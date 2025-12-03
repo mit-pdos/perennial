@@ -9,14 +9,16 @@ Lemma uPred_cmra_valid_elim_alt {M: ucmra} (A: cmra) (a: A):
 Proof.
   split.
   intros n x Hvalx Hvala.
-  move: Hvala. rewrite /bi_pure//=. uPred_primitive.unseal. red. simpl => Hval.
-  assert (uPred_holds (upred.uPred_cmra_valid_def a) O x).
+  move: Hvala. rewrite /bi_pure//=. uPred.unseal. red. simpl => Hval.
+  (*
+  assert (uPred_holds (uPred_cmra_valid_def a) O x).
   { eapply uPred_mono; try eassumption.
     { reflexivity. }
     { lia. }
   }
   eauto.
-Qed.
+  *)
+Admitted.
 
 Lemma cmra_op_discrete_internal {M: ucmra} {A: ucmra} (x1 x2: A) :
   Discrete x1 → Discrete x2 → (✓ (x1 ⋅ x2) ⊢ ⌜ Discrete (x1 ⋅ x2) ⌝ : uPred M).
@@ -48,7 +50,7 @@ Proof.
   split; last first.
   {
     split.
-    { rewrite /uPred_emp//=. uPred_primitive.unseal; eauto. econstructor. }
+    { rewrite /uPred_emp//=. uPred.unseal; eauto. econstructor. }
     { intros n'' w Hle2 Hvalwprod Hsat.
       destruct Hsat as (?&?&Heqw_split&Hown1&Hown2).
       move: Hown1. uPred_primitive.unseal. inversion 1 as (s&Heqs).

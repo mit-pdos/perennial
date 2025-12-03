@@ -114,23 +114,23 @@ Program Definition iMsg_base_def {Σ V}
     (v : V) (P : iProp Σ) (p : iProto Σ V) : iMsg Σ V :=
   IMsg (λ v', λne p', ⌜ v = v' ⌝ ∗ Next p ≡ p' ∗ P)%I.
 Next Obligation. solve_proper. Qed.
-Definition iMsg_base_aux : seal ( @iMsg_base_def). Proof. by eexists. Qed.
+Definition iMsg_base_aux : seal (@iMsg_base_def). by eexists. Qed.
 Definition iMsg_base := iMsg_base_aux.(unseal).
 Definition iMsg_base_eq : @iMsg_base = @iMsg_base_def := iMsg_base_aux.(seal_eq).
 Arguments iMsg_base {_ _} _%_V _%_I _%_proto.
-Global Instance: Params ( @iMsg_base) 3 := {}.
+Global Instance: Params (@iMsg_base) 3 := {}.
 
 Program Definition iMsg_exist_def {Σ V A} (m : A → iMsg Σ V) : iMsg Σ V :=
   IMsg (λ v', λne p', ∃ x, iMsg_car (m x) v' p')%I.
 Next Obligation. solve_proper. Qed.
-Definition iMsg_exist_aux : seal ( @iMsg_exist_def). by eexists. Qed.
+Definition iMsg_exist_aux : seal (@iMsg_exist_def). by eexists. Qed.
 Definition iMsg_exist := iMsg_exist_aux.(unseal).
 Definition iMsg_exist_eq : @iMsg_exist = @iMsg_exist_def := iMsg_exist_aux.(seal_eq).
 Arguments iMsg_exist {_ _ _} _%_msg.
-Global Instance: Params ( @iMsg_exist) 3 := {}.
+Global Instance: Params (@iMsg_exist) 3 := {}.
 
 Definition iMsg_texist {Σ V} {TT : tele} (m : TT → iMsg Σ V) : iMsg Σ V :=
-  tele_fold ( @iMsg_exist Σ V) (λ x, x) (tele_bind m).
+  tele_fold (@iMsg_exist Σ V) (λ x, x) (tele_bind m).
 Arguments iMsg_texist {_ _ !_} _%_msg /.
 
 Notation "'MSG' v {{ P } } ; p" := (iMsg_base v P p)
@@ -155,19 +155,19 @@ Qed.
 
 (** * Operators *)
 Definition iProto_end_def {Σ V} : iProto Σ V := proto_end.
-Definition iProto_end_aux : seal ( @iProto_end_def). by eexists. Qed.
+Definition iProto_end_aux : seal (@iProto_end_def). by eexists. Qed.
 Definition iProto_end := iProto_end_aux.(unseal).
 Definition iProto_end_eq : @iProto_end = @iProto_end_def := iProto_end_aux.(seal_eq).
 Arguments iProto_end {_ _}.
 
 Definition iProto_message_def {Σ V} (a : action) (m : iMsg Σ V) : iProto Σ V :=
   proto_message a (iMsg_car m).
-Definition iProto_message_aux : seal ( @iProto_message_def). by eexists. Qed.
+Definition iProto_message_aux : seal (@iProto_message_def). by eexists. Qed.
 Definition iProto_message := iProto_message_aux.(unseal).
 Definition iProto_message_eq :
   @iProto_message = @iProto_message_def := iProto_message_aux.(seal_eq).
 Arguments iProto_message {_ _} _ _%_msg.
-Global Instance: Params ( @iProto_message) 3 := {}.
+Global Instance: Params (@iProto_message) 3 := {}.
 
 Notation "'END'" := iProto_end : proto_scope.
 
@@ -231,28 +231,28 @@ Definition iProto_map_app {Σ V} (f : action → action)
 
 Definition iProto_app_def {Σ V} (p1 p2 : iProto Σ V) : iProto Σ V :=
   iProto_map_app id p2 p1.
-Definition iProto_app_aux : seal ( @iProto_app_def). Proof. by eexists. Qed.
+Definition iProto_app_aux : seal (@iProto_app_def). Proof. by eexists. Qed.
 Definition iProto_app := iProto_app_aux.(unseal).
 Definition iProto_app_eq : @iProto_app = @iProto_app_def := iProto_app_aux.(seal_eq).
 Arguments iProto_app {_ _} _%_proto _%_proto.
-Global Instance: Params ( @iProto_app) 2 := {}.
+Global Instance: Params (@iProto_app) 2 := {}.
 Infix "<++>" := iProto_app (at level 60) : proto_scope.
 Notation "m <++> p" := (iMsg_map (flip iProto_app p) m) : msg_scope.
 
 Definition iProto_dual_def {Σ V} (p : iProto Σ V) : iProto Σ V :=
   iProto_map_app action_dual proto_end p.
-Definition iProto_dual_aux : seal ( @iProto_dual_def). Proof. by eexists. Qed.
+Definition iProto_dual_aux : seal (@iProto_dual_def). Proof. by eexists. Qed.
 Definition iProto_dual := iProto_dual_aux.(unseal).
 Definition iProto_dual_eq :
   @iProto_dual = @iProto_dual_def := iProto_dual_aux.(seal_eq).
 Arguments iProto_dual {_ _} _%_proto.
-Global Instance: Params ( @iProto_dual) 2 := {}.
+Global Instance: Params (@iProto_dual) 2 := {}.
 Notation iMsg_dual := (iMsg_map iProto_dual).
 
 Definition iProto_dual_if {Σ V} (d : bool) (p : iProto Σ V) : iProto Σ V :=
   if d then iProto_dual p else p.
 Arguments iProto_dual_if {_ _} _ _%_proto.
-Global Instance: Params ( @iProto_dual_if) 3 := {}.
+Global Instance: Params (@iProto_dual_if) 3 := {}.
 
 (** * Protocol entailment *)
 Definition iProto_le_pre {Σ V}
@@ -265,7 +265,10 @@ Definition iProto_le_pre {Σ V}
        iMsg_car m1 v (Next p1') -∗ ∃ p2', ▷ rec p1' p2' ∗ iMsg_car m2 v (Next p2')
     | Send, Send => ∀ v p2',
        iMsg_car m2 v (Next p2') -∗ ∃ p1', ▷ rec p1' p2' ∗ iMsg_car m1 v (Next p1')
-    | _, _ => False
+    | Recv, Send => ∀ v1 v2 p1' p2',
+       iMsg_car m1 v1 (Next p1') -∗ iMsg_car m2 v2 (Next p2') -∗ ∃ pt,
+         ▷ rec p1' (<!> MSG v2; pt) ∗ ▷ rec (<?> MSG v1; pt) p2'
+    | Send, Recv => False
     end.
 Global Instance iProto_le_pre_ne {Σ V} (rec : iProto Σ V → iProto Σ V → iProp Σ) :
   NonExpansive2 (iProto_le_pre rec).
@@ -276,7 +279,7 @@ Program Definition iProto_le_pre' {Σ V}
     iProto Σ V -n> iProto Σ V -n> iPropO Σ := λne p1 p2,
   iProto_le_pre (λ p1' p2', rec p1' p2') p1 p2.
 Solve Obligations with solve_proper.
-Local Instance iProto_le_pre_contractive {Σ V} : Contractive ( @iProto_le_pre' Σ V).
+Local Instance iProto_le_pre_contractive {Σ V} : Contractive (@iProto_le_pre' Σ V).
 Proof.
   intros n rec1 rec2 Hrec p1 p2. rewrite /iProto_le_pre' /iProto_le_pre /=.
   by repeat (f_contractive || f_equiv).
@@ -284,12 +287,12 @@ Qed.
 Definition iProto_le {Σ V} (p1 p2 : iProto Σ V) : iProp Σ :=
   fixpoint iProto_le_pre' p1 p2.
 Arguments iProto_le {_ _} _%_proto _%_proto.
-Global Instance: Params ( @iProto_le) 2 := {}.
+Global Instance: Params (@iProto_le) 2 := {}.
 Notation "p ⊑ q" := (iProto_le p q) : bi_scope.
 
-Global Instance iProto_le_ne {Σ V} : NonExpansive2 ( @iProto_le Σ V).
+Global Instance iProto_le_ne {Σ V} : NonExpansive2 (@iProto_le Σ V).
 Proof. solve_proper. Qed.
-Global Instance iProto_le_proper {Σ V} : Proper ((≡) ==> (≡) ==> (⊣⊢)) ( @iProto_le Σ V).
+Global Instance iProto_le_proper {Σ V} : Proper ((≡) ==> (≡) ==> (⊣⊢)) (@iProto_le Σ V).
 Proof. solve_proper. Qed.
 
 Fixpoint iProto_app_recvs {Σ V} (vs : list V) (p : iProto Σ V) : iProto Σ V :=
@@ -323,7 +326,7 @@ Definition iProto_ctx `{protoG Σ V}
 Definition iProto_own `{!protoG Σ V} (γ : gname) (p : iProto Σ V) : iProp Σ :=
   ∃ p', ▷ (p' ⊑ p) ∗ iProto_own_frag γ p'.
 Arguments iProto_own {_ _ _} _ _%_proto.
-Global Instance: Params ( @iProto_own) 4 := {}.
+Global Instance: Params (@iProto_own) 4 := {}.
 
 Global Instance iProto_own_contractive `{protoG Σ V} γ :
   Contractive (iProto_own γ).
@@ -336,24 +339,6 @@ Section proto.
   Implicit Types p pl pr : iProto Σ V.
   Implicit Types m : iMsg Σ V.
 
-  Lemma own_prot_excl `{!protoG Σ V} γ (p1 p2 : iProto Σ V) :
-    own γ (◯E (Next p1)) -∗
-    own γ (◯E (Next p2)) -∗
-    False.
-  Proof.
-    iIntros "Hi Hj". iDestruct (own_valid_2 with "Hi Hj") as "H".
-    by rewrite uPred.cmra_valid_elim excl_auth_frag_op_validN.
-  Qed.
-
-  Lemma iProto_own_excl `{!protoG Σ V} γ (p1 p2 : iProto Σ V) :
-    iProto_own γ p1 -∗ iProto_own γ p2 -∗ False.
-  Proof.
-    rewrite /iProto_own.
-    iDestruct 1 as (p1') "[_ Hp1]".
-    iDestruct 1 as (p2') "[_ Hp2]".
-    iDestruct (own_prot_excl with "Hp1 Hp2") as %[].
-  Qed.
-
   (** ** Equality *)
   Lemma iProto_case p : p ≡ END ∨ ∃ a m, p ≡ <a> m.
   Proof.
@@ -361,15 +346,15 @@ Section proto.
     destruct (proto_case p) as [|(a&m&?)]; [by left|right].
     by exists a, (IMsg m).
   Qed.
-  Lemma iProto_message_equivI `{!BiInternalEq SPROP} a1 a2 m1 m2 :
+  Lemma iProto_message_equivI `{!Sbi SPROP} a1 a2 m1 m2 :
     (<a1> m1) ≡ (<a2> m2) ⊣⊢@{SPROP} ⌜ a1 = a2 ⌝ ∧
       (∀ v lp, iMsg_car m1 v lp ≡ iMsg_car m2 v lp).
   Proof. rewrite iProto_message_eq. apply proto_message_equivI. Qed.
 
-  Lemma iProto_message_end_equivI `{!BiInternalEq SPROP} a m :
+  Lemma iProto_message_end_equivI `{!Sbi SPROP} a m :
     (<a> m) ≡ END ⊢@{SPROP} False.
   Proof. rewrite iProto_message_eq iProto_end_eq. apply proto_message_end_equivI. Qed.
-  Lemma iProto_end_message_equivI `{!BiInternalEq SPROP} a m :
+  Lemma iProto_end_message_equivI `{!Sbi SPROP} a m :
     END ≡ (<a> m) ⊢@{SPROP} False.
   Proof. by rewrite internal_eq_sym iProto_message_end_equivI. Qed.
 
@@ -397,10 +382,10 @@ Section proto.
   Proof. apply (ne_proper_2 _). Qed.
 
   Global Instance iMsg_exist_ne A n :
-    Proper (pointwise_relation _ (dist n) ==> (dist n)) ( @iMsg_exist Σ V A).
-  rewrite iMsg_exist_eq=> m1 m2 Hm v p /=. f_equiv=> x. apply Hm. Qed.
+    Proper (pointwise_relation _ (dist n) ==> (dist n)) (@iMsg_exist Σ V A).
+  Proof. rewrite iMsg_exist_eq=> m1 m2 Hm v p /=. f_equiv=> x. apply Hm. Qed.
   Global Instance iMsg_exist_proper A :
-    Proper (pointwise_relation _ (≡) ==> (≡)) ( @iMsg_exist Σ V A).
+    Proper (pointwise_relation _ (≡) ==> (≡)) (@iMsg_exist Σ V A).
   Proof. rewrite iMsg_exist_eq=> m1 m2 Hm v p /=. f_equiv=> x. apply Hm. Qed.
 
   Global Instance msg_tele_base (v:V) (P : iProp Σ) (p : iProto Σ V) :
@@ -477,14 +462,14 @@ Section proto.
   Qed.
 
   (** ** Dual *)
-  Global Instance iProto_dual_ne : NonExpansive ( @iProto_dual Σ V).
-   rewrite iProto_dual_eq. solve_proper. Qed.
-  Global Instance iProto_dual_proper : Proper ((≡) ==> (≡)) ( @iProto_dual Σ V).
+  Global Instance iProto_dual_ne : NonExpansive (@iProto_dual Σ V).
+  Proof. rewrite iProto_dual_eq. solve_proper. Qed.
+  Global Instance iProto_dual_proper : Proper ((≡) ==> (≡)) (@iProto_dual Σ V).
   Proof. apply (ne_proper _). Qed.
-  Global Instance iProto_dual_if_ne d : NonExpansive ( @iProto_dual_if Σ V d).
+  Global Instance iProto_dual_if_ne d : NonExpansive (@iProto_dual_if Σ V d).
   Proof. solve_proper. Qed.
   Global Instance iProto_dual_if_proper d :
-    Proper ((≡) ==> (≡)) ( @iProto_dual_if Σ V d).
+    Proper ((≡) ==> (≡)) (@iProto_dual_if Σ V d).
   Proof. apply (ne_proper _). Qed.
 
   Lemma iProto_dual_end : iProto_dual (Σ:=Σ) (V:=V) END ≡ END.
@@ -508,9 +493,9 @@ Section proto.
     iMsg_dual (∃ x, m x) ≡ (∃ x, iMsg_dual (m x))%msg.
   Proof. apply iMsg_map_exist. Qed.
 
-  Global Instance iProto_dual_involutive : Involutive (≡) ( @iProto_dual Σ V).
+  Global Instance iProto_dual_involutive : Involutive (≡) (@iProto_dual Σ V).
   Proof.
-    intros p. apply (uPred.internal_eq_soundness (M:=iResUR Σ)).
+    intros p. apply (internal_eq_soundness (PROP:=iProp Σ)).
     iLöb as "IH" forall (p). destruct (iProto_case p) as [->|(a&m&->)].
     { by rewrite !iProto_dual_end. }
     rewrite !iProto_dual_message involutive.
@@ -525,7 +510,7 @@ Section proto.
   Qed.
 
   (** ** Append *)
-  Global Instance iProto_app_end_l : LeftId (≡) END ( @iProto_app Σ V).
+  Global Instance iProto_app_end_l : LeftId (≡) END (@iProto_app Σ V).
   Proof.
     intros p. rewrite iProto_end_eq iProto_app_eq /iProto_app_def /iProto_map_app.
     etrans; [apply (fixpoint_unfold (iProto_map_app_aux _ _))|]; simpl.
@@ -539,11 +524,11 @@ Section proto.
     intros a' m1 m2 Hm. f_equiv; solve_proper.
   Qed.
 
-  Global Instance iProto_app_ne : NonExpansive2 ( @iProto_app Σ V).
+  Global Instance iProto_app_ne : NonExpansive2 (@iProto_app Σ V).
   Proof.
-    assert (∀ n, Proper (dist n ==> (=) ==> dist n) ( @iProto_app Σ V)).
+    assert (∀ n, Proper (dist n ==> (=) ==> dist n) (@iProto_app Σ V)).
     { intros n p1 p1' Hp1 p2 p2' <-. by rewrite iProto_app_eq /iProto_app_def Hp1. }
-    assert (Proper ((≡) ==> (=) ==> (≡)) ( @iProto_app Σ V)).
+    assert (Proper ((≡) ==> (=) ==> (≡)) (@iProto_app Σ V)).
     { intros p1 p1' Hp1 p2 p2' <-. by rewrite iProto_app_eq /iProto_app_def Hp1. }
     intros n p1 p1' Hp1 p2 p2' Hp2. rewrite Hp1. clear p1 Hp1.
     revert p1'. induction (lt_wf n) as [n _ IH]; intros p1.
@@ -552,7 +537,7 @@ Section proto.
     rewrite !iProto_app_message. f_equiv=> v p' /=. do 4 f_equiv.
     f_contractive. apply IH; eauto using dist_lt.
   Qed.
-  Global Instance iProto_app_proper : Proper ((≡) ==> (≡) ==> (≡)) ( @iProto_app Σ V).
+  Global Instance iProto_app_proper : Proper ((≡) ==> (≡) ==> (≡)) (@iProto_app Σ V).
   Proof. apply (ne_proper_2 _). Qed.
 
   Lemma iMsg_app_base v P p1 p2 :
@@ -562,9 +547,9 @@ Section proto.
     ((∃ x, m x) <++> p2)%msg ≡ (∃ x, m x <++> p2)%msg.
   Proof. apply iMsg_map_exist. Qed.
 
-  Global Instance iProto_app_end_r : RightId (≡) END ( @iProto_app Σ V).
+  Global Instance iProto_app_end_r : RightId (≡) END (@iProto_app Σ V).
   Proof.
-    intros p. apply (uPred.internal_eq_soundness (M:=iResUR Σ)).
+    intros p. apply (internal_eq_soundness (PROP:=iProp Σ)).
     iLöb as "IH" forall (p). destruct (iProto_case p) as [->|(a&m&->)].
     { by rewrite left_id. }
     rewrite iProto_app_message.
@@ -576,9 +561,9 @@ Section proto.
     - iIntros "H". destruct (Next_uninj p') as [p'' Hp']. iExists p''.
       rewrite Hp'. iSplitL; [by auto|]. iIntros "!>". by iRewrite ("IH" $! p'').
   Qed.
-  Global Instance iProto_app_assoc : Assoc (≡) ( @iProto_app Σ V).
+  Global Instance iProto_app_assoc : Assoc (≡) (@iProto_app Σ V).
   Proof.
-    intros p1 p2 p3. apply (uPred.internal_eq_soundness (M:=iResUR Σ)).
+    intros p1 p2 p3. apply (internal_eq_soundness (PROP:=iProp Σ)).
     iLöb as "IH" forall (p1). destruct (iProto_case p1) as [->|(a&m&->)].
     { by rewrite !left_id. }
     rewrite !iProto_app_message.
@@ -595,7 +580,7 @@ Section proto.
   Lemma iProto_dual_app p1 p2 :
     iProto_dual (p1 <++> p2) ≡ iProto_dual p1 <++> iProto_dual p2.
   Proof.
-    apply (uPred.internal_eq_soundness (M:=iResUR Σ)).
+    apply (internal_eq_soundness (PROP:=iProp Σ)).
     iLöb as "IH" forall (p1 p2). destruct (iProto_case p1) as [->|(a&m&->)].
     { by rewrite iProto_dual_end !left_id. }
     rewrite iProto_dual_message !iProto_app_message iProto_dual_message /=.
@@ -626,6 +611,12 @@ Section proto.
       ▷ (p1' ⊑ p2') ∗ iMsg_car m2 v (Next p2')) -∗
     (<?> m1) ⊑ (<?> m2).
   Proof. rewrite iProto_le_unfold. iIntros "H". iRight. auto 10. Qed.
+  Lemma iProto_le_swap m1 m2 :
+    (∀ v1 v2 p1' p2',
+       iMsg_car m1 v1 (Next p1') -∗ iMsg_car m2 v2 (Next p2') -∗ ∃ pt,
+         ▷ (p1' ⊑ <!> MSG v2; pt) ∗ ▷ ((<?> MSG v1; pt) ⊑ p2')) -∗
+    (<?> m1) ⊑ (<!> m2).
+  Proof. rewrite iProto_le_unfold. iIntros "H". iRight. auto 10. Qed.
 
   Lemma iProto_le_end_inv_l p : p ⊑ END -∗ (p ≡ END).
   Proof.
@@ -642,37 +633,47 @@ Section proto.
   Qed.
 
   Lemma iProto_le_send_inv p1 m2 :
-    p1 ⊑ (<!> m2) -∗ ∃ m1,
-      (p1 ≡ <!> m1) ∗
-      ∀ v p2',
+    p1 ⊑ (<!> m2) -∗ ∃ a1 m1,
+      (p1 ≡ <a1> m1) ∗
+      match a1 with
+      | Send => ∀ v p2',
          iMsg_car m2 v (Next p2') -∗ ∃ p1',
-           ▷ (p1' ⊑ p2') ∗ iMsg_car m1 v (Next p1').
+           ▷ (p1' ⊑ p2') ∗ iMsg_car m1 v (Next p1')
+      | Recv => ∀ v1 v2 p1' p2',
+         iMsg_car m1 v1 (Next p1') -∗ iMsg_car m2 v2 (Next p2') -∗ ∃ pt,
+           ▷ (p1' ⊑ <!> MSG v2; pt) ∗ ▷ ((<?> MSG v1; pt) ⊑ p2')
+      end.
   Proof.
     rewrite iProto_le_unfold. iIntros "[[_ Heq]|H]".
     { iDestruct (iProto_message_end_equivI with "Heq") as %[]. }
     iDestruct "H" as (a1 a2 m1 m2') "(Hp1 & Hp2 & H)".
-    iDestruct (iProto_message_equivI with "Hp2") as (<-) "{Hp2} #Hm".
-    iExists _.
-    destruct a1.
-    - iFrame. iIntros (v p2') "Hm2".
+    iExists _, _; iSplit; [done|]. destruct a1, a2.
+    - iIntros (v p2') "Hm2".
+      iDestruct (iProto_message_equivI with "Hp2") as (_) "{Hp2} #Hm".
       iApply "H". by iRewrite -("Hm" $! v (Next p2')).
     - done.
+    - iIntros (v1 v2 p1' p2') "Hm1 Hm2".
+      iDestruct (iProto_message_equivI with "Hp2") as (_) "{Hp2} #Hm".
+      iApply ("H" with "Hm1"). by iRewrite -("Hm" $! v2 (Next p2')).
+    - iDestruct (iProto_message_equivI with "Hp2") as ([=]) "_".
   Qed.
   Lemma iProto_le_send_send_inv m1 m2 v p2' :
     (<!> m1) ⊑ (<!> m2) -∗
     iMsg_car m2 v (Next p2') -∗ ∃ p1', ▷ (p1' ⊑ p2') ∗ iMsg_car m1 v (Next p1').
   Proof.
-    iIntros "H Hm2". iDestruct (iProto_le_send_inv with "H") as (m1') "[Hm1 H]".
-    iDestruct (iProto_message_equivI with "Hm1") as (_) "Hm1".
+    iIntros "H Hm2". iDestruct (iProto_le_send_inv with "H") as (a m1') "[Hm1 H]".
+    iDestruct (iProto_message_equivI with "Hm1") as (<-) "Hm1".
     iDestruct ("H" with "Hm2") as (p1') "[Hle Hm]".
     iRewrite -("Hm1" $! v (Next p1')) in "Hm". auto with iFrame.
   Qed.
   Lemma iProto_le_recv_send_inv m1 m2 v1 v2 p1' p2' :
-    (<?> m1) ⊑ (<!> m2) -∗ False.
+    (<?> m1) ⊑ (<!> m2) -∗
+    iMsg_car m1 v1 (Next p1') -∗ iMsg_car m2 v2 (Next p2') -∗ ∃ pt,
+      ▷ (p1' ⊑ <!> MSG v2; pt) ∗ ▷ ((<?> MSG v1; pt) ⊑ p2').
   Proof.
-    iIntros "H". iDestruct (iProto_le_send_inv with "H") as (m1') "[Hm H]".
-    iDestruct (iProto_message_equivI with "Hm") as (H) "{Hm} #Hm".
-    done.
+    iIntros "H Hm1 Hm2". iDestruct (iProto_le_send_inv with "H") as (a m1') "[Hm H]".
+    iDestruct (iProto_message_equivI with "Hm") as (<-) "{Hm} #Hm".
+    iApply ("H" with "[Hm1] Hm2"). by iRewrite -("Hm" $! v1 (Next p1')).
   Qed.
 
   Lemma iProto_le_recv_inv p1 m2 :
@@ -712,14 +713,24 @@ Section proto.
     iIntros "H1 H2". iLöb as "IH" forall (p1 p2 p3).
     destruct (iProto_case p3) as [->|([]&m3&->)].
     - iDestruct (iProto_le_end_inv_l with "H2") as "H2". by iRewrite "H2" in "H1".
-    - iDestruct (iProto_le_send_inv with "H2") as (m2) "[Hp2 H2]".
-      iRewrite "Hp2" in "H1"; clear p2.
-      + iDestruct (iProto_le_send_inv with "H1") as (m1) "[Hp1 H1]".
-        iRewrite "Hp1"; clear p1.
-        iApply iProto_le_send. iIntros (v p3') "Hm3".
-        iDestruct ("H2" with "Hm3") as (p2') "[Hle Hm2]".
-        iDestruct ("H1" with "Hm2") as (p1') "[Hle' Hm1]".
-        iExists p1'. iIntros "{$Hm1} !>". by iApply ("IH" with "Hle'").
+    - iDestruct (iProto_le_send_inv with "H2") as (a2 m2) "[Hp2 H2]".
+      iRewrite "Hp2" in "H1"; clear p2. destruct a2.
+      + iDestruct (iProto_le_send_inv with "H1") as (a1 m1) "[Hp1 H1]".
+        iRewrite "Hp1"; clear p1. destruct a1.
+        * iApply iProto_le_send. iIntros (v p3') "Hm3".
+          iDestruct ("H2" with "Hm3") as (p2') "[Hle Hm2]".
+          iDestruct ("H1" with "Hm2") as (p1') "[Hle' Hm1]".
+          iExists p1'. iIntros "{$Hm1} !>". by iApply ("IH" with "Hle'").
+        * iApply iProto_le_swap. iIntros (v1 v3 p1' p3') "Hm1 Hm3".
+          iDestruct ("H2" with "Hm3") as (p2') "[Hle Hm2]".
+          iDestruct ("H1" with "Hm1 Hm2") as (pt) "[Hp1' Hp2']".
+          iExists pt. iIntros "{$Hp1'} !>". by iApply ("IH" with "Hp2'").
+      + iDestruct (iProto_le_recv_inv with "H1") as (m1) "[Hp1 H1]".
+        iRewrite "Hp1"; clear p1. iApply iProto_le_swap.
+        iIntros (v1 v3 p1' p3') "Hm1 Hm3".
+        iDestruct ("H1" with "Hm1") as (p2') "[Hle Hm2]".
+        iDestruct ("H2" with "Hm2 Hm3") as (pt) "[Hp2' Hp3']".
+        iExists pt. iIntros "{$Hp3'} !>". by iApply ("IH" with "Hle").
     - iDestruct (iProto_le_recv_inv with "H2") as (m2) "[Hp2 H3]".
       iRewrite "Hp2" in "H1".
       iDestruct (iProto_le_recv_inv with "H1") as (m1) "[Hp1 H2]".
@@ -729,21 +740,25 @@ Section proto.
       iExists p3'. iIntros "{$Hm3} !>". by iApply ("IH" with "Hle").
   Qed.
 
-  Lemma iProto_le_payload_elim_l m v P p :
-    (P -∗ (<?> MSG v; p) ⊑ (<?> m)) ⊢
-    (<?> MSG v {{ P }}; p) ⊑ (<?> m).
+  Lemma iProto_le_payload_elim_l a m v P p :
+    (P -∗ (<?> MSG v; p) ⊑ (<a> m)) ⊢
+    (<?> MSG v {{ P }}; p) ⊑ (<a> m).
   Proof.
-    rewrite iMsg_base_eq. iIntros "H".
-    iApply iProto_le_recv. iIntros (v' p') "(->&Hp&HP)".
-    iApply (iProto_le_recv_recv_inv with "(H HP)"); simpl; auto.
+    rewrite iMsg_base_eq. iIntros "H". destruct a.
+    - iApply iProto_le_swap. iIntros (v1 v2 p1' p2') "/= (#?&#?&HP) Hm2 /=".
+      iApply (iProto_le_recv_send_inv with "(H HP)"); simpl; auto.
+    - iApply iProto_le_recv. iIntros (v' p') "(->&Hp&HP)".
+      iApply (iProto_le_recv_recv_inv with "(H HP)"); simpl; auto.
   Qed.
-  Lemma iProto_le_payload_elim_r m v P p :
-    (P -∗ (<!> m) ⊑ (<!> MSG v; p)) ⊢
-    (<!> m) ⊑ (<!> MSG v {{ P }}; p).
+  Lemma iProto_le_payload_elim_r a m v P p :
+    (P -∗ (<a> m) ⊑ (<!> MSG v; p)) ⊢
+    (<a> m) ⊑ (<!> MSG v {{ P }}; p).
   Proof.
-    rewrite iMsg_base_eq. iIntros "H".
-    iApply iProto_le_send. iIntros (v' p') "(->&Hp&HP)".
-    iApply (iProto_le_send_send_inv with "(H HP)"); simpl; auto.
+    rewrite iMsg_base_eq. iIntros "H". destruct a.
+    - iApply iProto_le_send. iIntros (v' p') "(->&Hp&HP)".
+      iApply (iProto_le_send_send_inv with "(H HP)"); simpl; auto.
+    - iApply iProto_le_swap. iIntros (v1 v2 p1' p2') "/= Hm1 (->&#?&HP) /=".
+      iApply (iProto_le_recv_send_inv with "(H HP) Hm1"); simpl; auto.
   Qed.
   Lemma iProto_le_payload_intro_l v P p :
     P -∗ (<!> MSG v {{ P }}; p) ⊑ (<!> MSG v; p).
@@ -760,22 +775,69 @@ Section proto.
     iExists p'. iSplitR; [iApply iProto_le_refl|]. auto.
   Qed.
 
-  Lemma iProto_le_exist_elim_l {A} (m1 : A → iMsg Σ V) m2 :
-    (∀ x, (<?> m1 x) ⊑ (<?> m2)) ⊢
-    (<? x> m1 x) ⊑ (<?> m2).
+  Lemma iProto_le_exist_elim_l {A} (m1 : A → iMsg Σ V) a m2 :
+    (∀ x, (<?> m1 x) ⊑ (<a> m2)) ⊢
+    (<? x> m1 x) ⊑ (<a> m2).
   Proof.
-    rewrite iMsg_exist_eq. iIntros "H".
-    iApply iProto_le_recv. iIntros (v p1') "/=". iDestruct 1 as (x) "Hm".
-    by iApply (iProto_le_recv_recv_inv with "H").
+    rewrite iMsg_exist_eq. iIntros "H". destruct a.
+    - iApply iProto_le_swap. iIntros (v1 v2 p1' p2') "/= Hm1 Hm2 /=".
+      iDestruct "Hm1" as (x) "Hm1".
+      iApply (iProto_le_recv_send_inv with "H Hm1 Hm2").
+    - iApply iProto_le_recv. iIntros (v p1') "/=". iDestruct 1 as (x) "Hm".
+      by iApply (iProto_le_recv_recv_inv with "H").
   Qed.
 
-  Lemma iProto_le_exist_elim_r {A} m1 (m2 : A → iMsg Σ V) :
-    (∀ x, (<!> m1) ⊑ (<!> m2 x)) ⊢
-    (<!> m1) ⊑ (<! x> m2 x).
+  Lemma iProto_le_exist_elim_l_inhabited `{!Inhabited A} (m : A → iMsg Σ V) p :
+    (∀ x, (<?> m x) ⊑ p) ⊢
+    (<? x> m x) ⊑ p.
   Proof.
     rewrite iMsg_exist_eq. iIntros "H".
-    iApply iProto_le_send. iIntros (v p2'). iDestruct 1 as (x) "Hm".
-    by iApply (iProto_le_send_send_inv with "H").
+    destruct (iProto_case p) as [Heq | [a [m' Heq]]].
+    - unshelve iSpecialize ("H" $!inhabitant); first by apply _.
+      rewrite Heq.
+      iDestruct (iProto_le_end_inv_l with "H") as "H".
+      rewrite iProto_end_eq iProto_message_eq.
+      iDestruct (proto_message_end_equivI with "H") as "[]".
+    - iEval (rewrite Heq). destruct a.
+      + iApply iProto_le_swap. iIntros (v1 v2 p1' p2') "/= Hm1 Hm2 /=".
+        iDestruct "Hm1" as (x) "Hm1".
+        iSpecialize ("H" $! x). rewrite Heq.
+        iApply (iProto_le_recv_send_inv with "H Hm1 Hm2").
+      + iApply iProto_le_recv. iIntros (v p1') "/=". iDestruct 1 as (x) "Hm".
+        iSpecialize ("H" $! x). rewrite Heq.
+        by iApply (iProto_le_recv_recv_inv with "H").
+  Qed.
+
+  Lemma iProto_le_exist_elim_r {A} a m1 (m2 : A → iMsg Σ V) :
+    (∀ x, (<a> m1) ⊑ (<!> m2 x)) ⊢
+    (<a> m1) ⊑ (<! x> m2 x).
+  Proof.
+    rewrite iMsg_exist_eq. iIntros "H". destruct a.
+    - iApply iProto_le_send. iIntros (v p2'). iDestruct 1 as (x) "Hm".
+      by iApply (iProto_le_send_send_inv with "H").
+    - iApply iProto_le_swap. iIntros (v1 v2 p1' p2') "/= Hm1".
+      iDestruct 1 as (x) "Hm2".
+      iApply (iProto_le_recv_send_inv with "H Hm1 Hm2").
+  Qed.
+  Lemma iProto_le_exist_elim_r_inhabited `{!Inhabited A} p (m : A → iMsg Σ V) :
+    (∀ x, p ⊑ (<!> m x)) ⊢
+    p ⊑ (<! x> m x).
+  Proof.
+    rewrite iMsg_exist_eq. iIntros "H".
+    destruct (iProto_case p) as [Heq | [a [m' Heq]]].
+    - unshelve iSpecialize ("H" $!inhabitant); first by apply _.
+      rewrite Heq.
+      iDestruct (iProto_le_end_inv_r with "H") as "H".
+      rewrite iProto_end_eq iProto_message_eq.
+      iDestruct (proto_message_end_equivI with "H") as "[]".
+    - iEval (rewrite Heq). destruct a.
+      + iApply iProto_le_send. iIntros (v p2'). iDestruct 1 as (x) "Hm".
+        iSpecialize ("H" $! x). rewrite Heq.
+        by iApply (iProto_le_send_send_inv with "H").
+      + iApply iProto_le_swap. iIntros (v1 v2 p1' p2') "/= Hm1".
+        iDestruct 1 as (x) "Hm2".
+        iSpecialize ("H" $! x). rewrite Heq.
+        iApply (iProto_le_recv_send_inv with "H Hm1 Hm2").
   Qed.
   Lemma iProto_le_exist_intro_l {A} (m : A → iMsg Σ V) a :
     ⊢ (<! x> m x) ⊑ (<!> m a).
@@ -790,17 +852,17 @@ Section proto.
     iExists p'. iSplitR; last by auto. iApply iProto_le_refl.
   Qed.
 
-  Lemma iProto_le_texist_elim_l {TT : tele} (m1 : TT → iMsg Σ V) m2 :
-    (∀ x, (<?> m1 x) ⊑ (<?> m2)) ⊢
-    (<?.. x> m1 x) ⊑ (<?> m2).
+  Lemma iProto_le_texist_elim_l {TT : tele} (m1 : TT → iMsg Σ V) a m2 :
+    (∀ x, (<?> m1 x) ⊑ (<a> m2)) ⊢
+    (<?.. x> m1 x) ⊑ (<a> m2).
   Proof.
     iIntros "H". iInduction TT as [|T TT] "IH"; simpl; [done|].
     iApply iProto_le_exist_elim_l; iIntros (x).
     iApply "IH". iIntros (xs). iApply "H".
   Qed.
-  Lemma iProto_le_texist_elim_r {TT : tele} m1 (m2 : TT → iMsg Σ V) :
-    (∀ x, (<!> m1) ⊑ (<!> m2 x)) -∗
-    (<!> m1) ⊑ (<!.. x> m2 x).
+  Lemma iProto_le_texist_elim_r {TT : tele} a m1 (m2 : TT → iMsg Σ V) :
+    (∀ x, (<a> m1) ⊑ (<!> m2 x)) -∗
+    (<a> m1) ⊑ (<!.. x> m2 x).
   Proof.
     iIntros "H". iInduction TT as [|T TT] "IH"; simpl; [done|].
     iApply iProto_le_exist_elim_r; iIntros (x).
@@ -833,19 +895,38 @@ Section proto.
       iExists p2. iSplit; [|by auto]. iIntros "!>". by iRewrite -"Hp".
   Qed.
 
+  Lemma iProto_le_base_swap v1 v2 P1 P2 p :
+    ⊢ (<?> MSG v1 {{ P1 }}; <!> MSG v2 {{ P2 }}; p)
+    ⊑ (<!> MSG v2 {{ P2 }}; <?> MSG v1 {{ P1 }}; p).
+  Proof.
+    rewrite {1 3}iMsg_base_eq. iApply iProto_le_swap.
+    iIntros (v1' v2' p1' p2') "/= (->&#Hp1&HP1) (->&#Hp2&HP2)". iExists p.
+    iSplitL "HP2".
+    - iIntros "!>". iRewrite -"Hp1". by iApply iProto_le_payload_intro_l.
+    - iIntros "!>". iRewrite -"Hp2". by iApply iProto_le_payload_intro_r.
+  Qed.
+
   Lemma iProto_le_dual p1 p2 : p2 ⊑ p1 -∗ iProto_dual p1 ⊑ iProto_dual p2.
   Proof.
     iIntros "H". iLöb as "IH" forall (p1 p2).
     destruct (iProto_case p1) as [->|([]&m1&->)].
     - iDestruct (iProto_le_end_inv_l with "H") as "H".
       iRewrite "H". iApply iProto_le_refl.
-    - iDestruct (iProto_le_send_inv with "H") as (m2) "[Hp2 H]".
+    - iDestruct (iProto_le_send_inv with "H") as (a2 m2) "[Hp2 H]".
       iRewrite "Hp2"; clear p2. iEval (rewrite !iProto_dual_message).
-      iApply iProto_le_recv. iIntros (v p1d).
-      iDestruct 1 as (p1') "[Hm1 #Hp1d]".
-      iDestruct ("H" with "Hm1") as (p2') "[H Hm2]".
-      iDestruct ("IH" with "H") as "H". iExists (iProto_dual p2').
-      iSplitL "H"; [iIntros "!>"; by iRewrite "Hp1d"|]. simpl; auto.
+      destruct a2; simpl.
+      + iApply iProto_le_recv. iIntros (v p1d).
+        iDestruct 1 as (p1') "[Hm1 #Hp1d]".
+        iDestruct ("H" with "Hm1") as (p2') "[H Hm2]".
+        iDestruct ("IH" with "H") as "H". iExists (iProto_dual p2').
+        iSplitL "H"; [iIntros "!>"; by iRewrite "Hp1d"|]. simpl; auto.
+      + iApply iProto_le_swap. iIntros (v1 v2 p1d p2d).
+        iDestruct 1 as (p1') "[Hm1 #Hp1d]". iDestruct 1 as (p2') "[Hm2 #Hp2d]".
+        iDestruct ("H" with "Hm2 Hm1") as (pt) "[H1 H2]".
+        iDestruct ("IH" with "H1") as "H1". iDestruct ("IH" with "H2") as "H2 {IH}".
+        rewrite !iProto_dual_message /=. iExists (iProto_dual pt). iSplitL "H2".
+        * iIntros "!>". iRewrite "Hp1d". by rewrite -iMsg_dual_base.
+        * iIntros "!>". iRewrite "Hp2d". by rewrite -iMsg_dual_base.
     - iDestruct (iProto_le_recv_inv with "H") as (m2) "[Hp2 H]".
       iRewrite "Hp2"; clear p2. iEval (rewrite !iProto_dual_message /=).
       iApply iProto_le_send. iIntros (v p2d).
@@ -895,13 +976,24 @@ Section proto.
     destruct (iProto_case p2) as [->|([]&m2&->)].
     - iDestruct (iProto_le_end_inv_l with "H1") as "H1".
       iRewrite "H1". by rewrite !left_id.
-    - iDestruct (iProto_le_send_inv with "H1") as (m1) "[Hp1 H1]".
-      iRewrite "Hp1"; clear p1. rewrite !iProto_app_message.
-      iApply iProto_le_send. iIntros (v p24).
-      iDestruct 1 as (p2') "[Hm2 #Hp24]".
-      iDestruct ("H1" with "Hm2") as (p1') "[H1 Hm1]".
-      iExists (p1' <++> p3). iSplitR "Hm1"; [|by simpl; eauto].
-      iIntros "!>". iRewrite "Hp24". by iApply ("IH" with "H1").
+    - iDestruct (iProto_le_send_inv with "H1") as (a1 m1) "[Hp1 H1]".
+      iRewrite "Hp1"; clear p1. rewrite !iProto_app_message. destruct a1; simpl.
+      + iApply iProto_le_send. iIntros (v p24).
+        iDestruct 1 as (p2') "[Hm2 #Hp24]".
+        iDestruct ("H1" with "Hm2") as (p1') "[H1 Hm1]".
+        iExists (p1' <++> p3). iSplitR "Hm1"; [|by simpl; eauto].
+        iIntros "!>". iRewrite "Hp24". by iApply ("IH" with "H1").
+      + iApply iProto_le_swap. iIntros (v1 v2 p13 p24).
+        iDestruct 1 as (p1') "[Hm1 #Hp13]". iDestruct 1 as (p2') "[Hm2 #Hp24]".
+        iSpecialize ("H1" with "Hm1 Hm2").
+        iDestruct "H1" as (pt) "[H1 H1']".
+        iExists (pt <++> p3). iSplitL "H1".
+        * iIntros "!>". iRewrite "Hp13".
+          rewrite /= -iMsg_app_base -iProto_app_message.
+          iApply ("IH" with "H1"). iApply iProto_le_refl.
+        * iIntros "!>". iRewrite "Hp24".
+          rewrite /= -iMsg_app_base -iProto_app_message.
+          iApply ("IH" with "H1' H2").
     - iDestruct (iProto_le_recv_inv with "H1") as (m1) "[Hp1 H1]".
       iRewrite "Hp1"; clear p1. rewrite !iProto_app_message. iApply iProto_le_recv.
       iIntros (v p13). iDestruct 1 as (p1') "[Hm1 #Hp13]".
@@ -967,125 +1059,10 @@ Section proto.
     iApply (iProto_interp_le_l with "[H] Hle"). by iApply iProto_interp_sym.
   Qed.
 
-  Lemma iProto_interp_end_inv vsl vsr pr :
-    iProto_interp vsl vsr END pr -∗ ⌜vsr = []⌝.
-  Proof.
-    iDestruct 1 as (p) "[Hp Hdp] /=".
-    destruct vsr; [done|].
-    iDestruct (iProto_le_end_inv_l with "Hp") as "#Heq".
-    by rewrite iProto_message_end_equivI.
-  Qed.
-
-  Lemma iProto_interp_send_end_inv vsl vsr vl pl :
-    iProto_interp vsl vsr (<!> MSG vl; pl) END -∗
-    False.
-  Proof.
-    iIntros "H".
-    iDestruct (iProto_interp_sym with "H") as "H".
-    iDestruct (iProto_interp_end_inv with "H") as %->.
-    iDestruct (iProto_interp_sym with "H") as "H".
-    iDestruct "H" as (p) "[Hp Hdp] /=".
-    iDestruct (iProto_le_dual_l with "Hdp") as "Hdp".
-    rewrite iProto_dual_end.
-    iDestruct (iProto_le_end_inv_r with "Hdp") as "Heq".
-    iRewrite "Heq" in "Hp".
-    iInduction (vsr) as [|vr vsr] "IHvsr" forall (pl); simpl.
-    - iDestruct (iProto_le_end_inv_r with "Hp") as "Hp".
-      by rewrite iProto_message_end_equivI.
-    - iDestruct (iProto_le_send_inv with "Hp") as (m') "[Heq Hp]".
-      rewrite iProto_message_equivI.
-      iDestruct "Heq" as (Heq) "Heq". done.
-  Qed.
-
-  Lemma iProto_interp_recv_end_inv vsl m :
-    iProto_interp vsl [] (<?> m) END -∗
-    False.
-  Proof.
-    iIntros "H".
-    iDestruct (iProto_interp_sym with "H") as "H".
-    iDestruct (iProto_interp_end_inv with "H") as %->.
-    iDestruct (iProto_interp_sym with "H") as "H".
-    iDestruct "H" as (p) "[Hp Hdp] /=".
-    iDestruct (iProto_le_dual_l with "Hdp") as "Hdp".
-    rewrite iProto_dual_end.
-    iDestruct (iProto_le_end_inv_r with "Hdp") as "Heq".
-    iRewrite "Heq" in "Hp".
-    iDestruct (iProto_le_recv_inv with "Hp") as (m1) "[Heq Hp]".
-    by rewrite iProto_end_message_equivI.
-  Qed.
-
-  Lemma iProto_send_end_inv_r γl γr vsl vsr vr pr :
-    iProto_ctx γl γr vsl vsr -∗
-    iProto_own γl END -∗
-    iProto_own γr (<!> MSG vr; pr) -∗
-    ▷ False.
-  Proof.
-    iDestruct 1 as (pl' pr') "(H●l & H●r & Hinterp)".
-    iDestruct 1 as (pl'') "[Hlel H◯l]".
-    iDestruct 1 as (pr'') "[Hler H◯r]".
-    iDestruct (iProto_own_auth_agree with "H●l H◯l") as "#Hpl".
-    iDestruct (iProto_own_auth_agree with "H●r H◯r") as "#Hpr".
-    iDestruct (iProto_interp_le_l with "Hinterp [Hlel]") as "Hinterp".
-    { iIntros "!>". by iRewrite "Hpl". }
-    iDestruct (iProto_interp_le_r with "Hinterp [Hler]") as "Hinterp".
-    { iIntros "!>". by iRewrite "Hpr". }
-    iDestruct (iProto_interp_sym with "Hinterp") as "Hinterp".
-    by iDestruct (iProto_interp_send_end_inv with "Hinterp") as "Hneq".
-  Qed.
-
-  (* Make better lemma: i.e. prove that vsr = non-empty, when (<?> m) / END,
-     and derive contradiction from that *)
-  Lemma iProto_recv_end_inv_l γl γr vsl m :
-    iProto_ctx γl γr vsl [] -∗
-    iProto_own γl (<?> m) -∗
-    iProto_own γr END -∗
-    ▷ False.
-  Proof.
-    iDestruct 1 as (pl' pr') "(H●l & H●r & Hinterp)".
-    iDestruct 1 as (pl'') "[Hlel H◯l]".
-    iDestruct 1 as (pr'') "[Hler H◯r]".
-    iDestruct (iProto_own_auth_agree with "H●l H◯l") as "#Hpl".
-    iDestruct (iProto_own_auth_agree with "H●r H◯r") as "#Hpr".
-    iDestruct (iProto_interp_le_l with "Hinterp [Hlel]") as "Hinterp".
-    { iIntros "!>". by iRewrite "Hpl". }
-    iDestruct (iProto_interp_le_r with "Hinterp [Hler]") as "Hinterp".
-    { iIntros "!>". by iRewrite "Hpr". }
-    by iDestruct (iProto_interp_recv_end_inv with "Hinterp") as "Hneq".
-  Qed.
-
-  Lemma iProto_end_inv_l γl γr vsl vsr :
-    iProto_ctx γl γr vsl vsr -∗
-    iProto_own γl END -∗
-    ▷ ⌜vsr = []⌝.
-  Proof.
-    iDestruct 1 as (pl' pr') "(H●l & H●r & Hinterp)".
-    iDestruct 1 as (pr'') "[Hle H◯]".
-    iDestruct (iProto_own_auth_agree with "H●l H◯") as "#Hpl".
-    iDestruct (iProto_interp_le_l with "Hinterp [Hle]") as "Hinterp".
-    { iIntros "!>". by iRewrite "Hpl". }
-    iDestruct (iProto_interp_end_inv with "Hinterp") as "Hneq".
-    done.
-  Qed.
-
-  Lemma iProto_end_inv_r γl γr vsl vsr :
-    iProto_ctx γl γr vsl vsr -∗
-    iProto_own γr END -∗
-    ▷ ⌜vsl = []⌝.
-  Proof.
-    iDestruct 1 as (pl' pr') "(H●l & H●r & Hinterp)".
-    iDestruct 1 as (pl'') "[Hle H◯]".
-    iDestruct (iProto_own_auth_agree with "H●r H◯") as "#Hpr".
-    iDestruct (iProto_interp_le_r with "Hinterp [Hle]") as "Hinterp".
-    { iIntros "!>". by iRewrite "Hpr". }
-    iDestruct (iProto_interp_sym with "Hinterp") as "Hinterp".
-    iDestruct (iProto_interp_end_inv with "Hinterp") as "Hneq".
-    done.
-  Qed.
-
   Lemma iProto_interp_send vl ml vsl vsr pr pl' :
     iProto_interp vsl vsr (<!> ml) pr -∗
     iMsg_car ml vl (Next pl') -∗
-    iProto_interp (vsl ++ [vl]) vsr pl' pr.
+    ▷^(length vsr) iProto_interp (vsl ++ [vl]) vsr pl' pr.
   Proof.
     iDestruct 1 as (p) "[Hp Hdp] /="; iIntros "Hml".
     iDestruct (iProto_le_trans _ _ (<!> MSG vl; pl') with "Hp [Hml]") as "Hp".
@@ -1099,7 +1076,11 @@ Section proto.
         by rewrite involutive. }
       iApply iProto_le_base; iIntros "!>". by iApply "IH". }
     iDestruct (iProto_le_recv_send_inv _ _ vr vl
-      (iProto_app_recvs vsr p) pl' with "Hp") as "[]".
+      (iProto_app_recvs vsr p) pl' with "Hp [] []") as (p') "[H1 H2]";
+      [rewrite iMsg_base_eq; by auto..|].
+    iIntros "!>". iSpecialize ("IH" with "Hdp H1"). iIntros "!>".
+    iDestruct "IH" as (p'') "[Hp'' Hdp'']". iExists p''. iFrame "Hdp''".
+    iApply (iProto_le_trans with "[Hp''] H2"); simpl. by iApply iProto_le_base.
   Qed.
 
   Lemma iProto_interp_recv vl vsl vsr pl mr :
@@ -1155,7 +1136,7 @@ Section proto.
     iProto_ctx γl γr vsl vsr -∗
     iProto_own γl (<!> m) -∗
     iMsg_car m vl (Next p) ==∗
-      iProto_ctx γl γr (vsl ++ [vl]) vsr ∗
+      ▷^(length vsr) iProto_ctx γl γr (vsl ++ [vl]) vsr ∗
       iProto_own γl p.
   Proof.
     iDestruct 1 as (pl pr) "(H●l & H●r & Hinterp)".
@@ -1167,7 +1148,7 @@ Section proto.
     iDestruct (iProto_interp_send with "Hinterp [Hm //]") as "Hinterp".
     iMod (iProto_own_auth_update _ _ _ p with "H●l H◯") as "[H●l H◯]".
     iIntros "!>". iSplitR "H◯".
-    - iExists p, pr. iFrame.
+    - iIntros "!>". iExists p, pr. iFrame.
     - iExists p. iFrame. iApply iProto_le_refl.
   Qed.
 
@@ -1194,23 +1175,23 @@ Section proto.
 
   (** The instances below make it possible to use the tactics [iIntros],
   [iExist], [iSplitL]/[iSplitR], [iFrame] and [iModIntro] on [iProto_le] goals. *)
-  Global Instance iProto_le_from_forall_l {A} (m1 : A → iMsg Σ V) m2 name :
+  Global Instance iProto_le_from_forall_l {A} a (m1 : A → iMsg Σ V) m2 name :
     AsIdentName m1 name →
-    FromForall (iProto_message Recv (iMsg_exist m1) ⊑ (<?> m2))
-               (λ x, (<?> m1 x) ⊑ (<?> m2))%I name | 10.
+    FromForall (iProto_message Recv (iMsg_exist m1) ⊑ (<a> m2))
+               (λ x, (<?> m1 x) ⊑ (<a> m2))%I name | 10.
   Proof. intros _. apply iProto_le_exist_elim_l. Qed.
-  Global Instance iProto_le_from_forall_r {A} m1 (m2 : A → iMsg Σ V) name :
+  Global Instance iProto_le_from_forall_r {A} a m1 (m2 : A → iMsg Σ V) name :
     AsIdentName m2 name →
-    FromForall ((<!> m1) ⊑ iProto_message Send (iMsg_exist m2))
-               (λ x, (<!> m1) ⊑ (<!> m2 x))%I name | 11.
+    FromForall ((<a> m1) ⊑ iProto_message Send (iMsg_exist m2))
+               (λ x, (<a> m1) ⊑ (<!> m2 x))%I name | 11.
   Proof. intros _. apply iProto_le_exist_elim_r. Qed.
 
-  Global Instance iProto_le_from_wand_l m v P p :
+  Global Instance iProto_le_from_wand_l a m v P p :
     TCIf (TCEq P True%I) False TCTrue →
-    FromWand ((<?> MSG v {{ P }}; p) ⊑ (<?> m)) P ((<?> MSG v; p) ⊑ (<?> m)) | 10.
+    FromWand ((<?> MSG v {{ P }}; p) ⊑ (<a> m)) P ((<?> MSG v; p) ⊑ (<a> m)) | 10.
   Proof. intros _. apply iProto_le_payload_elim_l. Qed.
-  Global Instance iProto_le_from_wand_r m v P p :
-    FromWand ((<!> m) ⊑ (<!> MSG v {{ P }}; p)) P ((<!> m) ⊑ (<!> MSG v; p)) | 11.
+  Global Instance iProto_le_from_wand_r a m v P p :
+    FromWand ((<a> m) ⊑ (<!> MSG v {{ P }}; p)) P ((<a> m) ⊑ (<!> MSG v; p)) | 11.
   Proof. apply iProto_le_payload_elim_r. Qed.
 
   Global Instance iProto_le_from_exist_l {A} (m : A → iMsg Σ V) p :

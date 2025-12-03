@@ -99,7 +99,7 @@ Proof.
   iModIntro. iIntros "H". by iMod "H".
 Qed.
 
-Lemma step_fupdN_inner_plain `{BP: BiPlainly PROP} `{@BiFUpdPlainly PROP H BP}
+Lemma step_fupdN_inner_plain `{!Sbi PROP} `{BiFUpdSbi PROP}
       (k: nat) (P: PROP) :
   Plain P →
   ⊢ (|={⊤, ∅}=> |={∅}▷=>^k |={∅}=> P) -∗
@@ -238,7 +238,7 @@ Proof.
   - intros ? P Q ->. eauto.
 Qed.
 
-Lemma step_fupdN_inner_plain' `{BP: BiPlainly PROP} `{@BiFUpdPlainly PROP H BP}
+Lemma step_fupdN_inner_plain' `{!Sbi PROP} `{!BiFUpdSbi PROP}
       (k: nat) (P: PROP) :
   Plain P →
   ⊢ (|={⊤, ⊤}_k=> P) -∗
@@ -258,8 +258,8 @@ Proof using HAff.
     iNext. iNext. by iMod "H".
 Qed.
 
-Lemma step_fupdN_innerN_plain `{BP: BiPlainly PROP} `{@BiFUpdPlainly PROP H BP}
-      (k n: nat) (P: PROP) :
+Lemma step_fupdN_innerN_plain `{!Sbi PROP} `{!BiFUpdSbi PROP}
+  (k n: nat) (P: PROP) :
   Plain P →
   ⊢ (|={⊤}_k=>^n P) -∗
   |={⊤}=> ▷^(n * (S k)) P.
