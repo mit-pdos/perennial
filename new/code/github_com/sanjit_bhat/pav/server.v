@@ -323,7 +323,7 @@ Definition CallStartⁱᵐᵖˡ : val :=
     do:  ("vrf" <-[#ptrT] "$r0");;;
     (if: ![#boolT] "errb"
     then
-      let: "$r0" := ktcore.BlameServ in
+      let: "$r0" := ktcore.BlameServFull in
       do:  ("err" <-[#ktcore.Blame] "$r0");;;
       return: (![#ptrT] "chain", ![#ptrT] "vrf", ![#ktcore.Blame] "err")
     else do:  #());;;
@@ -421,13 +421,13 @@ Definition CallHistoryⁱᵐᵖˡ : val :=
     do:  ("errb" <-[#boolT] "$r2");;;
     (if: ![#boolT] "errb"
     then
-      let: "$r0" := ktcore.BlameServ in
+      let: "$r0" := ktcore.BlameServFull in
       do:  ("err" <-[#ktcore.Blame] "$r0");;;
       return: (![#sliceT] "chainProof", ![#sliceT] "linkSig", ![#sliceT] "hist", ![#ptrT] "bound", ![#ktcore.Blame] "err")
     else do:  #());;;
     (if: ![#boolT] (struct.field_ref #HistoryReply #"Err"%go (![#ptrT] "r"))
     then
-      let: "$r0" := ktcore.BlameServ in
+      let: "$r0" := ktcore.BlameServFull in
       do:  ("err" <-[#ktcore.Blame] "$r0");;;
       return: (![#sliceT] "chainProof", ![#sliceT] "linkSig", ![#sliceT] "hist", ![#ptrT] "bound", ![#ktcore.Blame] "err")
     else do:  #());;;
@@ -481,13 +481,13 @@ Definition CallAuditⁱᵐᵖˡ : val :=
     do:  ("errb" <-[#boolT] "$r2");;;
     (if: ![#boolT] "errb"
     then
-      let: "$r0" := ktcore.BlameServ in
+      let: "$r0" := ktcore.BlameServFull in
       do:  ("err" <-[#ktcore.Blame] "$r0");;;
       return: (![#sliceT] "p", ![#ktcore.Blame] "err")
     else do:  #());;;
     (if: ![#boolT] (struct.field_ref #AuditReply #"Err"%go (![#ptrT] "r"))
     then
-      let: "$r0" := ktcore.BlameServ in
+      let: "$r0" := ktcore.BlameServFull in
       do:  ("err" <-[#ktcore.Blame] "$r0");;;
       return: (![#sliceT] "p", ![#ktcore.Blame] "err")
     else do:  #());;;
@@ -1272,17 +1272,11 @@ Definition Server__Historyⁱᵐᵖˡ : val :=
     let: "$a1" := (![#uint64T] "numVers") in
     (method_call #(ptrT.id Server.id) #"getBound"%go (![#ptrT] "s")) "$a0" "$a1") in
     do:  ("bound" <-[#ptrT] "$r0");;;
-    (if: ((![#uint64T] "prevEpoch") + #(W64 1)) = (![#uint64T] "numEps")
-    then
-      let: "$r0" := #slice.nil in
-      do:  ("linkSig" <-[#sliceT] "$r0");;;
-      return: (![#sliceT] "chainProof", ![#sliceT] "linkSig", ![#sliceT] "hist", ![#ptrT] "bound", ![#boolT] "err")
-    else do:  #());;;
     return: (![#sliceT] "chainProof", ![#sliceT] "linkSig", ![#sliceT] "hist", ![#ptrT] "bound", ![#boolT] "err")).
 
 (* Audit errors if args out of bounds.
 
-   go: server.go:103:18 *)
+   go: server.go:97:18 *)
 Definition Server__Auditⁱᵐᵖˡ : val :=
   λ: "s" "prevEpoch",
     with_defer: (let: "err" := (mem.alloc (type.zero_val #boolT)) in
@@ -1322,7 +1316,7 @@ Definition mapEntry : go_type := structT [
 
 Definition getWork : go_string := "github.com/sanjit-bhat/pav/server.getWork"%go.
 
-(* go: server.go:127:18 *)
+(* go: server.go:121:18 *)
 Definition Server__workerⁱᵐᵖˡ : val :=
   λ: "s" <>,
     exception_do (let: "s" := (mem.alloc "s") in
@@ -1339,7 +1333,7 @@ Definition Server__workerⁱᵐᵖˡ : val :=
       (method_call #(ptrT.id Server.id) #"doWork"%go (![#ptrT] "s")) "$a0"));;;
     return: #()).
 
-(* go: server.go:137:6 *)
+(* go: server.go:131:6 *)
 Definition getWorkⁱᵐᵖˡ : val :=
   λ: "workQ",
     exception_do (let: "work" := (mem.alloc (type.zero_val #sliceT)) in
@@ -1374,7 +1368,7 @@ Definition getWorkⁱᵐᵖˡ : val :=
          )]));;;
     return: (![#sliceT] "work")).
 
-(* go: server.go:155:18 *)
+(* go: server.go:149:18 *)
 Definition Server__doWorkⁱᵐᵖˡ : val :=
   λ: "s" "work",
     exception_do (let: "s" := (mem.alloc "s") in
@@ -1394,7 +1388,7 @@ Definition Server__doWorkⁱᵐᵖˡ : val :=
 
 Definition New : go_string := "github.com/sanjit-bhat/pav/server.New"%go.
 
-(* go: server.go:167:6 *)
+(* go: server.go:161:6 *)
 Definition Newⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (let: "mu" := (mem.alloc (type.zero_val #ptrT)) in
@@ -1500,7 +1494,7 @@ Definition Newⁱᵐᵖˡ : val :=
     do:  (Fork ("$go" #()));;;
     return: (![#ptrT] "s", ![#cryptoffi.SigPublicKey] "sigPk")).
 
-(* go: server.go:192:18 *)
+(* go: server.go:186:18 *)
 Definition Server__checkWorkⁱᵐᵖˡ : val :=
   λ: "s" "work",
     exception_do (let: "s" := (mem.alloc "s") in
@@ -1542,7 +1536,7 @@ Definition Server__checkWorkⁱᵐᵖˡ : val :=
       do:  (map.insert (![type.mapT #uint64T #boolT] "uidSet") (![#uint64T] "uid") "$r0")));;;
     return: #()).
 
-(* go: server.go:212:18 *)
+(* go: server.go:206:18 *)
 Definition Server__makeEntriesⁱᵐᵖˡ : val :=
   λ: "s" "work",
     exception_do (let: "ents" := (mem.alloc (type.zero_val #sliceT)) in
@@ -1586,7 +1580,7 @@ Definition Server__makeEntriesⁱᵐᵖˡ : val :=
     do:  ((method_call #(ptrT.id sync.WaitGroup.id) #"Wait"%go (![#ptrT] "wg")) #());;;
     return: (![#sliceT] "ents")).
 
-(* go: server.go:232:18 *)
+(* go: server.go:226:18 *)
 Definition Server__makeEntryⁱᵐᵖˡ : val :=
   λ: "s" "in" "out",
     exception_do (let: "s" := (mem.alloc "s") in
@@ -1625,7 +1619,7 @@ Definition Server__makeEntryⁱᵐᵖˡ : val :=
     do:  ((struct.field_ref #mapEntry #"val"%go (![#ptrT] "out")) <-[#sliceT] "$r0");;;
     return: #()).
 
-(* go: server.go:243:18 *)
+(* go: server.go:237:18 *)
 Definition Server__addEntriesⁱᵐᵖˡ : val :=
   λ: "s" "work" "ents",
     exception_do (let: "s" := (mem.alloc "s") in
@@ -1708,7 +1702,7 @@ Definition Server__addEntriesⁱᵐᵖˡ : val :=
 
 (* getHist returns a history of membership proofs for all post-prefix versions.
 
-   go: server.go:269:18 *)
+   go: server.go:263:18 *)
 Definition Server__getHistⁱᵐᵖˡ : val :=
   λ: "s" "uid" "prefixLen",
     exception_do (let: "hist" := (mem.alloc (type.zero_val #sliceT)) in
@@ -1780,7 +1774,7 @@ Definition Server__getHistⁱᵐᵖˡ : val :=
 
 (* getBound returns a non-membership proof for the boundary version.
 
-   go: server.go:285:18 *)
+   go: server.go:279:18 *)
 Definition Server__getBoundⁱᵐᵖˡ : val :=
   λ: "s" "uid" "numVers",
     exception_do (let: "bound" := (mem.alloc (type.zero_val #ptrT)) in

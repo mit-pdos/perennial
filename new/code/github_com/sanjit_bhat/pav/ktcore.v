@@ -29,13 +29,17 @@ Definition Blame : go_type := uint64T.
 
 Definition BlameNone : val := #(W64 0).
 
-Definition BlameServ : val := #(W64 1).
+Definition BlameServSig : val := #(W64 1).
 
-Definition BlameAdtr : val := #(W64 2).
+Definition BlameServFull : val := #(W64 2).
 
-Definition BlameClients : val := #(W64 4).
+Definition BlameAdtrSig : val := #(W64 4).
 
-Definition BlameUnknown : val := #(W64 8).
+Definition BlameAdtrFull : val := #(W64 8).
+
+Definition BlameClients : val := #(W64 16).
+
+Definition BlameUnknown : val := #(W64 32).
 
 Definition SignVrf : go_string := "github.com/sanjit-bhat/pav/ktcore.SignVrf"%go.
 
@@ -50,7 +54,7 @@ Definition VrfSig : go_type := structT [
 
 Definition VrfSigTag : val := #(W8 0).
 
-(* go: ktcore.go:30:6 *)
+(* go: ktcore.go:36:6 *)
 Definition SignVrfⁱᵐᵖˡ : val :=
   λ: "sk" "vrfPk",
     exception_do (let: "sig" := (mem.alloc (type.zero_val #sliceT)) in
@@ -75,7 +79,7 @@ Definition SignVrfⁱᵐᵖˡ : val :=
 
 Definition VerifyVrfSig : go_string := "github.com/sanjit-bhat/pav/ktcore.VerifyVrfSig"%go.
 
-(* go: ktcore.go:38:6 *)
+(* go: ktcore.go:44:6 *)
 Definition VerifyVrfSigⁱᵐᵖˡ : val :=
   λ: "pk" "vrfPk" "sig",
     exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
@@ -112,7 +116,7 @@ Definition LinkSig : go_type := structT [
 
 Definition LinkSigTag : val := #(W8 1).
 
-(* go: ktcore.go:44:6 *)
+(* go: ktcore.go:50:6 *)
 Definition SignLinkⁱᵐᵖˡ : val :=
   λ: "sk" "epoch" "link",
     exception_do (let: "sig" := (mem.alloc (type.zero_val #sliceT)) in
@@ -140,7 +144,7 @@ Definition SignLinkⁱᵐᵖˡ : val :=
 
 Definition VerifyLinkSig : go_string := "github.com/sanjit-bhat/pav/ktcore.VerifyLinkSig"%go.
 
-(* go: ktcore.go:52:6 *)
+(* go: ktcore.go:58:6 *)
 Definition VerifyLinkSigⁱᵐᵖˡ : val :=
   λ: "pk" "epoch" "link" "sig",
     exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
@@ -177,7 +181,7 @@ Definition MapLabel : go_type := structT [
 #[global] Typeclasses Opaque MapLabel.
 #[global] Opaque MapLabel.
 
-(* go: ktcore.go:58:6 *)
+(* go: ktcore.go:64:6 *)
 Definition ProveMapLabelⁱᵐᵖˡ : val :=
   λ: "sk" "uid" "ver",
     exception_do (let: "proof" := (mem.alloc (type.zero_val #sliceT)) in
@@ -203,7 +207,7 @@ Definition ProveMapLabelⁱᵐᵖˡ : val :=
 
 Definition EvalMapLabel : go_string := "github.com/sanjit-bhat/pav/ktcore.EvalMapLabel"%go.
 
-(* go: ktcore.go:64:6 *)
+(* go: ktcore.go:70:6 *)
 Definition EvalMapLabelⁱᵐᵖˡ : val :=
   λ: "sk" "uid" "ver",
     exception_do (let: "label" := (mem.alloc (type.zero_val #sliceT)) in
@@ -227,7 +231,7 @@ Definition EvalMapLabelⁱᵐᵖˡ : val :=
 
 Definition CheckMapLabel : go_string := "github.com/sanjit-bhat/pav/ktcore.CheckMapLabel"%go.
 
-(* go: ktcore.go:70:6 *)
+(* go: ktcore.go:76:6 *)
 Definition CheckMapLabelⁱᵐᵖˡ : val :=
   λ: "pk" "uid" "ver" "proof",
     exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
@@ -257,7 +261,7 @@ Definition GetMapVal : go_string := "github.com/sanjit-bhat/pav/ktcore.GetMapVal
 
 Definition CommitOpenEncode : go_string := "github.com/sanjit-bhat/pav/ktcore.CommitOpenEncode"%go.
 
-(* go: ktcore.go:76:6 *)
+(* go: ktcore.go:82:6 *)
 Definition GetMapValⁱᵐᵖˡ : val :=
   λ: "pkOpen",
     exception_do (let: "val" := (mem.alloc (type.zero_val #sliceT)) in
@@ -275,7 +279,7 @@ Definition GetCommitRand : go_string := "github.com/sanjit-bhat/pav/ktcore.GetCo
 (* GetCommitRand computes the psuedo-random (wrt commitSecret) bits
    used in a mapVal commitment.
 
-   go: ktcore.go:83:6 *)
+   go: ktcore.go:89:6 *)
 Definition GetCommitRandⁱᵐᵖˡ : val :=
   λ: "commitSecret" "label",
     exception_do (let: "rand" := (mem.alloc (type.zero_val #sliceT)) in

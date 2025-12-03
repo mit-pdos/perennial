@@ -139,7 +139,7 @@ Definition Client__Getⁱᵐᵖˡ : val :=
     do:  ("errb" <-[#boolT] "$r1");;;
     (if: ![#boolT] "errb"
     then
-      let: "$r0" := ktcore.BlameServ in
+      let: "$r0" := ktcore.BlameServFull in
       do:  ("err" <-[#ktcore.Blame] "$r0");;;
       return: (![#uint64T] "ep", ![#boolT] "isReg", ![#sliceT] "pk", ![#ktcore.Blame] "err")
     else do:  #());;;
@@ -150,7 +150,7 @@ Definition Client__Getⁱᵐᵖˡ : val :=
     let: "$a4" := (![#sliceT] "hist") in
     (func_call #checkHist) "$a0" "$a1" "$a2" "$a3" "$a4"
     then
-      let: "$r0" := ktcore.BlameServ in
+      let: "$r0" := ktcore.BlameServFull in
       do:  ("err" <-[#ktcore.Blame] "$r0");;;
       return: (![#uint64T] "ep", ![#boolT] "isReg", ![#sliceT] "pk", ![#ktcore.Blame] "err")
     else do:  #());;;
@@ -165,7 +165,7 @@ Definition Client__Getⁱᵐᵖˡ : val :=
     let: "$a4" := (![#ptrT] "bound") in
     (func_call #checkNonMemb) "$a0" "$a1" "$a2" "$a3" "$a4"
     then
-      let: "$r0" := ktcore.BlameServ in
+      let: "$r0" := ktcore.BlameServFull in
       do:  ("err" <-[#ktcore.Blame] "$r0");;;
       return: (![#uint64T] "ep", ![#boolT] "isReg", ![#sliceT] "pk", ![#ktcore.Blame] "err")
     else do:  #());;;
@@ -224,7 +224,7 @@ Definition Client__SelfMonⁱᵐᵖˡ : val :=
     do:  ("errb" <-[#boolT] "$r1");;;
     (if: ![#boolT] "errb"
     then
-      let: "$r0" := ktcore.BlameServ in
+      let: "$r0" := ktcore.BlameServFull in
       do:  ("err" <-[#ktcore.Blame] "$r0");;;
       return: (![#uint64T] "ep", ![#boolT] "isChanged", ![#ktcore.Blame] "err")
     else do:  #());;;
@@ -235,7 +235,7 @@ Definition Client__SelfMonⁱᵐᵖˡ : val :=
     let: "$a4" := (![#sliceT] "hist") in
     (func_call #checkHist) "$a0" "$a1" "$a2" "$a3" "$a4"
     then
-      let: "$r0" := ktcore.BlameServ in
+      let: "$r0" := ktcore.BlameServFull in
       do:  ("err" <-[#ktcore.Blame] "$r0");;;
       return: (![#uint64T] "ep", ![#boolT] "isChanged", ![#ktcore.Blame] "err")
     else do:  #());;;
@@ -253,7 +253,7 @@ Definition Client__SelfMonⁱᵐᵖˡ : val :=
     let: "$a4" := (![#ptrT] "bound") in
     (func_call #checkNonMemb) "$a0" "$a1" "$a2" "$a3" "$a4"
     then
-      let: "$r0" := ktcore.BlameServ in
+      let: "$r0" := ktcore.BlameServFull in
       do:  ("err" <-[#ktcore.Blame] "$r0");;;
       return: (![#uint64T] "ep", ![#boolT] "isChanged", ![#ktcore.Blame] "err")
     else do:  #());;;
@@ -261,7 +261,7 @@ Definition Client__SelfMonⁱᵐᵖˡ : val :=
     then
       (if: (![#uint64T] "histLen") ≠ #(W64 0)
       then
-        let: "$r0" := (ktcore.BlameServ `or` ktcore.BlameClients) in
+        let: "$r0" := (ktcore.BlameServFull `or` ktcore.BlameClients) in
         do:  ("err" <-[#ktcore.Blame] "$r0");;;
         return: (![#uint64T] "ep", ![#boolT] "isChanged", ![#ktcore.Blame] "err")
       else do:  #());;;
@@ -271,7 +271,7 @@ Definition Client__SelfMonⁱᵐᵖˡ : val :=
     else do:  #());;;
     (if: (![#uint64T] "histLen") > #(W64 1)
     then
-      let: "$r0" := (ktcore.BlameServ `or` ktcore.BlameClients) in
+      let: "$r0" := (ktcore.BlameServFull `or` ktcore.BlameClients) in
       do:  ("err" <-[#ktcore.Blame] "$r0");;;
       return: (![#uint64T] "ep", ![#boolT] "isChanged", ![#ktcore.Blame] "err")
     else do:  #());;;
@@ -288,7 +288,7 @@ Definition Client__SelfMonⁱᵐᵖˡ : val :=
     let: "$a1" := (![#sliceT] (struct.field_ref #nextVer #"pendingPk"%go (![#ptrT] (struct.field_ref #Client #"pend"%go (![#ptrT] "c"))))) in
     (func_call #bytes.Equal) "$a0" "$a1"))
     then
-      let: "$r0" := (ktcore.BlameServ `or` ktcore.BlameClients) in
+      let: "$r0" := (ktcore.BlameServFull `or` ktcore.BlameClients) in
       do:  ("err" <-[#ktcore.Blame] "$r0");;;
       return: (![#uint64T] "ep", ![#boolT] "isChanged", ![#ktcore.Blame] "err")
     else do:  #());;;
@@ -369,7 +369,7 @@ Definition Client__Auditⁱᵐᵖˡ : val :=
     let: "$a3" := (![#ptrT] "link") in
     (func_call #checkAuditLink) "$a0" "$a1" "$a2" "$a3"
     then
-      let: "$r0" := ktcore.BlameAdtr in
+      let: "$r0" := ktcore.BlameAdtrFull in
       do:  ("err" <-[#ktcore.Blame] "$r0");;;
       return: (![#ptrT] "evid", ![#ktcore.Blame] "err")
     else do:  #());;;
@@ -378,7 +378,7 @@ Definition Client__Auditⁱᵐᵖˡ : val :=
     let: "$a2" := (![#ptrT] "vrf") in
     (func_call #checkAuditVrf) "$a0" "$a1" "$a2"
     then
-      let: "$r0" := ktcore.BlameAdtr in
+      let: "$r0" := ktcore.BlameAdtrFull in
       do:  ("err" <-[#ktcore.Blame] "$r0");;;
       return: (![#ptrT] "evid", ![#ktcore.Blame] "err")
     else do:  #());;;
@@ -405,7 +405,7 @@ Definition Client__Auditⁱᵐᵖˡ : val :=
         "link" ::= type.zero_val #ptrT
       }])) in
       do:  ("evid" <-[#ptrT] "$r0");;;
-      let: "$r0" := ktcore.BlameServ in
+      let: "$r0" := ktcore.BlameServSig in
       do:  ("err" <-[#ktcore.Blame] "$r0");;;
       return: (![#ptrT] "evid", ![#ktcore.Blame] "err")
     else do:  #());;;
@@ -430,7 +430,7 @@ Definition Client__Auditⁱᵐᵖˡ : val :=
         "link" ::= "$link"
       }])) in
       do:  ("evid" <-[#ptrT] "$r0");;;
-      let: "$r0" := ktcore.BlameServ in
+      let: "$r0" := ktcore.BlameServSig in
       do:  ("err" <-[#ktcore.Blame] "$r0");;;
       return: (![#ptrT] "evid", ![#ktcore.Blame] "err")
     else do:  #());;;
@@ -480,7 +480,7 @@ Definition Newⁱᵐᵖˡ : val :=
     do:  ("errb" <-[#boolT] "$r3");;;
     (if: ![#boolT] "errb"
     then
-      let: "$r0" := ktcore.BlameServ in
+      let: "$r0" := ktcore.BlameServFull in
       do:  ("err" <-[#ktcore.Blame] "$r0");;;
       return: (![#ptrT] "c", ![#ktcore.Blame] "err")
     else do:  #());;;
@@ -494,7 +494,7 @@ Definition Newⁱᵐᵖˡ : val :=
     do:  ("errb" <-[#boolT] "$r1");;;
     (if: ![#boolT] "errb"
     then
-      let: "$r0" := ktcore.BlameServ in
+      let: "$r0" := ktcore.BlameServFull in
       do:  ("err" <-[#ktcore.Blame] "$r0");;;
       return: (![#ptrT] "c", ![#ktcore.Blame] "err")
     else do:  #());;;
@@ -773,7 +773,7 @@ Definition checkAuditVrfⁱᵐᵖˡ : val :=
     else do:  #());;;
     return: (![#boolT] "err")).
 
-(* go: evidence.go:31:19 *)
+(* go: evidence.go:32:19 *)
 Definition evidVrf__checkⁱᵐᵖˡ : val :=
   λ: "e" "pk",
     exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
@@ -795,7 +795,7 @@ Definition evidVrf__checkⁱᵐᵖˡ : val :=
      let: "$a1" := (![#sliceT] (struct.field_ref #evidVrf #"vrfPk1"%go (![#ptrT] "e"))) in
      (func_call #bytes.Equal) "$a0" "$a1")).
 
-(* go: evidence.go:41:20 *)
+(* go: evidence.go:42:20 *)
 Definition evidLink__checkⁱᵐᵖˡ : val :=
   λ: "e" "pk",
     exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
@@ -822,7 +822,7 @@ Definition evidLink__checkⁱᵐᵖˡ : val :=
 (* Check returns an error if the evidence does not check out.
    otherwise, it proves that the server was dishonest.
 
-   go: evidence.go:53:16 *)
+   go: evidence.go:54:16 *)
 Definition Evid__Checkⁱᵐᵖˡ : val :=
   λ: "e" "pk",
     exception_do (let: "e" := (mem.alloc "e") in

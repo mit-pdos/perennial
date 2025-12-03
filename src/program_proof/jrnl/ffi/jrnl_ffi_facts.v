@@ -640,7 +640,7 @@ Proof.
   split_and!; first congruence.
   { eapply jrnl_sub_dom_trans; eassumption. }
   intros s g Hsub.
-  eapply rtc_transitive.
+  eapply rtc_trans.
   { eapply Hsteps1; eauto. }
   { assert (jrnl_upd σj3 s = jrnl_upd σj3 (jrnl_upd σj2 s)) as ->.
     { rewrite jrnl_upd_upd_sub_dom; eauto. }

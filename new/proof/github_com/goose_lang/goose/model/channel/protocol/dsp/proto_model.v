@@ -6,7 +6,6 @@
    https://gitlab.mpi-sws.org/iris/actris/-/blob/master/LICENSE
    for the full license text.
 *)
-
 (** This file defines the model of dependent separation protocols as the
 solution of a recursive domain equation, along with various primitive
 operations, such as append and map.
@@ -45,7 +44,6 @@ The defined functions on the type [proto] are:
 From iris.base_logic Require Import base_logic.
 From iris.proofmode Require Import proofmode.
 From New.proof.github_com.goose_lang.goose.model.channel Require Import cofe_solver_2.
-
 Set Default Proof Using "Type".
 
 Module Export action.
@@ -124,7 +122,7 @@ Qed.
 Global Instance proto_inhabited {V} `{!Cofe PROPn, !Cofe PROP} :
   Inhabited (proto V PROPn PROP) := populate proto_end.
 
-Lemma proto_message_equivI `{!BiInternalEq SPROP} {V} `{!Cofe PROPn, !Cofe PROP} a1 a2 m1 m2 :
+Lemma proto_message_equivI `{!Sbi SPROP} {V} `{!Cofe PROPn, !Cofe PROP} a1 a2 m1 m2 :
   proto_message (V:=V) (PROPn:=PROPn) (PROP:=PROP) a1 m1 ≡ proto_message a2 m2
   ⊣⊢@{SPROP} ⌜ a1 = a2 ⌝ ∧ (∀ v p', m1 v p' ≡ m2 v p').
 Proof.
@@ -135,10 +133,10 @@ Proof.
   rewrite -later_map_compose -{1}(later_map_id p).
   apply later_map_ext=> p' /=. by rewrite proto_fold_unfold.
 Qed.
-Lemma proto_message_end_equivI `{!BiInternalEq SPROP} {V} `{!Cofe PROPn, !Cofe PROP} a m :
+Lemma proto_message_end_equivI `{!Sbi SPROP} {V} `{!Cofe PROPn, !Cofe PROP} a m :
   proto_message (V:=V) (PROPn:=PROPn) (PROP:=PROP) a m ≡ proto_end ⊢@{SPROP} False.
 Proof. by rewrite option_equivI. Qed.
-Lemma proto_end_message_equivI `{!BiInternalEq SPROP} {V} `{!Cofe PROPn, !Cofe PROP} a m :
+Lemma proto_end_message_equivI `{!Sbi SPROP} {V} `{!Cofe PROPn, !Cofe PROP} a m :
   proto_end ≡ proto_message (V:=V) (PROPn:=PROPn) (PROP:=PROP) a m ⊢@{SPROP} False.
 Proof. by rewrite internal_eq_sym proto_message_end_equivI. Qed.
 

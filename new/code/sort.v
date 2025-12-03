@@ -183,15 +183,28 @@ Axiom Interface : go_type.
 
 Definition Sort : go_string := "sort.Sort"%go.
 
-Axiom sortedHint : go_type.
+Definition sortedHint : go_type := intT.
+#[global] Typeclasses Opaque sortedHint.
+#[global] Opaque sortedHint.
 
-Axiom unknownHint : val.
+Definition unknownHint : val := #(W64 0).
 
-Axiom increasingHint : val.
+Definition increasingHint : val := #(W64 1).
 
-Axiom decreasingHint : val.
+Definition decreasingHint : val := #(W64 2).
 
-Axiom xorshift : go_type.
+Definition xorshift : go_type := uint64T.
+#[global] Typeclasses Opaque xorshift.
+#[global] Opaque xorshift.
+
+(* go: sort.go:68:20 *)
+Definition xorshift__Nextⁱᵐᵖˡ : val :=
+  λ: "r" <>,
+    exception_do (let: "r" := (mem.alloc "r") in
+    do:  ((![#ptrT] "r") <-[#xorshift] ((![#xorshift] (![#ptrT] "r")) `xor` ((![#xorshift] (![#ptrT] "r")) ≪ #(W64 13))));;;
+    do:  ((![#ptrT] "r") <-[#xorshift] ((![#xorshift] (![#ptrT] "r")) `xor` ((![#xorshift] (![#ptrT] "r")) ≫ #(W64 7))));;;
+    do:  ((![#ptrT] "r") <-[#xorshift] ((![#xorshift] (![#ptrT] "r")) `xor` ((![#xorshift] (![#ptrT] "r")) ≪ #(W64 17))));;;
+    return: (![#xorshift] (![#ptrT] "r"))).
 
 Definition nextPowerOfTwo : go_string := "sort.nextPowerOfTwo"%go.
 
@@ -398,8 +411,6 @@ Axiom symMergeⁱᵐᵖˡ : val.
 Axiom rotateⁱᵐᵖˡ : val.
 
 Definition functions' : list (go_string * val) := [(Search, Searchⁱᵐᵖˡ); (Find, Findⁱᵐᵖˡ); (SearchInts, SearchIntsⁱᵐᵖˡ); (SearchFloat64s, SearchFloat64sⁱᵐᵖˡ); (SearchStrings, SearchStringsⁱᵐᵖˡ); (Slice, Sliceⁱᵐᵖˡ); (SliceStable, SliceStableⁱᵐᵖˡ); (SliceIsSorted, SliceIsSortedⁱᵐᵖˡ); (Sort, Sortⁱᵐᵖˡ); (nextPowerOfTwo, nextPowerOfTwoⁱᵐᵖˡ); (Reverse, Reverseⁱᵐᵖˡ); (IsSorted, IsSortedⁱᵐᵖˡ); (isNaN, isNaNⁱᵐᵖˡ); (Ints, Intsⁱᵐᵖˡ); (Float64s, Float64sⁱᵐᵖˡ); (Strings, Stringsⁱᵐᵖˡ); (IntsAreSorted, IntsAreSortedⁱᵐᵖˡ); (Float64sAreSorted, Float64sAreSortedⁱᵐᵖˡ); (StringsAreSorted, StringsAreSortedⁱᵐᵖˡ); (Stable, Stableⁱᵐᵖˡ); (insertionSort_func, insertionSort_funcⁱᵐᵖˡ); (siftDown_func, siftDown_funcⁱᵐᵖˡ); (heapSort_func, heapSort_funcⁱᵐᵖˡ); (pdqsort_func, pdqsort_funcⁱᵐᵖˡ); (partition_func, partition_funcⁱᵐᵖˡ); (partitionEqual_func, partitionEqual_funcⁱᵐᵖˡ); (partialInsertionSort_func, partialInsertionSort_funcⁱᵐᵖˡ); (breakPatterns_func, breakPatterns_funcⁱᵐᵖˡ); (choosePivot_func, choosePivot_funcⁱᵐᵖˡ); (order2_func, order2_funcⁱᵐᵖˡ); (median_func, median_funcⁱᵐᵖˡ); (medianAdjacent_func, medianAdjacent_funcⁱᵐᵖˡ); (reverseRange_func, reverseRange_funcⁱᵐᵖˡ); (swapRange_func, swapRange_funcⁱᵐᵖˡ); (stable_func, stable_funcⁱᵐᵖˡ); (symMerge_func, symMerge_funcⁱᵐᵖˡ); (rotate_func, rotate_funcⁱᵐᵖˡ); (insertionSort, insertionSortⁱᵐᵖˡ); (siftDown, siftDownⁱᵐᵖˡ); (heapSort, heapSortⁱᵐᵖˡ); (pdqsort, pdqsortⁱᵐᵖˡ); (partition, partitionⁱᵐᵖˡ); (partitionEqual, partitionEqualⁱᵐᵖˡ); (partialInsertionSort, partialInsertionSortⁱᵐᵖˡ); (breakPatterns, breakPatternsⁱᵐᵖˡ); (choosePivot, choosePivotⁱᵐᵖˡ); (order2, order2ⁱᵐᵖˡ); (median, medianⁱᵐᵖˡ); (medianAdjacent, medianAdjacentⁱᵐᵖˡ); (reverseRange, reverseRangeⁱᵐᵖˡ); (swapRange, swapRangeⁱᵐᵖˡ); (stable, stableⁱᵐᵖˡ); (symMerge, symMergeⁱᵐᵖˡ); (rotate, rotateⁱᵐᵖˡ)].
-
-Axiom xorshift__Nextⁱᵐᵖˡ : val.
 
 Axiom reverse__Lenⁱᵐᵖˡ : val.
 

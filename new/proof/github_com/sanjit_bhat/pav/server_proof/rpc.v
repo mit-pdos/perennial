@@ -114,13 +114,13 @@ Lemma wp_CallHistory s γ (uid prevEpoch prevVerLen : w64) :
       ∃ entry,
       let pks := entry.2 !!! uid in
       "#Hidx" ∷ mono_list_idx_own cfg.(cfg.histγ) (uint.nat prevEpoch) entry ∗
-      "%Hver" ∷ ⌜length pks = uint.nat prevVerLen⌝ end
+      "%Hver" ∷ ⌜uint.nat prevVerLen ≤ length pks⌝ end
   }}}
   @! server.CallHistory #s #uid #prevEpoch #prevVerLen
   {{{
     sl_chainProof sl_linkSig sl_hist ptr_bound err,
-    RET (#sl_chainProof, #sl_linkSig, #sl_hist, #ptr_bound, #err);
-    "%Hblame" ∷ ⌜ktcore.BlameSpec err {[ktcore.BlameServ:=option_bool γ]}⌝ ∗
+    RET (#sl_chainProof, #sl_linkSig, #sl_hist, #ptr_bound, #(ktcore.blame_to_u64 err));
+    "%Hblame" ∷ ⌜ktcore.BlameSpec err {[ktcore.BlameServFull:=option_bool γ]}⌝ ∗
     "Herr" ∷ (if decide (err ≠ ∅) then True else
       ∃ chainProof linkSig hist bound,
       "#Hsl_chainProof" ∷ sl_chainProof ↦*□ chainProof ∗
@@ -174,7 +174,7 @@ Proof.
   wp_apply (HistoryReply.wp_dec with "[$Hsl_reply]") as "* Hgenie".
   wp_if_destruct.
   (* serv promised well-encoded reply. *)
-  { rewrite ktcore.rw_BlameServ.
+  { rewrite ktcore.rw_BlameServFull.
     iApply "HΦ".
     iSplit; [|by case_decide].
     iApply ktcore.blame_one.
@@ -188,7 +188,7 @@ Proof.
   wp_auto. simpl.
   rewrite -wp_fupd.
   wp_if_destruct.
-  { rewrite ktcore.rw_BlameServ.
+  { rewrite ktcore.rw_BlameServFull.
     iApply "HΦ".
     iApply fupd_sep.
     iSplitL; try done.
@@ -220,7 +220,9 @@ Proof.
         iFrame "H". }
       { word. }
       iPureIntro. simpl in *.
-      rewrite Hver in Hmono. word. }
+      remember (length (entry.2 !!! _)) as w.
+      rewrite -Heqw in Hmono.
+      word. }
 
   rewrite ktcore.rw_BlameNone.
   iApply "HΦ".
@@ -246,7 +248,11 @@ Proof.
     iFrame "H". }
   { word. }
   iPureIntro. simpl in *.
-  by rewrite Hver in Hmono.
+  remember (length (entry.2 !!! _)) as w0.
+  rewrite -Heqw0 in Hmono.
+  remember (length (lastKeys !!! _)) as w1.
+  rewrite -Heqw1.
+  word.
 Qed.
 
 Lemma wp_CallAudit s γ (prevEpoch : w64) :
@@ -259,8 +265,8 @@ Lemma wp_CallAudit s γ (prevEpoch : w64) :
   }}}
   @! server.CallAudit #s #prevEpoch
   {{{
-    sl_proof err, RET (#sl_proof, #err);
-    "%Hblame" ∷ ⌜ktcore.BlameSpec err {[ktcore.BlameServ:=option_bool γ]}⌝ ∗
+    sl_proof err, RET (#sl_proof, #(ktcore.blame_to_u64 err));
+    "%Hblame" ∷ ⌜ktcore.BlameSpec err {[ktcore.BlameServFull:=option_bool γ]}⌝ ∗
     "Herr" ∷ (if decide (err ≠ ∅) then True else
       ∃ proof,
       "#Hsl_proof" ∷ ktcore.AuditProofSlice1D.own sl_proof proof (□) ∗
@@ -290,8 +296,8 @@ Lemma wp_CallStart s γ :
   }}}
   @! server.CallStart #s
   {{{
-    ptr_chain ptr_vrf err, RET (#ptr_chain, #ptr_vrf, #err);
-    "%Hblame" ∷ ⌜ktcore.BlameSpec err {[ktcore.BlameServ:=option_bool γ]}⌝ ∗
+    ptr_chain ptr_vrf err, RET (#ptr_chain, #ptr_vrf, #(ktcore.blame_to_u64 err));
+    "%Hblame" ∷ ⌜ktcore.BlameSpec err {[ktcore.BlameServFull:=option_bool γ]}⌝ ∗
     "Herr" ∷ (if decide (err ≠ ∅) then True else
       ∃ chain vrf,
       "#Hptr_chain" ∷ StartChain.own ptr_chain chain (□) ∗

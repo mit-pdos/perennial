@@ -41,12 +41,14 @@ with val_vars (v : val) : gset string :=
   | InjLV v | InjRV v => val_vars v
   end.
 
+(*
 Lemma expr_vars_subst e x es : x ∉ expr_vars e → subst x es e = e.
 Proof.
   induction e; rewrite /=; try (destruct op); rewrite ?bool_decide_spec ?andb_True=> ?;
     repeat case_decide; simplify_eq/=; f_equal; intuition eauto with set_solver.
   set_solver.
 Qed.
+*)
 
 (* Closed expressions and values. *)
 Fixpoint is_closed_expr (X : list string) (e : expr) : bool :=
