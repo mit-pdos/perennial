@@ -1,6 +1,7 @@
 Require Import New.proof.proof_prelude.
 From New.proof.github_com.goose_lang.goose.model.channel Require Import
-  chan_au_send chan_au_recv chan_au_base.
+  chan_au_base.
+From New.golang.theory Require Import chan.
 
 (** * Simple Channel Pattern Verification
 
@@ -11,7 +12,7 @@ From New.proof.github_com.goose_lang.goose.model.channel Require Import
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
-Context `{!chanGhostStateG Σ V}.
+Context `{!chanG Σ V}.
 Context `{!IntoVal V}.
 Context `{!IntoValTyped V t}.
 
@@ -19,12 +20,12 @@ Record simple_names := {
   chan_name : chan_names;
 }.
 
-(* TODO: cap should not have to be exposed *)
-Definition is_simple (γ : simple_names) (ch : loc) (cap : Z) (P : V → iProp Σ) : iProp Σ :=
-  "#Hch" ∷ is_channel ch cap γ.(chan_name) ∗
+(* TODO: should not have to be exposed *)
+Definition is_simple (γ : simple_names) (ch : loc) (P : V → iProp Σ) : iProp Σ :=
+  "#Hch" ∷ is_channel ch γ.(chan_name) ∗
   "#Hinv" ∷ inv nroot (
     ∃ (s : chan_rep.t V),
-      "Hch" ∷ own_channel ch cap s γ.(chan_name) ∗
+      "Hch" ∷ own_channel ch s γ.(chan_name) ∗
       match s with
       | chan_rep.Idle => True
       | chan_rep.SndPending v => P v
@@ -36,11 +37,13 @@ Definition is_simple (γ : simple_names) (ch : loc) (cap : Z) (P : V → iProp �
   )%I.
 #[global] Opaque is_simple.
 #[local] Transparent is_simple.
+#[global] Instance is_simple_pers γ ch P : Persistent (is_simple γ ch P).
+Proof. apply _. Qed.
 
-Lemma start_simple (ch : loc) (cap : Z) (γ : chan_names) (P : V → iProp Σ) :
-  is_channel ch cap γ -∗
-  own_channel ch cap chan_rep.Idle γ ={⊤}=∗
-  ∃ γdone, is_simple γdone ch cap P.
+Lemma start_simple (ch : loc) (γ : chan_names) (P : V → iProp Σ) :
+  is_channel ch γ -∗
+  own_channel ch chan_rep.Idle γ ={⊤}=∗
+  ∃ γsimple,  ⌜γ = γsimple.(chan_name)⌝ ∗ is_simple γsimple ch P.
 Proof.
   iIntros "#Hch Hoc".
   iExists {|
@@ -52,12 +55,28 @@ Proof.
   by iFrame "#".
 Qed.
 
-Lemma simple_rcv_au γ ch cap P Φ  :
-  is_simple γ ch cap P ∗ £1 ∗ £1 ⊢
-  (▷ ∀ v, P v -∗ Φ (#v, #true)%V) -∗
-  rcv_au_slow ch cap γ.(chan_name) (λ v ok, Φ (#v, #ok)%V).
+Lemma start_simple_buffered (ch : loc) (γ : chan_names) (P : V → iProp Σ) :
+  is_channel ch γ -∗
+  own_channel ch (chan_rep.Buffered []) γ ={⊤}=∗
+  ∃ γsimple,  ⌜γ = γsimple.(chan_name)⌝ ∗  is_simple γsimple ch P.
 Proof.
-  iIntros "(#Hsimple & ? & ?) HΦ".
+  iIntros "#Hch Hoc".
+  iExists {|
+    chan_name := γ;
+  |}.
+  iMod (inv_alloc nroot with "[Hoc]") as "$".
+  { iNext. iFrame. simpl. done. }
+  simpl.
+  by iFrame "#".
+Qed.
+
+Lemma simple_rcv_au γ ch P Φ  :
+  is_simple γ ch P ⊢
+  £1 ∗ £1  -∗
+  (▷ ∀ v, P v -∗ Φ v true ) -∗
+  rcv_au_slow ch γ.(chan_name) Φ.
+Proof.
+  iIntros "#Hsimple (Hlc1 & Hlc2 ) HΦ".
   iNamed "Hsimple".
   iInv "Hinv" as "Hinv_open" "Hinv_close".
   iMod (lc_fupd_elim_later with "[$] Hinv_open") as "Hinv_open".
@@ -156,25 +175,29 @@ Proof.
   }
 Qed.
 
-Lemma wp_simple_receive γ ch cap P :
-  {{{ is_pkg_init channel ∗
-      is_simple γ ch cap P }}}
-    ch @ (ptrT.id channel.Channel.id) @ "Receive" #t #()
+Lemma wp_simple_receive γ ch P :
+  {{{ is_simple γ ch P }}}
+    chan.receive #t #ch
   {{{ v, RET (#v, #true); P v }}}.
 Proof.
   wp_start_folded as "#Hsimple".
   iNamed "Hsimple".
-  wp_apply (wp_Receive ch cap γ.(chan_name) with "[$Hch]").
-  iIntros "(? & ? & ? & ?)".
-  iApply (simple_rcv_au with "[$]").
-  iFrame.
+  wp_apply (chan.wp_receive ch γ.(chan_name) with "[$Hch]").
+  iIntros "(Hlc1 & Hlc2 & Hlc3 & Hlc4)".
+  iApply (simple_rcv_au with "[] [$Hlc1 $Hlc2]").
+  {
+    iFrame "#".
+  }
+  {
+   iNext. iFrame.
+  }
 Qed.
 
-Lemma simple_send_au γ ch cap P v (Φ: val → iProp Σ) :
-  is_simple γ ch cap P ∗ £1 ∗ £1 ⊢
+Lemma simple_send_au γ ch P v (Φ: iProp Σ) :
+  is_simple γ ch P ∗ £1 ∗ £1 ⊢
   P v -∗
-  (▷ Φ #()) -∗
-  send_au_slow ch cap v γ.(chan_name) (Φ #()).
+  (▷ Φ) -∗
+  send_au_slow ch v γ.(chan_name) Φ.
 Proof.
   iIntros "(#Hsimple & ? & ?) HP HΦ".
   iNamed "Hsimple".
@@ -183,28 +206,20 @@ Proof.
   iDestruct "Hch" as "Hch0".
   iNamed "Hinv_open".
   destruct s; try done.
-  {
-    iFrame.
+  - iFrame.
     iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
     iNext.
-
-    destruct (Z.ltb_spec (length buff) cap).
+    iIntros "Hoc".
+    iMod "Hmask" as "_".
+    iMod ("Hinv_close" with "[Hoc Hinv_open HP]") as "_".
     {
-      iIntros "Hoc".
-      iMod "Hmask" as "_".
-      iMod ("Hinv_close" with "[Hoc Hinv_open HP]") as "_".
-      {
-        iNext. iFrame.
-        rewrite big_sepL_app /=.
-        iFrame.
-      }
-      iModIntro.
-      iApply "HΦ".
+      iNext. iFrame.
+      rewrite big_sepL_app /=.
+      iFrame.
     }
+    iModIntro.
     done.
-  }
-  {
-    iFrame.
+  - iFrame.
     iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
     iNext.
     iIntros "Hoc".
@@ -220,28 +235,17 @@ Proof.
     iMod (lc_fupd_elim_later with "[$] Hinv_open1") as "Hinv_open1".
     iNamed "Hinv_open1".
     destruct s; try done.
-    {
-      iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
+    + iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
       iNext. iFrame.
-    }
-    {
-      iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
+    + iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
       iNext. iFrame.
-    }
-    {
-      iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
+    + iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
       iNext. iFrame.
-    }
-    {
-      iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
+    + iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
       iNext. iFrame.
-    }
-    {
-      iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
+    + iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
       iNext. iFrame.
-    }
-    {
-      iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
+    + iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
       iNext. iFrame.
       iIntros "Hoc".
       iMod "Hmask" as "_".
@@ -250,14 +254,11 @@ Proof.
         iNext. iFrame.
       }
       done.
-    }
-  }
-  {
-    iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
+
+  - iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
     iNext. iFrame.
-  }
-  {
-    iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
+
+  - iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
     iNext. iFrame.
     iIntros "Hoc".
     iMod "Hmask" as "_".
@@ -267,27 +268,23 @@ Proof.
     }
     iModIntro.
     done.
-  }
-  {
-    iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
+
+  - iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
     iNext. iFrame.
-  }
-  {
-    iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
+
+  - iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
     iNext. iFrame.
-  }
 Qed.
 
-Lemma wp_simple_send γ ch cap v P :
-  {{{ is_pkg_init channel ∗
-      is_simple γ ch cap P ∗
+Lemma wp_simple_send γ ch v P :
+  {{{ is_simple γ ch P ∗
       P v }}}
-    ch @ (ptrT.id channel.Channel.id) @ "Send" #t #v
+    chan.send #t #ch #v
   {{{ RET #(); True }}}.
 Proof.
   wp_start_folded as "[#Hsimple HP]".
   unfold is_simple. iNamed "Hsimple".
-  wp_apply (wp_Send ch cap with "[$Hch]").
+  wp_apply (chan.wp_send ch with "[$Hch]").
   iIntros "(Hlc1 & Hlc2 & ? & ?)".
   iApply (simple_send_au with "[$] [$HP]").
   iNext. by iApply "HΦ".

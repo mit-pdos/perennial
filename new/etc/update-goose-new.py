@@ -393,6 +393,7 @@ def main():
             "context",
             "internal/reflectlite",
             "unsafe",
+            "crypto/ed25519",
             "crypto/rand",
             "errors",
             "io",

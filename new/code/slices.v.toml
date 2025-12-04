@@ -1,6 +1,2 @@
-translate = [
-  "!*",
-]
-imports = [
-  "!*",
-]
+translate = ["*CmpFunc", "xorshift", "xorshift.*"]
+imports = ["!*"]

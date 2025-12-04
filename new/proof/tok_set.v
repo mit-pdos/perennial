@@ -5,6 +5,8 @@ From iris.proofmode Require Import proofmode.
 From Perennial.goose_lang Require Import ipersist.
 From Perennial Require Import base.
 
+(* TODO: move this file to algebra *)
+
 Class tok_setG Σ := {
     tok_set_inG :: inG Σ (authUR natR)
   }.

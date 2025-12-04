@@ -115,9 +115,9 @@ Definition list__Triggerⁱᵐᵖˡ : val :=
     then
       do:  (let: "$chan" := (![type.chanT #interfaceT] "ch") in
       let: "$v" := (![#interfaceT] "x") in
-      chan.send "$chan" "$v");;;
+      chan.send #interfaceT "$chan" "$v");;;
       do:  (let: "$a0" := (![type.chanT #interfaceT] "ch") in
-      chan.close "$a0")
+      (chan.close #interfaceT) "$a0")
     else do:  #());;;
     return: #()).
 
@@ -281,7 +281,8 @@ Definition timeList__Triggerⁱᵐᵖˡ : val :=
         map.delete "$a0" "$a1");;;
         do:  (let: "$a0" := (![type.chanT (type.structT [
         ])] "ch") in
-        chan.close "$a0")
+        (chan.close (type.structT [
+        ])) "$a0")
       else do:  #())));;;
     return: #()).
 
@@ -313,7 +314,8 @@ Definition initialize' : val :=
         ])] "$r0");;;
         do:  (let: "$a0" := (![type.chanT (type.structT [
         ])] (globals.get #closec)) in
-        chan.close "$a0");;;
+        (chan.close (type.structT [
+        ])) "$a0");;;
         return: #())
         ) #()))
       ).

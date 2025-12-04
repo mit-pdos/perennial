@@ -27,37 +27,25 @@ Admitted.
 
 (* type sort.sortedHint *)
 Module sortedHint.
+
+#[global] Transparent sort.sortedHint.
+#[global] Typeclasses Transparent sort.sortedHint.
 Section def.
 Context `{ffi_syntax}.
-Axiom t : Type.
+Definition t := w64.
 End def.
 End sortedHint.
 
-Global Instance bounded_size_sortedHint : BoundedTypeSize sort.sortedHint.
-Admitted.
-
-Global Instance into_val_sortedHint `{ffi_syntax} : IntoVal sortedHint.t.
-Admitted.
-
-Global Instance into_val_typed_sortedHint `{ffi_syntax} : IntoValTyped sortedHint.t sort.sortedHint.
-Admitted.
-
 (* type sort.xorshift *)
 Module xorshift.
+
+#[global] Transparent sort.xorshift.
+#[global] Typeclasses Transparent sort.xorshift.
 Section def.
 Context `{ffi_syntax}.
-Axiom t : Type.
+Definition t := w64.
 End def.
 End xorshift.
-
-Global Instance bounded_size_xorshift : BoundedTypeSize sort.xorshift.
-Admitted.
-
-Global Instance into_val_xorshift `{ffi_syntax} : IntoVal xorshift.t.
-Admitted.
-
-Global Instance into_val_typed_xorshift `{ffi_syntax} : IntoValTyped xorshift.t sort.xorshift.
-Admitted.
 
 (* type sort.lessSwap *)
 Module lessSwap.
@@ -165,6 +153,22 @@ Global Program Instance is_pkg_defined_sort : IsPkgDefined sort :=
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
+
+Global Instance wp_func_call_Search :
+  WpFuncCall sort.Search _ (is_pkg_defined sort) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Find :
+  WpFuncCall sort.Find _ (is_pkg_defined sort) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_SearchInts :
+  WpFuncCall sort.SearchInts _ (is_pkg_defined sort) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_method_call_xorshift'ptr_Next :
+  WpMethodCall (ptrT.id sort.xorshift.id) "Next" _ (is_pkg_defined sort) :=
+  ltac:(solve_wp_method_call).
 
 End names.
 End sort.

@@ -4,6 +4,8 @@ From New.proof.sync Require Import atomic.
 
 From iris_named_props Require Import custom_syntax.
 
+Local Existing Instances tokG wg_totalG rw_ghost_varG rw_ghost_wlG rw_ghost_rwmutexG  wg_auth_inG.
+
 (**
 A [sync.Once] will perform exactly one action. The specification realizes this
 by requiring a specification for that action (a pre- and post-condition), a
@@ -77,7 +79,7 @@ Proof.
   iInv "Qinv" as "Hi" "Hclose".
   iMod (lc_fupd_elim_later with "[$] Hi") as "Hi". iNamedSuffix "Hi" "_inv".
   iApply fupd_mask_intro. { solve_ndisj. } iIntros "Hmask".
-  iFrame "done1_inv"; iIntros "done1_inv".
+  iFrame "done1_inv"; iIntros "!> done1_inv".
   iCombine "done1_inv done2" gives %[? ?].
   assert (done0 = done) as ->.
   {
@@ -119,7 +121,7 @@ Proof.
       destruct done; auto; word.
     }
     iCombine "done1_inv2 done2" as "done".
-    iFrame "done". iIntros "[done1 done2]".
+    iFrame "done". iIntros "!> [done1 done2]".
     iMod "Hmask" as "_".
     iMod ("Hclose" with "[done1]") as "_".
     {
@@ -148,7 +150,7 @@ Proof.
   iMod (lc_fupd_elim_later with "[$] Hi") as "Hi". iNamedSuffix "Hi" "_inv".
   iApply fupd_mask_intro. { solve_ndisj. } iIntros "Hmask".
   iExists _.
-  iFrame "done1_inv"; iIntros "done1_inv".
+  iFrame "done1_inv"; iIntros "!> done1_inv".
   iMod "Hmask" as "_".
   iMod ("Hclose" with "[done1_inv]") as "_".
   {

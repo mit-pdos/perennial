@@ -233,8 +233,8 @@ Proof using Type*.
   destruct s; destruct vs; simpl in *; try lia.
   iDestruct "Hs" as "[Hptr _]".
   rewrite Z.mul_0_r loc_add_0.
-  unshelve (by iApply (typed_pointsto_not_null with "[$]")).
-  done.
+  rewrite go_type_size_unseal in Hbt.
+  by iDestruct (typed_pointsto_not_null with "Hptr") as %?.
 Qed.
 
 Lemma own_slice_cap_wf s dq :
@@ -585,6 +585,16 @@ Proof.
   reflexivity.
 Qed.
 
+Global Instance pure_slice_for_range (sl : slice.t) (body : val) :
+  PureWp True (slice.for_range #t #sl body)%E
+    (let: "i" := alloc #(W64 0) in
+     for: (λ: <>, int_lt (![#int64T] "i") (slice.len #sl)) ; (λ: <>, "i" <-[#int64T] (![#int64T] "i") + #(W64 1)) :=
+       (λ: <>, body (![#int64T] "i") (![#t] (slice.elem_ref #t #sl (![#int64T] "i")))))%E.
+Proof.
+  iIntros (?????) "HΦ".
+  wp_call_lc "?". by iApply "HΦ".
+Qed.
+
 (** WP version of PureWp for discoverability and use with wp_apply.
 
 TODO: if PureWp instances had their pure side conditions dispatched with [word]
@@ -929,53 +939,6 @@ Proof.
 *)
 Qed.
 
-Lemma wp_slice_for_range {stk E} sl dq (vs : list V) (body : val) Φ :
-  sl ↦*{dq} vs -∗
-  (fold_right (λ v P (i : w64),
-                 WP body #i #v @ stk ; E {{ v', ⌜ v' = execute_val ⌝ ∗ P (word.add i 1) }})
-    (λ (_ : w64), sl ↦*{dq} vs -∗ Φ (execute_val))
-    vs) (W64 0) -∗
-  WP slice.for_range #t #sl body @ stk ; E {{ Φ }}
-.
-Proof.
-  iIntros "Hsl HΦ".
-  wp_call.
-  wp_alloc j_ptr as "Hi".
-  wp_pures.
-  iAssert (
-      ∃ (j : u64),
-        "Hi" ∷ j_ptr ↦ j ∗
-        "%Hi" ∷ ⌜0 ≤ sint.Z j ≤ Z.of_nat (length vs)⌝ ∗
-        "Hiters" ∷ (fold_right _ _ (drop (sint.nat j) vs)) j
-    )%I with "[Hi HΦ]" as "Hinv".
-  { iExists (W64 0). iFrame. word. }
-  wp_for "Hinv".
-  iDestruct (own_slice_len with "Hsl") as %Hlen.
-  wp_if_destruct.
-  - (* Case: execute loop body *)
-    pose proof (list_lookup_lt vs (sint.nat j) ltac:(word)) as [w Hlookup].
-    iDestruct (own_slice_elem_acc j with "[$]") as "[Helem Hown]"; [word|done|].
-    wp_pure.
-    { word. }
-    wp_load.
-    iDestruct ("Hown" with "Helem") as "Hown".
-    rewrite list_insert_id; [|assumption].
-    wp_load.
-    erewrite drop_S; last eassumption.
-    simpl.
-    wp_apply (wp_wand with "Hiters").
-    iIntros (?) "[-> Hiters]".
-    wp_for_post.
-    iFrame.
-    replace (sint.nat (word.add _ $ W64 1)) with (S $ sint.nat j) by word.
-    iFrame.
-    word.
-  - simpl.  (* Case: done with loop body. *)
-    rewrite drop_ge.
-    2:{ word. }
-    iApply "Hiters". by iFrame.
-Qed.
-
 Lemma wp_slice_literal {stk E} (l : list V) :
   {{{ True }}}
     slice.literal #t #l @ stk ; E
@@ -985,8 +948,6 @@ Proof.
   wp_call.
   wp_apply wp_list_Length.
   iIntros "%Hlen".
-  (* TODO: list.Length to give <2^63, not <2^64 *)
-  assert (length l = sint.nat (W64 (length l))) as Hlen' by admit.
   wp_pures.
   wp_apply wp_slice_make2.
   { word. }
@@ -1012,7 +973,7 @@ Proof.
     iExists _; iFrame.
     autorewrite with list in *.
     simpl.
-    rewrite drop_0 take_0 Nat.sub_0_r -Hlen' /=.
+    rewrite drop_0 take_0 Nat.sub_0_r -Hlen /=.
     iFrame. word.
   }
   wp_for.
@@ -1098,25 +1059,7 @@ Proof.
     rewrite replicate_eq_0; [ | word ].
     rewrite app_nil_r //.
   }
-  Fail idtac.
-Admitted.
-
-(* TODO: not sound, need 0 ≤ sint i *)
-Global Instance points_to_access_slice_elem_ref s (i : w64) (vs : list V) dq v
-  {Hlookup : TCSimpl (vs !! (sint.nat i)) (Some v)}
-  : PointsToAccess (slice.elem_ref_f s t i) v dq (s ↦*{dq} vs)
-      (λ v', s ↦*{dq} <[(sint.nat i) := v']> vs).
-Proof.
-(*
-  constructor.
-  - inv Hlookup.
-    iIntros "Hs".
-    iDestruct (own_slice_elem_acc with "Hs") as "Hs"; eauto.
-  - inv Hlookup.
-    rewrite list_insert_id //.
 Qed.
-*)
-Admitted.
 
 Lemma wp_load_slice_elem s (i: w64) (vs: list V) dq v :
   0 ≤ sint.Z i →

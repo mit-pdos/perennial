@@ -1,6 +1,5 @@
+From New.generatedproof.github_com.sanjit_bhat.pav Require Import merkle.
 From New.proof.github_com.sanjit_bhat.pav Require Import prelude.
-From New.proof Require Import proof_prelude.
-From Perennial.Helpers Require Import bytes NamedProps.
 
 From New.proof.github_com.sanjit_bhat.pav Require Import cryptoffi.
 
@@ -263,21 +262,21 @@ Fixpoint is_full_tree' t h limit : iProp Σ :=
   "#His_hash" ∷ cryptoffi.is_hash d h ∗
   "#Hdecode" ∷ match decode_node d with
   | DecEmpty =>
-    "%" ∷ ⌜ t = Empty ⌝
+    "%" ∷ ⌜t = Empty⌝
   | DecLeaf l v =>
-    "%" ∷ ⌜ t = Leaf l v ⌝
+    "%" ∷ ⌜t = Leaf l v⌝
   | DecInner h0 h1 =>
     match limit with
     | 0%nat =>
-      "%" ∷ ⌜ t = Cut h ⌝
+      "%" ∷ ⌜t = Cut h⌝
     | S limit' =>
       ∃ t0 t1,
       "#Hchild0" ∷ is_full_tree' t0 h0 limit' ∗
       "#Hchild1" ∷ is_full_tree' t1 h1 limit' ∗
-      "%" ∷ ⌜ t = Inner t0 t1 ⌝
+      "%" ∷ ⌜t = Inner t0 t1⌝
     end
   | DecInvalid =>
-    "%" ∷ ⌜ t = Cut h ⌝
+    "%" ∷ ⌜t = Cut h⌝
   end.
 #[global] Arguments is_full_tree' !_.
 Definition is_full_tree t h := is_full_tree' t h max_depth.
@@ -294,21 +293,21 @@ Lemma is_full_tree_unfold t h limit :
   "#His_hash" ∷ cryptoffi.is_hash d h ∗
   "#Hdecode" ∷ match decode_node d with
   | DecEmpty =>
-    "%" ∷ ⌜ t = Empty ⌝
+    "%" ∷ ⌜t = Empty⌝
   | DecLeaf l v =>
-    "%" ∷ ⌜ t = Leaf l v ⌝
+    "%" ∷ ⌜t = Leaf l v⌝
   | DecInner h0 h1 =>
     match limit with
     | 0%nat =>
-      "%" ∷ ⌜ t = Cut h ⌝
+      "%" ∷ ⌜t = Cut h⌝
     | S limit' =>
       ∃ t0 t1,
       "#Hchild0" ∷ is_full_tree' t0 h0 limit' ∗
       "#Hchild1" ∷ is_full_tree' t1 h1 limit' ∗
-      "%" ∷ ⌜ t = Inner t0 t1 ⌝
+      "%" ∷ ⌜t = Inner t0 t1⌝
     end
   | DecInvalid =>
-    "%" ∷ ⌜ t = Cut h ⌝
+    "%" ∷ ⌜t = Cut h⌝
   end.
 Proof. destruct limit; naive_solver. Qed.
 
@@ -337,30 +336,6 @@ Proof.
   naive_solver.
 Qed.
 
-(* if [Cut], carries the hash, so hashes must be equal.
-otherwise, [decode_node_inj] says that Some preimg's are equal,
-which implies the hashes are equal. *)
-Lemma is_full_tree_det t h0 h1 l0 l1 :
-  is_full_tree' t h0 l0 -∗
-  is_full_tree' t h1 l1 -∗
-  ⌜ h0 = h1 ⌝.
-Proof.
-  iInduction (l0) as [? IH] using lt_wf_ind forall (t h0 h1 l1);
-    iEval (setoid_rewrite is_full_tree_unfold);
-    iNamedSuffix 1 "0"; iNamedSuffix 1 "1";
-    repeat case_match;
-    iNamedSuffix "Hdecode0" "0"; iNamedSuffix "Hdecode1" "1";
-    simplify_eq/=; try done.
-  1-2:
-    opose proof (decode_node_inj _ d d0 _ _ _) as (-> & [? ->]); [done..|];
-    by iApply cryptoffi.is_hash_det.
-  iSpecialize ("IH" $! n with "[]"); [word|].
-  iDestruct ("IH" with "Hchild00 Hchild01") as %->.
-  iDestruct ("IH" with "Hchild10 Hchild11") as %->.
-  opose proof (decode_node_inj _ d d0 _ _ _) as (-> & [? ->]); [done..|].
-  by iApply cryptoffi.is_hash_det.
-Qed.
-
 (* [is_full_tree_inj] demands the same [limit], which allows it to perform
 the same number of hash inversions before potentially reaching [Cut].
 merkle clients should all use the same [limit] in their code and proofs.
@@ -371,7 +346,7 @@ however, the inversion lemma can't always guarantee this. *)
 Lemma is_full_tree_inj t0 t1 h limit :
   is_full_tree' t0 h limit -∗
   is_full_tree' t1 h limit -∗
-  ⌜ t0 = t1 ⌝.
+  ⌜t0 = t1⌝.
 Proof.
   iInduction (limit) as [? IH] using lt_wf_ind forall (t0 t1 h);
     iEval (setoid_rewrite is_full_tree_unfold);
@@ -387,7 +362,7 @@ Qed.
 
 Definition is_map m h : iProp Σ :=
   ∃ t,
-  "%Heq_map" ∷ ⌜ m = to_map t ⌝ ∗
+  "%Heq_map" ∷ ⌜m = to_map t⌝ ∗
   "#His_tree" ∷ is_full_tree t h.
 Hint Unfold is_map : merkle.
 
@@ -407,7 +382,7 @@ Qed.
 Lemma is_map_inj m0 m1 h :
   is_map m0 h -∗
   is_map m1 h -∗
-  ⌜ m0 = m1 ⌝.
+  ⌜m0 = m1⌝.
 Proof.
   iNamedSuffix 1 "0". iNamedSuffix 1 "1".
   iDestruct (is_full_tree_inj with "His_tree0 His_tree1") as %->.
@@ -427,8 +402,8 @@ Fixpoint is_cut_tree (t : tree) (h : list w8) : iProp Σ :=
   | Empty =>
     "#His_hash" ∷ cryptoffi.is_hash (Some [emptyNodeTag]) h
   | Leaf label val =>
-    "%Hlen_label" ∷ ⌜ length label < 2^64 ⌝ ∗
-    "%Hlen_val" ∷ ⌜ length val < 2^64 ⌝ ∗
+    "%Hlen_label" ∷ ⌜length label < 2^64⌝ ∗
+    "%Hlen_val" ∷ ⌜length val < 2^64⌝ ∗
     "#His_hash" ∷
       cryptoffi.is_hash (Some $ [leafNodeTag] ++
         (u64_le $ length label) ++ label ++
@@ -439,8 +414,8 @@ Fixpoint is_cut_tree (t : tree) (h : list w8) : iProp Σ :=
     "#Hchild1" ∷ is_cut_tree child1 h1 ∗
     "#His_hash" ∷ cryptoffi.is_hash (Some $ [innerNodeTag] ++ h0 ++ h1) h
   | Cut ch =>
-    "%Heq_cut" ∷ ⌜ h = ch ⌝ ∗
-    "%Hlen_hash" ∷ ⌜ Z.of_nat $ length h = cryptoffi.hash_len ⌝
+    "%Heq_cut" ∷ ⌜h = ch⌝ ∗
+    "%Hlen_hash" ∷ ⌜Z.of_nat $ length h = cryptoffi.hash_len⌝
   end.
 
 #[global]
@@ -478,13 +453,13 @@ Qed.
 
 Lemma is_cut_tree_len t h:
   is_cut_tree t h -∗
-  ⌜ Z.of_nat $ length h = cryptoffi.hash_len ⌝.
+  ⌜Z.of_nat $ length h = cryptoffi.hash_len⌝.
 Proof. destruct t; iNamed 1; [..|done]; by iApply cryptoffi.is_hash_len. Qed.
 
 Lemma is_cut_tree_det t h0 h1 :
   is_cut_tree t h0 -∗
   is_cut_tree t h1 -∗
-  ⌜ h0 = h1 ⌝.
+  ⌜h0 = h1⌝.
 Proof.
   iInduction t as [| ? | ? IH0 ? IH1 | ?] forall (h0 h1);
     simpl; iNamedSuffix 1 "0"; iNamedSuffix 1 "1".
@@ -620,10 +595,12 @@ Proof.
 Qed.
 
 Lemma init_to_reln_Empty lim :
-  is_initialized -∗
+  is_pkg_init merkle -∗
   ∃ h, cut_full_reln' Empty Empty lim h.
 Proof.
-  rewrite /is_initialized. iNamed 1.
+  iIntros "#Hpkg".
+  iDestruct (is_pkg_init_access with "[$]") as "/= #Hinit".
+  rewrite /is_initialized. iNamed "Hinit".
   rewrite /cut_full_reln'.
   iEval (setoid_rewrite is_full_tree_unfold).
   iFrame "#".
@@ -655,7 +632,7 @@ Lemma full_entry_txfer t0 t1 h label oval :
   is_cutless_path t0 label →
   is_limit t0 →
   cut_full_reln t0 t1 h -∗
-  ⌜ is_entry t1 label oval ⌝.
+  ⌜is_entry t1 label oval⌝.
 Proof.
   autounfold with merkle.
   remember max_depth as limit. clear Heqlimit.
@@ -1066,7 +1043,7 @@ Qed.
 instead it requires them. *)
 Lemma cut_full_over_put t0 t0' t1 t1' h0 h1 label val :
   (* to demonstrate Empty hash. *)
-  is_initialized -∗
+  is_pkg_init merkle -∗
   cut_full_reln t0 t0' h0 -∗
   ⌜pure_put t0 label val = Some t1⌝ -∗
   cut_full_reln t1 t1' h1 -∗

@@ -46,6 +46,10 @@ Definition int16T := uint16T.
 Definition int32T := uint32T.
 Definition int64T := uint64T.
 
+(* rune is an alias for int32, not even a defined type:
+https://pkg.go.dev/builtin#rune *)
+Notation runeT := int32T (only parsing).
+
 (* The zero_value for [floatX] is 0, so this is OK. *)
 Definition float32T := uint32T.
 Definition float64T := uint64T.
@@ -74,6 +78,17 @@ Record t := mk {
       e : expr;
     }.
 Definition nil := mk <> <> (LitV LitPoison).
+
+#[global] Instance : EqDecision t.
+Proof. solve_decision. Qed.
+
+#[global] Instance : Countable t.
+Proof.
+  refine (inj_countable' (λ fn, (f fn, x fn, e fn))
+            (λ '(f, x, e), (mk f x e)) _).
+  by intros [].
+Defined.
+
 End defn.
 End func.
 
@@ -125,6 +140,23 @@ Section goose_lang.
   Inductive t :=
   | mk (type_id : go_string) (v : val) : t
   | nil : t.
+
+  #[global] Instance eq_decision : EqDecision t.
+  Proof. solve_decision. Qed.
+
+  #[global] Instance countable : Countable t.
+  Proof.
+    apply (inj_countable' (A:=go_string * val + ())
+                       (λ x, match x with
+                             | mk type_id v => inl (type_id, v)
+                             | nil => inr tt
+                             end)
+                       (λ x, match x with
+                            | inl (type_id, v) => mk type_id v
+                            | inr _ => nil
+                            end)).
+    intros [|]; auto.
+  Defined.
 
 End goose_lang.
 End interface.

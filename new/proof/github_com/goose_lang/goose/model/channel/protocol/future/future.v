@@ -1,5 +1,7 @@
 Require Import New.proof.proof_prelude.
-From New.proof.github_com.goose_lang.goose.model.channel Require Import chan_au_send chan_au_recv chan_au_base chan_init.
+From New.proof.github_com.goose_lang.goose.model.channel.protocol Require Export base.
+From New.golang.theory Require Import chan.
+From Perennial.algebra Require Import ghost_var.
 
 (** * Future Channel Verification
 
@@ -18,11 +20,10 @@ From New.proof.github_com.goose_lang.goose.model.channel Require Import chan_au_
 
 Section future.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!chanGhostStateG Σ V}.
+Context `{!globalsGS Σ} {go_ctx : GoContext}.
+Context `{!chan_protocolG Σ V}.
 Context `{!IntoVal V}.
 Context `{!IntoValTyped V t}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
-Context `{!ghost_varG Σ bool}.
 
 (** ** Ghost State Names *)
 
@@ -32,7 +33,7 @@ Record future_names := {
   fulfill_name : gname         (* One-shot fulfill token *)
 }.
 
-Notation half := (1/2)%Qp.
+Notation half := (DfracOwn (1/2)).
 
 (** ** One-shot Token Predicates *)
 
@@ -60,10 +61,10 @@ Definition fulfill_token (γ : future_names) : iProp Σ :=
 *)
 Definition is_future (γ : future_names) (ch : loc)
                      (P : V → iProp Σ) : iProp Σ :=
-  is_channel ch 1 γ.(chan_name) ∗
+  is_channel ch γ.(chan_name) ∗
   inv nroot (
     ∃ s await_avail fulfill_avail,
-      "Hch" ∷ own_channel ch 1 s γ.(chan_name) ∗
+      "Hch" ∷ own_channel ch s γ.(chan_name) ∗
       "Hawait" ∷ ghost_var γ.(await_name) half await_avail ∗
       "Hfulfill" ∷ ghost_var γ.(fulfill_name) half fulfill_avail ∗
       (match s with
@@ -83,8 +84,8 @@ Definition is_future (γ : future_names) (ch : loc)
 
 (** Create a Future channel from a capacity-1 buffered channel *)
 Lemma start_future ch (P : V → iProp Σ) γ :
-  is_channel ch 1 γ -∗
-  (own_channel ch 1 (chan_rep.Buffered []) γ) ={⊤}=∗
+  is_channel ch γ -∗
+  (own_channel ch (chan_rep.Buffered []) γ) ={⊤}=∗
   (∃ γfuture, is_future γfuture ch P ∗ await_token γfuture ∗ fulfill_token γfuture).
 Proof.
   iIntros "#Hch Hoc".
@@ -99,7 +100,7 @@ Proof.
   (* Allocate the invariant *)
   iMod (inv_alloc nroot _ (
     ∃ s await_avail fulfill_avail,
-      "Hch" ∷ own_channel ch 1 s γ ∗
+      "Hch" ∷ own_channel ch s γ ∗
       "Hawait" ∷ ghost_var γawait half await_avail ∗
       "Hfulfill" ∷ ghost_var γfulfill half fulfill_avail ∗
       (match s with
@@ -124,176 +125,140 @@ Proof.
   iFrame "#". iFrame.
 Qed.
 
+Lemma future_is_channel γfuture ch P :
+  is_future γfuture ch P ⊢ is_channel ch γfuture.(future.chan_name).
+Proof.
+  iDestruct 1 as "[$ _]".
+Qed.
+
 (** ** Fulfill Operation (Send) *)
 
-(** Future fulfill operation - consumes fulfill token and P(v) to send value *)
-Lemma wp_future_fulfill γ ch (P : V → iProp Σ) (v : V) :
-  {{{ is_pkg_init channel ∗ is_future γ ch P ∗ fulfill_token γ ∗ P v }}}
-    ch @ (ptrT.id channel.Channel.id) @ "Send" #t #v
-  {{{ RET #(); True }}}.
+Lemma future_fulfill_au γ ch (P : V → iProp Σ) (v : V) :
+  ∀ (Φ: iProp Σ),
+  is_future γ ch P -∗
+  £1 ∗ fulfill_token γ ∗ P v -∗
+  ▷ (True -∗ Φ) -∗
+  send_au_slow ch v γ.(chan_name) Φ.
 Proof.
-  iIntros (Φ) "(#Hinit & #Hfuture & Hfulfillt & HP) Hcont".
-
-  (* Extract channel info from Future predicate *)
+  iIntros (Φ) "#Hfuture (Hlc & Hfulfillt & HP) Hcont".
   unfold is_future.
-  iDestruct "Hfuture" as "[Hchan Hinv]".
+  iDestruct "Hfuture" as "[#Hchan #Hinv]".
 
-  wp_apply (wp_Send ch 1 v γ.(chan_name) with "[$Hinit $Hchan]").
-  iIntros "(? & ? & ? & ?)".
-
-  (* Open the Future invariant to provide the atomic update *)
+  unfold send_au_slow.
   iInv "Hinv" as "Hinv_open" "Hinv_close".
-  iMod (lc_fupd_elim_later with "[$] Hinv_open") as "Hinv_open".
+  iDestruct "Hlc" as "[Hlc1 Hrest]".
+  iMod (lc_fupd_elim_later with "[$] [$Hinv_open]") as "Hinv_open".
   iNamed "Hinv_open".
 
-  (* Establish agreement between our fulfill token and invariant's fulfill state *)
   iDestruct (ghost_var_agree with "Hfulfill Hfulfillt") as %Hagree.
 
   iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
-  iNext. iFrame.
+  iNext.
+  iExists s. iFrame "Hch".
 
-  (* Case analysis on channel state *)
   destruct s; try done.
-
-  { (* Case: Buffered channel *)
-    destruct buff as [|v_buf rest].
-    { (* Empty buffer - this is the expected case *)
-      iDestruct "Hinv_open" as %Hdisj.
-      destruct Hdisj as [[Hawait Hfulfill_state] | [Hawait Hfulfill_state]].
-      { (* Initial state case *)
-        subst await_avail fulfill_avail.
-
-        iIntros "Hoc".
-
-        (* Update fulfill token to false (consumed) *)
-        iCombine "Hfulfill Hfulfillt" as "Hfulfill_full".
-        iMod (ghost_var_update false with "Hfulfill_full") as "[HfulfillI_new _]".
-
-        (* Close invariant with value in buffer *)
-        iMod "Hmask".
-        iMod ("Hinv_close" with "[Hoc Hawait HfulfillI_new HP]") as "_".
-        {
-          iNext. iExists (chan_rep.Buffered [v]), true, false.
-          iFrame.
-          iPureIntro. split; done.
-        }
-
-        (* Apply continuation *)
-        iModIntro. iApply "Hcont". done.
-      }
-      { (* Final state case - both tokens already consumed, should not happen *)
-        subst await_avail fulfill_avail.
-        iExFalso. done.
-      }
+  destruct buff as [|v_buf rest].
+{
+  
+  iDestruct "Hinv_open" as %Hdisj.
+  destruct Hdisj as [[Hawait_eq Hfulfill_eq] | [Hawait_eq Hfulfill_eq]]; subst.
+  - (* Initial state - can fulfill *)
+    simpl.
+    iIntros "Hoc".
+    iMod "Hmask".
+    iCombine "Hfulfill Hfulfillt" as "Hfulfill_full".
+    iMod (ghost_var_update false with "Hfulfill_full") as "[HfulfillI_new _]".
+    iMod ("Hinv_close" with "[Hoc Hawait HP HfulfillI_new]") as "_".
+    {
+      iNext. iExists (chan_rep.Buffered [v]), true, false.
+      iFrame. iPureIntro. split; done.
     }
-    { (* Non-empty buffer - should not happen with proper usage *)
-      destruct rest. all: done.
+    iModIntro. iApply "Hcont".
+    done.
+  - (* Final state - should not happen *)
+    iExFalso. done.
     }
-  }
-
+    {
+      destruct rest; try done.
+      iDestruct "Hinv_open" as "[[% %] _]".
+      congruence.
+    }
 Qed.
 
-(** ** Await Operation (Receive) *)
+Lemma wp_future_fulfill γ ch (P : V → iProp Σ) (v : V) :
+  {{{ is_future γ ch P ∗ fulfill_token γ ∗ P v }}}
+    chan.send #t #ch #v
+  {{{ RET #(); True }}}.
+Proof.
+  iIntros (Φ) "(#Hfuture & Hfulfillt & HP) Hcont".
+
+  unfold is_future.
+  iDestruct "Hfuture" as "[#Hchan #Hiv]".
+
+  wp_apply (chan.wp_send ch v γ.(chan_name) with "[$Hchan]").
+  iIntros "(Hlc1 & Hlc2 & Hlc3 & Hlc4)".
+
+  iApply (future_fulfill_au with "[$Hiv $Hchan] [$]").
+  done.
+Qed.
+
+Lemma future_await_au γ ch (P : V → iProp Σ) :
+  ∀ (Φ: V → bool → iProp Σ),
+  is_future γ ch P -∗
+  £1 ∗ await_token γ -∗
+  ▷ (∀ v, P v -∗ Φ v true) -∗
+  rcv_au_slow ch γ.(chan_name) (λ (v:V) (ok:bool), Φ v ok).
+Proof.
+  iIntros (Φ) "#Hfuture [Hlc Hawaitt] HΦcont".
+  unfold is_future.
+  iDestruct "Hfuture" as "[_ Hinv]".
+
+  unfold rcv_au_slow.
+  iInv "Hinv" as "Hinv_open" "Hinv_close".
+  iDestruct "Hlc" as "[Hlc1 Hrest]".
+  iMod (lc_fupd_elim_later with "[$] [$Hinv_open]") as "Hinv_open".
+  iNamed "Hinv_open".
+
+  iDestruct (ghost_var_agree with "Hawait Hawaitt") as %Hagree.
+
+  iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
+  iNext.
+  iExists s. iFrame "Hch".
+
+  destruct s; try done.
+  destruct buff as [|v [|? ?]]; try done.
+
+  (* Value in buffer - can await *)
+  iDestruct "Hinv_open" as "[%Hstates HP]".
+  destruct Hstates as [Hawait_eq Hfulfill_eq]; subst.
+  iIntros "Hoc".
+  iMod "Hmask".
+  iCombine "Hawait Hawaitt" as "Hawait_full".
+  iMod (ghost_var_update false with "Hawait_full") as "[HawaitI_new _]".
+  iMod ("Hinv_close" with "[Hoc HawaitI_new Hfulfill]") as "_".
+  {
+    iNext. iExists (chan_rep.Buffered []), false, false.
+    iFrame. iPureIntro. right. split; done.
+  }
+  iModIntro. iApply "HΦcont". done.
+Qed.
 
 (** Future await operation - consumes await token to receive value and P(v) *)
 Lemma wp_future_await γ ch (P : V → iProp Σ) :
-  {{{ is_pkg_init channel ∗ is_future γ ch P ∗ await_token γ }}}
-    ch @ (ptrT.id channel.Channel.id) @ "Receive" #t #()
-  {{{ (v : V) , RET (#v, #true);
-      P v }}}.
+  {{{ is_future γ ch P ∗ await_token γ }}}
+    chan.receive #t #ch
+  {{{ (v : V), RET (#v, #true); P v }}}.
 Proof.
-  iIntros (Φ) "(#Hinit & #Hfuture & HawaitI) Hcont".
+  iIntros (Φ) "(#Hfuture & Hawaitt) Hcont".
 
-  (* Extract channel info from Future predicate *)
   unfold is_future.
-  iDestruct "Hfuture" as "[Hchan Hinv]".
+  iDestruct "Hfuture" as "[#Hchan #Hinv]".
+  
+  iApply (chan.wp_receive ch γ.(chan_name) with "[$Hchan]").
+  iIntros "(Hlc1 & Hlc2)".
 
-  (* Use wp_Receive with our atomic update *)
-  iApply (wp_Receive ch 1 γ.(chan_name) with "[$Hinit $Hchan]").
-  iIntros "(Hlc1 & _)".
-
-  (* Open the Future invariant to provide the atomic update *)
-  iInv "Hinv" as "Hinv_open" "Hinv_close".
-  iMod (lc_fupd_elim_later with "[$] Hinv_open") as "Hinv_open".
-  iNamed "Hinv_open".
-
-  (* Establish agreement between our await token and invariant's await state *)
-  iDestruct (ghost_var_agree with "HawaitI Hawait") as %Hagree.
-
-  (* Provide rcv_au_slow *)
-  unfold rcv_au_slow.
-  iExists s. iFrame "Hch".
-  iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
+  iApply ((future_await_au γ ch  P ) with "[$Hchan $Hinv] [$] [Hcont]").
   iNext. iFrame.
-
-  (* Case analysis on channel state *)
-  destruct s; try done.
-
-  { (* Case: Buffered channel *)
-    destruct buff as [|v rest].
-    { (* Empty buffer - await must wait for fulfill *)
-      iDestruct "Hinv_open" as %Hdisj.
-      destruct Hdisj as [[Hawait_state Hfulfill_state] | [Hawait_state Hfulfill_state]].
-      { (* Initial state case *)
-        subst await_avail fulfill_avail.
-        (* With await_avail = true, we should not be able to receive yet *)
-        done.
-      }
-      { (* Final state case - both tokens consumed, should not happen *)
-        subst await_avail fulfill_avail.
-        (* This contradicts having the await token *)
-        iExFalso. done.
-      }
-    }
-    { (* Non-empty buffer - this is the expected case after fulfill *)
-      destruct rest.
-      { (* Exactly one value - expected case *)
-        iDestruct "Hinv_open" as "[%Hstates HPv]".
-        destruct Hstates as [Hawait_state Hfulfill_state].
-        subst await_avail fulfill_avail.
-
-        iIntros "Hoc".
-
-        (* Update await token to false (consumed) *)
-        iCombine "Hawait HawaitI" as "Hawait_full".
-        iMod (ghost_var_update false with "Hawait_full") as "[HawaitI_new _]".
-
-        (* Close invariant with empty buffer and both tokens consumed *)
-        iMod "Hmask".
-        iMod ("Hinv_close" with "[Hoc HawaitI_new Hfulfill]") as "_".
-        {
-          iNext. iExists (chan_rep.Buffered []), false, false.
-          iFrame "Hoc HawaitI_new Hfulfill".
-          iPureIntro. right. split; done.
-        }
-
-        (* Apply continuation with the value and its resource *)
-        iModIntro. iApply "Hcont". iFrame.
-      }
-      { (* More than one value - impossible with capacity 1 *)
-        iDestruct "Hinv_open" as "HFalse".
-        iExFalso. done.
-      }
-    }
-  }
-Qed.
-
-Lemma wp_future_await_discard_ok γ ch (P : V → iProp Σ) :
-  {{{ is_pkg_init channel ∗ is_future γ ch P ∗ await_token γ }}}
-    ch @ (ptrT.id channel.Channel.id) @ "ReceiveDiscardOk" #t #()
-  {{{ (v : V) , RET #v;
-      P v }}}.
-Proof.
-  wp_start. wp_auto.
-  wp_apply ((wp_future_await γ ch P) with "[- HΦ return_val]").
-  {
-   iFrame.
-  }
-  iIntros (v).
-  iIntros "HP".
-  wp_auto.
-  iApply "HΦ".
-  done.
 Qed.
 
 End future.

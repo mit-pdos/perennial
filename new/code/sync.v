@@ -2,7 +2,8 @@
 Require Export New.code.internal.race.
 Require Export New.code.sync.atomic.
 
-From New.golang Require Import defn.
+From New.golang Require Import defn.core.
+From New.golang.defn Require Export slice array map string interface defer builtin.
 Require Export New.trusted_code.sync.
 Import sync.
 Definition sync : go_string := "sync".
@@ -13,6 +14,8 @@ Module Cond. Definition id : go_string := "sync.Cond"%go. End Cond.
 Module copyChecker. Definition id : go_string := "sync.copyChecker"%go. End copyChecker.
 Module noCopy. Definition id : go_string := "sync.noCopy"%go. End noCopy.
 Module Map. Definition id : go_string := "sync.Map"%go. End Map.
+Module readOnly. Definition id : go_string := "sync.readOnly"%go. End readOnly.
+Module entry. Definition id : go_string := "sync.entry"%go. End entry.
 Module Mutex. Definition id : go_string := "sync.Mutex"%go. End Mutex.
 Module Locker. Definition id : go_string := "sync.Locker"%go. End Locker.
 Module Once. Definition id : go_string := "sync.Once"%go. End Once.
@@ -143,6 +146,14 @@ Definition Cond__Broadcastⁱᵐᵖˡ : val :=
     return: #()).
 
 Axiom Map : go_type.
+
+Axiom readOnly : go_type.
+
+Definition expunged : go_string := "sync.expunged"%go.
+
+Axiom entry : go_type.
+
+Definition newEntry : go_string := "sync.newEntry"%go.
 
 Definition Once : go_type := structT [
   "_0" :: noCopy;
@@ -703,7 +714,9 @@ Definition WaitGroup__Waitⁱᵐᵖˡ : val :=
       else do:  #()));;;
     return: #()).
 
-Definition vars' : list (go_string * go_type) := [].
+Definition vars' : list (go_string * go_type) := [(expunged, ptrT)].
+
+Axiom newEntryⁱᵐᵖˡ : val.
 
 Axiom OnceFuncⁱᵐᵖˡ : val.
 
@@ -735,7 +748,7 @@ Axiom fatalⁱᵐᵖˡ : val.
 
 Axiom syscall_hasWaitingReadersⁱᵐᵖˡ : val.
 
-Definition functions' : list (go_string * val) := [(NewCond, NewCondⁱᵐᵖˡ); (OnceFunc, OnceFuncⁱᵐᵖˡ); (OnceValue, OnceValueⁱᵐᵖˡ); (OnceValues, OnceValuesⁱᵐᵖˡ); (runtime_randn, runtime_randnⁱᵐᵖˡ); (poolRaceAddr, poolRaceAddrⁱᵐᵖˡ); (poolCleanup, poolCleanupⁱᵐᵖˡ); (indexLocal, indexLocalⁱᵐᵖˡ); (runtime_registerPoolCleanup, runtime_registerPoolCleanupⁱᵐᵖˡ); (runtime_procPin, runtime_procPinⁱᵐᵖˡ); (runtime_procUnpin, runtime_procUnpinⁱᵐᵖˡ); (runtime_LoadAcquintptr, runtime_LoadAcquintptrⁱᵐᵖˡ); (runtime_StoreReluintptr, runtime_StoreReluintptrⁱᵐᵖˡ); (runtime_Semacquire, runtime_Semacquireⁱᵐᵖˡ); (runtime_SemacquireWaitGroup, runtime_SemacquireWaitGroupⁱᵐᵖˡ); (runtime_SemacquireRWMutexR, runtime_SemacquireRWMutexRⁱᵐᵖˡ); (runtime_SemacquireRWMutex, runtime_SemacquireRWMutexⁱᵐᵖˡ); (runtime_Semrelease, runtime_Semreleaseⁱᵐᵖˡ); (runtime_notifyListAdd, runtime_notifyListAddⁱᵐᵖˡ); (runtime_notifyListWait, runtime_notifyListWaitⁱᵐᵖˡ); (runtime_notifyListNotifyAll, runtime_notifyListNotifyAllⁱᵐᵖˡ); (runtime_notifyListNotifyOne, runtime_notifyListNotifyOneⁱᵐᵖˡ); (runtime_notifyListCheck, runtime_notifyListCheckⁱᵐᵖˡ); (throw, throwⁱᵐᵖˡ); (fatal, fatalⁱᵐᵖˡ); (syscall_hasWaitingReaders, syscall_hasWaitingReadersⁱᵐᵖˡ)].
+Definition functions' : list (go_string * val) := [(NewCond, NewCondⁱᵐᵖˡ); (newEntry, newEntryⁱᵐᵖˡ); (OnceFunc, OnceFuncⁱᵐᵖˡ); (OnceValue, OnceValueⁱᵐᵖˡ); (OnceValues, OnceValuesⁱᵐᵖˡ); (runtime_randn, runtime_randnⁱᵐᵖˡ); (poolRaceAddr, poolRaceAddrⁱᵐᵖˡ); (poolCleanup, poolCleanupⁱᵐᵖˡ); (indexLocal, indexLocalⁱᵐᵖˡ); (runtime_registerPoolCleanup, runtime_registerPoolCleanupⁱᵐᵖˡ); (runtime_procPin, runtime_procPinⁱᵐᵖˡ); (runtime_procUnpin, runtime_procUnpinⁱᵐᵖˡ); (runtime_LoadAcquintptr, runtime_LoadAcquintptrⁱᵐᵖˡ); (runtime_StoreReluintptr, runtime_StoreReluintptrⁱᵐᵖˡ); (runtime_Semacquire, runtime_Semacquireⁱᵐᵖˡ); (runtime_SemacquireWaitGroup, runtime_SemacquireWaitGroupⁱᵐᵖˡ); (runtime_SemacquireRWMutexR, runtime_SemacquireRWMutexRⁱᵐᵖˡ); (runtime_SemacquireRWMutex, runtime_SemacquireRWMutexⁱᵐᵖˡ); (runtime_Semrelease, runtime_Semreleaseⁱᵐᵖˡ); (runtime_notifyListAdd, runtime_notifyListAddⁱᵐᵖˡ); (runtime_notifyListWait, runtime_notifyListWaitⁱᵐᵖˡ); (runtime_notifyListNotifyAll, runtime_notifyListNotifyAllⁱᵐᵖˡ); (runtime_notifyListNotifyOne, runtime_notifyListNotifyOneⁱᵐᵖˡ); (runtime_notifyListCheck, runtime_notifyListCheckⁱᵐᵖˡ); (throw, throwⁱᵐᵖˡ); (fatal, fatalⁱᵐᵖˡ); (syscall_hasWaitingReaders, syscall_hasWaitingReadersⁱᵐᵖˡ)].
 
 Axiom copyChecker__checkⁱᵐᵖˡ : val.
 
@@ -762,6 +775,28 @@ Axiom Map__Rangeⁱᵐᵖˡ : val.
 Axiom Map__Storeⁱᵐᵖˡ : val.
 
 Axiom Map__Swapⁱᵐᵖˡ : val.
+
+Axiom Map__dirtyLockedⁱᵐᵖˡ : val.
+
+Axiom Map__loadReadOnlyⁱᵐᵖˡ : val.
+
+Axiom Map__missLockedⁱᵐᵖˡ : val.
+
+Axiom entry__deleteⁱᵐᵖˡ : val.
+
+Axiom entry__loadⁱᵐᵖˡ : val.
+
+Axiom entry__swapLockedⁱᵐᵖˡ : val.
+
+Axiom entry__tryCompareAndSwapⁱᵐᵖˡ : val.
+
+Axiom entry__tryExpungeLockedⁱᵐᵖˡ : val.
+
+Axiom entry__tryLoadOrStoreⁱᵐᵖˡ : val.
+
+Axiom entry__trySwapⁱᵐᵖˡ : val.
+
+Axiom entry__unexpungeLockedⁱᵐᵖˡ : val.
 
 Axiom Pool__Getⁱᵐᵖˡ : val.
 
@@ -803,7 +838,7 @@ Axiom rlocker__Lockⁱᵐᵖˡ : val.
 
 Axiom rlocker__Unlockⁱᵐᵖˡ : val.
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(Cond.id, []); (ptrT.id Cond.id, [("Broadcast"%go, Cond__Broadcastⁱᵐᵖˡ); ("Signal"%go, Cond__Signalⁱᵐᵖˡ); ("Wait"%go, Cond__Waitⁱᵐᵖˡ)]); (copyChecker.id, []); (ptrT.id copyChecker.id, [("check"%go, copyChecker__checkⁱᵐᵖˡ)]); (noCopy.id, []); (ptrT.id noCopy.id, [("Lock"%go, noCopy__Lockⁱᵐᵖˡ); ("Unlock"%go, noCopy__Unlockⁱᵐᵖˡ)]); (Map.id, []); (ptrT.id Map.id, [("Clear"%go, Map__Clearⁱᵐᵖˡ); ("CompareAndDelete"%go, Map__CompareAndDeleteⁱᵐᵖˡ); ("CompareAndSwap"%go, Map__CompareAndSwapⁱᵐᵖˡ); ("Delete"%go, Map__Deleteⁱᵐᵖˡ); ("Load"%go, Map__Loadⁱᵐᵖˡ); ("LoadAndDelete"%go, Map__LoadAndDeleteⁱᵐᵖˡ); ("LoadOrStore"%go, Map__LoadOrStoreⁱᵐᵖˡ); ("Range"%go, Map__Rangeⁱᵐᵖˡ); ("Store"%go, Map__Storeⁱᵐᵖˡ); ("Swap"%go, Map__Swapⁱᵐᵖˡ)]); (Mutex.id, []); (ptrT.id Mutex.id, [("Lock"%go, Mutex__Lockⁱᵐᵖˡ); ("TryLock"%go, Mutex__TryLockⁱᵐᵖˡ); ("Unlock"%go, Mutex__Unlockⁱᵐᵖˡ)]); (Once.id, []); (ptrT.id Once.id, [("Do"%go, Once__Doⁱᵐᵖˡ); ("doSlow"%go, Once__doSlowⁱᵐᵖˡ)]); (Pool.id, []); (ptrT.id Pool.id, [("Get"%go, Pool__Getⁱᵐᵖˡ); ("Put"%go, Pool__Putⁱᵐᵖˡ); ("getSlow"%go, Pool__getSlowⁱᵐᵖˡ); ("pin"%go, Pool__pinⁱᵐᵖˡ); ("pinSlow"%go, Pool__pinSlowⁱᵐᵖˡ)]); (poolLocalInternal.id, []); (ptrT.id poolLocalInternal.id, []); (poolLocal.id, []); (ptrT.id poolLocal.id, []); (poolDequeue.id, []); (ptrT.id poolDequeue.id, [("pack"%go, poolDequeue__packⁱᵐᵖˡ); ("popHead"%go, poolDequeue__popHeadⁱᵐᵖˡ); ("popTail"%go, poolDequeue__popTailⁱᵐᵖˡ); ("pushHead"%go, poolDequeue__pushHeadⁱᵐᵖˡ); ("unpack"%go, poolDequeue__unpackⁱᵐᵖˡ)]); (eface.id, []); (ptrT.id eface.id, []); (dequeueNil.id, []); (ptrT.id dequeueNil.id, []); (poolChain.id, []); (ptrT.id poolChain.id, [("popHead"%go, poolChain__popHeadⁱᵐᵖˡ); ("popTail"%go, poolChain__popTailⁱᵐᵖˡ); ("pushHead"%go, poolChain__pushHeadⁱᵐᵖˡ)]); (poolChainElt.id, []); (ptrT.id poolChainElt.id, [("pack"%go, poolChainElt__packⁱᵐᵖˡ); ("popHead"%go, poolChainElt__popHeadⁱᵐᵖˡ); ("popTail"%go, poolChainElt__popTailⁱᵐᵖˡ); ("pushHead"%go, poolChainElt__pushHeadⁱᵐᵖˡ); ("unpack"%go, poolChainElt__unpackⁱᵐᵖˡ)]); (notifyList.id, []); (ptrT.id notifyList.id, []); (RWMutex.id, []); (ptrT.id RWMutex.id, [("Lock"%go, RWMutex__Lockⁱᵐᵖˡ); ("RLock"%go, RWMutex__RLockⁱᵐᵖˡ); ("RLocker"%go, RWMutex__RLockerⁱᵐᵖˡ); ("RUnlock"%go, RWMutex__RUnlockⁱᵐᵖˡ); ("TryLock"%go, RWMutex__TryLockⁱᵐᵖˡ); ("TryRLock"%go, RWMutex__TryRLockⁱᵐᵖˡ); ("Unlock"%go, RWMutex__Unlockⁱᵐᵖˡ); ("rUnlockSlow"%go, RWMutex__rUnlockSlowⁱᵐᵖˡ)]); (rlocker.id, []); (ptrT.id rlocker.id, [("Lock"%go, rlocker__Lockⁱᵐᵖˡ); ("Unlock"%go, rlocker__Unlockⁱᵐᵖˡ)]); (WaitGroup.id, []); (ptrT.id WaitGroup.id, [("Add"%go, WaitGroup__Addⁱᵐᵖˡ); ("Done"%go, WaitGroup__Doneⁱᵐᵖˡ); ("Wait"%go, WaitGroup__Waitⁱᵐᵖˡ)])].
+Definition msets' : list (go_string * (list (go_string * val))) := [(Cond.id, []); (ptrT.id Cond.id, [("Broadcast"%go, Cond__Broadcastⁱᵐᵖˡ); ("Signal"%go, Cond__Signalⁱᵐᵖˡ); ("Wait"%go, Cond__Waitⁱᵐᵖˡ)]); (copyChecker.id, []); (ptrT.id copyChecker.id, [("check"%go, copyChecker__checkⁱᵐᵖˡ)]); (noCopy.id, []); (ptrT.id noCopy.id, [("Lock"%go, noCopy__Lockⁱᵐᵖˡ); ("Unlock"%go, noCopy__Unlockⁱᵐᵖˡ)]); (Map.id, []); (ptrT.id Map.id, [("Clear"%go, Map__Clearⁱᵐᵖˡ); ("CompareAndDelete"%go, Map__CompareAndDeleteⁱᵐᵖˡ); ("CompareAndSwap"%go, Map__CompareAndSwapⁱᵐᵖˡ); ("Delete"%go, Map__Deleteⁱᵐᵖˡ); ("Load"%go, Map__Loadⁱᵐᵖˡ); ("LoadAndDelete"%go, Map__LoadAndDeleteⁱᵐᵖˡ); ("LoadOrStore"%go, Map__LoadOrStoreⁱᵐᵖˡ); ("Range"%go, Map__Rangeⁱᵐᵖˡ); ("Store"%go, Map__Storeⁱᵐᵖˡ); ("Swap"%go, Map__Swapⁱᵐᵖˡ); ("dirtyLocked"%go, Map__dirtyLockedⁱᵐᵖˡ); ("loadReadOnly"%go, Map__loadReadOnlyⁱᵐᵖˡ); ("missLocked"%go, Map__missLockedⁱᵐᵖˡ)]); (readOnly.id, []); (ptrT.id readOnly.id, []); (entry.id, []); (ptrT.id entry.id, [("delete"%go, entry__deleteⁱᵐᵖˡ); ("load"%go, entry__loadⁱᵐᵖˡ); ("swapLocked"%go, entry__swapLockedⁱᵐᵖˡ); ("tryCompareAndSwap"%go, entry__tryCompareAndSwapⁱᵐᵖˡ); ("tryExpungeLocked"%go, entry__tryExpungeLockedⁱᵐᵖˡ); ("tryLoadOrStore"%go, entry__tryLoadOrStoreⁱᵐᵖˡ); ("trySwap"%go, entry__trySwapⁱᵐᵖˡ); ("unexpungeLocked"%go, entry__unexpungeLockedⁱᵐᵖˡ)]); (Mutex.id, []); (ptrT.id Mutex.id, [("Lock"%go, Mutex__Lockⁱᵐᵖˡ); ("TryLock"%go, Mutex__TryLockⁱᵐᵖˡ); ("Unlock"%go, Mutex__Unlockⁱᵐᵖˡ)]); (Once.id, []); (ptrT.id Once.id, [("Do"%go, Once__Doⁱᵐᵖˡ); ("doSlow"%go, Once__doSlowⁱᵐᵖˡ)]); (Pool.id, []); (ptrT.id Pool.id, [("Get"%go, Pool__Getⁱᵐᵖˡ); ("Put"%go, Pool__Putⁱᵐᵖˡ); ("getSlow"%go, Pool__getSlowⁱᵐᵖˡ); ("pin"%go, Pool__pinⁱᵐᵖˡ); ("pinSlow"%go, Pool__pinSlowⁱᵐᵖˡ)]); (poolLocalInternal.id, []); (ptrT.id poolLocalInternal.id, []); (poolLocal.id, []); (ptrT.id poolLocal.id, []); (poolDequeue.id, []); (ptrT.id poolDequeue.id, [("pack"%go, poolDequeue__packⁱᵐᵖˡ); ("popHead"%go, poolDequeue__popHeadⁱᵐᵖˡ); ("popTail"%go, poolDequeue__popTailⁱᵐᵖˡ); ("pushHead"%go, poolDequeue__pushHeadⁱᵐᵖˡ); ("unpack"%go, poolDequeue__unpackⁱᵐᵖˡ)]); (eface.id, []); (ptrT.id eface.id, []); (dequeueNil.id, []); (ptrT.id dequeueNil.id, []); (poolChain.id, []); (ptrT.id poolChain.id, [("popHead"%go, poolChain__popHeadⁱᵐᵖˡ); ("popTail"%go, poolChain__popTailⁱᵐᵖˡ); ("pushHead"%go, poolChain__pushHeadⁱᵐᵖˡ)]); (poolChainElt.id, []); (ptrT.id poolChainElt.id, [("pack"%go, poolChainElt__packⁱᵐᵖˡ); ("popHead"%go, poolChainElt__popHeadⁱᵐᵖˡ); ("popTail"%go, poolChainElt__popTailⁱᵐᵖˡ); ("pushHead"%go, poolChainElt__pushHeadⁱᵐᵖˡ); ("unpack"%go, poolChainElt__unpackⁱᵐᵖˡ)]); (notifyList.id, []); (ptrT.id notifyList.id, []); (RWMutex.id, []); (ptrT.id RWMutex.id, [("Lock"%go, RWMutex__Lockⁱᵐᵖˡ); ("RLock"%go, RWMutex__RLockⁱᵐᵖˡ); ("RLocker"%go, RWMutex__RLockerⁱᵐᵖˡ); ("RUnlock"%go, RWMutex__RUnlockⁱᵐᵖˡ); ("TryLock"%go, RWMutex__TryLockⁱᵐᵖˡ); ("TryRLock"%go, RWMutex__TryRLockⁱᵐᵖˡ); ("Unlock"%go, RWMutex__Unlockⁱᵐᵖˡ); ("rUnlockSlow"%go, RWMutex__rUnlockSlowⁱᵐᵖˡ)]); (rlocker.id, []); (ptrT.id rlocker.id, [("Lock"%go, rlocker__Lockⁱᵐᵖˡ); ("Unlock"%go, rlocker__Unlockⁱᵐᵖˡ)]); (WaitGroup.id, []); (ptrT.id WaitGroup.id, [("Add"%go, WaitGroup__Addⁱᵐᵖˡ); ("Done"%go, WaitGroup__Doneⁱᵐᵖˡ); ("Wait"%go, WaitGroup__Waitⁱᵐᵖˡ)])].
 
 #[global] Instance info' : PkgInfo sync.sync :=
   {|
@@ -820,7 +855,9 @@ Definition initialize' : val :=
     package.init #sync.sync (λ: <>,
       exception_do (do:  (race.initialize' #());;;
       do:  (atomic.initialize' #());;;
-      do:  (package.alloc sync.sync #()))
+      do:  (package.alloc sync.sync #());;;
+      let: "$r0" := (mem.alloc (type.zero_val #interfaceT)) in
+      do:  ((globals.get #expunged) <-[#ptrT] "$r0"))
       ).
 
 End code.

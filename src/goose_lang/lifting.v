@@ -685,7 +685,7 @@ Global Instance load_atomic s v : Atomic s (Load (Val v)).
 Proof. solve_atomic. Qed.
 Global Instance finish_store_atomic s v1 v2 : Atomic s (FinishStore (Val v1) (Val v2)).
 Proof. solve_atomic. Qed.
-Global Instance atomic_store_atomic s v1 v2 : Atomic s (AtomicStore (Val v1) (Val v2)).
+Global Instance atomic_store_atomic s v1 v2 : Atomic s (AtomicSwap (Val v1) (Val v2)).
 Proof. solve_atomic. Qed.
 Global Instance start_read_atomic s v : Atomic s (StartRead (Val v)).
 Proof. solve_atomic. Qed.
@@ -1285,9 +1285,9 @@ Proof.
   iApply ("Hl_rest" with "Hl").
 Qed.
 
-Lemma wp_atomic_store s E l v0 v :
-  {{{ ▷ l ↦ v0 }}} AtomicStore (Val $ LitV (LitLoc l)) v @ s; E
-  {{{ RET #(); l ↦ v }}}.
+Lemma wp_atomic_swap s E l v0 v :
+  {{{ ▷ l ↦ v0 }}} AtomicSwap (Val $ LitV (LitLoc l)) v @ s; E
+  {{{ RET v0; l ↦ v }}}.
 Proof.
   iIntros (Φ) ">Hl HΦ".
   iApply wp_lift_atomic_base_step_no_fork; auto.

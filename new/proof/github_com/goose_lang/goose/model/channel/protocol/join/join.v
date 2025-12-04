@@ -1,13 +1,10 @@
 Require Import New.proof.proof_prelude.
-From New.proof.github_com.goose_lang.goose.model.channel Require Export chan_au_send chan_au_recv chan_au_base chan_init auth_set.
+From New.proof.github_com.goose_lang.goose.model.channel.protocol Require Export base.
+From New.golang.theory Require Import chan.
+From Perennial.algebra Require Import auth_set.
 From iris.base_logic Require Import ghost_map.
 From iris.base_logic.lib Require Import saved_prop.
-From iris.algebra Require Import excl.
-
-Section proof.
-  Context `{hG: heapGS Σ} `{!ffi_semantics _ _}.
-  Context {go_ctx: GoContext}.
-End proof.
+From Perennial.algebra Require Import ghost_var.
 
 Module join.
 
@@ -19,44 +16,31 @@ Record join_names :=
     join_counter_name: gname;
   }.
 
-Class joinG Σ := JoinG {
-    join_saved_propG :: savedPropG Σ;
-    join_auth_setG :: auth_setG Σ gname;
-    join_counterG :: ghost_varG Σ nat;
-  }.
-
-Definition joinΣ: gFunctors :=
-  #[ savedPropΣ; auth_setΣ gname; ghost_varΣ nat].
-
-#[global] Instance subG_joinG Σ : subG joinΣ Σ → joinG Σ.
-Proof. solve_inG. Qed.
-
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!chanGhostStateG Σ V}.
+Context `{!chan_protocolG Σ V}.
 Context `{!IntoVal V}.
 Context `{!IntoValTyped V t}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
-Context `{!joinG Σ}.
 
 Definition join (γ: join_names) (count:nat) (Q: iProp Σ): iProp Σ :=
-  ghost_var γ.(join_counter_name) (1/2) count ∗
+  ghost_var γ.(join_counter_name) (DfracOwn (1/2)) count ∗
   ∃ Q', saved_prop_own γ.(join_prop_name) (DfracOwn (1/2)) Q' ∗ (Q' -∗ Q).
 
 Definition worker (γ: join_names) (P: iProp Σ): iProp Σ :=
   ∃ γS, auth_set_frag γ.(worker_names_name) γS ∗
         saved_prop_own γS DfracDiscarded P.
 
-Definition own_join (γ : join_names) (ch : loc) (cap: nat) : iProp Σ :=
+Definition own_join (γ : join_names) (ch : loc) : iProp Σ :=
   ∃ (workerQ: iProp Σ) (sendNames: gset gname) s count,
-    "Hch" ∷ own_channel ch cap s γ.(chan_name) ∗
+    "Hch" ∷ own_channel ch s γ.(chan_name) ∗
     "joinQ" ∷ saved_prop_own γ.(join_prop_name) (DfracOwn (1/2)) workerQ ∗
     "%HnumWaiting" ∷ ⌜size sendNames = count⌝ ∗
-    "Hjoincount" ∷ ghost_var γ.(join_counter_name) (1/2) count ∗
+    "Hjoincount" ∷ ghost_var γ.(join_counter_name) (DfracOwn (1/2)) count ∗
     "HsendNames_auth" ∷ auth_set_auth γ.(worker_names_name) sendNames ∗
     "HworkerQ_wand" ∷ ((([∗ set] γS ∈ sendNames,
                           ∃ P, saved_prop_own γS DfracDiscarded P ∗ ▷ P) -∗
-                        ▷ workerQ) ∨ (ghost_var γ.(join_counter_name) (1/2) count)) ∗
+                        ▷ workerQ) ∨ (ghost_var γ.(join_counter_name) (DfracOwn (1/2)) count)) ∗
     match s with
     | chan_rep.Buffered msgs =>
         [∗ list] _ ∈ msgs, ∃ P, worker γ P ∗ P
@@ -68,11 +52,11 @@ Definition own_join (γ : join_names) (ch : loc) (cap: nat) : iProp Σ :=
     | _ => False
     end.
 
-Definition is_join (γ : join_names) (ch : loc) (cap : nat) : iProp Σ :=
-  is_channel ch cap γ.(chan_name) ∗
-  inv nroot ("Hbar" ∷ own_join γ ch cap)%I.
+Definition is_join (γ : join_names) (ch : loc) : iProp Σ :=
+  is_channel ch γ.(chan_name) ∗
+  inv nroot ("Hbar" ∷ own_join γ ch)%I.
 
-#[global] Instance is_join_persistent ch γ cap : Persistent (is_join γ ch cap) := _.
+#[global] Instance is_join_persistent ch γ : Persistent (is_join γ ch) := _.
 
 #[global] Instance worker_proper : Proper ((=) ==> (≡) ==> (≡)) worker.
 Proof.
@@ -93,9 +77,9 @@ Proof.
 Qed.
 
 Lemma own_join_alloc_unbuff (ch : loc) (γch : chan_names):
-  is_channel ch 0 γch -∗
-  own_channel ch 0 chan_rep.Idle γch ={⊤}=∗
-  ∃ γ, own_join γ ch 0 ∗ join γ 0 emp.
+  is_channel ch γch -∗
+  own_channel ch chan_rep.Idle γch ={⊤}=∗
+  ∃ γ,  is_join γ ch ∗ join γ 0 emp.
 Proof.
   iIntros "Hchan_info Hchan_own".
   iMod (saved_prop_alloc emp (DfracOwn 1)) as (γjoin_prop) "Hjoin_prop".
@@ -108,29 +92,34 @@ Proof.
     worker_names_name := γworker_names;
     join_counter_name := γjoin_counter;
   |}).
-  iModIntro. iExists γ. simpl. iFrame.
-  iDestruct "Hjoin_prop" as "[Hjoin_prop_half1 Hjoin_prop_half2]".
-  iFrame.
-  iDestruct "Hjoin_counter" as "[Hjoin_counter_half1 Hjoin_counter_half2]".
-  iSplitR "Hjoin_counter_half1".
-  {
-    iFrame.
-    iSplitL ""; first set_solver.
-    iSplitR "".
+  iDestruct "Hjoin_counter" as "[Hjc1 Hjc2]".
+  iDestruct "Hjoin_prop" as "[Hjp1 Hjp2]".
+   iMod (inv_alloc nroot _ (own_join γ ch) with "[$Hjc1 $Hjp1 $Hworker_names $Hchan_own]") as "#Hinv".
+  { iNext. unfold own_join.  iFrame. simpl.
+    iFrame "#%".
+    iSplitL "". {
+     iPureIntro. done. }
+    iSplitL "".
     {
-      iLeft. rewrite big_sepS_empty. done.
-    }
-    { done. }
+    iLeft.
+    rewrite big_sepS_empty.
+    done.
   }
-  iFrame. done.
+  done.
+    }
+iModIntro.
+iExists γ.
+  iFrame.
+  iSplitL "". { done. }
+  done.
 Qed.
 
-Lemma own_join_alloc_buff (ch : loc) (γch : chan_names):
-  is_channel ch 0 γch -∗
-  own_channel ch 0 (chan_rep.Buffered []) γch ={⊤}=∗
-  ∃ γ, own_join γ ch 0 ∗ join γ 0 emp.
+Lemma own_join_alloc_buff (ch : loc) (γch : chan_names) (cap:nat) :
+  is_channel ch γch -∗
+  own_channel ch (chan_rep.Buffered []) γch ={⊤}=∗
+  ∃ γ, is_join γ ch ∗  join γ 0 emp.
 Proof.
-  iIntros "Hchan_info Hchan_own".
+   iIntros "Hchan_info Hchan_own".
   iMod (saved_prop_alloc emp (DfracOwn 1)) as (γjoin_prop) "Hjoin_prop".
   { done. }
   iMod (auth_set_init (A:=gname)) as (γworker_names) "Hworker_names".
@@ -141,26 +130,32 @@ Proof.
     worker_names_name := γworker_names;
     join_counter_name := γjoin_counter;
   |}).
-  iModIntro. iExists γ. simpl. iFrame.
-  iDestruct "Hjoin_prop" as "[Hjoin_prop_half1 Hjoin_prop_half2]".
-  iFrame.
-  iDestruct "Hjoin_counter" as "[Hjoin_counter_half1 Hjoin_counter_half2]".
-  iSplitR "Hjoin_counter_half1".
-  {
-    iFrame.
-    iSplitL ""; first set_solver.
-    iSplitR "".
+  iDestruct "Hjoin_counter" as "[Hjc1 Hjc2]".
+  iDestruct "Hjoin_prop" as "[Hjp1 Hjp2]".
+   iMod (inv_alloc nroot _ (own_join γ ch) with "[$Hjc1 $Hjp1 $Hworker_names $Hchan_own]") as "#Hinv".
+  { iNext. unfold own_join.  iFrame. simpl.
+    iFrame "#%".
+    iSplitL "". {
+     iPureIntro. done. }
+    iSplitL "".
     {
-      iLeft. rewrite big_sepS_empty. done.
-    }
-    { done. }
+    iLeft.
+    rewrite big_sepS_empty.
+    done.
   }
-  iFrame. done.
-Qed.
+  done.
+    }
+iModIntro.
+iExists γ.
+  iFrame.
+  iSplitL "". { done. }
+  done.
+  Qed.
 
-Lemma join_alloc_worker γ ch cap Q P count :
+
+Lemma join_alloc_worker γ ch Q P count :
   £ 1 -∗
-  is_join γ ch cap -∗
+  is_join γ ch -∗
   join γ count Q ={⊤}=∗
   join γ (S count) (Q ∗ P) ∗ worker γ P.
 Proof.
@@ -227,22 +222,19 @@ Proof.
   }
 Qed.
 
-Lemma wp_worker_send γ ch cap P :
-  {{{ is_pkg_init channel ∗
-      £ 1 ∗ £ 1 ∗ £ 1 ∗
-      is_join γ ch cap ∗
-      worker γ P ∗
-      P }}}
-    ch @ (ptrT.id channel.Channel.id) @ "Send" #t #(default_val V)
-  {{{ RET #(); True }}}.
+Lemma join_send_au γ ch P Φ :
+  £1 ∗ £1 ∗ £1 -∗
+  is_join γ ch -∗
+  worker γ P -∗
+  P -∗
+  ▷(True -∗ Φ) -∗
+  send_au_slow ch (default_val V) γ.(chan_name) Φ.
 Proof.
-  iIntros (Φ) "(#Hinit & Hlc1 & Hlc2 & Hlc3 & #Hjoin & HWorker & HP) HΦ".
+  iIntros "(Hlc1 & Hlc2 & Hlc3) #Hjoin HWorker HP Hau".
   rewrite /worker /is_join.
   iNamed "HWorker".
   iDestruct "HWorker" as "[Hfrag Hprop]".
   iDestruct "Hjoin" as "[#Hch #Hinv]".
-  iApply (wp_Send ch cap (default_val V) γ.(chan_name) with "[$Hinit $Hch]").
-  iIntros "Hlc4".
   iInv "Hinv" as "Hinv_open" "Hinv_close".
   iMod (lc_fupd_elim_later with "Hlc1 Hinv_open") as "Hinv_open".
   iDestruct "Hch" as "Hch1".
@@ -253,8 +245,7 @@ Proof.
   iExists s. iFrame "Hch".
   iNamed "Hbar".
   destruct s; try done.
-  - destruct (length buff <? cap)%Z.
-    + iNext. iIntros "Hoc".
+  -  iNext. iIntros "Hoc".
       iMod "Hmask".
       iMod ("Hinv_close" with "[Hoc joinQ Hjoincount HsendNames_auth HworkerQ_wand Hbar HP Hprop Hfrag]") as "_".
       {
@@ -263,8 +254,7 @@ Proof.
         rewrite big_sepL_app.
         iFrame. simpl. done.
       }
-      iModIntro. iApply "HΦ". done.
-    + iModIntro. done.
+      iModIntro. iApply "Hau". done.
   - iNext. iIntros "Hoc".
     iMod "Hmask".
     iMod ("Hinv_close" with "[Hoc joinQ Hjoincount HsendNames_auth HworkerQ_wand Hbar HP Hprop Hfrag]") as "_".
@@ -290,7 +280,7 @@ Proof.
           iSplitL ""; first done.
           iFrame.
         }
-        iModIntro. iApply "HΦ". done.
+        iModIntro. iApply "Hau". done.
     }
   - iNext. iIntros "Hoc". iMod "Hmask".
     iMod ("Hinv_close" with "[Hoc joinQ Hjoincount HsendNames_auth HworkerQ_wand Hbar HP Hfrag Hprop]") as "_".
@@ -299,24 +289,37 @@ Proof.
       iSplitL ""; first done.
       iFrame.
     }
-    iModIntro. iApply "HΦ". done.
+    iModIntro. iApply "Hau". done.
 Qed.
 
-Lemma wp_join_receive γ ch cap n Q :
-  {{{ is_pkg_init channel ∗
-      £ 1 ∗ £ 1 ∗ £ 1 ∗
-      is_join γ ch cap ∗
-      join γ (S n) Q }}}
-    ch @ (ptrT.id channel.Channel.id) @ "Receive" #t #()
-  {{{ v, RET (v, #true); join γ n Q }}}.
+Lemma wp_join_send γ ch P :
+  {{{ is_join γ ch ∗
+      worker γ P ∗
+      P }}}
+    chan.send #t #ch #(default_val V)
+  {{{ RET #(); True }}}.
 Proof.
-  iIntros (Φ) "(#Hinit & Hlc1 & Hlc2 & Hlc3 & #Hjoin & HJoin & HJoinQ) HΦ".
-  iNamed "HJoinQ".
-  iDestruct "HJoinQ" as "[HspQ HQimp]".
-  rewrite /join /is_join.
+  iIntros (Φ) "(#Hjoin & HWorker & HP) HΦ".
+  rewrite /is_join.
   iDestruct "Hjoin" as "[#Hch #Hinv]".
-  iApply (wp_Receive ch cap γ.(chan_name) with "[$Hinit $Hch]").
-  iIntros "Hlc4".
+  iApply (chan.wp_send ch (default_val V) γ.(chan_name) with "[$Hch]").
+  iIntros "(Hlc1 & Hlc2 & Hlc3 & _)".
+  iApply (join_send_au with "[$] [$] [$] [$]").
+  done.
+Qed.
+
+Lemma join_receive_au γ ch n Q Φ :
+  £1 ∗ £1 -∗
+  is_join γ ch -∗
+  join γ (S n) Q -∗
+  ▷(∀ (v:V), join γ n Q -∗ Φ v true) -∗
+  rcv_au_slow ch γ.(chan_name) Φ.
+Proof.
+  iIntros "(Hlc1 & Hlc2) #Hjoin HJoin Hau".
+  rewrite /join /is_join.
+  iDestruct "HJoin" as "[HJoin HJoinQ]".
+  iDestruct "HJoinQ" as (Q') "[HspQ HQimp]".
+  iDestruct "Hjoin" as "[#Hch #Hinv]".
   iInv "Hinv" as "Hinv_open" "Hinv_close".
   iMod (lc_fupd_elim_later with "Hlc1 Hinv_open") as "Hinv_open".
   iNamed "Hinv".
@@ -361,8 +364,7 @@ Proof.
         { auto. }
         iFrame.
       }
-      iApply "HΦ".
-      iModIntro. iFrame.
+      iModIntro. iApply "Hau". iFrame.
     }
     {
       iCombine "H2 Hjoincount" as "H2".
@@ -417,7 +419,7 @@ Proof.
           }
           done.
         }
-        iModIntro. iApply "HΦ". iFrame.
+        iModIntro. iApply "Hau". iFrame.
       }
       {
         iCombine "H2 Hjoincount" as "H2".
@@ -461,17 +463,31 @@ Proof.
         }
         { done. }
       }
-      iApply "HΦ".
-      iModIntro. iFrame.
+      iModIntro. iApply "Hau". iFrame.
     }
     iCombine "H2 Hjoincount" as "H2".
     iDestruct (ghost_var_valid_2 with "HJoin_new H2") as "[%Hvalid _]".
     done.
 Qed.
 
-Lemma join_finish γ ch cap Q :
+Lemma wp_join_receive γ ch n Q :
+  {{{ is_join γ ch ∗
+      join γ (S n) Q }}}
+    chan.receive #t #ch
+  {{{ (v:V), RET (#v, #true); join γ n Q }}}.
+Proof.
+  iIntros (Φ) "(#Hjoin & HJoin) HΦ".
+  rewrite /is_join.
+  iDestruct "Hjoin" as "[#Hch #Hinv]".
+  iApply (chan.wp_receive ch γ.(chan_name) with "[$Hch]").
+  iIntros "(Hlc1 & Hlc2 & Hlc3 & _)".
+  iApply (join_receive_au with "[$] [$] [$]").
+  done.
+Qed.
+
+Lemma join_finish γ ch Q :
   £ 1 -∗
-  is_join γ ch cap -∗
+  is_join γ ch -∗
   join γ 0 Q ={⊤}=∗
   ▷ Q.
 Proof.

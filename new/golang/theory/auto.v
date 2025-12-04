@@ -3,7 +3,7 @@ From Coq Require Import ssreflect.
 From Ltac2 Require Import Ltac2 Printf.
 Set Default Proof Mode "Classic".
 From New.golang.defn Require Import typing.
-From New.golang.theory Require Import proofmode pkg loop chan.
+From New.golang.theory Require Import proofmode pkg loop.
 From New.golang.theory Require Import mem.
 From Perennial Require Import base.
 
@@ -277,25 +277,17 @@ Ltac cleanup_bool_decide :=
     ?if_decide_eq ?if_decide_true_eq_false ?if_decide_false_eq_true
     ?if_decide_true_neq_false ?if_decide_false_neq_true.
 
-#[local]
-Ltac wp_for_cleanup :=
+Ltac _wp_for_cleanup :=
   try wp_auto;
   cleanup_bool_decide;
   try wp_auto.
 
 Tactic Notation "wp_for" :=
-  loop.wp_for_core; wp_for_cleanup.
+  loop.wp_for_core; _wp_for_cleanup.
 Tactic Notation "wp_for" constr(hyp) :=
-  loop.wp_for_core; iNamed hyp; wp_for_cleanup.
+  loop.wp_for_core; iNamed hyp; _wp_for_cleanup.
 Ltac wp_for_post :=
   loop.wp_for_post_core; try wp_auto.
-
-Tactic Notation "wp_for_chan" :=
-  chan.wp_for_chan_core; wp_for_cleanup.
-Tactic Notation "wp_for_chan" constr(hyp) :=
-  chan.wp_for_chan_core; iNamed hyp; wp_for_cleanup.
-Ltac wp_for_chan_post :=
-  chan.wp_for_chan_post_core; try wp_auto.
 
 (* TODO: one tactic to handle all for loops. *)
 
@@ -307,7 +299,8 @@ inside the bool_decide. *)
 (* TODO: [wp_if_destruct] used when user has [if: #b] at program head
 and wants to case branch, regardless of whether b is a var or not.
 the impl should be changed to match this intuition.
-right now, it destructs [# b] found anywhere. *)
+right now, it destructs [# b] found anywhere.
+https://github.com/mit-pdos/perennial/issues/471 *)
 Ltac wp_if_destruct :=
   lazymatch goal with
   | |- environments.envs_entails _ ?g =>

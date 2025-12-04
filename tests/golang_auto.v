@@ -94,4 +94,14 @@ Proof.
   Fail wp_store.
 Abort.
 
+Lemma wp_apply_not_wp (x_l: loc) (x: w64) :
+  {{{ x_l ↦ x }}}
+    ![#uint64T] #x_l
+  {{{ RET #x; True }}}.
+Proof.
+  wp_start as "x".
+  wp_auto.
+  Fail wp_apply "HΦ".
+Abort.
+
 End proof.

@@ -1,13 +1,10 @@
 From New.code Require Import sync.
-From New.golang Require Import defn.
+From New.golang.defn Require Import core slice lock.
 
 Module primitive.
 Module prophId. Definition id : go_string := "github.com/goose-lang/goose.prophId". End prophId.
 Section code.
   Context `{ffi_syntax}.
-
-  (* FIXME: this shouldn't be exposed, but it is because of the alias `ProphId =
-   *prophId`. *)
 
   (** [Assume c] goes into an endless loop if [c] does not hold. So proofs can
 assume that it holds. *)
@@ -74,7 +71,8 @@ this in GooseLang, so we just loop. *)
 
   Definition AfterFuncⁱᵐᵖˡ : val := λ: "duration" "f", Fork "f" ;; ref "f".
 
-  Definition WaitTimeoutⁱᵐᵖˡ : val := λ: "l" "timeout", method_call #sync #"Cond" "Wait" "l".
+  Definition WaitTimeoutⁱᵐᵖˡ : val := λ: "l" "timeout",
+      method_call #sync #"Cond" "Wait" "l".
 
   Definition RandomUint64ⁱᵐᵖˡ : val := λ: <>, ArbitraryInt.
 
@@ -86,6 +84,14 @@ this in GooseLang, so we just loop. *)
 
   Definition AssumeNoStringOverflowⁱᵐᵖˡ : val :=
     λ: "s", assume.assume (IsNoStringOverflow "s").
+
+  Definition Mutex := boolT.
+
+  Definition Mutex__Lockⁱᵐᵖˡ : val :=
+    λ: "m" <>, lock.lock "m".
+
+  Definition Mutex__Unlockⁱᵐᵖˡ : val :=
+    λ: "m" <>, lock.unlock "m".
 
 End code.
 End primitive.

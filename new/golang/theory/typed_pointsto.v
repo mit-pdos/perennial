@@ -217,7 +217,7 @@ Section goose_lang.
     UpdateIntoPersistently (l ↦{dq} v) (l ↦□ v).
   Proof. apply _. Qed.
 
-  Lemma typed_pointsto_not_null l dq v :
+  Local Lemma typed_pointsto_not_null_aux l dq v :
     go_type_size t > 0 →
     l ↦{dq} v -∗ ⌜ l ≠ null ⌝.
   Proof using IntoValTyped0.
@@ -272,12 +272,12 @@ Section goose_lang.
   Qed.
 
   (* for automation - go_type_size_def t > 0 is provable using [auto] *)
-  Lemma pointsto_not_null l dq v :
+  Lemma typed_pointsto_not_null l dq v :
     go_type_size_def t > 0 →
     l ↦{dq} v -∗ ⌜l ≠ null⌝.
   Proof using IntoValTyped0.
     intros.
-    apply typed_pointsto_not_null.
+    apply typed_pointsto_not_null_aux.
     rewrite go_type_size_unseal //.
   Qed.
 
@@ -290,6 +290,48 @@ Section goose_lang.
     iApply (wp_prepare_write with "Hl"); iNext; iIntros "[Hl Hl']".
     wp_pures.
     by iApply (wp_finish_store with "[$Hl $Hl']").
+  Qed.
+
+  (* Prove points-to facts conflict even with different types, which doesn't
+  follow from the DFractional instance. *)
+  Lemma typed_pointsto_dfrac_valid l dq1 (v1: V) `{!IntoVal V'} `{!IntoValTyped V' t2} dq2 v2 :
+    go_type_size_def t > 0 →
+    go_type_size_def t2 > 0 →
+    l ↦{dq1} v1 -∗
+    l ↦{dq2} v2 -∗
+    ⌜✓(dq1 ⋅ dq2)⌝.
+  Proof using IntoValTyped0.
+    rewrite -!go_type_size_unseal.
+    intros Ht1 Ht2.
+    iIntros "Hl1 Hl2".
+    rewrite typed_pointsto_unseal /typed_pointsto_def.
+    pose proof (to_val_has_go_type v1) as Hty1.
+    pose proof (to_val_has_go_type v2) as Hty2.
+    pose proof (has_go_type_len Hty1).
+    pose proof (has_go_type_len Hty2).
+    destruct (flatten_struct (#v1)); [ simpl in *; lia | ].
+    destruct (flatten_struct (#v2)); [ simpl in *; lia | ].
+    simpl.
+    rewrite loc_add_0.
+    iDestruct "Hl1" as "[Hv1 _]".
+    iDestruct "Hl2" as "[Hv2 _]".
+    iCombine "Hv1 Hv2" gives %[Heq _].
+    eauto.
+  Qed.
+
+  Lemma typed_pointsto_conflict l1 l2 (v1: V) `{!IntoVal V'} `{!IntoValTyped V' t2} dq v2 :
+    go_type_size_def t > 0 →
+    go_type_size_def t2 > 0 →
+    l1 ↦ v1 -∗
+    l2 ↦{dq} v2 -∗
+    ⌜l1 ≠ l2⌝.
+  Proof using IntoValTyped0.
+    intros Hty1 Hty2.
+    iIntros "Hl1 Hl2".
+    destruct (decide (l1 = l2)); subst; auto.
+    iDestruct (typed_pointsto_dfrac_valid with "Hl1 Hl2") as %Hvalid; eauto.
+    apply dfrac_valid_own_l in Hvalid.
+    done.
   Qed.
 
 End goose_lang.

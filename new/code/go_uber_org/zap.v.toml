@@ -1,6 +1,2 @@
-imports = [
-  "go.uber.org/zap/zapcore",
-]
-translate = [
-  "!*",
-]
+imports = ["go.uber.org/zap/zapcore"]
+translate = ["!*"]

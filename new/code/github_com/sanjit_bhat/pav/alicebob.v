@@ -2,13 +2,13 @@
 Require Export New.code.bytes.
 Require Export New.code.github_com.goose_lang.primitive.
 Require Export New.code.github_com.goose_lang.std.
-Require Export New.code.github_com.sanjit_bhat.pav.advrpc.
 Require Export New.code.github_com.sanjit_bhat.pav.auditor.
 Require Export New.code.github_com.sanjit_bhat.pav.client.
 Require Export New.code.github_com.sanjit_bhat.pav.cryptoffi.
 Require Export New.code.github_com.sanjit_bhat.pav.ktcore.
 Require Export New.code.github_com.sanjit_bhat.pav.server.
 Require Export New.code.sync.
+Require Export New.code.time.
 
 From New.golang Require Import defn.
 Definition alicebob : go_string := "github.com/sanjit-bhat/pav/alicebob".
@@ -33,7 +33,7 @@ Definition runBob : go_string := "github.com/sanjit-bhat/pav/alicebob.runBob"%go
 
 Definition runAlice : go_string := "github.com/sanjit-bhat/pav/alicebob.runAlice"%go.
 
-(* go: alicebob.go:22:6 *)
+(* go: alicebob.go:26:6 *)
 Definition testAliceBobⁱᵐᵖˡ : val :=
   λ: "servAddr" "adtrAddr",
     exception_do (let: "err" := (mem.alloc (type.zero_val #ktcore.Blame)) in
@@ -53,8 +53,8 @@ Definition testAliceBobⁱᵐᵖˡ : val :=
     do:  ("servRpc" <-[#ptrT] "$r0");;;
     do:  (let: "$a0" := (![#uint64T] "servAddr") in
     (method_call #(ptrT.id advrpc.Server.id) #"Serve"%go (![#ptrT] "servRpc")) "$a0");;;
-    do:  (let: "$a0" := #(W64 1000000) in
-    (func_call #primitive.Sleep) "$a0");;;
+    do:  (let: "$a0" := time.Millisecond in
+    (func_call #time.Sleep) "$a0");;;
     let: "adtrPk" := (mem.alloc (type.zero_val #cryptoffi.SigPublicKey)) in
     let: "adtr" := (mem.alloc (type.zero_val #ptrT)) in
     let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#uint64T] "servAddr") in
@@ -75,8 +75,8 @@ Definition testAliceBobⁱᵐᵖˡ : val :=
     do:  ("adtrRpc" <-[#ptrT] "$r0");;;
     do:  (let: "$a0" := (![#uint64T] "adtrAddr") in
     (method_call #(ptrT.id advrpc.Server.id) #"Serve"%go (![#ptrT] "adtrRpc")) "$a0");;;
-    do:  (let: "$a0" := #(W64 1000000) in
-    (func_call #primitive.Sleep) "$a0");;;
+    do:  (let: "$a0" := time.Millisecond in
+    (func_call #time.Sleep) "$a0");;;
     let: "alice" := (mem.alloc (type.zero_val #ptrT)) in
     let: ("$ret0", "$ret1") := (let: "$a0" := aliceUid in
     let: "$a1" := (![#uint64T] "servAddr") in
@@ -101,6 +101,26 @@ Definition testAliceBobⁱᵐᵖˡ : val :=
     (if: (![#ktcore.Blame] "err") ≠ ktcore.BlameNone
     then return: (![#ptrT] "evid", ![#ktcore.Blame] "err")
     else do:  #());;;
+    (let: ("$ret0", "$ret1") := (let: "$a0" := (![#uint64T] "adtrAddr") in
+    let: "$a1" := (![#cryptoffi.SigPublicKey] "adtrPk") in
+    (method_call #(ptrT.id client.Client.id) #"Audit"%go (![#ptrT] "alice")) "$a0" "$a1") in
+    let: "$r0" := "$ret0" in
+    let: "$r1" := "$ret1" in
+    do:  ("evid" <-[#ptrT] "$r0");;;
+    do:  ("err" <-[#ktcore.Blame] "$r1");;;
+    (if: (![#ktcore.Blame] "err") ≠ ktcore.BlameNone
+    then return: (![#ptrT] "evid", ![#ktcore.Blame] "err")
+    else do:  #()));;;
+    (let: ("$ret0", "$ret1") := (let: "$a0" := (![#uint64T] "adtrAddr") in
+    let: "$a1" := (![#cryptoffi.SigPublicKey] "adtrPk") in
+    (method_call #(ptrT.id client.Client.id) #"Audit"%go (![#ptrT] "bob")) "$a0" "$a1") in
+    let: "$r0" := "$ret0" in
+    let: "$r1" := "$ret1" in
+    do:  ("evid" <-[#ptrT] "$r0");;;
+    do:  ("err" <-[#ktcore.Blame] "$r1");;;
+    (if: (![#ktcore.Blame] "err") ≠ ktcore.BlameNone
+    then return: (![#ptrT] "evid", ![#ktcore.Blame] "err")
+    else do:  #()));;;
     let: "aliceHist" := (mem.alloc (type.zero_val #sliceT)) in
     let: "aliceErr" := (mem.alloc (type.zero_val #ktcore.Blame)) in
     let: "bobEp" := (mem.alloc (type.zero_val #uint64T)) in
@@ -165,12 +185,7 @@ Definition testAliceBobⁱᵐᵖˡ : val :=
       do:  ("err" <-[#ktcore.Blame] "$r0");;;
       return: (![#ptrT] "evid", ![#ktcore.Blame] "err")
     else do:  #());;;
-    let: "adtrCli" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (let: "$a0" := (![#uint64T] "adtrAddr") in
-    (func_call #advrpc.Dial) "$a0") in
-    do:  ("adtrCli" <-[#ptrT] "$r0");;;
-    (let: "$r0" := (let: "$a0" := (![#ptrT] "adtrCli") in
-    (func_call #auditor.CallUpdate) "$a0") in
+    (let: "$r0" := ((method_call #(ptrT.id auditor.Auditor.id) #"Update"%go (![#ptrT] "adtr")) #()) in
     do:  ("err" <-[#ktcore.Blame] "$r0");;;
     (if: (![#ktcore.Blame] "err") ≠ ktcore.BlameNone
     then return: (![#ptrT] "evid", ![#ktcore.Blame] "err")
@@ -218,7 +233,7 @@ Definition histEntry : go_type := structT [
 #[global] Typeclasses Opaque histEntry.
 #[global] Opaque histEntry.
 
-(* go: alicebob.go:109:6 *)
+(* go: alicebob.go:124:6 *)
 Definition equalⁱᵐᵖˡ : val :=
   λ: "o0" "o1",
     exception_do (let: "o1" := (mem.alloc "o1") in
@@ -238,7 +253,7 @@ Definition loopPending : go_string := "github.com/sanjit-bhat/pav/alicebob.loopP
 
 (* runAlice does a bunch of puts.
 
-   go: alicebob.go:120:6 *)
+   go: alicebob.go:135:6 *)
 Definition runAliceⁱᵐᵖˡ : val :=
   λ: "cli",
     exception_do (let: "err" := (mem.alloc (type.zero_val #ktcore.Blame)) in
@@ -272,8 +287,8 @@ Definition runAliceⁱᵐᵖˡ : val :=
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[#intT] "$r0");;;
     (for: (λ: <>, int_lt (![#intT] "i") #(W64 20)); (λ: <>, do:  ("i" <-[#intT] ((![#intT] "i") + #(W64 1)))) := λ: <>,
-      do:  (let: "$a0" := #(W64 5000000) in
-      (func_call #primitive.Sleep) "$a0");;;
+      do:  (let: "$a0" := (#(W64 5) * time.Millisecond) in
+      (func_call #time.Sleep) "$a0");;;
       let: "pk" := (mem.alloc (type.zero_val #sliceT)) in
       let: "$r0" := (let: "$a0" := #(W64 32) in
       (func_call #cryptoffi.RandBytes) "$a0") in
@@ -300,7 +315,7 @@ Definition runAliceⁱᵐᵖˡ : val :=
       do:  ("hist" <-[#sliceT] "$r0")));;;
     return: (![#sliceT] "hist", ![#ktcore.Blame] "err")).
 
-(* go: alicebob.go:150:6 *)
+(* go: alicebob.go:165:6 *)
 Definition loopPendingⁱᵐᵖˡ : val :=
   λ: "cli" "ep",
     exception_do (let: "err" := (mem.alloc (type.zero_val #ktcore.Blame)) in
@@ -329,15 +344,15 @@ Definition loopPendingⁱᵐᵖˡ : val :=
 
 (* runBob does a get at some time in the middle of alice's puts.
 
-   go: alicebob.go:167:6 *)
+   go: alicebob.go:182:6 *)
 Definition runBobⁱᵐᵖˡ : val :=
   λ: "cli",
     exception_do (let: "err" := (mem.alloc (type.zero_val #ktcore.Blame)) in
     let: "ent" := (mem.alloc (type.zero_val #ptrT)) in
     let: "ep" := (mem.alloc (type.zero_val #uint64T)) in
     let: "cli" := (mem.alloc "cli") in
-    do:  (let: "$a0" := #(W64 120000000) in
-    (func_call #primitive.Sleep) "$a0");;;
+    do:  (let: "$a0" := (#(W64 120) * time.Millisecond) in
+    (func_call #time.Sleep) "$a0");;;
     let: "pk" := (mem.alloc (type.zero_val #sliceT)) in
     let: "isReg" := (mem.alloc (type.zero_val #boolT)) in
     let: ((("$ret0", "$ret1"), "$ret2"), "$ret3") := (let: "$a0" := aliceUid in
@@ -370,7 +385,7 @@ Definition msets' : list (go_string * (list (go_string * val))) := [(histEntry.i
     pkg_vars := vars';
     pkg_functions := functions';
     pkg_msets := msets';
-    pkg_imported_pkgs := [code.bytes.bytes; code.sync.sync; code.github_com.goose_lang.primitive.primitive; code.github_com.goose_lang.std.std; code.github_com.sanjit_bhat.pav.advrpc.advrpc; code.github_com.sanjit_bhat.pav.auditor.auditor; code.github_com.sanjit_bhat.pav.client.client; code.github_com.sanjit_bhat.pav.cryptoffi.cryptoffi; code.github_com.sanjit_bhat.pav.ktcore.ktcore; code.github_com.sanjit_bhat.pav.server.server];
+    pkg_imported_pkgs := [code.bytes.bytes; code.sync.sync; code.time.time; code.github_com.goose_lang.primitive.primitive; code.github_com.goose_lang.std.std; code.github_com.sanjit_bhat.pav.auditor.auditor; code.github_com.sanjit_bhat.pav.client.client; code.github_com.sanjit_bhat.pav.cryptoffi.cryptoffi; code.github_com.sanjit_bhat.pav.ktcore.ktcore; code.github_com.sanjit_bhat.pav.server.server];
   |}.
 
 Definition initialize' : val :=
@@ -381,12 +396,17 @@ Definition initialize' : val :=
       do:  (cryptoffi.initialize' #());;;
       do:  (client.initialize' #());;;
       do:  (auditor.initialize' #());;;
-      do:  (advrpc.initialize' #());;;
       do:  (std.initialize' #());;;
       do:  (primitive.initialize' #());;;
+      do:  (time.initialize' #());;;
       do:  (sync.initialize' #());;;
       do:  (bytes.initialize' #());;;
-      do:  (package.alloc alicebob.alicebob #()))
+      do:  (package.alloc alicebob.alicebob #());;;
+      do:  ((λ: <>,
+        exception_do (let: "$r0" := time.Millisecond in
+        do:  ((globals.get #server.BatchTimeout) <-[#time.Duration] "$r0");;;
+        return: #())
+        ) #()))
       ).
 
 End code.

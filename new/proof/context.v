@@ -1,8 +1,9 @@
-Require Import New.code.context.
-Require Export New.generatedproof.context.
-Require Import New.proof.proof_prelude.
-Require Import New.proof.chan.
+From New Require Import code.context.
+From New Require Export generatedproof.context.
+From New Require Import proof.proof_prelude.
 From New.proof Require Import sync.atomic sync time errors.
+(* make sure to use these specs *)
+From New.proof Require Import chan.
 
 Require Import Perennial.Helpers.CountableTactics.
 
@@ -17,9 +18,6 @@ Section defn.
 Context `{ffi_syntax}.
 (* Context `{hG: heapGS Σ, !ffi_semantics _ _}. *)
 Context `{PROP : Type}.
-(* FIXME: prove this and put it in golang directory. *)
-Instance interface_countable : Countable interface.t.
-Admitted.
 Record t :=
   mk
     {
@@ -100,7 +98,7 @@ Proof.
   iSplit.
   {
     simpl. iSplit; last done.
-    iExists unit, _, _, _.
+    iExists unit, _, _.
     iApply own_closeable_chan_nonblocking_receive.
     { iFrame "#". }
     simpl.

@@ -1,4 +1,4 @@
-From New.golang Require Import defn.
+From New.golang Require Import defn.core defn.lock.
 
 Module sync.
 Module Mutex. Definition id : go_string := "sync.Mutex". End Mutex.
@@ -14,18 +14,14 @@ Definition Mutex : go_type := structT [
 
 
 Definition Mutex__TryLockⁱᵐᵖˡ : val :=
-  λ: "m" <>, Snd (CmpXchg (struct.field_ref #Mutex #"state"%go "m") #false #true).
+  λ: "m" <>, lock.trylock (struct.field_ref #Mutex #"state"%go "m").
 
 Definition Mutex__Lockⁱᵐᵖˡ : val :=
   λ: "m" <>,
-    if: Snd (CmpXchg (struct.field_ref #Mutex #"state"%go "m") #false #true) then
-      #()
-    else
-      method_call #(ptrT.id Mutex.id) #"Lock" "m" #().
+     lock.lock (struct.field_ref #Mutex #"state"%go "m").
 
 Definition Mutex__Unlockⁱᵐᵖˡ : val :=
-  λ: "m" <>, exception_do (do: CmpXchg (struct.field_ref #Mutex #"state"%go "m") #true #false ;;; return: #())
-.
+  λ: "m" <>, lock.unlock (struct.field_ref #Mutex #"state"%go "m").
 
 Definition runtime_notifyListAddⁱᵐᵖˡ : val :=
   λ: "l", u_to_w32 ArbitraryInt.

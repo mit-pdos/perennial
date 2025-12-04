@@ -1,13 +1,13 @@
 Require Import New.proof.proof_prelude.
-From New.proof.github_com.goose_lang.goose.model.channel Require Export chan_au_send chan_au_recv chan_au_base chan_init.
+From New.proof.github_com.goose_lang.goose.model.channel Require Export protocol.base.
+From New.golang.theory Require Import chan.
 
 Section handshake.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!ghost_varG Σ ()}.
+Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{!IntoVal V}.
 Context `{!IntoValTyped V t}.
-Context `{!chanGhostStateG Σ V}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
+Context `{!chan_protocolG Σ V}.
 
 (*----------------------------------------------------------------------------
   Invariant for a simple handshake on an unbuffered channel with unit payloads.
@@ -21,10 +21,10 @@ Context `{!globalsGS Σ} {go_ctx : GoContext}.
 
   ---------------------------------------------------------------------------*)
 Definition is_handshake γ (ch : loc)  (P: V -> iProp Σ) Q : iProp Σ :=
-  is_channel ch 0 γ  ∗
+  is_channel ch γ  ∗
   inv nroot (
       ∃ s,
-        "Hch" ∷ own_channel ch 0 s γ ∗
+        "Hch" ∷ own_channel ch s γ ∗
     (match s with
      | chan_rep.Idle =>
         True
@@ -38,8 +38,8 @@ Definition is_handshake γ (ch : loc)  (P: V -> iProp Σ) Q : iProp Σ :=
     )).
 
 Lemma start_handshake ch P Q  γ:
-  is_channel  ch 0 γ  -∗
-  own_channel  ch 0 chan_rep.Idle γ ={⊤}=∗
+  is_channel  ch γ  -∗
+  own_channel  ch chan_rep.Idle γ ={⊤}=∗
   is_handshake γ ch P Q .
 Proof.
     intros.
@@ -50,26 +50,19 @@ Proof.
  iFrame "∗%#".
 Qed.
 
-Lemma wp_handshake_receive γ ch P Q :
-  {{{
-      is_pkg_init channel ∗
-      is_handshake γ ch P Q  ∗
-      Q
-  }}}
-    ch @ (ptrT.id channel.Channel.id) @ "Receive" #t #()
-  {{{
-      v, RET (#v, #true); P v
-  }}}.
+Lemma handshake_receive_au γ ch P Q Φ :
+  £1 ∗ £1 -∗
+  is_handshake γ ch P Q -∗
+  Q -∗
+  ▷(∀ v, P v -∗ Φ v true) -∗
+  rcv_au_slow ch γ Φ.
 Proof.
-  iIntros (?) "(Hpc & (#Hchan & #Hinv) & HQ) HΦ".
-  iApply ((wp_Receive ch 0  γ Φ  ) with "[$Hpc $Hchan]").
-  iIntros "(Hlc1 & Hlc2 & Hlc3 & _)".
-   iMod (lc_fupd_elim_later with "[$] HΦ") as "Hau".
-  iFrame "#".
+  iIntros "(Hlc1 & Hlc2) #His HQ Hau".
+  iPoseProof "His" as "[Hchan Hinv]".
   iInv "Hinv" as "Hi" "Hclose".
-   iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
-   iNamed "Hi".
-   iApply fupd_mask_intro; [ solve_ndisj | iIntros "Hmask"].
+  iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
+  iNamed "Hi".
+  iApply fupd_mask_intro; [ solve_ndisj | iIntros "Hmask"].
   iNext. iNamed "Hi". iFrame.
    destruct s. all:try done.
    -   iIntros "H".
@@ -87,25 +80,35 @@ Proof.
     iMod "Hmask" as "_". iMod ("Hclose" with "[-Hau Hlc1 Hi]").
     + iModIntro. iFrame.
     + iModIntro.
-       iApply "Hau". done.
+      iApply "Hau". done.
 Qed.
 
-Lemma wp_handshake_send γ ch v P Q :
+Lemma wp_handshake_receive γ ch P Q :
   {{{
-      is_pkg_init channel ∗
-      is_handshake γ ch P Q ∗
-      P v
+      is_handshake γ ch P Q  ∗
+      Q
   }}}
-    ch @ (ptrT.id channel.Channel.id) @ "Send" #t #v
+    chan.receive #t #ch
   {{{
-      RET (#()); Q
+      v, RET (#v, #true); P v
   }}}.
 Proof.
-  iIntros (?) "(Hpc & (#Hchan & #Hinv) & HP) HΦ".
-  iApply ((wp_Send ch 0 v γ Φ  ) with "[$Hpc $Hchan]").
+  iIntros (?) "((#Hchan & #Hinv) & HQ) HΦ".
+  wp_apply ((chan.wp_receive ch γ Φ  ) with "[$Hchan]").
   iIntros "(Hlc1 & Hlc2 & Hlc3 & _)".
-  iMod (lc_fupd_elim_later with "[$] HΦ") as "Hau".
-  iFrame "#".
+  iApply (handshake_receive_au with "[$] [$] [$HQ]").
+  done.
+Qed.
+
+Lemma handshake_send_au γ ch v P Q Φ :
+  £1 ∗ £1 ∗ £1 -∗
+  is_handshake γ ch P Q -∗
+  P v -∗
+  ▷(Q -∗ Φ) -∗
+  send_au_slow ch v γ Φ.
+Proof.
+  iIntros "(Hlc1 & Hlc2 & Hlc3) #Hchan HP Hau".
+  iDestruct "Hchan" as "[Hchan Hinv]".
   iInv "Hinv" as "Hi" "Hclose".
    iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
    iNamed "Hi".
@@ -127,6 +130,23 @@ Proof.
     iMod "Hmask" as "_". iMod ("Hclose" with "[-Hau Hlc1 Hi]").
     + iModIntro.  iFrame.
     + iModIntro.  iApply "Hau". done.
+Qed.
+
+Lemma wp_handshake_send γ ch v P Q :
+  {{{
+      is_handshake γ ch P Q ∗
+      P v
+  }}}
+    chan.send #t #ch #v
+  {{{
+      RET (#()); Q
+  }}}.
+Proof.
+  iIntros (?) "((#Hchan & #Hinv) & HP) HΦ".
+  wp_apply ((chan.wp_send ch v γ Φ  ) with "[$Hchan]").
+  iIntros "(Hlc1 & Hlc2 & Hlc3 & _)".
+  iApply (handshake_send_au with "[$] [$] [$]").
+  done.
 Qed.
 
 End handshake.

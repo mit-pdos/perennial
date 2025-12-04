@@ -27,20 +27,14 @@ Admitted.
 
 (* type slices.xorshift *)
 Module xorshift.
+
+#[global] Transparent slices.xorshift.
+#[global] Typeclasses Transparent slices.xorshift.
 Section def.
 Context `{ffi_syntax}.
-Axiom t : Type.
+Definition t := w64.
 End def.
 End xorshift.
-
-Global Instance bounded_size_xorshift : BoundedTypeSize slices.xorshift.
-Admitted.
-
-Global Instance into_val_xorshift `{ffi_syntax} : IntoVal xorshift.t.
-Admitted.
-
-Global Instance into_val_typed_xorshift `{ffi_syntax} : IntoValTyped xorshift.t slices.xorshift.
-Admitted.
 
 Section names.
 
@@ -63,6 +57,78 @@ Global Program Instance is_pkg_defined_slices : IsPkgDefined slices :=
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
+
+Global Instance wp_func_call_insertionSortCmpFunc :
+  WpFuncCall slices.insertionSortCmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_siftDownCmpFunc :
+  WpFuncCall slices.siftDownCmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_heapSortCmpFunc :
+  WpFuncCall slices.heapSortCmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_pdqsortCmpFunc :
+  WpFuncCall slices.pdqsortCmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_partitionCmpFunc :
+  WpFuncCall slices.partitionCmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_partitionEqualCmpFunc :
+  WpFuncCall slices.partitionEqualCmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_partialInsertionSortCmpFunc :
+  WpFuncCall slices.partialInsertionSortCmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_breakPatternsCmpFunc :
+  WpFuncCall slices.breakPatternsCmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_choosePivotCmpFunc :
+  WpFuncCall slices.choosePivotCmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_order2CmpFunc :
+  WpFuncCall slices.order2CmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_medianCmpFunc :
+  WpFuncCall slices.medianCmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_medianAdjacentCmpFunc :
+  WpFuncCall slices.medianAdjacentCmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_reverseRangeCmpFunc :
+  WpFuncCall slices.reverseRangeCmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_swapRangeCmpFunc :
+  WpFuncCall slices.swapRangeCmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_stableCmpFunc :
+  WpFuncCall slices.stableCmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_symMergeCmpFunc :
+  WpFuncCall slices.symMergeCmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_rotateCmpFunc :
+  WpFuncCall slices.rotateCmpFunc _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_method_call_xorshift'ptr_Next :
+  WpMethodCall (ptrT.id slices.xorshift.id) "Next" _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_method_call).
 
 End names.
 End slices.

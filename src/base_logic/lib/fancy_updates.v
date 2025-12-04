@@ -200,6 +200,7 @@ Proof.
   { iApply (ownE_weaken with "HE"). set_solver. }
   iPoseProof (except_0_into_later with "H'") as "H'".
   iApply (le_upd_later with "Hone"). iNext. done.
+  Unshelve. apply _. (* TODO: Sbi shelved *)
 Qed.
 
 Lemma step_fupdN_soundness `{!invGpreS Σ} n φ :

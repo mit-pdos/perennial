@@ -46,6 +46,11 @@ Definition own_map_unseal : own_map = _ := seal_eq _.
 
 Arguments own_map mptr dq m {kt IntoValTyped0 vt IntoValTyped1}.
 
+#[global] Instance own_map_timeless mptr dq (m: gmap K V)
+ `{!IntoValTyped K kt} `{!IntoValTyped V vt}
+  : Timeless (own_map mptr dq m).
+Proof. rewrite own_map_unseal. apply _. Qed.
+
 Context `{!IntoValTyped K kt} `{!IntoValTyped V vt}.
 Notation "mref ↦$ dq m" := (own_map mref dq m)
                             (at level 20, dq custom dfrac at level 50, format "mref  ↦$ dq  m").
@@ -214,6 +219,38 @@ Proof.
     + rewrite -> (bool_decide_eq_false_2 (k = k')) by congruence.
       rewrite lookup_insert_ne //.
       wp_pure. iApply ("IH" with "[//] HΦ").
+Qed.
+
+Lemma wp_map_clear l (m : gmap K V) :
+  {{{ l ↦$ m }}}
+    map.clear #l
+  {{{ RET #(); l ↦$ ∅ }}}.
+Proof.
+  rewrite own_map_unseal.
+  iIntros (?) "Hm HΦ".
+  iDestruct "Hm" as (?) "(Hm & % & %Hm)".
+  wp_call.
+  wp_bind (! _)%E.
+  rewrite [in #l]to_val_unseal /=.
+  iApply (wp_load with "[$]").
+  iIntros "!> Hm".
+  wp_pure.
+  iAssert (∃ v, heap_pointsto l (DfracOwn 1) v)%I with "[$Hm]" as "Hm".
+  iLöb as "IH" forall (v m Hm Φ).
+  destruct v; try by exfalso.
+  - wp_pures. destruct Hm as [-> ->].
+    iDestruct "Hm" as (v0) "Hm".
+    wp_apply (wp_store with "[$Hm]").
+    iIntros "Hm".
+    replace (LitV LitUnit) with #() by rewrite to_val_unseal //=.
+    iApply "HΦ".
+    rewrite /own_map_def. iFrame; auto.
+  - wp_pures.
+    destruct v; try by exfalso.
+    destruct v1; try by exfalso.
+    do 3 wp_pure.
+    destruct Hm as (k' & ? & ? & -> & -> & Hm & ->).
+    wp_apply ("IH" with "[] [$HΦ]"); eauto.
 Qed.
 
 Lemma wp_map_make :

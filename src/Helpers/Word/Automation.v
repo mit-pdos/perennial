@@ -133,7 +133,7 @@ Ltac2 unfold_w_whatever () :=
   (* unlike autounfold, autorewrite fails if empty DB, so wrap in try. *)
   ltac1:(try autorewrite with word in * );
   ltac1:(autounfold with word in * );
-  unfold W64, W32, (* W16, *) W8, w64, w32, (* w16, *) w8 in *.
+  unfold W64, W32, W16, W8, w64, w32, w16, w8 in *.
 
 (* Runs [t] and panics unrecoverably if it throws an exception. *)
 Ltac2 handle_unsafe t :=
@@ -298,8 +298,13 @@ Ltac2 eval_Z_constants_in_hyp (h : ident) : unit :=
             | _ => false
             end
           in (Bool.and should_eval (Bool.and sa sb), '($op $a $b))
-      | ?a ?b => let ((_, a), (_, b)) := (try_eval_aux a, try_eval_aux b) in
-                (false, '($a $b))
+      | ?op ?b =>
+          let (sb, b) := (try_eval_aux b) in
+          let should_eval :=
+            lazy_match! op with
+            | Z.abs => true | Z.opp => true | _ => false
+            end
+          in (Bool.and should_eval sb, '($op $b))
       | _ => (false, e)
       end
     in

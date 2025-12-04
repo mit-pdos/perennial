@@ -166,10 +166,10 @@ Qed.
 
 End wps.
 
-(** Tactic for convenient loop reasoning. First use [iAssert] to generalize the
-current context to the loop invariant, then apply this tactic. Use
-[wp_for_post_do], [wp_for_post_continue], and [wp_for_post_return] at the leaves
-of the proof. *)
+(** Tactics for convenient loop reasoning:
+- use [iAssert] to generalize the current context to the loop invariant.
+- use [wp_for] with the loop invariant.
+- use [wp_for_post] at the loop control points. *)
 Ltac wp_for_core :=
   wp_bind (do_for _ _ _); iApply (wp_for with "[-]");
   [ by iNamedAccu

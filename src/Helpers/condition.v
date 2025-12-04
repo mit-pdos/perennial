@@ -4,7 +4,8 @@ Section condition.
 Context {PROP : bi}.
 
 (* condition proof pattern:
-condition [P] and [Q] on bool [b]. [P] and [Q] should be filled by [iAccu].
+condition resources [P] and [Q] on bool [b].
+[P] and [Q] should be filled by [iAccu].
 this removes proof duplication for code that takes in different ownership
 depending on a condition.
 
@@ -12,7 +13,7 @@ e.g., binary tree code recursively traverses down a child corresponding
 to the current path bit [b].
 given ownership for child 0 [Q] and 1 [P], a standard proof would split
 on [b] and duplicate the recursive call reasoning for [b=true] and [b=false].
-instead, the proof can [condition_bool b] and pass only the
+instead, the proof can [condition_bool (P:=P) (Q:=Q) b] and pass only the
 "positive condition" (i.e., ownership corresponding to b)
 into the recursive call.
 

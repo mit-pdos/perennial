@@ -1,4 +1,2 @@
 translate = ["Builder"]
-imports = [
-  "!*"
-]
+imports = ["!*"]

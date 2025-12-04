@@ -45,12 +45,11 @@ Proof.
   intros H.
   rewrite /encode_cacheValue in H.
   apply app_inj_1 in H.
-  2:{ done. }
+  2:{ len. }
   destruct H as [H1 H2].
   split.
   { done. }
-  apply (f_equal le_to_u64) in H1.
-  repeat rewrite u64_le_to_word in H1.
+  apply (inj u64_le) in H1; subst.
   done.
 Qed.
 

@@ -210,7 +210,7 @@ Axiom lowerhex : go_string.
 
 Axiom runeSelf : Z.
 
-Axiom runeError : val.
+Axiom runeError : Z.
 
 Definition quote : go_string := "time.quote"%go.
 
@@ -708,8 +708,6 @@ Axiom ParseDurationⁱᵐᵖˡ : val.
 Axiom parseRFC3339ⁱᵐᵖˡ : val.
 
 Axiom parseStrictRFC3339ⁱᵐᵖˡ : val.
-
-Axiom Sleepⁱᵐᵖˡ : val.
 
 Axiom whenⁱᵐᵖˡ : val.
 

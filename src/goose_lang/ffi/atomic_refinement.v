@@ -1175,7 +1175,7 @@ Section go_refinement.
            do 4 eexists. split_and!; eauto.
            { repeat econstructor; rewrite ?Hlook => //=. repeat econstructor. }
            apply abstraction_insert; auto.
-           assert (base_step_atomic (AtomicStore #l v0) sσ1 sg1 [] #() (RecordSet.set heap <[l:=Free v0]> sσ1) sg1 []) as Hstep.
+           assert (base_step_atomic (AtomicSwap #l v0) sσ1 sg1 [] sv (RecordSet.set heap <[l:=Free v0]> sσ1) sg1 []) as Hstep.
            { econstructor. econstructor; unfold check; rewrite ?ifThenElse_if //.
              repeat (monad_simpl; simpl). }
            apply foval_val_impl_relation; auto.

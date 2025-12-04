@@ -16,6 +16,7 @@ Module Foo. Definition id : go_string := "github.com/goose-lang/goose/testdata/e
 Module importantStruct. Definition id : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.importantStruct"%go. End importantStruct.
 Module stringWrapper. Definition id : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.stringWrapper"%go. End stringWrapper.
 Module Uint32. Definition id : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.Uint32"%go. End Uint32.
+Module numWrapper. Definition id : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.numWrapper"%go. End numWrapper.
 Module diskWrapper. Definition id : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.diskWrapper"%go. End diskWrapper.
 Module embedA. Definition id : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.embedA"%go. End embedA.
 Module embedB. Definition id : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.embedB"%go. End embedB.
@@ -168,21 +169,21 @@ Definition chanBasicⁱᵐᵖˡ : val :=
     let: "$go" := (λ: <>,
       exception_do (do:  (let: "$chan" := (![type.chanT #stringT] "x") in
       let: "$v" := #"Foo"%go in
-      chan.send "$chan" "$v");;;
+      chan.send #stringT "$chan" "$v");;;
       do:  (let: "$chan" := (![type.chanT #stringT] "x") in
       let: "$v" := #"Foo"%go in
-      chan.send "$chan" "$v");;;
+      chan.send #stringT "$chan" "$v");;;
       return: #())
       ) in
     do:  (Fork ("$go" #()));;;
     let: "ok" := (mem.alloc (type.zero_val #boolT)) in
     let: "y" := (mem.alloc (type.zero_val #stringT)) in
-    let: ("$ret0", "$ret1") := (chan.receive (![type.chanT #stringT] "x")) in
+    let: ("$ret0", "$ret1") := (chan.receive #stringT (![type.chanT #stringT] "x")) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("y" <-[#stringT] "$r0");;;
     do:  ("ok" <-[#boolT] "$r1");;;
-    let: "$r0" := (Fst (chan.receive (![type.chanT #stringT] "x"))) in
+    let: "$r0" := (Fst (chan.receive #stringT (![type.chanT #stringT] "x"))) in
     do:  ("y" <-[#stringT] "$r0");;;
     (if: ![#boolT] "ok"
     then
@@ -213,9 +214,9 @@ Definition chanSelectⁱᵐᵖˡ : val :=
     let: "c" := (mem.alloc (type.zero_val (type.chanT #intT))) in
     let: "i2" := (mem.alloc (type.zero_val #intT)) in
     let: "i1" := (mem.alloc (type.zero_val #intT)) in
-    chan.select [chan.select_receive (![type.chanT #intT] "c3") (λ: "$recvVal",
+    chan.select_nonblocking [chan.select_receive #intT (![type.chanT #intT] "c3") (λ: "$recvVal",
        do:  #()
-       ); chan.select_receive (![type.chanT #intT] "c1") (λ: "$recvVal",
+       ); chan.select_receive #intT (![type.chanT #intT] "c1") (λ: "$recvVal",
        let: "$r0" := (Fst "$recvVal") in
        do:  ("i1" <-[#intT] "$r0");;;
        do:  (let: "$a0" := ((let: "$sl0" := (interface.make #stringT.id #"received "%go) in
@@ -224,14 +225,14 @@ Definition chanSelectⁱᵐᵖˡ : val :=
        "%go) in
        slice.literal #interfaceT ["$sl0"; "$sl1"; "$sl2"])) in
        (func_call #fmt.Print) "$a0")
-       ); chan.select_send (![#intT] "i2") (![type.chanT #intT] "c2") (λ: <>,
+       ); chan.select_send #intT (![type.chanT #intT] "c2") (![#intT] "i2") (λ: <>,
        do:  (let: "$a0" := ((let: "$sl0" := (interface.make #stringT.id #"sent "%go) in
        let: "$sl1" := (interface.make #intT.id (![#intT] "i2")) in
        let: "$sl2" := (interface.make #stringT.id #" to c2
        "%go) in
        slice.literal #interfaceT ["$sl0"; "$sl1"; "$sl2"])) in
        (func_call #fmt.Print) "$a0")
-       ); chan.select_receive (![type.chanT #intT] "c3") (λ: "$recvVal",
+       ); chan.select_receive #intT (![type.chanT #intT] "c3") (λ: "$recvVal",
        let: "ok" := (mem.alloc (type.zero_val #boolT)) in
        let: "i3" := (mem.alloc (type.zero_val #intT)) in
        let: ("$ret0", "$ret1") := "$recvVal" in
@@ -252,23 +253,23 @@ Definition chanSelectⁱᵐᵖˡ : val :=
          "%go) in
          slice.literal #interfaceT ["$sl0"])) in
          (func_call #fmt.Print) "$a0"))
-       ); chan.select_receive (![type.chanT #intT] "c4") (λ: "$recvVal",
+       ); chan.select_receive #intT (![type.chanT #intT] "c4") (λ: "$recvVal",
        let: "$r0" := (Fst "$recvVal") in
        do:  ((slice.elem_ref #intT (![#sliceT] "a") ((func_call #f) #())) <-[#intT] "$r0");;;
        do:  #()
-       )] (chan.select_default (λ: <>,
+       )] (λ: <>,
       do:  (let: "$a0" := ((let: "$sl0" := (interface.make #stringT.id #"no communication
       "%go) in
       slice.literal #interfaceT ["$sl0"])) in
       (func_call #fmt.Print) "$a0")
-      ));;;
+      );;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      chan.select [chan.select_send #(W64 0) (![type.chanT #intT] "c") (λ: <>,
+      chan.select_blocking [chan.select_send #intT (![type.chanT #intT] "c") #(W64 0) (λ: <>,
          do:  #()
-         ); chan.select_send #(W64 1) (![type.chanT #intT] "c") (λ: <>,
+         ); chan.select_send #intT (![type.chanT #intT] "c") #(W64 1) (λ: <>,
          do:  #()
-         )] chan.select_no_default);;;
-    chan.select [] chan.select_no_default;;;
+         )]);;;
+    chan.select_blocking [];;;
     return: #()).
 
 Definition chanDirectional : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.chanDirectional"%go.
@@ -278,10 +279,10 @@ Definition chanDirectionalⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (let: "x" := (mem.alloc (type.zero_val (type.chanT #uint64T))) in
     let: "y" := (mem.alloc (type.zero_val (type.chanT #stringT))) in
-    do:  (Fst (chan.receive (![type.chanT #uint64T] "x")));;;
+    do:  (Fst (chan.receive #uint64T (![type.chanT #uint64T] "x")));;;
     do:  (let: "$chan" := (![type.chanT #stringT] "y") in
     let: "$v" := #""%go in
-    chan.send "$chan" "$v");;;
+    chan.send #stringT "$chan" "$v");;;
     return: #()).
 
 Definition chanRange : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.chanRange"%go.
@@ -292,20 +293,20 @@ Definition chanRangeⁱᵐᵖˡ : val :=
     exception_do (let: "x" := (mem.alloc (type.zero_val (type.chanT #uint64T))) in
     let: "$range" := (![type.chanT #uint64T] "x") in
     (let: "y" := (mem.alloc (type.zero_val #uint64T)) in
-    chan.for_range "$range" (λ: "$key",
+    chan.for_range #uint64T "$range" (λ: "$key",
       do:  ("y" <-[#uint64T] "$key");;;
       do:  (let: "$a0" := ((let: "$sl0" := (interface.make #uint64T.id (![#uint64T] "y")) in
       slice.literal #interfaceT ["$sl0"])) in
       (func_call #fmt.Print) "$a0")));;;
     let: "$range" := (![type.chanT #uint64T] "x") in
     (let: "x" := (mem.alloc (type.zero_val #uint64T)) in
-    chan.for_range "$range" (λ: "$key",
+    chan.for_range #uint64T "$range" (λ: "$key",
       do:  ("x" <-[#uint64T] "$key");;;
       do:  (let: "$a0" := ((let: "$sl0" := (interface.make #uint64T.id (![#uint64T] "x")) in
       slice.literal #interfaceT ["$sl0"])) in
       (func_call #fmt.Print) "$a0")));;;
     let: "$range" := (![type.chanT #uint64T] "x") in
-    chan.for_range "$range" (λ: "$key",
+    chan.for_range #uint64T "$range" (λ: "$key",
       do:  #());;;
     return: #()).
 
@@ -612,6 +613,28 @@ Definition testU32NewtypeLenⁱᵐᵖˡ : val :=
     do:  ("s" <-[#sliceT] "$r0");;;
     return: ((s_to_w32 (let: "$a0" := (![#sliceT] "s") in
      slice.len "$a0")) = #(W32 20))).
+
+Definition numWrapper : go_type := intT.
+#[global] Typeclasses Opaque numWrapper.
+#[global] Opaque numWrapper.
+
+(* go: conversions.go:48:22 *)
+Definition numWrapper__incⁱᵐᵖˡ : val :=
+  λ: "n" <>,
+    exception_do (let: "n" := (mem.alloc "n") in
+    do:  ((![#ptrT] "n") <-[#numWrapper] ((![#numWrapper] (![#ptrT] "n")) + #(W64 1)));;;
+    return: #()).
+
+Definition testNumWrapper : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.testNumWrapper"%go.
+
+(* go: conversions.go:52:6 *)
+Definition testNumWrapperⁱᵐᵖˡ : val :=
+  λ: <>,
+    exception_do (let: "n" := (mem.alloc (type.zero_val #numWrapper)) in
+    let: "$r0" := #(W64 0) in
+    do:  ("n" <-[#numWrapper] "$r0");;;
+    do:  ((method_call #(ptrT.id numWrapper.id) #"inc"%go "n") #());;;
+    return: #()).
 
 Definition testCopySimple : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.testCopySimple"%go.
 
@@ -1155,9 +1178,15 @@ Definition globalA : go_string := "github.com/goose-lang/goose/testdata/examples
 
 Definition globalB : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.globalB"%go.
 
+Definition MaxRune : Z := 1114111.
+
+Definition runeWithType : val := #(W32 97).
+
+Definition IntWidth : Z := 8.
+
 Definition other : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.other"%go.
 
-(* go: globals.go:14:6 *)
+(* go: globals.go:18:6 *)
 Definition otherⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (let: "$r0" := #"ok"%go in
@@ -1166,13 +1195,25 @@ Definition otherⁱᵐᵖˡ : val :=
 
 Definition bar : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.bar"%go.
 
-(* go: globals.go:18:6 *)
+(* go: globals.go:22:6 *)
 Definition barⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (do:  ((func_call #other) #());;;
     (if: ((![#uint64T] (globals.get #GlobalX)) ≠ #(W64 10)) || ((![#stringT] (globals.get #globalY)) ≠ #"ok"%go)
     then
       do:  (let: "$a0" := (interface.make #stringT.id #"bad"%go) in
+      Panic "$a0")
+    else do:  #());;;
+    return: #()).
+
+Definition useUntypedRune : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.useUntypedRune"%go.
+
+(* go: globals.go:37:6 *)
+Definition useUntypedRuneⁱᵐᵖˡ : val :=
+  λ: <>,
+    exception_do ((if: int_gt runeWithType #(W32 MaxRune)
+    then
+      do:  (let: "$a0" := (interface.make #stringT.id #"invalid comparison"%go) in
       Panic "$a0")
     else do:  #());;;
     return: #()).
@@ -1453,6 +1494,13 @@ Definition testPtrMsetⁱᵐᵖˡ : val :=
     do:  ((interface.get #"B"%go (![#PointerInterface] "p")) #());;;
     do:  ((interface.get #"Foo"%go (![#Fooer] "f")) #());;;
     return: #()).
+
+Definition pointerAny : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.pointerAny"%go.
+
+(* go: interfaces.go:120:6 *)
+Definition pointerAnyⁱᵐᵖˡ : val :=
+  λ: <>,
+    exception_do (return: (mem.alloc (type.zero_val #interfaceT))).
 
 Definition useInts : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.useInts"%go.
 
@@ -1969,6 +2017,25 @@ Definition mapLiteralTestⁱᵐᵖˡ : val :=
     map.literal #stringT #uint64T [map.kv_entry "$k0" "$v0"; map.kv_entry "$k1" "$v1"; map.kv_entry "$k2" "$v2"])) in
     do:  ("ascii" <-[type.mapT #stringT #uint64T] "$r0");;;
     return: (![type.mapT #stringT #uint64T] "ascii")).
+
+Definition mapClearTest : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.mapClearTest"%go.
+
+(* go: maps.go:59:6 *)
+Definition mapClearTestⁱᵐᵖˡ : val :=
+  λ: <>,
+    exception_do (let: "m" := (mem.alloc (type.zero_val (type.mapT #intT #boolT))) in
+    let: "$r0" := (map.make #intT #boolT) in
+    do:  ("m" <-[type.mapT #intT #boolT] "$r0");;;
+    let: "$r0" := #true in
+    do:  (map.insert (![type.mapT #intT #boolT] "m") #(W64 1) "$r0");;;
+    let: "$r0" := #false in
+    do:  (map.insert (![type.mapT #intT #boolT] "m") #(W64 2) "$r0");;;
+    let: "$r0" := #true in
+    do:  (map.insert (![type.mapT #intT #boolT] "m") #(W64 7) "$r0");;;
+    do:  (let: "$a0" := (![type.mapT #intT #boolT] "m") in
+    map.clear "$a0");;;
+    return: (let: "$a0" := (![type.mapT #intT #boolT] "m") in
+     map.len "$a0")).
 
 Definition returnTwo : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.returnTwo"%go.
 
@@ -2530,6 +2597,24 @@ Definition VoidImplicitReturnInBranchⁱᵐᵖˡ : val :=
     then return: (#())
     else do:  ((func_call #BasicNamedReturn) #()));;;
     return: #()).
+
+Definition useRuneOps : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.useRuneOps"%go.
+
+(* go: rune.go:3:6 *)
+Definition useRuneOpsⁱᵐᵖˡ : val :=
+  λ: "r",
+    exception_do (let: "r" := (mem.alloc "r") in
+    do:  ("r" <-[#runeT] ((![#runeT] "r") + #(W32 1)));;;
+    let: "$r0" := #(W32 97) in
+    do:  ("r" <-[#runeT] "$r0");;;
+    let: "$r0" := #(W32 47) in
+    do:  ("r" <-[#runeT] "$r0");;;
+    let: "x" := (mem.alloc (type.zero_val #int32T)) in
+    let: "$r0" := #(W32 98) in
+    do:  ("x" <-[#int32T] "$r0");;;
+    let: "$r0" := (![#int32T] "x") in
+    do:  ("r" <-[#runeT] "$r0");;;
+    return: (![#runeT] "r")).
 
 Definition SliceAlias : go_type := sliceT.
 #[global] Typeclasses Opaque SliceAlias.
@@ -3151,9 +3236,9 @@ Definition LocalConstsⁱᵐᵖˡ : val :=
 
 Definition vars' : list (go_string * go_type) := [(GlobalX, uint64T); (globalY, stringT); (globalA, stringT); (globalB, stringT); (mapLiteral, mapT stringT uint64T); (mapLiteralWithConversion, mapT interfaceT interfaceT)].
 
-Definition functions' : list (go_string * val) := [(takesArray, takesArrayⁱᵐᵖˡ); (takesPtr, takesPtrⁱᵐᵖˡ); (usesArrayElemRef, usesArrayElemRefⁱᵐᵖˡ); (sum, sumⁱᵐᵖˡ); (arrayToSlice, arrayToSliceⁱᵐᵖˡ); (arrayLiteralKeyed, arrayLiteralKeyedⁱᵐᵖˡ); (chanBasic, chanBasicⁱᵐᵖˡ); (f, fⁱᵐᵖˡ); (chanSelect, chanSelectⁱᵐᵖˡ); (chanDirectional, chanDirectionalⁱᵐᵖˡ); (chanRange, chanRangeⁱᵐᵖˡ); (doSubtleThings, doSubtleThingsⁱᵐᵖˡ); (hasStartComment, hasStartCommentⁱᵐᵖˡ); (hasEndComment, hasEndCommentⁱᵐᵖˡ); (condvarWrapping, condvarWrappingⁱᵐᵖˡ); (useUntypedInt, useUntypedIntⁱᵐᵖˡ); (useUntypedString, useUntypedStringⁱᵐᵖˡ); (conditionalReturn, conditionalReturnⁱᵐᵖˡ); (alwaysReturn, alwaysReturnⁱᵐᵖˡ); (alwaysReturnInNestedBranches, alwaysReturnInNestedBranchesⁱᵐᵖˡ); (earlyReturn, earlyReturnⁱᵐᵖˡ); (conditionalAssign, conditionalAssignⁱᵐᵖˡ); (elseIf, elseIfⁱᵐᵖˡ); (ifStmtInitialization, ifStmtInitializationⁱᵐᵖˡ); (typedLiteral, typedLiteralⁱᵐᵖˡ); (literalCast, literalCastⁱᵐᵖˡ); (castInt, castIntⁱᵐᵖˡ); (stringToByteSlice, stringToByteSliceⁱᵐᵖˡ); (byteSliceToString, byteSliceToStringⁱᵐᵖˡ); (stringToStringWrapper, stringToStringWrapperⁱᵐᵖˡ); (stringWrapperToString, stringWrapperToStringⁱᵐᵖˡ); (testU32NewtypeLen, testU32NewtypeLenⁱᵐᵖˡ); (testCopySimple, testCopySimpleⁱᵐᵖˡ); (testCopyDifferentLengths, testCopyDifferentLengthsⁱᵐᵖˡ); (atomicCreateStub, atomicCreateStubⁱᵐᵖˡ); (useSlice, useSliceⁱᵐᵖˡ); (useSliceIndexing, useSliceIndexingⁱᵐᵖˡ); (useMap, useMapⁱᵐᵖˡ); (usePtr, usePtrⁱᵐᵖˡ); (iterMapKeysAndValues, iterMapKeysAndValuesⁱᵐᵖˡ); (iterMapKeys, iterMapKeysⁱᵐᵖˡ); (getRandom, getRandomⁱᵐᵖˡ); (diskArgument, diskArgumentⁱᵐᵖˡ); (returnEmbedVal, returnEmbedValⁱᵐᵖˡ); (returnEmbedValWithPointer, returnEmbedValWithPointerⁱᵐᵖˡ); (useEmbeddedField, useEmbeddedFieldⁱᵐᵖˡ); (useEmbeddedValField, useEmbeddedValFieldⁱᵐᵖˡ); (useEmbeddedMethod, useEmbeddedMethodⁱᵐᵖˡ); (useEmbeddedMethod2, useEmbeddedMethod2ⁱᵐᵖˡ); (empty, emptyⁱᵐᵖˡ); (emptyReturn, emptyReturnⁱᵐᵖˡ); (unnamedParams, unnamedParamsⁱᵐᵖˡ); (anonymousParam, anonymousParamⁱᵐᵖˡ); (useFloat, useFloatⁱᵐᵖˡ); (compareIntFloat, compareIntFloatⁱᵐᵖˡ); (compareFloatInt, compareFloatIntⁱᵐᵖˡ); (forRangeNoBinding, forRangeNoBindingⁱᵐᵖˡ); (forRangeOldVars, forRangeOldVarsⁱᵐᵖˡ); (foo, fooⁱᵐᵖˡ); (other, otherⁱᵐᵖˡ); (bar, barⁱᵐᵖˡ); (TakesFunctionType, TakesFunctionTypeⁱᵐᵖˡ); (FuncVar, FuncVarⁱᵐᵖˡ); (fooConsumer, fooConsumerⁱᵐᵖˡ); (testAssignConcreteToInterface, testAssignConcreteToInterfaceⁱᵐᵖˡ); (testPassConcreteToInterfaceArg, testPassConcreteToInterfaceArgⁱᵐᵖˡ); (testPassConcreteToInterfaceArgSpecial, testPassConcreteToInterfaceArgSpecialⁱᵐᵖˡ); (takesVarArgsInterface, takesVarArgsInterfaceⁱᵐᵖˡ); (test, testⁱᵐᵖˡ); (returnConcrete, returnConcreteⁱᵐᵖˡ); (testMultiReturn, testMultiReturnⁱᵐᵖˡ); (testReturnStatment, testReturnStatmentⁱᵐᵖˡ); (testConversionInEq, testConversionInEqⁱᵐᵖˡ); (takeMultiple, takeMultipleⁱᵐᵖˡ); (giveMultiple, giveMultipleⁱᵐᵖˡ); (testConversionInMultipleReturnPassThrough, testConversionInMultipleReturnPassThroughⁱᵐᵖˡ); (testConversionInMultiplePassThrough, testConversionInMultiplePassThroughⁱᵐᵖˡ); (testPtrMset, testPtrMsetⁱᵐᵖˡ); (useInts, useIntsⁱᵐᵖˡ); (signedMidpoint, signedMidpointⁱᵐᵖˡ); (normalLiterals, normalLiteralsⁱᵐᵖˡ); (outOfOrderLiteral, outOfOrderLiteralⁱᵐᵖˡ); (specialLiterals, specialLiteralsⁱᵐᵖˡ); (oddLiterals, oddLiteralsⁱᵐᵖˡ); (unKeyedLiteral, unKeyedLiteralⁱᵐᵖˡ); (useLocks, useLocksⁱᵐᵖˡ); (useCondVar, useCondVarⁱᵐᵖˡ); (ToBeDebugged, ToBeDebuggedⁱᵐᵖˡ); (DoNothing, DoNothingⁱᵐᵖˡ); (DoSomething, DoSomethingⁱᵐᵖˡ); (standardForLoop, standardForLoopⁱᵐᵖˡ); (conditionalInLoop, conditionalInLoopⁱᵐᵖˡ); (conditionalInLoopElse, conditionalInLoopElseⁱᵐᵖˡ); (nestedConditionalInLoopImplicitContinue, nestedConditionalInLoopImplicitContinueⁱᵐᵖˡ); (ImplicitLoopContinue, ImplicitLoopContinueⁱᵐᵖˡ); (ImplicitLoopContinue2, ImplicitLoopContinue2ⁱᵐᵖˡ); (ImplicitLoopContinueAfterIfBreak, ImplicitLoopContinueAfterIfBreakⁱᵐᵖˡ); (nestedLoops, nestedLoopsⁱᵐᵖˡ); (nestedGoStyleLoops, nestedGoStyleLoopsⁱᵐᵖˡ); (sumSlice, sumSliceⁱᵐᵖˡ); (intSliceLoop, intSliceLoopⁱᵐᵖˡ); (breakFromLoop, breakFromLoopⁱᵐᵖˡ); (IterateMapKeys, IterateMapKeysⁱᵐᵖˡ); (MapSize, MapSizeⁱᵐᵖˡ); (MapTypeAliases, MapTypeAliasesⁱᵐᵖˡ); (StringMap, StringMapⁱᵐᵖˡ); (mapUpdateField, mapUpdateFieldⁱᵐᵖˡ); (mapGetCall, mapGetCallⁱᵐᵖˡ); (mapLiteralTest, mapLiteralTestⁱᵐᵖˡ); (returnTwo, returnTwoⁱᵐᵖˡ); (returnTwoWrapper, returnTwoWrapperⁱᵐᵖˡ); (multipleVar, multipleVarⁱᵐᵖˡ); (multiplePassThrough, multiplePassThroughⁱᵐᵖˡ); (multipleReturnPassThrough, multipleReturnPassThroughⁱᵐᵖˡ); (AssignNilSlice, AssignNilSliceⁱᵐᵖˡ); (AssignNilPointer, AssignNilPointerⁱᵐᵖˡ); (CompareSliceToNil, CompareSliceToNilⁱᵐᵖˡ); (ComparePointerToNil, ComparePointerToNilⁱᵐᵖˡ); (useNilField, useNilFieldⁱᵐᵖˡ); (LogicalOperators, LogicalOperatorsⁱᵐᵖˡ); (LogicalAndEqualityOperators, LogicalAndEqualityOperatorsⁱᵐᵖˡ); (ArithmeticShifts, ArithmeticShiftsⁱᵐᵖˡ); (BitwiseOps, BitwiseOpsⁱᵐᵖˡ); (Comparison, Comparisonⁱᵐᵖˡ); (AssignOps, AssignOpsⁱᵐᵖˡ); (BitwiseAndNot, BitwiseAndNotⁱᵐᵖˡ); (Negative, Negativeⁱᵐᵖˡ); (PanicAtTheDisco, PanicAtTheDiscoⁱᵐᵖˡ); (Oracle, Oracleⁱᵐᵖˡ); (ReassignVars, ReassignVarsⁱᵐᵖˡ); (recur, recurⁱᵐᵖˡ); (useRenamedImport, useRenamedImportⁱᵐᵖˡ); (TwoDiskWrite, TwoDiskWriteⁱᵐᵖˡ); (TwoDiskRead, TwoDiskReadⁱᵐᵖˡ); (TwoDiskLock, TwoDiskLockⁱᵐᵖˡ); (TwoDiskUnlock, TwoDiskUnlockⁱᵐᵖˡ); (ReplicatedDiskRead, ReplicatedDiskReadⁱᵐᵖˡ); (ReplicatedDiskWrite, ReplicatedDiskWriteⁱᵐᵖˡ); (ReplicatedDiskRecover, ReplicatedDiskRecoverⁱᵐᵖˡ); (BasicNamedReturn, BasicNamedReturnⁱᵐᵖˡ); (NamedReturn, NamedReturnⁱᵐᵖˡ); (BasicNamedReturnMany, BasicNamedReturnManyⁱᵐᵖˡ); (NamedReturnMany, NamedReturnManyⁱᵐᵖˡ); (NamedReturnOverride, NamedReturnOverrideⁱᵐᵖˡ); (VoidButEndsWithReturn, VoidButEndsWithReturnⁱᵐᵖˡ); (VoidImplicitReturnInBranch, VoidImplicitReturnInBranchⁱᵐᵖˡ); (sliceOps, sliceOpsⁱᵐᵖˡ); (makeSingletonSlice, makeSingletonSliceⁱᵐᵖˡ); (makeAlias, makeAliasⁱᵐᵖˡ); (Skip, Skipⁱᵐᵖˡ); (simpleSpawn, simpleSpawnⁱᵐᵖˡ); (threadCode, threadCodeⁱᵐᵖˡ); (loopSpawn, loopSpawnⁱᵐᵖˡ); (stringAppend, stringAppendⁱᵐᵖˡ); (stringLength, stringLengthⁱᵐᵖˡ); (x, xⁱᵐᵖˡ); (UseAdd, UseAddⁱᵐᵖˡ); (UseAddWithLiteral, UseAddWithLiteralⁱᵐᵖˡ); (NewS, NewSⁱᵐᵖˡ); (localSRef, localSRefⁱᵐᵖˡ); (setField, setFieldⁱᵐᵖˡ); (testSwitchVal, testSwitchValⁱᵐᵖˡ); (testSwitchMultiple, testSwitchMultipleⁱᵐᵖˡ); (DoSomeLocking, DoSomeLockingⁱᵐᵖˡ); (makeLock, makeLockⁱᵐᵖˡ); (sleep, sleepⁱᵐᵖˡ); (mkInt, mkIntⁱᵐᵖˡ); (mkNothing, mkNothingⁱᵐᵖˡ); (convertToAlias, convertToAliasⁱᵐᵖˡ); (typeAssertInt, typeAssertIntⁱᵐᵖˡ); (wrapUnwrapInt, wrapUnwrapIntⁱᵐᵖˡ); (checkedTypeAssert, checkedTypeAssertⁱᵐᵖˡ); (basicTypeSwitch, basicTypeSwitchⁱᵐᵖˡ); (fancyTypeSwitch, fancyTypeSwitchⁱᵐᵖˡ); (multiTypeSwitch, multiTypeSwitchⁱᵐᵖˡ); (variadicFunc, variadicFuncⁱᵐᵖˡ); (testVariadicCall, testVariadicCallⁱᵐᵖˡ); (returnMultiple, returnMultipleⁱᵐᵖˡ); (testVariadicPassThrough, testVariadicPassThroughⁱᵐᵖˡ); (LocalVars, LocalVarsⁱᵐᵖˡ); (LocalConsts, LocalConstsⁱᵐᵖˡ)].
+Definition functions' : list (go_string * val) := [(takesArray, takesArrayⁱᵐᵖˡ); (takesPtr, takesPtrⁱᵐᵖˡ); (usesArrayElemRef, usesArrayElemRefⁱᵐᵖˡ); (sum, sumⁱᵐᵖˡ); (arrayToSlice, arrayToSliceⁱᵐᵖˡ); (arrayLiteralKeyed, arrayLiteralKeyedⁱᵐᵖˡ); (chanBasic, chanBasicⁱᵐᵖˡ); (f, fⁱᵐᵖˡ); (chanSelect, chanSelectⁱᵐᵖˡ); (chanDirectional, chanDirectionalⁱᵐᵖˡ); (chanRange, chanRangeⁱᵐᵖˡ); (doSubtleThings, doSubtleThingsⁱᵐᵖˡ); (hasStartComment, hasStartCommentⁱᵐᵖˡ); (hasEndComment, hasEndCommentⁱᵐᵖˡ); (condvarWrapping, condvarWrappingⁱᵐᵖˡ); (useUntypedInt, useUntypedIntⁱᵐᵖˡ); (useUntypedString, useUntypedStringⁱᵐᵖˡ); (conditionalReturn, conditionalReturnⁱᵐᵖˡ); (alwaysReturn, alwaysReturnⁱᵐᵖˡ); (alwaysReturnInNestedBranches, alwaysReturnInNestedBranchesⁱᵐᵖˡ); (earlyReturn, earlyReturnⁱᵐᵖˡ); (conditionalAssign, conditionalAssignⁱᵐᵖˡ); (elseIf, elseIfⁱᵐᵖˡ); (ifStmtInitialization, ifStmtInitializationⁱᵐᵖˡ); (typedLiteral, typedLiteralⁱᵐᵖˡ); (literalCast, literalCastⁱᵐᵖˡ); (castInt, castIntⁱᵐᵖˡ); (stringToByteSlice, stringToByteSliceⁱᵐᵖˡ); (byteSliceToString, byteSliceToStringⁱᵐᵖˡ); (stringToStringWrapper, stringToStringWrapperⁱᵐᵖˡ); (stringWrapperToString, stringWrapperToStringⁱᵐᵖˡ); (testU32NewtypeLen, testU32NewtypeLenⁱᵐᵖˡ); (testNumWrapper, testNumWrapperⁱᵐᵖˡ); (testCopySimple, testCopySimpleⁱᵐᵖˡ); (testCopyDifferentLengths, testCopyDifferentLengthsⁱᵐᵖˡ); (atomicCreateStub, atomicCreateStubⁱᵐᵖˡ); (useSlice, useSliceⁱᵐᵖˡ); (useSliceIndexing, useSliceIndexingⁱᵐᵖˡ); (useMap, useMapⁱᵐᵖˡ); (usePtr, usePtrⁱᵐᵖˡ); (iterMapKeysAndValues, iterMapKeysAndValuesⁱᵐᵖˡ); (iterMapKeys, iterMapKeysⁱᵐᵖˡ); (getRandom, getRandomⁱᵐᵖˡ); (diskArgument, diskArgumentⁱᵐᵖˡ); (returnEmbedVal, returnEmbedValⁱᵐᵖˡ); (returnEmbedValWithPointer, returnEmbedValWithPointerⁱᵐᵖˡ); (useEmbeddedField, useEmbeddedFieldⁱᵐᵖˡ); (useEmbeddedValField, useEmbeddedValFieldⁱᵐᵖˡ); (useEmbeddedMethod, useEmbeddedMethodⁱᵐᵖˡ); (useEmbeddedMethod2, useEmbeddedMethod2ⁱᵐᵖˡ); (empty, emptyⁱᵐᵖˡ); (emptyReturn, emptyReturnⁱᵐᵖˡ); (unnamedParams, unnamedParamsⁱᵐᵖˡ); (anonymousParam, anonymousParamⁱᵐᵖˡ); (useFloat, useFloatⁱᵐᵖˡ); (compareIntFloat, compareIntFloatⁱᵐᵖˡ); (compareFloatInt, compareFloatIntⁱᵐᵖˡ); (forRangeNoBinding, forRangeNoBindingⁱᵐᵖˡ); (forRangeOldVars, forRangeOldVarsⁱᵐᵖˡ); (foo, fooⁱᵐᵖˡ); (other, otherⁱᵐᵖˡ); (bar, barⁱᵐᵖˡ); (useUntypedRune, useUntypedRuneⁱᵐᵖˡ); (TakesFunctionType, TakesFunctionTypeⁱᵐᵖˡ); (FuncVar, FuncVarⁱᵐᵖˡ); (fooConsumer, fooConsumerⁱᵐᵖˡ); (testAssignConcreteToInterface, testAssignConcreteToInterfaceⁱᵐᵖˡ); (testPassConcreteToInterfaceArg, testPassConcreteToInterfaceArgⁱᵐᵖˡ); (testPassConcreteToInterfaceArgSpecial, testPassConcreteToInterfaceArgSpecialⁱᵐᵖˡ); (takesVarArgsInterface, takesVarArgsInterfaceⁱᵐᵖˡ); (test, testⁱᵐᵖˡ); (returnConcrete, returnConcreteⁱᵐᵖˡ); (testMultiReturn, testMultiReturnⁱᵐᵖˡ); (testReturnStatment, testReturnStatmentⁱᵐᵖˡ); (testConversionInEq, testConversionInEqⁱᵐᵖˡ); (takeMultiple, takeMultipleⁱᵐᵖˡ); (giveMultiple, giveMultipleⁱᵐᵖˡ); (testConversionInMultipleReturnPassThrough, testConversionInMultipleReturnPassThroughⁱᵐᵖˡ); (testConversionInMultiplePassThrough, testConversionInMultiplePassThroughⁱᵐᵖˡ); (testPtrMset, testPtrMsetⁱᵐᵖˡ); (pointerAny, pointerAnyⁱᵐᵖˡ); (useInts, useIntsⁱᵐᵖˡ); (signedMidpoint, signedMidpointⁱᵐᵖˡ); (normalLiterals, normalLiteralsⁱᵐᵖˡ); (outOfOrderLiteral, outOfOrderLiteralⁱᵐᵖˡ); (specialLiterals, specialLiteralsⁱᵐᵖˡ); (oddLiterals, oddLiteralsⁱᵐᵖˡ); (unKeyedLiteral, unKeyedLiteralⁱᵐᵖˡ); (useLocks, useLocksⁱᵐᵖˡ); (useCondVar, useCondVarⁱᵐᵖˡ); (ToBeDebugged, ToBeDebuggedⁱᵐᵖˡ); (DoNothing, DoNothingⁱᵐᵖˡ); (DoSomething, DoSomethingⁱᵐᵖˡ); (standardForLoop, standardForLoopⁱᵐᵖˡ); (conditionalInLoop, conditionalInLoopⁱᵐᵖˡ); (conditionalInLoopElse, conditionalInLoopElseⁱᵐᵖˡ); (nestedConditionalInLoopImplicitContinue, nestedConditionalInLoopImplicitContinueⁱᵐᵖˡ); (ImplicitLoopContinue, ImplicitLoopContinueⁱᵐᵖˡ); (ImplicitLoopContinue2, ImplicitLoopContinue2ⁱᵐᵖˡ); (ImplicitLoopContinueAfterIfBreak, ImplicitLoopContinueAfterIfBreakⁱᵐᵖˡ); (nestedLoops, nestedLoopsⁱᵐᵖˡ); (nestedGoStyleLoops, nestedGoStyleLoopsⁱᵐᵖˡ); (sumSlice, sumSliceⁱᵐᵖˡ); (intSliceLoop, intSliceLoopⁱᵐᵖˡ); (breakFromLoop, breakFromLoopⁱᵐᵖˡ); (IterateMapKeys, IterateMapKeysⁱᵐᵖˡ); (MapSize, MapSizeⁱᵐᵖˡ); (MapTypeAliases, MapTypeAliasesⁱᵐᵖˡ); (StringMap, StringMapⁱᵐᵖˡ); (mapUpdateField, mapUpdateFieldⁱᵐᵖˡ); (mapGetCall, mapGetCallⁱᵐᵖˡ); (mapLiteralTest, mapLiteralTestⁱᵐᵖˡ); (mapClearTest, mapClearTestⁱᵐᵖˡ); (returnTwo, returnTwoⁱᵐᵖˡ); (returnTwoWrapper, returnTwoWrapperⁱᵐᵖˡ); (multipleVar, multipleVarⁱᵐᵖˡ); (multiplePassThrough, multiplePassThroughⁱᵐᵖˡ); (multipleReturnPassThrough, multipleReturnPassThroughⁱᵐᵖˡ); (AssignNilSlice, AssignNilSliceⁱᵐᵖˡ); (AssignNilPointer, AssignNilPointerⁱᵐᵖˡ); (CompareSliceToNil, CompareSliceToNilⁱᵐᵖˡ); (ComparePointerToNil, ComparePointerToNilⁱᵐᵖˡ); (useNilField, useNilFieldⁱᵐᵖˡ); (LogicalOperators, LogicalOperatorsⁱᵐᵖˡ); (LogicalAndEqualityOperators, LogicalAndEqualityOperatorsⁱᵐᵖˡ); (ArithmeticShifts, ArithmeticShiftsⁱᵐᵖˡ); (BitwiseOps, BitwiseOpsⁱᵐᵖˡ); (Comparison, Comparisonⁱᵐᵖˡ); (AssignOps, AssignOpsⁱᵐᵖˡ); (BitwiseAndNot, BitwiseAndNotⁱᵐᵖˡ); (Negative, Negativeⁱᵐᵖˡ); (PanicAtTheDisco, PanicAtTheDiscoⁱᵐᵖˡ); (Oracle, Oracleⁱᵐᵖˡ); (ReassignVars, ReassignVarsⁱᵐᵖˡ); (recur, recurⁱᵐᵖˡ); (useRenamedImport, useRenamedImportⁱᵐᵖˡ); (TwoDiskWrite, TwoDiskWriteⁱᵐᵖˡ); (TwoDiskRead, TwoDiskReadⁱᵐᵖˡ); (TwoDiskLock, TwoDiskLockⁱᵐᵖˡ); (TwoDiskUnlock, TwoDiskUnlockⁱᵐᵖˡ); (ReplicatedDiskRead, ReplicatedDiskReadⁱᵐᵖˡ); (ReplicatedDiskWrite, ReplicatedDiskWriteⁱᵐᵖˡ); (ReplicatedDiskRecover, ReplicatedDiskRecoverⁱᵐᵖˡ); (BasicNamedReturn, BasicNamedReturnⁱᵐᵖˡ); (NamedReturn, NamedReturnⁱᵐᵖˡ); (BasicNamedReturnMany, BasicNamedReturnManyⁱᵐᵖˡ); (NamedReturnMany, NamedReturnManyⁱᵐᵖˡ); (NamedReturnOverride, NamedReturnOverrideⁱᵐᵖˡ); (VoidButEndsWithReturn, VoidButEndsWithReturnⁱᵐᵖˡ); (VoidImplicitReturnInBranch, VoidImplicitReturnInBranchⁱᵐᵖˡ); (useRuneOps, useRuneOpsⁱᵐᵖˡ); (sliceOps, sliceOpsⁱᵐᵖˡ); (makeSingletonSlice, makeSingletonSliceⁱᵐᵖˡ); (makeAlias, makeAliasⁱᵐᵖˡ); (Skip, Skipⁱᵐᵖˡ); (simpleSpawn, simpleSpawnⁱᵐᵖˡ); (threadCode, threadCodeⁱᵐᵖˡ); (loopSpawn, loopSpawnⁱᵐᵖˡ); (stringAppend, stringAppendⁱᵐᵖˡ); (stringLength, stringLengthⁱᵐᵖˡ); (x, xⁱᵐᵖˡ); (UseAdd, UseAddⁱᵐᵖˡ); (UseAddWithLiteral, UseAddWithLiteralⁱᵐᵖˡ); (NewS, NewSⁱᵐᵖˡ); (localSRef, localSRefⁱᵐᵖˡ); (setField, setFieldⁱᵐᵖˡ); (testSwitchVal, testSwitchValⁱᵐᵖˡ); (testSwitchMultiple, testSwitchMultipleⁱᵐᵖˡ); (DoSomeLocking, DoSomeLockingⁱᵐᵖˡ); (makeLock, makeLockⁱᵐᵖˡ); (sleep, sleepⁱᵐᵖˡ); (mkInt, mkIntⁱᵐᵖˡ); (mkNothing, mkNothingⁱᵐᵖˡ); (convertToAlias, convertToAliasⁱᵐᵖˡ); (typeAssertInt, typeAssertIntⁱᵐᵖˡ); (wrapUnwrapInt, wrapUnwrapIntⁱᵐᵖˡ); (checkedTypeAssert, checkedTypeAssertⁱᵐᵖˡ); (basicTypeSwitch, basicTypeSwitchⁱᵐᵖˡ); (fancyTypeSwitch, fancyTypeSwitchⁱᵐᵖˡ); (multiTypeSwitch, multiTypeSwitchⁱᵐᵖˡ); (variadicFunc, variadicFuncⁱᵐᵖˡ); (testVariadicCall, testVariadicCallⁱᵐᵖˡ); (returnMultiple, returnMultipleⁱᵐᵖˡ); (testVariadicPassThrough, testVariadicPassThroughⁱᵐᵖˡ); (LocalVars, LocalVarsⁱᵐᵖˡ); (LocalConsts, LocalConstsⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(Foo.id, []); (ptrT.id Foo.id, []); (importantStruct.id, []); (ptrT.id importantStruct.id, []); (stringWrapper.id, []); (ptrT.id stringWrapper.id, []); (Uint32.id, []); (ptrT.id Uint32.id, []); (diskWrapper.id, []); (ptrT.id diskWrapper.id, []); (embedA.id, [("Foo"%go, embedA__Fooⁱᵐᵖˡ)]); (ptrT.id embedA.id, [("Bar"%go, embedA__Barⁱᵐᵖˡ); ("Foo"%go, (λ: "$r",
+Definition msets' : list (go_string * (list (go_string * val))) := [(Foo.id, []); (ptrT.id Foo.id, []); (importantStruct.id, []); (ptrT.id importantStruct.id, []); (stringWrapper.id, []); (ptrT.id stringWrapper.id, []); (Uint32.id, []); (ptrT.id Uint32.id, []); (numWrapper.id, []); (ptrT.id numWrapper.id, [("inc"%go, numWrapper__incⁱᵐᵖˡ)]); (diskWrapper.id, []); (ptrT.id diskWrapper.id, []); (embedA.id, [("Foo"%go, embedA__Fooⁱᵐᵖˡ)]); (ptrT.id embedA.id, [("Bar"%go, embedA__Barⁱᵐᵖˡ); ("Foo"%go, (λ: "$r",
                  method_call #embedA.id #"Foo"%go (![#embedA] "$r")
                  )%V)]); (embedB.id, [("Foo"%go, embedB__Fooⁱᵐᵖˡ)]); (ptrT.id embedB.id, [("Bar"%go, (λ: "$r",
                  method_call #(ptrT.id embedA.id) #"Bar"%go (struct.field_ref #embedB #"embedA"%go "$r")

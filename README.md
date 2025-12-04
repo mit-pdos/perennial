@@ -22,10 +22,9 @@ See also [CONTRIBUTING.md](./CONTRIBUTING.md).
 We develop Perennial using Rocq master and maintain compatibility with the
 latest version of Rocq.
 
-This project uses git submodules to include several dependencies, including
-Iris. You should run `git submodule update --init --recursive` to set that up.
-
-To compile just run `make` with rocq on your `$PATH`.
+You will need to install some dependencies, which you can get with `opam install
+--deps-only .`. After installing the dependencies, you can develop proofs by
+just running `make`.
 
 ## New goose
 

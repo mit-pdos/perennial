@@ -7,6 +7,9 @@ From New.proof Require Import context sync.
 
 Require Import New.proof.go_etcd_io.etcd.client.v3.concurrency.
 Require Import New.proof.go_etcd_io.etcd.client.v3.
+
+From New.golang.theory Require Import chan_old.
+
 From Perennial.algebra Require Import ghost_var.
 Require Import Perennial.base.
 
@@ -111,11 +114,9 @@ Proof using ghost_mapG0.
   { solve_ndisj. }
   iIntros "Hmask".
   iFrame.
-  iSplitR.
+  iSplit.
   { word. }
-  iSplitR.
-  { iLeft. word. }
-  iIntros "_ Hctr". iMod "Hmask" as "_".
+  iIntros "!> Hctr". iMod "Hmask" as "_".
   iMod (ghost_map_delete with "[$] [$]") as "Hm".
   iMod ("Hclose" with "[-]").
   {
@@ -255,7 +256,7 @@ Proof.
   wp_apply (wp_RWMutex__Lock with "[$Hmu]").
   iIntros "[Hmu Hown]".
   wp_auto.
-  wp_bind (chan.select _ _).
+  wp_bind (chan.select_nonblocking _ _).
   iNamedSuffix "Hown" "_lock".
   iCombine "sessionc_lock sessionc" gives %[_ Heq]. subst.
   iCombine "sessionc_lock sessionc" as "sessionc".
@@ -320,8 +321,7 @@ Proof.
   wp_if_destruct.
   { (* got a valid session *)
     rewrite (decide_True _ _ eq_refl).
-    rewrite bool_decide_true //.
-    wp_auto. wp_apply (wp_RWMutex__Lock with "[$Hmu]").
+    wp_apply (wp_RWMutex__Lock with "[$Hmu]").
     iIntros "[Hmu Hown]". wp_auto.
     iClear "Hsession_lock".
     iNamedSuffix "Hown" "_lock".
@@ -344,7 +344,7 @@ Proof.
     iFrame "#". destruct (decide (s = null)); done.
   }
   { (* not a valid session. *)
-    rewrite bool_decide_false //. wp_auto. wp_for_post.
+    wp_for_post.
     iFrame "∗#%". iExists true. iFrame.
   }
 Qed.
@@ -541,12 +541,10 @@ Proof.
   iIntros "* [Hlkv Hready]".
   wp_auto. wp_if_destruct.
   2:{
-    rewrite bool_decide_false; last done.
-    wp_auto. iApply "HΦ". rewrite !decide_False //.
+    iApply "HΦ". rewrite !decide_False //.
   }
-  rewrite bool_decide_decide !decide_True //.
   iDestruct "Hready" as "#Hready".
-  wp_auto. wp_for.
+  wp_for.
   iPoseProof "Hctx" as "Hctx2".
   iNamedSuffix "Hctx2" "_ctx".
   wp_apply "HErr_ctx".
@@ -555,11 +553,11 @@ Proof.
   wp_auto.
   wp_if_destruct.
   2:{
-    rewrite bool_decide_decide !decide_False //. wp_auto.
+    rewrite decide_True // decide_False //.
     wp_apply ("HErr_ctx" with "[$Herr]"). iIntros (?) "%Herr". wp_auto.
     iApply "HΦ". rewrite !decide_False //.
   }
-  rewrite bool_decide_decide !decide_True //. wp_auto.
+  rewrite !decide_True //.
   rename err_ptr into outer_err_ptr. iRename "err" into "outer_err".
   wp_auto.
   (* wp_apply wp_leasingKV__tryModifyOp. *)
@@ -679,11 +677,11 @@ Proof using Type*.
   wp_apply (wp_WaitGroup__Add with "[]").
   { iFrame "#". }
   iApply fupd_mask_intro; [solve_ndisj | iIntros "Hmask"].
-  iFrame "Hwg_ctr Hwg_wait".
+  iNext. iFrame "Hwg_ctr".
   iSplitR.
   { word. }
-  iIntros "[%Hbad|Hwg_wait] Hwg_ctr".
-  { by exfalso. }
+  iRight.
+  iFrame "Hwg_wait". iIntros "Hwg_wait Hwg_ctr".
   iMod "Hmask" as "_". iModIntro.
   wp_auto.
   replace (word.add _ (W32 (uint.Z (W64 2)))) with (W32 2) by word.

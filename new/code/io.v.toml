@@ -1,4 +1,1 @@
-translate = [
-  "Reader",
-  "Writer",
-]
+translate = ["Reader", "Writer"]

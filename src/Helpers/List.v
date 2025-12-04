@@ -31,6 +31,48 @@ Section list.
   Context {A : Type}.
   Implicit Types l : (list A).
 
+  Local Lemma list_reln_trans_aux R `{!Transitive R} l :
+    (∀ i x y, l !! i = Some x → l !! S i = Some y → R x y) →
+    (∀ i k x y, l !! i = Some x → l !! S (i + k) = Some y → R x y).
+  Proof.
+    intros Hcons ???? Hi Hk.
+    generalize dependent y.
+    induction k.
+    - intros ? Hk.
+      replace (i + 0) with (i) in Hk by lia.
+      by eapply Hcons.
+    - intros ? Hk.
+      apply lookup_lt_Some in Hk as ?.
+      list_elem l (i + S k) as z.
+      trans z.
+      + replace (S (i + k)) with (i + S k) in IHk by lia.
+        by eapply IHk.
+      + by eapply Hcons.
+  Qed.
+
+  Lemma list_reln_trans R `{!Transitive R} l :
+    (∀ i x y, l !! i = Some x → l !! S i = Some y → R x y) →
+    (∀ i j x y, l !! i = Some x → l !! j = Some y → i < j → R x y).
+  Proof.
+    intros Hcons.
+    opose proof (list_reln_trans_aux _ _ Hcons) as Hskip.
+    intros ????? Hj ?.
+    replace j with (S (i + (j - i - 1))) in Hj by lia.
+    by eapply Hskip.
+  Qed.
+
+  Lemma list_reln_trans_refl R `{!Transitive R, !Reflexive R} l :
+    (∀ i x y, l !! i = Some x → l !! S i = Some y → R x y) →
+    (∀ i j x y, l !! i = Some x → l !! j = Some y → i ≤ j → R x y).
+  Proof.
+    intros Hcons.
+    opose proof (list_reln_trans _ _ Hcons) as Hskip.
+    intros ????? Hj ?.
+    destruct (decide (i = j)).
+    - by simplify_eq/=.
+    - eapply Hskip; [done..|]. lia.
+  Qed.
+
   Lemma snoc_to_cons x l : ∃ x' l', l ++ [x] = x' :: l'.
   Proof. destruct l; naive_solver. Qed.
 
@@ -761,6 +803,42 @@ Proof.
   f_equiv.
   rewrite Permutation_swap //.
 Qed.
+
+Lemma permutation_zip {A B} (l1 l1': list A) (l2: list B) :
+  l1 ≡ₚ l1' →
+  length l1 = length l2 →
+  ∃ l2', l2 ≡ₚ l2' ∧ zip l1 l2 ≡ₚ zip l1' l2'.
+Proof.
+  intros Hperm.
+  generalize dependent l2.
+  induction Hperm.
+  - eauto.
+  - intros l2 Hlen.
+    destruct l2 as [|x2 l2].
+    { exfalso; simpl in *; lia. }
+    destruct (IHHperm l2) as (l2' & Hl2' & Hzip).
+    { simpl in *; lia. }
+    exists (x2 :: l2').
+    simpl; eauto.
+  - intros l2 Hlen.
+    destruct l2 as [|y2 [|x2 l2]].
+    { exfalso; simpl in *; lia. }
+    { exfalso; simpl in *; lia. }
+    exists (x2 :: y2 :: l2); simpl; eauto using Permutation.
+  - (* this case almost handled by Claude:
+    https://claude.ai/share/33d6e926-622a-4fdd-ae7a-9a71584b374f *)
+    intros l2 Hlen.
+    destruct (IHHperm1 l2) as (l2' & Hl2'1 & Hzip1); auto.
+    destruct (IHHperm2 l2') as (l2'' & Hl2'2 & Hzip2).
+    { apply Permutation_length in Hperm1.
+      apply Permutation_length in Hl2'1.
+      lia. }
+    exists l2''.
+    split.
+    + by etrans; eauto.
+    + by etrans; eauto.
+Qed.
+
 
 Lemma subslice_app_length {A} n m (l0 l1 : list A) :
   subslice ((length l0) + n) ((length l0) + m) (l0 ++ l1) =

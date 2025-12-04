@@ -49,4 +49,4 @@ Proof.
   solve_field_ref_f.
 Qed.
 End instances.
-(* End manually written version of recordgen output *)
+(* End manually written version of proofgen output *)

@@ -521,6 +521,10 @@ Global Program Instance is_pkg_defined_time : IsPkgDefined time :=
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
 
+Global Instance wp_func_call_Sleep :
+  WpFuncCall time.Sleep _ (is_pkg_defined time) :=
+  ltac:(solve_wp_func_call).
+
 Global Instance wp_func_call_syncTimer :
   WpFuncCall time.syncTimer _ (is_pkg_defined time) :=
   ltac:(solve_wp_func_call).

@@ -19,11 +19,8 @@ Definition maxUint64 (n : nat) : val :=
   | _ => LitV $ LitPoison
   end.
 
-(* TODO(tchajed): I don't believe it's possible to implement signed operations
-in a width-independent way *)
-
 Definition int_ge0 : val :=
-  λ: "x", "x" < #(W64 (2^63)).
+  λ: "x", s_to_w64 "x" < #(W64 (2^63)).
 
 Definition int_lt : val :=
   λ: "x" "y", if: int_ge0 "x" then

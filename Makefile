@@ -1,7 +1,11 @@
 SRC_DIRS := 'src' 'external' 'new'
-ALL_VFILES := $(shell find $(SRC_DIRS) -not -path "external/coqutil/etc/coq-scripts/*" -name "*.v")
-VFILES := $(shell find 'src' -name "*.v")
-QUICK_CHECK_FILES := $(shell find 'src/program_proof/examples' -name "*.v")
+# ALL_VFILES is used to calculate dependencies so includes external
+ALL_VFILES := $(shell find $(SRC_DIRS) \
+	-type f -not -name "*__nobuild.v" -name "*.v")
+# PROJ_VFILES is for the all target
+PROJ_VFILES := $(shell find src new \
+	-not -path "*/*__nobuild/*" -a \
+	-not -name "*__nobuild.v" -name "*.v")
 
 # extract any global arguments for Rocq from _RocqProject
 ROCQPROJECT_ARGS := $(shell sed -E -e '/^\#/d' -e 's/-arg ([^ ]*)/\1/g' _RocqProject)
@@ -30,10 +34,16 @@ endif
 
 default: src/ShouldBuild.vo
 
-all: $(VFILES:.v=.vo)
-vos: src/ShouldBuild.vos
-vok: $(QUICK_CHECK_FILES:.v=.vok)
-interpreter: src/goose_lang/interpreter/generated_test.vos
+all: $(PROJ_VFILES:.v=.vo)
+vos: $(PROJ_VFILES:.v=.vos)
+vok: $(PROJ_VFILES:.v=.vok)
+
+.PHONY: new-goose new-goose.vos
+new-goose:
+	$(Q)$(MAKE) $$(./etc/package-sources.sh new-goose | sed 's/\.v$$/\.vo/')
+new-goose.vos:
+	$(Q)$(MAKE) $$(./etc/package-sources.sh new-goose | sed 's/\.v$$/\.vos/')
+
 check-assumptions: \
 	src/program_proof/examples/print_assumptions.vo \
 	src/program_proof/simple/print_assumptions.vo \
@@ -84,16 +94,10 @@ unskip-qed:
 	$(Q)./etc/disable-qed.sh --undo $(SLOW_QED_FILES)
 
 ci: skip-qed src/ShouldBuild.vo
-	$(Q)if [ ${TIMED} = "true" ]; then \
-		./etc/timing-report.py --max-files 30 --db $(TIMING_DB); \
-		fi
 
 # compiled by Rocq CI
 # not intended for normal development
 lite: src/LiteBuild.vo
-	$(Q)if [ ${TIMED} = "true" ]; then \
-		./etc/timing-report.py --max-files 30 --db $(TIMING_DB); \
-		fi
 
 clean:
 	@echo "CLEAN vo glob aux"

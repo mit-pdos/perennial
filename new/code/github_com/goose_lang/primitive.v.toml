@@ -1,13 +1,13 @@
-translate = [
-  "!*",
-]
-imports = [
-  "!*",
-]
+translate = ["!*"]
+imports = ["!*"]
 trusted = [
   "UInt64Put",
   "Assume",
   "RandomUint64",
   "AssumeNoStringOverflow",
+  "Mutex*",
   # FIXME: add remaining functions
 ]
+[bootstrap]
+enabled = true
+prelude = []

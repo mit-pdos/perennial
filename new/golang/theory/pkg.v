@@ -216,6 +216,7 @@ Lemma is_pkg_init_unfold (pkg_name : go_string) `{!IsPkgInit pkg_name} :
   "#Hinit" ∷ □ is_pkg_init_def pkg_name)%I.
 Proof. done. Qed.
 
+(* access user-defined init predicate. *)
 Lemma is_pkg_init_access (pkg_name : go_string) `{!IsPkgInit pkg_name} :
   is_pkg_init pkg_name -∗
   is_pkg_init_def pkg_name.
@@ -464,10 +465,18 @@ Notation "rcvr @ type @ method" :=
     (at level 1, type at next level, no associativity) : expr_scope.
 
 Ltac solve_wp_func_call :=
-  apply wp_func_call'; [reflexivity| iIntros "H"; try iDestruct "H" as "[H _]"; iFrame "H"].
+  lazymatch goal with
+  | |- WpFuncCall _ _ (is_pkg_defined ?pkg_name) =>
+      apply (wp_func_call' (pkg_name:=pkg_name)); [reflexivity| iIntros "H"; try iDestruct "H" as "[H _]"; iFrame "H"]
+  | _ => fail "solve_wp_func_call: not a WpFuncCall goal"
+  end.
 
 Ltac solve_wp_method_call :=
-  apply wp_method_call'; [reflexivity | iIntros "H"; try iDestruct "H" as "[H _]"; iFrame "H"].
+  lazymatch goal with
+  | |- WpMethodCall _ _ _ (is_pkg_defined ?pkg_name) =>
+      apply (wp_method_call' (pkg_name:=pkg_name)); [reflexivity | iIntros "H"; try iDestruct "H" as "[H _]"; iFrame "H"]
+  | _ => fail "solve_wp_method_call: not a WpMethodCall goal"
+  end.
 
 (* FIXME: better implementation using PkgInfo to direct the search. Could try lithium even. *)
 (* solve a goal which is just [is_pkg_init] or [is_pkg_defined] *)

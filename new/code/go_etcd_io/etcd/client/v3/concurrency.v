@@ -200,13 +200,14 @@ Definition Election__Campaignⁱᵐᵖˡ : val :=
     do:  ("err" <-[#error] "$r0");;;
     (if: (~ (interface.eq (![#error] "err") #interface.nil))
     then
-      chan.select [chan.select_receive ((interface.get #"Done"%go (![#context.Context] "ctx")) #()) (λ: "$recvVal",
+      chan.select_nonblocking [chan.select_receive (type.structT [
+       ]) ((interface.get #"Done"%go (![#context.Context] "ctx")) #()) (λ: "$recvVal",
          do:  (let: "$a0" := ((method_call #(ptrT.id clientv3.Client.id) #"Ctx"%go (![#ptrT] "client")) #()) in
          (method_call #(ptrT.id Election.id) #"Resign"%go (![#ptrT] "e")) "$a0")
-         )] (chan.select_default (λ: <>,
+         )] (λ: <>,
         let: "$r0" := #null in
         do:  ((struct.field_ref #Election #"leaderSession"%go (![#ptrT] "e")) <-[#ptrT] "$r0")
-        ));;;
+        );;;
       return: (![#error] "err")
     else do:  #());;;
     let: "$r0" := (![#ptrT] (struct.field_ref #clientv3.TxnResponse #"Header"%go (![#ptrT] "resp"))) in
@@ -375,7 +376,7 @@ Definition Election__observeⁱᵐᵖˡ : val :=
     let: "$r0" := ((method_call #(ptrT.id Session.id) #"Client"%go (![#ptrT] (struct.field_ref #Election #"session"%go (![#ptrT] "e")))) #()) in
     do:  ("client" <-[#ptrT] "$r0");;;
     do:  (let: "$a0" := (![type.chanT #clientv3.GetResponse] "ch") in
-    let: "$f" := chan.close in
+    let: "$f" := (chan.close #clientv3.GetResponse) in
     "$defer" <-[#funcT] (let: "$oldf" := (![#funcT] "$defer") in
     (λ: <>,
       "$f" "$a0";;
@@ -423,7 +424,7 @@ Definition Election__observeⁱᵐᵖˡ : val :=
         (for: (λ: <>, (![#ptrT] "kv") = #null); (λ: <>, #()) := λ: <>,
           let: "ok" := (mem.alloc (type.zero_val #boolT)) in
           let: "wr" := (mem.alloc (type.zero_val #clientv3.WatchResponse)) in
-          let: ("$ret0", "$ret1") := (chan.receive (![#clientv3.WatchChan] "wch")) in
+          let: ("$ret0", "$ret1") := (chan.receive #clientv3.WatchResponse (![#clientv3.WatchChan] "wch")) in
           let: "$r0" := "$ret0" in
           let: "$r1" := "$ret1" in
           do:  ("wr" <-[#clientv3.WatchResponse] "$r0");;;
@@ -454,7 +455,7 @@ Definition Election__observeⁱᵐᵖˡ : val :=
         let: "$r1" := (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] (struct.field_ref #clientv3.GetResponse #"Kvs"%go (![#ptrT] "resp"))) #(W64 0))) in
         do:  ("hdr" <-[#ptrT] "$r0");;;
         do:  ("kv" <-[#ptrT] "$r1"));;;
-      chan.select [chan.select_send (let: "$Header" := (![#ptrT] "hdr") in
+      chan.select_blocking [chan.select_send #clientv3.GetResponse (![type.chanT #clientv3.GetResponse] "ch") (let: "$Header" := (![#ptrT] "hdr") in
        let: "$Kvs" := ((let: "$sl0" := (![#ptrT] "kv") in
        slice.literal #ptrT ["$sl0"])) in
        struct.make #clientv3.GetResponse [{
@@ -466,11 +467,12 @@ Definition Election__observeⁱᵐᵖˡ : val :=
          ]);
          "XXX_unrecognized" ::= type.zero_val #sliceT;
          "XXX_sizecache" ::= type.zero_val #int32T
-       }]) (![type.chanT #clientv3.GetResponse] "ch") (λ: <>,
+       }]) (λ: <>,
          do:  #()
-         ); chan.select_receive ((interface.get #"Done"%go (![#context.Context] "ctx")) #()) (λ: "$recvVal",
+         ); chan.select_receive (type.structT [
+       ]) ((interface.get #"Done"%go (![#context.Context] "ctx")) #()) (λ: "$recvVal",
          return: (#())
-         )] chan.select_no_default;;;
+         )];;;
       let: "cancel" := (mem.alloc (type.zero_val #context.CancelFunc)) in
       let: "cctx" := (mem.alloc (type.zero_val #context.Context)) in
       let: ("$ret0", "$ret1") := (let: "$a0" := (![#context.Context] "ctx") in
@@ -493,7 +495,7 @@ Definition Election__observeⁱᵐᵖˡ : val :=
       (for: (λ: <>, (~ (![#boolT] "keyDeleted"))); (λ: <>, #()) := λ: <>,
         let: "ok" := (mem.alloc (type.zero_val #boolT)) in
         let: "wr" := (mem.alloc (type.zero_val #clientv3.WatchResponse)) in
-        let: ("$ret0", "$ret1") := (chan.receive (![#clientv3.WatchChan] "wch")) in
+        let: ("$ret0", "$ret1") := (chan.receive #clientv3.WatchResponse (![#clientv3.WatchChan] "wch")) in
         let: "$r0" := "$ret0" in
         let: "$r1" := "$ret1" in
         do:  ("wr" <-[#clientv3.WatchResponse] "$r0");;;
@@ -519,12 +521,13 @@ Definition Election__observeⁱᵐᵖˡ : val :=
           let: "$r0" := ((let: "$sl0" := (![#ptrT] (struct.field_ref #clientv3.Event #"Kv"%go (![#ptrT] "ev"))) in
           slice.literal #ptrT ["$sl0"])) in
           do:  ((struct.field_ref #clientv3.GetResponse #"Kvs"%go (![#ptrT] "resp")) <-[#sliceT] "$r0");;;
-          chan.select [chan.select_send (![#clientv3.GetResponse] (![#ptrT] "resp")) (![type.chanT #clientv3.GetResponse] "ch") (λ: <>,
+          chan.select_blocking [chan.select_send #clientv3.GetResponse (![type.chanT #clientv3.GetResponse] "ch") (![#clientv3.GetResponse] (![#ptrT] "resp")) (λ: <>,
              do:  #()
-             ); chan.select_receive ((interface.get #"Done"%go (![#context.Context] "cctx")) #()) (λ: "$recvVal",
+             ); chan.select_receive (type.structT [
+           ]) ((interface.get #"Done"%go (![#context.Context] "cctx")) #()) (λ: "$recvVal",
              do:  ((![#context.CancelFunc] "cancel") #());;;
              return: (#())
-             )] chan.select_no_default)));;;
+             )])));;;
       do:  ((![#context.CancelFunc] "cancel") #()));;;
     return: #()).
 
@@ -585,7 +588,7 @@ Definition waitDeleteⁱᵐᵖˡ : val :=
     (method_call #(ptrT.id clientv3.Client.id) #"Watch"%go (![#ptrT] "client")) "$a0" "$a1" "$a2") in
     do:  ("wch" <-[#clientv3.WatchChan] "$r0");;;
     let: "$range" := (![#clientv3.WatchChan] "wch") in
-    chan.for_range "$range" (λ: "$key",
+    chan.for_range #clientv3.WatchResponse "$range" (λ: "$key",
       do:  ("wr" <-[#clientv3.WatchResponse] "$key");;;
       let: "$range" := (![#sliceT] (struct.field_ref #clientv3.WatchResponse #"Events"%go "wr")) in
       (let: "ev" := (mem.alloc (type.zero_val #ptrT)) in
@@ -1122,7 +1125,8 @@ Definition NewSessionⁱᵐᵖˡ : val :=
       with_defer: (do:  (let: "$f" := (λ: <>,
         exception_do (do:  (let: "$a0" := (![type.chanT (type.structT [
         ])] "donec") in
-        chan.close "$a0");;;
+        (chan.close (type.structT [
+        ])) "$a0");;;
         do:  ((![#context.CancelFunc] "cancel") #());;;
         return: #())
         ) in
@@ -1132,7 +1136,7 @@ Definition NewSessionⁱᵐᵖˡ : val :=
         "$oldf" #()
         )));;;
       let: "$range" := (![type.chanT #ptrT] "keepAlive") in
-      chan.for_range "$range" (λ: "$key",
+      chan.for_range #ptrT "$range" (λ: "$key",
         do:  #());;;
       return: #())
       ) in
@@ -1183,7 +1187,8 @@ Definition Session__Orphanⁱᵐᵖˡ : val :=
   λ: "s" <>,
     exception_do (let: "s" := (mem.alloc "s") in
     do:  ((![#context.CancelFunc] (struct.field_ref #Session #"cancel"%go (![#ptrT] "s"))) #());;;
-    do:  (Fst (chan.receive (![type.chanT (type.structT [
+    do:  (Fst (chan.receive (type.structT [
+    ]) (![type.chanT (type.structT [
     ])] (struct.field_ref #Session #"donec"%go (![#ptrT] "s")))));;;
     return: #()).
 
@@ -1589,7 +1594,7 @@ Definition runSTMⁱᵐᵖˡ : val :=
             "resp" ::= #null;
             "err" ::= ![#error] (struct.field_ref #stmError #"err"%go "e")
           }]) in
-          chan.send "$chan" "$v")
+          chan.send #stmResponse "$chan" "$v")
         else do:  #()));;;
         return: #())
         ) in
@@ -1614,12 +1619,12 @@ Definition runSTMⁱᵐᵖˡ : val :=
         else do:  #())));;;
       do:  (let: "$chan" := (![type.chanT #stmResponse] "outc") in
       let: "$v" := (![#stmResponse] "out") in
-      chan.send "$chan" "$v");;;
+      chan.send #stmResponse "$chan" "$v");;;
       return: #())
       ) in
     do:  (Fork ("$go" #()));;;
     let: "r" := (mem.alloc (type.zero_val #stmResponse)) in
-    let: "$r0" := (Fst (chan.receive (![type.chanT #stmResponse] "outc"))) in
+    let: "$r0" := (Fst (chan.receive #stmResponse (![type.chanT #stmResponse] "outc"))) in
     do:  ("r" <-[#stmResponse] "$r0");;;
     return: (![#ptrT] (struct.field_ref #stmResponse #"resp"%go "r"), ![#error] (struct.field_ref #stmResponse #"err"%go "r"))).
 

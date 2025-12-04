@@ -6,7 +6,7 @@ From Goose.github_com.mit_pdos.vmvcc Require Import examples.
 From Perennial.goose_lang Require Import grove_ffi.adequacy.
 
 Section program.
-Context `{!heapGS Σ, !mvcc_ghostG Σ}.
+Context `{!heapGS Σ, !globalsGS Σ, !mvcc_ghostG Σ}.
 
 Definition P_Hello (r : dbmap) := ∃ v, r = {[ (W64 0) := v ]}.
 Definition Q_Hello (r w : dbmap) := w = {[ (W64 0) := Nil ]}.
@@ -165,7 +165,7 @@ Module closed_proof.
 
   Import adequacy.
 
-  Definition helloΣ := #[heapΣ; mvcc_ghostΣ].
+  Definition helloΣ := #[globalsΣ; adequacy.heapΣ; mvcc_ghostΣ].
 
   Lemma hello_adequate σ g :
     σ.(world).(grove_node_files) = ∅ →
