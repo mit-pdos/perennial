@@ -89,7 +89,7 @@ Ltac iPersist_one H := iPersist_hyp H H.
 Ltac iPersist_list Hlist :=
   let Hs := (eval cbv in (String.words Hlist)) in
   let rec go xs :=
-    match xs with
+    lazymatch xs with
     | cons ?H ?xs' => iPersist_hyp H H; go xs'
     | nil => idtac
     end in
