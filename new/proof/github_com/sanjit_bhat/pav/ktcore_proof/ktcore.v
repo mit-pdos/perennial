@@ -44,10 +44,16 @@ End blame.
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 
+Lemma rw_Blame0 err :
+  blame_to_u64 err = W64 0 ↔ err = ∅.
+Proof. Admitted.
+
 Lemma rw_BlameNone :
   ktcore.BlameNone = # (blame_to_u64 ∅).
 Proof. Admitted.
 
+(* TODO: would be nice to re-use Blame defs from code file.
+rewriting on code.BlameServFull (#(W64 1)) doesn't work on #(W64 1) goal. *)
 Lemma rw_BlameServSig :
   # (W64 1) = # (blame_to_u64 {[ BlameServSig ]}).
 Proof. Admitted.

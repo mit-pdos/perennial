@@ -83,6 +83,8 @@ Lemma wp_History_cli_call (Q : cfg.t → state.t → iProp Σ)
     "%Hdec" ∷ ⌜HistoryArg.wish arg
       (HistoryArg.mk' uid prevEpoch prevVerLen) tail⌝ ∗
     "HQ" ∷ Q cfg σ ∗
+    "%Hnoof_epochs" ∷ ⌜numEps = sint.nat (W64 numEps)⌝ ∗
+    "%Hnoof_vers" ∷ ⌜length pks = sint.nat (W64 (length pks))⌝ ∗
     "%Hlast_hist" ∷ ⌜last σ.(state.hist) = Some (lastDig, lastKeys)⌝ ∗
     "#His_lastLink" ∷ hashchain.is_chain σ.(state.hist).*1 None lastLink numEps ∗
 
@@ -133,8 +135,11 @@ Lemma wp_CallHistory s γ (uid prevEpoch prevVerLen : w64) :
         let numEps := length servHist in
         let pks := lastKeys !!! uid in
         "#Hlb_servHist" ∷ mono_list_lb_own cfg.(cfg.histγ) servHist ∗
-        "%Hlen_epochs" ∷ ⌜uint.nat prevEpoch < numEps⌝ ∗
-        "%Hlen_vers" ∷ ⌜uint.nat prevVerLen ≤ length pks⌝ ∗
+        "%Hlt_prevEpoch" ∷ ⌜uint.nat prevEpoch < numEps⌝ ∗
+        "%Hlt_prevVer" ∷ ⌜uint.nat prevVerLen ≤ length pks⌝ ∗
+        (* TODO: add to serv specs and other methods. *)
+        "%Hnoof_epochs" ∷ ⌜numEps = sint.nat (W64 numEps)⌝ ∗
+        "%Hnoof_vers" ∷ ⌜length pks = sint.nat (W64 (length pks))⌝ ∗
         "%Hlast_servHist" ∷ ⌜last servHist = Some (lastDig, lastKeys)⌝ ∗
         "#His_lastLink" ∷ hashchain.is_chain servHist.*1 None lastLink numEps ∗
 

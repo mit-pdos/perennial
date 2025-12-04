@@ -135,8 +135,13 @@ Definition own ptr obj : iProp Σ :=
 
   "#His_sigPk" ∷ match obj.(good) with None => True | Some cfg =>
     cryptoffi.is_sig_pk obj.(info).(servInfo.sig_pk)
-      (sigpred.pred cfg.(server.cfg.sigpredγ))
-    end.
+      (sigpred.pred cfg.(server.cfg.sigpredγ)) end ∗
+  (* trusted. *)
+  "%Heq_sig_pk" ∷ ⌜match obj.(good) with None => True | Some cfg =>
+    obj.(info).(servInfo.sig_pk) = cfg.(server.cfg.sig_pk) end⌝ ∗
+  (* from signed vrf_pk. *)
+  "%Heq_vrf_pk" ∷ ⌜match obj.(good) with None => True | Some cfg =>
+    obj.(info).(servInfo.vrf_pk) = cfg.(server.cfg.vrf_pk) end⌝.
 
 End proof.
 End serv.
@@ -639,6 +644,44 @@ Proof.
     list_elem hist (uint.nat c.(Client.last).(epoch.epoch)) as e.
     iDestruct (mono_list_idx_own_get with "His_hist") as "$"; [done|].
     word. }
+  case_bool_decide as Heq_err; wp_auto;
+    rewrite ktcore.rw_Blame0 in Heq_err; subst.
+  2: {
+    iApply "HΦ".
+    iSplit; [done|].
+    case_decide; try done.
+    iFrame "∗#%". }
+  case_decide; try done.
+  iNamed "Herr".
+  wp_apply wp_getNextEp as "* @".
+  { iFrame "#". iPureIntro. split; [done|]. by rewrite Heq_serv. }
+  wp_if_destruct.
+  { rewrite ktcore.rw_BlameServFull.
+    iApply "HΦ".
+    iSplit. 2: { case_decide; try done. by iFrame "∗#%". }
+    iApply ktcore.blame_one.
+    iIntros (?).
+    case_match; try done.
+    iNamed "Hgood".
+    iNamed "Hgood_last".
+    iApply "Hgenie".
+
+    iFrame "%".
+    case_decide as Hlen_vals; [naive_solver|].
+    iDestruct (mono_list_lb_valid with "His_hist Hlb_servHist") as %[[newHist ->]|Hpref].
+    2: {
+      apply prefix_length in Hpref.
+      rewrite -skipn_all_iff in Hlen_vals.
+      autorewrite with len in *. word. }
+    rewrite {}Heq_digs {}Heq_cut.
+    rewrite fmap_app drop_app_length'; [|len].
+
+    iExists _, (W64 (uint.Z c.(Client.last).(epoch.epoch) + length newHist)), _.
+    autorewrite with len in *.
+    iSplit; [word|].
+    iSplit. { iExactEq "His_lastLink". rewrite /named. repeat f_equal. word. }
+    iSplit. { iExactEq "Hwish_linkSig". rewrite /named. repeat f_equal; [done|word]. }
+    done. }
 Admitted.
 
 End proof.
