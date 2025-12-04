@@ -19,44 +19,30 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        coq_version:
-          - dev
-          - "9.1"
+        rocq-version:
+          - weekly
+          - latest
       max-parallel: 4
       fail-fast: false
 
     steps:
       - uses: actions/checkout@v6
-        with:
-          submodules: true
       - name: Install uv
         uses: astral-sh/setup-uv@v7
         with:
           version: ${{ env.UV_VERSION }}
-      - uses: coq-community/docker-coq-action@v1
+      - name: Install Rocq
+        uses: tchajed/setup-rocq@v1
         with:
-          coq_version: ${{ matrix.coq_version }}
-          ocaml_version: "default"
-          install: |
-            startGroup Install dependencies
-              sudo apt-get update
-              sudo apt-get install -y sqlite3
-            endGroup
-          # for permissions issue, see:
-          # https://github.com/coq-community/docker-coq-action#permissions.
-          before_script: |
-            sudo chown -R 1000:1000 .
-          script: |
-            startGroup Build
-              make -j4 -k ci
-            endGroup
-          uninstall:
-      - name: Revert permissions
-        if: ${{ always() }}
-        run: sudo chown -R 1001:116 .
-      - name: Report timing statistics
+          rocq-version: "${{ matrix.rocq-version }}"
+      - name: Install build dependencies
         run: |
-          ./etc/timing-report.py --max-files 50
+          opam install --deps-only .
+      - name: Rocq build
+        run: |
+          make -j4 -k ci
+      - name: Report timing statistics
+        run: ./etc/timing-report.py --max-files 50
 
   check-goose:
     runs-on: ubuntu-latest
