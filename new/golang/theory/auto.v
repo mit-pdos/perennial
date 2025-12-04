@@ -324,7 +324,7 @@ Ltac wp_if_destruct :=
       end
   end.
 
-Ltac wp_finish :=
+Ltac wp_end :=
   wp_pures;
   repeat iModIntro;
   (* TODO: hard coded continuation names, should try to automatically find

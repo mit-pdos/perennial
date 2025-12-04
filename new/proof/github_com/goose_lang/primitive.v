@@ -36,7 +36,7 @@ Lemma wp_Assume (cond : bool) :
 Proof.
   wp_start as "#Hdef".
   destruct cond; wp_auto.
-  - wp_finish.
+  - wp_end.
   - iLöb as "IH". wp_auto.
     wp_apply ("IH" with "[$]").
 Qed.
@@ -98,7 +98,7 @@ Proof.
   - iLöb as "IH".
     wp_pures.
     iApply "IH".
-    wp_finish.
+    wp_end.
 Qed.
 
 Lemma word_wrap_wrap `{word1: Interface.word width1} `{word2: Interface.word width2}
@@ -155,7 +155,7 @@ Proof.
     wp_pure; [word|];
     wp_apply (wp_store_slice_elem with "[$Hsl_b]") as "Hsl_b"; [len|]).
 
-  wp_finish.
+  wp_end.
   replace (sint.nat (W64 0)) with (0%nat) by word.
   replace (sint.nat (W64 1)) with (1%nat) by word.
   replace (sint.nat (W64 2)) with (2%nat) by word.

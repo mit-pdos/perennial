@@ -38,6 +38,6 @@ Tactic Notation "wp_untyped_store" :=
     [tc_solve
     |solve_pointsto ()
     |pm_reflexivity
-    |first [wp_pure_filter (Rec BAnon BAnon _); wp_rec|wp_finish]]
+    |first [wp_pure_filter (Rec BAnon BAnon _); wp_rec|wp_end]]
   | _ => fail "wp_untyped_store: not a 'wp'"
   end.
