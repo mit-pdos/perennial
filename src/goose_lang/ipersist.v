@@ -22,12 +22,12 @@ Qed.
 
 (* used when Q is an output (produced by going from P to Φ) *)
 #[global]
-Instance dfractional_update_into_persistently `{!BiBUpd PROP} (P : PROP) (Φ: dfrac → PROP) dq
-  `{!Affine (Φ DfracDiscarded)} :
+Instance dfractional_update_into_persistently `{!BiBUpd PROP} (P : PROP) (Φ: dfrac → PROP) dq :
   AsDFractional P Φ dq →
+  Affine (Φ DfracDiscarded) →
   UpdateIntoPersistently P (Φ DfracDiscarded).
 Proof.
-  intros [-> ?].
+  intros [-> ?] ?.
   rewrite /UpdateIntoPersistently.
   iIntros "H".
   pose proof (dfractional_persistent Φ).
@@ -37,13 +37,13 @@ Qed.
 
 (* used when Q is a fixed input *)
 #[global]
-Instance dfractional_update_into_persistently' `{!BiBUpd PROP} (P Q : PROP) (Φ: dfrac → PROP) dq
-  `{!Affine (Φ DfracDiscarded)} :
+Instance dfractional_update_into_persistently' `{!BiBUpd PROP} (P Q : PROP) (Φ: dfrac → PROP) dq :
   AsDFractional P Φ dq →
+  Affine (Φ DfracDiscarded) →
   AsDFractional Q Φ (DfracDiscarded) →
   UpdateIntoPersistently P Q.
 Proof.
-  intros [-> ?] [-> ?].
+  intros [-> ?] ? [-> ?].
   eapply dfractional_update_into_persistently; eauto.
 Qed.
 
