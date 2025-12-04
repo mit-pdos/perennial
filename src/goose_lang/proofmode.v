@@ -99,7 +99,7 @@ Ltac solve_bi_true :=
       | |- envs_entails _ (bi_wand (bi_pure True) _)  => apply tac_wp_true_elim
       end.
 
-Ltac wp_end :=
+Ltac wp_finish :=
   wp_expr_simpl;      (* simplify occurences of subst/fill *)
   try wp_value_head;  (* in case we have reached a value, get rid of the WP *)
   pm_prettify.        (* prettify ▷s caused by [MaybeIntoLaterNEnvs] and
@@ -125,7 +125,7 @@ Tactic Notation "wp_pure1_maybe_lc" constr(maybeCredName) tactic3(filter) :=
       [tc_solve                         (* PureExec *)
       |try solve_vals_compare_safe      (* The pure condition for PureExec -- handles trivial goals, including [vals_compare_safe] *)
       |tc_solve                         (* IntoLaters *)
-      | pm_reduce; wp_end  (* new goal *)
+      | pm_reduce; wp_finish  (* new goal *)
       ] | fail "wp_pure: first pattern match is not a redex" ]
           (* "3" is carefully chose to bubble up just enough to not break out of the [repeat] in [wp_pures] *)
    ) || fail "wp_pure: cannot find redex pattern"
@@ -158,7 +158,7 @@ Tactic Notation "wp_pure_filter" open_constr(efoc) :=
 Ltac wp_pures :=
   iStartProof;
   lazymatch goal with
-    | |- envs_entails ?envs (wp ?s ?E (Val ?v) ?Q) => wp_end
+    | |- envs_entails ?envs (wp ?s ?E (Val ?v) ?Q) => wp_finish
     | |- _ =>
       (* The `;[]` makes sure that no side-condition magically spawns. *)
       (* TODO: do this in one go, without [repeat]. *)
@@ -409,12 +409,12 @@ Tactic Notation "wp_untyped_load" :=
         |fail 1 "wp_untyped_load: cannot find 'Load' in" e];
       [tc_solve
       |solve_pointsto ()
-      |wp_end] ) ||
+      |wp_finish] ) ||
     ( first
         [reshape_expr e ltac:(fun K e' => eapply (tac_wp_load_persistent _ _ _ _ K))
         |fail 1 "wp_untyped_load: cannot find 'Load' in" e];
       [solve_pointsto ()
-      |wp_end] )
+      |wp_finish] )
   | _ => fail "wp_untyped_load: not a 'wp'"
   end.
 
@@ -432,8 +432,8 @@ Tactic Notation "wp_cmpxchg" "as" simple_intropattern(H1) "|" simple_intropatter
     |solve_pointsto ()
     |pm_reflexivity
     |try solve_vals_compare_safe
-    |intros H1; wp_end
-    |intros H2; wp_end]
+    |intros H1; wp_finish
+    |intros H2; wp_finish]
   | _ => fail "wp_cmpxchg: not a 'wp'"
   end.
 
@@ -451,7 +451,7 @@ Tactic Notation "wp_cmpxchg_fail" :=
     |solve_pointsto ()
     |try (simpl; congruence) (* value inequality *)
     |try solve_vals_compare_safe
-    |wp_end]
+    |wp_finish]
   | _ => fail "wp_cmpxchg_fail: not a 'wp'"
   end.
 
@@ -470,6 +470,6 @@ Tactic Notation "wp_cmpxchg_suc" :=
     |pm_reflexivity
     |try (simpl; congruence) (* value equality *)
     |try solve_vals_compare_safe
-    |wp_end]
+    |wp_finish]
   | _ => fail "wp_cmpxchg_suc: not a 'wp'"
   end.

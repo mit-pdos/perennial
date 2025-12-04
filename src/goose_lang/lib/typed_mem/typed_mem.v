@@ -565,12 +565,12 @@ Tactic Notation "wp_load" :=
         |fail 1 "wp_load: cannot find 'load_ty' in" e];
       [tc_solve
       |solve_pointsto ()
-      |wp_end] ) ||
+      |wp_finish] ) ||
     ( first
         [reshape_expr e ltac:(fun K e' => eapply (tac_wp_load_ty_persistent _ _ _ _ K))
         |fail 1 "wp_load: cannot find 'load_ty' in" e];
       [solve_pointsto ()
-      |wp_end] )
+      |wp_finish] )
   | _ => fail "wp_load: not a 'wp'"
   end.
 
@@ -588,6 +588,6 @@ Tactic Notation "wp_store" :=
     |tc_solve
     |solve_pointsto ()
     |pm_reflexivity
-    |first [wp_pure_filter (Rec BAnon BAnon _); wp_rec |wp_end]]
+    |first [wp_pure_filter (Rec BAnon BAnon _); wp_rec |wp_finish]]
   | _ => fail "wp_store: not a 'wp'"
   end.

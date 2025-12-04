@@ -210,7 +210,7 @@ Tactic Notation "wp_recv_core" tactic3(tac_intros) "as" tactic3(tac) :=
     |tc_solve
     |pm_reduce; simpl; tac_intros;
      tac Hnew;
-     wp_end]
+     wp_finish]
   | _ => fail "wp_recv: not a 'wp'"
   end.
 
@@ -290,7 +290,7 @@ Tactic Notation "wp_send_core" tactic3(tac_exist) "with" constr(pat) :=
         | |- False => fail "wp_send:" Hs' "not found"
         | _ => notypeclasses refine (conj (eq_refl _) (conj _ _));
                 [iFrame Hs_frame; solve_done d
-                |wp_end]
+                |wp_finish]
         end]
      | _ => fail "wp_send: not a 'wp'"
      end
