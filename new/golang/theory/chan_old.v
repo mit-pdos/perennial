@@ -1,6 +1,6 @@
 From New.golang.defn Require Export chan.
 From iris.base_logic Require Export lib.ghost_var.
-From New.golang.theory Require Import exception list mem loop typing proofmode.
+From New.golang.theory Require Import exception mem loop proofmode.
 From Perennial Require Import base.
 
 Set Default Proof Using "Type".
