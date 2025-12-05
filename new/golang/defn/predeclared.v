@@ -155,20 +155,20 @@ Class PredeclaredSemantics `{!GoSemanticsFunctions} :=
 
   #[global]
   comparable_bool :: go.IsComparable go.bool;
-  go_eq_bool : go.is_always_safe_to_compare go.bool Datatypes.bool;
+  #[global] go_eq_bool :: go.AlwaysSafelyComparable go.bool Datatypes.bool;
 
   #[global] comparable_ordered t (H : is_ordered_type t) :: go.IsComparable t | 10;
 
-  go_eq_int : go.is_always_safe_to_compare go.int w64;
-  go_eq_int64 : go.is_always_safe_to_compare go.int64 w64;
-  go_eq_int32 : go.is_always_safe_to_compare go.int32 w32;
-  go_eq_int16 : go.is_always_safe_to_compare go.int16 w16;
-  go_eq_int8 : go.is_always_safe_to_compare go.int8 w8;
-  go_eq_uint : go.is_always_safe_to_compare go.uint w64;
-  go_eq_uint64 : go.is_always_safe_to_compare go.uint64 w64;
-  go_eq_uint32 : go.is_always_safe_to_compare go.uint32 w32;
-  go_eq_uint16 : go.is_always_safe_to_compare go.uint16 w16;
-  go_eq_uint8 : go.is_always_safe_to_compare go.uint8 w8;
+  go_eq_int :: go.AlwaysSafelyComparable go.int w64;
+  go_eq_int64 :: go.AlwaysSafelyComparable go.int64 w64;
+  go_eq_int32 :: go.AlwaysSafelyComparable go.int32 w32;
+  go_eq_int16 :: go.AlwaysSafelyComparable go.int16 w16;
+  go_eq_int8 :: go.AlwaysSafelyComparable go.int8 w8;
+  go_eq_uint :: go.AlwaysSafelyComparable go.uint w64;
+  go_eq_uint64 :: go.AlwaysSafelyComparable go.uint64 w64;
+  go_eq_uint32 :: go.AlwaysSafelyComparable go.uint32 w32;
+  go_eq_uint16 :: go.AlwaysSafelyComparable go.uint16 w16;
+  go_eq_uint8 :: go.AlwaysSafelyComparable go.uint8 w8;
 
   #[global] le_int (v1 v2 : w64) :: go.IsGoOp GoLe go.int (#v1, #v2) #(bool_decide (sint.Z v1 ≤ sint.Z v2));
   #[global] le_int64 (v1 v2 : w64) :: go.IsGoOp GoLe go.int64 (#v1, #v2) #(bool_decide (sint.Z v1 ≤ sint.Z v2));
@@ -214,7 +214,7 @@ Class PredeclaredSemantics `{!GoSemanticsFunctions} :=
   #[global] gt_uint16 (v1 v2 : w16) :: go.IsGoOp GoGt go.uint16 (#v1, #v2) #(bool_decide (uint.Z v2 < uint.Z v1));
   #[global] gt_uint8 (v1 v2 : w8) :: go.IsGoOp GoGt go.uint8 (#v1, #v2) #(bool_decide (uint.Z v2 < uint.Z v1));
 
-  go_eq_string : go.is_always_safe_to_compare go.string go_string;
+  go_eq_string :: go.AlwaysSafelyComparable go.string go_string;
   index_string i (s : go_string) b (Hinrange : s !! (Z.to_nat i) = Some b) :
     index (go.string) i #s = #b
 }.

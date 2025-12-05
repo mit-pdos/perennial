@@ -187,6 +187,7 @@ Class IsGoStepPureDet instr args e : Prop :=
     is_go_step_pure_det : is_go_step_pure instr args = eq e;
   }.
 
+(* No-op steps are for producing later credits. Doesn't really change the semantics *)
 Class IsGoOp op t args v `{!GoSemanticsFunctions} : Prop :=
   {
     is_go_op : go_op op t args = (#();; v)%E;
@@ -198,31 +199,29 @@ Class IsComparable t `{!GoSemanticsFunctions} : Prop :=
   }.
 
 (* Helper definition to cover types for which `a == b` always executes safely. *)
-Definition is_always_safe_to_compare t V `{!EqDecision V} `{!GoSemanticsFunctions} : Prop :=
-  ∀ (v1 v2 : V), go_eq t #v1 #v2 = #(bool_decide (v1 = v2)).
+Class AlwaysSafelyComparable t V `{!EqDecision V} `{!GoSemanticsFunctions} : Prop :=
+  {
+    is_safely_comparable : ∀ (v1 v2 : V), go_eq t #v1 #v2 = (#();;#(bool_decide (v1 = v2)))%E;
+  }.
 
 Class CoreComparisonSemantics `{!GoSemanticsFunctions} : Prop :=
 {
   go_op_underlying o t args : go_op o t args = go_op o (to_underlying t) args;
   go_eq_underlying t : go_eq t = go_eq (to_underlying t);
 
-  (* special cases *)
+  (* special case equality for functions *)
   #[global] is_go_op_go_equals_func_nil_l sig f ::
     IsGoOp GoEquals (go.FunctionType sig) (#f, #func.nil)%V #(bool_decide (f = func.nil));
-
   #[global] is_go_op_go_equals_func_nil_r sig f ::
     IsGoOp GoEquals (go.FunctionType sig) (#func.nil, #f)%V #(bool_decide (f = func.nil));
 
-  #[global]
-  is_comparable_pointer t :: IsComparable (go.PointerType t);
-  go_eq_pointer t : is_always_safe_to_compare (go.PointerType t) loc;
+  #[global] is_comparable_pointer t :: IsComparable (go.PointerType t);
+  #[global] go_eq_pointer t :: AlwaysSafelyComparable (go.PointerType t) loc;
 
-  #[global]
-  is_comparable_channel t dir :: IsComparable (go.ChannelType t dir);
-  go_eq_channel t dir : is_always_safe_to_compare (go.ChannelType t dir) loc;
+  #[global] is_comparable_channel t dir :: IsComparable (go.ChannelType t dir);
+  #[global] go_eq_channel t dir :: AlwaysSafelyComparable (go.ChannelType t dir) loc;
 
-  #[global]
-  is_comparable_interface elems :: IsComparable (go.InterfaceType elems);
+  #[global] is_comparable_interface elems :: IsComparable (go.InterfaceType elems);
   go_eq_interface elems i1 i2 :
     go_eq (go.InterfaceType elems) #i1 #i2 =
       match i1, i2 with
@@ -290,12 +289,10 @@ Class CoreSemantics :=
   #[global] go_func_resolve_step n ts :: IsGoStepPureDet (FuncResolve n ts) #() #(functions n ts);
   #[global] go_method_resolve_step m t :: IsGoStepPureDet (MethodResolve t m) #() #(methods t m);
   #[global] go_global_var_addr_step v :: IsGoStepPureDet (GlobalVarAddr v) #() #(global_addr v);
-  #[global] struct_field_ref_step t f l ::
-    IsGoStepPureDet (StructFieldRef t f) #l #(struct_field_ref t f l);
-
-  #[global] go_interface_get_step m t v ::
-    IsGoStepPureDet (InterfaceGet m) #(interface.mk t v) #(methods t m);
+  #[global] struct_field_ref_step t f l :: IsGoStepPureDet (StructFieldRef t f) #l #(struct_field_ref t f l);
+  #[global] go_interface_get_step m t v :: IsGoStepPureDet (InterfaceGet m) #(interface.mk t v) #(methods t m);
   #[global] go_interface_make_step t v :: IsGoStepPureDet (InterfaceMake t) v #(interface.mk t v);
+  #[global] composite_literal_step t (v : val) :: IsGoStepPureDet (CompositeLiteral t) v (composite_literal t v);
   go_prealloc_step : is_go_step_pure GoPrealloc #() = (λ e, ∃ (l : loc), e = #l);
   angelic_exit_step : is_go_step_pure AngelicExit #() = (λ e, e = AngelicExit #());
 

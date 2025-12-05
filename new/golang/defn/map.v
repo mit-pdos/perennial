@@ -65,11 +65,21 @@ Context {ext : ffi_syntax}.
 Context {go_lctx : GoLocalContext} {go_gctx : GoGlobalContext}.
 Class MapSemantics `{!GoSemanticsFunctions} :=
 {
-  (* special cases *)
+  (* special cases for equality *)
   #[global] is_go_op_go_equals_map_nil_l kt vt s ::
     go.IsGoOp GoEquals (go.MapType kt vt) (#map.nil, #s)%V #(bool_decide (s = map.nil));
   #[global] is_go_op_go_equals_map_nil_r kt vt s ::
     go.IsGoOp GoEquals (go.MapType kt vt) (#s, #map.nil)%V #(bool_decide (s = map.nil));
+
+  (* internal deterministic steps *)
+  #[global] internal_map_lookup_step mv k ::
+    go.IsGoStepPureDet InternalMapLookup (mv, k)%V (let '(ok, v) := map_lookup mv k in (v, #ok));
+  #[global] internal_map_insert_step mv k v ::
+    go.IsGoStepPureDet InternalMapInsert (mv, k, v)%V (map_insert mv k v);
+  #[global] internal_map_delete_step mv k ::
+    go.IsGoStepPureDet InternalMapDelete (mv, k)%V (map_delete mv k);
+  #[global] internal_map_make_step v ::
+    go.IsGoStepPureDet InternalMapMake v (map_empty v);
 
   is_map_pure (v : val) (m : val → bool * val) : Prop;
   map_default : val → val;

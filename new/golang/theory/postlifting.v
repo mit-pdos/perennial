@@ -183,52 +183,19 @@ Proof.
   by iApply "HΦ".
 Qed.
 
-Global Instance wp_InternalMapLookup mv k:
-  PureWp True (InternalMapLookup (mv, k)%V) (let '(ok, v) := map_lookup mv k in (v, #ok)).
-Proof. solve_pure. Qed.
-
-Global Instance wp_InternalMapInsert mv k v:
-  PureWp True (InternalMapInsert (mv, k, v)%V) (map_insert mv k v).
-Proof. solve_pure. Qed.
-
-Global Instance wp_InternalMapDelete mv k :
-  PureWp True (InternalMapDelete (mv, k)%V) (map_delete mv k).
-Proof. solve_pure. Qed.
-
-Global Instance wp_InternalMapMake (v : val) :
-  PureWp True (InternalMapMake v) (map_empty v).
-Proof. solve_pure. Qed.
-
-Global Instance pure_wp_CompositeLiteral t (v : val) :
-  PureWp True (CompositeLiteral t v) (composite_literal t v).
-Proof. solve_pure. Qed.
-
-Class IsGoEq t v1 v2 (b : bool) : Prop :=
-  {
-    wp_go_eq stk E Φ : Φ #b -∗ WP (go.go_eq t v1 v2) @ stk; E {{ Φ }}
-  }.
-Global Arguments wp_go_eq [t].
-
-Global Instance pure_wp_eq_ t v1 v2 b `{!go.IsComparable t} :
-  IsGoEq t v1 v2 b → PureWp True (GoEquals t (v1, v2)%V) #b | 0.
+Global Instance pure_wp_go_op_equals_comparable t (v1 v2 : val) `{!go.IsComparable t} :
+  PureWp True (go_op GoEquals t (v1, v2)%V) (go_eq t v1 v2).
 Proof.
-  iIntros "%%*%% HΦ". wp_pure_lc "?". wp_bind (go.go_eq _ _ _). iApply wp_go_eq. by iApply "HΦ".
+  iIntros "%%*%% HΦ". pose proof go.is_comparable.
+  wp_pure_lc "?". wp_pures. by iApply "HΦ".
 Qed.
 
-Global Instance is_go_eq_pointer t (l1 l2 : loc) :
-  IsGoEq (go.PointerType t) #l1 #l2 (bool_decide (l1 = l2)).
-Proof. constructor. rewrite go.go_eq_pointer. iIntros "* ?". by wp_pures. Qed.
-
-Global Instance is_go_eq_channel t dir (l1 l2 : chan.t) :
-  IsGoEq (go.ChannelType t dir) #l1 #l2 (bool_decide (l1 = l2)).
-Proof. constructor. rewrite go.go_eq_channel. iIntros "* ?". by wp_pures. Qed.
-
-Global Instance is_go_eq_interface elems t v1 v2 b {Heq : IsGoEq t v1 v2 b}  :
-  IsGoEq (go.InterfaceType elems) #(interface.mk t v1) #(interface.mk t v2)
-    b.
+Global Instance pure_wp_go_eq_always_comparable t V (v1 v2 : V)
+                `{!EqDecision V} `{!go.AlwaysSafelyComparable t V} :
+  PureWp True (go_eq t #v1 #v2) #(bool_decide (v1 = v2)).
 Proof.
-  constructor. rewrite go.go_eq_interface. iIntros "*?". rewrite decide_True //.
-  by iApply wp_go_eq.
+  iIntros "%%*%% HΦ". rewrite go.is_safely_comparable. wp_pure_lc "?".
+  wp_pures. by iApply "HΦ".
 Qed.
 
 Lemma wp_fork s E e Φ :
@@ -325,7 +292,9 @@ Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} {core_sem : g
 Program Global Instance typed_pointsto_loc : TypedPointsto loc :=
   {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
 Final Obligation.
-Proof. iIntros "* H1 H2". iCombine "H1 H2" gives %Heq. naive_solver. Qed.
+Proof. iIntros "* H1 H2". iCombine "H1 H2" gives %Heq.
+       (* FIXME: bring back inj instances. *)
+       naive_solver. Qed.
 
 Program Global Instance typed_pointsto_w64 : TypedPointsto w64 :=
   {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
