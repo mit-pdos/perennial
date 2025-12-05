@@ -102,7 +102,7 @@ lite: src/LiteBuild.vo
 clean:
 	@echo "CLEAN vo glob aux"
 	$(Q)find $(SRC_DIRS) tests \( -name "*.vo" -o -name "*.vo[sk]" \
-		-o -name ".*.aux" -o -name ".*.cache" -name "*.glob" \) -delete
+		-o -name ".*.aux" -o -name ".*.cache" -o -name "*.glob" \) -delete
 	$(Q)rm -f .lia.cache
 	$(Q)rm -f $(TIMING_DB)
 	rm -f .rocqdeps.d tests/.rocqdeps.d
