@@ -45,7 +45,7 @@ Lemma wp_Assert (cond : bool) :
 Proof.
   wp_start as "%". subst.
   wp_auto.
-  by iApply "HΦ".
+  wp_end.
 Qed.
 
 Lemma wp_BytesEqual s1 s2 (xs1 xs2: list w8) dq1 dq2 :
@@ -88,16 +88,16 @@ Proof.
         congruence.
       + wp_for_post.
         rewrite -> bool_decide_eq_false_2 by congruence.
-        iApply "HΦ"; iFrame.
+        wp_end.
     - rewrite bool_decide_eq_true_2.
-      { iApply "HΦ"; iFrame. }
+      { wp_end. }
       eapply list_eq_same_length; [ eauto | eauto | ].
       intros ???? Hget1 Hget2.
       rewrite -> Hi in Hget1 by word.
       congruence.
   }
   rewrite bool_decide_eq_false_2.
-  { iApply "HΦ". iFrame. }
+  { wp_end. }
   intros ?%(f_equal length).
   word.
 Qed.
@@ -109,7 +109,7 @@ Lemma wp_BytesClone (b:slice.t) (xs:list u8) (dq:dfrac) :
 Proof.
   wp_start as "Hb". wp_auto.
   wp_if_destruct.
-  - iApply "HΦ". 
+  - wp_end.
     + iSplitL.
       * iDestruct (own_slice_len with "Hb") as "[%Hb_len %]".
         apply nil_length_inv in Hb_len. subst.
@@ -122,7 +122,7 @@ Proof.
       * iApply own_slice_cap_nil.
     + rewrite app_nil_l.
       iIntros (?) "(Hsl & Hcap & Hb)".
-      wp_auto. iApply "HΦ". iFrame.
+      wp_end.
 Qed.
 
 Lemma wp_SumNoOverflow (x y : u64) :
@@ -130,9 +130,9 @@ Lemma wp_SumNoOverflow (x y : u64) :
     @! std.SumNoOverflow #x #y
   {{{ RET #(bool_decide (uint.Z (word.add x y) = (uint.Z x + uint.Z y)%Z)); True }}}.
 Proof.
-  wp_start as "_"; wp_auto.
+  wp_start; wp_auto.
   wp_apply wp_SumNoOverflow.
-  iApply "HΦ"; done.
+  wp_end.
 Qed.
 
 Lemma wp_SumAssumeNoOverflow (x y : u64) :
@@ -140,9 +140,9 @@ Lemma wp_SumAssumeNoOverflow (x y : u64) :
     @! std.SumAssumeNoOverflow #x #y
   {{{ RET #(word.add x y); ⌜uint.Z (word.add x y) = (uint.Z x + uint.Z y)%Z⌝ }}}.
 Proof.
-  wp_start as "_"; wp_auto.
+  wp_start; wp_auto.
   wp_apply wp_SumAssumeNoOverflow.
-  iIntros "%". wp_auto. iApply "HΦ". done.
+  iIntros "%". wp_end.
 Qed.
 
 Lemma wp_SignedSumAssumeNoOverflow (x y : u64) :
@@ -159,8 +159,8 @@ Proof.
           || unshelve wp_auto
           || (wp_apply wp_Assume; iIntros "%")
           || congruence).
-  - iApply "HΦ"; word.
-  - iApply "HΦ"; word.
+  - wp_end.
+  - wp_end.
 Qed.
 
 Definition is_JoinHandle (l: loc) (P: iProp Σ): iProp _ :=
@@ -192,7 +192,7 @@ Proof.
          "HP" ∷ if done_b then P else True)
          with "[$] [$]") as "Hlock".
   wp_auto.
-  iApply "HΦ".
+  wp_end.
   rewrite /is_JoinHandle.
   iFrame "His_cond #". iFrame.
 Qed.
@@ -211,8 +211,7 @@ Proof.
   wp_apply (wp_Cond__Signal with "[$Hcond]").
   wp_apply (wp_Mutex__Unlock with "[$Hlock $locked done_b P]").
   { iFrame "done_b P". }
-  iApply "HΦ".
-  done.
+  wp_end.
 Qed.
 
 Lemma wp_Spawn (P: iProp Σ) (f : func.t) :
@@ -232,8 +231,7 @@ Proof.
     wp_auto.
     wp_apply (wp_JoinHandle__finish with "[$Hhandle $HP]").
     done.
-  - iApply "HΦ".
-    iFrame "#".
+  - wp_end.
 Qed.
 
 Lemma wp_JoinHandle__Join l P :
@@ -254,7 +252,7 @@ Proof.
   destruct done_b0; wp_auto.
   - wp_for_post.
     wp_apply (wp_Mutex__Unlock with "[$Hlock $locked $done]").
-    iApply "HΦ". done.
+    wp_end.
   - wp_apply (wp_Cond__Wait with "[$Hcond locked done HP]") as "H".
     { iSplit.
       - iApply (Mutex_is_Locker with "[] Hlock"). iPkgInit.
