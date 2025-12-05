@@ -44,6 +44,12 @@ new-goose:
 new-goose.vos:
 	$(Q)$(MAKE) $$(./etc/package-sources.sh new-goose | sed 's/\.v$$/\.vos/')
 
+.PHONY: old-goose old-goose.vos
+old-goose:
+	$(Q)$(MAKE) $$(./etc/package-sources.sh old-goose | sed 's/\.v$$/\.vo/')
+old-goose.vos:
+	$(Q)$(MAKE) $$(./etc/package-sources.sh old-goose | sed 's/\.v$$/\.vos/')
+
 check-assumptions: \
 	src/program_proof/examples/print_assumptions.vo \
 	src/program_proof/simple/print_assumptions.vo \
