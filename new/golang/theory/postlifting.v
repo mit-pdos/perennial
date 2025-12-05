@@ -65,7 +65,8 @@ Qed.
     [typed_pointsto_def] is in [IntoValProof] rather than here because `l ↦ v`
     not explicitly mention `t`, and there can be multiple `t`s for a single `V`
     (e.g. int64 and uint64 both have w64). *)
-Class IntoValTyped (V : Type) (t : go.type) `{!ZeroVal V} `{!TypedPointsto V} :=
+Class IntoValTyped (V : Type) (t : go.type) `{!ZeroVal V} `{!TypedPointsto V}
+  `{!GoSemanticsFunctions} :=
   {
     wp_alloc : (∀ {s E}, {{{ True }}}
                            alloc t #() @ s ; E
@@ -82,15 +83,15 @@ Class IntoValTyped (V : Type) (t : go.type) `{!ZeroVal V} `{!TypedPointsto V} :=
 End into_val_defs.
 
 (* [t] should not be an evar before doing typeclass search *)
-Global Hint Mode IntoValTyped - - - - - - - ! - - : typeclass_instances.
+Global Hint Mode IntoValTyped - - - - - - - ! - - - : typeclass_instances.
 
 Global Hint Mode TypedPointsto - ! : typeclass_instances.
 
 (* Non-maximally insert the arguments related to [t], [IntoVal], etc., so that
    typeclass search won't be invoked until wp_apply actually unifies the [t]. *)
-Global Arguments wp_alloc {_ _ _ _ _ _} [_ _ _ _ _ _ _] (Φ).
-Global Arguments wp_load {_ _ _ _ _ _} [_ _ _ _ _ _ _] (l dq v Φ).
-Global Arguments wp_store {_ _ _ _ _ _} [_ _ _ _ _ _ _] (l v w Φ).
+Global Arguments wp_alloc {_ _ _ _ _ _} [_ _ _ _ _ _ _ _] (Φ).
+Global Arguments wp_load {_ _ _ _ _ _} [_ _ _ _ _ _ _ _] (l dq v Φ).
+Global Arguments wp_store {_ _ _ _ _ _} [_ _ _ _ _ _ _ _] (l v w Φ).
 
 Notation "l ↦ dq v" := (typed_pointsto l dq v%V)
                          (at level 20, dq custom dfrac at level 1,
@@ -99,155 +100,23 @@ Notation "l ↦ dq v" := (typed_pointsto l dq v%V)
 Section go_wps.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} {core_sem : go.CoreSemantics}.
 
-Local Ltac solve_pure :=
-  iIntros "% * _ % HΦ"; iApply wp_GoInstruction;
-  [ intros; repeat econstructor | ];
-  iNext; iIntros "* %Hstep"; inv Hstep; inv Hpure;
+Global Instance pure_wp_go_step_det i v e :
+  go.IsGoStepPureDet i v e →
+  PureWp True (i v) e.
+Proof.
+  iIntros "% % * _ % HΦ". iApply wp_GoInstruction.
+  { intros. repeat econstructor. rewrite go.is_go_step_det go.is_go_step_pure_det //. }
+  iNext. iIntros "* %Hstep".
+  rewrite go.is_go_step_det go.is_go_step_pure_det in Hstep. inv Hstep.
   iIntros "H"; iIntros "$ !>"; by iApply "HΦ".
-
-Global Instance wp_GoAlloc t :
-  PureWp True (GoAlloc t #()) (alloc t #()).
-Proof. solve_pure. Qed.
-
-Global Instance wp_GoStore t (l : loc) v :
-  PureWp True (GoStore t (#l, v)%V) (store t #l v).
-Proof. solve_pure. Qed.
-
-Global Instance wp_GoLoad t (l : loc) :
-  PureWp True (GoLoad t #l) (load t #l).
-Proof. solve_pure. Qed.
-
-Global Instance wp_FuncResolve f ts :
-  PureWp True (FuncResolve f ts #()) #(functions f ts).
-Proof. solve_pure. Qed.
-
-Global Instance wp_MethodResolve t f :
-  PureWp True (MethodResolve t f #()) #(methods t f).
-Proof. solve_pure. Qed.
-
-Global Instance pure_wp_InterfaceGet m t v :
-  PureWp True (InterfaceGet m #(interface.mk t v)) (MethodResolve t m #() v).
-Proof. solve_pure. Qed.
-
-Global Instance pure_wp_InterfaceMake dt (v : val) :
-  PureWp True (InterfaceMake dt v) #(interface.mk dt v).
-Proof. solve_pure. Qed.
-
-Global Instance pure_wp_TypeAssert_non_interface t v :
-  PureWp (is_interface_type t = false) (TypeAssert t #(interface.mk t v)) v.
-Proof.
-  iIntros "% * %Heq % HΦ"; iApply wp_GoInstruction; [ intros; repeat econstructor |  ]; iNext.
-  iIntros "* %Hstep Hlc". inv Hstep. inv Hpure. iIntros "$ !>".
-  simpl. rewrite Heq. rewrite decide_True //. by iApply "HΦ".
 Qed.
 
-Global Instance pure_wp_TypeAssert_interface t dt v :
-  PureWp (is_interface_type t = true ∧ type_set_contains dt t = true)
-    (TypeAssert t #(interface.mk dt v)) #(interface.mk dt v).
+Global Instance pure_wp_is_go_op op t args v `{!go.IsGoOp op t args v} :
+  PureWp True (go_op op t args) v.
 Proof.
-  iIntros "% * %Heq % HΦ"; iApply wp_GoInstruction; [ intros; repeat econstructor |  ]; iNext.
-  iIntros "* %Hstep Hlc". inv Hstep. inv Hpure. iIntros "$ !>".
-  simpl. destruct Heq as [-> Hcontains]. rewrite Hcontains. by iApply "HΦ".
+  rewrite go.is_go_op.
+  iIntros "% % * _ % HΦ". wp_pure_lc "?". wp_pures. by iApply "HΦ".
 Qed.
-
-Global Instance pure_wp_TypeAssert2_non_interface t t' `{!ZeroVal V}
-                `{!go.GoZeroValEq t V} `{!TypedPointsto V} `{!IntoValTyped V t} (v : V) :
-  PureWp (is_interface_type t = false)
-    (TypeAssert2 t #(interface.mk t' #v))
-    (if decide (t = t') then (#v, #true)%V else (#(zero_val V), #false)%V).
-Proof.
-  iIntros "% * %Heq % HΦ"; iApply wp_GoInstruction; [ intros; repeat econstructor |  ]; iNext.
-  iIntros "* %Hstep Hlc". inv Hstep. inv Hpure. iIntros "$ !>".
-  simpl. rewrite Heq. destruct decide.
-  - by iApply "HΦ".
-  - rewrite go.go_zero_val_eq. wp_pures. by iApply "HΦ".
-Qed.
-
-Global Instance pure_wp_TypeAssert2_interface t i :
-  PureWp (is_interface_type t = true)
-    (TypeAssert2 t #i)
-    (match i with
-     | interface.mk dt v =>
-         if type_set_contains dt t then (# i, # true)%V else (# interface.nil, # false)%V
-     | interface.nil => (# interface.nil, # false)%V
-     end).
-Proof.
-  iIntros "% * %Heq % HΦ"; iApply wp_GoInstruction; [ intros; repeat econstructor |  ]; iNext.
-  iIntros "* %Hstep Hlc". inv Hstep. inv Hpure. iIntros "$ !>".
-  simpl. rewrite Heq. destruct i.
-  - by iApply "HΦ".
-  - by iApply "HΦ".
-Qed.
-
-Global Instance wp_GlobalVarAddr v :
-  PureWp True (GlobalVarAddr v #()) #(global_addr v).
-Proof. solve_pure. Qed.
-
-Global Instance wp_StructFieldRef t f (l : loc) :
-  PureWp True (StructFieldRef t f #l) #(struct_field_ref t f l).
-Proof. solve_pure. Qed.
-
-Class IsStructFieldGet t f (v v' : val) :=
-  {
-    struct_field_get_eq : struct_field_get t f v = v';
-  }.
-
-Class IsStructFieldSet t f v vf v' :=
-  {
-    struct_field_set_eq : struct_field_set t f v vf = v';
-  }.
-
-Global Instance wp_StructFieldGet `{!IsStructFieldGet t f v v'} :
-  PureWp True (StructFieldGet t f v) v'.
-Proof. rewrite -struct_field_get_eq. solve_pure. Qed.
-
-Global Instance wp_StructFieldSet t f v vf v' `{Heq : IsStructFieldSet t f v vf v'} :
-  PureWp True (StructFieldSet t f (v, vf)%V) v'.
-Proof. rewrite -(struct_field_set_eq (v':=v')). solve_pure. Qed.
-
-Global Instance wp_InternalLen et s :
-  PureWp True (InternalLen (go.SliceType et) #s) #(s.(slice.len)).
-Proof. solve_pure. Qed.
-
-Global Instance wp_InternalCap et s :
-  PureWp True (InternalCap (go.SliceType et) #s) #(s.(slice.cap)).
-Proof. solve_pure. Qed.
-
-Global Instance wp_InternalDynamicArrayAlloc et (n : w64) :
-  PureWp True (InternalDynamicArrayAlloc et #n)
-    (GoAlloc (go.ArrayType (sint.Z n) et) #()).
-Proof. solve_pure. Qed.
-
-Global Instance wp_InternalMakeSlice p l c :
-  PureWp True (InternalMakeSlice (#p, #l, #c)%V)
-    #(slice.mk p l c).
-Proof. solve_pure. Qed.
-
-Global Instance wp_IndexRef t (j : w64) (v : val) :
-  PureWp True (IndexRef t (v, #j)%V) (index_ref t (sint.Z j) v).
-Proof. solve_pure. Qed.
-
-Global Instance wp_Index t (j : w64) (v : val) :
-  PureWp True (Index t (v, #j)%V) (index t (sint.Z j) v).
-Proof. solve_pure. Qed.
-
-Local Lemma bool_decide_inj `(f : A → B) `{!Inj eq eq f} a a' `{!EqDecision A}
-  `{!EqDecision B}
-  : bool_decide (f a = f a') = bool_decide (a = a').
-Proof.
-  case_bool_decide.
-  { eapply inj in H; last done. rewrite bool_decide_true //. }
-  { rewrite bool_decide_false //.
-    intros HR. apply H. subst. done. }
-Qed.
-
-(* These should only be used if there aren't better instances available. *)
-Global Instance pure_wp_GoEquals_top_level t (v1 v2 : val) :
-  PureWp True (GoEquals t (v1, v2)%V) (go_eq_top_level t v1 v2) | 200.
-Proof. solve_pure. Qed.
-Global Instance pure_wp_GoEquals `[!go.IsComparable t] (v1 v2 : val) :
-  PureWp True (GoEquals t (v1, v2)%V) (go.go_eq t v1 v2) | 100.
-Proof. rewrite -go.is_comparable. solve_pure. Qed.
 
 Lemma wp_GoPrealloc {stk E} :
   {{{ True }}}
@@ -255,9 +124,10 @@ Lemma wp_GoPrealloc {stk E} :
   {{{ (l : loc), RET #l; True }}}.
 Proof.
   iIntros (?) "_ HΦ". wp_apply (wp_GoInstruction []).
-  { intros. exists #null. repeat econstructor. }
-  iIntros "* %Hstep"; inv Hstep; inv Hpure.
-  iIntros "_ $ !>". simpl. wp_pures. by iApply "HΦ".
+  { intros. exists #null. repeat econstructor. rewrite go.go_prealloc_step.
+    repeat econstructor. }
+  simpl. iIntros "* %Hstep". rewrite go.go_prealloc_step in Hstep.
+  destruct Hstep as [[]]. subst. iIntros "_ $ !>". simpl. wp_pures. by iApply "HΦ".
 Qed.
 
 Lemma wp_AngelicExit Φ s E :
@@ -265,9 +135,9 @@ Lemma wp_AngelicExit Φ s E :
 Proof.
   iLöb as "IH".
   wp_apply (wp_GoInstruction []).
-  { intros. repeat econstructor. }
-  iIntros "* %Hstep"; inv Hstep; inv Hpure.
-  iIntros "_ $ !>". simpl. iApply "IH".
+  { intros. repeat econstructor. rewrite go.angelic_exit_step //. }
+  simpl. iIntros "* %Hstep". rewrite go.angelic_exit_step in Hstep. inv Hstep.
+  iIntros "_ $ !>". subst. iApply "IH".
 Qed.
 
 Lemma wp_PackageInitCheck {stk E} (pkg : go_string) (s : gmap go_string bool) :
@@ -278,11 +148,9 @@ Proof.
   iIntros (?) "Hown HΦ".
   wp_apply (wp_GoInstruction []).
   { intros. repeat econstructor. }
-  iIntros "* %Hstep".
-  inv Hstep; last by inv Hpure.
+  simpl. iIntros "* %Hstep". intuition. simplify_eq.
   iIntros "_ Hauth". iCombine "Hauth Hown" gives %Heq. subst.
-  iModIntro. iFrame. simpl. wp_pures.
-  by iApply "HΦ".
+  iModIntro. iFrame. simpl. wp_pures. by iApply "HΦ".
 Qed.
 
 Lemma wp_PackageInitStart {stk E} (pkg : go_string) (s : gmap go_string bool) :
@@ -293,8 +161,7 @@ Proof.
   iIntros (?) "Hown HΦ".
   wp_apply (wp_GoInstruction []).
   { intros. repeat econstructor. }
-  iIntros "* %Hstep".
-  inv Hstep; last by inv Hpure.
+  simpl. iIntros "* %Hstep". intuition. simplify_eq.
   iIntros "_ Hauth". iCombine "Hauth Hown" gives %Heq. subst.
   iMod (own_go_state_update with "[$] [$]") as "[Hown Hauth]".
   iModIntro. iFrame. simpl. wp_pures.
@@ -309,8 +176,7 @@ Proof.
   iIntros (?) "Hown HΦ".
   wp_apply (wp_GoInstruction []).
   { intros. repeat econstructor. }
-  iIntros "* %Hstep".
-  inv Hstep; last by inv Hpure.
+  simpl. iIntros "* %Hstep". intuition. simplify_eq.
   iIntros "_ Hauth". iCombine "Hauth Hown" gives %Heq. subst.
   iMod (own_go_state_update with "[$] [$]") as "[Hown Hauth]".
   iModIntro. iFrame. simpl. wp_pures.

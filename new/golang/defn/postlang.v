@@ -181,12 +181,15 @@ panics because the type is not comparable.
 *)
 
 
-Definition is_go_step_det op args e : Prop :=
-  is_go_step_pure op args = eq e.
+Class IsGoStepPureDet instr args e : Prop :=
+  {
+    is_go_step_det s s' e' : is_go_step instr args e' s s' ↔ is_go_step_pure instr args e' ∧ s = s';
+    is_go_step_pure_det : is_go_step_pure instr args = eq e;
+  }.
 
 Class IsGoOp op t args v `{!GoSemanticsFunctions} : Prop :=
   {
-    is_go_op : go_op op t args = v;
+    is_go_op : go_op op t args = (#();; v)%E;
   }.
 
 Class IsComparable t `{!GoSemanticsFunctions} : Prop :=
@@ -200,9 +203,6 @@ Definition is_always_safe_to_compare t V `{!EqDecision V} `{!GoSemanticsFunction
 
 Class CoreComparisonSemantics `{!GoSemanticsFunctions} : Prop :=
 {
-  go_op_step o t args :
-    is_go_step_pure (GoOp o t) args = (eq $ go_op o t args);
-
   go_op_underlying o t args : go_op o t args = go_op o (to_underlying t) args;
   go_eq_underlying t : go_eq t = go_eq (to_underlying t);
 
@@ -274,19 +274,6 @@ Class GoZeroValEq t V `{!ZeroVal V} `{!GoSemanticsFunctions} :=
 Global Hint Mode GoZeroValEq ! - - - : typeclass_instances.
 Global Arguments go_zero_val_eq (t) V {_ _ _}.
 
-Class BasicIntoValInj :=
-  {
-    #[global] into_val_loc_inj :: Inj eq eq (into_val (V:=loc));
-    #[global] into_val_slice_inj :: Inj eq eq (into_val (V:=slice.t));
-    #[global] into_val_w64_inj :: Inj eq eq (into_val (V:=w64));
-    #[global] into_val_w32_inj :: Inj eq eq (into_val (V:=w32));
-    #[global] into_val_w16_inj :: Inj eq eq (into_val (V:=w16));
-    #[global] into_val_w8_inj :: Inj eq eq (into_val (V:=w8));
-    #[global] into_val_bool_inj :: Inj eq eq (into_val (V:=bool));
-    #[global] into_val_string_inj :: Inj eq eq (into_val (V:=go_string));
-    #[global] interface_into_val_inj :: Inj eq eq (into_val (V:=interface.t));
-  }.
-
 (** [go.CoreSemantics] defines the basics of when a GoContext is valid,
     excluding predeclared types (including primitives), arrays, slice, map, and
     channels, each of which is in their own file.
@@ -295,10 +282,26 @@ Class BasicIntoValInj :=
 Class CoreSemantics :=
 {
   #[global] core_semantics_data :: GoSemanticsFunctions;
+
+  #[global] go_op_step o t args :: IsGoStepPureDet (GoOp o t) args (go_op o t args);
+  #[global] go_alloc_step t args :: IsGoStepPureDet (GoAlloc t) args (alloc t args);
+  #[global] go_load_step t args :: IsGoStepPureDet (GoStore t) args (load t args);
+  #[global] go_store_step t args :: IsGoStepPureDet (GoStore t) args (store t args);
+  #[global] go_func_resolve_step n ts :: IsGoStepPureDet (FuncResolve n ts) #() #(functions n ts);
+  #[global] go_method_resolve_step m t :: IsGoStepPureDet (MethodResolve t m) #() #(methods t m);
+  #[global] go_global_var_addr_step v :: IsGoStepPureDet (GlobalVarAddr v) #() #(global_addr v);
+  #[global] struct_field_ref_step t f l ::
+    IsGoStepPureDet (StructFieldRef t f) #l #(struct_field_ref t f l);
+
+  #[global] go_interface_get_step m t v ::
+    IsGoStepPureDet (InterfaceGet m) #(interface.mk t v) #(methods t m);
+  #[global] go_interface_make_step t v :: IsGoStepPureDet (InterfaceMake t) v #(interface.mk t v);
+  go_prealloc_step : is_go_step_pure GoPrealloc #() = (λ e, ∃ (l : loc), e = #l);
+  angelic_exit_step : is_go_step_pure AngelicExit #() = (λ e, e = AngelicExit #());
+
   #[global] into_val_unfold_func ::
     IntoValUnfold func.t (λ f, (rec: f.(func.f) f.(func.x) := f.(func.e))%V);
   #[global] into_val_unfold_bool :: IntoValUnfold _ (λ x, LitV $ LitBool x);
-  #[global] basic_into_val_inj :: BasicIntoValInj;
 
   (* TODO: get rid of these. *)
   #[global] into_val_unfold_w64 :: IntoValUnfold _ (λ x, LitV $ LitInt x);
@@ -369,6 +372,11 @@ Class CoreSemantics :=
   index_ref_underlying t : index_ref t = index_ref (to_underlying t);
   index_underlying t : index t = index (to_underlying t);
 
+  #[global] index_ref_step t (j : w64) (v : val) ::
+    IsGoStepPureDet (IndexRef t) (v, #j)%V (index_ref t (sint.Z j) v);
+
+  #[global] index_step t (j : w64) (v : val) ::
+    IsGoStepPureDet (Index t) (v, #j)%V (index t (sint.Z j) v);
 
   composite_literal_underlying t :
     composite_literal t = composite_literal (to_underlying t);

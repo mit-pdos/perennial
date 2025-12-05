@@ -217,3 +217,50 @@ Inductive is_go_step_pure `{!GoGlobalContext} `{!GoLocalContext} :
     is_map_domain := inhabitant;
     composite_literal := inhabitant;
   |}.
+
+
+Global Instance pure_wp_TypeAssert_non_interface t v :
+  PureWp (is_interface_type t = false) (TypeAssert t #(interface.mk t v)) v.
+Proof.
+  iIntros "% * %Heq % HΦ"; iApply wp_GoInstruction; [ intros; repeat econstructor |  ]; iNext.
+  iIntros "* %Hstep Hlc". inv Hstep. inv Hpure. iIntros "$ !>".
+  simpl. rewrite Heq. rewrite decide_True //. by iApply "HΦ".
+Qed.
+
+Global Instance pure_wp_TypeAssert_interface t dt v :
+  PureWp (is_interface_type t = true ∧ type_set_contains dt t = true)
+    (TypeAssert t #(interface.mk dt v)) #(interface.mk dt v).
+Proof.
+  iIntros "% * %Heq % HΦ"; iApply wp_GoInstruction; [ intros; repeat econstructor |  ]; iNext.
+  iIntros "* %Hstep Hlc". inv Hstep. inv Hpure. iIntros "$ !>".
+  simpl. destruct Heq as [-> Hcontains]. rewrite Hcontains. by iApply "HΦ".
+Qed.
+
+Global Instance pure_wp_TypeAssert2_non_interface t t' `{!ZeroVal V}
+                `{!go.GoZeroValEq t V} `{!TypedPointsto V} `{!IntoValTyped V t} (v : V) :
+  PureWp (is_interface_type t = false)
+    (TypeAssert2 t #(interface.mk t' #v))
+    (if decide (t = t') then (#v, #true)%V else (#(zero_val V), #false)%V).
+Proof.
+  iIntros "% * %Heq % HΦ"; iApply wp_GoInstruction; [ intros; repeat econstructor |  ]; iNext.
+  iIntros "* %Hstep Hlc". inv Hstep. inv Hpure. iIntros "$ !>".
+  simpl. rewrite Heq. destruct decide.
+  - by iApply "HΦ".
+  - rewrite go.go_zero_val_eq. wp_pures. by iApply "HΦ".
+Qed.
+
+Global Instance pure_wp_TypeAssert2_interface t i :
+  PureWp (is_interface_type t = true)
+    (TypeAssert2 t #i)
+    (match i with
+     | interface.mk dt v =>
+         if type_set_contains dt t then (# i, # true)%V else (# interface.nil, # false)%V
+     | interface.nil => (# interface.nil, # false)%V
+     end).
+Proof.
+  iIntros "% * %Heq % HΦ"; iApply wp_GoInstruction; [ intros; repeat econstructor |  ]; iNext.
+  iIntros "* %Hstep Hlc". inv Hstep. inv Hpure. iIntros "$ !>".
+  simpl. rewrite Heq. destruct i.
+  - by iApply "HΦ".
+  - by iApply "HΦ".
+Qed.

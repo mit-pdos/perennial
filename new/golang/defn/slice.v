@@ -34,6 +34,18 @@ Context {ext : ffi_syntax}.
 Context {go_lctx : GoLocalContext} {go_gctx : GoGlobalContext}.
 Class SliceSemantics `{!GoSemanticsFunctions} :=
 {
+  #[global] internal_len_step s ::
+    go.IsGoStepPureDet InternalSliceLen #s #(s.(slice.len));
+  #[global] internal_cap_step s ::
+    go.IsGoStepPureDet InternalSliceCap #s #(s.(slice.cap));
+  #[global] internal_dynamic_array_alloc_step et (n : w64) ::
+    go.IsGoStepPureDet (InternalDynamicArrayAlloc et) #n
+    (GoAlloc (go.ArrayType (sint.Z n) et) #());
+
+  #[global] internal_make_slice_step p l c ::
+    go.IsGoStepPureDet InternalMakeSlice (#p, #l, #c)%V
+    #(slice.mk p l c);
+
   #[global] go_zero_val_eq_slice elem_type :: go.GoZeroValEq (go.SliceType elem_type) slice.t;
 
   (* special cases *)
@@ -90,11 +102,11 @@ Class SliceSemantics `{!GoSemanticsFunctions} :=
     GoLoad elem_type $ (Index $ go.SliceType elem_type) (#(W64 i), #s)%V;
   #[global] len_slice elem_type ::
     FuncUnfold go.len [go.SliceType elem_type]
-    (λ: "s", InternalLen (go.SliceType elem_type) "s")%V;
+    (λ: "s", InternalSliceLen "s")%V;
 
   #[global] cap_slice elem_type ::
     FuncUnfold go.cap [go.SliceType elem_type]
-    (λ: "s", InternalCap (go.SliceType elem_type) "s")%V;
+    (λ: "s", InternalSliceCap "s")%V;
 
   append_underlying t : functions go.append [t] = functions go.append [to_underlying t];
   #[global] append_slice elem_type ::

@@ -200,8 +200,8 @@ Inductive go_instruction : Type :=
 
 (* can do slice, array, string, map, etc. for these ops; the internal ones
    should not be directly called by GooseLang. *)
-| InternalLen (t : go.type)
-| InternalCap (t : go.type)
+| InternalSliceLen
+| InternalSliceCap
 | InternalDynamicArrayAlloc (elem_type : go.type)
 | InternalMakeSlice
 | IndexRef (t : go.type)
@@ -716,13 +716,14 @@ Notation "e1 || e2" :=
 Local Notation "# x" := (into_val x%go).
 Local Notation "#" := into_val (at level 0).
 
-Inductive is_go_step `{!GoGlobalContext} `{!GoLocalContext} :
-  ∀ (op : go_instruction) (arg : val) (e' : expr) (s s' : gmap go_string bool), Prop :=
-| package_init_check_step s p :
-  is_go_step (PackageInitCheck p) #() #(default false (s !! p)) s s
-| package_init_start_step s p : is_go_step (PackageInitStart p) #() #() s (<[ p := false ]> s)
-| package_init_finish_step s p : is_go_step (PackageInitFinish p) #() #() s (<[ p := true ]>s)
-| go_step_pure op arg e' (Hpure : is_go_step_pure op arg e') s : is_go_step op arg e' s s.
+Definition is_go_step `{!GoGlobalContext} `{!GoLocalContext}
+  (op : go_instruction) (arg : val) (e' : expr) (s s' : gmap go_string bool) : Prop :=
+  match op with
+  | PackageInitCheck p => arg = #() ∧ e' = #(default false (s !! p)) ∧ s' = s
+  | PackageInitStart p => arg = #() ∧ e' = #() ∧ s' = (<[ p := false ]> s)
+  | PackageInitFinish p => arg = #() ∧ e' = #() ∧ s' = (<[ p := true ]>s)
+  | _ => is_go_step_pure op arg e' ∧ s = s'
+  end.
 
 Record GoState : Type :=
   {
