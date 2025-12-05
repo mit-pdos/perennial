@@ -171,13 +171,16 @@ Definition Client__Getⁱᵐᵖˡ : val :=
     else do:  #());;;
     let: "$r0" := (![#ptrT] "next") in
     do:  ((struct.field_ref #Client #"last"%go (![#ptrT] "c")) <-[#ptrT] "$r0");;;
-    (if: (![#uint64T] "boundVer") = #(W64 0)
-    then return: (![#uint64T] (struct.field_ref #epoch #"epoch"%go (![#ptrT] "next")), #false, #slice.nil, ktcore.BlameNone)
-    else
-      let: "lastKey" := (mem.alloc (type.zero_val #ptrT)) in
-      let: "$r0" := (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] "hist") ((![#uint64T] "boundVer") - #(W64 1)))) in
-      do:  ("lastKey" <-[#ptrT] "$r0");;;
-      return: (![#uint64T] (struct.field_ref #epoch #"epoch"%go (![#ptrT] "next")), #true, ![#sliceT] (struct.field_ref #ktcore.CommitOpen #"Val"%go (![#ptrT] (struct.field_ref #ktcore.Memb #"PkOpen"%go (![#ptrT] "lastKey")))), ktcore.BlameNone))).
+    let: "$r0" := (![#uint64T] (struct.field_ref #epoch #"epoch"%go (![#ptrT] "next"))) in
+    do:  ("ep" <-[#uint64T] "$r0");;;
+    (if: (![#uint64T] "boundVer") ≠ #(W64 0)
+    then
+      let: "$r0" := #true in
+      do:  ("isReg" <-[#boolT] "$r0");;;
+      let: "$r0" := (![#sliceT] (struct.field_ref #ktcore.CommitOpen #"Val"%go (![#ptrT] (struct.field_ref #ktcore.Memb #"PkOpen"%go (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] "hist") ((![#uint64T] "boundVer") - #(W64 1)))))))) in
+      do:  ("pk" <-[#sliceT] "$r0")
+    else do:  #());;;
+    return: (![#uint64T] "ep", ![#boolT] "isReg", ![#sliceT] "pk", ![#ktcore.Blame] "err")).
 
 (* SelfMon a client's own uid.
    if isChanged, the key was added sometime from the last SelfMon.
@@ -557,8 +560,8 @@ Definition getNextEpⁱᵐᵖˡ : val :=
     let: "chainProof" := (mem.alloc "chainProof") in
     let: "sigPk" := (mem.alloc "sigPk") in
     let: "prev" := (mem.alloc "prev") in
-    let: "newLink" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "newDig" := (mem.alloc (type.zero_val #sliceT)) in
+    let: "nextLink" := (mem.alloc (type.zero_val #sliceT)) in
+    let: "nextDig" := (mem.alloc (type.zero_val #sliceT)) in
     let: "extLen" := (mem.alloc (type.zero_val #uint64T)) in
     let: ((("$ret0", "$ret1"), "$ret2"), "$ret3") := (let: "$a0" := (![#sliceT] (struct.field_ref #epoch #"link"%go (![#ptrT] "prev"))) in
     let: "$a1" := (![#sliceT] "chainProof") in
@@ -568,21 +571,15 @@ Definition getNextEpⁱᵐᵖˡ : val :=
     let: "$r2" := "$ret2" in
     let: "$r3" := "$ret3" in
     do:  ("extLen" <-[#uint64T] "$r0");;;
-    do:  ("newDig" <-[#sliceT] "$r1");;;
-    do:  ("newLink" <-[#sliceT] "$r2");;;
+    do:  ("nextDig" <-[#sliceT] "$r1");;;
+    do:  ("nextLink" <-[#sliceT] "$r2");;;
     do:  ("err" <-[#boolT] "$r3");;;
     (if: ![#boolT] "err"
     then return: (![#ptrT] "next", ![#boolT] "err")
     else do:  #());;;
-    (if: (![#uint64T] "extLen") = #(W64 0)
-    then
-      let: "$r0" := (![#ptrT] "prev") in
-      do:  ("next" <-[#ptrT] "$r0");;;
-      return: (![#ptrT] "next", ![#boolT] "err")
-    else do:  #());;;
-    let: "newEp" := (mem.alloc (type.zero_val #uint64T)) in
+    let: "nextEp" := (mem.alloc (type.zero_val #uint64T)) in
     let: "$r0" := ((![#uint64T] (struct.field_ref #epoch #"epoch"%go (![#ptrT] "prev"))) + (![#uint64T] "extLen")) in
-    do:  ("newEp" <-[#uint64T] "$r0");;;
+    do:  ("nextEp" <-[#uint64T] "$r0");;;
     (if: (~ (let: "$a0" := (![#uint64T] (struct.field_ref #epoch #"epoch"%go (![#ptrT] "prev"))) in
     let: "$a1" := (![#uint64T] "extLen") in
     (func_call #std.SumNoOverflow) "$a0" "$a1"))
@@ -592,8 +589,8 @@ Definition getNextEpⁱᵐᵖˡ : val :=
       return: (![#ptrT] "next", ![#boolT] "err")
     else do:  #());;;
     (if: let: "$a0" := (![#cryptoffi.SigPublicKey] "sigPk") in
-    let: "$a1" := (![#uint64T] "newEp") in
-    let: "$a2" := (![#sliceT] "newLink") in
+    let: "$a1" := (![#uint64T] "nextEp") in
+    let: "$a2" := (![#sliceT] "nextLink") in
     let: "$a3" := (![#sliceT] "sig") in
     (func_call #ktcore.VerifyLinkSig) "$a0" "$a1" "$a2" "$a3"
     then
@@ -601,9 +598,14 @@ Definition getNextEpⁱᵐᵖˡ : val :=
       do:  ("err" <-[#boolT] "$r0");;;
       return: (![#ptrT] "next", ![#boolT] "err")
     else do:  #());;;
-    let: "$r0" := (mem.alloc (let: "$epoch" := (![#uint64T] "newEp") in
-    let: "$dig" := (![#sliceT] "newDig") in
-    let: "$link" := (![#sliceT] "newLink") in
+    (if: (![#uint64T] "extLen") = #(W64 0)
+    then
+      let: "$r0" := (![#sliceT] (struct.field_ref #epoch #"dig"%go (![#ptrT] "prev"))) in
+      do:  ("nextDig" <-[#sliceT] "$r0")
+    else do:  #());;;
+    let: "$r0" := (mem.alloc (let: "$epoch" := (![#uint64T] "nextEp") in
+    let: "$dig" := (![#sliceT] "nextDig") in
+    let: "$link" := (![#sliceT] "nextLink") in
     let: "$sig" := (![#sliceT] "sig") in
     struct.make #epoch [{
       "epoch" ::= "$epoch";
@@ -616,7 +618,7 @@ Definition getNextEpⁱᵐᵖˡ : val :=
 
 Definition checkMemb : go_string := "github.com/sanjit-bhat/pav/client.checkMemb"%go.
 
-(* go: client.go:231:6 *)
+(* go: client.go:230:6 *)
 Definition checkMembⁱᵐᵖˡ : val :=
   λ: "vrfPk" "uid" "ver" "dig" "memb",
     exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
@@ -664,7 +666,7 @@ Definition checkMembⁱᵐᵖˡ : val :=
     else do:  #());;;
     return: (![#boolT] "err")).
 
-(* go: client.go:248:6 *)
+(* go: client.go:247:6 *)
 Definition checkHistⁱᵐᵖˡ : val :=
   λ: "vrfPk" "uid" "prefixLen" "dig" "hist",
     exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
@@ -691,7 +693,7 @@ Definition checkHistⁱᵐᵖˡ : val :=
       else do:  #()))));;;
     return: (![#boolT] "err")).
 
-(* go: client.go:257:6 *)
+(* go: client.go:256:6 *)
 Definition checkNonMembⁱᵐᵖˡ : val :=
   λ: "vrfPk" "uid" "ver" "dig" "nonMemb",
     exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
@@ -734,7 +736,7 @@ Definition checkNonMembⁱᵐᵖˡ : val :=
     else do:  #());;;
     return: (![#boolT] "err")).
 
-(* go: client.go:273:6 *)
+(* go: client.go:272:6 *)
 Definition checkAuditLinkⁱᵐᵖˡ : val :=
   λ: "servPk" "adtrPk" "ep" "link",
     exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
@@ -758,7 +760,7 @@ Definition checkAuditLinkⁱᵐᵖˡ : val :=
     else do:  #());;;
     return: (![#boolT] "err")).
 
-(* go: client.go:283:6 *)
+(* go: client.go:282:6 *)
 Definition checkAuditVrfⁱᵐᵖˡ : val :=
   λ: "servPk" "adtrPk" "vrf",
     exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in

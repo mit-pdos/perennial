@@ -114,8 +114,8 @@ Definition own ptr obj : iProp Σ :=
   "Hstruct_client" ∷ ptr ↦ (client.Client.mk obj.(uid) ptr_pend ptr_last ptr_serv) ∗
   "Hown_pend" ∷ nextVer.own ptr_pend obj.(pend) ∗
   "#Hown_last" ∷ epoch.own ptr_last obj.(last) ∗
-  "#Hgood_last" ∷ match obj.(serv).(serv.good) with None => True | Some γ =>
-    epoch.correct obj.(last) γ end ∗
+  "#Halign_last" ∷ match obj.(serv).(serv.good) with None => True | Some γ =>
+    epoch.align_server obj.(last) γ end ∗
   "#Hown_serv" ∷ serv.own ptr_serv obj.(serv) ∗
 
   "%Heq_serv" ∷ ⌜obj.(serv).(serv.info) = obj.(last).(epoch.serv)⌝ ∗
@@ -153,7 +153,6 @@ Lemma wp_getNextEp ptr_prev prev sl_sigPk sigPk sl_chainProof chainProof sl_sig 
 Proof.
   wp_start as "@".
   iNamedSuffix "Hown_prev" "_prev".
-  iNamedSuffix "Hvalid_epoch_prev" "_prev".
   wp_auto.
   wp_apply hashchain.wp_Verify as "* @".
   { iFrame "#". }
@@ -161,45 +160,53 @@ Proof.
   wp_if_destruct.
   { iApply "HΦ". iIntros "@". simpl in *. iApply "Hgenie". naive_solver. }
   iNamed "Hgenie".
-  wp_if_destruct.
-  { iApply "HΦ". iFrame "#%". case_decide; [done|]. by destruct new_vals. }
   wp_apply std.wp_SumNoOverflow.
   wp_if_destruct.
   2: { iApply "HΦ". iIntros "@".
-    opose proof (hashchain.wish_Proof_det _ _ _ Hwish_chain Hwish_chainProof) as <-.
-    case_decide as Heq.
-    { apply (f_equal length) in Heq. simpl in *. word. }
-    iNamed "Hlen_vals". word. }
+    opose proof (hashchain.wish_Proof_det _ _ _ Hwish_chain HnewDigs) as <-.
+    word. }
   wp_apply ktcore.wp_VerifyLinkSig as "* @".
   { iFrame "#". }
   wp_if_destruct.
   { iApply "HΦ". iIntros "@". iApply "Hgenie".
-    opose proof (hashchain.wish_Proof_det _ _ _ Hwish_chain Hwish_chainProof) as <-.
-    case_decide as Heq.
-    { apply (f_equal length) in Heq. simpl in *. word. }
-    iNamed "Hlen_vals".
-    iDestruct (hashchain.is_chain_det with "His_chain His_new_chain") as %<-.
-    iExactEq "Hwish_sig". repeat f_equal. word. }
+    opose proof (hashchain.wish_Proof_det _ _ _ Hwish_chain HnewDigs) as <-.
+    destruct next. inv Heq_next. simplify_eq/=.
+    iDestruct (hashchain.is_chain_det with "His_chain HnextLink") as %<-.
+    iExactEq "HnextSig". repeat f_equal. word. }
   iNamed "Hgenie".
+  iPersist "prev".
+  wp_bind (If _ _ _).
+  wp_apply (wp_wand _ _ _
+    (λ v,
+    ∃ sl_nextDig nextDig,
+    "->" ∷ ⌜v = execute_val⌝ ∗
+    "nextDig" ∷ nextDig_ptr ↦ sl_nextDig ∗
+    "%HnextDig" ∷ ⌜last (prev.(epoch.digs) ++ new_vals) = Some nextDig⌝ ∗
+    "#Hsl_nextDig" ∷ sl_nextDig ↦*□ nextDig
+    )%I
+    with "[nextDig]"
+  ) as "* @".
+  { wp_if_destruct.
+    - destruct new_vals; simpl in *; try done.
+      list_simplifier.
+      by iFrame "∗#%".
+    - destruct new_vals using rev_ind; simpl in *; [word|]. clear IHnew_vals.
+      rewrite (assoc _) !last_snoc /=.
+      by iFrame "∗#". }
   rewrite -wp_fupd.
   wp_apply wp_alloc as "* Hptr_next".
   iPersist "Hptr_next".
   iModIntro.
   iApply "HΦ".
-  iFrame (Hwish_chain).
+
   (* TODO[word]: w/o explicitly providing w64,
   something unfolds w64 to Naive.wrap and Naive.unsigned,
   which fails word tactic. *)
-  iExists (epoch.mk' (word.add prev.(epoch.epoch) extLen) _ _ _ _ _ _).
+  iExists _, (epoch.mk' (word.add prev.(epoch.epoch) extLen) _ _ _
+    (prev.(epoch.digs) ++ new_vals) _ _).
   iFrame "Hptr_next #%". simpl in *.
-  case_decide as Heq.
-  { apply (f_equal length) in Heq. simpl in *. word. }
-  iFrame "#".
-  repeat iSplit; try iPureIntro; try done.
-  - word.
+  repeat iSplit; [done|word|..].
   - iExactEq "His_chain". rewrite /named. repeat f_equal. word.
-  - destruct new_vals using rev_ind; [done|]. clear IHnew_vals.
-    by rewrite (assoc _) !last_snoc.
   - iExactEq "His_chain". rewrite /named. repeat f_equal. word.
 Qed.
 
@@ -568,7 +575,7 @@ Proof.
   wp_apply wp_CallHistory as "* @".
   { iFrame "#".
     case_match; try done.
-    iNamed "Hgood_last".
+    iNamed "Halign_last".
     list_elem hist (uint.nat c.(Client.last).(epoch.epoch)) as e.
     iDestruct (mono_list_idx_own_get with "His_hist") as "$"; [done|].
     word. }
@@ -592,7 +599,7 @@ Proof.
     case_match; try done.
     iApply "Hgenie".
     rewrite Heq_sig_pk.
-    iDestruct ("Hgood" with "Hvalid_epoch Hgood_last [//]") as "@".
+    iDestruct ("Hgood" with "Halign_last [//]") as "@".
     iFrame "#". }
   iNamed "Hgenie".
   iNamedSuffix "Hown_next" "_next".
@@ -611,7 +618,7 @@ Proof.
     case_match; try done.
     iApply "Hgenie".
     rewrite Heq_sig_pk Heq_vrf_pk.
-    iDestruct ("Hgood" with "Hvalid_epoch Hgood_last [//]") as "H".
+    iDestruct ("Hgood" with "Halign_last [//]") as "H".
     iNamedSuffix "H" "0".
     iDestruct (wish_getNextEp_det with "Hwish_getNextEp Hwish_getNextEp0") as %[-> ->].
     iFrame "#". }
@@ -627,28 +634,67 @@ Proof.
     case_match; try done.
     iApply "Hgenie".
     rewrite Heq_sig_pk Heq_vrf_pk.
-    iDestruct ("Hgood" with "Hvalid_epoch Hgood_last [//]") as "H".
+    iDestruct ("Hgood" with "Halign_last [//]") as "H".
     iNamedSuffix "H" "0".
     iDestruct (wish_getNextEp_det with "Hwish_getNextEp Hwish_getNextEp0") as %[-> ->].
     apply Forall2_length in Heq_hist0.
     autorewrite with len in *.
     iExactEq "Hwish_bound0". repeat f_equal. word. }
   iNamed "Hgenie".
-  wp_if_destruct.
-  { rewrite ktcore.rw_BlameNone.
-    iApply "HΦ".
-    iSplit. { iPureIntro. apply ktcore.blame_none. }
-    case_decide; try done.
-    iFrame "∗ Hstruct_epoch_next #%". simpl in *.
-    iExists digs.
-    iPoseProof "Hwish_getNextEp" as "@".
-    rewrite -sep_assoc.
-    iSplit.
-    { rewrite /epoch.valid. admit. }
-    iSplit. { admit. }
-    { case_decide; iNamed "Hlen_vals"; subst; simpl; [word|done]. }
-    (* maybe unify code branches. *)
-Admitted.
+  iPersist "hist boundVer".
+  wp_bind (If _ _ _).
+  wp_apply (wp_wand _ _ _
+    (λ v,
+    ∃ isReg sl_pk,
+    "->" ∷ ⌜v = execute_val⌝ ∗
+    "isReg" ∷ isReg_ptr ↦ isReg ∗
+    "pk" ∷ pk_ptr ↦ sl_pk ∗
+    "#Hlast_hist" ∷
+      match last hist with
+      | None => "%HisReg" ∷ ⌜isReg = false⌝
+      | Some x =>
+        "%HisReg" ∷ ⌜isReg = true⌝ ∗
+        "#Hsl_pk" ∷ sl_pk ↦*□ x.(ktcore.Memb.PkOpen).(ktcore.CommitOpen.Val)
+      end
+    )%I
+    with "[isReg pk]"
+  ) as "* @".
+  { wp_if_destruct.
+    - destruct (last hist) eqn:Hlast.
+      { apply last_Some in Hlast as [? Hlast].
+        apply (f_equal length) in Hlast.
+        autorewrite with len in *. word. }
+      by iFrame.
+    - destruct (last hist) as [memb|] eqn:Hlast.
+      2: { apply last_None in Hlast.
+        apply (f_equal length) in Hlast.
+        simpl in *. word. }
+      remember (word.sub sl_hist.(slice.len_f) (W64 1)) as idx.
+      rewrite last_lookup in Hlast.
+      replace (pred _) with (sint.nat idx) in Hlast by word.
+      list_elem ptr0 (sint.nat idx) as ptr_memb.
+      iDestruct (big_sepL2_lookup with "Hsl_hist") as "H"; [done..|].
+      iNamedSuffix "H" "0".
+      iNamedSuffix "Hown_PkOpen0" "1".
+
+      wp_pure; [word|].
+      wp_apply wp_load_slice_elem as "_"; [word|..].
+      { by iFrame "#". }
+      by iFrame "∗#". }
+
+  iApply "HΦ".
+  iSplit. { iPureIntro. apply ktcore.blame_none. }
+  case_decide; try done.
+  iPoseProof "Hwish_getNextEp" as "@".
+  destruct next. inv Heq_next. simplify_eq/=.
+  iFrame "∗ Hstruct_epoch_next #%". simpl in *.
+  case_match; try done.
+  rewrite Heq_sig_pk Heq_vrf_pk.
+  iDestruct ("Hgood" with "Halign_last [//]") as "H".
+  iNamedSuffix "H" "0".
+  iDestruct (wish_getNextEp_det with "Hwish_getNextEp Hwish_getNextEp0") as %[-> ->].
+  iFrame "#".
+Qed.
 
 End proof.
 End client.

@@ -41,12 +41,6 @@ Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 Context `{!pavG Σ}.
 
-Definition valid obj : iProp Σ :=
-  "%Hlast_dig" ∷ ⌜last obj.(digs) = Some obj.(dig)⌝ ∗
-  "#His_chain" ∷ hashchain.is_chain obj.(digs) obj.(cut) obj.(link) (S $ uint.nat obj.(epoch)) ∗
-  "#His_sig" ∷ ktcore.wish_LinkSig obj.(serv).(servInfo.sig_pk)
-    obj.(epoch) obj.(link) obj.(sig).
-
 Definition own ptr obj : iProp Σ :=
   ∃ sl_dig sl_link sl_sig,
   "#Hstruct_epoch" ∷ ptr ↦□ (client.epoch.mk obj.(epoch) sl_dig sl_link sl_sig) ∗
@@ -54,10 +48,12 @@ Definition own ptr obj : iProp Σ :=
   "#Hsl_link" ∷ sl_link ↦*□ obj.(link) ∗
   "#Hsl_sig" ∷ sl_sig ↦*□ obj.(sig) ∗
 
-  "#Hvalid_epoch" ∷ valid obj.
+  "%Hlast_dig" ∷ ⌜last obj.(digs) = Some obj.(dig)⌝ ∗
+  "#His_chain" ∷ hashchain.is_chain obj.(digs) obj.(cut) obj.(link) (S $ uint.nat obj.(epoch)) ∗
+  "#His_sig" ∷ ktcore.wish_LinkSig obj.(serv).(servInfo.sig_pk)
+    obj.(epoch) obj.(link) obj.(sig).
 
-(* separate [own] from [correct] to allow proving "pure" specs on [own]. *)
-Definition correct obj γ : iProp Σ :=
+Definition align_server obj γ : iProp Σ :=
   ∃ hist,
   "#His_hist" ∷ mono_list_lb_own γ.(server.cfg.histγ) hist ∗
   "%Heq_digs" ∷ ⌜obj.(digs) = hist.*1⌝ ∗
@@ -72,23 +68,19 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}
 Context `{!pavG Σ}.
 
 Definition wish_getNextEp prev sigPk chainProof sig newDigs next : iProp Σ :=
-  "%Hwish_chainProof" ∷ ⌜hashchain.wish_Proof chainProof newDigs⌝ ∗
-  "#Hlen_vals" ∷
-    (if decide (newDigs = [])
-    then "%Heq_next" ∷ ⌜next = prev⌝
-    else
-      ∃ newEp newLink,
-      "%HnewEp" ∷ ⌜uint.Z newEp = (uint.Z prev.(epoch.epoch) + length newDigs)%Z⌝ ∗
-      "#His_new_chain" ∷ hashchain.is_chain (prev.(epoch.digs) ++ newDigs)
-        prev.(epoch.cut) newLink (S $ uint.nat newEp) ∗
-      "#Hwish_sig" ∷ ktcore.wish_LinkSig sigPk newEp newLink sig ∗
-      "%Heq_next" ∷ ⌜next = epoch.mk' newEp (default [] (last newDigs))
-        newLink sig (prev.(epoch.digs) ++ newDigs)
-        prev.(epoch.cut) prev.(epoch.serv)⌝).
+  ∃ nextEp nextDig nextLink,
+  "%Heq_next" ∷ ⌜next = epoch.mk' nextEp nextDig nextLink sig
+    (prev.(epoch.digs) ++ newDigs) prev.(epoch.cut) prev.(epoch.serv)⌝ ∗
+  "%HnextEp" ∷ ⌜uint.Z nextEp = (uint.Z prev.(epoch.epoch) + length newDigs)%Z⌝ ∗
+  "%HnextDig" ∷ ⌜last next.(epoch.digs) = Some nextDig⌝ ∗
+  "%HnewDigs" ∷ ⌜hashchain.wish_Proof chainProof newDigs⌝ ∗
+  "#HnextLink" ∷ hashchain.is_chain next.(epoch.digs)
+    next.(epoch.cut) nextLink (S $ uint.nat nextEp) ∗
+  "#HnextSig" ∷ ktcore.wish_LinkSig sigPk nextEp nextLink sig.
 
 #[global] Instance wish_getNextEp_pers prev pk chain sig digs next :
   Persistent (wish_getNextEp prev pk chain sig digs next).
-Proof. rewrite /wish_getNextEp. case_decide; apply _. Qed.
+Proof. apply _. Qed.
 
 Lemma wish_getNextEp_det prev pk chain sig digs0 digs1 next0 next1 :
   wish_getNextEp prev pk chain sig digs0 next0 -∗
@@ -97,14 +89,12 @@ Lemma wish_getNextEp_det prev pk chain sig digs0 digs1 next0 next1 :
 Proof.
   iNamedSuffix 1 "0".
   iNamedSuffix 1 "1".
-  opose proof (hashchain.wish_Proof_det _ _ _ Hwish_chainProof0 Hwish_chainProof1) as ->.
-  case_decide;
-    iNamedSuffix "Hlen_vals0" "0";
-    iNamedSuffix "Hlen_vals1" "1";
-    [by simplify_eq/=|].
-  iDestruct (hashchain.is_chain_det with "His_new_chain0 His_new_chain1") as %->.
-  replace newEp with newEp0 in * by word.
-  by simplify_eq/=.
+  opose proof (hashchain.wish_Proof_det _ _ _ HnewDigs0 HnewDigs1) as ->.
+  destruct next0, next1. simpl in *.
+  (* simplify_eq doesn't work with more than 6 fields. *)
+  inv Heq_next0. inv Heq_next1.
+  iDestruct (hashchain.is_chain_det with "HnextLink0 HnextLink1") as %->.
+  by replace nextEp with nextEp0 in * by word.
 Qed.
 
 Lemma wp_CallHistory s γ (uid prevEpoch prevVerLen : w64) :
@@ -131,8 +121,7 @@ Lemma wp_CallHistory s γ (uid prevEpoch prevVerLen : w64) :
 
       "Hgood" ∷ match γ with None => True | Some cfg =>
         ∀ prev,
-        epoch.valid prev -∗
-        epoch.correct prev cfg -∗
+        epoch.align_server prev cfg -∗
         ⌜prev.(epoch.epoch) = prevEpoch⌝ -∗
 
         ∃ servHist lastDig lastKeys next,
@@ -140,13 +129,13 @@ Lemma wp_CallHistory s γ (uid prevEpoch prevVerLen : w64) :
         "#Hlb_servHist" ∷ mono_list_lb_own cfg.(cfg.histγ) servHist ∗
         "%Hlt_prevEpoch" ∷ ⌜uint.nat prevEpoch < length servHist⌝ ∗
         "%Hlt_prevVer" ∷ ⌜uint.nat prevVerLen ≤ length pks⌝ ∗
-        (* TODO: add to serv specs and other methods. *)
+        (* TODO: add noof to serv specs and other methods. *)
         "%Hnoof_vers" ∷ ⌜length pks = sint.nat (W64 (length pks))⌝ ∗
         "%Hlast_servHist" ∷ ⌜last servHist = Some (lastDig, lastKeys)⌝ ∗
 
         "#Hwish_getNextEp" ∷ wish_getNextEp prev cfg.(cfg.sig_pk) chainProof
           linkSig (drop (S (uint.nat prevEpoch)) servHist.*1) next ∗
-        "#Hgood_next" ∷ epoch.correct next cfg ∗
+        "#Halign_next" ∷ epoch.align_server next cfg ∗
         "#Hwish_hist" ∷ ktcore.wish_ListMemb cfg.(cfg.vrf_pk) uid prevVerLen
           next.(epoch.dig) hist ∗
         "%Heq_hist" ∷ ⌜Forall2
@@ -253,14 +242,10 @@ Proof.
   { word. }
   iModIntro.
 
-  iIntros (?) "@ @ %Heq_prevEp".
+  iIntros (?) "@ %Heq_prevEp".
   simplify_eq/=.
   iFrame (Hlast_hist) "Hnew_hist".
-  iExists (epoch.mk' (W64 (length σ.(state.hist) - 1))
-    lastDig lastLink
-    (* sig is only thing that can't be determ generated. *)
-    (if decide (drop (S (uint.nat prev.(epoch.epoch))) σ.(state.hist).*1 = [])
-      then prev.(epoch.sig) else linkSig)
+  iExists (epoch.mk' (W64 (length σ.(state.hist) - 1)) lastDig lastLink linkSig
     σ.(state.hist).*1 None prev.(epoch.serv)).
   iFrame "#%". simpl in *.
 
@@ -277,53 +262,24 @@ Proof.
     rewrite -Heqx.
     word. }
 
-  case_decide as Hlen_vals.
-  { iDestruct (mono_list_lb_valid with "His_hist Hnew_hist") as %Hpref.
-    assert (hist0 = σ.(state.hist)) as ->.
-    {
-      apply (f_equal length) in Hlen_vals. simpl in *.
-      rewrite length_drop in Hlen_vals.
-      autorewrite with len in *.
-      destruct Hpref as [Hpref|Hpref].
-      - opose proof (prefix_length_eq _ _ Hpref _) as ->; [|done].
-        remember (length σ.(state.hist)) as x.
-        rewrite -Heqx in Hlen_vals |-*.
-        word.
-      - opose proof (prefix_length_eq _ _ Hpref _) as ->; [|done].
-        remember (length σ.(state.hist)) as x.
-        rewrite -Heqx.
-        word. }
-    rewrite Heq_ep.
-    rewrite Heq_digs in Hlast_dig |-*.
-    rewrite Heq_cut.
-    iDestruct (hashchain.is_chain_det with "His_lastLink His_chain") as %->.
-    iPureIntro. destruct prev. simpl in *. repeat f_equal; try done.
-    - word.
-    - apply (f_equal (fmap fst)) in Hlast_hist. simpl in *.
-      rewrite -fmap_last Hlast_dig in Hlast_hist.
-      by simplify_eq/=.
-    - by case_decide. }
-
-  iDestruct (mono_list_lb_valid with "His_hist Hnew_hist") as %[[newHist Ht]|Hpref].
-  2: {
-    apply prefix_length in Hpref.
-    rewrite -skipn_all_iff in Hlen_vals.
-    autorewrite with len in *. word. }
+  iAssert (⌜hist0 `prefix_of` σ.(state.hist)⌝)%I as %[newDigs Ht].
+  { iDestruct (mono_list_lb_valid with "His_hist Hnew_hist") as %[?|[newDigs ?]]; [done|].
+    iPureIntro. simplify_eq/=.
+    destruct newDigs; [by list_simplifier|].
+    exfalso. autorewrite with len in *.
+    remember (length σ.(state.hist)) as x.
+    rewrite -Heqx in Heq_ep.
+    word. }
   rewrite ->Ht in *. clear Ht.
   rewrite {}Heq_digs {}Heq_cut.
-  rewrite fmap_app drop_app_length' in Hlen_vals |-*; [|len].
-
-  iExists (W64 (uint.Z prev.(epoch.epoch) + length newHist)), _.
+  rewrite fmap_app drop_app_length' in |-*; [|len].
   autorewrite with len in *.
-  iSplit; [word|].
-  iSplit. { iExactEq "His_lastLink". rewrite /named. repeat f_equal. word. }
-  iSplit. { iExactEq "Hwish_linkSig". rewrite /named. repeat f_equal. word. }
-  case_decide; try done.
-  iPureIntro. repeat f_equal; [word|].
-  destruct newHist using rev_ind; [done|]. clear IHnewHist.
-  rewrite (assoc _) last_snoc in Hlast_hist.
-  simplify_eq/=.
-  by rewrite fmap_app last_snoc.
+
+  iExists _.
+  repeat iSplit; try iPureIntro; [done|word|..].
+  - apply (f_equal (fmap fst)) in Hlast_hist. simpl in *.
+    by rewrite -fmap_last fmap_app in Hlast_hist.
+  - iExactEq "His_lastLink". rewrite /named. repeat f_equal. word.
 Qed.
 
 End proof.
