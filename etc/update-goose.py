@@ -203,20 +203,7 @@ def main():
             "./wal",
         )
 
-    run_goose(
-        journal_dir,
-        "./addr",
-        "./alloc",
-        "./buf",
-        "./jrnl",
-        "./common",
-        "./lockmap",
-        "./obj",
-        "./util",
-        "./wal",
-        "./jrnl_replication",
-        "./txn",
-    )
+    run_goose(journal_dir, "./...")
 
     run_goose(
         go_nfsd_dir,
