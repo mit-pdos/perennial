@@ -18,6 +18,10 @@ tags: [
   "logpath:Perennial"
 ]
 
+conflicts: [
+  "perennial"
+]
+
 depends: [
   "rocq-runtime" { (>= "9.1" & < "9.2~") | (= "dev") }
   "rocq-stdlib"
