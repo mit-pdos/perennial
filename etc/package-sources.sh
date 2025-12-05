@@ -73,7 +73,7 @@ elif [ "$package" = "old-goose" ]; then
   ls -1 \
     src/program_proof/unittest.v \
     src/program_proof/{proof_prelude,disk_lib,disk_prelude}.v \
-    src/program_proof/marshal*_proof.v \
+    src/program_proof/marshal*.v \
     src/program_proof/std_proof.v
 else
   echo "unknown package $package" 1>&2
