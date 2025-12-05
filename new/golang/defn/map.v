@@ -63,12 +63,13 @@ Module go.
 Section defs.
 Context {ext : ffi_syntax}.
 Context {go_lctx : GoLocalContext} {go_gctx : GoGlobalContext}.
-Class MapSemantics :=
+Class MapSemantics `{!GoSemanticsFunctions} :=
 {
-  go_eq_map_nil_l kt vt m :
-    go_eq_top_level (go.MapType kt vt) #m #map.nil = #(bool_decide (m = map.nil));
-  go_eq_map_nil_r kt vt m :
-    go_eq_top_level (go.MapType kt vt) #map.nil #m = #(bool_decide (m = map.nil));
+  (* special cases *)
+  #[global] is_go_op_go_equals_map_nil_l kt vt s ::
+    go.IsGoOp GoEquals (go.MapType kt vt) (#map.nil, #s)%V #(bool_decide (s = map.nil));
+  #[global] is_go_op_go_equals_map_nil_r kt vt s ::
+    go.IsGoOp GoEquals (go.MapType kt vt) (#s, #map.nil)%V #(bool_decide (s = map.nil));
 
   is_map_pure (v : val) (m : val → bool * val) : Prop;
   map_default : val → val;
@@ -95,25 +96,25 @@ Class MapSemantics :=
     is_map_domain mv ks →
     NoDup ks ∧ (∀ k, (m k).1 = true ↔ k ∈ ks);
 
-  clear_map key_type elem_type :
-    #(functions go.clear [go.MapType key_type elem_type]) =
+  #[global] clear_map key_type elem_type ::
+    FuncUnfold go.clear [go.MapType key_type elem_type]
     (λ: "m", Store "m" $ Read $
                FuncResolve go.make1 [go.MapType key_type elem_type] #())%V;
-  delete_map key_type elem_type :
-    #(functions go.delete [go.MapType key_type elem_type]) =
+  #[global] delete_map key_type elem_type ::
+    FuncUnfold go.delete [go.MapType key_type elem_type]
     (λ: "m" "k",
        InterfaceMake key_type "k" =⟨go.any⟩ InterfaceMake key_type "k";;
        Store "m" $ InternalMapDelete (Read "m", "k"))%V;
-  make2_map key_type elem_type :
-    #(functions go.make2 [go.MapType key_type elem_type]) =
+  #[global] make2_map key_type elem_type ::
+    FuncUnfold go.make2 [go.MapType key_type elem_type]
     (λ: "len",
        let: "default_elem" := GoLoad elem_type (GoAlloc elem_type #()) in
        ref (InternalMapMake "default_elem"))%V;
-  make1_map key_type elem_type :
-    #(functions go.make1 [go.MapType key_type elem_type]) =
+  #[global] make1_map key_type elem_type ::
+    FuncUnfold go.make1 [go.MapType key_type elem_type]
     (λ: <>, FuncResolve go.make2 [go.MapType key_type elem_type] #() #(W64 0))%V;
-  len_map key_type elem_type :
-    #(functions go.len [go.MapType key_type elem_type]) =
+  #[global] len_map key_type elem_type ::
+    FuncUnfold go.len [go.MapType key_type elem_type]
     (λ: "m", InternalMapLength (Read "m"))%V;
 
   composite_literal_map key_type elem_type (l : list keyed_element) :

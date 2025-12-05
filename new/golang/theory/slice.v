@@ -309,9 +309,6 @@ Qed.
 
 Context `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}.
 
-Local Instance make3_unfold t : FuncUnfold go.make3 [go.SliceType t] _ :=
-  ltac:(constructor; apply go.make3_slice).
-
 Lemma wp_slice_make3 stk E (len cap : w64) :
   0 ≤ sint.Z len ≤ sint.Z cap →
   {{{ True }}}
@@ -351,9 +348,6 @@ Proof.
   replace (sint.Z (sint.Z len)) with (sint.Z len) by word.
   iFrame.
 Qed.
-
-Local Instance make2_unfold t : FuncUnfold go.make2 [go.SliceType t] _ :=
-  ltac:(constructor; apply go.make2_slice).
 
 Lemma wp_slice_make2 stk E (len : u64) :
   {{{ ⌜0 ≤ sint.Z len⌝ }}}
@@ -750,9 +744,6 @@ Proof.
   iFrame.
 Qed.
 
-Local Instance copy_unfold t : FuncUnfold go.copy [go.SliceType t] _ :=
-  ltac:(constructor; apply go.copy_slice).
-
 (** slice.copy copies as much as possible (the smaller of len(s) and len(s2)) and returns
 the number of bytes copied. See https://pkg.go.dev/builtin#copy.
 
@@ -822,8 +813,6 @@ Proof.
     repeat (f_equal; try word).
 Qed.
 
-Local Instance clear_unfold t : FuncUnfold go.clear [go.SliceType t] _ :=
-  ltac:(constructor; apply go.clear_slice).
 Lemma wp_slice_clear s vs :
   {{{ s ↦[t]* vs }}}
     #(functions go.clear [go.SliceType t]) #s
@@ -869,8 +858,6 @@ Proof.
     word.
 Qed.
 
-Local Instance append_unfold t : FuncUnfold go.append [go.SliceType t] _ :=
-  ltac:(constructor; apply go.append_slice).
 Lemma wp_slice_append (s: slice.t) (vs: list V) (s2: slice.t) (vs': list V) dq :
   {{{ s ↦[t]* vs ∗ own_slice_cap t s (DfracOwn 1) ∗ s2 ↦[t]*{dq} vs' }}}
     #(functions go.append [go.SliceType t]) #s #s2

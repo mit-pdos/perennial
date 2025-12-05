@@ -31,7 +31,6 @@ Proof.
   iIntros "? $ !>". simpl. wp_auto. iApply "HΦ". done.
 Qed.
 
-
 (* NOTE: we assume EqDecision explicitly here even though it is also available
 through [IntoValTyped K kt] so that the instance used to type-check [gmap K V]
 is independent of the [IntoValTyped] instance. Otherwise, these proofs end up
@@ -92,9 +91,6 @@ Proof using Inj0.
   - by rewrite go.map_default_map_insert.
 Qed.
 
-Local Instance delete_unfold key_type elem_type :
-  FuncUnfold go.delete [go.MapType key_type elem_type] _ :=
-  ltac:(constructor; apply go.delete_map).
 Lemma wp_map_delete l (m : gmap K V) k key_type elem_type {Hsafe : SafeMapKey key_type k} :
   {{{ l ↦$ m }}}
     #(functions go.delete [go.MapType key_type elem_type])
@@ -158,9 +154,6 @@ Global Instance pure_wp_map_nil_lookup1 key_type elem_type k
   PureWp True (map.lookup1 key_type elem_type #map.nil #k) #(zero_val V).
 Proof. by pure_wp_start. Qed.
 
-Local Instance make2_unfold key_type elem_type :
-  FuncUnfold go.make2 [go.MapType key_type elem_type] _ :=
-  ltac:(constructor; apply go.make2_map).
 Lemma wp_map_make2 (len : w64) key_type elem_type
   `{!TypedPointsto V} `{!IntoValTyped V elem_type} :
 
@@ -183,9 +176,6 @@ Proof.
   - rewrite go.map_default_map_empty //.
 Qed.
 
-Local Instance make1_unfold key_type elem_type :
-  FuncUnfold go.make1 [go.MapType key_type elem_type] _ :=
-  ltac:(constructor; apply go.make1_map).
 Lemma wp_map_make1 key_type elem_type
   `{!TypedPointsto V} `{!IntoValTyped V elem_type} :
   {{{ True }}}
