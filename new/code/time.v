@@ -187,7 +187,7 @@ Axiom lowerhex : go_string.
 
 Axiom runeSelf : Z.
 
-Axiom runeError : val.
+Axiom runeError : Z.
 
 Definition quote : go_string := "time.quote"%go.
 

@@ -27,7 +27,6 @@ End Blame.
 Module VrfSig.
 Section def.
 Context `{ffi_syntax}.
-
 Record t := mk {
   SigTag' : w8;
   VrfPk' : slice.t;
@@ -70,6 +69,14 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_VrfSig SigTag' VrfPk':
+  PureWp True
+    (struct.make #ktcore.VrfSig (alist_val [
+      "SigTag" ::= #SigTag';
+      "VrfPk" ::= #VrfPk'
+    ]))%struct
+    #(VrfSig.mk SigTag' VrfPk').
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance VrfSig_struct_fields_split dq l (v : VrfSig.t) :
@@ -94,7 +101,6 @@ End instances.
 Module LinkSig.
 Section def.
 Context `{ffi_syntax}.
-
 Record t := mk {
   SigTag' : w8;
   Epoch' : w64;
@@ -142,6 +148,15 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_LinkSig SigTag' Epoch' Link':
+  PureWp True
+    (struct.make #ktcore.LinkSig (alist_val [
+      "SigTag" ::= #SigTag';
+      "Epoch" ::= #Epoch';
+      "Link" ::= #Link'
+    ]))%struct
+    #(LinkSig.mk SigTag' Epoch' Link').
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance LinkSig_struct_fields_split dq l (v : LinkSig.t) :
@@ -168,7 +183,6 @@ End instances.
 Module MapLabel.
 Section def.
 Context `{ffi_syntax}.
-
 Record t := mk {
   Uid' : w64;
   Ver' : w64;
@@ -211,6 +225,14 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_MapLabel Uid' Ver':
+  PureWp True
+    (struct.make #ktcore.MapLabel (alist_val [
+      "Uid" ::= #Uid';
+      "Ver" ::= #Ver'
+    ]))%struct
+    #(MapLabel.mk Uid' Ver').
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance MapLabel_struct_fields_split dq l (v : MapLabel.t) :
@@ -235,7 +257,6 @@ End instances.
 Module CommitOpen.
 Section def.
 Context `{ffi_syntax}.
-
 Record t := mk {
   Val' : slice.t;
   Rand' : slice.t;
@@ -278,6 +299,14 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_CommitOpen Val' Rand':
+  PureWp True
+    (struct.make #ktcore.CommitOpen (alist_val [
+      "Val" ::= #Val';
+      "Rand" ::= #Rand'
+    ]))%struct
+    #(CommitOpen.mk Val' Rand').
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance CommitOpen_struct_fields_split dq l (v : CommitOpen.t) :
@@ -302,7 +331,6 @@ End instances.
 Module Memb.
 Section def.
 Context `{ffi_syntax}.
-
 Record t := mk {
   LabelProof' : slice.t;
   PkOpen' : loc;
@@ -350,6 +378,15 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_Memb LabelProof' PkOpen' MerkleProof':
+  PureWp True
+    (struct.make #ktcore.Memb (alist_val [
+      "LabelProof" ::= #LabelProof';
+      "PkOpen" ::= #PkOpen';
+      "MerkleProof" ::= #MerkleProof'
+    ]))%struct
+    #(Memb.mk LabelProof' PkOpen' MerkleProof').
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Memb_struct_fields_split dq l (v : Memb.t) :
@@ -376,7 +413,6 @@ End instances.
 Module NonMemb.
 Section def.
 Context `{ffi_syntax}.
-
 Record t := mk {
   LabelProof' : slice.t;
   MerkleProof' : slice.t;
@@ -419,6 +455,14 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_NonMemb LabelProof' MerkleProof':
+  PureWp True
+    (struct.make #ktcore.NonMemb (alist_val [
+      "LabelProof" ::= #LabelProof';
+      "MerkleProof" ::= #MerkleProof'
+    ]))%struct
+    #(NonMemb.mk LabelProof' MerkleProof').
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance NonMemb_struct_fields_split dq l (v : NonMemb.t) :
@@ -443,7 +487,6 @@ End instances.
 Module AuditProof.
 Section def.
 Context `{ffi_syntax}.
-
 Record t := mk {
   Updates' : slice.t;
   LinkSig' : slice.t;
@@ -486,6 +529,14 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_AuditProof Updates' LinkSig':
+  PureWp True
+    (struct.make #ktcore.AuditProof (alist_val [
+      "Updates" ::= #Updates';
+      "LinkSig" ::= #LinkSig'
+    ]))%struct
+    #(AuditProof.mk Updates' LinkSig').
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance AuditProof_struct_fields_split dq l (v : AuditProof.t) :
@@ -510,7 +561,6 @@ End instances.
 Module UpdateProof.
 Section def.
 Context `{ffi_syntax}.
-
 Record t := mk {
   MapLabel' : slice.t;
   MapVal' : slice.t;
@@ -558,6 +608,15 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_UpdateProof MapLabel' MapVal' NonMembProof':
+  PureWp True
+    (struct.make #ktcore.UpdateProof (alist_val [
+      "MapLabel" ::= #MapLabel';
+      "MapVal" ::= #MapVal';
+      "NonMembProof" ::= #NonMembProof'
+    ]))%struct
+    #(UpdateProof.mk MapLabel' MapVal' NonMembProof').
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance UpdateProof_struct_fields_split dq l (v : UpdateProof.t) :
@@ -609,10 +668,6 @@ Global Program Instance is_pkg_defined_ktcore : IsPkgDefined ktcore :=
   |}.
 Final Obligation. iIntros. iFrame "#%". Qed.
 #[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
-
-Global Instance wp_func_call_CheckBlame :
-  WpFuncCall ktcore.CheckBlame _ (is_pkg_defined ktcore) :=
-  ltac:(solve_wp_func_call).
 
 Global Instance wp_func_call_SignVrf :
   WpFuncCall ktcore.SignVrf _ (is_pkg_defined ktcore) :=

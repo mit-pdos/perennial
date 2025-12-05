@@ -1,4 +1,5 @@
 From stdpp Require Export coPset.
+From iris.bi Require Import cmra.
 From iris.algebra Require Import gmap auth agree gset coPset list vector excl.
 From Perennial.algebra Require Import mlist.
 From iris.proofmode Require Import proofmode.
@@ -315,28 +316,19 @@ Lemma ownD_singleton_twice i : ownD {[i]} ∗ ownD {[i]} ⊢ False.
 Proof. rewrite ownD_disjoint. iIntros (?); set_solver. Qed.
 
 Lemma list_equivI_O {A: ofe} {M} (m1 m2: list A) : m1 ≡ m2 ⊣⊢@{uPredI M} ∀ i, m1 !! i ≡ m2 !! i.
-Proof.
-  uPred.unseal => //=.
-  split => n x Hval. split.
-  - intros ? Hequiv. apply list_dist_lookup; eauto.
-  - intros Hequiv. apply list_dist_lookup; eauto.
-Qed.
+Proof. apply list_equivI. Qed.
 Lemma list_equivI_1 {A: ofe} {M} (m1 m2: list A) : m1 ≡ m2 ⊢@{uPredI M} ∀ i, m1 !! i ≡ m2 !! i.
-Proof.
-  uPred.unseal => //=.
-  split => n x Hval Hequiv i. apply list_dist_lookup; eauto.
-Qed.
+Proof. rewrite list_equivI //. Qed.
 Lemma list_equivI_length {A: ofe} {M} (m1 m2: list A) : m1 ≡ m2 ⊢@{uPredI M} ⌜ length m1 = length m2 ⌝.
 Proof.
-  uPred.unseal => //=.
-  split => n x Hval Hequiv.
-  eapply (Forall2_length _ m1 m2 Hequiv).
+  sbi_unfold => n Hequiv.
+  apply (Forall2_length _ _ _ Hequiv).
 Qed.
 Lemma vec_equivI_1 {A: ofe} {M} {n} (m1 m2: vec A n) :
   m1 ≡ m2 ⊢@{uPredI M} ∀ i, vec_to_list m1 !! i ≡ vec_to_list m2 !! i.
 Proof.
-  uPred.unseal => //=.
-  split => ? x Hval Hequiv i. apply list_dist_lookup; eauto.
+  sbi_unfold => x //=.
+  apply list_dist_lookup.
 Qed.
 
 Lemma invariant_lookup_weak I {n} γ i sch (Ps: vec _ n) :
@@ -354,7 +346,7 @@ Proof.
   iExists Q, Qmut. (* iSplit; first done. *)
   iAssert (invariant_unfold sch' (list_to_vec Q) ≡ invariant_unfold sch Ps)%I as "Hequiv".
   { case: (I' !! i)=> [[Q' Qmut']|] //=.
-    - iRewrite "HI" in "HvI". rewrite option_validI prod_validI agree_validI.
+    - iRewrite "HI" in "HvI". rewrite option_validI prod_validI agree_op_invI.
       iDestruct "HvI" as "(HvI&_)". simpl.
       iRewrite -"HvI" in "HI". rewrite -pair_op agree_idemp prod_equivI.
       iDestruct "HI" as "($&_)".
@@ -379,12 +371,12 @@ Qed.
 
 Lemma agree_equiv_inclI {M} {A: ofe} (a b: A) c : to_agree a ≡ to_agree b ⋅ c ⊢@{uPredI M} (b ≡ a).
 Proof.
-  uPred.unseal. split.
-  intros n ? Hx Heq. apply (to_agree_includedN n b a). exists c; eauto.
+  sbi_unfold => n Heq.
+  apply (to_agree_includedN n b a). exists c; eauto.
 Qed.
 
 Lemma agree_op_invI {M} {A : ofe} (x y : agree A): ✓ (x ⋅ y) ⊢@{uPredI M} x ≡ y.
-Proof. uPred.unseal. split. intros n ? Hx Heq. by apply agree_op_invN. Qed.
+Proof. apply agree_op_invI. Qed.
 
 Lemma invariant_lookup_strong I {n m} γ i q sch (Ps: vec _ n) (Ps_mut: vec _ m) :
   own γ (● (inv_cmra_fmap <$> I : gmap _ _)) ∗
@@ -403,7 +395,7 @@ Proof.
   iExists Q, Qmut. (* iSplit; first done. *)
   iAssert (invariant_unfold sch' (list_to_vec Q) ≡ invariant_unfold sch Ps)%I as "Hequiv".
   { case: (I' !! i)=> [[Q' Qmut']|] //=.
-    - iRewrite "HI" in "HvI". rewrite option_validI prod_validI agree_validI.
+    - iRewrite "HI" in "HvI". rewrite option_validI prod_validI agree_op_invI.
       iDestruct "HvI" as "(HvI&_)". simpl.
       iRewrite -"HvI" in "HI". rewrite -pair_op agree_idemp prod_equivI.
       iDestruct "HI" as "($&_)".
@@ -413,7 +405,7 @@ Proof.
   iAssert (inv_mut_unfold q (list_to_vec Qmut) ≡ inv_mut_unfold q Ps_mut)%I as "Hequiv_mut".
   {
     case: (I' !! i)=> [[Q' Qmut']|] //=.
-    - iRewrite "HI" in "HvI". rewrite option_validI prod_validI agree_validI.
+    - iRewrite "HI" in "HvI". rewrite option_validI prod_validI agree_op_invI.
       iDestruct "HvI" as "(HvI&_)". simpl.
       iRewrite -"HvI" in "HI". rewrite -pair_op agree_idemp prod_equivI //=.
       iDestruct "HI" as "(_&Hi)".
@@ -587,7 +579,7 @@ Proof.
   { iCombine "Hi Hi_mut" as "Hcombine".
     iDestruct (own_valid with "Hcombine") as "#Hval".
     rewrite auth_frag_validI gmap_validI_singleton prod_validI /=.
-    rewrite agree_validI. iDestruct "Hval" as "(Hval_agree&_)".
+    rewrite agree_op_invI. iDestruct "Hval" as "(Hval_agree&_)".
     iRewrite -"Hval_agree" in "Hcombine".
     rewrite agree_idemp left_id. eauto.
   }
@@ -685,7 +677,7 @@ Proof.
   iDestruct "Hval" as "(_&Hval)".
   rewrite option_validI /= prod_validI /=.
   iDestruct "Hval" as "(_&Hagree)".
-  rewrite agree_validI agree_equivI.
+  rewrite agree_op_invI agree_equivI.
   (* XXX: this pattern is repeated a few times in other proofs. prove a lemma *)
   iDestruct (list_equivI_length with "Hagree") as %Hlen.
   iSplitL "".
@@ -745,7 +737,7 @@ Proof.
   { iCombine "Hi Hi_mut" as "Hcombine".
     iDestruct (own_valid with "Hcombine") as "#Hval".
     rewrite auth_frag_validI gmap_validI_singleton prod_validI /=.
-    rewrite agree_validI. iDestruct "Hval" as "(Hval_agree&_)".
+    rewrite agree_op_invI. iDestruct "Hval" as "(Hval_agree&_)".
     iRewrite -"Hval_agree" in "Hcombine".
     rewrite agree_idemp left_id. eauto.
   }

@@ -5,7 +5,6 @@ Require Export New.generatedproof.sync.
 Require Export New.generatedproof.time.
 Require Export New.generatedproof.github_com.goose_lang.primitive.
 Require Export New.generatedproof.github_com.goose_lang.std.
-Require Export New.generatedproof.github_com.sanjit_bhat.pav.advrpc.
 Require Export New.generatedproof.github_com.sanjit_bhat.pav.auditor.
 Require Export New.generatedproof.github_com.sanjit_bhat.pav.client.
 Require Export New.generatedproof.github_com.sanjit_bhat.pav.cryptoffi.
@@ -23,7 +22,6 @@ Module alicebob.
 Module histEntry.
 Section def.
 Context `{ffi_syntax}.
-
 Record t := mk {
   isReg' : bool;
   pk' : slice.t;
@@ -66,6 +64,14 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_histEntry isReg' pk':
+  PureWp True
+    (struct.make #alicebob.histEntry (alist_val [
+      "isReg" ::= #isReg';
+      "pk" ::= #pk'
+    ]))%struct
+    #(histEntry.mk isReg' pk').
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance histEntry_struct_fields_split dq l (v : histEntry.t) :
@@ -102,7 +108,6 @@ Global Instance is_pkg_defined_pure_alicebob : IsPkgDefinedPure alicebob :=
       is_pkg_defined_pure code.time.time ∧
       is_pkg_defined_pure code.github_com.goose_lang.primitive.primitive ∧
       is_pkg_defined_pure code.github_com.goose_lang.std.std ∧
-      is_pkg_defined_pure code.github_com.sanjit_bhat.pav.advrpc.advrpc ∧
       is_pkg_defined_pure code.github_com.sanjit_bhat.pav.auditor.auditor ∧
       is_pkg_defined_pure code.github_com.sanjit_bhat.pav.client.client ∧
       is_pkg_defined_pure code.github_com.sanjit_bhat.pav.cryptoffi.cryptoffi ∧
@@ -120,7 +125,6 @@ Global Program Instance is_pkg_defined_alicebob : IsPkgDefined alicebob :=
        is_pkg_defined code.time.time ∗
        is_pkg_defined code.github_com.goose_lang.primitive.primitive ∗
        is_pkg_defined code.github_com.goose_lang.std.std ∗
-       is_pkg_defined code.github_com.sanjit_bhat.pav.advrpc.advrpc ∗
        is_pkg_defined code.github_com.sanjit_bhat.pav.auditor.auditor ∗
        is_pkg_defined code.github_com.sanjit_bhat.pav.client.client ∗
        is_pkg_defined code.github_com.sanjit_bhat.pav.cryptoffi.cryptoffi ∗

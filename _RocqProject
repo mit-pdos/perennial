@@ -14,15 +14,5 @@
 # Iris-disabled warnings
 -arg -w -arg -notation-overridden,-redundant-canonical-projection,-notation-incompatible-prefix
 -arg -w -arg -unknown-warning
--Q external/stdpp/stdpp stdpp
--Q external/stdpp/stdpp_unstable stdpp.unstable
--Q external/stdpp/stdpp_bitvector stdpp.bitvector
--Q external/iris/iris iris
--Q external/iris/iris_deprecated iris.deprecated
--Q external/iris/iris_unstable iris.unstable
--Q external/iris/iris_heap_lang iris.heap_lang
--Q external/coqutil/src/coqutil coqutil
 -Q external/Goose Goose
--Q external/record-update/src RecordUpdate
--Q external/iris-named-props/src iris_named_props
 -Q new New

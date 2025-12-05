@@ -11,72 +11,63 @@ on:
   # allow running action manually.
   workflow_dispatch:
 
+env:
+  UV_VERSION: "0.9.11"
+
 jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        coq_version:
-          - dev
-          - "9.1"
-          - "9.0"
+        rocq-version:
+          - weekly
+          - latest
       max-parallel: 4
       fail-fast: false
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
         with:
-          submodules: true
-      - uses: coq-community/docker-coq-action@v1
+          version: ${{ env.UV_VERSION }}
+      - name: Install Rocq
+        uses: tchajed/setup-rocq@v1
         with:
-          coq_version: ${{ matrix.coq_version }}
-          ocaml_version: "default"
-          install: |
-            startGroup Install dependencies
-              sudo apt-get update
-              sudo apt-get install -y python3 python3-pandas sqlite3
-            endGroup
-          # for permissions issue, see:
-          # https://github.com/coq-community/docker-coq-action#permissions.
-          before_script: |
-            sudo chown -R 1000:1000 .
-          script: |
-            startGroup Build
-              make -j4 -k ci
-            endGroup
-          after_script: |
-            startGroup Create timing report
-              ./etc/timing-report.py --max-files 50
-            endGroup
-          uninstall: |
-            make clean
-      - name: Revert permissions
-        if: ${{ always() }}
-        run: sudo chown -R 1001:116 .
+          rocq-version: "${{ matrix.rocq-version }}"
+      - name: Install build dependencies
+        run: |
+          opam install --deps-only .
+      - name: Rocq build
+        run: |
+          make -j4 -k ci
+      - name: Report timing statistics
+        run: ./etc/timing-report.py --max-files 50
 
   check-goose:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
         with:
-          submodules: true
+          version: ${{ env.UV_VERSION }}
       - uses: actions/setup-go@v6
         with:
           # pin exact version for deterministic stdlib translation.
           go-version: "1.24.9"
           # repo doesn't have go.sum file. nothing to cache.
           cache: false
-      - name: Setup Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: "3.13"
-          cache: "pip"
-      - run: pip install .
       - name: build ci-use-goose-pr
         run: |
           cd etc/ci-use-goose-pr
           go install .
       - name: check that Goosed files are clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             ci-use-goose-pr -pr ${{ github.event.number }} -verbose
@@ -89,9 +80,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
         with:
-          submodules: true
+          version: ${{ env.UV_VERSION }}
       - name: Install protoc
         run: sudo apt-get install protobuf-compiler -y
       - name: Install Go
@@ -99,11 +92,6 @@ jobs:
         with:
           go-version: "1.24"
           cache: false
-      - name: Install Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: "3.13"
-          cache: "pip"
       - name: Check Grackle
         run: |
           ./etc/ci-grackle-check.py
@@ -112,7 +100,7 @@ jobs:
   python:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Setup Python
         uses: actions/setup-python@v6
         with:
@@ -127,7 +115,7 @@ jobs:
   toml:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Install taplo
         # NOTE: periodically update taplo version.
         run: |

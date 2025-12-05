@@ -16,7 +16,6 @@ Module hashchain.
 Module HashChain.
 Section def.
 Context `{ffi_syntax}.
-
 Record t := mk {
   predLastLink' : slice.t;
   lastLink' : slice.t;
@@ -64,6 +63,15 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_HashChain predLastLink' lastLink' vals':
+  PureWp True
+    (struct.make #hashchain.HashChain (alist_val [
+      "predLastLink" ::= #predLastLink';
+      "lastLink" ::= #lastLink';
+      "vals" ::= #vals'
+    ]))%struct
+    #(HashChain.mk predLastLink' lastLink' vals').
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance HashChain_struct_fields_split dq l (v : HashChain.t) :

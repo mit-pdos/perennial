@@ -50,7 +50,12 @@ Context `{heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{!syncG Σ}.
 
-#[global] Instance : IsPkgInit sync := define_is_pkg_init True%I.
+Definition is_initialized : iProp Σ :=
+  ∃ (p: loc),
+    global_addr sync.expunged ↦□ p ∗
+    p ↦□ interface.nil.
+
+#[global] Instance : IsPkgInit sync := define_is_pkg_init (is_initialized).
 #[global] Instance : GetIsPkgInitWf sync := build_get_is_pkg_init_wf.
 
 Lemma wp_initialize' get_is_pkg_init :
@@ -72,7 +77,24 @@ Proof.
   wp_apply (atomic.wp_initialize' with "[$Hown]") as "(Hown & #?)".
   { naive_solver. }
   { iModIntro. iEval simpl_is_pkg_defined in "Hdef". iPkgInit. }
-  wp_call. iEval (rewrite is_pkg_init_unfold /=). iFrame "∗#".  done.
+  wp_call. (* package.alloc sync *)
+  wp_alloc expunged_l as "Hexpunged".
+  wp_auto.
+
+  wp_apply wp_globals_get.
+  wp_apply assume.wp_assume. rewrite bool_decide_eq_true. iIntros (<-).
+  wp_auto.
+
+  wp_alloc expunged_p as "Hexpunged_p".
+  iPersist "Hexpunged_p".
+  wp_auto.
+
+  rewrite -wp_fupd.
+  wp_apply wp_globals_get.
+  iPersist "Hexpunged".
+  iModIntro.
+
+  iEval (rewrite is_pkg_init_unfold /=). iFrame "∗#".
 Qed.
 
 End defns.

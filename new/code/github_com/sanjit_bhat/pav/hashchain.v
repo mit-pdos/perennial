@@ -9,19 +9,17 @@ Definition hashchain : go_string := "github.com/sanjit-bhat/pav/hashchain".
 
 Module hashchain.
 
-Module HashChain. Definition id : go_string := "github.com/sanjit-bhat/pav/hashchain.HashChain"%go. End HashChain.
-
 Section code.
 Context `{ffi_syntax}.
 
 
-Definition HashChain : go_type := structT [
-  "predLastLink" :: sliceT;
-  "lastLink" :: sliceT;
-  "vals" :: sliceT
+Definition HashChainⁱᵐᵖˡ : go.type := go.StructType [
+  (go.FieldDecl "predLastLink"%go (go.SliceType go.byte));
+  (go.FieldDecl "lastLink"%go (go.SliceType go.byte));
+  (go.FieldDecl "vals"%go (go.SliceType go.byte))
 ].
-#[global] Typeclasses Opaque HashChain.
-#[global] Opaque HashChain.
+
+Definition HashChain : go.type := go.Named "github.com/sanjit-bhat/pav/hashchain.HashChain"%go [].
 
 Definition GetNextLink : go_string := "github.com/sanjit-bhat/pav/hashchain.GetNextLink"%go.
 
@@ -31,23 +29,23 @@ Definition GetNextLink : go_string := "github.com/sanjit-bhat/pav/hashchain.GetN
    go: hashchain.go:21:21 *)
 Definition HashChain__Appendⁱᵐᵖˡ : val :=
   λ: "c" "val",
-    exception_do (let: "newLink" := (mem.alloc (type.zero_val sliceT)) in
-    let: "c" := (mem.alloc "c") in
-    let: "val" := (mem.alloc "val") in
-    do:  (let: "$a0" := ((s_to_w64 (let: "$a0" := (![sliceT] "val") in
-    slice.len "$a0")) = cryptoffi.HashLen) in
-    (func_call #std.Assert) "$a0");;;
-    let: "$r0" := (![sliceT] (struct.field_ref ptrT #"lastLink"%go (![ptrT] "c"))) in
-    do:  ((struct.field_ref ptrT #"predLastLink"%go (![ptrT] "c")) <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] (struct.field_ref ptrT #"lastLink"%go (![ptrT] "c"))) in
-    let: "$a1" := (![sliceT] "val") in
-    (func_call #GetNextLink) "$a0" "$a1") in
-    do:  ((struct.field_ref ptrT #"lastLink"%go (![ptrT] "c")) <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] (struct.field_ref ptrT #"vals"%go (![ptrT] "c"))) in
-    let: "$a1" := (![sliceT] "val") in
-    (slice.append byteT) "$a0" "$a1") in
-    do:  ((struct.field_ref ptrT #"vals"%go (![ptrT] "c")) <-[sliceT] "$r0");;;
-    return: (![sliceT] (struct.field_ref ptrT #"lastLink"%go (![ptrT] "c")))).
+    exception_do (let: "newLink" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "c" := (go.AllocValue (go.PointerType HashChain) "c") in
+    let: "val" := (go.AllocValue (go.SliceType go.byte) "val") in
+    do:  (let: "$a0" := ((s_to_w64 (let: "$a0" := (![go.SliceType go.byte] "val") in
+    (FuncResolve go.len [go.SliceType go.byte] #()) "$a0")) =⟨go.uint64⟩ cryptoffi.HashLen) in
+    (FuncResolve std.Assert [] #()) "$a0");;;
+    let: "$r0" := (![go.SliceType go.byte] (StructFieldRef HashChain "lastLink"%go (![go.PointerType HashChain] "c"))) in
+    do:  ((StructFieldRef HashChain "predLastLink"%go (![go.PointerType HashChain] "c")) <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] (StructFieldRef HashChain "lastLink"%go (![go.PointerType HashChain] "c"))) in
+    let: "$a1" := (![go.SliceType go.byte] "val") in
+    (FuncResolve GetNextLink [] #()) "$a0" "$a1") in
+    do:  ((StructFieldRef HashChain "lastLink"%go (![go.PointerType HashChain] "c")) <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] (StructFieldRef HashChain "vals"%go (![go.PointerType HashChain] "c"))) in
+    let: "$a1" := (![go.SliceType go.byte] "val") in
+    (FuncResolve go.append [go.SliceType go.byte] #()) "$a0" "$a1") in
+    do:  ((StructFieldRef HashChain "vals"%go (![go.PointerType HashChain] "c")) <-[go.SliceType go.byte] "$r0");;;
+    return: (![go.SliceType go.byte] (StructFieldRef HashChain "lastLink"%go (![go.PointerType HashChain] "c")))).
 
 (* Prove transitions from knowing a prevLen prefix to knowing the latest list.
    it expects prevLen <= curr len.
@@ -55,15 +53,15 @@ Definition HashChain__Appendⁱᵐᵖˡ : val :=
    go: hashchain.go:31:21 *)
 Definition HashChain__Proveⁱᵐᵖˡ : val :=
   λ: "c" "prevLen",
-    exception_do (let: "proof" := (mem.alloc (type.zero_val sliceT)) in
-    let: "c" := (mem.alloc "c") in
-    let: "prevLen" := (mem.alloc "prevLen") in
-    let: "start" := (mem.alloc (type.zero_val uint64T)) in
-    let: "$r0" := ((![uint64T] "prevLen") * cryptoffi.HashLen) in
-    do:  ("start" <-[uint64T] "$r0");;;
-    return: (let: "$a0" := (let: "$s" := (![sliceT] (struct.field_ref ptrT #"vals"%go (![ptrT] "c"))) in
-     slice.slice byteT "$s" (![uint64T] "start") (slice.len "$s")) in
-     (func_call #bytes.Clone) "$a0")).
+    exception_do (let: "proof" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "c" := (go.AllocValue (go.PointerType HashChain) "c") in
+    let: "prevLen" := (go.AllocValue go.uint64 "prevLen") in
+    let: "start" := (GoAlloc go.uint64 #()) in
+    let: "$r0" := ((![go.uint64] "prevLen") *⟨go.uint64⟩ cryptoffi.HashLen) in
+    do:  ("start" <-[go.uint64] "$r0");;;
+    return: (let: "$a0" := (let: "$s" := (![go.SliceType go.byte] (StructFieldRef HashChain "vals"%go (![go.PointerType HashChain] "c"))) in
+     slice.slice go.byte "$s" (![go.uint64] "start") (slice.len "$s")) in
+     (FuncResolve bytes.Clone [] #()) "$a0")).
 
 (* Bootstrap hashchain verifiers with the last value.
    it expects non-empty values.
@@ -71,16 +69,16 @@ Definition HashChain__Proveⁱᵐᵖˡ : val :=
    go: hashchain.go:38:21 *)
 Definition HashChain__Bootstrapⁱᵐᵖˡ : val :=
   λ: "c" <>,
-    exception_do (let: "proof" := (mem.alloc (type.zero_val sliceT)) in
-    let: "bootLink" := (mem.alloc (type.zero_val sliceT)) in
-    let: "c" := (mem.alloc "c") in
-    let: "start" := (mem.alloc (type.zero_val uint64T)) in
-    let: "$r0" := ((s_to_w64 (let: "$a0" := (![sliceT] (struct.field_ref ptrT #"vals"%go (![ptrT] "c"))) in
-    slice.len "$a0")) - cryptoffi.HashLen) in
-    do:  ("start" <-[uint64T] "$r0");;;
-    return: (![sliceT] (struct.field_ref ptrT #"predLastLink"%go (![ptrT] "c")), let: "$a0" := (let: "$s" := (![sliceT] (struct.field_ref ptrT #"vals"%go (![ptrT] "c"))) in
-     slice.slice byteT "$s" (![uint64T] "start") (slice.len "$s")) in
-     (func_call #bytes.Clone) "$a0")).
+    exception_do (let: "proof" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "bootLink" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "c" := (go.AllocValue (go.PointerType HashChain) "c") in
+    let: "start" := (GoAlloc go.uint64 #()) in
+    let: "$r0" := ((s_to_w64 (let: "$a0" := (![go.SliceType go.byte] (StructFieldRef HashChain "vals"%go (![go.PointerType HashChain] "c"))) in
+    (FuncResolve go.len [go.SliceType go.byte] #()) "$a0")) -⟨go.uint64⟩ cryptoffi.HashLen) in
+    do:  ("start" <-[go.uint64] "$r0");;;
+    return: (![go.SliceType go.byte] (StructFieldRef HashChain "predLastLink"%go (![go.PointerType HashChain] "c")), let: "$a0" := (let: "$s" := (![go.SliceType go.byte] (StructFieldRef HashChain "vals"%go (![go.PointerType HashChain] "c"))) in
+     slice.slice go.byte "$s" (![go.uint64] "start") (slice.len "$s")) in
+     (FuncResolve bytes.Clone [] #()) "$a0")).
 
 Definition Verify : go_string := "github.com/sanjit-bhat/pav/hashchain.Verify"%go.
 
@@ -91,57 +89,41 @@ Definition Verify : go_string := "github.com/sanjit-bhat/pav/hashchain.Verify"%g
    go: hashchain.go:46:6 *)
 Definition Verifyⁱᵐᵖˡ : val :=
   λ: "prevLink" "proof",
-    exception_do (let: "err" := (mem.alloc (type.zero_val boolT)) in
-    let: "newLink" := (mem.alloc (type.zero_val sliceT)) in
-    let: "newVal" := (mem.alloc (type.zero_val sliceT)) in
-    let: "extLen" := (mem.alloc (type.zero_val uint64T)) in
-    let: "proof" := (mem.alloc "proof") in
-    let: "prevLink" := (mem.alloc "prevLink") in
-    let: "proofLen" := (mem.alloc (type.zero_val uint64T)) in
-    let: "$r0" := (s_to_w64 (let: "$a0" := (![sliceT] "proof") in
-    slice.len "$a0")) in
-    do:  ("proofLen" <-[uint64T] "$r0");;;
-    (if: ((![uint64T] "proofLen") `rem` cryptoffi.HashLen) ≠ #(W64 0)
+    exception_do (let: "err" := (GoAlloc go.bool #()) in
+    let: "newLink" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "newVal" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "extLen" := (GoAlloc go.uint64 #()) in
+    let: "proof" := (go.AllocValue (go.SliceType go.byte) "proof") in
+    let: "prevLink" := (go.AllocValue (go.SliceType go.byte) "prevLink") in
+    let: "proofLen" := (GoAlloc go.uint64 #()) in
+    let: "$r0" := (s_to_w64 (let: "$a0" := (![go.SliceType go.byte] "proof") in
+    (FuncResolve go.len [go.SliceType go.byte] #()) "$a0")) in
+    do:  ("proofLen" <-[go.uint64] "$r0");;;
+    (if: ((![go.uint64] "proofLen") `rem`⟨go.uint64⟩ cryptoffi.HashLen) ≠⟨go.uint64⟩ #(W64 0)
     then
       let: "$r0" := #true in
-      do:  ("err" <-[boolT] "$r0");;;
-      return: (![uint64T] "extLen", ![sliceT] "newVal", ![sliceT] "newLink", ![boolT] "err")
+      do:  ("err" <-[go.bool] "$r0");;;
+      return: (![go.uint64] "extLen", ![go.SliceType go.byte] "newVal", ![go.SliceType go.byte] "newLink", ![go.bool] "err")
     else do:  #());;;
-    let: "$r0" := ((![uint64T] "proofLen") `quot` cryptoffi.HashLen) in
-    do:  ("extLen" <-[uint64T] "$r0");;;
-    let: "$r0" := (![sliceT] "prevLink") in
-    do:  ("newLink" <-[sliceT] "$r0");;;
-    (let: "i" := (mem.alloc (type.zero_val uint64T)) in
+    let: "$r0" := ((![go.uint64] "proofLen") `quot`⟨go.uint64⟩ cryptoffi.HashLen) in
+    do:  ("extLen" <-[go.uint64] "$r0");;;
+    let: "$r0" := (![go.SliceType go.byte] "prevLink") in
+    do:  ("newLink" <-[go.SliceType go.byte] "$r0");;;
+    (let: "i" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 0) in
-<<<<<<< HEAD
-    do:  ("i" <-[uint64T] "$r0");;;
-    (for: (λ: <>, (![uint64T] "i") < (![uint64T] "extLen")); (λ: <>, do:  ("i" <-[uint64T] ((![uint64T] "i") + #(W64 1)))) := λ: <>,
-      let: "start" := (mem.alloc (type.zero_val uint64T)) in
-      let: "$r0" := ((![uint64T] "i") * cryptoffi.HashLen) in
-      do:  ("start" <-[uint64T] "$r0");;;
-      let: "end" := (mem.alloc (type.zero_val uint64T)) in
-      let: "$r0" := (((![uint64T] "i") + #(W64 1)) * cryptoffi.HashLen) in
-      do:  ("end" <-[uint64T] "$r0");;;
-      let: "$r0" := (let: "$s" := (![sliceT] "proof") in
-      slice.slice byteT "$s" (![uint64T] "start") (![uint64T] "end")) in
-      do:  ("newVal" <-[sliceT] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![sliceT] "newLink") in
-      let: "$a1" := (![sliceT] "newVal") in
-=======
-    do:  ("i" <-[#uint64T] "$r0");;;
-    (for: (λ: <>, (![#uint64T] "i") < (![#uint64T] "extLen")); (λ: <>, do:  ("i" <-[#uint64T] ((![#uint64T] "i") + #(W64 1)))) := λ: <>,
-      let: "$r0" := (let: "$s" := (![#sliceT] "proof") in
-      slice.slice #byteT "$s" #(W64 0) cryptoffi.HashLen) in
-      do:  ("newVal" <-[#sliceT] "$r0");;;
-      let: "$r0" := (let: "$s" := (![#sliceT] "proof") in
-      slice.slice #byteT "$s" cryptoffi.HashLen (slice.len "$s")) in
-      do:  ("proof" <-[#sliceT] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![#sliceT] "newLink") in
-      let: "$a1" := (![#sliceT] "newVal") in
->>>>>>> master
-      (func_call #GetNextLink) "$a0" "$a1") in
-      do:  ("newLink" <-[sliceT] "$r0")));;;
-    return: (![uint64T] "extLen", ![sliceT] "newVal", ![sliceT] "newLink", ![boolT] "err")).
+    do:  ("i" <-[go.uint64] "$r0");;;
+    (for: (λ: <>, (![go.uint64] "i") <⟨go.uint64⟩ (![go.uint64] "extLen")); (λ: <>, do:  ("i" <-[go.uint64] ((![go.uint64] "i") +⟨go.uint64⟩ #(W8 1)))) := λ: <>,
+      let: "$r0" := (let: "$s" := (![go.SliceType go.byte] "proof") in
+      slice.slice go.byte "$s" #(W64 0) cryptoffi.HashLen) in
+      do:  ("newVal" <-[go.SliceType go.byte] "$r0");;;
+      let: "$r0" := (let: "$s" := (![go.SliceType go.byte] "proof") in
+      slice.slice go.byte "$s" cryptoffi.HashLen (slice.len "$s")) in
+      do:  ("proof" <-[go.SliceType go.byte] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "newLink") in
+      let: "$a1" := (![go.SliceType go.byte] "newVal") in
+      (FuncResolve GetNextLink [] #()) "$a0" "$a1") in
+      do:  ("newLink" <-[go.SliceType go.byte] "$r0")));;;
+    return: (![go.uint64] "extLen", ![go.SliceType go.byte] "newVal", ![go.SliceType go.byte] "newLink", ![go.bool] "err")).
 
 Definition New : go_string := "github.com/sanjit-bhat/pav/hashchain.New"%go.
 
@@ -150,56 +132,50 @@ Definition GetEmptyLink : go_string := "github.com/sanjit-bhat/pav/hashchain.Get
 (* go: hashchain.go:63:6 *)
 Definition Newⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (return: (mem.alloc (let: "$lastLink" := ((func_call #GetEmptyLink) #()) in
-     struct.make HashChain [{
-       "predLastLink" ::= type.zero_val sliceT;
-       "lastLink" ::= "$lastLink";
-       "vals" ::= type.zero_val sliceT
-     }]))).
+    exception_do (return: (go.AllocValue HashChain (let: "$lastLink" := ((FuncResolve GetEmptyLink [] #()) #()) in
+     CompositeLiteral HashChain (
+       let: "$$vs" := go.StructElementListNil #() in 
+       let: "$$vs" := go.ElementListApp "$$vs" (go.ZeroVal (go.SliceType go.byte) #()) in
+       let: "$$vs" := go.ElementListApp "$$vs" "$lastLink" in
+       let: "$$vs" := go.ElementListApp "$$vs" (go.ZeroVal (go.SliceType go.byte) #()) in
+       "$$vs"
+     )))).
 
 (* go: hashchain.go:67:6 *)
 Definition GetEmptyLinkⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (return: (let: "$a0" := #slice.nil in
-     (func_call #cryptoutil.Hash) "$a0")).
+     (FuncResolve cryptoutil.Hash [] #()) "$a0")).
 
 (* go: hashchain.go:71:6 *)
 Definition GetNextLinkⁱᵐᵖˡ : val :=
   λ: "prevLink" "nextVal",
-    exception_do (let: "nextVal" := (mem.alloc "nextVal") in
-    let: "prevLink" := (mem.alloc "prevLink") in
-    let: "hr" := (mem.alloc (type.zero_val ptrT)) in
-    let: "$r0" := ((func_call #cryptoffi.NewHasher) #()) in
-    do:  ("hr" <-[ptrT] "$r0");;;
-    do:  (let: "$a0" := (![sliceT] "prevLink") in
-    (method_call #(ptrT.id cryptoffi.Hasher.id) #"Write"%go (![ptrT] "hr")) "$a0");;;
-    do:  (let: "$a0" := (![sliceT] "nextVal") in
-    (method_call #(ptrT.id cryptoffi.Hasher.id) #"Write"%go (![ptrT] "hr")) "$a0");;;
+    exception_do (let: "nextVal" := (go.AllocValue (go.SliceType go.byte) "nextVal") in
+    let: "prevLink" := (go.AllocValue (go.SliceType go.byte) "prevLink") in
+    let: "hr" := (GoAlloc (go.PointerType cryptoffi.Hasher) #()) in
+    let: "$r0" := ((FuncResolve cryptoffi.NewHasher [] #()) #()) in
+    do:  ("hr" <-[go.PointerType cryptoffi.Hasher] "$r0");;;
+    do:  (let: "$a0" := (![go.SliceType go.byte] "prevLink") in
+    (MethodResolve (go.PointerType cryptoffi.Hasher) Write #() (![go.PointerType cryptoffi.Hasher] "hr")) "$a0");;;
+    do:  (let: "$a0" := (![go.SliceType go.byte] "nextVal") in
+    (MethodResolve (go.PointerType cryptoffi.Hasher) Write #() (![go.PointerType cryptoffi.Hasher] "hr")) "$a0");;;
     return: (let: "$a0" := #slice.nil in
-     (method_call #(ptrT.id cryptoffi.Hasher.id) #"Sum"%go (![ptrT] "hr")) "$a0")).
-
-Definition vars' : list (go_string * go_type) := [].
+     (MethodResolve (go.PointerType cryptoffi.Hasher) Sum #() (![go.PointerType cryptoffi.Hasher] "hr")) "$a0")).
 
 Definition functions' : list (go_string * val) := [(Verify, Verifyⁱᵐᵖˡ); (New, Newⁱᵐᵖˡ); (GetEmptyLink, GetEmptyLinkⁱᵐᵖˡ); (GetNextLink, GetNextLinkⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(HashChain.id, []); (ptrT.id HashChain.id, [("Append"%go, HashChain__Appendⁱᵐᵖˡ); ("Bootstrap"%go, HashChain__Bootstrapⁱᵐᵖˡ); ("Prove"%go, HashChain__Proveⁱᵐᵖˡ)])].
-
 #[global] Instance info' : PkgInfo hashchain.hashchain :=
   {|
-    pkg_vars := vars';
-    pkg_functions := functions';
-    pkg_msets := msets';
     pkg_imported_pkgs := [code.bytes.bytes; code.github_com.goose_lang.std.std; code.github_com.sanjit_bhat.pav.cryptoffi.cryptoffi; code.github_com.sanjit_bhat.pav.cryptoutil.cryptoutil];
   |}.
 
 Definition initialize' : val :=
   λ: <>,
-    package.init #hashchain.hashchain (λ: <>,
+    package.init hashchain.hashchain (λ: <>,
       exception_do (do:  (cryptoutil.initialize' #());;;
       do:  (cryptoffi.initialize' #());;;
       do:  (std.initialize' #());;;
-      do:  (bytes.initialize' #());;;
-      do:  (package.alloc hashchain.hashchain #()))
+      do:  (bytes.initialize' #()))
       ).
 
 End code.

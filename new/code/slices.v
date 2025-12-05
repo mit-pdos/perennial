@@ -105,7 +105,18 @@ Axiom increasingHint : val.
 
 Axiom decreasingHint : val.
 
-Axiom xorshiftⁱᵐᵖˡ : go.type.
+Definition xorshiftⁱᵐᵖˡ : go.type := go.uint64.
+
+Definition xorshift : go.type := go.Named "slices.xorshift"%go [].
+
+(* go: sort.go:181:20 *)
+Definition xorshift__Nextⁱᵐᵖˡ : val :=
+  λ: "r" <>,
+    exception_do (let: "r" := (go.AllocValue (go.PointerType xorshift) "r") in
+    do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) `xor` ((![xorshift] (![go.PointerType xorshift] "r")) ≪⟨xorshift⟩ #(W64 13))));;;
+    do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) `xor` ((![xorshift] (![go.PointerType xorshift] "r")) ≫⟨xorshift⟩ #(W64 7))));;;
+    do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) `xor` ((![xorshift] (![go.PointerType xorshift] "r")) ≪⟨xorshift⟩ #(W64 17))));;;
+    return: (![xorshift] (![go.PointerType xorshift] "r"))).
 
 Definition nextPowerOfTwo : go_string := "slices.nextPowerOfTwo"%go.
 
@@ -567,8 +578,6 @@ Definition partialInsertionSortCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
           do:  ((slice.elem_ref E (![go.SliceType E] "data") ((![go.int] "j") -⟨go.int⟩ #(W64 1))) <-[E] "$r1")))
       else do:  #())));;;
     return: (#false)).
-
-Definition xorshift : go.type := go.Named "slices.xorshift"%go [].
 
 (* breakPatternsCmpFunc scatters some elements around in an attempt to break some patterns
    that might cause imbalanced partitions in quicksort.

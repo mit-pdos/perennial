@@ -15,242 +15,242 @@ Definition ReadBool : go_string := "github.com/sanjit-bhat/pav/safemarshal.ReadB
 (* go: safemarshal.go:9:6 *)
 Definition ReadBoolⁱᵐᵖˡ : val :=
   λ: "b",
-    exception_do (let: "err" := (mem.alloc (type.zero_val boolT)) in
-    let: "rem" := (mem.alloc (type.zero_val sliceT)) in
-    let: "data" := (mem.alloc (type.zero_val boolT)) in
-    let: "b" := (mem.alloc "b") in
-    let: "$r0" := (![sliceT] "b") in
-    do:  ("rem" <-[sliceT] "$r0");;;
-    (if: (s_to_w64 (let: "$a0" := (![sliceT] "rem") in
-    slice.len "$a0")) < #(W64 1)
+    exception_do (let: "err" := (GoAlloc go.bool #()) in
+    let: "rem" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "data" := (GoAlloc go.bool #()) in
+    let: "b" := (go.AllocValue (go.SliceType go.byte) "b") in
+    let: "$r0" := (![go.SliceType go.byte] "b") in
+    do:  ("rem" <-[go.SliceType go.byte] "$r0");;;
+    (if: (let: "$a0" := (![go.SliceType go.byte] "rem") in
+    (FuncResolve go.len [go.SliceType go.byte] #()) "$a0") <⟨go.int⟩ #(W64 1)
     then
       let: "$r0" := #true in
-      do:  ("err" <-[boolT] "$r0");;;
-      return: (![boolT] "data", ![sliceT] "rem", ![boolT] "err")
+      do:  ("err" <-[go.bool] "$r0");;;
+      return: (![go.bool] "data", ![go.SliceType go.byte] "rem", ![go.bool] "err")
     else do:  #());;;
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "rem") in
-    (func_call #marshal.ReadBool) "$a0") in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![go.SliceType go.byte] "rem") in
+    (FuncResolve marshal.ReadBool [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("data" <-[boolT] "$r0");;;
-    do:  ("rem" <-[sliceT] "$r1");;;
-    return: (![boolT] "data", ![sliceT] "rem", ![boolT] "err")).
+    do:  ("data" <-[go.bool] "$r0");;;
+    do:  ("rem" <-[go.SliceType go.byte] "$r1");;;
+    return: (![go.bool] "data", ![go.SliceType go.byte] "rem", ![go.bool] "err")).
 
 Definition ReadConstBool : go_string := "github.com/sanjit-bhat/pav/safemarshal.ReadConstBool"%go.
 
 (* go: safemarshal.go:19:6 *)
 Definition ReadConstBoolⁱᵐᵖˡ : val :=
   λ: "b" "cst",
-    exception_do (let: "err" := (mem.alloc (type.zero_val boolT)) in
-    let: "rem" := (mem.alloc (type.zero_val sliceT)) in
-    let: "cst" := (mem.alloc "cst") in
-    let: "b" := (mem.alloc "b") in
-    let: "$r0" := (![sliceT] "b") in
-    do:  ("rem" <-[sliceT] "$r0");;;
-    let: "data" := (mem.alloc (type.zero_val boolT)) in
-    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![sliceT] "rem") in
-    (func_call #ReadBool) "$a0") in
+    exception_do (let: "err" := (GoAlloc go.bool #()) in
+    let: "rem" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "cst" := (go.AllocValue go.bool "cst") in
+    let: "b" := (go.AllocValue (go.SliceType go.byte) "b") in
+    let: "$r0" := (![go.SliceType go.byte] "b") in
+    do:  ("rem" <-[go.SliceType go.byte] "$r0");;;
+    let: "data" := (GoAlloc go.bool #()) in
+    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![go.SliceType go.byte] "rem") in
+    (FuncResolve ReadBool [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
-    do:  ("data" <-[boolT] "$r0");;;
-    do:  ("rem" <-[sliceT] "$r1");;;
-    do:  ("err" <-[boolT] "$r2");;;
-    (if: ![boolT] "err"
-    then return: (![sliceT] "rem", ![boolT] "err")
+    do:  ("data" <-[go.bool] "$r0");;;
+    do:  ("rem" <-[go.SliceType go.byte] "$r1");;;
+    do:  ("err" <-[go.bool] "$r2");;;
+    (if: ![go.bool] "err"
+    then return: (![go.SliceType go.byte] "rem", ![go.bool] "err")
     else do:  #());;;
-    (if: (![boolT] "data") ≠ (![boolT] "cst")
+    (if: (![go.bool] "data") ≠⟨go.bool⟩ (![go.bool] "cst")
     then
       let: "$r0" := #true in
-      do:  ("err" <-[boolT] "$r0");;;
-      return: (![sliceT] "rem", ![boolT] "err")
+      do:  ("err" <-[go.bool] "$r0");;;
+      return: (![go.SliceType go.byte] "rem", ![go.bool] "err")
     else do:  #());;;
-    return: (![sliceT] "rem", ![boolT] "err")).
+    return: (![go.SliceType go.byte] "rem", ![go.bool] "err")).
 
 Definition ReadInt : go_string := "github.com/sanjit-bhat/pav/safemarshal.ReadInt"%go.
 
 (* go: safemarshal.go:32:6 *)
 Definition ReadIntⁱᵐᵖˡ : val :=
   λ: "b",
-    exception_do (let: "err" := (mem.alloc (type.zero_val boolT)) in
-    let: "rem" := (mem.alloc (type.zero_val sliceT)) in
-    let: "data" := (mem.alloc (type.zero_val uint64T)) in
-    let: "b" := (mem.alloc "b") in
-    let: "$r0" := (![sliceT] "b") in
-    do:  ("rem" <-[sliceT] "$r0");;;
-    (if: (s_to_w64 (let: "$a0" := (![sliceT] "rem") in
-    slice.len "$a0")) < #(W64 8)
+    exception_do (let: "err" := (GoAlloc go.bool #()) in
+    let: "rem" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "data" := (GoAlloc go.uint64 #()) in
+    let: "b" := (go.AllocValue (go.SliceType go.byte) "b") in
+    let: "$r0" := (![go.SliceType go.byte] "b") in
+    do:  ("rem" <-[go.SliceType go.byte] "$r0");;;
+    (if: (let: "$a0" := (![go.SliceType go.byte] "rem") in
+    (FuncResolve go.len [go.SliceType go.byte] #()) "$a0") <⟨go.int⟩ #(W64 8)
     then
       let: "$r0" := #true in
-      do:  ("err" <-[boolT] "$r0");;;
-      return: (![uint64T] "data", ![sliceT] "rem", ![boolT] "err")
+      do:  ("err" <-[go.bool] "$r0");;;
+      return: (![go.uint64] "data", ![go.SliceType go.byte] "rem", ![go.bool] "err")
     else do:  #());;;
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "rem") in
-    (func_call #marshal.ReadInt) "$a0") in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![go.SliceType go.byte] "rem") in
+    (FuncResolve marshal.ReadInt [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("data" <-[uint64T] "$r0");;;
-    do:  ("rem" <-[sliceT] "$r1");;;
-    return: (![uint64T] "data", ![sliceT] "rem", ![boolT] "err")).
+    do:  ("data" <-[go.uint64] "$r0");;;
+    do:  ("rem" <-[go.SliceType go.byte] "$r1");;;
+    return: (![go.uint64] "data", ![go.SliceType go.byte] "rem", ![go.bool] "err")).
 
 Definition ReadConstInt : go_string := "github.com/sanjit-bhat/pav/safemarshal.ReadConstInt"%go.
 
 (* go: safemarshal.go:42:6 *)
 Definition ReadConstIntⁱᵐᵖˡ : val :=
   λ: "b" "cst",
-    exception_do (let: "err" := (mem.alloc (type.zero_val boolT)) in
-    let: "rem" := (mem.alloc (type.zero_val sliceT)) in
-    let: "cst" := (mem.alloc "cst") in
-    let: "b" := (mem.alloc "b") in
-    let: "$r0" := (![sliceT] "b") in
-    do:  ("rem" <-[sliceT] "$r0");;;
-    let: "data" := (mem.alloc (type.zero_val uint64T)) in
-    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![sliceT] "rem") in
-    (func_call #ReadInt) "$a0") in
+    exception_do (let: "err" := (GoAlloc go.bool #()) in
+    let: "rem" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "cst" := (go.AllocValue go.uint64 "cst") in
+    let: "b" := (go.AllocValue (go.SliceType go.byte) "b") in
+    let: "$r0" := (![go.SliceType go.byte] "b") in
+    do:  ("rem" <-[go.SliceType go.byte] "$r0");;;
+    let: "data" := (GoAlloc go.uint64 #()) in
+    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![go.SliceType go.byte] "rem") in
+    (FuncResolve ReadInt [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
-    do:  ("data" <-[uint64T] "$r0");;;
-    do:  ("rem" <-[sliceT] "$r1");;;
-    do:  ("err" <-[boolT] "$r2");;;
-    (if: ![boolT] "err"
-    then return: (![sliceT] "rem", ![boolT] "err")
+    do:  ("data" <-[go.uint64] "$r0");;;
+    do:  ("rem" <-[go.SliceType go.byte] "$r1");;;
+    do:  ("err" <-[go.bool] "$r2");;;
+    (if: ![go.bool] "err"
+    then return: (![go.SliceType go.byte] "rem", ![go.bool] "err")
     else do:  #());;;
-    (if: (![uint64T] "data") ≠ (![uint64T] "cst")
+    (if: (![go.uint64] "data") ≠⟨go.uint64⟩ (![go.uint64] "cst")
     then
       let: "$r0" := #true in
-      do:  ("err" <-[boolT] "$r0");;;
-      return: (![sliceT] "rem", ![boolT] "err")
+      do:  ("err" <-[go.bool] "$r0");;;
+      return: (![go.SliceType go.byte] "rem", ![go.bool] "err")
     else do:  #());;;
-    return: (![sliceT] "rem", ![boolT] "err")).
+    return: (![go.SliceType go.byte] "rem", ![go.bool] "err")).
 
 Definition ReadByte : go_string := "github.com/sanjit-bhat/pav/safemarshal.ReadByte"%go.
 
 (* go: safemarshal.go:55:6 *)
 Definition ReadByteⁱᵐᵖˡ : val :=
   λ: "b",
-    exception_do (let: "err" := (mem.alloc (type.zero_val boolT)) in
-    let: "rem" := (mem.alloc (type.zero_val sliceT)) in
-    let: "data" := (mem.alloc (type.zero_val byteT)) in
-    let: "b" := (mem.alloc "b") in
-    let: "$r0" := (![sliceT] "b") in
-    do:  ("rem" <-[sliceT] "$r0");;;
-    (if: (s_to_w64 (let: "$a0" := (![sliceT] "rem") in
-    slice.len "$a0")) < #(W64 1)
+    exception_do (let: "err" := (GoAlloc go.bool #()) in
+    let: "rem" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "data" := (GoAlloc go.byte #()) in
+    let: "b" := (go.AllocValue (go.SliceType go.byte) "b") in
+    let: "$r0" := (![go.SliceType go.byte] "b") in
+    do:  ("rem" <-[go.SliceType go.byte] "$r0");;;
+    (if: (let: "$a0" := (![go.SliceType go.byte] "rem") in
+    (FuncResolve go.len [go.SliceType go.byte] #()) "$a0") <⟨go.int⟩ #(W64 1)
     then
       let: "$r0" := #true in
-      do:  ("err" <-[boolT] "$r0");;;
-      return: (![byteT] "data", ![sliceT] "rem", ![boolT] "err")
+      do:  ("err" <-[go.bool] "$r0");;;
+      return: (![go.byte] "data", ![go.SliceType go.byte] "rem", ![go.bool] "err")
     else do:  #());;;
-    let: "data0" := (mem.alloc (type.zero_val sliceT)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "rem") in
+    let: "data0" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![go.SliceType go.byte] "rem") in
     let: "$a1" := #(W64 1) in
-    (func_call #marshal.ReadBytes) "$a0" "$a1") in
+    (FuncResolve marshal.ReadBytes [] #()) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("data0" <-[sliceT] "$r0");;;
-    do:  ("rem" <-[sliceT] "$r1");;;
-    let: "$r0" := (![byteT] (slice.elem_ref byteT (![sliceT] "data0") #(W64 0))) in
-    do:  ("data" <-[byteT] "$r0");;;
-    return: (![byteT] "data", ![sliceT] "rem", ![boolT] "err")).
+    do:  ("data0" <-[go.SliceType go.byte] "$r0");;;
+    do:  ("rem" <-[go.SliceType go.byte] "$r1");;;
+    let: "$r0" := (![go.byte] (slice.elem_ref go.byte (![go.SliceType go.byte] "data0") #(W64 0))) in
+    do:  ("data" <-[go.byte] "$r0");;;
+    return: (![go.byte] "data", ![go.SliceType go.byte] "rem", ![go.bool] "err")).
 
 Definition ReadConstByte : go_string := "github.com/sanjit-bhat/pav/safemarshal.ReadConstByte"%go.
 
 (* go: safemarshal.go:66:6 *)
 Definition ReadConstByteⁱᵐᵖˡ : val :=
   λ: "b" "cst",
-    exception_do (let: "err" := (mem.alloc (type.zero_val boolT)) in
-    let: "rem" := (mem.alloc (type.zero_val sliceT)) in
-    let: "cst" := (mem.alloc "cst") in
-    let: "b" := (mem.alloc "b") in
-    let: "$r0" := (![sliceT] "b") in
-    do:  ("rem" <-[sliceT] "$r0");;;
-    let: "data" := (mem.alloc (type.zero_val byteT)) in
-    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![sliceT] "rem") in
-    (func_call #ReadByte) "$a0") in
+    exception_do (let: "err" := (GoAlloc go.bool #()) in
+    let: "rem" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "cst" := (go.AllocValue go.byte "cst") in
+    let: "b" := (go.AllocValue (go.SliceType go.byte) "b") in
+    let: "$r0" := (![go.SliceType go.byte] "b") in
+    do:  ("rem" <-[go.SliceType go.byte] "$r0");;;
+    let: "data" := (GoAlloc go.byte #()) in
+    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![go.SliceType go.byte] "rem") in
+    (FuncResolve ReadByte [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
-    do:  ("data" <-[byteT] "$r0");;;
-    do:  ("rem" <-[sliceT] "$r1");;;
-    do:  ("err" <-[boolT] "$r2");;;
-    (if: ![boolT] "err"
-    then return: (![sliceT] "rem", ![boolT] "err")
+    do:  ("data" <-[go.byte] "$r0");;;
+    do:  ("rem" <-[go.SliceType go.byte] "$r1");;;
+    do:  ("err" <-[go.bool] "$r2");;;
+    (if: ![go.bool] "err"
+    then return: (![go.SliceType go.byte] "rem", ![go.bool] "err")
     else do:  #());;;
-    (if: (![byteT] "data") ≠ (![byteT] "cst")
+    (if: (![go.byte] "data") ≠⟨go.byte⟩ (![go.byte] "cst")
     then
       let: "$r0" := #true in
-      do:  ("err" <-[boolT] "$r0");;;
-      return: (![sliceT] "rem", ![boolT] "err")
+      do:  ("err" <-[go.bool] "$r0");;;
+      return: (![go.SliceType go.byte] "rem", ![go.bool] "err")
     else do:  #());;;
-    return: (![sliceT] "rem", ![boolT] "err")).
+    return: (![go.SliceType go.byte] "rem", ![go.bool] "err")).
 
 Definition WriteByte : go_string := "github.com/sanjit-bhat/pav/safemarshal.WriteByte"%go.
 
 (* go: safemarshal.go:79:6 *)
 Definition WriteByteⁱᵐᵖˡ : val :=
   λ: "b" "data",
-    exception_do (let: "data" := (mem.alloc "data") in
-    let: "b" := (mem.alloc "b") in
-    return: (let: "$a0" := (![sliceT] "b") in
-     let: "$a1" := ((let: "$sl0" := (![byteT] "data") in
-     slice.literal byteT ["$sl0"])) in
-     (func_call #marshal.WriteBytes) "$a0" "$a1")).
+    exception_do (let: "data" := (go.AllocValue go.byte "data") in
+    let: "b" := (go.AllocValue (go.SliceType go.byte) "b") in
+    return: (let: "$a0" := (![go.SliceType go.byte] "b") in
+     let: "$a1" := ((let: "$sl0" := (![go.byte] "data") in
+     CompositeLiteral go.byte go.byte ["$sl0"])) in
+     (FuncResolve marshal.WriteBytes [] #()) "$a0" "$a1")).
 
 Definition ReadBytes : go_string := "github.com/sanjit-bhat/pav/safemarshal.ReadBytes"%go.
 
 (* go: safemarshal.go:83:6 *)
 Definition ReadBytesⁱᵐᵖˡ : val :=
   λ: "b" "length",
-    exception_do (let: "err" := (mem.alloc (type.zero_val boolT)) in
-    let: "rem" := (mem.alloc (type.zero_val sliceT)) in
-    let: "data" := (mem.alloc (type.zero_val sliceT)) in
-    let: "length" := (mem.alloc "length") in
-    let: "b" := (mem.alloc "b") in
-    let: "$r0" := (![sliceT] "b") in
-    do:  ("rem" <-[sliceT] "$r0");;;
-    (if: (s_to_w64 (let: "$a0" := (![sliceT] "rem") in
-    slice.len "$a0")) < (![uint64T] "length")
+    exception_do (let: "err" := (GoAlloc go.bool #()) in
+    let: "rem" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "data" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "length" := (go.AllocValue go.uint64 "length") in
+    let: "b" := (go.AllocValue (go.SliceType go.byte) "b") in
+    let: "$r0" := (![go.SliceType go.byte] "b") in
+    do:  ("rem" <-[go.SliceType go.byte] "$r0");;;
+    (if: (s_to_w64 (let: "$a0" := (![go.SliceType go.byte] "rem") in
+    (FuncResolve go.len [go.SliceType go.byte] #()) "$a0")) <⟨go.uint64⟩ (![go.uint64] "length")
     then
       let: "$r0" := #true in
-      do:  ("err" <-[boolT] "$r0");;;
-      return: (![sliceT] "data", ![sliceT] "rem", ![boolT] "err")
+      do:  ("err" <-[go.bool] "$r0");;;
+      return: (![go.SliceType go.byte] "data", ![go.SliceType go.byte] "rem", ![go.bool] "err")
     else do:  #());;;
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "rem") in
-    let: "$a1" := (![uint64T] "length") in
-    (func_call #marshal.ReadBytes) "$a0" "$a1") in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![go.SliceType go.byte] "rem") in
+    let: "$a1" := (![go.uint64] "length") in
+    (FuncResolve marshal.ReadBytes [] #()) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("data" <-[sliceT] "$r0");;;
-    do:  ("rem" <-[sliceT] "$r1");;;
-    return: (![sliceT] "data", ![sliceT] "rem", ![boolT] "err")).
+    do:  ("data" <-[go.SliceType go.byte] "$r0");;;
+    do:  ("rem" <-[go.SliceType go.byte] "$r1");;;
+    return: (![go.SliceType go.byte] "data", ![go.SliceType go.byte] "rem", ![go.bool] "err")).
 
 Definition ReadSlice1D : go_string := "github.com/sanjit-bhat/pav/safemarshal.ReadSlice1D"%go.
 
 (* go: safemarshal.go:93:6 *)
 Definition ReadSlice1Dⁱᵐᵖˡ : val :=
   λ: "b",
-    exception_do (let: "err" := (mem.alloc (type.zero_val boolT)) in
-    let: "rem" := (mem.alloc (type.zero_val sliceT)) in
-    let: "data" := (mem.alloc (type.zero_val sliceT)) in
-    let: "b" := (mem.alloc "b") in
-    let: "$r0" := (![sliceT] "b") in
-    do:  ("rem" <-[sliceT] "$r0");;;
-    let: "length" := (mem.alloc (type.zero_val uint64T)) in
-    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![sliceT] "rem") in
-    (func_call #ReadInt) "$a0") in
+    exception_do (let: "err" := (GoAlloc go.bool #()) in
+    let: "rem" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "data" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "b" := (go.AllocValue (go.SliceType go.byte) "b") in
+    let: "$r0" := (![go.SliceType go.byte] "b") in
+    do:  ("rem" <-[go.SliceType go.byte] "$r0");;;
+    let: "length" := (GoAlloc go.uint64 #()) in
+    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![go.SliceType go.byte] "rem") in
+    (FuncResolve ReadInt [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
-    do:  ("length" <-[uint64T] "$r0");;;
-    do:  ("rem" <-[sliceT] "$r1");;;
-    do:  ("err" <-[boolT] "$r2");;;
-    (if: ![boolT] "err"
-    then return: (![sliceT] "data", ![sliceT] "rem", ![boolT] "err")
+    do:  ("length" <-[go.uint64] "$r0");;;
+    do:  ("rem" <-[go.SliceType go.byte] "$r1");;;
+    do:  ("err" <-[go.bool] "$r2");;;
+    (if: ![go.bool] "err"
+    then return: (![go.SliceType go.byte] "data", ![go.SliceType go.byte] "rem", ![go.bool] "err")
     else do:  #());;;
-    let: (("$ret0", "$ret1"), "$ret2") := ((let: "$a0" := (![sliceT] "rem") in
-    let: "$a1" := (![uint64T] "length") in
-    (func_call #ReadBytes) "$a0" "$a1")) in
+    let: (("$ret0", "$ret1"), "$ret2") := ((let: "$a0" := (![go.SliceType go.byte] "rem") in
+    let: "$a1" := (![go.uint64] "length") in
+    (FuncResolve ReadBytes [] #()) "$a0" "$a1")) in
     return: ("$ret0", "$ret1", "$ret2")).
 
 Definition WriteSlice1D : go_string := "github.com/sanjit-bhat/pav/safemarshal.WriteSlice1D"%go.
@@ -258,174 +258,166 @@ Definition WriteSlice1D : go_string := "github.com/sanjit-bhat/pav/safemarshal.W
 (* go: safemarshal.go:102:6 *)
 Definition WriteSlice1Dⁱᵐᵖˡ : val :=
   λ: "b" "data",
-    exception_do (let: "data" := (mem.alloc "data") in
-    let: "b" := (mem.alloc "b") in
-    let: "$r0" := (let: "$a0" := (![sliceT] "b") in
-    let: "$a1" := (s_to_w64 (let: "$a0" := (![sliceT] "data") in
-    slice.len "$a0")) in
-    (func_call #marshal.WriteInt) "$a0" "$a1") in
-    do:  ("b" <-[sliceT] "$r0");;;
-    return: (let: "$a0" := (![sliceT] "b") in
-     let: "$a1" := (![sliceT] "data") in
-     (func_call #marshal.WriteBytes) "$a0" "$a1")).
+    exception_do (let: "data" := (go.AllocValue (go.SliceType go.byte) "data") in
+    let: "b" := (go.AllocValue (go.SliceType go.byte) "b") in
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "b") in
+    let: "$a1" := (s_to_w64 (let: "$a0" := (![go.SliceType go.byte] "data") in
+    (FuncResolve go.len [go.SliceType go.byte] #()) "$a0")) in
+    (FuncResolve marshal.WriteInt [] #()) "$a0" "$a1") in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    return: (let: "$a0" := (![go.SliceType go.byte] "b") in
+     let: "$a1" := (![go.SliceType go.byte] "data") in
+     (FuncResolve marshal.WriteBytes [] #()) "$a0" "$a1")).
 
 Definition ReadSlice2D : go_string := "github.com/sanjit-bhat/pav/safemarshal.ReadSlice2D"%go.
 
 (* go: safemarshal.go:107:6 *)
 Definition ReadSlice2Dⁱᵐᵖˡ : val :=
   λ: "b",
-    exception_do (let: "err" := (mem.alloc (type.zero_val boolT)) in
-    let: "rem" := (mem.alloc (type.zero_val sliceT)) in
-    let: "data" := (mem.alloc (type.zero_val sliceT)) in
-    let: "b" := (mem.alloc "b") in
-    let: "$r0" := (![sliceT] "b") in
-    do:  ("rem" <-[sliceT] "$r0");;;
-    let: "length" := (mem.alloc (type.zero_val uint64T)) in
-    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![sliceT] "rem") in
-    (func_call #ReadInt) "$a0") in
+    exception_do (let: "err" := (GoAlloc go.bool #()) in
+    let: "rem" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "data" := (GoAlloc (go.SliceType (go.SliceType go.byte)) #()) in
+    let: "b" := (go.AllocValue (go.SliceType go.byte) "b") in
+    let: "$r0" := (![go.SliceType go.byte] "b") in
+    do:  ("rem" <-[go.SliceType go.byte] "$r0");;;
+    let: "length" := (GoAlloc go.uint64 #()) in
+    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![go.SliceType go.byte] "rem") in
+    (FuncResolve ReadInt [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
-    do:  ("length" <-[uint64T] "$r0");;;
-    do:  ("rem" <-[sliceT] "$r1");;;
-    do:  ("err" <-[boolT] "$r2");;;
-    (if: ![boolT] "err"
-    then return: (![sliceT] "data", ![sliceT] "rem", ![boolT] "err")
+    do:  ("length" <-[go.uint64] "$r0");;;
+    do:  ("rem" <-[go.SliceType go.byte] "$r1");;;
+    do:  ("err" <-[go.bool] "$r2");;;
+    (if: ![go.bool] "err"
+    then return: (![go.SliceType (go.SliceType go.byte)] "data", ![go.SliceType go.byte] "rem", ![go.bool] "err")
     else do:  #());;;
-    (let: "i" := (mem.alloc (type.zero_val uint64T)) in
+    (let: "i" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 0) in
-    do:  ("i" <-[uint64T] "$r0");;;
-    (for: (λ: <>, (![uint64T] "i") < (![uint64T] "length")); (λ: <>, do:  ("i" <-[uint64T] ((![uint64T] "i") + #(W64 1)))) := λ: <>,
-      let: "data0" := (mem.alloc (type.zero_val sliceT)) in
-      let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![sliceT] "rem") in
-      (func_call #ReadSlice1D) "$a0") in
+    do:  ("i" <-[go.uint64] "$r0");;;
+    (for: (λ: <>, (![go.uint64] "i") <⟨go.uint64⟩ (![go.uint64] "length")); (λ: <>, do:  ("i" <-[go.uint64] ((![go.uint64] "i") +⟨go.uint64⟩ #(W8 1)))) := λ: <>,
+      let: "data0" := (GoAlloc (go.SliceType go.byte) #()) in
+      let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![go.SliceType go.byte] "rem") in
+      (FuncResolve ReadSlice1D [] #()) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       let: "$r2" := "$ret2" in
-      do:  ("data0" <-[sliceT] "$r0");;;
-      do:  ("rem" <-[sliceT] "$r1");;;
-      do:  ("err" <-[boolT] "$r2");;;
-      (if: ![boolT] "err"
-      then return: (![sliceT] "data", ![sliceT] "rem", ![boolT] "err")
+      do:  ("data0" <-[go.SliceType go.byte] "$r0");;;
+      do:  ("rem" <-[go.SliceType go.byte] "$r1");;;
+      do:  ("err" <-[go.bool] "$r2");;;
+      (if: ![go.bool] "err"
+      then return: (![go.SliceType (go.SliceType go.byte)] "data", ![go.SliceType go.byte] "rem", ![go.bool] "err")
       else do:  #());;;
-      let: "$r0" := (let: "$a0" := (![sliceT] "data") in
-      let: "$a1" := ((let: "$sl0" := (![sliceT] "data0") in
-      slice.literal sliceT ["$sl0"])) in
-      (slice.append sliceT) "$a0" "$a1") in
-      do:  ("data" <-[sliceT] "$r0")));;;
-    return: (![sliceT] "data", ![sliceT] "rem", ![boolT] "err")).
+      let: "$r0" := (let: "$a0" := (![go.SliceType (go.SliceType go.byte)] "data") in
+      let: "$a1" := ((let: "$sl0" := (![go.SliceType go.byte] "data0") in
+      CompositeLiteral (go.SliceType go.byte) (go.SliceType go.byte) ["$sl0"])) in
+      (FuncResolve go.append [go.SliceType (go.SliceType go.byte)] #()) "$a0" "$a1") in
+      do:  ("data" <-[go.SliceType (go.SliceType go.byte)] "$r0")));;;
+    return: (![go.SliceType (go.SliceType go.byte)] "data", ![go.SliceType go.byte] "rem", ![go.bool] "err")).
 
 Definition WriteSlice2D : go_string := "github.com/sanjit-bhat/pav/safemarshal.WriteSlice2D"%go.
 
 (* go: safemarshal.go:124:6 *)
 Definition WriteSlice2Dⁱᵐᵖˡ : val :=
   λ: "b" "data",
-    exception_do (let: "data" := (mem.alloc "data") in
-    let: "b" := (mem.alloc "b") in
-    let: "$r0" := (let: "$a0" := (![sliceT] "b") in
-    let: "$a1" := (s_to_w64 (let: "$a0" := (![sliceT] "data") in
-    slice.len "$a0")) in
-    (func_call #marshal.WriteInt) "$a0" "$a1") in
-    do:  ("b" <-[sliceT] "$r0");;;
-    let: "$range" := (![sliceT] "data") in
-    (let: "data1" := (mem.alloc (type.zero_val sliceT)) in
-    slice.for_range sliceT "$range" (λ: "$key" "$value",
-      do:  ("data1" <-[sliceT] "$value");;;
+    exception_do (let: "data" := (go.AllocValue (go.SliceType (go.SliceType go.byte)) "data") in
+    let: "b" := (go.AllocValue (go.SliceType go.byte) "b") in
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "b") in
+    let: "$a1" := (s_to_w64 (let: "$a0" := (![go.SliceType (go.SliceType go.byte)] "data") in
+    (FuncResolve go.len [go.SliceType (go.SliceType go.byte)] #()) "$a0")) in
+    (FuncResolve marshal.WriteInt [] #()) "$a0" "$a1") in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    let: "$range" := (![go.SliceType (go.SliceType go.byte)] "data") in
+    (let: "data1" := (GoAlloc (go.SliceType go.byte) #()) in
+    slice.for_range (go.SliceType go.byte) "$range" (λ: "$key" "$value",
+      do:  ("data1" <-[go.SliceType go.byte] "$value");;;
       do:  "$key";;;
-      let: "$r0" := (let: "$a0" := (![sliceT] "b") in
-      let: "$a1" := (![sliceT] "data1") in
-      (func_call #WriteSlice1D) "$a0" "$a1") in
-      do:  ("b" <-[sliceT] "$r0")));;;
-    return: (![sliceT] "b")).
+      let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "b") in
+      let: "$a1" := (![go.SliceType go.byte] "data1") in
+      (FuncResolve WriteSlice1D [] #()) "$a0" "$a1") in
+      do:  ("b" <-[go.SliceType go.byte] "$r0")));;;
+    return: (![go.SliceType go.byte] "b")).
 
 Definition ReadSlice3D : go_string := "github.com/sanjit-bhat/pav/safemarshal.ReadSlice3D"%go.
 
 (* go: safemarshal.go:132:6 *)
 Definition ReadSlice3Dⁱᵐᵖˡ : val :=
   λ: "b",
-    exception_do (let: "err" := (mem.alloc (type.zero_val boolT)) in
-    let: "rem" := (mem.alloc (type.zero_val sliceT)) in
-    let: "data" := (mem.alloc (type.zero_val sliceT)) in
-    let: "b" := (mem.alloc "b") in
-    let: "$r0" := (![sliceT] "b") in
-    do:  ("rem" <-[sliceT] "$r0");;;
-    let: "length" := (mem.alloc (type.zero_val uint64T)) in
-    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![sliceT] "rem") in
-    (func_call #ReadInt) "$a0") in
+    exception_do (let: "err" := (GoAlloc go.bool #()) in
+    let: "rem" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "data" := (GoAlloc (go.SliceType (go.SliceType (go.SliceType go.byte))) #()) in
+    let: "b" := (go.AllocValue (go.SliceType go.byte) "b") in
+    let: "$r0" := (![go.SliceType go.byte] "b") in
+    do:  ("rem" <-[go.SliceType go.byte] "$r0");;;
+    let: "length" := (GoAlloc go.uint64 #()) in
+    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![go.SliceType go.byte] "rem") in
+    (FuncResolve ReadInt [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
-    do:  ("length" <-[uint64T] "$r0");;;
-    do:  ("rem" <-[sliceT] "$r1");;;
-    do:  ("err" <-[boolT] "$r2");;;
-    (if: ![boolT] "err"
-    then return: (![sliceT] "data", ![sliceT] "rem", ![boolT] "err")
+    do:  ("length" <-[go.uint64] "$r0");;;
+    do:  ("rem" <-[go.SliceType go.byte] "$r1");;;
+    do:  ("err" <-[go.bool] "$r2");;;
+    (if: ![go.bool] "err"
+    then return: (![go.SliceType (go.SliceType (go.SliceType go.byte))] "data", ![go.SliceType go.byte] "rem", ![go.bool] "err")
     else do:  #());;;
-    (let: "i" := (mem.alloc (type.zero_val uint64T)) in
+    (let: "i" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 0) in
-    do:  ("i" <-[uint64T] "$r0");;;
-    (for: (λ: <>, (![uint64T] "i") < (![uint64T] "length")); (λ: <>, do:  ("i" <-[uint64T] ((![uint64T] "i") + #(W64 1)))) := λ: <>,
-      let: "data0" := (mem.alloc (type.zero_val sliceT)) in
-      let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![sliceT] "rem") in
-      (func_call #ReadSlice2D) "$a0") in
+    do:  ("i" <-[go.uint64] "$r0");;;
+    (for: (λ: <>, (![go.uint64] "i") <⟨go.uint64⟩ (![go.uint64] "length")); (λ: <>, do:  ("i" <-[go.uint64] ((![go.uint64] "i") +⟨go.uint64⟩ #(W8 1)))) := λ: <>,
+      let: "data0" := (GoAlloc (go.SliceType (go.SliceType go.byte)) #()) in
+      let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![go.SliceType go.byte] "rem") in
+      (FuncResolve ReadSlice2D [] #()) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       let: "$r2" := "$ret2" in
-      do:  ("data0" <-[sliceT] "$r0");;;
-      do:  ("rem" <-[sliceT] "$r1");;;
-      do:  ("err" <-[boolT] "$r2");;;
-      (if: ![boolT] "err"
-      then return: (![sliceT] "data", ![sliceT] "rem", ![boolT] "err")
+      do:  ("data0" <-[go.SliceType (go.SliceType go.byte)] "$r0");;;
+      do:  ("rem" <-[go.SliceType go.byte] "$r1");;;
+      do:  ("err" <-[go.bool] "$r2");;;
+      (if: ![go.bool] "err"
+      then return: (![go.SliceType (go.SliceType (go.SliceType go.byte))] "data", ![go.SliceType go.byte] "rem", ![go.bool] "err")
       else do:  #());;;
-      let: "$r0" := (let: "$a0" := (![sliceT] "data") in
-      let: "$a1" := ((let: "$sl0" := (![sliceT] "data0") in
-      slice.literal sliceT ["$sl0"])) in
-      (slice.append sliceT) "$a0" "$a1") in
-      do:  ("data" <-[sliceT] "$r0")));;;
-    return: (![sliceT] "data", ![sliceT] "rem", ![boolT] "err")).
+      let: "$r0" := (let: "$a0" := (![go.SliceType (go.SliceType (go.SliceType go.byte))] "data") in
+      let: "$a1" := ((let: "$sl0" := (![go.SliceType (go.SliceType go.byte)] "data0") in
+      CompositeLiteral (go.SliceType (go.SliceType go.byte)) (go.SliceType (go.SliceType go.byte)) ["$sl0"])) in
+      (FuncResolve go.append [go.SliceType (go.SliceType (go.SliceType go.byte))] #()) "$a0" "$a1") in
+      do:  ("data" <-[go.SliceType (go.SliceType (go.SliceType go.byte))] "$r0")));;;
+    return: (![go.SliceType (go.SliceType (go.SliceType go.byte))] "data", ![go.SliceType go.byte] "rem", ![go.bool] "err")).
 
 Definition WriteSlice3D : go_string := "github.com/sanjit-bhat/pav/safemarshal.WriteSlice3D"%go.
 
 (* go: safemarshal.go:149:6 *)
 Definition WriteSlice3Dⁱᵐᵖˡ : val :=
   λ: "b" "data",
-    exception_do (let: "data" := (mem.alloc "data") in
-    let: "b" := (mem.alloc "b") in
-    let: "$r0" := (let: "$a0" := (![sliceT] "b") in
-    let: "$a1" := (s_to_w64 (let: "$a0" := (![sliceT] "data") in
-    slice.len "$a0")) in
-    (func_call #marshal.WriteInt) "$a0" "$a1") in
-    do:  ("b" <-[sliceT] "$r0");;;
-    let: "$range" := (![sliceT] "data") in
-    (let: "data1" := (mem.alloc (type.zero_val sliceT)) in
-    slice.for_range sliceT "$range" (λ: "$key" "$value",
-      do:  ("data1" <-[sliceT] "$value");;;
+    exception_do (let: "data" := (go.AllocValue (go.SliceType (go.SliceType (go.SliceType go.byte))) "data") in
+    let: "b" := (go.AllocValue (go.SliceType go.byte) "b") in
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "b") in
+    let: "$a1" := (s_to_w64 (let: "$a0" := (![go.SliceType (go.SliceType (go.SliceType go.byte))] "data") in
+    (FuncResolve go.len [go.SliceType (go.SliceType (go.SliceType go.byte))] #()) "$a0")) in
+    (FuncResolve marshal.WriteInt [] #()) "$a0" "$a1") in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    let: "$range" := (![go.SliceType (go.SliceType (go.SliceType go.byte))] "data") in
+    (let: "data1" := (GoAlloc (go.SliceType (go.SliceType go.byte)) #()) in
+    slice.for_range (go.SliceType (go.SliceType go.byte)) "$range" (λ: "$key" "$value",
+      do:  ("data1" <-[go.SliceType (go.SliceType go.byte)] "$value");;;
       do:  "$key";;;
-      let: "$r0" := (let: "$a0" := (![sliceT] "b") in
-      let: "$a1" := (![sliceT] "data1") in
-      (func_call #WriteSlice2D) "$a0" "$a1") in
-      do:  ("b" <-[sliceT] "$r0")));;;
-    return: (![sliceT] "b")).
-
-Definition vars' : list (go_string * go_type) := [].
+      let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "b") in
+      let: "$a1" := (![go.SliceType (go.SliceType go.byte)] "data1") in
+      (FuncResolve WriteSlice2D [] #()) "$a0" "$a1") in
+      do:  ("b" <-[go.SliceType go.byte] "$r0")));;;
+    return: (![go.SliceType go.byte] "b")).
 
 Definition functions' : list (go_string * val) := [(ReadBool, ReadBoolⁱᵐᵖˡ); (ReadConstBool, ReadConstBoolⁱᵐᵖˡ); (ReadInt, ReadIntⁱᵐᵖˡ); (ReadConstInt, ReadConstIntⁱᵐᵖˡ); (ReadByte, ReadByteⁱᵐᵖˡ); (ReadConstByte, ReadConstByteⁱᵐᵖˡ); (WriteByte, WriteByteⁱᵐᵖˡ); (ReadBytes, ReadBytesⁱᵐᵖˡ); (ReadSlice1D, ReadSlice1Dⁱᵐᵖˡ); (WriteSlice1D, WriteSlice1Dⁱᵐᵖˡ); (ReadSlice2D, ReadSlice2Dⁱᵐᵖˡ); (WriteSlice2D, WriteSlice2Dⁱᵐᵖˡ); (ReadSlice3D, ReadSlice3Dⁱᵐᵖˡ); (WriteSlice3D, WriteSlice3Dⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [].
-
 #[global] Instance info' : PkgInfo safemarshal.safemarshal :=
   {|
-    pkg_vars := vars';
-    pkg_functions := functions';
-    pkg_msets := msets';
     pkg_imported_pkgs := [code.github_com.tchajed.marshal.marshal];
   |}.
 
 Definition initialize' : val :=
   λ: <>,
-    package.init #safemarshal.safemarshal (λ: <>,
-      exception_do (do:  (marshal.initialize' #());;;
-      do:  (package.alloc safemarshal.safemarshal #()))
+    package.init safemarshal.safemarshal (λ: <>,
+      exception_do (do:  (marshal.initialize' #()))
       ).
 
 End code.

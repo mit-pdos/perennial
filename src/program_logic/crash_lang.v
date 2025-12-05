@@ -84,10 +84,10 @@ Section crash_language.
     destruct s.
     - intros (?&?&?&?&?&?)%erased_rsteps_r_inv.
       intros. eapply erased_rsteps_r; eauto.
-      eapply rtc_transitive; eauto.
+      eapply rtc_trans; eauto.
     - inversion 1; subst; eauto.
       intros. econstructor.
-      eapply rtc_transitive; eauto.
+      eapply rtc_trans; eauto.
   Qed.
 
   Lemma erased_rsteps_r_1 r ρ ρ' ρ'' s:

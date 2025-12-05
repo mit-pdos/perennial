@@ -8,7 +8,9 @@ Context `{ffi_syntax}.
 Definition LoadUint64ⁱᵐᵖˡ : val :=
   λ: "addr", Load "addr".
 Definition StoreUint64ⁱᵐᵖˡ : val :=
-  λ: "addr" "val", AtomicStore "addr" "val".
+  λ: "addr" "val", AtomicSwap "addr" "val";; #().
+Definition SwapUint64ⁱᵐᵖˡ : val :=
+  λ: "addr" "val", AtomicSwap "addr" "val".
 Definition AddUint64ⁱᵐᵖˡ : val :=
   λ: "addr" "val", AtomicOp PlusOp "addr" "val".
 Definition CompareAndSwapUint64ⁱᵐᵖˡ : val :=
@@ -22,7 +24,9 @@ Definition CompareAndSwapUint64ⁱᵐᵖˡ : val :=
   Definition LoadInt64ⁱᵐᵖˡ : val :=
     λ: "addr", Load "addr".
   Definition StoreInt64ⁱᵐᵖˡ : val :=
-    λ: "addr" "val", AtomicStore "addr" "val".
+    λ: "addr" "val", AtomicSwap "addr" "val";; #().
+  Definition SwapInt64ⁱᵐᵖˡ : val :=
+    λ: "addr" "val", AtomicSwap "addr" "val".
   Definition AddInt64ⁱᵐᵖˡ : val :=
     λ: "addr" "val", AtomicOp PlusOp "addr" "val".
   Definition CompareAndSwapInt64ⁱᵐᵖˡ : val :=
@@ -33,7 +37,9 @@ Definition CompareAndSwapUint64ⁱᵐᵖˡ : val :=
   Definition LoadUint32ⁱᵐᵖˡ : val :=
     λ: "addr", Load "addr".
   Definition StoreUint32ⁱᵐᵖˡ : val :=
-    λ: "addr" "val", AtomicStore "addr" "val".
+    λ: "addr" "val", AtomicSwap "addr" "val";; #().
+  Definition SwapUint32ⁱᵐᵖˡ : val :=
+    λ: "addr" "val", AtomicSwap "addr" "val".
   Definition AddUint32ⁱᵐᵖˡ : val :=
     λ: "addr" "val", AtomicOp PlusOp "addr" "val".
   Definition CompareAndSwapUint32ⁱᵐᵖˡ : val :=
@@ -44,7 +50,9 @@ Definition CompareAndSwapUint64ⁱᵐᵖˡ : val :=
   Definition LoadInt32ⁱᵐᵖˡ : val :=
     λ: "addr", Load "addr".
   Definition StoreInt32ⁱᵐᵖˡ : val :=
-    λ: "addr" "val", AtomicStore "addr" "val".
+    λ: "addr" "val", AtomicSwap "addr" "val";; #().
+  Definition SwapInt32ⁱᵐᵖˡ : val :=
+    λ: "addr" "val", AtomicSwap "addr" "val".
   Definition AddInt32ⁱᵐᵖˡ : val :=
     λ: "addr" "val", AtomicOp PlusOp "addr" "val".
   Definition CompareAndSwapInt32ⁱᵐᵖˡ : val :=
@@ -52,6 +60,32 @@ Definition CompareAndSwapUint64ⁱᵐᵖˡ : val :=
       Snd (CmpXchg "addr" "old" "new").
 
 (* END AUTO-GENERATED *)
+
+(* FIXME (from merging):
+Definition noCopy : go_type := structT [
+].
+#[global] Typeclasses Opaque noCopy.
+#[global] Opaque noCopy.
+
+Definition Pointer : val :=
+  λ: "T", type.structT [
+    (#"_0"%go, type.arrayT #(W64 0) #ptrT);
+    (#"_1"%go, #(structT [])); (* XXX: inlined noCopy *)
+    (#"v"%go, #ptrT)
+  ].
+#[global] Typeclasses Opaque Pointer.
+#[global] Opaque Pointer.
+
+Definition Pointer__Loadⁱᵐᵖˡ: val :=
+  λ: "p" "T", Load (struct.field_ref (Pointer "T") #"v" "p").
+Definition Pointer__Swapⁱᵐᵖˡ: val :=
+  λ: "p" "T" "v", AtomicSwap (struct.field_ref (Pointer "T") #"v" "p") "v".
+Definition Pointer__Storeⁱᵐᵖˡ: val :=
+  λ: "p" "T" "v", AtomicSwap (struct.field_ref (Pointer "T") #"v" "p") "v";; #().
+Definition Pointer__CompareAndSwapⁱᵐᵖˡ: val :=
+  λ: "p" "T" "old" "new",
+    Snd (CmpXchg (struct.field_ref (Pointer "T") #"v" "p") "old" "new").
+*)
 
 End code.
 End atomic.

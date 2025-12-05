@@ -27,20 +27,14 @@ Admitted.
 
 (* type slices.xorshift *)
 Module xorshift.
+
+#[global] Transparent slices.xorshift.
+#[global] Typeclasses Transparent slices.xorshift.
 Section def.
 Context `{ffi_syntax}.
-Axiom t : Type.
+Definition t := w64.
 End def.
 End xorshift.
-
-Global Instance bounded_size_xorshift : BoundedTypeSize slices.xorshift.
-Admitted.
-
-Global Instance into_val_xorshift `{ffi_syntax} : IntoVal xorshift.t.
-Admitted.
-
-Global Instance into_val_typed_xorshift `{ffi_syntax} : IntoValTyped xorshift.t slices.xorshift.
-Admitted.
 
 Section names.
 
@@ -131,6 +125,10 @@ Global Instance wp_func_call_symMergeCmpFunc :
 Global Instance wp_func_call_rotateCmpFunc :
   WpFuncCall slices.rotateCmpFunc _ (is_pkg_defined slices) :=
   ltac:(solve_wp_func_call).
+
+Global Instance wp_method_call_xorshift'ptr_Next :
+  WpMethodCall (ptrT.id slices.xorshift.id) "Next" _ (is_pkg_defined slices) :=
+  ltac:(solve_wp_method_call).
 
 End names.
 End slices.

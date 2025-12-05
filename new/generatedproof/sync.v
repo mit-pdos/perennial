@@ -207,6 +207,40 @@ Admitted.
 Global Instance into_val_typed_Map `{ffi_syntax} : IntoValTyped Map.t sync.Map.
 Admitted.
 
+(* type sync.readOnly *)
+Module readOnly.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End readOnly.
+
+Global Instance bounded_size_readOnly : BoundedTypeSize sync.readOnly.
+Admitted.
+
+Global Instance into_val_readOnly `{ffi_syntax} : IntoVal readOnly.t.
+Admitted.
+
+Global Instance into_val_typed_readOnly `{ffi_syntax} : IntoValTyped readOnly.t sync.readOnly.
+Admitted.
+
+(* type sync.entry *)
+Module entry.
+Section def.
+Context `{ffi_syntax}.
+Axiom t : Type.
+End def.
+End entry.
+
+Global Instance bounded_size_entry : BoundedTypeSize sync.entry.
+Admitted.
+
+Global Instance into_val_entry `{ffi_syntax} : IntoVal entry.t.
+Admitted.
+
+Global Instance into_val_typed_entry `{ffi_syntax} : IntoValTyped entry.t sync.entry.
+Admitted.
+
 (* type sync.Once *)
 Module Once.
 Section def.

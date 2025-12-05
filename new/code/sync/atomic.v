@@ -813,10 +813,6 @@ Definition Pointer(T : go.type)  : go.type := go.Named "sync/atomic.Pointer"%go 
 
 Definition Uintptr : go.type := go.Named "sync/atomic.Uintptr"%go [].
 
-Axiom SwapInt32ⁱᵐᵖˡ : val.
-
-Axiom SwapUint32ⁱᵐᵖˡ : val.
-
 Axiom SwapUintptrⁱᵐᵖˡ : val.
 
 Axiom SwapPointerⁱᵐᵖˡ : val.
@@ -846,10 +842,6 @@ Axiom LoadPointerⁱᵐᵖˡ : val.
 Axiom StoreUintptrⁱᵐᵖˡ : val.
 
 Axiom StorePointerⁱᵐᵖˡ : val.
-
-Axiom SwapInt64ⁱᵐᵖˡ : val.
-
-Axiom SwapUint64ⁱᵐᵖˡ : val.
 
 Axiom AndInt64ⁱᵐᵖˡ : val.
 

@@ -76,6 +76,17 @@ Proof.
   unshelve iApply (wp_typed_Load with "[$]"); try tc_solve; done.
 Qed.
 
+Lemma wp_SwapUint64 (addr : loc) (v : w64) :
+  ∀ Φ,
+  is_pkg_init atomic -∗
+  (|={⊤,∅}=> ▷ ∃ (oldv : w64), addr ↦ oldv ∗ (addr ↦ v ={∅,⊤}=∗ Φ #oldv)) -∗
+  WP @! atomic.SwapUint64 #addr #v {{ Φ }}.
+Proof.
+  wp_start as "_".
+  iMod "HΦ" as (?) "[>Haddr HΦ]".
+  unshelve iApply (wp_typed_AtomicSwap with "[$]"); try tc_solve; done.
+Qed.
+
 Lemma wp_StoreUint64 (addr : loc) (v : w64) :
   ∀ Φ,
   is_pkg_init atomic -∗
@@ -83,8 +94,14 @@ Lemma wp_StoreUint64 (addr : loc) (v : w64) :
   WP @! atomic.StoreUint64 #addr #v {{ Φ }}.
 Proof.
   wp_start as "_".
+  wp_bind (AtomicSwap _ _).
   iMod "HΦ" as (?) "[>Haddr HΦ]".
-  unshelve iApply (wp_typed_AtomicStore with "[$]"); try tc_solve; done.
+  unshelve iApply (wp_typed_AtomicSwap with "[$]"); try tc_solve.
+  { done. }
+  iIntros "!> Haddr".
+  iMod ("HΦ" with "Haddr") as "HΦ".
+  iModIntro. wp_pures.
+  iApply "HΦ".
 Qed.
 
 Lemma wp_AddUint64 (addr : loc) (v : w64) :
@@ -287,6 +304,17 @@ Qed.
     unshelve iApply (wp_typed_Load with "[$]"); try tc_solve; done.
   Qed.
 
+  Lemma wp_SwapInt64 (addr : loc) (v : w64) :
+    ∀ Φ,
+    is_pkg_init atomic -∗
+    (|={⊤,∅}=> ▷ ∃ (oldv : w64), addr ↦ oldv ∗ (addr ↦ v ={∅,⊤}=∗ Φ #oldv)) -∗
+    WP @! atomic.SwapInt64 #addr #v {{ Φ }}.
+  Proof.
+    wp_start as "_".
+    iMod "HΦ" as (?) "[>Haddr HΦ]".
+    unshelve iApply (wp_typed_AtomicSwap with "[$]"); try tc_solve; done.
+  Qed.
+
   Lemma wp_StoreInt64 (addr : loc) (v : w64) :
     ∀ Φ,
     is_pkg_init atomic -∗
@@ -294,8 +322,14 @@ Qed.
     WP @! atomic.StoreInt64 #addr #v {{ Φ }}.
   Proof.
     wp_start as "_".
+    wp_bind (AtomicSwap _ _).
     iMod "HΦ" as (?) "[>Haddr HΦ]".
-    unshelve iApply (wp_typed_AtomicStore with "[$]"); try tc_solve; done.
+    unshelve iApply (wp_typed_AtomicSwap with "[$]"); try tc_solve.
+    { done. }
+    iIntros "!> Haddr".
+    iMod ("HΦ" with "Haddr") as "HΦ".
+    iModIntro. wp_pures.
+    iApply "HΦ".
   Qed.
 
   Lemma wp_AddInt64 (addr : loc) (v : w64) :
@@ -495,6 +529,17 @@ Qed.
     unshelve iApply (wp_typed_Load with "[$]"); try tc_solve; done.
   Qed.
 
+  Lemma wp_SwapUint32 (addr : loc) (v : w32) :
+    ∀ Φ,
+    is_pkg_init atomic -∗
+    (|={⊤,∅}=> ▷ ∃ (oldv : w32), addr ↦ oldv ∗ (addr ↦ v ={∅,⊤}=∗ Φ #oldv)) -∗
+    WP @! atomic.SwapUint32 #addr #v {{ Φ }}.
+  Proof.
+    wp_start as "_".
+    iMod "HΦ" as (?) "[>Haddr HΦ]".
+    unshelve iApply (wp_typed_AtomicSwap with "[$]"); try tc_solve; done.
+  Qed.
+
   Lemma wp_StoreUint32 (addr : loc) (v : w32) :
     ∀ Φ,
     is_pkg_init atomic -∗
@@ -502,8 +547,14 @@ Qed.
     WP @! atomic.StoreUint32 #addr #v {{ Φ }}.
   Proof.
     wp_start as "_".
+    wp_bind (AtomicSwap _ _).
     iMod "HΦ" as (?) "[>Haddr HΦ]".
-    unshelve iApply (wp_typed_AtomicStore with "[$]"); try tc_solve; done.
+    unshelve iApply (wp_typed_AtomicSwap with "[$]"); try tc_solve.
+    { done. }
+    iIntros "!> Haddr".
+    iMod ("HΦ" with "Haddr") as "HΦ".
+    iModIntro. wp_pures.
+    iApply "HΦ".
   Qed.
 
   Lemma wp_AddUint32 (addr : loc) (v : w32) :
@@ -703,6 +754,17 @@ Qed.
     unshelve iApply (wp_typed_Load with "[$]"); try tc_solve; done.
   Qed.
 
+  Lemma wp_SwapInt32 (addr : loc) (v : w32) :
+    ∀ Φ,
+    is_pkg_init atomic -∗
+    (|={⊤,∅}=> ▷ ∃ (oldv : w32), addr ↦ oldv ∗ (addr ↦ v ={∅,⊤}=∗ Φ #oldv)) -∗
+    WP @! atomic.SwapInt32 #addr #v {{ Φ }}.
+  Proof.
+    wp_start as "_".
+    iMod "HΦ" as (?) "[>Haddr HΦ]".
+    unshelve iApply (wp_typed_AtomicSwap with "[$]"); try tc_solve; done.
+  Qed.
+
   Lemma wp_StoreInt32 (addr : loc) (v : w32) :
     ∀ Φ,
     is_pkg_init atomic -∗
@@ -710,8 +772,14 @@ Qed.
     WP @! atomic.StoreInt32 #addr #v {{ Φ }}.
   Proof.
     wp_start as "_".
+    wp_bind (AtomicSwap _ _).
     iMod "HΦ" as (?) "[>Haddr HΦ]".
-    unshelve iApply (wp_typed_AtomicStore with "[$]"); try tc_solve; done.
+    unshelve iApply (wp_typed_AtomicSwap with "[$]"); try tc_solve.
+    { done. }
+    iIntros "!> Haddr".
+    iMod ("HΦ" with "Haddr") as "HΦ".
+    iModIntro. wp_pures.
+    iApply "HΦ".
   Qed.
 
   Lemma wp_AddInt32 (addr : loc) (v : w32) :
@@ -1085,18 +1153,18 @@ Proof using BoundedTypeSize0.
   done.
 Qed.
 
-Lemma wp_Pointer__Store u v' :
+Lemma wp_Pointer__Swap u v' :
   ∀ Φ,
   is_pkg_init atomic -∗
-  (|={⊤,∅}=> ∃ v, own_Pointer u (DfracOwn 1) v ∗ (own_Pointer u (DfracOwn 1) v' ={∅,⊤}=∗ Φ #())) -∗
-  WP u @ (ptrT.id atomic.Pointer.id) @ "Store" #T #v' {{ Φ }}.
+  (|={⊤,∅}=> ∃ v, own_Pointer u (DfracOwn 1) v ∗ (own_Pointer u (DfracOwn 1) v' ={∅,⊤}=∗ Φ #v)) -∗
+  WP u @ (ptrT.id atomic.Pointer.id) @ "Swap" #T #v' {{ Φ }}.
 Proof using BoundedTypeSize0.
   wp_start as "_".
   iMod "HΦ" as (?) "[Haddr HΦ]"; try tc_solve.
   rewrite /own_Pointer.
   iApply struct_fields_split in "Haddr"; simpl.
   iNamed "Haddr".
-  unshelve iApply (wp_typed_AtomicStore with "[$]"); try tc_solve.
+  unshelve iApply (wp_typed_AtomicSwap with "[$]"); try tc_solve.
   { done. }
   iModIntro.
   iIntros "Hv".
@@ -1105,6 +1173,32 @@ Proof using BoundedTypeSize0.
     iApply @struct_fields_combine; simpl.
     iFrame.
   }
+  done.
+Qed.
+
+Lemma wp_Pointer__Store u v' :
+  ∀ Φ,
+  is_pkg_init atomic -∗
+  (|={⊤,∅}=> ∃ v, own_Pointer u (DfracOwn 1) v ∗ (own_Pointer u (DfracOwn 1) v' ={∅,⊤}=∗ Φ #())) -∗
+  WP u @ (ptrT.id atomic.Pointer.id) @ "Store" #T #v' {{ Φ }}.
+Proof using BoundedTypeSize0.
+  wp_start as "_".
+  wp_bind (AtomicSwap _ _).
+  iMod "HΦ" as (?) "[Haddr HΦ]"; try tc_solve.
+  rewrite /own_Pointer.
+  iApply struct_fields_split in "Haddr"; simpl.
+  iNamed "Haddr".
+  unshelve iApply (wp_typed_AtomicSwap with "[$]"); try tc_solve.
+  { done. }
+  iModIntro.
+  iIntros "Hv".
+  iMod ("HΦ" with "[H_0 H_1 Hv]") as "HΦ".
+  {
+    iApply @struct_fields_combine; simpl.
+    iFrame.
+  }
+  iModIntro.
+  wp_pures.
   done.
 Qed.
 

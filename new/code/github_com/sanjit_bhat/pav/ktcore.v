@@ -9,23 +9,11 @@ Definition ktcore : go_string := "github.com/sanjit-bhat/pav/ktcore".
 
 Module ktcore.
 
-Module Blame. Definition id : go_string := "github.com/sanjit-bhat/pav/ktcore.Blame"%go. End Blame.
-Module VrfSig. Definition id : go_string := "github.com/sanjit-bhat/pav/ktcore.VrfSig"%go. End VrfSig.
-Module LinkSig. Definition id : go_string := "github.com/sanjit-bhat/pav/ktcore.LinkSig"%go. End LinkSig.
-Module MapLabel. Definition id : go_string := "github.com/sanjit-bhat/pav/ktcore.MapLabel"%go. End MapLabel.
-Module CommitOpen. Definition id : go_string := "github.com/sanjit-bhat/pav/ktcore.CommitOpen"%go. End CommitOpen.
-Module Memb. Definition id : go_string := "github.com/sanjit-bhat/pav/ktcore.Memb"%go. End Memb.
-Module NonMemb. Definition id : go_string := "github.com/sanjit-bhat/pav/ktcore.NonMemb"%go. End NonMemb.
-Module AuditProof. Definition id : go_string := "github.com/sanjit-bhat/pav/ktcore.AuditProof"%go. End AuditProof.
-Module UpdateProof. Definition id : go_string := "github.com/sanjit-bhat/pav/ktcore.UpdateProof"%go. End UpdateProof.
-
 Section code.
 Context `{ffi_syntax}.
 
 
-Definition Blame : go_type := uint64T.
-#[global] Typeclasses Opaque Blame.
-#[global] Opaque Blame.
+Definition Blameⁱᵐᵖˡ : go.type := go.uint64.
 
 Definition BlameNone : val := #(W64 0).
 
@@ -41,782 +29,742 @@ Definition BlameClients : val := #(W64 16).
 
 Definition BlameUnknown : val := #(W64 32).
 
-Definition CheckBlame : go_string := "github.com/sanjit-bhat/pav/ktcore.CheckBlame"%go.
-
-(* CheckBlame prevents bad parties from giving bad [Blame] codes.
-
-   go: ktcore.go:32:6 *)
-Definition CheckBlameⁱᵐᵖˡ : val :=
-  λ: "b" "allowed",
-    exception_do (let: "err" := (mem.alloc (type.zero_val boolT)) in
-    let: "allowed" := (mem.alloc "allowed") in
-    let: "b" := (mem.alloc "b") in
-    let: "all" := (mem.alloc (type.zero_val Blame)) in
-    let: "$range" := (![sliceT] "allowed") in
-    (let: "x" := (mem.alloc (type.zero_val Blame)) in
-    slice.for_range Blame "$range" (λ: "$key" "$value",
-      do:  ("x" <-[Blame] "$value");;;
-      do:  "$key";;;
-      do:  ("all" <-[Blame] ((![Blame] "all") `or` (![Blame] "x")))));;;
-    return: (((![Blame] "b") `and` (~ (![Blame] "all"))) ≠ #(W64 0))).
-
 Definition SignVrf : go_string := "github.com/sanjit-bhat/pav/ktcore.SignVrf"%go.
 
 Definition VrfSigEncode : go_string := "github.com/sanjit-bhat/pav/ktcore.VrfSigEncode"%go.
 
-Definition VrfSig : go_type := structT [
-  "SigTag" :: byteT;
-  "VrfPk" :: sliceT
-].
-#[global] Typeclasses Opaque VrfSig.
-#[global] Opaque VrfSig.
+Definition VrfSig : go.type := go.Named "github.com/sanjit-bhat/pav/ktcore.VrfSig"%go [].
 
 Definition VrfSigTag : val := #(W8 0).
 
-(* go: ktcore.go:40:6 *)
+(* go: ktcore.go:36:6 *)
 Definition SignVrfⁱᵐᵖˡ : val :=
   λ: "sk" "vrfPk",
-    exception_do (let: "sig" := (mem.alloc (type.zero_val sliceT)) in
-    let: "vrfPk" := (mem.alloc "vrfPk") in
-    let: "sk" := (mem.alloc "sk") in
-    let: "b" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (slice.make3 byteT #(W64 0) (#(W64 (1 + 8)) + cryptoffi.HashLen)) in
-    do:  ("b" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "b") in
-    let: "$a1" := (mem.alloc (let: "$SigTag" := VrfSigTag in
-    let: "$VrfPk" := (![sliceT] "vrfPk") in
-    struct.make VrfSig [{
-      "SigTag" ::= "$SigTag";
-      "VrfPk" ::= "$VrfPk"
-    }])) in
-    (func_call #VrfSigEncode) "$a0" "$a1") in
-    do:  ("b" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "b") in
-    (method_call #(ptrT.id cryptoffi.SigPrivateKey.id) #"Sign"%go (![ptrT] "sk")) "$a0") in
-    do:  ("sig" <-[sliceT] "$r0");;;
-    return: (![sliceT] "sig")).
+    exception_do (let: "sig" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "vrfPk" := (go.AllocValue (go.SliceType go.byte) "vrfPk") in
+    let: "sk" := (go.AllocValue (go.PointerType cryptoffi.SigPrivateKey) "sk") in
+    let: "b" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "$r0" := ((FuncResolve go.make3 [go.SliceType go.byte] #()) #(W64 0) ((1 +⟨go.untyped int⟩ 8) +⟨go.uint64⟩ cryptoffi.HashLen)) in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "b") in
+    let: "$a1" := (go.AllocValue VrfSig (let: "$SigTag" := VrfSigTag in
+    let: "$VrfPk" := (![go.SliceType go.byte] "vrfPk") in
+    CompositeLiteral VrfSig (
+      let: "$$vs" := go.StructElementListNil #() in 
+      let: "$$vs" := go.ElementListApp "$$vs" "$SigTag" in
+      let: "$$vs" := go.ElementListApp "$$vs" "$VrfPk" in
+      "$$vs"
+    ))) in
+    (FuncResolve VrfSigEncode [] #()) "$a0" "$a1") in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "b") in
+    (MethodResolve (go.PointerType cryptoffi.SigPrivateKey) Sign #() (![go.PointerType cryptoffi.SigPrivateKey] "sk")) "$a0") in
+    do:  ("sig" <-[go.SliceType go.byte] "$r0");;;
+    return: (![go.SliceType go.byte] "sig")).
 
 Definition VerifyVrfSig : go_string := "github.com/sanjit-bhat/pav/ktcore.VerifyVrfSig"%go.
 
-(* go: ktcore.go:48:6 *)
+(* go: ktcore.go:44:6 *)
 Definition VerifyVrfSigⁱᵐᵖˡ : val :=
   λ: "pk" "vrfPk" "sig",
-    exception_do (let: "err" := (mem.alloc (type.zero_val boolT)) in
-    let: "sig" := (mem.alloc "sig") in
-    let: "vrfPk" := (mem.alloc "vrfPk") in
-    let: "pk" := (mem.alloc "pk") in
-    let: "b" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (slice.make3 byteT #(W64 0) (#(W64 (1 + 8)) + cryptoffi.HashLen)) in
-    do:  ("b" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "b") in
-    let: "$a1" := (mem.alloc (let: "$SigTag" := VrfSigTag in
-    let: "$VrfPk" := (![sliceT] "vrfPk") in
-    struct.make VrfSig [{
-      "SigTag" ::= "$SigTag";
-      "VrfPk" ::= "$VrfPk"
-    }])) in
-    (func_call #VrfSigEncode) "$a0" "$a1") in
-    do:  ("b" <-[sliceT] "$r0");;;
-    return: (let: "$a0" := (![sliceT] "b") in
-     let: "$a1" := (![sliceT] "sig") in
-     (method_call #(ptrT.id cryptoffi.SigPublicKey.id) #"Verify"%go "pk") "$a0" "$a1")).
+    exception_do (let: "err" := (GoAlloc go.bool #()) in
+    let: "sig" := (go.AllocValue (go.SliceType go.byte) "sig") in
+    let: "vrfPk" := (go.AllocValue (go.SliceType go.byte) "vrfPk") in
+    let: "pk" := (go.AllocValue cryptoffi.SigPublicKey "pk") in
+    let: "b" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "$r0" := ((FuncResolve go.make3 [go.SliceType go.byte] #()) #(W64 0) ((1 +⟨go.untyped int⟩ 8) +⟨go.uint64⟩ cryptoffi.HashLen)) in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "b") in
+    let: "$a1" := (go.AllocValue VrfSig (let: "$SigTag" := VrfSigTag in
+    let: "$VrfPk" := (![go.SliceType go.byte] "vrfPk") in
+    CompositeLiteral VrfSig (
+      let: "$$vs" := go.StructElementListNil #() in 
+      let: "$$vs" := go.ElementListApp "$$vs" "$SigTag" in
+      let: "$$vs" := go.ElementListApp "$$vs" "$VrfPk" in
+      "$$vs"
+    ))) in
+    (FuncResolve VrfSigEncode [] #()) "$a0" "$a1") in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    return: (let: "$a0" := (![go.SliceType go.byte] "b") in
+     let: "$a1" := (![go.SliceType go.byte] "sig") in
+     (MethodResolve cryptoffi.SigPublicKey Verify #() (![cryptoffi.SigPublicKey] "pk")) "$a0" "$a1")).
 
 Definition SignLink : go_string := "github.com/sanjit-bhat/pav/ktcore.SignLink"%go.
 
 Definition LinkSigEncode : go_string := "github.com/sanjit-bhat/pav/ktcore.LinkSigEncode"%go.
 
-Definition LinkSig : go_type := structT [
-  "SigTag" :: byteT;
-  "Epoch" :: uint64T;
-  "Link" :: sliceT
-].
-#[global] Typeclasses Opaque LinkSig.
-#[global] Opaque LinkSig.
+Definition LinkSig : go.type := go.Named "github.com/sanjit-bhat/pav/ktcore.LinkSig"%go [].
 
 Definition LinkSigTag : val := #(W8 1).
 
-(* go: ktcore.go:54:6 *)
+(* go: ktcore.go:50:6 *)
 Definition SignLinkⁱᵐᵖˡ : val :=
   λ: "sk" "epoch" "link",
-    exception_do (let: "sig" := (mem.alloc (type.zero_val sliceT)) in
-    let: "link" := (mem.alloc "link") in
-    let: "epoch" := (mem.alloc "epoch") in
-    let: "sk" := (mem.alloc "sk") in
-    let: "b" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (slice.make3 byteT #(W64 0) (#(W64 ((1 + 8) + 8)) + cryptoffi.HashLen)) in
-    do:  ("b" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "b") in
-    let: "$a1" := (mem.alloc (let: "$SigTag" := LinkSigTag in
-    let: "$Epoch" := (![uint64T] "epoch") in
-    let: "$Link" := (![sliceT] "link") in
-    struct.make LinkSig [{
-      "SigTag" ::= "$SigTag";
-      "Epoch" ::= "$Epoch";
-      "Link" ::= "$Link"
-    }])) in
-    (func_call #LinkSigEncode) "$a0" "$a1") in
-    do:  ("b" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "b") in
-    (method_call #(ptrT.id cryptoffi.SigPrivateKey.id) #"Sign"%go (![ptrT] "sk")) "$a0") in
-    do:  ("sig" <-[sliceT] "$r0");;;
-    return: (![sliceT] "sig")).
+    exception_do (let: "sig" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "link" := (go.AllocValue (go.SliceType go.byte) "link") in
+    let: "epoch" := (go.AllocValue go.uint64 "epoch") in
+    let: "sk" := (go.AllocValue (go.PointerType cryptoffi.SigPrivateKey) "sk") in
+    let: "b" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "$r0" := ((FuncResolve go.make3 [go.SliceType go.byte] #()) #(W64 0) (((1 +⟨go.untyped int⟩ 8) +⟨go.untyped int⟩ 8) +⟨go.uint64⟩ cryptoffi.HashLen)) in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "b") in
+    let: "$a1" := (go.AllocValue LinkSig (let: "$SigTag" := LinkSigTag in
+    let: "$Epoch" := (![go.uint64] "epoch") in
+    let: "$Link" := (![go.SliceType go.byte] "link") in
+    CompositeLiteral LinkSig (
+      let: "$$vs" := go.StructElementListNil #() in 
+      let: "$$vs" := go.ElementListApp "$$vs" "$SigTag" in
+      let: "$$vs" := go.ElementListApp "$$vs" "$Epoch" in
+      let: "$$vs" := go.ElementListApp "$$vs" "$Link" in
+      "$$vs"
+    ))) in
+    (FuncResolve LinkSigEncode [] #()) "$a0" "$a1") in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "b") in
+    (MethodResolve (go.PointerType cryptoffi.SigPrivateKey) Sign #() (![go.PointerType cryptoffi.SigPrivateKey] "sk")) "$a0") in
+    do:  ("sig" <-[go.SliceType go.byte] "$r0");;;
+    return: (![go.SliceType go.byte] "sig")).
 
 Definition VerifyLinkSig : go_string := "github.com/sanjit-bhat/pav/ktcore.VerifyLinkSig"%go.
 
-(* go: ktcore.go:62:6 *)
+(* go: ktcore.go:58:6 *)
 Definition VerifyLinkSigⁱᵐᵖˡ : val :=
   λ: "pk" "epoch" "link" "sig",
-    exception_do (let: "err" := (mem.alloc (type.zero_val boolT)) in
-    let: "sig" := (mem.alloc "sig") in
-    let: "link" := (mem.alloc "link") in
-    let: "epoch" := (mem.alloc "epoch") in
-    let: "pk" := (mem.alloc "pk") in
-    let: "b" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (slice.make3 byteT #(W64 0) (#(W64 ((1 + 8) + 8)) + cryptoffi.HashLen)) in
-    do:  ("b" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "b") in
-    let: "$a1" := (mem.alloc (let: "$SigTag" := LinkSigTag in
-    let: "$Epoch" := (![uint64T] "epoch") in
-    let: "$Link" := (![sliceT] "link") in
-    struct.make LinkSig [{
-      "SigTag" ::= "$SigTag";
-      "Epoch" ::= "$Epoch";
-      "Link" ::= "$Link"
-    }])) in
-    (func_call #LinkSigEncode) "$a0" "$a1") in
-    do:  ("b" <-[sliceT] "$r0");;;
-    return: (let: "$a0" := (![sliceT] "b") in
-     let: "$a1" := (![sliceT] "sig") in
-     (method_call #(ptrT.id cryptoffi.SigPublicKey.id) #"Verify"%go "pk") "$a0" "$a1")).
+    exception_do (let: "err" := (GoAlloc go.bool #()) in
+    let: "sig" := (go.AllocValue (go.SliceType go.byte) "sig") in
+    let: "link" := (go.AllocValue (go.SliceType go.byte) "link") in
+    let: "epoch" := (go.AllocValue go.uint64 "epoch") in
+    let: "pk" := (go.AllocValue cryptoffi.SigPublicKey "pk") in
+    let: "b" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "$r0" := ((FuncResolve go.make3 [go.SliceType go.byte] #()) #(W64 0) (((1 +⟨go.untyped int⟩ 8) +⟨go.untyped int⟩ 8) +⟨go.uint64⟩ cryptoffi.HashLen)) in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "b") in
+    let: "$a1" := (go.AllocValue LinkSig (let: "$SigTag" := LinkSigTag in
+    let: "$Epoch" := (![go.uint64] "epoch") in
+    let: "$Link" := (![go.SliceType go.byte] "link") in
+    CompositeLiteral LinkSig (
+      let: "$$vs" := go.StructElementListNil #() in 
+      let: "$$vs" := go.ElementListApp "$$vs" "$SigTag" in
+      let: "$$vs" := go.ElementListApp "$$vs" "$Epoch" in
+      let: "$$vs" := go.ElementListApp "$$vs" "$Link" in
+      "$$vs"
+    ))) in
+    (FuncResolve LinkSigEncode [] #()) "$a0" "$a1") in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    return: (let: "$a0" := (![go.SliceType go.byte] "b") in
+     let: "$a1" := (![go.SliceType go.byte] "sig") in
+     (MethodResolve cryptoffi.SigPublicKey Verify #() (![cryptoffi.SigPublicKey] "pk")) "$a0" "$a1")).
 
 Definition ProveMapLabel : go_string := "github.com/sanjit-bhat/pav/ktcore.ProveMapLabel"%go.
 
 Definition MapLabelEncode : go_string := "github.com/sanjit-bhat/pav/ktcore.MapLabelEncode"%go.
 
-Definition MapLabel : go_type := structT [
-  "Uid" :: uint64T;
-  "Ver" :: uint64T
-].
-#[global] Typeclasses Opaque MapLabel.
-#[global] Opaque MapLabel.
+Definition MapLabel : go.type := go.Named "github.com/sanjit-bhat/pav/ktcore.MapLabel"%go [].
 
-(* go: ktcore.go:68:6 *)
+(* go: ktcore.go:64:6 *)
 Definition ProveMapLabelⁱᵐᵖˡ : val :=
-<<<<<<< HEAD
-  λ: "uid" "ver" "sk",
-    exception_do (let: "proof" := (mem.alloc (type.zero_val sliceT)) in
-    let: "label" := (mem.alloc (type.zero_val sliceT)) in
-    let: "sk" := (mem.alloc "sk") in
-    let: "ver" := (mem.alloc "ver") in
-    let: "uid" := (mem.alloc "uid") in
-    let: "b" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (slice.make3 byteT #(W64 0) #(W64 16)) in
-    do:  ("b" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "b") in
-    let: "$a1" := (mem.alloc (let: "$Uid" := (![uint64T] "uid") in
-    let: "$Ver" := (![uint64T] "ver") in
-    struct.make MapLabel [{
-=======
   λ: "sk" "uid" "ver",
-    exception_do (let: "proof" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "label" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "ver" := (mem.alloc "ver") in
-    let: "uid" := (mem.alloc "uid") in
-    let: "sk" := (mem.alloc "sk") in
-    let: "b" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make3 #byteT #(W64 0) #(W64 16)) in
-    do:  ("b" <-[#sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
-    let: "$a1" := (mem.alloc (let: "$Uid" := (![#uint64T] "uid") in
-    let: "$Ver" := (![#uint64T] "ver") in
-    struct.make #MapLabel [{
->>>>>>> master
-      "Uid" ::= "$Uid";
-      "Ver" ::= "$Ver"
-    }])) in
-    (func_call #MapLabelEncode) "$a0" "$a1") in
-    do:  ("b" <-[sliceT] "$r0");;;
-    let: ("$ret0", "$ret1") := ((let: "$a0" := (![sliceT] "b") in
-    (method_call #(ptrT.id cryptoffi.VrfPrivateKey.id) #"Prove"%go (![ptrT] "sk")) "$a0")) in
+    exception_do (let: "proof" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "label" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "ver" := (go.AllocValue go.uint64 "ver") in
+    let: "uid" := (go.AllocValue go.uint64 "uid") in
+    let: "sk" := (go.AllocValue (go.PointerType cryptoffi.VrfPrivateKey) "sk") in
+    let: "b" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "$r0" := ((FuncResolve go.make3 [go.SliceType go.byte] #()) #(W64 0) #(W64 16)) in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "b") in
+    let: "$a1" := (go.AllocValue MapLabel (let: "$Uid" := (![go.uint64] "uid") in
+    let: "$Ver" := (![go.uint64] "ver") in
+    CompositeLiteral MapLabel (
+      let: "$$vs" := go.StructElementListNil #() in 
+      let: "$$vs" := go.ElementListApp "$$vs" "$Uid" in
+      let: "$$vs" := go.ElementListApp "$$vs" "$Ver" in
+      "$$vs"
+    ))) in
+    (FuncResolve MapLabelEncode [] #()) "$a0" "$a1") in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    let: ("$ret0", "$ret1") := ((let: "$a0" := (![go.SliceType go.byte] "b") in
+    (MethodResolve (go.PointerType cryptoffi.VrfPrivateKey) Prove #() (![go.PointerType cryptoffi.VrfPrivateKey] "sk")) "$a0")) in
     return: ("$ret0", "$ret1")).
 
 Definition EvalMapLabel : go_string := "github.com/sanjit-bhat/pav/ktcore.EvalMapLabel"%go.
 
-(* go: ktcore.go:74:6 *)
+(* go: ktcore.go:70:6 *)
 Definition EvalMapLabelⁱᵐᵖˡ : val :=
-<<<<<<< HEAD
-  λ: "uid" "ver" "sk",
-    exception_do (let: "label" := (mem.alloc (type.zero_val sliceT)) in
-    let: "sk" := (mem.alloc "sk") in
-    let: "ver" := (mem.alloc "ver") in
-    let: "uid" := (mem.alloc "uid") in
-    let: "b" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (slice.make3 byteT #(W64 0) #(W64 16)) in
-    do:  ("b" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "b") in
-    let: "$a1" := (mem.alloc (let: "$Uid" := (![uint64T] "uid") in
-    let: "$Ver" := (![uint64T] "ver") in
-    struct.make MapLabel [{
-=======
   λ: "sk" "uid" "ver",
-    exception_do (let: "label" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "ver" := (mem.alloc "ver") in
-    let: "uid" := (mem.alloc "uid") in
-    let: "sk" := (mem.alloc "sk") in
-    let: "b" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make3 #byteT #(W64 0) #(W64 16)) in
-    do:  ("b" <-[#sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] "b") in
-    let: "$a1" := (mem.alloc (let: "$Uid" := (![#uint64T] "uid") in
-    let: "$Ver" := (![#uint64T] "ver") in
-    struct.make #MapLabel [{
->>>>>>> master
-      "Uid" ::= "$Uid";
-      "Ver" ::= "$Ver"
-    }])) in
-    (func_call #MapLabelEncode) "$a0" "$a1") in
-    do:  ("b" <-[sliceT] "$r0");;;
-    return: (let: "$a0" := (![sliceT] "b") in
-     (method_call #(ptrT.id cryptoffi.VrfPrivateKey.id) #"Evaluate"%go (![ptrT] "sk")) "$a0")).
+    exception_do (let: "label" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "ver" := (go.AllocValue go.uint64 "ver") in
+    let: "uid" := (go.AllocValue go.uint64 "uid") in
+    let: "sk" := (go.AllocValue (go.PointerType cryptoffi.VrfPrivateKey) "sk") in
+    let: "b" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "$r0" := ((FuncResolve go.make3 [go.SliceType go.byte] #()) #(W64 0) #(W64 16)) in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "b") in
+    let: "$a1" := (go.AllocValue MapLabel (let: "$Uid" := (![go.uint64] "uid") in
+    let: "$Ver" := (![go.uint64] "ver") in
+    CompositeLiteral MapLabel (
+      let: "$$vs" := go.StructElementListNil #() in 
+      let: "$$vs" := go.ElementListApp "$$vs" "$Uid" in
+      let: "$$vs" := go.ElementListApp "$$vs" "$Ver" in
+      "$$vs"
+    ))) in
+    (FuncResolve MapLabelEncode [] #()) "$a0" "$a1") in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    return: (let: "$a0" := (![go.SliceType go.byte] "b") in
+     (MethodResolve (go.PointerType cryptoffi.VrfPrivateKey) Evaluate #() (![go.PointerType cryptoffi.VrfPrivateKey] "sk")) "$a0")).
 
 Definition CheckMapLabel : go_string := "github.com/sanjit-bhat/pav/ktcore.CheckMapLabel"%go.
 
-(* go: ktcore.go:80:6 *)
+(* go: ktcore.go:76:6 *)
 Definition CheckMapLabelⁱᵐᵖˡ : val :=
   λ: "pk" "uid" "ver" "proof",
-    exception_do (let: "err" := (mem.alloc (type.zero_val boolT)) in
-    let: "label" := (mem.alloc (type.zero_val sliceT)) in
-    let: "proof" := (mem.alloc "proof") in
-    let: "ver" := (mem.alloc "ver") in
-    let: "uid" := (mem.alloc "uid") in
-    let: "pk" := (mem.alloc "pk") in
-    let: "b" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (slice.make3 byteT #(W64 0) #(W64 16)) in
-    do:  ("b" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "b") in
-    let: "$a1" := (mem.alloc (let: "$Uid" := (![uint64T] "uid") in
-    let: "$Ver" := (![uint64T] "ver") in
-    struct.make MapLabel [{
-      "Uid" ::= "$Uid";
-      "Ver" ::= "$Ver"
-    }])) in
-    (func_call #MapLabelEncode) "$a0" "$a1") in
-    do:  ("b" <-[sliceT] "$r0");;;
-    let: ("$ret0", "$ret1") := ((let: "$a0" := (![sliceT] "b") in
-    let: "$a1" := (![sliceT] "proof") in
-    (method_call #(ptrT.id cryptoffi.VrfPublicKey.id) #"Verify"%go (![ptrT] "pk")) "$a0" "$a1")) in
+    exception_do (let: "err" := (GoAlloc go.bool #()) in
+    let: "label" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "proof" := (go.AllocValue (go.SliceType go.byte) "proof") in
+    let: "ver" := (go.AllocValue go.uint64 "ver") in
+    let: "uid" := (go.AllocValue go.uint64 "uid") in
+    let: "pk" := (go.AllocValue (go.PointerType cryptoffi.VrfPublicKey) "pk") in
+    let: "b" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "$r0" := ((FuncResolve go.make3 [go.SliceType go.byte] #()) #(W64 0) #(W64 16)) in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "b") in
+    let: "$a1" := (go.AllocValue MapLabel (let: "$Uid" := (![go.uint64] "uid") in
+    let: "$Ver" := (![go.uint64] "ver") in
+    CompositeLiteral MapLabel (
+      let: "$$vs" := go.StructElementListNil #() in 
+      let: "$$vs" := go.ElementListApp "$$vs" "$Uid" in
+      let: "$$vs" := go.ElementListApp "$$vs" "$Ver" in
+      "$$vs"
+    ))) in
+    (FuncResolve MapLabelEncode [] #()) "$a0" "$a1") in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    let: ("$ret0", "$ret1") := ((let: "$a0" := (![go.SliceType go.byte] "b") in
+    let: "$a1" := (![go.SliceType go.byte] "proof") in
+    (MethodResolve (go.PointerType cryptoffi.VrfPublicKey) Verify #() (![go.PointerType cryptoffi.VrfPublicKey] "pk")) "$a0" "$a1")) in
     return: ("$ret0", "$ret1")).
 
 Definition GetMapVal : go_string := "github.com/sanjit-bhat/pav/ktcore.GetMapVal"%go.
 
 Definition CommitOpenEncode : go_string := "github.com/sanjit-bhat/pav/ktcore.CommitOpenEncode"%go.
 
-(* go: ktcore.go:86:6 *)
+Definition CommitOpen : go.type := go.Named "github.com/sanjit-bhat/pav/ktcore.CommitOpen"%go [].
+
+(* go: ktcore.go:82:6 *)
 Definition GetMapValⁱᵐᵖˡ : val :=
   λ: "pkOpen",
-    exception_do (let: "val" := (mem.alloc (type.zero_val sliceT)) in
-    let: "pkOpen" := (mem.alloc "pkOpen") in
-<<<<<<< HEAD
-    let: "b" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (slice.make3 byteT #(W64 0) (((#(W64 8) + (s_to_w64 (let: "$a0" := (![sliceT] (struct.field_ref ptrT #"Val"%go (![ptrT] "pkOpen"))) in
-    slice.len "$a0"))) + #(W64 8)) + cryptoffi.HashLen)) in
-    do:  ("b" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "b") in
-    let: "$a1" := (![ptrT] "pkOpen") in
-=======
-    let: "b" := (mem.alloc (type.zero_val #sliceT)) in
+    exception_do (let: "val" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "pkOpen" := (go.AllocValue (go.PointerType CommitOpen) "pkOpen") in
+    let: "b" := (GoAlloc (go.SliceType go.byte) #()) in
     let: "$r0" := (let: "$a0" := #slice.nil in
-    let: "$a1" := (![#ptrT] "pkOpen") in
->>>>>>> master
-    (func_call #CommitOpenEncode) "$a0" "$a1") in
-    do:  ("b" <-[sliceT] "$r0");;;
-    return: (let: "$a0" := (![sliceT] "b") in
-     (func_call #cryptoutil.Hash) "$a0")).
+    let: "$a1" := (![go.PointerType CommitOpen] "pkOpen") in
+    (FuncResolve CommitOpenEncode [] #()) "$a0" "$a1") in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    return: (let: "$a0" := (![go.SliceType go.byte] "b") in
+     (FuncResolve cryptoutil.Hash [] #()) "$a0")).
 
 Definition GetCommitRand : go_string := "github.com/sanjit-bhat/pav/ktcore.GetCommitRand"%go.
 
 (* GetCommitRand computes the psuedo-random (wrt commitSecret) bits
    used in a mapVal commitment.
 
-   go: ktcore.go:93:6 *)
+   go: ktcore.go:89:6 *)
 Definition GetCommitRandⁱᵐᵖˡ : val :=
   λ: "commitSecret" "label",
-    exception_do (let: "rand" := (mem.alloc (type.zero_val sliceT)) in
-    let: "label" := (mem.alloc "label") in
-    let: "commitSecret" := (mem.alloc "commitSecret") in
-    let: "hr" := (mem.alloc (type.zero_val ptrT)) in
-    let: "$r0" := ((func_call #cryptoffi.NewHasher) #()) in
-    do:  ("hr" <-[ptrT] "$r0");;;
-    do:  (let: "$a0" := (![sliceT] "commitSecret") in
-    (method_call #(ptrT.id cryptoffi.Hasher.id) #"Write"%go (![ptrT] "hr")) "$a0");;;
-    do:  (let: "$a0" := (![sliceT] "label") in
-    (method_call #(ptrT.id cryptoffi.Hasher.id) #"Write"%go (![ptrT] "hr")) "$a0");;;
+    exception_do (let: "rand" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "label" := (go.AllocValue (go.SliceType go.byte) "label") in
+    let: "commitSecret" := (go.AllocValue (go.SliceType go.byte) "commitSecret") in
+    let: "hr" := (GoAlloc (go.PointerType cryptoffi.Hasher) #()) in
+    let: "$r0" := ((FuncResolve cryptoffi.NewHasher [] #()) #()) in
+    do:  ("hr" <-[go.PointerType cryptoffi.Hasher] "$r0");;;
+    do:  (let: "$a0" := (![go.SliceType go.byte] "commitSecret") in
+    (MethodResolve (go.PointerType cryptoffi.Hasher) Write #() (![go.PointerType cryptoffi.Hasher] "hr")) "$a0");;;
+    do:  (let: "$a0" := (![go.SliceType go.byte] "label") in
+    (MethodResolve (go.PointerType cryptoffi.Hasher) Write #() (![go.PointerType cryptoffi.Hasher] "hr")) "$a0");;;
     return: (let: "$a0" := #slice.nil in
-     (method_call #(ptrT.id cryptoffi.Hasher.id) #"Sum"%go (![ptrT] "hr")) "$a0")).
+     (MethodResolve (go.PointerType cryptoffi.Hasher) Sum #() (![go.PointerType cryptoffi.Hasher] "hr")) "$a0")).
 
-Definition CommitOpen : go_type := structT [
-  "Val" :: sliceT;
-  "Rand" :: sliceT
+Definition VrfSigⁱᵐᵖˡ : go.type := go.StructType [
+  (go.FieldDecl "SigTag"%go go.byte);
+  (go.FieldDecl "VrfPk"%go (go.SliceType go.byte))
 ].
-#[global] Typeclasses Opaque CommitOpen.
-#[global] Opaque CommitOpen.
 
-Definition CommitOpen : go_type := structT [
-  "Val" :: sliceT;
-  "Rand" :: sliceT
+Definition LinkSigⁱᵐᵖˡ : go.type := go.StructType [
+  (go.FieldDecl "SigTag"%go go.byte);
+  (go.FieldDecl "Epoch"%go go.uint64);
+  (go.FieldDecl "Link"%go (go.SliceType go.byte))
 ].
-#[global] Typeclasses Opaque CommitOpen.
-#[global] Opaque CommitOpen.
 
-Definition Memb : go_type := structT [
-  "LabelProof" :: sliceT;
-  "PkOpen" :: ptrT;
-  "MerkleProof" :: sliceT
+Definition MapLabelⁱᵐᵖˡ : go.type := go.StructType [
+  (go.FieldDecl "Uid"%go go.uint64);
+  (go.FieldDecl "Ver"%go go.uint64)
 ].
-#[global] Typeclasses Opaque Memb.
-#[global] Opaque Memb.
 
-Definition NonMemb : go_type := structT [
-  "LabelProof" :: sliceT;
-  "MerkleProof" :: sliceT
+Definition CommitOpenⁱᵐᵖˡ : go.type := go.StructType [
+  (go.FieldDecl "Val"%go (go.SliceType go.byte));
+  (go.FieldDecl "Rand"%go (go.SliceType go.byte))
 ].
-#[global] Typeclasses Opaque NonMemb.
-#[global] Opaque NonMemb.
 
-Definition AuditProof : go_type := structT [
-  "Updates" :: sliceT;
-  "LinkSig" :: sliceT
+Definition Membⁱᵐᵖˡ : go.type := go.StructType [
+  (go.FieldDecl "LabelProof"%go (go.SliceType go.byte));
+  (go.FieldDecl "PkOpen"%go (go.PointerType CommitOpen));
+  (go.FieldDecl "MerkleProof"%go (go.SliceType go.byte))
 ].
-#[global] Typeclasses Opaque AuditProof.
-#[global] Opaque AuditProof.
 
-Definition UpdateProof : go_type := structT [
-  "MapLabel" :: sliceT;
-  "MapVal" :: sliceT;
-  "NonMembProof" :: sliceT
+Definition NonMembⁱᵐᵖˡ : go.type := go.StructType [
+  (go.FieldDecl "LabelProof"%go (go.SliceType go.byte));
+  (go.FieldDecl "MerkleProof"%go (go.SliceType go.byte))
 ].
-#[global] Typeclasses Opaque UpdateProof.
-#[global] Opaque UpdateProof.
+
+Definition UpdateProof : go.type := go.Named "github.com/sanjit-bhat/pav/ktcore.UpdateProof"%go [].
+
+Definition AuditProofⁱᵐᵖˡ : go.type := go.StructType [
+  (go.FieldDecl "Updates"%go (go.SliceType (go.PointerType UpdateProof)));
+  (go.FieldDecl "LinkSig"%go (go.SliceType go.byte))
+].
+
+Definition UpdateProofⁱᵐᵖˡ : go.type := go.StructType [
+  (go.FieldDecl "MapLabel"%go (go.SliceType go.byte));
+  (go.FieldDecl "MapVal"%go (go.SliceType go.byte));
+  (go.FieldDecl "NonMembProof"%go (go.SliceType go.byte))
+].
 
 (* go: serde.out.go:10:6 *)
 Definition VrfSigEncodeⁱᵐᵖˡ : val :=
   λ: "b0" "o",
-    exception_do (let: "o" := (mem.alloc "o") in
-    let: "b0" := (mem.alloc "b0") in
-    let: "b" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (![sliceT] "b0") in
-    do:  ("b" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "b") in
-    let: "$a1" := (![byteT] (struct.field_ref ptrT #"SigTag"%go (![ptrT] "o"))) in
-    (func_call #safemarshal.WriteByte) "$a0" "$a1") in
-    do:  ("b" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "b") in
-    let: "$a1" := (![sliceT] (struct.field_ref ptrT #"VrfPk"%go (![ptrT] "o"))) in
-    (func_call #safemarshal.WriteSlice1D) "$a0" "$a1") in
-    do:  ("b" <-[sliceT] "$r0");;;
-    return: (![sliceT] "b")).
+    exception_do (let: "o" := (go.AllocValue (go.PointerType VrfSig) "o") in
+    let: "b0" := (go.AllocValue (go.SliceType go.byte) "b0") in
+    let: "b" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "$r0" := (![go.SliceType go.byte] "b0") in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "b") in
+    let: "$a1" := (![go.byte] (StructFieldRef VrfSig "SigTag"%go (![go.PointerType VrfSig] "o"))) in
+    (FuncResolve safemarshal.WriteByte [] #()) "$a0" "$a1") in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "b") in
+    let: "$a1" := (![go.SliceType go.byte] (StructFieldRef VrfSig "VrfPk"%go (![go.PointerType VrfSig] "o"))) in
+    (FuncResolve safemarshal.WriteSlice1D [] #()) "$a0" "$a1") in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    return: (![go.SliceType go.byte] "b")).
 
 Definition VrfSigDecode : go_string := "github.com/sanjit-bhat/pav/ktcore.VrfSigDecode"%go.
 
 (* go: serde.out.go:16:6 *)
 Definition VrfSigDecodeⁱᵐᵖˡ : val :=
   λ: "b0",
-    exception_do (let: "b0" := (mem.alloc "b0") in
-    let: "err1" := (mem.alloc (type.zero_val boolT)) in
-    let: "b1" := (mem.alloc (type.zero_val sliceT)) in
-    let: "a1" := (mem.alloc (type.zero_val byteT)) in
-    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![sliceT] "b0") in
-    (func_call #safemarshal.ReadByte) "$a0") in
+    exception_do (let: "b0" := (go.AllocValue (go.SliceType go.byte) "b0") in
+    let: "err1" := (GoAlloc go.bool #()) in
+    let: "b1" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "a1" := (GoAlloc go.byte #()) in
+    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![go.SliceType go.byte] "b0") in
+    (FuncResolve safemarshal.ReadByte [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
-    do:  ("a1" <-[byteT] "$r0");;;
-    do:  ("b1" <-[sliceT] "$r1");;;
-    do:  ("err1" <-[boolT] "$r2");;;
-    (if: ![boolT] "err1"
+    do:  ("a1" <-[go.byte] "$r0");;;
+    do:  ("b1" <-[go.SliceType go.byte] "$r1");;;
+    do:  ("err1" <-[go.bool] "$r2");;;
+    (if: ![go.bool] "err1"
     then return: (#null, #slice.nil, #true)
     else do:  #());;;
-    let: "err2" := (mem.alloc (type.zero_val boolT)) in
-    let: "b2" := (mem.alloc (type.zero_val sliceT)) in
-    let: "a2" := (mem.alloc (type.zero_val sliceT)) in
-    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![sliceT] "b1") in
-    (func_call #safemarshal.ReadSlice1D) "$a0") in
+    let: "err2" := (GoAlloc go.bool #()) in
+    let: "b2" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "a2" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![go.SliceType go.byte] "b1") in
+    (FuncResolve safemarshal.ReadSlice1D [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
-    do:  ("a2" <-[sliceT] "$r0");;;
-    do:  ("b2" <-[sliceT] "$r1");;;
-    do:  ("err2" <-[boolT] "$r2");;;
-    (if: ![boolT] "err2"
+    do:  ("a2" <-[go.SliceType go.byte] "$r0");;;
+    do:  ("b2" <-[go.SliceType go.byte] "$r1");;;
+    do:  ("err2" <-[go.bool] "$r2");;;
+    (if: ![go.bool] "err2"
     then return: (#null, #slice.nil, #true)
     else do:  #());;;
-    return: (mem.alloc (let: "$SigTag" := (![byteT] "a1") in
-     let: "$VrfPk" := (![sliceT] "a2") in
-     struct.make VrfSig [{
-       "SigTag" ::= "$SigTag";
-       "VrfPk" ::= "$VrfPk"
-     }]), ![sliceT] "b2", #false)).
+    return: (go.AllocValue VrfSig (let: "$SigTag" := (![go.byte] "a1") in
+     let: "$VrfPk" := (![go.SliceType go.byte] "a2") in
+     CompositeLiteral VrfSig (
+       let: "$$vs" := go.StructElementListNil #() in 
+       let: "$$vs" := go.ElementListApp "$$vs" "$SigTag" in
+       let: "$$vs" := go.ElementListApp "$$vs" "$VrfPk" in
+       "$$vs"
+     )), ![go.SliceType go.byte] "b2", #false)).
 
 (* go: serde.out.go:27:6 *)
 Definition LinkSigEncodeⁱᵐᵖˡ : val :=
   λ: "b0" "o",
-    exception_do (let: "o" := (mem.alloc "o") in
-    let: "b0" := (mem.alloc "b0") in
-    let: "b" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (![sliceT] "b0") in
-    do:  ("b" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "b") in
-    let: "$a1" := (![byteT] (struct.field_ref ptrT #"SigTag"%go (![ptrT] "o"))) in
-    (func_call #safemarshal.WriteByte) "$a0" "$a1") in
-    do:  ("b" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "b") in
-    let: "$a1" := (![uint64T] (struct.field_ref ptrT #"Epoch"%go (![ptrT] "o"))) in
-    (func_call #marshal.WriteInt) "$a0" "$a1") in
-    do:  ("b" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "b") in
-    let: "$a1" := (![sliceT] (struct.field_ref ptrT #"Link"%go (![ptrT] "o"))) in
-    (func_call #safemarshal.WriteSlice1D) "$a0" "$a1") in
-    do:  ("b" <-[sliceT] "$r0");;;
-    return: (![sliceT] "b")).
+    exception_do (let: "o" := (go.AllocValue (go.PointerType LinkSig) "o") in
+    let: "b0" := (go.AllocValue (go.SliceType go.byte) "b0") in
+    let: "b" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "$r0" := (![go.SliceType go.byte] "b0") in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "b") in
+    let: "$a1" := (![go.byte] (StructFieldRef LinkSig "SigTag"%go (![go.PointerType LinkSig] "o"))) in
+    (FuncResolve safemarshal.WriteByte [] #()) "$a0" "$a1") in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "b") in
+    let: "$a1" := (![go.uint64] (StructFieldRef LinkSig "Epoch"%go (![go.PointerType LinkSig] "o"))) in
+    (FuncResolve marshal.WriteInt [] #()) "$a0" "$a1") in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "b") in
+    let: "$a1" := (![go.SliceType go.byte] (StructFieldRef LinkSig "Link"%go (![go.PointerType LinkSig] "o"))) in
+    (FuncResolve safemarshal.WriteSlice1D [] #()) "$a0" "$a1") in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    return: (![go.SliceType go.byte] "b")).
 
 Definition LinkSigDecode : go_string := "github.com/sanjit-bhat/pav/ktcore.LinkSigDecode"%go.
 
 (* go: serde.out.go:34:6 *)
 Definition LinkSigDecodeⁱᵐᵖˡ : val :=
   λ: "b0",
-    exception_do (let: "b0" := (mem.alloc "b0") in
-    let: "err1" := (mem.alloc (type.zero_val boolT)) in
-    let: "b1" := (mem.alloc (type.zero_val sliceT)) in
-    let: "a1" := (mem.alloc (type.zero_val byteT)) in
-    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![sliceT] "b0") in
-    (func_call #safemarshal.ReadByte) "$a0") in
+    exception_do (let: "b0" := (go.AllocValue (go.SliceType go.byte) "b0") in
+    let: "err1" := (GoAlloc go.bool #()) in
+    let: "b1" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "a1" := (GoAlloc go.byte #()) in
+    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![go.SliceType go.byte] "b0") in
+    (FuncResolve safemarshal.ReadByte [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
-    do:  ("a1" <-[byteT] "$r0");;;
-    do:  ("b1" <-[sliceT] "$r1");;;
-    do:  ("err1" <-[boolT] "$r2");;;
-    (if: ![boolT] "err1"
+    do:  ("a1" <-[go.byte] "$r0");;;
+    do:  ("b1" <-[go.SliceType go.byte] "$r1");;;
+    do:  ("err1" <-[go.bool] "$r2");;;
+    (if: ![go.bool] "err1"
     then return: (#null, #slice.nil, #true)
     else do:  #());;;
-    let: "err2" := (mem.alloc (type.zero_val boolT)) in
-    let: "b2" := (mem.alloc (type.zero_val sliceT)) in
-    let: "a2" := (mem.alloc (type.zero_val uint64T)) in
-    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![sliceT] "b1") in
-    (func_call #safemarshal.ReadInt) "$a0") in
+    let: "err2" := (GoAlloc go.bool #()) in
+    let: "b2" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "a2" := (GoAlloc go.uint64 #()) in
+    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![go.SliceType go.byte] "b1") in
+    (FuncResolve safemarshal.ReadInt [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
-    do:  ("a2" <-[uint64T] "$r0");;;
-    do:  ("b2" <-[sliceT] "$r1");;;
-    do:  ("err2" <-[boolT] "$r2");;;
-    (if: ![boolT] "err2"
+    do:  ("a2" <-[go.uint64] "$r0");;;
+    do:  ("b2" <-[go.SliceType go.byte] "$r1");;;
+    do:  ("err2" <-[go.bool] "$r2");;;
+    (if: ![go.bool] "err2"
     then return: (#null, #slice.nil, #true)
     else do:  #());;;
-    let: "err3" := (mem.alloc (type.zero_val boolT)) in
-    let: "b3" := (mem.alloc (type.zero_val sliceT)) in
-    let: "a3" := (mem.alloc (type.zero_val sliceT)) in
-    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![sliceT] "b2") in
-    (func_call #safemarshal.ReadSlice1D) "$a0") in
+    let: "err3" := (GoAlloc go.bool #()) in
+    let: "b3" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "a3" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![go.SliceType go.byte] "b2") in
+    (FuncResolve safemarshal.ReadSlice1D [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
-    do:  ("a3" <-[sliceT] "$r0");;;
-    do:  ("b3" <-[sliceT] "$r1");;;
-    do:  ("err3" <-[boolT] "$r2");;;
-    (if: ![boolT] "err3"
+    do:  ("a3" <-[go.SliceType go.byte] "$r0");;;
+    do:  ("b3" <-[go.SliceType go.byte] "$r1");;;
+    do:  ("err3" <-[go.bool] "$r2");;;
+    (if: ![go.bool] "err3"
     then return: (#null, #slice.nil, #true)
     else do:  #());;;
-    return: (mem.alloc (let: "$SigTag" := (![byteT] "a1") in
-     let: "$Epoch" := (![uint64T] "a2") in
-     let: "$Link" := (![sliceT] "a3") in
-     struct.make LinkSig [{
-       "SigTag" ::= "$SigTag";
-       "Epoch" ::= "$Epoch";
-       "Link" ::= "$Link"
-     }]), ![sliceT] "b3", #false)).
+    return: (go.AllocValue LinkSig (let: "$SigTag" := (![go.byte] "a1") in
+     let: "$Epoch" := (![go.uint64] "a2") in
+     let: "$Link" := (![go.SliceType go.byte] "a3") in
+     CompositeLiteral LinkSig (
+       let: "$$vs" := go.StructElementListNil #() in 
+       let: "$$vs" := go.ElementListApp "$$vs" "$SigTag" in
+       let: "$$vs" := go.ElementListApp "$$vs" "$Epoch" in
+       let: "$$vs" := go.ElementListApp "$$vs" "$Link" in
+       "$$vs"
+     )), ![go.SliceType go.byte] "b3", #false)).
 
 (* go: serde.out.go:49:6 *)
 Definition MapLabelEncodeⁱᵐᵖˡ : val :=
   λ: "b0" "o",
-    exception_do (let: "o" := (mem.alloc "o") in
-    let: "b0" := (mem.alloc "b0") in
-    let: "b" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (![sliceT] "b0") in
-    do:  ("b" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "b") in
-    let: "$a1" := (![uint64T] (struct.field_ref ptrT #"Uid"%go (![ptrT] "o"))) in
-    (func_call #marshal.WriteInt) "$a0" "$a1") in
-    do:  ("b" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "b") in
-    let: "$a1" := (![uint64T] (struct.field_ref ptrT #"Ver"%go (![ptrT] "o"))) in
-    (func_call #marshal.WriteInt) "$a0" "$a1") in
-    do:  ("b" <-[sliceT] "$r0");;;
-    return: (![sliceT] "b")).
+    exception_do (let: "o" := (go.AllocValue (go.PointerType MapLabel) "o") in
+    let: "b0" := (go.AllocValue (go.SliceType go.byte) "b0") in
+    let: "b" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "$r0" := (![go.SliceType go.byte] "b0") in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "b") in
+    let: "$a1" := (![go.uint64] (StructFieldRef MapLabel "Uid"%go (![go.PointerType MapLabel] "o"))) in
+    (FuncResolve marshal.WriteInt [] #()) "$a0" "$a1") in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "b") in
+    let: "$a1" := (![go.uint64] (StructFieldRef MapLabel "Ver"%go (![go.PointerType MapLabel] "o"))) in
+    (FuncResolve marshal.WriteInt [] #()) "$a0" "$a1") in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    return: (![go.SliceType go.byte] "b")).
 
 Definition MapLabelDecode : go_string := "github.com/sanjit-bhat/pav/ktcore.MapLabelDecode"%go.
 
 (* go: serde.out.go:55:6 *)
 Definition MapLabelDecodeⁱᵐᵖˡ : val :=
   λ: "b0",
-    exception_do (let: "b0" := (mem.alloc "b0") in
-    let: "err1" := (mem.alloc (type.zero_val boolT)) in
-    let: "b1" := (mem.alloc (type.zero_val sliceT)) in
-    let: "a1" := (mem.alloc (type.zero_val uint64T)) in
-    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![sliceT] "b0") in
-    (func_call #safemarshal.ReadInt) "$a0") in
+    exception_do (let: "b0" := (go.AllocValue (go.SliceType go.byte) "b0") in
+    let: "err1" := (GoAlloc go.bool #()) in
+    let: "b1" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "a1" := (GoAlloc go.uint64 #()) in
+    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![go.SliceType go.byte] "b0") in
+    (FuncResolve safemarshal.ReadInt [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
-    do:  ("a1" <-[uint64T] "$r0");;;
-    do:  ("b1" <-[sliceT] "$r1");;;
-    do:  ("err1" <-[boolT] "$r2");;;
-    (if: ![boolT] "err1"
+    do:  ("a1" <-[go.uint64] "$r0");;;
+    do:  ("b1" <-[go.SliceType go.byte] "$r1");;;
+    do:  ("err1" <-[go.bool] "$r2");;;
+    (if: ![go.bool] "err1"
     then return: (#null, #slice.nil, #true)
     else do:  #());;;
-    let: "err2" := (mem.alloc (type.zero_val boolT)) in
-    let: "b2" := (mem.alloc (type.zero_val sliceT)) in
-    let: "a2" := (mem.alloc (type.zero_val uint64T)) in
-    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![sliceT] "b1") in
-    (func_call #safemarshal.ReadInt) "$a0") in
+    let: "err2" := (GoAlloc go.bool #()) in
+    let: "b2" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "a2" := (GoAlloc go.uint64 #()) in
+    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![go.SliceType go.byte] "b1") in
+    (FuncResolve safemarshal.ReadInt [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
-    do:  ("a2" <-[uint64T] "$r0");;;
-    do:  ("b2" <-[sliceT] "$r1");;;
-    do:  ("err2" <-[boolT] "$r2");;;
-    (if: ![boolT] "err2"
+    do:  ("a2" <-[go.uint64] "$r0");;;
+    do:  ("b2" <-[go.SliceType go.byte] "$r1");;;
+    do:  ("err2" <-[go.bool] "$r2");;;
+    (if: ![go.bool] "err2"
     then return: (#null, #slice.nil, #true)
     else do:  #());;;
-    return: (mem.alloc (let: "$Uid" := (![uint64T] "a1") in
-     let: "$Ver" := (![uint64T] "a2") in
-     struct.make MapLabel [{
-       "Uid" ::= "$Uid";
-       "Ver" ::= "$Ver"
-     }]), ![sliceT] "b2", #false)).
+    return: (go.AllocValue MapLabel (let: "$Uid" := (![go.uint64] "a1") in
+     let: "$Ver" := (![go.uint64] "a2") in
+     CompositeLiteral MapLabel (
+       let: "$$vs" := go.StructElementListNil #() in 
+       let: "$$vs" := go.ElementListApp "$$vs" "$Uid" in
+       let: "$$vs" := go.ElementListApp "$$vs" "$Ver" in
+       "$$vs"
+     )), ![go.SliceType go.byte] "b2", #false)).
 
 (* go: serde.out.go:66:6 *)
 Definition CommitOpenEncodeⁱᵐᵖˡ : val :=
   λ: "b0" "o",
-    exception_do (let: "o" := (mem.alloc "o") in
-    let: "b0" := (mem.alloc "b0") in
-    let: "b" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (![sliceT] "b0") in
-    do:  ("b" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "b") in
-    let: "$a1" := (![sliceT] (struct.field_ref ptrT #"Val"%go (![ptrT] "o"))) in
-    (func_call #safemarshal.WriteSlice1D) "$a0" "$a1") in
-    do:  ("b" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "b") in
-    let: "$a1" := (![sliceT] (struct.field_ref ptrT #"Rand"%go (![ptrT] "o"))) in
-    (func_call #safemarshal.WriteSlice1D) "$a0" "$a1") in
-    do:  ("b" <-[sliceT] "$r0");;;
-    return: (![sliceT] "b")).
+    exception_do (let: "o" := (go.AllocValue (go.PointerType CommitOpen) "o") in
+    let: "b0" := (go.AllocValue (go.SliceType go.byte) "b0") in
+    let: "b" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "$r0" := (![go.SliceType go.byte] "b0") in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "b") in
+    let: "$a1" := (![go.SliceType go.byte] (StructFieldRef CommitOpen "Val"%go (![go.PointerType CommitOpen] "o"))) in
+    (FuncResolve safemarshal.WriteSlice1D [] #()) "$a0" "$a1") in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "b") in
+    let: "$a1" := (![go.SliceType go.byte] (StructFieldRef CommitOpen "Rand"%go (![go.PointerType CommitOpen] "o"))) in
+    (FuncResolve safemarshal.WriteSlice1D [] #()) "$a0" "$a1") in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    return: (![go.SliceType go.byte] "b")).
 
 Definition CommitOpenDecode : go_string := "github.com/sanjit-bhat/pav/ktcore.CommitOpenDecode"%go.
 
 (* go: serde.out.go:72:6 *)
 Definition CommitOpenDecodeⁱᵐᵖˡ : val :=
   λ: "b0",
-    exception_do (let: "b0" := (mem.alloc "b0") in
-    let: "err1" := (mem.alloc (type.zero_val boolT)) in
-    let: "b1" := (mem.alloc (type.zero_val sliceT)) in
-    let: "a1" := (mem.alloc (type.zero_val sliceT)) in
-    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![sliceT] "b0") in
-    (func_call #safemarshal.ReadSlice1D) "$a0") in
+    exception_do (let: "b0" := (go.AllocValue (go.SliceType go.byte) "b0") in
+    let: "err1" := (GoAlloc go.bool #()) in
+    let: "b1" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "a1" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![go.SliceType go.byte] "b0") in
+    (FuncResolve safemarshal.ReadSlice1D [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
-    do:  ("a1" <-[sliceT] "$r0");;;
-    do:  ("b1" <-[sliceT] "$r1");;;
-    do:  ("err1" <-[boolT] "$r2");;;
-    (if: ![boolT] "err1"
+    do:  ("a1" <-[go.SliceType go.byte] "$r0");;;
+    do:  ("b1" <-[go.SliceType go.byte] "$r1");;;
+    do:  ("err1" <-[go.bool] "$r2");;;
+    (if: ![go.bool] "err1"
     then return: (#null, #slice.nil, #true)
     else do:  #());;;
-    let: "err2" := (mem.alloc (type.zero_val boolT)) in
-    let: "b2" := (mem.alloc (type.zero_val sliceT)) in
-    let: "a2" := (mem.alloc (type.zero_val sliceT)) in
-    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![sliceT] "b1") in
-    (func_call #safemarshal.ReadSlice1D) "$a0") in
+    let: "err2" := (GoAlloc go.bool #()) in
+    let: "b2" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "a2" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![go.SliceType go.byte] "b1") in
+    (FuncResolve safemarshal.ReadSlice1D [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
-    do:  ("a2" <-[sliceT] "$r0");;;
-    do:  ("b2" <-[sliceT] "$r1");;;
-    do:  ("err2" <-[boolT] "$r2");;;
-    (if: ![boolT] "err2"
+    do:  ("a2" <-[go.SliceType go.byte] "$r0");;;
+    do:  ("b2" <-[go.SliceType go.byte] "$r1");;;
+    do:  ("err2" <-[go.bool] "$r2");;;
+    (if: ![go.bool] "err2"
     then return: (#null, #slice.nil, #true)
     else do:  #());;;
-    return: (mem.alloc (let: "$Val" := (![sliceT] "a1") in
-     let: "$Rand" := (![sliceT] "a2") in
-     struct.make CommitOpen [{
-       "Val" ::= "$Val";
-       "Rand" ::= "$Rand"
-     }]), ![sliceT] "b2", #false)).
+    return: (go.AllocValue CommitOpen (let: "$Val" := (![go.SliceType go.byte] "a1") in
+     let: "$Rand" := (![go.SliceType go.byte] "a2") in
+     CompositeLiteral CommitOpen (
+       let: "$$vs" := go.StructElementListNil #() in 
+       let: "$$vs" := go.ElementListApp "$$vs" "$Val" in
+       let: "$$vs" := go.ElementListApp "$$vs" "$Rand" in
+       "$$vs"
+     )), ![go.SliceType go.byte] "b2", #false)).
 
 Definition MembEncode : go_string := "github.com/sanjit-bhat/pav/ktcore.MembEncode"%go.
+
+Definition Memb : go.type := go.Named "github.com/sanjit-bhat/pav/ktcore.Memb"%go [].
 
 (* go: serde.out.go:83:6 *)
 Definition MembEncodeⁱᵐᵖˡ : val :=
   λ: "b0" "o",
-    exception_do (let: "o" := (mem.alloc "o") in
-    let: "b0" := (mem.alloc "b0") in
-    let: "b" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (![sliceT] "b0") in
-    do:  ("b" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "b") in
-    let: "$a1" := (![sliceT] (struct.field_ref ptrT #"LabelProof"%go (![ptrT] "o"))) in
-    (func_call #safemarshal.WriteSlice1D) "$a0" "$a1") in
-    do:  ("b" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "b") in
-    let: "$a1" := (![ptrT] (struct.field_ref ptrT #"PkOpen"%go (![ptrT] "o"))) in
-    (func_call #CommitOpenEncode) "$a0" "$a1") in
-    do:  ("b" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "b") in
-    let: "$a1" := (![sliceT] (struct.field_ref ptrT #"MerkleProof"%go (![ptrT] "o"))) in
-    (func_call #safemarshal.WriteSlice1D) "$a0" "$a1") in
-    do:  ("b" <-[sliceT] "$r0");;;
-    return: (![sliceT] "b")).
+    exception_do (let: "o" := (go.AllocValue (go.PointerType Memb) "o") in
+    let: "b0" := (go.AllocValue (go.SliceType go.byte) "b0") in
+    let: "b" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "$r0" := (![go.SliceType go.byte] "b0") in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "b") in
+    let: "$a1" := (![go.SliceType go.byte] (StructFieldRef Memb "LabelProof"%go (![go.PointerType Memb] "o"))) in
+    (FuncResolve safemarshal.WriteSlice1D [] #()) "$a0" "$a1") in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "b") in
+    let: "$a1" := (![go.PointerType CommitOpen] (StructFieldRef Memb "PkOpen"%go (![go.PointerType Memb] "o"))) in
+    (FuncResolve CommitOpenEncode [] #()) "$a0" "$a1") in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "b") in
+    let: "$a1" := (![go.SliceType go.byte] (StructFieldRef Memb "MerkleProof"%go (![go.PointerType Memb] "o"))) in
+    (FuncResolve safemarshal.WriteSlice1D [] #()) "$a0" "$a1") in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    return: (![go.SliceType go.byte] "b")).
 
 Definition MembDecode : go_string := "github.com/sanjit-bhat/pav/ktcore.MembDecode"%go.
 
 (* go: serde.out.go:90:6 *)
 Definition MembDecodeⁱᵐᵖˡ : val :=
   λ: "b0",
-    exception_do (let: "b0" := (mem.alloc "b0") in
-    let: "err1" := (mem.alloc (type.zero_val boolT)) in
-    let: "b1" := (mem.alloc (type.zero_val sliceT)) in
-    let: "a1" := (mem.alloc (type.zero_val sliceT)) in
-    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![sliceT] "b0") in
-    (func_call #safemarshal.ReadSlice1D) "$a0") in
+    exception_do (let: "b0" := (go.AllocValue (go.SliceType go.byte) "b0") in
+    let: "err1" := (GoAlloc go.bool #()) in
+    let: "b1" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "a1" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![go.SliceType go.byte] "b0") in
+    (FuncResolve safemarshal.ReadSlice1D [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
-    do:  ("a1" <-[sliceT] "$r0");;;
-    do:  ("b1" <-[sliceT] "$r1");;;
-    do:  ("err1" <-[boolT] "$r2");;;
-    (if: ![boolT] "err1"
+    do:  ("a1" <-[go.SliceType go.byte] "$r0");;;
+    do:  ("b1" <-[go.SliceType go.byte] "$r1");;;
+    do:  ("err1" <-[go.bool] "$r2");;;
+    (if: ![go.bool] "err1"
     then return: (#null, #slice.nil, #true)
     else do:  #());;;
-    let: "err2" := (mem.alloc (type.zero_val boolT)) in
-    let: "b2" := (mem.alloc (type.zero_val sliceT)) in
-    let: "a2" := (mem.alloc (type.zero_val ptrT)) in
-    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![sliceT] "b1") in
-    (func_call #CommitOpenDecode) "$a0") in
+    let: "err2" := (GoAlloc go.bool #()) in
+    let: "b2" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "a2" := (GoAlloc (go.PointerType CommitOpen) #()) in
+    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![go.SliceType go.byte] "b1") in
+    (FuncResolve CommitOpenDecode [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
-    do:  ("a2" <-[ptrT] "$r0");;;
-    do:  ("b2" <-[sliceT] "$r1");;;
-    do:  ("err2" <-[boolT] "$r2");;;
-    (if: ![boolT] "err2"
+    do:  ("a2" <-[go.PointerType CommitOpen] "$r0");;;
+    do:  ("b2" <-[go.SliceType go.byte] "$r1");;;
+    do:  ("err2" <-[go.bool] "$r2");;;
+    (if: ![go.bool] "err2"
     then return: (#null, #slice.nil, #true)
     else do:  #());;;
-    let: "err3" := (mem.alloc (type.zero_val boolT)) in
-    let: "b3" := (mem.alloc (type.zero_val sliceT)) in
-    let: "a3" := (mem.alloc (type.zero_val sliceT)) in
-    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![sliceT] "b2") in
-    (func_call #safemarshal.ReadSlice1D) "$a0") in
+    let: "err3" := (GoAlloc go.bool #()) in
+    let: "b3" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "a3" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![go.SliceType go.byte] "b2") in
+    (FuncResolve safemarshal.ReadSlice1D [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
-    do:  ("a3" <-[sliceT] "$r0");;;
-    do:  ("b3" <-[sliceT] "$r1");;;
-    do:  ("err3" <-[boolT] "$r2");;;
-    (if: ![boolT] "err3"
+    do:  ("a3" <-[go.SliceType go.byte] "$r0");;;
+    do:  ("b3" <-[go.SliceType go.byte] "$r1");;;
+    do:  ("err3" <-[go.bool] "$r2");;;
+    (if: ![go.bool] "err3"
     then return: (#null, #slice.nil, #true)
     else do:  #());;;
-    return: (mem.alloc (let: "$LabelProof" := (![sliceT] "a1") in
-     let: "$PkOpen" := (![ptrT] "a2") in
-     let: "$MerkleProof" := (![sliceT] "a3") in
-     struct.make Memb [{
-       "LabelProof" ::= "$LabelProof";
-       "PkOpen" ::= "$PkOpen";
-       "MerkleProof" ::= "$MerkleProof"
-     }]), ![sliceT] "b3", #false)).
+    return: (go.AllocValue Memb (let: "$LabelProof" := (![go.SliceType go.byte] "a1") in
+     let: "$PkOpen" := (![go.PointerType CommitOpen] "a2") in
+     let: "$MerkleProof" := (![go.SliceType go.byte] "a3") in
+     CompositeLiteral Memb (
+       let: "$$vs" := go.StructElementListNil #() in 
+       let: "$$vs" := go.ElementListApp "$$vs" "$LabelProof" in
+       let: "$$vs" := go.ElementListApp "$$vs" "$PkOpen" in
+       let: "$$vs" := go.ElementListApp "$$vs" "$MerkleProof" in
+       "$$vs"
+     )), ![go.SliceType go.byte] "b3", #false)).
 
 Definition NonMembEncode : go_string := "github.com/sanjit-bhat/pav/ktcore.NonMembEncode"%go.
+
+Definition NonMemb : go.type := go.Named "github.com/sanjit-bhat/pav/ktcore.NonMemb"%go [].
 
 (* go: serde.out.go:105:6 *)
 Definition NonMembEncodeⁱᵐᵖˡ : val :=
   λ: "b0" "o",
-    exception_do (let: "o" := (mem.alloc "o") in
-    let: "b0" := (mem.alloc "b0") in
-    let: "b" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (![sliceT] "b0") in
-    do:  ("b" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "b") in
-    let: "$a1" := (![sliceT] (struct.field_ref ptrT #"LabelProof"%go (![ptrT] "o"))) in
-    (func_call #safemarshal.WriteSlice1D) "$a0" "$a1") in
-    do:  ("b" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "b") in
-    let: "$a1" := (![sliceT] (struct.field_ref ptrT #"MerkleProof"%go (![ptrT] "o"))) in
-    (func_call #safemarshal.WriteSlice1D) "$a0" "$a1") in
-    do:  ("b" <-[sliceT] "$r0");;;
-    return: (![sliceT] "b")).
+    exception_do (let: "o" := (go.AllocValue (go.PointerType NonMemb) "o") in
+    let: "b0" := (go.AllocValue (go.SliceType go.byte) "b0") in
+    let: "b" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "$r0" := (![go.SliceType go.byte] "b0") in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "b") in
+    let: "$a1" := (![go.SliceType go.byte] (StructFieldRef NonMemb "LabelProof"%go (![go.PointerType NonMemb] "o"))) in
+    (FuncResolve safemarshal.WriteSlice1D [] #()) "$a0" "$a1") in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "b") in
+    let: "$a1" := (![go.SliceType go.byte] (StructFieldRef NonMemb "MerkleProof"%go (![go.PointerType NonMemb] "o"))) in
+    (FuncResolve safemarshal.WriteSlice1D [] #()) "$a0" "$a1") in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    return: (![go.SliceType go.byte] "b")).
 
 Definition NonMembDecode : go_string := "github.com/sanjit-bhat/pav/ktcore.NonMembDecode"%go.
 
 (* go: serde.out.go:111:6 *)
 Definition NonMembDecodeⁱᵐᵖˡ : val :=
   λ: "b0",
-    exception_do (let: "b0" := (mem.alloc "b0") in
-    let: "err1" := (mem.alloc (type.zero_val boolT)) in
-    let: "b1" := (mem.alloc (type.zero_val sliceT)) in
-    let: "a1" := (mem.alloc (type.zero_val sliceT)) in
-    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![sliceT] "b0") in
-    (func_call #safemarshal.ReadSlice1D) "$a0") in
+    exception_do (let: "b0" := (go.AllocValue (go.SliceType go.byte) "b0") in
+    let: "err1" := (GoAlloc go.bool #()) in
+    let: "b1" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "a1" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![go.SliceType go.byte] "b0") in
+    (FuncResolve safemarshal.ReadSlice1D [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
-    do:  ("a1" <-[sliceT] "$r0");;;
-    do:  ("b1" <-[sliceT] "$r1");;;
-    do:  ("err1" <-[boolT] "$r2");;;
-    (if: ![boolT] "err1"
+    do:  ("a1" <-[go.SliceType go.byte] "$r0");;;
+    do:  ("b1" <-[go.SliceType go.byte] "$r1");;;
+    do:  ("err1" <-[go.bool] "$r2");;;
+    (if: ![go.bool] "err1"
     then return: (#null, #slice.nil, #true)
     else do:  #());;;
-    let: "err2" := (mem.alloc (type.zero_val boolT)) in
-    let: "b2" := (mem.alloc (type.zero_val sliceT)) in
-    let: "a2" := (mem.alloc (type.zero_val sliceT)) in
-    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![sliceT] "b1") in
-    (func_call #safemarshal.ReadSlice1D) "$a0") in
+    let: "err2" := (GoAlloc go.bool #()) in
+    let: "b2" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "a2" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![go.SliceType go.byte] "b1") in
+    (FuncResolve safemarshal.ReadSlice1D [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
-    do:  ("a2" <-[sliceT] "$r0");;;
-    do:  ("b2" <-[sliceT] "$r1");;;
-    do:  ("err2" <-[boolT] "$r2");;;
-    (if: ![boolT] "err2"
+    do:  ("a2" <-[go.SliceType go.byte] "$r0");;;
+    do:  ("b2" <-[go.SliceType go.byte] "$r1");;;
+    do:  ("err2" <-[go.bool] "$r2");;;
+    (if: ![go.bool] "err2"
     then return: (#null, #slice.nil, #true)
     else do:  #());;;
-    return: (mem.alloc (let: "$LabelProof" := (![sliceT] "a1") in
-     let: "$MerkleProof" := (![sliceT] "a2") in
-     struct.make NonMemb [{
-       "LabelProof" ::= "$LabelProof";
-       "MerkleProof" ::= "$MerkleProof"
-     }]), ![sliceT] "b2", #false)).
+    return: (go.AllocValue NonMemb (let: "$LabelProof" := (![go.SliceType go.byte] "a1") in
+     let: "$MerkleProof" := (![go.SliceType go.byte] "a2") in
+     CompositeLiteral NonMemb (
+       let: "$$vs" := go.StructElementListNil #() in 
+       let: "$$vs" := go.ElementListApp "$$vs" "$LabelProof" in
+       let: "$$vs" := go.ElementListApp "$$vs" "$MerkleProof" in
+       "$$vs"
+     )), ![go.SliceType go.byte] "b2", #false)).
 
 Definition AuditProofEncode : go_string := "github.com/sanjit-bhat/pav/ktcore.AuditProofEncode"%go.
+
+Definition AuditProof : go.type := go.Named "github.com/sanjit-bhat/pav/ktcore.AuditProof"%go [].
 
 Definition UpdateProofSlice1DEncode : go_string := "github.com/sanjit-bhat/pav/ktcore.UpdateProofSlice1DEncode"%go.
 
 (* go: serde.out.go:122:6 *)
 Definition AuditProofEncodeⁱᵐᵖˡ : val :=
   λ: "b0" "o",
-    exception_do (let: "o" := (mem.alloc "o") in
-    let: "b0" := (mem.alloc "b0") in
-    let: "b" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (![sliceT] "b0") in
-    do:  ("b" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "b") in
-    let: "$a1" := (![sliceT] (struct.field_ref ptrT #"Updates"%go (![ptrT] "o"))) in
-    (func_call #UpdateProofSlice1DEncode) "$a0" "$a1") in
-    do:  ("b" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "b") in
-    let: "$a1" := (![sliceT] (struct.field_ref ptrT #"LinkSig"%go (![ptrT] "o"))) in
-    (func_call #safemarshal.WriteSlice1D) "$a0" "$a1") in
-    do:  ("b" <-[sliceT] "$r0");;;
-    return: (![sliceT] "b")).
+    exception_do (let: "o" := (go.AllocValue (go.PointerType AuditProof) "o") in
+    let: "b0" := (go.AllocValue (go.SliceType go.byte) "b0") in
+    let: "b" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "$r0" := (![go.SliceType go.byte] "b0") in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "b") in
+    let: "$a1" := (![go.SliceType (go.PointerType UpdateProof)] (StructFieldRef AuditProof "Updates"%go (![go.PointerType AuditProof] "o"))) in
+    (FuncResolve UpdateProofSlice1DEncode [] #()) "$a0" "$a1") in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "b") in
+    let: "$a1" := (![go.SliceType go.byte] (StructFieldRef AuditProof "LinkSig"%go (![go.PointerType AuditProof] "o"))) in
+    (FuncResolve safemarshal.WriteSlice1D [] #()) "$a0" "$a1") in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    return: (![go.SliceType go.byte] "b")).
 
 Definition AuditProofDecode : go_string := "github.com/sanjit-bhat/pav/ktcore.AuditProofDecode"%go.
 
@@ -825,399 +773,397 @@ Definition UpdateProofSlice1DDecode : go_string := "github.com/sanjit-bhat/pav/k
 (* go: serde.out.go:128:6 *)
 Definition AuditProofDecodeⁱᵐᵖˡ : val :=
   λ: "b0",
-    exception_do (let: "b0" := (mem.alloc "b0") in
-    let: "err1" := (mem.alloc (type.zero_val boolT)) in
-    let: "b1" := (mem.alloc (type.zero_val sliceT)) in
-    let: "a1" := (mem.alloc (type.zero_val sliceT)) in
-    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![sliceT] "b0") in
-    (func_call #UpdateProofSlice1DDecode) "$a0") in
+    exception_do (let: "b0" := (go.AllocValue (go.SliceType go.byte) "b0") in
+    let: "err1" := (GoAlloc go.bool #()) in
+    let: "b1" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "a1" := (GoAlloc (go.SliceType (go.PointerType UpdateProof)) #()) in
+    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![go.SliceType go.byte] "b0") in
+    (FuncResolve UpdateProofSlice1DDecode [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
-    do:  ("a1" <-[sliceT] "$r0");;;
-    do:  ("b1" <-[sliceT] "$r1");;;
-    do:  ("err1" <-[boolT] "$r2");;;
-    (if: ![boolT] "err1"
+    do:  ("a1" <-[go.SliceType (go.PointerType UpdateProof)] "$r0");;;
+    do:  ("b1" <-[go.SliceType go.byte] "$r1");;;
+    do:  ("err1" <-[go.bool] "$r2");;;
+    (if: ![go.bool] "err1"
     then return: (#null, #slice.nil, #true)
     else do:  #());;;
-    let: "err2" := (mem.alloc (type.zero_val boolT)) in
-    let: "b2" := (mem.alloc (type.zero_val sliceT)) in
-    let: "a2" := (mem.alloc (type.zero_val sliceT)) in
-    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![sliceT] "b1") in
-    (func_call #safemarshal.ReadSlice1D) "$a0") in
+    let: "err2" := (GoAlloc go.bool #()) in
+    let: "b2" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "a2" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![go.SliceType go.byte] "b1") in
+    (FuncResolve safemarshal.ReadSlice1D [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
-    do:  ("a2" <-[sliceT] "$r0");;;
-    do:  ("b2" <-[sliceT] "$r1");;;
-    do:  ("err2" <-[boolT] "$r2");;;
-    (if: ![boolT] "err2"
+    do:  ("a2" <-[go.SliceType go.byte] "$r0");;;
+    do:  ("b2" <-[go.SliceType go.byte] "$r1");;;
+    do:  ("err2" <-[go.bool] "$r2");;;
+    (if: ![go.bool] "err2"
     then return: (#null, #slice.nil, #true)
     else do:  #());;;
-    return: (mem.alloc (let: "$Updates" := (![sliceT] "a1") in
-     let: "$LinkSig" := (![sliceT] "a2") in
-     struct.make AuditProof [{
-       "Updates" ::= "$Updates";
-       "LinkSig" ::= "$LinkSig"
-     }]), ![sliceT] "b2", #false)).
+    return: (go.AllocValue AuditProof (let: "$Updates" := (![go.SliceType (go.PointerType UpdateProof)] "a1") in
+     let: "$LinkSig" := (![go.SliceType go.byte] "a2") in
+     CompositeLiteral AuditProof (
+       let: "$$vs" := go.StructElementListNil #() in 
+       let: "$$vs" := go.ElementListApp "$$vs" "$Updates" in
+       let: "$$vs" := go.ElementListApp "$$vs" "$LinkSig" in
+       "$$vs"
+     )), ![go.SliceType go.byte] "b2", #false)).
 
 Definition UpdateProofEncode : go_string := "github.com/sanjit-bhat/pav/ktcore.UpdateProofEncode"%go.
 
 (* go: serde.out.go:139:6 *)
 Definition UpdateProofEncodeⁱᵐᵖˡ : val :=
   λ: "b0" "o",
-    exception_do (let: "o" := (mem.alloc "o") in
-    let: "b0" := (mem.alloc "b0") in
-    let: "b" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (![sliceT] "b0") in
-    do:  ("b" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "b") in
-    let: "$a1" := (![sliceT] (struct.field_ref ptrT #"MapLabel"%go (![ptrT] "o"))) in
-    (func_call #safemarshal.WriteSlice1D) "$a0" "$a1") in
-    do:  ("b" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "b") in
-    let: "$a1" := (![sliceT] (struct.field_ref ptrT #"MapVal"%go (![ptrT] "o"))) in
-    (func_call #safemarshal.WriteSlice1D) "$a0" "$a1") in
-    do:  ("b" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "b") in
-    let: "$a1" := (![sliceT] (struct.field_ref ptrT #"NonMembProof"%go (![ptrT] "o"))) in
-    (func_call #safemarshal.WriteSlice1D) "$a0" "$a1") in
-    do:  ("b" <-[sliceT] "$r0");;;
-    return: (![sliceT] "b")).
+    exception_do (let: "o" := (go.AllocValue (go.PointerType UpdateProof) "o") in
+    let: "b0" := (go.AllocValue (go.SliceType go.byte) "b0") in
+    let: "b" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "$r0" := (![go.SliceType go.byte] "b0") in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "b") in
+    let: "$a1" := (![go.SliceType go.byte] (StructFieldRef UpdateProof "MapLabel"%go (![go.PointerType UpdateProof] "o"))) in
+    (FuncResolve safemarshal.WriteSlice1D [] #()) "$a0" "$a1") in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "b") in
+    let: "$a1" := (![go.SliceType go.byte] (StructFieldRef UpdateProof "MapVal"%go (![go.PointerType UpdateProof] "o"))) in
+    (FuncResolve safemarshal.WriteSlice1D [] #()) "$a0" "$a1") in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "b") in
+    let: "$a1" := (![go.SliceType go.byte] (StructFieldRef UpdateProof "NonMembProof"%go (![go.PointerType UpdateProof] "o"))) in
+    (FuncResolve safemarshal.WriteSlice1D [] #()) "$a0" "$a1") in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    return: (![go.SliceType go.byte] "b")).
 
 Definition UpdateProofDecode : go_string := "github.com/sanjit-bhat/pav/ktcore.UpdateProofDecode"%go.
 
 (* go: serde.out.go:146:6 *)
 Definition UpdateProofDecodeⁱᵐᵖˡ : val :=
   λ: "b0",
-    exception_do (let: "b0" := (mem.alloc "b0") in
-    let: "err1" := (mem.alloc (type.zero_val boolT)) in
-    let: "b1" := (mem.alloc (type.zero_val sliceT)) in
-    let: "a1" := (mem.alloc (type.zero_val sliceT)) in
-    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![sliceT] "b0") in
-    (func_call #safemarshal.ReadSlice1D) "$a0") in
+    exception_do (let: "b0" := (go.AllocValue (go.SliceType go.byte) "b0") in
+    let: "err1" := (GoAlloc go.bool #()) in
+    let: "b1" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "a1" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![go.SliceType go.byte] "b0") in
+    (FuncResolve safemarshal.ReadSlice1D [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
-    do:  ("a1" <-[sliceT] "$r0");;;
-    do:  ("b1" <-[sliceT] "$r1");;;
-    do:  ("err1" <-[boolT] "$r2");;;
-    (if: ![boolT] "err1"
+    do:  ("a1" <-[go.SliceType go.byte] "$r0");;;
+    do:  ("b1" <-[go.SliceType go.byte] "$r1");;;
+    do:  ("err1" <-[go.bool] "$r2");;;
+    (if: ![go.bool] "err1"
     then return: (#null, #slice.nil, #true)
     else do:  #());;;
-    let: "err2" := (mem.alloc (type.zero_val boolT)) in
-    let: "b2" := (mem.alloc (type.zero_val sliceT)) in
-    let: "a2" := (mem.alloc (type.zero_val sliceT)) in
-    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![sliceT] "b1") in
-    (func_call #safemarshal.ReadSlice1D) "$a0") in
+    let: "err2" := (GoAlloc go.bool #()) in
+    let: "b2" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "a2" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![go.SliceType go.byte] "b1") in
+    (FuncResolve safemarshal.ReadSlice1D [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
-    do:  ("a2" <-[sliceT] "$r0");;;
-    do:  ("b2" <-[sliceT] "$r1");;;
-    do:  ("err2" <-[boolT] "$r2");;;
-    (if: ![boolT] "err2"
+    do:  ("a2" <-[go.SliceType go.byte] "$r0");;;
+    do:  ("b2" <-[go.SliceType go.byte] "$r1");;;
+    do:  ("err2" <-[go.bool] "$r2");;;
+    (if: ![go.bool] "err2"
     then return: (#null, #slice.nil, #true)
     else do:  #());;;
-    let: "err3" := (mem.alloc (type.zero_val boolT)) in
-    let: "b3" := (mem.alloc (type.zero_val sliceT)) in
-    let: "a3" := (mem.alloc (type.zero_val sliceT)) in
-    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![sliceT] "b2") in
-    (func_call #safemarshal.ReadSlice1D) "$a0") in
+    let: "err3" := (GoAlloc go.bool #()) in
+    let: "b3" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "a3" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![go.SliceType go.byte] "b2") in
+    (FuncResolve safemarshal.ReadSlice1D [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
-    do:  ("a3" <-[sliceT] "$r0");;;
-    do:  ("b3" <-[sliceT] "$r1");;;
-    do:  ("err3" <-[boolT] "$r2");;;
-    (if: ![boolT] "err3"
+    do:  ("a3" <-[go.SliceType go.byte] "$r0");;;
+    do:  ("b3" <-[go.SliceType go.byte] "$r1");;;
+    do:  ("err3" <-[go.bool] "$r2");;;
+    (if: ![go.bool] "err3"
     then return: (#null, #slice.nil, #true)
     else do:  #());;;
-    return: (mem.alloc (let: "$MapLabel" := (![sliceT] "a1") in
-     let: "$MapVal" := (![sliceT] "a2") in
-     let: "$NonMembProof" := (![sliceT] "a3") in
-     struct.make UpdateProof [{
-       "MapLabel" ::= "$MapLabel";
-       "MapVal" ::= "$MapVal";
-       "NonMembProof" ::= "$NonMembProof"
-     }]), ![sliceT] "b3", #false)).
+    return: (go.AllocValue UpdateProof (let: "$MapLabel" := (![go.SliceType go.byte] "a1") in
+     let: "$MapVal" := (![go.SliceType go.byte] "a2") in
+     let: "$NonMembProof" := (![go.SliceType go.byte] "a3") in
+     CompositeLiteral UpdateProof (
+       let: "$$vs" := go.StructElementListNil #() in 
+       let: "$$vs" := go.ElementListApp "$$vs" "$MapLabel" in
+       let: "$$vs" := go.ElementListApp "$$vs" "$MapVal" in
+       let: "$$vs" := go.ElementListApp "$$vs" "$NonMembProof" in
+       "$$vs"
+     )), ![go.SliceType go.byte] "b3", #false)).
 
 (* go: serde_misc.go:8:6 *)
 Definition UpdateProofSlice1DEncodeⁱᵐᵖˡ : val :=
   λ: "b0" "o",
-    exception_do (let: "o" := (mem.alloc "o") in
-    let: "b0" := (mem.alloc "b0") in
-    let: "b" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (![sliceT] "b0") in
-    do:  ("b" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "b") in
-    let: "$a1" := (s_to_w64 (let: "$a0" := (![sliceT] "o") in
-    slice.len "$a0")) in
-    (func_call #marshal.WriteInt) "$a0" "$a1") in
-    do:  ("b" <-[sliceT] "$r0");;;
-    let: "$range" := (![sliceT] "o") in
-    (let: "e" := (mem.alloc (type.zero_val ptrT)) in
-    slice.for_range ptrT "$range" (λ: "$key" "$value",
-      do:  ("e" <-[ptrT] "$value");;;
+    exception_do (let: "o" := (go.AllocValue (go.SliceType (go.PointerType UpdateProof)) "o") in
+    let: "b0" := (go.AllocValue (go.SliceType go.byte) "b0") in
+    let: "b" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "$r0" := (![go.SliceType go.byte] "b0") in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "b") in
+    let: "$a1" := (s_to_w64 (let: "$a0" := (![go.SliceType (go.PointerType UpdateProof)] "o") in
+    (FuncResolve go.len [go.SliceType (go.PointerType UpdateProof)] #()) "$a0")) in
+    (FuncResolve marshal.WriteInt [] #()) "$a0" "$a1") in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    let: "$range" := (![go.SliceType (go.PointerType UpdateProof)] "o") in
+    (let: "e" := (GoAlloc (go.PointerType UpdateProof) #()) in
+    slice.for_range (go.PointerType UpdateProof) "$range" (λ: "$key" "$value",
+      do:  ("e" <-[go.PointerType UpdateProof] "$value");;;
       do:  "$key";;;
-      let: "$r0" := (let: "$a0" := (![sliceT] "b") in
-      let: "$a1" := (![ptrT] "e") in
-      (func_call #UpdateProofEncode) "$a0" "$a1") in
-      do:  ("b" <-[sliceT] "$r0")));;;
-    return: (![sliceT] "b")).
+      let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "b") in
+      let: "$a1" := (![go.PointerType UpdateProof] "e") in
+      (FuncResolve UpdateProofEncode [] #()) "$a0" "$a1") in
+      do:  ("b" <-[go.SliceType go.byte] "$r0")));;;
+    return: (![go.SliceType go.byte] "b")).
 
 (* go: serde_misc.go:17:6 *)
 Definition UpdateProofSlice1DDecodeⁱᵐᵖˡ : val :=
   λ: "b0",
-    exception_do (let: "b0" := (mem.alloc "b0") in
-    let: "err1" := (mem.alloc (type.zero_val boolT)) in
-    let: "b1" := (mem.alloc (type.zero_val sliceT)) in
-    let: "length" := (mem.alloc (type.zero_val uint64T)) in
-    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![sliceT] "b0") in
-    (func_call #safemarshal.ReadInt) "$a0") in
+    exception_do (let: "b0" := (go.AllocValue (go.SliceType go.byte) "b0") in
+    let: "err1" := (GoAlloc go.bool #()) in
+    let: "b1" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "length" := (GoAlloc go.uint64 #()) in
+    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![go.SliceType go.byte] "b0") in
+    (FuncResolve safemarshal.ReadInt [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
-    do:  ("length" <-[uint64T] "$r0");;;
-    do:  ("b1" <-[sliceT] "$r1");;;
-    do:  ("err1" <-[boolT] "$r2");;;
-    (if: ![boolT] "err1"
+    do:  ("length" <-[go.uint64] "$r0");;;
+    do:  ("b1" <-[go.SliceType go.byte] "$r1");;;
+    do:  ("err1" <-[go.bool] "$r2");;;
+    (if: ![go.bool] "err1"
     then return: (#slice.nil, #slice.nil, #true)
     else do:  #());;;
-    let: "loopO" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (slice.make3 ptrT #(W64 0) (![uint64T] "length")) in
-    do:  ("loopO" <-[sliceT] "$r0");;;
-    let: "loopErr" := (mem.alloc (type.zero_val boolT)) in
-    let: "loopB" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (![sliceT] "b1") in
-    do:  ("loopB" <-[sliceT] "$r0");;;
-    (let: "i" := (mem.alloc (type.zero_val uint64T)) in
+    let: "loopO" := (GoAlloc (go.SliceType (go.PointerType UpdateProof)) #()) in
+    let: "$r0" := ((FuncResolve go.make3 [go.SliceType (go.PointerType UpdateProof)] #()) #(W64 0) (![go.uint64] "length")) in
+    do:  ("loopO" <-[go.SliceType (go.PointerType UpdateProof)] "$r0");;;
+    let: "loopErr" := (GoAlloc go.bool #()) in
+    let: "loopB" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "$r0" := (![go.SliceType go.byte] "b1") in
+    do:  ("loopB" <-[go.SliceType go.byte] "$r0");;;
+    (let: "i" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 0) in
-    do:  ("i" <-[uint64T] "$r0");;;
-    (for: (λ: <>, (![uint64T] "i") < (![uint64T] "length")); (λ: <>, do:  ("i" <-[uint64T] ((![uint64T] "i") + #(W64 1)))) := λ: <>,
-      let: "err2" := (mem.alloc (type.zero_val boolT)) in
-      let: "loopB1" := (mem.alloc (type.zero_val sliceT)) in
-      let: "a2" := (mem.alloc (type.zero_val ptrT)) in
-      let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![sliceT] "loopB") in
-      (func_call #UpdateProofDecode) "$a0") in
+    do:  ("i" <-[go.uint64] "$r0");;;
+    (for: (λ: <>, (![go.uint64] "i") <⟨go.uint64⟩ (![go.uint64] "length")); (λ: <>, do:  ("i" <-[go.uint64] ((![go.uint64] "i") +⟨go.uint64⟩ #(W8 1)))) := λ: <>,
+      let: "err2" := (GoAlloc go.bool #()) in
+      let: "loopB1" := (GoAlloc (go.SliceType go.byte) #()) in
+      let: "a2" := (GoAlloc (go.PointerType UpdateProof) #()) in
+      let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![go.SliceType go.byte] "loopB") in
+      (FuncResolve UpdateProofDecode [] #()) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       let: "$r2" := "$ret2" in
-      do:  ("a2" <-[ptrT] "$r0");;;
-      do:  ("loopB1" <-[sliceT] "$r1");;;
-      do:  ("err2" <-[boolT] "$r2");;;
-      let: "$r0" := (![sliceT] "loopB1") in
-      do:  ("loopB" <-[sliceT] "$r0");;;
-      (if: ![boolT] "err2"
+      do:  ("a2" <-[go.PointerType UpdateProof] "$r0");;;
+      do:  ("loopB1" <-[go.SliceType go.byte] "$r1");;;
+      do:  ("err2" <-[go.bool] "$r2");;;
+      let: "$r0" := (![go.SliceType go.byte] "loopB1") in
+      do:  ("loopB" <-[go.SliceType go.byte] "$r0");;;
+      (if: ![go.bool] "err2"
       then
         let: "$r0" := #true in
-        do:  ("loopErr" <-[boolT] "$r0");;;
+        do:  ("loopErr" <-[go.bool] "$r0");;;
         break: #()
       else do:  #());;;
-      let: "$r0" := (let: "$a0" := (![sliceT] "loopO") in
-      let: "$a1" := ((let: "$sl0" := (![ptrT] "a2") in
-      slice.literal ptrT ["$sl0"])) in
-      (slice.append ptrT) "$a0" "$a1") in
-      do:  ("loopO" <-[sliceT] "$r0")));;;
-    (if: ![boolT] "loopErr"
+      let: "$r0" := (let: "$a0" := (![go.SliceType (go.PointerType UpdateProof)] "loopO") in
+      let: "$a1" := ((let: "$sl0" := (![go.PointerType UpdateProof] "a2") in
+      CompositeLiteral (go.PointerType UpdateProof) (go.PointerType UpdateProof) ["$sl0"])) in
+      (FuncResolve go.append [go.SliceType (go.PointerType UpdateProof)] #()) "$a0" "$a1") in
+      do:  ("loopO" <-[go.SliceType (go.PointerType UpdateProof)] "$r0")));;;
+    (if: ![go.bool] "loopErr"
     then return: (#slice.nil, #slice.nil, #true)
     else do:  #());;;
-    return: (![sliceT] "loopO", ![sliceT] "loopB", #false)).
+    return: (![go.SliceType (go.PointerType UpdateProof)] "loopO", ![go.SliceType go.byte] "loopB", #false)).
 
 Definition MembSlice1DEncode : go_string := "github.com/sanjit-bhat/pav/ktcore.MembSlice1DEncode"%go.
 
 (* go: serde_misc.go:40:6 *)
 Definition MembSlice1DEncodeⁱᵐᵖˡ : val :=
   λ: "b0" "o",
-    exception_do (let: "o" := (mem.alloc "o") in
-    let: "b0" := (mem.alloc "b0") in
-    let: "b" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (![sliceT] "b0") in
-    do:  ("b" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "b") in
-    let: "$a1" := (s_to_w64 (let: "$a0" := (![sliceT] "o") in
-    slice.len "$a0")) in
-    (func_call #marshal.WriteInt) "$a0" "$a1") in
-    do:  ("b" <-[sliceT] "$r0");;;
-    let: "$range" := (![sliceT] "o") in
-    (let: "e" := (mem.alloc (type.zero_val ptrT)) in
-    slice.for_range ptrT "$range" (λ: "$key" "$value",
-      do:  ("e" <-[ptrT] "$value");;;
+    exception_do (let: "o" := (go.AllocValue (go.SliceType (go.PointerType Memb)) "o") in
+    let: "b0" := (go.AllocValue (go.SliceType go.byte) "b0") in
+    let: "b" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "$r0" := (![go.SliceType go.byte] "b0") in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "b") in
+    let: "$a1" := (s_to_w64 (let: "$a0" := (![go.SliceType (go.PointerType Memb)] "o") in
+    (FuncResolve go.len [go.SliceType (go.PointerType Memb)] #()) "$a0")) in
+    (FuncResolve marshal.WriteInt [] #()) "$a0" "$a1") in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    let: "$range" := (![go.SliceType (go.PointerType Memb)] "o") in
+    (let: "e" := (GoAlloc (go.PointerType Memb) #()) in
+    slice.for_range (go.PointerType Memb) "$range" (λ: "$key" "$value",
+      do:  ("e" <-[go.PointerType Memb] "$value");;;
       do:  "$key";;;
-      let: "$r0" := (let: "$a0" := (![sliceT] "b") in
-      let: "$a1" := (![ptrT] "e") in
-      (func_call #MembEncode) "$a0" "$a1") in
-      do:  ("b" <-[sliceT] "$r0")));;;
-    return: (![sliceT] "b")).
+      let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "b") in
+      let: "$a1" := (![go.PointerType Memb] "e") in
+      (FuncResolve MembEncode [] #()) "$a0" "$a1") in
+      do:  ("b" <-[go.SliceType go.byte] "$r0")));;;
+    return: (![go.SliceType go.byte] "b")).
 
 Definition MembSlice1DDecode : go_string := "github.com/sanjit-bhat/pav/ktcore.MembSlice1DDecode"%go.
 
 (* go: serde_misc.go:49:6 *)
 Definition MembSlice1DDecodeⁱᵐᵖˡ : val :=
   λ: "b0",
-    exception_do (let: "b0" := (mem.alloc "b0") in
-    let: "err1" := (mem.alloc (type.zero_val boolT)) in
-    let: "b1" := (mem.alloc (type.zero_val sliceT)) in
-    let: "length" := (mem.alloc (type.zero_val uint64T)) in
-    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![sliceT] "b0") in
-    (func_call #safemarshal.ReadInt) "$a0") in
+    exception_do (let: "b0" := (go.AllocValue (go.SliceType go.byte) "b0") in
+    let: "err1" := (GoAlloc go.bool #()) in
+    let: "b1" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "length" := (GoAlloc go.uint64 #()) in
+    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![go.SliceType go.byte] "b0") in
+    (FuncResolve safemarshal.ReadInt [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
-    do:  ("length" <-[uint64T] "$r0");;;
-    do:  ("b1" <-[sliceT] "$r1");;;
-    do:  ("err1" <-[boolT] "$r2");;;
-    (if: ![boolT] "err1"
+    do:  ("length" <-[go.uint64] "$r0");;;
+    do:  ("b1" <-[go.SliceType go.byte] "$r1");;;
+    do:  ("err1" <-[go.bool] "$r2");;;
+    (if: ![go.bool] "err1"
     then return: (#slice.nil, #slice.nil, #true)
     else do:  #());;;
-    let: "loopO" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (slice.make3 ptrT #(W64 0) (![uint64T] "length")) in
-    do:  ("loopO" <-[sliceT] "$r0");;;
-    let: "loopErr" := (mem.alloc (type.zero_val boolT)) in
-    let: "loopB" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (![sliceT] "b1") in
-    do:  ("loopB" <-[sliceT] "$r0");;;
-    (let: "i" := (mem.alloc (type.zero_val uint64T)) in
+    let: "loopO" := (GoAlloc (go.SliceType (go.PointerType Memb)) #()) in
+    let: "$r0" := ((FuncResolve go.make3 [go.SliceType (go.PointerType Memb)] #()) #(W64 0) (![go.uint64] "length")) in
+    do:  ("loopO" <-[go.SliceType (go.PointerType Memb)] "$r0");;;
+    let: "loopErr" := (GoAlloc go.bool #()) in
+    let: "loopB" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "$r0" := (![go.SliceType go.byte] "b1") in
+    do:  ("loopB" <-[go.SliceType go.byte] "$r0");;;
+    (let: "i" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 0) in
-    do:  ("i" <-[uint64T] "$r0");;;
-    (for: (λ: <>, (![uint64T] "i") < (![uint64T] "length")); (λ: <>, do:  ("i" <-[uint64T] ((![uint64T] "i") + #(W64 1)))) := λ: <>,
-      let: "err2" := (mem.alloc (type.zero_val boolT)) in
-      let: "loopB1" := (mem.alloc (type.zero_val sliceT)) in
-      let: "a2" := (mem.alloc (type.zero_val ptrT)) in
-      let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![sliceT] "loopB") in
-      (func_call #MembDecode) "$a0") in
+    do:  ("i" <-[go.uint64] "$r0");;;
+    (for: (λ: <>, (![go.uint64] "i") <⟨go.uint64⟩ (![go.uint64] "length")); (λ: <>, do:  ("i" <-[go.uint64] ((![go.uint64] "i") +⟨go.uint64⟩ #(W8 1)))) := λ: <>,
+      let: "err2" := (GoAlloc go.bool #()) in
+      let: "loopB1" := (GoAlloc (go.SliceType go.byte) #()) in
+      let: "a2" := (GoAlloc (go.PointerType Memb) #()) in
+      let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![go.SliceType go.byte] "loopB") in
+      (FuncResolve MembDecode [] #()) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       let: "$r2" := "$ret2" in
-      do:  ("a2" <-[ptrT] "$r0");;;
-      do:  ("loopB1" <-[sliceT] "$r1");;;
-      do:  ("err2" <-[boolT] "$r2");;;
-      let: "$r0" := (![sliceT] "loopB1") in
-      do:  ("loopB" <-[sliceT] "$r0");;;
-      (if: ![boolT] "err2"
+      do:  ("a2" <-[go.PointerType Memb] "$r0");;;
+      do:  ("loopB1" <-[go.SliceType go.byte] "$r1");;;
+      do:  ("err2" <-[go.bool] "$r2");;;
+      let: "$r0" := (![go.SliceType go.byte] "loopB1") in
+      do:  ("loopB" <-[go.SliceType go.byte] "$r0");;;
+      (if: ![go.bool] "err2"
       then
         let: "$r0" := #true in
-        do:  ("loopErr" <-[boolT] "$r0");;;
+        do:  ("loopErr" <-[go.bool] "$r0");;;
         break: #()
       else do:  #());;;
-      let: "$r0" := (let: "$a0" := (![sliceT] "loopO") in
-      let: "$a1" := ((let: "$sl0" := (![ptrT] "a2") in
-      slice.literal ptrT ["$sl0"])) in
-      (slice.append ptrT) "$a0" "$a1") in
-      do:  ("loopO" <-[sliceT] "$r0")));;;
-    (if: ![boolT] "loopErr"
+      let: "$r0" := (let: "$a0" := (![go.SliceType (go.PointerType Memb)] "loopO") in
+      let: "$a1" := ((let: "$sl0" := (![go.PointerType Memb] "a2") in
+      CompositeLiteral (go.PointerType Memb) (go.PointerType Memb) ["$sl0"])) in
+      (FuncResolve go.append [go.SliceType (go.PointerType Memb)] #()) "$a0" "$a1") in
+      do:  ("loopO" <-[go.SliceType (go.PointerType Memb)] "$r0")));;;
+    (if: ![go.bool] "loopErr"
     then return: (#slice.nil, #slice.nil, #true)
     else do:  #());;;
-    return: (![sliceT] "loopO", ![sliceT] "loopB", #false)).
+    return: (![go.SliceType (go.PointerType Memb)] "loopO", ![go.SliceType go.byte] "loopB", #false)).
 
 Definition AuditProofSlice1DEncode : go_string := "github.com/sanjit-bhat/pav/ktcore.AuditProofSlice1DEncode"%go.
 
 (* go: serde_misc.go:72:6 *)
 Definition AuditProofSlice1DEncodeⁱᵐᵖˡ : val :=
   λ: "b0" "o",
-    exception_do (let: "o" := (mem.alloc "o") in
-    let: "b0" := (mem.alloc "b0") in
-    let: "b" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (![sliceT] "b0") in
-    do:  ("b" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "b") in
-    let: "$a1" := (s_to_w64 (let: "$a0" := (![sliceT] "o") in
-    slice.len "$a0")) in
-    (func_call #marshal.WriteInt) "$a0" "$a1") in
-    do:  ("b" <-[sliceT] "$r0");;;
-    let: "$range" := (![sliceT] "o") in
-    (let: "e" := (mem.alloc (type.zero_val ptrT)) in
-    slice.for_range ptrT "$range" (λ: "$key" "$value",
-      do:  ("e" <-[ptrT] "$value");;;
+    exception_do (let: "o" := (go.AllocValue (go.SliceType (go.PointerType AuditProof)) "o") in
+    let: "b0" := (go.AllocValue (go.SliceType go.byte) "b0") in
+    let: "b" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "$r0" := (![go.SliceType go.byte] "b0") in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "b") in
+    let: "$a1" := (s_to_w64 (let: "$a0" := (![go.SliceType (go.PointerType AuditProof)] "o") in
+    (FuncResolve go.len [go.SliceType (go.PointerType AuditProof)] #()) "$a0")) in
+    (FuncResolve marshal.WriteInt [] #()) "$a0" "$a1") in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    let: "$range" := (![go.SliceType (go.PointerType AuditProof)] "o") in
+    (let: "e" := (GoAlloc (go.PointerType AuditProof) #()) in
+    slice.for_range (go.PointerType AuditProof) "$range" (λ: "$key" "$value",
+      do:  ("e" <-[go.PointerType AuditProof] "$value");;;
       do:  "$key";;;
-      let: "$r0" := (let: "$a0" := (![sliceT] "b") in
-      let: "$a1" := (![ptrT] "e") in
-      (func_call #AuditProofEncode) "$a0" "$a1") in
-      do:  ("b" <-[sliceT] "$r0")));;;
-    return: (![sliceT] "b")).
+      let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "b") in
+      let: "$a1" := (![go.PointerType AuditProof] "e") in
+      (FuncResolve AuditProofEncode [] #()) "$a0" "$a1") in
+      do:  ("b" <-[go.SliceType go.byte] "$r0")));;;
+    return: (![go.SliceType go.byte] "b")).
 
 Definition AuditProofSlice1DDecode : go_string := "github.com/sanjit-bhat/pav/ktcore.AuditProofSlice1DDecode"%go.
 
 (* go: serde_misc.go:81:6 *)
 Definition AuditProofSlice1DDecodeⁱᵐᵖˡ : val :=
   λ: "b0",
-    exception_do (let: "b0" := (mem.alloc "b0") in
-    let: "err1" := (mem.alloc (type.zero_val boolT)) in
-    let: "b1" := (mem.alloc (type.zero_val sliceT)) in
-    let: "length" := (mem.alloc (type.zero_val uint64T)) in
-    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![sliceT] "b0") in
-    (func_call #safemarshal.ReadInt) "$a0") in
+    exception_do (let: "b0" := (go.AllocValue (go.SliceType go.byte) "b0") in
+    let: "err1" := (GoAlloc go.bool #()) in
+    let: "b1" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "length" := (GoAlloc go.uint64 #()) in
+    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![go.SliceType go.byte] "b0") in
+    (FuncResolve safemarshal.ReadInt [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
-    do:  ("length" <-[uint64T] "$r0");;;
-    do:  ("b1" <-[sliceT] "$r1");;;
-    do:  ("err1" <-[boolT] "$r2");;;
-    (if: ![boolT] "err1"
+    do:  ("length" <-[go.uint64] "$r0");;;
+    do:  ("b1" <-[go.SliceType go.byte] "$r1");;;
+    do:  ("err1" <-[go.bool] "$r2");;;
+    (if: ![go.bool] "err1"
     then return: (#slice.nil, #slice.nil, #true)
     else do:  #());;;
-    let: "loopO" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (slice.make3 ptrT #(W64 0) (![uint64T] "length")) in
-    do:  ("loopO" <-[sliceT] "$r0");;;
-    let: "loopErr" := (mem.alloc (type.zero_val boolT)) in
-    let: "loopB" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (![sliceT] "b1") in
-    do:  ("loopB" <-[sliceT] "$r0");;;
-    (let: "i" := (mem.alloc (type.zero_val uint64T)) in
+    let: "loopO" := (GoAlloc (go.SliceType (go.PointerType AuditProof)) #()) in
+    let: "$r0" := ((FuncResolve go.make3 [go.SliceType (go.PointerType AuditProof)] #()) #(W64 0) (![go.uint64] "length")) in
+    do:  ("loopO" <-[go.SliceType (go.PointerType AuditProof)] "$r0");;;
+    let: "loopErr" := (GoAlloc go.bool #()) in
+    let: "loopB" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "$r0" := (![go.SliceType go.byte] "b1") in
+    do:  ("loopB" <-[go.SliceType go.byte] "$r0");;;
+    (let: "i" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 0) in
-    do:  ("i" <-[uint64T] "$r0");;;
-    (for: (λ: <>, (![uint64T] "i") < (![uint64T] "length")); (λ: <>, do:  ("i" <-[uint64T] ((![uint64T] "i") + #(W64 1)))) := λ: <>,
-      let: "err2" := (mem.alloc (type.zero_val boolT)) in
-      let: "loopB1" := (mem.alloc (type.zero_val sliceT)) in
-      let: "a2" := (mem.alloc (type.zero_val ptrT)) in
-      let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![sliceT] "loopB") in
-      (func_call #AuditProofDecode) "$a0") in
+    do:  ("i" <-[go.uint64] "$r0");;;
+    (for: (λ: <>, (![go.uint64] "i") <⟨go.uint64⟩ (![go.uint64] "length")); (λ: <>, do:  ("i" <-[go.uint64] ((![go.uint64] "i") +⟨go.uint64⟩ #(W8 1)))) := λ: <>,
+      let: "err2" := (GoAlloc go.bool #()) in
+      let: "loopB1" := (GoAlloc (go.SliceType go.byte) #()) in
+      let: "a2" := (GoAlloc (go.PointerType AuditProof) #()) in
+      let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![go.SliceType go.byte] "loopB") in
+      (FuncResolve AuditProofDecode [] #()) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       let: "$r2" := "$ret2" in
-      do:  ("a2" <-[ptrT] "$r0");;;
-      do:  ("loopB1" <-[sliceT] "$r1");;;
-      do:  ("err2" <-[boolT] "$r2");;;
-      let: "$r0" := (![sliceT] "loopB1") in
-      do:  ("loopB" <-[sliceT] "$r0");;;
-      (if: ![boolT] "err2"
+      do:  ("a2" <-[go.PointerType AuditProof] "$r0");;;
+      do:  ("loopB1" <-[go.SliceType go.byte] "$r1");;;
+      do:  ("err2" <-[go.bool] "$r2");;;
+      let: "$r0" := (![go.SliceType go.byte] "loopB1") in
+      do:  ("loopB" <-[go.SliceType go.byte] "$r0");;;
+      (if: ![go.bool] "err2"
       then
         let: "$r0" := #true in
-        do:  ("loopErr" <-[boolT] "$r0");;;
+        do:  ("loopErr" <-[go.bool] "$r0");;;
         break: #()
       else do:  #());;;
-      let: "$r0" := (let: "$a0" := (![sliceT] "loopO") in
-      let: "$a1" := ((let: "$sl0" := (![ptrT] "a2") in
-      slice.literal ptrT ["$sl0"])) in
-      (slice.append ptrT) "$a0" "$a1") in
-      do:  ("loopO" <-[sliceT] "$r0")));;;
-    (if: ![boolT] "loopErr"
+      let: "$r0" := (let: "$a0" := (![go.SliceType (go.PointerType AuditProof)] "loopO") in
+      let: "$a1" := ((let: "$sl0" := (![go.PointerType AuditProof] "a2") in
+      CompositeLiteral (go.PointerType AuditProof) (go.PointerType AuditProof) ["$sl0"])) in
+      (FuncResolve go.append [go.SliceType (go.PointerType AuditProof)] #()) "$a0" "$a1") in
+      do:  ("loopO" <-[go.SliceType (go.PointerType AuditProof)] "$r0")));;;
+    (if: ![go.bool] "loopErr"
     then return: (#slice.nil, #slice.nil, #true)
     else do:  #());;;
-    return: (![sliceT] "loopO", ![sliceT] "loopB", #false)).
+    return: (![go.SliceType (go.PointerType AuditProof)] "loopO", ![go.SliceType go.byte] "loopB", #false)).
 
-Definition vars' : list (go_string * go_type) := [].
+Definition Blame : go.type := go.Named "github.com/sanjit-bhat/pav/ktcore.Blame"%go [].
 
-Definition functions' : list (go_string * val) := [(CheckBlame, CheckBlameⁱᵐᵖˡ); (SignVrf, SignVrfⁱᵐᵖˡ); (VerifyVrfSig, VerifyVrfSigⁱᵐᵖˡ); (SignLink, SignLinkⁱᵐᵖˡ); (VerifyLinkSig, VerifyLinkSigⁱᵐᵖˡ); (ProveMapLabel, ProveMapLabelⁱᵐᵖˡ); (EvalMapLabel, EvalMapLabelⁱᵐᵖˡ); (CheckMapLabel, CheckMapLabelⁱᵐᵖˡ); (GetMapVal, GetMapValⁱᵐᵖˡ); (GetCommitRand, GetCommitRandⁱᵐᵖˡ); (VrfSigEncode, VrfSigEncodeⁱᵐᵖˡ); (VrfSigDecode, VrfSigDecodeⁱᵐᵖˡ); (LinkSigEncode, LinkSigEncodeⁱᵐᵖˡ); (LinkSigDecode, LinkSigDecodeⁱᵐᵖˡ); (MapLabelEncode, MapLabelEncodeⁱᵐᵖˡ); (MapLabelDecode, MapLabelDecodeⁱᵐᵖˡ); (CommitOpenEncode, CommitOpenEncodeⁱᵐᵖˡ); (CommitOpenDecode, CommitOpenDecodeⁱᵐᵖˡ); (MembEncode, MembEncodeⁱᵐᵖˡ); (MembDecode, MembDecodeⁱᵐᵖˡ); (NonMembEncode, NonMembEncodeⁱᵐᵖˡ); (NonMembDecode, NonMembDecodeⁱᵐᵖˡ); (AuditProofEncode, AuditProofEncodeⁱᵐᵖˡ); (AuditProofDecode, AuditProofDecodeⁱᵐᵖˡ); (UpdateProofEncode, UpdateProofEncodeⁱᵐᵖˡ); (UpdateProofDecode, UpdateProofDecodeⁱᵐᵖˡ); (UpdateProofSlice1DEncode, UpdateProofSlice1DEncodeⁱᵐᵖˡ); (UpdateProofSlice1DDecode, UpdateProofSlice1DDecodeⁱᵐᵖˡ); (MembSlice1DEncode, MembSlice1DEncodeⁱᵐᵖˡ); (MembSlice1DDecode, MembSlice1DDecodeⁱᵐᵖˡ); (AuditProofSlice1DEncode, AuditProofSlice1DEncodeⁱᵐᵖˡ); (AuditProofSlice1DDecode, AuditProofSlice1DDecodeⁱᵐᵖˡ)].
-
-Definition msets' : list (go_string * (list (go_string * val))) := [(Blame.id, []); (ptrT.id Blame.id, []); (VrfSig.id, []); (ptrT.id VrfSig.id, []); (LinkSig.id, []); (ptrT.id LinkSig.id, []); (MapLabel.id, []); (ptrT.id MapLabel.id, []); (CommitOpen.id, []); (ptrT.id CommitOpen.id, []); (Memb.id, []); (ptrT.id Memb.id, []); (NonMemb.id, []); (ptrT.id NonMemb.id, []); (AuditProof.id, []); (ptrT.id AuditProof.id, []); (UpdateProof.id, []); (ptrT.id UpdateProof.id, [])].
+Definition functions' : list (go_string * val) := [(SignVrf, SignVrfⁱᵐᵖˡ); (VerifyVrfSig, VerifyVrfSigⁱᵐᵖˡ); (SignLink, SignLinkⁱᵐᵖˡ); (VerifyLinkSig, VerifyLinkSigⁱᵐᵖˡ); (ProveMapLabel, ProveMapLabelⁱᵐᵖˡ); (EvalMapLabel, EvalMapLabelⁱᵐᵖˡ); (CheckMapLabel, CheckMapLabelⁱᵐᵖˡ); (GetMapVal, GetMapValⁱᵐᵖˡ); (GetCommitRand, GetCommitRandⁱᵐᵖˡ); (VrfSigEncode, VrfSigEncodeⁱᵐᵖˡ); (VrfSigDecode, VrfSigDecodeⁱᵐᵖˡ); (LinkSigEncode, LinkSigEncodeⁱᵐᵖˡ); (LinkSigDecode, LinkSigDecodeⁱᵐᵖˡ); (MapLabelEncode, MapLabelEncodeⁱᵐᵖˡ); (MapLabelDecode, MapLabelDecodeⁱᵐᵖˡ); (CommitOpenEncode, CommitOpenEncodeⁱᵐᵖˡ); (CommitOpenDecode, CommitOpenDecodeⁱᵐᵖˡ); (MembEncode, MembEncodeⁱᵐᵖˡ); (MembDecode, MembDecodeⁱᵐᵖˡ); (NonMembEncode, NonMembEncodeⁱᵐᵖˡ); (NonMembDecode, NonMembDecodeⁱᵐᵖˡ); (AuditProofEncode, AuditProofEncodeⁱᵐᵖˡ); (AuditProofDecode, AuditProofDecodeⁱᵐᵖˡ); (UpdateProofEncode, UpdateProofEncodeⁱᵐᵖˡ); (UpdateProofDecode, UpdateProofDecodeⁱᵐᵖˡ); (UpdateProofSlice1DEncode, UpdateProofSlice1DEncodeⁱᵐᵖˡ); (UpdateProofSlice1DDecode, UpdateProofSlice1DDecodeⁱᵐᵖˡ); (MembSlice1DEncode, MembSlice1DEncodeⁱᵐᵖˡ); (MembSlice1DDecode, MembSlice1DDecodeⁱᵐᵖˡ); (AuditProofSlice1DEncode, AuditProofSlice1DEncodeⁱᵐᵖˡ); (AuditProofSlice1DDecode, AuditProofSlice1DDecodeⁱᵐᵖˡ)].
 
 #[global] Instance info' : PkgInfo ktcore.ktcore :=
   {|
-    pkg_vars := vars';
-    pkg_functions := functions';
-    pkg_msets := msets';
     pkg_imported_pkgs := [code.github_com.sanjit_bhat.pav.cryptoffi.cryptoffi; code.github_com.sanjit_bhat.pav.cryptoutil.cryptoutil; code.github_com.sanjit_bhat.pav.safemarshal.safemarshal; code.github_com.tchajed.marshal.marshal];
   |}.
 
 Definition initialize' : val :=
   λ: <>,
-    package.init #ktcore.ktcore (λ: <>,
+    package.init ktcore.ktcore (λ: <>,
       exception_do (do:  (marshal.initialize' #());;;
       do:  (safemarshal.initialize' #());;;
       do:  (cryptoutil.initialize' #());;;
-      do:  (cryptoffi.initialize' #());;;
-      do:  (package.alloc ktcore.ktcore #()))
+      do:  (cryptoffi.initialize' #()))
       ).
 
 End code.

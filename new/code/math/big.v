@@ -221,9 +221,9 @@ Definition bigEndianWord : go_string := "math/big.bigEndianWord"%go.
 
 Axiom digits : go_string.
 
-Axiom MaxBase : val.
+Axiom MaxBase : Z.
 
-Axiom maxBaseSmall : val.
+Axiom maxBaseSmall : Z.
 
 Definition maxPow : go_string := "math/big.maxPow"%go.
 

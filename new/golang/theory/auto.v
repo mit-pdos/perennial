@@ -322,6 +322,24 @@ Ltac wp_if_destruct :=
       end
   end.
 
+Ltac wp_end :=
+  wp_pures;
+  repeat iModIntro;
+  (* TODO: hard coded continuation names, should try to automatically find
+  the hypothesis *)
+  first [
+      iApply "HΦ" |
+      (* if HΦ doesn't unify, maybe an equality proof is needed *)
+      (iDestruct ("HΦ" with "[-]") as "HΦ"; [ | iExactEq "HΦ"; f_equal ]) |
+      iApply "HPost" |
+      (iDestruct ("HPost" with "[-]") as "HPost"; [ | iExactEq "HPost"; f_equal ])
+  ];
+  try solve [
+      auto;
+      iFrame;
+      word
+  ].
+
 Section __struct_test.
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
   {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}.

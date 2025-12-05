@@ -161,8 +161,7 @@ Proof.
   destruct ok; subst; wp_auto.
   { by iApply "HΦ". }
   wp_if_destruct.
-  { rewrite bool_decide_true //. wp_auto. by iApply "HΦ". }
-  rewrite bool_decide_false //. wp_auto.
+  { by iApply "HΦ". }
   by iApply "HΦ".
 Qed.
 
@@ -319,6 +318,7 @@ Proof.
   - iApply "HΦ". iFrame.
 Qed.
 
+
 Lemma wp_useEmbeddedMethod (d : unittest.embedD.t) :
   {{{ is_pkg_init unittest }}}
     @! unittest.useEmbeddedMethod #d
@@ -330,4 +330,29 @@ Proof.
   (* FIXME: struct.field_get WP *)
   wp_method_call.
 Qed.
+
+Lemma wp_pointerAny :
+  {{{ is_pkg_init unittest }}}
+    @! unittest.pointerAny #()
+  {{{ (l:loc), RET #l; l ↦ interface.nil }}}.
+Proof.
+  wp_start.
+  wp_auto.
+  wp_alloc p as "Hp".
+  wp_auto.
+  iApply "HΦ".
+  iFrame.
+Qed.
+
+Lemma wp_useRuneOps (r0: w32) :
+  {{{ is_pkg_init unittest }}}
+    @! unittest.useRuneOps #r0
+  {{{ (r: w32), RET #r; ⌜r = W32 98⌝ }}}.
+Proof.
+  wp_start.
+  wp_auto.
+  iApply "HΦ".
+  done.
+Qed.
+
 End proof.

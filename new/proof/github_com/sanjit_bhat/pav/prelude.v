@@ -3,6 +3,9 @@ after importing this, don't import anything except "new/proof" files,
 which shouldn't have side-effects (including Exports)
 or unintended name shadows. *)
 
+(* for inG's. not exported. *)
+From New.proof Require Import proof_prelude.
+
 (* add extra dependencies. *)
 From RecordUpdate Require Export RecordSet.
 From iris_named_props Require Export custom_syntax.
@@ -25,3 +28,50 @@ Ltac obligation_tac :=
 #[global] Obligation Tactic := obligation_tac.
 #[export] Set Default Goal Selector "!".
 #[global] Open Scope Z_scope.
+
+(* inG's. maybe this should go in separate file. *)
+Module sigpred.
+Module entry.
+Record t :=
+  mk {
+    dig: list w8;
+    link: list w8;
+    map: gmap (list w8) (list w8);
+  }.
+End entry.
+End sigpred.
+
+Class sigpredG Σ := {
+  (* ghost_var of vrfPk. *)
+  #[global] sigpredG_vrf :: ghost_varG Σ (list w8);
+  (* mono_list of (dig, link, map). *)
+  #[global] sigpredG_chain :: mono_listG sigpred.entry.t Σ;
+}.
+
+Class pavG Σ := {
+  #[global] pavG_sigpred :: sigpredG Σ;
+  (* ghost_map uid (gset (ver, pk)). *)
+  #[global] pavG_puts :: ghost_mapG Σ w64 (gset (w64 * list w8));
+  (* serverσ.hist. *)
+  #[global] pavG_serv_hist :: mono_listG (list w8 * (gmap w64 (list $ list w8))) Σ;
+  (* serverσ.pending. each uid has a mono_list of (ver, pk). *)
+  #[global] pavG_serv_uids :: mono_listG (w64 * list w8) Σ;
+}.
+
+(* misc. TODO: these should definitely go into separate file. *)
+
+Definition option_bool {A} (mx : option A) :=
+  match mx with None => false | _ => true end.
+
+Section misc.
+Context {PROP : bi} `{!BiFUpd PROP}.
+
+(* this helps proving [BlameSpec] when we need to open invs
+after learning that a party is good. *)
+Lemma fupd_not_prop P `{Decision P} : (⌜P⌝ ={⊤}=∗ False : PROP) ⊢ |={⊤}=> ¬ ⌜P⌝.
+Proof.
+  iIntros "H".
+  destruct (decide P); [|done].
+  by iMod ("H" with "[//]").
+Qed.
+End misc.

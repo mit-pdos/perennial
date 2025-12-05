@@ -15,35 +15,27 @@ Definition Hash : go_string := "github.com/sanjit-bhat/pav/cryptoutil.Hash"%go.
 (* go: cryptoutil.go:7:6 *)
 Definition Hashⁱᵐᵖˡ : val :=
   λ: "b",
-    exception_do (let: "hash" := (mem.alloc (type.zero_val sliceT)) in
-    let: "b" := (mem.alloc "b") in
-    let: "hr" := (mem.alloc (type.zero_val ptrT)) in
-    let: "$r0" := ((func_call #cryptoffi.NewHasher) #()) in
-    do:  ("hr" <-[ptrT] "$r0");;;
-    do:  (let: "$a0" := (![sliceT] "b") in
-    (method_call #(ptrT.id cryptoffi.Hasher.id) #"Write"%go (![ptrT] "hr")) "$a0");;;
+    exception_do (let: "hash" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "b" := (go.AllocValue (go.SliceType go.byte) "b") in
+    let: "hr" := (GoAlloc (go.PointerType cryptoffi.Hasher) #()) in
+    let: "$r0" := ((FuncResolve cryptoffi.NewHasher [] #()) #()) in
+    do:  ("hr" <-[go.PointerType cryptoffi.Hasher] "$r0");;;
+    do:  (let: "$a0" := (![go.SliceType go.byte] "b") in
+    (MethodResolve (go.PointerType cryptoffi.Hasher) Write #() (![go.PointerType cryptoffi.Hasher] "hr")) "$a0");;;
     return: (let: "$a0" := #slice.nil in
-     (method_call #(ptrT.id cryptoffi.Hasher.id) #"Sum"%go (![ptrT] "hr")) "$a0")).
-
-Definition vars' : list (go_string * go_type) := [].
+     (MethodResolve (go.PointerType cryptoffi.Hasher) Sum #() (![go.PointerType cryptoffi.Hasher] "hr")) "$a0")).
 
 Definition functions' : list (go_string * val) := [(Hash, Hashⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [].
-
 #[global] Instance info' : PkgInfo cryptoutil.cryptoutil :=
   {|
-    pkg_vars := vars';
-    pkg_functions := functions';
-    pkg_msets := msets';
     pkg_imported_pkgs := [code.github_com.sanjit_bhat.pav.cryptoffi.cryptoffi];
   |}.
 
 Definition initialize' : val :=
   λ: <>,
-    package.init #cryptoutil.cryptoutil (λ: <>,
-      exception_do (do:  (cryptoffi.initialize' #());;;
-      do:  (package.alloc cryptoutil.cryptoutil #()))
+    package.init cryptoutil.cryptoutil (λ: <>,
+      exception_do (do:  (cryptoffi.initialize' #()))
       ).
 
 End code.

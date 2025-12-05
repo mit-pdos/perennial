@@ -8,81 +8,78 @@ Definition advrpc : go_string := "github.com/sanjit-bhat/pav/advrpc".
 
 Module advrpc.
 
-Module Server. Definition id : go_string := "github.com/sanjit-bhat/pav/advrpc.Server"%go. End Server.
-Module Client. Definition id : go_string := "github.com/sanjit-bhat/pav/advrpc.Client"%go. End Client.
-
 Section code.
 Context `{ffi_syntax}.
 
 
-Definition Server : go_type := structT [
-  "handlers" :: mapT uint64T funcT
+Definition Serverⁱᵐᵖˡ : go.type := go.StructType [
+  (go.FieldDecl "handlers"%go (go.MapType go.uint64 (go.FunctionType (go.Signature [go.SliceType go.byte; go.PointerType (go.SliceType go.byte)] #false []))))
 ].
-#[global] Typeclasses Opaque Server.
-#[global] Opaque Server.
+
+Definition Server : go.type := go.Named "github.com/sanjit-bhat/pav/advrpc.Server"%go [].
 
 (* go: advrpc.go:19:18 *)
 Definition Server__handleⁱᵐᵖˡ : val :=
   λ: "s" "conn" "rpcId" "data",
-    exception_do (let: "s" := (mem.alloc "s") in
-    let: "data" := (mem.alloc "data") in
-    let: "rpcId" := (mem.alloc "rpcId") in
-    let: "conn" := (mem.alloc "conn") in
-    let: "ok0" := (mem.alloc (type.zero_val boolT)) in
-    let: "f" := (mem.alloc (type.zero_val funcT)) in
-    let: ("$ret0", "$ret1") := (map.get (![mapT uint64T funcT] (struct.field_ref ptrT #"handlers"%go (![ptrT] "s"))) (![uint64T] "rpcId")) in
+    exception_do (let: "s" := (go.AllocValue (go.PointerType Server) "s") in
+    let: "data" := (go.AllocValue (go.SliceType go.byte) "data") in
+    let: "rpcId" := (go.AllocValue go.uint64 "rpcId") in
+    let: "conn" := (go.AllocValue (go.PointerType netffi.Conn) "conn") in
+    let: "ok0" := (GoAlloc go.bool #()) in
+    let: "f" := (GoAlloc (go.FunctionType (go.Signature [go.SliceType go.byte; go.PointerType (go.SliceType go.byte)] #false [])) #()) in
+    let: ("$ret0", "$ret1") := (map.get (![go.MapType go.uint64 (go.FunctionType (go.Signature [go.SliceType go.byte; go.PointerType (go.SliceType go.byte)] #false []))] (StructFieldRef Server "handlers"%go (![go.PointerType Server] "s"))) (![go.uint64] "rpcId")) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("f" <-[funcT] "$r0");;;
-    do:  ("ok0" <-[boolT] "$r1");;;
-    (if: (~ (![boolT] "ok0"))
+    do:  ("f" <-[go.FunctionType (go.Signature [go.SliceType go.byte; go.PointerType (go.SliceType go.byte)] #false [])] "$r0");;;
+    do:  ("ok0" <-[go.bool] "$r1");;;
+    (if: (~ (![go.bool] "ok0"))
     then return: (#())
     else do:  #());;;
-    let: "resp" := (mem.alloc (type.zero_val ptrT)) in
-    let: "$r0" := (mem.alloc (type.zero_val sliceT)) in
-    do:  ("resp" <-[ptrT] "$r0");;;
-    do:  (let: "$a0" := (![sliceT] "data") in
-    let: "$a1" := (![ptrT] "resp") in
-    (![funcT] "f") "$a0" "$a1");;;
-    do:  (let: "$a0" := (![sliceT] (![ptrT] "resp")) in
-    (method_call #(ptrT.id netffi.Conn.id) #"Send"%go (![ptrT] "conn")) "$a0");;;
+    let: "resp" := (GoAlloc (go.PointerType (go.SliceType go.byte)) #()) in
+    let: "$r0" := (GoAlloc (go.SliceType go.byte) #()) in
+    do:  ("resp" <-[go.PointerType (go.SliceType go.byte)] "$r0");;;
+    do:  (let: "$a0" := (![go.SliceType go.byte] "data") in
+    let: "$a1" := (![go.PointerType (go.SliceType go.byte)] "resp") in
+    (![go.FunctionType (go.Signature [go.SliceType go.byte; go.PointerType (go.SliceType go.byte)] #false [])] "f") "$a0" "$a1");;;
+    do:  (let: "$a0" := (![go.SliceType go.byte] (![go.PointerType (go.SliceType go.byte)] "resp")) in
+    (MethodResolve (go.PointerType netffi.Conn) Send #() (![go.PointerType netffi.Conn] "conn")) "$a0");;;
     return: #()).
 
 (* go: advrpc.go:31:18 *)
 Definition Server__readⁱᵐᵖˡ : val :=
   λ: "s" "conn",
-    exception_do (let: "s" := (mem.alloc "s") in
-    let: "conn" := (mem.alloc "conn") in
+    exception_do (let: "s" := (go.AllocValue (go.PointerType Server) "s") in
+    let: "conn" := (go.AllocValue (go.PointerType netffi.Conn) "conn") in
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      let: "err0" := (mem.alloc (type.zero_val boolT)) in
-      let: "req" := (mem.alloc (type.zero_val sliceT)) in
-      let: ("$ret0", "$ret1") := ((method_call #(ptrT.id netffi.Conn.id) #"Receive"%go (![ptrT] "conn")) #()) in
+      let: "err0" := (GoAlloc go.bool #()) in
+      let: "req" := (GoAlloc (go.SliceType go.byte) #()) in
+      let: ("$ret0", "$ret1") := ((MethodResolve (go.PointerType netffi.Conn) Receive #() (![go.PointerType netffi.Conn] "conn")) #()) in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
-      do:  ("req" <-[sliceT] "$r0");;;
-      do:  ("err0" <-[boolT] "$r1");;;
-      (if: ![boolT] "err0"
+      do:  ("req" <-[go.SliceType go.byte] "$r0");;;
+      do:  ("err0" <-[go.bool] "$r1");;;
+      (if: ![go.bool] "err0"
       then break: #()
       else do:  #());;;
-      let: "err1" := (mem.alloc (type.zero_val boolT)) in
-      let: "data" := (mem.alloc (type.zero_val sliceT)) in
-      let: "rpcId" := (mem.alloc (type.zero_val uint64T)) in
-      let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![sliceT] "req") in
-      (func_call #safemarshal.ReadInt) "$a0") in
+      let: "err1" := (GoAlloc go.bool #()) in
+      let: "data" := (GoAlloc (go.SliceType go.byte) #()) in
+      let: "rpcId" := (GoAlloc go.uint64 #()) in
+      let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![go.SliceType go.byte] "req") in
+      (FuncResolve safemarshal.ReadInt [] #()) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       let: "$r2" := "$ret2" in
-      do:  ("rpcId" <-[uint64T] "$r0");;;
-      do:  ("data" <-[sliceT] "$r1");;;
-      do:  ("err1" <-[boolT] "$r2");;;
-      (if: ![boolT] "err1"
+      do:  ("rpcId" <-[go.uint64] "$r0");;;
+      do:  ("data" <-[go.SliceType go.byte] "$r1");;;
+      do:  ("err1" <-[go.bool] "$r2");;;
+      (if: ![go.bool] "err1"
       then continue: #()
       else do:  #());;;
       let: "$go" := (λ: <>,
-        exception_do (do:  (let: "$a0" := (![ptrT] "conn") in
-        let: "$a1" := (![uint64T] "rpcId") in
-        let: "$a2" := (![sliceT] "data") in
-        (method_call #(ptrT.id Server.id) #"handle"%go (![ptrT] "s")) "$a0" "$a1" "$a2");;;
+        exception_do (do:  (let: "$a0" := (![go.PointerType netffi.Conn] "conn") in
+        let: "$a1" := (![go.uint64] "rpcId") in
+        let: "$a2" := (![go.SliceType go.byte] "data") in
+        (MethodResolve (go.PointerType Server) handle #() (![go.PointerType Server] "s")) "$a0" "$a1" "$a2");;;
         return: #())
         ) in
       do:  (Fork ("$go" #())));;;
@@ -91,20 +88,20 @@ Definition Server__readⁱᵐᵖˡ : val :=
 (* go: advrpc.go:49:18 *)
 Definition Server__Serveⁱᵐᵖˡ : val :=
   λ: "s" "addr",
-    exception_do (let: "s" := (mem.alloc "s") in
-    let: "addr" := (mem.alloc "addr") in
-    let: "l" := (mem.alloc (type.zero_val ptrT)) in
-    let: "$r0" := (let: "$a0" := (![uint64T] "addr") in
-    (func_call #netffi.Listen) "$a0") in
-    do:  ("l" <-[ptrT] "$r0");;;
+    exception_do (let: "s" := (go.AllocValue (go.PointerType Server) "s") in
+    let: "addr" := (go.AllocValue go.uint64 "addr") in
+    let: "l" := (GoAlloc (go.PointerType netffi.Listener) #()) in
+    let: "$r0" := (let: "$a0" := (![go.uint64] "addr") in
+    (FuncResolve netffi.Listen [] #()) "$a0") in
+    do:  ("l" <-[go.PointerType netffi.Listener] "$r0");;;
     let: "$go" := (λ: <>,
       exception_do ((for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-        let: "conn" := (mem.alloc (type.zero_val ptrT)) in
-        let: "$r0" := ((method_call #(ptrT.id netffi.Listener.id) #"Accept"%go (![ptrT] "l")) #()) in
-        do:  ("conn" <-[ptrT] "$r0");;;
+        let: "conn" := (GoAlloc (go.PointerType netffi.Conn) #()) in
+        let: "$r0" := ((MethodResolve (go.PointerType netffi.Listener) Accept #() (![go.PointerType netffi.Listener] "l")) #()) in
+        do:  ("conn" <-[go.PointerType netffi.Conn] "$r0");;;
         let: "$go" := (λ: <>,
-          exception_do (do:  (let: "$a0" := (![ptrT] "conn") in
-          (method_call #(ptrT.id Server.id) #"read"%go (![ptrT] "s")) "$a0");;;
+          exception_do (do:  (let: "$a0" := (![go.PointerType netffi.Conn] "conn") in
+          (MethodResolve (go.PointerType Server) read #() (![go.PointerType Server] "s")) "$a0");;;
           return: #())
           ) in
         do:  (Fork ("$go" #())));;;
@@ -118,96 +115,92 @@ Definition NewServer : go_string := "github.com/sanjit-bhat/pav/advrpc.NewServer
 (* go: advrpc.go:61:6 *)
 Definition NewServerⁱᵐᵖˡ : val :=
   λ: "handlers",
-    exception_do (let: "handlers" := (mem.alloc "handlers") in
-    return: (mem.alloc (let: "$handlers" := (![mapT uint64T funcT] "handlers") in
-     struct.make Server [{
-       "handlers" ::= "$handlers"
-     }]))).
+    exception_do (let: "handlers" := (go.AllocValue (go.MapType go.uint64 (go.FunctionType (go.Signature [go.SliceType go.byte; go.PointerType (go.SliceType go.byte)] #false []))) "handlers") in
+    return: (go.AllocValue Server (let: "$handlers" := (![go.MapType go.uint64 (go.FunctionType (go.Signature [go.SliceType go.byte; go.PointerType (go.SliceType go.byte)] #false []))] "handlers") in
+     CompositeLiteral Server (
+       let: "$$vs" := go.StructElementListNil #() in 
+       let: "$$vs" := go.ElementListApp "$$vs" "$handlers" in
+       "$$vs"
+     )))).
 
-Definition Client : go_type := structT [
-  "conn" :: ptrT
+Definition Clientⁱᵐᵖˡ : go.type := go.StructType [
+  (go.FieldDecl "conn"%go (go.PointerType netffi.Conn))
 ].
-#[global] Typeclasses Opaque Client.
-#[global] Opaque Client.
 
 Definition Dial : go_string := "github.com/sanjit-bhat/pav/advrpc.Dial"%go.
+
+Definition Client : go.type := go.Named "github.com/sanjit-bhat/pav/advrpc.Client"%go [].
 
 (* go: advrpc.go:72:6 *)
 Definition Dialⁱᵐᵖˡ : val :=
   λ: "addr",
-    exception_do (let: "addr" := (mem.alloc "addr") in
-    let: "c" := (mem.alloc (type.zero_val ptrT)) in
-    let: "$r0" := (let: "$a0" := (![uint64T] "addr") in
-    (func_call #netffi.Dial) "$a0") in
-    do:  ("c" <-[ptrT] "$r0");;;
-    return: (mem.alloc (let: "$conn" := (![ptrT] "c") in
-     struct.make Client [{
-       "conn" ::= "$conn"
-     }]))).
+    exception_do (let: "addr" := (go.AllocValue go.uint64 "addr") in
+    let: "c" := (GoAlloc (go.PointerType netffi.Conn) #()) in
+    let: "$r0" := (let: "$a0" := (![go.uint64] "addr") in
+    (FuncResolve netffi.Dial [] #()) "$a0") in
+    do:  ("c" <-[go.PointerType netffi.Conn] "$r0");;;
+    return: (go.AllocValue Client (let: "$conn" := (![go.PointerType netffi.Conn] "c") in
+     CompositeLiteral Client (
+       let: "$$vs" := go.StructElementListNil #() in 
+       let: "$$vs" := go.ElementListApp "$$vs" "$conn" in
+       "$$vs"
+     )))).
 
 (* Call does an rpc.
 
    go: advrpc.go:78:18 *)
 Definition Client__Callⁱᵐᵖˡ : val :=
   λ: "c" "rpcId" "args" "reply",
-    exception_do (let: "err" := (mem.alloc (type.zero_val boolT)) in
-    let: "c" := (mem.alloc "c") in
-    let: "reply" := (mem.alloc "reply") in
-    let: "args" := (mem.alloc "args") in
-    let: "rpcId" := (mem.alloc "rpcId") in
-    let: "req0" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (slice.make3 byteT #(W64 0) (#(W64 8) + (let: "$a0" := (![sliceT] "args") in
-    slice.len "$a0"))) in
-    do:  ("req0" <-[sliceT] "$r0");;;
-    let: "req1" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (let: "$a0" := (![sliceT] "req0") in
-    let: "$a1" := (![uint64T] "rpcId") in
-    (func_call #marshal.WriteInt) "$a0" "$a1") in
-    do:  ("req1" <-[sliceT] "$r0");;;
-    let: "req2" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (let: "$a0" := (![sliceT] "req1") in
-    let: "$a1" := (![sliceT] "args") in
-    (func_call #marshal.WriteBytes) "$a0" "$a1") in
-    do:  ("req2" <-[sliceT] "$r0");;;
-    (if: let: "$a0" := (![sliceT] "req2") in
-    (method_call #(ptrT.id netffi.Conn.id) #"Send"%go (![ptrT] (struct.field_ref ptrT #"conn"%go (![ptrT] "c")))) "$a0"
+    exception_do (let: "err" := (GoAlloc go.bool #()) in
+    let: "c" := (go.AllocValue (go.PointerType Client) "c") in
+    let: "reply" := (go.AllocValue (go.PointerType (go.SliceType go.byte)) "reply") in
+    let: "args" := (go.AllocValue (go.SliceType go.byte) "args") in
+    let: "rpcId" := (go.AllocValue go.uint64 "rpcId") in
+    let: "req0" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "$r0" := ((FuncResolve go.make3 [go.SliceType go.byte] #()) #(W64 0) (#(W64 8) +⟨go.int⟩ (let: "$a0" := (![go.SliceType go.byte] "args") in
+    (FuncResolve go.len [go.SliceType go.byte] #()) "$a0"))) in
+    do:  ("req0" <-[go.SliceType go.byte] "$r0");;;
+    let: "req1" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "req0") in
+    let: "$a1" := (![go.uint64] "rpcId") in
+    (FuncResolve marshal.WriteInt [] #()) "$a0" "$a1") in
+    do:  ("req1" <-[go.SliceType go.byte] "$r0");;;
+    let: "req2" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "req1") in
+    let: "$a1" := (![go.SliceType go.byte] "args") in
+    (FuncResolve marshal.WriteBytes [] #()) "$a0" "$a1") in
+    do:  ("req2" <-[go.SliceType go.byte] "$r0");;;
+    (if: let: "$a0" := (![go.SliceType go.byte] "req2") in
+    (MethodResolve (go.PointerType netffi.Conn) Send #() (![go.PointerType netffi.Conn] (StructFieldRef Client "conn"%go (![go.PointerType Client] "c")))) "$a0"
     then return: (#true)
     else do:  #());;;
-    let: "err0" := (mem.alloc (type.zero_val boolT)) in
-    let: "resp" := (mem.alloc (type.zero_val sliceT)) in
-    let: ("$ret0", "$ret1") := ((method_call #(ptrT.id netffi.Conn.id) #"Receive"%go (![ptrT] (struct.field_ref ptrT #"conn"%go (![ptrT] "c")))) #()) in
+    let: "err0" := (GoAlloc go.bool #()) in
+    let: "resp" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: ("$ret0", "$ret1") := ((MethodResolve (go.PointerType netffi.Conn) Receive #() (![go.PointerType netffi.Conn] (StructFieldRef Client "conn"%go (![go.PointerType Client] "c")))) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("resp" <-[sliceT] "$r0");;;
-    do:  ("err0" <-[boolT] "$r1");;;
-    (if: ![boolT] "err0"
+    do:  ("resp" <-[go.SliceType go.byte] "$r0");;;
+    do:  ("err0" <-[go.bool] "$r1");;;
+    (if: ![go.bool] "err0"
     then return: (#true)
     else do:  #());;;
-    let: "$r0" := (![sliceT] "resp") in
-    do:  ((![ptrT] "reply") <-[sliceT] "$r0");;;
+    let: "$r0" := (![go.SliceType go.byte] "resp") in
+    do:  ((![go.PointerType (go.SliceType go.byte)] "reply") <-[go.SliceType go.byte] "$r0");;;
     return: (#false)).
-
-Definition vars' : list (go_string * go_type) := [].
 
 Definition functions' : list (go_string * val) := [(NewServer, NewServerⁱᵐᵖˡ); (Dial, Dialⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(Server.id, []); (ptrT.id Server.id, [("Serve"%go, Server__Serveⁱᵐᵖˡ); ("handle"%go, Server__handleⁱᵐᵖˡ); ("read"%go, Server__readⁱᵐᵖˡ)]); (Client.id, []); (ptrT.id Client.id, [("Call"%go, Client__Callⁱᵐᵖˡ)])].
-
 #[global] Instance info' : PkgInfo advrpc.advrpc :=
   {|
-    pkg_vars := vars';
-    pkg_functions := functions';
-    pkg_msets := msets';
     pkg_imported_pkgs := [code.github_com.sanjit_bhat.pav.netffi.netffi; code.github_com.sanjit_bhat.pav.safemarshal.safemarshal; code.github_com.tchajed.marshal.marshal];
   |}.
 
 Definition initialize' : val :=
   λ: <>,
-    package.init #advrpc.advrpc (λ: <>,
+    package.init advrpc.advrpc (λ: <>,
       exception_do (do:  (marshal.initialize' #());;;
       do:  (safemarshal.initialize' #());;;
-      do:  (netffi.initialize' #());;;
-      do:  (package.alloc advrpc.advrpc #()))
+      do:  (netffi.initialize' #()))
       ).
 
 End code.

@@ -21,7 +21,6 @@ Module client.
 Module Client.
 Section def.
 Context `{ffi_syntax}.
-
 Record t := mk {
   uid' : w64;
   pend' : loc;
@@ -74,6 +73,16 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_Client uid' pend' last' serv':
+  PureWp True
+    (struct.make #client.Client (alist_val [
+      "uid" ::= #uid';
+      "pend" ::= #pend';
+      "last" ::= #last';
+      "serv" ::= #serv'
+    ]))%struct
+    #(Client.mk uid' pend' last' serv').
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Client_struct_fields_split dq l (v : Client.t) :
@@ -102,7 +111,6 @@ End instances.
 Module nextVer.
 Section def.
 Context `{ffi_syntax}.
-
 Record t := mk {
   ver' : w64;
   isPending' : bool;
@@ -150,8 +158,6 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-<<<<<<< HEAD
-=======
 Global Instance wp_struct_make_nextVer ver' isPending' pendingPk':
   PureWp True
     (struct.make #client.nextVer (alist_val [
@@ -161,7 +167,6 @@ Global Instance wp_struct_make_nextVer ver' isPending' pendingPk':
     ]))%struct
     #(nextVer.mk ver' isPending' pendingPk').
 Proof. solve_struct_make_pure_wp. Qed.
->>>>>>> master
 
 
 Global Instance nextVer_struct_fields_split dq l (v : nextVer.t) :
@@ -188,7 +193,6 @@ End instances.
 Module epoch.
 Section def.
 Context `{ffi_syntax}.
-
 Record t := mk {
   epoch' : w64;
   dig' : slice.t;
@@ -241,6 +245,16 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_epoch epoch' dig' link' sig':
+  PureWp True
+    (struct.make #client.epoch (alist_val [
+      "epoch" ::= #epoch';
+      "dig" ::= #dig';
+      "link" ::= #link';
+      "sig" ::= #sig'
+    ]))%struct
+    #(epoch.mk epoch' dig' link' sig').
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance epoch_struct_fields_split dq l (v : epoch.t) :
@@ -269,7 +283,6 @@ End instances.
 Module serv.
 Section def.
 Context `{ffi_syntax}.
-
 Record t := mk {
   cli' : loc;
   sigPk' : cryptoffi.SigPublicKey.t;
@@ -322,6 +335,16 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_serv cli' sigPk' vrfPk' vrfSig':
+  PureWp True
+    (struct.make #client.serv (alist_val [
+      "cli" ::= #cli';
+      "sigPk" ::= #sigPk';
+      "vrfPk" ::= #vrfPk';
+      "vrfSig" ::= #vrfSig'
+    ]))%struct
+    #(serv.mk cli' sigPk' vrfPk' vrfSig').
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance serv_struct_fields_split dq l (v : serv.t) :
@@ -350,7 +373,6 @@ End instances.
 Module Evid.
 Section def.
 Context `{ffi_syntax}.
-
 Record t := mk {
   vrf' : loc;
   link' : loc;
@@ -393,6 +415,14 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_Evid vrf' link':
+  PureWp True
+    (struct.make #client.Evid (alist_val [
+      "vrf" ::= #vrf';
+      "link" ::= #link'
+    ]))%struct
+    #(Evid.mk vrf' link').
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance Evid_struct_fields_split dq l (v : Evid.t) :
@@ -417,7 +447,6 @@ End instances.
 Module evidVrf.
 Section def.
 Context `{ffi_syntax}.
-
 Record t := mk {
   vrfPk0' : slice.t;
   sig0' : slice.t;
@@ -470,6 +499,16 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_evidVrf vrfPk0' sig0' vrfPk1' sig1':
+  PureWp True
+    (struct.make #client.evidVrf (alist_val [
+      "vrfPk0" ::= #vrfPk0';
+      "sig0" ::= #sig0';
+      "vrfPk1" ::= #vrfPk1';
+      "sig1" ::= #sig1'
+    ]))%struct
+    #(evidVrf.mk vrfPk0' sig0' vrfPk1' sig1').
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance evidVrf_struct_fields_split dq l (v : evidVrf.t) :
@@ -498,7 +537,6 @@ End instances.
 Module evidLink.
 Section def.
 Context `{ffi_syntax}.
-
 Record t := mk {
   epoch' : w64;
   link0' : slice.t;
@@ -556,6 +594,17 @@ Proof. solve_into_val_struct_field. Qed.
 
 
 Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_evidLink epoch' link0' sig0' link1' sig1':
+  PureWp True
+    (struct.make #client.evidLink (alist_val [
+      "epoch" ::= #epoch';
+      "link0" ::= #link0';
+      "sig0" ::= #sig0';
+      "link1" ::= #link1';
+      "sig1" ::= #sig1'
+    ]))%struct
+    #(evidLink.mk epoch' link0' sig0' link1' sig1').
+Proof. solve_struct_make_pure_wp. Qed.
 
 
 Global Instance evidLink_struct_fields_split dq l (v : evidLink.t) :
@@ -642,8 +691,12 @@ Global Instance wp_func_call_checkNonMemb :
   WpFuncCall client.checkNonMemb _ (is_pkg_defined client) :=
   ltac:(solve_wp_func_call).
 
-Global Instance wp_func_call_checkAudit :
-  WpFuncCall client.checkAudit _ (is_pkg_defined client) :=
+Global Instance wp_func_call_checkAuditLink :
+  WpFuncCall client.checkAuditLink _ (is_pkg_defined client) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_checkAuditVrf :
+  WpFuncCall client.checkAuditVrf _ (is_pkg_defined client) :=
   ltac:(solve_wp_func_call).
 
 Global Instance wp_method_call_Client'ptr_Audit :

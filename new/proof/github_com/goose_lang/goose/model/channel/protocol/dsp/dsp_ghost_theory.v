@@ -336,23 +336,24 @@ Section proto.
   Implicit Types p pl pr : iProto Σ V.
   Implicit Types m : iMsg Σ V.
 
-  Lemma own_prot_excl `{!protoG Σ V} γ (p1 p2 : iProto Σ V) :
-    own γ (◯E (Next p1)) -∗
-    own γ (◯E (Next p2)) -∗
-    False.
-  Proof.
-    iIntros "Hi Hj". iDestruct (own_valid_2 with "Hi Hj") as "H".
-    by rewrite uPred.cmra_valid_elim excl_auth_frag_op_validN.
-  Qed.
-
-  Lemma iProto_own_excl `{!protoG Σ V} γ (p1 p2 : iProto Σ V) :
-    iProto_own γ p1 -∗ iProto_own γ p2 -∗ False.
-  Proof.
-    rewrite /iProto_own.
-    iDestruct 1 as (p1') "[_ Hp1]".
-    iDestruct 1 as (p2') "[_ Hp2]".
-    iDestruct (own_prot_excl with "Hp1 Hp2") as %[].
-  Qed.
+  Lemma own_prot_excl `{!protoG Σ V} γ (p1 p2 : iProto Σ V) :                                             
+    own γ (◯E (Next p1)) -∗                                                                               
+    own γ (◯E (Next p2)) -∗                                                                               
+    False.                                                                                                
+  Proof.                                                                                                  
+    iIntros "Hi Hj". iDestruct (own_valid_2 with "Hi Hj") as "H".                                         
+    iDestruct (internal_cmra_valid_elim with "H") as %Hvalid0.
+    by apply excl_auth_frag_op_validN in Hvalid0.
+  Qed.                                                                                                    
+                                                                                                          
+  Lemma iProto_own_excl `{!protoG Σ V} γ (p1 p2 : iProto Σ V) :                                           
+    iProto_own γ p1 -∗ iProto_own γ p2 -∗ False.                                                          
+  Proof.                                                                                                  
+    rewrite /iProto_own.                                                                                  
+    iDestruct 1 as (p1') "[_ Hp1]".                                                                       
+    iDestruct 1 as (p2') "[_ Hp2]".                                                                       
+    iDestruct (own_prot_excl with "Hp1 Hp2") as %[].                                                      
+  Qed.           
 
   (** ** Equality *)
   Lemma iProto_case p : p ≡ END ∨ ∃ a m, p ≡ <a> m.
@@ -361,15 +362,15 @@ Section proto.
     destruct (proto_case p) as [|(a&m&?)]; [by left|right].
     by exists a, (IMsg m).
   Qed.
-  Lemma iProto_message_equivI `{!BiInternalEq SPROP} a1 a2 m1 m2 :
+  Lemma iProto_message_equivI `{!Sbi SPROP} a1 a2 m1 m2 :
     (<a1> m1) ≡ (<a2> m2) ⊣⊢@{SPROP} ⌜ a1 = a2 ⌝ ∧
       (∀ v lp, iMsg_car m1 v lp ≡ iMsg_car m2 v lp).
   Proof. rewrite iProto_message_eq. apply proto_message_equivI. Qed.
 
-  Lemma iProto_message_end_equivI `{!BiInternalEq SPROP} a m :
+  Lemma iProto_message_end_equivI `{!Sbi SPROP} a m :
     (<a> m) ≡ END ⊢@{SPROP} False.
   Proof. rewrite iProto_message_eq iProto_end_eq. apply proto_message_end_equivI. Qed.
-  Lemma iProto_end_message_equivI `{!BiInternalEq SPROP} a m :
+  Lemma iProto_end_message_equivI `{!Sbi SPROP} a m :
     END ≡ (<a> m) ⊢@{SPROP} False.
   Proof. by rewrite internal_eq_sym iProto_message_end_equivI. Qed.
 
@@ -510,7 +511,7 @@ Section proto.
 
   Global Instance iProto_dual_involutive : Involutive (≡) ( @iProto_dual Σ V).
   Proof.
-    intros p. apply (uPred.internal_eq_soundness (M:=iResUR Σ)).
+    intros p. apply (internal_eq_soundness (PROP:=iProp Σ)).
     iLöb as "IH" forall (p). destruct (iProto_case p) as [->|(a&m&->)].
     { by rewrite !iProto_dual_end. }
     rewrite !iProto_dual_message involutive.
@@ -564,7 +565,7 @@ Section proto.
 
   Global Instance iProto_app_end_r : RightId (≡) END ( @iProto_app Σ V).
   Proof.
-    intros p. apply (uPred.internal_eq_soundness (M:=iResUR Σ)).
+    intros p. apply (internal_eq_soundness (PROP:=iProp Σ)).
     iLöb as "IH" forall (p). destruct (iProto_case p) as [->|(a&m&->)].
     { by rewrite left_id. }
     rewrite iProto_app_message.
@@ -578,7 +579,7 @@ Section proto.
   Qed.
   Global Instance iProto_app_assoc : Assoc (≡) ( @iProto_app Σ V).
   Proof.
-    intros p1 p2 p3. apply (uPred.internal_eq_soundness (M:=iResUR Σ)).
+    intros p1 p2 p3. apply (internal_eq_soundness (PROP:=iProp Σ)).
     iLöb as "IH" forall (p1). destruct (iProto_case p1) as [->|(a&m&->)].
     { by rewrite !left_id. }
     rewrite !iProto_app_message.
@@ -595,7 +596,7 @@ Section proto.
   Lemma iProto_dual_app p1 p2 :
     iProto_dual (p1 <++> p2) ≡ iProto_dual p1 <++> iProto_dual p2.
   Proof.
-    apply (uPred.internal_eq_soundness (M:=iResUR Σ)).
+    apply (internal_eq_soundness (PROP:=iProp Σ)).
     iLöb as "IH" forall (p1 p2). destruct (iProto_case p1) as [->|(a&m&->)].
     { by rewrite iProto_dual_end !left_id. }
     rewrite iProto_dual_message !iProto_app_message iProto_dual_message /=.

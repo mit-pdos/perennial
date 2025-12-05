@@ -68,13 +68,16 @@ Proof.
 
   lazymatch goal with
   | |- envs_entails _ (nclwp ?s ?E ?e ?Q) =>
-      reshape_expr e ltac:(fun K e' => iApply nclwp_bind K)
+      reshape_expr e ltac:(fun K e' => iApply (nclwp_bind K))
   | _ => fail "not a NCLWP"
   end
   .
+(*
   iApply nclwp_call_cc.
 
   wp_rec.
   iApply (nclwp_bind _ ).
+*)
+Abort.
 
 End proof.

@@ -2,7 +2,6 @@
 Require Export New.code.bytes.
 Require Export New.code.github_com.goose_lang.primitive.
 Require Export New.code.github_com.goose_lang.std.
-Require Export New.code.github_com.sanjit_bhat.pav.advrpc.
 Require Export New.code.github_com.sanjit_bhat.pav.auditor.
 Require Export New.code.github_com.sanjit_bhat.pav.client.
 Require Export New.code.github_com.sanjit_bhat.pav.cryptoffi.
@@ -16,8 +15,6 @@ Definition alicebob : go_string := "github.com/sanjit-bhat/pav/alicebob".
 
 Module alicebob.
 
-Module histEntry. Definition id : go_string := "github.com/sanjit-bhat/pav/alicebob.histEntry"%go. End histEntry.
-
 Section code.
 Context `{ffi_syntax}.
 
@@ -30,260 +27,223 @@ Definition testAliceBob : go_string := "github.com/sanjit-bhat/pav/alicebob.test
 
 Definition equal : go_string := "github.com/sanjit-bhat/pav/alicebob.equal"%go.
 
+Definition histEntry : go.type := go.Named "github.com/sanjit-bhat/pav/alicebob.histEntry"%go [].
+
 Definition runBob : go_string := "github.com/sanjit-bhat/pav/alicebob.runBob"%go.
 
 Definition runAlice : go_string := "github.com/sanjit-bhat/pav/alicebob.runAlice"%go.
 
-(* go: alicebob.go:23:6 *)
+(* go: alicebob.go:26:6 *)
 Definition testAliceBobⁱᵐᵖˡ : val :=
   λ: "servAddr" "adtrAddr",
-    exception_do (let: "err" := (mem.alloc (type.zero_val ktcore.Blame)) in
-    let: "evid" := (mem.alloc (type.zero_val ptrT)) in
-    let: "adtrAddr" := (mem.alloc "adtrAddr") in
-    let: "servAddr" := (mem.alloc "servAddr") in
-    let: "servSigPk" := (mem.alloc (type.zero_val cryptoffi.SigPublicKey)) in
-    let: "serv" := (mem.alloc (type.zero_val ptrT)) in
-    let: ("$ret0", "$ret1") := ((func_call #server.New) #()) in
+    exception_do (let: "err" := (GoAlloc ktcore.Blame #()) in
+    let: "evid" := (GoAlloc (go.PointerType client.Evid) #()) in
+    let: "adtrAddr" := (go.AllocValue go.uint64 "adtrAddr") in
+    let: "servAddr" := (go.AllocValue go.uint64 "servAddr") in
+    let: "servSigPk" := (GoAlloc cryptoffi.SigPublicKey #()) in
+    let: "serv" := (GoAlloc (go.PointerType server.Server) #()) in
+    let: ("$ret0", "$ret1") := ((FuncResolve server.New [] #()) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("serv" <-[ptrT] "$r0");;;
+    do:  ("serv" <-[go.PointerType server.Server] "$r0");;;
     do:  ("servSigPk" <-[cryptoffi.SigPublicKey] "$r1");;;
-    let: "servRpc" := (mem.alloc (type.zero_val ptrT)) in
-    let: "$r0" := (let: "$a0" := (![ptrT] "serv") in
-    (func_call #server.NewRpcServer) "$a0") in
-<<<<<<< HEAD
-    do:  ("servRpc" <-[ptrT] "$r0");;;
-    do:  (let: "$a0" := (![uint64T] "servAddr") in
-    (method_call #(ptrT.id advrpc.Server.id) #"Serve"%go (![ptrT] "servRpc")) "$a0");;;
-    do:  (let: "$a0" := #(W64 1000000) in
-    (func_call #primitive.Sleep) "$a0");;;
-    let: "adtrPk" := (mem.alloc (type.zero_val cryptoffi.SigPublicKey)) in
-    let: "adtr" := (mem.alloc (type.zero_val ptrT)) in
-    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![uint64T] "servAddr") in
-    let: "$a1" := (![cryptoffi.SigPublicKey] "servSigPk") in
-=======
-    do:  ("servRpc" <-[#ptrT] "$r0");;;
-    do:  (let: "$a0" := (![#uint64T] "servAddr") in
-    (method_call #(ptrT.id advrpc.Server.id) #"Serve"%go (![#ptrT] "servRpc")) "$a0");;;
+    let: "servRpc" := (GoAlloc (go.PointerType advrpc.Server) #()) in
+    let: "$r0" := (let: "$a0" := (![go.PointerType server.Server] "serv") in
+    (FuncResolve server.NewRpcServer [] #()) "$a0") in
+    do:  ("servRpc" <-[go.PointerType advrpc.Server] "$r0");;;
+    do:  (let: "$a0" := (![go.uint64] "servAddr") in
+    (MethodResolve (go.PointerType advrpc.Server) Serve #() (![go.PointerType advrpc.Server] "servRpc")) "$a0");;;
     do:  (let: "$a0" := time.Millisecond in
-    (func_call #time.Sleep) "$a0");;;
-    let: "adtrPk" := (mem.alloc (type.zero_val #cryptoffi.SigPublicKey)) in
-    let: "adtr" := (mem.alloc (type.zero_val #ptrT)) in
-    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![#uint64T] "servAddr") in
-    let: "$a1" := (![#cryptoffi.SigPublicKey] "servSigPk") in
->>>>>>> master
-    (func_call #auditor.New) "$a0" "$a1") in
+    (FuncResolve time.Sleep [] #()) "$a0");;;
+    let: "adtrPk" := (GoAlloc cryptoffi.SigPublicKey #()) in
+    let: "adtr" := (GoAlloc (go.PointerType auditor.Auditor) #()) in
+    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![go.uint64] "servAddr") in
+    let: "$a1" := (![cryptoffi.SigPublicKey] "servSigPk") in
+    (FuncResolve auditor.New [] #()) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
-    do:  ("adtr" <-[ptrT] "$r0");;;
+    do:  ("adtr" <-[go.PointerType auditor.Auditor] "$r0");;;
     do:  ("adtrPk" <-[cryptoffi.SigPublicKey] "$r1");;;
     do:  ("err" <-[ktcore.Blame] "$r2");;;
-    (if: (![ktcore.Blame] "err") ≠ ktcore.BlameNone
-    then return: (![ptrT] "evid", ![ktcore.Blame] "err")
+    (if: (![ktcore.Blame] "err") ≠⟨go.uint64⟩ ktcore.BlameNone
+    then return: (![go.PointerType client.Evid] "evid", ![ktcore.Blame] "err")
     else do:  #());;;
-    let: "adtrRpc" := (mem.alloc (type.zero_val ptrT)) in
-    let: "$r0" := (let: "$a0" := (![ptrT] "adtr") in
-    (func_call #auditor.NewRpcAuditor) "$a0") in
-<<<<<<< HEAD
-    do:  ("adtrRpc" <-[ptrT] "$r0");;;
-    do:  (let: "$a0" := (![uint64T] "adtrAddr") in
-    (method_call #(ptrT.id advrpc.Server.id) #"Serve"%go (![ptrT] "adtrRpc")) "$a0");;;
-    do:  (let: "$a0" := #(W64 1000000) in
-    (func_call #primitive.Sleep) "$a0");;;
-    let: "alice" := (mem.alloc (type.zero_val ptrT)) in
-=======
-    do:  ("adtrRpc" <-[#ptrT] "$r0");;;
-    do:  (let: "$a0" := (![#uint64T] "adtrAddr") in
-    (method_call #(ptrT.id advrpc.Server.id) #"Serve"%go (![#ptrT] "adtrRpc")) "$a0");;;
+    let: "adtrRpc" := (GoAlloc (go.PointerType advrpc.Server) #()) in
+    let: "$r0" := (let: "$a0" := (![go.PointerType auditor.Auditor] "adtr") in
+    (FuncResolve auditor.NewRpcAuditor [] #()) "$a0") in
+    do:  ("adtrRpc" <-[go.PointerType advrpc.Server] "$r0");;;
+    do:  (let: "$a0" := (![go.uint64] "adtrAddr") in
+    (MethodResolve (go.PointerType advrpc.Server) Serve #() (![go.PointerType advrpc.Server] "adtrRpc")) "$a0");;;
     do:  (let: "$a0" := time.Millisecond in
-    (func_call #time.Sleep) "$a0");;;
-    let: "alice" := (mem.alloc (type.zero_val #ptrT)) in
->>>>>>> master
+    (FuncResolve time.Sleep [] #()) "$a0");;;
+    let: "alice" := (GoAlloc (go.PointerType client.Client) #()) in
     let: ("$ret0", "$ret1") := (let: "$a0" := aliceUid in
-    let: "$a1" := (![uint64T] "servAddr") in
+    let: "$a1" := (![go.uint64] "servAddr") in
     let: "$a2" := (![cryptoffi.SigPublicKey] "servSigPk") in
-    (func_call #client.New) "$a0" "$a1" "$a2") in
+    (FuncResolve client.New [] #()) "$a0" "$a1" "$a2") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("alice" <-[ptrT] "$r0");;;
+    do:  ("alice" <-[go.PointerType client.Client] "$r0");;;
     do:  ("err" <-[ktcore.Blame] "$r1");;;
-    (if: (![ktcore.Blame] "err") ≠ ktcore.BlameNone
-    then return: (![ptrT] "evid", ![ktcore.Blame] "err")
+    (if: (![ktcore.Blame] "err") ≠⟨go.uint64⟩ ktcore.BlameNone
+    then return: (![go.PointerType client.Evid] "evid", ![ktcore.Blame] "err")
     else do:  #());;;
-    let: "bob" := (mem.alloc (type.zero_val ptrT)) in
+    let: "bob" := (GoAlloc (go.PointerType client.Client) #()) in
     let: ("$ret0", "$ret1") := (let: "$a0" := bobUid in
-    let: "$a1" := (![uint64T] "servAddr") in
+    let: "$a1" := (![go.uint64] "servAddr") in
     let: "$a2" := (![cryptoffi.SigPublicKey] "servSigPk") in
-    (func_call #client.New) "$a0" "$a1" "$a2") in
+    (FuncResolve client.New [] #()) "$a0" "$a1" "$a2") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("bob" <-[ptrT] "$r0");;;
+    do:  ("bob" <-[go.PointerType client.Client] "$r0");;;
     do:  ("err" <-[ktcore.Blame] "$r1");;;
-    (if: (![ktcore.Blame] "err") ≠ ktcore.BlameNone
-    then return: (![ptrT] "evid", ![ktcore.Blame] "err")
+    (if: (![ktcore.Blame] "err") ≠⟨go.uint64⟩ ktcore.BlameNone
+    then return: (![go.PointerType client.Evid] "evid", ![ktcore.Blame] "err")
     else do:  #());;;
-<<<<<<< HEAD
-    let: "aliceHist" := (mem.alloc (type.zero_val sliceT)) in
-    let: "aliceErr" := (mem.alloc (type.zero_val ktcore.Blame)) in
-    let: "bobEp" := (mem.alloc (type.zero_val uint64T)) in
-    let: "bobAlicePk" := (mem.alloc (type.zero_val ptrT)) in
-    let: "bobErr" := (mem.alloc (type.zero_val ktcore.Blame)) in
-    let: "wg" := (mem.alloc (type.zero_val ptrT)) in
-    let: "$r0" := (mem.alloc (type.zero_val sync.WaitGroup)) in
-    do:  ("wg" <-[ptrT] "$r0");;;
-=======
-    (let: ("$ret0", "$ret1") := (let: "$a0" := (![#uint64T] "adtrAddr") in
-    let: "$a1" := (![#cryptoffi.SigPublicKey] "adtrPk") in
-    (method_call #(ptrT.id client.Client.id) #"Audit"%go (![#ptrT] "alice")) "$a0" "$a1") in
+    (let: ("$ret0", "$ret1") := (let: "$a0" := (![go.uint64] "adtrAddr") in
+    let: "$a1" := (![cryptoffi.SigPublicKey] "adtrPk") in
+    (MethodResolve (go.PointerType client.Client) Audit #() (![go.PointerType client.Client] "alice")) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("evid" <-[#ptrT] "$r0");;;
-    do:  ("err" <-[#ktcore.Blame] "$r1");;;
-    (if: (![#ktcore.Blame] "err") ≠ ktcore.BlameNone
-    then return: (![#ptrT] "evid", ![#ktcore.Blame] "err")
+    do:  ("evid" <-[go.PointerType client.Evid] "$r0");;;
+    do:  ("err" <-[ktcore.Blame] "$r1");;;
+    (if: (![ktcore.Blame] "err") ≠⟨go.uint64⟩ ktcore.BlameNone
+    then return: (![go.PointerType client.Evid] "evid", ![ktcore.Blame] "err")
     else do:  #()));;;
-    (let: ("$ret0", "$ret1") := (let: "$a0" := (![#uint64T] "adtrAddr") in
-    let: "$a1" := (![#cryptoffi.SigPublicKey] "adtrPk") in
-    (method_call #(ptrT.id client.Client.id) #"Audit"%go (![#ptrT] "bob")) "$a0" "$a1") in
+    (let: ("$ret0", "$ret1") := (let: "$a0" := (![go.uint64] "adtrAddr") in
+    let: "$a1" := (![cryptoffi.SigPublicKey] "adtrPk") in
+    (MethodResolve (go.PointerType client.Client) Audit #() (![go.PointerType client.Client] "bob")) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("evid" <-[#ptrT] "$r0");;;
-    do:  ("err" <-[#ktcore.Blame] "$r1");;;
-    (if: (![#ktcore.Blame] "err") ≠ ktcore.BlameNone
-    then return: (![#ptrT] "evid", ![#ktcore.Blame] "err")
+    do:  ("evid" <-[go.PointerType client.Evid] "$r0");;;
+    do:  ("err" <-[ktcore.Blame] "$r1");;;
+    (if: (![ktcore.Blame] "err") ≠⟨go.uint64⟩ ktcore.BlameNone
+    then return: (![go.PointerType client.Evid] "evid", ![ktcore.Blame] "err")
     else do:  #()));;;
-    let: "aliceHist" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "aliceErr" := (mem.alloc (type.zero_val #ktcore.Blame)) in
-    let: "bobEp" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "bobAlicePk" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "bobErr" := (mem.alloc (type.zero_val #ktcore.Blame)) in
-    let: "wg" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (type.zero_val #sync.WaitGroup)) in
-    do:  ("wg" <-[#ptrT] "$r0");;;
->>>>>>> master
+    let: "aliceHist" := (GoAlloc (go.SliceType (go.PointerType histEntry)) #()) in
+    let: "aliceErr" := (GoAlloc ktcore.Blame #()) in
+    let: "bobEp" := (GoAlloc go.uint64 #()) in
+    let: "bobAlicePk" := (GoAlloc (go.PointerType histEntry) #()) in
+    let: "bobErr" := (GoAlloc ktcore.Blame #()) in
+    let: "wg" := (GoAlloc (go.PointerType sync.WaitGroup) #()) in
+    let: "$r0" := (GoAlloc sync.WaitGroup #()) in
+    do:  ("wg" <-[go.PointerType sync.WaitGroup] "$r0");;;
     do:  (let: "$a0" := #(W64 1) in
-    (method_call #(ptrT.id sync.WaitGroup.id) #"Add"%go (![ptrT] "wg")) "$a0");;;
+    (MethodResolve (go.PointerType sync.WaitGroup) Add #() (![go.PointerType sync.WaitGroup] "wg")) "$a0");;;
     do:  (let: "$a0" := #(W64 1) in
-    (method_call #(ptrT.id sync.WaitGroup.id) #"Add"%go (![ptrT] "wg")) "$a0");;;
+    (MethodResolve (go.PointerType sync.WaitGroup) Add #() (![go.PointerType sync.WaitGroup] "wg")) "$a0");;;
     let: "$go" := (λ: <>,
-      exception_do (let: "r1" := (mem.alloc (type.zero_val ktcore.Blame)) in
-      let: "r0" := (mem.alloc (type.zero_val sliceT)) in
-      let: ("$ret0", "$ret1") := (let: "$a0" := (![ptrT] "alice") in
-      (func_call #runAlice) "$a0") in
+      exception_do (let: "r1" := (GoAlloc ktcore.Blame #()) in
+      let: "r0" := (GoAlloc (go.SliceType (go.PointerType histEntry)) #()) in
+      let: ("$ret0", "$ret1") := (let: "$a0" := (![go.PointerType client.Client] "alice") in
+      (FuncResolve runAlice [] #()) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
-      do:  ("r0" <-[sliceT] "$r0");;;
+      do:  ("r0" <-[go.SliceType (go.PointerType histEntry)] "$r0");;;
       do:  ("r1" <-[ktcore.Blame] "$r1");;;
-      let: "$r0" := (![sliceT] "r0") in
-      do:  ("aliceHist" <-[sliceT] "$r0");;;
+      let: "$r0" := (![go.SliceType (go.PointerType histEntry)] "r0") in
+      do:  ("aliceHist" <-[go.SliceType (go.PointerType histEntry)] "$r0");;;
       let: "$r0" := (![ktcore.Blame] "r1") in
       do:  ("aliceErr" <-[ktcore.Blame] "$r0");;;
-      do:  ((method_call #(ptrT.id sync.WaitGroup.id) #"Done"%go (![ptrT] "wg")) #());;;
+      do:  ((MethodResolve (go.PointerType sync.WaitGroup) Done #() (![go.PointerType sync.WaitGroup] "wg")) #());;;
       return: #())
       ) in
     do:  (Fork ("$go" #()));;;
     let: "$go" := (λ: <>,
-      exception_do (let: "r2" := (mem.alloc (type.zero_val ktcore.Blame)) in
-      let: "r1" := (mem.alloc (type.zero_val ptrT)) in
-      let: "r0" := (mem.alloc (type.zero_val uint64T)) in
-      let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![ptrT] "bob") in
-      (func_call #runBob) "$a0") in
+      exception_do (let: "r2" := (GoAlloc ktcore.Blame #()) in
+      let: "r1" := (GoAlloc (go.PointerType histEntry) #()) in
+      let: "r0" := (GoAlloc go.uint64 #()) in
+      let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (![go.PointerType client.Client] "bob") in
+      (FuncResolve runBob [] #()) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       let: "$r2" := "$ret2" in
-      do:  ("r0" <-[uint64T] "$r0");;;
-      do:  ("r1" <-[ptrT] "$r1");;;
+      do:  ("r0" <-[go.uint64] "$r0");;;
+      do:  ("r1" <-[go.PointerType histEntry] "$r1");;;
       do:  ("r2" <-[ktcore.Blame] "$r2");;;
-      let: "$r0" := (![uint64T] "r0") in
-      do:  ("bobEp" <-[uint64T] "$r0");;;
-      let: "$r0" := (![ptrT] "r1") in
-      do:  ("bobAlicePk" <-[ptrT] "$r0");;;
+      let: "$r0" := (![go.uint64] "r0") in
+      do:  ("bobEp" <-[go.uint64] "$r0");;;
+      let: "$r0" := (![go.PointerType histEntry] "r1") in
+      do:  ("bobAlicePk" <-[go.PointerType histEntry] "$r0");;;
       let: "$r0" := (![ktcore.Blame] "r2") in
       do:  ("bobErr" <-[ktcore.Blame] "$r0");;;
-      do:  ((method_call #(ptrT.id sync.WaitGroup.id) #"Done"%go (![ptrT] "wg")) #());;;
+      do:  ((MethodResolve (go.PointerType sync.WaitGroup) Done #() (![go.PointerType sync.WaitGroup] "wg")) #());;;
       return: #())
       ) in
     do:  (Fork ("$go" #()));;;
-    do:  ((method_call #(ptrT.id sync.WaitGroup.id) #"Wait"%go (![ptrT] "wg")) #());;;
-    (if: (![ktcore.Blame] "aliceErr") ≠ ktcore.BlameNone
+    do:  ((MethodResolve (go.PointerType sync.WaitGroup) Wait #() (![go.PointerType sync.WaitGroup] "wg")) #());;;
+    (if: (![ktcore.Blame] "aliceErr") ≠⟨go.uint64⟩ ktcore.BlameNone
     then
       let: "$r0" := (![ktcore.Blame] "aliceErr") in
       do:  ("err" <-[ktcore.Blame] "$r0");;;
-      return: (![ptrT] "evid", ![ktcore.Blame] "err")
+      return: (![go.PointerType client.Evid] "evid", ![ktcore.Blame] "err")
     else do:  #());;;
-    (if: (![ktcore.Blame] "bobErr") ≠ ktcore.BlameNone
+    (if: (![ktcore.Blame] "bobErr") ≠⟨go.uint64⟩ ktcore.BlameNone
     then
       let: "$r0" := (![ktcore.Blame] "bobErr") in
       do:  ("err" <-[ktcore.Blame] "$r0");;;
-      return: (![ptrT] "evid", ![ktcore.Blame] "err")
+      return: (![go.PointerType client.Evid] "evid", ![ktcore.Blame] "err")
     else do:  #());;;
-    let: "adtrCli" := (mem.alloc (type.zero_val ptrT)) in
-    let: "$r0" := (let: "$a0" := (![uint64T] "adtrAddr") in
-    (func_call #advrpc.Dial) "$a0") in
-    do:  ("adtrCli" <-[ptrT] "$r0");;;
-    (let: "$r0" := (let: "$a0" := (![ptrT] "adtrCli") in
-    (func_call #auditor.CallUpdate) "$a0") in
+    (let: "$r0" := ((MethodResolve (go.PointerType auditor.Auditor) Update #() (![go.PointerType auditor.Auditor] "adtr")) #()) in
     do:  ("err" <-[ktcore.Blame] "$r0");;;
-    (if: (![ktcore.Blame] "err") ≠ ktcore.BlameNone
-    then return: (![ptrT] "evid", ![ktcore.Blame] "err")
+    (if: (![ktcore.Blame] "err") ≠⟨go.uint64⟩ ktcore.BlameNone
+    then return: (![go.PointerType client.Evid] "evid", ![ktcore.Blame] "err")
     else do:  #()));;;
-    (let: ("$ret0", "$ret1") := (let: "$a0" := (![uint64T] "adtrAddr") in
+    (let: ("$ret0", "$ret1") := (let: "$a0" := (![go.uint64] "adtrAddr") in
     let: "$a1" := (![cryptoffi.SigPublicKey] "adtrPk") in
-    (method_call #(ptrT.id client.Client.id) #"Audit"%go (![ptrT] "alice")) "$a0" "$a1") in
+    (MethodResolve (go.PointerType client.Client) Audit #() (![go.PointerType client.Client] "alice")) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("evid" <-[ptrT] "$r0");;;
+    do:  ("evid" <-[go.PointerType client.Evid] "$r0");;;
     do:  ("err" <-[ktcore.Blame] "$r1");;;
-    (if: (![ktcore.Blame] "err") ≠ ktcore.BlameNone
-    then return: (![ptrT] "evid", ![ktcore.Blame] "err")
+    (if: (![ktcore.Blame] "err") ≠⟨go.uint64⟩ ktcore.BlameNone
+    then return: (![go.PointerType client.Evid] "evid", ![ktcore.Blame] "err")
     else do:  #()));;;
-    (let: ("$ret0", "$ret1") := (let: "$a0" := (![uint64T] "adtrAddr") in
+    (let: ("$ret0", "$ret1") := (let: "$a0" := (![go.uint64] "adtrAddr") in
     let: "$a1" := (![cryptoffi.SigPublicKey] "adtrPk") in
-    (method_call #(ptrT.id client.Client.id) #"Audit"%go (![ptrT] "bob")) "$a0" "$a1") in
+    (MethodResolve (go.PointerType client.Client) Audit #() (![go.PointerType client.Client] "bob")) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("evid" <-[ptrT] "$r0");;;
+    do:  ("evid" <-[go.PointerType client.Evid] "$r0");;;
     do:  ("err" <-[ktcore.Blame] "$r1");;;
-    (if: (![ktcore.Blame] "err") ≠ ktcore.BlameNone
-    then return: (![ptrT] "evid", ![ktcore.Blame] "err")
+    (if: (![ktcore.Blame] "err") ≠⟨go.uint64⟩ ktcore.BlameNone
+    then return: (![go.PointerType client.Evid] "evid", ![ktcore.Blame] "err")
     else do:  #()));;;
-    do:  (let: "$a0" := ((![uint64T] "bobEp") < (s_to_w64 (let: "$a0" := (![sliceT] "aliceHist") in
-    slice.len "$a0"))) in
-    (func_call #primitive.Assume) "$a0");;;
-    let: "alicePk" := (mem.alloc (type.zero_val ptrT)) in
-    let: "$r0" := (![ptrT] (slice.elem_ref ptrT (![sliceT] "aliceHist") (![uint64T] "bobEp"))) in
-    do:  ("alicePk" <-[ptrT] "$r0");;;
-    (if: (~ (let: "$a0" := (![ptrT] "alicePk") in
-    let: "$a1" := (![ptrT] "bobAlicePk") in
-    (func_call #equal) "$a0" "$a1"))
+    do:  (let: "$a0" := ((![go.uint64] "bobEp") <⟨go.uint64⟩ (s_to_w64 (let: "$a0" := (![go.SliceType (go.PointerType histEntry)] "aliceHist") in
+    (FuncResolve go.len [go.SliceType (go.PointerType histEntry)] #()) "$a0"))) in
+    (FuncResolve primitive.Assume [] #()) "$a0");;;
+    let: "alicePk" := (GoAlloc (go.PointerType histEntry) #()) in
+    let: "$r0" := (![go.PointerType histEntry] (slice.elem_ref (go.PointerType histEntry) (![go.SliceType (go.PointerType histEntry)] "aliceHist") (![go.uint64] "bobEp"))) in
+    do:  ("alicePk" <-[go.PointerType histEntry] "$r0");;;
+    (if: (~ (let: "$a0" := (![go.PointerType histEntry] "alicePk") in
+    let: "$a1" := (![go.PointerType histEntry] "bobAlicePk") in
+    (FuncResolve equal [] #()) "$a0" "$a1"))
     then
       let: "$r0" := ktcore.BlameAdtrSig in
       do:  ("err" <-[ktcore.Blame] "$r0");;;
-      return: (![ptrT] "evid", ![ktcore.Blame] "err")
+      return: (![go.PointerType client.Evid] "evid", ![ktcore.Blame] "err")
     else do:  #());;;
-    return: (![ptrT] "evid", ![ktcore.Blame] "err")).
+    return: (![go.PointerType client.Evid] "evid", ![ktcore.Blame] "err")).
 
-Definition histEntry : go_type := structT [
-  "isReg" :: boolT;
-  "pk" :: sliceT
+Definition histEntryⁱᵐᵖˡ : go.type := go.StructType [
+  (go.FieldDecl "isReg"%go go.bool);
+  (go.FieldDecl "pk"%go (go.SliceType go.byte))
 ].
-#[global] Typeclasses Opaque histEntry.
-#[global] Opaque histEntry.
 
-(* go: alicebob.go:122:6 *)
+(* go: alicebob.go:124:6 *)
 Definition equalⁱᵐᵖˡ : val :=
   λ: "o0" "o1",
-    exception_do (let: "o1" := (mem.alloc "o1") in
-    let: "o0" := (mem.alloc "o0") in
-    (if: (![boolT] (struct.field_ref ptrT #"isReg"%go (![ptrT] "o0"))) ≠ (![boolT] (struct.field_ref ptrT #"isReg"%go (![ptrT] "o1")))
+    exception_do (let: "o1" := (go.AllocValue (go.PointerType histEntry) "o1") in
+    let: "o0" := (go.AllocValue (go.PointerType histEntry) "o0") in
+    (if: (![go.bool] (StructFieldRef histEntry "isReg"%go (![go.PointerType histEntry] "o0"))) ≠⟨go.bool⟩ (![go.bool] (StructFieldRef histEntry "isReg"%go (![go.PointerType histEntry] "o1")))
     then return: (#false)
     else do:  #());;;
-    (if: ![boolT] (struct.field_ref ptrT #"isReg"%go (![ptrT] "o0"))
+    (if: ![go.bool] (StructFieldRef histEntry "isReg"%go (![go.PointerType histEntry] "o0"))
     then
-      return: (let: "$a0" := (![sliceT] (struct.field_ref ptrT #"pk"%go (![ptrT] "o0"))) in
-       let: "$a1" := (![sliceT] (struct.field_ref ptrT #"pk"%go (![ptrT] "o1"))) in
-       (func_call #bytes.Equal) "$a0" "$a1")
+      return: (let: "$a0" := (![go.SliceType go.byte] (StructFieldRef histEntry "pk"%go (![go.PointerType histEntry] "o0"))) in
+       let: "$a1" := (![go.SliceType go.byte] (StructFieldRef histEntry "pk"%go (![go.PointerType histEntry] "o1"))) in
+       (FuncResolve bytes.Equal [] #()) "$a0" "$a1")
     else do:  #());;;
     return: (#true)).
 
@@ -291,171 +251,158 @@ Definition loopPending : go_string := "github.com/sanjit-bhat/pav/alicebob.loopP
 
 (* runAlice does a bunch of puts.
 
-   go: alicebob.go:133:6 *)
+   go: alicebob.go:135:6 *)
 Definition runAliceⁱᵐᵖˡ : val :=
   λ: "cli",
-    exception_do (let: "err" := (mem.alloc (type.zero_val ktcore.Blame)) in
-    let: "hist" := (mem.alloc (type.zero_val sliceT)) in
-    let: "cli" := (mem.alloc "cli") in
-    let: "ep" := (mem.alloc (type.zero_val uint64T)) in
-    let: "isInsert" := (mem.alloc (type.zero_val boolT)) in
-    let: (("$ret0", "$ret1"), "$ret2") := ((method_call #(ptrT.id client.Client.id) #"SelfMon"%go (![ptrT] "cli")) #()) in
+    exception_do (let: "err" := (GoAlloc ktcore.Blame #()) in
+    let: "hist" := (GoAlloc (go.SliceType (go.PointerType histEntry)) #()) in
+    let: "cli" := (go.AllocValue (go.PointerType client.Client) "cli") in
+    let: "ep" := (GoAlloc go.uint64 #()) in
+    let: "isInsert" := (GoAlloc go.bool #()) in
+    let: (("$ret0", "$ret1"), "$ret2") := ((MethodResolve (go.PointerType client.Client) SelfMon #() (![go.PointerType client.Client] "cli")) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
-    do:  ("ep" <-[uint64T] "$r0");;;
-    do:  ("isInsert" <-[boolT] "$r1");;;
+    do:  ("ep" <-[go.uint64] "$r0");;;
+    do:  ("isInsert" <-[go.bool] "$r1");;;
     do:  ("err" <-[ktcore.Blame] "$r2");;;
-    (if: (![ktcore.Blame] "err") ≠ ktcore.BlameNone
-    then return: (![sliceT] "hist", ![ktcore.Blame] "err")
+    (if: (![ktcore.Blame] "err") ≠⟨go.uint64⟩ ktcore.BlameNone
+    then return: (![go.SliceType (go.PointerType histEntry)] "hist", ![ktcore.Blame] "err")
     else do:  #());;;
-    do:  (let: "$a0" := (~ (![boolT] "isInsert")) in
-    (func_call #std.Assert) "$a0");;;
-    do:  (let: "$a0" := ((![uint64T] "ep") = #(W64 0)) in
-    (func_call #primitive.Assume) "$a0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "hist") in
-    let: "$a1" := ((let: "$sl0" := (mem.alloc (struct.make histEntry [{
-      "isReg" ::= type.zero_val boolT;
-      "pk" ::= type.zero_val sliceT
-    }])) in
-    slice.literal ptrT ["$sl0"])) in
-    (slice.append ptrT) "$a0" "$a1") in
-    do:  ("hist" <-[sliceT] "$r0");;;
-    (let: "i" := (mem.alloc (type.zero_val intT)) in
+    do:  (let: "$a0" := (~ (![go.bool] "isInsert")) in
+    (FuncResolve std.Assert [] #()) "$a0");;;
+    do:  (let: "$a0" := ((![go.uint64] "ep") =⟨go.uint64⟩ #(W64 0)) in
+    (FuncResolve primitive.Assume [] #()) "$a0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType (go.PointerType histEntry)] "hist") in
+    let: "$a1" := ((let: "$sl0" := (go.AllocValue histEntry (CompositeLiteral histEntry (
+      let: "$$vs" := go.StructElementListNil #() in 
+      let: "$$vs" := go.ElementListApp "$$vs" (go.ZeroVal go.bool #()) in
+      let: "$$vs" := go.ElementListApp "$$vs" (go.ZeroVal (go.SliceType go.byte) #()) in
+      "$$vs"
+    ))) in
+    CompositeLiteral (go.PointerType histEntry) (go.PointerType histEntry) ["$sl0"])) in
+    (FuncResolve go.append [go.SliceType (go.PointerType histEntry)] #()) "$a0" "$a1") in
+    do:  ("hist" <-[go.SliceType (go.PointerType histEntry)] "$r0");;;
+    (let: "i" := (GoAlloc go.int #()) in
     let: "$r0" := #(W64 0) in
-<<<<<<< HEAD
-    do:  ("i" <-[intT] "$r0");;;
-    (for: (λ: <>, int_lt (![intT] "i") #(W64 20)); (λ: <>, do:  ("i" <-[intT] ((![intT] "i") + #(W64 1)))) := λ: <>,
-      do:  (let: "$a0" := #(W64 5000000) in
-      (func_call #primitive.Sleep) "$a0");;;
-      let: "pk" := (mem.alloc (type.zero_val sliceT)) in
-=======
-    do:  ("i" <-[#intT] "$r0");;;
-    (for: (λ: <>, int_lt (![#intT] "i") #(W64 20)); (λ: <>, do:  ("i" <-[#intT] ((![#intT] "i") + #(W64 1)))) := λ: <>,
-      do:  (let: "$a0" := (#(W64 5) * time.Millisecond) in
-      (func_call #time.Sleep) "$a0");;;
-      let: "pk" := (mem.alloc (type.zero_val #sliceT)) in
->>>>>>> master
+    do:  ("i" <-[go.int] "$r0");;;
+    (for: (λ: <>, (![go.int] "i") <⟨go.int⟩ #(W64 20)); (λ: <>, do:  ("i" <-[go.int] ((![go.int] "i") +⟨go.int⟩ #(W8 1)))) := λ: <>,
+      do:  (let: "$a0" := (#(W64 5) *⟨go.int64⟩ time.Millisecond) in
+      (FuncResolve time.Sleep [] #()) "$a0");;;
+      let: "pk" := (GoAlloc (go.SliceType go.byte) #()) in
       let: "$r0" := (let: "$a0" := #(W64 32) in
-      (func_call #cryptoffi.RandBytes) "$a0") in
-      do:  ("pk" <-[sliceT] "$r0");;;
-      do:  (let: "$a0" := (![sliceT] "pk") in
-      (method_call #(ptrT.id client.Client.id) #"Put"%go (![ptrT] "cli")) "$a0");;;
-      (let: "$r0" := (let: "$a0" := (![ptrT] "cli") in
-      let: "$a1" := (s_to_w64 (let: "$a0" := (![sliceT] "hist") in
-      slice.len "$a0")) in
-      (func_call #loopPending) "$a0" "$a1") in
+      (FuncResolve cryptoffi.RandBytes [] #()) "$a0") in
+      do:  ("pk" <-[go.SliceType go.byte] "$r0");;;
+      do:  (let: "$a0" := (![go.SliceType go.byte] "pk") in
+      (MethodResolve (go.PointerType client.Client) Put #() (![go.PointerType client.Client] "cli")) "$a0");;;
+      (let: "$r0" := (let: "$a0" := (![go.PointerType client.Client] "cli") in
+      let: "$a1" := (s_to_w64 (let: "$a0" := (![go.SliceType (go.PointerType histEntry)] "hist") in
+      (FuncResolve go.len [go.SliceType (go.PointerType histEntry)] #()) "$a0")) in
+      (FuncResolve loopPending [] #()) "$a0" "$a1") in
       do:  ("err" <-[ktcore.Blame] "$r0");;;
-      (if: (![ktcore.Blame] "err") ≠ ktcore.BlameNone
-      then return: (![sliceT] "hist", ![ktcore.Blame] "err")
+      (if: (![ktcore.Blame] "err") ≠⟨go.uint64⟩ ktcore.BlameNone
+      then return: (![go.SliceType (go.PointerType histEntry)] "hist", ![ktcore.Blame] "err")
       else do:  #()));;;
-      let: "$r0" := (let: "$a0" := (![sliceT] "hist") in
-      let: "$a1" := ((let: "$sl0" := (mem.alloc (let: "$isReg" := #true in
-      let: "$pk" := (![sliceT] "pk") in
-      struct.make histEntry [{
-        "isReg" ::= "$isReg";
-        "pk" ::= "$pk"
-      }])) in
-      slice.literal ptrT ["$sl0"])) in
-      (slice.append ptrT) "$a0" "$a1") in
-      do:  ("hist" <-[sliceT] "$r0")));;;
-    return: (![sliceT] "hist", ![ktcore.Blame] "err")).
+      let: "$r0" := (let: "$a0" := (![go.SliceType (go.PointerType histEntry)] "hist") in
+      let: "$a1" := ((let: "$sl0" := (go.AllocValue histEntry (let: "$isReg" := #true in
+      let: "$pk" := (![go.SliceType go.byte] "pk") in
+      CompositeLiteral histEntry (
+        let: "$$vs" := go.StructElementListNil #() in 
+        let: "$$vs" := go.ElementListApp "$$vs" "$isReg" in
+        let: "$$vs" := go.ElementListApp "$$vs" "$pk" in
+        "$$vs"
+      ))) in
+      CompositeLiteral (go.PointerType histEntry) (go.PointerType histEntry) ["$sl0"])) in
+      (FuncResolve go.append [go.SliceType (go.PointerType histEntry)] #()) "$a0" "$a1") in
+      do:  ("hist" <-[go.SliceType (go.PointerType histEntry)] "$r0")));;;
+    return: (![go.SliceType (go.PointerType histEntry)] "hist", ![ktcore.Blame] "err")).
 
-(* go: alicebob.go:163:6 *)
+(* go: alicebob.go:165:6 *)
 Definition loopPendingⁱᵐᵖˡ : val :=
   λ: "cli" "ep",
-    exception_do (let: "err" := (mem.alloc (type.zero_val ktcore.Blame)) in
-    let: "ep" := (mem.alloc "ep") in
-    let: "cli" := (mem.alloc "cli") in
+    exception_do (let: "err" := (GoAlloc ktcore.Blame #()) in
+    let: "ep" := (go.AllocValue go.uint64 "ep") in
+    let: "cli" := (go.AllocValue (go.PointerType client.Client) "cli") in
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      let: "ep0" := (mem.alloc (type.zero_val uint64T)) in
-      let: "done" := (mem.alloc (type.zero_val boolT)) in
-      let: (("$ret0", "$ret1"), "$ret2") := ((method_call #(ptrT.id client.Client.id) #"SelfMon"%go (![ptrT] "cli")) #()) in
+      let: "ep0" := (GoAlloc go.uint64 #()) in
+      let: "done" := (GoAlloc go.bool #()) in
+      let: (("$ret0", "$ret1"), "$ret2") := ((MethodResolve (go.PointerType client.Client) SelfMon #() (![go.PointerType client.Client] "cli")) #()) in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
       let: "$r2" := "$ret2" in
-      do:  ("ep0" <-[uint64T] "$r0");;;
-      do:  ("done" <-[boolT] "$r1");;;
+      do:  ("ep0" <-[go.uint64] "$r0");;;
+      do:  ("done" <-[go.bool] "$r1");;;
       do:  ("err" <-[ktcore.Blame] "$r2");;;
-      (if: (![ktcore.Blame] "err") ≠ ktcore.BlameNone
+      (if: (![ktcore.Blame] "err") ≠⟨go.uint64⟩ ktcore.BlameNone
       then return: (![ktcore.Blame] "err")
       else do:  #());;;
-      (if: ![boolT] "done"
+      (if: ![go.bool] "done"
       then
-        do:  (let: "$a0" := ((![uint64T] "ep0") = (![uint64T] "ep")) in
-        (func_call #primitive.Assume) "$a0");;;
+        do:  (let: "$a0" := ((![go.uint64] "ep0") =⟨go.uint64⟩ (![go.uint64] "ep")) in
+        (FuncResolve primitive.Assume [] #()) "$a0");;;
         break: #()
       else do:  #()));;;
     return: (![ktcore.Blame] "err")).
 
 (* runBob does a get at some time in the middle of alice's puts.
 
-   go: alicebob.go:180:6 *)
+   go: alicebob.go:182:6 *)
 Definition runBobⁱᵐᵖˡ : val :=
   λ: "cli",
-    exception_do (let: "err" := (mem.alloc (type.zero_val ktcore.Blame)) in
-    let: "ent" := (mem.alloc (type.zero_val ptrT)) in
-    let: "ep" := (mem.alloc (type.zero_val uint64T)) in
-    let: "cli" := (mem.alloc "cli") in
-<<<<<<< HEAD
-    do:  (let: "$a0" := #(W64 120000000) in
-    (func_call #primitive.Sleep) "$a0");;;
-    let: "pk" := (mem.alloc (type.zero_val sliceT)) in
-    let: "isReg" := (mem.alloc (type.zero_val boolT)) in
-=======
-    do:  (let: "$a0" := (#(W64 120) * time.Millisecond) in
-    (func_call #time.Sleep) "$a0");;;
-    let: "pk" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "isReg" := (mem.alloc (type.zero_val #boolT)) in
->>>>>>> master
+    exception_do (let: "err" := (GoAlloc ktcore.Blame #()) in
+    let: "ent" := (GoAlloc (go.PointerType histEntry) #()) in
+    let: "ep" := (GoAlloc go.uint64 #()) in
+    let: "cli" := (go.AllocValue (go.PointerType client.Client) "cli") in
+    do:  (let: "$a0" := (#(W64 120) *⟨go.int64⟩ time.Millisecond) in
+    (FuncResolve time.Sleep [] #()) "$a0");;;
+    let: "pk" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "isReg" := (GoAlloc go.bool #()) in
     let: ((("$ret0", "$ret1"), "$ret2"), "$ret3") := (let: "$a0" := aliceUid in
-    (method_call #(ptrT.id client.Client.id) #"Get"%go (![ptrT] "cli")) "$a0") in
+    (MethodResolve (go.PointerType client.Client) Get #() (![go.PointerType client.Client] "cli")) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     let: "$r2" := "$ret2" in
     let: "$r3" := "$ret3" in
-    do:  ("ep" <-[uint64T] "$r0");;;
-    do:  ("isReg" <-[boolT] "$r1");;;
-    do:  ("pk" <-[sliceT] "$r2");;;
+    do:  ("ep" <-[go.uint64] "$r0");;;
+    do:  ("isReg" <-[go.bool] "$r1");;;
+    do:  ("pk" <-[go.SliceType go.byte] "$r2");;;
     do:  ("err" <-[ktcore.Blame] "$r3");;;
-    let: "$r0" := (mem.alloc (let: "$isReg" := (![boolT] "isReg") in
-    let: "$pk" := (![sliceT] "pk") in
-    struct.make histEntry [{
-      "isReg" ::= "$isReg";
-      "pk" ::= "$pk"
-    }])) in
-    do:  ("ent" <-[ptrT] "$r0");;;
-    return: (![uint64T] "ep", ![ptrT] "ent", ![ktcore.Blame] "err")).
-
-Definition vars' : list (go_string * go_type) := [].
+    let: "$r0" := (go.AllocValue histEntry (let: "$isReg" := (![go.bool] "isReg") in
+    let: "$pk" := (![go.SliceType go.byte] "pk") in
+    CompositeLiteral histEntry (
+      let: "$$vs" := go.StructElementListNil #() in 
+      let: "$$vs" := go.ElementListApp "$$vs" "$isReg" in
+      let: "$$vs" := go.ElementListApp "$$vs" "$pk" in
+      "$$vs"
+    ))) in
+    do:  ("ent" <-[go.PointerType histEntry] "$r0");;;
+    return: (![go.uint64] "ep", ![go.PointerType histEntry] "ent", ![ktcore.Blame] "err")).
 
 Definition functions' : list (go_string * val) := [(testAliceBob, testAliceBobⁱᵐᵖˡ); (equal, equalⁱᵐᵖˡ); (runAlice, runAliceⁱᵐᵖˡ); (loopPending, loopPendingⁱᵐᵖˡ); (runBob, runBobⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [(histEntry.id, []); (ptrT.id histEntry.id, [])].
-
 #[global] Instance info' : PkgInfo alicebob.alicebob :=
   {|
-    pkg_vars := vars';
-    pkg_functions := functions';
-    pkg_msets := msets';
-    pkg_imported_pkgs := [code.bytes.bytes; code.sync.sync; code.time.time; code.github_com.goose_lang.primitive.primitive; code.github_com.goose_lang.std.std; code.github_com.sanjit_bhat.pav.advrpc.advrpc; code.github_com.sanjit_bhat.pav.auditor.auditor; code.github_com.sanjit_bhat.pav.client.client; code.github_com.sanjit_bhat.pav.cryptoffi.cryptoffi; code.github_com.sanjit_bhat.pav.ktcore.ktcore; code.github_com.sanjit_bhat.pav.server.server];
+    pkg_imported_pkgs := [code.bytes.bytes; code.sync.sync; code.time.time; code.github_com.goose_lang.primitive.primitive; code.github_com.goose_lang.std.std; code.github_com.sanjit_bhat.pav.auditor.auditor; code.github_com.sanjit_bhat.pav.client.client; code.github_com.sanjit_bhat.pav.cryptoffi.cryptoffi; code.github_com.sanjit_bhat.pav.ktcore.ktcore; code.github_com.sanjit_bhat.pav.server.server];
   |}.
 
 Definition initialize' : val :=
   λ: <>,
-    package.init #alicebob.alicebob (λ: <>,
+    package.init alicebob.alicebob (λ: <>,
       exception_do (do:  (server.initialize' #());;;
       do:  (ktcore.initialize' #());;;
       do:  (cryptoffi.initialize' #());;;
       do:  (client.initialize' #());;;
       do:  (auditor.initialize' #());;;
-      do:  (advrpc.initialize' #());;;
       do:  (std.initialize' #());;;
       do:  (primitive.initialize' #());;;
       do:  (time.initialize' #());;;
       do:  (sync.initialize' #());;;
       do:  (bytes.initialize' #());;;
-      do:  (package.alloc alicebob.alicebob #()))
+      do:  ((λ: <>,
+        exception_do (let: "$r0" := time.Millisecond in
+        do:  ((GlobalVarAddr server.BatchTimeout #()) <-[time.Duration] "$r0");;;
+        return: #())
+        ) #()))
       ).
 
 End code.

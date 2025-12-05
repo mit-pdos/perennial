@@ -36,7 +36,7 @@ Lemma wp_Assume (cond : bool) :
 Proof.
   wp_start as "#Hdef".
   destruct cond; wp_auto.
-  - iApply ("HΦ" with "[//]").
+  - wp_end.
   - iLöb as "IH". wp_auto.
     wp_apply ("IH" with "[$]").
 Qed.
@@ -62,18 +62,28 @@ Proof.
   iIntros "%"; congruence.
 Qed.
 
+Lemma wp_RandomUint64__impl :
+  {{{ True }}}
+    primitive.RandomUint64ⁱᵐᵖˡ #()
+  {{{ (x: w64), RET #x; True }}}
+.
+Proof.
+  wp_start as "_".
+  wp_call.
+  wp_apply wp_ArbitraryInt.
+  iIntros (x).
+  by iApply "HΦ".
+Qed.
+
 Lemma wp_RandomUint64 :
   {{{ is_pkg_init primitive }}}
     @! primitive.RandomUint64 #()
   {{{ (x: w64), RET #x; True }}}
 .
 Proof.
-  wp_start as "_".
-  wp_apply wp_ArbitraryInt.
-  iIntros (x) "_".
-  replace (LitV x) with (#x) by (rewrite to_val_unseal //).
-  iApply "HΦ".
-  done.
+  wp_start_folded as "_".
+  wp_func_call.
+  by iApply wp_RandomUint64__impl.
 Qed.
 
 Lemma wp_AssumeNoStringOverflow (s: byte_string) :
@@ -81,14 +91,14 @@ Lemma wp_AssumeNoStringOverflow (s: byte_string) :
     @! primitive.AssumeNoStringOverflow #s
   {{{ RET #(); ⌜Z.of_nat (length s) < 2^64⌝ }}}.
 Proof.
-  wp_start as "_".
+  wp_start.
   wp_call.
   wp_if_destruct.
   - iApply "HΦ". done.
   - iLöb as "IH".
     wp_pures.
     iApply "IH".
-    iApply "HΦ".
+    wp_end.
 Qed.
 
 Lemma word_wrap_wrap `{word1: Interface.word width1} `{word2: Interface.word width2}
@@ -145,7 +155,7 @@ Proof.
     wp_pure; [word|];
     wp_apply (wp_store_slice_elem with "[$Hsl_b]") as "Hsl_b"; [len|]).
 
-  iApply "HΦ".
+  wp_end.
   replace (sint.nat (W64 0)) with (0%nat) by word.
   replace (sint.nat (W64 1)) with (1%nat) by word.
   replace (sint.nat (W64 2)) with (2%nat) by word.

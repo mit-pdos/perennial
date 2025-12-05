@@ -3,7 +3,7 @@ From New.proof.github_com.sanjit_bhat.pav Require Import prelude.
 
 From New.proof Require Import bytes.
 From New.proof.github_com.sanjit_bhat.pav Require Import
-  cryptoffi ktcore safemarshal.
+  cryptoffi ktcore safemarshal sigpred.
 
 From New.proof.github_com.sanjit_bhat.pav.client_proof Require Import
   base.
@@ -90,48 +90,16 @@ End Evid.
 
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
-
-(* TODO: move these into sep file. *)
-Class sigG Σ := {
-  #[local] vrf_inG :: ghost_varG Σ (list w8);
-  #[local] links_inG :: mono_listG (list w8) Σ;
-}.
-Context `{sigG Σ}.
-
-Record sig_names :=
-  mk {
-    vrf_name : gname;
-    links_name : gname;
-  }.
-Context {sigγ : sig_names}.
-
-Definition sig_pred_vrf γ enc : iProp Σ :=
-  ∃ vrfPk,
-  "%Henc" ∷ ⌜enc = ktcore.VrfSig.pure_enc (ktcore.VrfSig.mk' (W8 ktcore.VrfSigTag) vrfPk)⌝ ∗
-  "#Hshot" ∷ ghost_var γ (□) vrfPk ∗
-  "%Hvalid" ∷ ⌜safemarshal.Slice1D.valid vrfPk⌝.
-
-Definition sig_pred_links γ enc : iProp Σ :=
-  (* TODO: add map invs once figure out partial-epoch adtr. *)
-  ∃ ep link,
-  "%Henc" ∷ ⌜enc = ktcore.LinkSig.pure_enc (ktcore.LinkSig.mk' (W8 ktcore.LinkSigTag) ep link)⌝ ∗
-  "#Hidx" ∷ mono_list_idx_own γ (uint.nat ep) link ∗
-  "%Hvalid" ∷ ⌜safemarshal.Slice1D.valid link⌝.
-
-Definition sig_pred γ enc : iProp Σ :=
-  sig_pred_vrf γ.(vrf_name) enc ∨ sig_pred_links γ.(links_name) enc.
-
-#[global] Instance sig_pred_pers γ e : Persistent (sig_pred γ e).
-Proof. apply _. Qed.
+Context `{pavG Σ}.
 
 Definition wish_evidVrf e pk : iProp Σ :=
-  "#Hwish0" ∷ ktcore.wish_VerifyVrfSig pk e.(evidVrf.vrfPk0) e.(evidVrf.sig0) ∗
-  "#Hwish1" ∷ ktcore.wish_VerifyVrfSig pk e.(evidVrf.vrfPk1) e.(evidVrf.sig1) ∗
+  "#Hwish0" ∷ ktcore.wish_VrfSig pk e.(evidVrf.vrfPk0) e.(evidVrf.sig0) ∗
+  "#Hwish1" ∷ ktcore.wish_VrfSig pk e.(evidVrf.vrfPk1) e.(evidVrf.sig1) ∗
   "%Heq" ∷ ⌜e.(evidVrf.vrfPk0) ≠ e.(evidVrf.vrfPk1)⌝.
 
-Lemma wish_evidVrf_sig_pred e pk :
+Lemma wish_evidVrf_sig_pred e pk γ :
   wish_evidVrf e pk -∗
-  ¬ cryptoffi.is_sig_pk pk (sig_pred sigγ).
+  ¬ cryptoffi.is_sig_pk pk (sigpred.pred γ).
 Proof.
   iIntros "@ #His_pk".
   iNamedSuffix "Hwish0" "0".
@@ -201,13 +169,13 @@ Proof.
 Qed.
 
 Definition wish_evidLink e pk : iProp Σ :=
-  "#Hwish0" ∷ ktcore.wish_VerifyLinkSig pk e.(evidLink.epoch) e.(evidLink.link0) e.(evidLink.sig0) ∗
-  "#Hwish1" ∷ ktcore.wish_VerifyLinkSig pk e.(evidLink.epoch) e.(evidLink.link1) e.(evidLink.sig1) ∗
+  "#Hwish0" ∷ ktcore.wish_LinkSig pk e.(evidLink.epoch) e.(evidLink.link0) e.(evidLink.sig0) ∗
+  "#Hwish1" ∷ ktcore.wish_LinkSig pk e.(evidLink.epoch) e.(evidLink.link1) e.(evidLink.sig1) ∗
   "%Heq" ∷ ⌜e.(evidLink.link0) ≠ e.(evidLink.link1)⌝.
 
-Lemma wish_evidLink_sig_pred e pk :
+Lemma wish_evidLink_sig_pred e pk γ :
   wish_evidLink e pk -∗
-  ¬ cryptoffi.is_sig_pk pk (sig_pred sigγ).
+  ¬ cryptoffi.is_sig_pk pk (sigpred.pred γ).
 Proof.
   iIntros "@ #His_pk".
   iNamedSuffix "Hwish0" "0".
@@ -235,7 +203,11 @@ Proof.
     intuition.
     by f_equal. }
   simplify_eq/=.
-  by iDestruct (mono_list_idx_agree with "Hidx0 Hidx1") as %?.
+  iDestruct (mono_list_idx_own_get with "Hlb0") as "Hidx0"; [done|].
+  iDestruct (mono_list_idx_own_get with "Hlb1") as "Hidx1"; [done|].
+  iDestruct (mono_list_idx_agree with "Hidx0 Hidx1") as %->.
+  destruct e. simpl in *.
+  simplify_eq/=.
 Qed.
 
 Lemma wp_evidLink_check ptr_e e sl_pk pk :
@@ -283,9 +255,9 @@ Definition wish_Evid e pk : iProp Σ :=
   | _, _ => False
   end.
 
-Lemma wish_Evid_sig_pred e pk :
+Lemma wish_Evid_sig_pred e pk γ :
   wish_Evid e pk -∗
-  ¬ cryptoffi.is_sig_pk pk (sig_pred sigγ).
+  ¬ cryptoffi.is_sig_pk pk (sigpred.pred γ).
 Proof.
   iIntros "#Hwish #His_pk".
   destruct e.

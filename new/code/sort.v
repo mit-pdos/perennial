@@ -174,15 +174,26 @@ Axiom Interfaceⁱᵐᵖˡ : go.type.
 
 Definition Sort : go_string := "sort.Sort"%go.
 
-Axiom sortedHintⁱᵐᵖˡ : go.type.
+Definition sortedHintⁱᵐᵖˡ : go.type := go.int.
 
-Axiom unknownHint : val.
+Definition unknownHint : val := #(W64 0).
 
-Axiom increasingHint : val.
+Definition increasingHint : val := #(W64 1).
 
-Axiom decreasingHint : val.
+Definition decreasingHint : val := #(W64 2).
 
-Axiom xorshiftⁱᵐᵖˡ : go.type.
+Definition xorshiftⁱᵐᵖˡ : go.type := go.uint64.
+
+Definition xorshift : go.type := go.Named "sort.xorshift"%go [].
+
+(* go: sort.go:70:20 *)
+Definition xorshift__Nextⁱᵐᵖˡ : val :=
+  λ: "r" <>,
+    exception_do (let: "r" := (go.AllocValue (go.PointerType xorshift) "r") in
+    do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) `xor` ((![xorshift] (![go.PointerType xorshift] "r")) ≪⟨xorshift⟩ #(W64 13))));;;
+    do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) `xor` ((![xorshift] (![go.PointerType xorshift] "r")) ≫⟨xorshift⟩ #(W64 7))));;;
+    do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) `xor` ((![xorshift] (![go.PointerType xorshift] "r")) ≪⟨xorshift⟩ #(W64 17))));;;
+    return: (![xorshift] (![go.PointerType xorshift] "r"))).
 
 Definition nextPowerOfTwo : go_string := "sort.nextPowerOfTwo"%go.
 
@@ -287,8 +298,6 @@ Definition rotate : go_string := "sort.rotate"%go.
 Definition Interface : go.type := go.Named "sort.Interface"%go [].
 
 Definition sortedHint : go.type := go.Named "sort.sortedHint"%go [].
-
-Definition xorshift : go.type := go.Named "sort.xorshift"%go [].
 
 Definition lessSwap : go.type := go.Named "sort.lessSwap"%go [].
 

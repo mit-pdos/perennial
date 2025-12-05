@@ -4,51 +4,58 @@ From New.proof.github_com.sanjit_bhat.pav Require Import prelude.
 From New.proof Require Import bytes.
 From New.proof.github_com.goose_lang Require Import std.
 From New.proof.github_com.sanjit_bhat.pav Require Import
-  advrpc auditor cryptoffi hashchain ktcore merkle server.
+  advrpc auditor cryptoffi hashchain ktcore merkle server sigpred.
 
 From New.proof.github_com.sanjit_bhat.pav.client_proof Require Import
-  evidence.
+  evidence rpc.
 
 Module client.
-Import evidence.client.
-
-Module epoch.
-Record t :=
-  mk' {
-    epoch: w64;
-    dig: list w8;
-    link: list w8;
-    sig: list w8;
-  }.
-
-Section proof.
-Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
-
-Definition own ptr obj : iProp Σ :=
-  ∃ sl_dig sl_link sl_sig,
-  "#Hstruct" ∷ ptr ↦□ (client.epoch.mk obj.(epoch) sl_dig sl_link sl_sig) ∗
-  "#Hsl_dig" ∷ sl_dig ↦*□ obj.(dig) ∗
-  "#Hsl_link" ∷ sl_link ↦*□ obj.(link) ∗
-  "#Hsl_sig" ∷ sl_sig ↦*□ obj.(sig).
-
-End proof.
-End epoch.
+Import evidence.client rpc.client.
 
 Module nextVer.
 Record t :=
   mk' {
     ver: w64;
-    isPending: bool;
-    pendingPk: list w8;
+    pendingPk: option $ list w8;
+
+    uid: w64;
+    servGood: option server.cfg.t;
+    isGoodClis: bool;
   }.
 
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
+Context `{!pavG Σ}.
 
-Definition own ptr obj d : iProp Σ :=
-  ∃ sl_pendingPk,
-  "Hstruct" ∷ ptr ↦{d} (client.nextVer.mk obj.(ver) obj.(isPending) sl_pendingPk) ∗
-  "#Hsl_pendingPk" ∷ sl_pendingPk ↦*□ obj.(pendingPk).
+Definition uid_inv γ : iProp Σ :=
+  ∃ puts,
+  "Hputs" ∷ mono_list_auth_own γ 1 puts.
+Definition is_uid_inv γ := inv nroot (uid_inv γ).
+
+Definition own ptr obj : iProp Σ :=
+  ∃ isPending sl_pendingPk,
+  "Hstruct_nextVer" ∷ ptr ↦ (client.nextVer.mk obj.(ver) isPending sl_pendingPk) ∗
+  "#Hsl_pendingPk" ∷
+    match obj.(pendingPk) with
+    | None =>
+      "%HisPending" ∷ ⌜isPending = false⌝
+    | Some pk =>
+      "%HisPending" ∷ ⌜isPending = true⌝ ∗
+      "#Hsl_pendingPk" ∷ sl_pendingPk ↦*□ pk
+    end ∗
+
+  "Hown_uid" ∷ match obj.(servGood) with None => True | Some cfg =>
+    ∃ uidγ,
+    "%Hlook_uidγ" ∷ ⌜cfg.(server.cfg.uidγ) !! obj.(uid) = Some uidγ⌝ ∗
+    "HgoodCli" ∷
+      if obj.(isGoodClis)
+      then
+        ∃ puts,
+        "Hputs" ∷ mono_list_auth_own uidγ 1 puts ∗
+        "%Hbound" ∷ ⌜∀ ver' pk, (ver', pk) ∈ puts → uint.Z ver' ≤ uint.Z obj.(ver)⌝ ∗
+        "%Heq_pend" ∷ ⌜∀ pk, (obj.(ver), pk) ∈ puts → obj.(pendingPk) = Some pk⌝
+      else
+        "#Huid_inv" ∷ is_uid_inv uidγ end.
 
 End proof.
 End nextVer.
@@ -56,21 +63,35 @@ End nextVer.
 Module serv.
 Record t :=
   mk' {
-    cli: loc;
-    sigPk: list w8;
-    vrfPk: list w8;
     vrfSig: list w8;
+
+    info: servInfo.t;
+    good: option server.cfg.t;
   }.
 
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
+Context `{!pavG Σ}.
 
 Definition own ptr obj : iProp Σ :=
-  ∃ sl_sigPk ptr_vrfPk sl_vrfSig,
-  "#Hstruct" ∷ ptr ↦□ (client.serv.mk obj.(cli) sl_sigPk ptr_vrfPk sl_vrfSig) ∗
-  "#Hsl_sigPk" ∷ sl_sigPk ↦*□ obj.(sigPk) ∗
-  "#Hown_vrfPk" ∷ cryptoffi.own_vrf_pk ptr_vrfPk obj.(vrfPk) ∗
-  "#Hsl_vrfSig" ∷ sl_vrfSig ↦*□ obj.(vrfSig).
+  ∃ ptr_cli sl_sigPk ptr_vrfPk sl_vrfSig,
+  "#Hstruct_serv" ∷ ptr ↦□ (client.serv.mk ptr_cli sl_sigPk ptr_vrfPk sl_vrfSig) ∗
+  "#His_rpc" ∷ server.is_Server_rpc ptr_cli obj.(good) ∗
+  "#Hsl_sigPk" ∷ sl_sigPk ↦*□ obj.(info).(servInfo.sig_pk) ∗
+  "#Hown_vrfPk" ∷ cryptoffi.own_vrf_pk ptr_vrfPk obj.(info).(servInfo.vrf_pk) ∗
+  "#Hsl_vrfSig" ∷ sl_vrfSig ↦*□ obj.(vrfSig) ∗
+  "#His_vrfSig" ∷ ktcore.wish_VrfSig obj.(info).(servInfo.sig_pk)
+    obj.(info).(servInfo.vrf_pk) obj.(vrfSig) ∗
+
+  "#His_sigPk" ∷ match obj.(good) with None => True | Some cfg =>
+    cryptoffi.is_sig_pk obj.(info).(servInfo.sig_pk)
+      (sigpred.pred cfg.(server.cfg.sigpredγ)) end ∗
+  (* trusted. *)
+  "%Heq_sig_pk" ∷ ⌜match obj.(good) with None => True | Some cfg =>
+    obj.(info).(servInfo.sig_pk) = cfg.(server.cfg.sig_pk) end⌝ ∗
+  (* from signed vrf_pk. *)
+  "%Heq_vrf_pk" ∷ ⌜match obj.(good) with None => True | Some cfg =>
+    obj.(info).(servInfo.vrf_pk) = cfg.(server.cfg.vrf_pk) end⌝.
 
 End proof.
 End serv.
@@ -86,28 +107,101 @@ Record t :=
 
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
+Context `{!pavG Σ}.
 
-Definition own ptr obj d : iProp Σ :=
+Definition own ptr obj : iProp Σ :=
   ∃ ptr_pend ptr_last ptr_serv,
-  "Hstruct" ∷ ptr ↦{d} (client.Client.mk obj.(uid) ptr_pend ptr_last ptr_serv) ∗
-  "Hown_pend" ∷ nextVer.own ptr_pend obj.(pend) d ∗
+  "Hstruct_client" ∷ ptr ↦ (client.Client.mk obj.(uid) ptr_pend ptr_last ptr_serv) ∗
+  "Hown_pend" ∷ nextVer.own ptr_pend obj.(pend) ∗
   "#Hown_last" ∷ epoch.own ptr_last obj.(last) ∗
-  "#Hown_serv" ∷ serv.own ptr_serv obj.(serv).
+  "#Hgood_last" ∷ match obj.(serv).(serv.good) with None => True | Some γ =>
+    epoch.correct obj.(last) γ end ∗
+  "#Hown_serv" ∷ serv.own ptr_serv obj.(serv) ∗
+
+  "%Heq_serv" ∷ ⌜obj.(serv).(serv.info) = obj.(last).(epoch.serv)⌝ ∗
+  "%Heq_servGood1" ∷ ⌜obj.(serv).(serv.good) = obj.(pend).(nextVer.servGood)⌝ ∗
+  "%Heq_uid" ∷ ⌜obj.(uid) = obj.(pend).(nextVer.uid)⌝.
 
 End proof.
 End Client.
 
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
+Context `{!pavG Σ}.
 
-Definition wish_checkMemb pk uid ver dig memb : iProp Σ :=
-  ∃ label mapVal,
-  let enc_label := ktcore.MapLabel.pure_enc (ktcore.MapLabel.mk' uid ver) in
-  let enc_val := ktcore.CommitOpen.pure_enc memb.(ktcore.Memb.PkOpen) in
-  "#His_vrf_proof" ∷ cryptoffi.is_vrf_proof pk enc_label memb.(ktcore.Memb.LabelProof) ∗
-  "#His_vrf_out" ∷ cryptoffi.is_vrf_out pk enc_label label ∗
-  "#His_mapVal" ∷ cryptoffi.is_hash (Some enc_val) mapVal ∗
-  "#Hwish_memb" ∷ merkle.wish_VerifyMemb label mapVal memb.(ktcore.Memb.MerkleProof) dig.
+Lemma wp_getNextEp ptr_prev prev sl_sigPk sigPk sl_chainProof chainProof sl_sig sig :
+  {{{
+    is_pkg_init client ∗
+    "#Hown_prev" ∷ epoch.own ptr_prev prev ∗
+    "#Hsl_sigPk" ∷ sl_sigPk ↦*□ sigPk ∗
+    "%Heq_sigPk" ∷ ⌜sigPk = prev.(epoch.serv).(servInfo.sig_pk)⌝ ∗
+    "#Hsl_chainProof" ∷ sl_chainProof ↦*□ chainProof ∗
+    "#Hsl_sig" ∷ sl_sig ↦*□ sig
+  }}}
+  @! client.getNextEp #ptr_prev #sl_sigPk #sl_chainProof #sl_sig
+  {{{
+    ptr_next (err : bool), RET (#ptr_next, #err);
+    "Hgenie" ∷
+      match err with
+      | true => ¬ ∃ digs next, wish_getNextEp prev sigPk chainProof sig digs next
+      | false =>
+        ∃ digs next,
+        "#Hwish_getNextEp" ∷ wish_getNextEp prev sigPk chainProof sig digs next ∗
+        "#Hown_next" ∷ epoch.own ptr_next next
+      end
+  }}}.
+Proof.
+  wp_start as "@".
+  iNamedSuffix "Hown_prev" "_prev".
+  iNamedSuffix "Hvalid_epoch_prev" "_prev".
+  wp_auto.
+  wp_apply hashchain.wp_Verify as "* @".
+  { iFrame "#". }
+  iPersist "Hsl_newVal Hsl_newLink".
+  wp_if_destruct.
+  { iApply "HΦ". iIntros "@". simpl in *. iApply "Hgenie". naive_solver. }
+  iNamed "Hgenie".
+  wp_if_destruct.
+  { iApply "HΦ". iFrame "#%". case_decide; [done|]. by destruct new_vals. }
+  wp_apply std.wp_SumNoOverflow.
+  wp_if_destruct.
+  2: { iApply "HΦ". iIntros "@".
+    opose proof (hashchain.wish_Proof_det _ _ _ Hwish_chain Hwish_chainProof) as <-.
+    case_decide as Heq.
+    { apply (f_equal length) in Heq. simpl in *. word. }
+    iNamed "Hlen_vals". word. }
+  wp_apply ktcore.wp_VerifyLinkSig as "* @".
+  { iFrame "#". }
+  wp_if_destruct.
+  { iApply "HΦ". iIntros "@". iApply "Hgenie".
+    opose proof (hashchain.wish_Proof_det _ _ _ Hwish_chain Hwish_chainProof) as <-.
+    case_decide as Heq.
+    { apply (f_equal length) in Heq. simpl in *. word. }
+    iNamed "Hlen_vals".
+    iDestruct (hashchain.is_chain_det with "His_chain His_new_chain") as %<-.
+    iExactEq "Hwish_sig". repeat f_equal. word. }
+  iNamed "Hgenie".
+  rewrite -wp_fupd.
+  wp_apply wp_alloc as "* Hptr_next".
+  iPersist "Hptr_next".
+  iModIntro.
+  iApply "HΦ".
+  iFrame (Hwish_chain).
+  (* TODO[word]: w/o explicitly providing w64,
+  something unfolds w64 to Naive.wrap and Naive.unsigned,
+  which fails word tactic. *)
+  iExists (epoch.mk' (word.add prev.(epoch.epoch) extLen) _ _ _ _ _ _).
+  iFrame "Hptr_next #%". simpl in *.
+  case_decide as Heq.
+  { apply (f_equal length) in Heq. simpl in *. word. }
+  iFrame "#".
+  repeat iSplit; try iPureIntro; try done.
+  - word.
+  - iExactEq "His_chain". rewrite /named. repeat f_equal. word.
+  - destruct new_vals using rev_ind; [done|]. clear IHnew_vals.
+    by rewrite (assoc _) !last_snoc.
+  - iExactEq "His_chain". rewrite /named. repeat f_equal. word.
+Qed.
 
 Lemma wp_checkMemb ptr_pk pk (uid ver : w64) sl_dig dig ptr_memb memb :
   {{{
@@ -121,9 +215,9 @@ Lemma wp_checkMemb ptr_pk pk (uid ver : w64) sl_dig dig ptr_memb memb :
     (err : bool), RET #err;
     "Hgenie" ∷
       match err with
-      | true => ¬ wish_checkMemb pk uid ver dig memb
+      | true => ¬ ktcore.wish_Memb pk uid ver dig memb
       | false =>
-        "#Hwish_checkMemb" ∷ wish_checkMemb pk uid ver dig memb
+        "#Hwish_Memb" ∷ ktcore.wish_Memb pk uid ver dig memb
       end
   }}}.
 Proof.
@@ -153,15 +247,11 @@ Proof.
   2: { iApply "HΦ". iIntros "@".
     iDestruct (cryptoffi.is_vrf_out_det with "His_out His_vrf_out") as %->.
     iDestruct (cryptoffi.is_hash_det with "His_MapVal His_mapVal") as %->.
-    iDestruct (merkle.wish_VerifyMemb_det with "His_proof_merk Hwish_memb") as %->.
+    iDestruct (merkle.wish_Memb_det with "His_proof_merk Hwish_memb") as %->.
     done. }
   iApply "HΦ".
   iFrame "#".
 Qed.
-
-Definition wish_checkHist pk uid (prefixLen : w64) dig hist : iProp Σ :=
-  ([∗ list] ver ↦ memb ∈ hist,
-    wish_checkMemb pk uid (uint.Z prefixLen + ver) dig memb).
 
 Lemma wp_checkHist ptr_pk pk (uid prefixLen : w64) sl_dig dig sl_hist sl0_hist hist :
   {{{
@@ -177,9 +267,9 @@ Lemma wp_checkHist ptr_pk pk (uid prefixLen : w64) sl_dig dig sl_hist sl0_hist h
     (err : bool), RET #err;
     "Hgenie" ∷
       match err with
-      | true => ¬ wish_checkHist pk uid prefixLen dig hist
+      | true => ¬ ktcore.wish_ListMemb pk uid prefixLen dig hist
       | false =>
-        "#Hwish_checkHist" ∷ wish_checkHist pk uid prefixLen dig hist
+        "#Hwish_ListMemb" ∷ ktcore.wish_ListMemb pk uid prefixLen dig hist
       end
   }}}.
 Proof.
@@ -200,7 +290,7 @@ Proof.
 
     "%Hlt_i" ∷ ⌜0%Z ≤ sint.Z i ≤ length hist⌝ ∗
     "#Hwish" ∷ ([∗ list] ver ↦ memb ∈ take (sint.nat i) hist,
-      wish_checkMemb pk uid (uint.Z prefixLen + ver) dig memb)
+      ktcore.wish_Memb pk uid (uint.Z prefixLen + ver) dig memb)
   )%I with "[-HΦ]" as "IH".
   { iFrame. iSplit; [word|naive_solver]. }
   wp_for "IH".
@@ -224,7 +314,7 @@ Proof.
     erewrite take_S_r; [|done].
     rewrite big_sepL_snoc.
     iFrame "#".
-    iExactEq "Hwish_checkMemb".
+    iExactEq "Hwish_Memb".
     repeat f_equal. len. }
 
   iApply "HΦ".
@@ -232,13 +322,6 @@ Proof.
   rewrite take_ge; [|word].
   iFrame "#".
 Qed.
-
-Definition wish_checkNonMemb pk uid ver dig nonMemb : iProp Σ :=
-  ∃ label,
-  let enc := ktcore.MapLabel.pure_enc (ktcore.MapLabel.mk' uid ver) in
-  "#His_vrf_proof" ∷ cryptoffi.is_vrf_proof pk enc nonMemb.(ktcore.NonMemb.LabelProof) ∗
-  "#His_vrf_out" ∷ cryptoffi.is_vrf_out pk enc label ∗
-  "#Hwish_nonMemb" ∷ merkle.wish_VerifyNonMemb label nonMemb.(ktcore.NonMemb.MerkleProof) dig.
 
 Lemma wp_checkNonMemb ptr_pk pk (uid ver : w64) sl_dig dig ptr_nonMemb nonMemb :
   {{{
@@ -252,9 +335,9 @@ Lemma wp_checkNonMemb ptr_pk pk (uid ver : w64) sl_dig dig ptr_nonMemb nonMemb :
     (err : bool), RET #err;
     "Hgenie" ∷
       match err with
-      | true => ¬ wish_checkNonMemb pk uid ver dig nonMemb
+      | true => ¬ ktcore.wish_NonMemb pk uid ver dig nonMemb
       | false =>
-        "#Hwish_checkNonMemb" ∷ wish_checkNonMemb pk uid ver dig nonMemb
+        "#Hwish_NonMemb" ∷ ktcore.wish_NonMemb pk uid ver dig nonMemb
       end
   }}}.
 Proof.
@@ -279,53 +362,39 @@ Proof.
   wp_if_destruct.
   2: { iApply "HΦ". iIntros "@".
     iDestruct (cryptoffi.is_vrf_out_det with "His_out His_vrf_out") as %->.
-    iDestruct (merkle.wish_VerifyNonMemb_det with "His_proof_merk Hwish_nonMemb") as %->.
+    iDestruct (merkle.wish_NonMemb_det with "His_proof_merk Hwish_nonMemb") as %->.
     done. }
   iApply "HΦ".
   iFrame "#".
 Qed.
 
-Definition wish_checkAudit servPk adtrPk ep reply : iProp Σ :=
-  "#Hwish_adtr_vrfSig" ∷ ktcore.wish_VerifyVrfSig adtrPk
-    reply.(auditor.GetReply.VrfPk) reply.(auditor.GetReply.AdtrVrfSig) ∗
-  "#Hwish_serv_vrfSig" ∷ ktcore.wish_VerifyVrfSig servPk
-    reply.(auditor.GetReply.VrfPk) reply.(auditor.GetReply.ServVrfSig) ∗
-  "#Hwish_adtr_linkSig" ∷ ktcore.wish_VerifyLinkSig adtrPk ep
-    reply.(auditor.GetReply.Link) reply.(auditor.GetReply.AdtrLinkSig) ∗
-  "#Hwish_serv_linkSig" ∷ ktcore.wish_VerifyLinkSig servPk ep
-    reply.(auditor.GetReply.Link) reply.(auditor.GetReply.ServLinkSig).
+Definition wish_checkAuditLink servPk adtrPk ep link : iProp Σ :=
+  "#Hwish_adtr_linkSig" ∷ ktcore.wish_LinkSig adtrPk ep
+    link.(auditor.SignedLink.Link) link.(auditor.SignedLink.AdtrSig) ∗
+  "#Hwish_serv_linkSig" ∷ ktcore.wish_LinkSig servPk ep
+    link.(auditor.SignedLink.Link) link.(auditor.SignedLink.ServSig).
 
-Lemma wp_checkAudit sl_servPk servPk sl_adtrPk adtrPk (ep : w64) ptr_reply reply :
+Lemma wp_checkAuditLink sl_servPk servPk sl_adtrPk adtrPk (ep : w64) ptr_link link :
   {{{
     is_pkg_init client ∗
     "#Hsl_servPk" ∷ sl_servPk ↦*□ servPk ∗
     "#Hsl_adtrPk" ∷ sl_adtrPk ↦*□ adtrPk ∗
-    "#Hown_reply" ∷ auditor.GetReply.own ptr_reply reply (□)
+    "#Hown_link" ∷ auditor.SignedLink.own ptr_link link (□)
   }}}
-  @! client.checkAudit #sl_servPk #sl_adtrPk #ep #ptr_reply
+  @! client.checkAuditLink #sl_servPk #sl_adtrPk #ep #ptr_link
   {{{
     (err : bool), RET #err;
     "Hgenie" ∷
       match err with
-      | true => ¬ wish_checkAudit servPk adtrPk ep reply
+      | true => ¬ wish_checkAuditLink servPk adtrPk ep link
       | false =>
-        "#Hwish_checkAudit" ∷ wish_checkAudit servPk adtrPk ep reply
+        "#Hwish_checkAuditLink" ∷ wish_checkAuditLink servPk adtrPk ep link
       end
   }}}.
 Proof.
   wp_start as "@".
-  iNamed "Hown_reply".
+  iNamed "Hown_link".
   wp_auto.
-  wp_apply ktcore.wp_VerifyVrfSig as "* @".
-  { iFrame "#". }
-  wp_if_destruct.
-  { iApply "HΦ". iIntros "@". by iApply "Hgenie". }
-  iNamedSuffix "Hgenie" "_adtr_vrf".
-  wp_apply ktcore.wp_VerifyVrfSig as "* @".
-  { iFrame "#". }
-  wp_if_destruct.
-  { iApply "HΦ". iIntros "@". by iApply "Hgenie". }
-  iNamedSuffix "Hgenie" "_serv_vrf".
   wp_apply ktcore.wp_VerifyLinkSig as "* @".
   { iFrame "#". }
   wp_if_destruct.
@@ -339,6 +408,247 @@ Proof.
   iApply "HΦ".
   iFrame "#".
 Qed.
+
+Definition wish_checkAuditVrf servPk adtrPk vrf : iProp Σ :=
+  "#Hwish_adtr_vrfSig" ∷ ktcore.wish_VrfSig adtrPk
+    vrf.(auditor.SignedVrf.VrfPk) vrf.(auditor.SignedVrf.AdtrSig) ∗
+  "#Hwish_serv_vrfSig" ∷ ktcore.wish_VrfSig servPk
+    vrf.(auditor.SignedVrf.VrfPk) vrf.(auditor.SignedVrf.ServSig).
+
+Lemma wp_checkAuditVrf sl_servPk servPk sl_adtrPk adtrPk ptr_vrf vrf :
+  {{{
+    is_pkg_init client ∗
+    "#Hsl_servPk" ∷ sl_servPk ↦*□ servPk ∗
+    "#Hsl_adtrPk" ∷ sl_adtrPk ↦*□ adtrPk ∗
+    "#Hown_vrf" ∷ auditor.SignedVrf.own ptr_vrf vrf (□)
+  }}}
+  @! client.checkAuditVrf #sl_servPk #sl_adtrPk #ptr_vrf
+  {{{
+    (err : bool), RET #err;
+    "Hgenie" ∷
+      match err with
+      | true => ¬ wish_checkAuditVrf servPk adtrPk vrf
+      | false =>
+        "#Hwish_checkAuditVrf" ∷ wish_checkAuditVrf servPk adtrPk vrf
+      end
+  }}}.
+Proof.
+  wp_start as "@".
+  iNamed "Hown_vrf".
+  wp_auto.
+  wp_apply ktcore.wp_VerifyVrfSig as "* @".
+  { iFrame "#". }
+  wp_if_destruct.
+  { iApply "HΦ". iIntros "@". by iApply "Hgenie". }
+  iNamedSuffix "Hgenie" "_adtr_vrf".
+  wp_apply ktcore.wp_VerifyVrfSig as "* @".
+  { iFrame "#". }
+  wp_if_destruct.
+  { iApply "HΦ". iIntros "@". by iApply "Hgenie". }
+  iNamedSuffix "Hgenie" "_serv_vrf".
+  iApply "HΦ".
+  iFrame "#".
+Qed.
+
+Lemma wp_Client_Put ptr_c c sl_pk pk :
+  {{{
+    is_pkg_init client ∗
+    "Hclient" ∷ Client.own ptr_c c ∗
+    "#Hsl_pk" ∷ sl_pk ↦*□ pk ∗
+    "%Heq_pend" ∷ ⌜match c.(Client.pend).(nextVer.pendingPk) with None => True
+      | Some pk' => pk = pk' end⌝
+  }}}
+  ptr_c @ (ptrT.id client.Client.id) @ "Put" #sl_pk
+  {{{
+    RET #();
+    let c' := set Client.pend (λ p, set nextVer.pendingPk (λ _, Some pk) p) c in
+    "Hclient" ∷ Client.own ptr_c c'
+  }}}.
+Proof.
+  wp_start as "@".
+  iNamed "Hclient".
+  destruct c.
+  iNamed "Hown_pend".
+  destruct pend.
+  iNamed "Hown_serv".
+  destruct serv.
+  destruct last0.
+  simplify_eq/=.
+  wp_auto. simpl.
+  iPersist "c pk".
+  wp_bind (If _ _ _).
+  wp_apply (wp_wand _ _ _
+    (λ v,
+    ∃ sl_pendingPk',
+    "->" ∷ ⌜v = execute_val⌝ ∗
+    "Hstruct_client" ∷ ptr_c ↦ {|
+                                 client.Client.uid' := uid0;
+                                 client.Client.pend' := ptr_pend;
+                                 client.Client.last' := ptr_last;
+                                 client.Client.serv' := ptr_serv
+                               |} ∗
+    "Hstruct_nextVer" ∷ ptr_pend ↦ {|
+                                     client.nextVer.ver' := ver;
+                                     client.nextVer.isPending' := true;
+                                     client.nextVer.pendingPk' := sl_pendingPk'
+                                   |} ∗
+    "#Hsl_pendingPk'" ∷ sl_pendingPk' ↦*□ pk
+    )%I
+    with "[Hstruct_client Hstruct_nextVer]"
+  ) as "* @".
+  { wp_if_destruct.
+    - destruct pendingPk; iNamed "Hsl_pendingPk"; try done.
+      simplify_eq/=.
+      wp_apply bytes.wp_Equal as "_".
+      { iFrame "#". }
+      wp_apply std.wp_Assert.
+      { by case_bool_decide. }
+      by iFrame "∗#".
+    - by iFrame "∗#". }
+
+  destruct servGood; iNamed "Hown_uid".
+  2: {
+    wp_apply (server.wp_CallPut _ None).
+    { iFrame "#". }
+    iApply "HΦ". by iFrame "∗ Hown_last #". }
+  destruct isGoodClis; iNamed "HgoodCli".
+  + iMod (mono_list_auth_own_update_app [(ver, pk)] with "Hputs") as "[Hputs #Hlb]".
+    iDestruct (mono_list_idx_own_get (length puts) with "Hlb") as "#Hidx".
+    { by rewrite lookup_snoc. }
+    wp_apply (server.wp_CallPut _ (Some _)).
+    { iFrame "#%". }
+    iApply "HΦ".
+    iFrame "∗ Hown_last #%". simpl in *.
+    iPureIntro. repeat split; try done.
+    * intros. decompose_list_elem_of; [naive_solver|].
+      by simplify_eq/=.
+    * intros. decompose_list_elem_of; [naive_solver|].
+      by simplify_eq/=.
+  + iApply fupd_wp.
+    iInv "Huid_inv" as ">@" "Hclose".
+    iMod (mono_list_auth_own_update_app [(ver, pk)] with "Hputs") as "[Hputs #Hlb]".
+    iMod ("Hclose" with "[Hputs]") as "_"; [iFrame|].
+    iModIntro.
+    iDestruct (mono_list_idx_own_get (length puts) with "Hlb") as "#Hidx".
+    { by rewrite lookup_snoc. }
+    wp_apply (server.wp_CallPut _ (Some _)).
+    { iFrame "#%". }
+    iApply "HΦ".
+    by iFrame "∗ Hown_last #%".
+Qed.
+
+Lemma wp_Client_Get ptr_c c (uid : w64) :
+  {{{
+    is_pkg_init client ∗
+    "Hclient" ∷ Client.own ptr_c c
+  }}}
+  ptr_c @ (ptrT.id client.Client.id) @ "Get" #uid
+  {{{
+    (ep : w64) (isReg : bool) (sl_pk : slice.t) err,
+    RET (#ep, #isReg, #sl_pk, #(ktcore.blame_to_u64 err));
+    "%Hblame" ∷ ⌜ktcore.BlameSpec err
+      {[ktcore.BlameServFull:=option_bool c.(Client.serv).(serv.good)]}⌝ ∗
+    "Herr" ∷
+      (if decide (err ≠ ∅)
+      then "Hclient" ∷ Client.own ptr_c c
+      else
+        (* guarantee mono digs and ep match digs. *)
+        ∃ new_digs dig link sig,
+        let c' := set Client.last (λ e, epoch.mk' ep dig link sig
+          (e.(epoch.digs) ++ new_digs) e.(epoch.cut) e.(epoch.serv)) c in
+        "Hclient" ∷ Client.own ptr_c c' ∗
+        "%Heq_ep" ∷ ⌜uint.Z ep = (uint.Z c.(Client.last).(epoch.epoch) + length new_digs)%Z⌝)
+  }}}.
+Proof.
+  wp_start as "@".
+  iNamed "Hclient".
+  iNamed "Hown_serv".
+  iNamed "Hown_last".
+  wp_auto.
+  wp_apply wp_CallHistory as "* @".
+  { iFrame "#".
+    case_match; try done.
+    iNamed "Hgood_last".
+    list_elem hist (uint.nat c.(Client.last).(epoch.epoch)) as e.
+    iDestruct (mono_list_idx_own_get with "His_hist") as "$"; [done|].
+    word. }
+  case_bool_decide as Heq_err; wp_auto;
+    rewrite ktcore.rw_Blame0 in Heq_err; subst.
+  2: {
+    iApply "HΦ".
+    iSplit; [done|].
+    case_decide; try done.
+    iFrame "∗#%". }
+  case_decide; try done.
+  iNamed "Herr".
+  wp_apply wp_getNextEp as "* @".
+  { iFrame "#". iPureIntro. by rewrite Heq_serv. }
+  wp_if_destruct.
+  { rewrite ktcore.rw_BlameServFull.
+    iApply "HΦ".
+    iSplit. 2: { case_decide; try done. by iFrame "∗#%". }
+    iApply ktcore.blame_one.
+    iIntros (?).
+    case_match; try done.
+    iApply "Hgenie".
+    rewrite Heq_sig_pk.
+    iDestruct ("Hgood" with "Hvalid_epoch Hgood_last [//]") as "@".
+    iFrame "#". }
+  iNamed "Hgenie".
+  iNamedSuffix "Hown_next" "_next".
+  wp_auto.
+  iDestruct "Hsl_hist" as (?) "[Hsl0_hist Hsl_hist]".
+  iDestruct (own_slice_len with "Hsl0_hist") as %[? ?].
+  iDestruct (big_sepL2_length with "Hsl_hist") as %?.
+  wp_apply wp_checkHist as "* @".
+  { iFrame "#". }
+  wp_if_destruct.
+  { rewrite ktcore.rw_BlameServFull.
+    iApply "HΦ".
+    iSplit. 2: { case_decide; try done. by iFrame "∗#%". }
+    iApply ktcore.blame_one.
+    iIntros (?).
+    case_match; try done.
+    iApply "Hgenie".
+    rewrite Heq_sig_pk Heq_vrf_pk.
+    iDestruct ("Hgood" with "Hvalid_epoch Hgood_last [//]") as "H".
+    iNamedSuffix "H" "0".
+    iDestruct (wish_getNextEp_det with "Hwish_getNextEp Hwish_getNextEp0") as %[-> ->].
+    iFrame "#". }
+  iNamed "Hgenie".
+  wp_apply wp_checkNonMemb as "* @".
+  { iFrame "#". }
+  wp_if_destruct.
+  { rewrite ktcore.rw_BlameServFull.
+    iApply "HΦ".
+    iSplit. 2: { case_decide; try done. by iFrame "∗#%". }
+    iApply ktcore.blame_one.
+    iIntros (?).
+    case_match; try done.
+    iApply "Hgenie".
+    rewrite Heq_sig_pk Heq_vrf_pk.
+    iDestruct ("Hgood" with "Hvalid_epoch Hgood_last [//]") as "H".
+    iNamedSuffix "H" "0".
+    iDestruct (wish_getNextEp_det with "Hwish_getNextEp Hwish_getNextEp0") as %[-> ->].
+    apply Forall2_length in Heq_hist0.
+    autorewrite with len in *.
+    iExactEq "Hwish_bound0". repeat f_equal. word. }
+  iNamed "Hgenie".
+  wp_if_destruct.
+  { rewrite ktcore.rw_BlameNone.
+    iApply "HΦ".
+    iSplit. { iPureIntro. apply ktcore.blame_none. }
+    case_decide; try done.
+    iFrame "∗ Hstruct_epoch_next #%". simpl in *.
+    iExists digs.
+    iPoseProof "Hwish_getNextEp" as "@".
+    rewrite -sep_assoc.
+    iSplit.
+    { rewrite /epoch.valid. admit. }
+    iSplit. { admit. }
+    { case_decide; iNamed "Hlen_vals"; subst; simpl; [word|done]. }
+    (* maybe unify code branches. *)
+Admitted.
 
 End proof.
 End client.

@@ -163,6 +163,9 @@ Local Instance make2_unfold key_type elem_type :
   ltac:(constructor; apply go.make2_map).
 Lemma wp_map_make2 (len : w64) key_type elem_type
   `{!TypedPointsto V} `{!IntoValTyped V elem_type} :
+
+Lemma wp_map_make2 :
+  is_comparable_go_type kt = true →
   {{{ True }}}
     #(functions go.make2 [go.MapType key_type elem_type]) #len
   {{{ mref, RET #mref; mref ↦$ (∅ : gmap K V) }}}.
@@ -189,6 +192,38 @@ Lemma wp_map_make1 key_type elem_type
     #(functions go.make1 [go.MapType key_type elem_type]) #()
   {{{ mref, RET #mref; mref ↦$ (∅ : gmap K V) }}}.
 Proof. wp_start. by wp_apply wp_map_make2. Qed.
+
+Lemma wp_map_clear l (m : gmap K V) :
+  {{{ l ↦$ m }}}
+    map.clear #l
+  {{{ RET #(); l ↦$ ∅ }}}.
+Proof.
+  rewrite own_map_unseal.
+  iIntros (?) "Hm HΦ".
+  iDestruct "Hm" as (?) "(Hm & % & %Hm)".
+  wp_call.
+  wp_bind (! _)%E.
+  rewrite [in #l]to_val_unseal /=.
+  iApply (wp_load with "[$]").
+  iIntros "!> Hm".
+  wp_pure.
+  iAssert (∃ v, heap_pointsto l (DfracOwn 1) v)%I with "[$Hm]" as "Hm".
+  iLöb as "IH" forall (v m Hm Φ).
+  destruct v; try by exfalso.
+  - wp_pures. destruct Hm as [-> ->].
+    iDestruct "Hm" as (v0) "Hm".
+    wp_apply (wp_store with "[$Hm]").
+    iIntros "Hm".
+    replace (LitV LitUnit) with #() by rewrite to_val_unseal //=.
+    iApply "HΦ".
+    rewrite /own_map_def. iFrame; auto.
+  - wp_pures.
+    destruct v; try by exfalso.
+    destruct v1; try by exfalso.
+    do 3 wp_pure.
+    destruct Hm as (k' & ? & ? & -> & -> & Hm & ->).
+    wp_apply ("IH" with "[] [$HΦ]"); eauto.
+Qed.
 
 Lemma own_map_not_nil mref m dq :
   mref ↦${dq} m -∗ ⌜ mref ≠ map.nil ⌝.

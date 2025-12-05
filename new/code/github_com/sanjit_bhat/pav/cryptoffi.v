@@ -6,33 +6,25 @@ Definition cryptoffi : go_string := "github.com/sanjit-bhat/pav/cryptoffi".
 
 Module cryptoffi.
 
-Module Hasher. Definition id : go_string := "github.com/sanjit-bhat/pav/cryptoffi.Hasher"%go. End Hasher.
-Module SigPrivateKey. Definition id : go_string := "github.com/sanjit-bhat/pav/cryptoffi.SigPrivateKey"%go. End SigPrivateKey.
-Module SigPublicKey. Definition id : go_string := "github.com/sanjit-bhat/pav/cryptoffi.SigPublicKey"%go. End SigPublicKey.
-Module VrfPrivateKey. Definition id : go_string := "github.com/sanjit-bhat/pav/cryptoffi.VrfPrivateKey"%go. End VrfPrivateKey.
-Module VrfPublicKey. Definition id : go_string := "github.com/sanjit-bhat/pav/cryptoffi.VrfPublicKey"%go. End VrfPublicKey.
-
 Section code.
 Context `{ffi_syntax}.
 
 
 Definition HashLen : val := #(W64 32).
 
-Axiom Hasher : go_type.
+Axiom Hasherⁱᵐᵖˡ : go.type.
 
 Definition NewHasher : go_string := "github.com/sanjit-bhat/pav/cryptoffi.NewHasher"%go.
 
-Axiom SigPrivateKey : go_type.
+Axiom SigPrivateKeyⁱᵐᵖˡ : go.type.
 
-Definition SigPublicKey : go_type := ed25519.PublicKey.
-#[global] Typeclasses Opaque SigPublicKey.
-#[global] Opaque SigPublicKey.
+Definition SigPublicKeyⁱᵐᵖˡ : go.type := ed25519.PublicKey.
 
 Definition SigGenerateKey : go_string := "github.com/sanjit-bhat/pav/cryptoffi.SigGenerateKey"%go.
 
-Axiom VrfPrivateKey : go_type.
+Axiom VrfPrivateKeyⁱᵐᵖˡ : go.type.
 
-Axiom VrfPublicKey : go_type.
+Axiom VrfPublicKeyⁱᵐᵖˡ : go.type.
 
 Definition VrfGenerateKey : go_string := "github.com/sanjit-bhat/pav/cryptoffi.VrfGenerateKey"%go.
 
@@ -42,7 +34,15 @@ Definition VrfPublicKeyDecode : go_string := "github.com/sanjit-bhat/pav/cryptof
 
 Definition RandBytes : go_string := "github.com/sanjit-bhat/pav/cryptoffi.RandBytes"%go.
 
-Definition vars' : list (go_string * go_type) := [].
+Definition Hasher : go.type := go.Named "github.com/sanjit-bhat/pav/cryptoffi.Hasher"%go [].
+
+Definition SigPrivateKey : go.type := go.Named "github.com/sanjit-bhat/pav/cryptoffi.SigPrivateKey"%go [].
+
+Definition SigPublicKey : go.type := go.Named "github.com/sanjit-bhat/pav/cryptoffi.SigPublicKey"%go [].
+
+Definition VrfPrivateKey : go.type := go.Named "github.com/sanjit-bhat/pav/cryptoffi.VrfPrivateKey"%go [].
+
+Definition VrfPublicKey : go.type := go.Named "github.com/sanjit-bhat/pav/cryptoffi.VrfPublicKey"%go [].
 
 Axiom NewHasherⁱᵐᵖˡ : val.
 
@@ -58,29 +58,8 @@ Axiom RandBytesⁱᵐᵖˡ : val.
 
 Definition functions' : list (go_string * val) := [(NewHasher, NewHasherⁱᵐᵖˡ); (SigGenerateKey, SigGenerateKeyⁱᵐᵖˡ); (VrfGenerateKey, VrfGenerateKeyⁱᵐᵖˡ); (VrfPublicKeyEncode, VrfPublicKeyEncodeⁱᵐᵖˡ); (VrfPublicKeyDecode, VrfPublicKeyDecodeⁱᵐᵖˡ); (RandBytes, RandBytesⁱᵐᵖˡ)].
 
-Axiom Hasher__Sumⁱᵐᵖˡ : val.
-
-Axiom Hasher__Writeⁱᵐᵖˡ : val.
-
-Axiom SigPrivateKey__Signⁱᵐᵖˡ : val.
-
-Axiom SigPublicKey__Verifyⁱᵐᵖˡ : val.
-
-Axiom VrfPrivateKey__Evaluateⁱᵐᵖˡ : val.
-
-Axiom VrfPrivateKey__Proveⁱᵐᵖˡ : val.
-
-Axiom VrfPrivateKey__PublicKeyⁱᵐᵖˡ : val.
-
-Axiom VrfPublicKey__Verifyⁱᵐᵖˡ : val.
-
-Definition msets' : list (go_string * (list (go_string * val))) := [(Hasher.id, []); (ptrT.id Hasher.id, [("Sum"%go, Hasher__Sumⁱᵐᵖˡ); ("Write"%go, Hasher__Writeⁱᵐᵖˡ)]); (SigPrivateKey.id, []); (ptrT.id SigPrivateKey.id, [("Sign"%go, SigPrivateKey__Signⁱᵐᵖˡ)]); (SigPublicKey.id, [("Verify"%go, SigPublicKey__Verifyⁱᵐᵖˡ)]); (ptrT.id SigPublicKey.id, [("Verify"%go, SigPublicKey__Verifyⁱᵐᵖˡ)]); (VrfPrivateKey.id, []); (ptrT.id VrfPrivateKey.id, [("Evaluate"%go, VrfPrivateKey__Evaluateⁱᵐᵖˡ); ("Prove"%go, VrfPrivateKey__Proveⁱᵐᵖˡ); ("PublicKey"%go, VrfPrivateKey__PublicKeyⁱᵐᵖˡ)]); (VrfPublicKey.id, []); (ptrT.id VrfPublicKey.id, [("Verify"%go, VrfPublicKey__Verifyⁱᵐᵖˡ)])].
-
 #[global] Instance info' : PkgInfo cryptoffi.cryptoffi :=
   {|
-    pkg_vars := vars';
-    pkg_functions := functions';
-    pkg_msets := msets';
     pkg_imported_pkgs := [code.crypto.ed25519.ed25519];
   |}.
 
@@ -88,9 +67,8 @@ Axiom _'init : val.
 
 Definition initialize' : val :=
   λ: <>,
-    package.init #cryptoffi.cryptoffi (λ: <>,
-      exception_do (do:  (ed25519.initialize' #());;;
-      do:  (package.alloc cryptoffi.cryptoffi #()))
+    package.init cryptoffi.cryptoffi (λ: <>,
+      exception_do (do:  (ed25519.initialize' #()))
       ).
 
 End code.

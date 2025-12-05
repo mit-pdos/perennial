@@ -102,7 +102,7 @@ Tactic Notation "wp_store_bad" :=
     |(repeat econstructor || fail "could not establish [has_go_type]") (* solve [has_go_type v' t] *)
     |solve_pointsto ()
     |reduction.pm_reflexivity
-    |first [wp_pure_filter (Rec BAnon BAnon _)|wp_finish]]
+    |first [wp_pure_filter (Rec BAnon BAnon _)|wp_end]]
   | _ => fail "wp_store: not a 'wp'"
   end.
 

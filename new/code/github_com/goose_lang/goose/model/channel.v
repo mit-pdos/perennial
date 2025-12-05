@@ -474,7 +474,7 @@ Definition BlockingSelect2ⁱᵐᵖˡ (T1 T2 : go.type) : val :=
     let: "zero1" := (GoAlloc T1 #()) in
     let: "zero2" := (GoAlloc T2 #()) in
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      (if: (((primitive.RandomUint64ⁱᵐᵖˡ [] #()) #()) `rem`⟨go.uint64⟩ #(W64 2)) =⟨go.uint64⟩ #(W64 0)
+      (if: ((primitive.RandomUint64ⁱᵐᵖˡ #()) `rem`⟨go.uint64⟩ #(W64 2)) =⟨go.uint64⟩ #(W64 0)
       then
         (if: (![SelectDir] "dir1") =⟨go.uint64⟩ SelectSend
         then
@@ -539,7 +539,7 @@ Definition NonBlockingSelect2ⁱᵐᵖˡ (T1 T2 : go.type) : val :=
     let: "ch1" := (go.AllocValue (go.PointerType (Channel T1)) "ch1") in
     let: "zero1" := (GoAlloc T1 #()) in
     let: "zero2" := (GoAlloc T2 #()) in
-    (if: (((primitive.RandomUint64ⁱᵐᵖˡ [] #()) #()) `rem`⟨go.uint64⟩ #(W64 2)) =⟨go.uint64⟩ #(W64 0)
+    (if: ((primitive.RandomUint64ⁱᵐᵖˡ #()) `rem`⟨go.uint64⟩ #(W64 2)) =⟨go.uint64⟩ #(W64 0)
     then
       (if: (![SelectDir] "dir1") =⟨go.uint64⟩ SelectSend
       then
@@ -651,7 +651,7 @@ Definition BlockingSelect3ⁱᵐᵖˡ (T1 T2 T3 : go.type) : val :=
     let: "zero3" := (GoAlloc T3 #()) in
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       let: "r" := (GoAlloc go.uint64 #()) in
-      let: "$r0" := (((primitive.RandomUint64ⁱᵐᵖˡ [] #()) #()) `rem`⟨go.uint64⟩ #(W64 3)) in
+      let: "$r0" := ((primitive.RandomUint64ⁱᵐᵖˡ #()) `rem`⟨go.uint64⟩ #(W64 3)) in
       do:  ("r" <-[go.uint64] "$r0");;;
       let: "$sw" := (![go.uint64] "r") in
       (if: "$sw" =⟨go.uint64⟩ #(W64 0)
@@ -749,7 +749,7 @@ Definition NonBlockingSelect3ⁱᵐᵖˡ (T1 T2 T3 : go.type) : val :=
     let: "zero2" := (GoAlloc T2 #()) in
     let: "zero3" := (GoAlloc T3 #()) in
     let: "start" := (GoAlloc go.uint64 #()) in
-    let: "$r0" := (((primitive.RandomUint64ⁱᵐᵖˡ [] #()) #()) `rem`⟨go.uint64⟩ #(W64 3)) in
+    let: "$r0" := ((primitive.RandomUint64ⁱᵐᵖˡ #()) `rem`⟨go.uint64⟩ #(W64 3)) in
     do:  ("start" <-[go.uint64] "$r0");;;
     (let: "i" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 0) in

@@ -127,6 +127,14 @@ Definition noCopyⁱᵐᵖˡ : go.type := go.StructType [
 
 Axiom Mapⁱᵐᵖˡ : go.type.
 
+Axiom readOnlyⁱᵐᵖˡ : go.type.
+
+Definition expunged : go_string := "sync.expunged"%go.
+
+Axiom entryⁱᵐᵖˡ : go.type.
+
+Definition newEntry : go_string := "sync.newEntry"%go.
+
 Definition Lockerⁱᵐᵖˡ : go.type := go.InterfaceType [go.MethodElem #"Lock"%go (go.Signature [] #false []); go.MethodElem #"Unlock"%go (go.Signature [] #false [])].
 
 Definition Mutex : go.type := go.Named "sync.Mutex"%go [].
@@ -813,6 +821,10 @@ Definition WaitGroup__Goⁱᵐᵖˡ : val :=
 
 Definition Map : go.type := go.Named "sync.Map"%go [].
 
+Definition readOnly : go.type := go.Named "sync.readOnly"%go [].
+
+Definition entry : go.type := go.Named "sync.entry"%go [].
+
 Definition Pool : go.type := go.Named "sync.Pool"%go [].
 
 Definition poolLocalInternal : go.type := go.Named "sync.poolLocalInternal"%go [].
@@ -828,6 +840,8 @@ Definition dequeueNil : go.type := go.Named "sync.dequeueNil"%go [].
 Definition poolChain : go.type := go.Named "sync.poolChain"%go [].
 
 Definition poolChainElt : go.type := go.Named "sync.poolChainElt"%go [].
+
+Axiom newEntryⁱᵐᵖˡ : val.
 
 Axiom OnceFuncⁱᵐᵖˡ : val.
 
@@ -859,7 +873,7 @@ Axiom fatalⁱᵐᵖˡ : val.
 
 Axiom syscall_hasWaitingReadersⁱᵐᵖˡ : val.
 
-Definition functions' : list (go_string * val) := [(NewCond, NewCondⁱᵐᵖˡ); (OnceFunc, OnceFuncⁱᵐᵖˡ); (OnceValue, OnceValueⁱᵐᵖˡ); (OnceValues, OnceValuesⁱᵐᵖˡ); (runtime_randn, runtime_randnⁱᵐᵖˡ); (poolRaceAddr, poolRaceAddrⁱᵐᵖˡ); (poolCleanup, poolCleanupⁱᵐᵖˡ); (indexLocal, indexLocalⁱᵐᵖˡ); (runtime_registerPoolCleanup, runtime_registerPoolCleanupⁱᵐᵖˡ); (runtime_procPin, runtime_procPinⁱᵐᵖˡ); (runtime_procUnpin, runtime_procUnpinⁱᵐᵖˡ); (runtime_LoadAcquintptr, runtime_LoadAcquintptrⁱᵐᵖˡ); (runtime_StoreReluintptr, runtime_StoreReluintptrⁱᵐᵖˡ); (runtime_Semacquire, runtime_Semacquireⁱᵐᵖˡ); (runtime_SemacquireWaitGroup, runtime_SemacquireWaitGroupⁱᵐᵖˡ); (runtime_SemacquireRWMutexR, runtime_SemacquireRWMutexRⁱᵐᵖˡ); (runtime_SemacquireRWMutex, runtime_SemacquireRWMutexⁱᵐᵖˡ); (runtime_Semrelease, runtime_Semreleaseⁱᵐᵖˡ); (runtime_notifyListAdd, runtime_notifyListAddⁱᵐᵖˡ); (runtime_notifyListWait, runtime_notifyListWaitⁱᵐᵖˡ); (runtime_notifyListNotifyAll, runtime_notifyListNotifyAllⁱᵐᵖˡ); (runtime_notifyListNotifyOne, runtime_notifyListNotifyOneⁱᵐᵖˡ); (runtime_notifyListCheck, runtime_notifyListCheckⁱᵐᵖˡ); (throw, throwⁱᵐᵖˡ); (fatal, fatalⁱᵐᵖˡ); (syscall_hasWaitingReaders, syscall_hasWaitingReadersⁱᵐᵖˡ)].
+Definition functions' : list (go_string * val) := [(NewCond, NewCondⁱᵐᵖˡ); (newEntry, newEntryⁱᵐᵖˡ); (OnceFunc, OnceFuncⁱᵐᵖˡ); (OnceValue, OnceValueⁱᵐᵖˡ); (OnceValues, OnceValuesⁱᵐᵖˡ); (runtime_randn, runtime_randnⁱᵐᵖˡ); (poolRaceAddr, poolRaceAddrⁱᵐᵖˡ); (poolCleanup, poolCleanupⁱᵐᵖˡ); (indexLocal, indexLocalⁱᵐᵖˡ); (runtime_registerPoolCleanup, runtime_registerPoolCleanupⁱᵐᵖˡ); (runtime_procPin, runtime_procPinⁱᵐᵖˡ); (runtime_procUnpin, runtime_procUnpinⁱᵐᵖˡ); (runtime_LoadAcquintptr, runtime_LoadAcquintptrⁱᵐᵖˡ); (runtime_StoreReluintptr, runtime_StoreReluintptrⁱᵐᵖˡ); (runtime_Semacquire, runtime_Semacquireⁱᵐᵖˡ); (runtime_SemacquireWaitGroup, runtime_SemacquireWaitGroupⁱᵐᵖˡ); (runtime_SemacquireRWMutexR, runtime_SemacquireRWMutexRⁱᵐᵖˡ); (runtime_SemacquireRWMutex, runtime_SemacquireRWMutexⁱᵐᵖˡ); (runtime_Semrelease, runtime_Semreleaseⁱᵐᵖˡ); (runtime_notifyListAdd, runtime_notifyListAddⁱᵐᵖˡ); (runtime_notifyListWait, runtime_notifyListWaitⁱᵐᵖˡ); (runtime_notifyListNotifyAll, runtime_notifyListNotifyAllⁱᵐᵖˡ); (runtime_notifyListNotifyOne, runtime_notifyListNotifyOneⁱᵐᵖˡ); (runtime_notifyListCheck, runtime_notifyListCheckⁱᵐᵖˡ); (throw, throwⁱᵐᵖˡ); (fatal, fatalⁱᵐᵖˡ); (syscall_hasWaitingReaders, syscall_hasWaitingReadersⁱᵐᵖˡ)].
 
 #[global] Instance info' : PkgInfo sync.sync :=
   {|
@@ -871,9 +885,12 @@ Axiom _'init : val.
 Definition initialize' : val :=
   λ: <>,
     package.init sync.sync (λ: <>,
-      exception_do (do:  (synctest.initialize' #());;;
+      exception_do (do:  (GoGlobalAlloc expunged (go.PointerType (go.InterfaceType [])));;;
+      do:  (synctest.initialize' #());;;
       do:  (race.initialize' #());;;
-      do:  (atomic.initialize' #()))
+      do:  (atomic.initialize' #());;;
+      let: "$r0" := (GoAlloc (go.InterfaceType []) #()) in
+      do:  ((GloblalVarAddr #expunged) <-[go.PointerType (go.InterfaceType [])] "$r0"))
       ).
 
 End code.
