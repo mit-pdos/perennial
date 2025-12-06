@@ -292,9 +292,7 @@ Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} {core_sem : g
 Program Global Instance typed_pointsto_loc : TypedPointsto loc :=
   {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
 Final Obligation.
-Proof. iIntros "* H1 H2". iCombine "H1 H2" gives %Heq.
-       (* FIXME: bring back inj instances. *)
-       naive_solver. Qed.
+Proof. iIntros "* H1 H2". iCombine "H1 H2" gives %Heq. naive_solver. Qed.
 
 Program Global Instance typed_pointsto_w64 : TypedPointsto w64 :=
   {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.

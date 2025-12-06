@@ -273,6 +273,19 @@ Class GoZeroValEq t V `{!ZeroVal V} `{!GoSemanticsFunctions} :=
 Global Hint Mode GoZeroValEq ! - - - : typeclass_instances.
 Global Arguments go_zero_val_eq (t) V {_ _ _}.
 
+Class BasicIntoValInj :=
+  {
+    #[global] into_val_loc_inj :: Inj eq eq (into_val (V:=loc));
+    #[global] into_val_slice_inj :: Inj eq eq (into_val (V:=slice.t));
+    #[global] into_val_w64_inj :: Inj eq eq (into_val (V:=w64));
+    #[global] into_val_w32_inj :: Inj eq eq (into_val (V:=w32));
+    #[global] into_val_w16_inj :: Inj eq eq (into_val (V:=w16));
+    #[global] into_val_w8_inj :: Inj eq eq (into_val (V:=w8));
+    #[global] into_val_bool_inj :: Inj eq eq (into_val (V:=bool));
+    #[global] into_val_string_inj :: Inj eq eq (into_val (V:=go_string));
+    #[global] interface_into_val_inj :: Inj eq eq (into_val (V:=interface.t));
+  }.
+
 (** [go.CoreSemantics] defines the basics of when a GoContext is valid,
     excluding predeclared types (including primitives), arrays, slice, map, and
     channels, each of which is in their own file.
@@ -280,7 +293,9 @@ Global Arguments go_zero_val_eq (t) V {_ _ _}.
     The rules prefixed with [_] should not be used in any program proofs. *)
 Class CoreSemantics :=
 {
+  (* FIXME: maybe don't put GoSemanticsFunctions in here? *)
   #[global] core_semantics_data :: GoSemanticsFunctions;
+  #[global] basic_into_val_inj :: BasicIntoValInj;
 
   #[global] go_op_step o t args :: IsGoStepPureDet (GoOp o t) args (go_op o t args);
   #[global] go_alloc_step t args :: IsGoStepPureDet (GoAlloc t) args (alloc t args);
