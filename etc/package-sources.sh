@@ -57,10 +57,19 @@ elif [ "$package" = "new-goose" ]; then
     new/proof/github_com/goose_lang/std.v
   ls -1 new/code/github_com/goose_lang/goose/model/channel.v \
     new/{code,trusted_code}/github_com/goose_lang/primitive.v \
+    new/experiments/{chan,glob}.v \
     new/code/internal/race.v \
     new/{code,trusted_code}/sync.v \
-    new/{code,trusted_code}/sync/atomic.v
-  ls -1 new/proof/{proof_prelude,disk_prelude,grove_prelude}.v
+    new/{code,trusted_code}/sync/atomic.v \
+    new/proof/{proof_prelude,disk_prelude,grove_prelude}.v
+  # standard library (subset; some standard library is in directories)
+  ls -1 new/{code,generatedproof,proof}/*.v
+  ls -1 new/{code,generatedproof}/{internal,math}/*.v
+  ls -1 new/proof/internal/*.v
+  ls -1 new/{code,generatedproof,proof}/github_com/goose_lang/{std.v,std/std_core.v}
+  find_build new/{generatedproof,manualproof,trusted_code}
+  find_build new/proof/github_com/goose_lang/goose/model/channel
+  ls -1 new/proof/github_com/goose_lang/primitive.v
 elif [ "$package" = "old-goose" ]; then
   goose_common
   find_build src/goose_lang
@@ -72,9 +81,10 @@ elif [ "$package" = "old-goose" ]; then
   ls -1 external/Goose/github_com/tchajed/marshal.v
   ls -1 \
     src/program_proof/unittest.v \
-    src/program_proof/{proof_prelude,disk_lib,disk_prelude}.v \
+    src/program_proof/{proof_prelude,disk_lib,disk_prelude,grove_prelude}.v \
     src/program_proof/marshal*.v \
     src/program_proof/std_proof.v
+  find_build src/program_proof/grove_shared/
 else
   echo "unknown package $package" 1>&2
   exit 1
