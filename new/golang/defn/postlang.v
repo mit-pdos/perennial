@@ -299,8 +299,8 @@ Class CoreSemantics :=
 
   #[global] go_op_step o t args :: IsGoStepPureDet (GoOp o t) args (go_op o t args);
   #[global] go_alloc_step t args :: IsGoStepPureDet (GoAlloc t) args (alloc t args);
-  #[global] go_load_step t args :: IsGoStepPureDet (GoStore t) args (load t args);
-  #[global] go_store_step t args :: IsGoStepPureDet (GoStore t) args (store t args);
+  #[global] go_load_step t (l : loc) :: IsGoStepPureDet (GoLoad t) #l (load t #l);
+  #[global] go_store_step t (l : loc) v :: IsGoStepPureDet (GoStore t) (#l, v)%V (store t #l v);
   #[global] go_func_resolve_step n ts :: IsGoStepPureDet (FuncResolve n ts) #() #(functions n ts);
   #[global] go_method_resolve_step m t :: IsGoStepPureDet (MethodResolve t m) #() #(methods t m);
   #[global] go_global_var_addr_step v :: IsGoStepPureDet (GlobalVarAddr v) #() #(global_addr v);

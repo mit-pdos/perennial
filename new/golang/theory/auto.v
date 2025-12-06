@@ -363,14 +363,14 @@ Class foo_type_assumptions : Prop :=
     foo_zero_val : zero_val foo_t = mk (zero_val _) (zero_val _);
     foo_go_zero_val : go_zero_val foo = #(zero_val foo_t);
     foo_impl_go_zero_val : go_zero_val foo_impl = #(zero_val foo_t);
-    #[global] foo_get_a x :: IsStructFieldGet foo "a" #x #x.(a);
-    #[global] foo_get_b x :: IsStructFieldGet foo "b" #x #x.(b);
-    #[global] foo_set_a x a' :: IsStructFieldSet foo "a" #x #a' #(x <|a := a'|>);
-    #[global] foo_set_b x b' :: IsStructFieldSet foo "b" #x #b' #(x <|b := b'|>);
-    #[global] foo_impl_get_a x :: IsStructFieldGet foo_impl "a" #x #x.(a);
-    #[global] foo_impl_get_b x :: IsStructFieldGet foo_impl "b" #x #x.(b);
-    #[global] foo_impl_set_a x a' :: IsStructFieldSet foo_impl "a" #x #a' #(x <|a := a'|>);
-    #[global] foo_impl_set_b x b' :: IsStructFieldSet foo_impl "b" #x #b' #(x <|b := b'|>);
+    #[global] foo_get_a x :: go.IsGoStepPureDet (StructFieldGet foo "a") #x #x.(a);
+    #[global] foo_get_b x :: go.IsGoStepPureDet (StructFieldGet foo "b") #x #x.(b);
+    #[global] foo_set_a x a' :: go.IsGoStepPureDet (StructFieldSet foo "a") (#x, #a')%V #(x <|a := a'|>);
+    #[global] foo_set_b x b' :: go.IsGoStepPureDet (StructFieldSet foo "b") (#x, #b')%V #(x <|b := b'|>);
+    #[global] foo_impl_get_a x :: go.IsGoStepPureDet (StructFieldGet foo_impl "a") #x #x.(a);
+    #[global] foo_impl_get_b x :: go.IsGoStepPureDet (StructFieldGet foo_impl "b") #x #x.(b);
+    #[global] foo_impl_set_a x a' :: go.IsGoStepPureDet (StructFieldSet foo_impl "a") (#x, #a') #(x <|a := a'|>);
+    #[global] foo_impl_set_b x b' :: go.IsGoStepPureDet (StructFieldSet foo_impl "b") (#x, #b') #(x <|b := b'|>);
   }.
 
 Program Global Instance typed_pointsto_foo : TypedPointsto foo_t :=

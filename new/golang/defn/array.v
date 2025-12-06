@@ -7,11 +7,15 @@ Context {go_lctx : GoLocalContext} {go_gctx : GoGlobalContext}.
 
 Class ArraySemantics `{!GoSemanticsFunctions} :=
 {
+  #[global] array_set_step t V n (vs : array.t t V n) (i : w64) (v : V) ::
+    go.IsGoStepPureDet ArraySet (#vs, (#i, #v))%V
+    (# (array.mk t n (<[Z.to_nat (word.signed i):=v]> (array.arr vs))));
+
+  #[global] array_length_step vs ::
+    go.IsGoStepPureDet ArrayLength (ArrayV vs)
+    (if decide (length vs < 2 ^ 63) then #(W64 (length vs)) else AngelicExit (# ()));
+
   #[global] equals_array n t (H : go.IsComparable t) :: go.IsComparable (go.ArrayType n t);
-  array_set_eq ty ty' V V' n n' (a : array.t ty V n) (a' : array.t ty' V' n')
-     v v' (i : nat) :
-     #a = #a' → #v = #v' →
-     #(array.mk ty n $ <[i:=v]> (array.arr a)) = #(array.mk ty' n' $ <[i:=v']> (array.arr a'));
 
   #[global] go_zero_val_eq_array ty V n `{!ZeroVal V} `{!go.GoZeroValEq ty V} ::
     go.GoZeroValEq (go.ArrayType n ty) (array.t ty V n);
@@ -48,9 +52,8 @@ Class ArraySemantics `{!GoSemanticsFunctions} :=
     (Hinrange : (array.arr a) !! (Z.to_nat i) = Some v):
     index (go.ArrayType n elem_type) i #a = #v;
 
-  (* this only supports unkeyed array literals; goose will unfold them for now. *)
-  composite_literal_array n elem_type kvs :
-    composite_literal (go.ArrayType n elem_type) (LiteralValue kvs) =
+  #[global] composite_literal_array_step n elem_type kvs ::
+    go.IsGoStepPureDet (CompositeLiteral $ go.ArrayType n elem_type) (LiteralValue kvs)
     (foldl (λ '(cur_index, expr_so_far) ke,
              match ke with
              | KeyedElement None (ElementExpression e) =>
@@ -66,6 +69,16 @@ Class ArraySemantics `{!GoSemanticsFunctions} :=
              | _ => (0, Panic "invalid array literal")
              end
       ) (0, Val (go_zero_val (go.ArrayType n elem_type))) kvs).2;
+
+  (* Not an instance because there's a custom WP. *)
+  slice_array_step n elem_type p low high :
+    go.IsGoStepPureDet (Slice $ go.ArrayType n elem_type) (#p, (#low, #high))%V
+       (if decide (0 ≤ sint.Z low ≤ sint.Z high ≤ n) then
+          #(slice.mk (array_index_ref elem_type (word.signed low) p)
+              (word.sub high low)
+              (word.sub (W64 n) low))
+        else Panic "slice: out of bounds");
+
   array_index_ref_add t i j l :
     array_index_ref t (i + j) l = array_index_ref t j (array_index_ref t i l);
 }.

@@ -10,30 +10,6 @@ Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
 Context `{!ZeroVal V} `{!go.GoZeroValEq t V}.
 Context `{!TypedPointsto (Σ:=Σ) V}.
 Context `{!IntoValTyped V t}.
-Context `{!Inj eq eq (into_val (V:=V))}.
-
-Local Ltac solve_pure :=
-  iIntros "% * _ % HΦ"; iApply wp_GoInstruction;
-  [ intros; repeat econstructor | ];
-  iNext; iIntros "* %Hstep"; inv Hstep; inv Hpure;
-  iIntros "H"; iIntros "$ !>"; by iApply "HΦ".
-
-Global Instance wp_ArraySet n (vs : array.t t V n) (i : w64) (v : V) :
-  PureWp True (ArraySet (#vs, (#i, #v))%V)
-    (# (array.mk t n (<[Z.to_nat (word.signed i):=v]> (array.arr vs)))).
-Proof.
-  iIntros "% * _ % HΦ"; iApply wp_GoInstruction;
-  [ intros; repeat econstructor | ].
-  iNext; iIntros "* %Hstep".
-  inv Hstep. inv Hpure.
-  iIntros "H"; iIntros "$ !>".
-  erewrite go.array_set_eq; first (by iApply "HΦ"); done.
-Qed.
-
-Global Instance wp_ArrayLength vs :
-  PureWp True (ArrayLength (ArrayV vs))
-      (if decide (length vs < 2 ^ 63) then #(W64 (length vs)) else AngelicExit (# ())).
-Proof. solve_pure. Qed.
 
 Program Global Instance typed_pointsto_array n :
   TypedPointsto (array.t t V n) :=
@@ -183,34 +159,6 @@ Proof.
     f_equal. len.
 Qed.
 
-Global Instance pure_wp_array_composite_literal elem_type n (kvs : list keyed_element) :
-  PureWp True (CompositeLiteral (go.ArrayType n elem_type) (LiteralValue kvs))
-    (foldl (λ '(cur_index, expr_so_far) (ke : keyed_element),
-              match ke with
-              | KeyedElement (Some (KeyInteger cur_index)) (ElementExpression e) =>
-                  (cur_index + 1, ArraySet (expr_so_far, (# (W64 cur_index), e))%E)
-              | KeyedElement (Some (KeyInteger cur_index)) (ElementLiteralValue l) =>
-                  (cur_index + 1,
-                     ArraySet
-                       (expr_so_far, (# (W64 cur_index), CompositeLiteral elem_type (LiteralValue l)))%E)
-              | KeyedElement None (ElementExpression e) =>
-                  (cur_index + 1, ArraySet (expr_so_far, (# (W64 cur_index), e))%E)
-              | KeyedElement None (ElementLiteralValue l) =>
-                  (cur_index + 1,
-                     ArraySet
-                       (expr_so_far, (# (W64 cur_index), CompositeLiteral elem_type (LiteralValue l)))%E)
-              | _ => (0, Panic "invalid array literal")
-              end)
-       (0, Val $ go_zero_val (go.ArrayType n elem_type)) kvs).2.
-Proof.
-  iIntros "% * _ % HΦ"; iApply wp_GoInstruction;
-  [ intros; repeat econstructor | ].
-  iNext; iIntros "* %Hstep".
-  inv Hstep. inv Hpure.
-  iIntros "H"; iIntros "$ !>".
-  rewrite go.composite_literal_array. by iApply "HΦ".
-Qed.
-
 Global Instance pure_wp_slice_array elem_type n p low high :
   PureWp (0 ≤ word.signed low ≤ word.signed high ≤ n)
     (Slice (go.ArrayType n elem_type) (#p, (#low, #high))%V)
@@ -218,11 +166,8 @@ Global Instance pure_wp_slice_array elem_type n p low high :
            (word.sub high low)
            (word.sub (W64 n) low)).
 Proof.
-  pure_wp_start.
-  iApply (wp_GoInstruction []).
-  { intros; repeat econstructor. }
-  iNext; iIntros "* %Hstep"; inv Hstep; inv Hpure. rewrite decide_True //.
-  iIntros "H"; iIntros "$ !>". simpl. wp_pures. by iApply "HΦ".
+  pose proof go.slice_array_step. pure_wp_start.
+  rewrite decide_True //. wp_pures. iApply "HΦ".
 Qed.
 
 End lemmas.
