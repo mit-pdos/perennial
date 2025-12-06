@@ -15,9 +15,7 @@ def run_command(args, dry_run=False, verbose=False):
 def main():
     import argparse
 
-    parser = argparse.ArgumentParser(
-        description="Update goose output from goose tests and go-nfsd"
-    )
+    parser = argparse.ArgumentParser(description="Update goose output")
     parser.add_argument(
         "--compile", help="also compile and install goose", action="store_true"
     )
@@ -48,12 +46,6 @@ def main():
         "--channel",
         help="translate channel model",
         action="store_true",
-    )
-    parser.add_argument(
-        "--nfsd",
-        help="path to go-nfsd repo (skip translation if not provided)",
-        metavar="GO_NFSD_PATH",
-        default=None,
     )
     parser.add_argument(
         "--examples",
@@ -107,7 +99,6 @@ def main():
     args = parser.parse_args()
 
     goose_dir = args.goose
-    go_nfsd_dir = args.nfsd
     perennial_dir = path.join(path.dirname(os.path.realpath(__file__)), "..")
     examples_dir = args.examples
     gokv_dir = args.gokv
@@ -120,8 +111,6 @@ def main():
 
     if not os.path.isdir(goose_dir):
         parser.error("goose directory does not exist")
-    if go_nfsd_dir is not None and not os.path.isdir(go_nfsd_dir):
-        parser.error("go-nfsd directory does not exist")
     if examples_dir is not None and not os.path.isdir(examples_dir):
         parser.error("perennial-examples directory does not exist")
     if gokv_dir is not None and not os.path.isdir(gokv_dir):
@@ -193,15 +182,6 @@ def main():
             "./unittest/...",
             "./wal",
         )
-
-    run_goose(
-        go_nfsd_dir,
-        "./kvs",
-        "./super",
-        "./fh",
-        "./simple",
-        "./nfstypes",
-    )
 
     run_goose(
         examples_dir,
