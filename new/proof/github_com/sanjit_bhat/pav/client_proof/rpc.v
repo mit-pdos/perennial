@@ -97,10 +97,6 @@ Proof.
   by replace nextEp with nextEp0 in * by word.
 Qed.
 
-(* FIXME: needed for lia to unify [length digs] terms where one has keys_ty and
-the other has its unfolding *)
-Hint Unfold keys_ty : word.
-
 Lemma wp_CallHistory s γ (uid prevEpoch prevVerLen : w64) :
   {{{
     is_pkg_init server ∗
@@ -218,8 +214,6 @@ Proof.
         iFrame "H". }
       { word. }
       iPureIntro. simpl in *.
-      remember (length (entry.2 !!! _)) as w.
-      rewrite -Heqw in Hmono.
       word. }
 
   rewrite ktcore.rw_BlameNone.
@@ -253,15 +247,8 @@ Proof.
     σ.(state.hist).*1 None prev.(epoch.serv)).
   iFrame "#%". simpl in *.
 
-  iSplit.
-  { remember (length (entry.2 !!! _)) as w0.
-    rewrite -Heqw0 in Hmono.
-    remember (length (lastKeys !!! _)) as w1.
-    rewrite -Heqw1.
-    word. }
-  iSplit.
-  2: { iPureIntro. repeat split; try done.
-       word. }
+  iSplit; [word|].
+  iSplit. 2: { iPureIntro. repeat split; try done. word. }
 
   iAssert (⌜hist0 `prefix_of` σ.(state.hist)⌝)%I as %[newDigs Ht].
   { iDestruct (mono_list_lb_valid with "His_hist Hnew_hist") as %[?|[newDigs ?]]; [done|].
