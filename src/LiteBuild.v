@@ -17,11 +17,6 @@ From Perennial.goose_lang Require
      crash_lock
      rwlock.
 
-(* a couple program proofs that are pretty interesting on their own and include
-the wpc infrastructure *)
-From Perennial.program_proof Require
-     wal.circ_proof_crash.
-
 (* Goose tests: goose_unittest has the syntactic tests while generated_test
 includes running all the semantics tests *)
 From Perennial.program_proof Require unittest.
