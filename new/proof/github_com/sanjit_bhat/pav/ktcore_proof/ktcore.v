@@ -31,13 +31,30 @@ Definition Blame := gset BlameTys.
 
 Definition blame_to_u64 (err : Blame) : w64. Admitted.
 
-(* interp maps parties to is_good flags. reqs for establishing BlameSpec:
-- interp has flags for everyone in err gset.
-- it can't be the case that all err flags are true. *)
+(* [BlameSpec] formalizes the notion of blaming a set of parties who
+are responsible for a bad thing happening.
+[interp] maps parties to is_good flags. *)
 Definition BlameSpec (err : Blame) (interp : gmap BlameTys bool) :=
   err = ∅ ∨
   err = {[ BlameUnknown ]} ∨
-  (err ⊆ dom interp ∧ ¬ ∀ p, p ∈ err → interp !! p = Some true).
+  (* exists bad party in blame set. *)
+  (∃ p, p ∈ err ∧ interp !! p = Some false).
+
+(* TODO: curr spec allows Blame'ing more parties than are strictly responsible.
+e.g., if only server is responsible for a merkle proof not verifying,
+the client dev can blame both ServerFull and AuditorFull.
+to fix, need notion of "minimal party set".
+e.g., this might be a def, which intuitively requires that for any Blamed party,
+all remaining parties are good.
+
+TODO: i'm not sure if this is provable.
+we can't unconditionally prove that someone is good.
+we can only prove that someone must be bad after observing a bad event.
+
+TODO: minmality should take into account that ServSig is a strictly
+more minimal assumption than ServFull. *)
+Definition minimal (err : Blame) (interp : gmap BlameTys bool) :=
+  ∀ p p', p ∈ err → p' ∈ (err ∖ {[p]}) → interp !! p' = Some true.
 
 End blame.
 
@@ -88,17 +105,16 @@ Proof. rewrite /BlameSpec. naive_solver. Qed.
 Lemma blame_unknown interp : BlameSpec {[ BlameUnknown ]} interp.
 Proof. rewrite /BlameSpec. naive_solver. Qed.
 
-(* iProp form so it can be iApply'd and proven with pers resources. *)
+(* iProp form so it can be iApply'd and proven with iris resources. *)
 Lemma blame_one party good interp :
   (* written as "not good" bc goodness is how to learn contra. *)
   (¬ ⌜good = true⌝ : iProp Σ) -∗
   ⌜BlameSpec {[ party ]} (<[party:=good]>interp)⌝.
 Proof.
   iPureIntro. intros ?. right. right.
-  split; [set_solver|].
-  intros HB.
-  opose proof (HB party _); [set_solver|].
-  simplify_map_eq/=.
+  destruct good; try done.
+  exists party.
+  split; [set_solver|by simplify_map_eq/=].
 Qed.
 
 Lemma blame_two party0 party1 good0 good1 interp :
@@ -107,11 +123,13 @@ Lemma blame_two party0 party1 good0 good1 interp :
   ⌜BlameSpec {[ party0; party1 ]} (<[party0:=good0]>(<[party1:=good1]>interp))⌝.
 Proof.
   iPureIntro. intros [? Heq%Classical_Prop.not_and_or]. right. right.
-  split; [set_solver|].
-  intros HB.
-  opose proof (HB party0 _) as Hm0; [set_solver|].
-  opose proof (HB party1 _) as Hm1; [set_solver|].
-  destruct Heq as [?|?]; simplify_map_eq/=.
+  destruct Heq as [?|?].
+  - destruct good0; try done.
+    exists party0.
+    split; [set_solver|by simplify_map_eq/=].
+  - destruct good1; try done.
+    exists party1.
+    split; [set_solver|by simplify_map_eq/=].
 Qed.
 
 Definition wish_VrfSig pk vrfPk sig : iProp Σ :=
