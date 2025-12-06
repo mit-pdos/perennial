@@ -97,8 +97,10 @@ Gibson's masters thesis, "[Waddle: A proven interpreter and test framework for a
 subset of the Go
 semantics](https://pdos.csail.mit.edu/papers/gibsons-meng.pdf)".
 
-The proof of GoJournal's correctness is described in the OSDI paper,
-"[GoJournal: a verified, concurrent, crash-safe journaling
+The proofs for GoJournal are now in
+[mit-pdos/gojournal-proof](https://github.com/mit-pdos/gojournal-proof). The
+proof of GoJournal's correctness is described in the OSDI paper, "[GoJournal: a
+verified, concurrent, crash-safe journaling
 system](https://www.chajed.io/papers/gojournal:osdi2021.pdf)". The transaction
 system built on top, used for DaisyNFS, is described in Mark Theng's masters
 thesis, "[GoTxn: Verifying a Crash-Safe, Concurrent Transaction
