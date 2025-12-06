@@ -305,7 +305,6 @@ Class CoreSemantics :=
   #[global] go_method_resolve_step m t :: IsGoStepPureDet (MethodResolve t m) #() #(methods t m);
   #[global] go_global_var_addr_step v :: IsGoStepPureDet (GlobalVarAddr v) #() #(global_addr v);
   #[global] struct_field_ref_step t f l :: IsGoStepPureDet (StructFieldRef t f) #l #(struct_field_ref t f l);
-  #[global] go_interface_get_step m t v :: IsGoStepPureDet (InterfaceGet m) #(interface.mk t v) #(methods t m);
   #[global] go_interface_make_step t v :: IsGoStepPureDet (InterfaceMake t) v #(interface.mk t v);
   #[global] composite_literal_step t (v : val) :: IsGoStepPureDet (CompositeLiteral t) v (composite_literal t v);
   go_prealloc_step : is_go_step_pure GoPrealloc #() = (λ e, ∃ (l : loc), e = #l);
@@ -431,7 +430,10 @@ Class CoreSemantics :=
                  | _ => Panic "invalid Go code"
                  end
           ) (Val $ go_zero_val $ go.StructType fds) l
-    end
+    end;
+
+  to_underlying_not_named t :
+    to_underlying t = match t with | go.Named _ _ => to_underlying t | _ => t end;
 }.
 
 End defs.

@@ -9,7 +9,7 @@ Class ArraySemantics `{!GoSemanticsFunctions} :=
 {
   #[global] array_set_step t V n (vs : array.t t V n) (i : w64) (v : V) ::
     go.IsGoStepPureDet ArraySet (#vs, (#i, #v))%V
-    (# (array.mk t n (<[Z.to_nat (word.signed i):=v]> (array.arr vs))));
+    (# (array.mk t n (<[sint.nat i:=v]> (array.arr vs))));
 
   #[global] array_length_step vs ::
     go.IsGoStepPureDet ArrayLength (ArrayV vs)
@@ -52,8 +52,8 @@ Class ArraySemantics `{!GoSemanticsFunctions} :=
     (Hinrange : (array.arr a) !! (Z.to_nat i) = Some v):
     index (go.ArrayType n elem_type) i #a = #v;
 
-  #[global] composite_literal_array_step n elem_type kvs ::
-    go.IsGoStepPureDet (CompositeLiteral $ go.ArrayType n elem_type) (LiteralValue kvs)
+  composite_literal_array n elem_type kvs :
+    composite_literal (go.ArrayType n elem_type) (LiteralValue kvs) =
     (foldl (λ '(cur_index, expr_so_far) ke,
              match ke with
              | KeyedElement None (ElementExpression e) =>
@@ -70,14 +70,21 @@ Class ArraySemantics `{!GoSemanticsFunctions} :=
              end
       ) (0, Val (go_zero_val (go.ArrayType n elem_type))) kvs).2;
 
-  (* Not an instance because there's a custom WP. *)
-  slice_array_step n elem_type p low high :
+  #[global] slice_array_step n elem_type p low high ::
     go.IsGoStepPureDet (Slice $ go.ArrayType n elem_type) (#p, (#low, #high))%V
        (if decide (0 ≤ sint.Z low ≤ sint.Z high ≤ n) then
           #(slice.mk (array_index_ref elem_type (word.signed low) p)
               (word.sub high low)
               (word.sub (W64 n) low))
-        else Panic "slice: out of bounds");
+        else Panic "slice bounds out of range");
+
+  #[global] full_slice_array_step_pure n elem_type p low high max ::
+    go.IsGoStepPureDet (FullSlice (go.ArrayType n elem_type))
+    (#p, (#low, #high, #max))%V
+    (if decide (0 ≤ sint.Z low ≤ sint.Z high ≤ sint.Z max ∧ sint.Z max ≤ n) then
+       #(slice.mk (array_index_ref elem_type (sint.Z low) p)
+           (word.sub high low) (word.sub max low))
+     else Panic "slice bounds out of range");
 
   array_index_ref_add t i j l :
     array_index_ref t (i + j) l = array_index_ref t j (array_index_ref t i l);

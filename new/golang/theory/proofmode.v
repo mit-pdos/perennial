@@ -4,7 +4,7 @@ From Perennial.Helpers Require Export ipm Tactics.
 From iris.proofmode Require Import coq_tactics.
 (* make sure solve_proper comes from stdpp and not Coq *)
 From stdpp Require Export tactics.
-From New.golang.defn Require Export postlang.
+From New.golang.defn Require Export postlang interface.
 From Perennial Require Export base.
 From Ltac2 Require Import Ltac2.
 Import Printf.

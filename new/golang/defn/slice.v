@@ -38,17 +38,30 @@ Class SliceSemantics `{!GoSemanticsFunctions} :=
     go.IsGoStepPureDet InternalSliceLen #s #(s.(slice.len));
   #[global] internal_cap_step s ::
     go.IsGoStepPureDet InternalSliceCap #s #(s.(slice.cap));
-  #[global] internal_dynamic_array_alloc_step et (n : w64) ::
-    go.IsGoStepPureDet (InternalDynamicArrayAlloc et) #n
-    (GoAlloc (go.ArrayType (sint.Z n) et) #());
-
   #[global] internal_make_slice_step p l c ::
     go.IsGoStepPureDet InternalMakeSlice (#p, #l, #c)%V
     #(slice.mk p l c);
+  #[global] internal_dynamic_array_alloc_step et (n : w64) ::
+    go.IsGoStepPureDet (InternalDynamicArrayAlloc et) #n
+    (GoAlloc (go.ArrayType (sint.Z n) et) #());
+  #[global] slice_slice_step_pure elem_type s low high ::
+    go.IsGoStepPureDet (Slice (go.SliceType elem_type))
+    (#s, (#low, #high))%V
+    (if decide (0 ≤ sint.Z low ≤ sint.Z high ≤ sint.Z s.(slice.cap)) then
+       #(slice.mk (array_index_ref elem_type (sint.Z low) s.(slice.ptr))
+           (word.sub high low) (word.sub s.(slice.cap) low))
+     else Panic "slice bounds out of range");
+  #[global] full_slice_slice_step_pure elem_type s low high max ::
+    go.IsGoStepPureDet (FullSlice (go.SliceType elem_type))
+    (#s, (#low, #high, #max))%V
+    (if decide (0 ≤ sint.Z low ≤ sint.Z high ≤ sint.Z max ∧ sint.Z max ≤ sint.Z s.(slice.cap)) then
+       #(slice.mk (array_index_ref elem_type (sint.Z low) s.(slice.ptr))
+           (word.sub high low) (word.sub max low))
+     else Panic "slice bounds out of range");
 
   #[global] go_zero_val_eq_slice elem_type :: go.GoZeroValEq (go.SliceType elem_type) slice.t;
 
-  (* special cases *)
+  (* special case for slice equality *)
   #[global] is_go_op_go_equals_slice_nil_l elem_type s ::
     go.IsGoOp GoEquals (go.SliceType elem_type) (#slice.nil, #s)%V #(bool_decide (s = slice.nil));
   #[global] is_go_op_go_equals_slice_nil_r elem_type s ::
