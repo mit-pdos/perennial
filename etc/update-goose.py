@@ -98,12 +98,6 @@ def main():
         default=None,
     )
     parser.add_argument(
-        "--tulip",
-        help="path to tulip repo (skip translation if not provided)",
-        metavar="TULIP_PATH",
-        default=None,
-    )
-    parser.add_argument(
         "--pav",
         help="path to pav repo (skip translation if not provided)",
         metavar="PAV_PATH",
@@ -120,7 +114,6 @@ def main():
     gokv_dir = args.gokv
     mvcc_dir = args.mvcc
     rsm_dir = args.rsm
-    tulip_dir = args.tulip
     marshal_dir = args.marshal
     std_dir = args.std
     pav_dir = args.pav
@@ -327,23 +320,6 @@ def main():
         "./distx",
         "./tpl",
         "./pcr",
-    )
-
-    run_goose(
-        tulip_dir,
-        "./backup",
-        "./gcoord",
-        "./index",
-        "./message",
-        "./params",
-        "./paxos",
-        "./quorum",
-        "./replica",
-        "./tulip",
-        "./tuple",
-        "./txn",
-        "./txnlog",
-        "./util",
     )
 
     run_goose(marshal_dir, ".", extra_args=["-skip-interfaces"])
