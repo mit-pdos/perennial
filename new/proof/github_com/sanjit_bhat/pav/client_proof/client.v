@@ -552,6 +552,7 @@ Lemma wp_Client_Get ptr_c c (uid : w64) :
   ptr_c @ (ptrT.id client.Client.id) @ "Get" #uid
   {{{
     (ep : w64) (isReg : bool) (sl_pk : slice.t) err,
+    (* TODO: pin down isReg and sl_pk. *)
     RET (#ep, #isReg, #sl_pk, #(ktcore.blame_to_u64 err));
     "%Hblame" ∷ ⌜ktcore.BlameSpec err
       {[ktcore.BlameServFull:=option_bool c.(Client.serv).(serv.good)]}⌝ ∗
@@ -695,6 +696,43 @@ Proof.
   iDestruct (wish_getNextEp_det with "Hwish_getNextEp Hwish_getNextEp0") as %[-> ->].
   iFrame "#".
 Qed.
+
+Lemma wp_Client_SelfMon ptr_c c :
+  {{{
+    is_pkg_init client ∗
+    "Hclient" ∷ Client.own ptr_c c
+  }}}
+  ptr_c @ (ptrT.id client.Client.id) @ "SelfMon" #()
+  {{{
+    (ep : w64) (isChanged : bool) err,
+    RET (#ep, #isChanged, #(ktcore.blame_to_u64 err));
+    "%Hblame" ∷ ⌜ktcore.BlameSpec err
+      {[ktcore.BlameServFull:=option_bool c.(Client.serv).(serv.good)]}⌝ ∗
+    "Herr" ∷
+      (if decide (err ≠ ∅)
+      then "Hclient" ∷ Client.own ptr_c c
+      else
+        ∃ ver pendingPk new_digs dig link sig,
+        let lastEp := c.(Client.last).(epoch.epoch) in
+        let lastPendVer := c.(Client.pend).(nextVer.ver) in
+        let lastPendPk := c.(Client.pend).(nextVer.pendingPk) in
+        let c' :=
+          set Client.pend (λ x, set nextVer.ver (λ _, ver)
+            (set nextVer.pendingPk (λ _, pendingPk) x))
+          (set Client.last (λ x, epoch.mk' ep dig link sig
+            (x.(epoch.digs) ++ new_digs) x.(epoch.cut) x.(epoch.serv)) c) in
+        "Hclient" ∷ Client.own ptr_c c' ∗
+        "%Heq_ep" ∷ ⌜uint.Z ep = (uint.Z lastEp + length new_digs)%Z⌝ ∗
+        "%Hpend" ∷
+          ⌜match lastPendPk with
+          | None => isChanged = false ∧ ver = lastPendVer ∧ pendingPk = None
+          | Some pk =>
+            (isChanged = false ∧ ver = lastPendVer ∧ pendingPk = None) ∨
+            (isChanged = true ∧ uint.Z ver = (uint.Z lastPendVer + 1)%Z ∧
+              pendingPk = None)
+          end⌝)
+  }}}.
+Proof. Admitted.
 
 End proof.
 End client.
