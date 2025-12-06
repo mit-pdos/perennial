@@ -61,13 +61,6 @@ From Perennial.program_proof.vrsm Require print_assumptions.
 From Perennial.program_proof.mvcc Require db_run mvcc_proof.
 From Perennial.program_proof.mvcc Require print_assumptions.
 
-(* rsm *)
-From Perennial.program_proof.rsm Require rsm_proof.
-
-(* tulip *)
-From Perennial.program_proof.tulip Require tulip_proof.
-From Perennial.program_proof.tulip Require print_assumptions.
-
 (*
 From Perennial.goose_lang Require
      ffi.append_log_ffi.
@@ -138,7 +131,5 @@ From Perennial.program_logic Require simulation.
 From Perennial.program_proof.tutorial.lockservice Require
   proof lockrequest_proof_gk.
 From Perennial.goose_lang.trusted.github_com.mit_pdos.gokv Require trusted_hash.
-From Perennial.program_proof.tulip.paxos.invariance Require extend.
-From Perennial.program_proof.tulip.program.backup Require bgpreparer_process_query_result.
 
 From New Require should_build.
