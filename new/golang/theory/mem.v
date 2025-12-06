@@ -27,11 +27,8 @@ Section goose_lang.
       wp_atomic_load stk E l dq (v : V) :
         ({{{ ▷ l ↦{dq} v }}} ! #l @ stk ; E {{{ RET #v; l ↦{dq} v }}});
 
-      wp_atomic_store stk E l (v v' : V) :
-      ({{{ ▷ l ↦ v }}} AtomicStore #l #v' @ stk ; E {{{ RET #(); l ↦ v' }}});
-
       wp_atomic_swap s E (l : loc) (v v' : V) :
-      {{{ l ↦ v }}} AtomicSwap #l #v' @ s ; E {{{ RET #v; l ↦ v' }}}.
+      ({{{ l ↦ v }}} AtomicSwap #l #v' @ s ; E {{{ RET #v; l ↦ v' }}});
     }.
 
     (* FIXME: ltac to prove atomic swap
@@ -63,13 +60,13 @@ Qed. *)
     iIntros "* Hl HΦ"; rewrite typed_pointsto_unseal /= !go.into_val_unfold;
     iApply (lifting.wp_load with "[$]"); done.
 
-  Ltac solve_wp_atomic_store :=
+  Ltac solve_wp_atomic_swap :=
     iIntros "* Hl HΦ"; rewrite typed_pointsto_unseal /= !go.into_val_unfold;
-    iApply (lifting.wp_atomic_store with "[$]"); done.
+    iApply (lifting.wp_atomic_swap with "[$]"); done.
 
   Ltac solve_atomic_wps :=
     split; rewrite !go.into_val_unfold;
-    [solve_cmpxchg_fail | solve_cmpxchg_suc | solve_wp_atomic_load | solve_wp_atomic_store ].
+    [solve_cmpxchg_fail | solve_cmpxchg_suc | solve_wp_atomic_load | solve_wp_atomic_swap ].
 
   Instance atomic_wps_uint64 : AtomicWps w64.
   Proof. solve_atomic_wps. Qed.
@@ -85,7 +82,7 @@ Qed. *)
 End goose_lang.
 
 Section tac_lemmas.
-  Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
+  Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} `{!go.CoreSemantics}.
 
   Class PointsToAccess {V} `{!TypedPointsto V}
     (l : loc) (v : V) dq (P : iProp Σ) (P' : V → iProp Σ) : Prop :=
