@@ -14,5 +14,8 @@
 # Iris-disabled warnings
 -arg -w -arg -notation-overridden,-redundant-canonical-projection,-notation-incompatible-prefix
 -arg -w -arg -unknown-warning
+# Rocq 9.2+alpha issues not fixed
+-arg -w -arg -postfix-notation-not-level-1,-closed-notation-not-level-0
+
 -Q external/Goose Goose
 -Q new New

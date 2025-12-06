@@ -97,6 +97,10 @@ Proof.
   by replace nextEp with nextEp0 in * by word.
 Qed.
 
+(* FIXME: needed for lia to unify [length digs] terms where one has keys_ty and
+the other has its unfolding *)
+Hint Unfold keys_ty : word.
+
 Lemma wp_CallHistory s γ (uid prevEpoch prevVerLen : w64) :
   {{{
     is_pkg_init server ∗
@@ -257,22 +261,17 @@ Proof.
     word. }
   iSplit.
   2: { iPureIntro. repeat split; try done.
-    (* TODO[word]: shouldn't need to abstract out terms. *)
-    remember (length σ.(state.hist)) as x.
-    rewrite -Heqx.
-    word. }
+       word. }
 
   iAssert (⌜hist0 `prefix_of` σ.(state.hist)⌝)%I as %[newDigs Ht].
   { iDestruct (mono_list_lb_valid with "His_hist Hnew_hist") as %[?|[newDigs ?]]; [done|].
     iPureIntro. simplify_eq/=.
     destruct newDigs; [by list_simplifier|].
     exfalso. autorewrite with len in *.
-    remember (length σ.(state.hist)) as x.
-    rewrite -Heqx in Heq_ep.
     word. }
   rewrite ->Ht in *. clear Ht.
   rewrite {}Heq_digs {}Heq_cut.
-  rewrite fmap_app drop_app_length' in |-*; [|len].
+  rewrite fmap_app drop_app_length' in |-*; [|by len..].
   autorewrite with len in *.
 
   iExists _.
