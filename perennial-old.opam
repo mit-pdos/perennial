@@ -1,0 +1,43 @@
+opam-version: "2.0"
+maintainer: "Tej Chajed <chajed@wisc.edu>"
+authors: "The Perennial Team"
+license: "MIT"
+homepage: "https://github.com/mit-pdos/perennial"
+bug-reports: "https://github.com/mit-pdos/perennial/issues"
+dev-repo: "git+https://github.com/mit-pdos/perennial.git"
+version: "dev"
+
+synopsis: "A framework for verifying concurrent, crash-safe, distributed systems written in Go. (old goose version)"
+description: """
+Perennial is a framework for verifying the correctness of systems programs. It
+supports concurrency, crash-consistency proofs, and distributed systems.
+Perennial works together with Goose to be powerful infrastructure for verifying
+Go programs. It is built on top of the Iris separation logic.
+"""
+tags: [
+  "logpath:Perennial"
+]
+
+conflicts: [
+  "perennial"
+]
+
+depends: [
+  "rocq-runtime" { (>= "9.1" & < "9.2~") | (= "dev") }
+  "rocq-stdlib"
+  "coq-coqutil" { (>= "0.0.7") }
+  "coq-record-update"
+  "rocq-stdpp"
+  "rocq-iris"
+  "iris-named-props"
+]
+
+pin-depends: [
+  ["coq-record-update.dev"     "git+https://github.com/tchajed/coq-record-update#7b26452103"]
+  ["rocq-stdpp.dev"            "git+https://gitlab.mpi-sws.org/iris/stdpp#a09c2a19de"]
+  ["rocq-iris.dev"             "git+https://gitlab.mpi-sws.org/iris/iris#d8f049ee6e"]
+  ["iris-named-props.dev"      "git+https://github.com/tchajed/iris-named-props#c388714a93"]
+]
+
+build: [make "old-goose" "-j%{jobs}%"]
+install: ["./etc/install.sh" "old-goose"]

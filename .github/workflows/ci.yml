@@ -37,7 +37,7 @@ jobs:
           rocq-version: "${{ matrix.rocq-version }}"
       - name: Install build dependencies
         run: |
-          opam install --deps-only .
+          opam install --deps-only ./perennial.opam
       - name: Rocq build
         run: |
           make -j4 -k ci
