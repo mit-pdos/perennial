@@ -134,8 +134,8 @@ Section tac_lemmas.
     iApply "Henv". iFrame.
   Qed.
 
-  Lemma tac_wp_alloc
-    `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t} K Δ stk E Φ :
+  Lemma tac_wp_alloc K
+    `{!TypedPointsto V} `{!ZeroVal V} `{!IntoValTyped V t} Δ stk E Φ :
     (∀ l, envs_entails Δ (l ↦ (zero_val V) -∗ WP (fill K (Val #l)) @ stk; E {{ Φ }})) →
     envs_entails Δ (WP fill K (alloc t #()) @ stk; E {{ Φ }}).
   Proof.
@@ -183,8 +183,8 @@ Ltac2 wp_store () :=
 Ltac2 wp_alloc_visit e k :=
   Control.once_plus (fun () => Std.unify e '(alloc _ #()))
     (fun _ => Control.zero Walk_expr_more);
-  Control.once_plus (fun _ => eapply (tac_wp_alloc $k); ectx_simpl ())
-    (fun _ => Control.backtrack_tactic_failure "wp_alloc: failed to apply tac_wp_alloc")
+  Control.once_plus (fun _ => apply (tac_wp_alloc $k); ectx_simpl ())
+    (fun _ => Control.backtrack_tactic_failure "wp_alloc: failed to apply tac_wp_alloc (maybe no IntoValTyped instance?)")
 .
 
 Ltac2 wp_alloc () :=
@@ -202,7 +202,7 @@ Ltac2 wp_alloc_auto_visit e k :=
       let let_expr1 := '(Rec BAnon (BNamed $var_name) $e1) in
       let ptr_name := Std.eval_vm None constr:($var_name +:+ "_ptr") in
       let k := constr:(@AppRCtx _ $let_expr1 :: $k) in
-      Control.once_plus (fun _ => eapply (tac_wp_alloc $k); ectx_simpl ())
+      Control.once_plus (fun _ => apply (tac_wp_alloc $k); ectx_simpl ())
         (fun _ => Control.backtrack_tactic_failure "wp_alloc_auto: failed to apply tac_wp_alloc");
       let i :=
         orelse (fun () => Option.get_bt (Ident.of_string (StringToIdent.coq_string_to_string ptr_name)))

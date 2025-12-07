@@ -326,6 +326,8 @@ Class CoreSemantics :=
   go_zero_val_underlying t : go_zero_val t = go_zero_val (to_underlying t);
   #[global] go_zero_val_eq_pointer t :: GoZeroValEq (go.PointerType t) loc;
   #[global] go_zero_val_eq_function sig :: GoZeroValEq (go.FunctionType sig) func.t;
+  #[global] go_zero_val_eq_slice elem_type :: GoZeroValEq (go.SliceType elem_type) slice.t;
+  #[global] go_zero_val_eq_channel dir elem_type :: GoZeroValEq (go.ChannelType dir elem_type) chan.t;
 
   #[global] core_comparison_sem :: CoreComparisonSemantics;
 

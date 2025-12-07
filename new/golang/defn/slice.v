@@ -98,10 +98,12 @@ Class SliceSemantics `{!GoSemanticsFunctions} :=
        if: "cap" =⟨go.int⟩ #(W64 0) then
          (* XXX: this computes a nondeterministic unallocated address by using
             "(Loc 1 0) +ₗ ArbiraryInt"*)
-         InternalMakeSlice (#(Loc 1 0) +ₗ ArbitraryInt, "len", "cap")
+         InternalMakeSlice (#(Loc 1 0) +⟨go.PointerType elem_type⟩ ArbitraryInt, "len", "cap")
        else
          let: "p" := (InternalDynamicArrayAlloc elem_type) "cap" in
          InternalMakeSlice ("p", "len", "cap"))%V;
+  #[global] is_go_op_pointer_plus t (l : loc) (x : w64) ::
+    go.IsGoOp GoPlus (go.PointerType t) (#l, #x) (#(loc_add l (sint.Z x)));
 
   #[global] make2_slice elem_type ::
     FuncUnfold go.make2 [go.SliceType elem_type]

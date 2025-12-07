@@ -169,11 +169,6 @@ Notation "'build_get_is_pkg_init_wf'" := (ltac2:(build_get_is_pkg_init_wf ())) (
 Notation "@! func" :=
   #(functions func []) (at level 1, no associativity, format "@! func") : expr_scope.
 
-#[global]
-Notation "rcvr @ type @ method" :=
-  #(methods type method #rcvr)
-    (at level 1, type at next level, no associativity) : expr_scope.
-
 (* FIXME: better implementation using PkgInfo to direct the search. Could try lithium even. *)
 (* solve a goal which is just [is_pkg_init] or [is_pkg_defined] *)
 Ltac solve_pkg_init :=

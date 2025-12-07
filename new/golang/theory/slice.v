@@ -1,12 +1,13 @@
 From New.golang.defn Require Export slice.
-From New.golang.theory Require Export array loop auto assume.
+From New.golang.theory Require Export array loop auto.
 
 #[local]
 Transparent slice.for_range.
 
 Module slice.
 Section def.
-Context `{GoLocalContext}.
+Context {ext : ffi_syntax} {go_lctx : GoLocalContext} {go_gctx : GoGlobalContext}
+  `{!GoSemanticsFunctions}.
 Definition slice (sl : slice.t) (et : go.type) (n1 n2 : u64) : slice.t :=
   slice.mk (slice_index_ref et (sint.Z n1) sl) (word.sub n2 n1) (word.sub sl.(slice.cap) n1).
 
@@ -298,21 +299,21 @@ Local Set Default Proof Using "Type core_sem pre_sem array_sem slice_sem".
 Global Instance pure_wp_slice_len t (s : slice.t) :
   PureWp True (#(functions go.len [go.SliceType t]) (#s)) #(slice.len s).
 Proof.
-  iIntros (?????) "HΦ". rewrite go.len_slice. wp_auto_lc 1. by iApply "HΦ".
+  pure_wp_start. rewrite func_unfold. wp_auto_lc 1. by iApply "HΦ".
 Qed.
 
 Global Instance pure_wp_slice_cap t (s : slice.t) :
   PureWp True (#(functions go.cap [go.SliceType t]) (#s)) #(slice.cap s).
 Proof.
-  iIntros (?????) "HΦ". rewrite go.cap_slice. wp_auto_lc 1. by iApply "HΦ".
+  pure_wp_start. rewrite func_unfold. wp_auto_lc 1. by iApply "HΦ".
 Qed.
 
-Context `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}.
+Context `{!ZeroVal V} {t} `{!TypedPointsto V} `{!IntoValTyped V t}.
 
 Lemma wp_slice_make3 stk E (len cap : w64) :
   0 ≤ sint.Z len ≤ sint.Z cap →
   {{{ True }}}
-    #(functions go.make3 [go.SliceType t]) #len #cap @ stk; E
+    (#(functions go.make3 [go.SliceType t]) #len #cap) @ stk; E
   {{{ (sl : slice.t), RET #sl;
       sl ↦[t]* (replicate (sint.nat len) (zero_val V)) ∗
       own_slice_cap t sl (DfracOwn 1) ∗
@@ -371,32 +372,6 @@ Proof.
   by iApply "HΦ".
 Qed.
 
-Global Instance pure_wp_slice_slice s (low high : w64) :
-  PureWp (0 ≤ sint.Z low ≤ sint.Z high ≤ sint.Z (slice.cap s))
-    (Slice (go.SliceType t) (#s, (#low, #high))%V)
-    #(slice.slice s t low high).
-Proof.
-  iIntros "% * % % HΦ"; iApply wp_GoInstruction;
-  [ intros; repeat econstructor | ].
-  iNext; iIntros "* %Hstep"; inv Hstep; inv Hpure.
-  eapply inj in H3, H4; try tc_solve. subst.
-  rewrite decide_True //.
-  iIntros "? $ !>". by iApply "HΦ".
-Qed.
-
-Global Instance pure_wp_full_slice s (low high c : w64) :
-  PureWp (0 ≤ sint.Z low ≤ sint.Z high ≤ sint.Z c ∧ sint.Z c ≤ sint.Z (slice.cap s))
-    (FullSlice (go.SliceType t) (#s, (#low, #high, #c))%V)
-    #(slice.full_slice s t low high c).
-Proof.
-  iIntros "% * % % HΦ"; iApply wp_GoInstruction;
-  [ intros; repeat econstructor | ].
-  iNext; iIntros "* %Hstep"; inv Hstep; inv Hpure.
-  eapply inj in H3, H4, H5; try tc_solve. subst.
-  rewrite decide_True //.
-  iIntros "? $ !>". by iApply "HΦ".
-Qed.
-
 Global Instance pure_wp_slice_for_range (sl : slice.t) (body : val) :
   PureWp True (slice.for_range t #sl body)%E
        (let: "i" := alloc go.int (# ()) in
@@ -418,7 +393,7 @@ Lemma wp_slice_slice_pure s (low high: w64) :
     Slice (go.SliceType t) (#s, (#low, #high))%V
   {{{ RET #(slice.slice s t low high); True }}}.
 Proof.
-  iIntros "% % HΦ". wp_auto. iApply "HΦ". done.
+  iIntros "% % HΦ". wp_auto. rewrite decide_True //. wp_auto. iApply "HΦ". done.
 Qed.
 
 Lemma own_slice_split k s dq (vs: list V) low high :
@@ -631,7 +606,7 @@ Lemma wp_slice_slice s dq (vs: list V) (low high : w64) :
 Proof.
   iIntros (?) "[Hs %] HΦ".
   iDestruct (own_slice_wf with "Hs") as %Hwf.
-  wp_pure; first word. wp_auto. iApply "HΦ".
+  wp_auto. rewrite decide_True; last word. wp_auto. iApply "HΦ".
   rewrite -own_slice_slice; [|word].
   iFrame.
 Qed.
@@ -655,7 +630,7 @@ Lemma wp_slice_slice_with_cap s (vs: list V) (low high : w64) :
 Proof.
   iIntros (?) "(Hs & Hcap & %) HΦ".
   iDestruct (own_slice_wf with "Hs") as %Hwf.
-  wp_pure. { word. } wp_auto.
+  wp_auto. rewrite decide_True; last word. wp_auto.
   iApply "HΦ".
   iDestruct (own_slice_slice_with_cap low high with "[$Hs $Hcap]") as "(Hs_pre & Hs & Hs_cap)".
   { word. }
@@ -767,7 +742,7 @@ Proof.
     )%I with "[Hs1 Hs2 i]" as "IH".
   { iFrame. simpl. word. }
   wp_for "IH".
-  wp_if_destruct; first wp_auto.
+  wp_if_destruct.
   - wp_if_destruct.
     {
       list_elem vs' (sint.Z i) as y.
