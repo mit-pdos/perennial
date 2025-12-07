@@ -27,21 +27,22 @@ End servInfo.
 Module epoch.
 Record t :=
   mk' {
+    (* physical state. *)
     epoch: w64;
     dig: list w8;
     link: list w8;
     sig: list w8;
 
-    digs: list $ list w8;
+    (* externalize logical state relevant to getNextEp transition. *)
+    digs: list (list w8);
     cut: option $ list w8;
-    serv: servInfo.t;
   }.
 
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 Context `{!pavG Σ}.
 
-Definition own ptr obj : iProp Σ :=
+Definition own ptr obj serv : iProp Σ :=
   ∃ sl_dig sl_link sl_sig,
   "#Hstruct_epoch" ∷ ptr ↦□ (client.epoch.mk obj.(epoch) sl_dig sl_link sl_sig) ∗
   "#Hsl_dig" ∷ sl_dig ↦*□ obj.(dig) ∗
@@ -49,16 +50,17 @@ Definition own ptr obj : iProp Σ :=
   "#Hsl_sig" ∷ sl_sig ↦*□ obj.(sig) ∗
 
   "%Hlast_dig" ∷ ⌜last obj.(digs) = Some obj.(dig)⌝ ∗
-  "#His_chain" ∷ hashchain.is_chain obj.(digs) obj.(cut) obj.(link) (S $ uint.nat obj.(epoch)) ∗
-  "#His_sig" ∷ ktcore.wish_LinkSig obj.(serv).(servInfo.sig_pk)
+  "#His_chain" ∷ hashchain.is_chain obj.(digs) obj.(cut) obj.(link)
+    (S $ uint.nat obj.(epoch)) ∗
+  "#His_sig" ∷ ktcore.wish_LinkSig serv.(servInfo.sig_pk)
     obj.(epoch) obj.(link) obj.(sig).
 
-Definition align_server obj γ : iProp Σ :=
+Definition align_serv obj γ : iProp Σ :=
   ∃ hist,
   "#His_hist" ∷ mono_list_lb_own γ.(server.cfg.histγ) hist ∗
+  "%Heq_ep" ∷ ⌜length hist = S $ uint.nat obj.(epoch)⌝ ∗
   "%Heq_digs" ∷ ⌜obj.(digs) = hist.*1⌝ ∗
-  "%Heq_cut" ∷ ⌜obj.(cut) = None⌝ ∗
-  "%Heq_ep" ∷ ⌜length hist = S $ uint.nat obj.(epoch)⌝.
+  "%Heq_cut" ∷ ⌜obj.(cut) = None⌝.
 
 End proof.
 End epoch.
@@ -70,17 +72,13 @@ Context `{!pavG Σ}.
 Definition wish_getNextEp prev sigPk chainProof sig newDigs next : iProp Σ :=
   ∃ nextEp nextDig nextLink,
   "%Heq_next" ∷ ⌜next = epoch.mk' nextEp nextDig nextLink sig
-    (prev.(epoch.digs) ++ newDigs) prev.(epoch.cut) prev.(epoch.serv)⌝ ∗
+    (prev.(epoch.digs) ++ newDigs) prev.(epoch.cut)⌝ ∗
   "%HnextEp" ∷ ⌜uint.Z nextEp = (uint.Z prev.(epoch.epoch) + length newDigs)%Z⌝ ∗
   "%HnextDig" ∷ ⌜last next.(epoch.digs) = Some nextDig⌝ ∗
   "%HnewDigs" ∷ ⌜hashchain.wish_Proof chainProof newDigs⌝ ∗
   "#HnextLink" ∷ hashchain.is_chain next.(epoch.digs)
     next.(epoch.cut) nextLink (S $ uint.nat nextEp) ∗
   "#HnextSig" ∷ ktcore.wish_LinkSig sigPk nextEp nextLink sig.
-
-#[global] Instance wish_getNextEp_pers prev pk chain sig digs next :
-  Persistent (wish_getNextEp prev pk chain sig digs next).
-Proof. apply _. Qed.
 
 Lemma wish_getNextEp_det prev pk chain sig digs0 digs1 next0 next1 :
   wish_getNextEp prev pk chain sig digs0 next0 -∗
@@ -90,9 +88,7 @@ Proof.
   iNamedSuffix 1 "0".
   iNamedSuffix 1 "1".
   opose proof (hashchain.wish_Proof_det _ _ _ HnewDigs0 HnewDigs1) as ->.
-  destruct next0, next1. simpl in *.
-  (* simplify_eq doesn't work with more than 6 fields. *)
-  inv Heq_next0. inv Heq_next1.
+  simplify_eq/=.
   iDestruct (hashchain.is_chain_det with "HnextLink0 HnextLink1") as %->.
   by replace nextEp with nextEp0 in * by word.
 Qed.
@@ -101,11 +97,14 @@ Lemma wp_CallHistory s γ (uid prevEpoch prevVerLen : w64) :
   {{{
     is_pkg_init server ∗
     "#His_serv" ∷ is_Server_rpc s γ ∗
-    "#His_prevHist" ∷ match γ with None => True | Some cfg =>
-      ∃ entry,
-      let pks := entry.2 !!! uid in
-      "#Hidx" ∷ mono_list_idx_own cfg.(cfg.histγ) (uint.nat prevEpoch) entry ∗
-      "%Hver" ∷ ⌜uint.nat prevVerLen ≤ length pks⌝ end
+    (* one recurring pattern in pav is that resources only become available
+    under a good flag. so far, i've been able to work around this.
+    e.g., here, the caller needs to open invs after knowing good,
+    so we add an update under the match. *)
+    "#His_args" ∷ □ match γ with None => True | Some cfg =>
+      |={⊤}=> ∃ (entry : list w8 * keys_ty),
+      "#Hidx_ep" ∷ mono_list_idx_own cfg.(cfg.histγ) (uint.nat prevEpoch) entry ∗
+      "%Hlt_ver" ∷ ⌜uint.nat prevVerLen ≤ length (entry.2 !!! uid)⌝ end
   }}}
   @! server.CallHistory #s #uid #prevEpoch #prevVerLen
   {{{
@@ -121,7 +120,7 @@ Lemma wp_CallHistory s γ (uid prevEpoch prevVerLen : w64) :
 
       "Hgood" ∷ match γ with None => True | Some cfg =>
         ∀ prev,
-        epoch.align_server prev cfg -∗
+        epoch.align_serv prev cfg -∗
         ⌜prev.(epoch.epoch) = prevEpoch⌝ -∗
 
         ∃ servHist lastDig lastKeys next,
@@ -135,7 +134,7 @@ Lemma wp_CallHistory s γ (uid prevEpoch prevVerLen : w64) :
 
         "#Hwish_getNextEp" ∷ wish_getNextEp prev cfg.(cfg.sig_pk) chainProof
           linkSig (drop (S (uint.nat prevEpoch)) servHist.*1) next ∗
-        "#Halign_next" ∷ epoch.align_server next cfg ∗
+        "#Halign_next" ∷ epoch.align_serv next cfg ∗
         "#Hwish_hist" ∷ ktcore.wish_ListMemb cfg.(cfg.vrf_pk) uid prevVerLen
           next.(epoch.dig) hist ∗
         "%Heq_hist" ∷ ⌜Forall2
@@ -155,8 +154,9 @@ Proof.
   wp_apply (wp_History_cli_call (Q_read (uint.nat prevEpoch))
     with "[$Hsl_b $Hreply]") as "* @".
   { iFrame "#". case_match; [|done].
-    iNamed "His_prevHist".
-    iModIntro. by iApply op_read. }
+    iModIntro.
+    iMod "His_args" as "@".
+    by iApply op_read. }
   wp_if_destruct.
   (* BlameUnknown only from network. *)
   { rewrite ktcore.rw_BlameUnknown.
@@ -206,8 +206,8 @@ Proof.
       (* good prevEpoch. *)
       1: lia.
       (* good prevVerLen. *)
-      iNamed "His_prevHist".
-      iMod (len_pks_mono uid0 with "His_serv Hidx []") as %Hmono.
+      iMod "His_args" as "@".
+      iMod (len_pks_mono uid0 with "His_serv Hidx_ep []") as %Hmono.
       2: {
         rewrite last_lookup in Hlast_hist.
         iDestruct (mono_list_idx_own_get with "Hnew_hist") as "H"; [done|].
@@ -231,8 +231,8 @@ Proof.
   simplify_eq/=.
   iDestruct "HQ" as "[#Hnew_hist %]".
   iNamed "Herr_serv_args".
-  iNamed "His_prevHist".
-  iMod (len_pks_mono uid0 with "His_serv Hidx []") as %Hmono.
+  iMod "His_args" as "@".
+  iMod (len_pks_mono uid0 with "His_serv Hidx_ep []") as %Hmono.
   2: {
     rewrite last_lookup in Hlast_hist.
     iDestruct (mono_list_idx_own_get with "Hnew_hist") as "H"; [done|].
@@ -244,7 +244,7 @@ Proof.
   simplify_eq/=.
   iFrame (Hlast_hist) "Hnew_hist".
   iExists (epoch.mk' (W64 (length σ.(state.hist) - 1)) lastDig lastLink linkSig
-    σ.(state.hist).*1 None prev.(epoch.serv)).
+    σ.(state.hist).*1 None).
   iFrame "#%". simpl in *.
 
   iSplit; [word|].
