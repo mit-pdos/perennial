@@ -28,7 +28,8 @@ function header
 end
 
 ./etc/package-sources.sh old-goose | sort >old-goose.txt
-./etc/package-sources.sh new-goose | sort >new-goose.txt
+# pretend that new-goose also includes its dependencies
+perennial-cli deps (./etc/package-sources.sh new-goose) | sort >new-goose.txt
 
 perennial-cli deps $tulip_srcs >tulip.txt
 set_subtract tulip.txt old-goose.txt
@@ -70,7 +71,7 @@ echo
 header "moving pav would break:"
 perennial-cli deps -r (cat pav.txt) >broken.txt
 set_subtract broken.txt new-goose.txt
-#cat broken.txt
+cat broken.txt
 set_color red
 echo "(lots of things, need to fix new-goose package)"
 set_color normal

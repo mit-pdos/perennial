@@ -52,6 +52,7 @@ elif [ "$package" = "new-goose" ]; then
   find_build \
     new/golang/{defn/,defn.v} \
     new/golang/{theory/,theory.v} \
+    new/{atomic_fupd,grove_prelude}.v \
     new/proof/sync_proof \
     new/proof/{sync/,sync.v} \
     new/proof/github_com/goose_lang/std.v
@@ -61,7 +62,7 @@ elif [ "$package" = "new-goose" ]; then
     new/code/internal/race.v \
     new/{code,trusted_code}/sync.v \
     new/{code,trusted_code}/sync/atomic.v \
-    new/proof/{proof_prelude,disk_prelude,grove_prelude}.v
+    new/proof/{proof_prelude,grove_prelude}.v
   # standard library (subset; some standard library is in directories)
   ls -1 new/{code,generatedproof,proof}/*.v
   ls -1 new/{code,generatedproof}/{internal,math}/*.v
