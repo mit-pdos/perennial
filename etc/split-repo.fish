@@ -62,20 +62,17 @@ rm broken.txt
 
 echo
 header "moving grove would break:"
-perennial-cli deps -r (cat grove.txt) >broken.txt
-set_subtract broken.txt old-goose.txt
-cat broken.txt
-rm broken.txt
+perennial-cli deps -r (cat grove.txt) >grove-broken.txt
+set_subtract grove-broken.txt old-goose.txt
+cat grove-broken.txt
 
 echo
 header "moving pav would break:"
-perennial-cli deps -r (cat pav.txt) >broken.txt
-set_subtract broken.txt new-goose.txt
-cat broken.txt
+perennial-cli deps -r (cat pav.txt) >pav-broken.txt
+set_subtract pav-broken.txt new-goose.txt
+wc -l pav-broken.txt
 set_color red
 echo "(lots of things, need to fix new-goose package)"
 set_color normal
-wc -l broken.txt
-rm broken.txt
 
 rm old-goose.txt new-goose.txt
