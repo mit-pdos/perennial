@@ -11,7 +11,8 @@ Module ktcore.
 Import serde.ktcore.
 
 Section blame.
-(* Blame is defined completely outside separation logic. *)
+(* [BlameSpec] is defined completely outside separation logic,
+so it could even be transported via the adequacy theorem. *)
 
 Inductive BlameTys :=
   | BlameServSig
@@ -55,6 +56,20 @@ TODO: minmality should take into account that ServSig is a strictly
 more minimal assumption than ServFull. *)
 Definition minimal (err : Blame) (interp : gmap BlameTys bool) :=
   ∀ p p', p ∈ err → p' ∈ (err ∖ {[p]}) → interp !! p' = Some true.
+
+Lemma blame_add_interp err interp0 interp1 :
+  BlameSpec err interp0 →
+  interp0 ⊆ interp1 →
+  BlameSpec err interp1.
+Proof.
+  rewrite /BlameSpec.
+  intros HB Hsub.
+  destruct_or!; try naive_solver.
+  destruct HB as (p&?&?).
+  right. right.
+  exists p. split; try done.
+  by eapply map_subseteq_spec.
+Qed.
 
 End blame.
 

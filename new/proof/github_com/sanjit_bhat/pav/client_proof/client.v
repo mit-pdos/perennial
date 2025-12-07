@@ -717,7 +717,10 @@ Lemma wp_Client_SelfMon ptr_c c :
     (ep : w64) (isChanged : bool) err,
     RET (#ep, #isChanged, #(ktcore.blame_to_u64 err));
     "%Hblame" ∷ ⌜ktcore.BlameSpec err
-      {[ktcore.BlameServFull:=option_bool c.(Client.serv).(serv.good)]}⌝ ∗
+      ({[
+        ktcore.BlameServFull:=option_bool c.(Client.serv).(serv.good);
+        ktcore.BlameClients:=c.(Client.pend).(nextVer.isGoodClis)
+      ]})⌝ ∗
     "Herr" ∷
       (if decide (err ≠ ∅)
       then "Hclient" ∷ Client.own ptr_c c
@@ -761,7 +764,104 @@ Proof.
       as %?; [word|].
     iClear "Hidx_hist His_hist".
     iFrame "#". word. }
-  admit.
+  case_bool_decide as Heq_err; wp_auto;
+    rewrite ktcore.rw_Blame0 in Heq_err; subst.
+  2: {
+    iApply "HΦ".
+    iSplit. {
+      iPureIntro.
+      eapply ktcore.blame_add_interp; [done|].
+      apply map_singleton_subseteq_l.
+      by simpl_map. }
+    case_decide; try done.
+    iFrame "∗#%". }
+  case_decide; try done.
+  iNamed "Herr".
+  wp_apply wp_getNextEp as "* @".
+  { by iFrame "#". }
+  wp_if_destruct.
+  { rewrite ktcore.rw_BlameServFull.
+    iApply "HΦ".
+    iSplit. 2: { case_decide; try done. by iFrame "∗#%". }
+    iApply ktcore.blame_one.
+    iIntros (?).
+    case_match; try done.
+    iApply "Hgenie".
+    rewrite Heq_sig_pk.
+    iDestruct ("Hgood" with "Halign_last [//]") as "@".
+    iFrame "#". }
+  iNamed "Hgenie".
+  iNamedSuffix "Hown_next" "_next".
+  iDestruct "Hsl_hist" as (?) "[Hsl0_hist Hsl_hist]".
+  iDestruct (own_slice_len with "Hsl0_hist") as %[? ?].
+  iDestruct (big_sepL2_length with "Hsl_hist") as %?.
+  wp_apply std.wp_SumNoOverflow.
+  wp_if_destruct.
+  2: { rewrite ktcore.rw_BlameServFull.
+    iApply "HΦ".
+    iSplit. 2: { case_decide; try done. by iFrame "∗#%". }
+    iApply ktcore.blame_one.
+    iIntros (?).
+    case_match; try done.
+    rewrite Heq_sig_pk.
+    iDestruct ("Hgood" with "Halign_last [//]") as "H".
+    iNamedSuffix "H" "0".
+    iDestruct (wish_getNextEp_det with "Hwish_getNextEp Hwish_getNextEp0") as %[-> ->].
+    apply Forall2_length in Heq_hist0.
+    autorewrite with len in *.
+    word. }
+  wp_apply wp_checkHist as "* @".
+  { iFrame "#". }
+  wp_if_destruct.
+  { rewrite ktcore.rw_BlameServFull.
+    iApply "HΦ".
+    iSplit. 2: { case_decide; try done. by iFrame "∗#%". }
+    iApply ktcore.blame_one.
+    iIntros (?).
+    case_match; try done.
+    iApply "Hgenie".
+    rewrite Heq_sig_pk Heq_vrf_pk.
+    iDestruct ("Hgood" with "Halign_last [//]") as "H".
+    iNamedSuffix "H" "0".
+    iDestruct (wish_getNextEp_det with "Hwish_getNextEp Hwish_getNextEp0") as %[-> ->].
+    iFrame "#". }
+  iNamed "Hgenie".
+  wp_apply wp_checkNonMemb as "* @".
+  { iFrame "#". }
+  wp_if_destruct.
+  { rewrite ktcore.rw_BlameServFull.
+    iApply "HΦ".
+    iSplit. 2: { case_decide; try done. by iFrame "∗#%". }
+    iApply ktcore.blame_one.
+    iIntros (?).
+    case_match; try done.
+    iApply "Hgenie".
+    rewrite Heq_sig_pk Heq_vrf_pk.
+    iDestruct ("Hgood" with "Halign_last [//]") as "H".
+    iNamedSuffix "H" "0".
+    iDestruct (wish_getNextEp_det with "Hwish_getNextEp Hwish_getNextEp0") as %[-> ->].
+    apply Forall2_length in Heq_hist0.
+    autorewrite with len in *.
+    iExactEq "Hwish_bound0". repeat f_equal. word. }
+  iNamed "Hgenie".
+  rewrite -wp_fupd.
+  wp_if_destruct.
+  2: {
+    wp_if_destruct.
+    2: { rewrite ktcore.rw_BlameServClients.
+      iApply "HΦ".
+      rewrite -fupd_sep.
+      admit.
+
+(* TODO:
+- we're in err case where we have pending=false but observed non-zero hist!
+- our client owns mlist_auth that authoritatively pins puts for our uid.
+- problem: need mlist_auth to establish our two goals:
+(1) prove BlameSpec.
+own_puts bounds pend, which bounds hist, which contradicts observed hist.
+(2) re-establish Client.own.
+*)
+
 Admitted.
 
 End proof.
