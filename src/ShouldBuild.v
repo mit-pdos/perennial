@@ -34,33 +34,6 @@ From Perennial.program_proof.examples Require print_assumptions.
 From Perennial.program_proof.grove_shared Require
      urpc_proof erpc_proof.
 
-(* In-memory sharded KV system *)
-From Perennial.program_proof.memkv Require
-     connman_proof
-     memkv_clerk_proof memkv_shard_start_proof memkv_shard_make_proof memkv_coord_make_proof
-     memkv_clerk_proof
-     lockservice_proof bank_proof
-     closed.
-From Perennial.program_proof.memkv Require print_assumptions.
-
-(* Epoch-fencing examples *)
-From Perennial.program_proof.fencing Require
-     config_proof ctr_proof frontend_proof.
-From Perennial.program_proof.ctrexample Require
-     client server closed.
-
-(* Append-only file library *)
-From Perennial.program_proof.aof Require proof.
-
-(* vrsm *)
-From Perennial.program_proof.vrsm Require
-     reconfig.proof vkv.kv_proof closed_proof.
-From Perennial.program_proof.vrsm Require print_assumptions.
-
-(* MVCC *)
-From Perennial.program_proof.mvcc Require db_run mvcc_proof.
-From Perennial.program_proof.mvcc Require print_assumptions.
-
 (* rsm *)
 From Perennial.program_proof.rsm Require rsm_proof.
 
@@ -103,22 +76,6 @@ From Perennial.goose_lang.interpreter Require
 something in the lite build isn't listed here *)
 From Perennial Require LiteBuild.
 
-(* lease examples *)
-From Perennial.program_proof.minlease Require proof.
-
-(* Grove tutorial *)
-From Perennial.program_proof.tutorial Require
-     basics.proof basics.full_proof
-     queue.proof
-     kvservice.proof
-     kvservice.full_proof.
-From Perennial.program_proof.tutorial.objectstore Require
-     chunk.writechunk_proof_gk
-     dir.chunkhandle_proof_gk
-     dir.finishwrite_proof_gk
-     dir.recordchunk_proof_gk
-.
-
 (* Verus-related proofs *)
 From Perennial.program_proof.verus Require
     wrs wrsmulti inv ucmra_cmra_adjunction.
@@ -127,17 +84,12 @@ From Perennial.program_proof.verus Require
     typecast_nontermination.
 *)
 
-From Perennial.program_proof.cachekv Require proof.
-
 (** everything below is unmaintained but does build.
 i.e., if it breaks in the future, we might remove it. *)
 
 From Perennial.program_proof Require
   optional_precond spellchecker.proof bad_nil_slice bad_zero_func single.election.
 From Perennial.program_logic Require simulation.
-From Perennial.program_proof.tutorial.lockservice Require
-  proof lockrequest_proof_gk.
-From Perennial.goose_lang.trusted.github_com.mit_pdos.gokv Require trusted_hash.
 From Perennial.program_proof.tulip.paxos.invariance Require extend.
 From Perennial.program_proof.tulip.program.backup Require bgpreparer_process_query_result.
 
