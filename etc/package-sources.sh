@@ -78,6 +78,7 @@ elif [ "$package" = "old-goose" ]; then
   #  src/goose_lang/{adequacy,array,typing,crash_modality}.v
   #find_build src/goose_lang/ffi/ src/goose_lang/lib/
   find_build external/Goose/github_com/goose_lang
+  ls -1 external/Goose/github_com/mit_pdos/gokv/{erpc,urpc}.v
   ls -1 external/Goose/github_com/tchajed/marshal.v
   ls -1 \
     src/program_proof/unittest.v \
