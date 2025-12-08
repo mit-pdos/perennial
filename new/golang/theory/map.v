@@ -185,6 +185,7 @@ Proof.
 Qed.
 
 Lemma wp_map_make1 key_type elem_type
+  `{!TypedPointsto K} `{!IntoValTyped K key_type} (* to automatically fill in K *)
   `{!TypedPointsto V} `{!IntoValTyped V elem_type} :
   {{{ True }}}
     #(functions go.make1 [go.MapType key_type elem_type]) #()
@@ -312,38 +313,6 @@ Proof using Inj0 array_sem pre_sem slice_sem map_sem.
   wp_auto. wp_apply "Hown" as "Hown". iFrame.
 Qed.
 
-Lemma wp_map_composite_literal key_type elem_type (kvs : element_list K V)
-  `{!TypedPointsto V} `{!IntoValTyped V elem_type} :
-  {{{ ⌜ Forall (λ '(pair k v), SafeMapKey key_type k) kvs ⌝ }}}
-    composite_literal (go.MapType key_type elem_type) #kvs
-  {{{ mref, RET #mref; mref ↦$ (foldl (λ m '(pair k v), insert k v m) ∅ kvs) }}}.
-Proof using Inj0 array_sem core_sem pre_sem slice_sem.
-  wp_start as "%Hsafe". rewrite [in (_ (element_list _ _))]into_val_unseal.
-  rewrite go.composite_literal_map.
-  wp_auto. wp_apply wp_map_make1.
-  iIntros "%mref Hm". wp_auto.
-  replace (subst "m" #mref _) with
-    (foldl
-       (λ (expr_so_far : expr) (kv : val), expr_so_far;; map.insert key_type #mref (Fst kv) (Snd kv))
-       (# ()) ((λ '(pair k v), (# k, # v)%V) <$> kvs))%E.
-  2:{ induction kvs using rev_ind; try done.
-      simpl. rewrite fmap_app !foldl_snoc /=.
-      rewrite IHkvs //. rewrite Forall_app in Hsafe. naive_solver. }
-  wp_bind (foldl _ _ _).
-  iApply (wp_wand _ _ _ (λ _, _)%I with "[-HΦ] [HΦ]").
-  2:{ iIntros "% H". simpl. wp_auto. iApply "HΦ". iAccu. }
-  clear Φ.
-  iInduction kvs as [|] "IH" using rev_ind.
-  - simpl. wp_auto. iFrame.
-  - rewrite fmap_app !foldl_snoc.
-    wp_bind (foldl _ _ _). apply Forall_app in Hsafe as [Hsafe Hsafe'].
-    destruct x. rewrite Forall_singleton in Hsafe'.
-    iSpecialize ("IH" with "[//] [$]").
-    iApply (wp_wand with "IH"). iIntros "% H". wp_auto.
-    wp_apply (wp_map_insert with "[$]") as "Hm".
-    iFrame.
-Qed.
-
 Global Instance wp_map_nil_for_range (body : func.t) key_type elem_type :
   PureWp True (map.for_range key_type elem_type #map.nil #body) execute_val.
 Proof.
@@ -379,11 +348,48 @@ End defns_and_lemmas.
 Notation "mref ↦$ dq m" := (own_map mref dq m)
                             (at level 20, dq custom dfrac at level 50, format "mref  ↦$ dq  m").
 
-Module test_own_map.
+Module test.
   Section proof.
   Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
+    {core_sem : go.CoreSemantics}
+    {pre_sem : go.PredeclaredSemantics}
+    {array_sem : go.ArraySemantics}
+    {slice_sem : go.SliceSemantics}
     {map_sem : go.MapSemantics}.
+
   Definition foo (mref: loc) (m: gmap w64 w64): iProp Σ :=
     own_map mref DfracDiscarded m.
-  End proof.
-End test_own_map.
+
+  Lemma test Φ :
+    True -∗
+    WP (CompositeLiteral (go.MapType go.int (go.ArrayType 2 go.int32))
+          (LiteralValue
+             [KeyedElement (Some $ KeyExpression #(W64 0))
+                (ElementExpression $ CompositeLiteral (go.ArrayType 2 go.int32) $
+                   LiteralValue [KeyedElement None (ElementExpression #(W32 0));
+                                 KeyedElement None (ElementExpression #(W32 1))]);
+              KeyedElement (Some $ KeyExpression #(W64 1))
+                (ElementLiteralValue
+                   [KeyedElement None (ElementExpression #(W32 0));
+                    KeyedElement None (ElementExpression #(W32 1))])
+      ])) {{ Φ }}.
+  Proof.
+    iIntros "_".
+    wp_auto. rewrite go.composite_literal_map.
+    wp_auto. unshelve wp_apply wp_map_make1; try tc_solve. (* FIXME: tc ordering *)
+    iIntros "% Hm". wp_auto.
+    rewrite go.go_zero_val_eq. (* FIXME: automation *)
+    wp_auto.
+    wp_apply (@wp_map_insert with "Hm").
+    { eapply safe_map_key_is_go_eq.
+      admit. (* FIXME: state this way. *) }
+    iIntros "Hm". wp_auto.
+    rewrite go.go_zero_val_eq. (* FIXME: automation *)
+    wp_auto.
+    wp_apply (@wp_map_insert with "Hm").
+    { eapply safe_map_key_is_go_eq.
+      admit. (* FIXME: state this way. *) }
+    iIntros "Hm".
+  Admitted.
+End proof.
+End test.
