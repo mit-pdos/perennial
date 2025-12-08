@@ -512,7 +512,7 @@ Proof.
     with "[Hstruct_client Hstruct_nextVer]"
   ) as "* @".
   { wp_if_destruct.
-    - destruct pendingPk; iNamed "Hsl_pendingPk"; try done.
+    - destruct pendingPk; iNamed "HpendingPk"; try done.
       simplify_eq/=.
       wp_apply bytes.wp_Equal as "_".
       { iFrame "#". }
