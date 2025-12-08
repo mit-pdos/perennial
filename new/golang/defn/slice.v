@@ -1,9 +1,18 @@
 From New.golang.defn Require Export loop assume predeclared.
 
+Definition slice_index_ref {ext : ffi_syntax} `{!GoSemanticsFunctions} elem_type (i : Z) s : loc :=
+  array_index_ref elem_type i s.(slice.ptr).
+
 Module slice.
 Section goose_lang.
 Context {ext : ffi_syntax}.
-Context {go_lctx : GoLocalContext} {go_gctx : GoGlobalContext}.
+Context {go_lctx : GoLocalContext} {go_gctx : GoGlobalContext} `{!GoSemanticsFunctions}.
+
+Definition slice (sl : slice.t) (et : go.type) (low high : u64) : slice.t :=
+  slice.mk (slice_index_ref et (sint.Z low) sl) (word.sub high low) (word.sub sl.(slice.cap) low).
+
+Definition full_slice (sl : slice.t) (et : go.type) (low high max : u64) : slice.t :=
+  slice.mk (slice_index_ref et (sint.Z low) sl) (word.sub high low) (word.sub max low).
 
 (* only for internal use, not an external model *)
 Definition _new_cap : val :=
@@ -25,9 +34,6 @@ End slice.
 
 Global Opaque slice.for_range.
 
-Definition slice_index_ref {ext : ffi_syntax} `{!GoSemanticsFunctions} elem_type (i : Z) s : loc :=
-  array_index_ref elem_type i s.(slice.ptr).
-
 Module go.
 Section defs.
 Context {ext : ffi_syntax}.
@@ -48,15 +54,13 @@ Class SliceSemantics `{!GoSemanticsFunctions} :=
     go.IsGoStepPureDet (Slice (go.SliceType elem_type))
     (#s, (#low, #high))%V
     (if decide (0 ≤ sint.Z low ≤ sint.Z high ≤ sint.Z s.(slice.cap)) then
-       #(slice.mk (array_index_ref elem_type (sint.Z low) s.(slice.ptr))
-           (word.sub high low) (word.sub s.(slice.cap) low))
+       #(slice.slice s elem_type low high)
      else Panic "slice bounds out of range");
   #[global] full_slice_slice_step_pure elem_type s low high max ::
     go.IsGoStepPureDet (FullSlice (go.SliceType elem_type))
     (#s, (#low, #high, #max))%V
     (if decide (0 ≤ sint.Z low ≤ sint.Z high ≤ sint.Z max ∧ sint.Z max ≤ sint.Z s.(slice.cap)) then
-       #(slice.mk (array_index_ref elem_type (sint.Z low) s.(slice.ptr))
-           (word.sub high low) (word.sub max low))
+       #(slice.full_slice s elem_type low high max)
      else Panic "slice bounds out of range");
 
   #[global] go_zero_val_eq_slice elem_type :: go.GoZeroValEq (go.SliceType elem_type) slice.t;
@@ -109,12 +113,16 @@ Class SliceSemantics `{!GoSemanticsFunctions} :=
     FuncUnfold go.make2 [go.SliceType elem_type]
     (λ: "sz", FuncResolve go.make3 [go.SliceType elem_type] #() "sz" "sz")%V;
 
-  index_ref_slice elem_type i s (Hrange : 0 ≤ i < sint.Z s.(slice.len)) :
-    index_ref (go.SliceType elem_type) i #s = #(slice_index_ref elem_type i s);
+  #[global] index_ref_slice elem_type i s ::
+    go.GoExprEq (index_ref (go.SliceType elem_type) i #s)
+    (if decide (0 ≤ i < sint.Z s.(slice.len)) then
+       #(slice_index_ref elem_type i s)
+     else Panic "slice index out of bounds");
 
-  index_slice elem_type i (s : slice.t) :
-    index (go.SliceType elem_type) i #s =
-    GoLoad elem_type $ (Index $ go.SliceType elem_type) (#(W64 i), #s)%V;
+  #[global] index_slice elem_type i (s : slice.t) ::
+    go.GoExprEq (index (go.SliceType elem_type) i #s)
+    (GoLoad elem_type $ (Index $ go.SliceType elem_type) (#(W64 i), #s)%V);
+
   #[global] len_slice elem_type ::
     FuncUnfold go.len [go.SliceType elem_type]
     (λ: "s", InternalSliceLen "s")%V;
@@ -144,14 +152,14 @@ Class SliceSemantics `{!GoSemanticsFunctions} :=
          "s_new")%V;
 
   composite_literal_slice elem_type (vs : list val) :
-    composite_literal (go.SliceType elem_type) (ArrayV vs) =
-    if decide (Z.of_nat (length vs) < 2^63) then
+    go.GoExprEq (composite_literal (go.SliceType elem_type) (ArrayV vs))
+    (if decide (Z.of_nat (length vs) < 2^63) then
       (let: "tmp" := GoAlloc (go.ArrayType (length vs) elem_type) #() in
        "tmp" <-[(go.ArrayType (length vs) elem_type)]
                 CompositeLiteral (go.ArrayType (length vs) elem_type) (ArrayV vs);;
        Slice (go.ArrayType (length vs) elem_type) ("tmp", (#(W64 0), #(W64 (length vs))))
       )%E
-    else AngelicExit #();
+    else AngelicExit #());
 
   array_index_ref_0 t l : array_index_ref t 0 l = l;
 }.

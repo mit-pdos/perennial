@@ -180,17 +180,24 @@ circuit, and it tries to check if the `any` fields are equal, at which point it
 panics because the type is not comparable.
 *)
 
-
 Class IsGoStepPureDet instr args e : Prop :=
   {
-    is_go_step_det s s' e' : is_go_step instr args e' s s' ↔ is_go_step_pure instr args e' ∧ s = s';
+    is_go_step_det s s' e' :
+      is_go_step instr args e' s s' ↔ is_go_step_pure instr args e' ∧ s = s';
     is_go_step_pure_det : is_go_step_pure instr args = eq e;
   }.
 
 (* No-op steps are for producing later credits. Doesn't really change the semantics *)
+Class GoExprEq (e e' : expr) : Prop :=
+  {
+    go_expr_eq : e = (#();; e')%E;
+  }.
+
+#[global] Hint Mode GoExprEq ! - : typeclass_instances.
+
 Class IsGoOp op t args v `{!GoSemanticsFunctions} : Prop :=
   {
-    is_go_op : go_op op t args = (#();; v)%E;
+    #[global] is_go_op :: GoExprEq (go_op op t args) v;
   }.
 
 Class IsComparable t `{!GoSemanticsFunctions} : Prop :=

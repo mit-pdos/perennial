@@ -112,11 +112,10 @@ Proof.
   iIntros "H"; iIntros "$ !>"; by iApply "HΦ".
 Qed.
 
-Global Instance pure_wp_is_go_op op t args v `{!go.IsGoOp op t args v} :
-  PureWp True (go_op op t args) v.
+Global Instance pure_wp_go_expr_eq e e' `{!go.GoExprEq e e'} :
+  PureWp True e e'.
 Proof.
-  rewrite go.is_go_op.
-  iIntros "% % * _ % HΦ". wp_pure_lc "?". wp_pures. by iApply "HΦ".
+  rewrite -> go.go_expr_eq. iIntros "% % * _ % HΦ". wp_pure_lc "?". wp_pures. by iApply "HΦ".
 Qed.
 
 Lemma wp_GoPrealloc {stk E} :
