@@ -16,13 +16,6 @@ From Perennial.goose_lang Require
 .
 
 From Perennial.goose_lang.ffi Require async_disk async_disk_equiv.
-From Perennial.program_proof Require
-     lockmap_proof
-     jrnl_replication.jrnl_replication_proof
-     txn.twophase_refinement_thm
-     simple.proofs simple.example
-.
-From Perennial.program_proof.simple Require print_assumptions.
 
 
 From Perennial.program_proof.examples Require

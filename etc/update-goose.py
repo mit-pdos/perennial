@@ -15,9 +15,7 @@ def run_command(args, dry_run=False, verbose=False):
 def main():
     import argparse
 
-    parser = argparse.ArgumentParser(
-        description="Update goose output from goose tests and go-nfsd"
-    )
+    parser = argparse.ArgumentParser(description="Update goose output")
     parser.add_argument(
         "--compile", help="also compile and install goose", action="store_true"
     )
@@ -48,18 +46,6 @@ def main():
         "--channel",
         help="translate channel model",
         action="store_true",
-    )
-    parser.add_argument(
-        "--nfsd",
-        help="path to go-nfsd repo (skip translation if not provided)",
-        metavar="GO_NFSD_PATH",
-        default=None,
-    )
-    parser.add_argument(
-        "--journal",
-        help="path to go-journal repo (skip translation if not provided)",
-        metavar="GO_JOURNAL_PATH",
-        default=None,
     )
     parser.add_argument(
         "--examples",
@@ -101,8 +87,6 @@ def main():
     args = parser.parse_args()
 
     goose_dir = args.goose
-    go_nfsd_dir = args.nfsd
-    journal_dir = args.journal
     perennial_dir = path.join(path.dirname(os.path.realpath(__file__)), "..")
     examples_dir = args.examples
     rsm_dir = args.rsm
@@ -113,10 +97,6 @@ def main():
 
     if not os.path.isdir(goose_dir):
         parser.error("goose directory does not exist")
-    if go_nfsd_dir is not None and not os.path.isdir(go_nfsd_dir):
-        parser.error("go-nfsd directory does not exist")
-    if journal_dir is not None and not os.path.isdir(journal_dir):
-        parser.error("go-journal directory does not exist")
     if examples_dir is not None and not os.path.isdir(examples_dir):
         parser.error("perennial-examples directory does not exist")
     if rsm_dir is not None and not os.path.isdir(rsm_dir):
@@ -184,17 +164,6 @@ def main():
             "./unittest/...",
             "./wal",
         )
-
-    run_goose(journal_dir, "./...")
-
-    run_goose(
-        go_nfsd_dir,
-        "./kvs",
-        "./super",
-        "./fh",
-        "./simple",
-        "./nfstypes",
-    )
 
     run_goose(
         examples_dir,
