@@ -7,7 +7,7 @@ Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
   {pre_sem : go.PredeclaredSemantics}
   {array_sem : go.ArraySemantics}.
 
-Context `{!ZeroVal V} `{!go.GoZeroValEq t V}.
+Context `{!ZeroVal V}.
 Context `{!TypedPointsto (Σ:=Σ) V}.
 Context `{!IntoValTyped V t}.
 
