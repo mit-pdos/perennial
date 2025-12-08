@@ -141,7 +141,18 @@ Lemma wp_CallHistory s γ (uid prevEpoch prevVerLen : w64) :
           (λ x y, x = y.(ktcore.Memb.PkOpen).(ktcore.CommitOpen.Val))
           (drop (uint.nat prevVerLen) pks) hist⌝ ∗
         "#Hwish_bound" ∷ ktcore.wish_NonMemb cfg.(cfg.vrf_pk) uid
-          (W64 $ length pks) next.(epoch.dig) bound end)
+          (W64 $ length pks) next.(epoch.dig) bound ∗
+
+        (* info in pending GS.
+        caller could derive this itself when proving BlameSpec,
+        but we'd rather not have a fupd in front of BlameSpec so that
+        it's actually pers. *)
+        "#Hpend_gs" ∷ (if decide (length pks = 0%nat) then True else
+          ∃ uidγ,
+          "%Hlook_uidγ" ∷ ⌜cfg.(cfg.uidγ) !! uid = Some uidγ⌝ ∗
+          "#Hidx_pks" ∷ ([∗ list] ver ↦ pk ∈ pks,
+            ∃ i,
+            mono_list_idx_own uidγ i ((W64 ver), pk))) end)
   }}}.
 Proof.
   wp_start as "@". wp_auto.
@@ -189,7 +200,7 @@ Proof.
     iApply ktcore.blame_one.
     (* instead of using [fupd_not_prop], another option is to change
     [BlameSpec] to allow proving contra under fupd. *)
-    iApply fupd_not_prop.
+    rewrite -fupd_not_prop.
     iIntros (?).
     case_match; try done.
     iNamed "Hgood".
@@ -207,7 +218,7 @@ Proof.
       1: lia.
       (* good prevVerLen. *)
       iMod "His_args" as "@".
-      iMod (len_pks_mono uid0 with "His_serv Hidx_ep []") as %Hmono.
+      iMod (hist_pks_prefix uid0 with "His_serv Hidx_ep []") as %?%prefix_length.
       2: {
         rewrite last_lookup in Hlast_hist.
         iDestruct (mono_list_idx_own_get with "Hnew_hist") as "H"; [done|].
@@ -231,13 +242,17 @@ Proof.
   simplify_eq/=.
   iDestruct "HQ" as "[#Hnew_hist %]".
   iNamed "Herr_serv_args".
+
   iMod "His_args" as "@".
-  iMod (len_pks_mono uid0 with "His_serv Hidx_ep []") as %Hmono.
+  iMod (hist_pks_prefix uid0 with "His_serv Hidx_ep []") as %?%prefix_length.
   2: {
     rewrite last_lookup in Hlast_hist.
     iDestruct (mono_list_idx_own_get with "Hnew_hist") as "H"; [done|].
     iFrame "H". }
   { word. }
+  iMod (put_op_records with "His_serv []") as "#Hrecords".
+  { iApply (mono_list_idx_own_get with "Hnew_hist").
+    by rewrite last_lookup in Hlast_hist. }
   iModIntro.
 
   iIntros (?) "@ %Heq_prevEp".
@@ -246,9 +261,6 @@ Proof.
   iExists (epoch.mk' (W64 (length σ.(state.hist) - 1)) lastDig lastLink linkSig
     σ.(state.hist).*1 None).
   iFrame "#%". simpl in *.
-
-  iSplit; [word|].
-  iSplit. 2: { iPureIntro. repeat split; try done. word. }
 
   iAssert (⌜hist0 `prefix_of` σ.(state.hist)⌝)%I as %[newDigs Ht].
   { iDestruct (mono_list_lb_valid with "His_hist Hnew_hist") as %[?|[newDigs ?]]; [done|].
@@ -261,11 +273,21 @@ Proof.
   rewrite fmap_app drop_app_length' in |-*; [|by len..].
   autorewrite with len in *.
 
-  iExists _.
-  repeat iSplit; try iPureIntro; [done|word|..].
-  - apply (f_equal (fmap fst)) in Hlast_hist. simpl in *.
-    by rewrite -fmap_last fmap_app in Hlast_hist.
-  - iExactEq "His_lastLink". rewrite /named. repeat f_equal. word.
+  (* TODO: it'd be nice to have a tactic that iSplit's just the
+  immediate chain of seps in goal. *)
+  iSplit; [word|].
+  iSplit.
+  { iExists _.
+    repeat iSplit; try iPureIntro; [done|word|..].
+    - apply (f_equal (fmap fst)) in Hlast_hist. simpl in *.
+      by rewrite -fmap_last fmap_app in Hlast_hist.
+    - iExactEq "His_lastLink". rewrite /named. repeat f_equal. word. }
+  iSplit. { iPureIntro. repeat split; try done. word. }
+  { case_decide as Hlen_pks; try done.
+    rewrite lookup_total_alt in Hlen_pks |-*.
+    destruct (lastKeys !! uid0) eqn:Hlook_keys;
+      rewrite Hlook_keys in Hlen_pks |-*; simpl in *; [|word].
+    iDestruct ("Hrecords" with "[//][]") as "$". word. }
 Qed.
 
 End proof.

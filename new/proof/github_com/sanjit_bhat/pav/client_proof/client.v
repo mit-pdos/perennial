@@ -33,7 +33,7 @@ Definition is_uid_inv γ : iProp Σ := inv nroot (uid_inv γ).
 Definition own ptr obj : iProp Σ :=
   ∃ isPending sl_pendingPk,
   "Hstruct_nextVer" ∷ ptr ↦ (client.nextVer.mk obj.(ver) isPending sl_pendingPk) ∗
-  "#Hsl_pendingPk" ∷
+  "#HpendingPk" ∷
     match obj.(pendingPk) with
     | None =>
       "%HisPending" ∷ ⌜isPending = false⌝
@@ -760,8 +760,8 @@ Proof.
     list_elem hist (uint.nat c.(Client.last).(epoch.epoch)) as e.
     iDestruct (mono_list_idx_own_get with "His_hist") as "Hidx_hist0"; [done|].
     iNamed "Halign_pend_hist".
-    iMod (server.len_pks_mono c.(Client.uid) with "His_rpc Hidx_hist Hidx_hist0")
-      as %?; [word|].
+    iMod (server.hist_pks_prefix c.(Client.uid) with "His_rpc Hidx_hist Hidx_hist0")
+      as %?%prefix_length; [word|].
     iClear "Hidx_hist His_hist".
     iFrame "#". word. }
   case_bool_decide as Heq_err; wp_auto;
@@ -844,24 +844,41 @@ Proof.
     autorewrite with len in *.
     iExactEq "Hwish_bound0". repeat f_equal. word. }
   iNamed "Hgenie".
-  rewrite -wp_fupd.
   wp_if_destruct.
   2: {
     wp_if_destruct.
     2: { rewrite ktcore.rw_BlameServClients.
       iApply "HΦ".
-      rewrite -fupd_sep.
-      admit.
+      iSplit. 2: { case_decide; [|set_solver]. by iFrame "∗#%". }
+      iApply ktcore.blame_two.
+      iSplit; [done|].
+      iIntros ([? Ht]).
+      case_match; try done.
+      iNamed "Halign_pend_pend".
+      rewrite {}Ht.
+      iNamed "HgoodCli".
+      rewrite Heq_sig_pk Heq_vrf_pk.
+      iDestruct ("Hgood" with "Halign_last [//]") as "H".
+      iNamedSuffix "H" "0".
+      destruct (c.(Client.pend).(nextVer.pendingPk));
+        iNamed "HpendingPk"; try done.
 
-(* TODO:
-- we're in err case where we have pending=false but observed non-zero hist!
-- our client owns mlist_auth that authoritatively pins puts for our uid.
-- problem: need mlist_auth to establish our two goals:
-(1) prove BlameSpec.
-own_puts bounds pend, which bounds hist, which contradicts observed hist.
-(2) re-establish Client.own.
-*)
-
+      apply Forall2_length in Heq_hist0.
+      autorewrite with len in *.
+      remember (lastKeys !!! _) as pks.
+      list_elem pks (uint.nat c.(Client.pend).(nextVer.ver)) as pk.
+      case_decide.
+      { apply lookup_lt_Some in Hpk_lookup. word. }
+      iNamed "Hpend_gs0".
+      simplify_eq/=.
+      iDestruct (big_sepL_lookup with "Hidx_pks") as "[% #Hidx_bad]"; [done|].
+      iDestruct (mono_list_auth_idx_lookup with "Hputs Hidx_bad") as %Hlook_bad.
+      iPureIntro.
+      apply list_elem_of_lookup_2 in Hlook_bad.
+      ereplace (W64 (uint.nat ?[w])) with (?w) in Hlook_bad by word.
+      by apply Heq_pend in Hlook_bad. }
+    admit. }
+  admit.
 Admitted.
 
 End proof.

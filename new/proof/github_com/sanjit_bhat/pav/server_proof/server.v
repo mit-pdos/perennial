@@ -81,9 +81,9 @@ might be able to prove client correctness and serv specs without it.
 note: serv can maintain inv that ties its merkle tree to both
 lastDig and lastKeys. *)
 Definition state_inv σ : iProp Σ :=
-  "%Hpend" ∷ ⌜(∀ entry,
-    last σ.(state.hist) = Some entry →
-    keys_sub entry.2 σ.(state.pending))⌝ ∗
+  "%Hpend" ∷ ⌜(∀ lastKeys,
+    last σ.(state.hist).*2 = Some lastKeys →
+    keys_sub lastKeys σ.(state.pending))⌝ ∗
   "%Hhist" ∷ ⌜(∀ i keys0 keys1,
     σ.(state.hist).*2 !! i = Some keys0 →
     σ.(state.hist).*2 !! (S i) = Some keys1 →
@@ -106,12 +106,12 @@ Definition is_serv_inv γ := inv nroot (serv_inv γ).
 Definition is_Server (s : loc) γ : iProp Σ :=
   is_serv_inv γ.
 
-Lemma len_pks_mono uid γ (i j : nat) (x y : list w8 * keys_ty) :
+Lemma hist_pks_prefix uid γ (i j : nat) (x y : list w8 * keys_ty) :
   i ≤ j →
   is_serv_inv γ -∗
   mono_list_idx_own γ.(cfg.histγ) i x -∗
   mono_list_idx_own γ.(cfg.histγ) j y ={⊤}=∗
-  ⌜length (x.2 !!! uid) ≤ length (y.2 !!! uid)⌝.
+  ⌜x.2 !!! uid `prefix_of` y.2 !!! uid⌝.
 Proof.
   iIntros (?) "#His_serv #Hidx0 #Hidx1".
   rewrite /is_Server.
@@ -126,15 +126,60 @@ Proof.
   apply (list_lookup_fmap_Some_2 snd) in Hlook0, Hlook1.
   destruct x as [? keys0], y as [? keys1]. simpl in *.
   opose proof (list_reln_trans_refl _ _ Hhist
-    _ _ _ _ Hlook0 Hlook1 ltac:(lia)) as Hhist'.
-  rewrite /keys_sub /map_included /map_relation in Hhist'.
-  specialize (Hhist' uid).
+    _ _ _ _ Hlook0 Hlook1 ltac:(lia)) as Hsub.
+  rewrite /keys_sub /map_included /map_relation in Hsub.
+  specialize (Hsub uid).
   rewrite !lookup_total_alt.
   destruct (keys0 !! uid) eqn:Heq0;
     destruct (keys1 !! uid) eqn:Heq1;
-    rewrite Heq0 Heq1 in Hhist' |-*;
-    simpl in *; try done; [|lia].
-  apply prefix_length in Hhist'. lia.
+    rewrite Heq0 Heq1 in Hsub |-*;
+    simpl in *; try done.
+  apply prefix_nil.
+Qed.
+
+Lemma put_op_records γ i x :
+  is_serv_inv γ -∗
+  mono_list_idx_own γ.(cfg.histγ) i x ={⊤}=∗
+  ∀ uid pks,
+    ⌜x.2 !! uid = Some pks⌝ -∗
+    (* if empty pks, might not have uidγ. *)
+    ⌜length pks > 0%nat⌝ -∗
+    ∃ uidγ,
+      ⌜γ.(cfg.uidγ) !! uid = Some uidγ⌝ ∗
+      ([∗ list] ver ↦ pk ∈ pks,
+        ∃ i,
+        mono_list_idx_own uidγ i ((W64 ver), pk)).
+Proof.
+  iIntros "#His_serv #Hidx".
+  rewrite /is_Server.
+  iInv "His_serv" as ">@" "Hclose".
+  iNamed "Hgs".
+  iDestruct (mono_list_auth_idx_lookup with "Hhist Hidx") as %Hlook_hist.
+  iMod ("Hclose" with "[-]") as "_"; [by iFrame "∗#"|].
+  iNamed "Hstate".
+  iModIntro.
+
+  iIntros "* %Hlook_uid %Hlen_pks".
+  apply (list_lookup_fmap_Some_2 snd) in Hlook_hist.
+  destruct x as [? keys]. simpl in *.
+  apply lookup_lt_Some in Hlook_hist as ?.
+  list_elem (σ.(state.hist).*2) (pred (length σ.(state.hist).*2)) as lastKeys; [word|].
+  opose proof (list_reln_trans_refl _ _ Hhist
+    _ _ _ _ Hlook_hist HlastKeys_lookup ltac:(lia)) as Hsub0.
+  rewrite -last_lookup in HlastKeys_lookup.
+  apply Hpend in HlastKeys_lookup.
+  assert (keys_sub keys σ.(state.pending)) as Hsub.
+  { by trans lastKeys. }
+  rewrite /keys_sub /map_included /map_relation in Hsub.
+  specialize (Hsub uid).
+
+  rewrite Hlook_uid in Hsub.
+  destruct (σ.(state.pending) !! uid) as [pks0|] eqn:Hlook_pend;
+    rewrite Hlook_pend in Hsub;
+    simpl in *; try done.
+  iDestruct (big_sepM_lookup with "Hpend") as "@"; [done|].
+  apply prefix_to_take in Hsub as ->.
+  by iDestruct (big_sepL_take with "Hpks") as "$".
 Qed.
 
 (** state transition ops. *)
@@ -251,7 +296,8 @@ Proof.
 
   destruct σ. simpl in *.
   iSplit; iPureIntro; simpl.
-  - intros ? Hlast. rewrite last_snoc in Hlast.
+  - intros ? Hlast.
+    rewrite fmap_app last_snoc in Hlast.
     by simplify_eq/=.
   - intros i ?? Hlook0 Hlook1.
     apply list_lookup_fmap_Some_1 in Hlook0 as (?&?&Hlook0).
@@ -264,6 +310,8 @@ Proof.
       rewrite lookup_app_r in Hlook1; [|lia].
       apply list_lookup_singleton_Some in Hlook1 as [_ ?].
       replace i with (pred (length hist)) in Hlook0 by lia.
+      apply (list_lookup_fmap_Some_2 snd) in Hlook0.
+      replace (length hist) with (length hist.*2) in Hlook0 by len.
       rewrite -last_lookup in Hlook0.
       naive_solver.
     + rewrite !lookup_app_l in Hlook0, Hlook1; [|lia..].
