@@ -48,7 +48,7 @@ Definition for_range (key_type elem_type : go.type) : val :=
       do: #()
     else
       let: "mv" := StartRead "m" in
-      let: "v" := InternalMapForRange key_type elem_type ("mv", "body") in
+      let: "v" := exception_do (InternalMapForRange key_type elem_type ("mv", "body")) in
       FinishRead "m";;
       "v".
 
@@ -77,9 +77,9 @@ Class MapSemantics `{!GoSemanticsFunctions} :=
                  let: "b" := body (Val key) (m key).2 in
                  if: (Fst "b") =⟨go.string⟩ #"break" then (return: (do: #())) else (do: #()) ;;;
                  if: (Fst "b" =⟨go.string⟩ #"continue") || (Fst $ Var "b" =⟨go.string⟩ #"execute") then
-                   remaining_loop
-                 else "b"
-          )%E (do: #())%E ks);
+                   (λ: <>, remaining_loop)%V #()
+                 else return: "b"
+          )%E (return: (do: #()))%E ks);
   #[global] internal_map_make_step_pure v ::
     go.IsGoStepPureDet InternalMapMake v (map_empty v);
 

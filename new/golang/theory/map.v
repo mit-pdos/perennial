@@ -20,9 +20,16 @@ Lemma wp_InternalMapForRange {stk E} mv m (body : val) key_type elem_type :
   ∀ Φ,
   (⌜ is_map_pure mv m ⌝)  -∗
   (∀ ks, ⌜ is_map_domain mv ks ⌝ -∗
-         WP (foldr (λ (key : val) remaining_loop,
-                      (body key (m key).2 ;;; remaining_loop)%E)
-               (do: # ())%E ks) @ stk; E {{ Φ }}) -∗
+         (WP foldr
+            (λ (key0 : val) (remaining_loop : expr),
+               let: "b" := body key0 (m key0).2 in
+               if: Fst "b" =⟨go.string⟩ # "break"%go then return: (do: # ())
+               else (do: # ()) ;;;
+                      if: if: Fst "b" =⟨go.string⟩ # "continue"%go then # true
+                          else Fst "b" =⟨go.string⟩ # "execute"%go
+                      then ((λ: <>, remaining_loop)%V #()) else return: "b")
+            (return: (do: # ())) ks
+            @ stk; E {{ v, Φ v }})) -∗
   WP InternalMapForRange key_type elem_type (mv, body)%V @ stk; E {{ Φ }}.
 Proof.
   iIntros (?) "% HΦ".
@@ -205,6 +212,7 @@ Proof.
   rewrite own_map_unseal. iNamed 1. iDestruct (heap_pointsto_non_null with "Hown") as "$".
 Qed.
 
+(* FIXME: seal. *)
 Definition for_map_postcondition P Φ bv : iProp Σ :=
             (⌜ bv = continue_val ⌝ ∗ P) ∨
             (⌜ bv = execute_val ⌝ ∗ P) ∨
@@ -224,7 +232,7 @@ Lemma wp_map_for_range P stk E (body : func.t) key_type elem_type mref m dq
       (P keys (Z.of_nat (size m)) -∗ Φ execute_val))
   ) -∗
   WP map.for_range key_type elem_type #mref #body @ stk; E {{ Φ }}.
-Proof using Inj0 pre_sem slice_sem.
+Proof using Inj0 array_sem pre_sem slice_sem map_sem.
   iIntros "% Hm HΦ".
   wp_call.
   iDestruct (own_map_not_nil with "[$]") as %?.
@@ -286,35 +294,22 @@ Proof using Inj0 pre_sem slice_sem.
   erewrite drop_S; last done. rewrite fmap_cons foldr_cons.
   rewrite Hagree Hlookup /=. wp_apply (wp_wand with "Hiter").
   iIntros (execv) "Hpost".
-  iDestruct "Hpost" as "[[-> H]|?]".
-  { wp_auto.
-
-  }
-  rewrite Search drop cons.
-
-  assert (∃ i = )
-  iAssert (∃ i, )
-
+  rewrite -Z2Nat.inj_succ; last lia.
+  iDestruct "Hpost" as "[[-> H]|Hpost]".
+  { wp_auto. rewrite continue_val_unseal. wp_auto.
+    iApply ("IH" with "[$] [$] [$]").
+    word. }
   wp_auto.
-  wp_apply wp_slice_literal. iIntros "%keys_sl keys_sl". wp_auto.
-  wp_bind (slice.for_range _ _ _).
-  iSpecialize ("HΦ" with "[$keys_sl]").
-  { iPureIntro.
-    eassert _ as Hl.
-    2:{ split; first eexact Hl.
-        apply NoDup_fmap in Hks_nodup; last tc_solve.
-        rewrite <- (size_list_to_set (C:=gset K)); last done.
-        rewrite Hl. rewrite size_dom //. }
-    rewrite sets.set_eq. intros k.
-    rewrite elem_of_list_to_set.
-    specialize (Hks #k). specialize (Hagree k).
-    rewrite list_elem_of_fmap_inj in Hks.
-    rewrite -Hks. rewrite Hagree. rewrite elem_of_dom.
-    by destruct lookup.
-  }
-  iApply (wp_wand with "HΦ").
-  iIntros "% HΦ". wp_auto. wp_apply "Hown" as "Hown".
-  iApply "HΦ". iFrame "∗#%".
+  iDestruct "Hpost" as "[[-> H]|Hpost]".
+  { rewrite execute_val_unseal. wp_auto.
+    iApply ("IH" with "[$] [$] [$]").
+    word. }
+  iDestruct "Hpost" as "[[-> H]|Hpost]".
+  { rewrite break_val_unseal. wp_auto.
+    wp_apply "Hown". iIntros "Hown". wp_auto. iFrame. }
+  iDestruct "Hpost" as "(%  & -> & HΦ')".
+  rewrite return_val_unseal.
+  wp_auto. wp_apply "Hown" as "Hown". iFrame.
 Qed.
 
 Lemma wp_map_composite_literal key_type elem_type (kvs : element_list K V)
