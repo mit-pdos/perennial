@@ -16,38 +16,44 @@ Local Set Default Proof Using "Type core_sem pre_sem array_sem slice_sem map_sem
 (* TODO: reading from nil map. Want to say that an owned map is not nil, which
    requires knowing that wp_ref gives non-null pointers. *)
 
-Lemma wp_InternalMapDomain mv m :
-  {{{ ⌜ go.is_map_pure mv m ⌝  }}}
-    InternalMapDomain mv
-  {{{ ks, RET (ArrayV ks); ⌜ is_map_domain mv ks ⌝ }}}.
+Lemma wp_InternalMapForRange {stk E} mv m (body : val) key_type elem_type :
+  ∀ Φ,
+  (⌜ is_map_pure mv m ⌝)  -∗
+  (∀ ks, ⌜ is_map_domain mv ks ⌝ -∗
+         WP (foldr (λ (key : val) remaining_loop,
+                      (body key (m key).2 ;;; remaining_loop)%E)
+               (do: # ())%E ks) @ stk; E {{ Φ }}) -∗
+  WP InternalMapForRange key_type elem_type (mv, body)%V @ stk; E {{ Φ }}.
 Proof.
   iIntros (?) "% HΦ".
   wp_apply (wp_GoInstruction []).
   { intros.
-    unshelve epose proof (go.is_map_domain_exists _ _ _) as [? ?];
-      last (by repeat econstructor); done. }
+    unshelve epose proof (go.is_map_domain_exists mv m H) as [? ?].
+    repeat eexists.
+    erewrite go.internal_map_domain_literal_step_pure; last done. repeat eexists; done. }
   iIntros "* %Hstep".
-  inv Hstep. inv Hpure.
-  iIntros "? $ !>". simpl. wp_auto. iApply "HΦ". done.
+  simpl in *. erewrite go.internal_map_domain_literal_step_pure in Hstep; last done.
+  destruct Hstep as (Hstep & ?). destruct Hstep as (? & ? & ?). subst.
+  iIntros "? $ !>". iApply "HΦ". done.
 Qed.
 
 (* NOTE: we assume EqDecision explicitly here even though it is also available
 through [IntoValTyped K kt] so that the instance used to type-check [gmap K V]
 is independent of the [IntoValTyped] instance. Otherwise, these proofs end up
 relying on a [gmap] with a particular proof of [EqDecision K]. *)
-Context `{!IntoVal K} `{!EqDecision K} `{!Countable K} `{!IntoVal V}
+Context `{!ZeroVal K} `{!EqDecision K} `{!Countable K} `{!ZeroVal V}
   `{!Inj (=) (=) (into_val (V:=K))}.
 
 Definition own_map_def mptr dq (m : gmap K V) : iProp Σ :=
   ∃ (mv : val) mp,
     "Hown" ∷ heap_pointsto mptr dq mv ∗
-    "%His_map" ∷ ⌜ go.is_map_pure mv mp ⌝ ∗
+    "%His_map" ∷ ⌜ is_map_pure mv mp ⌝ ∗
     "%Hagree" ∷ ⌜ ∀ k, mp #k = (match m !! k with
                                 | None => (false, #(zero_val V))
                                 | Some v => (true, #v)
                                 end) ⌝ ∗
     "%Hdom" ∷ ⌜ ∀ kv, (mp kv).1 = true → ∃ (k : K), kv = #k ⌝ ∗
-    "%Hdefault" ∷ ⌜ go.map_default mv = #(zero_val V) ⌝.
+    "%Hdefault" ∷ ⌜ map_default mv = #(zero_val V) ⌝.
 Program Definition own_map := sealed @own_map_def.
 Definition own_map_unseal : own_map = _ := seal_eq _.
 
@@ -61,11 +67,11 @@ Notation "mref ↦$ dq m" := (own_map mref dq m)
 Class SafeMapKey key_type (k : K) :=
   {
     safe_map_go_eq :
-      ∃ b, IsGoEq key_type #k #k b;
+      ∃ (b : bool), go.GoExprEq (go_eq key_type #k #k) (#b);
   }.
 
-Global Instance safe_map_key_is_go_eq key_type k b :
-  IsGoEq key_type #k #k b → SafeMapKey key_type k.
+Global Instance safe_map_key_is_go_eq key_type k (b : bool) :
+  go.GoExprEq (go_eq key_type #k #k) #b → SafeMapKey key_type k.
 Proof.
   intros ?. constructor. by eexists.
 Qed.
@@ -74,10 +80,10 @@ Lemma wp_map_insert key_type l (m : gmap K V) k v {Hsafe : SafeMapKey key_type k
   {{{ l ↦$ m }}}
     map.insert key_type #l #k #v
   {{{ RET #(); l ↦$ <[k := v]> m }}}.
-Proof using Inj0.
+Proof using Inj0 map_sem.
   destruct Hsafe as [[? Hsafe]].
   rewrite own_map_unseal.
-  iIntros (?) "Hm HΦ". iNamed "Hm". wp_call.
+  iIntros (?) "Hm HΦ". iNamed "Hm". wp_call. rewrite decide_True //. wp_auto.
   wp_apply (_internal_wp_untyped_read with "Hown"). iIntros "Hown".
   wp_auto.
   wp_apply (_internal_wp_untyped_store with "Hown"). iIntros "Hown".
@@ -96,9 +102,9 @@ Lemma wp_map_delete l (m : gmap K V) k key_type elem_type {Hsafe : SafeMapKey ke
     #(functions go.delete [go.MapType key_type elem_type])
         #l #k
   {{{ RET #(); l ↦$ delete k m }}}.
-Proof using Inj0.
+Proof using Inj0 map_sem.
   destruct Hsafe as [[? Hsafe]].
-  wp_start as "Hm". rewrite own_map_unseal. iNamed "Hm".
+  wp_start as "Hm". rewrite own_map_unseal. iNamed "Hm". rewrite decide_True //. wp_auto.
   wp_apply (_internal_wp_untyped_read with "Hown") as "Hown".
   wp_apply (_internal_wp_untyped_store with "Hown") as "Hown".
   iApply "HΦ". iFrame "Hown".
@@ -119,8 +125,8 @@ Proof.
   destruct Hsafe as [[? Hsafe]].
   wp_start as "Hm". rewrite own_map_unseal. iNamed "Hm".
   iDestruct (heap_pointsto_non_null with "Hown") as "%H".
-  rewrite go.go_eq_map_nil_l. wp_if_destruct.
-  { exfalso. done. }
+  rewrite decide_True //. wp_auto.
+  wp_if_destruct; first by exfalso.
   wp_apply (_internal_wp_untyped_read with "Hown") as "Hown".
   erewrite go.map_lookup_pure; last done.
   pose proof (Hagree k) as Heq. rewrite Heq. destruct (m !! k); wp_auto.
@@ -134,9 +140,7 @@ Global Instance pure_wp_map_nil_lookup2 key_type elem_type k
   PureWp True (map.lookup2 key_type elem_type #map.nil #k) (#(zero_val V), #false)%V.
 Proof.
   destruct Hsafe as [[? Hsafe]].
-  pure_wp_start.
-  rewrite go.go_eq_map_nil_l. wp_if_destruct.
-  2:{ exfalso. done. }
+  pure_wp_start. rewrite decide_True //. wp_auto.
   wp_alloc tmp as "?". wp_auto. by iApply "HΦ".
 Qed.
 
@@ -156,9 +160,6 @@ Proof. by pure_wp_start. Qed.
 
 Lemma wp_map_make2 (len : w64) key_type elem_type
   `{!TypedPointsto V} `{!IntoValTyped V elem_type} :
-
-Lemma wp_map_make2 :
-  is_comparable_go_type kt = true →
   {{{ True }}}
     #(functions go.make2 [go.MapType key_type elem_type]) #len
   {{{ mref, RET #mref; mref ↦$ (∅ : gmap K V) }}}.
@@ -169,7 +170,7 @@ Proof.
   { erewrite go.is_map_pure_flatten; done. }
   iNext.
   iIntros (?) "Hl".
-  replace (LitV l) with #l; last by rewrite into_val_unseal.
+  replace (LitV l) with #l; last by rewrite go.into_val_unfold.
   iApply "HΦ". rewrite own_map_unseal.
   iFrame "∗%". iPureIntro. split.
   - intros. rewrite lookup_empty //.
@@ -183,36 +184,19 @@ Lemma wp_map_make1 key_type elem_type
   {{{ mref, RET #mref; mref ↦$ (∅ : gmap K V) }}}.
 Proof. wp_start. by wp_apply wp_map_make2. Qed.
 
-Lemma wp_map_clear l (m : gmap K V) :
-  {{{ l ↦$ m }}}
-    map.clear #l
-  {{{ RET #(); l ↦$ ∅ }}}.
+Lemma wp_map_clear mref (m : gmap K V) key_type elem_type
+  `{!TypedPointsto V} `{!IntoValTyped V elem_type} :
+  {{{ mref ↦$ m }}}
+    #(functions go.clear [go.MapType key_type elem_type]) #mref
+  {{{ RET #(); mref ↦$ ∅ }}}.
 Proof.
-  rewrite own_map_unseal.
-  iIntros (?) "Hm HΦ".
-  iDestruct "Hm" as (?) "(Hm & % & %Hm)".
-  wp_call.
-  wp_bind (! _)%E.
-  rewrite [in #l]to_val_unseal /=.
-  iApply (wp_load with "[$]").
-  iIntros "!> Hm".
-  wp_pure.
-  iAssert (∃ v, heap_pointsto l (DfracOwn 1) v)%I with "[$Hm]" as "Hm".
-  iLöb as "IH" forall (v m Hm Φ).
-  destruct v; try by exfalso.
-  - wp_pures. destruct Hm as [-> ->].
-    iDestruct "Hm" as (v0) "Hm".
-    wp_apply (wp_store with "[$Hm]").
-    iIntros "Hm".
-    replace (LitV LitUnit) with #() by rewrite to_val_unseal //=.
-    iApply "HΦ".
-    rewrite /own_map_def. iFrame; auto.
-  - wp_pures.
-    destruct v; try by exfalso.
-    destruct v1; try by exfalso.
-    do 3 wp_pure.
-    destruct Hm as (k' & ? & ? & -> & -> & Hm & ->).
-    wp_apply ("IH" with "[] [$HΦ]"); eauto.
+  rewrite own_map_unseal. iIntros (?) "Hm HΦ".
+  rewrite func_unfold. wp_auto. iNamed "Hm".
+  wp_apply wp_map_make1. iIntros "% Hm'".
+  rewrite own_map_unseal. iNamedSuffix "Hm'" "_2".
+  wp_apply (_internal_wp_untyped_read with "Hown_2") as "Hown_2".
+  wp_apply (_internal_wp_untyped_store with "Hown") as "Hown".
+  iApply "HΦ". iFrame "∗#%".
 Qed.
 
 Lemma own_map_not_nil mref m dq :
@@ -221,29 +205,33 @@ Proof.
   rewrite own_map_unseal. iNamed 1. iDestruct (heap_pointsto_non_null with "Hown") as "$".
 Qed.
 
-Lemma wp_map_for_range (body : func.t) key_type elem_type mref m dq
+Definition for_map_postcondition P Φ bv : iProp Σ :=
+            (⌜ bv = continue_val ⌝ ∗ P) ∨
+            (⌜ bv = execute_val ⌝ ∗ P) ∨
+            ⌜ bv = break_val ⌝ ∗ Φ execute_val ∨
+            (∃ v, ⌜ bv = return_val v ⌝ ∗ Φ bv).
+
+Lemma wp_map_for_range P stk E (body : func.t) key_type elem_type mref m dq
   `{!TypedPointsto K} `{!IntoValTyped K key_type} :
   ∀ Φ,
   mref ↦${dq} m -∗
-  (∀ keys_sl keys,
-     ⌜ list_to_set keys = dom m ∧ length keys = size m ∧ NoDup keys ⌝ ∗
-     keys_sl ↦[key_type]* keys -∗
-     WP slice.for_range key_type
-        (# {|
-              func.f := <>;
-              func.x := <>;
-              func.e := (λ: "k"%string, # body "k"%string (map.lookup1 key_type elem_type (# mref) "k"%string))%E
-            |}) (# keys_sl) {{ v, mref ↦${dq} m -∗ Φ v }}
+  (∀ keys,
+     ⌜ list_to_set keys = dom m ∧ length keys = size m ∧ NoDup keys ⌝ -∗
+     (P keys 0 ∗
+      □ (∀ i key v, ⌜ keys !! (Z.to_nat i) = Some key ∧ m !! key = Some v ⌝ -∗ P keys i -∗
+                    WP #body #key #v @ stk; E
+                      {{ v, for_map_postcondition (P keys (i+1)) Φ v }}) ∗
+      (P keys (Z.of_nat (size m)) -∗ Φ execute_val))
   ) -∗
-  WP map.for_range key_type elem_type #mref #body {{ Φ }}.
+  WP map.for_range key_type elem_type #mref #body @ stk; E {{ Φ }}.
 Proof using Inj0 pre_sem slice_sem.
   iIntros "% Hm HΦ".
-  wp_call. rewrite go.go_eq_map_nil_l.
+  wp_call.
   iDestruct (own_map_not_nil with "[$]") as %?.
   wp_if_destruct; first by exfalso.
   rewrite own_map_unseal. iNamed "Hm".
   wp_apply (_internal_wp_untyped_start_read with "Hown") as "Hown".
-  wp_apply (wp_InternalMapDomain with "[//]"). iIntros "%ks %Hdom'".
+  wp_apply (wp_InternalMapForRange with "[//]"). iIntros "%ks %Hdom'".
   eapply go.is_map_domain_pure in Hdom'; last done.
   destruct Hdom' as [Hks_nodup Hks].
   assert (Forall (λ kv, ∃ (k : K), kv = #k) ks) as Heq.
@@ -253,6 +241,61 @@ Proof using Inj0 pre_sem slice_sem.
   apply Forall_exists_Forall2_l in Heq as [keys Heq].
   apply Forall2_fmap_2 in Heq. rewrite -list_eq_Forall2 in Heq.
   rewrite list_fmap_id in Heq. subst.
+  iAssert (⌜ _ ⌝)%I with "[]" as "%Hfacts".
+  2: iDestruct ("HΦ" $! keys with "[]") as "(HP & #Hiter & HΦ)".
+  2: iPureIntro; exact Hfacts.
+  { iPureIntro. eassert _ as Hl.
+    2:{ split; first eexact Hl.
+        apply NoDup_fmap in Hks_nodup; last tc_solve.
+        rewrite <- (size_list_to_set (C:=gset K)); last done.
+        rewrite Hl. rewrite size_dom //. }
+    rewrite sets.set_eq. intros k.
+    rewrite elem_of_list_to_set.
+    specialize (Hks #k). specialize (Hagree k).
+    rewrite list_elem_of_fmap_inj in Hks.
+    rewrite -Hks. rewrite Hagree. rewrite elem_of_dom.
+    by destruct lookup.
+  }
+  (* foldr  *)
+  pose (i := 0).
+  change (P keys 0) with (P keys i).
+  iFreeze "Hiter".
+  replace (into_val <$> keys) with (into_val <$> (drop (Z.to_nat i) keys)).
+  2:{ rewrite drop_0 //. }
+  iThaw "Hiter".
+  iAssert (⌜ 0 ≤ i ≤ length keys ⌝)%I as "-#Hi"; first word.
+  generalize i. clear i. intros i.
+  iLöb as "IH" forall (i). iDestruct "Hi" as "%".
+  destruct (decide (i < length keys)).
+  2:{
+    assert (i = length keys) by word. subst.
+    nat_cleanup. rewrite drop_all /=.
+    wp_auto. wp_apply "Hown". iIntros "Hown".
+    wp_auto. iApply "HΦ". iFrame. destruct Hfacts as (? & -> & ?).
+    iFrame.
+  }
+  list_elem keys i as key.
+  destruct (m !! key) eqn:Hlookup.
+  2:{
+    exfalso. apply not_elem_of_dom_2 in Hlookup as Hkey_m.
+    destruct Hfacts as [Hfact _]. rewrite <- Hfact in Hkey_m.
+    rewrite elem_of_list_to_set in Hkey_m.
+    rewrite list_elem_of_lookup in Hkey_m. naive_solver.
+  }
+  iSpecialize ("Hiter" $! i key v with "[//] HP").
+  erewrite drop_S; last done. rewrite fmap_cons foldr_cons.
+  rewrite Hagree Hlookup /=. wp_apply (wp_wand with "Hiter").
+  iIntros (execv) "Hpost".
+  iDestruct "Hpost" as "[[-> H]|?]".
+  { wp_auto.
+
+  }
+  rewrite Search drop cons.
+
+  assert (∃ i = )
+  iAssert (∃ i, )
+
+  wp_auto.
   wp_apply wp_slice_literal. iIntros "%keys_sl keys_sl". wp_auto.
   wp_bind (slice.for_range _ _ _).
   iSpecialize ("HΦ" with "[$keys_sl]").

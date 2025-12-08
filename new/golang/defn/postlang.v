@@ -98,6 +98,9 @@ Class GoSemanticsFunctions {ext : ffi_syntax} :=
     map_delete : val → val → val;
     is_map_domain : val → list val → Prop;
     composite_literal : go.type → val → expr;
+
+    is_map_pure (v : val) (m : val → bool * val) : Prop;
+    map_default : val → val;
   }.
 
 Section unfolding_defs.
@@ -208,7 +211,8 @@ Class IsComparable t `{!GoSemanticsFunctions} : Prop :=
 (* Helper definition to cover types for which `a == b` always executes safely. *)
 Class AlwaysSafelyComparable t V `{!EqDecision V} `{!GoSemanticsFunctions} : Prop :=
   {
-    is_safely_comparable : ∀ (v1 v2 : V), go_eq t #v1 #v2 = (#();;#(bool_decide (v1 = v2)))%E;
+    #[global] is_safely_comparable ::
+      ∀ (v1 v2 : V), GoExprEq (go_eq t #v1 #v2) (#();;#(bool_decide (v1 = v2)))%E;
   }.
 
 Class CoreComparisonSemantics `{!GoSemanticsFunctions} : Prop :=
@@ -229,15 +233,15 @@ Class CoreComparisonSemantics `{!GoSemanticsFunctions} : Prop :=
   #[global] go_eq_channel t dir :: AlwaysSafelyComparable (go.ChannelType t dir) loc;
 
   #[global] is_comparable_interface elems :: IsComparable (go.InterfaceType elems);
-  go_eq_interface elems i1 i2 :
-    go_eq (go.InterfaceType elems) #i1 #i2 =
-      match i1, i2 with
-      | interface.nil, interface.nil => #true
-      | (interface.mk t1 v1), (interface.mk t2 v2) =>
-          if decide (t1 = t2) then go_eq t1 v1 v2
-          else #false
-      | _, _ => #false
-      end;
+  #[global] go_eq_interface elems i1 i2 ::
+    GoExprEq (go_eq (go.InterfaceType elems) #i1 #i2)
+      (match i1, i2 with
+       | interface.nil, interface.nil => #true
+       | (interface.mk t1 v1), (interface.mk t2 v2) =>
+           if decide (t1 = t2) then go_eq t1 v1 v2
+           else #false
+       | _, _ => #false
+       end);
 
   is_comparable_struct fds :
     IsComparable (go.StructType fds) ↔
@@ -245,16 +249,16 @@ Class CoreComparisonSemantics `{!GoSemanticsFunctions} : Prop :=
               IsComparable (
                   match fd with go.FieldDecl n t => t | go.EmbeddedField n t => t end
       )) fds;
-  go_eq_struct fds v1 v2 :
-    go_eq (go.StructType fds) v1 v2 =
-    foldl (λ cmp_so_far fd,
+  go_eq_struct fds v1 v2 ::
+    GoExprEq (go_eq (go.StructType fds) v1 v2)
+    (foldl (λ cmp_so_far fd,
              let (field_name, field_type) :=
                match fd with go.FieldDecl n t => (n, t) | go.EmbeddedField n t => (n, t) end in
              (if: cmp_so_far then
                 (StructFieldGet (go.StructType fds) field_name v1) =⟨field_type⟩
                 (StructFieldGet (go.StructType fds) field_name v2)
               else #false)%E
-      ) #true fds
+      ) #true fds);
 }.
 
 Fixpoint struct_field_type (f : go_string) (fds : list go.field_decl) : go.type :=

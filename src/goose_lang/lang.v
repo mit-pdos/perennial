@@ -218,7 +218,7 @@ Inductive go_instruction : Type :=
 | InternalMapInsert
 | InternalMapDelete
 | InternalMapLength
-| InternalMapDomainLiteral
+| InternalMapForRange (key_type elem_type : go.type)
 | InternalMapMake
 
 | CompositeLiteral (t : go.type).

@@ -52,8 +52,8 @@ Class ArraySemantics `{!GoSemanticsFunctions} :=
     (Hinrange : (array.arr a) !! (Z.to_nat i) = Some v):
     index (go.ArrayType n elem_type) i #a = #v;
 
-  composite_literal_array n elem_type kvs :
-    composite_literal (go.ArrayType n elem_type) (LiteralValue kvs) =
+  #[global] composite_literal_array n elem_type kvs ::
+    go.GoExprEq (composite_literal (go.ArrayType n elem_type) (LiteralValue kvs))
     (foldl (λ '(cur_index, expr_so_far) ke,
              match ke with
              | KeyedElement None (ElementExpression e) =>

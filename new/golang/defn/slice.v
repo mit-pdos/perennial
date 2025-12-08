@@ -38,6 +38,18 @@ Module go.
 Section defs.
 Context {ext : ffi_syntax}.
 Context {go_lctx : GoLocalContext} {go_gctx : GoGlobalContext}.
+
+Definition array_literal_size kvs : Z :=
+  let '(last, m) := (foldl (λ '(cur_index, max_so_far) ke,
+                              match ke with
+                              | KeyedElement None _ => (cur_index + 1, max_so_far)
+                              | KeyedElement (Some (KeyInteger cur_index')) _ =>
+                                  (cur_index' + 1, cur_index `max` max_so_far)
+                              | _ => (-1, -1)
+                              end
+                       ) (0, 0) kvs) in
+  last `max` m.
+
 Class SliceSemantics `{!GoSemanticsFunctions} :=
 {
   #[global] internal_len_step s ::
@@ -151,15 +163,14 @@ Class SliceSemantics `{!GoSemanticsFunctions} :=
          FuncResolve go.copy [st] #() (Slice st ("s_new", (FuncResolve go.len [st] #() "s", "new_len"))) "x" ;;
          "s_new")%V;
 
-  composite_literal_slice elem_type (vs : list val) :
-    go.GoExprEq (composite_literal (go.SliceType elem_type) (ArrayV vs))
-    (if decide (Z.of_nat (length vs) < 2^63) then
-      (let: "tmp" := GoAlloc (go.ArrayType (length vs) elem_type) #() in
-       "tmp" <-[(go.ArrayType (length vs) elem_type)]
-                CompositeLiteral (go.ArrayType (length vs) elem_type) (ArrayV vs);;
-       Slice (go.ArrayType (length vs) elem_type) ("tmp", (#(W64 0), #(W64 (length vs))))
-      )%E
-    else AngelicExit #());
+  #[global] composite_literal_slice elem_type kvs ::
+    go.GoExprEq (composite_literal (go.SliceType elem_type) (LiteralValue kvs))
+    (let len := array_literal_size kvs in
+    (let: "tmp" := GoAlloc (go.ArrayType len elem_type) #() in
+     "tmp" <-[(go.ArrayType len elem_type)]
+              CompositeLiteral (go.ArrayType len elem_type) (LiteralValue kvs);;
+     Slice (go.ArrayType len elem_type) ("tmp", (#(W64 0), #(W64 len)))
+    )%E);
 
   array_index_ref_0 t l : array_index_ref t 0 l = l;
 }.

@@ -48,11 +48,7 @@ Definition for_range (key_type elem_type : go.type) : val :=
       do: #()
     else
       let: "mv" := StartRead "m" in
-      let: "key_sl" := CompositeLiteral (go.SliceType key_type) (InternalMapDomainLiteral "mv") in
-      let: "v" :=
-        (slice.for_range key_type
-           (λ: <> "k", "body" "k" (lookup1 key_type elem_type "m" "k"))
-           "key_sl") in
+      let: "v" := InternalMapForRange key_type elem_type ("mv", "body") in
       FinishRead "m";;
       "v".
 
@@ -73,9 +69,17 @@ Class MapSemantics `{!GoSemanticsFunctions} :=
     go.IsGoStepPureDet InternalMapDelete (m, k) (map_delete m k);
   #[global] internal_map_length_step_pure m ks (H : is_map_domain m ks) ::
     go.IsGoStepPureDet InternalMapLength m #(W64 (length ks));
-  #[global] internal_map_domain_literal_step_pure m ks (H : is_map_domain m ks) ::
-    go.IsGoStepPureDet InternalMapDomainLiteral m
-    (LiteralValue ((λ v, KeyedElement None $ ElementExpression $ Val v) <$> ks));
+  internal_map_domain_literal_step_pure mv m body key_type elem_type (Hm : is_map_pure mv m) :
+    is_go_step_pure (InternalMapForRange key_type elem_type) (mv, body)%V =
+    (λ e, ∃ ks (His_dom : is_map_domain mv ks),
+        e =
+        foldr (λ key remaining_loop,
+                 let: "b" := body (Val key) (m key).2 in
+                 if: (Fst "b") =⟨go.string⟩ #"break" then (return: (do: #())) else (do: #()) ;;;
+                 if: (Fst "b" =⟨go.string⟩ #"continue") || (Fst $ Var "b" =⟨go.string⟩ #"execute") then
+                   remaining_loop
+                 else "b"
+          )%E (do: #())%E ks);
   #[global] internal_map_make_step_pure v ::
     go.IsGoStepPureDet InternalMapMake v (map_empty v);
 
@@ -94,9 +98,6 @@ Class MapSemantics `{!GoSemanticsFunctions} :=
     go.IsGoStepPureDet InternalMapDelete (mv, k)%V (map_delete mv k);
   #[global] internal_map_make_step v ::
     go.IsGoStepPureDet InternalMapMake v (map_empty v);
-
-  is_map_pure (v : val) (m : val → bool * val) : Prop;
-  map_default : val → val;
 
   is_map_pure_flatten mv m (H : is_map_pure mv m) :
     flatten_struct mv = [mv];
@@ -123,7 +124,7 @@ Class MapSemantics `{!GoSemanticsFunctions} :=
   #[global] clear_map key_type elem_type ::
     FuncUnfold go.clear [go.MapType key_type elem_type]
     (λ: "m", Store "m" $ Read $
-               FuncResolve go.make1 [go.MapType key_type elem_type] #())%V;
+               FuncResolve go.make1 [go.MapType key_type elem_type] #() #())%V;
   #[global] delete_map key_type elem_type ::
     FuncUnfold go.delete [go.MapType key_type elem_type]
     (λ: "m" "k",

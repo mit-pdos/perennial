@@ -190,14 +190,6 @@ Proof.
   wp_pure_lc "?". wp_pures. by iApply "HΦ".
 Qed.
 
-Global Instance pure_wp_go_eq_always_comparable t V (v1 v2 : V)
-                `{!EqDecision V} `{!go.AlwaysSafelyComparable t V} :
-  PureWp True (go_eq t #v1 #v2) #(bool_decide (v1 = v2)).
-Proof.
-  iIntros "%%*%% HΦ". rewrite go.is_safely_comparable. wp_pure_lc "?".
-  wp_pures. by iApply "HΦ".
-Qed.
-
 Lemma wp_fork s E e Φ :
   ▷ WP e @ s; ⊤ {{ _, True }} -∗ ▷ Φ #() -∗ WP Fork e @ s; E {{ Φ }}.
 Proof.
