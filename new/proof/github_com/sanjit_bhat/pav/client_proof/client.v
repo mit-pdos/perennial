@@ -18,8 +18,6 @@ Record t :=
     ver: w64;
     pendingPk: option $ list w8;
 
-    uid: w64;
-    servGood: option server.cfg.t;
     isGoodClis: bool;
   }.
 
@@ -30,7 +28,7 @@ Context `{!pavG Σ}.
 Definition uid_inv γ : iProp Σ :=
   ∃ puts,
   "Hputs" ∷ mono_list_auth_own γ 1 puts.
-Definition is_uid_inv γ := inv nroot (uid_inv γ).
+Definition is_uid_inv γ : iProp Σ := inv nroot (uid_inv γ).
 
 Definition own ptr obj : iProp Σ :=
   ∃ isPending sl_pendingPk,
@@ -42,20 +40,27 @@ Definition own ptr obj : iProp Σ :=
     | Some pk =>
       "%HisPending" ∷ ⌜isPending = true⌝ ∗
       "#Hsl_pendingPk" ∷ sl_pendingPk ↦*□ pk
-    end ∗
+    end.
 
-  "Hown_uid" ∷ match obj.(servGood) with None => True | Some cfg =>
-    ∃ uidγ,
-    "%Hlook_uidγ" ∷ ⌜cfg.(server.cfg.uidγ) !! obj.(uid) = Some uidγ⌝ ∗
-    "HgoodCli" ∷
-      if obj.(isGoodClis)
-      then
-        ∃ puts,
-        "Hputs" ∷ mono_list_auth_own uidγ 1 puts ∗
-        "%Hbound" ∷ ⌜∀ ver' pk, (ver', pk) ∈ puts → uint.Z ver' ≤ uint.Z obj.(ver)⌝ ∗
-        "%Heq_pend" ∷ ⌜∀ pk, (obj.(ver), pk) ∈ puts → obj.(pendingPk) = Some pk⌝
-      else
-        "#Huid_inv" ∷ is_uid_inv uidγ end.
+Definition align_serv_pend obj uid γ : iProp Σ :=
+  ∃ uidγ,
+  "%Hlook_uidγ" ∷ ⌜γ.(server.cfg.uidγ) !! uid = Some uidγ⌝ ∗
+  "HgoodCli" ∷
+    match obj.(isGoodClis) with
+    | true =>
+      ∃ puts,
+      "Hputs" ∷ mono_list_auth_own uidγ 1 puts ∗
+      "%Hbound" ∷ ⌜∀ ver' pk, (ver', pk) ∈ puts → uint.Z ver' ≤ uint.Z obj.(ver)⌝ ∗
+      "%Heq_pend" ∷ ⌜∀ pk, (obj.(ver), pk) ∈ puts → obj.(pendingPk) = Some pk⌝
+    | false =>
+      "#Huid_inv" ∷ is_uid_inv uidγ
+    end.
+
+Definition align_serv_hist obj uid γ (lastEp : w64) : iProp Σ :=
+  ∃ i (entry : list w8 * server.keys_ty),
+  "#Hidx_hist" ∷ mono_list_idx_own γ.(server.cfg.histγ) i entry ∗
+  "%Hlt_ep" ∷ ⌜i ≤ uint.nat lastEp⌝ ∗
+  "%Hver_hist" ∷ ⌜uint.nat obj.(ver) ≤ length (entry.2 !!! uid)⌝.
 
 End proof.
 End nextVer.
@@ -113,14 +118,14 @@ Definition own ptr obj : iProp Σ :=
   ∃ ptr_pend ptr_last ptr_serv,
   "Hstruct_client" ∷ ptr ↦ (client.Client.mk obj.(uid) ptr_pend ptr_last ptr_serv) ∗
   "Hown_pend" ∷ nextVer.own ptr_pend obj.(pend) ∗
-  "#Hown_last" ∷ epoch.own ptr_last obj.(last) ∗
+  "Halign_pend_pend" ∷ match obj.(serv).(serv.good) with None => True | Some γ =>
+    nextVer.align_serv_pend obj.(pend) obj.(uid) γ end ∗
+  "#Halign_pend_hist" ∷ match obj.(serv).(serv.good) with None => True | Some γ =>
+    nextVer.align_serv_hist obj.(pend) obj.(uid) γ obj.(last).(epoch.epoch) end ∗
+  "#Hown_last" ∷ epoch.own ptr_last obj.(last) obj.(serv).(serv.info) ∗
   "#Halign_last" ∷ match obj.(serv).(serv.good) with None => True | Some γ =>
-    epoch.align_server obj.(last) γ end ∗
-  "#Hown_serv" ∷ serv.own ptr_serv obj.(serv) ∗
-
-  "%Heq_serv" ∷ ⌜obj.(serv).(serv.info) = obj.(last).(epoch.serv)⌝ ∗
-  "%Heq_servGood1" ∷ ⌜obj.(serv).(serv.good) = obj.(pend).(nextVer.servGood)⌝ ∗
-  "%Heq_uid" ∷ ⌜obj.(uid) = obj.(pend).(nextVer.uid)⌝.
+    epoch.align_serv obj.(last) γ end ∗
+  "#Hown_serv" ∷ serv.own ptr_serv obj.(serv).
 
 End proof.
 End Client.
@@ -129,12 +134,12 @@ Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 Context `{!pavG Σ}.
 
-Lemma wp_getNextEp ptr_prev prev sl_sigPk sigPk sl_chainProof chainProof sl_sig sig :
+Lemma wp_getNextEp ptr_prev prev info sl_sigPk sigPk sl_chainProof chainProof sl_sig sig :
   {{{
     is_pkg_init client ∗
-    "#Hown_prev" ∷ epoch.own ptr_prev prev ∗
+    "#Hown_prev" ∷ epoch.own ptr_prev prev info ∗
     "#Hsl_sigPk" ∷ sl_sigPk ↦*□ sigPk ∗
-    "%Heq_sigPk" ∷ ⌜sigPk = prev.(epoch.serv).(servInfo.sig_pk)⌝ ∗
+    "%Heq_sigPk" ∷ ⌜sigPk = info.(servInfo.sig_pk)⌝ ∗
     "#Hsl_chainProof" ∷ sl_chainProof ↦*□ chainProof ∗
     "#Hsl_sig" ∷ sl_sig ↦*□ sig
   }}}
@@ -147,7 +152,7 @@ Lemma wp_getNextEp ptr_prev prev sl_sigPk sigPk sl_chainProof chainProof sl_sig 
       | false =>
         ∃ digs next,
         "#Hwish_getNextEp" ∷ wish_getNextEp prev sigPk chainProof sig digs next ∗
-        "#Hown_next" ∷ epoch.own ptr_next next
+        "#Hown_next" ∷ epoch.own ptr_next next info
       end
   }}}.
 Proof.
@@ -170,7 +175,7 @@ Proof.
   wp_if_destruct.
   { iApply "HΦ". iIntros "@". iApply "Hgenie".
     opose proof (hashchain.wish_Proof_det _ _ _ Hwish_chain HnewDigs) as <-.
-    destruct next. inv Heq_next. simplify_eq/=.
+    simplify_eq/=.
     iDestruct (hashchain.is_chain_det with "His_chain HnextLink") as %<-.
     iExactEq "HnextSig". repeat f_equal. word. }
   iNamed "Hgenie".
@@ -203,7 +208,7 @@ Proof.
   something unfolds w64 to Naive.wrap and Naive.unsigned,
   which fails word tactic. *)
   iExists _, (epoch.mk' (word.add prev.(epoch.epoch) extLen) _ _ _
-    (prev.(epoch.digs) ++ new_vals) _ _).
+    (prev.(epoch.digs) ++ new_vals) _).
   iFrame "Hptr_next #%". simpl in *.
   repeat iSplit; [done|word|..].
   - iExactEq "His_chain". rewrite /named. repeat f_equal. word.
@@ -462,8 +467,11 @@ Lemma wp_Client_Put ptr_c c sl_pk pk :
     is_pkg_init client ∗
     "Hclient" ∷ Client.own ptr_c c ∗
     "#Hsl_pk" ∷ sl_pk ↦*□ pk ∗
-    "%Heq_pend" ∷ ⌜match c.(Client.pend).(nextVer.pendingPk) with None => True
-      | Some pk' => pk = pk' end⌝
+    "%Heq_pend" ∷
+      ⌜match c.(Client.pend).(nextVer.pendingPk) with
+      | None => True
+      | Some pk' => pk = pk'
+      end⌝
   }}}
   ptr_c @ (ptrT.id client.Client.id) @ "Put" #sl_pk
   {{{
@@ -479,8 +487,8 @@ Proof.
   destruct pend.
   iNamed "Hown_serv".
   destruct serv.
-  destruct last0.
   simplify_eq/=.
+  (* destruct last0. *)
   wp_auto. simpl.
   iPersist "c pk".
   wp_bind (If _ _ _).
@@ -489,7 +497,7 @@ Proof.
     ∃ sl_pendingPk',
     "->" ∷ ⌜v = execute_val⌝ ∗
     "Hstruct_client" ∷ ptr_c ↦ {|
-                                 client.Client.uid' := uid0;
+                                 client.Client.uid' := uid;
                                  client.Client.pend' := ptr_pend;
                                  client.Client.last' := ptr_last;
                                  client.Client.serv' := ptr_serv
@@ -513,12 +521,12 @@ Proof.
       by iFrame "∗#".
     - by iFrame "∗#". }
 
-  destruct servGood; iNamed "Hown_uid".
+  destruct good; iNamed "Halign_pend_pend".
   2: {
     wp_apply (server.wp_CallPut _ None).
     { iFrame "#". }
     iApply "HΦ". by iFrame "∗ Hown_last #". }
-  destruct isGoodClis; iNamed "HgoodCli".
+  simpl in *. destruct isGoodClis; iNamed "HgoodCli".
   + iMod (mono_list_auth_own_update_app [(ver, pk)] with "Hputs") as "[Hputs #Hlb]".
     iDestruct (mono_list_idx_own_get (length puts) with "Hlb") as "#Hidx".
     { by rewrite lookup_snoc. }
@@ -563,7 +571,7 @@ Lemma wp_Client_Get ptr_c c (uid : w64) :
         (* guarantee mono digs and ep match digs. *)
         ∃ new_digs dig link sig,
         let c' := set Client.last (λ e, epoch.mk' ep dig link sig
-          (e.(epoch.digs) ++ new_digs) e.(epoch.cut) e.(epoch.serv)) c in
+          (e.(epoch.digs) ++ new_digs) e.(epoch.cut)) c in
         "Hclient" ∷ Client.own ptr_c c' ∗
         "%Heq_ep" ∷ ⌜uint.Z ep = (uint.Z c.(Client.last).(epoch.epoch) + length new_digs)%Z⌝)
   }}}.
@@ -590,7 +598,7 @@ Proof.
   case_decide; try done.
   iNamed "Herr".
   wp_apply wp_getNextEp as "* @".
-  { iFrame "#". iPureIntro. by rewrite Heq_serv. }
+  { by iFrame "#". }
   wp_if_destruct.
   { rewrite ktcore.rw_BlameServFull.
     iApply "HΦ".
@@ -687,14 +695,16 @@ Proof.
   iSplit. { iPureIntro. apply ktcore.blame_none. }
   case_decide; try done.
   iPoseProof "Hwish_getNextEp" as "@".
-  destruct next. inv Heq_next. simplify_eq/=.
+  simplify_eq/=.
   iFrame "∗ Hstruct_epoch_next #%". simpl in *.
   case_match; try done.
   rewrite Heq_sig_pk Heq_vrf_pk.
   iDestruct ("Hgood" with "Halign_last [//]") as "H".
   iNamedSuffix "H" "0".
   iDestruct (wish_getNextEp_det with "Hwish_getNextEp Hwish_getNextEp0") as %[-> ->].
-  iFrame "#".
+  iNamed "Halign_pend_hist".
+  Opaque mono_list_idx_own.
+  iFrame "#%". word.
 Qed.
 
 Lemma wp_Client_SelfMon ptr_c c :
@@ -707,32 +717,152 @@ Lemma wp_Client_SelfMon ptr_c c :
     (ep : w64) (isChanged : bool) err,
     RET (#ep, #isChanged, #(ktcore.blame_to_u64 err));
     "%Hblame" ∷ ⌜ktcore.BlameSpec err
-      {[ktcore.BlameServFull:=option_bool c.(Client.serv).(serv.good)]}⌝ ∗
+      ({[
+        ktcore.BlameServFull:=option_bool c.(Client.serv).(serv.good);
+        ktcore.BlameClients:=c.(Client.pend).(nextVer.isGoodClis)
+      ]})⌝ ∗
     "Herr" ∷
       (if decide (err ≠ ∅)
       then "Hclient" ∷ Client.own ptr_c c
       else
         ∃ ver pendingPk new_digs dig link sig,
-        let lastEp := c.(Client.last).(epoch.epoch) in
         let lastPendVer := c.(Client.pend).(nextVer.ver) in
         let lastPendPk := c.(Client.pend).(nextVer.pendingPk) in
+        let lastEp := c.(Client.last).(epoch.epoch) in
         let c' :=
           set Client.pend (λ x, set nextVer.ver (λ _, ver)
             (set nextVer.pendingPk (λ _, pendingPk) x))
           (set Client.last (λ x, epoch.mk' ep dig link sig
-            (x.(epoch.digs) ++ new_digs) x.(epoch.cut) x.(epoch.serv)) c) in
+            (x.(epoch.digs) ++ new_digs) x.(epoch.cut)) c) in
         "Hclient" ∷ Client.own ptr_c c' ∗
-        "%Heq_ep" ∷ ⌜uint.Z ep = (uint.Z lastEp + length new_digs)%Z⌝ ∗
         "%Hpend" ∷
           ⌜match lastPendPk with
-          | None => isChanged = false ∧ ver = lastPendVer ∧ pendingPk = None
+          | None => isChanged = false ∧ ver = lastPendVer ∧ pendingPk = lastPendPk
           | Some pk =>
-            (isChanged = false ∧ ver = lastPendVer ∧ pendingPk = None) ∨
+            (isChanged = false ∧ ver = lastPendVer ∧ pendingPk = lastPendPk) ∨
             (isChanged = true ∧ uint.Z ver = (uint.Z lastPendVer + 1)%Z ∧
               pendingPk = None)
-          end⌝)
+          end⌝ ∗
+        "%Heq_ep" ∷ ⌜uint.Z ep = (uint.Z lastEp + length new_digs)%Z⌝)
   }}}.
-Proof. Admitted.
+Proof.
+  wp_start as "@".
+  iNamed "Hclient".
+  iNamed "Hown_pend".
+  iNamed "Hown_last".
+  iNamed "Hown_serv".
+  wp_auto.
+  wp_apply wp_CallHistory as "* @".
+  { iFrame "#".
+    iModIntro.
+    case_match; try done.
+    iNamed "Halign_last".
+    list_elem hist (uint.nat c.(Client.last).(epoch.epoch)) as e.
+    iDestruct (mono_list_idx_own_get with "His_hist") as "Hidx_hist0"; [done|].
+    iNamed "Halign_pend_hist".
+    iMod (server.len_pks_mono c.(Client.uid) with "His_rpc Hidx_hist Hidx_hist0")
+      as %?; [word|].
+    iClear "Hidx_hist His_hist".
+    iFrame "#". word. }
+  case_bool_decide as Heq_err; wp_auto;
+    rewrite ktcore.rw_Blame0 in Heq_err; subst.
+  2: {
+    iApply "HΦ".
+    iSplit. {
+      iPureIntro.
+      eapply ktcore.blame_add_interp; [done|].
+      apply map_singleton_subseteq_l.
+      by simpl_map. }
+    case_decide; try done.
+    iFrame "∗#%". }
+  case_decide; try done.
+  iNamed "Herr".
+  wp_apply wp_getNextEp as "* @".
+  { by iFrame "#". }
+  wp_if_destruct.
+  { rewrite ktcore.rw_BlameServFull.
+    iApply "HΦ".
+    iSplit. 2: { case_decide; try done. by iFrame "∗#%". }
+    iApply ktcore.blame_one.
+    iIntros (?).
+    case_match; try done.
+    iApply "Hgenie".
+    rewrite Heq_sig_pk.
+    iDestruct ("Hgood" with "Halign_last [//]") as "@".
+    iFrame "#". }
+  iNamed "Hgenie".
+  iNamedSuffix "Hown_next" "_next".
+  iDestruct "Hsl_hist" as (?) "[Hsl0_hist Hsl_hist]".
+  iDestruct (own_slice_len with "Hsl0_hist") as %[? ?].
+  iDestruct (big_sepL2_length with "Hsl_hist") as %?.
+  wp_apply std.wp_SumNoOverflow.
+  wp_if_destruct.
+  2: { rewrite ktcore.rw_BlameServFull.
+    iApply "HΦ".
+    iSplit. 2: { case_decide; try done. by iFrame "∗#%". }
+    iApply ktcore.blame_one.
+    iIntros (?).
+    case_match; try done.
+    rewrite Heq_sig_pk.
+    iDestruct ("Hgood" with "Halign_last [//]") as "H".
+    iNamedSuffix "H" "0".
+    iDestruct (wish_getNextEp_det with "Hwish_getNextEp Hwish_getNextEp0") as %[-> ->].
+    apply Forall2_length in Heq_hist0.
+    autorewrite with len in *.
+    word. }
+  wp_apply wp_checkHist as "* @".
+  { iFrame "#". }
+  wp_if_destruct.
+  { rewrite ktcore.rw_BlameServFull.
+    iApply "HΦ".
+    iSplit. 2: { case_decide; try done. by iFrame "∗#%". }
+    iApply ktcore.blame_one.
+    iIntros (?).
+    case_match; try done.
+    iApply "Hgenie".
+    rewrite Heq_sig_pk Heq_vrf_pk.
+    iDestruct ("Hgood" with "Halign_last [//]") as "H".
+    iNamedSuffix "H" "0".
+    iDestruct (wish_getNextEp_det with "Hwish_getNextEp Hwish_getNextEp0") as %[-> ->].
+    iFrame "#". }
+  iNamed "Hgenie".
+  wp_apply wp_checkNonMemb as "* @".
+  { iFrame "#". }
+  wp_if_destruct.
+  { rewrite ktcore.rw_BlameServFull.
+    iApply "HΦ".
+    iSplit. 2: { case_decide; try done. by iFrame "∗#%". }
+    iApply ktcore.blame_one.
+    iIntros (?).
+    case_match; try done.
+    iApply "Hgenie".
+    rewrite Heq_sig_pk Heq_vrf_pk.
+    iDestruct ("Hgood" with "Halign_last [//]") as "H".
+    iNamedSuffix "H" "0".
+    iDestruct (wish_getNextEp_det with "Hwish_getNextEp Hwish_getNextEp0") as %[-> ->].
+    apply Forall2_length in Heq_hist0.
+    autorewrite with len in *.
+    iExactEq "Hwish_bound0". repeat f_equal. word. }
+  iNamed "Hgenie".
+  rewrite -wp_fupd.
+  wp_if_destruct.
+  2: {
+    wp_if_destruct.
+    2: { rewrite ktcore.rw_BlameServClients.
+      iApply "HΦ".
+      rewrite -fupd_sep.
+      admit.
+
+(* TODO:
+- we're in err case where we have pending=false but observed non-zero hist!
+- our client owns mlist_auth that authoritatively pins puts for our uid.
+- problem: need mlist_auth to establish our two goals:
+(1) prove BlameSpec.
+own_puts bounds pend, which bounds hist, which contradicts observed hist.
+(2) re-establish Client.own.
+*)
+
+Admitted.
 
 End proof.
 End client.
