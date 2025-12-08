@@ -66,18 +66,6 @@ def main():
         default=None,
     )
     parser.add_argument(
-        "--rsm",
-        help="path to rsm repo (skip translation if not provided)",
-        metavar="RSM_PATH",
-        default=None,
-    )
-    parser.add_argument(
-        "--tulip",
-        help="path to tulip repo (skip translation if not provided)",
-        metavar="TULIP_PATH",
-        default=None,
-    )
-    parser.add_argument(
         "--pav",
         help="path to pav repo (skip translation if not provided)",
         metavar="PAV_PATH",
@@ -89,8 +77,6 @@ def main():
     goose_dir = args.goose
     perennial_dir = path.join(path.dirname(os.path.realpath(__file__)), "..")
     examples_dir = args.examples
-    rsm_dir = args.rsm
-    tulip_dir = args.tulip
     marshal_dir = args.marshal
     std_dir = args.std
     pav_dir = args.pav
@@ -99,8 +85,6 @@ def main():
         parser.error("goose directory does not exist")
     if examples_dir is not None and not os.path.isdir(examples_dir):
         parser.error("perennial-examples directory does not exist")
-    if rsm_dir is not None and not os.path.isdir(rsm_dir):
-        parser.error("rsm directory does not exist")
     if marshal_dir is not None and not os.path.isdir(marshal_dir):
         parser.error("marshal directory does not exist")
     if std_dir is not None and not os.path.isdir(std_dir):
@@ -192,32 +176,6 @@ def main():
         "./kt",
         "./marshalutil",
         "./merkle",
-    )
-
-    run_goose(
-        rsm_dir,
-        "./spaxos",
-        "./mpaxos",
-        "./distx",
-        "./tpl",
-        "./pcr",
-    )
-
-    run_goose(
-        tulip_dir,
-        "./backup",
-        "./gcoord",
-        "./index",
-        "./message",
-        "./params",
-        "./paxos",
-        "./quorum",
-        "./replica",
-        "./tulip",
-        "./tuple",
-        "./txn",
-        "./txnlog",
-        "./util",
     )
 
     run_goose(marshal_dir, ".", extra_args=["-skip-interfaces"])

@@ -27,13 +27,6 @@ From Perennial.program_proof.examples Require print_assumptions.
 From Perennial.program_proof.grove_shared Require
      urpc_proof erpc_proof.
 
-(* rsm *)
-From Perennial.program_proof.rsm Require rsm_proof.
-
-(* tulip *)
-From Perennial.program_proof.tulip Require tulip_proof.
-From Perennial.program_proof.tulip Require print_assumptions.
-
 (*
 From Perennial.goose_lang Require
      ffi.append_log_ffi.
@@ -84,7 +77,5 @@ From Perennial.program_proof Require
   optional_precond spellchecker.proof bad_nil_slice bad_zero_func single.election.
 From Perennial.program_logic Require simulation.
 From Perennial.goose_lang.trusted.github_com.mit_pdos.gokv Require trusted_hash.
-From Perennial.program_proof.tulip.paxos.invariance Require extend.
-From Perennial.program_proof.tulip.program.backup Require bgpreparer_process_query_result.
 
 From New Require should_build.
