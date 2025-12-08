@@ -142,8 +142,8 @@ Class MapSemantics `{!GoSemanticsFunctions} :=
     FuncUnfold go.len [go.MapType key_type elem_type]
     (λ: "m", InternalMapLength (Read "m"))%V;
 
-  composite_literal_map key_type elem_type (l : list keyed_element) :
-    composite_literal (go.MapType key_type elem_type) (LiteralValue l) =
+  #[global] composite_literal_map key_type elem_type (l : list keyed_element) ::
+    go.GoExprEq (composite_literal (go.MapType key_type elem_type) (LiteralValue l))
     (let: "m" := FuncResolve go.make1 [go.MapType key_type elem_type] #() #() in
      (foldl (λ expr_so_far ke,
                match ke with

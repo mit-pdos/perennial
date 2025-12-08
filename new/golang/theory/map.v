@@ -48,7 +48,7 @@ Qed.
 through [IntoValTyped K kt] so that the instance used to type-check [gmap K V]
 is independent of the [IntoValTyped] instance. Otherwise, these proofs end up
 relying on a [gmap] with a particular proof of [EqDecision K]. *)
-Context `{!ZeroVal K} `{!EqDecision K} `{!Countable K} `{!ZeroVal V}
+Context `[!ZeroVal K] `[!EqDecision K] `[!Countable K] `[!ZeroVal V]
   `{!Inj (=) (=) (into_val (V:=K))}.
 
 Definition own_map_def mptr dq (m : gmap K V) : iProp Σ :=
@@ -375,20 +375,13 @@ Module test.
       ])) {{ Φ }}.
   Proof.
     iIntros "_".
-    wp_auto. rewrite go.composite_literal_map.
     wp_auto. unshelve wp_apply wp_map_make1; try tc_solve. (* FIXME: tc ordering *)
     iIntros "% Hm". wp_auto.
     rewrite go.go_zero_val_eq. (* FIXME: automation *)
-    wp_auto.
-    wp_apply (@wp_map_insert with "Hm").
-    { eapply safe_map_key_is_go_eq.
-      admit. (* FIXME: state this way. *) }
+    wp_auto. wp_apply (wp_map_insert with "Hm").
     iIntros "Hm". wp_auto.
     rewrite go.go_zero_val_eq. (* FIXME: automation *)
-    wp_auto.
-    wp_apply (@wp_map_insert with "Hm").
-    { eapply safe_map_key_is_go_eq.
-      admit. (* FIXME: state this way. *) }
+    wp_auto. wp_apply (wp_map_insert with "Hm").
     iIntros "Hm".
   Admitted.
 End proof.

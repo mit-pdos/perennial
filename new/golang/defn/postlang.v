@@ -212,7 +212,7 @@ Class IsComparable t `{!GoSemanticsFunctions} : Prop :=
 Class AlwaysSafelyComparable t V `{!EqDecision V} `{!GoSemanticsFunctions} : Prop :=
   {
     #[global] is_safely_comparable ::
-      ∀ (v1 v2 : V), GoExprEq (go_eq t #v1 #v2) (#();;#(bool_decide (v1 = v2)))%E;
+      ∀ (v1 v2 : V), GoExprEq (go_eq t #v1 #v2) (#(bool_decide (v1 = v2)))%E;
   }.
 
 Class CoreComparisonSemantics `{!GoSemanticsFunctions} : Prop :=
