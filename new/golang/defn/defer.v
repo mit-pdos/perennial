@@ -1,7 +1,7 @@
 From New.golang.defn Require Import exception.
 
 Section defn.
-Context `{!ffi_syntax}.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 
 Definition deferType := go.FunctionType (go.Signature [] false []).
 

@@ -2,7 +2,7 @@ From New.golang Require Import defn.core.
 
 Module atomic.
 Section code.
-Context `{ffi_syntax}.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 
 (* BEGIN TEMPLATE *)
 Definition LoadUint64ⁱᵐᵖˡ : val :=

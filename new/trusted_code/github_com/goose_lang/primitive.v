@@ -3,7 +3,7 @@ From New.golang.defn Require Import core slice lock.
 Module primitive.
 Module prophId. Definition id : go_string := "github.com/goose-lang/goose.prophId". End prophId.
 Section code.
-  Context `{ffi_syntax}.
+  Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 
   (** [Assume c] goes into an endless loop if [c] does not hold. So proofs can
 assume that it holds. *)

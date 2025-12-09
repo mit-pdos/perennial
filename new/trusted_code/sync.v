@@ -4,7 +4,7 @@ Module sync.
 Module Mutex. Definition id : go_string := "sync.Mutex". End Mutex.
 
 Section code.
-Context `{ffi_syntax}.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 
 Definition Mutexⁱᵐᵖˡ : go.type := go.bool.
 

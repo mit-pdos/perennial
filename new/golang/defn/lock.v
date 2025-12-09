@@ -2,7 +2,7 @@ From New.golang Require Import defn.core.
 
 Module lock.
 Section code.
-Context `{ffi_syntax}.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 
 Definition trylock : val :=
   λ: "m", Snd (CmpXchg "m" #false #true).
