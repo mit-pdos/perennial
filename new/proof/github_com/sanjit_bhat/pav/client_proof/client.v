@@ -70,6 +70,7 @@ Record t :=
   mk' {
     vrfSig: list w8;
 
+    (* TODO: maybe unwrap servInfo into this record. *)
     info: servInfo.t;
     good: option server.cfg.t;
   }.

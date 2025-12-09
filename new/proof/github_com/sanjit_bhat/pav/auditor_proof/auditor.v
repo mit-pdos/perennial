@@ -3,7 +3,7 @@ From New.generatedproof.github_com.sanjit_bhat.pav Require Import auditor.
 From New.proof Require Import bytes sync.
 From New.proof.github_com.goose_lang Require Import std.
 From New.proof.github_com.sanjit_bhat.pav Require Import
-  advrpc cryptoffi hashchain ktcore merkle server.
+  advrpc cryptoffi hashchain ktcore merkle server sigpred.
 
 From New.proof.github_com.sanjit_bhat.pav.auditor_proof Require Import
   base.
@@ -14,6 +14,115 @@ From New.proof.github_com.sanjit_bhat.pav Require Import prelude.
 
 Module auditor.
 Import base.auditor.
+
+Module cfg.
+Record t :=
+  mk {
+    serv_sig_pk: list w8;
+    adtr_sig_pk: list w8;
+    sigpredγ: sigpred.cfg.t;
+  }.
+End cfg.
+
+Module history.
+Record t :=
+  mk' {
+    link: list w8;
+  }.
+
+Section proof.
+Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
+
+Definition own ptr obj ep γ : iProp Σ :=
+  ∃ sl_link sl_servSig servSig sl_adtrSig adtrSig,
+  "#Hstr_history" ∷ ptr ↦□ (auditor.history.mk sl_link sl_servSig sl_adtrSig) ∗
+  "#Hsl_link" ∷ sl_link ↦*□ obj.(link) ∗
+  "#Hsl_servSig" ∷ sl_servSig ↦*□ servSig ∗
+  "#His_servSig" ∷ ktcore.wish_LinkSig γ.(cfg.serv_sig_pk) ep obj.(link) servSig ∗
+  "#Hsl_adtrSig" ∷ sl_adtrSig ↦*□ adtrSig ∗
+  "#His_adtrSig" ∷ ktcore.wish_LinkSig γ.(cfg.adtr_sig_pk) ep obj.(link) adtrSig.
+
+End proof.
+End history.
+
+Module serv.
+Record t :=
+  mk' {
+    vrfPk: list w8;
+
+    good: option server.cfg.t;
+  }.
+
+Section proof.
+Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
+Context `{!pavG Σ}.
+
+Definition own ptr obj γ : iProp Σ :=
+  ∃ ptr_cli sl_sigPk sl_vrfPk sl_servVrfSig servVrfSig sl_adtrVrfSig adtrVrfSig,
+  "#Hstr_serv" ∷ ptr ↦□ (auditor.serv.mk ptr_cli sl_sigPk sl_vrfPk sl_servVrfSig sl_adtrVrfSig) ∗
+  "#His_rpc" ∷ server.is_Server_rpc ptr_cli obj.(good) ∗
+  "#Hsl_sigPk" ∷ sl_sigPk ↦*□ γ.(cfg.serv_sig_pk) ∗
+  "#Hsl_vrfPk" ∷ sl_vrfPk ↦*□ obj.(vrfPk) ∗
+  "#Hsl_servVrfSig" ∷ sl_servVrfSig ↦*□ servVrfSig ∗
+  "#His_servVrfSig" ∷ ktcore.wish_VrfSig γ.(cfg.serv_sig_pk) obj.(vrfPk) servVrfSig ∗
+  "#Hsl_adtrVrfSig" ∷ sl_adtrVrfSig ↦*□ adtrVrfSig ∗
+  "#His_adtrVrfSig" ∷ ktcore.wish_VrfSig γ.(cfg.adtr_sig_pk) obj.(vrfPk) adtrVrfSig ∗
+
+  "#His_sigPk" ∷ match obj.(good) with None => True | Some servγ =>
+    cryptoffi.is_sig_pk γ.(cfg.serv_sig_pk)
+      (sigpred.pred servγ.(server.cfg.sigpredγ)) end ∗
+  (* trusted. *)
+  "%Heq_sig_pk" ∷ ⌜match obj.(good) with None => True | Some servγ =>
+    γ.(cfg.serv_sig_pk) = servγ.(server.cfg.sig_pk) end⌝ ∗
+  (* from signed vrf_pk. *)
+  "%Heq_vrf_pk" ∷ ⌜match obj.(good) with None => True | Some servγ =>
+    obj.(vrfPk) = servγ.(server.cfg.vrf_pk) end⌝.
+
+End proof.
+End serv.
+
+Module Auditor.
+Record t :=
+  mk' {
+    digs: list $ list w8;
+    cut: option (list w8);
+    serv: serv.t;
+  }.
+
+Section proof.
+Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
+Context `{!pavG Σ}.
+
+Definition own ptr obj γ (q : Qp) : iProp Σ :=
+  ∃ ptr_mu ptr_sk sl_lastDig lastDig startEp sl_hist (sl0_hist : list loc) ptr_serv,
+  (* TODO: RWMutex. *)
+  "Hstr_auditor" ∷ ptr ↦{#q} (auditor.Auditor.mk ptr_mu ptr_sk sl_lastDig startEp sl_hist ptr_serv) ∗
+  "#Hown_sk" ∷ cryptoffi.own_sig_sk ptr_sk γ.(cfg.adtr_sig_pk)
+    (sigpred.pred γ.(cfg.sigpredγ)) ∗
+  "Hsl_lastDig" ∷ sl_lastDig ↦*{#q} lastDig ∗
+  "%Heq_lastDig" ∷ ⌜last obj.(digs) = Some lastDig⌝ ∗
+  "Hsl_hist" ∷ sl_hist ↦*{#q} sl0_hist ∗
+  "Hcap_hist" ∷ own_slice_cap loc sl_hist (DfracOwn q) ∗
+  "#Hown_serv" ∷ serv.own ptr_serv obj.(serv) γ ∗
+
+  (* allows proving Get spec. *)
+  "#Hhist" ∷ ([∗ list] idx ↦ ptr_hist ∈ sl0_hist,
+    ∃ link,
+    let num_digs := (length obj.(digs) - length sl0_hist + idx + 1)%nat in
+    "#His_link" ∷ hashchain.is_chain (take num_digs obj.(digs)) obj.(cut) link num_digs ∗
+    "#Hown_hist" ∷ history.own ptr_hist (history.mk' link) (uint.nat startEp + idx) γ) ∗
+  "%Hlt_hist" ∷ ⌜length sl0_hist ≤ length obj.(digs)⌝ ∗
+
+  (* allows proving Update BlameSpec. *)
+  "#Hgood" ∷ match obj.(serv).(serv.good) with None => True | Some servγ =>
+    ∃ (hist : list (list w8 * server.keys_ty)),
+    "#Hlb_hist" ∷ mono_list_lb_own servγ.(server.cfg.histγ) hist ∗
+    "%Heq_digs" ∷ ⌜obj.(digs) = hist.*1⌝ ∗
+    "%Heq_cut" ∷ ⌜obj.(cut) = None⌝ end.
+
+End proof.
+End Auditor.
+
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 
