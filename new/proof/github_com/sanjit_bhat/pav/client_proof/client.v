@@ -748,19 +748,25 @@ Lemma wp_Client_SelfMon ptr_c c :
 Proof.
   wp_start as "@".
   iNamed "Hclient".
+  destruct c.
   iNamed "Hown_pend".
+  destruct pend.
   iNamed "Hown_last".
+  destruct last0.
   iNamed "Hown_serv".
+  destruct serv.
+  destruct info.
+  simplify_eq/=.
   wp_auto.
   wp_apply wp_CallHistory as "* @".
   { iFrame "#".
     iModIntro.
     case_match; try done.
-    iNamed "Halign_last".
-    list_elem hist (uint.nat c.(Client.last).(epoch.epoch)) as e.
+    iNamed "Halign_last". simplify_eq/=.
+    list_elem hist (uint.nat epoch) as e.
     iDestruct (mono_list_idx_own_get with "His_hist") as "Hidx_hist0"; [done|].
-    iNamed "Halign_pend_hist".
-    iMod (server.hist_pks_prefix c.(Client.uid) with "His_rpc Hidx_hist Hidx_hist0")
+    iNamed "Halign_pend_hist". simplify_eq/=.
+    iMod (server.hist_pks_prefix uid with "His_rpc Hidx_hist Hidx_hist0")
       as %?%prefix_length; [word|].
     iClear "Hidx_hist His_hist".
     iFrame "#". word. }
@@ -777,8 +783,9 @@ Proof.
     iFrame "∗#%". }
   case_decide; try done.
   iNamed "Herr".
-  wp_apply wp_getNextEp as "* @".
-  { by iFrame "#". }
+  (* TODO: change spec to have objs come as first args. *)
+  wp_apply (wp_getNextEp _ (epoch.mk' _ _ _ _ _ _) (servInfo.mk _ vrf_pk)) as "* @".
+  { by iFrame "Hstruct_epoch #". }
   wp_if_destruct.
   { rewrite ktcore.rw_BlameServFull.
     iApply "HΦ".
@@ -786,8 +793,8 @@ Proof.
     iApply ktcore.blame_one.
     iIntros (?).
     case_match; try done.
+    simplify_eq/=.
     iApply "Hgenie".
-    rewrite Heq_sig_pk.
     iDestruct ("Hgood" with "Halign_last [//]") as "@".
     iFrame "#". }
   iNamed "Hgenie".
@@ -795,6 +802,7 @@ Proof.
   iDestruct "Hsl_hist" as (?) "[Hsl0_hist Hsl_hist]".
   iDestruct (own_slice_len with "Hsl0_hist") as %[? ?].
   iDestruct (big_sepL2_length with "Hsl_hist") as %?.
+  wp_auto.
   wp_apply std.wp_SumNoOverflow.
   wp_if_destruct.
   2: { rewrite ktcore.rw_BlameServFull.
@@ -803,7 +811,7 @@ Proof.
     iApply ktcore.blame_one.
     iIntros (?).
     case_match; try done.
-    rewrite Heq_sig_pk.
+    simplify_eq/=.
     iDestruct ("Hgood" with "Halign_last [//]") as "H".
     iNamedSuffix "H" "0".
     iDestruct (wish_getNextEp_det with "Hwish_getNextEp Hwish_getNextEp0") as %[-> ->].
@@ -819,8 +827,8 @@ Proof.
     iApply ktcore.blame_one.
     iIntros (?).
     case_match; try done.
+    simplify_eq/=.
     iApply "Hgenie".
-    rewrite Heq_sig_pk Heq_vrf_pk.
     iDestruct ("Hgood" with "Halign_last [//]") as "H".
     iNamedSuffix "H" "0".
     iDestruct (wish_getNextEp_det with "Hwish_getNextEp Hwish_getNextEp0") as %[-> ->].
@@ -835,8 +843,8 @@ Proof.
     iApply ktcore.blame_one.
     iIntros (?).
     case_match; try done.
+    simplify_eq/=.
     iApply "Hgenie".
-    rewrite Heq_sig_pk Heq_vrf_pk.
     iDestruct ("Hgood" with "Halign_last [//]") as "H".
     iNamedSuffix "H" "0".
     iDestruct (wish_getNextEp_det with "Hwish_getNextEp Hwish_getNextEp0") as %[-> ->].
@@ -844,29 +852,28 @@ Proof.
     autorewrite with len in *.
     iExactEq "Hwish_bound0". repeat f_equal. word. }
   iNamed "Hgenie".
+
   wp_if_destruct.
   2: {
+    destruct pendingPk; iNamed "HpendingPk"; try done.
     wp_if_destruct.
     2: { rewrite ktcore.rw_BlameServClients.
       iApply "HΦ".
       iSplit. 2: { case_decide; [|set_solver]. by iFrame "∗#%". }
       iApply ktcore.blame_two.
       iSplit; [done|].
-      iIntros ([? Ht]).
+      iIntros ([? ->]).
       case_match; try done.
+      simplify_eq/=.
       iNamed "Halign_pend_pend".
-      rewrite {}Ht.
       iNamed "HgoodCli".
-      rewrite Heq_sig_pk Heq_vrf_pk.
       iDestruct ("Hgood" with "Halign_last [//]") as "H".
       iNamedSuffix "H" "0".
-      destruct (c.(Client.pend).(nextVer.pendingPk));
-        iNamed "HpendingPk"; try done.
 
       apply Forall2_length in Heq_hist0.
       autorewrite with len in *.
       remember (lastKeys !!! _) as pks.
-      list_elem pks (uint.nat c.(Client.pend).(nextVer.ver)) as pk.
+      list_elem pks (uint.nat ver) as pk.
       case_decide.
       { apply lookup_lt_Some in Hpk_lookup. word. }
       iNamed "Hpend_gs0".
@@ -877,9 +884,145 @@ Proof.
       apply list_elem_of_lookup_2 in Hlook_bad.
       ereplace (W64 (uint.nat ?[w])) with (?w) in Hlook_bad by word.
       by apply Heq_pend in Hlook_bad. }
-    admit. }
-  admit.
-Admitted.
+
+    iApply "HΦ".
+    iSplit. { iPureIntro. apply ktcore.blame_none. }
+    case_decide; try done.
+    iPoseProof "Hwish_getNextEp" as "@".
+    simplify_eq/=.
+    iFrame "∗ Hstruct_epoch_next #%". simpl in *.
+    iSplit; [|done].
+    iSplit; [done|].
+    case_match; try done.
+    simplify_eq/=.
+    iDestruct ("Hgood" with "Halign_last [//]") as "H".
+    iNamedSuffix "H" "0".
+    iDestruct (wish_getNextEp_det with "Hwish_getNextEp Hwish_getNextEp0") as %[-> ->].
+    iNamed "Halign_pend_hist".
+    Opaque mono_list_idx_own.
+    iFrame "#%". word. }
+  destruct pendingPk; iNamed "HpendingPk"; try done.
+
+  wp_if_destruct.
+  { rewrite ktcore.rw_BlameServClients.
+    iApply "HΦ".
+    iSplit. 2: { case_decide; [|set_solver]. by iFrame "∗#%". }
+    iApply ktcore.blame_two.
+    iSplit; [done|].
+    iIntros ([? ->]).
+    case_match; try done.
+    simplify_eq/=.
+    iNamed "Halign_pend_pend".
+    iNamed "HgoodCli".
+    iDestruct ("Hgood" with "Halign_last [//]") as "H".
+    iNamedSuffix "H" "0".
+
+    apply Forall2_length in Heq_hist0.
+    autorewrite with len in *.
+    remember (lastKeys !!! _) as pks.
+    list_elem pks (S $ uint.nat ver) as pk.
+    case_decide.
+    { apply lookup_lt_Some in Hpk_lookup. word. }
+    iNamed "Hpend_gs0".
+    simplify_eq/=.
+    iDestruct (big_sepL_lookup with "Hidx_pks") as "[% #Hidx_bad]"; [done|].
+    iDestruct (mono_list_auth_idx_lookup with "Hputs Hidx_bad") as %Hlook_bad.
+    iPureIntro.
+    apply list_elem_of_lookup_2 in Hlook_bad.
+    eapply Hbound in Hlook_bad.
+    word. }
+
+  wp_if_destruct.
+  { iApply "HΦ".
+    iSplit. { iPureIntro. apply ktcore.blame_none. }
+    case_decide; try done.
+    iPoseProof "Hwish_getNextEp" as "@".
+    simplify_eq/=.
+    iFrame "∗ Hstruct_epoch_next #%". simpl in *.
+    iSplit; [|naive_solver].
+    iSplit; [done|].
+    case_match; try done.
+    simplify_eq/=.
+    iDestruct ("Hgood" with "Halign_last [//]") as "H".
+    iNamedSuffix "H" "0".
+    iDestruct (wish_getNextEp_det with "Hwish_getNextEp Hwish_getNextEp0") as %[-> ->].
+    iNamed "Halign_pend_hist".
+    Opaque mono_list_idx_own.
+    iFrame "#%". word. }
+
+  list_elem ptr0 0 as ptr_memb.
+  list_elem hist 0 as memb.
+  iDestruct (big_sepL2_lookup with "Hsl_hist") as "H"; [done..|].
+  iNamedSuffix "H" "0".
+  iNamedSuffix "Hown_PkOpen0" "1".
+  wp_pure; [word|].
+  wp_apply wp_load_slice_elem as "_"; [word|..].
+  { by iFrame "#". }
+  wp_apply bytes.wp_Equal as "_".
+  { iFrame "#". }
+  wp_if_destruct.
+  2: { rewrite ktcore.rw_BlameServClients.
+    iApply "HΦ".
+    iSplit. 2: { case_decide; [|set_solver]. by iFrame "∗#%". }
+    iApply ktcore.blame_two.
+    iSplit; [done|].
+    iIntros ([? ->]).
+    case_match; try done.
+    simplify_eq/=.
+    iNamed "Halign_pend_pend".
+    iNamed "HgoodCli".
+    iDestruct ("Hgood" with "Halign_last [//]") as "H".
+    iNamedSuffix "H" "0".
+
+    opose proof (Forall2_lookup_r _ _ _ _ _ Heq_hist0 ltac:(done)) as (?&Hlook_pks&?).
+    simplify_eq/=.
+    rewrite lookup_drop in Hlook_pks.
+    apply Forall2_length in Heq_hist0 as ?.
+    autorewrite with len in *.
+    case_decide; [word|].
+    iNamed "Hpend_gs0".
+    simplify_eq/=.
+    iDestruct (big_sepL_lookup with "Hidx_pks") as "[% #Hidx_bad]"; [done|].
+    iDestruct (mono_list_auth_idx_lookup with "Hputs Hidx_bad") as %Hlook_bad.
+    iPureIntro.
+    apply list_elem_of_lookup_2 in Hlook_bad.
+    ereplace (W64 (uint.nat ?[w] + Z.to_nat 0)%nat) with (?w) in Hlook_bad by word.
+    apply Heq_pend in Hlook_bad.
+    simplify_eq/=. }
+
+  iApply "HΦ".
+  iSplit. { iPureIntro. apply ktcore.blame_none. }
+  case_decide; try done.
+  iPoseProof "Hwish_getNextEp" as "@".
+  simplify_eq/=.
+  (* TODO[word]: w64 getting unfolded to Naive.wrap. *)
+  iExists (word.add ver sl_hist.(slice.len_f)).
+  iFrame "Hstruct_client Hstruct_nextVer Hstruct_epoch_next".
+  simpl in *. iFrame "#%".
+  iExists _.
+  iSplit. 2: { iPureIntro. right. repeat split. word. }
+  iSplit; [done|].
+  case_match; try done.
+  simplify_eq/=.
+  iDestruct ("Hgood" with "Halign_last [//]") as "H".
+  iNamedSuffix "H" "0".
+  iDestruct (wish_getNextEp_det with "Hwish_getNextEp Hwish_getNextEp0") as %[-> ->].
+  iFrame "#".
+  iSplit.
+  - iNamed "Halign_pend_pend". iFrame "%". simpl in *.
+    destruct isGoodClis; [|done].
+    iNamed "HgoodCli".
+    iFrame.
+    iPureIntro. split.
+    + intros ?? Ht. apply Hbound in Ht. word.
+    + intros ? Ht. apply Hbound in Ht. word.
+  - rewrite last_lookup in Hlast_servHist0.
+    iDestruct (mono_list_idx_own_get with "Hlb_servHist0") as "$"; [done|].
+    simpl in *.
+    apply Forall2_length in Heq_hist0.
+    autorewrite with len in *.
+    iSplit; word.
+Qed.
 
 End proof.
 End client.
