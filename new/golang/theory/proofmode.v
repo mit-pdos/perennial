@@ -661,9 +661,15 @@ Ltac2 solve_bi_true () :=
   | [ |- envs_entails _ (bi_wand (bi_pure True) _) ] => apply tac_wp_true_elim
   end.
 
+(* This unshelves and calls tc_solve because the heuristic followed by
+   shelve_unifiable and `notypeclasses refine` to decide what to put on the
+   shelf is imperfect. shelve_unifiable will leave goals for EqDecision and
+   Countable on the shelf when they arise from a `gmap` if the gmap is mentioned
+   in the main WP goal. But, it may never actually get unified. *)
 Tactic Notation "wp_apply_core" open_constr(lem) :=
   ltac2:(Control.enter wp_bind_next);
-  iApply lem; try iNext; try ltac2:(Control.enter solve_bi_true).
+  unshelve (iApply lem; try iNext; try ltac2:(Control.enter solve_bi_true));
+  try tc_solve; shelve_unifiable.
 
 Tactic Notation "wp_apply" open_constr(lem) :=
   wp_apply_core lem.

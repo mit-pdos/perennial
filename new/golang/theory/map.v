@@ -44,8 +44,14 @@ Proof.
   iIntros "? $ !>". iApply "HΦ". done.
 Qed.
 
-Definition own_map_def `[Countable K, ZeroVal V] mptr dq (m : gmap K V)
-   : iProp Σ :=
+(* NOTE: we assume EqDecision explicitly here even though it is also available
+through [IntoValTyped K kt] so that the instance used to type-check [gmap K V]
+is independent of the [IntoValTyped] instance. Otherwise, these proofs end up
+relying on a [gmap] with a particular proof of [EqDecision K]. *)
+Context `[!ZeroVal K] `[!EqDecision K] `[!Countable K] `[!ZeroVal V]
+  `{!Inj (=) (=) (into_val (V:=K))}.
+
+Definition own_map_def mptr dq (m : gmap K V) : iProp Σ :=
   ∃ (mv : val) mp,
     "Hown" ∷ heap_pointsto mptr dq mv ∗
     "%His_map" ∷ ⌜ is_map_pure mv mp ⌝ ∗
@@ -57,34 +63,31 @@ Definition own_map_def `[Countable K, ZeroVal V] mptr dq (m : gmap K V)
     "%Hdefault" ∷ ⌜ map_default mv = #(zero_val V) ⌝.
 Program Definition own_map := sealed @own_map_def.
 Definition own_map_unseal : own_map = _ := seal_eq _.
-Global Arguments own_map [_ _ _ _ _] (mptr dq m).
 
-#[global] Instance own_map_timeless `[Countable K, ZeroVal V] mptr dq (m : gmap K V) :
-  Timeless (own_map mptr dq m).
+#[global] Instance own_map_timeless mptr dq (m: gmap K V)
+  : Timeless (own_map mptr dq m).
 Proof. rewrite own_map_unseal. apply _. Qed.
 
 Notation "mref ↦$ dq m" := (own_map mref dq m)
                             (at level 20, dq custom dfrac at level 50, format "mref  ↦$ dq  m").
 
-Class SafeMapKey {K} key_type (k : K) :=
+Class SafeMapKey key_type (k : K) :=
   {
     safe_map_go_eq :
       ∃ (b : bool), go.GoExprEq (go_eq key_type #k #k) (#b);
   }.
 
-Global Instance safe_map_key_is_go_eq K key_type (k : K) (b : bool) :
+Global Instance safe_map_key_is_go_eq key_type k (b : bool) :
   go.GoExprEq (go_eq key_type #k #k) #b → SafeMapKey key_type k.
 Proof.
   intros ?. constructor. by eexists.
 Qed.
 
-Lemma wp_map_insert `[Countable K, ZeroVal V] key_type l (m : gmap K V) k v
-  {Hsafe : SafeMapKey key_type k}
-  `{!Inj (=) (=) (into_val (V:=K))} :
+Lemma wp_map_insert key_type l (m : gmap K V) k v {Hsafe : SafeMapKey key_type k} :
   {{{ l ↦$ m }}}
     map.insert key_type #l #k #v
   {{{ RET #(); l ↦$ <[k := v]> m }}}.
-Proof.
+Proof using Inj0 map_sem.
   destruct Hsafe as [[? Hsafe]].
   rewrite own_map_unseal.
   iIntros (?) "Hm HΦ". iNamed "Hm". wp_call. rewrite decide_True //. wp_auto.
@@ -101,13 +104,12 @@ Proof.
   - by rewrite go.map_default_map_insert.
 Qed.
 
-Lemma wp_map_delete `[Countable K, ZeroVal V] l (m : gmap K V) k key_type elem_type
-  {Hsafe : SafeMapKey key_type k} `{!Inj (=) (=) (into_val (V:=K))} :
+Lemma wp_map_delete l (m : gmap K V) k key_type elem_type {Hsafe : SafeMapKey key_type k} :
   {{{ l ↦$ m }}}
     #(functions go.delete [go.MapType key_type elem_type])
         #l #k
   {{{ RET #(); l ↦$ delete k m }}}.
-Proof.
+Proof using Inj0 map_sem.
   destruct Hsafe as [[? Hsafe]].
   wp_start as "Hm". rewrite own_map_unseal. iNamed "Hm". rewrite decide_True //. wp_auto.
   wp_apply (_internal_wp_untyped_read with "Hown") as "Hown".
@@ -122,15 +124,14 @@ Proof.
   - by rewrite go.map_default_map_delete.
 Qed.
 
-Lemma wp_map_lookup2 [key_type elem_type] `[Countable K, ZeroVal V] mref (m : gmap K V) k dq
-  {Hsafe : SafeMapKey key_type k} :
+Lemma wp_map_lookup2 key_type elem_type mref (m : gmap K V) k dq {Hsafe : SafeMapKey key_type k} :
   {{{ mref ↦${dq} m }}}
     map.lookup2 key_type elem_type #mref #k
   {{{ RET (#(default (zero_val V) (m !! k)), #(bool_decide (is_Some (m !! k)))); mref ↦${dq} m }}}.
 Proof.
   destruct Hsafe as [[? Hsafe]].
   wp_start as "Hm". rewrite own_map_unseal. iNamed "Hm".
-  iDestruct (heap_pointsto_non_null with "Hown") as "%Hnotnull".
+  iDestruct (heap_pointsto_non_null with "Hown") as "%H".
   rewrite decide_True //. wp_auto.
   wp_if_destruct; first by exfalso.
   wp_apply (_internal_wp_untyped_read with "Hown") as "Hown".
@@ -140,9 +141,9 @@ Proof.
   + iApply "HΦ". iFrame "∗#%".
 Qed.
 
-Global Instance pure_wp_map_nil_lookup2
-  [key_type K] (k : K) [Hsafe : SafeMapKey key_type k]
-  `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V elem_type} :
+Global Instance pure_wp_map_nil_lookup2 key_type elem_type k
+  `{!TypedPointsto V} `{!IntoValTyped V elem_type}
+  {Hsafe : SafeMapKey key_type k} :
   PureWp True (map.lookup2 key_type elem_type #map.nil #k) (#(zero_val V), #false)%V.
 Proof.
   destruct Hsafe as [[? Hsafe]].
@@ -150,10 +151,7 @@ Proof.
   wp_alloc tmp as "?". wp_auto. by iApply "HΦ".
 Qed.
 
-Lemma wp_map_lookup1
-  [key_type K] (k : K) [Hsafe : SafeMapKey key_type k]
-  `{!EqDecision K} `{!Countable K}
-  elem_type V `[!ZeroVal V] mref (m : gmap K V) dq :
+Lemma wp_map_lookup1 key_type elem_type mref (m : gmap K V) k dq {Hsafe : SafeMapKey key_type k} :
   {{{ mref ↦${dq} m }}}
     map.lookup1 key_type elem_type #mref #k
   {{{ RET (#(default (zero_val V) (m !! k))); mref ↦${dq} m }}}.
@@ -161,16 +159,14 @@ Proof.
   wp_start as "Hm". wp_apply (wp_map_lookup2 with "Hm") as "Hm". by iApply "HΦ".
 Qed.
 
-Global Instance pure_wp_map_nil_lookup1
-  [key_type K] (k : K) [Hsafe : SafeMapKey key_type k]
-  [elem_type V] `[!ZeroVal V] `[!TypedPointsto V] `[!IntoValTyped V elem_type] :
+Global Instance pure_wp_map_nil_lookup1 key_type elem_type k
+  `{!TypedPointsto V} `{!IntoValTyped V elem_type}
+  {Hsafe : SafeMapKey key_type k} :
   PureWp True (map.lookup1 key_type elem_type #map.nil #k) #(zero_val V).
 Proof. by pure_wp_start. Qed.
 
-Lemma wp_map_make2 (len : w64)
-  [key_type elem_type] {K} (* `{!TypedPointsto K} `{!ZeroVal K} `{!IntoValTyped K key_type} *)
-  `{!EqDecision K} `{!Countable K}
-  V `{!TypedPointsto V} `{!ZeroVal V} `{!IntoValTyped V elem_type} :
+Lemma wp_map_make2 (len : w64) key_type elem_type
+  `{!TypedPointsto V} `{!IntoValTyped V elem_type} :
   {{{ True }}}
     #(functions go.make2 [go.MapType key_type elem_type]) #len
   {{{ mref, RET #mref; mref ↦$ (∅ : gmap K V) }}}.
@@ -188,122 +184,22 @@ Proof.
   - rewrite go.map_default_map_empty //.
 Qed.
 
-Lemma wp_map_make1 Φ
-  key_type K `{!TypedPointsto K} `{!ZeroVal K} `{!IntoValTyped K key_type}
-  elem_type V `{!TypedPointsto V} `{!ZeroVal V} `{!IntoValTyped V elem_type}
-  `{!EqDecision K} `{!Countable K} :
-  True -∗
-  ▷ (∀ mref, mref ↦$ (∅ : gmap K V) -∗ Φ #mref) -∗
-  WP #(functions go.make1 [go.MapType key_type elem_type]) #() {{ Φ }}.
-Proof. revert Φ. wp_start. by wp_apply wp_map_make2. Qed.
+Lemma wp_map_make1 key_type elem_type
+  `{!TypedPointsto K} `{!IntoValTyped K key_type} (* to automatically fill in K *)
+  `{!TypedPointsto V} `{!IntoValTyped V elem_type} :
+  {{{ True }}}
+    #(functions go.make1 [go.MapType key_type elem_type]) #()
+  {{{ mref, RET #mref; mref ↦$ (∅ : gmap K V) }}}.
+Proof. wp_start. by wp_apply wp_map_make2. Qed.
 
-Lemma wp_map_clear
-  [key_type K] `[!TypedPointsto K] `[!ZeroVal K] `[!IntoValTyped K key_type]
-  `[!EqDecision K] `[!Countable K]
-  [elem_type V] `[!TypedPointsto V] `[!ZeroVal V] `[!IntoValTyped V elem_type]
-  mref (m : gmap K V) :
+Lemma wp_map_clear mref (m : gmap K V) key_type elem_type
+  `{!TypedPointsto V} `{!IntoValTyped V elem_type} :
   {{{ mref ↦$ m }}}
     #(functions go.clear [go.MapType key_type elem_type]) #mref
-  {{{ RET #(); mref ↦$ (∅ : gmap K V) }}}.
+  {{{ RET #(); mref ↦$ ∅ }}}.
 Proof.
   rewrite own_map_unseal. iIntros (?) "Hm HΦ".
   rewrite func_unfold. wp_auto. iNamed "Hm".
-  wp_bind.
-
-  clear Hagree_2.
-  Unshelve.
-  all: shelve_unifiable.
-  Set Printing All.
-
-  (* unshelve wp_apply wp_map_make1. *)
-  Import coq_tactics reduction.
-  let Hnew := iFresh in
-  notypeclasses refine
-    (coq_tactics.tac_pose_proof _ Hnew _ _ (coq_tactics.into_emp_valid_proj _ _ _ wp_map_make1) _).
-  2:{ shelve. }
-  1:{
-    repeat notypeclasses refine (into_emp_valid_forall _ _ _ _);
-      [ .. | iIntoEmpValid_go; tc_solve ]; shelve_unifiable.
-    (* FIXME: shelve_unifiable does not result in the same goals as omitting
-       `simple` from refine....
-       Hypothesis: `simple notypeclasses refine` looks for all goals, whether active or not.
-     *)
-
-    repeat notypeclasses refine (into_emp_valid_forall _ _ _ _);
-      [ .. | iIntoEmpValid_go; tc_solve ].
-
-      pm_reduce;
-      iApplyHyp Hnew
-
-  [ repeat simple notypeclasses refine (into_emp_valid_forall _ _ _ _);
-    [ .. | iIntoEmpValid_go; tc_solve ] |
-    pm_reduce;
-    iApplyHyp Hnew
-  ].
-
-  all: cycle -1.
-  1: shelve.
-  all: shelve_unifiable.
-
-  all: try tc_solve.
-  2:{
-    Set Printing All.
-  }
-
-  (* FIXME: stuff is getting shelved in iIntoEmpValid that should not be
-     shelved. This case is fixed by using `simple notypeclasses refine`. *)
-
-  tc_solve.
-    }
-    all: shelve.
-  }
-  {
-    reduction.pm_reduce.
-    iApply
-  }
-    simple notypeclasses refine (into_emp_valid_forall _ _ _ _).
-    notypeclasses refine (into_emp_valid_forall _ _ _ _).
-    notypeclasses refine (into_emp_valid_forall _ _ _ _).
-    notypeclasses refine (into_emp_valid_forall _ _ _ _).
-    unshelve refine (into_emp_valid_forall _ _ _ _).
-    notypeclasses refine (into_emp_valid_forall _ _ _ _).
-
-
-    notypeclasses refine (into_emp_valid_forall _ _ _ _).
-    notypeclasses refine (into_emp_valid_forall _ _ _ _).
-    notypeclasses refine (into_emp_valid_forall _ _ _ _).
-    notypeclasses refine (into_emp_valid_forall _ _ _ _).
-    notypeclasses refine (into_emp_valid_forall _ _ _ _).
-    notypeclasses refine (into_emp_valid_forall _ _ _ _).
-
-
-
-    notypeclasses refine (into_emp_valid_impl _ _ _ _ _);
-    iIntoEmpValid. }
-
-  iPoseProofCoreLem wp_map_make1 as (fun Htmp => iApplyHyp Htmp).
-  iPoseProofCore wp_map_make1 as false (fun H => iApplyHyp H).
-  iApplyHyp wp_map_make1.
-  pose proof as "H".
-  iApply wp_map_make1.
-  iApply lem; try iNext; try ltac2:(Control.enter solve_bi_true).
-  (* wp_apply wp_map_make1. *)
-  iDestruct wp_map_make1 as "H".
-  3: wp_apply "H".
-  Unshelve.
-  2: apply _.
-  1: apply _.
-  2: shelve.
-  2: shelve. ****)
-
-  wp_apply wp_map_make1. iIntros "% Hm'".
-  rewrite own_map_unseal. iNamedSuffix "Hm'" "_2".
-  wp_apply (_internal_wp_untyped_read with "Hown_2") as "Hown_2".
-  wp_apply (_internal_wp_untyped_store with "Hown") as "Hown".
-  iApply "HΦ".
-  Set Printing All.
-  iFrame "∗#%".
-
   wp_apply wp_map_make1. iIntros "% Hm'".
   rewrite own_map_unseal. iNamedSuffix "Hm'" "_2".
   wp_apply (_internal_wp_untyped_read with "Hown_2") as "Hown_2".
@@ -325,7 +221,7 @@ Definition for_map_postcondition P Φ bv : iProp Σ :=
             (∃ v, ⌜ bv = return_val v ⌝ ∗ Φ bv).
 
 Lemma wp_map_for_range P stk E (body : func.t) key_type elem_type mref m dq
-  `{!TypedPointsto K} `{!IntoValTyped K key_type} `{!Inj (=) (=) (into_val (V:=K))} :
+  `{!TypedPointsto K} `{!IntoValTyped K key_type} :
   ∀ Φ,
   mref ↦${dq} m -∗
   (∀ keys,
@@ -337,7 +233,7 @@ Lemma wp_map_for_range P stk E (body : func.t) key_type elem_type mref m dq
       (P keys (Z.of_nat (size m)) -∗ Φ execute_val))
   ) -∗
   WP map.for_range key_type elem_type #mref #body @ stk; E {{ Φ }}.
-Proof.
+Proof using Inj0 array_sem pre_sem slice_sem map_sem.
   iIntros "% Hm HΦ".
   wp_call.
   iDestruct (own_map_not_nil with "[$]") as %?.
@@ -479,9 +375,7 @@ Module test.
       ])) {{ Φ }}.
   Proof.
     iIntros "_".
-    wp_auto.
-    unshelve wp_apply wp_map_make1.
-    try tc_solve. (* FIXME: tc ordering *)
+    wp_auto. wp_apply wp_map_make1.
     iIntros "% Hm". wp_auto.
     rewrite go.go_zero_val_eq. (* FIXME: automation *)
     wp_auto. wp_apply (wp_map_insert with "Hm").
