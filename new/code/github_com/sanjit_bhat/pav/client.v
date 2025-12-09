@@ -347,7 +347,7 @@ Definition checkAuditVrf : go_string := "github.com/sanjit-bhat/pav/client.check
 
 Definition checkAuditLink : go_string := "github.com/sanjit-bhat/pav/client.checkAuditLink"%go.
 
-(* go: client.go:153:18 *)
+(* go: client.go:154:18 *)
 Definition Client__Auditⁱᵐᵖˡ : val :=
   λ: "c" "adtrAddr" "adtrPk",
     exception_do (let: "err" := (mem.alloc (type.zero_val #ktcore.Blame)) in
@@ -451,7 +451,7 @@ Definition Client__Auditⁱᵐᵖˡ : val :=
 
 Definition New : go_string := "github.com/sanjit-bhat/pav/client.New"%go.
 
-(* go: client.go:187:6 *)
+(* go: client.go:188:6 *)
 Definition Newⁱᵐᵖˡ : val :=
   λ: "uid" "servAddr" "servPk",
     exception_do (let: "err" := (mem.alloc (type.zero_val #ktcore.Blame)) in
@@ -555,7 +555,7 @@ Definition Newⁱᵐᵖˡ : val :=
     do:  ("c" <-[#ptrT] "$r0");;;
     return: (![#ptrT] "c", ![#ktcore.Blame] "err")).
 
-(* go: client.go:211:6 *)
+(* go: client.go:212:6 *)
 Definition getNextEpⁱᵐᵖˡ : val :=
   λ: "prev" "sigPk" "chainProof" "sig",
     exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
@@ -622,7 +622,7 @@ Definition getNextEpⁱᵐᵖˡ : val :=
 
 Definition checkMemb : go_string := "github.com/sanjit-bhat/pav/client.checkMemb"%go.
 
-(* go: client.go:232:6 *)
+(* go: client.go:233:6 *)
 Definition checkMembⁱᵐᵖˡ : val :=
   λ: "vrfPk" "uid" "ver" "dig" "memb",
     exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
@@ -670,7 +670,7 @@ Definition checkMembⁱᵐᵖˡ : val :=
     else do:  #());;;
     return: (![#boolT] "err")).
 
-(* go: client.go:249:6 *)
+(* go: client.go:250:6 *)
 Definition checkHistⁱᵐᵖˡ : val :=
   λ: "vrfPk" "uid" "prefixLen" "dig" "hist",
     exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
@@ -697,7 +697,7 @@ Definition checkHistⁱᵐᵖˡ : val :=
       else do:  #()))));;;
     return: (![#boolT] "err")).
 
-(* go: client.go:258:6 *)
+(* go: client.go:259:6 *)
 Definition checkNonMembⁱᵐᵖˡ : val :=
   λ: "vrfPk" "uid" "ver" "dig" "nonMemb",
     exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
@@ -740,7 +740,7 @@ Definition checkNonMembⁱᵐᵖˡ : val :=
     else do:  #());;;
     return: (![#boolT] "err")).
 
-(* go: client.go:274:6 *)
+(* go: client.go:275:6 *)
 Definition checkAuditLinkⁱᵐᵖˡ : val :=
   λ: "servPk" "adtrPk" "ep" "link",
     exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
@@ -764,7 +764,7 @@ Definition checkAuditLinkⁱᵐᵖˡ : val :=
     else do:  #());;;
     return: (![#boolT] "err")).
 
-(* go: client.go:284:6 *)
+(* go: client.go:285:6 *)
 Definition checkAuditVrfⁱᵐᵖˡ : val :=
   λ: "servPk" "adtrPk" "vrf",
     exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
