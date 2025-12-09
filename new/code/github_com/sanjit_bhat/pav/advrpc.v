@@ -88,7 +88,7 @@ Definition Server__readⁱᵐᵖˡ : val :=
       do:  (Fork ("$go" #())));;;
     return: #()).
 
-(* go: advrpc.go:49:18 *)
+(* go: advrpc.go:51:18 *)
 Definition Server__Serveⁱᵐᵖˡ : val :=
   λ: "s" "addr",
     exception_do (let: "s" := (mem.alloc "s") in
@@ -115,7 +115,7 @@ Definition Server__Serveⁱᵐᵖˡ : val :=
 
 Definition NewServer : go_string := "github.com/sanjit-bhat/pav/advrpc.NewServer"%go.
 
-(* go: advrpc.go:61:6 *)
+(* go: advrpc.go:63:6 *)
 Definition NewServerⁱᵐᵖˡ : val :=
   λ: "handlers",
     exception_do (let: "handlers" := (mem.alloc "handlers") in
@@ -132,7 +132,7 @@ Definition Client : go_type := structT [
 
 Definition Dial : go_string := "github.com/sanjit-bhat/pav/advrpc.Dial"%go.
 
-(* go: advrpc.go:72:6 *)
+(* go: advrpc.go:74:6 *)
 Definition Dialⁱᵐᵖˡ : val :=
   λ: "addr",
     exception_do (let: "addr" := (mem.alloc "addr") in
@@ -147,7 +147,7 @@ Definition Dialⁱᵐᵖˡ : val :=
 
 (* Call does an rpc.
 
-   go: advrpc.go:78:18 *)
+   go: advrpc.go:80:18 *)
 Definition Client__Callⁱᵐᵖˡ : val :=
   λ: "c" "rpcId" "args" "reply",
     exception_do (let: "err" := (mem.alloc (type.zero_val #boolT)) in
