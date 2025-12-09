@@ -8,7 +8,7 @@ Definition log : go_string := "log".
 Module log.
 
 Section code.
-Context `{ffi_syntax}.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 
 
 (* the date in the local time zone: 2009/01/23 *)

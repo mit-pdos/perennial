@@ -6,7 +6,7 @@ Definition math : go_string := "math".
 Module math.
 
 Section code.
-Context `{ffi_syntax}.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 
 
 Definition Abs : go_string := "math.Abs"%go.

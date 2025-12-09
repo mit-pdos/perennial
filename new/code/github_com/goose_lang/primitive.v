@@ -9,7 +9,7 @@ Definition primitive : go_string := "github.com/goose-lang/primitive".
 Module primitive.
 
 Section code.
-Context `{ffi_syntax}.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 
 
 Definition UInt64Get : go_string := "github.com/goose-lang/primitive.UInt64Get"%go.

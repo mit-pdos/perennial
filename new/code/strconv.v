@@ -6,7 +6,7 @@ Definition strconv : go_string := "strconv".
 Module strconv.
 
 Section code.
-Context `{ffi_syntax}.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 
 
 Definition ParseBool : go_string := "strconv.ParseBool"%go.

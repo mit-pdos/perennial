@@ -8,7 +8,7 @@ Definition fmt : go_string := "fmt".
 Module fmt.
 
 Section code.
-Context `{ffi_syntax}.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 
 
 Definition Errorf : go_string := "fmt.Errorf"%go.

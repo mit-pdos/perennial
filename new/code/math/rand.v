@@ -6,7 +6,7 @@ Definition rand : go_string := "math/rand".
 Module rand.
 
 Section code.
-Context `{ffi_syntax}.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 
 
 Axiom re : val.

@@ -6,7 +6,7 @@ Definition os : go_string := "os".
 Module os.
 
 Section code.
-Context `{ffi_syntax}.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 
 
 Axiom readdirModeⁱᵐᵖˡ : go.type.

@@ -6,7 +6,7 @@ Definition unsafe : go_string := "unsafe".
 Module unsafe.
 
 Section code.
-Context `{ffi_syntax}.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 
 
 Definition functions' : list (go_string * val) := [].

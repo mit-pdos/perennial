@@ -11,7 +11,7 @@ Definition sync : go_string := "sync".
 Module sync.
 
 Section code.
-Context `{ffi_syntax}.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 
 
 Definition noCopy : go.type := go.Named "sync.noCopy"%go [].
@@ -39,15 +39,7 @@ Definition Cond : go.type := go.Named "sync.Cond"%go [].
 Definition NewCondⁱᵐᵖˡ : val :=
   λ: "l",
     exception_do (let: "l" := (go.AllocValue Locker "l") in
-    return: (go.AllocValue Cond (let: "$L" := (![Locker] "l") in
-     CompositeLiteral Cond (
-       let: "$$vs" := go.StructElementListNil #() in 
-       let: "$$vs" := go.ElementListApp "$$vs" (go.ZeroVal noCopy #()) in
-       let: "$$vs" := go.ElementListApp "$$vs" "$L" in
-       let: "$$vs" := go.ElementListApp "$$vs" (go.ZeroVal notifyList #()) in
-       let: "$$vs" := go.ElementListApp "$$vs" (go.ZeroVal copyChecker #()) in
-       "$$vs"
-     )))).
+    return: (go.AllocValue Cond (CompositeLiteral Cond [KeyedElement (Some (KeyField "L"%go)) (![Locker] "l")]))).
 
 Definition runtime_notifyListWait : go_string := "sync.runtime_notifyListWait"%go.
 

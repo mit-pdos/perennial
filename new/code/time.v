@@ -8,7 +8,7 @@ Definition time : go_string := "time".
 Module time.
 
 Section code.
-Context `{ffi_syntax}.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 
 
 Axiom Layout : go_string.
@@ -319,7 +319,7 @@ Definition Time__secⁱᵐᵖˡ : val :=
   λ: "t" <>,
     exception_do (let: "t" := (go.AllocValue (go.PointerType Time) "t") in
     (if: ((![go.uint64] (StructFieldRef Time "wall"%go (![go.PointerType Time] "t"))) `and` #(W64 hasMonotonic)) ≠⟨go.uint64⟩ #(W64 0)
-    then return: (wallToInternal +⟨go.int64⟩ (u_to_w64 (((![go.uint64] (StructFieldRef Time "wall"%go (![go.PointerType Time] "t"))) ≪⟨go.uint64⟩ #(W64 1)) ≫⟨go.uint64⟩ #(W64 (nsecShift +⟨go.untyped int⟩ 1)))))
+    then return: (wallToInternal +⟨go.int64⟩ (u_to_w64 (((![go.uint64] (StructFieldRef Time "wall"%go (![go.PointerType Time] "t"))) ≪⟨go.uint64⟩ #(W64 1)) ≫⟨go.uint64⟩ #(W64 31))))
     else do:  #());;;
     return: (![go.int64] (StructFieldRef Time "ext"%go (![go.PointerType Time] "t")))).
 

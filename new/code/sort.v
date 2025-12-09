@@ -6,7 +6,7 @@ Definition sort : go_string := "sort".
 Module sort.
 
 Section code.
-Context `{ffi_syntax}.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 
 
 Definition Search : go_string := "sort.Search"%go.
@@ -156,7 +156,7 @@ Definition SearchIntsⁱᵐᵖˡ : val :=
      (FuncResolve go.len [go.SliceType go.int] #()) "$a0") in
      let: "$a1" := (λ: "i",
        exception_do (let: "i" := (go.AllocValue go.int "i") in
-       return: ((![go.int] (slice.elem_ref go.int (![go.SliceType go.int] "a") (![go.int] "i"))) ≥⟨go.int⟩ (![go.int] "x")))
+       return: ((![go.int] (IndexRef go.int (![go.SliceType go.int] "a", ![go.int] "i"))) ≥⟨go.int⟩ (![go.int] "x")))
        ) in
      (FuncResolve Search [] #()) "$a0" "$a1")).
 

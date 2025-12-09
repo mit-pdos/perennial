@@ -6,7 +6,7 @@ Definition reflectlite : go_string := "internal/reflectlite".
 Module reflectlite.
 
 Section code.
-Context `{ffi_syntax}.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 
 
 Definition Swapper : go_string := "internal/reflectlite.Swapper"%go.

@@ -6,7 +6,7 @@ Definition bytes : go_string := "bytes".
 Module bytes.
 
 Section code.
-Context `{ffi_syntax}.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 
 
 Axiom smallBufferSize : Z.
@@ -205,7 +205,7 @@ Definition Cloneⁱᵐᵖˡ : val :=
     (if: (![go.SliceType go.byte] "b") =⟨go.SliceType go.byte⟩ #slice.nil
     then return: (#slice.nil)
     else do:  #());;;
-    return: (let: "$a0" := #slice.nil in
+    return: (let: "$a0" := (CompositeLiteral (go.SliceType go.byte) []) in
      let: "$a1" := (![go.SliceType go.byte] "b") in
      (FuncResolve go.append [go.SliceType go.byte] #()) "$a0" "$a1")).
 

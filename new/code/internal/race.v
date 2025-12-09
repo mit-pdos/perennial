@@ -6,7 +6,7 @@ Definition race : go_string := "internal/race".
 Module race.
 
 Section code.
-Context `{ffi_syntax}.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 
 
 Definition Enabled : val := #false.

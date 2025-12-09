@@ -8,7 +8,7 @@ Definition runtime : go_string := "runtime".
 Module runtime.
 
 Section code.
-Context `{ffi_syntax}.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 
 
 Axiom c0 : val.

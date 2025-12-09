@@ -7,7 +7,7 @@ Definition context : go_string := "context".
 Module context.
 
 Section code.
-Context `{ffi_syntax}.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 
 
 Definition Contextⁱᵐᵖˡ : go.type := go.InterfaceType [go.MethodElem #"Deadline"%go (go.Signature [] #false [time.Time; go.bool]); go.MethodElem #"Done"%go (go.Signature [] #false [go.ChannelType go.recvonly (go.StructType [

@@ -8,7 +8,7 @@ Definition io : go_string := "io".
 Module io.
 
 Section code.
-Context `{ffi_syntax}.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 
 
 Axiom SeekStart : Z.

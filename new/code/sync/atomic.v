@@ -8,7 +8,7 @@ Definition atomic : go_string := "sync/atomic".
 Module atomic.
 
 Section code.
-Context `{ffi_syntax}.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 
 
 Definition SwapInt32 : go_string := "sync/atomic.SwapInt32"%go.
@@ -865,13 +865,7 @@ Definition functions' : list (go_string * val) := [(SwapInt32, SwapInt32ⁱᵐ�
 Definition initialize' : val :=
   λ: <>,
     package.init atomic.atomic (λ: <>,
-      exception_do (let: "$r0" := (go.AllocValue (Pointer go.int) (CompositeLiteral (Pointer go.int) (
-        let: "$$vs" := go.StructElementListNil #() in 
-        let: "$$vs" := go.ElementListApp "$$vs" (go.ZeroVal (go.ArrayType 0 (go.PointerType go.int)) #()) in
-        let: "$$vs" := go.ElementListApp "$$vs" (go.ZeroVal noCopy #()) in
-        let: "$$vs" := go.ElementListApp "$$vs" (go.ZeroVal unsafe.Pointer #()) in
-        "$$vs"
-      ))) in
+      exception_do (let: "$r0" := (go.AllocValue (Pointer go.int) (CompositeLiteral (Pointer go.int) [])) in
       do:  #())
       ).
 

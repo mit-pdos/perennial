@@ -8,7 +8,7 @@ Definition std_core : go_string := "github.com/goose-lang/std/std_core".
 Module std_core.
 
 Section code.
-Context `{ffi_syntax}.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 
 
 Definition SumNoOverflow : go_string := "github.com/goose-lang/std/std_core.SumNoOverflow"%go.
@@ -18,9 +18,9 @@ Definition SumNoOverflow : go_string := "github.com/goose-lang/std/std_core.SumN
    go: std_core.go:11:6 *)
 Definition SumNoOverflowⁱᵐᵖˡ : val :=
   λ: "x" "y",
-    exception_do (let: "y" := (GoAllocValue go.uint64 "y") in
-    let: "x" := (GoAllocValue go.uint64 "x") in
-    return: (((![go.uint64] "x") + (![go.uint64] "y")) ≥ (![go.uint64] "x"))).
+    exception_do (let: "y" := (go.AllocValue go.uint64 "y") in
+    let: "x" := (go.AllocValue go.uint64 "x") in
+    return: (((![go.uint64] "x") +⟨go.uint64⟩ (![go.uint64] "y")) ≥⟨go.uint64⟩ (![go.uint64] "x"))).
 
 Definition SumAssumeNoOverflow : go_string := "github.com/goose-lang/std/std_core.SumAssumeNoOverflow"%go.
 
@@ -31,13 +31,13 @@ Definition SumAssumeNoOverflow : go_string := "github.com/goose-lang/std/std_cor
    go: std_core.go:18:6 *)
 Definition SumAssumeNoOverflowⁱᵐᵖˡ : val :=
   λ: "x" "y",
-    exception_do (let: "y" := (GoAllocValue go.uint64 "y") in
-    let: "x" := (GoAllocValue go.uint64 "x") in
+    exception_do (let: "y" := (go.AllocValue go.uint64 "y") in
+    let: "x" := (go.AllocValue go.uint64 "x") in
     do:  (let: "$a0" := (let: "$a0" := (![go.uint64] "x") in
     let: "$a1" := (![go.uint64] "y") in
-    (FuncResolve SumNoOverflow #()) "$a0" "$a1") in
-    (FuncResolve primitive.Assume #()) "$a0");;;
-    return: ((![go.uint64] "x") + (![go.uint64] "y"))).
+    (FuncResolve SumNoOverflow [] #()) "$a0" "$a1") in
+    (FuncResolve primitive.Assume [] #()) "$a0");;;
+    return: ((![go.uint64] "x") +⟨go.uint64⟩ (![go.uint64] "y"))).
 
 Definition MulNoOverflow : go_string := "github.com/goose-lang/std/std_core.MulNoOverflow"%go.
 
@@ -46,12 +46,12 @@ Definition MulNoOverflow : go_string := "github.com/goose-lang/std/std_core.MulN
    go: std_core.go:24:6 *)
 Definition MulNoOverflowⁱᵐᵖˡ : val :=
   λ: "x" "y",
-    exception_do (let: "y" := (GoAllocValue go.uint64 "y") in
-    let: "x" := (GoAllocValue go.uint64 "x") in
-    (if: ((![go.uint64] "x") = #(W64 0)) || ((![go.uint64] "y") = #(W64 0))
+    exception_do (let: "y" := (go.AllocValue go.uint64 "y") in
+    let: "x" := (go.AllocValue go.uint64 "x") in
+    (if: ((![go.uint64] "x") =⟨go.uint64⟩ #(W64 0)) || ((![go.uint64] "y") =⟨go.uint64⟩ #(W64 0))
     then return: (#true)
     else do:  #());;;
-    return: ((![go.uint64] "x") ≤ (#(W64 (18446744073709551616 - 1)) `quot` (![go.uint64] "y")))).
+    return: ((![go.uint64] "x") ≤⟨go.uint64⟩ (#(W64 18446744073709551615) /⟨go.uint64⟩ (![go.uint64] "y")))).
 
 Definition MulAssumeNoOverflow : go_string := "github.com/goose-lang/std/std_core.MulAssumeNoOverflow"%go.
 
@@ -62,13 +62,13 @@ Definition MulAssumeNoOverflow : go_string := "github.com/goose-lang/std/std_cor
    go: std_core.go:34:6 *)
 Definition MulAssumeNoOverflowⁱᵐᵖˡ : val :=
   λ: "x" "y",
-    exception_do (let: "y" := (GoAllocValue go.uint64 "y") in
-    let: "x" := (GoAllocValue go.uint64 "x") in
+    exception_do (let: "y" := (go.AllocValue go.uint64 "y") in
+    let: "x" := (go.AllocValue go.uint64 "x") in
     do:  (let: "$a0" := (let: "$a0" := (![go.uint64] "x") in
     let: "$a1" := (![go.uint64] "y") in
-    (FuncResolve MulNoOverflow #()) "$a0" "$a1") in
-    (FuncResolve primitive.Assume #()) "$a0");;;
-    return: ((![go.uint64] "x") * (![go.uint64] "y"))).
+    (FuncResolve MulNoOverflow [] #()) "$a0" "$a1") in
+    (FuncResolve primitive.Assume [] #()) "$a0");;;
+    return: ((![go.uint64] "x") *⟨go.uint64⟩ (![go.uint64] "y"))).
 
 Definition Shuffle : go_string := "github.com/goose-lang/std/std_core.Shuffle"%go.
 
@@ -77,26 +77,26 @@ Definition Shuffle : go_string := "github.com/goose-lang/std/std_core.Shuffle"%g
    go: std_core.go:40:6 *)
 Definition Shuffleⁱᵐᵖˡ : val :=
   λ: "xs",
-    exception_do (let: "xs" := (GoAllocValue (go.SliceType go.uint64) "xs") in
+    exception_do (let: "xs" := (go.AllocValue (go.SliceType go.uint64) "xs") in
     (if: (let: "$a0" := (![go.SliceType go.uint64] "xs") in
-    slice.len "$a0") = #(W64 0)
+    (FuncResolve go.len [go.SliceType go.uint64] #()) "$a0") =⟨go.int⟩ #(W64 0)
     then return: (#())
     else do:  #());;;
     (let: "i" := (GoAlloc go.uint64 #()) in
     let: "$r0" := (s_to_w64 ((let: "$a0" := (![go.SliceType go.uint64] "xs") in
-    slice.len "$a0") - #(W64 1))) in
+    (FuncResolve go.len [go.SliceType go.uint64] #()) "$a0") -⟨go.int⟩ #(W64 1))) in
     do:  ("i" <-[go.uint64] "$r0");;;
-    (for: (λ: <>, (![go.uint64] "i") > #(W64 0)); (λ: <>, do:  ("i" <-[go.uint64] ((![go.uint64] "i") - #(W64 1)))) := λ: <>,
+    (for: (λ: <>, (![go.uint64] "i") >⟨go.uint64⟩ #(W64 0)); (λ: <>, do:  ("i" <-[go.uint64] ((![go.uint64] "i") -⟨go.uint64⟩ #(W8 1)))) := λ: <>,
       let: "j" := (GoAlloc go.uint64 #()) in
-      let: "$r0" := (((FuncResolve primitive.RandomUint64 #()) #()) `rem` ((![go.uint64] "i") + #(W64 1))) in
+      let: "$r0" := (((FuncResolve primitive.RandomUint64 [] #()) #()) %⟨go.uint64⟩ ((![go.uint64] "i") +⟨go.uint64⟩ #(W64 1))) in
       do:  ("j" <-[go.uint64] "$r0");;;
       let: "temp" := (GoAlloc go.uint64 #()) in
-      let: "$r0" := (![go.uint64] (slice.elem_ref go.uint64 (![go.SliceType go.uint64] "xs") (![go.uint64] "i"))) in
+      let: "$r0" := (![go.uint64] (IndexRef go.uint64 (![go.SliceType go.uint64] "xs", ![go.uint64] "i"))) in
       do:  ("temp" <-[go.uint64] "$r0");;;
-      let: "$r0" := (![go.uint64] (slice.elem_ref go.uint64 (![go.SliceType go.uint64] "xs") (![go.uint64] "j"))) in
-      do:  ((slice.elem_ref go.uint64 (![go.SliceType go.uint64] "xs") (![go.uint64] "i")) <-[go.uint64] "$r0");;;
+      let: "$r0" := (![go.uint64] (IndexRef go.uint64 (![go.SliceType go.uint64] "xs", ![go.uint64] "j"))) in
+      do:  ((IndexRef go.uint64 (![go.SliceType go.uint64] "xs", ![go.uint64] "i")) <-[go.uint64] "$r0");;;
       let: "$r0" := (![go.uint64] "temp") in
-      do:  ((slice.elem_ref go.uint64 (![go.SliceType go.uint64] "xs") (![go.uint64] "j")) <-[go.uint64] "$r0")));;;
+      do:  ((IndexRef go.uint64 (![go.SliceType go.uint64] "xs", ![go.uint64] "j")) <-[go.uint64] "$r0")));;;
     return: #()).
 
 Definition Permutation : go_string := "github.com/goose-lang/std/std_core.Permutation"%go.
@@ -107,39 +107,31 @@ Definition Permutation : go_string := "github.com/goose-lang/std/std_core.Permut
    go: std_core.go:54:6 *)
 Definition Permutationⁱᵐᵖˡ : val :=
   λ: "n",
-    exception_do (let: "n" := (GoAllocValue go.uint64 "n") in
+    exception_do (let: "n" := (go.AllocValue go.uint64 "n") in
     let: "order" := (GoAlloc (go.SliceType go.uint64) #()) in
-    let: "$r0" := (slice.make2 go.uint64 (![go.uint64] "n")) in
+    let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.uint64] #()) (![go.uint64] "n")) in
     do:  ("order" <-[go.SliceType go.uint64] "$r0");;;
     (let: "i" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[go.uint64] "$r0");;;
-    (for: (λ: <>, (![go.uint64] "i") < (![go.uint64] "n")); (λ: <>, do:  ("i" <-[go.uint64] ((![go.uint64] "i") + #(W64 1)))) := λ: <>,
+    (for: (λ: <>, (![go.uint64] "i") <⟨go.uint64⟩ (![go.uint64] "n")); (λ: <>, do:  ("i" <-[go.uint64] ((![go.uint64] "i") +⟨go.uint64⟩ #(W8 1)))) := λ: <>,
       let: "$r0" := (![go.uint64] "i") in
-      do:  ((slice.elem_ref go.uint64 (![go.SliceType go.uint64] "order") (![go.uint64] "i")) <-[go.uint64] "$r0")));;;
+      do:  ((IndexRef go.uint64 (![go.SliceType go.uint64] "order", ![go.uint64] "i")) <-[go.uint64] "$r0")));;;
     do:  (let: "$a0" := (![go.SliceType go.uint64] "order") in
-    (FuncResolve Shuffle #()) "$a0");;;
+    (FuncResolve Shuffle [] #()) "$a0");;;
     return: (![go.SliceType go.uint64] "order")).
-
-Definition vars' : list (go_string * go.type) := [].
 
 Definition functions' : list (go_string * val) := [(SumNoOverflow, SumNoOverflowⁱᵐᵖˡ); (SumAssumeNoOverflow, SumAssumeNoOverflowⁱᵐᵖˡ); (MulNoOverflow, MulNoOverflowⁱᵐᵖˡ); (MulAssumeNoOverflow, MulAssumeNoOverflowⁱᵐᵖˡ); (Shuffle, Shuffleⁱᵐᵖˡ); (Permutation, Permutationⁱᵐᵖˡ)].
 
-Definition msets' : list (go_string * (list (go_string * val))) := [].
-
 #[global] Instance info' : PkgInfo std_core.std_core :=
   {|
-    pkg_vars := vars';
-    pkg_functions := functions';
-    pkg_msets := msets';
     pkg_imported_pkgs := [code.github_com.goose_lang.primitive.primitive];
   |}.
 
 Definition initialize' : val :=
   λ: <>,
-    package.init #std_core.std_core (λ: <>,
-      exception_do (do:  (primitive.initialize' #());;;
-      do:  (package.alloc std_core.std_core #()))
+    package.init std_core.std_core (λ: <>,
+      exception_do (do:  (primitive.initialize' #()))
       ).
 
 End code.

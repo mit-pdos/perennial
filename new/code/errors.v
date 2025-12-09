@@ -6,7 +6,7 @@ Definition errors : go_string := "errors".
 Module errors.
 
 Section code.
-Context `{ffi_syntax}.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 
 
 Definition New : go_string := "errors.New"%go.

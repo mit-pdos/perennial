@@ -6,7 +6,7 @@ Definition big : go_string := "math/big".
 Module big.
 
 Section code.
-Context `{ffi_syntax}.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 
 
 Axiom _Accuracy_name : go_string.

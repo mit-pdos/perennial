@@ -8,7 +8,7 @@ Definition channel : go_string := "github.com/goose-lang/goose/model/channel".
 Module channel.
 
 Section code.
-Context `{ffi_syntax}.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 
 
 Definition offerStateⁱᵐᵖˡ : go.type := go.uint64.
@@ -53,19 +53,7 @@ Definition NewChannelⁱᵐᵖˡ (T : go.type) : val :=
       let: "$r0" := buffered in
       do:  ("local_state" <-[offerState] "$r0")
     else do:  #());;;
-    return: (go.AllocValue (Channel T) (let: "$cap" := (![go.int] "cap") in
-     let: "$mu" := (GoAlloc primitive.Mutex #()) in
-     let: "$buffer" := ((FuncResolve go.make2 [go.SliceType T] #()) #(W64 0)) in
-     let: "$state" := (![offerState] "local_state") in
-     CompositeLiteral (Channel T) (
-       let: "$$vs" := go.StructElementListNil #() in 
-       let: "$$vs" := go.ElementListApp "$$vs" "$cap" in
-       let: "$$vs" := go.ElementListApp "$$vs" "$mu" in
-       let: "$$vs" := go.ElementListApp "$$vs" "$state" in
-       let: "$$vs" := go.ElementListApp "$$vs" "$buffer" in
-       let: "$$vs" := go.ElementListApp "$$vs" (go.ZeroVal T #()) in
-       "$$vs"
-     )))).
+    return: (go.AllocValue (Channel T) (CompositeLiteral (Channel T) [KeyedElement (Some (KeyField "cap"%go)) (![go.int] "cap"); KeyedElement (Some (KeyField "mu"%go)) (GoAlloc primitive.Mutex #()); KeyedElement (Some (KeyField "buffer"%go)) ((FuncResolve go.make2 [go.SliceType T] #()) #(W64 0)); KeyedElement (Some (KeyField "state"%go)) (![offerState] "local_state")]))).
 
 (* Non-Blocking send operation for select statements. Blocking send and blocking select
    statements simply call this in a for loop until it returns true.
@@ -185,7 +173,7 @@ Definition Channel__TryReceiveⁱᵐᵖˡ (T : go.type) : val :=
       (FuncResolve go.len [go.SliceType T] #()) "$a0") >⟨go.int⟩ #(W64 0)
       then
         let: "val_copy" := (GoAlloc T #()) in
-        let: "$r0" := (![T] (slice.elem_ref T (![go.SliceType T] (StructFieldRef (Channel T) "buffer"%go (![go.PointerType (Channel T)] "c"))) #(W64 0))) in
+        let: "$r0" := (![T] (IndexRef T (![go.SliceType T] (StructFieldRef (Channel T) "buffer"%go (![go.PointerType (Channel T)] "c")), #(W64 0)))) in
         do:  ("val_copy" <-[T] "$r0");;;
         let: "$r0" := (let: "$s" := (![go.SliceType T] (StructFieldRef (Channel T) "buffer"%go (![go.PointerType (Channel T)] "c"))) in
         slice.slice T "$s" #(W64 1) (slice.len "$s")) in
@@ -202,7 +190,7 @@ Definition Channel__TryReceiveⁱᵐᵖˡ (T : go.type) : val :=
         (FuncResolve go.len [go.SliceType T] #()) "$a0") >⟨go.int⟩ #(W64 0)
         then
           let: "val_copy" := (GoAlloc T #()) in
-          let: "$r0" := (![T] (slice.elem_ref T (![go.SliceType T] (StructFieldRef (Channel T) "buffer"%go (![go.PointerType (Channel T)] "c"))) #(W64 0))) in
+          let: "$r0" := (![T] (IndexRef T (![go.SliceType T] (StructFieldRef (Channel T) "buffer"%go (![go.PointerType (Channel T)] "c")), #(W64 0)))) in
           do:  ("val_copy" <-[T] "$r0");;;
           let: "$r0" := (let: "$s" := (![go.SliceType T] (StructFieldRef (Channel T) "buffer"%go (![go.PointerType (Channel T)] "c"))) in
           slice.slice T "$s" #(W64 1) (slice.len "$s")) in
@@ -474,7 +462,7 @@ Definition BlockingSelect2ⁱᵐᵖˡ (T1 T2 : go.type) : val :=
     let: "zero1" := (GoAlloc T1 #()) in
     let: "zero2" := (GoAlloc T2 #()) in
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      (if: ((primitive.RandomUint64ⁱᵐᵖˡ #()) `rem`⟨go.uint64⟩ #(W64 2)) =⟨go.uint64⟩ #(W64 0)
+      (if: ((primitive.RandomUint64ⁱᵐᵖˡ #()) %⟨go.uint64⟩ #(W64 2)) =⟨go.uint64⟩ #(W64 0)
       then
         (if: (![SelectDir] "dir1") =⟨go.uint64⟩ SelectSend
         then
@@ -539,7 +527,7 @@ Definition NonBlockingSelect2ⁱᵐᵖˡ (T1 T2 : go.type) : val :=
     let: "ch1" := (go.AllocValue (go.PointerType (Channel T1)) "ch1") in
     let: "zero1" := (GoAlloc T1 #()) in
     let: "zero2" := (GoAlloc T2 #()) in
-    (if: ((primitive.RandomUint64ⁱᵐᵖˡ #()) `rem`⟨go.uint64⟩ #(W64 2)) =⟨go.uint64⟩ #(W64 0)
+    (if: ((primitive.RandomUint64ⁱᵐᵖˡ #()) %⟨go.uint64⟩ #(W64 2)) =⟨go.uint64⟩ #(W64 0)
     then
       (if: (![SelectDir] "dir1") =⟨go.uint64⟩ SelectSend
       then
@@ -651,7 +639,7 @@ Definition BlockingSelect3ⁱᵐᵖˡ (T1 T2 T3 : go.type) : val :=
     let: "zero3" := (GoAlloc T3 #()) in
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       let: "r" := (GoAlloc go.uint64 #()) in
-      let: "$r0" := ((primitive.RandomUint64ⁱᵐᵖˡ #()) `rem`⟨go.uint64⟩ #(W64 3)) in
+      let: "$r0" := ((primitive.RandomUint64ⁱᵐᵖˡ #()) %⟨go.uint64⟩ #(W64 3)) in
       do:  ("r" <-[go.uint64] "$r0");;;
       let: "$sw" := (![go.uint64] "r") in
       (if: "$sw" =⟨go.uint64⟩ #(W64 0)
@@ -749,14 +737,14 @@ Definition NonBlockingSelect3ⁱᵐᵖˡ (T1 T2 T3 : go.type) : val :=
     let: "zero2" := (GoAlloc T2 #()) in
     let: "zero3" := (GoAlloc T3 #()) in
     let: "start" := (GoAlloc go.uint64 #()) in
-    let: "$r0" := ((primitive.RandomUint64ⁱᵐᵖˡ #()) `rem`⟨go.uint64⟩ #(W64 3)) in
+    let: "$r0" := ((primitive.RandomUint64ⁱᵐᵖˡ #()) %⟨go.uint64⟩ #(W64 3)) in
     do:  ("start" <-[go.uint64] "$r0");;;
     (let: "i" := (GoAlloc go.uint64 #()) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[go.uint64] "$r0");;;
     (for: (λ: <>, (![go.uint64] "i") <⟨go.uint64⟩ #(W64 3)); (λ: <>, do:  ("i" <-[go.uint64] ((![go.uint64] "i") +⟨go.uint64⟩ #(W8 1)))) := λ: <>,
       let: "caseIdx" := (GoAlloc go.uint64 #()) in
-      let: "$r0" := (((![go.uint64] "start") +⟨go.uint64⟩ (![go.uint64] "i")) `rem`⟨go.uint64⟩ #(W64 3)) in
+      let: "$r0" := (((![go.uint64] "start") +⟨go.uint64⟩ (![go.uint64] "i")) %⟨go.uint64⟩ #(W64 3)) in
       do:  ("caseIdx" <-[go.uint64] "$r0");;;
       (if: (![go.uint64] "caseIdx") =⟨go.uint64⟩ #(W64 0)
       then

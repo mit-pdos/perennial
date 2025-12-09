@@ -6,7 +6,7 @@ Definition strings : go_string := "strings".
 Module strings.
 
 Section code.
-Context `{ffi_syntax}.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 
 
 Definition Builder : go.type := go.Named "strings.Builder"%go [].

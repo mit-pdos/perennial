@@ -6,7 +6,7 @@ Definition testing : go_string := "testing".
 Module testing.
 
 Section code.
-Context `{ffi_syntax}.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 
 
 Definition AllocsPerRun : go_string := "testing.AllocsPerRun"%go.

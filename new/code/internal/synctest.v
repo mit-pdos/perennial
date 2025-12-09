@@ -8,7 +8,7 @@ Definition synctest : go_string := "internal/synctest".
 Module synctest.
 
 Section code.
-Context `{ffi_syntax}.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 
 
 Definition Run : go_string := "internal/synctest.Run"%go.

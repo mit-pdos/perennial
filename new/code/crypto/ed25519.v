@@ -6,7 +6,7 @@ Definition ed25519 : go_string := "crypto/ed25519".
 Module ed25519.
 
 Section code.
-Context `{ffi_syntax}.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 
 
 Axiom PublicKeySize : Z.
