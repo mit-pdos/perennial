@@ -19,12 +19,11 @@ See also [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ## Compiling
 
-We develop Perennial using Rocq master and maintain compatibility with the
-latest version of Rocq.
+We develop Perennial using the latest stable Rocq and maintain compatibility with Rocq master.
 
-You will need to install some dependencies, which you can get with `opam install
---deps-only .`. After installing the dependencies, you can develop proofs by
-just running `make`.
+Install the dependencies with `opam pin add -n .; opam install --deps-only ./perennial.opam`. Re-run this command after running `git pull` to get the correct version of the dependencies. Then, compile with `make`.
+
+See [docs/opam.md](docs/opam.md) for some more details on opam.
 
 ## New goose
 
@@ -59,7 +58,6 @@ in `new/`, with the important caveat that new goose is built on top of the core
   identify the source code being verified.
 
 - `Helpers/`
-
   - `Integers.v`
     Wrapper around `coqutil`'s word library for u64, u32, and u8.
   - `Transitions.v`
