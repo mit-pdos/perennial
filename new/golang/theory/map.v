@@ -210,16 +210,45 @@ Proof.
   rewrite func_unfold. wp_auto. iNamed "Hm".
   wp_bind.
 
+  clear Hagree_2.
+  Unshelve.
+  all: shelve_unifiable.
+  Set Printing All.
+
+  (* unshelve wp_apply wp_map_make1. *)
   Import coq_tactics reduction.
   let Hnew := iFresh in
   notypeclasses refine
-    (coq_tactics.tac_pose_proof _ Hnew _ _ (coq_tactics.into_emp_valid_proj _ _ _ wp_map_make1) _);
+    (coq_tactics.tac_pose_proof _ Hnew _ _ (coq_tactics.into_emp_valid_proj _ _ _ wp_map_make1) _).
+  2:{ shelve. }
+  1:{
+    repeat notypeclasses refine (into_emp_valid_forall _ _ _ _);
+      [ .. | iIntoEmpValid_go; tc_solve ]; shelve_unifiable.
+    (* FIXME: shelve_unifiable does not result in the same goals as omitting
+       `simple` from refine....
+       Hypothesis: `simple notypeclasses refine` looks for all goals, whether active or not.
+     *)
+
+    repeat notypeclasses refine (into_emp_valid_forall _ _ _ _);
+      [ .. | iIntoEmpValid_go; tc_solve ].
+
+      pm_reduce;
+      iApplyHyp Hnew
+
   [ repeat simple notypeclasses refine (into_emp_valid_forall _ _ _ _);
     [ .. | iIntoEmpValid_go; tc_solve ] |
     pm_reduce;
     iApplyHyp Hnew
-  ];
-  try tc_solve.
+  ].
+
+  all: cycle -1.
+  1: shelve.
+  all: shelve_unifiable.
+
+  all: try tc_solve.
+  2:{
+    Set Printing All.
+  }
 
   (* FIXME: stuff is getting shelved in iIntoEmpValid that should not be
      shelved. This case is fixed by using `simple notypeclasses refine`. *)
@@ -265,7 +294,7 @@ Proof.
   2: apply _.
   1: apply _.
   2: shelve.
-  2: shelve. *)
+  2: shelve. ****)
 
   wp_apply wp_map_make1. iIntros "% Hm'".
   rewrite own_map_unseal. iNamedSuffix "Hm'" "_2".
