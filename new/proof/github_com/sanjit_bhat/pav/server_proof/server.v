@@ -81,13 +81,13 @@ might be able to prove client correctness and serv specs without it.
 note: serv can maintain inv that ties its merkle tree to both
 lastDig and lastKeys. *)
 Definition state_inv σ : iProp Σ :=
-  "%Hpend" ∷ ⌜(∀ lastKeys,
+  "%Hpend" ∷ ⌜∀ lastKeys,
     last σ.(state.hist).*2 = Some lastKeys →
-    keys_sub lastKeys σ.(state.pending))⌝ ∗
-  "%Hhist" ∷ ⌜(∀ i keys0 keys1,
+    keys_sub lastKeys σ.(state.pending)⌝ ∗
+  "%Hhist" ∷ ⌜∀ i keys0 keys1,
     σ.(state.hist).*2 !! i = Some keys0 →
     σ.(state.hist).*2 !! (S i) = Some keys1 →
-    keys_sub keys0 keys1)⌝.
+    keys_sub keys0 keys1⌝.
 
 Axiom own_Server : ∀ γ σ, iProp Σ.
 

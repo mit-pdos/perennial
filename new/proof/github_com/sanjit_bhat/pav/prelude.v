@@ -31,22 +31,13 @@ Ltac obligation_tac :=
 #[global] Open Scope Z_scope.
 
 (* inG's. maybe this should go in separate file. *)
-Module sigpred.
-Module entry.
-Record t :=
-  mk {
-    dig: list w8;
-    link: list w8;
-    map: gmap (list w8) (list w8);
-  }.
-End entry.
-End sigpred.
-
 Class sigpredG Σ := {
   (* ghost_var of vrfPk. *)
   #[global] sigpredG_vrf :: ghost_varG Σ (list w8);
-  (* mono_list of (dig, link, map). *)
-  #[global] sigpredG_chain :: mono_listG sigpred.entry.t Σ;
+  (* ghost_var of audit start epoch. *)
+  #[global] sigpredG_startEp :: ghost_varG Σ w64;
+  (* mono_list of audited links. *)
+  #[global] sigpredG_chain :: mono_listG (list w8) Σ;
 }.
 
 Class pavG Σ := {
