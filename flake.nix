@@ -46,8 +46,7 @@
         });
       in {
         packages = {
-          # remove the perennial package from perennialPkgs since it won't build
-          # without python
+          # remove the perennial package from perennialPkgs since it won't build without python
           inherit (removeAttrs perennialPkgs ["perennial"]) perennial;
           default = perennial;
         };
