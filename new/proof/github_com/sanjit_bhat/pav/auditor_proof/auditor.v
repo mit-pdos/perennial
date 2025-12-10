@@ -82,55 +82,49 @@ End proof.
 End serv.
 
 Module Auditor.
-Record t :=
-  mk' {
-    digs: list $ list w8;
-    cut: option (list w8);
-    serv: serv.t;
-  }.
-
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 Context `{!pavG Σ}.
 
-Definition own ptr obj γ (q : Qp) : iProp Σ :=
-  ∃ ptr_sk sl_lastDig lastDig startEp sl_hist (sl0_hist : list loc)
+Definition own ptr γ (q : Qp) : iProp Σ :=
+  ∃ (digs : list $ list w8) (cut : option $ list w8) serv
+    ptr_sk sl_lastDig lastDig (startEp : w64) sl_hist (sl0_hist : list loc)
     ptr_serv (lastEp : w64),
-  (* unfold struct own bc "mu" field separate. *)
+  (* separate struct fields bc "mu" contained in lock perm. *)
   "#Hfld_sk" ∷ ptr ↦s[auditor.Auditor::"sk"]□ ptr_sk ∗
   "Hfld_lastDig" ∷ ptr ↦s[auditor.Auditor::"lastDig"]{# q} sl_lastDig ∗
   "#Hfld_startEp" ∷ ptr ↦s[auditor.Auditor::"startEp"]□ startEp ∗
-  "Hfld_startEp" ∷ ptr ↦s[auditor.Auditor::"hist"]{# q} sl_hist ∗
+  "Hfld_hist" ∷ ptr ↦s[auditor.Auditor::"hist"]{# q} sl_hist ∗
   "#Hfld_serv" ∷ ptr ↦s[auditor.Auditor::"serv"]□ ptr_serv ∗
 
   "#Hown_sk" ∷ cryptoffi.own_sig_sk ptr_sk γ.(cfg.adtr_sig_pk)
     (sigpred.pred γ.(cfg.sigpredγ)) ∗
   "Hsl_lastDig" ∷ sl_lastDig ↦*{#q} lastDig ∗
-  "%Heq_lastDig" ∷ ⌜last obj.(digs) = Some lastDig⌝ ∗
+  "%Heq_lastDig" ∷ ⌜last digs = Some lastDig⌝ ∗
   "Hsl_hist" ∷ sl_hist ↦*{#q} sl0_hist ∗
   "Hcap_hist" ∷ own_slice_cap loc sl_hist (DfracOwn q) ∗
-  "#Hown_serv" ∷ serv.own ptr_serv obj.(serv) γ ∗
+  "#Hown_serv" ∷ serv.own ptr_serv serv γ ∗
 
   (* allows proving Get spec. *)
   "#Hhist" ∷ ([∗ list] idx ↦ ptr_hist ∈ sl0_hist,
     ∃ link,
-    let num_digs := (length obj.(digs) - length sl0_hist + idx + 1)%nat in
-    "#His_link" ∷ hashchain.is_chain (take num_digs obj.(digs)) obj.(cut) link num_digs ∗
+    let num_digs := (length digs - length sl0_hist + idx + 1)%nat in
+    "#His_link" ∷ hashchain.is_chain (take num_digs digs) cut link num_digs ∗
     "#Hown_hist" ∷ history.own ptr_hist (history.mk' link) (uint.nat startEp + idx) γ) ∗
-  "%Hlt_hist" ∷ ⌜length sl0_hist ≤ length obj.(digs)⌝ ∗
+  "%Hlt_hist" ∷ ⌜length sl0_hist ≤ length digs⌝ ∗
   "%Hnoof_lastEp" ∷ ⌜uint.Z startEp + length sl0_hist - 1 = uint.Z lastEp⌝ ∗
 
   (* allows proving Update BlameSpec. *)
-  "#Hgood" ∷ match obj.(serv).(serv.good) with None => True | Some servγ =>
+  "#Hgood" ∷ match serv.(serv.good) with None => True | Some servγ =>
     ∃ (hist : list (list w8 * server.keys_ty)),
     "#Hlb_hist" ∷ mono_list_lb_own servγ.(server.cfg.histγ) hist ∗
-    "%Heq_digs" ∷ ⌜obj.(digs) = hist.*1⌝ ∗
-    "%Heq_cut" ∷ ⌜obj.(cut) = None⌝ end.
+    "%Heq_digs" ∷ ⌜digs = hist.*1⌝ ∗
+    "%Heq_cut" ∷ ⌜cut = None⌝ end.
 
 Definition lock_perm ptr γ : iProp Σ :=
-  ∃ ptr_mu adtr,
+  ∃ ptr_mu,
   "#Hfld_mu" ∷ ptr ↦s[auditor.Auditor::"mu"]□ ptr_mu ∗
-  "Hperm" ∷ own_RWMutex ptr_mu (own ptr adtr γ).
+  "Hperm" ∷ own_RWMutex ptr_mu (own ptr γ).
 
 End proof.
 End Auditor.
@@ -158,16 +152,50 @@ Lemma wp_Auditor_Get a γ epoch :
   }}}
   a @ (ptrT.id auditor.Auditor.id) @ "Get" #epoch
   {{{
-    ptr_link link ptr_vrf vrf err, RET (#ptr_link, #ptr_vrf, #err);
+    ptr_link ptr_vrf err, RET (#ptr_link, #ptr_vrf, #err);
     "Hlock" ∷ Auditor.lock_perm a γ ∗
     (* client doesn't require anything of this err. *)
     "Herr" ∷ match err with true => True | false =>
+      ∃ link vrf,
       "#Hown_link" ∷ SignedLink.own ptr_link link (□) ∗
       "#Hown_vrf" ∷ SignedVrf.own ptr_vrf vrf (□) ∗
       "#Hwish_link" ∷ wish_SignedLink γ.(cfg.serv_sig_pk) γ.(cfg.adtr_sig_pk) epoch link ∗
       "#Hwish_vrf" ∷ wish_SignedVrf γ.(cfg.serv_sig_pk) γ.(cfg.adtr_sig_pk) vrf end
   }}}.
-Proof. Admitted.
+Proof.
+  wp_start as "@".
+  iNamed "Hlock".
+  wp_apply wp_with_defer as "* Hdefer".
+  simpl. wp_auto.
+  wp_apply (wp_RWMutex__RLock with "[$Hperm]") as "[Hlocked H]".
+  iNamed "H". wp_auto.
+  wp_if_destruct.
+  { wp_apply (wp_RWMutex__RUnlock with "[-HΦ]") as "Hlock".
+    { iFrame "∗∗#%". }
+    iApply "HΦ". iFrame "∗#". }
+  wp_if_destruct.
+  { wp_apply (wp_RWMutex__RUnlock with "[-HΦ]") as "Hlock".
+    { iFrame "∗∗#%". }
+    iApply "HΦ". iFrame "∗#". }
+
+  iDestruct (own_slice_len with "Hsl_hist") as %[? ?].
+  wp_pure; [word|].
+  list_elem sl0_hist (sint.nat (word.sub epoch startEp)) as ptr_epoch.
+  iDestruct (big_sepL_lookup with "Hhist") as "@"; [done|].
+  iNamed "Hown_hist".
+  iNamed "Hown_serv".
+  wp_apply (wp_load_slice_elem with "[$Hsl_hist]") as "Hsl_hist"; [word|done|].
+  wp_apply wp_alloc as "* Hptr_link".
+  wp_apply wp_alloc as "* Hptr_vrf".
+  iPersist "Hptr_link Hptr_vrf".
+  wp_apply (wp_RWMutex__RUnlock with "[-HΦ]") as "Hlock".
+  { iFrame "∗∗ Hstr_serv #%". }
+  iApply "HΦ". iFrame "Hfld_mu ∗".
+  simpl in *.
+  iExists (SignedLink.mk' _ _ _), (SignedVrf.mk' _ _ _).
+  replace (W64 (uint.nat _ + sint.nat _)) with epoch by word.
+  iFrame "#".
+Qed.
 
 Definition wish_CheckStartChain servPk chain (ep : w64) dig link : iProp Σ :=
   ∃ digs0 digs1 cut,
