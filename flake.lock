@@ -260,6 +260,22 @@
         "type": "github"
       }
     },
+    "opam-rocq-repo": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1765332311,
+        "narHash": "sha256-Qa58BE2zqaZYxP1uRy7fx8aVGEasoFwZL/7thogbDLU=",
+        "owner": "rocq-prover",
+        "repo": "opam",
+        "rev": "4a3e787776d6fbeee2dcb40244a6bbbfe6821aa3",
+        "type": "github"
+      },
+      "original": {
+        "owner": "rocq-prover",
+        "repo": "opam",
+        "type": "github"
+      }
+    },
     "opam2json": {
       "inputs": {
         "nixpkgs": [
@@ -311,7 +327,8 @@
         "grackle": "grackle",
         "nixpkgs": "nixpkgs_3",
         "opam-nix": "opam-nix",
-        "opam-repository": "opam-repository_2"
+        "opam-repository": "opam-repository_2",
+        "opam-rocq-repo": "opam-rocq-repo"
       }
     },
     "systems": {
