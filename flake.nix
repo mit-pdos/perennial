@@ -38,6 +38,7 @@
           ./. {};
         perennial = perennialPkgs'.perennial.overrideAttrs (finalAttrs: previousAttrs: {
           nativeBuildInputs = with pkgs; [python3] ++ previousAttrs.nativeBuildInputs;
+          patches = previousAttrs.patches ++ [./nix/patches/install-all.patch];
           preBuild = ''
             # swap ROCQPATH for COQPATH, avoiding overriding the complex configurationPhase
             export ROCQPATH=$COQPATH
@@ -71,7 +72,7 @@
                 gmp
                 findutils
               ]
-              ++ (with perennialPkgs'; [
+              ++ (with perennialPkgs; [
                 rocq-runtime
                 rocq-stdlib
                 coq-coqutil

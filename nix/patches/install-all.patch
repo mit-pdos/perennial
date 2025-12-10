@@ -1,0 +1,9 @@
+--- a/perennial.opam
++++ b/perennial.opam
+@@ -37,4 +37,4 @@ pin-depends: [
+ ]
+ 
+-build: [make "new-goose" "-j%{jobs}%"]
+-install: ["./etc/install.sh" "new-goose"]
++build: [make "all" "-j%{jobs}%"]
++install: ["./etc/install.sh" "all"]
