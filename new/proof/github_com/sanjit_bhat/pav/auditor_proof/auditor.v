@@ -6,14 +6,14 @@ From New.proof.github_com.sanjit_bhat.pav Require Import
   advrpc cryptoffi hashchain ktcore merkle server sigpred.
 
 From New.proof.github_com.sanjit_bhat.pav.auditor_proof Require Import
-  base.
+  base serde.
 
 (* TODO: bad New.proof.sync exports.
 https://github.com/mit-pdos/perennial/issues/470 *)
 From New.proof.github_com.sanjit_bhat.pav Require Import prelude.
 
 Module auditor.
-Import base.auditor.
+Import base.auditor serde.auditor.
 
 Module cfg.
 Record t :=
@@ -94,9 +94,15 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}
 Context `{!pavG Σ}.
 
 Definition own ptr obj γ (q : Qp) : iProp Σ :=
-  ∃ ptr_mu ptr_sk sl_lastDig lastDig startEp sl_hist (sl0_hist : list loc) ptr_serv,
-  (* TODO: RWMutex. *)
-  "Hstr_auditor" ∷ ptr ↦{#q} (auditor.Auditor.mk ptr_mu ptr_sk sl_lastDig startEp sl_hist ptr_serv) ∗
+  ∃ ptr_sk sl_lastDig lastDig startEp sl_hist (sl0_hist : list loc)
+    ptr_serv (lastEp : w64),
+  (* unfold struct own bc "mu" field separate. *)
+  "#Hfld_sk" ∷ ptr ↦s[auditor.Auditor::"sk"]□ ptr_sk ∗
+  "Hfld_lastDig" ∷ ptr ↦s[auditor.Auditor::"lastDig"]{# q} sl_lastDig ∗
+  "#Hfld_startEp" ∷ ptr ↦s[auditor.Auditor::"startEp"]□ startEp ∗
+  "Hfld_startEp" ∷ ptr ↦s[auditor.Auditor::"hist"]{# q} sl_hist ∗
+  "#Hfld_serv" ∷ ptr ↦s[auditor.Auditor::"serv"]□ ptr_serv ∗
+
   "#Hown_sk" ∷ cryptoffi.own_sig_sk ptr_sk γ.(cfg.adtr_sig_pk)
     (sigpred.pred γ.(cfg.sigpredγ)) ∗
   "Hsl_lastDig" ∷ sl_lastDig ↦*{#q} lastDig ∗
@@ -112,6 +118,7 @@ Definition own ptr obj γ (q : Qp) : iProp Σ :=
     "#His_link" ∷ hashchain.is_chain (take num_digs obj.(digs)) obj.(cut) link num_digs ∗
     "#Hown_hist" ∷ history.own ptr_hist (history.mk' link) (uint.nat startEp + idx) γ) ∗
   "%Hlt_hist" ∷ ⌜length sl0_hist ≤ length obj.(digs)⌝ ∗
+  "%Hnoof_lastEp" ∷ ⌜uint.Z startEp + length sl0_hist - 1 = uint.Z lastEp⌝ ∗
 
   (* allows proving Update BlameSpec. *)
   "#Hgood" ∷ match obj.(serv).(serv.good) with None => True | Some servγ =>
@@ -120,11 +127,47 @@ Definition own ptr obj γ (q : Qp) : iProp Σ :=
     "%Heq_digs" ∷ ⌜obj.(digs) = hist.*1⌝ ∗
     "%Heq_cut" ∷ ⌜obj.(cut) = None⌝ end.
 
+Definition lock_perm ptr γ : iProp Σ :=
+  ∃ ptr_mu adtr,
+  "#Hfld_mu" ∷ ptr ↦s[auditor.Auditor::"mu"]□ ptr_mu ∗
+  "Hperm" ∷ own_RWMutex ptr_mu (own ptr adtr γ).
+
 End proof.
 End Auditor.
 
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
+Context `{!pavG Σ}.
+
+Definition wish_SignedLink servPk adtrPk ep link : iProp Σ :=
+  "#Hwish_adtr_sig" ∷ ktcore.wish_LinkSig adtrPk ep
+    link.(SignedLink.Link) link.(SignedLink.AdtrSig) ∗
+  "#Hwish_serv_sig" ∷ ktcore.wish_LinkSig servPk ep
+    link.(SignedLink.Link) link.(SignedLink.ServSig).
+
+Definition wish_SignedVrf servPk adtrPk vrf : iProp Σ :=
+  "#Hwish_adtr_sig" ∷ ktcore.wish_VrfSig adtrPk
+    vrf.(SignedVrf.VrfPk) vrf.(SignedVrf.AdtrSig) ∗
+  "#Hwish_serv_sig" ∷ ktcore.wish_VrfSig servPk
+    vrf.(SignedVrf.VrfPk) vrf.(SignedVrf.ServSig).
+
+Lemma wp_Auditor_Get a γ epoch :
+  {{{
+    is_pkg_init auditor ∗
+    "Hlock" ∷ Auditor.lock_perm a γ
+  }}}
+  a @ (ptrT.id auditor.Auditor.id) @ "Get" #epoch
+  {{{
+    ptr_link link ptr_vrf vrf err, RET (#ptr_link, #ptr_vrf, #err);
+    "Hlock" ∷ Auditor.lock_perm a γ ∗
+    (* client doesn't require anything of this err. *)
+    "Herr" ∷ match err with true => True | false =>
+      "#Hown_link" ∷ SignedLink.own ptr_link link (□) ∗
+      "#Hown_vrf" ∷ SignedVrf.own ptr_vrf vrf (□) ∗
+      "#Hwish_link" ∷ wish_SignedLink γ.(cfg.serv_sig_pk) γ.(cfg.adtr_sig_pk) epoch link ∗
+      "#Hwish_vrf" ∷ wish_SignedVrf γ.(cfg.serv_sig_pk) γ.(cfg.adtr_sig_pk) vrf end
+  }}}.
+Proof. Admitted.
 
 Definition wish_CheckStartChain servPk chain (ep : w64) dig link : iProp Σ :=
   ∃ digs0 digs1 cut,

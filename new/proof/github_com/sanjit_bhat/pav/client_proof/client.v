@@ -381,12 +381,6 @@ Proof.
   iFrame "#".
 Qed.
 
-Definition wish_checkAuditLink servPk adtrPk ep link : iProp Σ :=
-  "#Hwish_adtr_linkSig" ∷ ktcore.wish_LinkSig adtrPk ep
-    link.(auditor.SignedLink.Link) link.(auditor.SignedLink.AdtrSig) ∗
-  "#Hwish_serv_linkSig" ∷ ktcore.wish_LinkSig servPk ep
-    link.(auditor.SignedLink.Link) link.(auditor.SignedLink.ServSig).
-
 Lemma wp_checkAuditLink sl_servPk servPk sl_adtrPk adtrPk (ep : w64) ptr_link link :
   {{{
     is_pkg_init client ∗
@@ -399,9 +393,9 @@ Lemma wp_checkAuditLink sl_servPk servPk sl_adtrPk adtrPk (ep : w64) ptr_link li
     (err : bool), RET #err;
     "Hgenie" ∷
       match err with
-      | true => ¬ wish_checkAuditLink servPk adtrPk ep link
+      | true => ¬ auditor.wish_SignedLink servPk adtrPk ep link
       | false =>
-        "#Hwish_checkAuditLink" ∷ wish_checkAuditLink servPk adtrPk ep link
+        "#Hwish_SignedLink" ∷ auditor.wish_SignedLink servPk adtrPk ep link
       end
   }}}.
 Proof.
@@ -422,12 +416,6 @@ Proof.
   iFrame "#".
 Qed.
 
-Definition wish_checkAuditVrf servPk adtrPk vrf : iProp Σ :=
-  "#Hwish_adtr_vrfSig" ∷ ktcore.wish_VrfSig adtrPk
-    vrf.(auditor.SignedVrf.VrfPk) vrf.(auditor.SignedVrf.AdtrSig) ∗
-  "#Hwish_serv_vrfSig" ∷ ktcore.wish_VrfSig servPk
-    vrf.(auditor.SignedVrf.VrfPk) vrf.(auditor.SignedVrf.ServSig).
-
 Lemma wp_checkAuditVrf sl_servPk servPk sl_adtrPk adtrPk ptr_vrf vrf :
   {{{
     is_pkg_init client ∗
@@ -440,9 +428,9 @@ Lemma wp_checkAuditVrf sl_servPk servPk sl_adtrPk adtrPk ptr_vrf vrf :
     (err : bool), RET #err;
     "Hgenie" ∷
       match err with
-      | true => ¬ wish_checkAuditVrf servPk adtrPk vrf
+      | true => ¬ auditor.wish_SignedVrf servPk adtrPk vrf
       | false =>
-        "#Hwish_checkAuditVrf" ∷ wish_checkAuditVrf servPk adtrPk vrf
+        "#Hwish_SignedVrf" ∷ auditor.wish_SignedVrf servPk adtrPk vrf
       end
   }}}.
 Proof.
