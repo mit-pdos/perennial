@@ -86,6 +86,7 @@ Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 Context `{!pavG Σ}.
 
+(* length hist ≤ length digs ≤ total # eps. *)
 Definition own ptr γ (q : Qp) : iProp Σ :=
   ∃ (digs : list $ list w8) (cut : option $ list w8) serv
     ptr_sk sl_lastDig lastDig (startEp : w64) sl_hist (sl0_hist : list loc)
@@ -132,70 +133,6 @@ End Auditor.
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 Context `{!pavG Σ}.
-
-Definition wish_SignedLink servPk adtrPk ep link : iProp Σ :=
-  "#Hwish_adtr_sig" ∷ ktcore.wish_LinkSig adtrPk ep
-    link.(SignedLink.Link) link.(SignedLink.AdtrSig) ∗
-  "#Hwish_serv_sig" ∷ ktcore.wish_LinkSig servPk ep
-    link.(SignedLink.Link) link.(SignedLink.ServSig).
-
-Definition wish_SignedVrf servPk adtrPk vrf : iProp Σ :=
-  "#Hwish_adtr_sig" ∷ ktcore.wish_VrfSig adtrPk
-    vrf.(SignedVrf.VrfPk) vrf.(SignedVrf.AdtrSig) ∗
-  "#Hwish_serv_sig" ∷ ktcore.wish_VrfSig servPk
-    vrf.(SignedVrf.VrfPk) vrf.(SignedVrf.ServSig).
-
-Lemma wp_Auditor_Get a γ epoch :
-  {{{
-    is_pkg_init auditor ∗
-    "Hlock" ∷ Auditor.lock_perm a γ
-  }}}
-  a @ (ptrT.id auditor.Auditor.id) @ "Get" #epoch
-  {{{
-    ptr_link ptr_vrf err, RET (#ptr_link, #ptr_vrf, #err);
-    "Hlock" ∷ Auditor.lock_perm a γ ∗
-    (* client doesn't require anything of this err. *)
-    "Herr" ∷ match err with true => True | false =>
-      ∃ link vrf,
-      "#Hown_link" ∷ SignedLink.own ptr_link link (□) ∗
-      "#Hown_vrf" ∷ SignedVrf.own ptr_vrf vrf (□) ∗
-      "#Hwish_link" ∷ wish_SignedLink γ.(cfg.serv_sig_pk) γ.(cfg.adtr_sig_pk) epoch link ∗
-      "#Hwish_vrf" ∷ wish_SignedVrf γ.(cfg.serv_sig_pk) γ.(cfg.adtr_sig_pk) vrf end
-  }}}.
-Proof.
-  wp_start as "@".
-  iNamed "Hlock".
-  wp_apply wp_with_defer as "* Hdefer".
-  simpl. wp_auto.
-  wp_apply (wp_RWMutex__RLock with "[$Hperm]") as "[Hlocked H]".
-  iNamed "H". wp_auto.
-  wp_if_destruct.
-  { wp_apply (wp_RWMutex__RUnlock with "[-HΦ]") as "Hlock".
-    { iFrame "∗∗#%". }
-    iApply "HΦ". iFrame "∗#". }
-  wp_if_destruct.
-  { wp_apply (wp_RWMutex__RUnlock with "[-HΦ]") as "Hlock".
-    { iFrame "∗∗#%". }
-    iApply "HΦ". iFrame "∗#". }
-
-  iDestruct (own_slice_len with "Hsl_hist") as %[? ?].
-  wp_pure; [word|].
-  list_elem sl0_hist (sint.nat (word.sub epoch startEp)) as ptr_epoch.
-  iDestruct (big_sepL_lookup with "Hhist") as "@"; [done|].
-  iNamed "Hown_hist".
-  iNamed "Hown_serv".
-  wp_apply (wp_load_slice_elem with "[$Hsl_hist]") as "Hsl_hist"; [word|done|].
-  wp_apply wp_alloc as "* Hptr_link".
-  wp_apply wp_alloc as "* Hptr_vrf".
-  iPersist "Hptr_link Hptr_vrf".
-  wp_apply (wp_RWMutex__RUnlock with "[-HΦ]") as "Hlock".
-  { iFrame "∗∗ Hstr_serv #%". }
-  iApply "HΦ". iFrame "Hfld_mu ∗".
-  simpl in *.
-  iExists (SignedLink.mk' _ _ _), (SignedVrf.mk' _ _ _).
-  replace (W64 (uint.nat _ + sint.nat _)) with epoch by word.
-  iFrame "#".
-Qed.
 
 Definition wish_CheckStartChain servPk chain (ep : w64) dig link : iProp Σ :=
   ∃ digs0 digs1 cut,
@@ -445,6 +382,70 @@ Admitted.
 Qed.
 *)
 *)
+
+Definition wish_SignedLink servPk adtrPk ep link : iProp Σ :=
+  "#Hwish_adtr_sig" ∷ ktcore.wish_LinkSig adtrPk ep
+    link.(SignedLink.Link) link.(SignedLink.AdtrSig) ∗
+  "#Hwish_serv_sig" ∷ ktcore.wish_LinkSig servPk ep
+    link.(SignedLink.Link) link.(SignedLink.ServSig).
+
+Definition wish_SignedVrf servPk adtrPk vrf : iProp Σ :=
+  "#Hwish_adtr_sig" ∷ ktcore.wish_VrfSig adtrPk
+    vrf.(SignedVrf.VrfPk) vrf.(SignedVrf.AdtrSig) ∗
+  "#Hwish_serv_sig" ∷ ktcore.wish_VrfSig servPk
+    vrf.(SignedVrf.VrfPk) vrf.(SignedVrf.ServSig).
+
+Lemma wp_Auditor_Get a γ epoch :
+  {{{
+    is_pkg_init auditor ∗
+    "Hlock" ∷ Auditor.lock_perm a γ
+  }}}
+  a @ (ptrT.id auditor.Auditor.id) @ "Get" #epoch
+  {{{
+    ptr_link ptr_vrf err, RET (#ptr_link, #ptr_vrf, #err);
+    "Hlock" ∷ Auditor.lock_perm a γ ∗
+    (* client doesn't require anything of this err. *)
+    "Herr" ∷ match err with true => True | false =>
+      ∃ link vrf,
+      "#Hown_link" ∷ SignedLink.own ptr_link link (□) ∗
+      "#Hown_vrf" ∷ SignedVrf.own ptr_vrf vrf (□) ∗
+      "#Hwish_link" ∷ wish_SignedLink γ.(cfg.serv_sig_pk) γ.(cfg.adtr_sig_pk) epoch link ∗
+      "#Hwish_vrf" ∷ wish_SignedVrf γ.(cfg.serv_sig_pk) γ.(cfg.adtr_sig_pk) vrf end
+  }}}.
+Proof.
+  wp_start as "@".
+  iNamed "Hlock".
+  wp_apply wp_with_defer as "* Hdefer".
+  simpl. wp_auto.
+  wp_apply (wp_RWMutex__RLock with "[$Hperm]") as "[Hlocked H]".
+  iNamed "H". wp_auto.
+  wp_if_destruct.
+  { wp_apply (wp_RWMutex__RUnlock with "[-HΦ]") as "Hlock".
+    { iFrame "∗∗#%". }
+    iApply "HΦ". iFrame "∗#". }
+  wp_if_destruct.
+  { wp_apply (wp_RWMutex__RUnlock with "[-HΦ]") as "Hlock".
+    { iFrame "∗∗#%". }
+    iApply "HΦ". iFrame "∗#". }
+
+  iDestruct (own_slice_len with "Hsl_hist") as %[? ?].
+  wp_pure; [word|].
+  list_elem sl0_hist (sint.nat (word.sub epoch startEp)) as ptr_epoch.
+  iDestruct (big_sepL_lookup with "Hhist") as "@"; [done|].
+  iNamed "Hown_hist".
+  iNamed "Hown_serv".
+  wp_apply (wp_load_slice_elem with "[$Hsl_hist]") as "Hsl_hist"; [word|done|].
+  wp_apply wp_alloc as "* Hptr_link".
+  wp_apply wp_alloc as "* Hptr_vrf".
+  iPersist "Hptr_link Hptr_vrf".
+  wp_apply (wp_RWMutex__RUnlock with "[-HΦ]") as "Hlock".
+  { iFrame "∗∗ Hstr_serv #%". }
+  iApply "HΦ". iFrame "Hfld_mu ∗".
+  simpl in *.
+  iExists (SignedLink.mk' _ _ _), (SignedVrf.mk' _ _ _).
+  replace (W64 (uint.nat _ + sint.nat _)) with epoch by word.
+  iFrame "#".
+Qed.
 
 End proof.
 End auditor.

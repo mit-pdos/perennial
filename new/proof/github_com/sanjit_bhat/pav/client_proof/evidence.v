@@ -178,6 +178,7 @@ Lemma wish_evidLink_sig_pred e pk γ :
   ¬ cryptoffi.is_sig_pk pk (sigpred.pred γ).
 Proof.
   iIntros "@ #His_pk".
+  destruct e. simpl in *.
   iNamedSuffix "Hwish0" "0".
   iNamedSuffix "Hwish1" "1".
   iDestruct (cryptoffi.is_sig_to_pred with "His_pk His_sig0") as "#HP0".
@@ -203,11 +204,11 @@ Proof.
     intuition.
     by f_equal. }
   simplify_eq/=.
+  iCombine "Hshot0 Hshot1" gives %[_ <-].
   iDestruct (mono_list_idx_own_get with "Hlb0") as "Hidx0"; [done|].
   iDestruct (mono_list_idx_own_get with "Hlb1") as "Hidx1"; [done|].
   iDestruct (mono_list_idx_agree with "Hidx0 Hidx1") as %->.
-  destruct e. simpl in *.
-  simplify_eq/=.
+  done.
 Qed.
 
 Lemma wp_evidLink_check ptr_e e sl_pk pk :

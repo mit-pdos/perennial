@@ -9,7 +9,8 @@ Module cfg.
 Record t :=
   mk {
     vrf: gname;
-    chain: gname;
+    startEp: gname;
+    links: gname;
   }.
 End cfg.
 
@@ -24,35 +25,37 @@ Definition vrf_pred γ enc : iProp Σ :=
 
   "#Hshot" ∷ ghost_var γ (□) vrfPk.
 
-(* TODO: figure out what to do for auditors who:
-(1) don't have digs down to ep 0, even with inversion.
-(2) have only checked monotonicity from an ep.
-(3) might have inverted down to Some cut. *)
-Definition chain_inv chain : iProp Σ :=
-  "#Hdig_map" ∷ ([∗ list] x ∈ chain,
-    merkle.is_map x.(sigpred.entry.map) x.(sigpred.entry.dig)) ∗
-  "%Hmono" ∷ ⌜∀ (x y : nat) cx cy,
-    x ≤ y →
-    chain !! x = Some cx →
-    chain !! y = Some cy →
-    cx.(sigpred.entry.map) ⊆ cy.(sigpred.entry.map)⌝ ∗
-  "#Hdig_link" ∷ ([∗ list] k ↦ x ∈ chain,
-    hashchain.is_chain (take (S k) ((λ y, y.(sigpred.entry.dig)) <$> chain))
-      None x.(sigpred.entry.link) (S k)).
+Definition links_inv links : iProp Σ :=
+  ∃ digs cut maps,
+  (* [offset] is the number of digs prior to links starting. *)
+  let offset := (length digs - length links)%nat in
+  "#Hlinks" ∷ ([∗ list] idx ↦ link ∈ links,
+    let n_digs := (offset + idx + 1)%nat in
+    "#His_link" ∷ hashchain.is_chain (take n_digs digs) cut link n_digs) ∗
+  "%Hlt_links" ∷ ⌜length links ≤ length digs⌝ ∗
+  "#Hmaps" ∷ ([∗ list] idx ↦ _;m ∈ links;maps,
+    ∃ dig,
+    "%Hlook_dig" ∷ ⌜digs !! (offset + idx)%nat = Some dig⌝ ∗
+    "#His_map" ∷ merkle.is_map m dig) ∗
+  "%Hmono" ∷ ⌜∀ i m0 m1,
+    maps !! i = Some m0 →
+    maps !! (S i) = Some m1 →
+    m0 ⊆ m1⌝.
 
-Definition chain_pred γ enc : iProp Σ :=
-  ∃ ep link chain c,
+Definition links_pred γstartEp γlinks enc : iProp Σ :=
+  (* [links] are all audited. they start from [startEp]. *)
+  ∃ ep link startEp links,
   "%Henc" ∷ ⌜enc = ktcore.LinkSig.pure_enc (ktcore.LinkSig.mk' (W8 ktcore.LinkSigTag) ep link)⌝ ∗
   "%Hvalid" ∷ ⌜safemarshal.Slice1D.valid link⌝ ∗
 
-  "#Hlb" ∷ mono_list_lb_own γ chain ∗
-  "%Hlook" ∷ ⌜chain !! (sint.nat ep) = Some c⌝ ∗
-  "%Heq" ∷ ⌜c.(sigpred.entry.link) = link⌝ ∗
-
-  "#Hinv" ∷ chain_inv chain.
+  (* externalize startEp so that users agree on the epochs associated with links. *)
+  "#Hshot" ∷ ghost_var γstartEp (□) startEp ∗
+  "#Hlb" ∷ mono_list_lb_own γlinks links ∗
+  "%Hlook" ∷ ⌜links !! (sint.nat ep - sint.nat startEp)%nat = Some link⌝ ∗
+  "#Hinv" ∷ links_inv links.
 
 Definition pred γ enc : iProp Σ :=
-  vrf_pred γ.(cfg.vrf) enc ∨ chain_pred γ.(cfg.chain) enc.
+  vrf_pred γ.(cfg.vrf) enc ∨ links_pred γ.(cfg.startEp) γ.(cfg.links) enc.
 
 #[global] Instance pred_pers γ e : Persistent (pred γ e).
 Proof. apply _. Qed.
