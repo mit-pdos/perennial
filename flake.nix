@@ -31,12 +31,12 @@
           inherit system;
         };
         inherit (opam-nix.lib.${system}) buildOpamProject;
-        perennialPkgs =
+        perennialPkgs' =
           buildOpamProject {
             repos = ["${opam-repository}" "${opam-rocq-repo}/released"];
           } "perennial"
           ./. {};
-        perennial = perennialPkgs.perennial.overrideAttrs (finalAttrs: previousAttrs: {
+        perennial = perennialPkgs'.perennial.overrideAttrs (finalAttrs: previousAttrs: {
           nativeBuildInputs = with pkgs; [python3] ++ previousAttrs.nativeBuildInputs;
           preBuild = ''
             # swap ROCQPATH for COQPATH, avoiding overriding the complex configurationPhase
@@ -44,10 +44,11 @@
             unset COQPATH
           '';
         });
+        # remove the perennial package from perennialPkgs since it won't build without python
+        perennialPkgs = removeAttrs perennialPkgs' ["perennial"];
       in {
         packages = {
-          # remove the perennial package from perennialPkgs since it won't build without python
-          inherit (removeAttrs perennialPkgs ["perennial"]) perennial;
+          inherit perennialPkgs perennial;
           default = perennial;
         };
         devShells.default = with pkgs;
@@ -70,7 +71,7 @@
                 gmp
                 findutils
               ]
-              ++ (with perennialPkgs; [
+              ++ (with perennialPkgs'; [
                 rocq-runtime
                 rocq-stdlib
                 coq-coqutil
