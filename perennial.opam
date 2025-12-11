@@ -22,7 +22,7 @@ tags: [
 depends: [
   "rocq-runtime" { (>= "9.1" & < "9.2~") | (= "dev") }
   "rocq-stdlib"
-  "coq-coqutil" { (>= "0.0.7") }
+  "coqutil"
   "coq-record-update"
   "rocq-stdpp"
   "rocq-iris"
@@ -30,6 +30,7 @@ depends: [
 ]
 
 pin-depends: [
+  ["coqutil.dev"               "git+https://github.com/mit-plv/coqutil#f595ddf0de48aae23862dc146928825db960c955"]
   ["coq-record-update.dev"     "git+https://github.com/tchajed/coq-record-update#7b2645210331c3ec4ed75fa5ad0840a723f25151"]
   ["rocq-stdpp.dev"            "git+https://gitlab.mpi-sws.org/iris/stdpp#a09c2a19de6898fd470983ca2363ade519d70fe1"]
   ["rocq-iris.dev"             "git+https://gitlab.mpi-sws.org/iris/iris#d8f049ee6e28201a8781622ab4390a62c5293a85"]
