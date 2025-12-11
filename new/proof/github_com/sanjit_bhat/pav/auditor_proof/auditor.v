@@ -270,69 +270,58 @@ Proof.
   iFrame "#%".
 Qed.
 
-(*
-Lemma wp_getNextDig sl_prevDig prevDig sl_updates sl0_updates updates mPrev :
+Lemma wp_getNextDig sl_prevDig prevDig prevMap sl_updates updates :
   {{{
     is_pkg_init auditor ∗
     "#Hsl_prevDig" ∷ sl_prevDig ↦*□ prevDig ∗
-    "#Hsl_updates" ∷ sl_updates ↦*□ sl0_updates ∗
-    "#Hown_updates" ∷ ([∗ list] ptr;upd ∈ sl0_updates;updates,
-      ktcore.UpdateProof.own ptr upd (□)) ∗
-    "#His_map_prev" ∷ merkle.is_map mPrev prevDig
+    "#His_prevMap" ∷ merkle.is_map prevMap prevDig ∗
+    "#Hown_updates" ∷ ktcore.UpdateProofSlice1D.own sl_updates updates (□)
   }}}
   @! auditor.getNextDig #sl_prevDig #sl_updates
   {{{
-    sl_dig dig (err : bool), RET (#sl_dig, #err);
-    let updatesL := (λ x,
-      (x.(ktcore.UpdateProof.MapLabel), x.(ktcore.UpdateProof.MapLabel)))
-      <$> updates in
-    let updatesM := list_to_map updatesL in
-    let mNext := updatesM ∪ mPrev in
-    "#Hsl_dig" ∷ sl_dig ↦*□ dig ∗
+    sl_dig (err : bool), RET (#sl_dig, #err);
     "Hgenie" ∷
       match err with
-      | true => ¬ ∃ dig, wish_getNextDig prevDig updates dig
+      | true => ¬ ∃ dig, ktcore.wish_ListUpdate prevDig updates dig
       | false =>
-        "#Hwish_getNextDig" ∷ wish_getNextDig prevDig updates dig ∗
-        "#His_map_next" ∷ merkle.is_map mNext dig ∗
-        "%Hmono" ∷ ⌜mPrev ⊆ mNext⌝
+        ∃ dig map,
+        "#Hsl_dig" ∷ sl_dig ↦*□ dig ∗
+        "#His_map" ∷ merkle.is_map map dig ∗
+        (* caller doesn't need to know map update elems. just subset. *)
+        "%Hsub" ∷ ⌜prevMap ⊆ map⌝ ∗
+        "#Hwish_ListUpdate" ∷ ktcore.wish_ListUpdate prevDig updates dig
       end
   }}}.
 Proof.
   wp_start as "@". wp_auto.
   iPersist "updates".
-  iDestruct (own_slice_len with "Hsl_updates") as %[? _].
+  iDestruct "Hown_updates" as "(%sl0_updates&Hsl_updates&Hown_updates)".
+  iDestruct (own_slice_len with "Hsl_updates") as %[? ?].
   iDestruct (big_sepL2_length with "Hown_updates") as %?.
   iAssert (
-    ∃ (i : w64) sl_dig dig digs ptr_u,
-    let updatesSub := take (sint.nat i) updates in
-    let updatesL := (λ x,
-      (x.(ktcore.UpdateProof.MapLabel), x.(ktcore.UpdateProof.MapLabel)))
-      <$> updatesSub in
-    let updatesM := list_to_map updatesL in
-    let mNext := updatesM ∪ mPrev in
+    ∃ (i : w64) sl_dig dig x map,
+    let pref_updates := take (sint.nat i) updates in
     "i" ∷ i_ptr ↦ i ∗
     "%Hlt_i" ∷ ⌜0 ≤ sint.Z i ≤ length updates⌝ ∗
-    "u" ∷ u_ptr ↦ ptr_u ∗
+    "u" ∷ u_ptr ↦ x ∗
     "err" ∷ err_ptr ↦ false ∗
     "dig" ∷ dig_ptr ↦ sl_dig ∗
     "#Hsl_dig" ∷ sl_dig ↦*□ dig ∗
-
-    "#Hwish_aux" ∷ wish_getNextDig_aux prevDig updatesSub digs ∗
-    "%Hlast" ∷ ⌜last digs = Some dig⌝ ∗
-    "#His_map_next" ∷ merkle.is_map mNext dig ∗
-    "%Hmono" ∷ ⌜mPrev ⊆ mNext⌝
+    "#His_map" ∷ merkle.is_map map dig ∗
+    "%Hsub" ∷ ⌜prevMap ⊆ map⌝ ∗
+    "#Hwish" ∷ ktcore.wish_ListUpdate prevDig pref_updates dig
   )%I with "[-HΦ]" as "IH".
   { iFrame "∗#".
-    rewrite take_0 /= (left_id _).
-    iFrame "#". iExists [prevDig].
-    repeat iSplit; [word|word|done|done|naive_solver|done|done]. }
+    rewrite take_0.
+    repeat iSplit; [word|word|done|].
+    iExists [prevDig].
+    repeat iSplit; try done. naive_solver. }
 
   wp_for "IH".
   wp_if_destruct.
   2: {
     replace (sint.nat i) with (length updates) in * by word.
-    rewrite take_ge in Hmono |-*; [|lia].
+    rewrite take_ge; [|lia].
     iApply "HΦ". iFrame "#%". }
 
   list_elem sl0_updates (sint.Z i) as ptr_upd.
@@ -345,43 +334,37 @@ Proof.
   wp_apply merkle.wp_VerifyUpdate as "* @".
   { iFrame "#". }
   wp_if_destruct.
-  { wp_for_post. iApply "HΦ". iFrame "#".
+  { wp_for_post. iApply "HΦ".
     iNamedSuffix 1 "0". iNamed "Hwish_aux0". iApply "Hgenie".
-    iDestruct (big_sepL_lookup with "Hwish_updates") as "@"; [done|].
-    iFrame "#". }
+    iDestruct (big_sepL_lookup with "Hwish_upds") as "H"; [done|].
+    iNamedSuffix "H" "0". iFrame "#". }
   iNamed "Hgenie".
   wp_apply bytes.wp_Equal as "_".
   { iFrame "#". }
   wp_if_destruct.
-  2: { wp_for_post. iApply "HΦ". iFrame "#".
-    iNamedSuffix 1 "0".
-    admit. }
-Admitted.
-(*
+  2: { wp_for_post. iApply "HΦ".
+    iNamedSuffix 1 "0". iNamed "Hwish".
+    iDestruct (ktcore.wish_ListUpdate_aux_take (sint.nat i) with "Hwish_aux0") as "Hwish_aux1".
+    iDestruct (ktcore.wish_ListUpdate_aux_det with "Hwish_aux Hwish_aux1") as %->.
+    iNamed "Hwish_aux0".
+    iDestruct (big_sepL_lookup with "Hwish_upds") as "@"; [done|].
+    iDestruct (merkle.wish_Update_det with "His_proof Hwish_upd") as %[-> ->].
+    rewrite last_lookup in Hlast.
+    apply lookup_take_Some in Hlast as [Hlast _].
+    replace (pred _) with (sint.nat i) in Hlast by len.
+    by simplify_eq/=. }
   wp_for_post.
-  iFrame.
-  iPureIntro. split; [word|].
-  replace (uint.nat (word.add _ _)) with (S (uint.nat i)) by word.
-  iExists (digs ++ [newHash]).
-  repeat iSplit.
-  - iPureIntro. len.
-  - by rewrite head_app.
-  - iPureIntro. rewrite last_snoc. done.
-  - erewrite take_S_r; [|done].
-    rewrite big_sepL_app.
-    iFrame "#".
-    iApply big_sepL_singleton.
-    iExists oldHash, newHash.
-    repeat iSplit.
-    + iPureIntro. by rewrite lookup_app_l; [|word].
-    + iPureIntro. rewrite lookup_app_r; [|word].
-      replace (S (uint.nat i) - length digs) with 0%nat by word.
-      done.
-    + iExactEq "His_proof". repeat f_equal.
-      by rewrite -Hlast.
+  iFrame "∗#".
+  iSplit; [word|].
+  iSplit.
+  - iDestruct (merkle.is_map_inj with "His_map His_map_old") as %<-.
+    iPureIntro.
+    trans map; try done.
+    by apply insert_subseteq.
+  - replace (sint.nat (word.add _ _)) with (S $ sint.nat i) by word.
+    erewrite take_S_r; [|done].
+    iApply ktcore.wish_ListUpdate_grow; iFrame "#".
 Qed.
-*)
-*)
 
 Definition wish_SignedLink servPk adtrPk ep link : iProp Σ :=
   "#Hwish_adtr_sig" ∷ ktcore.wish_LinkSig adtrPk ep

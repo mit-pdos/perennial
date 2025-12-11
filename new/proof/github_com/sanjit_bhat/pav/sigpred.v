@@ -51,7 +51,7 @@ Definition links_pred γstartEp γlinks enc : iProp Σ :=
   (* externalize startEp so that users agree on the epochs associated with links. *)
   "#Hshot" ∷ ghost_var γstartEp (□) startEp ∗
   "#Hlb" ∷ mono_list_lb_own γlinks links ∗
-  "%Hlook" ∷ ⌜links !! (sint.nat ep - sint.nat startEp)%nat = Some link⌝ ∗
+  "%Hlook" ∷ ⌜links !! (uint.nat ep - uint.nat startEp)%nat = Some link⌝ ∗
   "#Hinv" ∷ links_inv links.
 
 Definition pred γ enc : iProp Σ :=

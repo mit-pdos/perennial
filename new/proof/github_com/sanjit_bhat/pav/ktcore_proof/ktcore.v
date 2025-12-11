@@ -459,11 +459,11 @@ Definition wish_NonMemb pk uid ver dig nonMemb : iProp Σ :=
 Definition wish_ListUpdate_aux prevDig updates digs : iProp Σ :=
   "%Hlen" ∷ ⌜length digs = S (length updates)⌝ ∗
   "%Hhead" ∷ ⌜head digs = Some prevDig⌝ ∗
-  "#Hwish_updates" ∷ ([∗ list] i ↦ upd ∈ updates,
+  "#Hwish_upds" ∷ ([∗ list] i ↦ upd ∈ updates,
     ∃ dig0 dig1,
     "%Hlook0" ∷ ⌜digs !! i = Some dig0⌝ ∗
     "%Hlook1" ∷ ⌜digs !! (S i) = Some dig1⌝ ∗
-    "#Hwish" ∷ merkle.wish_Update upd.(ktcore.UpdateProof.MapLabel)
+    "#Hwish_upd" ∷ merkle.wish_Update upd.(ktcore.UpdateProof.MapLabel)
       upd.(ktcore.UpdateProof.MapVal) upd.(ktcore.UpdateProof.NonMembProof)
       dig0 dig1).
 
@@ -485,12 +485,27 @@ Proof.
     rewrite !head_lookup in Hhead0, Hhead1.
     by simplify_eq/=. }
   list_elem updates i as upd.
-  iDestruct (big_sepL_lookup with "Hwish_updates0") as "H0"; [done|].
-  iDestruct (big_sepL_lookup with "Hwish_updates1") as "H1"; [done|].
+  iDestruct (big_sepL_lookup with "Hwish_upds0") as "H0"; [done|].
+  iDestruct (big_sepL_lookup with "Hwish_upds1") as "H1"; [done|].
   iNamedSuffix "H0" "0".
   iNamedSuffix "H1" "1".
   simplify_eq/=.
-  by iDestruct (merkle.wish_Update_det with "Hwish0 Hwish1") as %[-> ->].
+  by iDestruct (merkle.wish_Update_det with "Hwish_upd0 Hwish_upd1") as %[-> ->].
+Qed.
+
+Lemma wish_ListUpdate_aux_take n prevDig updates digs :
+  wish_ListUpdate_aux prevDig updates digs -∗
+  wish_ListUpdate_aux prevDig (take n updates) (take (S n) digs).
+Proof.
+  iNamed 1.
+  repeat iSplit; try iPureIntro; [len|by destruct digs|].
+  iApply big_sepL_forall.
+  iIntros (?? Hlook).
+  apply lookup_take_Some in Hlook as [Hlook ?].
+  iDestruct (big_sepL_lookup with "Hwish_upds") as "@"; [done|].
+  rewrite lookup_take_lt; [|word].
+  rewrite lookup_take_lt; [|word].
+  iFrame "#%".
 Qed.
 
 Definition wish_ListUpdate prevDig updates nextDig : iProp Σ :=
@@ -510,6 +525,38 @@ Proof.
   by simplify_eq/=.
 Qed.
 
+Lemma wish_ListUpdate_grow dig0 updates dig1 upd dig2 :
+  wish_ListUpdate dig0 updates dig1 -∗
+  merkle.wish_Update
+    upd.(UpdateProof.MapLabel)
+    upd.(UpdateProof.MapVal)
+    upd.(UpdateProof.NonMembProof)
+    dig1 dig2 -∗
+  wish_ListUpdate dig0 (updates ++ [upd]) dig2.
+Proof.
+  iIntros "@ #Hupd". iNamed "Hwish_aux".
+  iExists (digs ++ [dig2]).
+  repeat iSplit; try done; try iPureIntro.
+  - len.
+  - by rewrite head_app Hhead.
+  - iApply big_sepL_forall.
+    iIntros (?? Hlook).
+    apply lookup_lt_Some in Hlook as ?.
+    rewrite lookup_app_l; [|word].
+    rewrite lookup_app_l; [|word].
+    iDestruct (big_sepL_lookup with "Hwish_upds") as "@"; [done|].
+    iFrame "#%".
+  - iFrame "#". iPureIntro. split.
+    + rewrite lookup_app_l; [|word].
+      rewrite last_lookup in Hlast.
+      rewrite -Hlast.
+      f_equal. word.
+    + rewrite lookup_app_r; [|word].
+      rewrite list_lookup_singleton_Some.
+      split; [word|done].
+  - by rewrite last_snoc.
+Qed.
+
 Definition wish_ListAudit prevDig audits digs : iProp Σ :=
   "%Hlen" ∷ ⌜length digs = S (length audits)⌝ ∗
   "%Hhead" ∷ ⌜head digs = Some prevDig⌝ ∗
@@ -517,7 +564,7 @@ Definition wish_ListAudit prevDig audits digs : iProp Σ :=
     ∃ dig0 dig1,
     "%Hlook0" ∷ ⌜digs !! i = Some dig0⌝ ∗
     "%Hlook1" ∷ ⌜digs !! (S i) = Some dig1⌝ ∗
-    "#Hwish" ∷ wish_ListUpdate dig0 aud.(AuditProof.Updates) dig1).
+    "#Hwish_audit" ∷ wish_ListUpdate dig0 aud.(AuditProof.Updates) dig1).
 
 Lemma wish_ListAudit_det prevDig audits digs0 digs1 :
   wish_ListAudit prevDig audits digs0 -∗
@@ -560,7 +607,7 @@ Proof.
   apply list_lookup_singleton_Some in Hlook10 as [_ ->].
   apply list_lookup_singleton_Some in Hlook11 as [_ ->].
   simplify_eq/=.
-  by iDestruct (wish_ListUpdate_det with "Hwish0 Hwish1") as %->.
+  by iDestruct (wish_ListUpdate_det with "Hwish_audit0 Hwish_audit1") as %->.
 Qed.
 
 End proof.
