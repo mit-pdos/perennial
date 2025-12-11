@@ -81,22 +81,7 @@ grackle_gokv() {
     done
 }
 
-ARGS=$(getopt -o "c:g:h" --long "compile-grackle:,gokv:,help" -- "$@")
-
-eval set -- "$ARGS"
-while [ $# -ge 1 ]; do
-    case "$1" in
-    -c | --compile-grackle)
-        compile_grackle "$2"
-        shift
-        ;;
-    -g | --gokv)
-        grackle_gokv "$2"
-        shift
-        ;;
-    -h | --help)
-        cat <<EOF
-usage: update-grackle.sh [--compile-grackle <grackle repo> | -c <grackle repo>]
+HELP_MESSAGE="usage: update-grackle.sh [--compile-grackle <grackle repo> | -c <grackle repo>]
                          [--gokv <gokv repo> | -g <gokv repo>] [--help | -h]
 
 Calls grackle on all gokv go modules known to have proto files for grackle usage, generating rocq proofs.
@@ -105,15 +90,30 @@ THIS SCRIPT SHOULD BE RUN FROM THE ROOT OF THE PERENNIAL REPO.
 
 --compile-grackle [-c] : Takes the path to the grackle repository, recompiles and installs grackle
 
---gokv [-g] : Regenerate Rocq proofs for the gokv project, takes path to gokv as argument
-EOF
-        shift
+--gokv [-g] : Regenerate Rocq proofs for the gokv project, takes path to gokv as argument"
+
+if [ $# -eq 0 ]; then
+    echo "$HELP_MESSAGE"
+    exit 0
+fi
+
+while [ $# -gt 0 ]; do
+    case "$1" in
+    -c | --compile-grackle)
+        compile_grackle "$2"
+        shift 2
+        ;;
+    -g | --gokv)
+        grackle_gokv "$2"
+        shift 2
+        ;;
+    -h | --help)
+        echo "$HELP_MESSAGE"
         exit 0
         ;;
-    --)
-        shift
-        break
+    *)
+        echo "Unknown option: $1"
+        exit 1
         ;;
     esac
-    shift
 done
