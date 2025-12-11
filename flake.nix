@@ -38,11 +38,20 @@
           ./. {};
         perennial = perennialPkgs'.perennial.overrideAttrs (finalAttrs: previousAttrs: {
           nativeBuildInputs = with pkgs; [python3] ++ previousAttrs.nativeBuildInputs;
-          patches = previousAttrs.patches ++ [./nix/patches/install-all.patch];
           preBuild = ''
             # swap ROCQPATH for COQPATH, avoiding overriding the complex configurationPhase
             export ROCQPATH=$COQPATH
             unset COQPATH
+          '';
+          buildPhase = ''
+            runHook preBuild
+            make -j$NIX_BUILD_CORES all
+            runHook postBuild
+          '';
+          installPhase = ''
+            runHook preInstall
+            ./etc/install.sh all
+            runHook postInstall
           '';
         });
         # remove the perennial package from perennialPkgs since it won't build without python
