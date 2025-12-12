@@ -10,8 +10,8 @@ Section code.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 
 
-Definition Contextⁱᵐᵖˡ : go.type := go.InterfaceType [go.MethodElem #"Deadline"%go (go.Signature [] #false [time.Time; go.bool]); go.MethodElem #"Done"%go (go.Signature [] #false [go.ChannelType go.recvonly (go.StructType [
-  ])]); go.MethodElem #"Err"%go (go.Signature [] #false [go.error]); go.MethodElem #"Value"%go (go.Signature [go.InterfaceType []] #false [go.InterfaceType []])].
+Definition Contextⁱᵐᵖˡ : go.type := go.InterfaceType [go.MethodElem #"Deadline"%go (go.Signature [] false [time.Time; go.bool]); go.MethodElem #"Done"%go (go.Signature [] false [go.ChannelType go.recvonly (go.StructType [
+  ])]); go.MethodElem #"Err"%go (go.Signature [] false [go.error]); go.MethodElem #"Value"%go (go.Signature [go.InterfaceType []] false [go.InterfaceType []])].
 
 Definition Canceled : go_string := "context.Canceled"%go.
 
@@ -128,44 +128,6 @@ Definition withoutCancelCtx : go.type := go.Named "context.withoutCancelCtx"%go 
 Definition timerCtx : go.type := go.Named "context.timerCtx"%go [].
 
 Definition valueCtx : go.type := go.Named "context.valueCtx"%go [].
-
-Axiom Backgroundⁱᵐᵖˡ : val.
-
-Axiom TODOⁱᵐᵖˡ : val.
-
-Axiom WithCancelⁱᵐᵖˡ : val.
-
-Axiom WithCancelCauseⁱᵐᵖˡ : val.
-
-Axiom withCancelⁱᵐᵖˡ : val.
-
-Axiom Causeⁱᵐᵖˡ : val.
-
-Axiom AfterFuncⁱᵐᵖˡ : val.
-
-Axiom parentCancelCtxⁱᵐᵖˡ : val.
-
-Axiom removeChildⁱᵐᵖˡ : val.
-
-Axiom contextNameⁱᵐᵖˡ : val.
-
-Axiom WithoutCancelⁱᵐᵖˡ : val.
-
-Axiom WithDeadlineⁱᵐᵖˡ : val.
-
-Axiom WithDeadlineCauseⁱᵐᵖˡ : val.
-
-Axiom WithTimeoutⁱᵐᵖˡ : val.
-
-Axiom WithTimeoutCauseⁱᵐᵖˡ : val.
-
-Axiom WithValueⁱᵐᵖˡ : val.
-
-Axiom stringifyⁱᵐᵖˡ : val.
-
-Axiom valueⁱᵐᵖˡ : val.
-
-Definition functions' : list (go_string * val) := [(Background, Backgroundⁱᵐᵖˡ); (TODO, TODOⁱᵐᵖˡ); (WithCancel, WithCancelⁱᵐᵖˡ); (WithCancelCause, WithCancelCauseⁱᵐᵖˡ); (withCancel, withCancelⁱᵐᵖˡ); (Cause, Causeⁱᵐᵖˡ); (AfterFunc, AfterFuncⁱᵐᵖˡ); (parentCancelCtx, parentCancelCtxⁱᵐᵖˡ); (removeChild, removeChildⁱᵐᵖˡ); (contextName, contextNameⁱᵐᵖˡ); (WithoutCancel, WithoutCancelⁱᵐᵖˡ); (WithDeadline, WithDeadlineⁱᵐᵖˡ); (WithDeadlineCause, WithDeadlineCauseⁱᵐᵖˡ); (WithTimeout, WithTimeoutⁱᵐᵖˡ); (WithTimeoutCause, WithTimeoutCauseⁱᵐᵖˡ); (WithValue, WithValueⁱᵐᵖˡ); (stringify, stringifyⁱᵐᵖˡ); (value, valueⁱᵐᵖˡ)].
 
 #[global] Instance info' : PkgInfo context.context :=
   {|

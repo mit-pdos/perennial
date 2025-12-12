@@ -48,28 +48,6 @@ Definition Mutex : go.type := go.Named "github.com/goose-lang/primitive.Mutex"%g
 
 Definition prophId : go.type := go.Named "github.com/goose-lang/primitive.prophId"%go [].
 
-Axiom UInt64Getⁱᵐᵖˡ : val.
-
-Axiom UInt32Getⁱᵐᵖˡ : val.
-
-Axiom UInt32Putⁱᵐᵖˡ : val.
-
-Axiom UInt64ToStringⁱᵐᵖˡ : val.
-
-Axiom Linearizeⁱᵐᵖˡ : val.
-
-Axiom Assertⁱᵐᵖˡ : val.
-
-Axiom Exitⁱᵐᵖˡ : val.
-
-Axiom TimeNowⁱᵐᵖˡ : val.
-
-Axiom Sleepⁱᵐᵖˡ : val.
-
-Axiom NewProphⁱᵐᵖˡ : val.
-
-Definition functions' : list (go_string * val) := [(UInt64Get, UInt64Getⁱᵐᵖˡ); (UInt32Get, UInt32Getⁱᵐᵖˡ); (UInt64Put, UInt64Putⁱᵐᵖˡ); (UInt32Put, UInt32Putⁱᵐᵖˡ); (RandomUint64, RandomUint64ⁱᵐᵖˡ); (UInt64ToString, UInt64ToStringⁱᵐᵖˡ); (Linearize, Linearizeⁱᵐᵖˡ); (Assume, Assumeⁱᵐᵖˡ); (Assert, Assertⁱᵐᵖˡ); (Exit, Exitⁱᵐᵖˡ); (TimeNow, TimeNowⁱᵐᵖˡ); (Sleep, Sleepⁱᵐᵖˡ); (AssumeNoStringOverflow, AssumeNoStringOverflowⁱᵐᵖˡ); (NewProph, NewProphⁱᵐᵖˡ)].
-
 #[global] Instance info' : PkgInfo primitive.primitive :=
   {|
     pkg_imported_pkgs := [];

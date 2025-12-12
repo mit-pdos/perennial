@@ -121,8 +121,6 @@ Definition Permutationⁱᵐᵖˡ : val :=
     (FuncResolve Shuffle [] #()) "$a0");;;
     return: (![go.SliceType go.uint64] "order")).
 
-Definition functions' : list (go_string * val) := [(SumNoOverflow, SumNoOverflowⁱᵐᵖˡ); (SumAssumeNoOverflow, SumAssumeNoOverflowⁱᵐᵖˡ); (MulNoOverflow, MulNoOverflowⁱᵐᵖˡ); (MulAssumeNoOverflow, MulAssumeNoOverflowⁱᵐᵖˡ); (Shuffle, Shuffleⁱᵐᵖˡ); (Permutation, Permutationⁱᵐᵖˡ)].
-
 #[global] Instance info' : PkgInfo std_core.std_core :=
   {|
     pkg_imported_pkgs := [code.github_com.goose_lang.primitive.primitive];

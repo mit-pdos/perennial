@@ -113,9 +113,9 @@ Definition xorshift : go.type := go.Named "slices.xorshift"%go [].
 Definition xorshift__Nextⁱᵐᵖˡ : val :=
   λ: "r" <>,
     exception_do (let: "r" := (go.AllocValue (go.PointerType xorshift) "r") in
-    do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) `xor` ((![xorshift] (![go.PointerType xorshift] "r")) ≪⟨xorshift⟩ #(W64 13))));;;
-    do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) `xor` ((![xorshift] (![go.PointerType xorshift] "r")) ≫⟨xorshift⟩ #(W64 7))));;;
-    do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) `xor` ((![xorshift] (![go.PointerType xorshift] "r")) ≪⟨xorshift⟩ #(W64 17))));;;
+    do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) ^⟨go.uint64⟩ ((![xorshift] (![go.PointerType xorshift] "r")) ≪⟨xorshift⟩ #(W64 13))));;;
+    do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) ^⟨go.uint64⟩ ((![xorshift] (![go.PointerType xorshift] "r")) ≫⟨xorshift⟩ #(W64 7))));;;
+    do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) ^⟨go.uint64⟩ ((![xorshift] (![go.PointerType xorshift] "r")) ≪⟨xorshift⟩ #(W64 17))));;;
     return: (![xorshift] (![go.PointerType xorshift] "r"))).
 
 Definition nextPowerOfTwo : go_string := "slices.nextPowerOfTwo"%go.
@@ -129,7 +129,7 @@ Definition insertionSortCmpFunc : go_string := "slices.insertionSortCmpFunc"%go.
    go: zsortanyfunc.go:10:6 *)
 Definition insertionSortCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
   λ: "data" "a" "b" "cmp",
-    exception_do (let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] #false [go.int])) "cmp") in
+    exception_do (let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] false [go.int])) "cmp") in
     let: "b" := (go.AllocValue go.int "b") in
     let: "a" := (go.AllocValue go.int "a") in
     let: "data" := (go.AllocValue (go.SliceType E) "data") in
@@ -142,7 +142,7 @@ Definition insertionSortCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
       do:  ("j" <-[go.int] "$r0");;;
       (for: (λ: <>, ((![go.int] "j") >⟨go.int⟩ (![go.int] "a")) && ((let: "$a0" := (![E] (IndexRef E (![go.SliceType E] "data", ![go.int] "j"))) in
       let: "$a1" := (![E] (IndexRef E (![go.SliceType E] "data", (![go.int] "j") -⟨go.int⟩ #(W64 1)))) in
-      (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0))); (λ: <>, do:  ("j" <-[go.int] ((![go.int] "j") -⟨go.int⟩ #(W8 1)))) := λ: <>,
+      (![go.FunctionType (go.Signature [E; E] false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0))); (λ: <>, do:  ("j" <-[go.int] ((![go.int] "j") -⟨go.int⟩ #(W8 1)))) := λ: <>,
         let: "$r0" := (![E] (IndexRef E (![go.SliceType E] "data", (![go.int] "j") -⟨go.int⟩ #(W64 1)))) in
         let: "$r1" := (![E] (IndexRef E (![go.SliceType E] "data", ![go.int] "j"))) in
         do:  ((IndexRef E (![go.SliceType E] "data", ![go.int] "j")) <-[E] "$r0");;;
@@ -157,7 +157,7 @@ Definition siftDownCmpFunc : go_string := "slices.siftDownCmpFunc"%go.
    go: zsortanyfunc.go:20:6 *)
 Definition siftDownCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
   λ: "data" "lo" "hi" "first" "cmp",
-    exception_do (let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] #false [go.int])) "cmp") in
+    exception_do (let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] false [go.int])) "cmp") in
     let: "first" := (go.AllocValue go.int "first") in
     let: "hi" := (go.AllocValue go.int "hi") in
     let: "lo" := (go.AllocValue go.int "lo") in
@@ -174,12 +174,12 @@ Definition siftDownCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
       else do:  #());;;
       (if: (((![go.int] "child") +⟨go.int⟩ #(W64 1)) <⟨go.int⟩ (![go.int] "hi")) && ((let: "$a0" := (![E] (IndexRef E (![go.SliceType E] "data", (![go.int] "first") +⟨go.int⟩ (![go.int] "child")))) in
       let: "$a1" := (![E] (IndexRef E (![go.SliceType E] "data", ((![go.int] "first") +⟨go.int⟩ (![go.int] "child")) +⟨go.int⟩ #(W64 1)))) in
-      (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0))
+      (![go.FunctionType (go.Signature [E; E] false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0))
       then do:  ("child" <-[go.int] ((![go.int] "child") +⟨go.int⟩ #(W8 1)))
       else do:  #());;;
       (if: (~ ((let: "$a0" := (![E] (IndexRef E (![go.SliceType E] "data", (![go.int] "first") +⟨go.int⟩ (![go.int] "root")))) in
       let: "$a1" := (![E] (IndexRef E (![go.SliceType E] "data", (![go.int] "first") +⟨go.int⟩ (![go.int] "child")))) in
-      (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0)))
+      (![go.FunctionType (go.Signature [E; E] false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0)))
       then return: (#())
       else do:  #());;;
       let: "$r0" := (![E] (IndexRef E (![go.SliceType E] "data", (![go.int] "first") +⟨go.int⟩ (![go.int] "child")))) in
@@ -195,7 +195,7 @@ Definition heapSortCmpFunc : go_string := "slices.heapSortCmpFunc"%go.
 (* go: zsortanyfunc.go:38:6 *)
 Definition heapSortCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
   λ: "data" "a" "b" "cmp",
-    exception_do (let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] #false [go.int])) "cmp") in
+    exception_do (let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] false [go.int])) "cmp") in
     let: "b" := (go.AllocValue go.int "b") in
     let: "a" := (go.AllocValue go.int "a") in
     let: "data" := (go.AllocValue (go.SliceType E) "data") in
@@ -216,7 +216,7 @@ Definition heapSortCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
       let: "$a1" := (![go.int] "i") in
       let: "$a2" := (![go.int] "hi") in
       let: "$a3" := (![go.int] "first") in
-      let: "$a4" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+      let: "$a4" := (![go.FunctionType (go.Signature [E; E] false [go.int])] "cmp") in
       (FuncResolve siftDownCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3" "$a4")));;;
     (let: "i" := (GoAlloc go.int #()) in
     let: "$r0" := ((![go.int] "hi") -⟨go.int⟩ #(W64 1)) in
@@ -230,7 +230,7 @@ Definition heapSortCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
       let: "$a1" := (![go.int] "lo") in
       let: "$a2" := (![go.int] "i") in
       let: "$a3" := (![go.int] "first") in
-      let: "$a4" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+      let: "$a4" := (![go.FunctionType (go.Signature [E; E] false [go.int])] "cmp") in
       (FuncResolve siftDownCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3" "$a4")));;;
     return: #()).
 
@@ -260,7 +260,7 @@ Definition breakPatternsCmpFunc : go_string := "slices.breakPatternsCmpFunc"%go.
    go: zsortanyfunc.go:61:6 *)
 Definition pdqsortCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
   λ: "data" "a" "b" "limit" "cmp",
-    exception_do (let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] #false [go.int])) "cmp") in
+    exception_do (let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] false [go.int])) "cmp") in
     let: "limit" := (go.AllocValue go.int "limit") in
     let: "b" := (go.AllocValue go.int "b") in
     let: "a" := (go.AllocValue go.int "a") in
@@ -281,7 +281,7 @@ Definition pdqsortCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
         do:  (let: "$a0" := (![go.SliceType E] "data") in
         let: "$a1" := (![go.int] "a") in
         let: "$a2" := (![go.int] "b") in
-        let: "$a3" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+        let: "$a3" := (![go.FunctionType (go.Signature [E; E] false [go.int])] "cmp") in
         (FuncResolve insertionSortCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3");;;
         return: (#())
       else do:  #());;;
@@ -290,7 +290,7 @@ Definition pdqsortCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
         do:  (let: "$a0" := (![go.SliceType E] "data") in
         let: "$a1" := (![go.int] "a") in
         let: "$a2" := (![go.int] "b") in
-        let: "$a3" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+        let: "$a3" := (![go.FunctionType (go.Signature [E; E] false [go.int])] "cmp") in
         (FuncResolve heapSortCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3");;;
         return: (#())
       else do:  #());;;
@@ -299,7 +299,7 @@ Definition pdqsortCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
         do:  (let: "$a0" := (![go.SliceType E] "data") in
         let: "$a1" := (![go.int] "a") in
         let: "$a2" := (![go.int] "b") in
-        let: "$a3" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+        let: "$a3" := (![go.FunctionType (go.Signature [E; E] false [go.int])] "cmp") in
         (FuncResolve breakPatternsCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3");;;
         do:  ("limit" <-[go.int] ((![go.int] "limit") -⟨go.int⟩ #(W8 1)))
       else do:  #());;;
@@ -308,7 +308,7 @@ Definition pdqsortCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
       let: ("$ret0", "$ret1") := (let: "$a0" := (![go.SliceType E] "data") in
       let: "$a1" := (![go.int] "a") in
       let: "$a2" := (![go.int] "b") in
-      let: "$a3" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+      let: "$a3" := (![go.FunctionType (go.Signature [E; E] false [go.int])] "cmp") in
       (FuncResolve choosePivotCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
@@ -319,7 +319,7 @@ Definition pdqsortCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
         do:  (let: "$a0" := (![go.SliceType E] "data") in
         let: "$a1" := (![go.int] "a") in
         let: "$a2" := (![go.int] "b") in
-        let: "$a3" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+        let: "$a3" := (![go.FunctionType (go.Signature [E; E] false [go.int])] "cmp") in
         (FuncResolve reverseRangeCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3");;;
         let: "$r0" := (((![go.int] "b") -⟨go.int⟩ #(W64 1)) -⟨go.int⟩ ((![go.int] "pivot") -⟨go.int⟩ (![go.int] "a"))) in
         do:  ("pivot" <-[go.int] "$r0");;;
@@ -331,21 +331,21 @@ Definition pdqsortCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
         (if: let: "$a0" := (![go.SliceType E] "data") in
         let: "$a1" := (![go.int] "a") in
         let: "$a2" := (![go.int] "b") in
-        let: "$a3" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+        let: "$a3" := (![go.FunctionType (go.Signature [E; E] false [go.int])] "cmp") in
         (FuncResolve partialInsertionSortCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3"
         then return: (#())
         else do:  #())
       else do:  #());;;
       (if: ((![go.int] "a") >⟨go.int⟩ #(W64 0)) && (~ ((let: "$a0" := (![E] (IndexRef E (![go.SliceType E] "data", (![go.int] "a") -⟨go.int⟩ #(W64 1)))) in
       let: "$a1" := (![E] (IndexRef E (![go.SliceType E] "data", ![go.int] "pivot"))) in
-      (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0)))
+      (![go.FunctionType (go.Signature [E; E] false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0)))
       then
         let: "mid" := (GoAlloc go.int #()) in
         let: "$r0" := (let: "$a0" := (![go.SliceType E] "data") in
         let: "$a1" := (![go.int] "a") in
         let: "$a2" := (![go.int] "b") in
         let: "$a3" := (![go.int] "pivot") in
-        let: "$a4" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+        let: "$a4" := (![go.FunctionType (go.Signature [E; E] false [go.int])] "cmp") in
         (FuncResolve partitionEqualCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3" "$a4") in
         do:  ("mid" <-[go.int] "$r0");;;
         let: "$r0" := (![go.int] "mid") in
@@ -358,7 +358,7 @@ Definition pdqsortCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
       let: "$a1" := (![go.int] "a") in
       let: "$a2" := (![go.int] "b") in
       let: "$a3" := (![go.int] "pivot") in
-      let: "$a4" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+      let: "$a4" := (![go.FunctionType (go.Signature [E; E] false [go.int])] "cmp") in
       (FuncResolve partitionCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3" "$a4") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
@@ -383,7 +383,7 @@ Definition pdqsortCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
         let: "$a1" := (![go.int] "a") in
         let: "$a2" := (![go.int] "mid") in
         let: "$a3" := (![go.int] "limit") in
-        let: "$a4" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+        let: "$a4" := (![go.FunctionType (go.Signature [E; E] false [go.int])] "cmp") in
         (FuncResolve pdqsortCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3" "$a4");;;
         let: "$r0" := ((![go.int] "mid") +⟨go.int⟩ #(W64 1)) in
         do:  ("a" <-[go.int] "$r0")
@@ -394,7 +394,7 @@ Definition pdqsortCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
         let: "$a1" := ((![go.int] "mid") +⟨go.int⟩ #(W64 1)) in
         let: "$a2" := (![go.int] "b") in
         let: "$a3" := (![go.int] "limit") in
-        let: "$a4" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+        let: "$a4" := (![go.FunctionType (go.Signature [E; E] false [go.int])] "cmp") in
         (FuncResolve pdqsortCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3" "$a4");;;
         let: "$r0" := (![go.int] "mid") in
         do:  ("b" <-[go.int] "$r0")));;;
@@ -410,7 +410,7 @@ Definition partitionCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
   λ: "data" "a" "b" "pivot" "cmp",
     exception_do (let: "alreadyPartitioned" := (GoAlloc go.bool #()) in
     let: "newpivot" := (GoAlloc go.int #()) in
-    let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] #false [go.int])) "cmp") in
+    let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] false [go.int])) "cmp") in
     let: "pivot" := (go.AllocValue go.int "pivot") in
     let: "b" := (go.AllocValue go.int "b") in
     let: "a" := (go.AllocValue go.int "a") in
@@ -427,11 +427,11 @@ Definition partitionCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
     do:  ("j" <-[go.int] "$r1");;;
     (for: (λ: <>, ((![go.int] "i") ≤⟨go.int⟩ (![go.int] "j")) && ((let: "$a0" := (![E] (IndexRef E (![go.SliceType E] "data", ![go.int] "i"))) in
     let: "$a1" := (![E] (IndexRef E (![go.SliceType E] "data", ![go.int] "a"))) in
-    (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0))); (λ: <>, #()) := λ: <>,
+    (![go.FunctionType (go.Signature [E; E] false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0))); (λ: <>, #()) := λ: <>,
       do:  ("i" <-[go.int] ((![go.int] "i") +⟨go.int⟩ #(W8 1))));;;
     (for: (λ: <>, ((![go.int] "i") ≤⟨go.int⟩ (![go.int] "j")) && (~ ((let: "$a0" := (![E] (IndexRef E (![go.SliceType E] "data", ![go.int] "j"))) in
     let: "$a1" := (![E] (IndexRef E (![go.SliceType E] "data", ![go.int] "a"))) in
-    (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0)))); (λ: <>, #()) := λ: <>,
+    (![go.FunctionType (go.Signature [E; E] false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0)))); (λ: <>, #()) := λ: <>,
       do:  ("j" <-[go.int] ((![go.int] "j") -⟨go.int⟩ #(W8 1))));;;
     (if: (![go.int] "i") >⟨go.int⟩ (![go.int] "j")
     then
@@ -450,11 +450,11 @@ Definition partitionCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       (for: (λ: <>, ((![go.int] "i") ≤⟨go.int⟩ (![go.int] "j")) && ((let: "$a0" := (![E] (IndexRef E (![go.SliceType E] "data", ![go.int] "i"))) in
       let: "$a1" := (![E] (IndexRef E (![go.SliceType E] "data", ![go.int] "a"))) in
-      (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0))); (λ: <>, #()) := λ: <>,
+      (![go.FunctionType (go.Signature [E; E] false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0))); (λ: <>, #()) := λ: <>,
         do:  ("i" <-[go.int] ((![go.int] "i") +⟨go.int⟩ #(W8 1))));;;
       (for: (λ: <>, ((![go.int] "i") ≤⟨go.int⟩ (![go.int] "j")) && (~ ((let: "$a0" := (![E] (IndexRef E (![go.SliceType E] "data", ![go.int] "j"))) in
       let: "$a1" := (![E] (IndexRef E (![go.SliceType E] "data", ![go.int] "a"))) in
-      (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0)))); (λ: <>, #()) := λ: <>,
+      (![go.FunctionType (go.Signature [E; E] false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0)))); (λ: <>, #()) := λ: <>,
         do:  ("j" <-[go.int] ((![go.int] "j") -⟨go.int⟩ #(W8 1))));;;
       (if: (![go.int] "i") >⟨go.int⟩ (![go.int] "j")
       then break: #()
@@ -478,7 +478,7 @@ Definition partitionCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
 Definition partitionEqualCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
   λ: "data" "a" "b" "pivot" "cmp",
     exception_do (let: "newpivot" := (GoAlloc go.int #()) in
-    let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] #false [go.int])) "cmp") in
+    let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] false [go.int])) "cmp") in
     let: "pivot" := (go.AllocValue go.int "pivot") in
     let: "b" := (go.AllocValue go.int "b") in
     let: "a" := (go.AllocValue go.int "a") in
@@ -496,11 +496,11 @@ Definition partitionEqualCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       (for: (λ: <>, ((![go.int] "i") ≤⟨go.int⟩ (![go.int] "j")) && (~ ((let: "$a0" := (![E] (IndexRef E (![go.SliceType E] "data", ![go.int] "a"))) in
       let: "$a1" := (![E] (IndexRef E (![go.SliceType E] "data", ![go.int] "i"))) in
-      (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0)))); (λ: <>, #()) := λ: <>,
+      (![go.FunctionType (go.Signature [E; E] false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0)))); (λ: <>, #()) := λ: <>,
         do:  ("i" <-[go.int] ((![go.int] "i") +⟨go.int⟩ #(W8 1))));;;
       (for: (λ: <>, ((![go.int] "i") ≤⟨go.int⟩ (![go.int] "j")) && ((let: "$a0" := (![E] (IndexRef E (![go.SliceType E] "data", ![go.int] "a"))) in
       let: "$a1" := (![E] (IndexRef E (![go.SliceType E] "data", ![go.int] "j"))) in
-      (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0))); (λ: <>, #()) := λ: <>,
+      (![go.FunctionType (go.Signature [E; E] false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0))); (λ: <>, #()) := λ: <>,
         do:  ("j" <-[go.int] ((![go.int] "j") -⟨go.int⟩ #(W8 1))));;;
       (if: (![go.int] "i") >⟨go.int⟩ (![go.int] "j")
       then break: #()
@@ -518,7 +518,7 @@ Definition partitionEqualCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
    go: zsortanyfunc.go:195:6 *)
 Definition partialInsertionSortCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
   λ: "data" "a" "b" "cmp",
-    exception_do (let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] #false [go.int])) "cmp") in
+    exception_do (let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] false [go.int])) "cmp") in
     let: "b" := (go.AllocValue go.int "b") in
     let: "a" := (go.AllocValue go.int "a") in
     let: "data" := (go.AllocValue (go.SliceType E) "data") in
@@ -533,7 +533,7 @@ Definition partialInsertionSortCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
     (for: (λ: <>, (![go.int] "j") <⟨go.int⟩ #(W64 maxSteps)); (λ: <>, do:  ("j" <-[go.int] ((![go.int] "j") +⟨go.int⟩ #(W8 1)))) := λ: <>,
       (for: (λ: <>, ((![go.int] "i") <⟨go.int⟩ (![go.int] "b")) && (~ ((let: "$a0" := (![E] (IndexRef E (![go.SliceType E] "data", ![go.int] "i"))) in
       let: "$a1" := (![E] (IndexRef E (![go.SliceType E] "data", (![go.int] "i") -⟨go.int⟩ #(W64 1)))) in
-      (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0)))); (λ: <>, #()) := λ: <>,
+      (![go.FunctionType (go.Signature [E; E] false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0)))); (λ: <>, #()) := λ: <>,
         do:  ("i" <-[go.int] ((![go.int] "i") +⟨go.int⟩ #(W8 1))));;;
       (if: (![go.int] "i") =⟨go.int⟩ (![go.int] "b")
       then return: (#true)
@@ -553,7 +553,7 @@ Definition partialInsertionSortCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
         (for: (λ: <>, (![go.int] "j") ≥⟨go.int⟩ #(W64 1)); (λ: <>, do:  ("j" <-[go.int] ((![go.int] "j") -⟨go.int⟩ #(W8 1)))) := λ: <>,
           (if: (~ ((let: "$a0" := (![E] (IndexRef E (![go.SliceType E] "data", ![go.int] "j"))) in
           let: "$a1" := (![E] (IndexRef E (![go.SliceType E] "data", (![go.int] "j") -⟨go.int⟩ #(W64 1)))) in
-          (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0)))
+          (![go.FunctionType (go.Signature [E; E] false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0)))
           then break: #()
           else do:  #());;;
           let: "$r0" := (![E] (IndexRef E (![go.SliceType E] "data", (![go.int] "j") -⟨go.int⟩ #(W64 1)))) in
@@ -569,7 +569,7 @@ Definition partialInsertionSortCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
         (for: (λ: <>, (![go.int] "j") <⟨go.int⟩ (![go.int] "b")); (λ: <>, do:  ("j" <-[go.int] ((![go.int] "j") +⟨go.int⟩ #(W8 1)))) := λ: <>,
           (if: (~ ((let: "$a0" := (![E] (IndexRef E (![go.SliceType E] "data", ![go.int] "j"))) in
           let: "$a1" := (![E] (IndexRef E (![go.SliceType E] "data", (![go.int] "j") -⟨go.int⟩ #(W64 1)))) in
-          (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0)))
+          (![go.FunctionType (go.Signature [E; E] false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0)))
           then break: #()
           else do:  #());;;
           let: "$r0" := (![E] (IndexRef E (![go.SliceType E] "data", (![go.int] "j") -⟨go.int⟩ #(W64 1)))) in
@@ -585,7 +585,7 @@ Definition partialInsertionSortCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
    go: zsortanyfunc.go:240:6 *)
 Definition breakPatternsCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
   λ: "data" "a" "b" "cmp",
-    exception_do (let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] #false [go.int])) "cmp") in
+    exception_do (let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] false [go.int])) "cmp") in
     let: "b" := (go.AllocValue go.int "b") in
     let: "a" := (go.AllocValue go.int "a") in
     let: "data" := (go.AllocValue (go.SliceType E) "data") in
@@ -606,7 +606,7 @@ Definition breakPatternsCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
       do:  ("idx" <-[go.int] "$r0");;;
       (for: (λ: <>, (![go.int] "idx") ≤⟨go.int⟩ (((![go.int] "a") +⟨go.int⟩ (((![go.int] "length") /⟨go.int⟩ #(W64 4)) *⟨go.int⟩ #(W64 2))) +⟨go.int⟩ #(W64 1))); (λ: <>, do:  ("idx" <-[go.int] ((![go.int] "idx") +⟨go.int⟩ #(W8 1)))) := λ: <>,
         let: "other" := (GoAlloc go.int #()) in
-        let: "$r0" := (u_to_w64 ((u_to_w64 ((MethodResolve (go.PointerType xorshift) Next #() "random") #())) `and` ((![go.uint] "modulus") -⟨go.uint⟩ #(W64 1)))) in
+        let: "$r0" := (u_to_w64 ((u_to_w64 ((MethodResolve (go.PointerType xorshift) "Next"%go #() "random") #())) &⟨go.uint⟩ ((![go.uint] "modulus") -⟨go.uint⟩ #(W64 1)))) in
         do:  ("other" <-[go.int] "$r0");;;
         (if: (![go.int] "other") ≥⟨go.int⟩ (![go.int] "length")
         then do:  ("other" <-[go.int] ((![go.int] "other") -⟨go.int⟩ (![go.int] "length")))
@@ -633,7 +633,7 @@ Definition choosePivotCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
   λ: "data" "a" "b" "cmp",
     exception_do (let: "hint" := (GoAlloc sortedHint #()) in
     let: "pivot" := (GoAlloc go.int #()) in
-    let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] #false [go.int])) "cmp") in
+    let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] false [go.int])) "cmp") in
     let: "b" := (go.AllocValue go.int "b") in
     let: "a" := (go.AllocValue go.int "a") in
     let: "data" := (go.AllocValue (go.SliceType E) "data") in
@@ -659,19 +659,19 @@ Definition choosePivotCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
         let: "$r0" := (let: "$a0" := (![go.SliceType E] "data") in
         let: "$a1" := (![go.int] "i") in
         let: "$a2" := "swaps" in
-        let: "$a3" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+        let: "$a3" := (![go.FunctionType (go.Signature [E; E] false [go.int])] "cmp") in
         (FuncResolve medianAdjacentCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3") in
         do:  ("i" <-[go.int] "$r0");;;
         let: "$r0" := (let: "$a0" := (![go.SliceType E] "data") in
         let: "$a1" := (![go.int] "j") in
         let: "$a2" := "swaps" in
-        let: "$a3" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+        let: "$a3" := (![go.FunctionType (go.Signature [E; E] false [go.int])] "cmp") in
         (FuncResolve medianAdjacentCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3") in
         do:  ("j" <-[go.int] "$r0");;;
         let: "$r0" := (let: "$a0" := (![go.SliceType E] "data") in
         let: "$a1" := (![go.int] "k") in
         let: "$a2" := "swaps" in
-        let: "$a3" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+        let: "$a3" := (![go.FunctionType (go.Signature [E; E] false [go.int])] "cmp") in
         (FuncResolve medianAdjacentCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3") in
         do:  ("k" <-[go.int] "$r0")
       else do:  #());;;
@@ -680,7 +680,7 @@ Definition choosePivotCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
       let: "$a2" := (![go.int] "j") in
       let: "$a3" := (![go.int] "k") in
       let: "$a4" := "swaps" in
-      let: "$a5" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+      let: "$a5" := (![go.FunctionType (go.Signature [E; E] false [go.int])] "cmp") in
       (FuncResolve medianCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3" "$a4" "$a5") in
       do:  ("j" <-[go.int] "$r0")
     else do:  #());;;
@@ -699,14 +699,14 @@ Definition order2CmpFunc : go_string := "slices.order2CmpFunc"%go.
    go: zsortanyfunc.go:298:6 *)
 Definition order2CmpFuncⁱᵐᵖˡ (E : go.type) : val :=
   λ: "data" "a" "b" "swaps" "cmp",
-    exception_do (let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] #false [go.int])) "cmp") in
+    exception_do (let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] false [go.int])) "cmp") in
     let: "swaps" := (go.AllocValue (go.PointerType go.int) "swaps") in
     let: "b" := (go.AllocValue go.int "b") in
     let: "a" := (go.AllocValue go.int "a") in
     let: "data" := (go.AllocValue (go.SliceType E) "data") in
     (if: (let: "$a0" := (![E] (IndexRef E (![go.SliceType E] "data", ![go.int] "b"))) in
     let: "$a1" := (![E] (IndexRef E (![go.SliceType E] "data", ![go.int] "a"))) in
-    (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0)
+    (![go.FunctionType (go.Signature [E; E] false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0)
     then
       do:  ((![go.PointerType go.int] "swaps") <-[go.int] ((![go.int] (![go.PointerType go.int] "swaps")) +⟨go.int⟩ #(W8 1)));;;
       return: (![go.int] "b", ![go.int] "a")
@@ -718,7 +718,7 @@ Definition order2CmpFuncⁱᵐᵖˡ (E : go.type) : val :=
    go: zsortanyfunc.go:307:6 *)
 Definition medianCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
   λ: "data" "a" "b" "c" "swaps" "cmp",
-    exception_do (let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] #false [go.int])) "cmp") in
+    exception_do (let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] false [go.int])) "cmp") in
     let: "swaps" := (go.AllocValue (go.PointerType go.int) "swaps") in
     let: "c" := (go.AllocValue go.int "c") in
     let: "b" := (go.AllocValue go.int "b") in
@@ -728,7 +728,7 @@ Definition medianCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
     let: "$a1" := (![go.int] "a") in
     let: "$a2" := (![go.int] "b") in
     let: "$a3" := (![go.PointerType go.int] "swaps") in
-    let: "$a4" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+    let: "$a4" := (![go.FunctionType (go.Signature [E; E] false [go.int])] "cmp") in
     (FuncResolve order2CmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3" "$a4") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
@@ -738,7 +738,7 @@ Definition medianCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
     let: "$a1" := (![go.int] "b") in
     let: "$a2" := (![go.int] "c") in
     let: "$a3" := (![go.PointerType go.int] "swaps") in
-    let: "$a4" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+    let: "$a4" := (![go.FunctionType (go.Signature [E; E] false [go.int])] "cmp") in
     (FuncResolve order2CmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3" "$a4") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
@@ -748,7 +748,7 @@ Definition medianCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
     let: "$a1" := (![go.int] "a") in
     let: "$a2" := (![go.int] "b") in
     let: "$a3" := (![go.PointerType go.int] "swaps") in
-    let: "$a4" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+    let: "$a4" := (![go.FunctionType (go.Signature [E; E] false [go.int])] "cmp") in
     (FuncResolve order2CmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3" "$a4") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
@@ -761,7 +761,7 @@ Definition medianCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
    go: zsortanyfunc.go:315:6 *)
 Definition medianAdjacentCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
   λ: "data" "a" "swaps" "cmp",
-    exception_do (let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] #false [go.int])) "cmp") in
+    exception_do (let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] false [go.int])) "cmp") in
     let: "swaps" := (go.AllocValue (go.PointerType go.int) "swaps") in
     let: "a" := (go.AllocValue go.int "a") in
     let: "data" := (go.AllocValue (go.SliceType E) "data") in
@@ -770,13 +770,13 @@ Definition medianAdjacentCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
      let: "$a2" := (![go.int] "a") in
      let: "$a3" := ((![go.int] "a") +⟨go.int⟩ #(W64 1)) in
      let: "$a4" := (![go.PointerType go.int] "swaps") in
-     let: "$a5" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+     let: "$a5" := (![go.FunctionType (go.Signature [E; E] false [go.int])] "cmp") in
      (FuncResolve medianCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3" "$a4" "$a5")).
 
 (* go: zsortanyfunc.go:319:6 *)
 Definition reverseRangeCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
   λ: "data" "a" "b" "cmp",
-    exception_do (let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] #false [go.int])) "cmp") in
+    exception_do (let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] false [go.int])) "cmp") in
     let: "b" := (go.AllocValue go.int "b") in
     let: "a" := (go.AllocValue go.int "a") in
     let: "data" := (go.AllocValue (go.SliceType E) "data") in
@@ -800,7 +800,7 @@ Definition swapRangeCmpFunc : go_string := "slices.swapRangeCmpFunc"%go.
 (* go: zsortanyfunc.go:329:6 *)
 Definition swapRangeCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
   λ: "data" "a" "b" "n" "cmp",
-    exception_do (let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] #false [go.int])) "cmp") in
+    exception_do (let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] false [go.int])) "cmp") in
     let: "n" := (go.AllocValue go.int "n") in
     let: "b" := (go.AllocValue go.int "b") in
     let: "a" := (go.AllocValue go.int "a") in
@@ -822,7 +822,7 @@ Definition symMergeCmpFunc : go_string := "slices.symMergeCmpFunc"%go.
 (* go: zsortanyfunc.go:335:6 *)
 Definition stableCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
   λ: "data" "n" "cmp",
-    exception_do (let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] #false [go.int])) "cmp") in
+    exception_do (let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] false [go.int])) "cmp") in
     let: "n" := (go.AllocValue go.int "n") in
     let: "data" := (go.AllocValue (go.SliceType E) "data") in
     let: "blockSize" := (GoAlloc go.int #()) in
@@ -838,7 +838,7 @@ Definition stableCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
       do:  (let: "$a0" := (![go.SliceType E] "data") in
       let: "$a1" := (![go.int] "a") in
       let: "$a2" := (![go.int] "b") in
-      let: "$a3" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+      let: "$a3" := (![go.FunctionType (go.Signature [E; E] false [go.int])] "cmp") in
       (FuncResolve insertionSortCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3");;;
       let: "$r0" := (![go.int] "b") in
       do:  ("a" <-[go.int] "$r0");;;
@@ -846,7 +846,7 @@ Definition stableCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
     do:  (let: "$a0" := (![go.SliceType E] "data") in
     let: "$a1" := (![go.int] "a") in
     let: "$a2" := (![go.int] "n") in
-    let: "$a3" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+    let: "$a3" := (![go.FunctionType (go.Signature [E; E] false [go.int])] "cmp") in
     (FuncResolve insertionSortCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3");;;
     (for: (λ: <>, (![go.int] "blockSize") <⟨go.int⟩ (![go.int] "n")); (λ: <>, #()) := λ: <>,
       let: "$r0" := #(W64 0) in
@@ -858,7 +858,7 @@ Definition stableCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
         let: "$a1" := (![go.int] "a") in
         let: "$a2" := ((![go.int] "a") +⟨go.int⟩ (![go.int] "blockSize")) in
         let: "$a3" := (![go.int] "b") in
-        let: "$a4" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+        let: "$a4" := (![go.FunctionType (go.Signature [E; E] false [go.int])] "cmp") in
         (FuncResolve symMergeCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3" "$a4");;;
         let: "$r0" := (![go.int] "b") in
         do:  ("a" <-[go.int] "$r0");;;
@@ -872,7 +872,7 @@ Definition stableCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
         let: "$a1" := (![go.int] "a") in
         let: "$a2" := (![go.int] "m") in
         let: "$a3" := (![go.int] "n") in
-        let: "$a4" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+        let: "$a4" := (![go.FunctionType (go.Signature [E; E] false [go.int])] "cmp") in
         (FuncResolve symMergeCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3" "$a4")
       else do:  #()));;;
       do:  ("blockSize" <-[go.int] ((![go.int] "blockSize") *⟨go.int⟩ #(W64 2))));;;
@@ -903,7 +903,7 @@ Definition rotateCmpFunc : go_string := "slices.rotateCmpFunc"%go.
    go: zsortanyfunc.go:378:6 *)
 Definition symMergeCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
   λ: "data" "a" "m" "b" "cmp",
-    exception_do (let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] #false [go.int])) "cmp") in
+    exception_do (let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] false [go.int])) "cmp") in
     let: "b" := (go.AllocValue go.int "b") in
     let: "m" := (go.AllocValue go.int "m") in
     let: "a" := (go.AllocValue go.int "a") in
@@ -922,7 +922,7 @@ Definition symMergeCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
         do:  ("h" <-[go.int] "$r0");;;
         (if: (let: "$a0" := (![E] (IndexRef E (![go.SliceType E] "data", ![go.int] "h"))) in
         let: "$a1" := (![E] (IndexRef E (![go.SliceType E] "data", ![go.int] "a"))) in
-        (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0)
+        (![go.FunctionType (go.Signature [E; E] false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0)
         then
           let: "$r0" := ((![go.int] "h") +⟨go.int⟩ #(W64 1)) in
           do:  ("i" <-[go.int] "$r0")
@@ -953,7 +953,7 @@ Definition symMergeCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
         do:  ("h" <-[go.int] "$r0");;;
         (if: (~ ((let: "$a0" := (![E] (IndexRef E (![go.SliceType E] "data", ![go.int] "m"))) in
         let: "$a1" := (![E] (IndexRef E (![go.SliceType E] "data", ![go.int] "h"))) in
-        (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0)))
+        (![go.FunctionType (go.Signature [E; E] false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0)))
         then
           let: "$r0" := ((![go.int] "h") +⟨go.int⟩ #(W64 1)) in
           do:  ("i" <-[go.int] "$r0")
@@ -998,7 +998,7 @@ Definition symMergeCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
       do:  ("c" <-[go.int] "$r0");;;
       (if: (~ ((let: "$a0" := (![E] (IndexRef E (![go.SliceType E] "data", (![go.int] "p") -⟨go.int⟩ (![go.int] "c")))) in
       let: "$a1" := (![E] (IndexRef E (![go.SliceType E] "data", ![go.int] "c"))) in
-      (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0)))
+      (![go.FunctionType (go.Signature [E; E] false [go.int])] "cmp") "$a0" "$a1") <⟨go.int⟩ #(W64 0)))
       then
         let: "$r0" := ((![go.int] "c") +⟨go.int⟩ #(W64 1)) in
         do:  ("start" <-[go.int] "$r0")
@@ -1014,7 +1014,7 @@ Definition symMergeCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
       let: "$a1" := (![go.int] "start") in
       let: "$a2" := (![go.int] "m") in
       let: "$a3" := (![go.int] "end") in
-      let: "$a4" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+      let: "$a4" := (![go.FunctionType (go.Signature [E; E] false [go.int])] "cmp") in
       (FuncResolve rotateCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3" "$a4")
     else do:  #());;;
     (if: ((![go.int] "a") <⟨go.int⟩ (![go.int] "start")) && ((![go.int] "start") <⟨go.int⟩ (![go.int] "mid"))
@@ -1023,7 +1023,7 @@ Definition symMergeCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
       let: "$a1" := (![go.int] "a") in
       let: "$a2" := (![go.int] "start") in
       let: "$a3" := (![go.int] "mid") in
-      let: "$a4" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+      let: "$a4" := (![go.FunctionType (go.Signature [E; E] false [go.int])] "cmp") in
       (FuncResolve symMergeCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3" "$a4")
     else do:  #());;;
     (if: ((![go.int] "mid") <⟨go.int⟩ (![go.int] "end")) && ((![go.int] "end") <⟨go.int⟩ (![go.int] "b"))
@@ -1032,7 +1032,7 @@ Definition symMergeCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
       let: "$a1" := (![go.int] "mid") in
       let: "$a2" := (![go.int] "end") in
       let: "$a3" := (![go.int] "b") in
-      let: "$a4" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+      let: "$a4" := (![go.FunctionType (go.Signature [E; E] false [go.int])] "cmp") in
       (FuncResolve symMergeCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3" "$a4")
     else do:  #());;;
     return: #()).
@@ -1045,7 +1045,7 @@ Definition symMergeCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
    go: zsortanyfunc.go:464:6 *)
 Definition rotateCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
   λ: "data" "a" "m" "b" "cmp",
-    exception_do (let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] #false [go.int])) "cmp") in
+    exception_do (let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [E; E] false [go.int])) "cmp") in
     let: "b" := (go.AllocValue go.int "b") in
     let: "m" := (go.AllocValue go.int "m") in
     let: "a" := (go.AllocValue go.int "a") in
@@ -1063,7 +1063,7 @@ Definition rotateCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
         let: "$a1" := ((![go.int] "m") -⟨go.int⟩ (![go.int] "i")) in
         let: "$a2" := (![go.int] "m") in
         let: "$a3" := (![go.int] "j") in
-        let: "$a4" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+        let: "$a4" := (![go.FunctionType (go.Signature [E; E] false [go.int])] "cmp") in
         (FuncResolve swapRangeCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3" "$a4");;;
         do:  ("i" <-[go.int] ((![go.int] "i") -⟨go.int⟩ (![go.int] "j")))
       else
@@ -1071,14 +1071,14 @@ Definition rotateCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
         let: "$a1" := ((![go.int] "m") -⟨go.int⟩ (![go.int] "i")) in
         let: "$a2" := (((![go.int] "m") +⟨go.int⟩ (![go.int] "j")) -⟨go.int⟩ (![go.int] "i")) in
         let: "$a3" := (![go.int] "i") in
-        let: "$a4" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+        let: "$a4" := (![go.FunctionType (go.Signature [E; E] false [go.int])] "cmp") in
         (FuncResolve swapRangeCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3" "$a4");;;
         do:  ("j" <-[go.int] ((![go.int] "j") -⟨go.int⟩ (![go.int] "i")))));;;
     do:  (let: "$a0" := (![go.SliceType E] "data") in
     let: "$a1" := ((![go.int] "m") -⟨go.int⟩ (![go.int] "i")) in
     let: "$a2" := (![go.int] "m") in
     let: "$a3" := (![go.int] "i") in
-    let: "$a4" := (![go.FunctionType (go.Signature [E; E] #false [go.int])] "cmp") in
+    let: "$a4" := (![go.FunctionType (go.Signature [E; E] false [go.int])] "cmp") in
     (FuncResolve swapRangeCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3" "$a4");;;
     return: #()).
 
@@ -1115,134 +1115,6 @@ Definition stableOrdered : go_string := "slices.stableOrdered"%go.
 Definition symMergeOrdered : go_string := "slices.symMergeOrdered"%go.
 
 Definition rotateOrdered : go_string := "slices.rotateOrdered"%go.
-
-Axiom Allⁱᵐᵖˡ : val.
-
-Axiom Backwardⁱᵐᵖˡ : val.
-
-Axiom Valuesⁱᵐᵖˡ : val.
-
-Axiom AppendSeqⁱᵐᵖˡ : val.
-
-Axiom Collectⁱᵐᵖˡ : val.
-
-Axiom Sortedⁱᵐᵖˡ : val.
-
-Axiom SortedFuncⁱᵐᵖˡ : val.
-
-Axiom SortedStableFuncⁱᵐᵖˡ : val.
-
-Axiom Chunkⁱᵐᵖˡ : val.
-
-Axiom Equalⁱᵐᵖˡ : val.
-
-Axiom EqualFuncⁱᵐᵖˡ : val.
-
-Axiom Compareⁱᵐᵖˡ : val.
-
-Axiom CompareFuncⁱᵐᵖˡ : val.
-
-Axiom Indexⁱᵐᵖˡ : val.
-
-Axiom IndexFuncⁱᵐᵖˡ : val.
-
-Axiom Containsⁱᵐᵖˡ : val.
-
-Axiom ContainsFuncⁱᵐᵖˡ : val.
-
-Axiom Insertⁱᵐᵖˡ : val.
-
-Axiom Deleteⁱᵐᵖˡ : val.
-
-Axiom DeleteFuncⁱᵐᵖˡ : val.
-
-Axiom Replaceⁱᵐᵖˡ : val.
-
-Axiom Cloneⁱᵐᵖˡ : val.
-
-Axiom Compactⁱᵐᵖˡ : val.
-
-Axiom CompactFuncⁱᵐᵖˡ : val.
-
-Axiom Growⁱᵐᵖˡ : val.
-
-Axiom Clipⁱᵐᵖˡ : val.
-
-Axiom rotateLeftⁱᵐᵖˡ : val.
-
-Axiom rotateRightⁱᵐᵖˡ : val.
-
-Axiom overlapsⁱᵐᵖˡ : val.
-
-Axiom startIdxⁱᵐᵖˡ : val.
-
-Axiom Reverseⁱᵐᵖˡ : val.
-
-Axiom Concatⁱᵐᵖˡ : val.
-
-Axiom Repeatⁱᵐᵖˡ : val.
-
-Axiom Sortⁱᵐᵖˡ : val.
-
-Axiom SortFuncⁱᵐᵖˡ : val.
-
-Axiom SortStableFuncⁱᵐᵖˡ : val.
-
-Axiom IsSortedⁱᵐᵖˡ : val.
-
-Axiom IsSortedFuncⁱᵐᵖˡ : val.
-
-Axiom Minⁱᵐᵖˡ : val.
-
-Axiom MinFuncⁱᵐᵖˡ : val.
-
-Axiom Maxⁱᵐᵖˡ : val.
-
-Axiom MaxFuncⁱᵐᵖˡ : val.
-
-Axiom BinarySearchⁱᵐᵖˡ : val.
-
-Axiom BinarySearchFuncⁱᵐᵖˡ : val.
-
-Axiom nextPowerOfTwoⁱᵐᵖˡ : val.
-
-Axiom isNaNⁱᵐᵖˡ : val.
-
-Axiom insertionSortOrderedⁱᵐᵖˡ : val.
-
-Axiom siftDownOrderedⁱᵐᵖˡ : val.
-
-Axiom heapSortOrderedⁱᵐᵖˡ : val.
-
-Axiom pdqsortOrderedⁱᵐᵖˡ : val.
-
-Axiom partitionOrderedⁱᵐᵖˡ : val.
-
-Axiom partitionEqualOrderedⁱᵐᵖˡ : val.
-
-Axiom partialInsertionSortOrderedⁱᵐᵖˡ : val.
-
-Axiom breakPatternsOrderedⁱᵐᵖˡ : val.
-
-Axiom choosePivotOrderedⁱᵐᵖˡ : val.
-
-Axiom order2Orderedⁱᵐᵖˡ : val.
-
-Axiom medianOrderedⁱᵐᵖˡ : val.
-
-Axiom medianAdjacentOrderedⁱᵐᵖˡ : val.
-
-Axiom reverseRangeOrderedⁱᵐᵖˡ : val.
-
-Axiom swapRangeOrderedⁱᵐᵖˡ : val.
-
-Axiom stableOrderedⁱᵐᵖˡ : val.
-
-Axiom symMergeOrderedⁱᵐᵖˡ : val.
-
-Axiom rotateOrderedⁱᵐᵖˡ : val.
-
-Definition functions' : list (go_string * val) := [(All, Allⁱᵐᵖˡ); (Backward, Backwardⁱᵐᵖˡ); (Values, Valuesⁱᵐᵖˡ); (AppendSeq, AppendSeqⁱᵐᵖˡ); (Collect, Collectⁱᵐᵖˡ); (Sorted, Sortedⁱᵐᵖˡ); (SortedFunc, SortedFuncⁱᵐᵖˡ); (SortedStableFunc, SortedStableFuncⁱᵐᵖˡ); (Chunk, Chunkⁱᵐᵖˡ); (Equal, Equalⁱᵐᵖˡ); (EqualFunc, EqualFuncⁱᵐᵖˡ); (Compare, Compareⁱᵐᵖˡ); (CompareFunc, CompareFuncⁱᵐᵖˡ); (Index, Indexⁱᵐᵖˡ); (IndexFunc, IndexFuncⁱᵐᵖˡ); (Contains, Containsⁱᵐᵖˡ); (ContainsFunc, ContainsFuncⁱᵐᵖˡ); (Insert, Insertⁱᵐᵖˡ); (Delete, Deleteⁱᵐᵖˡ); (DeleteFunc, DeleteFuncⁱᵐᵖˡ); (Replace, Replaceⁱᵐᵖˡ); (Clone, Cloneⁱᵐᵖˡ); (Compact, Compactⁱᵐᵖˡ); (CompactFunc, CompactFuncⁱᵐᵖˡ); (Grow, Growⁱᵐᵖˡ); (Clip, Clipⁱᵐᵖˡ); (rotateLeft, rotateLeftⁱᵐᵖˡ); (rotateRight, rotateRightⁱᵐᵖˡ); (overlaps, overlapsⁱᵐᵖˡ); (startIdx, startIdxⁱᵐᵖˡ); (Reverse, Reverseⁱᵐᵖˡ); (Concat, Concatⁱᵐᵖˡ); (Repeat, Repeatⁱᵐᵖˡ); (Sort, Sortⁱᵐᵖˡ); (SortFunc, SortFuncⁱᵐᵖˡ); (SortStableFunc, SortStableFuncⁱᵐᵖˡ); (IsSorted, IsSortedⁱᵐᵖˡ); (IsSortedFunc, IsSortedFuncⁱᵐᵖˡ); (Min, Minⁱᵐᵖˡ); (MinFunc, MinFuncⁱᵐᵖˡ); (Max, Maxⁱᵐᵖˡ); (MaxFunc, MaxFuncⁱᵐᵖˡ); (BinarySearch, BinarySearchⁱᵐᵖˡ); (BinarySearchFunc, BinarySearchFuncⁱᵐᵖˡ); (nextPowerOfTwo, nextPowerOfTwoⁱᵐᵖˡ); (isNaN, isNaNⁱᵐᵖˡ); (insertionSortCmpFunc, insertionSortCmpFuncⁱᵐᵖˡ); (siftDownCmpFunc, siftDownCmpFuncⁱᵐᵖˡ); (heapSortCmpFunc, heapSortCmpFuncⁱᵐᵖˡ); (pdqsortCmpFunc, pdqsortCmpFuncⁱᵐᵖˡ); (partitionCmpFunc, partitionCmpFuncⁱᵐᵖˡ); (partitionEqualCmpFunc, partitionEqualCmpFuncⁱᵐᵖˡ); (partialInsertionSortCmpFunc, partialInsertionSortCmpFuncⁱᵐᵖˡ); (breakPatternsCmpFunc, breakPatternsCmpFuncⁱᵐᵖˡ); (choosePivotCmpFunc, choosePivotCmpFuncⁱᵐᵖˡ); (order2CmpFunc, order2CmpFuncⁱᵐᵖˡ); (medianCmpFunc, medianCmpFuncⁱᵐᵖˡ); (medianAdjacentCmpFunc, medianAdjacentCmpFuncⁱᵐᵖˡ); (reverseRangeCmpFunc, reverseRangeCmpFuncⁱᵐᵖˡ); (swapRangeCmpFunc, swapRangeCmpFuncⁱᵐᵖˡ); (stableCmpFunc, stableCmpFuncⁱᵐᵖˡ); (symMergeCmpFunc, symMergeCmpFuncⁱᵐᵖˡ); (rotateCmpFunc, rotateCmpFuncⁱᵐᵖˡ); (insertionSortOrdered, insertionSortOrderedⁱᵐᵖˡ); (siftDownOrdered, siftDownOrderedⁱᵐᵖˡ); (heapSortOrdered, heapSortOrderedⁱᵐᵖˡ); (pdqsortOrdered, pdqsortOrderedⁱᵐᵖˡ); (partitionOrdered, partitionOrderedⁱᵐᵖˡ); (partitionEqualOrdered, partitionEqualOrderedⁱᵐᵖˡ); (partialInsertionSortOrdered, partialInsertionSortOrderedⁱᵐᵖˡ); (breakPatternsOrdered, breakPatternsOrderedⁱᵐᵖˡ); (choosePivotOrdered, choosePivotOrderedⁱᵐᵖˡ); (order2Ordered, order2Orderedⁱᵐᵖˡ); (medianOrdered, medianOrderedⁱᵐᵖˡ); (medianAdjacentOrdered, medianAdjacentOrderedⁱᵐᵖˡ); (reverseRangeOrdered, reverseRangeOrderedⁱᵐᵖˡ); (swapRangeOrdered, swapRangeOrderedⁱᵐᵖˡ); (stableOrdered, stableOrderedⁱᵐᵖˡ); (symMergeOrdered, symMergeOrderedⁱᵐᵖˡ); (rotateOrdered, rotateOrderedⁱᵐᵖˡ)].
 
 #[global] Instance info' : PkgInfo slices.slices :=
   {|

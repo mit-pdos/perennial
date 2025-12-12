@@ -41,9 +41,9 @@ Definition ErrNoProgress : go_string := "io.ErrNoProgress"%go.
 
 Axiom ErrNoProgress'init : val.
 
-Definition Readerⁱᵐᵖˡ : go.type := go.InterfaceType [go.MethodElem #"Read"%go (go.Signature [go.SliceType go.byte] #false [go.int; go.error])].
+Definition Readerⁱᵐᵖˡ : go.type := go.InterfaceType [go.MethodElem #"Read"%go (go.Signature [go.SliceType go.byte] false [go.int; go.error])].
 
-Definition Writerⁱᵐᵖˡ : go.type := go.InterfaceType [go.MethodElem #"Write"%go (go.Signature [go.SliceType go.byte] #false [go.int; go.error])].
+Definition Writerⁱᵐᵖˡ : go.type := go.InterfaceType [go.MethodElem #"Write"%go (go.Signature [go.SliceType go.byte] false [go.int; go.error])].
 
 Axiom Closerⁱᵐᵖˡ : go.type.
 
@@ -236,40 +236,6 @@ Definition pipe : go.type := go.Named "io.pipe"%go [].
 Definition PipeReader : go.type := go.Named "io.PipeReader"%go [].
 
 Definition PipeWriter : go.type := go.Named "io.PipeWriter"%go [].
-
-Axiom WriteStringⁱᵐᵖˡ : val.
-
-Axiom ReadAtLeastⁱᵐᵖˡ : val.
-
-Axiom ReadFullⁱᵐᵖˡ : val.
-
-Axiom CopyNⁱᵐᵖˡ : val.
-
-Axiom Copyⁱᵐᵖˡ : val.
-
-Axiom CopyBufferⁱᵐᵖˡ : val.
-
-Axiom copyBufferⁱᵐᵖˡ : val.
-
-Axiom LimitReaderⁱᵐᵖˡ : val.
-
-Axiom NewSectionReaderⁱᵐᵖˡ : val.
-
-Axiom NewOffsetWriterⁱᵐᵖˡ : val.
-
-Axiom TeeReaderⁱᵐᵖˡ : val.
-
-Axiom NopCloserⁱᵐᵖˡ : val.
-
-Axiom ReadAllⁱᵐᵖˡ : val.
-
-Axiom MultiReaderⁱᵐᵖˡ : val.
-
-Axiom MultiWriterⁱᵐᵖˡ : val.
-
-Axiom Pipeⁱᵐᵖˡ : val.
-
-Definition functions' : list (go_string * val) := [(WriteString, WriteStringⁱᵐᵖˡ); (ReadAtLeast, ReadAtLeastⁱᵐᵖˡ); (ReadFull, ReadFullⁱᵐᵖˡ); (CopyN, CopyNⁱᵐᵖˡ); (Copy, Copyⁱᵐᵖˡ); (CopyBuffer, CopyBufferⁱᵐᵖˡ); (copyBuffer, copyBufferⁱᵐᵖˡ); (LimitReader, LimitReaderⁱᵐᵖˡ); (NewSectionReader, NewSectionReaderⁱᵐᵖˡ); (NewOffsetWriter, NewOffsetWriterⁱᵐᵖˡ); (TeeReader, TeeReaderⁱᵐᵖˡ); (NopCloser, NopCloserⁱᵐᵖˡ); (ReadAll, ReadAllⁱᵐᵖˡ); (MultiReader, MultiReaderⁱᵐᵖˡ); (MultiWriter, MultiWriterⁱᵐᵖˡ); (Pipe, Pipeⁱᵐᵖˡ)].
 
 #[global] Instance info' : PkgInfo io.io :=
   {|

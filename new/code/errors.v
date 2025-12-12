@@ -39,22 +39,6 @@ Definition errorString : go.type := go.Named "errors.errorString"%go [].
 
 Definition joinError : go.type := go.Named "errors.joinError"%go [].
 
-Axiom Newⁱᵐᵖˡ : val.
-
-Axiom Joinⁱᵐᵖˡ : val.
-
-Axiom Unwrapⁱᵐᵖˡ : val.
-
-Axiom Isⁱᵐᵖˡ : val.
-
-Axiom isⁱᵐᵖˡ : val.
-
-Axiom Asⁱᵐᵖˡ : val.
-
-Axiom asⁱᵐᵖˡ : val.
-
-Definition functions' : list (go_string * val) := [(New, Newⁱᵐᵖˡ); (Join, Joinⁱᵐᵖˡ); (Unwrap, Unwrapⁱᵐᵖˡ); (Is, Isⁱᵐᵖˡ); (is', isⁱᵐᵖˡ); (As, Asⁱᵐᵖˡ); (as', asⁱᵐᵖˡ)].
-
 #[global] Instance info' : PkgInfo errors.errors :=
   {|
     pkg_imported_pkgs := [];

@@ -29,18 +29,6 @@ Definition Int : go_string := "crypto/rand.Int"%go.
 
 Definition reader : go.type := go.Named "crypto/rand.reader"%go [].
 
-Axiom fatalⁱᵐᵖˡ : val.
-
-Axiom Readⁱᵐᵖˡ : val.
-
-Axiom Textⁱᵐᵖˡ : val.
-
-Axiom Primeⁱᵐᵖˡ : val.
-
-Axiom Intⁱᵐᵖˡ : val.
-
-Definition functions' : list (go_string * val) := [(fatal, fatalⁱᵐᵖˡ); (Read, Readⁱᵐᵖˡ); (Text, Textⁱᵐᵖˡ); (Prime, Primeⁱᵐᵖˡ); (Int, Intⁱᵐᵖˡ)].
-
 #[global] Instance info' : PkgInfo rand.rand :=
   {|
     pkg_imported_pkgs := [];

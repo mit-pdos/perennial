@@ -39,36 +39,6 @@ Definition WriteRange : go_string := "internal/race.WriteRange"%go.
 
 Definition Errors : go_string := "internal/race.Errors"%go.
 
-Axiom Acquireⁱᵐᵖˡ : val.
-
-Axiom Releaseⁱᵐᵖˡ : val.
-
-Axiom ReleaseMergeⁱᵐᵖˡ : val.
-
-Axiom Disableⁱᵐᵖˡ : val.
-
-Axiom Enableⁱᵐᵖˡ : val.
-
-Axiom Readⁱᵐᵖˡ : val.
-
-Axiom ReadPCⁱᵐᵖˡ : val.
-
-Axiom ReadObjectPCⁱᵐᵖˡ : val.
-
-Axiom Writeⁱᵐᵖˡ : val.
-
-Axiom WritePCⁱᵐᵖˡ : val.
-
-Axiom WriteObjectPCⁱᵐᵖˡ : val.
-
-Axiom ReadRangeⁱᵐᵖˡ : val.
-
-Axiom WriteRangeⁱᵐᵖˡ : val.
-
-Axiom Errorsⁱᵐᵖˡ : val.
-
-Definition functions' : list (go_string * val) := [(Acquire, Acquireⁱᵐᵖˡ); (Release, Releaseⁱᵐᵖˡ); (ReleaseMerge, ReleaseMergeⁱᵐᵖˡ); (Disable, Disableⁱᵐᵖˡ); (Enable, Enableⁱᵐᵖˡ); (Read, Readⁱᵐᵖˡ); (ReadPC, ReadPCⁱᵐᵖˡ); (ReadObjectPC, ReadObjectPCⁱᵐᵖˡ); (Write, Writeⁱᵐᵖˡ); (WritePC, WritePCⁱᵐᵖˡ); (WriteObjectPC, WriteObjectPCⁱᵐᵖˡ); (ReadRange, ReadRangeⁱᵐᵖˡ); (WriteRange, WriteRangeⁱᵐᵖˡ); (Errors, Errorsⁱᵐᵖˡ)].
-
 #[global] Instance info' : PkgInfo race.race :=
   {|
     pkg_imported_pkgs := [];

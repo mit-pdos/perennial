@@ -3,26 +3,17 @@ From New.code.github_com.goose_lang.goose.model Require Import channel.
 
 Module chan.
 Section defns.
-Context `{ffi_syntax}.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 
-(* takes type as first argument *)
-Definition make: val := λ: "T" "cap",
-    channel.NewChannelⁱᵐᵖˡ "T" "cap".
-Definition receive : val :=
-  λ: "T" "c", channel.Channel__Receiveⁱᵐᵖˡ "c" "T" #().
-Definition send : val :=
-  λ: "T" "c" "v", channel.Channel__Sendⁱᵐᵖˡ "c" "T" "v".
-Definition close : val :=
-  λ: "T" "c", channel.Channel__Closeⁱᵐᵖˡ "c" "T" #().
-Definition len : val :=
-  λ: "T" "c", channel.Channel__Lenⁱᵐᵖˡ "c" "T" #().
-Definition cap : val :=
-  λ: "T" "c", channel.Channel__Capⁱᵐᵖˡ "c" "T" #().
+Definition receive elem_type : val :=
+  λ: "c", MethodResolve (channel.Channel elem_type) "Receive" "c" #().
+Definition send elem_type : val :=
+  λ: "c", MethodResolve (channel.Channel elem_type) "Send" "c" #().
 
-Definition for_range : val :=
-  λ: "T" "c" "body",
+Definition for_range elem_type : val :=
+  λ: "c" "body",
     (for: (λ: <>, #true)%V; (λ: <>, Skip)%V := λ: <>,
-       let: "t" := receive "T" "c" in
+       let: "t" := receive elem_type "c" in
        if: Snd "t" then
          "body" (Fst "t")
        else
@@ -36,17 +27,19 @@ Definition select_send : val :=
 Definition select_receive : val :=
   λ: "T" "ch" "f", InjR ("T", "ch", "f").
 
-Definition try_select_case : val :=
+Definition try_select_case elem_type : val :=
   λ: "c" "blocking",
     (match: "c" with
        InjL "data" =>
          let: ((("T", "ch"), "v"), "handler") := "data" in
-         let: "success" := channel.Channel__TrySendⁱᵐᵖˡ "ch" "T" "v" "blocking" in
+         let: "success" :=
+           MethodResolve (channel.Channel elem_type) "TrySend" #() "ch" "v" "blocking" in
          if: "success" then ("handler" #(), #true)
          else (#(), #false)
      | InjR "data" =>
          let: (("T", "ch"), "handler") := "data" in
-         let: (("success", "v"), "ok") := channel.Channel__TryReceiveⁱᵐᵖˡ "ch" "T" "blocking" in
+         let: (("success", "v"), "ok") :=
+           MethodResolve (channel.Channel elem_type) "TryReceive" #() "ch" "blocking" in
          if: "success" then ("handler" ("v", "ok"), #true)
          else (#(), #false)
       end).
@@ -84,6 +77,9 @@ Definition select_nonblocking : val :=
 
 End defns.
 End chan.
+
+
+(* FIXME: assumption for make, close, len, cap functions. *)
 
 #[global] Opaque chan.make chan.receive chan.send chan.close
   chan.len chan.cap

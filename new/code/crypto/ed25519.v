@@ -45,22 +45,6 @@ Definition PrivateKey : go.type := go.Named "crypto/ed25519.PrivateKey"%go [].
 
 Definition Options : go.type := go.Named "crypto/ed25519.Options"%go [].
 
-Axiom GenerateKeyⁱᵐᵖˡ : val.
-
-Axiom NewKeyFromSeedⁱᵐᵖˡ : val.
-
-Axiom newKeyFromSeedⁱᵐᵖˡ : val.
-
-Axiom Signⁱᵐᵖˡ : val.
-
-Axiom signⁱᵐᵖˡ : val.
-
-Axiom Verifyⁱᵐᵖˡ : val.
-
-Axiom VerifyWithOptionsⁱᵐᵖˡ : val.
-
-Definition functions' : list (go_string * val) := [(GenerateKey, GenerateKeyⁱᵐᵖˡ); (NewKeyFromSeed, NewKeyFromSeedⁱᵐᵖˡ); (newKeyFromSeed, newKeyFromSeedⁱᵐᵖˡ); (Sign, Signⁱᵐᵖˡ); (sign, signⁱᵐᵖˡ); (Verify, Verifyⁱᵐᵖˡ); (VerifyWithOptions, VerifyWithOptionsⁱᵐᵖˡ)].
-
 #[global] Instance info' : PkgInfo ed25519.ed25519 :=
   {|
     pkg_imported_pkgs := [];

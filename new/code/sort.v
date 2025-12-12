@@ -64,7 +64,7 @@ Definition Search : go_string := "sort.Search"%go.
    go: search.go:58:6 *)
 Definition Searchⁱᵐᵖˡ : val :=
   λ: "n" "f",
-    exception_do (let: "f" := (go.AllocValue (go.FunctionType (go.Signature [go.int] #false [go.bool])) "f") in
+    exception_do (let: "f" := (go.AllocValue (go.FunctionType (go.Signature [go.int] false [go.bool])) "f") in
     let: "n" := (go.AllocValue go.int "n") in
     let: "j" := (GoAlloc go.int #()) in
     let: "i" := (GoAlloc go.int #()) in
@@ -77,7 +77,7 @@ Definition Searchⁱᵐᵖˡ : val :=
       let: "$r0" := (u_to_w64 ((s_to_w64 ((![go.int] "i") +⟨go.int⟩ (![go.int] "j"))) ≫⟨go.uint⟩ #(W64 1))) in
       do:  ("h" <-[go.int] "$r0");;;
       (if: (~ (let: "$a0" := (![go.int] "h") in
-      (![go.FunctionType (go.Signature [go.int] #false [go.bool])] "f") "$a0"))
+      (![go.FunctionType (go.Signature [go.int] false [go.bool])] "f") "$a0"))
       then
         let: "$r0" := ((![go.int] "h") +⟨go.int⟩ #(W64 1)) in
         do:  ("i" <-[go.int] "$r0")
@@ -118,7 +118,7 @@ Definition Findⁱᵐᵖˡ : val :=
   λ: "n" "cmp",
     exception_do (let: "found" := (GoAlloc go.bool #()) in
     let: "i" := (GoAlloc go.int #()) in
-    let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [go.int] #false [go.int])) "cmp") in
+    let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [go.int] false [go.int])) "cmp") in
     let: "n" := (go.AllocValue go.int "n") in
     let: "j" := (GoAlloc go.int #()) in
     let: "$r0" := #(W64 0) in
@@ -130,7 +130,7 @@ Definition Findⁱᵐᵖˡ : val :=
       let: "$r0" := (u_to_w64 ((s_to_w64 ((![go.int] "i") +⟨go.int⟩ (![go.int] "j"))) ≫⟨go.uint⟩ #(W64 1))) in
       do:  ("h" <-[go.int] "$r0");;;
       (if: (let: "$a0" := (![go.int] "h") in
-      (![go.FunctionType (go.Signature [go.int] #false [go.int])] "cmp") "$a0") >⟨go.int⟩ #(W64 0)
+      (![go.FunctionType (go.Signature [go.int] false [go.int])] "cmp") "$a0") >⟨go.int⟩ #(W64 0)
       then
         let: "$r0" := ((![go.int] "h") +⟨go.int⟩ #(W64 1)) in
         do:  ("i" <-[go.int] "$r0")
@@ -138,7 +138,7 @@ Definition Findⁱᵐᵖˡ : val :=
         let: "$r0" := (![go.int] "h") in
         do:  ("j" <-[go.int] "$r0")));;;
     return: (![go.int] "i", ((![go.int] "i") <⟨go.int⟩ (![go.int] "n")) && ((let: "$a0" := (![go.int] "i") in
-     (![go.FunctionType (go.Signature [go.int] #false [go.int])] "cmp") "$a0") =⟨go.int⟩ #(W64 0)))).
+     (![go.FunctionType (go.Signature [go.int] false [go.int])] "cmp") "$a0") =⟨go.int⟩ #(W64 0)))).
 
 Definition SearchInts : go_string := "sort.SearchInts"%go.
 
@@ -190,9 +190,9 @@ Definition xorshift : go.type := go.Named "sort.xorshift"%go [].
 Definition xorshift__Nextⁱᵐᵖˡ : val :=
   λ: "r" <>,
     exception_do (let: "r" := (go.AllocValue (go.PointerType xorshift) "r") in
-    do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) `xor` ((![xorshift] (![go.PointerType xorshift] "r")) ≪⟨xorshift⟩ #(W64 13))));;;
-    do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) `xor` ((![xorshift] (![go.PointerType xorshift] "r")) ≫⟨xorshift⟩ #(W64 7))));;;
-    do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) `xor` ((![xorshift] (![go.PointerType xorshift] "r")) ≪⟨xorshift⟩ #(W64 17))));;;
+    do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) ^⟨go.uint64⟩ ((![xorshift] (![go.PointerType xorshift] "r")) ≪⟨xorshift⟩ #(W64 13))));;;
+    do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) ^⟨go.uint64⟩ ((![xorshift] (![go.PointerType xorshift] "r")) ≫⟨xorshift⟩ #(W64 7))));;;
+    do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) ^⟨go.uint64⟩ ((![xorshift] (![go.PointerType xorshift] "r")) ≪⟨xorshift⟩ #(W64 17))));;;
     return: (![xorshift] (![go.PointerType xorshift] "r"))).
 
 Definition nextPowerOfTwo : go_string := "sort.nextPowerOfTwo"%go.
@@ -308,110 +308,6 @@ Definition IntSlice : go.type := go.Named "sort.IntSlice"%go [].
 Definition Float64Slice : go.type := go.Named "sort.Float64Slice"%go [].
 
 Definition StringSlice : go.type := go.Named "sort.StringSlice"%go [].
-
-Axiom SearchFloat64sⁱᵐᵖˡ : val.
-
-Axiom SearchStringsⁱᵐᵖˡ : val.
-
-Axiom Sliceⁱᵐᵖˡ : val.
-
-Axiom SliceStableⁱᵐᵖˡ : val.
-
-Axiom SliceIsSortedⁱᵐᵖˡ : val.
-
-Axiom Sortⁱᵐᵖˡ : val.
-
-Axiom nextPowerOfTwoⁱᵐᵖˡ : val.
-
-Axiom Reverseⁱᵐᵖˡ : val.
-
-Axiom IsSortedⁱᵐᵖˡ : val.
-
-Axiom isNaNⁱᵐᵖˡ : val.
-
-Axiom Intsⁱᵐᵖˡ : val.
-
-Axiom Float64sⁱᵐᵖˡ : val.
-
-Axiom Stringsⁱᵐᵖˡ : val.
-
-Axiom IntsAreSortedⁱᵐᵖˡ : val.
-
-Axiom Float64sAreSortedⁱᵐᵖˡ : val.
-
-Axiom StringsAreSortedⁱᵐᵖˡ : val.
-
-Axiom Stableⁱᵐᵖˡ : val.
-
-Axiom insertionSort_funcⁱᵐᵖˡ : val.
-
-Axiom siftDown_funcⁱᵐᵖˡ : val.
-
-Axiom heapSort_funcⁱᵐᵖˡ : val.
-
-Axiom pdqsort_funcⁱᵐᵖˡ : val.
-
-Axiom partition_funcⁱᵐᵖˡ : val.
-
-Axiom partitionEqual_funcⁱᵐᵖˡ : val.
-
-Axiom partialInsertionSort_funcⁱᵐᵖˡ : val.
-
-Axiom breakPatterns_funcⁱᵐᵖˡ : val.
-
-Axiom choosePivot_funcⁱᵐᵖˡ : val.
-
-Axiom order2_funcⁱᵐᵖˡ : val.
-
-Axiom median_funcⁱᵐᵖˡ : val.
-
-Axiom medianAdjacent_funcⁱᵐᵖˡ : val.
-
-Axiom reverseRange_funcⁱᵐᵖˡ : val.
-
-Axiom swapRange_funcⁱᵐᵖˡ : val.
-
-Axiom stable_funcⁱᵐᵖˡ : val.
-
-Axiom symMerge_funcⁱᵐᵖˡ : val.
-
-Axiom rotate_funcⁱᵐᵖˡ : val.
-
-Axiom insertionSortⁱᵐᵖˡ : val.
-
-Axiom siftDownⁱᵐᵖˡ : val.
-
-Axiom heapSortⁱᵐᵖˡ : val.
-
-Axiom pdqsortⁱᵐᵖˡ : val.
-
-Axiom partitionⁱᵐᵖˡ : val.
-
-Axiom partitionEqualⁱᵐᵖˡ : val.
-
-Axiom partialInsertionSortⁱᵐᵖˡ : val.
-
-Axiom breakPatternsⁱᵐᵖˡ : val.
-
-Axiom choosePivotⁱᵐᵖˡ : val.
-
-Axiom order2ⁱᵐᵖˡ : val.
-
-Axiom medianⁱᵐᵖˡ : val.
-
-Axiom medianAdjacentⁱᵐᵖˡ : val.
-
-Axiom reverseRangeⁱᵐᵖˡ : val.
-
-Axiom swapRangeⁱᵐᵖˡ : val.
-
-Axiom stableⁱᵐᵖˡ : val.
-
-Axiom symMergeⁱᵐᵖˡ : val.
-
-Axiom rotateⁱᵐᵖˡ : val.
-
-Definition functions' : list (go_string * val) := [(Search, Searchⁱᵐᵖˡ); (Find, Findⁱᵐᵖˡ); (SearchInts, SearchIntsⁱᵐᵖˡ); (SearchFloat64s, SearchFloat64sⁱᵐᵖˡ); (SearchStrings, SearchStringsⁱᵐᵖˡ); (Slice, Sliceⁱᵐᵖˡ); (SliceStable, SliceStableⁱᵐᵖˡ); (SliceIsSorted, SliceIsSortedⁱᵐᵖˡ); (Sort, Sortⁱᵐᵖˡ); (nextPowerOfTwo, nextPowerOfTwoⁱᵐᵖˡ); (Reverse, Reverseⁱᵐᵖˡ); (IsSorted, IsSortedⁱᵐᵖˡ); (isNaN, isNaNⁱᵐᵖˡ); (Ints, Intsⁱᵐᵖˡ); (Float64s, Float64sⁱᵐᵖˡ); (Strings, Stringsⁱᵐᵖˡ); (IntsAreSorted, IntsAreSortedⁱᵐᵖˡ); (Float64sAreSorted, Float64sAreSortedⁱᵐᵖˡ); (StringsAreSorted, StringsAreSortedⁱᵐᵖˡ); (Stable, Stableⁱᵐᵖˡ); (insertionSort_func, insertionSort_funcⁱᵐᵖˡ); (siftDown_func, siftDown_funcⁱᵐᵖˡ); (heapSort_func, heapSort_funcⁱᵐᵖˡ); (pdqsort_func, pdqsort_funcⁱᵐᵖˡ); (partition_func, partition_funcⁱᵐᵖˡ); (partitionEqual_func, partitionEqual_funcⁱᵐᵖˡ); (partialInsertionSort_func, partialInsertionSort_funcⁱᵐᵖˡ); (breakPatterns_func, breakPatterns_funcⁱᵐᵖˡ); (choosePivot_func, choosePivot_funcⁱᵐᵖˡ); (order2_func, order2_funcⁱᵐᵖˡ); (median_func, median_funcⁱᵐᵖˡ); (medianAdjacent_func, medianAdjacent_funcⁱᵐᵖˡ); (reverseRange_func, reverseRange_funcⁱᵐᵖˡ); (swapRange_func, swapRange_funcⁱᵐᵖˡ); (stable_func, stable_funcⁱᵐᵖˡ); (symMerge_func, symMerge_funcⁱᵐᵖˡ); (rotate_func, rotate_funcⁱᵐᵖˡ); (insertionSort, insertionSortⁱᵐᵖˡ); (siftDown, siftDownⁱᵐᵖˡ); (heapSort, heapSortⁱᵐᵖˡ); (pdqsort, pdqsortⁱᵐᵖˡ); (partition, partitionⁱᵐᵖˡ); (partitionEqual, partitionEqualⁱᵐᵖˡ); (partialInsertionSort, partialInsertionSortⁱᵐᵖˡ); (breakPatterns, breakPatternsⁱᵐᵖˡ); (choosePivot, choosePivotⁱᵐᵖˡ); (order2, order2ⁱᵐᵖˡ); (median, medianⁱᵐᵖˡ); (medianAdjacent, medianAdjacentⁱᵐᵖˡ); (reverseRange, reverseRangeⁱᵐᵖˡ); (swapRange, swapRangeⁱᵐᵖˡ); (stable, stableⁱᵐᵖˡ); (symMerge, symMergeⁱᵐᵖˡ); (rotate, rotateⁱᵐᵖˡ)].
 
 #[global] Instance info' : PkgInfo sort.sort :=
   {|

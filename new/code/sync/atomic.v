@@ -813,50 +813,6 @@ Definition Pointer(T : go.type)  : go.type := go.Named "sync/atomic.Pointer"%go 
 
 Definition Uintptr : go.type := go.Named "sync/atomic.Uintptr"%go [].
 
-Axiom SwapUintptrⁱᵐᵖˡ : val.
-
-Axiom SwapPointerⁱᵐᵖˡ : val.
-
-Axiom CompareAndSwapUintptrⁱᵐᵖˡ : val.
-
-Axiom CompareAndSwapPointerⁱᵐᵖˡ : val.
-
-Axiom AddUintptrⁱᵐᵖˡ : val.
-
-Axiom AndInt32ⁱᵐᵖˡ : val.
-
-Axiom AndUint32ⁱᵐᵖˡ : val.
-
-Axiom AndUintptrⁱᵐᵖˡ : val.
-
-Axiom OrInt32ⁱᵐᵖˡ : val.
-
-Axiom OrUint32ⁱᵐᵖˡ : val.
-
-Axiom OrUintptrⁱᵐᵖˡ : val.
-
-Axiom LoadUintptrⁱᵐᵖˡ : val.
-
-Axiom LoadPointerⁱᵐᵖˡ : val.
-
-Axiom StoreUintptrⁱᵐᵖˡ : val.
-
-Axiom StorePointerⁱᵐᵖˡ : val.
-
-Axiom AndInt64ⁱᵐᵖˡ : val.
-
-Axiom AndUint64ⁱᵐᵖˡ : val.
-
-Axiom OrInt64ⁱᵐᵖˡ : val.
-
-Axiom OrUint64ⁱᵐᵖˡ : val.
-
-Axiom runtime_procPinⁱᵐᵖˡ : val.
-
-Axiom runtime_procUnpinⁱᵐᵖˡ : val.
-
-Definition functions' : list (go_string * val) := [(SwapInt32, SwapInt32ⁱᵐᵖˡ); (SwapUint32, SwapUint32ⁱᵐᵖˡ); (SwapUintptr, SwapUintptrⁱᵐᵖˡ); (SwapPointer, SwapPointerⁱᵐᵖˡ); (CompareAndSwapInt32, CompareAndSwapInt32ⁱᵐᵖˡ); (CompareAndSwapUint32, CompareAndSwapUint32ⁱᵐᵖˡ); (CompareAndSwapUintptr, CompareAndSwapUintptrⁱᵐᵖˡ); (CompareAndSwapPointer, CompareAndSwapPointerⁱᵐᵖˡ); (AddInt32, AddInt32ⁱᵐᵖˡ); (AddUint32, AddUint32ⁱᵐᵖˡ); (AddUintptr, AddUintptrⁱᵐᵖˡ); (AndInt32, AndInt32ⁱᵐᵖˡ); (AndUint32, AndUint32ⁱᵐᵖˡ); (AndUintptr, AndUintptrⁱᵐᵖˡ); (OrInt32, OrInt32ⁱᵐᵖˡ); (OrUint32, OrUint32ⁱᵐᵖˡ); (OrUintptr, OrUintptrⁱᵐᵖˡ); (LoadInt32, LoadInt32ⁱᵐᵖˡ); (LoadUint32, LoadUint32ⁱᵐᵖˡ); (LoadUintptr, LoadUintptrⁱᵐᵖˡ); (LoadPointer, LoadPointerⁱᵐᵖˡ); (StoreInt32, StoreInt32ⁱᵐᵖˡ); (StoreUint32, StoreUint32ⁱᵐᵖˡ); (StoreUintptr, StoreUintptrⁱᵐᵖˡ); (StorePointer, StorePointerⁱᵐᵖˡ); (SwapInt64, SwapInt64ⁱᵐᵖˡ); (SwapUint64, SwapUint64ⁱᵐᵖˡ); (CompareAndSwapInt64, CompareAndSwapInt64ⁱᵐᵖˡ); (CompareAndSwapUint64, CompareAndSwapUint64ⁱᵐᵖˡ); (AddInt64, AddInt64ⁱᵐᵖˡ); (AddUint64, AddUint64ⁱᵐᵖˡ); (AndInt64, AndInt64ⁱᵐᵖˡ); (AndUint64, AndUint64ⁱᵐᵖˡ); (OrInt64, OrInt64ⁱᵐᵖˡ); (OrUint64, OrUint64ⁱᵐᵖˡ); (LoadInt64, LoadInt64ⁱᵐᵖˡ); (LoadUint64, LoadUint64ⁱᵐᵖˡ); (StoreInt64, StoreInt64ⁱᵐᵖˡ); (StoreUint64, StoreUint64ⁱᵐᵖˡ); (b32, b32ⁱᵐᵖˡ); (runtime_procPin, runtime_procPinⁱᵐᵖˡ); (runtime_procUnpin, runtime_procUnpinⁱᵐᵖˡ)].
-
 #[global] Instance info' : PkgInfo atomic.atomic :=
   {|
     pkg_imported_pkgs := [];
@@ -865,7 +821,7 @@ Definition functions' : list (go_string * val) := [(SwapInt32, SwapInt32ⁱᵐ�
 Definition initialize' : val :=
   λ: <>,
     package.init atomic.atomic (λ: <>,
-      exception_do (let: "$r0" := (go.AllocValue (Pointer go.int) (CompositeLiteral (Pointer go.int) [])) in
+      exception_do (let: "$r0" := (go.AllocValue (Pointer go.int) (CompositeLiteral (Pointer go.int) (LiteralValue []))) in
       do:  #())
       ).
 

@@ -308,7 +308,7 @@ Axiom nsecShift : Z.
 Definition Time__nsecⁱᵐᵖˡ : val :=
   λ: "t" <>,
     exception_do (let: "t" := (go.AllocValue (go.PointerType Time) "t") in
-    return: (u_to_w32 ((![go.uint64] (StructFieldRef Time "wall"%go (![go.PointerType Time] "t"))) `and` #(W64 nsecMask)))).
+    return: (u_to_w32 ((![go.uint64] (StructFieldRef Time "wall"%go (![go.PointerType Time] "t"))) &⟨go.uint64⟩ #(W64 nsecMask)))).
 
 Definition wallToInternal : val := #(W64 59453308800).
 
@@ -318,7 +318,7 @@ Definition wallToInternal : val := #(W64 59453308800).
 Definition Time__secⁱᵐᵖˡ : val :=
   λ: "t" <>,
     exception_do (let: "t" := (go.AllocValue (go.PointerType Time) "t") in
-    (if: ((![go.uint64] (StructFieldRef Time "wall"%go (![go.PointerType Time] "t"))) `and` #(W64 hasMonotonic)) ≠⟨go.uint64⟩ #(W64 0)
+    (if: ((![go.uint64] (StructFieldRef Time "wall"%go (![go.PointerType Time] "t"))) &⟨go.uint64⟩ #(W64 hasMonotonic)) ≠⟨go.uint64⟩ #(W64 0)
     then return: (wallToInternal +⟨go.int64⟩ (u_to_w64 (((![go.uint64] (StructFieldRef Time "wall"%go (![go.PointerType Time] "t"))) ≪⟨go.uint64⟩ #(W64 1)) ≫⟨go.uint64⟩ #(W64 31))))
     else do:  #());;;
     return: (![go.int64] (StructFieldRef Time "ext"%go (![go.PointerType Time] "t")))).
@@ -331,7 +331,7 @@ Definition internalToUnix : val := #(W64 (-62135596800)).
 Definition Time__unixSecⁱᵐᵖˡ : val :=
   λ: "t" <>,
     exception_do (let: "t" := (go.AllocValue (go.PointerType Time) "t") in
-    return: (((MethodResolve (go.PointerType Time) sec #() (![go.PointerType Time] "t")) #()) +⟨go.int64⟩ internalToUnix)).
+    return: (((MethodResolve (go.PointerType Time) "sec"%go #() (![go.PointerType Time] "t")) #()) +⟨go.int64⟩ internalToUnix)).
 
 Axiom Monthⁱᵐᵖˡ : go.type.
 
@@ -480,7 +480,7 @@ Definition unixTime : go_string := "time.unixTime"%go.
 Definition Time__UnixNanoⁱᵐᵖˡ : val :=
   λ: "t" <>,
     exception_do (let: "t" := (go.AllocValue Time "t") in
-    return: ((((MethodResolve (go.PointerType Time) unixSec #() "t") #()) *⟨go.int64⟩ #(W64 1000000000)) +⟨go.int64⟩ (s_to_w64 ((MethodResolve (go.PointerType Time) nsec #() "t") #())))).
+    return: ((((MethodResolve (go.PointerType Time) "unixSec"%go #() "t") #()) *⟨go.int64⟩ #(W64 1000000000)) +⟨go.int64⟩ (s_to_w64 ((MethodResolve (go.PointerType Time) "nsec"%go #() "t") #())))).
 
 Axiom timeBinaryVersionV1 : val.
 
@@ -663,190 +663,6 @@ Definition rule : go.type := go.Named "time.rule"%go [].
 Definition fileSizeError : go.type := go.Named "time.fileSizeError"%go [].
 
 Definition dataIO : go.type := go.Named "time.dataIO"%go [].
-
-Axiom startsWithLowerCaseⁱᵐᵖˡ : val.
-
-Axiom nextStdChunkⁱᵐᵖˡ : val.
-
-Axiom matchⁱᵐᵖˡ : val.
-
-Axiom lookupⁱᵐᵖˡ : val.
-
-Axiom appendIntⁱᵐᵖˡ : val.
-
-Axiom atoiⁱᵐᵖˡ : val.
-
-Axiom stdFracSecondⁱᵐᵖˡ : val.
-
-Axiom digitsLenⁱᵐᵖˡ : val.
-
-Axiom separatorⁱᵐᵖˡ : val.
-
-Axiom appendNanoⁱᵐᵖˡ : val.
-
-Axiom newParseErrorⁱᵐᵖˡ : val.
-
-Axiom quoteⁱᵐᵖˡ : val.
-
-Axiom isDigitⁱᵐᵖˡ : val.
-
-Axiom getnumⁱᵐᵖˡ : val.
-
-Axiom getnum3ⁱᵐᵖˡ : val.
-
-Axiom cutspaceⁱᵐᵖˡ : val.
-
-Axiom skipⁱᵐᵖˡ : val.
-
-Axiom Parseⁱᵐᵖˡ : val.
-
-Axiom ParseInLocationⁱᵐᵖˡ : val.
-
-Axiom parseⁱᵐᵖˡ : val.
-
-Axiom parseTimeZoneⁱᵐᵖˡ : val.
-
-Axiom parseGMTⁱᵐᵖˡ : val.
-
-Axiom parseSignedOffsetⁱᵐᵖˡ : val.
-
-Axiom commaOrPeriodⁱᵐᵖˡ : val.
-
-Axiom parseNanosecondsⁱᵐᵖˡ : val.
-
-Axiom leadingIntⁱᵐᵖˡ : val.
-
-Axiom leadingFractionⁱᵐᵖˡ : val.
-
-Axiom ParseDurationⁱᵐᵖˡ : val.
-
-Axiom parseRFC3339ⁱᵐᵖˡ : val.
-
-Axiom parseStrictRFC3339ⁱᵐᵖˡ : val.
-
-Axiom whenⁱᵐᵖˡ : val.
-
-Axiom stopTimerⁱᵐᵖˡ : val.
-
-Axiom resetTimerⁱᵐᵖˡ : val.
-
-Axiom NewTimerⁱᵐᵖˡ : val.
-
-Axiom sendTimeⁱᵐᵖˡ : val.
-
-Axiom AfterFuncⁱᵐᵖˡ : val.
-
-Axiom goFuncⁱᵐᵖˡ : val.
-
-Axiom interruptⁱᵐᵖˡ : val.
-
-Axiom openⁱᵐᵖˡ : val.
-
-Axiom readⁱᵐᵖˡ : val.
-
-Axiom closefdⁱᵐᵖˡ : val.
-
-Axiom preadnⁱᵐᵖˡ : val.
-
-Axiom NewTickerⁱᵐᵖˡ : val.
-
-Axiom Tickⁱᵐᵖˡ : val.
-
-Axiom dateToAbsDaysⁱᵐᵖˡ : val.
-
-Axiom fmtFracⁱᵐᵖˡ : val.
-
-Axiom fmtIntⁱᵐᵖˡ : val.
-
-Axiom lessThanHalfⁱᵐᵖˡ : val.
-
-Axiom subMonoⁱᵐᵖˡ : val.
-
-Axiom Sinceⁱᵐᵖˡ : val.
-
-Axiom Untilⁱᵐᵖˡ : val.
-
-Axiom daysBeforeⁱᵐᵖˡ : val.
-
-Axiom daysInⁱᵐᵖˡ : val.
-
-Axiom nowⁱᵐᵖˡ : val.
-
-Axiom runtimeNowⁱᵐᵖˡ : val.
-
-Axiom runtimeIsBubbledⁱᵐᵖˡ : val.
-
-Axiom Nowⁱᵐᵖˡ : val.
-
-Axiom unixTimeⁱᵐᵖˡ : val.
-
-Axiom Unixⁱᵐᵖˡ : val.
-
-Axiom UnixMilliⁱᵐᵖˡ : val.
-
-Axiom UnixMicroⁱᵐᵖˡ : val.
-
-Axiom isLeapⁱᵐᵖˡ : val.
-
-Axiom normⁱᵐᵖˡ : val.
-
-Axiom Dateⁱᵐᵖˡ : val.
-
-Axiom divⁱᵐᵖˡ : val.
-
-Axiom legacyTimeTimeAbsⁱᵐᵖˡ : val.
-
-Axiom legacyAbsClockⁱᵐᵖˡ : val.
-
-Axiom legacyAbsDateⁱᵐᵖˡ : val.
-
-Axiom FixedZoneⁱᵐᵖˡ : val.
-
-Axiom fixedZoneⁱᵐᵖˡ : val.
-
-Axiom tzsetⁱᵐᵖˡ : val.
-
-Axiom tzsetNameⁱᵐᵖˡ : val.
-
-Axiom tzsetOffsetⁱᵐᵖˡ : val.
-
-Axiom tzsetRuleⁱᵐᵖˡ : val.
-
-Axiom tzsetNumⁱᵐᵖˡ : val.
-
-Axiom tzruleTimeⁱᵐᵖˡ : val.
-
-Axiom LoadLocationⁱᵐᵖˡ : val.
-
-Axiom containsDotDotⁱᵐᵖˡ : val.
-
-Axiom gorootZoneSourceⁱᵐᵖˡ : val.
-
-Axiom registerLoadFromEmbeddedTZDataⁱᵐᵖˡ : val.
-
-Axiom byteStringⁱᵐᵖˡ : val.
-
-Axiom LoadLocationFromTZDataⁱᵐᵖˡ : val.
-
-Axiom findZoneⁱᵐᵖˡ : val.
-
-Axiom loadTzinfoFromDirOrZipⁱᵐᵖˡ : val.
-
-Axiom get4ⁱᵐᵖˡ : val.
-
-Axiom get2ⁱᵐᵖˡ : val.
-
-Axiom loadTzinfoFromZipⁱᵐᵖˡ : val.
-
-Axiom loadTzinfoⁱᵐᵖˡ : val.
-
-Axiom loadLocationⁱᵐᵖˡ : val.
-
-Axiom readFileⁱᵐᵖˡ : val.
-
-Axiom initLocalⁱᵐᵖˡ : val.
-
-Definition functions' : list (go_string * val) := [(startsWithLowerCase, startsWithLowerCaseⁱᵐᵖˡ); (nextStdChunk, nextStdChunkⁱᵐᵖˡ); (match', matchⁱᵐᵖˡ); (lookup', lookupⁱᵐᵖˡ); (appendInt, appendIntⁱᵐᵖˡ); (atoi, atoiⁱᵐᵖˡ); (stdFracSecond, stdFracSecondⁱᵐᵖˡ); (digitsLen, digitsLenⁱᵐᵖˡ); (separator, separatorⁱᵐᵖˡ); (appendNano, appendNanoⁱᵐᵖˡ); (newParseError, newParseErrorⁱᵐᵖˡ); (quote, quoteⁱᵐᵖˡ); (isDigit, isDigitⁱᵐᵖˡ); (getnum, getnumⁱᵐᵖˡ); (getnum3, getnum3ⁱᵐᵖˡ); (cutspace, cutspaceⁱᵐᵖˡ); (skip, skipⁱᵐᵖˡ); (Parse, Parseⁱᵐᵖˡ); (ParseInLocation, ParseInLocationⁱᵐᵖˡ); (parse, parseⁱᵐᵖˡ); (parseTimeZone, parseTimeZoneⁱᵐᵖˡ); (parseGMT, parseGMTⁱᵐᵖˡ); (parseSignedOffset, parseSignedOffsetⁱᵐᵖˡ); (commaOrPeriod, commaOrPeriodⁱᵐᵖˡ); (parseNanoseconds, parseNanosecondsⁱᵐᵖˡ); (leadingInt, leadingIntⁱᵐᵖˡ); (leadingFraction, leadingFractionⁱᵐᵖˡ); (ParseDuration, ParseDurationⁱᵐᵖˡ); (parseRFC3339, parseRFC3339ⁱᵐᵖˡ); (parseStrictRFC3339, parseStrictRFC3339ⁱᵐᵖˡ); (Sleep, Sleepⁱᵐᵖˡ); (syncTimer, syncTimerⁱᵐᵖˡ); (when, whenⁱᵐᵖˡ); (newTimer, newTimerⁱᵐᵖˡ); (stopTimer, stopTimerⁱᵐᵖˡ); (resetTimer, resetTimerⁱᵐᵖˡ); (NewTimer, NewTimerⁱᵐᵖˡ); (sendTime, sendTimeⁱᵐᵖˡ); (After, Afterⁱᵐᵖˡ); (AfterFunc, AfterFuncⁱᵐᵖˡ); (goFunc, goFuncⁱᵐᵖˡ); (interrupt, interruptⁱᵐᵖˡ); (open, openⁱᵐᵖˡ); (read, readⁱᵐᵖˡ); (closefd, closefdⁱᵐᵖˡ); (preadn, preadnⁱᵐᵖˡ); (NewTicker, NewTickerⁱᵐᵖˡ); (Tick, Tickⁱᵐᵖˡ); (dateToAbsDays, dateToAbsDaysⁱᵐᵖˡ); (fmtFrac, fmtFracⁱᵐᵖˡ); (fmtInt, fmtIntⁱᵐᵖˡ); (lessThanHalf, lessThanHalfⁱᵐᵖˡ); (subMono, subMonoⁱᵐᵖˡ); (Since, Sinceⁱᵐᵖˡ); (Until, Untilⁱᵐᵖˡ); (daysBefore, daysBeforeⁱᵐᵖˡ); (daysIn, daysInⁱᵐᵖˡ); (now, nowⁱᵐᵖˡ); (runtimeNow, runtimeNowⁱᵐᵖˡ); (runtimeNano, runtimeNanoⁱᵐᵖˡ); (runtimeIsBubbled, runtimeIsBubbledⁱᵐᵖˡ); (Now, Nowⁱᵐᵖˡ); (unixTime, unixTimeⁱᵐᵖˡ); (Unix, Unixⁱᵐᵖˡ); (UnixMilli, UnixMilliⁱᵐᵖˡ); (UnixMicro, UnixMicroⁱᵐᵖˡ); (isLeap, isLeapⁱᵐᵖˡ); (norm, normⁱᵐᵖˡ); (Date, Dateⁱᵐᵖˡ); (div, divⁱᵐᵖˡ); (legacyTimeTimeAbs, legacyTimeTimeAbsⁱᵐᵖˡ); (legacyAbsClock, legacyAbsClockⁱᵐᵖˡ); (legacyAbsDate, legacyAbsDateⁱᵐᵖˡ); (FixedZone, FixedZoneⁱᵐᵖˡ); (fixedZone, fixedZoneⁱᵐᵖˡ); (tzset, tzsetⁱᵐᵖˡ); (tzsetName, tzsetNameⁱᵐᵖˡ); (tzsetOffset, tzsetOffsetⁱᵐᵖˡ); (tzsetRule, tzsetRuleⁱᵐᵖˡ); (tzsetNum, tzsetNumⁱᵐᵖˡ); (tzruleTime, tzruleTimeⁱᵐᵖˡ); (LoadLocation, LoadLocationⁱᵐᵖˡ); (containsDotDot, containsDotDotⁱᵐᵖˡ); (gorootZoneSource, gorootZoneSourceⁱᵐᵖˡ); (registerLoadFromEmbeddedTZData, registerLoadFromEmbeddedTZDataⁱᵐᵖˡ); (byteString, byteStringⁱᵐᵖˡ); (LoadLocationFromTZData, LoadLocationFromTZDataⁱᵐᵖˡ); (findZone, findZoneⁱᵐᵖˡ); (loadTzinfoFromDirOrZip, loadTzinfoFromDirOrZipⁱᵐᵖˡ); (get4, get4ⁱᵐᵖˡ); (get2, get2ⁱᵐᵖˡ); (loadTzinfoFromZip, loadTzinfoFromZipⁱᵐᵖˡ); (loadTzinfo, loadTzinfoⁱᵐᵖˡ); (loadLocation, loadLocationⁱᵐᵖˡ); (readFile, readFileⁱᵐᵖˡ); (initLocal, initLocalⁱᵐᵖˡ)].
 
 #[global] Instance info' : PkgInfo time.time :=
   {|

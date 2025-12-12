@@ -51,30 +51,6 @@ Definition Association : go.type := go.Named "internal/synctest.Association"%go 
 
 Definition Bubble : go.type := go.Named "internal/synctest.Bubble"%go [].
 
-Axiom Waitⁱᵐᵖˡ : val.
-
-Axiom Associateⁱᵐᵖˡ : val.
-
-Axiom associateⁱᵐᵖˡ : val.
-
-Axiom Disassociateⁱᵐᵖˡ : val.
-
-Axiom disassociateⁱᵐᵖˡ : val.
-
-Axiom IsAssociatedⁱᵐᵖˡ : val.
-
-Axiom isAssociatedⁱᵐᵖˡ : val.
-
-Axiom acquireⁱᵐᵖˡ : val.
-
-Axiom releaseⁱᵐᵖˡ : val.
-
-Axiom inBubbleⁱᵐᵖˡ : val.
-
-Axiom Acquireⁱᵐᵖˡ : val.
-
-Definition functions' : list (go_string * val) := [(Run, Runⁱᵐᵖˡ); (Wait, Waitⁱᵐᵖˡ); (IsInBubble, IsInBubbleⁱᵐᵖˡ); (Associate, Associateⁱᵐᵖˡ); (associate, associateⁱᵐᵖˡ); (Disassociate, Disassociateⁱᵐᵖˡ); (disassociate, disassociateⁱᵐᵖˡ); (IsAssociated, IsAssociatedⁱᵐᵖˡ); (isAssociated, isAssociatedⁱᵐᵖˡ); (acquire, acquireⁱᵐᵖˡ); (release, releaseⁱᵐᵖˡ); (inBubble, inBubbleⁱᵐᵖˡ); (Acquire, Acquireⁱᵐᵖˡ)].
-
 #[global] Instance info' : PkgInfo synctest.synctest :=
   {|
     pkg_imported_pkgs := [];

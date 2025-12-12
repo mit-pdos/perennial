@@ -137,58 +137,6 @@ Definition flag : go.type := go.Named "internal/reflectlite.flag"%go [].
 
 Definition ValueError : go.type := go.Named "internal/reflectlite.ValueError"%go [].
 
-Axiom Swapperⁱᵐᵖˡ : val.
-
-Axiom pkgPathⁱᵐᵖˡ : val.
-
-Axiom resolveNameOffⁱᵐᵖˡ : val.
-
-Axiom resolveTypeOffⁱᵐᵖˡ : val.
-
-Axiom toRTypeⁱᵐᵖˡ : val.
-
-Axiom elemⁱᵐᵖˡ : val.
-
-Axiom addⁱᵐᵖˡ : val.
-
-Axiom TypeOfⁱᵐᵖˡ : val.
-
-Axiom implementsⁱᵐᵖˡ : val.
-
-Axiom directlyAssignableⁱᵐᵖˡ : val.
-
-Axiom haveIdenticalTypeⁱᵐᵖˡ : val.
-
-Axiom haveIdenticalUnderlyingTypeⁱᵐᵖˡ : val.
-
-Axiom toTypeⁱᵐᵖˡ : val.
-
-Axiom packEfaceⁱᵐᵖˡ : val.
-
-Axiom unpackEfaceⁱᵐᵖˡ : val.
-
-Axiom methodNameⁱᵐᵖˡ : val.
-
-Axiom valueInterfaceⁱᵐᵖˡ : val.
-
-Axiom chanlenⁱᵐᵖˡ : val.
-
-Axiom maplenⁱᵐᵖˡ : val.
-
-Axiom unsafe_Newⁱᵐᵖˡ : val.
-
-Axiom ValueOfⁱᵐᵖˡ : val.
-
-Axiom arrayAtⁱᵐᵖˡ : val.
-
-Axiom ifaceE2Iⁱᵐᵖˡ : val.
-
-Axiom typedmemmoveⁱᵐᵖˡ : val.
-
-Axiom escapesⁱᵐᵖˡ : val.
-
-Definition functions' : list (go_string * val) := [(Swapper, Swapperⁱᵐᵖˡ); (pkgPath, pkgPathⁱᵐᵖˡ); (resolveNameOff, resolveNameOffⁱᵐᵖˡ); (resolveTypeOff, resolveTypeOffⁱᵐᵖˡ); (toRType, toRTypeⁱᵐᵖˡ); (elem, elemⁱᵐᵖˡ); (add, addⁱᵐᵖˡ); (TypeOf, TypeOfⁱᵐᵖˡ); (implements, implementsⁱᵐᵖˡ); (directlyAssignable, directlyAssignableⁱᵐᵖˡ); (haveIdenticalType, haveIdenticalTypeⁱᵐᵖˡ); (haveIdenticalUnderlyingType, haveIdenticalUnderlyingTypeⁱᵐᵖˡ); (toType, toTypeⁱᵐᵖˡ); (packEface, packEfaceⁱᵐᵖˡ); (unpackEface, unpackEfaceⁱᵐᵖˡ); (methodName, methodNameⁱᵐᵖˡ); (valueInterface, valueInterfaceⁱᵐᵖˡ); (chanlen, chanlenⁱᵐᵖˡ); (maplen, maplenⁱᵐᵖˡ); (unsafe_New, unsafe_Newⁱᵐᵖˡ); (ValueOf, ValueOfⁱᵐᵖˡ); (arrayAt, arrayAtⁱᵐᵖˡ); (ifaceE2I, ifaceE2Iⁱᵐᵖˡ); (typedmemmove, typedmemmoveⁱᵐᵖˡ); (escapes, escapesⁱᵐᵖˡ)].
-
 #[global] Instance info' : PkgInfo reflectlite.reflectlite :=
   {|
     pkg_imported_pkgs := [];

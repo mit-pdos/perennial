@@ -139,58 +139,6 @@ Definition rngSource : go.type := go.Named "math/rand.rngSource"%go [].
 
 Definition Zipf : go.type := go.Named "math/rand.Zipf"%go [].
 
-Axiom absInt32ⁱᵐᵖˡ : val.
-
-Axiom NewSourceⁱᵐᵖˡ : val.
-
-Axiom newSourceⁱᵐᵖˡ : val.
-
-Axiom Newⁱᵐᵖˡ : val.
-
-Axiom readⁱᵐᵖˡ : val.
-
-Axiom globalRandⁱᵐᵖˡ : val.
-
-Axiom runtime_randⁱᵐᵖˡ : val.
-
-Axiom Seedⁱᵐᵖˡ : val.
-
-Axiom Int63ⁱᵐᵖˡ : val.
-
-Axiom Uint32ⁱᵐᵖˡ : val.
-
-Axiom Uint64ⁱᵐᵖˡ : val.
-
-Axiom Int31ⁱᵐᵖˡ : val.
-
-Axiom Intⁱᵐᵖˡ : val.
-
-Axiom Int63nⁱᵐᵖˡ : val.
-
-Axiom Int31nⁱᵐᵖˡ : val.
-
-Axiom Intnⁱᵐᵖˡ : val.
-
-Axiom Float64ⁱᵐᵖˡ : val.
-
-Axiom Float32ⁱᵐᵖˡ : val.
-
-Axiom Permⁱᵐᵖˡ : val.
-
-Axiom Shuffleⁱᵐᵖˡ : val.
-
-Axiom Readⁱᵐᵖˡ : val.
-
-Axiom NormFloat64ⁱᵐᵖˡ : val.
-
-Axiom ExpFloat64ⁱᵐᵖˡ : val.
-
-Axiom seedrandⁱᵐᵖˡ : val.
-
-Axiom NewZipfⁱᵐᵖˡ : val.
-
-Definition functions' : list (go_string * val) := [(absInt32, absInt32ⁱᵐᵖˡ); (NewSource, NewSourceⁱᵐᵖˡ); (newSource, newSourceⁱᵐᵖˡ); (New, Newⁱᵐᵖˡ); (read, readⁱᵐᵖˡ); (globalRand, globalRandⁱᵐᵖˡ); (runtime_rand, runtime_randⁱᵐᵖˡ); (Seed, Seedⁱᵐᵖˡ); (Int63, Int63ⁱᵐᵖˡ); (Uint32, Uint32ⁱᵐᵖˡ); (Uint64, Uint64ⁱᵐᵖˡ); (Int31, Int31ⁱᵐᵖˡ); (Int, Intⁱᵐᵖˡ); (Int63n, Int63nⁱᵐᵖˡ); (Int31n, Int31nⁱᵐᵖˡ); (Intn, Intnⁱᵐᵖˡ); (Float64, Float64ⁱᵐᵖˡ); (Float32, Float32ⁱᵐᵖˡ); (Perm, Permⁱᵐᵖˡ); (Shuffle, Shuffleⁱᵐᵖˡ); (Read, Readⁱᵐᵖˡ); (NormFloat64, NormFloat64ⁱᵐᵖˡ); (ExpFloat64, ExpFloat64ⁱᵐᵖˡ); (seedrand, seedrandⁱᵐᵖˡ); (NewZipf, NewZipfⁱᵐᵖˡ)].
-
 #[global] Instance info' : PkgInfo rand.rand :=
   {|
     pkg_imported_pkgs := [];

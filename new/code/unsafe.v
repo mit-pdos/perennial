@@ -9,8 +9,6 @@ Section code.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 
 
-Definition functions' : list (go_string * val) := [].
-
 #[global] Instance info' : PkgInfo unsafe.unsafe :=
   {|
     pkg_imported_pkgs := [];

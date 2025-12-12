@@ -88,48 +88,6 @@ Definition Output : go_string := "log.Output"%go.
 
 Definition Logger : go.type := go.Named "log.Logger"%go [].
 
-Axiom Newⁱᵐᵖˡ : val.
-
-Axiom Defaultⁱᵐᵖˡ : val.
-
-Axiom itoaⁱᵐᵖˡ : val.
-
-Axiom formatHeaderⁱᵐᵖˡ : val.
-
-Axiom getBufferⁱᵐᵖˡ : val.
-
-Axiom putBufferⁱᵐᵖˡ : val.
-
-Axiom SetOutputⁱᵐᵖˡ : val.
-
-Axiom Flagsⁱᵐᵖˡ : val.
-
-Axiom SetFlagsⁱᵐᵖˡ : val.
-
-Axiom Prefixⁱᵐᵖˡ : val.
-
-Axiom SetPrefixⁱᵐᵖˡ : val.
-
-Axiom Writerⁱᵐᵖˡ : val.
-
-Axiom Printⁱᵐᵖˡ : val.
-
-Axiom Fatalⁱᵐᵖˡ : val.
-
-Axiom Fatalfⁱᵐᵖˡ : val.
-
-Axiom Fatallnⁱᵐᵖˡ : val.
-
-Axiom Panicⁱᵐᵖˡ : val.
-
-Axiom Panicfⁱᵐᵖˡ : val.
-
-Axiom Paniclnⁱᵐᵖˡ : val.
-
-Axiom Outputⁱᵐᵖˡ : val.
-
-Definition functions' : list (go_string * val) := [(New, Newⁱᵐᵖˡ); (Default, Defaultⁱᵐᵖˡ); (itoa, itoaⁱᵐᵖˡ); (formatHeader, formatHeaderⁱᵐᵖˡ); (getBuffer, getBufferⁱᵐᵖˡ); (putBuffer, putBufferⁱᵐᵖˡ); (SetOutput, SetOutputⁱᵐᵖˡ); (Flags, Flagsⁱᵐᵖˡ); (SetFlags, SetFlagsⁱᵐᵖˡ); (Prefix, Prefixⁱᵐᵖˡ); (SetPrefix, SetPrefixⁱᵐᵖˡ); (Writer, Writerⁱᵐᵖˡ); (Print, Printⁱᵐᵖˡ); (Printf, Printfⁱᵐᵖˡ); (Println, Printlnⁱᵐᵖˡ); (Fatal, Fatalⁱᵐᵖˡ); (Fatalf, Fatalfⁱᵐᵖˡ); (Fatalln, Fatallnⁱᵐᵖˡ); (Panic, Panicⁱᵐᵖˡ); (Panicf, Panicfⁱᵐᵖˡ); (Panicln, Paniclnⁱᵐᵖˡ); (Output, Outputⁱᵐᵖˡ)].
-
 #[global] Instance info' : PkgInfo log.log :=
   {|
     pkg_imported_pkgs := [];

@@ -41,14 +41,6 @@ Definition FileDisk : go.type := go.Named "github.com/goose-lang/primitive/disk.
 
 Definition MemDisk : go.type := go.Named "github.com/goose-lang/primitive/disk.MemDisk"%go [].
 
-Axiom Initⁱᵐᵖˡ : val.
-
-Axiom NewFileDiskⁱᵐᵖˡ : val.
-
-Axiom NewMemDiskⁱᵐᵖˡ : val.
-
-Definition functions' : list (go_string * val) := [(Init, Initⁱᵐᵖˡ); (Get, Getⁱᵐᵖˡ); (Read, Readⁱᵐᵖˡ); (Write, Writeⁱᵐᵖˡ); (Size, Sizeⁱᵐᵖˡ); (Barrier, Barrierⁱᵐᵖˡ); (NewFileDisk, NewFileDiskⁱᵐᵖˡ); (NewMemDisk, NewMemDiskⁱᵐᵖˡ)].
-
 #[global] Instance info' : PkgInfo disk.disk :=
   {|
     pkg_imported_pkgs := [];
