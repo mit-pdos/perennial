@@ -1,5 +1,7 @@
 # Golang for Iris 
 
+FIXME: this is a bit out of date because lang.v contains more Go-specific stuff now.
+
 The `./defn` directory contains trusted definitions. It specifically
 defines the semantics of types, control flow like early return and for loops, and
 built-in Go objects such as maps, slices, etc. It is built on top of the minimal
@@ -72,5 +74,5 @@ select {
 ```
 Here, the translation desugars (1) select statements, uses λ-calculus
 let-bindings (2) to encode evaluation order while relying on substitution to
-ensure the `val` ends up in the cases, before taking steps according to a custom
-semantics (3).
+ensure the `val` ends up in the cases, before taking steps according to an
+axiomatic/operational semantics (3) specifically for select.

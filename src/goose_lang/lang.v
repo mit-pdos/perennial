@@ -221,60 +221,63 @@ Inductive go_instruction : Type :=
 | InternalMapForRange (key_type elem_type : go.type)
 | InternalMapMake
 
-| CompositeLiteral (t : go.type).
+| CompositeLiteral (t : go.type)
+| SelectStmt.
 
 Inductive expr :=
-  (* Values *)
-  | Val (v : val)
-  (* Base lambda calculus *)
-  | Var (x : string)
-  | Rec (f x : binder) (e : expr)
-  | App (e1 e2 : expr)
-  (* Base types and their operations *)
-  | UnOp (op : un_op) (e : expr)
-  | BinOp (op : bin_op) (e1 e2 : expr)
-  | If (e0 e1 e2 : expr)
-  (* Products *)
-  | Pair (e1 e2 : expr)
-  | Fst (e : expr)
-  | Snd (e : expr)
-  (* Sums *)
-  | InjL (e : expr)
-  | InjR (e : expr)
-  | Case (e0 : expr) (e1 : expr) (e2 : expr)
-  (* Concurrency *)
-  | Fork (e : expr)
-  | Atomically (e: expr) (e : expr)
-  (* Heap-based primitives *)
-  | Primitive0 (op: prim_op args0)
-  | Primitive1 (op: prim_op args1) (e : expr)
-  | Primitive2 (op: prim_op args2) (e1 e2 : expr)
-  (* | Primitive3 (op: prim_op args3) (e0 e1 e2 : expr) *)
-  | CmpXchg (e0 : expr) (e1 : expr) (e2 : expr) (* Compare-exchange *)
-  (* External FFI operation *)
-  | ExternalOp (op: ffi_opcode) (e: expr)
-  (* Prophecy *)
-  | NewProph
-  | ResolveProph (e1 : expr) (e2 : expr) (* proph, val *)
-  | SelectStmt (comms : list comm_clause)
+(* Values *)
+| Val (v : val)
+(* Base lambda calculus *)
+| Var (x : string)
+| Rec (f x : binder) (e : expr)
+| App (e1 e2 : expr)
+(* Base types and their operations *)
+| UnOp (op : un_op) (e : expr)
+| BinOp (op : bin_op) (e1 e2 : expr)
+| If (e0 e1 e2 : expr)
+(* Products *)
+| Pair (e1 e2 : expr)
+| Fst (e : expr)
+| Snd (e : expr)
+(* Sums *)
+| InjL (e : expr)
+| InjR (e : expr)
+| Case (e0 : expr) (e1 : expr) (e2 : expr)
+(* Concurrency *)
+| Fork (e : expr)
+| Atomically (e: expr) (e : expr)
+(* Heap-based primitives *)
+| Primitive0 (op: prim_op args0)
+| Primitive1 (op: prim_op args1) (e : expr)
+| Primitive2 (op: prim_op args2) (e1 e2 : expr)
+(* | Primitive3 (op: prim_op args3) (e0 e1 e2 : expr) *)
+| CmpXchg (e0 : expr) (e1 : expr) (e2 : expr) (* Compare-exchange *)
+(* External FFI operation *)
+| ExternalOp (op: ffi_opcode) (e: expr)
+(* Prophecy *)
+| NewProph
+| ResolveProph (e1 : expr) (e2 : expr) (* proph, val *)
 with val :=
-  | LitV (l : base_lit)
-  | RecV (f x : binder) (e : expr)
-  | PairV (v1 v2 : val)
-  | InjLV (v : val)
-  | InjRV (v : val)
-  (** This represents "pointers to opaque types" that FFI operations may return
+| LitV (l : base_lit)
+| RecV (f x : binder) (e : expr)
+| PairV (v1 v2 : val)
+| InjLV (v : val)
+| InjRV (v : val)
+(** This represents "pointers to opaque types" that FFI operations may return
   and that regular Goose code may not do anything with except for passing it to
   other FFI operations. FFI implementations must ensure that these values are
   indeed truly independent from anything modeled in GooseLang (i.e., no
   aliasing/sharing with memory that GooseLang can "see").
   On the Go side, these should be pointers to some private type. *)
-  | ExtV (ev : ffi_val)
-  (* Go stuff *)
-  | GoInstruction (o : go_instruction)
-  | ArrayV (vs : list val)
-  | InterfaceV (t : option (go.type * val))
-  | LiteralValue (l : list keyed_element)
+| ExtV (ev : ffi_val)
+(* Go stuff *)
+| GoInstruction (o : go_instruction)
+| ArrayV (vs : list val)
+| InterfaceV (t : option (go.type * val))
+
+(* FIXME: add expr versions of these two. *)
+| LiteralValue (l : list keyed_element)
+| SelectStmtCases (l : list comm_clause)
 
 (* https://go.dev/ref/spec#Composite_literals *)
 with keyed_element :=
@@ -293,8 +296,9 @@ with comm_clause :=
 (* Variable bindings are "desugared" by goose into the body, so the send and
    receives don't need to consider bindings or assignments. *)
 with comm_case :=
-| SendStmt (elem_type : go.type) (ch : expr)
-| RecvStmt (elem_type : go.type) (ch : expr)
+| SendCase (elem_type : go.type) (ch : expr)
+| RecvCase (elem_type : go.type) (ch : expr)
+| DefaultCase
 .
 
 End external.
@@ -828,14 +832,16 @@ Proof. solve_decision. Qed.
 Global Instance go_instruction_eq_dec : EqDecision go_instruction.
 Proof. solve_decision. Qed.
 
+Global Instance go_type_inhabited : Inhabited go.type := populate (go.Named "any"%go []).
+
 Global Instance val_inhabited : Inhabited val := populate (LitV LitUnit).
 Global Instance expr_inhabited : Inhabited expr := populate (Val inhabitant).
 Global Instance key_inhabited : Inhabited key := populate (KeyField []).
 Global Instance element_inhabited : Inhabited element := populate (ElementExpression inhabitant).
 Global Instance keyed_element_inhabited : Inhabited keyed_element :=
   populate (KeyedElement None inhabitant).
-
-Global Instance go_type_inhabited : Inhabited go.type := populate (go.Named "any"%go []).
+Global Instance comm_case_inhabited : Inhabited comm_case := populate (SendCase inhabitant inhabitant).
+Global Instance comm_clause_inhabited : Inhabited comm_clause := populate (CommClause inhabitant inhabitant).
 
 Global Instance func_t_inhabited : Inhabited func.t :=
   populate (func.mk inhabitant inhabitant inhabitant).
@@ -1170,6 +1176,7 @@ with enc_val (v : val) : tree leaf_type :=
          | None => []
          end)
   | LiteralValue arg1 => Node "LiteralValue" (enc_keyed_element <$> arg1)
+  | SelectStmtCases arg1 => Node "SelectStmtCases" (enc_comm_clause <$> arg1)
   end
 with enc_keyed_element (v : keyed_element) : tree leaf_type :=
   match v with
@@ -1191,7 +1198,18 @@ with enc_element (v : element) : tree leaf_type :=
   match v with
   | ElementExpression arg1 => Node "ElementExpression" [enc_expr arg1]
   | ElementLiteralValue arg1 => Node "ElementLiteralValue" (enc_keyed_element <$> arg1)
-  end.
+  end
+with enc_comm_clause (v : comm_clause) : tree leaf_type :=
+  match v with
+  | CommClause c e => Node "CommClause" [enc_comm_case c; enc_expr e]
+  end
+with enc_comm_case (v : comm_case) : tree leaf_type :=
+  match v with
+  | SendCase t e => Node "SendCase" [Leaf $ GoTypeLeaf t; enc_expr e]
+  | RecvCase t e => Node "RecvCase" [Leaf $ GoTypeLeaf t; enc_expr e]
+  | DefaultCase => Node "DefaultCase" []
+  end
+.
 
 Fixpoint dec_expr (v : tree leaf_type) : expr :=
   match v with
@@ -1244,6 +1262,7 @@ with dec_val (v : tree leaf_type) : val :=
          | _ => inhabitant
          end)
   | Node "LiteralValue" arg1 => LiteralValue (dec_keyed_element <$> arg1)
+  | Node "SelectStmtCases" arg1 => SelectStmtCases (dec_comm_clause <$> arg1)
   | _ => inhabitant
   end
 with dec_keyed_element (v : tree leaf_type) : keyed_element :=
@@ -1271,6 +1290,18 @@ with dec_element (v : tree leaf_type) : element :=
   | Node "ElementExpression" [arg1] => ElementExpression (dec_expr arg1)
   | Node "ElementLiteralValue" arg1 => ElementLiteralValue (dec_keyed_element <$> arg1)
   | _ => inhabitant
+  end
+with dec_comm_clause (v : tree leaf_type) : comm_clause  :=
+  match v with
+  | Node "CommClause" [c; e] => CommClause (dec_comm_case c) (dec_expr e)
+  | _ => inhabitant
+  end
+with dec_comm_case (v : tree leaf_type) : comm_case :=
+  match v with
+  | Node "SendCase" [Leaf (GoTypeLeaf t); e] => SendCase t (dec_expr e)
+  | Node "RecvCase" [Leaf (GoTypeLeaf t); e] => RecvCase t (dec_expr e)
+  | Node "DefaultCase" [] => DefaultCase
+  | _ => inhabitant
   end.
 
 Local Ltac prove :=
@@ -1279,7 +1310,10 @@ Local Ltac prove :=
     (pf_val v : dec_val $ enc_val v = v)
     (pf_keyed_element v : dec_keyed_element $ enc_keyed_element v = v)
     (pf_key v : dec_key $ enc_key v = v)
-    (pf_element v : dec_element $ enc_element v = v); clear I; intros [];
+    (pf_element v : dec_element $ enc_element v = v)
+    (pf_comm_clause v : dec_comm_clause $ enc_comm_clause v = v)
+    (pf_comm_case v : dec_comm_case $ enc_comm_case v = v)
+  ; clear I; intros [];
   repeat match goal with
     | |- _ => progress simpl
     | |- _ => progress f_equal
@@ -1291,7 +1325,9 @@ Local Ltac prove :=
 
 Lemma dec_expr_enc_expr :
   (∀ e, dec_expr $ enc_expr e = e).
-Proof. prove. Qed.
+Proof.
+  prove.
+Qed.
 Lemma dec_val_enc_val :
   (∀ e, dec_val $ enc_val e = e).
 Proof. prove. Qed.
@@ -1303,6 +1339,12 @@ Lemma dec_key_enc_key :
 Proof. prove. Qed.
 Lemma dec_element_enc_element :
   (∀ e, dec_element $ enc_element e = e).
+Proof. prove. Qed.
+Lemma dec_comm_clause_enc_comm_clause :
+  (∀ e, dec_comm_clause $ enc_comm_clause e = e).
+Proof. prove. Qed.
+Lemma dec_comm_case_enc_comm_case :
+  (∀ e, dec_comm_case $ enc_comm_case e = e).
 Proof. prove. Qed.
 
 Global Instance eq_decision_expr : EqDecision expr.
