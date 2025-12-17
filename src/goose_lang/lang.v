@@ -293,8 +293,8 @@ with comm_clause :=
 (* Variable bindings are "desugared" by goose into the body, so the send and
    receives don't need to consider bindings or assignments. *)
 with comm_case :=
-| SendStmt (ch : expr)
-| RecvStmt (ch : expr)
+| SendStmt (elem_type : go.type) (ch : expr)
+| RecvStmt (elem_type : go.type) (ch : expr)
 .
 
 End external.
