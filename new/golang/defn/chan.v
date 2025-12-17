@@ -13,9 +13,9 @@ Definition send elem_type : val :=
 Definition for_range elem_type : val :=
   λ: "c" "body",
     (for: (λ: <>, #true)%V; (λ: <>, Skip)%V := λ: <>,
-       let: "t" := receive elem_type "c" in
-       if: Snd "t" then
-         "body" (Fst "t")
+       let: ("v", "ok") := receive elem_type "c" in
+       if: "ok" then
+         "body" "v"
        else
          (* channel is closed *)
          break: #()

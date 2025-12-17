@@ -256,6 +256,7 @@ Inductive expr :=
   (* Prophecy *)
   | NewProph
   | ResolveProph (e1 : expr) (e2 : expr) (* proph, val *)
+  | SelectStmt (comms : list comm_clause)
 with val :=
   | LitV (l : base_lit)
   | RecV (f x : binder) (e : expr)
@@ -286,6 +287,14 @@ with key :=
 with element :=
 | ElementExpression (e : expr)
 | ElementLiteralValue (l : list keyed_element)
+
+with comm_clause :=
+| CommClause (c : comm_case) (body : expr)
+(* Variable bindings are "desugared" by goose into the body, so the send and
+   receives don't need to consider bindings or assignments. *)
+with comm_case :=
+| SendStmt (ch : expr)
+| RecvStmt (ch : expr)
 .
 
 End external.
