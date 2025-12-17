@@ -76,3 +76,7 @@ Here, the translation desugars (1) select statements, uses λ-calculus
 let-bindings (2) to encode evaluation order while relying on substitution to
 ensure the `val` ends up in the cases, before taking steps according to an
 axiomatic/operational semantics (3) specifically for select.
+Also, the default case is inlined into SelectStmtCases so that Rocq's type
+system ensures there's only one default (rather than having a list of
+send/recv/default all mixed up, and requiring that at most one entry is a
+DefaultCase in that list).

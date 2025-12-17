@@ -277,7 +277,7 @@ with val :=
 
 (* FIXME: add expr versions of these two. *)
 | LiteralValue (l : list keyed_element)
-| SelectStmtCases (l : list comm_clause)
+| SelectStmtCases (default_handler : option expr) (l : list comm_clause)
 
 (* https://go.dev/ref/spec#Composite_literals *)
 with keyed_element :=
@@ -295,10 +295,9 @@ with comm_clause :=
 | CommClause (c : comm_case) (body : expr)
 (* Variable bindings are "desugared" by goose into the body, so the send and
    receives don't need to consider bindings or assignments. *)
-with comm_case :=
+with comm_case := (* skips default because it's inlined into SelectStmtCases *)
 | SendCase (elem_type : go.type) (ch : expr)
 | RecvCase (elem_type : go.type) (ch : expr)
-| DefaultCase
 .
 
 End external.
@@ -1176,7 +1175,12 @@ with enc_val (v : val) : tree leaf_type :=
          | None => []
          end)
   | LiteralValue arg1 => Node "LiteralValue" (enc_keyed_element <$> arg1)
-  | SelectStmtCases arg1 => Node "SelectStmtCases" (enc_comm_clause <$> arg1)
+  | SelectStmtCases default_handler l =>
+      Node "SelectStmtCases" (
+          (match default_handler with
+           | Some default_handler => Node "Some" [enc_expr default_handler]
+           | None => Node "None" []
+           end) :: (enc_comm_clause <$> l))
   end
 with enc_keyed_element (v : keyed_element) : tree leaf_type :=
   match v with
@@ -1207,7 +1211,6 @@ with enc_comm_case (v : comm_case) : tree leaf_type :=
   match v with
   | SendCase t e => Node "SendCase" [Leaf $ GoTypeLeaf t; enc_expr e]
   | RecvCase t e => Node "RecvCase" [Leaf $ GoTypeLeaf t; enc_expr e]
-  | DefaultCase => Node "DefaultCase" []
   end
 .
 
@@ -1262,7 +1265,13 @@ with dec_val (v : tree leaf_type) : val :=
          | _ => inhabitant
          end)
   | Node "LiteralValue" arg1 => LiteralValue (dec_keyed_element <$> arg1)
-  | Node "SelectStmtCases" arg1 => SelectStmtCases (dec_comm_clause <$> arg1)
+  | Node "SelectStmtCases" (default_handler :: l) =>
+      SelectStmtCases
+      (match default_handler with
+       | Node "None" [] => None
+       | Node "Some" [e] => Some (dec_expr e)
+       | _ => inhabitant
+       end) (dec_comm_clause <$> l)
   | _ => inhabitant
   end
 with dec_keyed_element (v : tree leaf_type) : keyed_element :=
@@ -1300,7 +1309,6 @@ with dec_comm_case (v : tree leaf_type) : comm_case :=
   match v with
   | Node "SendCase" [Leaf (GoTypeLeaf t); e] => SendCase t (dec_expr e)
   | Node "RecvCase" [Leaf (GoTypeLeaf t); e] => RecvCase t (dec_expr e)
-  | Node "DefaultCase" [] => DefaultCase
   | _ => inhabitant
   end.
 
@@ -1325,9 +1333,7 @@ Local Ltac prove :=
 
 Lemma dec_expr_enc_expr :
   (∀ e, dec_expr $ enc_expr e = e).
-Proof.
-  prove.
-Qed.
+Proof. prove. Qed.
 Lemma dec_val_enc_val :
   (∀ e, dec_val $ enc_val e = e).
 Proof. prove. Qed.
