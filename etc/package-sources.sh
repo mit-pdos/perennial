@@ -67,6 +67,7 @@ elif [ "$package" = "new-goose" ]; then
   ls -1 new/{code,generatedproof,proof}/*.v
   ls -1 new/{code,generatedproof}/{internal,math}/*.v
   ls -1 new/proof/internal/*.v
+  ls -1 new/proof/github_com/tchajed/marshal.v
   ls -1 new/{code,generatedproof,proof}/github_com/goose_lang/{std.v,std/std_core.v}
   find_build new/{generatedproof,manualproof,trusted_code}
   find_build new/proof/github_com/goose_lang/goose/model/channel
