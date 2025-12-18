@@ -277,7 +277,7 @@ with val :=
 
 (* FIXME: add expr versions of these two. *)
 | LiteralValue (l : list keyed_element)
-| SelectStmtCases (default_handler : option expr) (l : list comm_clause)
+| SelectStmtClauses (default_handler : option expr) (l : list comm_clause)
 
 (* https://go.dev/ref/spec#Composite_literals *)
 with keyed_element :=
@@ -295,7 +295,7 @@ with comm_clause :=
 | CommClause (c : comm_case) (body : expr)
 (* Variable bindings are "desugared" by goose into the body, so the send and
    receives don't need to consider bindings or assignments. *)
-with comm_case := (* skips default because it's inlined into SelectStmtCases *)
+with comm_case := (* skips default because it's inlined into SelectStmtClauses *)
 | SendCase (elem_type : go.type) (ch : expr)
 | RecvCase (elem_type : go.type) (ch : expr)
 .
@@ -1175,8 +1175,8 @@ with enc_val (v : val) : tree leaf_type :=
          | None => []
          end)
   | LiteralValue arg1 => Node "LiteralValue" (enc_keyed_element <$> arg1)
-  | SelectStmtCases default_handler l =>
-      Node "SelectStmtCases" (
+  | SelectStmtClauses default_handler l =>
+      Node "SelectStmtClauses" (
           (match default_handler with
            | Some default_handler => Node "Some" [enc_expr default_handler]
            | None => Node "None" []
@@ -1265,8 +1265,8 @@ with dec_val (v : tree leaf_type) : val :=
          | _ => inhabitant
          end)
   | Node "LiteralValue" arg1 => LiteralValue (dec_keyed_element <$> arg1)
-  | Node "SelectStmtCases" (default_handler :: l) =>
-      SelectStmtCases
+  | Node "SelectStmtClauses" (default_handler :: l) =>
+      SelectStmtClauses
       (match default_handler with
        | Node "None" [] => None
        | Node "Some" [e] => Some (dec_expr e)

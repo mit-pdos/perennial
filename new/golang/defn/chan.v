@@ -60,28 +60,6 @@ Definition try_select (blocking : bool) : list comm_clause → expr :=
       if: ~"done" then cases_remaining
       else ("v", #true))%E
     (#(), #false)%E.
-
-(** select_blocking models a select without a default case. It takes a list of
-cases (select_send or select_receive). It starts from a random position, then
-runs do_select_case with "blocking"=#false over each case until one until one
-returns true. Loop this until success. *)
-
-Definition select_blocking cases : val :=
-  rec: "loop" "cases" :=
-    let: ("v", "succeeded") := try_select (list.Shuffle "cases") #true in
-    if: "succeeded" then "v"
-    else "loop" "cases".
-
-(** select_nonblocking models a select with a default case. It takes a list of
-cases (select_send or select_receive) and a default handler. It starts from a
-random position, then runs do_select_case with "blocking"=#true over each case.
-On failure, run the default handler. *)
-Definition select_nonblocking : val :=
-  λ: "cases" "def",
-    let: ("v", "succeeded") := try_select (list.Shuffle "cases") #false in
-    if: "succeeded" then "v"
-    else "def" #().
- *)
 End defns.
 End chan.
 
@@ -108,6 +86,27 @@ Class ChanSemantics `{!GoSemanticsFunctions} :=
   #[global] cap_chan dir elem_type ::
     FuncUnfold go.cap [go.ChannelType dir elem_type]
     (λ: "c", MethodResolve (channel.Channel elem_type) "Cap" #() "c")%V;
+
+  chan_select_nonblocking default_handler clauses :
+    is_go_step_pure SelectStmt (SelectStmtClauses (Some default_handler) clauses) =
+    (λ e',
+       ∃ clauses',
+         clauses' ≡ₚ clauses ∧
+         e' =
+         (let: ("v", "succeeded") := chan.try_select false clauses' in
+          if: "succeeded" then "v"
+          else default_handler #())%E
+    );
+  chan_select_blocking clauses :
+    is_go_step_pure SelectStmt (SelectStmtClauses None clauses) =
+    (λ e',
+       ∃ clauses',
+         clauses' ≡ₚ clauses ∧
+         e' =
+         (let: ("v", "succeeded") := chan.try_select true clauses' in
+          if: "succeeded" then "v"
+          else SelectStmt (SelectStmtClauses None clauses))%E
+    );
 }.
 End defs.
 End go.
