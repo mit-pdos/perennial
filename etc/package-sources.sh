@@ -45,32 +45,30 @@ function goose_common() {
 if [ "$package" = "all" ]; then
   # get all files
   find src new -not -name "*__nobuild.v" -name "*.v"
+
 elif [ "$package" = "new-goose" ]; then
   goose_common
-  ls -1 \
-    src/goose_lang/{lang,lifting,locations,notation,ipersist}.v
-  find_build \
-    new/golang/{defn/,defn.v} \
-    new/golang/{theory/,theory.v} \
-    new/{atomic_fupd,grove_prelude}.v \
-    new/proof/sync_proof \
-    new/proof/{sync/,sync.v} \
-    new/proof/github_com/goose_lang/std.v
-  ls -1 new/code/github_com/goose_lang/goose/model/channel.v \
-    new/{code,trusted_code}/github_com/goose_lang/primitive.v \
-    new/experiments/{chan,glob}.v \
-    new/code/internal/race.v \
-    new/{code,trusted_code}/sync.v \
-    new/{code,trusted_code}/sync/atomic.v \
-    new/proof/{proof_prelude,grove_prelude}.v
-  # standard library (subset; some standard library is in directories)
-  ls -1 new/{code,generatedproof,proof}/*.v
-  ls -1 new/{code,generatedproof}/{internal,math}/*.v
-  ls -1 new/proof/internal/*.v
-  ls -1 new/{code,generatedproof,proof}/github_com/goose_lang/{std.v,std/std_core.v}
-  find_build new/{generatedproof,manualproof,trusted_code}
+  # golang.
+  find_build src/goose_lang/{lang,lifting,locations,notation}.v
+  find_build new/golang/{defn,defn.v}
+  find_build new/golang/{theory,theory.v}
+  find_build new/{code,generatedproof}/github_com/goose_lang/goose/model/channel.v
   find_build new/proof/github_com/goose_lang/goose/model/channel
-  ls -1 new/proof/github_com/goose_lang/primitive.v
+  # go stdlib.
+  # TODO: some misplaced files match "new/proof/*.v".
+  find_build new/{code,generatedproof,proof,trusted_code,manualproof}/*.v
+  find_build new/proof/*_proof
+  find_build new/{code,generatedproof,proof}/crypto
+  find_build new/{code,generatedproof,proof}/internal
+  find_build new/{code,generatedproof}/math
+  find_build new/{code,generatedproof,proof,trusted_code,manualproof}/sync
+  # common external pkgs.
+  find_build new/{code,generatedproof,proof}/github_com/tchajed/marshal.v
+  find_build new/{code,generatedproof,proof}/github_com/goose_lang/{std.v,std}
+  find_build new/{code,generatedproof,proof,trusted_code,manualproof}/github_com/goose_lang/{primitive.v,primitive}
+  # misc.
+  find_build src/goose_lang/ipersist.v
+
 elif [ "$package" = "old-goose" ]; then
   goose_common
   find_build src/goose_lang
@@ -87,6 +85,7 @@ elif [ "$package" = "old-goose" ]; then
     src/program_proof/marshal*.v \
     src/program_proof/std_proof.v
   find_build src/program_proof/grove_shared/
+
 else
   echo "unknown package $package" 1>&2
   exit 1
