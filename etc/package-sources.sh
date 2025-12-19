@@ -68,6 +68,7 @@ elif [ "$package" = "new-goose" ]; then
   find_build new/{code,generatedproof,proof,trusted_code,manualproof}/github_com/goose_lang/{primitive.v,primitive}
   # misc.
   find_build src/goose_lang/ipersist.v
+  find_build new/experiments/glob.v
 
 elif [ "$package" = "old-goose" ]; then
   goose_common
