@@ -396,15 +396,10 @@ Lemma wp_Server_Audit s γ (prevEpoch : w64) Q :
         "#Hsl_proof" ∷ ktcore.AuditProofSlice1D.own sl_proof proof (□) ∗
 
         "%Heq_prevDig" ∷ ⌜σ.(state.hist).*1 !! (uint.nat prevEpoch) = Some prevDig⌝ ∗
-        "#Hwish_digs" ∷ ktcore.wish_ListAudit prevDig proof
-          (drop (S $ uint.nat prevEpoch) σ.(state.hist).*1) ∗
-        "#His_sigs" ∷ ([∗ list] k ↦ aud ∈ proof,
-          ∃ link,
-          let ep := S $ (uint.nat prevEpoch + k)%nat in
-          "#His_link" ∷ hashchain.is_chain (take (S ep) σ.(state.hist).*1)
-            None link (S ep) ∗
-          "#Hwish_linkSig" ∷ ktcore.wish_LinkSig γ.(cfg.sig_pk)
-            (W64 ep) link aud.(ktcore.AuditProof.LinkSig))
+        "#Hwish_proof" ∷ ktcore.wish_ListAudit prevEpoch
+          (take (S $ uint.nat prevEpoch) σ.(state.hist).*1)
+          None γ.(cfg.sig_pk) proof
+          (drop (S $ uint.nat prevEpoch) σ.(state.hist).*1)
         (* no need to explicitly state update labels and vals.
         those are tied down by UpdateProof, which is tied into server's digs.
         dig only commits to one map, which lets auditor know it shares

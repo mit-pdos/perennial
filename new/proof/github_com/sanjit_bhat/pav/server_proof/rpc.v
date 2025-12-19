@@ -130,15 +130,10 @@ Lemma wp_CallAudit s γ (prevEpoch : w64) :
         "%Hlen_epochs" ∷ ⌜uint.nat prevEpoch < length servHist⌝ ∗
         "%Heq_prevDig" ∷ ⌜servHist.*1 !! (uint.nat prevEpoch) = Some prevDig⌝ ∗
 
-        "#Hwish_digs" ∷ ktcore.wish_ListAudit prevDig proof
-          (drop (S $ uint.nat prevEpoch) servHist.*1) ∗
-        "#His_sigs" ∷ ([∗ list] k ↦ aud ∈ proof,
-          ∃ link,
-          let ep := S $ (uint.nat prevEpoch + k)%nat in
-          "#His_link" ∷ hashchain.is_chain (take (S ep) servHist.*1)
-            None link (S ep) ∗
-          "#Hwish_linkSig" ∷ ktcore.wish_LinkSig cfg.(cfg.sig_pk)
-            (W64 ep) link aud.(ktcore.AuditProof.LinkSig)) end)
+        "#Hwish_proof" ∷ ktcore.wish_ListAudit prevEpoch
+          (take (S $ uint.nat prevEpoch) servHist.*1)
+          None cfg.(cfg.sig_pk) proof
+          (drop (S $ uint.nat prevEpoch) servHist.*1) end)
   }}}.
 Proof. Admitted.
 

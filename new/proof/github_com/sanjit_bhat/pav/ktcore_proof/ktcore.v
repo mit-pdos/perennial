@@ -2,7 +2,7 @@ From New.generatedproof.github_com.sanjit_bhat.pav Require Import ktcore.
 From New.proof.github_com.sanjit_bhat.pav Require Import prelude.
 
 From New.proof.github_com.sanjit_bhat.pav Require Import
-  cryptoffi cryptoutil merkle.
+  cryptoffi cryptoutil hashchain merkle.
 
 From New.proof.github_com.sanjit_bhat.pav.ktcore_proof Require Import
   serde.
@@ -474,6 +474,7 @@ Lemma wish_ListUpdate_aux_det prevDig updates digs0 digs1 :
 Proof.
   iNamedSuffix 1 "0".
   iNamedSuffix 1 "1".
+  (* pointwise-equality suffices since merkle.UpdateProof's det give hashes. *)
   (* no way to apply [list_eq_same_length] directly. *)
   iAssert (⌜∀ (i : nat) x y,
     digs0 !! i = Some x → digs1 !! i = Some y → x = y⌝)%I as %?.
@@ -557,58 +558,25 @@ Proof.
   - by rewrite last_snoc.
 Qed.
 
-Definition wish_ListAudit prevDig audits digs : iProp Σ :=
-  "%Hlen" ∷ ⌜length digs = S (length audits)⌝ ∗
-  "%Hhead" ∷ ⌜head digs = Some prevDig⌝ ∗
-  "#Hwish_audits" ∷ ([∗ list] i ↦ aud ∈ audits,
+(* TODO: might not need det property.
+might not directly use this in BlameSpec "simulation" arg
+across server and auditor. *)
+Definition wish_ListAudit (prevEp : w64) prevDigs cut sigPk audits digs : iProp Σ :=
+  ∃ prevDig newDigs,
+  "%Heq_digs" ∷ ⌜digs = prevDigs ++ newDigs⌝ ∗
+  "%Heq_prevDig" ∷ ⌜last prevDigs = Some prevDig⌝ ∗
+  "%Hlen_newDigs" ∷ ⌜length newDigs = length audits⌝ ∗
+  "#His_digs" ∷ ([∗ list] i ↦ aud ∈ audits,
     ∃ dig0 dig1,
-    "%Hlook0" ∷ ⌜digs !! i = Some dig0⌝ ∗
-    "%Hlook1" ∷ ⌜digs !! (S i) = Some dig1⌝ ∗
-    "#Hwish_audit" ∷ wish_ListUpdate dig0 aud.(AuditProof.Updates) dig1).
-
-Lemma wish_ListAudit_det prevDig audits digs0 digs1 :
-  wish_ListAudit prevDig audits digs0 -∗
-  wish_ListAudit prevDig audits digs1 -∗
-  ⌜digs0 = digs1⌝.
-Proof.
-  iNamedSuffix 1 "0".
-  iNamedSuffix 1 "1".
-  iInduction audits as [] using rev_ind forall (digs0 digs1 Hlen0 Hlen1 Hhead0 Hhead1).
-  { destruct digs0, digs1; try done.
-    destruct digs0, digs1; try done.
-    by simplify_eq/=. }
-  destruct digs0 using rev_ind; try done. clear IHdigs0.
-  destruct digs1 using rev_ind; try done. clear IHdigs1.
-  autorewrite with len in *.
-  iDestruct (big_sepL_snoc with "Hwish_audits0") as "{Hwish_audits0} (Hwish_aud0&H0)".
-  iDestruct (big_sepL_snoc with "Hwish_audits1") as "{Hwish_audits1} (Hwish_aud1&H1)".
-  iNamedSuffix "H0" "0".
-  iNamedSuffix "H1" "1".
-  iDestruct ("IHaudits" $! digs0 digs1 with "[][][][][][]") as %->;
-    iClear "IHaudits".
-  1-4: iPureIntro.
-  1-2: lia.
-  { by destruct digs0. }
-  { by destruct digs1. }
-  { iModIntro. iApply (big_sepL_impl with "Hwish_aud0"). iModIntro.
-    iIntros (?? Hlook) "@".
-    apply lookup_lt_Some in Hlook.
-    rewrite !lookup_app_l in Hlook0, Hlook1; [|lia..].
-    iFrame "#%". }
-  { iModIntro. iApply (big_sepL_impl with "Hwish_aud1"). iModIntro.
-    iIntros (?? Hlook) "@".
-    apply lookup_lt_Some in Hlook.
-    rewrite !lookup_app_l in Hlook0, Hlook1; [|lia..].
-    iFrame "#%". }
-  iClear "Hwish_aud0 Hwish_aud1".
-  simplify_eq/=.
-  rewrite !lookup_app_l in Hlook00, Hlook01; [|lia..].
-  rewrite !lookup_app_r in Hlook10, Hlook11; [|lia..].
-  apply list_lookup_singleton_Some in Hlook10 as [_ ->].
-  apply list_lookup_singleton_Some in Hlook11 as [_ ->].
-  simplify_eq/=.
-  by iDestruct (wish_ListUpdate_det with "Hwish_audit0 Hwish_audit1") as %->.
-Qed.
+    "%Hlook0" ∷ ⌜(prevDig :: newDigs) !! i = Some dig0⌝ ∗
+    "%Hlook1" ∷ ⌜(prevDig :: newDigs) !! (S i) = Some dig1⌝ ∗
+    "#Hwish_ListUpdate" ∷ wish_ListUpdate dig0 aud.(AuditProof.Updates) dig1) ∗
+  "#His_sigs" ∷ ([∗ list] i ↦ aud ∈ audits,
+    ∃ link,
+    let ep := (uint.nat prevEp + S i)%nat in
+    "#His_link" ∷ hashchain.is_chain (prevDigs ++ take (S i) newDigs)
+      cut link (S ep) ∗
+    "#Hwish_LinkSig" ∷ wish_LinkSig sigPk (W64 ep) link aud.(AuditProof.LinkSig)).
 
 End proof.
 End ktcore.

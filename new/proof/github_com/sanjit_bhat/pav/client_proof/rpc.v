@@ -69,6 +69,7 @@ Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
 Context `{!pavG Σ}.
 
+(* TODO: might be able to hide [newDigs]. *)
 Definition wish_getNextEp prev sigPk chainProof sig newDigs next : iProp Σ :=
   ∃ nextEp nextDig nextLink,
   "%Heq_next" ∷ ⌜next = epoch.mk' nextEp nextDig nextLink sig
