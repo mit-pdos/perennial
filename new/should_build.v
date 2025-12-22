@@ -29,9 +29,6 @@ From New.proof.github_com.mit_pdos.go_journal Require
 
 From New.proof Require Import inG_problem.
 
-From New.proof.github_com.sanjit_bhat.pav Require alicebob.
-From New.proof.github_com.sanjit_bhat.pav.experiments Require should_build.
-
 Require New.proof.go_etcd_io.etcd.server.v3.etcdserver.
 
 (* might not be maintained going forward but do currently build *)

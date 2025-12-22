@@ -40,7 +40,6 @@ projs = {
     "marshal": Proj.make("marshal", "https://github.com/tchajed/marshal"),
     "examples": Proj.make("examples", "https://github.com/mit-pdos/perennial-examples"),
     "new_gokv": Proj.make("new_gokv", "https://github.com/mit-pdos/gokv", commit="new"),
-    "pav": Proj.make("pav", "https://github.com/sanjit-bhat/pav"),
     "etcd-raft": Proj.make("etcd-raft", "https://github.com/upamanyus/etcd-raft"),
     "etcd": Proj.make("etcd", "https://github.com/upamanyus/etcd"),
 }
@@ -143,8 +142,6 @@ def main():
             projs["etcd"].path(),
             "--etcd-raft",
             projs["etcd-raft"].path(),
-            "--pav",
-            projs["pav"].path(),
         ],
         check=True,
     )

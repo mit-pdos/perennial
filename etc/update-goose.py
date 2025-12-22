@@ -65,12 +65,6 @@ def main():
         metavar="STD_PATH",
         default=None,
     )
-    parser.add_argument(
-        "--pav",
-        help="path to pav repo (skip translation if not provided)",
-        metavar="PAV_PATH",
-        default=None,
-    )
 
     args = parser.parse_args()
 
@@ -79,7 +73,6 @@ def main():
     examples_dir = args.examples
     marshal_dir = args.marshal
     std_dir = args.std
-    pav_dir = args.pav
 
     if not os.path.isdir(goose_dir):
         parser.error("goose directory does not exist")
@@ -89,8 +82,6 @@ def main():
         parser.error("marshal directory does not exist")
     if std_dir is not None and not os.path.isdir(std_dir):
         parser.error("std directory does not exist")
-    if pav_dir is not None and not os.path.isdir(pav_dir):
-        parser.error("pav directory does not exist")
 
     def do_run(cmd_args):
         run_command(cmd_args, dry_run=args.dry_run, verbose=args.verbose)
@@ -166,16 +157,6 @@ def main():
         "./async_mem_alloc_inode",
         "./async_mem_alloc_dir",
         "./async_durable_alloc",
-    )
-
-    run_goose(
-        pav_dir,
-        "./advrpc",
-        "./alicebob",
-        "./cryptoutil",
-        "./kt",
-        "./marshalutil",
-        "./merkle",
     )
 
     run_goose(marshal_dir, ".", extra_args=["-skip-interfaces"])

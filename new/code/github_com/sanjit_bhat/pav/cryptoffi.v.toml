@@ -1,2 +1,0 @@
-translate = ["HashLen", "SigPublicKey"]
-imports = ["!*", "crypto/ed25519"]

@@ -1,2 +1,0 @@
-Module auditor.
-End auditor.
