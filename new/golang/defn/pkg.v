@@ -6,6 +6,8 @@ Class PkgInfo (pkg_name: go_string) `{ffi_syntax} :=
     pkg_imported_pkgs : list go_string;
   }.
 
+Arguments pkg_imported_pkgs (pkg_name) {_ _}.
+
 Module package.
 Section defns.
 Context {ext : ffi_syntax}.

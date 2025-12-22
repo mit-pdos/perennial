@@ -112,8 +112,8 @@ Local Ltac2 build_pkg_init_deps name :=
          lazy_match! deps with
          | cons ?pkg ?deps =>
              let rest := build_iprop deps in
-             constr:((is_pkg_init $pkg ∗ $rest)%I)
-         | nil => constr:(True%I)
+             open_constr:((is_pkg_init $pkg ∗ $rest)%I)
+         | nil => open_constr:(True%I)
          | _ =>
              Message.print (Message.of_constr deps);
              fail (fprintf "build_pkg_init_deps: unable to match deps list")

@@ -68,15 +68,15 @@ Qed. *)
     split; rewrite !go.into_val_unfold;
     [solve_cmpxchg_fail | solve_cmpxchg_suc | solve_wp_atomic_load | solve_wp_atomic_swap ].
 
-  Instance atomic_wps_uint64 : AtomicWps w64.
+  #[global] Instance atomic_wps_uint64 : AtomicWps w64.
   Proof. solve_atomic_wps. Qed.
-  Instance atomic_wps_uint32 : AtomicWps w32.
+  #[global] Instance atomic_wps_uint32 : AtomicWps w32.
   Proof. solve_atomic_wps. Qed.
-  Instance atomic_wps_uint16 : AtomicWps w16.
+  #[global] Instance atomic_wps_uint16 : AtomicWps w16.
   Proof. solve_atomic_wps. Qed.
-  Instance atomic_wps_uint8 : AtomicWps w8.
+  #[global] Instance atomic_wps_uint8 : AtomicWps w8.
   Proof. solve_atomic_wps. Qed.
-  Instance atomic_wps_bool : AtomicWps bool.
+  #[global] Instance atomic_wps_bool : AtomicWps bool.
   Proof. solve_atomic_wps. Qed.
 
 End goose_lang.

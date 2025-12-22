@@ -7,24 +7,24 @@ Require Import New.generatedproof.github_com.goose_lang.primitive.
 #[local] Transparent primitive.Mutex.
 
 Section wps.
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}
+  {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}.
+Local Set Default Proof Using "Type core_sem pre_sem".
 
-#[global] Instance : IsPkgInit primitive := define_is_pkg_init True%I.
+#[global] Instance : IsPkgInit primitive := define_is_pkg_init (True : iProp Σ)%I.
 #[global] Instance : GetIsPkgInitWf primitive := build_get_is_pkg_init_wf.
 
 Lemma wp_initialize' get_is_pkg_init :
   get_is_pkg_init_prop primitive get_is_pkg_init →
-  {{{ own_initializing get_is_pkg_init ∗ is_go_context ∗ □ is_pkg_defined primitive }}}
+  {{{ own_initializing get_is_pkg_init }}}
     primitive.initialize' #()
   {{{ RET #(); own_initializing get_is_pkg_init ∗ is_pkg_init primitive }}}.
 Proof.
-  intros Hinit. wp_start as "(Hown & #? & #Hdef)".
-  wp_call. wp_apply (wp_package_init with "[$Hown] HΦ").
+  intros Hinit. wp_start as "Hown".
+  wp_apply (wp_package_init with "[$Hown] HΦ").
   { destruct Hinit as (-> & ?); done. }
   iIntros "Hown". wp_auto.
-
-  wp_call. iEval (rewrite is_pkg_init_unfold /=).
+  iEval (rewrite is_pkg_init_unfold /=).
   by iFrame "∗#".
 Qed.
 
@@ -35,7 +35,7 @@ Lemma wp_Assume (cond : bool) :
 .
 Proof.
   wp_start as "#Hdef".
-  destruct cond; wp_auto.
+  destruct cond. wp_auto.
   - wp_end.
   - iLöb as "IH". wp_auto.
     wp_apply ("IH" with "[$]").
