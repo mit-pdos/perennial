@@ -424,6 +424,9 @@ Class CoreSemantics :=
                  | KeyedElement None (ElementExpression e) =>
                      StructFieldSet (go.StructType fds) field_name (v, e)%E
                  | KeyedElement None (ElementLiteralValue el) =>
+                     (* FIXME: this is not explicitly mentioned as OK by the
+                        spec, and the Go compiler does not support it. Should
+                        delete and simplify. *)
                      StructFieldSet (go.StructType fds) field_name
                        (v, (CompositeLiteral field_type (LiteralValue el)))%E
                        (* NOTE: if field_type is `*A`, then this will be
@@ -438,6 +441,7 @@ Class CoreSemantics :=
                  | KeyedElement (Some (KeyField field_name)) (ElementExpression e) =>
                      StructFieldSet (go.StructType fds) field_name (v, e)%E
                  | KeyedElement (Some (KeyField field_name)) (ElementLiteralValue el) =>
+                     (* FIXME: same as above. *)
                      StructFieldSet (go.StructType fds) field_name
                        (v, (CompositeLiteral (struct_field_type field_name fds) (LiteralValue el)))%E
                  | _ => Panic "invalid Go code"
