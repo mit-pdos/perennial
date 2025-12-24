@@ -8,8 +8,10 @@ Require Import New.generatedproof.github_com.goose_lang.primitive.
 
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}
-  {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}.
-Local Set Default Proof Using "Type core_sem pre_sem".
+  {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}
+  {array_sem : go.ArraySemantics} {slice_sem : go.SliceSemantics}.
+Context {package_sem : primitive.Assumptions}.
+Local Set Default Proof Using "Type package_sem core_sem pre_sem array_sem slice_sem".
 
 #[global] Instance : IsPkgInit primitive := define_is_pkg_init (True : iProp Σ)%I.
 #[global] Instance : GetIsPkgInitWf primitive := build_get_is_pkg_init_wf.
@@ -31,11 +33,10 @@ Qed.
 Lemma wp_Assume (cond : bool) :
   {{{ is_pkg_init primitive }}}
     @! primitive.Assume #cond
-  {{{ RET #(); ⌜ cond = true ⌝ }}}
-.
+  {{{ RET #(); ⌜ cond = true ⌝ }}}.
 Proof.
   wp_start as "#Hdef".
-  destruct cond. wp_auto.
+  destruct cond; wp_auto.
   - wp_end.
   - iLöb as "IH". wp_auto.
     wp_apply ("IH" with "[$]").
@@ -62,6 +63,7 @@ Proof.
   iIntros "%"; congruence.
 Qed.
 
+(* FIXME: get rid of this, or document why a lemma for [ⁱᵐᵖˡ] is needed. *)
 Lemma wp_RandomUint64__impl :
   {{{ True }}}
     primitive.RandomUint64ⁱᵐᵖˡ #()
@@ -69,7 +71,6 @@ Lemma wp_RandomUint64__impl :
 .
 Proof.
   wp_start as "_".
-  wp_call.
   wp_apply wp_ArbitraryInt.
   iIntros (x).
   by iApply "HΦ".
@@ -142,18 +143,19 @@ Qed.
 
 Lemma wp_UInt64Put sl_b space rem v :
   length space = 8%nat →
-  {{{ is_pkg_init primitive ∗ sl_b ↦* (space ++ rem) }}}
+  {{{ is_pkg_init primitive ∗ sl_b ↦[go.uint8]* (space ++ rem) }}}
     @! primitive.UInt64Put #sl_b #v
-  {{{ RET #(); sl_b ↦* (u64_le v ++ rem) }}}.
+  {{{ RET #(); sl_b ↦[go.uint8]* (u64_le v ++ rem) }}}.
 Proof.
   rewrite u64_le_unseal /u64_le_def.
   iIntros (Hlen_space).
   wp_start as "Hsl_b".
   iDestruct (own_slice_len with "Hsl_b") as %[Hlen_b ?].
   rewrite app_length Hlen_space in Hlen_b.
-  repeat (
-    wp_pure; [word|];
-    wp_apply (wp_store_slice_elem with "[$Hsl_b]") as "Hsl_b"; [len|]).
+
+  (* FIXME: [rewrite decide_True] is slow *)
+  repeat (rewrite -> decide_True; last word; wp_auto;
+          wp_apply (wp_store_slice_index with "[$Hsl_b]") as "Hsl_b"; [len|]).
 
   wp_end.
   replace (sint.nat (W64 0)) with (0%nat) by word.
@@ -197,7 +199,7 @@ Proof. apply _. Qed.
 Global Instance locked_timeless m : Timeless (own_Mutex m).
 Proof. apply _. Qed.
 
-Theorem init_Mutex R E m : m ↦ (default_val bool) -∗ ▷ R ={E}=∗ is_Mutex m R.
+Theorem init_Mutex R E m : m ↦ (zero_val bool) -∗ ▷ R ={E}=∗ is_Mutex m R.
 Proof.
   iIntros "H HR".
   simpl.
@@ -207,10 +209,12 @@ Qed.
 
 Lemma wp_Mutex__Lock m R :
   {{{ is_pkg_init primitive ∗ is_Mutex m R }}}
-    m @ (ptrT.id primitive.Mutex.id) @ "Lock" #()
+    #(methods (go.PointerType primitive.Mutex) "Lock") #()
   {{{ RET #(); own_Mutex m ∗ R }}}.
 Proof.
   wp_start as "#His".
+  (* FIXME: MethodUnfold instances. *)
+  wp_method_call.
   wp_apply (wp_lock_lock with "[$His]").
   iIntros "[Hown HR]".
   iApply "HΦ".

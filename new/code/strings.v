@@ -245,5 +245,9 @@ Definition initialize' : val :=
       exception_do (do:  (asciiSpace'init #()))
       ).
 
+Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
 End code.
 End strings.

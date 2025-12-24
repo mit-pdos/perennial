@@ -825,5 +825,30 @@ Definition initialize' : val :=
       do:  #())
       ).
 
+Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] SwapInt32_unfold :: FuncUnfold SwapInt32 [] SwapInt32ⁱᵐᵖˡ;
+  #[global] SwapUint32_unfold :: FuncUnfold SwapUint32 [] SwapUint32ⁱᵐᵖˡ;
+  #[global] CompareAndSwapInt32_unfold :: FuncUnfold CompareAndSwapInt32 [] CompareAndSwapInt32ⁱᵐᵖˡ;
+  #[global] CompareAndSwapUint32_unfold :: FuncUnfold CompareAndSwapUint32 [] CompareAndSwapUint32ⁱᵐᵖˡ;
+  #[global] AddInt32_unfold :: FuncUnfold AddInt32 [] AddInt32ⁱᵐᵖˡ;
+  #[global] AddUint32_unfold :: FuncUnfold AddUint32 [] AddUint32ⁱᵐᵖˡ;
+  #[global] LoadInt32_unfold :: FuncUnfold LoadInt32 [] LoadInt32ⁱᵐᵖˡ;
+  #[global] LoadUint32_unfold :: FuncUnfold LoadUint32 [] LoadUint32ⁱᵐᵖˡ;
+  #[global] StoreInt32_unfold :: FuncUnfold StoreInt32 [] StoreInt32ⁱᵐᵖˡ;
+  #[global] StoreUint32_unfold :: FuncUnfold StoreUint32 [] StoreUint32ⁱᵐᵖˡ;
+  #[global] SwapInt64_unfold :: FuncUnfold SwapInt64 [] SwapInt64ⁱᵐᵖˡ;
+  #[global] SwapUint64_unfold :: FuncUnfold SwapUint64 [] SwapUint64ⁱᵐᵖˡ;
+  #[global] CompareAndSwapInt64_unfold :: FuncUnfold CompareAndSwapInt64 [] CompareAndSwapInt64ⁱᵐᵖˡ;
+  #[global] CompareAndSwapUint64_unfold :: FuncUnfold CompareAndSwapUint64 [] CompareAndSwapUint64ⁱᵐᵖˡ;
+  #[global] AddInt64_unfold :: FuncUnfold AddInt64 [] AddInt64ⁱᵐᵖˡ;
+  #[global] AddUint64_unfold :: FuncUnfold AddUint64 [] AddUint64ⁱᵐᵖˡ;
+  #[global] LoadInt64_unfold :: FuncUnfold LoadInt64 [] LoadInt64ⁱᵐᵖˡ;
+  #[global] LoadUint64_unfold :: FuncUnfold LoadUint64 [] LoadUint64ⁱᵐᵖˡ;
+  #[global] StoreInt64_unfold :: FuncUnfold StoreInt64 [] StoreInt64ⁱᵐᵖˡ;
+  #[global] StoreUint64_unfold :: FuncUnfold StoreUint64 [] StoreUint64ⁱᵐᵖˡ;
+  #[global] b32_unfold :: FuncUnfold b32 [] b32ⁱᵐᵖˡ;
+}.
+
 End code.
 End atomic.

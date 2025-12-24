@@ -55,5 +55,14 @@ Definition initialize' : val :=
       do:  (_'init #()))
       ).
 
+Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Get_unfold :: FuncUnfold Get [] Getⁱᵐᵖˡ;
+  #[global] Read_unfold :: FuncUnfold Read [] Readⁱᵐᵖˡ;
+  #[global] Write_unfold :: FuncUnfold Write [] Writeⁱᵐᵖˡ;
+  #[global] Size_unfold :: FuncUnfold Size [] Sizeⁱᵐᵖˡ;
+  #[global] Barrier_unfold :: FuncUnfold Barrier [] Barrierⁱᵐᵖˡ;
+}.
+
 End code.
 End disk.

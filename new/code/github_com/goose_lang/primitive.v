@@ -61,5 +61,13 @@ Definition initialize' : val :=
       exception_do (do:  #())
       ).
 
+Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] UInt64Put_unfold :: FuncUnfold UInt64Put [] UInt64Putⁱᵐᵖˡ;
+  #[global] RandomUint64_unfold :: FuncUnfold RandomUint64 [] RandomUint64ⁱᵐᵖˡ;
+  #[global] Assume_unfold :: FuncUnfold Assume [] Assumeⁱᵐᵖˡ;
+  #[global] AssumeNoStringOverflow_unfold :: FuncUnfold AssumeNoStringOverflow [] AssumeNoStringOverflowⁱᵐᵖˡ;
+}.
+
 End code.
 End primitive.

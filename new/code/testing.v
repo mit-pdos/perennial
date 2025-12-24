@@ -418,5 +418,9 @@ Definition initialize' : val :=
       do:  (errMain'init #()))
       ).
 
+Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
 End code.
 End testing.

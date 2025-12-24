@@ -831,5 +831,15 @@ Definition initialize' : val :=
       exception_do (do:  (primitive.initialize' #()))
       ).
 
+Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] NewChannel_unfold T :: FuncUnfold NewChannel [T] (NewChannelⁱᵐᵖˡ T);
+  #[global] NonBlockingSelect1_unfold T :: FuncUnfold NonBlockingSelect1 [T] (NonBlockingSelect1ⁱᵐᵖˡ T);
+  #[global] BlockingSelect2_unfold T1 T2 :: FuncUnfold BlockingSelect2 [T1; T2] (BlockingSelect2ⁱᵐᵖˡ T1 T2);
+  #[global] NonBlockingSelect2_unfold T1 T2 :: FuncUnfold NonBlockingSelect2 [T1; T2] (NonBlockingSelect2ⁱᵐᵖˡ T1 T2);
+  #[global] BlockingSelect3_unfold T1 T2 T3 :: FuncUnfold BlockingSelect3 [T1; T2; T3] (BlockingSelect3ⁱᵐᵖˡ T1 T2 T3);
+  #[global] NonBlockingSelect3_unfold T1 T2 T3 :: FuncUnfold NonBlockingSelect3 [T1; T2; T3] (NonBlockingSelect3ⁱᵐᵖˡ T1 T2 T3);
+}.
+
 End code.
 End channel.

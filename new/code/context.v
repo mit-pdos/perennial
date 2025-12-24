@@ -145,5 +145,9 @@ Definition initialize' : val :=
       do:  (closedchan'init #()))
       ).
 
+Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
 End code.
 End context.

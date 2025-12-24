@@ -339,5 +339,9 @@ Definition initialize' : val :=
       do:  (isGraphic'init #()))
       ).
 
+Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
 End code.
 End strconv.

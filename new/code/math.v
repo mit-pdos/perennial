@@ -968,5 +968,9 @@ Definition initialize' : val :=
       do:  (mPi4'init #()))
       ).
 
+Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
 End code.
 End math.

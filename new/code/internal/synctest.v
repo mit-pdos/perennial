@@ -64,5 +64,11 @@ Definition initialize' : val :=
       exception_do (do:  #())
       ).
 
+Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Run_unfold :: FuncUnfold Run [] Runⁱᵐᵖˡ;
+  #[global] IsInBubble_unfold :: FuncUnfold IsInBubble [] IsInBubbleⁱᵐᵖˡ;
+}.
+
 End code.
 End synctest.

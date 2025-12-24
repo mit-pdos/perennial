@@ -132,5 +132,15 @@ Definition initialize' : val :=
       exception_do (do:  (primitive.initialize' #()))
       ).
 
+Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] SumNoOverflow_unfold :: FuncUnfold SumNoOverflow [] SumNoOverflowⁱᵐᵖˡ;
+  #[global] SumAssumeNoOverflow_unfold :: FuncUnfold SumAssumeNoOverflow [] SumAssumeNoOverflowⁱᵐᵖˡ;
+  #[global] MulNoOverflow_unfold :: FuncUnfold MulNoOverflow [] MulNoOverflowⁱᵐᵖˡ;
+  #[global] MulAssumeNoOverflow_unfold :: FuncUnfold MulAssumeNoOverflow [] MulAssumeNoOverflowⁱᵐᵖˡ;
+  #[global] Shuffle_unfold :: FuncUnfold Shuffle [] Shuffleⁱᵐᵖˡ;
+  #[global] Permutation_unfold :: FuncUnfold Permutation [] Permutationⁱᵐᵖˡ;
+}.
+
 End code.
 End std_core.

@@ -851,5 +851,20 @@ Definition initialize' : val :=
       do:  ((GloblalVarAddr #expunged) <-[go.PointerType (go.InterfaceType [])] "$r0"))
       ).
 
+Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] NewCond_unfold :: FuncUnfold NewCond [] NewCondⁱᵐᵖˡ;
+  #[global] runtime_Semacquire_unfold :: FuncUnfold runtime_Semacquire [] runtime_Semacquireⁱᵐᵖˡ;
+  #[global] runtime_SemacquireWaitGroup_unfold :: FuncUnfold runtime_SemacquireWaitGroup [] runtime_SemacquireWaitGroupⁱᵐᵖˡ;
+  #[global] runtime_SemacquireRWMutexR_unfold :: FuncUnfold runtime_SemacquireRWMutexR [] runtime_SemacquireRWMutexRⁱᵐᵖˡ;
+  #[global] runtime_SemacquireRWMutex_unfold :: FuncUnfold runtime_SemacquireRWMutex [] runtime_SemacquireRWMutexⁱᵐᵖˡ;
+  #[global] runtime_Semrelease_unfold :: FuncUnfold runtime_Semrelease [] runtime_Semreleaseⁱᵐᵖˡ;
+  #[global] runtime_notifyListAdd_unfold :: FuncUnfold runtime_notifyListAdd [] runtime_notifyListAddⁱᵐᵖˡ;
+  #[global] runtime_notifyListWait_unfold :: FuncUnfold runtime_notifyListWait [] runtime_notifyListWaitⁱᵐᵖˡ;
+  #[global] runtime_notifyListNotifyAll_unfold :: FuncUnfold runtime_notifyListNotifyAll [] runtime_notifyListNotifyAllⁱᵐᵖˡ;
+  #[global] runtime_notifyListNotifyOne_unfold :: FuncUnfold runtime_notifyListNotifyOne [] runtime_notifyListNotifyOneⁱᵐᵖˡ;
+  #[global] runtime_notifyListCheck_unfold :: FuncUnfold runtime_notifyListCheck [] runtime_notifyListCheckⁱᵐᵖˡ;
+}.
+
 End code.
 End sync.

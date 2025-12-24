@@ -253,5 +253,11 @@ Definition initialize' : val :=
       do:  (asciiSpace'init #()))
       ).
 
+Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Equal_unfold :: FuncUnfold Equal [] Equalⁱᵐᵖˡ;
+  #[global] Clone_unfold :: FuncUnfold Clone [] Cloneⁱᵐᵖˡ;
+}.
+
 End code.
 End bytes.

@@ -53,5 +53,9 @@ Definition initialize' : val :=
       do:  (errorType'init #()))
       ).
 
+Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
 End code.
 End errors.

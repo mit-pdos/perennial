@@ -715,5 +715,9 @@ Definition initialize' : val :=
       do:  (pollSplice'init #()))
       ).
 
+Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
 End code.
 End os.

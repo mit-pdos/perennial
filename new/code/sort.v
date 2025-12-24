@@ -322,5 +322,12 @@ Definition initialize' : val :=
       exception_do (do:  #())
       ).
 
+Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Search_unfold :: FuncUnfold Search [] Searchⁱᵐᵖˡ;
+  #[global] Find_unfold :: FuncUnfold Find [] Findⁱᵐᵖˡ;
+  #[global] SearchInts_unfold :: FuncUnfold SearchInts [] SearchIntsⁱᵐᵖˡ;
+}.
+
 End code.
 End sort.

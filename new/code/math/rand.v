@@ -160,5 +160,9 @@ Definition initialize' : val :=
       do:  (rngCooked'init #()))
       ).
 
+Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
 End code.
 End rand.

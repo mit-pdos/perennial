@@ -693,5 +693,14 @@ Definition initialize' : val :=
       do:  (platformZoneSources'init #()))
       ).
 
+Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Sleep_unfold :: FuncUnfold Sleep [] Sleepⁱᵐᵖˡ;
+  #[global] syncTimer_unfold :: FuncUnfold syncTimer [] syncTimerⁱᵐᵖˡ;
+  #[global] newTimer_unfold :: FuncUnfold newTimer [] newTimerⁱᵐᵖˡ;
+  #[global] After_unfold :: FuncUnfold After [] Afterⁱᵐᵖˡ;
+  #[global] runtimeNano_unfold :: FuncUnfold runtimeNano [] runtimeNanoⁱᵐᵖˡ;
+}.
+
 End code.
 End time.

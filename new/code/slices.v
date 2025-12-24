@@ -1129,5 +1129,26 @@ Definition initialize' : val :=
       exception_do (do:  #())
       ).
 
+Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] insertionSortCmpFunc_unfold E :: FuncUnfold insertionSortCmpFunc [E] (insertionSortCmpFuncⁱᵐᵖˡ E);
+  #[global] siftDownCmpFunc_unfold E :: FuncUnfold siftDownCmpFunc [E] (siftDownCmpFuncⁱᵐᵖˡ E);
+  #[global] heapSortCmpFunc_unfold E :: FuncUnfold heapSortCmpFunc [E] (heapSortCmpFuncⁱᵐᵖˡ E);
+  #[global] pdqsortCmpFunc_unfold E :: FuncUnfold pdqsortCmpFunc [E] (pdqsortCmpFuncⁱᵐᵖˡ E);
+  #[global] partitionCmpFunc_unfold E :: FuncUnfold partitionCmpFunc [E] (partitionCmpFuncⁱᵐᵖˡ E);
+  #[global] partitionEqualCmpFunc_unfold E :: FuncUnfold partitionEqualCmpFunc [E] (partitionEqualCmpFuncⁱᵐᵖˡ E);
+  #[global] partialInsertionSortCmpFunc_unfold E :: FuncUnfold partialInsertionSortCmpFunc [E] (partialInsertionSortCmpFuncⁱᵐᵖˡ E);
+  #[global] breakPatternsCmpFunc_unfold E :: FuncUnfold breakPatternsCmpFunc [E] (breakPatternsCmpFuncⁱᵐᵖˡ E);
+  #[global] choosePivotCmpFunc_unfold E :: FuncUnfold choosePivotCmpFunc [E] (choosePivotCmpFuncⁱᵐᵖˡ E);
+  #[global] order2CmpFunc_unfold E :: FuncUnfold order2CmpFunc [E] (order2CmpFuncⁱᵐᵖˡ E);
+  #[global] medianCmpFunc_unfold E :: FuncUnfold medianCmpFunc [E] (medianCmpFuncⁱᵐᵖˡ E);
+  #[global] medianAdjacentCmpFunc_unfold E :: FuncUnfold medianAdjacentCmpFunc [E] (medianAdjacentCmpFuncⁱᵐᵖˡ E);
+  #[global] reverseRangeCmpFunc_unfold E :: FuncUnfold reverseRangeCmpFunc [E] (reverseRangeCmpFuncⁱᵐᵖˡ E);
+  #[global] swapRangeCmpFunc_unfold E :: FuncUnfold swapRangeCmpFunc [E] (swapRangeCmpFuncⁱᵐᵖˡ E);
+  #[global] stableCmpFunc_unfold E :: FuncUnfold stableCmpFunc [E] (stableCmpFuncⁱᵐᵖˡ E);
+  #[global] symMergeCmpFunc_unfold E :: FuncUnfold symMergeCmpFunc [E] (symMergeCmpFuncⁱᵐᵖˡ E);
+  #[global] rotateCmpFunc_unfold E :: FuncUnfold rotateCmpFunc [E] (rotateCmpFuncⁱᵐᵖˡ E);
+}.
+
 End code.
 End slices.

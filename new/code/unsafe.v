@@ -20,5 +20,9 @@ Definition initialize' : val :=
       exception_do (do:  #())
       ).
 
+Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
 End code.
 End unsafe.

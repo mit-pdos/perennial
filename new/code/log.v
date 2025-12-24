@@ -102,5 +102,11 @@ Definition initialize' : val :=
       do:  (bufferPool'init #()))
       ).
 
+Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Printf_unfold :: FuncUnfold Printf [] Printfⁱᵐᵖˡ;
+  #[global] Println_unfold :: FuncUnfold Println [] Printlnⁱᵐᵖˡ;
+}.
+
 End code.
 End log.

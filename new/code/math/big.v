@@ -368,5 +368,9 @@ Definition initialize' : val :=
       do:  (_RoundingMode_index'init #()))
       ).
 
+Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
 End code.
 End big.

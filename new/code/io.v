@@ -265,5 +265,9 @@ Definition initialize' : val :=
       do:  (ErrClosedPipe'init #()))
       ).
 
+Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
 End code.
 End io.

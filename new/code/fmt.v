@@ -248,5 +248,11 @@ Definition initialize' : val :=
       do:  (errBool'init #()))
       ).
 
+Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Printf_unfold :: FuncUnfold Printf [] Printfⁱᵐᵖˡ;
+  #[global] Print_unfold :: FuncUnfold Print [] Printⁱᵐᵖˡ;
+}.
+
 End code.
 End fmt.

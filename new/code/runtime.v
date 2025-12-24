@@ -7414,5 +7414,10 @@ Definition initialize' : val :=
       do:  (vdsoSymbolKeys'init #()))
       ).
 
+Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Gosched_unfold :: FuncUnfold Gosched [] Goschedⁱᵐᵖˡ;
+}.
+
 End code.
 End runtime.
