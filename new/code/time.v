@@ -693,13 +693,128 @@ Definition initialize' : val :=
       do:  (platformZoneSources'init #()))
       ).
 
+Class ParseError_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class Timer_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class Ticker_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class Time_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Time'ptr_UnixNano_unfold :: MethodUnfold (Time) "UnixNano" (Time__UnixNanoⁱᵐᵖˡ);
+  #[global] Time'ptr_UnixNano_unfold :: MethodUnfold (go.PointerType (Time)) "UnixNano" (λ: "$r", MethodResolve (Time) UnixNano #() (![(Time)] "$r");
+  #[global] Time'ptr_nsec_unfold :: MethodUnfold (go.PointerType (Time)) "nsec" (Time__nsecⁱᵐᵖˡ);
+  #[global] Time'ptr_sec_unfold :: MethodUnfold (go.PointerType (Time)) "sec" (Time__secⁱᵐᵖˡ);
+  #[global] Time'ptr_unixSec_unfold :: MethodUnfold (go.PointerType (Time)) "unixSec" (Time__unixSecⁱᵐᵖˡ);
+}.
+
+Class Month_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class Weekday_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class absSeconds_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class absDays_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class absCentury_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class absCyear_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class absYday_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class absMonth_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class absLeap_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class absJanFeb_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class Duration_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class Location_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class zone_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class zoneTrans_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class ruleKind_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class rule_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class fileSizeError_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class dataIO_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
 Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Sleep_unfold :: FuncUnfold Sleep [] Sleepⁱᵐᵖˡ;
-  #[global] syncTimer_unfold :: FuncUnfold syncTimer [] syncTimerⁱᵐᵖˡ;
-  #[global] newTimer_unfold :: FuncUnfold newTimer [] newTimerⁱᵐᵖˡ;
-  #[global] After_unfold :: FuncUnfold After [] Afterⁱᵐᵖˡ;
-  #[global] runtimeNano_unfold :: FuncUnfold runtimeNano [] runtimeNanoⁱᵐᵖˡ;
+  #[global] ParseError_instance :: ParseError_Assumptions;
+  #[global] Timer_instance :: Timer_Assumptions;
+  #[global] Ticker_instance :: Ticker_Assumptions;
+  #[global] Time_instance :: Time_Assumptions;
+  #[global] Month_instance :: Month_Assumptions;
+  #[global] Weekday_instance :: Weekday_Assumptions;
+  #[global] absSeconds_instance :: absSeconds_Assumptions;
+  #[global] absDays_instance :: absDays_Assumptions;
+  #[global] absCentury_instance :: absCentury_Assumptions;
+  #[global] absCyear_instance :: absCyear_Assumptions;
+  #[global] absYday_instance :: absYday_Assumptions;
+  #[global] absMonth_instance :: absMonth_Assumptions;
+  #[global] absLeap_instance :: absLeap_Assumptions;
+  #[global] absJanFeb_instance :: absJanFeb_Assumptions;
+  #[global] Duration_instance :: Duration_Assumptions;
+  #[global] Location_instance :: Location_Assumptions;
+  #[global] zone_instance :: zone_Assumptions;
+  #[global] zoneTrans_instance :: zoneTrans_Assumptions;
+  #[global] ruleKind_instance :: ruleKind_Assumptions;
+  #[global] rule_instance :: rule_Assumptions;
+  #[global] fileSizeError_instance :: fileSizeError_Assumptions;
+  #[global] dataIO_instance :: dataIO_Assumptions;
+  #[global] Sleep_unfold :: FuncUnfold Sleep [] (Sleepⁱᵐᵖˡ);
+  #[global] syncTimer_unfold :: FuncUnfold syncTimer [] (syncTimerⁱᵐᵖˡ);
+  #[global] newTimer_unfold :: FuncUnfold newTimer [] (newTimerⁱᵐᵖˡ);
+  #[global] After_unfold :: FuncUnfold After [] (Afterⁱᵐᵖˡ);
+  #[global] runtimeNano_unfold :: FuncUnfold runtimeNano [] (runtimeNanoⁱᵐᵖˡ);
 }.
 
 End code.

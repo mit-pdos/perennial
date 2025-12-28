@@ -55,13 +55,28 @@ Definition initialize' : val :=
       do:  (_'init #()))
       ).
 
+Class Disk_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class FileDisk_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class MemDisk_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
 Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Get_unfold :: FuncUnfold Get [] Getⁱᵐᵖˡ;
-  #[global] Read_unfold :: FuncUnfold Read [] Readⁱᵐᵖˡ;
-  #[global] Write_unfold :: FuncUnfold Write [] Writeⁱᵐᵖˡ;
-  #[global] Size_unfold :: FuncUnfold Size [] Sizeⁱᵐᵖˡ;
-  #[global] Barrier_unfold :: FuncUnfold Barrier [] Barrierⁱᵐᵖˡ;
+  #[global] Disk_instance :: Disk_Assumptions;
+  #[global] FileDisk_instance :: FileDisk_Assumptions;
+  #[global] MemDisk_instance :: MemDisk_Assumptions;
+  #[global] Get_unfold :: FuncUnfold Get [] (Getⁱᵐᵖˡ);
+  #[global] Read_unfold :: FuncUnfold Read [] (Readⁱᵐᵖˡ);
+  #[global] Write_unfold :: FuncUnfold Write [] (Writeⁱᵐᵖˡ);
+  #[global] Size_unfold :: FuncUnfold Size [] (Sizeⁱᵐᵖˡ);
+  #[global] Barrier_unfold :: FuncUnfold Barrier [] (Barrierⁱᵐᵖˡ);
 }.
 
 End code.

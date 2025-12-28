@@ -253,10 +253,30 @@ Definition initialize' : val :=
       do:  (asciiSpace'init #()))
       ).
 
+Class Buffer_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class readOp_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class asciiSet_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class Reader_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
 Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Equal_unfold :: FuncUnfold Equal [] Equalⁱᵐᵖˡ;
-  #[global] Clone_unfold :: FuncUnfold Clone [] Cloneⁱᵐᵖˡ;
+  #[global] Buffer_instance :: Buffer_Assumptions;
+  #[global] readOp_instance :: readOp_Assumptions;
+  #[global] asciiSet_instance :: asciiSet_Assumptions;
+  #[global] Reader_instance :: Reader_Assumptions;
+  #[global] Equal_unfold :: FuncUnfold Equal [] (Equalⁱᵐᵖˡ);
+  #[global] Clone_unfold :: FuncUnfold Clone [] (Cloneⁱᵐᵖˡ);
 }.
 
 End code.

@@ -248,10 +248,95 @@ Definition initialize' : val :=
       do:  (errBool'init #()))
       ).
 
+Class wrapError_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class wrapErrors_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class fmtFlags_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class fmt_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class State_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class Formatter_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class Stringer_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class GoStringer_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class buffer_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class pp_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class ScanState_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class Scanner_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class stringReader_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class scanError_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class ss_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class ssave_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class readRune_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
 Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Printf_unfold :: FuncUnfold Printf [] Printfⁱᵐᵖˡ;
-  #[global] Print_unfold :: FuncUnfold Print [] Printⁱᵐᵖˡ;
+  #[global] wrapError_instance :: wrapError_Assumptions;
+  #[global] wrapErrors_instance :: wrapErrors_Assumptions;
+  #[global] fmtFlags_instance :: fmtFlags_Assumptions;
+  #[global] fmt_instance :: fmt_Assumptions;
+  #[global] State_instance :: State_Assumptions;
+  #[global] Formatter_instance :: Formatter_Assumptions;
+  #[global] Stringer_instance :: Stringer_Assumptions;
+  #[global] GoStringer_instance :: GoStringer_Assumptions;
+  #[global] buffer_instance :: buffer_Assumptions;
+  #[global] pp_instance :: pp_Assumptions;
+  #[global] ScanState_instance :: ScanState_Assumptions;
+  #[global] Scanner_instance :: Scanner_Assumptions;
+  #[global] stringReader_instance :: stringReader_Assumptions;
+  #[global] scanError_instance :: scanError_Assumptions;
+  #[global] ss_instance :: ss_Assumptions;
+  #[global] ssave_instance :: ssave_Assumptions;
+  #[global] readRune_instance :: readRune_Assumptions;
+  #[global] Printf_unfold :: FuncUnfold Printf [] (Printfⁱᵐᵖˡ);
+  #[global] Print_unfold :: FuncUnfold Print [] (Printⁱᵐᵖˡ);
 }.
 
 End code.

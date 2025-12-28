@@ -58,8 +58,23 @@ Definition initialize' : val :=
       exception_do (do:  #())
       ).
 
+Class PublicKey_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class PrivateKey_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class Options_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
 Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
+  #[global] PublicKey_instance :: PublicKey_Assumptions;
+  #[global] PrivateKey_instance :: PrivateKey_Assumptions;
+  #[global] Options_instance :: Options_Assumptions;
 }.
 
 End code.

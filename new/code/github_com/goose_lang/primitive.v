@@ -61,12 +61,24 @@ Definition initialize' : val :=
       exception_do (do:  #())
       ).
 
+Class Mutex_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Mutex'ptr_Lock_unfold :: MethodUnfold (go.PointerType (Mutex)) "Lock" (Mutex__Lockⁱᵐᵖˡ);
+  #[global] Mutex'ptr_Unlock_unfold :: MethodUnfold (go.PointerType (Mutex)) "Unlock" (Mutex__Unlockⁱᵐᵖˡ);
+}.
+
+Class prophId_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
 Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] UInt64Put_unfold :: FuncUnfold UInt64Put [] UInt64Putⁱᵐᵖˡ;
-  #[global] RandomUint64_unfold :: FuncUnfold RandomUint64 [] RandomUint64ⁱᵐᵖˡ;
-  #[global] Assume_unfold :: FuncUnfold Assume [] Assumeⁱᵐᵖˡ;
-  #[global] AssumeNoStringOverflow_unfold :: FuncUnfold AssumeNoStringOverflow [] AssumeNoStringOverflowⁱᵐᵖˡ;
+  #[global] Mutex_instance :: Mutex_Assumptions;
+  #[global] prophId_instance :: prophId_Assumptions;
+  #[global] UInt64Put_unfold :: FuncUnfold UInt64Put [] (UInt64Putⁱᵐᵖˡ);
+  #[global] RandomUint64_unfold :: FuncUnfold RandomUint64 [] (RandomUint64ⁱᵐᵖˡ);
+  #[global] Assume_unfold :: FuncUnfold Assume [] (Assumeⁱᵐᵖˡ);
+  #[global] AssumeNoStringOverflow_unfold :: FuncUnfold AssumeNoStringOverflow [] (AssumeNoStringOverflowⁱᵐᵖˡ);
 }.
 
 End code.

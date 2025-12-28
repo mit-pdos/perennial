@@ -265,8 +265,188 @@ Definition initialize' : val :=
       do:  (ErrClosedPipe'init #()))
       ).
 
+Class Reader_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class Writer_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class Closer_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class Seeker_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class ReadWriter_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class ReadCloser_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class WriteCloser_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class ReadWriteCloser_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class ReadSeeker_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class ReadSeekCloser_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class WriteSeeker_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class ReadWriteSeeker_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class ReaderFrom_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class WriterTo_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class ReaderAt_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class WriterAt_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class ByteReader_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class ByteScanner_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class ByteWriter_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class RuneReader_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class RuneScanner_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class StringWriter_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class LimitedReader_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class SectionReader_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class OffsetWriter_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class teeReader_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class discard_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class nopCloser_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class nopCloserWriterTo_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class eofReader_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class multiReader_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class multiWriter_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class onceError_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class pipe_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class PipeReader_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class PipeWriter_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
 Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
+  #[global] Reader_instance :: Reader_Assumptions;
+  #[global] Writer_instance :: Writer_Assumptions;
+  #[global] Closer_instance :: Closer_Assumptions;
+  #[global] Seeker_instance :: Seeker_Assumptions;
+  #[global] ReadWriter_instance :: ReadWriter_Assumptions;
+  #[global] ReadCloser_instance :: ReadCloser_Assumptions;
+  #[global] WriteCloser_instance :: WriteCloser_Assumptions;
+  #[global] ReadWriteCloser_instance :: ReadWriteCloser_Assumptions;
+  #[global] ReadSeeker_instance :: ReadSeeker_Assumptions;
+  #[global] ReadSeekCloser_instance :: ReadSeekCloser_Assumptions;
+  #[global] WriteSeeker_instance :: WriteSeeker_Assumptions;
+  #[global] ReadWriteSeeker_instance :: ReadWriteSeeker_Assumptions;
+  #[global] ReaderFrom_instance :: ReaderFrom_Assumptions;
+  #[global] WriterTo_instance :: WriterTo_Assumptions;
+  #[global] ReaderAt_instance :: ReaderAt_Assumptions;
+  #[global] WriterAt_instance :: WriterAt_Assumptions;
+  #[global] ByteReader_instance :: ByteReader_Assumptions;
+  #[global] ByteScanner_instance :: ByteScanner_Assumptions;
+  #[global] ByteWriter_instance :: ByteWriter_Assumptions;
+  #[global] RuneReader_instance :: RuneReader_Assumptions;
+  #[global] RuneScanner_instance :: RuneScanner_Assumptions;
+  #[global] StringWriter_instance :: StringWriter_Assumptions;
+  #[global] LimitedReader_instance :: LimitedReader_Assumptions;
+  #[global] SectionReader_instance :: SectionReader_Assumptions;
+  #[global] OffsetWriter_instance :: OffsetWriter_Assumptions;
+  #[global] teeReader_instance :: teeReader_Assumptions;
+  #[global] discard_instance :: discard_Assumptions;
+  #[global] nopCloser_instance :: nopCloser_Assumptions;
+  #[global] nopCloserWriterTo_instance :: nopCloserWriterTo_Assumptions;
+  #[global] eofReader_instance :: eofReader_Assumptions;
+  #[global] multiReader_instance :: multiReader_Assumptions;
+  #[global] multiWriter_instance :: multiWriter_Assumptions;
+  #[global] onceError_instance :: onceError_Assumptions;
+  #[global] pipe_instance :: pipe_Assumptions;
+  #[global] PipeReader_instance :: PipeReader_Assumptions;
+  #[global] PipeWriter_instance :: PipeWriter_Assumptions;
 }.
 
 End code.

@@ -831,8 +831,33 @@ Definition initialize' : val :=
       exception_do (do:  (primitive.initialize' #()))
       ).
 
+Class offerState_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class Channel_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Channel'ptr_Cap_unfold T :: MethodUnfold (go.PointerType (Channel T)) "Cap" (Channel__Capⁱᵐᵖˡ T);
+  #[global] Channel'ptr_Close_unfold T :: MethodUnfold (go.PointerType (Channel T)) "Close" (Channel__Closeⁱᵐᵖˡ T);
+  #[global] Channel'ptr_Iter_unfold T :: MethodUnfold (go.PointerType (Channel T)) "Iter" (Channel__Iterⁱᵐᵖˡ T);
+  #[global] Channel'ptr_Len_unfold T :: MethodUnfold (go.PointerType (Channel T)) "Len" (Channel__Lenⁱᵐᵖˡ T);
+  #[global] Channel'ptr_Receive_unfold T :: MethodUnfold (go.PointerType (Channel T)) "Receive" (Channel__Receiveⁱᵐᵖˡ T);
+  #[global] Channel'ptr_ReceiveDiscardOk_unfold T :: MethodUnfold (go.PointerType (Channel T)) "ReceiveDiscardOk" (Channel__ReceiveDiscardOkⁱᵐᵖˡ T);
+  #[global] Channel'ptr_Send_unfold T :: MethodUnfold (go.PointerType (Channel T)) "Send" (Channel__Sendⁱᵐᵖˡ T);
+  #[global] Channel'ptr_TryReceive_unfold T :: MethodUnfold (go.PointerType (Channel T)) "TryReceive" (Channel__TryReceiveⁱᵐᵖˡ T);
+  #[global] Channel'ptr_TrySend_unfold T :: MethodUnfold (go.PointerType (Channel T)) "TrySend" (Channel__TrySendⁱᵐᵖˡ T);
+  #[global] Channel'ptr_tryClose_unfold T :: MethodUnfold (go.PointerType (Channel T)) "tryClose" (Channel__tryCloseⁱᵐᵖˡ T);
+}.
+
+Class SelectDir_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
 Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
+  #[global] offerState_instance :: offerState_Assumptions;
+  #[global] Channel_instance :: Channel_Assumptions;
+  #[global] SelectDir_instance :: SelectDir_Assumptions;
   #[global] NewChannel_unfold T :: FuncUnfold NewChannel [T] (NewChannelⁱᵐᵖˡ T);
   #[global] NonBlockingSelect1_unfold T :: FuncUnfold NonBlockingSelect1 [T] (NonBlockingSelect1ⁱᵐᵖˡ T);
   #[global] BlockingSelect2_unfold T1 T2 :: FuncUnfold BlockingSelect2 [T1; T2] (BlockingSelect2ⁱᵐᵖˡ T1 T2);

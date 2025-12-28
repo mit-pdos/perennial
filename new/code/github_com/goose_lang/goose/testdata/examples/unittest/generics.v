@@ -7,17 +7,17 @@ Definition generics : go_string := "github.com/goose-lang/goose/testdata/example
 Module generics.
 
 Section code.
-Context `{ffi_syntax}.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 
 
 Definition UnderlyingSlice : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.UnderlyingSlice"%go.
 
 (* go: constraints.go:3:6 *)
-Definition UnderlyingSliceⁱᵐᵖˡ : val :=
-  λ: "T" "s",
-    exception_do (let: "s" := (GoAllocValue T "s") in
+Definition UnderlyingSliceⁱᵐᵖˡ (T : go.type) : val :=
+  λ: "s",
+    exception_do (let: "s" := (go.AllocValue T "s") in
     return: (let: "$a0" := (![T] "s") in
-     slice.len "$a0")).
+     (FuncResolve go.len [T] #()) "$a0")).
 
 Definition Clone : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.Clone"%go.
 
@@ -26,61 +26,57 @@ Definition Clone : go_string := "github.com/goose-lang/goose/testdata/examples/u
    Slightly simplified from [slices.Clone].
 
    go: constraints.go:10:6 *)
-Definition Cloneⁱᵐᵖˡ : val :=
-  λ: "S" "E" "s",
-    exception_do (let: "s" := (GoAllocValue S "s") in
-    return: (let: "$a0" := #slice.nil in
+Definition Cloneⁱᵐᵖˡ (S E : go.type) : val :=
+  λ: "s",
+    exception_do (let: "s" := (go.AllocValue S "s") in
+    return: (let: "$a0" := (CompositeLiteral S (LiteralValue [])) in
      let: "$a1" := (![S] "s") in
-     (slice.append E) "$a0" "$a1")).
+     (FuncResolve go.append [S] #()) "$a0" "$a1")).
 
-Definition Boxⁱᵐᵖˡ (T : go.type)  : go.type := go.StructType [
+Definition Boxⁱᵐᵖˡ(T : go.type)  : go.type := go.StructType [
   (go.FieldDecl "Value"%go T)
 ].
 
 Definition BoxGet : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.BoxGet"%go.
 
+Definition Box(T : go.type)  : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest/generics.Box"%go [T].
+
 (* BoxGet is a function getter (rather than a method)
 
    go: generics.go:13:6 *)
-Definition BoxGetⁱᵐᵖˡ : val :=
-  λ: "T" "b",
-    exception_do (let: "b" := (GoAllocValue (Box T) "b") in
-    return: (![T] (struct.field_ref Box #"Value"%go "b"))).
+Definition BoxGetⁱᵐᵖˡ (T : go.type) : val :=
+  λ: "b",
+    exception_do (let: "b" := (go.AllocValue (Box T) "b") in
+    return: (![T] (StructFieldRef (Box T) "Value"%go "b"))).
 
 Definition BoxGet2 : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.BoxGet2"%go.
 
 (* go: generics.go:17:6 *)
 Definition BoxGet2ⁱᵐᵖˡ : val :=
   λ: "b",
-    exception_do (let: "b" := (GoAllocValue (Box go.uint64) "b") in
-    return: (![go.uint64] (struct.field_ref Box #"Value"%go "b"))).
+    exception_do (let: "b" := (go.AllocValue (Box go.uint64) "b") in
+    return: (![go.uint64] (StructFieldRef (Box go.uint64) "Value"%go "b"))).
 
 (* go: generics.go:21:17 *)
-Definition Box__Getⁱᵐᵖˡ : val :=
-  λ: "b" "T" <>,
-    exception_do (let: "b" := (GoAllocValue (Box T) "b") in
-    return: (![T] (struct.field_ref Box #"Value"%go "b"))).
+Definition Box__Getⁱᵐᵖˡ (T : go.type) : val :=
+  λ: "b" <>,
+    exception_do (let: "b" := (go.AllocValue (Box T) "b") in
+    return: (![T] (StructFieldRef (Box T) "Value"%go "b"))).
 
 Definition makeGenericBox : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.makeGenericBox"%go.
 
 (* go: generics.go:25:6 *)
-Definition makeGenericBoxⁱᵐᵖˡ : val :=
-  λ: "T" "value",
-    exception_do (let: "value" := (GoAllocValue T "value") in
-    return: (let: "$Value" := (![T] "value") in
-     struct.make (Box T) [{
-       "Value" ::= "$Value"
-     }])).
+Definition makeGenericBoxⁱᵐᵖˡ (T : go.type) : val :=
+  λ: "value",
+    exception_do (let: "value" := (go.AllocValue T "value") in
+    return: (CompositeLiteral (Box T) (LiteralValue [KeyedElement (Some (KeyField "Value"%go)) (ElementExpression (![T] "value"))]))).
 
 Definition makeBox : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.makeBox"%go.
 
 (* go: generics.go:29:6 *)
 Definition makeBoxⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (return: (let: "$Value" := #(W64 42) in
-     struct.make (Box go.uint64) [{
-       "Value" ::= "$Value"
-     }])).
+    exception_do (return: (CompositeLiteral (Box go.uint64) (LiteralValue [KeyedElement (Some (KeyField "Value"%go)) (ElementExpression #(W64 42))]))).
 
 Definition useBoxGet : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.useBoxGet"%go.
 
@@ -89,101 +85,88 @@ Definition useBoxGetⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (let: "x" := (GoAlloc (Box go.uint64) #()) in
     let: "$r0" := (let: "$a0" := #(W64 42) in
-    ((FuncResolve makeGenericBox #()) go.uint64) "$a0") in
+    (FuncResolve makeGenericBox [go.uint64] #()) "$a0") in
     do:  ("x" <-[Box go.uint64] "$r0");;;
-    return: ((MethodResolve (Box go.uint64) Get #() (![Box go.uint64] "x") go.uint64) #())).
+    return: ((MethodResolve (Box go.uint64) "Get"%go #() (![Box go.uint64] "x")) #())).
 
-Definition Containerⁱᵐᵖˡ (T : go.type)  : go.type := go.StructType [
+Definition Containerⁱᵐᵖˡ(T : go.type)  : go.type := go.StructType [
   (go.FieldDecl "X"%go T);
-  (go.FieldDecl "Y"%go go.MapType go.int T);
-  (go.FieldDecl "Z"%go go.PointerType T);
+  (go.FieldDecl "Y"%go (go.MapType go.int T));
+  (go.FieldDecl "Z"%go (go.PointerType T));
   (go.FieldDecl "W"%go go.uint64)
 ].
 
 Definition useContainer : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.useContainer"%go.
 
+Definition Container(T : go.type)  : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest/generics.Container"%go [T].
+
 (* go: generics.go:47:6 *)
 Definition useContainerⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (let: "container" := (GoAlloc (Container go.uint64) #()) in
-    let: "$r0" := (let: "$X" := #(W64 1) in
-    let: "$Y" := ((let: "$v0" := #(W64 2) in
-    let: "$k0" := #(W64 1) in
-    map.literal go.int go.uint64 [map.kv_entry "$k0" "$v0"])) in
-    let: "$Z" := (GoAlloc go.uint64 #()) in
-    let: "$W" := #(W64 3) in
-    struct.make (Container go.uint64) [{
-      "X" ::= "$X";
-      "Y" ::= "$Y";
-      "Z" ::= "$Z";
-      "W" ::= "$W"
-    }]) in
+    let: "$r0" := (CompositeLiteral (Container go.uint64) (LiteralValue [KeyedElement (Some (KeyField "X"%go)) (ElementExpression #(W64 1)); KeyedElement (Some (KeyField "Y"%go)) (CompositeLiteral (go.MapType go.int go.uint64) (LiteralValue [KeyedElement (Some (KeyExpression #(W64 1))) (ElementExpression #(W64 2))])); KeyedElement (Some (KeyField "Z"%go)) (ElementExpression (GoAlloc go.uint64 #())); KeyedElement (Some (KeyField "W"%go)) (ElementExpression #(W64 3))])) in
     do:  ("container" <-[Container go.uint64] "$r0");;;
     let: "$r0" := #(W64 2) in
-    do:  ((struct.field_ref Container #"X"%go "container") <-[go.uint64] "$r0");;;
+    do:  ((StructFieldRef (Container go.uint64) "X"%go "container") <-[go.uint64] "$r0");;;
     let: "$r0" := #(W64 3) in
-    do:  (map.insert (![go.MapType go.int go.uint64] (struct.field_ref Container #"Y"%go "container")) #(W64 2) "$r0");;;
+    do:  (map.insert (![go.MapType go.int go.uint64] (StructFieldRef (Container go.uint64) "Y"%go "container")) #(W64 2) "$r0");;;
     let: "$r0" := (GoAlloc go.uint64 #()) in
-    do:  ((struct.field_ref Container #"Z"%go "container") <-[go.PointerType go.uint64] "$r0");;;
+    do:  ((StructFieldRef (Container go.uint64) "Z"%go "container") <-[go.PointerType go.uint64] "$r0");;;
     let: "$r0" := #(W64 4) in
-    do:  ((struct.field_ref Container #"W"%go "container") <-[go.uint64] "$r0");;;
+    do:  ((StructFieldRef (Container go.uint64) "W"%go "container") <-[go.uint64] "$r0");;;
     return: #()).
 
-Definition UseContainerⁱᵐᵖˡ  : go.type := go.StructType [
-  (go.FieldDecl "X"%go Container go.uint64)
+Definition UseContainerⁱᵐᵖˡ : go.type := go.StructType [
+  (go.FieldDecl "X"%go (Container go.uint64))
 ].
 
-Definition OnlyIndirectⁱᵐᵖˡ (T : go.type)  : go.type := go.StructType [
-  (go.FieldDecl "X"%go go.SliceType T);
-  (go.FieldDecl "Y"%go go.PointerType T)
+Definition OnlyIndirectⁱᵐᵖˡ(T : go.type)  : go.type := go.StructType [
+  (go.FieldDecl "X"%go (go.SliceType T));
+  (go.FieldDecl "Y"%go (go.PointerType T))
 ].
 
-Definition MultiParamⁱᵐᵖˡ (A : go.type) (B : go.type)  : go.type := go.StructType [
+Definition MultiParamⁱᵐᵖˡ(A : go.type) (B : go.type)  : go.type := go.StructType [
   (go.FieldDecl "Y"%go B);
   (go.FieldDecl "X"%go A)
 ].
 
 Definition useMultiParam : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.useMultiParam"%go.
 
+Definition MultiParam(A : go.type) (B : go.type)  : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest/generics.MultiParam"%go [A; B].
+
 (* go: generics.go:75:6 *)
 Definition useMultiParamⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (let: "mp" := (GoAlloc (MultiParam go.uint64 go.bool) #()) in
-    let: "$r0" := (let: "$Y" := #true in
-    let: "$X" := #(W64 1) in
-    struct.make (MultiParam go.uint64 go.bool) [{
-      "Y" ::= "$Y";
-      "X" ::= "$X"
-    }]) in
+    let: "$r0" := (CompositeLiteral (MultiParam go.uint64 go.bool) (LiteralValue [KeyedElement (Some (KeyField "Y"%go)) (ElementExpression #true); KeyedElement (Some (KeyField "X"%go)) (ElementExpression #(W64 1))])) in
     do:  ("mp" <-[MultiParam go.uint64 go.bool] "$r0");;;
     let: "$r0" := #(W64 2) in
-    do:  ((struct.field_ref MultiParam #"X"%go "mp") <-[go.uint64] "$r0");;;
+    do:  ((StructFieldRef (MultiParam go.uint64 go.bool) "X"%go "mp") <-[go.uint64] "$r0");;;
     return: #()).
 
 Definition swapMultiParam : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.swapMultiParam"%go.
 
 (* go: generics.go:80:6 *)
-Definition swapMultiParamⁱᵐᵖˡ : val :=
-  λ: "A" "p",
-    exception_do (let: "p" := (GoAllocValue (go.PointerType (MultiParam A A)) "p") in
+Definition swapMultiParamⁱᵐᵖˡ (A : go.type) : val :=
+  λ: "p",
+    exception_do (let: "p" := (go.AllocValue (go.PointerType (MultiParam A A)) "p") in
     let: "temp" := (GoAlloc A #()) in
-    let: "$r0" := (![A] (struct.field_ref MultiParam #"X"%go (![go.PointerType (MultiParam A A)] "p"))) in
+    let: "$r0" := (![A] (StructFieldRef (MultiParam A A) "X"%go (![go.PointerType (MultiParam A A)] "p"))) in
     do:  ("temp" <-[A] "$r0");;;
-    let: "$r0" := (![A] (struct.field_ref MultiParam #"Y"%go (![go.PointerType (MultiParam A A)] "p"))) in
-    do:  ((struct.field_ref MultiParam #"X"%go (![go.PointerType (MultiParam A A)] "p")) <-[A] "$r0");;;
+    let: "$r0" := (![A] (StructFieldRef (MultiParam A A) "Y"%go (![go.PointerType (MultiParam A A)] "p"))) in
+    do:  ((StructFieldRef (MultiParam A A) "X"%go (![go.PointerType (MultiParam A A)] "p")) <-[A] "$r0");;;
     let: "$r0" := (![A] "temp") in
-    do:  ((struct.field_ref MultiParam #"Y"%go (![go.PointerType (MultiParam A A)] "p")) <-[A] "$r0");;;
+    do:  ((StructFieldRef (MultiParam A A) "Y"%go (![go.PointerType (MultiParam A A)] "p")) <-[A] "$r0");;;
     return: #()).
 
 Definition multiParamFunc : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.multiParamFunc"%go.
 
 (* go: generics.go:86:6 *)
-Definition multiParamFuncⁱᵐᵖˡ : val :=
-  λ: "A" "B" "x" "b",
-    exception_do (let: "b" := (GoAllocValue B "b") in
-    let: "x" := (GoAllocValue A "x") in
-    return: ((let: "$sl0" := (![B] "b") in
-     slice.literal B ["$sl0"]))).
+Definition multiParamFuncⁱᵐᵖˡ (A B : go.type) : val :=
+  λ: "x" "b",
+    exception_do (let: "b" := (go.AllocValue B "b") in
+    let: "x" := (go.AllocValue A "x") in
+    return: (CompositeLiteral (go.SliceType B) (LiteralValue [KeyedElement None (ElementExpression (![B] "b"))]))).
 
 Definition useMultiParamFunc : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.useMultiParamFunc"%go.
 
@@ -192,7 +175,7 @@ Definition useMultiParamFuncⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (do:  (let: "$a0" := #(W64 1) in
     let: "$a1" := #true in
-    ((FuncResolve multiParamFunc #()) go.uint64 go.bool) "$a0" "$a1");;;
+    (FuncResolve multiParamFunc [go.uint64; go.bool] #()) "$a0" "$a1");;;
     return: (#());;;
     return: #()).
 
@@ -203,31 +186,67 @@ Definition useAnyPointerⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (let: "x" := (GoAlloc go.uint64 #()) in
     do:  (let: "$a0" := "x" in
-    (FuncResolve helpers.AnyPointer #() go.uint64) "$a0");;;
+    (FuncResolve helpers.AnyPointer [go.uint64] #()) "$a0");;;
     return: #()).
 
-Definition vars' : list (go_string * go.type) := [].
+Definition UseContainer : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest/generics.UseContainer"%go [].
 
-Definition functions' : list (go_string * val) := [(UnderlyingSlice, UnderlyingSliceⁱᵐᵖˡ); (Clone, Cloneⁱᵐᵖˡ); (BoxGet, BoxGetⁱᵐᵖˡ); (BoxGet2, BoxGet2ⁱᵐᵖˡ); (makeGenericBox, makeGenericBoxⁱᵐᵖˡ); (makeBox, makeBoxⁱᵐᵖˡ); (useBoxGet, useBoxGetⁱᵐᵖˡ); (useContainer, useContainerⁱᵐᵖˡ); (useMultiParam, useMultiParamⁱᵐᵖˡ); (swapMultiParam, swapMultiParamⁱᵐᵖˡ); (multiParamFunc, multiParamFuncⁱᵐᵖˡ); (useMultiParamFunc, useMultiParamFuncⁱᵐᵖˡ); (useAnyPointer, useAnyPointerⁱᵐᵖˡ)].
-
-Definition msets' : list (go_string * (list (go_string * val))) := [(Box, [("Get"%go, Box__Getⁱᵐᵖˡ)]); (go.PointerType Box, [("Get"%go, (λ: "$r",
-                 MethodResolve Box Get #() (![Box] "$r")
-                 )%V)]); (Container, []); (go.PointerType Container, []); (UseContainer, []); (go.PointerType UseContainer, []); (OnlyIndirect, []); (go.PointerType OnlyIndirect, []); (MultiParam, []); (go.PointerType MultiParam, [])].
+Definition OnlyIndirect(T : go.type)  : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest/generics.OnlyIndirect"%go [T].
 
 #[global] Instance info' : PkgInfo generics.generics :=
   {|
-    pkg_vars := vars';
-    pkg_functions := functions';
-    pkg_msets := msets';
     pkg_imported_pkgs := [code.github_com.goose_lang.goose.testdata.examples.unittest.generics.helpers.helpers];
   |}.
 
 Definition initialize' : val :=
   λ: <>,
-    package.init #generics.generics (λ: <>,
-      exception_do (do:  (helpers.initialize' #());;;
-      do:  (package.alloc generics.generics #()))
+    package.init generics.generics (λ: <>,
+      exception_do (do:  (helpers.initialize' #()))
       ).
+
+Class Box_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Box'ptr_Get_unfold T :: MethodUnfold (Box T) "Get" (Box__Getⁱᵐᵖˡ T);
+  #[global] Box'ptr_Get_unfold T :: MethodUnfold (go.PointerType (Box T)) "Get" (λ: "$r", MethodResolve (Box T) Get #() (![(Box T)] "$r");
+}.
+
+Class Container_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class UseContainer_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class OnlyIndirect_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class MultiParam_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Box_instance :: Box_Assumptions;
+  #[global] Container_instance :: Container_Assumptions;
+  #[global] UseContainer_instance :: UseContainer_Assumptions;
+  #[global] OnlyIndirect_instance :: OnlyIndirect_Assumptions;
+  #[global] MultiParam_instance :: MultiParam_Assumptions;
+  #[global] UnderlyingSlice_unfold T :: FuncUnfold UnderlyingSlice [T] (UnderlyingSliceⁱᵐᵖˡ T);
+  #[global] Clone_unfold S E :: FuncUnfold Clone [S; E] (Cloneⁱᵐᵖˡ S E);
+  #[global] BoxGet_unfold T :: FuncUnfold BoxGet [T] (BoxGetⁱᵐᵖˡ T);
+  #[global] BoxGet2_unfold :: FuncUnfold BoxGet2 [] (BoxGet2ⁱᵐᵖˡ);
+  #[global] makeGenericBox_unfold T :: FuncUnfold makeGenericBox [T] (makeGenericBoxⁱᵐᵖˡ T);
+  #[global] makeBox_unfold :: FuncUnfold makeBox [] (makeBoxⁱᵐᵖˡ);
+  #[global] useBoxGet_unfold :: FuncUnfold useBoxGet [] (useBoxGetⁱᵐᵖˡ);
+  #[global] useContainer_unfold :: FuncUnfold useContainer [] (useContainerⁱᵐᵖˡ);
+  #[global] useMultiParam_unfold :: FuncUnfold useMultiParam [] (useMultiParamⁱᵐᵖˡ);
+  #[global] swapMultiParam_unfold A :: FuncUnfold swapMultiParam [A] (swapMultiParamⁱᵐᵖˡ A);
+  #[global] multiParamFunc_unfold A B :: FuncUnfold multiParamFunc [A; B] (multiParamFuncⁱᵐᵖˡ A B);
+  #[global] useMultiParamFunc_unfold :: FuncUnfold useMultiParamFunc [] (useMultiParamFuncⁱᵐᵖˡ);
+  #[global] useAnyPointer_unfold :: FuncUnfold useAnyPointer [] (useAnyPointerⁱᵐᵖˡ);
+}.
 
 End code.
 End generics.

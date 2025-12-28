@@ -368,8 +368,73 @@ Definition initialize' : val :=
       do:  (_RoundingMode_index'init #()))
       ).
 
+Class Word_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class decimal_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class Float_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class ErrNaN_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class form_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class RoundingMode_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class Accuracy_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class Int_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class byteReader_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class nat_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class stack_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class divisor_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class Rat_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
 Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
+  #[global] Word_instance :: Word_Assumptions;
+  #[global] decimal_instance :: decimal_Assumptions;
+  #[global] Float_instance :: Float_Assumptions;
+  #[global] ErrNaN_instance :: ErrNaN_Assumptions;
+  #[global] form_instance :: form_Assumptions;
+  #[global] RoundingMode_instance :: RoundingMode_Assumptions;
+  #[global] Accuracy_instance :: Accuracy_Assumptions;
+  #[global] Int_instance :: Int_Assumptions;
+  #[global] byteReader_instance :: byteReader_Assumptions;
+  #[global] nat_instance :: nat_Assumptions;
+  #[global] stack_instance :: stack_Assumptions;
+  #[global] divisor_instance :: divisor_Assumptions;
+  #[global] Rat_instance :: Rat_Assumptions;
 }.
 
 End code.

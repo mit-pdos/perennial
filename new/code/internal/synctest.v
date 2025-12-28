@@ -64,10 +64,20 @@ Definition initialize' : val :=
       exception_do (do:  #())
       ).
 
+Class Association_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class Bubble_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
 Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Run_unfold :: FuncUnfold Run [] Runⁱᵐᵖˡ;
-  #[global] IsInBubble_unfold :: FuncUnfold IsInBubble [] IsInBubbleⁱᵐᵖˡ;
+  #[global] Association_instance :: Association_Assumptions;
+  #[global] Bubble_instance :: Bubble_Assumptions;
+  #[global] Run_unfold :: FuncUnfold Run [] (Runⁱᵐᵖˡ);
+  #[global] IsInBubble_unfold :: FuncUnfold IsInBubble [] (IsInBubbleⁱᵐᵖˡ);
 }.
 
 End code.

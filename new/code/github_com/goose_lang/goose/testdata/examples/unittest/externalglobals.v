@@ -16,29 +16,24 @@ Definition f : go_string := "github.com/goose-lang/goose/testdata/examples/unitt
 Definition fⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (let: "$r0" := #(W64 11) in
-    do:  ((globals.get #unittest.GlobalX) <-[go.uint64] "$r0");;;
+    do:  ((GlobalVarAddr unittest.GlobalX #()) <-[go.uint64] "$r0");;;
     return: #()).
-
-Definition vars' : list (go_string * go.type) := [].
-
-Definition functions' : list (go_string * val) := [(f, fⁱᵐᵖˡ)].
-
-Definition msets' : list (go_string * (list (go_string * val))) := [].
 
 #[global] Instance info' : PkgInfo externalglobals.externalglobals :=
   {|
-    pkg_vars := vars';
-    pkg_functions := functions';
-    pkg_msets := msets';
     pkg_imported_pkgs := [code.github_com.goose_lang.goose.testdata.examples.unittest.unittest];
   |}.
 
 Definition initialize' : val :=
   λ: <>,
-    package.init #externalglobals.externalglobals (λ: <>,
-      exception_do (do:  (unittest.initialize' #());;;
-      do:  (package.alloc externalglobals.externalglobals #()))
+    package.init externalglobals.externalglobals (λ: <>,
+      exception_do (do:  (unittest.initialize' #()))
       ).
+
+Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] f_unfold :: FuncUnfold f [] (fⁱᵐᵖˡ);
+}.
 
 End code.
 End externalglobals.

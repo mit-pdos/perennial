@@ -245,8 +245,73 @@ Definition initialize' : val :=
       exception_do (do:  (asciiSpace'init #()))
       ).
 
+Class Builder_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class Reader_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class Replacer_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class replacer_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class trieNode_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class genericReplacer_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class appendSliceWriter_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class stringWriter_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class singleStringReplacer_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class byteReplacer_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class byteStringReplacer_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class stringFinder_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class asciiSet_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
 Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
+  #[global] Builder_instance :: Builder_Assumptions;
+  #[global] Reader_instance :: Reader_Assumptions;
+  #[global] Replacer_instance :: Replacer_Assumptions;
+  #[global] replacer_instance :: replacer_Assumptions;
+  #[global] trieNode_instance :: trieNode_Assumptions;
+  #[global] genericReplacer_instance :: genericReplacer_Assumptions;
+  #[global] appendSliceWriter_instance :: appendSliceWriter_Assumptions;
+  #[global] stringWriter_instance :: stringWriter_Assumptions;
+  #[global] singleStringReplacer_instance :: singleStringReplacer_Assumptions;
+  #[global] byteReplacer_instance :: byteReplacer_Assumptions;
+  #[global] byteStringReplacer_instance :: byteStringReplacer_Assumptions;
+  #[global] stringFinder_instance :: stringFinder_Assumptions;
+  #[global] asciiSet_instance :: asciiSet_Assumptions;
 }.
 
 End code.

@@ -53,8 +53,18 @@ Definition initialize' : val :=
       do:  (errorType'init #()))
       ).
 
+Class errorString_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class joinError_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
 Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
+  #[global] errorString_instance :: errorString_Assumptions;
+  #[global] joinError_instance :: joinError_Assumptions;
 }.
 
 End code.

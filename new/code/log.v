@@ -102,10 +102,15 @@ Definition initialize' : val :=
       do:  (bufferPool'init #()))
       ).
 
+Class Logger_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
 Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Printf_unfold :: FuncUnfold Printf [] Printfⁱᵐᵖˡ;
-  #[global] Println_unfold :: FuncUnfold Println [] Printlnⁱᵐᵖˡ;
+  #[global] Logger_instance :: Logger_Assumptions;
+  #[global] Printf_unfold :: FuncUnfold Printf [] (Printfⁱᵐᵖˡ);
+  #[global] Println_unfold :: FuncUnfold Println [] (Printlnⁱᵐᵖˡ);
 }.
 
 End code.

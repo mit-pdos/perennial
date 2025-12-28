@@ -42,8 +42,13 @@ Definition initialize' : val :=
       exception_do (do:  #())
       ).
 
+Class reader_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
 Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
+  #[global] reader_instance :: reader_Assumptions;
 }.
 
 End code.

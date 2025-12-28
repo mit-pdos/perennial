@@ -7414,9 +7414,1769 @@ Definition initialize' : val :=
       do:  (vdsoSymbolKeys'init #()))
       ).
 
+Class userArena_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class liveUserArenaChunk_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class writeUserArenaHeapBits_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class cgoCallers_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class argset_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class hchan_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class waitq_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class coro_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class cpuProfile_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class debugCallWrapArgs_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class dloggerImpl_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class dloggerFake_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class debugLogWriter_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class debugLogBuf_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class debugLogReader_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class dlogPerM_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class timespec_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class timeval_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class sigactiont_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class siginfoFields_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class siginfo_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class itimerspec_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class itimerval_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class sigeventFields_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class sigevent_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class usigset_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class fpxreg_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class xmmreg_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class fpstate_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class fpxreg1_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class xmmreg1_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class fpstate1_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class fpreg1_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class stackt_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class mcontext_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class ucontext_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class sigcontext_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class sockaddr_un_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class Error_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class TypeAssertionError_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class errorString_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class errorAddressString_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class plainError_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class boundsError_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class boundsErrorCode_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class stringer_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class typeCacheBucket_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class childInfo_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class timeHistogram_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class itabTableType_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class uint16InterfacePtr_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class uint32InterfacePtr_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class uint64InterfacePtr_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class stringInterfacePtr_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class sliceInterfacePtr_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class lfstack_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class linknameIter_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class mWaitList_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class lockRank_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class lockRankStruct_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class persistentAlloc_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class linearAlloc_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class notInHeap_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class typePointers_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class markBits_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class mcache_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class gclink_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class gclinkptr_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class stackfreelist_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class mcentral_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class checkmarksMap_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class Cleanup_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class cleanupBlock_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class cleanupBlockHeader_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class cleanupQueue_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class metricData_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class metricReader_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class statDep_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class statDepSet_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class heapStatsAggregate_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class sysStatsAggregate_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class cpuStatsAggregate_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class gcStatsAggregate_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class statAggregate_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class metricKind_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class metricSample_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class metricValue_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class metricFloat64Histogram_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class metricName_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class finBlock_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class finalizer_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class fixalloc_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class mlink_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class gcMarkWorkerMode_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class workType_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class gcMode_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class gcTrigger_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class gcTriggerKind_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class gcBgMarkWorkerNode_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class gcBgMarkWorkerNodePadded_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class gcCPULimiterState_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class limiterEventType_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class limiterEventStamp_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class limiterEvent_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class gcDrainFlags_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class spanInlineMarkBits_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class spanQueue_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class localSpanQueue_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class objptr_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class sizeClassScanStats_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class gcControllerState_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class scavengerState_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class scavengeIndex_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class atomicScavChunkData_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class scavChunkData_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class scavChunkFlags_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class piController_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class stackWorkBuf_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class stackWorkBufHdr_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class stackObjectBuf_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class stackObjectBufHdr_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class stackObject_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class stackScanState_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class sweepdata_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class sweepClass_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class activeSweep_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class sweepLocker_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class sweepLocked_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class gcWork_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class workbufhdr_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class workbuf_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class mheap_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class heapArena_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class arenaHint_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class mSpanState_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class mSpanStateBox_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class mspan_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class spanClass_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class arenaIdx_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class spanAllocType_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class mSpanList_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class mSpanQueue_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class special_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class specialfinalizer_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class specialCleanup_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class specialCheckFinalizer_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class specialTinyBlock_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class specialWeakHandle_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class immortalWeakHandleMap_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class immortalWeakHandle_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class specialprofile_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class specialReachable_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class specialPinCounter_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class specialsIter_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class gcBits_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class gcBitsHeader_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class gcBitsArena_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class floaty_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class chunkIdx_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class pageAlloc_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class pallocSum_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class pageCache_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class pageBits_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class pallocBits_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class pallocData_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class bucketType_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class bucket_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class memRecord_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class memRecordCycle_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class blockRecord_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class buckhashArray_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class mProfCycleHolder_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class mLockProfile_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class StackRecord_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class MemProfileRecord_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class BlockProfileRecord_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class goroutineProfileState_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class goroutineProfileStateHolder_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class addrRange_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class offAddr_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class atomicOffAddr_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class addrRanges_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class spanSet_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class spanSetBlockHeader_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class spanSetBlockHeader2_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class spanSetBlock_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class atomicSpanSetSpinePointer_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class spanSetSpinePointer_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class spanSetBlockAlloc_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class headTailIndex_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class atomicHeadTailIndex_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class atomicMSpanPointer_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class mstats_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class MemStats_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class sysMemStat_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class heapStatsDelta_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class consistentHeapStats_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class cpuStats_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class wbBuf_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class pollDesc_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class pollInfo_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class pollCache_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class winlibcall_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class note_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class mOS_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class perThreadSyscallArgs_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class sigset_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class throwType_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class PanicNilError_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class Pinner_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class pinner_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class pinState_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class pinnerBits_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class ptabEntry_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class suspendGState_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class hex_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class stwReason_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class worldStop_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class cgothreadstart_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class sysmontick_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class updateMaxProcsGState_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class pMask_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class gQueue_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class gList_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class randomOrder_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class randomEnum_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class initTask_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class tracestat_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class profBuf_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class profAtomic_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class profIndex_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class profBufReadMode_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class ticksType_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class godebugInc_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class dbgVar_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class mutex_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class funcval_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class iface_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class eface_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class guintptr_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class puintptr_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class muintptr_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class gobuf_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class sudog_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class libcall_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class stack_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class heldLockInfo_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class g_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class m_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class mPadded_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class p_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class schedt_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class _func_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class funcinl_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class lfnode_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class forcegcstate_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class _defer_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class _panic_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class savedOpenDeferState_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class ancestorInfo_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class waitReason_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class rwmutex_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class scase_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class runtimeSelect_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class selectDir_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class semaRoot_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class semTable_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class semaProfileFlags_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class notifyList_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class sigctxt_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class sigTabT_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class gsignalStack_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class slice_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class notInHeapSlice_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class stackpoolItem_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class adjustinfo_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class bitvector_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class stackObjectRecord_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class stkframe_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class reflectMethodValue_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class tmpBuf_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class stringStruct_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class stringStructDWARF_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class neverCallThisFunction_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class Frames_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class Frame_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class Func_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class pcHeader_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class moduledata_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class modulehash_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class functab_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class textsect_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class findfuncbucket_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class funcInfo_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class srcFunc_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class pcvalueCache_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class pcvalueCacheEnt_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class stackmap_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class inlinedCall_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class inlineUnwinder_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class inlineFrame_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class synctestBubble_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class synctestDeadlockError_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class specialBubble_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class taggedPointer_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class timer_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class timers_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class timerWhen_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class timeTimer_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class traceAdvancerState_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class wakeableSleep_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class unwindFlags_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class unwinder_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class cgoTracebackArg_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class cgoContextArg_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class cgoSymbolizerArg_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class traceWriter_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class traceBufQueue_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class traceBufHeader_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class traceBuf_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class traceArg_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class traceEventWriter_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class traceMap_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class traceMapNode_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class traceRegionAlloc_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class traceRegionAllocBlock_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class traceRegionAllocBlockHeader_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class gTraceState_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class mTraceState_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class pTraceState_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class traceBlockReason_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class traceGoStopReason_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class traceLocker_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class traceStackTable_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class traceFrame_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class traceSchedResourceState_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class traceStringTable_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class traceTime_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class traceTypeTable_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class rtype_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class bitCursor_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class _typePair_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class elfSym_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class elfVerdef_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class elfEhdr_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class elfPhdr_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class elfShdr_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class elfDyn_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class elfVerdaux_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class vdsoSymbolKey_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class vdsoVersionKey_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class vdsoInfo_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
 Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Gosched_unfold :: FuncUnfold Gosched [] Goschedⁱᵐᵖˡ;
+  #[global] userArena_instance :: userArena_Assumptions;
+  #[global] liveUserArenaChunk_instance :: liveUserArenaChunk_Assumptions;
+  #[global] writeUserArenaHeapBits_instance :: writeUserArenaHeapBits_Assumptions;
+  #[global] cgoCallers_instance :: cgoCallers_Assumptions;
+  #[global] argset_instance :: argset_Assumptions;
+  #[global] hchan_instance :: hchan_Assumptions;
+  #[global] waitq_instance :: waitq_Assumptions;
+  #[global] coro_instance :: coro_Assumptions;
+  #[global] cpuProfile_instance :: cpuProfile_Assumptions;
+  #[global] debugCallWrapArgs_instance :: debugCallWrapArgs_Assumptions;
+  #[global] dloggerImpl_instance :: dloggerImpl_Assumptions;
+  #[global] dloggerFake_instance :: dloggerFake_Assumptions;
+  #[global] debugLogWriter_instance :: debugLogWriter_Assumptions;
+  #[global] debugLogBuf_instance :: debugLogBuf_Assumptions;
+  #[global] debugLogReader_instance :: debugLogReader_Assumptions;
+  #[global] dlogPerM_instance :: dlogPerM_Assumptions;
+  #[global] timespec_instance :: timespec_Assumptions;
+  #[global] timeval_instance :: timeval_Assumptions;
+  #[global] sigactiont_instance :: sigactiont_Assumptions;
+  #[global] siginfoFields_instance :: siginfoFields_Assumptions;
+  #[global] siginfo_instance :: siginfo_Assumptions;
+  #[global] itimerspec_instance :: itimerspec_Assumptions;
+  #[global] itimerval_instance :: itimerval_Assumptions;
+  #[global] sigeventFields_instance :: sigeventFields_Assumptions;
+  #[global] sigevent_instance :: sigevent_Assumptions;
+  #[global] usigset_instance :: usigset_Assumptions;
+  #[global] fpxreg_instance :: fpxreg_Assumptions;
+  #[global] xmmreg_instance :: xmmreg_Assumptions;
+  #[global] fpstate_instance :: fpstate_Assumptions;
+  #[global] fpxreg1_instance :: fpxreg1_Assumptions;
+  #[global] xmmreg1_instance :: xmmreg1_Assumptions;
+  #[global] fpstate1_instance :: fpstate1_Assumptions;
+  #[global] fpreg1_instance :: fpreg1_Assumptions;
+  #[global] stackt_instance :: stackt_Assumptions;
+  #[global] mcontext_instance :: mcontext_Assumptions;
+  #[global] ucontext_instance :: ucontext_Assumptions;
+  #[global] sigcontext_instance :: sigcontext_Assumptions;
+  #[global] sockaddr_un_instance :: sockaddr_un_Assumptions;
+  #[global] Error_instance :: Error_Assumptions;
+  #[global] TypeAssertionError_instance :: TypeAssertionError_Assumptions;
+  #[global] errorString_instance :: errorString_Assumptions;
+  #[global] errorAddressString_instance :: errorAddressString_Assumptions;
+  #[global] plainError_instance :: plainError_Assumptions;
+  #[global] boundsError_instance :: boundsError_Assumptions;
+  #[global] boundsErrorCode_instance :: boundsErrorCode_Assumptions;
+  #[global] stringer_instance :: stringer_Assumptions;
+  #[global] typeCacheBucket_instance :: typeCacheBucket_Assumptions;
+  #[global] childInfo_instance :: childInfo_Assumptions;
+  #[global] timeHistogram_instance :: timeHistogram_Assumptions;
+  #[global] itabTableType_instance :: itabTableType_Assumptions;
+  #[global] uint16InterfacePtr_instance :: uint16InterfacePtr_Assumptions;
+  #[global] uint32InterfacePtr_instance :: uint32InterfacePtr_Assumptions;
+  #[global] uint64InterfacePtr_instance :: uint64InterfacePtr_Assumptions;
+  #[global] stringInterfacePtr_instance :: stringInterfacePtr_Assumptions;
+  #[global] sliceInterfacePtr_instance :: sliceInterfacePtr_Assumptions;
+  #[global] lfstack_instance :: lfstack_Assumptions;
+  #[global] linknameIter_instance :: linknameIter_Assumptions;
+  #[global] mWaitList_instance :: mWaitList_Assumptions;
+  #[global] lockRank_instance :: lockRank_Assumptions;
+  #[global] lockRankStruct_instance :: lockRankStruct_Assumptions;
+  #[global] persistentAlloc_instance :: persistentAlloc_Assumptions;
+  #[global] linearAlloc_instance :: linearAlloc_Assumptions;
+  #[global] notInHeap_instance :: notInHeap_Assumptions;
+  #[global] typePointers_instance :: typePointers_Assumptions;
+  #[global] markBits_instance :: markBits_Assumptions;
+  #[global] mcache_instance :: mcache_Assumptions;
+  #[global] gclink_instance :: gclink_Assumptions;
+  #[global] gclinkptr_instance :: gclinkptr_Assumptions;
+  #[global] stackfreelist_instance :: stackfreelist_Assumptions;
+  #[global] mcentral_instance :: mcentral_Assumptions;
+  #[global] checkmarksMap_instance :: checkmarksMap_Assumptions;
+  #[global] Cleanup_instance :: Cleanup_Assumptions;
+  #[global] cleanupBlock_instance :: cleanupBlock_Assumptions;
+  #[global] cleanupBlockHeader_instance :: cleanupBlockHeader_Assumptions;
+  #[global] cleanupQueue_instance :: cleanupQueue_Assumptions;
+  #[global] metricData_instance :: metricData_Assumptions;
+  #[global] metricReader_instance :: metricReader_Assumptions;
+  #[global] statDep_instance :: statDep_Assumptions;
+  #[global] statDepSet_instance :: statDepSet_Assumptions;
+  #[global] heapStatsAggregate_instance :: heapStatsAggregate_Assumptions;
+  #[global] sysStatsAggregate_instance :: sysStatsAggregate_Assumptions;
+  #[global] cpuStatsAggregate_instance :: cpuStatsAggregate_Assumptions;
+  #[global] gcStatsAggregate_instance :: gcStatsAggregate_Assumptions;
+  #[global] statAggregate_instance :: statAggregate_Assumptions;
+  #[global] metricKind_instance :: metricKind_Assumptions;
+  #[global] metricSample_instance :: metricSample_Assumptions;
+  #[global] metricValue_instance :: metricValue_Assumptions;
+  #[global] metricFloat64Histogram_instance :: metricFloat64Histogram_Assumptions;
+  #[global] metricName_instance :: metricName_Assumptions;
+  #[global] finBlock_instance :: finBlock_Assumptions;
+  #[global] finalizer_instance :: finalizer_Assumptions;
+  #[global] fixalloc_instance :: fixalloc_Assumptions;
+  #[global] mlink_instance :: mlink_Assumptions;
+  #[global] gcMarkWorkerMode_instance :: gcMarkWorkerMode_Assumptions;
+  #[global] workType_instance :: workType_Assumptions;
+  #[global] gcMode_instance :: gcMode_Assumptions;
+  #[global] gcTrigger_instance :: gcTrigger_Assumptions;
+  #[global] gcTriggerKind_instance :: gcTriggerKind_Assumptions;
+  #[global] gcBgMarkWorkerNode_instance :: gcBgMarkWorkerNode_Assumptions;
+  #[global] gcBgMarkWorkerNodePadded_instance :: gcBgMarkWorkerNodePadded_Assumptions;
+  #[global] gcCPULimiterState_instance :: gcCPULimiterState_Assumptions;
+  #[global] limiterEventType_instance :: limiterEventType_Assumptions;
+  #[global] limiterEventStamp_instance :: limiterEventStamp_Assumptions;
+  #[global] limiterEvent_instance :: limiterEvent_Assumptions;
+  #[global] gcDrainFlags_instance :: gcDrainFlags_Assumptions;
+  #[global] spanInlineMarkBits_instance :: spanInlineMarkBits_Assumptions;
+  #[global] spanQueue_instance :: spanQueue_Assumptions;
+  #[global] localSpanQueue_instance :: localSpanQueue_Assumptions;
+  #[global] objptr_instance :: objptr_Assumptions;
+  #[global] sizeClassScanStats_instance :: sizeClassScanStats_Assumptions;
+  #[global] gcControllerState_instance :: gcControllerState_Assumptions;
+  #[global] scavengerState_instance :: scavengerState_Assumptions;
+  #[global] scavengeIndex_instance :: scavengeIndex_Assumptions;
+  #[global] atomicScavChunkData_instance :: atomicScavChunkData_Assumptions;
+  #[global] scavChunkData_instance :: scavChunkData_Assumptions;
+  #[global] scavChunkFlags_instance :: scavChunkFlags_Assumptions;
+  #[global] piController_instance :: piController_Assumptions;
+  #[global] stackWorkBuf_instance :: stackWorkBuf_Assumptions;
+  #[global] stackWorkBufHdr_instance :: stackWorkBufHdr_Assumptions;
+  #[global] stackObjectBuf_instance :: stackObjectBuf_Assumptions;
+  #[global] stackObjectBufHdr_instance :: stackObjectBufHdr_Assumptions;
+  #[global] stackObject_instance :: stackObject_Assumptions;
+  #[global] stackScanState_instance :: stackScanState_Assumptions;
+  #[global] sweepdata_instance :: sweepdata_Assumptions;
+  #[global] sweepClass_instance :: sweepClass_Assumptions;
+  #[global] activeSweep_instance :: activeSweep_Assumptions;
+  #[global] sweepLocker_instance :: sweepLocker_Assumptions;
+  #[global] sweepLocked_instance :: sweepLocked_Assumptions;
+  #[global] gcWork_instance :: gcWork_Assumptions;
+  #[global] workbufhdr_instance :: workbufhdr_Assumptions;
+  #[global] workbuf_instance :: workbuf_Assumptions;
+  #[global] mheap_instance :: mheap_Assumptions;
+  #[global] heapArena_instance :: heapArena_Assumptions;
+  #[global] arenaHint_instance :: arenaHint_Assumptions;
+  #[global] mSpanState_instance :: mSpanState_Assumptions;
+  #[global] mSpanStateBox_instance :: mSpanStateBox_Assumptions;
+  #[global] mspan_instance :: mspan_Assumptions;
+  #[global] spanClass_instance :: spanClass_Assumptions;
+  #[global] arenaIdx_instance :: arenaIdx_Assumptions;
+  #[global] spanAllocType_instance :: spanAllocType_Assumptions;
+  #[global] mSpanList_instance :: mSpanList_Assumptions;
+  #[global] mSpanQueue_instance :: mSpanQueue_Assumptions;
+  #[global] special_instance :: special_Assumptions;
+  #[global] specialfinalizer_instance :: specialfinalizer_Assumptions;
+  #[global] specialCleanup_instance :: specialCleanup_Assumptions;
+  #[global] specialCheckFinalizer_instance :: specialCheckFinalizer_Assumptions;
+  #[global] specialTinyBlock_instance :: specialTinyBlock_Assumptions;
+  #[global] specialWeakHandle_instance :: specialWeakHandle_Assumptions;
+  #[global] immortalWeakHandleMap_instance :: immortalWeakHandleMap_Assumptions;
+  #[global] immortalWeakHandle_instance :: immortalWeakHandle_Assumptions;
+  #[global] specialprofile_instance :: specialprofile_Assumptions;
+  #[global] specialReachable_instance :: specialReachable_Assumptions;
+  #[global] specialPinCounter_instance :: specialPinCounter_Assumptions;
+  #[global] specialsIter_instance :: specialsIter_Assumptions;
+  #[global] gcBits_instance :: gcBits_Assumptions;
+  #[global] gcBitsHeader_instance :: gcBitsHeader_Assumptions;
+  #[global] gcBitsArena_instance :: gcBitsArena_Assumptions;
+  #[global] floaty_instance :: floaty_Assumptions;
+  #[global] chunkIdx_instance :: chunkIdx_Assumptions;
+  #[global] pageAlloc_instance :: pageAlloc_Assumptions;
+  #[global] pallocSum_instance :: pallocSum_Assumptions;
+  #[global] pageCache_instance :: pageCache_Assumptions;
+  #[global] pageBits_instance :: pageBits_Assumptions;
+  #[global] pallocBits_instance :: pallocBits_Assumptions;
+  #[global] pallocData_instance :: pallocData_Assumptions;
+  #[global] bucketType_instance :: bucketType_Assumptions;
+  #[global] bucket_instance :: bucket_Assumptions;
+  #[global] memRecord_instance :: memRecord_Assumptions;
+  #[global] memRecordCycle_instance :: memRecordCycle_Assumptions;
+  #[global] blockRecord_instance :: blockRecord_Assumptions;
+  #[global] buckhashArray_instance :: buckhashArray_Assumptions;
+  #[global] mProfCycleHolder_instance :: mProfCycleHolder_Assumptions;
+  #[global] mLockProfile_instance :: mLockProfile_Assumptions;
+  #[global] StackRecord_instance :: StackRecord_Assumptions;
+  #[global] MemProfileRecord_instance :: MemProfileRecord_Assumptions;
+  #[global] BlockProfileRecord_instance :: BlockProfileRecord_Assumptions;
+  #[global] goroutineProfileState_instance :: goroutineProfileState_Assumptions;
+  #[global] goroutineProfileStateHolder_instance :: goroutineProfileStateHolder_Assumptions;
+  #[global] addrRange_instance :: addrRange_Assumptions;
+  #[global] offAddr_instance :: offAddr_Assumptions;
+  #[global] atomicOffAddr_instance :: atomicOffAddr_Assumptions;
+  #[global] addrRanges_instance :: addrRanges_Assumptions;
+  #[global] spanSet_instance :: spanSet_Assumptions;
+  #[global] spanSetBlockHeader_instance :: spanSetBlockHeader_Assumptions;
+  #[global] spanSetBlockHeader2_instance :: spanSetBlockHeader2_Assumptions;
+  #[global] spanSetBlock_instance :: spanSetBlock_Assumptions;
+  #[global] atomicSpanSetSpinePointer_instance :: atomicSpanSetSpinePointer_Assumptions;
+  #[global] spanSetSpinePointer_instance :: spanSetSpinePointer_Assumptions;
+  #[global] spanSetBlockAlloc_instance :: spanSetBlockAlloc_Assumptions;
+  #[global] headTailIndex_instance :: headTailIndex_Assumptions;
+  #[global] atomicHeadTailIndex_instance :: atomicHeadTailIndex_Assumptions;
+  #[global] atomicMSpanPointer_instance :: atomicMSpanPointer_Assumptions;
+  #[global] mstats_instance :: mstats_Assumptions;
+  #[global] MemStats_instance :: MemStats_Assumptions;
+  #[global] sysMemStat_instance :: sysMemStat_Assumptions;
+  #[global] heapStatsDelta_instance :: heapStatsDelta_Assumptions;
+  #[global] consistentHeapStats_instance :: consistentHeapStats_Assumptions;
+  #[global] cpuStats_instance :: cpuStats_Assumptions;
+  #[global] wbBuf_instance :: wbBuf_Assumptions;
+  #[global] pollDesc_instance :: pollDesc_Assumptions;
+  #[global] pollInfo_instance :: pollInfo_Assumptions;
+  #[global] pollCache_instance :: pollCache_Assumptions;
+  #[global] winlibcall_instance :: winlibcall_Assumptions;
+  #[global] note_instance :: note_Assumptions;
+  #[global] mOS_instance :: mOS_Assumptions;
+  #[global] perThreadSyscallArgs_instance :: perThreadSyscallArgs_Assumptions;
+  #[global] sigset_instance :: sigset_Assumptions;
+  #[global] throwType_instance :: throwType_Assumptions;
+  #[global] PanicNilError_instance :: PanicNilError_Assumptions;
+  #[global] Pinner_instance :: Pinner_Assumptions;
+  #[global] pinner_instance :: pinner_Assumptions;
+  #[global] pinState_instance :: pinState_Assumptions;
+  #[global] pinnerBits_instance :: pinnerBits_Assumptions;
+  #[global] ptabEntry_instance :: ptabEntry_Assumptions;
+  #[global] suspendGState_instance :: suspendGState_Assumptions;
+  #[global] hex_instance :: hex_Assumptions;
+  #[global] stwReason_instance :: stwReason_Assumptions;
+  #[global] worldStop_instance :: worldStop_Assumptions;
+  #[global] cgothreadstart_instance :: cgothreadstart_Assumptions;
+  #[global] sysmontick_instance :: sysmontick_Assumptions;
+  #[global] updateMaxProcsGState_instance :: updateMaxProcsGState_Assumptions;
+  #[global] pMask_instance :: pMask_Assumptions;
+  #[global] gQueue_instance :: gQueue_Assumptions;
+  #[global] gList_instance :: gList_Assumptions;
+  #[global] randomOrder_instance :: randomOrder_Assumptions;
+  #[global] randomEnum_instance :: randomEnum_Assumptions;
+  #[global] initTask_instance :: initTask_Assumptions;
+  #[global] tracestat_instance :: tracestat_Assumptions;
+  #[global] profBuf_instance :: profBuf_Assumptions;
+  #[global] profAtomic_instance :: profAtomic_Assumptions;
+  #[global] profIndex_instance :: profIndex_Assumptions;
+  #[global] profBufReadMode_instance :: profBufReadMode_Assumptions;
+  #[global] ticksType_instance :: ticksType_Assumptions;
+  #[global] godebugInc_instance :: godebugInc_Assumptions;
+  #[global] dbgVar_instance :: dbgVar_Assumptions;
+  #[global] mutex_instance :: mutex_Assumptions;
+  #[global] funcval_instance :: funcval_Assumptions;
+  #[global] iface_instance :: iface_Assumptions;
+  #[global] eface_instance :: eface_Assumptions;
+  #[global] guintptr_instance :: guintptr_Assumptions;
+  #[global] puintptr_instance :: puintptr_Assumptions;
+  #[global] muintptr_instance :: muintptr_Assumptions;
+  #[global] gobuf_instance :: gobuf_Assumptions;
+  #[global] sudog_instance :: sudog_Assumptions;
+  #[global] libcall_instance :: libcall_Assumptions;
+  #[global] stack_instance :: stack_Assumptions;
+  #[global] heldLockInfo_instance :: heldLockInfo_Assumptions;
+  #[global] g_instance :: g_Assumptions;
+  #[global] m_instance :: m_Assumptions;
+  #[global] mPadded_instance :: mPadded_Assumptions;
+  #[global] p_instance :: p_Assumptions;
+  #[global] schedt_instance :: schedt_Assumptions;
+  #[global] _func_instance :: _func_Assumptions;
+  #[global] funcinl_instance :: funcinl_Assumptions;
+  #[global] lfnode_instance :: lfnode_Assumptions;
+  #[global] forcegcstate_instance :: forcegcstate_Assumptions;
+  #[global] _defer_instance :: _defer_Assumptions;
+  #[global] _panic_instance :: _panic_Assumptions;
+  #[global] savedOpenDeferState_instance :: savedOpenDeferState_Assumptions;
+  #[global] ancestorInfo_instance :: ancestorInfo_Assumptions;
+  #[global] waitReason_instance :: waitReason_Assumptions;
+  #[global] rwmutex_instance :: rwmutex_Assumptions;
+  #[global] scase_instance :: scase_Assumptions;
+  #[global] runtimeSelect_instance :: runtimeSelect_Assumptions;
+  #[global] selectDir_instance :: selectDir_Assumptions;
+  #[global] semaRoot_instance :: semaRoot_Assumptions;
+  #[global] semTable_instance :: semTable_Assumptions;
+  #[global] semaProfileFlags_instance :: semaProfileFlags_Assumptions;
+  #[global] notifyList_instance :: notifyList_Assumptions;
+  #[global] sigctxt_instance :: sigctxt_Assumptions;
+  #[global] sigTabT_instance :: sigTabT_Assumptions;
+  #[global] gsignalStack_instance :: gsignalStack_Assumptions;
+  #[global] slice_instance :: slice_Assumptions;
+  #[global] notInHeapSlice_instance :: notInHeapSlice_Assumptions;
+  #[global] stackpoolItem_instance :: stackpoolItem_Assumptions;
+  #[global] adjustinfo_instance :: adjustinfo_Assumptions;
+  #[global] bitvector_instance :: bitvector_Assumptions;
+  #[global] stackObjectRecord_instance :: stackObjectRecord_Assumptions;
+  #[global] stkframe_instance :: stkframe_Assumptions;
+  #[global] reflectMethodValue_instance :: reflectMethodValue_Assumptions;
+  #[global] tmpBuf_instance :: tmpBuf_Assumptions;
+  #[global] stringStruct_instance :: stringStruct_Assumptions;
+  #[global] stringStructDWARF_instance :: stringStructDWARF_Assumptions;
+  #[global] neverCallThisFunction_instance :: neverCallThisFunction_Assumptions;
+  #[global] Frames_instance :: Frames_Assumptions;
+  #[global] Frame_instance :: Frame_Assumptions;
+  #[global] Func_instance :: Func_Assumptions;
+  #[global] pcHeader_instance :: pcHeader_Assumptions;
+  #[global] moduledata_instance :: moduledata_Assumptions;
+  #[global] modulehash_instance :: modulehash_Assumptions;
+  #[global] functab_instance :: functab_Assumptions;
+  #[global] textsect_instance :: textsect_Assumptions;
+  #[global] findfuncbucket_instance :: findfuncbucket_Assumptions;
+  #[global] funcInfo_instance :: funcInfo_Assumptions;
+  #[global] srcFunc_instance :: srcFunc_Assumptions;
+  #[global] pcvalueCache_instance :: pcvalueCache_Assumptions;
+  #[global] pcvalueCacheEnt_instance :: pcvalueCacheEnt_Assumptions;
+  #[global] stackmap_instance :: stackmap_Assumptions;
+  #[global] inlinedCall_instance :: inlinedCall_Assumptions;
+  #[global] inlineUnwinder_instance :: inlineUnwinder_Assumptions;
+  #[global] inlineFrame_instance :: inlineFrame_Assumptions;
+  #[global] synctestBubble_instance :: synctestBubble_Assumptions;
+  #[global] synctestDeadlockError_instance :: synctestDeadlockError_Assumptions;
+  #[global] specialBubble_instance :: specialBubble_Assumptions;
+  #[global] taggedPointer_instance :: taggedPointer_Assumptions;
+  #[global] timer_instance :: timer_Assumptions;
+  #[global] timers_instance :: timers_Assumptions;
+  #[global] timerWhen_instance :: timerWhen_Assumptions;
+  #[global] timeTimer_instance :: timeTimer_Assumptions;
+  #[global] traceAdvancerState_instance :: traceAdvancerState_Assumptions;
+  #[global] wakeableSleep_instance :: wakeableSleep_Assumptions;
+  #[global] unwindFlags_instance :: unwindFlags_Assumptions;
+  #[global] unwinder_instance :: unwinder_Assumptions;
+  #[global] cgoTracebackArg_instance :: cgoTracebackArg_Assumptions;
+  #[global] cgoContextArg_instance :: cgoContextArg_Assumptions;
+  #[global] cgoSymbolizerArg_instance :: cgoSymbolizerArg_Assumptions;
+  #[global] traceWriter_instance :: traceWriter_Assumptions;
+  #[global] traceBufQueue_instance :: traceBufQueue_Assumptions;
+  #[global] traceBufHeader_instance :: traceBufHeader_Assumptions;
+  #[global] traceBuf_instance :: traceBuf_Assumptions;
+  #[global] traceArg_instance :: traceArg_Assumptions;
+  #[global] traceEventWriter_instance :: traceEventWriter_Assumptions;
+  #[global] traceMap_instance :: traceMap_Assumptions;
+  #[global] traceMapNode_instance :: traceMapNode_Assumptions;
+  #[global] traceRegionAlloc_instance :: traceRegionAlloc_Assumptions;
+  #[global] traceRegionAllocBlock_instance :: traceRegionAllocBlock_Assumptions;
+  #[global] traceRegionAllocBlockHeader_instance :: traceRegionAllocBlockHeader_Assumptions;
+  #[global] gTraceState_instance :: gTraceState_Assumptions;
+  #[global] mTraceState_instance :: mTraceState_Assumptions;
+  #[global] pTraceState_instance :: pTraceState_Assumptions;
+  #[global] traceBlockReason_instance :: traceBlockReason_Assumptions;
+  #[global] traceGoStopReason_instance :: traceGoStopReason_Assumptions;
+  #[global] traceLocker_instance :: traceLocker_Assumptions;
+  #[global] traceStackTable_instance :: traceStackTable_Assumptions;
+  #[global] traceFrame_instance :: traceFrame_Assumptions;
+  #[global] traceSchedResourceState_instance :: traceSchedResourceState_Assumptions;
+  #[global] traceStringTable_instance :: traceStringTable_Assumptions;
+  #[global] traceTime_instance :: traceTime_Assumptions;
+  #[global] traceTypeTable_instance :: traceTypeTable_Assumptions;
+  #[global] rtype_instance :: rtype_Assumptions;
+  #[global] bitCursor_instance :: bitCursor_Assumptions;
+  #[global] _typePair_instance :: _typePair_Assumptions;
+  #[global] elfSym_instance :: elfSym_Assumptions;
+  #[global] elfVerdef_instance :: elfVerdef_Assumptions;
+  #[global] elfEhdr_instance :: elfEhdr_Assumptions;
+  #[global] elfPhdr_instance :: elfPhdr_Assumptions;
+  #[global] elfShdr_instance :: elfShdr_Assumptions;
+  #[global] elfDyn_instance :: elfDyn_Assumptions;
+  #[global] elfVerdaux_instance :: elfVerdaux_Assumptions;
+  #[global] vdsoSymbolKey_instance :: vdsoSymbolKey_Assumptions;
+  #[global] vdsoVersionKey_instance :: vdsoVersionKey_Assumptions;
+  #[global] vdsoInfo_instance :: vdsoInfo_Assumptions;
+  #[global] Gosched_unfold :: FuncUnfold Gosched [] (Goschedⁱᵐᵖˡ);
 }.
 
 End code.

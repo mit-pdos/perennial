@@ -825,29 +825,124 @@ Definition initialize' : val :=
       do:  #())
       ).
 
+Class Bool_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Bool'ptr_CompareAndSwap_unfold :: MethodUnfold (go.PointerType (Bool)) "CompareAndSwap" (Bool__CompareAndSwapⁱᵐᵖˡ);
+  #[global] Bool'ptr_Load_unfold :: MethodUnfold (go.PointerType (Bool)) "Load" (Bool__Loadⁱᵐᵖˡ);
+  #[global] Bool'ptr_Store_unfold :: MethodUnfold (go.PointerType (Bool)) "Store" (Bool__Storeⁱᵐᵖˡ);
+  #[global] Bool'ptr_Swap_unfold :: MethodUnfold (go.PointerType (Bool)) "Swap" (Bool__Swapⁱᵐᵖˡ);
+}.
+
+Class Pointer_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Pointer'ptr_CompareAndSwap_unfold T :: MethodUnfold (go.PointerType (Pointer T)) "CompareAndSwap" (Pointer__CompareAndSwapⁱᵐᵖˡ T);
+  #[global] Pointer'ptr_Load_unfold T :: MethodUnfold (go.PointerType (Pointer T)) "Load" (Pointer__Loadⁱᵐᵖˡ T);
+  #[global] Pointer'ptr_Store_unfold T :: MethodUnfold (go.PointerType (Pointer T)) "Store" (Pointer__Storeⁱᵐᵖˡ T);
+  #[global] Pointer'ptr_Swap_unfold T :: MethodUnfold (go.PointerType (Pointer T)) "Swap" (Pointer__Swapⁱᵐᵖˡ T);
+}.
+
+Class Int32_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Int32'ptr_Add_unfold :: MethodUnfold (go.PointerType (Int32)) "Add" (Int32__Addⁱᵐᵖˡ);
+  #[global] Int32'ptr_And_unfold :: MethodUnfold (go.PointerType (Int32)) "And" (Int32__Andⁱᵐᵖˡ);
+  #[global] Int32'ptr_CompareAndSwap_unfold :: MethodUnfold (go.PointerType (Int32)) "CompareAndSwap" (Int32__CompareAndSwapⁱᵐᵖˡ);
+  #[global] Int32'ptr_Load_unfold :: MethodUnfold (go.PointerType (Int32)) "Load" (Int32__Loadⁱᵐᵖˡ);
+  #[global] Int32'ptr_Or_unfold :: MethodUnfold (go.PointerType (Int32)) "Or" (Int32__Orⁱᵐᵖˡ);
+  #[global] Int32'ptr_Store_unfold :: MethodUnfold (go.PointerType (Int32)) "Store" (Int32__Storeⁱᵐᵖˡ);
+  #[global] Int32'ptr_Swap_unfold :: MethodUnfold (go.PointerType (Int32)) "Swap" (Int32__Swapⁱᵐᵖˡ);
+}.
+
+Class Int64_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Int64'ptr_Add_unfold :: MethodUnfold (go.PointerType (Int64)) "Add" (Int64__Addⁱᵐᵖˡ);
+  #[global] Int64'ptr_And_unfold :: MethodUnfold (go.PointerType (Int64)) "And" (Int64__Andⁱᵐᵖˡ);
+  #[global] Int64'ptr_CompareAndSwap_unfold :: MethodUnfold (go.PointerType (Int64)) "CompareAndSwap" (Int64__CompareAndSwapⁱᵐᵖˡ);
+  #[global] Int64'ptr_Load_unfold :: MethodUnfold (go.PointerType (Int64)) "Load" (Int64__Loadⁱᵐᵖˡ);
+  #[global] Int64'ptr_Or_unfold :: MethodUnfold (go.PointerType (Int64)) "Or" (Int64__Orⁱᵐᵖˡ);
+  #[global] Int64'ptr_Store_unfold :: MethodUnfold (go.PointerType (Int64)) "Store" (Int64__Storeⁱᵐᵖˡ);
+  #[global] Int64'ptr_Swap_unfold :: MethodUnfold (go.PointerType (Int64)) "Swap" (Int64__Swapⁱᵐᵖˡ);
+}.
+
+Class Uint32_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Uint32'ptr_Add_unfold :: MethodUnfold (go.PointerType (Uint32)) "Add" (Uint32__Addⁱᵐᵖˡ);
+  #[global] Uint32'ptr_And_unfold :: MethodUnfold (go.PointerType (Uint32)) "And" (Uint32__Andⁱᵐᵖˡ);
+  #[global] Uint32'ptr_CompareAndSwap_unfold :: MethodUnfold (go.PointerType (Uint32)) "CompareAndSwap" (Uint32__CompareAndSwapⁱᵐᵖˡ);
+  #[global] Uint32'ptr_Load_unfold :: MethodUnfold (go.PointerType (Uint32)) "Load" (Uint32__Loadⁱᵐᵖˡ);
+  #[global] Uint32'ptr_Or_unfold :: MethodUnfold (go.PointerType (Uint32)) "Or" (Uint32__Orⁱᵐᵖˡ);
+  #[global] Uint32'ptr_Store_unfold :: MethodUnfold (go.PointerType (Uint32)) "Store" (Uint32__Storeⁱᵐᵖˡ);
+  #[global] Uint32'ptr_Swap_unfold :: MethodUnfold (go.PointerType (Uint32)) "Swap" (Uint32__Swapⁱᵐᵖˡ);
+}.
+
+Class Uint64_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Uint64'ptr_Add_unfold :: MethodUnfold (go.PointerType (Uint64)) "Add" (Uint64__Addⁱᵐᵖˡ);
+  #[global] Uint64'ptr_And_unfold :: MethodUnfold (go.PointerType (Uint64)) "And" (Uint64__Andⁱᵐᵖˡ);
+  #[global] Uint64'ptr_CompareAndSwap_unfold :: MethodUnfold (go.PointerType (Uint64)) "CompareAndSwap" (Uint64__CompareAndSwapⁱᵐᵖˡ);
+  #[global] Uint64'ptr_Load_unfold :: MethodUnfold (go.PointerType (Uint64)) "Load" (Uint64__Loadⁱᵐᵖˡ);
+  #[global] Uint64'ptr_Or_unfold :: MethodUnfold (go.PointerType (Uint64)) "Or" (Uint64__Orⁱᵐᵖˡ);
+  #[global] Uint64'ptr_Store_unfold :: MethodUnfold (go.PointerType (Uint64)) "Store" (Uint64__Storeⁱᵐᵖˡ);
+  #[global] Uint64'ptr_Swap_unfold :: MethodUnfold (go.PointerType (Uint64)) "Swap" (Uint64__Swapⁱᵐᵖˡ);
+}.
+
+Class Uintptr_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class noCopy_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class align64_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class Value_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Value'ptr_CompareAndSwap_unfold :: MethodUnfold (go.PointerType (Value)) "CompareAndSwap" (Value__CompareAndSwapⁱᵐᵖˡ);
+  #[global] Value'ptr_Load_unfold :: MethodUnfold (go.PointerType (Value)) "Load" (Value__Loadⁱᵐᵖˡ);
+  #[global] Value'ptr_Store_unfold :: MethodUnfold (go.PointerType (Value)) "Store" (Value__Storeⁱᵐᵖˡ);
+  #[global] Value'ptr_Swap_unfold :: MethodUnfold (go.PointerType (Value)) "Swap" (Value__Swapⁱᵐᵖˡ);
+}.
+
+Class efaceWords_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
 Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] SwapInt32_unfold :: FuncUnfold SwapInt32 [] SwapInt32ⁱᵐᵖˡ;
-  #[global] SwapUint32_unfold :: FuncUnfold SwapUint32 [] SwapUint32ⁱᵐᵖˡ;
-  #[global] CompareAndSwapInt32_unfold :: FuncUnfold CompareAndSwapInt32 [] CompareAndSwapInt32ⁱᵐᵖˡ;
-  #[global] CompareAndSwapUint32_unfold :: FuncUnfold CompareAndSwapUint32 [] CompareAndSwapUint32ⁱᵐᵖˡ;
-  #[global] AddInt32_unfold :: FuncUnfold AddInt32 [] AddInt32ⁱᵐᵖˡ;
-  #[global] AddUint32_unfold :: FuncUnfold AddUint32 [] AddUint32ⁱᵐᵖˡ;
-  #[global] LoadInt32_unfold :: FuncUnfold LoadInt32 [] LoadInt32ⁱᵐᵖˡ;
-  #[global] LoadUint32_unfold :: FuncUnfold LoadUint32 [] LoadUint32ⁱᵐᵖˡ;
-  #[global] StoreInt32_unfold :: FuncUnfold StoreInt32 [] StoreInt32ⁱᵐᵖˡ;
-  #[global] StoreUint32_unfold :: FuncUnfold StoreUint32 [] StoreUint32ⁱᵐᵖˡ;
-  #[global] SwapInt64_unfold :: FuncUnfold SwapInt64 [] SwapInt64ⁱᵐᵖˡ;
-  #[global] SwapUint64_unfold :: FuncUnfold SwapUint64 [] SwapUint64ⁱᵐᵖˡ;
-  #[global] CompareAndSwapInt64_unfold :: FuncUnfold CompareAndSwapInt64 [] CompareAndSwapInt64ⁱᵐᵖˡ;
-  #[global] CompareAndSwapUint64_unfold :: FuncUnfold CompareAndSwapUint64 [] CompareAndSwapUint64ⁱᵐᵖˡ;
-  #[global] AddInt64_unfold :: FuncUnfold AddInt64 [] AddInt64ⁱᵐᵖˡ;
-  #[global] AddUint64_unfold :: FuncUnfold AddUint64 [] AddUint64ⁱᵐᵖˡ;
-  #[global] LoadInt64_unfold :: FuncUnfold LoadInt64 [] LoadInt64ⁱᵐᵖˡ;
-  #[global] LoadUint64_unfold :: FuncUnfold LoadUint64 [] LoadUint64ⁱᵐᵖˡ;
-  #[global] StoreInt64_unfold :: FuncUnfold StoreInt64 [] StoreInt64ⁱᵐᵖˡ;
-  #[global] StoreUint64_unfold :: FuncUnfold StoreUint64 [] StoreUint64ⁱᵐᵖˡ;
-  #[global] b32_unfold :: FuncUnfold b32 [] b32ⁱᵐᵖˡ;
+  #[global] Bool_instance :: Bool_Assumptions;
+  #[global] Pointer_instance :: Pointer_Assumptions;
+  #[global] Int32_instance :: Int32_Assumptions;
+  #[global] Int64_instance :: Int64_Assumptions;
+  #[global] Uint32_instance :: Uint32_Assumptions;
+  #[global] Uint64_instance :: Uint64_Assumptions;
+  #[global] Uintptr_instance :: Uintptr_Assumptions;
+  #[global] noCopy_instance :: noCopy_Assumptions;
+  #[global] align64_instance :: align64_Assumptions;
+  #[global] Value_instance :: Value_Assumptions;
+  #[global] efaceWords_instance :: efaceWords_Assumptions;
+  #[global] SwapInt32_unfold :: FuncUnfold SwapInt32 [] (SwapInt32ⁱᵐᵖˡ);
+  #[global] SwapUint32_unfold :: FuncUnfold SwapUint32 [] (SwapUint32ⁱᵐᵖˡ);
+  #[global] CompareAndSwapInt32_unfold :: FuncUnfold CompareAndSwapInt32 [] (CompareAndSwapInt32ⁱᵐᵖˡ);
+  #[global] CompareAndSwapUint32_unfold :: FuncUnfold CompareAndSwapUint32 [] (CompareAndSwapUint32ⁱᵐᵖˡ);
+  #[global] AddInt32_unfold :: FuncUnfold AddInt32 [] (AddInt32ⁱᵐᵖˡ);
+  #[global] AddUint32_unfold :: FuncUnfold AddUint32 [] (AddUint32ⁱᵐᵖˡ);
+  #[global] LoadInt32_unfold :: FuncUnfold LoadInt32 [] (LoadInt32ⁱᵐᵖˡ);
+  #[global] LoadUint32_unfold :: FuncUnfold LoadUint32 [] (LoadUint32ⁱᵐᵖˡ);
+  #[global] StoreInt32_unfold :: FuncUnfold StoreInt32 [] (StoreInt32ⁱᵐᵖˡ);
+  #[global] StoreUint32_unfold :: FuncUnfold StoreUint32 [] (StoreUint32ⁱᵐᵖˡ);
+  #[global] SwapInt64_unfold :: FuncUnfold SwapInt64 [] (SwapInt64ⁱᵐᵖˡ);
+  #[global] SwapUint64_unfold :: FuncUnfold SwapUint64 [] (SwapUint64ⁱᵐᵖˡ);
+  #[global] CompareAndSwapInt64_unfold :: FuncUnfold CompareAndSwapInt64 [] (CompareAndSwapInt64ⁱᵐᵖˡ);
+  #[global] CompareAndSwapUint64_unfold :: FuncUnfold CompareAndSwapUint64 [] (CompareAndSwapUint64ⁱᵐᵖˡ);
+  #[global] AddInt64_unfold :: FuncUnfold AddInt64 [] (AddInt64ⁱᵐᵖˡ);
+  #[global] AddUint64_unfold :: FuncUnfold AddUint64 [] (AddUint64ⁱᵐᵖˡ);
+  #[global] LoadInt64_unfold :: FuncUnfold LoadInt64 [] (LoadInt64ⁱᵐᵖˡ);
+  #[global] LoadUint64_unfold :: FuncUnfold LoadUint64 [] (LoadUint64ⁱᵐᵖˡ);
+  #[global] StoreInt64_unfold :: FuncUnfold StoreInt64 [] (StoreInt64ⁱᵐᵖˡ);
+  #[global] StoreUint64_unfold :: FuncUnfold StoreUint64 [] (StoreUint64ⁱᵐᵖˡ);
+  #[global] b32_unfold :: FuncUnfold b32 [] (b32ⁱᵐᵖˡ);
 }.
 
 End code.

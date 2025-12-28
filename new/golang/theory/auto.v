@@ -8,9 +8,9 @@ From Perennial Require Import base.
 #[local] Open Scope general_if_scope.
 
 Tactic Notation "wp_func_call" :=
-  try rewrite func_unfold; try iPkgInit.
+  rewrite func_unfold; try iPkgInit.
 Tactic Notation "wp_method_call" :=
-  try rewrite method_unfold; try iPkgInit; try iFrame "#".
+  rewrite method_unfold; try iPkgInit; try iFrame "#".
 
 (* remove and introduce [is_pkg_init] and [is_pkg_defined] facts from a hypothesis *)
 Ltac destruct_pkg_init H :=
@@ -60,7 +60,8 @@ Tactic Notation "wp_start_folded" "as" constr(pat) :=
 Tactic Notation "wp_start" "as" constr(pat) :=
   wp_start_folded as pat;
   (* only do this if it produces a single goal *)
-  try (first [ wp_func_call | wp_method_call ]; wp_call; [idtac]).
+  try (first [ wp_func_call | wp_method_call ]; [idtac]);
+  try wp_call.
 
 Tactic Notation "wp_start" :=
   wp_start as "Hpre".

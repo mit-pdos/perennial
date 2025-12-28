@@ -150,8 +150,38 @@ Definition initialize' : val :=
       exception_do (do:  #())
       ).
 
+Class Type_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class rtype_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class name_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class Value_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class flag_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class ValueError_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
 Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
+  #[global] Type_instance :: Type_Assumptions;
+  #[global] rtype_instance :: rtype_Assumptions;
+  #[global] name_instance :: name_Assumptions;
+  #[global] Value_instance :: Value_Assumptions;
+  #[global] flag_instance :: flag_Assumptions;
+  #[global] ValueError_instance :: ValueError_Assumptions;
 }.
 
 End code.

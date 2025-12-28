@@ -322,11 +322,52 @@ Definition initialize' : val :=
       exception_do (do:  #())
       ).
 
+Class Interface_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class sortedHint_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class xorshift_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] xorshift'ptr_Next_unfold :: MethodUnfold (go.PointerType (xorshift)) "Next" (xorshift__Nextⁱᵐᵖˡ);
+}.
+
+Class lessSwap_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class reverse_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class IntSlice_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class Float64Slice_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class StringSlice_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
 Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Search_unfold :: FuncUnfold Search [] Searchⁱᵐᵖˡ;
-  #[global] Find_unfold :: FuncUnfold Find [] Findⁱᵐᵖˡ;
-  #[global] SearchInts_unfold :: FuncUnfold SearchInts [] SearchIntsⁱᵐᵖˡ;
+  #[global] Interface_instance :: Interface_Assumptions;
+  #[global] sortedHint_instance :: sortedHint_Assumptions;
+  #[global] xorshift_instance :: xorshift_Assumptions;
+  #[global] lessSwap_instance :: lessSwap_Assumptions;
+  #[global] reverse_instance :: reverse_Assumptions;
+  #[global] IntSlice_instance :: IntSlice_Assumptions;
+  #[global] Float64Slice_instance :: Float64Slice_Assumptions;
+  #[global] StringSlice_instance :: StringSlice_Assumptions;
+  #[global] Search_unfold :: FuncUnfold Search [] (Searchⁱᵐᵖˡ);
+  #[global] Find_unfold :: FuncUnfold Find [] (Findⁱᵐᵖˡ);
+  #[global] SearchInts_unfold :: FuncUnfold SearchInts [] (SearchIntsⁱᵐᵖˡ);
 }.
 
 End code.

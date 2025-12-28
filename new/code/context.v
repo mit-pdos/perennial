@@ -145,8 +145,88 @@ Definition initialize' : val :=
       do:  (closedchan'init #()))
       ).
 
+Class Context_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class deadlineExceededError_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class emptyCtx_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class backgroundCtx_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class todoCtx_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class CancelFunc_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class CancelCauseFunc_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class afterFuncer_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class afterFuncCtx_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class stopCtx_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class canceler_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class cancelCtx_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class stringer_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class withoutCancelCtx_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class timerCtx_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class valueCtx_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
 Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
+  #[global] Context_instance :: Context_Assumptions;
+  #[global] deadlineExceededError_instance :: deadlineExceededError_Assumptions;
+  #[global] emptyCtx_instance :: emptyCtx_Assumptions;
+  #[global] backgroundCtx_instance :: backgroundCtx_Assumptions;
+  #[global] todoCtx_instance :: todoCtx_Assumptions;
+  #[global] CancelFunc_instance :: CancelFunc_Assumptions;
+  #[global] CancelCauseFunc_instance :: CancelCauseFunc_Assumptions;
+  #[global] afterFuncer_instance :: afterFuncer_Assumptions;
+  #[global] afterFuncCtx_instance :: afterFuncCtx_Assumptions;
+  #[global] stopCtx_instance :: stopCtx_Assumptions;
+  #[global] canceler_instance :: canceler_Assumptions;
+  #[global] cancelCtx_instance :: cancelCtx_Assumptions;
+  #[global] stringer_instance :: stringer_Assumptions;
+  #[global] withoutCancelCtx_instance :: withoutCancelCtx_Assumptions;
+  #[global] timerCtx_instance :: timerCtx_Assumptions;
+  #[global] valueCtx_instance :: valueCtx_Assumptions;
 }.
 
 End code.

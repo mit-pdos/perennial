@@ -715,8 +715,138 @@ Definition initialize' : val :=
       do:  (pollSplice'init #()))
       ).
 
+Class readdirMode_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class dirInfo_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class timeout_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class SyscallError_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class processStatus_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class Process_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class processHandle_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class ProcAttr_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class Signal_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class ProcessState_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class LinkError_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class noReadFrom_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class fileWithoutReadFrom_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class noWriteTo_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class fileWithoutWriteTo_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class dirFS_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class file_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class newFileKind_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class unixDirent_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class rawConn_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class Root_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class rootFS_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class root_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class errSymlink_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class File_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class fileStat_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
 Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
+  #[global] readdirMode_instance :: readdirMode_Assumptions;
+  #[global] dirInfo_instance :: dirInfo_Assumptions;
+  #[global] timeout_instance :: timeout_Assumptions;
+  #[global] SyscallError_instance :: SyscallError_Assumptions;
+  #[global] processStatus_instance :: processStatus_Assumptions;
+  #[global] Process_instance :: Process_Assumptions;
+  #[global] processHandle_instance :: processHandle_Assumptions;
+  #[global] ProcAttr_instance :: ProcAttr_Assumptions;
+  #[global] Signal_instance :: Signal_Assumptions;
+  #[global] ProcessState_instance :: ProcessState_Assumptions;
+  #[global] LinkError_instance :: LinkError_Assumptions;
+  #[global] noReadFrom_instance :: noReadFrom_Assumptions;
+  #[global] fileWithoutReadFrom_instance :: fileWithoutReadFrom_Assumptions;
+  #[global] noWriteTo_instance :: noWriteTo_Assumptions;
+  #[global] fileWithoutWriteTo_instance :: fileWithoutWriteTo_Assumptions;
+  #[global] dirFS_instance :: dirFS_Assumptions;
+  #[global] file_instance :: file_Assumptions;
+  #[global] newFileKind_instance :: newFileKind_Assumptions;
+  #[global] unixDirent_instance :: unixDirent_Assumptions;
+  #[global] rawConn_instance :: rawConn_Assumptions;
+  #[global] Root_instance :: Root_Assumptions;
+  #[global] rootFS_instance :: rootFS_Assumptions;
+  #[global] root_instance :: root_Assumptions;
+  #[global] errSymlink_instance :: errSymlink_Assumptions;
+  #[global] File_instance :: File_Assumptions;
+  #[global] fileStat_instance :: fileStat_Assumptions;
 }.
 
 End code.

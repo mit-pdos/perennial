@@ -418,8 +418,178 @@ Definition initialize' : val :=
       do:  (errMain'init #()))
       ).
 
+Class durationOrCountFlag_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class InternalBenchmark_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class B_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class BenchmarkResult_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class benchState_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class PB_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class discard_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class CoverBlock_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class Cover_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class InternalExample_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class InternalFuzzTarget_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class F_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class fuzzResult_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class fuzzCrashError_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class fuzzState_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class fuzzMode_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class matcher_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class filterMatch_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class simpleMatch_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class alternationMatch_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class chattyFlag_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class chattyPrinter_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class common_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class indenter_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class TB_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class T_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class outputWriter_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class panicHandling_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class InternalTest_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class testState_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class matchStringOnly_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class M_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class testDeps_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class highPrecisionTime_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
 Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
+  #[global] durationOrCountFlag_instance :: durationOrCountFlag_Assumptions;
+  #[global] InternalBenchmark_instance :: InternalBenchmark_Assumptions;
+  #[global] B_instance :: B_Assumptions;
+  #[global] BenchmarkResult_instance :: BenchmarkResult_Assumptions;
+  #[global] benchState_instance :: benchState_Assumptions;
+  #[global] PB_instance :: PB_Assumptions;
+  #[global] discard_instance :: discard_Assumptions;
+  #[global] CoverBlock_instance :: CoverBlock_Assumptions;
+  #[global] Cover_instance :: Cover_Assumptions;
+  #[global] InternalExample_instance :: InternalExample_Assumptions;
+  #[global] InternalFuzzTarget_instance :: InternalFuzzTarget_Assumptions;
+  #[global] F_instance :: F_Assumptions;
+  #[global] fuzzResult_instance :: fuzzResult_Assumptions;
+  #[global] fuzzCrashError_instance :: fuzzCrashError_Assumptions;
+  #[global] fuzzState_instance :: fuzzState_Assumptions;
+  #[global] fuzzMode_instance :: fuzzMode_Assumptions;
+  #[global] matcher_instance :: matcher_Assumptions;
+  #[global] filterMatch_instance :: filterMatch_Assumptions;
+  #[global] simpleMatch_instance :: simpleMatch_Assumptions;
+  #[global] alternationMatch_instance :: alternationMatch_Assumptions;
+  #[global] chattyFlag_instance :: chattyFlag_Assumptions;
+  #[global] chattyPrinter_instance :: chattyPrinter_Assumptions;
+  #[global] common_instance :: common_Assumptions;
+  #[global] indenter_instance :: indenter_Assumptions;
+  #[global] TB_instance :: TB_Assumptions;
+  #[global] T_instance :: T_Assumptions;
+  #[global] outputWriter_instance :: outputWriter_Assumptions;
+  #[global] panicHandling_instance :: panicHandling_Assumptions;
+  #[global] InternalTest_instance :: InternalTest_Assumptions;
+  #[global] testState_instance :: testState_Assumptions;
+  #[global] matchStringOnly_instance :: matchStringOnly_Assumptions;
+  #[global] M_instance :: M_Assumptions;
+  #[global] testDeps_instance :: testDeps_Assumptions;
+  #[global] highPrecisionTime_instance :: highPrecisionTime_Assumptions;
 }.
 
 End code.

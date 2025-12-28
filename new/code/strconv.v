@@ -339,8 +339,33 @@ Definition initialize' : val :=
       do:  (isGraphic'init #()))
       ).
 
+Class NumError_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class decimal_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class leftCheat_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class floatInfo_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class decimalSlice_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
 Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
+  #[global] NumError_instance :: NumError_Assumptions;
+  #[global] decimal_instance :: decimal_Assumptions;
+  #[global] leftCheat_instance :: leftCheat_Assumptions;
+  #[global] floatInfo_instance :: floatInfo_Assumptions;
+  #[global] decimalSlice_instance :: decimalSlice_Assumptions;
 }.
 
 End code.

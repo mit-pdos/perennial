@@ -851,19 +851,144 @@ Definition initialize' : val :=
       do:  ((GloblalVarAddr #expunged) <-[go.PointerType (go.InterfaceType [])] "$r0"))
       ).
 
+Class Cond_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Cond'ptr_Broadcast_unfold :: MethodUnfold (go.PointerType (Cond)) "Broadcast" (Cond__Broadcastⁱᵐᵖˡ);
+  #[global] Cond'ptr_Signal_unfold :: MethodUnfold (go.PointerType (Cond)) "Signal" (Cond__Signalⁱᵐᵖˡ);
+  #[global] Cond'ptr_Wait_unfold :: MethodUnfold (go.PointerType (Cond)) "Wait" (Cond__Waitⁱᵐᵖˡ);
+}.
+
+Class copyChecker_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class noCopy_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class Map_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class readOnly_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class entry_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class Mutex_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Mutex'ptr_Lock_unfold :: MethodUnfold (go.PointerType (Mutex)) "Lock" (Mutex__Lockⁱᵐᵖˡ);
+  #[global] Mutex'ptr_TryLock_unfold :: MethodUnfold (go.PointerType (Mutex)) "TryLock" (Mutex__TryLockⁱᵐᵖˡ);
+  #[global] Mutex'ptr_Unlock_unfold :: MethodUnfold (go.PointerType (Mutex)) "Unlock" (Mutex__Unlockⁱᵐᵖˡ);
+}.
+
+Class Locker_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class Once_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Once'ptr_Do_unfold :: MethodUnfold (go.PointerType (Once)) "Do" (Once__Doⁱᵐᵖˡ);
+  #[global] Once'ptr_doSlow_unfold :: MethodUnfold (go.PointerType (Once)) "doSlow" (Once__doSlowⁱᵐᵖˡ);
+}.
+
+Class Pool_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class poolLocalInternal_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class poolLocal_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class poolDequeue_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class eface_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class dequeueNil_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class poolChain_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class poolChainElt_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class notifyList_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class RWMutex_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] RWMutex'ptr_Lock_unfold :: MethodUnfold (go.PointerType (RWMutex)) "Lock" (RWMutex__Lockⁱᵐᵖˡ);
+  #[global] RWMutex'ptr_RLock_unfold :: MethodUnfold (go.PointerType (RWMutex)) "RLock" (RWMutex__RLockⁱᵐᵖˡ);
+  #[global] RWMutex'ptr_RLocker_unfold :: MethodUnfold (go.PointerType (RWMutex)) "RLocker" (RWMutex__RLockerⁱᵐᵖˡ);
+  #[global] RWMutex'ptr_RUnlock_unfold :: MethodUnfold (go.PointerType (RWMutex)) "RUnlock" (RWMutex__RUnlockⁱᵐᵖˡ);
+  #[global] RWMutex'ptr_TryLock_unfold :: MethodUnfold (go.PointerType (RWMutex)) "TryLock" (RWMutex__TryLockⁱᵐᵖˡ);
+  #[global] RWMutex'ptr_TryRLock_unfold :: MethodUnfold (go.PointerType (RWMutex)) "TryRLock" (RWMutex__TryRLockⁱᵐᵖˡ);
+  #[global] RWMutex'ptr_Unlock_unfold :: MethodUnfold (go.PointerType (RWMutex)) "Unlock" (RWMutex__Unlockⁱᵐᵖˡ);
+  #[global] RWMutex'ptr_rUnlockSlow_unfold :: MethodUnfold (go.PointerType (RWMutex)) "rUnlockSlow" (RWMutex__rUnlockSlowⁱᵐᵖˡ);
+}.
+
+Class rlocker_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class WaitGroup_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] WaitGroup'ptr_Add_unfold :: MethodUnfold (go.PointerType (WaitGroup)) "Add" (WaitGroup__Addⁱᵐᵖˡ);
+  #[global] WaitGroup'ptr_Done_unfold :: MethodUnfold (go.PointerType (WaitGroup)) "Done" (WaitGroup__Doneⁱᵐᵖˡ);
+  #[global] WaitGroup'ptr_Go_unfold :: MethodUnfold (go.PointerType (WaitGroup)) "Go" (WaitGroup__Goⁱᵐᵖˡ);
+  #[global] WaitGroup'ptr_Wait_unfold :: MethodUnfold (go.PointerType (WaitGroup)) "Wait" (WaitGroup__Waitⁱᵐᵖˡ);
+}.
+
 Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] NewCond_unfold :: FuncUnfold NewCond [] NewCondⁱᵐᵖˡ;
-  #[global] runtime_Semacquire_unfold :: FuncUnfold runtime_Semacquire [] runtime_Semacquireⁱᵐᵖˡ;
-  #[global] runtime_SemacquireWaitGroup_unfold :: FuncUnfold runtime_SemacquireWaitGroup [] runtime_SemacquireWaitGroupⁱᵐᵖˡ;
-  #[global] runtime_SemacquireRWMutexR_unfold :: FuncUnfold runtime_SemacquireRWMutexR [] runtime_SemacquireRWMutexRⁱᵐᵖˡ;
-  #[global] runtime_SemacquireRWMutex_unfold :: FuncUnfold runtime_SemacquireRWMutex [] runtime_SemacquireRWMutexⁱᵐᵖˡ;
-  #[global] runtime_Semrelease_unfold :: FuncUnfold runtime_Semrelease [] runtime_Semreleaseⁱᵐᵖˡ;
-  #[global] runtime_notifyListAdd_unfold :: FuncUnfold runtime_notifyListAdd [] runtime_notifyListAddⁱᵐᵖˡ;
-  #[global] runtime_notifyListWait_unfold :: FuncUnfold runtime_notifyListWait [] runtime_notifyListWaitⁱᵐᵖˡ;
-  #[global] runtime_notifyListNotifyAll_unfold :: FuncUnfold runtime_notifyListNotifyAll [] runtime_notifyListNotifyAllⁱᵐᵖˡ;
-  #[global] runtime_notifyListNotifyOne_unfold :: FuncUnfold runtime_notifyListNotifyOne [] runtime_notifyListNotifyOneⁱᵐᵖˡ;
-  #[global] runtime_notifyListCheck_unfold :: FuncUnfold runtime_notifyListCheck [] runtime_notifyListCheckⁱᵐᵖˡ;
+  #[global] Cond_instance :: Cond_Assumptions;
+  #[global] copyChecker_instance :: copyChecker_Assumptions;
+  #[global] noCopy_instance :: noCopy_Assumptions;
+  #[global] Map_instance :: Map_Assumptions;
+  #[global] readOnly_instance :: readOnly_Assumptions;
+  #[global] entry_instance :: entry_Assumptions;
+  #[global] Mutex_instance :: Mutex_Assumptions;
+  #[global] Locker_instance :: Locker_Assumptions;
+  #[global] Once_instance :: Once_Assumptions;
+  #[global] Pool_instance :: Pool_Assumptions;
+  #[global] poolLocalInternal_instance :: poolLocalInternal_Assumptions;
+  #[global] poolLocal_instance :: poolLocal_Assumptions;
+  #[global] poolDequeue_instance :: poolDequeue_Assumptions;
+  #[global] eface_instance :: eface_Assumptions;
+  #[global] dequeueNil_instance :: dequeueNil_Assumptions;
+  #[global] poolChain_instance :: poolChain_Assumptions;
+  #[global] poolChainElt_instance :: poolChainElt_Assumptions;
+  #[global] notifyList_instance :: notifyList_Assumptions;
+  #[global] RWMutex_instance :: RWMutex_Assumptions;
+  #[global] rlocker_instance :: rlocker_Assumptions;
+  #[global] WaitGroup_instance :: WaitGroup_Assumptions;
+  #[global] NewCond_unfold :: FuncUnfold NewCond [] (NewCondⁱᵐᵖˡ);
+  #[global] runtime_Semacquire_unfold :: FuncUnfold runtime_Semacquire [] (runtime_Semacquireⁱᵐᵖˡ);
+  #[global] runtime_SemacquireWaitGroup_unfold :: FuncUnfold runtime_SemacquireWaitGroup [] (runtime_SemacquireWaitGroupⁱᵐᵖˡ);
+  #[global] runtime_SemacquireRWMutexR_unfold :: FuncUnfold runtime_SemacquireRWMutexR [] (runtime_SemacquireRWMutexRⁱᵐᵖˡ);
+  #[global] runtime_SemacquireRWMutex_unfold :: FuncUnfold runtime_SemacquireRWMutex [] (runtime_SemacquireRWMutexⁱᵐᵖˡ);
+  #[global] runtime_Semrelease_unfold :: FuncUnfold runtime_Semrelease [] (runtime_Semreleaseⁱᵐᵖˡ);
+  #[global] runtime_notifyListAdd_unfold :: FuncUnfold runtime_notifyListAdd [] (runtime_notifyListAddⁱᵐᵖˡ);
+  #[global] runtime_notifyListWait_unfold :: FuncUnfold runtime_notifyListWait [] (runtime_notifyListWaitⁱᵐᵖˡ);
+  #[global] runtime_notifyListNotifyAll_unfold :: FuncUnfold runtime_notifyListNotifyAll [] (runtime_notifyListNotifyAllⁱᵐᵖˡ);
+  #[global] runtime_notifyListNotifyOne_unfold :: FuncUnfold runtime_notifyListNotifyOne [] (runtime_notifyListNotifyOneⁱᵐᵖˡ);
+  #[global] runtime_notifyListCheck_unfold :: FuncUnfold runtime_notifyListCheck [] (runtime_notifyListCheckⁱᵐᵖˡ);
 }.
 
 End code.

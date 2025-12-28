@@ -207,14 +207,13 @@ Proof.
   done.
 Qed.
 
+(* FIXME: bundle this typeclass into the package tc. *)
 Lemma wp_Mutex__Lock m R :
   {{{ is_pkg_init primitive ∗ is_Mutex m R }}}
-    #(methods (go.PointerType primitive.Mutex) "Lock") #()
+    #(methods (go.PointerType primitive.Mutex) "Lock") #m #()
   {{{ RET #(); own_Mutex m ∗ R }}}.
 Proof.
   wp_start as "#His".
-  (* FIXME: MethodUnfold instances. *)
-  wp_method_call.
   wp_apply (wp_lock_lock with "[$His]").
   iIntros "[Hown HR]".
   iApply "HΦ".
@@ -224,7 +223,7 @@ Qed.
 (* this form is useful for defer statements *)
 Lemma wp_Mutex__Unlock m R :
   {{{ is_pkg_init primitive ∗ is_Mutex m R ∗ own_Mutex m ∗ ▷ R }}}
-    m @ (ptrT.id primitive.Mutex.id) @ "Unlock" #()
+    #(methods (go.PointerType primitive.Mutex) "Unlock") #m #()
   {{{ RET #(); True }}}.
 Proof.
   wp_start as "(#His & Hlocked & HR)".

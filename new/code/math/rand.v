@@ -160,8 +160,43 @@ Definition initialize' : val :=
       do:  (rngCooked'init #()))
       ).
 
+Class Source_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class Source64_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class Rand_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class runtimeSource_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class lockedSource_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class rngSource_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class Zipf_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
 Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
+  #[global] Source_instance :: Source_Assumptions;
+  #[global] Source64_instance :: Source64_Assumptions;
+  #[global] Rand_instance :: Rand_Assumptions;
+  #[global] runtimeSource_instance :: runtimeSource_Assumptions;
+  #[global] lockedSource_instance :: lockedSource_Assumptions;
+  #[global] rngSource_instance :: rngSource_Assumptions;
+  #[global] Zipf_instance :: Zipf_Assumptions;
 }.
 
 End code.

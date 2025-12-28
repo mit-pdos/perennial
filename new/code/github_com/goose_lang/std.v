@@ -326,20 +326,27 @@ Definition initialize' : val :=
       do:  (math.initialize' #()))
       ).
 
+Class JoinHandle_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] JoinHandle'ptr_Join_unfold :: MethodUnfold (go.PointerType (JoinHandle)) "Join" (JoinHandle__Joinⁱᵐᵖˡ);
+  #[global] JoinHandle'ptr_finish_unfold :: MethodUnfold (go.PointerType (JoinHandle)) "finish" (JoinHandle__finishⁱᵐᵖˡ);
+}.
+
 Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Assert_unfold :: FuncUnfold Assert [] Assertⁱᵐᵖˡ;
-  #[global] SumNoOverflow_unfold :: FuncUnfold SumNoOverflow [] SumNoOverflowⁱᵐᵖˡ;
-  #[global] SumAssumeNoOverflow_unfold :: FuncUnfold SumAssumeNoOverflow [] SumAssumeNoOverflowⁱᵐᵖˡ;
-  #[global] SignedSumAssumeNoOverflow_unfold :: FuncUnfold SignedSumAssumeNoOverflow [] SignedSumAssumeNoOverflowⁱᵐᵖˡ;
-  #[global] BytesEqual_unfold :: FuncUnfold BytesEqual [] BytesEqualⁱᵐᵖˡ;
-  #[global] BytesClone_unfold :: FuncUnfold BytesClone [] BytesCloneⁱᵐᵖˡ;
+  #[global] JoinHandle_instance :: JoinHandle_Assumptions;
+  #[global] Assert_unfold :: FuncUnfold Assert [] (Assertⁱᵐᵖˡ);
+  #[global] SumNoOverflow_unfold :: FuncUnfold SumNoOverflow [] (SumNoOverflowⁱᵐᵖˡ);
+  #[global] SumAssumeNoOverflow_unfold :: FuncUnfold SumAssumeNoOverflow [] (SumAssumeNoOverflowⁱᵐᵖˡ);
+  #[global] SignedSumAssumeNoOverflow_unfold :: FuncUnfold SignedSumAssumeNoOverflow [] (SignedSumAssumeNoOverflowⁱᵐᵖˡ);
+  #[global] BytesEqual_unfold :: FuncUnfold BytesEqual [] (BytesEqualⁱᵐᵖˡ);
+  #[global] BytesClone_unfold :: FuncUnfold BytesClone [] (BytesCloneⁱᵐᵖˡ);
   #[global] SliceSplit_unfold T :: FuncUnfold SliceSplit [T] (SliceSplitⁱᵐᵖˡ T);
-  #[global] newJoinHandle_unfold :: FuncUnfold newJoinHandle [] newJoinHandleⁱᵐᵖˡ;
-  #[global] Spawn_unfold :: FuncUnfold Spawn [] Spawnⁱᵐᵖˡ;
-  #[global] Multipar_unfold :: FuncUnfold Multipar [] Multiparⁱᵐᵖˡ;
-  #[global] Skip_unfold :: FuncUnfold Skip [] Skipⁱᵐᵖˡ;
-  #[global] WaitTimeout_unfold :: FuncUnfold WaitTimeout [] WaitTimeoutⁱᵐᵖˡ;
+  #[global] newJoinHandle_unfold :: FuncUnfold newJoinHandle [] (newJoinHandleⁱᵐᵖˡ);
+  #[global] Spawn_unfold :: FuncUnfold Spawn [] (Spawnⁱᵐᵖˡ);
+  #[global] Multipar_unfold :: FuncUnfold Multipar [] (Multiparⁱᵐᵖˡ);
+  #[global] Skip_unfold :: FuncUnfold Skip [] (Skipⁱᵐᵖˡ);
+  #[global] WaitTimeout_unfold :: FuncUnfold WaitTimeout [] (WaitTimeoutⁱᵐᵖˡ);
 }.
 
 End code.

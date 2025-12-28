@@ -1129,8 +1129,19 @@ Definition initialize' : val :=
       exception_do (do:  #())
       ).
 
+Class sortedHint_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+}.
+
+Class xorshift_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] xorshift'ptr_Next_unfold :: MethodUnfold (go.PointerType (xorshift)) "Next" (xorshift__Nextⁱᵐᵖˡ);
+}.
+
 Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
+  #[global] sortedHint_instance :: sortedHint_Assumptions;
+  #[global] xorshift_instance :: xorshift_Assumptions;
   #[global] insertionSortCmpFunc_unfold E :: FuncUnfold insertionSortCmpFunc [E] (insertionSortCmpFuncⁱᵐᵖˡ E);
   #[global] siftDownCmpFunc_unfold E :: FuncUnfold siftDownCmpFunc [E] (siftDownCmpFuncⁱᵐᵖˡ E);
   #[global] heapSortCmpFunc_unfold E :: FuncUnfold heapSortCmpFunc [E] (heapSortCmpFuncⁱᵐᵖˡ E);
