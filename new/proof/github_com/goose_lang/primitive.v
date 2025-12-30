@@ -13,8 +13,8 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _}
 Context {package_sem : primitive.Assumptions}.
 Local Set Default Proof Using "Type package_sem core_sem pre_sem array_sem slice_sem".
 
-#[global] Instance : IsPkgInit primitive := define_is_pkg_init (True : iProp Σ)%I.
-#[global] Instance : GetIsPkgInitWf primitive := build_get_is_pkg_init_wf.
+#[global] Instance : IsPkgInit (iProp Σ) primitive := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ) primitive := build_get_is_pkg_init_wf.
 
 Lemma wp_initialize' get_is_pkg_init :
   get_is_pkg_init_prop primitive get_is_pkg_init →

@@ -1,28 +1,32 @@
 From New.proof Require Import proof_prelude.
+From New.code.github_com.goose_lang Require Export std_core.
 From New.generatedproof.github_com.goose_lang Require Export std_core.
 From New.proof Require Import github_com.goose_lang.primitive.
 
 Section wps.
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}
+  {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}
+  {array_sem : go.ArraySemantics} {slice_sem : go.SliceSemantics}.
+Context {package_sem : std_core.Assumptions}.
+Context {package_sem' : primitive.Assumptions}.
+Local Set Default Proof Using "Type package_sem core_sem pre_sem array_sem slice_sem".
 
-#[global] Instance : IsPkgInit std_core := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf std_core := build_get_is_pkg_init_wf.
+#[global] Instance : IsPkgInit (iProp Σ) std_core := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ) std_core := build_get_is_pkg_init_wf.
 
 Lemma wp_initialize' get_is_pkg_init :
   get_is_pkg_init_prop std_core get_is_pkg_init →
-  {{{ own_initializing get_is_pkg_init ∗ is_go_context ∗ □ is_pkg_defined std_core }}}
+  {{{ own_initializing get_is_pkg_init }}}
     std_core.initialize' #()
   {{{ RET #(); own_initializing get_is_pkg_init ∗ is_pkg_init std_core }}}.
 Proof.
-  intros Hinit. wp_start as "(Hown & #? & #Hdef)".
-  wp_call. wp_apply (wp_package_init with "[$Hown] HΦ").
+  intros Hinit. wp_start as "Hown".
+  wp_apply (wp_package_init with "[$Hown] HΦ").
   { destruct Hinit as (-> & ?); done. }
   iIntros "Hown". wp_auto.
   wp_apply (primitive.wp_initialize' with "[$Hown]") as "(Hown & #?)".
   { naive_solver. }
-  { iModIntro. iEval simpl_is_pkg_defined in "Hdef". iPkgInit. }
-  wp_call. iEval (rewrite is_pkg_init_unfold /=). iFrame "∗#". done.
+  iEval (rewrite is_pkg_init_unfold /=). iFrame "∗#". done.
 Qed.
 
 Lemma wp_SumNoOverflow (x y : u64) :
