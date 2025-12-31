@@ -34,9 +34,7 @@ Lemma wp_SumNoOverflow (x y : u64) :
     @! std_core.SumNoOverflow #x #y
   {{{ RET #(bool_decide (uint.Z (word.add x y) = (uint.Z x + uint.Z y)%Z)); True }}}.
 Proof.
-  wp_start as "_".
-  wp_apply wp_AllocValue as "%y_ptr y".
-  wp_apply wp_AllocValue as "%x_ptr x".
+  wp_start as "_". wp_auto.
   iSpecialize ("HΦ" with "[$]").
   iExactEq "HΦ".
   repeat f_equal.
@@ -75,7 +73,7 @@ Proof.
   iExactEq "HΦ".
   repeat f_equal.
   apply bool_decide_ext.
-  pose proof (mul_overflow_check_correct x y ltac:(word)).
+  pose proof (mul_overflow_check_correct x y ltac:(word) ltac:(word)).
   word.
 Qed.
 
@@ -95,17 +93,17 @@ Qed.
 #[local] Unset Printing Projections.
 
 Lemma wp_Shuffle s (xs: list w64) :
-  {{{ is_pkg_init std_core ∗ s ↦* xs }}}
+  {{{ is_pkg_init std_core ∗ s ↦[go.uint64]* xs }}}
     @! std_core.Shuffle #s
   {{{ xs', RET #(); ⌜Permutation xs xs'⌝ ∗
-                      s ↦* xs' }}}.
+                      s ↦[go.uint64]* xs' }}}.
 Proof.
   wp_start as "Hs".
   wp_auto.
   iPersist "xs".
   iDestruct (own_slice_len with "Hs") as %Hlen.
   iDestruct (own_slice_wf with "Hs") as %Hwf.
-  destruct (bool_decide_reflect (slice.len_f s = W64 0)); wp_auto.
+  destruct (bool_decide_reflect (slice.len s = W64 0)); wp_auto.
   {
     assert (xs = []); subst .
     { destruct xs; auto; simpl in *; word.  }
@@ -114,8 +112,8 @@ Proof.
   }
   iAssert (∃ (i: w64) (xs': list w64),
               "i" ∷ i_ptr ↦ i ∗
-              "%HI" ∷ ⌜0 ≤ sint.Z i < sint.Z (slice.len_f s)⌝ ∗
-              "Hs" ∷ s ↦* xs' ∗
+              "%HI" ∷ ⌜0 ≤ sint.Z i < sint.Z (slice.len s)⌝ ∗
+              "Hs" ∷ s ↦[_]* xs' ∗
               "%Hperm" ∷ ⌜xs ≡ₚ xs'⌝
           )%I with "[$i $Hs]" as "IH".
   { iPureIntro.
@@ -131,7 +129,7 @@ Proof.
     iIntros (x) "_".
     wp_auto.
     list_elem xs' (sint.Z i) as x_i.
-    wp_apply (wp_load_slice_elem with "[$Hs]") as "Hs"; [ word | eauto | ].
+    wp_apply (wp_load_slice_index with "[$Hs]") as "Hs"; [ word | eauto | ].
 
     list_elem xs' (sint.nat (word.modu x (word.add i (W64 1)))) as x_i'.
     wp_pure; first word.
