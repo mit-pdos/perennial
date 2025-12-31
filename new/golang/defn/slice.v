@@ -61,7 +61,7 @@ Class SliceSemantics `{!GoSemanticsFunctions} :=
     #(slice.mk p l c);
   #[global] internal_dynamic_array_alloc_step et (n : w64) ::
     go.IsGoStepPureDet (InternalDynamicArrayAlloc et) #n
-    (GoAlloc (go.ArrayType (sint.Z n) et) #());
+    (GoAlloc (go.ArrayType (sint.Z n) et) (GoZeroVal (go.ArrayType (sint.Z n) et) #()));
   #[global] slice_slice_step_pure elem_type s low high ::
     go.IsGoStepPureDet (Slice (go.SliceType elem_type))
     (#s, (#low, #high))%V
@@ -95,7 +95,7 @@ Class SliceSemantics `{!GoSemanticsFunctions} :=
     FuncUnfold go.copy [go.SliceType elem_type]
     (λ: "dst" "src",
        let st : go.type := go.SliceType elem_type in
-       let: "i" := GoAlloc go.int #() in
+       let: "i" := GoAlloc go.int (GoZeroVal go.int #()) in
        (for: (λ: <>, (![go.int] "i" <⟨go.int⟩ FuncResolve go.len [st] #() "dst") &&
                 (![go.int] "i" <⟨go.int⟩ FuncResolve go.len [st] #() "src")) ; (λ: <>, Skip) :=
           (λ: <>,
@@ -166,7 +166,7 @@ Class SliceSemantics `{!GoSemanticsFunctions} :=
   #[global] composite_literal_slice elem_type kvs ::
     go.GoExprEq (composite_literal (go.SliceType elem_type) (LiteralValue kvs))
     (let len := array_literal_size kvs in
-    (let: "tmp" := GoAlloc (go.ArrayType len elem_type) #() in
+    (let: "tmp" := GoAlloc (go.ArrayType len elem_type) (GoZeroVal (go.ArrayType len elem_type) #()) in
      "tmp" <-[(go.ArrayType len elem_type)]
               CompositeLiteral (go.ArrayType len elem_type) (LiteralValue kvs);;
      Slice (go.ArrayType len elem_type) ("tmp", (#(W64 0), #(W64 len)))

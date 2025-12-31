@@ -58,8 +58,8 @@ Definition Equal : go_string := "bytes.Equal"%go.
    go: bytes.go:20:6 *)
 Definition Equalⁱᵐᵖˡ : val :=
   λ: "a" "b",
-    exception_do (let: "b" := (go.AllocValue (go.SliceType go.byte) "b") in
-    let: "a" := (go.AllocValue (go.SliceType go.byte) "a") in
+    exception_do (let: "b" := (GoAlloc (go.SliceType go.byte) "b") in
+    let: "a" := (GoAlloc (go.SliceType go.byte) "a") in
     return: ((string.from_bytes (![go.SliceType go.byte] "a")) =⟨go.string⟩ (string.from_bytes (![go.SliceType go.byte] "b")))).
 
 Definition Compare : go_string := "bytes.Compare"%go.
@@ -201,7 +201,7 @@ Definition Clone : go_string := "bytes.Clone"%go.
    go: bytes.go:1415:6 *)
 Definition Cloneⁱᵐᵖˡ : val :=
   λ: "b",
-    exception_do (let: "b" := (go.AllocValue (go.SliceType go.byte) "b") in
+    exception_do (let: "b" := (GoAlloc (go.SliceType go.byte) "b") in
     (if: (![go.SliceType go.byte] "b") =⟨go.SliceType go.byte⟩ #slice.nil
     then return: (#slice.nil)
     else do:  #());;;

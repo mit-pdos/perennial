@@ -9,7 +9,7 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _}
   {array_sem : go.ArraySemantics} {slice_sem : go.SliceSemantics}.
 Context {package_sem : std_core.Assumptions}.
 Context {package_sem' : primitive.Assumptions}.
-Local Set Default Proof Using "Type package_sem core_sem pre_sem array_sem slice_sem".
+Local Set Default Proof Using "Type package_sem package_sem' core_sem pre_sem array_sem slice_sem".
 
 #[global] Instance : IsPkgInit (iProp Σ) std_core := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf (iProp Σ) std_core := build_get_is_pkg_init_wf.
@@ -35,7 +35,8 @@ Lemma wp_SumNoOverflow (x y : u64) :
   {{{ RET #(bool_decide (uint.Z (word.add x y) = (uint.Z x + uint.Z y)%Z)); True }}}.
 Proof.
   wp_start as "_".
-  wp_auto.
+  wp_apply wp_AllocValue as "%y_ptr y".
+  wp_apply wp_AllocValue as "%x_ptr x".
   iSpecialize ("HΦ" with "[$]").
   iExactEq "HΦ".
   repeat f_equal.

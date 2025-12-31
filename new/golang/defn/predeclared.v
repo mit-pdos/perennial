@@ -291,7 +291,7 @@ Class Uint8Semantics `{!GoSemanticsFunctions} :=
 
 Class PredeclaredSemantics `{!GoSemanticsFunctions} :=
 {
-  alloc_predeclared t v (H : is_predeclared_zero_val t v) : alloc t = (λ: <>, go.ref_one v)%V;
+  alloc_predeclared t (H : is_predeclared t) : alloc t = (λ: "v", go.ref_one "v")%V;
   load_predeclared t (H : is_predeclared t) : load t = (λ: "l", Read "l")%V;
   store_predeclared t (H : is_predeclared t) : store t = (λ: "l" "v", "l" <- "v")%V;
 

@@ -69,9 +69,9 @@ Class IntoValTyped (V : Type) (t : go.type) `{!ZeroVal V} `{!TypedPointsto V}
   `{!GoSemanticsFunctions} :=
   {
     #[global] go_zero_val_eq :: go.GoZeroValEq t V;
-    wp_alloc : (∀ {s E}, {{{ True }}}
-                           alloc t #() @ s ; E
-                         {{{ l, RET #l; l ↦ (zero_val V) }}});
+    wp_alloc : (∀ {s E} (v : V), {{{ True }}}
+                           alloc t #v @ s ; E
+                         {{{ l, RET #l; l ↦ v }}});
     wp_load : (∀ {s E} l dq (v : V),
                  {{{ l ↦{dq} v }}}
                    load t #l @ s ; E
@@ -90,7 +90,7 @@ Global Hint Mode TypedPointsto - ! : typeclass_instances.
 
 (* Non-maximally insert the arguments related to [t], [IntoVal], etc., so that
    typeclass search won't be invoked until wp_apply actually unifies the [t]. *)
-Global Arguments wp_alloc {_ _ _ _ _ _} [_ _ _ _ _ _ _ _] (Φ).
+Global Arguments wp_alloc {_ _ _ _ _ _} [_ _ _ _ _ _ _ _ _] (Φ).
 Global Arguments wp_load {_ _ _ _ _ _} [_ _ _ _ _ _ _ _] (l dq v Φ).
 Global Arguments wp_store {_ _ _ _ _ _} [_ _ _ _ _ _ _ _] (l v w Φ).
 

@@ -24,23 +24,21 @@ Global Arguments own_slice {_} (t) {_ _ _} (s dq vs).
 Notation "s ↦[ t ]* dq vs" := (own_slice t s dq vs)
                             (at level 20, dq custom dfrac at level 50, format "s  ↦[ t ]* dq  vs").
 
-Context `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}.
-Implicit Type (vs : list V).
-
-Definition own_slice_cap_def (s : slice.t) (dq : dfrac) : iProp Σ :=
-  (* Want to make this definition depend on [IntoValTyped], so it can be used a
-  typeclass for looking up V given t. At some point, we could introduce a
-  separate typeclass just for doing that. *)
-  let _ := wp_alloc (E:=⊤) (s:=NotStuck) (t:=t) (λ _, True)%I in
+Definition own_slice_cap_def `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}
+  (s : slice.t) (dq : dfrac) : iProp Σ :=
   ⌜ 0 ≤ sint.Z s.(slice.len) ≤ sint.Z s.(slice.cap) ⌝ ∗
-(* A notes about this definition. The capacity has arbitrary values, which is
-often desirable, but there are some niche cases where code could be aware of the
-contents of the capacity (for example, when sub-slicing from a larger slice) -
-actually taking advantage of that seems questionable though. *)
+  (* The capacity buffer has arbitrary values, which is often desirable, but
+  there are some niche cases where code could be aware of the contents of the
+  capacity (for example, when sub-slicing from a larger slice) - actually taking
+  advantage of that seems questionable though. *)
   ∃ (a : array.t t V $ (sint.Z s.(slice.cap) - sint.Z s.(slice.len))),
     (slice_index_ref t (sint.Z s.(slice.len)) s) ↦{dq} a.
 Program Definition own_slice_cap := sealed @own_slice_cap_def.
 Definition own_slice_cap_unseal : own_slice_cap = _ := seal_eq _.
+Global Arguments own_slice_cap {_ _ _} (t) {_} (s dq).
+
+Context `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}.
+Implicit Type (vs : list V).
 
 Ltac unseal := rewrite ?own_slice_unseal /own_slice_def
                  ?own_slice_cap_unseal /own_slice_cap_def.
@@ -64,7 +62,7 @@ Qed.
 Lemma own_slice_cap_none s :
   s.(slice.len) = s.(slice.cap) →
   0 ≤ sint.Z s.(slice.len) →
-  ⊢ own_slice_cap s (DfracOwn 1).
+  ⊢ own_slice_cap t s (DfracOwn 1).
 Proof.
   destruct s; simpl; intros Hcap Hlen. rewrite own_slice_cap_unseal /own_slice_cap_def /=.
   iSplit; [ word | ].
@@ -131,12 +129,12 @@ Proof.
   by iCombine "H0 H1" as "?".
 Qed.
 
-Global Instance own_slice_cap_persistent s : Persistent (own_slice_cap s (□)).
+Global Instance own_slice_cap_persistent s : Persistent (own_slice_cap t s (□)).
 Proof. unseal; apply _. Qed.
 
 #[global]
 Instance own_slice_cap_dfractional s :
-  DFractional (λ dq, own_slice_cap s dq).
+  DFractional (λ dq, own_slice_cap t s dq).
 Proof.
   unseal.
   apply dfractional_sep; [apply _|].
@@ -153,7 +151,7 @@ Qed.
 
 #[global]
 Instance own_slice_cap_as_dfractional s dq :
-  AsDFractional (own_slice_cap s dq) (λ dq, own_slice_cap s dq) dq.
+  AsDFractional (own_slice_cap t s dq) (λ dq, own_slice_cap t s dq) dq.
 Proof. auto. Qed.
 
 Lemma own_slice_persist s dq vs:
@@ -168,14 +166,14 @@ Instance own_slice_update_to_persistent s dq vs :
 Proof. apply _. Qed.
 
 Global Instance own_slice_cap_update_to_persistent s dq :
-  UpdateIntoPersistently (own_slice_cap s dq) (own_slice_cap s (□)).
+  UpdateIntoPersistently (own_slice_cap t s dq) (own_slice_cap t s (□)).
 Proof. apply _. Qed.
 
 Global Instance own_slice_timeless s dq vs : Timeless (s ↦[t]*{dq} vs).
 Proof. unseal. apply _. Qed.
 
 Lemma own_slice_cap_wf s dq :
-  own_slice_cap s dq -∗ ⌜0 ≤ sint.Z s.(slice.len) ≤ sint.Z s.(slice.cap)⌝.
+  own_slice_cap t s dq -∗ ⌜0 ≤ sint.Z s.(slice.len) ≤ sint.Z s.(slice.cap)⌝.
 Proof.
   unseal. iIntros "[% Hcap]".
   word.
@@ -183,7 +181,7 @@ Qed.
 (* NOTE: only for backwards compatibility; non-primed version is more precise
 about signed length *)
 Lemma own_slice_cap_wf' s dq :
-  own_slice_cap s dq -∗ ⌜uint.Z s.(slice.len) ≤ uint.Z s.(slice.cap)⌝.
+  own_slice_cap t s dq -∗ ⌜uint.Z s.(slice.len) ≤ uint.Z s.(slice.cap)⌝.
 Proof.
   iIntros "H". iDestruct (own_slice_cap_wf with "H") as "%". word.
 Qed.
@@ -204,7 +202,7 @@ Proof.
 Qed.
 
 Lemma own_slice_cap_nil :
-  ⊢ own_slice_cap slice.nil (DfracOwn 1).
+  ⊢ own_slice_cap t slice.nil (DfracOwn 1).
 Proof.
   rewrite own_slice_cap_unseal /own_slice_cap_def /=.
   iSplit; [ word | ].
@@ -272,8 +270,6 @@ End defns_and_lemmas.
 
 Global Notation "s ↦[ t ]* dq vs" := (own_slice t s dq vs)
                             (at level 20, dq custom dfrac at level 50, format "s  ↦[ t ]* dq  vs").
-
-Global Arguments own_slice_cap {_ _ _ _ _ _ _ _ _ _ _} (t) {_} s dq.
 
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}

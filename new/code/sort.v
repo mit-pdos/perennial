@@ -64,16 +64,16 @@ Definition Search : go_string := "sort.Search"%go.
    go: search.go:58:6 *)
 Definition Searchⁱᵐᵖˡ : val :=
   λ: "n" "f",
-    exception_do (let: "f" := (go.AllocValue (go.FunctionType (go.Signature [go.int] false [go.bool])) "f") in
-    let: "n" := (go.AllocValue go.int "n") in
-    let: "j" := (GoAlloc go.int #()) in
-    let: "i" := (GoAlloc go.int #()) in
+    exception_do (let: "f" := (GoAlloc (go.FunctionType (go.Signature [go.int] false [go.bool])) "f") in
+    let: "n" := (GoAlloc go.int "n") in
+    let: "j" := (GoAlloc go.int (GoZeroVal go.int #())) in
+    let: "i" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "$r0" := #(W64 0) in
     let: "$r1" := (![go.int] "n") in
     do:  ("i" <-[go.int] "$r0");;;
     do:  ("j" <-[go.int] "$r1");;;
     (for: (λ: <>, (![go.int] "i") <⟨go.int⟩ (![go.int] "j")); (λ: <>, #()) := λ: <>,
-      let: "h" := (GoAlloc go.int #()) in
+      let: "h" := (GoAlloc go.int (GoZeroVal go.int #())) in
       let: "$r0" := (u_to_w64 ((s_to_w64 ((![go.int] "i") +⟨go.int⟩ (![go.int] "j"))) ≫⟨go.uint⟩ #(W64 1))) in
       do:  ("h" <-[go.int] "$r0");;;
       (if: (~ (let: "$a0" := (![go.int] "h") in
@@ -116,17 +116,17 @@ Definition Find : go_string := "sort.Find"%go.
    go: search.go:99:6 *)
 Definition Findⁱᵐᵖˡ : val :=
   λ: "n" "cmp",
-    exception_do (let: "found" := (GoAlloc go.bool #()) in
-    let: "i" := (GoAlloc go.int #()) in
-    let: "cmp" := (go.AllocValue (go.FunctionType (go.Signature [go.int] false [go.int])) "cmp") in
-    let: "n" := (go.AllocValue go.int "n") in
-    let: "j" := (GoAlloc go.int #()) in
+    exception_do (let: "found" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
+    let: "i" := (GoAlloc go.int (GoZeroVal go.int #())) in
+    let: "cmp" := (GoAlloc (go.FunctionType (go.Signature [go.int] false [go.int])) "cmp") in
+    let: "n" := (GoAlloc go.int "n") in
+    let: "j" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "$r0" := #(W64 0) in
     let: "$r1" := (![go.int] "n") in
     do:  ("i" <-[go.int] "$r0");;;
     do:  ("j" <-[go.int] "$r1");;;
     (for: (λ: <>, (![go.int] "i") <⟨go.int⟩ (![go.int] "j")); (λ: <>, #()) := λ: <>,
-      let: "h" := (GoAlloc go.int #()) in
+      let: "h" := (GoAlloc go.int (GoZeroVal go.int #())) in
       let: "$r0" := (u_to_w64 ((s_to_w64 ((![go.int] "i") +⟨go.int⟩ (![go.int] "j"))) ≫⟨go.uint⟩ #(W64 1))) in
       do:  ("h" <-[go.int] "$r0");;;
       (if: (let: "$a0" := (![go.int] "h") in
@@ -150,12 +150,12 @@ Definition SearchInts : go_string := "sort.SearchInts"%go.
    go: search.go:123:6 *)
 Definition SearchIntsⁱᵐᵖˡ : val :=
   λ: "a" "x",
-    exception_do (let: "x" := (go.AllocValue go.int "x") in
-    let: "a" := (go.AllocValue (go.SliceType go.int) "a") in
+    exception_do (let: "x" := (GoAlloc go.int "x") in
+    let: "a" := (GoAlloc (go.SliceType go.int) "a") in
     return: (let: "$a0" := (let: "$a0" := (![go.SliceType go.int] "a") in
      (FuncResolve go.len [go.SliceType go.int] #()) "$a0") in
      let: "$a1" := (λ: "i",
-       exception_do (let: "i" := (go.AllocValue go.int "i") in
+       exception_do (let: "i" := (GoAlloc go.int "i") in
        return: ((![go.int] (IndexRef go.int (![go.SliceType go.int] "a", ![go.int] "i"))) ≥⟨go.int⟩ (![go.int] "x")))
        ) in
      (FuncResolve Search [] #()) "$a0" "$a1")).
@@ -189,7 +189,7 @@ Definition xorshift : go.type := go.Named "sort.xorshift"%go [].
 (* go: sort.go:70:20 *)
 Definition xorshift__Nextⁱᵐᵖˡ : val :=
   λ: "r" <>,
-    exception_do (let: "r" := (go.AllocValue (go.PointerType xorshift) "r") in
+    exception_do (let: "r" := (GoAlloc (go.PointerType xorshift) "r") in
     do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) ^⟨go.uint64⟩ ((![xorshift] (![go.PointerType xorshift] "r")) ≪⟨xorshift⟩ #(W64 13))));;;
     do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) ^⟨go.uint64⟩ ((![xorshift] (![go.PointerType xorshift] "r")) ≫⟨xorshift⟩ #(W64 7))));;;
     do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) ^⟨go.uint64⟩ ((![xorshift] (![go.PointerType xorshift] "r")) ≪⟨xorshift⟩ #(W64 17))));;;

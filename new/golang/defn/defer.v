@@ -7,7 +7,7 @@ Definition deferType := go.FunctionType (go.Signature [] false []).
 
 Definition wrap_defer : val :=
   λ: "body",
-    let: "$defer" := GoAlloc deferType #() in
+    let: "$defer" := GoAlloc deferType (GoZeroVal deferType #()) in
     "$defer" <-[deferType] #(func.mk <> <> #());;
     let: "$func_ret" := exception_do ("body" "$defer") in
     (![deferType] "$defer") #();;

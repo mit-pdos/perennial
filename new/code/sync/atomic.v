@@ -103,7 +103,7 @@ Definition Bool : go.type := go.Named "sync/atomic.Bool"%go [].
    go: type.go:19:16 *)
 Definition Bool__Loadⁱᵐᵖˡ : val :=
   λ: "x" <>,
-    exception_do (let: "x" := (go.AllocValue (go.PointerType Bool) "x") in
+    exception_do (let: "x" := (GoAlloc (go.PointerType Bool) "x") in
     return: ((let: "$a0" := (StructFieldRef Bool "v"%go (![go.PointerType Bool] "x")) in
      (FuncResolve LoadUint32 [] #()) "$a0") ≠⟨go.uint32⟩ #(W32 0))).
 
@@ -114,8 +114,8 @@ Definition b32 : go_string := "sync/atomic.b32"%go.
    go: type.go:22:16 *)
 Definition Bool__Storeⁱᵐᵖˡ : val :=
   λ: "x" "val",
-    exception_do (let: "x" := (go.AllocValue (go.PointerType Bool) "x") in
-    let: "val" := (go.AllocValue go.bool "val") in
+    exception_do (let: "x" := (GoAlloc (go.PointerType Bool) "x") in
+    let: "val" := (GoAlloc go.bool "val") in
     do:  (let: "$a0" := (StructFieldRef Bool "v"%go (![go.PointerType Bool] "x")) in
     let: "$a1" := (let: "$a0" := (![go.bool] "val") in
     (FuncResolve b32 [] #()) "$a0") in
@@ -127,9 +127,9 @@ Definition Bool__Storeⁱᵐᵖˡ : val :=
    go: type.go:25:16 *)
 Definition Bool__Swapⁱᵐᵖˡ : val :=
   λ: "x" "new",
-    exception_do (let: "old" := (GoAlloc go.bool #()) in
-    let: "x" := (go.AllocValue (go.PointerType Bool) "x") in
-    let: "new" := (go.AllocValue go.bool "new") in
+    exception_do (let: "old" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
+    let: "x" := (GoAlloc (go.PointerType Bool) "x") in
+    let: "new" := (GoAlloc go.bool "new") in
     return: ((let: "$a0" := (StructFieldRef Bool "v"%go (![go.PointerType Bool] "x")) in
      let: "$a1" := (let: "$a0" := (![go.bool] "new") in
      (FuncResolve b32 [] #()) "$a0") in
@@ -140,10 +140,10 @@ Definition Bool__Swapⁱᵐᵖˡ : val :=
    go: type.go:28:16 *)
 Definition Bool__CompareAndSwapⁱᵐᵖˡ : val :=
   λ: "x" "old" "new",
-    exception_do (let: "swapped" := (GoAlloc go.bool #()) in
-    let: "x" := (go.AllocValue (go.PointerType Bool) "x") in
-    let: "new" := (go.AllocValue go.bool "new") in
-    let: "old" := (go.AllocValue go.bool "old") in
+    exception_do (let: "swapped" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
+    let: "x" := (GoAlloc (go.PointerType Bool) "x") in
+    let: "new" := (GoAlloc go.bool "new") in
+    let: "old" := (GoAlloc go.bool "old") in
     return: (let: "$a0" := (StructFieldRef Bool "v"%go (![go.PointerType Bool] "x")) in
      let: "$a1" := (let: "$a0" := (![go.bool] "old") in
      (FuncResolve b32 [] #()) "$a0") in
@@ -156,7 +156,7 @@ Definition Bool__CompareAndSwapⁱᵐᵖˡ : val :=
    go: type.go:33:6 *)
 Definition b32ⁱᵐᵖˡ : val :=
   λ: "b",
-    exception_do (let: "b" := (go.AllocValue go.bool "b") in
+    exception_do (let: "b" := (GoAlloc go.bool "b") in
     (if: ![go.bool] "b"
     then return: (#(W32 1))
     else do:  #());;;
@@ -180,7 +180,7 @@ Definition Int32 : go.type := go.Named "sync/atomic.Int32"%go [].
    go: type.go:80:17 *)
 Definition Int32__Loadⁱᵐᵖˡ : val :=
   λ: "x" <>,
-    exception_do (let: "x" := (go.AllocValue (go.PointerType Int32) "x") in
+    exception_do (let: "x" := (GoAlloc (go.PointerType Int32) "x") in
     return: (let: "$a0" := (StructFieldRef Int32 "v"%go (![go.PointerType Int32] "x")) in
      (FuncResolve LoadInt32 [] #()) "$a0")).
 
@@ -189,8 +189,8 @@ Definition Int32__Loadⁱᵐᵖˡ : val :=
    go: type.go:83:17 *)
 Definition Int32__Storeⁱᵐᵖˡ : val :=
   λ: "x" "val",
-    exception_do (let: "x" := (go.AllocValue (go.PointerType Int32) "x") in
-    let: "val" := (go.AllocValue go.int32 "val") in
+    exception_do (let: "x" := (GoAlloc (go.PointerType Int32) "x") in
+    let: "val" := (GoAlloc go.int32 "val") in
     do:  (let: "$a0" := (StructFieldRef Int32 "v"%go (![go.PointerType Int32] "x")) in
     let: "$a1" := (![go.int32] "val") in
     (FuncResolve StoreInt32 [] #()) "$a0" "$a1");;;
@@ -201,9 +201,9 @@ Definition Int32__Storeⁱᵐᵖˡ : val :=
    go: type.go:86:17 *)
 Definition Int32__Swapⁱᵐᵖˡ : val :=
   λ: "x" "new",
-    exception_do (let: "old" := (GoAlloc go.int32 #()) in
-    let: "x" := (go.AllocValue (go.PointerType Int32) "x") in
-    let: "new" := (go.AllocValue go.int32 "new") in
+    exception_do (let: "old" := (GoAlloc go.int32 (GoZeroVal go.int32 #())) in
+    let: "x" := (GoAlloc (go.PointerType Int32) "x") in
+    let: "new" := (GoAlloc go.int32 "new") in
     return: (let: "$a0" := (StructFieldRef Int32 "v"%go (![go.PointerType Int32] "x")) in
      let: "$a1" := (![go.int32] "new") in
      (FuncResolve SwapInt32 [] #()) "$a0" "$a1")).
@@ -213,10 +213,10 @@ Definition Int32__Swapⁱᵐᵖˡ : val :=
    go: type.go:89:17 *)
 Definition Int32__CompareAndSwapⁱᵐᵖˡ : val :=
   λ: "x" "old" "new",
-    exception_do (let: "swapped" := (GoAlloc go.bool #()) in
-    let: "x" := (go.AllocValue (go.PointerType Int32) "x") in
-    let: "new" := (go.AllocValue go.int32 "new") in
-    let: "old" := (go.AllocValue go.int32 "old") in
+    exception_do (let: "swapped" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
+    let: "x" := (GoAlloc (go.PointerType Int32) "x") in
+    let: "new" := (GoAlloc go.int32 "new") in
+    let: "old" := (GoAlloc go.int32 "old") in
     return: (let: "$a0" := (StructFieldRef Int32 "v"%go (![go.PointerType Int32] "x")) in
      let: "$a1" := (![go.int32] "old") in
      let: "$a2" := (![go.int32] "new") in
@@ -227,9 +227,9 @@ Definition Int32__CompareAndSwapⁱᵐᵖˡ : val :=
    go: type.go:94:17 *)
 Definition Int32__Addⁱᵐᵖˡ : val :=
   λ: "x" "delta",
-    exception_do (let: "new" := (GoAlloc go.int32 #()) in
-    let: "x" := (go.AllocValue (go.PointerType Int32) "x") in
-    let: "delta" := (go.AllocValue go.int32 "delta") in
+    exception_do (let: "new" := (GoAlloc go.int32 (GoZeroVal go.int32 #())) in
+    let: "x" := (GoAlloc (go.PointerType Int32) "x") in
+    let: "delta" := (GoAlloc go.int32 "delta") in
     return: (let: "$a0" := (StructFieldRef Int32 "v"%go (![go.PointerType Int32] "x")) in
      let: "$a1" := (![go.int32] "delta") in
      (FuncResolve AddInt32 [] #()) "$a0" "$a1")).
@@ -240,9 +240,9 @@ Definition Int32__Addⁱᵐᵖˡ : val :=
    go: type.go:98:17 *)
 Definition Int32__Andⁱᵐᵖˡ : val :=
   λ: "x" "mask",
-    exception_do (let: "old" := (GoAlloc go.int32 #()) in
-    let: "x" := (go.AllocValue (go.PointerType Int32) "x") in
-    let: "mask" := (go.AllocValue go.int32 "mask") in
+    exception_do (let: "old" := (GoAlloc go.int32 (GoZeroVal go.int32 #())) in
+    let: "x" := (GoAlloc (go.PointerType Int32) "x") in
+    let: "mask" := (GoAlloc go.int32 "mask") in
     return: (let: "$a0" := (StructFieldRef Int32 "v"%go (![go.PointerType Int32] "x")) in
      let: "$a1" := (![go.int32] "mask") in
      (FuncResolve AndInt32 [] #()) "$a0" "$a1")).
@@ -253,9 +253,9 @@ Definition Int32__Andⁱᵐᵖˡ : val :=
    go: type.go:102:17 *)
 Definition Int32__Orⁱᵐᵖˡ : val :=
   λ: "x" "mask",
-    exception_do (let: "old" := (GoAlloc go.int32 #()) in
-    let: "x" := (go.AllocValue (go.PointerType Int32) "x") in
-    let: "mask" := (go.AllocValue go.int32 "mask") in
+    exception_do (let: "old" := (GoAlloc go.int32 (GoZeroVal go.int32 #())) in
+    let: "x" := (GoAlloc (go.PointerType Int32) "x") in
+    let: "mask" := (GoAlloc go.int32 "mask") in
     return: (let: "$a0" := (StructFieldRef Int32 "v"%go (![go.PointerType Int32] "x")) in
      let: "$a1" := (![go.int32] "mask") in
      (FuncResolve OrInt32 [] #()) "$a0" "$a1")).
@@ -275,7 +275,7 @@ Definition Int64 : go.type := go.Named "sync/atomic.Int64"%go [].
    go: type.go:114:17 *)
 Definition Int64__Loadⁱᵐᵖˡ : val :=
   λ: "x" <>,
-    exception_do (let: "x" := (go.AllocValue (go.PointerType Int64) "x") in
+    exception_do (let: "x" := (GoAlloc (go.PointerType Int64) "x") in
     return: (let: "$a0" := (StructFieldRef Int64 "v"%go (![go.PointerType Int64] "x")) in
      (FuncResolve LoadInt64 [] #()) "$a0")).
 
@@ -284,8 +284,8 @@ Definition Int64__Loadⁱᵐᵖˡ : val :=
    go: type.go:117:17 *)
 Definition Int64__Storeⁱᵐᵖˡ : val :=
   λ: "x" "val",
-    exception_do (let: "x" := (go.AllocValue (go.PointerType Int64) "x") in
-    let: "val" := (go.AllocValue go.int64 "val") in
+    exception_do (let: "x" := (GoAlloc (go.PointerType Int64) "x") in
+    let: "val" := (GoAlloc go.int64 "val") in
     do:  (let: "$a0" := (StructFieldRef Int64 "v"%go (![go.PointerType Int64] "x")) in
     let: "$a1" := (![go.int64] "val") in
     (FuncResolve StoreInt64 [] #()) "$a0" "$a1");;;
@@ -296,9 +296,9 @@ Definition Int64__Storeⁱᵐᵖˡ : val :=
    go: type.go:120:17 *)
 Definition Int64__Swapⁱᵐᵖˡ : val :=
   λ: "x" "new",
-    exception_do (let: "old" := (GoAlloc go.int64 #()) in
-    let: "x" := (go.AllocValue (go.PointerType Int64) "x") in
-    let: "new" := (go.AllocValue go.int64 "new") in
+    exception_do (let: "old" := (GoAlloc go.int64 (GoZeroVal go.int64 #())) in
+    let: "x" := (GoAlloc (go.PointerType Int64) "x") in
+    let: "new" := (GoAlloc go.int64 "new") in
     return: (let: "$a0" := (StructFieldRef Int64 "v"%go (![go.PointerType Int64] "x")) in
      let: "$a1" := (![go.int64] "new") in
      (FuncResolve SwapInt64 [] #()) "$a0" "$a1")).
@@ -308,10 +308,10 @@ Definition Int64__Swapⁱᵐᵖˡ : val :=
    go: type.go:123:17 *)
 Definition Int64__CompareAndSwapⁱᵐᵖˡ : val :=
   λ: "x" "old" "new",
-    exception_do (let: "swapped" := (GoAlloc go.bool #()) in
-    let: "x" := (go.AllocValue (go.PointerType Int64) "x") in
-    let: "new" := (go.AllocValue go.int64 "new") in
-    let: "old" := (go.AllocValue go.int64 "old") in
+    exception_do (let: "swapped" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
+    let: "x" := (GoAlloc (go.PointerType Int64) "x") in
+    let: "new" := (GoAlloc go.int64 "new") in
+    let: "old" := (GoAlloc go.int64 "old") in
     return: (let: "$a0" := (StructFieldRef Int64 "v"%go (![go.PointerType Int64] "x")) in
      let: "$a1" := (![go.int64] "old") in
      let: "$a2" := (![go.int64] "new") in
@@ -322,9 +322,9 @@ Definition Int64__CompareAndSwapⁱᵐᵖˡ : val :=
    go: type.go:128:17 *)
 Definition Int64__Addⁱᵐᵖˡ : val :=
   λ: "x" "delta",
-    exception_do (let: "new" := (GoAlloc go.int64 #()) in
-    let: "x" := (go.AllocValue (go.PointerType Int64) "x") in
-    let: "delta" := (go.AllocValue go.int64 "delta") in
+    exception_do (let: "new" := (GoAlloc go.int64 (GoZeroVal go.int64 #())) in
+    let: "x" := (GoAlloc (go.PointerType Int64) "x") in
+    let: "delta" := (GoAlloc go.int64 "delta") in
     return: (let: "$a0" := (StructFieldRef Int64 "v"%go (![go.PointerType Int64] "x")) in
      let: "$a1" := (![go.int64] "delta") in
      (FuncResolve AddInt64 [] #()) "$a0" "$a1")).
@@ -335,9 +335,9 @@ Definition Int64__Addⁱᵐᵖˡ : val :=
    go: type.go:132:17 *)
 Definition Int64__Andⁱᵐᵖˡ : val :=
   λ: "x" "mask",
-    exception_do (let: "old" := (GoAlloc go.int64 #()) in
-    let: "x" := (go.AllocValue (go.PointerType Int64) "x") in
-    let: "mask" := (go.AllocValue go.int64 "mask") in
+    exception_do (let: "old" := (GoAlloc go.int64 (GoZeroVal go.int64 #())) in
+    let: "x" := (GoAlloc (go.PointerType Int64) "x") in
+    let: "mask" := (GoAlloc go.int64 "mask") in
     return: (let: "$a0" := (StructFieldRef Int64 "v"%go (![go.PointerType Int64] "x")) in
      let: "$a1" := (![go.int64] "mask") in
      (FuncResolve AndInt64 [] #()) "$a0" "$a1")).
@@ -348,9 +348,9 @@ Definition Int64__Andⁱᵐᵖˡ : val :=
    go: type.go:136:17 *)
 Definition Int64__Orⁱᵐᵖˡ : val :=
   λ: "x" "mask",
-    exception_do (let: "old" := (GoAlloc go.int64 #()) in
-    let: "x" := (go.AllocValue (go.PointerType Int64) "x") in
-    let: "mask" := (go.AllocValue go.int64 "mask") in
+    exception_do (let: "old" := (GoAlloc go.int64 (GoZeroVal go.int64 #())) in
+    let: "x" := (GoAlloc (go.PointerType Int64) "x") in
+    let: "mask" := (GoAlloc go.int64 "mask") in
     return: (let: "$a0" := (StructFieldRef Int64 "v"%go (![go.PointerType Int64] "x")) in
      let: "$a1" := (![go.int64] "mask") in
      (FuncResolve OrInt64 [] #()) "$a0" "$a1")).
@@ -367,7 +367,7 @@ Definition Uint32 : go.type := go.Named "sync/atomic.Uint32"%go [].
    go: type.go:147:18 *)
 Definition Uint32__Loadⁱᵐᵖˡ : val :=
   λ: "x" <>,
-    exception_do (let: "x" := (go.AllocValue (go.PointerType Uint32) "x") in
+    exception_do (let: "x" := (GoAlloc (go.PointerType Uint32) "x") in
     return: (let: "$a0" := (StructFieldRef Uint32 "v"%go (![go.PointerType Uint32] "x")) in
      (FuncResolve LoadUint32 [] #()) "$a0")).
 
@@ -376,8 +376,8 @@ Definition Uint32__Loadⁱᵐᵖˡ : val :=
    go: type.go:150:18 *)
 Definition Uint32__Storeⁱᵐᵖˡ : val :=
   λ: "x" "val",
-    exception_do (let: "x" := (go.AllocValue (go.PointerType Uint32) "x") in
-    let: "val" := (go.AllocValue go.uint32 "val") in
+    exception_do (let: "x" := (GoAlloc (go.PointerType Uint32) "x") in
+    let: "val" := (GoAlloc go.uint32 "val") in
     do:  (let: "$a0" := (StructFieldRef Uint32 "v"%go (![go.PointerType Uint32] "x")) in
     let: "$a1" := (![go.uint32] "val") in
     (FuncResolve StoreUint32 [] #()) "$a0" "$a1");;;
@@ -388,9 +388,9 @@ Definition Uint32__Storeⁱᵐᵖˡ : val :=
    go: type.go:153:18 *)
 Definition Uint32__Swapⁱᵐᵖˡ : val :=
   λ: "x" "new",
-    exception_do (let: "old" := (GoAlloc go.uint32 #()) in
-    let: "x" := (go.AllocValue (go.PointerType Uint32) "x") in
-    let: "new" := (go.AllocValue go.uint32 "new") in
+    exception_do (let: "old" := (GoAlloc go.uint32 (GoZeroVal go.uint32 #())) in
+    let: "x" := (GoAlloc (go.PointerType Uint32) "x") in
+    let: "new" := (GoAlloc go.uint32 "new") in
     return: (let: "$a0" := (StructFieldRef Uint32 "v"%go (![go.PointerType Uint32] "x")) in
      let: "$a1" := (![go.uint32] "new") in
      (FuncResolve SwapUint32 [] #()) "$a0" "$a1")).
@@ -400,10 +400,10 @@ Definition Uint32__Swapⁱᵐᵖˡ : val :=
    go: type.go:156:18 *)
 Definition Uint32__CompareAndSwapⁱᵐᵖˡ : val :=
   λ: "x" "old" "new",
-    exception_do (let: "swapped" := (GoAlloc go.bool #()) in
-    let: "x" := (go.AllocValue (go.PointerType Uint32) "x") in
-    let: "new" := (go.AllocValue go.uint32 "new") in
-    let: "old" := (go.AllocValue go.uint32 "old") in
+    exception_do (let: "swapped" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
+    let: "x" := (GoAlloc (go.PointerType Uint32) "x") in
+    let: "new" := (GoAlloc go.uint32 "new") in
+    let: "old" := (GoAlloc go.uint32 "old") in
     return: (let: "$a0" := (StructFieldRef Uint32 "v"%go (![go.PointerType Uint32] "x")) in
      let: "$a1" := (![go.uint32] "old") in
      let: "$a2" := (![go.uint32] "new") in
@@ -414,9 +414,9 @@ Definition Uint32__CompareAndSwapⁱᵐᵖˡ : val :=
    go: type.go:161:18 *)
 Definition Uint32__Addⁱᵐᵖˡ : val :=
   λ: "x" "delta",
-    exception_do (let: "new" := (GoAlloc go.uint32 #()) in
-    let: "x" := (go.AllocValue (go.PointerType Uint32) "x") in
-    let: "delta" := (go.AllocValue go.uint32 "delta") in
+    exception_do (let: "new" := (GoAlloc go.uint32 (GoZeroVal go.uint32 #())) in
+    let: "x" := (GoAlloc (go.PointerType Uint32) "x") in
+    let: "delta" := (GoAlloc go.uint32 "delta") in
     return: (let: "$a0" := (StructFieldRef Uint32 "v"%go (![go.PointerType Uint32] "x")) in
      let: "$a1" := (![go.uint32] "delta") in
      (FuncResolve AddUint32 [] #()) "$a0" "$a1")).
@@ -427,9 +427,9 @@ Definition Uint32__Addⁱᵐᵖˡ : val :=
    go: type.go:165:18 *)
 Definition Uint32__Andⁱᵐᵖˡ : val :=
   λ: "x" "mask",
-    exception_do (let: "old" := (GoAlloc go.uint32 #()) in
-    let: "x" := (go.AllocValue (go.PointerType Uint32) "x") in
-    let: "mask" := (go.AllocValue go.uint32 "mask") in
+    exception_do (let: "old" := (GoAlloc go.uint32 (GoZeroVal go.uint32 #())) in
+    let: "x" := (GoAlloc (go.PointerType Uint32) "x") in
+    let: "mask" := (GoAlloc go.uint32 "mask") in
     return: (let: "$a0" := (StructFieldRef Uint32 "v"%go (![go.PointerType Uint32] "x")) in
      let: "$a1" := (![go.uint32] "mask") in
      (FuncResolve AndUint32 [] #()) "$a0" "$a1")).
@@ -440,9 +440,9 @@ Definition Uint32__Andⁱᵐᵖˡ : val :=
    go: type.go:169:18 *)
 Definition Uint32__Orⁱᵐᵖˡ : val :=
   λ: "x" "mask",
-    exception_do (let: "old" := (GoAlloc go.uint32 #()) in
-    let: "x" := (go.AllocValue (go.PointerType Uint32) "x") in
-    let: "mask" := (go.AllocValue go.uint32 "mask") in
+    exception_do (let: "old" := (GoAlloc go.uint32 (GoZeroVal go.uint32 #())) in
+    let: "x" := (GoAlloc (go.PointerType Uint32) "x") in
+    let: "mask" := (GoAlloc go.uint32 "mask") in
     return: (let: "$a0" := (StructFieldRef Uint32 "v"%go (![go.PointerType Uint32] "x")) in
      let: "$a1" := (![go.uint32] "mask") in
      (FuncResolve OrUint32 [] #()) "$a0" "$a1")).
@@ -460,7 +460,7 @@ Definition Uint64 : go.type := go.Named "sync/atomic.Uint64"%go [].
    go: type.go:181:18 *)
 Definition Uint64__Loadⁱᵐᵖˡ : val :=
   λ: "x" <>,
-    exception_do (let: "x" := (go.AllocValue (go.PointerType Uint64) "x") in
+    exception_do (let: "x" := (GoAlloc (go.PointerType Uint64) "x") in
     return: (let: "$a0" := (StructFieldRef Uint64 "v"%go (![go.PointerType Uint64] "x")) in
      (FuncResolve LoadUint64 [] #()) "$a0")).
 
@@ -469,8 +469,8 @@ Definition Uint64__Loadⁱᵐᵖˡ : val :=
    go: type.go:184:18 *)
 Definition Uint64__Storeⁱᵐᵖˡ : val :=
   λ: "x" "val",
-    exception_do (let: "x" := (go.AllocValue (go.PointerType Uint64) "x") in
-    let: "val" := (go.AllocValue go.uint64 "val") in
+    exception_do (let: "x" := (GoAlloc (go.PointerType Uint64) "x") in
+    let: "val" := (GoAlloc go.uint64 "val") in
     do:  (let: "$a0" := (StructFieldRef Uint64 "v"%go (![go.PointerType Uint64] "x")) in
     let: "$a1" := (![go.uint64] "val") in
     (FuncResolve StoreUint64 [] #()) "$a0" "$a1");;;
@@ -481,9 +481,9 @@ Definition Uint64__Storeⁱᵐᵖˡ : val :=
    go: type.go:187:18 *)
 Definition Uint64__Swapⁱᵐᵖˡ : val :=
   λ: "x" "new",
-    exception_do (let: "old" := (GoAlloc go.uint64 #()) in
-    let: "x" := (go.AllocValue (go.PointerType Uint64) "x") in
-    let: "new" := (go.AllocValue go.uint64 "new") in
+    exception_do (let: "old" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+    let: "x" := (GoAlloc (go.PointerType Uint64) "x") in
+    let: "new" := (GoAlloc go.uint64 "new") in
     return: (let: "$a0" := (StructFieldRef Uint64 "v"%go (![go.PointerType Uint64] "x")) in
      let: "$a1" := (![go.uint64] "new") in
      (FuncResolve SwapUint64 [] #()) "$a0" "$a1")).
@@ -493,10 +493,10 @@ Definition Uint64__Swapⁱᵐᵖˡ : val :=
    go: type.go:190:18 *)
 Definition Uint64__CompareAndSwapⁱᵐᵖˡ : val :=
   λ: "x" "old" "new",
-    exception_do (let: "swapped" := (GoAlloc go.bool #()) in
-    let: "x" := (go.AllocValue (go.PointerType Uint64) "x") in
-    let: "new" := (go.AllocValue go.uint64 "new") in
-    let: "old" := (go.AllocValue go.uint64 "old") in
+    exception_do (let: "swapped" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
+    let: "x" := (GoAlloc (go.PointerType Uint64) "x") in
+    let: "new" := (GoAlloc go.uint64 "new") in
+    let: "old" := (GoAlloc go.uint64 "old") in
     return: (let: "$a0" := (StructFieldRef Uint64 "v"%go (![go.PointerType Uint64] "x")) in
      let: "$a1" := (![go.uint64] "old") in
      let: "$a2" := (![go.uint64] "new") in
@@ -507,9 +507,9 @@ Definition Uint64__CompareAndSwapⁱᵐᵖˡ : val :=
    go: type.go:195:18 *)
 Definition Uint64__Addⁱᵐᵖˡ : val :=
   λ: "x" "delta",
-    exception_do (let: "new" := (GoAlloc go.uint64 #()) in
-    let: "x" := (go.AllocValue (go.PointerType Uint64) "x") in
-    let: "delta" := (go.AllocValue go.uint64 "delta") in
+    exception_do (let: "new" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+    let: "x" := (GoAlloc (go.PointerType Uint64) "x") in
+    let: "delta" := (GoAlloc go.uint64 "delta") in
     return: (let: "$a0" := (StructFieldRef Uint64 "v"%go (![go.PointerType Uint64] "x")) in
      let: "$a1" := (![go.uint64] "delta") in
      (FuncResolve AddUint64 [] #()) "$a0" "$a1")).
@@ -520,9 +520,9 @@ Definition Uint64__Addⁱᵐᵖˡ : val :=
    go: type.go:199:18 *)
 Definition Uint64__Andⁱᵐᵖˡ : val :=
   λ: "x" "mask",
-    exception_do (let: "old" := (GoAlloc go.uint64 #()) in
-    let: "x" := (go.AllocValue (go.PointerType Uint64) "x") in
-    let: "mask" := (go.AllocValue go.uint64 "mask") in
+    exception_do (let: "old" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+    let: "x" := (GoAlloc (go.PointerType Uint64) "x") in
+    let: "mask" := (GoAlloc go.uint64 "mask") in
     return: (let: "$a0" := (StructFieldRef Uint64 "v"%go (![go.PointerType Uint64] "x")) in
      let: "$a1" := (![go.uint64] "mask") in
      (FuncResolve AndUint64 [] #()) "$a0" "$a1")).
@@ -533,9 +533,9 @@ Definition Uint64__Andⁱᵐᵖˡ : val :=
    go: type.go:203:18 *)
 Definition Uint64__Orⁱᵐᵖˡ : val :=
   λ: "x" "mask",
-    exception_do (let: "old" := (GoAlloc go.uint64 #()) in
-    let: "x" := (go.AllocValue (go.PointerType Uint64) "x") in
-    let: "mask" := (go.AllocValue go.uint64 "mask") in
+    exception_do (let: "old" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+    let: "x" := (GoAlloc (go.PointerType Uint64) "x") in
+    let: "mask" := (GoAlloc go.uint64 "mask") in
     return: (let: "$a0" := (StructFieldRef Uint64 "v"%go (![go.PointerType Uint64] "x")) in
      let: "$a1" := (![go.uint64] "mask") in
      (FuncResolve OrUint64 [] #()) "$a0" "$a1")).
@@ -569,23 +569,23 @@ Definition Value : go.type := go.Named "sync/atomic.Value"%go [].
    go: value.go:28:17 *)
 Definition Value__Loadⁱᵐᵖˡ : val :=
   λ: "v" <>,
-    exception_do (let: "val" := (GoAlloc (go.InterfaceType []) #()) in
-    let: "v" := (go.AllocValue (go.PointerType Value) "v") in
-    let: "vp" := (GoAlloc (go.PointerType efaceWords) #()) in
+    exception_do (let: "val" := (GoAlloc (go.InterfaceType []) (GoZeroVal (go.InterfaceType []) #())) in
+    let: "v" := (GoAlloc (go.PointerType Value) "v") in
+    let: "vp" := (GoAlloc (go.PointerType efaceWords) (GoZeroVal (go.PointerType efaceWords) #())) in
     let: "$r0" := (![go.PointerType Value] "v") in
     do:  ("vp" <-[go.PointerType efaceWords] "$r0");;;
-    let: "typ" := (GoAlloc unsafe.Pointer #()) in
+    let: "typ" := (GoAlloc unsafe.Pointer (GoZeroVal unsafe.Pointer #())) in
     let: "$r0" := (let: "$a0" := (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vp")) in
     (FuncResolve LoadPointer [] #()) "$a0") in
     do:  ("typ" <-[unsafe.Pointer] "$r0");;;
     (if: ((![unsafe.Pointer] "typ") =⟨unsafe.Pointer⟩ #null) || ((![unsafe.Pointer] "typ") =⟨unsafe.Pointer⟩ (GlobalVarAddr firstStoreInProgress #()))
     then return: (#interface.nil)
     else do:  #());;;
-    let: "data" := (GoAlloc unsafe.Pointer #()) in
+    let: "data" := (GoAlloc unsafe.Pointer (GoZeroVal unsafe.Pointer #())) in
     let: "$r0" := (let: "$a0" := (StructFieldRef efaceWords "data"%go (![go.PointerType efaceWords] "vp")) in
     (FuncResolve LoadPointer [] #()) "$a0") in
     do:  ("data" <-[unsafe.Pointer] "$r0");;;
-    let: "vlp" := (GoAlloc (go.PointerType efaceWords) #()) in
+    let: "vlp" := (GoAlloc (go.PointerType efaceWords) (GoZeroVal (go.PointerType efaceWords) #())) in
     let: "$r0" := "val" in
     do:  ("vlp" <-[go.PointerType efaceWords] "$r0");;;
     let: "$r0" := (![unsafe.Pointer] "typ") in
@@ -605,21 +605,21 @@ Definition runtime_procPin : go_string := "sync/atomic.runtime_procPin"%go.
    go: value.go:47:17 *)
 Definition Value__Storeⁱᵐᵖˡ : val :=
   λ: "v" "val",
-    exception_do (let: "v" := (go.AllocValue (go.PointerType Value) "v") in
-    let: "val" := (go.AllocValue (go.InterfaceType []) "val") in
+    exception_do (let: "v" := (GoAlloc (go.PointerType Value) "v") in
+    let: "val" := (GoAlloc (go.InterfaceType []) "val") in
     (if: (![go.InterfaceType []] "val") =⟨go.InterfaceType []⟩ #interface.nil
     then
       do:  (let: "$a0" := (InterfaceMake go.string #"sync/atomic: store of nil value into Value"%go) in
       (FuncResolve go.panic [] #()) "$a0")
     else do:  #());;;
-    let: "vp" := (GoAlloc (go.PointerType efaceWords) #()) in
+    let: "vp" := (GoAlloc (go.PointerType efaceWords) (GoZeroVal (go.PointerType efaceWords) #())) in
     let: "$r0" := (![go.PointerType Value] "v") in
     do:  ("vp" <-[go.PointerType efaceWords] "$r0");;;
-    let: "vlp" := (GoAlloc (go.PointerType efaceWords) #()) in
+    let: "vlp" := (GoAlloc (go.PointerType efaceWords) (GoZeroVal (go.PointerType efaceWords) #())) in
     let: "$r0" := "val" in
     do:  ("vlp" <-[go.PointerType efaceWords] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      let: "typ" := (GoAlloc unsafe.Pointer #()) in
+      let: "typ" := (GoAlloc unsafe.Pointer (GoZeroVal unsafe.Pointer #())) in
       let: "$r0" := (let: "$a0" := (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vp")) in
       (FuncResolve LoadPointer [] #()) "$a0") in
       do:  ("typ" <-[unsafe.Pointer] "$r0");;;
@@ -666,22 +666,22 @@ Definition Value__Storeⁱᵐᵖˡ : val :=
    go: value.go:90:17 *)
 Definition Value__Swapⁱᵐᵖˡ : val :=
   λ: "v" "new",
-    exception_do (let: "old" := (GoAlloc (go.InterfaceType []) #()) in
-    let: "v" := (go.AllocValue (go.PointerType Value) "v") in
-    let: "new" := (go.AllocValue (go.InterfaceType []) "new") in
+    exception_do (let: "old" := (GoAlloc (go.InterfaceType []) (GoZeroVal (go.InterfaceType []) #())) in
+    let: "v" := (GoAlloc (go.PointerType Value) "v") in
+    let: "new" := (GoAlloc (go.InterfaceType []) "new") in
     (if: (![go.InterfaceType []] "new") =⟨go.InterfaceType []⟩ #interface.nil
     then
       do:  (let: "$a0" := (InterfaceMake go.string #"sync/atomic: swap of nil value into Value"%go) in
       (FuncResolve go.panic [] #()) "$a0")
     else do:  #());;;
-    let: "vp" := (GoAlloc (go.PointerType efaceWords) #()) in
+    let: "vp" := (GoAlloc (go.PointerType efaceWords) (GoZeroVal (go.PointerType efaceWords) #())) in
     let: "$r0" := (![go.PointerType Value] "v") in
     do:  ("vp" <-[go.PointerType efaceWords] "$r0");;;
-    let: "np" := (GoAlloc (go.PointerType efaceWords) #()) in
+    let: "np" := (GoAlloc (go.PointerType efaceWords) (GoZeroVal (go.PointerType efaceWords) #())) in
     let: "$r0" := "new" in
     do:  ("np" <-[go.PointerType efaceWords] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      let: "typ" := (GoAlloc unsafe.Pointer #()) in
+      let: "typ" := (GoAlloc unsafe.Pointer (GoZeroVal unsafe.Pointer #())) in
       let: "$r0" := (let: "$a0" := (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vp")) in
       (FuncResolve LoadPointer [] #()) "$a0") in
       do:  ("typ" <-[unsafe.Pointer] "$r0");;;
@@ -713,7 +713,7 @@ Definition Value__Swapⁱᵐᵖˡ : val :=
         do:  (let: "$a0" := (InterfaceMake go.string #"sync/atomic: swap of inconsistently typed value into Value"%go) in
         (FuncResolve go.panic [] #()) "$a0")
       else do:  #());;;
-      let: "op" := (GoAlloc (go.PointerType efaceWords) #()) in
+      let: "op" := (GoAlloc (go.PointerType efaceWords) (GoZeroVal (go.PointerType efaceWords) #())) in
       let: "$r0" := "old" in
       do:  ("op" <-[go.PointerType efaceWords] "$r0");;;
       let: "$r0" := (![unsafe.Pointer] (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "np"))) in
@@ -733,22 +733,22 @@ Definition Value__Swapⁱᵐᵖˡ : val :=
    go: value.go:135:17 *)
 Definition Value__CompareAndSwapⁱᵐᵖˡ : val :=
   λ: "v" "old" "new",
-    exception_do (let: "swapped" := (GoAlloc go.bool #()) in
-    let: "v" := (go.AllocValue (go.PointerType Value) "v") in
-    let: "new" := (go.AllocValue (go.InterfaceType []) "new") in
-    let: "old" := (go.AllocValue (go.InterfaceType []) "old") in
+    exception_do (let: "swapped" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
+    let: "v" := (GoAlloc (go.PointerType Value) "v") in
+    let: "new" := (GoAlloc (go.InterfaceType []) "new") in
+    let: "old" := (GoAlloc (go.InterfaceType []) "old") in
     (if: (![go.InterfaceType []] "new") =⟨go.InterfaceType []⟩ #interface.nil
     then
       do:  (let: "$a0" := (InterfaceMake go.string #"sync/atomic: compare and swap of nil value into Value"%go) in
       (FuncResolve go.panic [] #()) "$a0")
     else do:  #());;;
-    let: "vp" := (GoAlloc (go.PointerType efaceWords) #()) in
+    let: "vp" := (GoAlloc (go.PointerType efaceWords) (GoZeroVal (go.PointerType efaceWords) #())) in
     let: "$r0" := (![go.PointerType Value] "v") in
     do:  ("vp" <-[go.PointerType efaceWords] "$r0");;;
-    let: "np" := (GoAlloc (go.PointerType efaceWords) #()) in
+    let: "np" := (GoAlloc (go.PointerType efaceWords) (GoZeroVal (go.PointerType efaceWords) #())) in
     let: "$r0" := "new" in
     do:  ("np" <-[go.PointerType efaceWords] "$r0");;;
-    let: "op" := (GoAlloc (go.PointerType efaceWords) #()) in
+    let: "op" := (GoAlloc (go.PointerType efaceWords) (GoZeroVal (go.PointerType efaceWords) #())) in
     let: "$r0" := "old" in
     do:  ("op" <-[go.PointerType efaceWords] "$r0");;;
     (if: ((![unsafe.Pointer] (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "op"))) ≠⟨unsafe.Pointer⟩ #null) && ((![unsafe.Pointer] (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "np"))) ≠⟨unsafe.Pointer⟩ (![unsafe.Pointer] (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "op"))))
@@ -757,7 +757,7 @@ Definition Value__CompareAndSwapⁱᵐᵖˡ : val :=
       (FuncResolve go.panic [] #()) "$a0")
     else do:  #());;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      let: "typ" := (GoAlloc unsafe.Pointer #()) in
+      let: "typ" := (GoAlloc unsafe.Pointer (GoZeroVal unsafe.Pointer #())) in
       let: "$r0" := (let: "$a0" := (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vp")) in
       (FuncResolve LoadPointer [] #()) "$a0") in
       do:  ("typ" <-[unsafe.Pointer] "$r0");;;
@@ -792,11 +792,11 @@ Definition Value__CompareAndSwapⁱᵐᵖˡ : val :=
         do:  (let: "$a0" := (InterfaceMake go.string #"sync/atomic: compare and swap of inconsistently typed value into Value"%go) in
         (FuncResolve go.panic [] #()) "$a0")
       else do:  #());;;
-      let: "data" := (GoAlloc unsafe.Pointer #()) in
+      let: "data" := (GoAlloc unsafe.Pointer (GoZeroVal unsafe.Pointer #())) in
       let: "$r0" := (let: "$a0" := (StructFieldRef efaceWords "data"%go (![go.PointerType efaceWords] "vp")) in
       (FuncResolve LoadPointer [] #()) "$a0") in
       do:  ("data" <-[unsafe.Pointer] "$r0");;;
-      let: "i" := (GoAlloc (go.InterfaceType []) #()) in
+      let: "i" := (GoAlloc (go.InterfaceType []) (GoZeroVal (go.InterfaceType []) #())) in
       let: "$r0" := (![unsafe.Pointer] "typ") in
       do:  ((StructFieldRef efaceWords "typ"%go "i") <-[unsafe.Pointer] "$r0");;;
       let: "$r0" := (![unsafe.Pointer] "data") in
@@ -821,7 +821,7 @@ Definition Uintptr : go.type := go.Named "sync/atomic.Uintptr"%go [].
 Definition initialize' : val :=
   λ: <>,
     package.init atomic.atomic (λ: <>,
-      exception_do (let: "$r0" := (go.AllocValue (Pointer go.int) (CompositeLiteral (Pointer go.int) (LiteralValue []))) in
+      exception_do (let: "$r0" := (GoAlloc (Pointer go.int) (CompositeLiteral (Pointer go.int) (LiteralValue []))) in
       do:  #())
       ).
 

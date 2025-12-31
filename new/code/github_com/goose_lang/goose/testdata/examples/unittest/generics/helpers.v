@@ -14,7 +14,7 @@ Definition AnyPointer : go_string := "github.com/goose-lang/goose/testdata/examp
 (* go: helpers.go:3:6 *)
 Definition AnyPointerⁱᵐᵖˡ (T : go.type) : val :=
   λ: "x",
-    exception_do (let: "x" := (go.AllocValue (go.PointerType T) "x") in
+    exception_do (let: "x" := (GoAlloc (go.PointerType T) "x") in
     do:  #()).
 
 #[global] Instance info' : PkgInfo helpers.helpers :=

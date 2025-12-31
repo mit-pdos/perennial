@@ -22,15 +22,15 @@ Definition unit : go.type := go.Named "github.com/goose-lang/goose/testdata/exam
 (* go: allocator.go:7:6 *)
 Definition findKeyⁱᵐᵖˡ : val :=
   λ: "m",
-    exception_do (let: "m" := (go.AllocValue (go.MapType go.uint64 unit) "m") in
-    let: "found" := (GoAlloc go.uint64 #()) in
+    exception_do (let: "m" := (GoAlloc (go.MapType go.uint64 unit) "m") in
+    let: "found" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 0) in
     do:  ("found" <-[go.uint64] "$r0");;;
-    let: "ok" := (GoAlloc go.bool #()) in
+    let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #false in
     do:  ("ok" <-[go.bool] "$r0");;;
     let: "$range" := (![go.MapType go.uint64 unit] "m") in
-    (let: "k" := (GoAlloc go.uint64 #()) in
+    (let: "k" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("k" <-[go.uint64] "$key");;;
       (if: (~ (![go.bool] "ok"))
@@ -47,9 +47,9 @@ Definition allocate : go_string := "github.com/goose-lang/goose/testdata/example
 (* go: allocator.go:20:6 *)
 Definition allocateⁱᵐᵖˡ : val :=
   λ: "m",
-    exception_do (let: "m" := (go.AllocValue (go.MapType go.uint64 unit) "m") in
-    let: "ok" := (GoAlloc go.bool #()) in
-    let: "k" := (GoAlloc go.uint64 #()) in
+    exception_do (let: "m" := (GoAlloc (go.MapType go.uint64 unit) "m") in
+    let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
+    let: "k" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![go.MapType go.uint64 unit] "m") in
     (FuncResolve findKey [] #()) "$a0") in
     let: "$r0" := "$ret0" in
@@ -66,11 +66,11 @@ Definition freeRange : go_string := "github.com/goose-lang/goose/testdata/exampl
 (* go: allocator.go:26:6 *)
 Definition freeRangeⁱᵐᵖˡ : val :=
   λ: "sz",
-    exception_do (let: "sz" := (go.AllocValue go.uint64 "sz") in
-    let: "m" := (GoAlloc (go.MapType go.uint64 unit) #()) in
+    exception_do (let: "sz" := (GoAlloc go.uint64 "sz") in
+    let: "m" := (GoAlloc (go.MapType go.uint64 unit) (GoZeroVal (go.MapType go.uint64 unit) #())) in
     let: "$r0" := ((FuncResolve go.make1 [go.MapType go.uint64 unit] #()) #()) in
     do:  ("m" <-[go.MapType go.uint64 unit] "$r0");;;
-    (let: "i" := (GoAlloc go.uint64 #()) in
+    (let: "i" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[go.uint64] "$r0");;;
     (for: (λ: <>, (![go.uint64] "i") <⟨go.uint64⟩ (![go.uint64] "sz")); (λ: <>, do:  ("i" <-[go.uint64] ((![go.uint64] "i") +⟨go.uint64⟩ #(W8 1)))) := λ: <>,
@@ -83,18 +83,18 @@ Definition testAllocateDistinct : go_string := "github.com/goose-lang/goose/test
 (* go: allocator.go:34:6 *)
 Definition testAllocateDistinctⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "free" := (GoAlloc (go.MapType go.uint64 unit) #()) in
+    exception_do (let: "free" := (GoAlloc (go.MapType go.uint64 unit) (GoZeroVal (go.MapType go.uint64 unit) #())) in
     let: "$r0" := (let: "$a0" := #(W64 4) in
     (FuncResolve freeRange [] #()) "$a0") in
     do:  ("free" <-[go.MapType go.uint64 unit] "$r0");;;
-    let: "a1" := (GoAlloc go.uint64 #()) in
+    let: "a1" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![go.MapType go.uint64 unit] "free") in
     (FuncResolve allocate [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("a1" <-[go.uint64] "$r0");;;
     do:  "$r1";;;
-    let: "a2" := (GoAlloc go.uint64 #()) in
+    let: "a2" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![go.MapType go.uint64 unit] "free") in
     (FuncResolve allocate [] #()) "$a0") in
     let: "$r0" := "$ret0" in
@@ -108,25 +108,25 @@ Definition testAllocateFull : go_string := "github.com/goose-lang/goose/testdata
 (* go: allocator.go:41:6 *)
 Definition testAllocateFullⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "free" := (GoAlloc (go.MapType go.uint64 unit) #()) in
+    exception_do (let: "free" := (GoAlloc (go.MapType go.uint64 unit) (GoZeroVal (go.MapType go.uint64 unit) #())) in
     let: "$r0" := (let: "$a0" := #(W64 2) in
     (FuncResolve freeRange [] #()) "$a0") in
     do:  ("free" <-[go.MapType go.uint64 unit] "$r0");;;
-    let: "ok1" := (GoAlloc go.bool #()) in
+    let: "ok1" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![go.MapType go.uint64 unit] "free") in
     (FuncResolve allocate [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  "$r0";;;
     do:  ("ok1" <-[go.bool] "$r1");;;
-    let: "ok2" := (GoAlloc go.bool #()) in
+    let: "ok2" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![go.MapType go.uint64 unit] "free") in
     (FuncResolve allocate [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  "$r0";;;
     do:  ("ok2" <-[go.bool] "$r1");;;
-    let: "ok3" := (GoAlloc go.bool #()) in
+    let: "ok3" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![go.MapType go.uint64 unit] "free") in
     (FuncResolve allocate [] #()) "$a0") in
     let: "$r0" := "$ret0" in
@@ -140,10 +140,10 @@ Definition testExplicitBlockStmt : go_string := "github.com/goose-lang/goose/tes
 (* go: block.go:3:6 *)
 Definition testExplicitBlockStmtⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (GoAlloc go.int #()) in
+    exception_do (let: "x" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "$r0" := #(W64 10) in
     do:  ("x" <-[go.int] "$r0");;;
-    let: "x" := (GoAlloc go.int #()) in
+    let: "x" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "$r0" := #(W64 11) in
     do:  ("x" <-[go.int] "$r0");;;
     do:  ("x" <-[go.int] ((![go.int] "x") +⟨go.int⟩ #(W64 1)));;;
@@ -154,7 +154,7 @@ Definition testMinUint64 : go_string := "github.com/goose-lang/goose/testdata/ex
 (* go: builtin.go:3:6 *)
 Definition testMinUint64ⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (GoAlloc go.uint64 #()) in
+    exception_do (let: "x" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 10) in
     do:  ("x" <-[go.uint64] "$r0");;;
     return: ((let: "$a0" := (![go.uint64] "x") in
@@ -166,7 +166,7 @@ Definition testMaxUint64 : go_string := "github.com/goose-lang/goose/testdata/ex
 (* go: builtin.go:8:6 *)
 Definition testMaxUint64ⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (GoAlloc go.uint64 #()) in
+    exception_do (let: "x" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 10) in
     do:  ("x" <-[go.uint64] "$r0");;;
     return: ((let: "$a0" := (![go.uint64] "x") in
@@ -182,11 +182,11 @@ Definition adder : go_string := "github.com/goose-lang/goose/testdata/examples/s
 (* go: closures.go:6:6 *)
 Definition adderⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "sum" := (GoAlloc go.uint64 #()) in
+    exception_do (let: "sum" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 0) in
     do:  ("sum" <-[go.uint64] "$r0");;;
     return: ((λ: "x",
-       exception_do (let: "x" := (go.AllocValue go.uint64 "x") in
+       exception_do (let: "x" := (GoAlloc go.uint64 "x") in
        do:  ("sum" <-[go.uint64] ((![go.uint64] "sum") +⟨go.uint64⟩ (![go.uint64] "x")));;;
        return: (![go.uint64] "sum"))
        ))).
@@ -196,13 +196,13 @@ Definition testClosureBasic : go_string := "github.com/goose-lang/goose/testdata
 (* go: closures.go:14:6 *)
 Definition testClosureBasicⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "pos" := (GoAlloc (go.FunctionType (go.Signature [go.uint64] false [go.uint64])) #()) in
+    exception_do (let: "pos" := (GoAlloc (go.FunctionType (go.Signature [go.uint64] false [go.uint64])) (GoZeroVal (go.FunctionType (go.Signature [go.uint64] false [go.uint64])) #())) in
     let: "$r0" := ((FuncResolve adder [] #()) #()) in
     do:  ("pos" <-[go.FunctionType (go.Signature [go.uint64] false [go.uint64])] "$r0");;;
-    let: "doub" := (GoAlloc (go.FunctionType (go.Signature [go.uint64] false [go.uint64])) #()) in
+    let: "doub" := (GoAlloc (go.FunctionType (go.Signature [go.uint64] false [go.uint64])) (GoZeroVal (go.FunctionType (go.Signature [go.uint64] false [go.uint64])) #())) in
     let: "$r0" := ((FuncResolve adder [] #()) #()) in
     do:  ("doub" <-[go.FunctionType (go.Signature [go.uint64] false [go.uint64])] "$r0");;;
-    (let: "i" := (GoAlloc go.uint64 #()) in
+    (let: "i" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[go.uint64] "$r0");;;
     (for: (λ: <>, (![go.uint64] "i") <⟨go.uint64⟩ #(W64 10)); (λ: <>, do:  ("i" <-[go.uint64] ((![go.uint64] "i") +⟨go.uint64⟩ #(W8 1)))) := λ: <>,
@@ -222,10 +222,10 @@ Definition testCompareAll : go_string := "github.com/goose-lang/goose/testdata/e
 (* go: comparisons.go:3:6 *)
 Definition testCompareAllⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ok" := (GoAlloc go.bool #()) in
+    exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
     do:  ("ok" <-[go.bool] "$r0");;;
-    let: "nok" := (GoAlloc go.bool #()) in
+    let: "nok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #false in
     do:  ("nok" <-[go.bool] "$r0");;;
     let: "$r0" := ((![go.bool] "ok") && #true) in
@@ -248,13 +248,13 @@ Definition testCompareGT : go_string := "github.com/goose-lang/goose/testdata/ex
 (* go: comparisons.go:20:6 *)
 Definition testCompareGTⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (GoAlloc go.uint64 #()) in
+    exception_do (let: "x" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 4) in
     do:  ("x" <-[go.uint64] "$r0");;;
-    let: "y" := (GoAlloc go.uint64 #()) in
+    let: "y" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 5) in
     do:  ("y" <-[go.uint64] "$r0");;;
-    let: "ok" := (GoAlloc go.bool #()) in
+    let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
     do:  ("ok" <-[go.bool] "$r0");;;
     let: "$r0" := ((![go.bool] "ok") && ((![go.uint64] "y") >⟨go.uint64⟩ #(W64 4))) in
@@ -268,13 +268,13 @@ Definition testCompareGE : go_string := "github.com/goose-lang/goose/testdata/ex
 (* go: comparisons.go:31:6 *)
 Definition testCompareGEⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (GoAlloc go.uint64 #()) in
+    exception_do (let: "x" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 4) in
     do:  ("x" <-[go.uint64] "$r0");;;
-    let: "y" := (GoAlloc go.uint64 #()) in
+    let: "y" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 5) in
     do:  ("y" <-[go.uint64] "$r0");;;
-    let: "ok" := (GoAlloc go.bool #()) in
+    let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
     do:  ("ok" <-[go.bool] "$r0");;;
     let: "$r0" := ((![go.bool] "ok") && ((![go.uint64] "y") ≥⟨go.uint64⟩ #(W64 4))) in
@@ -293,13 +293,13 @@ Definition testCompareLT : go_string := "github.com/goose-lang/goose/testdata/ex
 (* go: comparisons.go:47:6 *)
 Definition testCompareLTⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (GoAlloc go.uint64 #()) in
+    exception_do (let: "x" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 4) in
     do:  ("x" <-[go.uint64] "$r0");;;
-    let: "y" := (GoAlloc go.uint64 #()) in
+    let: "y" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 5) in
     do:  ("y" <-[go.uint64] "$r0");;;
-    let: "ok" := (GoAlloc go.bool #()) in
+    let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
     do:  ("ok" <-[go.bool] "$r0");;;
     let: "$r0" := ((![go.bool] "ok") && ((![go.uint64] "y") <⟨go.uint64⟩ #(W64 6))) in
@@ -313,13 +313,13 @@ Definition testCompareLE : go_string := "github.com/goose-lang/goose/testdata/ex
 (* go: comparisons.go:58:6 *)
 Definition testCompareLEⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (GoAlloc go.uint64 #()) in
+    exception_do (let: "x" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 4) in
     do:  ("x" <-[go.uint64] "$r0");;;
-    let: "y" := (GoAlloc go.uint64 #()) in
+    let: "y" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 5) in
     do:  ("y" <-[go.uint64] "$r0");;;
-    let: "ok" := (GoAlloc go.bool #()) in
+    let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
     do:  ("ok" <-[go.bool] "$r0");;;
     let: "$r0" := ((![go.bool] "ok") && ((![go.uint64] "y") ≤⟨go.uint64⟩ #(W64 6))) in
@@ -338,7 +338,7 @@ Definition literalCast : go_string := "github.com/goose-lang/goose/testdata/exam
 (* go: conversions.go:5:6 *)
 Definition literalCastⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (GoAlloc go.uint64 #()) in
+    exception_do (let: "x" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 2) in
     do:  ("x" <-[go.uint64] "$r0");;;
     return: ((![go.uint64] "x") +⟨go.uint64⟩ #(W64 2))).
@@ -348,8 +348,8 @@ Definition stringToByteSlice : go_string := "github.com/goose-lang/goose/testdat
 (* go: conversions.go:11:6 *)
 Definition stringToByteSliceⁱᵐᵖˡ : val :=
   λ: "s",
-    exception_do (let: "s" := (go.AllocValue go.string "s") in
-    let: "p" := (GoAlloc (go.SliceType go.byte) #()) in
+    exception_do (let: "s" := (GoAlloc go.string "s") in
+    let: "p" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: "$r0" := (string.to_bytes (![go.string] "s")) in
     do:  ("p" <-[go.SliceType go.byte] "$r0");;;
     return: (![go.SliceType go.byte] "p")).
@@ -359,7 +359,7 @@ Definition byteSliceToString : go_string := "github.com/goose-lang/goose/testdat
 (* go: conversions.go:17:6 *)
 Definition byteSliceToStringⁱᵐᵖˡ : val :=
   λ: "p",
-    exception_do (let: "p" := (go.AllocValue (go.SliceType go.byte) "p") in
+    exception_do (let: "p" := (GoAlloc (go.SliceType go.byte) "p") in
     return: (string.from_bytes (![go.SliceType go.byte] "p"))).
 
 Definition testByteSliceToString : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testByteSliceToString"%go.
@@ -369,7 +369,7 @@ Definition testByteSliceToString : go_string := "github.com/goose-lang/goose/tes
    go: conversions.go:23:6 *)
 Definition testByteSliceToStringⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (GoAlloc (go.SliceType go.byte) #()) in
+    exception_do (let: "x" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) #(W64 3)) in
     do:  ("x" <-[go.SliceType go.byte] "$r0");;;
     let: "$r0" := #(W8 65) in
@@ -386,12 +386,12 @@ Definition testCopySimple : go_string := "github.com/goose-lang/goose/testdata/e
 (* go: copy.go:3:6 *)
 Definition testCopySimpleⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (GoAlloc (go.SliceType go.byte) #()) in
+    exception_do (let: "x" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) #(W64 10)) in
     do:  ("x" <-[go.SliceType go.byte] "$r0");;;
     let: "$r0" := #(W8 1) in
     do:  ((IndexRef go.byte (![go.SliceType go.byte] "x", #(W64 3))) <-[go.byte] "$r0");;;
-    let: "y" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "y" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) #(W64 10)) in
     do:  ("y" <-[go.SliceType go.byte] "$r0");;;
     do:  (let: "$a0" := (![go.SliceType go.byte] "y") in
@@ -404,17 +404,17 @@ Definition testCopyShorterDst : go_string := "github.com/goose-lang/goose/testda
 (* go: copy.go:11:6 *)
 Definition testCopyShorterDstⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (GoAlloc (go.SliceType go.byte) #()) in
+    exception_do (let: "x" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) #(W64 15)) in
     do:  ("x" <-[go.SliceType go.byte] "$r0");;;
     let: "$r0" := #(W8 1) in
     do:  ((IndexRef go.byte (![go.SliceType go.byte] "x", #(W64 3))) <-[go.byte] "$r0");;;
     let: "$r0" := #(W8 2) in
     do:  ((IndexRef go.byte (![go.SliceType go.byte] "x", #(W64 12))) <-[go.byte] "$r0");;;
-    let: "y" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "y" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) #(W64 10)) in
     do:  ("y" <-[go.SliceType go.byte] "$r0");;;
-    let: "n" := (GoAlloc go.uint64 #()) in
+    let: "n" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := (s_to_w64 (let: "$a0" := (![go.SliceType go.byte] "y") in
     let: "$a1" := (![go.SliceType go.byte] "x") in
     (FuncResolve go.copy [go.SliceType go.byte] #()) "$a0" "$a1")) in
@@ -426,17 +426,17 @@ Definition testCopyShorterSrc : go_string := "github.com/goose-lang/goose/testda
 (* go: copy.go:20:6 *)
 Definition testCopyShorterSrcⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (GoAlloc (go.SliceType go.byte) #()) in
+    exception_do (let: "x" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) #(W64 10)) in
     do:  ("x" <-[go.SliceType go.byte] "$r0");;;
-    let: "y" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "y" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) #(W64 15)) in
     do:  ("y" <-[go.SliceType go.byte] "$r0");;;
     let: "$r0" := #(W8 1) in
     do:  ((IndexRef go.byte (![go.SliceType go.byte] "x", #(W64 3))) <-[go.byte] "$r0");;;
     let: "$r0" := #(W8 2) in
     do:  ((IndexRef go.byte (![go.SliceType go.byte] "y", #(W64 12))) <-[go.byte] "$r0");;;
-    let: "n" := (GoAlloc go.uint64 #()) in
+    let: "n" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := (s_to_w64 (let: "$a0" := (![go.SliceType go.byte] "y") in
     let: "$a1" := (![go.SliceType go.byte] "x") in
     (FuncResolve go.copy [go.SliceType go.byte] #()) "$a0" "$a1")) in
@@ -448,10 +448,10 @@ Definition deferSimple : go_string := "github.com/goose-lang/goose/testdata/exam
 (* go: defer.go:3:6 *)
 Definition deferSimpleⁱᵐᵖˡ : val :=
   λ: <>,
-    with_defer: (let: "x" := (GoAlloc (go.PointerType go.uint64) #()) in
-    let: "$r0" := (GoAlloc go.uint64 #()) in
+    with_defer: (let: "x" := (GoAlloc (go.PointerType go.uint64) (GoZeroVal (go.PointerType go.uint64) #())) in
+    let: "$r0" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     do:  ("x" <-[go.PointerType go.uint64] "$r0");;;
-    (let: "i" := (GoAlloc go.uint64 #()) in
+    (let: "i" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[go.uint64] "$r0");;;
     (for: (λ: <>, (![go.uint64] "i") <⟨go.uint64⟩ #(W64 10)); (λ: <>, do:  ("i" <-[go.uint64] ((![go.uint64] "i") +⟨go.uint64⟩ #(W8 1)))) := λ: <>,
@@ -478,10 +478,10 @@ Definition testDeferFuncLit : go_string := "github.com/goose-lang/goose/testdata
 (* go: defer.go:17:6 *)
 Definition testDeferFuncLitⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (GoAlloc go.int #()) in
+    exception_do (let: "x" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "$r0" := #(W64 10) in
     do:  ("x" <-[go.int] "$r0");;;
-    let: "f" := (GoAlloc (go.FunctionType (go.Signature [] false [])) #()) in
+    let: "f" := (GoAlloc (go.FunctionType (go.Signature [] false [])) (GoZeroVal (go.FunctionType (go.Signature [] false [])) #())) in
     let: "$r0" := (λ: <>,
       with_defer: (do:  (let: "$f" := (λ: <>,
         exception_do (do:  ("x" <-[go.int] ((![go.int] "x") +⟨go.int⟩ #(W64 1)));;;
@@ -507,9 +507,9 @@ Definition Enc : go.type := go.Named "github.com/goose-lang/goose/testdata/examp
 (* go: encoding.go:10:15 *)
 Definition Enc__consumeⁱᵐᵖˡ : val :=
   λ: "e" "n",
-    exception_do (let: "e" := (go.AllocValue (go.PointerType Enc) "e") in
-    let: "n" := (go.AllocValue go.uint64 "n") in
-    let: "b" := (GoAlloc (go.SliceType go.byte) #()) in
+    exception_do (let: "e" := (GoAlloc (go.PointerType Enc) "e") in
+    let: "n" := (GoAlloc go.uint64 "n") in
+    let: "b" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: "$r0" := (let: "$s" := (![go.SliceType go.byte] (StructFieldRef Enc "p"%go (![go.PointerType Enc] "e"))) in
     Slice (go.SliceType go.byte) ("$s", #(W64 0), ![go.uint64] "n")) in
     do:  ("b" <-[go.SliceType go.byte] "$r0");;;
@@ -527,9 +527,9 @@ Definition Dec : go.type := go.Named "github.com/goose-lang/goose/testdata/examp
 (* go: encoding.go:20:15 *)
 Definition Dec__consumeⁱᵐᵖˡ : val :=
   λ: "d" "n",
-    exception_do (let: "d" := (go.AllocValue (go.PointerType Dec) "d") in
-    let: "n" := (go.AllocValue go.uint64 "n") in
-    let: "b" := (GoAlloc (go.SliceType go.byte) #()) in
+    exception_do (let: "d" := (GoAlloc (go.PointerType Dec) "d") in
+    let: "n" := (GoAlloc go.uint64 "n") in
+    let: "b" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: "$r0" := (let: "$s" := (![go.SliceType go.byte] (StructFieldRef Dec "p"%go (![go.PointerType Dec] "d"))) in
     Slice (go.SliceType go.byte) ("$s", #(W64 0), ![go.uint64] "n")) in
     do:  ("b" <-[go.SliceType go.byte] "$r0");;;
@@ -543,15 +543,15 @@ Definition roundtripEncDec32 : go_string := "github.com/goose-lang/goose/testdat
 (* go: encoding.go:26:6 *)
 Definition roundtripEncDec32ⁱᵐᵖˡ : val :=
   λ: "x",
-    exception_do (let: "x" := (go.AllocValue go.uint32 "x") in
-    let: "r" := (GoAlloc (go.SliceType go.byte) #()) in
+    exception_do (let: "x" := (GoAlloc go.uint32 "x") in
+    let: "r" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) #(W64 4)) in
     do:  ("r" <-[go.SliceType go.byte] "$r0");;;
-    let: "e" := (GoAlloc (go.PointerType Enc) #()) in
-    let: "$r0" := (go.AllocValue Enc (CompositeLiteral Enc (LiteralValue [KeyedElement (Some (KeyField "p"%go)) (ElementExpression (![go.SliceType go.byte] "r"))]))) in
+    let: "e" := (GoAlloc (go.PointerType Enc) (GoZeroVal (go.PointerType Enc) #())) in
+    let: "$r0" := (GoAlloc Enc (CompositeLiteral Enc (LiteralValue [KeyedElement (Some (KeyField "p"%go)) (ElementExpression (![go.SliceType go.byte] "r"))]))) in
     do:  ("e" <-[go.PointerType Enc] "$r0");;;
-    let: "d" := (GoAlloc (go.PointerType Dec) #()) in
-    let: "$r0" := (go.AllocValue Dec (CompositeLiteral Dec (LiteralValue [KeyedElement (Some (KeyField "p"%go)) (ElementExpression (![go.SliceType go.byte] "r"))]))) in
+    let: "d" := (GoAlloc (go.PointerType Dec) (GoZeroVal (go.PointerType Dec) #())) in
+    let: "$r0" := (GoAlloc Dec (CompositeLiteral Dec (LiteralValue [KeyedElement (Some (KeyField "p"%go)) (ElementExpression (![go.SliceType go.byte] "r"))]))) in
     do:  ("d" <-[go.PointerType Dec] "$r0");;;
     do:  (let: "$a0" := (let: "$a0" := #(W64 4) in
     (MethodResolve (go.PointerType Enc) "consume"%go #() (![go.PointerType Enc] "e")) "$a0") in
@@ -566,15 +566,15 @@ Definition roundtripEncDec64 : go_string := "github.com/goose-lang/goose/testdat
 (* go: encoding.go:34:6 *)
 Definition roundtripEncDec64ⁱᵐᵖˡ : val :=
   λ: "x",
-    exception_do (let: "x" := (go.AllocValue go.uint64 "x") in
-    let: "r" := (GoAlloc (go.SliceType go.byte) #()) in
+    exception_do (let: "x" := (GoAlloc go.uint64 "x") in
+    let: "r" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) #(W64 8)) in
     do:  ("r" <-[go.SliceType go.byte] "$r0");;;
-    let: "e" := (GoAlloc (go.PointerType Enc) #()) in
-    let: "$r0" := (go.AllocValue Enc (CompositeLiteral Enc (LiteralValue [KeyedElement (Some (KeyField "p"%go)) (ElementExpression (![go.SliceType go.byte] "r"))]))) in
+    let: "e" := (GoAlloc (go.PointerType Enc) (GoZeroVal (go.PointerType Enc) #())) in
+    let: "$r0" := (GoAlloc Enc (CompositeLiteral Enc (LiteralValue [KeyedElement (Some (KeyField "p"%go)) (ElementExpression (![go.SliceType go.byte] "r"))]))) in
     do:  ("e" <-[go.PointerType Enc] "$r0");;;
-    let: "d" := (GoAlloc (go.PointerType Dec) #()) in
-    let: "$r0" := (go.AllocValue Dec (CompositeLiteral Dec (LiteralValue [KeyedElement (Some (KeyField "p"%go)) (ElementExpression (![go.SliceType go.byte] "r"))]))) in
+    let: "d" := (GoAlloc (go.PointerType Dec) (GoZeroVal (go.PointerType Dec) #())) in
+    let: "$r0" := (GoAlloc Dec (CompositeLiteral Dec (LiteralValue [KeyedElement (Some (KeyField "p"%go)) (ElementExpression (![go.SliceType go.byte] "r"))]))) in
     do:  ("d" <-[go.PointerType Dec] "$r0");;;
     do:  (let: "$a0" := (let: "$a0" := #(W64 8) in
     (MethodResolve (go.PointerType Enc) "consume"%go #() (![go.PointerType Enc] "e")) "$a0") in
@@ -591,7 +591,7 @@ Definition testEncDec32Simple : go_string := "github.com/goose-lang/goose/testda
    go: encoding.go:43:6 *)
 Definition testEncDec32Simpleⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ok" := (GoAlloc go.bool #()) in
+    exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
     do:  ("ok" <-[go.bool] "$r0");;;
     let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := #(W32 0) in
@@ -610,7 +610,7 @@ Definition failing_testEncDec32 : go_string := "github.com/goose-lang/goose/test
 (* go: encoding.go:51:6 *)
 Definition failing_testEncDec32ⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ok" := (GoAlloc go.bool #()) in
+    exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
     do:  ("ok" <-[go.bool] "$r0");;;
     let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := #(W32 3434807466) in
@@ -638,7 +638,7 @@ Definition testEncDec64Simple : go_string := "github.com/goose-lang/goose/testda
 (* go: encoding.go:62:6 *)
 Definition testEncDec64Simpleⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ok" := (GoAlloc go.bool #()) in
+    exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
     do:  ("ok" <-[go.bool] "$r0");;;
     let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := #(W64 0) in
@@ -657,7 +657,7 @@ Definition testEncDec64 : go_string := "github.com/goose-lang/goose/testdata/exa
 (* go: encoding.go:70:6 *)
 Definition testEncDec64ⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ok" := (GoAlloc go.bool #()) in
+    exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
     do:  ("ok" <-[go.bool] "$r0");;;
     let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := #(W64 62206846038638762) in
@@ -691,7 +691,7 @@ Definition FirstClassFunction : go_string := "github.com/goose-lang/goose/testda
 (* go: first_class_function.go:3:6 *)
 Definition FirstClassFunctionⁱᵐᵖˡ : val :=
   λ: "a",
-    exception_do (let: "a" := (go.AllocValue go.uint64 "a") in
+    exception_do (let: "a" := (GoAlloc go.uint64 "a") in
     return: ((![go.uint64] "a") +⟨go.uint64⟩ #(W64 10))).
 
 Definition ApplyF : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.ApplyF"%go.
@@ -699,8 +699,8 @@ Definition ApplyF : go_string := "github.com/goose-lang/goose/testdata/examples/
 (* go: first_class_function.go:7:6 *)
 Definition ApplyFⁱᵐᵖˡ : val :=
   λ: "a" "f",
-    exception_do (let: "f" := (go.AllocValue (go.FunctionType (go.Signature [go.uint64] false [go.uint64])) "f") in
-    let: "a" := (go.AllocValue go.uint64 "a") in
+    exception_do (let: "f" := (GoAlloc (go.FunctionType (go.Signature [go.uint64] false [go.uint64])) "f") in
+    let: "a" := (GoAlloc go.uint64 "a") in
     return: (let: "$a0" := (![go.uint64] "a") in
      (![go.FunctionType (go.Signature [go.uint64] false [go.uint64])] "f") "$a0")).
 
@@ -726,9 +726,9 @@ Definition Editor : go.type := go.Named "github.com/goose-lang/goose/testdata/ex
    go: function_ordering.go:11:18 *)
 Definition Editor__AdvanceReturnⁱᵐᵖˡ : val :=
   λ: "e" "next",
-    exception_do (let: "e" := (go.AllocValue (go.PointerType Editor) "e") in
-    let: "next" := (go.AllocValue go.uint64 "next") in
-    let: "tmp" := (GoAlloc go.uint64 #()) in
+    exception_do (let: "e" := (GoAlloc (go.PointerType Editor) "e") in
+    let: "next" := (GoAlloc go.uint64 "next") in
+    let: "tmp" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := (![go.uint64] (StructFieldRef Editor "next_val"%go (![go.PointerType Editor] "e"))) in
     do:  ("tmp" <-[go.uint64] "$r0");;;
     let: "$r0" := (![go.uint64] "tmp") in
@@ -748,10 +748,10 @@ Definition addFour64 : go_string := "github.com/goose-lang/goose/testdata/exampl
    go: function_ordering.go:21:6 *)
 Definition addFour64ⁱᵐᵖˡ : val :=
   λ: "a" "b" "c" "d",
-    exception_do (let: "d" := (go.AllocValue go.uint64 "d") in
-    let: "c" := (go.AllocValue go.uint64 "c") in
-    let: "b" := (go.AllocValue go.uint64 "b") in
-    let: "a" := (go.AllocValue go.uint64 "a") in
+    exception_do (let: "d" := (GoAlloc go.uint64 "d") in
+    let: "c" := (GoAlloc go.uint64 "c") in
+    let: "b" := (GoAlloc go.uint64 "b") in
+    let: "a" := (GoAlloc go.uint64 "a") in
     return: ((((![go.uint64] "a") +⟨go.uint64⟩ (![go.uint64] "b")) +⟨go.uint64⟩ (![go.uint64] "c")) +⟨go.uint64⟩ (![go.uint64] "d"))).
 
 Definition Pairⁱᵐᵖˡ : go.type := go.StructType [
@@ -768,14 +768,14 @@ Definition Pair : go.type := go.Named "github.com/goose-lang/goose/testdata/exam
    go: function_ordering.go:31:6 *)
 Definition failing_testFunctionOrderingⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "arr" := (GoAlloc (go.SliceType go.uint64) #()) in
+    exception_do (let: "arr" := (GoAlloc (go.SliceType go.uint64) (GoZeroVal (go.SliceType go.uint64) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.uint64] #()) #(W64 5)) in
     do:  ("arr" <-[go.SliceType go.uint64] "$r0");;;
-    let: "e1" := (GoAlloc Editor #()) in
+    let: "e1" := (GoAlloc Editor (GoZeroVal Editor #())) in
     let: "$r0" := (CompositeLiteral Editor (LiteralValue [KeyedElement (Some (KeyField "s"%go)) (ElementExpression (let: "$s" := (![go.SliceType go.uint64] "arr") in
      Slice (go.SliceType go.uint64) ("$s", #(W64 0), FuncResolve go.len [go.SliceType go.uint64] #() (![go.SliceType go.uint64] "arr")))); KeyedElement (Some (KeyField "next_val"%go)) (ElementExpression #(W64 1))])) in
     do:  ("e1" <-[Editor] "$r0");;;
-    let: "e2" := (GoAlloc Editor #()) in
+    let: "e2" := (GoAlloc Editor (GoZeroVal Editor #())) in
     let: "$r0" := (CompositeLiteral Editor (LiteralValue [KeyedElement (Some (KeyField "s"%go)) (ElementExpression (let: "$s" := (![go.SliceType go.uint64] "arr") in
      Slice (go.SliceType go.uint64) ("$s", #(W64 0), FuncResolve go.len [go.SliceType go.uint64] #() (![go.SliceType go.uint64] "arr")))); KeyedElement (Some (KeyField "next_val"%go)) (ElementExpression #(W64 101))])) in
     do:  ("e2" <-[Editor] "$r0");;;
@@ -804,7 +804,7 @@ Definition failing_testFunctionOrderingⁱᵐᵖˡ : val :=
     (if: (![go.uint64] (IndexRef go.uint64 (![go.SliceType go.uint64] "arr", #(W64 2)))) ≠⟨go.uint64⟩ #(W64 3)
     then return: (#false)
     else do:  #());;;
-    let: "p" := (GoAlloc Pair #()) in
+    let: "p" := (GoAlloc Pair (GoZeroVal Pair #())) in
     let: "$r0" := (CompositeLiteral Pair (LiteralValue [KeyedElement (Some (KeyField "x"%go)) (ElementExpression (let: "$a0" := #(W64 5) in
      (MethodResolve (go.PointerType Editor) "AdvanceReturn"%go #() "e1") "$a0")); KeyedElement (Some (KeyField "y"%go)) (ElementExpression (let: "$a0" := #(W64 105) in
      (MethodResolve (go.PointerType Editor) "AdvanceReturn"%go #() "e2") "$a0"))])) in
@@ -812,7 +812,7 @@ Definition failing_testFunctionOrderingⁱᵐᵖˡ : val :=
     (if: (![go.uint64] (IndexRef go.uint64 (![go.SliceType go.uint64] "arr", #(W64 3)))) ≠⟨go.uint64⟩ #(W64 104)
     then return: (#false)
     else do:  #());;;
-    let: "q" := (GoAlloc Pair #()) in
+    let: "q" := (GoAlloc Pair (GoZeroVal Pair #())) in
     let: "$r0" := (CompositeLiteral Pair (LiteralValue [KeyedElement (Some (KeyField "y"%go)) (ElementExpression (let: "$a0" := #(W64 6) in
      (MethodResolve (go.PointerType Editor) "AdvanceReturn"%go #() "e1") "$a0")); KeyedElement (Some (KeyField "x"%go)) (ElementExpression (let: "$a0" := #(W64 106) in
      (MethodResolve (go.PointerType Editor) "AdvanceReturn"%go #() "e2") "$a0"))])) in
@@ -827,8 +827,8 @@ Definition storeAndReturn : go_string := "github.com/goose-lang/goose/testdata/e
 (* go: function_ordering.go:74:6 *)
 Definition storeAndReturnⁱᵐᵖˡ : val :=
   λ: "x" "v",
-    exception_do (let: "v" := (go.AllocValue go.uint64 "v") in
-    let: "x" := (go.AllocValue (go.PointerType go.uint64) "x") in
+    exception_do (let: "v" := (GoAlloc go.uint64 "v") in
+    let: "x" := (GoAlloc (go.PointerType go.uint64) "x") in
     let: "$r0" := (![go.uint64] "v") in
     do:  ((![go.PointerType go.uint64] "x") <-[go.uint64] "$r0");;;
     return: (![go.uint64] "v")).
@@ -841,7 +841,7 @@ Definition failing_testArgumentOrder : go_string := "github.com/goose-lang/goose
    go: function_ordering.go:81:6 *)
 Definition failing_testArgumentOrderⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (GoAlloc go.uint64 #()) in
+    exception_do (let: "x" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 0) in
     do:  ("x" <-[go.uint64] "$r0");;;
     do:  (let: "$a0" := (let: "$a0" := "x" in
@@ -857,7 +857,7 @@ Definition failing_testArgumentOrderⁱᵐᵖˡ : val :=
     let: "$a1" := #(W64 4) in
     (FuncResolve storeAndReturn [] #()) "$a0" "$a1") in
     (FuncResolve addFour64 [] #()) "$a0" "$a1" "$a2" "$a3");;;
-    let: "ok" := (GoAlloc go.bool #()) in
+    let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := ((![go.uint64] "x") =⟨go.uint64⟩ #(W64 4)) in
     do:  ("ok" <-[go.bool] "$r0");;;
     return: (![go.bool] "ok")).
@@ -867,13 +867,13 @@ Definition testU64ToU32 : go_string := "github.com/goose-lang/goose/testdata/exa
 (* go: int_conversions.go:3:6 *)
 Definition testU64ToU32ⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ok" := (GoAlloc go.bool #()) in
+    exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
     do:  ("ok" <-[go.bool] "$r0");;;
-    let: "x" := (GoAlloc go.uint64 #()) in
+    let: "x" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 1230) in
     do:  ("x" <-[go.uint64] "$r0");;;
-    let: "y" := (GoAlloc go.uint32 #()) in
+    let: "y" := (GoAlloc go.uint32 (GoZeroVal go.uint32 #())) in
     let: "$r0" := #(W32 1230) in
     do:  ("y" <-[go.uint32] "$r0");;;
     let: "$r0" := ((![go.bool] "ok") && ((u_to_w32 (![go.uint64] "x")) =⟨go.uint32⟩ (![go.uint32] "y"))) in
@@ -887,7 +887,7 @@ Definition testU32Len : go_string := "github.com/goose-lang/goose/testdata/examp
 (* go: int_conversions.go:12:6 *)
 Definition testU32Lenⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "s" := (GoAlloc (go.SliceType go.byte) #()) in
+    exception_do (let: "s" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) #(W64 100)) in
     do:  ("s" <-[go.SliceType go.byte] "$r0");;;
     return: ((s_to_w32 (let: "$a0" := (![go.SliceType go.byte] "s") in
@@ -902,7 +902,7 @@ Definition failing_testU32NewtypeLen : go_string := "github.com/goose-lang/goose
    go: int_conversions.go:20:6 *)
 Definition failing_testU32NewtypeLenⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "s" := (GoAlloc (go.SliceType go.byte) #()) in
+    exception_do (let: "s" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) #(W64 20)) in
     do:  ("s" <-[go.SliceType go.byte] "$r0");;;
     return: ((s_to_w32 (let: "$a0" := (![go.SliceType go.byte] "s") in
@@ -917,7 +917,7 @@ Definition geometryInterface : go.type := go.Named "github.com/goose-lang/goose/
 (* go: interfaces.go:12:6 *)
 Definition measureAreaⁱᵐᵖˡ : val :=
   λ: "t",
-    exception_do (let: "t" := (go.AllocValue geometryInterface "t") in
+    exception_do (let: "t" := (GoAlloc geometryInterface "t") in
     return: ((MethodResolve geometryInterface "Square"%go #() (![geometryInterface] "t")) #())).
 
 Definition measureVolumePlusNM : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.measureVolumePlusNM"%go.
@@ -925,9 +925,9 @@ Definition measureVolumePlusNM : go_string := "github.com/goose-lang/goose/testd
 (* go: interfaces.go:16:6 *)
 Definition measureVolumePlusNMⁱᵐᵖˡ : val :=
   λ: "t" "n" "m",
-    exception_do (let: "m" := (go.AllocValue go.uint64 "m") in
-    let: "n" := (go.AllocValue go.uint64 "n") in
-    let: "t" := (go.AllocValue geometryInterface "t") in
+    exception_do (let: "m" := (GoAlloc go.uint64 "m") in
+    let: "n" := (GoAlloc go.uint64 "n") in
+    let: "t" := (GoAlloc geometryInterface "t") in
     return: ((((MethodResolve geometryInterface "Volume"%go #() (![geometryInterface] "t")) #()) +⟨go.uint64⟩ (![go.uint64] "n")) +⟨go.uint64⟩ (![go.uint64] "m"))).
 
 Definition measureVolume : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.measureVolume"%go.
@@ -935,7 +935,7 @@ Definition measureVolume : go_string := "github.com/goose-lang/goose/testdata/ex
 (* go: interfaces.go:20:6 *)
 Definition measureVolumeⁱᵐᵖˡ : val :=
   λ: "t",
-    exception_do (let: "t" := (go.AllocValue geometryInterface "t") in
+    exception_do (let: "t" := (GoAlloc geometryInterface "t") in
     return: ((MethodResolve geometryInterface "Volume"%go #() (![geometryInterface] "t")) #())).
 
 Definition SquareStructⁱᵐᵖˡ : go.type := go.StructType [
@@ -947,13 +947,13 @@ Definition SquareStruct : go.type := go.Named "github.com/goose-lang/goose/testd
 (* go: interfaces.go:28:23 *)
 Definition SquareStruct__Squareⁱᵐᵖˡ : val :=
   λ: "t" <>,
-    exception_do (let: "t" := (go.AllocValue SquareStruct "t") in
+    exception_do (let: "t" := (GoAlloc SquareStruct "t") in
     return: ((![go.uint64] (StructFieldRef SquareStruct "Side"%go "t")) *⟨go.uint64⟩ (![go.uint64] (StructFieldRef SquareStruct "Side"%go "t")))).
 
 (* go: interfaces.go:32:23 *)
 Definition SquareStruct__Volumeⁱᵐᵖˡ : val :=
   λ: "t" <>,
-    exception_do (let: "t" := (go.AllocValue SquareStruct "t") in
+    exception_do (let: "t" := (GoAlloc SquareStruct "t") in
     return: (((![go.uint64] (StructFieldRef SquareStruct "Side"%go "t")) *⟨go.uint64⟩ (![go.uint64] (StructFieldRef SquareStruct "Side"%go "t"))) *⟨go.uint64⟩ (![go.uint64] (StructFieldRef SquareStruct "Side"%go "t")))).
 
 Definition testBasicInterface : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testBasicInterface"%go.
@@ -961,7 +961,7 @@ Definition testBasicInterface : go_string := "github.com/goose-lang/goose/testda
 (* go: interfaces.go:40:6 *)
 Definition testBasicInterfaceⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "s" := (GoAlloc SquareStruct #()) in
+    exception_do (let: "s" := (GoAlloc SquareStruct (GoZeroVal SquareStruct #())) in
     let: "$r0" := (CompositeLiteral SquareStruct (LiteralValue [KeyedElement (Some (KeyField "Side"%go)) (ElementExpression #(W64 2))])) in
     do:  ("s" <-[SquareStruct] "$r0");;;
     return: ((let: "$a0" := (InterfaceMake SquareStruct (![SquareStruct] "s")) in
@@ -972,10 +972,10 @@ Definition testAssignInterface : go_string := "github.com/goose-lang/goose/testd
 (* go: interfaces.go:47:6 *)
 Definition testAssignInterfaceⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "s" := (GoAlloc SquareStruct #()) in
+    exception_do (let: "s" := (GoAlloc SquareStruct (GoZeroVal SquareStruct #())) in
     let: "$r0" := (CompositeLiteral SquareStruct (LiteralValue [KeyedElement (Some (KeyField "Side"%go)) (ElementExpression #(W64 3))])) in
     do:  ("s" <-[SquareStruct] "$r0");;;
-    let: "area" := (GoAlloc go.uint64 #()) in
+    let: "area" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := (let: "$a0" := (InterfaceMake SquareStruct (![SquareStruct] "s")) in
     (FuncResolve measureArea [] #()) "$a0") in
     do:  ("area" <-[go.uint64] "$r0");;;
@@ -986,14 +986,14 @@ Definition testMultipleInterface : go_string := "github.com/goose-lang/goose/tes
 (* go: interfaces.go:55:6 *)
 Definition testMultipleInterfaceⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "s" := (GoAlloc SquareStruct #()) in
+    exception_do (let: "s" := (GoAlloc SquareStruct (GoZeroVal SquareStruct #())) in
     let: "$r0" := (CompositeLiteral SquareStruct (LiteralValue [KeyedElement (Some (KeyField "Side"%go)) (ElementExpression #(W64 3))])) in
     do:  ("s" <-[SquareStruct] "$r0");;;
-    let: "square1" := (GoAlloc go.uint64 #()) in
+    let: "square1" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := (let: "$a0" := (InterfaceMake SquareStruct (![SquareStruct] "s")) in
     (FuncResolve measureArea [] #()) "$a0") in
     do:  ("square1" <-[go.uint64] "$r0");;;
-    let: "square2" := (GoAlloc go.uint64 #()) in
+    let: "square2" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := (let: "$a0" := (InterfaceMake SquareStruct (![SquareStruct] "s")) in
     (FuncResolve measureArea [] #()) "$a0") in
     do:  ("square2" <-[go.uint64] "$r0");;;
@@ -1004,14 +1004,14 @@ Definition testBinaryExprInterface : go_string := "github.com/goose-lang/goose/t
 (* go: interfaces.go:64:6 *)
 Definition testBinaryExprInterfaceⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "s" := (GoAlloc SquareStruct #()) in
+    exception_do (let: "s" := (GoAlloc SquareStruct (GoZeroVal SquareStruct #())) in
     let: "$r0" := (CompositeLiteral SquareStruct (LiteralValue [KeyedElement (Some (KeyField "Side"%go)) (ElementExpression #(W64 3))])) in
     do:  ("s" <-[SquareStruct] "$r0");;;
-    let: "square1" := (GoAlloc go.uint64 #()) in
+    let: "square1" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := (let: "$a0" := (InterfaceMake SquareStruct (![SquareStruct] "s")) in
     (FuncResolve measureArea [] #()) "$a0") in
     do:  ("square1" <-[go.uint64] "$r0");;;
-    let: "square2" := (GoAlloc go.uint64 #()) in
+    let: "square2" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := (let: "$a0" := (InterfaceMake SquareStruct (![SquareStruct] "s")) in
     (FuncResolve measureVolume [] #()) "$a0") in
     do:  ("square2" <-[go.uint64] "$r0");;;
@@ -1024,7 +1024,7 @@ Definition testIfStmtInterface : go_string := "github.com/goose-lang/goose/testd
 (* go: interfaces.go:73:6 *)
 Definition testIfStmtInterfaceⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "s" := (GoAlloc SquareStruct #()) in
+    exception_do (let: "s" := (GoAlloc SquareStruct (GoZeroVal SquareStruct #())) in
     let: "$r0" := (CompositeLiteral SquareStruct (LiteralValue [KeyedElement (Some (KeyField "Side"%go)) (ElementExpression #(W64 3))])) in
     do:  ("s" <-[SquareStruct] "$r0");;;
     (if: (let: "$a0" := (InterfaceMake SquareStruct (![SquareStruct] "s")) in
@@ -1041,8 +1041,8 @@ Definition testsUseLocks : go_string := "github.com/goose-lang/goose/testdata/ex
    go: lock.go:7:6 *)
 Definition testsUseLocksⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "m" := (GoAlloc (go.PointerType sync.Mutex) #()) in
-    let: "$r0" := (GoAlloc sync.Mutex #()) in
+    exception_do (let: "m" := (GoAlloc (go.PointerType sync.Mutex) (GoZeroVal (go.PointerType sync.Mutex) #())) in
+    let: "$r0" := (GoAlloc sync.Mutex (GoZeroVal sync.Mutex #())) in
     do:  ("m" <-[go.PointerType sync.Mutex] "$r0");;;
     do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go #() (![go.PointerType sync.Mutex] "m")) #());;;
     do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go #() (![go.PointerType sync.Mutex] "m")) #());;;
@@ -1055,21 +1055,21 @@ Definition standardForLoop : go_string := "github.com/goose-lang/goose/testdata/
    go: loops.go:4:6 *)
 Definition standardForLoopⁱᵐᵖˡ : val :=
   λ: "s",
-    exception_do (let: "s" := (go.AllocValue (go.SliceType go.uint64) "s") in
-    let: "sumPtr" := (GoAlloc (go.PointerType go.uint64) #()) in
-    let: "$r0" := (GoAlloc go.uint64 #()) in
+    exception_do (let: "s" := (GoAlloc (go.SliceType go.uint64) "s") in
+    let: "sumPtr" := (GoAlloc (go.PointerType go.uint64) (GoZeroVal (go.PointerType go.uint64) #())) in
+    let: "$r0" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     do:  ("sumPtr" <-[go.PointerType go.uint64] "$r0");;;
-    (let: "i" := (GoAlloc go.uint64 #()) in
+    (let: "i" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[go.uint64] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       (if: (![go.uint64] "i") <⟨go.uint64⟩ (s_to_w64 (let: "$a0" := (![go.SliceType go.uint64] "s") in
       (FuncResolve go.len [go.SliceType go.uint64] #()) "$a0"))
       then
-        let: "sum" := (GoAlloc go.uint64 #()) in
+        let: "sum" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
         let: "$r0" := (![go.uint64] (![go.PointerType go.uint64] "sumPtr")) in
         do:  ("sum" <-[go.uint64] "$r0");;;
-        let: "x" := (GoAlloc go.uint64 #()) in
+        let: "x" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
         let: "$r0" := (![go.uint64] (IndexRef go.uint64 (![go.SliceType go.uint64] "s", ![go.uint64] "i"))) in
         do:  ("x" <-[go.uint64] "$r0");;;
         let: "$r0" := ((![go.uint64] "sum") +⟨go.uint64⟩ (![go.uint64] "x")) in
@@ -1079,7 +1079,7 @@ Definition standardForLoopⁱᵐᵖˡ : val :=
         continue: #()
       else do:  #());;;
       break: #()));;;
-    let: "sum" := (GoAlloc go.uint64 #()) in
+    let: "sum" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := (![go.uint64] (![go.PointerType go.uint64] "sumPtr")) in
     do:  ("sum" <-[go.uint64] "$r0");;;
     return: (![go.uint64] "sum")).
@@ -1093,10 +1093,10 @@ Definition LoopStruct : go.type := go.Named "github.com/goose-lang/goose/testdat
 (* go: loops.go:28:22 *)
 Definition LoopStruct__forLoopWaitⁱᵐᵖˡ : val :=
   λ: "ls" "i",
-    exception_do (let: "ls" := (go.AllocValue LoopStruct "ls") in
-    let: "i" := (go.AllocValue go.uint64 "i") in
+    exception_do (let: "ls" := (GoAlloc LoopStruct "ls") in
+    let: "i" := (GoAlloc go.uint64 "i") in
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      let: "nxt" := (GoAlloc (go.PointerType go.uint64) #()) in
+      let: "nxt" := (GoAlloc (go.PointerType go.uint64) (GoZeroVal (go.PointerType go.uint64) #())) in
       let: "$r0" := (![go.PointerType go.uint64] (StructFieldRef LoopStruct "loopNext"%go "ls")) in
       do:  ("nxt" <-[go.PointerType go.uint64] "$r0");;;
       (if: (![go.uint64] "i") <⟨go.uint64⟩ (![go.uint64] (![go.PointerType go.uint64] "nxt"))
@@ -1114,7 +1114,7 @@ Definition testStandardForLoop : go_string := "github.com/goose-lang/goose/testd
    go: loops.go:40:6 *)
 Definition testStandardForLoopⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "arr" := (GoAlloc (go.SliceType go.uint64) #()) in
+    exception_do (let: "arr" := (GoAlloc (go.SliceType go.uint64) (GoZeroVal (go.SliceType go.uint64) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.uint64] #()) #(W64 4)) in
     do:  ("arr" <-[go.SliceType go.uint64] "$r0");;;
     do:  ((IndexRef go.uint64 (![go.SliceType go.uint64] "arr", #(W64 0))) <-[go.uint64] ((![go.uint64] (IndexRef go.uint64 (![go.SliceType go.uint64] "arr", #(W64 0)))) +⟨go.uint64⟩ #(W64 1)));;;
@@ -1129,8 +1129,8 @@ Definition testForLoopWait : go_string := "github.com/goose-lang/goose/testdata/
 (* go: loops.go:49:6 *)
 Definition testForLoopWaitⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ls" := (GoAlloc LoopStruct #()) in
-    let: "$r0" := (CompositeLiteral LoopStruct (LiteralValue [KeyedElement (Some (KeyField "loopNext"%go)) (ElementExpression (GoAlloc go.uint64 #()))])) in
+    exception_do (let: "ls" := (GoAlloc LoopStruct (GoZeroVal LoopStruct #())) in
+    let: "$r0" := (CompositeLiteral LoopStruct (LiteralValue [KeyedElement (Some (KeyField "loopNext"%go)) (ElementExpression (GoAlloc go.uint64 (GoZeroVal go.uint64 #())))])) in
     do:  ("ls" <-[LoopStruct] "$r0");;;
     do:  (let: "$a0" := #(W64 3) in
     (MethodResolve LoopStruct "forLoopWait"%go #() (![LoopStruct] "ls")) "$a0");;;
@@ -1141,7 +1141,7 @@ Definition testBreakFromLoopWithContinue : go_string := "github.com/goose-lang/g
 (* go: loops.go:59:6 *)
 Definition testBreakFromLoopWithContinueⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "i" := (GoAlloc go.uint64 #()) in
+    exception_do (let: "i" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[go.uint64] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
@@ -1159,7 +1159,7 @@ Definition testBreakFromLoopNoContinue : go_string := "github.com/goose-lang/goo
 (* go: loops.go:71:6 *)
 Definition testBreakFromLoopNoContinueⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "i" := (GoAlloc go.uint64 #()) in
+    exception_do (let: "i" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[go.uint64] "$r0");;;
     (for: (λ: <>, (![go.uint64] "i") <⟨go.uint64⟩ #(W64 3)); (λ: <>, #()) := λ: <>,
@@ -1178,7 +1178,7 @@ Definition testBreakFromLoopNoContinueDouble : go_string := "github.com/goose-la
 (* go: loops.go:83:6 *)
 Definition testBreakFromLoopNoContinueDoubleⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "i" := (GoAlloc go.uint64 #()) in
+    exception_do (let: "i" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[go.uint64] "$r0");;;
     (for: (λ: <>, (![go.uint64] "i") <⟨go.uint64⟩ #(W64 3)); (λ: <>, #()) := λ: <>,
@@ -1199,7 +1199,7 @@ Definition testBreakFromLoopForOnly : go_string := "github.com/goose-lang/goose/
 (* go: loops.go:96:6 *)
 Definition testBreakFromLoopForOnlyⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "i" := (GoAlloc go.uint64 #()) in
+    exception_do (let: "i" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[go.uint64] "$r0");;;
     (for: (λ: <>, (![go.uint64] "i") <⟨go.uint64⟩ #(W64 3)); (λ: <>, #()) := λ: <>,
@@ -1212,7 +1212,7 @@ Definition testBreakFromLoopAssignAndContinue : go_string := "github.com/goose-l
 (* go: loops.go:104:6 *)
 Definition testBreakFromLoopAssignAndContinueⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "i" := (GoAlloc go.uint64 #()) in
+    exception_do (let: "i" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[go.uint64] "$r0");;;
     (for: (λ: <>, (![go.uint64] "i") <⟨go.uint64⟩ #(W64 3)); (λ: <>, #()) := λ: <>,
@@ -1232,17 +1232,17 @@ Definition testNestedLoops : go_string := "github.com/goose-lang/goose/testdata/
 (* go: loops.go:117:6 *)
 Definition testNestedLoopsⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ok1" := (GoAlloc go.bool #()) in
+    exception_do (let: "ok1" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #false in
     do:  ("ok1" <-[go.bool] "$r0");;;
-    let: "ok2" := (GoAlloc go.bool #()) in
+    let: "ok2" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #false in
     do:  ("ok2" <-[go.bool] "$r0");;;
-    (let: "i" := (GoAlloc go.uint64 #()) in
+    (let: "i" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[go.uint64] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      (let: "j" := (GoAlloc go.uint64 #()) in
+      (let: "j" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
       let: "$r0" := #(W64 0) in
       do:  ("j" <-[go.uint64] "$r0");;;
       (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
@@ -1266,14 +1266,14 @@ Definition testNestedGoStyleLoops : go_string := "github.com/goose-lang/goose/te
 (* go: loops.go:136:6 *)
 Definition testNestedGoStyleLoopsⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ok" := (GoAlloc go.bool #()) in
+    exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #false in
     do:  ("ok" <-[go.bool] "$r0");;;
-    (let: "i" := (GoAlloc go.uint64 #()) in
+    (let: "i" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[go.uint64] "$r0");;;
     (for: (λ: <>, (![go.uint64] "i") <⟨go.uint64⟩ #(W64 10)); (λ: <>, do:  ("i" <-[go.uint64] ((![go.uint64] "i") +⟨go.uint64⟩ #(W8 1)))) := λ: <>,
-      (let: "j" := (GoAlloc go.uint64 #()) in
+      (let: "j" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
       let: "$r0" := #(W64 0) in
       do:  ("j" <-[go.uint64] "$r0");;;
       (for: (λ: <>, (![go.uint64] "j") <⟨go.uint64⟩ (![go.uint64] "i")); (λ: <>, do:  ("j" <-[go.uint64] ((![go.uint64] "j") +⟨go.uint64⟩ #(W8 1)))) := λ: <>,
@@ -1290,14 +1290,14 @@ Definition testNestedGoStyleLoopsNoComparison : go_string := "github.com/goose-l
 (* go: loops.go:150:6 *)
 Definition testNestedGoStyleLoopsNoComparisonⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ok" := (GoAlloc go.bool #()) in
+    exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #false in
     do:  ("ok" <-[go.bool] "$r0");;;
-    (let: "i" := (GoAlloc go.uint64 #()) in
+    (let: "i" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[go.uint64] "$r0");;;
     (for: (λ: <>, (![go.uint64] "i") <⟨go.uint64⟩ #(W64 10)); (λ: <>, do:  ("i" <-[go.uint64] ((![go.uint64] "i") +⟨go.uint64⟩ #(W8 1)))) := λ: <>,
-      (let: "j" := (GoAlloc go.uint64 #()) in
+      (let: "j" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
       let: "$r0" := #(W64 0) in
       do:  ("j" <-[go.uint64] "$r0");;;
       (for: (λ: <>, (![go.uint64] "j") <⟨go.uint64⟩ (![go.uint64] "i")); (λ: <>, do:  ("j" <-[go.uint64] ((![go.uint64] "j") +⟨go.uint64⟩ #(W8 1)))) := λ: <>,
@@ -1314,10 +1314,10 @@ Definition IterateMapKeys : go_string := "github.com/goose-lang/goose/testdata/e
 (* go: maps.go:3:6 *)
 Definition IterateMapKeysⁱᵐᵖˡ : val :=
   λ: "m",
-    exception_do (let: "m" := (go.AllocValue (go.MapType go.uint64 go.uint64) "m") in
-    let: "sum" := (GoAlloc go.uint64 #()) in
+    exception_do (let: "m" := (GoAlloc (go.MapType go.uint64 go.uint64) "m") in
+    let: "sum" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$range" := (![go.MapType go.uint64 go.uint64] "m") in
-    (let: "k" := (GoAlloc go.uint64 #()) in
+    (let: "k" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("k" <-[go.uint64] "$key");;;
       let: "$r0" := ((![go.uint64] "sum") +⟨go.uint64⟩ (![go.uint64] "k")) in
@@ -1329,10 +1329,10 @@ Definition IterateMapValues : go_string := "github.com/goose-lang/goose/testdata
 (* go: maps.go:11:6 *)
 Definition IterateMapValuesⁱᵐᵖˡ : val :=
   λ: "m",
-    exception_do (let: "m" := (go.AllocValue (go.MapType go.uint64 go.uint64) "m") in
-    let: "sum" := (GoAlloc go.uint64 #()) in
+    exception_do (let: "m" := (GoAlloc (go.MapType go.uint64 go.uint64) "m") in
+    let: "sum" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$range" := (![go.MapType go.uint64 go.uint64] "m") in
-    (let: "v" := (GoAlloc go.uint64 #()) in
+    (let: "v" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     map.for_range "$range" (λ: "$key" "value",
       do:  ("v" <-[go.uint64] "$value");;;
       do:  "$key";;;
@@ -1345,10 +1345,10 @@ Definition testIterateMap : go_string := "github.com/goose-lang/goose/testdata/e
 (* go: maps.go:19:6 *)
 Definition testIterateMapⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ok" := (GoAlloc go.bool #()) in
+    exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
     do:  ("ok" <-[go.bool] "$r0");;;
-    let: "m" := (GoAlloc (go.MapType go.uint64 go.uint64) #()) in
+    let: "m" := (GoAlloc (go.MapType go.uint64 go.uint64) (GoZeroVal (go.MapType go.uint64 go.uint64) #())) in
     let: "$r0" := ((FuncResolve go.make1 [go.MapType go.uint64 go.uint64] #()) #()) in
     do:  ("m" <-[go.MapType go.uint64 go.uint64] "$r0");;;
     let: "$r0" := #(W64 1) in
@@ -1370,10 +1370,10 @@ Definition testMapSize : go_string := "github.com/goose-lang/goose/testdata/exam
 (* go: maps.go:37:6 *)
 Definition testMapSizeⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ok" := (GoAlloc go.bool #()) in
+    exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
     do:  ("ok" <-[go.bool] "$r0");;;
-    let: "m" := (GoAlloc (go.MapType go.uint64 go.uint64) #()) in
+    let: "m" := (GoAlloc (go.MapType go.uint64 go.uint64) (GoZeroVal (go.MapType go.uint64 go.uint64) #())) in
     let: "$r0" := ((FuncResolve go.make1 [go.MapType go.uint64 go.uint64] #()) #()) in
     do:  ("m" <-[go.MapType go.uint64 go.uint64] "$r0");;;
     let: "$r0" := ((![go.bool] "ok") && ((s_to_w64 (let: "$a0" := (![go.MapType go.uint64 go.uint64] "m") in
@@ -1402,10 +1402,10 @@ Definition testAssignTwo : go_string := "github.com/goose-lang/goose/testdata/ex
 (* go: multiple_assign.go:7:6 *)
 Definition testAssignTwoⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (GoAlloc go.uint64 #()) in
+    exception_do (let: "x" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 10) in
     do:  ("x" <-[go.uint64] "$r0");;;
-    let: "y" := (GoAlloc go.uint64 #()) in
+    let: "y" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 15) in
     do:  ("y" <-[go.uint64] "$r0");;;
     let: ("$ret0", "$ret1") := ((FuncResolve multReturnTwo [] #()) #()) in
@@ -1427,13 +1427,13 @@ Definition testAssignThree : go_string := "github.com/goose-lang/goose/testdata/
 (* go: multiple_assign.go:18:6 *)
 Definition testAssignThreeⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (GoAlloc go.uint64 #()) in
+    exception_do (let: "x" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 10) in
     do:  ("x" <-[go.uint64] "$r0");;;
-    let: "y" := (GoAlloc go.bool #()) in
+    let: "y" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #false in
     do:  ("y" <-[go.bool] "$r0");;;
-    let: "z" := (GoAlloc go.uint32 #()) in
+    let: "z" := (GoAlloc go.uint32 (GoZeroVal go.uint32 #())) in
     let: "$r0" := #(W32 15) in
     do:  ("z" <-[go.uint32] "$r0");;;
     let: (("$ret0", "$ret1"), "$ret2") := ((FuncResolve multReturnThree [] #()) #()) in
@@ -1450,10 +1450,10 @@ Definition testMultipleAssignToMap : go_string := "github.com/goose-lang/goose/t
 (* go: multiple_assign.go:26:6 *)
 Definition testMultipleAssignToMapⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (GoAlloc go.uint64 #()) in
+    exception_do (let: "x" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 10) in
     do:  ("x" <-[go.uint64] "$r0");;;
-    let: "m" := (GoAlloc (go.MapType go.uint64 go.uint64) #()) in
+    let: "m" := (GoAlloc (go.MapType go.uint64 go.uint64) (GoZeroVal (go.MapType go.uint64 go.uint64) #())) in
     let: "$r0" := ((FuncResolve go.make1 [go.MapType go.uint64 go.uint64] #()) #()) in
     do:  ("m" <-[go.MapType go.uint64 go.uint64] "$r0");;;
     let: ("$ret0", "$ret1") := ((FuncResolve multReturnTwo [] #()) #()) in
@@ -1475,8 +1475,8 @@ Definition testReturnTwo : go_string := "github.com/goose-lang/goose/testdata/ex
 (* go: multiple_return.go:7:6 *)
 Definition testReturnTwoⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "y" := (GoAlloc go.uint64 #()) in
-    let: "x" := (GoAlloc go.uint64 #()) in
+    exception_do (let: "y" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+    let: "x" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: ("$ret0", "$ret1") := ((FuncResolve returnTwo [] #()) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
@@ -1489,7 +1489,7 @@ Definition testAnonymousBinding : go_string := "github.com/goose-lang/goose/test
 (* go: multiple_return.go:12:6 *)
 Definition testAnonymousBindingⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "y" := (GoAlloc go.uint64 #()) in
+    exception_do (let: "y" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: ("$ret0", "$ret1") := ((FuncResolve returnTwo [] #()) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
@@ -1509,9 +1509,9 @@ Definition testReturnThree : go_string := "github.com/goose-lang/goose/testdata/
 (* go: multiple_return.go:21:6 *)
 Definition testReturnThreeⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "z" := (GoAlloc go.uint32 #()) in
-    let: "y" := (GoAlloc go.bool #()) in
-    let: "x" := (GoAlloc go.uint64 #()) in
+    exception_do (let: "z" := (GoAlloc go.uint32 (GoZeroVal go.uint32 #())) in
+    let: "y" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
+    let: "x" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: (("$ret0", "$ret1"), "$ret2") := ((FuncResolve returnThree [] #()) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
@@ -1533,10 +1533,10 @@ Definition testReturnFour : go_string := "github.com/goose-lang/goose/testdata/e
 (* go: multiple_return.go:30:6 *)
 Definition testReturnFourⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "w" := (GoAlloc go.uint64 #()) in
-    let: "z" := (GoAlloc go.uint32 #()) in
-    let: "y" := (GoAlloc go.bool #()) in
-    let: "x" := (GoAlloc go.uint64 #()) in
+    exception_do (let: "w" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+    let: "z" := (GoAlloc go.uint32 (GoZeroVal go.uint32 #())) in
+    let: "y" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
+    let: "x" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: ((("$ret0", "$ret1"), "$ret2"), "$ret3") := ((FuncResolve returnFour [] #()) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
@@ -1553,7 +1553,7 @@ Definition failing_testCompareSliceToNil : go_string := "github.com/goose-lang/g
 (* go: nil.go:3:6 *)
 Definition failing_testCompareSliceToNilⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "s" := (GoAlloc (go.SliceType go.byte) #()) in
+    exception_do (let: "s" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) #(W64 0)) in
     do:  ("s" <-[go.SliceType go.byte] "$r0");;;
     return: ((![go.SliceType go.byte] "s") ≠⟨go.SliceType go.byte⟩ #slice.nil)).
@@ -1563,8 +1563,8 @@ Definition testComparePointerToNil : go_string := "github.com/goose-lang/goose/t
 (* go: nil.go:8:6 *)
 Definition testComparePointerToNilⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "s" := (GoAlloc (go.PointerType go.uint64) #()) in
-    let: "$r0" := (GoAlloc go.uint64 #()) in
+    exception_do (let: "s" := (GoAlloc (go.PointerType go.uint64) (GoZeroVal (go.PointerType go.uint64) #())) in
+    let: "$r0" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     do:  ("s" <-[go.PointerType go.uint64] "$r0");;;
     return: ((![go.PointerType go.uint64] "s") ≠⟨go.PointerType go.uint64⟩ #null)).
 
@@ -1573,8 +1573,8 @@ Definition testCompareNilToNil : go_string := "github.com/goose-lang/goose/testd
 (* go: nil.go:13:6 *)
 Definition testCompareNilToNilⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "s" := (GoAlloc (go.PointerType (go.PointerType go.uint64)) #()) in
-    let: "$r0" := (GoAlloc (go.PointerType go.uint64) #()) in
+    exception_do (let: "s" := (GoAlloc (go.PointerType (go.PointerType go.uint64)) (GoZeroVal (go.PointerType (go.PointerType go.uint64)) #())) in
+    let: "$r0" := (GoAlloc (go.PointerType go.uint64) (GoZeroVal (go.PointerType go.uint64) #())) in
     do:  ("s" <-[go.PointerType (go.PointerType go.uint64)] "$r0");;;
     return: ((![go.PointerType go.uint64] (![go.PointerType (go.PointerType go.uint64)] "s")) =⟨go.PointerType go.uint64⟩ #null)).
 
@@ -1583,7 +1583,7 @@ Definition testComparePointerWrappedToNil : go_string := "github.com/goose-lang/
 (* go: nil.go:18:6 *)
 Definition testComparePointerWrappedToNilⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "s" := (GoAlloc (go.SliceType go.byte) #()) in
+    exception_do (let: "s" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) #(W64 1)) in
     do:  ("s" <-[go.SliceType go.byte] "$r0");;;
     return: ((![go.SliceType go.byte] "s") ≠⟨go.SliceType go.byte⟩ #slice.nil)).
@@ -1593,7 +1593,7 @@ Definition testComparePointerWrappedDefaultToNil : go_string := "github.com/goos
 (* go: nil.go:24:6 *)
 Definition testComparePointerWrappedDefaultToNilⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "s" := (GoAlloc (go.SliceType go.byte) #()) in
+    exception_do (let: "s" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     return: ((![go.SliceType go.byte] "s") =⟨go.SliceType go.byte⟩ #slice.nil)).
 
 Definition reverseAssignOps64 : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.reverseAssignOps64"%go.
@@ -1603,8 +1603,8 @@ Definition reverseAssignOps64 : go_string := "github.com/goose-lang/goose/testda
    go: operations.go:4:6 *)
 Definition reverseAssignOps64ⁱᵐᵖˡ : val :=
   λ: "x",
-    exception_do (let: "x" := (go.AllocValue go.uint64 "x") in
-    let: "y" := (GoAlloc go.uint64 #()) in
+    exception_do (let: "x" := (GoAlloc go.uint64 "x") in
+    let: "y" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     do:  ("y" <-[go.uint64] ((![go.uint64] "y") +⟨go.uint64⟩ (![go.uint64] "x")));;;
     do:  ("y" <-[go.uint64] ((![go.uint64] "y") -⟨go.uint64⟩ (![go.uint64] "x")));;;
     do:  ("y" <-[go.uint64] ((![go.uint64] "y") +⟨go.uint64⟩ #(W8 1)));;;
@@ -1616,8 +1616,8 @@ Definition reverseAssignOps32 : go_string := "github.com/goose-lang/goose/testda
 (* go: operations.go:13:6 *)
 Definition reverseAssignOps32ⁱᵐᵖˡ : val :=
   λ: "x",
-    exception_do (let: "x" := (go.AllocValue go.uint32 "x") in
-    let: "y" := (GoAlloc go.uint32 #()) in
+    exception_do (let: "x" := (GoAlloc go.uint32 "x") in
+    let: "y" := (GoAlloc go.uint32 (GoZeroVal go.uint32 #())) in
     do:  ("y" <-[go.uint32] ((![go.uint32] "y") +⟨go.uint32⟩ (![go.uint32] "x")));;;
     do:  ("y" <-[go.uint32] ((![go.uint32] "y") -⟨go.uint32⟩ (![go.uint32] "x")));;;
     do:  ("y" <-[go.uint32] ((![go.uint32] "y") +⟨go.uint32⟩ #(W8 1)));;;
@@ -1629,9 +1629,9 @@ Definition add64Equals : go_string := "github.com/goose-lang/goose/testdata/exam
 (* go: operations.go:22:6 *)
 Definition add64Equalsⁱᵐᵖˡ : val :=
   λ: "x" "y" "z",
-    exception_do (let: "z" := (go.AllocValue go.uint64 "z") in
-    let: "y" := (go.AllocValue go.uint64 "y") in
-    let: "x" := (go.AllocValue go.uint64 "x") in
+    exception_do (let: "z" := (GoAlloc go.uint64 "z") in
+    let: "y" := (GoAlloc go.uint64 "y") in
+    let: "x" := (GoAlloc go.uint64 "x") in
     return: (((![go.uint64] "x") +⟨go.uint64⟩ (![go.uint64] "y")) =⟨go.uint64⟩ (![go.uint64] "z"))).
 
 Definition sub64Equals : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.sub64Equals"%go.
@@ -1639,9 +1639,9 @@ Definition sub64Equals : go_string := "github.com/goose-lang/goose/testdata/exam
 (* go: operations.go:26:6 *)
 Definition sub64Equalsⁱᵐᵖˡ : val :=
   λ: "x" "y" "z",
-    exception_do (let: "z" := (go.AllocValue go.uint64 "z") in
-    let: "y" := (go.AllocValue go.uint64 "y") in
-    let: "x" := (go.AllocValue go.uint64 "x") in
+    exception_do (let: "z" := (GoAlloc go.uint64 "z") in
+    let: "y" := (GoAlloc go.uint64 "y") in
+    let: "x" := (GoAlloc go.uint64 "x") in
     return: (((![go.uint64] "x") -⟨go.uint64⟩ (![go.uint64] "y")) =⟨go.uint64⟩ (![go.uint64] "z"))).
 
 Definition testReverseAssignOps64 : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testReverseAssignOps64"%go.
@@ -1651,7 +1651,7 @@ Definition testReverseAssignOps64 : go_string := "github.com/goose-lang/goose/te
    go: operations.go:31:6 *)
 Definition testReverseAssignOps64ⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ok" := (GoAlloc go.bool #()) in
+    exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
     do:  ("ok" <-[go.bool] "$r0");;;
     let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := #(W64 0) in
@@ -1694,7 +1694,7 @@ Definition failing_testReverseAssignOps32 : go_string := "github.com/goose-lang/
 (* go: operations.go:47:6 *)
 Definition failing_testReverseAssignOps32ⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ok" := (GoAlloc go.bool #()) in
+    exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
     do:  ("ok" <-[go.bool] "$r0");;;
     let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := #(W32 0) in
@@ -1731,7 +1731,7 @@ Definition testAdd64Equals : go_string := "github.com/goose-lang/goose/testdata/
 (* go: operations.go:61:6 *)
 Definition testAdd64Equalsⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ok" := (GoAlloc go.bool #()) in
+    exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
     do:  ("ok" <-[go.bool] "$r0");;;
     let: "$r0" := ((![go.bool] "ok") && (let: "$a0" := #(W64 2) in
@@ -1751,7 +1751,7 @@ Definition testSub64Equals : go_string := "github.com/goose-lang/goose/testdata/
 (* go: operations.go:68:6 *)
 Definition testSub64Equalsⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ok" := (GoAlloc go.bool #()) in
+    exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
     do:  ("ok" <-[go.bool] "$r0");;;
     let: "$r0" := ((![go.bool] "ok") && (let: "$a0" := #(W64 2) in
@@ -1776,13 +1776,13 @@ Definition testDivisionPrecedence : go_string := "github.com/goose-lang/goose/te
 (* go: operations.go:76:6 *)
 Definition testDivisionPrecedenceⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "blockSize" := (GoAlloc go.uint64 #()) in
+    exception_do (let: "blockSize" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 4096) in
     do:  ("blockSize" <-[go.uint64] "$r0");;;
-    let: "hdrmeta" := (GoAlloc go.uint64 #()) in
+    let: "hdrmeta" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 8) in
     do:  ("hdrmeta" <-[go.uint64] "$r0");;;
-    let: "hdraddrs" := (GoAlloc go.uint64 #()) in
+    let: "hdraddrs" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := (((![go.uint64] "blockSize") -⟨go.uint64⟩ (![go.uint64] "hdrmeta")) /⟨go.uint64⟩ #(W64 8)) in
     do:  ("hdraddrs" <-[go.uint64] "$r0");;;
     return: ((![go.uint64] "hdraddrs") =⟨go.uint64⟩ #(W64 511))).
@@ -1792,10 +1792,10 @@ Definition testModPrecedence : go_string := "github.com/goose-lang/goose/testdat
 (* go: operations.go:83:6 *)
 Definition testModPrecedenceⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x1" := (GoAlloc go.int #()) in
+    exception_do (let: "x1" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "$r0" := #(W64 517) in
     do:  ("x1" <-[go.int] "$r0");;;
-    let: "x2" := (GoAlloc go.int #()) in
+    let: "x2" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "$r0" := #(W64 5) in
     do:  ("x2" <-[go.int] "$r0");;;
     return: (((![go.int] "x1") =⟨go.int⟩ #(W64 517)) && ((![go.int] "x2") =⟨go.int⟩ #(W64 5)))).
@@ -1805,7 +1805,7 @@ Definition testBitwiseOpsPrecedence : go_string := "github.com/goose-lang/goose/
 (* go: operations.go:89:6 *)
 Definition testBitwiseOpsPrecedenceⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ok" := (GoAlloc go.bool #()) in
+    exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
     do:  ("ok" <-[go.bool] "$r0");;;
     let: "$r0" := ((![go.bool] "ok") && #true) in
@@ -1827,7 +1827,7 @@ Definition testArithmeticShifts : go_string := "github.com/goose-lang/goose/test
 (* go: operations.go:102:6 *)
 Definition testArithmeticShiftsⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ok" := (GoAlloc go.bool #()) in
+    exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
     do:  ("ok" <-[go.bool] "$r0");;;
     let: "$r0" := ((![go.bool] "ok") && #true) in
@@ -1847,10 +1847,10 @@ Definition testBitAddAnd : go_string := "github.com/goose-lang/goose/testdata/ex
 (* go: operations.go:114:6 *)
 Definition testBitAddAndⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "tid" := (GoAlloc go.uint64 #()) in
+    exception_do (let: "tid" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 17) in
     do:  ("tid" <-[go.uint64] "$r0");;;
-    let: "n" := (GoAlloc go.uint64 #()) in
+    let: "n" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 16) in
     do:  ("n" <-[go.uint64] "$r0");;;
     return: ((((![go.uint64] "tid") +⟨go.uint64⟩ (![go.uint64] "n")) &⟨go.uint64⟩ (~ ((![go.uint64] "n") -⟨go.uint64⟩ #(W64 1)))) =⟨go.uint64⟩ #(W64 32))).
@@ -1884,7 +1884,7 @@ Definition testOrCompare : go_string := "github.com/goose-lang/goose/testdata/ex
 (* go: precedence.go:10:6 *)
 Definition testOrCompareⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ok" := (GoAlloc go.bool #()) in
+    exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
     do:  ("ok" <-[go.bool] "$r0");;;
     (if: (~ (#false || #true))
@@ -1904,7 +1904,7 @@ Definition testAndCompare : go_string := "github.com/goose-lang/goose/testdata/e
 (* go: precedence.go:22:6 *)
 Definition testAndCompareⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ok" := (GoAlloc go.bool #()) in
+    exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
     do:  ("ok" <-[go.bool] "$r0");;;
     (if: #false && #true
@@ -1931,8 +1931,8 @@ Definition testLinearize : go_string := "github.com/goose-lang/goose/testdata/ex
 (* go: prims.go:9:6 *)
 Definition testLinearizeⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "m" := (GoAlloc (go.PointerType sync.Mutex) #()) in
-    let: "$r0" := (GoAlloc sync.Mutex #()) in
+    exception_do (let: "m" := (GoAlloc (go.PointerType sync.Mutex) (GoZeroVal (go.PointerType sync.Mutex) #())) in
+    let: "$r0" := (GoAlloc sync.Mutex (GoZeroVal sync.Mutex #())) in
     do:  ("m" <-[go.PointerType sync.Mutex] "$r0");;;
     do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go #() (![go.PointerType sync.Mutex] "m")) #());;;
     do:  ((FuncResolve primitive.Linearize [] #()) #());;;
@@ -1953,7 +1953,7 @@ Definition BoolTest : go.type := go.Named "github.com/goose-lang/goose/testdata/
 (* go: shortcircuiting.go:11:6 *)
 Definition CheckTrueⁱᵐᵖˡ : val :=
   λ: "b",
-    exception_do (let: "b" := (go.AllocValue (go.PointerType BoolTest) "b") in
+    exception_do (let: "b" := (GoAlloc (go.PointerType BoolTest) "b") in
     do:  ((StructFieldRef BoolTest "tc"%go (![go.PointerType BoolTest] "b")) <-[go.uint64] ((![go.uint64] (StructFieldRef BoolTest "tc"%go (![go.PointerType BoolTest] "b"))) +⟨go.uint64⟩ #(W64 1)));;;
     return: (![go.bool] (StructFieldRef BoolTest "t"%go (![go.PointerType BoolTest] "b")))).
 
@@ -1962,7 +1962,7 @@ Definition CheckFalse : go_string := "github.com/goose-lang/goose/testdata/examp
 (* go: shortcircuiting.go:16:6 *)
 Definition CheckFalseⁱᵐᵖˡ : val :=
   λ: "b",
-    exception_do (let: "b" := (go.AllocValue (go.PointerType BoolTest) "b") in
+    exception_do (let: "b" := (GoAlloc (go.PointerType BoolTest) "b") in
     do:  ((StructFieldRef BoolTest "fc"%go (![go.PointerType BoolTest] "b")) <-[go.uint64] ((![go.uint64] (StructFieldRef BoolTest "fc"%go (![go.PointerType BoolTest] "b"))) +⟨go.uint64⟩ #(W64 1)));;;
     return: (![go.bool] (StructFieldRef BoolTest "f"%go (![go.PointerType BoolTest] "b")))).
 
@@ -1973,8 +1973,8 @@ Definition testShortcircuitAndTF : go_string := "github.com/goose-lang/goose/tes
    go: shortcircuiting.go:22:6 *)
 Definition testShortcircuitAndTFⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "b" := (GoAlloc (go.PointerType BoolTest) #()) in
-    let: "$r0" := (go.AllocValue BoolTest (CompositeLiteral BoolTest (LiteralValue [KeyedElement (Some (KeyField "t"%go)) (ElementExpression #true); KeyedElement (Some (KeyField "f"%go)) (ElementExpression #false); KeyedElement (Some (KeyField "tc"%go)) (ElementExpression #(W64 0)); KeyedElement (Some (KeyField "fc"%go)) (ElementExpression #(W64 0))]))) in
+    exception_do (let: "b" := (GoAlloc (go.PointerType BoolTest) (GoZeroVal (go.PointerType BoolTest) #())) in
+    let: "$r0" := (GoAlloc BoolTest (CompositeLiteral BoolTest (LiteralValue [KeyedElement (Some (KeyField "t"%go)) (ElementExpression #true); KeyedElement (Some (KeyField "f"%go)) (ElementExpression #false); KeyedElement (Some (KeyField "tc"%go)) (ElementExpression #(W64 0)); KeyedElement (Some (KeyField "fc"%go)) (ElementExpression #(W64 0))]))) in
     do:  ("b" <-[go.PointerType BoolTest] "$r0");;;
     (if: (let: "$a0" := (![go.PointerType BoolTest] "b") in
     (FuncResolve CheckTrue [] #()) "$a0") && (let: "$a0" := (![go.PointerType BoolTest] "b") in
@@ -1988,8 +1988,8 @@ Definition testShortcircuitAndFT : go_string := "github.com/goose-lang/goose/tes
 (* go: shortcircuiting.go:31:6 *)
 Definition testShortcircuitAndFTⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "b" := (GoAlloc (go.PointerType BoolTest) #()) in
-    let: "$r0" := (go.AllocValue BoolTest (CompositeLiteral BoolTest (LiteralValue [KeyedElement (Some (KeyField "t"%go)) (ElementExpression #true); KeyedElement (Some (KeyField "f"%go)) (ElementExpression #false); KeyedElement (Some (KeyField "tc"%go)) (ElementExpression #(W64 0)); KeyedElement (Some (KeyField "fc"%go)) (ElementExpression #(W64 0))]))) in
+    exception_do (let: "b" := (GoAlloc (go.PointerType BoolTest) (GoZeroVal (go.PointerType BoolTest) #())) in
+    let: "$r0" := (GoAlloc BoolTest (CompositeLiteral BoolTest (LiteralValue [KeyedElement (Some (KeyField "t"%go)) (ElementExpression #true); KeyedElement (Some (KeyField "f"%go)) (ElementExpression #false); KeyedElement (Some (KeyField "tc"%go)) (ElementExpression #(W64 0)); KeyedElement (Some (KeyField "fc"%go)) (ElementExpression #(W64 0))]))) in
     do:  ("b" <-[go.PointerType BoolTest] "$r0");;;
     (if: (let: "$a0" := (![go.PointerType BoolTest] "b") in
     (FuncResolve CheckFalse [] #()) "$a0") && (let: "$a0" := (![go.PointerType BoolTest] "b") in
@@ -2003,8 +2003,8 @@ Definition testShortcircuitOrTF : go_string := "github.com/goose-lang/goose/test
 (* go: shortcircuiting.go:40:6 *)
 Definition testShortcircuitOrTFⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "b" := (GoAlloc (go.PointerType BoolTest) #()) in
-    let: "$r0" := (go.AllocValue BoolTest (CompositeLiteral BoolTest (LiteralValue [KeyedElement (Some (KeyField "t"%go)) (ElementExpression #true); KeyedElement (Some (KeyField "f"%go)) (ElementExpression #false); KeyedElement (Some (KeyField "tc"%go)) (ElementExpression #(W64 0)); KeyedElement (Some (KeyField "fc"%go)) (ElementExpression #(W64 0))]))) in
+    exception_do (let: "b" := (GoAlloc (go.PointerType BoolTest) (GoZeroVal (go.PointerType BoolTest) #())) in
+    let: "$r0" := (GoAlloc BoolTest (CompositeLiteral BoolTest (LiteralValue [KeyedElement (Some (KeyField "t"%go)) (ElementExpression #true); KeyedElement (Some (KeyField "f"%go)) (ElementExpression #false); KeyedElement (Some (KeyField "tc"%go)) (ElementExpression #(W64 0)); KeyedElement (Some (KeyField "fc"%go)) (ElementExpression #(W64 0))]))) in
     do:  ("b" <-[go.PointerType BoolTest] "$r0");;;
     (if: (let: "$a0" := (![go.PointerType BoolTest] "b") in
     (FuncResolve CheckTrue [] #()) "$a0") || (let: "$a0" := (![go.PointerType BoolTest] "b") in
@@ -2018,8 +2018,8 @@ Definition testShortcircuitOrFT : go_string := "github.com/goose-lang/goose/test
 (* go: shortcircuiting.go:48:6 *)
 Definition testShortcircuitOrFTⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "b" := (GoAlloc (go.PointerType BoolTest) #()) in
-    let: "$r0" := (go.AllocValue BoolTest (CompositeLiteral BoolTest (LiteralValue [KeyedElement (Some (KeyField "t"%go)) (ElementExpression #true); KeyedElement (Some (KeyField "f"%go)) (ElementExpression #false); KeyedElement (Some (KeyField "tc"%go)) (ElementExpression #(W64 0)); KeyedElement (Some (KeyField "fc"%go)) (ElementExpression #(W64 0))]))) in
+    exception_do (let: "b" := (GoAlloc (go.PointerType BoolTest) (GoZeroVal (go.PointerType BoolTest) #())) in
+    let: "$r0" := (GoAlloc BoolTest (CompositeLiteral BoolTest (LiteralValue [KeyedElement (Some (KeyField "t"%go)) (ElementExpression #true); KeyedElement (Some (KeyField "f"%go)) (ElementExpression #false); KeyedElement (Some (KeyField "tc"%go)) (ElementExpression #(W64 0)); KeyedElement (Some (KeyField "fc"%go)) (ElementExpression #(W64 0))]))) in
     do:  ("b" <-[go.PointerType BoolTest] "$r0");;;
     (if: (let: "$a0" := (![go.PointerType BoolTest] "b") in
     (FuncResolve CheckFalse [] #()) "$a0") || (let: "$a0" := (![go.PointerType BoolTest] "b") in
@@ -2038,9 +2038,9 @@ Definition ArrayEditor : go.type := go.Named "github.com/goose-lang/goose/testda
 (* go: slices.go:9:24 *)
 Definition ArrayEditor__Advanceⁱᵐᵖˡ : val :=
   λ: "ae" "arr" "next",
-    exception_do (let: "ae" := (go.AllocValue (go.PointerType ArrayEditor) "ae") in
-    let: "next" := (go.AllocValue go.uint64 "next") in
-    let: "arr" := (go.AllocValue (go.SliceType go.uint64) "arr") in
+    exception_do (let: "ae" := (GoAlloc (go.PointerType ArrayEditor) "ae") in
+    let: "next" := (GoAlloc go.uint64 "next") in
+    let: "arr" := (GoAlloc (go.SliceType go.uint64) "arr") in
     do:  ((IndexRef go.uint64 (![go.SliceType go.uint64] "arr", #(W64 0))) <-[go.uint64] ((![go.uint64] (IndexRef go.uint64 (![go.SliceType go.uint64] "arr", #(W64 0)))) +⟨go.uint64⟩ #(W64 1)));;;
     let: "$r0" := (![go.uint64] (StructFieldRef ArrayEditor "next_val"%go (![go.PointerType ArrayEditor] "ae"))) in
     do:  ((IndexRef go.uint64 (![go.SliceType go.uint64] (StructFieldRef ArrayEditor "s"%go (![go.PointerType ArrayEditor] "ae")), #(W64 0))) <-[go.uint64] "$r0");;;
@@ -2058,7 +2058,7 @@ Definition testSliceOps : go_string := "github.com/goose-lang/goose/testdata/exa
    go: slices.go:17:6 *)
 Definition testSliceOpsⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (GoAlloc (go.SliceType go.uint64) #()) in
+    exception_do (let: "x" := (GoAlloc (go.SliceType go.uint64) (GoZeroVal (go.SliceType go.uint64) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.uint64] #()) #(W64 10)) in
     do:  ("x" <-[go.SliceType go.uint64] "$r0");;;
     let: "$r0" := #(W64 5) in
@@ -2069,21 +2069,21 @@ Definition testSliceOpsⁱᵐᵖˡ : val :=
     do:  ((IndexRef go.uint64 (![go.SliceType go.uint64] "x", #(W64 3))) <-[go.uint64] "$r0");;;
     let: "$r0" := #(W64 20) in
     do:  ((IndexRef go.uint64 (![go.SliceType go.uint64] "x", #(W64 4))) <-[go.uint64] "$r0");;;
-    let: "v1" := (GoAlloc go.uint64 #()) in
+    let: "v1" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := (![go.uint64] (IndexRef go.uint64 (![go.SliceType go.uint64] "x", #(W64 2)))) in
     do:  ("v1" <-[go.uint64] "$r0");;;
-    let: "v2" := (GoAlloc (go.SliceType go.uint64) #()) in
+    let: "v2" := (GoAlloc (go.SliceType go.uint64) (GoZeroVal (go.SliceType go.uint64) #())) in
     let: "$r0" := (let: "$s" := (![go.SliceType go.uint64] "x") in
     Slice (go.SliceType go.uint64) ("$s", #(W64 2), #(W64 3))) in
     do:  ("v2" <-[go.SliceType go.uint64] "$r0");;;
-    let: "v3" := (GoAlloc (go.SliceType go.uint64) #()) in
+    let: "v3" := (GoAlloc (go.SliceType go.uint64) (GoZeroVal (go.SliceType go.uint64) #())) in
     let: "$r0" := (let: "$s" := (![go.SliceType go.uint64] "x") in
     Slice (go.SliceType go.uint64) ("$s", #(W64 0), #(W64 3))) in
     do:  ("v3" <-[go.SliceType go.uint64] "$r0");;;
-    let: "v4" := (GoAlloc (go.PointerType go.uint64) #()) in
+    let: "v4" := (GoAlloc (go.PointerType go.uint64) (GoZeroVal (go.PointerType go.uint64) #())) in
     let: "$r0" := (IndexRef go.uint64 (![go.SliceType go.uint64] "x", #(W64 2))) in
     do:  ("v4" <-[go.PointerType go.uint64] "$r0");;;
-    let: "ok" := (GoAlloc go.bool #()) in
+    let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
     do:  ("ok" <-[go.bool] "$r0");;;
     let: "$r0" := ((![go.bool] "ok") && ((![go.uint64] "v1") =⟨go.uint64⟩ #(W64 10))) in
@@ -2109,22 +2109,22 @@ Definition testSliceCapacityOps : go_string := "github.com/goose-lang/goose/test
 (* go: slices.go:40:6 *)
 Definition testSliceCapacityOpsⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (GoAlloc (go.SliceType go.uint64) #()) in
+    exception_do (let: "x" := (GoAlloc (go.SliceType go.uint64) (GoZeroVal (go.SliceType go.uint64) #())) in
     let: "$r0" := ((FuncResolve go.make3 [go.SliceType go.uint64] #()) #(W64 0) #(W64 10)) in
     do:  ("x" <-[go.SliceType go.uint64] "$r0");;;
-    let: "sub1" := (GoAlloc (go.SliceType go.uint64) #()) in
+    let: "sub1" := (GoAlloc (go.SliceType go.uint64) (GoZeroVal (go.SliceType go.uint64) #())) in
     let: "$r0" := (let: "$s" := (![go.SliceType go.uint64] "x") in
     Slice (go.SliceType go.uint64) ("$s", #(W64 0), #(W64 6))) in
     do:  ("sub1" <-[go.SliceType go.uint64] "$r0");;;
     let: "$r0" := #(W64 1) in
     do:  ((IndexRef go.uint64 (![go.SliceType go.uint64] "sub1", #(W64 0))) <-[go.uint64] "$r0");;;
-    let: "sub2" := (GoAlloc (go.SliceType go.uint64) #()) in
+    let: "sub2" := (GoAlloc (go.SliceType go.uint64) (GoZeroVal (go.SliceType go.uint64) #())) in
     let: "$r0" := (let: "$s" := (![go.SliceType go.uint64] "x") in
     Slice (go.SliceType go.uint64) ("$s", #(W64 2), #(W64 4))) in
     do:  ("sub2" <-[go.SliceType go.uint64] "$r0");;;
     let: "$r0" := #(W64 2) in
     do:  ((IndexRef go.uint64 (![go.SliceType go.uint64] "sub2", #(W64 0))) <-[go.uint64] "$r0");;;
-    let: "ok" := (GoAlloc go.bool #()) in
+    let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
     do:  ("ok" <-[go.bool] "$r0");;;
     let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := (![go.SliceType go.uint64] "sub1") in
@@ -2152,15 +2152,15 @@ Definition testOverwriteArray : go_string := "github.com/goose-lang/goose/testda
 (* go: slices.go:59:6 *)
 Definition testOverwriteArrayⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "arr" := (GoAlloc (go.SliceType go.uint64) #()) in
+    exception_do (let: "arr" := (GoAlloc (go.SliceType go.uint64) (GoZeroVal (go.SliceType go.uint64) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.uint64] #()) #(W64 4)) in
     do:  ("arr" <-[go.SliceType go.uint64] "$r0");;;
-    let: "ae1" := (GoAlloc (go.PointerType ArrayEditor) #()) in
-    let: "$r0" := (go.AllocValue ArrayEditor (CompositeLiteral ArrayEditor (LiteralValue [KeyedElement (Some (KeyField "s"%go)) (ElementExpression (let: "$s" := (![go.SliceType go.uint64] "arr") in
+    let: "ae1" := (GoAlloc (go.PointerType ArrayEditor) (GoZeroVal (go.PointerType ArrayEditor) #())) in
+    let: "$r0" := (GoAlloc ArrayEditor (CompositeLiteral ArrayEditor (LiteralValue [KeyedElement (Some (KeyField "s"%go)) (ElementExpression (let: "$s" := (![go.SliceType go.uint64] "arr") in
      Slice (go.SliceType go.uint64) ("$s", #(W64 0), FuncResolve go.len [go.SliceType go.uint64] #() (![go.SliceType go.uint64] "arr")))); KeyedElement (Some (KeyField "next_val"%go)) (ElementExpression #(W64 1))]))) in
     do:  ("ae1" <-[go.PointerType ArrayEditor] "$r0");;;
-    let: "ae2" := (GoAlloc (go.PointerType ArrayEditor) #()) in
-    let: "$r0" := (go.AllocValue ArrayEditor (CompositeLiteral ArrayEditor (LiteralValue [KeyedElement (Some (KeyField "s"%go)) (ElementExpression (let: "$s" := (![go.SliceType go.uint64] "arr") in
+    let: "ae2" := (GoAlloc (go.PointerType ArrayEditor) (GoZeroVal (go.PointerType ArrayEditor) #())) in
+    let: "$r0" := (GoAlloc ArrayEditor (CompositeLiteral ArrayEditor (LiteralValue [KeyedElement (Some (KeyField "s"%go)) (ElementExpression (let: "$s" := (![go.SliceType go.uint64] "arr") in
      Slice (go.SliceType go.uint64) ("$s", #(W64 1), FuncResolve go.len [go.SliceType go.uint64] #() (![go.SliceType go.uint64] "arr")))); KeyedElement (Some (KeyField "next_val"%go)) (ElementExpression #(W64 102))]))) in
     do:  ("ae2" <-[go.PointerType ArrayEditor] "$r0");;;
     do:  (let: "$a0" := (![go.SliceType go.uint64] "arr") in
@@ -2194,15 +2194,15 @@ Definition testSliceLiteral : go_string := "github.com/goose-lang/goose/testdata
 (* go: slices.go:80:6 *)
 Definition testSliceLiteralⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "bytes" := (GoAlloc (go.SliceType go.byte) #()) in
+    exception_do (let: "bytes" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: "$r0" := (CompositeLiteral (go.SliceType go.byte) (LiteralValue [KeyedElement None (ElementExpression #(W8 1)); KeyedElement None (ElementExpression #(W8 2))])) in
     do:  ("bytes" <-[go.SliceType go.byte] "$r0");;;
-    let: "ok" := (GoAlloc go.bool #()) in
+    let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
     do:  ("ok" <-[go.bool] "$r0");;;
     let: "$r0" := ((![go.bool] "ok") && ((![go.byte] (IndexRef go.byte (![go.SliceType go.byte] "bytes", #(W64 0)))) =⟨go.byte⟩ #(W8 1))) in
     do:  ("ok" <-[go.bool] "$r0");;;
-    let: "ints" := (GoAlloc (go.SliceType go.uint64) #()) in
+    let: "ints" := (GoAlloc (go.SliceType go.uint64) (GoZeroVal (go.SliceType go.uint64) #())) in
     let: "$r0" := (CompositeLiteral (go.SliceType go.uint64) (LiteralValue [KeyedElement None (ElementExpression #(W64 1)); KeyedElement None (ElementExpression #(W64 2)); KeyedElement None (ElementExpression #(W64 3))])) in
     do:  ("ints" <-[go.SliceType go.uint64] "$r0");;;
     let: "$r0" := ((![go.bool] "ok") && ((![go.uint64] (IndexRef go.uint64 (![go.SliceType go.uint64] "ints", #(W64 1)))) =⟨go.uint64⟩ #(W64 2))) in
@@ -2214,10 +2214,10 @@ Definition testSliceAppend : go_string := "github.com/goose-lang/goose/testdata/
 (* go: slices.go:89:6 *)
 Definition testSliceAppendⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ok" := (GoAlloc go.bool #()) in
+    exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
     do:  ("ok" <-[go.bool] "$r0");;;
-    let: "bytes" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "bytes" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) #(W64 0)) in
     do:  ("bytes" <-[go.SliceType go.byte] "$r0");;;
     let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "bytes") in
@@ -2225,7 +2225,7 @@ Definition testSliceAppendⁱᵐᵖˡ : val :=
     CompositeLiteral go.byte (LiteralValue [KeyedElement None (ElementExpression "$sl0")]))) in
     (FuncResolve go.append [go.SliceType go.byte] #()) "$a0" "$a1") in
     do:  ("bytes" <-[go.SliceType go.byte] "$r0");;;
-    let: "newBytes" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "newBytes" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: "$r0" := (CompositeLiteral (go.SliceType go.byte) (LiteralValue [KeyedElement None (ElementExpression #(W8 2)); KeyedElement None (ElementExpression #(W8 3))])) in
     do:  ("newBytes" <-[go.SliceType go.byte] "$r0");;;
     let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "bytes") in
@@ -2253,7 +2253,7 @@ Definition Fooⁱᵐᵖˡ : go.type := go.StructType [
 (* go: struct_pointers.go:14:17 *)
 Definition Bar__mutateⁱᵐᵖˡ : val :=
   λ: "bar" <>,
-    exception_do (let: "bar" := (go.AllocValue (go.PointerType Bar) "bar") in
+    exception_do (let: "bar" := (GoAlloc (go.PointerType Bar) "bar") in
     let: "$r0" := #(W64 2) in
     do:  ((StructFieldRef Bar "a"%go (![go.PointerType Bar] "bar")) <-[go.uint64] "$r0");;;
     let: "$r0" := #(W64 3) in
@@ -2265,7 +2265,7 @@ Definition Foo : go.type := go.Named "github.com/goose-lang/goose/testdata/examp
 (* go: struct_pointers.go:19:17 *)
 Definition Foo__mutateBarⁱᵐᵖˡ : val :=
   λ: "foo" <>,
-    exception_do (let: "foo" := (go.AllocValue (go.PointerType Foo) "foo") in
+    exception_do (let: "foo" := (GoAlloc (go.PointerType Foo) "foo") in
     do:  ((MethodResolve (go.PointerType Bar) "mutate"%go #() (StructFieldRef Foo "bar"%go (![go.PointerType Foo] "foo"))) #());;;
     return: #()).
 
@@ -2274,7 +2274,7 @@ Definition testFooBarMutation : go_string := "github.com/goose-lang/goose/testda
 (* go: struct_pointers.go:23:6 *)
 Definition testFooBarMutationⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (GoAlloc Foo #()) in
+    exception_do (let: "x" := (GoAlloc Foo (GoZeroVal Foo #())) in
     let: "$r0" := (CompositeLiteral Foo (LiteralValue [KeyedElement (Some (KeyField "bar"%go)) (CompositeLiteral Bar (LiteralValue [KeyedElement (Some (KeyField "a"%go)) (ElementExpression #(W64 0)); KeyedElement (Some (KeyField "b"%go)) (ElementExpression #(W64 0))]))])) in
     do:  ("x" <-[Foo] "$r0");;;
     do:  ((MethodResolve (go.PointerType Foo) "mutateBar"%go #() "x") #());;;
@@ -2300,31 +2300,31 @@ Definition S : go.type := go.Named "github.com/goose-lang/goose/testdata/example
 (* go: structs.go:14:6 *)
 Definition NewSⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (return: (go.AllocValue S (CompositeLiteral S (LiteralValue [KeyedElement (Some (KeyField "a"%go)) (ElementExpression #(W64 2)); KeyedElement (Some (KeyField "b"%go)) (CompositeLiteral TwoInts (LiteralValue [KeyedElement (Some (KeyField "x"%go)) (ElementExpression #(W64 1)); KeyedElement (Some (KeyField "y"%go)) (ElementExpression #(W64 2))])); KeyedElement (Some (KeyField "c"%go)) (ElementExpression #true)])))).
+    exception_do (return: (GoAlloc S (CompositeLiteral S (LiteralValue [KeyedElement (Some (KeyField "a"%go)) (ElementExpression #(W64 2)); KeyedElement (Some (KeyField "b"%go)) (CompositeLiteral TwoInts (LiteralValue [KeyedElement (Some (KeyField "x"%go)) (ElementExpression #(W64 1)); KeyedElement (Some (KeyField "y"%go)) (ElementExpression #(W64 2))])); KeyedElement (Some (KeyField "c"%go)) (ElementExpression #true)])))).
 
 (* go: structs.go:22:13 *)
 Definition S__readAⁱᵐᵖˡ : val :=
   λ: "s" <>,
-    exception_do (let: "s" := (go.AllocValue (go.PointerType S) "s") in
+    exception_do (let: "s" := (GoAlloc (go.PointerType S) "s") in
     return: (![go.uint64] (StructFieldRef S "a"%go (![go.PointerType S] "s")))).
 
 (* go: structs.go:26:13 *)
 Definition S__readBⁱᵐᵖˡ : val :=
   λ: "s" <>,
-    exception_do (let: "s" := (go.AllocValue (go.PointerType S) "s") in
+    exception_do (let: "s" := (GoAlloc (go.PointerType S) "s") in
     return: (![TwoInts] (StructFieldRef S "b"%go (![go.PointerType S] "s")))).
 
 (* go: structs.go:30:12 *)
 Definition S__readBValⁱᵐᵖˡ : val :=
   λ: "s" <>,
-    exception_do (let: "s" := (go.AllocValue S "s") in
+    exception_do (let: "s" := (GoAlloc S "s") in
     return: (![TwoInts] (StructFieldRef S "b"%go "s"))).
 
 (* go: structs.go:34:13 *)
 Definition S__updateBValXⁱᵐᵖˡ : val :=
   λ: "s" "i",
-    exception_do (let: "s" := (go.AllocValue (go.PointerType S) "s") in
-    let: "i" := (go.AllocValue go.uint64 "i") in
+    exception_do (let: "s" := (GoAlloc (go.PointerType S) "s") in
+    let: "i" := (GoAlloc go.uint64 "i") in
     let: "$r0" := (![go.uint64] "i") in
     do:  ((StructFieldRef TwoInts "x"%go (StructFieldRef S "b"%go (![go.PointerType S] "s"))) <-[go.uint64] "$r0");;;
     return: #()).
@@ -2332,7 +2332,7 @@ Definition S__updateBValXⁱᵐᵖˡ : val :=
 (* go: structs.go:38:13 *)
 Definition S__negateCⁱᵐᵖˡ : val :=
   λ: "s" <>,
-    exception_do (let: "s" := (go.AllocValue (go.PointerType S) "s") in
+    exception_do (let: "s" := (GoAlloc (go.PointerType S) "s") in
     let: "$r0" := (~ (![go.bool] (StructFieldRef S "c"%go (![go.PointerType S] "s")))) in
     do:  ((StructFieldRef S "c"%go (![go.PointerType S] "s")) <-[go.bool] "$r0");;;
     return: #()).
@@ -2342,15 +2342,15 @@ Definition testStructUpdates : go_string := "github.com/goose-lang/goose/testdat
 (* go: structs.go:42:6 *)
 Definition testStructUpdatesⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ok" := (GoAlloc go.bool #()) in
+    exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
     do:  ("ok" <-[go.bool] "$r0");;;
-    let: "ns" := (GoAlloc (go.PointerType S) #()) in
+    let: "ns" := (GoAlloc (go.PointerType S) (GoZeroVal (go.PointerType S) #())) in
     let: "$r0" := ((FuncResolve NewS [] #()) #()) in
     do:  ("ns" <-[go.PointerType S] "$r0");;;
     let: "$r0" := ((![go.bool] "ok") && (((MethodResolve (go.PointerType S) "readA"%go #() (![go.PointerType S] "ns")) #()) =⟨go.uint64⟩ #(W64 2))) in
     do:  ("ok" <-[go.bool] "$r0");;;
-    let: "b1" := (GoAlloc TwoInts #()) in
+    let: "b1" := (GoAlloc TwoInts (GoZeroVal TwoInts #())) in
     let: "$r0" := ((MethodResolve (go.PointerType S) "readB"%go #() (![go.PointerType S] "ns")) #()) in
     do:  ("b1" <-[TwoInts] "$r0");;;
     let: "$r0" := ((![go.bool] "ok") && ((![go.uint64] (StructFieldRef TwoInts "x"%go "b1")) =⟨go.uint64⟩ #(W64 1))) in
@@ -2360,12 +2360,12 @@ Definition testStructUpdatesⁱᵐᵖˡ : val :=
     do:  ("ok" <-[go.bool] "$r0");;;
     let: "$r0" := #(W64 3) in
     do:  ((StructFieldRef TwoInts "x"%go "b1") <-[go.uint64] "$r0");;;
-    let: "b2" := (GoAlloc TwoInts #()) in
+    let: "b2" := (GoAlloc TwoInts (GoZeroVal TwoInts #())) in
     let: "$r0" := ((MethodResolve (go.PointerType S) "readB"%go #() (![go.PointerType S] "ns")) #()) in
     do:  ("b2" <-[TwoInts] "$r0");;;
     let: "$r0" := ((![go.bool] "ok") && ((![go.uint64] (StructFieldRef TwoInts "x"%go "b2")) =⟨go.uint64⟩ #(W64 1))) in
     do:  ("ok" <-[go.bool] "$r0");;;
-    let: "b3" := (GoAlloc (go.PointerType TwoInts) #()) in
+    let: "b3" := (GoAlloc (go.PointerType TwoInts) (GoZeroVal (go.PointerType TwoInts) #())) in
     let: "$r0" := (StructFieldRef S "b"%go (![go.PointerType S] "ns")) in
     do:  ("b3" <-[go.PointerType TwoInts] "$r0");;;
     let: "$r0" := ((![go.bool] "ok") && ((![go.uint64] (StructFieldRef TwoInts "x"%go (![go.PointerType TwoInts] "b3"))) =⟨go.uint64⟩ #(W64 1))) in
@@ -2381,10 +2381,10 @@ Definition testNestedStructUpdates : go_string := "github.com/goose-lang/goose/t
 (* go: structs.go:65:6 *)
 Definition testNestedStructUpdatesⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ok" := (GoAlloc go.bool #()) in
+    exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
     do:  ("ok" <-[go.bool] "$r0");;;
-    let: "ns" := (GoAlloc (go.PointerType S) #()) in
+    let: "ns" := (GoAlloc (go.PointerType S) (GoZeroVal (go.PointerType S) #())) in
     let: "$r0" := ((FuncResolve NewS [] #()) #()) in
     do:  ("ns" <-[go.PointerType S] "$r0");;;
     let: "$r0" := #(W64 5) in
@@ -2393,7 +2393,7 @@ Definition testNestedStructUpdatesⁱᵐᵖˡ : val :=
     do:  ("ok" <-[go.bool] "$r0");;;
     let: "$r0" := ((FuncResolve NewS [] #()) #()) in
     do:  ("ns" <-[go.PointerType S] "$r0");;;
-    let: "p" := (GoAlloc (go.PointerType TwoInts) #()) in
+    let: "p" := (GoAlloc (go.PointerType TwoInts) (GoZeroVal (go.PointerType TwoInts) #())) in
     let: "$r0" := (StructFieldRef S "b"%go (![go.PointerType S] "ns")) in
     do:  ("p" <-[go.PointerType TwoInts] "$r0");;;
     let: "$r0" := #(W64 5) in
@@ -2423,20 +2423,20 @@ Definition testStructConstructions : go_string := "github.com/goose-lang/goose/t
 (* go: structs.go:90:6 *)
 Definition testStructConstructionsⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ok" := (GoAlloc go.bool #()) in
+    exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
     do:  ("ok" <-[go.bool] "$r0");;;
-    let: "p1" := (GoAlloc (go.PointerType TwoInts) #()) in
-    let: "p2" := (GoAlloc TwoInts #()) in
-    let: "p3" := (GoAlloc TwoInts #()) in
+    let: "p1" := (GoAlloc (go.PointerType TwoInts) (GoZeroVal (go.PointerType TwoInts) #())) in
+    let: "p2" := (GoAlloc TwoInts (GoZeroVal TwoInts #())) in
+    let: "p3" := (GoAlloc TwoInts (GoZeroVal TwoInts #())) in
     let: "$r0" := (CompositeLiteral TwoInts (LiteralValue [KeyedElement (Some (KeyField "y"%go)) (ElementExpression #(W64 0)); KeyedElement (Some (KeyField "x"%go)) (ElementExpression #(W64 0))])) in
     do:  ("p3" <-[TwoInts] "$r0");;;
-    let: "p4" := (GoAlloc TwoInts #()) in
+    let: "p4" := (GoAlloc TwoInts (GoZeroVal TwoInts #())) in
     let: "$r0" := (CompositeLiteral TwoInts (LiteralValue [KeyedElement (Some (KeyField "x"%go)) (ElementExpression #(W64 0)); KeyedElement (Some (KeyField "y"%go)) (ElementExpression #(W64 0))])) in
     do:  ("p4" <-[TwoInts] "$r0");;;
     let: "$r0" := ((![go.bool] "ok") && ((![go.PointerType TwoInts] "p1") =⟨go.PointerType TwoInts⟩ #null)) in
     do:  ("ok" <-[go.bool] "$r0");;;
-    let: "$r0" := (GoAlloc TwoInts #()) in
+    let: "$r0" := (GoAlloc TwoInts (GoZeroVal TwoInts #())) in
     do:  ("p1" <-[go.PointerType TwoInts] "$r0");;;
     let: "$r0" := ((![go.bool] "ok") && ((![TwoInts] "p2") =⟨go.StructType [
       (go.FieldDecl "x"%go go.uint64);
@@ -2462,15 +2462,15 @@ Definition testIncompleteStruct : go_string := "github.com/goose-lang/goose/test
 (* go: structs.go:109:6 *)
 Definition testIncompleteStructⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ok" := (GoAlloc go.bool #()) in
+    exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
     do:  ("ok" <-[go.bool] "$r0");;;
-    let: "p1" := (GoAlloc TwoInts #()) in
+    let: "p1" := (GoAlloc TwoInts (GoZeroVal TwoInts #())) in
     let: "$r0" := (CompositeLiteral TwoInts (LiteralValue [KeyedElement (Some (KeyField "x"%go)) (ElementExpression #(W64 0))])) in
     do:  ("p1" <-[TwoInts] "$r0");;;
     let: "$r0" := ((![go.bool] "ok") && ((![go.uint64] (StructFieldRef TwoInts "y"%go "p1")) =⟨go.uint64⟩ #(W64 0))) in
     do:  ("ok" <-[go.bool] "$r0");;;
-    let: "p2" := (GoAlloc S #()) in
+    let: "p2" := (GoAlloc S (GoZeroVal S #())) in
     let: "$r0" := (CompositeLiteral S (LiteralValue [KeyedElement (Some (KeyField "a"%go)) (ElementExpression #(W64 2))])) in
     do:  ("p2" <-[S] "$r0");;;
     let: "$r0" := ((![go.bool] "ok") && ((![go.uint64] (StructFieldRef TwoInts "x"%go (StructFieldRef S "b"%go "p2"))) =⟨go.uint64⟩ #(W64 0))) in
@@ -2490,7 +2490,7 @@ Definition StructWrap : go.type := go.Named "github.com/goose-lang/goose/testdat
 (* go: structs.go:126:6 *)
 Definition testStoreInStructVarⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "p" := (GoAlloc StructWrap #()) in
+    exception_do (let: "p" := (GoAlloc StructWrap (GoZeroVal StructWrap #())) in
     let: "$r0" := (CompositeLiteral StructWrap (LiteralValue [KeyedElement (Some (KeyField "i"%go)) (ElementExpression #(W64 0))])) in
     do:  ("p" <-[StructWrap] "$r0");;;
     let: "$r0" := #(W64 5) in
@@ -2502,8 +2502,8 @@ Definition testStoreInStructPointerVar : go_string := "github.com/goose-lang/goo
 (* go: structs.go:132:6 *)
 Definition testStoreInStructPointerVarⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "p" := (GoAlloc (go.PointerType StructWrap) #()) in
-    let: "$r0" := (GoAlloc StructWrap #()) in
+    exception_do (let: "p" := (GoAlloc (go.PointerType StructWrap) (GoZeroVal (go.PointerType StructWrap) #())) in
+    let: "$r0" := (GoAlloc StructWrap (GoZeroVal StructWrap #())) in
     do:  ("p" <-[go.PointerType StructWrap] "$r0");;;
     let: "$r0" := #(W64 5) in
     do:  ((StructFieldRef StructWrap "i"%go (![go.PointerType StructWrap] "p")) <-[go.uint64] "$r0");;;
@@ -2514,8 +2514,8 @@ Definition testStoreComposite : go_string := "github.com/goose-lang/goose/testda
 (* go: structs.go:138:6 *)
 Definition testStoreCompositeⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "p" := (GoAlloc (go.PointerType TwoInts) #()) in
-    let: "$r0" := (GoAlloc TwoInts #()) in
+    exception_do (let: "p" := (GoAlloc (go.PointerType TwoInts) (GoZeroVal (go.PointerType TwoInts) #())) in
+    let: "$r0" := (GoAlloc TwoInts (GoZeroVal TwoInts #())) in
     do:  ("p" <-[go.PointerType TwoInts] "$r0");;;
     let: "$r0" := (CompositeLiteral TwoInts (LiteralValue [KeyedElement (Some (KeyField "x"%go)) (ElementExpression #(W64 3)); KeyedElement (Some (KeyField "y"%go)) (ElementExpression #(W64 4))])) in
     do:  ((![go.PointerType TwoInts] "p") <-[TwoInts] "$r0");;;
@@ -2526,10 +2526,10 @@ Definition testStoreSlice : go_string := "github.com/goose-lang/goose/testdata/e
 (* go: structs.go:144:6 *)
 Definition testStoreSliceⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "p" := (GoAlloc (go.PointerType (go.SliceType go.uint64)) #()) in
-    let: "$r0" := (GoAlloc (go.SliceType go.uint64) #()) in
+    exception_do (let: "p" := (GoAlloc (go.PointerType (go.SliceType go.uint64)) (GoZeroVal (go.PointerType (go.SliceType go.uint64)) #())) in
+    let: "$r0" := (GoAlloc (go.SliceType go.uint64) (GoZeroVal (go.SliceType go.uint64) #())) in
     do:  ("p" <-[go.PointerType (go.SliceType go.uint64)] "$r0");;;
-    let: "s" := (GoAlloc (go.SliceType go.uint64) #()) in
+    let: "s" := (GoAlloc (go.SliceType go.uint64) (GoZeroVal (go.SliceType go.uint64) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.uint64] #()) #(W64 3)) in
     do:  ("s" <-[go.SliceType go.uint64] "$r0");;;
     let: "$r0" := (![go.SliceType go.uint64] "s") in
@@ -2548,11 +2548,11 @@ Definition StructWithFunc : go.type := go.Named "github.com/goose-lang/goose/tes
 (* go: structs.go:155:6 *)
 Definition testStructFieldFuncⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "a" := (GoAlloc (go.PointerType StructWithFunc) #()) in
-    let: "$r0" := (GoAlloc StructWithFunc #()) in
+    exception_do (let: "a" := (GoAlloc (go.PointerType StructWithFunc) (GoZeroVal (go.PointerType StructWithFunc) #())) in
+    let: "$r0" := (GoAlloc StructWithFunc (GoZeroVal StructWithFunc #())) in
     do:  ("a" <-[go.PointerType StructWithFunc] "$r0");;;
     let: "$r0" := (λ: "arg",
-      exception_do (let: "arg" := (go.AllocValue go.uint64 "arg") in
+      exception_do (let: "arg" := (GoAlloc go.uint64 "arg") in
       return: ((![go.uint64] "arg") *⟨go.uint64⟩ #(W64 2)))
       ) in
     do:  ((StructFieldRef StructWithFunc "fn"%go (![go.PointerType StructWithFunc] "a")) <-[go.FunctionType (go.Signature [go.uint64] false [go.uint64])] "$r0");;;
@@ -2564,7 +2564,7 @@ Definition testSwitchVal : go_string := "github.com/goose-lang/goose/testdata/ex
 (* go: switch.go:3:6 *)
 Definition testSwitchValⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (GoAlloc go.uint64 #()) in
+    exception_do (let: "x" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 0) in
     do:  ("x" <-[go.uint64] "$r0");;;
     let: "$sw" := (![go.uint64] "x") in
@@ -2580,7 +2580,7 @@ Definition testSwitchMultiple : go_string := "github.com/goose-lang/goose/testda
 (* go: switch.go:15:6 *)
 Definition testSwitchMultipleⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (GoAlloc go.uint64 #()) in
+    exception_do (let: "x" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 0) in
     do:  ("x" <-[go.uint64] "$r0");;;
     let: "$sw" := (![go.uint64] "x") in
@@ -2597,7 +2597,7 @@ Definition testSwitchDefaultTrue : go_string := "github.com/goose-lang/goose/tes
 (* go: switch.go:26:6 *)
 Definition testSwitchDefaultTrueⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (GoAlloc go.uint64 #()) in
+    exception_do (let: "x" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 1) in
     do:  ("x" <-[go.uint64] "$r0");;;
     let: "$sw" := #true in
@@ -2618,7 +2618,7 @@ Definition switchConcrete : go.type := go.Named "github.com/goose-lang/goose/tes
 (* go: switch.go:45:26 *)
 Definition switchConcrete__markerⁱᵐᵖˡ : val :=
   λ: "c" <>,
-    exception_do (let: "c" := (go.AllocValue (go.PointerType switchConcrete) "c") in
+    exception_do (let: "c" := (GoAlloc (go.PointerType switchConcrete) "c") in
     do:  #()).
 
 Definition testSwitchConversion : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testSwitchConversion"%go.
@@ -2628,10 +2628,10 @@ Definition switchInterface : go.type := go.Named "github.com/goose-lang/goose/te
 (* go: switch.go:48:6 *)
 Definition testSwitchConversionⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "v" := (GoAlloc (go.PointerType switchConcrete) #()) in
-    let: "$r0" := (go.AllocValue switchConcrete (CompositeLiteral switchConcrete (LiteralValue []))) in
+    exception_do (let: "v" := (GoAlloc (go.PointerType switchConcrete) (GoZeroVal (go.PointerType switchConcrete) #())) in
+    let: "$r0" := (GoAlloc switchConcrete (CompositeLiteral switchConcrete (LiteralValue []))) in
     do:  ("v" <-[go.PointerType switchConcrete] "$r0");;;
-    let: "x" := (GoAlloc switchInterface #()) in
+    let: "x" := (GoAlloc switchInterface (GoZeroVal switchInterface #())) in
     let: "$r0" := (InterfaceMake (go.PointerType switchConcrete) (![go.PointerType switchConcrete] "v")) in
     do:  ("x" <-[switchInterface] "$r0");;;
     let: "$sw" := (![switchInterface] "x") in
@@ -2649,7 +2649,7 @@ Definition testPointerAssignment : go_string := "github.com/goose-lang/goose/tes
 (* go: vars.go:3:6 *)
 Definition testPointerAssignmentⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (GoAlloc go.bool #()) in
+    exception_do (let: "x" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
     do:  ("x" <-[go.bool] "$r0");;;
     return: (![go.bool] "x")).
@@ -2659,10 +2659,10 @@ Definition testAddressOfLocal : go_string := "github.com/goose-lang/goose/testda
 (* go: vars.go:9:6 *)
 Definition testAddressOfLocalⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (GoAlloc go.bool #()) in
+    exception_do (let: "x" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #false in
     do:  ("x" <-[go.bool] "$r0");;;
-    let: "xptr" := (GoAlloc (go.PointerType go.bool) #()) in
+    let: "xptr" := (GoAlloc (go.PointerType go.bool) (GoZeroVal (go.PointerType go.bool) #())) in
     let: "$r0" := "x" in
     do:  ("xptr" <-[go.PointerType go.bool] "$r0");;;
     let: "$r0" := #true in
@@ -2695,8 +2695,8 @@ Definition intToBlock : go_string := "github.com/goose-lang/goose/testdata/examp
 (* go: wal.go:25:6 *)
 Definition intToBlockⁱᵐᵖˡ : val :=
   λ: "a",
-    exception_do (let: "a" := (go.AllocValue go.uint64 "a") in
-    let: "b" := (GoAlloc (go.SliceType go.byte) #()) in
+    exception_do (let: "a" := (GoAlloc go.uint64 "a") in
+    let: "b" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) disk.BlockSize) in
     do:  ("b" <-[go.SliceType go.byte] "$r0");;;
     do:  (let: "$a0" := (![go.SliceType go.byte] "b") in
@@ -2709,8 +2709,8 @@ Definition blockToInt : go_string := "github.com/goose-lang/goose/testdata/examp
 (* go: wal.go:31:6 *)
 Definition blockToIntⁱᵐᵖˡ : val :=
   λ: "v",
-    exception_do (let: "v" := (go.AllocValue (go.SliceType go.byte) "v") in
-    let: "a" := (GoAlloc go.uint64 #()) in
+    exception_do (let: "v" := (GoAlloc (go.SliceType go.byte) "v") in
+    let: "a" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "v") in
     (FuncResolve primitive.UInt64Get [] #()) "$a0") in
     do:  ("a" <-[go.uint64] "$r0");;;
@@ -2725,10 +2725,10 @@ Definition Log : go.type := go.Named "github.com/goose-lang/goose/testdata/examp
    go: wal.go:37:6 *)
 Definition Newⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "d" := (GoAlloc disk.Disk #()) in
+    exception_do (let: "d" := (GoAlloc disk.Disk (GoZeroVal disk.Disk #())) in
     let: "$r0" := ((FuncResolve disk.Get [] #()) #()) in
     do:  ("d" <-[disk.Disk] "$r0");;;
-    let: "diskSize" := (GoAlloc go.uint64 #()) in
+    let: "diskSize" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := ((MethodResolve disk.Disk "Size"%go #() (![disk.Disk] "d")) #()) in
     do:  ("diskSize" <-[go.uint64] "$r0");;;
     (if: (![go.uint64] "diskSize") ≤⟨go.uint64⟩ logLength
@@ -2736,37 +2736,37 @@ Definition Newⁱᵐᵖˡ : val :=
       do:  (let: "$a0" := (InterfaceMake go.string #"disk is too small to host log"%go) in
       (FuncResolve go.panic [] #()) "$a0")
     else do:  #());;;
-    let: "cache" := (GoAlloc (go.MapType go.uint64 (go.SliceType go.byte)) #()) in
+    let: "cache" := (GoAlloc (go.MapType go.uint64 (go.SliceType go.byte)) (GoZeroVal (go.MapType go.uint64 (go.SliceType go.byte)) #())) in
     let: "$r0" := ((FuncResolve go.make1 [go.MapType go.uint64 (go.SliceType go.byte)] #()) #()) in
     do:  ("cache" <-[go.MapType go.uint64 (go.SliceType go.byte)] "$r0");;;
-    let: "header" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "header" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
     (FuncResolve intToBlock [] #()) "$a0") in
     do:  ("header" <-[go.SliceType go.byte] "$r0");;;
     do:  (let: "$a0" := #(W64 0) in
     let: "$a1" := (![go.SliceType go.byte] "header") in
     (MethodResolve disk.Disk "Write"%go #() (![disk.Disk] "d")) "$a0" "$a1");;;
-    let: "lengthPtr" := (GoAlloc (go.PointerType go.uint64) #()) in
-    let: "$r0" := (GoAlloc go.uint64 #()) in
+    let: "lengthPtr" := (GoAlloc (go.PointerType go.uint64) (GoZeroVal (go.PointerType go.uint64) #())) in
+    let: "$r0" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     do:  ("lengthPtr" <-[go.PointerType go.uint64] "$r0");;;
     let: "$r0" := #(W64 0) in
     do:  ((![go.PointerType go.uint64] "lengthPtr") <-[go.uint64] "$r0");;;
-    let: "l" := (GoAlloc (go.PointerType sync.Mutex) #()) in
-    let: "$r0" := (GoAlloc sync.Mutex #()) in
+    let: "l" := (GoAlloc (go.PointerType sync.Mutex) (GoZeroVal (go.PointerType sync.Mutex) #())) in
+    let: "$r0" := (GoAlloc sync.Mutex (GoZeroVal sync.Mutex #())) in
     do:  ("l" <-[go.PointerType sync.Mutex] "$r0");;;
     return: (CompositeLiteral Log (LiteralValue [KeyedElement (Some (KeyField "d"%go)) (ElementExpression (![disk.Disk] "d")); KeyedElement (Some (KeyField "cache"%go)) (ElementExpression (![go.MapType go.uint64 (go.SliceType go.byte)] "cache")); KeyedElement (Some (KeyField "length"%go)) (ElementExpression (![go.PointerType go.uint64] "lengthPtr")); KeyedElement (Some (KeyField "l"%go)) (ElementExpression (![go.PointerType sync.Mutex] "l"))]))).
 
 (* go: wal.go:52:14 *)
 Definition Log__lockⁱᵐᵖˡ : val :=
   λ: "l" <>,
-    exception_do (let: "l" := (go.AllocValue Log "l") in
+    exception_do (let: "l" := (GoAlloc Log "l") in
     do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go #() (![go.PointerType sync.Mutex] (StructFieldRef Log "l"%go "l"))) #());;;
     return: #()).
 
 (* go: wal.go:56:14 *)
 Definition Log__unlockⁱᵐᵖˡ : val :=
   λ: "l" <>,
-    exception_do (let: "l" := (go.AllocValue Log "l") in
+    exception_do (let: "l" := (GoAlloc Log "l") in
     do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go #() (![go.PointerType sync.Mutex] (StructFieldRef Log "l"%go "l"))) #());;;
     return: #()).
 
@@ -2777,9 +2777,9 @@ Definition Log__unlockⁱᵐᵖˡ : val :=
    go: wal.go:63:14 *)
 Definition Log__BeginTxnⁱᵐᵖˡ : val :=
   λ: "l" <>,
-    exception_do (let: "l" := (go.AllocValue Log "l") in
+    exception_do (let: "l" := (GoAlloc Log "l") in
     do:  ((MethodResolve Log "lock"%go #() (![Log] "l")) #());;;
-    let: "length" := (GoAlloc go.uint64 #()) in
+    let: "length" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := (![go.uint64] (![go.PointerType go.uint64] (StructFieldRef Log "length"%go "l"))) in
     do:  ("length" <-[go.uint64] "$r0");;;
     (if: (![go.uint64] "length") =⟨go.uint64⟩ #(W64 0)
@@ -2797,11 +2797,11 @@ Definition Log__BeginTxnⁱᵐᵖˡ : val :=
    go: wal.go:77:14 *)
 Definition Log__Readⁱᵐᵖˡ : val :=
   λ: "l" "a",
-    exception_do (let: "l" := (go.AllocValue Log "l") in
-    let: "a" := (go.AllocValue go.uint64 "a") in
+    exception_do (let: "l" := (GoAlloc Log "l") in
+    let: "a" := (GoAlloc go.uint64 "a") in
     do:  ((MethodResolve Log "lock"%go #() (![Log] "l")) #());;;
-    let: "ok" := (GoAlloc go.bool #()) in
-    let: "v" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
+    let: "v" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: ("$ret0", "$ret1") := (map.get (![go.MapType go.uint64 (go.SliceType go.byte)] (StructFieldRef Log "cache"%go "l")) (![go.uint64] "a")) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
@@ -2813,7 +2813,7 @@ Definition Log__Readⁱᵐᵖˡ : val :=
       return: (![go.SliceType go.byte] "v")
     else do:  #());;;
     do:  ((MethodResolve Log "unlock"%go #() (![Log] "l")) #());;;
-    let: "dv" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "dv" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: "$r0" := (let: "$a0" := (logLength +⟨go.uint64⟩ (![go.uint64] "a")) in
     (MethodResolve disk.Disk "Read"%go #() (![disk.Disk] (StructFieldRef Log "d"%go "l"))) "$a0") in
     do:  ("dv" <-[go.SliceType go.byte] "$r0");;;
@@ -2822,8 +2822,8 @@ Definition Log__Readⁱᵐᵖˡ : val :=
 (* go: wal.go:90:14 *)
 Definition Log__Sizeⁱᵐᵖˡ : val :=
   λ: "l" <>,
-    exception_do (let: "l" := (go.AllocValue Log "l") in
-    let: "sz" := (GoAlloc go.uint64 #()) in
+    exception_do (let: "l" := (GoAlloc Log "l") in
+    let: "sz" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := ((MethodResolve disk.Disk "Size"%go #() (![disk.Disk] (StructFieldRef Log "d"%go "l"))) #()) in
     do:  ("sz" <-[go.uint64] "$r0");;;
     return: ((![go.uint64] "sz") -⟨go.uint64⟩ logLength)).
@@ -2833,11 +2833,11 @@ Definition Log__Sizeⁱᵐᵖˡ : val :=
    go: wal.go:97:14 *)
 Definition Log__Writeⁱᵐᵖˡ : val :=
   λ: "l" "a" "v",
-    exception_do (let: "l" := (go.AllocValue Log "l") in
-    let: "v" := (go.AllocValue (go.SliceType go.byte) "v") in
-    let: "a" := (go.AllocValue go.uint64 "a") in
+    exception_do (let: "l" := (GoAlloc Log "l") in
+    let: "v" := (GoAlloc (go.SliceType go.byte) "v") in
+    let: "a" := (GoAlloc go.uint64 "a") in
     do:  ((MethodResolve Log "lock"%go #() (![Log] "l")) #());;;
-    let: "length" := (GoAlloc go.uint64 #()) in
+    let: "length" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := (![go.uint64] (![go.PointerType go.uint64] (StructFieldRef Log "length"%go "l"))) in
     do:  ("length" <-[go.uint64] "$r0");;;
     (if: (![go.uint64] "length") ≥⟨go.uint64⟩ MaxTxnWrites
@@ -2845,11 +2845,11 @@ Definition Log__Writeⁱᵐᵖˡ : val :=
       do:  (let: "$a0" := (InterfaceMake go.string #"transaction is at capacity"%go) in
       (FuncResolve go.panic [] #()) "$a0")
     else do:  #());;;
-    let: "aBlock" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "aBlock" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: "$r0" := (let: "$a0" := (![go.uint64] "a") in
     (FuncResolve intToBlock [] #()) "$a0") in
     do:  ("aBlock" <-[go.SliceType go.byte] "$r0");;;
-    let: "nextAddr" := (GoAlloc go.uint64 #()) in
+    let: "nextAddr" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := (#(W64 1) +⟨go.uint64⟩ (#(W64 2) *⟨go.uint64⟩ (![go.uint64] "length"))) in
     do:  ("nextAddr" <-[go.uint64] "$r0");;;
     do:  (let: "$a0" := (![go.uint64] "nextAddr") in
@@ -2870,13 +2870,13 @@ Definition Log__Writeⁱᵐᵖˡ : val :=
    go: wal.go:113:14 *)
 Definition Log__Commitⁱᵐᵖˡ : val :=
   λ: "l" <>,
-    exception_do (let: "l" := (go.AllocValue Log "l") in
+    exception_do (let: "l" := (GoAlloc Log "l") in
     do:  ((MethodResolve Log "lock"%go #() (![Log] "l")) #());;;
-    let: "length" := (GoAlloc go.uint64 #()) in
+    let: "length" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := (![go.uint64] (![go.PointerType go.uint64] (StructFieldRef Log "length"%go "l"))) in
     do:  ("length" <-[go.uint64] "$r0");;;
     do:  ((MethodResolve Log "unlock"%go #() (![Log] "l")) #());;;
-    let: "header" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "header" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: "$r0" := (let: "$a0" := (![go.uint64] "length") in
     (FuncResolve intToBlock [] #()) "$a0") in
     do:  ("header" <-[go.SliceType go.byte] "$r0");;;
@@ -2890,20 +2890,20 @@ Definition getLogEntry : go_string := "github.com/goose-lang/goose/testdata/exam
 (* go: wal.go:122:6 *)
 Definition getLogEntryⁱᵐᵖˡ : val :=
   λ: "d" "logOffset",
-    exception_do (let: "logOffset" := (go.AllocValue go.uint64 "logOffset") in
-    let: "d" := (go.AllocValue disk.Disk "d") in
-    let: "diskAddr" := (GoAlloc go.uint64 #()) in
+    exception_do (let: "logOffset" := (GoAlloc go.uint64 "logOffset") in
+    let: "d" := (GoAlloc disk.Disk "d") in
+    let: "diskAddr" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := (#(W64 1) +⟨go.uint64⟩ (#(W64 2) *⟨go.uint64⟩ (![go.uint64] "logOffset"))) in
     do:  ("diskAddr" <-[go.uint64] "$r0");;;
-    let: "aBlock" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "aBlock" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: "$r0" := (let: "$a0" := (![go.uint64] "diskAddr") in
     (MethodResolve disk.Disk "Read"%go #() (![disk.Disk] "d")) "$a0") in
     do:  ("aBlock" <-[go.SliceType go.byte] "$r0");;;
-    let: "a" := (GoAlloc go.uint64 #()) in
+    let: "a" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "aBlock") in
     (FuncResolve blockToInt [] #()) "$a0") in
     do:  ("a" <-[go.uint64] "$r0");;;
-    let: "v" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "v" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: "$r0" := (let: "$a0" := ((![go.uint64] "diskAddr") +⟨go.uint64⟩ #(W64 1)) in
     (MethodResolve disk.Disk "Read"%go #() (![disk.Disk] "d")) "$a0") in
     do:  ("v" <-[go.SliceType go.byte] "$r0");;;
@@ -2916,16 +2916,16 @@ Definition applyLog : go_string := "github.com/goose-lang/goose/testdata/example
    go: wal.go:131:6 *)
 Definition applyLogⁱᵐᵖˡ : val :=
   λ: "d" "length",
-    exception_do (let: "length" := (go.AllocValue go.uint64 "length") in
-    let: "d" := (go.AllocValue disk.Disk "d") in
-    (let: "i" := (GoAlloc go.uint64 #()) in
+    exception_do (let: "length" := (GoAlloc go.uint64 "length") in
+    let: "d" := (GoAlloc disk.Disk "d") in
+    (let: "i" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[go.uint64] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       (if: (![go.uint64] "i") <⟨go.uint64⟩ (![go.uint64] "length")
       then
-        let: "v" := (GoAlloc (go.SliceType go.byte) #()) in
-        let: "a" := (GoAlloc go.uint64 #()) in
+        let: "v" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
+        let: "a" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
         let: ("$ret0", "$ret1") := (let: "$a0" := (![disk.Disk] "d") in
         let: "$a1" := (![go.uint64] "i") in
         (FuncResolve getLogEntry [] #()) "$a0" "$a1") in
@@ -2948,8 +2948,8 @@ Definition clearLog : go_string := "github.com/goose-lang/goose/testdata/example
 (* go: wal.go:142:6 *)
 Definition clearLogⁱᵐᵖˡ : val :=
   λ: "d",
-    exception_do (let: "d" := (go.AllocValue disk.Disk "d") in
-    let: "header" := (GoAlloc (go.SliceType go.byte) #()) in
+    exception_do (let: "d" := (GoAlloc disk.Disk "d") in
+    let: "header" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
     (FuncResolve intToBlock [] #()) "$a0") in
     do:  ("header" <-[go.SliceType go.byte] "$r0");;;
@@ -2965,9 +2965,9 @@ Definition clearLogⁱᵐᵖˡ : val :=
    go: wal.go:150:14 *)
 Definition Log__Applyⁱᵐᵖˡ : val :=
   λ: "l" <>,
-    exception_do (let: "l" := (go.AllocValue Log "l") in
+    exception_do (let: "l" := (GoAlloc Log "l") in
     do:  ((MethodResolve Log "lock"%go #() (![Log] "l")) #());;;
-    let: "length" := (GoAlloc go.uint64 #()) in
+    let: "length" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := (![go.uint64] (![go.PointerType go.uint64] (StructFieldRef Log "length"%go "l"))) in
     do:  ("length" <-[go.uint64] "$r0");;;
     do:  (let: "$a0" := (![disk.Disk] (StructFieldRef Log "d"%go "l")) in
@@ -2987,14 +2987,14 @@ Definition Open : go_string := "github.com/goose-lang/goose/testdata/examples/se
    go: wal.go:163:6 *)
 Definition Openⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "d" := (GoAlloc disk.Disk #()) in
+    exception_do (let: "d" := (GoAlloc disk.Disk (GoZeroVal disk.Disk #())) in
     let: "$r0" := ((FuncResolve disk.Get [] #()) #()) in
     do:  ("d" <-[disk.Disk] "$r0");;;
-    let: "header" := (GoAlloc (go.SliceType go.byte) #()) in
+    let: "header" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
     (MethodResolve disk.Disk "Read"%go #() (![disk.Disk] "d")) "$a0") in
     do:  ("header" <-[go.SliceType go.byte] "$r0");;;
-    let: "length" := (GoAlloc go.uint64 #()) in
+    let: "length" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "header") in
     (FuncResolve blockToInt [] #()) "$a0") in
     do:  ("length" <-[go.uint64] "$r0");;;
@@ -3003,16 +3003,16 @@ Definition Openⁱᵐᵖˡ : val :=
     (FuncResolve applyLog [] #()) "$a0" "$a1");;;
     do:  (let: "$a0" := (![disk.Disk] "d") in
     (FuncResolve clearLog [] #()) "$a0");;;
-    let: "cache" := (GoAlloc (go.MapType go.uint64 (go.SliceType go.byte)) #()) in
+    let: "cache" := (GoAlloc (go.MapType go.uint64 (go.SliceType go.byte)) (GoZeroVal (go.MapType go.uint64 (go.SliceType go.byte)) #())) in
     let: "$r0" := ((FuncResolve go.make1 [go.MapType go.uint64 (go.SliceType go.byte)] #()) #()) in
     do:  ("cache" <-[go.MapType go.uint64 (go.SliceType go.byte)] "$r0");;;
-    let: "lengthPtr" := (GoAlloc (go.PointerType go.uint64) #()) in
-    let: "$r0" := (GoAlloc go.uint64 #()) in
+    let: "lengthPtr" := (GoAlloc (go.PointerType go.uint64) (GoZeroVal (go.PointerType go.uint64) #())) in
+    let: "$r0" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     do:  ("lengthPtr" <-[go.PointerType go.uint64] "$r0");;;
     let: "$r0" := #(W64 0) in
     do:  ((![go.PointerType go.uint64] "lengthPtr") <-[go.uint64] "$r0");;;
-    let: "l" := (GoAlloc (go.PointerType sync.Mutex) #()) in
-    let: "$r0" := (GoAlloc sync.Mutex #()) in
+    let: "l" := (GoAlloc (go.PointerType sync.Mutex) (GoZeroVal (go.PointerType sync.Mutex) #())) in
+    let: "$r0" := (GoAlloc sync.Mutex (GoZeroVal sync.Mutex #())) in
     do:  ("l" <-[go.PointerType sync.Mutex] "$r0");;;
     return: (CompositeLiteral Log (LiteralValue [KeyedElement (Some (KeyField "d"%go)) (ElementExpression (![disk.Disk] "d")); KeyedElement (Some (KeyField "cache"%go)) (ElementExpression (![go.MapType go.uint64 (go.SliceType go.byte)] "cache")); KeyedElement (Some (KeyField "length"%go)) (ElementExpression (![go.PointerType go.uint64] "lengthPtr")); KeyedElement (Some (KeyField "l"%go)) (ElementExpression (![go.PointerType sync.Mutex] "l"))]))).
 
@@ -3023,10 +3023,10 @@ Definition disabled_testWal : go_string := "github.com/goose-lang/goose/testdata
    go: wal.go:178:6 *)
 Definition disabled_testWalⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ok" := (GoAlloc go.bool #()) in
+    exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
     do:  ("ok" <-[go.bool] "$r0");;;
-    let: "lg" := (GoAlloc Log #()) in
+    let: "lg" := (GoAlloc Log (GoZeroVal Log #())) in
     let: "$r0" := ((FuncResolve New [] #()) #()) in
     do:  ("lg" <-[Log] "$r0");;;
     (if: (MethodResolve Log "BeginTxn"%go #() (![Log] "lg")) #()

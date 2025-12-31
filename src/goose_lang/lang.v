@@ -179,6 +179,7 @@ Inductive go_instruction : Type :=
 | GoStore (t : go.type)
 | GoAlloc (t : go.type)
 | GoPrealloc
+| GoZeroVal (t : go.type)
 
 | FuncResolve (f : go_string) (type_args : list go.type)
 | MethodResolve (t : go.type) (m : go_string)

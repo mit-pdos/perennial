@@ -307,7 +307,7 @@ Axiom nsecShift : Z.
    go: time.go:176:16 *)
 Definition Time__nsecⁱᵐᵖˡ : val :=
   λ: "t" <>,
-    exception_do (let: "t" := (go.AllocValue (go.PointerType Time) "t") in
+    exception_do (let: "t" := (GoAlloc (go.PointerType Time) "t") in
     return: (u_to_w32 ((![go.uint64] (StructFieldRef Time "wall"%go (![go.PointerType Time] "t"))) &⟨go.uint64⟩ #(W64 nsecMask)))).
 
 Definition wallToInternal : val := #(W64 59453308800).
@@ -317,7 +317,7 @@ Definition wallToInternal : val := #(W64 59453308800).
    go: time.go:181:16 *)
 Definition Time__secⁱᵐᵖˡ : val :=
   λ: "t" <>,
-    exception_do (let: "t" := (go.AllocValue (go.PointerType Time) "t") in
+    exception_do (let: "t" := (GoAlloc (go.PointerType Time) "t") in
     (if: ((![go.uint64] (StructFieldRef Time "wall"%go (![go.PointerType Time] "t"))) &⟨go.uint64⟩ #(W64 hasMonotonic)) ≠⟨go.uint64⟩ #(W64 0)
     then return: (wallToInternal +⟨go.int64⟩ (u_to_w64 (((![go.uint64] (StructFieldRef Time "wall"%go (![go.PointerType Time] "t"))) ≪⟨go.uint64⟩ #(W64 1)) ≫⟨go.uint64⟩ #(W64 31))))
     else do:  #());;;
@@ -330,7 +330,7 @@ Definition internalToUnix : val := #(W64 (-62135596800)).
    go: time.go:189:16 *)
 Definition Time__unixSecⁱᵐᵖˡ : val :=
   λ: "t" <>,
-    exception_do (let: "t" := (go.AllocValue (go.PointerType Time) "t") in
+    exception_do (let: "t" := (GoAlloc (go.PointerType Time) "t") in
     return: (((MethodResolve (go.PointerType Time) "sec"%go #() (![go.PointerType Time] "t")) #()) +⟨go.int64⟩ internalToUnix)).
 
 Axiom Monthⁱᵐᵖˡ : go.type.
@@ -479,7 +479,7 @@ Definition unixTime : go_string := "time.unixTime"%go.
    go: time.go:1456:15 *)
 Definition Time__UnixNanoⁱᵐᵖˡ : val :=
   λ: "t" <>,
-    exception_do (let: "t" := (go.AllocValue Time "t") in
+    exception_do (let: "t" := (GoAlloc Time "t") in
     return: ((((MethodResolve (go.PointerType Time) "unixSec"%go #() "t") #()) *⟨go.int64⟩ #(W64 1000000000)) +⟨go.int64⟩ (s_to_w64 ((MethodResolve (go.PointerType Time) "nsec"%go #() "t") #())))).
 
 Axiom timeBinaryVersionV1 : val.

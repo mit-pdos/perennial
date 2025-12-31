@@ -24,13 +24,13 @@ Definition LockedStack : go.type := go.Named "github.com/goose-lang/goose/testda
 (* go: elimination_stack.go:14:6 *)
 Definition NewLockedStackⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (return: (go.AllocValue LockedStack (CompositeLiteral LockedStack (LiteralValue [KeyedElement (Some (KeyField "stack"%go)) (ElementExpression ((FuncResolve go.make2 [go.SliceType go.string] #()) #(W64 0)))])))).
+    exception_do (return: (GoAlloc LockedStack (CompositeLiteral LockedStack (LiteralValue [KeyedElement (Some (KeyField "stack"%go)) (ElementExpression ((FuncResolve go.make2 [go.SliceType go.string] #()) #(W64 0)))])))).
 
 (* go: elimination_stack.go:18:23 *)
 Definition LockedStack__Pushⁱᵐᵖˡ : val :=
   λ: "s" "value",
-    exception_do (let: "s" := (go.AllocValue (go.PointerType LockedStack) "s") in
-    let: "value" := (go.AllocValue go.string "value") in
+    exception_do (let: "s" := (GoAlloc (go.PointerType LockedStack) "s") in
+    let: "value" := (GoAlloc go.string "value") in
     do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go #() (StructFieldRef LockedStack "mu"%go (![go.PointerType LockedStack] "s"))) #());;;
     let: "$r0" := (let: "$a0" := (![go.SliceType go.string] (StructFieldRef LockedStack "stack"%go (![go.PointerType LockedStack] "s"))) in
     let: "$a1" := ((let: "$sl0" := (![go.string] "value") in
@@ -43,7 +43,7 @@ Definition LockedStack__Pushⁱᵐᵖˡ : val :=
 (* go: elimination_stack.go:24:23 *)
 Definition LockedStack__Popⁱᵐᵖˡ : val :=
   λ: "s" <>,
-    exception_do (let: "s" := (go.AllocValue (go.PointerType LockedStack) "s") in
+    exception_do (let: "s" := (GoAlloc (go.PointerType LockedStack) "s") in
     do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go #() (StructFieldRef LockedStack "mu"%go (![go.PointerType LockedStack] "s"))) #());;;
     (if: (let: "$a0" := (![go.SliceType go.string] (StructFieldRef LockedStack "stack"%go (![go.PointerType LockedStack] "s"))) in
     (FuncResolve go.len [go.SliceType go.string] #()) "$a0") =⟨go.int⟩ #(W64 0)
@@ -51,11 +51,11 @@ Definition LockedStack__Popⁱᵐᵖˡ : val :=
       do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go #() (StructFieldRef LockedStack "mu"%go (![go.PointerType LockedStack] "s"))) #());;;
       return: (#""%go, #false)
     else do:  #());;;
-    let: "last" := (GoAlloc go.int #()) in
+    let: "last" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "$r0" := ((let: "$a0" := (![go.SliceType go.string] (StructFieldRef LockedStack "stack"%go (![go.PointerType LockedStack] "s"))) in
     (FuncResolve go.len [go.SliceType go.string] #()) "$a0") -⟨go.int⟩ #(W64 1)) in
     do:  ("last" <-[go.int] "$r0");;;
-    let: "v" := (GoAlloc go.string #()) in
+    let: "v" := (GoAlloc go.string (GoZeroVal go.string #())) in
     let: "$r0" := (![go.string] (IndexRef go.string (![go.SliceType go.string] (StructFieldRef LockedStack "stack"%go (![go.PointerType LockedStack] "s")), ![go.int] "last"))) in
     do:  ("v" <-[go.string] "$r0");;;
     let: "$r0" := (let: "$s" := (![go.SliceType go.string] (StructFieldRef LockedStack "stack"%go (![go.PointerType LockedStack] "s"))) in
@@ -81,15 +81,15 @@ Definition EliminationStack : go.type := go.Named "github.com/goose-lang/goose/t
    go: elimination_stack.go:47:6 *)
 Definition NewEliminationStackⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (return: (go.AllocValue EliminationStack (CompositeLiteral EliminationStack (LiteralValue [KeyedElement (Some (KeyField "base"%go)) (ElementExpression ((FuncResolve NewLockedStack [] #()) #())); KeyedElement (Some (KeyField "exchanger"%go)) (ElementExpression ((FuncResolve go.make1 [go.ChannelType go.sendrecv go.string] #()) #()))])))).
+    exception_do (return: (GoAlloc EliminationStack (CompositeLiteral EliminationStack (LiteralValue [KeyedElement (Some (KeyField "base"%go)) (ElementExpression ((FuncResolve NewLockedStack [] #()) #())); KeyedElement (Some (KeyField "exchanger"%go)) (ElementExpression ((FuncResolve go.make1 [go.ChannelType go.sendrecv go.string] #()) #()))])))).
 
 (* Push first tries one-shot elimination; on timeout, falls back to the locked stack.
 
    go: elimination_stack.go:55:28 *)
 Definition EliminationStack__Pushⁱᵐᵖˡ : val :=
   λ: "s" "value",
-    exception_do (let: "s" := (go.AllocValue (go.PointerType EliminationStack) "s") in
-    let: "value" := (go.AllocValue go.string "value") in
+    exception_do (let: "s" := (GoAlloc (go.PointerType EliminationStack) "s") in
+    let: "value" := (GoAlloc go.string "value") in
     chan.select_blocking [chan.select_send go.string (![go.ChannelType go.sendrecv go.string] (StructFieldRef EliminationStack "exchanger"%go (![go.PointerType EliminationStack] "s"))) (![go.string] "value") (λ: <>,
        return: (#())
        ); chan.select_receive time.Time (let: "$a0" := timeout in
@@ -105,9 +105,9 @@ Definition EliminationStack__Pushⁱᵐᵖˡ : val :=
    go: elimination_stack.go:67:28 *)
 Definition EliminationStack__Popⁱᵐᵖˡ : val :=
   λ: "s" <>,
-    exception_do (let: "s" := (go.AllocValue (go.PointerType EliminationStack) "s") in
+    exception_do (let: "s" := (GoAlloc (go.PointerType EliminationStack) "s") in
     chan.select_blocking [chan.select_receive go.string (![go.ChannelType go.sendrecv go.string] (StructFieldRef EliminationStack "exchanger"%go (![go.PointerType EliminationStack] "s"))) (λ: "$recvVal",
-       let: "v" := (GoAlloc go.string #()) in
+       let: "v" := (GoAlloc go.string (GoZeroVal go.string #())) in
        let: "$r0" := (Fst "$recvVal") in
        do:  ("v" <-[go.string] "$r0");;;
        return: (![go.string] "v", #true)
@@ -132,7 +132,7 @@ Definition HelloWorldAsync : go_string := "github.com/goose-lang/goose/testdata/
 (* go: examples.go:12:6 *)
 Definition HelloWorldAsyncⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "ch" := (GoAlloc (go.ChannelType go.sendrecv go.string) #()) in
+    exception_do (let: "ch" := (GoAlloc (go.ChannelType go.sendrecv go.string) (GoZeroVal (go.ChannelType go.sendrecv go.string) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.ChannelType go.sendrecv go.string] #()) #(W64 1)) in
     do:  ("ch" <-[go.ChannelType go.sendrecv go.string] "$r0");;;
     let: "$go" := (λ: <>,
@@ -158,14 +158,14 @@ Definition HelloWorldCancellable : go_string := "github.com/goose-lang/goose/tes
    go: examples.go:25:6 *)
 Definition HelloWorldCancellableⁱᵐᵖˡ : val :=
   λ: "done" "err",
-    exception_do (let: "err" := (go.AllocValue (go.PointerType go.string) "err") in
-    let: "done" := (go.AllocValue (go.ChannelType go.sendrecv (go.StructType [
+    exception_do (let: "err" := (GoAlloc (go.PointerType go.string) "err") in
+    let: "done" := (GoAlloc (go.ChannelType go.sendrecv (go.StructType [
     ])) "done") in
-    let: "future" := (GoAlloc (go.ChannelType go.sendrecv go.string) #()) in
+    let: "future" := (GoAlloc (go.ChannelType go.sendrecv go.string) (GoZeroVal (go.ChannelType go.sendrecv go.string) #())) in
     let: "$r0" := ((FuncResolve HelloWorldAsync [] #()) #()) in
     do:  ("future" <-[go.ChannelType go.sendrecv go.string] "$r0");;;
     chan.select_blocking [chan.select_receive go.string (![go.ChannelType go.sendrecv go.string] "future") (λ: "$recvVal",
-       let: "resolved" := (GoAlloc go.string #()) in
+       let: "resolved" := (GoAlloc go.string (GoZeroVal go.string #())) in
        let: "$r0" := (Fst "$recvVal") in
        do:  ("resolved" <-[go.string] "$r0");;;
        return: (![go.string] "resolved")
@@ -183,12 +183,13 @@ Definition HelloWorldWithTimeout : go_string := "github.com/goose-lang/goose/tes
 Definition HelloWorldWithTimeoutⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (let: "done" := (GoAlloc (go.ChannelType go.sendrecv (go.StructType [
-    ])) #()) in
+    ])) (GoZeroVal (go.ChannelType go.sendrecv (go.StructType [
+    ])) #())) in
     let: "$r0" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv (go.StructType [
      ])] #()) #()) in
     do:  ("done" <-[go.ChannelType go.sendrecv (go.StructType [
     ])] "$r0");;;
-    let: "errMsg" := (GoAlloc go.string #()) in
+    let: "errMsg" := (GoAlloc go.string (GoZeroVal go.string #())) in
     let: "$r0" := #""%go in
     do:  ("errMsg" <-[go.string] "$r0");;;
     let: "$go" := (λ: <>,
@@ -215,14 +216,14 @@ Definition DSPExample : go_string := "github.com/goose-lang/goose/testdata/examp
    go: examples.go:51:6 *)
 Definition DSPExampleⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "c" := (GoAlloc (go.ChannelType go.sendrecv (go.InterfaceType [])) #()) in
+    exception_do (let: "c" := (GoAlloc (go.ChannelType go.sendrecv (go.InterfaceType [])) (GoZeroVal (go.ChannelType go.sendrecv (go.InterfaceType [])) #())) in
     let: "$r0" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv (go.InterfaceType [])] #()) #()) in
     do:  ("c" <-[go.ChannelType go.sendrecv (go.InterfaceType [])] "$r0");;;
-    let: "signal" := (GoAlloc (go.ChannelType go.sendrecv (go.InterfaceType [])) #()) in
+    let: "signal" := (GoAlloc (go.ChannelType go.sendrecv (go.InterfaceType [])) (GoZeroVal (go.ChannelType go.sendrecv (go.InterfaceType [])) #())) in
     let: "$r0" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv (go.InterfaceType [])] #()) #()) in
     do:  ("signal" <-[go.ChannelType go.sendrecv (go.InterfaceType [])] "$r0");;;
     let: "$go" := (λ: <>,
-      exception_do (let: "ptr" := (GoAlloc (go.PointerType go.int) #()) in
+      exception_do (let: "ptr" := (GoAlloc (go.PointerType go.int) (GoZeroVal (go.PointerType go.int) #())) in
       let: "$r0" := (TypeAssert (go.PointerType go.int) (Fst (chan.receive (go.InterfaceType []) (![go.ChannelType go.sendrecv (go.InterfaceType [])] "c")))) in
       do:  ("ptr" <-[go.PointerType go.int] "$r0");;;
       let: "$r0" := ((![go.int] (![go.PointerType go.int] "ptr")) +⟨go.int⟩ #(W64 2)) in
@@ -235,10 +236,10 @@ Definition DSPExampleⁱᵐᵖˡ : val :=
       return: #())
       ) in
     do:  (Fork ("$go" #()));;;
-    let: "val" := (GoAlloc go.int #()) in
+    let: "val" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "$r0" := #(W64 40) in
     do:  ("val" <-[go.int] "$r0");;;
-    let: "ptr" := (GoAlloc (go.PointerType go.int) #()) in
+    let: "ptr" := (GoAlloc (go.PointerType go.int) (GoZeroVal (go.PointerType go.int) #())) in
     let: "$r0" := "val" in
     do:  ("ptr" <-[go.PointerType go.int] "$r0");;;
     do:  (let: "$chan" := (![go.ChannelType go.sendrecv (go.InterfaceType [])] "c") in
@@ -254,15 +255,15 @@ Definition fibonacci : go_string := "github.com/goose-lang/goose/testdata/exampl
    go: examples.go:69:6 *)
 Definition fibonacciⁱᵐᵖˡ : val :=
   λ: "n" "c",
-    exception_do (let: "c" := (go.AllocValue (go.ChannelType go.sendrecv go.int) "c") in
-    let: "n" := (go.AllocValue go.int "n") in
-    let: "y" := (GoAlloc go.int #()) in
-    let: "x" := (GoAlloc go.int #()) in
+    exception_do (let: "c" := (GoAlloc (go.ChannelType go.sendrecv go.int) "c") in
+    let: "n" := (GoAlloc go.int "n") in
+    let: "y" := (GoAlloc go.int (GoZeroVal go.int #())) in
+    let: "x" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "$r0" := #(W64 0) in
     let: "$r1" := #(W64 1) in
     do:  ("x" <-[go.int] "$r0");;;
     do:  ("y" <-[go.int] "$r1");;;
-    (let: "i" := (GoAlloc go.int #()) in
+    (let: "i" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[go.int] "$r0");;;
     (for: (λ: <>, (![go.int] "i") <⟨go.int⟩ (![go.int] "n")); (λ: <>, do:  ("i" <-[go.int] ((![go.int] "i") +⟨go.int⟩ #(W8 1)))) := λ: <>,
@@ -282,7 +283,7 @@ Definition fib_consumer : go_string := "github.com/goose-lang/goose/testdata/exa
 (* go: examples.go:78:6 *)
 Definition fib_consumerⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "c" := (GoAlloc (go.ChannelType go.sendrecv go.int) #()) in
+    exception_do (let: "c" := (GoAlloc (go.ChannelType go.sendrecv go.int) (GoZeroVal (go.ChannelType go.sendrecv go.int) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.ChannelType go.sendrecv go.int] #()) #(W64 10)) in
     do:  ("c" <-[go.ChannelType go.sendrecv go.int] "$r0");;;
     let: "$a0" := (let: "$a0" := (![go.ChannelType go.sendrecv go.int] "c") in
@@ -290,11 +291,11 @@ Definition fib_consumerⁱᵐᵖˡ : val :=
     let: "$a1" := (![go.ChannelType go.sendrecv go.int] "c") in
     let: "$go" := (FuncResolve fibonacci [] #()) in
     do:  (Fork ("$go" "$a0" "$a1"));;;
-    let: "results" := (GoAlloc (go.SliceType go.int) #()) in
+    let: "results" := (GoAlloc (go.SliceType go.int) (GoZeroVal (go.SliceType go.int) #())) in
     let: "$r0" := (CompositeLiteral (go.SliceType go.int) (LiteralValue [])) in
     do:  ("results" <-[go.SliceType go.int] "$r0");;;
     let: "$range" := (![go.ChannelType go.sendrecv go.int] "c") in
-    (let: "i" := (GoAlloc go.int #()) in
+    (let: "i" := (GoAlloc go.int (GoZeroVal go.int #())) in
     chan.for_range go.int "$range" (λ: "$key",
       do:  ("i" <-[go.int] "$key");;;
       let: "$r0" := (let: "$a0" := (![go.SliceType go.int] "results") in
@@ -310,12 +311,13 @@ Definition simple_join : go_string := "github.com/goose-lang/goose/testdata/exam
 Definition simple_joinⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (let: "ch" := (GoAlloc (go.ChannelType go.sendrecv (go.StructType [
-    ])) #()) in
+    ])) (GoZeroVal (go.ChannelType go.sendrecv (go.StructType [
+    ])) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.ChannelType go.sendrecv (go.StructType [
      ])] #()) #(W64 1)) in
     do:  ("ch" <-[go.ChannelType go.sendrecv (go.StructType [
     ])] "$r0");;;
-    let: "message" := (GoAlloc go.string #()) in
+    let: "message" := (GoAlloc go.string (GoZeroVal go.string #())) in
     let: "$go" := (λ: <>,
       exception_do (let: "$r0" := #"Hello, World!"%go in
       do:  ("message" <-[go.string] "$r0");;;
@@ -339,13 +341,14 @@ Definition simple_multi_join : go_string := "github.com/goose-lang/goose/testdat
 Definition simple_multi_joinⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (let: "ch" := (GoAlloc (go.ChannelType go.sendrecv (go.StructType [
-    ])) #()) in
+    ])) (GoZeroVal (go.ChannelType go.sendrecv (go.StructType [
+    ])) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.ChannelType go.sendrecv (go.StructType [
      ])] #()) #(W64 2)) in
     do:  ("ch" <-[go.ChannelType go.sendrecv (go.StructType [
     ])] "$r0");;;
-    let: "world" := (GoAlloc go.string #()) in
-    let: "hello" := (GoAlloc go.string #()) in
+    let: "world" := (GoAlloc go.string (GoZeroVal go.string #())) in
+    let: "hello" := (GoAlloc go.string (GoZeroVal go.string #())) in
     let: "$go" := (λ: <>,
       exception_do (let: "$r0" := #"Hello"%go in
       do:  ("hello" <-[go.string] "$r0");;;
@@ -386,7 +389,8 @@ Definition select_nb_no_panic : go_string := "github.com/goose-lang/goose/testda
 Definition select_nb_no_panicⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (let: "ch" := (GoAlloc (go.ChannelType go.sendrecv (go.StructType [
-    ])) #()) in
+    ])) (GoZeroVal (go.ChannelType go.sendrecv (go.StructType [
+    ])) #())) in
     let: "$r0" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv (go.StructType [
      ])] #()) #()) in
     do:  ("ch" <-[go.ChannelType go.sendrecv (go.StructType [
@@ -419,7 +423,7 @@ Definition select_no_double_close : go_string := "github.com/goose-lang/goose/te
 (* go: examples.go:138:6 *)
 Definition select_no_double_closeⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (GoAlloc (go.ChannelType go.sendrecv go.int) #()) in
+    exception_do (let: "x" := (GoAlloc (go.ChannelType go.sendrecv go.int) (GoZeroVal (go.ChannelType go.sendrecv go.int) #())) in
     let: "$r0" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv go.int] #()) #()) in
     do:  ("x" <-[go.ChannelType go.sendrecv go.int] "$r0");;;
     do:  (let: "$a0" := (![go.ChannelType go.sendrecv go.int] "x") in
@@ -437,14 +441,15 @@ Definition exchangePointer : go_string := "github.com/goose-lang/goose/testdata/
 (* go: examples.go:148:6 *)
 Definition exchangePointerⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "x" := (GoAlloc go.int #()) in
+    exception_do (let: "x" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "$r0" := #(W64 0) in
     do:  ("x" <-[go.int] "$r0");;;
-    let: "y" := (GoAlloc go.int #()) in
+    let: "y" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "$r0" := #(W64 0) in
     do:  ("y" <-[go.int] "$r0");;;
     let: "ch" := (GoAlloc (go.ChannelType go.sendrecv (go.StructType [
-    ])) #()) in
+    ])) (GoZeroVal (go.ChannelType go.sendrecv (go.StructType [
+    ])) #())) in
     let: "$r0" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv (go.StructType [
      ])] #()) #()) in
     do:  ("ch" <-[go.ChannelType go.sendrecv (go.StructType [
@@ -486,7 +491,8 @@ Definition select_ready_case_no_panic : go_string := "github.com/goose-lang/goos
 Definition select_ready_case_no_panicⁱᵐᵖˡ : val :=
   λ: <>,
     exception_do (let: "ch" := (GoAlloc (go.ChannelType go.sendrecv (go.StructType [
-    ])) #()) in
+    ])) (GoZeroVal (go.ChannelType go.sendrecv (go.StructType [
+    ])) #())) in
     let: "$r0" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv (go.StructType [
      ])] #()) #()) in
     do:  ("ch" <-[go.ChannelType go.sendrecv (go.StructType [
@@ -513,7 +519,7 @@ Definition TestHelloWorldSync : go_string := "github.com/goose-lang/goose/testda
    go: examples_unverified.go:20:6 *)
 Definition TestHelloWorldSyncⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "result" := (GoAlloc go.string #()) in
+    exception_do (let: "result" := (GoAlloc go.string (GoZeroVal go.string #())) in
     let: "$r0" := ((FuncResolve HelloWorldSync [] #()) #()) in
     do:  ("result" <-[go.string] "$r0");;;
     (if: (![go.string] "result") ≠⟨go.string⟩ #"Hello, World!"%go
@@ -528,7 +534,7 @@ Definition TestHelloWorldWithTimeout : go_string := "github.com/goose-lang/goose
 (* go: examples_unverified.go:27:6 *)
 Definition TestHelloWorldWithTimeoutⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "result" := (GoAlloc go.string #()) in
+    exception_do (let: "result" := (GoAlloc go.string (GoZeroVal go.string #())) in
     let: "$r0" := ((FuncResolve HelloWorldWithTimeout [] #()) #()) in
     do:  ("result" <-[go.string] "$r0");;;
     (if: ((![go.string] "result") ≠⟨go.string⟩ #"operation timed out"%go) && ((![go.string] "result") ≠⟨go.string⟩ #"Hello, World!"%go)
@@ -543,7 +549,7 @@ Definition TestDSPExample : go_string := "github.com/goose-lang/goose/testdata/e
 (* go: examples_unverified.go:34:6 *)
 Definition TestDSPExampleⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "result" := (GoAlloc go.int #()) in
+    exception_do (let: "result" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "$r0" := ((FuncResolve DSPExample [] #()) #()) in
     do:  ("result" <-[go.int] "$r0");;;
     (if: (![go.int] "result") ≠⟨go.int⟩ #(W64 42)
@@ -558,10 +564,10 @@ Definition TestFibConsumer : go_string := "github.com/goose-lang/goose/testdata/
 (* go: examples_unverified.go:41:6 *)
 Definition TestFibConsumerⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "result" := (GoAlloc (go.SliceType go.int) #()) in
+    exception_do (let: "result" := (GoAlloc (go.SliceType go.int) (GoZeroVal (go.SliceType go.int) #())) in
     let: "$r0" := ((FuncResolve fib_consumer [] #()) #()) in
     do:  ("result" <-[go.SliceType go.int] "$r0");;;
-    let: "expected" := (GoAlloc (go.SliceType go.int) #()) in
+    let: "expected" := (GoAlloc (go.SliceType go.int) (GoZeroVal (go.SliceType go.int) #())) in
     let: "$r0" := (CompositeLiteral (go.SliceType go.int) (LiteralValue [KeyedElement None (ElementExpression #(W64 0)); KeyedElement None (ElementExpression #(W64 1)); KeyedElement None (ElementExpression #(W64 1)); KeyedElement None (ElementExpression #(W64 2)); KeyedElement None (ElementExpression #(W64 3)); KeyedElement None (ElementExpression #(W64 5)); KeyedElement None (ElementExpression #(W64 8)); KeyedElement None (ElementExpression #(W64 13)); KeyedElement None (ElementExpression #(W64 21)); KeyedElement None (ElementExpression #(W64 34))])) in
     do:  ("expected" <-[go.SliceType go.int] "$r0");;;
     (if: (let: "$a0" := (![go.SliceType go.int] "result") in
@@ -572,7 +578,7 @@ Definition TestFibConsumerⁱᵐᵖˡ : val :=
       (FuncResolve go.panic [] #()) "$a0")
     else do:  #());;;
     let: "$range" := (![go.SliceType go.int] "expected") in
-    (let: "i" := (GoAlloc go.int #()) in
+    (let: "i" := (GoAlloc go.int (GoZeroVal go.int #())) in
     slice.for_range go.int "$range" (λ: "$key" "$value",
       do:  ("i" <-[go.int] "$key");;;
       (if: (![go.int] (IndexRef go.int (![go.SliceType go.int] "result", ![go.int] "i"))) ≠⟨go.int⟩ (![go.int] (IndexRef go.int (![go.SliceType go.int] "expected", ![go.int] "i")))
@@ -587,10 +593,10 @@ Definition TestSelectNbNoPanic : go_string := "github.com/goose-lang/goose/testd
 (* go: examples_unverified.go:56:6 *)
 Definition TestSelectNbNoPanicⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "iterations" := (GoAlloc go.int #()) in
+    exception_do (let: "iterations" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "$r0" := #(W64 10000) in
     do:  ("iterations" <-[go.int] "$r0");;;
-    (let: "i" := (GoAlloc go.int #()) in
+    (let: "i" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[go.int] "$r0");;;
     (for: (λ: <>, (![go.int] "i") <⟨go.int⟩ (![go.int] "iterations")); (λ: <>, do:  ("i" <-[go.int] ((![go.int] "i") +⟨go.int⟩ #(W8 1)))) := λ: <>,
@@ -604,10 +610,10 @@ Definition TestSelectReadyCaseNoPanic : go_string := "github.com/goose-lang/goos
 (* go: examples_unverified.go:65:6 *)
 Definition TestSelectReadyCaseNoPanicⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "iterations" := (GoAlloc go.int #()) in
+    exception_do (let: "iterations" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "$r0" := #(W64 10000) in
     do:  ("iterations" <-[go.int] "$r0");;;
-    (let: "i" := (GoAlloc go.int #()) in
+    (let: "i" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[go.int] "$r0");;;
     (for: (λ: <>, (![go.int] "i") <⟨go.int⟩ (![go.int] "iterations")); (λ: <>, do:  ("i" <-[go.int] ((![go.int] "i") +⟨go.int⟩ #(W8 1)))) := λ: <>,
@@ -626,7 +632,7 @@ Definition request : go.type := go.Named "github.com/goose-lang/goose/testdata/e
 (* go: higher_order.go:8:6 *)
 Definition mkRequestⁱᵐᵖˡ : val :=
   λ: "f",
-    exception_do (let: "f" := (go.AllocValue (go.FunctionType (go.Signature [] false [go.string])) "f") in
+    exception_do (let: "f" := (GoAlloc (go.FunctionType (go.Signature [] false [go.string])) "f") in
     return: (CompositeLiteral request (LiteralValue [KeyedElement (Some (KeyField "f"%go)) (ElementExpression (![go.FunctionType (go.Signature [] false [go.string])] "f")); KeyedElement (Some (KeyField "result"%go)) (ElementExpression ((FuncResolve go.make2 [go.ChannelType go.sendrecv go.string] #()) #(W64 1)))]))).
 
 Definition ho_worker : go_string := "github.com/goose-lang/goose/testdata/examples/channel.ho_worker"%go.
@@ -634,9 +640,9 @@ Definition ho_worker : go_string := "github.com/goose-lang/goose/testdata/exampl
 (* go: higher_order.go:12:6 *)
 Definition ho_workerⁱᵐᵖˡ : val :=
   λ: "c",
-    exception_do (let: "c" := (go.AllocValue (go.ChannelType go.sendrecv request) "c") in
+    exception_do (let: "c" := (GoAlloc (go.ChannelType go.sendrecv request) "c") in
     let: "$range" := (![go.ChannelType go.sendrecv request] "c") in
-    (let: "r" := (GoAlloc request #()) in
+    (let: "r" := (GoAlloc request (GoZeroVal request #())) in
     chan.for_range request "$range" (λ: "$key",
       do:  ("r" <-[request] "$key");;;
       do:  (let: "$chan" := (![go.ChannelType go.sendrecv go.string] (StructFieldRef request "result"%go "r")) in
@@ -649,7 +655,7 @@ Definition HigherOrderExample : go_string := "github.com/goose-lang/goose/testda
 (* go: higher_order.go:18:6 *)
 Definition HigherOrderExampleⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "c" := (GoAlloc (go.ChannelType go.sendrecv request) #()) in
+    exception_do (let: "c" := (GoAlloc (go.ChannelType go.sendrecv request) (GoZeroVal (go.ChannelType go.sendrecv request) #())) in
     let: "$r0" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv request] #()) #()) in
     do:  ("c" <-[go.ChannelType go.sendrecv request] "$r0");;;
     let: "$a0" := (![go.ChannelType go.sendrecv request] "c") in
@@ -658,19 +664,19 @@ Definition HigherOrderExampleⁱᵐᵖˡ : val :=
     let: "$a0" := (![go.ChannelType go.sendrecv request] "c") in
     let: "$go" := (FuncResolve ho_worker [] #()) in
     do:  (Fork ("$go" "$a0"));;;
-    let: "r1" := (GoAlloc request #()) in
+    let: "r1" := (GoAlloc request (GoZeroVal request #())) in
     let: "$r0" := (let: "$a0" := (λ: <>,
       exception_do (return: (#"hello world"%go))
       ) in
     (FuncResolve mkRequest [] #()) "$a0") in
     do:  ("r1" <-[request] "$r0");;;
-    let: "r2" := (GoAlloc request #()) in
+    let: "r2" := (GoAlloc request (GoZeroVal request #())) in
     let: "$r0" := (let: "$a0" := (λ: <>,
       exception_do (return: (#"HELLO"%go))
       ) in
     (FuncResolve mkRequest [] #()) "$a0") in
     do:  ("r2" <-[request] "$r0");;;
-    let: "r3" := (GoAlloc request #()) in
+    let: "r3" := (GoAlloc request (GoZeroVal request #())) in
     let: "$r0" := (let: "$a0" := (λ: <>,
       exception_do (return: (#"world"%go))
       ) in
@@ -685,7 +691,7 @@ Definition HigherOrderExampleⁱᵐᵖˡ : val :=
     do:  (let: "$chan" := (![go.ChannelType go.sendrecv request] "c") in
     let: "$v" := (![request] "r3") in
     chan.send request "$chan" "$v");;;
-    let: "responses" := (GoAlloc (go.SliceType go.string) #()) in
+    let: "responses" := (GoAlloc (go.SliceType go.string) (GoZeroVal (go.SliceType go.string) #())) in
     let: "$r0" := (CompositeLiteral (go.SliceType go.string) (LiteralValue [KeyedElement None (ElementExpression (Fst (chan.receive go.string (![go.ChannelType go.sendrecv go.string] (StructFieldRef request "result"%go "r1"))))); KeyedElement None (ElementExpression (Fst (chan.receive go.string (![go.ChannelType go.sendrecv go.string] (StructFieldRef request "result"%go "r2"))))); KeyedElement None (ElementExpression (Fst (chan.receive go.string (![go.ChannelType go.sendrecv go.string] (StructFieldRef request "result"%go "r3")))))])) in
     do:  ("responses" <-[go.SliceType go.string] "$r0");;;
     return: (![go.SliceType go.string] "responses")).
@@ -697,8 +703,8 @@ Definition load : go_string := "github.com/goose-lang/goose/testdata/examples/ch
    go: leaky_buffer.go:9:6 *)
 Definition loadⁱᵐᵖˡ : val :=
   λ: "b" "letter",
-    exception_do (let: "letter" := (go.AllocValue go.string "letter") in
-    let: "b" := (go.AllocValue (go.PointerType (go.SliceType go.byte)) "b") in
+    exception_do (let: "letter" := (GoAlloc go.string "letter") in
+    let: "b" := (GoAlloc (go.PointerType (go.SliceType go.byte)) "b") in
     let: "$r0" := (string.to_bytes (![go.string] "letter")) in
     do:  ((![go.PointerType (go.SliceType go.byte)] "b") <-[go.SliceType go.byte] "$r0");;;
     return: #()).
@@ -710,8 +716,8 @@ Definition process : go_string := "github.com/goose-lang/goose/testdata/examples
    go: leaky_buffer.go:14:6 *)
 Definition processⁱᵐᵖˡ : val :=
   λ: "b" "output",
-    exception_do (let: "output" := (go.AllocValue (go.PointerType go.string) "output") in
-    let: "b" := (go.AllocValue (go.PointerType (go.SliceType go.byte)) "b") in
+    exception_do (let: "output" := (GoAlloc (go.PointerType go.string) "output") in
+    let: "b" := (GoAlloc (go.PointerType (go.SliceType go.byte)) "b") in
     do:  ((![go.PointerType go.string] "output") <-[go.string] ((![go.string] (![go.PointerType go.string] "output")) +⟨go.string⟩ (let: "$a0" := (string.from_bytes (![go.SliceType go.byte] (![go.PointerType (go.SliceType go.byte)] "b"))) in
     (FuncResolve strings.ToUpper [] #()) "$a0")));;;
     return: #()).
@@ -721,15 +727,15 @@ Definition client : go_string := "github.com/goose-lang/goose/testdata/examples/
 (* go: leaky_buffer.go:18:6 *)
 Definition clientⁱᵐᵖˡ : val :=
   λ: "input" "freeList" "serverChan",
-    exception_do (let: "serverChan" := (go.AllocValue (go.ChannelType go.sendrecv (go.SliceType go.byte)) "serverChan") in
-    let: "freeList" := (go.AllocValue (go.ChannelType go.sendrecv (go.SliceType go.byte)) "freeList") in
-    let: "input" := (go.AllocValue (go.SliceType go.string) "input") in
+    exception_do (let: "serverChan" := (GoAlloc (go.ChannelType go.sendrecv (go.SliceType go.byte)) "serverChan") in
+    let: "freeList" := (GoAlloc (go.ChannelType go.sendrecv (go.SliceType go.byte)) "freeList") in
+    let: "input" := (GoAlloc (go.SliceType go.string) "input") in
     let: "$range" := (![go.SliceType go.string] "input") in
-    (let: "letter" := (GoAlloc go.string #()) in
+    (let: "letter" := (GoAlloc go.string (GoZeroVal go.string #())) in
     slice.for_range go.string "$range" (λ: "$key" "$value",
       do:  ("letter" <-[go.string] "$value");;;
       do:  "$key";;;
-      let: "b" := (GoAlloc (go.SliceType go.byte) #()) in
+      let: "b" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
       chan.select_nonblocking [chan.select_receive (go.SliceType go.byte) (![go.ChannelType go.sendrecv (go.SliceType go.byte)] "freeList") (λ: "$recvVal",
          let: "$r0" := (Fst "$recvVal") in
          do:  ("b" <-[go.SliceType go.byte] "$r0");;;
@@ -753,14 +759,14 @@ Definition server : go_string := "github.com/goose-lang/goose/testdata/examples/
 (* go: leaky_buffer.go:39:6 *)
 Definition serverⁱᵐᵖˡ : val :=
   λ: "output" "freeList" "serverChan" "done",
-    exception_do (let: "done" := (go.AllocValue (go.ChannelType go.sendrecv (go.StructType [
+    exception_do (let: "done" := (GoAlloc (go.ChannelType go.sendrecv (go.StructType [
     ])) "done") in
-    let: "serverChan" := (go.AllocValue (go.ChannelType go.sendrecv (go.SliceType go.byte)) "serverChan") in
-    let: "freeList" := (go.AllocValue (go.ChannelType go.sendrecv (go.SliceType go.byte)) "freeList") in
-    let: "output" := (go.AllocValue (go.PointerType go.string) "output") in
+    let: "serverChan" := (GoAlloc (go.ChannelType go.sendrecv (go.SliceType go.byte)) "serverChan") in
+    let: "freeList" := (GoAlloc (go.ChannelType go.sendrecv (go.SliceType go.byte)) "freeList") in
+    let: "output" := (GoAlloc (go.PointerType go.string) "output") in
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      let: "ok" := (GoAlloc go.bool #()) in
-      let: "b" := (GoAlloc (go.SliceType go.byte) #()) in
+      let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
+      let: "b" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
       let: ("$ret0", "$ret1") := (chan.receive (go.SliceType go.byte) (![go.ChannelType go.sendrecv (go.SliceType go.byte)] "serverChan")) in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
@@ -791,19 +797,20 @@ Definition LeakyBufferPipeline : go_string := "github.com/goose-lang/goose/testd
 (* go: leaky_buffer.go:61:6 *)
 Definition LeakyBufferPipelineⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "freeList" := (GoAlloc (go.ChannelType go.sendrecv (go.SliceType go.byte)) #()) in
+    exception_do (let: "freeList" := (GoAlloc (go.ChannelType go.sendrecv (go.SliceType go.byte)) (GoZeroVal (go.ChannelType go.sendrecv (go.SliceType go.byte)) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.ChannelType go.sendrecv (go.SliceType go.byte)] #()) #(W64 5)) in
     do:  ("freeList" <-[go.ChannelType go.sendrecv (go.SliceType go.byte)] "$r0");;;
-    let: "serverChan" := (GoAlloc (go.ChannelType go.sendrecv (go.SliceType go.byte)) #()) in
+    let: "serverChan" := (GoAlloc (go.ChannelType go.sendrecv (go.SliceType go.byte)) (GoZeroVal (go.ChannelType go.sendrecv (go.SliceType go.byte)) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.ChannelType go.sendrecv (go.SliceType go.byte)] #()) #(W64 0)) in
     do:  ("serverChan" <-[go.ChannelType go.sendrecv (go.SliceType go.byte)] "$r0");;;
     let: "done" := (GoAlloc (go.ChannelType go.sendrecv (go.StructType [
-    ])) #()) in
+    ])) (GoZeroVal (go.ChannelType go.sendrecv (go.StructType [
+    ])) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.ChannelType go.sendrecv (go.StructType [
      ])] #()) #(W64 0)) in
     do:  ("done" <-[go.ChannelType go.sendrecv (go.StructType [
     ])] "$r0");;;
-    let: "output" := (GoAlloc go.string #()) in
+    let: "output" := (GoAlloc go.string (GoZeroVal go.string #())) in
     let: "$r0" := #""%go in
     do:  ("output" <-[go.string] "$r0");;;
     let: "$a0" := "output" in
@@ -845,7 +852,7 @@ Definition streamold : go.type := go.Named "github.com/goose-lang/goose/testdata
 (* go: muxer.go:14:6 *)
 Definition mkStreamⁱᵐᵖˡ : val :=
   λ: "f",
-    exception_do (let: "f" := (go.AllocValue (go.FunctionType (go.Signature [go.string] false [go.string])) "f") in
+    exception_do (let: "f" := (GoAlloc (go.FunctionType (go.Signature [go.string] false [go.string])) "f") in
     return: (CompositeLiteral streamold (LiteralValue [KeyedElement None (ElementExpression ((FuncResolve go.make1 [go.ChannelType go.sendrecv go.string] #()) #())); KeyedElement None (ElementExpression ((FuncResolve go.make1 [go.ChannelType go.sendrecv go.string] #()) #())); KeyedElement None (ElementExpression (![go.FunctionType (go.Signature [go.string] false [go.string])] "f"))]))).
 
 Definition Async : go_string := "github.com/goose-lang/goose/testdata/examples/channel.Async"%go.
@@ -853,8 +860,8 @@ Definition Async : go_string := "github.com/goose-lang/goose/testdata/examples/c
 (* go: muxer.go:18:6 *)
 Definition Asyncⁱᵐᵖˡ : val :=
   λ: "f",
-    exception_do (let: "f" := (go.AllocValue (go.FunctionType (go.Signature [] false [go.string])) "f") in
-    let: "ch" := (GoAlloc (go.ChannelType go.sendrecv go.string) #()) in
+    exception_do (let: "f" := (GoAlloc (go.FunctionType (go.Signature [] false [go.string])) "f") in
+    let: "ch" := (GoAlloc (go.ChannelType go.sendrecv go.string) (GoZeroVal (go.ChannelType go.sendrecv go.string) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.ChannelType go.sendrecv go.string] #()) #(W64 1)) in
     do:  ("ch" <-[go.ChannelType go.sendrecv go.string] "$r0");;;
     let: "$go" := (λ: <>,
@@ -873,8 +880,8 @@ Definition stream : go.type := go.Named "github.com/goose-lang/goose/testdata/ex
 (* go: muxer.go:26:6 *)
 Definition Serveⁱᵐᵖˡ : val :=
   λ: "f",
-    exception_do (let: "f" := (go.AllocValue (go.FunctionType (go.Signature [go.string] false [go.string])) "f") in
-    let: "s" := (GoAlloc stream #()) in
+    exception_do (let: "f" := (GoAlloc (go.FunctionType (go.Signature [go.string] false [go.string])) "f") in
+    let: "s" := (GoAlloc stream (GoZeroVal stream #())) in
     let: "$r0" := (CompositeLiteral stream (LiteralValue [KeyedElement (Some (KeyField "req"%go)) (ElementExpression ((FuncResolve go.make1 [go.ChannelType go.sendrecv go.string] #()) #())); KeyedElement (Some (KeyField "res"%go)) (ElementExpression ((FuncResolve go.make1 [go.ChannelType go.sendrecv go.string] #()) #()))])) in
     do:  ("s" <-[stream] "$r0");;;
     let: "$go" := (λ: <>,
@@ -893,7 +900,7 @@ Definition appWrld : go_string := "github.com/goose-lang/goose/testdata/examples
 (* go: muxer.go:39:6 *)
 Definition appWrldⁱᵐᵖˡ : val :=
   λ: "s",
-    exception_do (let: "s" := (go.AllocValue go.string "s") in
+    exception_do (let: "s" := (GoAlloc go.string "s") in
     return: ((![go.string] "s") +⟨go.string⟩ #", World!"%go)).
 
 Definition Client : go_string := "github.com/goose-lang/goose/testdata/examples/channel.Client"%go.
@@ -901,7 +908,7 @@ Definition Client : go_string := "github.com/goose-lang/goose/testdata/examples/
 (* go: muxer.go:43:6 *)
 Definition Clientⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "hw" := (GoAlloc stream #()) in
+    exception_do (let: "hw" := (GoAlloc stream (GoZeroVal stream #())) in
     let: "$r0" := (let: "$a0" := (FuncResolve appWrld [] #()) in
     (FuncResolve Serve [] #()) "$a0") in
     do:  ("hw" <-[stream] "$r0");;;
@@ -915,9 +922,9 @@ Definition MapServer : go_string := "github.com/goose-lang/goose/testdata/exampl
 (* go: muxer.go:49:6 *)
 Definition MapServerⁱᵐᵖˡ : val :=
   λ: "s",
-    exception_do (let: "s" := (go.AllocValue streamold "s") in
+    exception_do (let: "s" := (GoAlloc streamold "s") in
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      let: "in" := (GoAlloc go.string #()) in
+      let: "in" := (GoAlloc go.string (GoZeroVal go.string #())) in
       let: "$r0" := (Fst (chan.receive go.string (![go.ChannelType go.sendrecv go.string] (StructFieldRef streamold "req"%go "s")))) in
       do:  ("in" <-[go.string] "$r0");;;
       do:  (let: "$chan" := (![go.ChannelType go.sendrecv go.string] (StructFieldRef streamold "res"%go "s")) in
@@ -931,16 +938,16 @@ Definition ClientOld : go_string := "github.com/goose-lang/goose/testdata/exampl
 (* go: muxer.go:56:6 *)
 Definition ClientOldⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "comma" := (GoAlloc streamold #()) in
+    exception_do (let: "comma" := (GoAlloc streamold (GoZeroVal streamold #())) in
     let: "$r0" := (let: "$a0" := (λ: "s",
-      exception_do (let: "s" := (go.AllocValue go.string "s") in
+      exception_do (let: "s" := (GoAlloc go.string "s") in
       return: ((![go.string] "s") +⟨go.string⟩ #","%go))
       ) in
     (FuncResolve mkStream [] #()) "$a0") in
     do:  ("comma" <-[streamold] "$r0");;;
-    let: "exclaim" := (GoAlloc streamold #()) in
+    let: "exclaim" := (GoAlloc streamold (GoZeroVal streamold #())) in
     let: "$r0" := (let: "$a0" := (λ: "s",
-      exception_do (let: "s" := (go.AllocValue go.string "s") in
+      exception_do (let: "s" := (GoAlloc go.string "s") in
       return: ((![go.string] "s") +⟨go.string⟩ #"!"%go))
       ) in
     (FuncResolve mkStream [] #()) "$a0") in
@@ -964,9 +971,9 @@ Definition Muxer : go_string := "github.com/goose-lang/goose/testdata/examples/c
 (* go: muxer.go:71:6 *)
 Definition Muxerⁱᵐᵖˡ : val :=
   λ: "c",
-    exception_do (let: "c" := (go.AllocValue (go.ChannelType go.sendrecv streamold) "c") in
+    exception_do (let: "c" := (GoAlloc (go.ChannelType go.sendrecv streamold) "c") in
     let: "$range" := (![go.ChannelType go.sendrecv streamold] "c") in
-    (let: "s" := (GoAlloc streamold #()) in
+    (let: "s" := (GoAlloc streamold (GoZeroVal streamold #())) in
     chan.for_range streamold "$range" (λ: "$key",
       do:  ("s" <-[streamold] "$key");;;
       let: "$a0" := (![streamold] "s") in
@@ -979,22 +986,22 @@ Definition makeGreeting : go_string := "github.com/goose-lang/goose/testdata/exa
 (* go: muxer.go:77:6 *)
 Definition makeGreetingⁱᵐᵖˡ : val :=
   λ: <>,
-    exception_do (let: "mux" := (GoAlloc (go.ChannelType go.sendrecv streamold) #()) in
+    exception_do (let: "mux" := (GoAlloc (go.ChannelType go.sendrecv streamold) (GoZeroVal (go.ChannelType go.sendrecv streamold) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.ChannelType go.sendrecv streamold] #()) #(W64 2)) in
     do:  ("mux" <-[go.ChannelType go.sendrecv streamold] "$r0");;;
     let: "$a0" := (![go.ChannelType go.sendrecv streamold] "mux") in
     let: "$go" := (FuncResolve Muxer [] #()) in
     do:  (Fork ("$go" "$a0"));;;
-    let: "comma" := (GoAlloc streamold #()) in
+    let: "comma" := (GoAlloc streamold (GoZeroVal streamold #())) in
     let: "$r0" := (let: "$a0" := (λ: "s",
-      exception_do (let: "s" := (go.AllocValue go.string "s") in
+      exception_do (let: "s" := (GoAlloc go.string "s") in
       return: ((![go.string] "s") +⟨go.string⟩ #","%go))
       ) in
     (FuncResolve mkStream [] #()) "$a0") in
     do:  ("comma" <-[streamold] "$r0");;;
-    let: "exclaim" := (GoAlloc streamold #()) in
+    let: "exclaim" := (GoAlloc streamold (GoZeroVal streamold #())) in
     let: "$r0" := (let: "$a0" := (λ: "s",
-      exception_do (let: "s" := (go.AllocValue go.string "s") in
+      exception_do (let: "s" := (GoAlloc go.string "s") in
       return: ((![go.string] "s") +⟨go.string⟩ #"!"%go))
       ) in
     (FuncResolve mkStream [] #()) "$a0") in
@@ -1018,13 +1025,13 @@ Definition CancellableMapServer : go_string := "github.com/goose-lang/goose/test
 (* go: muxer_unverified.go:3:6 *)
 Definition CancellableMapServerⁱᵐᵖˡ : val :=
   λ: "s" "done",
-    exception_do (let: "done" := (go.AllocValue (go.ChannelType go.sendrecv (go.StructType [
+    exception_do (let: "done" := (GoAlloc (go.ChannelType go.sendrecv (go.StructType [
     ])) "done") in
-    let: "s" := (go.AllocValue streamold "s") in
+    let: "s" := (GoAlloc streamold "s") in
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       chan.select_blocking [chan.select_receive go.string (![go.ChannelType go.sendrecv go.string] (StructFieldRef streamold "req"%go "s")) (λ: "$recvVal",
-         let: "ok" := (GoAlloc go.bool #()) in
-         let: "in" := (GoAlloc go.string #()) in
+         let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
+         let: "in" := (GoAlloc go.string (GoZeroVal go.string #())) in
          let: ("$ret0", "$ret1") := "$recvVal" in
          let: "$r0" := "$ret0" in
          let: "$r1" := "$ret1" in
@@ -1051,14 +1058,14 @@ Definition CancellableMuxer : go_string := "github.com/goose-lang/goose/testdata
    go: muxer_unverified.go:18:6 *)
 Definition CancellableMuxerⁱᵐᵖˡ : val :=
   λ: "c" "done" "errMsg",
-    exception_do (let: "errMsg" := (go.AllocValue (go.PointerType go.string) "errMsg") in
-    let: "done" := (go.AllocValue (go.ChannelType go.sendrecv (go.StructType [
+    exception_do (let: "errMsg" := (GoAlloc (go.PointerType go.string) "errMsg") in
+    let: "done" := (GoAlloc (go.ChannelType go.sendrecv (go.StructType [
     ])) "done") in
-    let: "c" := (go.AllocValue (go.ChannelType go.sendrecv streamold) "c") in
+    let: "c" := (GoAlloc (go.ChannelType go.sendrecv streamold) "c") in
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       chan.select_blocking [chan.select_receive streamold (![go.ChannelType go.sendrecv streamold] "c") (λ: "$recvVal",
-         let: "ok" := (GoAlloc go.bool #()) in
-         let: "s" := (GoAlloc streamold #()) in
+         let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
+         let: "s" := (GoAlloc streamold (GoZeroVal streamold #())) in
          let: ("$ret0", "$ret1") := "$recvVal" in
          let: "$r0" := "$ret0" in
          let: "$r1" := "$ret1" in
@@ -1083,12 +1090,12 @@ Definition worker : go_string := "github.com/goose-lang/goose/testdata/examples/
 (* go: parallel_search_replace.go:13:6 *)
 Definition workerⁱᵐᵖˡ : val :=
   λ: "c" "wg" "x" "y",
-    exception_do (let: "y" := (go.AllocValue go.int "y") in
-    let: "x" := (go.AllocValue go.int "x") in
-    let: "wg" := (go.AllocValue (go.PointerType sync.WaitGroup) "wg") in
-    let: "c" := (go.AllocValue (go.ChannelType go.recvonly (go.SliceType go.int)) "c") in
-    (let: "ok" := (GoAlloc go.bool #()) in
-    let: "s" := (GoAlloc (go.SliceType go.int) #()) in
+    exception_do (let: "y" := (GoAlloc go.int "y") in
+    let: "x" := (GoAlloc go.int "x") in
+    let: "wg" := (GoAlloc (go.PointerType sync.WaitGroup) "wg") in
+    let: "c" := (GoAlloc (go.ChannelType go.recvonly (go.SliceType go.int)) "c") in
+    (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
+    let: "s" := (GoAlloc (go.SliceType go.int) (GoZeroVal (go.SliceType go.int) #())) in
     let: ("$ret0", "$ret1") := (chan.receive (go.SliceType go.int) (![go.ChannelType go.recvonly (go.SliceType go.int)] "c")) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
@@ -1099,7 +1106,7 @@ Definition workerⁱᵐᵖˡ : val :=
     let: "$r1" := "$ret1" in
     do:  ("s" <-[go.SliceType go.int] "$r0");;;
     do:  ("ok" <-[go.bool] "$r1")) := λ: <>,
-      (let: "i" := (GoAlloc go.int #()) in
+      (let: "i" := (GoAlloc go.int (GoZeroVal go.int #())) in
       let: "$r0" := #(W64 0) in
       do:  ("i" <-[go.int] "$r0");;;
       (for: (λ: <>, (![go.int] "i") ≠⟨go.int⟩ (let: "$a0" := (![go.SliceType go.int] "s") in
@@ -1117,24 +1124,24 @@ Definition SearchReplace : go_string := "github.com/goose-lang/goose/testdata/ex
 (* go: parallel_search_replace.go:24:6 *)
 Definition SearchReplaceⁱᵐᵖˡ : val :=
   λ: "s" "x" "y",
-    exception_do (let: "y" := (go.AllocValue go.int "y") in
-    let: "x" := (go.AllocValue go.int "x") in
-    let: "s" := (go.AllocValue (go.SliceType go.int) "s") in
+    exception_do (let: "y" := (GoAlloc go.int "y") in
+    let: "x" := (GoAlloc go.int "x") in
+    let: "s" := (GoAlloc (go.SliceType go.int) "s") in
     (if: (let: "$a0" := (![go.SliceType go.int] "s") in
     (FuncResolve go.len [go.SliceType go.int] #()) "$a0") =⟨go.int⟩ #(W64 0)
     then return: (#())
     else do:  #());;;
-    let: "workers" := (GoAlloc go.int #()) in
+    let: "workers" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "$r0" := #(W64 8) in
     do:  ("workers" <-[go.int] "$r0");;;
-    let: "workRange" := (GoAlloc go.int #()) in
+    let: "workRange" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "$r0" := #(W64 1000) in
     do:  ("workRange" <-[go.int] "$r0");;;
-    let: "c" := (GoAlloc (go.ChannelType go.sendrecv (go.SliceType go.int)) #()) in
+    let: "c" := (GoAlloc (go.ChannelType go.sendrecv (go.SliceType go.int)) (GoZeroVal (go.ChannelType go.sendrecv (go.SliceType go.int)) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.ChannelType go.sendrecv (go.SliceType go.int)] #()) #(W64 4)) in
     do:  ("c" <-[go.ChannelType go.sendrecv (go.SliceType go.int)] "$r0");;;
-    let: "wg" := (GoAlloc sync.WaitGroup #()) in
-    (let: "i" := (GoAlloc go.int #()) in
+    let: "wg" := (GoAlloc sync.WaitGroup (GoZeroVal sync.WaitGroup #())) in
+    (let: "i" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[go.int] "$r0");;;
     (for: (λ: <>, (![go.int] "i") ≠⟨go.int⟩ (![go.int] "workers")); (λ: <>, do:  ("i" <-[go.int] ((![go.int] "i") +⟨go.int⟩ #(W8 1)))) := λ: <>,
@@ -1144,12 +1151,12 @@ Definition SearchReplaceⁱᵐᵖˡ : val :=
       let: "$a3" := (![go.int] "y") in
       let: "$go" := (FuncResolve worker [] #()) in
       do:  (Fork ("$go" "$a0" "$a1" "$a2" "$a3"))));;;
-    (let: "offset" := (GoAlloc go.int #()) in
+    (let: "offset" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "$r0" := #(W64 0) in
     do:  ("offset" <-[go.int] "$r0");;;
     (for: (λ: <>, (![go.int] "offset") ≠⟨go.int⟩ (let: "$a0" := (![go.SliceType go.int] "s") in
     (FuncResolve go.len [go.SliceType go.int] #()) "$a0")); (λ: <>, #()) := λ: <>,
-      let: "nextOffset" := (GoAlloc go.int #()) in
+      let: "nextOffset" := (GoAlloc go.int (GoZeroVal go.int #())) in
       let: "$r0" := ((![go.int] "offset") +⟨go.int⟩ (![go.int] "workRange")) in
       do:  ("nextOffset" <-[go.int] "$r0");;;
       (if: (![go.int] "nextOffset") >⟨go.int⟩ (let: "$a0" := (![go.SliceType go.int] "s") in
@@ -1159,7 +1166,7 @@ Definition SearchReplaceⁱᵐᵖˡ : val :=
         (FuncResolve go.len [go.SliceType go.int] #()) "$a0") in
         do:  ("nextOffset" <-[go.int] "$r0")
       else do:  #());;;
-      let: "section" := (GoAlloc (go.SliceType go.int) #()) in
+      let: "section" := (GoAlloc (go.SliceType go.int) (GoZeroVal (go.SliceType go.int) #())) in
       let: "$r0" := (let: "$s" := (![go.SliceType go.int] "s") in
       Slice (go.SliceType go.int) ("$s", ![go.int] "offset", ![go.int] "nextOffset")) in
       do:  ("section" <-[go.SliceType go.int] "$r0");;;

@@ -154,11 +154,6 @@ Proof. solve_decision. Qed.
 Definition ref_one : val :=
   λ: "v", let: "l" := ref (LitV $ LitString "") in "l" <- "v";; "l".
 
-Definition AllocValue_def t : val :=
-  λ: "v", let: "l" := GoAlloc t #() in GoStore t ("l", "v");; "l".
-Program Definition AllocValue := sealed AllocValue_def.
-Definition AllocValue_unseal : AllocValue = _ := seal_eq _.
-
 (* Here's an example exhibiting struct comparison subtleties:
 
 ```
@@ -280,6 +275,7 @@ Global Arguments into_val_unfold (V) {_}.
 Class GoZeroValEq t V `{!ZeroVal V} `{!GoSemanticsFunctions} :=
   {
     go_zero_val_eq : go_zero_val t = #(zero_val V);
+    #[global] go_zero_val_step :: IsGoStepPureDet (GoZeroVal t) #() #(zero_val V);
   }.
 Global Hint Mode GoZeroValEq ! - - - : typeclass_instances.
 Global Arguments go_zero_val_eq (t) V {_ _ _}.
@@ -343,7 +339,7 @@ Class CoreSemantics :=
   #[global] core_comparison_sem :: CoreComparisonSemantics;
 
   alloc_underlying t : alloc t = alloc (to_underlying t);
-  alloc_primitive t v (H : is_primitive_zero_val t v) : alloc t = (λ: <>, ref_one v)%V;
+  alloc_primitive t (H : is_primitive t) : alloc t = (λ: "v", ref_one "v")%V;
   alloc_struct fds :
     alloc (go.StructType fds) =
     (λ: <>,
@@ -407,7 +403,7 @@ Class CoreSemantics :=
 
   composite_literal_pointer elem_type l :
     composite_literal (go.PointerType elem_type) l  =
-    AllocValue elem_type (CompositeLiteral elem_type l);
+    GoAlloc elem_type (CompositeLiteral elem_type l);
 
   composite_literal_struct fds l :
     composite_literal (go.StructType fds) (LiteralValue l)  =

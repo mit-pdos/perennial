@@ -135,9 +135,9 @@ Section tac_lemmas.
   Qed.
 
   Lemma tac_wp_alloc K
-    `{!TypedPointsto V} `{!ZeroVal V} `{!IntoValTyped V t} Δ stk E Φ :
-    (∀ l, envs_entails Δ (l ↦ (zero_val V) -∗ WP (fill K (Val #l)) @ stk; E {{ Φ }})) →
-    envs_entails Δ (WP fill K (alloc t #()) @ stk; E {{ Φ }}).
+    `{!TypedPointsto V} `{!ZeroVal V} `{!IntoValTyped V t} (v : V) Δ stk E Φ :
+    (∀ l, envs_entails Δ (l ↦ v -∗ WP (fill K (Val #l)) @ stk; E {{ Φ }})) →
+    envs_entails Δ (WP fill K (alloc t #v) @ stk; E {{ Φ }}).
   Proof.
     rewrite envs_entails_unseal => Hwp.
     iIntros "Henv".
@@ -181,7 +181,7 @@ Ltac2 wp_store () :=
   end.
 
 Ltac2 wp_alloc_visit e k :=
-  Control.once_plus (fun () => Std.unify e '(alloc _ #()))
+  Control.once_plus (fun () => Std.unify e '(alloc _ (Val (#_))))
     (fun _ => Control.zero Walk_expr_more);
   Control.once_plus (fun _ => apply (tac_wp_alloc $k); ectx_simpl ())
     (fun _ => Control.backtrack_tactic_failure "wp_alloc: failed to apply tac_wp_alloc (maybe no IntoValTyped instance?)")
@@ -198,7 +198,7 @@ Ltac2 wp_alloc_auto_visit e k :=
   lazy_match! e with
   (* Manually writing out [let: ?var_name := (ref_ty _ (Val _)) in ?e1] to get
      pattern matching to work. *)
-  | (App (Rec BAnon (BNamed ?var_name) ?e1) (App (Val (alloc _)) (Val #()))) =>
+  | (App (Rec BAnon (BNamed ?var_name) ?e1) (App (Val (alloc _)) (Val (#_)))) =>
       let let_expr1 := '(Rec BAnon (BNamed $var_name) $e1) in
       let ptr_name := Std.eval_vm None constr:($var_name +:+ "_ptr") in
       let k := constr:(@AppRCtx _ $let_expr1 :: $k) in
