@@ -27,9 +27,7 @@ Definition lookup2 (key_type elem_type : go.type) : val :=
     (* make sure it's safe to look up *)
     InterfaceMake key_type "k" =⟨go.any⟩ InterfaceMake key_type "k";;
     if: "m" =⟨go.MapType key_type elem_type⟩ #map.nil then
-      (* NOTE: this gets the zero value from element type in a hacky way. *)
-      let: "default_elem" := GoLoad elem_type (GoAlloc elem_type #()) in
-      ("default_elem", #false)
+      (GoZeroVal elem_type #(), #false)
     else InternalMapLookup (Read "m", "k").
 
 Definition lookup1 (key_type elem_type : go.type) : val :=
@@ -133,8 +131,7 @@ Class MapSemantics `{!GoSemanticsFunctions} :=
   #[global] make2_map key_type elem_type ::
     FuncUnfold go.make2 [go.MapType key_type elem_type]
     (λ: "len",
-       let: "default_elem" := GoLoad elem_type (GoAlloc elem_type #()) in
-       ref (InternalMapMake "default_elem"))%V;
+       ref (InternalMapMake (GoZeroVal elem_type #())))%V;
   #[global] make1_map key_type elem_type ::
     FuncUnfold go.make1 [go.MapType key_type elem_type]
     (λ: <>, FuncResolve go.make2 [go.MapType key_type elem_type] #() #(W64 0))%V;

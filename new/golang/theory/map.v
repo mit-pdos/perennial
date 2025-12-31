@@ -130,7 +130,8 @@ Lemma wp_map_lookup2 key_type elem_type mref (m : gmap K V) k dq {Hsafe : SafeMa
   {{{ RET (#(default (zero_val V) (m !! k)), #(bool_decide (is_Some (m !! k)))); mref ↦${dq} m }}}.
 Proof.
   destruct Hsafe as [[? Hsafe]].
-  wp_start as "Hm". rewrite own_map_unseal. iNamed "Hm".
+  wp_start as "Hm".
+  rewrite own_map_unseal. iNamed "Hm".
   iDestruct (heap_pointsto_non_null with "Hown") as "%H".
   rewrite decide_True //. wp_auto.
   wp_if_destruct; first by exfalso.
@@ -148,7 +149,7 @@ Global Instance pure_wp_map_nil_lookup2 key_type elem_type k
 Proof.
   destruct Hsafe as [[? Hsafe]].
   pure_wp_start. rewrite decide_True //. wp_auto.
-  wp_alloc tmp as "?". wp_auto. by iApply "HΦ".
+  by iApply "HΦ".
 Qed.
 
 Lemma wp_map_lookup1 key_type elem_type mref (m : gmap K V) k dq {Hsafe : SafeMapKey key_type k} :
@@ -172,7 +173,7 @@ Lemma wp_map_make2 (len : w64) key_type elem_type
     #(functions go.make2 [go.MapType key_type elem_type]) #len
   {{{ mref, RET #mref; mref ↦$ (∅ : gmap K V) }}}.
 Proof.
-  wp_start. wp_alloc tmp as "?". wp_auto.
+  wp_start.
   epose proof (go.is_map_pure_map_empty _).
   iApply wp_alloc_untyped; try done.
   { erewrite go.is_map_pure_flatten; done. }
