@@ -291,7 +291,7 @@ Proof.
   pure_wp_start. rewrite func_unfold. wp_auto_lc 1. by iApply "HΦ".
 Qed.
 
-Context `{!ZeroVal V} {t} `{!TypedPointsto V} `{!IntoValTyped V t}.
+Context `[!ZeroVal V] [t] `[!TypedPointsto V] `[!IntoValTyped V t].
 
 Lemma wp_slice_make3 stk E (len cap : w64) :
   0 ≤ sint.Z len ≤ sint.Z cap →
