@@ -98,9 +98,14 @@ Proof. solve_inG. Qed.
 
 Section base.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context
+  {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}
+  {array_sem : go.ArraySemantics} {slice_sem : go.SliceSemantics}.
+Local Set Default Proof Using "Type core_sem pre_sem array_sem slice_sem".
+
 Context `{!chanG Σ V}.
-Context `{!IntoVal V}.
-Context `{!IntoValTyped V t}.
+Context `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}.
+
 
 (* Remove the later from a saved prop if we have later credits. *)
 Lemma saved_prop_lc_agree γ dq1 dq2 P Q :
@@ -112,63 +117,71 @@ Proof.
   iModIntro. done.
 Qed.
 
+(* FIXME: move higher level. *)
+Notation "ptr .[ t , field ]" := (struct_field_ref t field ptr)
+  (at level 1, format "ptr .[ t ,  field ]").
+
 (** Maps physical channel states to their heap representations.
     Each state corresponds to specific field values in the Go struct. *)
+(* TODO gemini change
+        `ch.[channel.Channel t, "XXX"] YYY` into
+        `ch.[channel.Channel.ty t :: "XXX"] YYY` into
+ *)
 Definition chan_phys (ch: loc) (s: chan_phys_state V) : iProp Σ :=
   match s with
     | Closed [] =>
-        ∃ (slice_val: slice.t),
-        "state" ∷ ch ↦s[(channel.Channel.ty t) :: "state"] (W64 6) ∗
-        "slice" ∷ own_slice slice_val (DfracOwn 1) ([] : list V) ∗
-        "slice_cap" ∷ own_slice_cap V slice_val (DfracOwn 1) ∗
-        "buffer" ∷ ch ↦s[(channel.Channel.ty t) :: "buffer"] slice_val
+        (∃ (slice_val: slice.t),
+            "state" ∷ (ch.[channel.Channel t , "state"] ↦ (W64 6)) ∗
+            "slice" ∷ own_slice t slice_val (DfracOwn 1) [] ∗
+            "slice_cap" ∷ own_slice_cap t slice_val (DfracOwn 1) ∗
+            "buffer" ∷ ch.[channel.Channel t, "buffer"] ↦ slice_val)
     | Closed draining =>
         ∃ (slice_val: slice.t),
-        "state" ∷ ch ↦s[(channel.Channel.ty t) :: "state"] (W64 6) ∗
-        "slice" ∷ own_slice slice_val (DfracOwn 1) draining ∗
-        "slice_cap" ∷ own_slice_cap V slice_val (DfracOwn 1) ∗
-        "buffer" ∷ ch ↦s[(channel.Channel.ty t) :: "buffer"] slice_val
+        "state" ∷ ch.[channel.Channel t, "state"] ↦ (W64 6) ∗
+        "slice" ∷ own_slice t slice_val (DfracOwn 1) draining ∗
+        "slice_cap" ∷ own_slice_cap t slice_val (DfracOwn 1) ∗
+        "buffer" ∷ ch.[channel.Channel t, "buffer"] ↦ slice_val
     | Buffered buff =>
         ∃ (slice_val: slice.t),
-        "state" ∷ ch ↦s[(channel.Channel.ty t) :: "state"] (W64 0) ∗
-        "slice" ∷ own_slice slice_val (DfracOwn 1) buff ∗
-        "slice_cap" ∷ own_slice_cap V slice_val (DfracOwn 1) ∗
-        "buffer" ∷ ch ↦s[(channel.Channel.ty t) :: "buffer"] slice_val
+        "state" ∷ ch.[channel.Channel t, "state"] ↦ (W64 0) ∗
+        "slice" ∷ own_slice t slice_val (DfracOwn 1) buff ∗
+        "slice_cap" ∷ own_slice_cap t slice_val (DfracOwn 1) ∗
+        "buffer" ∷ ch.[channel.Channel t, "buffer"] ↦ slice_val
     | Idle =>
         ∃ (v:V) (slice_val: slice.t),
-        "state" ∷ ch ↦s[(channel.Channel.ty t) :: "state"] (W64 1) ∗
-        "v" ∷ ch ↦s[(channel.Channel.ty t) :: "v"] v ∗
-        "slice" ∷ own_slice slice_val (DfracOwn 1) ([] : list V) ∗
-        "slice_cap" ∷ own_slice_cap V slice_val (DfracOwn 1) ∗
-        "buffer" ∷ ch ↦s[(channel.Channel.ty t) :: "buffer"] slice_val
+        "state" ∷ ch.[channel.Channel t, "state"] ↦ (W64 1) ∗
+        "v" ∷ ch.[channel.Channel t, "v"] ↦ v ∗
+        "slice" ∷ own_slice t slice_val (DfracOwn 1) ([] : list V) ∗
+        "slice_cap" ∷ own_slice_cap t slice_val (DfracOwn 1) ∗
+        "buffer" ∷ ch.[channel.Channel t, "buffer"] ↦ slice_val
     | SndWait v =>
         ∃ (slice_val: slice.t),
-        "state" ∷ ch ↦s[(channel.Channel.ty t) :: "state"] (W64 2) ∗
-        "v" ∷ ch ↦s[(channel.Channel.ty t) :: "v"] v ∗
-        "slice" ∷ own_slice slice_val (DfracOwn 1) ([] : list V) ∗
-        "slice_cap" ∷ own_slice_cap V slice_val (DfracOwn 1) ∗
-        "buffer" ∷ ch ↦s[(channel.Channel.ty t) :: "buffer"] slice_val
+        "state" ∷ ch.[channel.Channel t, "state"] ↦ (W64 2) ∗
+        "v" ∷ ch.[channel.Channel t, "v"] ↦ v ∗
+        "slice" ∷ own_slice t slice_val (DfracOwn 1) ([] : list V) ∗
+        "slice_cap" ∷ own_slice_cap t slice_val (DfracOwn 1) ∗
+        "buffer" ∷ ch.[channel.Channel t, "buffer"] ↦ slice_val
     | RcvWait =>
         ∃ (v:V) (slice_val: slice.t),
-        "state" ∷ ch ↦s[(channel.Channel.ty t) :: "state"] (W64 3) ∗
-        "v" ∷ ch ↦s[(channel.Channel.ty t) :: "v"] v ∗
-        "slice" ∷ own_slice slice_val (DfracOwn 1) ([] : list V) ∗
-        "slice_cap" ∷ own_slice_cap V slice_val (DfracOwn 1) ∗
-        "buffer" ∷ ch ↦s[(channel.Channel.ty t) :: "buffer"] slice_val
+        "state" ∷ ch.[channel.Channel t, "state"] ↦ (W64 3) ∗
+        "v" ∷ ch.[channel.Channel t, "v"] ↦ v ∗
+        "slice" ∷ own_slice t slice_val (DfracOwn 1) ([] : list V) ∗
+        "slice_cap" ∷ own_slice_cap t slice_val (DfracOwn 1) ∗
+        "buffer" ∷ ch.[channel.Channel t, "buffer"] ↦ slice_val
     | SndDone v =>
         ∃ (slice_val: slice.t),
-        "state" ∷ ch ↦s[(channel.Channel.ty t) :: "state"] (W64 4) ∗
-        "v" ∷ ch ↦s[(channel.Channel.ty t) :: "v"] v ∗
-        "slice" ∷ own_slice slice_val (DfracOwn 1) ([] : list V) ∗
-        "slice_cap" ∷ own_slice_cap V slice_val (DfracOwn 1) ∗
-        "buffer" ∷ ch ↦s[(channel.Channel.ty t) :: "buffer"] slice_val
+        "state" ∷ ch.[channel.Channel t, "state"] ↦ (W64 4) ∗
+        "v" ∷ ch.[channel.Channel t, "v"] ↦ v ∗
+        "slice" ∷ own_slice t slice_val (DfracOwn 1) ([] : list V) ∗
+        "slice_cap" ∷ own_slice_cap t slice_val (DfracOwn 1) ∗
+        "buffer" ∷ ch.[channel.Channel t, "buffer"] ↦ slice_val
     | RcvDone v =>
         ∃ (slice_val: slice.t),
-        "state" ∷ ch ↦s[(channel.Channel.ty t) :: "state"] (W64 5) ∗
-        "v" ∷ ch ↦s[(channel.Channel.ty t) :: "v"] v ∗
-        "slice" ∷ own_slice slice_val (DfracOwn 1) ([] : list V) ∗
-        "slice_cap" ∷ own_slice_cap V slice_val (DfracOwn 1) ∗
-        "buffer" ∷ ch ↦s[(channel.Channel.ty t) :: "buffer"] slice_val
+        "state" ∷ ch.[channel.Channel t, "state"] ↦ (W64 5) ∗
+        "v" ∷ ch.[channel.Channel t, "v"] ↦ v ∗
+        "slice" ∷ own_slice t slice_val (DfracOwn 1) ([] : list V) ∗
+        "slice_cap" ∷ own_slice_cap t slice_val (DfracOwn 1) ∗
+        "buffer" ∷ ch.[channel.Channel t, "buffer"] ↦ slice_val
     end.
 
 (** Bundles together offer-related ghost state for atomic operations *)
@@ -442,7 +455,7 @@ Definition rcv_au_inner ch (γ: chan_names) (Φ : V → bool → iProp Σ) : iPr
     (* Case: Sender has committed, complete the exchange *)
     | chan_rep.SndCommit v => own_channel ch chan_rep.Idle γ ={∅,⊤}=∗ Φ v true
     (* Case: Channel is closed with no messages *)
-    | chan_rep.Closed [] => own_channel ch s γ ={∅,⊤}=∗ Φ (default_val V) false
+    | chan_rep.Closed [] => own_channel ch s γ ={∅,⊤}=∗ Φ (zero_val V) false
     | _ => True
     end).
 
@@ -460,7 +473,7 @@ Definition rcv_au_slow ch (γ: chan_names) (Φ : V → bool → iProp Σ) : iPro
           own_channel ch (chan_rep.RcvPending) γ ={∅,⊤}=∗
               rcv_au_inner ch γ Φ
     (* Case: Channel is closed *)
-    | chan_rep.Closed [] => own_channel ch s γ ={∅,⊤}=∗ Φ (default_val V) false
+    | chan_rep.Closed [] => own_channel ch s γ ={∅,⊤}=∗ Φ (zero_val V) false
     (* Case: Closed but still have values to drain *)
     | chan_rep.Closed (v::rest) => (own_channel ch (chan_rep.Closed rest) γ ={∅,⊤}=∗ Φ v true)
     (* Case: Buffered channel with values in buffer *)
@@ -478,7 +491,7 @@ Definition rcv_au_fast ch γ (Φ : V → bool → iProp Σ) Φnotready : iProp �
              | chan_rep.SndPending v =>
                  own_channel ch chan_rep.RcvCommit γ ={∅,⊤}=∗ Φ v true
              (* Case: Channel is closed *)
-             | chan_rep.Closed [] => own_channel ch s γ ={∅,⊤}=∗ Φ (default_val V) false
+             | chan_rep.Closed [] => own_channel ch s γ ={∅,⊤}=∗ Φ (zero_val V) false
              (* Case: Channel is closed but still has values to drain *)
              | chan_rep.Closed (v::rest) => (own_channel ch (chan_rep.Closed rest) γ ={∅,⊤}=∗ Φ v true)
              (* Case: Buffered channel with values *)
@@ -497,7 +510,7 @@ Definition rcv_au_fast_alt ch γ (Φ : V → bool → iProp Σ) Φnotready : iPr
     | chan_rep.SndPending v =>
           own_channel ch chan_rep.RcvCommit γ ={∅,⊤}=∗ Φ v true
     (* Case: Channel is closed *)
-    | chan_rep.Closed [] => own_channel ch s γ ={∅,⊤}=∗ Φ (default_val V) false
+    | chan_rep.Closed [] => own_channel ch s γ ={∅,⊤}=∗ Φ (zero_val V) false
     (* Case: Channel is closed but still has values to drain *)
     | chan_rep.Closed (v::rest) => (own_channel ch (chan_rep.Closed rest) γ ={∅,⊤}=∗ Φ v true)
     (* Case: Buffered channel with values *)
@@ -712,9 +725,14 @@ Definition chan_inv_inner (ch: loc) (γ: chan_names) : iProp Σ :=
     This is persistent and provides access to the channel's capabilities. *)
 Definition is_channel (ch: loc) (γ: chan_names) : iProp Σ :=
   ∃ (mu_loc: loc),
-    "#cap" ∷ ch ↦s[(channel.Channel.ty t) :: "cap"]□ (W64 (chan_cap γ)) ∗
-    "#mu" ∷ ch ↦s[(channel.Channel.ty t) :: "mu"]□ mu_loc ∗
-    "#lock" ∷ is_lock mu_loc (chan_inv_inner ch γ).
+    "#cap" ∷ ch.[channel.Channel t, "cap"] ↦□ (W64 (chan_cap γ)) ∗
+    "#mu" ∷ ch.[channel.Channel t, "mu"] ↦□ mu_loc ∗
+    "#lock" ∷ is_lock mu_loc (chan_inv_inner ch γ) ∗
+    "%Hnotnull" ∷ ⌜ ch ≠ chan.nil ⌝.
+#[global] Typeclasses Opaque is_channel.
+#[global] Opaque is_channel.
+#[local] Transparent is_channel.
+#[local] Typeclasses Transparent is_channel.
 
 Global Instance is_channel_pers ch γ : Persistent (is_channel ch γ).
 Proof. apply _. Qed.
@@ -724,11 +742,7 @@ Proof. apply _. Qed.
 
 Lemma is_channel_not_null ch γ:
   is_channel ch γ -∗ ⌜ch ≠ null⌝.
-Proof.
-  iNamed 1.
-  iDestruct (field_pointsto_not_null with "cap") as %Hnn; auto.
-  done.
-Qed.
+Proof. iNamed 1. done. Qed.
 
 End base.
 
