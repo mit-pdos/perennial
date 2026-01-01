@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: nixbuild/nix-quick-install-action@v32
+      - uses: nixbuild/nix-quick-install-action@v34
       - run: nix build --version
       - name: Restore and save Nix store
         uses: nix-community/cache-nix-action@v6
@@ -45,7 +45,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: nixbuild/nix-quick-install-action@v32
+      - uses: nixbuild/nix-quick-install-action@v34
       - run: nix build --version
       - name: Restore and save Nix store
         uses: nix-community/cache-nix-action@v6
