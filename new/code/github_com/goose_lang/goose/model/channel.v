@@ -173,7 +173,7 @@ Definition Channel__TryReceiveⁱᵐᵖˡ (T : go.type) : val :=
       (FuncResolve go.len [go.SliceType T] #()) "$a0") >⟨go.int⟩ #(W64 0)
       then
         let: "val_copy" := (GoAlloc T (GoZeroVal T #())) in
-        let: "$r0" := (![T] (IndexRef T (![go.SliceType T] (StructFieldRef (Channel T) "buffer"%go (![go.PointerType (Channel T)] "c")), #(W64 0)))) in
+        let: "$r0" := (![T] (IndexRef (go.SliceType T) (![go.SliceType T] (StructFieldRef (Channel T) "buffer"%go (![go.PointerType (Channel T)] "c")), #(W64 0)))) in
         do:  ("val_copy" <-[T] "$r0");;;
         let: "$r0" := (let: "$s" := (![go.SliceType T] (StructFieldRef (Channel T) "buffer"%go (![go.PointerType (Channel T)] "c"))) in
         Slice (go.SliceType T) ("$s", #(W64 1), FuncResolve go.len [go.SliceType T] #() (![go.SliceType T] (StructFieldRef (Channel T) "buffer"%go (![go.PointerType (Channel T)] "c"))))) in
@@ -190,7 +190,7 @@ Definition Channel__TryReceiveⁱᵐᵖˡ (T : go.type) : val :=
         (FuncResolve go.len [go.SliceType T] #()) "$a0") >⟨go.int⟩ #(W64 0)
         then
           let: "val_copy" := (GoAlloc T (GoZeroVal T #())) in
-          let: "$r0" := (![T] (IndexRef T (![go.SliceType T] (StructFieldRef (Channel T) "buffer"%go (![go.PointerType (Channel T)] "c")), #(W64 0)))) in
+          let: "$r0" := (![T] (IndexRef (go.SliceType T) (![go.SliceType T] (StructFieldRef (Channel T) "buffer"%go (![go.PointerType (Channel T)] "c")), #(W64 0)))) in
           do:  ("val_copy" <-[T] "$r0");;;
           let: "$r0" := (let: "$s" := (![go.SliceType T] (StructFieldRef (Channel T) "buffer"%go (![go.PointerType (Channel T)] "c"))) in
           Slice (go.SliceType T) ("$s", #(W64 1), FuncResolve go.len [go.SliceType T] #() (![go.SliceType T] (StructFieldRef (Channel T) "buffer"%go (![go.PointerType (Channel T)] "c"))))) in
@@ -742,7 +742,7 @@ Definition NonBlockingSelect3ⁱᵐᵖˡ (T1 T2 T3 : go.type) : val :=
     (let: "i" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[go.uint64] "$r0");;;
-    (for: (λ: <>, (![go.uint64] "i") <⟨go.uint64⟩ #(W64 3)); (λ: <>, do:  ("i" <-[go.uint64] ((![go.uint64] "i") +⟨go.uint64⟩ #(W8 1)))) := λ: <>,
+    (for: (λ: <>, (![go.uint64] "i") <⟨go.uint64⟩ #(W64 3)); (λ: <>, do:  ("i" <-[go.uint64] ((![go.uint64] "i") +⟨go.uint64⟩ #(W64 1)))) := λ: <>,
       let: "caseIdx" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
       let: "$r0" := (((![go.uint64] "start") +⟨go.uint64⟩ (![go.uint64] "i")) %⟨go.uint64⟩ #(W64 3)) in
       do:  ("caseIdx" <-[go.uint64] "$r0");;;

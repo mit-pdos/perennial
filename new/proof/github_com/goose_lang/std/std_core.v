@@ -129,15 +129,17 @@ Proof.
     iIntros (x) "_".
     wp_auto.
     list_elem xs' (sint.Z i) as x_i.
+    rewrite -> decide_True; last word. wp_auto.
     wp_apply (wp_load_slice_index with "[$Hs]") as "Hs"; [ word | eauto | ].
+    rewrite -> decide_True; last word. wp_auto.
 
     list_elem xs' (sint.nat (word.modu x (word.add i (W64 1)))) as x_i'.
-    wp_pure; first word.
-    wp_apply (wp_load_slice_elem with "[$Hs]") as "Hs"; [ word | eauto | ].
-    wp_apply (wp_store_slice_elem with "[$Hs]") as "Hs".
+    wp_apply (wp_load_slice_index with "[$Hs]") as "Hs"; [ word | eauto | ].
+    rewrite -> decide_True; last word. wp_auto.
+    wp_apply (wp_store_slice_index with "[$Hs]") as "Hs".
     { word. }
-    wp_pure; first word.
-    wp_apply (wp_store_slice_elem with "[$Hs]") as "Hs"; [ len | ].
+    rewrite -> decide_True; last word. wp_auto.
+    wp_apply (wp_store_slice_index with "[$Hs]") as "Hs"; [ len | ].
     wp_for_post.
     iFrame.
     iPureIntro.
@@ -165,12 +167,12 @@ Lemma wp_Permutation (n: w64) :
     @! std_core.Permutation #n
   {{{ xs s, RET #s;
       ⌜xs ≡ₚ (W64 <$> seqZ 0 (sint.Z n))⌝ ∗
-      s ↦* xs
+      s ↦[go.uint64]* xs
   }}}.
 Proof.
   wp_start as "%Hnz".
   wp_auto.
-  wp_apply (wp_slice_make2 (V:=w64)).
+  wp_apply wp_slice_make2.
   { word. }
   iIntros (s) "[Hs _]".
   wp_auto.
@@ -179,7 +181,7 @@ Proof.
   iPersist "n order".
 
   iAssert (∃ (i: w64),
-              "Hs" ∷ s ↦* ((W64 <$> seqZ 0 (sint.Z i)) ++ replicate (sint.nat n - sint.nat i) (W64 0)) ∗
+              "Hs" ∷ s ↦[go.uint64]* ((W64 <$> seqZ 0 (sint.Z i)) ++ replicate (sint.nat n - sint.nat i) (W64 0)) ∗
               "i" ∷ i_ptr ↦ i ∗
               "%Hi" ∷ ⌜0 ≤ sint.Z i ≤ sint.Z n⌝)%I
     with "[$i Hs]" as "IH".
@@ -193,8 +195,8 @@ Proof.
   }
   wp_for "IH".
   destruct (bool_decide_reflect (uint.Z i < uint.Z n)); wp_auto.
-  - wp_pure; first word.
-    wp_apply (wp_store_slice_elem with "[$Hs]").
+  - rewrite -> decide_True; last word. wp_auto.
+    wp_apply (wp_store_slice_index with "[$Hs]").
     { len. }
     iIntros "Hs".
     wp_auto. wp_for_post.

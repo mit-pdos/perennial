@@ -156,7 +156,7 @@ Definition SearchIntsⁱᵐᵖˡ : val :=
      (FuncResolve go.len [go.SliceType go.int] #()) "$a0") in
      let: "$a1" := (λ: "i",
        exception_do (let: "i" := (GoAlloc go.int "i") in
-       return: ((![go.int] (IndexRef go.int (![go.SliceType go.int] "a", ![go.int] "i"))) ≥⟨go.int⟩ (![go.int] "x")))
+       return: ((![go.int] (IndexRef (go.SliceType go.int) (![go.SliceType go.int] "a", ![go.int] "i"))) ≥⟨go.int⟩ (![go.int] "x")))
        ) in
      (FuncResolve Search [] #()) "$a0" "$a1")).
 

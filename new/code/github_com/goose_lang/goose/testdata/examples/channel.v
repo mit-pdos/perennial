@@ -56,7 +56,7 @@ Definition LockedStack__Popⁱᵐᵖˡ : val :=
     (FuncResolve go.len [go.SliceType go.string] #()) "$a0") -⟨go.int⟩ #(W64 1)) in
     do:  ("last" <-[go.int] "$r0");;;
     let: "v" := (GoAlloc go.string (GoZeroVal go.string #())) in
-    let: "$r0" := (![go.string] (IndexRef go.string (![go.SliceType go.string] (StructFieldRef LockedStack "stack"%go (![go.PointerType LockedStack] "s")), ![go.int] "last"))) in
+    let: "$r0" := (![go.string] (IndexRef (go.SliceType go.string) (![go.SliceType go.string] (StructFieldRef LockedStack "stack"%go (![go.PointerType LockedStack] "s")), ![go.int] "last"))) in
     do:  ("v" <-[go.string] "$r0");;;
     let: "$r0" := (let: "$s" := (![go.SliceType go.string] (StructFieldRef LockedStack "stack"%go (![go.PointerType LockedStack] "s"))) in
     Slice (go.SliceType go.string) ("$s", #(W64 0), ![go.int] "last")) in
@@ -266,7 +266,7 @@ Definition fibonacciⁱᵐᵖˡ : val :=
     (let: "i" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[go.int] "$r0");;;
-    (for: (λ: <>, (![go.int] "i") <⟨go.int⟩ (![go.int] "n")); (λ: <>, do:  ("i" <-[go.int] ((![go.int] "i") +⟨go.int⟩ #(W8 1)))) := λ: <>,
+    (for: (λ: <>, (![go.int] "i") <⟨go.int⟩ (![go.int] "n")); (λ: <>, do:  ("i" <-[go.int] ((![go.int] "i") +⟨go.int⟩ #(W64 1)))) := λ: <>,
       do:  (let: "$chan" := (![go.ChannelType go.sendrecv go.int] "c") in
       let: "$v" := (![go.int] "x") in
       chan.send go.int "$chan" "$v");;;
@@ -581,7 +581,7 @@ Definition TestFibConsumerⁱᵐᵖˡ : val :=
     (let: "i" := (GoAlloc go.int (GoZeroVal go.int #())) in
     slice.for_range go.int "$range" (λ: "$key" "$value",
       do:  ("i" <-[go.int] "$key");;;
-      (if: (![go.int] (IndexRef go.int (![go.SliceType go.int] "result", ![go.int] "i"))) ≠⟨go.int⟩ (![go.int] (IndexRef go.int (![go.SliceType go.int] "expected", ![go.int] "i")))
+      (if: (![go.int] (IndexRef (go.SliceType go.int) (![go.SliceType go.int] "result", ![go.int] "i"))) ≠⟨go.int⟩ (![go.int] (IndexRef (go.SliceType go.int) (![go.SliceType go.int] "expected", ![go.int] "i")))
       then
         do:  (let: "$a0" := (InterfaceMake go.string #"incorrect output"%go) in
         (FuncResolve go.panic [] #()) "$a0")
@@ -599,7 +599,7 @@ Definition TestSelectNbNoPanicⁱᵐᵖˡ : val :=
     (let: "i" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[go.int] "$r0");;;
-    (for: (λ: <>, (![go.int] "i") <⟨go.int⟩ (![go.int] "iterations")); (λ: <>, do:  ("i" <-[go.int] ((![go.int] "i") +⟨go.int⟩ #(W8 1)))) := λ: <>,
+    (for: (λ: <>, (![go.int] "i") <⟨go.int⟩ (![go.int] "iterations")); (λ: <>, do:  ("i" <-[go.int] ((![go.int] "i") +⟨go.int⟩ #(W64 1)))) := λ: <>,
       do:  ((FuncResolve select_nb_no_panic [] #()) #());;;
       do:  (let: "$a0" := (#(W64 1) *⟨go.int64⟩ time.Microsecond) in
       (FuncResolve time.Sleep [] #()) "$a0")));;;
@@ -616,7 +616,7 @@ Definition TestSelectReadyCaseNoPanicⁱᵐᵖˡ : val :=
     (let: "i" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[go.int] "$r0");;;
-    (for: (λ: <>, (![go.int] "i") <⟨go.int⟩ (![go.int] "iterations")); (λ: <>, do:  ("i" <-[go.int] ((![go.int] "i") +⟨go.int⟩ #(W8 1)))) := λ: <>,
+    (for: (λ: <>, (![go.int] "i") <⟨go.int⟩ (![go.int] "iterations")); (λ: <>, do:  ("i" <-[go.int] ((![go.int] "i") +⟨go.int⟩ #(W64 1)))) := λ: <>,
       do:  ((FuncResolve select_ready_case_no_panic [] #()) #())));;;
     return: #()).
 
@@ -1110,11 +1110,11 @@ Definition workerⁱᵐᵖˡ : val :=
       let: "$r0" := #(W64 0) in
       do:  ("i" <-[go.int] "$r0");;;
       (for: (λ: <>, (![go.int] "i") ≠⟨go.int⟩ (let: "$a0" := (![go.SliceType go.int] "s") in
-      (FuncResolve go.len [go.SliceType go.int] #()) "$a0")); (λ: <>, do:  ("i" <-[go.int] ((![go.int] "i") +⟨go.int⟩ #(W8 1)))) := λ: <>,
-        (if: (![go.int] (IndexRef go.int (![go.SliceType go.int] "s", ![go.int] "i"))) =⟨go.int⟩ (![go.int] "x")
+      (FuncResolve go.len [go.SliceType go.int] #()) "$a0")); (λ: <>, do:  ("i" <-[go.int] ((![go.int] "i") +⟨go.int⟩ #(W64 1)))) := λ: <>,
+        (if: (![go.int] (IndexRef (go.SliceType go.int) (![go.SliceType go.int] "s", ![go.int] "i"))) =⟨go.int⟩ (![go.int] "x")
         then
           let: "$r0" := (![go.int] "y") in
-          do:  ((IndexRef go.int (![go.SliceType go.int] "s", ![go.int] "i")) <-[go.int] "$r0")
+          do:  ((IndexRef (go.SliceType go.int) (![go.SliceType go.int] "s", ![go.int] "i")) <-[go.int] "$r0")
         else do:  #())));;;
       do:  ((MethodResolve (go.PointerType sync.WaitGroup) "Done"%go #() (![go.PointerType sync.WaitGroup] "wg")) #())));;;
     return: #()).
@@ -1144,7 +1144,7 @@ Definition SearchReplaceⁱᵐᵖˡ : val :=
     (let: "i" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[go.int] "$r0");;;
-    (for: (λ: <>, (![go.int] "i") ≠⟨go.int⟩ (![go.int] "workers")); (λ: <>, do:  ("i" <-[go.int] ((![go.int] "i") +⟨go.int⟩ #(W8 1)))) := λ: <>,
+    (for: (λ: <>, (![go.int] "i") ≠⟨go.int⟩ (![go.int] "workers")); (λ: <>, do:  ("i" <-[go.int] ((![go.int] "i") +⟨go.int⟩ #(W64 1)))) := λ: <>,
       let: "$a0" := (![go.ChannelType go.sendrecv (go.SliceType go.int)] "c") in
       let: "$a1" := "wg" in
       let: "$a2" := (![go.int] "x") in

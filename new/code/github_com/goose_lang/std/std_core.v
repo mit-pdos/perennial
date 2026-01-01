@@ -86,17 +86,17 @@ Definition Shuffleⁱᵐᵖˡ : val :=
     let: "$r0" := (s_to_w64 ((let: "$a0" := (![go.SliceType go.uint64] "xs") in
     (FuncResolve go.len [go.SliceType go.uint64] #()) "$a0") -⟨go.int⟩ #(W64 1))) in
     do:  ("i" <-[go.uint64] "$r0");;;
-    (for: (λ: <>, (![go.uint64] "i") >⟨go.uint64⟩ #(W64 0)); (λ: <>, do:  ("i" <-[go.uint64] ((![go.uint64] "i") -⟨go.uint64⟩ #(W8 1)))) := λ: <>,
+    (for: (λ: <>, (![go.uint64] "i") >⟨go.uint64⟩ #(W64 0)); (λ: <>, do:  ("i" <-[go.uint64] ((![go.uint64] "i") -⟨go.uint64⟩ #(W64 1)))) := λ: <>,
       let: "j" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
       let: "$r0" := (((FuncResolve primitive.RandomUint64 [] #()) #()) %⟨go.uint64⟩ ((![go.uint64] "i") +⟨go.uint64⟩ #(W64 1))) in
       do:  ("j" <-[go.uint64] "$r0");;;
       let: "temp" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-      let: "$r0" := (![go.uint64] (IndexRef go.uint64 (![go.SliceType go.uint64] "xs", ![go.uint64] "i"))) in
+      let: "$r0" := (![go.uint64] (IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "xs", ![go.uint64] "i"))) in
       do:  ("temp" <-[go.uint64] "$r0");;;
-      let: "$r0" := (![go.uint64] (IndexRef go.uint64 (![go.SliceType go.uint64] "xs", ![go.uint64] "j"))) in
-      do:  ((IndexRef go.uint64 (![go.SliceType go.uint64] "xs", ![go.uint64] "i")) <-[go.uint64] "$r0");;;
+      let: "$r0" := (![go.uint64] (IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "xs", ![go.uint64] "j"))) in
+      do:  ((IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "xs", ![go.uint64] "i")) <-[go.uint64] "$r0");;;
       let: "$r0" := (![go.uint64] "temp") in
-      do:  ((IndexRef go.uint64 (![go.SliceType go.uint64] "xs", ![go.uint64] "j")) <-[go.uint64] "$r0")));;;
+      do:  ((IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "xs", ![go.uint64] "j")) <-[go.uint64] "$r0")));;;
     return: #()).
 
 Definition Permutation : go_string := "github.com/goose-lang/std/std_core.Permutation"%go.
@@ -114,9 +114,9 @@ Definition Permutationⁱᵐᵖˡ : val :=
     (let: "i" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[go.uint64] "$r0");;;
-    (for: (λ: <>, (![go.uint64] "i") <⟨go.uint64⟩ (![go.uint64] "n")); (λ: <>, do:  ("i" <-[go.uint64] ((![go.uint64] "i") +⟨go.uint64⟩ #(W8 1)))) := λ: <>,
+    (for: (λ: <>, (![go.uint64] "i") <⟨go.uint64⟩ (![go.uint64] "n")); (λ: <>, do:  ("i" <-[go.uint64] ((![go.uint64] "i") +⟨go.uint64⟩ #(W64 1)))) := λ: <>,
       let: "$r0" := (![go.uint64] "i") in
-      do:  ((IndexRef go.uint64 (![go.SliceType go.uint64] "order", ![go.uint64] "i")) <-[go.uint64] "$r0")));;;
+      do:  ((IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "order", ![go.uint64] "i")) <-[go.uint64] "$r0")));;;
     do:  (let: "$a0" := (![go.SliceType go.uint64] "order") in
     (FuncResolve Shuffle [] #()) "$a0");;;
     return: (![go.SliceType go.uint64] "order")).

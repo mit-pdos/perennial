@@ -517,7 +517,7 @@ Definition RWMutex__Unlockⁱᵐᵖˡ : val :=
     (let: "i" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[go.int] "$r0");;;
-    (for: (λ: <>, (![go.int] "i") <⟨go.int⟩ (s_to_w64 (![go.int32] "r"))); (λ: <>, do:  ("i" <-[go.int] ((![go.int] "i") +⟨go.int⟩ #(W8 1)))) := λ: <>,
+    (for: (λ: <>, (![go.int] "i") <⟨go.int⟩ (s_to_w64 (![go.int32] "r"))); (λ: <>, do:  ("i" <-[go.int] ((![go.int] "i") +⟨go.int⟩ #(W64 1)))) := λ: <>,
       do:  (let: "$a0" := (StructFieldRef RWMutex "readerSem"%go (![go.PointerType RWMutex] "rw")) in
       let: "$a1" := #false in
       let: "$a2" := #(W64 0) in
@@ -664,7 +664,7 @@ Definition WaitGroup__Addⁱᵐᵖˡ : val :=
       do:  (let: "$a0" := (![go.PointerType WaitGroup] "wg") in
       (FuncResolve synctest.Disassociate [WaitGroup] #()) "$a0")
     else do:  #());;;
-    (for: (λ: <>, (![go.uint32] "w") ≠⟨go.uint32⟩ #(W32 0)); (λ: <>, do:  ("w" <-[go.uint32] ((![go.uint32] "w") -⟨go.uint32⟩ #(W8 1)))) := λ: <>,
+    (for: (λ: <>, (![go.uint32] "w") ≠⟨go.uint32⟩ #(W32 0)); (λ: <>, do:  ("w" <-[go.uint32] ((![go.uint32] "w") -⟨go.uint32⟩ #(W32 1)))) := λ: <>,
       do:  (let: "$a0" := (StructFieldRef WaitGroup "sema"%go (![go.PointerType WaitGroup] "wg")) in
       let: "$a1" := #false in
       let: "$a2" := #(W64 0) in

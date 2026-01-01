@@ -92,7 +92,7 @@ Definition BytesEqualⁱᵐᵖˡ : val :=
     let: "$r0" := #true in
     do:  ("retval" <-[go.bool] "$r0");;;
     (for: (λ: <>, (![go.uint64] "i") <⟨go.uint64⟩ (s_to_w64 (![go.int] "xlen"))); (λ: <>, #()) := λ: <>,
-      (if: (![go.byte] (IndexRef go.byte (![go.SliceType go.byte] "x", ![go.uint64] "i"))) ≠⟨go.byte⟩ (![go.byte] (IndexRef go.byte (![go.SliceType go.byte] "y", ![go.uint64] "i")))
+      (if: (![go.byte] (IndexRef (go.SliceType go.byte) (![go.SliceType go.byte] "x", ![go.uint64] "i"))) ≠⟨go.byte⟩ (![go.byte] (IndexRef (go.SliceType go.byte) (![go.SliceType go.byte] "y", ![go.uint64] "i")))
       then
         let: "$r0" := #false in
         do:  ("retval" <-[go.bool] "$r0");;;
@@ -235,7 +235,7 @@ Definition Multiparⁱᵐᵖˡ : val :=
     (let: "i" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[go.uint64] "$r0");;;
-    (for: (λ: <>, (![go.uint64] "i") <⟨go.uint64⟩ (![go.uint64] "num")); (λ: <>, do:  ("i" <-[go.uint64] ((![go.uint64] "i") +⟨go.uint64⟩ #(W8 1)))) := λ: <>,
+    (for: (λ: <>, (![go.uint64] "i") <⟨go.uint64⟩ (![go.uint64] "num")); (λ: <>, do:  ("i" <-[go.uint64] ((![go.uint64] "i") +⟨go.uint64⟩ #(W64 1)))) := λ: <>,
       let: "i" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
       let: "$r0" := (![go.uint64] "i") in
       do:  ("i" <-[go.uint64] "$r0");;;
