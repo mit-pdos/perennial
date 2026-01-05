@@ -411,7 +411,7 @@ Class CoreSemantics :=
     (GoAlloc elem_type (CompositeLiteral elem_type l));
 
   #[global] composite_literal_struct `{!Underlying t (go.StructType fds)} l ::
-    GoExprEq (composite_literal t (LiteralValue l))
+    GoExprEq (composite_literal t (LiteralValueV l))
     (match l with
      | [] => go_zero_val $ go.StructType fds
      | KeyedElement None _ :: _ =>

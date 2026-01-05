@@ -88,7 +88,7 @@ Class ChanSemantics `{!GoSemanticsFunctions} :=
     (λ: "c", MethodResolve (channel.Channel elem_type) "Cap" #() "c")%V;
 
   chan_select_nonblocking default_handler clauses :
-    is_go_step_pure SelectStmt (SelectStmtClauses (Some default_handler) clauses) =
+    is_go_step_pure SelectStmt (SelectStmtClausesV (Some default_handler) clauses) =
     (λ e',
        ∃ clauses',
          clauses' ≡ₚ clauses ∧
@@ -98,7 +98,7 @@ Class ChanSemantics `{!GoSemanticsFunctions} :=
           else default_handler #())%E
     );
   chan_select_blocking clauses :
-    is_go_step_pure SelectStmt (SelectStmtClauses None clauses) =
+    is_go_step_pure SelectStmt (SelectStmtClausesV None clauses) =
     (λ e',
        ∃ clauses',
          clauses' ≡ₚ clauses ∧

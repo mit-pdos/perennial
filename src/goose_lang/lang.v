@@ -258,6 +258,9 @@ Inductive expr :=
 (* Prophecy *)
 | NewProph
 | ResolveProph (e1 : expr) (e2 : expr) (* proph, val *)
+
+| LiteralValue (l : list keyed_element)
+| SelectStmtClauses (default_handler : option expr) (l : list comm_clause)
 with val :=
 | LitV (l : base_lit)
 | RecV (f x : binder) (e : expr)
@@ -276,9 +279,8 @@ with val :=
 | ArrayV (vs : list val)
 | InterfaceV (t : option (go.type * val))
 
-(* FIXME: add expr versions of these two. *)
-| LiteralValue (l : list keyed_element)
-| SelectStmtClauses (default_handler : option expr) (l : list comm_clause)
+| LiteralValueV (l : list keyed_element)
+| SelectStmtClausesV (default_handler : option expr) (l : list comm_clause)
 
 (* https://go.dev/ref/spec#Composite_literals *)
 with keyed_element :=
@@ -923,7 +925,7 @@ Definition fill_item (Ki : ectx_item) (e : expr) : expr :=
   end.
 
 (** Substitution *)
-Fixpoint subst (x : String.string) (v : val) (e : expr)  : expr :=
+Fixpoint subst (x : string) (v : val) (e : expr)  : expr :=
   match e with
   | Val _ => e
   | Var y => if decide (x = y) then Val v else Var y
@@ -949,7 +951,35 @@ Fixpoint subst (x : String.string) (v : val) (e : expr)  : expr :=
   | CmpXchg e0 e1 e2 => CmpXchg (subst x v e0) (subst x v e1) (subst x v e2)
   | NewProph => NewProph
   | ResolveProph e1 e2 => ResolveProph (subst x v e1) (subst x v e2)
-  end.
+  | LiteralValue l => LiteralValue ((subst_keyed_element x v) <$> l)
+  | SelectStmtClauses default_handler l =>
+      SelectStmtClauses ((subst x v) <$> default_handler) ((subst_comm_clause x v) <$> l)
+  end
+with subst_keyed_element (x : string) (v : val) (ke : keyed_element) : keyed_element :=
+match ke with
+| KeyedElement k el =>
+    KeyedElement
+      (match k with
+       | Some (KeyExpression e) => Some $ KeyExpression (subst x v e)
+       | Some (KeyLiteralValue l) => Some $ KeyLiteralValue ((subst_keyed_element x v) <$> l)
+       | _ => k
+       end)
+      (match el with
+       | ElementExpression e => ElementExpression (subst x v e)
+       | ElementLiteralValue l => ElementLiteralValue ((subst_keyed_element x v) <$> l)
+       end)
+end
+with subst_comm_clause (x : string) (v : val) (c : comm_clause) : comm_clause :=
+match c with
+| CommClause c e =>
+    CommClause
+      (match c with
+       | SendCase t e => SendCase t (subst x v e)
+       | RecvCase t e => RecvCase t (subst x v e)
+       end)
+      (subst x v e)
+end
+.
 
 Definition subst' (mx : binder) (v : val) : expr → expr :=
   match mx with BNamed x => subst x v | BAnon => id end.
@@ -1158,6 +1188,13 @@ Fixpoint enc_expr (v : expr) : tree leaf_type :=
   | ExternalOp arg1 arg2 => Node "ExternalOp" [Leaf $ FfiOpcodeLeaf arg1; enc_expr arg2]
   | NewProph  => Node "NewProph" []
   | ResolveProph arg1 arg2 => Node "ResolveProph" [enc_expr arg1; enc_expr arg2]
+  | LiteralValue arg1 => Node "LiteralValue" (enc_keyed_element <$> arg1)
+  | SelectStmtClauses default_handler l =>
+      Node "SelectStmtClauses" (
+          (match default_handler with
+           | Some default_handler => Node "Some" [enc_expr default_handler]
+           | None => Node "None" []
+           end) :: (enc_comm_clause <$> l))
   end
 with enc_val (v : val) : tree leaf_type :=
   match v with
@@ -1175,9 +1212,9 @@ with enc_val (v : val) : tree leaf_type :=
          | Some (t, v) => [Leaf $ GoTypeLeaf t; enc_val v]
          | None => []
          end)
-  | LiteralValue arg1 => Node "LiteralValue" (enc_keyed_element <$> arg1)
-  | SelectStmtClauses default_handler l =>
-      Node "SelectStmtClauses" (
+  | LiteralValueV arg1 => Node "LiteralValueV" (enc_keyed_element <$> arg1)
+  | SelectStmtClausesV default_handler l =>
+      Node "SelectStmtClausesV" (
           (match default_handler with
            | Some default_handler => Node "Some" [enc_expr default_handler]
            | None => Node "None" []
@@ -1246,6 +1283,14 @@ Fixpoint dec_expr (v : tree leaf_type) : expr :=
   | Node "NewProph" [] => NewProph
   | Node "ResolveProph" [arg1; arg2] =>
        ResolveProph (dec_expr arg1) (dec_expr arg2)
+  | Node "LiteralValue" arg1 => LiteralValue (dec_keyed_element <$> arg1)
+  | Node "SelectStmtClauses" (default_handler :: l) =>
+      SelectStmtClauses
+      (match default_handler with
+       | Node "None" [] => None
+       | Node "Some" [e] => Some (dec_expr e)
+       | _ => inhabitant
+       end) (dec_comm_clause <$> l)
   | _ => inhabitant
   end
 with dec_val (v : tree leaf_type) : val :=
@@ -1265,9 +1310,9 @@ with dec_val (v : tree leaf_type) : val :=
          | [] => InterfaceV None
          | _ => inhabitant
          end)
-  | Node "LiteralValue" arg1 => LiteralValue (dec_keyed_element <$> arg1)
-  | Node "SelectStmtClauses" (default_handler :: l) =>
-      SelectStmtClauses
+  | Node "LiteralValueV" arg1 => LiteralValueV (dec_keyed_element <$> arg1)
+  | Node "SelectStmtClausesV" (default_handler :: l) =>
+      SelectStmtClausesV
       (match default_handler with
        | Node "None" [] => None
        | Node "Some" [e] => Some (dec_expr e)
@@ -1763,6 +1808,8 @@ Definition base_trans (e: expr) :
        ret $ LitV $ LitProphecy p)
   | ResolveProph (Val (LitV (LitProphecy p))) (Val w) =>
     ret ([(p, w)], Val $ LitV LitUnit, [])
+  | LiteralValue l => atomically $ ret $ LiteralValueV l
+  | SelectStmtClauses d cs => atomically $ ret $ SelectStmtClausesV d cs
   | _ => undefined
   end.
 

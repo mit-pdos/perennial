@@ -164,7 +164,7 @@ Class SliceSemantics `{!GoSemanticsFunctions} :=
          "s_new")%V;
 
   #[global] composite_literal_slice elem_type kvs ::
-    go.GoExprEq (composite_literal (go.SliceType elem_type) (LiteralValue kvs))
+    go.GoExprEq (composite_literal (go.SliceType elem_type) (LiteralValueV kvs))
     (let len := array_literal_size kvs in
     (let: "tmp" := GoAlloc (go.ArrayType len elem_type) (GoZeroVal (go.ArrayType len elem_type) #()) in
      "tmp" <-[(go.ArrayType len elem_type)]

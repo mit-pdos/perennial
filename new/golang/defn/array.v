@@ -53,7 +53,7 @@ Class ArraySemantics `{!GoSemanticsFunctions} :=
     index (go.ArrayType n elem_type) i #a = #v;
 
   #[global] composite_literal_array n elem_type kvs ::
-    go.GoExprEq (composite_literal (go.ArrayType n elem_type) (LiteralValue kvs))
+    go.GoExprEq (composite_literal (go.ArrayType n elem_type) (LiteralValueV kvs))
     (foldl (λ '(cur_index, expr_so_far) ke,
              match ke with
              | KeyedElement None (ElementExpression e) =>
