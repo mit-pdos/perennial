@@ -406,34 +406,34 @@ Class CoreSemantics :=
   #[global] index_step t (j : w64) (v : val) ::
     IsGoStepPureDet (Index t) (v, #j)%V (index t (sint.Z j) v);
 
-  composite_literal_pointer elem_type l :
-    composite_literal (go.PointerType elem_type) l =
-    GoAlloc elem_type (CompositeLiteral elem_type l);
+  #[global] composite_literal_pointer elem_type l ::
+    GoExprEq (composite_literal (go.PointerType elem_type) l)
+    (GoAlloc elem_type (CompositeLiteral elem_type l));
 
-  composite_literal_struct `{!Underlying t (go.StructType fds)} l :
-    composite_literal t (LiteralValue l) =
-    match l with
-    | [] => go_zero_val $ go.StructType fds
-    | KeyedElement None _ :: _ =>
-        (* unkeyed struct literal *)
-        foldl (λ v '(fd, ke),
-                 let field_name := match fd with go.FieldDecl n _ | go.EmbeddedField n _ => n end in
-                 match ke with
-                 | KeyedElement None (ElementExpression e) =>
-                     StructFieldSet t field_name (v, e)%E
-                 | _ => Panic "invalid Go code"
-                 end
-          ) (Val $ go_zero_val t) (zip fds l)
-    | KeyedElement (Some _) _ :: _ =>
-        (* keyed struct literal *)
-        foldl (λ v ke,
-                 match ke with
-                 | KeyedElement (Some (KeyField field_name)) (ElementExpression e) =>
-                     StructFieldSet t field_name (v, e)%E
-                 | _ => Panic "invalid Go code"
-                 end
-          ) (Val $ go_zero_val t) l
-    end;
+  #[global] composite_literal_struct `{!Underlying t (go.StructType fds)} l ::
+    GoExprEq (composite_literal t (LiteralValue l))
+    (match l with
+     | [] => go_zero_val $ go.StructType fds
+     | KeyedElement None _ :: _ =>
+         (* unkeyed struct literal *)
+         foldl (λ v '(fd, ke),
+                  let field_name := match fd with go.FieldDecl n _ | go.EmbeddedField n _ => n end in
+                  match ke with
+                  | KeyedElement None (ElementExpression e) =>
+                      StructFieldSet t field_name (v, e)%E
+                  | _ => Panic "invalid Go code"
+                  end
+           ) (Val $ go_zero_val t) (zip fds l)
+     | KeyedElement (Some _) _ :: _ =>
+         (* keyed struct literal *)
+         foldl (λ v ke,
+                  match ke with
+                  | KeyedElement (Some (KeyField field_name)) (ElementExpression e) =>
+                      StructFieldSet t field_name (v, e)%E
+                  | _ => Panic "invalid Go code"
+                  end
+           ) (Val $ go_zero_val t) l
+     end);
 
   #[global] underlying_not_named t ::
     Underlying t (match t with | go.Named _ _ => to_underlying t | _ => t end) | 1000;

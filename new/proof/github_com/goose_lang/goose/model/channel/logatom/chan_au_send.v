@@ -37,14 +37,12 @@ Proof.
   (* FIXME: intovaltyped instance *)
   wp_if_destruct.
   {
-    rewrite go.composite_literal_underlying.
-    (* FIXME: composite literal; ideally, don't want to unfold to struct type literal.
-       Will require reasoning principles. *)
-
-    (* Could get rid of go.composite_literal_underlying, and instead have each
-       unfolding be w.r.t. [to_underlying]. *)
-
+    (* FIXME: expression version of LiteralValue. *)
     (* FIXME: underlying type assumptions *)
+    assert (go.Underlying (channel.Channel t) (channel.Channelⁱᵐᵖˡ t)) by admit.
+    wp_auto.
+    rewrite go.composite_literal_underlying.
+
     replace (to_underlying $ channel.Channel t) with (channel.Channelⁱᵐᵖˡ t) by admit.
     rewrite go.composite_literal_struct /=.
     (* FIXME: struct set/get assumptions. *)
