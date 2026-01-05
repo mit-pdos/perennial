@@ -378,7 +378,7 @@ Class CoreSemantics :=
                 let field_addr := StructFieldRef (go.StructType fds) field_name "l" in
                 let field_val := GoLoad field_type field_addr in
                 StructFieldSet (go.StructType fds) field_name (struct_so_far, field_val)
-         ) (go_zero_val (go.StructType fds)) fds)%V;
+         ) (GoZeroVal (go.StructType fds)) fds)%V;
 
   store_underlying `{!Underlying t t'} : store t = store t';
   store_primitive t (H : is_primitive t) : store t = (λ: "l" "v", "l" <- "v")%V;
@@ -394,7 +394,7 @@ Class CoreSemantics :=
                 let field_addr := StructFieldRef (go.StructType fds) field_name "l" in
                 let field_val := StructFieldGet (go.StructType fds) field_name "v" in
                 GoStore field_type (field_addr, field_val)
-         ) (go_zero_val (go.StructType fds)) fds)%V;
+         ) (GoZeroVal (go.StructType fds)) fds)%V;
 
   struct_field_ref_underlying `{!Underlying t t'} : struct_field_ref t = struct_field_ref t';
   index_ref_underlying `{!Underlying t t'} : index_ref t = index_ref t';
@@ -413,7 +413,7 @@ Class CoreSemantics :=
   #[global] composite_literal_struct `{!Underlying t (go.StructType fds)} l ::
     GoExprEq (composite_literal t (LiteralValueV l))
     (match l with
-     | [] => go_zero_val $ go.StructType fds
+     | [] => GoZeroVal t
      | KeyedElement None _ :: _ =>
          (* unkeyed struct literal *)
          foldl (λ v '(fd, ke),
@@ -423,7 +423,7 @@ Class CoreSemantics :=
                       StructFieldSet t field_name (v, e)%E
                   | _ => Panic "invalid Go code"
                   end
-           ) (Val $ go_zero_val t) (zip fds l)
+           ) (GoZeroVal t) (zip fds l)
      | KeyedElement (Some _) _ :: _ =>
          (* keyed struct literal *)
          foldl (λ v ke,
@@ -432,7 +432,7 @@ Class CoreSemantics :=
                       StructFieldSet t field_name (v, e)%E
                   | _ => Panic "invalid Go code"
                   end
-           ) (Val $ go_zero_val t) l
+           ) (GoZeroVal t) l
      end);
 
   #[global] underlying_not_named t ::

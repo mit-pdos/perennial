@@ -431,6 +431,14 @@ Global Instance wp_call_go_func (v2 : val) f x e :
   PureWp True (App #(func.mk f x e) v2) (subst' x v2 (subst' f #(func.mk f x e) e)).
 Proof. rewrite !go.into_val_unfold /=. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
+Global Instance pure_wp_LiteralValue l :
+  PureWp True (LiteralValue l) (LiteralValueV l).
+Proof. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
+
+Global Instance pure_wp_SelectStmtClauses d cs :
+  PureWp True (SelectStmtClauses d cs) (SelectStmtClausesV d cs).
+Proof. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
+
 End instances.
 
 Global Hint Extern 0 (PureWp _ (App (Val (RecV _ _ _)) _) _) => simple apply wp_call : typeclass_instances.
@@ -508,6 +516,8 @@ Ltac2 walk_expr (e : constr) (f : constr -> constr -> 'a) : 'a :=
         | Rec _ _ _ => Control.zero Walk_expr_not_found
         | Fork _ => Control.zero Walk_expr_not_found
         | Primitive0 _ => Control.zero Walk_expr_not_found
+        | LiteralValue _ => Control.zero Walk_expr_not_found
+        | SelectStmtClauses _ _ => Control.zero Walk_expr_not_found
         | _ => Control.zero (Tactic_failure (Some (fprintf "walk_expr: no match for expr %t" e)))
         end
     | Err e => Control.zero e

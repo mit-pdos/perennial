@@ -41,7 +41,8 @@ Proof.
     (* FIXME: underlying type assumptions *)
     assert (go.Underlying (channel.Channel t) (channel.Channelⁱᵐᵖˡ t)) by admit.
     wp_auto.
-    rewrite go.composite_literal_underlying.
+    rewrite go_zero_val.
+    wp_bind.
 
     replace (to_underlying $ channel.Channel t) with (channel.Channelⁱᵐᵖˡ t) by admit.
     rewrite go.composite_literal_struct /=.
