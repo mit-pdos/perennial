@@ -19,41 +19,41 @@ Global Notation "e1 && e2" :=
 Global Notation "e1 || e2" :=
   (If e1%E #true e2%E) (only parsing) : expr_scope.
 
-Notation "e1 ≤⟨ t ⟩ e2" := (GoInstruction (GoOp GoLe t) (e1%E, e2%E)%E)
+Global Notation "e1 ≤⟨ t ⟩ e2" := (GoInstruction (GoOp GoLe t) (e1%E, e2%E)%E)
                              (at level 70, format "e1  ≤⟨ t ⟩  e2") : expr_scope.
-Notation "e1 <⟨ t ⟩ e2" := (GoInstruction (GoOp GoLt t) (e1%E, e2%E)%E)
+Global Notation "e1 <⟨ t ⟩ e2" := (GoInstruction (GoOp GoLt t) (e1%E, e2%E)%E)
                              (at level 70, format "e1  <⟨ t ⟩  e2") : expr_scope.
-Notation "e1 ≥⟨ t ⟩ e2" := (GoInstruction (GoOp GoGe t) (e1%E, e2%E)%E)
+Global Notation "e1 ≥⟨ t ⟩ e2" := (GoInstruction (GoOp GoGe t) (e1%E, e2%E)%E)
                              (at level 70, format "e1  ≥⟨ t ⟩  e2") : expr_scope.
-Notation "e1 >⟨ t ⟩ e2" := (GoInstruction (GoOp GoGt t) (e1%E, e2%E)%E)
+Global Notation "e1 >⟨ t ⟩ e2" := (GoInstruction (GoOp GoGt t) (e1%E, e2%E)%E)
                              (at level 70, format "e1  >⟨ t ⟩  e2") : expr_scope.
-Notation "e1 =⟨ t ⟩ e2" := (GoInstruction (GoOp GoEquals t) (e1%E, e2%E)%E)
+Global Notation "e1 =⟨ t ⟩ e2" := (GoInstruction (GoOp GoEquals t) (e1%E, e2%E)%E)
                              (at level 70, format "e1  =⟨ t ⟩  e2") : expr_scope.
-Notation "e1 ≠⟨ t ⟩ e2" := (UnOp NegOp (e1%E =⟨t⟩ e2%E))
+Global Notation "e1 ≠⟨ t ⟩ e2" := (UnOp NegOp (e1%E =⟨t⟩ e2%E))
                              (at level 70, format "e1  ≠⟨ t ⟩  e2") : expr_scope.
 
-Notation "e1 +⟨ t ⟩ e2" := (GoInstruction (GoOp GoPlus t) (e1%E, e2%E)%E)
+Global Notation "e1 +⟨ t ⟩ e2" := (GoInstruction (GoOp GoPlus t) (e1%E, e2%E)%E)
                              (at level 70, format "e1  +⟨ t ⟩  e2") : expr_scope.
-Notation "e1 -⟨ t ⟩ e2" := (GoInstruction (GoOp GoSub t) (e1%E, e2%E)%E)
+Global Notation "e1 -⟨ t ⟩ e2" := (GoInstruction (GoOp GoSub t) (e1%E, e2%E)%E)
                              (at level 70, format "e1  -⟨ t ⟩  e2") : expr_scope.
-Notation "e1 *⟨ t ⟩ e2" := (GoInstruction (GoOp GoMul t) (e1%E, e2%E)%E)
+Global Notation "e1 *⟨ t ⟩ e2" := (GoInstruction (GoOp GoMul t) (e1%E, e2%E)%E)
                              (at level 70, format "e1  *⟨ t ⟩  e2") : expr_scope.
-Notation "e1 /⟨ t ⟩ e2" := (GoInstruction (GoOp GoDiv t) (e1%E, e2%E)%E)
+Global Notation "e1 /⟨ t ⟩ e2" := (GoInstruction (GoOp GoDiv t) (e1%E, e2%E)%E)
                              (at level 70, format "e1  /⟨ t ⟩  e2") : expr_scope.
-Notation "e1 %⟨ t ⟩ e2" := (GoInstruction (GoOp GoRemainder t) (e1%E, e2%E)%E)
+Global Notation "e1 %⟨ t ⟩ e2" := (GoInstruction (GoOp GoRemainder t) (e1%E, e2%E)%E)
                              (at level 70, format "e1  %⟨ t ⟩  e2") : expr_scope.
 
-Notation "e1 &⟨ t ⟩ e2" := (GoInstruction (GoOp GoAnd t) (e1%E, e2%E)%E)
+Global Notation "e1 &⟨ t ⟩ e2" := (GoInstruction (GoOp GoAnd t) (e1%E, e2%E)%E)
                              (at level 70, format "e1  &⟨ t ⟩  e2") : expr_scope.
-Notation "e1 |⟨ t ⟩ e2" := (GoInstruction (GoOp GoOr t) (e1%E, e2%E)%E)
+Global Notation "e1 |⟨ t ⟩ e2" := (GoInstruction (GoOp GoOr t) (e1%E, e2%E)%E)
                              (at level 70, format "e1  |⟨ t ⟩  e2") : expr_scope.
-Notation "e1 ^⟨ t ⟩ e2" := (GoInstruction (GoOp GoXor t) (e1%E, e2%E)%E)
+Global Notation "e1 ^⟨ t ⟩ e2" := (GoInstruction (GoOp GoXor t) (e1%E, e2%E)%E)
                              (at level 70, format "e1  ^⟨ t ⟩  e2") : expr_scope.
-Notation "e1 &^⟨ t ⟩ e2" := (GoInstruction (GoOp GoBitClear t) (e1%E, e2%E)%E)
+Global Notation "e1 &^⟨ t ⟩ e2" := (GoInstruction (GoOp GoBitClear t) (e1%E, e2%E)%E)
                              (at level 70, format "e1  &^⟨ t ⟩  e2") : expr_scope.
-Notation "e1 <<⟨ t ⟩ e2" := (GoInstruction (GoOp GoShiftl t) (e1%E, e2%E)%E)
+Global Notation "e1 <<⟨ t ⟩ e2" := (GoInstruction (GoOp GoShiftl t) (e1%E, e2%E)%E)
                              (at level 70, format "e1  <<⟨ t ⟩  e2") : expr_scope.
-Notation "e1 >>⟨ t ⟩ e2" := (GoInstruction (GoOp GoShiftr t) (e1%E, e2%E)%E)
+Global Notation "e1 >>⟨ t ⟩ e2" := (GoInstruction (GoOp GoShiftr t) (e1%E, e2%E)%E)
                              (at level 70, format "e1  >>⟨ t ⟩  e2") : expr_scope.
 
 Module map.
@@ -102,6 +102,9 @@ Class GoSemanticsFunctions {ext : ffi_syntax} :=
     is_map_pure (v : val) (m : val → bool * val) : Prop;
     map_default : val → val;
   }.
+
+Global Notation "ptr .[ t , field ]" := (struct_field_ref t field ptr)
+  (at level 1, format "ptr .[ t ,  field ]").
 
 Section unfolding_defs.
 Context {ext : ffi_syntax} `{!GoSemanticsFunctions} {go_gctx : GoGlobalContext}.
