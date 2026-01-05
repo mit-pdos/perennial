@@ -5,404 +5,332 @@ Definition testing : go_string := "testing".
 
 Module testing.
 
-Section code.
-Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Definition AllocsPerRun {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.AllocsPerRun"%go.
 
+Definition initBenchmarkFlags {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.initBenchmarkFlags"%go.
 
-Definition AllocsPerRun : go_string := "testing.AllocsPerRun"%go.
+Definition matchBenchmarks {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.matchBenchmarks"%go.
 
-Definition initBenchmarkFlags : go_string := "testing.initBenchmarkFlags"%go.
+Definition benchmarkMemory {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.benchmarkMemory"%go.
 
-Definition matchBenchmarks : go_string := "testing.matchBenchmarks"%go.
+Definition benchTime {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.benchTime"%go.
 
-Definition benchmarkMemory : go_string := "testing.benchmarkMemory"%go.
+Axiom benchTime'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition benchTime : go_string := "testing.benchTime"%go.
+Axiom durationOrCountFlagⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom benchTime'init : val.
+Definition benchmarkLock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.benchmarkLock"%go.
 
-Axiom durationOrCountFlagⁱᵐᵖˡ : go.type.
+Definition memStats {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.memStats"%go.
 
-Definition benchmarkLock : go_string := "testing.benchmarkLock"%go.
+Axiom InternalBenchmarkⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition memStats : go_string := "testing.memStats"%go.
+Axiom Bⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom InternalBenchmarkⁱᵐᵖˡ : go.type.
+Definition labelsOnce {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.labelsOnce"%go.
 
-Axiom Bⁱᵐᵖˡ : go.type.
+Definition predictN {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.predictN"%go.
 
-Definition labelsOnce : go_string := "testing.labelsOnce"%go.
+Axiom loopPoisonTimer : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition predictN : go_string := "testing.predictN"%go.
+Axiom loopPoisonMask : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom loopPoisonTimer : val.
+Axiom BenchmarkResultⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom loopPoisonMask : val.
+Definition prettyPrint {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.prettyPrint"%go.
 
-Axiom BenchmarkResultⁱᵐᵖˡ : go.type.
+Definition benchmarkName {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.benchmarkName"%go.
 
-Definition prettyPrint : go_string := "testing.prettyPrint"%go.
+Axiom benchStateⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition benchmarkName : go_string := "testing.benchmarkName"%go.
+Definition RunBenchmarks {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.RunBenchmarks"%go.
 
-Axiom benchStateⁱᵐᵖˡ : go.type.
+Definition runBenchmarks {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.runBenchmarks"%go.
 
-Definition RunBenchmarks : go_string := "testing.RunBenchmarks"%go.
+Definition hideStdoutForTesting {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.hideStdoutForTesting"%go.
 
-Definition runBenchmarks : go_string := "testing.runBenchmarks"%go.
+Axiom hideStdoutForTesting'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition hideStdoutForTesting : go_string := "testing.hideStdoutForTesting"%go.
+Axiom PBⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom hideStdoutForTesting'init : val.
+Definition Benchmark {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.Benchmark"%go.
 
-Axiom PBⁱᵐᵖˡ : go.type.
+Axiom discardⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition Benchmark : go_string := "testing.Benchmark"%go.
+Axiom CoverBlockⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom discardⁱᵐᵖˡ : go.type.
+Axiom Coverⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom CoverBlockⁱᵐᵖˡ : go.type.
+Definition RegisterCover {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.RegisterCover"%go.
 
-Axiom Coverⁱᵐᵖˡ : go.type.
+Axiom InternalExampleⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition RegisterCover : go_string := "testing.RegisterCover"%go.
+Definition RunExamples {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.RunExamples"%go.
 
-Axiom InternalExampleⁱᵐᵖˡ : go.type.
+Definition runExamples {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.runExamples"%go.
 
-Definition RunExamples : go_string := "testing.RunExamples"%go.
+Definition initFuzzFlags {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.initFuzzFlags"%go.
 
-Definition runExamples : go_string := "testing.runExamples"%go.
+Definition matchFuzz {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.matchFuzz"%go.
 
-Definition initFuzzFlags : go_string := "testing.initFuzzFlags"%go.
+Definition fuzzDuration {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.fuzzDuration"%go.
 
-Definition matchFuzz : go_string := "testing.matchFuzz"%go.
+Definition minimizeDuration {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.minimizeDuration"%go.
 
-Definition fuzzDuration : go_string := "testing.fuzzDuration"%go.
+Axiom minimizeDuration'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition minimizeDuration : go_string := "testing.minimizeDuration"%go.
+Definition fuzzCacheDir {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.fuzzCacheDir"%go.
 
-Axiom minimizeDuration'init : val.
+Definition isFuzzWorker {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.isFuzzWorker"%go.
 
-Definition fuzzCacheDir : go_string := "testing.fuzzCacheDir"%go.
+Definition corpusDir {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.corpusDir"%go.
 
-Definition isFuzzWorker : go_string := "testing.isFuzzWorker"%go.
+Axiom corpusDir'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition corpusDir : go_string := "testing.corpusDir"%go.
+Axiom fuzzWorkerExitCode : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom corpusDir'init : val.
+Axiom InternalFuzzTargetⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom fuzzWorkerExitCode : Z.
+Axiom Fⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom InternalFuzzTargetⁱᵐᵖˡ : go.type.
+Axiom corpusEntry : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom Fⁱᵐᵖˡ : go.type.
+Definition supportedTypes {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.supportedTypes"%go.
 
-Axiom corpusEntry : go.type.
+Axiom supportedTypes'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition supportedTypes : go_string := "testing.supportedTypes"%go.
+Axiom fuzzResultⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom supportedTypes'init : val.
+Axiom fuzzCrashErrorⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom fuzzResultⁱᵐᵖˡ : go.type.
+Axiom fuzzStateⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom fuzzCrashErrorⁱᵐᵖˡ : go.type.
+Axiom fuzzModeⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom fuzzStateⁱᵐᵖˡ : go.type.
+Axiom seedCorpusOnly : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom fuzzModeⁱᵐᵖˡ : go.type.
+Axiom fuzzCoordinator : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom seedCorpusOnly : val.
+Axiom fuzzWorker : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom fuzzCoordinator : val.
+Definition runFuzzTests {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.runFuzzTests"%go.
 
-Axiom fuzzWorker : val.
+Definition runFuzzing {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.runFuzzing"%go.
 
-Definition runFuzzTests : go_string := "testing.runFuzzTests"%go.
+Definition fRunner {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.fRunner"%go.
 
-Definition runFuzzing : go_string := "testing.runFuzzing"%go.
+Axiom matcherⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition fRunner : go_string := "testing.fRunner"%go.
+Axiom filterMatchⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom matcherⁱᵐᵖˡ : go.type.
+Axiom simpleMatchⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom filterMatchⁱᵐᵖˡ : go.type.
+Axiom alternationMatchⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom simpleMatchⁱᵐᵖˡ : go.type.
+Definition matchMutex {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.matchMutex"%go.
 
-Axiom alternationMatchⁱᵐᵖˡ : go.type.
+Definition allMatcher {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.allMatcher"%go.
 
-Definition matchMutex : go_string := "testing.matchMutex"%go.
+Definition newMatcher {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.newMatcher"%go.
 
-Definition allMatcher : go_string := "testing.allMatcher"%go.
+Definition splitRegexp {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.splitRegexp"%go.
 
-Definition newMatcher : go_string := "testing.newMatcher"%go.
+Definition parseSubtestNumber {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.parseSubtestNumber"%go.
 
-Definition splitRegexp : go_string := "testing.splitRegexp"%go.
+Definition rewrite {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.rewrite"%go.
 
-Definition parseSubtestNumber : go_string := "testing.parseSubtestNumber"%go.
+Definition isSpace {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.isSpace"%go.
 
-Definition rewrite : go_string := "testing.rewrite"%go.
+Definition cover {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.cover"%go.
 
-Definition isSpace : go_string := "testing.isSpace"%go.
+Definition registerCover {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.registerCover"%go.
 
-Definition cover : go_string := "testing.cover"%go.
+Definition coverReport {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.coverReport"%go.
 
-Definition registerCover : go_string := "testing.registerCover"%go.
+Definition Coverage {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.Coverage"%go.
 
-Definition coverReport : go_string := "testing.coverReport"%go.
+Definition runExample {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.runExample"%go.
 
-Definition Coverage : go_string := "testing.Coverage"%go.
+Definition initRan {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.initRan"%go.
 
-Definition runExample : go_string := "testing.runExample"%go.
+Definition parallelStart {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.parallelStart"%go.
 
-Definition initRan : go_string := "testing.initRan"%go.
+Definition parallelStop {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.parallelStop"%go.
 
-Definition parallelStart : go_string := "testing.parallelStart"%go.
+Definition Init {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.Init"%go.
 
-Definition parallelStop : go_string := "testing.parallelStop"%go.
+Definition short {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.short"%go.
 
-Definition Init : go_string := "testing.Init"%go.
+Definition failFast {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.failFast"%go.
 
-Definition short : go_string := "testing.short"%go.
+Definition outputDir {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.outputDir"%go.
 
-Definition failFast : go_string := "testing.failFast"%go.
+Definition chatty {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.chatty"%go.
 
-Definition outputDir : go_string := "testing.outputDir"%go.
+Definition count {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.count"%go.
 
-Definition chatty : go_string := "testing.chatty"%go.
+Definition coverProfile {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.coverProfile"%go.
 
-Definition count : go_string := "testing.count"%go.
+Definition gocoverdir {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.gocoverdir"%go.
 
-Definition coverProfile : go_string := "testing.coverProfile"%go.
+Definition matchList {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.matchList"%go.
 
-Definition gocoverdir : go_string := "testing.gocoverdir"%go.
+Definition match' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.match"%go.
 
-Definition matchList : go_string := "testing.matchList"%go.
+Definition skip {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.skip"%go.
 
-Definition match' : go_string := "testing.match"%go.
+Definition memProfile {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.memProfile"%go.
 
-Definition skip : go_string := "testing.skip"%go.
+Definition memProfileRate {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.memProfileRate"%go.
 
-Definition memProfile : go_string := "testing.memProfile"%go.
+Definition cpuProfile {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.cpuProfile"%go.
 
-Definition memProfileRate : go_string := "testing.memProfileRate"%go.
+Definition blockProfile {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.blockProfile"%go.
 
-Definition cpuProfile : go_string := "testing.cpuProfile"%go.
+Definition blockProfileRate {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.blockProfileRate"%go.
 
-Definition blockProfile : go_string := "testing.blockProfile"%go.
+Definition mutexProfile {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.mutexProfile"%go.
 
-Definition blockProfileRate : go_string := "testing.blockProfileRate"%go.
+Definition mutexProfileFraction {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.mutexProfileFraction"%go.
 
-Definition mutexProfile : go_string := "testing.mutexProfile"%go.
+Definition panicOnExit0 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.panicOnExit0"%go.
 
-Definition mutexProfileFraction : go_string := "testing.mutexProfileFraction"%go.
+Definition traceFile {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.traceFile"%go.
 
-Definition panicOnExit0 : go_string := "testing.panicOnExit0"%go.
+Definition timeout {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.timeout"%go.
 
-Definition traceFile : go_string := "testing.traceFile"%go.
+Definition cpuListStr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.cpuListStr"%go.
 
-Definition timeout : go_string := "testing.timeout"%go.
+Definition parallel {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.parallel"%go.
 
-Definition cpuListStr : go_string := "testing.cpuListStr"%go.
+Definition shuffle {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.shuffle"%go.
 
-Definition parallel : go_string := "testing.parallel"%go.
+Definition testlog {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.testlog"%go.
 
-Definition shuffle : go_string := "testing.shuffle"%go.
+Definition fullPath {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.fullPath"%go.
 
-Definition testlog : go_string := "testing.testlog"%go.
+Definition haveExamples {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.haveExamples"%go.
 
-Definition fullPath : go_string := "testing.fullPath"%go.
+Definition cpuList {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.cpuList"%go.
 
-Definition haveExamples : go_string := "testing.haveExamples"%go.
+Definition testlogFile {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.testlogFile"%go.
 
-Definition cpuList : go_string := "testing.cpuList"%go.
+Definition numFailed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.numFailed"%go.
 
-Definition testlogFile : go_string := "testing.testlogFile"%go.
+Definition running {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.running"%go.
 
-Definition numFailed : go_string := "testing.numFailed"%go.
+Axiom chattyFlagⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition running : go_string := "testing.running"%go.
+Axiom marker : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom chattyFlagⁱᵐᵖˡ : go.type.
+Axiom chattyPrinterⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom marker : val.
+Definition newChattyPrinter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.newChattyPrinter"%go.
 
-Axiom chattyPrinterⁱᵐᵖˡ : go.type.
+Axiom maxStackLen : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition newChattyPrinter : go_string := "testing.newChattyPrinter"%go.
+Axiom commonⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom maxStackLen : Z.
+Definition Short {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.Short"%go.
 
-Axiom commonⁱᵐᵖˡ : go.type.
+Definition testBinary {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.testBinary"%go.
 
-Definition Short : go_string := "testing.Short"%go.
+Axiom testBinary'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition testBinary : go_string := "testing.testBinary"%go.
+Definition Testing {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.Testing"%go.
 
-Axiom testBinary'init : val.
+Definition CoverMode {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.CoverMode"%go.
 
-Definition Testing : go_string := "testing.Testing"%go.
+Definition Verbose {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.Verbose"%go.
 
-Definition CoverMode : go_string := "testing.CoverMode"%go.
+Axiom indenterⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition Verbose : go_string := "testing.Verbose"%go.
+Axiom indent : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
 
-Axiom indenterⁱᵐᵖˡ : go.type.
+Definition fmtDuration {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.fmtDuration"%go.
 
-Axiom indent : go_string.
+Axiom TBⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition fmtDuration : go_string := "testing.fmtDuration"%go.
+Axiom Tⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom TBⁱᵐᵖˡ : go.type.
+Axiom outputWriterⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom Tⁱᵐᵖˡ : go.type.
+Definition removeAll {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.removeAll"%go.
 
-Axiom outputWriterⁱᵐᵖˡ : go.type.
+Axiom panicHandlingⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition removeAll : go_string := "testing.removeAll"%go.
+Axiom normalPanic : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom panicHandlingⁱᵐᵖˡ : go.type.
+Axiom recoverAndReturnPanic : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom normalPanic : val.
+Definition callerName {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.callerName"%go.
 
-Axiom recoverAndReturnPanic : val.
+Definition pcToName {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.pcToName"%go.
 
-Definition callerName : go_string := "testing.callerName"%go.
+Axiom parallelConflict : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
 
-Definition pcToName : go_string := "testing.pcToName"%go.
+Axiom InternalTestⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom parallelConflict : go_string.
+Definition errNilPanicOrGoexit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.errNilPanicOrGoexit"%go.
 
-Axiom InternalTestⁱᵐᵖˡ : go.type.
+Axiom errNilPanicOrGoexit'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition errNilPanicOrGoexit : go_string := "testing.errNilPanicOrGoexit"%go.
+Definition tRunner {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.tRunner"%go.
 
-Axiom errNilPanicOrGoexit'init : val.
+Definition testingSynctestTest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.testingSynctestTest"%go.
 
-Definition tRunner : go_string := "testing.tRunner"%go.
+Axiom testStateⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition testingSynctestTest : go_string := "testing.testingSynctestTest"%go.
+Definition newTestState {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.newTestState"%go.
 
-Axiom testStateⁱᵐᵖˡ : go.type.
+Definition errMain {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.errMain"%go.
 
-Definition newTestState : go_string := "testing.newTestState"%go.
+Axiom errMain'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition errMain : go_string := "testing.errMain"%go.
+Axiom matchStringOnlyⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom errMain'init : val.
+Definition Main {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.Main"%go.
 
-Axiom matchStringOnlyⁱᵐᵖˡ : go.type.
+Axiom Mⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition Main : go_string := "testing.Main"%go.
+Axiom testDepsⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom Mⁱᵐᵖˡ : go.type.
+Definition MainStart {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.MainStart"%go.
 
-Axiom testDepsⁱᵐᵖˡ : go.type.
+Definition testingTesting {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.testingTesting"%go.
 
-Definition MainStart : go_string := "testing.MainStart"%go.
+Definition realStderr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.realStderr"%go.
 
-Definition testingTesting : go_string := "testing.testingTesting"%go.
+Definition listTests {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.listTests"%go.
 
-Definition realStderr : go_string := "testing.realStderr"%go.
+Definition RunTests {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.RunTests"%go.
 
-Definition listTests : go_string := "testing.listTests"%go.
+Definition runTests {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.runTests"%go.
 
-Definition RunTests : go_string := "testing.RunTests"%go.
+Definition toOutputDir {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.toOutputDir"%go.
 
-Definition runTests : go_string := "testing.runTests"%go.
+Definition runningList {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.runningList"%go.
 
-Definition toOutputDir : go_string := "testing.toOutputDir"%go.
+Definition parseCpuList {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.parseCpuList"%go.
 
-Definition runningList : go_string := "testing.runningList"%go.
+Definition shouldFailFast {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.shouldFailFast"%go.
 
-Definition parseCpuList : go_string := "testing.parseCpuList"%go.
+Definition isWindowsRetryable {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.isWindowsRetryable"%go.
 
-Definition shouldFailFast : go_string := "testing.shouldFailFast"%go.
+Axiom highPrecisionTimeⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition isWindowsRetryable : go_string := "testing.isWindowsRetryable"%go.
+Definition highPrecisionTimeNow {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.highPrecisionTimeNow"%go.
 
-Axiom highPrecisionTimeⁱᵐᵖˡ : go.type.
+Definition highPrecisionTimeSince {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.highPrecisionTimeSince"%go.
 
-Definition highPrecisionTimeNow : go_string := "testing.highPrecisionTimeNow"%go.
+#[global] Instance info' : PkgInfo testing.testing := 
+{|
+  pkg_imported_pkgs := []
+|}.
 
-Definition highPrecisionTimeSince : go_string := "testing.highPrecisionTimeSince"%go.
+Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition durationOrCountFlag : go.type := go.Named "testing.durationOrCountFlag"%go [].
-
-Definition InternalBenchmark : go.type := go.Named "testing.InternalBenchmark"%go [].
-
-Definition B : go.type := go.Named "testing.B"%go [].
-
-Definition BenchmarkResult : go.type := go.Named "testing.BenchmarkResult"%go [].
-
-Definition benchState : go.type := go.Named "testing.benchState"%go [].
-
-Definition PB : go.type := go.Named "testing.PB"%go [].
-
-Definition discard : go.type := go.Named "testing.discard"%go [].
-
-Definition CoverBlock : go.type := go.Named "testing.CoverBlock"%go [].
-
-Definition Cover : go.type := go.Named "testing.Cover"%go [].
-
-Definition InternalExample : go.type := go.Named "testing.InternalExample"%go [].
-
-Definition InternalFuzzTarget : go.type := go.Named "testing.InternalFuzzTarget"%go [].
-
-Definition F : go.type := go.Named "testing.F"%go [].
-
-Definition fuzzResult : go.type := go.Named "testing.fuzzResult"%go [].
-
-Definition fuzzCrashError : go.type := go.Named "testing.fuzzCrashError"%go [].
-
-Definition fuzzState : go.type := go.Named "testing.fuzzState"%go [].
-
-Definition fuzzMode : go.type := go.Named "testing.fuzzMode"%go [].
-
-Definition matcher : go.type := go.Named "testing.matcher"%go [].
-
-Definition filterMatch : go.type := go.Named "testing.filterMatch"%go [].
-
-Definition simpleMatch : go.type := go.Named "testing.simpleMatch"%go [].
-
-Definition alternationMatch : go.type := go.Named "testing.alternationMatch"%go [].
-
-Definition chattyFlag : go.type := go.Named "testing.chattyFlag"%go [].
-
-Definition chattyPrinter : go.type := go.Named "testing.chattyPrinter"%go [].
-
-Definition common : go.type := go.Named "testing.common"%go [].
-
-Definition indenter : go.type := go.Named "testing.indenter"%go [].
-
-Definition TB : go.type := go.Named "testing.TB"%go [].
-
-Definition T : go.type := go.Named "testing.T"%go [].
-
-Definition outputWriter : go.type := go.Named "testing.outputWriter"%go [].
-
-Definition panicHandling : go.type := go.Named "testing.panicHandling"%go [].
-
-Definition InternalTest : go.type := go.Named "testing.InternalTest"%go [].
-
-Definition testState : go.type := go.Named "testing.testState"%go [].
-
-Definition matchStringOnly : go.type := go.Named "testing.matchStringOnly"%go [].
-
-Definition M : go.type := go.Named "testing.M"%go [].
-
-Definition testDeps : go.type := go.Named "testing.testDeps"%go [].
-
-Definition highPrecisionTime : go.type := go.Named "testing.highPrecisionTime"%go [].
-
-#[global] Instance info' : PkgInfo testing.testing :=
-  {|
-    pkg_imported_pkgs := [];
-  |}.
-
-Axiom _'init : val.
-
-Definition initialize' : val :=
+Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init testing.testing (λ: <>,
       exception_do (do:  (benchTime'init #());;;
@@ -418,179 +346,7 @@ Definition initialize' : val :=
       do:  (errMain'init #()))
       ).
 
-Class durationOrCountFlag_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
 }.
-
-Class InternalBenchmark_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class B_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class BenchmarkResult_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class benchState_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class PB_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class discard_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class CoverBlock_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class Cover_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class InternalExample_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class InternalFuzzTarget_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class F_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class fuzzResult_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class fuzzCrashError_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class fuzzState_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class fuzzMode_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class matcher_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class filterMatch_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class simpleMatch_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class alternationMatch_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class chattyFlag_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class chattyPrinter_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class common_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class indenter_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class TB_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class T_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class outputWriter_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class panicHandling_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class InternalTest_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class testState_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class matchStringOnly_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class M_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class testDeps_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class highPrecisionTime_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] durationOrCountFlag_instance :: durationOrCountFlag_Assumptions;
-  #[global] InternalBenchmark_instance :: InternalBenchmark_Assumptions;
-  #[global] B_instance :: B_Assumptions;
-  #[global] BenchmarkResult_instance :: BenchmarkResult_Assumptions;
-  #[global] benchState_instance :: benchState_Assumptions;
-  #[global] PB_instance :: PB_Assumptions;
-  #[global] discard_instance :: discard_Assumptions;
-  #[global] CoverBlock_instance :: CoverBlock_Assumptions;
-  #[global] Cover_instance :: Cover_Assumptions;
-  #[global] InternalExample_instance :: InternalExample_Assumptions;
-  #[global] InternalFuzzTarget_instance :: InternalFuzzTarget_Assumptions;
-  #[global] F_instance :: F_Assumptions;
-  #[global] fuzzResult_instance :: fuzzResult_Assumptions;
-  #[global] fuzzCrashError_instance :: fuzzCrashError_Assumptions;
-  #[global] fuzzState_instance :: fuzzState_Assumptions;
-  #[global] fuzzMode_instance :: fuzzMode_Assumptions;
-  #[global] matcher_instance :: matcher_Assumptions;
-  #[global] filterMatch_instance :: filterMatch_Assumptions;
-  #[global] simpleMatch_instance :: simpleMatch_Assumptions;
-  #[global] alternationMatch_instance :: alternationMatch_Assumptions;
-  #[global] chattyFlag_instance :: chattyFlag_Assumptions;
-  #[global] chattyPrinter_instance :: chattyPrinter_Assumptions;
-  #[global] common_instance :: common_Assumptions;
-  #[global] indenter_instance :: indenter_Assumptions;
-  #[global] TB_instance :: TB_Assumptions;
-  #[global] T_instance :: T_Assumptions;
-  #[global] outputWriter_instance :: outputWriter_Assumptions;
-  #[global] panicHandling_instance :: panicHandling_Assumptions;
-  #[global] InternalTest_instance :: InternalTest_Assumptions;
-  #[global] testState_instance :: testState_Assumptions;
-  #[global] matchStringOnly_instance :: matchStringOnly_Assumptions;
-  #[global] M_instance :: M_Assumptions;
-  #[global] testDeps_instance :: testDeps_Assumptions;
-  #[global] highPrecisionTime_instance :: highPrecisionTime_Assumptions;
-}.
-
-End code.
 End testing.

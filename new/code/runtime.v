@@ -7,7318 +7,6610 @@ Definition runtime : go_string := "runtime".
 
 Module runtime.
 
-Section code.
-Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom c0 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
+Axiom c1 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom c0 : val.
+Definition memhash0 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.memhash0"%go.
 
-Axiom c1 : val.
+Definition memhash8 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.memhash8"%go.
 
-Definition memhash0 : go_string := "runtime.memhash0"%go.
+Definition memhash16 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.memhash16"%go.
 
-Definition memhash8 : go_string := "runtime.memhash8"%go.
+Definition memhash128 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.memhash128"%go.
 
-Definition memhash16 : go_string := "runtime.memhash16"%go.
+Definition memhash_varlen {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.memhash_varlen"%go.
 
-Definition memhash128 : go_string := "runtime.memhash128"%go.
+Definition useAeshash {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.useAeshash"%go.
 
-Definition memhash_varlen : go_string := "runtime.memhash_varlen"%go.
+Definition memhash {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.memhash"%go.
 
-Definition useAeshash : go_string := "runtime.useAeshash"%go.
+Definition memhash32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.memhash32"%go.
 
-Definition memhash : go_string := "runtime.memhash"%go.
+Definition memhash64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.memhash64"%go.
 
-Definition memhash32 : go_string := "runtime.memhash32"%go.
+Definition strhash {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.strhash"%go.
 
-Definition memhash64 : go_string := "runtime.memhash64"%go.
+Definition strhashFallback {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.strhashFallback"%go.
 
-Definition strhash : go_string := "runtime.strhash"%go.
+Definition f32hash {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.f32hash"%go.
 
-Definition strhashFallback : go_string := "runtime.strhashFallback"%go.
+Definition f64hash {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.f64hash"%go.
 
-Definition f32hash : go_string := "runtime.f32hash"%go.
+Definition c64hash {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.c64hash"%go.
 
-Definition f64hash : go_string := "runtime.f64hash"%go.
+Definition c128hash {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.c128hash"%go.
 
-Definition c64hash : go_string := "runtime.c64hash"%go.
+Definition interhash {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.interhash"%go.
 
-Definition c128hash : go_string := "runtime.c128hash"%go.
+Definition nilinterhash {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.nilinterhash"%go.
 
-Definition interhash : go_string := "runtime.interhash"%go.
+Definition typehash {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.typehash"%go.
 
-Definition nilinterhash : go_string := "runtime.nilinterhash"%go.
+Definition reflect_typehash {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflect_typehash"%go.
 
-Definition typehash : go_string := "runtime.typehash"%go.
+Definition memequal0 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.memequal0"%go.
 
-Definition reflect_typehash : go_string := "runtime.reflect_typehash"%go.
+Definition memequal8 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.memequal8"%go.
 
-Definition memequal0 : go_string := "runtime.memequal0"%go.
+Definition memequal16 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.memequal16"%go.
 
-Definition memequal8 : go_string := "runtime.memequal8"%go.
+Definition memequal32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.memequal32"%go.
 
-Definition memequal16 : go_string := "runtime.memequal16"%go.
+Definition memequal64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.memequal64"%go.
 
-Definition memequal32 : go_string := "runtime.memequal32"%go.
+Definition memequal128 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.memequal128"%go.
 
-Definition memequal64 : go_string := "runtime.memequal64"%go.
+Definition f32equal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.f32equal"%go.
 
-Definition memequal128 : go_string := "runtime.memequal128"%go.
+Definition f64equal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.f64equal"%go.
 
-Definition f32equal : go_string := "runtime.f32equal"%go.
+Definition c64equal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.c64equal"%go.
 
-Definition f64equal : go_string := "runtime.f64equal"%go.
+Definition c128equal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.c128equal"%go.
 
-Definition c64equal : go_string := "runtime.c64equal"%go.
+Definition strequal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.strequal"%go.
 
-Definition c128equal : go_string := "runtime.c128equal"%go.
+Definition interequal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.interequal"%go.
 
-Definition strequal : go_string := "runtime.strequal"%go.
+Definition nilinterequal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.nilinterequal"%go.
 
-Definition interequal : go_string := "runtime.interequal"%go.
+Definition efaceeq {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.efaceeq"%go.
 
-Definition nilinterequal : go_string := "runtime.nilinterequal"%go.
+Definition ifaceeq {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.ifaceeq"%go.
 
-Definition efaceeq : go_string := "runtime.efaceeq"%go.
+Definition stringHash {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.stringHash"%go.
 
-Definition ifaceeq : go_string := "runtime.ifaceeq"%go.
+Definition bytesHash {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.bytesHash"%go.
 
-Definition stringHash : go_string := "runtime.stringHash"%go.
+Definition int32Hash {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.int32Hash"%go.
 
-Definition bytesHash : go_string := "runtime.bytesHash"%go.
+Definition int64Hash {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.int64Hash"%go.
 
-Definition int32Hash : go_string := "runtime.int32Hash"%go.
+Definition efaceHash {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.efaceHash"%go.
 
-Definition int64Hash : go_string := "runtime.int64Hash"%go.
+Definition ifaceHash {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.ifaceHash"%go.
 
-Definition efaceHash : go_string := "runtime.efaceHash"%go.
+Axiom hashRandomBytes : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition ifaceHash : go_string := "runtime.ifaceHash"%go.
+Definition aeskeysched {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.aeskeysched"%go.
 
-Axiom hashRandomBytes : Z.
+Definition hashkey {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.hashkey"%go.
 
-Definition aeskeysched : go_string := "runtime.aeskeysched"%go.
+Definition alginit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.alginit"%go.
 
-Definition hashkey : go_string := "runtime.hashkey"%go.
+Definition initAlgAES {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.initAlgAES"%go.
 
-Definition alginit : go_string := "runtime.alginit"%go.
+Definition readUnaligned32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.readUnaligned32"%go.
 
-Definition initAlgAES : go_string := "runtime.initAlgAES"%go.
+Definition readUnaligned64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.readUnaligned64"%go.
 
-Definition readUnaligned32 : go_string := "runtime.readUnaligned32"%go.
+Definition arena_newArena {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.arena_newArena"%go.
 
-Definition readUnaligned64 : go_string := "runtime.readUnaligned64"%go.
+Definition arena_arena_New {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.arena_arena_New"%go.
 
-Definition arena_newArena : go_string := "runtime.arena_newArena"%go.
+Definition arena_arena_Slice {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.arena_arena_Slice"%go.
 
-Definition arena_arena_New : go_string := "runtime.arena_arena_New"%go.
+Definition arena_arena_Free {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.arena_arena_Free"%go.
 
-Definition arena_arena_Slice : go_string := "runtime.arena_arena_Slice"%go.
+Definition arena_heapify {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.arena_heapify"%go.
 
-Definition arena_arena_Free : go_string := "runtime.arena_arena_Free"%go.
+Axiom userArenaChunkBytesMax : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition arena_heapify : go_string := "runtime.arena_heapify"%go.
+Axiom userArenaChunkBytes : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom userArenaChunkBytesMax : Z.
+Axiom userArenaChunkPages : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom userArenaChunkBytes : val.
+Axiom userArenaChunkMaxAllocBytes : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom userArenaChunkPages : val.
+Definition init {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.init"%go.
 
-Axiom userArenaChunkMaxAllocBytes : val.
+Definition userArenaChunkReserveBytes {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.userArenaChunkReserveBytes"%go.
 
-Definition init : go_string := "runtime.init"%go.
+Axiom userArenaⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition userArenaChunkReserveBytes : go_string := "runtime.userArenaChunkReserveBytes"%go.
+Definition newUserArena {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.newUserArena"%go.
 
-Axiom userArenaⁱᵐᵖˡ : go.type.
+Axiom liveUserArenaChunkⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition newUserArena : go_string := "runtime.newUserArena"%go.
+Definition userArenaState {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.userArenaState"%go.
 
-Axiom liveUserArenaChunkⁱᵐᵖˡ : go.type.
+Definition userArenaHeapBitsSetSliceType {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.userArenaHeapBitsSetSliceType"%go.
 
-Definition userArenaState : go_string := "runtime.userArenaState"%go.
+Definition userArenaHeapBitsSetType {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.userArenaHeapBitsSetType"%go.
 
-Definition userArenaHeapBitsSetSliceType : go_string := "runtime.userArenaHeapBitsSetSliceType"%go.
+Axiom writeUserArenaHeapBitsⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition userArenaHeapBitsSetType : go_string := "runtime.userArenaHeapBitsSetType"%go.
+Definition bswapIfBigEndian {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.bswapIfBigEndian"%go.
 
-Axiom writeUserArenaHeapBitsⁱᵐᵖˡ : go.type.
+Definition newUserArenaChunk {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.newUserArenaChunk"%go.
 
-Definition bswapIfBigEndian : go_string := "runtime.bswapIfBigEndian"%go.
+Definition inUserArenaChunk {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.inUserArenaChunk"%go.
 
-Definition newUserArenaChunk : go_string := "runtime.newUserArenaChunk"%go.
+Definition freeUserArenaChunk {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.freeUserArenaChunk"%go.
 
-Definition inUserArenaChunk : go_string := "runtime.inUserArenaChunk"%go.
+Axiom asanenabled : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition freeUserArenaChunk : go_string := "runtime.freeUserArenaChunk"%go.
+Axiom asanenabledBit : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom asanenabled : val.
+Definition asanread {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.asanread"%go.
 
-Axiom asanenabledBit : Z.
+Definition asanwrite {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.asanwrite"%go.
 
-Definition asanread : go_string := "runtime.asanread"%go.
+Definition asanunpoison {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.asanunpoison"%go.
 
-Definition asanwrite : go_string := "runtime.asanwrite"%go.
+Definition asanpoison {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.asanpoison"%go.
 
-Definition asanunpoison : go_string := "runtime.asanunpoison"%go.
+Definition asanregisterglobals {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.asanregisterglobals"%go.
 
-Definition asanpoison : go_string := "runtime.asanpoison"%go.
+Definition lsanregisterrootregion {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.lsanregisterrootregion"%go.
 
-Definition asanregisterglobals : go_string := "runtime.asanregisterglobals"%go.
+Definition lsanunregisterrootregion {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.lsanunregisterrootregion"%go.
 
-Definition lsanregisterrootregion : go_string := "runtime.lsanregisterrootregion"%go.
+Definition lsandoleakcheck {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.lsandoleakcheck"%go.
 
-Definition lsanunregisterrootregion : go_string := "runtime.lsanunregisterrootregion"%go.
+Definition atomicwb {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.atomicwb"%go.
 
-Definition lsandoleakcheck : go_string := "runtime.lsandoleakcheck"%go.
+Definition atomicstorep {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.atomicstorep"%go.
 
-Definition atomicwb : go_string := "runtime.atomicwb"%go.
+Definition atomic_storePointer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.atomic_storePointer"%go.
 
-Definition atomicstorep : go_string := "runtime.atomicstorep"%go.
+Definition atomic_casPointer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.atomic_casPointer"%go.
 
-Definition atomic_storePointer : go_string := "runtime.atomic_storePointer"%go.
+Definition sync_atomic_StoreUintptr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sync_atomic_StoreUintptr"%go.
 
-Definition atomic_casPointer : go_string := "runtime.atomic_casPointer"%go.
+Definition sync_atomic_StorePointer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sync_atomic_StorePointer"%go.
 
-Definition sync_atomic_StoreUintptr : go_string := "runtime.sync_atomic_StoreUintptr"%go.
+Definition sync_atomic_SwapUintptr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sync_atomic_SwapUintptr"%go.
 
-Definition sync_atomic_StorePointer : go_string := "runtime.sync_atomic_StorePointer"%go.
+Definition sync_atomic_SwapPointer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sync_atomic_SwapPointer"%go.
 
-Definition sync_atomic_SwapUintptr : go_string := "runtime.sync_atomic_SwapUintptr"%go.
+Definition sync_atomic_CompareAndSwapUintptr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sync_atomic_CompareAndSwapUintptr"%go.
 
-Definition sync_atomic_SwapPointer : go_string := "runtime.sync_atomic_SwapPointer"%go.
+Definition sync_atomic_CompareAndSwapPointer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sync_atomic_CompareAndSwapPointer"%go.
 
-Definition sync_atomic_CompareAndSwapUintptr : go_string := "runtime.sync_atomic_CompareAndSwapUintptr"%go.
+Definition _cgo_init {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime._cgo_init"%go.
 
-Definition sync_atomic_CompareAndSwapPointer : go_string := "runtime.sync_atomic_CompareAndSwapPointer"%go.
+Definition _cgo_thread_start {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime._cgo_thread_start"%go.
 
-Definition _cgo_init : go_string := "runtime._cgo_init"%go.
+Definition _cgo_sys_thread_create {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime._cgo_sys_thread_create"%go.
 
-Definition _cgo_thread_start : go_string := "runtime._cgo_thread_start"%go.
+Definition _cgo_notify_runtime_init_done {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime._cgo_notify_runtime_init_done"%go.
 
-Definition _cgo_sys_thread_create : go_string := "runtime._cgo_sys_thread_create"%go.
+Definition _cgo_callers {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime._cgo_callers"%go.
 
-Definition _cgo_notify_runtime_init_done : go_string := "runtime._cgo_notify_runtime_init_done"%go.
+Definition _cgo_set_context_function {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime._cgo_set_context_function"%go.
 
-Definition _cgo_callers : go_string := "runtime._cgo_callers"%go.
+Definition _cgo_yield {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime._cgo_yield"%go.
 
-Definition _cgo_set_context_function : go_string := "runtime._cgo_set_context_function"%go.
+Definition _cgo_pthread_key_created {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime._cgo_pthread_key_created"%go.
 
-Definition _cgo_yield : go_string := "runtime._cgo_yield"%go.
+Definition _cgo_bindm {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime._cgo_bindm"%go.
 
-Definition _cgo_pthread_key_created : go_string := "runtime._cgo_pthread_key_created"%go.
+Definition _cgo_getstackbound {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime._cgo_getstackbound"%go.
 
-Definition _cgo_bindm : go_string := "runtime._cgo_bindm"%go.
+Definition iscgo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.iscgo"%go.
 
-Definition _cgo_getstackbound : go_string := "runtime._cgo_getstackbound"%go.
+Definition set_crosscall2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.set_crosscall2"%go.
 
-Definition iscgo : go_string := "runtime.iscgo"%go.
+Definition cgoHasExtraM {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.cgoHasExtraM"%go.
 
-Definition set_crosscall2 : go_string := "runtime.set_crosscall2"%go.
+Definition cgoUse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.cgoUse"%go.
 
-Definition cgoHasExtraM : go_string := "runtime.cgoHasExtraM"%go.
+Definition cgoKeepAlive {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.cgoKeepAlive"%go.
 
-Definition cgoUse : go_string := "runtime.cgoUse"%go.
+Definition cgoAlwaysFalse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.cgoAlwaysFalse"%go.
 
-Definition cgoKeepAlive : go_string := "runtime.cgoKeepAlive"%go.
+Definition cgo_yield {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.cgo_yield"%go.
 
-Definition cgoAlwaysFalse : go_string := "runtime.cgoAlwaysFalse"%go.
+Axiom cgo_yield'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition cgo_yield : go_string := "runtime.cgo_yield"%go.
+Definition cgoNoCallback {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.cgoNoCallback"%go.
 
-Axiom cgo_yield'init : val.
+Definition _cgo_mmap {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime._cgo_mmap"%go.
 
-Definition cgoNoCallback : go_string := "runtime.cgoNoCallback"%go.
+Definition _cgo_munmap {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime._cgo_munmap"%go.
 
-Definition _cgo_mmap : go_string := "runtime._cgo_mmap"%go.
+Definition mmap {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mmap"%go.
 
-Definition _cgo_munmap : go_string := "runtime._cgo_munmap"%go.
+Definition munmap {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.munmap"%go.
 
-Definition mmap : go_string := "runtime.mmap"%go.
+Definition sysMmap {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sysMmap"%go.
 
-Definition munmap : go_string := "runtime.munmap"%go.
+Definition callCgoMmap {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.callCgoMmap"%go.
 
-Definition sysMmap : go_string := "runtime.sysMmap"%go.
+Definition sysMunmap {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sysMunmap"%go.
 
-Definition callCgoMmap : go_string := "runtime.callCgoMmap"%go.
+Definition callCgoMunmap {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.callCgoMunmap"%go.
 
-Definition sysMunmap : go_string := "runtime.sysMunmap"%go.
+Definition _cgo_sigaction {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime._cgo_sigaction"%go.
 
-Definition callCgoMunmap : go_string := "runtime.callCgoMunmap"%go.
+Definition sigaction {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sigaction"%go.
 
-Definition _cgo_sigaction : go_string := "runtime._cgo_sigaction"%go.
+Definition callCgoSigaction {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.callCgoSigaction"%go.
 
-Definition sigaction : go_string := "runtime.sigaction"%go.
+Axiom cgoCallersⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition callCgoSigaction : go_string := "runtime.callCgoSigaction"%go.
+Axiom argsetⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom cgoCallersⁱᵐᵖˡ : go.type.
+Definition syscall_cgocaller {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.syscall_cgocaller"%go.
 
-Axiom argsetⁱᵐᵖˡ : go.type.
+Definition ncgocall {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.ncgocall"%go.
 
-Definition syscall_cgocaller : go_string := "runtime.syscall_cgocaller"%go.
+Definition cgocall {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.cgocall"%go.
 
-Definition ncgocall : go_string := "runtime.ncgocall"%go.
+Definition callbackUpdateSystemStack {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.callbackUpdateSystemStack"%go.
 
-Definition cgocall : go_string := "runtime.cgocall"%go.
+Definition cgocallbackg {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.cgocallbackg"%go.
 
-Definition callbackUpdateSystemStack : go_string := "runtime.callbackUpdateSystemStack"%go.
+Definition cgocallbackg1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.cgocallbackg1"%go.
 
-Definition cgocallbackg : go_string := "runtime.cgocallbackg"%go.
+Definition unwindm {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.unwindm"%go.
 
-Definition cgocallbackg1 : go_string := "runtime.cgocallbackg1"%go.
+Definition badcgocallback {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.badcgocallback"%go.
 
-Definition unwindm : go_string := "runtime.unwindm"%go.
+Definition cgounimpl {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.cgounimpl"%go.
 
-Definition badcgocallback : go_string := "runtime.badcgocallback"%go.
+Definition racecgosync {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.racecgosync"%go.
 
-Definition cgounimpl : go_string := "runtime.cgounimpl"%go.
+Definition cgoCheckPointer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.cgoCheckPointer"%go.
 
-Definition racecgosync : go_string := "runtime.racecgosync"%go.
+Axiom cgoCheckPointerFail : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
 
-Definition cgoCheckPointer : go_string := "runtime.cgoCheckPointer"%go.
+Axiom cgoResultFail : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
 
-Axiom cgoCheckPointerFail : go_string.
+Definition cgoCheckArg {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.cgoCheckArg"%go.
 
-Axiom cgoResultFail : go_string.
+Definition cgoCheckUnknownPointer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.cgoCheckUnknownPointer"%go.
 
-Definition cgoCheckArg : go_string := "runtime.cgoCheckArg"%go.
+Definition cgoIsGoPointer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.cgoIsGoPointer"%go.
 
-Definition cgoCheckUnknownPointer : go_string := "runtime.cgoCheckUnknownPointer"%go.
+Definition cgoInRange {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.cgoInRange"%go.
 
-Definition cgoIsGoPointer : go_string := "runtime.cgoIsGoPointer"%go.
+Definition cgoCheckResult {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.cgoCheckResult"%go.
 
-Definition cgoInRange : go_string := "runtime.cgoInRange"%go.
+Definition _cgo_panic_internal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime._cgo_panic_internal"%go.
 
-Definition cgoCheckResult : go_string := "runtime.cgoCheckResult"%go.
+Axiom cgoWriteBarrierFail : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
 
-Definition _cgo_panic_internal : go_string := "runtime._cgo_panic_internal"%go.
+Definition cgoCheckPtrWrite {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.cgoCheckPtrWrite"%go.
 
-Axiom cgoWriteBarrierFail : go_string.
+Definition cgoCheckMemmove {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.cgoCheckMemmove"%go.
 
-Definition cgoCheckPtrWrite : go_string := "runtime.cgoCheckPtrWrite"%go.
+Definition cgoCheckMemmove2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.cgoCheckMemmove2"%go.
 
-Definition cgoCheckMemmove : go_string := "runtime.cgoCheckMemmove"%go.
+Definition cgoCheckSliceCopy {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.cgoCheckSliceCopy"%go.
 
-Definition cgoCheckMemmove2 : go_string := "runtime.cgoCheckMemmove2"%go.
+Definition cgoCheckTypedBlock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.cgoCheckTypedBlock"%go.
 
-Definition cgoCheckSliceCopy : go_string := "runtime.cgoCheckSliceCopy"%go.
+Definition cgoCheckBits {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.cgoCheckBits"%go.
 
-Definition cgoCheckTypedBlock : go_string := "runtime.cgoCheckTypedBlock"%go.
+Definition cgoCheckUsingType {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.cgoCheckUsingType"%go.
 
-Definition cgoCheckBits : go_string := "runtime.cgoCheckBits"%go.
+Definition cgroupScratch {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.cgroupScratch"%go.
 
-Definition cgoCheckUsingType : go_string := "runtime.cgoCheckUsingType"%go.
+Definition cgroupOK {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.cgroupOK"%go.
 
-Definition cgroupScratch : go_string := "runtime.cgroupScratch"%go.
+Definition cgroupCPU {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.cgroupCPU"%go.
 
-Definition cgroupOK : go_string := "runtime.cgroupOK"%go.
+Definition containermaxprocsNonDefault {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.containermaxprocsNonDefault"%go.
 
-Definition cgroupCPU : go_string := "runtime.cgroupCPU"%go.
+Definition containermaxprocs {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.containermaxprocs"%go.
 
-Definition containermaxprocsNonDefault : go_string := "runtime.containermaxprocsNonDefault"%go.
+Axiom containermaxprocs'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition containermaxprocs : go_string := "runtime.containermaxprocs"%go.
+Definition defaultGOMAXPROCSInit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.defaultGOMAXPROCSInit"%go.
 
-Axiom containermaxprocs'init : val.
+Definition defaultGOMAXPROCSUpdateGODEBUG {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.defaultGOMAXPROCSUpdateGODEBUG"%go.
 
-Definition defaultGOMAXPROCSInit : go_string := "runtime.defaultGOMAXPROCSInit"%go.
+Definition defaultGOMAXPROCS {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.defaultGOMAXPROCS"%go.
 
-Definition defaultGOMAXPROCSUpdateGODEBUG : go_string := "runtime.defaultGOMAXPROCSUpdateGODEBUG"%go.
+Definition adjustCgroupGOMAXPROCS {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.adjustCgroupGOMAXPROCS"%go.
 
-Definition defaultGOMAXPROCS : go_string := "runtime.defaultGOMAXPROCS"%go.
+Axiom maxAlign : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition adjustCgroupGOMAXPROCS : go_string := "runtime.adjustCgroupGOMAXPROCS"%go.
+Axiom hchanSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom maxAlign : Z.
+Axiom debugChan : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom hchanSize : val.
+Axiom hchanⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom debugChan : val.
+Axiom waitqⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom hchanⁱᵐᵖˡ : go.type.
+Definition reflect_makechan {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflect_makechan"%go.
 
-Axiom waitqⁱᵐᵖˡ : go.type.
+Definition makechan64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.makechan64"%go.
 
-Definition reflect_makechan : go_string := "runtime.reflect_makechan"%go.
+Definition makechan {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.makechan"%go.
 
-Definition makechan64 : go_string := "runtime.makechan64"%go.
+Definition chanbuf {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.chanbuf"%go.
 
-Definition makechan : go_string := "runtime.makechan"%go.
+Definition full {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.full"%go.
 
-Definition chanbuf : go_string := "runtime.chanbuf"%go.
+Definition chansend1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.chansend1"%go.
 
-Definition full : go_string := "runtime.full"%go.
+Definition chansend {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.chansend"%go.
 
-Definition chansend1 : go_string := "runtime.chansend1"%go.
+Definition send {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.send"%go.
 
-Definition chansend : go_string := "runtime.chansend"%go.
+Definition timerchandrain {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.timerchandrain"%go.
 
-Definition send : go_string := "runtime.send"%go.
+Definition sendDirect {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sendDirect"%go.
 
-Definition timerchandrain : go_string := "runtime.timerchandrain"%go.
+Definition recvDirect {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.recvDirect"%go.
 
-Definition sendDirect : go_string := "runtime.sendDirect"%go.
+Definition closechan {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.closechan"%go.
 
-Definition recvDirect : go_string := "runtime.recvDirect"%go.
+Definition empty {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.empty"%go.
 
-Definition closechan : go_string := "runtime.closechan"%go.
+Definition chanrecv1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.chanrecv1"%go.
 
-Definition empty : go_string := "runtime.empty"%go.
+Definition chanrecv2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.chanrecv2"%go.
 
-Definition chanrecv1 : go_string := "runtime.chanrecv1"%go.
+Definition chanrecv {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.chanrecv"%go.
 
-Definition chanrecv2 : go_string := "runtime.chanrecv2"%go.
+Definition recv {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.recv"%go.
 
-Definition chanrecv : go_string := "runtime.chanrecv"%go.
+Definition chanparkcommit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.chanparkcommit"%go.
 
-Definition recv : go_string := "runtime.recv"%go.
+Definition selectnbsend {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.selectnbsend"%go.
 
-Definition chanparkcommit : go_string := "runtime.chanparkcommit"%go.
+Definition selectnbrecv {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.selectnbrecv"%go.
 
-Definition selectnbsend : go_string := "runtime.selectnbsend"%go.
+Definition reflect_chansend {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflect_chansend"%go.
 
-Definition selectnbrecv : go_string := "runtime.selectnbrecv"%go.
+Definition reflect_chanrecv {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflect_chanrecv"%go.
 
-Definition reflect_chansend : go_string := "runtime.reflect_chansend"%go.
+Definition chanlen {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.chanlen"%go.
 
-Definition reflect_chanrecv : go_string := "runtime.reflect_chanrecv"%go.
+Definition chancap {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.chancap"%go.
 
-Definition chanlen : go_string := "runtime.chanlen"%go.
+Definition reflect_chanlen {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflect_chanlen"%go.
 
-Definition chancap : go_string := "runtime.chancap"%go.
+Definition reflectlite_chanlen {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflectlite_chanlen"%go.
 
-Definition reflect_chanlen : go_string := "runtime.reflect_chanlen"%go.
+Definition reflect_chancap {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflect_chancap"%go.
 
-Definition reflectlite_chanlen : go_string := "runtime.reflectlite_chanlen"%go.
+Definition reflect_chanclose {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflect_chanclose"%go.
 
-Definition reflect_chancap : go_string := "runtime.reflect_chancap"%go.
+Definition racesync {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.racesync"%go.
 
-Definition reflect_chanclose : go_string := "runtime.reflect_chanclose"%go.
+Definition racenotify {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.racenotify"%go.
 
-Definition racesync : go_string := "runtime.racesync"%go.
+Definition checkptrAlignment {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.checkptrAlignment"%go.
 
-Definition racenotify : go_string := "runtime.racenotify"%go.
+Definition checkptrStraddles {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.checkptrStraddles"%go.
 
-Definition checkptrAlignment : go_string := "runtime.checkptrAlignment"%go.
+Definition checkptrArithmetic {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.checkptrArithmetic"%go.
 
-Definition checkptrStraddles : go_string := "runtime.checkptrStraddles"%go.
+Definition checkptrBase {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.checkptrBase"%go.
 
-Definition checkptrArithmetic : go_string := "runtime.checkptrArithmetic"%go.
+Axiom Compiler : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
 
-Definition checkptrBase : go_string := "runtime.checkptrBase"%go.
+Definition inf2one {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.inf2one"%go.
 
-Axiom Compiler : go_string.
+Definition complex128div {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.complex128div"%go.
 
-Definition inf2one : go_string := "runtime.inf2one"%go.
+Axiom coroⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition complex128div : go_string := "runtime.complex128div"%go.
+Definition newcoro {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.newcoro"%go.
 
-Axiom coroⁱᵐᵖˡ : go.type.
+Definition corostart {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.corostart"%go.
 
-Definition newcoro : go_string := "runtime.newcoro"%go.
+Definition coroexit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.coroexit"%go.
 
-Definition corostart : go_string := "runtime.corostart"%go.
+Definition coroswitch {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.coroswitch"%go.
 
-Definition coroexit : go_string := "runtime.coroexit"%go.
+Definition coroswitch_m {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.coroswitch_m"%go.
 
-Definition coroswitch : go_string := "runtime.coroswitch"%go.
+Definition coverage_getCovCounterList {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.coverage_getCovCounterList"%go.
 
-Definition coroswitch_m : go_string := "runtime.coroswitch_m"%go.
+Definition addCovMeta {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.addCovMeta"%go.
 
-Definition coverage_getCovCounterList : go_string := "runtime.coverage_getCovCounterList"%go.
+Axiom offsetX86HasAVX : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition addCovMeta : go_string := "runtime.addCovMeta"%go.
+Axiom offsetX86HasAVX2 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom offsetX86HasAVX : val.
+Axiom offsetX86HasERMS : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom offsetX86HasAVX2 : val.
+Axiom offsetX86HasRDTSCP : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom offsetX86HasERMS : val.
+Axiom offsetARMHasIDIVA : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom offsetX86HasRDTSCP : val.
+Axiom offsetMIPS64XHasMSA : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom offsetARMHasIDIVA : val.
+Axiom offsetLOONG64HasLSX : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom offsetMIPS64XHasMSA : val.
+Axiom offsetLOONG64HasLASX : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom offsetLOONG64HasLSX : val.
+Definition x86HasPOPCNT {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.x86HasPOPCNT"%go.
 
-Axiom offsetLOONG64HasLASX : val.
+Definition x86HasSSE41 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.x86HasSSE41"%go.
 
-Definition x86HasPOPCNT : go_string := "runtime.x86HasPOPCNT"%go.
+Definition x86HasFMA {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.x86HasFMA"%go.
 
-Definition x86HasSSE41 : go_string := "runtime.x86HasSSE41"%go.
+Definition armHasVFPv4 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.armHasVFPv4"%go.
 
-Definition x86HasFMA : go_string := "runtime.x86HasFMA"%go.
+Definition arm64HasATOMICS {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.arm64HasATOMICS"%go.
 
-Definition armHasVFPv4 : go_string := "runtime.armHasVFPv4"%go.
+Definition loong64HasLAMCAS {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.loong64HasLAMCAS"%go.
 
-Definition arm64HasATOMICS : go_string := "runtime.arm64HasATOMICS"%go.
+Definition loong64HasLAM_BH {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.loong64HasLAM_BH"%go.
 
-Definition loong64HasLAMCAS : go_string := "runtime.loong64HasLAMCAS"%go.
+Definition loong64HasLSX {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.loong64HasLSX"%go.
 
-Definition loong64HasLAM_BH : go_string := "runtime.loong64HasLAM_BH"%go.
+Definition riscv64HasZbb {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.riscv64HasZbb"%go.
 
-Definition loong64HasLSX : go_string := "runtime.loong64HasLSX"%go.
+Definition memmoveBits {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.memmoveBits"%go.
 
-Definition riscv64HasZbb : go_string := "runtime.riscv64HasZbb"%go.
+Axiom avxSupported : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition memmoveBits : go_string := "runtime.memmoveBits"%go.
+Axiom repmovsPreferred : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom avxSupported : Z.
+Axiom maxCPUProfStack : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom repmovsPreferred : Z.
+Axiom profBufWordCount : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom maxCPUProfStack : Z.
+Axiom profBufTagCount : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom profBufWordCount : Z.
+Axiom cpuProfileⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom profBufTagCount : Z.
+Definition cpuprof {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.cpuprof"%go.
 
-Axiom cpuProfileⁱᵐᵖˡ : go.type.
+Definition SetCPUProfileRate {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.SetCPUProfileRate"%go.
 
-Definition cpuprof : go_string := "runtime.cpuprof"%go.
+Definition CPUProfile {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.CPUProfile"%go.
 
-Definition SetCPUProfileRate : go_string := "runtime.SetCPUProfileRate"%go.
+Definition pprof_cyclesPerSecond {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.pprof_cyclesPerSecond"%go.
 
-Definition CPUProfile : go_string := "runtime.CPUProfile"%go.
+Definition runtime_pprof_readProfile {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.runtime_pprof_readProfile"%go.
 
-Definition pprof_cyclesPerSecond : go_string := "runtime.pprof_cyclesPerSecond"%go.
+Definition cputicks {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.cputicks"%go.
 
-Definition runtime_pprof_readProfile : go_string := "runtime.runtime_pprof_readProfile"%go.
+Axiom canCreateFile : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition cputicks : go_string := "runtime.cputicks"%go.
+Definition create {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.create"%go.
 
-Axiom canCreateFile : val.
+Definition GOMAXPROCS {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.GOMAXPROCS"%go.
 
-Definition create : go_string := "runtime.create"%go.
+Definition SetDefaultGOMAXPROCS {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.SetDefaultGOMAXPROCS"%go.
 
-Definition GOMAXPROCS : go_string := "runtime.GOMAXPROCS"%go.
+Definition NumCPU {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.NumCPU"%go.
 
-Definition SetDefaultGOMAXPROCS : go_string := "runtime.SetDefaultGOMAXPROCS"%go.
+Definition NumCgoCall {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.NumCgoCall"%go.
 
-Definition NumCPU : go_string := "runtime.NumCPU"%go.
+Definition totalMutexWaitTimeNanos {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.totalMutexWaitTimeNanos"%go.
 
-Definition NumCgoCall : go_string := "runtime.NumCgoCall"%go.
+Definition NumGoroutine {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.NumGoroutine"%go.
 
-Definition totalMutexWaitTimeNanos : go_string := "runtime.totalMutexWaitTimeNanos"%go.
+Definition debug_modinfo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.debug_modinfo"%go.
 
-Definition NumGoroutine : go_string := "runtime.NumGoroutine"%go.
+Definition mayMoreStackPreempt {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mayMoreStackPreempt"%go.
 
-Definition debug_modinfo : go_string := "runtime.debug_modinfo"%go.
+Definition mayMoreStackMove {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mayMoreStackMove"%go.
 
-Definition mayMoreStackPreempt : go_string := "runtime.mayMoreStackPreempt"%go.
+Definition debugPinnerKeepUnpin {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.debugPinnerKeepUnpin"%go.
 
-Definition mayMoreStackMove : go_string := "runtime.mayMoreStackMove"%go.
+Axiom debugPinnerKeepUnpin'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition debugPinnerKeepUnpin : go_string := "runtime.debugPinnerKeepUnpin"%go.
+Definition debugPinnerV1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.debugPinnerV1"%go.
 
-Axiom debugPinnerKeepUnpin'init : val.
+Axiom debugCallSystemStack : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
 
-Definition debugPinnerV1 : go_string := "runtime.debugPinnerV1"%go.
+Axiom debugCallUnknownFunc : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
 
-Axiom debugCallSystemStack : go_string.
+Axiom debugCallRuntime : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
 
-Axiom debugCallUnknownFunc : go_string.
+Axiom debugCallUnsafePoint : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
 
-Axiom debugCallRuntime : go_string.
+Definition debugCallV2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.debugCallV2"%go.
 
-Axiom debugCallUnsafePoint : go_string.
+Definition debugCallPanicked {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.debugCallPanicked"%go.
 
-Definition debugCallV2 : go_string := "runtime.debugCallV2"%go.
+Definition debugCallCheck {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.debugCallCheck"%go.
 
-Definition debugCallPanicked : go_string := "runtime.debugCallPanicked"%go.
+Definition debugCallWrap {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.debugCallWrap"%go.
 
-Definition debugCallCheck : go_string := "runtime.debugCallCheck"%go.
+Axiom debugCallWrapArgsⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition debugCallWrap : go_string := "runtime.debugCallWrap"%go.
+Definition debugCallWrap1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.debugCallWrap1"%go.
 
-Axiom debugCallWrapArgsⁱᵐᵖˡ : go.type.
+Definition debugCallWrap2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.debugCallWrap2"%go.
 
-Definition debugCallWrap1 : go_string := "runtime.debugCallWrap1"%go.
+Axiom debugLogBytes : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition debugCallWrap2 : go_string := "runtime.debugCallWrap2"%go.
+Axiom debugLogStringLimit : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom debugLogBytes : Z.
+Definition dlog {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.dlog"%go.
 
-Axiom debugLogStringLimit : Z.
+Definition dlogFake {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.dlogFake"%go.
 
-Definition dlog : go_string := "runtime.dlog"%go.
+Definition dlogImpl {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.dlogImpl"%go.
 
-Definition dlogFake : go_string := "runtime.dlogFake"%go.
+Axiom dloggerImplⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition dlogImpl : go_string := "runtime.dlogImpl"%go.
+Definition allDloggers {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.allDloggers"%go.
 
-Axiom dloggerImplⁱᵐᵖˡ : go.type.
+Axiom dloggerFakeⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition allDloggers : go_string := "runtime.allDloggers"%go.
+Axiom debugLogUnknown : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom dloggerFakeⁱᵐᵖˡ : go.type.
+Axiom debugLogBoolTrue : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom debugLogUnknown : Z.
+Axiom debugLogBoolFalse : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom debugLogBoolTrue : Z.
+Axiom debugLogInt : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom debugLogBoolFalse : Z.
+Axiom debugLogUint : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom debugLogInt : Z.
+Axiom debugLogHex : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom debugLogUint : Z.
+Axiom debugLogPtr : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom debugLogHex : Z.
+Axiom debugLogString : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom debugLogPtr : Z.
+Axiom debugLogConstString : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom debugLogString : Z.
+Axiom debugLogStringOverflow : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom debugLogConstString : Z.
+Axiom debugLogPC : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom debugLogStringOverflow : Z.
+Axiom debugLogTraceback : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom debugLogPC : Z.
+Axiom debugLogWriterⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom debugLogTraceback : Z.
+Axiom debugLogBufⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom debugLogWriterⁱᵐᵖˡ : go.type.
+Axiom debugLogHeaderSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom debugLogBufⁱᵐᵖˡ : go.type.
+Axiom debugLogSyncSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom debugLogHeaderSize : Z.
+Axiom debugLogReaderⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom debugLogSyncSize : Z.
+Definition printDebugLog {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.printDebugLog"%go.
 
-Axiom debugLogReaderⁱᵐᵖˡ : go.type.
+Definition printDebugLogImpl {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.printDebugLogImpl"%go.
 
-Definition printDebugLog : go_string := "runtime.printDebugLog"%go.
+Definition printDebugLogPC {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.printDebugLogPC"%go.
 
-Definition printDebugLogImpl : go_string := "runtime.printDebugLogImpl"%go.
+Axiom dlogEnabled : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition printDebugLogPC : go_string := "runtime.printDebugLogPC"%go.
+Axiom dlogger : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom dlogEnabled : val.
+Definition dlog1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.dlog1"%go.
 
-Axiom dlogger : go.type.
+Axiom dlogPerMⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition dlog1 : go_string := "runtime.dlog1"%go.
+Definition getCachedDlogger {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.getCachedDlogger"%go.
 
-Axiom dlogPerMⁱᵐᵖˡ : go.type.
+Definition putCachedDlogger {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.putCachedDlogger"%go.
 
-Definition getCachedDlogger : go_string := "runtime.getCachedDlogger"%go.
+Axiom _EINTR : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition putCachedDlogger : go_string := "runtime.putCachedDlogger"%go.
+Axiom _EAGAIN : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _EINTR : Z.
+Axiom _ENOMEM : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _EAGAIN : Z.
+Axiom _PROT_NONE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _ENOMEM : Z.
+Axiom _PROT_READ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _PROT_NONE : Z.
+Axiom _PROT_WRITE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _PROT_READ : Z.
+Axiom _PROT_EXEC : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _PROT_WRITE : Z.
+Axiom _MAP_ANON : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _PROT_EXEC : Z.
+Axiom _MAP_PRIVATE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _MAP_ANON : Z.
+Axiom _MAP_FIXED : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _MAP_PRIVATE : Z.
+Axiom _MADV_DONTNEED : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _MAP_FIXED : Z.
+Axiom _MADV_FREE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _MADV_DONTNEED : Z.
+Axiom _MADV_HUGEPAGE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _MADV_FREE : Z.
+Axiom _MADV_NOHUGEPAGE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _MADV_HUGEPAGE : Z.
+Axiom _MADV_COLLAPSE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _MADV_NOHUGEPAGE : Z.
+Axiom _SA_RESTART : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _MADV_COLLAPSE : Z.
+Axiom _SA_ONSTACK : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SA_RESTART : Z.
+Axiom _SA_RESTORER : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SA_ONSTACK : Z.
+Axiom _SA_SIGINFO : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SA_RESTORER : Z.
+Axiom _SI_KERNEL : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SA_SIGINFO : Z.
+Axiom _SI_TIMER : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SI_KERNEL : Z.
+Axiom _SIGHUP : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SI_TIMER : Z.
+Axiom _SIGINT : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SIGHUP : Z.
+Axiom _SIGQUIT : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SIGINT : Z.
+Axiom _SIGILL : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SIGQUIT : Z.
+Axiom _SIGTRAP : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SIGILL : Z.
+Axiom _SIGABRT : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SIGTRAP : Z.
+Axiom _SIGBUS : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SIGABRT : Z.
+Axiom _SIGFPE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SIGBUS : Z.
+Axiom _SIGKILL : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SIGFPE : Z.
+Axiom _SIGUSR1 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SIGKILL : Z.
+Axiom _SIGSEGV : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SIGUSR1 : Z.
+Axiom _SIGUSR2 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SIGSEGV : Z.
+Axiom _SIGPIPE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SIGUSR2 : Z.
+Axiom _SIGALRM : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SIGPIPE : Z.
+Axiom _SIGSTKFLT : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SIGALRM : Z.
+Axiom _SIGCHLD : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SIGSTKFLT : Z.
+Axiom _SIGCONT : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SIGCHLD : Z.
+Axiom _SIGSTOP : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SIGCONT : Z.
+Axiom _SIGTSTP : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SIGSTOP : Z.
+Axiom _SIGTTIN : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SIGTSTP : Z.
+Axiom _SIGTTOU : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SIGTTIN : Z.
+Axiom _SIGURG : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SIGTTOU : Z.
+Axiom _SIGXCPU : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SIGURG : Z.
+Axiom _SIGXFSZ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SIGXCPU : Z.
+Axiom _SIGVTALRM : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SIGXFSZ : Z.
+Axiom _SIGPROF : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SIGVTALRM : Z.
+Axiom _SIGWINCH : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SIGPROF : Z.
+Axiom _SIGIO : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SIGWINCH : Z.
+Axiom _SIGPWR : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SIGIO : Z.
+Axiom _SIGSYS : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SIGPWR : Z.
+Axiom _SIGRTMIN : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SIGSYS : Z.
+Axiom _FPE_INTDIV : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SIGRTMIN : Z.
+Axiom _FPE_INTOVF : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _FPE_INTDIV : Z.
+Axiom _FPE_FLTDIV : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _FPE_INTOVF : Z.
+Axiom _FPE_FLTOVF : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _FPE_FLTDIV : Z.
+Axiom _FPE_FLTUND : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _FPE_FLTOVF : Z.
+Axiom _FPE_FLTRES : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _FPE_FLTUND : Z.
+Axiom _FPE_FLTINV : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _FPE_FLTRES : Z.
+Axiom _FPE_FLTSUB : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _FPE_FLTINV : Z.
+Axiom _BUS_ADRALN : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _FPE_FLTSUB : Z.
+Axiom _BUS_ADRERR : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _BUS_ADRALN : Z.
+Axiom _BUS_OBJERR : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _BUS_ADRERR : Z.
+Axiom _SEGV_MAPERR : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _BUS_OBJERR : Z.
+Axiom _SEGV_ACCERR : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SEGV_MAPERR : Z.
+Axiom _ITIMER_REAL : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SEGV_ACCERR : Z.
+Axiom _ITIMER_VIRTUAL : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _ITIMER_REAL : Z.
+Axiom _ITIMER_PROF : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _ITIMER_VIRTUAL : Z.
+Axiom _CLOCK_THREAD_CPUTIME_ID : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _ITIMER_PROF : Z.
+Axiom _SIGEV_THREAD_ID : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _CLOCK_THREAD_CPUTIME_ID : Z.
+Axiom _AF_UNIX : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SIGEV_THREAD_ID : Z.
+Axiom _SOCK_DGRAM : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _AF_UNIX : Z.
+Axiom timespecⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom _SOCK_DGRAM : Z.
+Axiom timevalⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom timespecⁱᵐᵖˡ : go.type.
+Axiom sigactiontⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom timevalⁱᵐᵖˡ : go.type.
+Axiom siginfoFieldsⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom sigactiontⁱᵐᵖˡ : go.type.
+Axiom siginfoⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom siginfoFieldsⁱᵐᵖˡ : go.type.
+Axiom itimerspecⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom siginfoⁱᵐᵖˡ : go.type.
+Axiom itimervalⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom itimerspecⁱᵐᵖˡ : go.type.
+Axiom sigeventFieldsⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom itimervalⁱᵐᵖˡ : go.type.
+Axiom sigeventⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom sigeventFieldsⁱᵐᵖˡ : go.type.
+Axiom _O_RDONLY : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom sigeventⁱᵐᵖˡ : go.type.
+Axiom _O_WRONLY : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _O_RDONLY : Z.
+Axiom _O_CREAT : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _O_WRONLY : Z.
+Axiom _O_TRUNC : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _O_CREAT : Z.
+Axiom _O_NONBLOCK : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _O_TRUNC : Z.
+Axiom _O_CLOEXEC : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _O_NONBLOCK : Z.
+Axiom usigsetⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom _O_CLOEXEC : Z.
+Axiom fpxregⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom usigsetⁱᵐᵖˡ : go.type.
+Axiom xmmregⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom fpxregⁱᵐᵖˡ : go.type.
+Axiom fpstateⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom xmmregⁱᵐᵖˡ : go.type.
+Axiom fpxreg1ⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom fpstateⁱᵐᵖˡ : go.type.
+Axiom xmmreg1ⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom fpxreg1ⁱᵐᵖˡ : go.type.
+Axiom fpstate1ⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom xmmreg1ⁱᵐᵖˡ : go.type.
+Axiom fpreg1ⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom fpstate1ⁱᵐᵖˡ : go.type.
+Axiom stacktⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom fpreg1ⁱᵐᵖˡ : go.type.
+Axiom mcontextⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom stacktⁱᵐᵖˡ : go.type.
+Axiom ucontextⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom mcontextⁱᵐᵖˡ : go.type.
+Axiom sigcontextⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom ucontextⁱᵐᵖˡ : go.type.
+Axiom sockaddr_unⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom sigcontextⁱᵐᵖˡ : go.type.
+Definition gogetenv {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gogetenv"%go.
 
-Axiom sockaddr_unⁱᵐᵖˡ : go.type.
+Definition envKeyEqual {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.envKeyEqual"%go.
 
-Definition gogetenv : go_string := "runtime.gogetenv"%go.
+Definition lowerASCII {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.lowerASCII"%go.
 
-Definition envKeyEqual : go_string := "runtime.envKeyEqual"%go.
+Definition _cgo_setenv {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime._cgo_setenv"%go.
 
-Definition lowerASCII : go_string := "runtime.lowerASCII"%go.
+Definition _cgo_unsetenv {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime._cgo_unsetenv"%go.
 
-Definition _cgo_setenv : go_string := "runtime._cgo_setenv"%go.
+Definition setenv_c {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.setenv_c"%go.
 
-Definition _cgo_unsetenv : go_string := "runtime._cgo_unsetenv"%go.
+Definition unsetenv_c {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.unsetenv_c"%go.
 
-Definition setenv_c : go_string := "runtime.setenv_c"%go.
+Definition cstring {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.cstring"%go.
 
-Definition unsetenv_c : go_string := "runtime.unsetenv_c"%go.
+Axiom Errorⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition cstring : go_string := "runtime.cstring"%go.
+Axiom TypeAssertionErrorⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom Errorⁱᵐᵖˡ : go.type.
+Definition itoa {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.itoa"%go.
 
-Axiom TypeAssertionErrorⁱᵐᵖˡ : go.type.
+Axiom errorStringⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition itoa : go_string := "runtime.itoa"%go.
+Axiom errorAddressStringⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom errorStringⁱᵐᵖˡ : go.type.
+Axiom plainErrorⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom errorAddressStringⁱᵐᵖˡ : go.type.
+Axiom boundsErrorⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom plainErrorⁱᵐᵖˡ : go.type.
+Axiom boundsErrorCodeⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom boundsErrorⁱᵐᵖˡ : go.type.
+Axiom boundsIndex : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom boundsErrorCodeⁱᵐᵖˡ : go.type.
+Axiom boundsSliceAlen : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom boundsIndex : val.
+Axiom boundsSliceAcap : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom boundsSliceAlen : val.
+Axiom boundsSliceB : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom boundsSliceAcap : val.
+Axiom boundsSlice3Alen : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom boundsSliceB : val.
+Axiom boundsSlice3Acap : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom boundsSlice3Alen : val.
+Axiom boundsSlice3B : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom boundsSlice3Acap : val.
+Axiom boundsSlice3C : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom boundsSlice3B : val.
+Axiom boundsConvert : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom boundsSlice3C : val.
+Definition boundsErrorFmts {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.boundsErrorFmts"%go.
 
-Axiom boundsConvert : val.
+Axiom boundsErrorFmts'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition boundsErrorFmts : go_string := "runtime.boundsErrorFmts"%go.
+Definition boundsNegErrorFmts {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.boundsNegErrorFmts"%go.
 
-Axiom boundsErrorFmts'init : val.
+Axiom boundsNegErrorFmts'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition boundsNegErrorFmts : go_string := "runtime.boundsNegErrorFmts"%go.
+Definition appendIntStr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.appendIntStr"%go.
 
-Axiom boundsNegErrorFmts'init : val.
+Axiom stringerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition appendIntStr : go_string := "runtime.appendIntStr"%go.
+Definition printpanicval {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.printpanicval"%go.
 
-Axiom stringerⁱᵐᵖˡ : go.type.
+Definition printanycustomtype {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.printanycustomtype"%go.
 
-Definition printpanicval : go_string := "runtime.printpanicval"%go.
+Definition printindented {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.printindented"%go.
 
-Definition printanycustomtype : go_string := "runtime.printanycustomtype"%go.
+Definition panicwrap {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.panicwrap"%go.
 
-Definition printindented : go_string := "runtime.printindented"%go.
+Definition Caller {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.Caller"%go.
 
-Definition panicwrap : go_string := "runtime.panicwrap"%go.
+Definition Callers {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.Callers"%go.
 
-Definition Caller : go_string := "runtime.Caller"%go.
+Definition defaultGOROOT {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.defaultGOROOT"%go.
 
-Definition Callers : go_string := "runtime.Callers"%go.
+Definition GOROOT {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.GOROOT"%go.
 
-Definition defaultGOROOT : go_string := "runtime.defaultGOROOT"%go.
+Definition buildVersion {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.buildVersion"%go.
 
-Definition GOROOT : go_string := "runtime.GOROOT"%go.
+Definition Version {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.Version"%go.
 
-Definition buildVersion : go_string := "runtime.buildVersion"%go.
+Axiom GOOS : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition Version : go_string := "runtime.Version"%go.
+Axiom GOARCH : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom GOOS : val.
+Definition fastlog2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.fastlog2"%go.
 
-Axiom GOARCH : val.
+Axiom fastlogNumBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition fastlog2 : go_string := "runtime.fastlog2"%go.
+Definition fastlog2Table {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.fastlog2Table"%go.
 
-Axiom fastlogNumBits : Z.
+Axiom fastlog2Table'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition fastlog2Table : go_string := "runtime.fastlog2Table"%go.
+Definition checkfds {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.checkfds"%go.
 
-Axiom fastlog2Table'init : val.
+Axiom float64Mask : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition checkfds : go_string := "runtime.checkfds"%go.
+Axiom float64Shift : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom float64Mask : Z.
+Axiom float64Bias : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom float64Shift : Z.
+Definition inf {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.inf"%go.
 
-Axiom float64Bias : Z.
+Axiom inf'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition inf : go_string := "runtime.inf"%go.
+Definition isNaN {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.isNaN"%go.
 
-Axiom inf'init : val.
+Definition isFinite {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.isFinite"%go.
 
-Definition isNaN : go_string := "runtime.isNaN"%go.
+Definition isInf {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.isInf"%go.
 
-Definition isFinite : go_string := "runtime.isFinite"%go.
+Definition abs {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.abs"%go.
 
-Definition isInf : go_string := "runtime.isInf"%go.
+Definition copysign {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.copysign"%go.
 
-Definition abs : go_string := "runtime.abs"%go.
+Definition float64bits {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.float64bits"%go.
 
-Definition copysign : go_string := "runtime.copysign"%go.
+Definition float64frombits {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.float64frombits"%go.
 
-Definition float64bits : go_string := "runtime.float64bits"%go.
+Definition floor {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.floor"%go.
 
-Definition float64frombits : go_string := "runtime.float64frombits"%go.
+Definition ceil {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.ceil"%go.
 
-Definition floor : go_string := "runtime.floor"%go.
+Definition modf {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.modf"%go.
 
-Definition ceil : go_string := "runtime.ceil"%go.
+Axiom m5 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition modf : go_string := "runtime.modf"%go.
+Definition memhashFallback {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.memhashFallback"%go.
 
-Axiom m5 : Z.
+Definition memhash32Fallback {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.memhash32Fallback"%go.
 
-Definition memhashFallback : go_string := "runtime.memhashFallback"%go.
+Definition memhash64Fallback {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.memhash64Fallback"%go.
 
-Definition memhash32Fallback : go_string := "runtime.memhash32Fallback"%go.
+Definition mix {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mix"%go.
 
-Definition memhash64Fallback : go_string := "runtime.memhash64Fallback"%go.
+Definition r4 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.r4"%go.
 
-Definition mix : go_string := "runtime.mix"%go.
+Definition r8 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.r8"%go.
 
-Definition r4 : go_string := "runtime.r4"%go.
+Definition runtime_debug_WriteHeapDump {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.runtime_debug_WriteHeapDump"%go.
 
-Definition r8 : go_string := "runtime.r8"%go.
+Axiom fieldKindEol : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition runtime_debug_WriteHeapDump : go_string := "runtime.runtime_debug_WriteHeapDump"%go.
+Axiom fieldKindPtr : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom fieldKindEol : Z.
+Axiom fieldKindIface : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom fieldKindPtr : Z.
+Axiom fieldKindEface : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom fieldKindIface : Z.
+Axiom tagEOF : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom fieldKindEface : Z.
+Axiom tagObject : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom tagEOF : Z.
+Axiom tagOtherRoot : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom tagObject : Z.
+Axiom tagType : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom tagOtherRoot : Z.
+Axiom tagGoroutine : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom tagType : Z.
+Axiom tagStackFrame : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom tagGoroutine : Z.
+Axiom tagParams : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom tagStackFrame : Z.
+Axiom tagFinalizer : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom tagParams : Z.
+Axiom tagItab : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom tagFinalizer : Z.
+Axiom tagOSThread : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom tagItab : Z.
+Axiom tagMemStats : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom tagOSThread : Z.
+Axiom tagQueuedFinalizer : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom tagMemStats : Z.
+Axiom tagData : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom tagQueuedFinalizer : Z.
+Axiom tagBSS : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom tagData : Z.
+Axiom tagDefer : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom tagBSS : Z.
+Axiom tagPanic : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom tagDefer : Z.
+Axiom tagMemProf : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom tagPanic : Z.
+Axiom tagAllocSample : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom tagMemProf : Z.
+Definition dumpfd {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.dumpfd"%go.
 
-Axiom tagAllocSample : Z.
+Definition tmpbuf {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.tmpbuf"%go.
 
-Definition dumpfd : go_string := "runtime.dumpfd"%go.
+Axiom bufSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition tmpbuf : go_string := "runtime.tmpbuf"%go.
+Definition buf {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.buf"%go.
 
-Axiom bufSize : Z.
+Definition nbuf {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.nbuf"%go.
 
-Definition buf : go_string := "runtime.buf"%go.
+Definition dwrite {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.dwrite"%go.
 
-Definition nbuf : go_string := "runtime.nbuf"%go.
+Definition dwritebyte {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.dwritebyte"%go.
 
-Definition dwrite : go_string := "runtime.dwrite"%go.
+Definition flush {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.flush"%go.
 
-Definition dwritebyte : go_string := "runtime.dwritebyte"%go.
+Axiom typeCacheBuckets : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition flush : go_string := "runtime.flush"%go.
+Axiom typeCacheAssoc : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom typeCacheBuckets : Z.
+Axiom typeCacheBucketⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom typeCacheAssoc : Z.
+Definition typecache {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.typecache"%go.
 
-Axiom typeCacheBucketⁱᵐᵖˡ : go.type.
+Definition dumpint {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.dumpint"%go.
 
-Definition typecache : go_string := "runtime.typecache"%go.
+Definition dumpbool {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.dumpbool"%go.
 
-Definition dumpint : go_string := "runtime.dumpint"%go.
+Definition dumpmemrange {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.dumpmemrange"%go.
 
-Definition dumpbool : go_string := "runtime.dumpbool"%go.
+Definition dumpslice {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.dumpslice"%go.
 
-Definition dumpmemrange : go_string := "runtime.dumpmemrange"%go.
+Definition dumpstr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.dumpstr"%go.
 
-Definition dumpslice : go_string := "runtime.dumpslice"%go.
+Definition dumptype {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.dumptype"%go.
 
-Definition dumpstr : go_string := "runtime.dumpstr"%go.
+Definition dumpobj {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.dumpobj"%go.
 
-Definition dumptype : go_string := "runtime.dumptype"%go.
+Definition dumpotherroot {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.dumpotherroot"%go.
 
-Definition dumpobj : go_string := "runtime.dumpobj"%go.
+Definition dumpfinalizer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.dumpfinalizer"%go.
 
-Definition dumpotherroot : go_string := "runtime.dumpotherroot"%go.
+Axiom childInfoⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition dumpfinalizer : go_string := "runtime.dumpfinalizer"%go.
+Definition dumpbv {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.dumpbv"%go.
 
-Axiom childInfoⁱᵐᵖˡ : go.type.
+Definition dumpframe {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.dumpframe"%go.
 
-Definition dumpbv : go_string := "runtime.dumpbv"%go.
+Definition dumpgoroutine {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.dumpgoroutine"%go.
 
-Definition dumpframe : go_string := "runtime.dumpframe"%go.
+Definition dumpgs {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.dumpgs"%go.
 
-Definition dumpgoroutine : go_string := "runtime.dumpgoroutine"%go.
+Definition finq_callback {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.finq_callback"%go.
 
-Definition dumpgs : go_string := "runtime.dumpgs"%go.
+Definition dumproots {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.dumproots"%go.
 
-Definition finq_callback : go_string := "runtime.finq_callback"%go.
+Definition freemark {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.freemark"%go.
 
-Definition dumproots : go_string := "runtime.dumproots"%go.
+Definition dumpobjs {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.dumpobjs"%go.
 
-Definition freemark : go_string := "runtime.freemark"%go.
+Definition dumpparams {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.dumpparams"%go.
 
-Definition dumpobjs : go_string := "runtime.dumpobjs"%go.
+Definition itab_callback {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.itab_callback"%go.
 
-Definition dumpparams : go_string := "runtime.dumpparams"%go.
+Definition dumpitabs {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.dumpitabs"%go.
 
-Definition itab_callback : go_string := "runtime.itab_callback"%go.
+Definition dumpms {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.dumpms"%go.
 
-Definition dumpitabs : go_string := "runtime.dumpitabs"%go.
+Definition dumpmemstats {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.dumpmemstats"%go.
 
-Definition dumpms : go_string := "runtime.dumpms"%go.
+Definition dumpmemprof_callback {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.dumpmemprof_callback"%go.
 
-Definition dumpmemstats : go_string := "runtime.dumpmemstats"%go.
+Definition dumpmemprof {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.dumpmemprof"%go.
 
-Definition dumpmemprof_callback : go_string := "runtime.dumpmemprof_callback"%go.
+Definition dumphdr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.dumphdr"%go.
 
-Definition dumpmemprof : go_string := "runtime.dumpmemprof"%go.
+Axiom dumphdr'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition dumphdr : go_string := "runtime.dumphdr"%go.
+Definition mdump {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mdump"%go.
 
-Axiom dumphdr'init : val.
+Definition writeheapdump_m {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.writeheapdump_m"%go.
 
-Definition mdump : go_string := "runtime.mdump"%go.
+Definition dumpfields {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.dumpfields"%go.
 
-Definition writeheapdump_m : go_string := "runtime.writeheapdump_m"%go.
+Definition makeheapobjbv {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.makeheapobjbv"%go.
 
-Definition dumpfields : go_string := "runtime.dumpfields"%go.
+Axiom timeHistMinBucketBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition makeheapobjbv : go_string := "runtime.makeheapobjbv"%go.
+Axiom timeHistMaxBucketBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom timeHistMinBucketBits : Z.
+Axiom timeHistSubBucketBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom timeHistMaxBucketBits : Z.
+Axiom timeHistNumSubBuckets : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom timeHistSubBucketBits : Z.
+Axiom timeHistNumBuckets : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom timeHistNumSubBuckets : Z.
+Axiom timeHistTotalBuckets : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom timeHistNumBuckets : Z.
+Axiom timeHistogramⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom timeHistTotalBuckets : Z.
+Axiom fInf : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom timeHistogramⁱᵐᵖˡ : go.type.
+Axiom fNegInf : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom fInf : Z.
+Definition float64Inf {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.float64Inf"%go.
 
-Axiom fNegInf : Z.
+Definition float64NegInf {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.float64NegInf"%go.
 
-Definition float64Inf : go_string := "runtime.float64Inf"%go.
+Definition timeHistogramMetricsBuckets {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.timeHistogramMetricsBuckets"%go.
 
-Definition float64NegInf : go_string := "runtime.float64NegInf"%go.
+Axiom itabInitSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition timeHistogramMetricsBuckets : go_string := "runtime.timeHistogramMetricsBuckets"%go.
+Definition itabLock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.itabLock"%go.
 
-Axiom itabInitSize : Z.
+Definition itabTable {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.itabTable"%go.
 
-Definition itabLock : go_string := "runtime.itabLock"%go.
+Axiom itabTable'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition itabTable : go_string := "runtime.itabTable"%go.
+Definition itabTableInit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.itabTableInit"%go.
 
-Axiom itabTable'init : val.
+Axiom itabTableInit'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition itabTableInit : go_string := "runtime.itabTableInit"%go.
+Axiom itabTableTypeⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom itabTableInit'init : val.
+Definition itabHashFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.itabHashFunc"%go.
 
-Axiom itabTableTypeⁱᵐᵖˡ : go.type.
+Definition getitab {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.getitab"%go.
 
-Definition itabHashFunc : go_string := "runtime.itabHashFunc"%go.
+Definition itabAdd {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.itabAdd"%go.
 
-Definition getitab : go_string := "runtime.getitab"%go.
+Definition itabInit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.itabInit"%go.
 
-Definition itabAdd : go_string := "runtime.itabAdd"%go.
+Definition itabsinit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.itabsinit"%go.
 
-Definition itabInit : go_string := "runtime.itabInit"%go.
+Definition panicdottypeE {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.panicdottypeE"%go.
 
-Definition itabsinit : go_string := "runtime.itabsinit"%go.
+Definition panicdottypeI {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.panicdottypeI"%go.
 
-Definition panicdottypeE : go_string := "runtime.panicdottypeE"%go.
+Definition panicnildottype {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.panicnildottype"%go.
 
-Definition panicdottypeI : go_string := "runtime.panicdottypeI"%go.
+Axiom uint16InterfacePtrⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition panicnildottype : go_string := "runtime.panicnildottype"%go.
+Axiom uint32InterfacePtrⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom uint16InterfacePtrⁱᵐᵖˡ : go.type.
+Axiom uint64InterfacePtrⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom uint32InterfacePtrⁱᵐᵖˡ : go.type.
+Axiom stringInterfacePtrⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom uint64InterfacePtrⁱᵐᵖˡ : go.type.
+Axiom sliceInterfacePtrⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom stringInterfacePtrⁱᵐᵖˡ : go.type.
+Definition uint16Eface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.uint16Eface"%go.
 
-Axiom sliceInterfacePtrⁱᵐᵖˡ : go.type.
+Axiom uint16Eface'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition uint16Eface : go_string := "runtime.uint16Eface"%go.
+Definition uint32Eface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.uint32Eface"%go.
 
-Axiom uint16Eface'init : val.
+Axiom uint32Eface'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition uint32Eface : go_string := "runtime.uint32Eface"%go.
+Definition uint64Eface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.uint64Eface"%go.
 
-Axiom uint32Eface'init : val.
+Axiom uint64Eface'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition uint64Eface : go_string := "runtime.uint64Eface"%go.
+Definition stringEface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.stringEface"%go.
 
-Axiom uint64Eface'init : val.
+Axiom stringEface'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition stringEface : go_string := "runtime.stringEface"%go.
+Definition sliceEface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sliceEface"%go.
 
-Axiom stringEface'init : val.
+Axiom sliceEface'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition sliceEface : go_string := "runtime.sliceEface"%go.
+Definition uint16Type {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.uint16Type"%go.
 
-Axiom sliceEface'init : val.
+Axiom uint16Type'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition uint16Type : go_string := "runtime.uint16Type"%go.
+Definition uint32Type {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.uint32Type"%go.
 
-Axiom uint16Type'init : val.
+Axiom uint32Type'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition uint32Type : go_string := "runtime.uint32Type"%go.
+Definition uint64Type {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.uint64Type"%go.
 
-Axiom uint32Type'init : val.
+Axiom uint64Type'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition uint64Type : go_string := "runtime.uint64Type"%go.
+Definition stringType {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.stringType"%go.
 
-Axiom uint64Type'init : val.
+Axiom stringType'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition stringType : go_string := "runtime.stringType"%go.
+Definition sliceType {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sliceType"%go.
 
-Axiom stringType'init : val.
+Axiom sliceType'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition sliceType : go_string := "runtime.sliceType"%go.
+Definition convT {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.convT"%go.
 
-Axiom sliceType'init : val.
+Definition convTnoptr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.convTnoptr"%go.
 
-Definition convT : go_string := "runtime.convT"%go.
+Definition convT16 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.convT16"%go.
 
-Definition convTnoptr : go_string := "runtime.convTnoptr"%go.
+Definition convT32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.convT32"%go.
 
-Definition convT16 : go_string := "runtime.convT16"%go.
+Definition convT64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.convT64"%go.
 
-Definition convT32 : go_string := "runtime.convT32"%go.
+Definition convTstring {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.convTstring"%go.
 
-Definition convT64 : go_string := "runtime.convT64"%go.
+Definition convTslice {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.convTslice"%go.
 
-Definition convTstring : go_string := "runtime.convTstring"%go.
+Definition assertE2I {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.assertE2I"%go.
 
-Definition convTslice : go_string := "runtime.convTslice"%go.
+Definition assertE2I2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.assertE2I2"%go.
 
-Definition assertE2I : go_string := "runtime.assertE2I"%go.
+Definition typeAssert {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.typeAssert"%go.
 
-Definition assertE2I2 : go_string := "runtime.assertE2I2"%go.
+Definition buildTypeAssertCache {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.buildTypeAssertCache"%go.
 
-Definition typeAssert : go_string := "runtime.typeAssert"%go.
+Definition emptyTypeAssertCache {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.emptyTypeAssertCache"%go.
 
-Definition buildTypeAssertCache : go_string := "runtime.buildTypeAssertCache"%go.
+Axiom emptyTypeAssertCache'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition emptyTypeAssertCache : go_string := "runtime.emptyTypeAssertCache"%go.
+Definition interfaceSwitch {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.interfaceSwitch"%go.
 
-Axiom emptyTypeAssertCache'init : val.
+Definition buildInterfaceSwitchCache {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.buildInterfaceSwitchCache"%go.
 
-Definition interfaceSwitch : go_string := "runtime.interfaceSwitch"%go.
+Definition emptyInterfaceSwitchCache {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.emptyInterfaceSwitchCache"%go.
 
-Definition buildInterfaceSwitchCache : go_string := "runtime.buildInterfaceSwitchCache"%go.
+Axiom emptyInterfaceSwitchCache'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition emptyInterfaceSwitchCache : go_string := "runtime.emptyInterfaceSwitchCache"%go.
+Definition reflect_ifaceE2I {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflect_ifaceE2I"%go.
 
-Axiom emptyInterfaceSwitchCache'init : val.
+Definition reflectlite_ifaceE2I {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflectlite_ifaceE2I"%go.
 
-Definition reflect_ifaceE2I : go_string := "runtime.reflect_ifaceE2I"%go.
+Definition iterate_itabs {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.iterate_itabs"%go.
 
-Definition reflectlite_ifaceE2I : go_string := "runtime.reflectlite_ifaceE2I"%go.
+Definition staticuint64s {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.staticuint64s"%go.
 
-Definition iterate_itabs : go_string := "runtime.iterate_itabs"%go.
+Definition getStaticuint64s {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.getStaticuint64s"%go.
 
-Definition staticuint64s : go_string := "runtime.staticuint64s"%go.
+Definition unreachableMethod {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.unreachableMethod"%go.
 
-Definition getStaticuint64s : go_string := "runtime.getStaticuint64s"%go.
+Axiom lfstackⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition unreachableMethod : go_string := "runtime.unreachableMethod"%go.
+Definition lfnodeValidate {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.lfnodeValidate"%go.
 
-Axiom lfstackⁱᵐᵖˡ : go.type.
+Definition lfstackPack {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.lfstackPack"%go.
 
-Definition lfnodeValidate : go_string := "runtime.lfnodeValidate"%go.
+Definition lfstackUnpack {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.lfstackUnpack"%go.
 
-Definition lfstackPack : go_string := "runtime.lfstackPack"%go.
+Axiom linknameIterⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition lfstackUnpack : go_string := "runtime.lfstackUnpack"%go.
+Definition mapiterinit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mapiterinit"%go.
 
-Axiom linknameIterⁱᵐᵖˡ : go.type.
+Definition reflect_mapiterinit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflect_mapiterinit"%go.
 
-Definition mapiterinit : go_string := "runtime.mapiterinit"%go.
+Definition mapiternext {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mapiternext"%go.
 
-Definition reflect_mapiterinit : go_string := "runtime.reflect_mapiterinit"%go.
+Definition reflect_mapiternext {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflect_mapiternext"%go.
 
-Definition mapiternext : go_string := "runtime.mapiternext"%go.
+Definition reflect_mapiterkey {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflect_mapiterkey"%go.
 
-Definition reflect_mapiternext : go_string := "runtime.reflect_mapiternext"%go.
+Definition reflect_mapiterelem {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflect_mapiterelem"%go.
 
-Definition reflect_mapiterkey : go_string := "runtime.reflect_mapiterkey"%go.
+Definition key32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.key32"%go.
 
-Definition reflect_mapiterelem : go_string := "runtime.reflect_mapiterelem"%go.
+Definition noteclear {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.noteclear"%go.
 
-Definition key32 : go_string := "runtime.key32"%go.
+Definition notewakeup {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.notewakeup"%go.
 
-Definition noteclear : go_string := "runtime.noteclear"%go.
+Definition notesleep {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.notesleep"%go.
 
-Definition notewakeup : go_string := "runtime.notewakeup"%go.
+Definition notetsleep_internal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.notetsleep_internal"%go.
 
-Definition notesleep : go_string := "runtime.notesleep"%go.
+Definition notetsleep {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.notetsleep"%go.
 
-Definition notetsleep_internal : go_string := "runtime.notetsleep_internal"%go.
+Definition notetsleepg {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.notetsleepg"%go.
 
-Definition notetsleep : go_string := "runtime.notetsleep"%go.
+Definition beforeIdle {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.beforeIdle"%go.
 
-Definition notetsleepg : go_string := "runtime.notetsleepg"%go.
+Definition checkTimeouts {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.checkTimeouts"%go.
 
-Definition beforeIdle : go_string := "runtime.beforeIdle"%go.
+Definition semacreate {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.semacreate"%go.
 
-Definition checkTimeouts : go_string := "runtime.checkTimeouts"%go.
+Definition semasleep {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.semasleep"%go.
 
-Definition semacreate : go_string := "runtime.semacreate"%go.
+Definition semawakeup {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.semawakeup"%go.
 
-Definition semasleep : go_string := "runtime.semasleep"%go.
+Axiom active_spin : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition semawakeup : go_string := "runtime.semawakeup"%go.
+Axiom active_spin_cnt : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom active_spin : Z.
+Axiom mutexLocked : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom active_spin_cnt : Z.
+Axiom mutexSleeping : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom mutexLocked : Z.
+Axiom mutexSpinning : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom mutexSleeping : Z.
+Axiom mutexStackLocked : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom mutexSpinning : Z.
+Axiom mutexMMask : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom mutexStackLocked : Z.
+Axiom mutexMOffset : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom mutexMMask : Z.
+Axiom mutexActiveSpinCount : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom mutexMOffset : Z.
+Axiom mutexActiveSpinSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom mutexActiveSpinCount : Z.
+Axiom mutexPassiveSpinCount : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom mutexActiveSpinSize : Z.
+Axiom mutexTailWakePeriod : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom mutexPassiveSpinCount : Z.
+Definition key8 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.key8"%go.
 
-Axiom mutexTailWakePeriod : Z.
+Axiom mWaitListⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition key8 : go_string := "runtime.key8"%go.
+Definition lockVerifyMSize {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.lockVerifyMSize"%go.
 
-Axiom mWaitListⁱᵐᵖˡ : go.type.
+Definition mutexWaitListHead {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mutexWaitListHead"%go.
 
-Definition lockVerifyMSize : go_string := "runtime.lockVerifyMSize"%go.
+Definition mutexPreferLowLatency {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mutexPreferLowLatency"%go.
 
-Definition mutexWaitListHead : go_string := "runtime.mutexWaitListHead"%go.
+Definition mutexContended {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mutexContended"%go.
 
-Definition mutexPreferLowLatency : go_string := "runtime.mutexPreferLowLatency"%go.
+Definition lock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.lock"%go.
 
-Definition mutexContended : go_string := "runtime.mutexContended"%go.
+Definition lock2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.lock2"%go.
 
-Definition lock : go_string := "runtime.lock"%go.
+Definition unlock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.unlock"%go.
 
-Definition lock2 : go_string := "runtime.lock2"%go.
+Definition unlock2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.unlock2"%go.
 
-Definition unlock : go_string := "runtime.unlock"%go.
+Definition mutexSampleContention {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mutexSampleContention"%go.
 
-Definition unlock2 : go_string := "runtime.unlock2"%go.
+Definition unlock2Wake {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.unlock2Wake"%go.
 
-Definition mutexSampleContention : go_string := "runtime.mutexSampleContention"%go.
+Axiom lockRankⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition unlock2Wake : go_string := "runtime.unlock2Wake"%go.
+Axiom lockRankUnknown : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankⁱᵐᵖˡ : go.type.
+Axiom lockRankSysmon : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankUnknown : val.
+Axiom lockRankScavenge : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankSysmon : val.
+Axiom lockRankForcegc : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankScavenge : val.
+Axiom lockRankComputeMaxProcs : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankForcegc : val.
+Axiom lockRankUpdateMaxProcsG : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankComputeMaxProcs : val.
+Axiom lockRankDefer : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankUpdateMaxProcsG : val.
+Axiom lockRankSweepWaiters : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankDefer : val.
+Axiom lockRankAssistQueue : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankSweepWaiters : val.
+Axiom lockRankStrongFromWeakQueue : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankAssistQueue : val.
+Axiom lockRankCleanupQueue : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankStrongFromWeakQueue : val.
+Axiom lockRankSweep : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankCleanupQueue : val.
+Axiom lockRankTestR : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankSweep : val.
+Axiom lockRankTestW : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankTestR : val.
+Axiom lockRankVgetrandom : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankTestW : val.
+Axiom lockRankTimerSend : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankVgetrandom : val.
+Axiom lockRankAllocmW : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankTimerSend : val.
+Axiom lockRankExecW : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankAllocmW : val.
+Axiom lockRankCpuprof : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankExecW : val.
+Axiom lockRankPollCache : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankCpuprof : val.
+Axiom lockRankPollDesc : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankPollCache : val.
+Axiom lockRankWakeableSleep : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankPollDesc : val.
+Axiom lockRankHchan : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankWakeableSleep : val.
+Axiom lockRankAllocmR : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankHchan : val.
+Axiom lockRankExecR : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankAllocmR : val.
+Axiom lockRankSched : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankExecR : val.
+Axiom lockRankAllg : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankSched : val.
+Axiom lockRankAllp : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankAllg : val.
+Axiom lockRankNotifyList : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankAllp : val.
+Axiom lockRankSudog : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankNotifyList : val.
+Axiom lockRankTimers : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankSudog : val.
+Axiom lockRankTimer : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankTimers : val.
+Axiom lockRankNetpollInit : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankTimer : val.
+Axiom lockRankRoot : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankNetpollInit : val.
+Axiom lockRankItab : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankRoot : val.
+Axiom lockRankReflectOffs : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankItab : val.
+Axiom lockRankSynctest : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankReflectOffs : val.
+Axiom lockRankUserArenaState : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankSynctest : val.
+Axiom lockRankTraceBuf : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankUserArenaState : val.
+Axiom lockRankTraceStrings : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankTraceBuf : val.
+Axiom lockRankFin : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankTraceStrings : val.
+Axiom lockRankSpanSetSpine : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankFin : val.
+Axiom lockRankMspanSpecial : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankSpanSetSpine : val.
+Axiom lockRankTraceTypeTab : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankMspanSpecial : val.
+Axiom lockRankGcBitsArenas : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankTraceTypeTab : val.
+Axiom lockRankProfInsert : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankGcBitsArenas : val.
+Axiom lockRankProfBlock : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankProfInsert : val.
+Axiom lockRankProfMemActive : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankProfBlock : val.
+Axiom lockRankProfMemFuture : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankProfMemActive : val.
+Axiom lockRankGscan : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankProfMemFuture : val.
+Axiom lockRankStackpool : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankGscan : val.
+Axiom lockRankStackLarge : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankStackpool : val.
+Axiom lockRankHchanLeaf : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankStackLarge : val.
+Axiom lockRankWbufSpans : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankHchanLeaf : val.
+Axiom lockRankMheap : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankWbufSpans : val.
+Axiom lockRankMheapSpecial : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankMheap : val.
+Axiom lockRankGlobalAlloc : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankMheapSpecial : val.
+Axiom lockRankTrace : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankGlobalAlloc : val.
+Axiom lockRankTraceStackTab : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankTrace : val.
+Axiom lockRankPanic : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankTraceStackTab : val.
+Axiom lockRankDeadlock : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankPanic : val.
+Axiom lockRankRaceFini : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankDeadlock : val.
+Axiom lockRankAllocmRInternal : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankRaceFini : val.
+Axiom lockRankExecRInternal : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankAllocmRInternal : val.
+Axiom lockRankTestRInternal : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankExecRInternal : val.
+Axiom lockRankLeafRank : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockRankTestRInternal : val.
+Definition lockNames {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.lockNames"%go.
 
-Axiom lockRankLeafRank : val.
+Axiom lockNames'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition lockNames : go_string := "runtime.lockNames"%go.
+Definition lockPartialOrder {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.lockPartialOrder"%go.
 
-Axiom lockNames'init : val.
+Axiom lockPartialOrder'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition lockPartialOrder : go_string := "runtime.lockPartialOrder"%go.
+Axiom staticLockRanking : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lockPartialOrder'init : val.
+Axiom lockRankStructⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom staticLockRanking : val.
+Definition lockInit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.lockInit"%go.
 
-Axiom lockRankStructⁱᵐᵖˡ : go.type.
+Definition getLockRank {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.getLockRank"%go.
 
-Definition lockInit : go_string := "runtime.lockInit"%go.
+Definition lockWithRank {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.lockWithRank"%go.
 
-Definition getLockRank : go_string := "runtime.getLockRank"%go.
+Definition acquireLockRankAndM {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.acquireLockRankAndM"%go.
 
-Definition lockWithRank : go_string := "runtime.lockWithRank"%go.
+Definition unlockWithRank {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.unlockWithRank"%go.
 
-Definition acquireLockRankAndM : go_string := "runtime.acquireLockRankAndM"%go.
+Definition releaseLockRankAndM {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.releaseLockRankAndM"%go.
 
-Definition unlockWithRank : go_string := "runtime.unlockWithRank"%go.
+Definition lockWithRankMayAcquire {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.lockWithRankMayAcquire"%go.
 
-Definition releaseLockRankAndM : go_string := "runtime.releaseLockRankAndM"%go.
+Definition assertLockHeld {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.assertLockHeld"%go.
 
-Definition lockWithRankMayAcquire : go_string := "runtime.lockWithRankMayAcquire"%go.
+Definition assertRankHeld {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.assertRankHeld"%go.
 
-Definition assertLockHeld : go_string := "runtime.assertLockHeld"%go.
+Definition worldStopped {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.worldStopped"%go.
 
-Definition assertRankHeld : go_string := "runtime.assertRankHeld"%go.
+Definition worldStarted {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.worldStarted"%go.
 
-Definition worldStopped : go_string := "runtime.worldStopped"%go.
+Definition assertWorldStopped {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.assertWorldStopped"%go.
 
-Definition worldStarted : go_string := "runtime.worldStarted"%go.
+Definition assertWorldStoppedOrLockHeld {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.assertWorldStoppedOrLockHeld"%go.
 
-Definition assertWorldStopped : go_string := "runtime.assertWorldStopped"%go.
+Axiom maxTinySize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition assertWorldStoppedOrLockHeld : go_string := "runtime.assertWorldStoppedOrLockHeld"%go.
+Axiom tinySizeClass : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom maxTinySize : Z.
+Axiom maxSmallSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom tinySizeClass : val.
+Axiom pageSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom maxSmallSize : Z.
+Axiom pageMask : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom pageSize : Z.
+Axiom _PageSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom pageMask : Z.
+Axiom minSizeForMallocHeader : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _PageSize : Z.
+Axiom mallocHeaderSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom minSizeForMallocHeader : Z.
+Axiom _64bit : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom mallocHeaderSize : Z.
+Axiom _TinySize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _64bit : Z.
+Axiom _TinySizeClass : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _TinySize : Z.
+Axiom _FixAllocChunk : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _TinySizeClass : val.
+Axiom _StackCacheSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _FixAllocChunk : Z.
+Axiom _NumStackOrders : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _StackCacheSize : Z.
+Axiom heapAddrBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _NumStackOrders : Z.
+Axiom maxAlloc : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom heapAddrBits : Z.
+Axiom heapArenaBytes : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom maxAlloc : Z.
+Axiom heapArenaWords : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom heapArenaBytes : Z.
+Axiom logHeapArenaBytes : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom heapArenaWords : Z.
+Axiom heapArenaBitmapWords : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom logHeapArenaBytes : Z.
+Axiom pagesPerArena : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom heapArenaBitmapWords : Z.
+Axiom arenaL1Bits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom pagesPerArena : Z.
+Axiom arenaL2Bits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom arenaL1Bits : Z.
+Axiom arenaL1Shift : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom arenaL2Bits : Z.
+Axiom arenaBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom arenaL1Shift : Z.
+Axiom arenaBaseOffset : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom arenaBits : Z.
+Axiom arenaBaseOffsetUintptr : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom arenaBaseOffset : Z.
+Axiom _MaxGcproc : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom arenaBaseOffsetUintptr : val.
+Axiom minLegalPointer : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _MaxGcproc : Z.
+Axiom minHeapForMetadataHugePages : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom minLegalPointer : val.
+Definition physPageSize {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.physPageSize"%go.
 
-Axiom minHeapForMetadataHugePages : Z.
+Definition physHugePageSize {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.physHugePageSize"%go.
 
-Definition physPageSize : go_string := "runtime.physPageSize"%go.
+Definition physHugePageShift {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.physHugePageShift"%go.
 
-Definition physHugePageSize : go_string := "runtime.physHugePageSize"%go.
+Definition mallocinit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mallocinit"%go.
 
-Definition physHugePageShift : go_string := "runtime.physHugePageShift"%go.
+Definition sysReserveAligned {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sysReserveAligned"%go.
 
-Definition mallocinit : go_string := "runtime.mallocinit"%go.
+Definition zerobase {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.zerobase"%go.
 
-Definition sysReserveAligned : go_string := "runtime.sysReserveAligned"%go.
+Definition nextFreeFast {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.nextFreeFast"%go.
 
-Definition zerobase : go_string := "runtime.zerobase"%go.
+Axiom doubleCheckMalloc : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition nextFreeFast : go_string := "runtime.nextFreeFast"%go.
+Definition mallocgc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mallocgc"%go.
 
-Axiom doubleCheckMalloc : val.
+Definition mallocgcTiny {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mallocgcTiny"%go.
 
-Definition mallocgc : go_string := "runtime.mallocgc"%go.
+Definition mallocgcSmallNoscan {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mallocgcSmallNoscan"%go.
 
-Definition mallocgcTiny : go_string := "runtime.mallocgcTiny"%go.
+Definition mallocgcSmallScanNoHeader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mallocgcSmallScanNoHeader"%go.
 
-Definition mallocgcSmallNoscan : go_string := "runtime.mallocgcSmallNoscan"%go.
+Definition mallocgcSmallScanHeader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mallocgcSmallScanHeader"%go.
 
-Definition mallocgcSmallScanNoHeader : go_string := "runtime.mallocgcSmallScanNoHeader"%go.
+Definition mallocgcLarge {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mallocgcLarge"%go.
 
-Definition mallocgcSmallScanHeader : go_string := "runtime.mallocgcSmallScanHeader"%go.
+Definition preMallocgcDebug {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.preMallocgcDebug"%go.
 
-Definition mallocgcLarge : go_string := "runtime.mallocgcLarge"%go.
+Definition postMallocgcDebug {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.postMallocgcDebug"%go.
 
-Definition preMallocgcDebug : go_string := "runtime.preMallocgcDebug"%go.
+Definition deductAssistCredit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.deductAssistCredit"%go.
 
-Definition postMallocgcDebug : go_string := "runtime.postMallocgcDebug"%go.
+Definition memclrNoHeapPointersChunked {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.memclrNoHeapPointersChunked"%go.
 
-Definition deductAssistCredit : go_string := "runtime.deductAssistCredit"%go.
+Definition newobject {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.newobject"%go.
 
-Definition memclrNoHeapPointersChunked : go_string := "runtime.memclrNoHeapPointersChunked"%go.
+Definition maps_newobject {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.maps_newobject"%go.
 
-Definition newobject : go_string := "runtime.newobject"%go.
+Definition reflect_unsafe_New {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflect_unsafe_New"%go.
 
-Definition maps_newobject : go_string := "runtime.maps_newobject"%go.
+Definition reflectlite_unsafe_New {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflectlite_unsafe_New"%go.
 
-Definition reflect_unsafe_New : go_string := "runtime.reflect_unsafe_New"%go.
+Definition newarray {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.newarray"%go.
 
-Definition reflectlite_unsafe_New : go_string := "runtime.reflectlite_unsafe_New"%go.
+Definition reflect_unsafe_NewArray {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflect_unsafe_NewArray"%go.
 
-Definition newarray : go_string := "runtime.newarray"%go.
+Definition maps_newarray {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.maps_newarray"%go.
 
-Definition reflect_unsafe_NewArray : go_string := "runtime.reflect_unsafe_NewArray"%go.
+Definition profilealloc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.profilealloc"%go.
 
-Definition maps_newarray : go_string := "runtime.maps_newarray"%go.
+Definition nextSample {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.nextSample"%go.
 
-Definition profilealloc : go_string := "runtime.profilealloc"%go.
+Definition fastexprand {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.fastexprand"%go.
 
-Definition nextSample : go_string := "runtime.nextSample"%go.
+Axiom persistentAllocⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition fastexprand : go_string := "runtime.fastexprand"%go.
+Definition globalAlloc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.globalAlloc"%go.
 
-Axiom persistentAllocⁱᵐᵖˡ : go.type.
+Axiom persistentChunkSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition globalAlloc : go_string := "runtime.globalAlloc"%go.
+Definition persistentChunks {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.persistentChunks"%go.
 
-Axiom persistentChunkSize : Z.
+Definition persistentalloc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.persistentalloc"%go.
 
-Definition persistentChunks : go_string := "runtime.persistentChunks"%go.
+Definition persistentalloc1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.persistentalloc1"%go.
 
-Definition persistentalloc : go_string := "runtime.persistentalloc"%go.
+Definition inPersistentAlloc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.inPersistentAlloc"%go.
 
-Definition persistentalloc1 : go_string := "runtime.persistentalloc1"%go.
+Axiom linearAllocⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition inPersistentAlloc : go_string := "runtime.inPersistentAlloc"%go.
+Axiom notInHeapⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom linearAllocⁱᵐᵖˡ : go.type.
+Definition redZoneSize {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.redZoneSize"%go.
 
-Axiom notInHeapⁱᵐᵖˡ : go.type.
+Definition mapaccess1_fast32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mapaccess1_fast32"%go.
 
-Definition redZoneSize : go_string := "runtime.redZoneSize"%go.
+Definition mapaccess2_fast32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mapaccess2_fast32"%go.
 
-Definition mapaccess1_fast32 : go_string := "runtime.mapaccess1_fast32"%go.
+Definition mapassign_fast32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mapassign_fast32"%go.
 
-Definition mapaccess2_fast32 : go_string := "runtime.mapaccess2_fast32"%go.
+Definition mapassign_fast32ptr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mapassign_fast32ptr"%go.
 
-Definition mapassign_fast32 : go_string := "runtime.mapassign_fast32"%go.
+Definition mapdelete_fast32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mapdelete_fast32"%go.
 
-Definition mapassign_fast32ptr : go_string := "runtime.mapassign_fast32ptr"%go.
+Definition mapaccess1_fast64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mapaccess1_fast64"%go.
 
-Definition mapdelete_fast32 : go_string := "runtime.mapdelete_fast32"%go.
+Definition mapaccess2_fast64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mapaccess2_fast64"%go.
 
-Definition mapaccess1_fast64 : go_string := "runtime.mapaccess1_fast64"%go.
+Definition mapassign_fast64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mapassign_fast64"%go.
 
-Definition mapaccess2_fast64 : go_string := "runtime.mapaccess2_fast64"%go.
+Definition mapassign_fast64ptr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mapassign_fast64ptr"%go.
 
-Definition mapassign_fast64 : go_string := "runtime.mapassign_fast64"%go.
+Definition mapdelete_fast64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mapdelete_fast64"%go.
 
-Definition mapassign_fast64ptr : go_string := "runtime.mapassign_fast64ptr"%go.
+Definition mapaccess1_faststr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mapaccess1_faststr"%go.
 
-Definition mapdelete_fast64 : go_string := "runtime.mapdelete_fast64"%go.
+Definition mapaccess2_faststr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mapaccess2_faststr"%go.
 
-Definition mapaccess1_faststr : go_string := "runtime.mapaccess1_faststr"%go.
+Definition mapassign_faststr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mapassign_faststr"%go.
 
-Definition mapaccess2_faststr : go_string := "runtime.mapaccess2_faststr"%go.
+Definition mapdelete_faststr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mapdelete_faststr"%go.
 
-Definition mapassign_faststr : go_string := "runtime.mapassign_faststr"%go.
+Axiom loadFactorNum : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition mapdelete_faststr : go_string := "runtime.mapdelete_faststr"%go.
+Axiom loadFactorDen : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom loadFactorNum : Z.
+Axiom maptype : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom loadFactorDen : Z.
+Definition maps_errNilAssign {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.maps_errNilAssign"%go.
 
-Axiom maptype : go.type.
+Axiom maps_errNilAssign'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition maps_errNilAssign : go_string := "runtime.maps_errNilAssign"%go.
+Definition makemap64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.makemap64"%go.
 
-Axiom maps_errNilAssign'init : val.
+Definition makemap_small {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.makemap_small"%go.
 
-Definition makemap64 : go_string := "runtime.makemap64"%go.
+Definition makemap {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.makemap"%go.
 
-Definition makemap_small : go_string := "runtime.makemap_small"%go.
+Definition mapaccess1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mapaccess1"%go.
 
-Definition makemap : go_string := "runtime.makemap"%go.
+Definition mapaccess2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mapaccess2"%go.
 
-Definition mapaccess1 : go_string := "runtime.mapaccess1"%go.
+Definition mapaccess1_fat {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mapaccess1_fat"%go.
 
-Definition mapaccess2 : go_string := "runtime.mapaccess2"%go.
+Definition mapaccess2_fat {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mapaccess2_fat"%go.
 
-Definition mapaccess1_fat : go_string := "runtime.mapaccess1_fat"%go.
+Definition mapassign {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mapassign"%go.
 
-Definition mapaccess2_fat : go_string := "runtime.mapaccess2_fat"%go.
+Definition mapdelete {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mapdelete"%go.
 
-Definition mapassign : go_string := "runtime.mapassign"%go.
+Definition mapIterStart {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mapIterStart"%go.
 
-Definition mapdelete : go_string := "runtime.mapdelete"%go.
+Definition mapIterNext {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mapIterNext"%go.
 
-Definition mapIterStart : go_string := "runtime.mapIterStart"%go.
+Definition mapclear {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mapclear"%go.
 
-Definition mapIterNext : go_string := "runtime.mapIterNext"%go.
+Definition reflect_makemap {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflect_makemap"%go.
 
-Definition mapclear : go_string := "runtime.mapclear"%go.
+Definition reflect_mapaccess {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflect_mapaccess"%go.
 
-Definition reflect_makemap : go_string := "runtime.reflect_makemap"%go.
+Definition reflect_mapaccess_faststr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflect_mapaccess_faststr"%go.
 
-Definition reflect_mapaccess : go_string := "runtime.reflect_mapaccess"%go.
+Definition reflect_mapassign {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflect_mapassign"%go.
 
-Definition reflect_mapaccess_faststr : go_string := "runtime.reflect_mapaccess_faststr"%go.
+Definition reflect_mapassign_faststr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflect_mapassign_faststr"%go.
 
-Definition reflect_mapassign : go_string := "runtime.reflect_mapassign"%go.
+Definition reflect_mapdelete {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflect_mapdelete"%go.
 
-Definition reflect_mapassign_faststr : go_string := "runtime.reflect_mapassign_faststr"%go.
+Definition reflect_mapdelete_faststr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflect_mapdelete_faststr"%go.
 
-Definition reflect_mapdelete : go_string := "runtime.reflect_mapdelete"%go.
+Definition reflect_maplen {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflect_maplen"%go.
 
-Definition reflect_mapdelete_faststr : go_string := "runtime.reflect_mapdelete_faststr"%go.
+Definition reflect_mapclear {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflect_mapclear"%go.
 
-Definition reflect_maplen : go_string := "runtime.reflect_maplen"%go.
+Definition reflectlite_maplen {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflectlite_maplen"%go.
 
-Definition reflect_mapclear : go_string := "runtime.reflect_mapclear"%go.
+Definition mapinitnoop {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mapinitnoop"%go.
 
-Definition reflectlite_maplen : go_string := "runtime.reflectlite_maplen"%go.
+Definition mapclone {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mapclone"%go.
 
-Definition mapinitnoop : go_string := "runtime.mapinitnoop"%go.
+Definition keys {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.keys"%go.
 
-Definition mapclone : go_string := "runtime.mapclone"%go.
+Definition values {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.values"%go.
 
-Definition keys : go_string := "runtime.keys"%go.
+Definition typedmemmove {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.typedmemmove"%go.
 
-Definition values : go_string := "runtime.values"%go.
+Definition wbZero {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.wbZero"%go.
 
-Definition typedmemmove : go_string := "runtime.typedmemmove"%go.
+Definition wbMove {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.wbMove"%go.
 
-Definition wbZero : go_string := "runtime.wbZero"%go.
+Definition reflect_typedmemmove {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflect_typedmemmove"%go.
 
-Definition wbMove : go_string := "runtime.wbMove"%go.
+Definition reflectlite_typedmemmove {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflectlite_typedmemmove"%go.
 
-Definition reflect_typedmemmove : go_string := "runtime.reflect_typedmemmove"%go.
+Definition maps_typedmemmove {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.maps_typedmemmove"%go.
 
-Definition reflectlite_typedmemmove : go_string := "runtime.reflectlite_typedmemmove"%go.
+Definition reflectcallmove {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflectcallmove"%go.
 
-Definition maps_typedmemmove : go_string := "runtime.maps_typedmemmove"%go.
+Definition typedslicecopy {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.typedslicecopy"%go.
 
-Definition reflectcallmove : go_string := "runtime.reflectcallmove"%go.
+Definition reflect_typedslicecopy {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflect_typedslicecopy"%go.
 
-Definition typedslicecopy : go_string := "runtime.typedslicecopy"%go.
+Definition typedmemclr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.typedmemclr"%go.
 
-Definition reflect_typedslicecopy : go_string := "runtime.reflect_typedslicecopy"%go.
+Definition reflect_typedmemclr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflect_typedmemclr"%go.
 
-Definition typedmemclr : go_string := "runtime.typedmemclr"%go.
+Definition maps_typedmemclr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.maps_typedmemclr"%go.
 
-Definition reflect_typedmemclr : go_string := "runtime.reflect_typedmemclr"%go.
+Definition reflect_typedmemclrpartial {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflect_typedmemclrpartial"%go.
 
-Definition maps_typedmemclr : go_string := "runtime.maps_typedmemclr"%go.
+Definition reflect_typedarrayclear {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflect_typedarrayclear"%go.
 
-Definition reflect_typedmemclrpartial : go_string := "runtime.reflect_typedmemclrpartial"%go.
+Definition memclrHasPointers {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.memclrHasPointers"%go.
 
-Definition reflect_typedarrayclear : go_string := "runtime.reflect_typedarrayclear"%go.
+Definition heapBitsInSpan {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.heapBitsInSpan"%go.
 
-Definition memclrHasPointers : go_string := "runtime.memclrHasPointers"%go.
+Axiom typePointersⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition heapBitsInSpan : go_string := "runtime.heapBitsInSpan"%go.
+Definition bulkBarrierPreWrite {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.bulkBarrierPreWrite"%go.
 
-Axiom typePointersⁱᵐᵖˡ : go.type.
+Definition bulkBarrierPreWriteSrcOnly {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.bulkBarrierPreWriteSrcOnly"%go.
 
-Definition bulkBarrierPreWrite : go_string := "runtime.bulkBarrierPreWrite"%go.
+Definition heapBitsSlice {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.heapBitsSlice"%go.
 
-Definition bulkBarrierPreWriteSrcOnly : go_string := "runtime.bulkBarrierPreWriteSrcOnly"%go.
+Definition spanHeapBitsRange {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.spanHeapBitsRange"%go.
 
-Definition heapBitsSlice : go_string := "runtime.heapBitsSlice"%go.
+Axiom doubleCheckHeapSetType : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition spanHeapBitsRange : go_string := "runtime.spanHeapBitsRange"%go.
+Definition heapSetTypeNoHeader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.heapSetTypeNoHeader"%go.
 
-Axiom doubleCheckHeapSetType : val.
+Definition heapSetTypeSmallHeader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.heapSetTypeSmallHeader"%go.
 
-Definition heapSetTypeNoHeader : go_string := "runtime.heapSetTypeNoHeader"%go.
+Definition heapSetTypeLarge {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.heapSetTypeLarge"%go.
 
-Definition heapSetTypeSmallHeader : go_string := "runtime.heapSetTypeSmallHeader"%go.
+Definition doubleCheckHeapType {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.doubleCheckHeapType"%go.
 
-Definition heapSetTypeLarge : go_string := "runtime.heapSetTypeLarge"%go.
+Definition doubleCheckHeapPointers {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.doubleCheckHeapPointers"%go.
 
-Definition doubleCheckHeapType : go_string := "runtime.doubleCheckHeapType"%go.
+Definition doubleCheckHeapPointersInterior {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.doubleCheckHeapPointersInterior"%go.
 
-Definition doubleCheckHeapPointers : go_string := "runtime.doubleCheckHeapPointers"%go.
+Definition doubleCheckTypePointersOfType {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.doubleCheckTypePointersOfType"%go.
 
-Definition doubleCheckHeapPointersInterior : go_string := "runtime.doubleCheckHeapPointersInterior"%go.
+Definition dumpTypePointers {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.dumpTypePointers"%go.
 
-Definition doubleCheckTypePointersOfType : go_string := "runtime.doubleCheckTypePointersOfType"%go.
+Definition addb {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.addb"%go.
 
-Definition dumpTypePointers : go_string := "runtime.dumpTypePointers"%go.
+Definition subtractb {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.subtractb"%go.
 
-Definition addb : go_string := "runtime.addb"%go.
+Definition add1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.add1"%go.
 
-Definition subtractb : go_string := "runtime.subtractb"%go.
+Definition subtract1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.subtract1"%go.
 
-Definition add1 : go_string := "runtime.add1"%go.
+Axiom markBitsⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition subtract1 : go_string := "runtime.subtract1"%go.
+Definition markBitsForAddr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.markBitsForAddr"%go.
 
-Axiom markBitsⁱᵐᵖˡ : go.type.
+Definition markBitsForSpan {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.markBitsForSpan"%go.
 
-Definition markBitsForAddr : go_string := "runtime.markBitsForAddr"%go.
+Axiom clobberdeadPtr : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition markBitsForSpan : go_string := "runtime.markBitsForSpan"%go.
+Definition badPointer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.badPointer"%go.
 
-Axiom clobberdeadPtr : val.
+Definition findObject {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.findObject"%go.
 
-Definition badPointer : go_string := "runtime.badPointer"%go.
+Definition reflect_verifyNotInHeapPtr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflect_verifyNotInHeapPtr"%go.
 
-Definition findObject : go_string := "runtime.findObject"%go.
+Axiom ptrBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition reflect_verifyNotInHeapPtr : go_string := "runtime.reflect_verifyNotInHeapPtr"%go.
+Definition bulkBarrierBitmap {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.bulkBarrierBitmap"%go.
 
-Axiom ptrBits : Z.
+Definition typeBitsBulkBarrier {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.typeBitsBulkBarrier"%go.
 
-Definition bulkBarrierBitmap : go_string := "runtime.bulkBarrierBitmap"%go.
+Definition readUintptr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.readUintptr"%go.
 
-Definition typeBitsBulkBarrier : go_string := "runtime.typeBitsBulkBarrier"%go.
+Definition debugPtrmask {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.debugPtrmask"%go.
 
-Definition readUintptr : go_string := "runtime.readUintptr"%go.
+Definition progToPointerMask {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.progToPointerMask"%go.
 
-Definition debugPtrmask : go_string := "runtime.debugPtrmask"%go.
+Definition runGCProg {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.runGCProg"%go.
 
-Definition progToPointerMask : go_string := "runtime.progToPointerMask"%go.
+Definition dumpGCProg {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.dumpGCProg"%go.
 
-Definition runGCProg : go_string := "runtime.runGCProg"%go.
+Definition reflect_gcbits {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflect_gcbits"%go.
 
-Definition dumpGCProg : go_string := "runtime.dumpGCProg"%go.
+Definition pointerMask {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.pointerMask"%go.
 
-Definition reflect_gcbits : go_string := "runtime.reflect_gcbits"%go.
+Axiom mcacheⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition pointerMask : go_string := "runtime.pointerMask"%go.
+Axiom gclinkⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom mcacheⁱᵐᵖˡ : go.type.
+Axiom gclinkptrⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom gclinkⁱᵐᵖˡ : go.type.
+Axiom stackfreelistⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom gclinkptrⁱᵐᵖˡ : go.type.
+Definition emptymspan {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.emptymspan"%go.
 
-Axiom stackfreelistⁱᵐᵖˡ : go.type.
+Definition allocmcache {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.allocmcache"%go.
 
-Definition emptymspan : go_string := "runtime.emptymspan"%go.
+Definition freemcache {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.freemcache"%go.
 
-Definition allocmcache : go_string := "runtime.allocmcache"%go.
+Definition getMCache {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.getMCache"%go.
 
-Definition freemcache : go_string := "runtime.freemcache"%go.
+Axiom mcentralⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition getMCache : go_string := "runtime.getMCache"%go.
+Axiom checkmarksMapⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom mcentralⁱᵐᵖˡ : go.type.
+Definition useCheckmark {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.useCheckmark"%go.
 
-Axiom checkmarksMapⁱᵐᵖˡ : go.type.
+Axiom useCheckmark'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition useCheckmark : go_string := "runtime.useCheckmark"%go.
+Definition startCheckmarks {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.startCheckmarks"%go.
 
-Axiom useCheckmark'init : val.
+Definition endCheckmarks {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.endCheckmarks"%go.
 
-Definition startCheckmarks : go_string := "runtime.startCheckmarks"%go.
+Definition setCheckmark {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.setCheckmark"%go.
 
-Definition endCheckmarks : go_string := "runtime.endCheckmarks"%go.
+Definition getCheckmark {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.getCheckmark"%go.
 
-Definition setCheckmark : go_string := "runtime.setCheckmark"%go.
+Definition runCheckmark {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.runCheckmark"%go.
 
-Definition getCheckmark : go_string := "runtime.getCheckmark"%go.
+Definition checkFinalizersAndCleanups {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.checkFinalizersAndCleanups"%go.
 
-Definition runCheckmark : go_string := "runtime.runCheckmark"%go.
+Definition forEachSpecial {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.forEachSpecial"%go.
 
-Definition checkFinalizersAndCleanups : go_string := "runtime.checkFinalizersAndCleanups"%go.
+Definition AddCleanup {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.AddCleanup"%go.
 
-Definition forEachSpecial : go_string := "runtime.forEachSpecial"%go.
+Axiom Cleanupⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition AddCleanup : go_string := "runtime.AddCleanup"%go.
+Axiom cleanupBlockSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom Cleanupⁱᵐᵖˡ : go.type.
+Axiom cleanupBlockⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom cleanupBlockSize : Z.
+Definition cleanupBlockPtrMask {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.cleanupBlockPtrMask"%go.
 
-Axiom cleanupBlockⁱᵐᵖˡ : go.type.
+Axiom cleanupBlockHeaderⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition cleanupBlockPtrMask : go_string := "runtime.cleanupBlockPtrMask"%go.
+Axiom cleanupQueueⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom cleanupBlockHeaderⁱᵐᵖˡ : go.type.
+Definition maxCleanupGs {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.maxCleanupGs"%go.
 
-Axiom cleanupQueueⁱᵐᵖˡ : go.type.
+Definition gcCleanups {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcCleanups"%go.
 
-Definition maxCleanupGs : go_string := "runtime.maxCleanupGs"%go.
+Definition runCleanups {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.runCleanups"%go.
 
-Definition gcCleanups : go_string := "runtime.gcCleanups"%go.
+Definition unique_runtime_blockUntilEmptyCleanupQueue {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.unique_runtime_blockUntilEmptyCleanupQueue"%go.
 
-Definition runCleanups : go_string := "runtime.runCleanups"%go.
+Definition sync_test_runtime_blockUntilEmptyCleanupQueue {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sync_test_runtime_blockUntilEmptyCleanupQueue"%go.
 
-Definition unique_runtime_blockUntilEmptyCleanupQueue : go_string := "runtime.unique_runtime_blockUntilEmptyCleanupQueue"%go.
+Definition raceEnterNewCtx {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.raceEnterNewCtx"%go.
 
-Definition sync_test_runtime_blockUntilEmptyCleanupQueue : go_string := "runtime.sync_test_runtime_blockUntilEmptyCleanupQueue"%go.
+Definition raceRestoreCtx {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.raceRestoreCtx"%go.
 
-Definition raceEnterNewCtx : go_string := "runtime.raceEnterNewCtx"%go.
+Definition sysAlloc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sysAlloc"%go.
 
-Definition raceRestoreCtx : go_string := "runtime.raceRestoreCtx"%go.
+Definition sysUnused {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sysUnused"%go.
 
-Definition sysAlloc : go_string := "runtime.sysAlloc"%go.
+Definition sysUsed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sysUsed"%go.
 
-Definition sysUnused : go_string := "runtime.sysUnused"%go.
+Definition sysHugePage {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sysHugePage"%go.
 
-Definition sysUsed : go_string := "runtime.sysUsed"%go.
+Definition sysNoHugePage {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sysNoHugePage"%go.
 
-Definition sysHugePage : go_string := "runtime.sysHugePage"%go.
+Definition sysHugePageCollapse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sysHugePageCollapse"%go.
 
-Definition sysNoHugePage : go_string := "runtime.sysNoHugePage"%go.
+Definition sysFree {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sysFree"%go.
 
-Definition sysHugePageCollapse : go_string := "runtime.sysHugePageCollapse"%go.
+Definition sysFault {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sysFault"%go.
 
-Definition sysFree : go_string := "runtime.sysFree"%go.
+Definition sysReserve {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sysReserve"%go.
 
-Definition sysFault : go_string := "runtime.sysFault"%go.
+Definition sysMap {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sysMap"%go.
 
-Definition sysReserve : go_string := "runtime.sysReserve"%go.
+Axiom _EACCES : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition sysMap : go_string := "runtime.sysMap"%go.
+Axiom _EINVAL : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _EACCES : Z.
+Definition sysAllocOS {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sysAllocOS"%go.
 
-Axiom _EINVAL : Z.
+Definition adviseUnused {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.adviseUnused"%go.
 
-Definition sysAllocOS : go_string := "runtime.sysAllocOS"%go.
+Axiom adviseUnused'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition adviseUnused : go_string := "runtime.adviseUnused"%go.
+Axiom madviseUnsupported : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom adviseUnused'init : val.
+Definition sysUnusedOS {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sysUnusedOS"%go.
 
-Axiom madviseUnsupported : Z.
+Definition sysUsedOS {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sysUsedOS"%go.
 
-Definition sysUnusedOS : go_string := "runtime.sysUnusedOS"%go.
+Definition sysHugePageOS {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sysHugePageOS"%go.
 
-Definition sysUsedOS : go_string := "runtime.sysUsedOS"%go.
+Definition sysNoHugePageOS {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sysNoHugePageOS"%go.
 
-Definition sysHugePageOS : go_string := "runtime.sysHugePageOS"%go.
+Definition sysHugePageCollapseOS {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sysHugePageCollapseOS"%go.
 
-Definition sysNoHugePageOS : go_string := "runtime.sysNoHugePageOS"%go.
+Definition sysFreeOS {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sysFreeOS"%go.
 
-Definition sysHugePageCollapseOS : go_string := "runtime.sysHugePageCollapseOS"%go.
+Definition sysFaultOS {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sysFaultOS"%go.
 
-Definition sysFreeOS : go_string := "runtime.sysFreeOS"%go.
+Definition sysReserveOS {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sysReserveOS"%go.
 
-Definition sysFaultOS : go_string := "runtime.sysFaultOS"%go.
+Definition sysMapOS {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sysMapOS"%go.
 
-Definition sysReserveOS : go_string := "runtime.sysReserveOS"%go.
+Axiom isSbrkPlatform : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition sysMapOS : go_string := "runtime.sysMapOS"%go.
+Definition sysReserveAlignedSbrk {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sysReserveAlignedSbrk"%go.
 
-Axiom isSbrkPlatform : val.
+Definition metricsSema {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.metricsSema"%go.
 
-Definition sysReserveAlignedSbrk : go_string := "runtime.sysReserveAlignedSbrk"%go.
+Axiom metricsSema'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition metricsSema : go_string := "runtime.metricsSema"%go.
+Definition metricsInit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.metricsInit"%go.
 
-Axiom metricsSema'init : val.
+Definition metrics {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.metrics"%go.
 
-Definition metricsInit : go_string := "runtime.metricsInit"%go.
+Definition sizeClassBuckets {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sizeClassBuckets"%go.
 
-Definition metrics : go_string := "runtime.metrics"%go.
+Definition timeHistBuckets {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.timeHistBuckets"%go.
 
-Definition sizeClassBuckets : go_string := "runtime.sizeClassBuckets"%go.
+Axiom metricDataⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition timeHistBuckets : go_string := "runtime.timeHistBuckets"%go.
+Definition metricsLock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.metricsLock"%go.
 
-Axiom metricDataⁱᵐᵖˡ : go.type.
+Definition metricsUnlock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.metricsUnlock"%go.
 
-Definition metricsLock : go_string := "runtime.metricsLock"%go.
+Definition initMetrics {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.initMetrics"%go.
 
-Definition metricsUnlock : go_string := "runtime.metricsUnlock"%go.
+Definition compute0 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.compute0"%go.
 
-Definition initMetrics : go_string := "runtime.initMetrics"%go.
+Axiom metricReaderⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition compute0 : go_string := "runtime.compute0"%go.
+Definition godebug_registerMetric {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.godebug_registerMetric"%go.
 
-Axiom metricReaderⁱᵐᵖˡ : go.type.
+Axiom statDepⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition godebug_registerMetric : go_string := "runtime.godebug_registerMetric"%go.
+Axiom heapStatsDep : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom statDepⁱᵐᵖˡ : go.type.
+Axiom sysStatsDep : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom heapStatsDep : val.
+Axiom cpuStatsDep : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom sysStatsDep : val.
+Axiom gcStatsDep : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom cpuStatsDep : val.
+Axiom numStatsDeps : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom gcStatsDep : val.
+Axiom statDepSetⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom numStatsDeps : val.
+Definition makeStatDepSet {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.makeStatDepSet"%go.
 
-Axiom statDepSetⁱᵐᵖˡ : go.type.
+Axiom heapStatsAggregateⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition makeStatDepSet : go_string := "runtime.makeStatDepSet"%go.
+Axiom sysStatsAggregateⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom heapStatsAggregateⁱᵐᵖˡ : go.type.
+Axiom cpuStatsAggregateⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom sysStatsAggregateⁱᵐᵖˡ : go.type.
+Axiom gcStatsAggregateⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom cpuStatsAggregateⁱᵐᵖˡ : go.type.
+Definition nsToSec {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.nsToSec"%go.
 
-Axiom gcStatsAggregateⁱᵐᵖˡ : go.type.
+Axiom statAggregateⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition nsToSec : go_string := "runtime.nsToSec"%go.
+Axiom metricKindⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom statAggregateⁱᵐᵖˡ : go.type.
+Axiom metricKindBad : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom metricKindⁱᵐᵖˡ : go.type.
+Axiom metricKindUint64 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom metricKindBad : val.
+Axiom metricKindFloat64 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom metricKindUint64 : val.
+Axiom metricKindFloat64Histogram : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom metricKindFloat64 : val.
+Axiom metricSampleⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom metricKindFloat64Histogram : val.
+Axiom metricValueⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom metricSampleⁱᵐᵖˡ : go.type.
+Axiom metricFloat64Histogramⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom metricValueⁱᵐᵖˡ : go.type.
+Definition agg {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.agg"%go.
 
-Axiom metricFloat64Histogramⁱᵐᵖˡ : go.type.
+Axiom metricNameⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition agg : go_string := "runtime.agg"%go.
+Definition readMetricNames {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.readMetricNames"%go.
 
-Axiom metricNameⁱᵐᵖˡ : go.type.
+Definition readMetrics {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.readMetrics"%go.
 
-Definition readMetricNames : go_string := "runtime.readMetricNames"%go.
+Definition readMetricsLocked {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.readMetricsLocked"%go.
 
-Definition readMetrics : go_string := "runtime.readMetrics"%go.
+Axiom finBlockSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition readMetricsLocked : go_string := "runtime.readMetricsLocked"%go.
+Axiom finBlockⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom finBlockSize : Z.
+Definition fingStatus {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.fingStatus"%go.
 
-Axiom finBlockⁱᵐᵖˡ : go.type.
+Axiom fingUninitialized : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition fingStatus : go_string := "runtime.fingStatus"%go.
+Axiom fingCreated : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom fingUninitialized : val.
+Axiom fingRunningFinalizer : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom fingCreated : val.
+Axiom fingWait : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom fingRunningFinalizer : val.
+Axiom fingWake : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom fingWait : val.
+Definition finlock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.finlock"%go.
 
-Axiom fingWake : val.
+Definition fing {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.fing"%go.
 
-Definition finlock : go_string := "runtime.finlock"%go.
+Definition finq {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.finq"%go.
 
-Definition fing : go_string := "runtime.fing"%go.
+Definition finc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.finc"%go.
 
-Definition finq : go_string := "runtime.finq"%go.
+Definition finptrmask {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.finptrmask"%go.
 
-Definition finc : go_string := "runtime.finc"%go.
+Definition finqueued {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.finqueued"%go.
 
-Definition finptrmask : go_string := "runtime.finptrmask"%go.
+Definition finexecuted {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.finexecuted"%go.
 
-Definition finqueued : go_string := "runtime.finqueued"%go.
+Definition allfin {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.allfin"%go.
 
-Definition finexecuted : go_string := "runtime.finexecuted"%go.
+Axiom finalizerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition allfin : go_string := "runtime.allfin"%go.
+Definition finalizer1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.finalizer1"%go.
 
-Axiom finalizerⁱᵐᵖˡ : go.type.
+Axiom finalizer1'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition finalizer1 : go_string := "runtime.finalizer1"%go.
+Definition lockRankMayQueueFinalizer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.lockRankMayQueueFinalizer"%go.
 
-Axiom finalizer1'init : val.
+Definition queuefinalizer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.queuefinalizer"%go.
 
-Definition lockRankMayQueueFinalizer : go_string := "runtime.lockRankMayQueueFinalizer"%go.
+Definition iterate_finq {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.iterate_finq"%go.
 
-Definition queuefinalizer : go_string := "runtime.queuefinalizer"%go.
+Definition wakefing {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.wakefing"%go.
 
-Definition iterate_finq : go_string := "runtime.iterate_finq"%go.
+Definition createfing {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.createfing"%go.
 
-Definition wakefing : go_string := "runtime.wakefing"%go.
+Definition finalizercommit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.finalizercommit"%go.
 
-Definition createfing : go_string := "runtime.createfing"%go.
+Definition finReadQueueStats {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.finReadQueueStats"%go.
 
-Definition finalizercommit : go_string := "runtime.finalizercommit"%go.
+Definition runFinalizers {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.runFinalizers"%go.
 
-Definition finReadQueueStats : go_string := "runtime.finReadQueueStats"%go.
+Definition isGoPointerWithoutSpan {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.isGoPointerWithoutSpan"%go.
 
-Definition runFinalizers : go_string := "runtime.runFinalizers"%go.
+Definition blockUntilEmptyFinalizerQueue {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.blockUntilEmptyFinalizerQueue"%go.
 
-Definition isGoPointerWithoutSpan : go_string := "runtime.isGoPointerWithoutSpan"%go.
+Definition SetFinalizer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.SetFinalizer"%go.
 
-Definition blockUntilEmptyFinalizerQueue : go_string := "runtime.blockUntilEmptyFinalizerQueue"%go.
+Definition KeepAlive {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.KeepAlive"%go.
 
-Definition SetFinalizer : go_string := "runtime.SetFinalizer"%go.
+Axiom fixallocⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition KeepAlive : go_string := "runtime.KeepAlive"%go.
+Axiom mlinkⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom fixallocⁱᵐᵖˡ : go.type.
+Axiom _DebugGC : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom mlinkⁱᵐᵖˡ : go.type.
+Axiom concurrentSweep : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _DebugGC : Z.
+Axiom debugScanConservative : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom concurrentSweep : val.
+Axiom sweepMinHeapDistance : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom debugScanConservative : val.
+Definition heapObjectsCanMove {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.heapObjectsCanMove"%go.
 
-Axiom sweepMinHeapDistance : Z.
+Definition gcinit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcinit"%go.
 
-Definition heapObjectsCanMove : go_string := "runtime.heapObjectsCanMove"%go.
+Definition gcenable {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcenable"%go.
 
-Definition gcinit : go_string := "runtime.gcinit"%go.
+Definition gcphase {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcphase"%go.
 
-Definition gcenable : go_string := "runtime.gcenable"%go.
+Definition writeBarrier {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.writeBarrier"%go.
 
-Definition gcphase : go_string := "runtime.gcphase"%go.
+Definition gcBlackenEnabled {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcBlackenEnabled"%go.
 
-Definition writeBarrier : go_string := "runtime.writeBarrier"%go.
+Axiom _GCoff : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition gcBlackenEnabled : go_string := "runtime.gcBlackenEnabled"%go.
+Axiom _GCmark : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _GCoff : Z.
+Axiom _GCmarktermination : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _GCmark : Z.
+Definition setGCPhase {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.setGCPhase"%go.
 
-Axiom _GCmarktermination : Z.
+Axiom gcMarkWorkerModeⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition setGCPhase : go_string := "runtime.setGCPhase"%go.
+Axiom gcMarkWorkerNotWorker : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom gcMarkWorkerModeⁱᵐᵖˡ : go.type.
+Axiom gcMarkWorkerDedicatedMode : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom gcMarkWorkerNotWorker : val.
+Axiom gcMarkWorkerFractionalMode : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom gcMarkWorkerDedicatedMode : val.
+Axiom gcMarkWorkerIdleMode : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom gcMarkWorkerFractionalMode : val.
+Definition gcMarkWorkerModeStrings {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcMarkWorkerModeStrings"%go.
 
-Axiom gcMarkWorkerIdleMode : val.
+Axiom gcMarkWorkerModeStrings'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition gcMarkWorkerModeStrings : go_string := "runtime.gcMarkWorkerModeStrings"%go.
+Definition pollFractionalWorkerExit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.pollFractionalWorkerExit"%go.
 
-Axiom gcMarkWorkerModeStrings'init : val.
+Definition work {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.work"%go.
 
-Definition pollFractionalWorkerExit : go_string := "runtime.pollFractionalWorkerExit"%go.
+Axiom workTypeⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition work : go_string := "runtime.work"%go.
+Definition GC {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.GC"%go.
 
-Axiom workTypeⁱᵐᵖˡ : go.type.
+Definition gcWaitOnMark {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcWaitOnMark"%go.
 
-Definition GC : go_string := "runtime.GC"%go.
+Axiom gcModeⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition gcWaitOnMark : go_string := "runtime.gcWaitOnMark"%go.
+Axiom gcBackgroundMode : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom gcModeⁱᵐᵖˡ : go.type.
+Axiom gcForceMode : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom gcBackgroundMode : val.
+Axiom gcForceBlockMode : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom gcForceMode : val.
+Axiom gcTriggerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom gcForceBlockMode : val.
+Axiom gcTriggerKindⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom gcTriggerⁱᵐᵖˡ : go.type.
+Axiom gcTriggerHeap : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom gcTriggerKindⁱᵐᵖˡ : go.type.
+Axiom gcTriggerTime : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom gcTriggerHeap : val.
+Axiom gcTriggerCycle : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom gcTriggerTime : val.
+Definition gcStart {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcStart"%go.
 
-Axiom gcTriggerCycle : val.
+Definition gcMarkDoneFlushed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcMarkDoneFlushed"%go.
 
-Definition gcStart : go_string := "runtime.gcStart"%go.
+Definition gcDebugMarkDone {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcDebugMarkDone"%go.
 
-Definition gcMarkDoneFlushed : go_string := "runtime.gcMarkDoneFlushed"%go.
+Definition gcMarkDone {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcMarkDone"%go.
 
-Definition gcDebugMarkDone : go_string := "runtime.gcDebugMarkDone"%go.
+Definition gcMarkTermination {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcMarkTermination"%go.
 
-Definition gcMarkDone : go_string := "runtime.gcMarkDone"%go.
+Definition gcBgMarkStartWorkers {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcBgMarkStartWorkers"%go.
 
-Definition gcMarkTermination : go_string := "runtime.gcMarkTermination"%go.
+Definition gcBgMarkPrepare {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcBgMarkPrepare"%go.
 
-Definition gcBgMarkStartWorkers : go_string := "runtime.gcBgMarkStartWorkers"%go.
+Axiom gcBgMarkWorkerNodeⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition gcBgMarkPrepare : go_string := "runtime.gcBgMarkPrepare"%go.
+Axiom gcBgMarkWorkerNodePaddedⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom gcBgMarkWorkerNodeⁱᵐᵖˡ : go.type.
+Axiom gcBgMarkWorkerNodeRedZoneSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom gcBgMarkWorkerNodePaddedⁱᵐᵖˡ : go.type.
+Definition gcBgMarkWorker {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcBgMarkWorker"%go.
 
-Axiom gcBgMarkWorkerNodeRedZoneSize : Z.
+Definition gcMarkWorkAvailable {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcMarkWorkAvailable"%go.
 
-Definition gcBgMarkWorker : go_string := "runtime.gcBgMarkWorker"%go.
+Definition gcMark {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcMark"%go.
 
-Definition gcMarkWorkAvailable : go_string := "runtime.gcMarkWorkAvailable"%go.
+Definition gcSweep {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcSweep"%go.
 
-Definition gcMark : go_string := "runtime.gcMark"%go.
+Definition gcResetMarkState {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcResetMarkState"%go.
 
-Definition gcSweep : go_string := "runtime.gcSweep"%go.
+Definition poolcleanup {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.poolcleanup"%go.
 
-Definition gcResetMarkState : go_string := "runtime.gcResetMarkState"%go.
+Definition boringCaches {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.boringCaches"%go.
 
-Definition poolcleanup : go_string := "runtime.poolcleanup"%go.
+Definition sync_runtime_registerPoolCleanup {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sync_runtime_registerPoolCleanup"%go.
 
-Definition boringCaches : go_string := "runtime.boringCaches"%go.
+Definition boring_registerCache {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.boring_registerCache"%go.
 
-Definition sync_runtime_registerPoolCleanup : go_string := "runtime.sync_runtime_registerPoolCleanup"%go.
+Definition clearpools {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.clearpools"%go.
 
-Definition boring_registerCache : go_string := "runtime.boring_registerCache"%go.
+Definition itoaDiv {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.itoaDiv"%go.
 
-Definition clearpools : go_string := "runtime.clearpools"%go.
+Definition fmtNSAsMS {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.fmtNSAsMS"%go.
 
-Definition itoaDiv : go_string := "runtime.itoaDiv"%go.
+Definition gcTestMoveStackOnNextCall {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcTestMoveStackOnNextCall"%go.
 
-Definition fmtNSAsMS : go_string := "runtime.fmtNSAsMS"%go.
+Definition gcTestIsReachable {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcTestIsReachable"%go.
 
-Definition gcTestMoveStackOnNextCall : go_string := "runtime.gcTestMoveStackOnNextCall"%go.
+Definition gcTestPointerClass {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcTestPointerClass"%go.
 
-Definition gcTestIsReachable : go_string := "runtime.gcTestIsReachable"%go.
+Definition gcCPULimiter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcCPULimiter"%go.
 
-Definition gcTestPointerClass : go_string := "runtime.gcTestPointerClass"%go.
+Axiom gcCPULimiterStateⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition gcCPULimiter : go_string := "runtime.gcCPULimiter"%go.
+Axiom gcCPULimiterUpdatePeriod : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom gcCPULimiterStateⁱᵐᵖˡ : go.type.
+Axiom capacityPerProc : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom gcCPULimiterUpdatePeriod : val.
+Axiom limiterEventTypeⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom capacityPerProc : val.
+Axiom limiterEventNone : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom limiterEventTypeⁱᵐᵖˡ : go.type.
+Axiom limiterEventIdleMarkWork : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom limiterEventNone : val.
+Axiom limiterEventMarkAssist : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom limiterEventIdleMarkWork : val.
+Axiom limiterEventScavengeAssist : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom limiterEventMarkAssist : val.
+Axiom limiterEventIdle : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom limiterEventScavengeAssist : val.
+Axiom limiterEventBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom limiterEventIdle : val.
+Axiom limiterEventTypeMask : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom limiterEventBits : Z.
+Axiom limiterEventStampNone : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom limiterEventTypeMask : val.
+Axiom limiterEventStampⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom limiterEventStampNone : val.
+Definition makeLimiterEventStamp {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.makeLimiterEventStamp"%go.
 
-Axiom limiterEventStampⁱᵐᵖˡ : go.type.
+Axiom limiterEventⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition makeLimiterEventStamp : go_string := "runtime.makeLimiterEventStamp"%go.
+Axiom fixedRootFinalizers : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom limiterEventⁱᵐᵖˡ : go.type.
+Axiom fixedRootFreeGStacks : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom fixedRootFinalizers : Z.
+Axiom fixedRootCleanups : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom fixedRootFreeGStacks : Z.
+Axiom fixedRootCount : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom fixedRootCleanups : Z.
+Axiom rootBlockBytes : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom fixedRootCount : Z.
+Axiom maxObletBytes : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom rootBlockBytes : Z.
+Axiom drainCheckThreshold : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom maxObletBytes : Z.
+Axiom pagesPerSpanRoot : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom drainCheckThreshold : Z.
+Definition gcPrepareMarkRoots {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcPrepareMarkRoots"%go.
 
-Axiom pagesPerSpanRoot : Z.
+Definition gcMarkRootCheck {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcMarkRootCheck"%go.
 
-Definition gcPrepareMarkRoots : go_string := "runtime.gcPrepareMarkRoots"%go.
+Definition oneptrmask {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.oneptrmask"%go.
 
-Definition gcMarkRootCheck : go_string := "runtime.gcMarkRootCheck"%go.
+Axiom oneptrmask'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition oneptrmask : go_string := "runtime.oneptrmask"%go.
+Definition markroot {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.markroot"%go.
 
-Axiom oneptrmask'init : val.
+Definition markrootBlock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.markrootBlock"%go.
 
-Definition markroot : go_string := "runtime.markroot"%go.
+Definition markrootFreeGStacks {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.markrootFreeGStacks"%go.
 
-Definition markrootBlock : go_string := "runtime.markrootBlock"%go.
+Definition markrootSpans {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.markrootSpans"%go.
 
-Definition markrootFreeGStacks : go_string := "runtime.markrootFreeGStacks"%go.
+Definition gcScanFinalizer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcScanFinalizer"%go.
 
-Definition markrootSpans : go_string := "runtime.markrootSpans"%go.
+Definition gcScanCleanup {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcScanCleanup"%go.
 
-Definition gcScanFinalizer : go_string := "runtime.gcScanFinalizer"%go.
+Definition gcAssistAlloc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcAssistAlloc"%go.
 
-Definition gcScanCleanup : go_string := "runtime.gcScanCleanup"%go.
+Definition gcAssistAlloc1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcAssistAlloc1"%go.
 
-Definition gcAssistAlloc : go_string := "runtime.gcAssistAlloc"%go.
+Definition gcWakeAllAssists {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcWakeAllAssists"%go.
 
-Definition gcAssistAlloc1 : go_string := "runtime.gcAssistAlloc1"%go.
+Definition gcParkAssist {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcParkAssist"%go.
 
-Definition gcWakeAllAssists : go_string := "runtime.gcWakeAllAssists"%go.
+Definition gcFlushBgCredit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcFlushBgCredit"%go.
 
-Definition gcParkAssist : go_string := "runtime.gcParkAssist"%go.
+Definition scanstack {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.scanstack"%go.
 
-Definition gcFlushBgCredit : go_string := "runtime.gcFlushBgCredit"%go.
+Definition scanframeworker {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.scanframeworker"%go.
 
-Definition scanstack : go_string := "runtime.scanstack"%go.
+Axiom gcDrainFlagsⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition scanframeworker : go_string := "runtime.scanframeworker"%go.
+Axiom gcDrainUntilPreempt : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom gcDrainFlagsⁱᵐᵖˡ : go.type.
+Axiom gcDrainFlushBgCredit : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom gcDrainUntilPreempt : val.
+Axiom gcDrainIdle : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom gcDrainFlushBgCredit : val.
+Axiom gcDrainFractional : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom gcDrainIdle : val.
+Definition gcDrainMarkWorkerIdle {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcDrainMarkWorkerIdle"%go.
 
-Axiom gcDrainFractional : val.
+Definition gcDrainMarkWorkerDedicated {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcDrainMarkWorkerDedicated"%go.
 
-Definition gcDrainMarkWorkerIdle : go_string := "runtime.gcDrainMarkWorkerIdle"%go.
+Definition gcDrainMarkWorkerFractional {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcDrainMarkWorkerFractional"%go.
 
-Definition gcDrainMarkWorkerDedicated : go_string := "runtime.gcDrainMarkWorkerDedicated"%go.
+Definition gcDrain {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcDrain"%go.
 
-Definition gcDrainMarkWorkerFractional : go_string := "runtime.gcDrainMarkWorkerFractional"%go.
+Definition gcDrainN {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcDrainN"%go.
 
-Definition gcDrain : go_string := "runtime.gcDrain"%go.
+Definition scanblock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.scanblock"%go.
 
-Definition gcDrainN : go_string := "runtime.gcDrainN"%go.
+Definition scanobject {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.scanobject"%go.
 
-Definition scanblock : go_string := "runtime.scanblock"%go.
+Definition scanConservative {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.scanConservative"%go.
 
-Definition scanobject : go_string := "runtime.scanobject"%go.
+Definition shade {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.shade"%go.
 
-Definition scanConservative : go_string := "runtime.scanConservative"%go.
+Definition greyobject {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.greyobject"%go.
 
-Definition shade : go_string := "runtime.shade"%go.
+Definition gcDumpObject {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcDumpObject"%go.
 
-Definition greyobject : go_string := "runtime.greyobject"%go.
+Definition gcmarknewobject {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcmarknewobject"%go.
 
-Definition gcDumpObject : go_string := "runtime.gcDumpObject"%go.
+Definition gcMarkTinyAllocs {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcMarkTinyAllocs"%go.
 
-Definition gcmarknewobject : go_string := "runtime.gcmarknewobject"%go.
+Definition tryDeferToSpanScan {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.tryDeferToSpanScan"%go.
 
-Definition gcMarkTinyAllocs : go_string := "runtime.gcMarkTinyAllocs"%go.
+Definition gcUsesSpanInlineMarkBits {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcUsesSpanInlineMarkBits"%go.
 
-Definition tryDeferToSpanScan : go_string := "runtime.tryDeferToSpanScan"%go.
+Axiom spanInlineMarkBitsⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition gcUsesSpanInlineMarkBits : go_string := "runtime.gcUsesSpanInlineMarkBits"%go.
+Axiom spanQueueⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom spanInlineMarkBitsⁱᵐᵖˡ : go.type.
+Axiom localSpanQueueⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom spanQueueⁱᵐᵖˡ : go.type.
+Axiom objptrⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom localSpanQueueⁱᵐᵖˡ : go.type.
+Definition scanSpan {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.scanSpan"%go.
 
-Axiom objptrⁱᵐᵖˡ : go.type.
+Axiom sizeClassScanStatsⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition scanSpan : go_string := "runtime.scanSpan"%go.
+Definition dumpScanStats {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.dumpScanStats"%go.
 
-Axiom sizeClassScanStatsⁱᵐᵖˡ : go.type.
+Axiom gcGoalUtilization : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition dumpScanStats : go_string := "runtime.dumpScanStats"%go.
+Axiom gcBackgroundUtilization : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom gcGoalUtilization : val.
+Axiom gcCreditSlack : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom gcBackgroundUtilization : val.
+Axiom gcAssistTimeSlack : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom gcCreditSlack : Z.
+Axiom gcOverAssistWork : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom gcAssistTimeSlack : Z.
+Axiom defaultHeapMinimum : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom gcOverAssistWork : Z.
+Axiom maxStackScanSlack : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom defaultHeapMinimum : Z.
+Axiom memoryLimitMinHeapGoalHeadroom : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom maxStackScanSlack : Z.
+Axiom memoryLimitHeapGoalHeadroomPercent : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom memoryLimitMinHeapGoalHeadroom : Z.
+Definition gcController {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcController"%go.
 
-Axiom memoryLimitHeapGoalHeadroomPercent : Z.
+Axiom gcControllerStateⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition gcController : go_string := "runtime.gcController"%go.
+Axiom triggerRatioDen : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom gcControllerStateⁱᵐᵖˡ : go.type.
+Axiom minTriggerRatioNum : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom triggerRatioDen : Z.
+Axiom maxTriggerRatioNum : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom minTriggerRatioNum : Z.
+Definition setGCPercent {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.setGCPercent"%go.
 
-Axiom maxTriggerRatioNum : Z.
+Definition readGOGC {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.readGOGC"%go.
 
-Definition setGCPercent : go_string := "runtime.setGCPercent"%go.
+Definition setMemoryLimit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.setMemoryLimit"%go.
 
-Definition readGOGC : go_string := "runtime.readGOGC"%go.
+Definition readGOMEMLIMIT {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.readGOMEMLIMIT"%go.
 
-Definition setMemoryLimit : go_string := "runtime.setMemoryLimit"%go.
+Definition gcControllerCommit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcControllerCommit"%go.
 
-Definition readGOMEMLIMIT : go_string := "runtime.readGOMEMLIMIT"%go.
+Axiom scavengePercent : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition gcControllerCommit : go_string := "runtime.gcControllerCommit"%go.
+Axiom retainExtraPercent : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom scavengePercent : Z.
+Axiom reduceExtraPercent : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom retainExtraPercent : Z.
+Axiom maxPagesPerPhysPage : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom reduceExtraPercent : Z.
+Axiom scavengeCostRatio : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom maxPagesPerPhysPage : Z.
+Axiom scavChunkHiOccFrac : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom scavengeCostRatio : val.
+Axiom scavChunkHiOccPages : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom scavChunkHiOccFrac : val.
+Definition heapRetained {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.heapRetained"%go.
 
-Axiom scavChunkHiOccPages : val.
+Definition gcPaceScavenger {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcPaceScavenger"%go.
 
-Definition heapRetained : go_string := "runtime.heapRetained"%go.
+Definition scavenge {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.scavenge"%go.
 
-Definition gcPaceScavenger : go_string := "runtime.gcPaceScavenger"%go.
+Axiom startingScavSleepRatio : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition scavenge : go_string := "runtime.scavenge"%go.
+Axiom minScavWorkTime : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom startingScavSleepRatio : val.
+Definition scavenger {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.scavenger"%go.
 
-Axiom minScavWorkTime : val.
+Axiom scavengerStateⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition scavenger : go_string := "runtime.scavenger"%go.
+Definition bgscavenge {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.bgscavenge"%go.
 
-Axiom scavengerStateⁱᵐᵖˡ : go.type.
+Definition printScavTrace {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.printScavTrace"%go.
 
-Definition bgscavenge : go_string := "runtime.bgscavenge"%go.
+Definition fillAligned {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.fillAligned"%go.
 
-Definition printScavTrace : go_string := "runtime.printScavTrace"%go.
+Axiom scavengeIndexⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition fillAligned : go_string := "runtime.fillAligned"%go.
+Axiom atomicScavChunkDataⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom scavengeIndexⁱᵐᵖˡ : go.type.
+Axiom scavChunkDataⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom atomicScavChunkDataⁱᵐᵖˡ : go.type.
+Definition unpackScavChunkData {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.unpackScavChunkData"%go.
 
-Axiom scavChunkDataⁱᵐᵖˡ : go.type.
+Axiom scavChunkHasFree : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition unpackScavChunkData : go_string := "runtime.unpackScavChunkData"%go.
+Axiom scavChunkMaxFlags : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom scavChunkHasFree : val.
+Axiom scavChunkFlagsMask : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom scavChunkMaxFlags : Z.
+Axiom logScavChunkInUseMax : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom scavChunkFlagsMask : Z.
+Axiom scavChunkInUseMask : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom logScavChunkInUseMax : Z.
+Axiom scavChunkFlagsⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom scavChunkInUseMask : Z.
+Axiom piControllerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom scavChunkFlagsⁱᵐᵖˡ : go.type.
+Axiom stackTraceDebug : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom piControllerⁱᵐᵖˡ : go.type.
+Axiom stackWorkBufⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom stackTraceDebug : val.
+Axiom stackWorkBufHdrⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom stackWorkBufⁱᵐᵖˡ : go.type.
+Axiom stackObjectBufⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom stackWorkBufHdrⁱᵐᵖˡ : go.type.
+Axiom stackObjectBufHdrⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom stackObjectBufⁱᵐᵖˡ : go.type.
+Axiom stackObjectⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom stackObjectBufHdrⁱᵐᵖˡ : go.type.
+Axiom stackScanStateⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom stackObjectⁱᵐᵖˡ : go.type.
+Definition binarySearchTree {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.binarySearchTree"%go.
 
-Axiom stackScanStateⁱᵐᵖˡ : go.type.
+Definition sweep {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sweep"%go.
 
-Definition binarySearchTree : go_string := "runtime.binarySearchTree"%go.
+Axiom sweepdataⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition sweep : go_string := "runtime.sweep"%go.
+Axiom sweepClassⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom sweepdataⁱᵐᵖˡ : go.type.
+Axiom numSweepClasses : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom sweepClassⁱᵐᵖˡ : go.type.
+Axiom sweepClassDone : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom numSweepClasses : Z.
+Axiom sweepDrainedMask : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom sweepClassDone : val.
+Axiom activeSweepⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom sweepDrainedMask : Z.
+Definition finishsweep_m {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.finishsweep_m"%go.
 
-Axiom activeSweepⁱᵐᵖˡ : go.type.
+Definition bgsweep {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.bgsweep"%go.
 
-Definition finishsweep_m : go_string := "runtime.finishsweep_m"%go.
+Axiom sweepLockerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition bgsweep : go_string := "runtime.bgsweep"%go.
+Axiom sweepLockedⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom sweepLockerⁱᵐᵖˡ : go.type.
+Definition sweepone {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sweepone"%go.
 
-Axiom sweepLockedⁱᵐᵖˡ : go.type.
+Definition isSweepDone {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.isSweepDone"%go.
 
-Definition sweepone : go_string := "runtime.sweepone"%go.
+Definition deductSweepCredit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.deductSweepCredit"%go.
 
-Definition isSweepDone : go_string := "runtime.isSweepDone"%go.
+Definition clobberfree {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.clobberfree"%go.
 
-Definition deductSweepCredit : go_string := "runtime.deductSweepCredit"%go.
+Definition gcPaceSweeper {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcPaceSweeper"%go.
 
-Definition clobberfree : go_string := "runtime.clobberfree"%go.
+Axiom _WorkbufSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition gcPaceSweeper : go_string := "runtime.gcPaceSweeper"%go.
+Axiom workbufAlloc : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _WorkbufSize : Z.
+Axiom gcWorkⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom workbufAlloc : Z.
+Axiom workbufhdrⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom gcWorkⁱᵐᵖˡ : go.type.
+Axiom workbufⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom workbufhdrⁱᵐᵖˡ : go.type.
+Definition getempty {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.getempty"%go.
 
-Axiom workbufⁱᵐᵖˡ : go.type.
+Definition putempty {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.putempty"%go.
 
-Definition getempty : go_string := "runtime.getempty"%go.
+Definition putfull {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.putfull"%go.
 
-Definition putempty : go_string := "runtime.putempty"%go.
+Definition trygetfull {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.trygetfull"%go.
 
-Definition putfull : go_string := "runtime.putfull"%go.
+Definition handoff {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.handoff"%go.
 
-Definition trygetfull : go_string := "runtime.trygetfull"%go.
+Definition prepareFreeWorkbufs {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.prepareFreeWorkbufs"%go.
 
-Definition handoff : go_string := "runtime.handoff"%go.
+Definition freeSomeWbufs {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.freeSomeWbufs"%go.
 
-Definition prepareFreeWorkbufs : go_string := "runtime.prepareFreeWorkbufs"%go.
+Axiom minPhysPageSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition freeSomeWbufs : go_string := "runtime.freeSomeWbufs"%go.
+Axiom maxPhysPageSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom minPhysPageSize : Z.
+Axiom maxPhysHugePageSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom maxPhysPageSize : Z.
+Axiom pagesPerReclaimerChunk : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom maxPhysHugePageSize : Z.
+Axiom physPageAlignedStacks : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom pagesPerReclaimerChunk : Z.
+Axiom mheapⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom physPageAlignedStacks : val.
+Definition mheap_ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mheap_"%go.
 
-Axiom mheapⁱᵐᵖˡ : go.type.
+Axiom heapArenaⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition mheap_ : go_string := "runtime.mheap_"%go.
+Axiom arenaHintⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom heapArenaⁱᵐᵖˡ : go.type.
+Axiom mSpanStateⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom arenaHintⁱᵐᵖˡ : go.type.
+Axiom mSpanDead : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom mSpanStateⁱᵐᵖˡ : go.type.
+Axiom mSpanInUse : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom mSpanDead : val.
+Axiom mSpanManual : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom mSpanInUse : val.
+Definition mSpanStateNames {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mSpanStateNames"%go.
 
-Axiom mSpanManual : val.
+Axiom mSpanStateNames'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition mSpanStateNames : go_string := "runtime.mSpanStateNames"%go.
+Axiom mSpanStateBoxⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom mSpanStateNames'init : val.
+Axiom mspanⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom mSpanStateBoxⁱᵐᵖˡ : go.type.
+Definition recordspan {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.recordspan"%go.
 
-Axiom mspanⁱᵐᵖˡ : go.type.
+Axiom spanClassⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition recordspan : go_string := "runtime.recordspan"%go.
+Axiom numSpanClasses : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom spanClassⁱᵐᵖˡ : go.type.
+Axiom tinySpanClass : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom numSpanClasses : Z.
+Definition makeSpanClass {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.makeSpanClass"%go.
 
-Axiom tinySpanClass : val.
+Definition arenaIndex {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.arenaIndex"%go.
 
-Definition makeSpanClass : go_string := "runtime.makeSpanClass"%go.
+Definition arenaBase {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.arenaBase"%go.
 
-Definition arenaIndex : go_string := "runtime.arenaIndex"%go.
+Axiom arenaIdxⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition arenaBase : go_string := "runtime.arenaBase"%go.
+Definition inheap {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.inheap"%go.
 
-Axiom arenaIdxⁱᵐᵖˡ : go.type.
+Definition inHeapOrStack {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.inHeapOrStack"%go.
 
-Definition inheap : go_string := "runtime.inheap"%go.
+Definition spanOf {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.spanOf"%go.
 
-Definition inHeapOrStack : go_string := "runtime.inHeapOrStack"%go.
+Definition spanOfUnchecked {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.spanOfUnchecked"%go.
 
-Definition spanOf : go_string := "runtime.spanOf"%go.
+Definition spanOfHeap {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.spanOfHeap"%go.
 
-Definition spanOfUnchecked : go_string := "runtime.spanOfUnchecked"%go.
+Definition pageIndexOf {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.pageIndexOf"%go.
 
-Definition spanOfHeap : go_string := "runtime.spanOfHeap"%go.
+Definition heapArenaOf {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.heapArenaOf"%go.
 
-Definition pageIndexOf : go_string := "runtime.pageIndexOf"%go.
+Axiom spanAllocTypeⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition heapArenaOf : go_string := "runtime.heapArenaOf"%go.
+Axiom spanAllocHeap : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom spanAllocTypeⁱᵐᵖˡ : go.type.
+Axiom spanAllocStack : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom spanAllocHeap : val.
+Axiom spanAllocWorkBuf : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom spanAllocStack : val.
+Definition runtime_debug_freeOSMemory {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.runtime_debug_freeOSMemory"%go.
 
-Axiom spanAllocWorkBuf : val.
+Axiom mSpanListⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition runtime_debug_freeOSMemory : go_string := "runtime.runtime_debug_freeOSMemory"%go.
+Axiom mSpanQueueⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom mSpanListⁱᵐᵖˡ : go.type.
+Axiom _KindSpecialTinyBlock : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom mSpanQueueⁱᵐᵖˡ : go.type.
+Axiom _KindSpecialFinalizer : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _KindSpecialTinyBlock : Z.
+Axiom _KindSpecialWeakHandle : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _KindSpecialFinalizer : Z.
+Axiom _KindSpecialProfile : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _KindSpecialWeakHandle : Z.
+Axiom _KindSpecialReachable : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _KindSpecialProfile : Z.
+Axiom _KindSpecialPinCounter : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _KindSpecialReachable : Z.
+Axiom _KindSpecialCleanup : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _KindSpecialPinCounter : Z.
+Axiom _KindSpecialCheckFinalizer : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _KindSpecialCleanup : Z.
+Axiom _KindSpecialBubble : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _KindSpecialCheckFinalizer : Z.
+Axiom specialⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom _KindSpecialBubble : Z.
+Definition spanHasSpecials {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.spanHasSpecials"%go.
 
-Axiom specialⁱᵐᵖˡ : go.type.
+Definition spanHasNoSpecials {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.spanHasNoSpecials"%go.
 
-Definition spanHasSpecials : go_string := "runtime.spanHasSpecials"%go.
+Definition addspecial {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.addspecial"%go.
 
-Definition spanHasNoSpecials : go_string := "runtime.spanHasNoSpecials"%go.
+Definition removespecial {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.removespecial"%go.
 
-Definition addspecial : go_string := "runtime.addspecial"%go.
+Axiom specialfinalizerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition removespecial : go_string := "runtime.removespecial"%go.
+Definition addfinalizer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.addfinalizer"%go.
 
-Axiom specialfinalizerⁱᵐᵖˡ : go.type.
+Definition removefinalizer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.removefinalizer"%go.
 
-Definition addfinalizer : go_string := "runtime.addfinalizer"%go.
+Axiom specialCleanupⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition removefinalizer : go_string := "runtime.removefinalizer"%go.
+Definition addCleanup {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.addCleanup"%go.
 
-Axiom specialCleanupⁱᵐᵖˡ : go.type.
+Axiom specialCheckFinalizerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition addCleanup : go_string := "runtime.addCleanup"%go.
+Definition setFinalizerContext {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.setFinalizerContext"%go.
 
-Axiom specialCheckFinalizerⁱᵐᵖˡ : go.type.
+Definition setCleanupContext {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.setCleanupContext"%go.
 
-Definition setFinalizerContext : go_string := "runtime.setFinalizerContext"%go.
+Definition getCleanupContext {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.getCleanupContext"%go.
 
-Definition setCleanupContext : go_string := "runtime.setCleanupContext"%go.
+Definition clearFinalizerContext {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.clearFinalizerContext"%go.
 
-Definition getCleanupContext : go_string := "runtime.getCleanupContext"%go.
+Definition clearCleanupContext {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.clearCleanupContext"%go.
 
-Definition clearFinalizerContext : go_string := "runtime.clearFinalizerContext"%go.
+Axiom specialTinyBlockⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition clearCleanupContext : go_string := "runtime.clearCleanupContext"%go.
+Definition setTinyBlockContext {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.setTinyBlockContext"%go.
 
-Axiom specialTinyBlockⁱᵐᵖˡ : go.type.
+Definition inTinyBlock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.inTinyBlock"%go.
 
-Definition setTinyBlockContext : go_string := "runtime.setTinyBlockContext"%go.
+Axiom specialWeakHandleⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition inTinyBlock : go_string := "runtime.inTinyBlock"%go.
+Definition internal_weak_runtime_registerWeakPointer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.internal_weak_runtime_registerWeakPointer"%go.
 
-Axiom specialWeakHandleⁱᵐᵖˡ : go.type.
+Definition internal_weak_runtime_makeStrongFromWeak {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.internal_weak_runtime_makeStrongFromWeak"%go.
 
-Definition internal_weak_runtime_registerWeakPointer : go_string := "runtime.internal_weak_runtime_registerWeakPointer"%go.
+Definition gcParkStrongFromWeak {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcParkStrongFromWeak"%go.
 
-Definition internal_weak_runtime_makeStrongFromWeak : go_string := "runtime.internal_weak_runtime_makeStrongFromWeak"%go.
+Definition gcWakeAllStrongFromWeak {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcWakeAllStrongFromWeak"%go.
 
-Definition gcParkStrongFromWeak : go_string := "runtime.gcParkStrongFromWeak"%go.
+Definition getOrAddWeakHandle {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.getOrAddWeakHandle"%go.
 
-Definition gcWakeAllStrongFromWeak : go_string := "runtime.gcWakeAllStrongFromWeak"%go.
+Definition getWeakHandle {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.getWeakHandle"%go.
 
-Definition getOrAddWeakHandle : go_string := "runtime.getOrAddWeakHandle"%go.
+Axiom immortalWeakHandleMapⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition getWeakHandle : go_string := "runtime.getWeakHandle"%go.
+Axiom immortalWeakHandleⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom immortalWeakHandleMapⁱᵐᵖˡ : go.type.
+Axiom specialprofileⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom immortalWeakHandleⁱᵐᵖˡ : go.type.
+Definition setprofilebucket {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.setprofilebucket"%go.
 
-Axiom specialprofileⁱᵐᵖˡ : go.type.
+Axiom specialReachableⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition setprofilebucket : go_string := "runtime.setprofilebucket"%go.
+Axiom specialPinCounterⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom specialReachableⁱᵐᵖˡ : go.type.
+Axiom specialsIterⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom specialPinCounterⁱᵐᵖˡ : go.type.
+Definition newSpecialsIter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.newSpecialsIter"%go.
 
-Axiom specialsIterⁱᵐᵖˡ : go.type.
+Definition freeSpecial {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.freeSpecial"%go.
 
-Definition newSpecialsIter : go_string := "runtime.newSpecialsIter"%go.
+Axiom gcBitsⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition freeSpecial : go_string := "runtime.freeSpecial"%go.
+Axiom gcBitsChunkBytes : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom gcBitsⁱᵐᵖˡ : go.type.
+Axiom gcBitsHeaderBytes : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom gcBitsChunkBytes : val.
+Axiom gcBitsHeaderⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom gcBitsHeaderBytes : val.
+Axiom gcBitsArenaⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom gcBitsHeaderⁱᵐᵖˡ : go.type.
+Definition gcBitsArenas {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcBitsArenas"%go.
 
-Axiom gcBitsArenaⁱᵐᵖˡ : go.type.
+Definition newMarkBits {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.newMarkBits"%go.
 
-Definition gcBitsArenas : go_string := "runtime.gcBitsArenas"%go.
+Definition newAllocBits {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.newAllocBits"%go.
 
-Definition newMarkBits : go_string := "runtime.newMarkBits"%go.
+Definition nextMarkBitArenaEpoch {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.nextMarkBitArenaEpoch"%go.
 
-Definition newAllocBits : go_string := "runtime.newAllocBits"%go.
+Definition newArenaMayUnlock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.newArenaMayUnlock"%go.
 
-Definition nextMarkBitArenaEpoch : go_string := "runtime.nextMarkBitArenaEpoch"%go.
+Definition strmin {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.strmin"%go.
 
-Definition newArenaMayUnlock : go_string := "runtime.newArenaMayUnlock"%go.
+Definition strmax {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.strmax"%go.
 
-Definition strmin : go_string := "runtime.strmin"%go.
+Definition fmin32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.fmin32"%go.
 
-Definition strmax : go_string := "runtime.strmax"%go.
+Definition fmin64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.fmin64"%go.
 
-Definition fmin32 : go_string := "runtime.fmin32"%go.
+Definition fmax32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.fmax32"%go.
 
-Definition fmin64 : go_string := "runtime.fmin64"%go.
+Definition fmax64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.fmax64"%go.
 
-Definition fmax32 : go_string := "runtime.fmax32"%go.
+Axiom floatyⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition fmax64 : go_string := "runtime.fmax64"%go.
+Definition fmin {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.fmin"%go.
 
-Axiom floatyⁱᵐᵖˡ : go.type.
+Definition fmax {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.fmax"%go.
 
-Definition fmin : go_string := "runtime.fmin"%go.
+Definition forbits {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.forbits"%go.
 
-Definition fmax : go_string := "runtime.fmax"%go.
+Definition fandbits {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.fandbits"%go.
 
-Definition forbits : go_string := "runtime.forbits"%go.
+Axiom pallocChunkPages : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition fandbits : go_string := "runtime.fandbits"%go.
+Axiom pallocChunkBytes : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom pallocChunkPages : Z.
+Axiom logPallocChunkPages : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom pallocChunkBytes : Z.
+Axiom logPallocChunkBytes : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom logPallocChunkPages : Z.
+Axiom summaryLevelBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom logPallocChunkBytes : Z.
+Axiom summaryL0Bits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom summaryLevelBits : Z.
+Axiom pallocChunksL2Bits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom summaryL0Bits : Z.
+Axiom pallocChunksL1Shift : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom pallocChunksL2Bits : Z.
+Axiom vmaNamePageAllocIndex : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
 
-Axiom pallocChunksL1Shift : Z.
+Definition maxSearchAddr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.maxSearchAddr"%go.
 
-Axiom vmaNamePageAllocIndex : go_string.
+Axiom chunkIdxⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition maxSearchAddr : go_string := "runtime.maxSearchAddr"%go.
+Definition chunkIndex {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.chunkIndex"%go.
 
-Axiom chunkIdxⁱᵐᵖˡ : go.type.
+Definition chunkBase {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.chunkBase"%go.
 
-Definition chunkIndex : go_string := "runtime.chunkIndex"%go.
+Definition chunkPageIndex {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.chunkPageIndex"%go.
 
-Definition chunkBase : go_string := "runtime.chunkBase"%go.
+Definition offAddrToLevelIndex {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.offAddrToLevelIndex"%go.
 
-Definition chunkPageIndex : go_string := "runtime.chunkPageIndex"%go.
+Definition levelIndexToOffAddr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.levelIndexToOffAddr"%go.
 
-Definition offAddrToLevelIndex : go_string := "runtime.offAddrToLevelIndex"%go.
+Definition addrsToSummaryRange {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.addrsToSummaryRange"%go.
 
-Definition levelIndexToOffAddr : go_string := "runtime.levelIndexToOffAddr"%go.
+Definition blockAlignSummaryRange {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.blockAlignSummaryRange"%go.
 
-Definition addrsToSummaryRange : go_string := "runtime.addrsToSummaryRange"%go.
+Axiom pageAllocⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition blockAlignSummaryRange : go_string := "runtime.blockAlignSummaryRange"%go.
+Axiom pallocSumBytes : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom pageAllocⁱᵐᵖˡ : go.type.
+Axiom maxPackedValue : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom pallocSumBytes : val.
+Axiom logMaxPackedValue : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom maxPackedValue : Z.
+Axiom freeChunkSum : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom logMaxPackedValue : Z.
+Axiom pallocSumⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom freeChunkSum : val.
+Definition packPallocSum {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.packPallocSum"%go.
 
-Axiom pallocSumⁱᵐᵖˡ : go.type.
+Definition mergeSummaries {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mergeSummaries"%go.
 
-Definition packPallocSum : go_string := "runtime.packPallocSum"%go.
+Axiom summaryLevels : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition mergeSummaries : go_string := "runtime.mergeSummaries"%go.
+Axiom pageAlloc32Bit : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom summaryLevels : Z.
+Axiom pageAlloc64Bit : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom pageAlloc32Bit : Z.
+Axiom pallocChunksL1Bits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom pageAlloc64Bit : Z.
+Definition levelBits {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.levelBits"%go.
 
-Axiom pallocChunksL1Bits : Z.
+Axiom levelBits'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition levelBits : go_string := "runtime.levelBits"%go.
+Definition levelShift {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.levelShift"%go.
 
-Axiom levelBits'init : val.
+Axiom levelShift'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition levelShift : go_string := "runtime.levelShift"%go.
+Definition levelLogPages {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.levelLogPages"%go.
 
-Axiom levelShift'init : val.
+Axiom levelLogPages'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition levelLogPages : go_string := "runtime.levelLogPages"%go.
+Axiom pageCachePages : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom levelLogPages'init : val.
+Axiom pageCacheⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom pageCachePages : val.
+Axiom pageBitsⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom pageCacheⁱᵐᵖˡ : go.type.
+Axiom pallocBitsⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom pageBitsⁱᵐᵖˡ : go.type.
+Definition findBitRange64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.findBitRange64"%go.
 
-Axiom pallocBitsⁱᵐᵖˡ : go.type.
+Axiom pallocDataⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition findBitRange64 : go_string := "runtime.findBitRange64"%go.
+Definition profInsertLock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.profInsertLock"%go.
 
-Axiom pallocDataⁱᵐᵖˡ : go.type.
+Definition profBlockLock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.profBlockLock"%go.
 
-Definition profInsertLock : go_string := "runtime.profInsertLock"%go.
+Definition profMemActiveLock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.profMemActiveLock"%go.
 
-Definition profBlockLock : go_string := "runtime.profBlockLock"%go.
+Definition profMemFutureLock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.profMemFutureLock"%go.
 
-Definition profMemActiveLock : go_string := "runtime.profMemActiveLock"%go.
+Axiom memProfile : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition profMemFutureLock : go_string := "runtime.profMemFutureLock"%go.
+Axiom blockProfile : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom memProfile : val.
+Axiom mutexProfile : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom blockProfile : val.
+Axiom buckHashSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom mutexProfile : val.
+Axiom maxSkip : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom buckHashSize : Z.
+Axiom maxProfStackDepth : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom maxSkip : Z.
+Axiom bucketTypeⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom maxProfStackDepth : Z.
+Axiom bucketⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom bucketTypeⁱᵐᵖˡ : go.type.
+Axiom memRecordⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom bucketⁱᵐᵖˡ : go.type.
+Axiom memRecordCycleⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom memRecordⁱᵐᵖˡ : go.type.
+Axiom blockRecordⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom memRecordCycleⁱᵐᵖˡ : go.type.
+Definition mbuckets {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mbuckets"%go.
 
-Axiom blockRecordⁱᵐᵖˡ : go.type.
+Definition bbuckets {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.bbuckets"%go.
 
-Definition mbuckets : go_string := "runtime.mbuckets"%go.
+Definition xbuckets {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.xbuckets"%go.
 
-Definition bbuckets : go_string := "runtime.bbuckets"%go.
+Definition buckhash {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.buckhash"%go.
 
-Definition xbuckets : go_string := "runtime.xbuckets"%go.
+Definition mProfCycle {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mProfCycle"%go.
 
-Definition buckhash : go_string := "runtime.buckhash"%go.
+Axiom buckhashArrayⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition mProfCycle : go_string := "runtime.mProfCycle"%go.
+Axiom mProfCycleWrap : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom buckhashArrayⁱᵐᵖˡ : go.type.
+Axiom mProfCycleHolderⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom mProfCycleWrap : val.
+Definition newBucket {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.newBucket"%go.
 
-Axiom mProfCycleHolderⁱᵐᵖˡ : go.type.
+Definition stkbucket {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.stkbucket"%go.
 
-Definition newBucket : go_string := "runtime.newBucket"%go.
+Definition eqslice {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.eqslice"%go.
 
-Definition stkbucket : go_string := "runtime.stkbucket"%go.
+Definition mProf_NextCycle {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mProf_NextCycle"%go.
 
-Definition eqslice : go_string := "runtime.eqslice"%go.
+Definition mProf_Flush {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mProf_Flush"%go.
 
-Definition mProf_NextCycle : go_string := "runtime.mProf_NextCycle"%go.
+Definition mProf_FlushLocked {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mProf_FlushLocked"%go.
 
-Definition mProf_Flush : go_string := "runtime.mProf_Flush"%go.
+Definition mProf_PostSweep {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mProf_PostSweep"%go.
 
-Definition mProf_FlushLocked : go_string := "runtime.mProf_FlushLocked"%go.
+Definition mProf_Malloc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mProf_Malloc"%go.
 
-Definition mProf_PostSweep : go_string := "runtime.mProf_PostSweep"%go.
+Definition mProf_Free {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mProf_Free"%go.
 
-Definition mProf_Malloc : go_string := "runtime.mProf_Malloc"%go.
+Definition blockprofilerate {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.blockprofilerate"%go.
 
-Definition mProf_Free : go_string := "runtime.mProf_Free"%go.
+Definition SetBlockProfileRate {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.SetBlockProfileRate"%go.
 
-Definition blockprofilerate : go_string := "runtime.blockprofilerate"%go.
+Definition blockevent {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.blockevent"%go.
 
-Definition SetBlockProfileRate : go_string := "runtime.SetBlockProfileRate"%go.
+Definition blocksampled {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.blocksampled"%go.
 
-Definition blockevent : go_string := "runtime.blockevent"%go.
+Definition saveblockevent {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.saveblockevent"%go.
 
-Definition blocksampled : go_string := "runtime.blocksampled"%go.
+Definition fpTracebackPartialExpand {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.fpTracebackPartialExpand"%go.
 
-Definition saveblockevent : go_string := "runtime.saveblockevent"%go.
+Axiom mLockProfileⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition fpTracebackPartialExpand : go_string := "runtime.fpTracebackPartialExpand"%go.
+Definition saveBlockEventStack {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.saveBlockEventStack"%go.
 
-Axiom mLockProfileⁱᵐᵖˡ : go.type.
+Definition mutexprofilerate {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mutexprofilerate"%go.
 
-Definition saveBlockEventStack : go_string := "runtime.saveBlockEventStack"%go.
+Definition SetMutexProfileFraction {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.SetMutexProfileFraction"%go.
 
-Definition mutexprofilerate : go_string := "runtime.mutexprofilerate"%go.
+Definition mutexevent {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mutexevent"%go.
 
-Definition SetMutexProfileFraction : go_string := "runtime.SetMutexProfileFraction"%go.
+Axiom StackRecordⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition mutexevent : go_string := "runtime.mutexevent"%go.
+Definition MemProfileRate {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.MemProfileRate"%go.
 
-Axiom StackRecordⁱᵐᵖˡ : go.type.
+Axiom MemProfileRate'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition MemProfileRate : go_string := "runtime.MemProfileRate"%go.
+Definition disableMemoryProfiling {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.disableMemoryProfiling"%go.
 
-Axiom MemProfileRate'init : val.
+Axiom MemProfileRecordⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition disableMemoryProfiling : go_string := "runtime.disableMemoryProfiling"%go.
+Definition MemProfile {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.MemProfile"%go.
 
-Axiom MemProfileRecordⁱᵐᵖˡ : go.type.
+Definition memProfileInternal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.memProfileInternal"%go.
 
-Definition MemProfile : go_string := "runtime.MemProfile"%go.
+Definition copyMemProfileRecord {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.copyMemProfileRecord"%go.
 
-Definition memProfileInternal : go_string := "runtime.memProfileInternal"%go.
+Definition pprof_memProfileInternal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.pprof_memProfileInternal"%go.
 
-Definition copyMemProfileRecord : go_string := "runtime.copyMemProfileRecord"%go.
+Definition iterate_memprof {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.iterate_memprof"%go.
 
-Definition pprof_memProfileInternal : go_string := "runtime.pprof_memProfileInternal"%go.
+Axiom BlockProfileRecordⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition iterate_memprof : go_string := "runtime.iterate_memprof"%go.
+Definition BlockProfile {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.BlockProfile"%go.
 
-Axiom BlockProfileRecordⁱᵐᵖˡ : go.type.
+Definition expandFrames {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.expandFrames"%go.
 
-Definition BlockProfile : go_string := "runtime.BlockProfile"%go.
+Definition blockProfileInternal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.blockProfileInternal"%go.
 
-Definition expandFrames : go_string := "runtime.expandFrames"%go.
+Definition copyBlockProfileRecord {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.copyBlockProfileRecord"%go.
 
-Definition blockProfileInternal : go_string := "runtime.blockProfileInternal"%go.
+Definition pprof_blockProfileInternal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.pprof_blockProfileInternal"%go.
 
-Definition copyBlockProfileRecord : go_string := "runtime.copyBlockProfileRecord"%go.
+Definition MutexProfile {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.MutexProfile"%go.
 
-Definition pprof_blockProfileInternal : go_string := "runtime.pprof_blockProfileInternal"%go.
+Definition mutexProfileInternal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mutexProfileInternal"%go.
 
-Definition MutexProfile : go_string := "runtime.MutexProfile"%go.
+Definition pprof_mutexProfileInternal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.pprof_mutexProfileInternal"%go.
 
-Definition mutexProfileInternal : go_string := "runtime.mutexProfileInternal"%go.
+Definition ThreadCreateProfile {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.ThreadCreateProfile"%go.
 
-Definition pprof_mutexProfileInternal : go_string := "runtime.pprof_mutexProfileInternal"%go.
+Definition threadCreateProfileInternal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.threadCreateProfileInternal"%go.
 
-Definition ThreadCreateProfile : go_string := "runtime.ThreadCreateProfile"%go.
+Definition pprof_threadCreateInternal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.pprof_threadCreateInternal"%go.
 
-Definition threadCreateProfileInternal : go_string := "runtime.threadCreateProfileInternal"%go.
+Definition pprof_goroutineProfileWithLabels {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.pprof_goroutineProfileWithLabels"%go.
 
-Definition pprof_threadCreateInternal : go_string := "runtime.pprof_threadCreateInternal"%go.
+Definition goroutineProfileWithLabels {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.goroutineProfileWithLabels"%go.
 
-Definition pprof_goroutineProfileWithLabels : go_string := "runtime.pprof_goroutineProfileWithLabels"%go.
+Definition goroutineProfile {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.goroutineProfile"%go.
 
-Definition goroutineProfileWithLabels : go_string := "runtime.goroutineProfileWithLabels"%go.
+Axiom goroutineProfile'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition goroutineProfile : go_string := "runtime.goroutineProfile"%go.
+Axiom goroutineProfileStateⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom goroutineProfile'init : val.
+Axiom goroutineProfileAbsent : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom goroutineProfileStateⁱᵐᵖˡ : go.type.
+Axiom goroutineProfileInProgress : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom goroutineProfileAbsent : val.
+Axiom goroutineProfileSatisfied : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom goroutineProfileInProgress : val.
+Axiom goroutineProfileStateHolderⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom goroutineProfileSatisfied : val.
+Definition goroutineProfileWithLabelsConcurrent {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.goroutineProfileWithLabelsConcurrent"%go.
 
-Axiom goroutineProfileStateHolderⁱᵐᵖˡ : go.type.
+Definition tryRecordGoroutineProfileWB {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.tryRecordGoroutineProfileWB"%go.
 
-Definition goroutineProfileWithLabelsConcurrent : go_string := "runtime.goroutineProfileWithLabelsConcurrent"%go.
+Definition tryRecordGoroutineProfile {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.tryRecordGoroutineProfile"%go.
 
-Definition tryRecordGoroutineProfileWB : go_string := "runtime.tryRecordGoroutineProfileWB"%go.
+Definition doRecordGoroutineProfile {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.doRecordGoroutineProfile"%go.
 
-Definition tryRecordGoroutineProfile : go_string := "runtime.tryRecordGoroutineProfile"%go.
+Definition goroutineProfileWithLabelsSync {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.goroutineProfileWithLabelsSync"%go.
 
-Definition doRecordGoroutineProfile : go_string := "runtime.doRecordGoroutineProfile"%go.
+Definition GoroutineProfile {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.GoroutineProfile"%go.
 
-Definition goroutineProfileWithLabelsSync : go_string := "runtime.goroutineProfileWithLabelsSync"%go.
+Definition goroutineProfileInternal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.goroutineProfileInternal"%go.
 
-Definition GoroutineProfile : go_string := "runtime.GoroutineProfile"%go.
+Definition saveg {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.saveg"%go.
 
-Definition goroutineProfileInternal : go_string := "runtime.goroutineProfileInternal"%go.
+Definition Stack {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.Stack"%go.
 
-Definition saveg : go_string := "runtime.saveg"%go.
+Axiom addrRangeⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition Stack : go_string := "runtime.Stack"%go.
+Definition makeAddrRange {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.makeAddrRange"%go.
 
-Axiom addrRangeⁱᵐᵖˡ : go.type.
+Definition minOffAddr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.minOffAddr"%go.
 
-Definition makeAddrRange : go_string := "runtime.makeAddrRange"%go.
+Axiom minOffAddr'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition minOffAddr : go_string := "runtime.minOffAddr"%go.
+Definition maxOffAddr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.maxOffAddr"%go.
 
-Axiom minOffAddr'init : val.
+Axiom maxOffAddr'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition maxOffAddr : go_string := "runtime.maxOffAddr"%go.
+Axiom offAddrⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom maxOffAddr'init : val.
+Axiom atomicOffAddrⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom offAddrⁱᵐᵖˡ : go.type.
+Axiom addrRangesⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom atomicOffAddrⁱᵐᵖˡ : go.type.
+Axiom msanenabled : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom addrRangesⁱᵐᵖˡ : go.type.
+Definition msanread {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.msanread"%go.
 
-Axiom msanenabled : val.
+Definition msanwrite {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.msanwrite"%go.
 
-Definition msanread : go_string := "runtime.msanread"%go.
+Definition msanmalloc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.msanmalloc"%go.
 
-Definition msanwrite : go_string := "runtime.msanwrite"%go.
+Definition msanfree {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.msanfree"%go.
 
-Definition msanmalloc : go_string := "runtime.msanmalloc"%go.
+Definition msanmove {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.msanmove"%go.
 
-Definition msanfree : go_string := "runtime.msanfree"%go.
+Definition roundupsize {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.roundupsize"%go.
 
-Definition msanmove : go_string := "runtime.msanmove"%go.
+Axiom spanSetⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition roundupsize : go_string := "runtime.roundupsize"%go.
+Axiom spanSetBlockEntries : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom spanSetⁱᵐᵖˡ : go.type.
+Axiom spanSetInitSpineCap : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom spanSetBlockEntries : Z.
+Axiom spanSetBlockHeaderⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom spanSetInitSpineCap : Z.
+Axiom spanSetBlockHeader2ⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom spanSetBlockHeaderⁱᵐᵖˡ : go.type.
+Axiom spanSetBlockⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom spanSetBlockHeader2ⁱᵐᵖˡ : go.type.
+Axiom atomicSpanSetSpinePointerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom spanSetBlockⁱᵐᵖˡ : go.type.
+Axiom spanSetSpinePointerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom atomicSpanSetSpinePointerⁱᵐᵖˡ : go.type.
+Definition spanSetBlockPool {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.spanSetBlockPool"%go.
 
-Axiom spanSetSpinePointerⁱᵐᵖˡ : go.type.
+Axiom spanSetBlockAllocⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition spanSetBlockPool : go_string := "runtime.spanSetBlockPool"%go.
+Axiom headTailIndexⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom spanSetBlockAllocⁱᵐᵖˡ : go.type.
+Definition makeHeadTailIndex {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.makeHeadTailIndex"%go.
 
-Axiom headTailIndexⁱᵐᵖˡ : go.type.
+Axiom atomicHeadTailIndexⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition makeHeadTailIndex : go_string := "runtime.makeHeadTailIndex"%go.
+Axiom atomicMSpanPointerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom atomicHeadTailIndexⁱᵐᵖˡ : go.type.
+Axiom mstatsⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom atomicMSpanPointerⁱᵐᵖˡ : go.type.
+Definition memstats {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.memstats"%go.
 
-Axiom mstatsⁱᵐᵖˡ : go.type.
+Axiom MemStatsⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition memstats : go_string := "runtime.memstats"%go.
+Definition ReadMemStats {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.ReadMemStats"%go.
 
-Axiom MemStatsⁱᵐᵖˡ : go.type.
+Definition doubleCheckReadMemStats {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.doubleCheckReadMemStats"%go.
 
-Definition ReadMemStats : go_string := "runtime.ReadMemStats"%go.
+Axiom doubleCheckReadMemStats'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition doubleCheckReadMemStats : go_string := "runtime.doubleCheckReadMemStats"%go.
+Definition readmemstats_m {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.readmemstats_m"%go.
 
-Axiom doubleCheckReadMemStats'init : val.
+Definition readGCStats {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.readGCStats"%go.
 
-Definition readmemstats_m : go_string := "runtime.readmemstats_m"%go.
+Definition readGCStats_m {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.readGCStats_m"%go.
 
-Definition readGCStats : go_string := "runtime.readGCStats"%go.
+Definition flushmcache {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.flushmcache"%go.
 
-Definition readGCStats_m : go_string := "runtime.readGCStats_m"%go.
+Definition flushallmcaches {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.flushallmcaches"%go.
 
-Definition flushmcache : go_string := "runtime.flushmcache"%go.
+Axiom sysMemStatⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition flushallmcaches : go_string := "runtime.flushallmcaches"%go.
+Axiom heapStatsDeltaⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom sysMemStatⁱᵐᵖˡ : go.type.
+Axiom consistentHeapStatsⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom heapStatsDeltaⁱᵐᵖˡ : go.type.
+Axiom cpuStatsⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom consistentHeapStatsⁱᵐᵖˡ : go.type.
+Axiom testSmallBuf : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom cpuStatsⁱᵐᵖˡ : go.type.
+Axiom wbBufⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom testSmallBuf : val.
+Axiom wbBufEntries : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom wbBufⁱᵐᵖˡ : go.type.
+Axiom wbMaxEntriesPerCall : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom wbBufEntries : Z.
+Definition wbBufFlush {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.wbBufFlush"%go.
 
-Axiom wbMaxEntriesPerCall : Z.
+Definition wbBufFlush1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.wbBufFlush1"%go.
 
-Definition wbBufFlush : go_string := "runtime.wbBufFlush"%go.
+Definition nonblockingPipe {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.nonblockingPipe"%go.
 
-Definition wbBufFlush1 : go_string := "runtime.wbBufFlush1"%go.
+Axiom pollNoError : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition nonblockingPipe : go_string := "runtime.nonblockingPipe"%go.
+Axiom pollErrClosing : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom pollNoError : Z.
+Axiom pollErrTimeout : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom pollErrClosing : Z.
+Axiom pollErrNotPollable : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom pollErrTimeout : Z.
+Axiom pdNil : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom pollErrNotPollable : Z.
+Axiom pdReady : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom pdNil : val.
+Axiom pdWait : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom pdReady : val.
+Axiom pollBlockSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom pdWait : val.
+Axiom pollDescⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom pollBlockSize : Z.
+Axiom pollInfoⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom pollDescⁱᵐᵖˡ : go.type.
+Axiom pollClosing : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom pollInfoⁱᵐᵖˡ : go.type.
+Axiom pollEventErr : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom pollClosing : Z.
+Axiom pollExpiredReadDeadline : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom pollEventErr : Z.
+Axiom pollExpiredWriteDeadline : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom pollExpiredReadDeadline : Z.
+Axiom pollFDSeq : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom pollExpiredWriteDeadline : Z.
+Axiom pollFDSeqBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom pollFDSeq : Z.
+Axiom pollFDSeqMask : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom pollFDSeqBits : Z.
+Axiom pollCacheⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom pollFDSeqMask : Z.
+Definition netpollInitLock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.netpollInitLock"%go.
 
-Axiom pollCacheⁱᵐᵖˡ : go.type.
+Definition netpollInited {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.netpollInited"%go.
 
-Definition netpollInitLock : go_string := "runtime.netpollInitLock"%go.
+Definition pollcache {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.pollcache"%go.
 
-Definition netpollInited : go_string := "runtime.netpollInited"%go.
+Definition netpollWaiters {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.netpollWaiters"%go.
 
-Definition pollcache : go_string := "runtime.pollcache"%go.
+Definition poll_runtime_pollServerInit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.poll_runtime_pollServerInit"%go.
 
-Definition netpollWaiters : go_string := "runtime.netpollWaiters"%go.
+Definition netpollGenericInit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.netpollGenericInit"%go.
 
-Definition poll_runtime_pollServerInit : go_string := "runtime.poll_runtime_pollServerInit"%go.
+Definition netpollinited {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.netpollinited"%go.
 
-Definition netpollGenericInit : go_string := "runtime.netpollGenericInit"%go.
+Definition poll_runtime_isPollServerDescriptor {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.poll_runtime_isPollServerDescriptor"%go.
 
-Definition netpollinited : go_string := "runtime.netpollinited"%go.
+Definition poll_runtime_pollOpen {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.poll_runtime_pollOpen"%go.
 
-Definition poll_runtime_isPollServerDescriptor : go_string := "runtime.poll_runtime_isPollServerDescriptor"%go.
+Definition poll_runtime_pollClose {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.poll_runtime_pollClose"%go.
 
-Definition poll_runtime_pollOpen : go_string := "runtime.poll_runtime_pollOpen"%go.
+Definition poll_runtime_pollReset {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.poll_runtime_pollReset"%go.
 
-Definition poll_runtime_pollClose : go_string := "runtime.poll_runtime_pollClose"%go.
+Definition poll_runtime_pollWait {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.poll_runtime_pollWait"%go.
 
-Definition poll_runtime_pollReset : go_string := "runtime.poll_runtime_pollReset"%go.
+Definition poll_runtime_pollWaitCanceled {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.poll_runtime_pollWaitCanceled"%go.
 
-Definition poll_runtime_pollWait : go_string := "runtime.poll_runtime_pollWait"%go.
+Definition poll_runtime_pollSetDeadline {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.poll_runtime_pollSetDeadline"%go.
 
-Definition poll_runtime_pollWaitCanceled : go_string := "runtime.poll_runtime_pollWaitCanceled"%go.
+Definition poll_runtime_pollUnblock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.poll_runtime_pollUnblock"%go.
 
-Definition poll_runtime_pollSetDeadline : go_string := "runtime.poll_runtime_pollSetDeadline"%go.
+Definition netpollready {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.netpollready"%go.
 
-Definition poll_runtime_pollUnblock : go_string := "runtime.poll_runtime_pollUnblock"%go.
+Definition netpollcheckerr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.netpollcheckerr"%go.
 
-Definition netpollready : go_string := "runtime.netpollready"%go.
+Definition netpollblockcommit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.netpollblockcommit"%go.
 
-Definition netpollcheckerr : go_string := "runtime.netpollcheckerr"%go.
+Definition netpollgoready {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.netpollgoready"%go.
 
-Definition netpollblockcommit : go_string := "runtime.netpollblockcommit"%go.
+Definition netpollblock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.netpollblock"%go.
 
-Definition netpollgoready : go_string := "runtime.netpollgoready"%go.
+Definition netpollunblock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.netpollunblock"%go.
 
-Definition netpollblock : go_string := "runtime.netpollblock"%go.
+Definition netpolldeadlineimpl {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.netpolldeadlineimpl"%go.
 
-Definition netpollunblock : go_string := "runtime.netpollunblock"%go.
+Definition netpollDeadline {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.netpollDeadline"%go.
 
-Definition netpolldeadlineimpl : go_string := "runtime.netpolldeadlineimpl"%go.
+Definition netpollReadDeadline {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.netpollReadDeadline"%go.
 
-Definition netpollDeadline : go_string := "runtime.netpollDeadline"%go.
+Definition netpollWriteDeadline {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.netpollWriteDeadline"%go.
 
-Definition netpollReadDeadline : go_string := "runtime.netpollReadDeadline"%go.
+Definition netpollAnyWaiters {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.netpollAnyWaiters"%go.
 
-Definition netpollWriteDeadline : go_string := "runtime.netpollWriteDeadline"%go.
+Definition netpollAdjustWaiters {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.netpollAdjustWaiters"%go.
 
-Definition netpollAnyWaiters : go_string := "runtime.netpollAnyWaiters"%go.
+Definition pdEface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.pdEface"%go.
 
-Definition netpollAdjustWaiters : go_string := "runtime.netpollAdjustWaiters"%go.
+Axiom pdEface'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition pdEface : go_string := "runtime.pdEface"%go.
+Definition pdType {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.pdType"%go.
 
-Axiom pdEface'init : val.
+Axiom pdType'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition pdType : go_string := "runtime.pdType"%go.
+Definition epfd {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.epfd"%go.
 
-Axiom pdType'init : val.
+Axiom epfd'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition epfd : go_string := "runtime.epfd"%go.
+Definition netpollEventFd {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.netpollEventFd"%go.
 
-Axiom epfd'init : val.
+Definition netpollWakeSig {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.netpollWakeSig"%go.
 
-Definition netpollEventFd : go_string := "runtime.netpollEventFd"%go.
+Definition netpollinit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.netpollinit"%go.
 
-Definition netpollWakeSig : go_string := "runtime.netpollWakeSig"%go.
+Definition netpollIsPollDescriptor {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.netpollIsPollDescriptor"%go.
 
-Definition netpollinit : go_string := "runtime.netpollinit"%go.
+Definition netpollopen {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.netpollopen"%go.
 
-Definition netpollIsPollDescriptor : go_string := "runtime.netpollIsPollDescriptor"%go.
+Definition netpollclose {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.netpollclose"%go.
 
-Definition netpollopen : go_string := "runtime.netpollopen"%go.
+Definition netpollarm {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.netpollarm"%go.
 
-Definition netpollclose : go_string := "runtime.netpollclose"%go.
+Definition netpollBreak {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.netpollBreak"%go.
 
-Definition netpollarm : go_string := "runtime.netpollarm"%go.
+Definition netpoll {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.netpoll"%go.
 
-Definition netpollBreak : go_string := "runtime.netpollBreak"%go.
+Axiom osRelaxMinNS : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition netpoll : go_string := "runtime.netpoll"%go.
+Definition haveHighResSleep {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.haveHighResSleep"%go.
 
-Axiom osRelaxMinNS : Z.
+Axiom haveHighResSleep'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition haveHighResSleep : go_string := "runtime.haveHighResSleep"%go.
+Definition osRelax {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.osRelax"%go.
 
-Axiom haveHighResSleep'init : val.
+Definition enableWER {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.enableWER"%go.
 
-Definition osRelax : go_string := "runtime.osRelax"%go.
+Axiom winlibcallⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition enableWER : go_string := "runtime.enableWER"%go.
+Axiom noteⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom winlibcallⁱᵐᵖˡ : go.type.
+Axiom sigPerThreadSyscall : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom noteⁱᵐᵖˡ : go.type.
+Axiom mOSⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom sigPerThreadSyscall : Z.
+Definition futex {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.futex"%go.
 
-Axiom mOSⁱᵐᵖˡ : go.type.
+Axiom _FUTEX_PRIVATE_FLAG : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition futex : go_string := "runtime.futex"%go.
+Axiom _FUTEX_WAIT_PRIVATE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _FUTEX_PRIVATE_FLAG : Z.
+Axiom _FUTEX_WAKE_PRIVATE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _FUTEX_WAIT_PRIVATE : Z.
+Definition futexsleep {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.futexsleep"%go.
 
-Axiom _FUTEX_WAKE_PRIVATE : Z.
+Definition futexwakeup {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.futexwakeup"%go.
 
-Definition futexsleep : go_string := "runtime.futexsleep"%go.
+Definition getCPUCount {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.getCPUCount"%go.
 
-Definition futexwakeup : go_string := "runtime.futexwakeup"%go.
+Axiom _CLONE_VM : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition getCPUCount : go_string := "runtime.getCPUCount"%go.
+Axiom _CLONE_FS : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _CLONE_VM : Z.
+Axiom _CLONE_FILES : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _CLONE_FS : Z.
+Axiom _CLONE_SIGHAND : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _CLONE_FILES : Z.
+Axiom _CLONE_PTRACE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _CLONE_SIGHAND : Z.
+Axiom _CLONE_VFORK : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _CLONE_PTRACE : Z.
+Axiom _CLONE_PARENT : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _CLONE_VFORK : Z.
+Axiom _CLONE_THREAD : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _CLONE_PARENT : Z.
+Axiom _CLONE_NEWNS : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _CLONE_THREAD : Z.
+Axiom _CLONE_SYSVSEM : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _CLONE_NEWNS : Z.
+Axiom _CLONE_SETTLS : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _CLONE_SYSVSEM : Z.
+Axiom _CLONE_PARENT_SETTID : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _CLONE_SETTLS : Z.
+Axiom _CLONE_CHILD_CLEARTID : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _CLONE_PARENT_SETTID : Z.
+Axiom _CLONE_UNTRACED : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _CLONE_CHILD_CLEARTID : Z.
+Axiom _CLONE_CHILD_SETTID : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _CLONE_UNTRACED : Z.
+Axiom _CLONE_STOPPED : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _CLONE_CHILD_SETTID : Z.
+Axiom _CLONE_NEWUTS : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _CLONE_STOPPED : Z.
+Axiom _CLONE_NEWIPC : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _CLONE_NEWUTS : Z.
+Axiom cloneFlags : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _CLONE_NEWIPC : Z.
+Definition clone {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.clone"%go.
 
-Axiom cloneFlags : Z.
+Definition newosproc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.newosproc"%go.
 
-Definition clone : go_string := "runtime.clone"%go.
+Definition newosproc0 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.newosproc0"%go.
 
-Definition newosproc : go_string := "runtime.newosproc"%go.
+Axiom _AT_NULL : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition newosproc0 : go_string := "runtime.newosproc0"%go.
+Axiom _AT_PAGESZ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _AT_NULL : Z.
+Axiom _AT_PLATFORM : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _AT_PAGESZ : Z.
+Axiom _AT_HWCAP : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _AT_PLATFORM : Z.
+Axiom _AT_SECURE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _AT_HWCAP : Z.
+Axiom _AT_RANDOM : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _AT_SECURE : Z.
+Axiom _AT_HWCAP2 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _AT_RANDOM : Z.
+Definition procAuxv {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.procAuxv"%go.
 
-Axiom _AT_HWCAP2 : Z.
+Axiom procAuxv'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition procAuxv : go_string := "runtime.procAuxv"%go.
+Definition addrspace_vec {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.addrspace_vec"%go.
 
-Axiom procAuxv'init : val.
+Definition mincore {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mincore"%go.
 
-Definition addrspace_vec : go_string := "runtime.addrspace_vec"%go.
+Definition auxvreadbuf {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.auxvreadbuf"%go.
 
-Definition mincore : go_string := "runtime.mincore"%go.
+Definition sysargs {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sysargs"%go.
 
-Definition auxvreadbuf : go_string := "runtime.auxvreadbuf"%go.
+Definition secureMode {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.secureMode"%go.
 
-Definition sysargs : go_string := "runtime.sysargs"%go.
+Definition sysauxv {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sysauxv"%go.
 
-Definition secureMode : go_string := "runtime.secureMode"%go.
+Definition sysTHPSizePath {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sysTHPSizePath"%go.
 
-Definition sysauxv : go_string := "runtime.sysauxv"%go.
+Axiom sysTHPSizePath'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition sysTHPSizePath : go_string := "runtime.sysTHPSizePath"%go.
+Definition getHugePageSize {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.getHugePageSize"%go.
 
-Axiom sysTHPSizePath'init : val.
+Definition osinit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.osinit"%go.
 
-Definition getHugePageSize : go_string := "runtime.getHugePageSize"%go.
+Definition urandom_dev {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.urandom_dev"%go.
 
-Definition osinit : go_string := "runtime.osinit"%go.
+Axiom urandom_dev'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition urandom_dev : go_string := "runtime.urandom_dev"%go.
+Definition readRandom {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.readRandom"%go.
 
-Axiom urandom_dev'init : val.
+Definition goenvs {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.goenvs"%go.
 
-Definition readRandom : go_string := "runtime.readRandom"%go.
+Definition libpreinit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.libpreinit"%go.
 
-Definition goenvs : go_string := "runtime.goenvs"%go.
+Definition mpreinit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mpreinit"%go.
 
-Definition libpreinit : go_string := "runtime.libpreinit"%go.
+Definition gettid {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gettid"%go.
 
-Definition mpreinit : go_string := "runtime.mpreinit"%go.
+Definition minit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.minit"%go.
 
-Definition gettid : go_string := "runtime.gettid"%go.
+Definition unminit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.unminit"%go.
 
-Definition minit : go_string := "runtime.minit"%go.
+Definition mdestroy {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mdestroy"%go.
 
-Definition unminit : go_string := "runtime.unminit"%go.
+Definition sigreturn__sigaction {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sigreturn__sigaction"%go.
 
-Definition mdestroy : go_string := "runtime.mdestroy"%go.
+Definition sigtramp {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sigtramp"%go.
 
-Definition sigreturn__sigaction : go_string := "runtime.sigreturn__sigaction"%go.
+Definition cgoSigtramp {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.cgoSigtramp"%go.
 
-Definition sigtramp : go_string := "runtime.sigtramp"%go.
+Definition sigaltstack {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sigaltstack"%go.
 
-Definition cgoSigtramp : go_string := "runtime.cgoSigtramp"%go.
+Definition setitimer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.setitimer"%go.
 
-Definition sigaltstack : go_string := "runtime.sigaltstack"%go.
+Definition timer_create {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.timer_create"%go.
 
-Definition setitimer : go_string := "runtime.setitimer"%go.
+Definition timer_settime {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.timer_settime"%go.
 
-Definition timer_create : go_string := "runtime.timer_create"%go.
+Definition timer_delete {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.timer_delete"%go.
 
-Definition timer_settime : go_string := "runtime.timer_settime"%go.
+Definition rtsigprocmask {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.rtsigprocmask"%go.
 
-Definition timer_delete : go_string := "runtime.timer_delete"%go.
+Definition sigprocmask {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sigprocmask"%go.
 
-Definition rtsigprocmask : go_string := "runtime.rtsigprocmask"%go.
+Definition raise {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.raise"%go.
 
-Definition sigprocmask : go_string := "runtime.sigprocmask"%go.
+Definition raiseproc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.raiseproc"%go.
 
-Definition raise : go_string := "runtime.raise"%go.
+Definition sched_getaffinity {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sched_getaffinity"%go.
 
-Definition raiseproc : go_string := "runtime.raiseproc"%go.
+Definition osyield {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.osyield"%go.
 
-Definition sched_getaffinity : go_string := "runtime.sched_getaffinity"%go.
+Definition osyield_no_g {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.osyield_no_g"%go.
 
-Definition osyield : go_string := "runtime.osyield"%go.
+Definition pipe2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.pipe2"%go.
 
-Definition osyield_no_g : go_string := "runtime.osyield_no_g"%go.
+Definition fcntl {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.fcntl"%go.
 
-Definition pipe2 : go_string := "runtime.pipe2"%go.
+Axiom _si_max_size : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition fcntl : go_string := "runtime.fcntl"%go.
+Axiom _sigev_max_size : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _si_max_size : Z.
+Definition setsig {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.setsig"%go.
 
-Axiom _sigev_max_size : Z.
+Definition setsigstack {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.setsigstack"%go.
 
-Definition setsig : go_string := "runtime.setsig"%go.
+Definition getsig {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.getsig"%go.
 
-Definition setsigstack : go_string := "runtime.setsigstack"%go.
+Definition setSignalstackSP {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.setSignalstackSP"%go.
 
-Definition getsig : go_string := "runtime.getsig"%go.
+Definition sysSigaction {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sysSigaction"%go.
 
-Definition setSignalstackSP : go_string := "runtime.setSignalstackSP"%go.
+Definition rt_sigaction {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.rt_sigaction"%go.
 
-Definition sysSigaction : go_string := "runtime.sysSigaction"%go.
+Definition getpid {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.getpid"%go.
 
-Definition rt_sigaction : go_string := "runtime.rt_sigaction"%go.
+Definition tgkill {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.tgkill"%go.
 
-Definition getpid : go_string := "runtime.getpid"%go.
+Definition signalM {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.signalM"%go.
 
-Definition tgkill : go_string := "runtime.tgkill"%go.
+Definition validSIGPROF {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.validSIGPROF"%go.
 
-Definition signalM : go_string := "runtime.signalM"%go.
+Definition setProcessCPUProfiler {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.setProcessCPUProfiler"%go.
 
-Definition validSIGPROF : go_string := "runtime.validSIGPROF"%go.
+Definition setThreadCPUProfiler {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.setThreadCPUProfiler"%go.
 
-Definition setProcessCPUProfiler : go_string := "runtime.setProcessCPUProfiler"%go.
+Axiom perThreadSyscallArgsⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition setThreadCPUProfiler : go_string := "runtime.setThreadCPUProfiler"%go.
+Definition perThreadSyscall {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.perThreadSyscall"%go.
 
-Axiom perThreadSyscallArgsⁱᵐᵖˡ : go.type.
+Definition syscall_runtime_doAllThreadsSyscall {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.syscall_runtime_doAllThreadsSyscall"%go.
 
-Definition perThreadSyscall : go_string := "runtime.perThreadSyscall"%go.
+Definition runPerThreadSyscall {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.runPerThreadSyscall"%go.
 
-Definition syscall_runtime_doAllThreadsSyscall : go_string := "runtime.syscall_runtime_doAllThreadsSyscall"%go.
+Axiom _SI_USER : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition runPerThreadSyscall : go_string := "runtime.runPerThreadSyscall"%go.
+Axiom _SI_TKILL : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SI_USER : Z.
+Axiom _SYS_SECCOMP : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SI_TKILL : Z.
+Definition mprotect {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mprotect"%go.
 
-Axiom _SYS_SECCOMP : Z.
+Axiom _SS_DISABLE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition mprotect : go_string := "runtime.mprotect"%go.
+Axiom _NSIG : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SS_DISABLE : Z.
+Axiom _SIG_BLOCK : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _NSIG : Z.
+Axiom _SIG_UNBLOCK : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SIG_BLOCK : Z.
+Axiom _SIG_SETMASK : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SIG_UNBLOCK : Z.
+Axiom sigsetⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom _SIG_SETMASK : Z.
+Definition sigset_all {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sigset_all"%go.
 
-Axiom sigsetⁱᵐᵖˡ : go.type.
+Axiom sigset_all'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition sigset_all : go_string := "runtime.sigset_all"%go.
+Definition sigaddset {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sigaddset"%go.
 
-Axiom sigset_all'init : val.
+Definition sigdelset {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sigdelset"%go.
 
-Definition sigaddset : go_string := "runtime.sigaddset"%go.
+Definition sigfillset {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sigfillset"%go.
 
-Definition sigdelset : go_string := "runtime.sigdelset"%go.
+Definition archauxv {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.archauxv"%go.
 
-Definition sigfillset : go_string := "runtime.sigfillset"%go.
+Definition osArchInit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.osArchInit"%go.
 
-Definition archauxv : go_string := "runtime.archauxv"%go.
+Definition osStackAlloc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.osStackAlloc"%go.
 
-Definition osArchInit : go_string := "runtime.osArchInit"%go.
+Definition osStackFree {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.osStackFree"%go.
 
-Definition osStackAlloc : go_string := "runtime.osStackAlloc"%go.
+Axiom _F_SETFD : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition osStackFree : go_string := "runtime.osStackFree"%go.
+Axiom _FD_CLOEXEC : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _F_SETFD : Z.
+Definition closeonexec {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.closeonexec"%go.
 
-Axiom _FD_CLOEXEC : Z.
+Axiom throwTypeⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition closeonexec : go_string := "runtime.closeonexec"%go.
+Axiom throwTypeNone : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom throwTypeⁱᵐᵖˡ : go.type.
+Axiom throwTypeUser : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom throwTypeNone : val.
+Axiom throwTypeRuntime : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom throwTypeUser : val.
+Definition panicCheck1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.panicCheck1"%go.
 
-Axiom throwTypeRuntime : val.
+Definition panicCheck2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.panicCheck2"%go.
 
-Definition panicCheck1 : go_string := "runtime.panicCheck1"%go.
+Definition goPanicIndex {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.goPanicIndex"%go.
 
-Definition panicCheck2 : go_string := "runtime.panicCheck2"%go.
+Definition goPanicIndexU {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.goPanicIndexU"%go.
 
-Definition goPanicIndex : go_string := "runtime.goPanicIndex"%go.
+Definition goPanicSliceAlen {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.goPanicSliceAlen"%go.
 
-Definition goPanicIndexU : go_string := "runtime.goPanicIndexU"%go.
+Definition goPanicSliceAlenU {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.goPanicSliceAlenU"%go.
 
-Definition goPanicSliceAlen : go_string := "runtime.goPanicSliceAlen"%go.
+Definition goPanicSliceAcap {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.goPanicSliceAcap"%go.
 
-Definition goPanicSliceAlenU : go_string := "runtime.goPanicSliceAlenU"%go.
+Definition goPanicSliceAcapU {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.goPanicSliceAcapU"%go.
 
-Definition goPanicSliceAcap : go_string := "runtime.goPanicSliceAcap"%go.
+Definition goPanicSliceB {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.goPanicSliceB"%go.
 
-Definition goPanicSliceAcapU : go_string := "runtime.goPanicSliceAcapU"%go.
+Definition goPanicSliceBU {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.goPanicSliceBU"%go.
 
-Definition goPanicSliceB : go_string := "runtime.goPanicSliceB"%go.
+Definition goPanicSlice3Alen {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.goPanicSlice3Alen"%go.
 
-Definition goPanicSliceBU : go_string := "runtime.goPanicSliceBU"%go.
+Definition goPanicSlice3AlenU {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.goPanicSlice3AlenU"%go.
 
-Definition goPanicSlice3Alen : go_string := "runtime.goPanicSlice3Alen"%go.
+Definition goPanicSlice3Acap {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.goPanicSlice3Acap"%go.
 
-Definition goPanicSlice3AlenU : go_string := "runtime.goPanicSlice3AlenU"%go.
+Definition goPanicSlice3AcapU {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.goPanicSlice3AcapU"%go.
 
-Definition goPanicSlice3Acap : go_string := "runtime.goPanicSlice3Acap"%go.
+Definition goPanicSlice3B {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.goPanicSlice3B"%go.
 
-Definition goPanicSlice3AcapU : go_string := "runtime.goPanicSlice3AcapU"%go.
+Definition goPanicSlice3BU {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.goPanicSlice3BU"%go.
 
-Definition goPanicSlice3B : go_string := "runtime.goPanicSlice3B"%go.
+Definition goPanicSlice3C {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.goPanicSlice3C"%go.
 
-Definition goPanicSlice3BU : go_string := "runtime.goPanicSlice3BU"%go.
+Definition goPanicSlice3CU {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.goPanicSlice3CU"%go.
 
-Definition goPanicSlice3C : go_string := "runtime.goPanicSlice3C"%go.
+Definition goPanicSliceConvert {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.goPanicSliceConvert"%go.
 
-Definition goPanicSlice3CU : go_string := "runtime.goPanicSlice3CU"%go.
+Definition panicIndex {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.panicIndex"%go.
 
-Definition goPanicSliceConvert : go_string := "runtime.goPanicSliceConvert"%go.
+Definition panicIndexU {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.panicIndexU"%go.
 
-Definition panicIndex : go_string := "runtime.panicIndex"%go.
+Definition panicSliceAlen {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.panicSliceAlen"%go.
 
-Definition panicIndexU : go_string := "runtime.panicIndexU"%go.
+Definition panicSliceAlenU {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.panicSliceAlenU"%go.
 
-Definition panicSliceAlen : go_string := "runtime.panicSliceAlen"%go.
+Definition panicSliceAcap {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.panicSliceAcap"%go.
 
-Definition panicSliceAlenU : go_string := "runtime.panicSliceAlenU"%go.
+Definition panicSliceAcapU {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.panicSliceAcapU"%go.
 
-Definition panicSliceAcap : go_string := "runtime.panicSliceAcap"%go.
+Definition panicSliceB {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.panicSliceB"%go.
 
-Definition panicSliceAcapU : go_string := "runtime.panicSliceAcapU"%go.
+Definition panicSliceBU {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.panicSliceBU"%go.
 
-Definition panicSliceB : go_string := "runtime.panicSliceB"%go.
+Definition panicSlice3Alen {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.panicSlice3Alen"%go.
 
-Definition panicSliceBU : go_string := "runtime.panicSliceBU"%go.
+Definition panicSlice3AlenU {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.panicSlice3AlenU"%go.
 
-Definition panicSlice3Alen : go_string := "runtime.panicSlice3Alen"%go.
+Definition panicSlice3Acap {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.panicSlice3Acap"%go.
 
-Definition panicSlice3AlenU : go_string := "runtime.panicSlice3AlenU"%go.
+Definition panicSlice3AcapU {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.panicSlice3AcapU"%go.
 
-Definition panicSlice3Acap : go_string := "runtime.panicSlice3Acap"%go.
+Definition panicSlice3B {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.panicSlice3B"%go.
 
-Definition panicSlice3AcapU : go_string := "runtime.panicSlice3AcapU"%go.
+Definition panicSlice3BU {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.panicSlice3BU"%go.
 
-Definition panicSlice3B : go_string := "runtime.panicSlice3B"%go.
+Definition panicSlice3C {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.panicSlice3C"%go.
 
-Definition panicSlice3BU : go_string := "runtime.panicSlice3BU"%go.
+Definition panicSlice3CU {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.panicSlice3CU"%go.
 
-Definition panicSlice3C : go_string := "runtime.panicSlice3C"%go.
+Definition panicSliceConvert {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.panicSliceConvert"%go.
 
-Definition panicSlice3CU : go_string := "runtime.panicSlice3CU"%go.
+Definition shiftError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.shiftError"%go.
 
-Definition panicSliceConvert : go_string := "runtime.panicSliceConvert"%go.
+Axiom shiftError'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition shiftError : go_string := "runtime.shiftError"%go.
+Definition panicshift {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.panicshift"%go.
 
-Axiom shiftError'init : val.
+Definition divideError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.divideError"%go.
 
-Definition panicshift : go_string := "runtime.panicshift"%go.
+Axiom divideError'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition divideError : go_string := "runtime.divideError"%go.
+Definition panicdivide {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.panicdivide"%go.
 
-Axiom divideError'init : val.
+Definition overflowError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.overflowError"%go.
 
-Definition panicdivide : go_string := "runtime.panicdivide"%go.
+Axiom overflowError'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition overflowError : go_string := "runtime.overflowError"%go.
+Definition panicoverflow {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.panicoverflow"%go.
 
-Axiom overflowError'init : val.
+Definition floatError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.floatError"%go.
 
-Definition panicoverflow : go_string := "runtime.panicoverflow"%go.
+Axiom floatError'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition floatError : go_string := "runtime.floatError"%go.
+Definition panicfloat {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.panicfloat"%go.
 
-Axiom floatError'init : val.
+Definition memoryError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.memoryError"%go.
 
-Definition panicfloat : go_string := "runtime.panicfloat"%go.
+Axiom memoryError'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition memoryError : go_string := "runtime.memoryError"%go.
+Definition panicmem {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.panicmem"%go.
 
-Axiom memoryError'init : val.
+Definition panicmemAddr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.panicmemAddr"%go.
 
-Definition panicmem : go_string := "runtime.panicmem"%go.
+Definition deferproc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.deferproc"%go.
 
-Definition panicmemAddr : go_string := "runtime.panicmemAddr"%go.
+Definition rangeDoneError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.rangeDoneError"%go.
 
-Definition deferproc : go_string := "runtime.deferproc"%go.
+Axiom rangeDoneError'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition rangeDoneError : go_string := "runtime.rangeDoneError"%go.
+Definition rangePanicError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.rangePanicError"%go.
 
-Axiom rangeDoneError'init : val.
+Axiom rangePanicError'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition rangePanicError : go_string := "runtime.rangePanicError"%go.
+Definition rangeExhaustedError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.rangeExhaustedError"%go.
 
-Axiom rangePanicError'init : val.
+Axiom rangeExhaustedError'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition rangeExhaustedError : go_string := "runtime.rangeExhaustedError"%go.
+Definition rangeMissingPanicError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.rangeMissingPanicError"%go.
 
-Axiom rangeExhaustedError'init : val.
+Axiom rangeMissingPanicError'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition rangeMissingPanicError : go_string := "runtime.rangeMissingPanicError"%go.
+Definition panicrangestate {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.panicrangestate"%go.
 
-Axiom rangeMissingPanicError'init : val.
+Definition deferrangefunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.deferrangefunc"%go.
 
-Definition panicrangestate : go_string := "runtime.panicrangestate"%go.
+Definition badDefer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.badDefer"%go.
 
-Definition deferrangefunc : go_string := "runtime.deferrangefunc"%go.
+Definition deferprocat {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.deferprocat"%go.
 
-Definition badDefer : go_string := "runtime.badDefer"%go.
+Definition deferconvert {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.deferconvert"%go.
 
-Definition deferprocat : go_string := "runtime.deferprocat"%go.
+Definition deferprocStack {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.deferprocStack"%go.
 
-Definition deferconvert : go_string := "runtime.deferconvert"%go.
+Definition newdefer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.newdefer"%go.
 
-Definition deferprocStack : go_string := "runtime.deferprocStack"%go.
+Definition popDefer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.popDefer"%go.
 
-Definition newdefer : go_string := "runtime.newdefer"%go.
+Definition deferreturn {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.deferreturn"%go.
 
-Definition popDefer : go_string := "runtime.popDefer"%go.
+Definition Goexit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.Goexit"%go.
 
-Definition deferreturn : go_string := "runtime.deferreturn"%go.
+Definition preprintpanics {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.preprintpanics"%go.
 
-Definition Goexit : go_string := "runtime.Goexit"%go.
+Definition printpanics {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.printpanics"%go.
 
-Definition preprintpanics : go_string := "runtime.preprintpanics"%go.
+Definition readvarintUnsafe {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.readvarintUnsafe"%go.
 
-Definition printpanics : go_string := "runtime.printpanics"%go.
+Axiom PanicNilErrorⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition readvarintUnsafe : go_string := "runtime.readvarintUnsafe"%go.
+Definition panicnil {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.panicnil"%go.
 
-Axiom PanicNilErrorⁱᵐᵖˡ : go.type.
+Axiom panicnil'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition panicnil : go_string := "runtime.panicnil"%go.
+Definition gopanic {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gopanic"%go.
 
-Axiom panicnil'init : val.
+Definition gorecover {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gorecover"%go.
 
-Definition gopanic : go_string := "runtime.gopanic"%go.
+Definition sync_throw {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sync_throw"%go.
 
-Definition gorecover : go_string := "runtime.gorecover"%go.
+Definition sync_fatal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sync_fatal"%go.
 
-Definition sync_throw : go_string := "runtime.sync_throw"%go.
+Definition rand_fatal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.rand_fatal"%go.
 
-Definition sync_fatal : go_string := "runtime.sync_fatal"%go.
+Definition sysrand_fatal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sysrand_fatal"%go.
 
-Definition rand_fatal : go_string := "runtime.rand_fatal"%go.
+Definition fips_fatal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.fips_fatal"%go.
 
-Definition sysrand_fatal : go_string := "runtime.sysrand_fatal"%go.
+Definition maps_fatal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.maps_fatal"%go.
 
-Definition fips_fatal : go_string := "runtime.fips_fatal"%go.
+Definition internal_sync_throw {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.internal_sync_throw"%go.
 
-Definition maps_fatal : go_string := "runtime.maps_fatal"%go.
+Definition internal_sync_fatal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.internal_sync_fatal"%go.
 
-Definition internal_sync_throw : go_string := "runtime.internal_sync_throw"%go.
+Definition cgroup_throw {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.cgroup_throw"%go.
 
-Definition internal_sync_fatal : go_string := "runtime.internal_sync_fatal"%go.
+Definition throw {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.throw"%go.
 
-Definition cgroup_throw : go_string := "runtime.cgroup_throw"%go.
+Definition fatal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.fatal"%go.
 
-Definition throw : go_string := "runtime.throw"%go.
+Definition runningPanicDefers {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.runningPanicDefers"%go.
 
-Definition fatal : go_string := "runtime.fatal"%go.
+Definition panicking {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.panicking"%go.
 
-Definition runningPanicDefers : go_string := "runtime.runningPanicDefers"%go.
+Definition paniclk {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.paniclk"%go.
 
-Definition panicking : go_string := "runtime.panicking"%go.
+Definition recovery {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.recovery"%go.
 
-Definition paniclk : go_string := "runtime.paniclk"%go.
+Definition fatalthrow {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.fatalthrow"%go.
 
-Definition recovery : go_string := "runtime.recovery"%go.
+Definition fatalpanic {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.fatalpanic"%go.
 
-Definition fatalthrow : go_string := "runtime.fatalthrow"%go.
+Definition startpanic_m {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.startpanic_m"%go.
 
-Definition fatalpanic : go_string := "runtime.fatalpanic"%go.
+Definition didothers {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.didothers"%go.
 
-Definition startpanic_m : go_string := "runtime.startpanic_m"%go.
+Definition deadlock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.deadlock"%go.
 
-Definition didothers : go_string := "runtime.didothers"%go.
+Definition dopanic_m {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.dopanic_m"%go.
 
-Definition deadlock : go_string := "runtime.deadlock"%go.
+Definition canpanic {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.canpanic"%go.
 
-Definition dopanic_m : go_string := "runtime.dopanic_m"%go.
+Definition shouldPushSigpanic {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.shouldPushSigpanic"%go.
 
-Definition canpanic : go_string := "runtime.canpanic"%go.
+Definition isAbortPC {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.isAbortPC"%go.
 
-Definition shouldPushSigpanic : go_string := "runtime.shouldPushSigpanic"%go.
+Axiom Pinnerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition isAbortPC : go_string := "runtime.isAbortPC"%go.
+Axiom pinnerSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom Pinnerⁱᵐᵖˡ : go.type.
+Axiom pinnerRefStoreSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom pinnerSize : Z.
+Axiom pinnerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom pinnerRefStoreSize : val.
+Definition pinnerGetPtr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.pinnerGetPtr"%go.
 
-Axiom pinnerⁱᵐᵖˡ : go.type.
+Definition isPinned {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.isPinned"%go.
 
-Definition pinnerGetPtr : go_string := "runtime.pinnerGetPtr"%go.
+Definition setPinned {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.setPinned"%go.
 
-Definition isPinned : go_string := "runtime.isPinned"%go.
+Axiom pinStateⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition setPinned : go_string := "runtime.setPinned"%go.
+Axiom pinnerBitsⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom pinStateⁱᵐᵖˡ : go.type.
+Definition pinnerGetPinCounter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.pinnerGetPinCounter"%go.
 
-Axiom pinnerBitsⁱᵐᵖˡ : go.type.
+Definition pinnerLeakPanic {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.pinnerLeakPanic"%go.
 
-Definition pinnerGetPinCounter : go_string := "runtime.pinnerGetPinCounter"%go.
+Axiom pinnerLeakPanic'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition pinnerLeakPanic : go_string := "runtime.pinnerLeakPanic"%go.
+Definition plugin_lastmoduleinit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.plugin_lastmoduleinit"%go.
 
-Axiom pinnerLeakPanic'init : val.
+Definition pluginftabverify {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.pluginftabverify"%go.
 
-Definition plugin_lastmoduleinit : go_string := "runtime.plugin_lastmoduleinit"%go.
+Definition inRange {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.inRange"%go.
 
-Definition pluginftabverify : go_string := "runtime.pluginftabverify"%go.
+Axiom ptabEntryⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition inRange : go_string := "runtime.inRange"%go.
+Axiom suspendGStateⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom ptabEntryⁱᵐᵖˡ : go.type.
+Definition suspendG {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.suspendG"%go.
 
-Axiom suspendGStateⁱᵐᵖˡ : go.type.
+Definition resumeG {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.resumeG"%go.
 
-Definition suspendG : go_string := "runtime.suspendG"%go.
+Definition canPreemptM {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.canPreemptM"%go.
 
-Definition resumeG : go_string := "runtime.resumeG"%go.
+Definition asyncPreempt {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.asyncPreempt"%go.
 
-Definition canPreemptM : go_string := "runtime.canPreemptM"%go.
+Definition asyncPreempt2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.asyncPreempt2"%go.
 
-Definition asyncPreempt : go_string := "runtime.asyncPreempt"%go.
+Definition asyncPreemptStack {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.asyncPreemptStack"%go.
 
-Definition asyncPreempt2 : go_string := "runtime.asyncPreempt2"%go.
+Axiom asyncPreemptStack'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition asyncPreemptStack : go_string := "runtime.asyncPreemptStack"%go.
+Definition wantAsyncPreempt {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.wantAsyncPreempt"%go.
 
-Axiom asyncPreemptStack'init : val.
+Definition isAsyncSafePoint {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.isAsyncSafePoint"%go.
 
-Definition wantAsyncPreempt : go_string := "runtime.wantAsyncPreempt"%go.
+Definition osPreemptExtEnter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.osPreemptExtEnter"%go.
 
-Definition isAsyncSafePoint : go_string := "runtime.isAsyncSafePoint"%go.
+Definition osPreemptExtExit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.osPreemptExtExit"%go.
 
-Definition osPreemptExtEnter : go_string := "runtime.osPreemptExtEnter"%go.
+Axiom hexⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition osPreemptExtExit : go_string := "runtime.osPreemptExtExit"%go.
+Definition bytes {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.bytes"%go.
 
-Axiom hexⁱᵐᵖˡ : go.type.
+Definition printBacklog {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.printBacklog"%go.
 
-Definition bytes : go_string := "runtime.bytes"%go.
+Definition printBacklogIndex {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.printBacklogIndex"%go.
 
-Definition printBacklog : go_string := "runtime.printBacklog"%go.
+Definition recordForPanic {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.recordForPanic"%go.
 
-Definition printBacklogIndex : go_string := "runtime.printBacklogIndex"%go.
+Definition debuglock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.debuglock"%go.
 
-Definition recordForPanic : go_string := "runtime.recordForPanic"%go.
+Definition printlock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.printlock"%go.
 
-Definition debuglock : go_string := "runtime.debuglock"%go.
+Definition printunlock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.printunlock"%go.
 
-Definition printlock : go_string := "runtime.printlock"%go.
+Definition gwrite {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gwrite"%go.
 
-Definition printunlock : go_string := "runtime.printunlock"%go.
+Definition printsp {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.printsp"%go.
 
-Definition gwrite : go_string := "runtime.gwrite"%go.
+Definition printnl {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.printnl"%go.
 
-Definition printsp : go_string := "runtime.printsp"%go.
+Definition printbool {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.printbool"%go.
 
-Definition printnl : go_string := "runtime.printnl"%go.
+Definition printfloat {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.printfloat"%go.
 
-Definition printbool : go_string := "runtime.printbool"%go.
+Definition printcomplex {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.printcomplex"%go.
 
-Definition printfloat : go_string := "runtime.printfloat"%go.
+Definition printuint {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.printuint"%go.
 
-Definition printcomplex : go_string := "runtime.printcomplex"%go.
+Definition printint {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.printint"%go.
 
-Definition printuint : go_string := "runtime.printuint"%go.
+Definition minhexdigits {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.minhexdigits"%go.
 
-Definition printint : go_string := "runtime.printint"%go.
+Axiom minhexdigits'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition minhexdigits : go_string := "runtime.minhexdigits"%go.
+Definition printhex {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.printhex"%go.
 
-Axiom minhexdigits'init : val.
+Definition printpointer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.printpointer"%go.
 
-Definition printhex : go_string := "runtime.printhex"%go.
+Definition printuintptr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.printuintptr"%go.
 
-Definition printpointer : go_string := "runtime.printpointer"%go.
+Definition printstring {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.printstring"%go.
 
-Definition printuintptr : go_string := "runtime.printuintptr"%go.
+Definition printslice {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.printslice"%go.
 
-Definition printstring : go_string := "runtime.printstring"%go.
+Definition printeface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.printeface"%go.
 
-Definition printslice : go_string := "runtime.printslice"%go.
+Definition printiface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.printiface"%go.
 
-Definition printeface : go_string := "runtime.printeface"%go.
+Definition hexdumpWords {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.hexdumpWords"%go.
 
-Definition printiface : go_string := "runtime.printiface"%go.
+Definition modinfo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.modinfo"%go.
 
-Definition hexdumpWords : go_string := "runtime.hexdumpWords"%go.
+Definition m0 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.m0"%go.
 
-Definition modinfo : go_string := "runtime.modinfo"%go.
+Definition g0 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.g0"%go.
 
-Definition m0 : go_string := "runtime.m0"%go.
+Definition mcache0 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mcache0"%go.
 
-Definition g0 : go_string := "runtime.g0"%go.
+Definition raceprocctx0 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.raceprocctx0"%go.
 
-Definition mcache0 : go_string := "runtime.mcache0"%go.
+Definition raceFiniLock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.raceFiniLock"%go.
 
-Definition raceprocctx0 : go_string := "runtime.raceprocctx0"%go.
+Definition runtime_inittasks {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.runtime_inittasks"%go.
 
-Definition raceFiniLock : go_string := "runtime.raceFiniLock"%go.
+Definition main_init_done {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.main_init_done"%go.
 
-Definition runtime_inittasks : go_string := "runtime.runtime_inittasks"%go.
+Definition main_main {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.main_main"%go.
 
-Definition main_init_done : go_string := "runtime.main_init_done"%go.
+Definition mainStarted {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mainStarted"%go.
 
-Definition main_main : go_string := "runtime.main_main"%go.
+Definition runtimeInitTime {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.runtimeInitTime"%go.
 
-Definition mainStarted : go_string := "runtime.mainStarted"%go.
+Definition initSigmask {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.initSigmask"%go.
 
-Definition runtimeInitTime : go_string := "runtime.runtimeInitTime"%go.
+Definition main {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.main"%go.
 
-Definition initSigmask : go_string := "runtime.initSigmask"%go.
+Definition os_beforeExit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.os_beforeExit"%go.
 
-Definition main : go_string := "runtime.main"%go.
+Definition runExitHooks {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.runExitHooks"%go.
 
-Definition os_beforeExit : go_string := "runtime.os_beforeExit"%go.
+Definition forcegchelper {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.forcegchelper"%go.
 
-Definition runExitHooks : go_string := "runtime.runExitHooks"%go.
+Definition Gosched {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.Gosched"%go.
 
-Definition forcegchelper : go_string := "runtime.forcegchelper"%go.
+Definition goschedguarded {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.goschedguarded"%go.
 
-Definition Gosched : go_string := "runtime.Gosched"%go.
+Definition goschedIfBusy {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.goschedIfBusy"%go.
 
-Definition goschedguarded : go_string := "runtime.goschedguarded"%go.
+Definition gopark {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gopark"%go.
 
-Definition goschedIfBusy : go_string := "runtime.goschedIfBusy"%go.
+Definition goparkunlock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.goparkunlock"%go.
 
-Definition gopark : go_string := "runtime.gopark"%go.
+Definition goready {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.goready"%go.
 
-Definition goparkunlock : go_string := "runtime.goparkunlock"%go.
+Definition acquireSudog {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.acquireSudog"%go.
 
-Definition goready : go_string := "runtime.goready"%go.
+Definition releaseSudog {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.releaseSudog"%go.
 
-Definition acquireSudog : go_string := "runtime.acquireSudog"%go.
+Definition badmcall {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.badmcall"%go.
 
-Definition releaseSudog : go_string := "runtime.releaseSudog"%go.
+Definition badmcall2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.badmcall2"%go.
 
-Definition badmcall : go_string := "runtime.badmcall"%go.
+Definition badreflectcall {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.badreflectcall"%go.
 
-Definition badmcall2 : go_string := "runtime.badmcall2"%go.
+Definition badmorestackg0 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.badmorestackg0"%go.
 
-Definition badreflectcall : go_string := "runtime.badreflectcall"%go.
+Definition badmorestackgsignal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.badmorestackgsignal"%go.
 
-Definition badmorestackg0 : go_string := "runtime.badmorestackg0"%go.
+Definition badctxt {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.badctxt"%go.
 
-Definition badmorestackgsignal : go_string := "runtime.badmorestackgsignal"%go.
+Definition gcrash {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcrash"%go.
 
-Definition badctxt : go_string := "runtime.badctxt"%go.
+Definition crashingG {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.crashingG"%go.
 
-Definition gcrash : go_string := "runtime.gcrash"%go.
+Definition switchToCrashStack {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.switchToCrashStack"%go.
 
-Definition crashingG : go_string := "runtime.crashingG"%go.
+Axiom crashStackImplemented : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition switchToCrashStack : go_string := "runtime.switchToCrashStack"%go.
+Definition switchToCrashStack0 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.switchToCrashStack0"%go.
 
-Axiom crashStackImplemented : val.
+Definition lockedOSThread {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.lockedOSThread"%go.
 
-Definition switchToCrashStack0 : go_string := "runtime.switchToCrashStack0"%go.
+Definition allglock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.allglock"%go.
 
-Definition lockedOSThread : go_string := "runtime.lockedOSThread"%go.
+Definition allgs {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.allgs"%go.
 
-Definition allglock : go_string := "runtime.allglock"%go.
+Definition allglen {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.allglen"%go.
 
-Definition allgs : go_string := "runtime.allgs"%go.
+Definition allgptr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.allgptr"%go.
 
-Definition allglen : go_string := "runtime.allglen"%go.
+Definition allgadd {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.allgadd"%go.
 
-Definition allgptr : go_string := "runtime.allgptr"%go.
+Definition allGsSnapshot {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.allGsSnapshot"%go.
 
-Definition allgadd : go_string := "runtime.allgadd"%go.
+Definition atomicAllG {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.atomicAllG"%go.
 
-Definition allGsSnapshot : go_string := "runtime.allGsSnapshot"%go.
+Definition atomicAllGIndex {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.atomicAllGIndex"%go.
 
-Definition atomicAllG : go_string := "runtime.atomicAllG"%go.
+Definition forEachG {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.forEachG"%go.
 
-Definition atomicAllGIndex : go_string := "runtime.atomicAllGIndex"%go.
+Definition forEachGRace {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.forEachGRace"%go.
 
-Definition forEachG : go_string := "runtime.forEachG"%go.
+Axiom _GoidCacheBatch : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition forEachGRace : go_string := "runtime.forEachGRace"%go.
+Definition cpuinit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.cpuinit"%go.
 
-Axiom _GoidCacheBatch : Z.
+Definition getGodebugEarly {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.getGodebugEarly"%go.
 
-Definition cpuinit : go_string := "runtime.cpuinit"%go.
+Definition schedinit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.schedinit"%go.
 
-Definition getGodebugEarly : go_string := "runtime.getGodebugEarly"%go.
+Definition dumpgstatus {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.dumpgstatus"%go.
 
-Definition schedinit : go_string := "runtime.schedinit"%go.
+Definition checkmcount {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.checkmcount"%go.
 
-Definition dumpgstatus : go_string := "runtime.dumpgstatus"%go.
+Definition mReserveID {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mReserveID"%go.
 
-Definition checkmcount : go_string := "runtime.checkmcount"%go.
+Definition mcommoninit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mcommoninit"%go.
 
-Definition mReserveID : go_string := "runtime.mReserveID"%go.
+Definition mProfStackInit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mProfStackInit"%go.
 
-Definition mcommoninit : go_string := "runtime.mcommoninit"%go.
+Definition makeProfStackFP {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.makeProfStackFP"%go.
 
-Definition mProfStackInit : go_string := "runtime.mProfStackInit"%go.
+Definition makeProfStack {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.makeProfStack"%go.
 
-Definition makeProfStackFP : go_string := "runtime.makeProfStackFP"%go.
+Definition pprof_makeProfStack {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.pprof_makeProfStack"%go.
 
-Definition makeProfStack : go_string := "runtime.makeProfStack"%go.
+Axiom osHasLowResTimer : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition pprof_makeProfStack : go_string := "runtime.pprof_makeProfStack"%go.
+Axiom osHasLowResClockInt : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom osHasLowResTimer : val.
+Axiom osHasLowResClock : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom osHasLowResClockInt : Z.
+Definition ready {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.ready"%go.
 
-Axiom osHasLowResClock : val.
+Axiom freezeStopWait : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition ready : go_string := "runtime.ready"%go.
+Definition freezing {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.freezing"%go.
 
-Axiom freezeStopWait : Z.
+Definition freezetheworld {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.freezetheworld"%go.
 
-Definition freezing : go_string := "runtime.freezing"%go.
+Definition readgstatus {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.readgstatus"%go.
 
-Definition freezetheworld : go_string := "runtime.freezetheworld"%go.
+Definition casfrom_Gscanstatus {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.casfrom_Gscanstatus"%go.
 
-Definition readgstatus : go_string := "runtime.readgstatus"%go.
+Definition castogscanstatus {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.castogscanstatus"%go.
 
-Definition casfrom_Gscanstatus : go_string := "runtime.casfrom_Gscanstatus"%go.
+Definition casgstatusAlwaysTrack {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.casgstatusAlwaysTrack"%go.
 
-Definition castogscanstatus : go_string := "runtime.castogscanstatus"%go.
+Axiom casgstatusAlwaysTrack'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition casgstatusAlwaysTrack : go_string := "runtime.casgstatusAlwaysTrack"%go.
+Definition casgstatus {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.casgstatus"%go.
 
-Axiom casgstatusAlwaysTrack'init : val.
+Definition casGToWaiting {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.casGToWaiting"%go.
 
-Definition casgstatus : go_string := "runtime.casgstatus"%go.
+Definition casGToWaitingForSuspendG {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.casGToWaitingForSuspendG"%go.
 
-Definition casGToWaiting : go_string := "runtime.casGToWaiting"%go.
+Definition casGToPreemptScan {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.casGToPreemptScan"%go.
 
-Definition casGToWaitingForSuspendG : go_string := "runtime.casGToWaitingForSuspendG"%go.
+Definition casGFromPreempted {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.casGFromPreempted"%go.
 
-Definition casGToPreemptScan : go_string := "runtime.casGToPreemptScan"%go.
+Axiom stwReasonⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition casGFromPreempted : go_string := "runtime.casGFromPreempted"%go.
+Axiom stwUnknown : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stwReasonⁱᵐᵖˡ : go.type.
+Axiom stwGCMarkTerm : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stwUnknown : val.
+Axiom stwGCSweepTerm : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stwGCMarkTerm : val.
+Axiom stwWriteHeapDump : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stwGCSweepTerm : val.
+Axiom stwGoroutineProfile : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stwWriteHeapDump : val.
+Axiom stwGoroutineProfileCleanup : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stwGoroutineProfile : val.
+Axiom stwAllGoroutinesStack : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stwGoroutineProfileCleanup : val.
+Axiom stwReadMemStats : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stwAllGoroutinesStack : val.
+Axiom stwAllThreadsSyscall : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stwReadMemStats : val.
+Axiom stwGOMAXPROCS : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stwAllThreadsSyscall : val.
+Axiom stwStartTrace : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stwGOMAXPROCS : val.
+Axiom stwStopTrace : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stwStartTrace : val.
+Axiom stwForTestCountPagesInUse : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stwStopTrace : val.
+Axiom stwForTestReadMetricsSlow : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stwForTestCountPagesInUse : val.
+Axiom stwForTestReadMemStatsSlow : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stwForTestReadMetricsSlow : val.
+Axiom stwForTestPageCachePagesLeaked : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stwForTestReadMemStatsSlow : val.
+Axiom stwForTestResetDebugLog : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stwForTestPageCachePagesLeaked : val.
+Definition stwReasonStrings {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.stwReasonStrings"%go.
 
-Axiom stwForTestResetDebugLog : val.
+Axiom stwReasonStrings'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition stwReasonStrings : go_string := "runtime.stwReasonStrings"%go.
+Axiom worldStopⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom stwReasonStrings'init : val.
+Definition stopTheWorldContext {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.stopTheWorldContext"%go.
 
-Axiom worldStopⁱᵐᵖˡ : go.type.
+Definition stopTheWorld {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.stopTheWorld"%go.
 
-Definition stopTheWorldContext : go_string := "runtime.stopTheWorldContext"%go.
+Definition startTheWorld {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.startTheWorld"%go.
 
-Definition stopTheWorld : go_string := "runtime.stopTheWorld"%go.
+Definition stopTheWorldGC {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.stopTheWorldGC"%go.
 
-Definition startTheWorld : go_string := "runtime.startTheWorld"%go.
+Definition startTheWorldGC {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.startTheWorldGC"%go.
 
-Definition stopTheWorldGC : go_string := "runtime.stopTheWorldGC"%go.
+Definition worldsema {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.worldsema"%go.
 
-Definition startTheWorldGC : go_string := "runtime.startTheWorldGC"%go.
+Axiom worldsema'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition worldsema : go_string := "runtime.worldsema"%go.
+Definition gcsema {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcsema"%go.
 
-Axiom worldsema'init : val.
+Axiom gcsema'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition gcsema : go_string := "runtime.gcsema"%go.
+Definition stopTheWorldWithSema {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.stopTheWorldWithSema"%go.
 
-Axiom gcsema'init : val.
+Definition startTheWorldWithSema {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.startTheWorldWithSema"%go.
 
-Definition stopTheWorldWithSema : go_string := "runtime.stopTheWorldWithSema"%go.
+Definition usesLibcall {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.usesLibcall"%go.
 
-Definition startTheWorldWithSema : go_string := "runtime.startTheWorldWithSema"%go.
+Definition mStackIsSystemAllocated {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mStackIsSystemAllocated"%go.
 
-Definition usesLibcall : go_string := "runtime.usesLibcall"%go.
+Definition mstart {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mstart"%go.
 
-Definition mStackIsSystemAllocated : go_string := "runtime.mStackIsSystemAllocated"%go.
+Definition mstart0 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mstart0"%go.
 
-Definition mstart : go_string := "runtime.mstart"%go.
+Definition mstart1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mstart1"%go.
 
-Definition mstart0 : go_string := "runtime.mstart0"%go.
+Definition mstartm0 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mstartm0"%go.
 
-Definition mstart1 : go_string := "runtime.mstart1"%go.
+Definition mPark {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mPark"%go.
 
-Definition mstartm0 : go_string := "runtime.mstartm0"%go.
+Definition mexit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mexit"%go.
 
-Definition mPark : go_string := "runtime.mPark"%go.
+Definition forEachP {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.forEachP"%go.
 
-Definition mexit : go_string := "runtime.mexit"%go.
+Definition forEachPInternal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.forEachPInternal"%go.
 
-Definition forEachP : go_string := "runtime.forEachP"%go.
+Definition runSafePointFn {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.runSafePointFn"%go.
 
-Definition forEachPInternal : go_string := "runtime.forEachPInternal"%go.
+Definition cgoThreadStart {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.cgoThreadStart"%go.
 
-Definition runSafePointFn : go_string := "runtime.runSafePointFn"%go.
+Axiom cgothreadstartⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition cgoThreadStart : go_string := "runtime.cgoThreadStart"%go.
+Definition allocm {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.allocm"%go.
 
-Axiom cgothreadstartⁱᵐᵖˡ : go.type.
+Definition needm {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.needm"%go.
 
-Definition allocm : go_string := "runtime.allocm"%go.
+Definition needAndBindM {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.needAndBindM"%go.
 
-Definition needm : go_string := "runtime.needm"%go.
+Definition newextram {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.newextram"%go.
 
-Definition needAndBindM : go_string := "runtime.needAndBindM"%go.
+Definition oneNewExtraM {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.oneNewExtraM"%go.
 
-Definition newextram : go_string := "runtime.newextram"%go.
+Definition dropm {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.dropm"%go.
 
-Definition oneNewExtraM : go_string := "runtime.oneNewExtraM"%go.
+Definition cgoBindM {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.cgoBindM"%go.
 
-Definition dropm : go_string := "runtime.dropm"%go.
+Definition getm {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.getm"%go.
 
-Definition cgoBindM : go_string := "runtime.cgoBindM"%go.
+Definition extraM {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.extraM"%go.
 
-Definition getm : go_string := "runtime.getm"%go.
+Definition extraMLength {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.extraMLength"%go.
 
-Definition extraM : go_string := "runtime.extraM"%go.
+Definition extraMWaiters {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.extraMWaiters"%go.
 
-Definition extraMLength : go_string := "runtime.extraMLength"%go.
+Definition extraMInUse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.extraMInUse"%go.
 
-Definition extraMWaiters : go_string := "runtime.extraMWaiters"%go.
+Definition lockextra {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.lockextra"%go.
 
-Definition extraMInUse : go_string := "runtime.extraMInUse"%go.
+Definition unlockextra {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.unlockextra"%go.
 
-Definition lockextra : go_string := "runtime.lockextra"%go.
+Definition getExtraM {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.getExtraM"%go.
 
-Definition unlockextra : go_string := "runtime.unlockextra"%go.
+Definition putExtraM {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.putExtraM"%go.
 
-Definition getExtraM : go_string := "runtime.getExtraM"%go.
+Definition addExtraM {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.addExtraM"%go.
 
-Definition putExtraM : go_string := "runtime.putExtraM"%go.
+Definition allocmLock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.allocmLock"%go.
 
-Definition addExtraM : go_string := "runtime.addExtraM"%go.
+Definition execLock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.execLock"%go.
 
-Definition allocmLock : go_string := "runtime.allocmLock"%go.
+Axiom failthreadcreate : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
 
-Definition execLock : go_string := "runtime.execLock"%go.
+Axiom failallocatestack : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
 
-Axiom failthreadcreate : go_string.
+Definition newmHandoff {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.newmHandoff"%go.
 
-Axiom failallocatestack : go_string.
+Definition newm {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.newm"%go.
 
-Definition newmHandoff : go_string := "runtime.newmHandoff"%go.
+Definition newm1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.newm1"%go.
 
-Definition newm : go_string := "runtime.newm"%go.
+Definition startTemplateThread {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.startTemplateThread"%go.
 
-Definition newm1 : go_string := "runtime.newm1"%go.
+Definition templateThread {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.templateThread"%go.
 
-Definition startTemplateThread : go_string := "runtime.startTemplateThread"%go.
+Definition stopm {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.stopm"%go.
 
-Definition templateThread : go_string := "runtime.templateThread"%go.
+Definition mspinning {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mspinning"%go.
 
-Definition stopm : go_string := "runtime.stopm"%go.
+Definition startm {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.startm"%go.
 
-Definition mspinning : go_string := "runtime.mspinning"%go.
+Definition handoffp {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.handoffp"%go.
 
-Definition startm : go_string := "runtime.startm"%go.
+Definition wakep {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.wakep"%go.
 
-Definition handoffp : go_string := "runtime.handoffp"%go.
+Definition stoplockedm {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.stoplockedm"%go.
 
-Definition wakep : go_string := "runtime.wakep"%go.
+Definition startlockedm {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.startlockedm"%go.
 
-Definition stoplockedm : go_string := "runtime.stoplockedm"%go.
+Definition gcstopm {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcstopm"%go.
 
-Definition startlockedm : go_string := "runtime.startlockedm"%go.
+Definition execute {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.execute"%go.
 
-Definition gcstopm : go_string := "runtime.gcstopm"%go.
+Definition findRunnable {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.findRunnable"%go.
 
-Definition execute : go_string := "runtime.execute"%go.
+Definition pollWork {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.pollWork"%go.
 
-Definition findRunnable : go_string := "runtime.findRunnable"%go.
+Definition stealWork {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.stealWork"%go.
 
-Definition pollWork : go_string := "runtime.pollWork"%go.
+Definition checkRunqsNoP {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.checkRunqsNoP"%go.
 
-Definition stealWork : go_string := "runtime.stealWork"%go.
+Definition checkTimersNoP {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.checkTimersNoP"%go.
 
-Definition checkRunqsNoP : go_string := "runtime.checkRunqsNoP"%go.
+Definition checkIdleGCNoP {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.checkIdleGCNoP"%go.
 
-Definition checkTimersNoP : go_string := "runtime.checkTimersNoP"%go.
+Definition wakeNetPoller {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.wakeNetPoller"%go.
 
-Definition checkIdleGCNoP : go_string := "runtime.checkIdleGCNoP"%go.
+Definition resetspinning {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.resetspinning"%go.
 
-Definition wakeNetPoller : go_string := "runtime.wakeNetPoller"%go.
+Definition injectglist {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.injectglist"%go.
 
-Definition resetspinning : go_string := "runtime.resetspinning"%go.
+Definition schedule {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.schedule"%go.
 
-Definition injectglist : go_string := "runtime.injectglist"%go.
+Definition dropg {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.dropg"%go.
 
-Definition schedule : go_string := "runtime.schedule"%go.
+Definition parkunlock_c {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.parkunlock_c"%go.
 
-Definition dropg : go_string := "runtime.dropg"%go.
+Definition park_m {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.park_m"%go.
 
-Definition parkunlock_c : go_string := "runtime.parkunlock_c"%go.
+Definition goschedImpl {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.goschedImpl"%go.
 
-Definition park_m : go_string := "runtime.park_m"%go.
+Definition gosched_m {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gosched_m"%go.
 
-Definition goschedImpl : go_string := "runtime.goschedImpl"%go.
+Definition goschedguarded_m {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.goschedguarded_m"%go.
 
-Definition gosched_m : go_string := "runtime.gosched_m"%go.
+Definition gopreempt_m {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gopreempt_m"%go.
 
-Definition goschedguarded_m : go_string := "runtime.goschedguarded_m"%go.
+Definition preemptPark {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.preemptPark"%go.
 
-Definition gopreempt_m : go_string := "runtime.gopreempt_m"%go.
+Definition goyield {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.goyield"%go.
 
-Definition preemptPark : go_string := "runtime.preemptPark"%go.
+Definition goyield_m {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.goyield_m"%go.
 
-Definition goyield : go_string := "runtime.goyield"%go.
+Definition goexit1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.goexit1"%go.
 
-Definition goyield_m : go_string := "runtime.goyield_m"%go.
+Definition goexit0 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.goexit0"%go.
 
-Definition goexit1 : go_string := "runtime.goexit1"%go.
+Definition gdestroy {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gdestroy"%go.
 
-Definition goexit0 : go_string := "runtime.goexit0"%go.
+Definition save {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.save"%go.
 
-Definition gdestroy : go_string := "runtime.gdestroy"%go.
+Definition reentersyscall {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reentersyscall"%go.
 
-Definition save : go_string := "runtime.save"%go.
+Definition entersyscall {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.entersyscall"%go.
 
-Definition reentersyscall : go_string := "runtime.reentersyscall"%go.
+Definition entersyscall_sysmon {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.entersyscall_sysmon"%go.
 
-Definition entersyscall : go_string := "runtime.entersyscall"%go.
+Definition entersyscall_gcwait {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.entersyscall_gcwait"%go.
 
-Definition entersyscall_sysmon : go_string := "runtime.entersyscall_sysmon"%go.
+Definition entersyscallblock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.entersyscallblock"%go.
 
-Definition entersyscall_gcwait : go_string := "runtime.entersyscall_gcwait"%go.
+Definition entersyscallblock_handoff {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.entersyscallblock_handoff"%go.
 
-Definition entersyscallblock : go_string := "runtime.entersyscallblock"%go.
+Definition exitsyscall {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.exitsyscall"%go.
 
-Definition entersyscallblock_handoff : go_string := "runtime.entersyscallblock_handoff"%go.
+Definition exitsyscallfast {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.exitsyscallfast"%go.
 
-Definition exitsyscall : go_string := "runtime.exitsyscall"%go.
+Definition exitsyscallfast_reacquired {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.exitsyscallfast_reacquired"%go.
 
-Definition exitsyscallfast : go_string := "runtime.exitsyscallfast"%go.
+Definition exitsyscallfast_pidle {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.exitsyscallfast_pidle"%go.
 
-Definition exitsyscallfast_reacquired : go_string := "runtime.exitsyscallfast_reacquired"%go.
+Definition exitsyscall0 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.exitsyscall0"%go.
 
-Definition exitsyscallfast_pidle : go_string := "runtime.exitsyscallfast_pidle"%go.
+Definition syscall_runtime_BeforeFork {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.syscall_runtime_BeforeFork"%go.
 
-Definition exitsyscall0 : go_string := "runtime.exitsyscall0"%go.
+Definition syscall_runtime_AfterFork {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.syscall_runtime_AfterFork"%go.
 
-Definition syscall_runtime_BeforeFork : go_string := "runtime.syscall_runtime_BeforeFork"%go.
+Definition inForkedChild {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.inForkedChild"%go.
 
-Definition syscall_runtime_AfterFork : go_string := "runtime.syscall_runtime_AfterFork"%go.
+Definition syscall_runtime_AfterForkInChild {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.syscall_runtime_AfterForkInChild"%go.
 
-Definition inForkedChild : go_string := "runtime.inForkedChild"%go.
+Definition pendingPreemptSignals {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.pendingPreemptSignals"%go.
 
-Definition syscall_runtime_AfterForkInChild : go_string := "runtime.syscall_runtime_AfterForkInChild"%go.
+Definition syscall_runtime_BeforeExec {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.syscall_runtime_BeforeExec"%go.
 
-Definition pendingPreemptSignals : go_string := "runtime.pendingPreemptSignals"%go.
+Definition syscall_runtime_AfterExec {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.syscall_runtime_AfterExec"%go.
 
-Definition syscall_runtime_BeforeExec : go_string := "runtime.syscall_runtime_BeforeExec"%go.
+Definition malg {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.malg"%go.
 
-Definition syscall_runtime_AfterExec : go_string := "runtime.syscall_runtime_AfterExec"%go.
+Definition newproc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.newproc"%go.
 
-Definition malg : go_string := "runtime.malg"%go.
+Definition newproc1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.newproc1"%go.
 
-Definition newproc : go_string := "runtime.newproc"%go.
+Definition saveAncestors {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.saveAncestors"%go.
 
-Definition newproc1 : go_string := "runtime.newproc1"%go.
+Definition gfput {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gfput"%go.
 
-Definition saveAncestors : go_string := "runtime.saveAncestors"%go.
+Definition gfget {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gfget"%go.
 
-Definition gfput : go_string := "runtime.gfput"%go.
+Definition gfpurge {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gfpurge"%go.
 
-Definition gfget : go_string := "runtime.gfget"%go.
+Definition Breakpoint {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.Breakpoint"%go.
 
-Definition gfpurge : go_string := "runtime.gfpurge"%go.
+Definition dolockOSThread {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.dolockOSThread"%go.
 
-Definition Breakpoint : go_string := "runtime.Breakpoint"%go.
+Definition LockOSThread {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.LockOSThread"%go.
 
-Definition dolockOSThread : go_string := "runtime.dolockOSThread"%go.
+Definition lockOSThread {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.lockOSThread"%go.
 
-Definition LockOSThread : go_string := "runtime.LockOSThread"%go.
+Definition dounlockOSThread {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.dounlockOSThread"%go.
 
-Definition lockOSThread : go_string := "runtime.lockOSThread"%go.
+Definition UnlockOSThread {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.UnlockOSThread"%go.
 
-Definition dounlockOSThread : go_string := "runtime.dounlockOSThread"%go.
+Definition unlockOSThread {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.unlockOSThread"%go.
 
-Definition UnlockOSThread : go_string := "runtime.UnlockOSThread"%go.
+Definition badunlockosthread {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.badunlockosthread"%go.
 
-Definition unlockOSThread : go_string := "runtime.unlockOSThread"%go.
+Definition gcount {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcount"%go.
 
-Definition badunlockosthread : go_string := "runtime.badunlockosthread"%go.
+Definition mcount {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mcount"%go.
 
-Definition gcount : go_string := "runtime.gcount"%go.
+Definition prof {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.prof"%go.
 
-Definition mcount : go_string := "runtime.mcount"%go.
+Definition _System {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime._System"%go.
 
-Definition prof : go_string := "runtime.prof"%go.
+Definition _ExternalCode {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime._ExternalCode"%go.
 
-Definition _System : go_string := "runtime._System"%go.
+Definition _LostExternalCode {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime._LostExternalCode"%go.
 
-Definition _ExternalCode : go_string := "runtime._ExternalCode"%go.
+Definition _GC {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime._GC"%go.
 
-Definition _LostExternalCode : go_string := "runtime._LostExternalCode"%go.
+Definition _LostSIGPROFDuringAtomic64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime._LostSIGPROFDuringAtomic64"%go.
 
-Definition _GC : go_string := "runtime._GC"%go.
+Definition _LostContendedRuntimeLock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime._LostContendedRuntimeLock"%go.
 
-Definition _LostSIGPROFDuringAtomic64 : go_string := "runtime._LostSIGPROFDuringAtomic64"%go.
+Definition _VDSO {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime._VDSO"%go.
 
-Definition _LostContendedRuntimeLock : go_string := "runtime._LostContendedRuntimeLock"%go.
+Definition sigprof {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sigprof"%go.
 
-Definition _VDSO : go_string := "runtime._VDSO"%go.
+Definition setcpuprofilerate {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.setcpuprofilerate"%go.
 
-Definition sigprof : go_string := "runtime.sigprof"%go.
+Definition procresize {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.procresize"%go.
 
-Definition setcpuprofilerate : go_string := "runtime.setcpuprofilerate"%go.
+Definition acquirep {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.acquirep"%go.
 
-Definition procresize : go_string := "runtime.procresize"%go.
+Definition wirep {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.wirep"%go.
 
-Definition acquirep : go_string := "runtime.acquirep"%go.
+Definition releasep {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.releasep"%go.
 
-Definition wirep : go_string := "runtime.wirep"%go.
+Definition releasepNoTrace {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.releasepNoTrace"%go.
 
-Definition releasep : go_string := "runtime.releasep"%go.
+Definition incidlelocked {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.incidlelocked"%go.
 
-Definition releasepNoTrace : go_string := "runtime.releasepNoTrace"%go.
+Definition checkdead {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.checkdead"%go.
 
-Definition incidlelocked : go_string := "runtime.incidlelocked"%go.
+Definition forcegcperiod {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.forcegcperiod"%go.
 
-Definition checkdead : go_string := "runtime.checkdead"%go.
+Axiom forcegcperiod'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition forcegcperiod : go_string := "runtime.forcegcperiod"%go.
+Definition needSysmonWorkaround {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.needSysmonWorkaround"%go.
 
-Axiom forcegcperiod'init : val.
+Axiom needSysmonWorkaround'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition needSysmonWorkaround : go_string := "runtime.needSysmonWorkaround"%go.
+Axiom haveSysmon : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom needSysmonWorkaround'init : val.
+Definition sysmon {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sysmon"%go.
 
-Axiom haveSysmon : val.
+Axiom sysmontickⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition sysmon : go_string := "runtime.sysmon"%go.
+Axiom forcePreemptNS : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom sysmontickⁱᵐᵖˡ : go.type.
+Definition retake {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.retake"%go.
 
-Axiom forcePreemptNS : Z.
+Definition preemptall {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.preemptall"%go.
 
-Definition retake : go_string := "runtime.retake"%go.
+Definition preemptone {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.preemptone"%go.
 
-Definition preemptall : go_string := "runtime.preemptall"%go.
+Definition starttime {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.starttime"%go.
 
-Definition preemptone : go_string := "runtime.preemptone"%go.
+Definition schedtrace {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.schedtrace"%go.
 
-Definition starttime : go_string := "runtime.starttime"%go.
+Axiom updateMaxProcsGStateⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition schedtrace : go_string := "runtime.schedtrace"%go.
+Definition updatemaxprocs {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.updatemaxprocs"%go.
 
-Axiom updateMaxProcsGStateⁱᵐᵖˡ : go.type.
+Axiom updatemaxprocs'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition updatemaxprocs : go_string := "runtime.updatemaxprocs"%go.
+Definition updateMaxProcsG {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.updateMaxProcsG"%go.
 
-Axiom updatemaxprocs'init : val.
+Definition computeMaxProcsLock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.computeMaxProcsLock"%go.
 
-Definition updateMaxProcsG : go_string := "runtime.updateMaxProcsG"%go.
+Definition defaultGOMAXPROCSUpdateEnable {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.defaultGOMAXPROCSUpdateEnable"%go.
 
-Definition computeMaxProcsLock : go_string := "runtime.computeMaxProcsLock"%go.
+Definition updateMaxProcsGoroutine {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.updateMaxProcsGoroutine"%go.
 
-Definition defaultGOMAXPROCSUpdateEnable : go_string := "runtime.defaultGOMAXPROCSUpdateEnable"%go.
+Definition sysmonUpdateGOMAXPROCS {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sysmonUpdateGOMAXPROCS"%go.
 
-Definition updateMaxProcsGoroutine : go_string := "runtime.updateMaxProcsGoroutine"%go.
+Definition schedEnableUser {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.schedEnableUser"%go.
 
-Definition sysmonUpdateGOMAXPROCS : go_string := "runtime.sysmonUpdateGOMAXPROCS"%go.
+Definition schedEnabled {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.schedEnabled"%go.
 
-Definition schedEnableUser : go_string := "runtime.schedEnableUser"%go.
+Definition mput {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mput"%go.
 
-Definition schedEnabled : go_string := "runtime.schedEnabled"%go.
+Definition mget {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mget"%go.
 
-Definition mput : go_string := "runtime.mput"%go.
+Definition globrunqput {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.globrunqput"%go.
 
-Definition mget : go_string := "runtime.mget"%go.
+Definition globrunqputhead {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.globrunqputhead"%go.
 
-Definition globrunqput : go_string := "runtime.globrunqput"%go.
+Definition globrunqputbatch {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.globrunqputbatch"%go.
 
-Definition globrunqputhead : go_string := "runtime.globrunqputhead"%go.
+Definition globrunqget {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.globrunqget"%go.
 
-Definition globrunqputbatch : go_string := "runtime.globrunqputbatch"%go.
+Definition globrunqgetbatch {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.globrunqgetbatch"%go.
 
-Definition globrunqget : go_string := "runtime.globrunqget"%go.
+Axiom pMaskⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition globrunqgetbatch : go_string := "runtime.globrunqgetbatch"%go.
+Definition pidleput {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.pidleput"%go.
 
-Axiom pMaskⁱᵐᵖˡ : go.type.
+Definition pidleget {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.pidleget"%go.
 
-Definition pidleput : go_string := "runtime.pidleput"%go.
+Definition pidlegetSpinning {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.pidlegetSpinning"%go.
 
-Definition pidleget : go_string := "runtime.pidleget"%go.
+Definition runqempty {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.runqempty"%go.
 
-Definition pidlegetSpinning : go_string := "runtime.pidlegetSpinning"%go.
+Axiom randomizeScheduler : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition runqempty : go_string := "runtime.runqempty"%go.
+Definition runqput {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.runqput"%go.
 
-Axiom randomizeScheduler : val.
+Definition runqputslow {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.runqputslow"%go.
 
-Definition runqput : go_string := "runtime.runqput"%go.
+Definition runqputbatch {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.runqputbatch"%go.
 
-Definition runqputslow : go_string := "runtime.runqputslow"%go.
+Definition runqget {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.runqget"%go.
 
-Definition runqputbatch : go_string := "runtime.runqputbatch"%go.
+Definition runqdrain {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.runqdrain"%go.
 
-Definition runqget : go_string := "runtime.runqget"%go.
+Definition runqgrab {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.runqgrab"%go.
 
-Definition runqdrain : go_string := "runtime.runqdrain"%go.
+Definition runqsteal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.runqsteal"%go.
 
-Definition runqgrab : go_string := "runtime.runqgrab"%go.
+Axiom gQueueⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition runqsteal : go_string := "runtime.runqsteal"%go.
+Axiom gListⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom gQueueⁱᵐᵖˡ : go.type.
+Definition setMaxThreads {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.setMaxThreads"%go.
 
-Axiom gListⁱᵐᵖˡ : go.type.
+Definition procPin {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.procPin"%go.
 
-Definition setMaxThreads : go_string := "runtime.setMaxThreads"%go.
+Definition procUnpin {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.procUnpin"%go.
 
-Definition procPin : go_string := "runtime.procPin"%go.
+Definition sync_runtime_procPin {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sync_runtime_procPin"%go.
 
-Definition procUnpin : go_string := "runtime.procUnpin"%go.
+Definition sync_runtime_procUnpin {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sync_runtime_procUnpin"%go.
 
-Definition sync_runtime_procPin : go_string := "runtime.sync_runtime_procPin"%go.
+Definition sync_atomic_runtime_procPin {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sync_atomic_runtime_procPin"%go.
 
-Definition sync_runtime_procUnpin : go_string := "runtime.sync_runtime_procUnpin"%go.
+Definition sync_atomic_runtime_procUnpin {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sync_atomic_runtime_procUnpin"%go.
 
-Definition sync_atomic_runtime_procPin : go_string := "runtime.sync_atomic_runtime_procPin"%go.
+Definition internal_sync_runtime_canSpin {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.internal_sync_runtime_canSpin"%go.
 
-Definition sync_atomic_runtime_procUnpin : go_string := "runtime.sync_atomic_runtime_procUnpin"%go.
+Definition internal_sync_runtime_doSpin {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.internal_sync_runtime_doSpin"%go.
 
-Definition internal_sync_runtime_canSpin : go_string := "runtime.internal_sync_runtime_canSpin"%go.
+Definition sync_runtime_canSpin {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sync_runtime_canSpin"%go.
 
-Definition internal_sync_runtime_doSpin : go_string := "runtime.internal_sync_runtime_doSpin"%go.
+Definition sync_runtime_doSpin {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sync_runtime_doSpin"%go.
 
-Definition sync_runtime_canSpin : go_string := "runtime.sync_runtime_canSpin"%go.
+Definition stealOrder {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.stealOrder"%go.
 
-Definition sync_runtime_doSpin : go_string := "runtime.sync_runtime_doSpin"%go.
+Axiom randomOrderⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition stealOrder : go_string := "runtime.stealOrder"%go.
+Axiom randomEnumⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom randomOrderⁱᵐᵖˡ : go.type.
+Definition gcd {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcd"%go.
 
-Axiom randomEnumⁱᵐᵖˡ : go.type.
+Axiom initTaskⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition gcd : go_string := "runtime.gcd"%go.
+Definition inittrace {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.inittrace"%go.
 
-Axiom initTaskⁱᵐᵖˡ : go.type.
+Axiom tracestatⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition inittrace : go_string := "runtime.inittrace"%go.
+Definition doInit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.doInit"%go.
 
-Axiom tracestatⁱᵐᵖˡ : go.type.
+Definition doInit1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.doInit1"%go.
 
-Definition doInit : go_string := "runtime.doInit"%go.
+Axiom profBufⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition doInit1 : go_string := "runtime.doInit1"%go.
+Axiom profAtomicⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom profBufⁱᵐᵖˡ : go.type.
+Axiom profIndexⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom profAtomicⁱᵐᵖˡ : go.type.
+Axiom profReaderSleeping : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom profIndexⁱᵐᵖˡ : go.type.
+Axiom profWriteExtra : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom profReaderSleeping : val.
+Definition countSub {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.countSub"%go.
 
-Axiom profWriteExtra : val.
+Definition newProfBuf {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.newProfBuf"%go.
 
-Definition countSub : go_string := "runtime.countSub"%go.
+Axiom profBufReadModeⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition newProfBuf : go_string := "runtime.newProfBuf"%go.
+Axiom profBufBlocking : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom profBufReadModeⁱᵐᵖˡ : go.type.
+Axiom profBufNonBlocking : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom profBufBlocking : val.
+Definition overflowTag {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.overflowTag"%go.
 
-Axiom profBufNonBlocking : val.
+Definition labelSync {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.labelSync"%go.
 
-Definition overflowTag : go_string := "runtime.overflowTag"%go.
+Definition runtime_setProfLabel {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.runtime_setProfLabel"%go.
 
-Definition labelSync : go_string := "runtime.labelSync"%go.
+Definition runtime_getProfLabel {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.runtime_getProfLabel"%go.
 
-Definition runtime_setProfLabel : go_string := "runtime.runtime_setProfLabel"%go.
+Axiom raceenabled : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition runtime_getProfLabel : go_string := "runtime.runtime_getProfLabel"%go.
+Definition raceReadObjectPC {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.raceReadObjectPC"%go.
 
-Axiom raceenabled : val.
+Definition raceWriteObjectPC {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.raceWriteObjectPC"%go.
 
-Definition raceReadObjectPC : go_string := "runtime.raceReadObjectPC"%go.
+Definition raceinit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.raceinit"%go.
 
-Definition raceWriteObjectPC : go_string := "runtime.raceWriteObjectPC"%go.
+Definition racefini {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.racefini"%go.
 
-Definition raceinit : go_string := "runtime.raceinit"%go.
+Definition raceproccreate {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.raceproccreate"%go.
 
-Definition racefini : go_string := "runtime.racefini"%go.
+Definition raceprocdestroy {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.raceprocdestroy"%go.
 
-Definition raceproccreate : go_string := "runtime.raceproccreate"%go.
+Definition racemapshadow {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.racemapshadow"%go.
 
-Definition raceprocdestroy : go_string := "runtime.raceprocdestroy"%go.
+Definition racewritepc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.racewritepc"%go.
 
-Definition racemapshadow : go_string := "runtime.racemapshadow"%go.
+Definition racereadpc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.racereadpc"%go.
 
-Definition racewritepc : go_string := "runtime.racewritepc"%go.
+Definition racereadrangepc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.racereadrangepc"%go.
 
-Definition racereadpc : go_string := "runtime.racereadpc"%go.
+Definition racewriterangepc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.racewriterangepc"%go.
 
-Definition racereadrangepc : go_string := "runtime.racereadrangepc"%go.
+Definition raceacquire {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.raceacquire"%go.
 
-Definition racewriterangepc : go_string := "runtime.racewriterangepc"%go.
+Definition raceacquireg {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.raceacquireg"%go.
 
-Definition raceacquire : go_string := "runtime.raceacquire"%go.
+Definition raceacquirectx {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.raceacquirectx"%go.
 
-Definition raceacquireg : go_string := "runtime.raceacquireg"%go.
+Definition racerelease {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.racerelease"%go.
 
-Definition raceacquirectx : go_string := "runtime.raceacquirectx"%go.
+Definition racereleaseg {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.racereleaseg"%go.
 
-Definition racerelease : go_string := "runtime.racerelease"%go.
+Definition racereleaseacquire {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.racereleaseacquire"%go.
 
-Definition racereleaseg : go_string := "runtime.racereleaseg"%go.
+Definition racereleaseacquireg {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.racereleaseacquireg"%go.
 
-Definition racereleaseacquire : go_string := "runtime.racereleaseacquire"%go.
+Definition racereleasemerge {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.racereleasemerge"%go.
 
-Definition racereleaseacquireg : go_string := "runtime.racereleaseacquireg"%go.
+Definition racereleasemergeg {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.racereleasemergeg"%go.
 
-Definition racereleasemerge : go_string := "runtime.racereleasemerge"%go.
+Definition racefingo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.racefingo"%go.
 
-Definition racereleasemergeg : go_string := "runtime.racereleasemergeg"%go.
+Definition racemalloc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.racemalloc"%go.
 
-Definition racefingo : go_string := "runtime.racefingo"%go.
+Definition racefree {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.racefree"%go.
 
-Definition racemalloc : go_string := "runtime.racemalloc"%go.
+Definition racegostart {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.racegostart"%go.
 
-Definition racefree : go_string := "runtime.racefree"%go.
+Definition racegoend {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.racegoend"%go.
 
-Definition racegostart : go_string := "runtime.racegostart"%go.
+Definition racectxstart {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.racectxstart"%go.
 
-Definition racegoend : go_string := "runtime.racegoend"%go.
+Definition racectxend {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.racectxend"%go.
 
-Definition racectxstart : go_string := "runtime.racectxstart"%go.
+Definition startupRand {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.startupRand"%go.
 
-Definition racectxend : go_string := "runtime.racectxend"%go.
+Definition globalRand {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.globalRand"%go.
 
-Definition startupRand : go_string := "runtime.startupRand"%go.
+Definition readRandomFailed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.readRandomFailed"%go.
 
-Definition globalRand : go_string := "runtime.globalRand"%go.
+Definition randinit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.randinit"%go.
 
-Definition readRandomFailed : go_string := "runtime.readRandomFailed"%go.
+Definition readTimeRandom {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.readTimeRandom"%go.
 
-Definition randinit : go_string := "runtime.randinit"%go.
+Definition allZero {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.allZero"%go.
 
-Definition readTimeRandom : go_string := "runtime.readTimeRandom"%go.
+Definition bootstrapRand {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.bootstrapRand"%go.
 
-Definition allZero : go_string := "runtime.allZero"%go.
+Definition bootstrapRandReseed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.bootstrapRandReseed"%go.
 
-Definition bootstrapRand : go_string := "runtime.bootstrapRand"%go.
+Definition rand32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.rand32"%go.
 
-Definition bootstrapRandReseed : go_string := "runtime.bootstrapRandReseed"%go.
+Definition rand {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.rand"%go.
 
-Definition rand32 : go_string := "runtime.rand32"%go.
+Definition maps_rand {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.maps_rand"%go.
 
-Definition rand : go_string := "runtime.rand"%go.
+Definition mrandinit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mrandinit"%go.
 
-Definition maps_rand : go_string := "runtime.maps_rand"%go.
+Definition randn {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.randn"%go.
 
-Definition mrandinit : go_string := "runtime.mrandinit"%go.
+Definition cheaprand {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.cheaprand"%go.
 
-Definition randn : go_string := "runtime.randn"%go.
+Definition cheaprand64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.cheaprand64"%go.
 
-Definition cheaprand : go_string := "runtime.cheaprand"%go.
+Definition cheaprandn {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.cheaprandn"%go.
 
-Definition cheaprand64 : go_string := "runtime.cheaprand64"%go.
+Definition legacy_fastrand {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.legacy_fastrand"%go.
 
-Definition cheaprandn : go_string := "runtime.cheaprandn"%go.
+Definition legacy_fastrandn {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.legacy_fastrandn"%go.
 
-Definition legacy_fastrand : go_string := "runtime.legacy_fastrand"%go.
+Definition legacy_fastrand64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.legacy_fastrand64"%go.
 
-Definition legacy_fastrandn : go_string := "runtime.legacy_fastrandn"%go.
+Definition setMaxStack {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.setMaxStack"%go.
 
-Definition legacy_fastrand64 : go_string := "runtime.legacy_fastrand64"%go.
+Definition setPanicOnFault {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.setPanicOnFault"%go.
 
-Definition setMaxStack : go_string := "runtime.setMaxStack"%go.
+Definition retryOnEAGAIN {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.retryOnEAGAIN"%go.
 
-Definition setPanicOnFault : go_string := "runtime.setPanicOnFault"%go.
+Definition ticks {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.ticks"%go.
 
-Definition retryOnEAGAIN : go_string := "runtime.retryOnEAGAIN"%go.
+Axiom ticksTypeⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition ticks : go_string := "runtime.ticks"%go.
+Axiom minTimeForTicksPerSecond : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom ticksTypeⁱᵐᵖˡ : go.type.
+Definition ticksPerSecond {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.ticksPerSecond"%go.
 
-Axiom minTimeForTicksPerSecond : Z.
+Definition envs {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.envs"%go.
 
-Definition ticksPerSecond : go_string := "runtime.ticksPerSecond"%go.
+Definition argslice {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.argslice"%go.
 
-Definition envs : go_string := "runtime.envs"%go.
+Definition syscall_runtime_envs {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.syscall_runtime_envs"%go.
 
-Definition argslice : go_string := "runtime.argslice"%go.
+Definition syscall_Getpagesize {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.syscall_Getpagesize"%go.
 
-Definition syscall_runtime_envs : go_string := "runtime.syscall_runtime_envs"%go.
+Definition os_runtime_args {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.os_runtime_args"%go.
 
-Definition syscall_Getpagesize : go_string := "runtime.syscall_Getpagesize"%go.
+Definition syscall_Exit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.syscall_Exit"%go.
 
-Definition os_runtime_args : go_string := "runtime.os_runtime_args"%go.
+Definition godebugDefault {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.godebugDefault"%go.
 
-Definition syscall_Exit : go_string := "runtime.syscall_Exit"%go.
+Definition godebugUpdate {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.godebugUpdate"%go.
 
-Definition godebugDefault : go_string := "runtime.godebugDefault"%go.
+Definition godebugEnv {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.godebugEnv"%go.
 
-Definition godebugUpdate : go_string := "runtime.godebugUpdate"%go.
+Definition godebugNewIncNonDefault {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.godebugNewIncNonDefault"%go.
 
-Definition godebugEnv : go_string := "runtime.godebugEnv"%go.
+Definition godebug_setUpdate {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.godebug_setUpdate"%go.
 
-Definition godebugNewIncNonDefault : go_string := "runtime.godebugNewIncNonDefault"%go.
+Definition godebug_setNewIncNonDefault {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.godebug_setNewIncNonDefault"%go.
 
-Definition godebug_setUpdate : go_string := "runtime.godebug_setUpdate"%go.
+Axiom godebugIncⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition godebug_setNewIncNonDefault : go_string := "runtime.godebug_setNewIncNonDefault"%go.
+Definition godebugNotify {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.godebugNotify"%go.
 
-Axiom godebugIncⁱᵐᵖˡ : go.type.
+Definition syscall_runtimeSetenv {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.syscall_runtimeSetenv"%go.
 
-Definition godebugNotify : go_string := "runtime.godebugNotify"%go.
+Definition syscall_runtimeUnsetenv {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.syscall_runtimeUnsetenv"%go.
 
-Definition syscall_runtimeSetenv : go_string := "runtime.syscall_runtimeSetenv"%go.
+Definition writeErrStr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.writeErrStr"%go.
 
-Definition syscall_runtimeUnsetenv : go_string := "runtime.syscall_runtimeUnsetenv"%go.
+Definition writeErrData {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.writeErrData"%go.
 
-Definition writeErrStr : go_string := "runtime.writeErrStr"%go.
+Definition crashFD {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.crashFD"%go.
 
-Definition writeErrData : go_string := "runtime.writeErrData"%go.
+Definition setCrashFD {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.setCrashFD"%go.
 
-Definition crashFD : go_string := "runtime.crashFD"%go.
+Definition auxv {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.auxv"%go.
 
-Definition setCrashFD : go_string := "runtime.setCrashFD"%go.
+Definition getAuxv {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.getAuxv"%go.
 
-Definition auxv : go_string := "runtime.auxv"%go.
+Definition zeroVal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.zeroVal"%go.
 
-Definition getAuxv : go_string := "runtime.getAuxv"%go.
+Axiom tracebackCrash : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition zeroVal : go_string := "runtime.zeroVal"%go.
+Axiom tracebackAll : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom tracebackCrash : Z.
+Axiom tracebackShift : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom tracebackAll : Z.
+Definition traceback_cache {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.traceback_cache"%go.
 
-Axiom tracebackShift : Z.
+Axiom traceback_cache'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition traceback_cache : go_string := "runtime.traceback_cache"%go.
+Definition traceback_env {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.traceback_env"%go.
 
-Axiom traceback_cache'init : val.
+Definition gotraceback {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gotraceback"%go.
 
-Definition traceback_env : go_string := "runtime.traceback_env"%go.
+Definition argc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.argc"%go.
 
-Definition gotraceback : go_string := "runtime.gotraceback"%go.
+Definition argv {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.argv"%go.
 
-Definition argc : go_string := "runtime.argc"%go.
+Definition argv_index {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.argv_index"%go.
 
-Definition argv : go_string := "runtime.argv"%go.
+Definition args {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.args"%go.
 
-Definition argv_index : go_string := "runtime.argv_index"%go.
+Definition goargs {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.goargs"%go.
 
-Definition args : go_string := "runtime.args"%go.
+Definition goenvs_unix {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.goenvs_unix"%go.
 
-Definition goargs : go_string := "runtime.goargs"%go.
+Definition environ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.environ"%go.
 
-Definition goenvs_unix : go_string := "runtime.goenvs_unix"%go.
+Definition test_z64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.test_z64"%go.
 
-Definition environ : go_string := "runtime.environ"%go.
+Definition test_x64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.test_x64"%go.
 
-Definition test_z64 : go_string := "runtime.test_z64"%go.
+Definition testAtomic64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.testAtomic64"%go.
 
-Definition test_x64 : go_string := "runtime.test_x64"%go.
+Definition check {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.check"%go.
 
-Definition testAtomic64 : go_string := "runtime.testAtomic64"%go.
+Axiom dbgVarⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition check : go_string := "runtime.check"%go.
+Definition debug {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.debug"%go.
 
-Axiom dbgVarⁱᵐᵖˡ : go.type.
+Definition dbgvars {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.dbgvars"%go.
 
-Definition debug : go_string := "runtime.debug"%go.
+Axiom dbgvars'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition dbgvars : go_string := "runtime.dbgvars"%go.
+Definition parseRuntimeDebugVars {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.parseRuntimeDebugVars"%go.
 
-Axiom dbgvars'init : val.
+Definition finishDebugVarsSetup {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.finishDebugVarsSetup"%go.
 
-Definition parseRuntimeDebugVars : go_string := "runtime.parseRuntimeDebugVars"%go.
+Definition reparsedebugvars {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reparsedebugvars"%go.
 
-Definition finishDebugVarsSetup : go_string := "runtime.finishDebugVarsSetup"%go.
+Definition parsegodebug {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.parsegodebug"%go.
 
-Definition reparsedebugvars : go_string := "runtime.reparsedebugvars"%go.
+Definition setTraceback {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.setTraceback"%go.
 
-Definition parsegodebug : go_string := "runtime.parsegodebug"%go.
+Definition timediv {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.timediv"%go.
 
-Definition setTraceback : go_string := "runtime.setTraceback"%go.
+Definition acquirem {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.acquirem"%go.
 
-Definition timediv : go_string := "runtime.timediv"%go.
+Definition releasem {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.releasem"%go.
 
-Definition acquirem : go_string := "runtime.acquirem"%go.
+Definition reflect_typelinks {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflect_typelinks"%go.
 
-Definition releasem : go_string := "runtime.releasem"%go.
+Definition reflect_resolveNameOff {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflect_resolveNameOff"%go.
 
-Definition reflect_typelinks : go_string := "runtime.reflect_typelinks"%go.
+Definition reflect_resolveTypeOff {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflect_resolveTypeOff"%go.
 
-Definition reflect_resolveNameOff : go_string := "runtime.reflect_resolveNameOff"%go.
+Definition reflect_resolveTextOff {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflect_resolveTextOff"%go.
 
-Definition reflect_resolveTypeOff : go_string := "runtime.reflect_resolveTypeOff"%go.
+Definition reflectlite_resolveNameOff {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflectlite_resolveNameOff"%go.
 
-Definition reflect_resolveTextOff : go_string := "runtime.reflect_resolveTextOff"%go.
+Definition reflectlite_resolveTypeOff {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflectlite_resolveTypeOff"%go.
 
-Definition reflectlite_resolveNameOff : go_string := "runtime.reflectlite_resolveNameOff"%go.
+Definition reflect_addReflectOff {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflect_addReflectOff"%go.
 
-Definition reflectlite_resolveTypeOff : go_string := "runtime.reflectlite_resolveTypeOff"%go.
+Definition fips_getIndicator {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.fips_getIndicator"%go.
 
-Definition reflect_addReflectOff : go_string := "runtime.reflect_addReflectOff"%go.
+Definition fips_setIndicator {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.fips_setIndicator"%go.
 
-Definition fips_getIndicator : go_string := "runtime.fips_getIndicator"%go.
+Axiom _Gidle : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition fips_setIndicator : go_string := "runtime.fips_setIndicator"%go.
+Axiom _Grunnable : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _Gidle : Z.
+Axiom _Grunning : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _Grunnable : Z.
+Axiom _Gsyscall : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _Grunning : Z.
+Axiom _Gwaiting : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _Gsyscall : Z.
+Axiom _Gmoribund_unused : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _Gwaiting : Z.
+Axiom _Gdead : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _Gmoribund_unused : Z.
+Axiom _Genqueue_unused : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _Gdead : Z.
+Axiom _Gcopystack : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _Genqueue_unused : Z.
+Axiom _Gpreempted : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _Gcopystack : Z.
+Axiom _Gscan : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _Gpreempted : Z.
+Axiom _Gscanrunnable : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _Gscan : Z.
+Axiom _Gscanrunning : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _Gscanrunnable : Z.
+Axiom _Gscansyscall : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _Gscanrunning : Z.
+Axiom _Gscanwaiting : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _Gscansyscall : Z.
+Axiom _Gscanpreempted : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _Gscanwaiting : Z.
+Axiom _Pidle : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _Gscanpreempted : Z.
+Axiom _Prunning : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _Pidle : Z.
+Axiom _Psyscall : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _Prunning : Z.
+Axiom _Pgcstop : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _Psyscall : Z.
+Axiom _Pdead : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _Pgcstop : Z.
+Axiom mutexⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom _Pdead : Z.
+Axiom funcvalⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom mutexⁱᵐᵖˡ : go.type.
+Axiom ifaceⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom funcvalⁱᵐᵖˡ : go.type.
+Axiom efaceⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom ifaceⁱᵐᵖˡ : go.type.
+Definition efaceOf {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.efaceOf"%go.
 
-Axiom efaceⁱᵐᵖˡ : go.type.
+Axiom guintptrⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition efaceOf : go_string := "runtime.efaceOf"%go.
+Definition setGNoWB {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.setGNoWB"%go.
 
-Axiom guintptrⁱᵐᵖˡ : go.type.
+Axiom puintptrⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition setGNoWB : go_string := "runtime.setGNoWB"%go.
+Axiom muintptrⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom puintptrⁱᵐᵖˡ : go.type.
+Definition setMNoWB {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.setMNoWB"%go.
 
-Axiom muintptrⁱᵐᵖˡ : go.type.
+Axiom gobufⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition setMNoWB : go_string := "runtime.setMNoWB"%go.
+Axiom sudogⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom gobufⁱᵐᵖˡ : go.type.
+Axiom libcallⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom sudogⁱᵐᵖˡ : go.type.
+Axiom stackⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom libcallⁱᵐᵖˡ : go.type.
+Axiom heldLockInfoⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom stackⁱᵐᵖˡ : go.type.
+Axiom gⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom heldLockInfoⁱᵐᵖˡ : go.type.
+Axiom gTrackingPeriod : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom gⁱᵐᵖˡ : go.type.
+Axiom tlsSlots : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom gTrackingPeriod : Z.
+Axiom tlsSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom tlsSlots : Z.
+Axiom freeMStack : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom tlsSize : Z.
+Axiom freeMRef : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom freeMStack : Z.
+Axiom freeMWait : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom freeMRef : Z.
+Axiom mⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom freeMWait : Z.
+Axiom mRedZoneSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom mⁱᵐᵖˡ : go.type.
+Axiom mPaddedⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom mRedZoneSize : Z.
+Axiom pⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom mPaddedⁱᵐᵖˡ : go.type.
+Axiom schedtⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom pⁱᵐᵖˡ : go.type.
+Axiom _SigNotify : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom schedtⁱᵐᵖˡ : go.type.
+Axiom _SigKill : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SigNotify : Z.
+Axiom _SigThrow : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SigKill : Z.
+Axiom _SigPanic : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SigThrow : Z.
+Axiom _SigDefault : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SigPanic : Z.
+Axiom _SigGoExit : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SigDefault : Z.
+Axiom _SigSetStack : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SigGoExit : Z.
+Axiom _SigUnblock : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SigSetStack : Z.
+Axiom _SigIgn : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SigUnblock : Z.
+Axiom _funcⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom _SigIgn : Z.
+Axiom funcinlⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom _funcⁱᵐᵖˡ : go.type.
+Axiom itab : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom funcinlⁱᵐᵖˡ : go.type.
+Axiom lfnodeⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom itab : go.type.
+Axiom forcegcstateⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom lfnodeⁱᵐᵖˡ : go.type.
+Axiom _deferⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom forcegcstateⁱᵐᵖˡ : go.type.
+Axiom _panicⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom _deferⁱᵐᵖˡ : go.type.
+Axiom savedOpenDeferStateⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom _panicⁱᵐᵖˡ : go.type.
+Axiom ancestorInfoⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom savedOpenDeferStateⁱᵐᵖˡ : go.type.
+Axiom waitReasonⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom ancestorInfoⁱᵐᵖˡ : go.type.
+Axiom waitReasonZero : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom waitReasonⁱᵐᵖˡ : go.type.
+Axiom waitReasonGCAssistMarking : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom waitReasonZero : val.
+Axiom waitReasonIOWait : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom waitReasonGCAssistMarking : val.
+Axiom waitReasonChanReceiveNilChan : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom waitReasonIOWait : val.
+Axiom waitReasonChanSendNilChan : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom waitReasonChanReceiveNilChan : val.
+Axiom waitReasonDumpingHeap : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom waitReasonChanSendNilChan : val.
+Axiom waitReasonGarbageCollection : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom waitReasonDumpingHeap : val.
+Axiom waitReasonGarbageCollectionScan : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom waitReasonGarbageCollection : val.
+Axiom waitReasonPanicWait : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom waitReasonGarbageCollectionScan : val.
+Axiom waitReasonSelect : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom waitReasonPanicWait : val.
+Axiom waitReasonSelectNoCases : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom waitReasonSelect : val.
+Axiom waitReasonGCAssistWait : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom waitReasonSelectNoCases : val.
+Axiom waitReasonGCSweepWait : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom waitReasonGCAssistWait : val.
+Axiom waitReasonGCScavengeWait : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom waitReasonGCSweepWait : val.
+Axiom waitReasonChanReceive : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom waitReasonGCScavengeWait : val.
+Axiom waitReasonChanSend : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom waitReasonChanReceive : val.
+Axiom waitReasonFinalizerWait : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom waitReasonChanSend : val.
+Axiom waitReasonForceGCIdle : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom waitReasonFinalizerWait : val.
+Axiom waitReasonUpdateGOMAXPROCSIdle : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom waitReasonForceGCIdle : val.
+Axiom waitReasonSemacquire : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom waitReasonUpdateGOMAXPROCSIdle : val.
+Axiom waitReasonSleep : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom waitReasonSemacquire : val.
+Axiom waitReasonSyncCondWait : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom waitReasonSleep : val.
+Axiom waitReasonSyncMutexLock : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom waitReasonSyncCondWait : val.
+Axiom waitReasonSyncRWMutexRLock : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom waitReasonSyncMutexLock : val.
+Axiom waitReasonSyncRWMutexLock : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom waitReasonSyncRWMutexRLock : val.
+Axiom waitReasonSyncWaitGroupWait : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom waitReasonSyncRWMutexLock : val.
+Axiom waitReasonTraceReaderBlocked : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom waitReasonSyncWaitGroupWait : val.
+Axiom waitReasonWaitForGCCycle : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom waitReasonTraceReaderBlocked : val.
+Axiom waitReasonGCWorkerIdle : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom waitReasonWaitForGCCycle : val.
+Axiom waitReasonGCWorkerActive : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom waitReasonGCWorkerIdle : val.
+Axiom waitReasonPreempted : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom waitReasonGCWorkerActive : val.
+Axiom waitReasonDebugCall : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom waitReasonPreempted : val.
+Axiom waitReasonGCMarkTermination : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom waitReasonDebugCall : val.
+Axiom waitReasonStoppingTheWorld : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom waitReasonGCMarkTermination : val.
+Axiom waitReasonFlushProcCaches : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom waitReasonStoppingTheWorld : val.
+Axiom waitReasonTraceGoroutineStatus : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom waitReasonFlushProcCaches : val.
+Axiom waitReasonTraceProcStatus : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom waitReasonTraceGoroutineStatus : val.
+Axiom waitReasonPageTraceFlush : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom waitReasonTraceProcStatus : val.
+Axiom waitReasonCoroutine : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom waitReasonPageTraceFlush : val.
+Axiom waitReasonGCWeakToStrongWait : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom waitReasonCoroutine : val.
+Axiom waitReasonSynctestRun : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom waitReasonGCWeakToStrongWait : val.
+Axiom waitReasonSynctestWait : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom waitReasonSynctestRun : val.
+Axiom waitReasonSynctestChanReceive : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom waitReasonSynctestWait : val.
+Axiom waitReasonSynctestChanSend : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom waitReasonSynctestChanReceive : val.
+Axiom waitReasonSynctestSelect : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom waitReasonSynctestChanSend : val.
+Axiom waitReasonSynctestWaitGroupWait : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom waitReasonSynctestSelect : val.
+Axiom waitReasonCleanupWait : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom waitReasonSynctestWaitGroupWait : val.
+Definition waitReasonStrings {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.waitReasonStrings"%go.
 
-Axiom waitReasonCleanupWait : val.
+Axiom waitReasonStrings'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition waitReasonStrings : go_string := "runtime.waitReasonStrings"%go.
+Definition isWaitingForSuspendG {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.isWaitingForSuspendG"%go.
 
-Axiom waitReasonStrings'init : val.
+Axiom isWaitingForSuspendG'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition isWaitingForSuspendG : go_string := "runtime.isWaitingForSuspendG"%go.
+Definition isIdleInSynctest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.isIdleInSynctest"%go.
 
-Axiom isWaitingForSuspendG'init : val.
+Axiom isIdleInSynctest'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition isIdleInSynctest : go_string := "runtime.isIdleInSynctest"%go.
+Definition allm {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.allm"%go.
 
-Axiom isIdleInSynctest'init : val.
+Definition gomaxprocs {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gomaxprocs"%go.
 
-Definition allm : go_string := "runtime.allm"%go.
+Definition numCPUStartup {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.numCPUStartup"%go.
 
-Definition gomaxprocs : go_string := "runtime.gomaxprocs"%go.
+Definition forcegc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.forcegc"%go.
 
-Definition numCPUStartup : go_string := "runtime.numCPUStartup"%go.
+Definition sched {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sched"%go.
 
-Definition forcegc : go_string := "runtime.forcegc"%go.
+Definition newprocs {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.newprocs"%go.
 
-Definition sched : go_string := "runtime.sched"%go.
+Definition allpLock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.allpLock"%go.
 
-Definition newprocs : go_string := "runtime.newprocs"%go.
+Definition allp {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.allp"%go.
 
-Definition allpLock : go_string := "runtime.allpLock"%go.
+Definition idlepMask {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.idlepMask"%go.
 
-Definition allp : go_string := "runtime.allp"%go.
+Definition timerpMask {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.timerpMask"%go.
 
-Definition idlepMask : go_string := "runtime.idlepMask"%go.
+Definition gcBgMarkWorkerPool {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcBgMarkWorkerPool"%go.
 
-Definition timerpMask : go_string := "runtime.timerpMask"%go.
+Definition gcBgMarkWorkerCount {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcBgMarkWorkerCount"%go.
 
-Definition gcBgMarkWorkerPool : go_string := "runtime.gcBgMarkWorkerPool"%go.
+Definition processorVersionInfo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.processorVersionInfo"%go.
 
-Definition gcBgMarkWorkerCount : go_string := "runtime.gcBgMarkWorkerCount"%go.
+Definition isIntel {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.isIntel"%go.
 
-Definition processorVersionInfo : go_string := "runtime.processorVersionInfo"%go.
+Definition goarm {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.goarm"%go.
 
-Definition isIntel : go_string := "runtime.isIntel"%go.
+Definition goarmsoftfp {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.goarmsoftfp"%go.
 
-Definition goarm : go_string := "runtime.goarm"%go.
+Definition islibrary {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.islibrary"%go.
 
-Definition goarmsoftfp : go_string := "runtime.goarmsoftfp"%go.
+Definition isarchive {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.isarchive"%go.
 
-Definition islibrary : go_string := "runtime.islibrary"%go.
+Axiom framepointer_enabled : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition isarchive : go_string := "runtime.isarchive"%go.
+Definition getcallerfp {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.getcallerfp"%go.
 
-Axiom framepointer_enabled : val.
+Definition boring_runtime_arg0 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.boring_runtime_arg0"%go.
 
-Definition getcallerfp : go_string := "runtime.getcallerfp"%go.
+Axiom rwmutexⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition boring_runtime_arg0 : go_string := "runtime.boring_runtime_arg0"%go.
+Axiom rwmutexMaxReaders : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom rwmutexⁱᵐᵖˡ : go.type.
+Definition initSecureMode {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.initSecureMode"%go.
 
-Axiom rwmutexMaxReaders : Z.
+Definition isSecureMode {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.isSecureMode"%go.
 
-Definition initSecureMode : go_string := "runtime.initSecureMode"%go.
+Definition secure {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.secure"%go.
 
-Definition isSecureMode : go_string := "runtime.isSecureMode"%go.
+Definition secureEnv {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.secureEnv"%go.
 
-Definition secure : go_string := "runtime.secure"%go.
+Axiom debugSelect : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition secureEnv : go_string := "runtime.secureEnv"%go.
+Axiom scaseⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom debugSelect : val.
+Definition chansendpc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.chansendpc"%go.
 
-Axiom scaseⁱᵐᵖˡ : go.type.
+Axiom chansendpc'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition chansendpc : go_string := "runtime.chansendpc"%go.
+Definition chanrecvpc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.chanrecvpc"%go.
 
-Axiom chansendpc'init : val.
+Axiom chanrecvpc'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition chanrecvpc : go_string := "runtime.chanrecvpc"%go.
+Definition selectsetpc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.selectsetpc"%go.
 
-Axiom chanrecvpc'init : val.
+Definition sellock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sellock"%go.
 
-Definition selectsetpc : go_string := "runtime.selectsetpc"%go.
+Definition selunlock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.selunlock"%go.
 
-Definition sellock : go_string := "runtime.sellock"%go.
+Definition selparkcommit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.selparkcommit"%go.
 
-Definition selunlock : go_string := "runtime.selunlock"%go.
+Definition block {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.block"%go.
 
-Definition selparkcommit : go_string := "runtime.selparkcommit"%go.
+Definition selectgo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.selectgo"%go.
 
-Definition block : go_string := "runtime.block"%go.
+Axiom runtimeSelectⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition selectgo : go_string := "runtime.selectgo"%go.
+Axiom selectDirⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom runtimeSelectⁱᵐᵖˡ : go.type.
+Axiom selectSend : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom selectDirⁱᵐᵖˡ : go.type.
+Axiom selectRecv : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom selectSend : val.
+Axiom selectDefault : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom selectRecv : val.
+Definition reflect_rselect {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflect_rselect"%go.
 
-Axiom selectDefault : val.
+Axiom semaRootⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition reflect_rselect : go_string := "runtime.reflect_rselect"%go.
+Definition semtable {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.semtable"%go.
 
-Axiom semaRootⁱᵐᵖˡ : go.type.
+Axiom semTabSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition semtable : go_string := "runtime.semtable"%go.
+Axiom semTableⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom semTabSize : Z.
+Definition sync_runtime_Semacquire {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sync_runtime_Semacquire"%go.
 
-Axiom semTableⁱᵐᵖˡ : go.type.
+Definition poll_runtime_Semacquire {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.poll_runtime_Semacquire"%go.
 
-Definition sync_runtime_Semacquire : go_string := "runtime.sync_runtime_Semacquire"%go.
+Definition sync_runtime_Semrelease {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sync_runtime_Semrelease"%go.
 
-Definition poll_runtime_Semacquire : go_string := "runtime.poll_runtime_Semacquire"%go.
+Definition internal_sync_runtime_SemacquireMutex {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.internal_sync_runtime_SemacquireMutex"%go.
 
-Definition sync_runtime_Semrelease : go_string := "runtime.sync_runtime_Semrelease"%go.
+Definition sync_runtime_SemacquireRWMutexR {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sync_runtime_SemacquireRWMutexR"%go.
 
-Definition internal_sync_runtime_SemacquireMutex : go_string := "runtime.internal_sync_runtime_SemacquireMutex"%go.
+Definition sync_runtime_SemacquireRWMutex {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sync_runtime_SemacquireRWMutex"%go.
 
-Definition sync_runtime_SemacquireRWMutexR : go_string := "runtime.sync_runtime_SemacquireRWMutexR"%go.
+Definition sync_runtime_SemacquireWaitGroup {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sync_runtime_SemacquireWaitGroup"%go.
 
-Definition sync_runtime_SemacquireRWMutex : go_string := "runtime.sync_runtime_SemacquireRWMutex"%go.
+Definition poll_runtime_Semrelease {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.poll_runtime_Semrelease"%go.
 
-Definition sync_runtime_SemacquireWaitGroup : go_string := "runtime.sync_runtime_SemacquireWaitGroup"%go.
+Definition internal_sync_runtime_Semrelease {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.internal_sync_runtime_Semrelease"%go.
 
-Definition poll_runtime_Semrelease : go_string := "runtime.poll_runtime_Semrelease"%go.
+Definition readyWithTime {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.readyWithTime"%go.
 
-Definition internal_sync_runtime_Semrelease : go_string := "runtime.internal_sync_runtime_Semrelease"%go.
+Axiom semaProfileFlagsⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition readyWithTime : go_string := "runtime.readyWithTime"%go.
+Axiom semaBlockProfile : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom semaProfileFlagsⁱᵐᵖˡ : go.type.
+Axiom semaMutexProfile : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom semaBlockProfile : val.
+Definition semacquire {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.semacquire"%go.
 
-Axiom semaMutexProfile : val.
+Definition semacquire1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.semacquire1"%go.
 
-Definition semacquire : go_string := "runtime.semacquire"%go.
+Definition semrelease {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.semrelease"%go.
 
-Definition semacquire1 : go_string := "runtime.semacquire1"%go.
+Definition semrelease1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.semrelease1"%go.
 
-Definition semrelease : go_string := "runtime.semrelease"%go.
+Definition cansemacquire {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.cansemacquire"%go.
 
-Definition semrelease1 : go_string := "runtime.semrelease1"%go.
+Axiom notifyListⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition cansemacquire : go_string := "runtime.cansemacquire"%go.
+Definition less {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.less"%go.
 
-Axiom notifyListⁱᵐᵖˡ : go.type.
+Definition notifyListAdd {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.notifyListAdd"%go.
 
-Definition less : go_string := "runtime.less"%go.
+Definition notifyListWait {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.notifyListWait"%go.
 
-Definition notifyListAdd : go_string := "runtime.notifyListAdd"%go.
+Definition notifyListNotifyAll {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.notifyListNotifyAll"%go.
 
-Definition notifyListWait : go_string := "runtime.notifyListWait"%go.
+Definition notifyListNotifyOne {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.notifyListNotifyOne"%go.
 
-Definition notifyListNotifyAll : go_string := "runtime.notifyListNotifyAll"%go.
+Definition notifyListCheck {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.notifyListCheck"%go.
 
-Definition notifyListNotifyOne : go_string := "runtime.notifyListNotifyOne"%go.
+Definition internal_sync_nanotime {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.internal_sync_nanotime"%go.
 
-Definition notifyListCheck : go_string := "runtime.notifyListCheck"%go.
+Definition prSetVMAUnsupported {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.prSetVMAUnsupported"%go.
 
-Definition internal_sync_nanotime : go_string := "runtime.internal_sync_nanotime"%go.
+Definition setVMANameSupported {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.setVMANameSupported"%go.
 
-Definition prSetVMAUnsupported : go_string := "runtime.prSetVMAUnsupported"%go.
+Definition setVMAName {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.setVMAName"%go.
 
-Definition setVMANameSupported : go_string := "runtime.setVMANameSupported"%go.
+Definition dumpregs {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.dumpregs"%go.
 
-Definition setVMAName : go_string := "runtime.setVMAName"%go.
+Axiom sigctxtⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition dumpregs : go_string := "runtime.dumpregs"%go.
+Axiom sigTabTⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom sigctxtⁱᵐᵖˡ : go.type.
+Definition os_sigpipe {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.os_sigpipe"%go.
 
-Axiom sigTabTⁱᵐᵖˡ : go.type.
+Definition signame {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.signame"%go.
 
-Definition os_sigpipe : go_string := "runtime.os_sigpipe"%go.
+Axiom _SIG_DFL : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition signame : go_string := "runtime.signame"%go.
+Axiom _SIG_IGN : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SIG_DFL : val.
+Axiom sigPreempt : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SIG_IGN : val.
+Definition fwdSig {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.fwdSig"%go.
 
-Axiom sigPreempt : Z.
+Definition handlingSig {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.handlingSig"%go.
 
-Definition fwdSig : go_string := "runtime.fwdSig"%go.
+Definition disableSigChan {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.disableSigChan"%go.
 
-Definition handlingSig : go_string := "runtime.handlingSig"%go.
+Definition enableSigChan {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.enableSigChan"%go.
 
-Definition disableSigChan : go_string := "runtime.disableSigChan"%go.
+Definition maskUpdatedChan {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.maskUpdatedChan"%go.
 
-Definition enableSigChan : go_string := "runtime.enableSigChan"%go.
+Definition signalsOK {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.signalsOK"%go.
 
-Definition maskUpdatedChan : go_string := "runtime.maskUpdatedChan"%go.
+Definition initsig {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.initsig"%go.
 
-Definition signalsOK : go_string := "runtime.signalsOK"%go.
+Definition sigInstallGoHandler {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sigInstallGoHandler"%go.
 
-Definition initsig : go_string := "runtime.initsig"%go.
+Definition sigenable {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sigenable"%go.
 
-Definition sigInstallGoHandler : go_string := "runtime.sigInstallGoHandler"%go.
+Definition sigdisable {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sigdisable"%go.
 
-Definition sigenable : go_string := "runtime.sigenable"%go.
+Definition sigignore {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sigignore"%go.
 
-Definition sigdisable : go_string := "runtime.sigdisable"%go.
+Definition clearSignalHandlers {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.clearSignalHandlers"%go.
 
-Definition sigignore : go_string := "runtime.sigignore"%go.
+Definition setProcessCPUProfilerTimer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.setProcessCPUProfilerTimer"%go.
 
-Definition clearSignalHandlers : go_string := "runtime.clearSignalHandlers"%go.
+Definition setThreadCPUProfilerHz {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.setThreadCPUProfilerHz"%go.
 
-Definition setProcessCPUProfilerTimer : go_string := "runtime.setProcessCPUProfilerTimer"%go.
+Definition sigpipe {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sigpipe"%go.
 
-Definition setThreadCPUProfilerHz : go_string := "runtime.setThreadCPUProfilerHz"%go.
+Definition doSigPreempt {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.doSigPreempt"%go.
 
-Definition sigpipe : go_string := "runtime.sigpipe"%go.
+Axiom preemptMSupported : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition doSigPreempt : go_string := "runtime.doSigPreempt"%go.
+Definition preemptM {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.preemptM"%go.
 
-Axiom preemptMSupported : val.
+Definition sigFetchG {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sigFetchG"%go.
 
-Definition preemptM : go_string := "runtime.preemptM"%go.
+Definition sigtrampgo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sigtrampgo"%go.
 
-Definition sigFetchG : go_string := "runtime.sigFetchG"%go.
+Definition sigprofCallers {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sigprofCallers"%go.
 
-Definition sigtrampgo : go_string := "runtime.sigtrampgo"%go.
+Definition sigprofCallersUse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sigprofCallersUse"%go.
 
-Definition sigprofCallers : go_string := "runtime.sigprofCallers"%go.
+Definition sigprofNonGo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sigprofNonGo"%go.
 
-Definition sigprofCallersUse : go_string := "runtime.sigprofCallersUse"%go.
+Definition sigprofNonGoPC {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sigprofNonGoPC"%go.
 
-Definition sigprofNonGo : go_string := "runtime.sigprofNonGo"%go.
+Definition adjustSignalStack {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.adjustSignalStack"%go.
 
-Definition sigprofNonGoPC : go_string := "runtime.sigprofNonGoPC"%go.
+Definition adjustSignalStack2Indirect {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.adjustSignalStack2Indirect"%go.
 
-Definition adjustSignalStack : go_string := "runtime.adjustSignalStack"%go.
+Axiom adjustSignalStack2Indirect'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition adjustSignalStack2Indirect : go_string := "runtime.adjustSignalStack2Indirect"%go.
+Definition adjustSignalStack2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.adjustSignalStack2"%go.
 
-Axiom adjustSignalStack2Indirect'init : val.
+Definition crashing {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.crashing"%go.
 
-Definition adjustSignalStack2 : go_string := "runtime.adjustSignalStack2"%go.
+Definition testSigtrap {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.testSigtrap"%go.
 
-Definition crashing : go_string := "runtime.crashing"%go.
+Definition testSigusr1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.testSigusr1"%go.
 
-Definition testSigtrap : go_string := "runtime.testSigtrap"%go.
+Definition sigsysIgnored {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sigsysIgnored"%go.
 
-Definition testSigusr1 : go_string := "runtime.testSigusr1"%go.
+Definition ignoreSIGSYS {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.ignoreSIGSYS"%go.
 
-Definition sigsysIgnored : go_string := "runtime.sigsysIgnored"%go.
+Definition restoreSIGSYS {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.restoreSIGSYS"%go.
 
-Definition ignoreSIGSYS : go_string := "runtime.ignoreSIGSYS"%go.
+Definition sighandler {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sighandler"%go.
 
-Definition restoreSIGSYS : go_string := "runtime.restoreSIGSYS"%go.
+Definition fatalsignal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.fatalsignal"%go.
 
-Definition sighandler : go_string := "runtime.sighandler"%go.
+Definition sigpanic {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sigpanic"%go.
 
-Definition fatalsignal : go_string := "runtime.fatalsignal"%go.
+Definition dieFromSignal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.dieFromSignal"%go.
 
-Definition sigpanic : go_string := "runtime.sigpanic"%go.
+Definition raisebadsignal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.raisebadsignal"%go.
 
-Definition dieFromSignal : go_string := "runtime.dieFromSignal"%go.
+Definition crash {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.crash"%go.
 
-Definition raisebadsignal : go_string := "runtime.raisebadsignal"%go.
+Definition ensureSigM {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.ensureSigM"%go.
 
-Definition crash : go_string := "runtime.crash"%go.
+Definition noSignalStack {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.noSignalStack"%go.
 
-Definition ensureSigM : go_string := "runtime.ensureSigM"%go.
+Definition sigNotOnStack {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sigNotOnStack"%go.
 
-Definition noSignalStack : go_string := "runtime.noSignalStack"%go.
+Definition signalDuringFork {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.signalDuringFork"%go.
 
-Definition sigNotOnStack : go_string := "runtime.sigNotOnStack"%go.
+Definition badsignal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.badsignal"%go.
 
-Definition signalDuringFork : go_string := "runtime.signalDuringFork"%go.
+Definition sigfwd {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sigfwd"%go.
 
-Definition badsignal : go_string := "runtime.badsignal"%go.
+Definition sigfwdgo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sigfwdgo"%go.
 
-Definition sigfwd : go_string := "runtime.sigfwd"%go.
+Definition sigsave {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sigsave"%go.
 
-Definition sigfwdgo : go_string := "runtime.sigfwdgo"%go.
+Definition msigrestore {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.msigrestore"%go.
 
-Definition sigsave : go_string := "runtime.sigsave"%go.
+Definition sigsetAllExiting {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sigsetAllExiting"%go.
 
-Definition msigrestore : go_string := "runtime.msigrestore"%go.
+Axiom sigsetAllExiting'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition sigsetAllExiting : go_string := "runtime.sigsetAllExiting"%go.
+Definition sigblock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sigblock"%go.
 
-Axiom sigsetAllExiting'init : val.
+Definition unblocksig {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.unblocksig"%go.
 
-Definition sigblock : go_string := "runtime.sigblock"%go.
+Definition minitSignals {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.minitSignals"%go.
 
-Definition unblocksig : go_string := "runtime.unblocksig"%go.
+Definition minitSignalStack {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.minitSignalStack"%go.
 
-Definition minitSignals : go_string := "runtime.minitSignals"%go.
+Definition minitSignalMask {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.minitSignalMask"%go.
 
-Definition minitSignalStack : go_string := "runtime.minitSignalStack"%go.
+Definition unminitSignals {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.unminitSignals"%go.
 
-Definition minitSignalMask : go_string := "runtime.minitSignalMask"%go.
+Definition blockableSig {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.blockableSig"%go.
 
-Definition unminitSignals : go_string := "runtime.unminitSignals"%go.
+Axiom gsignalStackⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition blockableSig : go_string := "runtime.blockableSig"%go.
+Definition setGsignalStack {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.setGsignalStack"%go.
 
-Axiom gsignalStackⁱᵐᵖˡ : go.type.
+Definition restoreGsignalStack {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.restoreGsignalStack"%go.
 
-Definition setGsignalStack : go_string := "runtime.setGsignalStack"%go.
+Definition signalstack {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.signalstack"%go.
 
-Definition restoreGsignalStack : go_string := "runtime.restoreGsignalStack"%go.
+Definition setsigsegv {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.setsigsegv"%go.
 
-Definition signalstack : go_string := "runtime.signalstack"%go.
+Definition sig {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sig"%go.
 
-Definition setsigsegv : go_string := "runtime.setsigsegv"%go.
+Axiom sigIdle : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition sig : go_string := "runtime.sig"%go.
+Axiom sigReceiving : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom sigIdle : Z.
+Axiom sigSending : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom sigReceiving : Z.
+Definition sigsend {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sigsend"%go.
 
-Axiom sigSending : Z.
+Definition signal_recv {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.signal_recv"%go.
 
-Definition sigsend : go_string := "runtime.sigsend"%go.
+Definition signalWaitUntilIdle {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.signalWaitUntilIdle"%go.
 
-Definition signal_recv : go_string := "runtime.signal_recv"%go.
+Definition signal_enable {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.signal_enable"%go.
 
-Definition signalWaitUntilIdle : go_string := "runtime.signalWaitUntilIdle"%go.
+Definition signal_disable {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.signal_disable"%go.
 
-Definition signal_enable : go_string := "runtime.signal_enable"%go.
+Definition signal_ignore {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.signal_ignore"%go.
 
-Definition signal_disable : go_string := "runtime.signal_disable"%go.
+Definition sigInitIgnored {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sigInitIgnored"%go.
 
-Definition signal_ignore : go_string := "runtime.signal_ignore"%go.
+Definition signal_ignored {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.signal_ignored"%go.
 
-Definition sigInitIgnored : go_string := "runtime.sigInitIgnored"%go.
+Definition sigNoteSetup {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sigNoteSetup"%go.
 
-Definition signal_ignored : go_string := "runtime.signal_ignored"%go.
+Definition sigNoteSleep {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sigNoteSleep"%go.
 
-Definition sigNoteSetup : go_string := "runtime.sigNoteSetup"%go.
+Definition sigNoteWakeup {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sigNoteWakeup"%go.
 
-Definition sigNoteSleep : go_string := "runtime.sigNoteSleep"%go.
+Definition sigtable {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sigtable"%go.
 
-Definition sigNoteWakeup : go_string := "runtime.sigNoteWakeup"%go.
+Axiom sigtable'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition sigtable : go_string := "runtime.sigtable"%go.
+Axiom sliceⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom sigtable'init : val.
+Axiom notInHeapSliceⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom sliceⁱᵐᵖˡ : go.type.
+Definition panicmakeslicelen {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.panicmakeslicelen"%go.
 
-Axiom notInHeapSliceⁱᵐᵖˡ : go.type.
+Definition panicmakeslicecap {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.panicmakeslicecap"%go.
 
-Definition panicmakeslicelen : go_string := "runtime.panicmakeslicelen"%go.
+Definition makeslicecopy {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.makeslicecopy"%go.
 
-Definition panicmakeslicecap : go_string := "runtime.panicmakeslicecap"%go.
+Definition makeslice {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.makeslice"%go.
 
-Definition makeslicecopy : go_string := "runtime.makeslicecopy"%go.
+Definition makeslice64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.makeslice64"%go.
 
-Definition makeslice : go_string := "runtime.makeslice"%go.
+Definition growslice {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.growslice"%go.
 
-Definition makeslice64 : go_string := "runtime.makeslice64"%go.
+Definition nextslicecap {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.nextslicecap"%go.
 
-Definition growslice : go_string := "runtime.growslice"%go.
+Definition reflect_growslice {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflect_growslice"%go.
 
-Definition nextslicecap : go_string := "runtime.nextslicecap"%go.
+Definition isPowerOfTwo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.isPowerOfTwo"%go.
 
-Definition reflect_growslice : go_string := "runtime.reflect_growslice"%go.
+Definition slicecopy {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.slicecopy"%go.
 
-Definition isPowerOfTwo : go_string := "runtime.isPowerOfTwo"%go.
+Definition bytealg_MakeNoZero {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.bytealg_MakeNoZero"%go.
 
-Definition slicecopy : go_string := "runtime.slicecopy"%go.
+Axiom mantbits64 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition bytealg_MakeNoZero : go_string := "runtime.bytealg_MakeNoZero"%go.
+Axiom expbits64 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom mantbits64 : val.
+Axiom bias64 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom expbits64 : val.
+Axiom nan64 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom bias64 : Z.
+Axiom inf64 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom nan64 : val.
+Axiom neg64 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom inf64 : val.
+Axiom mantbits32 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom neg64 : val.
+Axiom expbits32 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom mantbits32 : val.
+Axiom bias32 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom expbits32 : val.
+Axiom nan32 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom bias32 : Z.
+Axiom inf32 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom nan32 : val.
+Axiom neg32 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom inf32 : val.
+Definition funpack64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.funpack64"%go.
 
-Axiom neg32 : val.
+Definition funpack32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.funpack32"%go.
 
-Definition funpack64 : go_string := "runtime.funpack64"%go.
+Definition fpack64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.fpack64"%go.
 
-Definition funpack32 : go_string := "runtime.funpack32"%go.
+Definition fpack32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.fpack32"%go.
 
-Definition fpack64 : go_string := "runtime.fpack64"%go.
+Definition fadd64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.fadd64"%go.
 
-Definition fpack32 : go_string := "runtime.fpack32"%go.
+Definition fsub64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.fsub64"%go.
 
-Definition fadd64 : go_string := "runtime.fadd64"%go.
+Definition fneg64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.fneg64"%go.
 
-Definition fsub64 : go_string := "runtime.fsub64"%go.
+Definition fmul64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.fmul64"%go.
 
-Definition fneg64 : go_string := "runtime.fneg64"%go.
+Definition fdiv64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.fdiv64"%go.
 
-Definition fmul64 : go_string := "runtime.fmul64"%go.
+Definition f64to32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.f64to32"%go.
 
-Definition fdiv64 : go_string := "runtime.fdiv64"%go.
+Definition f32to64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.f32to64"%go.
 
-Definition f64to32 : go_string := "runtime.f64to32"%go.
+Definition fcmp64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.fcmp64"%go.
 
-Definition f32to64 : go_string := "runtime.f32to64"%go.
+Definition f64toint {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.f64toint"%go.
 
-Definition fcmp64 : go_string := "runtime.fcmp64"%go.
+Definition fintto64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.fintto64"%go.
 
-Definition f64toint : go_string := "runtime.f64toint"%go.
+Definition fintto32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.fintto32"%go.
 
-Definition fintto64 : go_string := "runtime.fintto64"%go.
+Definition mullu {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mullu"%go.
 
-Definition fintto32 : go_string := "runtime.fintto32"%go.
+Definition divlu {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.divlu"%go.
 
-Definition mullu : go_string := "runtime.mullu"%go.
+Definition fadd32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.fadd32"%go.
 
-Definition divlu : go_string := "runtime.divlu"%go.
+Definition fmul32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.fmul32"%go.
 
-Definition fadd32 : go_string := "runtime.fadd32"%go.
+Definition fdiv32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.fdiv32"%go.
 
-Definition fmul32 : go_string := "runtime.fmul32"%go.
+Definition feq32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.feq32"%go.
 
-Definition fdiv32 : go_string := "runtime.fdiv32"%go.
+Definition fgt32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.fgt32"%go.
 
-Definition feq32 : go_string := "runtime.feq32"%go.
+Definition fge32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.fge32"%go.
 
-Definition fgt32 : go_string := "runtime.fgt32"%go.
+Definition feq64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.feq64"%go.
 
-Definition fge32 : go_string := "runtime.fge32"%go.
+Definition fgt64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.fgt64"%go.
 
-Definition feq64 : go_string := "runtime.feq64"%go.
+Definition fge64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.fge64"%go.
 
-Definition fgt64 : go_string := "runtime.fgt64"%go.
+Definition fint32to32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.fint32to32"%go.
 
-Definition fge64 : go_string := "runtime.fge64"%go.
+Definition fint32to64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.fint32to64"%go.
 
-Definition fint32to32 : go_string := "runtime.fint32to32"%go.
+Definition fint64to32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.fint64to32"%go.
 
-Definition fint32to64 : go_string := "runtime.fint32to64"%go.
+Definition fint64to64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.fint64to64"%go.
 
-Definition fint64to32 : go_string := "runtime.fint64to32"%go.
+Definition f32toint32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.f32toint32"%go.
 
-Definition fint64to64 : go_string := "runtime.fint64to64"%go.
+Definition f32toint64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.f32toint64"%go.
 
-Definition f32toint32 : go_string := "runtime.f32toint32"%go.
+Definition f64toint32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.f64toint32"%go.
 
-Definition f32toint64 : go_string := "runtime.f32toint64"%go.
+Definition f64toint64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.f64toint64"%go.
 
-Definition f64toint32 : go_string := "runtime.f64toint32"%go.
+Definition f64touint64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.f64touint64"%go.
 
-Definition f64toint64 : go_string := "runtime.f64toint64"%go.
+Definition f32touint64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.f32touint64"%go.
 
-Definition f64touint64 : go_string := "runtime.f64touint64"%go.
+Definition fuint64to64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.fuint64to64"%go.
 
-Definition f32touint64 : go_string := "runtime.f32touint64"%go.
+Definition fuint64to32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.fuint64to32"%go.
 
-Definition fuint64to64 : go_string := "runtime.fuint64to64"%go.
+Axiom stackSystem : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition fuint64to32 : go_string := "runtime.fuint64to32"%go.
+Axiom stackMin : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom stackSystem : Z.
+Axiom fixedStack0 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom stackMin : Z.
+Axiom fixedStack1 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom fixedStack0 : Z.
+Axiom fixedStack2 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom fixedStack1 : Z.
+Axiom fixedStack3 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom fixedStack2 : Z.
+Axiom fixedStack4 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom fixedStack3 : Z.
+Axiom fixedStack5 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom fixedStack4 : Z.
+Axiom fixedStack6 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom fixedStack5 : Z.
+Axiom fixedStack : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom fixedStack6 : Z.
+Axiom stackNosplit : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom fixedStack : Z.
+Axiom stackGuard : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom stackNosplit : Z.
+Axiom stackDebug : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom stackGuard : Z.
+Axiom stackFromSystem : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom stackDebug : Z.
+Axiom stackFaultOnFree : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom stackFromSystem : Z.
+Axiom stackNoCache : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom stackFaultOnFree : Z.
+Axiom debugCheckBP : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stackNoCache : Z.
+Definition stackPoisonCopy {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.stackPoisonCopy"%go.
 
-Axiom debugCheckBP : val.
+Axiom stackPoisonCopy'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition stackPoisonCopy : go_string := "runtime.stackPoisonCopy"%go.
+Axiom uintptrMask : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom stackPoisonCopy'init : val.
+Axiom stackPreempt : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom uintptrMask : Z.
+Axiom stackFork : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom stackPreempt : Z.
+Axiom stackForceMove : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom stackFork : Z.
+Axiom stackPoisonMin : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom stackForceMove : Z.
+Definition stackpool {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.stackpool"%go.
 
-Axiom stackPoisonMin : Z.
+Axiom stackpoolItemⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition stackpool : go_string := "runtime.stackpool"%go.
+Definition stackLarge {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.stackLarge"%go.
 
-Axiom stackpoolItemⁱᵐᵖˡ : go.type.
+Definition stackinit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.stackinit"%go.
 
-Definition stackLarge : go_string := "runtime.stackLarge"%go.
+Definition stacklog2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.stacklog2"%go.
 
-Definition stackinit : go_string := "runtime.stackinit"%go.
+Definition stackpoolalloc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.stackpoolalloc"%go.
 
-Definition stacklog2 : go_string := "runtime.stacklog2"%go.
+Definition stackpoolfree {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.stackpoolfree"%go.
 
-Definition stackpoolalloc : go_string := "runtime.stackpoolalloc"%go.
+Definition stackcacherefill {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.stackcacherefill"%go.
 
-Definition stackpoolfree : go_string := "runtime.stackpoolfree"%go.
+Definition stackcacherelease {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.stackcacherelease"%go.
 
-Definition stackcacherefill : go_string := "runtime.stackcacherefill"%go.
+Definition stackcache_clear {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.stackcache_clear"%go.
 
-Definition stackcacherelease : go_string := "runtime.stackcacherelease"%go.
+Definition stackalloc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.stackalloc"%go.
 
-Definition stackcache_clear : go_string := "runtime.stackcache_clear"%go.
+Definition stackfree {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.stackfree"%go.
 
-Definition stackalloc : go_string := "runtime.stackalloc"%go.
+Definition maxstacksize {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.maxstacksize"%go.
 
-Definition stackfree : go_string := "runtime.stackfree"%go.
+Axiom maxstacksize'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition maxstacksize : go_string := "runtime.maxstacksize"%go.
+Definition maxstackceiling {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.maxstackceiling"%go.
 
-Axiom maxstacksize'init : val.
+Axiom maxstackceiling'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition maxstackceiling : go_string := "runtime.maxstackceiling"%go.
+Definition ptrnames {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.ptrnames"%go.
 
-Axiom maxstackceiling'init : val.
+Axiom ptrnames'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition ptrnames : go_string := "runtime.ptrnames"%go.
+Axiom adjustinfoⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom ptrnames'init : val.
+Definition adjustpointer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.adjustpointer"%go.
 
-Axiom adjustinfoⁱᵐᵖˡ : go.type.
+Axiom bitvectorⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition adjustpointer : go_string := "runtime.adjustpointer"%go.
+Definition adjustpointers {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.adjustpointers"%go.
 
-Axiom bitvectorⁱᵐᵖˡ : go.type.
+Definition adjustframe {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.adjustframe"%go.
 
-Definition adjustpointers : go_string := "runtime.adjustpointers"%go.
+Definition adjustctxt {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.adjustctxt"%go.
 
-Definition adjustframe : go_string := "runtime.adjustframe"%go.
+Definition adjustdefers {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.adjustdefers"%go.
 
-Definition adjustctxt : go_string := "runtime.adjustctxt"%go.
+Definition adjustpanics {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.adjustpanics"%go.
 
-Definition adjustdefers : go_string := "runtime.adjustdefers"%go.
+Definition adjustsudogs {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.adjustsudogs"%go.
 
-Definition adjustpanics : go_string := "runtime.adjustpanics"%go.
+Definition fillstack {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.fillstack"%go.
 
-Definition adjustsudogs : go_string := "runtime.adjustsudogs"%go.
+Definition findsghi {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.findsghi"%go.
 
-Definition fillstack : go_string := "runtime.fillstack"%go.
+Definition syncadjustsudogs {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.syncadjustsudogs"%go.
 
-Definition findsghi : go_string := "runtime.findsghi"%go.
+Definition copystack {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.copystack"%go.
 
-Definition syncadjustsudogs : go_string := "runtime.syncadjustsudogs"%go.
+Definition round2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.round2"%go.
 
-Definition copystack : go_string := "runtime.copystack"%go.
+Definition newstack {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.newstack"%go.
 
-Definition round2 : go_string := "runtime.round2"%go.
+Definition nilfunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.nilfunc"%go.
 
-Definition newstack : go_string := "runtime.newstack"%go.
+Definition gostartcallfn {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gostartcallfn"%go.
 
-Definition nilfunc : go_string := "runtime.nilfunc"%go.
+Definition isShrinkStackSafe {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.isShrinkStackSafe"%go.
 
-Definition gostartcallfn : go_string := "runtime.gostartcallfn"%go.
+Definition shrinkstack {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.shrinkstack"%go.
 
-Definition isShrinkStackSafe : go_string := "runtime.isShrinkStackSafe"%go.
+Definition freeStackSpans {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.freeStackSpans"%go.
 
-Definition shrinkstack : go_string := "runtime.shrinkstack"%go.
+Axiom stackObjectRecordⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition freeStackSpans : go_string := "runtime.freeStackSpans"%go.
+Definition morestackc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.morestackc"%go.
 
-Axiom stackObjectRecordⁱᵐᵖˡ : go.type.
+Definition startingStackSize {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.startingStackSize"%go.
 
-Definition morestackc : go_string := "runtime.morestackc"%go.
+Axiom startingStackSize'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition startingStackSize : go_string := "runtime.startingStackSize"%go.
+Definition gcComputeStartingStackSize {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcComputeStartingStackSize"%go.
 
-Axiom startingStackSize'init : val.
+Axiom stkframeⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition gcComputeStartingStackSize : go_string := "runtime.gcComputeStartingStackSize"%go.
+Axiom reflectMethodValueⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom stkframeⁱᵐᵖˡ : go.type.
+Definition methodValueCallFrameObjs {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.methodValueCallFrameObjs"%go.
 
-Axiom reflectMethodValueⁱᵐᵖˡ : go.type.
+Definition stkobjinit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.stkobjinit"%go.
 
-Definition methodValueCallFrameObjs : go_string := "runtime.methodValueCallFrameObjs"%go.
+Axiom tmpStringBufSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition stkobjinit : go_string := "runtime.stkobjinit"%go.
+Axiom tmpBufⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom tmpStringBufSize : Z.
+Definition concatstrings {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.concatstrings"%go.
 
-Axiom tmpBufⁱᵐᵖˡ : go.type.
+Definition concatstring2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.concatstring2"%go.
 
-Definition concatstrings : go_string := "runtime.concatstrings"%go.
+Definition concatstring3 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.concatstring3"%go.
 
-Definition concatstring2 : go_string := "runtime.concatstring2"%go.
+Definition concatstring4 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.concatstring4"%go.
 
-Definition concatstring3 : go_string := "runtime.concatstring3"%go.
+Definition concatstring5 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.concatstring5"%go.
 
-Definition concatstring4 : go_string := "runtime.concatstring4"%go.
+Definition concatbytes {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.concatbytes"%go.
 
-Definition concatstring5 : go_string := "runtime.concatstring5"%go.
+Definition concatbyte2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.concatbyte2"%go.
 
-Definition concatbytes : go_string := "runtime.concatbytes"%go.
+Definition concatbyte3 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.concatbyte3"%go.
 
-Definition concatbyte2 : go_string := "runtime.concatbyte2"%go.
+Definition concatbyte4 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.concatbyte4"%go.
 
-Definition concatbyte3 : go_string := "runtime.concatbyte3"%go.
+Definition concatbyte5 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.concatbyte5"%go.
 
-Definition concatbyte4 : go_string := "runtime.concatbyte4"%go.
+Definition slicebytetostring {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.slicebytetostring"%go.
 
-Definition concatbyte5 : go_string := "runtime.concatbyte5"%go.
+Definition stringDataOnStack {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.stringDataOnStack"%go.
 
-Definition slicebytetostring : go_string := "runtime.slicebytetostring"%go.
+Definition rawstringtmp {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.rawstringtmp"%go.
 
-Definition stringDataOnStack : go_string := "runtime.stringDataOnStack"%go.
+Definition slicebytetostringtmp {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.slicebytetostringtmp"%go.
 
-Definition rawstringtmp : go_string := "runtime.rawstringtmp"%go.
+Definition stringtoslicebyte {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.stringtoslicebyte"%go.
 
-Definition slicebytetostringtmp : go_string := "runtime.slicebytetostringtmp"%go.
+Definition stringtoslicerune {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.stringtoslicerune"%go.
 
-Definition stringtoslicebyte : go_string := "runtime.stringtoslicebyte"%go.
+Definition slicerunetostring {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.slicerunetostring"%go.
 
-Definition stringtoslicerune : go_string := "runtime.stringtoslicerune"%go.
+Axiom stringStructⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition slicerunetostring : go_string := "runtime.slicerunetostring"%go.
+Axiom stringStructDWARFⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom stringStructⁱᵐᵖˡ : go.type.
+Definition stringStructOf {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.stringStructOf"%go.
 
-Axiom stringStructDWARFⁱᵐᵖˡ : go.type.
+Definition intstring {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.intstring"%go.
 
-Definition stringStructOf : go_string := "runtime.stringStructOf"%go.
+Definition rawstring {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.rawstring"%go.
 
-Definition intstring : go_string := "runtime.intstring"%go.
+Definition rawbyteslice {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.rawbyteslice"%go.
 
-Definition rawstring : go_string := "runtime.rawstring"%go.
+Definition rawruneslice {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.rawruneslice"%go.
 
-Definition rawbyteslice : go_string := "runtime.rawbyteslice"%go.
+Definition gobytes {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gobytes"%go.
 
-Definition rawruneslice : go_string := "runtime.rawruneslice"%go.
+Definition gostring {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gostring"%go.
 
-Definition gobytes : go_string := "runtime.gobytes"%go.
+Definition internal_syscall_gostring {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.internal_syscall_gostring"%go.
 
-Definition gostring : go_string := "runtime.gostring"%go.
+Definition gostringn {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gostringn"%go.
 
-Definition internal_syscall_gostring : go_string := "runtime.internal_syscall_gostring"%go.
+Definition parseByteCount {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.parseByteCount"%go.
 
-Definition gostringn : go_string := "runtime.gostringn"%go.
+Definition findnull {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.findnull"%go.
 
-Definition parseByteCount : go_string := "runtime.parseByteCount"%go.
+Definition findnullw {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.findnullw"%go.
 
-Definition findnull : go_string := "runtime.findnull"%go.
+Definition gostringnocopy {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gostringnocopy"%go.
 
-Definition findnullw : go_string := "runtime.findnullw"%go.
+Definition gostringw {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gostringw"%go.
 
-Definition gostringnocopy : go_string := "runtime.gostringnocopy"%go.
+Definition add {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.add"%go.
 
-Definition gostringw : go_string := "runtime.gostringw"%go.
+Definition getg {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.getg"%go.
 
-Definition add : go_string := "runtime.add"%go.
+Definition mcall {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.mcall"%go.
 
-Definition getg : go_string := "runtime.getg"%go.
+Definition systemstack {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.systemstack"%go.
 
-Definition mcall : go_string := "runtime.mcall"%go.
+Definition badsystemstack {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.badsystemstack"%go.
 
-Definition systemstack : go_string := "runtime.systemstack"%go.
+Definition memclrNoHeapPointers {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.memclrNoHeapPointers"%go.
 
-Definition badsystemstack : go_string := "runtime.badsystemstack"%go.
+Definition reflect_memclrNoHeapPointers {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflect_memclrNoHeapPointers"%go.
 
-Definition memclrNoHeapPointers : go_string := "runtime.memclrNoHeapPointers"%go.
+Definition memmove {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.memmove"%go.
 
-Definition reflect_memclrNoHeapPointers : go_string := "runtime.reflect_memclrNoHeapPointers"%go.
+Definition reflect_memmove {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflect_memmove"%go.
 
-Definition memmove : go_string := "runtime.memmove"%go.
+Axiom hashLoad : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition reflect_memmove : go_string := "runtime.reflect_memmove"%go.
+Definition memequal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.memequal"%go.
 
-Axiom hashLoad : val.
+Definition noescape {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.noescape"%go.
 
-Definition memequal : go_string := "runtime.memequal"%go.
+Definition noEscapePtr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.noEscapePtr"%go.
 
-Definition noescape : go_string := "runtime.noescape"%go.
+Definition cgocallback {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.cgocallback"%go.
 
-Definition noEscapePtr : go_string := "runtime.noEscapePtr"%go.
+Definition gogo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gogo"%go.
 
-Definition cgocallback : go_string := "runtime.cgocallback"%go.
+Definition asminit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.asminit"%go.
 
-Definition gogo : go_string := "runtime.gogo"%go.
+Definition setg {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.setg"%go.
 
-Definition asminit : go_string := "runtime.asminit"%go.
+Definition breakpoint {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.breakpoint"%go.
 
-Definition setg : go_string := "runtime.setg"%go.
+Definition reflectcall {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflectcall"%go.
 
-Definition breakpoint : go_string := "runtime.breakpoint"%go.
+Definition procyield {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.procyield"%go.
 
-Definition reflectcall : go_string := "runtime.reflectcall"%go.
+Axiom neverCallThisFunctionⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition procyield : go_string := "runtime.procyield"%go.
+Definition goexit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.goexit"%go.
 
-Axiom neverCallThisFunctionⁱᵐᵖˡ : go.type.
+Definition publicationBarrier {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.publicationBarrier"%go.
 
-Definition goexit : go_string := "runtime.goexit"%go.
+Definition asmcgocall {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.asmcgocall"%go.
 
-Definition publicationBarrier : go_string := "runtime.publicationBarrier"%go.
+Definition morestack {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.morestack"%go.
 
-Definition asmcgocall : go_string := "runtime.asmcgocall"%go.
+Definition morestack_noctxt {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.morestack_noctxt"%go.
 
-Definition morestack : go_string := "runtime.morestack"%go.
+Definition rt0_go {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.rt0_go"%go.
 
-Definition morestack_noctxt : go_string := "runtime.morestack_noctxt"%go.
+Definition call16 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.call16"%go.
 
-Definition rt0_go : go_string := "runtime.rt0_go"%go.
+Definition call32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.call32"%go.
 
-Definition call16 : go_string := "runtime.call16"%go.
+Definition call64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.call64"%go.
 
-Definition call32 : go_string := "runtime.call32"%go.
+Definition call128 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.call128"%go.
 
-Definition call64 : go_string := "runtime.call64"%go.
+Definition call256 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.call256"%go.
 
-Definition call128 : go_string := "runtime.call128"%go.
+Definition call512 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.call512"%go.
 
-Definition call256 : go_string := "runtime.call256"%go.
+Definition call1024 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.call1024"%go.
 
-Definition call512 : go_string := "runtime.call512"%go.
+Definition call2048 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.call2048"%go.
 
-Definition call1024 : go_string := "runtime.call1024"%go.
+Definition call4096 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.call4096"%go.
 
-Definition call2048 : go_string := "runtime.call2048"%go.
+Definition call8192 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.call8192"%go.
 
-Definition call4096 : go_string := "runtime.call4096"%go.
+Definition call16384 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.call16384"%go.
 
-Definition call8192 : go_string := "runtime.call8192"%go.
+Definition call32768 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.call32768"%go.
 
-Definition call16384 : go_string := "runtime.call16384"%go.
+Definition call65536 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.call65536"%go.
 
-Definition call32768 : go_string := "runtime.call32768"%go.
+Definition call131072 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.call131072"%go.
 
-Definition call65536 : go_string := "runtime.call65536"%go.
+Definition call262144 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.call262144"%go.
 
-Definition call131072 : go_string := "runtime.call131072"%go.
+Definition call524288 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.call524288"%go.
 
-Definition call262144 : go_string := "runtime.call262144"%go.
+Definition call1048576 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.call1048576"%go.
 
-Definition call524288 : go_string := "runtime.call524288"%go.
+Definition call2097152 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.call2097152"%go.
 
-Definition call1048576 : go_string := "runtime.call1048576"%go.
+Definition call4194304 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.call4194304"%go.
 
-Definition call2097152 : go_string := "runtime.call2097152"%go.
+Definition call8388608 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.call8388608"%go.
 
-Definition call4194304 : go_string := "runtime.call4194304"%go.
+Definition call16777216 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.call16777216"%go.
 
-Definition call8388608 : go_string := "runtime.call8388608"%go.
+Definition call33554432 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.call33554432"%go.
 
-Definition call16777216 : go_string := "runtime.call16777216"%go.
+Definition call67108864 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.call67108864"%go.
 
-Definition call33554432 : go_string := "runtime.call33554432"%go.
+Definition call134217728 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.call134217728"%go.
 
-Definition call67108864 : go_string := "runtime.call67108864"%go.
+Definition call268435456 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.call268435456"%go.
 
-Definition call134217728 : go_string := "runtime.call134217728"%go.
+Definition call536870912 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.call536870912"%go.
 
-Definition call268435456 : go_string := "runtime.call268435456"%go.
+Definition call1073741824 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.call1073741824"%go.
 
-Definition call536870912 : go_string := "runtime.call536870912"%go.
+Definition systemstack_switch {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.systemstack_switch"%go.
 
-Definition call1073741824 : go_string := "runtime.call1073741824"%go.
+Definition alignUp {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.alignUp"%go.
 
-Definition systemstack_switch : go_string := "runtime.systemstack_switch"%go.
+Definition alignDown {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.alignDown"%go.
 
-Definition alignUp : go_string := "runtime.alignUp"%go.
+Definition divRoundUp {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.divRoundUp"%go.
 
-Definition alignDown : go_string := "runtime.alignDown"%go.
+Definition checkASM {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.checkASM"%go.
 
-Definition divRoundUp : go_string := "runtime.divRoundUp"%go.
+Definition memequal_varlen {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.memequal_varlen"%go.
 
-Definition checkASM : go_string := "runtime.checkASM"%go.
+Definition bool2int {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.bool2int"%go.
 
-Definition memequal_varlen : go_string := "runtime.memequal_varlen"%go.
+Definition abort {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.abort"%go.
 
-Definition bool2int : go_string := "runtime.bool2int"%go.
+Definition gcWriteBarrier1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcWriteBarrier1"%go.
 
-Definition abort : go_string := "runtime.abort"%go.
+Definition gcWriteBarrier2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcWriteBarrier2"%go.
 
-Definition gcWriteBarrier1 : go_string := "runtime.gcWriteBarrier1"%go.
+Definition gcWriteBarrier3 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcWriteBarrier3"%go.
 
-Definition gcWriteBarrier2 : go_string := "runtime.gcWriteBarrier2"%go.
+Definition gcWriteBarrier4 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcWriteBarrier4"%go.
 
-Definition gcWriteBarrier3 : go_string := "runtime.gcWriteBarrier3"%go.
+Definition gcWriteBarrier5 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcWriteBarrier5"%go.
 
-Definition gcWriteBarrier4 : go_string := "runtime.gcWriteBarrier4"%go.
+Definition gcWriteBarrier6 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcWriteBarrier6"%go.
 
-Definition gcWriteBarrier5 : go_string := "runtime.gcWriteBarrier5"%go.
+Definition gcWriteBarrier7 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcWriteBarrier7"%go.
 
-Definition gcWriteBarrier6 : go_string := "runtime.gcWriteBarrier6"%go.
+Definition gcWriteBarrier8 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcWriteBarrier8"%go.
 
-Definition gcWriteBarrier7 : go_string := "runtime.gcWriteBarrier7"%go.
+Definition duffzero {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.duffzero"%go.
 
-Definition gcWriteBarrier8 : go_string := "runtime.gcWriteBarrier8"%go.
+Definition duffcopy {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.duffcopy"%go.
 
-Definition duffzero : go_string := "runtime.duffzero"%go.
+Definition addmoduledata {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.addmoduledata"%go.
 
-Definition duffcopy : go_string := "runtime.duffcopy"%go.
+Definition sigpanic0 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sigpanic0"%go.
 
-Definition addmoduledata : go_string := "runtime.addmoduledata"%go.
+Definition intArgRegs {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.intArgRegs"%go.
 
-Definition sigpanic0 : go_string := "runtime.sigpanic0"%go.
+Axiom intArgRegs'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition intArgRegs : go_string := "runtime.intArgRegs"%go.
+Definition read {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.read"%go.
 
-Axiom intArgRegs'init : val.
+Definition closefd {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.closefd"%go.
 
-Definition read : go_string := "runtime.read"%go.
+Definition exit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.exit"%go.
 
-Definition closefd : go_string := "runtime.closefd"%go.
+Definition usleep {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.usleep"%go.
 
-Definition exit : go_string := "runtime.exit"%go.
+Definition usleep_no_g {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.usleep_no_g"%go.
 
-Definition usleep : go_string := "runtime.usleep"%go.
+Definition write1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.write1"%go.
 
-Definition usleep_no_g : go_string := "runtime.usleep_no_g"%go.
+Definition open {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.open"%go.
 
-Definition write1 : go_string := "runtime.write1"%go.
+Definition madvise {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.madvise"%go.
 
-Definition open : go_string := "runtime.open"%go.
+Definition exitThread {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.exitThread"%go.
 
-Definition madvise : go_string := "runtime.madvise"%go.
+Definition nanotime1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.nanotime1"%go.
 
-Definition exitThread : go_string := "runtime.exitThread"%go.
+Definition gcWriteBarrierCX {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcWriteBarrierCX"%go.
 
-Definition nanotime1 : go_string := "runtime.nanotime1"%go.
+Definition gcWriteBarrierDX {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcWriteBarrierDX"%go.
 
-Definition gcWriteBarrierCX : go_string := "runtime.gcWriteBarrierCX"%go.
+Definition gcWriteBarrierBX {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcWriteBarrierBX"%go.
 
-Definition gcWriteBarrierDX : go_string := "runtime.gcWriteBarrierDX"%go.
+Definition gcWriteBarrierBP {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcWriteBarrierBP"%go.
 
-Definition gcWriteBarrierBX : go_string := "runtime.gcWriteBarrierBX"%go.
+Definition gcWriteBarrierSI {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcWriteBarrierSI"%go.
 
-Definition gcWriteBarrierBP : go_string := "runtime.gcWriteBarrierBP"%go.
+Definition gcWriteBarrierR8 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcWriteBarrierR8"%go.
 
-Definition gcWriteBarrierSI : go_string := "runtime.gcWriteBarrierSI"%go.
+Definition gcWriteBarrierR9 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcWriteBarrierR9"%go.
 
-Definition gcWriteBarrierR8 : go_string := "runtime.gcWriteBarrierR8"%go.
+Definition stackcheck {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.stackcheck"%go.
 
-Definition gcWriteBarrierR9 : go_string := "runtime.gcWriteBarrierR9"%go.
+Definition settls {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.settls"%go.
 
-Definition stackcheck : go_string := "runtime.stackcheck"%go.
+Definition retpolineAX {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.retpolineAX"%go.
 
-Definition settls : go_string := "runtime.settls"%go.
+Definition retpolineCX {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.retpolineCX"%go.
 
-Definition retpolineAX : go_string := "runtime.retpolineAX"%go.
+Definition retpolineDX {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.retpolineDX"%go.
 
-Definition retpolineCX : go_string := "runtime.retpolineCX"%go.
+Definition retpolineBX {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.retpolineBX"%go.
 
-Definition retpolineDX : go_string := "runtime.retpolineDX"%go.
+Definition retpolineBP {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.retpolineBP"%go.
 
-Definition retpolineBX : go_string := "runtime.retpolineBX"%go.
+Definition retpolineSI {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.retpolineSI"%go.
 
-Definition retpolineBP : go_string := "runtime.retpolineBP"%go.
+Definition retpolineDI {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.retpolineDI"%go.
 
-Definition retpolineSI : go_string := "runtime.retpolineSI"%go.
+Definition retpolineR8 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.retpolineR8"%go.
 
-Definition retpolineDI : go_string := "runtime.retpolineDI"%go.
+Definition retpolineR9 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.retpolineR9"%go.
 
-Definition retpolineR8 : go_string := "runtime.retpolineR8"%go.
+Definition retpolineR10 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.retpolineR10"%go.
 
-Definition retpolineR9 : go_string := "runtime.retpolineR9"%go.
+Definition retpolineR11 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.retpolineR11"%go.
 
-Definition retpolineR10 : go_string := "runtime.retpolineR10"%go.
+Definition retpolineR12 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.retpolineR12"%go.
 
-Definition retpolineR11 : go_string := "runtime.retpolineR11"%go.
+Definition retpolineR13 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.retpolineR13"%go.
 
-Definition retpolineR12 : go_string := "runtime.retpolineR12"%go.
+Definition retpolineR14 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.retpolineR14"%go.
 
-Definition retpolineR13 : go_string := "runtime.retpolineR13"%go.
+Definition retpolineR15 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.retpolineR15"%go.
 
-Definition retpolineR14 : go_string := "runtime.retpolineR14"%go.
+Definition asmcgocall_no_g {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.asmcgocall_no_g"%go.
 
-Definition retpolineR15 : go_string := "runtime.retpolineR15"%go.
+Definition asmcgocall_landingpad {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.asmcgocall_landingpad"%go.
 
-Definition asmcgocall_no_g : go_string := "runtime.asmcgocall_no_g"%go.
+Definition spillArgs {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.spillArgs"%go.
 
-Definition asmcgocall_landingpad : go_string := "runtime.asmcgocall_landingpad"%go.
+Definition unspillArgs {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.unspillArgs"%go.
 
-Definition spillArgs : go_string := "runtime.spillArgs"%go.
+Definition getfp {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.getfp"%go.
 
-Definition unspillArgs : go_string := "runtime.unspillArgs"%go.
+Definition sbrk0 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.sbrk0"%go.
 
-Definition getfp : go_string := "runtime.getfp"%go.
+Definition access {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.access"%go.
 
-Definition sbrk0 : go_string := "runtime.sbrk0"%go.
+Definition connect {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.connect"%go.
 
-Definition access : go_string := "runtime.access"%go.
+Definition socket {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.socket"%go.
 
-Definition connect : go_string := "runtime.connect"%go.
+Definition pause {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.pause"%go.
 
-Definition socket : go_string := "runtime.socket"%go.
+Axiom Framesⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition pause : go_string := "runtime.pause"%go.
+Axiom Frameⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom Framesⁱᵐᵖˡ : go.type.
+Definition CallersFrames {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.CallersFrames"%go.
 
-Axiom Frameⁱᵐᵖˡ : go.type.
+Definition runtime_FrameStartLine {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.runtime_FrameStartLine"%go.
 
-Definition CallersFrames : go_string := "runtime.CallersFrames"%go.
+Definition runtime_FrameSymbolName {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.runtime_FrameSymbolName"%go.
 
-Definition runtime_FrameStartLine : go_string := "runtime.runtime_FrameStartLine"%go.
+Definition runtime_expandFinalInlineFrame {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.runtime_expandFinalInlineFrame"%go.
 
-Definition runtime_FrameSymbolName : go_string := "runtime.runtime_FrameSymbolName"%go.
+Definition expandCgoFrames {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.expandCgoFrames"%go.
 
-Definition runtime_expandFinalInlineFrame : go_string := "runtime.runtime_expandFinalInlineFrame"%go.
+Axiom Funcⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition expandCgoFrames : go_string := "runtime.expandCgoFrames"%go.
+Axiom pcHeaderⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom Funcⁱᵐᵖˡ : go.type.
+Axiom moduledataⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom pcHeaderⁱᵐᵖˡ : go.type.
+Axiom modulehashⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom moduledataⁱᵐᵖˡ : go.type.
+Definition pinnedTypemaps {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.pinnedTypemaps"%go.
 
-Axiom modulehashⁱᵐᵖˡ : go.type.
+Definition aixStaticDataBase {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.aixStaticDataBase"%go.
 
-Definition pinnedTypemaps : go_string := "runtime.pinnedTypemaps"%go.
+Definition firstmoduledata {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.firstmoduledata"%go.
 
-Definition aixStaticDataBase : go_string := "runtime.aixStaticDataBase"%go.
+Definition lastmoduledatap {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.lastmoduledatap"%go.
 
-Definition firstmoduledata : go_string := "runtime.firstmoduledata"%go.
+Definition modulesSlice {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.modulesSlice"%go.
 
-Definition lastmoduledatap : go_string := "runtime.lastmoduledatap"%go.
+Definition activeModules {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.activeModules"%go.
 
-Definition modulesSlice : go_string := "runtime.modulesSlice"%go.
+Definition modulesinit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.modulesinit"%go.
 
-Definition activeModules : go_string := "runtime.activeModules"%go.
+Axiom functabⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition modulesinit : go_string := "runtime.modulesinit"%go.
+Axiom textsectⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom functabⁱᵐᵖˡ : go.type.
+Axiom findfuncbucketⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom textsectⁱᵐᵖˡ : go.type.
+Definition moduledataverify {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.moduledataverify"%go.
 
-Axiom findfuncbucketⁱᵐᵖˡ : go.type.
+Axiom debugPcln : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition moduledataverify : go_string := "runtime.moduledataverify"%go.
+Definition moduledataverify1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.moduledataverify1"%go.
 
-Axiom debugPcln : val.
+Definition FuncForPC {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.FuncForPC"%go.
 
-Definition moduledataverify1 : go_string := "runtime.moduledataverify1"%go.
+Definition findmoduledatap {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.findmoduledatap"%go.
 
-Definition FuncForPC : go_string := "runtime.FuncForPC"%go.
+Axiom funcInfoⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition findmoduledatap : go_string := "runtime.findmoduledatap"%go.
+Definition badFuncInfoEntry {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.badFuncInfoEntry"%go.
 
-Axiom funcInfoⁱᵐᵖˡ : go.type.
+Definition findfunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.findfunc"%go.
 
-Definition badFuncInfoEntry : go_string := "runtime.badFuncInfoEntry"%go.
+Axiom srcFuncⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition findfunc : go_string := "runtime.findfunc"%go.
+Definition badSrcFuncName {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.badSrcFuncName"%go.
 
-Axiom srcFuncⁱᵐᵖˡ : go.type.
+Axiom pcvalueCacheⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition badSrcFuncName : go_string := "runtime.badSrcFuncName"%go.
+Axiom pcvalueCacheEntⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom pcvalueCacheⁱᵐᵖˡ : go.type.
+Definition pcvalueCacheKey {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.pcvalueCacheKey"%go.
 
-Axiom pcvalueCacheEntⁱᵐᵖˡ : go.type.
+Definition pcvalue {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.pcvalue"%go.
 
-Definition pcvalueCacheKey : go_string := "runtime.pcvalueCacheKey"%go.
+Definition funcname {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.funcname"%go.
 
-Definition pcvalue : go_string := "runtime.pcvalue"%go.
+Definition funcpkgpath {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.funcpkgpath"%go.
 
-Definition funcname : go_string := "runtime.funcname"%go.
+Definition funcfile {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.funcfile"%go.
 
-Definition funcpkgpath : go_string := "runtime.funcpkgpath"%go.
+Definition funcline1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.funcline1"%go.
 
-Definition funcfile : go_string := "runtime.funcfile"%go.
+Definition funcline {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.funcline"%go.
 
-Definition funcline1 : go_string := "runtime.funcline1"%go.
+Definition funcspdelta {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.funcspdelta"%go.
 
-Definition funcline : go_string := "runtime.funcline"%go.
+Definition funcMaxSPDelta {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.funcMaxSPDelta"%go.
 
-Definition funcspdelta : go_string := "runtime.funcspdelta"%go.
+Definition pcdatastart {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.pcdatastart"%go.
 
-Definition funcMaxSPDelta : go_string := "runtime.funcMaxSPDelta"%go.
+Definition pcdatavalue {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.pcdatavalue"%go.
 
-Definition pcdatastart : go_string := "runtime.pcdatastart"%go.
+Definition pcdatavalue1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.pcdatavalue1"%go.
 
-Definition pcdatavalue : go_string := "runtime.pcdatavalue"%go.
+Definition pcdatavalue2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.pcdatavalue2"%go.
 
-Definition pcdatavalue1 : go_string := "runtime.pcdatavalue1"%go.
+Definition funcdata {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.funcdata"%go.
 
-Definition pcdatavalue2 : go_string := "runtime.pcdatavalue2"%go.
+Definition step {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.step"%go.
 
-Definition funcdata : go_string := "runtime.funcdata"%go.
+Definition readvarint {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.readvarint"%go.
 
-Definition step : go_string := "runtime.step"%go.
+Axiom stackmapⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition readvarint : go_string := "runtime.readvarint"%go.
+Definition stackmapdata {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.stackmapdata"%go.
 
-Axiom stackmapⁱᵐᵖˡ : go.type.
+Axiom inlinedCallⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition stackmapdata : go_string := "runtime.stackmapdata"%go.
+Axiom inlineUnwinderⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom inlinedCallⁱᵐᵖˡ : go.type.
+Axiom inlineFrameⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom inlineUnwinderⁱᵐᵖˡ : go.type.
+Definition newInlineUnwinder {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.newInlineUnwinder"%go.
 
-Axiom inlineFrameⁱᵐᵖˡ : go.type.
+Definition badSrcFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.badSrcFunc"%go.
 
-Definition newInlineUnwinder : go_string := "runtime.newInlineUnwinder"%go.
+Axiom synctestBubbleⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition badSrcFunc : go_string := "runtime.badSrcFunc"%go.
+Definition bubbleGen {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.bubbleGen"%go.
 
-Axiom synctestBubbleⁱᵐᵖˡ : go.type.
+Definition synctestRun {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.synctestRun"%go.
 
-Definition bubbleGen : go_string := "runtime.bubbleGen"%go.
+Axiom synctestDeadlockErrorⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition synctestRun : go_string := "runtime.synctestRun"%go.
+Definition synctestidle_c {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.synctestidle_c"%go.
 
-Axiom synctestDeadlockErrorⁱᵐᵖˡ : go.type.
+Definition synctestWait {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.synctestWait"%go.
 
-Definition synctestidle_c : go_string := "runtime.synctestidle_c"%go.
+Definition synctestwait_c {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.synctestwait_c"%go.
 
-Definition synctestWait : go_string := "runtime.synctestWait"%go.
+Definition synctest_isInBubble {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.synctest_isInBubble"%go.
 
-Definition synctestwait_c : go_string := "runtime.synctestwait_c"%go.
+Definition synctest_acquire {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.synctest_acquire"%go.
 
-Definition synctest_isInBubble : go_string := "runtime.synctest_isInBubble"%go.
+Definition synctest_release {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.synctest_release"%go.
 
-Definition synctest_acquire : go_string := "runtime.synctest_acquire"%go.
+Definition synctest_inBubble {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.synctest_inBubble"%go.
 
-Definition synctest_release : go_string := "runtime.synctest_release"%go.
+Axiom specialBubbleⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition synctest_inBubble : go_string := "runtime.synctest_inBubble"%go.
+Axiom bubbleAssocUnbubbled : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom specialBubbleⁱᵐᵖˡ : go.type.
+Axiom bubbleAssocCurrentBubble : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom bubbleAssocUnbubbled : Z.
+Axiom bubbleAssocOtherBubble : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom bubbleAssocCurrentBubble : Z.
+Definition getOrSetBubbleSpecial {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.getOrSetBubbleSpecial"%go.
 
-Axiom bubbleAssocOtherBubble : Z.
+Definition synctest_associate {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.synctest_associate"%go.
 
-Definition getOrSetBubbleSpecial : go_string := "runtime.getOrSetBubbleSpecial"%go.
+Definition synctest_disassociate {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.synctest_disassociate"%go.
 
-Definition synctest_associate : go_string := "runtime.synctest_associate"%go.
+Definition synctest_isAssociated {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.synctest_isAssociated"%go.
 
-Definition synctest_disassociate : go_string := "runtime.synctest_disassociate"%go.
+Definition prepGoExitFrame {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.prepGoExitFrame"%go.
 
-Definition synctest_isAssociated : go_string := "runtime.synctest_isAssociated"%go.
+Definition gostartcall {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gostartcall"%go.
 
-Definition prepGoExitFrame : go_string := "runtime.prepGoExitFrame"%go.
+Axiom taggedPointerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition gostartcall : go_string := "runtime.gostartcall"%go.
+Axiom minTagBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom taggedPointerⁱᵐᵖˡ : go.type.
+Axiom tagAlignBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom minTagBits : Z.
+Axiom tagAlign : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom tagAlignBits : Z.
+Axiom defaultAddrBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom tagAlign : Z.
+Axiom aixAddrBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom defaultAddrBits : Z.
+Axiom freebsdAmd64AddrBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom aixAddrBits : Z.
+Axiom riscv64AddrBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom freebsdAmd64AddrBits : Z.
+Axiom addrBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom riscv64AddrBits : Z.
+Axiom tagBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom addrBits : Z.
+Definition taggedPointerPack {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.taggedPointerPack"%go.
 
-Axiom tagBits : Z.
+Definition testSPWrite {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.testSPWrite"%go.
 
-Definition taggedPointerPack : go_string := "runtime.taggedPointerPack"%go.
+Definition time_runtimeNow {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.time_runtimeNow"%go.
 
-Definition testSPWrite : go_string := "runtime.testSPWrite"%go.
+Definition time_runtimeNano {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.time_runtimeNano"%go.
 
-Definition time_runtimeNow : go_string := "runtime.time_runtimeNow"%go.
+Definition time_runtimeIsBubbled {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.time_runtimeIsBubbled"%go.
 
-Definition time_runtimeNano : go_string := "runtime.time_runtimeNano"%go.
+Axiom timerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition time_runtimeIsBubbled : go_string := "runtime.time_runtimeIsBubbled"%go.
+Axiom timersⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom timerⁱᵐᵖˡ : go.type.
+Axiom timerWhenⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom timersⁱᵐᵖˡ : go.type.
+Axiom timerHeaped : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom timerWhenⁱᵐᵖˡ : go.type.
+Axiom timerModified : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom timerHeaped : val.
+Axiom timerZombie : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom timerModified : val.
+Axiom timerDebug : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom timerZombie : val.
+Axiom maxWhen : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom timerDebug : val.
+Axiom verifyTimers : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom maxWhen : Z.
+Definition timeSleep {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.timeSleep"%go.
 
-Axiom verifyTimers : val.
+Definition resetForSleep {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.resetForSleep"%go.
 
-Definition timeSleep : go_string := "runtime.timeSleep"%go.
+Axiom timeTimerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition resetForSleep : go_string := "runtime.resetForSleep"%go.
+Definition newTimer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.newTimer"%go.
 
-Axiom timeTimerⁱᵐᵖˡ : go.type.
+Definition stopTimer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.stopTimer"%go.
 
-Definition newTimer : go_string := "runtime.newTimer"%go.
+Definition resetTimer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.resetTimer"%go.
 
-Definition stopTimer : go_string := "runtime.stopTimer"%go.
+Definition goroutineReady {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.goroutineReady"%go.
 
-Definition resetTimer : go_string := "runtime.resetTimer"%go.
+Definition timeSleepUntil {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.timeSleepUntil"%go.
 
-Definition goroutineReady : go_string := "runtime.goroutineReady"%go.
+Axiom timerHeapN : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition timeSleepUntil : go_string := "runtime.timeSleepUntil"%go.
+Definition badTimer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.badTimer"%go.
 
-Axiom timerHeapN : Z.
+Definition blockTimerChan {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.blockTimerChan"%go.
 
-Definition badTimer : go_string := "runtime.badTimer"%go.
+Definition unblockTimerChan {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.unblockTimerChan"%go.
 
-Definition blockTimerChan : go_string := "runtime.blockTimerChan"%go.
+Definition faketime {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.faketime"%go.
 
-Definition unblockTimerChan : go_string := "runtime.unblockTimerChan"%go.
+Definition nanotime {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.nanotime"%go.
 
-Definition faketime : go_string := "runtime.faketime"%go.
+Definition overrideWrite {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.overrideWrite"%go.
 
-Definition nanotime : go_string := "runtime.nanotime"%go.
+Definition write {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.write"%go.
 
-Definition overrideWrite : go_string := "runtime.overrideWrite"%go.
+Definition time_now {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.time_now"%go.
 
-Definition write : go_string := "runtime.write"%go.
+Definition osSetupTLS {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.osSetupTLS"%go.
 
-Definition time_now : go_string := "runtime.time_now"%go.
+Definition trace {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.trace"%go.
 
-Definition osSetupTLS : go_string := "runtime.osSetupTLS"%go.
+Definition traceAdvanceSema {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.traceAdvanceSema"%go.
 
-Definition trace : go_string := "runtime.trace"%go.
+Axiom traceAdvanceSema'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition traceAdvanceSema : go_string := "runtime.traceAdvanceSema"%go.
+Definition traceShutdownSema {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.traceShutdownSema"%go.
 
-Axiom traceAdvanceSema'init : val.
+Axiom traceShutdownSema'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition traceShutdownSema : go_string := "runtime.traceShutdownSema"%go.
+Definition StartTrace {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.StartTrace"%go.
 
-Axiom traceShutdownSema'init : val.
+Definition StopTrace {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.StopTrace"%go.
 
-Definition StartTrace : go_string := "runtime.StartTrace"%go.
+Definition traceAdvance {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.traceAdvance"%go.
 
-Definition StopTrace : go_string := "runtime.StopTrace"%go.
+Definition traceNextGen {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.traceNextGen"%go.
 
-Definition traceAdvance : go_string := "runtime.traceAdvance"%go.
+Definition traceRegisterLabelsAndReasons {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.traceRegisterLabelsAndReasons"%go.
 
-Definition traceNextGen : go_string := "runtime.traceNextGen"%go.
+Definition ReadTrace {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.ReadTrace"%go.
 
-Definition traceRegisterLabelsAndReasons : go_string := "runtime.traceRegisterLabelsAndReasons"%go.
+Definition readTrace {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.readTrace"%go.
 
-Definition ReadTrace : go_string := "runtime.ReadTrace"%go.
+Definition readTrace0 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.readTrace0"%go.
 
-Definition readTrace : go_string := "runtime.readTrace"%go.
+Definition traceReader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.traceReader"%go.
 
-Definition readTrace0 : go_string := "runtime.readTrace0"%go.
+Definition traceReaderAvailable {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.traceReaderAvailable"%go.
 
-Definition traceReader : go_string := "runtime.traceReader"%go.
+Definition traceAdvancer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.traceAdvancer"%go.
 
-Definition traceReaderAvailable : go_string := "runtime.traceReaderAvailable"%go.
+Axiom traceAdvancerStateⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition traceAdvancer : go_string := "runtime.traceAdvancer"%go.
+Axiom defaultTraceAdvancePeriod : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom traceAdvancerStateⁱᵐᵖˡ : go.type.
+Axiom wakeableSleepⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom defaultTraceAdvancePeriod : val.
+Definition newWakeableSleep {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.newWakeableSleep"%go.
 
-Axiom wakeableSleepⁱᵐᵖˡ : go.type.
+Axiom traceAllocFreeTypesBatch : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition newWakeableSleep : go_string := "runtime.newWakeableSleep"%go.
+Axiom traceAllocFreeInfoBatch : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom traceAllocFreeTypesBatch : Z.
+Definition traceSnapshotMemory {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.traceSnapshotMemory"%go.
 
-Axiom traceAllocFreeInfoBatch : Z.
+Definition traceSpanTypeAndClass {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.traceSpanTypeAndClass"%go.
 
-Definition traceSnapshotMemory : go_string := "runtime.traceSnapshotMemory"%go.
+Definition traceSpanID {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.traceSpanID"%go.
 
-Definition traceSpanTypeAndClass : go_string := "runtime.traceSpanTypeAndClass"%go.
+Definition traceHeapObjectID {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.traceHeapObjectID"%go.
 
-Definition traceSpanID : go_string := "runtime.traceSpanID"%go.
+Definition traceGoroutineStackID {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.traceGoroutineStackID"%go.
 
-Definition traceHeapObjectID : go_string := "runtime.traceHeapObjectID"%go.
+Definition traceCompressStackSize {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.traceCompressStackSize"%go.
 
-Definition traceGoroutineStackID : go_string := "runtime.traceGoroutineStackID"%go.
+Axiom usesLR : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition traceCompressStackSize : go_string := "runtime.traceCompressStackSize"%go.
+Axiom tracebackInnerFrames : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom usesLR : val.
+Axiom tracebackOuterFrames : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom tracebackInnerFrames : Z.
+Axiom unwindFlagsⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom tracebackOuterFrames : Z.
+Axiom unwindPrintErrors : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom unwindFlagsⁱᵐᵖˡ : go.type.
+Axiom unwindSilentErrors : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom unwindPrintErrors : val.
+Axiom unwindTrap : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom unwindSilentErrors : val.
+Axiom unwindJumpStack : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom unwindTrap : val.
+Axiom unwinderⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom unwindJumpStack : val.
+Definition tracebackPCs {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.tracebackPCs"%go.
 
-Axiom unwinderⁱᵐᵖˡ : go.type.
+Definition printArgs {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.printArgs"%go.
 
-Definition tracebackPCs : go_string := "runtime.tracebackPCs"%go.
+Definition funcNamePiecesForPrint {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.funcNamePiecesForPrint"%go.
 
-Definition printArgs : go_string := "runtime.printArgs"%go.
+Definition funcNameForPrint {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.funcNameForPrint"%go.
 
-Definition funcNamePiecesForPrint : go_string := "runtime.funcNamePiecesForPrint"%go.
+Definition printFuncName {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.printFuncName"%go.
 
-Definition funcNameForPrint : go_string := "runtime.funcNameForPrint"%go.
+Definition printcreatedby {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.printcreatedby"%go.
 
-Definition printFuncName : go_string := "runtime.printFuncName"%go.
+Definition printcreatedby1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.printcreatedby1"%go.
 
-Definition printcreatedby : go_string := "runtime.printcreatedby"%go.
+Definition traceback {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.traceback"%go.
 
-Definition printcreatedby1 : go_string := "runtime.printcreatedby1"%go.
+Definition tracebacktrap {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.tracebacktrap"%go.
 
-Definition traceback : go_string := "runtime.traceback"%go.
+Definition traceback1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.traceback1"%go.
 
-Definition tracebacktrap : go_string := "runtime.tracebacktrap"%go.
+Definition traceback2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.traceback2"%go.
 
-Definition traceback1 : go_string := "runtime.traceback1"%go.
+Definition printAncestorTraceback {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.printAncestorTraceback"%go.
 
-Definition traceback2 : go_string := "runtime.traceback2"%go.
+Definition printAncestorTracebackFuncInfo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.printAncestorTracebackFuncInfo"%go.
 
-Definition printAncestorTraceback : go_string := "runtime.printAncestorTraceback"%go.
+Definition callers {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.callers"%go.
 
-Definition printAncestorTracebackFuncInfo : go_string := "runtime.printAncestorTracebackFuncInfo"%go.
+Definition gcallers {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gcallers"%go.
 
-Definition callers : go_string := "runtime.callers"%go.
+Definition showframe {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.showframe"%go.
 
-Definition gcallers : go_string := "runtime.gcallers"%go.
+Definition showfuncinfo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.showfuncinfo"%go.
 
-Definition showframe : go_string := "runtime.showframe"%go.
+Definition isExportedRuntime {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.isExportedRuntime"%go.
 
-Definition showfuncinfo : go_string := "runtime.showfuncinfo"%go.
+Definition elideWrapperCalling {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.elideWrapperCalling"%go.
 
-Definition isExportedRuntime : go_string := "runtime.isExportedRuntime"%go.
+Definition gStatusStrings {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.gStatusStrings"%go.
 
-Definition elideWrapperCalling : go_string := "runtime.elideWrapperCalling"%go.
+Axiom gStatusStrings'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition gStatusStrings : go_string := "runtime.gStatusStrings"%go.
+Definition goroutineheader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.goroutineheader"%go.
 
-Axiom gStatusStrings'init : val.
+Definition tracebackothers {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.tracebackothers"%go.
 
-Definition goroutineheader : go_string := "runtime.goroutineheader"%go.
+Definition tracebacksomeothers {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.tracebacksomeothers"%go.
 
-Definition tracebackothers : go_string := "runtime.tracebackothers"%go.
+Definition tracebackHexdump {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.tracebackHexdump"%go.
 
-Definition tracebacksomeothers : go_string := "runtime.tracebacksomeothers"%go.
+Definition isSystemGoroutine {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.isSystemGoroutine"%go.
 
-Definition tracebackHexdump : go_string := "runtime.tracebackHexdump"%go.
+Definition SetCgoTraceback {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.SetCgoTraceback"%go.
 
-Definition isSystemGoroutine : go_string := "runtime.isSystemGoroutine"%go.
+Definition cgoTraceback {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.cgoTraceback"%go.
 
-Definition SetCgoTraceback : go_string := "runtime.SetCgoTraceback"%go.
+Definition cgoContext {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.cgoContext"%go.
 
-Definition cgoTraceback : go_string := "runtime.cgoTraceback"%go.
+Definition cgoSymbolizer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.cgoSymbolizer"%go.
 
-Definition cgoContext : go_string := "runtime.cgoContext"%go.
+Axiom cgoTracebackArgⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition cgoSymbolizer : go_string := "runtime.cgoSymbolizer"%go.
+Axiom cgoContextArgⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom cgoTracebackArgⁱᵐᵖˡ : go.type.
+Axiom cgoSymbolizerArgⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom cgoContextArgⁱᵐᵖˡ : go.type.
+Definition printCgoTraceback {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.printCgoTraceback"%go.
 
-Axiom cgoSymbolizerArgⁱᵐᵖˡ : go.type.
+Definition printOneCgoTraceback {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.printOneCgoTraceback"%go.
 
-Definition printCgoTraceback : go_string := "runtime.printCgoTraceback"%go.
+Definition callCgoSymbolizer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.callCgoSymbolizer"%go.
 
-Definition printOneCgoTraceback : go_string := "runtime.printOneCgoTraceback"%go.
+Definition cgoContextPCs {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.cgoContextPCs"%go.
 
-Definition callCgoSymbolizer : go_string := "runtime.callCgoSymbolizer"%go.
+Axiom traceBytesPerNumber : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition cgoContextPCs : go_string := "runtime.cgoContextPCs"%go.
+Axiom traceWriterⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom traceBytesPerNumber : Z.
+Definition unsafeTraceWriter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.unsafeTraceWriter"%go.
 
-Axiom traceWriterⁱᵐᵖˡ : go.type.
+Definition unsafeTraceExpWriter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.unsafeTraceExpWriter"%go.
 
-Definition unsafeTraceWriter : go_string := "runtime.unsafeTraceWriter"%go.
+Axiom traceBufQueueⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition unsafeTraceExpWriter : go_string := "runtime.unsafeTraceExpWriter"%go.
+Axiom traceBufHeaderⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom traceBufQueueⁱᵐᵖˡ : go.type.
+Axiom traceBufⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom traceBufHeaderⁱᵐᵖˡ : go.type.
+Definition traceBufFlush {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.traceBufFlush"%go.
 
-Axiom traceBufⁱᵐᵖˡ : go.type.
+Definition traceInitReadCPU {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.traceInitReadCPU"%go.
 
-Definition traceBufFlush : go_string := "runtime.traceBufFlush"%go.
+Definition traceStartReadCPU {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.traceStartReadCPU"%go.
 
-Definition traceInitReadCPU : go_string := "runtime.traceInitReadCPU"%go.
+Definition traceStopReadCPU {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.traceStopReadCPU"%go.
 
-Definition traceStartReadCPU : go_string := "runtime.traceStartReadCPU"%go.
+Definition traceReadCPU {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.traceReadCPU"%go.
 
-Definition traceStopReadCPU : go_string := "runtime.traceStopReadCPU"%go.
+Definition traceCPUFlush {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.traceCPUFlush"%go.
 
-Definition traceReadCPU : go_string := "runtime.traceReadCPU"%go.
+Definition traceCPUSample {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.traceCPUSample"%go.
 
-Definition traceCPUFlush : go_string := "runtime.traceCPUFlush"%go.
+Axiom traceArgⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition traceCPUSample : go_string := "runtime.traceCPUSample"%go.
+Axiom traceEventWriterⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom traceArgⁱᵐᵖˡ : go.type.
+Axiom traceMapⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom traceEventWriterⁱᵐᵖˡ : go.type.
+Axiom traceMapNodeⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom traceMapⁱᵐᵖˡ : go.type.
+Axiom traceRegionAllocⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom traceMapNodeⁱᵐᵖˡ : go.type.
+Axiom traceRegionAllocBlockⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom traceRegionAllocⁱᵐᵖˡ : go.type.
+Axiom traceRegionAllocBlockHeaderⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom traceRegionAllocBlockⁱᵐᵖˡ : go.type.
+Axiom traceRegionAllocBlockData : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom traceRegionAllocBlockHeaderⁱᵐᵖˡ : go.type.
+Axiom gTraceStateⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom traceRegionAllocBlockData : val.
+Axiom mTraceStateⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom gTraceStateⁱᵐᵖˡ : go.type.
+Axiom pTraceStateⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom mTraceStateⁱᵐᵖˡ : go.type.
+Definition traceLockInit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.traceLockInit"%go.
 
-Axiom pTraceStateⁱᵐᵖˡ : go.type.
+Definition lockRankMayTraceFlush {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.lockRankMayTraceFlush"%go.
 
-Definition traceLockInit : go_string := "runtime.traceLockInit"%go.
+Axiom traceBlockReasonⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition lockRankMayTraceFlush : go_string := "runtime.lockRankMayTraceFlush"%go.
+Axiom traceBlockGeneric : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom traceBlockReasonⁱᵐᵖˡ : go.type.
+Axiom traceBlockForever : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom traceBlockGeneric : val.
+Axiom traceBlockNet : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom traceBlockForever : val.
+Axiom traceBlockSelect : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom traceBlockNet : val.
+Axiom traceBlockCondWait : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom traceBlockSelect : val.
+Axiom traceBlockSync : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom traceBlockCondWait : val.
+Axiom traceBlockChanSend : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom traceBlockSync : val.
+Axiom traceBlockChanRecv : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom traceBlockChanSend : val.
+Axiom traceBlockGCMarkAssist : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom traceBlockChanRecv : val.
+Axiom traceBlockGCSweep : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom traceBlockGCMarkAssist : val.
+Axiom traceBlockSystemGoroutine : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom traceBlockGCSweep : val.
+Axiom traceBlockPreempted : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom traceBlockSystemGoroutine : val.
+Axiom traceBlockDebugCall : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom traceBlockPreempted : val.
+Axiom traceBlockUntilGCEnds : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom traceBlockDebugCall : val.
+Axiom traceBlockSleep : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom traceBlockUntilGCEnds : val.
+Axiom traceBlockGCWeakToStrongWait : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom traceBlockSleep : val.
+Axiom traceBlockSynctest : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom traceBlockGCWeakToStrongWait : val.
+Definition traceBlockReasonStrings {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.traceBlockReasonStrings"%go.
 
-Axiom traceBlockSynctest : val.
+Axiom traceBlockReasonStrings'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition traceBlockReasonStrings : go_string := "runtime.traceBlockReasonStrings"%go.
+Axiom traceGoStopReasonⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom traceBlockReasonStrings'init : val.
+Axiom traceGoStopGeneric : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom traceGoStopReasonⁱᵐᵖˡ : go.type.
+Axiom traceGoStopGoSched : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom traceGoStopGeneric : val.
+Axiom traceGoStopPreempted : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom traceGoStopGoSched : val.
+Definition traceGoStopReasonStrings {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.traceGoStopReasonStrings"%go.
 
-Axiom traceGoStopPreempted : val.
+Axiom traceGoStopReasonStrings'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition traceGoStopReasonStrings : go_string := "runtime.traceGoStopReasonStrings"%go.
+Definition traceEnabled {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.traceEnabled"%go.
 
-Axiom traceGoStopReasonStrings'init : val.
+Definition traceAllocFreeEnabled {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.traceAllocFreeEnabled"%go.
 
-Definition traceEnabled : go_string := "runtime.traceEnabled"%go.
+Definition traceShuttingDown {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.traceShuttingDown"%go.
 
-Definition traceAllocFreeEnabled : go_string := "runtime.traceAllocFreeEnabled"%go.
+Axiom traceLockerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition traceShuttingDown : go_string := "runtime.traceShuttingDown"%go.
+Axiom debugTraceReentrancy : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom traceLockerⁱᵐᵖˡ : go.type.
+Definition traceAcquire {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.traceAcquire"%go.
 
-Axiom debugTraceReentrancy : val.
+Definition traceAcquireEnabled {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.traceAcquireEnabled"%go.
 
-Definition traceAcquire : go_string := "runtime.traceAcquire"%go.
+Definition traceRelease {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.traceRelease"%go.
 
-Definition traceAcquireEnabled : go_string := "runtime.traceAcquireEnabled"%go.
+Definition traceExitingSyscall {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.traceExitingSyscall"%go.
 
-Definition traceRelease : go_string := "runtime.traceRelease"%go.
+Definition traceExitedSyscall {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.traceExitedSyscall"%go.
 
-Definition traceExitingSyscall : go_string := "runtime.traceExitingSyscall"%go.
+Definition trace_userTaskCreate {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.trace_userTaskCreate"%go.
 
-Definition traceExitedSyscall : go_string := "runtime.traceExitedSyscall"%go.
+Definition trace_userTaskEnd {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.trace_userTaskEnd"%go.
 
-Definition trace_userTaskCreate : go_string := "runtime.trace_userTaskCreate"%go.
+Definition trace_userRegion {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.trace_userRegion"%go.
 
-Definition trace_userTaskEnd : go_string := "runtime.trace_userTaskEnd"%go.
+Definition trace_userLog {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.trace_userLog"%go.
 
-Definition trace_userRegion : go_string := "runtime.trace_userRegion"%go.
+Definition traceThreadDestroy {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.traceThreadDestroy"%go.
 
-Definition trace_userLog : go_string := "runtime.trace_userLog"%go.
+Axiom logicalStackSentinel : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition traceThreadDestroy : go_string := "runtime.traceThreadDestroy"%go.
+Definition traceStack {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.traceStack"%go.
 
-Axiom logicalStackSentinel : val.
+Axiom traceStackTableⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition traceStack : go_string := "runtime.traceStack"%go.
+Definition dumpStacksRec {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.dumpStacksRec"%go.
 
-Axiom traceStackTableⁱᵐᵖˡ : go.type.
+Definition makeTraceFrames {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.makeTraceFrames"%go.
 
-Definition dumpStacksRec : go_string := "runtime.dumpStacksRec"%go.
+Axiom traceFrameⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition makeTraceFrames : go_string := "runtime.makeTraceFrames"%go.
+Definition makeTraceFrame {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.makeTraceFrame"%go.
 
-Axiom traceFrameⁱᵐᵖˡ : go.type.
+Definition tracefpunwindoff {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.tracefpunwindoff"%go.
 
-Definition makeTraceFrame : go_string := "runtime.makeTraceFrame"%go.
+Definition fpTracebackPCs {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.fpTracebackPCs"%go.
 
-Definition tracefpunwindoff : go_string := "runtime.tracefpunwindoff"%go.
+Definition pprof_fpunwindExpand {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.pprof_fpunwindExpand"%go.
 
-Definition fpTracebackPCs : go_string := "runtime.fpTracebackPCs"%go.
+Definition fpunwindExpand {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.fpunwindExpand"%go.
 
-Definition pprof_fpunwindExpand : go_string := "runtime.pprof_fpunwindExpand"%go.
+Definition startPCForTrace {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.startPCForTrace"%go.
 
-Definition fpunwindExpand : go_string := "runtime.fpunwindExpand"%go.
+Definition goStatusToTraceGoStatus {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.goStatusToTraceGoStatus"%go.
 
-Definition startPCForTrace : go_string := "runtime.startPCForTrace"%go.
+Axiom traceSchedResourceStateⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition goStatusToTraceGoStatus : go_string := "runtime.goStatusToTraceGoStatus"%go.
+Axiom traceStringTableⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom traceSchedResourceStateⁱᵐᵖˡ : go.type.
+Axiom traceTimeDiv : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom traceStringTableⁱᵐᵖˡ : go.type.
+Axiom traceTimeⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom traceTimeDiv : Z.
+Definition traceClockNow {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.traceClockNow"%go.
 
-Axiom traceTimeⁱᵐᵖˡ : go.type.
+Definition traceClockUnitsPerSecond {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.traceClockUnitsPerSecond"%go.
 
-Definition traceClockNow : go_string := "runtime.traceClockNow"%go.
+Definition traceSyncBatch {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.traceSyncBatch"%go.
 
-Definition traceClockUnitsPerSecond : go_string := "runtime.traceClockUnitsPerSecond"%go.
+Axiom traceTypeTableⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition traceSyncBatch : go_string := "runtime.traceSyncBatch"%go.
+Definition dumpTypesRec {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.dumpTypesRec"%go.
 
-Axiom traceTypeTableⁱᵐᵖˡ : go.type.
+Definition maps_typeString {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.maps_typeString"%go.
 
-Definition dumpTypesRec : go_string := "runtime.dumpTypesRec"%go.
+Axiom nameOff : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition maps_typeString : go_string := "runtime.maps_typeString"%go.
+Axiom typeOff : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom nameOff : go.type.
+Axiom textOff : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom typeOff : go.type.
+Axiom _type : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom textOff : go.type.
+Axiom rtypeⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom _type : go.type.
+Definition getGCMask {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.getGCMask"%go.
 
-Axiom rtypeⁱᵐᵖˡ : go.type.
+Definition inProgress {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.inProgress"%go.
 
-Definition getGCMask : go_string := "runtime.getGCMask"%go.
+Definition getGCMaskOnDemand {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.getGCMaskOnDemand"%go.
 
-Definition inProgress : go_string := "runtime.inProgress"%go.
+Axiom bitCursorⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition getGCMaskOnDemand : go_string := "runtime.getGCMaskOnDemand"%go.
+Definition buildGCMask {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.buildGCMask"%go.
 
-Axiom bitCursorⁱᵐᵖˡ : go.type.
+Definition reflectOffs {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflectOffs"%go.
 
-Definition buildGCMask : go_string := "runtime.buildGCMask"%go.
+Definition reflectOffsLock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflectOffsLock"%go.
 
-Definition reflectOffs : go_string := "runtime.reflectOffs"%go.
+Definition reflectOffsUnlock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflectOffsUnlock"%go.
 
-Definition reflectOffsLock : go_string := "runtime.reflectOffsLock"%go.
+Definition resolveNameOff {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.resolveNameOff"%go.
 
-Definition reflectOffsUnlock : go_string := "runtime.reflectOffsUnlock"%go.
+Definition resolveTypeOff {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.resolveTypeOff"%go.
 
-Definition resolveNameOff : go_string := "runtime.resolveNameOff"%go.
+Axiom uncommontype : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition resolveTypeOff : go_string := "runtime.resolveTypeOff"%go.
+Axiom interfacetype : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom uncommontype : go.type.
+Axiom arraytype : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom interfacetype : go.type.
+Axiom chantype : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom arraytype : go.type.
+Axiom slicetype : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom chantype : go.type.
+Axiom functype : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom slicetype : go.type.
+Axiom ptrtype : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom functype : go.type.
+Axiom name : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom ptrtype : go.type.
+Axiom structtype : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom name : go.type.
+Definition pkgPath {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.pkgPath"%go.
 
-Axiom structtype : go.type.
+Definition typelinksinit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.typelinksinit"%go.
 
-Definition pkgPath : go_string := "runtime.pkgPath"%go.
+Axiom _typePairⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition typelinksinit : go_string := "runtime.typelinksinit"%go.
+Definition toRType {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.toRType"%go.
 
-Axiom _typePairⁱᵐᵖˡ : go.type.
+Definition typesEqual {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.typesEqual"%go.
 
-Definition toRType : go_string := "runtime.toRType"%go.
+Definition isDirectIface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.isDirectIface"%go.
 
-Definition typesEqual : go_string := "runtime.typesEqual"%go.
+Definition unsafestring {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.unsafestring"%go.
 
-Definition isDirectIface : go_string := "runtime.isDirectIface"%go.
+Definition unsafestring64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.unsafestring64"%go.
 
-Definition unsafestring : go_string := "runtime.unsafestring"%go.
+Definition unsafestringcheckptr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.unsafestringcheckptr"%go.
 
-Definition unsafestring64 : go_string := "runtime.unsafestring64"%go.
+Definition panicunsafestringlen {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.panicunsafestringlen"%go.
 
-Definition unsafestringcheckptr : go_string := "runtime.unsafestringcheckptr"%go.
+Definition panicunsafestringnilptr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.panicunsafestringnilptr"%go.
 
-Definition panicunsafestringlen : go_string := "runtime.panicunsafestringlen"%go.
+Definition unsafeslice {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.unsafeslice"%go.
 
-Definition panicunsafestringnilptr : go_string := "runtime.panicunsafestringnilptr"%go.
+Definition unsafeslice64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.unsafeslice64"%go.
 
-Definition unsafeslice : go_string := "runtime.unsafeslice"%go.
+Definition unsafeslicecheckptr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.unsafeslicecheckptr"%go.
 
-Definition unsafeslice64 : go_string := "runtime.unsafeslice64"%go.
+Definition panicunsafeslicelen {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.panicunsafeslicelen"%go.
 
-Definition unsafeslicecheckptr : go_string := "runtime.unsafeslicecheckptr"%go.
+Definition panicunsafeslicelen1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.panicunsafeslicelen1"%go.
 
-Definition panicunsafeslicelen : go_string := "runtime.panicunsafeslicelen"%go.
+Definition panicunsafeslicenilptr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.panicunsafeslicenilptr"%go.
 
-Definition panicunsafeslicelen1 : go_string := "runtime.panicunsafeslicelen1"%go.
+Definition panicunsafeslicenilptr1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.panicunsafeslicenilptr1"%go.
 
-Definition panicunsafeslicenilptr : go_string := "runtime.panicunsafeslicenilptr"%go.
+Definition reflect_unsafeslice {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.reflect_unsafeslice"%go.
 
-Definition panicunsafeslicenilptr1 : go_string := "runtime.panicunsafeslicenilptr1"%go.
+Axiom runeError : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition reflect_unsafeslice : go_string := "runtime.reflect_unsafeslice"%go.
+Axiom runeSelf : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom runeError : Z.
+Axiom maxRune : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom runeSelf : Z.
+Axiom surrogateMin : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom maxRune : Z.
+Axiom surrogateMax : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom surrogateMin : Z.
+Axiom t1 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom surrogateMax : Z.
+Axiom tx : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom t1 : Z.
+Axiom t2 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom tx : Z.
+Axiom t3 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom t2 : Z.
+Axiom t4 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom t3 : Z.
+Axiom t5 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom t4 : Z.
+Axiom maskx : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom t5 : Z.
+Axiom mask2 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom maskx : Z.
+Axiom mask3 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom mask2 : Z.
+Axiom mask4 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom mask3 : Z.
+Axiom rune1Max : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom mask4 : Z.
+Axiom rune2Max : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom rune1Max : Z.
+Axiom rune3Max : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom rune2Max : Z.
+Axiom locb : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom rune3Max : Z.
+Axiom hicb : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom locb : Z.
+Definition countrunes {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.countrunes"%go.
 
-Axiom hicb : Z.
+Definition decoderune {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.decoderune"%go.
 
-Definition countrunes : go_string := "runtime.countrunes"%go.
+Definition encoderune {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.encoderune"%go.
 
-Definition decoderune : go_string := "runtime.decoderune"%go.
+Axiom valgrindenabled : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition encoderune : go_string := "runtime.encoderune"%go.
+Definition valgrindRegisterStack {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.valgrindRegisterStack"%go.
 
-Axiom valgrindenabled : val.
+Definition valgrindDeregisterStack {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.valgrindDeregisterStack"%go.
 
-Definition valgrindRegisterStack : go_string := "runtime.valgrindRegisterStack"%go.
+Definition valgrindChangeStack {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.valgrindChangeStack"%go.
 
-Definition valgrindDeregisterStack : go_string := "runtime.valgrindDeregisterStack"%go.
+Definition valgrindMalloc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.valgrindMalloc"%go.
 
-Definition valgrindChangeStack : go_string := "runtime.valgrindChangeStack"%go.
+Definition valgrindFree {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.valgrindFree"%go.
 
-Definition valgrindMalloc : go_string := "runtime.valgrindMalloc"%go.
+Definition valgrindCreateMempool {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.valgrindCreateMempool"%go.
 
-Definition valgrindFree : go_string := "runtime.valgrindFree"%go.
+Definition valgrindMempoolMalloc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.valgrindMempoolMalloc"%go.
 
-Definition valgrindCreateMempool : go_string := "runtime.valgrindCreateMempool"%go.
+Definition valgrindMempoolFree {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.valgrindMempoolFree"%go.
 
-Definition valgrindMempoolMalloc : go_string := "runtime.valgrindMempoolMalloc"%go.
+Definition valgrindMakeMemUndefined {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.valgrindMakeMemUndefined"%go.
 
-Definition valgrindMempoolFree : go_string := "runtime.valgrindMempoolFree"%go.
+Definition valgrindMakeMemDefined {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.valgrindMakeMemDefined"%go.
 
-Definition valgrindMakeMemUndefined : go_string := "runtime.valgrindMakeMemUndefined"%go.
+Definition valgrindMakeMemNoAccess {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.valgrindMakeMemNoAccess"%go.
 
-Definition valgrindMakeMemDefined : go_string := "runtime.valgrindMakeMemDefined"%go.
+Axiom elfSymⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition valgrindMakeMemNoAccess : go_string := "runtime.valgrindMakeMemNoAccess"%go.
+Axiom elfVerdefⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom elfSymⁱᵐᵖˡ : go.type.
+Axiom elfEhdrⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom elfVerdefⁱᵐᵖˡ : go.type.
+Axiom elfPhdrⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom elfEhdrⁱᵐᵖˡ : go.type.
+Axiom elfShdrⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom elfPhdrⁱᵐᵖˡ : go.type.
+Axiom elfDynⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom elfShdrⁱᵐᵖˡ : go.type.
+Axiom elfVerdauxⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom elfDynⁱᵐᵖˡ : go.type.
+Axiom _AT_SYSINFO_EHDR : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom elfVerdauxⁱᵐᵖˡ : go.type.
+Axiom _PT_LOAD : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _AT_SYSINFO_EHDR : Z.
+Axiom _PT_DYNAMIC : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _PT_LOAD : Z.
+Axiom _DT_NULL : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _PT_DYNAMIC : Z.
+Axiom _DT_HASH : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _DT_NULL : Z.
+Axiom _DT_STRTAB : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _DT_HASH : Z.
+Axiom _DT_SYMTAB : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _DT_STRTAB : Z.
+Axiom _DT_GNU_HASH : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _DT_SYMTAB : Z.
+Axiom _DT_VERSYM : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _DT_GNU_HASH : Z.
+Axiom _DT_VERDEF : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _DT_VERSYM : Z.
+Axiom _VER_FLG_BASE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _DT_VERDEF : Z.
+Axiom _SHN_UNDEF : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _VER_FLG_BASE : Z.
+Axiom _SHT_DYNSYM : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SHN_UNDEF : Z.
+Axiom _STT_FUNC : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _SHT_DYNSYM : Z.
+Axiom _STT_NOTYPE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _STT_FUNC : Z.
+Axiom _STB_GLOBAL : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _STT_NOTYPE : Z.
+Axiom _STB_WEAK : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _STB_GLOBAL : Z.
+Axiom _EI_NIDENT : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _STB_WEAK : Z.
+Axiom vdsoSymTabSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _EI_NIDENT : Z.
+Axiom vdsoDynSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom vdsoSymTabSize : val.
+Axiom vdsoSymStringsSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom vdsoDynSize : val.
+Axiom vdsoVerSymSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom vdsoSymStringsSize : Z.
+Axiom vdsoHashSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom vdsoVerSymSize : Z.
+Axiom vdsoBloomSizeScale : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom vdsoHashSize : Z.
+Definition _ELF_ST_BIND {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime._ELF_ST_BIND"%go.
 
-Axiom vdsoBloomSizeScale : val.
+Definition _ELF_ST_TYPE {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime._ELF_ST_TYPE"%go.
 
-Definition _ELF_ST_BIND : go_string := "runtime._ELF_ST_BIND"%go.
+Axiom vdsoSymbolKeyⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition _ELF_ST_TYPE : go_string := "runtime._ELF_ST_TYPE"%go.
+Axiom vdsoVersionKeyⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom vdsoSymbolKeyⁱᵐᵖˡ : go.type.
+Axiom vdsoInfoⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom vdsoVersionKeyⁱᵐᵖˡ : go.type.
+Definition vdsoLoadStart {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.vdsoLoadStart"%go.
 
-Axiom vdsoInfoⁱᵐᵖˡ : go.type.
+Definition vdsoLoadEnd {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.vdsoLoadEnd"%go.
 
-Definition vdsoLoadStart : go_string := "runtime.vdsoLoadStart"%go.
+Definition vdsoInitFromSysinfoEhdr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.vdsoInitFromSysinfoEhdr"%go.
 
-Definition vdsoLoadEnd : go_string := "runtime.vdsoLoadEnd"%go.
+Definition vdsoFindVersion {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.vdsoFindVersion"%go.
 
-Definition vdsoInitFromSysinfoEhdr : go_string := "runtime.vdsoInitFromSysinfoEhdr"%go.
+Definition vdsoParseSymbols {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.vdsoParseSymbols"%go.
 
-Definition vdsoFindVersion : go_string := "runtime.vdsoFindVersion"%go.
+Definition vdsoauxv {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.vdsoauxv"%go.
 
-Definition vdsoParseSymbols : go_string := "runtime.vdsoParseSymbols"%go.
+Definition inVDSOPage {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.inVDSOPage"%go.
 
-Definition vdsoauxv : go_string := "runtime.vdsoauxv"%go.
+Axiom vdsoArrayMax : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition inVDSOPage : go_string := "runtime.inVDSOPage"%go.
+Definition vdsoLinuxVersion {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.vdsoLinuxVersion"%go.
 
-Axiom vdsoArrayMax : Z.
+Axiom vdsoLinuxVersion'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition vdsoLinuxVersion : go_string := "runtime.vdsoLinuxVersion"%go.
+Definition vdsoSymbolKeys {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.vdsoSymbolKeys"%go.
 
-Axiom vdsoLinuxVersion'init : val.
+Axiom vdsoSymbolKeys'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition vdsoSymbolKeys : go_string := "runtime.vdsoSymbolKeys"%go.
+Definition vdsoGettimeofdaySym {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.vdsoGettimeofdaySym"%go.
 
-Axiom vdsoSymbolKeys'init : val.
+Definition vdsoClockgettimeSym {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.vdsoClockgettimeSym"%go.
 
-Definition vdsoGettimeofdaySym : go_string := "runtime.vdsoGettimeofdaySym"%go.
+Definition vdsoGetrandomSym {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.vdsoGetrandomSym"%go.
 
-Definition vdsoClockgettimeSym : go_string := "runtime.vdsoClockgettimeSym"%go.
+Definition vgetrandom1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.vgetrandom1"%go.
 
-Definition vdsoGetrandomSym : go_string := "runtime.vdsoGetrandomSym"%go.
+Definition vgetrandomAlloc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.vgetrandomAlloc"%go.
 
-Definition vgetrandom1 : go_string := "runtime.vgetrandom1"%go.
+Definition vgetrandomInit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.vgetrandomInit"%go.
 
-Definition vgetrandomAlloc : go_string := "runtime.vgetrandomAlloc"%go.
+Definition vgetrandomGetState {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.vgetrandomGetState"%go.
 
-Definition vgetrandomInit : go_string := "runtime.vgetrandomInit"%go.
+Definition vgetrandomDestroy {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.vgetrandomDestroy"%go.
 
-Definition vgetrandomGetState : go_string := "runtime.vgetrandomGetState"%go.
+Definition vgetrandom {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.vgetrandom"%go.
 
-Definition vgetrandomDestroy : go_string := "runtime.vgetrandomDestroy"%go.
+Definition writeErr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.writeErr"%go.
 
-Definition vgetrandom : go_string := "runtime.vgetrandom"%go.
+#[global] Instance info' : PkgInfo runtime.runtime := 
+{|
+  pkg_imported_pkgs := []
+|}.
 
-Definition writeErr : go_string := "runtime.writeErr"%go.
+Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition userArena : go.type := go.Named "runtime.userArena"%go [].
-
-Definition liveUserArenaChunk : go.type := go.Named "runtime.liveUserArenaChunk"%go [].
-
-Definition writeUserArenaHeapBits : go.type := go.Named "runtime.writeUserArenaHeapBits"%go [].
-
-Definition cgoCallers : go.type := go.Named "runtime.cgoCallers"%go [].
-
-Definition argset : go.type := go.Named "runtime.argset"%go [].
-
-Definition hchan : go.type := go.Named "runtime.hchan"%go [].
-
-Definition waitq : go.type := go.Named "runtime.waitq"%go [].
-
-Definition coro : go.type := go.Named "runtime.coro"%go [].
-
-Definition cpuProfile : go.type := go.Named "runtime.cpuProfile"%go [].
-
-Definition debugCallWrapArgs : go.type := go.Named "runtime.debugCallWrapArgs"%go [].
-
-Definition dloggerImpl : go.type := go.Named "runtime.dloggerImpl"%go [].
-
-Definition dloggerFake : go.type := go.Named "runtime.dloggerFake"%go [].
-
-Definition debugLogWriter : go.type := go.Named "runtime.debugLogWriter"%go [].
-
-Definition debugLogBuf : go.type := go.Named "runtime.debugLogBuf"%go [].
-
-Definition debugLogReader : go.type := go.Named "runtime.debugLogReader"%go [].
-
-Definition dlogPerM : go.type := go.Named "runtime.dlogPerM"%go [].
-
-Definition timespec : go.type := go.Named "runtime.timespec"%go [].
-
-Definition timeval : go.type := go.Named "runtime.timeval"%go [].
-
-Definition sigactiont : go.type := go.Named "runtime.sigactiont"%go [].
-
-Definition siginfoFields : go.type := go.Named "runtime.siginfoFields"%go [].
-
-Definition siginfo : go.type := go.Named "runtime.siginfo"%go [].
-
-Definition itimerspec : go.type := go.Named "runtime.itimerspec"%go [].
-
-Definition itimerval : go.type := go.Named "runtime.itimerval"%go [].
-
-Definition sigeventFields : go.type := go.Named "runtime.sigeventFields"%go [].
-
-Definition sigevent : go.type := go.Named "runtime.sigevent"%go [].
-
-Definition usigset : go.type := go.Named "runtime.usigset"%go [].
-
-Definition fpxreg : go.type := go.Named "runtime.fpxreg"%go [].
-
-Definition xmmreg : go.type := go.Named "runtime.xmmreg"%go [].
-
-Definition fpstate : go.type := go.Named "runtime.fpstate"%go [].
-
-Definition fpxreg1 : go.type := go.Named "runtime.fpxreg1"%go [].
-
-Definition xmmreg1 : go.type := go.Named "runtime.xmmreg1"%go [].
-
-Definition fpstate1 : go.type := go.Named "runtime.fpstate1"%go [].
-
-Definition fpreg1 : go.type := go.Named "runtime.fpreg1"%go [].
-
-Definition stackt : go.type := go.Named "runtime.stackt"%go [].
-
-Definition mcontext : go.type := go.Named "runtime.mcontext"%go [].
-
-Definition ucontext : go.type := go.Named "runtime.ucontext"%go [].
-
-Definition sigcontext : go.type := go.Named "runtime.sigcontext"%go [].
-
-Definition sockaddr_un : go.type := go.Named "runtime.sockaddr_un"%go [].
-
-Definition Error : go.type := go.Named "runtime.Error"%go [].
-
-Definition TypeAssertionError : go.type := go.Named "runtime.TypeAssertionError"%go [].
-
-Definition errorString : go.type := go.Named "runtime.errorString"%go [].
-
-Definition errorAddressString : go.type := go.Named "runtime.errorAddressString"%go [].
-
-Definition plainError : go.type := go.Named "runtime.plainError"%go [].
-
-Definition boundsError : go.type := go.Named "runtime.boundsError"%go [].
-
-Definition boundsErrorCode : go.type := go.Named "runtime.boundsErrorCode"%go [].
-
-Definition stringer : go.type := go.Named "runtime.stringer"%go [].
-
-Definition typeCacheBucket : go.type := go.Named "runtime.typeCacheBucket"%go [].
-
-Definition childInfo : go.type := go.Named "runtime.childInfo"%go [].
-
-Definition timeHistogram : go.type := go.Named "runtime.timeHistogram"%go [].
-
-Definition itabTableType : go.type := go.Named "runtime.itabTableType"%go [].
-
-Definition uint16InterfacePtr : go.type := go.Named "runtime.uint16InterfacePtr"%go [].
-
-Definition uint32InterfacePtr : go.type := go.Named "runtime.uint32InterfacePtr"%go [].
-
-Definition uint64InterfacePtr : go.type := go.Named "runtime.uint64InterfacePtr"%go [].
-
-Definition stringInterfacePtr : go.type := go.Named "runtime.stringInterfacePtr"%go [].
-
-Definition sliceInterfacePtr : go.type := go.Named "runtime.sliceInterfacePtr"%go [].
-
-Definition lfstack : go.type := go.Named "runtime.lfstack"%go [].
-
-Definition linknameIter : go.type := go.Named "runtime.linknameIter"%go [].
-
-Definition mWaitList : go.type := go.Named "runtime.mWaitList"%go [].
-
-Definition lockRank : go.type := go.Named "runtime.lockRank"%go [].
-
-Definition lockRankStruct : go.type := go.Named "runtime.lockRankStruct"%go [].
-
-Definition persistentAlloc : go.type := go.Named "runtime.persistentAlloc"%go [].
-
-Definition linearAlloc : go.type := go.Named "runtime.linearAlloc"%go [].
-
-Definition notInHeap : go.type := go.Named "runtime.notInHeap"%go [].
-
-Definition typePointers : go.type := go.Named "runtime.typePointers"%go [].
-
-Definition markBits : go.type := go.Named "runtime.markBits"%go [].
-
-Definition mcache : go.type := go.Named "runtime.mcache"%go [].
-
-Definition gclink : go.type := go.Named "runtime.gclink"%go [].
-
-Definition gclinkptr : go.type := go.Named "runtime.gclinkptr"%go [].
-
-Definition stackfreelist : go.type := go.Named "runtime.stackfreelist"%go [].
-
-Definition mcentral : go.type := go.Named "runtime.mcentral"%go [].
-
-Definition checkmarksMap : go.type := go.Named "runtime.checkmarksMap"%go [].
-
-Definition Cleanup : go.type := go.Named "runtime.Cleanup"%go [].
-
-Definition cleanupBlock : go.type := go.Named "runtime.cleanupBlock"%go [].
-
-Definition cleanupBlockHeader : go.type := go.Named "runtime.cleanupBlockHeader"%go [].
-
-Definition cleanupQueue : go.type := go.Named "runtime.cleanupQueue"%go [].
-
-Definition metricData : go.type := go.Named "runtime.metricData"%go [].
-
-Definition metricReader : go.type := go.Named "runtime.metricReader"%go [].
-
-Definition statDep : go.type := go.Named "runtime.statDep"%go [].
-
-Definition statDepSet : go.type := go.Named "runtime.statDepSet"%go [].
-
-Definition heapStatsAggregate : go.type := go.Named "runtime.heapStatsAggregate"%go [].
-
-Definition sysStatsAggregate : go.type := go.Named "runtime.sysStatsAggregate"%go [].
-
-Definition cpuStatsAggregate : go.type := go.Named "runtime.cpuStatsAggregate"%go [].
-
-Definition gcStatsAggregate : go.type := go.Named "runtime.gcStatsAggregate"%go [].
-
-Definition statAggregate : go.type := go.Named "runtime.statAggregate"%go [].
-
-Definition metricKind : go.type := go.Named "runtime.metricKind"%go [].
-
-Definition metricSample : go.type := go.Named "runtime.metricSample"%go [].
-
-Definition metricValue : go.type := go.Named "runtime.metricValue"%go [].
-
-Definition metricFloat64Histogram : go.type := go.Named "runtime.metricFloat64Histogram"%go [].
-
-Definition metricName : go.type := go.Named "runtime.metricName"%go [].
-
-Definition finBlock : go.type := go.Named "runtime.finBlock"%go [].
-
-Definition finalizer : go.type := go.Named "runtime.finalizer"%go [].
-
-Definition fixalloc : go.type := go.Named "runtime.fixalloc"%go [].
-
-Definition mlink : go.type := go.Named "runtime.mlink"%go [].
-
-Definition gcMarkWorkerMode : go.type := go.Named "runtime.gcMarkWorkerMode"%go [].
-
-Definition workType : go.type := go.Named "runtime.workType"%go [].
-
-Definition gcMode : go.type := go.Named "runtime.gcMode"%go [].
-
-Definition gcTrigger : go.type := go.Named "runtime.gcTrigger"%go [].
-
-Definition gcTriggerKind : go.type := go.Named "runtime.gcTriggerKind"%go [].
-
-Definition gcBgMarkWorkerNode : go.type := go.Named "runtime.gcBgMarkWorkerNode"%go [].
-
-Definition gcBgMarkWorkerNodePadded : go.type := go.Named "runtime.gcBgMarkWorkerNodePadded"%go [].
-
-Definition gcCPULimiterState : go.type := go.Named "runtime.gcCPULimiterState"%go [].
-
-Definition limiterEventType : go.type := go.Named "runtime.limiterEventType"%go [].
-
-Definition limiterEventStamp : go.type := go.Named "runtime.limiterEventStamp"%go [].
-
-Definition limiterEvent : go.type := go.Named "runtime.limiterEvent"%go [].
-
-Definition gcDrainFlags : go.type := go.Named "runtime.gcDrainFlags"%go [].
-
-Definition spanInlineMarkBits : go.type := go.Named "runtime.spanInlineMarkBits"%go [].
-
-Definition spanQueue : go.type := go.Named "runtime.spanQueue"%go [].
-
-Definition localSpanQueue : go.type := go.Named "runtime.localSpanQueue"%go [].
-
-Definition objptr : go.type := go.Named "runtime.objptr"%go [].
-
-Definition sizeClassScanStats : go.type := go.Named "runtime.sizeClassScanStats"%go [].
-
-Definition gcControllerState : go.type := go.Named "runtime.gcControllerState"%go [].
-
-Definition scavengerState : go.type := go.Named "runtime.scavengerState"%go [].
-
-Definition scavengeIndex : go.type := go.Named "runtime.scavengeIndex"%go [].
-
-Definition atomicScavChunkData : go.type := go.Named "runtime.atomicScavChunkData"%go [].
-
-Definition scavChunkData : go.type := go.Named "runtime.scavChunkData"%go [].
-
-Definition scavChunkFlags : go.type := go.Named "runtime.scavChunkFlags"%go [].
-
-Definition piController : go.type := go.Named "runtime.piController"%go [].
-
-Definition stackWorkBuf : go.type := go.Named "runtime.stackWorkBuf"%go [].
-
-Definition stackWorkBufHdr : go.type := go.Named "runtime.stackWorkBufHdr"%go [].
-
-Definition stackObjectBuf : go.type := go.Named "runtime.stackObjectBuf"%go [].
-
-Definition stackObjectBufHdr : go.type := go.Named "runtime.stackObjectBufHdr"%go [].
-
-Definition stackObject : go.type := go.Named "runtime.stackObject"%go [].
-
-Definition stackScanState : go.type := go.Named "runtime.stackScanState"%go [].
-
-Definition sweepdata : go.type := go.Named "runtime.sweepdata"%go [].
-
-Definition sweepClass : go.type := go.Named "runtime.sweepClass"%go [].
-
-Definition activeSweep : go.type := go.Named "runtime.activeSweep"%go [].
-
-Definition sweepLocker : go.type := go.Named "runtime.sweepLocker"%go [].
-
-Definition sweepLocked : go.type := go.Named "runtime.sweepLocked"%go [].
-
-Definition gcWork : go.type := go.Named "runtime.gcWork"%go [].
-
-Definition workbufhdr : go.type := go.Named "runtime.workbufhdr"%go [].
-
-Definition workbuf : go.type := go.Named "runtime.workbuf"%go [].
-
-Definition mheap : go.type := go.Named "runtime.mheap"%go [].
-
-Definition heapArena : go.type := go.Named "runtime.heapArena"%go [].
-
-Definition arenaHint : go.type := go.Named "runtime.arenaHint"%go [].
-
-Definition mSpanState : go.type := go.Named "runtime.mSpanState"%go [].
-
-Definition mSpanStateBox : go.type := go.Named "runtime.mSpanStateBox"%go [].
-
-Definition mspan : go.type := go.Named "runtime.mspan"%go [].
-
-Definition spanClass : go.type := go.Named "runtime.spanClass"%go [].
-
-Definition arenaIdx : go.type := go.Named "runtime.arenaIdx"%go [].
-
-Definition spanAllocType : go.type := go.Named "runtime.spanAllocType"%go [].
-
-Definition mSpanList : go.type := go.Named "runtime.mSpanList"%go [].
-
-Definition mSpanQueue : go.type := go.Named "runtime.mSpanQueue"%go [].
-
-Definition special : go.type := go.Named "runtime.special"%go [].
-
-Definition specialfinalizer : go.type := go.Named "runtime.specialfinalizer"%go [].
-
-Definition specialCleanup : go.type := go.Named "runtime.specialCleanup"%go [].
-
-Definition specialCheckFinalizer : go.type := go.Named "runtime.specialCheckFinalizer"%go [].
-
-Definition specialTinyBlock : go.type := go.Named "runtime.specialTinyBlock"%go [].
-
-Definition specialWeakHandle : go.type := go.Named "runtime.specialWeakHandle"%go [].
-
-Definition immortalWeakHandleMap : go.type := go.Named "runtime.immortalWeakHandleMap"%go [].
-
-Definition immortalWeakHandle : go.type := go.Named "runtime.immortalWeakHandle"%go [].
-
-Definition specialprofile : go.type := go.Named "runtime.specialprofile"%go [].
-
-Definition specialReachable : go.type := go.Named "runtime.specialReachable"%go [].
-
-Definition specialPinCounter : go.type := go.Named "runtime.specialPinCounter"%go [].
-
-Definition specialsIter : go.type := go.Named "runtime.specialsIter"%go [].
-
-Definition gcBits : go.type := go.Named "runtime.gcBits"%go [].
-
-Definition gcBitsHeader : go.type := go.Named "runtime.gcBitsHeader"%go [].
-
-Definition gcBitsArena : go.type := go.Named "runtime.gcBitsArena"%go [].
-
-Definition floaty : go.type := go.Named "runtime.floaty"%go [].
-
-Definition chunkIdx : go.type := go.Named "runtime.chunkIdx"%go [].
-
-Definition pageAlloc : go.type := go.Named "runtime.pageAlloc"%go [].
-
-Definition pallocSum : go.type := go.Named "runtime.pallocSum"%go [].
-
-Definition pageCache : go.type := go.Named "runtime.pageCache"%go [].
-
-Definition pageBits : go.type := go.Named "runtime.pageBits"%go [].
-
-Definition pallocBits : go.type := go.Named "runtime.pallocBits"%go [].
-
-Definition pallocData : go.type := go.Named "runtime.pallocData"%go [].
-
-Definition bucketType : go.type := go.Named "runtime.bucketType"%go [].
-
-Definition bucket : go.type := go.Named "runtime.bucket"%go [].
-
-Definition memRecord : go.type := go.Named "runtime.memRecord"%go [].
-
-Definition memRecordCycle : go.type := go.Named "runtime.memRecordCycle"%go [].
-
-Definition blockRecord : go.type := go.Named "runtime.blockRecord"%go [].
-
-Definition buckhashArray : go.type := go.Named "runtime.buckhashArray"%go [].
-
-Definition mProfCycleHolder : go.type := go.Named "runtime.mProfCycleHolder"%go [].
-
-Definition mLockProfile : go.type := go.Named "runtime.mLockProfile"%go [].
-
-Definition StackRecord : go.type := go.Named "runtime.StackRecord"%go [].
-
-Definition MemProfileRecord : go.type := go.Named "runtime.MemProfileRecord"%go [].
-
-Definition BlockProfileRecord : go.type := go.Named "runtime.BlockProfileRecord"%go [].
-
-Definition goroutineProfileState : go.type := go.Named "runtime.goroutineProfileState"%go [].
-
-Definition goroutineProfileStateHolder : go.type := go.Named "runtime.goroutineProfileStateHolder"%go [].
-
-Definition addrRange : go.type := go.Named "runtime.addrRange"%go [].
-
-Definition offAddr : go.type := go.Named "runtime.offAddr"%go [].
-
-Definition atomicOffAddr : go.type := go.Named "runtime.atomicOffAddr"%go [].
-
-Definition addrRanges : go.type := go.Named "runtime.addrRanges"%go [].
-
-Definition spanSet : go.type := go.Named "runtime.spanSet"%go [].
-
-Definition spanSetBlockHeader : go.type := go.Named "runtime.spanSetBlockHeader"%go [].
-
-Definition spanSetBlockHeader2 : go.type := go.Named "runtime.spanSetBlockHeader2"%go [].
-
-Definition spanSetBlock : go.type := go.Named "runtime.spanSetBlock"%go [].
-
-Definition atomicSpanSetSpinePointer : go.type := go.Named "runtime.atomicSpanSetSpinePointer"%go [].
-
-Definition spanSetSpinePointer : go.type := go.Named "runtime.spanSetSpinePointer"%go [].
-
-Definition spanSetBlockAlloc : go.type := go.Named "runtime.spanSetBlockAlloc"%go [].
-
-Definition headTailIndex : go.type := go.Named "runtime.headTailIndex"%go [].
-
-Definition atomicHeadTailIndex : go.type := go.Named "runtime.atomicHeadTailIndex"%go [].
-
-Definition atomicMSpanPointer : go.type := go.Named "runtime.atomicMSpanPointer"%go [].
-
-Definition mstats : go.type := go.Named "runtime.mstats"%go [].
-
-Definition MemStats : go.type := go.Named "runtime.MemStats"%go [].
-
-Definition sysMemStat : go.type := go.Named "runtime.sysMemStat"%go [].
-
-Definition heapStatsDelta : go.type := go.Named "runtime.heapStatsDelta"%go [].
-
-Definition consistentHeapStats : go.type := go.Named "runtime.consistentHeapStats"%go [].
-
-Definition cpuStats : go.type := go.Named "runtime.cpuStats"%go [].
-
-Definition wbBuf : go.type := go.Named "runtime.wbBuf"%go [].
-
-Definition pollDesc : go.type := go.Named "runtime.pollDesc"%go [].
-
-Definition pollInfo : go.type := go.Named "runtime.pollInfo"%go [].
-
-Definition pollCache : go.type := go.Named "runtime.pollCache"%go [].
-
-Definition winlibcall : go.type := go.Named "runtime.winlibcall"%go [].
-
-Definition note : go.type := go.Named "runtime.note"%go [].
-
-Definition mOS : go.type := go.Named "runtime.mOS"%go [].
-
-Definition perThreadSyscallArgs : go.type := go.Named "runtime.perThreadSyscallArgs"%go [].
-
-Definition sigset : go.type := go.Named "runtime.sigset"%go [].
-
-Definition throwType : go.type := go.Named "runtime.throwType"%go [].
-
-Definition PanicNilError : go.type := go.Named "runtime.PanicNilError"%go [].
-
-Definition Pinner : go.type := go.Named "runtime.Pinner"%go [].
-
-Definition pinner : go.type := go.Named "runtime.pinner"%go [].
-
-Definition pinState : go.type := go.Named "runtime.pinState"%go [].
-
-Definition pinnerBits : go.type := go.Named "runtime.pinnerBits"%go [].
-
-Definition ptabEntry : go.type := go.Named "runtime.ptabEntry"%go [].
-
-Definition suspendGState : go.type := go.Named "runtime.suspendGState"%go [].
-
-Definition hex : go.type := go.Named "runtime.hex"%go [].
-
-Definition stwReason : go.type := go.Named "runtime.stwReason"%go [].
-
-Definition worldStop : go.type := go.Named "runtime.worldStop"%go [].
-
-Definition cgothreadstart : go.type := go.Named "runtime.cgothreadstart"%go [].
-
-Definition sysmontick : go.type := go.Named "runtime.sysmontick"%go [].
-
-Definition updateMaxProcsGState : go.type := go.Named "runtime.updateMaxProcsGState"%go [].
-
-Definition pMask : go.type := go.Named "runtime.pMask"%go [].
-
-Definition gQueue : go.type := go.Named "runtime.gQueue"%go [].
-
-Definition gList : go.type := go.Named "runtime.gList"%go [].
-
-Definition randomOrder : go.type := go.Named "runtime.randomOrder"%go [].
-
-Definition randomEnum : go.type := go.Named "runtime.randomEnum"%go [].
-
-Definition initTask : go.type := go.Named "runtime.initTask"%go [].
-
-Definition tracestat : go.type := go.Named "runtime.tracestat"%go [].
-
-Definition profBuf : go.type := go.Named "runtime.profBuf"%go [].
-
-Definition profAtomic : go.type := go.Named "runtime.profAtomic"%go [].
-
-Definition profIndex : go.type := go.Named "runtime.profIndex"%go [].
-
-Definition profBufReadMode : go.type := go.Named "runtime.profBufReadMode"%go [].
-
-Definition ticksType : go.type := go.Named "runtime.ticksType"%go [].
-
-Definition godebugInc : go.type := go.Named "runtime.godebugInc"%go [].
-
-Definition dbgVar : go.type := go.Named "runtime.dbgVar"%go [].
-
-Definition mutex : go.type := go.Named "runtime.mutex"%go [].
-
-Definition funcval : go.type := go.Named "runtime.funcval"%go [].
-
-Definition iface : go.type := go.Named "runtime.iface"%go [].
-
-Definition eface : go.type := go.Named "runtime.eface"%go [].
-
-Definition guintptr : go.type := go.Named "runtime.guintptr"%go [].
-
-Definition puintptr : go.type := go.Named "runtime.puintptr"%go [].
-
-Definition muintptr : go.type := go.Named "runtime.muintptr"%go [].
-
-Definition gobuf : go.type := go.Named "runtime.gobuf"%go [].
-
-Definition sudog : go.type := go.Named "runtime.sudog"%go [].
-
-Definition libcall : go.type := go.Named "runtime.libcall"%go [].
-
-Definition stack : go.type := go.Named "runtime.stack"%go [].
-
-Definition heldLockInfo : go.type := go.Named "runtime.heldLockInfo"%go [].
-
-Definition g : go.type := go.Named "runtime.g"%go [].
-
-Definition m : go.type := go.Named "runtime.m"%go [].
-
-Definition mPadded : go.type := go.Named "runtime.mPadded"%go [].
-
-Definition p : go.type := go.Named "runtime.p"%go [].
-
-Definition schedt : go.type := go.Named "runtime.schedt"%go [].
-
-Definition _func : go.type := go.Named "runtime._func"%go [].
-
-Definition funcinl : go.type := go.Named "runtime.funcinl"%go [].
-
-Definition lfnode : go.type := go.Named "runtime.lfnode"%go [].
-
-Definition forcegcstate : go.type := go.Named "runtime.forcegcstate"%go [].
-
-Definition _defer : go.type := go.Named "runtime._defer"%go [].
-
-Definition _panic : go.type := go.Named "runtime._panic"%go [].
-
-Definition savedOpenDeferState : go.type := go.Named "runtime.savedOpenDeferState"%go [].
-
-Definition ancestorInfo : go.type := go.Named "runtime.ancestorInfo"%go [].
-
-Definition waitReason : go.type := go.Named "runtime.waitReason"%go [].
-
-Definition rwmutex : go.type := go.Named "runtime.rwmutex"%go [].
-
-Definition scase : go.type := go.Named "runtime.scase"%go [].
-
-Definition runtimeSelect : go.type := go.Named "runtime.runtimeSelect"%go [].
-
-Definition selectDir : go.type := go.Named "runtime.selectDir"%go [].
-
-Definition semaRoot : go.type := go.Named "runtime.semaRoot"%go [].
-
-Definition semTable : go.type := go.Named "runtime.semTable"%go [].
-
-Definition semaProfileFlags : go.type := go.Named "runtime.semaProfileFlags"%go [].
-
-Definition notifyList : go.type := go.Named "runtime.notifyList"%go [].
-
-Definition sigctxt : go.type := go.Named "runtime.sigctxt"%go [].
-
-Definition sigTabT : go.type := go.Named "runtime.sigTabT"%go [].
-
-Definition gsignalStack : go.type := go.Named "runtime.gsignalStack"%go [].
-
-Definition slice : go.type := go.Named "runtime.slice"%go [].
-
-Definition notInHeapSlice : go.type := go.Named "runtime.notInHeapSlice"%go [].
-
-Definition stackpoolItem : go.type := go.Named "runtime.stackpoolItem"%go [].
-
-Definition adjustinfo : go.type := go.Named "runtime.adjustinfo"%go [].
-
-Definition bitvector : go.type := go.Named "runtime.bitvector"%go [].
-
-Definition stackObjectRecord : go.type := go.Named "runtime.stackObjectRecord"%go [].
-
-Definition stkframe : go.type := go.Named "runtime.stkframe"%go [].
-
-Definition reflectMethodValue : go.type := go.Named "runtime.reflectMethodValue"%go [].
-
-Definition tmpBuf : go.type := go.Named "runtime.tmpBuf"%go [].
-
-Definition stringStruct : go.type := go.Named "runtime.stringStruct"%go [].
-
-Definition stringStructDWARF : go.type := go.Named "runtime.stringStructDWARF"%go [].
-
-Definition neverCallThisFunction : go.type := go.Named "runtime.neverCallThisFunction"%go [].
-
-Definition Frames : go.type := go.Named "runtime.Frames"%go [].
-
-Definition Frame : go.type := go.Named "runtime.Frame"%go [].
-
-Definition Func : go.type := go.Named "runtime.Func"%go [].
-
-Definition pcHeader : go.type := go.Named "runtime.pcHeader"%go [].
-
-Definition moduledata : go.type := go.Named "runtime.moduledata"%go [].
-
-Definition modulehash : go.type := go.Named "runtime.modulehash"%go [].
-
-Definition functab : go.type := go.Named "runtime.functab"%go [].
-
-Definition textsect : go.type := go.Named "runtime.textsect"%go [].
-
-Definition findfuncbucket : go.type := go.Named "runtime.findfuncbucket"%go [].
-
-Definition funcInfo : go.type := go.Named "runtime.funcInfo"%go [].
-
-Definition srcFunc : go.type := go.Named "runtime.srcFunc"%go [].
-
-Definition pcvalueCache : go.type := go.Named "runtime.pcvalueCache"%go [].
-
-Definition pcvalueCacheEnt : go.type := go.Named "runtime.pcvalueCacheEnt"%go [].
-
-Definition stackmap : go.type := go.Named "runtime.stackmap"%go [].
-
-Definition inlinedCall : go.type := go.Named "runtime.inlinedCall"%go [].
-
-Definition inlineUnwinder : go.type := go.Named "runtime.inlineUnwinder"%go [].
-
-Definition inlineFrame : go.type := go.Named "runtime.inlineFrame"%go [].
-
-Definition synctestBubble : go.type := go.Named "runtime.synctestBubble"%go [].
-
-Definition synctestDeadlockError : go.type := go.Named "runtime.synctestDeadlockError"%go [].
-
-Definition specialBubble : go.type := go.Named "runtime.specialBubble"%go [].
-
-Definition taggedPointer : go.type := go.Named "runtime.taggedPointer"%go [].
-
-Definition timer : go.type := go.Named "runtime.timer"%go [].
-
-Definition timers : go.type := go.Named "runtime.timers"%go [].
-
-Definition timerWhen : go.type := go.Named "runtime.timerWhen"%go [].
-
-Definition timeTimer : go.type := go.Named "runtime.timeTimer"%go [].
-
-Definition traceAdvancerState : go.type := go.Named "runtime.traceAdvancerState"%go [].
-
-Definition wakeableSleep : go.type := go.Named "runtime.wakeableSleep"%go [].
-
-Definition unwindFlags : go.type := go.Named "runtime.unwindFlags"%go [].
-
-Definition unwinder : go.type := go.Named "runtime.unwinder"%go [].
-
-Definition cgoTracebackArg : go.type := go.Named "runtime.cgoTracebackArg"%go [].
-
-Definition cgoContextArg : go.type := go.Named "runtime.cgoContextArg"%go [].
-
-Definition cgoSymbolizerArg : go.type := go.Named "runtime.cgoSymbolizerArg"%go [].
-
-Definition traceWriter : go.type := go.Named "runtime.traceWriter"%go [].
-
-Definition traceBufQueue : go.type := go.Named "runtime.traceBufQueue"%go [].
-
-Definition traceBufHeader : go.type := go.Named "runtime.traceBufHeader"%go [].
-
-Definition traceBuf : go.type := go.Named "runtime.traceBuf"%go [].
-
-Definition traceArg : go.type := go.Named "runtime.traceArg"%go [].
-
-Definition traceEventWriter : go.type := go.Named "runtime.traceEventWriter"%go [].
-
-Definition traceMap : go.type := go.Named "runtime.traceMap"%go [].
-
-Definition traceMapNode : go.type := go.Named "runtime.traceMapNode"%go [].
-
-Definition traceRegionAlloc : go.type := go.Named "runtime.traceRegionAlloc"%go [].
-
-Definition traceRegionAllocBlock : go.type := go.Named "runtime.traceRegionAllocBlock"%go [].
-
-Definition traceRegionAllocBlockHeader : go.type := go.Named "runtime.traceRegionAllocBlockHeader"%go [].
-
-Definition gTraceState : go.type := go.Named "runtime.gTraceState"%go [].
-
-Definition mTraceState : go.type := go.Named "runtime.mTraceState"%go [].
-
-Definition pTraceState : go.type := go.Named "runtime.pTraceState"%go [].
-
-Definition traceBlockReason : go.type := go.Named "runtime.traceBlockReason"%go [].
-
-Definition traceGoStopReason : go.type := go.Named "runtime.traceGoStopReason"%go [].
-
-Definition traceLocker : go.type := go.Named "runtime.traceLocker"%go [].
-
-Definition traceStackTable : go.type := go.Named "runtime.traceStackTable"%go [].
-
-Definition traceFrame : go.type := go.Named "runtime.traceFrame"%go [].
-
-Definition traceSchedResourceState : go.type := go.Named "runtime.traceSchedResourceState"%go [].
-
-Definition traceStringTable : go.type := go.Named "runtime.traceStringTable"%go [].
-
-Definition traceTime : go.type := go.Named "runtime.traceTime"%go [].
-
-Definition traceTypeTable : go.type := go.Named "runtime.traceTypeTable"%go [].
-
-Definition rtype : go.type := go.Named "runtime.rtype"%go [].
-
-Definition bitCursor : go.type := go.Named "runtime.bitCursor"%go [].
-
-Definition _typePair : go.type := go.Named "runtime._typePair"%go [].
-
-Definition elfSym : go.type := go.Named "runtime.elfSym"%go [].
-
-Definition elfVerdef : go.type := go.Named "runtime.elfVerdef"%go [].
-
-Definition elfEhdr : go.type := go.Named "runtime.elfEhdr"%go [].
-
-Definition elfPhdr : go.type := go.Named "runtime.elfPhdr"%go [].
-
-Definition elfShdr : go.type := go.Named "runtime.elfShdr"%go [].
-
-Definition elfDyn : go.type := go.Named "runtime.elfDyn"%go [].
-
-Definition elfVerdaux : go.type := go.Named "runtime.elfVerdaux"%go [].
-
-Definition vdsoSymbolKey : go.type := go.Named "runtime.vdsoSymbolKey"%go [].
-
-Definition vdsoVersionKey : go.type := go.Named "runtime.vdsoVersionKey"%go [].
-
-Definition vdsoInfo : go.type := go.Named "runtime.vdsoInfo"%go [].
-
-#[global] Instance info' : PkgInfo runtime.runtime :=
-  {|
-    pkg_imported_pkgs := [];
-  |}.
-
-Axiom _'init : val.
-
-Definition initialize' : val :=
+Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init runtime.runtime (λ: <>,
       exception_do (do:  (cgo_yield'init #());;;
@@ -7414,1770 +6706,8 @@ Definition initialize' : val :=
       do:  (vdsoSymbolKeys'init #()))
       ).
 
-Class userArena_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-}.
-
-Class liveUserArenaChunk_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class writeUserArenaHeapBits_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class cgoCallers_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class argset_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class hchan_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class waitq_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class coro_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class cpuProfile_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class debugCallWrapArgs_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class dloggerImpl_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class dloggerFake_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class debugLogWriter_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class debugLogBuf_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class debugLogReader_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class dlogPerM_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class timespec_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class timeval_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class sigactiont_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class siginfoFields_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class siginfo_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class itimerspec_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class itimerval_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class sigeventFields_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class sigevent_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class usigset_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class fpxreg_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class xmmreg_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class fpstate_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class fpxreg1_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class xmmreg1_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class fpstate1_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class fpreg1_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class stackt_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class mcontext_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class ucontext_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class sigcontext_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class sockaddr_un_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class Error_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class TypeAssertionError_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class errorString_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class errorAddressString_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class plainError_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class boundsError_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class boundsErrorCode_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class stringer_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class typeCacheBucket_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class childInfo_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class timeHistogram_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class itabTableType_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class uint16InterfacePtr_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class uint32InterfacePtr_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class uint64InterfacePtr_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class stringInterfacePtr_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class sliceInterfacePtr_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class lfstack_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class linknameIter_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class mWaitList_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class lockRank_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class lockRankStruct_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class persistentAlloc_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class linearAlloc_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class notInHeap_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class typePointers_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class markBits_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class mcache_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class gclink_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class gclinkptr_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class stackfreelist_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class mcentral_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class checkmarksMap_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class Cleanup_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class cleanupBlock_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class cleanupBlockHeader_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class cleanupQueue_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class metricData_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class metricReader_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class statDep_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class statDepSet_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class heapStatsAggregate_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class sysStatsAggregate_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class cpuStatsAggregate_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class gcStatsAggregate_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class statAggregate_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class metricKind_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class metricSample_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class metricValue_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class metricFloat64Histogram_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class metricName_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class finBlock_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class finalizer_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class fixalloc_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class mlink_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class gcMarkWorkerMode_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class workType_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class gcMode_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class gcTrigger_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class gcTriggerKind_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class gcBgMarkWorkerNode_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class gcBgMarkWorkerNodePadded_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class gcCPULimiterState_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class limiterEventType_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class limiterEventStamp_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class limiterEvent_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class gcDrainFlags_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class spanInlineMarkBits_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class spanQueue_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class localSpanQueue_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class objptr_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class sizeClassScanStats_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class gcControllerState_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class scavengerState_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class scavengeIndex_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class atomicScavChunkData_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class scavChunkData_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class scavChunkFlags_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class piController_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class stackWorkBuf_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class stackWorkBufHdr_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class stackObjectBuf_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class stackObjectBufHdr_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class stackObject_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class stackScanState_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class sweepdata_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class sweepClass_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class activeSweep_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class sweepLocker_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class sweepLocked_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class gcWork_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class workbufhdr_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class workbuf_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class mheap_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class heapArena_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class arenaHint_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class mSpanState_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class mSpanStateBox_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class mspan_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class spanClass_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class arenaIdx_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class spanAllocType_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class mSpanList_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class mSpanQueue_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class special_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class specialfinalizer_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class specialCleanup_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class specialCheckFinalizer_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class specialTinyBlock_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class specialWeakHandle_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class immortalWeakHandleMap_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class immortalWeakHandle_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class specialprofile_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class specialReachable_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class specialPinCounter_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class specialsIter_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class gcBits_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class gcBitsHeader_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class gcBitsArena_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class floaty_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class chunkIdx_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class pageAlloc_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class pallocSum_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class pageCache_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class pageBits_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class pallocBits_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class pallocData_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class bucketType_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class bucket_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class memRecord_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class memRecordCycle_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class blockRecord_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class buckhashArray_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class mProfCycleHolder_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class mLockProfile_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class StackRecord_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class MemProfileRecord_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class BlockProfileRecord_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class goroutineProfileState_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class goroutineProfileStateHolder_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class addrRange_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class offAddr_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class atomicOffAddr_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class addrRanges_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class spanSet_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class spanSetBlockHeader_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class spanSetBlockHeader2_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class spanSetBlock_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class atomicSpanSetSpinePointer_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class spanSetSpinePointer_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class spanSetBlockAlloc_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class headTailIndex_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class atomicHeadTailIndex_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class atomicMSpanPointer_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class mstats_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class MemStats_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class sysMemStat_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class heapStatsDelta_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class consistentHeapStats_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class cpuStats_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class wbBuf_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class pollDesc_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class pollInfo_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class pollCache_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class winlibcall_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class note_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class mOS_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class perThreadSyscallArgs_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class sigset_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class throwType_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class PanicNilError_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class Pinner_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class pinner_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class pinState_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class pinnerBits_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class ptabEntry_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class suspendGState_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class hex_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class stwReason_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class worldStop_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class cgothreadstart_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class sysmontick_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class updateMaxProcsGState_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class pMask_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class gQueue_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class gList_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class randomOrder_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class randomEnum_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class initTask_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class tracestat_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class profBuf_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class profAtomic_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class profIndex_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class profBufReadMode_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class ticksType_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class godebugInc_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class dbgVar_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class mutex_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class funcval_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class iface_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class eface_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class guintptr_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class puintptr_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class muintptr_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class gobuf_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class sudog_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class libcall_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class stack_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class heldLockInfo_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class g_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class m_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class mPadded_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class p_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class schedt_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class _func_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class funcinl_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class lfnode_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class forcegcstate_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class _defer_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class _panic_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class savedOpenDeferState_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class ancestorInfo_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class waitReason_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class rwmutex_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class scase_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class runtimeSelect_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class selectDir_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class semaRoot_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class semTable_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class semaProfileFlags_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class notifyList_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class sigctxt_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class sigTabT_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class gsignalStack_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class slice_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class notInHeapSlice_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class stackpoolItem_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class adjustinfo_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class bitvector_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class stackObjectRecord_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class stkframe_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class reflectMethodValue_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class tmpBuf_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class stringStruct_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class stringStructDWARF_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class neverCallThisFunction_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class Frames_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class Frame_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class Func_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class pcHeader_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class moduledata_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class modulehash_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class functab_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class textsect_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class findfuncbucket_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class funcInfo_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class srcFunc_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class pcvalueCache_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class pcvalueCacheEnt_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class stackmap_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class inlinedCall_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class inlineUnwinder_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class inlineFrame_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class synctestBubble_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class synctestDeadlockError_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class specialBubble_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class taggedPointer_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class timer_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class timers_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class timerWhen_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class timeTimer_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class traceAdvancerState_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class wakeableSleep_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class unwindFlags_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class unwinder_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class cgoTracebackArg_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class cgoContextArg_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class cgoSymbolizerArg_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class traceWriter_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class traceBufQueue_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class traceBufHeader_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class traceBuf_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class traceArg_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class traceEventWriter_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class traceMap_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class traceMapNode_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class traceRegionAlloc_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class traceRegionAllocBlock_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class traceRegionAllocBlockHeader_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class gTraceState_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class mTraceState_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class pTraceState_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class traceBlockReason_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class traceGoStopReason_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class traceLocker_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class traceStackTable_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class traceFrame_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class traceSchedResourceState_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class traceStringTable_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class traceTime_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class traceTypeTable_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class rtype_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class bitCursor_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class _typePair_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class elfSym_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class elfVerdef_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class elfEhdr_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class elfPhdr_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class elfShdr_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class elfDyn_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class elfVerdaux_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class vdsoSymbolKey_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class vdsoVersionKey_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class vdsoInfo_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] userArena_instance :: userArena_Assumptions;
-  #[global] liveUserArenaChunk_instance :: liveUserArenaChunk_Assumptions;
-  #[global] writeUserArenaHeapBits_instance :: writeUserArenaHeapBits_Assumptions;
-  #[global] cgoCallers_instance :: cgoCallers_Assumptions;
-  #[global] argset_instance :: argset_Assumptions;
-  #[global] hchan_instance :: hchan_Assumptions;
-  #[global] waitq_instance :: waitq_Assumptions;
-  #[global] coro_instance :: coro_Assumptions;
-  #[global] cpuProfile_instance :: cpuProfile_Assumptions;
-  #[global] debugCallWrapArgs_instance :: debugCallWrapArgs_Assumptions;
-  #[global] dloggerImpl_instance :: dloggerImpl_Assumptions;
-  #[global] dloggerFake_instance :: dloggerFake_Assumptions;
-  #[global] debugLogWriter_instance :: debugLogWriter_Assumptions;
-  #[global] debugLogBuf_instance :: debugLogBuf_Assumptions;
-  #[global] debugLogReader_instance :: debugLogReader_Assumptions;
-  #[global] dlogPerM_instance :: dlogPerM_Assumptions;
-  #[global] timespec_instance :: timespec_Assumptions;
-  #[global] timeval_instance :: timeval_Assumptions;
-  #[global] sigactiont_instance :: sigactiont_Assumptions;
-  #[global] siginfoFields_instance :: siginfoFields_Assumptions;
-  #[global] siginfo_instance :: siginfo_Assumptions;
-  #[global] itimerspec_instance :: itimerspec_Assumptions;
-  #[global] itimerval_instance :: itimerval_Assumptions;
-  #[global] sigeventFields_instance :: sigeventFields_Assumptions;
-  #[global] sigevent_instance :: sigevent_Assumptions;
-  #[global] usigset_instance :: usigset_Assumptions;
-  #[global] fpxreg_instance :: fpxreg_Assumptions;
-  #[global] xmmreg_instance :: xmmreg_Assumptions;
-  #[global] fpstate_instance :: fpstate_Assumptions;
-  #[global] fpxreg1_instance :: fpxreg1_Assumptions;
-  #[global] xmmreg1_instance :: xmmreg1_Assumptions;
-  #[global] fpstate1_instance :: fpstate1_Assumptions;
-  #[global] fpreg1_instance :: fpreg1_Assumptions;
-  #[global] stackt_instance :: stackt_Assumptions;
-  #[global] mcontext_instance :: mcontext_Assumptions;
-  #[global] ucontext_instance :: ucontext_Assumptions;
-  #[global] sigcontext_instance :: sigcontext_Assumptions;
-  #[global] sockaddr_un_instance :: sockaddr_un_Assumptions;
-  #[global] Error_instance :: Error_Assumptions;
-  #[global] TypeAssertionError_instance :: TypeAssertionError_Assumptions;
-  #[global] errorString_instance :: errorString_Assumptions;
-  #[global] errorAddressString_instance :: errorAddressString_Assumptions;
-  #[global] plainError_instance :: plainError_Assumptions;
-  #[global] boundsError_instance :: boundsError_Assumptions;
-  #[global] boundsErrorCode_instance :: boundsErrorCode_Assumptions;
-  #[global] stringer_instance :: stringer_Assumptions;
-  #[global] typeCacheBucket_instance :: typeCacheBucket_Assumptions;
-  #[global] childInfo_instance :: childInfo_Assumptions;
-  #[global] timeHistogram_instance :: timeHistogram_Assumptions;
-  #[global] itabTableType_instance :: itabTableType_Assumptions;
-  #[global] uint16InterfacePtr_instance :: uint16InterfacePtr_Assumptions;
-  #[global] uint32InterfacePtr_instance :: uint32InterfacePtr_Assumptions;
-  #[global] uint64InterfacePtr_instance :: uint64InterfacePtr_Assumptions;
-  #[global] stringInterfacePtr_instance :: stringInterfacePtr_Assumptions;
-  #[global] sliceInterfacePtr_instance :: sliceInterfacePtr_Assumptions;
-  #[global] lfstack_instance :: lfstack_Assumptions;
-  #[global] linknameIter_instance :: linknameIter_Assumptions;
-  #[global] mWaitList_instance :: mWaitList_Assumptions;
-  #[global] lockRank_instance :: lockRank_Assumptions;
-  #[global] lockRankStruct_instance :: lockRankStruct_Assumptions;
-  #[global] persistentAlloc_instance :: persistentAlloc_Assumptions;
-  #[global] linearAlloc_instance :: linearAlloc_Assumptions;
-  #[global] notInHeap_instance :: notInHeap_Assumptions;
-  #[global] typePointers_instance :: typePointers_Assumptions;
-  #[global] markBits_instance :: markBits_Assumptions;
-  #[global] mcache_instance :: mcache_Assumptions;
-  #[global] gclink_instance :: gclink_Assumptions;
-  #[global] gclinkptr_instance :: gclinkptr_Assumptions;
-  #[global] stackfreelist_instance :: stackfreelist_Assumptions;
-  #[global] mcentral_instance :: mcentral_Assumptions;
-  #[global] checkmarksMap_instance :: checkmarksMap_Assumptions;
-  #[global] Cleanup_instance :: Cleanup_Assumptions;
-  #[global] cleanupBlock_instance :: cleanupBlock_Assumptions;
-  #[global] cleanupBlockHeader_instance :: cleanupBlockHeader_Assumptions;
-  #[global] cleanupQueue_instance :: cleanupQueue_Assumptions;
-  #[global] metricData_instance :: metricData_Assumptions;
-  #[global] metricReader_instance :: metricReader_Assumptions;
-  #[global] statDep_instance :: statDep_Assumptions;
-  #[global] statDepSet_instance :: statDepSet_Assumptions;
-  #[global] heapStatsAggregate_instance :: heapStatsAggregate_Assumptions;
-  #[global] sysStatsAggregate_instance :: sysStatsAggregate_Assumptions;
-  #[global] cpuStatsAggregate_instance :: cpuStatsAggregate_Assumptions;
-  #[global] gcStatsAggregate_instance :: gcStatsAggregate_Assumptions;
-  #[global] statAggregate_instance :: statAggregate_Assumptions;
-  #[global] metricKind_instance :: metricKind_Assumptions;
-  #[global] metricSample_instance :: metricSample_Assumptions;
-  #[global] metricValue_instance :: metricValue_Assumptions;
-  #[global] metricFloat64Histogram_instance :: metricFloat64Histogram_Assumptions;
-  #[global] metricName_instance :: metricName_Assumptions;
-  #[global] finBlock_instance :: finBlock_Assumptions;
-  #[global] finalizer_instance :: finalizer_Assumptions;
-  #[global] fixalloc_instance :: fixalloc_Assumptions;
-  #[global] mlink_instance :: mlink_Assumptions;
-  #[global] gcMarkWorkerMode_instance :: gcMarkWorkerMode_Assumptions;
-  #[global] workType_instance :: workType_Assumptions;
-  #[global] gcMode_instance :: gcMode_Assumptions;
-  #[global] gcTrigger_instance :: gcTrigger_Assumptions;
-  #[global] gcTriggerKind_instance :: gcTriggerKind_Assumptions;
-  #[global] gcBgMarkWorkerNode_instance :: gcBgMarkWorkerNode_Assumptions;
-  #[global] gcBgMarkWorkerNodePadded_instance :: gcBgMarkWorkerNodePadded_Assumptions;
-  #[global] gcCPULimiterState_instance :: gcCPULimiterState_Assumptions;
-  #[global] limiterEventType_instance :: limiterEventType_Assumptions;
-  #[global] limiterEventStamp_instance :: limiterEventStamp_Assumptions;
-  #[global] limiterEvent_instance :: limiterEvent_Assumptions;
-  #[global] gcDrainFlags_instance :: gcDrainFlags_Assumptions;
-  #[global] spanInlineMarkBits_instance :: spanInlineMarkBits_Assumptions;
-  #[global] spanQueue_instance :: spanQueue_Assumptions;
-  #[global] localSpanQueue_instance :: localSpanQueue_Assumptions;
-  #[global] objptr_instance :: objptr_Assumptions;
-  #[global] sizeClassScanStats_instance :: sizeClassScanStats_Assumptions;
-  #[global] gcControllerState_instance :: gcControllerState_Assumptions;
-  #[global] scavengerState_instance :: scavengerState_Assumptions;
-  #[global] scavengeIndex_instance :: scavengeIndex_Assumptions;
-  #[global] atomicScavChunkData_instance :: atomicScavChunkData_Assumptions;
-  #[global] scavChunkData_instance :: scavChunkData_Assumptions;
-  #[global] scavChunkFlags_instance :: scavChunkFlags_Assumptions;
-  #[global] piController_instance :: piController_Assumptions;
-  #[global] stackWorkBuf_instance :: stackWorkBuf_Assumptions;
-  #[global] stackWorkBufHdr_instance :: stackWorkBufHdr_Assumptions;
-  #[global] stackObjectBuf_instance :: stackObjectBuf_Assumptions;
-  #[global] stackObjectBufHdr_instance :: stackObjectBufHdr_Assumptions;
-  #[global] stackObject_instance :: stackObject_Assumptions;
-  #[global] stackScanState_instance :: stackScanState_Assumptions;
-  #[global] sweepdata_instance :: sweepdata_Assumptions;
-  #[global] sweepClass_instance :: sweepClass_Assumptions;
-  #[global] activeSweep_instance :: activeSweep_Assumptions;
-  #[global] sweepLocker_instance :: sweepLocker_Assumptions;
-  #[global] sweepLocked_instance :: sweepLocked_Assumptions;
-  #[global] gcWork_instance :: gcWork_Assumptions;
-  #[global] workbufhdr_instance :: workbufhdr_Assumptions;
-  #[global] workbuf_instance :: workbuf_Assumptions;
-  #[global] mheap_instance :: mheap_Assumptions;
-  #[global] heapArena_instance :: heapArena_Assumptions;
-  #[global] arenaHint_instance :: arenaHint_Assumptions;
-  #[global] mSpanState_instance :: mSpanState_Assumptions;
-  #[global] mSpanStateBox_instance :: mSpanStateBox_Assumptions;
-  #[global] mspan_instance :: mspan_Assumptions;
-  #[global] spanClass_instance :: spanClass_Assumptions;
-  #[global] arenaIdx_instance :: arenaIdx_Assumptions;
-  #[global] spanAllocType_instance :: spanAllocType_Assumptions;
-  #[global] mSpanList_instance :: mSpanList_Assumptions;
-  #[global] mSpanQueue_instance :: mSpanQueue_Assumptions;
-  #[global] special_instance :: special_Assumptions;
-  #[global] specialfinalizer_instance :: specialfinalizer_Assumptions;
-  #[global] specialCleanup_instance :: specialCleanup_Assumptions;
-  #[global] specialCheckFinalizer_instance :: specialCheckFinalizer_Assumptions;
-  #[global] specialTinyBlock_instance :: specialTinyBlock_Assumptions;
-  #[global] specialWeakHandle_instance :: specialWeakHandle_Assumptions;
-  #[global] immortalWeakHandleMap_instance :: immortalWeakHandleMap_Assumptions;
-  #[global] immortalWeakHandle_instance :: immortalWeakHandle_Assumptions;
-  #[global] specialprofile_instance :: specialprofile_Assumptions;
-  #[global] specialReachable_instance :: specialReachable_Assumptions;
-  #[global] specialPinCounter_instance :: specialPinCounter_Assumptions;
-  #[global] specialsIter_instance :: specialsIter_Assumptions;
-  #[global] gcBits_instance :: gcBits_Assumptions;
-  #[global] gcBitsHeader_instance :: gcBitsHeader_Assumptions;
-  #[global] gcBitsArena_instance :: gcBitsArena_Assumptions;
-  #[global] floaty_instance :: floaty_Assumptions;
-  #[global] chunkIdx_instance :: chunkIdx_Assumptions;
-  #[global] pageAlloc_instance :: pageAlloc_Assumptions;
-  #[global] pallocSum_instance :: pallocSum_Assumptions;
-  #[global] pageCache_instance :: pageCache_Assumptions;
-  #[global] pageBits_instance :: pageBits_Assumptions;
-  #[global] pallocBits_instance :: pallocBits_Assumptions;
-  #[global] pallocData_instance :: pallocData_Assumptions;
-  #[global] bucketType_instance :: bucketType_Assumptions;
-  #[global] bucket_instance :: bucket_Assumptions;
-  #[global] memRecord_instance :: memRecord_Assumptions;
-  #[global] memRecordCycle_instance :: memRecordCycle_Assumptions;
-  #[global] blockRecord_instance :: blockRecord_Assumptions;
-  #[global] buckhashArray_instance :: buckhashArray_Assumptions;
-  #[global] mProfCycleHolder_instance :: mProfCycleHolder_Assumptions;
-  #[global] mLockProfile_instance :: mLockProfile_Assumptions;
-  #[global] StackRecord_instance :: StackRecord_Assumptions;
-  #[global] MemProfileRecord_instance :: MemProfileRecord_Assumptions;
-  #[global] BlockProfileRecord_instance :: BlockProfileRecord_Assumptions;
-  #[global] goroutineProfileState_instance :: goroutineProfileState_Assumptions;
-  #[global] goroutineProfileStateHolder_instance :: goroutineProfileStateHolder_Assumptions;
-  #[global] addrRange_instance :: addrRange_Assumptions;
-  #[global] offAddr_instance :: offAddr_Assumptions;
-  #[global] atomicOffAddr_instance :: atomicOffAddr_Assumptions;
-  #[global] addrRanges_instance :: addrRanges_Assumptions;
-  #[global] spanSet_instance :: spanSet_Assumptions;
-  #[global] spanSetBlockHeader_instance :: spanSetBlockHeader_Assumptions;
-  #[global] spanSetBlockHeader2_instance :: spanSetBlockHeader2_Assumptions;
-  #[global] spanSetBlock_instance :: spanSetBlock_Assumptions;
-  #[global] atomicSpanSetSpinePointer_instance :: atomicSpanSetSpinePointer_Assumptions;
-  #[global] spanSetSpinePointer_instance :: spanSetSpinePointer_Assumptions;
-  #[global] spanSetBlockAlloc_instance :: spanSetBlockAlloc_Assumptions;
-  #[global] headTailIndex_instance :: headTailIndex_Assumptions;
-  #[global] atomicHeadTailIndex_instance :: atomicHeadTailIndex_Assumptions;
-  #[global] atomicMSpanPointer_instance :: atomicMSpanPointer_Assumptions;
-  #[global] mstats_instance :: mstats_Assumptions;
-  #[global] MemStats_instance :: MemStats_Assumptions;
-  #[global] sysMemStat_instance :: sysMemStat_Assumptions;
-  #[global] heapStatsDelta_instance :: heapStatsDelta_Assumptions;
-  #[global] consistentHeapStats_instance :: consistentHeapStats_Assumptions;
-  #[global] cpuStats_instance :: cpuStats_Assumptions;
-  #[global] wbBuf_instance :: wbBuf_Assumptions;
-  #[global] pollDesc_instance :: pollDesc_Assumptions;
-  #[global] pollInfo_instance :: pollInfo_Assumptions;
-  #[global] pollCache_instance :: pollCache_Assumptions;
-  #[global] winlibcall_instance :: winlibcall_Assumptions;
-  #[global] note_instance :: note_Assumptions;
-  #[global] mOS_instance :: mOS_Assumptions;
-  #[global] perThreadSyscallArgs_instance :: perThreadSyscallArgs_Assumptions;
-  #[global] sigset_instance :: sigset_Assumptions;
-  #[global] throwType_instance :: throwType_Assumptions;
-  #[global] PanicNilError_instance :: PanicNilError_Assumptions;
-  #[global] Pinner_instance :: Pinner_Assumptions;
-  #[global] pinner_instance :: pinner_Assumptions;
-  #[global] pinState_instance :: pinState_Assumptions;
-  #[global] pinnerBits_instance :: pinnerBits_Assumptions;
-  #[global] ptabEntry_instance :: ptabEntry_Assumptions;
-  #[global] suspendGState_instance :: suspendGState_Assumptions;
-  #[global] hex_instance :: hex_Assumptions;
-  #[global] stwReason_instance :: stwReason_Assumptions;
-  #[global] worldStop_instance :: worldStop_Assumptions;
-  #[global] cgothreadstart_instance :: cgothreadstart_Assumptions;
-  #[global] sysmontick_instance :: sysmontick_Assumptions;
-  #[global] updateMaxProcsGState_instance :: updateMaxProcsGState_Assumptions;
-  #[global] pMask_instance :: pMask_Assumptions;
-  #[global] gQueue_instance :: gQueue_Assumptions;
-  #[global] gList_instance :: gList_Assumptions;
-  #[global] randomOrder_instance :: randomOrder_Assumptions;
-  #[global] randomEnum_instance :: randomEnum_Assumptions;
-  #[global] initTask_instance :: initTask_Assumptions;
-  #[global] tracestat_instance :: tracestat_Assumptions;
-  #[global] profBuf_instance :: profBuf_Assumptions;
-  #[global] profAtomic_instance :: profAtomic_Assumptions;
-  #[global] profIndex_instance :: profIndex_Assumptions;
-  #[global] profBufReadMode_instance :: profBufReadMode_Assumptions;
-  #[global] ticksType_instance :: ticksType_Assumptions;
-  #[global] godebugInc_instance :: godebugInc_Assumptions;
-  #[global] dbgVar_instance :: dbgVar_Assumptions;
-  #[global] mutex_instance :: mutex_Assumptions;
-  #[global] funcval_instance :: funcval_Assumptions;
-  #[global] iface_instance :: iface_Assumptions;
-  #[global] eface_instance :: eface_Assumptions;
-  #[global] guintptr_instance :: guintptr_Assumptions;
-  #[global] puintptr_instance :: puintptr_Assumptions;
-  #[global] muintptr_instance :: muintptr_Assumptions;
-  #[global] gobuf_instance :: gobuf_Assumptions;
-  #[global] sudog_instance :: sudog_Assumptions;
-  #[global] libcall_instance :: libcall_Assumptions;
-  #[global] stack_instance :: stack_Assumptions;
-  #[global] heldLockInfo_instance :: heldLockInfo_Assumptions;
-  #[global] g_instance :: g_Assumptions;
-  #[global] m_instance :: m_Assumptions;
-  #[global] mPadded_instance :: mPadded_Assumptions;
-  #[global] p_instance :: p_Assumptions;
-  #[global] schedt_instance :: schedt_Assumptions;
-  #[global] _func_instance :: _func_Assumptions;
-  #[global] funcinl_instance :: funcinl_Assumptions;
-  #[global] lfnode_instance :: lfnode_Assumptions;
-  #[global] forcegcstate_instance :: forcegcstate_Assumptions;
-  #[global] _defer_instance :: _defer_Assumptions;
-  #[global] _panic_instance :: _panic_Assumptions;
-  #[global] savedOpenDeferState_instance :: savedOpenDeferState_Assumptions;
-  #[global] ancestorInfo_instance :: ancestorInfo_Assumptions;
-  #[global] waitReason_instance :: waitReason_Assumptions;
-  #[global] rwmutex_instance :: rwmutex_Assumptions;
-  #[global] scase_instance :: scase_Assumptions;
-  #[global] runtimeSelect_instance :: runtimeSelect_Assumptions;
-  #[global] selectDir_instance :: selectDir_Assumptions;
-  #[global] semaRoot_instance :: semaRoot_Assumptions;
-  #[global] semTable_instance :: semTable_Assumptions;
-  #[global] semaProfileFlags_instance :: semaProfileFlags_Assumptions;
-  #[global] notifyList_instance :: notifyList_Assumptions;
-  #[global] sigctxt_instance :: sigctxt_Assumptions;
-  #[global] sigTabT_instance :: sigTabT_Assumptions;
-  #[global] gsignalStack_instance :: gsignalStack_Assumptions;
-  #[global] slice_instance :: slice_Assumptions;
-  #[global] notInHeapSlice_instance :: notInHeapSlice_Assumptions;
-  #[global] stackpoolItem_instance :: stackpoolItem_Assumptions;
-  #[global] adjustinfo_instance :: adjustinfo_Assumptions;
-  #[global] bitvector_instance :: bitvector_Assumptions;
-  #[global] stackObjectRecord_instance :: stackObjectRecord_Assumptions;
-  #[global] stkframe_instance :: stkframe_Assumptions;
-  #[global] reflectMethodValue_instance :: reflectMethodValue_Assumptions;
-  #[global] tmpBuf_instance :: tmpBuf_Assumptions;
-  #[global] stringStruct_instance :: stringStruct_Assumptions;
-  #[global] stringStructDWARF_instance :: stringStructDWARF_Assumptions;
-  #[global] neverCallThisFunction_instance :: neverCallThisFunction_Assumptions;
-  #[global] Frames_instance :: Frames_Assumptions;
-  #[global] Frame_instance :: Frame_Assumptions;
-  #[global] Func_instance :: Func_Assumptions;
-  #[global] pcHeader_instance :: pcHeader_Assumptions;
-  #[global] moduledata_instance :: moduledata_Assumptions;
-  #[global] modulehash_instance :: modulehash_Assumptions;
-  #[global] functab_instance :: functab_Assumptions;
-  #[global] textsect_instance :: textsect_Assumptions;
-  #[global] findfuncbucket_instance :: findfuncbucket_Assumptions;
-  #[global] funcInfo_instance :: funcInfo_Assumptions;
-  #[global] srcFunc_instance :: srcFunc_Assumptions;
-  #[global] pcvalueCache_instance :: pcvalueCache_Assumptions;
-  #[global] pcvalueCacheEnt_instance :: pcvalueCacheEnt_Assumptions;
-  #[global] stackmap_instance :: stackmap_Assumptions;
-  #[global] inlinedCall_instance :: inlinedCall_Assumptions;
-  #[global] inlineUnwinder_instance :: inlineUnwinder_Assumptions;
-  #[global] inlineFrame_instance :: inlineFrame_Assumptions;
-  #[global] synctestBubble_instance :: synctestBubble_Assumptions;
-  #[global] synctestDeadlockError_instance :: synctestDeadlockError_Assumptions;
-  #[global] specialBubble_instance :: specialBubble_Assumptions;
-  #[global] taggedPointer_instance :: taggedPointer_Assumptions;
-  #[global] timer_instance :: timer_Assumptions;
-  #[global] timers_instance :: timers_Assumptions;
-  #[global] timerWhen_instance :: timerWhen_Assumptions;
-  #[global] timeTimer_instance :: timeTimer_Assumptions;
-  #[global] traceAdvancerState_instance :: traceAdvancerState_Assumptions;
-  #[global] wakeableSleep_instance :: wakeableSleep_Assumptions;
-  #[global] unwindFlags_instance :: unwindFlags_Assumptions;
-  #[global] unwinder_instance :: unwinder_Assumptions;
-  #[global] cgoTracebackArg_instance :: cgoTracebackArg_Assumptions;
-  #[global] cgoContextArg_instance :: cgoContextArg_Assumptions;
-  #[global] cgoSymbolizerArg_instance :: cgoSymbolizerArg_Assumptions;
-  #[global] traceWriter_instance :: traceWriter_Assumptions;
-  #[global] traceBufQueue_instance :: traceBufQueue_Assumptions;
-  #[global] traceBufHeader_instance :: traceBufHeader_Assumptions;
-  #[global] traceBuf_instance :: traceBuf_Assumptions;
-  #[global] traceArg_instance :: traceArg_Assumptions;
-  #[global] traceEventWriter_instance :: traceEventWriter_Assumptions;
-  #[global] traceMap_instance :: traceMap_Assumptions;
-  #[global] traceMapNode_instance :: traceMapNode_Assumptions;
-  #[global] traceRegionAlloc_instance :: traceRegionAlloc_Assumptions;
-  #[global] traceRegionAllocBlock_instance :: traceRegionAllocBlock_Assumptions;
-  #[global] traceRegionAllocBlockHeader_instance :: traceRegionAllocBlockHeader_Assumptions;
-  #[global] gTraceState_instance :: gTraceState_Assumptions;
-  #[global] mTraceState_instance :: mTraceState_Assumptions;
-  #[global] pTraceState_instance :: pTraceState_Assumptions;
-  #[global] traceBlockReason_instance :: traceBlockReason_Assumptions;
-  #[global] traceGoStopReason_instance :: traceGoStopReason_Assumptions;
-  #[global] traceLocker_instance :: traceLocker_Assumptions;
-  #[global] traceStackTable_instance :: traceStackTable_Assumptions;
-  #[global] traceFrame_instance :: traceFrame_Assumptions;
-  #[global] traceSchedResourceState_instance :: traceSchedResourceState_Assumptions;
-  #[global] traceStringTable_instance :: traceStringTable_Assumptions;
-  #[global] traceTime_instance :: traceTime_Assumptions;
-  #[global] traceTypeTable_instance :: traceTypeTable_Assumptions;
-  #[global] rtype_instance :: rtype_Assumptions;
-  #[global] bitCursor_instance :: bitCursor_Assumptions;
-  #[global] _typePair_instance :: _typePair_Assumptions;
-  #[global] elfSym_instance :: elfSym_Assumptions;
-  #[global] elfVerdef_instance :: elfVerdef_Assumptions;
-  #[global] elfEhdr_instance :: elfEhdr_Assumptions;
-  #[global] elfPhdr_instance :: elfPhdr_Assumptions;
-  #[global] elfShdr_instance :: elfShdr_Assumptions;
-  #[global] elfDyn_instance :: elfDyn_Assumptions;
-  #[global] elfVerdaux_instance :: elfVerdaux_Assumptions;
-  #[global] vdsoSymbolKey_instance :: vdsoSymbolKey_Assumptions;
-  #[global] vdsoVersionKey_instance :: vdsoVersionKey_Assumptions;
-  #[global] vdsoInfo_instance :: vdsoInfo_Assumptions;
   #[global] Gosched_unfold :: FuncUnfold Gosched [] (Goschedⁱᵐᵖˡ);
 }.
-
-End code.
 End runtime.

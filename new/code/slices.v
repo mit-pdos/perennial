@@ -5,112 +5,106 @@ Definition slices : go_string := "slices".
 
 Module slices.
 
-Section code.
-Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Definition All {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.All"%go.
 
+Definition Backward {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.Backward"%go.
 
-Definition All : go_string := "slices.All"%go.
+Definition Values {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.Values"%go.
 
-Definition Backward : go_string := "slices.Backward"%go.
+Definition AppendSeq {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.AppendSeq"%go.
 
-Definition Values : go_string := "slices.Values"%go.
+Definition Collect {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.Collect"%go.
 
-Definition AppendSeq : go_string := "slices.AppendSeq"%go.
+Definition Sorted {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.Sorted"%go.
 
-Definition Collect : go_string := "slices.Collect"%go.
+Definition SortedFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.SortedFunc"%go.
 
-Definition Sorted : go_string := "slices.Sorted"%go.
+Definition SortedStableFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.SortedStableFunc"%go.
 
-Definition SortedFunc : go_string := "slices.SortedFunc"%go.
+Definition Chunk {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.Chunk"%go.
 
-Definition SortedStableFunc : go_string := "slices.SortedStableFunc"%go.
+Definition Equal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.Equal"%go.
 
-Definition Chunk : go_string := "slices.Chunk"%go.
+Definition EqualFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.EqualFunc"%go.
 
-Definition Equal : go_string := "slices.Equal"%go.
+Definition Compare {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.Compare"%go.
 
-Definition EqualFunc : go_string := "slices.EqualFunc"%go.
+Definition CompareFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.CompareFunc"%go.
 
-Definition Compare : go_string := "slices.Compare"%go.
+Definition Index {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.Index"%go.
 
-Definition CompareFunc : go_string := "slices.CompareFunc"%go.
+Definition IndexFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.IndexFunc"%go.
 
-Definition Index : go_string := "slices.Index"%go.
+Definition Contains {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.Contains"%go.
 
-Definition IndexFunc : go_string := "slices.IndexFunc"%go.
+Definition ContainsFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.ContainsFunc"%go.
 
-Definition Contains : go_string := "slices.Contains"%go.
+Definition Insert {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.Insert"%go.
 
-Definition ContainsFunc : go_string := "slices.ContainsFunc"%go.
+Definition Delete {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.Delete"%go.
 
-Definition Insert : go_string := "slices.Insert"%go.
+Definition DeleteFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.DeleteFunc"%go.
 
-Definition Delete : go_string := "slices.Delete"%go.
+Definition Replace {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.Replace"%go.
 
-Definition DeleteFunc : go_string := "slices.DeleteFunc"%go.
+Definition Clone {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.Clone"%go.
 
-Definition Replace : go_string := "slices.Replace"%go.
+Definition Compact {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.Compact"%go.
 
-Definition Clone : go_string := "slices.Clone"%go.
+Definition CompactFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.CompactFunc"%go.
 
-Definition Compact : go_string := "slices.Compact"%go.
+Definition Grow {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.Grow"%go.
 
-Definition CompactFunc : go_string := "slices.CompactFunc"%go.
+Definition Clip {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.Clip"%go.
 
-Definition Grow : go_string := "slices.Grow"%go.
+Definition rotateLeft {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.rotateLeft"%go.
 
-Definition Clip : go_string := "slices.Clip"%go.
+Definition rotateRight {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.rotateRight"%go.
 
-Definition rotateLeft : go_string := "slices.rotateLeft"%go.
+Definition overlaps {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.overlaps"%go.
 
-Definition rotateRight : go_string := "slices.rotateRight"%go.
+Definition startIdx {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.startIdx"%go.
 
-Definition overlaps : go_string := "slices.overlaps"%go.
+Definition Reverse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.Reverse"%go.
 
-Definition startIdx : go_string := "slices.startIdx"%go.
+Definition Concat {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.Concat"%go.
 
-Definition Reverse : go_string := "slices.Reverse"%go.
+Definition Repeat {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.Repeat"%go.
 
-Definition Concat : go_string := "slices.Concat"%go.
+Definition Sort {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.Sort"%go.
 
-Definition Repeat : go_string := "slices.Repeat"%go.
+Definition SortFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.SortFunc"%go.
 
-Definition Sort : go_string := "slices.Sort"%go.
+Definition SortStableFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.SortStableFunc"%go.
 
-Definition SortFunc : go_string := "slices.SortFunc"%go.
+Definition IsSorted {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.IsSorted"%go.
 
-Definition SortStableFunc : go_string := "slices.SortStableFunc"%go.
+Definition IsSortedFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.IsSortedFunc"%go.
 
-Definition IsSorted : go_string := "slices.IsSorted"%go.
+Definition Min {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.Min"%go.
 
-Definition IsSortedFunc : go_string := "slices.IsSortedFunc"%go.
+Definition MinFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.MinFunc"%go.
 
-Definition Min : go_string := "slices.Min"%go.
+Definition Max {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.Max"%go.
 
-Definition MinFunc : go_string := "slices.MinFunc"%go.
+Definition MaxFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.MaxFunc"%go.
 
-Definition Max : go_string := "slices.Max"%go.
+Definition BinarySearch {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.BinarySearch"%go.
 
-Definition MaxFunc : go_string := "slices.MaxFunc"%go.
+Definition BinarySearchFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.BinarySearchFunc"%go.
 
-Definition BinarySearch : go_string := "slices.BinarySearch"%go.
+Axiom sortedHintⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition BinarySearchFunc : go_string := "slices.BinarySearchFunc"%go.
+Axiom unknownHint : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom sortedHintⁱᵐᵖˡ : go.type.
+Axiom increasingHint : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom unknownHint : val.
-
-Axiom increasingHint : val.
-
-Axiom decreasingHint : val.
-
-Definition xorshiftⁱᵐᵖˡ : go.type := go.uint64.
+Axiom decreasingHint : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition xorshift : go.type := go.Named "slices.xorshift"%go [].
 
 (* go: sort.go:181:20 *)
-Definition xorshift__Nextⁱᵐᵖˡ : val :=
+Definition xorshift__Nextⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" <>,
     exception_do (let: "r" := (GoAlloc (go.PointerType xorshift) "r") in
     do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) ^⟨go.uint64⟩ ((![xorshift] (![go.PointerType xorshift] "r")) ≪⟨xorshift⟩ #(W64 13))));;;
@@ -118,16 +112,31 @@ Definition xorshift__Nextⁱᵐᵖˡ : val :=
     do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) ^⟨go.uint64⟩ ((![xorshift] (![go.PointerType xorshift] "r")) ≪⟨xorshift⟩ #(W64 17))));;;
     return: (![xorshift] (![go.PointerType xorshift] "r"))).
 
-Definition nextPowerOfTwo : go_string := "slices.nextPowerOfTwo"%go.
+Definition xorshiftⁱᵐᵖˡ : go.type := go.uint64.
 
-Definition isNaN : go_string := "slices.isNaN"%go.
+Module xorshift.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Definition t  : Type := w64.
+End def.
+End xorshift.
 
-Definition insertionSortCmpFunc : go_string := "slices.insertionSortCmpFunc"%go.
+Class xorshift_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] xorshift_zero_val  :: go.GoZeroValEq xorshift xorshift.t;
+  #[global] xorshift'ptr_Next_unfold :: MethodUnfold (go.PointerType (xorshift)) "Next" (xorshift__Nextⁱᵐᵖˡ);
+}.
+
+Definition nextPowerOfTwo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.nextPowerOfTwo"%go.
+
+Definition isNaN {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.isNaN"%go.
+
+Definition insertionSortCmpFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.insertionSortCmpFunc"%go.
 
 (* insertionSortCmpFunc sorts data[a:b] using insertion sort.
 
    go: zsortanyfunc.go:10:6 *)
-Definition insertionSortCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
+Definition insertionSortCmpFuncⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (E : go.type) : val :=
   λ: "data" "a" "b" "cmp",
     exception_do (let: "cmp" := (GoAlloc (go.FunctionType (go.Signature [E; E] false [go.int])) "cmp") in
     let: "b" := (GoAlloc go.int "b") in
@@ -149,13 +158,13 @@ Definition insertionSortCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
         do:  ((IndexRef (go.SliceType E) (![go.SliceType E] "data", (![go.int] "j") -⟨go.int⟩ #(W64 1))) <-[E] "$r1")))));;;
     return: #()).
 
-Definition siftDownCmpFunc : go_string := "slices.siftDownCmpFunc"%go.
+Definition siftDownCmpFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.siftDownCmpFunc"%go.
 
 (* siftDownCmpFunc implements the heap property on data[lo:hi].
    first is an offset into the array where the root of the heap lies.
 
    go: zsortanyfunc.go:20:6 *)
-Definition siftDownCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
+Definition siftDownCmpFuncⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (E : go.type) : val :=
   λ: "data" "lo" "hi" "first" "cmp",
     exception_do (let: "cmp" := (GoAlloc (go.FunctionType (go.Signature [E; E] false [go.int])) "cmp") in
     let: "first" := (GoAlloc go.int "first") in
@@ -190,10 +199,10 @@ Definition siftDownCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
       do:  ("root" <-[go.int] "$r0"));;;
     return: #()).
 
-Definition heapSortCmpFunc : go_string := "slices.heapSortCmpFunc"%go.
+Definition heapSortCmpFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.heapSortCmpFunc"%go.
 
 (* go: zsortanyfunc.go:38:6 *)
-Definition heapSortCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
+Definition heapSortCmpFuncⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (E : go.type) : val :=
   λ: "data" "a" "b" "cmp",
     exception_do (let: "cmp" := (GoAlloc (go.FunctionType (go.Signature [E; E] false [go.int])) "cmp") in
     let: "b" := (GoAlloc go.int "b") in
@@ -234,21 +243,19 @@ Definition heapSortCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
       (FuncResolve siftDownCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3" "$a4")));;;
     return: #()).
 
-Definition pdqsortCmpFunc : go_string := "slices.pdqsortCmpFunc"%go.
+Definition pdqsortCmpFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.pdqsortCmpFunc"%go.
 
-Definition partitionCmpFunc : go_string := "slices.partitionCmpFunc"%go.
+Definition partitionCmpFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.partitionCmpFunc"%go.
 
-Definition partitionEqualCmpFunc : go_string := "slices.partitionEqualCmpFunc"%go.
+Definition partitionEqualCmpFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.partitionEqualCmpFunc"%go.
 
-Definition sortedHint : go.type := go.Named "slices.sortedHint"%go [].
+Definition partialInsertionSortCmpFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.partialInsertionSortCmpFunc"%go.
 
-Definition partialInsertionSortCmpFunc : go_string := "slices.partialInsertionSortCmpFunc"%go.
+Definition reverseRangeCmpFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.reverseRangeCmpFunc"%go.
 
-Definition reverseRangeCmpFunc : go_string := "slices.reverseRangeCmpFunc"%go.
+Definition choosePivotCmpFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.choosePivotCmpFunc"%go.
 
-Definition choosePivotCmpFunc : go_string := "slices.choosePivotCmpFunc"%go.
-
-Definition breakPatternsCmpFunc : go_string := "slices.breakPatternsCmpFunc"%go.
+Definition breakPatternsCmpFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.breakPatternsCmpFunc"%go.
 
 (* pdqsortCmpFunc sorts data[a:b].
    The algorithm based on pattern-defeating quicksort(pdqsort), but without the optimizations from BlockQuicksort.
@@ -258,7 +265,7 @@ Definition breakPatternsCmpFunc : go_string := "slices.breakPatternsCmpFunc"%go.
    limit is the number of allowed bad (very unbalanced) pivots before falling back to heapsort.
 
    go: zsortanyfunc.go:61:6 *)
-Definition pdqsortCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
+Definition pdqsortCmpFuncⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (E : go.type) : val :=
   λ: "data" "a" "b" "limit" "cmp",
     exception_do (let: "cmp" := (GoAlloc (go.FunctionType (go.Signature [E; E] false [go.int])) "cmp") in
     let: "limit" := (GoAlloc go.int "limit") in
@@ -406,7 +413,7 @@ Definition pdqsortCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
    On return, data[newpivot] = p
 
    go: zsortanyfunc.go:135:6 *)
-Definition partitionCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
+Definition partitionCmpFuncⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (E : go.type) : val :=
   λ: "data" "a" "b" "pivot" "cmp",
     exception_do (let: "alreadyPartitioned" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "newpivot" := (GoAlloc go.int (GoZeroVal go.int #())) in
@@ -475,7 +482,7 @@ Definition partitionCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
    It assumed that data[a:b] does not contain elements smaller than the data[pivot].
 
    go: zsortanyfunc.go:173:6 *)
-Definition partitionEqualCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
+Definition partitionEqualCmpFuncⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (E : go.type) : val :=
   λ: "data" "a" "b" "pivot" "cmp",
     exception_do (let: "newpivot" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "cmp" := (GoAlloc (go.FunctionType (go.Signature [E; E] false [go.int])) "cmp") in
@@ -516,7 +523,7 @@ Definition partitionEqualCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
 (* partialInsertionSortCmpFunc partially sorts a slice, returns true if the slice is sorted at the end.
 
    go: zsortanyfunc.go:195:6 *)
-Definition partialInsertionSortCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
+Definition partialInsertionSortCmpFuncⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (E : go.type) : val :=
   λ: "data" "a" "b" "cmp",
     exception_do (let: "cmp" := (GoAlloc (go.FunctionType (go.Signature [E; E] false [go.int])) "cmp") in
     let: "b" := (GoAlloc go.int "b") in
@@ -583,7 +590,7 @@ Definition partialInsertionSortCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
    that might cause imbalanced partitions in quicksort.
 
    go: zsortanyfunc.go:240:6 *)
-Definition breakPatternsCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
+Definition breakPatternsCmpFuncⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (E : go.type) : val :=
   λ: "data" "a" "b" "cmp",
     exception_do (let: "cmp" := (GoAlloc (go.FunctionType (go.Signature [E; E] false [go.int])) "cmp") in
     let: "b" := (GoAlloc go.int "b") in
@@ -618,9 +625,9 @@ Definition breakPatternsCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
     else do:  #());;;
     return: #()).
 
-Definition medianCmpFunc : go_string := "slices.medianCmpFunc"%go.
+Definition medianCmpFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.medianCmpFunc"%go.
 
-Definition medianAdjacentCmpFunc : go_string := "slices.medianAdjacentCmpFunc"%go.
+Definition medianAdjacentCmpFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.medianAdjacentCmpFunc"%go.
 
 (* choosePivotCmpFunc chooses a pivot in data[a:b].
 
@@ -629,7 +636,7 @@ Definition medianAdjacentCmpFunc : go_string := "slices.medianAdjacentCmpFunc"%g
    [shortestNinther,∞): uses the Tukey ninther method.
 
    go: zsortanyfunc.go:261:6 *)
-Definition choosePivotCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
+Definition choosePivotCmpFuncⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (E : go.type) : val :=
   λ: "data" "a" "b" "cmp",
     exception_do (let: "hint" := (GoAlloc sortedHint (GoZeroVal sortedHint #())) in
     let: "pivot" := (GoAlloc go.int (GoZeroVal go.int #())) in
@@ -692,12 +699,12 @@ Definition choosePivotCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
       then return: (![go.int] "j", decreasingHint)
       else return: (![go.int] "j", unknownHint)))).
 
-Definition order2CmpFunc : go_string := "slices.order2CmpFunc"%go.
+Definition order2CmpFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.order2CmpFunc"%go.
 
 (* order2CmpFunc returns x,y where data[x] <= data[y], where x,y=a,b or x,y=b,a.
 
    go: zsortanyfunc.go:298:6 *)
-Definition order2CmpFuncⁱᵐᵖˡ (E : go.type) : val :=
+Definition order2CmpFuncⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (E : go.type) : val :=
   λ: "data" "a" "b" "swaps" "cmp",
     exception_do (let: "cmp" := (GoAlloc (go.FunctionType (go.Signature [E; E] false [go.int])) "cmp") in
     let: "swaps" := (GoAlloc (go.PointerType go.int) "swaps") in
@@ -716,7 +723,7 @@ Definition order2CmpFuncⁱᵐᵖˡ (E : go.type) : val :=
 (* medianCmpFunc returns x where data[x] is the median of data[a],data[b],data[c], where x is a, b, or c.
 
    go: zsortanyfunc.go:307:6 *)
-Definition medianCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
+Definition medianCmpFuncⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (E : go.type) : val :=
   λ: "data" "a" "b" "c" "swaps" "cmp",
     exception_do (let: "cmp" := (GoAlloc (go.FunctionType (go.Signature [E; E] false [go.int])) "cmp") in
     let: "swaps" := (GoAlloc (go.PointerType go.int) "swaps") in
@@ -759,7 +766,7 @@ Definition medianCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
 (* medianAdjacentCmpFunc finds the median of data[a - 1], data[a], data[a + 1] and stores the index into a.
 
    go: zsortanyfunc.go:315:6 *)
-Definition medianAdjacentCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
+Definition medianAdjacentCmpFuncⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (E : go.type) : val :=
   λ: "data" "a" "swaps" "cmp",
     exception_do (let: "cmp" := (GoAlloc (go.FunctionType (go.Signature [E; E] false [go.int])) "cmp") in
     let: "swaps" := (GoAlloc (go.PointerType go.int) "swaps") in
@@ -774,7 +781,7 @@ Definition medianAdjacentCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
      (FuncResolve medianCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3" "$a4" "$a5")).
 
 (* go: zsortanyfunc.go:319:6 *)
-Definition reverseRangeCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
+Definition reverseRangeCmpFuncⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (E : go.type) : val :=
   λ: "data" "a" "b" "cmp",
     exception_do (let: "cmp" := (GoAlloc (go.FunctionType (go.Signature [E; E] false [go.int])) "cmp") in
     let: "b" := (GoAlloc go.int "b") in
@@ -795,10 +802,10 @@ Definition reverseRangeCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
       do:  ("j" <-[go.int] ((![go.int] "j") -⟨go.int⟩ #(W64 1))));;;
     return: #()).
 
-Definition swapRangeCmpFunc : go_string := "slices.swapRangeCmpFunc"%go.
+Definition swapRangeCmpFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.swapRangeCmpFunc"%go.
 
 (* go: zsortanyfunc.go:329:6 *)
-Definition swapRangeCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
+Definition swapRangeCmpFuncⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (E : go.type) : val :=
   λ: "data" "a" "b" "n" "cmp",
     exception_do (let: "cmp" := (GoAlloc (go.FunctionType (go.Signature [E; E] false [go.int])) "cmp") in
     let: "n" := (GoAlloc go.int "n") in
@@ -815,12 +822,12 @@ Definition swapRangeCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
       do:  ((IndexRef (go.SliceType E) (![go.SliceType E] "data", (![go.int] "b") +⟨go.int⟩ (![go.int] "i"))) <-[E] "$r1")));;;
     return: #()).
 
-Definition stableCmpFunc : go_string := "slices.stableCmpFunc"%go.
+Definition stableCmpFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.stableCmpFunc"%go.
 
-Definition symMergeCmpFunc : go_string := "slices.symMergeCmpFunc"%go.
+Definition symMergeCmpFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.symMergeCmpFunc"%go.
 
 (* go: zsortanyfunc.go:335:6 *)
-Definition stableCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
+Definition stableCmpFuncⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (E : go.type) : val :=
   λ: "data" "n" "cmp",
     exception_do (let: "cmp" := (GoAlloc (go.FunctionType (go.Signature [E; E] false [go.int])) "cmp") in
     let: "n" := (GoAlloc go.int "n") in
@@ -878,7 +885,7 @@ Definition stableCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
       do:  ("blockSize" <-[go.int] ((![go.int] "blockSize") *⟨go.int⟩ #(W64 2))));;;
     return: #()).
 
-Definition rotateCmpFunc : go_string := "slices.rotateCmpFunc"%go.
+Definition rotateCmpFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.rotateCmpFunc"%go.
 
 (* symMergeCmpFunc merges the two sorted subsequences data[a:m] and data[m:b] using
    the SymMerge algorithm from Pok-Son Kim and Arne Kutzner, "Stable Minimum
@@ -901,7 +908,7 @@ Definition rotateCmpFunc : go_string := "slices.rotateCmpFunc"%go.
    which improves performance.
 
    go: zsortanyfunc.go:378:6 *)
-Definition symMergeCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
+Definition symMergeCmpFuncⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (E : go.type) : val :=
   λ: "data" "a" "m" "b" "cmp",
     exception_do (let: "cmp" := (GoAlloc (go.FunctionType (go.Signature [E; E] false [go.int])) "cmp") in
     let: "b" := (GoAlloc go.int "b") in
@@ -1043,7 +1050,7 @@ Definition symMergeCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
    and it assumes non-degenerate arguments: a < m && m < b.
 
    go: zsortanyfunc.go:464:6 *)
-Definition rotateCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
+Definition rotateCmpFuncⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (E : go.type) : val :=
   λ: "data" "a" "m" "b" "cmp",
     exception_do (let: "cmp" := (GoAlloc (go.FunctionType (go.Signature [E; E] false [go.int])) "cmp") in
     let: "b" := (GoAlloc go.int "b") in
@@ -1082,65 +1089,55 @@ Definition rotateCmpFuncⁱᵐᵖˡ (E : go.type) : val :=
     (FuncResolve swapRangeCmpFunc [E] #()) "$a0" "$a1" "$a2" "$a3" "$a4");;;
     return: #()).
 
-Definition insertionSortOrdered : go_string := "slices.insertionSortOrdered"%go.
+Definition insertionSortOrdered {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.insertionSortOrdered"%go.
 
-Definition siftDownOrdered : go_string := "slices.siftDownOrdered"%go.
+Definition siftDownOrdered {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.siftDownOrdered"%go.
 
-Definition heapSortOrdered : go_string := "slices.heapSortOrdered"%go.
+Definition heapSortOrdered {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.heapSortOrdered"%go.
 
-Definition pdqsortOrdered : go_string := "slices.pdqsortOrdered"%go.
+Definition pdqsortOrdered {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.pdqsortOrdered"%go.
 
-Definition partitionOrdered : go_string := "slices.partitionOrdered"%go.
+Definition partitionOrdered {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.partitionOrdered"%go.
 
-Definition partitionEqualOrdered : go_string := "slices.partitionEqualOrdered"%go.
+Definition partitionEqualOrdered {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.partitionEqualOrdered"%go.
 
-Definition partialInsertionSortOrdered : go_string := "slices.partialInsertionSortOrdered"%go.
+Definition partialInsertionSortOrdered {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.partialInsertionSortOrdered"%go.
 
-Definition breakPatternsOrdered : go_string := "slices.breakPatternsOrdered"%go.
+Definition breakPatternsOrdered {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.breakPatternsOrdered"%go.
 
-Definition choosePivotOrdered : go_string := "slices.choosePivotOrdered"%go.
+Definition choosePivotOrdered {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.choosePivotOrdered"%go.
 
-Definition order2Ordered : go_string := "slices.order2Ordered"%go.
+Definition order2Ordered {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.order2Ordered"%go.
 
-Definition medianOrdered : go_string := "slices.medianOrdered"%go.
+Definition medianOrdered {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.medianOrdered"%go.
 
-Definition medianAdjacentOrdered : go_string := "slices.medianAdjacentOrdered"%go.
+Definition medianAdjacentOrdered {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.medianAdjacentOrdered"%go.
 
-Definition reverseRangeOrdered : go_string := "slices.reverseRangeOrdered"%go.
+Definition reverseRangeOrdered {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.reverseRangeOrdered"%go.
 
-Definition swapRangeOrdered : go_string := "slices.swapRangeOrdered"%go.
+Definition swapRangeOrdered {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.swapRangeOrdered"%go.
 
-Definition stableOrdered : go_string := "slices.stableOrdered"%go.
+Definition stableOrdered {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.stableOrdered"%go.
 
-Definition symMergeOrdered : go_string := "slices.symMergeOrdered"%go.
+Definition symMergeOrdered {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.symMergeOrdered"%go.
 
-Definition rotateOrdered : go_string := "slices.rotateOrdered"%go.
+Definition rotateOrdered {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.rotateOrdered"%go.
 
-#[global] Instance info' : PkgInfo slices.slices :=
-  {|
-    pkg_imported_pkgs := [];
-  |}.
+#[global] Instance info' : PkgInfo slices.slices := 
+{|
+  pkg_imported_pkgs := []
+|}.
 
-Axiom _'init : val.
+Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition initialize' : val :=
+Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init slices.slices (λ: <>,
       exception_do (do:  #())
       ).
 
-Class sortedHint_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-}.
-
-Class xorshift_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] xorshift'ptr_Next_unfold :: MethodUnfold (go.PointerType (xorshift)) "Next" (xorshift__Nextⁱᵐᵖˡ);
-}.
-
-Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] sortedHint_instance :: sortedHint_Assumptions;
   #[global] xorshift_instance :: xorshift_Assumptions;
   #[global] insertionSortCmpFunc_unfold E :: FuncUnfold insertionSortCmpFunc [E] (insertionSortCmpFuncⁱᵐᵖˡ E);
   #[global] siftDownCmpFunc_unfold E :: FuncUnfold siftDownCmpFunc [E] (siftDownCmpFuncⁱᵐᵖˡ E);
@@ -1160,6 +1157,4 @@ Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions
   #[global] symMergeCmpFunc_unfold E :: FuncUnfold symMergeCmpFunc [E] (symMergeCmpFuncⁱᵐᵖˡ E);
   #[global] rotateCmpFunc_unfold E :: FuncUnfold rotateCmpFunc [E] (rotateCmpFuncⁱᵐᵖˡ E);
 }.
-
-End code.
 End slices.

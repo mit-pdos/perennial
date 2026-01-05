@@ -5,148 +5,130 @@ Definition rand : go_string := "math/rand".
 
 Module rand.
 
-Section code.
-Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom re : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
+Definition ke {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/rand.ke"%go.
 
-Axiom re : val.
+Axiom ke'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition ke : go_string := "math/rand.ke"%go.
+Definition we {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/rand.we"%go.
 
-Axiom ke'init : val.
+Axiom we'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition we : go_string := "math/rand.we"%go.
+Definition fe {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/rand.fe"%go.
 
-Axiom we'init : val.
+Axiom fe'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition fe : go_string := "math/rand.fe"%go.
+Axiom rn : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom fe'init : val.
+Definition absInt32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/rand.absInt32"%go.
 
-Axiom rn : val.
+Definition kn {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/rand.kn"%go.
 
-Definition absInt32 : go_string := "math/rand.absInt32"%go.
+Axiom kn'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition kn : go_string := "math/rand.kn"%go.
+Definition wn {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/rand.wn"%go.
 
-Axiom kn'init : val.
+Axiom wn'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition wn : go_string := "math/rand.wn"%go.
+Definition fn {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/rand.fn"%go.
 
-Axiom wn'init : val.
+Axiom fn'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition fn : go_string := "math/rand.fn"%go.
+Axiom Sourceⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom fn'init : val.
+Axiom Source64ⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom Sourceⁱᵐᵖˡ : go.type.
+Definition NewSource {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/rand.NewSource"%go.
 
-Axiom Source64ⁱᵐᵖˡ : go.type.
+Definition newSource {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/rand.newSource"%go.
 
-Definition NewSource : go_string := "math/rand.NewSource"%go.
+Axiom Randⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition newSource : go_string := "math/rand.newSource"%go.
+Definition New {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/rand.New"%go.
 
-Axiom Randⁱᵐᵖˡ : go.type.
+Definition read {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/rand.read"%go.
 
-Definition New : go_string := "math/rand.New"%go.
+Definition globalRandGenerator {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/rand.globalRandGenerator"%go.
 
-Definition read : go_string := "math/rand.read"%go.
+Definition randautoseed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/rand.randautoseed"%go.
 
-Definition globalRandGenerator : go_string := "math/rand.globalRandGenerator"%go.
+Axiom randautoseed'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition randautoseed : go_string := "math/rand.randautoseed"%go.
+Definition randseednop {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/rand.randseednop"%go.
 
-Axiom randautoseed'init : val.
+Axiom randseednop'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition randseednop : go_string := "math/rand.randseednop"%go.
+Definition globalRand {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/rand.globalRand"%go.
 
-Axiom randseednop'init : val.
+Definition runtime_rand {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/rand.runtime_rand"%go.
 
-Definition globalRand : go_string := "math/rand.globalRand"%go.
+Axiom runtimeSourceⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition runtime_rand : go_string := "math/rand.runtime_rand"%go.
+Definition Seed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/rand.Seed"%go.
 
-Axiom runtimeSourceⁱᵐᵖˡ : go.type.
+Definition Int63 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/rand.Int63"%go.
 
-Definition Seed : go_string := "math/rand.Seed"%go.
+Definition Uint32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/rand.Uint32"%go.
 
-Definition Int63 : go_string := "math/rand.Int63"%go.
+Definition Uint64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/rand.Uint64"%go.
 
-Definition Uint32 : go_string := "math/rand.Uint32"%go.
+Definition Int31 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/rand.Int31"%go.
 
-Definition Uint64 : go_string := "math/rand.Uint64"%go.
+Definition Int {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/rand.Int"%go.
 
-Definition Int31 : go_string := "math/rand.Int31"%go.
+Definition Int63n {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/rand.Int63n"%go.
 
-Definition Int : go_string := "math/rand.Int"%go.
+Definition Int31n {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/rand.Int31n"%go.
 
-Definition Int63n : go_string := "math/rand.Int63n"%go.
+Definition Intn {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/rand.Intn"%go.
 
-Definition Int31n : go_string := "math/rand.Int31n"%go.
+Definition Float64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/rand.Float64"%go.
 
-Definition Intn : go_string := "math/rand.Intn"%go.
+Definition Float32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/rand.Float32"%go.
 
-Definition Float64 : go_string := "math/rand.Float64"%go.
+Definition Perm {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/rand.Perm"%go.
 
-Definition Float32 : go_string := "math/rand.Float32"%go.
+Definition Shuffle {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/rand.Shuffle"%go.
 
-Definition Perm : go_string := "math/rand.Perm"%go.
+Definition Read {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/rand.Read"%go.
 
-Definition Shuffle : go_string := "math/rand.Shuffle"%go.
+Definition NormFloat64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/rand.NormFloat64"%go.
 
-Definition Read : go_string := "math/rand.Read"%go.
+Definition ExpFloat64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/rand.ExpFloat64"%go.
 
-Definition NormFloat64 : go_string := "math/rand.NormFloat64"%go.
+Axiom lockedSourceⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition ExpFloat64 : go_string := "math/rand.ExpFloat64"%go.
+Axiom rngLen : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom lockedSourceⁱᵐᵖˡ : go.type.
+Axiom rngTap : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom rngLen : Z.
+Axiom rngMax : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom rngTap : Z.
+Axiom rngMask : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom rngMax : Z.
+Axiom int32max : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom rngMask : Z.
+Definition rngCooked {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/rand.rngCooked"%go.
 
-Axiom int32max : Z.
+Axiom rngCooked'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition rngCooked : go_string := "math/rand.rngCooked"%go.
+Axiom rngSourceⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom rngCooked'init : val.
+Definition seedrand {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/rand.seedrand"%go.
 
-Axiom rngSourceⁱᵐᵖˡ : go.type.
+Axiom Zipfⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition seedrand : go_string := "math/rand.seedrand"%go.
+Definition NewZipf {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/rand.NewZipf"%go.
 
-Axiom Zipfⁱᵐᵖˡ : go.type.
+#[global] Instance info' : PkgInfo rand.rand := 
+{|
+  pkg_imported_pkgs := []
+|}.
 
-Definition NewZipf : go_string := "math/rand.NewZipf"%go.
+Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition Source : go.type := go.Named "math/rand.Source"%go [].
-
-Definition Source64 : go.type := go.Named "math/rand.Source64"%go [].
-
-Definition Rand : go.type := go.Named "math/rand.Rand"%go [].
-
-Definition runtimeSource : go.type := go.Named "math/rand.runtimeSource"%go [].
-
-Definition lockedSource : go.type := go.Named "math/rand.lockedSource"%go [].
-
-Definition rngSource : go.type := go.Named "math/rand.rngSource"%go [].
-
-Definition Zipf : go.type := go.Named "math/rand.Zipf"%go [].
-
-#[global] Instance info' : PkgInfo rand.rand :=
-  {|
-    pkg_imported_pkgs := [];
-  |}.
-
-Axiom _'init : val.
-
-Definition initialize' : val :=
+Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init rand.rand (λ: <>,
       exception_do (do:  (ke'init #());;;
@@ -160,44 +142,7 @@ Definition initialize' : val :=
       do:  (rngCooked'init #()))
       ).
 
-Class Source_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
 }.
-
-Class Source64_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class Rand_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class runtimeSource_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class lockedSource_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class rngSource_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class Zipf_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] Source_instance :: Source_Assumptions;
-  #[global] Source64_instance :: Source64_Assumptions;
-  #[global] Rand_instance :: Rand_Assumptions;
-  #[global] runtimeSource_instance :: runtimeSource_Assumptions;
-  #[global] lockedSource_instance :: lockedSource_Assumptions;
-  #[global] rngSource_instance :: rngSource_Assumptions;
-  #[global] Zipf_instance :: Zipf_Assumptions;
-}.
-
-End code.
 End rand.

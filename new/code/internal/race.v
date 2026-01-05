@@ -5,56 +5,50 @@ Definition race : go_string := "internal/race".
 
 Module race.
 
-Section code.
-Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Definition Enabled {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #false.
 
+Definition Acquire {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/race.Acquire"%go.
 
-Definition Enabled : val := #false.
+Definition Release {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/race.Release"%go.
 
-Definition Acquire : go_string := "internal/race.Acquire"%go.
+Definition ReleaseMerge {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/race.ReleaseMerge"%go.
 
-Definition Release : go_string := "internal/race.Release"%go.
+Definition Disable {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/race.Disable"%go.
 
-Definition ReleaseMerge : go_string := "internal/race.ReleaseMerge"%go.
+Definition Enable {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/race.Enable"%go.
 
-Definition Disable : go_string := "internal/race.Disable"%go.
+Definition Read {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/race.Read"%go.
 
-Definition Enable : go_string := "internal/race.Enable"%go.
+Definition ReadPC {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/race.ReadPC"%go.
 
-Definition Read : go_string := "internal/race.Read"%go.
+Definition ReadObjectPC {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/race.ReadObjectPC"%go.
 
-Definition ReadPC : go_string := "internal/race.ReadPC"%go.
+Definition Write {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/race.Write"%go.
 
-Definition ReadObjectPC : go_string := "internal/race.ReadObjectPC"%go.
+Definition WritePC {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/race.WritePC"%go.
 
-Definition Write : go_string := "internal/race.Write"%go.
+Definition WriteObjectPC {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/race.WriteObjectPC"%go.
 
-Definition WritePC : go_string := "internal/race.WritePC"%go.
+Definition ReadRange {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/race.ReadRange"%go.
 
-Definition WriteObjectPC : go_string := "internal/race.WriteObjectPC"%go.
+Definition WriteRange {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/race.WriteRange"%go.
 
-Definition ReadRange : go_string := "internal/race.ReadRange"%go.
+Definition Errors {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/race.Errors"%go.
 
-Definition WriteRange : go_string := "internal/race.WriteRange"%go.
+#[global] Instance info' : PkgInfo race.race := 
+{|
+  pkg_imported_pkgs := []
+|}.
 
-Definition Errors : go_string := "internal/race.Errors"%go.
+Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-#[global] Instance info' : PkgInfo race.race :=
-  {|
-    pkg_imported_pkgs := [];
-  |}.
-
-Axiom _'init : val.
-
-Definition initialize' : val :=
+Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init race.race (λ: <>,
       exception_do (do:  #())
       ).
 
-Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
 }.
-
-End code.
 End race.

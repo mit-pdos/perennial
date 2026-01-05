@@ -5,912 +5,908 @@ Definition math : go_string := "math".
 
 Module math.
 
-Section code.
-Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Definition Abs {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Abs"%go.
 
+Definition Acosh {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Acosh"%go.
 
-Definition Abs : go_string := "math.Abs"%go.
+Definition acosh {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.acosh"%go.
 
-Definition Acosh : go_string := "math.Acosh"%go.
+Definition Asin {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Asin"%go.
 
-Definition acosh : go_string := "math.acosh"%go.
+Definition asin {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.asin"%go.
 
-Definition Asin : go_string := "math.Asin"%go.
+Definition Acos {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Acos"%go.
 
-Definition asin : go_string := "math.asin"%go.
+Definition acos {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.acos"%go.
 
-Definition Acos : go_string := "math.Acos"%go.
+Definition Asinh {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Asinh"%go.
 
-Definition acos : go_string := "math.acos"%go.
+Definition asinh {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.asinh"%go.
 
-Definition Asinh : go_string := "math.Asinh"%go.
+Definition xatan {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.xatan"%go.
 
-Definition asinh : go_string := "math.asinh"%go.
+Definition satan {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.satan"%go.
 
-Definition xatan : go_string := "math.xatan"%go.
+Definition Atan {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Atan"%go.
 
-Definition satan : go_string := "math.satan"%go.
+Definition atan {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.atan"%go.
 
-Definition Atan : go_string := "math.Atan"%go.
+Definition Atan2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Atan2"%go.
 
-Definition atan : go_string := "math.atan"%go.
+Definition atan2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.atan2"%go.
 
-Definition Atan2 : go_string := "math.Atan2"%go.
+Definition Atanh {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Atanh"%go.
 
-Definition atan2 : go_string := "math.atan2"%go.
+Definition atanh {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.atanh"%go.
 
-Definition Atanh : go_string := "math.Atanh"%go.
+Axiom uvnan : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition atanh : go_string := "math.atanh"%go.
+Axiom uvinf : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom uvnan : Z.
+Axiom uvneginf : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom uvinf : Z.
+Axiom uvone : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom uvneginf : Z.
+Axiom mask : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom uvone : Z.
+Axiom shift : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom mask : Z.
+Axiom bias : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom shift : Z.
+Axiom signMask : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom bias : Z.
+Axiom fracMask : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom signMask : Z.
+Definition Inf {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Inf"%go.
 
-Axiom fracMask : Z.
+Definition NaN {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.NaN"%go.
 
-Definition Inf : go_string := "math.Inf"%go.
+Definition IsNaN {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.IsNaN"%go.
 
-Definition NaN : go_string := "math.NaN"%go.
+Definition IsInf {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.IsInf"%go.
 
-Definition IsNaN : go_string := "math.IsNaN"%go.
+Definition normalize {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.normalize"%go.
 
-Definition IsInf : go_string := "math.IsInf"%go.
+Definition Cbrt {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Cbrt"%go.
 
-Definition normalize : go_string := "math.normalize"%go.
+Definition cbrt {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.cbrt"%go.
 
-Definition Cbrt : go_string := "math.Cbrt"%go.
+Axiom E : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition cbrt : go_string := "math.cbrt"%go.
+Axiom Pi : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom E : val.
+Axiom Phi : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom Pi : val.
+Axiom Sqrt2 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom Phi : val.
+Axiom SqrtE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom Sqrt2 : val.
+Axiom SqrtPi : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom SqrtE : val.
+Axiom SqrtPhi : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom SqrtPi : val.
+Axiom Ln2 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom SqrtPhi : val.
+Axiom Log2E : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom Ln2 : val.
+Axiom Ln10 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom Log2E : val.
+Axiom Log10E : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom Ln10 : val.
+Axiom MaxFloat32 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom Log10E : val.
+Axiom SmallestNonzeroFloat32 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom MaxFloat32 : val.
+Axiom MaxFloat64 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom SmallestNonzeroFloat32 : val.
+Axiom SmallestNonzeroFloat64 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom MaxFloat64 : val.
-
-Axiom SmallestNonzeroFloat64 : val.
-
-Axiom intSize : Z.
+Axiom intSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
 (* MaxInt32 or MaxInt64 depending on intSize. *)
-Definition MaxInt : Z := 9223372036854775807.
+Definition MaxInt {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Z := 9223372036854775807.
 
 (* MinInt32 or MinInt64 depending on intSize. *)
-Definition MinInt : Z := -9223372036854775808.
+Definition MinInt {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Z := -9223372036854775808.
 
-Axiom MaxInt8 : Z.
+Axiom MaxInt8 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom MinInt8 : Z.
+Axiom MinInt8 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom MaxInt16 : Z.
+Axiom MaxInt16 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom MinInt16 : Z.
+Axiom MinInt16 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom MaxInt32 : Z.
+Axiom MaxInt32 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom MinInt32 : Z.
+Axiom MinInt32 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
 (* 9223372036854775807 *)
-Definition MaxInt64 : Z := 9223372036854775807.
+Definition MaxInt64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Z := 9223372036854775807.
 
-Axiom MinInt64 : Z.
+Axiom MinInt64 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom MaxUint : Z.
+Axiom MaxUint : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom MaxUint8 : Z.
+Axiom MaxUint8 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom MaxUint16 : Z.
+Axiom MaxUint16 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom MaxUint32 : Z.
+Axiom MaxUint32 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
 (* 18446744073709551615 *)
-Definition MaxUint64 : Z := 18446744073709551615.
+Definition MaxUint64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Z := 18446744073709551615.
 
-Definition Copysign : go_string := "math.Copysign"%go.
+Definition Copysign {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Copysign"%go.
 
-Definition Dim : go_string := "math.Dim"%go.
+Definition Dim {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Dim"%go.
 
-Definition Max : go_string := "math.Max"%go.
+Definition Max {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Max"%go.
 
-Definition max : go_string := "math.max"%go.
+Definition max {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.max"%go.
 
-Definition Min : go_string := "math.Min"%go.
+Definition Min {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Min"%go.
 
-Definition min : go_string := "math.min"%go.
+Definition min {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.min"%go.
 
-Axiom haveArchMax : val.
+Axiom haveArchMax : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition archMax : go_string := "math.archMax"%go.
+Definition archMax {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.archMax"%go.
 
-Axiom haveArchMin : val.
+Axiom haveArchMin : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition archMin : go_string := "math.archMin"%go.
+Definition archMin {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.archMin"%go.
 
-Axiom erx : val.
+Axiom erx : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom efx : val.
+Axiom efx : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom efx8 : val.
+Axiom efx8 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom pp0 : val.
+Axiom pp0 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom pp1 : val.
+Axiom pp1 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom pp2 : val.
+Axiom pp2 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom pp3 : val.
+Axiom pp3 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom pp4 : val.
+Axiom pp4 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom qq1 : val.
+Axiom qq1 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom qq2 : val.
+Axiom qq2 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom qq3 : val.
+Axiom qq3 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom qq4 : val.
+Axiom qq4 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom qq5 : val.
+Axiom qq5 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom pa0 : val.
+Axiom pa0 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom pa1 : val.
+Axiom pa1 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom pa2 : val.
+Axiom pa2 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom pa3 : val.
+Axiom pa3 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom pa4 : val.
+Axiom pa4 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom pa5 : val.
+Axiom pa5 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom pa6 : val.
+Axiom pa6 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom qa1 : val.
+Axiom qa1 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom qa2 : val.
+Axiom qa2 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom qa3 : val.
+Axiom qa3 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom qa4 : val.
+Axiom qa4 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom qa5 : val.
+Axiom qa5 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom qa6 : val.
+Axiom qa6 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom ra0 : val.
+Axiom ra0 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom ra1 : val.
+Axiom ra1 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom ra2 : val.
+Axiom ra2 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom ra3 : val.
+Axiom ra3 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom ra4 : val.
+Axiom ra4 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom ra5 : val.
+Axiom ra5 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom ra6 : val.
+Axiom ra6 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom ra7 : val.
+Axiom ra7 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom sa1 : val.
+Axiom sa1 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom sa2 : val.
+Axiom sa2 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom sa3 : val.
+Axiom sa3 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom sa4 : val.
+Axiom sa4 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom sa5 : val.
+Axiom sa5 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom sa6 : val.
+Axiom sa6 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom sa7 : val.
+Axiom sa7 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom sa8 : val.
+Axiom sa8 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom rb0 : val.
+Axiom rb0 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom rb1 : val.
+Axiom rb1 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom rb2 : val.
+Axiom rb2 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom rb3 : val.
+Axiom rb3 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom rb4 : val.
+Axiom rb4 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom rb5 : val.
+Axiom rb5 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom rb6 : val.
+Axiom rb6 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom sb1 : val.
+Axiom sb1 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom sb2 : val.
+Axiom sb2 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom sb3 : val.
+Axiom sb3 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom sb4 : val.
+Axiom sb4 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom sb5 : val.
+Axiom sb5 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom sb6 : val.
+Axiom sb6 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom sb7 : val.
+Axiom sb7 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition Erf : go_string := "math.Erf"%go.
+Definition Erf {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Erf"%go.
 
-Definition erf : go_string := "math.erf"%go.
+Definition erf {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.erf"%go.
 
-Definition Erfc : go_string := "math.Erfc"%go.
+Definition Erfc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Erfc"%go.
 
-Definition erfc : go_string := "math.erfc"%go.
+Definition erfc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.erfc"%go.
 
-Axiom a0 : val.
+Axiom a0 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom a1 : val.
+Axiom a1 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom a2 : val.
+Axiom a2 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom a3 : val.
+Axiom a3 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom a4 : val.
+Axiom a4 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom a5 : val.
+Axiom a5 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom a6 : val.
+Axiom a6 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom a7 : val.
+Axiom a7 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom b0 : val.
+Axiom b0 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom b1 : val.
+Axiom b1 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom b2 : val.
+Axiom b2 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom b3 : val.
+Axiom b3 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom b4 : val.
+Axiom b4 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom b5 : val.
+Axiom b5 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom b6 : val.
+Axiom b6 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom b7 : val.
+Axiom b7 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom c0 : val.
+Axiom c0 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom c1 : val.
+Axiom c1 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom c2 : val.
+Axiom c2 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom c3 : val.
+Axiom c3 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom c4 : val.
+Axiom c4 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom c5 : val.
+Axiom c5 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom c6 : val.
+Axiom c6 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom c7 : val.
+Axiom c7 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom d0 : val.
+Axiom d0 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom d1 : val.
+Axiom d1 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom d2 : val.
+Axiom d2 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom d3 : val.
+Axiom d3 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom d4 : val.
+Axiom d4 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom d5 : val.
+Axiom d5 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom d6 : val.
+Axiom d6 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom d7 : val.
+Axiom d7 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom e0 : val.
+Axiom e0 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom e1 : val.
+Axiom e1 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom e2 : val.
+Axiom e2 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom e3 : val.
+Axiom e3 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom e4 : val.
+Axiom e4 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom e5 : val.
+Axiom e5 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom e6 : val.
+Axiom e6 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom e7 : val.
+Axiom e7 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom f0 : val.
+Axiom f0 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom f1 : val.
+Axiom f1 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom f2 : val.
+Axiom f2 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom f3 : val.
+Axiom f3 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom f4 : val.
+Axiom f4 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom f5 : val.
+Axiom f5 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom f6 : val.
+Axiom f6 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom f7 : val.
+Axiom f7 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition Erfinv : go_string := "math.Erfinv"%go.
+Definition Erfinv {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Erfinv"%go.
 
-Definition Erfcinv : go_string := "math.Erfcinv"%go.
+Definition Erfcinv {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Erfcinv"%go.
 
-Definition Exp : go_string := "math.Exp"%go.
+Definition Exp {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Exp"%go.
 
-Definition exp : go_string := "math.exp"%go.
+Definition exp {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.exp"%go.
 
-Definition Exp2 : go_string := "math.Exp2"%go.
+Definition Exp2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Exp2"%go.
 
-Definition exp2 : go_string := "math.exp2"%go.
+Definition exp2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.exp2"%go.
 
-Definition expmulti : go_string := "math.expmulti"%go.
+Definition expmulti {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.expmulti"%go.
 
-Axiom haveArchExp2 : val.
+Axiom haveArchExp2 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition archExp2 : go_string := "math.archExp2"%go.
+Definition archExp2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.archExp2"%go.
 
-Definition useFMA : go_string := "math.useFMA"%go.
+Definition useFMA {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.useFMA"%go.
 
-Axiom useFMA'init : val.
+Axiom useFMA'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom haveArchExp : val.
+Axiom haveArchExp : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition archExp : go_string := "math.archExp"%go.
+Definition archExp {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.archExp"%go.
 
-Definition Expm1 : go_string := "math.Expm1"%go.
+Definition Expm1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Expm1"%go.
 
-Definition expm1 : go_string := "math.expm1"%go.
+Definition expm1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.expm1"%go.
 
-Definition Floor : go_string := "math.Floor"%go.
+Definition Floor {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Floor"%go.
 
-Definition floor : go_string := "math.floor"%go.
+Definition floor {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.floor"%go.
 
-Definition Ceil : go_string := "math.Ceil"%go.
+Definition Ceil {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Ceil"%go.
 
-Definition ceil : go_string := "math.ceil"%go.
+Definition ceil {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.ceil"%go.
 
-Definition Trunc : go_string := "math.Trunc"%go.
+Definition Trunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Trunc"%go.
 
-Definition trunc : go_string := "math.trunc"%go.
+Definition trunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.trunc"%go.
 
-Definition Round : go_string := "math.Round"%go.
+Definition Round {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Round"%go.
 
-Definition RoundToEven : go_string := "math.RoundToEven"%go.
+Definition RoundToEven {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.RoundToEven"%go.
 
-Axiom haveArchFloor : val.
+Axiom haveArchFloor : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition archFloor : go_string := "math.archFloor"%go.
+Definition archFloor {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.archFloor"%go.
 
-Axiom haveArchCeil : val.
+Axiom haveArchCeil : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition archCeil : go_string := "math.archCeil"%go.
+Definition archCeil {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.archCeil"%go.
 
-Axiom haveArchTrunc : val.
+Axiom haveArchTrunc : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition archTrunc : go_string := "math.archTrunc"%go.
+Definition archTrunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.archTrunc"%go.
 
-Definition zero : go_string := "math.zero"%go.
+Definition zero {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.zero"%go.
 
-Definition nonzero : go_string := "math.nonzero"%go.
+Definition nonzero {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.nonzero"%go.
 
-Definition shl : go_string := "math.shl"%go.
+Definition shl {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.shl"%go.
 
-Definition shr : go_string := "math.shr"%go.
+Definition shr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.shr"%go.
 
-Definition shrcompress : go_string := "math.shrcompress"%go.
+Definition shrcompress {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.shrcompress"%go.
 
-Definition lz : go_string := "math.lz"%go.
+Definition lz {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.lz"%go.
 
-Definition split : go_string := "math.split"%go.
+Definition split {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.split"%go.
 
-Definition FMA : go_string := "math.FMA"%go.
+Definition FMA {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.FMA"%go.
 
-Definition Frexp : go_string := "math.Frexp"%go.
+Definition Frexp {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Frexp"%go.
 
-Definition frexp : go_string := "math.frexp"%go.
+Definition frexp {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.frexp"%go.
 
-Definition _gamP : go_string := "math._gamP"%go.
+Definition _gamP {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math._gamP"%go.
 
-Axiom _gamP'init : val.
+Axiom _gamP'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition _gamQ : go_string := "math._gamQ"%go.
+Definition _gamQ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math._gamQ"%go.
 
-Axiom _gamQ'init : val.
+Axiom _gamQ'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition _gamS : go_string := "math._gamS"%go.
+Definition _gamS {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math._gamS"%go.
 
-Axiom _gamS'init : val.
+Axiom _gamS'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition stirling : go_string := "math.stirling"%go.
+Definition stirling {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.stirling"%go.
 
-Definition Gamma : go_string := "math.Gamma"%go.
+Definition Gamma {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Gamma"%go.
 
-Definition isNegInt : go_string := "math.isNegInt"%go.
+Definition isNegInt {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.isNegInt"%go.
 
-Definition Hypot : go_string := "math.Hypot"%go.
+Definition Hypot {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Hypot"%go.
 
-Definition hypot : go_string := "math.hypot"%go.
+Definition hypot {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.hypot"%go.
 
-Axiom haveArchHypot : val.
+Axiom haveArchHypot : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition archHypot : go_string := "math.archHypot"%go.
+Definition archHypot {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.archHypot"%go.
 
-Definition J0 : go_string := "math.J0"%go.
+Definition J0 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.J0"%go.
 
-Definition Y0 : go_string := "math.Y0"%go.
+Definition Y0 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Y0"%go.
 
-Definition p0R8 : go_string := "math.p0R8"%go.
+Definition p0R8 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.p0R8"%go.
 
-Axiom p0R8'init : val.
+Axiom p0R8'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition p0S8 : go_string := "math.p0S8"%go.
+Definition p0S8 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.p0S8"%go.
 
-Axiom p0S8'init : val.
+Axiom p0S8'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition p0R5 : go_string := "math.p0R5"%go.
+Definition p0R5 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.p0R5"%go.
 
-Axiom p0R5'init : val.
+Axiom p0R5'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition p0S5 : go_string := "math.p0S5"%go.
+Definition p0S5 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.p0S5"%go.
 
-Axiom p0S5'init : val.
+Axiom p0S5'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition p0R3 : go_string := "math.p0R3"%go.
+Definition p0R3 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.p0R3"%go.
 
-Axiom p0R3'init : val.
+Axiom p0R3'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition p0S3 : go_string := "math.p0S3"%go.
+Definition p0S3 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.p0S3"%go.
 
-Axiom p0S3'init : val.
+Axiom p0S3'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition p0R2 : go_string := "math.p0R2"%go.
+Definition p0R2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.p0R2"%go.
 
-Axiom p0R2'init : val.
+Axiom p0R2'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition p0S2 : go_string := "math.p0S2"%go.
+Definition p0S2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.p0S2"%go.
 
-Axiom p0S2'init : val.
+Axiom p0S2'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition pzero : go_string := "math.pzero"%go.
+Definition pzero {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.pzero"%go.
 
-Definition q0R8 : go_string := "math.q0R8"%go.
+Definition q0R8 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.q0R8"%go.
 
-Axiom q0R8'init : val.
+Axiom q0R8'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition q0S8 : go_string := "math.q0S8"%go.
+Definition q0S8 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.q0S8"%go.
 
-Axiom q0S8'init : val.
+Axiom q0S8'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition q0R5 : go_string := "math.q0R5"%go.
+Definition q0R5 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.q0R5"%go.
 
-Axiom q0R5'init : val.
+Axiom q0R5'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition q0S5 : go_string := "math.q0S5"%go.
+Definition q0S5 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.q0S5"%go.
 
-Axiom q0S5'init : val.
+Axiom q0S5'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition q0R3 : go_string := "math.q0R3"%go.
+Definition q0R3 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.q0R3"%go.
 
-Axiom q0R3'init : val.
+Axiom q0R3'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition q0S3 : go_string := "math.q0S3"%go.
+Definition q0S3 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.q0S3"%go.
 
-Axiom q0S3'init : val.
+Axiom q0S3'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition q0R2 : go_string := "math.q0R2"%go.
+Definition q0R2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.q0R2"%go.
 
-Axiom q0R2'init : val.
+Axiom q0R2'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition q0S2 : go_string := "math.q0S2"%go.
+Definition q0S2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.q0S2"%go.
 
-Axiom q0S2'init : val.
+Axiom q0S2'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition qzero : go_string := "math.qzero"%go.
+Definition qzero {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.qzero"%go.
 
-Definition J1 : go_string := "math.J1"%go.
+Definition J1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.J1"%go.
 
-Definition Y1 : go_string := "math.Y1"%go.
+Definition Y1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Y1"%go.
 
-Definition p1R8 : go_string := "math.p1R8"%go.
+Definition p1R8 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.p1R8"%go.
 
-Axiom p1R8'init : val.
+Axiom p1R8'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition p1S8 : go_string := "math.p1S8"%go.
+Definition p1S8 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.p1S8"%go.
 
-Axiom p1S8'init : val.
+Axiom p1S8'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition p1R5 : go_string := "math.p1R5"%go.
+Definition p1R5 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.p1R5"%go.
 
-Axiom p1R5'init : val.
+Axiom p1R5'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition p1S5 : go_string := "math.p1S5"%go.
+Definition p1S5 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.p1S5"%go.
 
-Axiom p1S5'init : val.
+Axiom p1S5'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition p1R3 : go_string := "math.p1R3"%go.
+Definition p1R3 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.p1R3"%go.
 
-Axiom p1R3'init : val.
+Axiom p1R3'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition p1S3 : go_string := "math.p1S3"%go.
+Definition p1S3 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.p1S3"%go.
 
-Axiom p1S3'init : val.
+Axiom p1S3'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition p1R2 : go_string := "math.p1R2"%go.
+Definition p1R2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.p1R2"%go.
 
-Axiom p1R2'init : val.
+Axiom p1R2'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition p1S2 : go_string := "math.p1S2"%go.
+Definition p1S2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.p1S2"%go.
 
-Axiom p1S2'init : val.
+Axiom p1S2'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition pone : go_string := "math.pone"%go.
+Definition pone {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.pone"%go.
 
-Definition q1R8 : go_string := "math.q1R8"%go.
+Definition q1R8 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.q1R8"%go.
 
-Axiom q1R8'init : val.
+Axiom q1R8'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition q1S8 : go_string := "math.q1S8"%go.
+Definition q1S8 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.q1S8"%go.
 
-Axiom q1S8'init : val.
+Axiom q1S8'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition q1R5 : go_string := "math.q1R5"%go.
+Definition q1R5 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.q1R5"%go.
 
-Axiom q1R5'init : val.
+Axiom q1R5'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition q1S5 : go_string := "math.q1S5"%go.
+Definition q1S5 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.q1S5"%go.
 
-Axiom q1S5'init : val.
+Axiom q1S5'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition q1R3 : go_string := "math.q1R3"%go.
+Definition q1R3 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.q1R3"%go.
 
-Axiom q1R3'init : val.
+Axiom q1R3'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition q1S3 : go_string := "math.q1S3"%go.
+Definition q1S3 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.q1S3"%go.
 
-Axiom q1S3'init : val.
+Axiom q1S3'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition q1R2 : go_string := "math.q1R2"%go.
+Definition q1R2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.q1R2"%go.
 
-Axiom q1R2'init : val.
+Axiom q1R2'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition q1S2 : go_string := "math.q1S2"%go.
+Definition q1S2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.q1S2"%go.
 
-Axiom q1S2'init : val.
+Axiom q1S2'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition qone : go_string := "math.qone"%go.
+Definition qone {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.qone"%go.
 
-Definition Jn : go_string := "math.Jn"%go.
+Definition Jn {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Jn"%go.
 
-Definition Yn : go_string := "math.Yn"%go.
+Definition Yn {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Yn"%go.
 
-Definition Ldexp : go_string := "math.Ldexp"%go.
+Definition Ldexp {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Ldexp"%go.
 
-Definition ldexp : go_string := "math.ldexp"%go.
+Definition ldexp {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.ldexp"%go.
 
-Definition _lgamA : go_string := "math._lgamA"%go.
+Definition _lgamA {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math._lgamA"%go.
 
-Axiom _lgamA'init : val.
+Axiom _lgamA'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition _lgamR : go_string := "math._lgamR"%go.
+Definition _lgamR {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math._lgamR"%go.
 
-Axiom _lgamR'init : val.
+Axiom _lgamR'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition _lgamS : go_string := "math._lgamS"%go.
+Definition _lgamS {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math._lgamS"%go.
 
-Axiom _lgamS'init : val.
+Axiom _lgamS'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition _lgamT : go_string := "math._lgamT"%go.
+Definition _lgamT {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math._lgamT"%go.
 
-Axiom _lgamT'init : val.
+Axiom _lgamT'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition _lgamU : go_string := "math._lgamU"%go.
+Definition _lgamU {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math._lgamU"%go.
 
-Axiom _lgamU'init : val.
+Axiom _lgamU'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition _lgamV : go_string := "math._lgamV"%go.
+Definition _lgamV {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math._lgamV"%go.
 
-Axiom _lgamV'init : val.
+Axiom _lgamV'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition _lgamW : go_string := "math._lgamW"%go.
+Definition _lgamW {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math._lgamW"%go.
 
-Axiom _lgamW'init : val.
+Axiom _lgamW'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition Lgamma : go_string := "math.Lgamma"%go.
+Definition Lgamma {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Lgamma"%go.
 
-Definition sinPi : go_string := "math.sinPi"%go.
+Definition sinPi {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.sinPi"%go.
 
-Definition Log : go_string := "math.Log"%go.
+Definition Log {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Log"%go.
 
-Definition log : go_string := "math.log"%go.
+Definition log {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.log"%go.
 
-Definition Log10 : go_string := "math.Log10"%go.
+Definition Log10 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Log10"%go.
 
-Definition log10 : go_string := "math.log10"%go.
+Definition log10 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.log10"%go.
 
-Definition Log2 : go_string := "math.Log2"%go.
+Definition Log2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Log2"%go.
 
-Definition log2 : go_string := "math.log2"%go.
+Definition log2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.log2"%go.
 
-Definition Log1p : go_string := "math.Log1p"%go.
+Definition Log1p {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Log1p"%go.
 
-Definition log1p : go_string := "math.log1p"%go.
+Definition log1p {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.log1p"%go.
 
-Axiom haveArchLog : val.
+Axiom haveArchLog : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition archLog : go_string := "math.archLog"%go.
+Definition archLog {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.archLog"%go.
 
-Definition Logb : go_string := "math.Logb"%go.
+Definition Logb {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Logb"%go.
 
-Definition Ilogb : go_string := "math.Ilogb"%go.
+Definition Ilogb {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Ilogb"%go.
 
-Definition ilogb : go_string := "math.ilogb"%go.
+Definition ilogb {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.ilogb"%go.
 
-Definition Mod : go_string := "math.Mod"%go.
+Definition Mod {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Mod"%go.
 
-Definition mod' : go_string := "math.mod"%go.
+Definition mod' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.mod"%go.
 
-Definition Modf : go_string := "math.Modf"%go.
+Definition Modf {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Modf"%go.
 
-Definition modf : go_string := "math.modf"%go.
+Definition modf {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.modf"%go.
 
-Axiom haveArchModf : val.
+Axiom haveArchModf : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition archModf : go_string := "math.archModf"%go.
+Definition archModf {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.archModf"%go.
 
-Definition Nextafter32 : go_string := "math.Nextafter32"%go.
+Definition Nextafter32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Nextafter32"%go.
 
-Definition Nextafter : go_string := "math.Nextafter"%go.
+Definition Nextafter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Nextafter"%go.
 
-Definition isOddInt : go_string := "math.isOddInt"%go.
+Definition isOddInt {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.isOddInt"%go.
 
-Definition Pow : go_string := "math.Pow"%go.
+Definition Pow {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Pow"%go.
 
-Definition pow : go_string := "math.pow"%go.
+Definition pow {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.pow"%go.
 
-Definition pow10tab : go_string := "math.pow10tab"%go.
+Definition pow10tab {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.pow10tab"%go.
 
-Axiom pow10tab'init : val.
+Axiom pow10tab'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition pow10postab32 : go_string := "math.pow10postab32"%go.
+Definition pow10postab32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.pow10postab32"%go.
 
-Axiom pow10postab32'init : val.
+Axiom pow10postab32'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition pow10negtab32 : go_string := "math.pow10negtab32"%go.
+Definition pow10negtab32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.pow10negtab32"%go.
 
-Axiom pow10negtab32'init : val.
+Axiom pow10negtab32'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition Pow10 : go_string := "math.Pow10"%go.
+Definition Pow10 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Pow10"%go.
 
-Definition Remainder : go_string := "math.Remainder"%go.
+Definition Remainder {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Remainder"%go.
 
-Definition remainder : go_string := "math.remainder"%go.
+Definition remainder {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.remainder"%go.
 
-Definition Signbit : go_string := "math.Signbit"%go.
+Definition Signbit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Signbit"%go.
 
-Definition _sin : go_string := "math._sin"%go.
+Definition _sin {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math._sin"%go.
 
-Axiom _sin'init : val.
+Axiom _sin'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition _cos : go_string := "math._cos"%go.
+Definition _cos {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math._cos"%go.
 
-Axiom _cos'init : val.
+Axiom _cos'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition Cos : go_string := "math.Cos"%go.
+Definition Cos {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Cos"%go.
 
-Definition cos : go_string := "math.cos"%go.
+Definition cos {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.cos"%go.
 
-Definition Sin : go_string := "math.Sin"%go.
+Definition Sin {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Sin"%go.
 
-Definition sin : go_string := "math.sin"%go.
+Definition sin {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.sin"%go.
 
-Definition Sincos : go_string := "math.Sincos"%go.
+Definition Sincos {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Sincos"%go.
 
-Definition Sinh : go_string := "math.Sinh"%go.
+Definition Sinh {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Sinh"%go.
 
-Definition sinh : go_string := "math.sinh"%go.
+Definition sinh {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.sinh"%go.
 
-Definition Cosh : go_string := "math.Cosh"%go.
+Definition Cosh {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Cosh"%go.
 
-Definition cosh : go_string := "math.cosh"%go.
+Definition cosh {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.cosh"%go.
 
-Definition Sqrt : go_string := "math.Sqrt"%go.
+Definition Sqrt {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Sqrt"%go.
 
-Definition sqrt : go_string := "math.sqrt"%go.
+Definition sqrt {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.sqrt"%go.
 
-Axiom haveArchAcos : val.
+Axiom haveArchAcos : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition archAcos : go_string := "math.archAcos"%go.
+Definition archAcos {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.archAcos"%go.
 
-Axiom haveArchAcosh : val.
+Axiom haveArchAcosh : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition archAcosh : go_string := "math.archAcosh"%go.
+Definition archAcosh {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.archAcosh"%go.
 
-Axiom haveArchAsin : val.
+Axiom haveArchAsin : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition archAsin : go_string := "math.archAsin"%go.
+Definition archAsin {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.archAsin"%go.
 
-Axiom haveArchAsinh : val.
+Axiom haveArchAsinh : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition archAsinh : go_string := "math.archAsinh"%go.
+Definition archAsinh {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.archAsinh"%go.
 
-Axiom haveArchAtan : val.
+Axiom haveArchAtan : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition archAtan : go_string := "math.archAtan"%go.
+Definition archAtan {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.archAtan"%go.
 
-Axiom haveArchAtan2 : val.
+Axiom haveArchAtan2 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition archAtan2 : go_string := "math.archAtan2"%go.
+Definition archAtan2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.archAtan2"%go.
 
-Axiom haveArchAtanh : val.
+Axiom haveArchAtanh : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition archAtanh : go_string := "math.archAtanh"%go.
+Definition archAtanh {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.archAtanh"%go.
 
-Axiom haveArchCbrt : val.
+Axiom haveArchCbrt : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition archCbrt : go_string := "math.archCbrt"%go.
+Definition archCbrt {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.archCbrt"%go.
 
-Axiom haveArchCos : val.
+Axiom haveArchCos : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition archCos : go_string := "math.archCos"%go.
+Definition archCos {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.archCos"%go.
 
-Axiom haveArchCosh : val.
+Axiom haveArchCosh : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition archCosh : go_string := "math.archCosh"%go.
+Definition archCosh {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.archCosh"%go.
 
-Axiom haveArchErf : val.
+Axiom haveArchErf : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition archErf : go_string := "math.archErf"%go.
+Definition archErf {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.archErf"%go.
 
-Axiom haveArchErfc : val.
+Axiom haveArchErfc : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition archErfc : go_string := "math.archErfc"%go.
+Definition archErfc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.archErfc"%go.
 
-Axiom haveArchExpm1 : val.
+Axiom haveArchExpm1 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition archExpm1 : go_string := "math.archExpm1"%go.
+Definition archExpm1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.archExpm1"%go.
 
-Axiom haveArchFrexp : val.
+Axiom haveArchFrexp : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition archFrexp : go_string := "math.archFrexp"%go.
+Definition archFrexp {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.archFrexp"%go.
 
-Axiom haveArchLdexp : val.
+Axiom haveArchLdexp : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition archLdexp : go_string := "math.archLdexp"%go.
+Definition archLdexp {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.archLdexp"%go.
 
-Axiom haveArchLog10 : val.
+Axiom haveArchLog10 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition archLog10 : go_string := "math.archLog10"%go.
+Definition archLog10 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.archLog10"%go.
 
-Axiom haveArchLog2 : val.
+Axiom haveArchLog2 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition archLog2 : go_string := "math.archLog2"%go.
+Definition archLog2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.archLog2"%go.
 
-Axiom haveArchLog1p : val.
+Axiom haveArchLog1p : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition archLog1p : go_string := "math.archLog1p"%go.
+Definition archLog1p {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.archLog1p"%go.
 
-Axiom haveArchMod : val.
+Axiom haveArchMod : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition archMod : go_string := "math.archMod"%go.
+Definition archMod {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.archMod"%go.
 
-Axiom haveArchPow : val.
+Axiom haveArchPow : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition archPow : go_string := "math.archPow"%go.
+Definition archPow {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.archPow"%go.
 
-Axiom haveArchRemainder : val.
+Axiom haveArchRemainder : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition archRemainder : go_string := "math.archRemainder"%go.
+Definition archRemainder {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.archRemainder"%go.
 
-Axiom haveArchSin : val.
+Axiom haveArchSin : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition archSin : go_string := "math.archSin"%go.
+Definition archSin {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.archSin"%go.
 
-Axiom haveArchSinh : val.
+Axiom haveArchSinh : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition archSinh : go_string := "math.archSinh"%go.
+Definition archSinh {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.archSinh"%go.
 
-Axiom haveArchTan : val.
+Axiom haveArchTan : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition archTan : go_string := "math.archTan"%go.
+Definition archTan {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.archTan"%go.
 
-Axiom haveArchTanh : val.
+Axiom haveArchTanh : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition archTanh : go_string := "math.archTanh"%go.
+Definition archTanh {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.archTanh"%go.
 
-Definition _tanP : go_string := "math._tanP"%go.
+Definition _tanP {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math._tanP"%go.
 
-Axiom _tanP'init : val.
+Axiom _tanP'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition _tanQ : go_string := "math._tanQ"%go.
+Definition _tanQ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math._tanQ"%go.
 
-Axiom _tanQ'init : val.
+Axiom _tanQ'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition Tan : go_string := "math.Tan"%go.
+Definition Tan {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Tan"%go.
 
-Definition tan : go_string := "math.tan"%go.
+Definition tan {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.tan"%go.
 
-Definition tanhP : go_string := "math.tanhP"%go.
+Definition tanhP {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.tanhP"%go.
 
-Axiom tanhP'init : val.
+Axiom tanhP'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition tanhQ : go_string := "math.tanhQ"%go.
+Definition tanhQ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.tanhQ"%go.
 
-Axiom tanhQ'init : val.
+Axiom tanhQ'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition Tanh : go_string := "math.Tanh"%go.
+Definition Tanh {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Tanh"%go.
 
-Definition tanh : go_string := "math.tanh"%go.
+Definition tanh {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.tanh"%go.
 
-Axiom reduceThreshold : Z.
+Axiom reduceThreshold : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition trigReduce : go_string := "math.trigReduce"%go.
+Definition trigReduce {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.trigReduce"%go.
 
-Definition mPi4 : go_string := "math.mPi4"%go.
+Definition mPi4 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.mPi4"%go.
 
-Axiom mPi4'init : val.
+Axiom mPi4'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition Float32bits : go_string := "math.Float32bits"%go.
+Definition Float32bits {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Float32bits"%go.
 
-Definition Float32frombits : go_string := "math.Float32frombits"%go.
+Definition Float32frombits {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Float32frombits"%go.
 
-Definition Float64bits : go_string := "math.Float64bits"%go.
+Definition Float64bits {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Float64bits"%go.
 
-Definition Float64frombits : go_string := "math.Float64frombits"%go.
+Definition Float64frombits {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Float64frombits"%go.
 
-#[global] Instance info' : PkgInfo math.math :=
-  {|
-    pkg_imported_pkgs := [];
-  |}.
+#[global] Instance info' : PkgInfo math.math := 
+{|
+  pkg_imported_pkgs := []
+|}.
 
-Axiom _'init : val.
+Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition initialize' : val :=
+Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init math.math (λ: <>,
       exception_do (do:  (useFMA'init #());;;
@@ -968,9 +964,7 @@ Definition initialize' : val :=
       do:  (mPi4'init #()))
       ).
 
-Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
 }.
-
-End code.
 End math.

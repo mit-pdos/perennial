@@ -10,40 +10,50 @@ Definition sync : go_string := "sync".
 
 Module sync.
 
-Section code.
-Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-
-
 Definition noCopy : go.type := go.Named "sync.noCopy"%go [].
 
 Definition Locker : go.type := go.Named "sync.Locker"%go [].
 
-Definition notifyList : go.type := go.Named "sync.notifyList"%go [].
-
-Definition copyChecker : go.type := go.Named "sync.copyChecker"%go [].
-
-Definition Condⁱᵐᵖˡ : go.type := go.StructType [
-  (go.FieldDecl "noCopy"%go noCopy);
-  (go.FieldDecl "L"%go Locker);
-  (go.FieldDecl "notify"%go notifyList);
-  (go.FieldDecl "checker"%go copyChecker)
-].
-
-Definition NewCond : go_string := "sync.NewCond"%go.
+Definition runtime_notifyListNotifyAll {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync.runtime_notifyListNotifyAll"%go.
 
 Definition Cond : go.type := go.Named "sync.Cond"%go [].
 
-(* NewCond returns a new Cond with Locker l.
+(* Broadcast wakes all goroutines waiting on c.
 
-   go: cond.go:48:6 *)
-Definition NewCondⁱᵐᵖˡ : val :=
-  λ: "l",
-    exception_do (let: "l" := (GoAlloc Locker "l") in
-    return: (GoAlloc Cond (CompositeLiteral Cond (LiteralValue [KeyedElement (Some (KeyField "L"%go)) (ElementExpression (![Locker] "l"))])))).
+   It is allowed but not required for the caller to hold c.L
+   during the call.
 
-Definition runtime_notifyListWait : go_string := "sync.runtime_notifyListWait"%go.
+   go: cond.go:91:16 *)
+Definition Cond__Broadcastⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "c" <>,
+    exception_do (let: "c" := (GoAlloc (go.PointerType Cond) "c") in
+    do:  ((MethodResolve (go.PointerType copyChecker) "check"%go #() (StructFieldRef Cond "checker"%go (![go.PointerType Cond] "c"))) #());;;
+    do:  (let: "$a0" := (StructFieldRef Cond "notify"%go (![go.PointerType Cond] "c")) in
+    (FuncResolve runtime_notifyListNotifyAll [] #()) "$a0");;;
+    return: #()).
 
-Definition runtime_notifyListAdd : go_string := "sync.runtime_notifyListAdd"%go.
+Definition runtime_notifyListNotifyOne {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync.runtime_notifyListNotifyOne"%go.
+
+(* Signal wakes one goroutine waiting on c, if there is any.
+
+   It is allowed but not required for the caller to hold c.L
+   during the call.
+
+   Signal() does not affect goroutine scheduling priority; if other goroutines
+   are attempting to lock c.L, they may be awoken before a "waiting" goroutine.
+
+   go: cond.go:82:16 *)
+Definition Cond__Signalⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "c" <>,
+    exception_do (let: "c" := (GoAlloc (go.PointerType Cond) "c") in
+    do:  ((MethodResolve (go.PointerType copyChecker) "check"%go #() (StructFieldRef Cond "checker"%go (![go.PointerType Cond] "c"))) #());;;
+    do:  (let: "$a0" := (StructFieldRef Cond "notify"%go (![go.PointerType Cond] "c")) in
+    (FuncResolve runtime_notifyListNotifyOne [] #()) "$a0");;;
+    return: #()).
+
+Definition runtime_notifyListWait {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync.runtime_notifyListWait"%go.
+
+Definition runtime_notifyListAdd {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync.runtime_notifyListAdd"%go.
 
 (* Wait atomically unlocks c.L and suspends execution
    of the calling goroutine. After later resuming execution,
@@ -62,7 +72,7 @@ Definition runtime_notifyListAdd : go_string := "sync.runtime_notifyListAdd"%go.
    	c.L.Unlock()
 
    go: cond.go:67:16 *)
-Definition Cond__Waitⁱᵐᵖˡ : val :=
+Definition Cond__Waitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "c" <>,
     exception_do (let: "c" := (GoAlloc (go.PointerType Cond) "c") in
     do:  ((MethodResolve (go.PointerType copyChecker) "check"%go #() (StructFieldRef Cond "checker"%go (![go.PointerType Cond] "c"))) #());;;
@@ -77,65 +87,102 @@ Definition Cond__Waitⁱᵐᵖˡ : val :=
     do:  ((MethodResolve Locker "Lock"%go #() (![Locker] (StructFieldRef Cond "L"%go (![go.PointerType Cond] "c")))) #());;;
     return: #()).
 
-Definition runtime_notifyListNotifyOne : go_string := "sync.runtime_notifyListNotifyOne"%go.
+Definition Condⁱᵐᵖˡ : go.type := go.StructType [
+  (go.FieldDecl "noCopy"%go noCopy);
+  (go.FieldDecl "L"%go Locker);
+  (go.FieldDecl "notify"%go notifyList);
+  (go.FieldDecl "checker"%go copyChecker)
+].
 
-(* Signal wakes one goroutine waiting on c, if there is any.
+Module Cond.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  noCopy : sync.noCopy.t;
+  L : sync.Locker.t;
+  notify : sync.notifyList.t;
+  checker : sync.copyChecker.t;
+}.
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _) (zero_val _)|}.
+End def.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
 
-   It is allowed but not required for the caller to hold c.L
-   during the call.
+End Cond.
 
-   Signal() does not affect goroutine scheduling priority; if other goroutines
-   are attempting to lock c.L, they may be awoken before a "waiting" goroutine.
+Class Cond_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Cond_zero_val  :: go.GoZeroValEq Cond Cond.t;
+  #[global] Cond'ptr_Broadcast_unfold :: MethodUnfold (go.PointerType (Cond)) "Broadcast" (Cond__Broadcastⁱᵐᵖˡ);
+  #[global] Cond'ptr_Signal_unfold :: MethodUnfold (go.PointerType (Cond)) "Signal" (Cond__Signalⁱᵐᵖˡ);
+  #[global] Cond'ptr_Wait_unfold :: MethodUnfold (go.PointerType (Cond)) "Wait" (Cond__Waitⁱᵐᵖˡ);
+}.
 
-   go: cond.go:82:16 *)
-Definition Cond__Signalⁱᵐᵖˡ : val :=
-  λ: "c" <>,
-    exception_do (let: "c" := (GoAlloc (go.PointerType Cond) "c") in
-    do:  ((MethodResolve (go.PointerType copyChecker) "check"%go #() (StructFieldRef Cond "checker"%go (![go.PointerType Cond] "c"))) #());;;
-    do:  (let: "$a0" := (StructFieldRef Cond "notify"%go (![go.PointerType Cond] "c")) in
-    (FuncResolve runtime_notifyListNotifyOne [] #()) "$a0");;;
-    return: #()).
+Definition NewCond {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync.NewCond"%go.
 
-Definition runtime_notifyListNotifyAll : go_string := "sync.runtime_notifyListNotifyAll"%go.
+(* NewCond returns a new Cond with Locker l.
 
-(* Broadcast wakes all goroutines waiting on c.
+   go: cond.go:48:6 *)
+Definition NewCondⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "l",
+    exception_do (let: "l" := (GoAlloc Locker "l") in
+    return: (GoAlloc Cond (CompositeLiteral Cond (LiteralValue [KeyedElement (Some (KeyField "L"%go)) (ElementExpression (![Locker] "l"))])))).
 
-   It is allowed but not required for the caller to hold c.L
-   during the call.
-
-   go: cond.go:91:16 *)
-Definition Cond__Broadcastⁱᵐᵖˡ : val :=
-  λ: "c" <>,
-    exception_do (let: "c" := (GoAlloc (go.PointerType Cond) "c") in
-    do:  ((MethodResolve (go.PointerType copyChecker) "check"%go #() (StructFieldRef Cond "checker"%go (![go.PointerType Cond] "c"))) #());;;
-    do:  (let: "$a0" := (StructFieldRef Cond "notify"%go (![go.PointerType Cond] "c")) in
-    (FuncResolve runtime_notifyListNotifyAll [] #()) "$a0");;;
-    return: #()).
-
-Axiom copyCheckerⁱᵐᵖˡ : go.type.
+Axiom copyCheckerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
 Definition noCopyⁱᵐᵖˡ : go.type := go.StructType [
 ].
 
-Axiom Mapⁱᵐᵖˡ : go.type.
+Module noCopy.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+}.
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk|}.
+End def.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
 
-Axiom readOnlyⁱᵐᵖˡ : go.type.
+End noCopy.
 
-Definition expunged : go_string := "sync.expunged"%go.
+Class noCopy_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] noCopy_zero_val  :: go.GoZeroValEq noCopy noCopy.t;
+}.
 
-Axiom entryⁱᵐᵖˡ : go.type.
+Axiom Mapⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition newEntry : go_string := "sync.newEntry"%go.
+Axiom readOnlyⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Definition expunged {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync.expunged"%go.
+
+Axiom entryⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Definition newEntry {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync.newEntry"%go.
+
+Class Mutex_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Mutex_zero_val  :: go.GoZeroValEq Mutex Mutex.t;
+  #[global] Mutex'ptr_Lock_unfold :: MethodUnfold (go.PointerType (Mutex)) "Lock" (Mutex__Lockⁱᵐᵖˡ);
+  #[global] Mutex'ptr_TryLock_unfold :: MethodUnfold (go.PointerType (Mutex)) "TryLock" (Mutex__TryLockⁱᵐᵖˡ);
+  #[global] Mutex'ptr_Unlock_unfold :: MethodUnfold (go.PointerType (Mutex)) "Unlock" (Mutex__Unlockⁱᵐᵖˡ);
+}.
 
 Definition Lockerⁱᵐᵖˡ : go.type := go.InterfaceType [go.MethodElem #"Lock"%go (go.Signature [] false []); go.MethodElem #"Unlock"%go (go.Signature [] false [])].
 
-Definition Mutex : go.type := go.Named "sync.Mutex"%go [].
+Module Locker.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Definition t  : Type := interface.t.
+End def.
+End Locker.
 
-Definition Onceⁱᵐᵖˡ : go.type := go.StructType [
-  (go.FieldDecl "_0"%go noCopy);
-  (go.FieldDecl "done"%go atomic.Bool);
-  (go.FieldDecl "m"%go Mutex)
-].
+Class Locker_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Locker_zero_val  :: go.GoZeroValEq Locker Locker.t;
+}.
 
 Definition Once : go.type := go.Named "sync.Once"%go [].
 
@@ -161,7 +208,7 @@ Definition Once : go.type := go.Named "sync.Once"%go [].
    without calling f.
 
    go: once.go:52:16 *)
-Definition Once__Doⁱᵐᵖˡ : val :=
+Definition Once__Doⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "o" "f",
     exception_do (let: "o" := (GoAlloc (go.PointerType Once) "o") in
     let: "f" := (GoAlloc (go.FunctionType (go.Signature [] false [])) "f") in
@@ -173,7 +220,7 @@ Definition Once__Doⁱᵐᵖˡ : val :=
     return: #()).
 
 (* go: once.go:73:16 *)
-Definition Once__doSlowⁱᵐᵖˡ : val :=
+Definition Once__doSlowⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "o" "f",
     with_defer: (let: "o" := (GoAlloc (go.PointerType Once) "o") in
     let: "f" := (GoAlloc (go.FunctionType (go.Signature [] false [])) "f") in
@@ -197,220 +244,117 @@ Definition Once__doSlowⁱᵐᵖˡ : val :=
     else do:  #());;;
     return: #()).
 
-Definition OnceFunc : go_string := "sync.OnceFunc"%go.
-
-Definition OnceValue : go_string := "sync.OnceValue"%go.
-
-Definition OnceValues : go_string := "sync.OnceValues"%go.
-
-Axiom Poolⁱᵐᵖˡ : go.type.
-
-Axiom poolLocalInternalⁱᵐᵖˡ : go.type.
-
-Axiom poolLocalⁱᵐᵖˡ : go.type.
-
-Definition runtime_randn : go_string := "sync.runtime_randn"%go.
-
-Definition poolRaceHash : go_string := "sync.poolRaceHash"%go.
-
-Definition poolRaceAddr : go_string := "sync.poolRaceAddr"%go.
-
-Definition poolCleanup : go_string := "sync.poolCleanup"%go.
-
-Definition allPoolsMu : go_string := "sync.allPoolsMu"%go.
-
-Definition allPools : go_string := "sync.allPools"%go.
-
-Definition oldPools : go_string := "sync.oldPools"%go.
-
-Definition init : go_string := "sync.init"%go.
-
-Definition indexLocal : go_string := "sync.indexLocal"%go.
-
-Definition runtime_registerPoolCleanup : go_string := "sync.runtime_registerPoolCleanup"%go.
-
-Definition runtime_procPin : go_string := "sync.runtime_procPin"%go.
-
-Definition runtime_procUnpin : go_string := "sync.runtime_procUnpin"%go.
-
-Definition runtime_LoadAcquintptr : go_string := "sync.runtime_LoadAcquintptr"%go.
-
-Definition runtime_StoreReluintptr : go_string := "sync.runtime_StoreReluintptr"%go.
-
-Axiom poolDequeueⁱᵐᵖˡ : go.type.
-
-Axiom efaceⁱᵐᵖˡ : go.type.
-
-Axiom dequeueBits : Z.
-
-Axiom dequeueLimit : Z.
-
-Axiom dequeueNilⁱᵐᵖˡ : go.type.
-
-Axiom poolChainⁱᵐᵖˡ : go.type.
-
-Axiom poolChainEltⁱᵐᵖˡ : go.type.
-
-Definition runtime_Semacquire : go_string := "sync.runtime_Semacquire"%go.
-
-Definition runtime_SemacquireWaitGroup : go_string := "sync.runtime_SemacquireWaitGroup"%go.
-
-Definition runtime_SemacquireRWMutexR : go_string := "sync.runtime_SemacquireRWMutexR"%go.
-
-Definition runtime_SemacquireRWMutex : go_string := "sync.runtime_SemacquireRWMutex"%go.
-
-Definition runtime_Semrelease : go_string := "sync.runtime_Semrelease"%go.
-
-Definition runtime_notifyListCheck : go_string := "sync.runtime_notifyListCheck"%go.
-
-Definition throw : go_string := "sync.throw"%go.
-
-Definition fatal : go_string := "sync.fatal"%go.
-
-Axiom notifyListⁱᵐᵖˡ : go.type.
-
-Definition RWMutexⁱᵐᵖˡ : go.type := go.StructType [
-  (go.FieldDecl "w"%go Mutex);
-  (go.FieldDecl "writerSem"%go go.uint32);
-  (go.FieldDecl "readerSem"%go go.uint32);
-  (go.FieldDecl "readerCount"%go atomic.Int32);
-  (go.FieldDecl "readerWait"%go atomic.Int32)
+Definition Onceⁱᵐᵖˡ : go.type := go.StructType [
+  (go.FieldDecl "_0"%go noCopy);
+  (go.FieldDecl "done"%go atomic.Bool);
+  (go.FieldDecl "m"%go Mutex)
 ].
 
-Definition rwmutexMaxReaders : Z := 1073741824.
+Module Once.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  _ : sync.noCopy.t;
+  done : atomic.Bool.t;
+  m : sync.Mutex.t;
+}.
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
+End def.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+
+End Once.
+
+Class Once_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Once_zero_val  :: go.GoZeroValEq Once Once.t;
+  #[global] Once'ptr_Do_unfold :: MethodUnfold (go.PointerType (Once)) "Do" (Once__Doⁱᵐᵖˡ);
+  #[global] Once'ptr_doSlow_unfold :: MethodUnfold (go.PointerType (Once)) "doSlow" (Once__doSlowⁱᵐᵖˡ);
+}.
+
+Definition OnceFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync.OnceFunc"%go.
+
+Definition OnceValue {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync.OnceValue"%go.
+
+Definition OnceValues {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync.OnceValues"%go.
+
+Axiom Poolⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom poolLocalInternalⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom poolLocalⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Definition runtime_randn {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync.runtime_randn"%go.
+
+Definition poolRaceHash {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync.poolRaceHash"%go.
+
+Definition poolRaceAddr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync.poolRaceAddr"%go.
+
+Definition poolCleanup {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync.poolCleanup"%go.
+
+Definition allPoolsMu {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync.allPoolsMu"%go.
+
+Definition allPools {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync.allPools"%go.
+
+Definition oldPools {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync.oldPools"%go.
+
+Definition init {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync.init"%go.
+
+Definition indexLocal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync.indexLocal"%go.
+
+Definition runtime_registerPoolCleanup {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync.runtime_registerPoolCleanup"%go.
+
+Definition runtime_procPin {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync.runtime_procPin"%go.
+
+Definition runtime_procUnpin {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync.runtime_procUnpin"%go.
+
+Definition runtime_LoadAcquintptr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync.runtime_LoadAcquintptr"%go.
+
+Definition runtime_StoreReluintptr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync.runtime_StoreReluintptr"%go.
+
+Axiom poolDequeueⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom efaceⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom dequeueBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+
+Axiom dequeueLimit : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+
+Axiom dequeueNilⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom poolChainⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom poolChainEltⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Definition runtime_Semacquire {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync.runtime_Semacquire"%go.
+
+Definition runtime_SemacquireWaitGroup {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync.runtime_SemacquireWaitGroup"%go.
+
+Definition runtime_SemacquireRWMutexR {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync.runtime_SemacquireRWMutexR"%go.
+
+Definition runtime_SemacquireRWMutex {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync.runtime_SemacquireRWMutex"%go.
+
+Definition runtime_Semrelease {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync.runtime_Semrelease"%go.
+
+Definition runtime_notifyListCheck {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync.runtime_notifyListCheck"%go.
+
+Definition throw {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync.throw"%go.
+
+Definition fatal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync.fatal"%go.
+
+Axiom notifyListⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
 Definition RWMutex : go.type := go.Named "sync.RWMutex"%go [].
 
-(* RLock locks rw for reading.
-
-   It should not be used for recursive read locking; a blocked Lock
-   call excludes new readers from acquiring the lock. See the
-   documentation on the [RWMutex] type.
-
-   go: rwmutex.go:67:20 *)
-Definition RWMutex__RLockⁱᵐᵖˡ : val :=
-  λ: "rw" <>,
-    exception_do (let: "rw" := (GoAlloc (go.PointerType RWMutex) "rw") in
-    (if: race.Enabled
-    then
-      do:  (let: "$a0" := (StructFieldRef RWMutex "w"%go (![go.PointerType RWMutex] "rw")) in
-      (FuncResolve race.Read [] #()) "$a0");;;
-      do:  ((FuncResolve race.Disable [] #()) #())
-    else do:  #());;;
-    (if: (let: "$a0" := #(W32 1) in
-    (MethodResolve (go.PointerType atomic.Int32) "Add"%go #() (StructFieldRef RWMutex "readerCount"%go (![go.PointerType RWMutex] "rw"))) "$a0") <⟨go.int32⟩ #(W32 0)
-    then
-      do:  (let: "$a0" := (StructFieldRef RWMutex "readerSem"%go (![go.PointerType RWMutex] "rw")) in
-      let: "$a1" := #false in
-      let: "$a2" := #(W64 0) in
-      (FuncResolve runtime_SemacquireRWMutexR [] #()) "$a0" "$a1" "$a2")
-    else do:  #());;;
-    (if: race.Enabled
-    then
-      do:  ((FuncResolve race.Enable [] #()) #());;;
-      do:  (let: "$a0" := (StructFieldRef RWMutex "readerSem"%go (![go.PointerType RWMutex] "rw")) in
-      (FuncResolve race.Acquire [] #()) "$a0")
-    else do:  #());;;
-    return: #()).
-
-(* TryRLock tries to lock rw for reading and reports whether it succeeded.
-
-   Note that while correct uses of TryRLock do exist, they are rare,
-   and use of TryRLock is often a sign of a deeper problem
-   in a particular use of mutexes.
-
-   go: rwmutex.go:87:20 *)
-Definition RWMutex__TryRLockⁱᵐᵖˡ : val :=
-  λ: "rw" <>,
-    exception_do (let: "rw" := (GoAlloc (go.PointerType RWMutex) "rw") in
-    (if: race.Enabled
-    then
-      do:  (let: "$a0" := (StructFieldRef RWMutex "w"%go (![go.PointerType RWMutex] "rw")) in
-      (FuncResolve race.Read [] #()) "$a0");;;
-      do:  ((FuncResolve race.Disable [] #()) #())
-    else do:  #());;;
-    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      let: "c" := (GoAlloc go.int32 (GoZeroVal go.int32 #())) in
-      let: "$r0" := ((MethodResolve (go.PointerType atomic.Int32) "Load"%go #() (StructFieldRef RWMutex "readerCount"%go (![go.PointerType RWMutex] "rw"))) #()) in
-      do:  ("c" <-[go.int32] "$r0");;;
-      (if: (![go.int32] "c") <⟨go.int32⟩ #(W32 0)
-      then
-        (if: race.Enabled
-        then do:  ((FuncResolve race.Enable [] #()) #())
-        else do:  #());;;
-        return: (#false)
-      else do:  #());;;
-      (if: let: "$a0" := (![go.int32] "c") in
-      let: "$a1" := ((![go.int32] "c") +⟨go.int32⟩ #(W32 1)) in
-      (MethodResolve (go.PointerType atomic.Int32) "CompareAndSwap"%go #() (StructFieldRef RWMutex "readerCount"%go (![go.PointerType RWMutex] "rw"))) "$a0" "$a1"
-      then
-        (if: race.Enabled
-        then
-          do:  ((FuncResolve race.Enable [] #()) #());;;
-          do:  (let: "$a0" := (StructFieldRef RWMutex "readerSem"%go (![go.PointerType RWMutex] "rw")) in
-          (FuncResolve race.Acquire [] #()) "$a0")
-        else do:  #());;;
-        return: (#true)
-      else do:  #()))).
-
-(* RUnlock undoes a single [RWMutex.RLock] call;
-   it does not affect other simultaneous readers.
-   It is a run-time error if rw is not locked for reading
-   on entry to RUnlock.
-
-   go: rwmutex.go:114:20 *)
-Definition RWMutex__RUnlockⁱᵐᵖˡ : val :=
-  λ: "rw" <>,
-    exception_do (let: "rw" := (GoAlloc (go.PointerType RWMutex) "rw") in
-    (if: race.Enabled
-    then
-      do:  (let: "$a0" := (StructFieldRef RWMutex "w"%go (![go.PointerType RWMutex] "rw")) in
-      (FuncResolve race.Read [] #()) "$a0");;;
-      do:  (let: "$a0" := (StructFieldRef RWMutex "writerSem"%go (![go.PointerType RWMutex] "rw")) in
-      (FuncResolve race.ReleaseMerge [] #()) "$a0");;;
-      do:  ((FuncResolve race.Disable [] #()) #())
-    else do:  #());;;
-    (let: "r" := (GoAlloc go.int32 (GoZeroVal go.int32 #())) in
-    let: "$r0" := (let: "$a0" := #(W32 (- 1)) in
-    (MethodResolve (go.PointerType atomic.Int32) "Add"%go #() (StructFieldRef RWMutex "readerCount"%go (![go.PointerType RWMutex] "rw"))) "$a0") in
-    do:  ("r" <-[go.int32] "$r0");;;
-    (if: (![go.int32] "r") <⟨go.int32⟩ #(W32 0)
-    then
-      do:  (let: "$a0" := (![go.int32] "r") in
-      (MethodResolve (go.PointerType RWMutex) "rUnlockSlow"%go #() (![go.PointerType RWMutex] "rw")) "$a0")
-    else do:  #()));;;
-    (if: race.Enabled
-    then do:  ((FuncResolve race.Enable [] #()) #())
-    else do:  #());;;
-    return: #()).
-
-(* go: rwmutex.go:129:20 *)
-Definition RWMutex__rUnlockSlowⁱᵐᵖˡ : val :=
-  λ: "rw" "r",
-    exception_do (let: "rw" := (GoAlloc (go.PointerType RWMutex) "rw") in
-    let: "r" := (GoAlloc go.int32 "r") in
-    (if: (((![go.int32] "r") +⟨go.int32⟩ #(W32 1)) =⟨go.int32⟩ #(W32 0)) || (((![go.int32] "r") +⟨go.int32⟩ #(W32 1)) =⟨go.int32⟩ #(W32 (- rwmutexMaxReaders)))
-    then
-      do:  ((FuncResolve race.Enable [] #()) #());;;
-      do:  (let: "$a0" := #"sync: RUnlock of unlocked RWMutex"%go in
-      (FuncResolve fatal [] #()) "$a0")
-    else do:  #());;;
-    (if: (let: "$a0" := #(W32 (- 1)) in
-    (MethodResolve (go.PointerType atomic.Int32) "Add"%go #() (StructFieldRef RWMutex "readerWait"%go (![go.PointerType RWMutex] "rw"))) "$a0") =⟨go.int32⟩ #(W32 0)
-    then
-      do:  (let: "$a0" := (StructFieldRef RWMutex "writerSem"%go (![go.PointerType RWMutex] "rw")) in
-      let: "$a1" := #false in
-      let: "$a2" := #(W64 1) in
-      (FuncResolve runtime_Semrelease [] #()) "$a0" "$a1" "$a2")
-    else do:  #());;;
-    return: #()).
+Definition rwmutexMaxReaders {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Z := 1073741824.
 
 (* Lock locks rw for writing.
    If the lock is already locked for reading or writing,
    Lock blocks until the lock is available.
 
    go: rwmutex.go:144:20 *)
-Definition RWMutex__Lockⁱᵐᵖˡ : val :=
+Definition RWMutex__Lockⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "rw" <>,
     exception_do (let: "rw" := (GoAlloc (go.PointerType RWMutex) "rw") in
     (if: race.Enabled
@@ -442,6 +386,80 @@ Definition RWMutex__Lockⁱᵐᵖˡ : val :=
     else do:  #());;;
     return: #()).
 
+(* RLock locks rw for reading.
+
+   It should not be used for recursive read locking; a blocked Lock
+   call excludes new readers from acquiring the lock. See the
+   documentation on the [RWMutex] type.
+
+   go: rwmutex.go:67:20 *)
+Definition RWMutex__RLockⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "rw" <>,
+    exception_do (let: "rw" := (GoAlloc (go.PointerType RWMutex) "rw") in
+    (if: race.Enabled
+    then
+      do:  (let: "$a0" := (StructFieldRef RWMutex "w"%go (![go.PointerType RWMutex] "rw")) in
+      (FuncResolve race.Read [] #()) "$a0");;;
+      do:  ((FuncResolve race.Disable [] #()) #())
+    else do:  #());;;
+    (if: (let: "$a0" := #(W32 1) in
+    (MethodResolve (go.PointerType atomic.Int32) "Add"%go #() (StructFieldRef RWMutex "readerCount"%go (![go.PointerType RWMutex] "rw"))) "$a0") <⟨go.int32⟩ #(W32 0)
+    then
+      do:  (let: "$a0" := (StructFieldRef RWMutex "readerSem"%go (![go.PointerType RWMutex] "rw")) in
+      let: "$a1" := #false in
+      let: "$a2" := #(W64 0) in
+      (FuncResolve runtime_SemacquireRWMutexR [] #()) "$a0" "$a1" "$a2")
+    else do:  #());;;
+    (if: race.Enabled
+    then
+      do:  ((FuncResolve race.Enable [] #()) #());;;
+      do:  (let: "$a0" := (StructFieldRef RWMutex "readerSem"%go (![go.PointerType RWMutex] "rw")) in
+      (FuncResolve race.Acquire [] #()) "$a0")
+    else do:  #());;;
+    return: #()).
+
+Definition rlocker : go.type := go.Named "sync.rlocker"%go [].
+
+(* RLocker returns a [Locker] interface that implements
+   the [Locker.Lock] and [Locker.Unlock] methods by calling rw.RLock and rw.RUnlock.
+
+   go: rwmutex.go:240:20 *)
+Definition RWMutex__RLockerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "rw" <>,
+    exception_do (let: "rw" := (GoAlloc (go.PointerType RWMutex) "rw") in
+    return: (InterfaceMake (go.PointerType rlocker) (![go.PointerType RWMutex] "rw"))).
+
+(* RUnlock undoes a single [RWMutex.RLock] call;
+   it does not affect other simultaneous readers.
+   It is a run-time error if rw is not locked for reading
+   on entry to RUnlock.
+
+   go: rwmutex.go:114:20 *)
+Definition RWMutex__RUnlockⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "rw" <>,
+    exception_do (let: "rw" := (GoAlloc (go.PointerType RWMutex) "rw") in
+    (if: race.Enabled
+    then
+      do:  (let: "$a0" := (StructFieldRef RWMutex "w"%go (![go.PointerType RWMutex] "rw")) in
+      (FuncResolve race.Read [] #()) "$a0");;;
+      do:  (let: "$a0" := (StructFieldRef RWMutex "writerSem"%go (![go.PointerType RWMutex] "rw")) in
+      (FuncResolve race.ReleaseMerge [] #()) "$a0");;;
+      do:  ((FuncResolve race.Disable [] #()) #())
+    else do:  #());;;
+    (let: "r" := (GoAlloc go.int32 (GoZeroVal go.int32 #())) in
+    let: "$r0" := (let: "$a0" := #(W32 (- 1)) in
+    (MethodResolve (go.PointerType atomic.Int32) "Add"%go #() (StructFieldRef RWMutex "readerCount"%go (![go.PointerType RWMutex] "rw"))) "$a0") in
+    do:  ("r" <-[go.int32] "$r0");;;
+    (if: (![go.int32] "r") <⟨go.int32⟩ #(W32 0)
+    then
+      do:  (let: "$a0" := (![go.int32] "r") in
+      (MethodResolve (go.PointerType RWMutex) "rUnlockSlow"%go #() (![go.PointerType RWMutex] "rw")) "$a0")
+    else do:  #()));;;
+    (if: race.Enabled
+    then do:  ((FuncResolve race.Enable [] #()) #())
+    else do:  #());;;
+    return: #()).
+
 (* TryLock tries to lock rw for writing and reports whether it succeeded.
 
    Note that while correct uses of TryLock do exist, they are rare,
@@ -449,7 +467,7 @@ Definition RWMutex__Lockⁱᵐᵖˡ : val :=
    in a particular use of mutexes.
 
    go: rwmutex.go:169:20 *)
-Definition RWMutex__TryLockⁱᵐᵖˡ : val :=
+Definition RWMutex__TryLockⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "rw" <>,
     exception_do (let: "rw" := (GoAlloc (go.PointerType RWMutex) "rw") in
     (if: race.Enabled
@@ -485,6 +503,46 @@ Definition RWMutex__TryLockⁱᵐᵖˡ : val :=
     else do:  #());;;
     return: (#true)).
 
+(* TryRLock tries to lock rw for reading and reports whether it succeeded.
+
+   Note that while correct uses of TryRLock do exist, they are rare,
+   and use of TryRLock is often a sign of a deeper problem
+   in a particular use of mutexes.
+
+   go: rwmutex.go:87:20 *)
+Definition RWMutex__TryRLockⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "rw" <>,
+    exception_do (let: "rw" := (GoAlloc (go.PointerType RWMutex) "rw") in
+    (if: race.Enabled
+    then
+      do:  (let: "$a0" := (StructFieldRef RWMutex "w"%go (![go.PointerType RWMutex] "rw")) in
+      (FuncResolve race.Read [] #()) "$a0");;;
+      do:  ((FuncResolve race.Disable [] #()) #())
+    else do:  #());;;
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
+      let: "c" := (GoAlloc go.int32 (GoZeroVal go.int32 #())) in
+      let: "$r0" := ((MethodResolve (go.PointerType atomic.Int32) "Load"%go #() (StructFieldRef RWMutex "readerCount"%go (![go.PointerType RWMutex] "rw"))) #()) in
+      do:  ("c" <-[go.int32] "$r0");;;
+      (if: (![go.int32] "c") <⟨go.int32⟩ #(W32 0)
+      then
+        (if: race.Enabled
+        then do:  ((FuncResolve race.Enable [] #()) #())
+        else do:  #());;;
+        return: (#false)
+      else do:  #());;;
+      (if: let: "$a0" := (![go.int32] "c") in
+      let: "$a1" := ((![go.int32] "c") +⟨go.int32⟩ #(W32 1)) in
+      (MethodResolve (go.PointerType atomic.Int32) "CompareAndSwap"%go #() (StructFieldRef RWMutex "readerCount"%go (![go.PointerType RWMutex] "rw"))) "$a0" "$a1"
+      then
+        (if: race.Enabled
+        then
+          do:  ((FuncResolve race.Enable [] #()) #());;;
+          do:  (let: "$a0" := (StructFieldRef RWMutex "readerSem"%go (![go.PointerType RWMutex] "rw")) in
+          (FuncResolve race.Acquire [] #()) "$a0")
+        else do:  #());;;
+        return: (#true)
+      else do:  #()))).
+
 (* Unlock unlocks rw for writing. It is a run-time error if rw is
    not locked for writing on entry to Unlock.
 
@@ -493,7 +551,7 @@ Definition RWMutex__TryLockⁱᵐᵖˡ : val :=
    arrange for another goroutine to [RWMutex.RUnlock] ([RWMutex.Unlock]) it.
 
    go: rwmutex.go:201:20 *)
-Definition RWMutex__Unlockⁱᵐᵖˡ : val :=
+Definition RWMutex__Unlockⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "rw" <>,
     exception_do (let: "rw" := (GoAlloc (go.PointerType RWMutex) "rw") in
     (if: race.Enabled
@@ -528,30 +586,85 @@ Definition RWMutex__Unlockⁱᵐᵖˡ : val :=
     else do:  #());;;
     return: #()).
 
-Definition syscall_hasWaitingReaders : go_string := "sync.syscall_hasWaitingReaders"%go.
-
-Definition rlocker : go.type := go.Named "sync.rlocker"%go [].
-
-(* RLocker returns a [Locker] interface that implements
-   the [Locker.Lock] and [Locker.Unlock] methods by calling rw.RLock and rw.RUnlock.
-
-   go: rwmutex.go:240:20 *)
-Definition RWMutex__RLockerⁱᵐᵖˡ : val :=
-  λ: "rw" <>,
+(* go: rwmutex.go:129:20 *)
+Definition RWMutex__rUnlockSlowⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "rw" "r",
     exception_do (let: "rw" := (GoAlloc (go.PointerType RWMutex) "rw") in
-    return: (InterfaceMake (go.PointerType rlocker) (![go.PointerType RWMutex] "rw"))).
+    let: "r" := (GoAlloc go.int32 "r") in
+    (if: (((![go.int32] "r") +⟨go.int32⟩ #(W32 1)) =⟨go.int32⟩ #(W32 0)) || (((![go.int32] "r") +⟨go.int32⟩ #(W32 1)) =⟨go.int32⟩ #(W32 (- rwmutexMaxReaders)))
+    then
+      do:  ((FuncResolve race.Enable [] #()) #());;;
+      do:  (let: "$a0" := #"sync: RUnlock of unlocked RWMutex"%go in
+      (FuncResolve fatal [] #()) "$a0")
+    else do:  #());;;
+    (if: (let: "$a0" := #(W32 (- 1)) in
+    (MethodResolve (go.PointerType atomic.Int32) "Add"%go #() (StructFieldRef RWMutex "readerWait"%go (![go.PointerType RWMutex] "rw"))) "$a0") =⟨go.int32⟩ #(W32 0)
+    then
+      do:  (let: "$a0" := (StructFieldRef RWMutex "writerSem"%go (![go.PointerType RWMutex] "rw")) in
+      let: "$a1" := #false in
+      let: "$a2" := #(W64 1) in
+      (FuncResolve runtime_Semrelease [] #()) "$a0" "$a1" "$a2")
+    else do:  #());;;
+    return: #()).
+
+Definition RWMutexⁱᵐᵖˡ : go.type := go.StructType [
+  (go.FieldDecl "w"%go Mutex);
+  (go.FieldDecl "writerSem"%go go.uint32);
+  (go.FieldDecl "readerSem"%go go.uint32);
+  (go.FieldDecl "readerCount"%go atomic.Int32);
+  (go.FieldDecl "readerWait"%go atomic.Int32)
+].
+
+Module RWMutex.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  w : sync.Mutex.t;
+  writerSem : w32;
+  readerSem : w32;
+  readerCount : atomic.Int32.t;
+  readerWait : atomic.Int32.t;
+}.
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _) (zero_val _) (zero_val _)|}.
+End def.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+
+End RWMutex.
+
+Class RWMutex_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] RWMutex_zero_val  :: go.GoZeroValEq RWMutex RWMutex.t;
+  #[global] RWMutex'ptr_Lock_unfold :: MethodUnfold (go.PointerType (RWMutex)) "Lock" (RWMutex__Lockⁱᵐᵖˡ);
+  #[global] RWMutex'ptr_RLock_unfold :: MethodUnfold (go.PointerType (RWMutex)) "RLock" (RWMutex__RLockⁱᵐᵖˡ);
+  #[global] RWMutex'ptr_RLocker_unfold :: MethodUnfold (go.PointerType (RWMutex)) "RLocker" (RWMutex__RLockerⁱᵐᵖˡ);
+  #[global] RWMutex'ptr_RUnlock_unfold :: MethodUnfold (go.PointerType (RWMutex)) "RUnlock" (RWMutex__RUnlockⁱᵐᵖˡ);
+  #[global] RWMutex'ptr_TryLock_unfold :: MethodUnfold (go.PointerType (RWMutex)) "TryLock" (RWMutex__TryLockⁱᵐᵖˡ);
+  #[global] RWMutex'ptr_TryRLock_unfold :: MethodUnfold (go.PointerType (RWMutex)) "TryRLock" (RWMutex__TryRLockⁱᵐᵖˡ);
+  #[global] RWMutex'ptr_Unlock_unfold :: MethodUnfold (go.PointerType (RWMutex)) "Unlock" (RWMutex__Unlockⁱᵐᵖˡ);
+  #[global] RWMutex'ptr_rUnlockSlow_unfold :: MethodUnfold (go.PointerType (RWMutex)) "rUnlockSlow" (RWMutex__rUnlockSlowⁱᵐᵖˡ);
+}.
+
+Definition syscall_hasWaitingReaders {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync.syscall_hasWaitingReaders"%go.
 
 Definition rlockerⁱᵐᵖˡ : go.type := RWMutex.
 
-Definition WaitGroupⁱᵐᵖˡ : go.type := go.StructType [
-  (go.FieldDecl "noCopy"%go noCopy);
-  (go.FieldDecl "state"%go atomic.Uint64);
-  (go.FieldDecl "sema"%go go.uint32)
-].
+Module rlocker.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Definition t  : Type := sync.RWMutex.t.
+End def.
+End rlocker.
 
-Definition waitGroupBubbleFlag : Z := 2147483648.
+Class rlocker_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] rlocker_zero_val  :: go.GoZeroValEq rlocker rlocker.t;
+}.
 
 Definition WaitGroup : go.type := go.Named "sync.WaitGroup"%go [].
+
+Definition waitGroupBubbleFlag {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Z := 2147483648.
 
 (* Add adds delta, which may be negative, to the [WaitGroup] task counter.
    If the counter becomes zero, all goroutines blocked on [WaitGroup.Wait] are released.
@@ -570,7 +683,7 @@ Definition WaitGroup : go.type := go.Named "sync.WaitGroup"%go [].
    See the WaitGroup example.
 
    go: waitgroup.go:77:22 *)
-Definition WaitGroup__Addⁱᵐᵖˡ : val :=
+Definition WaitGroup__Addⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "wg" "delta",
     with_defer: (let: "wg" := (GoAlloc (go.PointerType WaitGroup) "wg") in
     let: "delta" := (GoAlloc go.int "delta") in
@@ -682,17 +795,54 @@ Definition WaitGroup__Addⁱᵐᵖˡ : val :=
    [the Go memory model]: https://go.dev/ref/mem
 
    go: waitgroup.go:155:22 *)
-Definition WaitGroup__Doneⁱᵐᵖˡ : val :=
+Definition WaitGroup__Doneⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "wg" <>,
     exception_do (let: "wg" := (GoAlloc (go.PointerType WaitGroup) "wg") in
     do:  (let: "$a0" := #(W64 (- 1)) in
     (MethodResolve (go.PointerType WaitGroup) "Add"%go #() (![go.PointerType WaitGroup] "wg")) "$a0");;;
     return: #()).
 
+(* Go calls f in a new goroutine and adds that task to the [WaitGroup].
+   When f returns, the task is removed from the WaitGroup.
+
+   The function f must not panic.
+
+   If the WaitGroup is empty, Go must happen before a [WaitGroup.Wait].
+   Typically, this simply means Go is called to start tasks before Wait is called.
+   If the WaitGroup is not empty, Go may happen at any time.
+   This means a goroutine started by Go may itself call Go.
+   If a WaitGroup is reused to wait for several independent sets of tasks,
+   new Go calls must happen after all previous Wait calls have returned.
+
+   In the terminology of [the Go memory model], the return from f
+   "synchronizes before" the return of any Wait call that it unblocks.
+
+   [the Go memory model]: https://go.dev/ref/mem
+
+   go: waitgroup.go:235:22 *)
+Definition WaitGroup__Goⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "wg" "f",
+    exception_do (let: "wg" := (GoAlloc (go.PointerType WaitGroup) "wg") in
+    let: "f" := (GoAlloc (go.FunctionType (go.Signature [] false [])) "f") in
+    do:  (let: "$a0" := #(W64 1) in
+    (MethodResolve (go.PointerType WaitGroup) "Add"%go #() (![go.PointerType WaitGroup] "wg")) "$a0");;;
+    let: "$go" := (λ: <>,
+      with_defer: (do:  (let: "$f" := (MethodResolve (go.PointerType WaitGroup) "Done"%go #() (![go.PointerType WaitGroup] "wg")) in
+      "$defer" <-[deferType] (let: "$oldf" := (![deferType] "$defer") in
+      (λ: <>,
+        "$f" #();;
+        "$oldf" #()
+        )));;;
+      do:  ((![go.FunctionType (go.Signature [] false [])] "f") #());;;
+      return: #())
+      ) in
+    do:  (Fork ("$go" #()));;;
+    return: #()).
+
 (* Wait blocks until the [WaitGroup] task counter is zero.
 
    go: waitgroup.go:160:22 *)
-Definition WaitGroup__Waitⁱᵐᵖˡ : val :=
+Definition WaitGroup__Waitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "wg" <>,
     exception_do (let: "wg" := (GoAlloc (go.PointerType WaitGroup) "wg") in
     (if: race.Enabled
@@ -774,73 +924,45 @@ Definition WaitGroup__Waitⁱᵐᵖˡ : val :=
       else do:  #()));;;
     return: #()).
 
-(* Go calls f in a new goroutine and adds that task to the [WaitGroup].
-   When f returns, the task is removed from the WaitGroup.
+Definition WaitGroupⁱᵐᵖˡ : go.type := go.StructType [
+  (go.FieldDecl "noCopy"%go noCopy);
+  (go.FieldDecl "state"%go atomic.Uint64);
+  (go.FieldDecl "sema"%go go.uint32)
+].
 
-   The function f must not panic.
+Module WaitGroup.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  noCopy : sync.noCopy.t;
+  state : atomic.Uint64.t;
+  sema : w32;
+}.
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
+End def.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
 
-   If the WaitGroup is empty, Go must happen before a [WaitGroup.Wait].
-   Typically, this simply means Go is called to start tasks before Wait is called.
-   If the WaitGroup is not empty, Go may happen at any time.
-   This means a goroutine started by Go may itself call Go.
-   If a WaitGroup is reused to wait for several independent sets of tasks,
-   new Go calls must happen after all previous Wait calls have returned.
+End WaitGroup.
 
-   In the terminology of [the Go memory model], the return from f
-   "synchronizes before" the return of any Wait call that it unblocks.
+Class WaitGroup_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] WaitGroup_zero_val  :: go.GoZeroValEq WaitGroup WaitGroup.t;
+  #[global] WaitGroup'ptr_Add_unfold :: MethodUnfold (go.PointerType (WaitGroup)) "Add" (WaitGroup__Addⁱᵐᵖˡ);
+  #[global] WaitGroup'ptr_Done_unfold :: MethodUnfold (go.PointerType (WaitGroup)) "Done" (WaitGroup__Doneⁱᵐᵖˡ);
+  #[global] WaitGroup'ptr_Go_unfold :: MethodUnfold (go.PointerType (WaitGroup)) "Go" (WaitGroup__Goⁱᵐᵖˡ);
+  #[global] WaitGroup'ptr_Wait_unfold :: MethodUnfold (go.PointerType (WaitGroup)) "Wait" (WaitGroup__Waitⁱᵐᵖˡ);
+}.
 
-   [the Go memory model]: https://go.dev/ref/mem
+#[global] Instance info' : PkgInfo sync.sync := 
+{|
+  pkg_imported_pkgs := [code.sync.atomic.atomic; code.internal.race.race; code.internal.synctest.synctest]
+|}.
 
-   go: waitgroup.go:235:22 *)
-Definition WaitGroup__Goⁱᵐᵖˡ : val :=
-  λ: "wg" "f",
-    exception_do (let: "wg" := (GoAlloc (go.PointerType WaitGroup) "wg") in
-    let: "f" := (GoAlloc (go.FunctionType (go.Signature [] false [])) "f") in
-    do:  (let: "$a0" := #(W64 1) in
-    (MethodResolve (go.PointerType WaitGroup) "Add"%go #() (![go.PointerType WaitGroup] "wg")) "$a0");;;
-    let: "$go" := (λ: <>,
-      with_defer: (do:  (let: "$f" := (MethodResolve (go.PointerType WaitGroup) "Done"%go #() (![go.PointerType WaitGroup] "wg")) in
-      "$defer" <-[deferType] (let: "$oldf" := (![deferType] "$defer") in
-      (λ: <>,
-        "$f" #();;
-        "$oldf" #()
-        )));;;
-      do:  ((![go.FunctionType (go.Signature [] false [])] "f") #());;;
-      return: #())
-      ) in
-    do:  (Fork ("$go" #()));;;
-    return: #()).
+Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition Map : go.type := go.Named "sync.Map"%go [].
-
-Definition readOnly : go.type := go.Named "sync.readOnly"%go [].
-
-Definition entry : go.type := go.Named "sync.entry"%go [].
-
-Definition Pool : go.type := go.Named "sync.Pool"%go [].
-
-Definition poolLocalInternal : go.type := go.Named "sync.poolLocalInternal"%go [].
-
-Definition poolLocal : go.type := go.Named "sync.poolLocal"%go [].
-
-Definition poolDequeue : go.type := go.Named "sync.poolDequeue"%go [].
-
-Definition eface : go.type := go.Named "sync.eface"%go [].
-
-Definition dequeueNil : go.type := go.Named "sync.dequeueNil"%go [].
-
-Definition poolChain : go.type := go.Named "sync.poolChain"%go [].
-
-Definition poolChainElt : go.type := go.Named "sync.poolChainElt"%go [].
-
-#[global] Instance info' : PkgInfo sync.sync :=
-  {|
-    pkg_imported_pkgs := [code.sync.atomic.atomic; code.internal.race.race; code.internal.synctest.synctest];
-  |}.
-
-Axiom _'init : val.
-
-Definition initialize' : val :=
+Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init sync.sync (λ: <>,
       exception_do (do:  (GoGlobalAlloc expunged (go.PointerType (go.InterfaceType [])));;;
@@ -851,130 +973,13 @@ Definition initialize' : val :=
       do:  ((GloblalVarAddr #expunged) <-[go.PointerType (go.InterfaceType [])] "$r0"))
       ).
 
-Class Cond_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] Cond'ptr_Broadcast_unfold :: MethodUnfold (go.PointerType (Cond)) "Broadcast" (Cond__Broadcastⁱᵐᵖˡ);
-  #[global] Cond'ptr_Signal_unfold :: MethodUnfold (go.PointerType (Cond)) "Signal" (Cond__Signalⁱᵐᵖˡ);
-  #[global] Cond'ptr_Wait_unfold :: MethodUnfold (go.PointerType (Cond)) "Wait" (Cond__Waitⁱᵐᵖˡ);
-}.
-
-Class copyChecker_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class noCopy_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class Map_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class readOnly_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class entry_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class Mutex_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] Mutex'ptr_Lock_unfold :: MethodUnfold (go.PointerType (Mutex)) "Lock" (Mutex__Lockⁱᵐᵖˡ);
-  #[global] Mutex'ptr_TryLock_unfold :: MethodUnfold (go.PointerType (Mutex)) "TryLock" (Mutex__TryLockⁱᵐᵖˡ);
-  #[global] Mutex'ptr_Unlock_unfold :: MethodUnfold (go.PointerType (Mutex)) "Unlock" (Mutex__Unlockⁱᵐᵖˡ);
-}.
-
-Class Locker_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class Once_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] Once'ptr_Do_unfold :: MethodUnfold (go.PointerType (Once)) "Do" (Once__Doⁱᵐᵖˡ);
-  #[global] Once'ptr_doSlow_unfold :: MethodUnfold (go.PointerType (Once)) "doSlow" (Once__doSlowⁱᵐᵖˡ);
-}.
-
-Class Pool_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class poolLocalInternal_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class poolLocal_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class poolDequeue_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class eface_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class dequeueNil_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class poolChain_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class poolChainElt_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class notifyList_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class RWMutex_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] RWMutex'ptr_Lock_unfold :: MethodUnfold (go.PointerType (RWMutex)) "Lock" (RWMutex__Lockⁱᵐᵖˡ);
-  #[global] RWMutex'ptr_RLock_unfold :: MethodUnfold (go.PointerType (RWMutex)) "RLock" (RWMutex__RLockⁱᵐᵖˡ);
-  #[global] RWMutex'ptr_RLocker_unfold :: MethodUnfold (go.PointerType (RWMutex)) "RLocker" (RWMutex__RLockerⁱᵐᵖˡ);
-  #[global] RWMutex'ptr_RUnlock_unfold :: MethodUnfold (go.PointerType (RWMutex)) "RUnlock" (RWMutex__RUnlockⁱᵐᵖˡ);
-  #[global] RWMutex'ptr_TryLock_unfold :: MethodUnfold (go.PointerType (RWMutex)) "TryLock" (RWMutex__TryLockⁱᵐᵖˡ);
-  #[global] RWMutex'ptr_TryRLock_unfold :: MethodUnfold (go.PointerType (RWMutex)) "TryRLock" (RWMutex__TryRLockⁱᵐᵖˡ);
-  #[global] RWMutex'ptr_Unlock_unfold :: MethodUnfold (go.PointerType (RWMutex)) "Unlock" (RWMutex__Unlockⁱᵐᵖˡ);
-  #[global] RWMutex'ptr_rUnlockSlow_unfold :: MethodUnfold (go.PointerType (RWMutex)) "rUnlockSlow" (RWMutex__rUnlockSlowⁱᵐᵖˡ);
-}.
-
-Class rlocker_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class WaitGroup_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] WaitGroup'ptr_Add_unfold :: MethodUnfold (go.PointerType (WaitGroup)) "Add" (WaitGroup__Addⁱᵐᵖˡ);
-  #[global] WaitGroup'ptr_Done_unfold :: MethodUnfold (go.PointerType (WaitGroup)) "Done" (WaitGroup__Doneⁱᵐᵖˡ);
-  #[global] WaitGroup'ptr_Go_unfold :: MethodUnfold (go.PointerType (WaitGroup)) "Go" (WaitGroup__Goⁱᵐᵖˡ);
-  #[global] WaitGroup'ptr_Wait_unfold :: MethodUnfold (go.PointerType (WaitGroup)) "Wait" (WaitGroup__Waitⁱᵐᵖˡ);
-}.
-
-Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Cond_instance :: Cond_Assumptions;
-  #[global] copyChecker_instance :: copyChecker_Assumptions;
   #[global] noCopy_instance :: noCopy_Assumptions;
-  #[global] Map_instance :: Map_Assumptions;
-  #[global] readOnly_instance :: readOnly_Assumptions;
-  #[global] entry_instance :: entry_Assumptions;
   #[global] Mutex_instance :: Mutex_Assumptions;
   #[global] Locker_instance :: Locker_Assumptions;
   #[global] Once_instance :: Once_Assumptions;
-  #[global] Pool_instance :: Pool_Assumptions;
-  #[global] poolLocalInternal_instance :: poolLocalInternal_Assumptions;
-  #[global] poolLocal_instance :: poolLocal_Assumptions;
-  #[global] poolDequeue_instance :: poolDequeue_Assumptions;
-  #[global] eface_instance :: eface_Assumptions;
-  #[global] dequeueNil_instance :: dequeueNil_Assumptions;
-  #[global] poolChain_instance :: poolChain_Assumptions;
-  #[global] poolChainElt_instance :: poolChainElt_Assumptions;
-  #[global] notifyList_instance :: notifyList_Assumptions;
   #[global] RWMutex_instance :: RWMutex_Assumptions;
   #[global] rlocker_instance :: rlocker_Assumptions;
   #[global] WaitGroup_instance :: WaitGroup_Assumptions;
@@ -990,6 +995,4 @@ Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions
   #[global] runtime_notifyListNotifyOne_unfold :: FuncUnfold runtime_notifyListNotifyOne [] (runtime_notifyListNotifyOneⁱᵐᵖˡ);
   #[global] runtime_notifyListCheck_unfold :: FuncUnfold runtime_notifyListCheck [] (runtime_notifyListCheckⁱᵐᵖˡ);
 }.
-
-End code.
 End sync.

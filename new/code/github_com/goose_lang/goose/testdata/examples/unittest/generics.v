@@ -6,82 +6,100 @@ Definition generics : go_string := "github.com/goose-lang/goose/testdata/example
 
 Module generics.
 
-Section code.
-Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-
-
-Definition UnderlyingSlice : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.UnderlyingSlice"%go.
+Definition UnderlyingSlice {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.UnderlyingSlice"%go.
 
 (* go: constraints.go:3:6 *)
-Definition UnderlyingSliceⁱᵐᵖˡ (T : go.type) : val :=
+Definition UnderlyingSliceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) : val :=
   λ: "s",
     exception_do (let: "s" := (GoAlloc T "s") in
     return: (let: "$a0" := (![T] "s") in
      (FuncResolve go.len [T] #()) "$a0")).
 
-Definition Clone : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.Clone"%go.
+Definition Clone {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.Clone"%go.
 
 (* Clone copies a generic slice.
 
    Slightly simplified from [slices.Clone].
 
    go: constraints.go:10:6 *)
-Definition Cloneⁱᵐᵖˡ (S E : go.type) : val :=
+Definition Cloneⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (S E : go.type) : val :=
   λ: "s",
     exception_do (let: "s" := (GoAlloc S "s") in
     return: (let: "$a0" := (CompositeLiteral S (LiteralValue [])) in
      let: "$a1" := (![S] "s") in
      (FuncResolve go.append [S] #()) "$a0" "$a1")).
 
-Definition Boxⁱᵐᵖˡ(T : go.type)  : go.type := go.StructType [
-  (go.FieldDecl "Value"%go T)
-].
-
-Definition BoxGet : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.BoxGet"%go.
-
 Definition Box(T : go.type)  : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest/generics.Box"%go [T].
 
-(* BoxGet is a function getter (rather than a method)
-
-   go: generics.go:13:6 *)
-Definition BoxGetⁱᵐᵖˡ (T : go.type) : val :=
-  λ: "b",
-    exception_do (let: "b" := (GoAlloc (Box T) "b") in
-    return: (![T] (StructFieldRef (Box T) "Value"%go "b"))).
-
-Definition BoxGet2 : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.BoxGet2"%go.
-
-(* go: generics.go:17:6 *)
-Definition BoxGet2ⁱᵐᵖˡ : val :=
-  λ: "b",
-    exception_do (let: "b" := (GoAlloc (Box go.uint64) "b") in
-    return: (![go.uint64] (StructFieldRef (Box go.uint64) "Value"%go "b"))).
-
 (* go: generics.go:21:17 *)
-Definition Box__Getⁱᵐᵖˡ (T : go.type) : val :=
+Definition Box__Getⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) : val :=
   λ: "b" <>,
     exception_do (let: "b" := (GoAlloc (Box T) "b") in
     return: (![T] (StructFieldRef (Box T) "Value"%go "b"))).
 
-Definition makeGenericBox : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.makeGenericBox"%go.
+Definition Boxⁱᵐᵖˡ(T : go.type)  : go.type := go.StructType [
+  (go.FieldDecl "Value"%go T)
+].
+
+Module Box.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Context {T : Type}.
+Record t :=
+mk {
+  Value : T;
+}.
+#[global] Instance zero_val`{!ZeroVal T}  : ZeroVal t := {| zero_val := mk (zero_val _)|}.
+End def.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+
+End Box.
+
+Class Box_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Box_zero_val T T' `{!ZeroVal T'} `{!go.GoZeroValEq T T'} :: go.GoZeroValEq (Box T) (Box.t T');
+  #[global] Box'ptr_Get_unfold T :: MethodUnfold (Box T) "Get" (Box__Getⁱᵐᵖˡ T);
+  #[global] Box'ptr_Get_unfold T :: MethodUnfold (go.PointerType (Box T)) "Get" (λ: "$r", MethodResolve (Box T) Get #() (![(Box T)] "$r");
+}.
+
+Definition BoxGet {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.BoxGet"%go.
+
+(* BoxGet is a function getter (rather than a method)
+
+   go: generics.go:13:6 *)
+Definition BoxGetⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) : val :=
+  λ: "b",
+    exception_do (let: "b" := (GoAlloc (Box T) "b") in
+    return: (![T] (StructFieldRef (Box T) "Value"%go "b"))).
+
+Definition BoxGet2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.BoxGet2"%go.
+
+(* go: generics.go:17:6 *)
+Definition BoxGet2ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "b",
+    exception_do (let: "b" := (GoAlloc (Box go.uint64) "b") in
+    return: (![go.uint64] (StructFieldRef (Box go.uint64) "Value"%go "b"))).
+
+Definition makeGenericBox {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.makeGenericBox"%go.
 
 (* go: generics.go:25:6 *)
-Definition makeGenericBoxⁱᵐᵖˡ (T : go.type) : val :=
+Definition makeGenericBoxⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) : val :=
   λ: "value",
     exception_do (let: "value" := (GoAlloc T "value") in
     return: (CompositeLiteral (Box T) (LiteralValue [KeyedElement (Some (KeyField "Value"%go)) (ElementExpression (![T] "value"))]))).
 
-Definition makeBox : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.makeBox"%go.
+Definition makeBox {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.makeBox"%go.
 
 (* go: generics.go:29:6 *)
-Definition makeBoxⁱᵐᵖˡ : val :=
+Definition makeBoxⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (return: (CompositeLiteral (Box go.uint64) (LiteralValue [KeyedElement (Some (KeyField "Value"%go)) (ElementExpression #(W64 42))]))).
 
-Definition useBoxGet : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.useBoxGet"%go.
+Definition useBoxGet {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.useBoxGet"%go.
 
 (* go: generics.go:34:6 *)
-Definition useBoxGetⁱᵐᵖˡ : val :=
+Definition useBoxGetⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "x" := (GoAlloc (Box go.uint64) (GoZeroVal (Box go.uint64) #())) in
     let: "$r0" := (let: "$a0" := #(W64 42) in
@@ -96,12 +114,35 @@ Definition Containerⁱᵐᵖˡ(T : go.type)  : go.type := go.StructType [
   (go.FieldDecl "W"%go go.uint64)
 ].
 
-Definition useContainer : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.useContainer"%go.
-
 Definition Container(T : go.type)  : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest/generics.Container"%go [T].
 
+Module Container.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Context {T : Type}.
+Record t :=
+mk {
+  X : T;
+  Y : loc;
+  Z : loc;
+  W : w64;
+}.
+#[global] Instance zero_val`{!ZeroVal T}  : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _) (zero_val _)|}.
+End def.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+
+End Container.
+
+Class Container_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Container_zero_val T T' `{!ZeroVal T'} `{!go.GoZeroValEq T T'} :: go.GoZeroValEq (Container T) (Container.t T');
+}.
+
+Definition useContainer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.useContainer"%go.
+
 (* go: generics.go:47:6 *)
-Definition useContainerⁱᵐᵖˡ : val :=
+Definition useContainerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "container" := (GoAlloc (Container go.uint64) (GoZeroVal (Container go.uint64) #())) in
     let: "$r0" := (CompositeLiteral (Container go.uint64) (LiteralValue [KeyedElement (Some (KeyField "X"%go)) (ElementExpression #(W64 1)); KeyedElement (Some (KeyField "Y"%go)) (CompositeLiteral (go.MapType go.int go.uint64) (LiteralValue [KeyedElement (Some (KeyExpression #(W64 1))) (ElementExpression #(W64 2))])); KeyedElement (Some (KeyField "Z"%go)) (ElementExpression (GoAlloc go.uint64 (GoZeroVal go.uint64 #()))); KeyedElement (Some (KeyField "W"%go)) (ElementExpression #(W64 3))])) in
@@ -120,22 +161,87 @@ Definition UseContainerⁱᵐᵖˡ : go.type := go.StructType [
   (go.FieldDecl "X"%go (Container go.uint64))
 ].
 
+Definition UseContainer : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest/generics.UseContainer"%go [].
+
+Module UseContainer.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  X : (generics.Container.t w64);
+}.
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
+End def.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+
+End UseContainer.
+
+Class UseContainer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] UseContainer_zero_val  :: go.GoZeroValEq UseContainer UseContainer.t;
+}.
+
 Definition OnlyIndirectⁱᵐᵖˡ(T : go.type)  : go.type := go.StructType [
   (go.FieldDecl "X"%go (go.SliceType T));
   (go.FieldDecl "Y"%go (go.PointerType T))
 ].
+
+Definition OnlyIndirect(T : go.type)  : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest/generics.OnlyIndirect"%go [T].
+
+Module OnlyIndirect.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Context {T : Type}.
+Record t :=
+mk {
+  X : slice.t;
+  Y : loc;
+}.
+#[global] Instance zero_val`{!ZeroVal T}  : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
+End def.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+
+End OnlyIndirect.
+
+Class OnlyIndirect_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] OnlyIndirect_zero_val T T' `{!ZeroVal T'} `{!go.GoZeroValEq T T'} :: go.GoZeroValEq (OnlyIndirect T) (OnlyIndirect.t T');
+}.
 
 Definition MultiParamⁱᵐᵖˡ(A : go.type) (B : go.type)  : go.type := go.StructType [
   (go.FieldDecl "Y"%go B);
   (go.FieldDecl "X"%go A)
 ].
 
-Definition useMultiParam : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.useMultiParam"%go.
-
 Definition MultiParam(A : go.type) (B : go.type)  : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest/generics.MultiParam"%go [A; B].
 
+Module MultiParam.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Context {A B : Type}.
+Record t :=
+mk {
+  Y : B;
+  X : A;
+}.
+#[global] Instance zero_val`{!ZeroVal A} `{!ZeroVal B}  : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
+End def.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+
+End MultiParam.
+
+Class MultiParam_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] MultiParam_zero_val A A' `{!ZeroVal A'} `{!go.GoZeroValEq A A'}B B' `{!ZeroVal B'} `{!go.GoZeroValEq B B'} :: go.GoZeroValEq (MultiParam A B) (MultiParam.t A' B');
+}.
+
+Definition useMultiParam {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.useMultiParam"%go.
+
 (* go: generics.go:75:6 *)
-Definition useMultiParamⁱᵐᵖˡ : val :=
+Definition useMultiParamⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "mp" := (GoAlloc (MultiParam go.uint64 go.bool) (GoZeroVal (MultiParam go.uint64 go.bool) #())) in
     let: "$r0" := (CompositeLiteral (MultiParam go.uint64 go.bool) (LiteralValue [KeyedElement (Some (KeyField "Y"%go)) (ElementExpression #true); KeyedElement (Some (KeyField "X"%go)) (ElementExpression #(W64 1))])) in
@@ -144,10 +250,10 @@ Definition useMultiParamⁱᵐᵖˡ : val :=
     do:  ((StructFieldRef (MultiParam go.uint64 go.bool) "X"%go "mp") <-[go.uint64] "$r0");;;
     return: #()).
 
-Definition swapMultiParam : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.swapMultiParam"%go.
+Definition swapMultiParam {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.swapMultiParam"%go.
 
 (* go: generics.go:80:6 *)
-Definition swapMultiParamⁱᵐᵖˡ (A : go.type) : val :=
+Definition swapMultiParamⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (A : go.type) : val :=
   λ: "p",
     exception_do (let: "p" := (GoAlloc (go.PointerType (MultiParam A A)) "p") in
     let: "temp" := (GoAlloc A (GoZeroVal A #())) in
@@ -159,19 +265,19 @@ Definition swapMultiParamⁱᵐᵖˡ (A : go.type) : val :=
     do:  ((StructFieldRef (MultiParam A A) "Y"%go (![go.PointerType (MultiParam A A)] "p")) <-[A] "$r0");;;
     return: #()).
 
-Definition multiParamFunc : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.multiParamFunc"%go.
+Definition multiParamFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.multiParamFunc"%go.
 
 (* go: generics.go:86:6 *)
-Definition multiParamFuncⁱᵐᵖˡ (A B : go.type) : val :=
+Definition multiParamFuncⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (A B : go.type) : val :=
   λ: "x" "b",
     exception_do (let: "b" := (GoAlloc B "b") in
     let: "x" := (GoAlloc A "x") in
     return: (CompositeLiteral (go.SliceType B) (LiteralValue [KeyedElement None (ElementExpression (![B] "b"))]))).
 
-Definition useMultiParamFunc : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.useMultiParamFunc"%go.
+Definition useMultiParamFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.useMultiParamFunc"%go.
 
 (* go: generics.go:90:6 *)
-Definition useMultiParamFuncⁱᵐᵖˡ : val :=
+Definition useMultiParamFuncⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (do:  (let: "$a0" := #(W64 1) in
     let: "$a1" := #true in
@@ -179,54 +285,28 @@ Definition useMultiParamFuncⁱᵐᵖˡ : val :=
     return: (#());;;
     return: #()).
 
-Definition useAnyPointer : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.useAnyPointer"%go.
+Definition useAnyPointer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.useAnyPointer"%go.
 
 (* go: generics.go:96:6 *)
-Definition useAnyPointerⁱᵐᵖˡ : val :=
+Definition useAnyPointerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "x" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     do:  (let: "$a0" := "x" in
     (FuncResolve helpers.AnyPointer [go.uint64] #()) "$a0");;;
     return: #()).
 
-Definition UseContainer : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest/generics.UseContainer"%go [].
+#[global] Instance info' : PkgInfo generics.generics := 
+{|
+  pkg_imported_pkgs := [code.github_com.goose_lang.goose.testdata.examples.unittest.generics.helpers.helpers]
+|}.
 
-Definition OnlyIndirect(T : go.type)  : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest/generics.OnlyIndirect"%go [T].
-
-#[global] Instance info' : PkgInfo generics.generics :=
-  {|
-    pkg_imported_pkgs := [code.github_com.goose_lang.goose.testdata.examples.unittest.generics.helpers.helpers];
-  |}.
-
-Definition initialize' : val :=
+Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init generics.generics (λ: <>,
       exception_do (do:  (helpers.initialize' #()))
       ).
 
-Class Box_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] Box'ptr_Get_unfold T :: MethodUnfold (Box T) "Get" (Box__Getⁱᵐᵖˡ T);
-  #[global] Box'ptr_Get_unfold T :: MethodUnfold (go.PointerType (Box T)) "Get" (λ: "$r", MethodResolve (Box T) Get #() (![(Box T)] "$r");
-}.
-
-Class Container_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class UseContainer_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class OnlyIndirect_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class MultiParam_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Box_instance :: Box_Assumptions;
   #[global] Container_instance :: Container_Assumptions;
@@ -247,6 +327,4 @@ Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions
   #[global] useMultiParamFunc_unfold :: FuncUnfold useMultiParamFunc [] (useMultiParamFuncⁱᵐᵖˡ);
   #[global] useAnyPointer_unfold :: FuncUnfold useAnyPointer [] (useAnyPointerⁱᵐᵖˡ);
 }.
-
-End code.
 End generics.

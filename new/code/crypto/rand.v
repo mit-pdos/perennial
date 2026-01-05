@@ -5,51 +5,38 @@ Definition rand : go_string := "crypto/rand".
 
 Module rand.
 
-Section code.
-Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Definition Reader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "crypto/rand.Reader"%go.
 
+Definition init {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "crypto/rand.init"%go.
 
-Definition Reader : go_string := "crypto/rand.Reader"%go.
+Axiom readerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition init : go_string := "crypto/rand.init"%go.
+Definition fatal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "crypto/rand.fatal"%go.
 
-Axiom readerⁱᵐᵖˡ : go.type.
+Definition Read {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "crypto/rand.Read"%go.
 
-Definition fatal : go_string := "crypto/rand.fatal"%go.
+Axiom base32alphabet : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
 
-Definition Read : go_string := "crypto/rand.Read"%go.
+Definition Text {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "crypto/rand.Text"%go.
 
-Axiom base32alphabet : go_string.
+Definition Prime {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "crypto/rand.Prime"%go.
 
-Definition Text : go_string := "crypto/rand.Text"%go.
+Definition Int {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "crypto/rand.Int"%go.
 
-Definition Prime : go_string := "crypto/rand.Prime"%go.
+#[global] Instance info' : PkgInfo rand.rand := 
+{|
+  pkg_imported_pkgs := []
+|}.
 
-Definition Int : go_string := "crypto/rand.Int"%go.
+Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition reader : go.type := go.Named "crypto/rand.reader"%go [].
-
-#[global] Instance info' : PkgInfo rand.rand :=
-  {|
-    pkg_imported_pkgs := [];
-  |}.
-
-Axiom _'init : val.
-
-Definition initialize' : val :=
+Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init rand.rand (λ: <>,
       exception_do (do:  #())
       ).
 
-Class reader_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
 }.
-
-Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] reader_instance :: reader_Assumptions;
-}.
-
-End code.
 End rand.

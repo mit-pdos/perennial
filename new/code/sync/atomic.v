@@ -7,138 +7,94 @@ Definition atomic : go_string := "sync/atomic".
 
 Module atomic.
 
-Section code.
-Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Definition SwapInt32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync/atomic.SwapInt32"%go.
 
+Definition SwapUint32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync/atomic.SwapUint32"%go.
 
-Definition SwapInt32 : go_string := "sync/atomic.SwapInt32"%go.
+Definition SwapUintptr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync/atomic.SwapUintptr"%go.
 
-Definition SwapUint32 : go_string := "sync/atomic.SwapUint32"%go.
+Definition SwapPointer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync/atomic.SwapPointer"%go.
 
-Definition SwapUintptr : go_string := "sync/atomic.SwapUintptr"%go.
+Definition CompareAndSwapInt32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync/atomic.CompareAndSwapInt32"%go.
 
-Definition SwapPointer : go_string := "sync/atomic.SwapPointer"%go.
+Definition CompareAndSwapUint32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync/atomic.CompareAndSwapUint32"%go.
 
-Definition CompareAndSwapInt32 : go_string := "sync/atomic.CompareAndSwapInt32"%go.
+Definition CompareAndSwapUintptr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync/atomic.CompareAndSwapUintptr"%go.
 
-Definition CompareAndSwapUint32 : go_string := "sync/atomic.CompareAndSwapUint32"%go.
+Definition CompareAndSwapPointer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync/atomic.CompareAndSwapPointer"%go.
 
-Definition CompareAndSwapUintptr : go_string := "sync/atomic.CompareAndSwapUintptr"%go.
+Definition AddInt32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync/atomic.AddInt32"%go.
 
-Definition CompareAndSwapPointer : go_string := "sync/atomic.CompareAndSwapPointer"%go.
+Definition AddUint32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync/atomic.AddUint32"%go.
 
-Definition AddInt32 : go_string := "sync/atomic.AddInt32"%go.
+Definition AddUintptr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync/atomic.AddUintptr"%go.
 
-Definition AddUint32 : go_string := "sync/atomic.AddUint32"%go.
+Definition AndInt32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync/atomic.AndInt32"%go.
 
-Definition AddUintptr : go_string := "sync/atomic.AddUintptr"%go.
+Definition AndUint32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync/atomic.AndUint32"%go.
 
-Definition AndInt32 : go_string := "sync/atomic.AndInt32"%go.
+Definition AndUintptr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync/atomic.AndUintptr"%go.
 
-Definition AndUint32 : go_string := "sync/atomic.AndUint32"%go.
+Definition OrInt32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync/atomic.OrInt32"%go.
 
-Definition AndUintptr : go_string := "sync/atomic.AndUintptr"%go.
+Definition OrUint32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync/atomic.OrUint32"%go.
 
-Definition OrInt32 : go_string := "sync/atomic.OrInt32"%go.
+Definition OrUintptr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync/atomic.OrUintptr"%go.
 
-Definition OrUint32 : go_string := "sync/atomic.OrUint32"%go.
+Definition LoadInt32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync/atomic.LoadInt32"%go.
 
-Definition OrUintptr : go_string := "sync/atomic.OrUintptr"%go.
+Definition LoadUint32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync/atomic.LoadUint32"%go.
 
-Definition LoadInt32 : go_string := "sync/atomic.LoadInt32"%go.
+Definition LoadUintptr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync/atomic.LoadUintptr"%go.
 
-Definition LoadUint32 : go_string := "sync/atomic.LoadUint32"%go.
+Definition LoadPointer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync/atomic.LoadPointer"%go.
 
-Definition LoadUintptr : go_string := "sync/atomic.LoadUintptr"%go.
+Definition StoreInt32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync/atomic.StoreInt32"%go.
 
-Definition LoadPointer : go_string := "sync/atomic.LoadPointer"%go.
+Definition StoreUint32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync/atomic.StoreUint32"%go.
 
-Definition StoreInt32 : go_string := "sync/atomic.StoreInt32"%go.
+Definition StoreUintptr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync/atomic.StoreUintptr"%go.
 
-Definition StoreUint32 : go_string := "sync/atomic.StoreUint32"%go.
+Definition StorePointer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync/atomic.StorePointer"%go.
 
-Definition StoreUintptr : go_string := "sync/atomic.StoreUintptr"%go.
+Definition SwapInt64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync/atomic.SwapInt64"%go.
 
-Definition StorePointer : go_string := "sync/atomic.StorePointer"%go.
+Definition SwapUint64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync/atomic.SwapUint64"%go.
 
-Definition SwapInt64 : go_string := "sync/atomic.SwapInt64"%go.
+Definition CompareAndSwapInt64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync/atomic.CompareAndSwapInt64"%go.
 
-Definition SwapUint64 : go_string := "sync/atomic.SwapUint64"%go.
+Definition CompareAndSwapUint64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync/atomic.CompareAndSwapUint64"%go.
 
-Definition CompareAndSwapInt64 : go_string := "sync/atomic.CompareAndSwapInt64"%go.
+Definition AddInt64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync/atomic.AddInt64"%go.
 
-Definition CompareAndSwapUint64 : go_string := "sync/atomic.CompareAndSwapUint64"%go.
+Definition AddUint64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync/atomic.AddUint64"%go.
 
-Definition AddInt64 : go_string := "sync/atomic.AddInt64"%go.
+Definition AndInt64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync/atomic.AndInt64"%go.
 
-Definition AddUint64 : go_string := "sync/atomic.AddUint64"%go.
+Definition AndUint64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync/atomic.AndUint64"%go.
 
-Definition AndInt64 : go_string := "sync/atomic.AndInt64"%go.
+Definition OrInt64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync/atomic.OrInt64"%go.
 
-Definition AndUint64 : go_string := "sync/atomic.AndUint64"%go.
+Definition OrUint64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync/atomic.OrUint64"%go.
 
-Definition OrInt64 : go_string := "sync/atomic.OrInt64"%go.
+Definition LoadInt64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync/atomic.LoadInt64"%go.
 
-Definition OrUint64 : go_string := "sync/atomic.OrUint64"%go.
+Definition LoadUint64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync/atomic.LoadUint64"%go.
 
-Definition LoadInt64 : go_string := "sync/atomic.LoadInt64"%go.
+Definition StoreInt64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync/atomic.StoreInt64"%go.
 
-Definition LoadUint64 : go_string := "sync/atomic.LoadUint64"%go.
-
-Definition StoreInt64 : go_string := "sync/atomic.StoreInt64"%go.
-
-Definition StoreUint64 : go_string := "sync/atomic.StoreUint64"%go.
+Definition StoreUint64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync/atomic.StoreUint64"%go.
 
 Definition noCopy : go.type := go.Named "sync/atomic.noCopy"%go [].
 
-Definition Boolⁱᵐᵖˡ : go.type := go.StructType [
-  (go.FieldDecl "_0"%go noCopy);
-  (go.FieldDecl "v"%go go.uint32)
-].
-
 Definition Bool : go.type := go.Named "sync/atomic.Bool"%go [].
 
-(* Load atomically loads and returns the value stored in x.
-
-   go: type.go:19:16 *)
-Definition Bool__Loadⁱᵐᵖˡ : val :=
-  λ: "x" <>,
-    exception_do (let: "x" := (GoAlloc (go.PointerType Bool) "x") in
-    return: ((let: "$a0" := (StructFieldRef Bool "v"%go (![go.PointerType Bool] "x")) in
-     (FuncResolve LoadUint32 [] #()) "$a0") ≠⟨go.uint32⟩ #(W32 0))).
-
-Definition b32 : go_string := "sync/atomic.b32"%go.
-
-(* Store atomically stores val into x.
-
-   go: type.go:22:16 *)
-Definition Bool__Storeⁱᵐᵖˡ : val :=
-  λ: "x" "val",
-    exception_do (let: "x" := (GoAlloc (go.PointerType Bool) "x") in
-    let: "val" := (GoAlloc go.bool "val") in
-    do:  (let: "$a0" := (StructFieldRef Bool "v"%go (![go.PointerType Bool] "x")) in
-    let: "$a1" := (let: "$a0" := (![go.bool] "val") in
-    (FuncResolve b32 [] #()) "$a0") in
-    (FuncResolve StoreUint32 [] #()) "$a0" "$a1");;;
-    return: #()).
-
-(* Swap atomically stores new into x and returns the previous value.
-
-   go: type.go:25:16 *)
-Definition Bool__Swapⁱᵐᵖˡ : val :=
-  λ: "x" "new",
-    exception_do (let: "old" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
-    let: "x" := (GoAlloc (go.PointerType Bool) "x") in
-    let: "new" := (GoAlloc go.bool "new") in
-    return: ((let: "$a0" := (StructFieldRef Bool "v"%go (![go.PointerType Bool] "x")) in
-     let: "$a1" := (let: "$a0" := (![go.bool] "new") in
-     (FuncResolve b32 [] #()) "$a0") in
-     (FuncResolve SwapUint32 [] #()) "$a0" "$a1") ≠⟨go.uint32⟩ #(W32 0))).
+Definition b32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync/atomic.b32"%go.
 
 (* CompareAndSwap executes the compare-and-swap operation for the boolean value x.
 
    go: type.go:28:16 *)
-Definition Bool__CompareAndSwapⁱᵐᵖˡ : val :=
+Definition Bool__CompareAndSwapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "x" "old" "new",
     exception_do (let: "swapped" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "x" := (GoAlloc (go.PointerType Bool) "x") in
@@ -151,10 +107,74 @@ Definition Bool__CompareAndSwapⁱᵐᵖˡ : val :=
      (FuncResolve b32 [] #()) "$a0") in
      (FuncResolve CompareAndSwapUint32 [] #()) "$a0" "$a1" "$a2")).
 
+(* Load atomically loads and returns the value stored in x.
+
+   go: type.go:19:16 *)
+Definition Bool__Loadⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "x" <>,
+    exception_do (let: "x" := (GoAlloc (go.PointerType Bool) "x") in
+    return: ((let: "$a0" := (StructFieldRef Bool "v"%go (![go.PointerType Bool] "x")) in
+     (FuncResolve LoadUint32 [] #()) "$a0") ≠⟨go.uint32⟩ #(W32 0))).
+
+(* Store atomically stores val into x.
+
+   go: type.go:22:16 *)
+Definition Bool__Storeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "x" "val",
+    exception_do (let: "x" := (GoAlloc (go.PointerType Bool) "x") in
+    let: "val" := (GoAlloc go.bool "val") in
+    do:  (let: "$a0" := (StructFieldRef Bool "v"%go (![go.PointerType Bool] "x")) in
+    let: "$a1" := (let: "$a0" := (![go.bool] "val") in
+    (FuncResolve b32 [] #()) "$a0") in
+    (FuncResolve StoreUint32 [] #()) "$a0" "$a1");;;
+    return: #()).
+
+(* Swap atomically stores new into x and returns the previous value.
+
+   go: type.go:25:16 *)
+Definition Bool__Swapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "x" "new",
+    exception_do (let: "old" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
+    let: "x" := (GoAlloc (go.PointerType Bool) "x") in
+    let: "new" := (GoAlloc go.bool "new") in
+    return: ((let: "$a0" := (StructFieldRef Bool "v"%go (![go.PointerType Bool] "x")) in
+     let: "$a1" := (let: "$a0" := (![go.bool] "new") in
+     (FuncResolve b32 [] #()) "$a0") in
+     (FuncResolve SwapUint32 [] #()) "$a0" "$a1") ≠⟨go.uint32⟩ #(W32 0))).
+
+Definition Boolⁱᵐᵖˡ : go.type := go.StructType [
+  (go.FieldDecl "_0"%go noCopy);
+  (go.FieldDecl "v"%go go.uint32)
+].
+
+Module Bool.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  _ : atomic.noCopy.t;
+  v : w32;
+}.
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
+End def.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+
+End Bool.
+
+Class Bool_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Bool_zero_val  :: go.GoZeroValEq Bool Bool.t;
+  #[global] Bool'ptr_CompareAndSwap_unfold :: MethodUnfold (go.PointerType (Bool)) "CompareAndSwap" (Bool__CompareAndSwapⁱᵐᵖˡ);
+  #[global] Bool'ptr_Load_unfold :: MethodUnfold (go.PointerType (Bool)) "Load" (Bool__Loadⁱᵐᵖˡ);
+  #[global] Bool'ptr_Store_unfold :: MethodUnfold (go.PointerType (Bool)) "Store" (Bool__Storeⁱᵐᵖˡ);
+  #[global] Bool'ptr_Swap_unfold :: MethodUnfold (go.PointerType (Bool)) "Swap" (Bool__Swapⁱᵐᵖˡ);
+}.
+
 (* b32 returns a uint32 0 or 1 representing b.
 
    go: type.go:33:6 *)
-Definition b32ⁱᵐᵖˡ : val :=
+Definition b32ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "b",
     exception_do (let: "b" := (GoAlloc go.bool "b") in
     (if: ![go.bool] "b"
@@ -168,64 +188,40 @@ Definition Pointerⁱᵐᵖˡ(T : go.type)  : go.type := go.StructType [
   (go.FieldDecl "v"%go unsafe.Pointer)
 ].
 
-Definition Int32ⁱᵐᵖˡ : go.type := go.StructType [
-  (go.FieldDecl "_0"%go noCopy);
-  (go.FieldDecl "v"%go go.int32)
-].
+Definition Pointer(T : go.type)  : go.type := go.Named "sync/atomic.Pointer"%go [T].
+
+Module Pointer.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Context {T : Type}.
+Record t :=
+mk {
+  _ : (vec loc (uint.nat (W64 0)));
+  _ : atomic.noCopy.t;
+  v : loc;
+}.
+#[global] Instance zero_val`{!ZeroVal T}  : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
+End def.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+
+End Pointer.
+
+Class Pointer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Pointer_zero_val T T' `{!ZeroVal T'} `{!go.GoZeroValEq T T'} :: go.GoZeroValEq (Pointer T) (Pointer.t T');
+  #[global] Pointer'ptr_CompareAndSwap_unfold T :: MethodUnfold (go.PointerType (Pointer T)) "CompareAndSwap" (Pointer__CompareAndSwapⁱᵐᵖˡ T);
+  #[global] Pointer'ptr_Load_unfold T :: MethodUnfold (go.PointerType (Pointer T)) "Load" (Pointer__Loadⁱᵐᵖˡ T);
+  #[global] Pointer'ptr_Store_unfold T :: MethodUnfold (go.PointerType (Pointer T)) "Store" (Pointer__Storeⁱᵐᵖˡ T);
+  #[global] Pointer'ptr_Swap_unfold T :: MethodUnfold (go.PointerType (Pointer T)) "Swap" (Pointer__Swapⁱᵐᵖˡ T);
+}.
 
 Definition Int32 : go.type := go.Named "sync/atomic.Int32"%go [].
-
-(* Load atomically loads and returns the value stored in x.
-
-   go: type.go:80:17 *)
-Definition Int32__Loadⁱᵐᵖˡ : val :=
-  λ: "x" <>,
-    exception_do (let: "x" := (GoAlloc (go.PointerType Int32) "x") in
-    return: (let: "$a0" := (StructFieldRef Int32 "v"%go (![go.PointerType Int32] "x")) in
-     (FuncResolve LoadInt32 [] #()) "$a0")).
-
-(* Store atomically stores val into x.
-
-   go: type.go:83:17 *)
-Definition Int32__Storeⁱᵐᵖˡ : val :=
-  λ: "x" "val",
-    exception_do (let: "x" := (GoAlloc (go.PointerType Int32) "x") in
-    let: "val" := (GoAlloc go.int32 "val") in
-    do:  (let: "$a0" := (StructFieldRef Int32 "v"%go (![go.PointerType Int32] "x")) in
-    let: "$a1" := (![go.int32] "val") in
-    (FuncResolve StoreInt32 [] #()) "$a0" "$a1");;;
-    return: #()).
-
-(* Swap atomically stores new into x and returns the previous value.
-
-   go: type.go:86:17 *)
-Definition Int32__Swapⁱᵐᵖˡ : val :=
-  λ: "x" "new",
-    exception_do (let: "old" := (GoAlloc go.int32 (GoZeroVal go.int32 #())) in
-    let: "x" := (GoAlloc (go.PointerType Int32) "x") in
-    let: "new" := (GoAlloc go.int32 "new") in
-    return: (let: "$a0" := (StructFieldRef Int32 "v"%go (![go.PointerType Int32] "x")) in
-     let: "$a1" := (![go.int32] "new") in
-     (FuncResolve SwapInt32 [] #()) "$a0" "$a1")).
-
-(* CompareAndSwap executes the compare-and-swap operation for x.
-
-   go: type.go:89:17 *)
-Definition Int32__CompareAndSwapⁱᵐᵖˡ : val :=
-  λ: "x" "old" "new",
-    exception_do (let: "swapped" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
-    let: "x" := (GoAlloc (go.PointerType Int32) "x") in
-    let: "new" := (GoAlloc go.int32 "new") in
-    let: "old" := (GoAlloc go.int32 "old") in
-    return: (let: "$a0" := (StructFieldRef Int32 "v"%go (![go.PointerType Int32] "x")) in
-     let: "$a1" := (![go.int32] "old") in
-     let: "$a2" := (![go.int32] "new") in
-     (FuncResolve CompareAndSwapInt32 [] #()) "$a0" "$a1" "$a2")).
 
 (* Add atomically adds delta to x and returns the new value.
 
    go: type.go:94:17 *)
-Definition Int32__Addⁱᵐᵖˡ : val :=
+Definition Int32__Addⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "x" "delta",
     exception_do (let: "new" := (GoAlloc go.int32 (GoZeroVal go.int32 #())) in
     let: "x" := (GoAlloc (go.PointerType Int32) "x") in
@@ -238,7 +234,7 @@ Definition Int32__Addⁱᵐᵖˡ : val :=
    provided as mask and returns the old value.
 
    go: type.go:98:17 *)
-Definition Int32__Andⁱᵐᵖˡ : val :=
+Definition Int32__Andⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "x" "mask",
     exception_do (let: "old" := (GoAlloc go.int32 (GoZeroVal go.int32 #())) in
     let: "x" := (GoAlloc (go.PointerType Int32) "x") in
@@ -247,11 +243,34 @@ Definition Int32__Andⁱᵐᵖˡ : val :=
      let: "$a1" := (![go.int32] "mask") in
      (FuncResolve AndInt32 [] #()) "$a0" "$a1")).
 
+(* CompareAndSwap executes the compare-and-swap operation for x.
+
+   go: type.go:89:17 *)
+Definition Int32__CompareAndSwapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "x" "old" "new",
+    exception_do (let: "swapped" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
+    let: "x" := (GoAlloc (go.PointerType Int32) "x") in
+    let: "new" := (GoAlloc go.int32 "new") in
+    let: "old" := (GoAlloc go.int32 "old") in
+    return: (let: "$a0" := (StructFieldRef Int32 "v"%go (![go.PointerType Int32] "x")) in
+     let: "$a1" := (![go.int32] "old") in
+     let: "$a2" := (![go.int32] "new") in
+     (FuncResolve CompareAndSwapInt32 [] #()) "$a0" "$a1" "$a2")).
+
+(* Load atomically loads and returns the value stored in x.
+
+   go: type.go:80:17 *)
+Definition Int32__Loadⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "x" <>,
+    exception_do (let: "x" := (GoAlloc (go.PointerType Int32) "x") in
+    return: (let: "$a0" := (StructFieldRef Int32 "v"%go (![go.PointerType Int32] "x")) in
+     (FuncResolve LoadInt32 [] #()) "$a0")).
+
 (* Or atomically performs a bitwise OR operation on x using the bitmask
    provided as mask and returns the old value.
 
    go: type.go:102:17 *)
-Definition Int32__Orⁱᵐᵖˡ : val :=
+Definition Int32__Orⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "x" "mask",
     exception_do (let: "old" := (GoAlloc go.int32 (GoZeroVal go.int32 #())) in
     let: "x" := (GoAlloc (go.PointerType Int32) "x") in
@@ -260,67 +279,70 @@ Definition Int32__Orⁱᵐᵖˡ : val :=
      let: "$a1" := (![go.int32] "mask") in
      (FuncResolve OrInt32 [] #()) "$a0" "$a1")).
 
-Definition align64 : go.type := go.Named "sync/atomic.align64"%go [].
-
-Definition Int64ⁱᵐᵖˡ : go.type := go.StructType [
-  (go.FieldDecl "_0"%go noCopy);
-  (go.FieldDecl "_1"%go align64);
-  (go.FieldDecl "v"%go go.int64)
-].
-
-Definition Int64 : go.type := go.Named "sync/atomic.Int64"%go [].
-
-(* Load atomically loads and returns the value stored in x.
-
-   go: type.go:114:17 *)
-Definition Int64__Loadⁱᵐᵖˡ : val :=
-  λ: "x" <>,
-    exception_do (let: "x" := (GoAlloc (go.PointerType Int64) "x") in
-    return: (let: "$a0" := (StructFieldRef Int64 "v"%go (![go.PointerType Int64] "x")) in
-     (FuncResolve LoadInt64 [] #()) "$a0")).
-
 (* Store atomically stores val into x.
 
-   go: type.go:117:17 *)
-Definition Int64__Storeⁱᵐᵖˡ : val :=
+   go: type.go:83:17 *)
+Definition Int32__Storeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "x" "val",
-    exception_do (let: "x" := (GoAlloc (go.PointerType Int64) "x") in
-    let: "val" := (GoAlloc go.int64 "val") in
-    do:  (let: "$a0" := (StructFieldRef Int64 "v"%go (![go.PointerType Int64] "x")) in
-    let: "$a1" := (![go.int64] "val") in
-    (FuncResolve StoreInt64 [] #()) "$a0" "$a1");;;
+    exception_do (let: "x" := (GoAlloc (go.PointerType Int32) "x") in
+    let: "val" := (GoAlloc go.int32 "val") in
+    do:  (let: "$a0" := (StructFieldRef Int32 "v"%go (![go.PointerType Int32] "x")) in
+    let: "$a1" := (![go.int32] "val") in
+    (FuncResolve StoreInt32 [] #()) "$a0" "$a1");;;
     return: #()).
 
 (* Swap atomically stores new into x and returns the previous value.
 
-   go: type.go:120:17 *)
-Definition Int64__Swapⁱᵐᵖˡ : val :=
+   go: type.go:86:17 *)
+Definition Int32__Swapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "x" "new",
-    exception_do (let: "old" := (GoAlloc go.int64 (GoZeroVal go.int64 #())) in
-    let: "x" := (GoAlloc (go.PointerType Int64) "x") in
-    let: "new" := (GoAlloc go.int64 "new") in
-    return: (let: "$a0" := (StructFieldRef Int64 "v"%go (![go.PointerType Int64] "x")) in
-     let: "$a1" := (![go.int64] "new") in
-     (FuncResolve SwapInt64 [] #()) "$a0" "$a1")).
+    exception_do (let: "old" := (GoAlloc go.int32 (GoZeroVal go.int32 #())) in
+    let: "x" := (GoAlloc (go.PointerType Int32) "x") in
+    let: "new" := (GoAlloc go.int32 "new") in
+    return: (let: "$a0" := (StructFieldRef Int32 "v"%go (![go.PointerType Int32] "x")) in
+     let: "$a1" := (![go.int32] "new") in
+     (FuncResolve SwapInt32 [] #()) "$a0" "$a1")).
 
-(* CompareAndSwap executes the compare-and-swap operation for x.
+Definition Int32ⁱᵐᵖˡ : go.type := go.StructType [
+  (go.FieldDecl "_0"%go noCopy);
+  (go.FieldDecl "v"%go go.int32)
+].
 
-   go: type.go:123:17 *)
-Definition Int64__CompareAndSwapⁱᵐᵖˡ : val :=
-  λ: "x" "old" "new",
-    exception_do (let: "swapped" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
-    let: "x" := (GoAlloc (go.PointerType Int64) "x") in
-    let: "new" := (GoAlloc go.int64 "new") in
-    let: "old" := (GoAlloc go.int64 "old") in
-    return: (let: "$a0" := (StructFieldRef Int64 "v"%go (![go.PointerType Int64] "x")) in
-     let: "$a1" := (![go.int64] "old") in
-     let: "$a2" := (![go.int64] "new") in
-     (FuncResolve CompareAndSwapInt64 [] #()) "$a0" "$a1" "$a2")).
+Module Int32.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  _ : atomic.noCopy.t;
+  v : w32;
+}.
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
+End def.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+
+End Int32.
+
+Class Int32_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Int32_zero_val  :: go.GoZeroValEq Int32 Int32.t;
+  #[global] Int32'ptr_Add_unfold :: MethodUnfold (go.PointerType (Int32)) "Add" (Int32__Addⁱᵐᵖˡ);
+  #[global] Int32'ptr_And_unfold :: MethodUnfold (go.PointerType (Int32)) "And" (Int32__Andⁱᵐᵖˡ);
+  #[global] Int32'ptr_CompareAndSwap_unfold :: MethodUnfold (go.PointerType (Int32)) "CompareAndSwap" (Int32__CompareAndSwapⁱᵐᵖˡ);
+  #[global] Int32'ptr_Load_unfold :: MethodUnfold (go.PointerType (Int32)) "Load" (Int32__Loadⁱᵐᵖˡ);
+  #[global] Int32'ptr_Or_unfold :: MethodUnfold (go.PointerType (Int32)) "Or" (Int32__Orⁱᵐᵖˡ);
+  #[global] Int32'ptr_Store_unfold :: MethodUnfold (go.PointerType (Int32)) "Store" (Int32__Storeⁱᵐᵖˡ);
+  #[global] Int32'ptr_Swap_unfold :: MethodUnfold (go.PointerType (Int32)) "Swap" (Int32__Swapⁱᵐᵖˡ);
+}.
+
+Definition align64 : go.type := go.Named "sync/atomic.align64"%go [].
+
+Definition Int64 : go.type := go.Named "sync/atomic.Int64"%go [].
 
 (* Add atomically adds delta to x and returns the new value.
 
    go: type.go:128:17 *)
-Definition Int64__Addⁱᵐᵖˡ : val :=
+Definition Int64__Addⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "x" "delta",
     exception_do (let: "new" := (GoAlloc go.int64 (GoZeroVal go.int64 #())) in
     let: "x" := (GoAlloc (go.PointerType Int64) "x") in
@@ -333,7 +355,7 @@ Definition Int64__Addⁱᵐᵖˡ : val :=
    provided as mask and returns the old value.
 
    go: type.go:132:17 *)
-Definition Int64__Andⁱᵐᵖˡ : val :=
+Definition Int64__Andⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "x" "mask",
     exception_do (let: "old" := (GoAlloc go.int64 (GoZeroVal go.int64 #())) in
     let: "x" := (GoAlloc (go.PointerType Int64) "x") in
@@ -342,11 +364,34 @@ Definition Int64__Andⁱᵐᵖˡ : val :=
      let: "$a1" := (![go.int64] "mask") in
      (FuncResolve AndInt64 [] #()) "$a0" "$a1")).
 
+(* CompareAndSwap executes the compare-and-swap operation for x.
+
+   go: type.go:123:17 *)
+Definition Int64__CompareAndSwapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "x" "old" "new",
+    exception_do (let: "swapped" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
+    let: "x" := (GoAlloc (go.PointerType Int64) "x") in
+    let: "new" := (GoAlloc go.int64 "new") in
+    let: "old" := (GoAlloc go.int64 "old") in
+    return: (let: "$a0" := (StructFieldRef Int64 "v"%go (![go.PointerType Int64] "x")) in
+     let: "$a1" := (![go.int64] "old") in
+     let: "$a2" := (![go.int64] "new") in
+     (FuncResolve CompareAndSwapInt64 [] #()) "$a0" "$a1" "$a2")).
+
+(* Load atomically loads and returns the value stored in x.
+
+   go: type.go:114:17 *)
+Definition Int64__Loadⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "x" <>,
+    exception_do (let: "x" := (GoAlloc (go.PointerType Int64) "x") in
+    return: (let: "$a0" := (StructFieldRef Int64 "v"%go (![go.PointerType Int64] "x")) in
+     (FuncResolve LoadInt64 [] #()) "$a0")).
+
 (* Or atomically performs a bitwise OR operation on x using the bitmask
    provided as mask and returns the old value.
 
    go: type.go:136:17 *)
-Definition Int64__Orⁱᵐᵖˡ : val :=
+Definition Int64__Orⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "x" "mask",
     exception_do (let: "old" := (GoAlloc go.int64 (GoZeroVal go.int64 #())) in
     let: "x" := (GoAlloc (go.PointerType Int64) "x") in
@@ -355,64 +400,70 @@ Definition Int64__Orⁱᵐᵖˡ : val :=
      let: "$a1" := (![go.int64] "mask") in
      (FuncResolve OrInt64 [] #()) "$a0" "$a1")).
 
-Definition Uint32ⁱᵐᵖˡ : go.type := go.StructType [
-  (go.FieldDecl "_0"%go noCopy);
-  (go.FieldDecl "v"%go go.uint32)
-].
-
-Definition Uint32 : go.type := go.Named "sync/atomic.Uint32"%go [].
-
-(* Load atomically loads and returns the value stored in x.
-
-   go: type.go:147:18 *)
-Definition Uint32__Loadⁱᵐᵖˡ : val :=
-  λ: "x" <>,
-    exception_do (let: "x" := (GoAlloc (go.PointerType Uint32) "x") in
-    return: (let: "$a0" := (StructFieldRef Uint32 "v"%go (![go.PointerType Uint32] "x")) in
-     (FuncResolve LoadUint32 [] #()) "$a0")).
-
 (* Store atomically stores val into x.
 
-   go: type.go:150:18 *)
-Definition Uint32__Storeⁱᵐᵖˡ : val :=
+   go: type.go:117:17 *)
+Definition Int64__Storeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "x" "val",
-    exception_do (let: "x" := (GoAlloc (go.PointerType Uint32) "x") in
-    let: "val" := (GoAlloc go.uint32 "val") in
-    do:  (let: "$a0" := (StructFieldRef Uint32 "v"%go (![go.PointerType Uint32] "x")) in
-    let: "$a1" := (![go.uint32] "val") in
-    (FuncResolve StoreUint32 [] #()) "$a0" "$a1");;;
+    exception_do (let: "x" := (GoAlloc (go.PointerType Int64) "x") in
+    let: "val" := (GoAlloc go.int64 "val") in
+    do:  (let: "$a0" := (StructFieldRef Int64 "v"%go (![go.PointerType Int64] "x")) in
+    let: "$a1" := (![go.int64] "val") in
+    (FuncResolve StoreInt64 [] #()) "$a0" "$a1");;;
     return: #()).
 
 (* Swap atomically stores new into x and returns the previous value.
 
-   go: type.go:153:18 *)
-Definition Uint32__Swapⁱᵐᵖˡ : val :=
+   go: type.go:120:17 *)
+Definition Int64__Swapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "x" "new",
-    exception_do (let: "old" := (GoAlloc go.uint32 (GoZeroVal go.uint32 #())) in
-    let: "x" := (GoAlloc (go.PointerType Uint32) "x") in
-    let: "new" := (GoAlloc go.uint32 "new") in
-    return: (let: "$a0" := (StructFieldRef Uint32 "v"%go (![go.PointerType Uint32] "x")) in
-     let: "$a1" := (![go.uint32] "new") in
-     (FuncResolve SwapUint32 [] #()) "$a0" "$a1")).
+    exception_do (let: "old" := (GoAlloc go.int64 (GoZeroVal go.int64 #())) in
+    let: "x" := (GoAlloc (go.PointerType Int64) "x") in
+    let: "new" := (GoAlloc go.int64 "new") in
+    return: (let: "$a0" := (StructFieldRef Int64 "v"%go (![go.PointerType Int64] "x")) in
+     let: "$a1" := (![go.int64] "new") in
+     (FuncResolve SwapInt64 [] #()) "$a0" "$a1")).
 
-(* CompareAndSwap executes the compare-and-swap operation for x.
+Definition Int64ⁱᵐᵖˡ : go.type := go.StructType [
+  (go.FieldDecl "_0"%go noCopy);
+  (go.FieldDecl "_1"%go align64);
+  (go.FieldDecl "v"%go go.int64)
+].
 
-   go: type.go:156:18 *)
-Definition Uint32__CompareAndSwapⁱᵐᵖˡ : val :=
-  λ: "x" "old" "new",
-    exception_do (let: "swapped" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
-    let: "x" := (GoAlloc (go.PointerType Uint32) "x") in
-    let: "new" := (GoAlloc go.uint32 "new") in
-    let: "old" := (GoAlloc go.uint32 "old") in
-    return: (let: "$a0" := (StructFieldRef Uint32 "v"%go (![go.PointerType Uint32] "x")) in
-     let: "$a1" := (![go.uint32] "old") in
-     let: "$a2" := (![go.uint32] "new") in
-     (FuncResolve CompareAndSwapUint32 [] #()) "$a0" "$a1" "$a2")).
+Module Int64.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  _ : atomic.noCopy.t;
+  _ : atomic.align64.t;
+  v : w64;
+}.
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
+End def.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+
+End Int64.
+
+Class Int64_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Int64_zero_val  :: go.GoZeroValEq Int64 Int64.t;
+  #[global] Int64'ptr_Add_unfold :: MethodUnfold (go.PointerType (Int64)) "Add" (Int64__Addⁱᵐᵖˡ);
+  #[global] Int64'ptr_And_unfold :: MethodUnfold (go.PointerType (Int64)) "And" (Int64__Andⁱᵐᵖˡ);
+  #[global] Int64'ptr_CompareAndSwap_unfold :: MethodUnfold (go.PointerType (Int64)) "CompareAndSwap" (Int64__CompareAndSwapⁱᵐᵖˡ);
+  #[global] Int64'ptr_Load_unfold :: MethodUnfold (go.PointerType (Int64)) "Load" (Int64__Loadⁱᵐᵖˡ);
+  #[global] Int64'ptr_Or_unfold :: MethodUnfold (go.PointerType (Int64)) "Or" (Int64__Orⁱᵐᵖˡ);
+  #[global] Int64'ptr_Store_unfold :: MethodUnfold (go.PointerType (Int64)) "Store" (Int64__Storeⁱᵐᵖˡ);
+  #[global] Int64'ptr_Swap_unfold :: MethodUnfold (go.PointerType (Int64)) "Swap" (Int64__Swapⁱᵐᵖˡ);
+}.
+
+Definition Uint32 : go.type := go.Named "sync/atomic.Uint32"%go [].
 
 (* Add atomically adds delta to x and returns the new value.
 
    go: type.go:161:18 *)
-Definition Uint32__Addⁱᵐᵖˡ : val :=
+Definition Uint32__Addⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "x" "delta",
     exception_do (let: "new" := (GoAlloc go.uint32 (GoZeroVal go.uint32 #())) in
     let: "x" := (GoAlloc (go.PointerType Uint32) "x") in
@@ -425,7 +476,7 @@ Definition Uint32__Addⁱᵐᵖˡ : val :=
    provided as mask and returns the old value.
 
    go: type.go:165:18 *)
-Definition Uint32__Andⁱᵐᵖˡ : val :=
+Definition Uint32__Andⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "x" "mask",
     exception_do (let: "old" := (GoAlloc go.uint32 (GoZeroVal go.uint32 #())) in
     let: "x" := (GoAlloc (go.PointerType Uint32) "x") in
@@ -434,11 +485,34 @@ Definition Uint32__Andⁱᵐᵖˡ : val :=
      let: "$a1" := (![go.uint32] "mask") in
      (FuncResolve AndUint32 [] #()) "$a0" "$a1")).
 
+(* CompareAndSwap executes the compare-and-swap operation for x.
+
+   go: type.go:156:18 *)
+Definition Uint32__CompareAndSwapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "x" "old" "new",
+    exception_do (let: "swapped" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
+    let: "x" := (GoAlloc (go.PointerType Uint32) "x") in
+    let: "new" := (GoAlloc go.uint32 "new") in
+    let: "old" := (GoAlloc go.uint32 "old") in
+    return: (let: "$a0" := (StructFieldRef Uint32 "v"%go (![go.PointerType Uint32] "x")) in
+     let: "$a1" := (![go.uint32] "old") in
+     let: "$a2" := (![go.uint32] "new") in
+     (FuncResolve CompareAndSwapUint32 [] #()) "$a0" "$a1" "$a2")).
+
+(* Load atomically loads and returns the value stored in x.
+
+   go: type.go:147:18 *)
+Definition Uint32__Loadⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "x" <>,
+    exception_do (let: "x" := (GoAlloc (go.PointerType Uint32) "x") in
+    return: (let: "$a0" := (StructFieldRef Uint32 "v"%go (![go.PointerType Uint32] "x")) in
+     (FuncResolve LoadUint32 [] #()) "$a0")).
+
 (* Or atomically performs a bitwise OR operation on x using the bitmask
    provided as mask and returns the old value.
 
    go: type.go:169:18 *)
-Definition Uint32__Orⁱᵐᵖˡ : val :=
+Definition Uint32__Orⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "x" "mask",
     exception_do (let: "old" := (GoAlloc go.uint32 (GoZeroVal go.uint32 #())) in
     let: "x" := (GoAlloc (go.PointerType Uint32) "x") in
@@ -447,65 +521,68 @@ Definition Uint32__Orⁱᵐᵖˡ : val :=
      let: "$a1" := (![go.uint32] "mask") in
      (FuncResolve OrUint32 [] #()) "$a0" "$a1")).
 
-Definition Uint64ⁱᵐᵖˡ : go.type := go.StructType [
-  (go.FieldDecl "_0"%go noCopy);
-  (go.FieldDecl "_1"%go align64);
-  (go.FieldDecl "v"%go go.uint64)
-].
-
-Definition Uint64 : go.type := go.Named "sync/atomic.Uint64"%go [].
-
-(* Load atomically loads and returns the value stored in x.
-
-   go: type.go:181:18 *)
-Definition Uint64__Loadⁱᵐᵖˡ : val :=
-  λ: "x" <>,
-    exception_do (let: "x" := (GoAlloc (go.PointerType Uint64) "x") in
-    return: (let: "$a0" := (StructFieldRef Uint64 "v"%go (![go.PointerType Uint64] "x")) in
-     (FuncResolve LoadUint64 [] #()) "$a0")).
-
 (* Store atomically stores val into x.
 
-   go: type.go:184:18 *)
-Definition Uint64__Storeⁱᵐᵖˡ : val :=
+   go: type.go:150:18 *)
+Definition Uint32__Storeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "x" "val",
-    exception_do (let: "x" := (GoAlloc (go.PointerType Uint64) "x") in
-    let: "val" := (GoAlloc go.uint64 "val") in
-    do:  (let: "$a0" := (StructFieldRef Uint64 "v"%go (![go.PointerType Uint64] "x")) in
-    let: "$a1" := (![go.uint64] "val") in
-    (FuncResolve StoreUint64 [] #()) "$a0" "$a1");;;
+    exception_do (let: "x" := (GoAlloc (go.PointerType Uint32) "x") in
+    let: "val" := (GoAlloc go.uint32 "val") in
+    do:  (let: "$a0" := (StructFieldRef Uint32 "v"%go (![go.PointerType Uint32] "x")) in
+    let: "$a1" := (![go.uint32] "val") in
+    (FuncResolve StoreUint32 [] #()) "$a0" "$a1");;;
     return: #()).
 
 (* Swap atomically stores new into x and returns the previous value.
 
-   go: type.go:187:18 *)
-Definition Uint64__Swapⁱᵐᵖˡ : val :=
+   go: type.go:153:18 *)
+Definition Uint32__Swapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "x" "new",
-    exception_do (let: "old" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    let: "x" := (GoAlloc (go.PointerType Uint64) "x") in
-    let: "new" := (GoAlloc go.uint64 "new") in
-    return: (let: "$a0" := (StructFieldRef Uint64 "v"%go (![go.PointerType Uint64] "x")) in
-     let: "$a1" := (![go.uint64] "new") in
-     (FuncResolve SwapUint64 [] #()) "$a0" "$a1")).
+    exception_do (let: "old" := (GoAlloc go.uint32 (GoZeroVal go.uint32 #())) in
+    let: "x" := (GoAlloc (go.PointerType Uint32) "x") in
+    let: "new" := (GoAlloc go.uint32 "new") in
+    return: (let: "$a0" := (StructFieldRef Uint32 "v"%go (![go.PointerType Uint32] "x")) in
+     let: "$a1" := (![go.uint32] "new") in
+     (FuncResolve SwapUint32 [] #()) "$a0" "$a1")).
 
-(* CompareAndSwap executes the compare-and-swap operation for x.
+Definition Uint32ⁱᵐᵖˡ : go.type := go.StructType [
+  (go.FieldDecl "_0"%go noCopy);
+  (go.FieldDecl "v"%go go.uint32)
+].
 
-   go: type.go:190:18 *)
-Definition Uint64__CompareAndSwapⁱᵐᵖˡ : val :=
-  λ: "x" "old" "new",
-    exception_do (let: "swapped" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
-    let: "x" := (GoAlloc (go.PointerType Uint64) "x") in
-    let: "new" := (GoAlloc go.uint64 "new") in
-    let: "old" := (GoAlloc go.uint64 "old") in
-    return: (let: "$a0" := (StructFieldRef Uint64 "v"%go (![go.PointerType Uint64] "x")) in
-     let: "$a1" := (![go.uint64] "old") in
-     let: "$a2" := (![go.uint64] "new") in
-     (FuncResolve CompareAndSwapUint64 [] #()) "$a0" "$a1" "$a2")).
+Module Uint32.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  _ : atomic.noCopy.t;
+  v : w32;
+}.
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
+End def.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+
+End Uint32.
+
+Class Uint32_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Uint32_zero_val  :: go.GoZeroValEq Uint32 Uint32.t;
+  #[global] Uint32'ptr_Add_unfold :: MethodUnfold (go.PointerType (Uint32)) "Add" (Uint32__Addⁱᵐᵖˡ);
+  #[global] Uint32'ptr_And_unfold :: MethodUnfold (go.PointerType (Uint32)) "And" (Uint32__Andⁱᵐᵖˡ);
+  #[global] Uint32'ptr_CompareAndSwap_unfold :: MethodUnfold (go.PointerType (Uint32)) "CompareAndSwap" (Uint32__CompareAndSwapⁱᵐᵖˡ);
+  #[global] Uint32'ptr_Load_unfold :: MethodUnfold (go.PointerType (Uint32)) "Load" (Uint32__Loadⁱᵐᵖˡ);
+  #[global] Uint32'ptr_Or_unfold :: MethodUnfold (go.PointerType (Uint32)) "Or" (Uint32__Orⁱᵐᵖˡ);
+  #[global] Uint32'ptr_Store_unfold :: MethodUnfold (go.PointerType (Uint32)) "Store" (Uint32__Storeⁱᵐᵖˡ);
+  #[global] Uint32'ptr_Swap_unfold :: MethodUnfold (go.PointerType (Uint32)) "Swap" (Uint32__Swapⁱᵐᵖˡ);
+}.
+
+Definition Uint64 : go.type := go.Named "sync/atomic.Uint64"%go [].
 
 (* Add atomically adds delta to x and returns the new value.
 
    go: type.go:195:18 *)
-Definition Uint64__Addⁱᵐᵖˡ : val :=
+Definition Uint64__Addⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "x" "delta",
     exception_do (let: "new" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "x" := (GoAlloc (go.PointerType Uint64) "x") in
@@ -518,7 +595,7 @@ Definition Uint64__Addⁱᵐᵖˡ : val :=
    provided as mask and returns the old value.
 
    go: type.go:199:18 *)
-Definition Uint64__Andⁱᵐᵖˡ : val :=
+Definition Uint64__Andⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "x" "mask",
     exception_do (let: "old" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "x" := (GoAlloc (go.PointerType Uint64) "x") in
@@ -527,11 +604,34 @@ Definition Uint64__Andⁱᵐᵖˡ : val :=
      let: "$a1" := (![go.uint64] "mask") in
      (FuncResolve AndUint64 [] #()) "$a0" "$a1")).
 
+(* CompareAndSwap executes the compare-and-swap operation for x.
+
+   go: type.go:190:18 *)
+Definition Uint64__CompareAndSwapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "x" "old" "new",
+    exception_do (let: "swapped" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
+    let: "x" := (GoAlloc (go.PointerType Uint64) "x") in
+    let: "new" := (GoAlloc go.uint64 "new") in
+    let: "old" := (GoAlloc go.uint64 "old") in
+    return: (let: "$a0" := (StructFieldRef Uint64 "v"%go (![go.PointerType Uint64] "x")) in
+     let: "$a1" := (![go.uint64] "old") in
+     let: "$a2" := (![go.uint64] "new") in
+     (FuncResolve CompareAndSwapUint64 [] #()) "$a0" "$a1" "$a2")).
+
+(* Load atomically loads and returns the value stored in x.
+
+   go: type.go:181:18 *)
+Definition Uint64__Loadⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "x" <>,
+    exception_do (let: "x" := (GoAlloc (go.PointerType Uint64) "x") in
+    return: (let: "$a0" := (StructFieldRef Uint64 "v"%go (![go.PointerType Uint64] "x")) in
+     (FuncResolve LoadUint64 [] #()) "$a0")).
+
 (* Or atomically performs a bitwise OR operation on x using the bitmask
    provided as mask and returns the old value.
 
    go: type.go:203:18 *)
-Definition Uint64__Orⁱᵐᵖˡ : val :=
+Definition Uint64__Orⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "x" "mask",
     exception_do (let: "old" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "x" := (GoAlloc (go.PointerType Uint64) "x") in
@@ -540,189 +640,117 @@ Definition Uint64__Orⁱᵐᵖˡ : val :=
      let: "$a1" := (![go.uint64] "mask") in
      (FuncResolve OrUint64 [] #()) "$a0" "$a1")).
 
-Axiom Uintptrⁱᵐᵖˡ : go.type.
+(* Store atomically stores val into x.
+
+   go: type.go:184:18 *)
+Definition Uint64__Storeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "x" "val",
+    exception_do (let: "x" := (GoAlloc (go.PointerType Uint64) "x") in
+    let: "val" := (GoAlloc go.uint64 "val") in
+    do:  (let: "$a0" := (StructFieldRef Uint64 "v"%go (![go.PointerType Uint64] "x")) in
+    let: "$a1" := (![go.uint64] "val") in
+    (FuncResolve StoreUint64 [] #()) "$a0" "$a1");;;
+    return: #()).
+
+(* Swap atomically stores new into x and returns the previous value.
+
+   go: type.go:187:18 *)
+Definition Uint64__Swapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "x" "new",
+    exception_do (let: "old" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+    let: "x" := (GoAlloc (go.PointerType Uint64) "x") in
+    let: "new" := (GoAlloc go.uint64 "new") in
+    return: (let: "$a0" := (StructFieldRef Uint64 "v"%go (![go.PointerType Uint64] "x")) in
+     let: "$a1" := (![go.uint64] "new") in
+     (FuncResolve SwapUint64 [] #()) "$a0" "$a1")).
+
+Definition Uint64ⁱᵐᵖˡ : go.type := go.StructType [
+  (go.FieldDecl "_0"%go noCopy);
+  (go.FieldDecl "_1"%go align64);
+  (go.FieldDecl "v"%go go.uint64)
+].
+
+Module Uint64.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  _ : atomic.noCopy.t;
+  _ : atomic.align64.t;
+  v : w64;
+}.
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
+End def.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+
+End Uint64.
+
+Class Uint64_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Uint64_zero_val  :: go.GoZeroValEq Uint64 Uint64.t;
+  #[global] Uint64'ptr_Add_unfold :: MethodUnfold (go.PointerType (Uint64)) "Add" (Uint64__Addⁱᵐᵖˡ);
+  #[global] Uint64'ptr_And_unfold :: MethodUnfold (go.PointerType (Uint64)) "And" (Uint64__Andⁱᵐᵖˡ);
+  #[global] Uint64'ptr_CompareAndSwap_unfold :: MethodUnfold (go.PointerType (Uint64)) "CompareAndSwap" (Uint64__CompareAndSwapⁱᵐᵖˡ);
+  #[global] Uint64'ptr_Load_unfold :: MethodUnfold (go.PointerType (Uint64)) "Load" (Uint64__Loadⁱᵐᵖˡ);
+  #[global] Uint64'ptr_Or_unfold :: MethodUnfold (go.PointerType (Uint64)) "Or" (Uint64__Orⁱᵐᵖˡ);
+  #[global] Uint64'ptr_Store_unfold :: MethodUnfold (go.PointerType (Uint64)) "Store" (Uint64__Storeⁱᵐᵖˡ);
+  #[global] Uint64'ptr_Swap_unfold :: MethodUnfold (go.PointerType (Uint64)) "Swap" (Uint64__Swapⁱᵐᵖˡ);
+}.
+
+Axiom Uintptrⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
 Definition noCopyⁱᵐᵖˡ : go.type := go.StructType [
 ].
 
+Module noCopy.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+}.
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk|}.
+End def.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+
+End noCopy.
+
+Class noCopy_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] noCopy_zero_val  :: go.GoZeroValEq noCopy noCopy.t;
+}.
+
 Definition align64ⁱᵐᵖˡ : go.type := go.StructType [
 ].
 
-Definition Valueⁱᵐᵖˡ : go.type := go.StructType [
-  (go.FieldDecl "v"%go (go.InterfaceType []))
-].
+Module align64.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+}.
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk|}.
+End def.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
 
-Definition efaceWordsⁱᵐᵖˡ : go.type := go.StructType [
-  (go.FieldDecl "typ"%go unsafe.Pointer);
-  (go.FieldDecl "data"%go unsafe.Pointer)
-].
+End align64.
+
+Class align64_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] align64_zero_val  :: go.GoZeroValEq align64 align64.t;
+}.
 
 Definition efaceWords : go.type := go.Named "sync/atomic.efaceWords"%go [].
 
-Definition firstStoreInProgress : go_string := "sync/atomic.firstStoreInProgress"%go.
+Definition firstStoreInProgress {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync/atomic.firstStoreInProgress"%go.
+
+Definition runtime_procUnpin {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync/atomic.runtime_procUnpin"%go.
+
+Definition runtime_procPin {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync/atomic.runtime_procPin"%go.
 
 Definition Value : go.type := go.Named "sync/atomic.Value"%go [].
-
-(* Load returns the value set by the most recent Store.
-   It returns nil if there has been no call to Store for this Value.
-
-   go: value.go:28:17 *)
-Definition Value__Loadⁱᵐᵖˡ : val :=
-  λ: "v" <>,
-    exception_do (let: "val" := (GoAlloc (go.InterfaceType []) (GoZeroVal (go.InterfaceType []) #())) in
-    let: "v" := (GoAlloc (go.PointerType Value) "v") in
-    let: "vp" := (GoAlloc (go.PointerType efaceWords) (GoZeroVal (go.PointerType efaceWords) #())) in
-    let: "$r0" := (![go.PointerType Value] "v") in
-    do:  ("vp" <-[go.PointerType efaceWords] "$r0");;;
-    let: "typ" := (GoAlloc unsafe.Pointer (GoZeroVal unsafe.Pointer #())) in
-    let: "$r0" := (let: "$a0" := (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vp")) in
-    (FuncResolve LoadPointer [] #()) "$a0") in
-    do:  ("typ" <-[unsafe.Pointer] "$r0");;;
-    (if: ((![unsafe.Pointer] "typ") =⟨unsafe.Pointer⟩ #null) || ((![unsafe.Pointer] "typ") =⟨unsafe.Pointer⟩ (GlobalVarAddr firstStoreInProgress #()))
-    then return: (#interface.nil)
-    else do:  #());;;
-    let: "data" := (GoAlloc unsafe.Pointer (GoZeroVal unsafe.Pointer #())) in
-    let: "$r0" := (let: "$a0" := (StructFieldRef efaceWords "data"%go (![go.PointerType efaceWords] "vp")) in
-    (FuncResolve LoadPointer [] #()) "$a0") in
-    do:  ("data" <-[unsafe.Pointer] "$r0");;;
-    let: "vlp" := (GoAlloc (go.PointerType efaceWords) (GoZeroVal (go.PointerType efaceWords) #())) in
-    let: "$r0" := "val" in
-    do:  ("vlp" <-[go.PointerType efaceWords] "$r0");;;
-    let: "$r0" := (![unsafe.Pointer] "typ") in
-    do:  ((StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vlp")) <-[unsafe.Pointer] "$r0");;;
-    let: "$r0" := (![unsafe.Pointer] "data") in
-    do:  ((StructFieldRef efaceWords "data"%go (![go.PointerType efaceWords] "vlp")) <-[unsafe.Pointer] "$r0");;;
-    return: (![go.InterfaceType []] "val")).
-
-Definition runtime_procUnpin : go_string := "sync/atomic.runtime_procUnpin"%go.
-
-Definition runtime_procPin : go_string := "sync/atomic.runtime_procPin"%go.
-
-(* Store sets the value of the [Value] v to val.
-   All calls to Store for a given Value must use values of the same concrete type.
-   Store of an inconsistent type panics, as does Store(nil).
-
-   go: value.go:47:17 *)
-Definition Value__Storeⁱᵐᵖˡ : val :=
-  λ: "v" "val",
-    exception_do (let: "v" := (GoAlloc (go.PointerType Value) "v") in
-    let: "val" := (GoAlloc (go.InterfaceType []) "val") in
-    (if: (![go.InterfaceType []] "val") =⟨go.InterfaceType []⟩ #interface.nil
-    then
-      do:  (let: "$a0" := (InterfaceMake go.string #"sync/atomic: store of nil value into Value"%go) in
-      (FuncResolve go.panic [] #()) "$a0")
-    else do:  #());;;
-    let: "vp" := (GoAlloc (go.PointerType efaceWords) (GoZeroVal (go.PointerType efaceWords) #())) in
-    let: "$r0" := (![go.PointerType Value] "v") in
-    do:  ("vp" <-[go.PointerType efaceWords] "$r0");;;
-    let: "vlp" := (GoAlloc (go.PointerType efaceWords) (GoZeroVal (go.PointerType efaceWords) #())) in
-    let: "$r0" := "val" in
-    do:  ("vlp" <-[go.PointerType efaceWords] "$r0");;;
-    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      let: "typ" := (GoAlloc unsafe.Pointer (GoZeroVal unsafe.Pointer #())) in
-      let: "$r0" := (let: "$a0" := (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vp")) in
-      (FuncResolve LoadPointer [] #()) "$a0") in
-      do:  ("typ" <-[unsafe.Pointer] "$r0");;;
-      (if: (![unsafe.Pointer] "typ") =⟨unsafe.Pointer⟩ #null
-      then
-        do:  ((FuncResolve runtime_procPin [] #()) #());;;
-        (if: (~ (let: "$a0" := (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vp")) in
-        let: "$a1" := #null in
-        let: "$a2" := (GlobalVarAddr firstStoreInProgress #()) in
-        (FuncResolve CompareAndSwapPointer [] #()) "$a0" "$a1" "$a2"))
-        then
-          do:  ((FuncResolve runtime_procUnpin [] #()) #());;;
-          continue: #()
-        else do:  #());;;
-        do:  (let: "$a0" := (StructFieldRef efaceWords "data"%go (![go.PointerType efaceWords] "vp")) in
-        let: "$a1" := (![unsafe.Pointer] (StructFieldRef efaceWords "data"%go (![go.PointerType efaceWords] "vlp"))) in
-        (FuncResolve StorePointer [] #()) "$a0" "$a1");;;
-        do:  (let: "$a0" := (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vp")) in
-        let: "$a1" := (![unsafe.Pointer] (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vlp"))) in
-        (FuncResolve StorePointer [] #()) "$a0" "$a1");;;
-        do:  ((FuncResolve runtime_procUnpin [] #()) #());;;
-        return: (#())
-      else do:  #());;;
-      (if: (![unsafe.Pointer] "typ") =⟨unsafe.Pointer⟩ (GlobalVarAddr firstStoreInProgress #())
-      then continue: #()
-      else do:  #());;;
-      (if: (![unsafe.Pointer] "typ") ≠⟨unsafe.Pointer⟩ (![unsafe.Pointer] (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vlp")))
-      then
-        do:  (let: "$a0" := (InterfaceMake go.string #"sync/atomic: store of inconsistently typed value into Value"%go) in
-        (FuncResolve go.panic [] #()) "$a0")
-      else do:  #());;;
-      do:  (let: "$a0" := (StructFieldRef efaceWords "data"%go (![go.PointerType efaceWords] "vp")) in
-      let: "$a1" := (![unsafe.Pointer] (StructFieldRef efaceWords "data"%go (![go.PointerType efaceWords] "vlp"))) in
-      (FuncResolve StorePointer [] #()) "$a0" "$a1");;;
-      return: (#()));;;
-    return: #()).
-
-(* Swap stores new into Value and returns the previous value. It returns nil if
-   the Value is empty.
-
-   All calls to Swap for a given Value must use values of the same concrete
-   type. Swap of an inconsistent type panics, as does Swap(nil).
-
-   go: value.go:90:17 *)
-Definition Value__Swapⁱᵐᵖˡ : val :=
-  λ: "v" "new",
-    exception_do (let: "old" := (GoAlloc (go.InterfaceType []) (GoZeroVal (go.InterfaceType []) #())) in
-    let: "v" := (GoAlloc (go.PointerType Value) "v") in
-    let: "new" := (GoAlloc (go.InterfaceType []) "new") in
-    (if: (![go.InterfaceType []] "new") =⟨go.InterfaceType []⟩ #interface.nil
-    then
-      do:  (let: "$a0" := (InterfaceMake go.string #"sync/atomic: swap of nil value into Value"%go) in
-      (FuncResolve go.panic [] #()) "$a0")
-    else do:  #());;;
-    let: "vp" := (GoAlloc (go.PointerType efaceWords) (GoZeroVal (go.PointerType efaceWords) #())) in
-    let: "$r0" := (![go.PointerType Value] "v") in
-    do:  ("vp" <-[go.PointerType efaceWords] "$r0");;;
-    let: "np" := (GoAlloc (go.PointerType efaceWords) (GoZeroVal (go.PointerType efaceWords) #())) in
-    let: "$r0" := "new" in
-    do:  ("np" <-[go.PointerType efaceWords] "$r0");;;
-    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      let: "typ" := (GoAlloc unsafe.Pointer (GoZeroVal unsafe.Pointer #())) in
-      let: "$r0" := (let: "$a0" := (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vp")) in
-      (FuncResolve LoadPointer [] #()) "$a0") in
-      do:  ("typ" <-[unsafe.Pointer] "$r0");;;
-      (if: (![unsafe.Pointer] "typ") =⟨unsafe.Pointer⟩ #null
-      then
-        do:  ((FuncResolve runtime_procPin [] #()) #());;;
-        (if: (~ (let: "$a0" := (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vp")) in
-        let: "$a1" := #null in
-        let: "$a2" := (GlobalVarAddr firstStoreInProgress #()) in
-        (FuncResolve CompareAndSwapPointer [] #()) "$a0" "$a1" "$a2"))
-        then
-          do:  ((FuncResolve runtime_procUnpin [] #()) #());;;
-          continue: #()
-        else do:  #());;;
-        do:  (let: "$a0" := (StructFieldRef efaceWords "data"%go (![go.PointerType efaceWords] "vp")) in
-        let: "$a1" := (![unsafe.Pointer] (StructFieldRef efaceWords "data"%go (![go.PointerType efaceWords] "np"))) in
-        (FuncResolve StorePointer [] #()) "$a0" "$a1");;;
-        do:  (let: "$a0" := (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vp")) in
-        let: "$a1" := (![unsafe.Pointer] (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "np"))) in
-        (FuncResolve StorePointer [] #()) "$a0" "$a1");;;
-        do:  ((FuncResolve runtime_procUnpin [] #()) #());;;
-        return: (#interface.nil)
-      else do:  #());;;
-      (if: (![unsafe.Pointer] "typ") =⟨unsafe.Pointer⟩ (GlobalVarAddr firstStoreInProgress #())
-      then continue: #()
-      else do:  #());;;
-      (if: (![unsafe.Pointer] "typ") ≠⟨unsafe.Pointer⟩ (![unsafe.Pointer] (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "np")))
-      then
-        do:  (let: "$a0" := (InterfaceMake go.string #"sync/atomic: swap of inconsistently typed value into Value"%go) in
-        (FuncResolve go.panic [] #()) "$a0")
-      else do:  #());;;
-      let: "op" := (GoAlloc (go.PointerType efaceWords) (GoZeroVal (go.PointerType efaceWords) #())) in
-      let: "$r0" := "old" in
-      do:  ("op" <-[go.PointerType efaceWords] "$r0");;;
-      let: "$r0" := (![unsafe.Pointer] (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "np"))) in
-      let: "$r1" := (let: "$a0" := (StructFieldRef efaceWords "data"%go (![go.PointerType efaceWords] "vp")) in
-      let: "$a1" := (![unsafe.Pointer] (StructFieldRef efaceWords "data"%go (![go.PointerType efaceWords] "np"))) in
-      (FuncResolve SwapPointer [] #()) "$a0" "$a1") in
-      do:  ((StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "op")) <-[unsafe.Pointer] "$r0");;;
-      do:  ((StructFieldRef efaceWords "data"%go (![go.PointerType efaceWords] "op")) <-[unsafe.Pointer] "$r1");;;
-      return: (![go.InterfaceType []] "old"))).
 
 (* CompareAndSwap executes the compare-and-swap operation for the [Value].
 
@@ -731,7 +759,7 @@ Definition Value__Swapⁱᵐᵖˡ : val :=
    CompareAndSwap(old, nil).
 
    go: value.go:135:17 *)
-Definition Value__CompareAndSwapⁱᵐᵖˡ : val :=
+Definition Value__CompareAndSwapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "v" "old" "new",
     exception_do (let: "swapped" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "v" := (GoAlloc (go.PointerType Value) "v") in
@@ -809,107 +837,228 @@ Definition Value__CompareAndSwapⁱᵐᵖˡ : val :=
        let: "$a2" := (![unsafe.Pointer] (StructFieldRef efaceWords "data"%go (![go.PointerType efaceWords] "np"))) in
        (FuncResolve CompareAndSwapPointer [] #()) "$a0" "$a1" "$a2"))).
 
-Definition Pointer(T : go.type)  : go.type := go.Named "sync/atomic.Pointer"%go [T].
+(* Load returns the value set by the most recent Store.
+   It returns nil if there has been no call to Store for this Value.
 
-Definition Uintptr : go.type := go.Named "sync/atomic.Uintptr"%go [].
+   go: value.go:28:17 *)
+Definition Value__Loadⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "v" <>,
+    exception_do (let: "val" := (GoAlloc (go.InterfaceType []) (GoZeroVal (go.InterfaceType []) #())) in
+    let: "v" := (GoAlloc (go.PointerType Value) "v") in
+    let: "vp" := (GoAlloc (go.PointerType efaceWords) (GoZeroVal (go.PointerType efaceWords) #())) in
+    let: "$r0" := (![go.PointerType Value] "v") in
+    do:  ("vp" <-[go.PointerType efaceWords] "$r0");;;
+    let: "typ" := (GoAlloc unsafe.Pointer (GoZeroVal unsafe.Pointer #())) in
+    let: "$r0" := (let: "$a0" := (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vp")) in
+    (FuncResolve LoadPointer [] #()) "$a0") in
+    do:  ("typ" <-[unsafe.Pointer] "$r0");;;
+    (if: ((![unsafe.Pointer] "typ") =⟨unsafe.Pointer⟩ #null) || ((![unsafe.Pointer] "typ") =⟨unsafe.Pointer⟩ (GlobalVarAddr firstStoreInProgress #()))
+    then return: (#interface.nil)
+    else do:  #());;;
+    let: "data" := (GoAlloc unsafe.Pointer (GoZeroVal unsafe.Pointer #())) in
+    let: "$r0" := (let: "$a0" := (StructFieldRef efaceWords "data"%go (![go.PointerType efaceWords] "vp")) in
+    (FuncResolve LoadPointer [] #()) "$a0") in
+    do:  ("data" <-[unsafe.Pointer] "$r0");;;
+    let: "vlp" := (GoAlloc (go.PointerType efaceWords) (GoZeroVal (go.PointerType efaceWords) #())) in
+    let: "$r0" := "val" in
+    do:  ("vlp" <-[go.PointerType efaceWords] "$r0");;;
+    let: "$r0" := (![unsafe.Pointer] "typ") in
+    do:  ((StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vlp")) <-[unsafe.Pointer] "$r0");;;
+    let: "$r0" := (![unsafe.Pointer] "data") in
+    do:  ((StructFieldRef efaceWords "data"%go (![go.PointerType efaceWords] "vlp")) <-[unsafe.Pointer] "$r0");;;
+    return: (![go.InterfaceType []] "val")).
 
-#[global] Instance info' : PkgInfo atomic.atomic :=
-  {|
-    pkg_imported_pkgs := [];
-  |}.
+(* Store sets the value of the [Value] v to val.
+   All calls to Store for a given Value must use values of the same concrete type.
+   Store of an inconsistent type panics, as does Store(nil).
 
-Definition initialize' : val :=
-  λ: <>,
-    package.init atomic.atomic (λ: <>,
-      exception_do (let: "$r0" := (GoAlloc (Pointer go.int) (CompositeLiteral (Pointer go.int) (LiteralValue []))) in
-      do:  #())
-      ).
+   go: value.go:47:17 *)
+Definition Value__Storeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "v" "val",
+    exception_do (let: "v" := (GoAlloc (go.PointerType Value) "v") in
+    let: "val" := (GoAlloc (go.InterfaceType []) "val") in
+    (if: (![go.InterfaceType []] "val") =⟨go.InterfaceType []⟩ #interface.nil
+    then
+      do:  (let: "$a0" := (InterfaceMake go.string #"sync/atomic: store of nil value into Value"%go) in
+      (FuncResolve go.panic [] #()) "$a0")
+    else do:  #());;;
+    let: "vp" := (GoAlloc (go.PointerType efaceWords) (GoZeroVal (go.PointerType efaceWords) #())) in
+    let: "$r0" := (![go.PointerType Value] "v") in
+    do:  ("vp" <-[go.PointerType efaceWords] "$r0");;;
+    let: "vlp" := (GoAlloc (go.PointerType efaceWords) (GoZeroVal (go.PointerType efaceWords) #())) in
+    let: "$r0" := "val" in
+    do:  ("vlp" <-[go.PointerType efaceWords] "$r0");;;
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
+      let: "typ" := (GoAlloc unsafe.Pointer (GoZeroVal unsafe.Pointer #())) in
+      let: "$r0" := (let: "$a0" := (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vp")) in
+      (FuncResolve LoadPointer [] #()) "$a0") in
+      do:  ("typ" <-[unsafe.Pointer] "$r0");;;
+      (if: (![unsafe.Pointer] "typ") =⟨unsafe.Pointer⟩ #null
+      then
+        do:  ((FuncResolve runtime_procPin [] #()) #());;;
+        (if: (~ (let: "$a0" := (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vp")) in
+        let: "$a1" := #null in
+        let: "$a2" := (GlobalVarAddr firstStoreInProgress #()) in
+        (FuncResolve CompareAndSwapPointer [] #()) "$a0" "$a1" "$a2"))
+        then
+          do:  ((FuncResolve runtime_procUnpin [] #()) #());;;
+          continue: #()
+        else do:  #());;;
+        do:  (let: "$a0" := (StructFieldRef efaceWords "data"%go (![go.PointerType efaceWords] "vp")) in
+        let: "$a1" := (![unsafe.Pointer] (StructFieldRef efaceWords "data"%go (![go.PointerType efaceWords] "vlp"))) in
+        (FuncResolve StorePointer [] #()) "$a0" "$a1");;;
+        do:  (let: "$a0" := (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vp")) in
+        let: "$a1" := (![unsafe.Pointer] (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vlp"))) in
+        (FuncResolve StorePointer [] #()) "$a0" "$a1");;;
+        do:  ((FuncResolve runtime_procUnpin [] #()) #());;;
+        return: (#())
+      else do:  #());;;
+      (if: (![unsafe.Pointer] "typ") =⟨unsafe.Pointer⟩ (GlobalVarAddr firstStoreInProgress #())
+      then continue: #()
+      else do:  #());;;
+      (if: (![unsafe.Pointer] "typ") ≠⟨unsafe.Pointer⟩ (![unsafe.Pointer] (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vlp")))
+      then
+        do:  (let: "$a0" := (InterfaceMake go.string #"sync/atomic: store of inconsistently typed value into Value"%go) in
+        (FuncResolve go.panic [] #()) "$a0")
+      else do:  #());;;
+      do:  (let: "$a0" := (StructFieldRef efaceWords "data"%go (![go.PointerType efaceWords] "vp")) in
+      let: "$a1" := (![unsafe.Pointer] (StructFieldRef efaceWords "data"%go (![go.PointerType efaceWords] "vlp"))) in
+      (FuncResolve StorePointer [] #()) "$a0" "$a1");;;
+      return: (#()));;;
+    return: #()).
 
-Class Bool_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] Bool'ptr_CompareAndSwap_unfold :: MethodUnfold (go.PointerType (Bool)) "CompareAndSwap" (Bool__CompareAndSwapⁱᵐᵖˡ);
-  #[global] Bool'ptr_Load_unfold :: MethodUnfold (go.PointerType (Bool)) "Load" (Bool__Loadⁱᵐᵖˡ);
-  #[global] Bool'ptr_Store_unfold :: MethodUnfold (go.PointerType (Bool)) "Store" (Bool__Storeⁱᵐᵖˡ);
-  #[global] Bool'ptr_Swap_unfold :: MethodUnfold (go.PointerType (Bool)) "Swap" (Bool__Swapⁱᵐᵖˡ);
+(* Swap stores new into Value and returns the previous value. It returns nil if
+   the Value is empty.
+
+   All calls to Swap for a given Value must use values of the same concrete
+   type. Swap of an inconsistent type panics, as does Swap(nil).
+
+   go: value.go:90:17 *)
+Definition Value__Swapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "v" "new",
+    exception_do (let: "old" := (GoAlloc (go.InterfaceType []) (GoZeroVal (go.InterfaceType []) #())) in
+    let: "v" := (GoAlloc (go.PointerType Value) "v") in
+    let: "new" := (GoAlloc (go.InterfaceType []) "new") in
+    (if: (![go.InterfaceType []] "new") =⟨go.InterfaceType []⟩ #interface.nil
+    then
+      do:  (let: "$a0" := (InterfaceMake go.string #"sync/atomic: swap of nil value into Value"%go) in
+      (FuncResolve go.panic [] #()) "$a0")
+    else do:  #());;;
+    let: "vp" := (GoAlloc (go.PointerType efaceWords) (GoZeroVal (go.PointerType efaceWords) #())) in
+    let: "$r0" := (![go.PointerType Value] "v") in
+    do:  ("vp" <-[go.PointerType efaceWords] "$r0");;;
+    let: "np" := (GoAlloc (go.PointerType efaceWords) (GoZeroVal (go.PointerType efaceWords) #())) in
+    let: "$r0" := "new" in
+    do:  ("np" <-[go.PointerType efaceWords] "$r0");;;
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
+      let: "typ" := (GoAlloc unsafe.Pointer (GoZeroVal unsafe.Pointer #())) in
+      let: "$r0" := (let: "$a0" := (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vp")) in
+      (FuncResolve LoadPointer [] #()) "$a0") in
+      do:  ("typ" <-[unsafe.Pointer] "$r0");;;
+      (if: (![unsafe.Pointer] "typ") =⟨unsafe.Pointer⟩ #null
+      then
+        do:  ((FuncResolve runtime_procPin [] #()) #());;;
+        (if: (~ (let: "$a0" := (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vp")) in
+        let: "$a1" := #null in
+        let: "$a2" := (GlobalVarAddr firstStoreInProgress #()) in
+        (FuncResolve CompareAndSwapPointer [] #()) "$a0" "$a1" "$a2"))
+        then
+          do:  ((FuncResolve runtime_procUnpin [] #()) #());;;
+          continue: #()
+        else do:  #());;;
+        do:  (let: "$a0" := (StructFieldRef efaceWords "data"%go (![go.PointerType efaceWords] "vp")) in
+        let: "$a1" := (![unsafe.Pointer] (StructFieldRef efaceWords "data"%go (![go.PointerType efaceWords] "np"))) in
+        (FuncResolve StorePointer [] #()) "$a0" "$a1");;;
+        do:  (let: "$a0" := (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vp")) in
+        let: "$a1" := (![unsafe.Pointer] (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "np"))) in
+        (FuncResolve StorePointer [] #()) "$a0" "$a1");;;
+        do:  ((FuncResolve runtime_procUnpin [] #()) #());;;
+        return: (#interface.nil)
+      else do:  #());;;
+      (if: (![unsafe.Pointer] "typ") =⟨unsafe.Pointer⟩ (GlobalVarAddr firstStoreInProgress #())
+      then continue: #()
+      else do:  #());;;
+      (if: (![unsafe.Pointer] "typ") ≠⟨unsafe.Pointer⟩ (![unsafe.Pointer] (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "np")))
+      then
+        do:  (let: "$a0" := (InterfaceMake go.string #"sync/atomic: swap of inconsistently typed value into Value"%go) in
+        (FuncResolve go.panic [] #()) "$a0")
+      else do:  #());;;
+      let: "op" := (GoAlloc (go.PointerType efaceWords) (GoZeroVal (go.PointerType efaceWords) #())) in
+      let: "$r0" := "old" in
+      do:  ("op" <-[go.PointerType efaceWords] "$r0");;;
+      let: "$r0" := (![unsafe.Pointer] (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "np"))) in
+      let: "$r1" := (let: "$a0" := (StructFieldRef efaceWords "data"%go (![go.PointerType efaceWords] "vp")) in
+      let: "$a1" := (![unsafe.Pointer] (StructFieldRef efaceWords "data"%go (![go.PointerType efaceWords] "np"))) in
+      (FuncResolve SwapPointer [] #()) "$a0" "$a1") in
+      do:  ((StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "op")) <-[unsafe.Pointer] "$r0");;;
+      do:  ((StructFieldRef efaceWords "data"%go (![go.PointerType efaceWords] "op")) <-[unsafe.Pointer] "$r1");;;
+      return: (![go.InterfaceType []] "old"))).
+
+Definition Valueⁱᵐᵖˡ : go.type := go.StructType [
+  (go.FieldDecl "v"%go (go.InterfaceType []))
+].
+
+Module Value.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  v : interface.t;
 }.
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
+End def.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
 
-Class Pointer_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] Pointer'ptr_CompareAndSwap_unfold T :: MethodUnfold (go.PointerType (Pointer T)) "CompareAndSwap" (Pointer__CompareAndSwapⁱᵐᵖˡ T);
-  #[global] Pointer'ptr_Load_unfold T :: MethodUnfold (go.PointerType (Pointer T)) "Load" (Pointer__Loadⁱᵐᵖˡ T);
-  #[global] Pointer'ptr_Store_unfold T :: MethodUnfold (go.PointerType (Pointer T)) "Store" (Pointer__Storeⁱᵐᵖˡ T);
-  #[global] Pointer'ptr_Swap_unfold T :: MethodUnfold (go.PointerType (Pointer T)) "Swap" (Pointer__Swapⁱᵐᵖˡ T);
-}.
+End Value.
 
-Class Int32_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+Class Value_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Int32'ptr_Add_unfold :: MethodUnfold (go.PointerType (Int32)) "Add" (Int32__Addⁱᵐᵖˡ);
-  #[global] Int32'ptr_And_unfold :: MethodUnfold (go.PointerType (Int32)) "And" (Int32__Andⁱᵐᵖˡ);
-  #[global] Int32'ptr_CompareAndSwap_unfold :: MethodUnfold (go.PointerType (Int32)) "CompareAndSwap" (Int32__CompareAndSwapⁱᵐᵖˡ);
-  #[global] Int32'ptr_Load_unfold :: MethodUnfold (go.PointerType (Int32)) "Load" (Int32__Loadⁱᵐᵖˡ);
-  #[global] Int32'ptr_Or_unfold :: MethodUnfold (go.PointerType (Int32)) "Or" (Int32__Orⁱᵐᵖˡ);
-  #[global] Int32'ptr_Store_unfold :: MethodUnfold (go.PointerType (Int32)) "Store" (Int32__Storeⁱᵐᵖˡ);
-  #[global] Int32'ptr_Swap_unfold :: MethodUnfold (go.PointerType (Int32)) "Swap" (Int32__Swapⁱᵐᵖˡ);
-}.
-
-Class Int64_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] Int64'ptr_Add_unfold :: MethodUnfold (go.PointerType (Int64)) "Add" (Int64__Addⁱᵐᵖˡ);
-  #[global] Int64'ptr_And_unfold :: MethodUnfold (go.PointerType (Int64)) "And" (Int64__Andⁱᵐᵖˡ);
-  #[global] Int64'ptr_CompareAndSwap_unfold :: MethodUnfold (go.PointerType (Int64)) "CompareAndSwap" (Int64__CompareAndSwapⁱᵐᵖˡ);
-  #[global] Int64'ptr_Load_unfold :: MethodUnfold (go.PointerType (Int64)) "Load" (Int64__Loadⁱᵐᵖˡ);
-  #[global] Int64'ptr_Or_unfold :: MethodUnfold (go.PointerType (Int64)) "Or" (Int64__Orⁱᵐᵖˡ);
-  #[global] Int64'ptr_Store_unfold :: MethodUnfold (go.PointerType (Int64)) "Store" (Int64__Storeⁱᵐᵖˡ);
-  #[global] Int64'ptr_Swap_unfold :: MethodUnfold (go.PointerType (Int64)) "Swap" (Int64__Swapⁱᵐᵖˡ);
-}.
-
-Class Uint32_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] Uint32'ptr_Add_unfold :: MethodUnfold (go.PointerType (Uint32)) "Add" (Uint32__Addⁱᵐᵖˡ);
-  #[global] Uint32'ptr_And_unfold :: MethodUnfold (go.PointerType (Uint32)) "And" (Uint32__Andⁱᵐᵖˡ);
-  #[global] Uint32'ptr_CompareAndSwap_unfold :: MethodUnfold (go.PointerType (Uint32)) "CompareAndSwap" (Uint32__CompareAndSwapⁱᵐᵖˡ);
-  #[global] Uint32'ptr_Load_unfold :: MethodUnfold (go.PointerType (Uint32)) "Load" (Uint32__Loadⁱᵐᵖˡ);
-  #[global] Uint32'ptr_Or_unfold :: MethodUnfold (go.PointerType (Uint32)) "Or" (Uint32__Orⁱᵐᵖˡ);
-  #[global] Uint32'ptr_Store_unfold :: MethodUnfold (go.PointerType (Uint32)) "Store" (Uint32__Storeⁱᵐᵖˡ);
-  #[global] Uint32'ptr_Swap_unfold :: MethodUnfold (go.PointerType (Uint32)) "Swap" (Uint32__Swapⁱᵐᵖˡ);
-}.
-
-Class Uint64_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] Uint64'ptr_Add_unfold :: MethodUnfold (go.PointerType (Uint64)) "Add" (Uint64__Addⁱᵐᵖˡ);
-  #[global] Uint64'ptr_And_unfold :: MethodUnfold (go.PointerType (Uint64)) "And" (Uint64__Andⁱᵐᵖˡ);
-  #[global] Uint64'ptr_CompareAndSwap_unfold :: MethodUnfold (go.PointerType (Uint64)) "CompareAndSwap" (Uint64__CompareAndSwapⁱᵐᵖˡ);
-  #[global] Uint64'ptr_Load_unfold :: MethodUnfold (go.PointerType (Uint64)) "Load" (Uint64__Loadⁱᵐᵖˡ);
-  #[global] Uint64'ptr_Or_unfold :: MethodUnfold (go.PointerType (Uint64)) "Or" (Uint64__Orⁱᵐᵖˡ);
-  #[global] Uint64'ptr_Store_unfold :: MethodUnfold (go.PointerType (Uint64)) "Store" (Uint64__Storeⁱᵐᵖˡ);
-  #[global] Uint64'ptr_Swap_unfold :: MethodUnfold (go.PointerType (Uint64)) "Swap" (Uint64__Swapⁱᵐᵖˡ);
-}.
-
-Class Uintptr_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class noCopy_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class align64_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class Value_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
+  #[global] Value_zero_val  :: go.GoZeroValEq Value Value.t;
   #[global] Value'ptr_CompareAndSwap_unfold :: MethodUnfold (go.PointerType (Value)) "CompareAndSwap" (Value__CompareAndSwapⁱᵐᵖˡ);
   #[global] Value'ptr_Load_unfold :: MethodUnfold (go.PointerType (Value)) "Load" (Value__Loadⁱᵐᵖˡ);
   #[global] Value'ptr_Store_unfold :: MethodUnfold (go.PointerType (Value)) "Store" (Value__Storeⁱᵐᵖˡ);
   #[global] Value'ptr_Swap_unfold :: MethodUnfold (go.PointerType (Value)) "Swap" (Value__Swapⁱᵐᵖˡ);
 }.
 
-Class efaceWords_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+Definition efaceWordsⁱᵐᵖˡ : go.type := go.StructType [
+  (go.FieldDecl "typ"%go unsafe.Pointer);
+  (go.FieldDecl "data"%go unsafe.Pointer)
+].
+
+Module efaceWords.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  typ : loc;
+  data : loc;
+}.
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
+End def.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+
+End efaceWords.
+
+Class efaceWords_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
+  #[global] efaceWords_zero_val  :: go.GoZeroValEq efaceWords efaceWords.t;
 }.
 
-Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+#[global] Instance info' : PkgInfo atomic.atomic := 
+{|
+  pkg_imported_pkgs := []
+|}.
+
+Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: <>,
+    package.init atomic.atomic (λ: <>,
+      exception_do (let: "$r0" := (GoAlloc (Pointer go.int) (CompositeLiteral (Pointer go.int) (LiteralValue []))) in
+      do:  #())
+      ).
+
+Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Bool_instance :: Bool_Assumptions;
   #[global] Pointer_instance :: Pointer_Assumptions;
@@ -917,7 +1066,6 @@ Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions
   #[global] Int64_instance :: Int64_Assumptions;
   #[global] Uint32_instance :: Uint32_Assumptions;
   #[global] Uint64_instance :: Uint64_Assumptions;
-  #[global] Uintptr_instance :: Uintptr_Assumptions;
   #[global] noCopy_instance :: noCopy_Assumptions;
   #[global] align64_instance :: align64_Assumptions;
   #[global] Value_instance :: Value_Assumptions;
@@ -944,6 +1092,4 @@ Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions
   #[global] StoreUint64_unfold :: FuncUnfold StoreUint64 [] (StoreUint64ⁱᵐᵖˡ);
   #[global] b32_unfold :: FuncUnfold b32 [] (b32ⁱᵐᵖˡ);
 }.
-
-End code.
 End atomic.

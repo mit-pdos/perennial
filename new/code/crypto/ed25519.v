@@ -5,77 +5,65 @@ Definition ed25519 : go_string := "crypto/ed25519".
 
 Module ed25519.
 
-Section code.
-Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom PublicKeySize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
+Axiom PrivateKeySize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom PublicKeySize : Z.
+Axiom SignatureSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom PrivateKeySize : Z.
-
-Axiom SignatureSize : Z.
-
-Axiom SeedSize : Z.
+Axiom SeedSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
 Definition PublicKeyⁱᵐᵖˡ : go.type := go.SliceType go.byte.
 
-Axiom PrivateKeyⁱᵐᵖˡ : go.type.
-
-Definition privateKeyCache : go_string := "crypto/ed25519.privateKeyCache"%go.
-
-Axiom Optionsⁱᵐᵖˡ : go.type.
-
-Definition GenerateKey : go_string := "crypto/ed25519.GenerateKey"%go.
-
-Definition NewKeyFromSeed : go_string := "crypto/ed25519.NewKeyFromSeed"%go.
-
-Definition newKeyFromSeed : go_string := "crypto/ed25519.newKeyFromSeed"%go.
-
-Definition Sign : go_string := "crypto/ed25519.Sign"%go.
-
-Definition sign : go_string := "crypto/ed25519.sign"%go.
-
-Definition Verify : go_string := "crypto/ed25519.Verify"%go.
-
-Definition VerifyWithOptions : go_string := "crypto/ed25519.VerifyWithOptions"%go.
-
 Definition PublicKey : go.type := go.Named "crypto/ed25519.PublicKey"%go [].
 
-Definition PrivateKey : go.type := go.Named "crypto/ed25519.PrivateKey"%go [].
+Module PublicKey.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Definition t  : Type := slice.t.
+End def.
+End PublicKey.
 
-Definition Options : go.type := go.Named "crypto/ed25519.Options"%go [].
+Class PublicKey_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] PublicKey_zero_val  :: go.GoZeroValEq PublicKey PublicKey.t;
+}.
 
-#[global] Instance info' : PkgInfo ed25519.ed25519 :=
-  {|
-    pkg_imported_pkgs := [];
-  |}.
+Axiom PrivateKeyⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom _'init : val.
+Definition privateKeyCache {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "crypto/ed25519.privateKeyCache"%go.
 
-Definition initialize' : val :=
+Axiom Optionsⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Definition GenerateKey {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "crypto/ed25519.GenerateKey"%go.
+
+Definition NewKeyFromSeed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "crypto/ed25519.NewKeyFromSeed"%go.
+
+Definition newKeyFromSeed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "crypto/ed25519.newKeyFromSeed"%go.
+
+Definition Sign {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "crypto/ed25519.Sign"%go.
+
+Definition sign {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "crypto/ed25519.sign"%go.
+
+Definition Verify {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "crypto/ed25519.Verify"%go.
+
+Definition VerifyWithOptions {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "crypto/ed25519.VerifyWithOptions"%go.
+
+#[global] Instance info' : PkgInfo ed25519.ed25519 := 
+{|
+  pkg_imported_pkgs := []
+|}.
+
+Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
+
+Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init ed25519.ed25519 (λ: <>,
       exception_do (do:  #())
       ).
 
-Class PublicKey_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class PrivateKey_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class Options_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] PublicKey_instance :: PublicKey_Assumptions;
-  #[global] PrivateKey_instance :: PrivateKey_Assumptions;
-  #[global] Options_instance :: Options_Assumptions;
 }.
-
-End code.
 End ed25519.

@@ -5,24 +5,18 @@ Definition unsafe : go_string := "unsafe".
 
 Module unsafe.
 
-Section code.
-Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+#[global] Instance info' : PkgInfo unsafe.unsafe := 
+{|
+  pkg_imported_pkgs := []
+|}.
 
-
-#[global] Instance info' : PkgInfo unsafe.unsafe :=
-  {|
-    pkg_imported_pkgs := [];
-  |}.
-
-Definition initialize' : val :=
+Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init unsafe.unsafe (λ: <>,
       exception_do (do:  #())
       ).
 
-Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
 }.
-
-End code.
 End unsafe.

@@ -7,244 +7,196 @@ Definition io : go_string := "io".
 
 Module io.
 
-Section code.
-Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom SeekStart : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
+Axiom SeekCurrent : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom SeekStart : Z.
+Axiom SeekEnd : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom SeekCurrent : Z.
+Definition ErrShortWrite {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "io.ErrShortWrite"%go.
 
-Axiom SeekEnd : Z.
+Axiom ErrShortWrite'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition ErrShortWrite : go_string := "io.ErrShortWrite"%go.
+Definition errInvalidWrite {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "io.errInvalidWrite"%go.
 
-Axiom ErrShortWrite'init : val.
+Axiom errInvalidWrite'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition errInvalidWrite : go_string := "io.errInvalidWrite"%go.
+Definition ErrShortBuffer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "io.ErrShortBuffer"%go.
 
-Axiom errInvalidWrite'init : val.
+Axiom ErrShortBuffer'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition ErrShortBuffer : go_string := "io.ErrShortBuffer"%go.
+Definition EOF {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "io.EOF"%go.
 
-Axiom ErrShortBuffer'init : val.
+Axiom EOF'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition EOF : go_string := "io.EOF"%go.
+Definition ErrUnexpectedEOF {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "io.ErrUnexpectedEOF"%go.
 
-Axiom EOF'init : val.
+Axiom ErrUnexpectedEOF'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition ErrUnexpectedEOF : go_string := "io.ErrUnexpectedEOF"%go.
+Definition ErrNoProgress {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "io.ErrNoProgress"%go.
 
-Axiom ErrUnexpectedEOF'init : val.
-
-Definition ErrNoProgress : go_string := "io.ErrNoProgress"%go.
-
-Axiom ErrNoProgress'init : val.
+Axiom ErrNoProgress'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition Readerⁱᵐᵖˡ : go.type := go.InterfaceType [go.MethodElem #"Read"%go (go.Signature [go.SliceType go.byte] false [go.int; go.error])].
 
-Definition Writerⁱᵐᵖˡ : go.type := go.InterfaceType [go.MethodElem #"Write"%go (go.Signature [go.SliceType go.byte] false [go.int; go.error])].
-
-Axiom Closerⁱᵐᵖˡ : go.type.
-
-Axiom Seekerⁱᵐᵖˡ : go.type.
-
-Axiom ReadWriterⁱᵐᵖˡ : go.type.
-
-Axiom ReadCloserⁱᵐᵖˡ : go.type.
-
-Axiom WriteCloserⁱᵐᵖˡ : go.type.
-
-Axiom ReadWriteCloserⁱᵐᵖˡ : go.type.
-
-Axiom ReadSeekerⁱᵐᵖˡ : go.type.
-
-Axiom ReadSeekCloserⁱᵐᵖˡ : go.type.
-
-Axiom WriteSeekerⁱᵐᵖˡ : go.type.
-
-Axiom ReadWriteSeekerⁱᵐᵖˡ : go.type.
-
-Axiom ReaderFromⁱᵐᵖˡ : go.type.
-
-Axiom WriterToⁱᵐᵖˡ : go.type.
-
-Axiom ReaderAtⁱᵐᵖˡ : go.type.
-
-Axiom WriterAtⁱᵐᵖˡ : go.type.
-
-Axiom ByteReaderⁱᵐᵖˡ : go.type.
-
-Axiom ByteScannerⁱᵐᵖˡ : go.type.
-
-Axiom ByteWriterⁱᵐᵖˡ : go.type.
-
-Axiom RuneReaderⁱᵐᵖˡ : go.type.
-
-Axiom RuneScannerⁱᵐᵖˡ : go.type.
-
-Axiom StringWriterⁱᵐᵖˡ : go.type.
-
-Definition WriteString : go_string := "io.WriteString"%go.
-
-Definition ReadAtLeast : go_string := "io.ReadAtLeast"%go.
-
-Definition ReadFull : go_string := "io.ReadFull"%go.
-
-Definition CopyN : go_string := "io.CopyN"%go.
-
-Definition Copy : go_string := "io.Copy"%go.
-
-Definition CopyBuffer : go_string := "io.CopyBuffer"%go.
-
-Definition copyBuffer : go_string := "io.copyBuffer"%go.
-
-Definition LimitReader : go_string := "io.LimitReader"%go.
-
-Axiom LimitedReaderⁱᵐᵖˡ : go.type.
-
-Definition NewSectionReader : go_string := "io.NewSectionReader"%go.
-
-Axiom SectionReaderⁱᵐᵖˡ : go.type.
-
-Definition errWhence : go_string := "io.errWhence"%go.
-
-Axiom errWhence'init : val.
-
-Definition errOffset : go_string := "io.errOffset"%go.
-
-Axiom errOffset'init : val.
-
-Axiom OffsetWriterⁱᵐᵖˡ : go.type.
-
-Definition NewOffsetWriter : go_string := "io.NewOffsetWriter"%go.
-
-Definition TeeReader : go_string := "io.TeeReader"%go.
-
-Axiom teeReaderⁱᵐᵖˡ : go.type.
-
-Definition Discard : go_string := "io.Discard"%go.
-
-Axiom Discard'init : val.
-
-Axiom discardⁱᵐᵖˡ : go.type.
-
-Definition blackHolePool : go_string := "io.blackHolePool"%go.
-
-Axiom blackHolePool'init : val.
-
-Definition NopCloser : go_string := "io.NopCloser"%go.
-
-Axiom nopCloserⁱᵐᵖˡ : go.type.
-
-Axiom nopCloserWriterToⁱᵐᵖˡ : go.type.
-
-Definition ReadAll : go_string := "io.ReadAll"%go.
-
-Axiom eofReaderⁱᵐᵖˡ : go.type.
-
-Axiom multiReaderⁱᵐᵖˡ : go.type.
-
-Definition MultiReader : go_string := "io.MultiReader"%go.
-
-Axiom multiWriterⁱᵐᵖˡ : go.type.
-
-Definition MultiWriter : go_string := "io.MultiWriter"%go.
-
-Axiom onceErrorⁱᵐᵖˡ : go.type.
-
-Definition ErrClosedPipe : go_string := "io.ErrClosedPipe"%go.
-
-Axiom ErrClosedPipe'init : val.
-
-Axiom pipeⁱᵐᵖˡ : go.type.
-
-Axiom PipeReaderⁱᵐᵖˡ : go.type.
-
-Axiom PipeWriterⁱᵐᵖˡ : go.type.
-
-Definition Pipe : go_string := "io.Pipe"%go.
-
 Definition Reader : go.type := go.Named "io.Reader"%go [].
+
+Module Reader.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Definition t  : Type := interface.t.
+End def.
+End Reader.
+
+Class Reader_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Reader_zero_val  :: go.GoZeroValEq Reader Reader.t;
+}.
+
+Definition Writerⁱᵐᵖˡ : go.type := go.InterfaceType [go.MethodElem #"Write"%go (go.Signature [go.SliceType go.byte] false [go.int; go.error])].
 
 Definition Writer : go.type := go.Named "io.Writer"%go [].
 
-Definition Closer : go.type := go.Named "io.Closer"%go [].
+Module Writer.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Definition t  : Type := interface.t.
+End def.
+End Writer.
 
-Definition Seeker : go.type := go.Named "io.Seeker"%go [].
+Class Writer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Writer_zero_val  :: go.GoZeroValEq Writer Writer.t;
+}.
 
-Definition ReadWriter : go.type := go.Named "io.ReadWriter"%go [].
+Axiom Closerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition ReadCloser : go.type := go.Named "io.ReadCloser"%go [].
+Axiom Seekerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition WriteCloser : go.type := go.Named "io.WriteCloser"%go [].
+Axiom ReadWriterⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition ReadWriteCloser : go.type := go.Named "io.ReadWriteCloser"%go [].
+Axiom ReadCloserⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition ReadSeeker : go.type := go.Named "io.ReadSeeker"%go [].
+Axiom WriteCloserⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition ReadSeekCloser : go.type := go.Named "io.ReadSeekCloser"%go [].
+Axiom ReadWriteCloserⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition WriteSeeker : go.type := go.Named "io.WriteSeeker"%go [].
+Axiom ReadSeekerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition ReadWriteSeeker : go.type := go.Named "io.ReadWriteSeeker"%go [].
+Axiom ReadSeekCloserⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition ReaderFrom : go.type := go.Named "io.ReaderFrom"%go [].
+Axiom WriteSeekerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition WriterTo : go.type := go.Named "io.WriterTo"%go [].
+Axiom ReadWriteSeekerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition ReaderAt : go.type := go.Named "io.ReaderAt"%go [].
+Axiom ReaderFromⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition WriterAt : go.type := go.Named "io.WriterAt"%go [].
+Axiom WriterToⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition ByteReader : go.type := go.Named "io.ByteReader"%go [].
+Axiom ReaderAtⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition ByteScanner : go.type := go.Named "io.ByteScanner"%go [].
+Axiom WriterAtⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition ByteWriter : go.type := go.Named "io.ByteWriter"%go [].
+Axiom ByteReaderⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition RuneReader : go.type := go.Named "io.RuneReader"%go [].
+Axiom ByteScannerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition RuneScanner : go.type := go.Named "io.RuneScanner"%go [].
+Axiom ByteWriterⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition StringWriter : go.type := go.Named "io.StringWriter"%go [].
+Axiom RuneReaderⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition LimitedReader : go.type := go.Named "io.LimitedReader"%go [].
+Axiom RuneScannerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition SectionReader : go.type := go.Named "io.SectionReader"%go [].
+Axiom StringWriterⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition OffsetWriter : go.type := go.Named "io.OffsetWriter"%go [].
+Definition WriteString {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "io.WriteString"%go.
 
-Definition teeReader : go.type := go.Named "io.teeReader"%go [].
+Definition ReadAtLeast {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "io.ReadAtLeast"%go.
 
-Definition discard : go.type := go.Named "io.discard"%go [].
+Definition ReadFull {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "io.ReadFull"%go.
 
-Definition nopCloser : go.type := go.Named "io.nopCloser"%go [].
+Definition CopyN {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "io.CopyN"%go.
 
-Definition nopCloserWriterTo : go.type := go.Named "io.nopCloserWriterTo"%go [].
+Definition Copy {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "io.Copy"%go.
 
-Definition eofReader : go.type := go.Named "io.eofReader"%go [].
+Definition CopyBuffer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "io.CopyBuffer"%go.
 
-Definition multiReader : go.type := go.Named "io.multiReader"%go [].
+Definition copyBuffer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "io.copyBuffer"%go.
 
-Definition multiWriter : go.type := go.Named "io.multiWriter"%go [].
+Definition LimitReader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "io.LimitReader"%go.
 
-Definition onceError : go.type := go.Named "io.onceError"%go [].
+Axiom LimitedReaderⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition pipe : go.type := go.Named "io.pipe"%go [].
+Definition NewSectionReader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "io.NewSectionReader"%go.
 
-Definition PipeReader : go.type := go.Named "io.PipeReader"%go [].
+Axiom SectionReaderⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition PipeWriter : go.type := go.Named "io.PipeWriter"%go [].
+Definition errWhence {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "io.errWhence"%go.
 
-#[global] Instance info' : PkgInfo io.io :=
-  {|
-    pkg_imported_pkgs := [code.errors.errors; code.sync.sync];
-  |}.
+Axiom errWhence'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _'init : val.
+Definition errOffset {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "io.errOffset"%go.
 
-Definition initialize' : val :=
+Axiom errOffset'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
+
+Axiom OffsetWriterⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Definition NewOffsetWriter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "io.NewOffsetWriter"%go.
+
+Definition TeeReader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "io.TeeReader"%go.
+
+Axiom teeReaderⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Definition Discard {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "io.Discard"%go.
+
+Axiom Discard'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
+
+Axiom discardⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Definition blackHolePool {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "io.blackHolePool"%go.
+
+Axiom blackHolePool'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
+
+Definition NopCloser {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "io.NopCloser"%go.
+
+Axiom nopCloserⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom nopCloserWriterToⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Definition ReadAll {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "io.ReadAll"%go.
+
+Axiom eofReaderⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom multiReaderⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Definition MultiReader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "io.MultiReader"%go.
+
+Axiom multiWriterⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Definition MultiWriter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "io.MultiWriter"%go.
+
+Axiom onceErrorⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Definition ErrClosedPipe {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "io.ErrClosedPipe"%go.
+
+Axiom ErrClosedPipe'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
+
+Axiom pipeⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom PipeReaderⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom PipeWriterⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Definition Pipe {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "io.Pipe"%go.
+
+#[global] Instance info' : PkgInfo io.io := 
+{|
+  pkg_imported_pkgs := [code.errors.errors; code.sync.sync]
+|}.
+
+Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
+
+Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init io.io (λ: <>,
       exception_do (do:  (sync.initialize' #());;;
@@ -265,189 +217,9 @@ Definition initialize' : val :=
       do:  (ErrClosedPipe'init #()))
       ).
 
-Class Reader_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class Writer_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class Closer_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class Seeker_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class ReadWriter_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class ReadCloser_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class WriteCloser_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class ReadWriteCloser_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class ReadSeeker_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class ReadSeekCloser_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class WriteSeeker_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class ReadWriteSeeker_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class ReaderFrom_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class WriterTo_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class ReaderAt_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class WriterAt_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class ByteReader_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class ByteScanner_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class ByteWriter_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class RuneReader_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class RuneScanner_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class StringWriter_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class LimitedReader_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class SectionReader_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class OffsetWriter_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class teeReader_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class discard_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class nopCloser_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class nopCloserWriterTo_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class eofReader_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class multiReader_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class multiWriter_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class onceError_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class pipe_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class PipeReader_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class PipeWriter_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Reader_instance :: Reader_Assumptions;
   #[global] Writer_instance :: Writer_Assumptions;
-  #[global] Closer_instance :: Closer_Assumptions;
-  #[global] Seeker_instance :: Seeker_Assumptions;
-  #[global] ReadWriter_instance :: ReadWriter_Assumptions;
-  #[global] ReadCloser_instance :: ReadCloser_Assumptions;
-  #[global] WriteCloser_instance :: WriteCloser_Assumptions;
-  #[global] ReadWriteCloser_instance :: ReadWriteCloser_Assumptions;
-  #[global] ReadSeeker_instance :: ReadSeeker_Assumptions;
-  #[global] ReadSeekCloser_instance :: ReadSeekCloser_Assumptions;
-  #[global] WriteSeeker_instance :: WriteSeeker_Assumptions;
-  #[global] ReadWriteSeeker_instance :: ReadWriteSeeker_Assumptions;
-  #[global] ReaderFrom_instance :: ReaderFrom_Assumptions;
-  #[global] WriterTo_instance :: WriterTo_Assumptions;
-  #[global] ReaderAt_instance :: ReaderAt_Assumptions;
-  #[global] WriterAt_instance :: WriterAt_Assumptions;
-  #[global] ByteReader_instance :: ByteReader_Assumptions;
-  #[global] ByteScanner_instance :: ByteScanner_Assumptions;
-  #[global] ByteWriter_instance :: ByteWriter_Assumptions;
-  #[global] RuneReader_instance :: RuneReader_Assumptions;
-  #[global] RuneScanner_instance :: RuneScanner_Assumptions;
-  #[global] StringWriter_instance :: StringWriter_Assumptions;
-  #[global] LimitedReader_instance :: LimitedReader_Assumptions;
-  #[global] SectionReader_instance :: SectionReader_Assumptions;
-  #[global] OffsetWriter_instance :: OffsetWriter_Assumptions;
-  #[global] teeReader_instance :: teeReader_Assumptions;
-  #[global] discard_instance :: discard_Assumptions;
-  #[global] nopCloser_instance :: nopCloser_Assumptions;
-  #[global] nopCloserWriterTo_instance :: nopCloserWriterTo_Assumptions;
-  #[global] eofReader_instance :: eofReader_Assumptions;
-  #[global] multiReader_instance :: multiReader_Assumptions;
-  #[global] multiWriter_instance :: multiWriter_Assumptions;
-  #[global] onceError_instance :: onceError_Assumptions;
-  #[global] pipe_instance :: pipe_Assumptions;
-  #[global] PipeReader_instance :: PipeReader_Assumptions;
-  #[global] PipeWriter_instance :: PipeWriter_Assumptions;
 }.
-
-End code.
 End io.

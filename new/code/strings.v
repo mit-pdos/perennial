@@ -5,10 +5,6 @@ Definition strings : go_string := "strings".
 
 Module strings.
 
-Section code.
-Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-
-
 Definition Builder : go.type := go.Named "strings.Builder"%go [].
 
 Definition Builderⁱᵐᵖˡ : go.type := go.StructType [
@@ -16,303 +12,233 @@ Definition Builderⁱᵐᵖˡ : go.type := go.StructType [
   (go.FieldDecl "buf"%go (go.SliceType go.byte))
 ].
 
-Definition Clone : go_string := "strings.Clone"%go.
+Module Builder.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  addr : loc;
+  buf : slice.t;
+}.
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
+End def.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
 
-Definition Compare : go_string := "strings.Compare"%go.
+End Builder.
 
-Definition Lines : go_string := "strings.Lines"%go.
+Class Builder_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Builder_zero_val  :: go.GoZeroValEq Builder Builder.t;
+}.
 
-Definition splitSeq : go_string := "strings.splitSeq"%go.
+Definition Clone {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.Clone"%go.
 
-Definition SplitSeq : go_string := "strings.SplitSeq"%go.
+Definition Compare {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.Compare"%go.
 
-Definition SplitAfterSeq : go_string := "strings.SplitAfterSeq"%go.
+Definition Lines {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.Lines"%go.
 
-Definition FieldsSeq : go_string := "strings.FieldsSeq"%go.
+Definition splitSeq {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.splitSeq"%go.
 
-Definition FieldsFuncSeq : go_string := "strings.FieldsFuncSeq"%go.
+Definition SplitSeq {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.SplitSeq"%go.
 
-Axiom Readerⁱᵐᵖˡ : go.type.
+Definition SplitAfterSeq {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.SplitAfterSeq"%go.
 
-Definition NewReader : go_string := "strings.NewReader"%go.
+Definition FieldsSeq {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.FieldsSeq"%go.
 
-Axiom Replacerⁱᵐᵖˡ : go.type.
+Definition FieldsFuncSeq {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.FieldsFuncSeq"%go.
 
-Axiom replacerⁱᵐᵖˡ : go.type.
+Axiom Readerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition NewReplacer : go_string := "strings.NewReplacer"%go.
+Definition NewReader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.NewReader"%go.
 
-Axiom trieNodeⁱᵐᵖˡ : go.type.
+Axiom Replacerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom genericReplacerⁱᵐᵖˡ : go.type.
+Axiom replacerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition makeGenericReplacer : go_string := "strings.makeGenericReplacer"%go.
+Definition NewReplacer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.NewReplacer"%go.
 
-Axiom appendSliceWriterⁱᵐᵖˡ : go.type.
+Axiom trieNodeⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom stringWriterⁱᵐᵖˡ : go.type.
+Axiom genericReplacerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition getStringWriter : go_string := "strings.getStringWriter"%go.
+Definition makeGenericReplacer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.makeGenericReplacer"%go.
 
-Axiom singleStringReplacerⁱᵐᵖˡ : go.type.
+Axiom appendSliceWriterⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition makeSingleStringReplacer : go_string := "strings.makeSingleStringReplacer"%go.
+Axiom stringWriterⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom byteReplacerⁱᵐᵖˡ : go.type.
+Definition getStringWriter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.getStringWriter"%go.
 
-Axiom byteStringReplacerⁱᵐᵖˡ : go.type.
+Axiom singleStringReplacerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom countCutOff : Z.
+Definition makeSingleStringReplacer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.makeSingleStringReplacer"%go.
 
-Axiom stringFinderⁱᵐᵖˡ : go.type.
+Axiom byteReplacerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition makeStringFinder : go_string := "strings.makeStringFinder"%go.
+Axiom byteStringReplacerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition longestCommonSuffix : go_string := "strings.longestCommonSuffix"%go.
+Axiom countCutOff : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom maxInt : val.
+Axiom stringFinderⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition explode : go_string := "strings.explode"%go.
+Definition makeStringFinder {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.makeStringFinder"%go.
 
-Definition Count : go_string := "strings.Count"%go.
+Definition longestCommonSuffix {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.longestCommonSuffix"%go.
 
-Definition Contains : go_string := "strings.Contains"%go.
+Axiom maxInt : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition ContainsAny : go_string := "strings.ContainsAny"%go.
+Definition explode {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.explode"%go.
 
-Definition ContainsRune : go_string := "strings.ContainsRune"%go.
+Definition Count {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.Count"%go.
 
-Definition ContainsFunc : go_string := "strings.ContainsFunc"%go.
+Definition Contains {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.Contains"%go.
 
-Definition LastIndex : go_string := "strings.LastIndex"%go.
+Definition ContainsAny {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.ContainsAny"%go.
 
-Definition IndexByte : go_string := "strings.IndexByte"%go.
+Definition ContainsRune {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.ContainsRune"%go.
 
-Definition IndexRune : go_string := "strings.IndexRune"%go.
+Definition ContainsFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.ContainsFunc"%go.
 
-Definition IndexAny : go_string := "strings.IndexAny"%go.
+Definition LastIndex {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.LastIndex"%go.
 
-Definition LastIndexAny : go_string := "strings.LastIndexAny"%go.
+Definition IndexByte {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.IndexByte"%go.
 
-Definition LastIndexByte : go_string := "strings.LastIndexByte"%go.
+Definition IndexRune {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.IndexRune"%go.
 
-Definition genSplit : go_string := "strings.genSplit"%go.
+Definition IndexAny {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.IndexAny"%go.
 
-Definition SplitN : go_string := "strings.SplitN"%go.
+Definition LastIndexAny {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.LastIndexAny"%go.
 
-Definition SplitAfterN : go_string := "strings.SplitAfterN"%go.
+Definition LastIndexByte {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.LastIndexByte"%go.
 
-Definition Split : go_string := "strings.Split"%go.
+Definition genSplit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.genSplit"%go.
 
-Definition SplitAfter : go_string := "strings.SplitAfter"%go.
+Definition SplitN {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.SplitN"%go.
 
-Definition asciiSpace : go_string := "strings.asciiSpace"%go.
+Definition SplitAfterN {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.SplitAfterN"%go.
 
-Axiom asciiSpace'init : val.
+Definition Split {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.Split"%go.
 
-Definition Fields : go_string := "strings.Fields"%go.
+Definition SplitAfter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.SplitAfter"%go.
 
-Definition FieldsFunc : go_string := "strings.FieldsFunc"%go.
+Definition asciiSpace {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.asciiSpace"%go.
 
-Definition Join : go_string := "strings.Join"%go.
+Axiom asciiSpace'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition HasPrefix : go_string := "strings.HasPrefix"%go.
+Definition Fields {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.Fields"%go.
 
-Definition HasSuffix : go_string := "strings.HasSuffix"%go.
+Definition FieldsFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.FieldsFunc"%go.
 
-Definition Map : go_string := "strings.Map"%go.
+Definition Join {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.Join"%go.
 
-Axiom repeatedSpaces : go_string.
+Definition HasPrefix {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.HasPrefix"%go.
 
-Axiom repeatedDashes : go_string.
+Definition HasSuffix {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.HasSuffix"%go.
 
-Axiom repeatedZeroes : go_string.
+Definition Map {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.Map"%go.
 
-Axiom repeatedEquals : go_string.
+Axiom repeatedSpaces : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
 
-Axiom repeatedTabs : go_string.
+Axiom repeatedDashes : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
 
-Definition Repeat : go_string := "strings.Repeat"%go.
+Axiom repeatedZeroes : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
 
-Definition ToUpper : go_string := "strings.ToUpper"%go.
+Axiom repeatedEquals : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
 
-Definition ToLower : go_string := "strings.ToLower"%go.
+Axiom repeatedTabs : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
 
-Definition ToTitle : go_string := "strings.ToTitle"%go.
+Definition Repeat {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.Repeat"%go.
 
-Definition ToUpperSpecial : go_string := "strings.ToUpperSpecial"%go.
+Definition ToUpper {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.ToUpper"%go.
 
-Definition ToLowerSpecial : go_string := "strings.ToLowerSpecial"%go.
+Definition ToLower {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.ToLower"%go.
 
-Definition ToTitleSpecial : go_string := "strings.ToTitleSpecial"%go.
+Definition ToTitle {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.ToTitle"%go.
 
-Definition ToValidUTF8 : go_string := "strings.ToValidUTF8"%go.
+Definition ToUpperSpecial {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.ToUpperSpecial"%go.
 
-Definition isSeparator : go_string := "strings.isSeparator"%go.
+Definition ToLowerSpecial {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.ToLowerSpecial"%go.
 
-Definition Title : go_string := "strings.Title"%go.
+Definition ToTitleSpecial {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.ToTitleSpecial"%go.
 
-Definition TrimLeftFunc : go_string := "strings.TrimLeftFunc"%go.
+Definition ToValidUTF8 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.ToValidUTF8"%go.
 
-Definition TrimRightFunc : go_string := "strings.TrimRightFunc"%go.
+Definition isSeparator {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.isSeparator"%go.
 
-Definition TrimFunc : go_string := "strings.TrimFunc"%go.
+Definition Title {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.Title"%go.
 
-Definition IndexFunc : go_string := "strings.IndexFunc"%go.
+Definition TrimLeftFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.TrimLeftFunc"%go.
 
-Definition LastIndexFunc : go_string := "strings.LastIndexFunc"%go.
+Definition TrimRightFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.TrimRightFunc"%go.
 
-Definition indexFunc : go_string := "strings.indexFunc"%go.
+Definition TrimFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.TrimFunc"%go.
 
-Definition lastIndexFunc : go_string := "strings.lastIndexFunc"%go.
+Definition IndexFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.IndexFunc"%go.
 
-Axiom asciiSetⁱᵐᵖˡ : go.type.
+Definition LastIndexFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.LastIndexFunc"%go.
 
-Definition makeASCIISet : go_string := "strings.makeASCIISet"%go.
+Definition indexFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.indexFunc"%go.
 
-Definition Trim : go_string := "strings.Trim"%go.
+Definition lastIndexFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.lastIndexFunc"%go.
 
-Definition TrimLeft : go_string := "strings.TrimLeft"%go.
+Axiom asciiSetⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition trimLeftByte : go_string := "strings.trimLeftByte"%go.
+Definition makeASCIISet {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.makeASCIISet"%go.
 
-Definition trimLeftASCII : go_string := "strings.trimLeftASCII"%go.
+Definition Trim {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.Trim"%go.
 
-Definition trimLeftUnicode : go_string := "strings.trimLeftUnicode"%go.
+Definition TrimLeft {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.TrimLeft"%go.
 
-Definition TrimRight : go_string := "strings.TrimRight"%go.
+Definition trimLeftByte {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.trimLeftByte"%go.
 
-Definition trimRightByte : go_string := "strings.trimRightByte"%go.
+Definition trimLeftASCII {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.trimLeftASCII"%go.
 
-Definition trimRightASCII : go_string := "strings.trimRightASCII"%go.
+Definition trimLeftUnicode {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.trimLeftUnicode"%go.
 
-Definition trimRightUnicode : go_string := "strings.trimRightUnicode"%go.
+Definition TrimRight {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.TrimRight"%go.
 
-Definition TrimSpace : go_string := "strings.TrimSpace"%go.
+Definition trimRightByte {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.trimRightByte"%go.
 
-Definition TrimPrefix : go_string := "strings.TrimPrefix"%go.
+Definition trimRightASCII {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.trimRightASCII"%go.
 
-Definition TrimSuffix : go_string := "strings.TrimSuffix"%go.
+Definition trimRightUnicode {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.trimRightUnicode"%go.
 
-Definition Replace : go_string := "strings.Replace"%go.
+Definition TrimSpace {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.TrimSpace"%go.
 
-Definition ReplaceAll : go_string := "strings.ReplaceAll"%go.
+Definition TrimPrefix {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.TrimPrefix"%go.
 
-Definition EqualFold : go_string := "strings.EqualFold"%go.
+Definition TrimSuffix {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.TrimSuffix"%go.
 
-Definition Index : go_string := "strings.Index"%go.
+Definition Replace {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.Replace"%go.
 
-Definition Cut : go_string := "strings.Cut"%go.
+Definition ReplaceAll {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.ReplaceAll"%go.
 
-Definition CutPrefix : go_string := "strings.CutPrefix"%go.
+Definition EqualFold {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.EqualFold"%go.
 
-Definition CutSuffix : go_string := "strings.CutSuffix"%go.
+Definition Index {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.Index"%go.
 
-Definition Reader : go.type := go.Named "strings.Reader"%go [].
+Definition Cut {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.Cut"%go.
 
-Definition Replacer : go.type := go.Named "strings.Replacer"%go [].
+Definition CutPrefix {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.CutPrefix"%go.
 
-Definition replacer : go.type := go.Named "strings.replacer"%go [].
+Definition CutSuffix {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.CutSuffix"%go.
 
-Definition trieNode : go.type := go.Named "strings.trieNode"%go [].
+#[global] Instance info' : PkgInfo strings.strings := 
+{|
+  pkg_imported_pkgs := []
+|}.
 
-Definition genericReplacer : go.type := go.Named "strings.genericReplacer"%go [].
+Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition appendSliceWriter : go.type := go.Named "strings.appendSliceWriter"%go [].
-
-Definition stringWriter : go.type := go.Named "strings.stringWriter"%go [].
-
-Definition singleStringReplacer : go.type := go.Named "strings.singleStringReplacer"%go [].
-
-Definition byteReplacer : go.type := go.Named "strings.byteReplacer"%go [].
-
-Definition byteStringReplacer : go.type := go.Named "strings.byteStringReplacer"%go [].
-
-Definition stringFinder : go.type := go.Named "strings.stringFinder"%go [].
-
-Definition asciiSet : go.type := go.Named "strings.asciiSet"%go [].
-
-#[global] Instance info' : PkgInfo strings.strings :=
-  {|
-    pkg_imported_pkgs := [];
-  |}.
-
-Axiom _'init : val.
-
-Definition initialize' : val :=
+Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init strings.strings (λ: <>,
       exception_do (do:  (asciiSpace'init #()))
       ).
 
-Class Builder_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class Reader_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class Replacer_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class replacer_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class trieNode_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class genericReplacer_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class appendSliceWriter_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class stringWriter_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class singleStringReplacer_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class byteReplacer_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class byteStringReplacer_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class stringFinder_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class asciiSet_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Builder_instance :: Builder_Assumptions;
-  #[global] Reader_instance :: Reader_Assumptions;
-  #[global] Replacer_instance :: Replacer_Assumptions;
-  #[global] replacer_instance :: replacer_Assumptions;
-  #[global] trieNode_instance :: trieNode_Assumptions;
-  #[global] genericReplacer_instance :: genericReplacer_Assumptions;
-  #[global] appendSliceWriter_instance :: appendSliceWriter_Assumptions;
-  #[global] stringWriter_instance :: stringWriter_Assumptions;
-  #[global] singleStringReplacer_instance :: singleStringReplacer_Assumptions;
-  #[global] byteReplacer_instance :: byteReplacer_Assumptions;
-  #[global] byteStringReplacer_instance :: byteStringReplacer_Assumptions;
-  #[global] stringFinder_instance :: stringFinder_Assumptions;
-  #[global] asciiSet_instance :: asciiSet_Assumptions;
 }.
-
-End code.
 End strings.

@@ -4,23 +4,38 @@ Require Export New.code.github_com.goose_lang.primitive.disk.
 Require Export New.code.sync.
 
 From New.golang Require Import defn.
+From New Require Import disk_prelude.
 Definition semantics : go_string := "github.com/goose-lang/goose/testdata/examples/semantics".
 
-From New Require Import disk_prelude.
 Module semantics.
-
-Section code.
-
 
 Definition unitⁱᵐᵖˡ : go.type := go.StructType [
 ].
 
-Definition findKey : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.findKey"%go.
-
 Definition unit : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.unit"%go [].
 
+Module unit.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+}.
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk|}.
+End def.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+
+End unit.
+
+Class unit_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] unit_zero_val  :: go.GoZeroValEq unit unit.t;
+}.
+
+Definition findKey {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.findKey"%go.
+
 (* go: allocator.go:7:6 *)
-Definition findKeyⁱᵐᵖˡ : val :=
+Definition findKeyⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "m",
     exception_do (let: "m" := (GoAlloc (go.MapType go.uint64 unit) "m") in
     let: "found" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
@@ -42,10 +57,10 @@ Definition findKeyⁱᵐᵖˡ : val :=
       else do:  #())));;;
     return: (![go.uint64] "found", ![go.bool] "ok")).
 
-Definition allocate : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.allocate"%go.
+Definition allocate {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.allocate"%go.
 
 (* go: allocator.go:20:6 *)
-Definition allocateⁱᵐᵖˡ : val :=
+Definition allocateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "m",
     exception_do (let: "m" := (GoAlloc (go.MapType go.uint64 unit) "m") in
     let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
@@ -61,10 +76,10 @@ Definition allocateⁱᵐᵖˡ : val :=
     (FuncResolve go.delete [go.MapType go.uint64 unit] #()) "$a0" "$a1");;;
     return: (![go.uint64] "k", ![go.bool] "ok")).
 
-Definition freeRange : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.freeRange"%go.
+Definition freeRange {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.freeRange"%go.
 
 (* go: allocator.go:26:6 *)
-Definition freeRangeⁱᵐᵖˡ : val :=
+Definition freeRangeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "sz",
     exception_do (let: "sz" := (GoAlloc go.uint64 "sz") in
     let: "m" := (GoAlloc (go.MapType go.uint64 unit) (GoZeroVal (go.MapType go.uint64 unit) #())) in
@@ -78,10 +93,10 @@ Definition freeRangeⁱᵐᵖˡ : val :=
       do:  (map.insert (![go.MapType go.uint64 unit] "m") (![go.uint64] "i") "$r0")));;;
     return: (![go.MapType go.uint64 unit] "m")).
 
-Definition testAllocateDistinct : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testAllocateDistinct"%go.
+Definition testAllocateDistinct {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testAllocateDistinct"%go.
 
 (* go: allocator.go:34:6 *)
-Definition testAllocateDistinctⁱᵐᵖˡ : val :=
+Definition testAllocateDistinctⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "free" := (GoAlloc (go.MapType go.uint64 unit) (GoZeroVal (go.MapType go.uint64 unit) #())) in
     let: "$r0" := (let: "$a0" := #(W64 4) in
@@ -103,10 +118,10 @@ Definition testAllocateDistinctⁱᵐᵖˡ : val :=
     do:  "$r1";;;
     return: ((![go.uint64] "a1") ≠⟨go.uint64⟩ (![go.uint64] "a2"))).
 
-Definition testAllocateFull : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testAllocateFull"%go.
+Definition testAllocateFull {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testAllocateFull"%go.
 
 (* go: allocator.go:41:6 *)
-Definition testAllocateFullⁱᵐᵖˡ : val :=
+Definition testAllocateFullⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "free" := (GoAlloc (go.MapType go.uint64 unit) (GoZeroVal (go.MapType go.uint64 unit) #())) in
     let: "$r0" := (let: "$a0" := #(W64 2) in
@@ -135,10 +150,10 @@ Definition testAllocateFullⁱᵐᵖˡ : val :=
     do:  ("ok3" <-[go.bool] "$r1");;;
     return: (((![go.bool] "ok1") && (![go.bool] "ok2")) && (~ (![go.bool] "ok3")))).
 
-Definition testExplicitBlockStmt : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testExplicitBlockStmt"%go.
+Definition testExplicitBlockStmt {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testExplicitBlockStmt"%go.
 
 (* go: block.go:3:6 *)
-Definition testExplicitBlockStmtⁱᵐᵖˡ : val :=
+Definition testExplicitBlockStmtⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "x" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "$r0" := #(W64 10) in
@@ -149,10 +164,10 @@ Definition testExplicitBlockStmtⁱᵐᵖˡ : val :=
     do:  ("x" <-[go.int] ((![go.int] "x") +⟨go.int⟩ #(W64 1)));;;
     return: ((![go.int] "x") =⟨go.int⟩ #(W64 10))).
 
-Definition testMinUint64 : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testMinUint64"%go.
+Definition testMinUint64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testMinUint64"%go.
 
 (* go: builtin.go:3:6 *)
-Definition testMinUint64ⁱᵐᵖˡ : val :=
+Definition testMinUint64ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "x" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 10) in
@@ -161,10 +176,10 @@ Definition testMinUint64ⁱᵐᵖˡ : val :=
      let: "$a1" := #(W64 1) in
      (FuncResolve go.min [go.uint64; go.uint64] #()) "$a0" "$a1") =⟨go.uint64⟩ #(W64 1))).
 
-Definition testMaxUint64 : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testMaxUint64"%go.
+Definition testMaxUint64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testMaxUint64"%go.
 
 (* go: builtin.go:8:6 *)
-Definition testMaxUint64ⁱᵐᵖˡ : val :=
+Definition testMaxUint64ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "x" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 10) in
@@ -177,10 +192,10 @@ Definition AdderType : go.type := go.FunctionType (go.Signature [go.uint64] fals
 
 Definition MultipleArgsType : go.type := go.FunctionType (go.Signature [go.uint64; go.bool] false [go.uint64]).
 
-Definition adder : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.adder"%go.
+Definition adder {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.adder"%go.
 
 (* go: closures.go:6:6 *)
-Definition adderⁱᵐᵖˡ : val :=
+Definition adderⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "sum" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 0) in
@@ -191,10 +206,10 @@ Definition adderⁱᵐᵖˡ : val :=
        return: (![go.uint64] "sum"))
        ))).
 
-Definition testClosureBasic : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testClosureBasic"%go.
+Definition testClosureBasic {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testClosureBasic"%go.
 
 (* go: closures.go:14:6 *)
-Definition testClosureBasicⁱᵐᵖˡ : val :=
+Definition testClosureBasicⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "pos" := (GoAlloc (go.FunctionType (go.Signature [go.uint64] false [go.uint64])) (GoZeroVal (go.FunctionType (go.Signature [go.uint64] false [go.uint64])) #())) in
     let: "$r0" := ((FuncResolve adder [] #()) #()) in
@@ -217,10 +232,10 @@ Definition testClosureBasicⁱᵐᵖˡ : val :=
     else do:  #());;;
     return: (#false)).
 
-Definition testCompareAll : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testCompareAll"%go.
+Definition testCompareAll {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testCompareAll"%go.
 
 (* go: comparisons.go:3:6 *)
-Definition testCompareAllⁱᵐᵖˡ : val :=
+Definition testCompareAllⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
@@ -243,10 +258,10 @@ Definition testCompareAllⁱᵐᵖˡ : val :=
     else do:  #());;;
     return: (![go.bool] "ok")).
 
-Definition testCompareGT : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testCompareGT"%go.
+Definition testCompareGT {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testCompareGT"%go.
 
 (* go: comparisons.go:20:6 *)
-Definition testCompareGTⁱᵐᵖˡ : val :=
+Definition testCompareGTⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "x" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 4) in
@@ -263,10 +278,10 @@ Definition testCompareGTⁱᵐᵖˡ : val :=
     do:  ("ok" <-[go.bool] "$r0");;;
     return: (![go.bool] "ok")).
 
-Definition testCompareGE : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testCompareGE"%go.
+Definition testCompareGE {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testCompareGE"%go.
 
 (* go: comparisons.go:31:6 *)
-Definition testCompareGEⁱᵐᵖˡ : val :=
+Definition testCompareGEⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "x" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 4) in
@@ -288,10 +303,10 @@ Definition testCompareGEⁱᵐᵖˡ : val :=
     else do:  #());;;
     return: (![go.bool] "ok")).
 
-Definition testCompareLT : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testCompareLT"%go.
+Definition testCompareLT {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testCompareLT"%go.
 
 (* go: comparisons.go:47:6 *)
-Definition testCompareLTⁱᵐᵖˡ : val :=
+Definition testCompareLTⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "x" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 4) in
@@ -308,10 +323,10 @@ Definition testCompareLTⁱᵐᵖˡ : val :=
     do:  ("ok" <-[go.bool] "$r0");;;
     return: (![go.bool] "ok")).
 
-Definition testCompareLE : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testCompareLE"%go.
+Definition testCompareLE {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testCompareLE"%go.
 
 (* go: comparisons.go:58:6 *)
-Definition testCompareLEⁱᵐᵖˡ : val :=
+Definition testCompareLEⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "x" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 4) in
@@ -333,20 +348,20 @@ Definition testCompareLEⁱᵐᵖˡ : val :=
     else do:  #());;;
     return: (![go.bool] "ok")).
 
-Definition literalCast : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.literalCast"%go.
+Definition literalCast {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.literalCast"%go.
 
 (* go: conversions.go:5:6 *)
-Definition literalCastⁱᵐᵖˡ : val :=
+Definition literalCastⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "x" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 2) in
     do:  ("x" <-[go.uint64] "$r0");;;
     return: ((![go.uint64] "x") +⟨go.uint64⟩ #(W64 2))).
 
-Definition stringToByteSlice : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.stringToByteSlice"%go.
+Definition stringToByteSlice {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.stringToByteSlice"%go.
 
 (* go: conversions.go:11:6 *)
-Definition stringToByteSliceⁱᵐᵖˡ : val :=
+Definition stringToByteSliceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "s",
     exception_do (let: "s" := (GoAlloc go.string "s") in
     let: "p" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
@@ -354,20 +369,20 @@ Definition stringToByteSliceⁱᵐᵖˡ : val :=
     do:  ("p" <-[go.SliceType go.byte] "$r0");;;
     return: (![go.SliceType go.byte] "p")).
 
-Definition byteSliceToString : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.byteSliceToString"%go.
+Definition byteSliceToString {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.byteSliceToString"%go.
 
 (* go: conversions.go:17:6 *)
-Definition byteSliceToStringⁱᵐᵖˡ : val :=
+Definition byteSliceToStringⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "p",
     exception_do (let: "p" := (GoAlloc (go.SliceType go.byte) "p") in
     return: (string.from_bytes (![go.SliceType go.byte] "p"))).
 
-Definition testByteSliceToString : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testByteSliceToString"%go.
+Definition testByteSliceToString {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testByteSliceToString"%go.
 
 (* tests
 
    go: conversions.go:23:6 *)
-Definition testByteSliceToStringⁱᵐᵖˡ : val :=
+Definition testByteSliceToStringⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "x" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) #(W64 3)) in
@@ -381,10 +396,10 @@ Definition testByteSliceToStringⁱᵐᵖˡ : val :=
     return: ((let: "$a0" := (![go.SliceType go.byte] "x") in
      (FuncResolve byteSliceToString [] #()) "$a0") =⟨go.string⟩ #"ABC"%go)).
 
-Definition testCopySimple : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testCopySimple"%go.
+Definition testCopySimple {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testCopySimple"%go.
 
 (* go: copy.go:3:6 *)
-Definition testCopySimpleⁱᵐᵖˡ : val :=
+Definition testCopySimpleⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "x" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) #(W64 10)) in
@@ -399,10 +414,10 @@ Definition testCopySimpleⁱᵐᵖˡ : val :=
     (FuncResolve go.copy [go.SliceType go.byte] #()) "$a0" "$a1");;;
     return: ((![go.byte] (IndexRef (go.SliceType go.byte) (![go.SliceType go.byte] "y", #(W64 3)))) =⟨go.byte⟩ #(W8 1))).
 
-Definition testCopyShorterDst : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testCopyShorterDst"%go.
+Definition testCopyShorterDst {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testCopyShorterDst"%go.
 
 (* go: copy.go:11:6 *)
-Definition testCopyShorterDstⁱᵐᵖˡ : val :=
+Definition testCopyShorterDstⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "x" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) #(W64 15)) in
@@ -421,10 +436,10 @@ Definition testCopyShorterDstⁱᵐᵖˡ : val :=
     do:  ("n" <-[go.uint64] "$r0");;;
     return: (((![go.uint64] "n") =⟨go.uint64⟩ #(W64 10)) && ((![go.byte] (IndexRef (go.SliceType go.byte) (![go.SliceType go.byte] "y", #(W64 3)))) =⟨go.byte⟩ #(W8 1)))).
 
-Definition testCopyShorterSrc : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testCopyShorterSrc"%go.
+Definition testCopyShorterSrc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testCopyShorterSrc"%go.
 
 (* go: copy.go:20:6 *)
-Definition testCopyShorterSrcⁱᵐᵖˡ : val :=
+Definition testCopyShorterSrcⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "x" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) #(W64 10)) in
@@ -443,10 +458,10 @@ Definition testCopyShorterSrcⁱᵐᵖˡ : val :=
     do:  ("n" <-[go.uint64] "$r0");;;
     return: ((((![go.uint64] "n") =⟨go.uint64⟩ #(W64 10)) && ((![go.byte] (IndexRef (go.SliceType go.byte) (![go.SliceType go.byte] "y", #(W64 3)))) =⟨go.byte⟩ #(W8 1))) && ((![go.byte] (IndexRef (go.SliceType go.byte) (![go.SliceType go.byte] "y", #(W64 12)))) =⟨go.byte⟩ #(W8 2)))).
 
-Definition deferSimple : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.deferSimple"%go.
+Definition deferSimple {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.deferSimple"%go.
 
 (* go: defer.go:3:6 *)
-Definition deferSimpleⁱᵐᵖˡ : val :=
+Definition deferSimpleⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     with_defer: (let: "x" := (GoAlloc (go.PointerType go.uint64) (GoZeroVal (go.PointerType go.uint64) #())) in
     let: "$r0" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
@@ -466,17 +481,17 @@ Definition deferSimpleⁱᵐᵖˡ : val :=
         )))));;;
     return: (![go.PointerType go.uint64] "x")).
 
-Definition testDefer : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testDefer"%go.
+Definition testDefer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testDefer"%go.
 
 (* go: defer.go:13:6 *)
-Definition testDeferⁱᵐᵖˡ : val :=
+Definition testDeferⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (return: ((![go.uint64] ((FuncResolve deferSimple [] #()) #())) =⟨go.uint64⟩ #(W64 10))).
 
-Definition testDeferFuncLit : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testDeferFuncLit"%go.
+Definition testDeferFuncLit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testDeferFuncLit"%go.
 
 (* go: defer.go:17:6 *)
-Definition testDeferFuncLitⁱᵐᵖˡ : val :=
+Definition testDeferFuncLitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "x" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "$r0" := #(W64 10) in
@@ -498,14 +513,10 @@ Definition testDeferFuncLitⁱᵐᵖˡ : val :=
     do:  ((![go.FunctionType (go.Signature [] false [])] "f") #());;;
     return: ((![go.int] "x") =⟨go.int⟩ #(W64 11))).
 
-Definition Encⁱᵐᵖˡ : go.type := go.StructType [
-  (go.FieldDecl "p"%go (go.SliceType go.byte))
-].
-
 Definition Enc : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.Enc"%go [].
 
 (* go: encoding.go:10:15 *)
-Definition Enc__consumeⁱᵐᵖˡ : val :=
+Definition Enc__consumeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "e" "n",
     exception_do (let: "e" := (GoAlloc (go.PointerType Enc) "e") in
     let: "n" := (GoAlloc go.uint64 "n") in
@@ -518,14 +529,34 @@ Definition Enc__consumeⁱᵐᵖˡ : val :=
     do:  ((StructFieldRef Enc "p"%go (![go.PointerType Enc] "e")) <-[go.SliceType go.byte] "$r0");;;
     return: (![go.SliceType go.byte] "b")).
 
-Definition Decⁱᵐᵖˡ : go.type := go.StructType [
+Definition Encⁱᵐᵖˡ : go.type := go.StructType [
   (go.FieldDecl "p"%go (go.SliceType go.byte))
 ].
+
+Module Enc.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  p : slice.t;
+}.
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
+End def.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+
+End Enc.
+
+Class Enc_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Enc_zero_val  :: go.GoZeroValEq Enc Enc.t;
+  #[global] Enc'ptr_consume_unfold :: MethodUnfold (go.PointerType (Enc)) "consume" (Enc__consumeⁱᵐᵖˡ);
+}.
 
 Definition Dec : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.Dec"%go [].
 
 (* go: encoding.go:20:15 *)
-Definition Dec__consumeⁱᵐᵖˡ : val :=
+Definition Dec__consumeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "d" "n",
     exception_do (let: "d" := (GoAlloc (go.PointerType Dec) "d") in
     let: "n" := (GoAlloc go.uint64 "n") in
@@ -538,10 +569,34 @@ Definition Dec__consumeⁱᵐᵖˡ : val :=
     do:  ((StructFieldRef Dec "p"%go (![go.PointerType Dec] "d")) <-[go.SliceType go.byte] "$r0");;;
     return: (![go.SliceType go.byte] "b")).
 
-Definition roundtripEncDec32 : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.roundtripEncDec32"%go.
+Definition Decⁱᵐᵖˡ : go.type := go.StructType [
+  (go.FieldDecl "p"%go (go.SliceType go.byte))
+].
+
+Module Dec.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  p : slice.t;
+}.
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
+End def.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+
+End Dec.
+
+Class Dec_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Dec_zero_val  :: go.GoZeroValEq Dec Dec.t;
+  #[global] Dec'ptr_consume_unfold :: MethodUnfold (go.PointerType (Dec)) "consume" (Dec__consumeⁱᵐᵖˡ);
+}.
+
+Definition roundtripEncDec32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.roundtripEncDec32"%go.
 
 (* go: encoding.go:26:6 *)
-Definition roundtripEncDec32ⁱᵐᵖˡ : val :=
+Definition roundtripEncDec32ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "x",
     exception_do (let: "x" := (GoAlloc go.uint32 "x") in
     let: "r" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
@@ -561,10 +616,10 @@ Definition roundtripEncDec32ⁱᵐᵖˡ : val :=
      (MethodResolve (go.PointerType Dec) "consume"%go #() (![go.PointerType Dec] "d")) "$a0") in
      (FuncResolve primitive.UInt32Get [] #()) "$a0")).
 
-Definition roundtripEncDec64 : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.roundtripEncDec64"%go.
+Definition roundtripEncDec64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.roundtripEncDec64"%go.
 
 (* go: encoding.go:34:6 *)
-Definition roundtripEncDec64ⁱᵐᵖˡ : val :=
+Definition roundtripEncDec64ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "x",
     exception_do (let: "x" := (GoAlloc go.uint64 "x") in
     let: "r" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
@@ -584,12 +639,12 @@ Definition roundtripEncDec64ⁱᵐᵖˡ : val :=
      (MethodResolve (go.PointerType Dec) "consume"%go #() (![go.PointerType Dec] "d")) "$a0") in
      (FuncResolve primitive.UInt64Get [] #()) "$a0")).
 
-Definition testEncDec32Simple : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testEncDec32Simple"%go.
+Definition testEncDec32Simple {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testEncDec32Simple"%go.
 
 (* tests
 
    go: encoding.go:43:6 *)
-Definition testEncDec32Simpleⁱᵐᵖˡ : val :=
+Definition testEncDec32Simpleⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
@@ -605,10 +660,10 @@ Definition testEncDec32Simpleⁱᵐᵖˡ : val :=
     do:  ("ok" <-[go.bool] "$r0");;;
     return: (![go.bool] "ok")).
 
-Definition failing_testEncDec32 : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.failing_testEncDec32"%go.
+Definition failing_testEncDec32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.failing_testEncDec32"%go.
 
 (* go: encoding.go:51:6 *)
-Definition failing_testEncDec32ⁱᵐᵖˡ : val :=
+Definition failing_testEncDec32ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
@@ -633,10 +688,10 @@ Definition failing_testEncDec32ⁱᵐᵖˡ : val :=
     do:  ("ok" <-[go.bool] "$r0");;;
     return: (![go.bool] "ok")).
 
-Definition testEncDec64Simple : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testEncDec64Simple"%go.
+Definition testEncDec64Simple {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testEncDec64Simple"%go.
 
 (* go: encoding.go:62:6 *)
-Definition testEncDec64Simpleⁱᵐᵖˡ : val :=
+Definition testEncDec64Simpleⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
@@ -652,10 +707,10 @@ Definition testEncDec64Simpleⁱᵐᵖˡ : val :=
     do:  ("ok" <-[go.bool] "$r0");;;
     return: (![go.bool] "ok")).
 
-Definition testEncDec64 : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testEncDec64"%go.
+Definition testEncDec64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testEncDec64"%go.
 
 (* go: encoding.go:70:6 *)
-Definition testEncDec64ⁱᵐᵖˡ : val :=
+Definition testEncDec64ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
@@ -686,37 +741,32 @@ Definition testEncDec64ⁱᵐᵖˡ : val :=
     do:  ("ok" <-[go.bool] "$r0");;;
     return: (![go.bool] "ok")).
 
-Definition FirstClassFunction : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.FirstClassFunction"%go.
+Definition FirstClassFunction {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.FirstClassFunction"%go.
 
 (* go: first_class_function.go:3:6 *)
-Definition FirstClassFunctionⁱᵐᵖˡ : val :=
+Definition FirstClassFunctionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "a",
     exception_do (let: "a" := (GoAlloc go.uint64 "a") in
     return: ((![go.uint64] "a") +⟨go.uint64⟩ #(W64 10))).
 
-Definition ApplyF : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.ApplyF"%go.
+Definition ApplyF {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.ApplyF"%go.
 
 (* go: first_class_function.go:7:6 *)
-Definition ApplyFⁱᵐᵖˡ : val :=
+Definition ApplyFⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "a" "f",
     exception_do (let: "f" := (GoAlloc (go.FunctionType (go.Signature [go.uint64] false [go.uint64])) "f") in
     let: "a" := (GoAlloc go.uint64 "a") in
     return: (let: "$a0" := (![go.uint64] "a") in
      (![go.FunctionType (go.Signature [go.uint64] false [go.uint64])] "f") "$a0")).
 
-Definition testFirstClassFunction : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testFirstClassFunction"%go.
+Definition testFirstClassFunction {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testFirstClassFunction"%go.
 
 (* go: first_class_function.go:11:6 *)
-Definition testFirstClassFunctionⁱᵐᵖˡ : val :=
+Definition testFirstClassFunctionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (return: ((let: "$a0" := #(W64 1) in
      let: "$a1" := (FuncResolve FirstClassFunction [] #()) in
      (FuncResolve ApplyF [] #()) "$a0" "$a1") =⟨go.uint64⟩ #(W64 11))).
-
-Definition Editorⁱᵐᵖˡ : go.type := go.StructType [
-  (go.FieldDecl "s"%go (go.SliceType go.uint64));
-  (go.FieldDecl "next_val"%go go.uint64)
-].
 
 Definition Editor : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.Editor"%go [].
 
@@ -724,7 +774,7 @@ Definition Editor : go.type := go.Named "github.com/goose-lang/goose/testdata/ex
    "next" in next_val
 
    go: function_ordering.go:11:18 *)
-Definition Editor__AdvanceReturnⁱᵐᵖˡ : val :=
+Definition Editor__AdvanceReturnⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "e" "next",
     exception_do (let: "e" := (GoAlloc (go.PointerType Editor) "e") in
     let: "next" := (GoAlloc go.uint64 "next") in
@@ -740,13 +790,39 @@ Definition Editor__AdvanceReturnⁱᵐᵖˡ : val :=
     do:  ((StructFieldRef Editor "s"%go (![go.PointerType Editor] "e")) <-[go.SliceType go.uint64] "$r0");;;
     return: (![go.uint64] "tmp")).
 
-Definition addFour64 : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.addFour64"%go.
+Definition Editorⁱᵐᵖˡ : go.type := go.StructType [
+  (go.FieldDecl "s"%go (go.SliceType go.uint64));
+  (go.FieldDecl "next_val"%go go.uint64)
+].
+
+Module Editor.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  s : slice.t;
+  next_val : w64;
+}.
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
+End def.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+
+End Editor.
+
+Class Editor_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Editor_zero_val  :: go.GoZeroValEq Editor Editor.t;
+  #[global] Editor'ptr_AdvanceReturn_unfold :: MethodUnfold (go.PointerType (Editor)) "AdvanceReturn" (Editor__AdvanceReturnⁱᵐᵖˡ);
+}.
+
+Definition addFour64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.addFour64"%go.
 
 (* we call this function with side-effectful function calls as arguments,
    its implementation is unimportant
 
    go: function_ordering.go:21:6 *)
-Definition addFour64ⁱᵐᵖˡ : val :=
+Definition addFour64ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "a" "b" "c" "d",
     exception_do (let: "d" := (GoAlloc go.uint64 "d") in
     let: "c" := (GoAlloc go.uint64 "c") in
@@ -759,14 +835,34 @@ Definition Pairⁱᵐᵖˡ : go.type := go.StructType [
   (go.FieldDecl "y"%go go.uint64)
 ].
 
-Definition failing_testFunctionOrdering : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.failing_testFunctionOrdering"%go.
-
 Definition Pair : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.Pair"%go [].
+
+Module Pair.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  x : w64;
+  y : w64;
+}.
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
+End def.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+
+End Pair.
+
+Class Pair_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Pair_zero_val  :: go.GoZeroValEq Pair Pair.t;
+}.
+
+Definition failing_testFunctionOrdering {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.failing_testFunctionOrdering"%go.
 
 (* tests
 
    go: function_ordering.go:31:6 *)
-Definition failing_testFunctionOrderingⁱᵐᵖˡ : val :=
+Definition failing_testFunctionOrderingⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "arr" := (GoAlloc (go.SliceType go.uint64) (GoZeroVal (go.SliceType go.uint64) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.uint64] #()) #(W64 5)) in
@@ -822,10 +918,10 @@ Definition failing_testFunctionOrderingⁱᵐᵖˡ : val :=
     else do:  #());;;
     return: (((![go.uint64] (StructFieldRef Pair "x"%go "p")) +⟨go.uint64⟩ (![go.uint64] (StructFieldRef Pair "x"%go "q"))) =⟨go.uint64⟩ #(W64 109))).
 
-Definition storeAndReturn : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.storeAndReturn"%go.
+Definition storeAndReturn {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.storeAndReturn"%go.
 
 (* go: function_ordering.go:74:6 *)
-Definition storeAndReturnⁱᵐᵖˡ : val :=
+Definition storeAndReturnⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "x" "v",
     exception_do (let: "v" := (GoAlloc go.uint64 "v") in
     let: "x" := (GoAlloc (go.PointerType go.uint64) "x") in
@@ -833,13 +929,13 @@ Definition storeAndReturnⁱᵐᵖˡ : val :=
     do:  ((![go.PointerType go.uint64] "x") <-[go.uint64] "$r0");;;
     return: (![go.uint64] "v")).
 
-Definition failing_testArgumentOrder : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.failing_testArgumentOrder"%go.
+Definition failing_testArgumentOrder {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.failing_testArgumentOrder"%go.
 
 (* Goose has a right-to-left evaluation order for function arguments,
    which is incorrect.
 
    go: function_ordering.go:81:6 *)
-Definition failing_testArgumentOrderⁱᵐᵖˡ : val :=
+Definition failing_testArgumentOrderⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "x" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 0) in
@@ -862,10 +958,10 @@ Definition failing_testArgumentOrderⁱᵐᵖˡ : val :=
     do:  ("ok" <-[go.bool] "$r0");;;
     return: (![go.bool] "ok")).
 
-Definition testU64ToU32 : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testU64ToU32"%go.
+Definition testU64ToU32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testU64ToU32"%go.
 
 (* go: int_conversions.go:3:6 *)
-Definition testU64ToU32ⁱᵐᵖˡ : val :=
+Definition testU64ToU32ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
@@ -882,10 +978,10 @@ Definition testU64ToU32ⁱᵐᵖˡ : val :=
     do:  ("ok" <-[go.bool] "$r0");;;
     return: (![go.bool] "ok")).
 
-Definition testU32Len : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testU32Len"%go.
+Definition testU32Len {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testU32Len"%go.
 
 (* go: int_conversions.go:12:6 *)
-Definition testU32Lenⁱᵐᵖˡ : val :=
+Definition testU32Lenⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "s" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) #(W64 100)) in
@@ -895,12 +991,26 @@ Definition testU32Lenⁱᵐᵖˡ : val :=
 
 Definition Uint32ⁱᵐᵖˡ : go.type := go.uint32.
 
-Definition failing_testU32NewtypeLen : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.failing_testU32NewtypeLen"%go.
+Definition Uint32 : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.Uint32"%go [].
+
+Module Uint32.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Definition t  : Type := w32.
+End def.
+End Uint32.
+
+Class Uint32_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Uint32_zero_val  :: go.GoZeroValEq Uint32 Uint32.t;
+}.
+
+Definition failing_testU32NewtypeLen {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.failing_testU32NewtypeLen"%go.
 
 (* https://github.com/goose-lang/goose/issues/14
 
    go: int_conversions.go:20:6 *)
-Definition failing_testU32NewtypeLenⁱᵐᵖˡ : val :=
+Definition failing_testU32NewtypeLenⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "s" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) #(W64 20)) in
@@ -910,56 +1020,93 @@ Definition failing_testU32NewtypeLenⁱᵐᵖˡ : val :=
 
 Definition geometryInterfaceⁱᵐᵖˡ : go.type := go.InterfaceType [go.MethodElem #"Square"%go (go.Signature [] false [go.uint64]); go.MethodElem #"Volume"%go (go.Signature [] false [go.uint64])].
 
-Definition measureArea : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.measureArea"%go.
-
 Definition geometryInterface : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.geometryInterface"%go [].
 
+Module geometryInterface.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Definition t  : Type := interface.t.
+End def.
+End geometryInterface.
+
+Class geometryInterface_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] geometryInterface_zero_val  :: go.GoZeroValEq geometryInterface geometryInterface.t;
+  #[global] geometryInterface'ptr_Square_unfold :: MethodUnfold (geometryInterface) "Square" (geometryInterface__Squareⁱᵐᵖˡ);
+  #[global] geometryInterface'ptr_Volume_unfold :: MethodUnfold (geometryInterface) "Volume" (geometryInterface__Volumeⁱᵐᵖˡ);
+}.
+
+Definition measureArea {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.measureArea"%go.
+
 (* go: interfaces.go:12:6 *)
-Definition measureAreaⁱᵐᵖˡ : val :=
+Definition measureAreaⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "t",
     exception_do (let: "t" := (GoAlloc geometryInterface "t") in
     return: ((MethodResolve geometryInterface "Square"%go #() (![geometryInterface] "t")) #())).
 
-Definition measureVolumePlusNM : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.measureVolumePlusNM"%go.
+Definition measureVolumePlusNM {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.measureVolumePlusNM"%go.
 
 (* go: interfaces.go:16:6 *)
-Definition measureVolumePlusNMⁱᵐᵖˡ : val :=
+Definition measureVolumePlusNMⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "t" "n" "m",
     exception_do (let: "m" := (GoAlloc go.uint64 "m") in
     let: "n" := (GoAlloc go.uint64 "n") in
     let: "t" := (GoAlloc geometryInterface "t") in
     return: ((((MethodResolve geometryInterface "Volume"%go #() (![geometryInterface] "t")) #()) +⟨go.uint64⟩ (![go.uint64] "n")) +⟨go.uint64⟩ (![go.uint64] "m"))).
 
-Definition measureVolume : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.measureVolume"%go.
+Definition measureVolume {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.measureVolume"%go.
 
 (* go: interfaces.go:20:6 *)
-Definition measureVolumeⁱᵐᵖˡ : val :=
+Definition measureVolumeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "t",
     exception_do (let: "t" := (GoAlloc geometryInterface "t") in
     return: ((MethodResolve geometryInterface "Volume"%go #() (![geometryInterface] "t")) #())).
 
-Definition SquareStructⁱᵐᵖˡ : go.type := go.StructType [
-  (go.FieldDecl "Side"%go go.uint64)
-].
-
 Definition SquareStruct : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.SquareStruct"%go [].
 
 (* go: interfaces.go:28:23 *)
-Definition SquareStruct__Squareⁱᵐᵖˡ : val :=
+Definition SquareStruct__Squareⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "t" <>,
     exception_do (let: "t" := (GoAlloc SquareStruct "t") in
     return: ((![go.uint64] (StructFieldRef SquareStruct "Side"%go "t")) *⟨go.uint64⟩ (![go.uint64] (StructFieldRef SquareStruct "Side"%go "t")))).
 
 (* go: interfaces.go:32:23 *)
-Definition SquareStruct__Volumeⁱᵐᵖˡ : val :=
+Definition SquareStruct__Volumeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "t" <>,
     exception_do (let: "t" := (GoAlloc SquareStruct "t") in
     return: (((![go.uint64] (StructFieldRef SquareStruct "Side"%go "t")) *⟨go.uint64⟩ (![go.uint64] (StructFieldRef SquareStruct "Side"%go "t"))) *⟨go.uint64⟩ (![go.uint64] (StructFieldRef SquareStruct "Side"%go "t")))).
 
-Definition testBasicInterface : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testBasicInterface"%go.
+Definition SquareStructⁱᵐᵖˡ : go.type := go.StructType [
+  (go.FieldDecl "Side"%go go.uint64)
+].
+
+Module SquareStruct.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  Side : w64;
+}.
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
+End def.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+
+End SquareStruct.
+
+Class SquareStruct_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] SquareStruct_zero_val  :: go.GoZeroValEq SquareStruct SquareStruct.t;
+  #[global] SquareStruct'ptr_Square_unfold :: MethodUnfold (SquareStruct) "Square" (SquareStruct__Squareⁱᵐᵖˡ);
+  #[global] SquareStruct'ptr_Volume_unfold :: MethodUnfold (SquareStruct) "Volume" (SquareStruct__Volumeⁱᵐᵖˡ);
+  #[global] SquareStruct'ptr_Square_unfold :: MethodUnfold (go.PointerType (SquareStruct)) "Square" (λ: "$r", MethodResolve (SquareStruct) Square #() (![(SquareStruct)] "$r");
+  #[global] SquareStruct'ptr_Volume_unfold :: MethodUnfold (go.PointerType (SquareStruct)) "Volume" (λ: "$r", MethodResolve (SquareStruct) Volume #() (![(SquareStruct)] "$r");
+}.
+
+Definition testBasicInterface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testBasicInterface"%go.
 
 (* go: interfaces.go:40:6 *)
-Definition testBasicInterfaceⁱᵐᵖˡ : val :=
+Definition testBasicInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "s" := (GoAlloc SquareStruct (GoZeroVal SquareStruct #())) in
     let: "$r0" := (CompositeLiteral SquareStruct (LiteralValue [KeyedElement (Some (KeyField "Side"%go)) (ElementExpression #(W64 2))])) in
@@ -967,10 +1114,10 @@ Definition testBasicInterfaceⁱᵐᵖˡ : val :=
     return: ((let: "$a0" := (InterfaceMake SquareStruct (![SquareStruct] "s")) in
      (FuncResolve measureArea [] #()) "$a0") =⟨go.uint64⟩ #(W64 4))).
 
-Definition testAssignInterface : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testAssignInterface"%go.
+Definition testAssignInterface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testAssignInterface"%go.
 
 (* go: interfaces.go:47:6 *)
-Definition testAssignInterfaceⁱᵐᵖˡ : val :=
+Definition testAssignInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "s" := (GoAlloc SquareStruct (GoZeroVal SquareStruct #())) in
     let: "$r0" := (CompositeLiteral SquareStruct (LiteralValue [KeyedElement (Some (KeyField "Side"%go)) (ElementExpression #(W64 3))])) in
@@ -981,10 +1128,10 @@ Definition testAssignInterfaceⁱᵐᵖˡ : val :=
     do:  ("area" <-[go.uint64] "$r0");;;
     return: ((![go.uint64] "area") =⟨go.uint64⟩ #(W64 9))).
 
-Definition testMultipleInterface : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testMultipleInterface"%go.
+Definition testMultipleInterface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testMultipleInterface"%go.
 
 (* go: interfaces.go:55:6 *)
-Definition testMultipleInterfaceⁱᵐᵖˡ : val :=
+Definition testMultipleInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "s" := (GoAlloc SquareStruct (GoZeroVal SquareStruct #())) in
     let: "$r0" := (CompositeLiteral SquareStruct (LiteralValue [KeyedElement (Some (KeyField "Side"%go)) (ElementExpression #(W64 3))])) in
@@ -999,10 +1146,10 @@ Definition testMultipleInterfaceⁱᵐᵖˡ : val :=
     do:  ("square2" <-[go.uint64] "$r0");;;
     return: ((![go.uint64] "square1") =⟨go.uint64⟩ (![go.uint64] "square2"))).
 
-Definition testBinaryExprInterface : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testBinaryExprInterface"%go.
+Definition testBinaryExprInterface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testBinaryExprInterface"%go.
 
 (* go: interfaces.go:64:6 *)
-Definition testBinaryExprInterfaceⁱᵐᵖˡ : val :=
+Definition testBinaryExprInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "s" := (GoAlloc SquareStruct (GoZeroVal SquareStruct #())) in
     let: "$r0" := (CompositeLiteral SquareStruct (LiteralValue [KeyedElement (Some (KeyField "Side"%go)) (ElementExpression #(W64 3))])) in
@@ -1019,10 +1166,10 @@ Definition testBinaryExprInterfaceⁱᵐᵖˡ : val :=
      (FuncResolve measureArea [] #()) "$a0")) && ((![go.uint64] "square2") =⟨go.uint64⟩ (let: "$a0" := (InterfaceMake SquareStruct (![SquareStruct] "s")) in
      (FuncResolve measureVolume [] #()) "$a0")))).
 
-Definition testIfStmtInterface : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testIfStmtInterface"%go.
+Definition testIfStmtInterface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testIfStmtInterface"%go.
 
 (* go: interfaces.go:73:6 *)
-Definition testIfStmtInterfaceⁱᵐᵖˡ : val :=
+Definition testIfStmtInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "s" := (GoAlloc SquareStruct (GoZeroVal SquareStruct #())) in
     let: "$r0" := (CompositeLiteral SquareStruct (LiteralValue [KeyedElement (Some (KeyField "Side"%go)) (ElementExpression #(W64 3))])) in
@@ -1033,13 +1180,13 @@ Definition testIfStmtInterfaceⁱᵐᵖˡ : val :=
     else do:  #());;;
     return: (#false)).
 
-Definition testsUseLocks : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testsUseLocks"%go.
+Definition testsUseLocks {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testsUseLocks"%go.
 
 (* We can't interpret multithreaded code, so this just checks that
    locks are correctly interpreted
 
    go: lock.go:7:6 *)
-Definition testsUseLocksⁱᵐᵖˡ : val :=
+Definition testsUseLocksⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "m" := (GoAlloc (go.PointerType sync.Mutex) (GoZeroVal (go.PointerType sync.Mutex) #())) in
     let: "$r0" := (GoAlloc sync.Mutex (GoZeroVal sync.Mutex #())) in
@@ -1048,12 +1195,12 @@ Definition testsUseLocksⁱᵐᵖˡ : val :=
     do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go #() (![go.PointerType sync.Mutex] "m")) #());;;
     return: (#true)).
 
-Definition standardForLoop : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.standardForLoop"%go.
+Definition standardForLoop {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.standardForLoop"%go.
 
 (* helpers
 
    go: loops.go:4:6 *)
-Definition standardForLoopⁱᵐᵖˡ : val :=
+Definition standardForLoopⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "s",
     exception_do (let: "s" := (GoAlloc (go.SliceType go.uint64) "s") in
     let: "sumPtr" := (GoAlloc (go.PointerType go.uint64) (GoZeroVal (go.PointerType go.uint64) #())) in
@@ -1084,14 +1231,10 @@ Definition standardForLoopⁱᵐᵖˡ : val :=
     do:  ("sum" <-[go.uint64] "$r0");;;
     return: (![go.uint64] "sum")).
 
-Definition LoopStructⁱᵐᵖˡ : go.type := go.StructType [
-  (go.FieldDecl "loopNext"%go (go.PointerType go.uint64))
-].
-
 Definition LoopStruct : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.LoopStruct"%go [].
 
 (* go: loops.go:28:22 *)
-Definition LoopStruct__forLoopWaitⁱᵐᵖˡ : val :=
+Definition LoopStruct__forLoopWaitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "ls" "i",
     exception_do (let: "ls" := (GoAlloc LoopStruct "ls") in
     let: "i" := (GoAlloc go.uint64 "i") in
@@ -1107,12 +1250,37 @@ Definition LoopStruct__forLoopWaitⁱᵐᵖˡ : val :=
       continue: #());;;
     return: #()).
 
-Definition testStandardForLoop : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testStandardForLoop"%go.
+Definition LoopStructⁱᵐᵖˡ : go.type := go.StructType [
+  (go.FieldDecl "loopNext"%go (go.PointerType go.uint64))
+].
+
+Module LoopStruct.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  loopNext : loc;
+}.
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
+End def.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+
+End LoopStruct.
+
+Class LoopStruct_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] LoopStruct_zero_val  :: go.GoZeroValEq LoopStruct LoopStruct.t;
+  #[global] LoopStruct'ptr_forLoopWait_unfold :: MethodUnfold (LoopStruct) "forLoopWait" (LoopStruct__forLoopWaitⁱᵐᵖˡ);
+  #[global] LoopStruct'ptr_forLoopWait_unfold :: MethodUnfold (go.PointerType (LoopStruct)) "forLoopWait" (λ: "$r", MethodResolve (LoopStruct) forLoopWait #() (![(LoopStruct)] "$r");
+}.
+
+Definition testStandardForLoop {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testStandardForLoop"%go.
 
 (* tests
 
    go: loops.go:40:6 *)
-Definition testStandardForLoopⁱᵐᵖˡ : val :=
+Definition testStandardForLoopⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "arr" := (GoAlloc (go.SliceType go.uint64) (GoZeroVal (go.SliceType go.uint64) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.uint64] #()) #(W64 4)) in
@@ -1124,10 +1292,10 @@ Definition testStandardForLoopⁱᵐᵖˡ : val :=
     return: ((let: "$a0" := (![go.SliceType go.uint64] "arr") in
      (FuncResolve standardForLoop [] #()) "$a0") =⟨go.uint64⟩ #(W64 16))).
 
-Definition testForLoopWait : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testForLoopWait"%go.
+Definition testForLoopWait {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testForLoopWait"%go.
 
 (* go: loops.go:49:6 *)
-Definition testForLoopWaitⁱᵐᵖˡ : val :=
+Definition testForLoopWaitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "ls" := (GoAlloc LoopStruct (GoZeroVal LoopStruct #())) in
     let: "$r0" := (CompositeLiteral LoopStruct (LiteralValue [KeyedElement (Some (KeyField "loopNext"%go)) (ElementExpression (GoAlloc go.uint64 (GoZeroVal go.uint64 #())))])) in
@@ -1136,10 +1304,10 @@ Definition testForLoopWaitⁱᵐᵖˡ : val :=
     (MethodResolve LoopStruct "forLoopWait"%go #() (![LoopStruct] "ls")) "$a0");;;
     return: ((![go.uint64] (![go.PointerType go.uint64] (StructFieldRef LoopStruct "loopNext"%go "ls"))) =⟨go.uint64⟩ #(W64 4))).
 
-Definition testBreakFromLoopWithContinue : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testBreakFromLoopWithContinue"%go.
+Definition testBreakFromLoopWithContinue {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testBreakFromLoopWithContinue"%go.
 
 (* go: loops.go:59:6 *)
-Definition testBreakFromLoopWithContinueⁱᵐᵖˡ : val :=
+Definition testBreakFromLoopWithContinueⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "i" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 0) in
@@ -1154,10 +1322,10 @@ Definition testBreakFromLoopWithContinueⁱᵐᵖˡ : val :=
       continue: #());;;
     return: ((![go.uint64] "i") =⟨go.uint64⟩ #(W64 1))).
 
-Definition testBreakFromLoopNoContinue : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testBreakFromLoopNoContinue"%go.
+Definition testBreakFromLoopNoContinue {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testBreakFromLoopNoContinue"%go.
 
 (* go: loops.go:71:6 *)
-Definition testBreakFromLoopNoContinueⁱᵐᵖˡ : val :=
+Definition testBreakFromLoopNoContinueⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "i" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 0) in
@@ -1173,10 +1341,10 @@ Definition testBreakFromLoopNoContinueⁱᵐᵖˡ : val :=
       do:  ("i" <-[go.uint64] "$r0"));;;
     return: ((![go.uint64] "i") =⟨go.uint64⟩ #(W64 1))).
 
-Definition testBreakFromLoopNoContinueDouble : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testBreakFromLoopNoContinueDouble"%go.
+Definition testBreakFromLoopNoContinueDouble {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testBreakFromLoopNoContinueDouble"%go.
 
 (* go: loops.go:83:6 *)
-Definition testBreakFromLoopNoContinueDoubleⁱᵐᵖˡ : val :=
+Definition testBreakFromLoopNoContinueDoubleⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "i" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 0) in
@@ -1194,10 +1362,10 @@ Definition testBreakFromLoopNoContinueDoubleⁱᵐᵖˡ : val :=
       do:  ("i" <-[go.uint64] "$r0"));;;
     return: ((![go.uint64] "i") =⟨go.uint64⟩ #(W64 4))).
 
-Definition testBreakFromLoopForOnly : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testBreakFromLoopForOnly"%go.
+Definition testBreakFromLoopForOnly {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testBreakFromLoopForOnly"%go.
 
 (* go: loops.go:96:6 *)
-Definition testBreakFromLoopForOnlyⁱᵐᵖˡ : val :=
+Definition testBreakFromLoopForOnlyⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "i" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 0) in
@@ -1207,10 +1375,10 @@ Definition testBreakFromLoopForOnlyⁱᵐᵖˡ : val :=
       do:  ("i" <-[go.uint64] "$r0"));;;
     return: ((![go.uint64] "i") =⟨go.uint64⟩ #(W64 4))).
 
-Definition testBreakFromLoopAssignAndContinue : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testBreakFromLoopAssignAndContinue"%go.
+Definition testBreakFromLoopAssignAndContinue {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testBreakFromLoopAssignAndContinue"%go.
 
 (* go: loops.go:104:6 *)
-Definition testBreakFromLoopAssignAndContinueⁱᵐᵖˡ : val :=
+Definition testBreakFromLoopAssignAndContinueⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "i" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 0) in
@@ -1227,10 +1395,10 @@ Definition testBreakFromLoopAssignAndContinueⁱᵐᵖˡ : val :=
       continue: #());;;
     return: ((![go.uint64] "i") =⟨go.uint64⟩ #(W64 1))).
 
-Definition testNestedLoops : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testNestedLoops"%go.
+Definition testNestedLoops {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testNestedLoops"%go.
 
 (* go: loops.go:117:6 *)
-Definition testNestedLoopsⁱᵐᵖˡ : val :=
+Definition testNestedLoopsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "ok1" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #false in
@@ -1261,10 +1429,10 @@ Definition testNestedLoopsⁱᵐᵖˡ : val :=
       break: #()));;;
     return: ((![go.bool] "ok1") && (![go.bool] "ok2"))).
 
-Definition testNestedGoStyleLoops : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testNestedGoStyleLoops"%go.
+Definition testNestedGoStyleLoops {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testNestedGoStyleLoops"%go.
 
 (* go: loops.go:136:6 *)
-Definition testNestedGoStyleLoopsⁱᵐᵖˡ : val :=
+Definition testNestedGoStyleLoopsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #false in
@@ -1285,10 +1453,10 @@ Definition testNestedGoStyleLoopsⁱᵐᵖˡ : val :=
       do:  ("ok" <-[go.bool] "$r0")));;;
     return: (![go.bool] "ok")).
 
-Definition testNestedGoStyleLoopsNoComparison : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testNestedGoStyleLoopsNoComparison"%go.
+Definition testNestedGoStyleLoopsNoComparison {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testNestedGoStyleLoopsNoComparison"%go.
 
 (* go: loops.go:150:6 *)
-Definition testNestedGoStyleLoopsNoComparisonⁱᵐᵖˡ : val :=
+Definition testNestedGoStyleLoopsNoComparisonⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #false in
@@ -1309,10 +1477,10 @@ Definition testNestedGoStyleLoopsNoComparisonⁱᵐᵖˡ : val :=
       do:  ("ok" <-[go.bool] "$r0")));;;
     return: (![go.bool] "ok")).
 
-Definition IterateMapKeys : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.IterateMapKeys"%go.
+Definition IterateMapKeys {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.IterateMapKeys"%go.
 
 (* go: maps.go:3:6 *)
-Definition IterateMapKeysⁱᵐᵖˡ : val :=
+Definition IterateMapKeysⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "m",
     exception_do (let: "m" := (GoAlloc (go.MapType go.uint64 go.uint64) "m") in
     let: "sum" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
@@ -1324,10 +1492,10 @@ Definition IterateMapKeysⁱᵐᵖˡ : val :=
       do:  ("sum" <-[go.uint64] "$r0")));;;
     return: (![go.uint64] "sum")).
 
-Definition IterateMapValues : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.IterateMapValues"%go.
+Definition IterateMapValues {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.IterateMapValues"%go.
 
 (* go: maps.go:11:6 *)
-Definition IterateMapValuesⁱᵐᵖˡ : val :=
+Definition IterateMapValuesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "m",
     exception_do (let: "m" := (GoAlloc (go.MapType go.uint64 go.uint64) "m") in
     let: "sum" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
@@ -1340,10 +1508,10 @@ Definition IterateMapValuesⁱᵐᵖˡ : val :=
       do:  ("sum" <-[go.uint64] "$r0")));;;
     return: (![go.uint64] "sum")).
 
-Definition testIterateMap : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testIterateMap"%go.
+Definition testIterateMap {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testIterateMap"%go.
 
 (* go: maps.go:19:6 *)
-Definition testIterateMapⁱᵐᵖˡ : val :=
+Definition testIterateMapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
@@ -1365,10 +1533,10 @@ Definition testIterateMapⁱᵐᵖˡ : val :=
     do:  ("ok" <-[go.bool] "$r0");;;
     return: (![go.bool] "ok")).
 
-Definition testMapSize : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testMapSize"%go.
+Definition testMapSize {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testMapSize"%go.
 
 (* go: maps.go:37:6 *)
-Definition testMapSizeⁱᵐᵖˡ : val :=
+Definition testMapSizeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
@@ -1390,17 +1558,17 @@ Definition testMapSizeⁱᵐᵖˡ : val :=
     do:  ("ok" <-[go.bool] "$r0");;;
     return: (![go.bool] "ok")).
 
-Definition multReturnTwo : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.multReturnTwo"%go.
+Definition multReturnTwo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.multReturnTwo"%go.
 
 (* go: multiple_assign.go:3:6 *)
-Definition multReturnTwoⁱᵐᵖˡ : val :=
+Definition multReturnTwoⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (return: (#(W64 2), #(W64 3))).
 
-Definition testAssignTwo : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testAssignTwo"%go.
+Definition testAssignTwo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testAssignTwo"%go.
 
 (* go: multiple_assign.go:7:6 *)
-Definition testAssignTwoⁱᵐᵖˡ : val :=
+Definition testAssignTwoⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "x" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 10) in
@@ -1415,17 +1583,17 @@ Definition testAssignTwoⁱᵐᵖˡ : val :=
     do:  ("y" <-[go.uint64] "$r1");;;
     return: (((![go.uint64] "x") =⟨go.uint64⟩ #(W64 2)) && ((![go.uint64] "y") =⟨go.uint64⟩ #(W64 3)))).
 
-Definition multReturnThree : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.multReturnThree"%go.
+Definition multReturnThree {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.multReturnThree"%go.
 
 (* go: multiple_assign.go:14:6 *)
-Definition multReturnThreeⁱᵐᵖˡ : val :=
+Definition multReturnThreeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (return: (#(W64 2), #true, #(W32 1))).
 
-Definition testAssignThree : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testAssignThree"%go.
+Definition testAssignThree {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testAssignThree"%go.
 
 (* go: multiple_assign.go:18:6 *)
-Definition testAssignThreeⁱᵐᵖˡ : val :=
+Definition testAssignThreeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "x" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 10) in
@@ -1445,10 +1613,10 @@ Definition testAssignThreeⁱᵐᵖˡ : val :=
     do:  ("z" <-[go.uint32] "$r2");;;
     return: ((((![go.uint64] "x") =⟨go.uint64⟩ #(W64 2)) && ((![go.bool] "y") =⟨go.bool⟩ #true)) && ((![go.uint32] "z") =⟨go.uint32⟩ #(W32 1)))).
 
-Definition testMultipleAssignToMap : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testMultipleAssignToMap"%go.
+Definition testMultipleAssignToMap {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testMultipleAssignToMap"%go.
 
 (* go: multiple_assign.go:26:6 *)
-Definition testMultipleAssignToMapⁱᵐᵖˡ : val :=
+Definition testMultipleAssignToMapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "x" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 10) in
@@ -1463,17 +1631,17 @@ Definition testMultipleAssignToMapⁱᵐᵖˡ : val :=
     do:  (map.insert (![go.MapType go.uint64 go.uint64] "m") #(W64 0) "$r1");;;
     return: (((![go.uint64] "x") =⟨go.uint64⟩ #(W64 2)) && ((Fst (map.get (![go.MapType go.uint64 go.uint64] "m") #(W64 0))) =⟨go.uint64⟩ #(W64 3)))).
 
-Definition returnTwo : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.returnTwo"%go.
+Definition returnTwo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.returnTwo"%go.
 
 (* go: multiple_return.go:3:6 *)
-Definition returnTwoⁱᵐᵖˡ : val :=
+Definition returnTwoⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (return: (#(W64 2), #(W64 3))).
 
-Definition testReturnTwo : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testReturnTwo"%go.
+Definition testReturnTwo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testReturnTwo"%go.
 
 (* go: multiple_return.go:7:6 *)
-Definition testReturnTwoⁱᵐᵖˡ : val :=
+Definition testReturnTwoⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "y" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "x" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
@@ -1484,10 +1652,10 @@ Definition testReturnTwoⁱᵐᵖˡ : val :=
     do:  ("y" <-[go.uint64] "$r1");;;
     return: (((![go.uint64] "x") =⟨go.uint64⟩ #(W64 2)) && ((![go.uint64] "y") =⟨go.uint64⟩ #(W64 3)))).
 
-Definition testAnonymousBinding : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testAnonymousBinding"%go.
+Definition testAnonymousBinding {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testAnonymousBinding"%go.
 
 (* go: multiple_return.go:12:6 *)
-Definition testAnonymousBindingⁱᵐᵖˡ : val :=
+Definition testAnonymousBindingⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "y" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: ("$ret0", "$ret1") := ((FuncResolve returnTwo [] #()) #()) in
@@ -1497,17 +1665,17 @@ Definition testAnonymousBindingⁱᵐᵖˡ : val :=
     do:  ("y" <-[go.uint64] "$r1");;;
     return: ((![go.uint64] "y") =⟨go.uint64⟩ #(W64 3))).
 
-Definition returnThree : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.returnThree"%go.
+Definition returnThree {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.returnThree"%go.
 
 (* go: multiple_return.go:17:6 *)
-Definition returnThreeⁱᵐᵖˡ : val :=
+Definition returnThreeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (return: (#(W64 2), #true, #(W32 1))).
 
-Definition testReturnThree : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testReturnThree"%go.
+Definition testReturnThree {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testReturnThree"%go.
 
 (* go: multiple_return.go:21:6 *)
-Definition testReturnThreeⁱᵐᵖˡ : val :=
+Definition testReturnThreeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "z" := (GoAlloc go.uint32 (GoZeroVal go.uint32 #())) in
     let: "y" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
@@ -1521,17 +1689,17 @@ Definition testReturnThreeⁱᵐᵖˡ : val :=
     do:  ("z" <-[go.uint32] "$r2");;;
     return: ((((![go.uint64] "x") =⟨go.uint64⟩ #(W64 2)) && ((![go.bool] "y") =⟨go.bool⟩ #true)) && ((![go.uint32] "z") =⟨go.uint32⟩ #(W32 1)))).
 
-Definition returnFour : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.returnFour"%go.
+Definition returnFour {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.returnFour"%go.
 
 (* go: multiple_return.go:26:6 *)
-Definition returnFourⁱᵐᵖˡ : val :=
+Definition returnFourⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (return: (#(W64 2), #true, #(W32 1), #(W64 7))).
 
-Definition testReturnFour : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testReturnFour"%go.
+Definition testReturnFour {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testReturnFour"%go.
 
 (* go: multiple_return.go:30:6 *)
-Definition testReturnFourⁱᵐᵖˡ : val :=
+Definition testReturnFourⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "w" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "z" := (GoAlloc go.uint32 (GoZeroVal go.uint32 #())) in
@@ -1548,60 +1716,60 @@ Definition testReturnFourⁱᵐᵖˡ : val :=
     do:  ("w" <-[go.uint64] "$r3");;;
     return: (((((![go.uint64] "x") =⟨go.uint64⟩ #(W64 2)) && ((![go.bool] "y") =⟨go.bool⟩ #true)) && ((![go.uint32] "z") =⟨go.uint32⟩ #(W32 1))) && ((![go.uint64] "w") =⟨go.uint64⟩ #(W64 7)))).
 
-Definition failing_testCompareSliceToNil : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.failing_testCompareSliceToNil"%go.
+Definition failing_testCompareSliceToNil {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.failing_testCompareSliceToNil"%go.
 
 (* go: nil.go:3:6 *)
-Definition failing_testCompareSliceToNilⁱᵐᵖˡ : val :=
+Definition failing_testCompareSliceToNilⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "s" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) #(W64 0)) in
     do:  ("s" <-[go.SliceType go.byte] "$r0");;;
     return: ((![go.SliceType go.byte] "s") ≠⟨go.SliceType go.byte⟩ #slice.nil)).
 
-Definition testComparePointerToNil : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testComparePointerToNil"%go.
+Definition testComparePointerToNil {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testComparePointerToNil"%go.
 
 (* go: nil.go:8:6 *)
-Definition testComparePointerToNilⁱᵐᵖˡ : val :=
+Definition testComparePointerToNilⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "s" := (GoAlloc (go.PointerType go.uint64) (GoZeroVal (go.PointerType go.uint64) #())) in
     let: "$r0" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     do:  ("s" <-[go.PointerType go.uint64] "$r0");;;
     return: ((![go.PointerType go.uint64] "s") ≠⟨go.PointerType go.uint64⟩ #null)).
 
-Definition testCompareNilToNil : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testCompareNilToNil"%go.
+Definition testCompareNilToNil {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testCompareNilToNil"%go.
 
 (* go: nil.go:13:6 *)
-Definition testCompareNilToNilⁱᵐᵖˡ : val :=
+Definition testCompareNilToNilⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "s" := (GoAlloc (go.PointerType (go.PointerType go.uint64)) (GoZeroVal (go.PointerType (go.PointerType go.uint64)) #())) in
     let: "$r0" := (GoAlloc (go.PointerType go.uint64) (GoZeroVal (go.PointerType go.uint64) #())) in
     do:  ("s" <-[go.PointerType (go.PointerType go.uint64)] "$r0");;;
     return: ((![go.PointerType go.uint64] (![go.PointerType (go.PointerType go.uint64)] "s")) =⟨go.PointerType go.uint64⟩ #null)).
 
-Definition testComparePointerWrappedToNil : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testComparePointerWrappedToNil"%go.
+Definition testComparePointerWrappedToNil {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testComparePointerWrappedToNil"%go.
 
 (* go: nil.go:18:6 *)
-Definition testComparePointerWrappedToNilⁱᵐᵖˡ : val :=
+Definition testComparePointerWrappedToNilⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "s" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) #(W64 1)) in
     do:  ("s" <-[go.SliceType go.byte] "$r0");;;
     return: ((![go.SliceType go.byte] "s") ≠⟨go.SliceType go.byte⟩ #slice.nil)).
 
-Definition testComparePointerWrappedDefaultToNil : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testComparePointerWrappedDefaultToNil"%go.
+Definition testComparePointerWrappedDefaultToNil {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testComparePointerWrappedDefaultToNil"%go.
 
 (* go: nil.go:24:6 *)
-Definition testComparePointerWrappedDefaultToNilⁱᵐᵖˡ : val :=
+Definition testComparePointerWrappedDefaultToNilⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "s" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     return: ((![go.SliceType go.byte] "s") =⟨go.SliceType go.byte⟩ #slice.nil)).
 
-Definition reverseAssignOps64 : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.reverseAssignOps64"%go.
+Definition reverseAssignOps64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.reverseAssignOps64"%go.
 
 (* helpers
 
    go: operations.go:4:6 *)
-Definition reverseAssignOps64ⁱᵐᵖˡ : val :=
+Definition reverseAssignOps64ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "x",
     exception_do (let: "x" := (GoAlloc go.uint64 "x") in
     let: "y" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
@@ -1611,10 +1779,10 @@ Definition reverseAssignOps64ⁱᵐᵖˡ : val :=
     do:  ("y" <-[go.uint64] ((![go.uint64] "y") -⟨go.uint64⟩ #(W64 1)));;;
     return: (![go.uint64] "y")).
 
-Definition reverseAssignOps32 : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.reverseAssignOps32"%go.
+Definition reverseAssignOps32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.reverseAssignOps32"%go.
 
 (* go: operations.go:13:6 *)
-Definition reverseAssignOps32ⁱᵐᵖˡ : val :=
+Definition reverseAssignOps32ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "x",
     exception_do (let: "x" := (GoAlloc go.uint32 "x") in
     let: "y" := (GoAlloc go.uint32 (GoZeroVal go.uint32 #())) in
@@ -1624,32 +1792,32 @@ Definition reverseAssignOps32ⁱᵐᵖˡ : val :=
     do:  ("y" <-[go.uint32] ((![go.uint32] "y") -⟨go.uint32⟩ #(W32 1)));;;
     return: (![go.uint32] "y")).
 
-Definition add64Equals : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.add64Equals"%go.
+Definition add64Equals {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.add64Equals"%go.
 
 (* go: operations.go:22:6 *)
-Definition add64Equalsⁱᵐᵖˡ : val :=
+Definition add64Equalsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "x" "y" "z",
     exception_do (let: "z" := (GoAlloc go.uint64 "z") in
     let: "y" := (GoAlloc go.uint64 "y") in
     let: "x" := (GoAlloc go.uint64 "x") in
     return: (((![go.uint64] "x") +⟨go.uint64⟩ (![go.uint64] "y")) =⟨go.uint64⟩ (![go.uint64] "z"))).
 
-Definition sub64Equals : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.sub64Equals"%go.
+Definition sub64Equals {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.sub64Equals"%go.
 
 (* go: operations.go:26:6 *)
-Definition sub64Equalsⁱᵐᵖˡ : val :=
+Definition sub64Equalsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "x" "y" "z",
     exception_do (let: "z" := (GoAlloc go.uint64 "z") in
     let: "y" := (GoAlloc go.uint64 "y") in
     let: "x" := (GoAlloc go.uint64 "x") in
     return: (((![go.uint64] "x") -⟨go.uint64⟩ (![go.uint64] "y")) =⟨go.uint64⟩ (![go.uint64] "z"))).
 
-Definition testReverseAssignOps64 : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testReverseAssignOps64"%go.
+Definition testReverseAssignOps64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testReverseAssignOps64"%go.
 
 (* tests
 
    go: operations.go:31:6 *)
-Definition testReverseAssignOps64ⁱᵐᵖˡ : val :=
+Definition testReverseAssignOps64ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
@@ -1689,10 +1857,10 @@ Definition testReverseAssignOps64ⁱᵐᵖˡ : val :=
     do:  ("ok" <-[go.bool] "$r0");;;
     return: (![go.bool] "ok")).
 
-Definition failing_testReverseAssignOps32 : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.failing_testReverseAssignOps32"%go.
+Definition failing_testReverseAssignOps32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.failing_testReverseAssignOps32"%go.
 
 (* go: operations.go:47:6 *)
-Definition failing_testReverseAssignOps32ⁱᵐᵖˡ : val :=
+Definition failing_testReverseAssignOps32ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
@@ -1726,10 +1894,10 @@ Definition failing_testReverseAssignOps32ⁱᵐᵖˡ : val :=
     do:  ("ok" <-[go.bool] "$r0");;;
     return: (![go.bool] "ok")).
 
-Definition testAdd64Equals : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testAdd64Equals"%go.
+Definition testAdd64Equals {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testAdd64Equals"%go.
 
 (* go: operations.go:61:6 *)
-Definition testAdd64Equalsⁱᵐᵖˡ : val :=
+Definition testAdd64Equalsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
@@ -1746,10 +1914,10 @@ Definition testAdd64Equalsⁱᵐᵖˡ : val :=
     do:  ("ok" <-[go.bool] "$r0");;;
     return: (![go.bool] "ok")).
 
-Definition testSub64Equals : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testSub64Equals"%go.
+Definition testSub64Equals {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testSub64Equals"%go.
 
 (* go: operations.go:68:6 *)
-Definition testSub64Equalsⁱᵐᵖˡ : val :=
+Definition testSub64Equalsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
@@ -1771,10 +1939,10 @@ Definition testSub64Equalsⁱᵐᵖˡ : val :=
     do:  ("ok" <-[go.bool] "$r0");;;
     return: (![go.bool] "ok")).
 
-Definition testDivisionPrecedence : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testDivisionPrecedence"%go.
+Definition testDivisionPrecedence {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testDivisionPrecedence"%go.
 
 (* go: operations.go:76:6 *)
-Definition testDivisionPrecedenceⁱᵐᵖˡ : val :=
+Definition testDivisionPrecedenceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "blockSize" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 4096) in
@@ -1787,10 +1955,10 @@ Definition testDivisionPrecedenceⁱᵐᵖˡ : val :=
     do:  ("hdraddrs" <-[go.uint64] "$r0");;;
     return: ((![go.uint64] "hdraddrs") =⟨go.uint64⟩ #(W64 511))).
 
-Definition testModPrecedence : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testModPrecedence"%go.
+Definition testModPrecedence {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testModPrecedence"%go.
 
 (* go: operations.go:83:6 *)
-Definition testModPrecedenceⁱᵐᵖˡ : val :=
+Definition testModPrecedenceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "x1" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "$r0" := #(W64 517) in
@@ -1800,10 +1968,10 @@ Definition testModPrecedenceⁱᵐᵖˡ : val :=
     do:  ("x2" <-[go.int] "$r0");;;
     return: (((![go.int] "x1") =⟨go.int⟩ #(W64 517)) && ((![go.int] "x2") =⟨go.int⟩ #(W64 5)))).
 
-Definition testBitwiseOpsPrecedence : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testBitwiseOpsPrecedence"%go.
+Definition testBitwiseOpsPrecedence {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testBitwiseOpsPrecedence"%go.
 
 (* go: operations.go:89:6 *)
-Definition testBitwiseOpsPrecedenceⁱᵐᵖˡ : val :=
+Definition testBitwiseOpsPrecedenceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
@@ -1822,10 +1990,10 @@ Definition testBitwiseOpsPrecedenceⁱᵐᵖˡ : val :=
     do:  ("ok" <-[go.bool] "$r0");;;
     return: (![go.bool] "ok")).
 
-Definition testArithmeticShifts : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testArithmeticShifts"%go.
+Definition testArithmeticShifts {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testArithmeticShifts"%go.
 
 (* go: operations.go:102:6 *)
-Definition testArithmeticShiftsⁱᵐᵖˡ : val :=
+Definition testArithmeticShiftsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
@@ -1842,10 +2010,10 @@ Definition testArithmeticShiftsⁱᵐᵖˡ : val :=
     do:  ("ok" <-[go.bool] "$r0");;;
     return: (![go.bool] "ok")).
 
-Definition testBitAddAnd : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testBitAddAnd"%go.
+Definition testBitAddAnd {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testBitAddAnd"%go.
 
 (* go: operations.go:114:6 *)
-Definition testBitAddAndⁱᵐᵖˡ : val :=
+Definition testBitAddAndⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "tid" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 17) in
@@ -1855,34 +2023,34 @@ Definition testBitAddAndⁱᵐᵖˡ : val :=
     do:  ("n" <-[go.uint64] "$r0");;;
     return: ((((![go.uint64] "tid") +⟨go.uint64⟩ (![go.uint64] "n")) &⟨go.uint64⟩ (~ ((![go.uint64] "n") -⟨go.uint64⟩ #(W64 1)))) =⟨go.uint64⟩ #(W64 32))).
 
-Definition testManyParentheses : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testManyParentheses"%go.
+Definition testManyParentheses {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testManyParentheses"%go.
 
 (* go: operations.go:120:6 *)
-Definition testManyParenthesesⁱᵐᵖˡ : val :=
+Definition testManyParenthesesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (return: (#true)).
 
-Definition testPlusTimes : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testPlusTimes"%go.
+Definition testPlusTimes {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testPlusTimes"%go.
 
 (* go: operations.go:124:6 *)
-Definition testPlusTimesⁱᵐᵖˡ : val :=
+Definition testPlusTimesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (return: (#true)).
 
-Definition testOrCompareSimple : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testOrCompareSimple"%go.
+Definition testOrCompareSimple {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testOrCompareSimple"%go.
 
 (* go: precedence.go:3:6 *)
-Definition testOrCompareSimpleⁱᵐᵖˡ : val :=
+Definition testOrCompareSimpleⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do ((if: #false || #true
     then return: (#true)
     else do:  #());;;
     return: (#false)).
 
-Definition testOrCompare : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testOrCompare"%go.
+Definition testOrCompare {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testOrCompare"%go.
 
 (* go: precedence.go:10:6 *)
-Definition testOrCompareⁱᵐᵖˡ : val :=
+Definition testOrCompareⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
@@ -1899,10 +2067,10 @@ Definition testOrCompareⁱᵐᵖˡ : val :=
     else do:  #());;;
     return: (![go.bool] "ok")).
 
-Definition testAndCompare : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testAndCompare"%go.
+Definition testAndCompare {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testAndCompare"%go.
 
 (* go: precedence.go:22:6 *)
-Definition testAndCompareⁱᵐᵖˡ : val :=
+Definition testAndCompareⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
@@ -1919,17 +2087,17 @@ Definition testAndCompareⁱᵐᵖˡ : val :=
       do:  ("ok" <-[go.bool] "$r0"));;;
     return: (![go.bool] "ok")).
 
-Definition testShiftMod : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testShiftMod"%go.
+Definition testShiftMod {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testShiftMod"%go.
 
 (* go: precedence.go:34:6 *)
-Definition testShiftModⁱᵐᵖˡ : val :=
+Definition testShiftModⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (return: (#true)).
 
-Definition testLinearize : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testLinearize"%go.
+Definition testLinearize {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testLinearize"%go.
 
 (* go: prims.go:9:6 *)
-Definition testLinearizeⁱᵐᵖˡ : val :=
+Definition testLinearizeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "m" := (GoAlloc (go.PointerType sync.Mutex) (GoZeroVal (go.PointerType sync.Mutex) #())) in
     let: "$r0" := (GoAlloc sync.Mutex (GoZeroVal sync.Mutex #())) in
@@ -1946,32 +2114,54 @@ Definition BoolTestⁱᵐᵖˡ : go.type := go.StructType [
   (go.FieldDecl "fc"%go go.uint64)
 ].
 
-Definition CheckTrue : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.CheckTrue"%go.
-
 Definition BoolTest : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.BoolTest"%go [].
 
+Module BoolTest.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  t : bool;
+  f : bool;
+  tc : w64;
+  fc : w64;
+}.
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _) (zero_val _)|}.
+End def.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+
+End BoolTest.
+
+Class BoolTest_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] BoolTest_zero_val  :: go.GoZeroValEq BoolTest BoolTest.t;
+}.
+
+Definition CheckTrue {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.CheckTrue"%go.
+
 (* go: shortcircuiting.go:11:6 *)
-Definition CheckTrueⁱᵐᵖˡ : val :=
+Definition CheckTrueⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "b",
     exception_do (let: "b" := (GoAlloc (go.PointerType BoolTest) "b") in
     do:  ((StructFieldRef BoolTest "tc"%go (![go.PointerType BoolTest] "b")) <-[go.uint64] ((![go.uint64] (StructFieldRef BoolTest "tc"%go (![go.PointerType BoolTest] "b"))) +⟨go.uint64⟩ #(W64 1)));;;
     return: (![go.bool] (StructFieldRef BoolTest "t"%go (![go.PointerType BoolTest] "b")))).
 
-Definition CheckFalse : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.CheckFalse"%go.
+Definition CheckFalse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.CheckFalse"%go.
 
 (* go: shortcircuiting.go:16:6 *)
-Definition CheckFalseⁱᵐᵖˡ : val :=
+Definition CheckFalseⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "b",
     exception_do (let: "b" := (GoAlloc (go.PointerType BoolTest) "b") in
     do:  ((StructFieldRef BoolTest "fc"%go (![go.PointerType BoolTest] "b")) <-[go.uint64] ((![go.uint64] (StructFieldRef BoolTest "fc"%go (![go.PointerType BoolTest] "b"))) +⟨go.uint64⟩ #(W64 1)));;;
     return: (![go.bool] (StructFieldRef BoolTest "f"%go (![go.PointerType BoolTest] "b")))).
 
-Definition testShortcircuitAndTF : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testShortcircuitAndTF"%go.
+Definition testShortcircuitAndTF {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testShortcircuitAndTF"%go.
 
 (* tests
 
    go: shortcircuiting.go:22:6 *)
-Definition testShortcircuitAndTFⁱᵐᵖˡ : val :=
+Definition testShortcircuitAndTFⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "b" := (GoAlloc (go.PointerType BoolTest) (GoZeroVal (go.PointerType BoolTest) #())) in
     let: "$r0" := (GoAlloc BoolTest (CompositeLiteral BoolTest (LiteralValue [KeyedElement (Some (KeyField "t"%go)) (ElementExpression #true); KeyedElement (Some (KeyField "f"%go)) (ElementExpression #false); KeyedElement (Some (KeyField "tc"%go)) (ElementExpression #(W64 0)); KeyedElement (Some (KeyField "fc"%go)) (ElementExpression #(W64 0))]))) in
@@ -1983,10 +2173,10 @@ Definition testShortcircuitAndTFⁱᵐᵖˡ : val :=
     else do:  #());;;
     return: (((![go.uint64] (StructFieldRef BoolTest "tc"%go (![go.PointerType BoolTest] "b"))) =⟨go.uint64⟩ #(W64 1)) && ((![go.uint64] (StructFieldRef BoolTest "fc"%go (![go.PointerType BoolTest] "b"))) =⟨go.uint64⟩ #(W64 1)))).
 
-Definition testShortcircuitAndFT : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testShortcircuitAndFT"%go.
+Definition testShortcircuitAndFT {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testShortcircuitAndFT"%go.
 
 (* go: shortcircuiting.go:31:6 *)
-Definition testShortcircuitAndFTⁱᵐᵖˡ : val :=
+Definition testShortcircuitAndFTⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "b" := (GoAlloc (go.PointerType BoolTest) (GoZeroVal (go.PointerType BoolTest) #())) in
     let: "$r0" := (GoAlloc BoolTest (CompositeLiteral BoolTest (LiteralValue [KeyedElement (Some (KeyField "t"%go)) (ElementExpression #true); KeyedElement (Some (KeyField "f"%go)) (ElementExpression #false); KeyedElement (Some (KeyField "tc"%go)) (ElementExpression #(W64 0)); KeyedElement (Some (KeyField "fc"%go)) (ElementExpression #(W64 0))]))) in
@@ -1998,10 +2188,10 @@ Definition testShortcircuitAndFTⁱᵐᵖˡ : val :=
     else do:  #());;;
     return: (((![go.uint64] (StructFieldRef BoolTest "tc"%go (![go.PointerType BoolTest] "b"))) =⟨go.uint64⟩ #(W64 0)) && ((![go.uint64] (StructFieldRef BoolTest "fc"%go (![go.PointerType BoolTest] "b"))) =⟨go.uint64⟩ #(W64 1)))).
 
-Definition testShortcircuitOrTF : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testShortcircuitOrTF"%go.
+Definition testShortcircuitOrTF {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testShortcircuitOrTF"%go.
 
 (* go: shortcircuiting.go:40:6 *)
-Definition testShortcircuitOrTFⁱᵐᵖˡ : val :=
+Definition testShortcircuitOrTFⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "b" := (GoAlloc (go.PointerType BoolTest) (GoZeroVal (go.PointerType BoolTest) #())) in
     let: "$r0" := (GoAlloc BoolTest (CompositeLiteral BoolTest (LiteralValue [KeyedElement (Some (KeyField "t"%go)) (ElementExpression #true); KeyedElement (Some (KeyField "f"%go)) (ElementExpression #false); KeyedElement (Some (KeyField "tc"%go)) (ElementExpression #(W64 0)); KeyedElement (Some (KeyField "fc"%go)) (ElementExpression #(W64 0))]))) in
@@ -2013,10 +2203,10 @@ Definition testShortcircuitOrTFⁱᵐᵖˡ : val :=
     else do:  #());;;
     return: (#false)).
 
-Definition testShortcircuitOrFT : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testShortcircuitOrFT"%go.
+Definition testShortcircuitOrFT {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testShortcircuitOrFT"%go.
 
 (* go: shortcircuiting.go:48:6 *)
-Definition testShortcircuitOrFTⁱᵐᵖˡ : val :=
+Definition testShortcircuitOrFTⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "b" := (GoAlloc (go.PointerType BoolTest) (GoZeroVal (go.PointerType BoolTest) #())) in
     let: "$r0" := (GoAlloc BoolTest (CompositeLiteral BoolTest (LiteralValue [KeyedElement (Some (KeyField "t"%go)) (ElementExpression #true); KeyedElement (Some (KeyField "f"%go)) (ElementExpression #false); KeyedElement (Some (KeyField "tc"%go)) (ElementExpression #(W64 0)); KeyedElement (Some (KeyField "fc"%go)) (ElementExpression #(W64 0))]))) in
@@ -2028,15 +2218,10 @@ Definition testShortcircuitOrFTⁱᵐᵖˡ : val :=
     else do:  #());;;
     return: (#false)).
 
-Definition ArrayEditorⁱᵐᵖˡ : go.type := go.StructType [
-  (go.FieldDecl "s"%go (go.SliceType go.uint64));
-  (go.FieldDecl "next_val"%go go.uint64)
-].
-
 Definition ArrayEditor : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.ArrayEditor"%go [].
 
 (* go: slices.go:9:24 *)
-Definition ArrayEditor__Advanceⁱᵐᵖˡ : val :=
+Definition ArrayEditor__Advanceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "ae" "arr" "next",
     exception_do (let: "ae" := (GoAlloc (go.PointerType ArrayEditor) "ae") in
     let: "next" := (GoAlloc go.uint64 "next") in
@@ -2051,12 +2236,38 @@ Definition ArrayEditor__Advanceⁱᵐᵖˡ : val :=
     do:  ((StructFieldRef ArrayEditor "s"%go (![go.PointerType ArrayEditor] "ae")) <-[go.SliceType go.uint64] "$r0");;;
     return: #()).
 
-Definition testSliceOps : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testSliceOps"%go.
+Definition ArrayEditorⁱᵐᵖˡ : go.type := go.StructType [
+  (go.FieldDecl "s"%go (go.SliceType go.uint64));
+  (go.FieldDecl "next_val"%go go.uint64)
+].
+
+Module ArrayEditor.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  s : slice.t;
+  next_val : w64;
+}.
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
+End def.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+
+End ArrayEditor.
+
+Class ArrayEditor_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] ArrayEditor_zero_val  :: go.GoZeroValEq ArrayEditor ArrayEditor.t;
+  #[global] ArrayEditor'ptr_Advance_unfold :: MethodUnfold (go.PointerType (ArrayEditor)) "Advance" (ArrayEditor__Advanceⁱᵐᵖˡ);
+}.
+
+Definition testSliceOps {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testSliceOps"%go.
 
 (* tests
 
    go: slices.go:17:6 *)
-Definition testSliceOpsⁱᵐᵖˡ : val :=
+Definition testSliceOpsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "x" := (GoAlloc (go.SliceType go.uint64) (GoZeroVal (go.SliceType go.uint64) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.uint64] #()) #(W64 10)) in
@@ -2104,10 +2315,10 @@ Definition testSliceOpsⁱᵐᵖˡ : val :=
     do:  ("ok" <-[go.bool] "$r0");;;
     return: (![go.bool] "ok")).
 
-Definition testSliceCapacityOps : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testSliceCapacityOps"%go.
+Definition testSliceCapacityOps {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testSliceCapacityOps"%go.
 
 (* go: slices.go:40:6 *)
-Definition testSliceCapacityOpsⁱᵐᵖˡ : val :=
+Definition testSliceCapacityOpsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "x" := (GoAlloc (go.SliceType go.uint64) (GoZeroVal (go.SliceType go.uint64) #())) in
     let: "$r0" := ((FuncResolve go.make3 [go.SliceType go.uint64] #()) #(W64 0) #(W64 10)) in
@@ -2147,10 +2358,10 @@ Definition testSliceCapacityOpsⁱᵐᵖˡ : val :=
     do:  ("ok" <-[go.bool] "$r0");;;
     return: (![go.bool] "ok")).
 
-Definition testOverwriteArray : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testOverwriteArray"%go.
+Definition testOverwriteArray {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testOverwriteArray"%go.
 
 (* go: slices.go:59:6 *)
-Definition testOverwriteArrayⁱᵐᵖˡ : val :=
+Definition testOverwriteArrayⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "arr" := (GoAlloc (go.SliceType go.uint64) (GoZeroVal (go.SliceType go.uint64) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.uint64] #()) #(W64 4)) in
@@ -2189,10 +2400,10 @@ Definition testOverwriteArrayⁱᵐᵖˡ : val :=
     else do:  #());;;
     return: (((![go.uint64] (IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "arr", #(W64 3)))) =⟨go.uint64⟩ #(W64 4)) && ((![go.uint64] (IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "arr", #(W64 0)))) =⟨go.uint64⟩ #(W64 4)))).
 
-Definition testSliceLiteral : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testSliceLiteral"%go.
+Definition testSliceLiteral {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testSliceLiteral"%go.
 
 (* go: slices.go:80:6 *)
-Definition testSliceLiteralⁱᵐᵖˡ : val :=
+Definition testSliceLiteralⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "bytes" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: "$r0" := (CompositeLiteral (go.SliceType go.byte) (LiteralValue [KeyedElement None (ElementExpression #(W8 1)); KeyedElement None (ElementExpression #(W8 2))])) in
@@ -2209,10 +2420,10 @@ Definition testSliceLiteralⁱᵐᵖˡ : val :=
     do:  ("ok" <-[go.bool] "$r0");;;
     return: (![go.bool] "ok")).
 
-Definition testSliceAppend : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testSliceAppend"%go.
+Definition testSliceAppend {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testSliceAppend"%go.
 
 (* go: slices.go:89:6 *)
-Definition testSliceAppendⁱᵐᵖˡ : val :=
+Definition testSliceAppendⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
@@ -2239,19 +2450,10 @@ Definition testSliceAppendⁱᵐᵖˡ : val :=
     do:  ("ok" <-[go.bool] "$r0");;;
     return: (![go.bool] "ok")).
 
-Definition Barⁱᵐᵖˡ : go.type := go.StructType [
-  (go.FieldDecl "a"%go go.uint64);
-  (go.FieldDecl "b"%go go.uint64)
-].
-
 Definition Bar : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.Bar"%go [].
 
-Definition Fooⁱᵐᵖˡ : go.type := go.StructType [
-  (go.FieldDecl "bar"%go Bar)
-].
-
 (* go: struct_pointers.go:14:17 *)
-Definition Bar__mutateⁱᵐᵖˡ : val :=
+Definition Bar__mutateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "bar" <>,
     exception_do (let: "bar" := (GoAlloc (go.PointerType Bar) "bar") in
     let: "$r0" := #(W64 2) in
@@ -2260,19 +2462,69 @@ Definition Bar__mutateⁱᵐᵖˡ : val :=
     do:  ((StructFieldRef Bar "b"%go (![go.PointerType Bar] "bar")) <-[go.uint64] "$r0");;;
     return: #()).
 
+Definition Barⁱᵐᵖˡ : go.type := go.StructType [
+  (go.FieldDecl "a"%go go.uint64);
+  (go.FieldDecl "b"%go go.uint64)
+].
+
+Module Bar.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  a : w64;
+  b : w64;
+}.
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
+End def.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+
+End Bar.
+
+Class Bar_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Bar_zero_val  :: go.GoZeroValEq Bar Bar.t;
+  #[global] Bar'ptr_mutate_unfold :: MethodUnfold (go.PointerType (Bar)) "mutate" (Bar__mutateⁱᵐᵖˡ);
+}.
+
 Definition Foo : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.Foo"%go [].
 
 (* go: struct_pointers.go:19:17 *)
-Definition Foo__mutateBarⁱᵐᵖˡ : val :=
+Definition Foo__mutateBarⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "foo" <>,
     exception_do (let: "foo" := (GoAlloc (go.PointerType Foo) "foo") in
     do:  ((MethodResolve (go.PointerType Bar) "mutate"%go #() (StructFieldRef Foo "bar"%go (![go.PointerType Foo] "foo"))) #());;;
     return: #()).
 
-Definition testFooBarMutation : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testFooBarMutation"%go.
+Definition Fooⁱᵐᵖˡ : go.type := go.StructType [
+  (go.FieldDecl "bar"%go Bar)
+].
+
+Module Foo.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  bar : semantics.Bar.t;
+}.
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
+End def.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+
+End Foo.
+
+Class Foo_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Foo_zero_val  :: go.GoZeroValEq Foo Foo.t;
+  #[global] Foo'ptr_mutateBar_unfold :: MethodUnfold (go.PointerType (Foo)) "mutateBar" (Foo__mutateBarⁱᵐᵖˡ);
+}.
+
+Definition testFooBarMutation {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testFooBarMutation"%go.
 
 (* go: struct_pointers.go:23:6 *)
-Definition testFooBarMutationⁱᵐᵖˡ : val :=
+Definition testFooBarMutationⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "x" := (GoAlloc Foo (GoZeroVal Foo #())) in
     let: "$r0" := (CompositeLiteral Foo (LiteralValue [KeyedElement (Some (KeyField "bar"%go)) (CompositeLiteral Bar (LiteralValue [KeyedElement (Some (KeyField "a"%go)) (ElementExpression #(W64 0)); KeyedElement (Some (KeyField "b"%go)) (ElementExpression #(W64 0))]))])) in
@@ -2287,41 +2539,56 @@ Definition TwoIntsⁱᵐᵖˡ : go.type := go.StructType [
 
 Definition TwoInts : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.TwoInts"%go [].
 
-Definition Sⁱᵐᵖˡ : go.type := go.StructType [
-  (go.FieldDecl "a"%go go.uint64);
-  (go.FieldDecl "b"%go TwoInts);
-  (go.FieldDecl "c"%go go.bool)
-].
+Module TwoInts.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  x : w64;
+  y : w64;
+}.
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
+End def.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
 
-Definition NewS : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.NewS"%go.
+End TwoInts.
+
+Class TwoInts_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] TwoInts_zero_val  :: go.GoZeroValEq TwoInts TwoInts.t;
+}.
 
 Definition S : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.S"%go [].
 
-(* go: structs.go:14:6 *)
-Definition NewSⁱᵐᵖˡ : val :=
-  λ: <>,
-    exception_do (return: (GoAlloc S (CompositeLiteral S (LiteralValue [KeyedElement (Some (KeyField "a"%go)) (ElementExpression #(W64 2)); KeyedElement (Some (KeyField "b"%go)) (CompositeLiteral TwoInts (LiteralValue [KeyedElement (Some (KeyField "x"%go)) (ElementExpression #(W64 1)); KeyedElement (Some (KeyField "y"%go)) (ElementExpression #(W64 2))])); KeyedElement (Some (KeyField "c"%go)) (ElementExpression #true)])))).
+(* go: structs.go:30:12 *)
+Definition S__readBValⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "s" <>,
+    exception_do (let: "s" := (GoAlloc S "s") in
+    return: (![TwoInts] (StructFieldRef S "b"%go "s"))).
+
+(* go: structs.go:38:13 *)
+Definition S__negateCⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "s" <>,
+    exception_do (let: "s" := (GoAlloc (go.PointerType S) "s") in
+    let: "$r0" := (~ (![go.bool] (StructFieldRef S "c"%go (![go.PointerType S] "s")))) in
+    do:  ((StructFieldRef S "c"%go (![go.PointerType S] "s")) <-[go.bool] "$r0");;;
+    return: #()).
 
 (* go: structs.go:22:13 *)
-Definition S__readAⁱᵐᵖˡ : val :=
+Definition S__readAⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "s" <>,
     exception_do (let: "s" := (GoAlloc (go.PointerType S) "s") in
     return: (![go.uint64] (StructFieldRef S "a"%go (![go.PointerType S] "s")))).
 
 (* go: structs.go:26:13 *)
-Definition S__readBⁱᵐᵖˡ : val :=
+Definition S__readBⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "s" <>,
     exception_do (let: "s" := (GoAlloc (go.PointerType S) "s") in
     return: (![TwoInts] (StructFieldRef S "b"%go (![go.PointerType S] "s")))).
 
-(* go: structs.go:30:12 *)
-Definition S__readBValⁱᵐᵖˡ : val :=
-  λ: "s" <>,
-    exception_do (let: "s" := (GoAlloc S "s") in
-    return: (![TwoInts] (StructFieldRef S "b"%go "s"))).
-
 (* go: structs.go:34:13 *)
-Definition S__updateBValXⁱᵐᵖˡ : val :=
+Definition S__updateBValXⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "s" "i",
     exception_do (let: "s" := (GoAlloc (go.PointerType S) "s") in
     let: "i" := (GoAlloc go.uint64 "i") in
@@ -2329,18 +2596,50 @@ Definition S__updateBValXⁱᵐᵖˡ : val :=
     do:  ((StructFieldRef TwoInts "x"%go (StructFieldRef S "b"%go (![go.PointerType S] "s"))) <-[go.uint64] "$r0");;;
     return: #()).
 
-(* go: structs.go:38:13 *)
-Definition S__negateCⁱᵐᵖˡ : val :=
-  λ: "s" <>,
-    exception_do (let: "s" := (GoAlloc (go.PointerType S) "s") in
-    let: "$r0" := (~ (![go.bool] (StructFieldRef S "c"%go (![go.PointerType S] "s")))) in
-    do:  ((StructFieldRef S "c"%go (![go.PointerType S] "s")) <-[go.bool] "$r0");;;
-    return: #()).
+Definition Sⁱᵐᵖˡ : go.type := go.StructType [
+  (go.FieldDecl "a"%go go.uint64);
+  (go.FieldDecl "b"%go TwoInts);
+  (go.FieldDecl "c"%go go.bool)
+].
 
-Definition testStructUpdates : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testStructUpdates"%go.
+Module S.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  a : w64;
+  b : semantics.TwoInts.t;
+  c : bool;
+}.
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
+End def.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+
+End S.
+
+Class S_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] S_zero_val  :: go.GoZeroValEq S S.t;
+  #[global] S'ptr_readBVal_unfold :: MethodUnfold (S) "readBVal" (S__readBValⁱᵐᵖˡ);
+  #[global] S'ptr_negateC_unfold :: MethodUnfold (go.PointerType (S)) "negateC" (S__negateCⁱᵐᵖˡ);
+  #[global] S'ptr_readA_unfold :: MethodUnfold (go.PointerType (S)) "readA" (S__readAⁱᵐᵖˡ);
+  #[global] S'ptr_readB_unfold :: MethodUnfold (go.PointerType (S)) "readB" (S__readBⁱᵐᵖˡ);
+  #[global] S'ptr_readBVal_unfold :: MethodUnfold (go.PointerType (S)) "readBVal" (λ: "$r", MethodResolve (S) readBVal #() (![(S)] "$r");
+  #[global] S'ptr_updateBValX_unfold :: MethodUnfold (go.PointerType (S)) "updateBValX" (S__updateBValXⁱᵐᵖˡ);
+}.
+
+Definition NewS {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.NewS"%go.
+
+(* go: structs.go:14:6 *)
+Definition NewSⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: <>,
+    exception_do (return: (GoAlloc S (CompositeLiteral S (LiteralValue [KeyedElement (Some (KeyField "a"%go)) (ElementExpression #(W64 2)); KeyedElement (Some (KeyField "b"%go)) (CompositeLiteral TwoInts (LiteralValue [KeyedElement (Some (KeyField "x"%go)) (ElementExpression #(W64 1)); KeyedElement (Some (KeyField "y"%go)) (ElementExpression #(W64 2))])); KeyedElement (Some (KeyField "c"%go)) (ElementExpression #true)])))).
+
+Definition testStructUpdates {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testStructUpdates"%go.
 
 (* go: structs.go:42:6 *)
-Definition testStructUpdatesⁱᵐᵖˡ : val :=
+Definition testStructUpdatesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
@@ -2376,10 +2675,10 @@ Definition testStructUpdatesⁱᵐᵖˡ : val :=
     do:  ("ok" <-[go.bool] "$r0");;;
     return: (![go.bool] "ok")).
 
-Definition testNestedStructUpdates : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testNestedStructUpdates"%go.
+Definition testNestedStructUpdates {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testNestedStructUpdates"%go.
 
 (* go: structs.go:65:6 *)
-Definition testNestedStructUpdatesⁱᵐᵖˡ : val :=
+Definition testNestedStructUpdatesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
@@ -2418,10 +2717,10 @@ Definition testNestedStructUpdatesⁱᵐᵖˡ : val :=
     do:  ("ok" <-[go.bool] "$r0");;;
     return: (![go.bool] "ok")).
 
-Definition testStructConstructions : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testStructConstructions"%go.
+Definition testStructConstructions {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testStructConstructions"%go.
 
 (* go: structs.go:90:6 *)
-Definition testStructConstructionsⁱᵐᵖˡ : val :=
+Definition testStructConstructionsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
@@ -2457,10 +2756,10 @@ Definition testStructConstructionsⁱᵐᵖˡ : val :=
     do:  ("ok" <-[go.bool] "$r0");;;
     return: (![go.bool] "ok")).
 
-Definition testIncompleteStruct : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testIncompleteStruct"%go.
+Definition testIncompleteStruct {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testIncompleteStruct"%go.
 
 (* go: structs.go:109:6 *)
-Definition testIncompleteStructⁱᵐᵖˡ : val :=
+Definition testIncompleteStructⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
@@ -2483,12 +2782,31 @@ Definition StructWrapⁱᵐᵖˡ : go.type := go.StructType [
   (go.FieldDecl "i"%go go.uint64)
 ].
 
-Definition testStoreInStructVar : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testStoreInStructVar"%go.
-
 Definition StructWrap : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.StructWrap"%go [].
 
+Module StructWrap.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  i : w64;
+}.
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
+End def.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+
+End StructWrap.
+
+Class StructWrap_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] StructWrap_zero_val  :: go.GoZeroValEq StructWrap StructWrap.t;
+}.
+
+Definition testStoreInStructVar {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testStoreInStructVar"%go.
+
 (* go: structs.go:126:6 *)
-Definition testStoreInStructVarⁱᵐᵖˡ : val :=
+Definition testStoreInStructVarⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "p" := (GoAlloc StructWrap (GoZeroVal StructWrap #())) in
     let: "$r0" := (CompositeLiteral StructWrap (LiteralValue [KeyedElement (Some (KeyField "i"%go)) (ElementExpression #(W64 0))])) in
@@ -2497,10 +2815,10 @@ Definition testStoreInStructVarⁱᵐᵖˡ : val :=
     do:  ((StructFieldRef StructWrap "i"%go "p") <-[go.uint64] "$r0");;;
     return: ((![go.uint64] (StructFieldRef StructWrap "i"%go "p")) =⟨go.uint64⟩ #(W64 5))).
 
-Definition testStoreInStructPointerVar : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testStoreInStructPointerVar"%go.
+Definition testStoreInStructPointerVar {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testStoreInStructPointerVar"%go.
 
 (* go: structs.go:132:6 *)
-Definition testStoreInStructPointerVarⁱᵐᵖˡ : val :=
+Definition testStoreInStructPointerVarⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "p" := (GoAlloc (go.PointerType StructWrap) (GoZeroVal (go.PointerType StructWrap) #())) in
     let: "$r0" := (GoAlloc StructWrap (GoZeroVal StructWrap #())) in
@@ -2509,10 +2827,10 @@ Definition testStoreInStructPointerVarⁱᵐᵖˡ : val :=
     do:  ((StructFieldRef StructWrap "i"%go (![go.PointerType StructWrap] "p")) <-[go.uint64] "$r0");;;
     return: ((![go.uint64] (StructFieldRef StructWrap "i"%go (![go.PointerType StructWrap] "p"))) =⟨go.uint64⟩ #(W64 5))).
 
-Definition testStoreComposite : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testStoreComposite"%go.
+Definition testStoreComposite {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testStoreComposite"%go.
 
 (* go: structs.go:138:6 *)
-Definition testStoreCompositeⁱᵐᵖˡ : val :=
+Definition testStoreCompositeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "p" := (GoAlloc (go.PointerType TwoInts) (GoZeroVal (go.PointerType TwoInts) #())) in
     let: "$r0" := (GoAlloc TwoInts (GoZeroVal TwoInts #())) in
@@ -2521,10 +2839,10 @@ Definition testStoreCompositeⁱᵐᵖˡ : val :=
     do:  ((![go.PointerType TwoInts] "p") <-[TwoInts] "$r0");;;
     return: ((![go.uint64] (StructFieldRef TwoInts "y"%go (![go.PointerType TwoInts] "p"))) =⟨go.uint64⟩ #(W64 4))).
 
-Definition testStoreSlice : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testStoreSlice"%go.
+Definition testStoreSlice {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testStoreSlice"%go.
 
 (* go: structs.go:144:6 *)
-Definition testStoreSliceⁱᵐᵖˡ : val :=
+Definition testStoreSliceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "p" := (GoAlloc (go.PointerType (go.SliceType go.uint64)) (GoZeroVal (go.PointerType (go.SliceType go.uint64)) #())) in
     let: "$r0" := (GoAlloc (go.SliceType go.uint64) (GoZeroVal (go.SliceType go.uint64) #())) in
@@ -2541,12 +2859,31 @@ Definition StructWithFuncⁱᵐᵖˡ : go.type := go.StructType [
   (go.FieldDecl "fn"%go (go.FunctionType (go.Signature [go.uint64] false [go.uint64])))
 ].
 
-Definition testStructFieldFunc : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testStructFieldFunc"%go.
-
 Definition StructWithFunc : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.StructWithFunc"%go [].
 
+Module StructWithFunc.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  fn : func.t;
+}.
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
+End def.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+
+End StructWithFunc.
+
+Class StructWithFunc_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] StructWithFunc_zero_val  :: go.GoZeroValEq StructWithFunc StructWithFunc.t;
+}.
+
+Definition testStructFieldFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testStructFieldFunc"%go.
+
 (* go: structs.go:155:6 *)
-Definition testStructFieldFuncⁱᵐᵖˡ : val :=
+Definition testStructFieldFuncⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "a" := (GoAlloc (go.PointerType StructWithFunc) (GoZeroVal (go.PointerType StructWithFunc) #())) in
     let: "$r0" := (GoAlloc StructWithFunc (GoZeroVal StructWithFunc #())) in
@@ -2559,10 +2896,10 @@ Definition testStructFieldFuncⁱᵐᵖˡ : val :=
     return: ((let: "$a0" := #(W64 10) in
      (![go.FunctionType (go.Signature [go.uint64] false [go.uint64])] (StructFieldRef StructWithFunc "fn"%go (![go.PointerType StructWithFunc] "a"))) "$a0") =⟨go.uint64⟩ #(W64 20))).
 
-Definition testSwitchVal : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testSwitchVal"%go.
+Definition testSwitchVal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testSwitchVal"%go.
 
 (* go: switch.go:3:6 *)
-Definition testSwitchValⁱᵐᵖˡ : val :=
+Definition testSwitchValⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "x" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 0) in
@@ -2575,10 +2912,10 @@ Definition testSwitchValⁱᵐᵖˡ : val :=
       then return: (#false)
       else return: (#false)))).
 
-Definition testSwitchMultiple : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testSwitchMultiple"%go.
+Definition testSwitchMultiple {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testSwitchMultiple"%go.
 
 (* go: switch.go:15:6 *)
-Definition testSwitchMultipleⁱᵐᵖˡ : val :=
+Definition testSwitchMultipleⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "x" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 0) in
@@ -2592,10 +2929,10 @@ Definition testSwitchMultipleⁱᵐᵖˡ : val :=
       else do:  #()));;;
     return: (#false)).
 
-Definition testSwitchDefaultTrue : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testSwitchDefaultTrue"%go.
+Definition testSwitchDefaultTrue {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testSwitchDefaultTrue"%go.
 
 (* go: switch.go:26:6 *)
-Definition testSwitchDefaultTrueⁱᵐᵖˡ : val :=
+Definition testSwitchDefaultTrueⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "x" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 1) in
@@ -2608,25 +2945,57 @@ Definition testSwitchDefaultTrueⁱᵐᵖˡ : val :=
       then return: (#false)
       else return: (#true)))).
 
-Definition switchConcreteⁱᵐᵖˡ : go.type := go.StructType [
-].
-
-Definition switchInterfaceⁱᵐᵖˡ : go.type := go.InterfaceType [go.MethodElem #"marker"%go (go.Signature [] false [])].
-
 Definition switchConcrete : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.switchConcrete"%go [].
 
 (* go: switch.go:45:26 *)
-Definition switchConcrete__markerⁱᵐᵖˡ : val :=
+Definition switchConcrete__markerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "c" <>,
     exception_do (let: "c" := (GoAlloc (go.PointerType switchConcrete) "c") in
     do:  #()).
 
-Definition testSwitchConversion : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testSwitchConversion"%go.
+Definition switchConcreteⁱᵐᵖˡ : go.type := go.StructType [
+].
+
+Module switchConcrete.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+}.
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk|}.
+End def.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+
+End switchConcrete.
+
+Class switchConcrete_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] switchConcrete_zero_val  :: go.GoZeroValEq switchConcrete switchConcrete.t;
+  #[global] switchConcrete'ptr_marker_unfold :: MethodUnfold (go.PointerType (switchConcrete)) "marker" (switchConcrete__markerⁱᵐᵖˡ);
+}.
+
+Definition switchInterfaceⁱᵐᵖˡ : go.type := go.InterfaceType [go.MethodElem #"marker"%go (go.Signature [] false [])].
 
 Definition switchInterface : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.switchInterface"%go [].
 
+Module switchInterface.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Definition t  : Type := interface.t.
+End def.
+End switchInterface.
+
+Class switchInterface_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] switchInterface_zero_val  :: go.GoZeroValEq switchInterface switchInterface.t;
+  #[global] switchInterface'ptr_marker_unfold :: MethodUnfold (switchInterface) "marker" (switchInterface__markerⁱᵐᵖˡ);
+}.
+
+Definition testSwitchConversion {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testSwitchConversion"%go.
+
 (* go: switch.go:48:6 *)
-Definition testSwitchConversionⁱᵐᵖˡ : val :=
+Definition testSwitchConversionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "v" := (GoAlloc (go.PointerType switchConcrete) (GoZeroVal (go.PointerType switchConcrete) #())) in
     let: "$r0" := (GoAlloc switchConcrete (CompositeLiteral switchConcrete (LiteralValue []))) in
@@ -2644,20 +3013,20 @@ Definition testSwitchConversionⁱᵐᵖˡ : val :=
     else return: (#false));;;
     return: (#true)).
 
-Definition testPointerAssignment : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testPointerAssignment"%go.
+Definition testPointerAssignment {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testPointerAssignment"%go.
 
 (* go: vars.go:3:6 *)
-Definition testPointerAssignmentⁱᵐᵖˡ : val :=
+Definition testPointerAssignmentⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "x" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
     do:  ("x" <-[go.bool] "$r0");;;
     return: (![go.bool] "x")).
 
-Definition testAddressOfLocal : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testAddressOfLocal"%go.
+Definition testAddressOfLocal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testAddressOfLocal"%go.
 
 (* go: vars.go:9:6 *)
-Definition testAddressOfLocalⁱᵐᵖˡ : val :=
+Definition testAddressOfLocalⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "x" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #false in
@@ -2669,105 +3038,46 @@ Definition testAddressOfLocalⁱᵐᵖˡ : val :=
     do:  ((![go.PointerType go.bool] "xptr") <-[go.bool] "$r0");;;
     return: ((![go.bool] "x") && (![go.bool] (![go.PointerType go.bool] "xptr")))).
 
-Definition testAnonymousAssign : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testAnonymousAssign"%go.
+Definition testAnonymousAssign {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testAnonymousAssign"%go.
 
 (* go: vars.go:16:6 *)
-Definition testAnonymousAssignⁱᵐᵖˡ : val :=
+Definition testAnonymousAssignⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "$r0" := (#(W64 1) +⟨go.uint64⟩ #(W64 2)) in
     do:  "$r0";;;
     return: (#true)).
 
 (* 10 is completely arbitrary *)
-Definition MaxTxnWrites : val := #(W64 10).
+Definition MaxTxnWrites {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #(W64 10).
 
-Definition logLength : val := #(W64 21).
-
-Definition Logⁱᵐᵖˡ : go.type := go.StructType [
-  (go.FieldDecl "d"%go disk.Disk);
-  (go.FieldDecl "l"%go (go.PointerType sync.Mutex));
-  (go.FieldDecl "cache"%go (go.MapType go.uint64 (go.SliceType go.byte)));
-  (go.FieldDecl "length"%go (go.PointerType go.uint64))
-].
-
-Definition intToBlock : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.intToBlock"%go.
-
-(* go: wal.go:25:6 *)
-Definition intToBlockⁱᵐᵖˡ : val :=
-  λ: "a",
-    exception_do (let: "a" := (GoAlloc go.uint64 "a") in
-    let: "b" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
-    let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) disk.BlockSize) in
-    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
-    do:  (let: "$a0" := (![go.SliceType go.byte] "b") in
-    let: "$a1" := (![go.uint64] "a") in
-    (FuncResolve primitive.UInt64Put [] #()) "$a0" "$a1");;;
-    return: (![go.SliceType go.byte] "b")).
-
-Definition blockToInt : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.blockToInt"%go.
-
-(* go: wal.go:31:6 *)
-Definition blockToIntⁱᵐᵖˡ : val :=
-  λ: "v",
-    exception_do (let: "v" := (GoAlloc (go.SliceType go.byte) "v") in
-    let: "a" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "v") in
-    (FuncResolve primitive.UInt64Get [] #()) "$a0") in
-    do:  ("a" <-[go.uint64] "$r0");;;
-    return: (![go.uint64] "a")).
-
-Definition New : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.New"%go.
+Definition logLength {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #(W64 21).
 
 Definition Log : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.Log"%go [].
 
-(* New initializes a fresh log
+Definition clearLog {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.clearLog"%go.
 
-   go: wal.go:37:6 *)
-Definition Newⁱᵐᵖˡ : val :=
-  λ: <>,
-    exception_do (let: "d" := (GoAlloc disk.Disk (GoZeroVal disk.Disk #())) in
-    let: "$r0" := ((FuncResolve disk.Get [] #()) #()) in
-    do:  ("d" <-[disk.Disk] "$r0");;;
-    let: "diskSize" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    let: "$r0" := ((MethodResolve disk.Disk "Size"%go #() (![disk.Disk] "d")) #()) in
-    do:  ("diskSize" <-[go.uint64] "$r0");;;
-    (if: (![go.uint64] "diskSize") ≤⟨go.uint64⟩ logLength
-    then
-      do:  (let: "$a0" := (InterfaceMake go.string #"disk is too small to host log"%go) in
-      (FuncResolve go.panic [] #()) "$a0")
-    else do:  #());;;
-    let: "cache" := (GoAlloc (go.MapType go.uint64 (go.SliceType go.byte)) (GoZeroVal (go.MapType go.uint64 (go.SliceType go.byte)) #())) in
-    let: "$r0" := ((FuncResolve go.make1 [go.MapType go.uint64 (go.SliceType go.byte)] #()) #()) in
-    do:  ("cache" <-[go.MapType go.uint64 (go.SliceType go.byte)] "$r0");;;
-    let: "header" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
-    let: "$r0" := (let: "$a0" := #(W64 0) in
-    (FuncResolve intToBlock [] #()) "$a0") in
-    do:  ("header" <-[go.SliceType go.byte] "$r0");;;
-    do:  (let: "$a0" := #(W64 0) in
-    let: "$a1" := (![go.SliceType go.byte] "header") in
-    (MethodResolve disk.Disk "Write"%go #() (![disk.Disk] "d")) "$a0" "$a1");;;
-    let: "lengthPtr" := (GoAlloc (go.PointerType go.uint64) (GoZeroVal (go.PointerType go.uint64) #())) in
-    let: "$r0" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    do:  ("lengthPtr" <-[go.PointerType go.uint64] "$r0");;;
+Definition applyLog {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.applyLog"%go.
+
+(* Apply all the committed transactions.
+
+   Frees all the space in the log.
+
+   go: wal.go:150:14 *)
+Definition Log__Applyⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "l" <>,
+    exception_do (let: "l" := (GoAlloc Log "l") in
+    do:  ((MethodResolve Log "lock"%go #() (![Log] "l")) #());;;
+    let: "length" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+    let: "$r0" := (![go.uint64] (![go.PointerType go.uint64] (StructFieldRef Log "length"%go "l"))) in
+    do:  ("length" <-[go.uint64] "$r0");;;
+    do:  (let: "$a0" := (![disk.Disk] (StructFieldRef Log "d"%go "l")) in
+    let: "$a1" := (![go.uint64] "length") in
+    (FuncResolve applyLog [] #()) "$a0" "$a1");;;
+    do:  (let: "$a0" := (![disk.Disk] (StructFieldRef Log "d"%go "l")) in
+    (FuncResolve clearLog [] #()) "$a0");;;
     let: "$r0" := #(W64 0) in
-    do:  ((![go.PointerType go.uint64] "lengthPtr") <-[go.uint64] "$r0");;;
-    let: "l" := (GoAlloc (go.PointerType sync.Mutex) (GoZeroVal (go.PointerType sync.Mutex) #())) in
-    let: "$r0" := (GoAlloc sync.Mutex (GoZeroVal sync.Mutex #())) in
-    do:  ("l" <-[go.PointerType sync.Mutex] "$r0");;;
-    return: (CompositeLiteral Log (LiteralValue [KeyedElement (Some (KeyField "d"%go)) (ElementExpression (![disk.Disk] "d")); KeyedElement (Some (KeyField "cache"%go)) (ElementExpression (![go.MapType go.uint64 (go.SliceType go.byte)] "cache")); KeyedElement (Some (KeyField "length"%go)) (ElementExpression (![go.PointerType go.uint64] "lengthPtr")); KeyedElement (Some (KeyField "l"%go)) (ElementExpression (![go.PointerType sync.Mutex] "l"))]))).
-
-(* go: wal.go:52:14 *)
-Definition Log__lockⁱᵐᵖˡ : val :=
-  λ: "l" <>,
-    exception_do (let: "l" := (GoAlloc Log "l") in
-    do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go #() (![go.PointerType sync.Mutex] (StructFieldRef Log "l"%go "l"))) #());;;
-    return: #()).
-
-(* go: wal.go:56:14 *)
-Definition Log__unlockⁱᵐᵖˡ : val :=
-  λ: "l" <>,
-    exception_do (let: "l" := (GoAlloc Log "l") in
-    do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go #() (![go.PointerType sync.Mutex] (StructFieldRef Log "l"%go "l"))) #());;;
+    do:  ((![go.PointerType go.uint64] (StructFieldRef Log "length"%go "l")) <-[go.uint64] "$r0");;;
+    do:  ((MethodResolve Log "unlock"%go #() (![Log] "l")) #());;;
     return: #()).
 
 (* BeginTxn allocates space for a new transaction in the log.
@@ -2775,7 +3085,7 @@ Definition Log__unlockⁱᵐᵖˡ : val :=
    Returns true if the allocation succeeded.
 
    go: wal.go:63:14 *)
-Definition Log__BeginTxnⁱᵐᵖˡ : val :=
+Definition Log__BeginTxnⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "l" <>,
     exception_do (let: "l" := (GoAlloc Log "l") in
     do:  ((MethodResolve Log "lock"%go #() (![Log] "l")) #());;;
@@ -2790,12 +3100,34 @@ Definition Log__BeginTxnⁱᵐᵖˡ : val :=
     do:  ((MethodResolve Log "unlock"%go #() (![Log] "l")) #());;;
     return: (#false)).
 
+Definition intToBlock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.intToBlock"%go.
+
+(* Commit the current transaction.
+
+   go: wal.go:113:14 *)
+Definition Log__Commitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "l" <>,
+    exception_do (let: "l" := (GoAlloc Log "l") in
+    do:  ((MethodResolve Log "lock"%go #() (![Log] "l")) #());;;
+    let: "length" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+    let: "$r0" := (![go.uint64] (![go.PointerType go.uint64] (StructFieldRef Log "length"%go "l"))) in
+    do:  ("length" <-[go.uint64] "$r0");;;
+    do:  ((MethodResolve Log "unlock"%go #() (![Log] "l")) #());;;
+    let: "header" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
+    let: "$r0" := (let: "$a0" := (![go.uint64] "length") in
+    (FuncResolve intToBlock [] #()) "$a0") in
+    do:  ("header" <-[go.SliceType go.byte] "$r0");;;
+    do:  (let: "$a0" := #(W64 0) in
+    let: "$a1" := (![go.SliceType go.byte] "header") in
+    (MethodResolve disk.Disk "Write"%go #() (![disk.Disk] (StructFieldRef Log "d"%go "l"))) "$a0" "$a1");;;
+    return: #()).
+
 (* Read from the logical disk.
 
    Reads must go through the log to return committed but un-applied writes.
 
    go: wal.go:77:14 *)
-Definition Log__Readⁱᵐᵖˡ : val :=
+Definition Log__Readⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "l" "a",
     exception_do (let: "l" := (GoAlloc Log "l") in
     let: "a" := (GoAlloc go.uint64 "a") in
@@ -2820,7 +3152,7 @@ Definition Log__Readⁱᵐᵖˡ : val :=
     return: (![go.SliceType go.byte] "dv")).
 
 (* go: wal.go:90:14 *)
-Definition Log__Sizeⁱᵐᵖˡ : val :=
+Definition Log__Sizeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "l" <>,
     exception_do (let: "l" := (GoAlloc Log "l") in
     let: "sz" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
@@ -2831,7 +3163,7 @@ Definition Log__Sizeⁱᵐᵖˡ : val :=
 (* Write to the disk through the log.
 
    go: wal.go:97:14 *)
-Definition Log__Writeⁱᵐᵖˡ : val :=
+Definition Log__Writeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "l" "a" "v",
     exception_do (let: "l" := (GoAlloc Log "l") in
     let: "v" := (GoAlloc (go.SliceType go.byte) "v") in
@@ -2865,30 +3197,131 @@ Definition Log__Writeⁱᵐᵖˡ : val :=
     do:  ((MethodResolve Log "unlock"%go #() (![Log] "l")) #());;;
     return: #()).
 
-(* Commit the current transaction.
-
-   go: wal.go:113:14 *)
-Definition Log__Commitⁱᵐᵖˡ : val :=
+(* go: wal.go:52:14 *)
+Definition Log__lockⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "l" <>,
     exception_do (let: "l" := (GoAlloc Log "l") in
-    do:  ((MethodResolve Log "lock"%go #() (![Log] "l")) #());;;
-    let: "length" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    let: "$r0" := (![go.uint64] (![go.PointerType go.uint64] (StructFieldRef Log "length"%go "l"))) in
-    do:  ("length" <-[go.uint64] "$r0");;;
-    do:  ((MethodResolve Log "unlock"%go #() (![Log] "l")) #());;;
+    do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go #() (![go.PointerType sync.Mutex] (StructFieldRef Log "l"%go "l"))) #());;;
+    return: #()).
+
+(* go: wal.go:56:14 *)
+Definition Log__unlockⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "l" <>,
+    exception_do (let: "l" := (GoAlloc Log "l") in
+    do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go #() (![go.PointerType sync.Mutex] (StructFieldRef Log "l"%go "l"))) #());;;
+    return: #()).
+
+Definition Logⁱᵐᵖˡ : go.type := go.StructType [
+  (go.FieldDecl "d"%go disk.Disk);
+  (go.FieldDecl "l"%go (go.PointerType sync.Mutex));
+  (go.FieldDecl "cache"%go (go.MapType go.uint64 (go.SliceType go.byte)));
+  (go.FieldDecl "length"%go (go.PointerType go.uint64))
+].
+
+Module Log.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  d : disk.Disk.t;
+  l : loc;
+  cache : loc;
+  length : loc;
+}.
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _) (zero_val _)|}.
+End def.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+
+End Log.
+
+Class Log_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Log_zero_val  :: go.GoZeroValEq Log Log.t;
+  #[global] Log'ptr_Apply_unfold :: MethodUnfold (Log) "Apply" (Log__Applyⁱᵐᵖˡ);
+  #[global] Log'ptr_BeginTxn_unfold :: MethodUnfold (Log) "BeginTxn" (Log__BeginTxnⁱᵐᵖˡ);
+  #[global] Log'ptr_Commit_unfold :: MethodUnfold (Log) "Commit" (Log__Commitⁱᵐᵖˡ);
+  #[global] Log'ptr_Read_unfold :: MethodUnfold (Log) "Read" (Log__Readⁱᵐᵖˡ);
+  #[global] Log'ptr_Size_unfold :: MethodUnfold (Log) "Size" (Log__Sizeⁱᵐᵖˡ);
+  #[global] Log'ptr_Write_unfold :: MethodUnfold (Log) "Write" (Log__Writeⁱᵐᵖˡ);
+  #[global] Log'ptr_lock_unfold :: MethodUnfold (Log) "lock" (Log__lockⁱᵐᵖˡ);
+  #[global] Log'ptr_unlock_unfold :: MethodUnfold (Log) "unlock" (Log__unlockⁱᵐᵖˡ);
+  #[global] Log'ptr_Apply_unfold :: MethodUnfold (go.PointerType (Log)) "Apply" (λ: "$r", MethodResolve (Log) Apply #() (![(Log)] "$r");
+  #[global] Log'ptr_BeginTxn_unfold :: MethodUnfold (go.PointerType (Log)) "BeginTxn" (λ: "$r", MethodResolve (Log) BeginTxn #() (![(Log)] "$r");
+  #[global] Log'ptr_Commit_unfold :: MethodUnfold (go.PointerType (Log)) "Commit" (λ: "$r", MethodResolve (Log) Commit #() (![(Log)] "$r");
+  #[global] Log'ptr_Read_unfold :: MethodUnfold (go.PointerType (Log)) "Read" (λ: "$r", MethodResolve (Log) Read #() (![(Log)] "$r");
+  #[global] Log'ptr_Size_unfold :: MethodUnfold (go.PointerType (Log)) "Size" (λ: "$r", MethodResolve (Log) Size #() (![(Log)] "$r");
+  #[global] Log'ptr_Write_unfold :: MethodUnfold (go.PointerType (Log)) "Write" (λ: "$r", MethodResolve (Log) Write #() (![(Log)] "$r");
+  #[global] Log'ptr_lock_unfold :: MethodUnfold (go.PointerType (Log)) "lock" (λ: "$r", MethodResolve (Log) lock #() (![(Log)] "$r");
+  #[global] Log'ptr_unlock_unfold :: MethodUnfold (go.PointerType (Log)) "unlock" (λ: "$r", MethodResolve (Log) unlock #() (![(Log)] "$r");
+}.
+
+(* go: wal.go:25:6 *)
+Definition intToBlockⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "a",
+    exception_do (let: "a" := (GoAlloc go.uint64 "a") in
+    let: "b" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
+    let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) disk.BlockSize) in
+    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+    do:  (let: "$a0" := (![go.SliceType go.byte] "b") in
+    let: "$a1" := (![go.uint64] "a") in
+    (FuncResolve primitive.UInt64Put [] #()) "$a0" "$a1");;;
+    return: (![go.SliceType go.byte] "b")).
+
+Definition blockToInt {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.blockToInt"%go.
+
+(* go: wal.go:31:6 *)
+Definition blockToIntⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "v",
+    exception_do (let: "v" := (GoAlloc (go.SliceType go.byte) "v") in
+    let: "a" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "v") in
+    (FuncResolve primitive.UInt64Get [] #()) "$a0") in
+    do:  ("a" <-[go.uint64] "$r0");;;
+    return: (![go.uint64] "a")).
+
+Definition New {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.New"%go.
+
+(* New initializes a fresh log
+
+   go: wal.go:37:6 *)
+Definition Newⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: <>,
+    exception_do (let: "d" := (GoAlloc disk.Disk (GoZeroVal disk.Disk #())) in
+    let: "$r0" := ((FuncResolve disk.Get [] #()) #()) in
+    do:  ("d" <-[disk.Disk] "$r0");;;
+    let: "diskSize" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+    let: "$r0" := ((MethodResolve disk.Disk "Size"%go #() (![disk.Disk] "d")) #()) in
+    do:  ("diskSize" <-[go.uint64] "$r0");;;
+    (if: (![go.uint64] "diskSize") ≤⟨go.uint64⟩ logLength
+    then
+      do:  (let: "$a0" := (InterfaceMake go.string #"disk is too small to host log"%go) in
+      (FuncResolve go.panic [] #()) "$a0")
+    else do:  #());;;
+    let: "cache" := (GoAlloc (go.MapType go.uint64 (go.SliceType go.byte)) (GoZeroVal (go.MapType go.uint64 (go.SliceType go.byte)) #())) in
+    let: "$r0" := ((FuncResolve go.make1 [go.MapType go.uint64 (go.SliceType go.byte)] #()) #()) in
+    do:  ("cache" <-[go.MapType go.uint64 (go.SliceType go.byte)] "$r0");;;
     let: "header" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
-    let: "$r0" := (let: "$a0" := (![go.uint64] "length") in
+    let: "$r0" := (let: "$a0" := #(W64 0) in
     (FuncResolve intToBlock [] #()) "$a0") in
     do:  ("header" <-[go.SliceType go.byte] "$r0");;;
     do:  (let: "$a0" := #(W64 0) in
     let: "$a1" := (![go.SliceType go.byte] "header") in
-    (MethodResolve disk.Disk "Write"%go #() (![disk.Disk] (StructFieldRef Log "d"%go "l"))) "$a0" "$a1");;;
-    return: #()).
+    (MethodResolve disk.Disk "Write"%go #() (![disk.Disk] "d")) "$a0" "$a1");;;
+    let: "lengthPtr" := (GoAlloc (go.PointerType go.uint64) (GoZeroVal (go.PointerType go.uint64) #())) in
+    let: "$r0" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+    do:  ("lengthPtr" <-[go.PointerType go.uint64] "$r0");;;
+    let: "$r0" := #(W64 0) in
+    do:  ((![go.PointerType go.uint64] "lengthPtr") <-[go.uint64] "$r0");;;
+    let: "l" := (GoAlloc (go.PointerType sync.Mutex) (GoZeroVal (go.PointerType sync.Mutex) #())) in
+    let: "$r0" := (GoAlloc sync.Mutex (GoZeroVal sync.Mutex #())) in
+    do:  ("l" <-[go.PointerType sync.Mutex] "$r0");;;
+    return: (CompositeLiteral Log (LiteralValue [KeyedElement (Some (KeyField "d"%go)) (ElementExpression (![disk.Disk] "d")); KeyedElement (Some (KeyField "cache"%go)) (ElementExpression (![go.MapType go.uint64 (go.SliceType go.byte)] "cache")); KeyedElement (Some (KeyField "length"%go)) (ElementExpression (![go.PointerType go.uint64] "lengthPtr")); KeyedElement (Some (KeyField "l"%go)) (ElementExpression (![go.PointerType sync.Mutex] "l"))]))).
 
-Definition getLogEntry : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.getLogEntry"%go.
+Definition getLogEntry {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.getLogEntry"%go.
 
 (* go: wal.go:122:6 *)
-Definition getLogEntryⁱᵐᵖˡ : val :=
+Definition getLogEntryⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "d" "logOffset",
     exception_do (let: "logOffset" := (GoAlloc go.uint64 "logOffset") in
     let: "d" := (GoAlloc disk.Disk "d") in
@@ -2909,12 +3342,10 @@ Definition getLogEntryⁱᵐᵖˡ : val :=
     do:  ("v" <-[go.SliceType go.byte] "$r0");;;
     return: (![go.uint64] "a", ![go.SliceType go.byte] "v")).
 
-Definition applyLog : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.applyLog"%go.
-
 (* applyLog assumes we are running sequentially
 
    go: wal.go:131:6 *)
-Definition applyLogⁱᵐᵖˡ : val :=
+Definition applyLogⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "d" "length",
     exception_do (let: "length" := (GoAlloc go.uint64 "length") in
     let: "d" := (GoAlloc disk.Disk "d") in
@@ -2943,10 +3374,8 @@ Definition applyLogⁱᵐᵖˡ : val :=
       break: #()));;;
     return: #()).
 
-Definition clearLog : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.clearLog"%go.
-
 (* go: wal.go:142:6 *)
-Definition clearLogⁱᵐᵖˡ : val :=
+Definition clearLogⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "d",
     exception_do (let: "d" := (GoAlloc disk.Disk "d") in
     let: "header" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
@@ -2958,34 +3387,12 @@ Definition clearLogⁱᵐᵖˡ : val :=
     (MethodResolve disk.Disk "Write"%go #() (![disk.Disk] "d")) "$a0" "$a1");;;
     return: #()).
 
-(* Apply all the committed transactions.
-
-   Frees all the space in the log.
-
-   go: wal.go:150:14 *)
-Definition Log__Applyⁱᵐᵖˡ : val :=
-  λ: "l" <>,
-    exception_do (let: "l" := (GoAlloc Log "l") in
-    do:  ((MethodResolve Log "lock"%go #() (![Log] "l")) #());;;
-    let: "length" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    let: "$r0" := (![go.uint64] (![go.PointerType go.uint64] (StructFieldRef Log "length"%go "l"))) in
-    do:  ("length" <-[go.uint64] "$r0");;;
-    do:  (let: "$a0" := (![disk.Disk] (StructFieldRef Log "d"%go "l")) in
-    let: "$a1" := (![go.uint64] "length") in
-    (FuncResolve applyLog [] #()) "$a0" "$a1");;;
-    do:  (let: "$a0" := (![disk.Disk] (StructFieldRef Log "d"%go "l")) in
-    (FuncResolve clearLog [] #()) "$a0");;;
-    let: "$r0" := #(W64 0) in
-    do:  ((![go.PointerType go.uint64] (StructFieldRef Log "length"%go "l")) <-[go.uint64] "$r0");;;
-    do:  ((MethodResolve Log "unlock"%go #() (![Log] "l")) #());;;
-    return: #()).
-
-Definition Open : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.Open"%go.
+Definition Open {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.Open"%go.
 
 (* Open recovers the log following a crash or shutdown
 
    go: wal.go:163:6 *)
-Definition Openⁱᵐᵖˡ : val :=
+Definition Openⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "d" := (GoAlloc disk.Disk (GoZeroVal disk.Disk #())) in
     let: "$r0" := ((FuncResolve disk.Get [] #()) #()) in
@@ -3016,12 +3423,12 @@ Definition Openⁱᵐᵖˡ : val :=
     do:  ("l" <-[go.PointerType sync.Mutex] "$r0");;;
     return: (CompositeLiteral Log (LiteralValue [KeyedElement (Some (KeyField "d"%go)) (ElementExpression (![disk.Disk] "d")); KeyedElement (Some (KeyField "cache"%go)) (ElementExpression (![go.MapType go.uint64 (go.SliceType go.byte)] "cache")); KeyedElement (Some (KeyField "length"%go)) (ElementExpression (![go.PointerType go.uint64] "lengthPtr")); KeyedElement (Some (KeyField "l"%go)) (ElementExpression (![go.PointerType sync.Mutex] "l"))]))).
 
-Definition disabled_testWal : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.disabled_testWal"%go.
+Definition disabled_testWal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.disabled_testWal"%go.
 
 (* disabled since performance is quite poor
 
    go: wal.go:178:6 *)
-Definition disabled_testWalⁱᵐᵖˡ : val :=
+Definition disabled_testWalⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
@@ -3054,14 +3461,12 @@ Definition disabled_testWalⁱᵐᵖˡ : val :=
     do:  ("ok" <-[go.bool] "$r0");;;
     return: (![go.bool] "ok")).
 
-Definition Uint32 : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.Uint32"%go [].
+#[global] Instance info' : PkgInfo semantics.semantics := 
+{|
+  pkg_imported_pkgs := [code.github_com.goose_lang.primitive.primitive; code.sync.sync; code.github_com.goose_lang.primitive.disk.disk]
+|}.
 
-#[global] Instance info' : PkgInfo semantics.semantics :=
-  {|
-    pkg_imported_pkgs := [code.github_com.goose_lang.primitive.primitive; code.sync.sync; code.github_com.goose_lang.primitive.disk.disk];
-  |}.
-
-Definition initialize' : val :=
+Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init semantics.semantics (λ: <>,
       exception_do (do:  (disk.initialize' #());;;
@@ -3069,125 +3474,7 @@ Definition initialize' : val :=
       do:  (primitive.initialize' #()))
       ).
 
-Class unit_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class Enc_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] Enc'ptr_consume_unfold :: MethodUnfold (go.PointerType (Enc)) "consume" (Enc__consumeⁱᵐᵖˡ);
-}.
-
-Class Dec_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] Dec'ptr_consume_unfold :: MethodUnfold (go.PointerType (Dec)) "consume" (Dec__consumeⁱᵐᵖˡ);
-}.
-
-Class Editor_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] Editor'ptr_AdvanceReturn_unfold :: MethodUnfold (go.PointerType (Editor)) "AdvanceReturn" (Editor__AdvanceReturnⁱᵐᵖˡ);
-}.
-
-Class Pair_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class Uint32_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class geometryInterface_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] geometryInterface'ptr_Square_unfold :: MethodUnfold (geometryInterface) "Square" (geometryInterface__Squareⁱᵐᵖˡ);
-  #[global] geometryInterface'ptr_Volume_unfold :: MethodUnfold (geometryInterface) "Volume" (geometryInterface__Volumeⁱᵐᵖˡ);
-}.
-
-Class SquareStruct_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] SquareStruct'ptr_Square_unfold :: MethodUnfold (SquareStruct) "Square" (SquareStruct__Squareⁱᵐᵖˡ);
-  #[global] SquareStruct'ptr_Volume_unfold :: MethodUnfold (SquareStruct) "Volume" (SquareStruct__Volumeⁱᵐᵖˡ);
-  #[global] SquareStruct'ptr_Square_unfold :: MethodUnfold (go.PointerType (SquareStruct)) "Square" (λ: "$r", MethodResolve (SquareStruct) Square #() (![(SquareStruct)] "$r");
-  #[global] SquareStruct'ptr_Volume_unfold :: MethodUnfold (go.PointerType (SquareStruct)) "Volume" (λ: "$r", MethodResolve (SquareStruct) Volume #() (![(SquareStruct)] "$r");
-}.
-
-Class LoopStruct_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] LoopStruct'ptr_forLoopWait_unfold :: MethodUnfold (LoopStruct) "forLoopWait" (LoopStruct__forLoopWaitⁱᵐᵖˡ);
-  #[global] LoopStruct'ptr_forLoopWait_unfold :: MethodUnfold (go.PointerType (LoopStruct)) "forLoopWait" (λ: "$r", MethodResolve (LoopStruct) forLoopWait #() (![(LoopStruct)] "$r");
-}.
-
-Class BoolTest_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class ArrayEditor_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] ArrayEditor'ptr_Advance_unfold :: MethodUnfold (go.PointerType (ArrayEditor)) "Advance" (ArrayEditor__Advanceⁱᵐᵖˡ);
-}.
-
-Class Bar_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] Bar'ptr_mutate_unfold :: MethodUnfold (go.PointerType (Bar)) "mutate" (Bar__mutateⁱᵐᵖˡ);
-}.
-
-Class Foo_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] Foo'ptr_mutateBar_unfold :: MethodUnfold (go.PointerType (Foo)) "mutateBar" (Foo__mutateBarⁱᵐᵖˡ);
-}.
-
-Class TwoInts_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class S_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] S'ptr_readBVal_unfold :: MethodUnfold (S) "readBVal" (S__readBValⁱᵐᵖˡ);
-  #[global] S'ptr_negateC_unfold :: MethodUnfold (go.PointerType (S)) "negateC" (S__negateCⁱᵐᵖˡ);
-  #[global] S'ptr_readA_unfold :: MethodUnfold (go.PointerType (S)) "readA" (S__readAⁱᵐᵖˡ);
-  #[global] S'ptr_readB_unfold :: MethodUnfold (go.PointerType (S)) "readB" (S__readBⁱᵐᵖˡ);
-  #[global] S'ptr_readBVal_unfold :: MethodUnfold (go.PointerType (S)) "readBVal" (λ: "$r", MethodResolve (S) readBVal #() (![(S)] "$r");
-  #[global] S'ptr_updateBValX_unfold :: MethodUnfold (go.PointerType (S)) "updateBValX" (S__updateBValXⁱᵐᵖˡ);
-}.
-
-Class StructWrap_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class StructWithFunc_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class switchConcrete_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] switchConcrete'ptr_marker_unfold :: MethodUnfold (go.PointerType (switchConcrete)) "marker" (switchConcrete__markerⁱᵐᵖˡ);
-}.
-
-Class switchInterface_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] switchInterface'ptr_marker_unfold :: MethodUnfold (switchInterface) "marker" (switchInterface__markerⁱᵐᵖˡ);
-}.
-
-Class Log_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] Log'ptr_Apply_unfold :: MethodUnfold (Log) "Apply" (Log__Applyⁱᵐᵖˡ);
-  #[global] Log'ptr_BeginTxn_unfold :: MethodUnfold (Log) "BeginTxn" (Log__BeginTxnⁱᵐᵖˡ);
-  #[global] Log'ptr_Commit_unfold :: MethodUnfold (Log) "Commit" (Log__Commitⁱᵐᵖˡ);
-  #[global] Log'ptr_Read_unfold :: MethodUnfold (Log) "Read" (Log__Readⁱᵐᵖˡ);
-  #[global] Log'ptr_Size_unfold :: MethodUnfold (Log) "Size" (Log__Sizeⁱᵐᵖˡ);
-  #[global] Log'ptr_Write_unfold :: MethodUnfold (Log) "Write" (Log__Writeⁱᵐᵖˡ);
-  #[global] Log'ptr_lock_unfold :: MethodUnfold (Log) "lock" (Log__lockⁱᵐᵖˡ);
-  #[global] Log'ptr_unlock_unfold :: MethodUnfold (Log) "unlock" (Log__unlockⁱᵐᵖˡ);
-  #[global] Log'ptr_Apply_unfold :: MethodUnfold (go.PointerType (Log)) "Apply" (λ: "$r", MethodResolve (Log) Apply #() (![(Log)] "$r");
-  #[global] Log'ptr_BeginTxn_unfold :: MethodUnfold (go.PointerType (Log)) "BeginTxn" (λ: "$r", MethodResolve (Log) BeginTxn #() (![(Log)] "$r");
-  #[global] Log'ptr_Commit_unfold :: MethodUnfold (go.PointerType (Log)) "Commit" (λ: "$r", MethodResolve (Log) Commit #() (![(Log)] "$r");
-  #[global] Log'ptr_Read_unfold :: MethodUnfold (go.PointerType (Log)) "Read" (λ: "$r", MethodResolve (Log) Read #() (![(Log)] "$r");
-  #[global] Log'ptr_Size_unfold :: MethodUnfold (go.PointerType (Log)) "Size" (λ: "$r", MethodResolve (Log) Size #() (![(Log)] "$r");
-  #[global] Log'ptr_Write_unfold :: MethodUnfold (go.PointerType (Log)) "Write" (λ: "$r", MethodResolve (Log) Write #() (![(Log)] "$r");
-  #[global] Log'ptr_lock_unfold :: MethodUnfold (go.PointerType (Log)) "lock" (λ: "$r", MethodResolve (Log) lock #() (![(Log)] "$r");
-  #[global] Log'ptr_unlock_unfold :: MethodUnfold (go.PointerType (Log)) "unlock" (λ: "$r", MethodResolve (Log) unlock #() (![(Log)] "$r");
-}.
-
-Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] unit_instance :: unit_Assumptions;
   #[global] Enc_instance :: Enc_Assumptions;
@@ -3349,6 +3636,4 @@ Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions
   #[global] Open_unfold :: FuncUnfold Open [] (Openⁱᵐᵖˡ);
   #[global] disabled_testWal_unfold :: FuncUnfold disabled_testWal [] (disabled_testWalⁱᵐᵖˡ);
 }.
-
-End code.
 End semantics.

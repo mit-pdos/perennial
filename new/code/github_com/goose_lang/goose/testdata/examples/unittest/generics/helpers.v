@@ -5,33 +5,27 @@ Definition helpers : go_string := "github.com/goose-lang/goose/testdata/examples
 
 Module helpers.
 
-Section code.
-Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-
-
-Definition AnyPointer : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics/helpers.AnyPointer"%go.
+Definition AnyPointer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics/helpers.AnyPointer"%go.
 
 (* go: helpers.go:3:6 *)
-Definition AnyPointerⁱᵐᵖˡ (T : go.type) : val :=
+Definition AnyPointerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) : val :=
   λ: "x",
     exception_do (let: "x" := (GoAlloc (go.PointerType T) "x") in
     do:  #()).
 
-#[global] Instance info' : PkgInfo helpers.helpers :=
-  {|
-    pkg_imported_pkgs := [];
-  |}.
+#[global] Instance info' : PkgInfo helpers.helpers := 
+{|
+  pkg_imported_pkgs := []
+|}.
 
-Definition initialize' : val :=
+Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init helpers.helpers (λ: <>,
       exception_do (do:  #())
       ).
 
-Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] AnyPointer_unfold T :: FuncUnfold AnyPointer [T] (AnyPointerⁱᵐᵖˡ T);
 }.
-
-End code.
 End helpers.

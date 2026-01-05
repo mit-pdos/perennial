@@ -5,201 +5,197 @@ Definition bytes : go_string := "bytes".
 
 Module bytes.
 
-Section code.
-Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom smallBufferSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
+Axiom Bufferⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom smallBufferSize : Z.
+Axiom readOpⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom Bufferⁱᵐᵖˡ : go.type.
+Axiom opRead : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom readOpⁱᵐᵖˡ : go.type.
+Axiom opInvalid : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom opRead : val.
+Axiom opReadRune1 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom opInvalid : val.
+Axiom opReadRune2 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom opReadRune1 : val.
+Axiom opReadRune3 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom opReadRune2 : val.
+Axiom opReadRune4 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom opReadRune3 : val.
+Definition ErrTooLarge {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.ErrTooLarge"%go.
 
-Axiom opReadRune4 : val.
+Axiom ErrTooLarge'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition ErrTooLarge : go_string := "bytes.ErrTooLarge"%go.
+Definition errNegativeRead {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.errNegativeRead"%go.
 
-Axiom ErrTooLarge'init : val.
+Axiom errNegativeRead'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition errNegativeRead : go_string := "bytes.errNegativeRead"%go.
+Axiom maxInt : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom errNegativeRead'init : val.
+Axiom MinRead : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom maxInt : val.
+Definition growSlice {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.growSlice"%go.
 
-Axiom MinRead : Z.
+Definition errUnreadByte {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.errUnreadByte"%go.
 
-Definition growSlice : go_string := "bytes.growSlice"%go.
+Axiom errUnreadByte'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition errUnreadByte : go_string := "bytes.errUnreadByte"%go.
+Definition NewBuffer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.NewBuffer"%go.
 
-Axiom errUnreadByte'init : val.
+Definition NewBufferString {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.NewBufferString"%go.
 
-Definition NewBuffer : go_string := "bytes.NewBuffer"%go.
-
-Definition NewBufferString : go_string := "bytes.NewBufferString"%go.
-
-Definition Equal : go_string := "bytes.Equal"%go.
+Definition Equal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.Equal"%go.
 
 (* Equal reports whether a and b
    are the same length and contain the same bytes.
    A nil argument is equivalent to an empty slice.
 
    go: bytes.go:20:6 *)
-Definition Equalⁱᵐᵖˡ : val :=
+Definition Equalⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "a" "b",
     exception_do (let: "b" := (GoAlloc (go.SliceType go.byte) "b") in
     let: "a" := (GoAlloc (go.SliceType go.byte) "a") in
     return: ((string.from_bytes (![go.SliceType go.byte] "a")) =⟨go.string⟩ (string.from_bytes (![go.SliceType go.byte] "b")))).
 
-Definition Compare : go_string := "bytes.Compare"%go.
+Definition Compare {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.Compare"%go.
 
-Definition explode : go_string := "bytes.explode"%go.
+Definition explode {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.explode"%go.
 
-Definition Count : go_string := "bytes.Count"%go.
+Definition Count {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.Count"%go.
 
-Definition Contains : go_string := "bytes.Contains"%go.
+Definition Contains {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.Contains"%go.
 
-Definition ContainsAny : go_string := "bytes.ContainsAny"%go.
+Definition ContainsAny {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.ContainsAny"%go.
 
-Definition ContainsRune : go_string := "bytes.ContainsRune"%go.
+Definition ContainsRune {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.ContainsRune"%go.
 
-Definition ContainsFunc : go_string := "bytes.ContainsFunc"%go.
+Definition ContainsFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.ContainsFunc"%go.
 
-Definition IndexByte : go_string := "bytes.IndexByte"%go.
+Definition IndexByte {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.IndexByte"%go.
 
-Definition indexBytePortable : go_string := "bytes.indexBytePortable"%go.
+Definition indexBytePortable {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.indexBytePortable"%go.
 
-Definition LastIndex : go_string := "bytes.LastIndex"%go.
+Definition LastIndex {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.LastIndex"%go.
 
-Definition LastIndexByte : go_string := "bytes.LastIndexByte"%go.
+Definition LastIndexByte {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.LastIndexByte"%go.
 
-Definition IndexRune : go_string := "bytes.IndexRune"%go.
+Definition IndexRune {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.IndexRune"%go.
 
-Definition IndexAny : go_string := "bytes.IndexAny"%go.
+Definition IndexAny {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.IndexAny"%go.
 
-Definition LastIndexAny : go_string := "bytes.LastIndexAny"%go.
+Definition LastIndexAny {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.LastIndexAny"%go.
 
-Definition genSplit : go_string := "bytes.genSplit"%go.
+Definition genSplit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.genSplit"%go.
 
-Definition SplitN : go_string := "bytes.SplitN"%go.
+Definition SplitN {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.SplitN"%go.
 
-Definition SplitAfterN : go_string := "bytes.SplitAfterN"%go.
+Definition SplitAfterN {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.SplitAfterN"%go.
 
-Definition Split : go_string := "bytes.Split"%go.
+Definition Split {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.Split"%go.
 
-Definition SplitAfter : go_string := "bytes.SplitAfter"%go.
+Definition SplitAfter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.SplitAfter"%go.
 
-Definition asciiSpace : go_string := "bytes.asciiSpace"%go.
+Definition asciiSpace {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.asciiSpace"%go.
 
-Axiom asciiSpace'init : val.
+Axiom asciiSpace'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition Fields : go_string := "bytes.Fields"%go.
+Definition Fields {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.Fields"%go.
 
-Definition FieldsFunc : go_string := "bytes.FieldsFunc"%go.
+Definition FieldsFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.FieldsFunc"%go.
 
-Definition Join : go_string := "bytes.Join"%go.
+Definition Join {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.Join"%go.
 
-Definition HasPrefix : go_string := "bytes.HasPrefix"%go.
+Definition HasPrefix {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.HasPrefix"%go.
 
-Definition HasSuffix : go_string := "bytes.HasSuffix"%go.
+Definition HasSuffix {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.HasSuffix"%go.
 
-Definition Map : go_string := "bytes.Map"%go.
+Definition Map {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.Map"%go.
 
-Definition Repeat : go_string := "bytes.Repeat"%go.
+Definition Repeat {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.Repeat"%go.
 
-Definition ToUpper : go_string := "bytes.ToUpper"%go.
+Definition ToUpper {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.ToUpper"%go.
 
-Definition ToLower : go_string := "bytes.ToLower"%go.
+Definition ToLower {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.ToLower"%go.
 
-Definition ToTitle : go_string := "bytes.ToTitle"%go.
+Definition ToTitle {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.ToTitle"%go.
 
-Definition ToUpperSpecial : go_string := "bytes.ToUpperSpecial"%go.
+Definition ToUpperSpecial {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.ToUpperSpecial"%go.
 
-Definition ToLowerSpecial : go_string := "bytes.ToLowerSpecial"%go.
+Definition ToLowerSpecial {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.ToLowerSpecial"%go.
 
-Definition ToTitleSpecial : go_string := "bytes.ToTitleSpecial"%go.
+Definition ToTitleSpecial {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.ToTitleSpecial"%go.
 
-Definition ToValidUTF8 : go_string := "bytes.ToValidUTF8"%go.
+Definition ToValidUTF8 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.ToValidUTF8"%go.
 
-Definition isSeparator : go_string := "bytes.isSeparator"%go.
+Definition isSeparator {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.isSeparator"%go.
 
-Definition Title : go_string := "bytes.Title"%go.
+Definition Title {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.Title"%go.
 
-Definition TrimLeftFunc : go_string := "bytes.TrimLeftFunc"%go.
+Definition TrimLeftFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.TrimLeftFunc"%go.
 
-Definition TrimRightFunc : go_string := "bytes.TrimRightFunc"%go.
+Definition TrimRightFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.TrimRightFunc"%go.
 
-Definition TrimFunc : go_string := "bytes.TrimFunc"%go.
+Definition TrimFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.TrimFunc"%go.
 
-Definition TrimPrefix : go_string := "bytes.TrimPrefix"%go.
+Definition TrimPrefix {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.TrimPrefix"%go.
 
-Definition TrimSuffix : go_string := "bytes.TrimSuffix"%go.
+Definition TrimSuffix {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.TrimSuffix"%go.
 
-Definition IndexFunc : go_string := "bytes.IndexFunc"%go.
+Definition IndexFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.IndexFunc"%go.
 
-Definition LastIndexFunc : go_string := "bytes.LastIndexFunc"%go.
+Definition LastIndexFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.LastIndexFunc"%go.
 
-Definition indexFunc : go_string := "bytes.indexFunc"%go.
+Definition indexFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.indexFunc"%go.
 
-Definition lastIndexFunc : go_string := "bytes.lastIndexFunc"%go.
+Definition lastIndexFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.lastIndexFunc"%go.
 
-Axiom asciiSetⁱᵐᵖˡ : go.type.
+Axiom asciiSetⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition makeASCIISet : go_string := "bytes.makeASCIISet"%go.
+Definition makeASCIISet {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.makeASCIISet"%go.
 
-Definition containsRune : go_string := "bytes.containsRune"%go.
+Definition containsRune {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.containsRune"%go.
 
-Definition Trim : go_string := "bytes.Trim"%go.
+Definition Trim {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.Trim"%go.
 
-Definition TrimLeft : go_string := "bytes.TrimLeft"%go.
+Definition TrimLeft {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.TrimLeft"%go.
 
-Definition trimLeftByte : go_string := "bytes.trimLeftByte"%go.
+Definition trimLeftByte {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.trimLeftByte"%go.
 
-Definition trimLeftASCII : go_string := "bytes.trimLeftASCII"%go.
+Definition trimLeftASCII {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.trimLeftASCII"%go.
 
-Definition trimLeftUnicode : go_string := "bytes.trimLeftUnicode"%go.
+Definition trimLeftUnicode {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.trimLeftUnicode"%go.
 
-Definition TrimRight : go_string := "bytes.TrimRight"%go.
+Definition TrimRight {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.TrimRight"%go.
 
-Definition trimRightByte : go_string := "bytes.trimRightByte"%go.
+Definition trimRightByte {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.trimRightByte"%go.
 
-Definition trimRightASCII : go_string := "bytes.trimRightASCII"%go.
+Definition trimRightASCII {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.trimRightASCII"%go.
 
-Definition trimRightUnicode : go_string := "bytes.trimRightUnicode"%go.
+Definition trimRightUnicode {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.trimRightUnicode"%go.
 
-Definition TrimSpace : go_string := "bytes.TrimSpace"%go.
+Definition TrimSpace {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.TrimSpace"%go.
 
-Definition Runes : go_string := "bytes.Runes"%go.
+Definition Runes {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.Runes"%go.
 
-Definition Replace : go_string := "bytes.Replace"%go.
+Definition Replace {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.Replace"%go.
 
-Definition ReplaceAll : go_string := "bytes.ReplaceAll"%go.
+Definition ReplaceAll {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.ReplaceAll"%go.
 
-Definition EqualFold : go_string := "bytes.EqualFold"%go.
+Definition EqualFold {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.EqualFold"%go.
 
-Definition Index : go_string := "bytes.Index"%go.
+Definition Index {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.Index"%go.
 
-Definition Cut : go_string := "bytes.Cut"%go.
+Definition Cut {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.Cut"%go.
 
-Definition Clone : go_string := "bytes.Clone"%go.
+Definition Clone {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.Clone"%go.
 
 (* Clone returns a copy of b[:len(b)].
    The result may have additional unused capacity.
    Clone(nil) returns nil.
 
    go: bytes.go:1415:6 *)
-Definition Cloneⁱᵐᵖˡ : val :=
+Definition Cloneⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "b",
     exception_do (let: "b" := (GoAlloc (go.SliceType go.byte) "b") in
     (if: (![go.SliceType go.byte] "b") =⟨go.SliceType go.byte⟩ #slice.nil
@@ -209,42 +205,34 @@ Definition Cloneⁱᵐᵖˡ : val :=
      let: "$a1" := (![go.SliceType go.byte] "b") in
      (FuncResolve go.append [go.SliceType go.byte] #()) "$a0" "$a1")).
 
-Definition CutPrefix : go_string := "bytes.CutPrefix"%go.
+Definition CutPrefix {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.CutPrefix"%go.
 
-Definition CutSuffix : go_string := "bytes.CutSuffix"%go.
+Definition CutSuffix {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.CutSuffix"%go.
 
-Definition Lines : go_string := "bytes.Lines"%go.
+Definition Lines {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.Lines"%go.
 
-Definition splitSeq : go_string := "bytes.splitSeq"%go.
+Definition splitSeq {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.splitSeq"%go.
 
-Definition SplitSeq : go_string := "bytes.SplitSeq"%go.
+Definition SplitSeq {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.SplitSeq"%go.
 
-Definition SplitAfterSeq : go_string := "bytes.SplitAfterSeq"%go.
+Definition SplitAfterSeq {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.SplitAfterSeq"%go.
 
-Definition FieldsSeq : go_string := "bytes.FieldsSeq"%go.
+Definition FieldsSeq {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.FieldsSeq"%go.
 
-Definition FieldsFuncSeq : go_string := "bytes.FieldsFuncSeq"%go.
+Definition FieldsFuncSeq {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.FieldsFuncSeq"%go.
 
-Axiom Readerⁱᵐᵖˡ : go.type.
+Axiom Readerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition NewReader : go_string := "bytes.NewReader"%go.
+Definition NewReader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.NewReader"%go.
 
-Definition Buffer : go.type := go.Named "bytes.Buffer"%go [].
+#[global] Instance info' : PkgInfo bytes.bytes := 
+{|
+  pkg_imported_pkgs := []
+|}.
 
-Definition readOp : go.type := go.Named "bytes.readOp"%go [].
+Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition asciiSet : go.type := go.Named "bytes.asciiSet"%go [].
-
-Definition Reader : go.type := go.Named "bytes.Reader"%go [].
-
-#[global] Instance info' : PkgInfo bytes.bytes :=
-  {|
-    pkg_imported_pkgs := [];
-  |}.
-
-Axiom _'init : val.
-
-Definition initialize' : val :=
+Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init bytes.bytes (λ: <>,
       exception_do (do:  (ErrTooLarge'init #());;;
@@ -253,31 +241,9 @@ Definition initialize' : val :=
       do:  (asciiSpace'init #()))
       ).
 
-Class Buffer_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-}.
-
-Class readOp_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class asciiSet_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class Reader_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] Buffer_instance :: Buffer_Assumptions;
-  #[global] readOp_instance :: readOp_Assumptions;
-  #[global] asciiSet_instance :: asciiSet_Assumptions;
-  #[global] Reader_instance :: Reader_Assumptions;
   #[global] Equal_unfold :: FuncUnfold Equal [] (Equalⁱᵐᵖˡ);
   #[global] Clone_unfold :: FuncUnfold Clone [] (Cloneⁱᵐᵖˡ);
 }.
-
-End code.
 End bytes.

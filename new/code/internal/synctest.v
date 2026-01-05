@@ -7,78 +7,58 @@ Definition synctest : go_string := "internal/synctest".
 
 Module synctest.
 
-Section code.
-Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Definition Run {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/synctest.Run"%go.
 
+Definition Wait {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/synctest.Wait"%go.
 
-Definition Run : go_string := "internal/synctest.Run"%go.
+Definition IsInBubble {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/synctest.IsInBubble"%go.
 
-Definition Wait : go_string := "internal/synctest.Wait"%go.
+Axiom Associationⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition IsInBubble : go_string := "internal/synctest.IsInBubble"%go.
+Axiom Unbubbled : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom Associationⁱᵐᵖˡ : go.type.
+Axiom CurrentBubble : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom Unbubbled : val.
+Axiom OtherBubble : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom CurrentBubble : val.
+Definition Associate {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/synctest.Associate"%go.
 
-Axiom OtherBubble : val.
+Definition associate {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/synctest.associate"%go.
 
-Definition Associate : go_string := "internal/synctest.Associate"%go.
+Definition Disassociate {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/synctest.Disassociate"%go.
 
-Definition associate : go_string := "internal/synctest.associate"%go.
+Definition disassociate {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/synctest.disassociate"%go.
 
-Definition Disassociate : go_string := "internal/synctest.Disassociate"%go.
+Definition IsAssociated {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/synctest.IsAssociated"%go.
 
-Definition disassociate : go_string := "internal/synctest.disassociate"%go.
+Definition isAssociated {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/synctest.isAssociated"%go.
 
-Definition IsAssociated : go_string := "internal/synctest.IsAssociated"%go.
+Definition acquire {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/synctest.acquire"%go.
 
-Definition isAssociated : go_string := "internal/synctest.isAssociated"%go.
+Definition release {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/synctest.release"%go.
 
-Definition acquire : go_string := "internal/synctest.acquire"%go.
+Definition inBubble {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/synctest.inBubble"%go.
 
-Definition release : go_string := "internal/synctest.release"%go.
+Axiom Bubbleⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition inBubble : go_string := "internal/synctest.inBubble"%go.
+Definition Acquire {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/synctest.Acquire"%go.
 
-Axiom Bubbleⁱᵐᵖˡ : go.type.
+#[global] Instance info' : PkgInfo synctest.synctest := 
+{|
+  pkg_imported_pkgs := []
+|}.
 
-Definition Acquire : go_string := "internal/synctest.Acquire"%go.
+Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition Association : go.type := go.Named "internal/synctest.Association"%go [].
-
-Definition Bubble : go.type := go.Named "internal/synctest.Bubble"%go [].
-
-#[global] Instance info' : PkgInfo synctest.synctest :=
-  {|
-    pkg_imported_pkgs := [];
-  |}.
-
-Axiom _'init : val.
-
-Definition initialize' : val :=
+Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init synctest.synctest (λ: <>,
       exception_do (do:  #())
       ).
 
-Class Association_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-}.
-
-Class Bubble_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] Association_instance :: Association_Assumptions;
-  #[global] Bubble_instance :: Bubble_Assumptions;
   #[global] Run_unfold :: FuncUnfold Run [] (Runⁱᵐᵖˡ);
   #[global] IsInBubble_unfold :: FuncUnfold IsInBubble [] (IsInBubbleⁱᵐᵖˡ);
 }.
-
-End code.
 End synctest.

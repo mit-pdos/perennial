@@ -8,40 +8,10 @@ Definition chan_spec_raw_examples : go_string := "github.com/goose-lang/goose/te
 
 Module chan_spec_raw_examples.
 
-Section code.
-Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-
-
-Definition LockedStackⁱᵐᵖˡ : go.type := go.StructType [
-  (go.FieldDecl "mu"%go sync.Mutex);
-  (go.FieldDecl "stack"%go (go.SliceType go.string))
-].
-
-Definition NewLockedStack : go_string := "github.com/goose-lang/goose/testdata/examples/channel.NewLockedStack"%go.
-
 Definition LockedStack : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/channel.LockedStack"%go [].
 
-(* go: elimination_stack.go:14:6 *)
-Definition NewLockedStackⁱᵐᵖˡ : val :=
-  λ: <>,
-    exception_do (return: (GoAlloc LockedStack (CompositeLiteral LockedStack (LiteralValue [KeyedElement (Some (KeyField "stack"%go)) (ElementExpression ((FuncResolve go.make2 [go.SliceType go.string] #()) #(W64 0)))])))).
-
-(* go: elimination_stack.go:18:23 *)
-Definition LockedStack__Pushⁱᵐᵖˡ : val :=
-  λ: "s" "value",
-    exception_do (let: "s" := (GoAlloc (go.PointerType LockedStack) "s") in
-    let: "value" := (GoAlloc go.string "value") in
-    do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go #() (StructFieldRef LockedStack "mu"%go (![go.PointerType LockedStack] "s"))) #());;;
-    let: "$r0" := (let: "$a0" := (![go.SliceType go.string] (StructFieldRef LockedStack "stack"%go (![go.PointerType LockedStack] "s"))) in
-    let: "$a1" := ((let: "$sl0" := (![go.string] "value") in
-    CompositeLiteral go.string (LiteralValue [KeyedElement None (ElementExpression "$sl0")]))) in
-    (FuncResolve go.append [go.SliceType go.string] #()) "$a0" "$a1") in
-    do:  ((StructFieldRef LockedStack "stack"%go (![go.PointerType LockedStack] "s")) <-[go.SliceType go.string] "$r0");;;
-    do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go #() (StructFieldRef LockedStack "mu"%go (![go.PointerType LockedStack] "s"))) #());;;
-    return: #()).
-
 (* go: elimination_stack.go:24:23 *)
-Definition LockedStack__Popⁱᵐᵖˡ : val :=
+Definition LockedStack__Popⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "s" <>,
     exception_do (let: "s" := (GoAlloc (go.PointerType LockedStack) "s") in
     do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go #() (StructFieldRef LockedStack "mu"%go (![go.PointerType LockedStack] "s"))) #());;;
@@ -64,46 +34,62 @@ Definition LockedStack__Popⁱᵐᵖˡ : val :=
     do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go #() (StructFieldRef LockedStack "mu"%go (![go.PointerType LockedStack] "s"))) #());;;
     return: (![go.string] "v", #true)).
 
-Definition timeout : val := #(W64 10000).
+(* go: elimination_stack.go:18:23 *)
+Definition LockedStack__Pushⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "s" "value",
+    exception_do (let: "s" := (GoAlloc (go.PointerType LockedStack) "s") in
+    let: "value" := (GoAlloc go.string "value") in
+    do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go #() (StructFieldRef LockedStack "mu"%go (![go.PointerType LockedStack] "s"))) #());;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.string] (StructFieldRef LockedStack "stack"%go (![go.PointerType LockedStack] "s"))) in
+    let: "$a1" := ((let: "$sl0" := (![go.string] "value") in
+    CompositeLiteral go.string (LiteralValue [KeyedElement None (ElementExpression "$sl0")]))) in
+    (FuncResolve go.append [go.SliceType go.string] #()) "$a0" "$a1") in
+    do:  ((StructFieldRef LockedStack "stack"%go (![go.PointerType LockedStack] "s")) <-[go.SliceType go.string] "$r0");;;
+    do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go #() (StructFieldRef LockedStack "mu"%go (![go.PointerType LockedStack] "s"))) #());;;
+    return: #()).
 
-Definition EliminationStackⁱᵐᵖˡ : go.type := go.StructType [
-  (go.FieldDecl "base"%go (go.PointerType LockedStack));
-  (go.FieldDecl "exchanger"%go (go.ChannelType go.sendrecv go.string))
+Definition LockedStackⁱᵐᵖˡ : go.type := go.StructType [
+  (go.FieldDecl "mu"%go sync.Mutex);
+  (go.FieldDecl "stack"%go (go.SliceType go.string))
 ].
 
-Definition NewEliminationStack : go_string := "github.com/goose-lang/goose/testdata/examples/channel.NewEliminationStack"%go.
+Module LockedStack.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  mu : sync.Mutex.t;
+  stack : slice.t;
+}.
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
+End def.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+
+End LockedStack.
+
+Class LockedStack_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] LockedStack_zero_val  :: go.GoZeroValEq LockedStack LockedStack.t;
+  #[global] LockedStack'ptr_Pop_unfold :: MethodUnfold (go.PointerType (LockedStack)) "Pop" (LockedStack__Popⁱᵐᵖˡ);
+  #[global] LockedStack'ptr_Push_unfold :: MethodUnfold (go.PointerType (LockedStack)) "Push" (LockedStack__Pushⁱᵐᵖˡ);
+}.
+
+Definition NewLockedStack {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.NewLockedStack"%go.
+
+(* go: elimination_stack.go:14:6 *)
+Definition NewLockedStackⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: <>,
+    exception_do (return: (GoAlloc LockedStack (CompositeLiteral LockedStack (LiteralValue [KeyedElement (Some (KeyField "stack"%go)) (ElementExpression ((FuncResolve go.make2 [go.SliceType go.string] #()) #(W64 0)))])))).
+
+Definition timeout {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #(W64 10000).
 
 Definition EliminationStack : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/channel.EliminationStack"%go [].
-
-(* NewEliminationStack constructs a new elimination stack
-   using a fresh LockedStack and a small default timeout.
-
-   go: elimination_stack.go:47:6 *)
-Definition NewEliminationStackⁱᵐᵖˡ : val :=
-  λ: <>,
-    exception_do (return: (GoAlloc EliminationStack (CompositeLiteral EliminationStack (LiteralValue [KeyedElement (Some (KeyField "base"%go)) (ElementExpression ((FuncResolve NewLockedStack [] #()) #())); KeyedElement (Some (KeyField "exchanger"%go)) (ElementExpression ((FuncResolve go.make1 [go.ChannelType go.sendrecv go.string] #()) #()))])))).
-
-(* Push first tries one-shot elimination; on timeout, falls back to the locked stack.
-
-   go: elimination_stack.go:55:28 *)
-Definition EliminationStack__Pushⁱᵐᵖˡ : val :=
-  λ: "s" "value",
-    exception_do (let: "s" := (GoAlloc (go.PointerType EliminationStack) "s") in
-    let: "value" := (GoAlloc go.string "value") in
-    chan.select_blocking [chan.select_send go.string (![go.ChannelType go.sendrecv go.string] (StructFieldRef EliminationStack "exchanger"%go (![go.PointerType EliminationStack] "s"))) (![go.string] "value") (λ: <>,
-       return: (#())
-       ); chan.select_receive time.Time (let: "$a0" := timeout in
-     (FuncResolve time.After [] #()) "$a0") (λ: "$recvVal",
-       do:  #()
-       )];;;
-    do:  (let: "$a0" := (![go.string] "value") in
-    (MethodResolve (go.PointerType LockedStack) "Push"%go #() (![go.PointerType LockedStack] (StructFieldRef EliminationStack "base"%go (![go.PointerType EliminationStack] "s")))) "$a0");;;
-    return: #()).
 
 (* Pop first tries one-shot elimination; on timeout, falls back to the locked stack.
 
    go: elimination_stack.go:67:28 *)
-Definition EliminationStack__Popⁱᵐᵖˡ : val :=
+Definition EliminationStack__Popⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "s" <>,
     exception_do (let: "s" := (GoAlloc (go.PointerType EliminationStack) "s") in
     chan.select_blocking [chan.select_receive go.string (![go.ChannelType go.sendrecv go.string] (StructFieldRef EliminationStack "exchanger"%go (![go.PointerType EliminationStack] "s"))) (λ: "$recvVal",
@@ -118,19 +104,73 @@ Definition EliminationStack__Popⁱᵐᵖˡ : val :=
     let: ("$ret0", "$ret1") := (((MethodResolve (go.PointerType LockedStack) "Pop"%go #() (![go.PointerType LockedStack] (StructFieldRef EliminationStack "base"%go (![go.PointerType EliminationStack] "s")))) #())) in
     return: ("$ret0", "$ret1")).
 
-Definition sys_hello_world : go_string := "github.com/goose-lang/goose/testdata/examples/channel.sys_hello_world"%go.
+(* Push first tries one-shot elimination; on timeout, falls back to the locked stack.
+
+   go: elimination_stack.go:55:28 *)
+Definition EliminationStack__Pushⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "s" "value",
+    exception_do (let: "s" := (GoAlloc (go.PointerType EliminationStack) "s") in
+    let: "value" := (GoAlloc go.string "value") in
+    chan.select_blocking [chan.select_send go.string (![go.ChannelType go.sendrecv go.string] (StructFieldRef EliminationStack "exchanger"%go (![go.PointerType EliminationStack] "s"))) (![go.string] "value") (λ: <>,
+       return: (#())
+       ); chan.select_receive time.Time (let: "$a0" := timeout in
+     (FuncResolve time.After [] #()) "$a0") (λ: "$recvVal",
+       do:  #()
+       )];;;
+    do:  (let: "$a0" := (![go.string] "value") in
+    (MethodResolve (go.PointerType LockedStack) "Push"%go #() (![go.PointerType LockedStack] (StructFieldRef EliminationStack "base"%go (![go.PointerType EliminationStack] "s")))) "$a0");;;
+    return: #()).
+
+Definition EliminationStackⁱᵐᵖˡ : go.type := go.StructType [
+  (go.FieldDecl "base"%go (go.PointerType LockedStack));
+  (go.FieldDecl "exchanger"%go (go.ChannelType go.sendrecv go.string))
+].
+
+Module EliminationStack.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  base : loc;
+  exchanger : loc;
+}.
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
+End def.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+
+End EliminationStack.
+
+Class EliminationStack_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] EliminationStack_zero_val  :: go.GoZeroValEq EliminationStack EliminationStack.t;
+  #[global] EliminationStack'ptr_Pop_unfold :: MethodUnfold (go.PointerType (EliminationStack)) "Pop" (EliminationStack__Popⁱᵐᵖˡ);
+  #[global] EliminationStack'ptr_Push_unfold :: MethodUnfold (go.PointerType (EliminationStack)) "Push" (EliminationStack__Pushⁱᵐᵖˡ);
+}.
+
+Definition NewEliminationStack {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.NewEliminationStack"%go.
+
+(* NewEliminationStack constructs a new elimination stack
+   using a fresh LockedStack and a small default timeout.
+
+   go: elimination_stack.go:47:6 *)
+Definition NewEliminationStackⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: <>,
+    exception_do (return: (GoAlloc EliminationStack (CompositeLiteral EliminationStack (LiteralValue [KeyedElement (Some (KeyField "base"%go)) (ElementExpression ((FuncResolve NewLockedStack [] #()) #())); KeyedElement (Some (KeyField "exchanger"%go)) (ElementExpression ((FuncResolve go.make1 [go.ChannelType go.sendrecv go.string] #()) #()))])))).
+
+Definition sys_hello_world {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.sys_hello_world"%go.
 
 (* Fake syscall for demonstration.
 
    go: examples.go:8:6 *)
-Definition sys_hello_worldⁱᵐᵖˡ : val :=
+Definition sys_hello_worldⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (return: (#"Hello, World!"%go)).
 
-Definition HelloWorldAsync : go_string := "github.com/goose-lang/goose/testdata/examples/channel.HelloWorldAsync"%go.
+Definition HelloWorldAsync {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.HelloWorldAsync"%go.
 
 (* go: examples.go:12:6 *)
-Definition HelloWorldAsyncⁱᵐᵖˡ : val :=
+Definition HelloWorldAsyncⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "ch" := (GoAlloc (go.ChannelType go.sendrecv go.string) (GoZeroVal (go.ChannelType go.sendrecv go.string) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.ChannelType go.sendrecv go.string] #()) #(W64 1)) in
@@ -144,19 +184,19 @@ Definition HelloWorldAsyncⁱᵐᵖˡ : val :=
     do:  (Fork ("$go" #()));;;
     return: (![go.ChannelType go.sendrecv go.string] "ch")).
 
-Definition HelloWorldSync : go_string := "github.com/goose-lang/goose/testdata/examples/channel.HelloWorldSync"%go.
+Definition HelloWorldSync {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.HelloWorldSync"%go.
 
 (* go: examples.go:20:6 *)
-Definition HelloWorldSyncⁱᵐᵖˡ : val :=
+Definition HelloWorldSyncⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (return: (Fst (chan.receive go.string ((FuncResolve HelloWorldAsync [] #()) #())))).
 
-Definition HelloWorldCancellable : go_string := "github.com/goose-lang/goose/testdata/examples/channel.HelloWorldCancellable"%go.
+Definition HelloWorldCancellable {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.HelloWorldCancellable"%go.
 
 (* Simulates the error/done channel components of Context
 
    go: examples.go:25:6 *)
-Definition HelloWorldCancellableⁱᵐᵖˡ : val :=
+Definition HelloWorldCancellableⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "done" "err",
     exception_do (let: "err" := (GoAlloc (go.PointerType go.string) "err") in
     let: "done" := (GoAlloc (go.ChannelType go.sendrecv (go.StructType [
@@ -175,12 +215,12 @@ Definition HelloWorldCancellableⁱᵐᵖˡ : val :=
        return: (![go.string] (![go.PointerType go.string] "err"))
        )]).
 
-Definition HelloWorldWithTimeout : go_string := "github.com/goose-lang/goose/testdata/examples/channel.HelloWorldWithTimeout"%go.
+Definition HelloWorldWithTimeout {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.HelloWorldWithTimeout"%go.
 
 (* Uses cancellation as a timeout mechanism.
 
    go: examples.go:36:6 *)
-Definition HelloWorldWithTimeoutⁱᵐᵖˡ : val :=
+Definition HelloWorldWithTimeoutⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "done" := (GoAlloc (go.ChannelType go.sendrecv (go.StructType [
     ])) (GoZeroVal (go.ChannelType go.sendrecv (go.StructType [
@@ -209,12 +249,12 @@ Definition HelloWorldWithTimeoutⁱᵐᵖˡ : val :=
      let: "$a1" := "errMsg" in
      (FuncResolve HelloWorldCancellable [] #()) "$a0" "$a1")).
 
-Definition DSPExample : go_string := "github.com/goose-lang/goose/testdata/examples/channel.DSPExample"%go.
+Definition DSPExample {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.DSPExample"%go.
 
 (* prog3 from Actris 2.0 intro: https://arxiv.org/pdf/2010.15030
 
    go: examples.go:51:6 *)
-Definition DSPExampleⁱᵐᵖˡ : val :=
+Definition DSPExampleⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "c" := (GoAlloc (go.ChannelType go.sendrecv (go.InterfaceType [])) (GoZeroVal (go.ChannelType go.sendrecv (go.InterfaceType [])) #())) in
     let: "$r0" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv (go.InterfaceType [])] #()) #()) in
@@ -248,12 +288,12 @@ Definition DSPExampleⁱᵐᵖˡ : val :=
     do:  (Fst (chan.receive (go.InterfaceType []) (![go.ChannelType go.sendrecv (go.InterfaceType [])] "signal")));;;
     return: (![go.int] (![go.PointerType go.int] "ptr"))).
 
-Definition fibonacci : go_string := "github.com/goose-lang/goose/testdata/examples/channel.fibonacci"%go.
+Definition fibonacci {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.fibonacci"%go.
 
 (* https://go.dev/tour/concurrency/4
 
    go: examples.go:69:6 *)
-Definition fibonacciⁱᵐᵖˡ : val :=
+Definition fibonacciⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "n" "c",
     exception_do (let: "c" := (GoAlloc (go.ChannelType go.sendrecv go.int) "c") in
     let: "n" := (GoAlloc go.int "n") in
@@ -278,10 +318,10 @@ Definition fibonacciⁱᵐᵖˡ : val :=
     (FuncResolve go.close [go.ChannelType go.sendrecv go.int] #()) "$a0");;;
     return: #()).
 
-Definition fib_consumer : go_string := "github.com/goose-lang/goose/testdata/examples/channel.fib_consumer"%go.
+Definition fib_consumer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.fib_consumer"%go.
 
 (* go: examples.go:78:6 *)
-Definition fib_consumerⁱᵐᵖˡ : val :=
+Definition fib_consumerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "c" := (GoAlloc (go.ChannelType go.sendrecv go.int) (GoZeroVal (go.ChannelType go.sendrecv go.int) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.ChannelType go.sendrecv go.int] #()) #(W64 10)) in
@@ -305,10 +345,10 @@ Definition fib_consumerⁱᵐᵖˡ : val :=
       do:  ("results" <-[go.SliceType go.int] "$r0")));;;
     return: (![go.SliceType go.int] "results")).
 
-Definition simple_join : go_string := "github.com/goose-lang/goose/testdata/examples/channel.simple_join"%go.
+Definition simple_join {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.simple_join"%go.
 
 (* go: examples.go:89:6 *)
-Definition simple_joinⁱᵐᵖˡ : val :=
+Definition simple_joinⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "ch" := (GoAlloc (go.ChannelType go.sendrecv (go.StructType [
     ])) (GoZeroVal (go.ChannelType go.sendrecv (go.StructType [
@@ -335,10 +375,10 @@ Definition simple_joinⁱᵐᵖˡ : val :=
     ])] "ch")));;;
     return: (![go.string] "message")).
 
-Definition simple_multi_join : go_string := "github.com/goose-lang/goose/testdata/examples/channel.simple_multi_join"%go.
+Definition simple_multi_join {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.simple_multi_join"%go.
 
 (* go: examples.go:102:6 *)
-Definition simple_multi_joinⁱᵐᵖˡ : val :=
+Definition simple_multi_joinⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "ch" := (GoAlloc (go.ChannelType go.sendrecv (go.StructType [
     ])) (GoZeroVal (go.ChannelType go.sendrecv (go.StructType [
@@ -381,12 +421,12 @@ Definition simple_multi_joinⁱᵐᵖˡ : val :=
     ])] "ch")));;;
     return: (((![go.string] "hello") +⟨go.string⟩ #" "%go) +⟨go.string⟩ (![go.string] "world"))).
 
-Definition select_nb_no_panic : go_string := "github.com/goose-lang/goose/testdata/examples/channel.select_nb_no_panic"%go.
+Definition select_nb_no_panic {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.select_nb_no_panic"%go.
 
 (* Show that it isn't possible to have 2 nonblocking ops that match.
 
    go: examples.go:121:6 *)
-Definition select_nb_no_panicⁱᵐᵖˡ : val :=
+Definition select_nb_no_panicⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "ch" := (GoAlloc (go.ChannelType go.sendrecv (go.StructType [
     ])) (GoZeroVal (go.ChannelType go.sendrecv (go.StructType [
@@ -418,10 +458,10 @@ Definition select_nb_no_panicⁱᵐᵖˡ : val :=
       );;;
     return: #()).
 
-Definition select_no_double_close : go_string := "github.com/goose-lang/goose/testdata/examples/channel.select_no_double_close"%go.
+Definition select_no_double_close {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.select_no_double_close"%go.
 
 (* go: examples.go:138:6 *)
-Definition select_no_double_closeⁱᵐᵖˡ : val :=
+Definition select_no_double_closeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "x" := (GoAlloc (go.ChannelType go.sendrecv go.int) (GoZeroVal (go.ChannelType go.sendrecv go.int) #())) in
     let: "$r0" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv go.int] #()) #()) in
@@ -436,10 +476,10 @@ Definition select_no_double_closeⁱᵐᵖˡ : val :=
       );;;
     return: #()).
 
-Definition exchangePointer : go_string := "github.com/goose-lang/goose/testdata/examples/channel.exchangePointer"%go.
+Definition exchangePointer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.exchangePointer"%go.
 
 (* go: examples.go:148:6 *)
-Definition exchangePointerⁱᵐᵖˡ : val :=
+Definition exchangePointerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "x" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "$r0" := #(W64 0) in
@@ -483,12 +523,12 @@ Definition exchangePointerⁱᵐᵖˡ : val :=
     else do:  #());;;
     return: #()).
 
-Definition select_ready_case_no_panic : go_string := "github.com/goose-lang/goose/testdata/examples/channel.select_ready_case_no_panic"%go.
+Definition select_ready_case_no_panic {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.select_ready_case_no_panic"%go.
 
 (* Show that a guaranteed to be ready case makes default impossible
 
    go: examples_unverified.go:6:6 *)
-Definition select_ready_case_no_panicⁱᵐᵖˡ : val :=
+Definition select_ready_case_no_panicⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "ch" := (GoAlloc (go.ChannelType go.sendrecv (go.StructType [
     ])) (GoZeroVal (go.ChannelType go.sendrecv (go.StructType [
@@ -511,13 +551,13 @@ Definition select_ready_case_no_panicⁱᵐᵖˡ : val :=
       );;;
     return: #()).
 
-Definition TestHelloWorldSync : go_string := "github.com/goose-lang/goose/testdata/examples/channel.TestHelloWorldSync"%go.
+Definition TestHelloWorldSync {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.TestHelloWorldSync"%go.
 
 (* Various tests that should panic when failing, which also means verifying { True } e { True } is
    sufficient since panic can't be verified.
 
    go: examples_unverified.go:20:6 *)
-Definition TestHelloWorldSyncⁱᵐᵖˡ : val :=
+Definition TestHelloWorldSyncⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "result" := (GoAlloc go.string (GoZeroVal go.string #())) in
     let: "$r0" := ((FuncResolve HelloWorldSync [] #()) #()) in
@@ -529,10 +569,10 @@ Definition TestHelloWorldSyncⁱᵐᵖˡ : val :=
     else do:  #());;;
     return: #()).
 
-Definition TestHelloWorldWithTimeout : go_string := "github.com/goose-lang/goose/testdata/examples/channel.TestHelloWorldWithTimeout"%go.
+Definition TestHelloWorldWithTimeout {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.TestHelloWorldWithTimeout"%go.
 
 (* go: examples_unverified.go:27:6 *)
-Definition TestHelloWorldWithTimeoutⁱᵐᵖˡ : val :=
+Definition TestHelloWorldWithTimeoutⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "result" := (GoAlloc go.string (GoZeroVal go.string #())) in
     let: "$r0" := ((FuncResolve HelloWorldWithTimeout [] #()) #()) in
@@ -544,10 +584,10 @@ Definition TestHelloWorldWithTimeoutⁱᵐᵖˡ : val :=
     else do:  #());;;
     return: #()).
 
-Definition TestDSPExample : go_string := "github.com/goose-lang/goose/testdata/examples/channel.TestDSPExample"%go.
+Definition TestDSPExample {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.TestDSPExample"%go.
 
 (* go: examples_unverified.go:34:6 *)
-Definition TestDSPExampleⁱᵐᵖˡ : val :=
+Definition TestDSPExampleⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "result" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "$r0" := ((FuncResolve DSPExample [] #()) #()) in
@@ -559,10 +599,10 @@ Definition TestDSPExampleⁱᵐᵖˡ : val :=
     else do:  #());;;
     return: #()).
 
-Definition TestFibConsumer : go_string := "github.com/goose-lang/goose/testdata/examples/channel.TestFibConsumer"%go.
+Definition TestFibConsumer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.TestFibConsumer"%go.
 
 (* go: examples_unverified.go:41:6 *)
-Definition TestFibConsumerⁱᵐᵖˡ : val :=
+Definition TestFibConsumerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "result" := (GoAlloc (go.SliceType go.int) (GoZeroVal (go.SliceType go.int) #())) in
     let: "$r0" := ((FuncResolve fib_consumer [] #()) #()) in
@@ -588,10 +628,10 @@ Definition TestFibConsumerⁱᵐᵖˡ : val :=
       else do:  #())));;;
     return: #()).
 
-Definition TestSelectNbNoPanic : go_string := "github.com/goose-lang/goose/testdata/examples/channel.TestSelectNbNoPanic"%go.
+Definition TestSelectNbNoPanic {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.TestSelectNbNoPanic"%go.
 
 (* go: examples_unverified.go:56:6 *)
-Definition TestSelectNbNoPanicⁱᵐᵖˡ : val :=
+Definition TestSelectNbNoPanicⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "iterations" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "$r0" := #(W64 10000) in
@@ -605,10 +645,10 @@ Definition TestSelectNbNoPanicⁱᵐᵖˡ : val :=
       (FuncResolve time.Sleep [] #()) "$a0")));;;
     return: #()).
 
-Definition TestSelectReadyCaseNoPanic : go_string := "github.com/goose-lang/goose/testdata/examples/channel.TestSelectReadyCaseNoPanic"%go.
+Definition TestSelectReadyCaseNoPanic {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.TestSelectReadyCaseNoPanic"%go.
 
 (* go: examples_unverified.go:65:6 *)
-Definition TestSelectReadyCaseNoPanicⁱᵐᵖˡ : val :=
+Definition TestSelectReadyCaseNoPanicⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "iterations" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "$r0" := #(W64 10000) in
@@ -625,20 +665,40 @@ Definition requestⁱᵐᵖˡ : go.type := go.StructType [
   (go.FieldDecl "result"%go (go.ChannelType go.sendrecv go.string))
 ].
 
-Definition mkRequest : go_string := "github.com/goose-lang/goose/testdata/examples/channel.mkRequest"%go.
-
 Definition request : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/channel.request"%go [].
 
+Module request.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  f : func.t;
+  result : loc;
+}.
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
+End def.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+
+End request.
+
+Class request_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] request_zero_val  :: go.GoZeroValEq request request.t;
+}.
+
+Definition mkRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.mkRequest"%go.
+
 (* go: higher_order.go:8:6 *)
-Definition mkRequestⁱᵐᵖˡ : val :=
+Definition mkRequestⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "f",
     exception_do (let: "f" := (GoAlloc (go.FunctionType (go.Signature [] false [go.string])) "f") in
     return: (CompositeLiteral request (LiteralValue [KeyedElement (Some (KeyField "f"%go)) (ElementExpression (![go.FunctionType (go.Signature [] false [go.string])] "f")); KeyedElement (Some (KeyField "result"%go)) (ElementExpression ((FuncResolve go.make2 [go.ChannelType go.sendrecv go.string] #()) #(W64 1)))]))).
 
-Definition ho_worker : go_string := "github.com/goose-lang/goose/testdata/examples/channel.ho_worker"%go.
+Definition ho_worker {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.ho_worker"%go.
 
 (* go: higher_order.go:12:6 *)
-Definition ho_workerⁱᵐᵖˡ : val :=
+Definition ho_workerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "c",
     exception_do (let: "c" := (GoAlloc (go.ChannelType go.sendrecv request) "c") in
     let: "$range" := (![go.ChannelType go.sendrecv request] "c") in
@@ -650,10 +710,10 @@ Definition ho_workerⁱᵐᵖˡ : val :=
       chan.send go.string "$chan" "$v")));;;
     return: #()).
 
-Definition HigherOrderExample : go_string := "github.com/goose-lang/goose/testdata/examples/channel.HigherOrderExample"%go.
+Definition HigherOrderExample {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.HigherOrderExample"%go.
 
 (* go: higher_order.go:18:6 *)
-Definition HigherOrderExampleⁱᵐᵖˡ : val :=
+Definition HigherOrderExampleⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "c" := (GoAlloc (go.ChannelType go.sendrecv request) (GoZeroVal (go.ChannelType go.sendrecv request) #())) in
     let: "$r0" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv request] #()) #()) in
@@ -696,12 +756,12 @@ Definition HigherOrderExampleⁱᵐᵖˡ : val :=
     do:  ("responses" <-[go.SliceType go.string] "$r0");;;
     return: (![go.SliceType go.string] "responses")).
 
-Definition load : go_string := "github.com/goose-lang/goose/testdata/examples/channel.load"%go.
+Definition load {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.load"%go.
 
 (* load writes the next letter into the buffer.
 
    go: leaky_buffer.go:9:6 *)
-Definition loadⁱᵐᵖˡ : val :=
+Definition loadⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "b" "letter",
     exception_do (let: "letter" := (GoAlloc go.string "letter") in
     let: "b" := (GoAlloc (go.PointerType (go.SliceType go.byte)) "b") in
@@ -709,12 +769,12 @@ Definition loadⁱᵐᵖˡ : val :=
     do:  ((![go.PointerType (go.SliceType go.byte)] "b") <-[go.SliceType go.byte] "$r0");;;
     return: #()).
 
-Definition process : go_string := "github.com/goose-lang/goose/testdata/examples/channel.process"%go.
+Definition process {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.process"%go.
 
 (* process consumes the buffer and appends it to the output.
 
    go: leaky_buffer.go:14:6 *)
-Definition processⁱᵐᵖˡ : val :=
+Definition processⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "b" "output",
     exception_do (let: "output" := (GoAlloc (go.PointerType go.string) "output") in
     let: "b" := (GoAlloc (go.PointerType (go.SliceType go.byte)) "b") in
@@ -722,10 +782,10 @@ Definition processⁱᵐᵖˡ : val :=
     (FuncResolve strings.ToUpper [] #()) "$a0")));;;
     return: #()).
 
-Definition client : go_string := "github.com/goose-lang/goose/testdata/examples/channel.client"%go.
+Definition client {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.client"%go.
 
 (* go: leaky_buffer.go:18:6 *)
-Definition clientⁱᵐᵖˡ : val :=
+Definition clientⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "input" "freeList" "serverChan",
     exception_do (let: "serverChan" := (GoAlloc (go.ChannelType go.sendrecv (go.SliceType go.byte)) "serverChan") in
     let: "freeList" := (GoAlloc (go.ChannelType go.sendrecv (go.SliceType go.byte)) "freeList") in
@@ -754,10 +814,10 @@ Definition clientⁱᵐᵖˡ : val :=
     (FuncResolve go.close [go.ChannelType go.sendrecv (go.SliceType go.byte)] #()) "$a0");;;
     return: #()).
 
-Definition server : go_string := "github.com/goose-lang/goose/testdata/examples/channel.server"%go.
+Definition server {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.server"%go.
 
 (* go: leaky_buffer.go:39:6 *)
-Definition serverⁱᵐᵖˡ : val :=
+Definition serverⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "output" "freeList" "serverChan" "done",
     exception_do (let: "done" := (GoAlloc (go.ChannelType go.sendrecv (go.StructType [
     ])) "done") in
@@ -792,10 +852,10 @@ Definition serverⁱᵐᵖˡ : val :=
         ));;;
     return: #()).
 
-Definition LeakyBufferPipeline : go_string := "github.com/goose-lang/goose/testdata/examples/channel.LeakyBufferPipeline"%go.
+Definition LeakyBufferPipeline {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.LeakyBufferPipeline"%go.
 
 (* go: leaky_buffer.go:61:6 *)
-Definition LeakyBufferPipelineⁱᵐᵖˡ : val :=
+Definition LeakyBufferPipelineⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "freeList" := (GoAlloc (go.ChannelType go.sendrecv (go.SliceType go.byte)) (GoZeroVal (go.ChannelType go.sendrecv (go.SliceType go.byte)) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.ChannelType go.sendrecv (go.SliceType go.byte)] #()) #(W64 5)) in
@@ -839,26 +899,69 @@ Definition streamⁱᵐᵖˡ : go.type := go.StructType [
   (go.FieldDecl "res"%go (go.ChannelType go.sendrecv go.string))
 ].
 
+Definition stream : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/channel.stream"%go [].
+
+Module stream.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  req : loc;
+  res : loc;
+}.
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
+End def.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+
+End stream.
+
+Class stream_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] stream_zero_val  :: go.GoZeroValEq stream stream.t;
+}.
+
 Definition streamoldⁱᵐᵖˡ : go.type := go.StructType [
   (go.FieldDecl "req"%go (go.ChannelType go.sendrecv go.string));
   (go.FieldDecl "res"%go (go.ChannelType go.sendrecv go.string));
   (go.FieldDecl "f"%go (go.FunctionType (go.Signature [go.string] false [go.string])))
 ].
 
-Definition mkStream : go_string := "github.com/goose-lang/goose/testdata/examples/channel.mkStream"%go.
-
 Definition streamold : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/channel.streamold"%go [].
 
+Module streamold.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  req : loc;
+  res : loc;
+  f : func.t;
+}.
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
+End def.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+
+End streamold.
+
+Class streamold_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] streamold_zero_val  :: go.GoZeroValEq streamold streamold.t;
+}.
+
+Definition mkStream {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.mkStream"%go.
+
 (* go: muxer.go:14:6 *)
-Definition mkStreamⁱᵐᵖˡ : val :=
+Definition mkStreamⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "f",
     exception_do (let: "f" := (GoAlloc (go.FunctionType (go.Signature [go.string] false [go.string])) "f") in
     return: (CompositeLiteral streamold (LiteralValue [KeyedElement None (ElementExpression ((FuncResolve go.make1 [go.ChannelType go.sendrecv go.string] #()) #())); KeyedElement None (ElementExpression ((FuncResolve go.make1 [go.ChannelType go.sendrecv go.string] #()) #())); KeyedElement None (ElementExpression (![go.FunctionType (go.Signature [go.string] false [go.string])] "f"))]))).
 
-Definition Async : go_string := "github.com/goose-lang/goose/testdata/examples/channel.Async"%go.
+Definition Async {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.Async"%go.
 
 (* go: muxer.go:18:6 *)
-Definition Asyncⁱᵐᵖˡ : val :=
+Definition Asyncⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "f",
     exception_do (let: "f" := (GoAlloc (go.FunctionType (go.Signature [] false [go.string])) "f") in
     let: "ch" := (GoAlloc (go.ChannelType go.sendrecv go.string) (GoZeroVal (go.ChannelType go.sendrecv go.string) #())) in
@@ -873,12 +976,10 @@ Definition Asyncⁱᵐᵖˡ : val :=
     do:  (Fork ("$go" #()));;;
     return: (![go.ChannelType go.sendrecv go.string] "ch")).
 
-Definition Serve : go_string := "github.com/goose-lang/goose/testdata/examples/channel.Serve"%go.
-
-Definition stream : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/channel.stream"%go [].
+Definition Serve {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.Serve"%go.
 
 (* go: muxer.go:26:6 *)
-Definition Serveⁱᵐᵖˡ : val :=
+Definition Serveⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "f",
     exception_do (let: "f" := (GoAlloc (go.FunctionType (go.Signature [go.string] false [go.string])) "f") in
     let: "s" := (GoAlloc stream (GoZeroVal stream #())) in
@@ -895,18 +996,18 @@ Definition Serveⁱᵐᵖˡ : val :=
     do:  (Fork ("$go" #()));;;
     return: (![stream] "s")).
 
-Definition appWrld : go_string := "github.com/goose-lang/goose/testdata/examples/channel.appWrld"%go.
+Definition appWrld {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.appWrld"%go.
 
 (* go: muxer.go:39:6 *)
-Definition appWrldⁱᵐᵖˡ : val :=
+Definition appWrldⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "s",
     exception_do (let: "s" := (GoAlloc go.string "s") in
     return: ((![go.string] "s") +⟨go.string⟩ #", World!"%go)).
 
-Definition Client : go_string := "github.com/goose-lang/goose/testdata/examples/channel.Client"%go.
+Definition Client {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.Client"%go.
 
 (* go: muxer.go:43:6 *)
-Definition Clientⁱᵐᵖˡ : val :=
+Definition Clientⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "hw" := (GoAlloc stream (GoZeroVal stream #())) in
     let: "$r0" := (let: "$a0" := (FuncResolve appWrld [] #()) in
@@ -917,10 +1018,10 @@ Definition Clientⁱᵐᵖˡ : val :=
     chan.send go.string "$chan" "$v");;;
     return: (Fst (chan.receive go.string (![go.ChannelType go.sendrecv go.string] (StructFieldRef stream "res"%go "hw"))))).
 
-Definition MapServer : go_string := "github.com/goose-lang/goose/testdata/examples/channel.MapServer"%go.
+Definition MapServer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.MapServer"%go.
 
 (* go: muxer.go:49:6 *)
-Definition MapServerⁱᵐᵖˡ : val :=
+Definition MapServerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "s",
     exception_do (let: "s" := (GoAlloc streamold "s") in
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
@@ -933,10 +1034,10 @@ Definition MapServerⁱᵐᵖˡ : val :=
       chan.send go.string "$chan" "$v"));;;
     return: #()).
 
-Definition ClientOld : go_string := "github.com/goose-lang/goose/testdata/examples/channel.ClientOld"%go.
+Definition ClientOld {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.ClientOld"%go.
 
 (* go: muxer.go:56:6 *)
-Definition ClientOldⁱᵐᵖˡ : val :=
+Definition ClientOldⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "comma" := (GoAlloc streamold (GoZeroVal streamold #())) in
     let: "$r0" := (let: "$a0" := (λ: "s",
@@ -966,10 +1067,10 @@ Definition ClientOldⁱᵐᵖˡ : val :=
     chan.send go.string "$chan" "$v");;;
     return: (((Fst (chan.receive go.string (![go.ChannelType go.sendrecv go.string] (StructFieldRef streamold "res"%go "comma")))) +⟨go.string⟩ #" "%go) +⟨go.string⟩ (Fst (chan.receive go.string (![go.ChannelType go.sendrecv go.string] (StructFieldRef streamold "res"%go "exclaim")))))).
 
-Definition Muxer : go_string := "github.com/goose-lang/goose/testdata/examples/channel.Muxer"%go.
+Definition Muxer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.Muxer"%go.
 
 (* go: muxer.go:71:6 *)
-Definition Muxerⁱᵐᵖˡ : val :=
+Definition Muxerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "c",
     exception_do (let: "c" := (GoAlloc (go.ChannelType go.sendrecv streamold) "c") in
     let: "$range" := (![go.ChannelType go.sendrecv streamold] "c") in
@@ -981,10 +1082,10 @@ Definition Muxerⁱᵐᵖˡ : val :=
       do:  (Fork ("$go" "$a0"))));;;
     return: #()).
 
-Definition makeGreeting : go_string := "github.com/goose-lang/goose/testdata/examples/channel.makeGreeting"%go.
+Definition makeGreeting {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.makeGreeting"%go.
 
 (* go: muxer.go:77:6 *)
-Definition makeGreetingⁱᵐᵖˡ : val :=
+Definition makeGreetingⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "mux" := (GoAlloc (go.ChannelType go.sendrecv streamold) (GoZeroVal (go.ChannelType go.sendrecv streamold) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.ChannelType go.sendrecv streamold] #()) #(W64 2)) in
@@ -1020,10 +1121,10 @@ Definition makeGreetingⁱᵐᵖˡ : val :=
     chan.send go.string "$chan" "$v");;;
     return: (((Fst (chan.receive go.string (![go.ChannelType go.sendrecv go.string] (StructFieldRef streamold "res"%go "comma")))) +⟨go.string⟩ #" "%go) +⟨go.string⟩ (Fst (chan.receive go.string (![go.ChannelType go.sendrecv go.string] (StructFieldRef streamold "res"%go "exclaim")))))).
 
-Definition CancellableMapServer : go_string := "github.com/goose-lang/goose/testdata/examples/channel.CancellableMapServer"%go.
+Definition CancellableMapServer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.CancellableMapServer"%go.
 
 (* go: muxer_unverified.go:3:6 *)
-Definition CancellableMapServerⁱᵐᵖˡ : val :=
+Definition CancellableMapServerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "s" "done",
     exception_do (let: "done" := (GoAlloc (go.ChannelType go.sendrecv (go.StructType [
     ])) "done") in
@@ -1051,12 +1152,12 @@ Definition CancellableMapServerⁱᵐᵖˡ : val :=
          )]);;;
     return: #()).
 
-Definition CancellableMuxer : go_string := "github.com/goose-lang/goose/testdata/examples/channel.CancellableMuxer"%go.
+Definition CancellableMuxer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.CancellableMuxer"%go.
 
 (* 4. CancellableMuxer - muxer with cancellation
 
    go: muxer_unverified.go:18:6 *)
-Definition CancellableMuxerⁱᵐᵖˡ : val :=
+Definition CancellableMuxerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "c" "done" "errMsg",
     exception_do (let: "errMsg" := (GoAlloc (go.PointerType go.string) "errMsg") in
     let: "done" := (GoAlloc (go.ChannelType go.sendrecv (go.StructType [
@@ -1085,10 +1186,10 @@ Definition CancellableMuxerⁱᵐᵖˡ : val :=
          return: (![go.string] (![go.PointerType go.string] "errMsg"))
          )])).
 
-Definition worker : go_string := "github.com/goose-lang/goose/testdata/examples/channel.worker"%go.
+Definition worker {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.worker"%go.
 
 (* go: parallel_search_replace.go:13:6 *)
-Definition workerⁱᵐᵖˡ : val :=
+Definition workerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "c" "wg" "x" "y",
     exception_do (let: "y" := (GoAlloc go.int "y") in
     let: "x" := (GoAlloc go.int "x") in
@@ -1119,10 +1220,10 @@ Definition workerⁱᵐᵖˡ : val :=
       do:  ((MethodResolve (go.PointerType sync.WaitGroup) "Done"%go #() (![go.PointerType sync.WaitGroup] "wg")) #())));;;
     return: #()).
 
-Definition SearchReplace : go_string := "github.com/goose-lang/goose/testdata/examples/channel.SearchReplace"%go.
+Definition SearchReplace {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.SearchReplace"%go.
 
 (* go: parallel_search_replace.go:24:6 *)
-Definition SearchReplaceⁱᵐᵖˡ : val :=
+Definition SearchReplaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "s" "x" "y",
     exception_do (let: "y" := (GoAlloc go.int "y") in
     let: "x" := (GoAlloc go.int "x") in
@@ -1180,12 +1281,12 @@ Definition SearchReplaceⁱᵐᵖˡ : val :=
     do:  ((MethodResolve (go.PointerType sync.WaitGroup) "Wait"%go #() "wg") #());;;
     return: #()).
 
-#[global] Instance info' : PkgInfo channel.chan_spec_raw_examples :=
-  {|
-    pkg_imported_pkgs := [code.sync.sync; code.time.time; code.strings.strings];
-  |}.
+#[global] Instance info' : PkgInfo channel.chan_spec_raw_examples := 
+{|
+  pkg_imported_pkgs := [code.sync.sync; code.time.time; code.strings.strings]
+|}.
 
-Definition initialize' : val :=
+Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init channel.chan_spec_raw_examples (λ: <>,
       exception_do (do:  (strings.initialize' #());;;
@@ -1193,31 +1294,7 @@ Definition initialize' : val :=
       do:  (sync.initialize' #()))
       ).
 
-Class LockedStack_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] LockedStack'ptr_Pop_unfold :: MethodUnfold (go.PointerType (LockedStack)) "Pop" (LockedStack__Popⁱᵐᵖˡ);
-  #[global] LockedStack'ptr_Push_unfold :: MethodUnfold (go.PointerType (LockedStack)) "Push" (LockedStack__Pushⁱᵐᵖˡ);
-}.
-
-Class EliminationStack_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] EliminationStack'ptr_Pop_unfold :: MethodUnfold (go.PointerType (EliminationStack)) "Pop" (EliminationStack__Popⁱᵐᵖˡ);
-  #[global] EliminationStack'ptr_Push_unfold :: MethodUnfold (go.PointerType (EliminationStack)) "Push" (EliminationStack__Pushⁱᵐᵖˡ);
-}.
-
-Class request_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class stream_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class streamold_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] LockedStack_instance :: LockedStack_Assumptions;
   #[global] EliminationStack_instance :: EliminationStack_Assumptions;
@@ -1268,6 +1345,4 @@ Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions
   #[global] worker_unfold :: FuncUnfold worker [] (workerⁱᵐᵖˡ);
   #[global] SearchReplace_unfold :: FuncUnfold SearchReplace [] (SearchReplaceⁱᵐᵖˡ);
 }.
-
-End code.
 End chan_spec_raw_examples.

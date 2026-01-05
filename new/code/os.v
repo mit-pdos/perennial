@@ -5,686 +5,630 @@ Definition os : go_string := "os".
 
 Module os.
 
-Section code.
-Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom readdirModeⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
+Axiom readdirName : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom readdirModeⁱᵐᵖˡ : go.type.
+Axiom readdirDirEntry : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom readdirName : val.
+Axiom readdirFileInfo : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom readdirDirEntry : val.
+Axiom DirEntry : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom readdirFileInfo : val.
+Definition ReadDir {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.ReadDir"%go.
 
-Axiom DirEntry : go.type.
+Definition CopyFS {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.CopyFS"%go.
 
-Definition ReadDir : go_string := "os.ReadDir"%go.
+Axiom dirInfoⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition CopyFS : go_string := "os.CopyFS"%go.
+Axiom blockSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom dirInfoⁱᵐᵖˡ : go.type.
+Definition dirBufPool {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.dirBufPool"%go.
 
-Axiom blockSize : Z.
+Axiom dirBufPool'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition dirBufPool : go_string := "os.dirBufPool"%go.
+Definition readInt {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.readInt"%go.
 
-Axiom dirBufPool'init : val.
+Definition readIntBE {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.readIntBE"%go.
 
-Definition readInt : go_string := "os.readInt"%go.
+Definition readIntLE {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.readIntLE"%go.
 
-Definition readIntBE : go_string := "os.readIntBE"%go.
+Definition direntIno {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.direntIno"%go.
 
-Definition readIntLE : go_string := "os.readIntLE"%go.
+Definition direntReclen {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.direntReclen"%go.
 
-Definition direntIno : go_string := "os.direntIno"%go.
+Definition direntNamlen {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.direntNamlen"%go.
 
-Definition direntReclen : go_string := "os.direntReclen"%go.
+Definition direntType {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.direntType"%go.
 
-Definition direntNamlen : go_string := "os.direntNamlen"%go.
+Definition isNoFollowErr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.isNoFollowErr"%go.
 
-Definition direntType : go_string := "os.direntType"%go.
+Definition Expand {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.Expand"%go.
 
-Definition isNoFollowErr : go_string := "os.isNoFollowErr"%go.
+Definition ExpandEnv {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.ExpandEnv"%go.
 
-Definition Expand : go_string := "os.Expand"%go.
+Definition isShellSpecialVar {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.isShellSpecialVar"%go.
 
-Definition ExpandEnv : go_string := "os.ExpandEnv"%go.
+Definition isAlphaNum {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.isAlphaNum"%go.
 
-Definition isShellSpecialVar : go_string := "os.isShellSpecialVar"%go.
+Definition getShellName {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.getShellName"%go.
 
-Definition isAlphaNum : go_string := "os.isAlphaNum"%go.
+Definition Getenv {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.Getenv"%go.
 
-Definition getShellName : go_string := "os.getShellName"%go.
+Definition LookupEnv {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.LookupEnv"%go.
 
-Definition Getenv : go_string := "os.Getenv"%go.
+Definition Setenv {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.Setenv"%go.
 
-Definition LookupEnv : go_string := "os.LookupEnv"%go.
+Definition Unsetenv {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.Unsetenv"%go.
 
-Definition Setenv : go_string := "os.Setenv"%go.
+Definition Clearenv {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.Clearenv"%go.
 
-Definition Unsetenv : go_string := "os.Unsetenv"%go.
+Definition Environ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.Environ"%go.
 
-Definition Clearenv : go_string := "os.Clearenv"%go.
+Definition ErrInvalid {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.ErrInvalid"%go.
 
-Definition Environ : go_string := "os.Environ"%go.
+Axiom ErrInvalid'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition ErrInvalid : go_string := "os.ErrInvalid"%go.
+Definition ErrPermission {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.ErrPermission"%go.
 
-Axiom ErrInvalid'init : val.
+Axiom ErrPermission'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition ErrPermission : go_string := "os.ErrPermission"%go.
+Definition ErrExist {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.ErrExist"%go.
 
-Axiom ErrPermission'init : val.
+Axiom ErrExist'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition ErrExist : go_string := "os.ErrExist"%go.
+Definition ErrNotExist {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.ErrNotExist"%go.
 
-Axiom ErrExist'init : val.
+Axiom ErrNotExist'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition ErrNotExist : go_string := "os.ErrNotExist"%go.
+Definition ErrClosed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.ErrClosed"%go.
 
-Axiom ErrNotExist'init : val.
+Axiom ErrClosed'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition ErrClosed : go_string := "os.ErrClosed"%go.
+Definition ErrNoDeadline {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.ErrNoDeadline"%go.
 
-Axiom ErrClosed'init : val.
+Axiom ErrNoDeadline'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition ErrNoDeadline : go_string := "os.ErrNoDeadline"%go.
+Definition ErrDeadlineExceeded {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.ErrDeadlineExceeded"%go.
 
-Axiom ErrNoDeadline'init : val.
+Axiom ErrDeadlineExceeded'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition ErrDeadlineExceeded : go_string := "os.ErrDeadlineExceeded"%go.
+Definition errNoDeadline {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.errNoDeadline"%go.
 
-Axiom ErrDeadlineExceeded'init : val.
+Definition errDeadlineExceeded {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.errDeadlineExceeded"%go.
 
-Definition errNoDeadline : go_string := "os.errNoDeadline"%go.
+Axiom timeoutⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition errDeadlineExceeded : go_string := "os.errDeadlineExceeded"%go.
+Axiom PathError : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom timeoutⁱᵐᵖˡ : go.type.
+Axiom SyscallErrorⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom PathError : go.type.
+Definition NewSyscallError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.NewSyscallError"%go.
 
-Axiom SyscallErrorⁱᵐᵖˡ : go.type.
+Definition IsExist {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.IsExist"%go.
 
-Definition NewSyscallError : go_string := "os.NewSyscallError"%go.
+Definition IsNotExist {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.IsNotExist"%go.
 
-Definition IsExist : go_string := "os.IsExist"%go.
+Definition IsPermission {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.IsPermission"%go.
 
-Definition IsNotExist : go_string := "os.IsNotExist"%go.
+Definition IsTimeout {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.IsTimeout"%go.
 
-Definition IsPermission : go_string := "os.IsPermission"%go.
+Definition underlyingErrorIs {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.underlyingErrorIs"%go.
 
-Definition IsTimeout : go_string := "os.IsTimeout"%go.
+Definition underlyingError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.underlyingError"%go.
 
-Definition underlyingErrorIs : go_string := "os.underlyingErrorIs"%go.
+Axiom syscallErrorType : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition underlyingError : go_string := "os.underlyingError"%go.
+Axiom errENOSYS : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom syscallErrorType : go.type.
+Axiom errERANGE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom errENOSYS : val.
+Axiom errENOMEM : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom errERANGE : val.
+Definition ErrProcessDone {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.ErrProcessDone"%go.
 
-Axiom errENOMEM : val.
+Axiom ErrProcessDone'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition ErrProcessDone : go_string := "os.ErrProcessDone"%go.
+Axiom processStatusⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom ErrProcessDone'init : val.
+Axiom statusOK : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom processStatusⁱᵐᵖˡ : go.type.
+Axiom statusDone : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom statusOK : val.
+Axiom statusReleased : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom statusDone : val.
+Axiom Processⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom statusReleased : val.
+Axiom processHandleⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom Processⁱᵐᵖˡ : go.type.
+Definition newPIDProcess {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.newPIDProcess"%go.
 
-Axiom processHandleⁱᵐᵖˡ : go.type.
+Definition newHandleProcess {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.newHandleProcess"%go.
 
-Definition newPIDProcess : go_string := "os.newPIDProcess"%go.
+Definition newDoneProcess {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.newDoneProcess"%go.
 
-Definition newHandleProcess : go_string := "os.newHandleProcess"%go.
+Axiom ProcAttrⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition newDoneProcess : go_string := "os.newDoneProcess"%go.
+Axiom Signalⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom ProcAttrⁱᵐᵖˡ : go.type.
+Definition Getpid {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.Getpid"%go.
 
-Axiom Signalⁱᵐᵖˡ : go.type.
+Definition Getppid {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.Getppid"%go.
 
-Definition Getpid : go_string := "os.Getpid"%go.
+Definition FindProcess {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.FindProcess"%go.
 
-Definition Getppid : go_string := "os.Getppid"%go.
+Definition StartProcess {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.StartProcess"%go.
 
-Definition FindProcess : go_string := "os.FindProcess"%go.
+Definition Interrupt {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.Interrupt"%go.
 
-Definition StartProcess : go_string := "os.StartProcess"%go.
+Axiom Interrupt'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition Interrupt : go_string := "os.Interrupt"%go.
+Definition Kill {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.Kill"%go.
 
-Axiom Interrupt'init : val.
+Axiom Kill'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition Kill : go_string := "os.Kill"%go.
+Definition startProcess {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.startProcess"%go.
 
-Axiom Kill'init : val.
+Axiom ProcessStateⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition startProcess : go_string := "os.startProcess"%go.
+Axiom pidUnset : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom ProcessStateⁱᵐᵖˡ : go.type.
+Axiom pidReleased : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom pidUnset : Z.
+Definition convertESRCH {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.convertESRCH"%go.
 
-Axiom pidReleased : Z.
+Definition findProcess {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.findProcess"%go.
 
-Definition convertESRCH : go_string := "os.convertESRCH"%go.
+Definition Executable {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.Executable"%go.
 
-Definition findProcess : go_string := "os.findProcess"%go.
+Definition executable {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.executable"%go.
 
-Definition Executable : go_string := "os.Executable"%go.
+Definition Stdin {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.Stdin"%go.
 
-Definition executable : go_string := "os.executable"%go.
+Axiom Stdin'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition Stdin : go_string := "os.Stdin"%go.
+Definition Stdout {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.Stdout"%go.
 
-Axiom Stdin'init : val.
+Axiom Stdout'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition Stdout : go_string := "os.Stdout"%go.
+Definition Stderr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.Stderr"%go.
 
-Axiom Stdout'init : val.
+Axiom Stderr'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition Stderr : go_string := "os.Stderr"%go.
+Axiom O_RDONLY : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom Stderr'init : val.
+Axiom O_WRONLY : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom O_RDONLY : val.
+Axiom O_RDWR : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom O_WRONLY : val.
+Axiom O_APPEND : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom O_RDWR : val.
+Axiom O_CREATE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom O_APPEND : val.
+Axiom O_EXCL : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom O_CREATE : val.
+Axiom O_SYNC : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom O_EXCL : val.
+Axiom O_TRUNC : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom O_SYNC : val.
+Axiom SEEK_SET : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom O_TRUNC : val.
+Axiom SEEK_CUR : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom SEEK_SET : val.
+Axiom SEEK_END : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom SEEK_CUR : val.
+Axiom LinkErrorⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom SEEK_END : val.
+Definition NewFile {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.NewFile"%go.
 
-Axiom LinkErrorⁱᵐᵖˡ : go.type.
+Axiom noReadFromⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition NewFile : go_string := "os.NewFile"%go.
+Axiom fileWithoutReadFromⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom noReadFromⁱᵐᵖˡ : go.type.
+Definition genericReadFrom {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.genericReadFrom"%go.
 
-Axiom fileWithoutReadFromⁱᵐᵖˡ : go.type.
+Definition errWriteAtInAppendMode {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.errWriteAtInAppendMode"%go.
 
-Definition genericReadFrom : go_string := "os.genericReadFrom"%go.
+Axiom errWriteAtInAppendMode'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition errWriteAtInAppendMode : go_string := "os.errWriteAtInAppendMode"%go.
+Axiom noWriteToⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom errWriteAtInAppendMode'init : val.
+Axiom fileWithoutWriteToⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom noWriteToⁱᵐᵖˡ : go.type.
+Definition genericWriteTo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.genericWriteTo"%go.
 
-Axiom fileWithoutWriteToⁱᵐᵖˡ : go.type.
+Definition Mkdir {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.Mkdir"%go.
 
-Definition genericWriteTo : go_string := "os.genericWriteTo"%go.
+Definition setStickyBit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.setStickyBit"%go.
 
-Definition Mkdir : go_string := "os.Mkdir"%go.
+Definition Chdir {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.Chdir"%go.
 
-Definition setStickyBit : go_string := "os.setStickyBit"%go.
+Definition Open {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.Open"%go.
 
-Definition Chdir : go_string := "os.Chdir"%go.
+Definition Create {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.Create"%go.
 
-Definition Open : go_string := "os.Open"%go.
+Definition OpenFile {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.OpenFile"%go.
 
-Definition Create : go_string := "os.Create"%go.
+Definition errPathEscapes {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.errPathEscapes"%go.
 
-Definition OpenFile : go_string := "os.OpenFile"%go.
+Axiom errPathEscapes'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition errPathEscapes : go_string := "os.errPathEscapes"%go.
+Definition openDir {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.openDir"%go.
 
-Axiom errPathEscapes'init : val.
+Definition lstat {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.lstat"%go.
 
-Definition openDir : go_string := "os.openDir"%go.
+Axiom lstat'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition lstat : go_string := "os.lstat"%go.
+Definition Rename {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.Rename"%go.
 
-Axiom lstat'init : val.
+Definition Readlink {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.Readlink"%go.
 
-Definition Rename : go_string := "os.Rename"%go.
+Definition fixCount {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.fixCount"%go.
 
-Definition Readlink : go_string := "os.Readlink"%go.
+Definition checkWrapErr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.checkWrapErr"%go.
 
-Definition fixCount : go_string := "os.fixCount"%go.
+Axiom checkWrapErr'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition checkWrapErr : go_string := "os.checkWrapErr"%go.
+Definition TempDir {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.TempDir"%go.
 
-Axiom checkWrapErr'init : val.
+Definition UserCacheDir {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.UserCacheDir"%go.
 
-Definition TempDir : go_string := "os.TempDir"%go.
+Definition UserConfigDir {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.UserConfigDir"%go.
 
-Definition UserCacheDir : go_string := "os.UserCacheDir"%go.
+Definition UserHomeDir {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.UserHomeDir"%go.
 
-Definition UserConfigDir : go_string := "os.UserConfigDir"%go.
+Definition Chmod {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.Chmod"%go.
 
-Definition UserHomeDir : go_string := "os.UserHomeDir"%go.
+Definition DirFS {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.DirFS"%go.
 
-Definition Chmod : go_string := "os.Chmod"%go.
+Axiom dirFSⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition DirFS : go_string := "os.DirFS"%go.
+Definition ReadFile {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.ReadFile"%go.
 
-Axiom dirFSⁱᵐᵖˡ : go.type.
+Definition statOrZero {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.statOrZero"%go.
 
-Definition ReadFile : go_string := "os.ReadFile"%go.
+Definition readFileContents {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.readFileContents"%go.
 
-Definition statOrZero : go_string := "os.statOrZero"%go.
+Definition WriteFile {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.WriteFile"%go.
 
-Definition readFileContents : go_string := "os.readFileContents"%go.
+Definition open {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.open"%go.
 
-Definition WriteFile : go_string := "os.WriteFile"%go.
+Definition syscallMode {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.syscallMode"%go.
 
-Definition open : go_string := "os.open"%go.
+Definition chmod {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.chmod"%go.
 
-Definition syscallMode : go_string := "os.syscallMode"%go.
+Definition Chown {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.Chown"%go.
 
-Definition chmod : go_string := "os.chmod"%go.
+Definition Lchown {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.Lchown"%go.
 
-Definition Chown : go_string := "os.Chown"%go.
+Definition Chtimes {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.Chtimes"%go.
 
-Definition Lchown : go_string := "os.Lchown"%go.
+Definition chtimesUtimes {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.chtimesUtimes"%go.
 
-Definition Chtimes : go_string := "os.Chtimes"%go.
+Definition ignoringEINTR {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.ignoringEINTR"%go.
 
-Definition chtimesUtimes : go_string := "os.chtimesUtimes"%go.
+Definition ignoringEINTR2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.ignoringEINTR2"%go.
 
-Definition ignoringEINTR : go_string := "os.ignoringEINTR"%go.
+Axiom _UTIME_OMIT : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition ignoringEINTR2 : go_string := "os.ignoringEINTR2"%go.
+Definition fixLongPath {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.fixLongPath"%go.
 
-Axiom _UTIME_OMIT : Z.
+Definition rename {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.rename"%go.
 
-Definition fixLongPath : go_string := "os.fixLongPath"%go.
+Axiom fileⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition rename : go_string := "os.rename"%go.
+Definition newFileFromNewFile {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.newFileFromNewFile"%go.
 
-Axiom fileⁱᵐᵖˡ : go.type.
+Definition net_newUnixFile {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.net_newUnixFile"%go.
 
-Definition newFileFromNewFile : go_string := "os.newFileFromNewFile"%go.
+Axiom newFileKindⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition net_newUnixFile : go_string := "os.net_newUnixFile"%go.
+Axiom kindNewFile : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom newFileKindⁱᵐᵖˡ : go.type.
+Axiom kindOpenFile : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom kindNewFile : val.
+Axiom kindPipe : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom kindOpenFile : val.
+Axiom kindSock : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom kindPipe : val.
+Axiom kindNoPoll : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom kindSock : val.
+Definition newFile {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.newFile"%go.
 
-Axiom kindNoPoll : val.
+Definition sigpipe {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.sigpipe"%go.
 
-Definition newFile : go_string := "os.newFile"%go.
+Definition epipecheck {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.epipecheck"%go.
 
-Definition sigpipe : go_string := "os.sigpipe"%go.
+Axiom DevNull : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
 
-Definition epipecheck : go_string := "os.epipecheck"%go.
+Definition openFileNolog {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.openFileNolog"%go.
 
-Axiom DevNull : go_string.
+Definition openDirNolog {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.openDirNolog"%go.
 
-Definition openFileNolog : go_string := "os.openFileNolog"%go.
+Definition Truncate {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.Truncate"%go.
 
-Definition openDirNolog : go_string := "os.openDirNolog"%go.
+Definition Remove {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.Remove"%go.
 
-Definition Truncate : go_string := "os.Truncate"%go.
+Definition tempDir {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.tempDir"%go.
 
-Definition Remove : go_string := "os.Remove"%go.
+Definition Link {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.Link"%go.
 
-Definition tempDir : go_string := "os.tempDir"%go.
+Definition Symlink {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.Symlink"%go.
 
-Definition Link : go_string := "os.Link"%go.
+Definition readlink {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.readlink"%go.
 
-Definition Symlink : go_string := "os.Symlink"%go.
+Axiom unixDirentⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition readlink : go_string := "os.readlink"%go.
+Definition newUnixDirent {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.newUnixDirent"%go.
 
-Axiom unixDirentⁱᵐᵖˡ : go.type.
+Definition getwdCache {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.getwdCache"%go.
 
-Definition newUnixDirent : go_string := "os.newUnixDirent"%go.
+Definition Getwd {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.Getwd"%go.
 
-Definition getwdCache : go_string := "os.getwdCache"%go.
+Definition MkdirAll {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.MkdirAll"%go.
 
-Definition Getwd : go_string := "os.Getwd"%go.
+Definition RemoveAll {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.RemoveAll"%go.
 
-Definition MkdirAll : go_string := "os.MkdirAll"%go.
+Definition endsWithDot {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.endsWithDot"%go.
 
-Definition RemoveAll : go_string := "os.RemoveAll"%go.
+Axiom PathSeparator : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition endsWithDot : go_string := "os.endsWithDot"%go.
+Axiom PathListSeparator : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom PathSeparator : Z.
+Definition IsPathSeparator {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.IsPathSeparator"%go.
 
-Axiom PathListSeparator : Z.
+Definition splitPath {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.splitPath"%go.
 
-Definition IsPathSeparator : go_string := "os.IsPathSeparator"%go.
+Definition ensurePidfd {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.ensurePidfd"%go.
 
-Definition splitPath : go_string := "os.splitPath"%go.
+Definition getPidfd {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.getPidfd"%go.
 
-Definition ensurePidfd : go_string := "os.ensurePidfd"%go.
+Definition pidfdFind {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.pidfdFind"%go.
 
-Definition getPidfd : go_string := "os.getPidfd"%go.
+Definition pidfdWorks {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.pidfdWorks"%go.
 
-Definition pidfdFind : go_string := "os.pidfdFind"%go.
+Definition checkPidfdOnce {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.checkPidfdOnce"%go.
 
-Definition pidfdWorks : go_string := "os.pidfdWorks"%go.
+Axiom checkPidfdOnce'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition checkPidfdOnce : go_string := "os.checkPidfdOnce"%go.
+Definition checkPidfd {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.checkPidfd"%go.
 
-Axiom checkPidfdOnce'init : val.
+Definition checkClonePidfd {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.checkClonePidfd"%go.
 
-Definition checkPidfd : go_string := "os.checkPidfd"%go.
+Definition ignoreSIGSYS {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.ignoreSIGSYS"%go.
 
-Definition checkClonePidfd : go_string := "os.checkClonePidfd"%go.
+Definition restoreSIGSYS {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.restoreSIGSYS"%go.
 
-Definition ignoreSIGSYS : go_string := "os.ignoreSIGSYS"%go.
+Definition Pipe {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.Pipe"%go.
 
-Definition restoreSIGSYS : go_string := "os.restoreSIGSYS"%go.
+Definition Args {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.Args"%go.
 
-Definition Pipe : go_string := "os.Pipe"%go.
+Definition init {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.init"%go.
 
-Definition Args : go_string := "os.Args"%go.
+Definition runtime_args {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.runtime_args"%go.
 
-Definition init : go_string := "os.init"%go.
+Definition Getuid {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.Getuid"%go.
 
-Definition runtime_args : go_string := "os.runtime_args"%go.
+Definition Geteuid {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.Geteuid"%go.
 
-Definition Getuid : go_string := "os.Getuid"%go.
+Definition Getgid {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.Getgid"%go.
 
-Definition Geteuid : go_string := "os.Geteuid"%go.
+Definition Getegid {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.Getegid"%go.
 
-Definition Getgid : go_string := "os.Getgid"%go.
+Definition Getgroups {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.Getgroups"%go.
 
-Definition Getegid : go_string := "os.Getegid"%go.
+Definition Exit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.Exit"%go.
 
-Definition Getgroups : go_string := "os.Getgroups"%go.
+Definition runtime_beforeExit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.runtime_beforeExit"%go.
 
-Definition Exit : go_string := "os.Exit"%go.
+Axiom rawConnⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition runtime_beforeExit : go_string := "os.runtime_beforeExit"%go.
+Definition newRawConn {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.newRawConn"%go.
 
-Axiom rawConnⁱᵐᵖˡ : go.type.
+Definition removeAll {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.removeAll"%go.
 
-Definition newRawConn : go_string := "os.newRawConn"%go.
+Definition removeAllFrom {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.removeAllFrom"%go.
 
-Definition removeAll : go_string := "os.removeAll"%go.
+Definition openDirAt {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.openDirAt"%go.
 
-Definition removeAllFrom : go_string := "os.removeAllFrom"%go.
+Definition isErrNoFollow {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.isErrNoFollow"%go.
 
-Definition openDirAt : go_string := "os.openDirAt"%go.
+Definition newDirFile {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.newDirFile"%go.
 
-Definition isErrNoFollow : go_string := "os.isErrNoFollow"%go.
+Definition OpenInRoot {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.OpenInRoot"%go.
 
-Definition newDirFile : go_string := "os.newDirFile"%go.
+Axiom Rootⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition OpenInRoot : go_string := "os.OpenInRoot"%go.
+Axiom rootMaxSymlinks : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom Rootⁱᵐᵖˡ : go.type.
+Definition OpenRoot {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.OpenRoot"%go.
 
-Axiom rootMaxSymlinks : Z.
+Definition splitPathInRoot {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.splitPathInRoot"%go.
 
-Definition OpenRoot : go_string := "os.OpenRoot"%go.
+Axiom rootFSⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition splitPathInRoot : go_string := "os.splitPathInRoot"%go.
+Definition isValidRootFSPath {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.isValidRootFSPath"%go.
 
-Axiom rootFSⁱᵐᵖˡ : go.type.
+Definition rootCleanPath {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.rootCleanPath"%go.
 
-Definition isValidRootFSPath : go_string := "os.isValidRootFSPath"%go.
+Axiom rootⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition rootCleanPath : go_string := "os.rootCleanPath"%go.
+Definition rootChmod {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.rootChmod"%go.
 
-Axiom rootⁱᵐᵖˡ : go.type.
+Definition rootChown {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.rootChown"%go.
 
-Definition rootChmod : go_string := "os.rootChmod"%go.
+Definition rootLchown {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.rootLchown"%go.
 
-Definition rootChown : go_string := "os.rootChown"%go.
+Definition rootChtimes {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.rootChtimes"%go.
 
-Definition rootLchown : go_string := "os.rootLchown"%go.
+Definition rootMkdir {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.rootMkdir"%go.
 
-Definition rootChtimes : go_string := "os.rootChtimes"%go.
+Definition rootMkdirAll {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.rootMkdirAll"%go.
 
-Definition rootMkdir : go_string := "os.rootMkdir"%go.
+Definition rootReadlink {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.rootReadlink"%go.
 
-Definition rootMkdirAll : go_string := "os.rootMkdirAll"%go.
+Definition rootRemove {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.rootRemove"%go.
 
-Definition rootReadlink : go_string := "os.rootReadlink"%go.
+Definition rootRemoveAll {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.rootRemoveAll"%go.
 
-Definition rootRemove : go_string := "os.rootRemove"%go.
+Definition rootRename {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.rootRename"%go.
 
-Definition rootRemoveAll : go_string := "os.rootRemoveAll"%go.
+Definition rootLink {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.rootLink"%go.
 
-Definition rootRename : go_string := "os.rootRename"%go.
+Definition doInRoot {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.doInRoot"%go.
 
-Definition rootLink : go_string := "os.rootLink"%go.
+Axiom errSymlinkⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition doInRoot : go_string := "os.doInRoot"%go.
+Axiom sysfdType : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom errSymlinkⁱᵐᵖˡ : go.type.
+Definition openRootNolog {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.openRootNolog"%go.
 
-Axiom sysfdType : go.type.
+Definition newRoot {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.newRoot"%go.
 
-Definition openRootNolog : go_string := "os.openRootNolog"%go.
+Definition openRootInRoot {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.openRootInRoot"%go.
 
-Definition newRoot : go_string := "os.newRoot"%go.
+Definition rootOpenFileNolog {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.rootOpenFileNolog"%go.
 
-Definition openRootInRoot : go_string := "os.openRootInRoot"%go.
+Definition rootOpenDir {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.rootOpenDir"%go.
 
-Definition rootOpenFileNolog : go_string := "os.rootOpenFileNolog"%go.
+Definition rootStat {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.rootStat"%go.
 
-Definition rootOpenDir : go_string := "os.rootOpenDir"%go.
+Definition rootSymlink {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.rootSymlink"%go.
 
-Definition rootStat : go_string := "os.rootStat"%go.
+Definition afterResolvingSymlink {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.afterResolvingSymlink"%go.
 
-Definition rootSymlink : go_string := "os.rootSymlink"%go.
+Definition chmodat {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.chmodat"%go.
 
-Definition afterResolvingSymlink : go_string := "os.afterResolvingSymlink"%go.
+Definition chownat {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.chownat"%go.
 
-Definition chmodat : go_string := "os.chmodat"%go.
+Definition lchownat {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.lchownat"%go.
 
-Definition chownat : go_string := "os.chownat"%go.
+Definition chtimesat {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.chtimesat"%go.
 
-Definition lchownat : go_string := "os.lchownat"%go.
+Definition mkdirat {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.mkdirat"%go.
 
-Definition chtimesat : go_string := "os.chtimesat"%go.
+Definition removeat {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.removeat"%go.
 
-Definition mkdirat : go_string := "os.mkdirat"%go.
+Definition removefileat {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.removefileat"%go.
 
-Definition removeat : go_string := "os.removeat"%go.
+Definition removedirat {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.removedirat"%go.
 
-Definition removefileat : go_string := "os.removefileat"%go.
+Definition renameat {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.renameat"%go.
 
-Definition removedirat : go_string := "os.removedirat"%go.
+Definition linkat {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.linkat"%go.
 
-Definition renameat : go_string := "os.renameat"%go.
+Definition symlinkat {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.symlinkat"%go.
 
-Definition linkat : go_string := "os.linkat"%go.
+Definition modeAt {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.modeAt"%go.
 
-Definition symlinkat : go_string := "os.symlinkat"%go.
+Definition checkSymlink {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.checkSymlink"%go.
 
-Definition modeAt : go_string := "os.modeAt"%go.
+Definition readlinkat {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.readlinkat"%go.
 
-Definition checkSymlink : go_string := "os.checkSymlink"%go.
+Definition Stat {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.Stat"%go.
 
-Definition readlinkat : go_string := "os.readlinkat"%go.
+Definition Lstat {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.Lstat"%go.
 
-Definition Stat : go_string := "os.Stat"%go.
+Definition fillFileStatFromSys {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.fillFileStatFromSys"%go.
 
-Definition Lstat : go_string := "os.Lstat"%go.
+Definition atime {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.atime"%go.
 
-Definition fillFileStatFromSys : go_string := "os.fillFileStatFromSys"%go.
+Definition statNolog {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.statNolog"%go.
 
-Definition atime : go_string := "os.atime"%go.
+Definition lstatNolog {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.lstatNolog"%go.
 
-Definition statNolog : go_string := "os.statNolog"%go.
+Axiom supportsCreateWithStickyBit : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition lstatNolog : go_string := "os.lstatNolog"%go.
+Definition Hostname {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.Hostname"%go.
 
-Axiom supportsCreateWithStickyBit : val.
+Definition hostname {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.hostname"%go.
 
-Definition Hostname : go_string := "os.Hostname"%go.
+Axiom supportsCloseOnExec : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition hostname : go_string := "os.hostname"%go.
+Definition runtime_rand {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.runtime_rand"%go.
 
-Axiom supportsCloseOnExec : val.
+Definition nextRandom {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.nextRandom"%go.
 
-Definition runtime_rand : go_string := "os.runtime_rand"%go.
+Definition CreateTemp {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.CreateTemp"%go.
 
-Definition nextRandom : go_string := "os.nextRandom"%go.
+Definition errPatternHasSeparator {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.errPatternHasSeparator"%go.
 
-Definition CreateTemp : go_string := "os.CreateTemp"%go.
+Axiom errPatternHasSeparator'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition errPatternHasSeparator : go_string := "os.errPatternHasSeparator"%go.
+Definition prefixAndSuffix {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.prefixAndSuffix"%go.
 
-Axiom errPatternHasSeparator'init : val.
+Definition MkdirTemp {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.MkdirTemp"%go.
 
-Definition prefixAndSuffix : go_string := "os.prefixAndSuffix"%go.
+Definition joinPath {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.joinPath"%go.
 
-Definition MkdirTemp : go_string := "os.MkdirTemp"%go.
+Definition Getpagesize {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.Getpagesize"%go.
 
-Definition joinPath : go_string := "os.joinPath"%go.
+Axiom Fileⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition Getpagesize : go_string := "os.Getpagesize"%go.
+Axiom FileInfo : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom Fileⁱᵐᵖˡ : go.type.
+Axiom FileMode : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom FileInfo : go.type.
+Axiom ModeDir : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom FileMode : go.type.
+Axiom ModeAppend : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom ModeDir : val.
+Axiom ModeExclusive : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom ModeAppend : val.
+Axiom ModeTemporary : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom ModeExclusive : val.
+Axiom ModeSymlink : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom ModeTemporary : val.
+Axiom ModeDevice : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom ModeSymlink : val.
+Axiom ModeNamedPipe : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom ModeDevice : val.
+Axiom ModeSocket : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom ModeNamedPipe : val.
+Axiom ModeSetuid : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom ModeSocket : val.
+Axiom ModeSetgid : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom ModeSetuid : val.
+Axiom ModeCharDevice : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom ModeSetgid : val.
+Axiom ModeSticky : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom ModeCharDevice : val.
+Axiom ModeIrregular : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom ModeSticky : val.
+Axiom ModeType : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom ModeIrregular : val.
+Axiom ModePerm : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom ModeType : val.
+Definition SameFile {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.SameFile"%go.
 
-Axiom ModePerm : val.
+Axiom fileStatⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition SameFile : go_string := "os.SameFile"%go.
+Definition sameFile {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.sameFile"%go.
 
-Axiom fileStatⁱᵐᵖˡ : go.type.
+Definition pollCopyFileRange {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.pollCopyFileRange"%go.
 
-Definition sameFile : go_string := "os.sameFile"%go.
+Axiom pollCopyFileRange'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition pollCopyFileRange : go_string := "os.pollCopyFileRange"%go.
+Definition pollSplice {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.pollSplice"%go.
 
-Axiom pollCopyFileRange'init : val.
+Axiom pollSplice'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition pollSplice : go_string := "os.pollSplice"%go.
+Definition getPollFDAndNetwork {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.getPollFDAndNetwork"%go.
 
-Axiom pollSplice'init : val.
+Definition isUnixOrTCP {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.isUnixOrTCP"%go.
 
-Definition getPollFDAndNetwork : go_string := "os.getPollFDAndNetwork"%go.
+Definition wrapSyscallError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.wrapSyscallError"%go.
 
-Definition isUnixOrTCP : go_string := "os.isUnixOrTCP"%go.
+Definition tryLimitedReader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.tryLimitedReader"%go.
 
-Definition wrapSyscallError : go_string := "os.wrapSyscallError"%go.
+#[global] Instance info' : PkgInfo os.os := 
+{|
+  pkg_imported_pkgs := []
+|}.
 
-Definition tryLimitedReader : go_string := "os.tryLimitedReader"%go.
+Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition readdirMode : go.type := go.Named "os.readdirMode"%go [].
-
-Definition dirInfo : go.type := go.Named "os.dirInfo"%go [].
-
-Definition timeout : go.type := go.Named "os.timeout"%go [].
-
-Definition SyscallError : go.type := go.Named "os.SyscallError"%go [].
-
-Definition processStatus : go.type := go.Named "os.processStatus"%go [].
-
-Definition Process : go.type := go.Named "os.Process"%go [].
-
-Definition processHandle : go.type := go.Named "os.processHandle"%go [].
-
-Definition ProcAttr : go.type := go.Named "os.ProcAttr"%go [].
-
-Definition Signal : go.type := go.Named "os.Signal"%go [].
-
-Definition ProcessState : go.type := go.Named "os.ProcessState"%go [].
-
-Definition LinkError : go.type := go.Named "os.LinkError"%go [].
-
-Definition noReadFrom : go.type := go.Named "os.noReadFrom"%go [].
-
-Definition fileWithoutReadFrom : go.type := go.Named "os.fileWithoutReadFrom"%go [].
-
-Definition noWriteTo : go.type := go.Named "os.noWriteTo"%go [].
-
-Definition fileWithoutWriteTo : go.type := go.Named "os.fileWithoutWriteTo"%go [].
-
-Definition dirFS : go.type := go.Named "os.dirFS"%go [].
-
-Definition file : go.type := go.Named "os.file"%go [].
-
-Definition newFileKind : go.type := go.Named "os.newFileKind"%go [].
-
-Definition unixDirent : go.type := go.Named "os.unixDirent"%go [].
-
-Definition rawConn : go.type := go.Named "os.rawConn"%go [].
-
-Definition Root : go.type := go.Named "os.Root"%go [].
-
-Definition rootFS : go.type := go.Named "os.rootFS"%go [].
-
-Definition root : go.type := go.Named "os.root"%go [].
-
-Definition errSymlink : go.type := go.Named "os.errSymlink"%go [].
-
-Definition File : go.type := go.Named "os.File"%go [].
-
-Definition fileStat : go.type := go.Named "os.fileStat"%go [].
-
-#[global] Instance info' : PkgInfo os.os :=
-  {|
-    pkg_imported_pkgs := [];
-  |}.
-
-Axiom _'init : val.
-
-Definition initialize' : val :=
+Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init os.os (λ: <>,
       exception_do (do:  (dirBufPool'init #());;;
@@ -715,139 +659,7 @@ Definition initialize' : val :=
       do:  (pollSplice'init #()))
       ).
 
-Class readdirMode_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
 }.
-
-Class dirInfo_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class timeout_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class SyscallError_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class processStatus_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class Process_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class processHandle_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class ProcAttr_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class Signal_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class ProcessState_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class LinkError_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class noReadFrom_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class fileWithoutReadFrom_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class noWriteTo_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class fileWithoutWriteTo_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class dirFS_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class file_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class newFileKind_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class unixDirent_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class rawConn_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class Root_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class rootFS_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class root_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class errSymlink_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class File_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class fileStat_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] readdirMode_instance :: readdirMode_Assumptions;
-  #[global] dirInfo_instance :: dirInfo_Assumptions;
-  #[global] timeout_instance :: timeout_Assumptions;
-  #[global] SyscallError_instance :: SyscallError_Assumptions;
-  #[global] processStatus_instance :: processStatus_Assumptions;
-  #[global] Process_instance :: Process_Assumptions;
-  #[global] processHandle_instance :: processHandle_Assumptions;
-  #[global] ProcAttr_instance :: ProcAttr_Assumptions;
-  #[global] Signal_instance :: Signal_Assumptions;
-  #[global] ProcessState_instance :: ProcessState_Assumptions;
-  #[global] LinkError_instance :: LinkError_Assumptions;
-  #[global] noReadFrom_instance :: noReadFrom_Assumptions;
-  #[global] fileWithoutReadFrom_instance :: fileWithoutReadFrom_Assumptions;
-  #[global] noWriteTo_instance :: noWriteTo_Assumptions;
-  #[global] fileWithoutWriteTo_instance :: fileWithoutWriteTo_Assumptions;
-  #[global] dirFS_instance :: dirFS_Assumptions;
-  #[global] file_instance :: file_Assumptions;
-  #[global] newFileKind_instance :: newFileKind_Assumptions;
-  #[global] unixDirent_instance :: unixDirent_Assumptions;
-  #[global] rawConn_instance :: rawConn_Assumptions;
-  #[global] Root_instance :: Root_Assumptions;
-  #[global] rootFS_instance :: rootFS_Assumptions;
-  #[global] root_instance :: root_Assumptions;
-  #[global] errSymlink_instance :: errSymlink_Assumptions;
-  #[global] File_instance :: File_Assumptions;
-  #[global] fileStat_instance :: fileStat_Assumptions;
-}.
-
-End code.
 End os.

@@ -7,29 +7,25 @@ Definition std_core : go_string := "github.com/goose-lang/std/std_core".
 
 Module std_core.
 
-Section code.
-Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-
-
-Definition SumNoOverflow : go_string := "github.com/goose-lang/std/std_core.SumNoOverflow"%go.
+Definition SumNoOverflow {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/std/std_core.SumNoOverflow"%go.
 
 (* Returns true if x + y does not overflow
 
    go: std_core.go:11:6 *)
-Definition SumNoOverflowⁱᵐᵖˡ : val :=
+Definition SumNoOverflowⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "x" "y",
     exception_do (let: "y" := (GoAlloc go.uint64 "y") in
     let: "x" := (GoAlloc go.uint64 "x") in
     return: (((![go.uint64] "x") +⟨go.uint64⟩ (![go.uint64] "y")) ≥⟨go.uint64⟩ (![go.uint64] "x"))).
 
-Definition SumAssumeNoOverflow : go_string := "github.com/goose-lang/std/std_core.SumAssumeNoOverflow"%go.
+Definition SumAssumeNoOverflow {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/std/std_core.SumAssumeNoOverflow"%go.
 
 (* SumAssumeNoOverflow returns x + y, `Assume`ing that this does not overflow.
 
    *Use with care* - if the assumption is violated this function will panic.
 
    go: std_core.go:18:6 *)
-Definition SumAssumeNoOverflowⁱᵐᵖˡ : val :=
+Definition SumAssumeNoOverflowⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "x" "y",
     exception_do (let: "y" := (GoAlloc go.uint64 "y") in
     let: "x" := (GoAlloc go.uint64 "x") in
@@ -39,12 +35,12 @@ Definition SumAssumeNoOverflowⁱᵐᵖˡ : val :=
     (FuncResolve primitive.Assume [] #()) "$a0");;;
     return: ((![go.uint64] "x") +⟨go.uint64⟩ (![go.uint64] "y"))).
 
-Definition MulNoOverflow : go_string := "github.com/goose-lang/std/std_core.MulNoOverflow"%go.
+Definition MulNoOverflow {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/std/std_core.MulNoOverflow"%go.
 
 (* MulNoOverflow returns true if x * y does not overflow
 
    go: std_core.go:24:6 *)
-Definition MulNoOverflowⁱᵐᵖˡ : val :=
+Definition MulNoOverflowⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "x" "y",
     exception_do (let: "y" := (GoAlloc go.uint64 "y") in
     let: "x" := (GoAlloc go.uint64 "x") in
@@ -53,14 +49,14 @@ Definition MulNoOverflowⁱᵐᵖˡ : val :=
     else do:  #());;;
     return: ((![go.uint64] "x") ≤⟨go.uint64⟩ (#(W64 18446744073709551615) /⟨go.uint64⟩ (![go.uint64] "y")))).
 
-Definition MulAssumeNoOverflow : go_string := "github.com/goose-lang/std/std_core.MulAssumeNoOverflow"%go.
+Definition MulAssumeNoOverflow {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/std/std_core.MulAssumeNoOverflow"%go.
 
 (* MulAssumeNoOverflow returns x * y, `Assume`ing that this does not overflow.
 
    *Use with care* - if the assumption is violated this function will panic.
 
    go: std_core.go:34:6 *)
-Definition MulAssumeNoOverflowⁱᵐᵖˡ : val :=
+Definition MulAssumeNoOverflowⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "x" "y",
     exception_do (let: "y" := (GoAlloc go.uint64 "y") in
     let: "x" := (GoAlloc go.uint64 "x") in
@@ -70,12 +66,12 @@ Definition MulAssumeNoOverflowⁱᵐᵖˡ : val :=
     (FuncResolve primitive.Assume [] #()) "$a0");;;
     return: ((![go.uint64] "x") *⟨go.uint64⟩ (![go.uint64] "y"))).
 
-Definition Shuffle : go_string := "github.com/goose-lang/std/std_core.Shuffle"%go.
+Definition Shuffle {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/std/std_core.Shuffle"%go.
 
 (* Shuffle shuffles the elements of xs in place, using a Fisher-Yates shuffle.
 
    go: std_core.go:40:6 *)
-Definition Shuffleⁱᵐᵖˡ : val :=
+Definition Shuffleⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "xs",
     exception_do (let: "xs" := (GoAlloc (go.SliceType go.uint64) "xs") in
     (if: (let: "$a0" := (![go.SliceType go.uint64] "xs") in
@@ -99,13 +95,13 @@ Definition Shuffleⁱᵐᵖˡ : val :=
       do:  ((IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "xs", ![go.uint64] "j")) <-[go.uint64] "$r0")));;;
     return: #()).
 
-Definition Permutation : go_string := "github.com/goose-lang/std/std_core.Permutation"%go.
+Definition Permutation {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/std/std_core.Permutation"%go.
 
 (* Permutation returns a random permutation of the integers 0, ..., n-1, using a
    Fisher-Yates shuffle.
 
    go: std_core.go:54:6 *)
-Definition Permutationⁱᵐᵖˡ : val :=
+Definition Permutationⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "n",
     exception_do (let: "n" := (GoAlloc go.uint64 "n") in
     let: "order" := (GoAlloc (go.SliceType go.uint64) (GoZeroVal (go.SliceType go.uint64) #())) in
@@ -121,18 +117,18 @@ Definition Permutationⁱᵐᵖˡ : val :=
     (FuncResolve Shuffle [] #()) "$a0");;;
     return: (![go.SliceType go.uint64] "order")).
 
-#[global] Instance info' : PkgInfo std_core.std_core :=
-  {|
-    pkg_imported_pkgs := [code.github_com.goose_lang.primitive.primitive];
-  |}.
+#[global] Instance info' : PkgInfo std_core.std_core := 
+{|
+  pkg_imported_pkgs := [code.github_com.goose_lang.primitive.primitive]
+|}.
 
-Definition initialize' : val :=
+Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init std_core.std_core (λ: <>,
       exception_do (do:  (primitive.initialize' #()))
       ).
 
-Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] SumNoOverflow_unfold :: FuncUnfold SumNoOverflow [] (SumNoOverflowⁱᵐᵖˡ);
   #[global] SumAssumeNoOverflow_unfold :: FuncUnfold SumAssumeNoOverflow [] (SumAssumeNoOverflowⁱᵐᵖˡ);
@@ -141,6 +137,4 @@ Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions
   #[global] Shuffle_unfold :: FuncUnfold Shuffle [] (Shuffleⁱᵐᵖˡ);
   #[global] Permutation_unfold :: FuncUnfold Permutation [] (Permutationⁱᵐᵖˡ);
 }.
-
-End code.
 End std_core.

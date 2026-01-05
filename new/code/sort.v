@@ -5,11 +5,7 @@ Definition sort : go_string := "sort".
 
 Module sort.
 
-Section code.
-Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-
-
-Definition Search : go_string := "sort.Search"%go.
+Definition Search {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.Search"%go.
 
 (* Search uses binary search to find and return the smallest index i
    in [0, n) at which f(i) is true, assuming that on the range [0, n),
@@ -62,7 +58,7 @@ Definition Search : go_string := "sort.Search"%go.
    	}
 
    go: search.go:58:6 *)
-Definition Searchⁱᵐᵖˡ : val :=
+Definition Searchⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "n" "f",
     exception_do (let: "f" := (GoAlloc (go.FunctionType (go.Signature [go.int] false [go.bool])) "f") in
     let: "n" := (GoAlloc go.int "n") in
@@ -86,7 +82,7 @@ Definition Searchⁱᵐᵖˡ : val :=
         do:  ("j" <-[go.int] "$r0")));;;
     return: (![go.int] "i")).
 
-Definition Find : go_string := "sort.Find"%go.
+Definition Find {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.Find"%go.
 
 (* Find uses binary search to find and return the smallest index i in [0, n)
    at which cmp(i) <= 0. If there is no such index i, Find returns i = n.
@@ -114,7 +110,7 @@ Definition Find : go_string := "sort.Find"%go.
    	}
 
    go: search.go:99:6 *)
-Definition Findⁱᵐᵖˡ : val :=
+Definition Findⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "n" "cmp",
     exception_do (let: "found" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "i" := (GoAlloc go.int (GoZeroVal go.int #())) in
@@ -140,7 +136,7 @@ Definition Findⁱᵐᵖˡ : val :=
     return: (![go.int] "i", ((![go.int] "i") <⟨go.int⟩ (![go.int] "n")) && ((let: "$a0" := (![go.int] "i") in
      (![go.FunctionType (go.Signature [go.int] false [go.int])] "cmp") "$a0") =⟨go.int⟩ #(W64 0)))).
 
-Definition SearchInts : go_string := "sort.SearchInts"%go.
+Definition SearchInts {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.SearchInts"%go.
 
 (* SearchInts searches for x in a sorted slice of ints and returns the index
    as specified by [Search]. The return value is the index to insert x if x is
@@ -148,7 +144,7 @@ Definition SearchInts : go_string := "sort.SearchInts"%go.
    The slice must be sorted in ascending order.
 
    go: search.go:123:6 *)
-Definition SearchIntsⁱᵐᵖˡ : val :=
+Definition SearchIntsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "a" "x",
     exception_do (let: "x" := (GoAlloc go.int "x") in
     let: "a" := (GoAlloc (go.SliceType go.int) "a") in
@@ -160,34 +156,46 @@ Definition SearchIntsⁱᵐᵖˡ : val :=
        ) in
      (FuncResolve Search [] #()) "$a0" "$a1")).
 
-Definition SearchFloat64s : go_string := "sort.SearchFloat64s"%go.
+Definition SearchFloat64s {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.SearchFloat64s"%go.
 
-Definition SearchStrings : go_string := "sort.SearchStrings"%go.
+Definition SearchStrings {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.SearchStrings"%go.
 
-Definition Slice : go_string := "sort.Slice"%go.
+Definition Slice {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.Slice"%go.
 
-Definition SliceStable : go_string := "sort.SliceStable"%go.
+Definition SliceStable {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.SliceStable"%go.
 
-Definition SliceIsSorted : go_string := "sort.SliceIsSorted"%go.
+Definition SliceIsSorted {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.SliceIsSorted"%go.
 
-Axiom Interfaceⁱᵐᵖˡ : go.type.
+Axiom Interfaceⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition Sort : go_string := "sort.Sort"%go.
+Definition Sort {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.Sort"%go.
 
 Definition sortedHintⁱᵐᵖˡ : go.type := go.int.
 
-Definition unknownHint : val := #(W64 0).
+Definition sortedHint : go.type := go.Named "sort.sortedHint"%go [].
 
-Definition increasingHint : val := #(W64 1).
+Module sortedHint.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Definition t  : Type := w64.
+End def.
+End sortedHint.
 
-Definition decreasingHint : val := #(W64 2).
+Class sortedHint_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] sortedHint_zero_val  :: go.GoZeroValEq sortedHint sortedHint.t;
+}.
 
-Definition xorshiftⁱᵐᵖˡ : go.type := go.uint64.
+Definition unknownHint {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #(W64 0).
+
+Definition increasingHint {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #(W64 1).
+
+Definition decreasingHint {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #(W64 2).
 
 Definition xorshift : go.type := go.Named "sort.xorshift"%go [].
 
 (* go: sort.go:70:20 *)
-Definition xorshift__Nextⁱᵐᵖˡ : val :=
+Definition xorshift__Nextⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" <>,
     exception_do (let: "r" := (GoAlloc (go.PointerType xorshift) "r") in
     do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) ^⟨go.uint64⟩ ((![xorshift] (![go.PointerType xorshift] "r")) ≪⟨xorshift⟩ #(W64 13))));;;
@@ -195,180 +203,140 @@ Definition xorshift__Nextⁱᵐᵖˡ : val :=
     do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) ^⟨go.uint64⟩ ((![xorshift] (![go.PointerType xorshift] "r")) ≪⟨xorshift⟩ #(W64 17))));;;
     return: (![xorshift] (![go.PointerType xorshift] "r"))).
 
-Definition nextPowerOfTwo : go_string := "sort.nextPowerOfTwo"%go.
+Definition xorshiftⁱᵐᵖˡ : go.type := go.uint64.
 
-Axiom lessSwapⁱᵐᵖˡ : go.type.
+Module xorshift.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Definition t  : Type := w64.
+End def.
+End xorshift.
 
-Axiom reverseⁱᵐᵖˡ : go.type.
+Class xorshift_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] xorshift_zero_val  :: go.GoZeroValEq xorshift xorshift.t;
+  #[global] xorshift'ptr_Next_unfold :: MethodUnfold (go.PointerType (xorshift)) "Next" (xorshift__Nextⁱᵐᵖˡ);
+}.
 
-Definition Reverse : go_string := "sort.Reverse"%go.
+Definition nextPowerOfTwo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.nextPowerOfTwo"%go.
 
-Definition IsSorted : go_string := "sort.IsSorted"%go.
+Axiom lessSwapⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom IntSliceⁱᵐᵖˡ : go.type.
+Axiom reverseⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom Float64Sliceⁱᵐᵖˡ : go.type.
+Definition Reverse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.Reverse"%go.
 
-Definition isNaN : go_string := "sort.isNaN"%go.
+Definition IsSorted {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.IsSorted"%go.
 
-Axiom StringSliceⁱᵐᵖˡ : go.type.
+Axiom IntSliceⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition Ints : go_string := "sort.Ints"%go.
+Axiom Float64Sliceⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition Float64s : go_string := "sort.Float64s"%go.
+Definition isNaN {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.isNaN"%go.
 
-Definition Strings : go_string := "sort.Strings"%go.
+Axiom StringSliceⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition IntsAreSorted : go_string := "sort.IntsAreSorted"%go.
+Definition Ints {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.Ints"%go.
 
-Definition Float64sAreSorted : go_string := "sort.Float64sAreSorted"%go.
+Definition Float64s {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.Float64s"%go.
 
-Definition StringsAreSorted : go_string := "sort.StringsAreSorted"%go.
+Definition Strings {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.Strings"%go.
 
-Definition Stable : go_string := "sort.Stable"%go.
+Definition IntsAreSorted {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.IntsAreSorted"%go.
 
-Definition insertionSort_func : go_string := "sort.insertionSort_func"%go.
+Definition Float64sAreSorted {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.Float64sAreSorted"%go.
 
-Definition siftDown_func : go_string := "sort.siftDown_func"%go.
+Definition StringsAreSorted {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.StringsAreSorted"%go.
 
-Definition heapSort_func : go_string := "sort.heapSort_func"%go.
+Definition Stable {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.Stable"%go.
 
-Definition pdqsort_func : go_string := "sort.pdqsort_func"%go.
+Definition insertionSort_func {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.insertionSort_func"%go.
 
-Definition partition_func : go_string := "sort.partition_func"%go.
+Definition siftDown_func {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.siftDown_func"%go.
 
-Definition partitionEqual_func : go_string := "sort.partitionEqual_func"%go.
+Definition heapSort_func {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.heapSort_func"%go.
 
-Definition partialInsertionSort_func : go_string := "sort.partialInsertionSort_func"%go.
+Definition pdqsort_func {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.pdqsort_func"%go.
 
-Definition breakPatterns_func : go_string := "sort.breakPatterns_func"%go.
+Definition partition_func {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.partition_func"%go.
 
-Definition choosePivot_func : go_string := "sort.choosePivot_func"%go.
+Definition partitionEqual_func {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.partitionEqual_func"%go.
 
-Definition order2_func : go_string := "sort.order2_func"%go.
+Definition partialInsertionSort_func {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.partialInsertionSort_func"%go.
 
-Definition median_func : go_string := "sort.median_func"%go.
+Definition breakPatterns_func {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.breakPatterns_func"%go.
 
-Definition medianAdjacent_func : go_string := "sort.medianAdjacent_func"%go.
+Definition choosePivot_func {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.choosePivot_func"%go.
 
-Definition reverseRange_func : go_string := "sort.reverseRange_func"%go.
+Definition order2_func {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.order2_func"%go.
 
-Definition swapRange_func : go_string := "sort.swapRange_func"%go.
+Definition median_func {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.median_func"%go.
 
-Definition stable_func : go_string := "sort.stable_func"%go.
+Definition medianAdjacent_func {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.medianAdjacent_func"%go.
 
-Definition symMerge_func : go_string := "sort.symMerge_func"%go.
+Definition reverseRange_func {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.reverseRange_func"%go.
 
-Definition rotate_func : go_string := "sort.rotate_func"%go.
+Definition swapRange_func {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.swapRange_func"%go.
 
-Definition insertionSort : go_string := "sort.insertionSort"%go.
+Definition stable_func {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.stable_func"%go.
 
-Definition siftDown : go_string := "sort.siftDown"%go.
+Definition symMerge_func {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.symMerge_func"%go.
 
-Definition heapSort : go_string := "sort.heapSort"%go.
+Definition rotate_func {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.rotate_func"%go.
 
-Definition pdqsort : go_string := "sort.pdqsort"%go.
+Definition insertionSort {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.insertionSort"%go.
 
-Definition partition : go_string := "sort.partition"%go.
+Definition siftDown {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.siftDown"%go.
 
-Definition partitionEqual : go_string := "sort.partitionEqual"%go.
+Definition heapSort {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.heapSort"%go.
 
-Definition partialInsertionSort : go_string := "sort.partialInsertionSort"%go.
+Definition pdqsort {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.pdqsort"%go.
 
-Definition breakPatterns : go_string := "sort.breakPatterns"%go.
+Definition partition {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.partition"%go.
 
-Definition choosePivot : go_string := "sort.choosePivot"%go.
+Definition partitionEqual {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.partitionEqual"%go.
 
-Definition order2 : go_string := "sort.order2"%go.
+Definition partialInsertionSort {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.partialInsertionSort"%go.
 
-Definition median : go_string := "sort.median"%go.
+Definition breakPatterns {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.breakPatterns"%go.
 
-Definition medianAdjacent : go_string := "sort.medianAdjacent"%go.
+Definition choosePivot {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.choosePivot"%go.
 
-Definition reverseRange : go_string := "sort.reverseRange"%go.
+Definition order2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.order2"%go.
 
-Definition swapRange : go_string := "sort.swapRange"%go.
+Definition median {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.median"%go.
 
-Definition stable : go_string := "sort.stable"%go.
+Definition medianAdjacent {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.medianAdjacent"%go.
 
-Definition symMerge : go_string := "sort.symMerge"%go.
+Definition reverseRange {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.reverseRange"%go.
 
-Definition rotate : go_string := "sort.rotate"%go.
+Definition swapRange {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.swapRange"%go.
 
-Definition Interface : go.type := go.Named "sort.Interface"%go [].
+Definition stable {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.stable"%go.
 
-Definition sortedHint : go.type := go.Named "sort.sortedHint"%go [].
+Definition symMerge {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.symMerge"%go.
 
-Definition lessSwap : go.type := go.Named "sort.lessSwap"%go [].
+Definition rotate {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.rotate"%go.
 
-Definition reverse : go.type := go.Named "sort.reverse"%go [].
+#[global] Instance info' : PkgInfo sort.sort := 
+{|
+  pkg_imported_pkgs := []
+|}.
 
-Definition IntSlice : go.type := go.Named "sort.IntSlice"%go [].
+Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition Float64Slice : go.type := go.Named "sort.Float64Slice"%go [].
-
-Definition StringSlice : go.type := go.Named "sort.StringSlice"%go [].
-
-#[global] Instance info' : PkgInfo sort.sort :=
-  {|
-    pkg_imported_pkgs := [];
-  |}.
-
-Axiom _'init : val.
-
-Definition initialize' : val :=
+Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init sort.sort (λ: <>,
       exception_do (do:  #())
       ).
 
-Class Interface_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-}.
-
-Class sortedHint_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class xorshift_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] xorshift'ptr_Next_unfold :: MethodUnfold (go.PointerType (xorshift)) "Next" (xorshift__Nextⁱᵐᵖˡ);
-}.
-
-Class lessSwap_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class reverse_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class IntSlice_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class Float64Slice_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class StringSlice_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] Interface_instance :: Interface_Assumptions;
   #[global] sortedHint_instance :: sortedHint_Assumptions;
   #[global] xorshift_instance :: xorshift_Assumptions;
-  #[global] lessSwap_instance :: lessSwap_Assumptions;
-  #[global] reverse_instance :: reverse_Assumptions;
-  #[global] IntSlice_instance :: IntSlice_Assumptions;
-  #[global] Float64Slice_instance :: Float64Slice_Assumptions;
-  #[global] StringSlice_instance :: StringSlice_Assumptions;
   #[global] Search_unfold :: FuncUnfold Search [] (Searchⁱᵐᵖˡ);
   #[global] Find_unfold :: FuncUnfold Find [] (Findⁱᵐᵖˡ);
   #[global] SearchInts_unfold :: FuncUnfold SearchInts [] (SearchIntsⁱᵐᵖˡ);
 }.
-
-End code.
 End sort.

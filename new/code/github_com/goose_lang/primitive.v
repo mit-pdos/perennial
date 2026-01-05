@@ -8,78 +8,64 @@ Definition primitive : go_string := "github.com/goose-lang/primitive".
 
 Module primitive.
 
-Section code.
-Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Definition UInt64Get {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/primitive.UInt64Get"%go.
 
+Definition UInt32Get {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/primitive.UInt32Get"%go.
 
-Definition UInt64Get : go_string := "github.com/goose-lang/primitive.UInt64Get"%go.
+Definition UInt64Put {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/primitive.UInt64Put"%go.
 
-Definition UInt32Get : go_string := "github.com/goose-lang/primitive.UInt32Get"%go.
+Definition UInt32Put {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/primitive.UInt32Put"%go.
 
-Definition UInt64Put : go_string := "github.com/goose-lang/primitive.UInt64Put"%go.
+Definition RandomUint64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/primitive.RandomUint64"%go.
 
-Definition UInt32Put : go_string := "github.com/goose-lang/primitive.UInt32Put"%go.
+Definition UInt64ToString {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/primitive.UInt64ToString"%go.
 
-Definition RandomUint64 : go_string := "github.com/goose-lang/primitive.RandomUint64"%go.
+Definition Linearize {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/primitive.Linearize"%go.
 
-Definition UInt64ToString : go_string := "github.com/goose-lang/primitive.UInt64ToString"%go.
+Definition Assume {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/primitive.Assume"%go.
 
-Definition Linearize : go_string := "github.com/goose-lang/primitive.Linearize"%go.
+Definition Assert {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/primitive.Assert"%go.
 
-Definition Assume : go_string := "github.com/goose-lang/primitive.Assume"%go.
+Definition Exit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/primitive.Exit"%go.
 
-Definition Assert : go_string := "github.com/goose-lang/primitive.Assert"%go.
+Definition TimeNow {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/primitive.TimeNow"%go.
 
-Definition Exit : go_string := "github.com/goose-lang/primitive.Exit"%go.
+Definition Sleep {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/primitive.Sleep"%go.
 
-Definition TimeNow : go_string := "github.com/goose-lang/primitive.TimeNow"%go.
+Definition AssumeNoStringOverflow {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/primitive.AssumeNoStringOverflow"%go.
 
-Definition Sleep : go_string := "github.com/goose-lang/primitive.Sleep"%go.
+Class Mutex_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Mutex_zero_val  :: go.GoZeroValEq Mutex Mutex.t;
+  #[global] Mutex'ptr_Lock_unfold :: MethodUnfold (go.PointerType (Mutex)) "Lock" (Mutex__Lockⁱᵐᵖˡ);
+  #[global] Mutex'ptr_Unlock_unfold :: MethodUnfold (go.PointerType (Mutex)) "Unlock" (Mutex__Unlockⁱᵐᵖˡ);
+}.
 
-Definition AssumeNoStringOverflow : go_string := "github.com/goose-lang/primitive.AssumeNoStringOverflow"%go.
+Axiom prophIdⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom prophIdⁱᵐᵖˡ : go.type.
+Axiom ProphId : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom ProphId : go.type.
+Definition NewProph {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/primitive.NewProph"%go.
 
-Definition NewProph : go_string := "github.com/goose-lang/primitive.NewProph"%go.
+#[global] Instance info' : PkgInfo primitive.primitive := 
+{|
+  pkg_imported_pkgs := []
+|}.
 
-Definition Mutex : go.type := go.Named "github.com/goose-lang/primitive.Mutex"%go [].
+Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition prophId : go.type := go.Named "github.com/goose-lang/primitive.prophId"%go [].
-
-#[global] Instance info' : PkgInfo primitive.primitive :=
-  {|
-    pkg_imported_pkgs := [];
-  |}.
-
-Axiom _'init : val.
-
-Definition initialize' : val :=
+Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init primitive.primitive (λ: <>,
       exception_do (do:  #())
       ).
 
-Class Mutex_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] Mutex'ptr_Lock_unfold :: MethodUnfold (go.PointerType (Mutex)) "Lock" (Mutex__Lockⁱᵐᵖˡ);
-  #[global] Mutex'ptr_Unlock_unfold :: MethodUnfold (go.PointerType (Mutex)) "Unlock" (Mutex__Unlockⁱᵐᵖˡ);
-}.
-
-Class prophId_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Mutex_instance :: Mutex_Assumptions;
-  #[global] prophId_instance :: prophId_Assumptions;
   #[global] UInt64Put_unfold :: FuncUnfold UInt64Put [] (UInt64Putⁱᵐᵖˡ);
   #[global] RandomUint64_unfold :: FuncUnfold RandomUint64 [] (RandomUint64ⁱᵐᵖˡ);
   #[global] Assume_unfold :: FuncUnfold Assume [] (Assumeⁱᵐᵖˡ);
   #[global] AssumeNoStringOverflow_unfold :: FuncUnfold AssumeNoStringOverflow [] (AssumeNoStringOverflowⁱᵐᵖˡ);
 }.
-
-End code.
 End primitive.

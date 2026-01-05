@@ -5,184 +5,136 @@ Definition reflectlite : go_string := "internal/reflectlite".
 
 Module reflectlite.
 
-Section code.
-Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Definition Swapper {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/reflectlite.Swapper"%go.
 
+Axiom Typeⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition Swapper : go_string := "internal/reflectlite.Swapper"%go.
+Axiom Kind : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom Typeⁱᵐᵖˡ : go.type.
+Axiom Ptr : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom Kind : go.type.
+Axiom Interface : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom Ptr : val.
+Axiom Slice : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom Interface : val.
+Axiom String : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom Slice : val.
+Axiom Struct : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom String : val.
+Axiom nameOff : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom Struct : val.
+Axiom typeOff : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom nameOff : go.type.
+Axiom textOff : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom typeOff : go.type.
+Axiom rtypeⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom textOff : go.type.
+Axiom uncommonType : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom rtypeⁱᵐᵖˡ : go.type.
+Axiom arrayType : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom uncommonType : go.type.
+Axiom chanType : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom arrayType : go.type.
+Axiom funcType : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom chanType : go.type.
+Axiom interfaceType : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom funcType : go.type.
+Axiom ptrType : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom interfaceType : go.type.
+Axiom sliceType : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom ptrType : go.type.
+Axiom structType : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom sliceType : go.type.
+Axiom nameⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom structType : go.type.
+Definition pkgPath {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/reflectlite.pkgPath"%go.
 
-Axiom nameⁱᵐᵖˡ : go.type.
+Definition resolveNameOff {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/reflectlite.resolveNameOff"%go.
 
-Definition pkgPath : go_string := "internal/reflectlite.pkgPath"%go.
+Definition resolveTypeOff {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/reflectlite.resolveTypeOff"%go.
 
-Definition resolveNameOff : go_string := "internal/reflectlite.resolveNameOff"%go.
+Definition toRType {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/reflectlite.toRType"%go.
 
-Definition resolveTypeOff : go_string := "internal/reflectlite.resolveTypeOff"%go.
+Definition elem {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/reflectlite.elem"%go.
 
-Definition toRType : go_string := "internal/reflectlite.toRType"%go.
+Definition add {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/reflectlite.add"%go.
 
-Definition elem : go_string := "internal/reflectlite.elem"%go.
+Definition TypeOf {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/reflectlite.TypeOf"%go.
 
-Definition add : go_string := "internal/reflectlite.add"%go.
+Definition implements {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/reflectlite.implements"%go.
 
-Definition TypeOf : go_string := "internal/reflectlite.TypeOf"%go.
+Definition directlyAssignable {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/reflectlite.directlyAssignable"%go.
 
-Definition implements : go_string := "internal/reflectlite.implements"%go.
+Definition haveIdenticalType {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/reflectlite.haveIdenticalType"%go.
 
-Definition directlyAssignable : go_string := "internal/reflectlite.directlyAssignable"%go.
+Definition haveIdenticalUnderlyingType {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/reflectlite.haveIdenticalUnderlyingType"%go.
 
-Definition haveIdenticalType : go_string := "internal/reflectlite.haveIdenticalType"%go.
+Definition toType {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/reflectlite.toType"%go.
 
-Definition haveIdenticalUnderlyingType : go_string := "internal/reflectlite.haveIdenticalUnderlyingType"%go.
+Axiom Valueⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition toType : go_string := "internal/reflectlite.toType"%go.
+Axiom flagⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom Valueⁱᵐᵖˡ : go.type.
+Axiom flagKindWidth : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom flagⁱᵐᵖˡ : go.type.
+Axiom flagKindMask : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom flagKindWidth : Z.
+Axiom flagStickyRO : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom flagKindMask : val.
+Axiom flagEmbedRO : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom flagStickyRO : val.
+Axiom flagIndir : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom flagEmbedRO : val.
+Axiom flagAddr : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom flagIndir : val.
+Axiom flagMethod : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom flagAddr : val.
+Axiom flagMethodShift : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom flagMethod : val.
+Axiom flagRO : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom flagMethodShift : Z.
+Definition packEface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/reflectlite.packEface"%go.
 
-Axiom flagRO : val.
+Definition unpackEface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/reflectlite.unpackEface"%go.
 
-Definition packEface : go_string := "internal/reflectlite.packEface"%go.
+Axiom ValueErrorⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition unpackEface : go_string := "internal/reflectlite.unpackEface"%go.
+Definition methodName {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/reflectlite.methodName"%go.
 
-Axiom ValueErrorⁱᵐᵖˡ : go.type.
+Definition valueInterface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/reflectlite.valueInterface"%go.
 
-Definition methodName : go_string := "internal/reflectlite.methodName"%go.
+Definition chanlen {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/reflectlite.chanlen"%go.
 
-Definition valueInterface : go_string := "internal/reflectlite.valueInterface"%go.
+Definition maplen {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/reflectlite.maplen"%go.
 
-Definition chanlen : go_string := "internal/reflectlite.chanlen"%go.
+Definition unsafe_New {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/reflectlite.unsafe_New"%go.
 
-Definition maplen : go_string := "internal/reflectlite.maplen"%go.
+Definition ValueOf {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/reflectlite.ValueOf"%go.
 
-Definition unsafe_New : go_string := "internal/reflectlite.unsafe_New"%go.
+Definition arrayAt {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/reflectlite.arrayAt"%go.
 
-Definition ValueOf : go_string := "internal/reflectlite.ValueOf"%go.
+Definition ifaceE2I {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/reflectlite.ifaceE2I"%go.
 
-Definition arrayAt : go_string := "internal/reflectlite.arrayAt"%go.
+Definition typedmemmove {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/reflectlite.typedmemmove"%go.
 
-Definition ifaceE2I : go_string := "internal/reflectlite.ifaceE2I"%go.
+Definition escapes {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/reflectlite.escapes"%go.
 
-Definition typedmemmove : go_string := "internal/reflectlite.typedmemmove"%go.
+Definition dummy {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/reflectlite.dummy"%go.
 
-Definition escapes : go_string := "internal/reflectlite.escapes"%go.
+#[global] Instance info' : PkgInfo reflectlite.reflectlite := 
+{|
+  pkg_imported_pkgs := []
+|}.
 
-Definition dummy : go_string := "internal/reflectlite.dummy"%go.
+Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition Type' : go.type := go.Named "internal/reflectlite.Type"%go [].
-
-Definition rtype : go.type := go.Named "internal/reflectlite.rtype"%go [].
-
-Definition name : go.type := go.Named "internal/reflectlite.name"%go [].
-
-Definition Value : go.type := go.Named "internal/reflectlite.Value"%go [].
-
-Definition flag : go.type := go.Named "internal/reflectlite.flag"%go [].
-
-Definition ValueError : go.type := go.Named "internal/reflectlite.ValueError"%go [].
-
-#[global] Instance info' : PkgInfo reflectlite.reflectlite :=
-  {|
-    pkg_imported_pkgs := [];
-  |}.
-
-Axiom _'init : val.
-
-Definition initialize' : val :=
+Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init reflectlite.reflectlite (λ: <>,
       exception_do (do:  #())
       ).
 
-Class Type_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
 }.
-
-Class rtype_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class name_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class Value_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class flag_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class ValueError_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] Type_instance :: Type_Assumptions;
-  #[global] rtype_instance :: rtype_Assumptions;
-  #[global] name_instance :: name_Assumptions;
-  #[global] Value_instance :: Value_Assumptions;
-  #[global] flag_instance :: flag_Assumptions;
-  #[global] ValueError_instance :: ValueError_Assumptions;
-}.
-
-End code.
 End reflectlite.

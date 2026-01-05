@@ -5,344 +5,314 @@ Definition big : go_string := "math/big".
 
 Module big.
 
-Section code.
-Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom _Accuracy_name : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
 
+Definition _Accuracy_index {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big._Accuracy_index"%go.
 
-Axiom _Accuracy_name : go_string.
+Axiom _Accuracy_index'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition _Accuracy_index : go_string := "math/big._Accuracy_index"%go.
+Axiom Wordⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom _Accuracy_index'init : val.
+Axiom _S : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom Wordⁱᵐᵖˡ : go.type.
+Axiom _W : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _S : Z.
+Axiom _B : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _W : Z.
+Axiom _M : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom _B : Z.
+Definition mulWW {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.mulWW"%go.
 
-Axiom _M : Z.
+Definition mulAddWWW_g {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.mulAddWWW_g"%go.
 
-Definition mulWW : go_string := "math/big.mulWW"%go.
+Definition nlz {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.nlz"%go.
 
-Definition mulAddWWW_g : go_string := "math/big.mulAddWWW_g"%go.
+Definition addVV_g {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.addVV_g"%go.
 
-Definition nlz : go_string := "math/big.nlz"%go.
+Definition subVV_g {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.subVV_g"%go.
 
-Definition addVV_g : go_string := "math/big.addVV_g"%go.
+Definition addVW {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.addVW"%go.
 
-Definition subVV_g : go_string := "math/big.subVV_g"%go.
+Definition addVW_ref {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.addVW_ref"%go.
 
-Definition addVW : go_string := "math/big.addVW"%go.
+Definition subVW {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.subVW"%go.
 
-Definition addVW_ref : go_string := "math/big.addVW_ref"%go.
+Definition subVW_ref {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.subVW_ref"%go.
 
-Definition subVW : go_string := "math/big.subVW"%go.
+Definition lshVU_g {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.lshVU_g"%go.
 
-Definition subVW_ref : go_string := "math/big.subVW_ref"%go.
+Definition rshVU_g {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.rshVU_g"%go.
 
-Definition lshVU_g : go_string := "math/big.lshVU_g"%go.
+Definition mulAddVWW_g {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.mulAddVWW_g"%go.
 
-Definition rshVU_g : go_string := "math/big.rshVU_g"%go.
+Definition addMulVVWW_g {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.addMulVVWW_g"%go.
 
-Definition mulAddVWW_g : go_string := "math/big.mulAddVWW_g"%go.
+Definition divWW {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.divWW"%go.
 
-Definition addMulVVWW_g : go_string := "math/big.addMulVVWW_g"%go.
+Definition reciprocalWord {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.reciprocalWord"%go.
 
-Definition divWW : go_string := "math/big.divWW"%go.
+Definition hasADX {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.hasADX"%go.
 
-Definition reciprocalWord : go_string := "math/big.reciprocalWord"%go.
+Axiom hasADX'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition hasADX : go_string := "math/big.hasADX"%go.
+Definition addVV {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.addVV"%go.
 
-Axiom hasADX'init : val.
+Definition subVV {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.subVV"%go.
 
-Definition addVV : go_string := "math/big.addVV"%go.
+Definition shlVU {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.shlVU"%go.
 
-Definition subVV : go_string := "math/big.subVV"%go.
+Definition lshVU {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.lshVU"%go.
 
-Definition shlVU : go_string := "math/big.shlVU"%go.
+Definition rshVU {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.rshVU"%go.
 
-Definition lshVU : go_string := "math/big.lshVU"%go.
+Definition mulAddVWW {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.mulAddVWW"%go.
 
-Definition rshVU : go_string := "math/big.rshVU"%go.
+Definition addMulVVW {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.addMulVVW"%go.
 
-Definition mulAddVWW : go_string := "math/big.mulAddVWW"%go.
+Definition addMulVVWW {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.addMulVVWW"%go.
 
-Definition addMulVVW : go_string := "math/big.addMulVVW"%go.
+Axiom decimalⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition addMulVVWW : go_string := "math/big.addMulVVWW"%go.
+Axiom maxShift : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom decimalⁱᵐᵖˡ : go.type.
+Definition rsh {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.rsh"%go.
 
-Axiom maxShift : Z.
+Definition appendZeros {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.appendZeros"%go.
 
-Definition rsh : go_string := "math/big.rsh"%go.
+Definition shouldRoundUp {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.shouldRoundUp"%go.
 
-Definition appendZeros : go_string := "math/big.appendZeros"%go.
+Definition trim {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.trim"%go.
 
-Definition shouldRoundUp : go_string := "math/big.shouldRoundUp"%go.
+Axiom debugFloat : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition trim : go_string := "math/big.trim"%go.
+Axiom Floatⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom debugFloat : val.
+Axiom ErrNaNⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom Floatⁱᵐᵖˡ : go.type.
+Definition NewFloat {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.NewFloat"%go.
 
-Axiom ErrNaNⁱᵐᵖˡ : go.type.
+Axiom MaxExp : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition NewFloat : go_string := "math/big.NewFloat"%go.
+Axiom MinExp : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom MaxExp : Z.
+Axiom MaxPrec : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom MinExp : Z.
+Axiom formⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom MaxPrec : Z.
+Axiom zero : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom formⁱᵐᵖˡ : go.type.
+Axiom finite : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom zero : val.
+Axiom inf : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom finite : val.
+Axiom RoundingModeⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom inf : val.
+Axiom ToNearestEven : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom RoundingModeⁱᵐᵖˡ : go.type.
+Axiom ToNearestAway : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom ToNearestEven : val.
+Axiom ToZero : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom ToNearestAway : val.
+Axiom AwayFromZero : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom ToZero : val.
+Axiom ToNegativeInf : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom AwayFromZero : val.
+Axiom ToPositiveInf : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom ToNegativeInf : val.
+Axiom Accuracyⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom ToPositiveInf : val.
+Axiom Below : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom Accuracyⁱᵐᵖˡ : go.type.
+Axiom Exact : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom Below : val.
+Axiom Above : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom Exact : val.
+Definition makeAcc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.makeAcc"%go.
 
-Axiom Above : val.
+Definition fnorm {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.fnorm"%go.
 
-Definition makeAcc : go_string := "math/big.makeAcc"%go.
+Definition msb32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.msb32"%go.
 
-Definition fnorm : go_string := "math/big.fnorm"%go.
+Definition msb64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.msb64"%go.
 
-Definition msb32 : go_string := "math/big.msb32"%go.
+Definition validateBinaryOperands {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.validateBinaryOperands"%go.
 
-Definition msb64 : go_string := "math/big.msb64"%go.
+Definition floatZero {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.floatZero"%go.
 
-Definition validateBinaryOperands : go_string := "math/big.validateBinaryOperands"%go.
+Definition pow5tab {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.pow5tab"%go.
 
-Definition floatZero : go_string := "math/big.floatZero"%go.
+Axiom pow5tab'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition pow5tab : go_string := "math/big.pow5tab"%go.
+Definition ParseFloat {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.ParseFloat"%go.
 
-Axiom pow5tab'init : val.
+Axiom floatGobVersion : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition ParseFloat : go_string := "math/big.ParseFloat"%go.
+Definition roundShortest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.roundShortest"%go.
 
-Axiom floatGobVersion : val.
+Definition fmtE {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.fmtE"%go.
 
-Definition roundShortest : go_string := "math/big.roundShortest"%go.
+Definition fmtF {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.fmtF"%go.
 
-Definition fmtE : go_string := "math/big.fmtE"%go.
+Axiom Intⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition fmtF : go_string := "math/big.fmtF"%go.
+Definition intOne {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.intOne"%go.
 
-Axiom Intⁱᵐᵖˡ : go.type.
+Axiom intOne'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition intOne : go_string := "math/big.intOne"%go.
+Definition NewInt {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.NewInt"%go.
 
-Axiom intOne'init : val.
+Definition low32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.low32"%go.
 
-Definition NewInt : go_string := "math/big.NewInt"%go.
+Definition low64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.low64"%go.
 
-Definition low32 : go_string := "math/big.low32"%go.
+Definition lehmerSimulate {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.lehmerSimulate"%go.
 
-Definition low64 : go_string := "math/big.low64"%go.
+Definition lehmerUpdate {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.lehmerUpdate"%go.
 
-Definition lehmerSimulate : go_string := "math/big.lehmerSimulate"%go.
+Definition mulW {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.mulW"%go.
 
-Definition lehmerUpdate : go_string := "math/big.lehmerUpdate"%go.
+Definition euclidUpdate {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.euclidUpdate"%go.
 
-Definition mulW : go_string := "math/big.mulW"%go.
+Definition Jacobi {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.Jacobi"%go.
 
-Definition euclidUpdate : go_string := "math/big.euclidUpdate"%go.
+Definition writeMultiple {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.writeMultiple"%go.
 
-Definition Jacobi : go_string := "math/big.Jacobi"%go.
+Definition scanSign {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.scanSign"%go.
 
-Definition writeMultiple : go_string := "math/big.writeMultiple"%go.
+Axiom byteReaderⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition scanSign : go_string := "math/big.scanSign"%go.
+Axiom intGobVersion : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom byteReaderⁱᵐᵖˡ : go.type.
+Axiom natⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom intGobVersion : val.
+Definition natOne {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.natOne"%go.
 
-Axiom natⁱᵐᵖˡ : go.type.
+Axiom natOne'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition natOne : go_string := "math/big.natOne"%go.
+Definition natTwo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.natTwo"%go.
 
-Axiom natOne'init : val.
+Axiom natTwo'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition natTwo : go_string := "math/big.natTwo"%go.
+Definition natFive {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.natFive"%go.
 
-Axiom natTwo'init : val.
+Axiom natFive'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition natFive : go_string := "math/big.natFive"%go.
+Definition natTen {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.natTen"%go.
 
-Axiom natFive'init : val.
+Axiom natTen'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition natTen : go_string := "math/big.natTen"%go.
+Definition alias {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.alias"%go.
 
-Axiom natTen'init : val.
+Definition addTo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.addTo"%go.
 
-Definition alias : go_string := "math/big.alias"%go.
+Axiom stackⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition addTo : go_string := "math/big.addTo"%go.
+Definition stackPool {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.stackPool"%go.
 
-Axiom stackⁱᵐᵖˡ : go.type.
+Definition getStack {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.getStack"%go.
 
-Definition stackPool : go_string := "math/big.stackPool"%go.
+Definition same {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.same"%go.
 
-Definition getStack : go_string := "math/big.getStack"%go.
+Definition bigEndianWord {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.bigEndianWord"%go.
 
-Definition same : go_string := "math/big.same"%go.
+Axiom digits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
 
-Definition bigEndianWord : go_string := "math/big.bigEndianWord"%go.
+Axiom MaxBase : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom digits : go_string.
+Axiom maxBaseSmall : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom MaxBase : Z.
+Definition maxPow {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.maxPow"%go.
 
-Axiom maxBaseSmall : Z.
+Definition pow {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.pow"%go.
 
-Definition maxPow : go_string := "math/big.maxPow"%go.
+Definition errNoDigits {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.errNoDigits"%go.
 
-Definition pow : go_string := "math/big.pow"%go.
+Axiom errNoDigits'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition errNoDigits : go_string := "math/big.errNoDigits"%go.
+Definition errInvalSep {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.errInvalSep"%go.
 
-Axiom errNoDigits'init : val.
+Axiom errInvalSep'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition errInvalSep : go_string := "math/big.errInvalSep"%go.
+Definition leafSize {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.leafSize"%go.
 
-Axiom errInvalSep'init : val.
+Axiom leafSize'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition leafSize : go_string := "math/big.leafSize"%go.
+Axiom divisorⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom leafSize'init : val.
+Definition cacheBase10 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.cacheBase10"%go.
 
-Axiom divisorⁱᵐᵖˡ : go.type.
+Definition divisors {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.divisors"%go.
 
-Definition cacheBase10 : go_string := "math/big.cacheBase10"%go.
+Definition divWVW {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.divWVW"%go.
 
-Definition divisors : go_string := "math/big.divisors"%go.
+Definition greaterThan {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.greaterThan"%go.
 
-Definition divWVW : go_string := "math/big.divWVW"%go.
+Definition divRecursiveThreshold {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.divRecursiveThreshold"%go.
 
-Definition greaterThan : go_string := "math/big.greaterThan"%go.
+Axiom divRecursiveThreshold'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition divRecursiveThreshold : go_string := "math/big.divRecursiveThreshold"%go.
+Definition karatsubaThreshold {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.karatsubaThreshold"%go.
 
-Axiom divRecursiveThreshold'init : val.
+Axiom karatsubaThreshold'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition karatsubaThreshold : go_string := "math/big.karatsubaThreshold"%go.
+Definition basicSqrThreshold {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.basicSqrThreshold"%go.
 
-Axiom karatsubaThreshold'init : val.
+Axiom basicSqrThreshold'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition basicSqrThreshold : go_string := "math/big.basicSqrThreshold"%go.
+Definition karatsubaSqrThreshold {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.karatsubaSqrThreshold"%go.
 
-Axiom basicSqrThreshold'init : val.
+Axiom karatsubaSqrThreshold'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition karatsubaSqrThreshold : go_string := "math/big.karatsubaSqrThreshold"%go.
+Definition basicSqr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.basicSqr"%go.
 
-Axiom karatsubaSqrThreshold'init : val.
+Definition basicMul {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.basicMul"%go.
 
-Definition basicSqr : go_string := "math/big.basicSqr"%go.
+Definition karatsuba {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.karatsuba"%go.
 
-Definition basicMul : go_string := "math/big.basicMul"%go.
+Definition karatsubaSqr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.karatsubaSqr"%go.
 
-Definition karatsuba : go_string := "math/big.karatsuba"%go.
+Definition ifmt {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.ifmt"%go.
 
-Definition karatsubaSqr : go_string := "math/big.karatsubaSqr"%go.
+Definition trace {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.trace"%go.
 
-Definition ifmt : go_string := "math/big.ifmt"%go.
+Axiom Ratⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition trace : go_string := "math/big.trace"%go.
+Definition NewRat {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.NewRat"%go.
 
-Axiom Ratⁱᵐᵖˡ : go.type.
+Definition quotToFloat32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.quotToFloat32"%go.
 
-Definition NewRat : go_string := "math/big.NewRat"%go.
+Definition quotToFloat64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.quotToFloat64"%go.
 
-Definition quotToFloat32 : go_string := "math/big.quotToFloat32"%go.
+Definition mulDenom {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.mulDenom"%go.
 
-Definition quotToFloat64 : go_string := "math/big.quotToFloat64"%go.
+Definition ratTok {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.ratTok"%go.
 
-Definition mulDenom : go_string := "math/big.mulDenom"%go.
+Definition ratZero {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.ratZero"%go.
 
-Definition ratTok : go_string := "math/big.ratTok"%go.
+Definition scanExponent {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.scanExponent"%go.
 
-Definition ratZero : go_string := "math/big.ratZero"%go.
+Axiom ratGobVersion : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition scanExponent : go_string := "math/big.scanExponent"%go.
+Axiom _RoundingMode_name : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
 
-Axiom ratGobVersion : val.
+Definition _RoundingMode_index {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big._RoundingMode_index"%go.
 
-Axiom _RoundingMode_name : go_string.
+Axiom _RoundingMode_index'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition _RoundingMode_index : go_string := "math/big._RoundingMode_index"%go.
+Definition threeOnce {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.threeOnce"%go.
 
-Axiom _RoundingMode_index'init : val.
+Definition three {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.three"%go.
 
-Definition threeOnce : go_string := "math/big.threeOnce"%go.
+Definition newFloat {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big.newFloat"%go.
 
-Definition three : go_string := "math/big.three"%go.
+#[global] Instance info' : PkgInfo big.big := 
+{|
+  pkg_imported_pkgs := []
+|}.
 
-Definition newFloat : go_string := "math/big.newFloat"%go.
+Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition Word : go.type := go.Named "math/big.Word"%go [].
-
-Definition decimal : go.type := go.Named "math/big.decimal"%go [].
-
-Definition Float : go.type := go.Named "math/big.Float"%go [].
-
-Definition ErrNaN : go.type := go.Named "math/big.ErrNaN"%go [].
-
-Definition form : go.type := go.Named "math/big.form"%go [].
-
-Definition RoundingMode : go.type := go.Named "math/big.RoundingMode"%go [].
-
-Definition Accuracy : go.type := go.Named "math/big.Accuracy"%go [].
-
-Definition Int : go.type := go.Named "math/big.Int"%go [].
-
-Definition byteReader : go.type := go.Named "math/big.byteReader"%go [].
-
-Definition nat : go.type := go.Named "math/big.nat"%go [].
-
-Definition stack : go.type := go.Named "math/big.stack"%go [].
-
-Definition divisor : go.type := go.Named "math/big.divisor"%go [].
-
-Definition Rat : go.type := go.Named "math/big.Rat"%go [].
-
-#[global] Instance info' : PkgInfo big.big :=
-  {|
-    pkg_imported_pkgs := [];
-  |}.
-
-Axiom _'init : val.
-
-Definition initialize' : val :=
+Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init big.big (λ: <>,
       exception_do (do:  (_Accuracy_index'init #());;;
@@ -368,74 +338,7 @@ Definition initialize' : val :=
       do:  (_RoundingMode_index'init #()))
       ).
 
-Class Word_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
 }.
-
-Class decimal_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class Float_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class ErrNaN_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class form_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class RoundingMode_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class Accuracy_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class Int_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class byteReader_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class nat_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class stack_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class divisor_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class Rat_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] Word_instance :: Word_Assumptions;
-  #[global] decimal_instance :: decimal_Assumptions;
-  #[global] Float_instance :: Float_Assumptions;
-  #[global] ErrNaN_instance :: ErrNaN_Assumptions;
-  #[global] form_instance :: form_Assumptions;
-  #[global] RoundingMode_instance :: RoundingMode_Assumptions;
-  #[global] Accuracy_instance :: Accuracy_Assumptions;
-  #[global] Int_instance :: Int_Assumptions;
-  #[global] byteReader_instance :: byteReader_Assumptions;
-  #[global] nat_instance :: nat_Assumptions;
-  #[global] stack_instance :: stack_Assumptions;
-  #[global] divisor_instance :: divisor_Assumptions;
-  #[global] Rat_instance :: Rat_Assumptions;
-}.
-
-End code.
 End big.

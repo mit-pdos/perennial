@@ -7,111 +7,98 @@ Definition log : go_string := "log".
 
 Module log.
 
-Section code.
-Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-
-
 (* the date in the local time zone: 2009/01/23 *)
-Definition Ldate : Z := 1.
+Definition Ldate {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Z := 1.
 
 (* the time in the local time zone: 01:23:23 *)
-Definition Ltime : Z := 2.
+Definition Ltime {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Z := 2.
 
-Axiom Lmicroseconds : Z.
+Axiom Lmicroseconds : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom Llongfile : Z.
+Axiom Llongfile : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom Lshortfile : Z.
+Axiom Lshortfile : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom LUTC : Z.
+Axiom LUTC : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom Lmsgprefix : Z.
+Axiom Lmsgprefix : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
 (* initial values for the standard logger *)
-Definition LstdFlags : Z := 3.
+Definition LstdFlags {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Z := 3.
 
-Axiom Loggerⁱᵐᵖˡ : go.type.
+Axiom Loggerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition New : go_string := "log.New"%go.
+Definition New {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "log.New"%go.
 
-Definition std : go_string := "log.std"%go.
+Definition std {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "log.std"%go.
 
-Axiom std'init : val.
+Axiom std'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition Default : go_string := "log.Default"%go.
+Definition Default {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "log.Default"%go.
 
-Definition itoa : go_string := "log.itoa"%go.
+Definition itoa {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "log.itoa"%go.
 
-Definition formatHeader : go_string := "log.formatHeader"%go.
+Definition formatHeader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "log.formatHeader"%go.
 
-Definition bufferPool : go_string := "log.bufferPool"%go.
+Definition bufferPool {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "log.bufferPool"%go.
 
-Axiom bufferPool'init : val.
+Axiom bufferPool'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition getBuffer : go_string := "log.getBuffer"%go.
+Definition getBuffer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "log.getBuffer"%go.
 
-Definition putBuffer : go_string := "log.putBuffer"%go.
+Definition putBuffer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "log.putBuffer"%go.
 
-Definition init : go_string := "log.init"%go.
+Definition init {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "log.init"%go.
 
-Definition SetOutput : go_string := "log.SetOutput"%go.
+Definition SetOutput {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "log.SetOutput"%go.
 
-Definition Flags : go_string := "log.Flags"%go.
+Definition Flags {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "log.Flags"%go.
 
-Definition SetFlags : go_string := "log.SetFlags"%go.
+Definition SetFlags {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "log.SetFlags"%go.
 
-Definition Prefix : go_string := "log.Prefix"%go.
+Definition Prefix {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "log.Prefix"%go.
 
-Definition SetPrefix : go_string := "log.SetPrefix"%go.
+Definition SetPrefix {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "log.SetPrefix"%go.
 
-Definition Writer : go_string := "log.Writer"%go.
+Definition Writer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "log.Writer"%go.
 
-Definition Print : go_string := "log.Print"%go.
+Definition Print {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "log.Print"%go.
 
-Definition Printf : go_string := "log.Printf"%go.
+Definition Printf {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "log.Printf"%go.
 
-Definition Println : go_string := "log.Println"%go.
+Definition Println {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "log.Println"%go.
 
-Definition Fatal : go_string := "log.Fatal"%go.
+Definition Fatal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "log.Fatal"%go.
 
-Definition Fatalf : go_string := "log.Fatalf"%go.
+Definition Fatalf {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "log.Fatalf"%go.
 
-Definition Fatalln : go_string := "log.Fatalln"%go.
+Definition Fatalln {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "log.Fatalln"%go.
 
-Definition Panic : go_string := "log.Panic"%go.
+Definition Panic {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "log.Panic"%go.
 
-Definition Panicf : go_string := "log.Panicf"%go.
+Definition Panicf {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "log.Panicf"%go.
 
-Definition Panicln : go_string := "log.Panicln"%go.
+Definition Panicln {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "log.Panicln"%go.
 
-Definition Output : go_string := "log.Output"%go.
+Definition Output {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "log.Output"%go.
 
-Definition Logger : go.type := go.Named "log.Logger"%go [].
+#[global] Instance info' : PkgInfo log.log := 
+{|
+  pkg_imported_pkgs := []
+|}.
 
-#[global] Instance info' : PkgInfo log.log :=
-  {|
-    pkg_imported_pkgs := [];
-  |}.
+Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _'init : val.
-
-Definition initialize' : val :=
+Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init log.log (λ: <>,
       exception_do (do:  (std'init #());;;
       do:  (bufferPool'init #()))
       ).
 
-Class Logger_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-}.
-
-Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] Logger_instance :: Logger_Assumptions;
   #[global] Printf_unfold :: FuncUnfold Printf [] (Printfⁱᵐᵖˡ);
   #[global] Println_unfold :: FuncUnfold Println [] (Printlnⁱᵐᵖˡ);
 }.
-
-End code.
 End log.

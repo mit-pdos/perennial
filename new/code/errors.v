@@ -5,67 +5,47 @@ Definition errors : go_string := "errors".
 
 Module errors.
 
-Section code.
-Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Definition New {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "errors.New"%go.
 
+Axiom errorStringⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition New : go_string := "errors.New"%go.
+Definition ErrUnsupported {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "errors.ErrUnsupported"%go.
 
-Axiom errorStringⁱᵐᵖˡ : go.type.
+Axiom ErrUnsupported'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition ErrUnsupported : go_string := "errors.ErrUnsupported"%go.
+Definition Join {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "errors.Join"%go.
 
-Axiom ErrUnsupported'init : val.
+Axiom joinErrorⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition Join : go_string := "errors.Join"%go.
+Definition Unwrap {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "errors.Unwrap"%go.
 
-Axiom joinErrorⁱᵐᵖˡ : go.type.
+Definition Is {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "errors.Is"%go.
 
-Definition Unwrap : go_string := "errors.Unwrap"%go.
+Definition is' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "errors.is"%go.
 
-Definition Is : go_string := "errors.Is"%go.
+Definition As {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "errors.As"%go.
 
-Definition is' : go_string := "errors.is"%go.
+Definition as' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "errors.as"%go.
 
-Definition As : go_string := "errors.As"%go.
+Definition errorType {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "errors.errorType"%go.
 
-Definition as' : go_string := "errors.as"%go.
+Axiom errorType'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition errorType : go_string := "errors.errorType"%go.
+#[global] Instance info' : PkgInfo errors.errors := 
+{|
+  pkg_imported_pkgs := []
+|}.
 
-Axiom errorType'init : val.
+Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition errorString : go.type := go.Named "errors.errorString"%go [].
-
-Definition joinError : go.type := go.Named "errors.joinError"%go [].
-
-#[global] Instance info' : PkgInfo errors.errors :=
-  {|
-    pkg_imported_pkgs := [];
-  |}.
-
-Axiom _'init : val.
-
-Definition initialize' : val :=
+Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init errors.errors (λ: <>,
       exception_do (do:  (ErrUnsupported'init #());;;
       do:  (errorType'init #()))
       ).
 
-Class errorString_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
 }.
-
-Class joinError_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] errorString_instance :: errorString_Assumptions;
-  #[global] joinError_instance :: joinError_Assumptions;
-}.
-
-End code.
 End errors.

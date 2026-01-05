@@ -3,81 +3,61 @@
 From New.golang Require Import defn.
 Require Export New.trusted_code.github_com.goose_lang.primitive.disk.
 Import disk.
+From New Require Import disk_prelude.
 Definition disk : go_string := "github.com/goose-lang/primitive/disk".
 
-From New Require Import disk_prelude.
 Module disk.
 
-Section code.
+Axiom Block : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
+Class Disk_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Disk_zero_val  :: go.GoZeroValEq Disk Disk.t;
+}.
 
-Axiom Block : go.type.
+Definition implicitDisk {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/primitive/disk.implicitDisk"%go.
 
-Definition implicitDisk : go_string := "github.com/goose-lang/primitive/disk.implicitDisk"%go.
+Definition Init {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/primitive/disk.Init"%go.
 
-Definition Init : go_string := "github.com/goose-lang/primitive/disk.Init"%go.
+Definition Get {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/primitive/disk.Get"%go.
 
-Definition Get : go_string := "github.com/goose-lang/primitive/disk.Get"%go.
+Definition Read {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/primitive/disk.Read"%go.
 
-Definition Read : go_string := "github.com/goose-lang/primitive/disk.Read"%go.
+Definition Write {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/primitive/disk.Write"%go.
 
-Definition Write : go_string := "github.com/goose-lang/primitive/disk.Write"%go.
+Definition Size {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/primitive/disk.Size"%go.
 
-Definition Size : go_string := "github.com/goose-lang/primitive/disk.Size"%go.
+Definition Barrier {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/primitive/disk.Barrier"%go.
 
-Definition Barrier : go_string := "github.com/goose-lang/primitive/disk.Barrier"%go.
+Axiom FileDiskⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom FileDiskⁱᵐᵖˡ : go.type.
+Definition NewFileDisk {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/primitive/disk.NewFileDisk"%go.
 
-Definition NewFileDisk : go_string := "github.com/goose-lang/primitive/disk.NewFileDisk"%go.
+Axiom MemDiskⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom MemDiskⁱᵐᵖˡ : go.type.
+Definition NewMemDisk {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/primitive/disk.NewMemDisk"%go.
 
-Definition NewMemDisk : go_string := "github.com/goose-lang/primitive/disk.NewMemDisk"%go.
+#[global] Instance info' : PkgInfo disk.disk := 
+{|
+  pkg_imported_pkgs := []
+|}.
 
-Definition Disk : go.type := go.Named "github.com/goose-lang/primitive/disk.Disk"%go [].
+Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition FileDisk : go.type := go.Named "github.com/goose-lang/primitive/disk.FileDisk"%go [].
-
-Definition MemDisk : go.type := go.Named "github.com/goose-lang/primitive/disk.MemDisk"%go [].
-
-#[global] Instance info' : PkgInfo disk.disk :=
-  {|
-    pkg_imported_pkgs := [];
-  |}.
-
-Axiom _'init : val.
-
-Definition initialize' : val :=
+Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init disk.disk (λ: <>,
       exception_do (do:  (_'init #());;;
       do:  (_'init #()))
       ).
 
-Class Disk_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class FileDisk_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class MemDisk_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Disk_instance :: Disk_Assumptions;
-  #[global] FileDisk_instance :: FileDisk_Assumptions;
-  #[global] MemDisk_instance :: MemDisk_Assumptions;
   #[global] Get_unfold :: FuncUnfold Get [] (Getⁱᵐᵖˡ);
   #[global] Read_unfold :: FuncUnfold Read [] (Readⁱᵐᵖˡ);
   #[global] Write_unfold :: FuncUnfold Write [] (Writeⁱᵐᵖˡ);
   #[global] Size_unfold :: FuncUnfold Size [] (Sizeⁱᵐᵖˡ);
   #[global] Barrier_unfold :: FuncUnfold Barrier [] (Barrierⁱᵐᵖˡ);
 }.
-
-End code.
 End disk.

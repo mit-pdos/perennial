@@ -2,38 +2,33 @@
 Require Export New.code.github_com.goose_lang.goose.testdata.examples.unittest.
 
 From New.golang Require Import defn.
+From New Require Import disk_prelude.
 Definition externalglobals : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/externalglobals".
 
-From New Require Import disk_prelude.
 Module externalglobals.
 
-Section code.
-
-
-Definition f : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/externalglobals.f"%go.
+Definition f {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/externalglobals.f"%go.
 
 (* go: g.go:7:6 *)
-Definition fⁱᵐᵖˡ : val :=
+Definition fⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "$r0" := #(W64 11) in
     do:  ((GlobalVarAddr unittest.GlobalX #()) <-[go.uint64] "$r0");;;
     return: #()).
 
-#[global] Instance info' : PkgInfo externalglobals.externalglobals :=
-  {|
-    pkg_imported_pkgs := [code.github_com.goose_lang.goose.testdata.examples.unittest.unittest];
-  |}.
+#[global] Instance info' : PkgInfo externalglobals.externalglobals := 
+{|
+  pkg_imported_pkgs := [code.github_com.goose_lang.goose.testdata.examples.unittest.unittest]
+|}.
 
-Definition initialize' : val :=
+Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init externalglobals.externalglobals (λ: <>,
       exception_do (do:  (unittest.initialize' #()))
       ).
 
-Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] f_unfold :: FuncUnfold f [] (fⁱᵐᵖˡ);
 }.
-
-End code.
 End externalglobals.

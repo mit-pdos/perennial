@@ -5,320 +5,306 @@ Definition strconv : go_string := "strconv".
 
 Module strconv.
 
-Section code.
-Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Definition ParseBool {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.ParseBool"%go.
 
+Definition FormatBool {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.FormatBool"%go.
 
-Definition ParseBool : go_string := "strconv.ParseBool"%go.
+Definition AppendBool {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.AppendBool"%go.
 
-Definition FormatBool : go_string := "strconv.FormatBool"%go.
+Axiom fnParseComplex : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
 
-Definition AppendBool : go_string := "strconv.AppendBool"%go.
+Definition convErr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.convErr"%go.
 
-Axiom fnParseComplex : go_string.
+Definition ParseComplex {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.ParseComplex"%go.
 
-Definition convErr : go_string := "strconv.convErr"%go.
+Definition optimize {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.optimize"%go.
 
-Definition ParseComplex : go_string := "strconv.ParseComplex"%go.
+Axiom optimize'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition optimize : go_string := "strconv.optimize"%go.
+Definition commonPrefixLenIgnoreCase {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.commonPrefixLenIgnoreCase"%go.
 
-Axiom optimize'init : val.
+Definition special {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.special"%go.
 
-Definition commonPrefixLenIgnoreCase : go_string := "strconv.commonPrefixLenIgnoreCase"%go.
+Definition readFloat {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.readFloat"%go.
 
-Definition special : go_string := "strconv.special"%go.
+Definition powtab {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.powtab"%go.
 
-Definition readFloat : go_string := "strconv.readFloat"%go.
+Axiom powtab'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition powtab : go_string := "strconv.powtab"%go.
+Definition float64pow10 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.float64pow10"%go.
 
-Axiom powtab'init : val.
+Axiom float64pow10'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition float64pow10 : go_string := "strconv.float64pow10"%go.
+Definition float32pow10 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.float32pow10"%go.
 
-Axiom float64pow10'init : val.
+Axiom float32pow10'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition float32pow10 : go_string := "strconv.float32pow10"%go.
+Definition atof64exact {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.atof64exact"%go.
 
-Axiom float32pow10'init : val.
+Definition atof32exact {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.atof32exact"%go.
 
-Definition atof64exact : go_string := "strconv.atof64exact"%go.
+Definition atofHex {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.atofHex"%go.
 
-Definition atof32exact : go_string := "strconv.atof32exact"%go.
+Axiom fnParseFloat : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
 
-Definition atofHex : go_string := "strconv.atofHex"%go.
+Definition atof32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.atof32"%go.
 
-Axiom fnParseFloat : go_string.
+Definition atof64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.atof64"%go.
 
-Definition atof32 : go_string := "strconv.atof32"%go.
+Definition ParseFloat {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.ParseFloat"%go.
 
-Definition atof64 : go_string := "strconv.atof64"%go.
+Definition parseFloatPrefix {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.parseFloatPrefix"%go.
 
-Definition ParseFloat : go_string := "strconv.ParseFloat"%go.
+Definition lower {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.lower"%go.
 
-Definition parseFloatPrefix : go_string := "strconv.parseFloatPrefix"%go.
+Definition ErrRange {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.ErrRange"%go.
 
-Definition lower : go_string := "strconv.lower"%go.
+Axiom ErrRange'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition ErrRange : go_string := "strconv.ErrRange"%go.
+Definition ErrSyntax {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.ErrSyntax"%go.
 
-Axiom ErrRange'init : val.
+Axiom ErrSyntax'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition ErrSyntax : go_string := "strconv.ErrSyntax"%go.
+Axiom NumErrorⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom ErrSyntax'init : val.
+Definition syntaxError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.syntaxError"%go.
 
-Axiom NumErrorⁱᵐᵖˡ : go.type.
+Definition rangeError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.rangeError"%go.
 
-Definition syntaxError : go_string := "strconv.syntaxError"%go.
+Definition baseError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.baseError"%go.
 
-Definition rangeError : go_string := "strconv.rangeError"%go.
+Definition bitSizeError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.bitSizeError"%go.
 
-Definition baseError : go_string := "strconv.baseError"%go.
+Axiom intSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition bitSizeError : go_string := "strconv.bitSizeError"%go.
+Axiom IntSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom intSize : Z.
+Axiom maxUint64 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom IntSize : Z.
+Definition ParseUint {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.ParseUint"%go.
 
-Axiom maxUint64 : Z.
+Definition ParseInt {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.ParseInt"%go.
 
-Definition ParseUint : go_string := "strconv.ParseUint"%go.
+Definition Atoi {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.Atoi"%go.
 
-Definition ParseInt : go_string := "strconv.ParseInt"%go.
+Definition underscoreOK {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.underscoreOK"%go.
 
-Definition Atoi : go_string := "strconv.Atoi"%go.
+Definition index {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.index"%go.
 
-Definition underscoreOK : go_string := "strconv.underscoreOK"%go.
+Definition FormatComplex {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.FormatComplex"%go.
 
-Definition index : go_string := "strconv.index"%go.
+Axiom decimalⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition FormatComplex : go_string := "strconv.FormatComplex"%go.
+Definition digitZero {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.digitZero"%go.
 
-Axiom decimalⁱᵐᵖˡ : go.type.
+Definition trim {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.trim"%go.
 
-Definition digitZero : go_string := "strconv.digitZero"%go.
+Axiom uintSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition trim : go_string := "strconv.trim"%go.
+Axiom maxShift : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom uintSize : Z.
+Definition rightShift {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.rightShift"%go.
 
-Axiom maxShift : Z.
+Axiom leftCheatⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition rightShift : go_string := "strconv.rightShift"%go.
+Definition leftcheats {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.leftcheats"%go.
 
-Axiom leftCheatⁱᵐᵖˡ : go.type.
+Axiom leftcheats'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition leftcheats : go_string := "strconv.leftcheats"%go.
+Definition prefixIsLessThan {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.prefixIsLessThan"%go.
 
-Axiom leftcheats'init : val.
+Definition leftShift {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.leftShift"%go.
 
-Definition prefixIsLessThan : go_string := "strconv.prefixIsLessThan"%go.
+Definition shouldRoundUp {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.shouldRoundUp"%go.
 
-Definition leftShift : go_string := "strconv.leftShift"%go.
+Definition eiselLemire64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.eiselLemire64"%go.
 
-Definition shouldRoundUp : go_string := "strconv.shouldRoundUp"%go.
+Definition eiselLemire32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.eiselLemire32"%go.
 
-Definition eiselLemire64 : go_string := "strconv.eiselLemire64"%go.
+Axiom detailedPowersOfTenMinExp10 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition eiselLemire32 : go_string := "strconv.eiselLemire32"%go.
+Axiom detailedPowersOfTenMaxExp10 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Axiom detailedPowersOfTenMinExp10 : Z.
+Definition detailedPowersOfTen {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.detailedPowersOfTen"%go.
 
-Axiom detailedPowersOfTenMaxExp10 : Z.
+Axiom detailedPowersOfTen'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition detailedPowersOfTen : go_string := "strconv.detailedPowersOfTen"%go.
+Axiom floatInfoⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom detailedPowersOfTen'init : val.
+Definition float32info {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.float32info"%go.
 
-Axiom floatInfoⁱᵐᵖˡ : go.type.
+Axiom float32info'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition float32info : go_string := "strconv.float32info"%go.
+Definition float64info {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.float64info"%go.
 
-Axiom float32info'init : val.
+Axiom float64info'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition float64info : go_string := "strconv.float64info"%go.
+Definition FormatFloat {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.FormatFloat"%go.
 
-Axiom float64info'init : val.
+Definition AppendFloat {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.AppendFloat"%go.
 
-Definition FormatFloat : go_string := "strconv.FormatFloat"%go.
+Definition genericFtoa {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.genericFtoa"%go.
 
-Definition AppendFloat : go_string := "strconv.AppendFloat"%go.
+Definition bigFtoa {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.bigFtoa"%go.
 
-Definition genericFtoa : go_string := "strconv.genericFtoa"%go.
+Definition formatDigits {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.formatDigits"%go.
 
-Definition bigFtoa : go_string := "strconv.bigFtoa"%go.
+Definition roundShortest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.roundShortest"%go.
 
-Definition formatDigits : go_string := "strconv.formatDigits"%go.
+Axiom decimalSliceⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Definition roundShortest : go_string := "strconv.roundShortest"%go.
+Definition fmtE {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.fmtE"%go.
 
-Axiom decimalSliceⁱᵐᵖˡ : go.type.
+Definition fmtF {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.fmtF"%go.
 
-Definition fmtE : go_string := "strconv.fmtE"%go.
+Definition fmtB {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.fmtB"%go.
 
-Definition fmtF : go_string := "strconv.fmtF"%go.
+Definition fmtX {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.fmtX"%go.
 
-Definition fmtB : go_string := "strconv.fmtB"%go.
+Definition ryuFtoaFixed32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.ryuFtoaFixed32"%go.
 
-Definition fmtX : go_string := "strconv.fmtX"%go.
+Definition ryuFtoaFixed64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.ryuFtoaFixed64"%go.
 
-Definition ryuFtoaFixed32 : go_string := "strconv.ryuFtoaFixed32"%go.
+Definition uint64pow10 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.uint64pow10"%go.
 
-Definition ryuFtoaFixed64 : go_string := "strconv.ryuFtoaFixed64"%go.
+Axiom uint64pow10'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition uint64pow10 : go_string := "strconv.uint64pow10"%go.
+Definition formatDecimal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.formatDecimal"%go.
 
-Axiom uint64pow10'init : val.
+Definition ryuFtoaShortest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.ryuFtoaShortest"%go.
 
-Definition formatDecimal : go_string := "strconv.formatDecimal"%go.
+Definition mulByLog2Log10 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.mulByLog2Log10"%go.
 
-Definition ryuFtoaShortest : go_string := "strconv.ryuFtoaShortest"%go.
+Definition mulByLog10Log2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.mulByLog10Log2"%go.
 
-Definition mulByLog2Log10 : go_string := "strconv.mulByLog2Log10"%go.
+Definition computeBounds {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.computeBounds"%go.
 
-Definition mulByLog10Log2 : go_string := "strconv.mulByLog10Log2"%go.
+Definition ryuDigits {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.ryuDigits"%go.
 
-Definition computeBounds : go_string := "strconv.computeBounds"%go.
+Definition ryuDigits32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.ryuDigits32"%go.
 
-Definition ryuDigits : go_string := "strconv.ryuDigits"%go.
+Definition mult64bitPow10 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.mult64bitPow10"%go.
 
-Definition ryuDigits32 : go_string := "strconv.ryuDigits32"%go.
+Definition mult128bitPow10 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.mult128bitPow10"%go.
 
-Definition mult64bitPow10 : go_string := "strconv.mult64bitPow10"%go.
+Definition divisibleByPower5 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.divisibleByPower5"%go.
 
-Definition mult128bitPow10 : go_string := "strconv.mult128bitPow10"%go.
+Definition divmod1e9 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.divmod1e9"%go.
 
-Definition divisibleByPower5 : go_string := "strconv.divisibleByPower5"%go.
+Definition isPrint16 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.isPrint16"%go.
 
-Definition divmod1e9 : go_string := "strconv.divmod1e9"%go.
+Axiom isPrint16'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition isPrint16 : go_string := "strconv.isPrint16"%go.
+Definition isNotPrint16 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.isNotPrint16"%go.
 
-Axiom isPrint16'init : val.
+Axiom isNotPrint16'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition isNotPrint16 : go_string := "strconv.isNotPrint16"%go.
+Definition isPrint32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.isPrint32"%go.
 
-Axiom isNotPrint16'init : val.
+Axiom isPrint32'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition isPrint32 : go_string := "strconv.isPrint32"%go.
+Definition isNotPrint32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.isNotPrint32"%go.
 
-Axiom isPrint32'init : val.
+Axiom isNotPrint32'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition isNotPrint32 : go_string := "strconv.isNotPrint32"%go.
+Definition isGraphic {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.isGraphic"%go.
 
-Axiom isNotPrint32'init : val.
+Axiom isGraphic'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition isGraphic : go_string := "strconv.isGraphic"%go.
+Axiom fastSmalls : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom isGraphic'init : val.
+Definition FormatUint {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.FormatUint"%go.
 
-Axiom fastSmalls : val.
+Definition FormatInt {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.FormatInt"%go.
 
-Definition FormatUint : go_string := "strconv.FormatUint"%go.
+Definition Itoa {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.Itoa"%go.
 
-Definition FormatInt : go_string := "strconv.FormatInt"%go.
+Definition AppendInt {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.AppendInt"%go.
 
-Definition Itoa : go_string := "strconv.Itoa"%go.
+Definition AppendUint {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.AppendUint"%go.
 
-Definition AppendInt : go_string := "strconv.AppendInt"%go.
+Definition small {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.small"%go.
 
-Definition AppendUint : go_string := "strconv.AppendUint"%go.
+Axiom nSmalls : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
-Definition small : go_string := "strconv.small"%go.
+Axiom smallsString : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
 
-Axiom nSmalls : Z.
+Axiom host32bit : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom smallsString : go_string.
+Axiom digits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
 
-Axiom host32bit : val.
+Definition formatBits {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.formatBits"%go.
 
-Axiom digits : go_string.
+Definition isPowerOfTwo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.isPowerOfTwo"%go.
 
-Definition formatBits : go_string := "strconv.formatBits"%go.
+Axiom lowerhex : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
 
-Definition isPowerOfTwo : go_string := "strconv.isPowerOfTwo"%go.
+Axiom upperhex : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
 
-Axiom lowerhex : go_string.
+Definition contains {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.contains"%go.
 
-Axiom upperhex : go_string.
+Definition quoteWith {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.quoteWith"%go.
 
-Definition contains : go_string := "strconv.contains"%go.
+Definition quoteRuneWith {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.quoteRuneWith"%go.
 
-Definition quoteWith : go_string := "strconv.quoteWith"%go.
+Definition appendQuotedWith {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.appendQuotedWith"%go.
 
-Definition quoteRuneWith : go_string := "strconv.quoteRuneWith"%go.
+Definition appendQuotedRuneWith {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.appendQuotedRuneWith"%go.
 
-Definition appendQuotedWith : go_string := "strconv.appendQuotedWith"%go.
+Definition appendEscapedRune {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.appendEscapedRune"%go.
 
-Definition appendQuotedRuneWith : go_string := "strconv.appendQuotedRuneWith"%go.
+Definition Quote {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.Quote"%go.
 
-Definition appendEscapedRune : go_string := "strconv.appendEscapedRune"%go.
+Definition AppendQuote {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.AppendQuote"%go.
 
-Definition Quote : go_string := "strconv.Quote"%go.
+Definition QuoteToASCII {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.QuoteToASCII"%go.
 
-Definition AppendQuote : go_string := "strconv.AppendQuote"%go.
+Definition AppendQuoteToASCII {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.AppendQuoteToASCII"%go.
 
-Definition QuoteToASCII : go_string := "strconv.QuoteToASCII"%go.
+Definition QuoteToGraphic {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.QuoteToGraphic"%go.
 
-Definition AppendQuoteToASCII : go_string := "strconv.AppendQuoteToASCII"%go.
+Definition AppendQuoteToGraphic {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.AppendQuoteToGraphic"%go.
 
-Definition QuoteToGraphic : go_string := "strconv.QuoteToGraphic"%go.
+Definition QuoteRune {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.QuoteRune"%go.
 
-Definition AppendQuoteToGraphic : go_string := "strconv.AppendQuoteToGraphic"%go.
+Definition AppendQuoteRune {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.AppendQuoteRune"%go.
 
-Definition QuoteRune : go_string := "strconv.QuoteRune"%go.
+Definition QuoteRuneToASCII {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.QuoteRuneToASCII"%go.
 
-Definition AppendQuoteRune : go_string := "strconv.AppendQuoteRune"%go.
+Definition AppendQuoteRuneToASCII {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.AppendQuoteRuneToASCII"%go.
 
-Definition QuoteRuneToASCII : go_string := "strconv.QuoteRuneToASCII"%go.
+Definition QuoteRuneToGraphic {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.QuoteRuneToGraphic"%go.
 
-Definition AppendQuoteRuneToASCII : go_string := "strconv.AppendQuoteRuneToASCII"%go.
+Definition AppendQuoteRuneToGraphic {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.AppendQuoteRuneToGraphic"%go.
 
-Definition QuoteRuneToGraphic : go_string := "strconv.QuoteRuneToGraphic"%go.
+Definition CanBackquote {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.CanBackquote"%go.
 
-Definition AppendQuoteRuneToGraphic : go_string := "strconv.AppendQuoteRuneToGraphic"%go.
+Definition unhex {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.unhex"%go.
 
-Definition CanBackquote : go_string := "strconv.CanBackquote"%go.
+Definition UnquoteChar {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.UnquoteChar"%go.
 
-Definition unhex : go_string := "strconv.unhex"%go.
+Definition QuotedPrefix {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.QuotedPrefix"%go.
 
-Definition UnquoteChar : go_string := "strconv.UnquoteChar"%go.
+Definition Unquote {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.Unquote"%go.
 
-Definition QuotedPrefix : go_string := "strconv.QuotedPrefix"%go.
+Definition unquote {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.unquote"%go.
 
-Definition Unquote : go_string := "strconv.Unquote"%go.
+Definition bsearch {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.bsearch"%go.
 
-Definition unquote : go_string := "strconv.unquote"%go.
+Definition IsPrint {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.IsPrint"%go.
 
-Definition bsearch : go_string := "strconv.bsearch"%go.
+Definition IsGraphic {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.IsGraphic"%go.
 
-Definition IsPrint : go_string := "strconv.IsPrint"%go.
+Definition isInGraphicList {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.isInGraphicList"%go.
 
-Definition IsGraphic : go_string := "strconv.IsGraphic"%go.
+#[global] Instance info' : PkgInfo strconv.strconv := 
+{|
+  pkg_imported_pkgs := []
+|}.
 
-Definition isInGraphicList : go_string := "strconv.isInGraphicList"%go.
+Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition NumError : go.type := go.Named "strconv.NumError"%go [].
-
-Definition decimal : go.type := go.Named "strconv.decimal"%go [].
-
-Definition leftCheat : go.type := go.Named "strconv.leftCheat"%go [].
-
-Definition floatInfo : go.type := go.Named "strconv.floatInfo"%go [].
-
-Definition decimalSlice : go.type := go.Named "strconv.decimalSlice"%go [].
-
-#[global] Instance info' : PkgInfo strconv.strconv :=
-  {|
-    pkg_imported_pkgs := [];
-  |}.
-
-Axiom _'init : val.
-
-Definition initialize' : val :=
+Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init strconv.strconv (λ: <>,
       exception_do (do:  (optimize'init #());;;
@@ -339,34 +325,7 @@ Definition initialize' : val :=
       do:  (isGraphic'init #()))
       ).
 
-Class NumError_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
 }.
-
-Class decimal_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class leftCheat_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class floatInfo_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class decimalSlice_Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-}.
-
-Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] NumError_instance :: NumError_Assumptions;
-  #[global] decimal_instance :: decimal_Assumptions;
-  #[global] leftCheat_instance :: leftCheat_Assumptions;
-  #[global] floatInfo_instance :: floatInfo_Assumptions;
-  #[global] decimalSlice_instance :: decimalSlice_Assumptions;
-}.
-
-End code.
 End strconv.
