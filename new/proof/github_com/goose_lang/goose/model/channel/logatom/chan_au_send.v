@@ -18,6 +18,10 @@ Local Set Default Proof Using "Type package_sem core_sem pre_sem array_sem slice
 Context `{!chanG Σ V}.
 Context `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}.
 
+(* FIXME *)
+Instance offer_state_into_val : IntoValTyped channel.offerState.t channel.offerState.
+Admitted.
+
 Lemma wp_NewChannel (cap: Z) :
   0 ≤ cap < 2^63 ->
   {{{ True }}}
@@ -30,9 +34,21 @@ Lemma wp_NewChannel (cap: Z) :
 Proof.
   intros Hcap.
   wp_start. wp_auto.
-  (* FIXME intovaltyped instance *)
+  (* FIXME: intovaltyped instance *)
   wp_if_destruct.
   {
+    rewrite go.composite_literal_underlying.
+    (* FIXME: composite literal; ideally, don't want to unfold to struct type literal.
+       Will require reasoning principles. *)
+
+    (* Could get rid of go.composite_literal_underlying, and instead have each
+       unfolding be w.r.t. [to_underlying]. *)
+
+    (* FIXME: underlying type assumptions *)
+    replace (to_underlying $ channel.Channel t) with (channel.Channelⁱᵐᵖˡ t) by admit.
+    rewrite go.composite_literal_struct /=.
+    (* FIXME: struct set/get assumptions. *)
+
     assert (cap > 0) by word.
     rewrite -wp_fupd.
     wp_alloc mu as "mu".
