@@ -10,23 +10,27 @@ From Perennial.algebra Require Import ghost_var.
 
 Section atomic_specs.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!chanG Σ V}.
-Context `{!IntoVal V}.
-Context `{!IntoValTyped V t}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
+Context {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}
+  {array_sem : go.ArraySemantics} {slice_sem : go.SliceSemantics}.
+Context {package_sem : channel.Assumptions}.
+Local Set Default Proof Using "Type package_sem core_sem pre_sem array_sem slice_sem".
 
-Lemma wp_NewChannel (cap: Z) {B: BoundedTypeSize t} :
+Context `{!chanG Σ V}.
+Context `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}.
+
+Lemma wp_NewChannel (cap: Z) :
   0 ≤ cap < 2^63 ->
   {{{ True }}}
-    channel.NewChannelⁱᵐᵖˡ #t #(W64 cap)
+    channel.NewChannelⁱᵐᵖˡ t #(W64 cap)
   {{{ (ch: loc) (γ: chan_names), RET #ch;
-      is_channel ch γ ∗
+      is_channel (t:=t) ch γ ∗
       ⌜chan_cap γ = cap⌝ ∗
       own_channel ch (if decide (cap = 0) then chan_rep.Idle else chan_rep.Buffered []) γ
   }}}.
 Proof.
   intros Hcap.
-  wp_start. wp_call. wp_auto.
+  wp_start. wp_auto.
+  (* FIXME intovaltyped instance *)
   wp_if_destruct.
   {
     assert (cap > 0) by word.

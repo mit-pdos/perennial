@@ -23,7 +23,6 @@ Inductive t (V : Type) : Type :=
 .
 #[global] Instance witness V : Inhabited (t V) := populate!.
 
-
 Global Arguments Buffered {V}.
 Global Arguments Idle {V}.
 Global Arguments SndPending {V}.
@@ -48,13 +47,13 @@ Inductive chan_phys_state (V : Type) : Type :=
 | Closed (draining: list V)  (* Closed channel *)
 .
 
-  Global Arguments Idle {V}.
-  Global Arguments SndWait {V}.
-  Global Arguments RcvWait {V}.
-  Global Arguments SndDone {V}.
-  Global Arguments RcvDone {V}.
-  Global Arguments Closed {V}.
-  Global Arguments Buffered {V}.
+Global Arguments Idle {V}.
+Global Arguments SndWait {V}.
+Global Arguments RcvWait {V}.
+Global Arguments SndDone {V}.
+Global Arguments RcvDone {V}.
+Global Arguments Closed {V}.
+Global Arguments Buffered {V}.
 
 (** The offer protocol coordinates handshakes between senders and receivers
     in unbuffered channels. An "offer" represents a pending operation that
@@ -66,8 +65,8 @@ Inductive offer_lock (V : Type) : Type :=
 | Rcv                        (* Receiver has made an offer *)
 .
 
-  Global Arguments Snd {V}.
-  Global Arguments Rcv {V}.
+Global Arguments Snd {V}.
+Global Arguments Rcv {V}.
 
 (** Ghost names for tracking various aspects of channel state in the logic *)
 Record chan_names := {
@@ -98,14 +97,12 @@ Proof. solve_inG. Qed.
 
 Section base.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context
-  {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}
+Context {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}
   {array_sem : go.ArraySemantics} {slice_sem : go.SliceSemantics}.
 Local Set Default Proof Using "Type core_sem pre_sem array_sem slice_sem".
 
 Context `{!chanG Σ V}.
 Context `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}.
-
 
 (* Remove the later from a saved prop if we have later credits. *)
 Lemma saved_prop_lc_agree γ dq1 dq2 P Q :
@@ -117,16 +114,8 @@ Proof.
   iModIntro. done.
 Qed.
 
-(* FIXME: move higher level. *)
-Notation "ptr .[ t , field ]" := (struct_field_ref t field ptr)
-  (at level 1, format "ptr .[ t ,  field ]").
-
 (** Maps physical channel states to their heap representations.
     Each state corresponds to specific field values in the Go struct. *)
-(* TODO gemini change
-        `ch.[channel.Channel t, "XXX"] YYY` into
-        `ch.[channel.Channel.ty t :: "XXX"] YYY` into
- *)
 Definition chan_phys (ch: loc) (s: chan_phys_state V) : iProp Σ :=
   match s with
     | Closed [] =>
@@ -583,7 +572,8 @@ Definition send_au_fast ch (v : V) γ Φ Φnotready : iProp Σ :=
              end) ∧
   Φnotready.
 
-(* Special case update that only works if the channel is known to be buffered. *)
+(* Special case update that only works if the channel is known to be buffered.
+   This is only an illustrative example. Proofs and specs should always use [send_au_slow] *)
 Definition buffered_send_au ch (v : V) γ Φ : iProp Σ :=
   |={⊤,∅}=>
     ▷∃ s, "Hoc" ∷ own_channel ch s γ ∗

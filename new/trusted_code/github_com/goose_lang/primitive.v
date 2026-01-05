@@ -1,7 +1,6 @@
 From New.golang.defn Require Import core slice lock.
 
 Module primitive.
-Module prophId. Definition id : go_string := "github.com/goose-lang/goose.prophId". End prophId.
 Section code.
   Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 
@@ -83,6 +82,8 @@ this in GooseLang, so we just loop. *)
 
   Definition Mutexⁱᵐᵖˡ := go.bool.
 
+  Definition Mutex := go.Named "github.com/goose-lang/primitive.Mutex"%go [].
+
   Definition Mutex__Lockⁱᵐᵖˡ : val :=
     λ: "m" <>, lock.lock "m".
 
@@ -90,4 +91,7 @@ this in GooseLang, so we just loop. *)
     λ: "m" <>, lock.unlock "m".
 
 End code.
+
+Module Mutex. Definition t := bool. End Mutex.
+
 End primitive.
