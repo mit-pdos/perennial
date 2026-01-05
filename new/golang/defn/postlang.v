@@ -296,6 +296,11 @@ Class BasicIntoValInj :=
     #[global] interface_into_val_inj :: Inj eq eq (into_val (V:=interface.t));
   }.
 
+Class Underlying t tunder  `{!GoSemanticsFunctions} : Prop :=
+  {
+    to_underlying_unfold : to_underlying t = tunder
+  }.
+
 (** [go.CoreSemantics] defines the basics of when a GoContext is valid,
     excluding predeclared types (including primitives), arrays, slice, map, and
     channels, each of which is in their own file.
@@ -333,7 +338,7 @@ Class CoreSemantics :=
   #[global] into_val_unfold_loc :: IntoValUnfold _ (λ x, LitV $ LitLoc x);
   #[global] into_val_unfold_unit :: IntoValUnfold unit (λ _, LitV LitUnit);
 
-  go_zero_val_underlying t : go_zero_val t = go_zero_val (to_underlying t);
+  go_zero_val_underlying `{!Underlying t t'} : go_zero_val t = go_zero_val t';
   #[global] go_zero_val_eq_pointer t :: GoZeroValEq (go.PointerType t) loc;
   #[global] go_zero_val_eq_function sig :: GoZeroValEq (go.FunctionType sig) func.t;
   #[global] go_zero_val_eq_slice elem_type :: GoZeroValEq (go.SliceType elem_type) slice.t;
@@ -341,7 +346,7 @@ Class CoreSemantics :=
 
   #[global] core_comparison_sem :: CoreComparisonSemantics;
 
-  alloc_underlying t : alloc t = alloc (to_underlying t);
+  alloc_underlying `{!Underlying t t'} : alloc t = alloc t';
   alloc_primitive t (H : is_primitive t) : alloc t = (λ: "v", ref_one "v")%V;
   alloc_struct fds :
     alloc (go.StructType fds) =
@@ -360,7 +365,7 @@ Class CoreSemantics :=
           ) #() fds ;;
         "l")%V;
 
-  load_underlying t : load t = load (to_underlying t);
+  load_underlying `{!Underlying t t'} : load t = load t';
   load_primitive t (H : is_primitive t) : load t = (λ: "l", Read "l")%V;
   load_struct fds :
     load (go.StructType fds) =
@@ -375,7 +380,7 @@ Class CoreSemantics :=
                 StructFieldSet (go.StructType fds) field_name (struct_so_far, field_val)
          ) (go_zero_val (go.StructType fds)) fds)%V;
 
-  store_underlying t : store t = store (to_underlying t);
+  store_underlying `{!Underlying t t'} : store t = store t';
   store_primitive t (H : is_primitive t) : store t = (λ: "l" "v", "l" <- "v")%V;
   store_struct fds :
     store (go.StructType fds) =
@@ -391,9 +396,9 @@ Class CoreSemantics :=
                 GoStore field_type (field_addr, field_val)
          ) (go_zero_val (go.StructType fds)) fds)%V;
 
-  struct_field_ref_underlying t : struct_field_ref t = struct_field_ref (to_underlying t);
-  index_ref_underlying t : index_ref t = index_ref (to_underlying t);
-  index_underlying t : index t = index (to_underlying t);
+  struct_field_ref_underlying `{!Underlying t t'} : struct_field_ref t = struct_field_ref t';
+  index_ref_underlying `{!Underlying t t'} : index_ref t = index_ref t';
+  index_underlying `{!Underlying t t'} : index t = index t';
 
   #[global] index_ref_step t (j : w64) (v : val) ::
     IsGoStepPureDet (IndexRef t) (v, #j)%V (index_ref t (sint.Z j) v);
@@ -401,55 +406,37 @@ Class CoreSemantics :=
   #[global] index_step t (j : w64) (v : val) ::
     IsGoStepPureDet (Index t) (v, #j)%V (index t (sint.Z j) v);
 
-  composite_literal_underlying t :
-    composite_literal t = composite_literal (to_underlying t);
-
   composite_literal_pointer elem_type l :
-    composite_literal (go.PointerType elem_type) l  =
+    composite_literal (go.PointerType elem_type) l =
     GoAlloc elem_type (CompositeLiteral elem_type l);
 
-  composite_literal_struct fds l :
-    composite_literal (go.StructType fds) (LiteralValue l)  =
+  composite_literal_struct `{!Underlying t (go.StructType fds)} l :
+    composite_literal t (LiteralValue l) =
     match l with
     | [] => go_zero_val $ go.StructType fds
     | KeyedElement None _ :: _ =>
         (* unkeyed struct literal *)
         foldl (λ v '(fd, ke),
-                 let (field_name, field_type) :=
-                   match fd with
-                   | go.FieldDecl n t | go.EmbeddedField n t => pair n t
-                   end in
+                 let field_name := match fd with go.FieldDecl n _ | go.EmbeddedField n _ => n end in
                  match ke with
                  | KeyedElement None (ElementExpression e) =>
-                     StructFieldSet (go.StructType fds) field_name (v, e)%E
-                 | KeyedElement None (ElementLiteralValue el) =>
-                     (* FIXME: this is not explicitly mentioned as OK by the
-                        spec, and the Go compiler does not support it. Should
-                        delete and simplify. *)
-                     StructFieldSet (go.StructType fds) field_name
-                       (v, (CompositeLiteral field_type (LiteralValue el)))%E
-                       (* NOTE: if field_type is `*A`, then this will be
-                           *A {...}, which the semantics can interpret as &A{...} *)
+                     StructFieldSet t field_name (v, e)%E
                  | _ => Panic "invalid Go code"
                  end
-          ) (Val $ go_zero_val $ go.StructType fds) (zip fds l)
+          ) (Val $ go_zero_val t) (zip fds l)
     | KeyedElement (Some _) _ :: _ =>
         (* keyed struct literal *)
         foldl (λ v ke,
                  match ke with
                  | KeyedElement (Some (KeyField field_name)) (ElementExpression e) =>
-                     StructFieldSet (go.StructType fds) field_name (v, e)%E
-                 | KeyedElement (Some (KeyField field_name)) (ElementLiteralValue el) =>
-                     (* FIXME: same as above. *)
-                     StructFieldSet (go.StructType fds) field_name
-                       (v, (CompositeLiteral (struct_field_type field_name fds) (LiteralValue el)))%E
+                     StructFieldSet t field_name (v, e)%E
                  | _ => Panic "invalid Go code"
                  end
-          ) (Val $ go_zero_val $ go.StructType fds) l
+          ) (Val $ go_zero_val t) l
     end;
 
-  to_underlying_not_named t :
-    to_underlying t = match t with | go.Named _ _ => to_underlying t | _ => t end;
+  #[global] underlying_not_named t ::
+    Underlying t (match t with | go.Named _ _ => to_underlying t | _ => t end) | 1000;
 }.
 
 End defs.
