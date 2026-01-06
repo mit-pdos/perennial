@@ -617,14 +617,12 @@ End goose_lang.
 End interface.
 
 Module array.
-Section goose_lang.
-Inductive t (ty : go.type) (V : Type) (n : Z) :=
-| mk (arr : list V) : t ty V n.
-Definition arr {ty V n} (x : t ty V n) := let (arr) := x in arr.
-End goose_lang.
+Inductive t (V : Type) (n : Z) :=
+| mk (arr : list V) : t V n.
+Definition arr {V n} (x : t V n) := let (arr) := x in arr.
 End array.
-Arguments array.mk (ty) {_} (n arr).
-Arguments array.arr {_ _ _} (_).
+Arguments array.mk {_} (n arr).
+Arguments array.arr {_ _} (_).
 
 Section external.
 (* these are codes for external operations (which all take a single val as an
@@ -709,8 +707,8 @@ Global Instance zero_val_go_string : ZeroVal go_string :=
 Global Instance zero_val_func : ZeroVal func.t :=
   {| zero_val_def := func.nil |}.
 
-Global Instance zero_val_array t `{!ZeroVal V} n : ZeroVal (array.t t V n) :=
-  {| zero_val_def := array.mk t n $ replicate (Z.to_nat n) (zero_val_def V) |}.
+Global Instance zero_val_array `{!ZeroVal V} n : ZeroVal (array.t V n) :=
+  {| zero_val_def := array.mk n $ replicate (Z.to_nat n) (zero_val_def V) |}.
 
 Global Instance zero_val_slice : ZeroVal slice.t :=
   {| zero_val_def := slice.nil |}.

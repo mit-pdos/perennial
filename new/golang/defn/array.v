@@ -7,9 +7,9 @@ Context {go_lctx : GoLocalContext} {go_gctx : GoGlobalContext}.
 
 Class ArraySemantics `{!GoSemanticsFunctions} :=
 {
-  #[global] array_set_step t V n (vs : array.t t V n) (i : w64) (v : V) ::
+  #[global] array_set_step V n (vs : array.t V n) (i : w64) (v : V) ::
     go.IsGoStepPureDet ArraySet (#vs, (#i, #v))%V
-    (# (array.mk t n (<[sint.nat i:=v]> (array.arr vs))));
+    (# (array.mk n (<[sint.nat i:=v]> (array.arr vs))));
 
   #[global] array_length_step vs ::
     go.IsGoStepPureDet ArrayLength (ArrayV vs)
@@ -18,7 +18,7 @@ Class ArraySemantics `{!GoSemanticsFunctions} :=
   #[global] equals_array n t (H : go.IsComparable t) :: go.IsComparable (go.ArrayType n t);
 
   #[global] go_zero_val_eq_array ty V n `{!ZeroVal V} `{!go.GoZeroValEq ty V} ::
-    go.GoZeroValEq (go.ArrayType n ty) (array.t ty V n);
+    go.GoZeroValEq (go.ArrayType n ty) (array.t V n);
 
   alloc_array n elem : alloc (go.ArrayType n elem) = alloc (go.ArrayType n elem); (* TODO *)
   load_array n elem_type :
@@ -29,7 +29,7 @@ Class ArraySemantics `{!GoSemanticsFunctions} :=
     else
       (λ: "l",
          (rec: "recur" "n" :=
-            if: "n" =⟨go.int⟩ #(W64 0) then go_zero_val (go.ArrayType n elem_type)
+            if: "n" =⟨go.int⟩ #(W64 0) then GoZeroVal (go.ArrayType n elem_type) #()
             else let: "array_so_far" := "recur" ("n" - #(W64 1)) in
                  let: "elem_addr" := IndexRef (go.ArrayType n elem_type) ("l", "n" - #(W64 1)) in
                  let: "elem_val" := GoLoad elem_type "elem_addr" in
@@ -46,9 +46,11 @@ Class ArraySemantics `{!GoSemanticsFunctions} :=
              (#()) (seqZ 0 n)
     )%V;
 
-  index_ref_array n elem_type i l :
-    index_ref (go.ArrayType n elem_type) i #l = #(array_index_ref elem_type i l);
-  index_array n elem_type i V (a : array.t elem_type V n) v
+
+  (* FIXME: this panics if out of bounds. It should also be a go.GoExprEq. *)
+  index_ref_array n elem_type i l V `{!go.TypeRepr elem_type V} :
+    index_ref (go.ArrayType n elem_type) i #l = #(array_index_ref V i l);
+  index_array n elem_type i V `{!go.TypeRepr elem_type V} (a : array.t V n) v
     (Hinrange : (array.arr a) !! (Z.to_nat i) = Some v):
     index (go.ArrayType n elem_type) i #a = #v;
 
@@ -68,21 +70,21 @@ Class ArraySemantics `{!GoSemanticsFunctions} :=
                     ArraySet (expr_so_far, (#(W64 cur_index), CompositeLiteral elem_type $ LiteralValue l))%E)
              | _ => (0, Panic "invalid array literal")
              end
-      ) (0, Val (go_zero_val (go.ArrayType n elem_type))) kvs).2;
+      ) (0, (GoZeroVal (go.ArrayType n elem_type) #())) kvs).2;
 
-  #[global] slice_array_step n elem_type p low high ::
+  #[global] slice_array_step n elem_type p low high `{!TypeRepre elem_type V} ::
     go.IsGoStepPureDet (Slice $ go.ArrayType n elem_type) (#p, (#low, #high))%V
        (if decide (0 ≤ sint.Z low ≤ sint.Z high ≤ n) then
-          #(slice.mk (array_index_ref elem_type (word.signed low) p)
+          #(slice.mk (array_index_ref V (word.signed low) p)
               (word.sub high low)
               (word.sub (W64 n) low))
         else Panic "slice bounds out of range");
 
-  #[global] full_slice_array_step_pure n elem_type p low high max ::
+  #[global] full_slice_array_step_pure n elem_type p low high max `{!TypeRepre elem_type V} ::
     go.IsGoStepPureDet (FullSlice (go.ArrayType n elem_type))
     (#p, (#low, #high, #max))%V
     (if decide (0 ≤ sint.Z low ≤ sint.Z high ≤ sint.Z max ∧ sint.Z max ≤ n) then
-       #(slice.mk (array_index_ref elem_type (sint.Z low) p)
+       #(slice.mk (array_index_ref V (sint.Z low) p)
            (word.sub high low) (word.sub max low))
      else Panic "slice bounds out of range");
 

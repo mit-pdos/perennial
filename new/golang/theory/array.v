@@ -12,11 +12,11 @@ Context `{!TypedPointsto (Σ:=Σ) V}.
 Context `{!IntoValTyped V t}.
 
 Program Global Instance typed_pointsto_array n :
-  TypedPointsto (array.t t V n) :=
+  TypedPointsto (array.t V n) :=
   {|
     typed_pointsto_def l dq v :=
       (⌜ Z.of_nat $ length (array.arr v) = n ⌝ ∗
-       [∗ list] i ↦ ve ∈ (array.arr v), array_index_ref t (Z.of_nat i) l ↦{dq} ve)%I;
+       [∗ list] i ↦ ve ∈ (array.arr v), array_index_ref V (Z.of_nat i) l ↦{dq} ve)%I;
   |}.
 Final Obligation.
 Proof.
@@ -41,7 +41,7 @@ Proof.
 Qed.
 
 Lemma array_len ptr dq n vs :
-  ptr ↦{dq} (array.mk t n vs) -∗ ⌜ n = Z.of_nat $ length vs ⌝.
+  ptr ↦{dq} (array.mk n vs) -∗ ⌜ n = Z.of_nat $ length vs ⌝.
 Proof.
   rewrite typed_pointsto_unseal. simpl. iIntros "[% _] !%". done.
 Qed.
@@ -54,7 +54,8 @@ Proof.
   rewrite seq_S fmap_app /=. f_equal. f_equal. lia.
 Qed.
 
-Global Instance into_val_typed_array n : IntoValTyped (array.t t V n) (go.ArrayType n t).
+Context `{!go.TypeRepr t V}.
+Global Instance into_val_typed_array n : IntoValTyped (array.t V n) (go.ArrayType n t).
 Proof.
   split.
   - apply _.
@@ -69,8 +70,8 @@ Proof.
     iDestruct (array_len with "Hl") as "%Hlen".
     iApply (wp_wand _ _ _
                     (λ v, ∃ vs' ,
-                        "Hl" ∷ l ↦{dq} array.mk t n vs ∗
-                        "->" ∷ ⌜ v = #(array.mk t n vs') ⌝ ∗
+                        "Hl" ∷ l ↦{dq} array.mk n vs ∗
+                        "->" ∷ ⌜ v = #(array.mk n vs') ⌝ ∗
                         "%Hagree" ∷ ⌜ take (Z.to_nat m) vs = take (Z.to_nat m) vs' ⌝ ∗
                         "%Hlen'" ∷ ⌜ length vs = length vs' ⌝
                     )%I
@@ -83,7 +84,7 @@ Proof.
     iLöb as "IH" forall (m Hm).
     wp_pures.
     case_bool_decide as Heq.
-    { wp_pures. rewrite go.go_zero_val_eq. simpl. iFrame. iPureIntro.
+    { wp_pures. iFrame. iPureIntro.
       replace m with 0 by word. setoid_rewrite take_0. eexists _; split; first done.
       split; [done|len]. }
     wp_pure. wp_pure. set (m':=m-1).
@@ -111,21 +112,21 @@ Proof.
 Admitted.
 
 Lemma array_empty ptr dq :
-  ⊢ ptr ↦{dq} (array.mk t 0 []).
+  ⊢ ptr ↦{dq} (array.mk 0 []).
 Proof.
   rewrite typed_pointsto_unseal. simpl. iPureIntro. done.
 Qed.
 
-Lemma array_acc p (i : Z) dq n (a : array.t t V n) (v: V) :
+Lemma array_acc p (i : Z) dq n (a : array.t V n) (v: V) :
   0 ≤ i →
   array.arr a !! (Z.to_nat i) = Some v →
   p ↦{dq} a -∗
-  array_index_ref t i p ↦{dq} v ∗
-  (∀ v', array_index_ref t i p ↦{dq} v' -∗
-        p ↦{dq} (array.mk t n $ <[(Z.to_nat i) := v']> $ array.arr a)).
+  array_index_ref V i p ↦{dq} v ∗
+  (∀ v', array_index_ref V i p ↦{dq} v' -∗
+        p ↦{dq} (array.mk n $ <[(Z.to_nat i) := v']> $ array.arr a)).
 Proof.
   iIntros (Hpos Hlookup) "Harr".
-  rewrite [in _ (array.t _ _ _)]typed_pointsto_unseal /=.
+  rewrite [in _ (array.t _ _)]typed_pointsto_unseal /=.
   iDestruct "Harr" as "[% Harr]".
   iDestruct (big_sepL_insert_acc _ _ (Z.to_nat i) with "Harr") as "[Hptsto Harr]".
   { done. }
@@ -134,11 +135,11 @@ Proof.
   iFrame. rewrite length_insert. done.
 Qed.
 
-Lemma array_split (k : w64) l dq n (a : array.t t V n) :
+Lemma array_split (k : w64) l dq n (a : array.t V n) :
   0 ≤ sint.Z k ≤ sint.Z n →
   l ↦{dq} a ⊣⊢
-  l ↦{dq} (array.mk t (sint.Z k) $ take (sint.nat k) $ array.arr a) ∗
-  array_index_ref t (sint.Z k) l ↦{dq} (array.mk t (n - sint.Z k) $ drop (sint.nat k) $ array.arr a).
+  l ↦{dq} (array.mk (sint.Z k) $ take (sint.nat k) $ array.arr a) ∗
+  array_index_ref V (sint.Z k) l ↦{dq} (array.mk (n - sint.Z k) $ drop (sint.nat k) $ array.arr a).
 Proof.
   intros Hle. rewrite typed_pointsto_unseal /=. destruct a as [arr]. simpl.
   rewrite -{1}(take_drop (sint.nat k) arr).
@@ -158,17 +159,6 @@ Proof.
     iApply (big_sepL_impl with "H2").
     iIntros "!# * % H". iExactEq "H". f_equal.
     f_equal. len.
-Qed.
-
-Global Instance pure_wp_slice_array elem_type n p low high :
-  PureWp (0 ≤ word.signed low ≤ word.signed high ≤ n)
-    (Slice (go.ArrayType n elem_type) (#p, (#low, #high))%V)
-       #(slice.mk (array_index_ref elem_type (word.signed low) p)
-           (word.sub high low)
-           (word.sub (W64 n) low)).
-Proof.
-  pose proof go.slice_array_step. pure_wp_start.
-  rewrite decide_True //. wp_pures. iApply "HΦ".
 Qed.
 
 End lemmas.

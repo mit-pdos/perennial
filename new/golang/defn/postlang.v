@@ -80,7 +80,12 @@ Class GoSemanticsFunctions {ext : ffi_syntax} :=
     load : go.type → val;
     store : go.type → val;
 
-    struct_field_ref : go.type → go_string → loc → loc;
+    (* This uses a Gallina [Type] because there are multiple [go.type]s that
+       have the same [Type] representation (e.g. uint64/int64, *X/*Y), but
+       offsets are only supposed to depend on the Gallina representation. *)
+    is_type_repr : go.type → Type → Prop;
+    struct_field_ref : Type → go_string → loc → loc;
+
     struct_field_get : go.type → go_string → val → expr;
     struct_field_set : go.type → go_string → val → val → expr;
 
@@ -90,7 +95,7 @@ Class GoSemanticsFunctions {ext : ffi_syntax} :=
        expression. https://go.dev/ref/spec#Index_expressions *)
     index (container_type : go.type) (i : Z) (v : val) : expr;
     index_ref (container_type : go.type) (i : Z) (v : val) : expr;
-    array_index_ref (elem_type : go.type) (i : Z) (l : loc) : loc;
+    array_index_ref (elem_type : Type) (i : Z) (l : loc) : loc;
 
     map_empty : val → val;
     map_lookup : val → val → bool * val;
@@ -148,7 +153,7 @@ Inductive is_primitive_zero_val : go.type → val → Prop :=
 Global Instance interface_eq_dec : EqDecision interface.t.
 Proof. solve_decision. Qed.
 
-Global Instance array_eq_dec t V n `{!EqDecision V} : EqDecision (array.t t V n).
+Global Instance array_eq_dec V n `{!EqDecision V} : EqDecision (array.t V n).
 Proof. solve_decision. Qed.
 
 Global Instance func_eq_dec : EqDecision func.t.
@@ -301,6 +306,12 @@ Class Underlying t tunder  `{!GoSemanticsFunctions} : Prop :=
     to_underlying_unfold : to_underlying t = tunder
   }.
 
+Class TypeRepr `{!GoSemanticsFunctions} t V : Prop :=
+  {
+    type_repr : is_type_repr t V;
+  }.
+Global Hint Mode TypeRepr - ! - : typeclass_instances.
+
 (** [go.CoreSemantics] defines the basics of when a GoContext is valid,
     excluding predeclared types (including primitives), arrays, slice, map, and
     channels, each of which is in their own file.
@@ -319,7 +330,8 @@ Class CoreSemantics :=
   #[global] go_func_resolve_step n ts :: IsGoStepPureDet (FuncResolve n ts) #() #(functions n ts);
   #[global] go_method_resolve_step m t :: IsGoStepPureDet (MethodResolve t m) #() #(methods t m);
   #[global] go_global_var_addr_step v :: IsGoStepPureDet (GlobalVarAddr v) #() #(global_addr v);
-  #[global] struct_field_ref_step t f l :: IsGoStepPureDet (StructFieldRef t f) #l #(struct_field_ref t f l);
+  #[global] struct_field_ref_step t f l V `{!TypeRepr t V} ::
+    IsGoStepPureDet (StructFieldRef t f) #l #(struct_field_ref V f l);
   #[global] go_interface_make_step t v :: IsGoStepPureDet (InterfaceMake t) v #(interface.mk t v);
   #[global] composite_literal_step t (v : val) :: IsGoStepPureDet (CompositeLiteral t) v (composite_literal t v);
   go_prealloc_step : is_go_step_pure GoPrealloc #() = (λ e, ∃ (l : loc), e = #l);
@@ -396,7 +408,6 @@ Class CoreSemantics :=
                 GoStore field_type (field_addr, field_val)
          ) (GoZeroVal (go.StructType fds) #()) fds)%V;
 
-  struct_field_ref_underlying `{!Underlying t t'} : struct_field_ref t = struct_field_ref t';
   index_ref_underlying `{!Underlying t t'} : index_ref t = index_ref t';
   index_underlying `{!Underlying t t'} : index t = index t';
 

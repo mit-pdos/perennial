@@ -93,10 +93,10 @@ Qed.
 #[local] Unset Printing Projections.
 
 Lemma wp_Shuffle s (xs: list w64) :
-  {{{ is_pkg_init std_core ∗ s ↦[go.uint64]* xs }}}
+  {{{ is_pkg_init std_core ∗ s ↦* xs }}}
     @! std_core.Shuffle #s
   {{{ xs', RET #(); ⌜Permutation xs xs'⌝ ∗
-                      s ↦[go.uint64]* xs' }}}.
+                      s ↦* xs' }}}.
 Proof.
   wp_start as "Hs".
   wp_auto.
@@ -113,7 +113,7 @@ Proof.
   iAssert (∃ (i: w64) (xs': list w64),
               "i" ∷ i_ptr ↦ i ∗
               "%HI" ∷ ⌜0 ≤ sint.Z i < sint.Z (slice.len s)⌝ ∗
-              "Hs" ∷ s ↦[_]* xs' ∗
+              "Hs" ∷ s ↦* xs' ∗
               "%Hperm" ∷ ⌜xs ≡ₚ xs'⌝
           )%I with "[$i $Hs]" as "IH".
   { iPureIntro.
@@ -167,7 +167,7 @@ Lemma wp_Permutation (n: w64) :
     @! std_core.Permutation #n
   {{{ xs s, RET #s;
       ⌜xs ≡ₚ (W64 <$> seqZ 0 (sint.Z n))⌝ ∗
-      s ↦[go.uint64]* xs
+      s ↦* xs
   }}}.
 Proof.
   wp_start as "%Hnz".
@@ -181,7 +181,7 @@ Proof.
   iPersist "n order".
 
   iAssert (∃ (i: w64),
-              "Hs" ∷ s ↦[go.uint64]* ((W64 <$> seqZ 0 (sint.Z i)) ++ replicate (sint.nat n - sint.nat i) (W64 0)) ∗
+              "Hs" ∷ s ↦* ((W64 <$> seqZ 0 (sint.Z i)) ++ replicate (sint.nat n - sint.nat i) (W64 0)) ∗
               "i" ∷ i_ptr ↦ i ∗
               "%Hi" ∷ ⌜0 ≤ sint.Z i ≤ sint.Z n⌝)%I
     with "[$i Hs]" as "IH".

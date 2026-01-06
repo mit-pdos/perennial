@@ -62,7 +62,7 @@ Class InterfaceSemantics :=
          if is_interface_type t then
            (if (type_set_contains dt t) then (#i, #true)%V else (#interface.nil, #false)%V)
          else
-           (if decide (t = dt) then (v, #true)%V else (go_zero_val t, #false)%E)
+           (if decide (t = dt) then (v, #true)%V else (GoZeroVal t #(), #false)%E)
      end);
 
   method_interface t m (H : is_interface_type t = true) :

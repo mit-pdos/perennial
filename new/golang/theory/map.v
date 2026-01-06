@@ -1,5 +1,5 @@
 From New.golang.defn Require Export map.
-From New.golang.theory Require Export mem array predeclared auto slice.
+From New.golang.theory Require Export mem array predeclared auto.
 
 Set Default Proof Using "Type".
 
@@ -7,11 +7,9 @@ Section defns_and_lemmas.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
   {core_sem : go.CoreSemantics}
   {pre_sem : go.PredeclaredSemantics}
-  {array_sem : go.ArraySemantics}
-  {slice_sem : go.SliceSemantics}
   {map_sem : go.MapSemantics}.
 
-Local Set Default Proof Using "Type core_sem pre_sem array_sem slice_sem map_sem".
+Local Set Default Proof Using "Type core_sem pre_sem map_sem".
 
 (* TODO: reading from nil map. Want to say that an owned map is not nil, which
    requires knowing that wp_ref gives non-null pointers. *)
@@ -236,7 +234,7 @@ Lemma wp_map_for_range P stk E (body : func.t) key_type elem_type mref m dq
       (P keys (Z.of_nat (size m)) -∗ Φ execute_val))
   ) -∗
   WP map.for_range key_type elem_type #mref #body @ stk; E {{ Φ }}.
-Proof using Inj0 array_sem pre_sem slice_sem map_sem.
+Proof using Inj0 pre_sem map_sem.
   iIntros "% Hm HΦ".
   wp_call.
   iDestruct (own_map_not_nil with "[$]") as %?.
@@ -380,12 +378,8 @@ Module test.
     iIntros "_".
     wp_auto. wp_apply wp_map_make1.
     iIntros "% Hm". wp_auto.
-    rewrite go.go_zero_val_eq. (* FIXME: automation *)
-    wp_auto. wp_apply (wp_map_insert with "Hm").
-    iIntros "Hm". wp_auto.
-    rewrite go.go_zero_val_eq. (* FIXME: automation *)
-    wp_auto. wp_apply (wp_map_insert with "Hm").
-    iIntros "Hm".
-  Admitted.
+    wp_apply (wp_map_insert with "Hm"). iIntros "Hm". wp_auto.
+    wp_apply (wp_map_insert with "Hm"). iIntros "Hm". wp_auto.
+  Abort.
 End proof.
 End test.

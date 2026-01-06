@@ -8,11 +8,11 @@ Section goose_lang.
 Context {ext : ffi_syntax}.
 Context {go_lctx : GoLocalContext} {go_gctx : GoGlobalContext} `{!GoSemanticsFunctions}.
 
-Definition slice (sl : slice.t) (et : go.type) (low high : u64) : slice.t :=
-  slice.mk (slice_index_ref et (sint.Z low) sl) (word.sub high low) (word.sub sl.(slice.cap) low).
+Definition slice (sl : slice.t) (V : Type) (low high : u64) : slice.t :=
+  slice.mk (slice_index_ref V (sint.Z low) sl) (word.sub high low) (word.sub sl.(slice.cap) low).
 
-Definition full_slice (sl : slice.t) (et : go.type) (low high max : u64) : slice.t :=
-  slice.mk (slice_index_ref et (sint.Z low) sl) (word.sub high low) (word.sub max low).
+Definition full_slice (sl : slice.t) (V : Type) (low high max : u64) : slice.t :=
+  slice.mk (slice_index_ref V (sint.Z low) sl) (word.sub high low) (word.sub max low).
 
 (* only for internal use, not an external model *)
 Definition _new_cap : val :=
@@ -62,17 +62,17 @@ Class SliceSemantics `{!GoSemanticsFunctions} :=
   #[global] internal_dynamic_array_alloc_step et (n : w64) ::
     go.IsGoStepPureDet (InternalDynamicArrayAlloc et) #n
     (GoAlloc (go.ArrayType (sint.Z n) et) (GoZeroVal (go.ArrayType (sint.Z n) et) #()));
-  #[global] slice_slice_step_pure elem_type s low high ::
+  #[global] slice_slice_step_pure elem_type s low high `{!go.TypeRepr elem_type V} ::
     go.IsGoStepPureDet (Slice (go.SliceType elem_type))
     (#s, (#low, #high))%V
     (if decide (0 ≤ sint.Z low ≤ sint.Z high ≤ sint.Z s.(slice.cap)) then
-       #(slice.slice s elem_type low high)
+       #(slice.slice s V low high)
      else Panic "slice bounds out of range");
-  #[global] full_slice_slice_step_pure elem_type s low high max ::
+  #[global] full_slice_slice_step_pure elem_type s low high max `{!go.TypeRepr elem_type V} ::
     go.IsGoStepPureDet (FullSlice (go.SliceType elem_type))
     (#s, (#low, #high, #max))%V
     (if decide (0 ≤ sint.Z low ≤ sint.Z high ≤ sint.Z max ∧ sint.Z max ≤ sint.Z s.(slice.cap)) then
-       #(slice.full_slice s elem_type low high max)
+       #(slice.full_slice s V low high max)
      else Panic "slice bounds out of range");
 
   #[global] go_zero_val_eq_slice elem_type :: go.GoZeroValEq (go.SliceType elem_type) slice.t;
@@ -125,10 +125,10 @@ Class SliceSemantics `{!GoSemanticsFunctions} :=
     FuncUnfold go.make2 [go.SliceType elem_type]
     (λ: "sz", FuncResolve go.make3 [go.SliceType elem_type] #() "sz" "sz")%V;
 
-  #[global] index_ref_slice elem_type i s ::
+  #[global] index_ref_slice elem_type i s `{!go.TypeRepr elem_type V} ::
     go.GoExprEq (index_ref (go.SliceType elem_type) i #s)
     (if decide (0 ≤ i < sint.Z s.(slice.len)) then
-       #(slice_index_ref elem_type i s)
+       #(slice_index_ref V i s)
      else Panic "slice index out of bounds");
 
   #[global] index_slice elem_type i (s : slice.t) ::

@@ -140,9 +140,9 @@ Qed.
 
 Lemma wp_UInt64Put sl_b space rem v :
   length space = 8%nat →
-  {{{ is_pkg_init primitive ∗ sl_b ↦[go.uint8]* (space ++ rem) }}}
+  {{{ is_pkg_init primitive ∗ sl_b ↦* (space ++ rem) }}}
     @! primitive.UInt64Put #sl_b #v
-  {{{ RET #(); sl_b ↦[go.uint8]* (u64_le v ++ rem) }}}.
+  {{{ RET #(); sl_b ↦* (u64_le v ++ rem) }}}.
 Proof.
   rewrite u64_le_unseal /u64_le_def.
   iIntros (Hlen_space).
