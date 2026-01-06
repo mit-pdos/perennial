@@ -21,28 +21,57 @@ Instance into_val_underlying V `{!ZeroVal V} `{!TypedPointsto V} n ta tunder
   : go.Underlying (go.Named n ta) tunder → IntoValTyped V tunder → IntoValTyped V (go.Named n ta).
 Admitted.
 
-Context `{!chanG Σ V}.
-Context `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}.
 
-(* FIXME: this the addresses depend on the Go type.
-   i.e. TypedPointsto actually _does_ depend on the Go type (sometimes). *)
-#[global] Program Instance channel_typed_pointsto T T' `{!TypedPointsto (Σ:=Σ) T'} :
+#[global] Program Instance channel_typed_pointsto T' `{!TypedPointsto (Σ:=Σ) T'} :
   TypedPointsto (Σ:=Σ) (channel.Channel.t T') :=
   {|
     typed_pointsto_def l dq v :=
       (
-        l.[channel.Channel T, "cap"] ↦{dq} v.(channel.Channel.cap)
+        "cap" ∷ l.[channel.Channel.t T', "cap"] ↦{dq} v.(channel.Channel.cap) ∗
+        "mu" ∷ l.[channel.Channel.t T', "mu"] ↦{dq} v.(channel.Channel.mu) ∗
+        "state" ∷ l.[channel.Channel.t T', "state"] ↦{dq} v.(channel.Channel.state) ∗
+        "buffer" ∷ l.[channel.Channel.t T', "buffer"] ↦{dq} v.(channel.Channel.buffer) ∗
+        "v" ∷ l.[channel.Channel.t T', "v"] ↦{dq} v.(channel.Channel.v)
       )%I
   |}.
-Next Obligation.
-Abort.
+Final Obligation.
+  destruct v1, v2. simpl. intros. iIntros "H1 H2".
+  iNamedSuffix "H1" "1". iNamedSuffix "H2" "2".
+  iCombine "cap1 cap2" gives %->.
+  iCombine "mu1 mu2" gives %->.
+  iCombine "state1 state2" gives %->.
+  iCombine "buffer1 buffer2" gives %->.
+  iCombine "v1 v2" gives %->.
+  done.
+Qed.
+
+(* FIXME: proofgen IntoValTyped for channel.Channel.t *)
+Instance channel_into_val_typed T' T
+  `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T}:
+  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+Proof.
+  constructor.
+  - apply _.
+  - intros. iIntros "_ HΦ".
+    rewrite go.alloc_underlying go.alloc_struct.
+    wp_auto. admit.
+  - intros. iIntros "Hl HΦ". rewrite typed_pointsto_unseal.
+    iNamed "Hl".
+    (* FIXME: use [Underlying] class in load_struct. *)
+    (* rewrite go.load_struct. *)
+    (* wp_auto. *)
+    (* wp_bind. *)
+Admitted.
+
+Context `[!chanG Σ V].
+Context `[!ZeroVal V] `[!TypedPointsto V] `[!IntoValTyped V t] `[!go.TypeRepr t V].
 
 Lemma wp_NewChannel (cap: Z) :
   0 ≤ cap < 2^63 ->
   {{{ True }}}
     channel.NewChannelⁱᵐᵖˡ t #(W64 cap)
   {{{ (ch: loc) (γ: chan_names), RET #ch;
-      is_channel (t:=t) ch γ ∗
+      is_channel ch γ ∗
       ⌜chan_cap γ = cap⌝ ∗
       own_channel ch (if decide (cap = 0) then chan_rep.Idle else chan_rep.Buffered []) γ
   }}}.
@@ -56,14 +85,13 @@ Proof.
     assert (cap > 0) by word.
     rewrite -wp_fupd.
     wp_auto.
+    wp_bind.
     wp_apply wp_slice_make2; first done.
     iIntros (sl) ("Hsl"). wp_auto.
-    (* FIXME: proofgen IntoValTyped for channel.Channel.t *)
     wp_alloc ch as "Hch".
     wp_auto.
-    rewrite /named.
-    iDestruct (struct_fields_split with "Hch") as "Hch".
-    iNamed "Hch". simpl.
+    iEval (rewrite typed_pointsto_unseal) in "Hch". simpl.
+    iNamedPrefix "Hch" "H". simpl.
     iMod (ghost_var_alloc (chan_rep.Buffered []))
       as (state_gname) "[Hstate_auth Hstate_frag]".
     iMod (ghost_var_alloc (None : option (offer_lock V)))
@@ -101,7 +129,9 @@ Proof.
     iModIntro.  iApply ("HΦ" $! _ γ).
     iFrame "#". simpl.
     rewrite decide_False; [ | word ].
-    iFrame. iPureIntro. unfold chan_cap_valid. simpl; lia.
+    unfold is_channel. iFrame "∗#". iPureIntro.
+    (* FIXME: non-nilness. *)
+    unfold chan_cap_valid. simpl; lia.
   }
   {
     assert (cap = 0) by word; subst.

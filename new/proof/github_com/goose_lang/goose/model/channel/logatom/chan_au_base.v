@@ -120,57 +120,57 @@ Definition chan_phys (ch: loc) (s: chan_phys_state V) : iProp Σ :=
   match s with
     | Closed [] =>
         (∃ (slice_val: slice.t),
-            "state" ∷ (ch.[channel.Channel t , "state"] ↦ (W64 6)) ∗
-            "slice" ∷ own_slice t slice_val (DfracOwn 1) [] ∗
-            "slice_cap" ∷ own_slice_cap t slice_val (DfracOwn 1) ∗
-            "buffer" ∷ ch.[channel.Channel t, "buffer"] ↦ slice_val)
+            "state" ∷ (ch.[channel.Channel.t V , "state"] ↦ (W64 6)) ∗
+            "slice" ∷ slice_val ↦* ([] : list V) ∗
+            "slice_cap" ∷ own_slice_cap V slice_val (DfracOwn 1) ∗
+            "buffer" ∷ ch.[channel.Channel.t V, "buffer"] ↦ slice_val)
     | Closed draining =>
         ∃ (slice_val: slice.t),
-        "state" ∷ ch.[channel.Channel t, "state"] ↦ (W64 6) ∗
-        "slice" ∷ own_slice t slice_val (DfracOwn 1) draining ∗
-        "slice_cap" ∷ own_slice_cap t slice_val (DfracOwn 1) ∗
-        "buffer" ∷ ch.[channel.Channel t, "buffer"] ↦ slice_val
+        "state" ∷ ch.[channel.Channel.t V, "state"] ↦ (W64 6) ∗
+        "slice" ∷ slice_val ↦* draining ∗
+        "slice_cap" ∷ own_slice_cap V slice_val (DfracOwn 1) ∗
+        "buffer" ∷ ch.[channel.Channel.t V, "buffer"] ↦ slice_val
     | Buffered buff =>
         ∃ (slice_val: slice.t),
-        "state" ∷ ch.[channel.Channel t, "state"] ↦ (W64 0) ∗
-        "slice" ∷ own_slice t slice_val (DfracOwn 1) buff ∗
-        "slice_cap" ∷ own_slice_cap t slice_val (DfracOwn 1) ∗
-        "buffer" ∷ ch.[channel.Channel t, "buffer"] ↦ slice_val
+        "state" ∷ ch.[channel.Channel.t V, "state"] ↦ (W64 0) ∗
+        "slice" ∷ slice_val ↦* buff ∗
+        "slice_cap" ∷ own_slice_cap V slice_val (DfracOwn 1) ∗
+        "buffer" ∷ ch.[channel.Channel.t V, "buffer"] ↦ slice_val
     | Idle =>
         ∃ (v:V) (slice_val: slice.t),
-        "state" ∷ ch.[channel.Channel t, "state"] ↦ (W64 1) ∗
-        "v" ∷ ch.[channel.Channel t, "v"] ↦ v ∗
-        "slice" ∷ own_slice t slice_val (DfracOwn 1) ([] : list V) ∗
-        "slice_cap" ∷ own_slice_cap t slice_val (DfracOwn 1) ∗
-        "buffer" ∷ ch.[channel.Channel t, "buffer"] ↦ slice_val
+        "state" ∷ ch.[channel.Channel.t V, "state"] ↦ (W64 1) ∗
+        "v" ∷ ch.[channel.Channel.t V, "v"] ↦ v ∗
+        "slice" ∷ slice_val ↦* ([] : list V) ∗
+        "slice_cap" ∷ own_slice_cap V slice_val (DfracOwn 1) ∗
+        "buffer" ∷ ch.[channel.Channel.t V, "buffer"] ↦ slice_val
     | SndWait v =>
         ∃ (slice_val: slice.t),
-        "state" ∷ ch.[channel.Channel t, "state"] ↦ (W64 2) ∗
-        "v" ∷ ch.[channel.Channel t, "v"] ↦ v ∗
-        "slice" ∷ own_slice t slice_val (DfracOwn 1) ([] : list V) ∗
-        "slice_cap" ∷ own_slice_cap t slice_val (DfracOwn 1) ∗
-        "buffer" ∷ ch.[channel.Channel t, "buffer"] ↦ slice_val
+        "state" ∷ ch.[channel.Channel.t V, "state"] ↦ (W64 2) ∗
+        "v" ∷ ch.[channel.Channel.t V, "v"] ↦ v ∗
+        "slice" ∷ slice_val ↦* ([] : list V) ∗
+        "slice_cap" ∷ own_slice_cap V slice_val (DfracOwn 1) ∗
+        "buffer" ∷ ch.[channel.Channel.t V, "buffer"] ↦ slice_val
     | RcvWait =>
         ∃ (v:V) (slice_val: slice.t),
-        "state" ∷ ch.[channel.Channel t, "state"] ↦ (W64 3) ∗
-        "v" ∷ ch.[channel.Channel t, "v"] ↦ v ∗
-        "slice" ∷ own_slice t slice_val (DfracOwn 1) ([] : list V) ∗
-        "slice_cap" ∷ own_slice_cap t slice_val (DfracOwn 1) ∗
-        "buffer" ∷ ch.[channel.Channel t, "buffer"] ↦ slice_val
+        "state" ∷ ch.[channel.Channel.t V, "state"] ↦ (W64 3) ∗
+        "v" ∷ ch.[channel.Channel.t V, "v"] ↦ v ∗
+        "slice" ∷ slice_val ↦* ([] : list V) ∗
+        "slice_cap" ∷ own_slice_cap V slice_val (DfracOwn 1) ∗
+        "buffer" ∷ ch.[channel.Channel.t V, "buffer"] ↦ slice_val
     | SndDone v =>
         ∃ (slice_val: slice.t),
-        "state" ∷ ch.[channel.Channel t, "state"] ↦ (W64 4) ∗
-        "v" ∷ ch.[channel.Channel t, "v"] ↦ v ∗
-        "slice" ∷ own_slice t slice_val (DfracOwn 1) ([] : list V) ∗
-        "slice_cap" ∷ own_slice_cap t slice_val (DfracOwn 1) ∗
-        "buffer" ∷ ch.[channel.Channel t, "buffer"] ↦ slice_val
+        "state" ∷ ch.[channel.Channel.t V, "state"] ↦ (W64 4) ∗
+        "v" ∷ ch.[channel.Channel.t V, "v"] ↦ v ∗
+        "slice" ∷ slice_val ↦* ([] : list V) ∗
+        "slice_cap" ∷ own_slice_cap V slice_val (DfracOwn 1) ∗
+        "buffer" ∷ ch.[channel.Channel.t V, "buffer"] ↦ slice_val
     | RcvDone v =>
         ∃ (slice_val: slice.t),
-        "state" ∷ ch.[channel.Channel t, "state"] ↦ (W64 5) ∗
-        "v" ∷ ch.[channel.Channel t, "v"] ↦ v ∗
-        "slice" ∷ own_slice t slice_val (DfracOwn 1) ([] : list V) ∗
-        "slice_cap" ∷ own_slice_cap t slice_val (DfracOwn 1) ∗
-        "buffer" ∷ ch.[channel.Channel t, "buffer"] ↦ slice_val
+        "state" ∷ ch.[channel.Channel.t V, "state"] ↦ (W64 5) ∗
+        "v" ∷ ch.[channel.Channel.t V, "v"] ↦ v ∗
+        "slice" ∷ slice_val ↦* ([] : list V) ∗
+        "slice_cap" ∷ own_slice_cap V slice_val (DfracOwn 1) ∗
+        "buffer" ∷ ch.[channel.Channel.t V, "buffer"] ↦ slice_val
     end.
 
 (** Bundles together offer-related ghost state for atomic operations *)
@@ -715,8 +715,8 @@ Definition chan_inv_inner (ch: loc) (γ: chan_names) : iProp Σ :=
     This is persistent and provides access to the channel's capabilities. *)
 Definition is_channel (ch: loc) (γ: chan_names) : iProp Σ :=
   ∃ (mu_loc: loc),
-    "#cap" ∷ ch.[channel.Channel t, "cap"] ↦□ (W64 (chan_cap γ)) ∗
-    "#mu" ∷ ch.[channel.Channel t, "mu"] ↦□ mu_loc ∗
+    "#cap" ∷ ch.[channel.Channel.t V, "cap"] ↦□ (W64 (chan_cap γ)) ∗
+    "#mu" ∷ ch.[channel.Channel.t V, "mu"] ↦□ mu_loc ∗
     "#lock" ∷ is_lock mu_loc (chan_inv_inner ch γ) ∗
     "%Hnotnull" ∷ ⌜ ch ≠ chan.nil ⌝.
 #[global] Typeclasses Opaque is_channel.
