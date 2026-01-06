@@ -47,12 +47,16 @@ Class ArraySemantics `{!GoSemanticsFunctions} :=
     )%V;
 
 
-  (* FIXME: this panics if out of bounds. It should also be a go.GoExprEq. *)
-  index_ref_array n elem_type i l V `{!go.TypeRepr elem_type V} :
-    index_ref (go.ArrayType n elem_type) i #l = #(array_index_ref V i l);
-  index_array n elem_type i V `{!go.TypeRepr elem_type V} (a : array.t V n) v
-    (Hinrange : (array.arr a) !! (Z.to_nat i) = Some v):
-    index (go.ArrayType n elem_type) i #a = #v;
+  #[global] index_ref_array n elem_type i l V `{!go.TypeRepr elem_type V} ::
+    go.GoExprEq (index_ref (go.ArrayType n elem_type) i #l)
+      (if decide (i < n) then #(array_index_ref V i l)
+       else Panic "index out of range");
+  #[global] index_array n elem_type i V `{!go.TypeRepr elem_type V} (a : array.t V n) ::
+    go.GoExprEq (index (go.ArrayType n elem_type) i #a)
+      (match (array.arr a) !! (Z.to_nat i) with
+       | Some v => #v
+       | None => Panic "index out of range"
+       end);
 
   #[global] composite_literal_array n elem_type kvs ::
     go.GoExprEq (composite_literal (go.ArrayType n elem_type) (LiteralValueV kvs))

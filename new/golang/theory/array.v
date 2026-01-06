@@ -93,7 +93,7 @@ Proof.
     pose proof (list_lookup_lt vs (Z.to_nat m')) as [ve Hlookup]; first word.
     erewrite take_S_r; last done.
     iSpecialize ("IH" with "[] Hl"); last wp_apply (wp_wand with "IH"); first word.
-    iIntros "% H". iNamed "H". wp_pures. rewrite go.index_ref_array. wp_pures.
+    iIntros "% H". iNamed "H". wp_pures. rewrite -> decide_True; last word. wp_pures.
     rewrite typed_pointsto_unseal.
     iDestruct "Hl" as "[% Hl]".
     iDestruct (big_sepL_lookup_acc with "Hl") as "[H Hl]"; first done.
