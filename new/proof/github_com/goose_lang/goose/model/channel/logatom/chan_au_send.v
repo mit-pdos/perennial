@@ -51,7 +51,6 @@ Instance channel_into_val_typed T' T
   IntoValTyped (channel.Channel.t T') (channel.Channel T).
 Proof.
   constructor.
-  - apply _.
   - intros. iIntros "_ HΦ".
     rewrite go.alloc_underlying go.alloc_struct.
     wp_auto. admit.

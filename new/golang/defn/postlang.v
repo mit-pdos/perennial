@@ -280,14 +280,6 @@ Class IntoValUnfold V f :=
 Global Hint Mode IntoValUnfold ! - : typeclass_instances.
 Global Arguments into_val_unfold (V) {_}.
 
-Class GoZeroValEq t V `{!ZeroVal V} `{!GoSemanticsFunctions} :=
-  {
-    go_zero_val_eq : go_zero_val t = #(zero_val V);
-    #[global] go_zero_val_step :: IsGoStepPureDet (GoZeroVal t) #() #(zero_val V);
-  }.
-Global Hint Mode GoZeroValEq ! - - - : typeclass_instances.
-Global Arguments go_zero_val_eq (t) V {_ _ _}.
-
 Class BasicIntoValInj :=
   {
     #[global] into_val_loc_inj :: Inj eq eq (into_val (V:=loc));
@@ -306,11 +298,14 @@ Class Underlying t tunder  `{!GoSemanticsFunctions} : Prop :=
     to_underlying_unfold : to_underlying t = tunder
   }.
 
-Class TypeRepr `{!GoSemanticsFunctions} t V : Prop :=
+
+Class TypeRepr t V `{!ZeroVal V} `{!GoSemanticsFunctions} : Prop :=
   {
     type_repr : is_type_repr t V;
+    go_zero_val_eq : go_zero_val t = #(zero_val V);
+    #[global] go_zero_val_step :: IsGoStepPureDet (GoZeroVal t) #() #(zero_val V);
   }.
-Global Hint Mode TypeRepr - ! - : typeclass_instances.
+Global Hint Mode TypeRepr ! - - - : typeclass_instances.
 
 (** [go.CoreSemantics] defines the basics of when a GoContext is valid,
     excluding predeclared types (including primitives), arrays, slice, map, and
@@ -330,7 +325,7 @@ Class CoreSemantics :=
   #[global] go_func_resolve_step n ts :: IsGoStepPureDet (FuncResolve n ts) #() #(functions n ts);
   #[global] go_method_resolve_step m t :: IsGoStepPureDet (MethodResolve t m) #() #(methods t m);
   #[global] go_global_var_addr_step v :: IsGoStepPureDet (GlobalVarAddr v) #() #(global_addr v);
-  #[global] struct_field_ref_step t f l V `{!TypeRepr t V} ::
+  #[global] struct_field_ref_step t f l V `{!ZeroVal V} `{!TypeRepr t V} ::
     IsGoStepPureDet (StructFieldRef t f) #l #(struct_field_ref V f l);
   #[global] go_interface_make_step t v :: IsGoStepPureDet (InterfaceMake t) v #(interface.mk t v);
   #[global] composite_literal_step t (v : val) :: IsGoStepPureDet (CompositeLiteral t) v (composite_literal t v);
@@ -351,10 +346,10 @@ Class CoreSemantics :=
   #[global] into_val_unfold_unit :: IntoValUnfold unit (λ _, LitV LitUnit);
 
   go_zero_val_underlying `{!Underlying t t'} : go_zero_val t = go_zero_val t';
-  #[global] go_zero_val_eq_pointer t :: GoZeroValEq (go.PointerType t) loc;
-  #[global] go_zero_val_eq_function sig :: GoZeroValEq (go.FunctionType sig) func.t;
-  #[global] go_zero_val_eq_slice elem_type :: GoZeroValEq (go.SliceType elem_type) slice.t;
-  #[global] go_zero_val_eq_channel dir elem_type :: GoZeroValEq (go.ChannelType dir elem_type) chan.t;
+  #[global] type_repr_pointer t :: TypeRepr (go.PointerType t) loc;
+  #[global] type_repr_function sig :: TypeRepr (go.FunctionType sig) func.t;
+  #[global] type_repr_slice elem_type :: TypeRepr (go.SliceType elem_type) slice.t;
+  #[global] type_repr_channel dir elem_type :: TypeRepr (go.ChannelType dir elem_type) chan.t;
 
   #[global] core_comparison_sem :: CoreComparisonSemantics;
 

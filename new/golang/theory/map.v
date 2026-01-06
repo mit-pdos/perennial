@@ -141,7 +141,7 @@ Proof.
 Qed.
 
 Global Instance pure_wp_map_nil_lookup2 key_type elem_type k
-  `{!TypedPointsto V} `{!IntoValTyped V elem_type}
+  `{!TypedPointsto V} `{!IntoValTyped V elem_type} `{!go.TypeRepr elem_type V}
   {Hsafe : SafeMapKey key_type k} :
   PureWp True (map.lookup2 key_type elem_type #map.nil #k) (#(zero_val V), #false)%V.
 Proof.
@@ -159,14 +159,14 @@ Proof.
 Qed.
 
 Global Instance pure_wp_map_nil_lookup1 key_type elem_type k
-  `{!TypedPointsto V} `{!IntoValTyped V elem_type}
+  `{!TypedPointsto V} `{!IntoValTyped V elem_type} `{!go.TypeRepr elem_type V}
   {Hsafe : SafeMapKey key_type k} :
   PureWp True (map.lookup1 key_type elem_type #map.nil #k) #(zero_val V).
 Proof. by pure_wp_start. Qed.
 
 Lemma wp_map_make2 (len : w64) key_type elem_type
-  `{!TypedPointsto K} `{!IntoValTyped K key_type} (* to automatically fill in K *)
-  `{!TypedPointsto V} `{!IntoValTyped V elem_type} :
+  `{!go.TypeRepr key_type K} (* to automatically fill in K *)
+  `{!TypedPointsto V} `{!IntoValTyped V elem_type} `{!go.TypeRepr elem_type V} :
   {{{ True }}}
     #(functions go.make2 [go.MapType key_type elem_type]) #len
   {{{ mref, RET #mref; mref ↦$ (∅ : gmap K V) }}}.
@@ -185,16 +185,16 @@ Proof.
 Qed.
 
 Lemma wp_map_make1 key_type elem_type
-  `{!TypedPointsto K} `{!IntoValTyped K key_type}
-  `{!TypedPointsto V} `{!IntoValTyped V elem_type} :
+  `{!go.TypeRepr key_type K} `{!TypedPointsto V}
+  `{!IntoValTyped V elem_type} `{!go.TypeRepr elem_type V} :
   {{{ True }}}
     #(functions go.make1 [go.MapType key_type elem_type]) #()
   {{{ mref, RET #mref; mref ↦$ (∅ : gmap K V) }}}.
 Proof. wp_start. by wp_apply wp_map_make2. Qed.
 
 Lemma wp_map_clear mref (m : gmap K V) key_type elem_type
-  `{!TypedPointsto K} `{!IntoValTyped K key_type}
-  `{!TypedPointsto V} `{!IntoValTyped V elem_type} :
+  `{!go.TypeRepr key_type K} `{!TypedPointsto V}
+  `{!IntoValTyped V elem_type} `{!go.TypeRepr elem_type V} :
   {{{ mref ↦$ m }}}
     #(functions go.clear [go.MapType key_type elem_type]) #mref
   {{{ RET #(); mref ↦$ ∅ }}}.

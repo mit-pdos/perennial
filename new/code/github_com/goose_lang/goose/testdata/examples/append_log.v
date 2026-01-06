@@ -143,7 +143,7 @@ End Log.
 
 Class Log_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Log_zero_val  :: go.GoZeroValEq Log Log.t;
+  #[global] Log_zero_val  :: go.TypeRepr Log Log.t;
   #[global] Log_underlying :: go.Underlying (Log) (Logⁱᵐᵖˡ);
   #[global] Log_get_m (x : Log.t) :: go.IsGoStepPureDet (StructFieldGet (Log) "m") #x #x.(Log.m);
   #[global] Log_set_m (x : Log.t) y :: go.IsGoStepPureDet (StructFieldSet (Log) "m") (#x, #y) #(x <|Log.m := y|>);

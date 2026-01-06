@@ -29,7 +29,7 @@ End unit.
 
 Class unit_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] unit_zero_val  :: go.GoZeroValEq unit unit.t;
+  #[global] unit_zero_val  :: go.TypeRepr unit unit.t;
   #[global] unit_underlying :: go.Underlying (unit) (unitⁱᵐᵖˡ);
 }.
 
@@ -550,7 +550,7 @@ End Enc.
 
 Class Enc_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Enc_zero_val  :: go.GoZeroValEq Enc Enc.t;
+  #[global] Enc_zero_val  :: go.TypeRepr Enc Enc.t;
   #[global] Enc_underlying :: go.Underlying (Enc) (Encⁱᵐᵖˡ);
   #[global] Enc_get_p (x : Enc.t) :: go.IsGoStepPureDet (StructFieldGet (Enc) "p") #x #x.(Enc.p);
   #[global] Enc_set_p (x : Enc.t) y :: go.IsGoStepPureDet (StructFieldSet (Enc) "p") (#x, #y) #(x <|Enc.p := y|>);
@@ -593,7 +593,7 @@ End Dec.
 
 Class Dec_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Dec_zero_val  :: go.GoZeroValEq Dec Dec.t;
+  #[global] Dec_zero_val  :: go.TypeRepr Dec Dec.t;
   #[global] Dec_underlying :: go.Underlying (Dec) (Decⁱᵐᵖˡ);
   #[global] Dec_get_p (x : Dec.t) :: go.IsGoStepPureDet (StructFieldGet (Dec) "p") #x #x.(Dec.p);
   #[global] Dec_set_p (x : Dec.t) y :: go.IsGoStepPureDet (StructFieldSet (Dec) "p") (#x, #y) #(x <|Dec.p := y|>);
@@ -819,7 +819,7 @@ End Editor.
 
 Class Editor_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Editor_zero_val  :: go.GoZeroValEq Editor Editor.t;
+  #[global] Editor_zero_val  :: go.TypeRepr Editor Editor.t;
   #[global] Editor_underlying :: go.Underlying (Editor) (Editorⁱᵐᵖˡ);
   #[global] Editor_get_s (x : Editor.t) :: go.IsGoStepPureDet (StructFieldGet (Editor) "s") #x #x.(Editor.s);
   #[global] Editor_set_s (x : Editor.t) y :: go.IsGoStepPureDet (StructFieldSet (Editor) "s") (#x, #y) #(x <|Editor.s := y|>);
@@ -866,7 +866,7 @@ End Pair.
 
 Class Pair_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Pair_zero_val  :: go.GoZeroValEq Pair Pair.t;
+  #[global] Pair_zero_val  :: go.TypeRepr Pair Pair.t;
   #[global] Pair_underlying :: go.Underlying (Pair) (Pairⁱᵐᵖˡ);
   #[global] Pair_get_x (x : Pair.t) :: go.IsGoStepPureDet (StructFieldGet (Pair) "x") #x #x.(Pair.x);
   #[global] Pair_set_x (x : Pair.t) y :: go.IsGoStepPureDet (StructFieldSet (Pair) "x") (#x, #y) #(x <|Pair.x := y|>);
@@ -1019,7 +1019,7 @@ End Uint32.
 
 Class Uint32_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Uint32_zero_val  :: go.GoZeroValEq Uint32 Uint32.t;
+  #[global] Uint32_zero_val  :: go.TypeRepr Uint32 Uint32.t;
   #[global] Uint32_underlying :: go.Underlying (Uint32) (Uint32ⁱᵐᵖˡ);
 }.
 
@@ -1049,7 +1049,7 @@ End geometryInterface.
 
 Class geometryInterface_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] geometryInterface_zero_val  :: go.GoZeroValEq geometryInterface geometryInterface.t;
+  #[global] geometryInterface_zero_val  :: go.TypeRepr geometryInterface geometryInterface.t;
   #[global] geometryInterface_underlying :: go.Underlying (geometryInterface) (geometryInterfaceⁱᵐᵖˡ);
   #[global] geometryInterface'ptr_Square_unfold :: MethodUnfold (geometryInterface) "Square" (geometryInterface__Squareⁱᵐᵖˡ);
   #[global] geometryInterface'ptr_Volume_unfold :: MethodUnfold (geometryInterface) "Volume" (geometryInterface__Volumeⁱᵐᵖˡ);
@@ -1115,7 +1115,7 @@ End SquareStruct.
 
 Class SquareStruct_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] SquareStruct_zero_val  :: go.GoZeroValEq SquareStruct SquareStruct.t;
+  #[global] SquareStruct_zero_val  :: go.TypeRepr SquareStruct SquareStruct.t;
   #[global] SquareStruct_underlying :: go.Underlying (SquareStruct) (SquareStructⁱᵐᵖˡ);
   #[global] SquareStruct_get_Side (x : SquareStruct.t) :: go.IsGoStepPureDet (StructFieldGet (SquareStruct) "Side") #x #x.(SquareStruct.Side);
   #[global] SquareStruct_set_Side (x : SquareStruct.t) y :: go.IsGoStepPureDet (StructFieldSet (SquareStruct) "Side") (#x, #y) #(x <|SquareStruct.Side := y|>);
@@ -1292,7 +1292,7 @@ End LoopStruct.
 
 Class LoopStruct_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] LoopStruct_zero_val  :: go.GoZeroValEq LoopStruct LoopStruct.t;
+  #[global] LoopStruct_zero_val  :: go.TypeRepr LoopStruct LoopStruct.t;
   #[global] LoopStruct_underlying :: go.Underlying (LoopStruct) (LoopStructⁱᵐᵖˡ);
   #[global] LoopStruct_get_loopNext (x : LoopStruct.t) :: go.IsGoStepPureDet (StructFieldGet (LoopStruct) "loopNext") #x #x.(LoopStruct.loopNext);
   #[global] LoopStruct_set_loopNext (x : LoopStruct.t) y :: go.IsGoStepPureDet (StructFieldSet (LoopStruct) "loopNext") (#x, #y) #(x <|LoopStruct.loopNext := y|>);
@@ -2160,7 +2160,7 @@ End BoolTest.
 
 Class BoolTest_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] BoolTest_zero_val  :: go.GoZeroValEq BoolTest BoolTest.t;
+  #[global] BoolTest_zero_val  :: go.TypeRepr BoolTest BoolTest.t;
   #[global] BoolTest_underlying :: go.Underlying (BoolTest) (BoolTestⁱᵐᵖˡ);
   #[global] BoolTest_get_t (x : BoolTest.t) :: go.IsGoStepPureDet (StructFieldGet (BoolTest) "t") #x #x.(BoolTest.t);
   #[global] BoolTest_set_t (x : BoolTest.t) y :: go.IsGoStepPureDet (StructFieldSet (BoolTest) "t") (#x, #y) #(x <|BoolTest.t := y|>);
@@ -2292,7 +2292,7 @@ End ArrayEditor.
 
 Class ArrayEditor_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] ArrayEditor_zero_val  :: go.GoZeroValEq ArrayEditor ArrayEditor.t;
+  #[global] ArrayEditor_zero_val  :: go.TypeRepr ArrayEditor ArrayEditor.t;
   #[global] ArrayEditor_underlying :: go.Underlying (ArrayEditor) (ArrayEditorⁱᵐᵖˡ);
   #[global] ArrayEditor_get_s (x : ArrayEditor.t) :: go.IsGoStepPureDet (StructFieldGet (ArrayEditor) "s") #x #x.(ArrayEditor.s);
   #[global] ArrayEditor_set_s (x : ArrayEditor.t) y :: go.IsGoStepPureDet (StructFieldSet (ArrayEditor) "s") (#x, #y) #(x <|ArrayEditor.s := y|>);
@@ -2523,7 +2523,7 @@ End Bar.
 
 Class Bar_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Bar_zero_val  :: go.GoZeroValEq Bar Bar.t;
+  #[global] Bar_zero_val  :: go.TypeRepr Bar Bar.t;
   #[global] Bar_underlying :: go.Underlying (Bar) (Barⁱᵐᵖˡ);
   #[global] Bar_get_a (x : Bar.t) :: go.IsGoStepPureDet (StructFieldGet (Bar) "a") #x #x.(Bar.a);
   #[global] Bar_set_a (x : Bar.t) y :: go.IsGoStepPureDet (StructFieldSet (Bar) "a") (#x, #y) #(x <|Bar.a := y|>);
@@ -2561,7 +2561,7 @@ End Foo.
 
 Class Foo_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Foo_zero_val  :: go.GoZeroValEq Foo Foo.t;
+  #[global] Foo_zero_val  :: go.TypeRepr Foo Foo.t;
   #[global] Foo_underlying :: go.Underlying (Foo) (Fooⁱᵐᵖˡ);
   #[global] Foo_get_bar (x : Foo.t) :: go.IsGoStepPureDet (StructFieldGet (Foo) "bar") #x #x.(Foo.bar);
   #[global] Foo_set_bar (x : Foo.t) y :: go.IsGoStepPureDet (StructFieldSet (Foo) "bar") (#x, #y) #(x <|Foo.bar := y|>);
@@ -2603,7 +2603,7 @@ End TwoInts.
 
 Class TwoInts_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] TwoInts_zero_val  :: go.GoZeroValEq TwoInts TwoInts.t;
+  #[global] TwoInts_zero_val  :: go.TypeRepr TwoInts TwoInts.t;
   #[global] TwoInts_underlying :: go.Underlying (TwoInts) (TwoIntsⁱᵐᵖˡ);
   #[global] TwoInts_get_x (x : TwoInts.t) :: go.IsGoStepPureDet (StructFieldGet (TwoInts) "x") #x #x.(TwoInts.x);
   #[global] TwoInts_set_x (x : TwoInts.t) y :: go.IsGoStepPureDet (StructFieldSet (TwoInts) "x") (#x, #y) #(x <|TwoInts.x := y|>);
@@ -2672,7 +2672,7 @@ End S.
 
 Class S_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] S_zero_val  :: go.GoZeroValEq S S.t;
+  #[global] S_zero_val  :: go.TypeRepr S S.t;
   #[global] S_underlying :: go.Underlying (S) (Sⁱᵐᵖˡ);
   #[global] S_get_a (x : S.t) :: go.IsGoStepPureDet (StructFieldGet (S) "a") #x #x.(S.a);
   #[global] S_set_a (x : S.t) y :: go.IsGoStepPureDet (StructFieldSet (S) "a") (#x, #y) #(x <|S.a := y|>);
@@ -2859,7 +2859,7 @@ End StructWrap.
 
 Class StructWrap_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] StructWrap_zero_val  :: go.GoZeroValEq StructWrap StructWrap.t;
+  #[global] StructWrap_zero_val  :: go.TypeRepr StructWrap StructWrap.t;
   #[global] StructWrap_underlying :: go.Underlying (StructWrap) (StructWrapⁱᵐᵖˡ);
   #[global] StructWrap_get_i (x : StructWrap.t) :: go.IsGoStepPureDet (StructFieldGet (StructWrap) "i") #x #x.(StructWrap.i);
   #[global] StructWrap_set_i (x : StructWrap.t) y :: go.IsGoStepPureDet (StructFieldSet (StructWrap) "i") (#x, #y) #(x <|StructWrap.i := y|>);
@@ -2939,7 +2939,7 @@ End StructWithFunc.
 
 Class StructWithFunc_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] StructWithFunc_zero_val  :: go.GoZeroValEq StructWithFunc StructWithFunc.t;
+  #[global] StructWithFunc_zero_val  :: go.TypeRepr StructWithFunc StructWithFunc.t;
   #[global] StructWithFunc_underlying :: go.Underlying (StructWithFunc) (StructWithFuncⁱᵐᵖˡ);
   #[global] StructWithFunc_get_fn (x : StructWithFunc.t) :: go.IsGoStepPureDet (StructFieldGet (StructWithFunc) "fn") #x #x.(StructWithFunc.fn);
   #[global] StructWithFunc_set_fn (x : StructWithFunc.t) y :: go.IsGoStepPureDet (StructFieldSet (StructWithFunc) "fn") (#x, #y) #(x <|StructWithFunc.fn := y|>);
@@ -3036,7 +3036,7 @@ End switchConcrete.
 
 Class switchConcrete_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] switchConcrete_zero_val  :: go.GoZeroValEq switchConcrete switchConcrete.t;
+  #[global] switchConcrete_zero_val  :: go.TypeRepr switchConcrete switchConcrete.t;
   #[global] switchConcrete_underlying :: go.Underlying (switchConcrete) (switchConcreteⁱᵐᵖˡ);
   #[global] switchConcrete'ptr_marker_unfold :: MethodUnfold (go.PointerType (switchConcrete)) "marker" (switchConcrete__markerⁱᵐᵖˡ);
 }.
@@ -3054,7 +3054,7 @@ End switchInterface.
 
 Class switchInterface_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] switchInterface_zero_val  :: go.GoZeroValEq switchInterface switchInterface.t;
+  #[global] switchInterface_zero_val  :: go.TypeRepr switchInterface switchInterface.t;
   #[global] switchInterface_underlying :: go.Underlying (switchInterface) (switchInterfaceⁱᵐᵖˡ);
   #[global] switchInterface'ptr_marker_unfold :: MethodUnfold (switchInterface) "marker" (switchInterface__markerⁱᵐᵖˡ);
 }.
@@ -3304,7 +3304,7 @@ End Log.
 
 Class Log_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Log_zero_val  :: go.GoZeroValEq Log Log.t;
+  #[global] Log_zero_val  :: go.TypeRepr Log Log.t;
   #[global] Log_underlying :: go.Underlying (Log) (Logⁱᵐᵖˡ);
   #[global] Log_get_d (x : Log.t) :: go.IsGoStepPureDet (StructFieldGet (Log) "d") #x #x.(Log.d);
   #[global] Log_set_d (x : Log.t) y :: go.IsGoStepPureDet (StructFieldSet (Log) "d") (#x, #y) #(x <|Log.d := y|>);

@@ -58,7 +58,6 @@ Context `{!go.TypeRepr t V}.
 Global Instance into_val_typed_array n : IntoValTyped (array.t V n) (go.ArrayType n t).
 Proof.
   split.
-  - apply _.
   - admit.
   - iIntros "* Hl HΦ".
     rewrite go.load_array. case_decide.

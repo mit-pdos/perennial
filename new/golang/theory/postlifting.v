@@ -68,7 +68,6 @@ Qed.
 Class IntoValTyped (V : Type) (t : go.type) `{!ZeroVal V} `{!TypedPointsto V}
   `{!GoSemanticsFunctions} :=
   {
-    #[global] go_zero_val_eq :: go.GoZeroValEq t V;
     wp_alloc : (∀ {s E} (v : V), {{{ True }}}
                            alloc t #v @ s ; E
                          {{{ l, RET #l; l ↦ v }}});
@@ -354,7 +353,7 @@ Ltac solve_wp_store :=
   wp_apply (_internal_wp_untyped_store with "Hl");
   iIntros "Hl"; by iApply "HΦ".
 
-Ltac solve_into_val_typed := constructor; [tc_solve|solve_wp_alloc|solve_wp_load|solve_wp_store].
+Ltac solve_into_val_typed := constructor; [solve_wp_alloc|solve_wp_load|solve_wp_store].
 
 Global Instance into_val_typed_loc t : IntoValTyped loc (go.PointerType t).
 Proof. solve_into_val_typed. Qed.

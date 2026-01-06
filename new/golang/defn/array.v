@@ -17,8 +17,8 @@ Class ArraySemantics `{!GoSemanticsFunctions} :=
 
   #[global] equals_array n t (H : go.IsComparable t) :: go.IsComparable (go.ArrayType n t);
 
-  #[global] go_zero_val_eq_array ty V n `{!ZeroVal V} `{!go.GoZeroValEq ty V} ::
-    go.GoZeroValEq (go.ArrayType n ty) (array.t V n);
+  #[global] type_repr_array ty V n `{!ZeroVal V} `{!go.TypeRepr ty V} ::
+    go.TypeRepr (go.ArrayType n ty) (array.t V n);
 
   alloc_array n elem : alloc (go.ArrayType n elem) = alloc (go.ArrayType n elem); (* TODO *)
   load_array n elem_type :
@@ -47,11 +47,11 @@ Class ArraySemantics `{!GoSemanticsFunctions} :=
     )%V;
 
 
-  #[global] index_ref_array n elem_type i l V `{!go.TypeRepr elem_type V} ::
+  #[global] index_ref_array n elem_type i l V `{!ZeroVal V} `{!go.TypeRepr elem_type V} ::
     go.GoExprEq (index_ref (go.ArrayType n elem_type) i #l)
       (if decide (i < n) then #(array_index_ref V i l)
        else Panic "index out of range");
-  #[global] index_array n elem_type i V `{!go.TypeRepr elem_type V} (a : array.t V n) ::
+  #[global] index_array n elem_type i V `{!ZeroVal V} `{!go.TypeRepr elem_type V} (a : array.t V n) ::
     go.GoExprEq (index (go.ArrayType n elem_type) i #a)
       (match (array.arr a) !! (Z.to_nat i) with
        | Some v => #v
