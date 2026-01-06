@@ -353,10 +353,9 @@ Class CoreSemantics :=
 
   #[global] core_comparison_sem :: CoreComparisonSemantics;
 
-  alloc_underlying `{!Underlying t t'} : alloc t = alloc t';
-  alloc_primitive t (H : is_primitive t) : alloc t = (λ: "v", ref_one "v")%V;
-  alloc_struct fds :
-    alloc (go.StructType fds) =
+  alloc_primitive `{!Underlying t t'} (H : is_primitive t') : alloc t = (λ: "v", ref_one "v")%V;
+  alloc_struct `{!Underlying t (go.StructType fds)} :
+    alloc t =
     (λ: <>,
         let: "l" := GoPrealloc #() in
         foldl (λ alloc_so_far fd,
@@ -365,32 +364,30 @@ Class CoreSemantics :=
                                                  | go.FieldDecl n t => pair n t
                                                  | go.EmbeddedField n t => pair n t
                                                  end in
-                let field_addr := StructFieldRef (go.StructType fds) field_name "l" in
+                let field_addr := StructFieldRef t field_name "l" in
                 let: "l_field" := GoAlloc field_type #() in
                 if: ("l_field" ≠⟨go.PointerType field_type⟩ field_addr) then AngelicExit #()
                 else #()
           ) #() fds ;;
         "l")%V;
 
-  load_underlying `{!Underlying t t'} : load t = load t';
-  load_primitive t (H : is_primitive t) : load t = (λ: "l", Read "l")%V;
-  load_struct fds :
-    load (go.StructType fds) =
+  load_primitive `{!Underlying t t'} (H : is_primitive t') : load t = (λ: "l", Read "l")%V;
+  load_struct `{!Underlying t (go.StructType fds)} :
+    load t =
     (λ: "l",
        foldl (λ struct_so_far fd,
                 let (field_name, field_type) := match fd with
                                                 | go.FieldDecl n t => pair n t
                                                 | go.EmbeddedField n t => pair n t
                                                 end in
-                let field_addr := StructFieldRef (go.StructType fds) field_name "l" in
+                let field_addr := StructFieldRef t field_name "l" in
                 let field_val := GoLoad field_type field_addr in
-                StructFieldSet (go.StructType fds) field_name (struct_so_far, field_val)
-         ) (GoZeroVal (go.StructType fds) #()) fds)%V;
+                StructFieldSet t field_name (struct_so_far, field_val)
+         ) (GoZeroVal t #()) fds)%V;
 
-  store_underlying `{!Underlying t t'} : store t = store t';
-  store_primitive t (H : is_primitive t) : store t = (λ: "l" "v", "l" <- "v")%V;
-  store_struct fds :
-    store (go.StructType fds) =
+  store_primitive `{!Underlying t t'} (H : is_primitive t) : store t = (λ: "l" "v", "l" <- "v")%V;
+  store_struct `{!Underlying t (go.StructType fds)} :
+    store t =
     (λ: "l" "v",
        foldl (λ store_so_far fd,
                 store_so_far;;
@@ -398,10 +395,10 @@ Class CoreSemantics :=
                                                 | go.FieldDecl n t => pair n t
                                                 | go.EmbeddedField n t => pair n t
                                                 end in
-                let field_addr := StructFieldRef (go.StructType fds) field_name "l" in
-                let field_val := StructFieldGet (go.StructType fds) field_name "v" in
+                let field_addr := StructFieldRef t field_name "l" in
+                let field_val := StructFieldGet t field_name "v" in
                 GoStore field_type (field_addr, field_val)
-         ) (GoZeroVal (go.StructType fds) #()) fds)%V;
+         ) (GoZeroVal t #()) fds)%V;
 
   index_ref_underlying `{!Underlying t t'} : index_ref t = index_ref t';
   index_underlying `{!Underlying t t'} : index t = index t';

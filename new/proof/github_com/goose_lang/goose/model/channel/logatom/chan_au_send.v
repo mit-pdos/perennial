@@ -47,19 +47,19 @@ Qed.
 
 (* FIXME: proofgen IntoValTyped for channel.Channel.t *)
 Instance channel_into_val_typed T' T
-  `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T}:
+  `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T} `{!go.TypeRepr T T'} :
   IntoValTyped (channel.Channel.t T') (channel.Channel T).
 Proof.
   constructor.
   - intros. iIntros "_ HΦ".
-    rewrite go.alloc_underlying go.alloc_struct.
+    rewrite go.alloc_struct.
     wp_auto. admit.
   - intros. iIntros "Hl HΦ". rewrite typed_pointsto_unseal.
-    iNamed "Hl".
-    (* FIXME: use [Underlying] class in load_struct. *)
-    (* rewrite go.load_struct. *)
-    (* wp_auto. *)
-    (* wp_bind. *)
+    iNamed "Hl". rewrite go.load_struct. simpl. wp_auto.
+    destruct v. simpl. iApply "HΦ". iFrame.
+  - intros. iIntros "Hl HΦ". rewrite typed_pointsto_unseal.
+    iNamed "Hl". rewrite go.store_struct. simpl. wp_auto.
+    destruct v. simpl. iApply "HΦ". iFrame.
 Admitted.
 
 Context `[!chanG Σ V].
