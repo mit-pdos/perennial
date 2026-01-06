@@ -274,6 +274,7 @@ End Timer.
 Class Timer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Timer_zero_val  :: go.GoZeroValEq Timer Timer.t;
+  #[global] Timer_underlying  :: go.Underlying (Timer ) (Timerⁱᵐᵖˡ );
 }.
 
 Definition NewTimer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "time.NewTimer"%go.
@@ -375,6 +376,7 @@ End Time.
 Class Time_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Time_zero_val  :: go.GoZeroValEq Time Time.t;
+  #[global] Time_underlying  :: go.Underlying (Time ) (Timeⁱᵐᵖˡ );
   #[global] Time'ptr_UnixNano_unfold :: MethodUnfold (Time) "UnixNano" (Time__UnixNanoⁱᵐᵖˡ);
   #[global] Time'ptr_UnixNano_unfold :: MethodUnfold (go.PointerType (Time)) "UnixNano" (λ: "$r", MethodResolve (Time) UnixNano #() (![(Time)] "$r");
   #[global] Time'ptr_nsec_unfold :: MethodUnfold (go.PointerType (Time)) "nsec" (Time__nsecⁱᵐᵖˡ);
@@ -488,6 +490,7 @@ End Duration.
 Class Duration_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Duration_zero_val  :: go.GoZeroValEq Duration Duration.t;
+  #[global] Duration_underlying  :: go.Underlying (Duration ) (Durationⁱᵐᵖˡ );
 }.
 
 Axiom minDuration : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.

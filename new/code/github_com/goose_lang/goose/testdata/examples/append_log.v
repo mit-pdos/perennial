@@ -144,6 +144,7 @@ End Log.
 Class Log_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Log_zero_val  :: go.GoZeroValEq Log Log.t;
+  #[global] Log_underlying  :: go.Underlying (Log ) (Logⁱᵐᵖˡ );
   #[global] Log'ptr_Append_unfold :: MethodUnfold (go.PointerType (Log)) "Append" (Log__Appendⁱᵐᵖˡ);
   #[global] Log'ptr_Get_unfold :: MethodUnfold (go.PointerType (Log)) "Get" (Log__Getⁱᵐᵖˡ);
   #[global] Log'ptr_Reset_unfold :: MethodUnfold (go.PointerType (Log)) "Reset" (Log__Resetⁱᵐᵖˡ);

@@ -30,6 +30,7 @@ End unit.
 Class unit_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] unit_zero_val  :: go.GoZeroValEq unit unit.t;
+  #[global] unit_underlying  :: go.Underlying (unit ) (unitⁱᵐᵖˡ );
 }.
 
 Definition findKey {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.findKey"%go.
@@ -550,6 +551,7 @@ End Enc.
 Class Enc_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Enc_zero_val  :: go.GoZeroValEq Enc Enc.t;
+  #[global] Enc_underlying  :: go.Underlying (Enc ) (Encⁱᵐᵖˡ );
   #[global] Enc'ptr_consume_unfold :: MethodUnfold (go.PointerType (Enc)) "consume" (Enc__consumeⁱᵐᵖˡ);
 }.
 
@@ -590,6 +592,7 @@ End Dec.
 Class Dec_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Dec_zero_val  :: go.GoZeroValEq Dec Dec.t;
+  #[global] Dec_underlying  :: go.Underlying (Dec ) (Decⁱᵐᵖˡ );
   #[global] Dec'ptr_consume_unfold :: MethodUnfold (go.PointerType (Dec)) "consume" (Dec__consumeⁱᵐᵖˡ);
 }.
 
@@ -813,6 +816,7 @@ End Editor.
 Class Editor_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Editor_zero_val  :: go.GoZeroValEq Editor Editor.t;
+  #[global] Editor_underlying  :: go.Underlying (Editor ) (Editorⁱᵐᵖˡ );
   #[global] Editor'ptr_AdvanceReturn_unfold :: MethodUnfold (go.PointerType (Editor)) "AdvanceReturn" (Editor__AdvanceReturnⁱᵐᵖˡ);
 }.
 
@@ -855,6 +859,7 @@ End Pair.
 Class Pair_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Pair_zero_val  :: go.GoZeroValEq Pair Pair.t;
+  #[global] Pair_underlying  :: go.Underlying (Pair ) (Pairⁱᵐᵖˡ );
 }.
 
 Definition failing_testFunctionOrdering {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.failing_testFunctionOrdering"%go.
@@ -1003,6 +1008,7 @@ End Uint32.
 Class Uint32_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Uint32_zero_val  :: go.GoZeroValEq Uint32 Uint32.t;
+  #[global] Uint32_underlying  :: go.Underlying (Uint32 ) (Uint32ⁱᵐᵖˡ );
 }.
 
 Definition failing_testU32NewtypeLen {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.failing_testU32NewtypeLen"%go.
@@ -1032,6 +1038,7 @@ End geometryInterface.
 Class geometryInterface_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] geometryInterface_zero_val  :: go.GoZeroValEq geometryInterface geometryInterface.t;
+  #[global] geometryInterface_underlying  :: go.Underlying (geometryInterface ) (geometryInterfaceⁱᵐᵖˡ );
   #[global] geometryInterface'ptr_Square_unfold :: MethodUnfold (geometryInterface) "Square" (geometryInterface__Squareⁱᵐᵖˡ);
   #[global] geometryInterface'ptr_Volume_unfold :: MethodUnfold (geometryInterface) "Volume" (geometryInterface__Volumeⁱᵐᵖˡ);
 }.
@@ -1097,6 +1104,7 @@ End SquareStruct.
 Class SquareStruct_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] SquareStruct_zero_val  :: go.GoZeroValEq SquareStruct SquareStruct.t;
+  #[global] SquareStruct_underlying  :: go.Underlying (SquareStruct ) (SquareStructⁱᵐᵖˡ );
   #[global] SquareStruct'ptr_Square_unfold :: MethodUnfold (SquareStruct) "Square" (SquareStruct__Squareⁱᵐᵖˡ);
   #[global] SquareStruct'ptr_Volume_unfold :: MethodUnfold (SquareStruct) "Volume" (SquareStruct__Volumeⁱᵐᵖˡ);
   #[global] SquareStruct'ptr_Square_unfold :: MethodUnfold (go.PointerType (SquareStruct)) "Square" (λ: "$r", MethodResolve (SquareStruct) Square #() (![(SquareStruct)] "$r");
@@ -1271,6 +1279,7 @@ End LoopStruct.
 Class LoopStruct_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] LoopStruct_zero_val  :: go.GoZeroValEq LoopStruct LoopStruct.t;
+  #[global] LoopStruct_underlying  :: go.Underlying (LoopStruct ) (LoopStructⁱᵐᵖˡ );
   #[global] LoopStruct'ptr_forLoopWait_unfold :: MethodUnfold (LoopStruct) "forLoopWait" (LoopStruct__forLoopWaitⁱᵐᵖˡ);
   #[global] LoopStruct'ptr_forLoopWait_unfold :: MethodUnfold (go.PointerType (LoopStruct)) "forLoopWait" (λ: "$r", MethodResolve (LoopStruct) forLoopWait #() (![(LoopStruct)] "$r");
 }.
@@ -2136,6 +2145,7 @@ End BoolTest.
 Class BoolTest_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] BoolTest_zero_val  :: go.GoZeroValEq BoolTest BoolTest.t;
+  #[global] BoolTest_underlying  :: go.Underlying (BoolTest ) (BoolTestⁱᵐᵖˡ );
 }.
 
 Definition CheckTrue {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.CheckTrue"%go.
@@ -2259,6 +2269,7 @@ End ArrayEditor.
 Class ArrayEditor_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] ArrayEditor_zero_val  :: go.GoZeroValEq ArrayEditor ArrayEditor.t;
+  #[global] ArrayEditor_underlying  :: go.Underlying (ArrayEditor ) (ArrayEditorⁱᵐᵖˡ );
   #[global] ArrayEditor'ptr_Advance_unfold :: MethodUnfold (go.PointerType (ArrayEditor)) "Advance" (ArrayEditor__Advanceⁱᵐᵖˡ);
 }.
 
@@ -2485,6 +2496,7 @@ End Bar.
 Class Bar_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Bar_zero_val  :: go.GoZeroValEq Bar Bar.t;
+  #[global] Bar_underlying  :: go.Underlying (Bar ) (Barⁱᵐᵖˡ );
   #[global] Bar'ptr_mutate_unfold :: MethodUnfold (go.PointerType (Bar)) "mutate" (Bar__mutateⁱᵐᵖˡ);
 }.
 
@@ -2518,6 +2530,7 @@ End Foo.
 Class Foo_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Foo_zero_val  :: go.GoZeroValEq Foo Foo.t;
+  #[global] Foo_underlying  :: go.Underlying (Foo ) (Fooⁱᵐᵖˡ );
   #[global] Foo'ptr_mutateBar_unfold :: MethodUnfold (go.PointerType (Foo)) "mutateBar" (Foo__mutateBarⁱᵐᵖˡ);
 }.
 
@@ -2557,6 +2570,7 @@ End TwoInts.
 Class TwoInts_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] TwoInts_zero_val  :: go.GoZeroValEq TwoInts TwoInts.t;
+  #[global] TwoInts_underlying  :: go.Underlying (TwoInts ) (TwoIntsⁱᵐᵖˡ );
 }.
 
 Definition S : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.S"%go [].
@@ -2621,6 +2635,7 @@ End S.
 Class S_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] S_zero_val  :: go.GoZeroValEq S S.t;
+  #[global] S_underlying  :: go.Underlying (S ) (Sⁱᵐᵖˡ );
   #[global] S'ptr_readBVal_unfold :: MethodUnfold (S) "readBVal" (S__readBValⁱᵐᵖˡ);
   #[global] S'ptr_negateC_unfold :: MethodUnfold (go.PointerType (S)) "negateC" (S__negateCⁱᵐᵖˡ);
   #[global] S'ptr_readA_unfold :: MethodUnfold (go.PointerType (S)) "readA" (S__readAⁱᵐᵖˡ);
@@ -2801,6 +2816,7 @@ End StructWrap.
 Class StructWrap_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] StructWrap_zero_val  :: go.GoZeroValEq StructWrap StructWrap.t;
+  #[global] StructWrap_underlying  :: go.Underlying (StructWrap ) (StructWrapⁱᵐᵖˡ );
 }.
 
 Definition testStoreInStructVar {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testStoreInStructVar"%go.
@@ -2878,6 +2894,7 @@ End StructWithFunc.
 Class StructWithFunc_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] StructWithFunc_zero_val  :: go.GoZeroValEq StructWithFunc StructWithFunc.t;
+  #[global] StructWithFunc_underlying  :: go.Underlying (StructWithFunc ) (StructWithFuncⁱᵐᵖˡ );
 }.
 
 Definition testStructFieldFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testStructFieldFunc"%go.
@@ -2972,6 +2989,7 @@ End switchConcrete.
 Class switchConcrete_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] switchConcrete_zero_val  :: go.GoZeroValEq switchConcrete switchConcrete.t;
+  #[global] switchConcrete_underlying  :: go.Underlying (switchConcrete ) (switchConcreteⁱᵐᵖˡ );
   #[global] switchConcrete'ptr_marker_unfold :: MethodUnfold (go.PointerType (switchConcrete)) "marker" (switchConcrete__markerⁱᵐᵖˡ);
 }.
 
@@ -2989,6 +3007,7 @@ End switchInterface.
 Class switchInterface_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] switchInterface_zero_val  :: go.GoZeroValEq switchInterface switchInterface.t;
+  #[global] switchInterface_underlying  :: go.Underlying (switchInterface ) (switchInterfaceⁱᵐᵖˡ );
   #[global] switchInterface'ptr_marker_unfold :: MethodUnfold (switchInterface) "marker" (switchInterface__markerⁱᵐᵖˡ);
 }.
 
@@ -3238,6 +3257,7 @@ End Log.
 Class Log_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Log_zero_val  :: go.GoZeroValEq Log Log.t;
+  #[global] Log_underlying  :: go.Underlying (Log ) (Logⁱᵐᵖˡ );
   #[global] Log'ptr_Apply_unfold :: MethodUnfold (Log) "Apply" (Log__Applyⁱᵐᵖˡ);
   #[global] Log'ptr_BeginTxn_unfold :: MethodUnfold (Log) "BeginTxn" (Log__BeginTxnⁱᵐᵖˡ);
   #[global] Log'ptr_Commit_unfold :: MethodUnfold (Log) "Commit" (Log__Commitⁱᵐᵖˡ);

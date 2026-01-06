@@ -51,6 +51,7 @@ End Reader.
 Class Reader_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Reader_zero_val  :: go.GoZeroValEq Reader Reader.t;
+  #[global] Reader_underlying  :: go.Underlying (Reader ) (Readerⁱᵐᵖˡ );
 }.
 
 Definition Writerⁱᵐᵖˡ : go.type := go.InterfaceType [go.MethodElem #"Write"%go (go.Signature [go.SliceType go.byte] false [go.int; go.error])].
@@ -67,6 +68,7 @@ End Writer.
 Class Writer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Writer_zero_val  :: go.GoZeroValEq Writer Writer.t;
+  #[global] Writer_underlying  :: go.Underlying (Writer ) (Writerⁱᵐᵖˡ );
 }.
 
 Axiom Closerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.

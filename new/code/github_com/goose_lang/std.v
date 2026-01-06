@@ -185,6 +185,7 @@ End JoinHandle.
 Class JoinHandle_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] JoinHandle_zero_val  :: go.GoZeroValEq JoinHandle JoinHandle.t;
+  #[global] JoinHandle_underlying  :: go.Underlying (JoinHandle ) (JoinHandleⁱᵐᵖˡ );
   #[global] JoinHandle'ptr_Join_unfold :: MethodUnfold (go.PointerType (JoinHandle)) "Join" (JoinHandle__Joinⁱᵐᵖˡ);
   #[global] JoinHandle'ptr_finish_unfold :: MethodUnfold (go.PointerType (JoinHandle)) "finish" (JoinHandle__finishⁱᵐᵖˡ);
 }.

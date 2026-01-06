@@ -165,6 +165,7 @@ End Bool.
 Class Bool_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Bool_zero_val  :: go.GoZeroValEq Bool Bool.t;
+  #[global] Bool_underlying  :: go.Underlying (Bool ) (Boolⁱᵐᵖˡ );
   #[global] Bool'ptr_CompareAndSwap_unfold :: MethodUnfold (go.PointerType (Bool)) "CompareAndSwap" (Bool__CompareAndSwapⁱᵐᵖˡ);
   #[global] Bool'ptr_Load_unfold :: MethodUnfold (go.PointerType (Bool)) "Load" (Bool__Loadⁱᵐᵖˡ);
   #[global] Bool'ptr_Store_unfold :: MethodUnfold (go.PointerType (Bool)) "Store" (Bool__Storeⁱᵐᵖˡ);
@@ -210,6 +211,7 @@ End Pointer.
 Class Pointer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Pointer_zero_val T T' `{!ZeroVal T'} `{!go.GoZeroValEq T T'} :: go.GoZeroValEq (Pointer T) (Pointer.t T');
+  #[global] Pointer_underlying  T :: go.Underlying (Pointer  T) (Pointerⁱᵐᵖˡ  T);
   #[global] Pointer'ptr_CompareAndSwap_unfold T :: MethodUnfold (go.PointerType (Pointer T)) "CompareAndSwap" (Pointer__CompareAndSwapⁱᵐᵖˡ T);
   #[global] Pointer'ptr_Load_unfold T :: MethodUnfold (go.PointerType (Pointer T)) "Load" (Pointer__Loadⁱᵐᵖˡ T);
   #[global] Pointer'ptr_Store_unfold T :: MethodUnfold (go.PointerType (Pointer T)) "Store" (Pointer__Storeⁱᵐᵖˡ T);
@@ -326,6 +328,7 @@ End Int32.
 Class Int32_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Int32_zero_val  :: go.GoZeroValEq Int32 Int32.t;
+  #[global] Int32_underlying  :: go.Underlying (Int32 ) (Int32ⁱᵐᵖˡ );
   #[global] Int32'ptr_Add_unfold :: MethodUnfold (go.PointerType (Int32)) "Add" (Int32__Addⁱᵐᵖˡ);
   #[global] Int32'ptr_And_unfold :: MethodUnfold (go.PointerType (Int32)) "And" (Int32__Andⁱᵐᵖˡ);
   #[global] Int32'ptr_CompareAndSwap_unfold :: MethodUnfold (go.PointerType (Int32)) "CompareAndSwap" (Int32__CompareAndSwapⁱᵐᵖˡ);
@@ -449,6 +452,7 @@ End Int64.
 Class Int64_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Int64_zero_val  :: go.GoZeroValEq Int64 Int64.t;
+  #[global] Int64_underlying  :: go.Underlying (Int64 ) (Int64ⁱᵐᵖˡ );
   #[global] Int64'ptr_Add_unfold :: MethodUnfold (go.PointerType (Int64)) "Add" (Int64__Addⁱᵐᵖˡ);
   #[global] Int64'ptr_And_unfold :: MethodUnfold (go.PointerType (Int64)) "And" (Int64__Andⁱᵐᵖˡ);
   #[global] Int64'ptr_CompareAndSwap_unfold :: MethodUnfold (go.PointerType (Int64)) "CompareAndSwap" (Int64__CompareAndSwapⁱᵐᵖˡ);
@@ -568,6 +572,7 @@ End Uint32.
 Class Uint32_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Uint32_zero_val  :: go.GoZeroValEq Uint32 Uint32.t;
+  #[global] Uint32_underlying  :: go.Underlying (Uint32 ) (Uint32ⁱᵐᵖˡ );
   #[global] Uint32'ptr_Add_unfold :: MethodUnfold (go.PointerType (Uint32)) "Add" (Uint32__Addⁱᵐᵖˡ);
   #[global] Uint32'ptr_And_unfold :: MethodUnfold (go.PointerType (Uint32)) "And" (Uint32__Andⁱᵐᵖˡ);
   #[global] Uint32'ptr_CompareAndSwap_unfold :: MethodUnfold (go.PointerType (Uint32)) "CompareAndSwap" (Uint32__CompareAndSwapⁱᵐᵖˡ);
@@ -689,6 +694,7 @@ End Uint64.
 Class Uint64_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Uint64_zero_val  :: go.GoZeroValEq Uint64 Uint64.t;
+  #[global] Uint64_underlying  :: go.Underlying (Uint64 ) (Uint64ⁱᵐᵖˡ );
   #[global] Uint64'ptr_Add_unfold :: MethodUnfold (go.PointerType (Uint64)) "Add" (Uint64__Addⁱᵐᵖˡ);
   #[global] Uint64'ptr_And_unfold :: MethodUnfold (go.PointerType (Uint64)) "And" (Uint64__Andⁱᵐᵖˡ);
   #[global] Uint64'ptr_CompareAndSwap_unfold :: MethodUnfold (go.PointerType (Uint64)) "CompareAndSwap" (Uint64__CompareAndSwapⁱᵐᵖˡ);
@@ -719,6 +725,7 @@ End noCopy.
 Class noCopy_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] noCopy_zero_val  :: go.GoZeroValEq noCopy noCopy.t;
+  #[global] noCopy_underlying  :: go.Underlying (noCopy ) (noCopyⁱᵐᵖˡ );
 }.
 
 Definition align64ⁱᵐᵖˡ : go.type := go.StructType [
@@ -740,6 +747,7 @@ End align64.
 Class align64_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] align64_zero_val  :: go.GoZeroValEq align64 align64.t;
+  #[global] align64_underlying  :: go.Underlying (align64 ) (align64ⁱᵐᵖˡ );
 }.
 
 Definition efaceWords : go.type := go.Named "sync/atomic.efaceWords"%go [].
@@ -1015,6 +1023,7 @@ End Value.
 Class Value_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Value_zero_val  :: go.GoZeroValEq Value Value.t;
+  #[global] Value_underlying  :: go.Underlying (Value ) (Valueⁱᵐᵖˡ );
   #[global] Value'ptr_CompareAndSwap_unfold :: MethodUnfold (go.PointerType (Value)) "CompareAndSwap" (Value__CompareAndSwapⁱᵐᵖˡ);
   #[global] Value'ptr_Load_unfold :: MethodUnfold (go.PointerType (Value)) "Load" (Value__Loadⁱᵐᵖˡ);
   #[global] Value'ptr_Store_unfold :: MethodUnfold (go.PointerType (Value)) "Store" (Value__Storeⁱᵐᵖˡ);
@@ -1044,6 +1053,7 @@ End efaceWords.
 Class efaceWords_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] efaceWords_zero_val  :: go.GoZeroValEq efaceWords efaceWords.t;
+  #[global] efaceWords_underlying  :: go.Underlying (efaceWords ) (efaceWordsⁱᵐᵖˡ );
 }.
 
 #[global] Instance info' : PkgInfo atomic.atomic := 

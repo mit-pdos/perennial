@@ -30,6 +30,7 @@ End Builder.
 Class Builder_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Builder_zero_val  :: go.GoZeroValEq Builder Builder.t;
+  #[global] Builder_underlying  :: go.Underlying (Builder ) (Builderⁱᵐᵖˡ );
 }.
 
 Definition Clone {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.Clone"%go.

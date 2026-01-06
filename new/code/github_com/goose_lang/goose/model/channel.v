@@ -21,6 +21,7 @@ End offerState.
 Class offerState_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] offerState_zero_val  :: go.GoZeroValEq offerState offerState.t;
+  #[global] offerState_underlying  :: go.Underlying (offerState ) (offerStateⁱᵐᵖˡ );
 }.
 
 Definition buffered {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #(W64 0).
@@ -414,6 +415,7 @@ End Channel.
 Class Channel_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Channel_zero_val T T' `{!ZeroVal T'} `{!go.GoZeroValEq T T'} :: go.GoZeroValEq (Channel T) (Channel.t T');
+  #[global] Channel_underlying  T :: go.Underlying (Channel  T) (Channelⁱᵐᵖˡ  T);
   #[global] Channel'ptr_Cap_unfold T :: MethodUnfold (go.PointerType (Channel T)) "Cap" (Channel__Capⁱᵐᵖˡ T);
   #[global] Channel'ptr_Close_unfold T :: MethodUnfold (go.PointerType (Channel T)) "Close" (Channel__Closeⁱᵐᵖˡ T);
   #[global] Channel'ptr_Iter_unfold T :: MethodUnfold (go.PointerType (Channel T)) "Iter" (Channel__Iterⁱᵐᵖˡ T);
@@ -456,6 +458,7 @@ End SelectDir.
 Class SelectDir_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] SelectDir_zero_val  :: go.GoZeroValEq SelectDir SelectDir.t;
+  #[global] SelectDir_underlying  :: go.Underlying (SelectDir ) (SelectDirⁱᵐᵖˡ );
 }.
 
 (* case ch <- Send *)

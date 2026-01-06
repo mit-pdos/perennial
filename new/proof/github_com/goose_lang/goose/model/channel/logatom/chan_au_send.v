@@ -22,10 +22,6 @@ Admitted.
 Context `{!chanG Σ V}.
 Context `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}.
 
-Context `{!go.Underlying channel.offerState channel.offerStateⁱᵐᵖˡ}.
-
-(* Admitted. *)
-
 Lemma wp_NewChannel (cap: Z) :
   0 ≤ cap < 2^63 ->
   {{{ True }}}
@@ -41,11 +37,6 @@ Proof.
   wp_auto.
   wp_if_destruct.
   {
-    (* FIXME: underlying type assumptions *)
-    assert (go.Underlying (channel.Channel t) (channel.Channelⁱᵐᵖˡ t)) by admit.
-    wp_auto.
-    wp_bind.
-
     (* FIXME: struct set/get assumptions. *)
 
     assert (cap > 0) by word.

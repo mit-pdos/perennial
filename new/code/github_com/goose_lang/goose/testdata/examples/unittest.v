@@ -26,6 +26,7 @@ End Foo.
 Class Foo_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Foo_zero_val  :: go.GoZeroValEq Foo Foo.t;
+  #[global] Foo_underlying  :: go.Underlying (Foo ) (Fooⁱᵐᵖˡ );
 }.
 
 Definition takesArray {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.takesArray"%go.
@@ -276,6 +277,7 @@ End importantStruct.
 Class importantStruct_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] importantStruct_zero_val  :: go.GoZeroValEq importantStruct importantStruct.t;
+  #[global] importantStruct_underlying  :: go.Underlying (importantStruct ) (importantStructⁱᵐᵖˡ );
 }.
 
 Definition doSubtleThings {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.doSubtleThings"%go.
@@ -508,6 +510,7 @@ End stringWrapper.
 Class stringWrapper_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] stringWrapper_zero_val  :: go.GoZeroValEq stringWrapper stringWrapper.t;
+  #[global] stringWrapper_underlying  :: go.Underlying (stringWrapper ) (stringWrapperⁱᵐᵖˡ );
 }.
 
 Definition typedLiteral {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.typedLiteral"%go.
@@ -588,6 +591,7 @@ End Uint32.
 Class Uint32_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Uint32_zero_val  :: go.GoZeroValEq Uint32 Uint32.t;
+  #[global] Uint32_underlying  :: go.Underlying (Uint32 ) (Uint32ⁱᵐᵖˡ );
 }.
 
 Definition testU32NewtypeLen {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.testU32NewtypeLen"%go.
@@ -622,6 +626,7 @@ End numWrapper.
 Class numWrapper_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] numWrapper_zero_val  :: go.GoZeroValEq numWrapper numWrapper.t;
+  #[global] numWrapper_underlying  :: go.Underlying (numWrapper ) (numWrapperⁱᵐᵖˡ );
   #[global] numWrapper'ptr_inc_unfold :: MethodUnfold (go.PointerType (numWrapper)) "inc" (numWrapper__incⁱᵐᵖˡ);
 }.
 
@@ -853,6 +858,7 @@ End diskWrapper.
 Class diskWrapper_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] diskWrapper_zero_val  :: go.GoZeroValEq diskWrapper diskWrapper.t;
+  #[global] diskWrapper_underlying  :: go.Underlying (diskWrapper ) (diskWrapperⁱᵐᵖˡ );
 }.
 
 Definition diskArgument {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.diskArgument"%go.
@@ -905,6 +911,7 @@ End embedA.
 Class embedA_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] embedA_zero_val  :: go.GoZeroValEq embedA embedA.t;
+  #[global] embedA_underlying  :: go.Underlying (embedA ) (embedAⁱᵐᵖˡ );
   #[global] embedA'ptr_Foo_unfold :: MethodUnfold (embedA) "Foo" (embedA__Fooⁱᵐᵖˡ);
   #[global] embedA'ptr_Bar_unfold :: MethodUnfold (go.PointerType (embedA)) "Bar" (embedA__Barⁱᵐᵖˡ);
   #[global] embedA'ptr_Foo_unfold :: MethodUnfold (go.PointerType (embedA)) "Foo" (λ: "$r", MethodResolve (embedA) Foo #() (![(embedA)] "$r");
@@ -945,6 +952,7 @@ End embedB.
 Class embedB_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] embedB_zero_val  :: go.GoZeroValEq embedB embedB.t;
+  #[global] embedB_underlying  :: go.Underlying (embedB ) (embedBⁱᵐᵖˡ );
   #[global] embedB'ptr_Foo_unfold :: MethodUnfold (embedB) "Foo" (embedB__Fooⁱᵐᵖˡ);
   #[global] embedB'ptr_Bar_unfold :: MethodUnfold (go.PointerType (embedB)) "Bar" (λ: "$r", MethodResolve (go.PointerType embedA) Bar #() (StructFieldRef embedB #"embedA"%go "$r"));
   #[global] embedB'ptr_Car_unfold :: MethodUnfold (go.PointerType (embedB)) "Car" (embedB__Carⁱᵐᵖˡ);
@@ -974,6 +982,7 @@ End embedC.
 Class embedC_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] embedC_zero_val  :: go.GoZeroValEq embedC embedC.t;
+  #[global] embedC_underlying  :: go.Underlying (embedC ) (embedCⁱᵐᵖˡ );
   #[global] embedC'ptr_Bar_unfold :: MethodUnfold (embedC) "Bar" (λ: "$r", MethodResolve (go.PointerType embedB) Bar #() (StructFieldGet (embedC) "embedB" "$r" ))%V;
   #[global] embedC'ptr_Car_unfold :: MethodUnfold (embedC) "Car" (λ: "$r", MethodResolve (go.PointerType embedB) Car #() (StructFieldGet (embedC) "embedB" "$r" ))%V;
   #[global] embedC'ptr_Foo_unfold :: MethodUnfold (embedC) "Foo" (λ: "$r", MethodResolve (go.PointerType embedB) Foo #() (StructFieldGet (embedC) "embedB" "$r" ))%V;
@@ -1005,6 +1014,7 @@ End embedD.
 Class embedD_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] embedD_zero_val  :: go.GoZeroValEq embedD embedD.t;
+  #[global] embedD_underlying  :: go.Underlying (embedD ) (embedDⁱᵐᵖˡ );
   #[global] embedD'ptr_Bar_unfold :: MethodUnfold (embedD) "Bar" (λ: "$r", MethodResolve embedC Bar #() (StructFieldGet (embedD) "embedC" "$r" ))%V;
   #[global] embedD'ptr_Car_unfold :: MethodUnfold (embedD) "Car" (λ: "$r", MethodResolve embedC Car #() (StructFieldGet (embedD) "embedC" "$r" ))%V;
   #[global] embedD'ptr_Foo_unfold :: MethodUnfold (embedD) "Foo" (λ: "$r", MethodResolve embedC Foo #() (StructFieldGet (embedD) "embedC" "$r" ))%V;
@@ -1164,6 +1174,7 @@ End Enc.
 Class Enc_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Enc_zero_val  :: go.GoZeroValEq Enc Enc.t;
+  #[global] Enc_underlying  :: go.Underlying (Enc ) (Encⁱᵐᵖˡ );
   #[global] Enc'ptr_UInt32_unfold :: MethodUnfold (go.PointerType (Enc)) "UInt32" (Enc__UInt32ⁱᵐᵖˡ);
   #[global] Enc'ptr_UInt64_unfold :: MethodUnfold (go.PointerType (Enc)) "UInt64" (Enc__UInt64ⁱᵐᵖˡ);
   #[global] Enc'ptr_consume_unfold :: MethodUnfold (go.PointerType (Enc)) "consume" (Enc__consumeⁱᵐᵖˡ);
@@ -1222,6 +1233,7 @@ End Dec.
 Class Dec_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Dec_zero_val  :: go.GoZeroValEq Dec Dec.t;
+  #[global] Dec_underlying  :: go.Underlying (Dec ) (Decⁱᵐᵖˡ );
   #[global] Dec'ptr_UInt32_unfold :: MethodUnfold (go.PointerType (Dec)) "UInt32" (Dec__UInt32ⁱᵐᵖˡ);
   #[global] Dec'ptr_UInt64_unfold :: MethodUnfold (go.PointerType (Dec)) "UInt64" (Dec__UInt64ⁱᵐᵖˡ);
   #[global] Dec'ptr_consume_unfold :: MethodUnfold (go.PointerType (Dec)) "consume" (Dec__consumeⁱᵐᵖˡ);
@@ -1241,6 +1253,7 @@ End Enum1.
 Class Enum1_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Enum1_zero_val  :: go.GoZeroValEq Enum1 Enum1.t;
+  #[global] Enum1_underlying  :: go.Underlying (Enum1 ) (Enum1ⁱᵐᵖˡ );
 }.
 
 Definition Enum1A {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #(W64 0).
@@ -1263,6 +1276,7 @@ End Enum2.
 Class Enum2_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Enum2_zero_val  :: go.GoZeroValEq Enum2 Enum2.t;
+  #[global] Enum2_underlying  :: go.Underlying (Enum2 ) (Enum2ⁱᵐᵖˡ );
 }.
 
 (* line comment 1 *)
@@ -1427,6 +1441,7 @@ End Fooer.
 Class Fooer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Fooer_zero_val  :: go.GoZeroValEq Fooer Fooer.t;
+  #[global] Fooer_underlying  :: go.Underlying (Fooer ) (Fooerⁱᵐᵖˡ );
   #[global] Fooer'ptr_Foo_unfold :: MethodUnfold (Fooer) "Foo" (Fooer__Fooⁱᵐᵖˡ);
 }.
 
@@ -1459,6 +1474,7 @@ End concreteFooer.
 Class concreteFooer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] concreteFooer_zero_val  :: go.GoZeroValEq concreteFooer concreteFooer.t;
+  #[global] concreteFooer_underlying  :: go.Underlying (concreteFooer ) (concreteFooerⁱᵐᵖˡ );
   #[global] concreteFooer'ptr_Foo_unfold :: MethodUnfold (go.PointerType (concreteFooer)) "Foo" (concreteFooer__Fooⁱᵐᵖˡ);
 }.
 
@@ -1485,6 +1501,7 @@ End FooerUser.
 Class FooerUser_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] FooerUser_zero_val  :: go.GoZeroValEq FooerUser FooerUser.t;
+  #[global] FooerUser_underlying  :: go.Underlying (FooerUser ) (FooerUserⁱᵐᵖˡ );
 }.
 
 Definition fooConsumer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.fooConsumer"%go.
@@ -1671,6 +1688,7 @@ End PointerInterface.
 Class PointerInterface_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] PointerInterface_zero_val  :: go.GoZeroValEq PointerInterface PointerInterface.t;
+  #[global] PointerInterface_underlying  :: go.Underlying (PointerInterface ) (PointerInterfaceⁱᵐᵖˡ );
   #[global] PointerInterface'ptr_B_unfold :: MethodUnfold (PointerInterface) "B" (PointerInterface__Bⁱᵐᵖˡ);
   #[global] PointerInterface'ptr_Foo_unfold :: MethodUnfold (PointerInterface) "Foo" (PointerInterface__Fooⁱᵐᵖˡ);
 }.
@@ -1708,6 +1726,7 @@ End concrete1.
 Class concrete1_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] concrete1_zero_val  :: go.GoZeroValEq concrete1 concrete1.t;
+  #[global] concrete1_underlying  :: go.Underlying (concrete1 ) (concrete1ⁱᵐᵖˡ );
   #[global] concrete1'ptr_Foo_unfold :: MethodUnfold (concrete1) "Foo" (concrete1__Fooⁱᵐᵖˡ);
   #[global] concrete1'ptr_B_unfold :: MethodUnfold (go.PointerType (concrete1)) "B" (concrete1__Bⁱᵐᵖˡ);
   #[global] concrete1'ptr_Foo_unfold :: MethodUnfold (go.PointerType (concrete1)) "Foo" (λ: "$r", MethodResolve (concrete1) Foo #() (![(concrete1)] "$r");
@@ -1778,6 +1797,7 @@ End my_u32.
 Class my_u32_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] my_u32_zero_val  :: go.GoZeroValEq my_u32 my_u32.t;
+  #[global] my_u32_underlying  :: go.Underlying (my_u32 ) (my_u32ⁱᵐᵖˡ );
 }.
 
 Definition also_u32ⁱᵐᵖˡ : go.type := my_u32.
@@ -1794,6 +1814,7 @@ End also_u32.
 Class also_u32_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] also_u32_zero_val  :: go.GoZeroValEq also_u32 also_u32.t;
+  #[global] also_u32_underlying  :: go.Underlying (also_u32 ) (also_u32ⁱᵐᵖˡ );
 }.
 
 Definition ConstWithAbbrevType {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #(W32 3).
@@ -1825,6 +1846,7 @@ End allTheLiterals.
 Class allTheLiterals_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] allTheLiterals_zero_val  :: go.GoZeroValEq allTheLiterals allTheLiterals.t;
+  #[global] allTheLiterals_underlying  :: go.Underlying (allTheLiterals ) (allTheLiteralsⁱᵐᵖˡ );
 }.
 
 Definition normalLiterals {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.normalLiterals"%go.
@@ -1915,6 +1937,7 @@ End hasCondVar.
 Class hasCondVar_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] hasCondVar_zero_val  :: go.GoZeroValEq hasCondVar hasCondVar.t;
+  #[global] hasCondVar_underlying  :: go.Underlying (hasCondVar ) (hasCondVarⁱᵐᵖˡ );
 }.
 
 Definition ToBeDebugged {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.ToBeDebugged"%go.
@@ -2219,6 +2242,7 @@ End IntWrapper.
 Class IntWrapper_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] IntWrapper_zero_val  :: go.GoZeroValEq IntWrapper IntWrapper.t;
+  #[global] IntWrapper_underlying  :: go.Underlying (IntWrapper ) (IntWrapperⁱᵐᵖˡ );
 }.
 
 Definition MapWrapperⁱᵐᵖˡ : go.type := go.MapType go.uint64 go.bool.
@@ -2235,6 +2259,7 @@ End MapWrapper.
 Class MapWrapper_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] MapWrapper_zero_val  :: go.GoZeroValEq MapWrapper MapWrapper.t;
+  #[global] MapWrapper_underlying  :: go.Underlying (MapWrapper ) (MapWrapperⁱᵐᵖˡ );
 }.
 
 Definition MapTypeAliases {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.MapTypeAliases"%go.
@@ -2281,6 +2306,7 @@ End mapElem.
 Class mapElem_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] mapElem_zero_val  :: go.GoZeroValEq mapElem mapElem.t;
+  #[global] mapElem_underlying  :: go.Underlying (mapElem ) (mapElemⁱᵐᵖˡ );
 }.
 
 Definition mapUpdateField {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.mapUpdateField"%go.
@@ -2464,6 +2490,7 @@ End containsPointer.
 Class containsPointer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] containsPointer_zero_val  :: go.GoZeroValEq containsPointer containsPointer.t;
+  #[global] containsPointer_underlying  :: go.Underlying (containsPointer ) (containsPointerⁱᵐᵖˡ );
 }.
 
 Definition useNilField {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.useNilField"%go.
@@ -2599,6 +2626,7 @@ End wrapExternalStruct.
 Class wrapExternalStruct_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] wrapExternalStruct_zero_val  :: go.GoZeroValEq wrapExternalStruct wrapExternalStruct.t;
+  #[global] wrapExternalStruct_underlying  :: go.Underlying (wrapExternalStruct ) (wrapExternalStructⁱᵐᵖˡ );
   #[global] wrapExternalStruct'ptr_join_unfold :: MethodUnfold (wrapExternalStruct) "join" (wrapExternalStruct__joinⁱᵐᵖˡ);
   #[global] wrapExternalStruct'ptr_join_unfold :: MethodUnfold (go.PointerType (wrapExternalStruct)) "join" (λ: "$r", MethodResolve (wrapExternalStruct) join #() (![(wrapExternalStruct)] "$r");
 }.
@@ -2647,6 +2675,7 @@ End typing.
 Class typing_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] typing_zero_val  :: go.GoZeroValEq typing typing.t;
+  #[global] typing_underlying  :: go.Underlying (typing ) (typingⁱᵐᵖˡ );
 }.
 
 Definition compositeⁱᵐᵖˡ : go.type := go.StructType [
@@ -2674,6 +2703,7 @@ End composite.
 Class composite_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] composite_zero_val  :: go.GoZeroValEq composite composite.t;
+  #[global] composite_underlying  :: go.Underlying (composite ) (compositeⁱᵐᵖˡ );
 }.
 
 Definition ReassignVars {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.ReassignVars"%go.
@@ -2732,6 +2762,7 @@ End R.
 Class R_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] R_zero_val  :: go.GoZeroValEq R R.t;
+  #[global] R_underlying  :: go.Underlying (R ) (Rⁱᵐᵖˡ );
   #[global] R'ptr_recurMethod_unfold :: MethodUnfold (go.PointerType (R)) "recurMethod" (R__recurMethodⁱᵐᵖˡ);
 }.
 
@@ -2760,6 +2791,7 @@ End Other.
 Class Other_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Other_zero_val  :: go.GoZeroValEq Other Other.t;
+  #[global] Other_underlying  :: go.Underlying (Other ) (Otherⁱᵐᵖˡ );
   #[global] Other'ptr_recurEmbeddedMethod_unfold :: MethodUnfold (Other) "recurEmbeddedMethod" (λ: "$r", MethodResolve (go.PointerType RecursiveEmbedded) recurEmbeddedMethod #() (StructFieldGet (Other) "RecursiveEmbedded" "$r" ))%V;
   #[global] Other'ptr_recurEmbeddedMethod_unfold :: MethodUnfold (go.PointerType (Other)) "recurEmbeddedMethod" (λ: "$r", MethodResolve (go.PointerType RecursiveEmbedded) recurEmbeddedMethod #() (![go.PointerType RecursiveEmbedded] (StructFieldRef Other #"RecursiveEmbedded"%go "$r")));
 }.
@@ -2792,6 +2824,7 @@ End RecursiveEmbedded.
 Class RecursiveEmbedded_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] RecursiveEmbedded_zero_val  :: go.GoZeroValEq RecursiveEmbedded RecursiveEmbedded.t;
+  #[global] RecursiveEmbedded_underlying  :: go.Underlying (RecursiveEmbedded ) (RecursiveEmbeddedⁱᵐᵖˡ );
   #[global] RecursiveEmbedded'ptr_recurEmbeddedMethod_unfold :: MethodUnfold (go.PointerType (RecursiveEmbedded)) "recurEmbeddedMethod" (RecursiveEmbedded__recurEmbeddedMethodⁱᵐᵖˡ);
 }.
 
@@ -2828,6 +2861,7 @@ End Block.
 Class Block_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Block_zero_val  :: go.GoZeroValEq Block Block.t;
+  #[global] Block_underlying  :: go.Underlying (Block ) (Blockⁱᵐᵖˡ );
 }.
 
 Definition Disk1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #(W64 0).
@@ -3078,6 +3112,7 @@ End SliceAlias.
 Class SliceAlias_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] SliceAlias_zero_val  :: go.GoZeroValEq SliceAlias SliceAlias.t;
+  #[global] SliceAlias_underlying  :: go.Underlying (SliceAlias ) (SliceAliasⁱᵐᵖˡ );
 }.
 
 Definition sliceOps {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.sliceOps"%go.
@@ -3137,6 +3172,7 @@ End thing.
 Class thing_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] thing_zero_val  :: go.GoZeroValEq thing thing.t;
+  #[global] thing_underlying  :: go.Underlying (thing ) (thingⁱᵐᵖˡ );
 }.
 
 Definition sliceOfThings : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.sliceOfThings"%go [].
@@ -3169,6 +3205,7 @@ End sliceOfThings.
 Class sliceOfThings_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] sliceOfThings_zero_val  :: go.GoZeroValEq sliceOfThings sliceOfThings.t;
+  #[global] sliceOfThings_underlying  :: go.Underlying (sliceOfThings ) (sliceOfThingsⁱᵐᵖˡ );
   #[global] sliceOfThings'ptr_getThingRef_unfold :: MethodUnfold (sliceOfThings) "getThingRef" (sliceOfThings__getThingRefⁱᵐᵖˡ);
   #[global] sliceOfThings'ptr_getThingRef_unfold :: MethodUnfold (go.PointerType (sliceOfThings)) "getThingRef" (λ: "$r", MethodResolve (sliceOfThings) getThingRef #() (![(sliceOfThings)] "$r");
 }.
@@ -3328,6 +3365,7 @@ End Point.
 Class Point_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Point_zero_val  :: go.GoZeroValEq Point Point.t;
+  #[global] Point_underlying  :: go.Underlying (Point ) (Pointⁱᵐᵖˡ );
   #[global] Point'ptr_Add_unfold :: MethodUnfold (Point) "Add" (Point__Addⁱᵐᵖˡ);
   #[global] Point'ptr_GetField_unfold :: MethodUnfold (Point) "GetField" (Point__GetFieldⁱᵐᵖˡ);
   #[global] Point'ptr_IgnoreReceiver_unfold :: MethodUnfold (Point) "IgnoreReceiver" (Point__IgnoreReceiverⁱᵐᵖˡ);
@@ -3386,6 +3424,7 @@ End TwoInts.
 Class TwoInts_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] TwoInts_zero_val  :: go.GoZeroValEq TwoInts TwoInts.t;
+  #[global] TwoInts_underlying  :: go.Underlying (TwoInts ) (TwoIntsⁱᵐᵖˡ );
 }.
 
 Definition S : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.S"%go [].
@@ -3456,6 +3495,7 @@ End S.
 Class S_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] S_zero_val  :: go.GoZeroValEq S S.t;
+  #[global] S_underlying  :: go.Underlying (S ) (Sⁱᵐᵖˡ );
   #[global] S'ptr_readBVal_unfold :: MethodUnfold (S) "readBVal" (S__readBValⁱᵐᵖˡ);
   #[global] S'ptr_negateC_unfold :: MethodUnfold (go.PointerType (S)) "negateC" (S__negateCⁱᵐᵖˡ);
   #[global] S'ptr_readA_unfold :: MethodUnfold (go.PointerType (S)) "readA" (S__readAⁱᵐᵖˡ);
@@ -3579,6 +3619,7 @@ End B.
 Class B_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] B_zero_val  :: go.GoZeroValEq B B.t;
+  #[global] B_underlying  :: go.Underlying (B ) (Bⁱᵐᵖˡ );
 }.
 
 Definition Aⁱᵐᵖˡ : go.type := go.StructType [
@@ -3600,6 +3641,7 @@ End A.
 Class A_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] A_zero_val  :: go.GoZeroValEq A A.t;
+  #[global] A_underlying  :: go.Underlying (A ) (Aⁱᵐᵖˡ );
 }.
 
 Definition mkInt {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.mkInt"%go.
@@ -3633,6 +3675,7 @@ End Timestamp.
 Class Timestamp_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Timestamp_zero_val  :: go.GoZeroValEq Timestamp Timestamp.t;
+  #[global] Timestamp_underlying  :: go.Underlying (Timestamp ) (Timestampⁱᵐᵖˡ );
 }.
 
 Definition UseTypeAbbrevⁱᵐᵖˡ : go.type := go.uint64.
@@ -3649,6 +3692,7 @@ End UseTypeAbbrev.
 Class UseTypeAbbrev_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] UseTypeAbbrev_zero_val  :: go.GoZeroValEq UseTypeAbbrev UseTypeAbbrev.t;
+  #[global] UseTypeAbbrev_underlying  :: go.Underlying (UseTypeAbbrev ) (UseTypeAbbrevⁱᵐᵖˡ );
 }.
 
 Definition UseNamedTypeⁱᵐᵖˡ : go.type := Timestamp.
@@ -3665,6 +3709,7 @@ End UseNamedType.
 Class UseNamedType_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] UseNamedType_zero_val  :: go.GoZeroValEq UseNamedType UseNamedType.t;
+  #[global] UseNamedType_underlying  :: go.Underlying (UseNamedType ) (UseNamedTypeⁱᵐᵖˡ );
 }.
 
 Definition convertToAlias {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.convertToAlias"%go.

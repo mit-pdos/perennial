@@ -114,6 +114,7 @@ End Cond.
 Class Cond_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Cond_zero_val  :: go.GoZeroValEq Cond Cond.t;
+  #[global] Cond_underlying  :: go.Underlying (Cond ) (Condⁱᵐᵖˡ );
   #[global] Cond'ptr_Broadcast_unfold :: MethodUnfold (go.PointerType (Cond)) "Broadcast" (Cond__Broadcastⁱᵐᵖˡ);
   #[global] Cond'ptr_Signal_unfold :: MethodUnfold (go.PointerType (Cond)) "Signal" (Cond__Signalⁱᵐᵖˡ);
   #[global] Cond'ptr_Wait_unfold :: MethodUnfold (go.PointerType (Cond)) "Wait" (Cond__Waitⁱᵐᵖˡ);
@@ -150,6 +151,7 @@ End noCopy.
 Class noCopy_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] noCopy_zero_val  :: go.GoZeroValEq noCopy noCopy.t;
+  #[global] noCopy_underlying  :: go.Underlying (noCopy ) (noCopyⁱᵐᵖˡ );
 }.
 
 Axiom Mapⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
@@ -165,6 +167,7 @@ Definition newEntry {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string :
 Class Mutex_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Mutex_zero_val  :: go.GoZeroValEq Mutex Mutex.t;
+  #[global] Mutex_underlying  :: go.Underlying (Mutex ) (Mutexⁱᵐᵖˡ );
   #[global] Mutex'ptr_Lock_unfold :: MethodUnfold (go.PointerType (Mutex)) "Lock" (Mutex__Lockⁱᵐᵖˡ);
   #[global] Mutex'ptr_TryLock_unfold :: MethodUnfold (go.PointerType (Mutex)) "TryLock" (Mutex__TryLockⁱᵐᵖˡ);
   #[global] Mutex'ptr_Unlock_unfold :: MethodUnfold (go.PointerType (Mutex)) "Unlock" (Mutex__Unlockⁱᵐᵖˡ);
@@ -182,6 +185,7 @@ End Locker.
 Class Locker_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Locker_zero_val  :: go.GoZeroValEq Locker Locker.t;
+  #[global] Locker_underlying  :: go.Underlying (Locker ) (Lockerⁱᵐᵖˡ );
 }.
 
 Definition Once : go.type := go.Named "sync.Once"%go [].
@@ -269,6 +273,7 @@ End Once.
 Class Once_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Once_zero_val  :: go.GoZeroValEq Once Once.t;
+  #[global] Once_underlying  :: go.Underlying (Once ) (Onceⁱᵐᵖˡ );
   #[global] Once'ptr_Do_unfold :: MethodUnfold (go.PointerType (Once)) "Do" (Once__Doⁱᵐᵖˡ);
   #[global] Once'ptr_doSlow_unfold :: MethodUnfold (go.PointerType (Once)) "doSlow" (Once__doSlowⁱᵐᵖˡ);
 }.
@@ -636,6 +641,7 @@ End RWMutex.
 Class RWMutex_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] RWMutex_zero_val  :: go.GoZeroValEq RWMutex RWMutex.t;
+  #[global] RWMutex_underlying  :: go.Underlying (RWMutex ) (RWMutexⁱᵐᵖˡ );
   #[global] RWMutex'ptr_Lock_unfold :: MethodUnfold (go.PointerType (RWMutex)) "Lock" (RWMutex__Lockⁱᵐᵖˡ);
   #[global] RWMutex'ptr_RLock_unfold :: MethodUnfold (go.PointerType (RWMutex)) "RLock" (RWMutex__RLockⁱᵐᵖˡ);
   #[global] RWMutex'ptr_RLocker_unfold :: MethodUnfold (go.PointerType (RWMutex)) "RLocker" (RWMutex__RLockerⁱᵐᵖˡ);
@@ -660,6 +666,7 @@ End rlocker.
 Class rlocker_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] rlocker_zero_val  :: go.GoZeroValEq rlocker rlocker.t;
+  #[global] rlocker_underlying  :: go.Underlying (rlocker ) (rlockerⁱᵐᵖˡ );
 }.
 
 Definition WaitGroup : go.type := go.Named "sync.WaitGroup"%go [].
@@ -949,6 +956,7 @@ End WaitGroup.
 Class WaitGroup_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] WaitGroup_zero_val  :: go.GoZeroValEq WaitGroup WaitGroup.t;
+  #[global] WaitGroup_underlying  :: go.Underlying (WaitGroup ) (WaitGroupⁱᵐᵖˡ );
   #[global] WaitGroup'ptr_Add_unfold :: MethodUnfold (go.PointerType (WaitGroup)) "Add" (WaitGroup__Addⁱᵐᵖˡ);
   #[global] WaitGroup'ptr_Done_unfold :: MethodUnfold (go.PointerType (WaitGroup)) "Done" (WaitGroup__Doneⁱᵐᵖˡ);
   #[global] WaitGroup'ptr_Go_unfold :: MethodUnfold (go.PointerType (WaitGroup)) "Go" (WaitGroup__Goⁱᵐᵖˡ);

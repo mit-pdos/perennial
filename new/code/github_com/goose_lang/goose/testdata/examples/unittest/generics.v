@@ -59,6 +59,7 @@ End Box.
 Class Box_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Box_zero_val T T' `{!ZeroVal T'} `{!go.GoZeroValEq T T'} :: go.GoZeroValEq (Box T) (Box.t T');
+  #[global] Box_underlying  T :: go.Underlying (Box  T) (Boxⁱᵐᵖˡ  T);
   #[global] Box'ptr_Get_unfold T :: MethodUnfold (Box T) "Get" (Box__Getⁱᵐᵖˡ T);
   #[global] Box'ptr_Get_unfold T :: MethodUnfold (go.PointerType (Box T)) "Get" (λ: "$r", MethodResolve (Box T) Get #() (![(Box T)] "$r");
 }.
@@ -137,6 +138,7 @@ End Container.
 Class Container_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Container_zero_val T T' `{!ZeroVal T'} `{!go.GoZeroValEq T T'} :: go.GoZeroValEq (Container T) (Container.t T');
+  #[global] Container_underlying  T :: go.Underlying (Container  T) (Containerⁱᵐᵖˡ  T);
 }.
 
 Definition useContainer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.useContainer"%go.
@@ -180,6 +182,7 @@ End UseContainer.
 Class UseContainer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] UseContainer_zero_val  :: go.GoZeroValEq UseContainer UseContainer.t;
+  #[global] UseContainer_underlying  :: go.Underlying (UseContainer ) (UseContainerⁱᵐᵖˡ );
 }.
 
 Definition OnlyIndirectⁱᵐᵖˡ(T : go.type)  : go.type := go.StructType [
@@ -208,6 +211,7 @@ End OnlyIndirect.
 Class OnlyIndirect_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] OnlyIndirect_zero_val T T' `{!ZeroVal T'} `{!go.GoZeroValEq T T'} :: go.GoZeroValEq (OnlyIndirect T) (OnlyIndirect.t T');
+  #[global] OnlyIndirect_underlying  T :: go.Underlying (OnlyIndirect  T) (OnlyIndirectⁱᵐᵖˡ  T);
 }.
 
 Definition MultiParamⁱᵐᵖˡ(A : go.type) (B : go.type)  : go.type := go.StructType [
@@ -236,6 +240,7 @@ End MultiParam.
 Class MultiParam_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] MultiParam_zero_val A A' `{!ZeroVal A'} `{!go.GoZeroValEq A A'}B B' `{!ZeroVal B'} `{!go.GoZeroValEq B B'} :: go.GoZeroValEq (MultiParam A B) (MultiParam.t A' B');
+  #[global] MultiParam_underlying  A B :: go.Underlying (MultiParam  A B) (MultiParamⁱᵐᵖˡ  A B);
 }.
 
 Definition useMultiParam {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.useMultiParam"%go.

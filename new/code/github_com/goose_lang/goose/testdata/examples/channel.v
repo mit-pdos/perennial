@@ -71,6 +71,7 @@ End LockedStack.
 Class LockedStack_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] LockedStack_zero_val  :: go.GoZeroValEq LockedStack LockedStack.t;
+  #[global] LockedStack_underlying  :: go.Underlying (LockedStack ) (LockedStackⁱᵐᵖˡ );
   #[global] LockedStack'ptr_Pop_unfold :: MethodUnfold (go.PointerType (LockedStack)) "Pop" (LockedStack__Popⁱᵐᵖˡ);
   #[global] LockedStack'ptr_Push_unfold :: MethodUnfold (go.PointerType (LockedStack)) "Push" (LockedStack__Pushⁱᵐᵖˡ);
 }.
@@ -144,6 +145,7 @@ End EliminationStack.
 Class EliminationStack_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] EliminationStack_zero_val  :: go.GoZeroValEq EliminationStack EliminationStack.t;
+  #[global] EliminationStack_underlying  :: go.Underlying (EliminationStack ) (EliminationStackⁱᵐᵖˡ );
   #[global] EliminationStack'ptr_Pop_unfold :: MethodUnfold (go.PointerType (EliminationStack)) "Pop" (EliminationStack__Popⁱᵐᵖˡ);
   #[global] EliminationStack'ptr_Push_unfold :: MethodUnfold (go.PointerType (EliminationStack)) "Push" (EliminationStack__Pushⁱᵐᵖˡ);
 }.
@@ -685,6 +687,7 @@ End request.
 Class request_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] request_zero_val  :: go.GoZeroValEq request request.t;
+  #[global] request_underlying  :: go.Underlying (request ) (requestⁱᵐᵖˡ );
 }.
 
 Definition mkRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.mkRequest"%go.
@@ -919,6 +922,7 @@ End stream.
 Class stream_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] stream_zero_val  :: go.GoZeroValEq stream stream.t;
+  #[global] stream_underlying  :: go.Underlying (stream ) (streamⁱᵐᵖˡ );
 }.
 
 Definition streamoldⁱᵐᵖˡ : go.type := go.StructType [
@@ -948,6 +952,7 @@ End streamold.
 Class streamold_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] streamold_zero_val  :: go.GoZeroValEq streamold streamold.t;
+  #[global] streamold_underlying  :: go.Underlying (streamold ) (streamoldⁱᵐᵖˡ );
 }.
 
 Definition mkStream {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.mkStream"%go.

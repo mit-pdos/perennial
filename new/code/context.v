@@ -21,6 +21,7 @@ End Context.
 Class Context_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Context_zero_val  :: go.GoZeroValEq Context Context.t;
+  #[global] Context_underlying  :: go.Underlying (Context ) (Contextⁱᵐᵖˡ );
 }.
 
 Definition Canceled {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "context.Canceled"%go.
