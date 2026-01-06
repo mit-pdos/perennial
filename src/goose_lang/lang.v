@@ -674,49 +674,49 @@ Instance Oracle_Inhabited: Inhabited Oracle := populate (fun _ _ => word.of_Z 0)
 
 Class ZeroVal V :=
   {
-    zero_val : V
+    zero_val_def : V
   }.
 Global Hint Mode ZeroVal ! : typeclass_instances.
-Global Arguments zero_val (V) {_}.
+Global Arguments zero_val_def (V) {_}.
 
 Section zero_val_instances.
 Context `{ffi_syntax}.
 
 Global Instance zero_val_loc : ZeroVal loc :=
-  {| zero_val := null |}.
+  {| zero_val_def := null |}.
 
 Global Instance zero_val_w64 : ZeroVal w64 :=
-  {| zero_val := W64 0 |}.
+  {| zero_val_def := W64 0 |}.
 
 Global Instance zero_val_w32 : ZeroVal w32 :=
-  {| zero_val := W32 0 |}.
+  {| zero_val_def := W32 0 |}.
 
 Global Instance zero_val_w16 : ZeroVal w16 :=
-  {| zero_val := W16 0 |}.
+  {| zero_val_def := W16 0 |}.
 
 Global Instance zero_val_w8 : ZeroVal w8 :=
-  {| zero_val := W8 0 |}.
+  {| zero_val_def := W8 0 |}.
 
 Global Instance zero_val_unit : ZeroVal () :=
-  {| zero_val := () |}.
+  {| zero_val_def := () |}.
 
 Global Instance zero_val_bool : ZeroVal bool :=
-  {| zero_val := false |}.
+  {| zero_val_def := false |}.
 
 Global Instance zero_val_go_string : ZeroVal go_string :=
-  {| zero_val := ""%go |}.
+  {| zero_val_def := ""%go |}.
 
 Global Instance zero_val_func : ZeroVal func.t :=
-  {| zero_val := func.nil |}.
+  {| zero_val_def := func.nil |}.
 
 Global Instance zero_val_array t `{!ZeroVal V} n : ZeroVal (array.t t V n) :=
-  {| zero_val := array.mk t n $ replicate (Z.to_nat n) (zero_val V) |}.
+  {| zero_val_def := array.mk t n $ replicate (Z.to_nat n) (zero_val_def V) |}.
 
 Global Instance zero_val_slice : ZeroVal slice.t :=
-  {| zero_val := slice.nil |}.
+  {| zero_val_def := slice.nil |}.
 
 Global Instance zero_val_interface : ZeroVal interface.t :=
-  {| zero_val := interface.nil |}.
+  {| zero_val_def := interface.nil |}.
 
 End zero_val_instances.
 Notation "()" := tt : val_scope.
@@ -1986,6 +1986,8 @@ Proof.
 Qed.
 
 End external.
+
+Global Notation zero_val := zero_val_def.
 
 (** Language *)
 

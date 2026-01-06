@@ -15,12 +15,16 @@ Context {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}
 Context {package_sem : channel.Assumptions}.
 Local Set Default Proof Using "Type package_sem core_sem pre_sem array_sem slice_sem".
 
+Instance into_val_underlying V `{!ZeroVal V} `{!TypedPointsto V} n ta tunder
+  : go.Underlying (go.Named n ta) tunder → IntoValTyped V tunder → IntoValTyped V (go.Named n ta).
+Admitted.
+
 Context `{!chanG Σ V}.
 Context `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}.
 
-(* FIXME *)
-Instance offer_state_into_val : IntoValTyped channel.offerState.t channel.offerState.
-Admitted.
+Context `{!go.Underlying channel.offerState channel.offerStateⁱᵐᵖˡ}.
+
+(* Admitted. *)
 
 Lemma wp_NewChannel (cap: Z) :
   0 ≤ cap < 2^63 ->
@@ -33,19 +37,15 @@ Lemma wp_NewChannel (cap: Z) :
   }}}.
 Proof.
   intros Hcap.
-  wp_start. wp_auto.
-  (* FIXME: intovaltyped instance *)
+  wp_start.
+  wp_auto.
   wp_if_destruct.
   {
-    (* FIXME: expression version of LiteralValue. *)
     (* FIXME: underlying type assumptions *)
     assert (go.Underlying (channel.Channel t) (channel.Channelⁱᵐᵖˡ t)) by admit.
     wp_auto.
-    rewrite go_zero_val.
     wp_bind.
 
-    replace (to_underlying $ channel.Channel t) with (channel.Channelⁱᵐᵖˡ t) by admit.
-    rewrite go.composite_literal_struct /=.
     (* FIXME: struct set/get assumptions. *)
 
     assert (cap > 0) by word.

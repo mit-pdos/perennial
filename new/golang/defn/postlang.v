@@ -378,7 +378,7 @@ Class CoreSemantics :=
                 let field_addr := StructFieldRef (go.StructType fds) field_name "l" in
                 let field_val := GoLoad field_type field_addr in
                 StructFieldSet (go.StructType fds) field_name (struct_so_far, field_val)
-         ) (GoZeroVal (go.StructType fds)) fds)%V;
+         ) (GoZeroVal (go.StructType fds) #()) fds)%V;
 
   store_underlying `{!Underlying t t'} : store t = store t';
   store_primitive t (H : is_primitive t) : store t = (λ: "l" "v", "l" <- "v")%V;
@@ -394,7 +394,7 @@ Class CoreSemantics :=
                 let field_addr := StructFieldRef (go.StructType fds) field_name "l" in
                 let field_val := StructFieldGet (go.StructType fds) field_name "v" in
                 GoStore field_type (field_addr, field_val)
-         ) (GoZeroVal (go.StructType fds)) fds)%V;
+         ) (GoZeroVal (go.StructType fds) #()) fds)%V;
 
   struct_field_ref_underlying `{!Underlying t t'} : struct_field_ref t = struct_field_ref t';
   index_ref_underlying `{!Underlying t t'} : index_ref t = index_ref t';
@@ -413,7 +413,7 @@ Class CoreSemantics :=
   #[global] composite_literal_struct `{!Underlying t (go.StructType fds)} l ::
     GoExprEq (composite_literal t (LiteralValueV l))
     (match l with
-     | [] => GoZeroVal t
+     | [] => GoZeroVal t #()
      | KeyedElement None _ :: _ =>
          (* unkeyed struct literal *)
          foldl (λ v '(fd, ke),
@@ -423,7 +423,7 @@ Class CoreSemantics :=
                       StructFieldSet t field_name (v, e)%E
                   | _ => Panic "invalid Go code"
                   end
-           ) (GoZeroVal t) (zip fds l)
+           ) (GoZeroVal t #()) (zip fds l)
      | KeyedElement (Some _) _ :: _ =>
          (* keyed struct literal *)
          foldl (λ v ke,
@@ -432,11 +432,17 @@ Class CoreSemantics :=
                       StructFieldSet t field_name (v, e)%E
                   | _ => Panic "invalid Go code"
                   end
-           ) (GoZeroVal t) l
+           ) (GoZeroVal t #()) l
      end);
 
-  #[global] underlying_not_named t ::
-    Underlying t (match t with | go.Named _ _ => to_underlying t | _ => t end) | 1000;
+  #[global] underlying_array n elem :: Underlying (go.ArrayType n elem) (go.ArrayType n elem);
+  #[global] underlying_struct fds :: Underlying (go.StructType fds) (go.StructType fds);
+  #[global] underlying_pointer elem :: Underlying (go.PointerType elem) (go.PointerType elem);
+  #[global] underlying_function sig :: Underlying (go.FunctionType sig) (go.FunctionType sig);
+  #[global] underlying_interface elems :: Underlying (go.InterfaceType elems) (go.InterfaceType elems);
+  #[global] underlying_slice elem :: Underlying (go.SliceType elem) (go.SliceType elem);
+  #[global] underlying_map key elem :: Underlying (go.MapType key elem) (go.MapType key elem);
+  #[global] underlying_channel dir elem :: Underlying (go.ChannelType dir elem) (go.ChannelType dir elem);
 }.
 
 End defs.
