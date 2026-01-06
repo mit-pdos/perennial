@@ -368,3 +368,15 @@ Global Instance into_val_typed_chan t b : IntoValTyped chan.t (go.ChannelType b 
 Proof. solve_into_val_typed. Qed.
 
 End typed_pointsto_instances.
+
+Tactic Notation "iStructNamed" constr(H) :=
+  iEval (typed_pointsto_unseal) in H;
+  iNamed H.
+
+Tactic Notation "iStructNamedSuffix" constr(H) constr(suff):=
+  iEval (rewrite typed_pointsto_unseal /=) in H;
+  iNamedSuffix H suff.
+
+Tactic Notation "iStructNamedPrefix" constr(H) constr(pref) :=
+  iEval (rewrite typed_pointsto_unseal /=) in H;
+  iNamedPrefix H pref.

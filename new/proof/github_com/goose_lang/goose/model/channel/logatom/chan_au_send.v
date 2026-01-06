@@ -7,6 +7,7 @@ From New.generatedproof.github_com.goose_lang.goose Require Import model.channel
 From Perennial.algebra Require Import ghost_var.
 
 #[local] Transparent is_channel own_channel.
+#[local] Typeclasses Transparent is_channel own_channel.
 
 Section atomic_specs.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
@@ -89,8 +90,7 @@ Proof.
     iIntros (sl) ("Hsl"). wp_auto.
     wp_alloc ch as "Hch".
     wp_auto.
-    iEval (rewrite typed_pointsto_unseal) in "Hch". simpl.
-    iNamedPrefix "Hch" "H". simpl.
+    iStructNamedPrefix "Hch" "H".
     iMod (ghost_var_alloc (chan_rep.Buffered []))
       as (state_gname) "[Hstate_auth Hstate_frag]".
     iMod (ghost_var_alloc (None : option (offer_lock V)))
@@ -125,12 +125,12 @@ Proof.
       simpl. lia.
 
     }
-    iModIntro.  iApply ("HΦ" $! _ γ).
+    iModIntro. iApply ("HΦ" $! _ γ).
     iFrame "#". simpl.
     rewrite decide_False; [ | word ].
     unfold is_channel. iFrame "∗#". iPureIntro.
-    (* FIXME: non-nilness. *)
-    unfold chan_cap_valid. simpl; lia.
+    assert (ch ≠ chan.nil) by admit. (* FIXME: non-nilness. *)
+    split; first done. unfold chan_cap_valid. simpl; lia.
   }
   {
     assert (cap = 0) by word; subst.
@@ -142,9 +142,7 @@ Proof.
     iIntros (sl) ("Hsl"). wp_auto.
     wp_alloc ch as "Hch".
     wp_auto.
-    rewrite /named.
-    iDestruct (struct_fields_split with "Hch") as "Hch".
-    iNamed "Hch". simpl.
+    iStructNamedPrefix "Hch" "H". simpl.
     iMod (ghost_var_alloc chan_rep.Idle)
       as (state_gname) "[Hstate_auth Hstate_frag]".
     iMod (ghost_var_alloc (None : option (offer_lock V)))
@@ -176,8 +174,9 @@ Proof.
       rewrite /chan_cap_valid //.
     }
     iModIntro.  iApply ("HΦ" $! _ γ).
-    iFrame "#". simpl.
-    iFrame.  iPureIntro. rewrite /chan_cap_valid //.
+    unfold is_channel. iFrame "∗#". simpl.
+    iFrame "∗#". assert (ch ≠ chan.nil) by admit. (* FIXME: non-nilness. *)
+    iPureIntro. rewrite /chan_cap_valid //.
   }
 Qed.
 
