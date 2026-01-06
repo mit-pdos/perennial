@@ -105,8 +105,6 @@ mk {
   checker : sync.copyChecker.t;
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _) (zero_val _)|}.
-#[global] Instance settable : Settable t :=
-  settable! mk <noCopy; L; notify; checker>.
 End def.
 
 #[global] Arguments mk : clear implicits.
@@ -152,8 +150,6 @@ Record t :=
 mk {
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk|}.
-#[global] Instance settable : Settable t :=
-  settable! mk <>.
 End def.
 
 #[global] Arguments mk : clear implicits.
@@ -276,8 +272,6 @@ mk {
   m : sync.Mutex.t;
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
-#[global] Instance settable : Settable t :=
-  settable! mk <_; done; m>.
 End def.
 
 #[global] Arguments mk : clear implicits.
@@ -652,8 +646,6 @@ mk {
   readerWait : atomic.Int32.t;
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _) (zero_val _) (zero_val _)|}.
-#[global] Instance settable : Settable t :=
-  settable! mk <w; writerSem; readerSem; readerCount; readerWait>.
 End def.
 
 #[global] Arguments mk : clear implicits.
@@ -989,8 +981,6 @@ mk {
   sema : w32;
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
-#[global] Instance settable : Settable t :=
-  settable! mk <noCopy; state; sema>.
 End def.
 
 #[global] Arguments mk : clear implicits.

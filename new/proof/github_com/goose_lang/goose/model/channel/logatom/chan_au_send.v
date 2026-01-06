@@ -24,6 +24,19 @@ Admitted.
 Context `{!chanG Σ V}.
 Context `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}.
 
+(* FIXME: this the addresses depend on the Go type.
+   i.e. TypedPointsto actually _does_ depend on the Go type (sometimes). *)
+#[global] Program Instance channel_typed_pointsto T T' `{!TypedPointsto (Σ:=Σ) T'} :
+  TypedPointsto (Σ:=Σ) (channel.Channel.t T') :=
+  {|
+    typed_pointsto_def l dq v :=
+      (
+        l.[channel.Channel T, "cap"] ↦{dq} v.(channel.Channel.cap)
+      )%I
+  |}.
+Next Obligation.
+Abort.
+
 Lemma wp_NewChannel (cap: Z) :
   0 ≤ cap < 2^63 ->
   {{{ True }}}
@@ -43,7 +56,7 @@ Proof.
     assert (cap > 0) by word.
     rewrite -wp_fupd.
     wp_auto.
-    wp_apply (wp_slice_make2 (V:=V)); first done.
+    wp_apply wp_slice_make2; first done.
     iIntros (sl) ("Hsl"). wp_auto.
     (* FIXME: proofgen IntoValTyped for channel.Channel.t *)
     wp_alloc ch as "Hch".

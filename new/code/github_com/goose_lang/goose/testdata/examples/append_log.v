@@ -135,8 +135,6 @@ mk {
   diskSz : w64;
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
-#[global] Instance settable : Settable t :=
-  settable! mk <m; sz; diskSz>.
 End def.
 
 #[global] Arguments mk : clear implicits.

@@ -21,8 +21,6 @@ Record t :=
 mk {
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk|}.
-#[global] Instance settable : Settable t :=
-  settable! mk <>.
 End def.
 
 #[global] Arguments mk : clear implicits.
@@ -544,8 +542,6 @@ mk {
   p : slice.t;
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
-#[global] Instance settable : Settable t :=
-  settable! mk <p>.
 End def.
 
 #[global] Arguments mk : clear implicits.
@@ -589,8 +585,6 @@ mk {
   p : slice.t;
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
-#[global] Instance settable : Settable t :=
-  settable! mk <p>.
 End def.
 
 #[global] Arguments mk : clear implicits.
@@ -817,8 +811,6 @@ mk {
   next_val : w64;
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
-#[global] Instance settable : Settable t :=
-  settable! mk <s; next_val>.
 End def.
 
 #[global] Arguments mk : clear implicits.
@@ -866,8 +858,6 @@ mk {
   y : w64;
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
-#[global] Instance settable : Settable t :=
-  settable! mk <x; y>.
 End def.
 
 #[global] Arguments mk : clear implicits.
@@ -1117,8 +1107,6 @@ mk {
   Side : w64;
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
-#[global] Instance settable : Settable t :=
-  settable! mk <Side>.
 End def.
 
 #[global] Arguments mk : clear implicits.
@@ -1296,8 +1284,6 @@ mk {
   loopNext : loc;
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
-#[global] Instance settable : Settable t :=
-  settable! mk <loopNext>.
 End def.
 
 #[global] Arguments mk : clear implicits.
@@ -2166,8 +2152,6 @@ mk {
   fc : w64;
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _) (zero_val _)|}.
-#[global] Instance settable : Settable t :=
-  settable! mk <t; f; tc; fc>.
 End def.
 
 #[global] Arguments mk : clear implicits.
@@ -2300,8 +2284,6 @@ mk {
   next_val : w64;
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
-#[global] Instance settable : Settable t :=
-  settable! mk <s; next_val>.
 End def.
 
 #[global] Arguments mk : clear implicits.
@@ -2533,8 +2515,6 @@ mk {
   b : w64;
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
-#[global] Instance settable : Settable t :=
-  settable! mk <a; b>.
 End def.
 
 #[global] Arguments mk : clear implicits.
@@ -2573,8 +2553,6 @@ mk {
   bar : semantics.Bar.t;
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
-#[global] Instance settable : Settable t :=
-  settable! mk <bar>.
 End def.
 
 #[global] Arguments mk : clear implicits.
@@ -2617,8 +2595,6 @@ mk {
   y : w64;
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
-#[global] Instance settable : Settable t :=
-  settable! mk <x; y>.
 End def.
 
 #[global] Arguments mk : clear implicits.
@@ -2688,8 +2664,6 @@ mk {
   c : bool;
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
-#[global] Instance settable : Settable t :=
-  settable! mk <a; b; c>.
 End def.
 
 #[global] Arguments mk : clear implicits.
@@ -2877,8 +2851,6 @@ mk {
   i : w64;
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
-#[global] Instance settable : Settable t :=
-  settable! mk <i>.
 End def.
 
 #[global] Arguments mk : clear implicits.
@@ -2959,8 +2931,6 @@ mk {
   fn : func.t;
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
-#[global] Instance settable : Settable t :=
-  settable! mk <fn>.
 End def.
 
 #[global] Arguments mk : clear implicits.
@@ -3058,8 +3028,6 @@ Record t :=
 mk {
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk|}.
-#[global] Instance settable : Settable t :=
-  settable! mk <>.
 End def.
 
 #[global] Arguments mk : clear implicits.
@@ -3328,8 +3296,6 @@ mk {
   length : loc;
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _) (zero_val _)|}.
-#[global] Instance settable : Settable t :=
-  settable! mk <d; l; cache; length>.
 End def.
 
 #[global] Arguments mk : clear implicits.

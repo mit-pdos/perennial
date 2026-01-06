@@ -48,7 +48,7 @@ Axiom ProphId : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
 Definition NewProph {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/primitive.NewProph"%go.
 
-#[global] Instance info' : PkgInfo primitive.primitive :=
+#[global] Instance info' : PkgInfo primitive.primitive := 
 {|
   pkg_imported_pkgs := []
 |}.

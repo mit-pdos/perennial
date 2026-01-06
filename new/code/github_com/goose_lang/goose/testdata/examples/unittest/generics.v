@@ -50,8 +50,6 @@ mk {
   Value : T;
 }.
 #[global] Instance zero_val`{!ZeroVal T}  : ZeroVal t := {| zero_val := mk (zero_val _)|}.
-#[global] Instance settable : Settable t :=
-  settable! mk <Value>.
 End def.
 
 #[global] Arguments mk : clear implicits.
@@ -133,8 +131,6 @@ mk {
   W : w64;
 }.
 #[global] Instance zero_val`{!ZeroVal T}  : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _) (zero_val _)|}.
-#[global] Instance settable : Settable t :=
-  settable! mk <X; Y; Z; W>.
 End def.
 
 #[global] Arguments mk : clear implicits.
@@ -187,8 +183,6 @@ mk {
   X : (generics.Container.t w64);
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
-#[global] Instance settable : Settable t :=
-  settable! mk <X>.
 End def.
 
 #[global] Arguments mk : clear implicits.
@@ -220,8 +214,6 @@ mk {
   Y : loc;
 }.
 #[global] Instance zero_val`{!ZeroVal T}  : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
-#[global] Instance settable : Settable t :=
-  settable! mk <X; Y>.
 End def.
 
 #[global] Arguments mk : clear implicits.
@@ -255,8 +247,6 @@ mk {
   X : A;
 }.
 #[global] Instance zero_val`{!ZeroVal A} `{!ZeroVal B}  : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
-#[global] Instance settable : Settable t :=
-  settable! mk <Y; X>.
 End def.
 
 #[global] Arguments mk : clear implicits.

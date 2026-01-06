@@ -406,8 +406,6 @@ mk {
   v : T;
 }.
 #[global] Instance zero_val`{!ZeroVal T}  : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _) (zero_val _) (zero_val _)|}.
-#[global] Instance settable : Settable t :=
-  settable! mk <cap; mu; state; buffer; v>.
 End def.
 
 #[global] Arguments mk : clear implicits.

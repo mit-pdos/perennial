@@ -62,8 +62,6 @@ mk {
   stack : slice.t;
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
-#[global] Instance settable : Settable t :=
-  settable! mk <mu; stack>.
 End def.
 
 #[global] Arguments mk : clear implicits.
@@ -142,8 +140,6 @@ mk {
   exchanger : loc;
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
-#[global] Instance settable : Settable t :=
-  settable! mk <base; exchanger>.
 End def.
 
 #[global] Arguments mk : clear implicits.
@@ -690,8 +686,6 @@ mk {
   result : loc;
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
-#[global] Instance settable : Settable t :=
-  settable! mk <f; result>.
 End def.
 
 #[global] Arguments mk : clear implicits.
@@ -931,8 +925,6 @@ mk {
   res : loc;
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
-#[global] Instance settable : Settable t :=
-  settable! mk <req; res>.
 End def.
 
 #[global] Arguments mk : clear implicits.
@@ -967,8 +959,6 @@ mk {
   f : func.t;
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
-#[global] Instance settable : Settable t :=
-  settable! mk <req; res; f>.
 End def.
 
 #[global] Arguments mk : clear implicits.

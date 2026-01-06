@@ -21,8 +21,6 @@ mk {
   buf : slice.t;
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
-#[global] Instance settable : Settable t :=
-  settable! mk <addr; buf>.
 End def.
 
 #[global] Arguments mk : clear implicits.
