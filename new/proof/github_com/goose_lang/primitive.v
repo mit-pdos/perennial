@@ -3,9 +3,6 @@ From New.golang Require Import theory.lock.
 Require Import New.code.github_com.goose_lang.primitive.
 Require Import New.generatedproof.github_com.goose_lang.primitive.
 
-#[global] Opaque primitive.Mutex.
-#[local] Transparent primitive.Mutex.
-
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}
   {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}

@@ -27,7 +27,7 @@ End PublicKey.
 Class PublicKey_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] PublicKey_zero_val  :: go.GoZeroValEq PublicKey PublicKey.t;
-  #[global] PublicKey_underlying  :: go.Underlying (PublicKey ) (PublicKeyⁱᵐᵖˡ );
+  #[global] PublicKey_underlying :: go.Underlying (PublicKey) (PublicKeyⁱᵐᵖˡ);
 }.
 
 Axiom PrivateKeyⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.

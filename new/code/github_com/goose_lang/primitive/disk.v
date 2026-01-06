@@ -13,7 +13,7 @@ Axiom Block : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 Class Disk_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Disk_zero_val  :: go.GoZeroValEq Disk Disk.t;
-  #[global] Disk_underlying  :: go.Underlying (Disk ) (Diskⁱᵐᵖˡ );
+  #[global] Disk_underlying :: go.Underlying (Disk) (Diskⁱᵐᵖˡ);
 }.
 
 Definition implicitDisk {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/primitive/disk.implicitDisk"%go.

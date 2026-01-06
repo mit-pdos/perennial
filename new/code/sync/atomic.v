@@ -156,16 +156,22 @@ mk {
   v : w32;
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
+#[global] Instance settable : Settable t :=
+  settable! mk <_; v>.
 End def.
+
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
-
 End Bool.
 
 Class Bool_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Bool_zero_val  :: go.GoZeroValEq Bool Bool.t;
-  #[global] Bool_underlying  :: go.Underlying (Bool ) (Boolⁱᵐᵖˡ );
+  #[global] Bool_underlying :: go.Underlying (Bool) (Boolⁱᵐᵖˡ);
+  #[global] Bool_get__ (x : Bool.t) :: go.IsGoStepPureDet (StructFieldGet (Bool) "_") #x #x.(Bool._);
+  #[global] Bool_set__ (x : Bool.t) y :: go.IsGoStepPureDet (StructFieldSet (Bool) "_") (#x, #y) #(x <|Bool._ := y|>);
+  #[global] Bool_get_v (x : Bool.t) :: go.IsGoStepPureDet (StructFieldGet (Bool) "v") #x #x.(Bool.v);
+  #[global] Bool_set_v (x : Bool.t) y :: go.IsGoStepPureDet (StructFieldSet (Bool) "v") (#x, #y) #(x <|Bool.v := y|>);
   #[global] Bool'ptr_CompareAndSwap_unfold :: MethodUnfold (go.PointerType (Bool)) "CompareAndSwap" (Bool__CompareAndSwapⁱᵐᵖˡ);
   #[global] Bool'ptr_Load_unfold :: MethodUnfold (go.PointerType (Bool)) "Load" (Bool__Loadⁱᵐᵖˡ);
   #[global] Bool'ptr_Store_unfold :: MethodUnfold (go.PointerType (Bool)) "Store" (Bool__Storeⁱᵐᵖˡ);
@@ -202,16 +208,24 @@ mk {
   v : loc;
 }.
 #[global] Instance zero_val`{!ZeroVal T}  : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
+#[global] Instance settable : Settable t :=
+  settable! mk <_; _; v>.
 End def.
+
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
-
 End Pointer.
 
 Class Pointer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Pointer_zero_val T T' `{!ZeroVal T'} `{!go.GoZeroValEq T T'} :: go.GoZeroValEq (Pointer T) (Pointer.t T');
-  #[global] Pointer_underlying  T :: go.Underlying (Pointer  T) (Pointerⁱᵐᵖˡ  T);
+  #[global] Pointer_underlying T :: go.Underlying (Pointer T) (Pointerⁱᵐᵖˡ T);
+  #[global] Pointer_get__ T T' (x : Pointer.t T') :: go.IsGoStepPureDet (StructFieldGet (Pointer T) "_") #x #x.(Pointer._);
+  #[global] Pointer_set__ T T' (x : Pointer.t T') y :: go.IsGoStepPureDet (StructFieldSet (Pointer T) "_") (#x, #y) #(x <|Pointer._ := y|>);
+  #[global] Pointer_get__ T T' (x : Pointer.t T') :: go.IsGoStepPureDet (StructFieldGet (Pointer T) "_") #x #x.(Pointer._);
+  #[global] Pointer_set__ T T' (x : Pointer.t T') y :: go.IsGoStepPureDet (StructFieldSet (Pointer T) "_") (#x, #y) #(x <|Pointer._ := y|>);
+  #[global] Pointer_get_v T T' (x : Pointer.t T') :: go.IsGoStepPureDet (StructFieldGet (Pointer T) "v") #x #x.(Pointer.v);
+  #[global] Pointer_set_v T T' (x : Pointer.t T') y :: go.IsGoStepPureDet (StructFieldSet (Pointer T) "v") (#x, #y) #(x <|Pointer.v := y|>);
   #[global] Pointer'ptr_CompareAndSwap_unfold T :: MethodUnfold (go.PointerType (Pointer T)) "CompareAndSwap" (Pointer__CompareAndSwapⁱᵐᵖˡ T);
   #[global] Pointer'ptr_Load_unfold T :: MethodUnfold (go.PointerType (Pointer T)) "Load" (Pointer__Loadⁱᵐᵖˡ T);
   #[global] Pointer'ptr_Store_unfold T :: MethodUnfold (go.PointerType (Pointer T)) "Store" (Pointer__Storeⁱᵐᵖˡ T);
@@ -319,16 +333,22 @@ mk {
   v : w32;
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
+#[global] Instance settable : Settable t :=
+  settable! mk <_; v>.
 End def.
+
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
-
 End Int32.
 
 Class Int32_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Int32_zero_val  :: go.GoZeroValEq Int32 Int32.t;
-  #[global] Int32_underlying  :: go.Underlying (Int32 ) (Int32ⁱᵐᵖˡ );
+  #[global] Int32_underlying :: go.Underlying (Int32) (Int32ⁱᵐᵖˡ);
+  #[global] Int32_get__ (x : Int32.t) :: go.IsGoStepPureDet (StructFieldGet (Int32) "_") #x #x.(Int32._);
+  #[global] Int32_set__ (x : Int32.t) y :: go.IsGoStepPureDet (StructFieldSet (Int32) "_") (#x, #y) #(x <|Int32._ := y|>);
+  #[global] Int32_get_v (x : Int32.t) :: go.IsGoStepPureDet (StructFieldGet (Int32) "v") #x #x.(Int32.v);
+  #[global] Int32_set_v (x : Int32.t) y :: go.IsGoStepPureDet (StructFieldSet (Int32) "v") (#x, #y) #(x <|Int32.v := y|>);
   #[global] Int32'ptr_Add_unfold :: MethodUnfold (go.PointerType (Int32)) "Add" (Int32__Addⁱᵐᵖˡ);
   #[global] Int32'ptr_And_unfold :: MethodUnfold (go.PointerType (Int32)) "And" (Int32__Andⁱᵐᵖˡ);
   #[global] Int32'ptr_CompareAndSwap_unfold :: MethodUnfold (go.PointerType (Int32)) "CompareAndSwap" (Int32__CompareAndSwapⁱᵐᵖˡ);
@@ -443,16 +463,24 @@ mk {
   v : w64;
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
+#[global] Instance settable : Settable t :=
+  settable! mk <_; _; v>.
 End def.
+
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
-
 End Int64.
 
 Class Int64_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Int64_zero_val  :: go.GoZeroValEq Int64 Int64.t;
-  #[global] Int64_underlying  :: go.Underlying (Int64 ) (Int64ⁱᵐᵖˡ );
+  #[global] Int64_underlying :: go.Underlying (Int64) (Int64ⁱᵐᵖˡ);
+  #[global] Int64_get__ (x : Int64.t) :: go.IsGoStepPureDet (StructFieldGet (Int64) "_") #x #x.(Int64._);
+  #[global] Int64_set__ (x : Int64.t) y :: go.IsGoStepPureDet (StructFieldSet (Int64) "_") (#x, #y) #(x <|Int64._ := y|>);
+  #[global] Int64_get__ (x : Int64.t) :: go.IsGoStepPureDet (StructFieldGet (Int64) "_") #x #x.(Int64._);
+  #[global] Int64_set__ (x : Int64.t) y :: go.IsGoStepPureDet (StructFieldSet (Int64) "_") (#x, #y) #(x <|Int64._ := y|>);
+  #[global] Int64_get_v (x : Int64.t) :: go.IsGoStepPureDet (StructFieldGet (Int64) "v") #x #x.(Int64.v);
+  #[global] Int64_set_v (x : Int64.t) y :: go.IsGoStepPureDet (StructFieldSet (Int64) "v") (#x, #y) #(x <|Int64.v := y|>);
   #[global] Int64'ptr_Add_unfold :: MethodUnfold (go.PointerType (Int64)) "Add" (Int64__Addⁱᵐᵖˡ);
   #[global] Int64'ptr_And_unfold :: MethodUnfold (go.PointerType (Int64)) "And" (Int64__Andⁱᵐᵖˡ);
   #[global] Int64'ptr_CompareAndSwap_unfold :: MethodUnfold (go.PointerType (Int64)) "CompareAndSwap" (Int64__CompareAndSwapⁱᵐᵖˡ);
@@ -563,16 +591,22 @@ mk {
   v : w32;
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
+#[global] Instance settable : Settable t :=
+  settable! mk <_; v>.
 End def.
+
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
-
 End Uint32.
 
 Class Uint32_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Uint32_zero_val  :: go.GoZeroValEq Uint32 Uint32.t;
-  #[global] Uint32_underlying  :: go.Underlying (Uint32 ) (Uint32ⁱᵐᵖˡ );
+  #[global] Uint32_underlying :: go.Underlying (Uint32) (Uint32ⁱᵐᵖˡ);
+  #[global] Uint32_get__ (x : Uint32.t) :: go.IsGoStepPureDet (StructFieldGet (Uint32) "_") #x #x.(Uint32._);
+  #[global] Uint32_set__ (x : Uint32.t) y :: go.IsGoStepPureDet (StructFieldSet (Uint32) "_") (#x, #y) #(x <|Uint32._ := y|>);
+  #[global] Uint32_get_v (x : Uint32.t) :: go.IsGoStepPureDet (StructFieldGet (Uint32) "v") #x #x.(Uint32.v);
+  #[global] Uint32_set_v (x : Uint32.t) y :: go.IsGoStepPureDet (StructFieldSet (Uint32) "v") (#x, #y) #(x <|Uint32.v := y|>);
   #[global] Uint32'ptr_Add_unfold :: MethodUnfold (go.PointerType (Uint32)) "Add" (Uint32__Addⁱᵐᵖˡ);
   #[global] Uint32'ptr_And_unfold :: MethodUnfold (go.PointerType (Uint32)) "And" (Uint32__Andⁱᵐᵖˡ);
   #[global] Uint32'ptr_CompareAndSwap_unfold :: MethodUnfold (go.PointerType (Uint32)) "CompareAndSwap" (Uint32__CompareAndSwapⁱᵐᵖˡ);
@@ -685,16 +719,24 @@ mk {
   v : w64;
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
+#[global] Instance settable : Settable t :=
+  settable! mk <_; _; v>.
 End def.
+
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
-
 End Uint64.
 
 Class Uint64_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Uint64_zero_val  :: go.GoZeroValEq Uint64 Uint64.t;
-  #[global] Uint64_underlying  :: go.Underlying (Uint64 ) (Uint64ⁱᵐᵖˡ );
+  #[global] Uint64_underlying :: go.Underlying (Uint64) (Uint64ⁱᵐᵖˡ);
+  #[global] Uint64_get__ (x : Uint64.t) :: go.IsGoStepPureDet (StructFieldGet (Uint64) "_") #x #x.(Uint64._);
+  #[global] Uint64_set__ (x : Uint64.t) y :: go.IsGoStepPureDet (StructFieldSet (Uint64) "_") (#x, #y) #(x <|Uint64._ := y|>);
+  #[global] Uint64_get__ (x : Uint64.t) :: go.IsGoStepPureDet (StructFieldGet (Uint64) "_") #x #x.(Uint64._);
+  #[global] Uint64_set__ (x : Uint64.t) y :: go.IsGoStepPureDet (StructFieldSet (Uint64) "_") (#x, #y) #(x <|Uint64._ := y|>);
+  #[global] Uint64_get_v (x : Uint64.t) :: go.IsGoStepPureDet (StructFieldGet (Uint64) "v") #x #x.(Uint64.v);
+  #[global] Uint64_set_v (x : Uint64.t) y :: go.IsGoStepPureDet (StructFieldSet (Uint64) "v") (#x, #y) #(x <|Uint64.v := y|>);
   #[global] Uint64'ptr_Add_unfold :: MethodUnfold (go.PointerType (Uint64)) "Add" (Uint64__Addⁱᵐᵖˡ);
   #[global] Uint64'ptr_And_unfold :: MethodUnfold (go.PointerType (Uint64)) "And" (Uint64__Andⁱᵐᵖˡ);
   #[global] Uint64'ptr_CompareAndSwap_unfold :: MethodUnfold (go.PointerType (Uint64)) "CompareAndSwap" (Uint64__CompareAndSwapⁱᵐᵖˡ);
@@ -716,16 +758,18 @@ Record t :=
 mk {
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk|}.
+#[global] Instance settable : Settable t :=
+  settable! mk <>.
 End def.
+
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
-
 End noCopy.
 
 Class noCopy_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] noCopy_zero_val  :: go.GoZeroValEq noCopy noCopy.t;
-  #[global] noCopy_underlying  :: go.Underlying (noCopy ) (noCopyⁱᵐᵖˡ );
+  #[global] noCopy_underlying :: go.Underlying (noCopy) (noCopyⁱᵐᵖˡ);
 }.
 
 Definition align64ⁱᵐᵖˡ : go.type := go.StructType [
@@ -738,16 +782,18 @@ Record t :=
 mk {
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk|}.
+#[global] Instance settable : Settable t :=
+  settable! mk <>.
 End def.
+
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
-
 End align64.
 
 Class align64_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] align64_zero_val  :: go.GoZeroValEq align64 align64.t;
-  #[global] align64_underlying  :: go.Underlying (align64 ) (align64ⁱᵐᵖˡ );
+  #[global] align64_underlying :: go.Underlying (align64) (align64ⁱᵐᵖˡ);
 }.
 
 Definition efaceWords : go.type := go.Named "sync/atomic.efaceWords"%go [].
@@ -1014,16 +1060,20 @@ mk {
   v : interface.t;
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
+#[global] Instance settable : Settable t :=
+  settable! mk <v>.
 End def.
+
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
-
 End Value.
 
 Class Value_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Value_zero_val  :: go.GoZeroValEq Value Value.t;
-  #[global] Value_underlying  :: go.Underlying (Value ) (Valueⁱᵐᵖˡ );
+  #[global] Value_underlying :: go.Underlying (Value) (Valueⁱᵐᵖˡ);
+  #[global] Value_get_v (x : Value.t) :: go.IsGoStepPureDet (StructFieldGet (Value) "v") #x #x.(Value.v);
+  #[global] Value_set_v (x : Value.t) y :: go.IsGoStepPureDet (StructFieldSet (Value) "v") (#x, #y) #(x <|Value.v := y|>);
   #[global] Value'ptr_CompareAndSwap_unfold :: MethodUnfold (go.PointerType (Value)) "CompareAndSwap" (Value__CompareAndSwapⁱᵐᵖˡ);
   #[global] Value'ptr_Load_unfold :: MethodUnfold (go.PointerType (Value)) "Load" (Value__Loadⁱᵐᵖˡ);
   #[global] Value'ptr_Store_unfold :: MethodUnfold (go.PointerType (Value)) "Store" (Value__Storeⁱᵐᵖˡ);
@@ -1044,16 +1094,22 @@ mk {
   data : loc;
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
+#[global] Instance settable : Settable t :=
+  settable! mk <typ; data>.
 End def.
+
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
-
 End efaceWords.
 
 Class efaceWords_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] efaceWords_zero_val  :: go.GoZeroValEq efaceWords efaceWords.t;
-  #[global] efaceWords_underlying  :: go.Underlying (efaceWords ) (efaceWordsⁱᵐᵖˡ );
+  #[global] efaceWords_underlying :: go.Underlying (efaceWords) (efaceWordsⁱᵐᵖˡ);
+  #[global] efaceWords_get_typ (x : efaceWords.t) :: go.IsGoStepPureDet (StructFieldGet (efaceWords) "typ") #x #x.(efaceWords.typ);
+  #[global] efaceWords_set_typ (x : efaceWords.t) y :: go.IsGoStepPureDet (StructFieldSet (efaceWords) "typ") (#x, #y) #(x <|efaceWords.typ := y|>);
+  #[global] efaceWords_get_data (x : efaceWords.t) :: go.IsGoStepPureDet (StructFieldGet (efaceWords) "data") #x #x.(efaceWords.data);
+  #[global] efaceWords_set_data (x : efaceWords.t) y :: go.IsGoStepPureDet (StructFieldSet (efaceWords) "data") (#x, #y) #(x <|efaceWords.data := y|>);
 }.
 
 #[global] Instance info' : PkgInfo atomic.atomic := 

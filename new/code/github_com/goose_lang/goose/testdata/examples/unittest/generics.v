@@ -50,16 +50,20 @@ mk {
   Value : T;
 }.
 #[global] Instance zero_val`{!ZeroVal T}  : ZeroVal t := {| zero_val := mk (zero_val _)|}.
+#[global] Instance settable : Settable t :=
+  settable! mk <Value>.
 End def.
+
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
-
 End Box.
 
 Class Box_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Box_zero_val T T' `{!ZeroVal T'} `{!go.GoZeroValEq T T'} :: go.GoZeroValEq (Box T) (Box.t T');
-  #[global] Box_underlying  T :: go.Underlying (Box  T) (Boxⁱᵐᵖˡ  T);
+  #[global] Box_underlying T :: go.Underlying (Box T) (Boxⁱᵐᵖˡ T);
+  #[global] Box_get_Value T T' (x : Box.t T') :: go.IsGoStepPureDet (StructFieldGet (Box T) "Value") #x #x.(Box.Value);
+  #[global] Box_set_Value T T' (x : Box.t T') y :: go.IsGoStepPureDet (StructFieldSet (Box T) "Value") (#x, #y) #(x <|Box.Value := y|>);
   #[global] Box'ptr_Get_unfold T :: MethodUnfold (Box T) "Get" (Box__Getⁱᵐᵖˡ T);
   #[global] Box'ptr_Get_unfold T :: MethodUnfold (go.PointerType (Box T)) "Get" (λ: "$r", MethodResolve (Box T) Get #() (![(Box T)] "$r");
 }.
@@ -129,16 +133,26 @@ mk {
   W : w64;
 }.
 #[global] Instance zero_val`{!ZeroVal T}  : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _) (zero_val _)|}.
+#[global] Instance settable : Settable t :=
+  settable! mk <X; Y; Z; W>.
 End def.
+
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
-
 End Container.
 
 Class Container_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Container_zero_val T T' `{!ZeroVal T'} `{!go.GoZeroValEq T T'} :: go.GoZeroValEq (Container T) (Container.t T');
-  #[global] Container_underlying  T :: go.Underlying (Container  T) (Containerⁱᵐᵖˡ  T);
+  #[global] Container_underlying T :: go.Underlying (Container T) (Containerⁱᵐᵖˡ T);
+  #[global] Container_get_X T T' (x : Container.t T') :: go.IsGoStepPureDet (StructFieldGet (Container T) "X") #x #x.(Container.X);
+  #[global] Container_set_X T T' (x : Container.t T') y :: go.IsGoStepPureDet (StructFieldSet (Container T) "X") (#x, #y) #(x <|Container.X := y|>);
+  #[global] Container_get_Y T T' (x : Container.t T') :: go.IsGoStepPureDet (StructFieldGet (Container T) "Y") #x #x.(Container.Y);
+  #[global] Container_set_Y T T' (x : Container.t T') y :: go.IsGoStepPureDet (StructFieldSet (Container T) "Y") (#x, #y) #(x <|Container.Y := y|>);
+  #[global] Container_get_Z T T' (x : Container.t T') :: go.IsGoStepPureDet (StructFieldGet (Container T) "Z") #x #x.(Container.Z);
+  #[global] Container_set_Z T T' (x : Container.t T') y :: go.IsGoStepPureDet (StructFieldSet (Container T) "Z") (#x, #y) #(x <|Container.Z := y|>);
+  #[global] Container_get_W T T' (x : Container.t T') :: go.IsGoStepPureDet (StructFieldGet (Container T) "W") #x #x.(Container.W);
+  #[global] Container_set_W T T' (x : Container.t T') y :: go.IsGoStepPureDet (StructFieldSet (Container T) "W") (#x, #y) #(x <|Container.W := y|>);
 }.
 
 Definition useContainer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.useContainer"%go.
@@ -173,16 +187,20 @@ mk {
   X : (generics.Container.t w64);
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
+#[global] Instance settable : Settable t :=
+  settable! mk <X>.
 End def.
+
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
-
 End UseContainer.
 
 Class UseContainer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] UseContainer_zero_val  :: go.GoZeroValEq UseContainer UseContainer.t;
-  #[global] UseContainer_underlying  :: go.Underlying (UseContainer ) (UseContainerⁱᵐᵖˡ );
+  #[global] UseContainer_underlying :: go.Underlying (UseContainer) (UseContainerⁱᵐᵖˡ);
+  #[global] UseContainer_get_X (x : UseContainer.t) :: go.IsGoStepPureDet (StructFieldGet (UseContainer) "X") #x #x.(UseContainer.X);
+  #[global] UseContainer_set_X (x : UseContainer.t) y :: go.IsGoStepPureDet (StructFieldSet (UseContainer) "X") (#x, #y) #(x <|UseContainer.X := y|>);
 }.
 
 Definition OnlyIndirectⁱᵐᵖˡ(T : go.type)  : go.type := go.StructType [
@@ -202,16 +220,22 @@ mk {
   Y : loc;
 }.
 #[global] Instance zero_val`{!ZeroVal T}  : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
+#[global] Instance settable : Settable t :=
+  settable! mk <X; Y>.
 End def.
+
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
-
 End OnlyIndirect.
 
 Class OnlyIndirect_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] OnlyIndirect_zero_val T T' `{!ZeroVal T'} `{!go.GoZeroValEq T T'} :: go.GoZeroValEq (OnlyIndirect T) (OnlyIndirect.t T');
-  #[global] OnlyIndirect_underlying  T :: go.Underlying (OnlyIndirect  T) (OnlyIndirectⁱᵐᵖˡ  T);
+  #[global] OnlyIndirect_underlying T :: go.Underlying (OnlyIndirect T) (OnlyIndirectⁱᵐᵖˡ T);
+  #[global] OnlyIndirect_get_X T T' (x : OnlyIndirect.t T') :: go.IsGoStepPureDet (StructFieldGet (OnlyIndirect T) "X") #x #x.(OnlyIndirect.X);
+  #[global] OnlyIndirect_set_X T T' (x : OnlyIndirect.t T') y :: go.IsGoStepPureDet (StructFieldSet (OnlyIndirect T) "X") (#x, #y) #(x <|OnlyIndirect.X := y|>);
+  #[global] OnlyIndirect_get_Y T T' (x : OnlyIndirect.t T') :: go.IsGoStepPureDet (StructFieldGet (OnlyIndirect T) "Y") #x #x.(OnlyIndirect.Y);
+  #[global] OnlyIndirect_set_Y T T' (x : OnlyIndirect.t T') y :: go.IsGoStepPureDet (StructFieldSet (OnlyIndirect T) "Y") (#x, #y) #(x <|OnlyIndirect.Y := y|>);
 }.
 
 Definition MultiParamⁱᵐᵖˡ(A : go.type) (B : go.type)  : go.type := go.StructType [
@@ -231,16 +255,22 @@ mk {
   X : A;
 }.
 #[global] Instance zero_val`{!ZeroVal A} `{!ZeroVal B}  : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
+#[global] Instance settable : Settable t :=
+  settable! mk <Y; X>.
 End def.
+
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
-
 End MultiParam.
 
 Class MultiParam_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] MultiParam_zero_val A A' `{!ZeroVal A'} `{!go.GoZeroValEq A A'}B B' `{!ZeroVal B'} `{!go.GoZeroValEq B B'} :: go.GoZeroValEq (MultiParam A B) (MultiParam.t A' B');
-  #[global] MultiParam_underlying  A B :: go.Underlying (MultiParam  A B) (MultiParamⁱᵐᵖˡ  A B);
+  #[global] MultiParam_underlying A B :: go.Underlying (MultiParam A B) (MultiParamⁱᵐᵖˡ A B);
+  #[global] MultiParam_get_Y A B A' B' (x : MultiParam.t A' B') :: go.IsGoStepPureDet (StructFieldGet (MultiParam A B) "Y") #x #x.(MultiParam.Y);
+  #[global] MultiParam_set_Y A B A' B' (x : MultiParam.t A' B') y :: go.IsGoStepPureDet (StructFieldSet (MultiParam A B) "Y") (#x, #y) #(x <|MultiParam.Y := y|>);
+  #[global] MultiParam_get_X A B A' B' (x : MultiParam.t A' B') :: go.IsGoStepPureDet (StructFieldGet (MultiParam A B) "X") #x #x.(MultiParam.X);
+  #[global] MultiParam_set_X A B A' B' (x : MultiParam.t A' B') y :: go.IsGoStepPureDet (StructFieldSet (MultiParam A B) "X") (#x, #y) #(x <|MultiParam.X := y|>);
 }.
 
 Definition useMultiParam {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.useMultiParam"%go.

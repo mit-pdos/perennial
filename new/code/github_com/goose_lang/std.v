@@ -176,16 +176,24 @@ mk {
   cond : loc;
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
+#[global] Instance settable : Settable t :=
+  settable! mk <mu; done; cond>.
 End def.
+
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
-
 End JoinHandle.
 
 Class JoinHandle_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] JoinHandle_zero_val  :: go.GoZeroValEq JoinHandle JoinHandle.t;
-  #[global] JoinHandle_underlying  :: go.Underlying (JoinHandle ) (JoinHandleⁱᵐᵖˡ );
+  #[global] JoinHandle_underlying :: go.Underlying (JoinHandle) (JoinHandleⁱᵐᵖˡ);
+  #[global] JoinHandle_get_mu (x : JoinHandle.t) :: go.IsGoStepPureDet (StructFieldGet (JoinHandle) "mu") #x #x.(JoinHandle.mu);
+  #[global] JoinHandle_set_mu (x : JoinHandle.t) y :: go.IsGoStepPureDet (StructFieldSet (JoinHandle) "mu") (#x, #y) #(x <|JoinHandle.mu := y|>);
+  #[global] JoinHandle_get_done (x : JoinHandle.t) :: go.IsGoStepPureDet (StructFieldGet (JoinHandle) "done") #x #x.(JoinHandle.done);
+  #[global] JoinHandle_set_done (x : JoinHandle.t) y :: go.IsGoStepPureDet (StructFieldSet (JoinHandle) "done") (#x, #y) #(x <|JoinHandle.done := y|>);
+  #[global] JoinHandle_get_cond (x : JoinHandle.t) :: go.IsGoStepPureDet (StructFieldGet (JoinHandle) "cond") #x #x.(JoinHandle.cond);
+  #[global] JoinHandle_set_cond (x : JoinHandle.t) y :: go.IsGoStepPureDet (StructFieldSet (JoinHandle) "cond") (#x, #y) #(x <|JoinHandle.cond := y|>);
   #[global] JoinHandle'ptr_Join_unfold :: MethodUnfold (go.PointerType (JoinHandle)) "Join" (JoinHandle__Joinⁱᵐᵖˡ);
   #[global] JoinHandle'ptr_finish_unfold :: MethodUnfold (go.PointerType (JoinHandle)) "finish" (JoinHandle__finishⁱᵐᵖˡ);
 }.

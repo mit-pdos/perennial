@@ -62,16 +62,22 @@ mk {
   stack : slice.t;
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
+#[global] Instance settable : Settable t :=
+  settable! mk <mu; stack>.
 End def.
+
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
-
 End LockedStack.
 
 Class LockedStack_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] LockedStack_zero_val  :: go.GoZeroValEq LockedStack LockedStack.t;
-  #[global] LockedStack_underlying  :: go.Underlying (LockedStack ) (LockedStackⁱᵐᵖˡ );
+  #[global] LockedStack_underlying :: go.Underlying (LockedStack) (LockedStackⁱᵐᵖˡ);
+  #[global] LockedStack_get_mu (x : LockedStack.t) :: go.IsGoStepPureDet (StructFieldGet (LockedStack) "mu") #x #x.(LockedStack.mu);
+  #[global] LockedStack_set_mu (x : LockedStack.t) y :: go.IsGoStepPureDet (StructFieldSet (LockedStack) "mu") (#x, #y) #(x <|LockedStack.mu := y|>);
+  #[global] LockedStack_get_stack (x : LockedStack.t) :: go.IsGoStepPureDet (StructFieldGet (LockedStack) "stack") #x #x.(LockedStack.stack);
+  #[global] LockedStack_set_stack (x : LockedStack.t) y :: go.IsGoStepPureDet (StructFieldSet (LockedStack) "stack") (#x, #y) #(x <|LockedStack.stack := y|>);
   #[global] LockedStack'ptr_Pop_unfold :: MethodUnfold (go.PointerType (LockedStack)) "Pop" (LockedStack__Popⁱᵐᵖˡ);
   #[global] LockedStack'ptr_Push_unfold :: MethodUnfold (go.PointerType (LockedStack)) "Push" (LockedStack__Pushⁱᵐᵖˡ);
 }.
@@ -136,16 +142,22 @@ mk {
   exchanger : loc;
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
+#[global] Instance settable : Settable t :=
+  settable! mk <base; exchanger>.
 End def.
+
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
-
 End EliminationStack.
 
 Class EliminationStack_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] EliminationStack_zero_val  :: go.GoZeroValEq EliminationStack EliminationStack.t;
-  #[global] EliminationStack_underlying  :: go.Underlying (EliminationStack ) (EliminationStackⁱᵐᵖˡ );
+  #[global] EliminationStack_underlying :: go.Underlying (EliminationStack) (EliminationStackⁱᵐᵖˡ);
+  #[global] EliminationStack_get_base (x : EliminationStack.t) :: go.IsGoStepPureDet (StructFieldGet (EliminationStack) "base") #x #x.(EliminationStack.base);
+  #[global] EliminationStack_set_base (x : EliminationStack.t) y :: go.IsGoStepPureDet (StructFieldSet (EliminationStack) "base") (#x, #y) #(x <|EliminationStack.base := y|>);
+  #[global] EliminationStack_get_exchanger (x : EliminationStack.t) :: go.IsGoStepPureDet (StructFieldGet (EliminationStack) "exchanger") #x #x.(EliminationStack.exchanger);
+  #[global] EliminationStack_set_exchanger (x : EliminationStack.t) y :: go.IsGoStepPureDet (StructFieldSet (EliminationStack) "exchanger") (#x, #y) #(x <|EliminationStack.exchanger := y|>);
   #[global] EliminationStack'ptr_Pop_unfold :: MethodUnfold (go.PointerType (EliminationStack)) "Pop" (EliminationStack__Popⁱᵐᵖˡ);
   #[global] EliminationStack'ptr_Push_unfold :: MethodUnfold (go.PointerType (EliminationStack)) "Push" (EliminationStack__Pushⁱᵐᵖˡ);
 }.
@@ -678,16 +690,22 @@ mk {
   result : loc;
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
+#[global] Instance settable : Settable t :=
+  settable! mk <f; result>.
 End def.
+
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
-
 End request.
 
 Class request_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] request_zero_val  :: go.GoZeroValEq request request.t;
-  #[global] request_underlying  :: go.Underlying (request ) (requestⁱᵐᵖˡ );
+  #[global] request_underlying :: go.Underlying (request) (requestⁱᵐᵖˡ);
+  #[global] request_get_f (x : request.t) :: go.IsGoStepPureDet (StructFieldGet (request) "f") #x #x.(request.f);
+  #[global] request_set_f (x : request.t) y :: go.IsGoStepPureDet (StructFieldSet (request) "f") (#x, #y) #(x <|request.f := y|>);
+  #[global] request_get_result (x : request.t) :: go.IsGoStepPureDet (StructFieldGet (request) "result") #x #x.(request.result);
+  #[global] request_set_result (x : request.t) y :: go.IsGoStepPureDet (StructFieldSet (request) "result") (#x, #y) #(x <|request.result := y|>);
 }.
 
 Definition mkRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.mkRequest"%go.
@@ -913,16 +931,22 @@ mk {
   res : loc;
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
+#[global] Instance settable : Settable t :=
+  settable! mk <req; res>.
 End def.
+
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
-
 End stream.
 
 Class stream_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] stream_zero_val  :: go.GoZeroValEq stream stream.t;
-  #[global] stream_underlying  :: go.Underlying (stream ) (streamⁱᵐᵖˡ );
+  #[global] stream_underlying :: go.Underlying (stream) (streamⁱᵐᵖˡ);
+  #[global] stream_get_req (x : stream.t) :: go.IsGoStepPureDet (StructFieldGet (stream) "req") #x #x.(stream.req);
+  #[global] stream_set_req (x : stream.t) y :: go.IsGoStepPureDet (StructFieldSet (stream) "req") (#x, #y) #(x <|stream.req := y|>);
+  #[global] stream_get_res (x : stream.t) :: go.IsGoStepPureDet (StructFieldGet (stream) "res") #x #x.(stream.res);
+  #[global] stream_set_res (x : stream.t) y :: go.IsGoStepPureDet (StructFieldSet (stream) "res") (#x, #y) #(x <|stream.res := y|>);
 }.
 
 Definition streamoldⁱᵐᵖˡ : go.type := go.StructType [
@@ -943,16 +967,24 @@ mk {
   f : func.t;
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
+#[global] Instance settable : Settable t :=
+  settable! mk <req; res; f>.
 End def.
+
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
-
 End streamold.
 
 Class streamold_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] streamold_zero_val  :: go.GoZeroValEq streamold streamold.t;
-  #[global] streamold_underlying  :: go.Underlying (streamold ) (streamoldⁱᵐᵖˡ );
+  #[global] streamold_underlying :: go.Underlying (streamold) (streamoldⁱᵐᵖˡ);
+  #[global] streamold_get_req (x : streamold.t) :: go.IsGoStepPureDet (StructFieldGet (streamold) "req") #x #x.(streamold.req);
+  #[global] streamold_set_req (x : streamold.t) y :: go.IsGoStepPureDet (StructFieldSet (streamold) "req") (#x, #y) #(x <|streamold.req := y|>);
+  #[global] streamold_get_res (x : streamold.t) :: go.IsGoStepPureDet (StructFieldGet (streamold) "res") #x #x.(streamold.res);
+  #[global] streamold_set_res (x : streamold.t) y :: go.IsGoStepPureDet (StructFieldSet (streamold) "res") (#x, #y) #(x <|streamold.res := y|>);
+  #[global] streamold_get_f (x : streamold.t) :: go.IsGoStepPureDet (StructFieldGet (streamold) "f") #x #x.(streamold.f);
+  #[global] streamold_set_f (x : streamold.t) y :: go.IsGoStepPureDet (StructFieldSet (streamold) "f") (#x, #y) #(x <|streamold.f := y|>);
 }.
 
 Definition mkStream {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.mkStream"%go.

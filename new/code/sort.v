@@ -184,7 +184,7 @@ End sortedHint.
 Class sortedHint_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] sortedHint_zero_val  :: go.GoZeroValEq sortedHint sortedHint.t;
-  #[global] sortedHint_underlying  :: go.Underlying (sortedHint ) (sortedHintⁱᵐᵖˡ );
+  #[global] sortedHint_underlying :: go.Underlying (sortedHint) (sortedHintⁱᵐᵖˡ);
 }.
 
 Definition unknownHint {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #(W64 0).
@@ -216,7 +216,7 @@ End xorshift.
 Class xorshift_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] xorshift_zero_val  :: go.GoZeroValEq xorshift xorshift.t;
-  #[global] xorshift_underlying  :: go.Underlying (xorshift ) (xorshiftⁱᵐᵖˡ );
+  #[global] xorshift_underlying :: go.Underlying (xorshift) (xorshiftⁱᵐᵖˡ);
   #[global] xorshift'ptr_Next_unfold :: MethodUnfold (go.PointerType (xorshift)) "Next" (xorshift__Nextⁱᵐᵖˡ);
 }.
 

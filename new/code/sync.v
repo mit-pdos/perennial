@@ -105,16 +105,26 @@ mk {
   checker : sync.copyChecker.t;
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _) (zero_val _)|}.
+#[global] Instance settable : Settable t :=
+  settable! mk <noCopy; L; notify; checker>.
 End def.
+
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
-
 End Cond.
 
 Class Cond_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Cond_zero_val  :: go.GoZeroValEq Cond Cond.t;
-  #[global] Cond_underlying  :: go.Underlying (Cond ) (Condⁱᵐᵖˡ );
+  #[global] Cond_underlying :: go.Underlying (Cond) (Condⁱᵐᵖˡ);
+  #[global] Cond_get_noCopy (x : Cond.t) :: go.IsGoStepPureDet (StructFieldGet (Cond) "noCopy") #x #x.(Cond.noCopy);
+  #[global] Cond_set_noCopy (x : Cond.t) y :: go.IsGoStepPureDet (StructFieldSet (Cond) "noCopy") (#x, #y) #(x <|Cond.noCopy := y|>);
+  #[global] Cond_get_L (x : Cond.t) :: go.IsGoStepPureDet (StructFieldGet (Cond) "L") #x #x.(Cond.L);
+  #[global] Cond_set_L (x : Cond.t) y :: go.IsGoStepPureDet (StructFieldSet (Cond) "L") (#x, #y) #(x <|Cond.L := y|>);
+  #[global] Cond_get_notify (x : Cond.t) :: go.IsGoStepPureDet (StructFieldGet (Cond) "notify") #x #x.(Cond.notify);
+  #[global] Cond_set_notify (x : Cond.t) y :: go.IsGoStepPureDet (StructFieldSet (Cond) "notify") (#x, #y) #(x <|Cond.notify := y|>);
+  #[global] Cond_get_checker (x : Cond.t) :: go.IsGoStepPureDet (StructFieldGet (Cond) "checker") #x #x.(Cond.checker);
+  #[global] Cond_set_checker (x : Cond.t) y :: go.IsGoStepPureDet (StructFieldSet (Cond) "checker") (#x, #y) #(x <|Cond.checker := y|>);
   #[global] Cond'ptr_Broadcast_unfold :: MethodUnfold (go.PointerType (Cond)) "Broadcast" (Cond__Broadcastⁱᵐᵖˡ);
   #[global] Cond'ptr_Signal_unfold :: MethodUnfold (go.PointerType (Cond)) "Signal" (Cond__Signalⁱᵐᵖˡ);
   #[global] Cond'ptr_Wait_unfold :: MethodUnfold (go.PointerType (Cond)) "Wait" (Cond__Waitⁱᵐᵖˡ);
@@ -142,16 +152,18 @@ Record t :=
 mk {
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk|}.
+#[global] Instance settable : Settable t :=
+  settable! mk <>.
 End def.
+
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
-
 End noCopy.
 
 Class noCopy_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] noCopy_zero_val  :: go.GoZeroValEq noCopy noCopy.t;
-  #[global] noCopy_underlying  :: go.Underlying (noCopy ) (noCopyⁱᵐᵖˡ );
+  #[global] noCopy_underlying :: go.Underlying (noCopy) (noCopyⁱᵐᵖˡ);
 }.
 
 Axiom Mapⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
@@ -167,7 +179,7 @@ Definition newEntry {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string :
 Class Mutex_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Mutex_zero_val  :: go.GoZeroValEq Mutex Mutex.t;
-  #[global] Mutex_underlying  :: go.Underlying (Mutex ) (Mutexⁱᵐᵖˡ );
+  #[global] Mutex_underlying :: go.Underlying (Mutex) (Mutexⁱᵐᵖˡ);
   #[global] Mutex'ptr_Lock_unfold :: MethodUnfold (go.PointerType (Mutex)) "Lock" (Mutex__Lockⁱᵐᵖˡ);
   #[global] Mutex'ptr_TryLock_unfold :: MethodUnfold (go.PointerType (Mutex)) "TryLock" (Mutex__TryLockⁱᵐᵖˡ);
   #[global] Mutex'ptr_Unlock_unfold :: MethodUnfold (go.PointerType (Mutex)) "Unlock" (Mutex__Unlockⁱᵐᵖˡ);
@@ -185,7 +197,7 @@ End Locker.
 Class Locker_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Locker_zero_val  :: go.GoZeroValEq Locker Locker.t;
-  #[global] Locker_underlying  :: go.Underlying (Locker ) (Lockerⁱᵐᵖˡ );
+  #[global] Locker_underlying :: go.Underlying (Locker) (Lockerⁱᵐᵖˡ);
 }.
 
 Definition Once : go.type := go.Named "sync.Once"%go [].
@@ -264,16 +276,24 @@ mk {
   m : sync.Mutex.t;
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
+#[global] Instance settable : Settable t :=
+  settable! mk <_; done; m>.
 End def.
+
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
-
 End Once.
 
 Class Once_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Once_zero_val  :: go.GoZeroValEq Once Once.t;
-  #[global] Once_underlying  :: go.Underlying (Once ) (Onceⁱᵐᵖˡ );
+  #[global] Once_underlying :: go.Underlying (Once) (Onceⁱᵐᵖˡ);
+  #[global] Once_get__ (x : Once.t) :: go.IsGoStepPureDet (StructFieldGet (Once) "_") #x #x.(Once._);
+  #[global] Once_set__ (x : Once.t) y :: go.IsGoStepPureDet (StructFieldSet (Once) "_") (#x, #y) #(x <|Once._ := y|>);
+  #[global] Once_get_done (x : Once.t) :: go.IsGoStepPureDet (StructFieldGet (Once) "done") #x #x.(Once.done);
+  #[global] Once_set_done (x : Once.t) y :: go.IsGoStepPureDet (StructFieldSet (Once) "done") (#x, #y) #(x <|Once.done := y|>);
+  #[global] Once_get_m (x : Once.t) :: go.IsGoStepPureDet (StructFieldGet (Once) "m") #x #x.(Once.m);
+  #[global] Once_set_m (x : Once.t) y :: go.IsGoStepPureDet (StructFieldSet (Once) "m") (#x, #y) #(x <|Once.m := y|>);
   #[global] Once'ptr_Do_unfold :: MethodUnfold (go.PointerType (Once)) "Do" (Once__Doⁱᵐᵖˡ);
   #[global] Once'ptr_doSlow_unfold :: MethodUnfold (go.PointerType (Once)) "doSlow" (Once__doSlowⁱᵐᵖˡ);
 }.
@@ -632,16 +652,28 @@ mk {
   readerWait : atomic.Int32.t;
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _) (zero_val _) (zero_val _)|}.
+#[global] Instance settable : Settable t :=
+  settable! mk <w; writerSem; readerSem; readerCount; readerWait>.
 End def.
+
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
-
 End RWMutex.
 
 Class RWMutex_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] RWMutex_zero_val  :: go.GoZeroValEq RWMutex RWMutex.t;
-  #[global] RWMutex_underlying  :: go.Underlying (RWMutex ) (RWMutexⁱᵐᵖˡ );
+  #[global] RWMutex_underlying :: go.Underlying (RWMutex) (RWMutexⁱᵐᵖˡ);
+  #[global] RWMutex_get_w (x : RWMutex.t) :: go.IsGoStepPureDet (StructFieldGet (RWMutex) "w") #x #x.(RWMutex.w);
+  #[global] RWMutex_set_w (x : RWMutex.t) y :: go.IsGoStepPureDet (StructFieldSet (RWMutex) "w") (#x, #y) #(x <|RWMutex.w := y|>);
+  #[global] RWMutex_get_writerSem (x : RWMutex.t) :: go.IsGoStepPureDet (StructFieldGet (RWMutex) "writerSem") #x #x.(RWMutex.writerSem);
+  #[global] RWMutex_set_writerSem (x : RWMutex.t) y :: go.IsGoStepPureDet (StructFieldSet (RWMutex) "writerSem") (#x, #y) #(x <|RWMutex.writerSem := y|>);
+  #[global] RWMutex_get_readerSem (x : RWMutex.t) :: go.IsGoStepPureDet (StructFieldGet (RWMutex) "readerSem") #x #x.(RWMutex.readerSem);
+  #[global] RWMutex_set_readerSem (x : RWMutex.t) y :: go.IsGoStepPureDet (StructFieldSet (RWMutex) "readerSem") (#x, #y) #(x <|RWMutex.readerSem := y|>);
+  #[global] RWMutex_get_readerCount (x : RWMutex.t) :: go.IsGoStepPureDet (StructFieldGet (RWMutex) "readerCount") #x #x.(RWMutex.readerCount);
+  #[global] RWMutex_set_readerCount (x : RWMutex.t) y :: go.IsGoStepPureDet (StructFieldSet (RWMutex) "readerCount") (#x, #y) #(x <|RWMutex.readerCount := y|>);
+  #[global] RWMutex_get_readerWait (x : RWMutex.t) :: go.IsGoStepPureDet (StructFieldGet (RWMutex) "readerWait") #x #x.(RWMutex.readerWait);
+  #[global] RWMutex_set_readerWait (x : RWMutex.t) y :: go.IsGoStepPureDet (StructFieldSet (RWMutex) "readerWait") (#x, #y) #(x <|RWMutex.readerWait := y|>);
   #[global] RWMutex'ptr_Lock_unfold :: MethodUnfold (go.PointerType (RWMutex)) "Lock" (RWMutex__Lockⁱᵐᵖˡ);
   #[global] RWMutex'ptr_RLock_unfold :: MethodUnfold (go.PointerType (RWMutex)) "RLock" (RWMutex__RLockⁱᵐᵖˡ);
   #[global] RWMutex'ptr_RLocker_unfold :: MethodUnfold (go.PointerType (RWMutex)) "RLocker" (RWMutex__RLockerⁱᵐᵖˡ);
@@ -666,7 +698,17 @@ End rlocker.
 Class rlocker_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] rlocker_zero_val  :: go.GoZeroValEq rlocker rlocker.t;
-  #[global] rlocker_underlying  :: go.Underlying (rlocker ) (rlockerⁱᵐᵖˡ );
+  #[global] rlocker_underlying :: go.Underlying (rlocker) (rlockerⁱᵐᵖˡ);
+  #[global] rlocker_get_w (x : rlocker.t) :: go.IsGoStepPureDet (StructFieldGet (rlocker) "w") #x #x.(rlocker.w);
+  #[global] rlocker_set_w (x : rlocker.t) y :: go.IsGoStepPureDet (StructFieldSet (rlocker) "w") (#x, #y) #(x <|rlocker.w := y|>);
+  #[global] rlocker_get_writerSem (x : rlocker.t) :: go.IsGoStepPureDet (StructFieldGet (rlocker) "writerSem") #x #x.(rlocker.writerSem);
+  #[global] rlocker_set_writerSem (x : rlocker.t) y :: go.IsGoStepPureDet (StructFieldSet (rlocker) "writerSem") (#x, #y) #(x <|rlocker.writerSem := y|>);
+  #[global] rlocker_get_readerSem (x : rlocker.t) :: go.IsGoStepPureDet (StructFieldGet (rlocker) "readerSem") #x #x.(rlocker.readerSem);
+  #[global] rlocker_set_readerSem (x : rlocker.t) y :: go.IsGoStepPureDet (StructFieldSet (rlocker) "readerSem") (#x, #y) #(x <|rlocker.readerSem := y|>);
+  #[global] rlocker_get_readerCount (x : rlocker.t) :: go.IsGoStepPureDet (StructFieldGet (rlocker) "readerCount") #x #x.(rlocker.readerCount);
+  #[global] rlocker_set_readerCount (x : rlocker.t) y :: go.IsGoStepPureDet (StructFieldSet (rlocker) "readerCount") (#x, #y) #(x <|rlocker.readerCount := y|>);
+  #[global] rlocker_get_readerWait (x : rlocker.t) :: go.IsGoStepPureDet (StructFieldGet (rlocker) "readerWait") #x #x.(rlocker.readerWait);
+  #[global] rlocker_set_readerWait (x : rlocker.t) y :: go.IsGoStepPureDet (StructFieldSet (rlocker) "readerWait") (#x, #y) #(x <|rlocker.readerWait := y|>);
 }.
 
 Definition WaitGroup : go.type := go.Named "sync.WaitGroup"%go [].
@@ -947,16 +989,24 @@ mk {
   sema : w32;
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
+#[global] Instance settable : Settable t :=
+  settable! mk <noCopy; state; sema>.
 End def.
+
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
-
 End WaitGroup.
 
 Class WaitGroup_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] WaitGroup_zero_val  :: go.GoZeroValEq WaitGroup WaitGroup.t;
-  #[global] WaitGroup_underlying  :: go.Underlying (WaitGroup ) (WaitGroupⁱᵐᵖˡ );
+  #[global] WaitGroup_underlying :: go.Underlying (WaitGroup) (WaitGroupⁱᵐᵖˡ);
+  #[global] WaitGroup_get_noCopy (x : WaitGroup.t) :: go.IsGoStepPureDet (StructFieldGet (WaitGroup) "noCopy") #x #x.(WaitGroup.noCopy);
+  #[global] WaitGroup_set_noCopy (x : WaitGroup.t) y :: go.IsGoStepPureDet (StructFieldSet (WaitGroup) "noCopy") (#x, #y) #(x <|WaitGroup.noCopy := y|>);
+  #[global] WaitGroup_get_state (x : WaitGroup.t) :: go.IsGoStepPureDet (StructFieldGet (WaitGroup) "state") #x #x.(WaitGroup.state);
+  #[global] WaitGroup_set_state (x : WaitGroup.t) y :: go.IsGoStepPureDet (StructFieldSet (WaitGroup) "state") (#x, #y) #(x <|WaitGroup.state := y|>);
+  #[global] WaitGroup_get_sema (x : WaitGroup.t) :: go.IsGoStepPureDet (StructFieldGet (WaitGroup) "sema") #x #x.(WaitGroup.sema);
+  #[global] WaitGroup_set_sema (x : WaitGroup.t) y :: go.IsGoStepPureDet (StructFieldSet (WaitGroup) "sema") (#x, #y) #(x <|WaitGroup.sema := y|>);
   #[global] WaitGroup'ptr_Add_unfold :: MethodUnfold (go.PointerType (WaitGroup)) "Add" (WaitGroup__Addⁱᵐᵖˡ);
   #[global] WaitGroup'ptr_Done_unfold :: MethodUnfold (go.PointerType (WaitGroup)) "Done" (WaitGroup__Doneⁱᵐᵖˡ);
   #[global] WaitGroup'ptr_Go_unfold :: MethodUnfold (go.PointerType (WaitGroup)) "Go" (WaitGroup__Goⁱᵐᵖˡ);

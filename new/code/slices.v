@@ -124,7 +124,7 @@ End xorshift.
 Class xorshift_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] xorshift_zero_val  :: go.GoZeroValEq xorshift xorshift.t;
-  #[global] xorshift_underlying  :: go.Underlying (xorshift ) (xorshiftⁱᵐᵖˡ );
+  #[global] xorshift_underlying :: go.Underlying (xorshift) (xorshiftⁱᵐᵖˡ);
   #[global] xorshift'ptr_Next_unfold :: MethodUnfold (go.PointerType (xorshift)) "Next" (xorshift__Nextⁱᵐᵖˡ);
 }.
 

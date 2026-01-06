@@ -21,16 +21,22 @@ mk {
   buf : slice.t;
 }.
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
+#[global] Instance settable : Settable t :=
+  settable! mk <addr; buf>.
 End def.
+
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
-
 End Builder.
 
 Class Builder_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Builder_zero_val  :: go.GoZeroValEq Builder Builder.t;
-  #[global] Builder_underlying  :: go.Underlying (Builder ) (Builderⁱᵐᵖˡ );
+  #[global] Builder_underlying :: go.Underlying (Builder) (Builderⁱᵐᵖˡ);
+  #[global] Builder_get_addr (x : Builder.t) :: go.IsGoStepPureDet (StructFieldGet (Builder) "addr") #x #x.(Builder.addr);
+  #[global] Builder_set_addr (x : Builder.t) y :: go.IsGoStepPureDet (StructFieldSet (Builder) "addr") (#x, #y) #(x <|Builder.addr := y|>);
+  #[global] Builder_get_buf (x : Builder.t) :: go.IsGoStepPureDet (StructFieldGet (Builder) "buf") #x #x.(Builder.buf);
+  #[global] Builder_set_buf (x : Builder.t) y :: go.IsGoStepPureDet (StructFieldSet (Builder) "buf") (#x, #y) #(x <|Builder.buf := y|>);
 }.
 
 Definition Clone {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.Clone"%go.

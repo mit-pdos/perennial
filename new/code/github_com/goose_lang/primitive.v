@@ -37,7 +37,7 @@ Definition AssumeNoStringOverflow {ext : ffi_syntax} {go_gctx : GoGlobalContext}
 Class Mutex_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Mutex_zero_val  :: go.GoZeroValEq Mutex Mutex.t;
-  #[global] Mutex_underlying  :: go.Underlying (Mutex ) (Mutexⁱᵐᵖˡ );
+  #[global] Mutex_underlying :: go.Underlying (Mutex) (Mutexⁱᵐᵖˡ);
   #[global] Mutex'ptr_Lock_unfold :: MethodUnfold (go.PointerType (Mutex)) "Lock" (Mutex__Lockⁱᵐᵖˡ);
   #[global] Mutex'ptr_Unlock_unfold :: MethodUnfold (go.PointerType (Mutex)) "Unlock" (Mutex__Unlockⁱᵐᵖˡ);
 }.
@@ -48,7 +48,7 @@ Axiom ProphId : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
 Definition NewProph {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/primitive.NewProph"%go.
 
-#[global] Instance info' : PkgInfo primitive.primitive := 
+#[global] Instance info' : PkgInfo primitive.primitive :=
 {|
   pkg_imported_pkgs := []
 |}.

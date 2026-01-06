@@ -13,8 +13,10 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}
   {array_sem : go.ArraySemantics} {slice_sem : go.SliceSemantics}.
 Context {package_sem : channel.Assumptions}.
-Local Set Default Proof Using "Type package_sem core_sem pre_sem array_sem slice_sem".
+Context {package_sem' : primitive.Assumptions}.
+Local Set Default Proof Using "Type package_sem' package_sem core_sem pre_sem array_sem slice_sem".
 
+(* FIXME: *)
 Instance into_val_underlying V `{!ZeroVal V} `{!TypedPointsto V} n ta tunder
   : go.Underlying (go.Named n ta) tunder → IntoValTyped V tunder → IntoValTyped V (go.Named n ta).
 Admitted.
@@ -37,14 +39,13 @@ Proof.
   wp_auto.
   wp_if_destruct.
   {
-    (* FIXME: struct set/get assumptions. *)
-
+    wp_alloc mu as "mu".
     assert (cap > 0) by word.
     rewrite -wp_fupd.
-    wp_alloc mu as "mu".
     wp_auto.
     wp_apply (wp_slice_make2 (V:=V)); first done.
     iIntros (sl) ("Hsl"). wp_auto.
+    (* FIXME: proofgen IntoValTyped for channel.Channel.t *)
     wp_alloc ch as "Hch".
     wp_auto.
     rewrite /named.
