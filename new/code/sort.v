@@ -183,7 +183,7 @@ End sortedHint.
 
 Class sortedHint_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] sortedHint_zero_val  :: go.TypeRepr sortedHint sortedHint.t;
+  #[global] sortedHint_type_repr  :: go.TypeRepr sortedHint sortedHint.t;
   #[global] sortedHint_underlying :: go.Underlying (sortedHint) (sortedHintⁱᵐᵖˡ);
 }.
 
@@ -215,7 +215,7 @@ End xorshift.
 
 Class xorshift_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] xorshift_zero_val  :: go.TypeRepr xorshift xorshift.t;
+  #[global] xorshift_type_repr  :: go.TypeRepr xorshift xorshift.t;
   #[global] xorshift_underlying :: go.Underlying (xorshift) (xorshiftⁱᵐᵖˡ);
   #[global] xorshift'ptr_Next_unfold :: MethodUnfold (go.PointerType (xorshift)) "Next" (xorshift__Nextⁱᵐᵖˡ);
 }.

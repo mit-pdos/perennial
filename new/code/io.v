@@ -50,7 +50,7 @@ End Reader.
 
 Class Reader_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Reader_zero_val  :: go.TypeRepr Reader Reader.t;
+  #[global] Reader_type_repr  :: go.TypeRepr Reader Reader.t;
   #[global] Reader_underlying :: go.Underlying (Reader) (Readerⁱᵐᵖˡ);
 }.
 
@@ -67,7 +67,7 @@ End Writer.
 
 Class Writer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Writer_zero_val  :: go.TypeRepr Writer Writer.t;
+  #[global] Writer_type_repr  :: go.TypeRepr Writer Writer.t;
   #[global] Writer_underlying :: go.Underlying (Writer) (Writerⁱᵐᵖˡ);
 }.
 

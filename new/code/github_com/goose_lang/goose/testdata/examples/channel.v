@@ -70,7 +70,7 @@ End LockedStack.
 
 Class LockedStack_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] LockedStack_zero_val  :: go.TypeRepr LockedStack LockedStack.t;
+  #[global] LockedStack_type_repr  :: go.TypeRepr LockedStack LockedStack.t;
   #[global] LockedStack_underlying :: go.Underlying (LockedStack) (LockedStackⁱᵐᵖˡ);
   #[global] LockedStack_get_mu (x : LockedStack.t) :: go.IsGoStepPureDet (StructFieldGet (LockedStack) "mu") #x #x.(LockedStack.mu);
   #[global] LockedStack_set_mu (x : LockedStack.t) y :: go.IsGoStepPureDet (StructFieldSet (LockedStack) "mu") (#x, #y) #(x <|LockedStack.mu := y|>);
@@ -148,7 +148,7 @@ End EliminationStack.
 
 Class EliminationStack_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] EliminationStack_zero_val  :: go.TypeRepr EliminationStack EliminationStack.t;
+  #[global] EliminationStack_type_repr  :: go.TypeRepr EliminationStack EliminationStack.t;
   #[global] EliminationStack_underlying :: go.Underlying (EliminationStack) (EliminationStackⁱᵐᵖˡ);
   #[global] EliminationStack_get_base (x : EliminationStack.t) :: go.IsGoStepPureDet (StructFieldGet (EliminationStack) "base") #x #x.(EliminationStack.base);
   #[global] EliminationStack_set_base (x : EliminationStack.t) y :: go.IsGoStepPureDet (StructFieldSet (EliminationStack) "base") (#x, #y) #(x <|EliminationStack.base := y|>);
@@ -694,7 +694,7 @@ End request.
 
 Class request_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] request_zero_val  :: go.TypeRepr request request.t;
+  #[global] request_type_repr  :: go.TypeRepr request request.t;
   #[global] request_underlying :: go.Underlying (request) (requestⁱᵐᵖˡ);
   #[global] request_get_f (x : request.t) :: go.IsGoStepPureDet (StructFieldGet (request) "f") #x #x.(request.f);
   #[global] request_set_f (x : request.t) y :: go.IsGoStepPureDet (StructFieldSet (request) "f") (#x, #y) #(x <|request.f := y|>);
@@ -933,7 +933,7 @@ End stream.
 
 Class stream_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] stream_zero_val  :: go.TypeRepr stream stream.t;
+  #[global] stream_type_repr  :: go.TypeRepr stream stream.t;
   #[global] stream_underlying :: go.Underlying (stream) (streamⁱᵐᵖˡ);
   #[global] stream_get_req (x : stream.t) :: go.IsGoStepPureDet (StructFieldGet (stream) "req") #x #x.(stream.req);
   #[global] stream_set_req (x : stream.t) y :: go.IsGoStepPureDet (StructFieldSet (stream) "req") (#x, #y) #(x <|stream.req := y|>);
@@ -967,7 +967,7 @@ End streamold.
 
 Class streamold_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] streamold_zero_val  :: go.TypeRepr streamold streamold.t;
+  #[global] streamold_type_repr  :: go.TypeRepr streamold streamold.t;
   #[global] streamold_underlying :: go.Underlying (streamold) (streamoldⁱᵐᵖˡ);
   #[global] streamold_get_req (x : streamold.t) :: go.IsGoStepPureDet (StructFieldGet (streamold) "req") #x #x.(streamold.req);
   #[global] streamold_set_req (x : streamold.t) y :: go.IsGoStepPureDet (StructFieldSet (streamold) "req") (#x, #y) #(x <|streamold.req := y|>);

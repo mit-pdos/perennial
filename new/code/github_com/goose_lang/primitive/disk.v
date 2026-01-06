@@ -12,7 +12,7 @@ Axiom Block : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
 Class Disk_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Disk_zero_val  :: go.TypeRepr Disk Disk.t;
+  #[global] Disk_type_repr  :: go.TypeRepr Disk Disk.t;
   #[global] Disk_underlying :: go.Underlying (Disk) (Diskⁱᵐᵖˡ);
 }.
 

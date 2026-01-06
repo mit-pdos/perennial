@@ -184,7 +184,7 @@ End JoinHandle.
 
 Class JoinHandle_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] JoinHandle_zero_val  :: go.TypeRepr JoinHandle JoinHandle.t;
+  #[global] JoinHandle_type_repr  :: go.TypeRepr JoinHandle JoinHandle.t;
   #[global] JoinHandle_underlying :: go.Underlying (JoinHandle) (JoinHandleⁱᵐᵖˡ);
   #[global] JoinHandle_get_mu (x : JoinHandle.t) :: go.IsGoStepPureDet (StructFieldGet (JoinHandle) "mu") #x #x.(JoinHandle.mu);
   #[global] JoinHandle_set_mu (x : JoinHandle.t) y :: go.IsGoStepPureDet (StructFieldSet (JoinHandle) "mu") (#x, #y) #(x <|JoinHandle.mu := y|>);

@@ -164,7 +164,7 @@ End Bool.
 
 Class Bool_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Bool_zero_val  :: go.TypeRepr Bool Bool.t;
+  #[global] Bool_type_repr  :: go.TypeRepr Bool Bool.t;
   #[global] Bool_underlying :: go.Underlying (Bool) (Boolⁱᵐᵖˡ);
   #[global] Bool_get__ (x : Bool.t) :: go.IsGoStepPureDet (StructFieldGet (Bool) "_") #x #x.(Bool._);
   #[global] Bool_set__ (x : Bool.t) y :: go.IsGoStepPureDet (StructFieldSet (Bool) "_") (#x, #y) #(x <|Bool._ := y|>);
@@ -214,7 +214,7 @@ End Pointer.
 
 Class Pointer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Pointer_zero_val T T' `{!ZeroVal T'} `{!go.TypeRepr T T'} :: go.TypeRepr (Pointer T) (Pointer.t T');
+  #[global] Pointer_type_repr T T' `{!ZeroVal T'} `{!go.TypeRepr T T'} :: go.TypeRepr (Pointer T) (Pointer.t T');
   #[global] Pointer_underlying T :: go.Underlying (Pointer T) (Pointerⁱᵐᵖˡ T);
   #[global] Pointer_get__ T T' (x : Pointer.t T') :: go.IsGoStepPureDet (StructFieldGet (Pointer T) "_") #x #x.(Pointer._);
   #[global] Pointer_set__ T T' (x : Pointer.t T') y :: go.IsGoStepPureDet (StructFieldSet (Pointer T) "_") (#x, #y) #(x <|Pointer._ := y|>);
@@ -337,7 +337,7 @@ End Int32.
 
 Class Int32_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Int32_zero_val  :: go.TypeRepr Int32 Int32.t;
+  #[global] Int32_type_repr  :: go.TypeRepr Int32 Int32.t;
   #[global] Int32_underlying :: go.Underlying (Int32) (Int32ⁱᵐᵖˡ);
   #[global] Int32_get__ (x : Int32.t) :: go.IsGoStepPureDet (StructFieldGet (Int32) "_") #x #x.(Int32._);
   #[global] Int32_set__ (x : Int32.t) y :: go.IsGoStepPureDet (StructFieldSet (Int32) "_") (#x, #y) #(x <|Int32._ := y|>);
@@ -465,7 +465,7 @@ End Int64.
 
 Class Int64_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Int64_zero_val  :: go.TypeRepr Int64 Int64.t;
+  #[global] Int64_type_repr  :: go.TypeRepr Int64 Int64.t;
   #[global] Int64_underlying :: go.Underlying (Int64) (Int64ⁱᵐᵖˡ);
   #[global] Int64_get__ (x : Int64.t) :: go.IsGoStepPureDet (StructFieldGet (Int64) "_") #x #x.(Int64._);
   #[global] Int64_set__ (x : Int64.t) y :: go.IsGoStepPureDet (StructFieldSet (Int64) "_") (#x, #y) #(x <|Int64._ := y|>);
@@ -591,7 +591,7 @@ End Uint32.
 
 Class Uint32_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Uint32_zero_val  :: go.TypeRepr Uint32 Uint32.t;
+  #[global] Uint32_type_repr  :: go.TypeRepr Uint32 Uint32.t;
   #[global] Uint32_underlying :: go.Underlying (Uint32) (Uint32ⁱᵐᵖˡ);
   #[global] Uint32_get__ (x : Uint32.t) :: go.IsGoStepPureDet (StructFieldGet (Uint32) "_") #x #x.(Uint32._);
   #[global] Uint32_set__ (x : Uint32.t) y :: go.IsGoStepPureDet (StructFieldSet (Uint32) "_") (#x, #y) #(x <|Uint32._ := y|>);
@@ -717,7 +717,7 @@ End Uint64.
 
 Class Uint64_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Uint64_zero_val  :: go.TypeRepr Uint64 Uint64.t;
+  #[global] Uint64_type_repr  :: go.TypeRepr Uint64 Uint64.t;
   #[global] Uint64_underlying :: go.Underlying (Uint64) (Uint64ⁱᵐᵖˡ);
   #[global] Uint64_get__ (x : Uint64.t) :: go.IsGoStepPureDet (StructFieldGet (Uint64) "_") #x #x.(Uint64._);
   #[global] Uint64_set__ (x : Uint64.t) y :: go.IsGoStepPureDet (StructFieldSet (Uint64) "_") (#x, #y) #(x <|Uint64._ := y|>);
@@ -754,7 +754,7 @@ End noCopy.
 
 Class noCopy_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] noCopy_zero_val  :: go.TypeRepr noCopy noCopy.t;
+  #[global] noCopy_type_repr  :: go.TypeRepr noCopy noCopy.t;
   #[global] noCopy_underlying :: go.Underlying (noCopy) (noCopyⁱᵐᵖˡ);
 }.
 
@@ -776,7 +776,7 @@ End align64.
 
 Class align64_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] align64_zero_val  :: go.TypeRepr align64 align64.t;
+  #[global] align64_type_repr  :: go.TypeRepr align64 align64.t;
   #[global] align64_underlying :: go.Underlying (align64) (align64ⁱᵐᵖˡ);
 }.
 
@@ -1052,7 +1052,7 @@ End Value.
 
 Class Value_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Value_zero_val  :: go.TypeRepr Value Value.t;
+  #[global] Value_type_repr  :: go.TypeRepr Value Value.t;
   #[global] Value_underlying :: go.Underlying (Value) (Valueⁱᵐᵖˡ);
   #[global] Value_get_v (x : Value.t) :: go.IsGoStepPureDet (StructFieldGet (Value) "v") #x #x.(Value.v);
   #[global] Value_set_v (x : Value.t) y :: go.IsGoStepPureDet (StructFieldSet (Value) "v") (#x, #y) #(x <|Value.v := y|>);
@@ -1084,7 +1084,7 @@ End efaceWords.
 
 Class efaceWords_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] efaceWords_zero_val  :: go.TypeRepr efaceWords efaceWords.t;
+  #[global] efaceWords_type_repr  :: go.TypeRepr efaceWords efaceWords.t;
   #[global] efaceWords_underlying :: go.Underlying (efaceWords) (efaceWordsⁱᵐᵖˡ);
   #[global] efaceWords_get_typ (x : efaceWords.t) :: go.IsGoStepPureDet (StructFieldGet (efaceWords) "typ") #x #x.(efaceWords.typ);
   #[global] efaceWords_set_typ (x : efaceWords.t) y :: go.IsGoStepPureDet (StructFieldSet (efaceWords) "typ") (#x, #y) #(x <|efaceWords.typ := y|>);

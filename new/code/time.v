@@ -273,7 +273,7 @@ End Timer.
 
 Class Timer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Timer_zero_val  :: go.TypeRepr Timer Timer.t;
+  #[global] Timer_type_repr  :: go.TypeRepr Timer Timer.t;
   #[global] Timer_underlying :: go.Underlying (Timer) (Timerⁱᵐᵖˡ);
   #[global] Timer_get_C (x : Timer.t) :: go.IsGoStepPureDet (StructFieldGet (Timer) "C") #x #x.(Timer.C);
   #[global] Timer_set_C (x : Timer.t) y :: go.IsGoStepPureDet (StructFieldSet (Timer) "C") (#x, #y) #(x <|Timer.C := y|>);
@@ -379,7 +379,7 @@ End Time.
 
 Class Time_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Time_zero_val  :: go.TypeRepr Time Time.t;
+  #[global] Time_type_repr  :: go.TypeRepr Time Time.t;
   #[global] Time_underlying :: go.Underlying (Time) (Timeⁱᵐᵖˡ);
   #[global] Time_get_wall (x : Time.t) :: go.IsGoStepPureDet (StructFieldGet (Time) "wall") #x #x.(Time.wall);
   #[global] Time_set_wall (x : Time.t) y :: go.IsGoStepPureDet (StructFieldSet (Time) "wall") (#x, #y) #(x <|Time.wall := y|>);
@@ -499,7 +499,7 @@ End Duration.
 
 Class Duration_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Duration_zero_val  :: go.TypeRepr Duration Duration.t;
+  #[global] Duration_type_repr  :: go.TypeRepr Duration Duration.t;
   #[global] Duration_underlying :: go.Underlying (Duration) (Durationⁱᵐᵖˡ);
 }.
 

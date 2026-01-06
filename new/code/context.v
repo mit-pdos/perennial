@@ -20,7 +20,7 @@ End Context.
 
 Class Context_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Context_zero_val  :: go.TypeRepr Context Context.t;
+  #[global] Context_type_repr  :: go.TypeRepr Context Context.t;
   #[global] Context_underlying :: go.Underlying (Context) (Contextⁱᵐᵖˡ);
 }.
 
