@@ -329,7 +329,13 @@ Class CoreSemantics :=
     IsGoStepPureDet (StructFieldRef t f) #l #(struct_field_ref V f l);
   #[global] go_interface_make_step t v :: IsGoStepPureDet (InterfaceMake t) v #(interface.mk t v);
   #[global] composite_literal_step t (v : val) :: IsGoStepPureDet (CompositeLiteral t) v (composite_literal t v);
-  go_prealloc_step : is_go_step_pure GoPrealloc #() = (λ e, ∃ (l : loc), e = #l);
+
+  (* The language spec doesn't say anything about the addresses of zero-sized
+     allocation. But, in the runtime, these addresses are non-nil, so the
+     semantics assumes it here.
+     https://cs.opensource.google/go/go/+/refs/tags/go1.25.5:src/runtime/malloc.go;l=927
+     https://cs.opensource.google/go/go/+/refs/tags/go1.25.5:src/runtime/malloc.go;l=1023 *)
+  go_prealloc_step : is_go_step_pure GoPrealloc #() = (λ e, ∃ (l : loc), l ≠ null ∧ e = #l);
   angelic_exit_step : is_go_step_pure AngelicExit #() = (λ e, e = AngelicExit #());
 
   #[global] into_val_unfold_func ::

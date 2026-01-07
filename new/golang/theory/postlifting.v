@@ -120,13 +120,13 @@ Qed.
 Lemma wp_GoPrealloc {stk E} :
   {{{ True }}}
     GoPrealloc #() @ stk; E
-  {{{ (l : loc), RET #l; True }}}.
+  {{{ (l : loc), RET #l; ⌜ l ≠ null ⌝ }}}.
 Proof.
   iIntros (?) "_ HΦ". wp_apply (wp_GoInstruction []).
-  { intros. exists #null. repeat econstructor. rewrite go.go_prealloc_step.
-    repeat econstructor. }
+  { intros. exists #(Loc 1 1). repeat econstructor. rewrite go.go_prealloc_step.
+    repeat econstructor. done. }
   simpl. iIntros "* %Hstep". rewrite go.go_prealloc_step in Hstep.
-  destruct Hstep as [[]]. subst. iIntros "_ $ !>". simpl. wp_pures. by iApply "HΦ".
+  destruct Hstep as [[? []]]. subst. iIntros "_ $ !>". simpl. wp_pures. by iApply "HΦ".
 Qed.
 
 Lemma wp_AngelicExit Φ s E :
