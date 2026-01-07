@@ -325,6 +325,11 @@ Class CoreSemantics :=
   #[global] go_func_resolve_step n ts :: IsGoStepPureDet (FuncResolve n ts) #() #(functions n ts);
   #[global] go_method_resolve_step m t :: IsGoStepPureDet (MethodResolve t m) #() #(methods t m);
   #[global] go_global_var_addr_step v :: IsGoStepPureDet (GlobalVarAddr v) #() #(global_addr v);
+
+  (* FIXME: unsound semantics: simply computing the struct field address will
+     panic if the base address is nil. This is a bit of a headache because every
+     program step executing [StructFieldRef] will not have a precondition that
+     [l ≠ null]. *)
   #[global] struct_field_ref_step t f l V `{!ZeroVal V} `{!TypeRepr t V} ::
     IsGoStepPureDet (StructFieldRef t f) #l #(struct_field_ref V f l);
   #[global] go_interface_make_step t v :: IsGoStepPureDet (InterfaceMake t) v #(interface.mk t v);
