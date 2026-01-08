@@ -238,7 +238,7 @@ Proof.
     iDestruct (get_write_witness i with "[$]") as "#Hwit".
     { word. }
     iMod (wait_step with "[$] [$] [$]") as "HQ".
-    wp_apply (wp_Mutex__Unlock with "[-HΦ s index defer HQ]").
+    wp_apply (wp_Mutex__Unlock with "[-HΦ HQ]").
     {
       iFrame "HmuInv Hlocked".
       repeat iExists _; iFrame "∗#%".
@@ -371,7 +371,7 @@ Proof.
   iDestruct "H" as "(Hnoclose & Hdat & Hghost & Hesc & #Hinv)".
   iMod (own_slice_persist with "Hdata_in") as "#Hdata_in".
   wp_apply wp_Cond__Signal; first iFrame "#".
-  wp_apply (wp_Mutex__Unlock with "[-HΦ Hnoclose Hdat Hesc s data index]").
+  wp_apply (wp_Mutex__Unlock with "[-HΦ Hnoclose Hdat Hesc s index]").
   {
     iFrame "HmuInv Hlocked".
     iNext.
