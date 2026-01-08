@@ -94,7 +94,7 @@ Proof.
   rewrite !(decide_True (P:=slice.nil = slice.nil)) //=.
   iPersist "val_sl key_sl".
   wp_auto.
-  iApply "HΦ". iClear "ret".
+  iApply "HΦ".
   iFrame "∗#%". simpl.
   iPureIntro. done.
 Qed.

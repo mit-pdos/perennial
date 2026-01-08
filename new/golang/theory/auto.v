@@ -72,6 +72,24 @@ Tactic Notation "wp_start" "as" constr(pat) :=
 Tactic Notation "wp_start" :=
   wp_start as "Hpre".
 
+Ltac wp_clear_unused_pointsto :=
+  match goal with
+  | |- environments.envs_entails _ ?g =>
+      (* conservative check: if there's an evar, it could be filled in with
+      iNamedAccu and use any hypothesis (TODO: check for iProp evars
+      specifically) *)
+      has_evar g
+  | _ =>
+    repeat
+      match goal with
+      | |- context[environments.Esnoc _ ?name (typed_pointsto ?l _ _)] =>
+          (* only succeeds if l is not used anywhere (after clearing this
+              points-to) *)
+          iClear name;
+          clear l
+      end
+  end.
+
 Ltac2 wp_auto_lc (num_lc_wanted : int) :=
   let num_lc_wanted := Ref.ref num_lc_wanted in
   let wp_pure_maybe_lc () :=
@@ -83,6 +101,7 @@ Ltac2 wp_auto_lc (num_lc_wanted : int) :=
                     | wp_load ()
                     | wp_store ()
                     | wp_alloc_auto ()
+                    | ltac1:(progress wp_clear_unused_pointsto)
                     | ltac1:(rewrite <- !default_val_eq_zero_val) ]);
       if (Int.gt (Ref.get num_lc_wanted) 0) then
         Control.backtrack_tactic_failure "wp_auto_lc: unable to generate enough later credits"

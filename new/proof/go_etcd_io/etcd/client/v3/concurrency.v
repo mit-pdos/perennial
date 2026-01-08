@@ -82,7 +82,6 @@ Proof.
   rewrite bool_decide_eq_true in Herr. subst.
   wp_auto.
   rewrite decide_True //.
-  iClear "err". clear err_ptr.
   iDestruct "Hl" as "#Hlease0".
   wp_apply (wp_WithCancel True) as "* (Hcancel & Hctx)".
   { iFrame "#". }
