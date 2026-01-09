@@ -28,7 +28,7 @@ Proof.
 Qed.
 
 Lemma wp_Assume (cond : bool) :
-  {{{ is_pkg_init primitive }}}
+  {{{ True }}}
     @! primitive.Assume #cond
   {{{ RET #(); ⌜ cond = true ⌝ }}}.
 Proof.
@@ -41,21 +41,19 @@ Qed.
 
 Lemma wp_Assume_true :
   ∀ Φ,
-  is_pkg_init primitive -∗
   Φ #() -∗
   WP @! primitive.Assume #true {{ Φ }}.
 Proof.
-  iIntros (Φ) "#? HΦ".
+  iIntros (Φ) "HΦ".
   wp_apply wp_Assume.
   iIntros "%". iFrame.
 Qed.
 
 Lemma wp_Assume_false :
-  ∀ Φ,
-  is_pkg_init primitive -∗
+  ⊢ ∀ Φ,
   WP @! primitive.Assume #false {{ Φ }}.
 Proof.
-  iIntros (Φ) "#?".
+  iIntros (Φ).
   wp_apply wp_Assume.
   iIntros "%"; congruence.
 Qed.
@@ -74,7 +72,7 @@ Proof.
 Qed.
 
 Lemma wp_RandomUint64 :
-  {{{ is_pkg_init primitive }}}
+  {{{ True }}}
     @! primitive.RandomUint64 #()
   {{{ (x: w64), RET #x; True }}}
 .
@@ -85,11 +83,11 @@ Proof.
 Qed.
 
 Lemma wp_AssumeNoStringOverflow (s: byte_string) :
-  {{{ is_pkg_init primitive }}}
+  {{{ True }}}
     @! primitive.AssumeNoStringOverflow #s
   {{{ RET #(); ⌜Z.of_nat (length s) < 2^64⌝ }}}.
 Proof.
-  wp_start.
+  wp_start as "_".
   wp_call.
   wp_if_destruct.
   - iApply "HΦ". done.
@@ -140,7 +138,7 @@ Qed.
 
 Lemma wp_UInt64Put sl_b space rem v :
   length space = 8%nat →
-  {{{ is_pkg_init primitive ∗ sl_b ↦* (space ++ rem) }}}
+  {{{ sl_b ↦* (space ++ rem) }}}
     @! primitive.UInt64Put #sl_b #v
   {{{ RET #(); sl_b ↦* (u64_le v ++ rem) }}}.
 Proof.
@@ -204,9 +202,8 @@ Proof.
   done.
 Qed.
 
-(* FIXME: bundle this typeclass into the package tc. *)
 Lemma wp_Mutex__Lock m R :
-  {{{ is_pkg_init primitive ∗ is_Mutex m R }}}
+  {{{ is_Mutex m R }}}
     #(methods (go.PointerType primitive.Mutex) "Lock") #m #()
   {{{ RET #(); own_Mutex m ∗ R }}}.
 Proof.
@@ -219,7 +216,7 @@ Qed.
 
 (* this form is useful for defer statements *)
 Lemma wp_Mutex__Unlock m R :
-  {{{ is_pkg_init primitive ∗ is_Mutex m R ∗ own_Mutex m ∗ ▷ R }}}
+  {{{ is_Mutex m R ∗ own_Mutex m ∗ ▷ R }}}
     #(methods (go.PointerType primitive.Mutex) "Unlock") #m #()
   {{{ RET #(); True }}}.
 Proof.
