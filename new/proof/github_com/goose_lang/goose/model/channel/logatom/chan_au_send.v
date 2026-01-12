@@ -21,6 +21,13 @@ Context {package_sem : channel.Assumptions}.
 Context {package_sem' : primitive.Assumptions}.
 Local Set Default Proof Using "All".
 
+Ltac solve_typed_pointsto_agree :=
+  intros; (destruct &v1, &v2); simpl; iIntros "H1 H2";
+  let field := (iDestruct "H1" as "[H H1]"; iDestruct "H2" as "[H' H2]";
+                iCombine "H H'" gives "->"; iClear "H H'") in
+  repeat field;
+  iCombine "H1 H2" gives "->"; done.
+
 (* FIXME: proofgen *)
 #[global] Program Instance channel_typed_pointsto T' `{!TypedPointsto (Σ:=Σ) T'} :
   TypedPointsto (Σ:=Σ) (channel.Channel.t T') :=
@@ -35,52 +42,36 @@ Local Set Default Proof Using "All".
       )%I
   |}.
 Final Obligation.
-  destruct v1, v2. simpl. intros. iIntros "H1 H2".
-  iNamedSuffix "H1" "1". iNamedSuffix "H2" "2".
-  iCombine "cap1 cap2" gives %->.
-  iCombine "mu1 mu2" gives %->.
-  iCombine "state1 state2" gives %->.
-  iCombine "buffer1 buffer2" gives %->.
-  iCombine "v1 v2" gives %->.
-  done.
+solve_typed_pointsto_agree.
 Qed.
+
+Ltac solve_into_val_typed_struct :=
+    let alloc :=
+      let field :=
+        rewrite bool_decide_decide; destruct decide; subst;
+        last (wp_auto; wp_apply wp_AngelicExit);
+        iDestruct "l_field" as "?"; wp_auto
+      in
+      intros; iIntros "_ HΦ"; rewrite go.alloc_struct;
+      wp_auto; wp_apply wp_GoPrealloc as "* %Hnotnull";
+      repeat field;
+      iApply "HΦ"; iEval (rewrite typed_pointsto_unseal); iFrame in
+    let load :=
+      intros; iIntros "Hl HΦ"; rewrite typed_pointsto_unseal;
+      iNamed "Hl"; rewrite go.load_struct; simpl; wp_auto;
+      destruct &v; simpl; iApply "HΦ"; iFrame in
+    let store :=
+      intros; iIntros "Hl HΦ"; rewrite typed_pointsto_unseal;
+      iNamed "Hl"; rewrite go.store_struct; simpl; wp_auto;
+      destruct &v; simpl; iApply "HΦ"; iFrame in
+    constructor; [alloc | load | store].
 
 (* FIXME: proofgen *)
 Instance channel_into_val_typed T' T
   `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T} `{!go.TypeRepr T T'} :
   IntoValTyped (channel.Channel.t T') (channel.Channel T).
 Proof.
-  constructor.
-  - intros. iIntros "_ HΦ". rewrite go.alloc_struct.
-    wp_auto. wp_apply wp_GoPrealloc as "* %Hnotnull".
-
-    rewrite bool_decide_decide. destruct decide; subst.
-    2:{ wp_auto. wp_apply wp_AngelicExit. }
-    iDestruct "l_field" as "?". wp_auto.
-
-    rewrite bool_decide_decide. destruct decide; subst.
-    2:{ wp_auto. wp_apply wp_AngelicExit. }
-    iDestruct "l_field" as "?". wp_auto.
-
-    rewrite bool_decide_decide. destruct decide; subst.
-    2:{ wp_auto. wp_apply wp_AngelicExit. }
-    iDestruct "l_field" as "?". wp_auto.
-
-    rewrite bool_decide_decide. destruct decide; subst.
-    2:{ wp_auto. wp_apply wp_AngelicExit. }
-    iDestruct "l_field" as "?". wp_auto.
-
-    rewrite bool_decide_decide. destruct decide; subst.
-    2:{ wp_auto. wp_apply wp_AngelicExit. }
-    iDestruct "l_field" as "?". wp_auto.
-
-    iApply "HΦ". iEval (rewrite typed_pointsto_unseal). iFrame.
-  - intros. iIntros "Hl HΦ". rewrite typed_pointsto_unseal.
-    iNamed "Hl". rewrite go.load_struct. simpl. wp_auto.
-    destruct v. simpl. iApply "HΦ". iFrame.
-  - intros. iIntros "Hl HΦ". rewrite typed_pointsto_unseal.
-    iNamed "Hl". rewrite go.store_struct. simpl. wp_auto.
-    destruct v. simpl. iApply "HΦ". iFrame.
+  solve_into_val_typed_struct.
 Qed.
 
 Context `[!chanG Σ V].
