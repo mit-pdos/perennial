@@ -12,12 +12,16 @@ From Perennial.algebra Require Import ghost_var.
 
 Section atomic_specs.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+(* FIXME: bundling? *)
 Context {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}
   {array_sem : go.ArraySemantics} {slice_sem : go.SliceSemantics}.
+
+(* FIXME: imported packages in assumptions *)
 Context {package_sem : channel.Assumptions}.
 Context {package_sem' : primitive.Assumptions}.
 Local Set Default Proof Using "All".
 
+(* FIXME: proofgen *)
 #[global] Program Instance channel_typed_pointsto T' `{!TypedPointsto (Σ:=Σ) T'} :
   TypedPointsto (Σ:=Σ) (channel.Channel.t T') :=
   {|
@@ -41,22 +45,43 @@ Final Obligation.
   done.
 Qed.
 
-(* FIXME: proofgen IntoValTyped for channel.Channel.t *)
+(* FIXME: proofgen *)
 Instance channel_into_val_typed T' T
   `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T} `{!go.TypeRepr T T'} :
   IntoValTyped (channel.Channel.t T') (channel.Channel T).
 Proof.
   constructor.
-  - intros. iIntros "_ HΦ".
-    rewrite go.alloc_struct.
-    wp_auto. admit.
+  - intros. iIntros "_ HΦ". rewrite go.alloc_struct.
+    wp_auto. wp_apply wp_GoPrealloc as "* %Hnotnull".
+
+    rewrite bool_decide_decide. destruct decide; subst.
+    2:{ wp_auto. wp_apply wp_AngelicExit. }
+    iDestruct "l_field" as "?". wp_auto.
+
+    rewrite bool_decide_decide. destruct decide; subst.
+    2:{ wp_auto. wp_apply wp_AngelicExit. }
+    iDestruct "l_field" as "?". wp_auto.
+
+    rewrite bool_decide_decide. destruct decide; subst.
+    2:{ wp_auto. wp_apply wp_AngelicExit. }
+    iDestruct "l_field" as "?". wp_auto.
+
+    rewrite bool_decide_decide. destruct decide; subst.
+    2:{ wp_auto. wp_apply wp_AngelicExit. }
+    iDestruct "l_field" as "?". wp_auto.
+
+    rewrite bool_decide_decide. destruct decide; subst.
+    2:{ wp_auto. wp_apply wp_AngelicExit. }
+    iDestruct "l_field" as "?". wp_auto.
+
+    iApply "HΦ". iEval (rewrite typed_pointsto_unseal). iFrame.
   - intros. iIntros "Hl HΦ". rewrite typed_pointsto_unseal.
     iNamed "Hl". rewrite go.load_struct. simpl. wp_auto.
     destruct v. simpl. iApply "HΦ". iFrame.
   - intros. iIntros "Hl HΦ". rewrite typed_pointsto_unseal.
     iNamed "Hl". rewrite go.store_struct. simpl. wp_auto.
     destruct v. simpl. iApply "HΦ". iFrame.
-Admitted.
+Qed.
 
 Context `[!chanG Σ V].
 Context `[!ZeroVal V] `[!TypedPointsto V] `[!IntoValTyped V t] `[!go.TypeRepr t V].

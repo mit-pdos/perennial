@@ -374,18 +374,18 @@ Class CoreSemantics :=
   alloc_primitive t (H : is_primitive t) : alloc t = (λ: "v", ref_one "v")%V;
   alloc_struct `{!Underlying t (go.StructType fds)} :
     alloc t =
-    (λ: <>,
+    (λ: "v",
         let: "l" := GoPrealloc #() in
-        foldl (λ alloc_so_far fd,
-                 alloc_so_far ;;
+        foldr (λ fd alloc_rest,
                  let (field_name, field_type) := match fd with
                                                  | go.FieldDecl n t => pair n t
                                                  | go.EmbeddedField n t => pair n t
                                                  end in
-                let field_addr := StructFieldRef t field_name "l" in
-                let: "l_field" := GoAlloc field_type #() in
-                if: ("l_field" ≠⟨go.PointerType field_type⟩ field_addr) then AngelicExit #()
-                else #()
+                 let field_addr := StructFieldRef t field_name "l" in
+                 let: "l_field" := GoAlloc field_type (StructFieldGet t field_name "v") in
+                 (if: ("l_field" ≠⟨go.PointerType field_type⟩ field_addr) then AngelicExit #()
+                  else #());;
+                 alloc_rest
           ) #() fds ;;
         "l")%V;
 
