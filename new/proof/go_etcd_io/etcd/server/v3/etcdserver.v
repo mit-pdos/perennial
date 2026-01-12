@@ -168,8 +168,6 @@ Proof.
       wp_auto. iSplitR; first done. iFrame. done. }
   iIntros "*". iNamed 1. iNamed "H".
   wp_auto.
-  iClear "err". clear err_ptr.
-  wp_auto.
 
   iDestruct (own_InternalRaftRequest_new_header with "[$] [$]") as "[%req_abs' req]".
   wp_apply (wp_InternalRaftRequest__Marshal with "[$r $req]").

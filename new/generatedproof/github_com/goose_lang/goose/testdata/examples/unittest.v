@@ -2665,6 +2665,14 @@ Global Instance wp_func_call_useRenamedImport :
   WpFuncCall unittest.useRenamedImport _ (is_pkg_defined unittest) :=
   ltac:(solve_wp_func_call).
 
+Global Instance wp_func_call_ifJoinDemo :
+  WpFuncCall unittest.ifJoinDemo _ (is_pkg_defined unittest) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_repeatLocalVars :
+  WpFuncCall unittest.repeatLocalVars _ (is_pkg_defined unittest) :=
+  ltac:(solve_wp_func_call).
+
 Global Instance wp_func_call_TwoDiskWrite :
   WpFuncCall unittest.TwoDiskWrite _ (is_pkg_defined unittest) :=
   ltac:(solve_wp_func_call).

@@ -412,13 +412,12 @@ Proof using chan_protocolG0.
    simpl.
  iAssert (∃ (i: nat) (i_v: w64) sl,
              "i" ∷ i_ptr ↦ i_v ∗
-            "c"  ∷ c_ptr ↦ c ∗
   "Hcons"  ∷ spsc_consumer γspsc (fib_list i) ∗
   "Hsl"  ∷ sl ↦* (fib_list i) ∗
   "results"  ∷ results_ptr ↦ sl ∗
   "oslc"  ∷ theory.slice.own_slice_cap w64 sl (DfracOwn 1)
 )%I
-  with "[ i c Hcons results]" as "IH".
+  with "[ i Hcons results]" as "IH".
 {
   iExists 0%nat.
   iFrame.
@@ -726,7 +725,6 @@ Proof.
   rewrite /is_request_chan.
   wp_auto.
   rewrite /chan.for_range.
-  iPersist "c".
   wp_auto.
   iAssert (∃ (r0: request.t),
       "r" ∷ r_ptr ↦ r0

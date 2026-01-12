@@ -32,6 +32,19 @@ goal 1 is:
         (do: "y2" <-[# uint32T] "$r0") ;;;
         return: (![# uint64T] "z", ![# uint32T] "y2"))
   {{ v, Φ v }}
+goal 1 is:
+  
+  Σ : gFunctors
+  hG : heapGS Σ
+  globalsGS0 : globalsGS Σ
+  go_ctx : GoContext
+  Φ : val → iPropI Σ
+  ============================
+  _ : is_pkg_init unittest
+  --------------------------------------□
+  "HΦ" : True -∗ Φ (# ()%V)
+  --------------------------------------∗
+  Φ (# ()%V)
 The command has indeed failed with message:
 Uncaught Ltac2 exception:
 Init.Tactic_failure
