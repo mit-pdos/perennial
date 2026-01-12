@@ -355,6 +355,15 @@ Ltac solve_wp_store :=
 
 Ltac solve_into_val_typed := constructor; [solve_wp_alloc|solve_wp_load|solve_wp_store].
 
+Global Instance into_val_typed_underlying V `{!ZeroVal V} `{!TypedPointsto V} n ta tunder
+  : go.Underlying (go.Named n ta) tunder → IntoValTyped V tunder → IntoValTyped V (go.Named n ta).
+Proof.
+  intros. constructor.
+  - rewrite go.alloc_underlying. eapply wp_alloc. apply _.
+  - rewrite go.load_underlying. eapply wp_load. apply _.
+  - rewrite go.store_underlying. eapply wp_store. apply _.
+Qed.
+
 Global Instance into_val_typed_loc t : IntoValTyped loc (go.PointerType t).
 Proof. solve_into_val_typed. Qed.
 

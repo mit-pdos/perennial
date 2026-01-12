@@ -370,6 +370,7 @@ Class CoreSemantics :=
 
   #[global] core_comparison_sem :: CoreComparisonSemantics;
 
+  alloc_underlying `{!Underlying t tunder} : alloc t = alloc tunder;
   alloc_primitive t (H : is_primitive t) : alloc t = (λ: "v", ref_one "v")%V;
   alloc_struct `{!Underlying t (go.StructType fds)} :
     alloc t =
@@ -388,6 +389,7 @@ Class CoreSemantics :=
           ) #() fds ;;
         "l")%V;
 
+  load_underlying `{!Underlying t tunder} : load t = load tunder;
   load_primitive t (H : is_primitive t) : load t = (λ: "l", Read "l")%V;
   load_struct `{!Underlying t (go.StructType fds)} :
     load t =
@@ -402,6 +404,7 @@ Class CoreSemantics :=
                 StructFieldSet t field_name (struct_so_far, field_val)
          ) (GoZeroVal t #()) fds)%V;
 
+  store_underlying `{!Underlying t tunder} : store t = store tunder;
   store_primitive t (H : is_primitive t) : store t = (λ: "l" "v", "l" <- "v")%V;
   store_struct `{!Underlying t (go.StructType fds)} :
     store t =
