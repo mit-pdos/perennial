@@ -308,7 +308,7 @@ Definition Channel__TrySendⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
         then
           let: "$r0" := (let: "$a0" := (![go.SliceType T] (StructFieldRef (Channel T) "buffer"%go (![go.PointerType (Channel T)] "c"))) in
           let: "$a1" := ((let: "$sl0" := (![T] "val") in
-          CompositeLiteral T (LiteralValue [KeyedElement None (ElementExpression "$sl0")]))) in
+          CompositeLiteral (go.SliceType T) (LiteralValue [KeyedElement None (ElementExpression "$sl0")]))) in
           (FuncResolve go.append [go.SliceType T] #()) "$a0" "$a1") in
           do:  ((StructFieldRef (Channel T) "buffer"%go (![go.PointerType (Channel T)] "c")) <-[go.SliceType T] "$r0");;;
           do:  ((MethodResolve (go.PointerType primitive.Mutex) "Unlock"%go #() (![go.PointerType primitive.Mutex] (StructFieldRef (Channel T) "mu"%go (![go.PointerType (Channel T)] "c")))) #());;;

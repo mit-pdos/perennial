@@ -169,14 +169,14 @@ Definition chanSelectⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
        let: "$sl1" := (InterfaceMake go.int (![go.int] "i1")) in
        let: "$sl2" := (InterfaceMake go.string #" from c1
        "%go) in
-       CompositeLiteral (go.InterfaceType []) (LiteralValue [KeyedElement None (ElementExpression "$sl0"); KeyedElement None (ElementExpression "$sl1"); KeyedElement None (ElementExpression "$sl2")]))) in
+       CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression "$sl0"); KeyedElement None (ElementExpression "$sl1"); KeyedElement None (ElementExpression "$sl2")]))) in
        (FuncResolve fmt.Print [] #()) "$a0")
        ); chan.select_send go.int (![go.ChannelType go.sendrecv go.int] "c2") (![go.int] "i2") (λ: <>,
        do:  (let: "$a0" := ((let: "$sl0" := (InterfaceMake go.string #"sent "%go) in
        let: "$sl1" := (InterfaceMake go.int (![go.int] "i2")) in
        let: "$sl2" := (InterfaceMake go.string #" to c2
        "%go) in
-       CompositeLiteral (go.InterfaceType []) (LiteralValue [KeyedElement None (ElementExpression "$sl0"); KeyedElement None (ElementExpression "$sl1"); KeyedElement None (ElementExpression "$sl2")]))) in
+       CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression "$sl0"); KeyedElement None (ElementExpression "$sl1"); KeyedElement None (ElementExpression "$sl2")]))) in
        (FuncResolve fmt.Print [] #()) "$a0")
        ); chan.select_receive go.int (![go.ChannelType go.sendrecv go.int] "c3") (λ: "$recvVal",
        let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
@@ -192,12 +192,12 @@ Definition chanSelectⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
          let: "$sl1" := (InterfaceMake go.int (![go.int] "i3")) in
          let: "$sl2" := (InterfaceMake go.string #" from c3
          "%go) in
-         CompositeLiteral (go.InterfaceType []) (LiteralValue [KeyedElement None (ElementExpression "$sl0"); KeyedElement None (ElementExpression "$sl1"); KeyedElement None (ElementExpression "$sl2")]))) in
+         CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression "$sl0"); KeyedElement None (ElementExpression "$sl1"); KeyedElement None (ElementExpression "$sl2")]))) in
          (FuncResolve fmt.Print [] #()) "$a0")
        else
          do:  (let: "$a0" := ((let: "$sl0" := (InterfaceMake go.string #"c3 is closed
          "%go) in
-         CompositeLiteral (go.InterfaceType []) (LiteralValue [KeyedElement None (ElementExpression "$sl0")]))) in
+         CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression "$sl0")]))) in
          (FuncResolve fmt.Print [] #()) "$a0"))
        ); chan.select_receive go.int (![go.ChannelType go.sendrecv go.int] "c4") (λ: "$recvVal",
        let: "$r0" := (Fst "$recvVal") in
@@ -206,7 +206,7 @@ Definition chanSelectⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
        )] (λ: <>,
       do:  (let: "$a0" := ((let: "$sl0" := (InterfaceMake go.string #"no communication
       "%go) in
-      CompositeLiteral (go.InterfaceType []) (LiteralValue [KeyedElement None (ElementExpression "$sl0")]))) in
+      CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression "$sl0")]))) in
       (FuncResolve fmt.Print [] #()) "$a0")
       );;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
@@ -242,14 +242,14 @@ Definition chanRangeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
     chan.for_range go.uint64 "$range" (λ: "$key",
       do:  ("y" <-[go.uint64] "$key");;;
       do:  (let: "$a0" := ((let: "$sl0" := (InterfaceMake go.uint64 (![go.uint64] "y")) in
-      CompositeLiteral (go.InterfaceType []) (LiteralValue [KeyedElement None (ElementExpression "$sl0")]))) in
+      CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression "$sl0")]))) in
       (FuncResolve fmt.Print [] #()) "$a0")));;;
     let: "$range" := (![go.ChannelType go.sendrecv go.uint64] "x") in
     (let: "x" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     chan.for_range go.uint64 "$range" (λ: "$key",
       do:  ("x" <-[go.uint64] "$key");;;
       do:  (let: "$a0" := ((let: "$sl0" := (InterfaceMake go.uint64 (![go.uint64] "x")) in
-      CompositeLiteral (go.InterfaceType []) (LiteralValue [KeyedElement None (ElementExpression "$sl0")]))) in
+      CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression "$sl0")]))) in
       (FuncResolve fmt.Print [] #()) "$a0")));;;
     let: "$range" := (![go.ChannelType go.sendrecv go.uint64] "x") in
     chan.for_range go.uint64 "$range" (λ: "$key",
@@ -815,7 +815,7 @@ Definition iterMapKeysⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
       let: "newKeys" := (GoAlloc (go.SliceType go.uint64) (GoZeroVal (go.SliceType go.uint64) #())) in
       let: "$r0" := (let: "$a0" := (![go.SliceType go.uint64] "keys") in
       let: "$a1" := ((let: "$sl0" := (![go.uint64] "k") in
-      CompositeLiteral go.uint64 (LiteralValue [KeyedElement None (ElementExpression "$sl0")]))) in
+      CompositeLiteral (go.SliceType go.uint64) (LiteralValue [KeyedElement None (ElementExpression "$sl0")]))) in
       (FuncResolve go.append [go.SliceType go.uint64] #()) "$a0" "$a1") in
       do:  ("newKeys" <-[go.SliceType go.uint64] "$r0");;;
       let: "$r0" := (![go.SliceType go.uint64] "newKeys") in
@@ -1345,7 +1345,7 @@ Definition forRangeNoBindingⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
     let: "$range" := (![go.SliceType go.string] "x") in
     slice.for_range go.string "$range" (λ: "$key" "$value",
       do:  (let: "$a0" := ((let: "$sl0" := (InterfaceMake (go.SliceType go.string) (![go.SliceType go.string] "x")) in
-      CompositeLiteral (go.InterfaceType []) (LiteralValue [KeyedElement None (ElementExpression "$sl0")]))) in
+      CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression "$sl0")]))) in
       (FuncResolve fmt.Print [] #()) "$a0"));;;
     return: #()).
 
@@ -1363,7 +1363,7 @@ Definition forRangeOldVarsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
       do:  ("y" <-[go.string] "$value");;;
       do:  "$key";;;
       do:  (let: "$a0" := ((let: "$sl0" := (InterfaceMake go.string (![go.string] "y")) in
-      CompositeLiteral (go.InterfaceType []) (LiteralValue [KeyedElement None (ElementExpression "$sl0")]))) in
+      CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression "$sl0")]))) in
       (FuncResolve fmt.Print [] #()) "$a0"));;;
     return: #()).
 
@@ -1603,7 +1603,7 @@ Definition testⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val 
   λ: <>,
     exception_do (do:  (let: "$a0" := ((let: "$sl0" := (InterfaceMake (go.PointerType concreteFooer) (GoAlloc concreteFooer (CompositeLiteral concreteFooer (LiteralValue [])))) in
     let: "$sl1" := (InterfaceMake (go.PointerType concreteFooer) (GoAlloc concreteFooer (CompositeLiteral concreteFooer (LiteralValue [])))) in
-    CompositeLiteral Fooer (LiteralValue [KeyedElement None (ElementExpression "$sl0"); KeyedElement None (ElementExpression "$sl1")]))) in
+    CompositeLiteral (go.SliceType Fooer) (LiteralValue [KeyedElement None (ElementExpression "$sl0"); KeyedElement None (ElementExpression "$sl1")]))) in
     (FuncResolve takesVarArgsInterface [] #()) "$a0");;;
     return: #()).
 
@@ -1688,7 +1688,7 @@ Definition testConversionInMultiplePassThroughⁱᵐᵖˡ {ext : ffi_syntax} {go
     let: "$a0" := "$ret0" in
     let: "$a1" := ((let: "$sl0" := "$ret1" in
     let: "$sl1" := (InterfaceMake (go.PointerType concreteFooer) "$ret2") in
-    CompositeLiteral Fooer (LiteralValue [KeyedElement None (ElementExpression "$sl0"); KeyedElement None (ElementExpression "$sl1")]))) in
+    CompositeLiteral (go.SliceType Fooer) (LiteralValue [KeyedElement None (ElementExpression "$sl0"); KeyedElement None (ElementExpression "$sl1")]))) in
     (FuncResolve takeMultiple [] #()) "$a0" "$a1");;;
     return: #()).
 
@@ -1973,14 +1973,14 @@ Definition ToBeDebuggedⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
   λ: "x",
     exception_do (let: "x" := (GoAlloc go.uint64 "x") in
     do:  (let: "$a0" := ((let: "$sl0" := (InterfaceMake go.string #"starting function"%go) in
-    CompositeLiteral (go.InterfaceType []) (LiteralValue [KeyedElement None (ElementExpression "$sl0")]))) in
+    CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression "$sl0")]))) in
     (FuncResolve log.Println [] #()) "$a0");;;
     do:  (let: "$a0" := #"called with %d"%go in
     let: "$a1" := ((let: "$sl0" := (InterfaceMake go.uint64 (![go.uint64] "x")) in
-    CompositeLiteral (go.InterfaceType []) (LiteralValue [KeyedElement None (ElementExpression "$sl0")]))) in
+    CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression "$sl0")]))) in
     (FuncResolve log.Printf [] #()) "$a0" "$a1");;;
     do:  (let: "$a0" := ((let: "$sl0" := (InterfaceMake go.string #"ending function"%go) in
-    CompositeLiteral (go.InterfaceType []) (LiteralValue [KeyedElement None (ElementExpression "$sl0")]))) in
+    CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression "$sl0")]))) in
     (FuncResolve log.Println [] #()) "$a0");;;
     return: (![go.uint64] "x")).
 
@@ -1990,7 +1990,7 @@ Definition DoNothing {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string 
 Definition DoNothingⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (do:  (let: "$a0" := ((let: "$sl0" := (InterfaceMake go.string #"doing nothing"%go) in
-    CompositeLiteral (go.InterfaceType []) (LiteralValue [KeyedElement None (ElementExpression "$sl0")]))) in
+    CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression "$sl0")]))) in
     (FuncResolve log.Println [] #()) "$a0");;;
     return: #()).
 
@@ -2878,7 +2878,7 @@ Definition useRenamedImport {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_
 Definition useRenamedImportⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (do:  (let: "$a0" := ((let: "$sl0" := (InterfaceMake go.string #"blah"%go) in
-    CompositeLiteral (go.InterfaceType []) (LiteralValue [KeyedElement None (ElementExpression "$sl0")]))) in
+    CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression "$sl0")]))) in
     (FuncResolve fmt.Print [] #()) "$a0");;;
     return: #()).
 
@@ -3910,7 +3910,7 @@ Definition testVariadicCallⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
     let: "$sl1" := #(W8 1) in
     let: "$sl2" := #(W8 2) in
     let: "$sl3" := #(W8 3) in
-    CompositeLiteral go.byte (LiteralValue [KeyedElement None (ElementExpression "$sl0"); KeyedElement None (ElementExpression "$sl1"); KeyedElement None (ElementExpression "$sl2"); KeyedElement None (ElementExpression "$sl3")]))) in
+    CompositeLiteral (go.SliceType go.byte) (LiteralValue [KeyedElement None (ElementExpression "$sl0"); KeyedElement None (ElementExpression "$sl1"); KeyedElement None (ElementExpression "$sl2"); KeyedElement None (ElementExpression "$sl3")]))) in
     (FuncResolve variadicFunc [] #()) "$a0" "$a1" "$a2");;;
     do:  (let: "$a0" := #(W64 10) in
     let: "$a1" := #"abc"%go in
@@ -3940,7 +3940,7 @@ Definition testVariadicPassThroughⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGl
     let: "$a1" := "$ret1" in
     let: "$a2" := ((let: "$sl0" := "$ret2" in
     let: "$sl1" := "$ret3" in
-    CompositeLiteral go.byte (LiteralValue [KeyedElement None (ElementExpression "$sl0"); KeyedElement None (ElementExpression "$sl1")]))) in
+    CompositeLiteral (go.SliceType go.byte) (LiteralValue [KeyedElement None (ElementExpression "$sl0"); KeyedElement None (ElementExpression "$sl1")]))) in
     (FuncResolve variadicFunc [] #()) "$a0" "$a1" "$a2");;;
     return: #()).
 

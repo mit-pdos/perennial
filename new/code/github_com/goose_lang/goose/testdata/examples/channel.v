@@ -42,7 +42,7 @@ Definition LockedStack__Pushⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
     do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go #() (StructFieldRef LockedStack "mu"%go (![go.PointerType LockedStack] "s"))) #());;;
     let: "$r0" := (let: "$a0" := (![go.SliceType go.string] (StructFieldRef LockedStack "stack"%go (![go.PointerType LockedStack] "s"))) in
     let: "$a1" := ((let: "$sl0" := (![go.string] "value") in
-    CompositeLiteral go.string (LiteralValue [KeyedElement None (ElementExpression "$sl0")]))) in
+    CompositeLiteral (go.SliceType go.string) (LiteralValue [KeyedElement None (ElementExpression "$sl0")]))) in
     (FuncResolve go.append [go.SliceType go.string] #()) "$a0" "$a1") in
     do:  ((StructFieldRef LockedStack "stack"%go (![go.PointerType LockedStack] "s")) <-[go.SliceType go.string] "$r0");;;
     do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go #() (StructFieldRef LockedStack "mu"%go (![go.PointerType LockedStack] "s"))) #());;;
@@ -350,7 +350,7 @@ Definition fib_consumerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
       do:  ("i" <-[go.int] "$key");;;
       let: "$r0" := (let: "$a0" := (![go.SliceType go.int] "results") in
       let: "$a1" := ((let: "$sl0" := (![go.int] "i") in
-      CompositeLiteral go.int (LiteralValue [KeyedElement None (ElementExpression "$sl0")]))) in
+      CompositeLiteral (go.SliceType go.int) (LiteralValue [KeyedElement None (ElementExpression "$sl0")]))) in
       (FuncResolve go.append [go.SliceType go.int] #()) "$a0" "$a1") in
       do:  ("results" <-[go.SliceType go.int] "$r0")));;;
     return: (![go.SliceType go.int] "results")).

@@ -2472,7 +2472,7 @@ Definition testSliceAppendⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
     do:  ("bytes" <-[go.SliceType go.byte] "$r0");;;
     let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "bytes") in
     let: "$a1" := ((let: "$sl0" := #(W8 1) in
-    CompositeLiteral go.byte (LiteralValue [KeyedElement None (ElementExpression "$sl0")]))) in
+    CompositeLiteral (go.SliceType go.byte) (LiteralValue [KeyedElement None (ElementExpression "$sl0")]))) in
     (FuncResolve go.append [go.SliceType go.byte] #()) "$a0" "$a1") in
     do:  ("bytes" <-[go.SliceType go.byte] "$r0");;;
     let: "newBytes" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
