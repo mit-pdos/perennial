@@ -3,27 +3,77 @@ From New.proof Require Import proof_prelude.
 From New.golang.theory Require Import lock.
 Require Export New.code.github_com.goose_lang.goose.model.channel.
 From New.generatedproof.github_com.goose_lang.goose Require Import model.channel.
+Require Import New.proof.github_com.goose_lang.primitive.
 
 #[local] Transparent is_channel own_channel.
+#[local] Typeclasses Transparent is_channel own_channel.
 
 Section atomic_specs.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!chanG Σ V}.
-Context `{!IntoVal V}.
-Context `{!IntoValTyped V t}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
+Context {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}
+  {array_sem : go.ArraySemantics} {slice_sem : go.SliceSemantics}.
+Context {package_sem : channel.Assumptions}.
+Context {package_sem' : primitive.Assumptions}.
+Local Set Default Proof Using "All".
+
+(* FIXME: *)
+Instance into_val_underlying V `{!ZeroVal V} `{!TypedPointsto V} n ta tunder
+  : go.Underlying (go.Named n ta) tunder → IntoValTyped V tunder → IntoValTyped V (go.Named n ta).
+Admitted.
+
+#[global] Program Instance channel_typed_pointsto T' `{!TypedPointsto (Σ:=Σ) T'} :
+  TypedPointsto (Σ:=Σ) (channel.Channel.t T') :=
+  {|
+    typed_pointsto_def l dq v :=
+      (
+        "cap" ∷ l.[channel.Channel.t T', "cap"] ↦{dq} v.(channel.Channel.cap) ∗
+        "mu" ∷ l.[channel.Channel.t T', "mu"] ↦{dq} v.(channel.Channel.mu) ∗
+        "state" ∷ l.[channel.Channel.t T', "state"] ↦{dq} v.(channel.Channel.state) ∗
+        "buffer" ∷ l.[channel.Channel.t T', "buffer"] ↦{dq} v.(channel.Channel.buffer) ∗
+        "v" ∷ l.[channel.Channel.t T', "v"] ↦{dq} v.(channel.Channel.v)
+      )%I
+  |}.
+Final Obligation.
+  destruct v1, v2. simpl. intros. iIntros "H1 H2".
+  iNamedSuffix "H1" "1". iNamedSuffix "H2" "2".
+  iCombine "cap1 cap2" gives %->.
+  iCombine "mu1 mu2" gives %->.
+  iCombine "state1 state2" gives %->.
+  iCombine "buffer1 buffer2" gives %->.
+  iCombine "v1 v2" gives %->.
+  done.
+Qed.
+
+(* FIXME: proofgen IntoValTyped for channel.Channel.t *)
+Instance channel_into_val_typed T' T
+  `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T} `{!go.TypeRepr T T'} :
+  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+Proof.
+  constructor.
+  - intros. iIntros "_ HΦ".
+    rewrite go.alloc_struct.
+    wp_auto. admit.
+  - intros. iIntros "Hl HΦ". rewrite typed_pointsto_unseal.
+    iNamed "Hl". rewrite go.load_struct. simpl. wp_auto.
+    destruct v. simpl. iApply "HΦ". iFrame.
+  - intros. iIntros "Hl HΦ". rewrite typed_pointsto_unseal.
+    iNamed "Hl". rewrite go.store_struct. simpl. wp_auto.
+    destruct v. simpl. iApply "HΦ". iFrame.
+Admitted.
+
+Context `[!chanG Σ V].
+Context `[!ZeroVal V] `[!TypedPointsto V] `[!IntoValTyped V t] `[!go.TypeRepr t V].
 
 Local Lemma wp_TryReceive_blocking (ch: loc)  (γ: chan_names) :
   ∀ Φ ,
   is_channel ch γ -∗
-  rcv_au_slow ch γ (λ v ok, Φ (#true, #v, #ok)%V) ∧ Φ (#false, #(default_val V), #true)%V -∗
-  WP channel.Channel__TryReceiveⁱᵐᵖˡ #ch #t #true {{ Φ }}.
+  rcv_au_slow ch γ (λ v ok, Φ (#true, #v, #ok)%V) ∧ Φ (#false, #(zero_val V), #true)%V -∗
+  WP #(methods (go.PointerType (channel.Channel t)) "TryReceive") #ch #true {{ Φ }}.
 Proof.
   iIntros (?) "Hch HΦ". iNamed "Hch".
-  wp_call_lc "?".
+  wp_method_call. wp_call_lc "?".
   wp_auto_lc 9.
-  wp_call.
-  wp_apply (wp_lock_lock with "[$lock]") as "[Hlock Hchan]".
+  wp_apply (wp_Mutex__Lock with "[$lock]") as "[Hlock Hchan]".
   iNamed "Hchan".
   (* Case analysis on channel state *)
   destruct s.
@@ -35,7 +85,7 @@ Proof.
       {
         iDestruct (own_slice_len with "slice") as "[%Hl %Hcap2]".
         rewrite length_nil in Hl.
-        replace (sint.Z slice_val.(slice.len_f))with (0) in * by word.
+        replace (sint.Z slice_val.(slice.len))with (0) in * by word.
         word.
       }
       iLeft in "HΦ".
@@ -62,19 +112,17 @@ Proof.
       { done. }
       iSpecialize ("Hclose" $! v with "Hcell").  (* gives back [slice_val ↦* (v::draining)] *)
       iDestruct (own_slice_len with "Hclose") as %(Hlen_eq & Hnonneg).
-      assert (0 ≤ sint.Z (W64 0) < sint.Z slice_val.(slice.len_f)) as Hlt.
+      assert (0 ≤ sint.Z (W64 0) < sint.Z slice_val.(slice.len)) as Hlt.
       { word. }
+      rewrite -> decide_True; last word.
       wp_auto.
-      wp_apply ((wp_load_slice_elem slice_val 0
-                   ( <[0%nat:=v]> (v :: rest)))
+      wp_apply (wp_load_slice_index
                  with "[Hclose]"). all: try word.
       { iFrame. done. }
       iIntros "Hsl". wp_auto.
       iDestruct (own_slice_cap_wf with "slice_cap") as %Hwf.
-      wp_apply (wp_slice_slice_pure).
-      { iPureIntro. word. }
-      wp_call.
-      wp_apply (wp_lock_unlock
+      rewrite -> decide_True; last word. wp_auto.
+      wp_apply (wp_Mutex__Unlock
                  with "[$lock state slice_cap Hsl buffer Hown2  $Hlock]").
       { unfold chan_inv_inner. iExists (Buffered rest). iFrame.
 
@@ -86,7 +134,7 @@ Proof.
         iFrame.
         iDestruct (own_slice_len with "Hhd") as %[Hlent _].
         iDestruct (own_slice_cap_wf with "slice_cap") as %Hlen_le_cap.
-        iDestruct (own_slice_cap_slice_f (slice_val) (W64 1) (DfracOwn 1)) as "H".
+        iDestruct (own_slice_cap_slice (slice_val) (W64 1) (DfracOwn 1)) as "H".
         { word. }
         iApply "H" in "slice_cap". iFrame.
       }
@@ -94,16 +142,15 @@ Proof.
     }
     {
       iDestruct (own_slice_len with "slice") as "[%Hl %Hcap2]".
-      assert ( sint.Z slice_val.(slice.len_f) = sint.Z (W64 0)).
+      assert (sint.Z slice_val.(slice.len) = sint.Z (W64 0)) as Heq.
       {
         word.
       }
       assert (buff = []).
-      { destruct buff. { done. } { rewrite H in Hl. naive_solver. } }
+      { destruct buff. { done. } { rewrite Heq in Hl. naive_solver. } }
       subst buff.
 
-      wp_call.
-      wp_apply (wp_lock_unlock
+      wp_apply (wp_Mutex__Unlock
                  with "[$lock state buffer slice slice_cap Hchanrepfrag $Hlock]").
       { iFrame. unfold chan_inv_inner. iFrame.  iExists (Buffered []).
         iFrame. iPureIntro. done. }
@@ -114,15 +161,13 @@ Proof.
     iDestruct (offer_idle_to_recv with "Hoffer") as ">[offer1 offer2]".
     iMod ((saved_prop.saved_pred_update (K (λ (v0 : V) (ok : bool), Φ (# true, # v0, # ok)%V)
           )) with "Hpred") as "[Hpred1 Hpred2]".
-    wp_call.
-    wp_apply (wp_lock_unlock
+    wp_apply (wp_Mutex__Unlock
                with "[$lock state v slice slice_cap buffer  offer1 Hpred1 Hchanrepfrag HΦ $Hlock]").
     { unfold chan_inv_inner. iExists (RcvWait).
       iFrame "offer1". (* FIXME: iFrame frames random junk into ?Goal4. *)
       iFrame "HΦ". iFrame. iSplitL; last done.
       iIntros "H". iLeft in "H". iFrame. }
-    wp_call.
-    wp_apply (wp_lock_lock with "[$lock]") as "[Hlock Hchan]".
+    wp_apply (wp_Mutex__Lock with "[$lock]") as "[Hlock Hchan]".
     iNamed "Hchan".
     iNamed "phys". iNamed "offer".
     destruct s.
@@ -155,8 +200,7 @@ Proof.
       iMod ((saved_prop.saved_pred_update_halves (K Φr0)
             ) with "Hpred2 Hpred") as "[Hpred1 Hpred2]".
       iCombine "Hpred1 Hpred2" as "Hp".
-      wp_call.
-      wp_apply (wp_lock_unlock
+      wp_apply (wp_Mutex__Unlock
                  with "[$lock state v slice slice_cap buffer Hchanrepfrag   Hp  H1   $Hlock]").
       { unfold chan_inv_inner. iExists (Idle). iFrame.
         iExists Φr0. iFrame. unfold  saved_prop.saved_pred_own . rewrite dfrac_op_own Qp.half_half.
@@ -193,8 +237,7 @@ Proof.
       iCombine "Hpred2 Hpred" as "offer".
       rewrite dfrac_op_own Qp.half_half.
       iDestruct (offer_bundle_lc_agree with "[$] [$offer2] [$Hoffer]") as ">(%Heq & Hpeq & H & H1)".
-      wp_call.
-      wp_apply (wp_lock_unlock
+      wp_apply (wp_Mutex__Unlock
                  with "[$lock state v slice slice_cap buffer H1   Hgv2 offer   $Hlock]").
       { unfold chan_inv_inner. iExists (Idle). iFrame.
       }
@@ -257,8 +300,7 @@ Proof.
                 with "[$Hgv1] [$Hoc]") as ">[Hgv1 Hgv2]".
     { done. }
     iMod ("Hcont" with "Hgv2") as "Hcont". iModIntro.
-    wp_call.
-    wp_apply (wp_lock_unlock
+    wp_apply (wp_Mutex__Unlock
                with "[$lock state v slice slice_cap buffer Hgv1 H2 Hpred Hoffer Hcont1 $Hlock]").
     { unfold chan_inv_inner.  iExists (RcvDone v). iFrame "∗#".
       iNamed "Hgv1". iFrame.
@@ -266,22 +308,19 @@ Proof.
     done.
   - iNamed "phys". wp_auto.
 
-    wp_call.
-    wp_apply (wp_lock_unlock
+    wp_apply (wp_Mutex__Unlock
                with "[$lock state v slice slice_cap buffer offer  $Hlock]").
     { unfold chan_inv_inner. iExists RcvWait. iFrame. }
     iRight in "HΦ". iFrame.
   - iNamed "phys". wp_auto.
 
-    wp_call.
-    wp_apply (wp_lock_unlock
+    wp_apply (wp_Mutex__Unlock
                with "[$lock state v slice slice_cap buffer offer  $Hlock]").
     { unfold chan_inv_inner. iExists (SndDone v). iFrame. }
     iRight in "HΦ". iFrame.
   - iNamed "phys". wp_auto.
 
-    wp_call.
-    wp_apply (wp_lock_unlock
+    wp_apply (wp_Mutex__Unlock
                with "[$lock state v slice slice_cap buffer offer  $Hlock]").
     { unfold chan_inv_inner. iExists (RcvDone v). iFrame. }
     iRight in "HΦ". iFrame.
@@ -304,8 +343,7 @@ Proof.
         word.
       }
 
-      wp_call.
-      wp_apply (wp_lock_unlock
+      wp_apply (wp_Mutex__Unlock
                  with "[$lock state  slice slice_cap buffer offer H $Hlock]").
       { unfold chan_inv_inner.  iExists (Closed []). iFrame.
       }
@@ -339,21 +377,17 @@ Proof.
         { done. }
         iSpecialize ("Hclose" $! v with "Hcell").  (* gives back [slice_val ↦* (v::draining)] *)
         iDestruct (own_slice_len with "Hclose") as %(Hlen_eq & Hnonneg).
-        have Hlt : 0 ≤ sint.Z (W64 0) < sint.Z slice_val.(slice.len_f).
+        have Hlt : 0 ≤ sint.Z (W64 0) < sint.Z slice_val.(slice.len).
         { move: Hlen_eq; simpl.  (* length (v::draining) = S (length draining) *)
           (* sint.nat len = S _  ⇒  sint.Z len > 0 *)
           word. }
-        wp_auto.
-        wp_apply ((wp_load_slice_elem slice_val 0
-                     ( <[sint.nat (W64 0):=v]> (v :: draining)))
-                   with "[Hclose]"). all: try word.
+        rewrite -> decide_True; last word. wp_auto.
+        wp_apply (wp_load_slice_index with "[Hclose]"). all: try word.
         { iFrame. done. }
         iIntros "Hsl". wp_auto.
         iDestruct (own_slice_cap_wf with "slice_cap") as %Hwf.
-        wp_apply (wp_slice_slice_pure).
-        { iPureIntro. word. }
-        wp_call.
-        wp_apply (wp_lock_unlock
+        rewrite -> decide_True; last word. wp_auto.
+        wp_apply (wp_Mutex__Unlock
                    with "[$lock state slice_cap Hsl buffer Hown2  $Hlock]").
         { unfold chan_inv_inner. iExists (Closed draining). iFrame.
 
@@ -365,7 +399,7 @@ Proof.
           iFrame.
           iDestruct (own_slice_len with "Hhd") as %[Hlent _].
           iDestruct (own_slice_cap_wf with "slice_cap") as %Hlen_le_cap.
-          iDestruct (own_slice_cap_slice_f (slice_val) (W64 1) (DfracOwn 1)) as "H".
+          iDestruct (own_slice_cap_slice (slice_val) (W64 1) (DfracOwn 1)) as "H".
           { word. }
           iApply "H" in "slice_cap". iFrame.
           destruct draining.
@@ -376,11 +410,11 @@ Proof.
       }
       {
         iDestruct (own_slice_len with "slice") as "[%Hl %Hcap2]".
-        assert (sint.Z slice_val.(slice.len_f) = sint.Z (W64 0)).
+        assert (sint.Z slice_val.(slice.len) = sint.Z (W64 0)).
         {
           word.
         }
-        replace (sint.nat slice_val.(slice.len_f)) with 0%nat in *.
+        replace (sint.nat slice_val.(slice.len)) with 0%nat in *.
         { done.  }
         word.
       }
@@ -390,14 +424,13 @@ Qed.
 Local Lemma wp_TryReceive_nonblocking (ch : loc)  (γ : chan_names) :
   ∀ Φ ,
   is_channel ch γ -∗
-  rcv_au_fast ch γ (λ v ok, Φ (#true, #v, #ok)%V) (Φ (#false, #(default_val V), #true)%V) -∗
-  WP channel.Channel__TryReceiveⁱᵐᵖˡ #ch #t #false {{ Φ }}.
+  rcv_au_fast ch γ (λ v ok, Φ (#true, #v, #ok)%V) (Φ (#false, #(zero_val V), #true)%V) -∗
+  WP #(methods (go.PointerType (channel.Channel t)) "TryReceive") #ch #false {{ Φ }}.
 Proof.
   iIntros (?) "#Hch HΦ". iNamed "Hch".
-  wp_call_lc "?".
+  wp_method_call. wp_call_lc "?".
   wp_auto_lc 9.
-  wp_call.
-  wp_apply (wp_lock_lock with "[$lock]") as "[Hlock Hchan]".
+  wp_apply (wp_Mutex__Lock with "[$lock]") as "[Hlock Hchan]".
   iNamedSuffix "Hchan" "_inv".
 
   (* Case analysis on channel state *)
@@ -423,18 +456,18 @@ Proof.
       iMod ("Hcont" with "Hchanrepfrag") as "Hcont".
       iModIntro.
       iDestruct (own_slice_elem_acc 0 with "slice_inv") as "[Hcell slice_inv]"; [done..|].
-      wp_pure; first word. wp_auto.
+      rewrite -> decide_True; last word. wp_auto.
       iSpecialize ("slice_inv" $! v with "Hcell").
-      wp_apply (wp_slice_slice_pure); [word..|].
+      rewrite -> decide_True; last word. wp_auto.
       rewrite list_insert_id //.
-      wp_call. iCombineNamed "*_inv" as "Hi".
-      wp_apply (wp_lock_unlock
+      iCombineNamed "*_inv" as "Hi".
+      wp_apply (wp_Mutex__Unlock
                  with "[$lock $Hlock Hi]").
       { iNamed "Hi". unfold chan_inv_inner. iExists (Buffered rest). iFrame "buffer_inv".
         iFrame.
         iDestruct (own_slice_split_all (W64 1) with "slice_inv")
           as "[Hhd $]"; first word.
-        iDestruct (own_slice_cap_slice_f with "slice_cap_inv") as "$".
+        iDestruct (own_slice_cap_slice with "slice_cap_inv") as "$".
         word.
       }
       done.
@@ -443,16 +476,16 @@ Proof.
       assert (buff = []).
       { destruct buff; [done | simpl in *; word]. }
       subst buff.
-      wp_call. iCombineNamed "*_inv" as "Hi".
-      wp_apply (wp_lock_unlock
+      iCombineNamed "*_inv" as "Hi".
+      wp_apply (wp_Mutex__Unlock
                  with "[$lock $Hlock Hi]").
       { iNamed "Hi". iFrame. unfold chan_inv_inner. iFrame.  iExists (Buffered []).
         iFrame. iPureIntro. done. }
       iRight in "HΦ". iFrame.
     }
   - wp_auto_lc 2.
-    wp_call. iCombineNamed "*_inv" as "Hi".
-    wp_apply (wp_lock_unlock with "[$lock $Hlock Hi]").
+    iCombineNamed "*_inv" as "Hi".
+    wp_apply (wp_Mutex__Unlock with "[$lock $Hlock Hi]").
     { iNamed "Hi". unfold chan_inv_inner. iExists Idle. iFrame. }
     iRight in "HΦ". iFrame.
   - (* SndWait *)
@@ -477,24 +510,24 @@ Proof.
 
     iMod ("Hcont" with "Hchanrepfrag") as "Hcont". iModIntro.
 
-    wp_call. iCombineNamed "*_inv" as "Hi".
-    wp_apply (wp_lock_unlock
+    iCombineNamed "*_inv" as "Hi".
+    wp_apply (wp_Mutex__Unlock
                with "[$lock $Hlock Hi]").
     { iNamed "Hi". unfold chan_inv_inner. iExists (RcvDone v). iFrame "∗#". }
     done.
   - wp_auto_lc 2.
-    wp_call. iCombineNamed "*_inv" as "Hi".
-    wp_apply (wp_lock_unlock with "[$lock $Hlock Hi]").
+    iCombineNamed "*_inv" as "Hi".
+    wp_apply (wp_Mutex__Unlock with "[$lock $Hlock Hi]").
     { iNamed "Hi". unfold chan_inv_inner. iExists RcvWait. iFrame. }
     iRight in "HΦ". iFrame.
   - wp_auto_lc 2.
-    wp_call. iCombineNamed "*_inv" as "Hi".
-    wp_apply (wp_lock_unlock with "[$lock $Hlock Hi]").
+    iCombineNamed "*_inv" as "Hi".
+    wp_apply (wp_Mutex__Unlock with "[$lock $Hlock Hi]").
     { iNamed "Hi". unfold chan_inv_inner. iExists (SndDone _). iFrame. }
     iRight in "HΦ". iFrame.
   - wp_auto_lc 2.
-    wp_call. iCombineNamed "*_inv" as "Hi".
-    wp_apply (wp_lock_unlock with "[$lock $Hlock Hi]").
+    iCombineNamed "*_inv" as "Hi".
+    wp_apply (wp_Mutex__Unlock with "[$lock $Hlock Hi]").
     { iNamed "Hi". unfold chan_inv_inner. iExists (RcvDone _). iFrame. }
     iRight in "HΦ". iFrame.
   - destruct draining; iNamedSuffix "phys_inv" "_inv".
@@ -511,8 +544,8 @@ Proof.
 
       iMod ("Hcont" with "Hoc") as "Hcont". iModIntro.
 
-      wp_call. iCombineNamed "*_inv" as "Hi".
-      wp_apply (wp_lock_unlock with "[$lock $Hlock Hi]").
+      iCombineNamed "*_inv" as "Hi".
+      wp_apply (wp_Mutex__Unlock with "[$lock $Hlock Hi]").
       { iNamed "Hi". unfold chan_inv_inner. iExists (Closed []). iFrame. }
       iFrame.
     + wp_auto_lc 2.
@@ -534,28 +567,27 @@ Proof.
       { done. }
       iMod ("Hcont" with "Hoc") as "Hcont".
       iModIntro.
-      wp_pure; first word.
+      rewrite -> decide_True; last word.
       iDestruct (own_slice_elem_acc 0 with "slice_inv") as "[Hcell slice_inv]"; [done..|].
       wp_auto.
       iSpecialize ("slice_inv" $! v with "Hcell").
       rewrite list_insert_id //.
-      wp_apply (wp_slice_slice_pure).
-      { iPureIntro. simpl in *. word. }
-      wp_call. iCombineNamed "*_inv" as "Hi".
-      wp_apply (wp_lock_unlock with "[$lock $Hlock Hi]").
+      rewrite -> decide_True; last word. wp_auto.
+      iCombineNamed "*_inv" as "Hi".
+      wp_apply (wp_Mutex__Unlock with "[$lock $Hlock Hi]").
       { iNamed "Hi". unfold chan_inv_inner. iExists (Closed draining). iFrame.
         destruct draining; iFrame "buffer_inv"; iFrame.
         - iDestruct (own_slice_split_all (W64 1) with "slice_inv") as "[_ slice_inv]".
           { word. }
           rewrite drop_ge; last by len.
           iFrame.
-          iDestruct (own_slice_cap_slice_f with "slice_cap_inv") as "$".
+          iDestruct (own_slice_cap_slice with "slice_cap_inv") as "$".
           { word. }
           iFrame. iIntros "%". simpl in *. word.
         - iDestruct (own_slice_split_all (W64 1) with "slice_inv") as "[_ slice_inv]".
           { word. }
           rewrite skipn_cons. iFrame.
-          iDestruct (own_slice_cap_slice_f with "slice_cap_inv") as "$".
+          iDestruct (own_slice_cap_slice with "slice_cap_inv") as "$".
           word.
       }
       done.
@@ -564,14 +596,13 @@ Qed.
 Local Lemma wp_TryReceive_nonblocking_alt (ch : loc) (γ : chan_names) :
   ∀ Φ ,
   is_channel ch γ -∗
-  rcv_au_fast_alt ch γ (λ v ok, Φ (#true, #v, #ok)%V) (Φ (#false, #(default_val V), #true)%V) -∗
-  WP channel.Channel__TryReceiveⁱᵐᵖˡ #ch #t #false {{ Φ }}.
+  rcv_au_fast_alt ch γ (λ v ok, Φ (#true, #v, #ok)%V) (Φ (#false, #(zero_val V), #true)%V) -∗
+  WP #(methods (go.PointerType (channel.Channel t)) "TryReceive") #ch #false {{ Φ }}.
 Proof.
   iIntros (?) "#Hch HΦ". iNamed "Hch".
-  wp_call_lc "?".
+  wp_method_call. wp_call_lc "?".
   wp_auto_lc 9.
-  wp_call.
-  wp_apply (wp_lock_lock with "[$lock]") as "[Hlock Hchan]".
+  wp_apply (wp_Mutex__Lock with "[$lock]") as "[Hlock Hchan]".
   iNamedSuffix "Hchan" "_inv".
 
   (* Case analysis on channel state *)
@@ -594,18 +625,18 @@ Proof.
       iMod ("Hcont" with "Hchanrepfrag") as "Hcont".
       iModIntro.
       iDestruct (own_slice_elem_acc 0 with "slice_inv") as "[Hcell slice_inv]"; [done..|].
-      wp_pure; first word. wp_auto.
+      rewrite -> decide_True; last word. wp_auto.
       iSpecialize ("slice_inv" $! v with "Hcell").
-      wp_apply (wp_slice_slice_pure); [word..|].
+      rewrite -> decide_True; last word. wp_auto.
       rewrite list_insert_id //.
-      wp_call. iCombineNamed "*_inv" as "Hi".
-      wp_apply (wp_lock_unlock
+      iCombineNamed "*_inv" as "Hi".
+      wp_apply (wp_Mutex__Unlock
                  with "[$lock $Hlock Hi]").
       { iNamed "Hi". unfold chan_inv_inner. iExists (Buffered rest). iFrame "buffer_inv".
         iFrame.
         iDestruct (own_slice_split_all (W64 1) with "slice_inv")
           as "[Hhd $]"; first word.
-        iDestruct (own_slice_cap_slice_f with "slice_cap_inv") as "$".
+        iDestruct (own_slice_cap_slice with "slice_cap_inv") as "$".
         word.
       }
       done.
@@ -621,8 +652,8 @@ Proof.
       { done. }
       iModIntro.
 
-      wp_call. iCombineNamed "*_inv" as "Hi".
-      wp_apply (wp_lock_unlock
+      iCombineNamed "*_inv" as "Hi".
+      wp_apply (wp_Mutex__Unlock
                  with "[$lock $Hlock Hi]").
       { iNamed "Hi". iFrame. unfold chan_inv_inner. iFrame.  iExists (Buffered []).
         iFrame. iPureIntro. done. }
@@ -637,8 +668,8 @@ Proof.
     { done. }
     iModIntro.
 
-    wp_call. iCombineNamed "*_inv" as "Hi".
-    wp_apply (wp_lock_unlock
+    iCombineNamed "*_inv" as "Hi".
+    wp_apply (wp_Mutex__Unlock
                with "[$lock $Hlock Hi]").
     { iNamed "Hi". iFrame. unfold chan_inv_inner. iFrame. iExists (Idle).
       iFrame. iPureIntro. done. }
@@ -664,8 +695,8 @@ Proof.
 
     iMod ("Hcont" with "Hchanrepfrag") as "Hcont". iModIntro.
 
-    wp_call. iCombineNamed "*_inv" as "Hi".
-    wp_apply (wp_lock_unlock
+    iCombineNamed "*_inv" as "Hi".
+    wp_apply (wp_Mutex__Unlock
                with "[$lock $Hlock Hi]").
     { iNamed "Hi". unfold chan_inv_inner. iExists (RcvDone v). iFrame "∗#". }
     done.
@@ -678,8 +709,8 @@ Proof.
     iMod ("Hcont" with "[$Hchanrepfrag]") as "HΦ".
     { done. }
     iModIntro.
-    wp_call. iCombineNamed "*_inv" as "Hi".
-    wp_apply (wp_lock_unlock
+    iCombineNamed "*_inv" as "Hi".
+    wp_apply (wp_Mutex__Unlock
                with "[$lock $Hlock Hi]").
     { iNamed "Hi". iFrame. unfold chan_inv_inner. iFrame. iExists RcvWait.
       iFrame. iPureIntro. done. }
@@ -693,8 +724,8 @@ Proof.
     iMod ("Hcont" with "[$Hchanrepfrag]") as "HΦ".
     { done. }
     iModIntro.
-    wp_call. iCombineNamed "*_inv" as "Hi".
-    wp_apply (wp_lock_unlock
+    iCombineNamed "*_inv" as "Hi".
+    wp_apply (wp_Mutex__Unlock
                with "[$lock $Hlock Hi]").
     { iNamed "Hi". iFrame. unfold chan_inv_inner. iFrame. iExists (SndDone _).
       iFrame. iPureIntro. done. }
@@ -708,8 +739,8 @@ Proof.
     iMod ("Hcont" with "[$Hchanrepfrag]") as "HΦ".
     { done. }
     iModIntro.
-    wp_call. iCombineNamed "*_inv" as "Hi".
-    wp_apply (wp_lock_unlock
+    iCombineNamed "*_inv" as "Hi".
+    wp_apply (wp_Mutex__Unlock
                with "[$lock $Hlock Hi]").
     { iNamed "Hi". iFrame. unfold chan_inv_inner. iFrame. iExists (RcvDone _).
       iFrame. iPureIntro. done. }
@@ -728,8 +759,8 @@ Proof.
 
       iMod ("Hcont" with "Hoc") as "Hcont". iModIntro.
 
-      wp_call. iCombineNamed "*_inv" as "Hi".
-      wp_apply (wp_lock_unlock with "[$lock $Hlock Hi]").
+      iCombineNamed "*_inv" as "Hi".
+      wp_apply (wp_Mutex__Unlock with "[$lock $Hlock Hi]").
       { iNamed "Hi". unfold chan_inv_inner. iExists (Closed []). iFrame. }
       iFrame.
     + wp_auto_lc 2.
@@ -750,28 +781,27 @@ Proof.
       { done. }
       iMod ("Hcont" with "Hoc") as "Hcont".
       iModIntro.
-      wp_pure; first word.
+      rewrite -> decide_True; last word.
       iDestruct (own_slice_elem_acc 0 with "slice_inv") as "[Hcell slice_inv]"; [done..|].
       wp_auto.
       iSpecialize ("slice_inv" $! v with "Hcell").
       rewrite list_insert_id //.
-      wp_apply (wp_slice_slice_pure).
-      { iPureIntro. simpl in *. word. }
-      wp_call. iCombineNamed "*_inv" as "Hi".
-      wp_apply (wp_lock_unlock with "[$lock $Hlock Hi]").
+      rewrite -> decide_True; last word. wp_auto.
+      iCombineNamed "*_inv" as "Hi".
+      wp_apply (wp_Mutex__Unlock with "[$lock $Hlock Hi]").
       { iNamed "Hi". unfold chan_inv_inner. iExists (Closed draining). iFrame.
         destruct draining; iFrame "buffer_inv"; iFrame.
         - iDestruct (own_slice_split_all (W64 1) with "slice_inv") as "[_ slice_inv]".
           { word. }
           rewrite drop_ge; last by len.
           iFrame.
-          iDestruct (own_slice_cap_slice_f with "slice_cap_inv") as "$".
+          iDestruct (own_slice_cap_slice with "slice_cap_inv") as "$".
           { word. }
           iFrame. iIntros "%". simpl in *. word.
         - iDestruct (own_slice_split_all (W64 1) with "slice_inv") as "[_ slice_inv]".
           { word. }
           rewrite skipn_cons. iFrame.
-          iDestruct (own_slice_cap_slice_f with "slice_cap_inv") as "$".
+          iDestruct (own_slice_cap_slice with "slice_cap_inv") as "$".
           word.
       }
       done.
@@ -781,15 +811,15 @@ Lemma wp_TryReceive (ch : loc) (γ : chan_names) (blocking : bool) :
   ∀ (Φ : val → iProp Σ),
   is_channel ch γ -∗
   (if blocking then rcv_au_slow ch γ (λ v ok, Φ (#true, #v, #ok)%V) ∧
-                    Φ (#false, #(default_val V), #true)%V
+                    Φ (#false, #(zero_val V), #true)%V
    else (rcv_au_fast ch γ
            (λ v ok, Φ (#true, #v, #ok)%V)
-           (Φ (#false, #(default_val V), #true)%V)
+           (Φ (#false, #(zero_val V), #true)%V)
            ∨ rcv_au_fast_alt ch γ
                (λ v ok, Φ (#true, #v, #ok)%V)
-               (Φ (#false, #(default_val V), #true)%V)
+               (Φ (#false, #(zero_val V), #true)%V)
   )) -∗
-  WP channel.Channel__TryReceiveⁱᵐᵖˡ #ch #t #blocking {{ Φ }}.
+  WP #(methods (go.PointerType (channel.Channel t)) "TryReceive") #ch #blocking {{ Φ }}.
 Proof.
   iIntros (?) "#? HΦ".
   destruct blocking.
@@ -803,11 +833,11 @@ Lemma wp_Receive (ch: loc) (γ: chan_names) :
   ∀ Φ,
   is_channel ch γ -∗
   (£1 ∗ £1 ∗ £1 ∗ £1 -∗ rcv_au_slow ch γ (λ v ok, Φ (#v, #ok)%V)) -∗
-  WP channel.Channel__Receiveⁱᵐᵖˡ #ch #t #() {{ Φ }}.
+  WP #(methods (go.PointerType (channel.Channel t)) "Receive") #ch #() {{ Φ }}.
 Proof.
   intros. iIntros "#Hic". iIntros "Hau".
   iDestruct (is_channel_not_null with "[$Hic]") as "%Hnn".
-  wp_call_lc "?".
+  wp_method_call. wp_call_lc "?".
   wp_auto_lc 3.
   iSpecialize ("Hau" with "[$]").
 

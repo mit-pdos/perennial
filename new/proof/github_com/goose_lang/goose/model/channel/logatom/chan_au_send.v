@@ -23,7 +23,6 @@ Instance into_val_underlying V `{!ZeroVal V} `{!TypedPointsto V} n ta tunder
   : go.Underlying (go.Named n ta) tunder → IntoValTyped V tunder → IntoValTyped V (go.Named n ta).
 Admitted.
 
-
 #[global] Program Instance channel_typed_pointsto T' `{!TypedPointsto (Σ:=Σ) T'} :
   TypedPointsto (Σ:=Σ) (channel.Channel.t T') :=
   {|
