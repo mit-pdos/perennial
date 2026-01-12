@@ -218,6 +218,9 @@ Class AlwaysSafelyComparable t V `{!EqDecision V} `{!GoSemanticsFunctions} : Pro
       ∀ (v1 v2 : V), GoExprEq (go_eq t #v1 #v2) (#(bool_decide (v1 = v2)))%E;
   }.
 
+(* Only declare instances for this when [tunder ≠ t].  This is used to reduce
+   goals involving [t] into goals involving [tunder], so having instances with
+   [t = tunder] will result in infinite loops during typeclass search. *)
 Class Underlying t tunder  `{!GoSemanticsFunctions} : Prop :=
 {
   to_underlying_unfold : to_underlying t = tunder
@@ -367,7 +370,7 @@ Class CoreSemantics :=
 
   #[global] core_comparison_sem :: CoreComparisonSemantics;
 
-  alloc_primitive `{!Underlying t t'} (H : is_primitive t') : alloc t = (λ: "v", ref_one "v")%V;
+  alloc_primitive t (H : is_primitive t) : alloc t = (λ: "v", ref_one "v")%V;
   alloc_struct `{!Underlying t (go.StructType fds)} :
     alloc t =
     (λ: <>,
@@ -385,7 +388,7 @@ Class CoreSemantics :=
           ) #() fds ;;
         "l")%V;
 
-  load_primitive `{!Underlying t t'} (H : is_primitive t') : load t = (λ: "l", Read "l")%V;
+  load_primitive t (H : is_primitive t) : load t = (λ: "l", Read "l")%V;
   load_struct `{!Underlying t (go.StructType fds)} :
     load t =
     (λ: "l",
@@ -399,7 +402,7 @@ Class CoreSemantics :=
                 StructFieldSet t field_name (struct_so_far, field_val)
          ) (GoZeroVal t #()) fds)%V;
 
-  store_primitive `{!Underlying t t'} (H : is_primitive t) : store t = (λ: "l" "v", "l" <- "v")%V;
+  store_primitive t (H : is_primitive t) : store t = (λ: "l" "v", "l" <- "v")%V;
   store_struct `{!Underlying t (go.StructType fds)} :
     store t =
     (λ: "l" "v",
@@ -451,15 +454,6 @@ Class CoreSemantics :=
                   end
            ) (GoZeroVal t #()) l
      end);
-
-  #[global] underlying_array n elem :: Underlying (go.ArrayType n elem) (go.ArrayType n elem);
-  #[global] underlying_struct fds :: Underlying (go.StructType fds) (go.StructType fds);
-  #[global] underlying_pointer elem :: Underlying (go.PointerType elem) (go.PointerType elem);
-  #[global] underlying_function sig :: Underlying (go.FunctionType sig) (go.FunctionType sig);
-  #[global] underlying_interface elems :: Underlying (go.InterfaceType elems) (go.InterfaceType elems);
-  #[global] underlying_slice elem :: Underlying (go.SliceType elem) (go.SliceType elem);
-  #[global] underlying_map key elem :: Underlying (go.MapType key elem) (go.MapType key elem);
-  #[global] underlying_channel dir elem :: Underlying (go.ChannelType dir elem) (go.ChannelType dir elem);
 }.
 
 End defs.
