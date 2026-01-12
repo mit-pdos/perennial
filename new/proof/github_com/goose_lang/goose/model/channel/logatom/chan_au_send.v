@@ -317,8 +317,17 @@ Proof.
 
   - (* Buffered channel *)
     iNamed "phys". iNamed "offer". wp_auto. unfold chan_cap_valid in Hcapvalid.
+    (* FIXME: go_op should use underlying *)
+    rewrite go.go_op_underlying go.to_underlying_unfold.
+    wp_auto.
+    rewrite go.go_op_underlying go.to_underlying_unfold.
+    wp_auto.
     wp_if_destruct.
     {
+      rewrite go.array_index_ref_0 /go.array_literal_size /=.
+      vm_compute Z.max. rewrite word.sub_0_r.
+      (* FIXME: need slice composite reasoning principle. *)
+
       wp_apply wp_slice_literal. iIntros (sl) "Hsl". wp_auto.
       iDestruct (own_slice_len with "slice") as "[%Hl %Hcap2]".
       iDestruct (slice.own_slice_len with "slice") as "[%Hlen_slice %Hslgtz]".

@@ -76,7 +76,7 @@ Class ArraySemantics `{!GoSemanticsFunctions} :=
              end
       ) (0, (GoZeroVal (go.ArrayType n elem_type) #())) kvs).2;
 
-  #[global] slice_array_step n elem_type p low high `{!TypeRepre elem_type V} ::
+  #[global] slice_array_step n elem_type p low high `{!ZeroVal V} `{!go.TypeRepr elem_type V} ::
     go.IsGoStepPureDet (Slice $ go.ArrayType n elem_type) (#p, (#low, #high))%V
        (if decide (0 ≤ sint.Z low ≤ sint.Z high ≤ n) then
           #(slice.mk (array_index_ref V (word.signed low) p)
@@ -84,7 +84,8 @@ Class ArraySemantics `{!GoSemanticsFunctions} :=
               (word.sub (W64 n) low))
         else Panic "slice bounds out of range");
 
-  #[global] full_slice_array_step_pure n elem_type p low high max `{!TypeRepre elem_type V} ::
+  #[global] full_slice_array_step_pure n elem_type p low high max `{!ZeroVal V}
+    `{!go.TypeRepr elem_type V} ::
     go.IsGoStepPureDet (FullSlice (go.ArrayType n elem_type))
     (#p, (#low, #high, #max))%V
     (if decide (0 ≤ sint.Z low ≤ sint.Z high ≤ sint.Z max ∧ sint.Z max ≤ n) then
