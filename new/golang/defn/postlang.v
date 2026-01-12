@@ -218,10 +218,17 @@ Class AlwaysSafelyComparable t V `{!EqDecision V} `{!GoSemanticsFunctions} : Pro
       ∀ (v1 v2 : V), GoExprEq (go_eq t #v1 #v2) (#(bool_decide (v1 = v2)))%E;
   }.
 
+Class Underlying t tunder  `{!GoSemanticsFunctions} : Prop :=
+{
+  to_underlying_unfold : to_underlying t = tunder
+}.
+
 Class CoreComparisonSemantics `{!GoSemanticsFunctions} : Prop :=
 {
-  go_op_underlying o t args : go_op o t args = go_op o (to_underlying t) args;
-  go_eq_underlying t : go_eq t = go_eq (to_underlying t);
+  #[global] go_op_underlying `{!Underlying t tunder} `{!GoExprEq (go_op o tunder args) e} ::
+    GoExprEq (go_op o t args) e;
+  #[global] go_eq_underlying `{!Underlying t tunder} `{!GoExprEq (go_eq tunder v1 v2) e} ::
+    GoExprEq (go_eq t v1 v2) e;
 
   (* special case equality for functions *)
   #[global] is_go_op_go_equals_func_nil_l sig f ::
@@ -229,6 +236,8 @@ Class CoreComparisonSemantics `{!GoSemanticsFunctions} : Prop :=
   #[global] is_go_op_go_equals_func_nil_r sig f ::
     IsGoOp GoEquals (go.FunctionType sig) (#func.nil, #f)%V #(bool_decide (f = func.nil));
 
+  #[global] is_comparable_underlying `{!Underlying t tunder} `{!IsComparable tunder} ::
+    IsComparable t;
   #[global] is_comparable_pointer t :: IsComparable (go.PointerType t);
   #[global] go_eq_pointer t :: AlwaysSafelyComparable (go.PointerType t) loc;
 
@@ -292,12 +301,6 @@ Class BasicIntoValInj :=
     #[global] into_val_string_inj :: Inj eq eq (into_val (V:=go_string));
     #[global] interface_into_val_inj :: Inj eq eq (into_val (V:=interface.t));
   }.
-
-Class Underlying t tunder  `{!GoSemanticsFunctions} : Prop :=
-  {
-    to_underlying_unfold : to_underlying t = tunder
-  }.
-
 
 Class TypeRepr t V `{!ZeroVal V} `{!GoSemanticsFunctions} : Prop :=
   {

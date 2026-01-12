@@ -317,11 +317,6 @@ Proof.
 
   - (* Buffered channel *)
     iNamed "phys". iNamed "offer". wp_auto. unfold chan_cap_valid in Hcapvalid.
-    (* FIXME: go_op should use underlying *)
-    rewrite go.go_op_underlying go.to_underlying_unfold.
-    wp_auto.
-    rewrite go.go_op_underlying go.to_underlying_unfold.
-    wp_auto.
     wp_if_destruct.
     {
       rewrite go.array_index_ref_0 /go.array_literal_size /=.
@@ -368,7 +363,6 @@ Proof.
     iNamed "offer".
     iDestruct (offer_idle_to_send γ v (_ ∧ Φ #false) (Φ (# true)) with "Hoffer") as ">[offer1 offer2]".
 
-    wp_call.
     wp_apply (wp_Mutex__Unlock
       with "[$lock state v slice slice_cap buffer offer1 Hpred Hchanrepfrag HΦ $Hlock]").
     { unfold chan_inv_inner. iExists (SndWait v). iFrame. iSplitL; last done.
