@@ -77,7 +77,7 @@ Class ArraySemantics `{!GoSemanticsFunctions} :=
       ) (0, (GoZeroVal (go.ArrayType n elem_type) #())) kvs).2;
 
   #[global] slice_array_step n elem_type p low high `{!ZeroVal V} `{!go.TypeRepr elem_type V} ::
-    go.IsGoStepPureDet (Slice $ go.ArrayType n elem_type) (#p, (#low, #high))%V
+    go.IsGoStepPureDet (Slice $ go.ArrayType n elem_type) (#p, #low, #high)%V
        (if decide (0 ≤ sint.Z low ≤ sint.Z high ≤ n) then
           #(slice.mk (array_index_ref V (word.signed low) p)
               (word.sub high low)
@@ -87,7 +87,7 @@ Class ArraySemantics `{!GoSemanticsFunctions} :=
   #[global] full_slice_array_step_pure n elem_type p low high max `{!ZeroVal V}
     `{!go.TypeRepr elem_type V} ::
     go.IsGoStepPureDet (FullSlice (go.ArrayType n elem_type))
-    (#p, (#low, #high, #max))%V
+    (#p, #low, #high, #max)%V
     (if decide (0 ≤ sint.Z low ≤ sint.Z high ≤ sint.Z max ∧ sint.Z max ≤ n) then
        #(slice.mk (array_index_ref V (sint.Z low) p)
            (word.sub high low) (word.sub max low))

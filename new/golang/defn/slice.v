@@ -64,14 +64,14 @@ Class SliceSemantics `{!GoSemanticsFunctions} :=
     (GoAlloc (go.ArrayType (sint.Z n) et) (GoZeroVal (go.ArrayType (sint.Z n) et) #()));
   #[global] slice_slice_step_pure elem_type s low high `{!ZeroVal V} `{!go.TypeRepr elem_type V} ::
     go.IsGoStepPureDet (Slice (go.SliceType elem_type))
-    (#s, (#low, #high))%V
+    (#s, #low, #high)%V
     (if decide (0 ≤ sint.Z low ≤ sint.Z high ≤ sint.Z s.(slice.cap)) then
        #(slice.slice s V low high)
      else Panic "slice bounds out of range");
   #[global] full_slice_slice_step_pure elem_type s low high max `{!ZeroVal V}
     `{!go.TypeRepr elem_type V} ::
     go.IsGoStepPureDet (FullSlice (go.SliceType elem_type))
-    (#s, (#low, #high, #max))%V
+    (#s, #low, #high, #max)%V
     (if decide (0 ≤ sint.Z low ≤ sint.Z high ≤ sint.Z max ∧ sint.Z max ≤ sint.Z s.(slice.cap)) then
        #(slice.full_slice s V low high max)
      else Panic "slice bounds out of range");
@@ -153,15 +153,15 @@ Class SliceSemantics `{!GoSemanticsFunctions} :=
                            (FuncResolve go.len [st] #() "x") in
        if: (FuncResolve go.cap [st] #() "s") ≥⟨go.int⟩ "new_len" then
          (* "grow" s to include its capacity *)
-         let: "s_new" := Slice st ("s", (#(W64 0), "new_len")) in
+         let: "s_new" := Slice st ("s", #(W64 0), "new_len") in
          (* copy "x" past the original "s" *)
-         FuncResolve go.copy [st] #() (Slice st ("s_new", (FuncResolve go.len [st] #() "s", "new_len"))) "x";;
+         FuncResolve go.copy [st] #() (Slice st ("s_new", FuncResolve go.len [st] #() "s", "new_len")) "x";;
          "s_new"
        else
          let: "new_cap" := slice._new_cap "new_len" in
          let: "s_new" := FuncResolve go.make3 [st] #() "new_len" "new_cap" in
          FuncResolve go.copy [st] #() "s_new" "s" ;;
-         FuncResolve go.copy [st] #() (Slice st ("s_new", (FuncResolve go.len [st] #() "s", "new_len"))) "x" ;;
+         FuncResolve go.copy [st] #() (Slice st ("s_new", FuncResolve go.len [st] #() "s", "new_len")) "x" ;;
          "s_new")%V;
 
   #[global] composite_literal_slice elem_type kvs ::
@@ -170,7 +170,7 @@ Class SliceSemantics `{!GoSemanticsFunctions} :=
     (let: "tmp" := GoAlloc (go.ArrayType len elem_type) (GoZeroVal (go.ArrayType len elem_type) #()) in
      "tmp" <-[(go.ArrayType len elem_type)]
               CompositeLiteral (go.ArrayType len elem_type) (LiteralValue kvs);;
-     Slice (go.ArrayType len elem_type) ("tmp", (#(W64 0), #(W64 len)))
+     Slice (go.ArrayType len elem_type) ("tmp", #(W64 0), #(W64 len))
     )%E);
 
   array_index_ref_0 t l : array_index_ref t 0 l = l;

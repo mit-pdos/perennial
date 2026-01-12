@@ -37,7 +37,7 @@ Program Definition own_slice_cap := sealed @own_slice_cap_def.
 Definition own_slice_cap_unseal : own_slice_cap = _ := seal_eq _.
 Global Arguments own_slice_cap (_) {_ _} (s dq).
 
-Context `{!ZeroVal V} `{!TypedPointsto (Σ:=Σ) V}.
+Context `[!ZeroVal V] `[!TypedPointsto (Σ:=Σ) V].
 Implicit Type (vs : list V).
 
 Ltac unseal := rewrite ?own_slice_unseal /own_slice_def
