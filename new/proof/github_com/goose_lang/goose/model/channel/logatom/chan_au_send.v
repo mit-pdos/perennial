@@ -325,10 +325,10 @@ Proof.
     wp_if_destruct.
     {
       rewrite go.array_index_ref_0 /go.array_literal_size /=.
-      vm_compute Z.max. rewrite word.sub_0_r.
-      (* FIXME: need slice composite reasoning principle. *)
+      vm_compute Z.max. rewrite word.sub_0_r. vm_compute Z.to_nat. simpl.
+      iDestruct (slice_array with "tmp") as "Hsl".
+      { done. }
 
-      wp_apply wp_slice_literal. iIntros (sl) "Hsl". wp_auto.
       iDestruct (own_slice_len with "slice") as "[%Hl %Hcap2]".
       iDestruct (slice.own_slice_len with "slice") as "[%Hlen_slice %Hslgtz]".
       iDestruct (own_slice_wf with "slice") as "%Hwf".
@@ -351,13 +351,11 @@ Proof.
         with "[$Hoc] [$Hown]") as ">[Hgv1 Hgv2]".
       { simpl. len. }
       iMod ("Hcont" with "Hgv1") as "Hstep". iModIntro.
-      wp_call.
       wp_apply (wp_Mutex__Unlock with "[$lock state buffer Hfr Hfrsl Hgv2 $Hlock]").
       { unfold chan_inv_inner. iExists (Buffered (buff ++ [v])). iFrame. }
       done.
     }
     {
-      wp_call.
       wp_apply (wp_Mutex__Unlock
         with "[$lock state slice_cap Hchanrepfrag buffer slice $Hlock]").
       { unfold chan_inv_inner. iExists (Buffered buff). iFrame "#∗".
@@ -366,7 +364,7 @@ Proof.
       iRight in "HΦ". iFrame.
     }
   - (* Idle - make offer *)
-    iNamed "phys". wp_auto_lc 5.
+    iNamed "phys". wp_auto_lc 4.
     iNamed "offer".
     iDestruct (offer_idle_to_send γ v (_ ∧ Φ #false) (Φ (# true)) with "Hoffer") as ">[offer1 offer2]".
 

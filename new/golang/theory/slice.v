@@ -266,6 +266,19 @@ Proof.
   iSpecialize ("Hsl" with "[$]"). iFrame. word.
 Qed.
 
+(* FIXME: maintain that owned array length doesn't overflow 64 bits? *)
+Lemma slice_array l n (a : array.t V n) :
+  length (array.arr a) < 2^63 →
+  l ↦ a -∗
+  (slice.mk l (W64 n) (W64 n)) ↦* (array.arr a).
+Proof.
+  iIntros "%Hlen H". rewrite own_slice_unseal.
+  destruct a. iDestruct (array_len with "H") as %?. subst.
+  simpl in *. rewrite /own_slice_def /=.
+  replace (sint.Z _) with (Z.of_nat $ length arr) by word.
+  iFrame. done.
+Qed.
+
 End defns_and_lemmas.
 
 Global Notation "s ↦* dq vs" := (own_slice s dq vs)
