@@ -2413,6 +2413,16 @@ Definition mapClearTestⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
     return: (let: "$a0" := (![go.MapType go.int go.bool] "m") in
      (FuncResolve go.len [go.MapType go.int go.bool] #()) "$a0")).
 
+Definition mapLookupConversion {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.mapLookupConversion"%go.
+
+(* go: maps.go:68:6 *)
+Definition mapLookupConversionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: <>,
+    exception_do (let: "m" := (GoAlloc (go.MapType (go.InterfaceType []) go.bool) (GoZeroVal (go.MapType (go.InterfaceType []) go.bool) #())) in
+    let: "$r0" := ((FuncResolve go.make1 [go.MapType (go.InterfaceType []) go.bool] #()) #()) in
+    do:  ("m" <-[go.MapType (go.InterfaceType []) go.bool] "$r0");;;
+    return: (map.lookup1 (go.InterfaceType []) go.bool (![go.MapType (go.InterfaceType []) go.bool] "m") (InterfaceMake go.string #"ok"%go))).
+
 Definition returnTwo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.returnTwo"%go.
 
 (* go: multiple.go:3:6 *)
@@ -4199,6 +4209,7 @@ Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!G
   #[global] mapGetCall_unfold :: FuncUnfold mapGetCall [] (mapGetCallⁱᵐᵖˡ);
   #[global] mapLiteralTest_unfold :: FuncUnfold mapLiteralTest [] (mapLiteralTestⁱᵐᵖˡ);
   #[global] mapClearTest_unfold :: FuncUnfold mapClearTest [] (mapClearTestⁱᵐᵖˡ);
+  #[global] mapLookupConversion_unfold :: FuncUnfold mapLookupConversion [] (mapLookupConversionⁱᵐᵖˡ);
   #[global] returnTwo_unfold :: FuncUnfold returnTwo [] (returnTwoⁱᵐᵖˡ);
   #[global] returnTwoWrapper_unfold :: FuncUnfold returnTwoWrapper [] (returnTwoWrapperⁱᵐᵖˡ);
   #[global] multipleVar_unfold :: FuncUnfold multipleVar [] (multipleVarⁱᵐᵖˡ);
