@@ -16,29 +16,6 @@ Context {package_sem : channel.Assumptions}.
 Context {package_sem' : primitive.Assumptions}.
 Local Set Default Proof Using "All".
 
-#[global] Program Instance channel_typed_pointsto T' `{!TypedPointsto (Σ:=Σ) T'} :
-  TypedPointsto (Σ:=Σ) (channel.Channel.t T') :=
-  {|
-    typed_pointsto_def l dq v :=
-      (
-        "cap" ∷ l.[channel.Channel.t T', "cap"] ↦{dq} v.(channel.Channel.cap) ∗
-        "mu" ∷ l.[channel.Channel.t T', "mu"] ↦{dq} v.(channel.Channel.mu) ∗
-        "state" ∷ l.[channel.Channel.t T', "state"] ↦{dq} v.(channel.Channel.state) ∗
-        "buffer" ∷ l.[channel.Channel.t T', "buffer"] ↦{dq} v.(channel.Channel.buffer) ∗
-        "v" ∷ l.[channel.Channel.t T', "v"] ↦{dq} v.(channel.Channel.v)
-      )%I
-  |}.
-Final Obligation.
-  destruct v1, v2. simpl. intros. iIntros "H1 H2".
-  iNamedSuffix "H1" "1". iNamedSuffix "H2" "2".
-  iCombine "cap1 cap2" gives %->.
-  iCombine "mu1 mu2" gives %->.
-  iCombine "state1 state2" gives %->.
-  iCombine "buffer1 buffer2" gives %->.
-  iCombine "v1 v2" gives %->.
-  done.
-Qed.
-
 (* FIXME: proofgen IntoValTyped for channel.Channel.t *)
 Instance channel_into_val_typed T' T
   `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T} `{!go.TypeRepr T T'} :

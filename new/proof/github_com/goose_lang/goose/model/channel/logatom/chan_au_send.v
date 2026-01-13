@@ -22,44 +22,6 @@ Context {package_sem' : primitive.Assumptions}.
 Local Set Default Proof Using "All".
 
 (* FIXME: proofgen *)
-#[global] Program Instance channel_typed_pointsto T' `{!TypedPointsto (Σ:=Σ) T'} :
-  TypedPointsto (Σ:=Σ) (channel.Channel.t T') :=
-  {|
-    typed_pointsto_def l dq v :=
-      (
-        "cap" ∷ l.[channel.Channel.t T', "cap"] ↦{dq} v.(channel.Channel.cap) ∗
-        "mu" ∷ l.[channel.Channel.t T', "mu"] ↦{dq} v.(channel.Channel.mu) ∗
-        "state" ∷ l.[channel.Channel.t T', "state"] ↦{dq} v.(channel.Channel.state) ∗
-        "buffer" ∷ l.[channel.Channel.t T', "buffer"] ↦{dq} v.(channel.Channel.buffer) ∗
-        "v" ∷ l.[channel.Channel.t T', "v"] ↦{dq} v.(channel.Channel.v)
-      )%I
-  |}.
-Final Obligation.
-solve_typed_pointsto_agree.
-Qed.
-
-Ltac solve_into_val_typed_struct :=
-    let alloc :=
-      let field :=
-        rewrite bool_decide_decide; destruct decide; subst;
-        last (wp_auto; wp_apply wp_AngelicExit);
-        iDestruct "l_field" as "?"; wp_auto
-      in
-      intros; iIntros "_ HΦ"; rewrite go.alloc_struct;
-      wp_auto; wp_apply wp_GoPrealloc as "* %Hnotnull";
-      repeat field;
-      iApply "HΦ"; iEval (rewrite typed_pointsto_unseal); iFrame in
-    let load :=
-      intros; iIntros "Hl HΦ"; rewrite typed_pointsto_unseal;
-      iNamed "Hl"; rewrite go.load_struct; simpl; wp_auto;
-      destruct &v; simpl; iApply "HΦ"; iFrame in
-    let store :=
-      intros; iIntros "Hl HΦ"; rewrite typed_pointsto_unseal;
-      iNamed "Hl"; rewrite go.store_struct; simpl; wp_auto;
-      destruct &v; simpl; iApply "HΦ"; iFrame in
-    constructor; [alloc | load | store].
-
-(* FIXME: proofgen *)
 Instance channel_into_val_typed T' T
   `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T} `{!go.TypeRepr T T'} :
   IntoValTyped (channel.Channel.t T') (channel.Channel T).
