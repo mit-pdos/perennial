@@ -264,11 +264,12 @@ mk {
   C : loc;
   initTimer : bool;
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End Timer.
 
 Class Timer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -370,11 +371,12 @@ mk {
   ext : w64;
   loc : loc;
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End Time.
 
 Class Time_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -387,8 +389,8 @@ Class Time_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext}
   #[global] Time_set_ext (x : Time.t) y :: go.IsGoStepPureDet (StructFieldSet (Time) "ext") (#x, #y) #(x <|Time.ext := y|>);
   #[global] Time_get_loc (x : Time.t) :: go.IsGoStepPureDet (StructFieldGet (Time) "loc") #x #x.(Time.loc);
   #[global] Time_set_loc (x : Time.t) y :: go.IsGoStepPureDet (StructFieldSet (Time) "loc") (#x, #y) #(x <|Time.loc := y|>);
-  #[global] Time'ptr_UnixNano_unfold :: MethodUnfold (Time) "UnixNano" (Time__UnixNanoⁱᵐᵖˡ);
-  #[global] Time'ptr_UnixNano_unfold :: MethodUnfold (go.PointerType (Time)) "UnixNano" (λ: "$r", MethodResolve (Time) UnixNano #() (![(Time)] "$r");
+  #[global] Time_UnixNano_unfold :: MethodUnfold (Time) "UnixNano" (Time__UnixNanoⁱᵐᵖˡ);
+  #[global] Time'ptr_UnixNano_unfold :: MethodUnfold (go.PointerType (Time)) "UnixNano" (λ: "$r", MethodResolve (Time) "UnixNano" #() (![(Time)] "$r"));
   #[global] Time'ptr_nsec_unfold :: MethodUnfold (go.PointerType (Time)) "nsec" (Time__nsecⁱᵐᵖˡ);
   #[global] Time'ptr_sec_unfold :: MethodUnfold (go.PointerType (Time)) "sec" (Time__secⁱᵐᵖˡ);
   #[global] Time'ptr_unixSec_unfold :: MethodUnfold (go.PointerType (Time)) "unixSec" (Time__unixSecⁱᵐᵖˡ);

@@ -31,7 +31,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance LockedStack_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (chan_spec_raw_examples.LockedStack.t) (chan_spec_raw_examples.LockedStack).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -61,7 +61,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance EliminationStack_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (chan_spec_raw_examples.EliminationStack.t) (chan_spec_raw_examples.EliminationStack).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -91,7 +91,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance request_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (chan_spec_raw_examples.request.t) (chan_spec_raw_examples.request).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -121,7 +121,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance stream_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (chan_spec_raw_examples.stream.t) (chan_spec_raw_examples.stream).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -152,7 +152,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance streamold_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (chan_spec_raw_examples.streamold.t) (chan_spec_raw_examples.streamold).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.

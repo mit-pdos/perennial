@@ -32,7 +32,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance Bool_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (atomic.Bool.t) (atomic.Bool).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -63,7 +63,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance Pointer_into_val_typed
   `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T} `{!go.TypeRepr T T'}  :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (atomic.Pointer.t T') (atomic.Pointer T).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -93,7 +93,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance Int32_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (atomic.Int32.t) (atomic.Int32).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -124,7 +124,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance Int64_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (atomic.Int64.t) (atomic.Int64).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -154,7 +154,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance Uint32_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (atomic.Uint32.t) (atomic.Uint32).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -185,7 +185,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance Uint64_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (atomic.Uint64.t) (atomic.Uint64).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -213,7 +213,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance noCopy_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (atomic.noCopy.t) (atomic.noCopy).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -241,7 +241,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance align64_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (atomic.align64.t) (atomic.align64).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -270,7 +270,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance Value_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (atomic.Value.t) (atomic.Value).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -300,7 +300,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance efaceWords_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (atomic.efaceWords.t) (atomic.efaceWords).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.

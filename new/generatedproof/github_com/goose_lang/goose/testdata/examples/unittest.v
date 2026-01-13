@@ -29,7 +29,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance importantStruct_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (unittest.importantStruct.t) (unittest.importantStruct).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -58,7 +58,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance diskWrapper_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (unittest.diskWrapper.t) (unittest.diskWrapper).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -87,7 +87,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance embedA_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (unittest.embedA.t) (unittest.embedA).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -116,7 +116,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance embedB_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (unittest.embedB.t) (unittest.embedB).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -145,7 +145,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance embedC_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (unittest.embedC.t) (unittest.embedC).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -174,7 +174,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance embedD_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (unittest.embedD.t) (unittest.embedD).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -203,7 +203,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance Enc_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (unittest.Enc.t) (unittest.Enc).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -232,7 +232,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance Dec_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (unittest.Dec.t) (unittest.Dec).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -261,7 +261,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance concreteFooer_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (unittest.concreteFooer.t) (unittest.concreteFooer).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -290,7 +290,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance FooerUser_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (unittest.FooerUser.t) (unittest.FooerUser).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -318,7 +318,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance concrete1_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (unittest.concrete1.t) (unittest.concrete1).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -349,7 +349,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance allTheLiterals_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (unittest.allTheLiterals.t) (unittest.allTheLiterals).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -378,7 +378,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance hasCondVar_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (unittest.hasCondVar.t) (unittest.hasCondVar).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -408,7 +408,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance mapElem_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (unittest.mapElem.t) (unittest.mapElem).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -437,7 +437,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance containsPointer_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (unittest.containsPointer.t) (unittest.containsPointer).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -466,7 +466,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance wrapExternalStruct_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (unittest.wrapExternalStruct.t) (unittest.wrapExternalStruct).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -495,7 +495,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance typing_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (unittest.typing.t) (unittest.typing).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -525,7 +525,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance composite_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (unittest.composite.t) (unittest.composite).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -553,7 +553,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance R_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (unittest.R.t) (unittest.R).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -582,7 +582,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance Other_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (unittest.Other.t) (unittest.Other).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -611,7 +611,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance RecursiveEmbedded_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (unittest.RecursiveEmbedded.t) (unittest.RecursiveEmbedded).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -640,7 +640,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance Block_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (unittest.Block.t) (unittest.Block).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -669,7 +669,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance thing_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (unittest.thing.t) (unittest.thing).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -698,7 +698,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance sliceOfThings_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (unittest.sliceOfThings.t) (unittest.sliceOfThings).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -728,7 +728,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance Point_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (unittest.Point.t) (unittest.Point).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -758,7 +758,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance TwoInts_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (unittest.TwoInts.t) (unittest.TwoInts).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -789,7 +789,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance S_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (unittest.S.t) (unittest.S).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -818,7 +818,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance B_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (unittest.B.t) (unittest.B).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -846,7 +846,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance A_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (unittest.A.t) (unittest.A).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.

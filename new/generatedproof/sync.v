@@ -34,7 +34,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance Cond_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (sync.Cond.t) (sync.Cond).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -62,7 +62,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance noCopy_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (sync.noCopy.t) (sync.noCopy).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -93,7 +93,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance Once_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (sync.Once.t) (sync.Once).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -126,7 +126,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance RWMutex_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (sync.RWMutex.t) (sync.RWMutex).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -157,7 +157,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance WaitGroup_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (sync.WaitGroup.t) (sync.WaitGroup).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.

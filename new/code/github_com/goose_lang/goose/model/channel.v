@@ -396,8 +396,7 @@ Definition Channelⁱᵐᵖˡ(T : go.type)  : go.type := go.StructType [
 Module Channel.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Context {T : Type}.
-Record t :=
+Record t {T : Type} :=
 mk {
   cap : w64;
   mu : loc;
@@ -405,11 +404,12 @@ mk {
   buffer : slice.t;
   v : T;
 }.
-#[global] Instance zero_val`{!ZeroVal T}  : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _) (zero_val _) (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val `{!ZeroVal T} : ZeroVal t := {| zero_val := mk T (zero_val _) (zero_val _) (zero_val _) (zero_val _) (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End Channel.
 
 Class Channel_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=

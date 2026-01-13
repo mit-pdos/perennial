@@ -31,7 +31,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance Builder_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (strings.Builder.t) (strings.Builder).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.

@@ -32,7 +32,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance Log_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (append_log.Log.t) (append_log.Log).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.

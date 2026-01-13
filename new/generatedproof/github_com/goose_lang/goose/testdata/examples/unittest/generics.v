@@ -30,7 +30,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance Box_into_val_typed
   `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T} `{!go.TypeRepr T T'}  :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (generics.Box.t T') (generics.Box T).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -62,7 +62,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance Container_into_val_typed
   `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T} `{!go.TypeRepr T T'}  :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (generics.Container.t T') (generics.Container T).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -91,7 +91,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance UseContainer_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (generics.UseContainer.t) (generics.UseContainer).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -121,7 +121,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance OnlyIndirect_into_val_typed
   `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T} `{!go.TypeRepr T T'}  :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (generics.OnlyIndirect.t T') (generics.OnlyIndirect T).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -151,7 +151,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance MultiParam_into_val_typed
   `{!ZeroVal A'} `{!TypedPointsto (Σ:=Σ) A'} `{!IntoValTyped A' A} `{!go.TypeRepr A A'} `{!ZeroVal B'} `{!TypedPointsto (Σ:=Σ) B'} `{!IntoValTyped B' B} `{!go.TypeRepr B B'}  :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (generics.MultiParam.t A' B') (generics.MultiParam A B).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.

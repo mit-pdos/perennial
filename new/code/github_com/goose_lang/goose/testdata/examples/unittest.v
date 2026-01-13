@@ -267,11 +267,12 @@ Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End importantStruct.
 
 Class importantStruct_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -734,7 +735,7 @@ Definition useMapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : va
     let: "$r0" := ((FuncResolve go.make1 [go.MapType go.uint64 (go.SliceType go.byte)] #()) #()) in
     do:  ("m" <-[go.MapType go.uint64 (go.SliceType go.byte)] "$r0");;;
     let: "$r0" := #slice.nil in
-    do:  (map.insert (![go.MapType go.uint64 (go.SliceType go.byte)] "m") #(W64 1) "$r0");;;
+    do:  (map.insert go.uint64 (![go.MapType go.uint64 (go.SliceType go.byte)] "m") #(W64 1) "$r0");;;
     let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "x" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: ("$ret0", "$ret1") := (map.get (![go.MapType go.uint64 (go.SliceType go.byte)] "m") #(W64 2)) in
@@ -746,7 +747,7 @@ Definition useMapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : va
     then return: (#())
     else do:  #());;;
     let: "$r0" := (![go.SliceType go.byte] "x") in
-    do:  (map.insert (![go.MapType go.uint64 (go.SliceType go.byte)] "m") #(W64 3) "$r0");;;
+    do:  (map.insert go.uint64 (![go.MapType go.uint64 (go.SliceType go.byte)] "m") #(W64 3) "$r0");;;
     return: #()).
 
 Definition usePtr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.usePtr"%go.
@@ -848,11 +849,12 @@ Record t :=
 mk {
   d : disk.Disk.t;
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End diskWrapper.
 
 Class diskWrapper_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -903,11 +905,12 @@ Record t :=
 mk {
   a : w64;
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End embedA.
 
 Class embedA_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -916,9 +919,9 @@ Class embedA_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContex
   #[global] embedA_underlying :: go.Underlying (embedA) (embedAⁱᵐᵖˡ);
   #[global] embedA_get_a (x : embedA.t) :: go.IsGoStepPureDet (StructFieldGet (embedA) "a") #x #x.(embedA.a);
   #[global] embedA_set_a (x : embedA.t) y :: go.IsGoStepPureDet (StructFieldSet (embedA) "a") (#x, #y) #(x <|embedA.a := y|>);
-  #[global] embedA'ptr_Foo_unfold :: MethodUnfold (embedA) "Foo" (embedA__Fooⁱᵐᵖˡ);
+  #[global] embedA_Foo_unfold :: MethodUnfold (embedA) "Foo" (embedA__Fooⁱᵐᵖˡ);
   #[global] embedA'ptr_Bar_unfold :: MethodUnfold (go.PointerType (embedA)) "Bar" (embedA__Barⁱᵐᵖˡ);
-  #[global] embedA'ptr_Foo_unfold :: MethodUnfold (go.PointerType (embedA)) "Foo" (λ: "$r", MethodResolve (embedA) Foo #() (![(embedA)] "$r");
+  #[global] embedA'ptr_Foo_unfold :: MethodUnfold (go.PointerType (embedA)) "Foo" (λ: "$r", MethodResolve (embedA) "Foo" #() (![(embedA)] "$r"));
 }.
 
 Definition embedB : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.embedB"%go [].
@@ -946,11 +949,12 @@ Record t :=
 mk {
   embedA : unittest.embedA.t;
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End embedB.
 
 Class embedB_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -959,10 +963,10 @@ Class embedB_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContex
   #[global] embedB_underlying :: go.Underlying (embedB) (embedBⁱᵐᵖˡ);
   #[global] embedB_get_embedA (x : embedB.t) :: go.IsGoStepPureDet (StructFieldGet (embedB) "embedA") #x #x.(embedB.embedA);
   #[global] embedB_set_embedA (x : embedB.t) y :: go.IsGoStepPureDet (StructFieldSet (embedB) "embedA") (#x, #y) #(x <|embedB.embedA := y|>);
-  #[global] embedB'ptr_Foo_unfold :: MethodUnfold (embedB) "Foo" (embedB__Fooⁱᵐᵖˡ);
+  #[global] embedB_Foo_unfold :: MethodUnfold (embedB) "Foo" (embedB__Fooⁱᵐᵖˡ);
   #[global] embedB'ptr_Bar_unfold :: MethodUnfold (go.PointerType (embedB)) "Bar" (λ: "$r", MethodResolve (go.PointerType embedA) Bar #() (StructFieldRef embedB #"embedA"%go "$r"));
   #[global] embedB'ptr_Car_unfold :: MethodUnfold (go.PointerType (embedB)) "Car" (embedB__Carⁱᵐᵖˡ);
-  #[global] embedB'ptr_Foo_unfold :: MethodUnfold (go.PointerType (embedB)) "Foo" (λ: "$r", MethodResolve (embedB) Foo #() (![(embedB)] "$r");
+  #[global] embedB'ptr_Foo_unfold :: MethodUnfold (go.PointerType (embedB)) "Foo" (λ: "$r", MethodResolve (embedB) "Foo" #() (![(embedB)] "$r"));
 }.
 
 Definition embedC : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.embedC"%go [].
@@ -978,11 +982,12 @@ Record t :=
 mk {
   embedB : loc;
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End embedC.
 
 Class embedC_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -991,9 +996,9 @@ Class embedC_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContex
   #[global] embedC_underlying :: go.Underlying (embedC) (embedCⁱᵐᵖˡ);
   #[global] embedC_get_embedB (x : embedC.t) :: go.IsGoStepPureDet (StructFieldGet (embedC) "embedB") #x #x.(embedC.embedB);
   #[global] embedC_set_embedB (x : embedC.t) y :: go.IsGoStepPureDet (StructFieldSet (embedC) "embedB") (#x, #y) #(x <|embedC.embedB := y|>);
-  #[global] embedC'ptr_Bar_unfold :: MethodUnfold (embedC) "Bar" (λ: "$r", MethodResolve (go.PointerType embedB) Bar #() (StructFieldGet (embedC) "embedB" "$r" ))%V;
-  #[global] embedC'ptr_Car_unfold :: MethodUnfold (embedC) "Car" (λ: "$r", MethodResolve (go.PointerType embedB) Car #() (StructFieldGet (embedC) "embedB" "$r" ))%V;
-  #[global] embedC'ptr_Foo_unfold :: MethodUnfold (embedC) "Foo" (λ: "$r", MethodResolve (go.PointerType embedB) Foo #() (StructFieldGet (embedC) "embedB" "$r" ))%V;
+  #[global] embedC_Bar_unfold :: MethodUnfold (embedC) "Bar" (λ: "$r", MethodResolve (go.PointerType embedB) Bar #() (StructFieldGet (embedC) "embedB" "$r" ))%V;
+  #[global] embedC_Car_unfold :: MethodUnfold (embedC) "Car" (λ: "$r", MethodResolve (go.PointerType embedB) Car #() (StructFieldGet (embedC) "embedB" "$r" ))%V;
+  #[global] embedC_Foo_unfold :: MethodUnfold (embedC) "Foo" (λ: "$r", MethodResolve (go.PointerType embedB) Foo #() (StructFieldGet (embedC) "embedB" "$r" ))%V;
   #[global] embedC'ptr_Bar_unfold :: MethodUnfold (go.PointerType (embedC)) "Bar" (λ: "$r", MethodResolve (go.PointerType embedB) Bar #() (![go.PointerType embedB] (StructFieldRef embedC #"embedB"%go "$r")));
   #[global] embedC'ptr_Car_unfold :: MethodUnfold (go.PointerType (embedC)) "Car" (λ: "$r", MethodResolve (go.PointerType embedB) Car #() (![go.PointerType embedB] (StructFieldRef embedC #"embedB"%go "$r")));
   #[global] embedC'ptr_Foo_unfold :: MethodUnfold (go.PointerType (embedC)) "Foo" (λ: "$r", MethodResolve (go.PointerType embedB) Foo #() (![go.PointerType embedB] (StructFieldRef embedC #"embedB"%go "$r")));
@@ -1012,11 +1017,12 @@ Record t :=
 mk {
   embedC : unittest.embedC.t;
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End embedD.
 
 Class embedD_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -1025,9 +1031,9 @@ Class embedD_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContex
   #[global] embedD_underlying :: go.Underlying (embedD) (embedDⁱᵐᵖˡ);
   #[global] embedD_get_embedC (x : embedD.t) :: go.IsGoStepPureDet (StructFieldGet (embedD) "embedC") #x #x.(embedD.embedC);
   #[global] embedD_set_embedC (x : embedD.t) y :: go.IsGoStepPureDet (StructFieldSet (embedD) "embedC") (#x, #y) #(x <|embedD.embedC := y|>);
-  #[global] embedD'ptr_Bar_unfold :: MethodUnfold (embedD) "Bar" (λ: "$r", MethodResolve embedC Bar #() (StructFieldGet (embedD) "embedC" "$r" ))%V;
-  #[global] embedD'ptr_Car_unfold :: MethodUnfold (embedD) "Car" (λ: "$r", MethodResolve embedC Car #() (StructFieldGet (embedD) "embedC" "$r" ))%V;
-  #[global] embedD'ptr_Foo_unfold :: MethodUnfold (embedD) "Foo" (λ: "$r", MethodResolve embedC Foo #() (StructFieldGet (embedD) "embedC" "$r" ))%V;
+  #[global] embedD_Bar_unfold :: MethodUnfold (embedD) "Bar" (λ: "$r", MethodResolve embedC Bar #() (StructFieldGet (embedD) "embedC" "$r" ))%V;
+  #[global] embedD_Car_unfold :: MethodUnfold (embedD) "Car" (λ: "$r", MethodResolve embedC Car #() (StructFieldGet (embedD) "embedC" "$r" ))%V;
+  #[global] embedD_Foo_unfold :: MethodUnfold (embedD) "Foo" (λ: "$r", MethodResolve embedC Foo #() (StructFieldGet (embedD) "embedC" "$r" ))%V;
   #[global] embedD'ptr_Bar_unfold :: MethodUnfold (go.PointerType (embedD)) "Bar" (λ: "$r", MethodResolve (go.PointerType embedC) Bar #() (StructFieldRef embedD #"embedC"%go "$r"));
   #[global] embedD'ptr_Car_unfold :: MethodUnfold (go.PointerType (embedD)) "Car" (λ: "$r", MethodResolve (go.PointerType embedC) Car #() (StructFieldRef embedD #"embedC"%go "$r"));
   #[global] embedD'ptr_Foo_unfold :: MethodUnfold (go.PointerType (embedD)) "Foo" (λ: "$r", MethodResolve (go.PointerType embedC) Foo #() (StructFieldRef embedD #"embedC"%go "$r"));
@@ -1174,11 +1180,12 @@ Record t :=
 mk {
   p : slice.t;
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End Enc.
 
 Class Enc_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -1235,11 +1242,12 @@ Record t :=
 mk {
   p : slice.t;
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End Dec.
 
 Class Dec_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -1456,7 +1464,7 @@ Class Fooer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext
 {
   #[global] Fooer_type_repr  :: go.TypeRepr Fooer Fooer.t;
   #[global] Fooer_underlying :: go.Underlying (Fooer) (Fooerⁱᵐᵖˡ);
-  #[global] Fooer'ptr_Foo_unfold :: MethodUnfold (Fooer) "Foo" (Fooer__Fooⁱᵐᵖˡ);
+  #[global] Fooer_Foo_unfold :: MethodUnfold (Fooer) "Foo" (Fooer__Fooⁱᵐᵖˡ);
 }.
 
 Definition concreteFooer : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.concreteFooer"%go [].
@@ -1478,11 +1486,12 @@ Record t :=
 mk {
   a : w64;
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End concreteFooer.
 
 Class concreteFooer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -1507,11 +1516,12 @@ Record t :=
 mk {
   f : unittest.Fooer.t;
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End FooerUser.
 
 Class FooerUser_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -1581,7 +1591,7 @@ Definition testPassConcreteToInterfaceArgSpecialⁱᵐᵖˡ {ext : ffi_syntax} {
     let: "$r0" := ((FuncResolve go.make1 [go.MapType go.uint64 Fooer] #()) #()) in
     do:  ("m" <-[go.MapType go.uint64 Fooer] "$r0");;;
     let: "$r0" := (InterfaceMake (go.PointerType concreteFooer) (![go.PointerType concreteFooer] "c1")) in
-    do:  (map.insert (![go.MapType go.uint64 Fooer] "m") #(W64 10) "$r0");;;
+    do:  (map.insert go.uint64 (![go.MapType go.uint64 Fooer] "m") #(W64 10) "$r0");;;
     let: "f" := (GoAlloc FooerUser (GoZeroVal FooerUser #())) in
     let: "$r0" := (CompositeLiteral FooerUser (LiteralValue [KeyedElement None (ElementExpression (![go.PointerType concreteFooer] "c1"))])) in
     do:  ("f" <-[FooerUser] "$r0");;;
@@ -1707,8 +1717,8 @@ Class PointerInterface_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoL
 {
   #[global] PointerInterface_type_repr  :: go.TypeRepr PointerInterface PointerInterface.t;
   #[global] PointerInterface_underlying :: go.Underlying (PointerInterface) (PointerInterfaceⁱᵐᵖˡ);
-  #[global] PointerInterface'ptr_B_unfold :: MethodUnfold (PointerInterface) "B" (PointerInterface__Bⁱᵐᵖˡ);
-  #[global] PointerInterface'ptr_Foo_unfold :: MethodUnfold (PointerInterface) "Foo" (PointerInterface__Fooⁱᵐᵖˡ);
+  #[global] PointerInterface_B_unfold :: MethodUnfold (PointerInterface) "B" (PointerInterface__Bⁱᵐᵖˡ);
+  #[global] PointerInterface_Foo_unfold :: MethodUnfold (PointerInterface) "Foo" (PointerInterface__Fooⁱᵐᵖˡ);
 }.
 
 Definition concrete1 : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.concrete1"%go [].
@@ -1734,20 +1744,21 @@ Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End concrete1.
 
 Class concrete1_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] concrete1_type_repr  :: go.TypeRepr concrete1 concrete1.t;
   #[global] concrete1_underlying :: go.Underlying (concrete1) (concrete1ⁱᵐᵖˡ);
-  #[global] concrete1'ptr_Foo_unfold :: MethodUnfold (concrete1) "Foo" (concrete1__Fooⁱᵐᵖˡ);
+  #[global] concrete1_Foo_unfold :: MethodUnfold (concrete1) "Foo" (concrete1__Fooⁱᵐᵖˡ);
   #[global] concrete1'ptr_B_unfold :: MethodUnfold (go.PointerType (concrete1)) "B" (concrete1__Bⁱᵐᵖˡ);
-  #[global] concrete1'ptr_Foo_unfold :: MethodUnfold (go.PointerType (concrete1)) "Foo" (λ: "$r", MethodResolve (concrete1) Foo #() (![(concrete1)] "$r");
+  #[global] concrete1'ptr_Foo_unfold :: MethodUnfold (go.PointerType (concrete1)) "Foo" (λ: "$r", MethodResolve (concrete1) "Foo" #() (![(concrete1)] "$r"));
 }.
 
 Definition testPtrMset {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.testPtrMset"%go.
@@ -1854,11 +1865,12 @@ mk {
   s : go_string;
   b : bool;
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End allTheLiterals.
 
 Class allTheLiterals_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -1951,11 +1963,12 @@ Record t :=
 mk {
   cond : loc;
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End hasCondVar.
 
 Class hasCondVar_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -2296,7 +2309,7 @@ Definition MapTypeAliasesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
     exception_do (let: "m2" := (GoAlloc MapWrapper "m2") in
     let: "m1" := (GoAlloc (go.MapType IntWrapper go.bool) "m1") in
     let: "$r0" := (Fst (map.get (![MapWrapper] "m2") #(W64 0))) in
-    do:  (map.insert (![go.MapType IntWrapper go.bool] "m1") #(W64 4) "$r0");;;
+    do:  (map.insert IntWrapper (![go.MapType IntWrapper go.bool] "m1") #(W64 4) "$r0");;;
     return: #()).
 
 Definition StringMap {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.StringMap"%go.
@@ -2322,11 +2335,12 @@ mk {
   a : w64;
   b : w64;
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End mapElem.
 
 Class mapElem_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -2366,7 +2380,7 @@ Definition mapGetCallⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
     let: "$r0" := (λ: <>,
       exception_do (do:  #())
       ) in
-    do:  (map.insert (![go.MapType go.uint64 (go.FunctionType (go.Signature [] false []))] "handlers") #(W64 0) "$r0");;;
+    do:  (map.insert go.uint64 (![go.MapType go.uint64 (go.FunctionType (go.Signature [] false []))] "handlers") #(W64 0) "$r0");;;
     do:  ((Fst (map.get (![go.MapType go.uint64 (go.FunctionType (go.Signature [] false []))] "handlers") #(W64 0))) #());;;
     return: #()).
 
@@ -2389,11 +2403,11 @@ Definition mapClearTestⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
     let: "$r0" := ((FuncResolve go.make1 [go.MapType go.int go.bool] #()) #()) in
     do:  ("m" <-[go.MapType go.int go.bool] "$r0");;;
     let: "$r0" := #true in
-    do:  (map.insert (![go.MapType go.int go.bool] "m") #(W64 1) "$r0");;;
+    do:  (map.insert go.int (![go.MapType go.int go.bool] "m") #(W64 1) "$r0");;;
     let: "$r0" := #false in
-    do:  (map.insert (![go.MapType go.int go.bool] "m") #(W64 2) "$r0");;;
+    do:  (map.insert go.int (![go.MapType go.int go.bool] "m") #(W64 2) "$r0");;;
     let: "$r0" := #true in
-    do:  (map.insert (![go.MapType go.int go.bool] "m") #(W64 7) "$r0");;;
+    do:  (map.insert go.int (![go.MapType go.int go.bool] "m") #(W64 7) "$r0");;;
     do:  (let: "$a0" := (![go.MapType go.int go.bool] "m") in
     (FuncResolve go.clear [go.MapType go.int go.bool] #()) "$a0");;;
     return: (let: "$a0" := (![go.MapType go.int go.bool] "m") in
@@ -2510,11 +2524,12 @@ Record t :=
 mk {
   s : loc;
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End containsPointer.
 
 Class containsPointer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -2648,11 +2663,12 @@ Record t :=
 mk {
   j : loc;
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End wrapExternalStruct.
 
 Class wrapExternalStruct_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -2661,8 +2677,8 @@ Class wrapExternalStruct_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!G
   #[global] wrapExternalStruct_underlying :: go.Underlying (wrapExternalStruct) (wrapExternalStructⁱᵐᵖˡ);
   #[global] wrapExternalStruct_get_j (x : wrapExternalStruct.t) :: go.IsGoStepPureDet (StructFieldGet (wrapExternalStruct) "j") #x #x.(wrapExternalStruct.j);
   #[global] wrapExternalStruct_set_j (x : wrapExternalStruct.t) y :: go.IsGoStepPureDet (StructFieldSet (wrapExternalStruct) "j") (#x, #y) #(x <|wrapExternalStruct.j := y|>);
-  #[global] wrapExternalStruct'ptr_join_unfold :: MethodUnfold (wrapExternalStruct) "join" (wrapExternalStruct__joinⁱᵐᵖˡ);
-  #[global] wrapExternalStruct'ptr_join_unfold :: MethodUnfold (go.PointerType (wrapExternalStruct)) "join" (λ: "$r", MethodResolve (wrapExternalStruct) join #() (![(wrapExternalStruct)] "$r");
+  #[global] wrapExternalStruct_join_unfold :: MethodUnfold (wrapExternalStruct) "join" (wrapExternalStruct__joinⁱᵐᵖˡ);
+  #[global] wrapExternalStruct'ptr_join_unfold :: MethodUnfold (go.PointerType (wrapExternalStruct)) "join" (λ: "$r", MethodResolve (wrapExternalStruct) "join" #() (![(wrapExternalStruct)] "$r"));
 }.
 
 Definition PanicAtTheDisco {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.PanicAtTheDisco"%go.
@@ -2699,11 +2715,12 @@ Record t :=
 mk {
   proph : loc;
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End typing.
 
 Class typing_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -2729,11 +2746,12 @@ mk {
   a : w64;
   b : w64;
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End composite.
 
 Class composite_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -2792,11 +2810,12 @@ Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End R.
 
 Class R_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -2821,11 +2840,12 @@ Record t :=
 mk {
   RecursiveEmbedded : loc;
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End Other.
 
 Class Other_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -2834,7 +2854,7 @@ Class Other_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext
   #[global] Other_underlying :: go.Underlying (Other) (Otherⁱᵐᵖˡ);
   #[global] Other_get_RecursiveEmbedded (x : Other.t) :: go.IsGoStepPureDet (StructFieldGet (Other) "RecursiveEmbedded") #x #x.(Other.RecursiveEmbedded);
   #[global] Other_set_RecursiveEmbedded (x : Other.t) y :: go.IsGoStepPureDet (StructFieldSet (Other) "RecursiveEmbedded") (#x, #y) #(x <|Other.RecursiveEmbedded := y|>);
-  #[global] Other'ptr_recurEmbeddedMethod_unfold :: MethodUnfold (Other) "recurEmbeddedMethod" (λ: "$r", MethodResolve (go.PointerType RecursiveEmbedded) recurEmbeddedMethod #() (StructFieldGet (Other) "RecursiveEmbedded" "$r" ))%V;
+  #[global] Other_recurEmbeddedMethod_unfold :: MethodUnfold (Other) "recurEmbeddedMethod" (λ: "$r", MethodResolve (go.PointerType RecursiveEmbedded) recurEmbeddedMethod #() (StructFieldGet (Other) "RecursiveEmbedded" "$r" ))%V;
   #[global] Other'ptr_recurEmbeddedMethod_unfold :: MethodUnfold (go.PointerType (Other)) "recurEmbeddedMethod" (λ: "$r", MethodResolve (go.PointerType RecursiveEmbedded) recurEmbeddedMethod #() (![go.PointerType RecursiveEmbedded] (StructFieldRef Other #"RecursiveEmbedded"%go "$r")));
 }.
 
@@ -2856,11 +2876,12 @@ Record t :=
 mk {
   Other : unittest.Other.t;
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End RecursiveEmbedded.
 
 Class RecursiveEmbedded_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -2895,11 +2916,12 @@ Record t :=
 mk {
   Value : w64;
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End Block.
 
 Class Block_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -3208,11 +3230,12 @@ Record t :=
 mk {
   x : w64;
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End thing.
 
 Class thing_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -3243,11 +3266,12 @@ Record t :=
 mk {
   things : slice.t;
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End sliceOfThings.
 
 Class sliceOfThings_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -3256,8 +3280,8 @@ Class sliceOfThings_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLoca
   #[global] sliceOfThings_underlying :: go.Underlying (sliceOfThings) (sliceOfThingsⁱᵐᵖˡ);
   #[global] sliceOfThings_get_things (x : sliceOfThings.t) :: go.IsGoStepPureDet (StructFieldGet (sliceOfThings) "things") #x #x.(sliceOfThings.things);
   #[global] sliceOfThings_set_things (x : sliceOfThings.t) y :: go.IsGoStepPureDet (StructFieldSet (sliceOfThings) "things") (#x, #y) #(x <|sliceOfThings.things := y|>);
-  #[global] sliceOfThings'ptr_getThingRef_unfold :: MethodUnfold (sliceOfThings) "getThingRef" (sliceOfThings__getThingRefⁱᵐᵖˡ);
-  #[global] sliceOfThings'ptr_getThingRef_unfold :: MethodUnfold (go.PointerType (sliceOfThings)) "getThingRef" (λ: "$r", MethodResolve (sliceOfThings) getThingRef #() (![(sliceOfThings)] "$r");
+  #[global] sliceOfThings_getThingRef_unfold :: MethodUnfold (sliceOfThings) "getThingRef" (sliceOfThings__getThingRefⁱᵐᵖˡ);
+  #[global] sliceOfThings'ptr_getThingRef_unfold :: MethodUnfold (go.PointerType (sliceOfThings)) "getThingRef" (λ: "$r", MethodResolve (sliceOfThings) "getThingRef" #() (![(sliceOfThings)] "$r"));
 }.
 
 Definition makeAlias {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.makeAlias"%go.
@@ -3405,11 +3429,12 @@ mk {
   x : w64;
   y : w64;
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End Point.
 
 Class Point_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -3420,12 +3445,12 @@ Class Point_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext
   #[global] Point_set_x (x : Point.t) y :: go.IsGoStepPureDet (StructFieldSet (Point) "x") (#x, #y) #(x <|Point.x := y|>);
   #[global] Point_get_y (x : Point.t) :: go.IsGoStepPureDet (StructFieldGet (Point) "y") #x #x.(Point.y);
   #[global] Point_set_y (x : Point.t) y :: go.IsGoStepPureDet (StructFieldSet (Point) "y") (#x, #y) #(x <|Point.y := y|>);
-  #[global] Point'ptr_Add_unfold :: MethodUnfold (Point) "Add" (Point__Addⁱᵐᵖˡ);
-  #[global] Point'ptr_GetField_unfold :: MethodUnfold (Point) "GetField" (Point__GetFieldⁱᵐᵖˡ);
-  #[global] Point'ptr_IgnoreReceiver_unfold :: MethodUnfold (Point) "IgnoreReceiver" (Point__IgnoreReceiverⁱᵐᵖˡ);
-  #[global] Point'ptr_Add_unfold :: MethodUnfold (go.PointerType (Point)) "Add" (λ: "$r", MethodResolve (Point) Add #() (![(Point)] "$r");
-  #[global] Point'ptr_GetField_unfold :: MethodUnfold (go.PointerType (Point)) "GetField" (λ: "$r", MethodResolve (Point) GetField #() (![(Point)] "$r");
-  #[global] Point'ptr_IgnoreReceiver_unfold :: MethodUnfold (go.PointerType (Point)) "IgnoreReceiver" (λ: "$r", MethodResolve (Point) IgnoreReceiver #() (![(Point)] "$r");
+  #[global] Point_Add_unfold :: MethodUnfold (Point) "Add" (Point__Addⁱᵐᵖˡ);
+  #[global] Point_GetField_unfold :: MethodUnfold (Point) "GetField" (Point__GetFieldⁱᵐᵖˡ);
+  #[global] Point_IgnoreReceiver_unfold :: MethodUnfold (Point) "IgnoreReceiver" (Point__IgnoreReceiverⁱᵐᵖˡ);
+  #[global] Point'ptr_Add_unfold :: MethodUnfold (go.PointerType (Point)) "Add" (λ: "$r", MethodResolve (Point) "Add" #() (![(Point)] "$r"));
+  #[global] Point'ptr_GetField_unfold :: MethodUnfold (go.PointerType (Point)) "GetField" (λ: "$r", MethodResolve (Point) "GetField" #() (![(Point)] "$r"));
+  #[global] Point'ptr_IgnoreReceiver_unfold :: MethodUnfold (go.PointerType (Point)) "IgnoreReceiver" (λ: "$r", MethodResolve (Point) "IgnoreReceiver" #() (![(Point)] "$r"));
 }.
 
 Definition UseAdd {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.UseAdd"%go.
@@ -3468,11 +3493,12 @@ mk {
   x : w64;
   y : w64;
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End TwoInts.
 
 Class TwoInts_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -3543,11 +3569,12 @@ mk {
   b : unittest.TwoInts.t;
   c : bool;
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End S.
 
 Class S_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -3560,11 +3587,11 @@ Class S_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{
   #[global] S_set_b (x : S.t) y :: go.IsGoStepPureDet (StructFieldSet (S) "b") (#x, #y) #(x <|S.b := y|>);
   #[global] S_get_c (x : S.t) :: go.IsGoStepPureDet (StructFieldGet (S) "c") #x #x.(S.c);
   #[global] S_set_c (x : S.t) y :: go.IsGoStepPureDet (StructFieldSet (S) "c") (#x, #y) #(x <|S.c := y|>);
-  #[global] S'ptr_readBVal_unfold :: MethodUnfold (S) "readBVal" (S__readBValⁱᵐᵖˡ);
+  #[global] S_readBVal_unfold :: MethodUnfold (S) "readBVal" (S__readBValⁱᵐᵖˡ);
   #[global] S'ptr_negateC_unfold :: MethodUnfold (go.PointerType (S)) "negateC" (S__negateCⁱᵐᵖˡ);
   #[global] S'ptr_readA_unfold :: MethodUnfold (go.PointerType (S)) "readA" (S__readAⁱᵐᵖˡ);
   #[global] S'ptr_readB_unfold :: MethodUnfold (go.PointerType (S)) "readB" (S__readBⁱᵐᵖˡ);
-  #[global] S'ptr_readBVal_unfold :: MethodUnfold (go.PointerType (S)) "readBVal" (λ: "$r", MethodResolve (S) readBVal #() (![(S)] "$r");
+  #[global] S'ptr_readBVal_unfold :: MethodUnfold (go.PointerType (S)) "readBVal" (λ: "$r", MethodResolve (S) "readBVal" #() (![(S)] "$r"));
   #[global] S'ptr_refC_unfold :: MethodUnfold (go.PointerType (S)) "refC" (S__refCⁱᵐᵖˡ);
   #[global] S'ptr_writeB_unfold :: MethodUnfold (go.PointerType (S)) "writeB" (S__writeBⁱᵐᵖˡ);
 }.
@@ -3574,7 +3601,7 @@ Definition NewS {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "g
 (* go: struct_pointers.go:14:6 *)
 Definition NewSⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    exception_do (return: (GoAlloc S (CompositeLiteral S (LiteralValue [KeyedElement (Some (KeyField "a"%go)) (ElementExpression #(W64 2)); KeyedElement (Some (KeyField "b"%go)) (CompositeLiteral TwoInts (LiteralValue [KeyedElement (Some (KeyField "x"%go)) (ElementExpression #(W64 1)); KeyedElement (Some (KeyField "y"%go)) (ElementExpression #(W64 2))])); KeyedElement (Some (KeyField "c"%go)) (ElementExpression #true)])))).
+    exception_do (return: (GoAlloc S (CompositeLiteral S (LiteralValue [KeyedElement (Some (KeyField "a"%go)) (ElementExpression #(W64 2)); KeyedElement (Some (KeyField "b"%go)) (ElementExpression (CompositeLiteral TwoInts (LiteralValue [KeyedElement (Some (KeyField "x"%go)) (ElementExpression #(W64 1)); KeyedElement (Some (KeyField "y"%go)) (ElementExpression #(W64 2))]))); KeyedElement (Some (KeyField "c"%go)) (ElementExpression #true)])))).
 
 Definition localSRef {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.localSRef"%go.
 
@@ -3673,11 +3700,12 @@ Record t :=
 mk {
   a : slice.t;
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End B.
 
 Class B_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -3697,11 +3725,12 @@ Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End A.
 
 Class A_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=

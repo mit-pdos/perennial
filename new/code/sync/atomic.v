@@ -155,11 +155,12 @@ mk {
   _ : atomic.noCopy.t;
   v : w32;
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End Bool.
 
 Class Bool_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -198,18 +199,18 @@ Definition Pointer(T : go.type)  : go.type := go.Named "sync/atomic.Pointer"%go 
 Module Pointer.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Context {T : Type}.
-Record t :=
+Record t {T : Type} :=
 mk {
   _ : (vec loc (uint.nat (W64 0)));
   _ : atomic.noCopy.t;
   v : loc;
 }.
-#[global] Instance zero_val`{!ZeroVal T}  : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val `{!ZeroVal T} : ZeroVal t := {| zero_val := mk T (zero_val _) (zero_val _) (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End Pointer.
 
 Class Pointer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -328,11 +329,12 @@ mk {
   _ : atomic.noCopy.t;
   v : w32;
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End Int32.
 
 Class Int32_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -456,11 +458,12 @@ mk {
   _ : atomic.align64.t;
   v : w64;
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End Int64.
 
 Class Int64_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -582,11 +585,12 @@ mk {
   _ : atomic.noCopy.t;
   v : w32;
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End Uint32.
 
 Class Uint32_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -708,11 +712,12 @@ mk {
   _ : atomic.align64.t;
   v : w64;
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End Uint64.
 
 Class Uint64_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -745,11 +750,12 @@ Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End noCopy.
 
 Class noCopy_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -767,11 +773,12 @@ Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End align64.
 
 Class align64_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -1043,11 +1050,12 @@ Record t :=
 mk {
   v : interface.t;
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End Value.
 
 Class Value_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -1075,11 +1083,12 @@ mk {
   typ : loc;
   data : loc;
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End efaceWords.
 
 Class efaceWords_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=

@@ -29,7 +29,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance unit_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (semantics.unit.t) (semantics.unit).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -58,7 +58,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance Enc_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (semantics.Enc.t) (semantics.Enc).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -87,7 +87,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance Dec_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (semantics.Dec.t) (semantics.Dec).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -117,7 +117,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance Editor_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (semantics.Editor.t) (semantics.Editor).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -147,7 +147,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance Pair_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (semantics.Pair.t) (semantics.Pair).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -176,7 +176,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance SquareStruct_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (semantics.SquareStruct.t) (semantics.SquareStruct).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -205,7 +205,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance LoopStruct_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (semantics.LoopStruct.t) (semantics.LoopStruct).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -237,7 +237,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance BoolTest_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (semantics.BoolTest.t) (semantics.BoolTest).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -267,7 +267,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance ArrayEditor_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (semantics.ArrayEditor.t) (semantics.ArrayEditor).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -297,7 +297,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance Bar_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (semantics.Bar.t) (semantics.Bar).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -326,7 +326,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance Foo_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (semantics.Foo.t) (semantics.Foo).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -356,7 +356,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance TwoInts_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (semantics.TwoInts.t) (semantics.TwoInts).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -387,7 +387,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance S_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (semantics.S.t) (semantics.S).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -416,7 +416,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance StructWrap_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (semantics.StructWrap.t) (semantics.StructWrap).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -445,7 +445,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance StructWithFunc_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (semantics.StructWithFunc.t) (semantics.StructWithFunc).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -473,7 +473,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance switchConcrete_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (semantics.switchConcrete.t) (semantics.switchConcrete).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -505,7 +505,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 Instance Log_into_val_typed
    :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+  IntoValTyped (semantics.Log.t) (semantics.Log).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.

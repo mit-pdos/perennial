@@ -20,11 +20,12 @@ Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End unit.
 
 Class unit_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -91,7 +92,7 @@ Definition freeRangeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
     do:  ("i" <-[go.uint64] "$r0");;;
     (for: (λ: <>, (![go.uint64] "i") <⟨go.uint64⟩ (![go.uint64] "sz")); (λ: <>, do:  ("i" <-[go.uint64] ((![go.uint64] "i") +⟨go.uint64⟩ #(W64 1)))) := λ: <>,
       let: "$r0" := (CompositeLiteral unit (LiteralValue [])) in
-      do:  (map.insert (![go.MapType go.uint64 unit] "m") (![go.uint64] "i") "$r0")));;;
+      do:  (map.insert go.uint64 (![go.MapType go.uint64 unit] "m") (![go.uint64] "i") "$r0")));;;
     return: (![go.MapType go.uint64 unit] "m")).
 
 Definition testAllocateDistinct {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testAllocateDistinct"%go.
@@ -541,11 +542,12 @@ Record t :=
 mk {
   p : slice.t;
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End Enc.
 
 Class Enc_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -584,11 +586,12 @@ Record t :=
 mk {
   p : slice.t;
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End Dec.
 
 Class Dec_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -810,11 +813,12 @@ mk {
   s : slice.t;
   next_val : w64;
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End Editor.
 
 Class Editor_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -857,11 +861,12 @@ mk {
   x : w64;
   y : w64;
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End Pair.
 
 Class Pair_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -1051,8 +1056,8 @@ Class geometryInterface_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!Go
 {
   #[global] geometryInterface_type_repr  :: go.TypeRepr geometryInterface geometryInterface.t;
   #[global] geometryInterface_underlying :: go.Underlying (geometryInterface) (geometryInterfaceⁱᵐᵖˡ);
-  #[global] geometryInterface'ptr_Square_unfold :: MethodUnfold (geometryInterface) "Square" (geometryInterface__Squareⁱᵐᵖˡ);
-  #[global] geometryInterface'ptr_Volume_unfold :: MethodUnfold (geometryInterface) "Volume" (geometryInterface__Volumeⁱᵐᵖˡ);
+  #[global] geometryInterface_Square_unfold :: MethodUnfold (geometryInterface) "Square" (geometryInterface__Squareⁱᵐᵖˡ);
+  #[global] geometryInterface_Volume_unfold :: MethodUnfold (geometryInterface) "Volume" (geometryInterface__Volumeⁱᵐᵖˡ);
 }.
 
 Definition measureArea {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.measureArea"%go.
@@ -1106,11 +1111,12 @@ Record t :=
 mk {
   Side : w64;
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End SquareStruct.
 
 Class SquareStruct_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -1119,10 +1125,10 @@ Class SquareStruct_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocal
   #[global] SquareStruct_underlying :: go.Underlying (SquareStruct) (SquareStructⁱᵐᵖˡ);
   #[global] SquareStruct_get_Side (x : SquareStruct.t) :: go.IsGoStepPureDet (StructFieldGet (SquareStruct) "Side") #x #x.(SquareStruct.Side);
   #[global] SquareStruct_set_Side (x : SquareStruct.t) y :: go.IsGoStepPureDet (StructFieldSet (SquareStruct) "Side") (#x, #y) #(x <|SquareStruct.Side := y|>);
-  #[global] SquareStruct'ptr_Square_unfold :: MethodUnfold (SquareStruct) "Square" (SquareStruct__Squareⁱᵐᵖˡ);
-  #[global] SquareStruct'ptr_Volume_unfold :: MethodUnfold (SquareStruct) "Volume" (SquareStruct__Volumeⁱᵐᵖˡ);
-  #[global] SquareStruct'ptr_Square_unfold :: MethodUnfold (go.PointerType (SquareStruct)) "Square" (λ: "$r", MethodResolve (SquareStruct) Square #() (![(SquareStruct)] "$r");
-  #[global] SquareStruct'ptr_Volume_unfold :: MethodUnfold (go.PointerType (SquareStruct)) "Volume" (λ: "$r", MethodResolve (SquareStruct) Volume #() (![(SquareStruct)] "$r");
+  #[global] SquareStruct_Square_unfold :: MethodUnfold (SquareStruct) "Square" (SquareStruct__Squareⁱᵐᵖˡ);
+  #[global] SquareStruct_Volume_unfold :: MethodUnfold (SquareStruct) "Volume" (SquareStruct__Volumeⁱᵐᵖˡ);
+  #[global] SquareStruct'ptr_Square_unfold :: MethodUnfold (go.PointerType (SquareStruct)) "Square" (λ: "$r", MethodResolve (SquareStruct) "Square" #() (![(SquareStruct)] "$r"));
+  #[global] SquareStruct'ptr_Volume_unfold :: MethodUnfold (go.PointerType (SquareStruct)) "Volume" (λ: "$r", MethodResolve (SquareStruct) "Volume" #() (![(SquareStruct)] "$r"));
 }.
 
 Definition testBasicInterface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testBasicInterface"%go.
@@ -1283,11 +1289,12 @@ Record t :=
 mk {
   loopNext : loc;
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End LoopStruct.
 
 Class LoopStruct_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -1296,8 +1303,8 @@ Class LoopStruct_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalCo
   #[global] LoopStruct_underlying :: go.Underlying (LoopStruct) (LoopStructⁱᵐᵖˡ);
   #[global] LoopStruct_get_loopNext (x : LoopStruct.t) :: go.IsGoStepPureDet (StructFieldGet (LoopStruct) "loopNext") #x #x.(LoopStruct.loopNext);
   #[global] LoopStruct_set_loopNext (x : LoopStruct.t) y :: go.IsGoStepPureDet (StructFieldSet (LoopStruct) "loopNext") (#x, #y) #(x <|LoopStruct.loopNext := y|>);
-  #[global] LoopStruct'ptr_forLoopWait_unfold :: MethodUnfold (LoopStruct) "forLoopWait" (LoopStruct__forLoopWaitⁱᵐᵖˡ);
-  #[global] LoopStruct'ptr_forLoopWait_unfold :: MethodUnfold (go.PointerType (LoopStruct)) "forLoopWait" (λ: "$r", MethodResolve (LoopStruct) forLoopWait #() (![(LoopStruct)] "$r");
+  #[global] LoopStruct_forLoopWait_unfold :: MethodUnfold (LoopStruct) "forLoopWait" (LoopStruct__forLoopWaitⁱᵐᵖˡ);
+  #[global] LoopStruct'ptr_forLoopWait_unfold :: MethodUnfold (go.PointerType (LoopStruct)) "forLoopWait" (λ: "$r", MethodResolve (LoopStruct) "forLoopWait" #() (![(LoopStruct)] "$r"));
 }.
 
 Definition testStandardForLoop {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testStandardForLoop"%go.
@@ -1545,11 +1552,11 @@ Definition testIterateMapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
     let: "$r0" := ((FuncResolve go.make1 [go.MapType go.uint64 go.uint64] #()) #()) in
     do:  ("m" <-[go.MapType go.uint64 go.uint64] "$r0");;;
     let: "$r0" := #(W64 1) in
-    do:  (map.insert (![go.MapType go.uint64 go.uint64] "m") #(W64 0) "$r0");;;
+    do:  (map.insert go.uint64 (![go.MapType go.uint64 go.uint64] "m") #(W64 0) "$r0");;;
     let: "$r0" := #(W64 2) in
-    do:  (map.insert (![go.MapType go.uint64 go.uint64] "m") #(W64 1) "$r0");;;
+    do:  (map.insert go.uint64 (![go.MapType go.uint64 go.uint64] "m") #(W64 1) "$r0");;;
     let: "$r0" := #(W64 4) in
-    do:  (map.insert (![go.MapType go.uint64 go.uint64] "m") #(W64 3) "$r0");;;
+    do:  (map.insert go.uint64 (![go.MapType go.uint64 go.uint64] "m") #(W64 3) "$r0");;;
     let: "$r0" := ((![go.bool] "ok") && ((let: "$a0" := (![go.MapType go.uint64 go.uint64] "m") in
     (FuncResolve IterateMapKeys [] #()) "$a0") =⟨go.uint64⟩ #(W64 4))) in
     do:  ("ok" <-[go.bool] "$r0");;;
@@ -1573,11 +1580,11 @@ Definition testMapSizeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
     (FuncResolve go.len [go.MapType go.uint64 go.uint64] #()) "$a0")) =⟨go.uint64⟩ #(W64 0))) in
     do:  ("ok" <-[go.bool] "$r0");;;
     let: "$r0" := #(W64 1) in
-    do:  (map.insert (![go.MapType go.uint64 go.uint64] "m") #(W64 0) "$r0");;;
+    do:  (map.insert go.uint64 (![go.MapType go.uint64 go.uint64] "m") #(W64 0) "$r0");;;
     let: "$r0" := #(W64 2) in
-    do:  (map.insert (![go.MapType go.uint64 go.uint64] "m") #(W64 1) "$r0");;;
+    do:  (map.insert go.uint64 (![go.MapType go.uint64 go.uint64] "m") #(W64 1) "$r0");;;
     let: "$r0" := #(W64 4) in
-    do:  (map.insert (![go.MapType go.uint64 go.uint64] "m") #(W64 3) "$r0");;;
+    do:  (map.insert go.uint64 (![go.MapType go.uint64 go.uint64] "m") #(W64 3) "$r0");;;
     let: "$r0" := ((![go.bool] "ok") && ((s_to_w64 (let: "$a0" := (![go.MapType go.uint64 go.uint64] "m") in
     (FuncResolve go.len [go.MapType go.uint64 go.uint64] #()) "$a0")) =⟨go.uint64⟩ #(W64 3))) in
     do:  ("ok" <-[go.bool] "$r0");;;
@@ -1653,7 +1660,7 @@ Definition testMultipleAssignToMapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGl
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("x" <-[go.uint64] "$r0");;;
-    do:  (map.insert (![go.MapType go.uint64 go.uint64] "m") #(W64 0) "$r1");;;
+    do:  (map.insert go.uint64 (![go.MapType go.uint64 go.uint64] "m") #(W64 0) "$r1");;;
     return: (((![go.uint64] "x") =⟨go.uint64⟩ #(W64 2)) && ((Fst (map.get (![go.MapType go.uint64 go.uint64] "m") #(W64 0))) =⟨go.uint64⟩ #(W64 3)))).
 
 Definition returnTwo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.returnTwo"%go.
@@ -2151,11 +2158,12 @@ mk {
   tc : w64;
   fc : w64;
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _) (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _) (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End BoolTest.
 
 Class BoolTest_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -2283,11 +2291,12 @@ mk {
   s : slice.t;
   next_val : w64;
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End ArrayEditor.
 
 Class ArrayEditor_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -2514,11 +2523,12 @@ mk {
   a : w64;
   b : w64;
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End Bar.
 
 Class Bar_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -2552,11 +2562,12 @@ Record t :=
 mk {
   bar : semantics.Bar.t;
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End Foo.
 
 Class Foo_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -2574,7 +2585,7 @@ Definition testFooBarMutation {ext : ffi_syntax} {go_gctx : GoGlobalContext} : g
 Definition testFooBarMutationⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "x" := (GoAlloc Foo (GoZeroVal Foo #())) in
-    let: "$r0" := (CompositeLiteral Foo (LiteralValue [KeyedElement (Some (KeyField "bar"%go)) (CompositeLiteral Bar (LiteralValue [KeyedElement (Some (KeyField "a"%go)) (ElementExpression #(W64 0)); KeyedElement (Some (KeyField "b"%go)) (ElementExpression #(W64 0))]))])) in
+    let: "$r0" := (CompositeLiteral Foo (LiteralValue [KeyedElement (Some (KeyField "bar"%go)) (ElementExpression (CompositeLiteral Bar (LiteralValue [KeyedElement (Some (KeyField "a"%go)) (ElementExpression #(W64 0)); KeyedElement (Some (KeyField "b"%go)) (ElementExpression #(W64 0))])))])) in
     do:  ("x" <-[Foo] "$r0");;;
     do:  ((MethodResolve (go.PointerType Foo) "mutateBar"%go #() "x") #());;;
     return: ((![go.uint64] (StructFieldRef Bar "a"%go (StructFieldRef Foo "bar"%go "x"))) =⟨go.uint64⟩ #(W64 2))).
@@ -2594,11 +2605,12 @@ mk {
   x : w64;
   y : w64;
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End TwoInts.
 
 Class TwoInts_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -2663,11 +2675,12 @@ mk {
   b : semantics.TwoInts.t;
   c : bool;
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End S.
 
 Class S_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -2680,11 +2693,11 @@ Class S_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{
   #[global] S_set_b (x : S.t) y :: go.IsGoStepPureDet (StructFieldSet (S) "b") (#x, #y) #(x <|S.b := y|>);
   #[global] S_get_c (x : S.t) :: go.IsGoStepPureDet (StructFieldGet (S) "c") #x #x.(S.c);
   #[global] S_set_c (x : S.t) y :: go.IsGoStepPureDet (StructFieldSet (S) "c") (#x, #y) #(x <|S.c := y|>);
-  #[global] S'ptr_readBVal_unfold :: MethodUnfold (S) "readBVal" (S__readBValⁱᵐᵖˡ);
+  #[global] S_readBVal_unfold :: MethodUnfold (S) "readBVal" (S__readBValⁱᵐᵖˡ);
   #[global] S'ptr_negateC_unfold :: MethodUnfold (go.PointerType (S)) "negateC" (S__negateCⁱᵐᵖˡ);
   #[global] S'ptr_readA_unfold :: MethodUnfold (go.PointerType (S)) "readA" (S__readAⁱᵐᵖˡ);
   #[global] S'ptr_readB_unfold :: MethodUnfold (go.PointerType (S)) "readB" (S__readBⁱᵐᵖˡ);
-  #[global] S'ptr_readBVal_unfold :: MethodUnfold (go.PointerType (S)) "readBVal" (λ: "$r", MethodResolve (S) readBVal #() (![(S)] "$r");
+  #[global] S'ptr_readBVal_unfold :: MethodUnfold (go.PointerType (S)) "readBVal" (λ: "$r", MethodResolve (S) "readBVal" #() (![(S)] "$r"));
   #[global] S'ptr_updateBValX_unfold :: MethodUnfold (go.PointerType (S)) "updateBValX" (S__updateBValXⁱᵐᵖˡ);
 }.
 
@@ -2693,7 +2706,7 @@ Definition NewS {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "g
 (* go: structs.go:14:6 *)
 Definition NewSⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    exception_do (return: (GoAlloc S (CompositeLiteral S (LiteralValue [KeyedElement (Some (KeyField "a"%go)) (ElementExpression #(W64 2)); KeyedElement (Some (KeyField "b"%go)) (CompositeLiteral TwoInts (LiteralValue [KeyedElement (Some (KeyField "x"%go)) (ElementExpression #(W64 1)); KeyedElement (Some (KeyField "y"%go)) (ElementExpression #(W64 2))])); KeyedElement (Some (KeyField "c"%go)) (ElementExpression #true)])))).
+    exception_do (return: (GoAlloc S (CompositeLiteral S (LiteralValue [KeyedElement (Some (KeyField "a"%go)) (ElementExpression #(W64 2)); KeyedElement (Some (KeyField "b"%go)) (ElementExpression (CompositeLiteral TwoInts (LiteralValue [KeyedElement (Some (KeyField "x"%go)) (ElementExpression #(W64 1)); KeyedElement (Some (KeyField "y"%go)) (ElementExpression #(W64 2))]))); KeyedElement (Some (KeyField "c"%go)) (ElementExpression #true)])))).
 
 Definition testStructUpdates {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testStructUpdates"%go.
 
@@ -2850,11 +2863,12 @@ Record t :=
 mk {
   i : w64;
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End StructWrap.
 
 Class StructWrap_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -2930,11 +2944,12 @@ Record t :=
 mk {
   fn : func.t;
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End StructWithFunc.
 
 Class StructWithFunc_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -3027,11 +3042,12 @@ Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End switchConcrete.
 
 Class switchConcrete_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -3056,7 +3072,7 @@ Class switchInterface_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLo
 {
   #[global] switchInterface_type_repr  :: go.TypeRepr switchInterface switchInterface.t;
   #[global] switchInterface_underlying :: go.Underlying (switchInterface) (switchInterfaceⁱᵐᵖˡ);
-  #[global] switchInterface'ptr_marker_unfold :: MethodUnfold (switchInterface) "marker" (switchInterface__markerⁱᵐᵖˡ);
+  #[global] switchInterface_marker_unfold :: MethodUnfold (switchInterface) "marker" (switchInterface__markerⁱᵐᵖˡ);
 }.
 
 Definition testSwitchConversion {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testSwitchConversion"%go.
@@ -3258,7 +3274,7 @@ Definition Log__Writeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
     let: "$a1" := (![go.SliceType go.byte] "v") in
     (MethodResolve disk.Disk "Write"%go #() (![disk.Disk] (StructFieldRef Log "d"%go "l"))) "$a0" "$a1");;;
     let: "$r0" := (![go.SliceType go.byte] "v") in
-    do:  (map.insert (![go.MapType go.uint64 (go.SliceType go.byte)] (StructFieldRef Log "cache"%go "l")) (![go.uint64] "a") "$r0");;;
+    do:  (map.insert go.uint64 (![go.MapType go.uint64 (go.SliceType go.byte)] (StructFieldRef Log "cache"%go "l")) (![go.uint64] "a") "$r0");;;
     let: "$r0" := ((![go.uint64] "length") +⟨go.uint64⟩ #(W64 1)) in
     do:  ((![go.PointerType go.uint64] (StructFieldRef Log "length"%go "l")) <-[go.uint64] "$r0");;;
     do:  ((MethodResolve Log "unlock"%go #() (![Log] "l")) #());;;
@@ -3295,11 +3311,12 @@ mk {
   cache : loc;
   length : loc;
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _) (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _) (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End Log.
 
 Class Log_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -3314,22 +3331,22 @@ Class Log_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} 
   #[global] Log_set_cache (x : Log.t) y :: go.IsGoStepPureDet (StructFieldSet (Log) "cache") (#x, #y) #(x <|Log.cache := y|>);
   #[global] Log_get_length (x : Log.t) :: go.IsGoStepPureDet (StructFieldGet (Log) "length") #x #x.(Log.length);
   #[global] Log_set_length (x : Log.t) y :: go.IsGoStepPureDet (StructFieldSet (Log) "length") (#x, #y) #(x <|Log.length := y|>);
-  #[global] Log'ptr_Apply_unfold :: MethodUnfold (Log) "Apply" (Log__Applyⁱᵐᵖˡ);
-  #[global] Log'ptr_BeginTxn_unfold :: MethodUnfold (Log) "BeginTxn" (Log__BeginTxnⁱᵐᵖˡ);
-  #[global] Log'ptr_Commit_unfold :: MethodUnfold (Log) "Commit" (Log__Commitⁱᵐᵖˡ);
-  #[global] Log'ptr_Read_unfold :: MethodUnfold (Log) "Read" (Log__Readⁱᵐᵖˡ);
-  #[global] Log'ptr_Size_unfold :: MethodUnfold (Log) "Size" (Log__Sizeⁱᵐᵖˡ);
-  #[global] Log'ptr_Write_unfold :: MethodUnfold (Log) "Write" (Log__Writeⁱᵐᵖˡ);
-  #[global] Log'ptr_lock_unfold :: MethodUnfold (Log) "lock" (Log__lockⁱᵐᵖˡ);
-  #[global] Log'ptr_unlock_unfold :: MethodUnfold (Log) "unlock" (Log__unlockⁱᵐᵖˡ);
-  #[global] Log'ptr_Apply_unfold :: MethodUnfold (go.PointerType (Log)) "Apply" (λ: "$r", MethodResolve (Log) Apply #() (![(Log)] "$r");
-  #[global] Log'ptr_BeginTxn_unfold :: MethodUnfold (go.PointerType (Log)) "BeginTxn" (λ: "$r", MethodResolve (Log) BeginTxn #() (![(Log)] "$r");
-  #[global] Log'ptr_Commit_unfold :: MethodUnfold (go.PointerType (Log)) "Commit" (λ: "$r", MethodResolve (Log) Commit #() (![(Log)] "$r");
-  #[global] Log'ptr_Read_unfold :: MethodUnfold (go.PointerType (Log)) "Read" (λ: "$r", MethodResolve (Log) Read #() (![(Log)] "$r");
-  #[global] Log'ptr_Size_unfold :: MethodUnfold (go.PointerType (Log)) "Size" (λ: "$r", MethodResolve (Log) Size #() (![(Log)] "$r");
-  #[global] Log'ptr_Write_unfold :: MethodUnfold (go.PointerType (Log)) "Write" (λ: "$r", MethodResolve (Log) Write #() (![(Log)] "$r");
-  #[global] Log'ptr_lock_unfold :: MethodUnfold (go.PointerType (Log)) "lock" (λ: "$r", MethodResolve (Log) lock #() (![(Log)] "$r");
-  #[global] Log'ptr_unlock_unfold :: MethodUnfold (go.PointerType (Log)) "unlock" (λ: "$r", MethodResolve (Log) unlock #() (![(Log)] "$r");
+  #[global] Log_Apply_unfold :: MethodUnfold (Log) "Apply" (Log__Applyⁱᵐᵖˡ);
+  #[global] Log_BeginTxn_unfold :: MethodUnfold (Log) "BeginTxn" (Log__BeginTxnⁱᵐᵖˡ);
+  #[global] Log_Commit_unfold :: MethodUnfold (Log) "Commit" (Log__Commitⁱᵐᵖˡ);
+  #[global] Log_Read_unfold :: MethodUnfold (Log) "Read" (Log__Readⁱᵐᵖˡ);
+  #[global] Log_Size_unfold :: MethodUnfold (Log) "Size" (Log__Sizeⁱᵐᵖˡ);
+  #[global] Log_Write_unfold :: MethodUnfold (Log) "Write" (Log__Writeⁱᵐᵖˡ);
+  #[global] Log_lock_unfold :: MethodUnfold (Log) "lock" (Log__lockⁱᵐᵖˡ);
+  #[global] Log_unlock_unfold :: MethodUnfold (Log) "unlock" (Log__unlockⁱᵐᵖˡ);
+  #[global] Log'ptr_Apply_unfold :: MethodUnfold (go.PointerType (Log)) "Apply" (λ: "$r", MethodResolve (Log) "Apply" #() (![(Log)] "$r"));
+  #[global] Log'ptr_BeginTxn_unfold :: MethodUnfold (go.PointerType (Log)) "BeginTxn" (λ: "$r", MethodResolve (Log) "BeginTxn" #() (![(Log)] "$r"));
+  #[global] Log'ptr_Commit_unfold :: MethodUnfold (go.PointerType (Log)) "Commit" (λ: "$r", MethodResolve (Log) "Commit" #() (![(Log)] "$r"));
+  #[global] Log'ptr_Read_unfold :: MethodUnfold (go.PointerType (Log)) "Read" (λ: "$r", MethodResolve (Log) "Read" #() (![(Log)] "$r"));
+  #[global] Log'ptr_Size_unfold :: MethodUnfold (go.PointerType (Log)) "Size" (λ: "$r", MethodResolve (Log) "Size" #() (![(Log)] "$r"));
+  #[global] Log'ptr_Write_unfold :: MethodUnfold (go.PointerType (Log)) "Write" (λ: "$r", MethodResolve (Log) "Write" #() (![(Log)] "$r"));
+  #[global] Log'ptr_lock_unfold :: MethodUnfold (go.PointerType (Log)) "lock" (λ: "$r", MethodResolve (Log) "lock" #() (![(Log)] "$r"));
+  #[global] Log'ptr_unlock_unfold :: MethodUnfold (go.PointerType (Log)) "unlock" (λ: "$r", MethodResolve (Log) "unlock" #() (![(Log)] "$r"));
 }.
 
 (* go: wal.go:25:6 *)

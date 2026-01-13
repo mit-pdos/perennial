@@ -44,16 +44,16 @@ Definition Boxⁱᵐᵖˡ(T : go.type)  : go.type := go.StructType [
 Module Box.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Context {T : Type}.
-Record t :=
+Record t {T : Type} :=
 mk {
   Value : T;
 }.
-#[global] Instance zero_val`{!ZeroVal T}  : ZeroVal t := {| zero_val := mk (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val `{!ZeroVal T} : ZeroVal t := {| zero_val := mk T (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End Box.
 
 Class Box_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -62,8 +62,8 @@ Class Box_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} 
   #[global] Box_underlying T :: go.Underlying (Box T) (Boxⁱᵐᵖˡ T);
   #[global] Box_get_Value T T' (x : Box.t T') :: go.IsGoStepPureDet (StructFieldGet (Box T) "Value") #x #x.(Box.Value);
   #[global] Box_set_Value T T' (x : Box.t T') y :: go.IsGoStepPureDet (StructFieldSet (Box T) "Value") (#x, #y) #(x <|Box.Value := y|>);
-  #[global] Box'ptr_Get_unfold T :: MethodUnfold (Box T) "Get" (Box__Getⁱᵐᵖˡ T);
-  #[global] Box'ptr_Get_unfold T :: MethodUnfold (go.PointerType (Box T)) "Get" (λ: "$r", MethodResolve (Box T) Get #() (![(Box T)] "$r");
+  #[global] Box_Get_unfold T :: MethodUnfold (Box T) "Get" (Box__Getⁱᵐᵖˡ T);
+  #[global] Box'ptr_Get_unfold T :: MethodUnfold (go.PointerType (Box T)) "Get" (λ: "$r", MethodResolve (Box T) "Get" #() (![(Box T)] "$r"));
 }.
 
 Definition BoxGet {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.BoxGet"%go.
@@ -122,19 +122,19 @@ Definition Container(T : go.type)  : go.type := go.Named "github.com/goose-lang/
 Module Container.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Context {T : Type}.
-Record t :=
+Record t {T : Type} :=
 mk {
   X : T;
   Y : loc;
   Z : loc;
   W : w64;
 }.
-#[global] Instance zero_val`{!ZeroVal T}  : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _) (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val `{!ZeroVal T} : ZeroVal t := {| zero_val := mk T (zero_val _) (zero_val _) (zero_val _) (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End Container.
 
 Class Container_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -157,12 +157,12 @@ Definition useContainer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_stri
 Definition useContainerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "container" := (GoAlloc (Container go.uint64) (GoZeroVal (Container go.uint64) #())) in
-    let: "$r0" := (CompositeLiteral (Container go.uint64) (LiteralValue [KeyedElement (Some (KeyField "X"%go)) (ElementExpression #(W64 1)); KeyedElement (Some (KeyField "Y"%go)) (CompositeLiteral (go.MapType go.int go.uint64) (LiteralValue [KeyedElement (Some (KeyExpression #(W64 1))) (ElementExpression #(W64 2))])); KeyedElement (Some (KeyField "Z"%go)) (ElementExpression (GoAlloc go.uint64 (GoZeroVal go.uint64 #()))); KeyedElement (Some (KeyField "W"%go)) (ElementExpression #(W64 3))])) in
+    let: "$r0" := (CompositeLiteral (Container go.uint64) (LiteralValue [KeyedElement (Some (KeyField "X"%go)) (ElementExpression #(W64 1)); KeyedElement (Some (KeyField "Y"%go)) (ElementExpression (CompositeLiteral (go.MapType go.int go.uint64) (LiteralValue [KeyedElement (Some (KeyExpression #(W64 1))) (ElementExpression #(W64 2))]))); KeyedElement (Some (KeyField "Z"%go)) (ElementExpression (GoAlloc go.uint64 (GoZeroVal go.uint64 #()))); KeyedElement (Some (KeyField "W"%go)) (ElementExpression #(W64 3))])) in
     do:  ("container" <-[Container go.uint64] "$r0");;;
     let: "$r0" := #(W64 2) in
     do:  ((StructFieldRef (Container go.uint64) "X"%go "container") <-[go.uint64] "$r0");;;
     let: "$r0" := #(W64 3) in
-    do:  (map.insert (![go.MapType go.int go.uint64] (StructFieldRef (Container go.uint64) "Y"%go "container")) #(W64 2) "$r0");;;
+    do:  (map.insert go.int (![go.MapType go.int go.uint64] (StructFieldRef (Container go.uint64) "Y"%go "container")) #(W64 2) "$r0");;;
     let: "$r0" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     do:  ((StructFieldRef (Container go.uint64) "Z"%go "container") <-[go.PointerType go.uint64] "$r0");;;
     let: "$r0" := #(W64 4) in
@@ -182,11 +182,12 @@ Record t :=
 mk {
   X : (generics.Container.t w64);
 }.
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End UseContainer.
 
 Class UseContainer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -207,17 +208,17 @@ Definition OnlyIndirect(T : go.type)  : go.type := go.Named "github.com/goose-la
 Module OnlyIndirect.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Context {T : Type}.
-Record t :=
+Record t {T : Type} :=
 mk {
   X : slice.t;
   Y : loc;
 }.
-#[global] Instance zero_val`{!ZeroVal T}  : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val `{!ZeroVal T} : ZeroVal t := {| zero_val := mk T (zero_val _) (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End OnlyIndirect.
 
 Class OnlyIndirect_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -240,17 +241,17 @@ Definition MultiParam(A : go.type) (B : go.type)  : go.type := go.Named "github.
 Module MultiParam.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Context {A B : Type}.
-Record t :=
+Record t {A B : Type} :=
 mk {
   Y : B;
   X : A;
 }.
-#[global] Instance zero_val`{!ZeroVal A} `{!ZeroVal B}  : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
-End def.
 
+#[global] Instance zero_val `{!ZeroVal A} `{!ZeroVal B} : ZeroVal t := {| zero_val := mk A B (zero_val _) (zero_val _)|}.
 #[global] Arguments mk : clear implicits.
 #[global] Arguments t : clear implicits.
+End def.
+
 End MultiParam.
 
 Class MultiParam_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
