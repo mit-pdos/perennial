@@ -29,6 +29,11 @@ Local Set Default Proof Using "All".
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
+Instance Builder_into_val_typed
+   :
+  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+Proof. solve_into_val_typed_struct. Qed.
+
 End def.
 End Builder.
 

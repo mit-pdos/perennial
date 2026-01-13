@@ -27,6 +27,11 @@ Local Set Default Proof Using "All".
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
+Instance unit_into_val_typed
+   :
+  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+Proof. solve_into_val_typed_struct. Qed.
+
 End def.
 End unit.
 
@@ -51,6 +56,11 @@ Local Set Default Proof Using "All".
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
+Instance Enc_into_val_typed
+   :
+  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+Proof. solve_into_val_typed_struct. Qed.
+
 End def.
 End Enc.
 
@@ -74,6 +84,11 @@ Local Set Default Proof Using "All".
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
+
+Instance Dec_into_val_typed
+   :
+  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+Proof. solve_into_val_typed_struct. Qed.
 
 End def.
 End Dec.
@@ -100,6 +115,11 @@ Local Set Default Proof Using "All".
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
+Instance Editor_into_val_typed
+   :
+  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+Proof. solve_into_val_typed_struct. Qed.
+
 End def.
 End Editor.
 
@@ -125,6 +145,11 @@ Local Set Default Proof Using "All".
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
+Instance Pair_into_val_typed
+   :
+  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+Proof. solve_into_val_typed_struct. Qed.
+
 End def.
 End Pair.
 
@@ -149,6 +174,11 @@ Local Set Default Proof Using "All".
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
+Instance SquareStruct_into_val_typed
+   :
+  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+Proof. solve_into_val_typed_struct. Qed.
+
 End def.
 End SquareStruct.
 
@@ -172,6 +202,11 @@ Local Set Default Proof Using "All".
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
+
+Instance LoopStruct_into_val_typed
+   :
+  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+Proof. solve_into_val_typed_struct. Qed.
 
 End def.
 End LoopStruct.
@@ -200,6 +235,11 @@ Local Set Default Proof Using "All".
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
+Instance BoolTest_into_val_typed
+   :
+  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+Proof. solve_into_val_typed_struct. Qed.
+
 End def.
 End BoolTest.
 
@@ -224,6 +264,11 @@ Local Set Default Proof Using "All".
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
+
+Instance ArrayEditor_into_val_typed
+   :
+  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+Proof. solve_into_val_typed_struct. Qed.
 
 End def.
 End ArrayEditor.
@@ -250,6 +295,11 @@ Local Set Default Proof Using "All".
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
+Instance Bar_into_val_typed
+   :
+  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+Proof. solve_into_val_typed_struct. Qed.
+
 End def.
 End Bar.
 
@@ -273,6 +323,11 @@ Local Set Default Proof Using "All".
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
+
+Instance Foo_into_val_typed
+   :
+  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+Proof. solve_into_val_typed_struct. Qed.
 
 End def.
 End Foo.
@@ -298,6 +353,11 @@ Local Set Default Proof Using "All".
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
+
+Instance TwoInts_into_val_typed
+   :
+  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+Proof. solve_into_val_typed_struct. Qed.
 
 End def.
 End TwoInts.
@@ -325,6 +385,11 @@ Local Set Default Proof Using "All".
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
+Instance S_into_val_typed
+   :
+  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+Proof. solve_into_val_typed_struct. Qed.
+
 End def.
 End S.
 
@@ -348,6 +413,11 @@ Local Set Default Proof Using "All".
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
+
+Instance StructWrap_into_val_typed
+   :
+  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+Proof. solve_into_val_typed_struct. Qed.
 
 End def.
 End StructWrap.
@@ -373,6 +443,11 @@ Local Set Default Proof Using "All".
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
+Instance StructWithFunc_into_val_typed
+   :
+  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+Proof. solve_into_val_typed_struct. Qed.
+
 End def.
 End StructWithFunc.
 
@@ -395,6 +470,11 @@ Local Set Default Proof Using "All".
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
+
+Instance switchConcrete_into_val_typed
+   :
+  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+Proof. solve_into_val_typed_struct. Qed.
 
 End def.
 End switchConcrete.
@@ -422,6 +502,11 @@ Local Set Default Proof Using "All".
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
+
+Instance Log_into_val_typed
+   :
+  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+Proof. solve_into_val_typed_struct. Qed.
 
 End def.
 End Log.

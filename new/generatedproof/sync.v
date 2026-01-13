@@ -32,6 +32,11 @@ Local Set Default Proof Using "All".
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
+Instance Cond_into_val_typed
+   :
+  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+Proof. solve_into_val_typed_struct. Qed.
+
 End def.
 End Cond.
 
@@ -54,6 +59,11 @@ Local Set Default Proof Using "All".
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
+
+Instance noCopy_into_val_typed
+   :
+  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+Proof. solve_into_val_typed_struct. Qed.
 
 End def.
 End noCopy.
@@ -80,6 +90,11 @@ Local Set Default Proof Using "All".
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
+
+Instance Once_into_val_typed
+   :
+  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+Proof. solve_into_val_typed_struct. Qed.
 
 End def.
 End Once.
@@ -109,6 +124,11 @@ Local Set Default Proof Using "All".
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
+Instance RWMutex_into_val_typed
+   :
+  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+Proof. solve_into_val_typed_struct. Qed.
+
 End def.
 End RWMutex.
 
@@ -134,6 +154,11 @@ Local Set Default Proof Using "All".
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
+
+Instance WaitGroup_into_val_typed
+   :
+  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+Proof. solve_into_val_typed_struct. Qed.
 
 End def.
 End WaitGroup.

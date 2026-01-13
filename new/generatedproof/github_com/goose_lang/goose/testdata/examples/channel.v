@@ -29,6 +29,11 @@ Local Set Default Proof Using "All".
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
+Instance LockedStack_into_val_typed
+   :
+  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+Proof. solve_into_val_typed_struct. Qed.
+
 End def.
 End LockedStack.
 
@@ -53,6 +58,11 @@ Local Set Default Proof Using "All".
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
+
+Instance EliminationStack_into_val_typed
+   :
+  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+Proof. solve_into_val_typed_struct. Qed.
 
 End def.
 End EliminationStack.
@@ -79,6 +89,11 @@ Local Set Default Proof Using "All".
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
+Instance request_into_val_typed
+   :
+  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+Proof. solve_into_val_typed_struct. Qed.
+
 End def.
 End request.
 
@@ -103,6 +118,11 @@ Local Set Default Proof Using "All".
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
+
+Instance stream_into_val_typed
+   :
+  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+Proof. solve_into_val_typed_struct. Qed.
 
 End def.
 End stream.
@@ -129,6 +149,11 @@ Local Set Default Proof Using "All".
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
+
+Instance streamold_into_val_typed
+   :
+  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+Proof. solve_into_val_typed_struct. Qed.
 
 End def.
 End streamold.

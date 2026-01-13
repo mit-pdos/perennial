@@ -32,6 +32,11 @@ Local Set Default Proof Using "All".
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
+Instance Channel_into_val_typed
+  `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T} `{!go.TypeRepr T T'}  :
+  IntoValTyped (channel.Channel.t T') (channel.Channel T).
+Proof. solve_into_val_typed_struct. Qed.
+
 End def.
 End Channel.
 
