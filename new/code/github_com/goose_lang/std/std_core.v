@@ -87,12 +87,12 @@ Definition Shuffleⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : v
       let: "$r0" := (((FuncResolve primitive.RandomUint64 [] #()) #()) %⟨go.uint64⟩ ((![go.uint64] "i") +⟨go.uint64⟩ #(W64 1))) in
       do:  ("j" <-[go.uint64] "$r0");;;
       let: "temp" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-      let: "$r0" := (![go.uint64] (IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "xs", ![go.uint64] "i"))) in
+      let: "$r0" := (![go.uint64] (IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "xs", u_to_w64 (![go.uint64] "i")))) in
       do:  ("temp" <-[go.uint64] "$r0");;;
-      let: "$r0" := (![go.uint64] (IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "xs", ![go.uint64] "j"))) in
-      do:  ((IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "xs", ![go.uint64] "i")) <-[go.uint64] "$r0");;;
+      let: "$r0" := (![go.uint64] (IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "xs", u_to_w64 (![go.uint64] "j")))) in
+      do:  ((IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "xs", u_to_w64 (![go.uint64] "i"))) <-[go.uint64] "$r0");;;
       let: "$r0" := (![go.uint64] "temp") in
-      do:  ((IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "xs", ![go.uint64] "j")) <-[go.uint64] "$r0")));;;
+      do:  ((IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "xs", u_to_w64 (![go.uint64] "j"))) <-[go.uint64] "$r0")));;;
     return: #()).
 
 Definition Permutation {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/std/std_core.Permutation"%go.
@@ -112,7 +112,7 @@ Definition Permutationⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
     do:  ("i" <-[go.uint64] "$r0");;;
     (for: (λ: <>, (![go.uint64] "i") <⟨go.uint64⟩ (![go.uint64] "n")); (λ: <>, do:  ("i" <-[go.uint64] ((![go.uint64] "i") +⟨go.uint64⟩ #(W64 1)))) := λ: <>,
       let: "$r0" := (![go.uint64] "i") in
-      do:  ((IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "order", ![go.uint64] "i")) <-[go.uint64] "$r0")));;;
+      do:  ((IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "order", u_to_w64 (![go.uint64] "i"))) <-[go.uint64] "$r0")));;;
     do:  (let: "$a0" := (![go.SliceType go.uint64] "order") in
     (FuncResolve Shuffle [] #()) "$a0");;;
     return: (![go.SliceType go.uint64] "order")).

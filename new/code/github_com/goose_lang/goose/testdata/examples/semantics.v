@@ -1245,7 +1245,7 @@ Definition standardForLoopⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
         let: "$r0" := (![go.uint64] (![go.PointerType go.uint64] "sumPtr")) in
         do:  ("sum" <-[go.uint64] "$r0");;;
         let: "x" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-        let: "$r0" := (![go.uint64] (IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "s", ![go.uint64] "i"))) in
+        let: "$r0" := (![go.uint64] (IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "s", u_to_w64 (![go.uint64] "i")))) in
         do:  ("x" <-[go.uint64] "$r0");;;
         let: "$r0" := ((![go.uint64] "sum") +⟨go.uint64⟩ (![go.uint64] "x")) in
         do:  ((![go.PointerType go.uint64] "sumPtr") <-[go.uint64] "$r0");;;
@@ -1661,7 +1661,7 @@ Definition testMultipleAssignToMapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGl
     let: "$r1" := "$ret1" in
     do:  ("x" <-[go.uint64] "$r0");;;
     do:  (map.insert go.uint64 (![go.MapType go.uint64 go.uint64] "m") #(W64 0) "$r1");;;
-    return: (((![go.uint64] "x") =⟨go.uint64⟩ #(W64 2)) && ((Fst (map.get (![go.MapType go.uint64 go.uint64] "m") #(W64 0))) =⟨go.uint64⟩ #(W64 3)))).
+    return: (((![go.uint64] "x") =⟨go.uint64⟩ #(W64 2)) && ((map.lookup1 go.uint64 go.uint64 (![go.MapType go.uint64 go.uint64] "m") #(W64 0)) =⟨go.uint64⟩ #(W64 3)))).
 
 Definition returnTwo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.returnTwo"%go.
 
@@ -3217,7 +3217,7 @@ Definition Log__Readⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
     do:  ((MethodResolve Log "lock"%go #() (![Log] "l")) #());;;
     let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "v" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
-    let: ("$ret0", "$ret1") := (map.get (![go.MapType go.uint64 (go.SliceType go.byte)] (StructFieldRef Log "cache"%go "l")) (![go.uint64] "a")) in
+    let: ("$ret0", "$ret1") := (map.lookup2 go.uint64 (go.SliceType go.byte) (![go.MapType go.uint64 (go.SliceType go.byte)] (StructFieldRef Log "cache"%go "l")) (![go.uint64] "a")) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("v" <-[go.SliceType go.byte] "$r0");;;

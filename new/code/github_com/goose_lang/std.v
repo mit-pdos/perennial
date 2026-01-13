@@ -88,7 +88,7 @@ Definition BytesEqualⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
     let: "$r0" := #true in
     do:  ("retval" <-[go.bool] "$r0");;;
     (for: (λ: <>, (![go.uint64] "i") <⟨go.uint64⟩ (s_to_w64 (![go.int] "xlen"))); (λ: <>, #()) := λ: <>,
-      (if: (![go.byte] (IndexRef (go.SliceType go.byte) (![go.SliceType go.byte] "x", ![go.uint64] "i"))) ≠⟨go.byte⟩ (![go.byte] (IndexRef (go.SliceType go.byte) (![go.SliceType go.byte] "y", ![go.uint64] "i")))
+      (if: (![go.byte] (IndexRef (go.SliceType go.byte) (![go.SliceType go.byte] "x", u_to_w64 (![go.uint64] "i")))) ≠⟨go.byte⟩ (![go.byte] (IndexRef (go.SliceType go.byte) (![go.SliceType go.byte] "y", u_to_w64 (![go.uint64] "i"))))
       then
         let: "$r0" := #false in
         do:  ("retval" <-[go.bool] "$r0");;;

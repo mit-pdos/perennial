@@ -73,7 +73,7 @@ Definition sumⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[go.uint64] "$r0");;;
     (for: (λ: <>, (![go.uint64] "i") <⟨go.uint64⟩ (s_to_w64 (array.len (go.ArrayType 100 go.uint64)))); (λ: <>, do:  ("i" <-[go.uint64] ((![go.uint64] "i") +⟨go.uint64⟩ #(W64 1)))) := λ: <>,
-      do:  ("sum" <-[go.uint64] ((![go.uint64] "sum") +⟨go.uint64⟩ (![go.uint64] (IndexRef (go.ArrayType 100 go.uint64) (![go.ArrayType 100 go.uint64] "x", ![go.uint64] "i")))))));;;
+      do:  ("sum" <-[go.uint64] ((![go.uint64] "sum") +⟨go.uint64⟩ (![go.uint64] (IndexRef (go.ArrayType 100 go.uint64) (![go.ArrayType 100 go.uint64] "x", u_to_w64 (![go.uint64] "i"))))))));;;
     do:  ("sum" <-[go.uint64] ((![go.uint64] "sum") +⟨go.uint64⟩ (s_to_w64 (array.cap (go.ArrayType 100 go.uint64)))));;;
     return: (![go.uint64] "sum")).
 
@@ -738,7 +738,7 @@ Definition useMapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : va
     do:  (map.insert go.uint64 (![go.MapType go.uint64 (go.SliceType go.byte)] "m") #(W64 1) "$r0");;;
     let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "x" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
-    let: ("$ret0", "$ret1") := (map.get (![go.MapType go.uint64 (go.SliceType go.byte)] "m") #(W64 2)) in
+    let: ("$ret0", "$ret1") := (map.lookup2 go.uint64 (go.SliceType go.byte) (![go.MapType go.uint64 (go.SliceType go.byte)] "m") #(W64 2)) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
     do:  ("x" <-[go.SliceType go.byte] "$r0");;;
@@ -2037,7 +2037,7 @@ Definition standardForLoopⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
         let: "$r0" := (![go.uint64] (![go.PointerType go.uint64] "sumPtr")) in
         do:  ("sum" <-[go.uint64] "$r0");;;
         let: "x" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-        let: "$r0" := (![go.uint64] (IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "s", ![go.uint64] "i"))) in
+        let: "$r0" := (![go.uint64] (IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "s", u_to_w64 (![go.uint64] "i")))) in
         do:  ("x" <-[go.uint64] "$r0");;;
         let: "$r0" := ((![go.uint64] "sum") +⟨go.uint64⟩ (![go.uint64] "x")) in
         do:  ((![go.PointerType go.uint64] "sumPtr") <-[go.uint64] "$r0");;;
@@ -2308,7 +2308,7 @@ Definition MapTypeAliasesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
   λ: "m1" "m2",
     exception_do (let: "m2" := (GoAlloc MapWrapper "m2") in
     let: "m1" := (GoAlloc (go.MapType IntWrapper go.bool) "m1") in
-    let: "$r0" := (Fst (map.get (![MapWrapper] "m2") #(W64 0))) in
+    let: "$r0" := (map.lookup1 go.uint64 go.bool (![MapWrapper] "m2") #(W64 0)) in
     do:  (map.insert IntWrapper (![go.MapType IntWrapper go.bool] "m1") #(W64 4) "$r0");;;
     return: #()).
 
@@ -2318,7 +2318,7 @@ Definition StringMap {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string 
 Definition StringMapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "m",
     exception_do (let: "m" := (GoAlloc (go.MapType go.string go.uint64) "m") in
-    return: (Fst (map.get (![go.MapType go.string go.uint64] "m") #"foo"%go))).
+    return: (map.lookup1 go.string go.uint64 (![go.MapType go.string go.uint64] "m") #"foo"%go)).
 
 Definition mapElemⁱᵐᵖˡ : go.type := go.StructType [
   (go.FieldDecl "a"%go go.uint64);
@@ -2362,7 +2362,7 @@ Definition mapUpdateFieldⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
     let: "$r0" := ((FuncResolve go.make1 [go.MapType go.uint64 (go.PointerType mapElem)] #()) #()) in
     do:  ("x" <-[go.MapType go.uint64 (go.PointerType mapElem)] "$r0");;;
     let: "$r0" := #(W64 10) in
-    do:  ((StructFieldRef mapElem "a"%go (Fst (map.get (![go.MapType go.uint64 (go.PointerType mapElem)] "x") #(W64 0)))) <-[go.uint64] "$r0");;;
+    do:  ((StructFieldRef mapElem "a"%go (map.lookup1 go.uint64 (go.PointerType mapElem) (![go.MapType go.uint64 (go.PointerType mapElem)] "x") #(W64 0))) <-[go.uint64] "$r0");;;
     return: #()).
 
 Definition mapLiteral {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.mapLiteral"%go.
@@ -2381,7 +2381,7 @@ Definition mapGetCallⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
       exception_do (do:  #())
       ) in
     do:  (map.insert go.uint64 (![go.MapType go.uint64 (go.FunctionType (go.Signature [] false []))] "handlers") #(W64 0) "$r0");;;
-    do:  ((Fst (map.get (![go.MapType go.uint64 (go.FunctionType (go.Signature [] false []))] "handlers") #(W64 0))) #());;;
+    do:  ((map.lookup1 go.uint64 (go.FunctionType (go.Signature [] false [])) (![go.MapType go.uint64 (go.FunctionType (go.Signature [] false []))] "handlers") #(W64 0)) #());;;
     return: #()).
 
 Definition mapLiteralTest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.mapLiteralTest"%go.
