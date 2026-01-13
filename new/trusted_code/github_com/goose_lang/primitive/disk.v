@@ -5,8 +5,7 @@ From New.golang Require Import defn.
 #[global]
 Existing Instances disk_op disk_model.
 Section disk.
-
-  Definition Disk : go_type := ptrT.
+Context {go_gctx : GoGlobalContext}.
 
   Definition BlockSize :=
     #(W64 4096).
@@ -22,11 +21,11 @@ Section disk.
   Definition ReadToⁱᵐᵖˡ : val :=
     λ: "a" "buf",
     let: "p" := ExternalOp ReadOp (Var "a") in
-    slice.copy byteT (Var "buf") (Var "p", #(W64 4096), #(W64 4096)).
+    FuncResolve "copy" [go.SliceType go.byte] #() (Var "buf") (Var "p", #(W64 4096), #(W64 4096)).
 
   Definition Writeⁱᵐᵖˡ : val :=
     λ: "a" "b",
-    ExternalOp WriteOp (Var "a", slice.ptr (Var "b")).
+    ExternalOp WriteOp (Var "a", IndexRef (go.SliceType go.byte) (Var "b", #(W64 0))).
 
   Definition Barrierⁱᵐᵖˡ : val :=
     λ: <>, #().

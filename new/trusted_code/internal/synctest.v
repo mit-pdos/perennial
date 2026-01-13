@@ -2,7 +2,7 @@ From New.golang Require Import defn.
 
 Module synctest.
 Section code.
-Context `{ffi_syntax}.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 
 Definition Runⁱᵐᵖˡ : val := λ: "f", Panic "not supported".
 

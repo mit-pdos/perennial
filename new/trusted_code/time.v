@@ -2,7 +2,7 @@ From New.golang Require Import defn.
 
 Module time.
 Section code.
-Context `{ffi_syntax}.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 
 Definition newTimerⁱᵐᵖˡ : val :=
   λ: "when" "period" "f" "arg" "cp", #().
@@ -14,31 +14,25 @@ Definition runtimeNanoⁱᵐᵖˡ : val :=
    which requires verifying `internal/godebug`. *)
 Definition syncTimerⁱᵐᵖˡ : val :=
   λ: "c",
-     if: ArbitraryInt = #(W64 0) then "c"
+     if: ArbitraryInt =⟨go.int64⟩ #(W64 0) then "c"
      else #chan.nil.
 
-(* TODO: awkward to construct a time.Time from trusted_code *)
-#[local] Definition __Time : go_type := structT [
-  "wall" :: uint64T;
-  "ext" :: int64T;
-  "loc" :: ptrT
-].
 Definition arbitraryTime: val :=
   λ: <>,
      (* generate a simple non-monotonic time without any nanoseconds and
      location of UTC *)
      let: "wall_seconds" := ArbitraryInt in
-     struct.make #__Time [{
-        "wall" ::= #(W64 0);
-        "ext" ::= "wall_seconds";
-        "loc" ::= #null
-     }].
+     CompositeLiteral (go.Named "time.Time"%go []) (LiteralValue [
+        KeyedElement (Some $ KeyField "wall") (ElementExpression #(W64 0));
+        KeyedElement (Some $ KeyField "ext") (ElementExpression "wall_seconds");
+        KeyedElement (Some $ KeyField "loc") (ElementExpression #null)
+     ]).
 
 Definition Afterⁱᵐᵖˡ : val :=
   λ: "d",
-    let: "ch" := chan.make #__Time #(W64 0) in
+    let: "ch" := FuncResolve go.make2 [(go.Named "time.Time"%go [])] #() #(W64 0) in
     (* delay is modeled as a no-op *)
-    Fork (chan.send #__Time "ch" (arbitraryTime #()));;
+    Fork (chan.send (go.Named "time.Time"%go []) "ch" (arbitraryTime #()));;
     "ch".
 
 Definition Sleepⁱᵐᵖˡ : val :=

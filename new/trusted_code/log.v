@@ -1,7 +1,7 @@
 From New.golang Require Import defn.
 
 Section code.
-Context `{ffi_syntax}.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 
 Definition Printfⁱᵐᵖˡ : val :=
   λ: "format" "vs", #().
