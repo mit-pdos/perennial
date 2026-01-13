@@ -21,13 +21,6 @@ Context {package_sem : channel.Assumptions}.
 Context {package_sem' : primitive.Assumptions}.
 Local Set Default Proof Using "All".
 
-Ltac solve_typed_pointsto_agree :=
-  intros; (destruct &v1, &v2); simpl; iIntros "H1 H2";
-  let field := (iDestruct "H1" as "[H H1]"; iDestruct "H2" as "[H' H2]";
-                iCombine "H H'" gives "->"; iClear "H H'") in
-  repeat field;
-  iCombine "H1 H2" gives "->"; done.
-
 (* FIXME: proofgen *)
 #[global] Program Instance channel_typed_pointsto T' `{!TypedPointsto (Σ:=Σ) T'} :
   TypedPointsto (Σ:=Σ) (channel.Channel.t T') :=

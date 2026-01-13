@@ -339,3 +339,24 @@ Ltac wp_end :=
       iFrame;
       word
   ].
+
+Ltac solve_into_val_typed_struct :=
+    let alloc :=
+      let field :=
+        rewrite bool_decide_decide; destruct decide; subst;
+        last (wp_auto; wp_apply wp_AngelicExit);
+        iDestruct "l_field" as "?"; wp_auto
+      in
+      intros; iIntros "_ HΦ"; rewrite go.alloc_struct;
+      wp_auto; wp_apply wp_GoPrealloc as "* %Hnotnull";
+      repeat field;
+      iApply "HΦ"; iEval (rewrite typed_pointsto_unseal); iFrame in
+    let load :=
+      intros; iIntros "Hl HΦ"; rewrite typed_pointsto_unseal;
+      iNamed "Hl"; rewrite go.load_struct; simpl; wp_auto;
+      destruct &v; simpl; iApply "HΦ"; iFrame in
+    let store :=
+      intros; iIntros "Hl HΦ"; rewrite typed_pointsto_unseal;
+      iNamed "Hl"; rewrite go.store_struct; simpl; wp_auto;
+      destruct &v; simpl; iApply "HΦ"; iFrame in
+    constructor; [alloc | load | store].
