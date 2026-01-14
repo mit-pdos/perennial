@@ -8,8 +8,7 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _}
   {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}
   {array_sem : go.ArraySemantics} {slice_sem : go.SliceSemantics}.
 Context {package_sem : std_core.Assumptions}.
-Context {package_sem' : primitive.Assumptions}.
-Local Set Default Proof Using "Type package_sem package_sem' core_sem pre_sem array_sem slice_sem".
+Local Set Default Proof Using "Type package_sem core_sem pre_sem array_sem slice_sem".
 
 #[global] Instance : IsPkgInit (iProp Σ) std_core := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf (iProp Σ) std_core := build_get_is_pkg_init_wf.

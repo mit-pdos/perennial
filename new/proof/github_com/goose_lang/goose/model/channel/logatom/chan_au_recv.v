@@ -13,25 +13,7 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}
   {array_sem : go.ArraySemantics} {slice_sem : go.SliceSemantics}.
 Context {package_sem : channel.Assumptions}.
-Context {package_sem' : primitive.Assumptions}.
 Local Set Default Proof Using "All".
-
-(* FIXME: proofgen IntoValTyped for channel.Channel.t *)
-Instance channel_into_val_typed T' T
-  `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T} `{!go.TypeRepr T T'} :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
-Proof.
-  constructor.
-  - intros. iIntros "_ HΦ".
-    rewrite go.alloc_struct.
-    wp_auto. admit.
-  - intros. iIntros "Hl HΦ". rewrite typed_pointsto_unseal.
-    iNamed "Hl". rewrite go.load_struct. simpl. wp_auto.
-    destruct v. simpl. iApply "HΦ". iFrame.
-  - intros. iIntros "Hl HΦ". rewrite typed_pointsto_unseal.
-    iNamed "Hl". rewrite go.store_struct. simpl. wp_auto.
-    destruct v. simpl. iApply "HΦ". iFrame.
-Admitted.
 
 Context `[!chanG Σ V].
 Context `[!ZeroVal V] `[!TypedPointsto V] `[!IntoValTyped V t] `[!go.TypeRepr t V].

@@ -16,18 +16,8 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}
   {array_sem : go.ArraySemantics} {slice_sem : go.SliceSemantics}.
 
-(* FIXME: imported packages in assumptions *)
 Context {package_sem : channel.Assumptions}.
-Context {package_sem' : primitive.Assumptions}.
 Local Set Default Proof Using "All".
-
-(* FIXME: proofgen *)
-Instance channel_into_val_typed T' T
-  `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T} `{!go.TypeRepr T T'} :
-  IntoValTyped (channel.Channel.t T') (channel.Channel T).
-Proof.
-  solve_into_val_typed_struct.
-Qed.
 
 Context `[!chanG Σ V].
 Context `[!ZeroVal V] `[!TypedPointsto V] `[!IntoValTyped V t] `[!go.TypeRepr t V].
