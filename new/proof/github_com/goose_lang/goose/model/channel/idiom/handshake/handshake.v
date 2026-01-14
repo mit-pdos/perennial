@@ -1,5 +1,5 @@
 Require Import New.proof.proof_prelude.
-From New.proof.github_com.goose_lang.goose.model.channel Require Export protocol.base.
+From New.proof.github_com.goose_lang.goose.model.channel Require Export idiom.base.
 From New.golang.theory Require Import chan.
 
 Section handshake.
@@ -7,7 +7,7 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{!IntoVal V}.
 Context `{!IntoValTyped V t}.
-Context `{!chan_protocolG Σ V}.
+Context `{!chan_idiomG Σ V}.
 
 (*----------------------------------------------------------------------------
   Invariant for a simple handshake on an unbuffered channel with unit payloads.
@@ -17,14 +17,14 @@ Context `{!chan_protocolG Σ V}.
   - When the channel has an in-flight *receive* (RcvWait/RcvDone), predicate [Q]
     must hold (consumer-side obligation).
   - Buffered channels are intentionally disallowed.
-  - Closing is also disallowed in this protocol ([_ => False]).
+  - Closing is also disallowed in this idiom ([_ => False]).
 
   ---------------------------------------------------------------------------*)
 Definition is_handshake γ (ch : loc)  (P: V -> iProp Σ) Q : iProp Σ :=
-  is_channel ch γ  ∗
+  IsChan ch γ  ∗
   inv nroot (
       ∃ s,
-        "Hch" ∷ own_channel ch s γ ∗
+        "Hch" ∷ OwnChan ch s γ ∗
     (match s with
      | chan_rep.Idle =>
         True
@@ -38,8 +38,8 @@ Definition is_handshake γ (ch : loc)  (P: V -> iProp Σ) Q : iProp Σ :=
     )).
 
 Lemma start_handshake ch P Q  γ:
-  is_channel  ch γ  -∗
-  own_channel  ch chan_rep.Idle γ ={⊤}=∗
+  IsChan  ch γ  -∗
+  OwnChan  ch chan_rep.Idle γ ={⊤}=∗
   is_handshake γ ch P Q .
 Proof.
     intros.
@@ -55,7 +55,7 @@ Lemma handshake_receive_au γ ch P Q Φ :
   is_handshake γ ch P Q -∗
   Q -∗
   ▷(∀ v, P v -∗ Φ v true) -∗
-  rcv_au_slow ch γ Φ.
+  RecvAU ch γ Φ.
 Proof.
   iIntros "(Hlc1 & Hlc2) #His HQ Hau".
   iPoseProof "His" as "[Hchan Hinv]".
@@ -105,7 +105,7 @@ Lemma handshake_send_au γ ch v P Q Φ :
   is_handshake γ ch P Q -∗
   P v -∗
   ▷(Q -∗ Φ) -∗
-  send_au_slow ch v γ Φ.
+  SendAU ch v γ Φ.
 Proof.
   iIntros "(Hlc1 & Hlc2 & Hlc3) #Hchan HP Hau".
   iDestruct "Hchan" as "[Hchan Hinv]".

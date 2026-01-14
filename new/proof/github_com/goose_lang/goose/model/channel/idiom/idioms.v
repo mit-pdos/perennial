@@ -1,6 +1,6 @@
-From New.proof.github_com.goose_lang.goose.model.channel.protocol Require
+From New.proof.github_com.goose_lang.goose.model.channel.idiom Require
   done.done
-  simple.simple
+  handoff.handoff
   dsp.dsp
   future.future
   handshake.handshake

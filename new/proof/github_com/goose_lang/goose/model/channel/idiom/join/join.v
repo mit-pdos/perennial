@@ -1,5 +1,5 @@
 Require Import New.proof.proof_prelude.
-From New.proof.github_com.goose_lang.goose.model.channel.protocol Require Export base.
+From New.proof.github_com.goose_lang.goose.model.channel.idiom Require Export base.
 From New.golang.theory Require Import chan.
 From Perennial.algebra Require Import auth_set.
 From iris.base_logic Require Import ghost_map.
@@ -18,7 +18,7 @@ Record join_names :=
 
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!chan_protocolG Σ V}.
+Context `{!chan_idiomG Σ V}.
 Context `{!IntoVal V}.
 Context `{!IntoValTyped V t}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
@@ -33,7 +33,7 @@ Definition worker (γ: join_names) (P: iProp Σ): iProp Σ :=
 
 Definition own_join (γ : join_names) (ch : loc) : iProp Σ :=
   ∃ (workerQ: iProp Σ) (sendNames: gset gname) s count,
-    "Hch" ∷ own_channel ch s γ.(chan_name) ∗
+    "Hch" ∷ OwnChan ch s γ.(chan_name) ∗
     "joinQ" ∷ saved_prop_own γ.(join_prop_name) (DfracOwn (1/2)) workerQ ∗
     "%HnumWaiting" ∷ ⌜size sendNames = count⌝ ∗
     "Hjoincount" ∷ ghost_var γ.(join_counter_name) (DfracOwn (1/2)) count ∗
@@ -53,7 +53,7 @@ Definition own_join (γ : join_names) (ch : loc) : iProp Σ :=
     end.
 
 Definition is_join (γ : join_names) (ch : loc) : iProp Σ :=
-  is_channel ch γ.(chan_name) ∗
+  IsChan ch γ.(chan_name) ∗
   inv nroot ("Hbar" ∷ own_join γ ch)%I.
 
 #[global] Instance is_join_persistent ch γ : Persistent (is_join γ ch) := _.
@@ -77,8 +77,8 @@ Proof.
 Qed.
 
 Lemma own_join_alloc_unbuff (ch : loc) (γch : chan_names):
-  is_channel ch γch -∗
-  own_channel ch chan_rep.Idle γch ={⊤}=∗
+  IsChan ch γch -∗
+  OwnChan ch chan_rep.Idle γch ={⊤}=∗
   ∃ γ,  is_join γ ch ∗ join γ 0 emp.
 Proof.
   iIntros "Hchan_info Hchan_own".
@@ -115,8 +115,8 @@ iExists γ.
 Qed.
 
 Lemma own_join_alloc_buff (ch : loc) (γch : chan_names) (cap:nat) :
-  is_channel ch γch -∗
-  own_channel ch (chan_rep.Buffered []) γch ={⊤}=∗
+  IsChan ch γch -∗
+  OwnChan ch (chan_rep.Buffered []) γch ={⊤}=∗
   ∃ γ, is_join γ ch ∗  join γ 0 emp.
 Proof.
    iIntros "Hchan_info Hchan_own".
@@ -228,7 +228,7 @@ Lemma join_send_au γ ch P Φ :
   worker γ P -∗
   P -∗
   ▷(True -∗ Φ) -∗
-  send_au_slow ch (default_val V) γ.(chan_name) Φ.
+  SendAU ch (default_val V) γ.(chan_name) Φ.
 Proof.
   iIntros "(Hlc1 & Hlc2 & Hlc3) #Hjoin HWorker HP Hau".
   rewrite /worker /is_join.
@@ -265,7 +265,7 @@ Proof.
     }
     {
       iModIntro.
-      unfold send_au_inner.
+      unfold SendNestedAU.
       iInv "Hinv" as "Hinv_open2" "Hinv_close2".
       iMod (lc_fupd_elim_later with "Hlc2 Hinv_open2") as "Hinv_open2".
       iNamed "Hinv_open2".
@@ -313,7 +313,7 @@ Lemma join_receive_au γ ch n Q Φ :
   is_join γ ch -∗
   join γ (S n) Q -∗
   ▷(∀ (v:V), join γ n Q -∗ Φ v true) -∗
-  rcv_au_slow ch γ.(chan_name) Φ.
+  RecvAU ch γ.(chan_name) Φ.
 Proof.
   iIntros "(Hlc1 & Hlc2) #Hjoin HJoin Hau".
   rewrite /join /is_join.

@@ -1,5 +1,5 @@
 Require Import New.proof.proof_prelude.
-From New.proof.github_com.goose_lang.goose.model.channel.protocol Require Export base.
+From New.proof.github_com.goose_lang.goose.model.channel.idiom Require Export base.
 From New.golang.theory Require Import chan.
 From iris.base_logic Require Import ghost_map.
 From iris.base_logic.lib Require Import saved_prop.
@@ -20,7 +20,7 @@ From iris.base_logic.lib Require Import saved_prop.
 Section done.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
-Context `{!chan_protocolG Σ V}.
+Context `{!chan_idiomG Σ V}.
 
 Context `{!IntoVal V}.
 Context `{!IntoValTyped V t}.
@@ -52,10 +52,10 @@ Definition Notified (γ : done_names) (Q : iProp Σ) : iProp Σ :=
     saved_prop_own prop_gname (DfracOwn (1/2)) Q.
 
 Definition is_done (γ : done_names) (ch : loc) : iProp Σ :=
-  is_channel ch γ.(chan_name) ∗
+  IsChan ch γ.(chan_name) ∗
   inv nroot (
     ∃ (s : chan_rep.t V) (m : gmap nat gname) (Qs: list (iProp Σ)),
-      "Hch" ∷ own_channel ch s γ.(chan_name) ∗
+      "Hch" ∷ OwnChan ch s γ.(chan_name) ∗
       "Hmap" ∷ ghost_map_auth γ.(receivers_map_name) (1/2)%Qp m ∗
       match s with
       | chan_rep.Idle => True
@@ -174,7 +174,7 @@ iMod (saved_prop_update (R ∗ Q) with "Hsp") as "Hsp".
     }
   }
   {
-    destruct draining.
+    destruct drain.
     - iDestruct "Hstate" as "[>%Hc Hgm]".
       iDestruct "Hgm" as "(>? & ?)". iNamed.
       iDestruct ((ghost_map_auth_agree _ (1/2) (1/2) m' (<[i:=prop_gname]> m')) with "[$Hgm] [$Hauth_half1]") as %->.
@@ -188,8 +188,8 @@ iMod (saved_prop_update (R ∗ Q) with "Hsp") as "Hsp".
 Qed.
 
 Lemma start_done (ch : loc) (γ : chan_names) :
-  is_channel ch γ -∗
-  own_channel ch chan_rep.Idle γ ={⊤}=∗
+  IsChan ch γ -∗
+  OwnChan ch chan_rep.Idle γ ={⊤}=∗
   ∃ γdone, is_done γdone ch ∗ Notify γdone True.
 Proof.
   iIntros "#Hch Hoc".
@@ -206,7 +206,7 @@ Proof.
   |}).
   iMod (inv_alloc nroot _ (
     ∃ s m Qs,
-      "Hch" ∷ own_channel ch s γ ∗
+      "Hch" ∷ OwnChan ch s γ ∗
       "Hmap" ∷ ghost_map_auth γmap (1/2)%Qp m ∗
       match s with
       | chan_rep.Idle => True
@@ -246,18 +246,18 @@ Proof.
   }
 Qed.
 
-Lemma done_is_channel γ ch :
-  is_done γ ch ⊢ is_channel ch γ.(chan_name).
+Lemma done_IsChan γ ch :
+  is_done γ ch ⊢ IsChan ch γ.(chan_name).
 Proof.
   iDestruct 1 as "[$ _]".
 Qed.
 
-Lemma done_close_au γ ch R Φ :
+Lemma done_CloseAU γ ch R Φ :
   is_done γ ch -∗
   £1 ∗ £1 ∗ £1 -∗
   Notify γ R ∗ R -∗
   ▷ Φ -∗
-  close_au ch γ.(chan_name) Φ.
+  CloseAU ch γ.(chan_name) Φ.
 Proof.
   iIntros "#Hdone". iIntros "(Hlc1 & Hlc2 & Hlc3)". iIntros "[HNh HR]".
   unfold Notify. iNamed "HNh". iDestruct "HNh" as "[HProps Hsp]".
@@ -294,7 +294,7 @@ Proof.
       }
     }
     iModIntro. iApply "Hcont".
-  - destruct draining; try done.
+  - destruct drain; try done.
     iNamed "Hstate".
     iCombine "Hmap_half Hgm" as "H". iNamed "Hstate".
     iCombine "H Hgm" as "H".
@@ -316,7 +316,7 @@ Proof.
   unfold is_done. iDestruct "Hdone" as "[Hch Hinv]".
   iApply (chan.wp_close ch γ.(chan_name) with "[$Hch]").
   iIntros "Hlc". iDestruct "Hlc" as "[Hlc Hlcrest]".
-  iApply (done_close_au with "[][$][$HNh $HR][Hphi]").
+  iApply (done_CloseAU with "[][$][$HNh $HR][Hphi]").
   { iFrame "#". }
   iNext. iApply "Hphi". done.
 Qed.
@@ -327,7 +327,7 @@ Lemma done_receive_au γ ch Q  :
   Notified γ Q -∗
   ▷ (Q -∗ Φ (default_val V) false) -∗
   £1 ∗ £1 ∗ £1 ∗ £1 -∗
-  rcv_au_slow ch γ.(chan_name) (λ (v:V) (ok:bool), Φ v ok).
+  RecvAU ch γ.(chan_name) (λ (v:V) (ok:bool), Φ v ok).
 Proof.
   intros Φ.
   iIntros "#Hdone".
@@ -355,7 +355,7 @@ Proof.
       iNext. iFrame. iExists []. done.
     }
     iModIntro.
-    unfold rcv_au_inner.
+    unfold RecvNestedAU.
     iInv "Hinv" as "Hinv_open1" "Hinv_close".
     iMod (lc_fupd_elim_later with "[$] Hinv_open1") as "Hinv_open1".
     iNamed "Hinv_open1".
@@ -371,7 +371,7 @@ Proof.
     {
       iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
       iNext. iFrame.
-      destruct draining.
+      destruct drain.
       {
         iIntros "Hoc".
         iMod "Hmask". iNamed "Hinv_open1". iNamed "HNotified".
@@ -420,7 +420,7 @@ Proof.
     iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
     iNext.
     iFrame.
-    destruct draining.
+    destruct drain.
     {
       iIntros "Hoc".
       iMod "Hmask". iNamed "Hinv_open". iNamed "HNotified".
