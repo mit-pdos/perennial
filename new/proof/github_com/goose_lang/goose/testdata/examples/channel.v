@@ -442,7 +442,7 @@ Proof using chan_protocolG0.
       iDestruct (slice.own_slice_len with "Hsl") as "[%Hlen_slice %Hslgtz]".
 
 
-wp_apply wp_slice_literal. iIntros (sl0) "Hsl0".
+wp_apply wp_slice_literal. iIntros (sl0) "[Hsl0 _]".
       iDestruct (slice.own_slice_len with "Hsl0") as "[%Hl0 %Hcap0]".
       iDestruct (slice.own_slice_len with "Hsl0") as "[%Hlen_slice0 %Hslgtz0]".
 wp_auto.
@@ -796,7 +796,7 @@ Proof using chan_protocolG0 chan_protocolG1.
   wp_apply (wp_get_response with "[$Hawait_r3]") as "%s %Heq".
   subst.
   wp_apply wp_slice_literal.
-  iIntros (sl) "Hresponse".
+  iIntros (sl) "[Hresponse _]".
   wp_auto.
   iApply "HΦ".
   done.

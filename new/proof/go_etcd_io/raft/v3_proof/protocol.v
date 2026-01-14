@@ -122,7 +122,7 @@ Lemma wp_node__Propose γraft n (ctx : context.Context.t) ctx_desc (data_sl : sl
 Proof.
   (* Inlining proofs of [stepWait] and [stepWithWaitOption (wait:=true)] here. *)
   wp_start. iNamed "Hpre". wp_auto.
-  wp_apply wp_slice_literal. iIntros "%entries_sl entries_sl".
+  wp_apply wp_slice_literal. iIntros "%entries_sl [entries_sl _]".
   wp_auto. wp_bind. wp_method_call. wp_call.
   wp_auto. wp_bind. wp_method_call. wp_call.
   wp_auto. iNamed "Hnode". wp_auto. wp_apply (wp_chan_make (V:=error.t)).

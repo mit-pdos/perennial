@@ -360,7 +360,7 @@ Proof.
          with "[arr]").
   {
     wp_if_destruct.
-    - wp_apply (wp_slice_literal (V:=w64)) as "%sl Hsl".
+    - wp_apply (wp_slice_literal (V:=w64)) as "%sl [Hsl _]".
       wp_apply (wp_slice_append (V:=w64) with "[Hsl]") as "%sl1 (Hsl & Hsl_cap & _)".
       {
         iFrame.
@@ -378,7 +378,7 @@ Proof.
   iIntros (v) "[% @]". subst.
   wp_auto.
   wp_if_destruct.
-  - wp_apply (wp_slice_literal (V:=w64)) as "%sl2 Hsl2".
+  - wp_apply (wp_slice_literal (V:=w64)) as "%sl2 [Hsl2 _]".
     wp_apply (wp_slice_append (V:=w64) with "[$Hsl $Hsl_cap $Hsl2]") as "%sl1 (Hsl & Hsl_cap & _)".
     wp_end.
   - wp_end.

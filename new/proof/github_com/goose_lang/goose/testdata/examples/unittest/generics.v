@@ -122,7 +122,7 @@ Proof.
   wp_start as "_"; try wp_auto.
   unshelve wp_apply wp_slice_literal.
   { apply _. }
-  iIntros (sl) "H".
+  iIntros (sl) "[H _]".
   wp_auto.
   iApply "HΦ". iFrame.
 Qed.

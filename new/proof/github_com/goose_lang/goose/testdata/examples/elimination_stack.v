@@ -65,7 +65,7 @@ Proof.
   wp_start as "#His". wp_auto. iNamed "His".
   wp_apply (wp_Mutex__Lock with "[$Hmu]"). iIntros "[Hlocked Hi]".
   iNamedSuffix "Hi" "_inv". wp_auto.
-  wp_apply wp_slice_literal. iIntros "% Htmp". wp_auto.
+  wp_apply wp_slice_literal. iIntros "% [Htmp _]". wp_auto.
   wp_apply (wp_slice_append with "[$Hsl_inv $Hcap_inv $Htmp]").
   iIntros (stack_sl') "(Hsl_inv & Hcap_inv & _)". wp_auto.
   iApply fupd_wp. iMod "HΦ" as "(% & Hl & HΦ)". iCombine "Hl Hauth_inv" gives %[_ ->].

@@ -277,7 +277,7 @@ Proof.
     iNamed "phys". iNamed "offer". wp_auto. unfold chan_cap_valid in Hcapvalid.
     wp_if_destruct.
     {
-      wp_apply wp_slice_literal. iIntros (sl) "Hsl". wp_auto.
+      wp_apply wp_slice_literal. iIntros (sl) "[Hsl _]". wp_auto.
       iDestruct (own_slice_len with "slice") as "[%Hl %Hcap2]".
       iDestruct (slice.own_slice_len with "slice") as "[%Hlen_slice %Hslgtz]".
       iDestruct (own_slice_wf with "slice") as "%Hwf".
@@ -538,7 +538,7 @@ Proof.
       { simpl in *. len. }
       iMod ("Hcont" with "Hchanrepfrag") as "Hstep". iModIntro.
       assert (sint.Z γ.(chan_cap) = γ.(chan_cap)) by (destruct γ; simpl in *; word).
-      wp_apply wp_slice_literal. iIntros (sl) "Hsl". wp_auto.
+      wp_apply wp_slice_literal. iIntros (sl) "[Hsl _]". wp_auto.
       wp_apply (wp_slice_append with "[$slice_inv $Hsl $slice_cap_inv]").
       iIntros (fr) "(slice_inv & slice_cap_inv & Hsl)". wp_auto.
       wp_call. iCombineNamed "*_inv" as "Hi".
@@ -656,7 +656,7 @@ Proof.
       destruct decide.
       2:{ exfalso. word. }
       iMod ("Hcont" with "Hchanrepfrag") as "Hstep". iModIntro.
-      wp_apply wp_slice_literal. iIntros (sl) "Hsl". wp_auto.
+      wp_apply wp_slice_literal. iIntros (sl) "[Hsl _]". wp_auto.
       wp_apply (wp_slice_append with "[$slice_inv $Hsl $slice_cap_inv]").
       iIntros (fr) "(slice_inv & slice_cap_inv & Hsl)". wp_auto.
       wp_call. iCombineNamed "*_inv" as "Hi".

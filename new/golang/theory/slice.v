@@ -942,7 +942,11 @@ Qed.
 Lemma wp_slice_literal {stk E} (l : list V) :
   {{{ True }}}
     slice.literal #t #l @ stk ; E
-  {{{ sl, RET #sl; sl ↦* l }}}.
+  {{{
+    sl, RET #sl;
+    sl ↦* l ∗
+    own_slice_cap V sl (DfracOwn 1)
+  }}}.
 Proof.
   iIntros (Φ) "_ HΦ".
   wp_call.
@@ -1054,6 +1058,7 @@ Proof.
     iApply "HΦ".
     replace (sint.Z i) with (sint.Z (length l)).
     2:{ word. }
+    iFrame.
     iExactEq "Hsl".
     rewrite take_ge; [ | word ].
     rewrite replicate_eq_0; [ | word ].

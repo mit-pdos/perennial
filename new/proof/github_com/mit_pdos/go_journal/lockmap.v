@@ -427,7 +427,7 @@ Proof.
     iIntros (ls gh) "Hls".
     wp_auto.
     wp_apply wp_slice_literal.
-    iIntros (sls) "Hsls".
+    iIntros (sls) "[Hsls _]".
     wp_auto.
 
     wp_apply (wp_slice_append with "[$Hslice_cap $Hslice $Hsls]").
