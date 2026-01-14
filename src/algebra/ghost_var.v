@@ -1,9 +1,12 @@
-(** FIXME: probably want notation, and eventually want to use an upstreamed version of ghost_var with dfrac *)
+(** FIXME: probably want notation, and eventually want to use
+an upstreamed version of ghost_var with dfrac. *)
 
 (** A simple "ghost variable" of arbitrary type with fractional ownership.
 Can be mutated when fully owned. *)
 From iris.algebra Require Import dfrac_agree proofmode_classes frac.
 From iris.bi.lib Require Import fractional.
+From Perennial.iris_lib Require Import dfractional.
+From Perennial.goose_lang Require Import ipersist.
 From iris.proofmode Require Import proofmode.
 From iris.base_logic.lib Require Import own.
 From iris.prelude Require Import options.
@@ -39,16 +42,35 @@ Section lemmas.
   Global Instance ghost_var_timeless γ dq a : Timeless (ghost_var γ dq a).
   Proof. unseal. apply _. Qed.
 
-  Global Instance ghost_var_fractional γ a : Fractional (λ q, ghost_var γ (DfracOwn q) a).
-  Proof. intros q1 q2. unseal. rewrite -own_op -frac_agree_op //. Qed.
-  Global Instance ghost_var_as_fractional γ a q :
-    AsFractional (ghost_var γ (DfracOwn q) a) (λ q, ghost_var γ (DfracOwn q) a) q.
-  Proof. split; [done|]. apply _. Qed.
+  #[global]
+  Instance ghost_var_dfractional γ a :
+    DFractional (λ dq, ghost_var γ dq a).
+  Proof.
+    unseal. split.
+    - intros. rewrite dfrac_agree_op own_op //.
+    - apply _.
+    - intros. iApply own_update. apply dfrac_agree_persist.
+  Qed.
+
+  #[global]
+  Instance ghost_var_as_dfractional γ dq a :
+    AsDFractional (ghost_var γ dq a) (λ dq, ghost_var γ dq a) dq.
+  Proof. auto. Qed.
+
+  #[global]
+  Instance ghost_var_as_fractional γ q a :
+    AsFractional (ghost_var γ (DfracOwn q) a)
+      (λ q, ghost_var γ (DfracOwn q) a) q.
+  Proof.
+    constructor; [done|]. intros ??.
+    unseal. rewrite -own_op -frac_agree_op //.
+  Qed.
 
   Lemma ghost_var_alloc_strong a (P : gname → Prop) :
     pred_infinite P →
     ⊢ |==> ∃ γ, ⌜P γ⌝ ∗ ghost_var γ (DfracOwn 1) a.
   Proof. unseal. intros. iApply own_alloc_strong; done. Qed.
+
   Lemma ghost_var_alloc a :
     ⊢ |==> ∃ γ, ghost_var γ (DfracOwn 1) a.
   Proof. unseal. iApply own_alloc. done. Qed.
@@ -60,6 +82,7 @@ Section lemmas.
     iCombine "Hvar1 Hvar2" gives %[Hq Ha]%dfrac_agree_op_valid.
     done.
   Qed.
+
   (** Almost all the time, this is all you really need. *)
   Lemma ghost_var_agree γ a1 dq1 a2 dq2 :
     ghost_var γ dq1 a1 -∗ ghost_var γ dq2 a2 -∗ ⌜a1 = a2⌝.
@@ -104,6 +127,7 @@ Section lemmas.
   Proof.
     unseal. iApply own_update. apply cmra_update_exclusive. done.
   Qed.
+
   Lemma ghost_var_update_2 b γ a1 dq1 a2 dq2 :
     (dq1 ⋅ dq2 = DfracOwn 1)%Qp →
     ghost_var γ dq1 a1 -∗ ghost_var γ dq2 a2 ==∗ ghost_var γ dq1 b ∗ ghost_var γ dq2 b.
@@ -111,6 +135,7 @@ Section lemmas.
     intros Hq. unseal. rewrite -own_op. iApply own_update_2.
     apply dfrac_agree_update_2. done.
   Qed.
+
   Lemma ghost_var_update_halves b γ a1 a2 :
     ghost_var γ (DfracOwn (1/2)) a1 -∗ ghost_var γ (DfracOwn (1/2)) a2 ==∗ ghost_var γ (DfracOwn (1/2)) b ∗ ghost_var γ (DfracOwn (1/2)) b.
   Proof.
@@ -121,12 +146,7 @@ Section lemmas.
 
   Lemma ghost_var_persist γ q a :
     ghost_var γ (DfracOwn q) a ==∗ ghost_var γ DfracDiscarded a.
-  Proof.
-    unseal. iApply own_update. apply dfrac_agree_persist.
-  Qed.
-
-  Global Instance ghost_var_persistent γ a : Persistent (ghost_var γ DfracDiscarded a).
-  Proof. unseal; apply _. Qed.
+  Proof. iIntros "H". by iPersist "H". Qed.
 
   (** Framing support *)
   Global Instance frame_ghost_var p γ a q1 q2 q :
