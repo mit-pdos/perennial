@@ -131,6 +131,16 @@ Module go.
 Section defs.
 Context {ext : ffi_syntax}.
 Context {go_lctx : GoLocalContext} {go_gctx : GoGlobalContext}.
+
+Definition GlobalAlloc_def (v : go_string) (t : go.type) : val :=
+  λ: <>,
+    let: "l" := GoAlloc t in
+    if: "l" ≠⟨go.PointerType t⟩ GlobalVarAddr v #() then
+      AngelicExit #()
+    else "l".
+Program Definition GlobalAlloc := sealed GlobalAlloc_def.
+Definition GlobalAlloc_unseal : GlobalAlloc = _ := seal_eq _.
+
 (** This semantics considers several Go types to be [primitive] in the sense
     that they are modeled as taking a single heap location. Predeclared types
     and in their own file. *)

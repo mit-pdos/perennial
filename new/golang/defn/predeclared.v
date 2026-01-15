@@ -18,6 +18,16 @@ Definition maxⁱᵐᵖˡ t (n : nat) : val :=
 
 End helpers.
 
+Module unsafe.
+Definition Pointer : go.type := go.Named "unsafe.Pointer"%go [].
+Class Semantics {ext : ffi_syntax} {go_lctx : GoLocalContext}
+  {go_gctx : GoGlobalContext} `{!GoSemanticsFunctions} :=
+  {
+    #[global] type_repr_Pointer :: go.TypeRepr Pointer loc;
+    #[global] go_eq_Pointer :: go.AlwaysSafelyComparable Pointer loc;
+  }.
+End unsafe.
+
 Module go.
 
 (* Functions from https://go.dev/ref/spec#Predeclared_identifiers *)
@@ -307,6 +317,7 @@ Class PredeclaredSemantics `{!GoSemanticsFunctions} :=
   min_ordered n t : #(functions min (replicate n t)) = minⁱᵐᵖˡ t n;
   max_ordered n t : #(functions max (replicate n t)) = maxⁱᵐᵖˡ t n;
 
+  #[global] unsafe_sem :: unsafe.Semantics;
   #[global] comparable_bool :: go.IsComparable go.bool;
   #[global] go_eq_bool :: go.AlwaysSafelyComparable go.bool Datatypes.bool;
   #[global] type_repr_bool :: go.TypeRepr go.bool Datatypes.bool;

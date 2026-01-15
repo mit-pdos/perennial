@@ -1,7 +1,6 @@
 From New.golang Require Import defn.core defn.lock.
 
 Module sync.
-Module Mutex. Definition id : go_string := "sync.Mutex". End Mutex.
 
 Section code.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
@@ -73,4 +72,9 @@ Definition runtime_SemacquireRWMutexⁱᵐᵖˡ : val :=
   λ: "addr" "_lifo" "_skipframes", (FuncResolve "sync.runtime_Semacquire" []) #() "addr".
 
 End code.
+
+Module Mutex.
+Definition t := bool.
+End Mutex.
+
 End sync.
