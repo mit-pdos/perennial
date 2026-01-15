@@ -6,9 +6,9 @@ Definition synctest : go_string := "internal/synctest".
 
 Module synctest.
 
-Axiom Association : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition Association {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "internal/synctest.Association"%go [].
 
-Axiom Bubble : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition Bubble {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "internal/synctest.Bubble"%go [].
 
 Axiom Unbubbled : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
@@ -57,6 +57,8 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
+  #[global] Association_instance :: Association_Assumptions;
+  #[global] Bubble_instance :: Bubble_Assumptions;
   #[global] Run_unfold :: FuncUnfold Run [] (Runⁱᵐᵖˡ);
   #[global] IsInBubble_unfold :: FuncUnfold IsInBubble [] (IsInBubbleⁱᵐᵖˡ);
 }.

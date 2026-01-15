@@ -4,7 +4,7 @@ Definition rand : go_string := "crypto/rand".
 
 Module rand.
 
-Axiom reader : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition reader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "crypto/rand.reader"%go [].
 
 Axiom base32alphabet : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
 
@@ -35,5 +35,6 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
+  #[global] reader_instance :: reader_Assumptions;
 }.
 End rand.

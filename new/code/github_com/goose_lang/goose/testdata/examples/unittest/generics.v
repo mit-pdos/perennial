@@ -5,15 +5,15 @@ Definition generics : go_string := "github.com/goose-lang/goose/testdata/example
 
 Module generics.
 
-Definition Box(T : go.type)  : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest/generics.Box"%go [T].
+Definition Box {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest/generics.Box"%go [T].
 
-Definition Container(T : go.type)  : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest/generics.Container"%go [T].
+Definition Container {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest/generics.Container"%go [T].
 
-Definition UseContainer : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest/generics.UseContainer"%go [].
+Definition UseContainer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest/generics.UseContainer"%go [].
 
-Definition OnlyIndirect(T : go.type)  : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest/generics.OnlyIndirect"%go [T].
+Definition OnlyIndirect {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest/generics.OnlyIndirect"%go [T].
 
-Definition MultiParam(A : go.type) (B : go.type)  : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest/generics.MultiParam"%go [A; B].
+Definition MultiParam {ext : ffi_syntax} {go_gctx : GoGlobalContext} (A : go.type) (B : go.type) : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest/generics.MultiParam"%go [A; B].
 
 Definition UnderlyingSlice {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.UnderlyingSlice"%go.
 
@@ -189,7 +189,7 @@ End def.
 
 End Box.
 
-Definition Boxⁱᵐᵖˡ(T : go.type)  : go.type := go.StructType [
+Definition Boxⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) : go.type := go.StructType [
   (go.FieldDecl "Value"%go T)
 ].
 
@@ -221,7 +221,7 @@ End def.
 
 End Container.
 
-Definition Containerⁱᵐᵖˡ(T : go.type)  : go.type := go.StructType [
+Definition Containerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) : go.type := go.StructType [
   (go.FieldDecl "X"%go T);
   (go.FieldDecl "Y"%go (go.MapType go.int T));
   (go.FieldDecl "Z"%go (go.PointerType T));
@@ -257,7 +257,7 @@ End def.
 
 End UseContainer.
 
-Definition UseContainerⁱᵐᵖˡ : go.type := go.StructType [
+Definition UseContainerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
   (go.FieldDecl "X"%go (Container go.uint64))
 ].
 
@@ -285,7 +285,7 @@ End def.
 
 End OnlyIndirect.
 
-Definition OnlyIndirectⁱᵐᵖˡ(T : go.type)  : go.type := go.StructType [
+Definition OnlyIndirectⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) : go.type := go.StructType [
   (go.FieldDecl "X"%go (go.SliceType T));
   (go.FieldDecl "Y"%go (go.PointerType T))
 ].
@@ -316,7 +316,7 @@ End def.
 
 End MultiParam.
 
-Definition MultiParamⁱᵐᵖˡ(A : go.type) (B : go.type)  : go.type := go.StructType [
+Definition MultiParamⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (A : go.type) (B : go.type) : go.type := go.StructType [
   (go.FieldDecl "Y"%go B);
   (go.FieldDecl "X"%go A)
 ].

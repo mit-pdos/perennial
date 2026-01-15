@@ -4,11 +4,11 @@ Definition ed25519 : go_string := "crypto/ed25519".
 
 Module ed25519.
 
-Definition PublicKey : go.type := go.Named "crypto/ed25519.PublicKey"%go [].
+Definition PublicKey {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "crypto/ed25519.PublicKey"%go [].
 
-Axiom PrivateKey : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition PrivateKey {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "crypto/ed25519.PrivateKey"%go [].
 
-Axiom Options : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition Options {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "crypto/ed25519.Options"%go [].
 
 Axiom PublicKeySize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
@@ -54,7 +54,7 @@ Definition t  : Type := slice.t.
 End def.
 End PublicKey.
 
-Definition PublicKeyⁱᵐᵖˡ : go.type := go.SliceType go.byte.
+Definition PublicKeyⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.SliceType go.byte.
 
 Class PublicKey_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
@@ -65,5 +65,7 @@ Class PublicKey_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalCon
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] PublicKey_instance :: PublicKey_Assumptions;
+  #[global] PrivateKey_instance :: PrivateKey_Assumptions;
+  #[global] Options_instance :: Options_Assumptions;
 }.
 End ed25519.

@@ -4,75 +4,75 @@ Definition testing : go_string := "testing".
 
 Module testing.
 
-Axiom durationOrCountFlag : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition durationOrCountFlag {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.durationOrCountFlag"%go [].
 
-Axiom InternalBenchmark : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition InternalBenchmark {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.InternalBenchmark"%go [].
 
-Axiom B : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition B {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.B"%go [].
 
-Axiom BenchmarkResult : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition BenchmarkResult {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.BenchmarkResult"%go [].
 
-Axiom benchState : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition benchState {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.benchState"%go [].
 
-Axiom PB : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition PB {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.PB"%go [].
 
-Axiom discard : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition discard {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.discard"%go [].
 
-Axiom CoverBlock : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition CoverBlock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.CoverBlock"%go [].
 
-Axiom Cover : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition Cover {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.Cover"%go [].
 
-Axiom InternalExample : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition InternalExample {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.InternalExample"%go [].
 
-Axiom InternalFuzzTarget : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition InternalFuzzTarget {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.InternalFuzzTarget"%go [].
 
-Axiom F : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition F {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.F"%go [].
+
+Definition fuzzResult {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.fuzzResult"%go [].
+
+Definition fuzzCrashError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.fuzzCrashError"%go [].
+
+Definition fuzzState {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.fuzzState"%go [].
+
+Definition fuzzMode {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.fuzzMode"%go [].
+
+Definition matcher {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.matcher"%go [].
+
+Definition filterMatch {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.filterMatch"%go [].
+
+Definition simpleMatch {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.simpleMatch"%go [].
+
+Definition alternationMatch {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.alternationMatch"%go [].
+
+Definition chattyFlag {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.chattyFlag"%go [].
+
+Definition chattyPrinter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.chattyPrinter"%go [].
+
+Definition common {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.common"%go [].
+
+Definition indenter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.indenter"%go [].
+
+Definition TB {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.TB"%go [].
+
+Definition T {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.T"%go [].
+
+Definition outputWriter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.outputWriter"%go [].
+
+Definition panicHandling {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.panicHandling"%go [].
+
+Definition InternalTest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.InternalTest"%go [].
+
+Definition testState {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.testState"%go [].
+
+Definition matchStringOnly {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.matchStringOnly"%go [].
+
+Definition M {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.M"%go [].
+
+Definition testDeps {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.testDeps"%go [].
+
+Definition highPrecisionTime {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.highPrecisionTime"%go [].
 
 Axiom corpusEntry : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom fuzzResult : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom fuzzCrashError : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom fuzzState : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom fuzzMode : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom matcher : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom filterMatch : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom simpleMatch : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom alternationMatch : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom chattyFlag : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom chattyPrinter : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom common : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom indenter : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom TB : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom T : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom outputWriter : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom panicHandling : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom InternalTest : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom testState : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom matchStringOnly : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom M : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom testDeps : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom highPrecisionTime : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
 Axiom loopPoisonTimer : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
@@ -347,5 +347,39 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
+  #[global] durationOrCountFlag_instance :: durationOrCountFlag_Assumptions;
+  #[global] InternalBenchmark_instance :: InternalBenchmark_Assumptions;
+  #[global] B_instance :: B_Assumptions;
+  #[global] BenchmarkResult_instance :: BenchmarkResult_Assumptions;
+  #[global] benchState_instance :: benchState_Assumptions;
+  #[global] PB_instance :: PB_Assumptions;
+  #[global] discard_instance :: discard_Assumptions;
+  #[global] CoverBlock_instance :: CoverBlock_Assumptions;
+  #[global] Cover_instance :: Cover_Assumptions;
+  #[global] InternalExample_instance :: InternalExample_Assumptions;
+  #[global] InternalFuzzTarget_instance :: InternalFuzzTarget_Assumptions;
+  #[global] F_instance :: F_Assumptions;
+  #[global] fuzzResult_instance :: fuzzResult_Assumptions;
+  #[global] fuzzCrashError_instance :: fuzzCrashError_Assumptions;
+  #[global] fuzzState_instance :: fuzzState_Assumptions;
+  #[global] fuzzMode_instance :: fuzzMode_Assumptions;
+  #[global] matcher_instance :: matcher_Assumptions;
+  #[global] filterMatch_instance :: filterMatch_Assumptions;
+  #[global] simpleMatch_instance :: simpleMatch_Assumptions;
+  #[global] alternationMatch_instance :: alternationMatch_Assumptions;
+  #[global] chattyFlag_instance :: chattyFlag_Assumptions;
+  #[global] chattyPrinter_instance :: chattyPrinter_Assumptions;
+  #[global] common_instance :: common_Assumptions;
+  #[global] indenter_instance :: indenter_Assumptions;
+  #[global] TB_instance :: TB_Assumptions;
+  #[global] T_instance :: T_Assumptions;
+  #[global] outputWriter_instance :: outputWriter_Assumptions;
+  #[global] panicHandling_instance :: panicHandling_Assumptions;
+  #[global] InternalTest_instance :: InternalTest_Assumptions;
+  #[global] testState_instance :: testState_Assumptions;
+  #[global] matchStringOnly_instance :: matchStringOnly_Assumptions;
+  #[global] M_instance :: M_Assumptions;
+  #[global] testDeps_instance :: testDeps_Assumptions;
+  #[global] highPrecisionTime_instance :: highPrecisionTime_Assumptions;
 }.
 End testing.

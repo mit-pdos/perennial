@@ -4,31 +4,31 @@ Definition strings : go_string := "strings".
 
 Module strings.
 
-Definition Builder : go.type := go.Named "strings.Builder"%go [].
+Definition Builder {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "strings.Builder"%go [].
 
-Axiom Reader : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition Reader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "strings.Reader"%go [].
 
-Axiom Replacer : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition Replacer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "strings.Replacer"%go [].
 
-Axiom replacer : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition replacer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "strings.replacer"%go [].
 
-Axiom trieNode : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition trieNode {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "strings.trieNode"%go [].
 
-Axiom genericReplacer : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition genericReplacer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "strings.genericReplacer"%go [].
 
-Axiom appendSliceWriter : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition appendSliceWriter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "strings.appendSliceWriter"%go [].
 
-Axiom stringWriter : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition stringWriter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "strings.stringWriter"%go [].
 
-Axiom singleStringReplacer : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition singleStringReplacer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "strings.singleStringReplacer"%go [].
 
-Axiom byteReplacer : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition byteReplacer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "strings.byteReplacer"%go [].
 
-Axiom byteStringReplacer : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition byteStringReplacer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "strings.byteStringReplacer"%go [].
 
-Axiom stringFinder : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition stringFinder {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "strings.stringFinder"%go [].
 
-Axiom asciiSet : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition asciiSet {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "strings.asciiSet"%go [].
 
 Axiom countCutOff : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
@@ -227,7 +227,7 @@ End def.
 
 End Builder.
 
-Definition Builderⁱᵐᵖˡ : go.type := go.StructType [
+Definition Builderⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
   (go.FieldDecl "addr"%go (go.PointerType Builder));
   (go.FieldDecl "buf"%go (go.SliceType go.byte))
 ].
@@ -245,5 +245,17 @@ Class Builder_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalConte
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Builder_instance :: Builder_Assumptions;
+  #[global] Reader_instance :: Reader_Assumptions;
+  #[global] Replacer_instance :: Replacer_Assumptions;
+  #[global] replacer_instance :: replacer_Assumptions;
+  #[global] trieNode_instance :: trieNode_Assumptions;
+  #[global] genericReplacer_instance :: genericReplacer_Assumptions;
+  #[global] appendSliceWriter_instance :: appendSliceWriter_Assumptions;
+  #[global] stringWriter_instance :: stringWriter_Assumptions;
+  #[global] singleStringReplacer_instance :: singleStringReplacer_Assumptions;
+  #[global] byteReplacer_instance :: byteReplacer_Assumptions;
+  #[global] byteStringReplacer_instance :: byteStringReplacer_Assumptions;
+  #[global] stringFinder_instance :: stringFinder_Assumptions;
+  #[global] asciiSet_instance :: asciiSet_Assumptions;
 }.
 End strings.

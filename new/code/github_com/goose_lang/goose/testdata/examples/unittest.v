@@ -3,113 +3,105 @@ Require Export New.code.fmt.
 Require Export New.code.sync.
 Require Export New.code.github_com.goose_lang.primitive.
 Require Export New.code.github_com.goose_lang.primitive.disk.
-Require Export New.code.github_com.goose_lang.primitive.
-Require Export New.code.fmt.
-Require Export New.code.sync.
 Require Export New.code.log.
 Require Export New.code.github_com.goose_lang.std.
-Require Export New.code.github_com.goose_lang.primitive.
-Require Export New.code.fmt.
-Require Export New.code.sync.
-Require Export New.code.sync.
-Require Export New.code.github_com.goose_lang.primitive.
 From New.golang Require Import defn.
 From New Require Import disk_prelude.
 Definition unittest : go_string := "github.com/goose-lang/goose/testdata/examples/unittest".
 
 Module unittest.
 
-Definition Foo : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.Foo"%go [].
+Definition Foo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.Foo"%go [].
 
-Definition importantStruct : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.importantStruct"%go [].
+Definition importantStruct {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.importantStruct"%go [].
 
-Definition stringWrapper : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.stringWrapper"%go [].
+Definition stringWrapper {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.stringWrapper"%go [].
 
-Definition Uint32 : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.Uint32"%go [].
+Definition Uint32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.Uint32"%go [].
 
-Definition numWrapper : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.numWrapper"%go [].
+Definition numWrapper {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.numWrapper"%go [].
 
-Definition diskWrapper : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.diskWrapper"%go [].
+Definition diskWrapper {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.diskWrapper"%go [].
 
-Definition embedA : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.embedA"%go [].
+Definition embedA {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.embedA"%go [].
 
-Definition embedB : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.embedB"%go [].
+Definition embedB {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.embedB"%go [].
 
-Definition embedC : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.embedC"%go [].
+Definition embedC {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.embedC"%go [].
 
-Definition embedD : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.embedD"%go [].
+Definition embedD {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.embedD"%go [].
 
-Definition Enc : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.Enc"%go [].
+Definition Enc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.Enc"%go [].
 
-Definition Dec : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.Dec"%go [].
+Definition Dec {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.Dec"%go [].
 
-Definition Enum1 : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.Enum1"%go [].
+Definition Enum1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.Enum1"%go [].
 
-Definition Enum2 : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.Enum2"%go [].
+Definition Enum2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.Enum2"%go [].
 
-Definition Fooer : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.Fooer"%go [].
+Definition Fooer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.Fooer"%go [].
 
-Definition concreteFooer : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.concreteFooer"%go [].
+Definition concreteFooer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.concreteFooer"%go [].
 
-Definition FooerUser : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.FooerUser"%go [].
+Definition FooerUser {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.FooerUser"%go [].
 
-Definition PointerInterface : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.PointerInterface"%go [].
+Definition PointerInterface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.PointerInterface"%go [].
 
-Definition concrete1 : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.concrete1"%go [].
+Definition concrete1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.concrete1"%go [].
 
-Definition my_u32 : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.my_u32"%go [].
+Definition my_u32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.my_u32"%go [].
 
-Definition also_u32 : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.also_u32"%go [].
+Definition also_u32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.also_u32"%go [].
 
-Definition allTheLiterals : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.allTheLiterals"%go [].
+Definition allTheLiterals {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.allTheLiterals"%go [].
 
-Definition hasCondVar : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.hasCondVar"%go [].
+Definition hasCondVar {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.hasCondVar"%go [].
 
-Definition IntWrapper : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.IntWrapper"%go [].
+Definition IntWrapper {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.IntWrapper"%go [].
 
-Definition MapWrapper : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.MapWrapper"%go [].
+Definition MapWrapper {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.MapWrapper"%go [].
 
-Definition mapElem : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.mapElem"%go [].
+Definition mapElem {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.mapElem"%go [].
 
-Definition containsPointer : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.containsPointer"%go [].
+Definition containsPointer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.containsPointer"%go [].
 
-Definition wrapExternalStruct : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.wrapExternalStruct"%go [].
+Definition wrapExternalStruct {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.wrapExternalStruct"%go [].
 
-Definition typing : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.typing"%go [].
+Definition typing {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.typing"%go [].
 
-Definition composite : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.composite"%go [].
+Definition composite {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.composite"%go [].
 
-Definition R : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.R"%go [].
+Definition R {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.R"%go [].
 
-Definition Other : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.Other"%go [].
+Definition Other {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.Other"%go [].
 
-Definition RecursiveEmbedded : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.RecursiveEmbedded"%go [].
+Definition RecursiveEmbedded {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.RecursiveEmbedded"%go [].
 
-Definition Block : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.Block"%go [].
+Definition Block {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.Block"%go [].
 
-Definition SliceAlias : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.SliceAlias"%go [].
+Definition SliceAlias {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.SliceAlias"%go [].
 
-Definition thing : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.thing"%go [].
+Definition thing {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.thing"%go [].
 
-Definition sliceOfThings : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.sliceOfThings"%go [].
+Definition sliceOfThings {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.sliceOfThings"%go [].
 
-Definition Point : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.Point"%go [].
+Definition Point {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.Point"%go [].
 
-Definition TwoInts : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.TwoInts"%go [].
+Definition TwoInts {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.TwoInts"%go [].
 
-Definition S : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.S"%go [].
+Definition S {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.S"%go [].
 
-Definition B : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.B"%go [].
+Definition B {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.B"%go [].
 
-Definition A : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.A"%go [].
+Definition A {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.A"%go [].
 
-Definition Timestamp : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.Timestamp"%go [].
+Definition Timestamp {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.Timestamp"%go [].
 
-Definition UseTypeAbbrev : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.UseTypeAbbrev"%go [].
+Definition UseTypeAbbrev {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.UseTypeAbbrev"%go [].
 
-Definition UseNamedType : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.UseNamedType"%go [].
+Definition UseNamedType {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.UseNamedType"%go [].
 
-Definition my_u64 : go.type := go.uint64.
+Definition my_u64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.uint64.
 
 Definition arrayA {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Z := 0.
 
@@ -1563,7 +1555,7 @@ Definition testConversionInEqⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
     do:  ("c" <-[go.PointerType concreteFooer] "$r0");;;
     let: "$r0" := (InterfaceMake (go.PointerType concreteFooer) (![go.PointerType concreteFooer] "c")) in
     do:  ("f" <-[Fooer] "$r0");;;
-    return: ((InterfaceMake (go.PointerType concreteFooer) (![go.PointerType concreteFooer] "c")) =⟨go.InterfaceType [go.MethodElem #"Foo"%go (go.Signature [] false [])]⟩ (![Fooer] "f"))).
+    return: ((InterfaceMake (go.PointerType concreteFooer) (![go.PointerType concreteFooer] "c")) =⟨go.InterfaceType [go.MethodElem "Foo"%go (go.Signature [] false [])]⟩ (![Fooer] "f"))).
 
 (* go: interfaces.go:82:6 *)
 Definition takeMultipleⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -2928,12 +2920,12 @@ Definition LocalConstsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init unittest.unittest (λ: <>,
-      exception_do (do:  (GoGlobalAlloc mapLiteralWithConversion (go.MapType (go.InterfaceType []) (go.InterfaceType [])));;;
-      do:  (GoGlobalAlloc mapLiteral (go.MapType go.string go.uint64));;;
-      do:  (GoGlobalAlloc globalB go.string);;;
-      do:  (GoGlobalAlloc globalA go.string);;;
-      do:  (GoGlobalAlloc globalY go.string);;;
-      do:  (GoGlobalAlloc GlobalX go.uint64);;;
+      exception_do (do:  (go.GlobalAlloc mapLiteralWithConversion (go.MapType (go.InterfaceType []) (go.InterfaceType [])) #());;;
+      do:  (go.GlobalAlloc mapLiteral (go.MapType go.string go.uint64) #());;;
+      do:  (go.GlobalAlloc globalB go.string #());;;
+      do:  (go.GlobalAlloc globalA go.string #());;;
+      do:  (go.GlobalAlloc globalY go.string #());;;
+      do:  (go.GlobalAlloc GlobalX go.uint64 #());;;
       do:  (std.initialize' #());;;
       do:  (log.initialize' #());;;
       do:  (disk.initialize' #());;;
@@ -2941,16 +2933,16 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
       do:  (sync.initialize' #());;;
       do:  (fmt.initialize' #());;;
       let: "$r0" := ((FuncResolve foo [] #()) #()) in
-      do:  ((GloblalVarAddr #GlobalX) <-[go.uint64] "$r0");;;
+      do:  ((GlobalVarAddr GlobalX #()) <-[go.uint64] "$r0");;;
       let: "$r0" := #"a"%go in
-      do:  ((GloblalVarAddr #globalA) <-[go.string] "$r0");;;
+      do:  ((GlobalVarAddr globalA #()) <-[go.string] "$r0");;;
       let: "$r0" := #"b"%go in
-      do:  ((GloblalVarAddr #globalB) <-[go.string] "$r0");;;
+      do:  ((GlobalVarAddr globalB #()) <-[go.string] "$r0");;;
       let: "$r0" := ((FuncResolve foo [] #()) #()) in
       let: "$r0" := (CompositeLiteral (go.MapType go.string go.uint64) (LiteralValue [KeyedElement (Some (KeyExpression #"a"%go)) (ElementExpression #(W64 10))])) in
-      do:  ((GloblalVarAddr #mapLiteral) <-[go.MapType go.string go.uint64] "$r0");;;
+      do:  ((GlobalVarAddr mapLiteral #()) <-[go.MapType go.string go.uint64] "$r0");;;
       let: "$r0" := (CompositeLiteral (go.MapType (go.InterfaceType []) (go.InterfaceType [])) (LiteralValue [KeyedElement (Some (KeyExpression #"a"%go)) (ElementExpression #(W64 10))])) in
-      do:  ((GloblalVarAddr #mapLiteralWithConversion) <-[go.MapType (go.InterfaceType []) (go.InterfaceType [])] "$r0");;;
+      do:  ((GlobalVarAddr mapLiteralWithConversion #()) <-[go.MapType (go.InterfaceType []) (go.InterfaceType [])] "$r0");;;
       do:  ((λ: <>,
         exception_do (let: "$r0" := (![go.uint64] (GlobalVarAddr GlobalX #())) in
         do:  ((GlobalVarAddr GlobalX #()) <-[go.uint64] "$r0");;;
@@ -2966,11 +2958,11 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
 Module Foo.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Definition t  : Type := (vec w64 (uint.nat (W64 10))).
+Definition t  : Type := (array.t w64 10).
 End def.
 End Foo.
 
-Definition Fooⁱᵐᵖˡ : go.type := go.ArrayType 10 go.uint64.
+Definition Fooⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.ArrayType 10 go.uint64.
 
 Class Foo_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
@@ -2992,7 +2984,7 @@ End def.
 
 End importantStruct.
 
-Definition importantStructⁱᵐᵖˡ : go.type := go.StructType [
+Definition importantStructⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
 ].
 
 Class importantStruct_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -3008,7 +3000,7 @@ Definition t  : Type := go_string.
 End def.
 End stringWrapper.
 
-Definition stringWrapperⁱᵐᵖˡ : go.type := go.string.
+Definition stringWrapperⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.string.
 
 Class stringWrapper_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
@@ -3023,7 +3015,7 @@ Definition t  : Type := w32.
 End def.
 End Uint32.
 
-Definition Uint32ⁱᵐᵖˡ : go.type := go.uint32.
+Definition Uint32ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.uint32.
 
 Class Uint32_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
@@ -3038,7 +3030,7 @@ Definition t  : Type := w64.
 End def.
 End numWrapper.
 
-Definition numWrapperⁱᵐᵖˡ : go.type := go.int.
+Definition numWrapperⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.int.
 
 Class numWrapper_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
@@ -3062,7 +3054,7 @@ End def.
 
 End diskWrapper.
 
-Definition diskWrapperⁱᵐᵖˡ : go.type := go.StructType [
+Definition diskWrapperⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
   (go.FieldDecl "d"%go disk.Disk)
 ].
 
@@ -3089,7 +3081,7 @@ End def.
 
 End embedA.
 
-Definition embedAⁱᵐᵖˡ : go.type := go.StructType [
+Definition embedAⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
   (go.FieldDecl "a"%go go.uint64)
 ].
 
@@ -3119,7 +3111,7 @@ End def.
 
 End embedB.
 
-Definition embedBⁱᵐᵖˡ : go.type := go.StructType [
+Definition embedBⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
   (go.FieldDecl "embedA"%go embedA)
 ].
 
@@ -3150,7 +3142,7 @@ End def.
 
 End embedC.
 
-Definition embedCⁱᵐᵖˡ : go.type := go.StructType [
+Definition embedCⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
   (go.FieldDecl "embedB"%go (go.PointerType embedB))
 ].
 
@@ -3183,7 +3175,7 @@ End def.
 
 End embedD.
 
-Definition embedDⁱᵐᵖˡ : go.type := go.StructType [
+Definition embedDⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
   (go.FieldDecl "embedC"%go embedC)
 ].
 
@@ -3216,7 +3208,7 @@ End def.
 
 End Enc.
 
-Definition Encⁱᵐᵖˡ : go.type := go.StructType [
+Definition Encⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
   (go.FieldDecl "p"%go (go.SliceType go.byte))
 ].
 
@@ -3246,7 +3238,7 @@ End def.
 
 End Dec.
 
-Definition Decⁱᵐᵖˡ : go.type := go.StructType [
+Definition Decⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
   (go.FieldDecl "p"%go (go.SliceType go.byte))
 ].
 
@@ -3268,7 +3260,7 @@ Definition t  : Type := w64.
 End def.
 End Enum1.
 
-Definition Enum1ⁱᵐᵖˡ : go.type := go.uint64.
+Definition Enum1ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.uint64.
 
 Class Enum1_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
@@ -3283,7 +3275,7 @@ Definition t  : Type := w64.
 End def.
 End Enum2.
 
-Definition Enum2ⁱᵐᵖˡ : go.type := go.int.
+Definition Enum2ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.int.
 
 Class Enum2_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
@@ -3298,7 +3290,7 @@ Definition t  : Type := interface.t.
 End def.
 End Fooer.
 
-Definition Fooerⁱᵐᵖˡ : go.type := go.InterfaceType [go.MethodElem #"Foo"%go (go.Signature [] false [])].
+Definition Fooerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.InterfaceType [go.MethodElem "Foo"%go (go.Signature [] false [])].
 
 Class Fooer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
@@ -3322,7 +3314,7 @@ End def.
 
 End concreteFooer.
 
-Definition concreteFooerⁱᵐᵖˡ : go.type := go.StructType [
+Definition concreteFooerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
   (go.FieldDecl "a"%go go.uint64)
 ].
 
@@ -3350,7 +3342,7 @@ End def.
 
 End FooerUser.
 
-Definition FooerUserⁱᵐᵖˡ : go.type := go.StructType [
+Definition FooerUserⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
   (go.FieldDecl "f"%go Fooer)
 ].
 
@@ -3377,7 +3369,7 @@ End def.
 
 End B.
 
-Definition Bⁱᵐᵖˡ : go.type := go.StructType [
+Definition Bⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
   (go.FieldDecl "a"%go (go.SliceType A))
 ].
 
@@ -3396,7 +3388,7 @@ Definition t  : Type := interface.t.
 End def.
 End PointerInterface.
 
-Definition PointerInterfaceⁱᵐᵖˡ : go.type := go.InterfaceType [go.MethodElem #"B"%go (go.Signature [] false []); go.MethodElem #"Foo"%go (go.Signature [] false [])].
+Definition PointerInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.InterfaceType [go.MethodElem "B"%go (go.Signature [] false []); go.MethodElem "Foo"%go (go.Signature [] false [])].
 
 Class PointerInterface_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
@@ -3420,7 +3412,7 @@ End def.
 
 End concrete1.
 
-Definition concrete1ⁱᵐᵖˡ : go.type := go.StructType [
+Definition concrete1ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
 ].
 
 Class concrete1_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -3439,7 +3431,7 @@ Definition t  : Type := w32.
 End def.
 End my_u32.
 
-Definition my_u32ⁱᵐᵖˡ : go.type := go.uint32.
+Definition my_u32ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.uint32.
 
 Class my_u32_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
@@ -3454,7 +3446,7 @@ Definition t  : Type := unittest.my_u32.t.
 End def.
 End also_u32.
 
-Definition also_u32ⁱᵐᵖˡ : go.type := my_u32.
+Definition also_u32ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := my_u32.
 
 Class also_u32_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
@@ -3479,7 +3471,7 @@ End def.
 
 End allTheLiterals.
 
-Definition allTheLiteralsⁱᵐᵖˡ : go.type := go.StructType [
+Definition allTheLiteralsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
   (go.FieldDecl "int"%go go.uint64);
   (go.FieldDecl "s"%go go.string);
   (go.FieldDecl "b"%go go.bool)
@@ -3512,7 +3504,7 @@ End def.
 
 End hasCondVar.
 
-Definition hasCondVarⁱᵐᵖˡ : go.type := go.StructType [
+Definition hasCondVarⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
   (go.FieldDecl "cond"%go (go.PointerType sync.Cond))
 ].
 
@@ -3531,7 +3523,7 @@ Definition t  : Type := w64.
 End def.
 End IntWrapper.
 
-Definition IntWrapperⁱᵐᵖˡ : go.type := go.uint64.
+Definition IntWrapperⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.uint64.
 
 Class IntWrapper_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
@@ -3546,7 +3538,7 @@ Definition t  : Type := loc.
 End def.
 End MapWrapper.
 
-Definition MapWrapperⁱᵐᵖˡ : go.type := go.MapType go.uint64 go.bool.
+Definition MapWrapperⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.MapType go.uint64 go.bool.
 
 Class MapWrapper_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
@@ -3570,7 +3562,7 @@ End def.
 
 End mapElem.
 
-Definition mapElemⁱᵐᵖˡ : go.type := go.StructType [
+Definition mapElemⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
   (go.FieldDecl "a"%go go.uint64);
   (go.FieldDecl "b"%go go.uint64)
 ].
@@ -3600,7 +3592,7 @@ End def.
 
 End containsPointer.
 
-Definition containsPointerⁱᵐᵖˡ : go.type := go.StructType [
+Definition containsPointerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
   (go.FieldDecl "s"%go (go.PointerType go.uint64))
 ].
 
@@ -3627,7 +3619,7 @@ End def.
 
 End wrapExternalStruct.
 
-Definition wrapExternalStructⁱᵐᵖˡ : go.type := go.StructType [
+Definition wrapExternalStructⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
   (go.FieldDecl "j"%go (go.PointerType std.JoinHandle))
 ].
 
@@ -3656,7 +3648,7 @@ End def.
 
 End typing.
 
-Definition typingⁱᵐᵖˡ : go.type := go.StructType [
+Definition typingⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
   (go.FieldDecl "proph"%go (go.PointerType primitive.prophId))
 ].
 
@@ -3684,7 +3676,7 @@ End def.
 
 End composite.
 
-Definition compositeⁱᵐᵖˡ : go.type := go.StructType [
+Definition compositeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
   (go.FieldDecl "a"%go go.uint64);
   (go.FieldDecl "b"%go go.uint64)
 ].
@@ -3713,7 +3705,7 @@ End def.
 
 End R.
 
-Definition Rⁱᵐᵖˡ : go.type := go.StructType [
+Definition Rⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
 ].
 
 Class R_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -3738,7 +3730,7 @@ End def.
 
 End Other.
 
-Definition Otherⁱᵐᵖˡ : go.type := go.StructType [
+Definition Otherⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
   (go.FieldDecl "RecursiveEmbedded"%go (go.PointerType RecursiveEmbedded))
 ].
 
@@ -3767,7 +3759,7 @@ End def.
 
 End RecursiveEmbedded.
 
-Definition RecursiveEmbeddedⁱᵐᵖˡ : go.type := go.StructType [
+Definition RecursiveEmbeddedⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
   (go.FieldDecl "Other"%go Other)
 ].
 
@@ -3795,7 +3787,7 @@ End def.
 
 End Block.
 
-Definition Blockⁱᵐᵖˡ : go.type := go.StructType [
+Definition Blockⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
   (go.FieldDecl "Value"%go go.uint64)
 ].
 
@@ -3814,7 +3806,7 @@ Definition t  : Type := slice.t.
 End def.
 End SliceAlias.
 
-Definition SliceAliasⁱᵐᵖˡ : go.type := go.SliceType go.bool.
+Definition SliceAliasⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.SliceType go.bool.
 
 Class SliceAlias_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
@@ -3837,7 +3829,7 @@ End def.
 
 End thing.
 
-Definition thingⁱᵐᵖˡ : go.type := go.StructType [
+Definition thingⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
   (go.FieldDecl "x"%go go.uint64)
 ].
 
@@ -3864,7 +3856,7 @@ End def.
 
 End sliceOfThings.
 
-Definition sliceOfThingsⁱᵐᵖˡ : go.type := go.StructType [
+Definition sliceOfThingsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
   (go.FieldDecl "things"%go (go.SliceType thing))
 ].
 
@@ -3894,7 +3886,7 @@ End def.
 
 End Point.
 
-Definition Pointⁱᵐᵖˡ : go.type := go.StructType [
+Definition Pointⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
   (go.FieldDecl "x"%go go.uint64);
   (go.FieldDecl "y"%go go.uint64)
 ].
@@ -3931,7 +3923,7 @@ End def.
 
 End TwoInts.
 
-Definition TwoIntsⁱᵐᵖˡ : go.type := go.StructType [
+Definition TwoIntsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
   (go.FieldDecl "x"%go go.uint64);
   (go.FieldDecl "y"%go go.uint64)
 ].
@@ -3963,7 +3955,7 @@ End def.
 
 End S.
 
-Definition Sⁱᵐᵖˡ : go.type := go.StructType [
+Definition Sⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
   (go.FieldDecl "a"%go go.uint64);
   (go.FieldDecl "b"%go TwoInts);
   (go.FieldDecl "c"%go go.bool)
@@ -4002,7 +3994,7 @@ End def.
 
 End A.
 
-Definition Aⁱᵐᵖˡ : go.type := go.StructType [
+Definition Aⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
 ].
 
 Class A_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -4018,7 +4010,7 @@ Definition t  : Type := w64.
 End def.
 End Timestamp.
 
-Definition Timestampⁱᵐᵖˡ : go.type := go.uint64.
+Definition Timestampⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.uint64.
 
 Class Timestamp_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
@@ -4033,7 +4025,7 @@ Definition t  : Type := w64.
 End def.
 End UseTypeAbbrev.
 
-Definition UseTypeAbbrevⁱᵐᵖˡ : go.type := go.uint64.
+Definition UseTypeAbbrevⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.uint64.
 
 Class UseTypeAbbrev_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
@@ -4048,7 +4040,7 @@ Definition t  : Type := unittest.Timestamp.t.
 End def.
 End UseNamedType.
 
-Definition UseNamedTypeⁱᵐᵖˡ : go.type := Timestamp.
+Definition UseNamedTypeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := Timestamp.
 
 Class UseNamedType_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {

@@ -4,9 +4,9 @@ Definition errors : go_string := "errors".
 
 Module errors.
 
-Axiom errorString : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition errorString {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "errors.errorString"%go [].
 
-Axiom joinError : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition joinError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "errors.joinError"%go [].
 
 Definition ErrUnsupported {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "errors.ErrUnsupported"%go.
 
@@ -46,5 +46,7 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
+  #[global] errorString_instance :: errorString_Assumptions;
+  #[global] joinError_instance :: joinError_Assumptions;
 }.
 End errors.

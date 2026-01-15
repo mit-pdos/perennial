@@ -6,39 +6,39 @@ Definition fmt : go_string := "fmt".
 
 Module fmt.
 
-Axiom wrapError : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition wrapError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "fmt.wrapError"%go [].
 
-Axiom wrapErrors : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition wrapErrors {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "fmt.wrapErrors"%go [].
 
-Axiom fmtFlags : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition fmtFlags {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "fmt.fmtFlags"%go [].
 
-Axiom fmt : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition fmt {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "fmt.fmt"%go [].
 
-Axiom State : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition State {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "fmt.State"%go [].
 
-Axiom Formatter : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition Formatter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "fmt.Formatter"%go [].
 
-Axiom Stringer : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition Stringer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "fmt.Stringer"%go [].
 
-Axiom GoStringer : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition GoStringer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "fmt.GoStringer"%go [].
 
-Axiom buffer : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition buffer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "fmt.buffer"%go [].
 
-Axiom pp : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition pp {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "fmt.pp"%go [].
 
-Axiom ScanState : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition ScanState {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "fmt.ScanState"%go [].
 
-Axiom Scanner : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition Scanner {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "fmt.Scanner"%go [].
 
-Axiom stringReader : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition stringReader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "fmt.stringReader"%go [].
 
-Axiom scanError : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition scanError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "fmt.scanError"%go [].
 
-Axiom ss : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition ss {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "fmt.ss"%go [].
 
-Axiom ssave : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition ssave {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "fmt.ssave"%go [].
 
-Axiom readRune : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition readRune {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "fmt.readRune"%go [].
 
 Axiom ldigits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
 
@@ -211,6 +211,23 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
+  #[global] wrapError_instance :: wrapError_Assumptions;
+  #[global] wrapErrors_instance :: wrapErrors_Assumptions;
+  #[global] fmtFlags_instance :: fmtFlags_Assumptions;
+  #[global] fmt_instance :: fmt_Assumptions;
+  #[global] State_instance :: State_Assumptions;
+  #[global] Formatter_instance :: Formatter_Assumptions;
+  #[global] Stringer_instance :: Stringer_Assumptions;
+  #[global] GoStringer_instance :: GoStringer_Assumptions;
+  #[global] buffer_instance :: buffer_Assumptions;
+  #[global] pp_instance :: pp_Assumptions;
+  #[global] ScanState_instance :: ScanState_Assumptions;
+  #[global] Scanner_instance :: Scanner_Assumptions;
+  #[global] stringReader_instance :: stringReader_Assumptions;
+  #[global] scanError_instance :: scanError_Assumptions;
+  #[global] ss_instance :: ss_Assumptions;
+  #[global] ssave_instance :: ssave_Assumptions;
+  #[global] readRune_instance :: readRune_Assumptions;
   #[global] Printf_unfold :: FuncUnfold Printf [] (Printfⁱᵐᵖˡ);
   #[global] Print_unfold :: FuncUnfold Print [] (Printⁱᵐᵖˡ);
 }.

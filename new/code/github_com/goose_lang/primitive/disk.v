@@ -7,11 +7,13 @@ Definition disk : go_string := "github.com/goose-lang/primitive/disk".
 
 Module disk.
 
+Definition Disk {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/primitive/disk.Disk"%go [].
+
+Definition FileDisk {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/primitive/disk.FileDisk"%go [].
+
+Definition MemDisk {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/primitive/disk.MemDisk"%go [].
+
 Axiom Block : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom FileDisk : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom MemDisk : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
 Definition implicitDisk {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/primitive/disk.implicitDisk"%go.
 
@@ -54,6 +56,8 @@ Class Disk_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext}
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Disk_instance :: Disk_Assumptions;
+  #[global] FileDisk_instance :: FileDisk_Assumptions;
+  #[global] MemDisk_instance :: MemDisk_Assumptions;
   #[global] Get_unfold :: FuncUnfold Get [] (Getⁱᵐᵖˡ);
   #[global] Read_unfold :: FuncUnfold Read [] (Readⁱᵐᵖˡ);
   #[global] Write_unfold :: FuncUnfold Write [] (Writeⁱᵐᵖˡ);

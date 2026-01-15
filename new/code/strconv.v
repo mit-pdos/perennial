@@ -4,15 +4,15 @@ Definition strconv : go_string := "strconv".
 
 Module strconv.
 
-Axiom NumError : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition NumError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "strconv.NumError"%go [].
 
-Axiom decimal : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition decimal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "strconv.decimal"%go [].
 
-Axiom leftCheat : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition leftCheat {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "strconv.leftCheat"%go [].
 
-Axiom floatInfo : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition floatInfo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "strconv.floatInfo"%go [].
 
-Axiom decimalSlice : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition decimalSlice {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "strconv.decimalSlice"%go [].
 
 Axiom fnParseComplex : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
 
@@ -326,5 +326,10 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
+  #[global] NumError_instance :: NumError_Assumptions;
+  #[global] decimal_instance :: decimal_Assumptions;
+  #[global] leftCheat_instance :: leftCheat_Assumptions;
+  #[global] floatInfo_instance :: floatInfo_Assumptions;
+  #[global] decimalSlice_instance :: decimalSlice_Assumptions;
 }.
 End strconv.

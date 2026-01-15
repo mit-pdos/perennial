@@ -4,13 +4,13 @@ Definition bytes : go_string := "bytes".
 
 Module bytes.
 
-Axiom Buffer : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition Buffer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "bytes.Buffer"%go [].
 
-Axiom readOp : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition readOp {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "bytes.readOp"%go [].
 
-Axiom asciiSet : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition asciiSet {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "bytes.asciiSet"%go [].
 
-Axiom Reader : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition Reader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "bytes.Reader"%go [].
 
 Axiom smallBufferSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
@@ -242,6 +242,10 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
+  #[global] Buffer_instance :: Buffer_Assumptions;
+  #[global] readOp_instance :: readOp_Assumptions;
+  #[global] asciiSet_instance :: asciiSet_Assumptions;
+  #[global] Reader_instance :: Reader_Assumptions;
   #[global] Equal_unfold :: FuncUnfold Equal [] (Equalⁱᵐᵖˡ);
   #[global] Clone_unfold :: FuncUnfold Clone [] (Cloneⁱᵐᵖˡ);
 }.

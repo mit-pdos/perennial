@@ -9,6 +9,8 @@ Module unsafe.
   pkg_imported_pkgs := []
 |}.
 
+Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
+
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init unsafe.unsafe (λ: <>,

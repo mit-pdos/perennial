@@ -6,27 +6,27 @@ Definition atomic : go_string := "sync/atomic".
 
 Module atomic.
 
-Definition Bool : go.type := go.Named "sync/atomic.Bool"%go [].
+Definition Bool {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync/atomic.Bool"%go [].
 
-Definition Pointer(T : go.type)  : go.type := go.Named "sync/atomic.Pointer"%go [T].
+Definition Pointer {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) : go.type := go.Named "sync/atomic.Pointer"%go [T].
 
-Definition Int32 : go.type := go.Named "sync/atomic.Int32"%go [].
+Definition Int32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync/atomic.Int32"%go [].
 
-Definition Int64 : go.type := go.Named "sync/atomic.Int64"%go [].
+Definition Int64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync/atomic.Int64"%go [].
 
-Definition Uint32 : go.type := go.Named "sync/atomic.Uint32"%go [].
+Definition Uint32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync/atomic.Uint32"%go [].
 
-Definition Uint64 : go.type := go.Named "sync/atomic.Uint64"%go [].
+Definition Uint64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync/atomic.Uint64"%go [].
 
-Definition noCopy : go.type := go.Named "sync/atomic.noCopy"%go [].
+Definition Uintptr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync/atomic.Uintptr"%go [].
 
-Definition align64 : go.type := go.Named "sync/atomic.align64"%go [].
+Definition noCopy {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync/atomic.noCopy"%go [].
 
-Definition Value : go.type := go.Named "sync/atomic.Value"%go [].
+Definition align64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync/atomic.align64"%go [].
 
-Definition efaceWords : go.type := go.Named "sync/atomic.efaceWords"%go [].
+Definition Value {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync/atomic.Value"%go [].
 
-Axiom Uintptr : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition efaceWords {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync/atomic.efaceWords"%go [].
 
 Definition firstStoreInProgress {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync/atomic.firstStoreInProgress"%go.
 
@@ -175,6 +175,53 @@ Definition b32ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :
     then return: (#(W32 1))
     else do:  #());;;
     return: (#(W32 0))).
+
+(* Load atomically loads and returns the value stored in x.
+
+   go: type.go:58:22 *)
+Definition Pointer__Loadⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) : val :=
+  λ: "x" <>,
+    exception_do (let: "x" := (GoAlloc (go.PointerType (Pointer T)) "x") in
+    return: (let: "$a0" := (StructFieldRef (Pointer T) "v"%go (![go.PointerType (Pointer T)] "x")) in
+     (FuncResolve LoadPointer [] #()) "$a0")).
+
+(* Store atomically stores val into x.
+
+   go: type.go:61:22 *)
+Definition Pointer__Storeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) : val :=
+  λ: "x" "val",
+    exception_do (let: "x" := (GoAlloc (go.PointerType (Pointer T)) "x") in
+    let: "val" := (GoAlloc (go.PointerType T) "val") in
+    do:  (let: "$a0" := (StructFieldRef (Pointer T) "v"%go (![go.PointerType (Pointer T)] "x")) in
+    let: "$a1" := (![go.PointerType T] "val") in
+    (FuncResolve StorePointer [] #()) "$a0" "$a1");;;
+    return: #()).
+
+(* Swap atomically stores new into x and returns the previous value.
+
+   go: type.go:64:22 *)
+Definition Pointer__Swapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) : val :=
+  λ: "x" "new",
+    exception_do (let: "old" := (GoAlloc (go.PointerType T) (GoZeroVal (go.PointerType T) #())) in
+    let: "x" := (GoAlloc (go.PointerType (Pointer T)) "x") in
+    let: "new" := (GoAlloc (go.PointerType T) "new") in
+    return: (let: "$a0" := (StructFieldRef (Pointer T) "v"%go (![go.PointerType (Pointer T)] "x")) in
+     let: "$a1" := (![go.PointerType T] "new") in
+     (FuncResolve SwapPointer [] #()) "$a0" "$a1")).
+
+(* CompareAndSwap executes the compare-and-swap operation for x.
+
+   go: type.go:67:22 *)
+Definition Pointer__CompareAndSwapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) : val :=
+  λ: "x" "old" "new",
+    exception_do (let: "swapped" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
+    let: "x" := (GoAlloc (go.PointerType (Pointer T)) "x") in
+    let: "new" := (GoAlloc (go.PointerType T) "new") in
+    let: "old" := (GoAlloc (go.PointerType T) "old") in
+    return: (let: "$a0" := (StructFieldRef (Pointer T) "v"%go (![go.PointerType (Pointer T)] "x")) in
+     let: "$a1" := (![go.PointerType T] "old") in
+     let: "$a2" := (![go.PointerType T] "new") in
+     (FuncResolve CompareAndSwapPointer [] #()) "$a0" "$a1" "$a2")).
 
 (* Load atomically loads and returns the value stored in x.
 
@@ -784,7 +831,7 @@ End def.
 
 End noCopy.
 
-Definition noCopyⁱᵐᵖˡ : go.type := go.StructType [
+Definition noCopyⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
 ].
 
 Class noCopy_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -798,7 +845,7 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  _ : atomic.noCopy.t;
+  _0 : atomic.noCopy.t;
   v : w32;
 }.
 
@@ -809,7 +856,7 @@ End def.
 
 End Bool.
 
-Definition Boolⁱᵐᵖˡ : go.type := go.StructType [
+Definition Boolⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
   (go.FieldDecl "_0"%go noCopy);
   (go.FieldDecl "v"%go go.uint32)
 ].
@@ -818,8 +865,6 @@ Class Bool_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext}
 {
   #[global] Bool_type_repr  :: go.TypeRepr Bool Bool.t;
   #[global] Bool_underlying :: go.Underlying (Bool) (Boolⁱᵐᵖˡ);
-  #[global] Bool_get__ (x : Bool.t) :: go.IsGoStepPureDet (StructFieldGet (Bool) "_") #x #x.(Bool._);
-  #[global] Bool_set__ (x : Bool.t) y :: go.IsGoStepPureDet (StructFieldSet (Bool) "_") (#x, #y) #(x <|Bool._ := y|>);
   #[global] Bool_get_v (x : Bool.t) :: go.IsGoStepPureDet (StructFieldGet (Bool) "v") #x #x.(Bool.v);
   #[global] Bool_set_v (x : Bool.t) y :: go.IsGoStepPureDet (StructFieldSet (Bool) "v") (#x, #y) #(x <|Bool.v := y|>);
   #[global] Bool'ptr_CompareAndSwap_unfold :: MethodUnfold (go.PointerType (Bool)) "CompareAndSwap" (Bool__CompareAndSwapⁱᵐᵖˡ);
@@ -833,8 +878,8 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t {T : Type} :=
 mk {
-  _ : (vec loc (uint.nat (W64 0)));
-  _ : atomic.noCopy.t;
+  _0 : (array.t loc 0);
+  _1 : atomic.noCopy.t;
   v : loc;
 }.
 
@@ -845,7 +890,7 @@ End def.
 
 End Pointer.
 
-Definition Pointerⁱᵐᵖˡ(T : go.type)  : go.type := go.StructType [
+Definition Pointerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) : go.type := go.StructType [
   (go.FieldDecl "_0"%go (go.ArrayType 0 (go.PointerType T)));
   (go.FieldDecl "_1"%go noCopy);
   (go.FieldDecl "v"%go unsafe.Pointer)
@@ -855,10 +900,6 @@ Class Pointer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalConte
 {
   #[global] Pointer_type_repr T T' `{!ZeroVal T'} `{!go.TypeRepr T T'} :: go.TypeRepr (Pointer T) (Pointer.t T');
   #[global] Pointer_underlying T :: go.Underlying (Pointer T) (Pointerⁱᵐᵖˡ T);
-  #[global] Pointer_get__ T T' (x : Pointer.t T') :: go.IsGoStepPureDet (StructFieldGet (Pointer T) "_") #x #x.(Pointer._);
-  #[global] Pointer_set__ T T' (x : Pointer.t T') y :: go.IsGoStepPureDet (StructFieldSet (Pointer T) "_") (#x, #y) #(x <|Pointer._ := y|>);
-  #[global] Pointer_get__ T T' (x : Pointer.t T') :: go.IsGoStepPureDet (StructFieldGet (Pointer T) "_") #x #x.(Pointer._);
-  #[global] Pointer_set__ T T' (x : Pointer.t T') y :: go.IsGoStepPureDet (StructFieldSet (Pointer T) "_") (#x, #y) #(x <|Pointer._ := y|>);
   #[global] Pointer_get_v T T' (x : Pointer.t T') :: go.IsGoStepPureDet (StructFieldGet (Pointer T) "v") #x #x.(Pointer.v);
   #[global] Pointer_set_v T T' (x : Pointer.t T') y :: go.IsGoStepPureDet (StructFieldSet (Pointer T) "v") (#x, #y) #(x <|Pointer.v := y|>);
   #[global] Pointer'ptr_CompareAndSwap_unfold T :: MethodUnfold (go.PointerType (Pointer T)) "CompareAndSwap" (Pointer__CompareAndSwapⁱᵐᵖˡ T);
@@ -872,7 +913,7 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  _ : atomic.noCopy.t;
+  _0 : atomic.noCopy.t;
   v : w32;
 }.
 
@@ -883,7 +924,7 @@ End def.
 
 End Int32.
 
-Definition Int32ⁱᵐᵖˡ : go.type := go.StructType [
+Definition Int32ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
   (go.FieldDecl "_0"%go noCopy);
   (go.FieldDecl "v"%go go.int32)
 ].
@@ -892,8 +933,6 @@ Class Int32_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext
 {
   #[global] Int32_type_repr  :: go.TypeRepr Int32 Int32.t;
   #[global] Int32_underlying :: go.Underlying (Int32) (Int32ⁱᵐᵖˡ);
-  #[global] Int32_get__ (x : Int32.t) :: go.IsGoStepPureDet (StructFieldGet (Int32) "_") #x #x.(Int32._);
-  #[global] Int32_set__ (x : Int32.t) y :: go.IsGoStepPureDet (StructFieldSet (Int32) "_") (#x, #y) #(x <|Int32._ := y|>);
   #[global] Int32_get_v (x : Int32.t) :: go.IsGoStepPureDet (StructFieldGet (Int32) "v") #x #x.(Int32.v);
   #[global] Int32_set_v (x : Int32.t) y :: go.IsGoStepPureDet (StructFieldSet (Int32) "v") (#x, #y) #(x <|Int32.v := y|>);
   #[global] Int32'ptr_Add_unfold :: MethodUnfold (go.PointerType (Int32)) "Add" (Int32__Addⁱᵐᵖˡ);
@@ -919,7 +958,7 @@ End def.
 
 End align64.
 
-Definition align64ⁱᵐᵖˡ : go.type := go.StructType [
+Definition align64ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
 ].
 
 Class align64_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -933,8 +972,8 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  _ : atomic.noCopy.t;
-  _ : atomic.align64.t;
+  _0 : atomic.noCopy.t;
+  _1 : atomic.align64.t;
   v : w64;
 }.
 
@@ -945,7 +984,7 @@ End def.
 
 End Int64.
 
-Definition Int64ⁱᵐᵖˡ : go.type := go.StructType [
+Definition Int64ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
   (go.FieldDecl "_0"%go noCopy);
   (go.FieldDecl "_1"%go align64);
   (go.FieldDecl "v"%go go.int64)
@@ -955,10 +994,6 @@ Class Int64_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext
 {
   #[global] Int64_type_repr  :: go.TypeRepr Int64 Int64.t;
   #[global] Int64_underlying :: go.Underlying (Int64) (Int64ⁱᵐᵖˡ);
-  #[global] Int64_get__ (x : Int64.t) :: go.IsGoStepPureDet (StructFieldGet (Int64) "_") #x #x.(Int64._);
-  #[global] Int64_set__ (x : Int64.t) y :: go.IsGoStepPureDet (StructFieldSet (Int64) "_") (#x, #y) #(x <|Int64._ := y|>);
-  #[global] Int64_get__ (x : Int64.t) :: go.IsGoStepPureDet (StructFieldGet (Int64) "_") #x #x.(Int64._);
-  #[global] Int64_set__ (x : Int64.t) y :: go.IsGoStepPureDet (StructFieldSet (Int64) "_") (#x, #y) #(x <|Int64._ := y|>);
   #[global] Int64_get_v (x : Int64.t) :: go.IsGoStepPureDet (StructFieldGet (Int64) "v") #x #x.(Int64.v);
   #[global] Int64_set_v (x : Int64.t) y :: go.IsGoStepPureDet (StructFieldSet (Int64) "v") (#x, #y) #(x <|Int64.v := y|>);
   #[global] Int64'ptr_Add_unfold :: MethodUnfold (go.PointerType (Int64)) "Add" (Int64__Addⁱᵐᵖˡ);
@@ -975,7 +1010,7 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  _ : atomic.noCopy.t;
+  _0 : atomic.noCopy.t;
   v : w32;
 }.
 
@@ -986,7 +1021,7 @@ End def.
 
 End Uint32.
 
-Definition Uint32ⁱᵐᵖˡ : go.type := go.StructType [
+Definition Uint32ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
   (go.FieldDecl "_0"%go noCopy);
   (go.FieldDecl "v"%go go.uint32)
 ].
@@ -995,8 +1030,6 @@ Class Uint32_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContex
 {
   #[global] Uint32_type_repr  :: go.TypeRepr Uint32 Uint32.t;
   #[global] Uint32_underlying :: go.Underlying (Uint32) (Uint32ⁱᵐᵖˡ);
-  #[global] Uint32_get__ (x : Uint32.t) :: go.IsGoStepPureDet (StructFieldGet (Uint32) "_") #x #x.(Uint32._);
-  #[global] Uint32_set__ (x : Uint32.t) y :: go.IsGoStepPureDet (StructFieldSet (Uint32) "_") (#x, #y) #(x <|Uint32._ := y|>);
   #[global] Uint32_get_v (x : Uint32.t) :: go.IsGoStepPureDet (StructFieldGet (Uint32) "v") #x #x.(Uint32.v);
   #[global] Uint32_set_v (x : Uint32.t) y :: go.IsGoStepPureDet (StructFieldSet (Uint32) "v") (#x, #y) #(x <|Uint32.v := y|>);
   #[global] Uint32'ptr_Add_unfold :: MethodUnfold (go.PointerType (Uint32)) "Add" (Uint32__Addⁱᵐᵖˡ);
@@ -1013,8 +1046,8 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  _ : atomic.noCopy.t;
-  _ : atomic.align64.t;
+  _0 : atomic.noCopy.t;
+  _1 : atomic.align64.t;
   v : w64;
 }.
 
@@ -1025,7 +1058,7 @@ End def.
 
 End Uint64.
 
-Definition Uint64ⁱᵐᵖˡ : go.type := go.StructType [
+Definition Uint64ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
   (go.FieldDecl "_0"%go noCopy);
   (go.FieldDecl "_1"%go align64);
   (go.FieldDecl "v"%go go.uint64)
@@ -1035,10 +1068,6 @@ Class Uint64_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContex
 {
   #[global] Uint64_type_repr  :: go.TypeRepr Uint64 Uint64.t;
   #[global] Uint64_underlying :: go.Underlying (Uint64) (Uint64ⁱᵐᵖˡ);
-  #[global] Uint64_get__ (x : Uint64.t) :: go.IsGoStepPureDet (StructFieldGet (Uint64) "_") #x #x.(Uint64._);
-  #[global] Uint64_set__ (x : Uint64.t) y :: go.IsGoStepPureDet (StructFieldSet (Uint64) "_") (#x, #y) #(x <|Uint64._ := y|>);
-  #[global] Uint64_get__ (x : Uint64.t) :: go.IsGoStepPureDet (StructFieldGet (Uint64) "_") #x #x.(Uint64._);
-  #[global] Uint64_set__ (x : Uint64.t) y :: go.IsGoStepPureDet (StructFieldSet (Uint64) "_") (#x, #y) #(x <|Uint64._ := y|>);
   #[global] Uint64_get_v (x : Uint64.t) :: go.IsGoStepPureDet (StructFieldGet (Uint64) "v") #x #x.(Uint64.v);
   #[global] Uint64_set_v (x : Uint64.t) y :: go.IsGoStepPureDet (StructFieldSet (Uint64) "v") (#x, #y) #(x <|Uint64.v := y|>);
   #[global] Uint64'ptr_Add_unfold :: MethodUnfold (go.PointerType (Uint64)) "Add" (Uint64__Addⁱᵐᵖˡ);
@@ -1065,7 +1094,7 @@ End def.
 
 End Value.
 
-Definition Valueⁱᵐᵖˡ : go.type := go.StructType [
+Definition Valueⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
   (go.FieldDecl "v"%go (go.InterfaceType []))
 ].
 
@@ -1097,7 +1126,7 @@ End def.
 
 End efaceWords.
 
-Definition efaceWordsⁱᵐᵖˡ : go.type := go.StructType [
+Definition efaceWordsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
   (go.FieldDecl "typ"%go unsafe.Pointer);
   (go.FieldDecl "data"%go unsafe.Pointer)
 ].
@@ -1120,6 +1149,7 @@ Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!G
   #[global] Int64_instance :: Int64_Assumptions;
   #[global] Uint32_instance :: Uint32_Assumptions;
   #[global] Uint64_instance :: Uint64_Assumptions;
+  #[global] Uintptr_instance :: Uintptr_Assumptions;
   #[global] noCopy_instance :: noCopy_Assumptions;
   #[global] align64_instance :: align64_Assumptions;
   #[global] Value_instance :: Value_Assumptions;

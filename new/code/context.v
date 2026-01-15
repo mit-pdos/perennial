@@ -5,37 +5,37 @@ Definition context : go_string := "context".
 
 Module context.
 
-Definition Context : go.type := go.Named "context.Context"%go [].
+Definition Context {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "context.Context"%go [].
 
-Axiom deadlineExceededError : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition deadlineExceededError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "context.deadlineExceededError"%go [].
 
-Axiom emptyCtx : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition emptyCtx {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "context.emptyCtx"%go [].
 
-Axiom backgroundCtx : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition backgroundCtx {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "context.backgroundCtx"%go [].
 
-Axiom todoCtx : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition todoCtx {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "context.todoCtx"%go [].
 
-Axiom CancelFunc : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition CancelFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "context.CancelFunc"%go [].
 
-Axiom CancelCauseFunc : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition CancelCauseFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "context.CancelCauseFunc"%go [].
 
-Axiom afterFuncer : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition afterFuncer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "context.afterFuncer"%go [].
 
-Axiom afterFuncCtx : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition afterFuncCtx {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "context.afterFuncCtx"%go [].
 
-Axiom stopCtx : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition stopCtx {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "context.stopCtx"%go [].
 
-Axiom canceler : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition canceler {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "context.canceler"%go [].
 
-Axiom cancelCtx : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition cancelCtx {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "context.cancelCtx"%go [].
 
-Axiom stringer : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition stringer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "context.stringer"%go [].
 
-Axiom withoutCancelCtx : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition withoutCancelCtx {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "context.withoutCancelCtx"%go [].
 
-Axiom timerCtx : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition timerCtx {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "context.timerCtx"%go [].
 
-Axiom valueCtx : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition valueCtx {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "context.valueCtx"%go [].
 
 Definition Canceled {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "context.Canceled"%go.
 
@@ -112,8 +112,8 @@ Definition t  : Type := interface.t.
 End def.
 End Context.
 
-Definition Contextⁱᵐᵖˡ : go.type := go.InterfaceType [go.MethodElem #"Deadline"%go (go.Signature [] false [time.Time; go.bool]); go.MethodElem #"Done"%go (go.Signature [] false [go.ChannelType go.recvonly (go.StructType [
-  ])]); go.MethodElem #"Err"%go (go.Signature [] false [go.error]); go.MethodElem #"Value"%go (go.Signature [go.InterfaceType []] false [go.InterfaceType []])].
+Definition Contextⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.InterfaceType [go.MethodElem "Deadline"%go (go.Signature [] false [time.Time; go.bool]); go.MethodElem "Done"%go (go.Signature [] false [go.ChannelType go.recvonly (go.StructType [
+  ])]); go.MethodElem "Err"%go (go.Signature [] false [go.error]); go.MethodElem "Value"%go (go.Signature [go.InterfaceType []] false [go.InterfaceType []])].
 
 Class Context_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
@@ -124,6 +124,21 @@ Class Context_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalConte
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Context_instance :: Context_Assumptions;
+  #[global] deadlineExceededError_instance :: deadlineExceededError_Assumptions;
+  #[global] emptyCtx_instance :: emptyCtx_Assumptions;
+  #[global] backgroundCtx_instance :: backgroundCtx_Assumptions;
+  #[global] todoCtx_instance :: todoCtx_Assumptions;
+  #[global] CancelFunc_instance :: CancelFunc_Assumptions;
+  #[global] CancelCauseFunc_instance :: CancelCauseFunc_Assumptions;
+  #[global] afterFuncer_instance :: afterFuncer_Assumptions;
+  #[global] afterFuncCtx_instance :: afterFuncCtx_Assumptions;
+  #[global] stopCtx_instance :: stopCtx_Assumptions;
+  #[global] canceler_instance :: canceler_Assumptions;
+  #[global] cancelCtx_instance :: cancelCtx_Assumptions;
+  #[global] stringer_instance :: stringer_Assumptions;
+  #[global] withoutCancelCtx_instance :: withoutCancelCtx_Assumptions;
+  #[global] timerCtx_instance :: timerCtx_Assumptions;
+  #[global] valueCtx_instance :: valueCtx_Assumptions;
   #[global] import_time_Assumption :: time.Assumptions;
 }.
 End context.

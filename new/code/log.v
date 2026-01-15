@@ -6,7 +6,7 @@ Definition log : go_string := "log".
 
 Module log.
 
-Axiom Logger : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition Logger {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "log.Logger"%go [].
 
 (* the date in the local time zone: 2009/01/23 *)
 Definition Ldate {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Z := 1.
@@ -95,6 +95,7 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
+  #[global] Logger_instance :: Logger_Assumptions;
   #[global] Printf_unfold :: FuncUnfold Printf [] (Printfⁱᵐᵖˡ);
   #[global] Println_unfold :: FuncUnfold Println [] (Printlnⁱᵐᵖˡ);
 }.

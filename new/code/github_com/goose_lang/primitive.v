@@ -7,7 +7,9 @@ Definition primitive : go_string := "github.com/goose-lang/primitive".
 
 Module primitive.
 
-Axiom prophId : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition Mutex {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/primitive.Mutex"%go [].
+
+Definition prophId {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/primitive.prophId"%go [].
 
 Axiom ProphId : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
@@ -63,6 +65,7 @@ Class Mutex_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Mutex_instance :: Mutex_Assumptions;
+  #[global] prophId_instance :: prophId_Assumptions;
   #[global] UInt64Put_unfold :: FuncUnfold UInt64Put [] (UInt64Putⁱᵐᵖˡ);
   #[global] RandomUint64_unfold :: FuncUnfold RandomUint64 [] (RandomUint64ⁱᵐᵖˡ);
   #[global] Assume_unfold :: FuncUnfold Assume [] (Assumeⁱᵐᵖˡ);

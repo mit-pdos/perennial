@@ -6,49 +6,49 @@ Definition time : go_string := "time".
 
 Module time.
 
-Definition Timer : go.type := go.Named "time.Timer"%go [].
+Definition ParseError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "time.ParseError"%go [].
 
-Definition Time : go.type := go.Named "time.Time"%go [].
+Definition Timer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "time.Timer"%go [].
 
-Definition Duration : go.type := go.Named "time.Duration"%go [].
+Definition Ticker {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "time.Ticker"%go [].
 
-Axiom ParseError : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition Time {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "time.Time"%go [].
 
-Axiom Ticker : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition Month {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "time.Month"%go [].
 
-Axiom Month : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition Weekday {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "time.Weekday"%go [].
 
-Axiom Weekday : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition absSeconds {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "time.absSeconds"%go [].
 
-Axiom absSeconds : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition absDays {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "time.absDays"%go [].
 
-Axiom absDays : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition absCentury {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "time.absCentury"%go [].
 
-Axiom absCentury : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition absCyear {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "time.absCyear"%go [].
 
-Axiom absCyear : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition absYday {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "time.absYday"%go [].
 
-Axiom absYday : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition absMonth {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "time.absMonth"%go [].
 
-Axiom absMonth : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition absLeap {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "time.absLeap"%go [].
 
-Axiom absLeap : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition absJanFeb {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "time.absJanFeb"%go [].
 
-Axiom absJanFeb : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition Duration {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "time.Duration"%go [].
 
-Axiom Location : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition Location {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "time.Location"%go [].
 
-Axiom zone : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition zone {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "time.zone"%go [].
 
-Axiom zoneTrans : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition zoneTrans {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "time.zoneTrans"%go [].
 
-Axiom ruleKind : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition ruleKind {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "time.ruleKind"%go [].
 
-Axiom rule : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition rule {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "time.rule"%go [].
 
-Axiom fileSizeError : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition fileSizeError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "time.fileSizeError"%go [].
 
-Axiom dataIO : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition dataIO {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "time.dataIO"%go [].
 
 Axiom Layout : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
 
@@ -583,7 +583,7 @@ Definition Time__secⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
   λ: "t" <>,
     exception_do (let: "t" := (GoAlloc (go.PointerType Time) "t") in
     (if: ((![go.uint64] (StructFieldRef Time "wall"%go (![go.PointerType Time] "t"))) &⟨go.uint64⟩ #(W64 hasMonotonic)) ≠⟨go.uint64⟩ #(W64 0)
-    then return: (wallToInternal +⟨go.int64⟩ (u_to_w64 (((![go.uint64] (StructFieldRef Time "wall"%go (![go.PointerType Time] "t"))) ≪⟨go.uint64⟩ #(W64 1)) ≫⟨go.uint64⟩ #(W64 31))))
+    then return: (wallToInternal +⟨go.int64⟩ (u_to_w64 (((![go.uint64] (StructFieldRef Time "wall"%go (![go.PointerType Time] "t"))) <<⟨go.uint64⟩ #(W64 1)) >>⟨go.uint64⟩ #(W64 31))))
     else do:  #());;;
     return: (![go.int64] (StructFieldRef Time "ext"%go (![go.PointerType Time] "t")))).
 
@@ -654,7 +654,7 @@ End def.
 
 End Time.
 
-Definition Timeⁱᵐᵖˡ : go.type := go.StructType [
+Definition Timeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
   (go.FieldDecl "wall"%go go.uint64);
   (go.FieldDecl "ext"%go go.int64);
   (go.FieldDecl "loc"%go (go.PointerType Location))
@@ -693,7 +693,7 @@ End def.
 
 End Timer.
 
-Definition Timerⁱᵐᵖˡ : go.type := go.StructType [
+Definition Timerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
   (go.FieldDecl "C"%go (go.ChannelType go.recvonly Time));
   (go.FieldDecl "initTimer"%go go.bool)
 ].
@@ -715,7 +715,7 @@ Definition t  : Type := w64.
 End def.
 End Duration.
 
-Definition Durationⁱᵐᵖˡ : go.type := go.int64.
+Definition Durationⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.int64.
 
 Class Duration_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
@@ -725,9 +725,28 @@ Class Duration_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalCont
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
+  #[global] ParseError_instance :: ParseError_Assumptions;
   #[global] Timer_instance :: Timer_Assumptions;
+  #[global] Ticker_instance :: Ticker_Assumptions;
   #[global] Time_instance :: Time_Assumptions;
+  #[global] Month_instance :: Month_Assumptions;
+  #[global] Weekday_instance :: Weekday_Assumptions;
+  #[global] absSeconds_instance :: absSeconds_Assumptions;
+  #[global] absDays_instance :: absDays_Assumptions;
+  #[global] absCentury_instance :: absCentury_Assumptions;
+  #[global] absCyear_instance :: absCyear_Assumptions;
+  #[global] absYday_instance :: absYday_Assumptions;
+  #[global] absMonth_instance :: absMonth_Assumptions;
+  #[global] absLeap_instance :: absLeap_Assumptions;
+  #[global] absJanFeb_instance :: absJanFeb_Assumptions;
   #[global] Duration_instance :: Duration_Assumptions;
+  #[global] Location_instance :: Location_Assumptions;
+  #[global] zone_instance :: zone_Assumptions;
+  #[global] zoneTrans_instance :: zoneTrans_Assumptions;
+  #[global] ruleKind_instance :: ruleKind_Assumptions;
+  #[global] rule_instance :: rule_Assumptions;
+  #[global] fileSizeError_instance :: fileSizeError_Assumptions;
+  #[global] dataIO_instance :: dataIO_Assumptions;
   #[global] Sleep_unfold :: FuncUnfold Sleep [] (Sleepⁱᵐᵖˡ);
   #[global] syncTimer_unfold :: FuncUnfold syncTimer [] (syncTimerⁱᵐᵖˡ);
   #[global] newTimer_unfold :: FuncUnfold newTimer [] (newTimerⁱᵐᵖˡ);

@@ -8,7 +8,7 @@ Definition append_log : go_string := "github.com/goose-lang/goose/testdata/examp
 
 Module append_log.
 
-Definition Log : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/append_log.Log"%go [].
+Definition Log {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/append_log.Log"%go [].
 
 Definition Init {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/append_log.Init"%go.
 
@@ -200,7 +200,7 @@ End def.
 
 End Log.
 
-Definition Logⁱᵐᵖˡ : go.type := go.StructType [
+Definition Logⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
   (go.FieldDecl "m"%go (go.PointerType sync.Mutex));
   (go.FieldDecl "sz"%go go.uint64);
   (go.FieldDecl "diskSz"%go go.uint64)

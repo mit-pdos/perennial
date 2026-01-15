@@ -4,21 +4,21 @@ Definition sort : go_string := "sort".
 
 Module sort.
 
-Definition sortedHint : go.type := go.Named "sort.sortedHint"%go [].
+Definition Interface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sort.Interface"%go [].
 
-Definition xorshift : go.type := go.Named "sort.xorshift"%go [].
+Definition sortedHint {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sort.sortedHint"%go [].
 
-Axiom Interface : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition xorshift {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sort.xorshift"%go [].
 
-Axiom lessSwap : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition lessSwap {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sort.lessSwap"%go [].
 
-Axiom reverse : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition reverse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sort.reverse"%go [].
 
-Axiom IntSlice : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition IntSlice {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sort.IntSlice"%go [].
 
-Axiom Float64Slice : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition Float64Slice {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sort.Float64Slice"%go [].
 
-Axiom StringSlice : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition StringSlice {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sort.StringSlice"%go [].
 
 Definition unknownHint {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #(W64 0).
 
@@ -197,7 +197,7 @@ Definition Searchⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : va
     do:  ("j" <-[go.int] "$r1");;;
     (for: (λ: <>, (![go.int] "i") <⟨go.int⟩ (![go.int] "j")); (λ: <>, #()) := λ: <>,
       let: "h" := (GoAlloc go.int (GoZeroVal go.int #())) in
-      let: "$r0" := (u_to_w64 ((s_to_w64 ((![go.int] "i") +⟨go.int⟩ (![go.int] "j"))) ≫⟨go.uint⟩ #(W64 1))) in
+      let: "$r0" := (u_to_w64 ((s_to_w64 ((![go.int] "i") +⟨go.int⟩ (![go.int] "j"))) >>⟨go.uint⟩ #(W64 1))) in
       do:  ("h" <-[go.int] "$r0");;;
       (if: (~ (let: "$a0" := (![go.int] "h") in
       (![go.FunctionType (go.Signature [go.int] false [go.bool])] "f") "$a0"))
@@ -248,7 +248,7 @@ Definition Findⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val 
     do:  ("j" <-[go.int] "$r1");;;
     (for: (λ: <>, (![go.int] "i") <⟨go.int⟩ (![go.int] "j")); (λ: <>, #()) := λ: <>,
       let: "h" := (GoAlloc go.int (GoZeroVal go.int #())) in
-      let: "$r0" := (u_to_w64 ((s_to_w64 ((![go.int] "i") +⟨go.int⟩ (![go.int] "j"))) ≫⟨go.uint⟩ #(W64 1))) in
+      let: "$r0" := (u_to_w64 ((s_to_w64 ((![go.int] "i") +⟨go.int⟩ (![go.int] "j"))) >>⟨go.uint⟩ #(W64 1))) in
       do:  ("h" <-[go.int] "$r0");;;
       (if: (let: "$a0" := (![go.int] "h") in
       (![go.FunctionType (go.Signature [go.int] false [go.int])] "cmp") "$a0") >⟨go.int⟩ #(W64 0)
@@ -283,9 +283,9 @@ Definition SearchIntsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
 Definition xorshift__Nextⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" <>,
     exception_do (let: "r" := (GoAlloc (go.PointerType xorshift) "r") in
-    do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) ^⟨go.uint64⟩ ((![xorshift] (![go.PointerType xorshift] "r")) ≪⟨xorshift⟩ #(W64 13))));;;
-    do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) ^⟨go.uint64⟩ ((![xorshift] (![go.PointerType xorshift] "r")) ≫⟨xorshift⟩ #(W64 7))));;;
-    do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) ^⟨go.uint64⟩ ((![xorshift] (![go.PointerType xorshift] "r")) ≪⟨xorshift⟩ #(W64 17))));;;
+    do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) ^⟨go.uint64⟩ ((![xorshift] (![go.PointerType xorshift] "r")) <<⟨xorshift⟩ #(W64 13))));;;
+    do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) ^⟨go.uint64⟩ ((![xorshift] (![go.PointerType xorshift] "r")) >>⟨xorshift⟩ #(W64 7))));;;
+    do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) ^⟨go.uint64⟩ ((![xorshift] (![go.PointerType xorshift] "r")) <<⟨xorshift⟩ #(W64 17))));;;
     return: (![xorshift] (![go.PointerType xorshift] "r"))).
 
 #[global] Instance info' : PkgInfo sort.sort := 
@@ -308,7 +308,7 @@ Definition t  : Type := w64.
 End def.
 End sortedHint.
 
-Definition sortedHintⁱᵐᵖˡ : go.type := go.int.
+Definition sortedHintⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.int.
 
 Class sortedHint_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
@@ -323,7 +323,7 @@ Definition t  : Type := w64.
 End def.
 End xorshift.
 
-Definition xorshiftⁱᵐᵖˡ : go.type := go.uint64.
+Definition xorshiftⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.uint64.
 
 Class xorshift_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
@@ -334,8 +334,14 @@ Class xorshift_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalCont
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
+  #[global] Interface_instance :: Interface_Assumptions;
   #[global] sortedHint_instance :: sortedHint_Assumptions;
   #[global] xorshift_instance :: xorshift_Assumptions;
+  #[global] lessSwap_instance :: lessSwap_Assumptions;
+  #[global] reverse_instance :: reverse_Assumptions;
+  #[global] IntSlice_instance :: IntSlice_Assumptions;
+  #[global] Float64Slice_instance :: Float64Slice_Assumptions;
+  #[global] StringSlice_instance :: StringSlice_Assumptions;
   #[global] Search_unfold :: FuncUnfold Search [] (Searchⁱᵐᵖˡ);
   #[global] Find_unfold :: FuncUnfold Find [] (Findⁱᵐᵖˡ);
   #[global] SearchInts_unfold :: FuncUnfold SearchInts [] (SearchIntsⁱᵐᵖˡ);

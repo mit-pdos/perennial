@@ -4,19 +4,19 @@ Definition rand : go_string := "math/rand".
 
 Module rand.
 
-Axiom Source : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition Source {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "math/rand.Source"%go [].
 
-Axiom Source64 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition Source64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "math/rand.Source64"%go [].
 
-Axiom Rand : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition Rand {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "math/rand.Rand"%go [].
 
-Axiom runtimeSource : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition runtimeSource {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "math/rand.runtimeSource"%go [].
 
-Axiom lockedSource : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition lockedSource {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "math/rand.lockedSource"%go [].
 
-Axiom rngSource : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition rngSource {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "math/rand.rngSource"%go [].
 
-Axiom Zipf : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition Zipf {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "math/rand.Zipf"%go [].
 
 Axiom re : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
@@ -143,5 +143,12 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
+  #[global] Source_instance :: Source_Assumptions;
+  #[global] Source64_instance :: Source64_Assumptions;
+  #[global] Rand_instance :: Rand_Assumptions;
+  #[global] runtimeSource_instance :: runtimeSource_Assumptions;
+  #[global] lockedSource_instance :: lockedSource_Assumptions;
+  #[global] rngSource_instance :: rngSource_Assumptions;
+  #[global] Zipf_instance :: Zipf_Assumptions;
 }.
 End rand.

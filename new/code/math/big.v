@@ -4,31 +4,31 @@ Definition big : go_string := "math/big".
 
 Module big.
 
-Axiom Word : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition Word {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "math/big.Word"%go [].
 
-Axiom decimal : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition decimal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "math/big.decimal"%go [].
 
-Axiom Float : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition Float {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "math/big.Float"%go [].
 
-Axiom ErrNaN : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition ErrNaN {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "math/big.ErrNaN"%go [].
 
-Axiom form : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition form {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "math/big.form"%go [].
 
-Axiom RoundingMode : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition RoundingMode {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "math/big.RoundingMode"%go [].
 
-Axiom Accuracy : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition Accuracy {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "math/big.Accuracy"%go [].
 
-Axiom Int : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition Int {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "math/big.Int"%go [].
 
-Axiom byteReader : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition byteReader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "math/big.byteReader"%go [].
 
-Axiom nat : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition nat {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "math/big.nat"%go [].
 
-Axiom stack : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition stack {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "math/big.stack"%go [].
 
-Axiom divisor : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition divisor {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "math/big.divisor"%go [].
 
-Axiom Rat : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition Rat {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "math/big.Rat"%go [].
 
 Axiom _Accuracy_name : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
 
@@ -339,5 +339,18 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
+  #[global] Word_instance :: Word_Assumptions;
+  #[global] decimal_instance :: decimal_Assumptions;
+  #[global] Float_instance :: Float_Assumptions;
+  #[global] ErrNaN_instance :: ErrNaN_Assumptions;
+  #[global] form_instance :: form_Assumptions;
+  #[global] RoundingMode_instance :: RoundingMode_Assumptions;
+  #[global] Accuracy_instance :: Accuracy_Assumptions;
+  #[global] Int_instance :: Int_Assumptions;
+  #[global] byteReader_instance :: byteReader_Assumptions;
+  #[global] nat_instance :: nat_Assumptions;
+  #[global] stack_instance :: stack_Assumptions;
+  #[global] divisor_instance :: divisor_Assumptions;
+  #[global] Rat_instance :: Rat_Assumptions;
 }.
 End big.

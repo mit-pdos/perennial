@@ -13,7 +13,7 @@ translate = [
 
   "noCopy",
   "Pointer",
-  "Pointer.*",
+  "Pointer*",
 
   "_",
 ]

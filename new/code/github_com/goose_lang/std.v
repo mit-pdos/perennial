@@ -9,7 +9,7 @@ Definition std : go_string := "github.com/goose-lang/std".
 
 Module std.
 
-Definition JoinHandle : go.type := go.Named "github.com/goose-lang/std.JoinHandle"%go [].
+Definition JoinHandle {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/std.JoinHandle"%go [].
 
 Definition Assert {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/std.Assert"%go.
 
@@ -333,7 +333,7 @@ End def.
 
 End JoinHandle.
 
-Definition JoinHandleⁱᵐᵖˡ : go.type := go.StructType [
+Definition JoinHandleⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
   (go.FieldDecl "mu"%go (go.PointerType sync.Mutex));
   (go.FieldDecl "done"%go go.bool);
   (go.FieldDecl "cond"%go (go.PointerType sync.Cond))

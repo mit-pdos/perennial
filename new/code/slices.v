@@ -4,9 +4,9 @@ Definition slices : go_string := "slices".
 
 Module slices.
 
-Definition xorshift : go.type := go.Named "slices.xorshift"%go [].
+Definition sortedHint {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "slices.sortedHint"%go [].
 
-Axiom sortedHint : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition xorshift {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "slices.xorshift"%go [].
 
 Axiom unknownHint : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
@@ -178,9 +178,9 @@ Definition rotateOrdered {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_str
 Definition xorshift__Nextⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" <>,
     exception_do (let: "r" := (GoAlloc (go.PointerType xorshift) "r") in
-    do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) ^⟨go.uint64⟩ ((![xorshift] (![go.PointerType xorshift] "r")) ≪⟨xorshift⟩ #(W64 13))));;;
-    do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) ^⟨go.uint64⟩ ((![xorshift] (![go.PointerType xorshift] "r")) ≫⟨xorshift⟩ #(W64 7))));;;
-    do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) ^⟨go.uint64⟩ ((![xorshift] (![go.PointerType xorshift] "r")) ≪⟨xorshift⟩ #(W64 17))));;;
+    do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) ^⟨go.uint64⟩ ((![xorshift] (![go.PointerType xorshift] "r")) <<⟨xorshift⟩ #(W64 13))));;;
+    do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) ^⟨go.uint64⟩ ((![xorshift] (![go.PointerType xorshift] "r")) >>⟨xorshift⟩ #(W64 7))));;;
+    do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) ^⟨go.uint64⟩ ((![xorshift] (![go.PointerType xorshift] "r")) <<⟨xorshift⟩ #(W64 17))));;;
     return: (![xorshift] (![go.PointerType xorshift] "r"))).
 
 (* insertionSortCmpFunc sorts data[a:b] using insertion sort.
@@ -943,7 +943,7 @@ Definition symMergeCmpFuncⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
       do:  ("j" <-[go.int] "$r0");;;
       (for: (λ: <>, (![go.int] "i") <⟨go.int⟩ (![go.int] "j")); (λ: <>, #()) := λ: <>,
         let: "h" := (GoAlloc go.int (GoZeroVal go.int #())) in
-        let: "$r0" := (u_to_w64 ((s_to_w64 ((![go.int] "i") +⟨go.int⟩ (![go.int] "j"))) ≫⟨go.uint⟩ #(W64 1))) in
+        let: "$r0" := (u_to_w64 ((s_to_w64 ((![go.int] "i") +⟨go.int⟩ (![go.int] "j"))) >>⟨go.uint⟩ #(W64 1))) in
         do:  ("h" <-[go.int] "$r0");;;
         (if: (let: "$a0" := (![E] (IndexRef (go.SliceType E) (![go.SliceType E] "data", ![go.int] "h"))) in
         let: "$a1" := (![E] (IndexRef (go.SliceType E) (![go.SliceType E] "data", ![go.int] "a"))) in
@@ -974,7 +974,7 @@ Definition symMergeCmpFuncⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
       do:  ("j" <-[go.int] "$r0");;;
       (for: (λ: <>, (![go.int] "i") <⟨go.int⟩ (![go.int] "j")); (λ: <>, #()) := λ: <>,
         let: "h" := (GoAlloc go.int (GoZeroVal go.int #())) in
-        let: "$r0" := (u_to_w64 ((s_to_w64 ((![go.int] "i") +⟨go.int⟩ (![go.int] "j"))) ≫⟨go.uint⟩ #(W64 1))) in
+        let: "$r0" := (u_to_w64 ((s_to_w64 ((![go.int] "i") +⟨go.int⟩ (![go.int] "j"))) >>⟨go.uint⟩ #(W64 1))) in
         do:  ("h" <-[go.int] "$r0");;;
         (if: (~ ((let: "$a0" := (![E] (IndexRef (go.SliceType E) (![go.SliceType E] "data", ![go.int] "m"))) in
         let: "$a1" := (![E] (IndexRef (go.SliceType E) (![go.SliceType E] "data", ![go.int] "h"))) in
@@ -996,7 +996,7 @@ Definition symMergeCmpFuncⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
       return: (#())
     else do:  #());;;
     let: "mid" := (GoAlloc go.int (GoZeroVal go.int #())) in
-    let: "$r0" := (u_to_w64 ((s_to_w64 ((![go.int] "a") +⟨go.int⟩ (![go.int] "b"))) ≫⟨go.uint⟩ #(W64 1))) in
+    let: "$r0" := (u_to_w64 ((s_to_w64 ((![go.int] "a") +⟨go.int⟩ (![go.int] "b"))) >>⟨go.uint⟩ #(W64 1))) in
     do:  ("mid" <-[go.int] "$r0");;;
     let: "n" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "$r0" := ((![go.int] "mid") +⟨go.int⟩ (![go.int] "m")) in
@@ -1019,7 +1019,7 @@ Definition symMergeCmpFuncⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
     do:  ("p" <-[go.int] "$r0");;;
     (for: (λ: <>, (![go.int] "start") <⟨go.int⟩ (![go.int] "r")); (λ: <>, #()) := λ: <>,
       let: "c" := (GoAlloc go.int (GoZeroVal go.int #())) in
-      let: "$r0" := (u_to_w64 ((s_to_w64 ((![go.int] "start") +⟨go.int⟩ (![go.int] "r"))) ≫⟨go.uint⟩ #(W64 1))) in
+      let: "$r0" := (u_to_w64 ((s_to_w64 ((![go.int] "start") +⟨go.int⟩ (![go.int] "r"))) >>⟨go.uint⟩ #(W64 1))) in
       do:  ("c" <-[go.int] "$r0");;;
       (if: (~ ((let: "$a0" := (![E] (IndexRef (go.SliceType E) (![go.SliceType E] "data", (![go.int] "p") -⟨go.int⟩ (![go.int] "c")))) in
       let: "$a1" := (![E] (IndexRef (go.SliceType E) (![go.SliceType E] "data", ![go.int] "c"))) in
@@ -1127,7 +1127,7 @@ Definition t  : Type := w64.
 End def.
 End xorshift.
 
-Definition xorshiftⁱᵐᵖˡ : go.type := go.uint64.
+Definition xorshiftⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.uint64.
 
 Class xorshift_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
@@ -1138,6 +1138,7 @@ Class xorshift_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalCont
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
+  #[global] sortedHint_instance :: sortedHint_Assumptions;
   #[global] xorshift_instance :: xorshift_Assumptions;
   #[global] insertionSortCmpFunc_unfold E :: FuncUnfold insertionSortCmpFunc [E] (insertionSortCmpFuncⁱᵐᵖˡ E);
   #[global] siftDownCmpFunc_unfold E :: FuncUnfold siftDownCmpFunc [E] (siftDownCmpFuncⁱᵐᵖˡ E);
