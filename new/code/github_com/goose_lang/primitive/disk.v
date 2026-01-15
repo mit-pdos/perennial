@@ -92,7 +92,7 @@ Class MemDisk_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalConte
   #[global] MemDisk_type_repr  :: go.TypeRepr MemDisk MemDisk.t;
 }.
 
-Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Disk_instance :: Disk_Assumptions;
   #[global] FileDisk_instance :: FileDisk_Assumptions;

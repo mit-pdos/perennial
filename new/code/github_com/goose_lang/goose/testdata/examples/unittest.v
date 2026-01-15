@@ -164,9 +164,9 @@ Definition Enum2C {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Z := 4.
 (* line comment 3 *)
 Definition Enum2D {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #(W64 15).
 
-Definition a {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := float_placeholder.
+Definition a {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #(W64 4607182418800017408).
 
-Definition b {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := float_placeholder.
+Definition b {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #(W64 4696837146684686336).
 
 Definition MaxRune {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Z := 1114111.
 
@@ -603,9 +603,9 @@ Definition sumⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :
     (let: "i" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[go.uint64] "$r0");;;
-    (for: (λ: <>, (![go.uint64] "i") <⟨go.uint64⟩ (s_to_w64 (array.len (go.ArrayType 100 go.uint64)))); (λ: <>, do:  ("i" <-[go.uint64] ((![go.uint64] "i") +⟨go.uint64⟩ #(W64 1)))) := λ: <>,
+    (for: (λ: <>, (![go.uint64] "i") <⟨go.uint64⟩ (s_to_w64 (FuncResolve go.len [go.ArrayType 100 go.uint64] #()))); (λ: <>, do:  ("i" <-[go.uint64] ((![go.uint64] "i") +⟨go.uint64⟩ #(W64 1)))) := λ: <>,
       do:  ("sum" <-[go.uint64] ((![go.uint64] "sum") +⟨go.uint64⟩ (![go.uint64] (IndexRef (go.ArrayType 100 go.uint64) (![go.ArrayType 100 go.uint64] "x", u_to_w64 (![go.uint64] "i"))))))));;;
-    do:  ("sum" <-[go.uint64] ((![go.uint64] "sum") +⟨go.uint64⟩ (s_to_w64 (array.cap (go.ArrayType 100 go.uint64)))));;;
+    do:  ("sum" <-[go.uint64] ((![go.uint64] "sum") +⟨go.uint64⟩ (s_to_w64 (FuncResolve go.cap [go.ArrayType 100 go.uint64] #()))));;;
     return: (![go.uint64] "sum")).
 
 (* go: array.go:31:6 *)
@@ -677,62 +677,62 @@ Definition chanSelectⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
     let: "c" := (GoAlloc (go.ChannelType go.sendrecv go.int) (GoZeroVal (go.ChannelType go.sendrecv go.int) #())) in
     let: "i2" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "i1" := (GoAlloc go.int (GoZeroVal go.int #())) in
-    chan.select_nonblocking [chan.select_receive go.int (![go.ChannelType go.sendrecv go.int] "c3") (λ: "$recvVal",
-       do:  #()
-       ); chan.select_receive go.int (![go.ChannelType go.sendrecv go.int] "c1") (λ: "$recvVal",
-       let: "$r0" := (Fst "$recvVal") in
-       do:  ("i1" <-[go.int] "$r0");;;
-       do:  (let: "$a0" := ((let: "$sl0" := (InterfaceMake go.string #"received "%go) in
-       let: "$sl1" := (InterfaceMake go.int (![go.int] "i1")) in
-       let: "$sl2" := (InterfaceMake go.string #" from c1
-       "%go) in
-       CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression "$sl0"); KeyedElement None (ElementExpression "$sl1"); KeyedElement None (ElementExpression "$sl2")]))) in
-       (FuncResolve fmt.Print [] #()) "$a0")
-       ); chan.select_send go.int (![go.ChannelType go.sendrecv go.int] "c2") (![go.int] "i2") (λ: <>,
-       do:  (let: "$a0" := ((let: "$sl0" := (InterfaceMake go.string #"sent "%go) in
-       let: "$sl1" := (InterfaceMake go.int (![go.int] "i2")) in
-       let: "$sl2" := (InterfaceMake go.string #" to c2
-       "%go) in
-       CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression "$sl0"); KeyedElement None (ElementExpression "$sl1"); KeyedElement None (ElementExpression "$sl2")]))) in
-       (FuncResolve fmt.Print [] #()) "$a0")
-       ); chan.select_receive go.int (![go.ChannelType go.sendrecv go.int] "c3") (λ: "$recvVal",
-       let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
-       let: "i3" := (GoAlloc go.int (GoZeroVal go.int #())) in
-       let: ("$ret0", "$ret1") := "$recvVal" in
-       let: "$r0" := "$ret0" in
-       let: "$r1" := "$ret1" in
-       do:  ("i3" <-[go.int] "$r0");;;
-       do:  ("ok" <-[go.bool] "$r1");;;
-       (if: ![go.bool] "ok"
-       then
-         do:  (let: "$a0" := ((let: "$sl0" := (InterfaceMake go.string #"received "%go) in
-         let: "$sl1" := (InterfaceMake go.int (![go.int] "i3")) in
-         let: "$sl2" := (InterfaceMake go.string #" from c3
-         "%go) in
-         CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression "$sl0"); KeyedElement None (ElementExpression "$sl1"); KeyedElement None (ElementExpression "$sl2")]))) in
-         (FuncResolve fmt.Print [] #()) "$a0")
-       else
-         do:  (let: "$a0" := ((let: "$sl0" := (InterfaceMake go.string #"c3 is closed
-         "%go) in
-         CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression "$sl0")]))) in
-         (FuncResolve fmt.Print [] #()) "$a0"))
-       ); chan.select_receive go.int (![go.ChannelType go.sendrecv go.int] "c4") (λ: "$recvVal",
-       let: "$r0" := (Fst "$recvVal") in
-       do:  ((IndexRef (go.SliceType go.int) (![go.SliceType go.int] "a", (FuncResolve f [] #()) #())) <-[go.int] "$r0");;;
-       do:  #()
-       )] (λ: <>,
+    SelectStmt (SelectStmtClauses (Some (λ: <>,
       do:  (let: "$a0" := ((let: "$sl0" := (InterfaceMake go.string #"no communication
       "%go) in
       CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression "$sl0")]))) in
       (FuncResolve fmt.Print [] #()) "$a0")
-      );;;
+      )) [(CommClause (RecvCase go.int (![go.ChannelType go.sendrecv go.int] "c3")) (λ: "$recvVal",
+      do:  #()
+      )); (CommClause (RecvCase go.int (![go.ChannelType go.sendrecv go.int] "c1")) (λ: "$recvVal",
+      let: "$r0" := (Fst "$recvVal") in
+      do:  ("i1" <-[go.int] "$r0");;;
+      do:  (let: "$a0" := ((let: "$sl0" := (InterfaceMake go.string #"received "%go) in
+      let: "$sl1" := (InterfaceMake go.int (![go.int] "i1")) in
+      let: "$sl2" := (InterfaceMake go.string #" from c1
+      "%go) in
+      CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression "$sl0"); KeyedElement None (ElementExpression "$sl1"); KeyedElement None (ElementExpression "$sl2")]))) in
+      (FuncResolve fmt.Print [] #()) "$a0")
+      )); (CommClause (SendCase go.int (![go.ChannelType go.sendrecv go.int] "c2") (![go.int] "i2")) (λ: <>,
+      do:  (let: "$a0" := ((let: "$sl0" := (InterfaceMake go.string #"sent "%go) in
+      let: "$sl1" := (InterfaceMake go.int (![go.int] "i2")) in
+      let: "$sl2" := (InterfaceMake go.string #" to c2
+      "%go) in
+      CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression "$sl0"); KeyedElement None (ElementExpression "$sl1"); KeyedElement None (ElementExpression "$sl2")]))) in
+      (FuncResolve fmt.Print [] #()) "$a0")
+      )); (CommClause (RecvCase go.int (![go.ChannelType go.sendrecv go.int] "c3")) (λ: "$recvVal",
+      let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
+      let: "i3" := (GoAlloc go.int (GoZeroVal go.int #())) in
+      let: ("$ret0", "$ret1") := "$recvVal" in
+      let: "$r0" := "$ret0" in
+      let: "$r1" := "$ret1" in
+      do:  ("i3" <-[go.int] "$r0");;;
+      do:  ("ok" <-[go.bool] "$r1");;;
+      (if: ![go.bool] "ok"
+      then
+        do:  (let: "$a0" := ((let: "$sl0" := (InterfaceMake go.string #"received "%go) in
+        let: "$sl1" := (InterfaceMake go.int (![go.int] "i3")) in
+        let: "$sl2" := (InterfaceMake go.string #" from c3
+        "%go) in
+        CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression "$sl0"); KeyedElement None (ElementExpression "$sl1"); KeyedElement None (ElementExpression "$sl2")]))) in
+        (FuncResolve fmt.Print [] #()) "$a0")
+      else
+        do:  (let: "$a0" := ((let: "$sl0" := (InterfaceMake go.string #"c3 is closed
+        "%go) in
+        CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression "$sl0")]))) in
+        (FuncResolve fmt.Print [] #()) "$a0"))
+      )); (CommClause (RecvCase go.int (![go.ChannelType go.sendrecv go.int] "c4")) (λ: "$recvVal",
+      let: "$r0" := (Fst "$recvVal") in
+      do:  ((IndexRef (go.SliceType go.int) (![go.SliceType go.int] "a", (FuncResolve f [] #()) #())) <-[go.int] "$r0");;;
+      do:  #()
+      ))]);;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      chan.select_blocking [chan.select_send go.int (![go.ChannelType go.sendrecv go.int] "c") #(W64 0) (λ: <>,
-         do:  #()
-         ); chan.select_send go.int (![go.ChannelType go.sendrecv go.int] "c") #(W64 1) (λ: <>,
-         do:  #()
-         )]);;;
-    chan.select_blocking [];;;
+      SelectStmt (SelectStmtClauses None [(CommClause (SendCase go.int (![go.ChannelType go.sendrecv go.int] "c") #(W64 0)) (λ: <>,
+        do:  #()
+        )); (CommClause (SendCase go.int (![go.ChannelType go.sendrecv go.int] "c") #(W64 1)) (λ: <>,
+        do:  #()
+        ))]));;;
+    SelectStmt (SelectStmtClauses None []);;;
     return: #()).
 
 (* go: chan.go:59:6 *)
@@ -1352,7 +1352,7 @@ Definition useFloatⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : 
     exception_do (let: "x" := (GoAlloc go.float64 (GoZeroVal go.float64 #())) in
     let: "$r0" := (make_nondet float64T a) in
     do:  ("x" <-[go.float64] "$r0");;;
-    let: "$r0" := (((![go.float64] "x") +⟨go.float64⟩ (make_nondet float64T a)) *⟨go.float64⟩ (make_nondet float64T float_placeholder)) in
+    let: "$r0" := (((![go.float64] "x") +⟨go.float64⟩ (make_nondet float64T a)) *⟨go.float64⟩ (make_nondet float64T #(W64 4607182418800017408))) in
     do:  ("x" <-[go.float64] "$r0");;;
     return: (![go.float64] "x")).
 

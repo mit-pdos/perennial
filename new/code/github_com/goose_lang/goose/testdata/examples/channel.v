@@ -166,12 +166,12 @@ Definition EliminationStack__Pushⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
   λ: "s" "value",
     exception_do (let: "s" := (GoAlloc (go.PointerType EliminationStack) "s") in
     let: "value" := (GoAlloc go.string "value") in
-    chan.select_blocking [chan.select_send go.string (![go.ChannelType go.sendrecv go.string] (StructFieldRef EliminationStack "exchanger"%go (![go.PointerType EliminationStack] "s"))) (![go.string] "value") (λ: <>,
-       return: (#())
-       ); chan.select_receive time.Time (let: "$a0" := timeout in
-     (FuncResolve time.After [] #()) "$a0") (λ: "$recvVal",
-       do:  #()
-       )];;;
+    SelectStmt (SelectStmtClauses None [(CommClause (SendCase go.string (![go.ChannelType go.sendrecv go.string] (StructFieldRef EliminationStack "exchanger"%go (![go.PointerType EliminationStack] "s"))) (![go.string] "value")) (λ: <>,
+      return: (#())
+      )); (CommClause (RecvCase time.Time (let: "$a0" := timeout in
+    (FuncResolve time.After [] #()) "$a0")) (λ: "$recvVal",
+      do:  #()
+      ))]);;;
     do:  (let: "$a0" := (![go.string] "value") in
     (MethodResolve (go.PointerType LockedStack) "Push"%go #() (![go.PointerType LockedStack] (StructFieldRef EliminationStack "base"%go (![go.PointerType EliminationStack] "s")))) "$a0");;;
     return: #()).
@@ -182,15 +182,15 @@ Definition EliminationStack__Pushⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
 Definition EliminationStack__Popⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "s" <>,
     exception_do (let: "s" := (GoAlloc (go.PointerType EliminationStack) "s") in
-    chan.select_blocking [chan.select_receive go.string (![go.ChannelType go.sendrecv go.string] (StructFieldRef EliminationStack "exchanger"%go (![go.PointerType EliminationStack] "s"))) (λ: "$recvVal",
-       let: "v" := (GoAlloc go.string (GoZeroVal go.string #())) in
-       let: "$r0" := (Fst "$recvVal") in
-       do:  ("v" <-[go.string] "$r0");;;
-       return: (![go.string] "v", #true)
-       ); chan.select_receive time.Time (let: "$a0" := timeout in
-     (FuncResolve time.After [] #()) "$a0") (λ: "$recvVal",
-       do:  #()
-       )];;;
+    SelectStmt (SelectStmtClauses None [(CommClause (RecvCase go.string (![go.ChannelType go.sendrecv go.string] (StructFieldRef EliminationStack "exchanger"%go (![go.PointerType EliminationStack] "s")))) (λ: "$recvVal",
+      let: "v" := (GoAlloc go.string (GoZeroVal go.string #())) in
+      let: "$r0" := (Fst "$recvVal") in
+      do:  ("v" <-[go.string] "$r0");;;
+      return: (![go.string] "v", #true)
+      )); (CommClause (RecvCase time.Time (let: "$a0" := timeout in
+    (FuncResolve time.After [] #()) "$a0")) (λ: "$recvVal",
+      do:  #()
+      ))]);;;
     let: ("$ret0", "$ret1") := (((MethodResolve (go.PointerType LockedStack) "Pop"%go #() (![go.PointerType LockedStack] (StructFieldRef EliminationStack "base"%go (![go.PointerType EliminationStack] "s")))) #())) in
     return: ("$ret0", "$ret1")).
 
@@ -232,16 +232,16 @@ Definition HelloWorldCancellableⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
     let: "future" := (GoAlloc (go.ChannelType go.sendrecv go.string) (GoZeroVal (go.ChannelType go.sendrecv go.string) #())) in
     let: "$r0" := ((FuncResolve HelloWorldAsync [] #()) #()) in
     do:  ("future" <-[go.ChannelType go.sendrecv go.string] "$r0");;;
-    chan.select_blocking [chan.select_receive go.string (![go.ChannelType go.sendrecv go.string] "future") (λ: "$recvVal",
-       let: "resolved" := (GoAlloc go.string (GoZeroVal go.string #())) in
-       let: "$r0" := (Fst "$recvVal") in
-       do:  ("resolved" <-[go.string] "$r0");;;
-       return: (![go.string] "resolved")
-       ); chan.select_receive (go.StructType [
-     ]) (![go.ChannelType go.sendrecv (go.StructType [
-     ])] "done") (λ: "$recvVal",
-       return: (![go.string] (![go.PointerType go.string] "err"))
-       )]).
+    SelectStmt (SelectStmtClauses None [(CommClause (RecvCase go.string (![go.ChannelType go.sendrecv go.string] "future")) (λ: "$recvVal",
+      let: "resolved" := (GoAlloc go.string (GoZeroVal go.string #())) in
+      let: "$r0" := (Fst "$recvVal") in
+      do:  ("resolved" <-[go.string] "$r0");;;
+      return: (![go.string] "resolved")
+      )); (CommClause (RecvCase (go.StructType [
+    ]) (![go.ChannelType go.sendrecv (go.StructType [
+    ])] "done")) (λ: "$recvVal",
+      return: (![go.string] (![go.PointerType go.string] "err"))
+      ))])).
 
 (* Uses cancellation as a timeout mechanism.
 
@@ -450,26 +450,26 @@ Definition select_nb_no_panicⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
     do:  ("ch" <-[go.ChannelType go.sendrecv (go.StructType [
     ])] "$r0");;;
     let: "$go" := (λ: <>,
-      exception_do (chan.select_nonblocking [chan.select_receive (go.StructType [
-       ]) (![go.ChannelType go.sendrecv (go.StructType [
-       ])] "ch") (λ: "$recvVal",
-         do:  (let: "$a0" := (InterfaceMake go.string #"bad"%go) in
-         (FuncResolve go.panic [] #()) "$a0")
-         )] (λ: <>,
+      exception_do (SelectStmt (SelectStmtClauses (Some (λ: <>,
         do:  #()
-        );;;
+        )) [(CommClause (RecvCase (go.StructType [
+      ]) (![go.ChannelType go.sendrecv (go.StructType [
+      ])] "ch")) (λ: "$recvVal",
+        do:  (let: "$a0" := (InterfaceMake go.string #"bad"%go) in
+        (FuncResolve go.panic [] #()) "$a0")
+        ))]);;;
       return: #())
       ) in
     do:  (Fork ("$go" #()));;;
-    chan.select_nonblocking [chan.select_send (go.StructType [
-     ]) (![go.ChannelType go.sendrecv (go.StructType [
-     ])] "ch") (CompositeLiteral (go.StructType [
-     ]) (LiteralValue [])) (λ: <>,
-       do:  (let: "$a0" := (InterfaceMake go.string #"bad"%go) in
-       (FuncResolve go.panic [] #()) "$a0")
-       )] (λ: <>,
+    SelectStmt (SelectStmtClauses (Some (λ: <>,
       do:  #()
-      );;;
+      )) [(CommClause (SendCase (go.StructType [
+    ]) (![go.ChannelType go.sendrecv (go.StructType [
+    ])] "ch") (CompositeLiteral (go.StructType [
+    ]) (LiteralValue []))) (λ: <>,
+      do:  (let: "$a0" := (InterfaceMake go.string #"bad"%go) in
+      (FuncResolve go.panic [] #()) "$a0")
+      ))]);;;
     return: #()).
 
 (* go: examples.go:138:6 *)
@@ -480,12 +480,12 @@ Definition select_no_double_closeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
     do:  ("x" <-[go.ChannelType go.sendrecv go.int] "$r0");;;
     do:  (let: "$a0" := (![go.ChannelType go.sendrecv go.int] "x") in
     (FuncResolve go.close [go.ChannelType go.sendrecv go.int] #()) "$a0");;;
-    chan.select_nonblocking [chan.select_receive go.int (![go.ChannelType go.sendrecv go.int] "x") (λ: "$recvVal",
-       do:  #()
-       )] (λ: <>,
+    SelectStmt (SelectStmtClauses (Some (λ: <>,
       do:  (let: "$a0" := (![go.ChannelType go.sendrecv go.int] "x") in
       (FuncResolve go.close [go.ChannelType go.sendrecv go.int] #()) "$a0")
-      );;;
+      )) [(CommClause (RecvCase go.int (![go.ChannelType go.sendrecv go.int] "x")) (λ: "$recvVal",
+      do:  #()
+      ))]);;;
     return: #()).
 
 (* go: examples.go:148:6 *)
@@ -549,14 +549,14 @@ Definition select_ready_case_no_panicⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : G
     ])] "ch") in
     (FuncResolve go.close [go.ChannelType go.sendrecv (go.StructType [
      ])] #()) "$a0");;;
-    chan.select_nonblocking [chan.select_receive (go.StructType [
-     ]) (![go.ChannelType go.sendrecv (go.StructType [
-     ])] "ch") (λ: "$recvVal",
-       do:  #()
-       )] (λ: <>,
+    SelectStmt (SelectStmtClauses (Some (λ: <>,
       do:  (let: "$a0" := (InterfaceMake go.string #"Shouldn't be possible!"%go) in
       (FuncResolve go.panic [] #()) "$a0")
-      );;;
+      )) [(CommClause (RecvCase (go.StructType [
+    ]) (![go.ChannelType go.sendrecv (go.StructType [
+    ])] "ch")) (λ: "$recvVal",
+      do:  #()
+      ))]);;;
     return: #()).
 
 (* Various tests that should panic when failing, which also means verifying { True } e { True } is
@@ -753,14 +753,14 @@ Definition clientⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : va
       do:  ("letter" <-[go.string] "$value");;;
       do:  "$key";;;
       let: "b" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
-      chan.select_nonblocking [chan.select_receive (go.SliceType go.byte) (![go.ChannelType go.sendrecv (go.SliceType go.byte)] "freeList") (λ: "$recvVal",
-         let: "$r0" := (Fst "$recvVal") in
-         do:  ("b" <-[go.SliceType go.byte] "$r0");;;
-         do:  #()
-         )] (λ: <>,
+      SelectStmt (SelectStmtClauses (Some (λ: <>,
         let: "$r0" := (CompositeLiteral (go.SliceType go.byte) (LiteralValue [KeyedElement None (ElementExpression #(W8 0))])) in
         do:  ("b" <-[go.SliceType go.byte] "$r0")
-        );;;
+        )) [(CommClause (RecvCase (go.SliceType go.byte) (![go.ChannelType go.sendrecv (go.SliceType go.byte)] "freeList")) (λ: "$recvVal",
+        let: "$r0" := (Fst "$recvVal") in
+        do:  ("b" <-[go.SliceType go.byte] "$r0");;;
+        do:  #()
+        ))]);;;
       do:  (let: "$a0" := "b" in
       let: "$a1" := (![go.string] "letter") in
       (FuncResolve load [] #()) "$a0" "$a1");;;
@@ -800,11 +800,11 @@ Definition serverⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : va
       do:  (let: "$a0" := "b" in
       let: "$a1" := (![go.PointerType go.string] "output") in
       (FuncResolve process [] #()) "$a0" "$a1");;;
-      chan.select_nonblocking [chan.select_send (go.SliceType go.byte) (![go.ChannelType go.sendrecv (go.SliceType go.byte)] "freeList") (![go.SliceType go.byte] "b") (λ: <>,
-         do:  #()
-         )] (λ: <>,
+      SelectStmt (SelectStmtClauses (Some (λ: <>,
         do:  #()
-        ));;;
+        )) [(CommClause (SendCase (go.SliceType go.byte) (![go.ChannelType go.sendrecv (go.SliceType go.byte)] "freeList") (![go.SliceType go.byte] "b")) (λ: <>,
+        do:  #()
+        ))]));;;
     return: #()).
 
 (* go: leaky_buffer.go:61:6 *)
@@ -1007,26 +1007,26 @@ Definition CancellableMapServerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
     ])) "done") in
     let: "s" := (GoAlloc streamold "s") in
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      chan.select_blocking [chan.select_receive go.string (![go.ChannelType go.sendrecv go.string] (StructFieldRef streamold "req"%go "s")) (λ: "$recvVal",
-         let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
-         let: "in" := (GoAlloc go.string (GoZeroVal go.string #())) in
-         let: ("$ret0", "$ret1") := "$recvVal" in
-         let: "$r0" := "$ret0" in
-         let: "$r1" := "$ret1" in
-         do:  ("in" <-[go.string] "$r0");;;
-         do:  ("ok" <-[go.bool] "$r1");;;
-         (if: (~ (![go.bool] "ok"))
-         then return: (#())
-         else do:  #());;;
-         do:  (let: "$chan" := (![go.ChannelType go.sendrecv go.string] (StructFieldRef streamold "res"%go "s")) in
-         let: "$v" := (let: "$a0" := (![go.string] "in") in
-         (![go.FunctionType (go.Signature [go.string] false [go.string])] (StructFieldRef streamold "f"%go "s")) "$a0") in
-         chan.send go.string "$chan" "$v")
-         ); chan.select_receive (go.StructType [
-       ]) (![go.ChannelType go.sendrecv (go.StructType [
-       ])] "done") (λ: "$recvVal",
-         return: (#())
-         )]);;;
+      SelectStmt (SelectStmtClauses None [(CommClause (RecvCase go.string (![go.ChannelType go.sendrecv go.string] (StructFieldRef streamold "req"%go "s"))) (λ: "$recvVal",
+        let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
+        let: "in" := (GoAlloc go.string (GoZeroVal go.string #())) in
+        let: ("$ret0", "$ret1") := "$recvVal" in
+        let: "$r0" := "$ret0" in
+        let: "$r1" := "$ret1" in
+        do:  ("in" <-[go.string] "$r0");;;
+        do:  ("ok" <-[go.bool] "$r1");;;
+        (if: (~ (![go.bool] "ok"))
+        then return: (#())
+        else do:  #());;;
+        do:  (let: "$chan" := (![go.ChannelType go.sendrecv go.string] (StructFieldRef streamold "res"%go "s")) in
+        let: "$v" := (let: "$a0" := (![go.string] "in") in
+        (![go.FunctionType (go.Signature [go.string] false [go.string])] (StructFieldRef streamold "f"%go "s")) "$a0") in
+        chan.send go.string "$chan" "$v")
+        )); (CommClause (RecvCase (go.StructType [
+      ]) (![go.ChannelType go.sendrecv (go.StructType [
+      ])] "done")) (λ: "$recvVal",
+        return: (#())
+        ))]));;;
     return: #()).
 
 (* 4. CancellableMuxer - muxer with cancellation
@@ -1039,27 +1039,27 @@ Definition CancellableMuxerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
     ])) "done") in
     let: "c" := (GoAlloc (go.ChannelType go.sendrecv streamold) "c") in
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      chan.select_blocking [chan.select_receive streamold (![go.ChannelType go.sendrecv streamold] "c") (λ: "$recvVal",
-         let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
-         let: "s" := (GoAlloc streamold (GoZeroVal streamold #())) in
-         let: ("$ret0", "$ret1") := "$recvVal" in
-         let: "$r0" := "$ret0" in
-         let: "$r1" := "$ret1" in
-         do:  ("s" <-[streamold] "$r0");;;
-         do:  ("ok" <-[go.bool] "$r1");;;
-         (if: (~ (![go.bool] "ok"))
-         then return: (#"serviced all requests"%go)
-         else do:  #());;;
-         let: "$a0" := (![streamold] "s") in
-         let: "$a1" := (![go.ChannelType go.sendrecv (go.StructType [
-         ])] "done") in
-         let: "$go" := (FuncResolve CancellableMapServer [] #()) in
-         do:  (Fork ("$go" "$a0" "$a1"))
-         ); chan.select_receive (go.StructType [
-       ]) (![go.ChannelType go.sendrecv (go.StructType [
-       ])] "done") (λ: "$recvVal",
-         return: (![go.string] (![go.PointerType go.string] "errMsg"))
-         )])).
+      SelectStmt (SelectStmtClauses None [(CommClause (RecvCase streamold (![go.ChannelType go.sendrecv streamold] "c")) (λ: "$recvVal",
+        let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
+        let: "s" := (GoAlloc streamold (GoZeroVal streamold #())) in
+        let: ("$ret0", "$ret1") := "$recvVal" in
+        let: "$r0" := "$ret0" in
+        let: "$r1" := "$ret1" in
+        do:  ("s" <-[streamold] "$r0");;;
+        do:  ("ok" <-[go.bool] "$r1");;;
+        (if: (~ (![go.bool] "ok"))
+        then return: (#"serviced all requests"%go)
+        else do:  #());;;
+        let: "$a0" := (![streamold] "s") in
+        let: "$a1" := (![go.ChannelType go.sendrecv (go.StructType [
+        ])] "done") in
+        let: "$go" := (FuncResolve CancellableMapServer [] #()) in
+        do:  (Fork ("$go" "$a0" "$a1"))
+        )); (CommClause (RecvCase (go.StructType [
+      ]) (![go.ChannelType go.sendrecv (go.StructType [
+      ])] "done")) (λ: "$recvVal",
+        return: (![go.string] (![go.PointerType go.string] "errMsg"))
+        ))]))).
 
 (* go: parallel_search_replace.go:13:6 *)
 Definition workerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
