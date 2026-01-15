@@ -61,17 +61,16 @@ jobs:
           go-version: "1.24.9"
           # repo doesn't have go.sum file. nothing to cache.
           cache: false
-      - name: build ci-use-goose-pr
+      - name: install gh-paired-pr
         run: |
-          cd etc/ci-use-goose-pr
-          go install .
+          go install github.com/tchajed/gh-paired-pr@latest
       - name: check that Goosed files are clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            ci-use-goose-pr -pr ${{ github.event.number }} -verbose
-            ./etc/ci-goose-check.py --new-goose-url "$( ci-use-goose-pr -pr ${{ github.event.number }} )"
+            gh-paired-pr -base mit-pdos/perennial -dependency goose-lang/goose -pr ${{ github.event.number }} -verbose
+            ./etc/ci-goose-check.py --new-goose-url "$( gh-paired-pr -base mit-pdos/perennial -dependency goose-lang/goose -pr ${{ github.event.number }} )"
           else
             ./etc/ci-goose-check.py
           fi
