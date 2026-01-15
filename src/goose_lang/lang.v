@@ -299,7 +299,7 @@ with comm_clause :=
 (* Variable bindings are "desugared" by goose into the body, so the send and
    receives don't need to consider bindings or assignments. *)
 with comm_case := (* skips default because it's inlined into SelectStmtClauses *)
-| SendCase (elem_type : go.type) (ch : expr)
+| SendCase (elem_type : go.type) (ch : expr) (e : expr)
 | RecvCase (elem_type : go.type) (ch : expr)
 .
 
@@ -840,7 +840,7 @@ Global Instance key_inhabited : Inhabited key := populate (KeyField []).
 Global Instance element_inhabited : Inhabited element := populate (ElementExpression inhabitant).
 Global Instance keyed_element_inhabited : Inhabited keyed_element :=
   populate (KeyedElement None inhabitant).
-Global Instance comm_case_inhabited : Inhabited comm_case := populate (SendCase inhabitant inhabitant).
+Global Instance comm_case_inhabited : Inhabited comm_case := populate (SendCase inhabitant inhabitant inhabitant).
 Global Instance comm_clause_inhabited : Inhabited comm_clause := populate (CommClause inhabitant inhabitant).
 
 Global Instance func_t_inhabited : Inhabited func.t :=
@@ -972,7 +972,7 @@ match c with
 | CommClause c e =>
     CommClause
       (match c with
-       | SendCase t e => SendCase t (subst x v e)
+       | SendCase t b e => SendCase t (subst x v b) (subst x v e)
        | RecvCase t e => RecvCase t (subst x v e)
        end)
       (subst x v e)
@@ -1245,7 +1245,7 @@ with enc_comm_clause (v : comm_clause) : tree leaf_type :=
   end
 with enc_comm_case (v : comm_case) : tree leaf_type :=
   match v with
-  | SendCase t e => Node "SendCase" [Leaf $ GoTypeLeaf t; enc_expr e]
+  | SendCase t b e => Node "SendCase" [Leaf $ GoTypeLeaf t; enc_expr b; enc_expr e]
   | RecvCase t e => Node "RecvCase" [Leaf $ GoTypeLeaf t; enc_expr e]
   end
 .
@@ -1351,7 +1351,7 @@ with dec_comm_clause (v : tree leaf_type) : comm_clause  :=
   end
 with dec_comm_case (v : tree leaf_type) : comm_case :=
   match v with
-  | Node "SendCase" [Leaf (GoTypeLeaf t); e] => SendCase t (dec_expr e)
+  | Node "SendCase" [Leaf (GoTypeLeaf t); b; e] => SendCase t (dec_expr b) (dec_expr e)
   | Node "RecvCase" [Leaf (GoTypeLeaf t); e] => RecvCase t (dec_expr e)
   | _ => inhabitant
   end.
