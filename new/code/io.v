@@ -2,8 +2,11 @@
 Require Export New.code.errors.
 Require Export New.code.sync.
 From New.golang Require Import defn.
+Module pkg_id.
 Definition io : go_string := "io".
 
+End pkg_id.
+Export pkg_id.
 Module io.
 
 Definition Reader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "io.Reader"%go [].
@@ -160,16 +163,16 @@ Definition MultiWriter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_strin
 
 Definition Pipe {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "io.Pipe"%go.
 
-#[global] Instance info' : PkgInfo io.io := 
+#[global] Instance info' : PkgInfo pkg_id.io :=
 {|
-  pkg_imported_pkgs := [code.errors.errors; code.sync.sync]
+  pkg_imported_pkgs := [code.errors.pkg_id.errors; code.sync.pkg_id.sync]
 |}.
 
 Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    package.init io.io (λ: <>,
+    package.init pkg_id.io (λ: <>,
       exception_do (do:  (sync.initialize' #());;;
       do:  (errors.initialize' #());;;
       do:  (ErrShortWrite'init #());;;
@@ -191,7 +194,7 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
 Module Reader.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Definition t  : Type := interface.t.
+Definition t : Type := interface.t.
 End def.
 End Reader.
 
@@ -206,7 +209,7 @@ Class Reader_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContex
 Module Writer.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Definition t  : Type := interface.t.
+Definition t : Type := interface.t.
 End def.
 End Writer.
 
@@ -216,6 +219,482 @@ Class Writer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContex
 {
   #[global] Writer_type_repr  :: go.TypeRepr Writer Writer.t;
   #[global] Writer_underlying :: go.Underlying (Writer) (Writerⁱᵐᵖˡ);
+}.
+
+Module Closer.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End Closer.
+
+Class Closer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Closer_type_repr  :: go.TypeRepr Closer Closer.t;
+}.
+
+Module Seeker.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End Seeker.
+
+Class Seeker_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Seeker_type_repr  :: go.TypeRepr Seeker Seeker.t;
+}.
+
+Module ReadWriter.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End ReadWriter.
+
+Class ReadWriter_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] ReadWriter_type_repr  :: go.TypeRepr ReadWriter ReadWriter.t;
+}.
+
+Module ReadCloser.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End ReadCloser.
+
+Class ReadCloser_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] ReadCloser_type_repr  :: go.TypeRepr ReadCloser ReadCloser.t;
+}.
+
+Module WriteCloser.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End WriteCloser.
+
+Class WriteCloser_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] WriteCloser_type_repr  :: go.TypeRepr WriteCloser WriteCloser.t;
+}.
+
+Module ReadWriteCloser.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End ReadWriteCloser.
+
+Class ReadWriteCloser_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] ReadWriteCloser_type_repr  :: go.TypeRepr ReadWriteCloser ReadWriteCloser.t;
+}.
+
+Module ReadSeeker.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End ReadSeeker.
+
+Class ReadSeeker_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] ReadSeeker_type_repr  :: go.TypeRepr ReadSeeker ReadSeeker.t;
+}.
+
+Module ReadSeekCloser.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End ReadSeekCloser.
+
+Class ReadSeekCloser_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] ReadSeekCloser_type_repr  :: go.TypeRepr ReadSeekCloser ReadSeekCloser.t;
+}.
+
+Module WriteSeeker.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End WriteSeeker.
+
+Class WriteSeeker_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] WriteSeeker_type_repr  :: go.TypeRepr WriteSeeker WriteSeeker.t;
+}.
+
+Module ReadWriteSeeker.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End ReadWriteSeeker.
+
+Class ReadWriteSeeker_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] ReadWriteSeeker_type_repr  :: go.TypeRepr ReadWriteSeeker ReadWriteSeeker.t;
+}.
+
+Module ReaderFrom.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End ReaderFrom.
+
+Class ReaderFrom_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] ReaderFrom_type_repr  :: go.TypeRepr ReaderFrom ReaderFrom.t;
+}.
+
+Module WriterTo.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End WriterTo.
+
+Class WriterTo_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] WriterTo_type_repr  :: go.TypeRepr WriterTo WriterTo.t;
+}.
+
+Module ReaderAt.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End ReaderAt.
+
+Class ReaderAt_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] ReaderAt_type_repr  :: go.TypeRepr ReaderAt ReaderAt.t;
+}.
+
+Module WriterAt.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End WriterAt.
+
+Class WriterAt_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] WriterAt_type_repr  :: go.TypeRepr WriterAt WriterAt.t;
+}.
+
+Module ByteReader.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End ByteReader.
+
+Class ByteReader_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] ByteReader_type_repr  :: go.TypeRepr ByteReader ByteReader.t;
+}.
+
+Module ByteScanner.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End ByteScanner.
+
+Class ByteScanner_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] ByteScanner_type_repr  :: go.TypeRepr ByteScanner ByteScanner.t;
+}.
+
+Module ByteWriter.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End ByteWriter.
+
+Class ByteWriter_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] ByteWriter_type_repr  :: go.TypeRepr ByteWriter ByteWriter.t;
+}.
+
+Module RuneReader.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End RuneReader.
+
+Class RuneReader_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] RuneReader_type_repr  :: go.TypeRepr RuneReader RuneReader.t;
+}.
+
+Module RuneScanner.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End RuneScanner.
+
+Class RuneScanner_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] RuneScanner_type_repr  :: go.TypeRepr RuneScanner RuneScanner.t;
+}.
+
+Module StringWriter.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End StringWriter.
+
+Class StringWriter_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] StringWriter_type_repr  :: go.TypeRepr StringWriter StringWriter.t;
+}.
+
+Module LimitedReader.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End LimitedReader.
+
+Class LimitedReader_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] LimitedReader_type_repr  :: go.TypeRepr LimitedReader LimitedReader.t;
+}.
+
+Module SectionReader.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End SectionReader.
+
+Class SectionReader_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] SectionReader_type_repr  :: go.TypeRepr SectionReader SectionReader.t;
+}.
+
+Module OffsetWriter.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End OffsetWriter.
+
+Class OffsetWriter_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] OffsetWriter_type_repr  :: go.TypeRepr OffsetWriter OffsetWriter.t;
+}.
+
+Module teeReader.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End teeReader.
+
+Class teeReader_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] teeReader_type_repr  :: go.TypeRepr teeReader teeReader.t;
+}.
+
+Module discard.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End discard.
+
+Class discard_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] discard_type_repr  :: go.TypeRepr discard discard.t;
+}.
+
+Module nopCloser.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End nopCloser.
+
+Class nopCloser_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] nopCloser_type_repr  :: go.TypeRepr nopCloser nopCloser.t;
+}.
+
+Module nopCloserWriterTo.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End nopCloserWriterTo.
+
+Class nopCloserWriterTo_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] nopCloserWriterTo_type_repr  :: go.TypeRepr nopCloserWriterTo nopCloserWriterTo.t;
+}.
+
+Module eofReader.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End eofReader.
+
+Class eofReader_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] eofReader_type_repr  :: go.TypeRepr eofReader eofReader.t;
+}.
+
+Module multiReader.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End multiReader.
+
+Class multiReader_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] multiReader_type_repr  :: go.TypeRepr multiReader multiReader.t;
+}.
+
+Module multiWriter.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End multiWriter.
+
+Class multiWriter_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] multiWriter_type_repr  :: go.TypeRepr multiWriter multiWriter.t;
+}.
+
+Module onceError.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End onceError.
+
+Class onceError_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] onceError_type_repr  :: go.TypeRepr onceError onceError.t;
+}.
+
+Module pipe.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End pipe.
+
+Class pipe_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] pipe_type_repr  :: go.TypeRepr pipe pipe.t;
+}.
+
+Module PipeReader.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End PipeReader.
+
+Class PipeReader_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] PipeReader_type_repr  :: go.TypeRepr PipeReader PipeReader.t;
+}.
+
+Module PipeWriter.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End PipeWriter.
+
+Class PipeWriter_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] PipeWriter_type_repr  :: go.TypeRepr PipeWriter PipeWriter.t;
 }.
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=

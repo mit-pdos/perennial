@@ -4,8 +4,11 @@ Require Export New.code.github_com.tchajed.marshal.
 Require Export New.code.github_com.goose_lang.primitive.disk.
 From New.golang Require Import defn.
 From New Require Import disk_prelude.
+Module pkg_id.
 Definition append_log : go_string := "github.com/goose-lang/goose/testdata/examples/append_log".
 
+End pkg_id.
+Export pkg_id.
 Module append_log.
 
 Definition Log {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/append_log.Log"%go [].
@@ -170,14 +173,14 @@ Definition Log__Resetⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
     do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go #() (![go.PointerType sync.Mutex] (StructFieldRef Log "m"%go (![go.PointerType Log] "log")))) #());;;
     return: #()).
 
-#[global] Instance info' : PkgInfo append_log.append_log := 
+#[global] Instance info' : PkgInfo pkg_id.append_log :=
 {|
-  pkg_imported_pkgs := [code.sync.sync; code.github_com.tchajed.marshal.marshal; code.github_com.goose_lang.primitive.disk.disk]
+  pkg_imported_pkgs := [code.sync.pkg_id.sync; code.github_com.tchajed.marshal.pkg_id.marshal; code.github_com.goose_lang.primitive.disk.pkg_id.disk]
 |}.
 
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    package.init append_log.append_log (λ: <>,
+    package.init pkg_id.append_log (λ: <>,
       exception_do (do:  (disk.initialize' #());;;
       do:  (marshal.initialize' #());;;
       do:  (sync.initialize' #()))
@@ -188,9 +191,9 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  m : loc;
-  sz : w64;
-  diskSz : w64;
+  m' : loc;
+  sz' : w64;
+  diskSz' : w64;
 }.
 
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
@@ -210,12 +213,12 @@ Class Log_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} 
 {
   #[global] Log_type_repr  :: go.TypeRepr Log Log.t;
   #[global] Log_underlying :: go.Underlying (Log) (Logⁱᵐᵖˡ);
-  #[global] Log_get_m (x : Log.t) :: go.IsGoStepPureDet (StructFieldGet (Log) "m") #x #x.(Log.m);
-  #[global] Log_set_m (x : Log.t) y :: go.IsGoStepPureDet (StructFieldSet (Log) "m") (#x, #y) #(x <|Log.m := y|>);
-  #[global] Log_get_sz (x : Log.t) :: go.IsGoStepPureDet (StructFieldGet (Log) "sz") #x #x.(Log.sz);
-  #[global] Log_set_sz (x : Log.t) y :: go.IsGoStepPureDet (StructFieldSet (Log) "sz") (#x, #y) #(x <|Log.sz := y|>);
-  #[global] Log_get_diskSz (x : Log.t) :: go.IsGoStepPureDet (StructFieldGet (Log) "diskSz") #x #x.(Log.diskSz);
-  #[global] Log_set_diskSz (x : Log.t) y :: go.IsGoStepPureDet (StructFieldSet (Log) "diskSz") (#x, #y) #(x <|Log.diskSz := y|>);
+  #[global] Log_get_m' (x : Log.t) :: go.IsGoStepPureDet (StructFieldGet (Log) "m'") #x #x.(Log.m');
+  #[global] Log_set_m' (x : Log.t) y :: go.IsGoStepPureDet (StructFieldSet (Log) "m'") (#x, #y) #(x <|Log.m' := y|>);
+  #[global] Log_get_sz' (x : Log.t) :: go.IsGoStepPureDet (StructFieldGet (Log) "sz'") #x #x.(Log.sz');
+  #[global] Log_set_sz' (x : Log.t) y :: go.IsGoStepPureDet (StructFieldSet (Log) "sz'") (#x, #y) #(x <|Log.sz' := y|>);
+  #[global] Log_get_diskSz' (x : Log.t) :: go.IsGoStepPureDet (StructFieldGet (Log) "diskSz'") #x #x.(Log.diskSz');
+  #[global] Log_set_diskSz' (x : Log.t) y :: go.IsGoStepPureDet (StructFieldSet (Log) "diskSz'") (#x, #y) #(x <|Log.diskSz' := y|>);
   #[global] Log'ptr_Append_unfold :: MethodUnfold (go.PointerType (Log)) "Append" (Log__Appendⁱᵐᵖˡ);
   #[global] Log'ptr_Get_unfold :: MethodUnfold (go.PointerType (Log)) "Get" (Log__Getⁱᵐᵖˡ);
   #[global] Log'ptr_Reset_unfold :: MethodUnfold (go.PointerType (Log)) "Reset" (Log__Resetⁱᵐᵖˡ);

@@ -2,8 +2,11 @@
 From New.golang Require Import defn.
 Require Export New.trusted_code.internal.synctest.
 Import synctest.
+Module pkg_id.
 Definition synctest : go_string := "internal/synctest".
 
+End pkg_id.
+Export pkg_id.
 Module synctest.
 
 Definition Association {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "internal/synctest.Association"%go [].
@@ -42,7 +45,7 @@ Definition inBubble {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string :
 
 Definition Acquire {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "internal/synctest.Acquire"%go.
 
-#[global] Instance info' : PkgInfo synctest.synctest := 
+#[global] Instance info' : PkgInfo pkg_id.synctest :=
 {|
   pkg_imported_pkgs := []
 |}.
@@ -51,9 +54,37 @@ Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    package.init synctest.synctest (λ: <>,
+    package.init pkg_id.synctest (λ: <>,
       exception_do (do:  #())
       ).
+
+Module Association.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End Association.
+
+Class Association_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Association_type_repr  :: go.TypeRepr Association Association.t;
+}.
+
+Module Bubble.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End Bubble.
+
+Class Bubble_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Bubble_type_repr  :: go.TypeRepr Bubble Bubble.t;
+}.
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {

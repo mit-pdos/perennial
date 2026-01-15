@@ -3,8 +3,11 @@ From New.golang Require Import defn.
 Require Export New.trusted_code.github_com.goose_lang.primitive.disk.
 Import disk.
 From New Require Import disk_prelude.
+Module pkg_id.
 Definition disk : go_string := "github.com/goose-lang/primitive/disk".
 
+End pkg_id.
+Export pkg_id.
 Module disk.
 
 Definition Disk {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/primitive/disk.Disk"%go [].
@@ -33,7 +36,7 @@ Definition NewFileDisk {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_strin
 
 Definition NewMemDisk {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/primitive/disk.NewMemDisk"%go.
 
-#[global] Instance info' : PkgInfo disk.disk := 
+#[global] Instance info' : PkgInfo pkg_id.disk :=
 {|
   pkg_imported_pkgs := []
 |}.
@@ -42,7 +45,7 @@ Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    package.init disk.disk (λ: <>,
+    package.init pkg_id.disk (λ: <>,
       exception_do (do:  (_'init #());;;
       do:  (_'init #()))
       ).
@@ -51,6 +54,34 @@ Class Disk_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext}
 {
   #[global] Disk_type_repr  :: go.TypeRepr Disk Disk.t;
   #[global] Disk_underlying :: go.Underlying (Disk) (Diskⁱᵐᵖˡ);
+}.
+
+Module FileDisk.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End FileDisk.
+
+Class FileDisk_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] FileDisk_type_repr  :: go.TypeRepr FileDisk FileDisk.t;
+}.
+
+Module MemDisk.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End MemDisk.
+
+Class MemDisk_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] MemDisk_type_repr  :: go.TypeRepr MemDisk MemDisk.t;
 }.
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=

@@ -2,8 +2,11 @@
 From New.golang Require Import defn.
 Require Export New.trusted_code.fmt.
 Import fmt.
+Module pkg_id.
 Definition fmt : go_string := "fmt".
 
+End pkg_id.
+Export pkg_id.
 Module fmt.
 
 Definition wrapError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "fmt.wrapError"%go [].
@@ -192,7 +195,7 @@ Definition hexDigit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string :
 
 Definition errorHandler {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "fmt.errorHandler"%go.
 
-#[global] Instance info' : PkgInfo fmt.fmt := 
+#[global] Instance info' : PkgInfo pkg_id.fmt :=
 {|
   pkg_imported_pkgs := []
 |}.
@@ -201,13 +204,251 @@ Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    package.init fmt.fmt (λ: <>,
+    package.init pkg_id.fmt (λ: <>,
       exception_do (do:  (ppFree'init #());;;
       do:  (space'init #());;;
       do:  (ssFree'init #());;;
       do:  (errComplex'init #());;;
       do:  (errBool'init #()))
       ).
+
+Module wrapError.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End wrapError.
+
+Class wrapError_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] wrapError_type_repr  :: go.TypeRepr wrapError wrapError.t;
+}.
+
+Module wrapErrors.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End wrapErrors.
+
+Class wrapErrors_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] wrapErrors_type_repr  :: go.TypeRepr wrapErrors wrapErrors.t;
+}.
+
+Module fmtFlags.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End fmtFlags.
+
+Class fmtFlags_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] fmtFlags_type_repr  :: go.TypeRepr fmtFlags fmtFlags.t;
+}.
+
+Module fmt.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End fmt.
+
+Class fmt_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] fmt_type_repr  :: go.TypeRepr fmt fmt.t;
+}.
+
+Module State.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End State.
+
+Class State_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] State_type_repr  :: go.TypeRepr State State.t;
+}.
+
+Module Formatter.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End Formatter.
+
+Class Formatter_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Formatter_type_repr  :: go.TypeRepr Formatter Formatter.t;
+}.
+
+Module Stringer.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End Stringer.
+
+Class Stringer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Stringer_type_repr  :: go.TypeRepr Stringer Stringer.t;
+}.
+
+Module GoStringer.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End GoStringer.
+
+Class GoStringer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] GoStringer_type_repr  :: go.TypeRepr GoStringer GoStringer.t;
+}.
+
+Module buffer.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End buffer.
+
+Class buffer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] buffer_type_repr  :: go.TypeRepr buffer buffer.t;
+}.
+
+Module pp.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End pp.
+
+Class pp_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] pp_type_repr  :: go.TypeRepr pp pp.t;
+}.
+
+Module ScanState.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End ScanState.
+
+Class ScanState_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] ScanState_type_repr  :: go.TypeRepr ScanState ScanState.t;
+}.
+
+Module Scanner.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End Scanner.
+
+Class Scanner_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Scanner_type_repr  :: go.TypeRepr Scanner Scanner.t;
+}.
+
+Module stringReader.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End stringReader.
+
+Class stringReader_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] stringReader_type_repr  :: go.TypeRepr stringReader stringReader.t;
+}.
+
+Module scanError.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End scanError.
+
+Class scanError_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] scanError_type_repr  :: go.TypeRepr scanError scanError.t;
+}.
+
+Module ss.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End ss.
+
+Class ss_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] ss_type_repr  :: go.TypeRepr ss ss.t;
+}.
+
+Module ssave.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End ssave.
+
+Class ssave_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] ssave_type_repr  :: go.TypeRepr ssave ssave.t;
+}.
+
+Module readRune.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End readRune.
+
+Class readRune_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] readRune_type_repr  :: go.TypeRepr readRune readRune.t;
+}.
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {

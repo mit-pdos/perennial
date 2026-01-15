@@ -7,8 +7,11 @@ Require Export New.code.log.
 Require Export New.code.github_com.goose_lang.std.
 From New.golang Require Import defn.
 From New Require Import disk_prelude.
+Module pkg_id.
 Definition unittest : go_string := "github.com/goose-lang/goose/testdata/examples/unittest".
 
+End pkg_id.
+Export pkg_id.
 Module unittest.
 
 Definition Foo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.Foo"%go [].
@@ -2912,14 +2915,14 @@ Definition LocalConstsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
     do:  ("x" <-[go.int] ((![go.int] "x") -⟨go.int⟩ #(W64 d)));;;
     return: (![go.int] "x")).
 
-#[global] Instance info' : PkgInfo unittest.unittest := 
+#[global] Instance info' : PkgInfo pkg_id.unittest :=
 {|
-  pkg_imported_pkgs := [code.fmt.fmt; code.sync.sync; code.github_com.goose_lang.primitive.primitive; code.github_com.goose_lang.primitive.disk.disk; code.log.log; code.github_com.goose_lang.std.std]
+  pkg_imported_pkgs := [code.fmt.pkg_id.fmt; code.sync.pkg_id.sync; code.github_com.goose_lang.primitive.pkg_id.primitive; code.github_com.goose_lang.primitive.disk.pkg_id.disk; code.log.pkg_id.log; code.github_com.goose_lang.std.pkg_id.std]
 |}.
 
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    package.init unittest.unittest (λ: <>,
+    package.init pkg_id.unittest (λ: <>,
       exception_do (do:  (go.GlobalAlloc mapLiteralWithConversion (go.MapType (go.InterfaceType []) (go.InterfaceType [])) #());;;
       do:  (go.GlobalAlloc mapLiteral (go.MapType go.string go.uint64) #());;;
       do:  (go.GlobalAlloc globalB go.string #());;;
@@ -2958,7 +2961,7 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
 Module Foo.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Definition t  : Type := (array.t w64 10).
+Definition t : Type := (array.t w64 10).
 End def.
 End Foo.
 
@@ -2996,7 +2999,7 @@ Class importantStruct_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLo
 Module stringWrapper.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Definition t  : Type := go_string.
+Definition t : Type := go_string.
 End def.
 End stringWrapper.
 
@@ -3011,7 +3014,7 @@ Class stringWrapper_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLoca
 Module Uint32.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Definition t  : Type := w32.
+Definition t : Type := w32.
 End def.
 End Uint32.
 
@@ -3026,7 +3029,7 @@ Class Uint32_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContex
 Module numWrapper.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Definition t  : Type := w64.
+Definition t : Type := w64.
 End def.
 End numWrapper.
 
@@ -3044,7 +3047,7 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  d : disk.Disk.t;
+  d' : disk.Disk.t;
 }.
 
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
@@ -3062,8 +3065,8 @@ Class diskWrapper_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalC
 {
   #[global] diskWrapper_type_repr  :: go.TypeRepr diskWrapper diskWrapper.t;
   #[global] diskWrapper_underlying :: go.Underlying (diskWrapper) (diskWrapperⁱᵐᵖˡ);
-  #[global] diskWrapper_get_d (x : diskWrapper.t) :: go.IsGoStepPureDet (StructFieldGet (diskWrapper) "d") #x #x.(diskWrapper.d);
-  #[global] diskWrapper_set_d (x : diskWrapper.t) y :: go.IsGoStepPureDet (StructFieldSet (diskWrapper) "d") (#x, #y) #(x <|diskWrapper.d := y|>);
+  #[global] diskWrapper_get_d' (x : diskWrapper.t) :: go.IsGoStepPureDet (StructFieldGet (diskWrapper) "d'") #x #x.(diskWrapper.d');
+  #[global] diskWrapper_set_d' (x : diskWrapper.t) y :: go.IsGoStepPureDet (StructFieldSet (diskWrapper) "d'") (#x, #y) #(x <|diskWrapper.d' := y|>);
 }.
 
 Module embedA.
@@ -3071,7 +3074,7 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  a : w64;
+  a' : w64;
 }.
 
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
@@ -3089,8 +3092,8 @@ Class embedA_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContex
 {
   #[global] embedA_type_repr  :: go.TypeRepr embedA embedA.t;
   #[global] embedA_underlying :: go.Underlying (embedA) (embedAⁱᵐᵖˡ);
-  #[global] embedA_get_a (x : embedA.t) :: go.IsGoStepPureDet (StructFieldGet (embedA) "a") #x #x.(embedA.a);
-  #[global] embedA_set_a (x : embedA.t) y :: go.IsGoStepPureDet (StructFieldSet (embedA) "a") (#x, #y) #(x <|embedA.a := y|>);
+  #[global] embedA_get_a' (x : embedA.t) :: go.IsGoStepPureDet (StructFieldGet (embedA) "a'") #x #x.(embedA.a');
+  #[global] embedA_set_a' (x : embedA.t) y :: go.IsGoStepPureDet (StructFieldSet (embedA) "a'") (#x, #y) #(x <|embedA.a' := y|>);
   #[global] embedA_Foo_unfold :: MethodUnfold (embedA) "Foo" (embedA__Fooⁱᵐᵖˡ);
   #[global] embedA'ptr_Bar_unfold :: MethodUnfold (go.PointerType (embedA)) "Bar" (embedA__Barⁱᵐᵖˡ);
   #[global] embedA'ptr_Foo_unfold :: MethodUnfold (go.PointerType (embedA)) "Foo" (λ: "$r", MethodResolve (embedA) "Foo" #() (![(embedA)] "$r"));
@@ -3101,7 +3104,7 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  embedA : unittest.embedA.t;
+  embedA' : unittest.embedA.t;
 }.
 
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
@@ -3119,8 +3122,8 @@ Class embedB_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContex
 {
   #[global] embedB_type_repr  :: go.TypeRepr embedB embedB.t;
   #[global] embedB_underlying :: go.Underlying (embedB) (embedBⁱᵐᵖˡ);
-  #[global] embedB_get_embedA (x : embedB.t) :: go.IsGoStepPureDet (StructFieldGet (embedB) "embedA") #x #x.(embedB.embedA);
-  #[global] embedB_set_embedA (x : embedB.t) y :: go.IsGoStepPureDet (StructFieldSet (embedB) "embedA") (#x, #y) #(x <|embedB.embedA := y|>);
+  #[global] embedB_get_embedA' (x : embedB.t) :: go.IsGoStepPureDet (StructFieldGet (embedB) "embedA'") #x #x.(embedB.embedA');
+  #[global] embedB_set_embedA' (x : embedB.t) y :: go.IsGoStepPureDet (StructFieldSet (embedB) "embedA'") (#x, #y) #(x <|embedB.embedA' := y|>);
   #[global] embedB_Foo_unfold :: MethodUnfold (embedB) "Foo" (embedB__Fooⁱᵐᵖˡ);
   #[global] embedB'ptr_Bar_unfold :: MethodUnfold (go.PointerType (embedB)) "Bar" (λ: "$r", MethodResolve (go.PointerType embedA) Bar #() (StructFieldRef embedB #"embedA"%go "$r"));
   #[global] embedB'ptr_Car_unfold :: MethodUnfold (go.PointerType (embedB)) "Car" (embedB__Carⁱᵐᵖˡ);
@@ -3132,7 +3135,7 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  embedB : loc;
+  embedB' : loc;
 }.
 
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
@@ -3150,8 +3153,8 @@ Class embedC_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContex
 {
   #[global] embedC_type_repr  :: go.TypeRepr embedC embedC.t;
   #[global] embedC_underlying :: go.Underlying (embedC) (embedCⁱᵐᵖˡ);
-  #[global] embedC_get_embedB (x : embedC.t) :: go.IsGoStepPureDet (StructFieldGet (embedC) "embedB") #x #x.(embedC.embedB);
-  #[global] embedC_set_embedB (x : embedC.t) y :: go.IsGoStepPureDet (StructFieldSet (embedC) "embedB") (#x, #y) #(x <|embedC.embedB := y|>);
+  #[global] embedC_get_embedB' (x : embedC.t) :: go.IsGoStepPureDet (StructFieldGet (embedC) "embedB'") #x #x.(embedC.embedB');
+  #[global] embedC_set_embedB' (x : embedC.t) y :: go.IsGoStepPureDet (StructFieldSet (embedC) "embedB'") (#x, #y) #(x <|embedC.embedB' := y|>);
   #[global] embedC_Bar_unfold :: MethodUnfold (embedC) "Bar" (λ: "$r", MethodResolve (go.PointerType embedB) Bar #() (StructFieldGet (embedC) "embedB" "$r" ))%V;
   #[global] embedC_Car_unfold :: MethodUnfold (embedC) "Car" (λ: "$r", MethodResolve (go.PointerType embedB) Car #() (StructFieldGet (embedC) "embedB" "$r" ))%V;
   #[global] embedC_Foo_unfold :: MethodUnfold (embedC) "Foo" (λ: "$r", MethodResolve (go.PointerType embedB) Foo #() (StructFieldGet (embedC) "embedB" "$r" ))%V;
@@ -3165,7 +3168,7 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  embedC : unittest.embedC.t;
+  embedC' : unittest.embedC.t;
 }.
 
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
@@ -3183,8 +3186,8 @@ Class embedD_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContex
 {
   #[global] embedD_type_repr  :: go.TypeRepr embedD embedD.t;
   #[global] embedD_underlying :: go.Underlying (embedD) (embedDⁱᵐᵖˡ);
-  #[global] embedD_get_embedC (x : embedD.t) :: go.IsGoStepPureDet (StructFieldGet (embedD) "embedC") #x #x.(embedD.embedC);
-  #[global] embedD_set_embedC (x : embedD.t) y :: go.IsGoStepPureDet (StructFieldSet (embedD) "embedC") (#x, #y) #(x <|embedD.embedC := y|>);
+  #[global] embedD_get_embedC' (x : embedD.t) :: go.IsGoStepPureDet (StructFieldGet (embedD) "embedC'") #x #x.(embedD.embedC');
+  #[global] embedD_set_embedC' (x : embedD.t) y :: go.IsGoStepPureDet (StructFieldSet (embedD) "embedC'") (#x, #y) #(x <|embedD.embedC' := y|>);
   #[global] embedD_Bar_unfold :: MethodUnfold (embedD) "Bar" (λ: "$r", MethodResolve embedC Bar #() (StructFieldGet (embedD) "embedC" "$r" ))%V;
   #[global] embedD_Car_unfold :: MethodUnfold (embedD) "Car" (λ: "$r", MethodResolve embedC Car #() (StructFieldGet (embedD) "embedC" "$r" ))%V;
   #[global] embedD_Foo_unfold :: MethodUnfold (embedD) "Foo" (λ: "$r", MethodResolve embedC Foo #() (StructFieldGet (embedD) "embedC" "$r" ))%V;
@@ -3198,7 +3201,7 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  p : slice.t;
+  p' : slice.t;
 }.
 
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
@@ -3216,8 +3219,8 @@ Class Enc_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} 
 {
   #[global] Enc_type_repr  :: go.TypeRepr Enc Enc.t;
   #[global] Enc_underlying :: go.Underlying (Enc) (Encⁱᵐᵖˡ);
-  #[global] Enc_get_p (x : Enc.t) :: go.IsGoStepPureDet (StructFieldGet (Enc) "p") #x #x.(Enc.p);
-  #[global] Enc_set_p (x : Enc.t) y :: go.IsGoStepPureDet (StructFieldSet (Enc) "p") (#x, #y) #(x <|Enc.p := y|>);
+  #[global] Enc_get_p' (x : Enc.t) :: go.IsGoStepPureDet (StructFieldGet (Enc) "p'") #x #x.(Enc.p');
+  #[global] Enc_set_p' (x : Enc.t) y :: go.IsGoStepPureDet (StructFieldSet (Enc) "p'") (#x, #y) #(x <|Enc.p' := y|>);
   #[global] Enc'ptr_UInt32_unfold :: MethodUnfold (go.PointerType (Enc)) "UInt32" (Enc__UInt32ⁱᵐᵖˡ);
   #[global] Enc'ptr_UInt64_unfold :: MethodUnfold (go.PointerType (Enc)) "UInt64" (Enc__UInt64ⁱᵐᵖˡ);
   #[global] Enc'ptr_consume_unfold :: MethodUnfold (go.PointerType (Enc)) "consume" (Enc__consumeⁱᵐᵖˡ);
@@ -3228,7 +3231,7 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  p : slice.t;
+  p' : slice.t;
 }.
 
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
@@ -3246,8 +3249,8 @@ Class Dec_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} 
 {
   #[global] Dec_type_repr  :: go.TypeRepr Dec Dec.t;
   #[global] Dec_underlying :: go.Underlying (Dec) (Decⁱᵐᵖˡ);
-  #[global] Dec_get_p (x : Dec.t) :: go.IsGoStepPureDet (StructFieldGet (Dec) "p") #x #x.(Dec.p);
-  #[global] Dec_set_p (x : Dec.t) y :: go.IsGoStepPureDet (StructFieldSet (Dec) "p") (#x, #y) #(x <|Dec.p := y|>);
+  #[global] Dec_get_p' (x : Dec.t) :: go.IsGoStepPureDet (StructFieldGet (Dec) "p'") #x #x.(Dec.p');
+  #[global] Dec_set_p' (x : Dec.t) y :: go.IsGoStepPureDet (StructFieldSet (Dec) "p'") (#x, #y) #(x <|Dec.p' := y|>);
   #[global] Dec'ptr_UInt32_unfold :: MethodUnfold (go.PointerType (Dec)) "UInt32" (Dec__UInt32ⁱᵐᵖˡ);
   #[global] Dec'ptr_UInt64_unfold :: MethodUnfold (go.PointerType (Dec)) "UInt64" (Dec__UInt64ⁱᵐᵖˡ);
   #[global] Dec'ptr_consume_unfold :: MethodUnfold (go.PointerType (Dec)) "consume" (Dec__consumeⁱᵐᵖˡ);
@@ -3256,7 +3259,7 @@ Class Dec_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} 
 Module Enum1.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Definition t  : Type := w64.
+Definition t : Type := w64.
 End def.
 End Enum1.
 
@@ -3271,7 +3274,7 @@ Class Enum1_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext
 Module Enum2.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Definition t  : Type := w64.
+Definition t : Type := w64.
 End def.
 End Enum2.
 
@@ -3286,7 +3289,7 @@ Class Enum2_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext
 Module Fooer.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Definition t  : Type := interface.t.
+Definition t : Type := interface.t.
 End def.
 End Fooer.
 
@@ -3304,7 +3307,7 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  a : w64;
+  a' : w64;
 }.
 
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
@@ -3322,8 +3325,8 @@ Class concreteFooer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLoca
 {
   #[global] concreteFooer_type_repr  :: go.TypeRepr concreteFooer concreteFooer.t;
   #[global] concreteFooer_underlying :: go.Underlying (concreteFooer) (concreteFooerⁱᵐᵖˡ);
-  #[global] concreteFooer_get_a (x : concreteFooer.t) :: go.IsGoStepPureDet (StructFieldGet (concreteFooer) "a") #x #x.(concreteFooer.a);
-  #[global] concreteFooer_set_a (x : concreteFooer.t) y :: go.IsGoStepPureDet (StructFieldSet (concreteFooer) "a") (#x, #y) #(x <|concreteFooer.a := y|>);
+  #[global] concreteFooer_get_a' (x : concreteFooer.t) :: go.IsGoStepPureDet (StructFieldGet (concreteFooer) "a'") #x #x.(concreteFooer.a');
+  #[global] concreteFooer_set_a' (x : concreteFooer.t) y :: go.IsGoStepPureDet (StructFieldSet (concreteFooer) "a'") (#x, #y) #(x <|concreteFooer.a' := y|>);
   #[global] concreteFooer'ptr_Foo_unfold :: MethodUnfold (go.PointerType (concreteFooer)) "Foo" (concreteFooer__Fooⁱᵐᵖˡ);
 }.
 
@@ -3332,7 +3335,7 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  f : unittest.Fooer.t;
+  f' : unittest.Fooer.t;
 }.
 
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
@@ -3350,8 +3353,8 @@ Class FooerUser_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalCon
 {
   #[global] FooerUser_type_repr  :: go.TypeRepr FooerUser FooerUser.t;
   #[global] FooerUser_underlying :: go.Underlying (FooerUser) (FooerUserⁱᵐᵖˡ);
-  #[global] FooerUser_get_f (x : FooerUser.t) :: go.IsGoStepPureDet (StructFieldGet (FooerUser) "f") #x #x.(FooerUser.f);
-  #[global] FooerUser_set_f (x : FooerUser.t) y :: go.IsGoStepPureDet (StructFieldSet (FooerUser) "f") (#x, #y) #(x <|FooerUser.f := y|>);
+  #[global] FooerUser_get_f' (x : FooerUser.t) :: go.IsGoStepPureDet (StructFieldGet (FooerUser) "f'") #x #x.(FooerUser.f');
+  #[global] FooerUser_set_f' (x : FooerUser.t) y :: go.IsGoStepPureDet (StructFieldSet (FooerUser) "f'") (#x, #y) #(x <|FooerUser.f' := y|>);
 }.
 
 Module B.
@@ -3359,7 +3362,7 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  a : slice.t;
+  a' : slice.t;
 }.
 
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
@@ -3377,14 +3380,14 @@ Class B_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{
 {
   #[global] B_type_repr  :: go.TypeRepr B B.t;
   #[global] B_underlying :: go.Underlying (B) (Bⁱᵐᵖˡ);
-  #[global] B_get_a (x : B.t) :: go.IsGoStepPureDet (StructFieldGet (B) "a") #x #x.(B.a);
-  #[global] B_set_a (x : B.t) y :: go.IsGoStepPureDet (StructFieldSet (B) "a") (#x, #y) #(x <|B.a := y|>);
+  #[global] B_get_a' (x : B.t) :: go.IsGoStepPureDet (StructFieldGet (B) "a'") #x #x.(B.a');
+  #[global] B_set_a' (x : B.t) y :: go.IsGoStepPureDet (StructFieldSet (B) "a'") (#x, #y) #(x <|B.a' := y|>);
 }.
 
 Module PointerInterface.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Definition t  : Type := interface.t.
+Definition t : Type := interface.t.
 End def.
 End PointerInterface.
 
@@ -3427,7 +3430,7 @@ Class concrete1_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalCon
 Module my_u32.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Definition t  : Type := w32.
+Definition t : Type := w32.
 End def.
 End my_u32.
 
@@ -3442,7 +3445,7 @@ Class my_u32_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContex
 Module also_u32.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Definition t  : Type := unittest.my_u32.t.
+Definition t : Type := unittest.my_u32.t.
 End def.
 End also_u32.
 
@@ -3459,9 +3462,9 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  int : w64;
-  s : go_string;
-  b : bool;
+  int' : w64;
+  s' : go_string;
+  b' : bool;
 }.
 
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
@@ -3481,12 +3484,12 @@ Class allTheLiterals_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLoc
 {
   #[global] allTheLiterals_type_repr  :: go.TypeRepr allTheLiterals allTheLiterals.t;
   #[global] allTheLiterals_underlying :: go.Underlying (allTheLiterals) (allTheLiteralsⁱᵐᵖˡ);
-  #[global] allTheLiterals_get_int (x : allTheLiterals.t) :: go.IsGoStepPureDet (StructFieldGet (allTheLiterals) "int") #x #x.(allTheLiterals.int);
-  #[global] allTheLiterals_set_int (x : allTheLiterals.t) y :: go.IsGoStepPureDet (StructFieldSet (allTheLiterals) "int") (#x, #y) #(x <|allTheLiterals.int := y|>);
-  #[global] allTheLiterals_get_s (x : allTheLiterals.t) :: go.IsGoStepPureDet (StructFieldGet (allTheLiterals) "s") #x #x.(allTheLiterals.s);
-  #[global] allTheLiterals_set_s (x : allTheLiterals.t) y :: go.IsGoStepPureDet (StructFieldSet (allTheLiterals) "s") (#x, #y) #(x <|allTheLiterals.s := y|>);
-  #[global] allTheLiterals_get_b (x : allTheLiterals.t) :: go.IsGoStepPureDet (StructFieldGet (allTheLiterals) "b") #x #x.(allTheLiterals.b);
-  #[global] allTheLiterals_set_b (x : allTheLiterals.t) y :: go.IsGoStepPureDet (StructFieldSet (allTheLiterals) "b") (#x, #y) #(x <|allTheLiterals.b := y|>);
+  #[global] allTheLiterals_get_int' (x : allTheLiterals.t) :: go.IsGoStepPureDet (StructFieldGet (allTheLiterals) "int'") #x #x.(allTheLiterals.int');
+  #[global] allTheLiterals_set_int' (x : allTheLiterals.t) y :: go.IsGoStepPureDet (StructFieldSet (allTheLiterals) "int'") (#x, #y) #(x <|allTheLiterals.int' := y|>);
+  #[global] allTheLiterals_get_s' (x : allTheLiterals.t) :: go.IsGoStepPureDet (StructFieldGet (allTheLiterals) "s'") #x #x.(allTheLiterals.s');
+  #[global] allTheLiterals_set_s' (x : allTheLiterals.t) y :: go.IsGoStepPureDet (StructFieldSet (allTheLiterals) "s'") (#x, #y) #(x <|allTheLiterals.s' := y|>);
+  #[global] allTheLiterals_get_b' (x : allTheLiterals.t) :: go.IsGoStepPureDet (StructFieldGet (allTheLiterals) "b'") #x #x.(allTheLiterals.b');
+  #[global] allTheLiterals_set_b' (x : allTheLiterals.t) y :: go.IsGoStepPureDet (StructFieldSet (allTheLiterals) "b'") (#x, #y) #(x <|allTheLiterals.b' := y|>);
 }.
 
 Module hasCondVar.
@@ -3494,7 +3497,7 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  cond : loc;
+  cond' : loc;
 }.
 
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
@@ -3512,14 +3515,14 @@ Class hasCondVar_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalCo
 {
   #[global] hasCondVar_type_repr  :: go.TypeRepr hasCondVar hasCondVar.t;
   #[global] hasCondVar_underlying :: go.Underlying (hasCondVar) (hasCondVarⁱᵐᵖˡ);
-  #[global] hasCondVar_get_cond (x : hasCondVar.t) :: go.IsGoStepPureDet (StructFieldGet (hasCondVar) "cond") #x #x.(hasCondVar.cond);
-  #[global] hasCondVar_set_cond (x : hasCondVar.t) y :: go.IsGoStepPureDet (StructFieldSet (hasCondVar) "cond") (#x, #y) #(x <|hasCondVar.cond := y|>);
+  #[global] hasCondVar_get_cond' (x : hasCondVar.t) :: go.IsGoStepPureDet (StructFieldGet (hasCondVar) "cond'") #x #x.(hasCondVar.cond');
+  #[global] hasCondVar_set_cond' (x : hasCondVar.t) y :: go.IsGoStepPureDet (StructFieldSet (hasCondVar) "cond'") (#x, #y) #(x <|hasCondVar.cond' := y|>);
 }.
 
 Module IntWrapper.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Definition t  : Type := w64.
+Definition t : Type := w64.
 End def.
 End IntWrapper.
 
@@ -3534,7 +3537,7 @@ Class IntWrapper_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalCo
 Module MapWrapper.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Definition t  : Type := loc.
+Definition t : Type := loc.
 End def.
 End MapWrapper.
 
@@ -3551,8 +3554,8 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  a : w64;
-  b : w64;
+  a' : w64;
+  b' : w64;
 }.
 
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
@@ -3571,10 +3574,10 @@ Class mapElem_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalConte
 {
   #[global] mapElem_type_repr  :: go.TypeRepr mapElem mapElem.t;
   #[global] mapElem_underlying :: go.Underlying (mapElem) (mapElemⁱᵐᵖˡ);
-  #[global] mapElem_get_a (x : mapElem.t) :: go.IsGoStepPureDet (StructFieldGet (mapElem) "a") #x #x.(mapElem.a);
-  #[global] mapElem_set_a (x : mapElem.t) y :: go.IsGoStepPureDet (StructFieldSet (mapElem) "a") (#x, #y) #(x <|mapElem.a := y|>);
-  #[global] mapElem_get_b (x : mapElem.t) :: go.IsGoStepPureDet (StructFieldGet (mapElem) "b") #x #x.(mapElem.b);
-  #[global] mapElem_set_b (x : mapElem.t) y :: go.IsGoStepPureDet (StructFieldSet (mapElem) "b") (#x, #y) #(x <|mapElem.b := y|>);
+  #[global] mapElem_get_a' (x : mapElem.t) :: go.IsGoStepPureDet (StructFieldGet (mapElem) "a'") #x #x.(mapElem.a');
+  #[global] mapElem_set_a' (x : mapElem.t) y :: go.IsGoStepPureDet (StructFieldSet (mapElem) "a'") (#x, #y) #(x <|mapElem.a' := y|>);
+  #[global] mapElem_get_b' (x : mapElem.t) :: go.IsGoStepPureDet (StructFieldGet (mapElem) "b'") #x #x.(mapElem.b');
+  #[global] mapElem_set_b' (x : mapElem.t) y :: go.IsGoStepPureDet (StructFieldSet (mapElem) "b'") (#x, #y) #(x <|mapElem.b' := y|>);
 }.
 
 Module containsPointer.
@@ -3582,7 +3585,7 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  s : loc;
+  s' : loc;
 }.
 
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
@@ -3600,8 +3603,8 @@ Class containsPointer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLo
 {
   #[global] containsPointer_type_repr  :: go.TypeRepr containsPointer containsPointer.t;
   #[global] containsPointer_underlying :: go.Underlying (containsPointer) (containsPointerⁱᵐᵖˡ);
-  #[global] containsPointer_get_s (x : containsPointer.t) :: go.IsGoStepPureDet (StructFieldGet (containsPointer) "s") #x #x.(containsPointer.s);
-  #[global] containsPointer_set_s (x : containsPointer.t) y :: go.IsGoStepPureDet (StructFieldSet (containsPointer) "s") (#x, #y) #(x <|containsPointer.s := y|>);
+  #[global] containsPointer_get_s' (x : containsPointer.t) :: go.IsGoStepPureDet (StructFieldGet (containsPointer) "s'") #x #x.(containsPointer.s');
+  #[global] containsPointer_set_s' (x : containsPointer.t) y :: go.IsGoStepPureDet (StructFieldSet (containsPointer) "s'") (#x, #y) #(x <|containsPointer.s' := y|>);
 }.
 
 Module wrapExternalStruct.
@@ -3609,7 +3612,7 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  j : loc;
+  j' : loc;
 }.
 
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
@@ -3627,8 +3630,8 @@ Class wrapExternalStruct_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!G
 {
   #[global] wrapExternalStruct_type_repr  :: go.TypeRepr wrapExternalStruct wrapExternalStruct.t;
   #[global] wrapExternalStruct_underlying :: go.Underlying (wrapExternalStruct) (wrapExternalStructⁱᵐᵖˡ);
-  #[global] wrapExternalStruct_get_j (x : wrapExternalStruct.t) :: go.IsGoStepPureDet (StructFieldGet (wrapExternalStruct) "j") #x #x.(wrapExternalStruct.j);
-  #[global] wrapExternalStruct_set_j (x : wrapExternalStruct.t) y :: go.IsGoStepPureDet (StructFieldSet (wrapExternalStruct) "j") (#x, #y) #(x <|wrapExternalStruct.j := y|>);
+  #[global] wrapExternalStruct_get_j' (x : wrapExternalStruct.t) :: go.IsGoStepPureDet (StructFieldGet (wrapExternalStruct) "j'") #x #x.(wrapExternalStruct.j');
+  #[global] wrapExternalStruct_set_j' (x : wrapExternalStruct.t) y :: go.IsGoStepPureDet (StructFieldSet (wrapExternalStruct) "j'") (#x, #y) #(x <|wrapExternalStruct.j' := y|>);
   #[global] wrapExternalStruct_join_unfold :: MethodUnfold (wrapExternalStruct) "join" (wrapExternalStruct__joinⁱᵐᵖˡ);
   #[global] wrapExternalStruct'ptr_join_unfold :: MethodUnfold (go.PointerType (wrapExternalStruct)) "join" (λ: "$r", MethodResolve (wrapExternalStruct) "join" #() (![(wrapExternalStruct)] "$r"));
 }.
@@ -3638,7 +3641,7 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  proph : loc;
+  proph' : loc;
 }.
 
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
@@ -3656,8 +3659,8 @@ Class typing_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContex
 {
   #[global] typing_type_repr  :: go.TypeRepr typing typing.t;
   #[global] typing_underlying :: go.Underlying (typing) (typingⁱᵐᵖˡ);
-  #[global] typing_get_proph (x : typing.t) :: go.IsGoStepPureDet (StructFieldGet (typing) "proph") #x #x.(typing.proph);
-  #[global] typing_set_proph (x : typing.t) y :: go.IsGoStepPureDet (StructFieldSet (typing) "proph") (#x, #y) #(x <|typing.proph := y|>);
+  #[global] typing_get_proph' (x : typing.t) :: go.IsGoStepPureDet (StructFieldGet (typing) "proph'") #x #x.(typing.proph');
+  #[global] typing_set_proph' (x : typing.t) y :: go.IsGoStepPureDet (StructFieldSet (typing) "proph'") (#x, #y) #(x <|typing.proph' := y|>);
 }.
 
 Module composite.
@@ -3665,8 +3668,8 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  a : w64;
-  b : w64;
+  a' : w64;
+  b' : w64;
 }.
 
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
@@ -3685,10 +3688,10 @@ Class composite_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalCon
 {
   #[global] composite_type_repr  :: go.TypeRepr composite composite.t;
   #[global] composite_underlying :: go.Underlying (composite) (compositeⁱᵐᵖˡ);
-  #[global] composite_get_a (x : composite.t) :: go.IsGoStepPureDet (StructFieldGet (composite) "a") #x #x.(composite.a);
-  #[global] composite_set_a (x : composite.t) y :: go.IsGoStepPureDet (StructFieldSet (composite) "a") (#x, #y) #(x <|composite.a := y|>);
-  #[global] composite_get_b (x : composite.t) :: go.IsGoStepPureDet (StructFieldGet (composite) "b") #x #x.(composite.b);
-  #[global] composite_set_b (x : composite.t) y :: go.IsGoStepPureDet (StructFieldSet (composite) "b") (#x, #y) #(x <|composite.b := y|>);
+  #[global] composite_get_a' (x : composite.t) :: go.IsGoStepPureDet (StructFieldGet (composite) "a'") #x #x.(composite.a');
+  #[global] composite_set_a' (x : composite.t) y :: go.IsGoStepPureDet (StructFieldSet (composite) "a'") (#x, #y) #(x <|composite.a' := y|>);
+  #[global] composite_get_b' (x : composite.t) :: go.IsGoStepPureDet (StructFieldGet (composite) "b'") #x #x.(composite.b');
+  #[global] composite_set_b' (x : composite.t) y :: go.IsGoStepPureDet (StructFieldSet (composite) "b'") (#x, #y) #(x <|composite.b' := y|>);
 }.
 
 Module R.
@@ -3720,7 +3723,7 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  RecursiveEmbedded : loc;
+  RecursiveEmbedded' : loc;
 }.
 
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
@@ -3738,8 +3741,8 @@ Class Other_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext
 {
   #[global] Other_type_repr  :: go.TypeRepr Other Other.t;
   #[global] Other_underlying :: go.Underlying (Other) (Otherⁱᵐᵖˡ);
-  #[global] Other_get_RecursiveEmbedded (x : Other.t) :: go.IsGoStepPureDet (StructFieldGet (Other) "RecursiveEmbedded") #x #x.(Other.RecursiveEmbedded);
-  #[global] Other_set_RecursiveEmbedded (x : Other.t) y :: go.IsGoStepPureDet (StructFieldSet (Other) "RecursiveEmbedded") (#x, #y) #(x <|Other.RecursiveEmbedded := y|>);
+  #[global] Other_get_RecursiveEmbedded' (x : Other.t) :: go.IsGoStepPureDet (StructFieldGet (Other) "RecursiveEmbedded'") #x #x.(Other.RecursiveEmbedded');
+  #[global] Other_set_RecursiveEmbedded' (x : Other.t) y :: go.IsGoStepPureDet (StructFieldSet (Other) "RecursiveEmbedded'") (#x, #y) #(x <|Other.RecursiveEmbedded' := y|>);
   #[global] Other_recurEmbeddedMethod_unfold :: MethodUnfold (Other) "recurEmbeddedMethod" (λ: "$r", MethodResolve (go.PointerType RecursiveEmbedded) recurEmbeddedMethod #() (StructFieldGet (Other) "RecursiveEmbedded" "$r" ))%V;
   #[global] Other'ptr_recurEmbeddedMethod_unfold :: MethodUnfold (go.PointerType (Other)) "recurEmbeddedMethod" (λ: "$r", MethodResolve (go.PointerType RecursiveEmbedded) recurEmbeddedMethod #() (![go.PointerType RecursiveEmbedded] (StructFieldRef Other #"RecursiveEmbedded"%go "$r")));
 }.
@@ -3749,7 +3752,7 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  Other : unittest.Other.t;
+  Other' : unittest.Other.t;
 }.
 
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
@@ -3767,8 +3770,8 @@ Class RecursiveEmbedded_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!Go
 {
   #[global] RecursiveEmbedded_type_repr  :: go.TypeRepr RecursiveEmbedded RecursiveEmbedded.t;
   #[global] RecursiveEmbedded_underlying :: go.Underlying (RecursiveEmbedded) (RecursiveEmbeddedⁱᵐᵖˡ);
-  #[global] RecursiveEmbedded_get_Other (x : RecursiveEmbedded.t) :: go.IsGoStepPureDet (StructFieldGet (RecursiveEmbedded) "Other") #x #x.(RecursiveEmbedded.Other);
-  #[global] RecursiveEmbedded_set_Other (x : RecursiveEmbedded.t) y :: go.IsGoStepPureDet (StructFieldSet (RecursiveEmbedded) "Other") (#x, #y) #(x <|RecursiveEmbedded.Other := y|>);
+  #[global] RecursiveEmbedded_get_Other' (x : RecursiveEmbedded.t) :: go.IsGoStepPureDet (StructFieldGet (RecursiveEmbedded) "Other'") #x #x.(RecursiveEmbedded.Other');
+  #[global] RecursiveEmbedded_set_Other' (x : RecursiveEmbedded.t) y :: go.IsGoStepPureDet (StructFieldSet (RecursiveEmbedded) "Other'") (#x, #y) #(x <|RecursiveEmbedded.Other' := y|>);
   #[global] RecursiveEmbedded'ptr_recurEmbeddedMethod_unfold :: MethodUnfold (go.PointerType (RecursiveEmbedded)) "recurEmbeddedMethod" (RecursiveEmbedded__recurEmbeddedMethodⁱᵐᵖˡ);
 }.
 
@@ -3777,7 +3780,7 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  Value : w64;
+  Value' : w64;
 }.
 
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
@@ -3795,14 +3798,14 @@ Class Block_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext
 {
   #[global] Block_type_repr  :: go.TypeRepr Block Block.t;
   #[global] Block_underlying :: go.Underlying (Block) (Blockⁱᵐᵖˡ);
-  #[global] Block_get_Value (x : Block.t) :: go.IsGoStepPureDet (StructFieldGet (Block) "Value") #x #x.(Block.Value);
-  #[global] Block_set_Value (x : Block.t) y :: go.IsGoStepPureDet (StructFieldSet (Block) "Value") (#x, #y) #(x <|Block.Value := y|>);
+  #[global] Block_get_Value' (x : Block.t) :: go.IsGoStepPureDet (StructFieldGet (Block) "Value'") #x #x.(Block.Value');
+  #[global] Block_set_Value' (x : Block.t) y :: go.IsGoStepPureDet (StructFieldSet (Block) "Value'") (#x, #y) #(x <|Block.Value' := y|>);
 }.
 
 Module SliceAlias.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Definition t  : Type := slice.t.
+Definition t : Type := slice.t.
 End def.
 End SliceAlias.
 
@@ -3819,7 +3822,7 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  x : w64;
+  x' : w64;
 }.
 
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
@@ -3837,8 +3840,8 @@ Class thing_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext
 {
   #[global] thing_type_repr  :: go.TypeRepr thing thing.t;
   #[global] thing_underlying :: go.Underlying (thing) (thingⁱᵐᵖˡ);
-  #[global] thing_get_x (x : thing.t) :: go.IsGoStepPureDet (StructFieldGet (thing) "x") #x #x.(thing.x);
-  #[global] thing_set_x (x : thing.t) y :: go.IsGoStepPureDet (StructFieldSet (thing) "x") (#x, #y) #(x <|thing.x := y|>);
+  #[global] thing_get_x' (x : thing.t) :: go.IsGoStepPureDet (StructFieldGet (thing) "x'") #x #x.(thing.x');
+  #[global] thing_set_x' (x : thing.t) y :: go.IsGoStepPureDet (StructFieldSet (thing) "x'") (#x, #y) #(x <|thing.x' := y|>);
 }.
 
 Module sliceOfThings.
@@ -3846,7 +3849,7 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  things : slice.t;
+  things' : slice.t;
 }.
 
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
@@ -3864,8 +3867,8 @@ Class sliceOfThings_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLoca
 {
   #[global] sliceOfThings_type_repr  :: go.TypeRepr sliceOfThings sliceOfThings.t;
   #[global] sliceOfThings_underlying :: go.Underlying (sliceOfThings) (sliceOfThingsⁱᵐᵖˡ);
-  #[global] sliceOfThings_get_things (x : sliceOfThings.t) :: go.IsGoStepPureDet (StructFieldGet (sliceOfThings) "things") #x #x.(sliceOfThings.things);
-  #[global] sliceOfThings_set_things (x : sliceOfThings.t) y :: go.IsGoStepPureDet (StructFieldSet (sliceOfThings) "things") (#x, #y) #(x <|sliceOfThings.things := y|>);
+  #[global] sliceOfThings_get_things' (x : sliceOfThings.t) :: go.IsGoStepPureDet (StructFieldGet (sliceOfThings) "things'") #x #x.(sliceOfThings.things');
+  #[global] sliceOfThings_set_things' (x : sliceOfThings.t) y :: go.IsGoStepPureDet (StructFieldSet (sliceOfThings) "things'") (#x, #y) #(x <|sliceOfThings.things' := y|>);
   #[global] sliceOfThings_getThingRef_unfold :: MethodUnfold (sliceOfThings) "getThingRef" (sliceOfThings__getThingRefⁱᵐᵖˡ);
   #[global] sliceOfThings'ptr_getThingRef_unfold :: MethodUnfold (go.PointerType (sliceOfThings)) "getThingRef" (λ: "$r", MethodResolve (sliceOfThings) "getThingRef" #() (![(sliceOfThings)] "$r"));
 }.
@@ -3875,8 +3878,8 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  x : w64;
-  y : w64;
+  x' : w64;
+  y' : w64;
 }.
 
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
@@ -3895,10 +3898,10 @@ Class Point_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext
 {
   #[global] Point_type_repr  :: go.TypeRepr Point Point.t;
   #[global] Point_underlying :: go.Underlying (Point) (Pointⁱᵐᵖˡ);
-  #[global] Point_get_x (x : Point.t) :: go.IsGoStepPureDet (StructFieldGet (Point) "x") #x #x.(Point.x);
-  #[global] Point_set_x (x : Point.t) y :: go.IsGoStepPureDet (StructFieldSet (Point) "x") (#x, #y) #(x <|Point.x := y|>);
-  #[global] Point_get_y (x : Point.t) :: go.IsGoStepPureDet (StructFieldGet (Point) "y") #x #x.(Point.y);
-  #[global] Point_set_y (x : Point.t) y :: go.IsGoStepPureDet (StructFieldSet (Point) "y") (#x, #y) #(x <|Point.y := y|>);
+  #[global] Point_get_x' (x : Point.t) :: go.IsGoStepPureDet (StructFieldGet (Point) "x'") #x #x.(Point.x');
+  #[global] Point_set_x' (x : Point.t) y :: go.IsGoStepPureDet (StructFieldSet (Point) "x'") (#x, #y) #(x <|Point.x' := y|>);
+  #[global] Point_get_y' (x : Point.t) :: go.IsGoStepPureDet (StructFieldGet (Point) "y'") #x #x.(Point.y');
+  #[global] Point_set_y' (x : Point.t) y :: go.IsGoStepPureDet (StructFieldSet (Point) "y'") (#x, #y) #(x <|Point.y' := y|>);
   #[global] Point_Add_unfold :: MethodUnfold (Point) "Add" (Point__Addⁱᵐᵖˡ);
   #[global] Point_GetField_unfold :: MethodUnfold (Point) "GetField" (Point__GetFieldⁱᵐᵖˡ);
   #[global] Point_IgnoreReceiver_unfold :: MethodUnfold (Point) "IgnoreReceiver" (Point__IgnoreReceiverⁱᵐᵖˡ);
@@ -3912,8 +3915,8 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  x : w64;
-  y : w64;
+  x' : w64;
+  y' : w64;
 }.
 
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
@@ -3932,10 +3935,10 @@ Class TwoInts_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalConte
 {
   #[global] TwoInts_type_repr  :: go.TypeRepr TwoInts TwoInts.t;
   #[global] TwoInts_underlying :: go.Underlying (TwoInts) (TwoIntsⁱᵐᵖˡ);
-  #[global] TwoInts_get_x (x : TwoInts.t) :: go.IsGoStepPureDet (StructFieldGet (TwoInts) "x") #x #x.(TwoInts.x);
-  #[global] TwoInts_set_x (x : TwoInts.t) y :: go.IsGoStepPureDet (StructFieldSet (TwoInts) "x") (#x, #y) #(x <|TwoInts.x := y|>);
-  #[global] TwoInts_get_y (x : TwoInts.t) :: go.IsGoStepPureDet (StructFieldGet (TwoInts) "y") #x #x.(TwoInts.y);
-  #[global] TwoInts_set_y (x : TwoInts.t) y :: go.IsGoStepPureDet (StructFieldSet (TwoInts) "y") (#x, #y) #(x <|TwoInts.y := y|>);
+  #[global] TwoInts_get_x' (x : TwoInts.t) :: go.IsGoStepPureDet (StructFieldGet (TwoInts) "x'") #x #x.(TwoInts.x');
+  #[global] TwoInts_set_x' (x : TwoInts.t) y :: go.IsGoStepPureDet (StructFieldSet (TwoInts) "x'") (#x, #y) #(x <|TwoInts.x' := y|>);
+  #[global] TwoInts_get_y' (x : TwoInts.t) :: go.IsGoStepPureDet (StructFieldGet (TwoInts) "y'") #x #x.(TwoInts.y');
+  #[global] TwoInts_set_y' (x : TwoInts.t) y :: go.IsGoStepPureDet (StructFieldSet (TwoInts) "y'") (#x, #y) #(x <|TwoInts.y' := y|>);
 }.
 
 Module S.
@@ -3943,9 +3946,9 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  a : w64;
-  b : unittest.TwoInts.t;
-  c : bool;
+  a' : w64;
+  b' : unittest.TwoInts.t;
+  c' : bool;
 }.
 
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
@@ -3965,12 +3968,12 @@ Class S_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{
 {
   #[global] S_type_repr  :: go.TypeRepr S S.t;
   #[global] S_underlying :: go.Underlying (S) (Sⁱᵐᵖˡ);
-  #[global] S_get_a (x : S.t) :: go.IsGoStepPureDet (StructFieldGet (S) "a") #x #x.(S.a);
-  #[global] S_set_a (x : S.t) y :: go.IsGoStepPureDet (StructFieldSet (S) "a") (#x, #y) #(x <|S.a := y|>);
-  #[global] S_get_b (x : S.t) :: go.IsGoStepPureDet (StructFieldGet (S) "b") #x #x.(S.b);
-  #[global] S_set_b (x : S.t) y :: go.IsGoStepPureDet (StructFieldSet (S) "b") (#x, #y) #(x <|S.b := y|>);
-  #[global] S_get_c (x : S.t) :: go.IsGoStepPureDet (StructFieldGet (S) "c") #x #x.(S.c);
-  #[global] S_set_c (x : S.t) y :: go.IsGoStepPureDet (StructFieldSet (S) "c") (#x, #y) #(x <|S.c := y|>);
+  #[global] S_get_a' (x : S.t) :: go.IsGoStepPureDet (StructFieldGet (S) "a'") #x #x.(S.a');
+  #[global] S_set_a' (x : S.t) y :: go.IsGoStepPureDet (StructFieldSet (S) "a'") (#x, #y) #(x <|S.a' := y|>);
+  #[global] S_get_b' (x : S.t) :: go.IsGoStepPureDet (StructFieldGet (S) "b'") #x #x.(S.b');
+  #[global] S_set_b' (x : S.t) y :: go.IsGoStepPureDet (StructFieldSet (S) "b'") (#x, #y) #(x <|S.b' := y|>);
+  #[global] S_get_c' (x : S.t) :: go.IsGoStepPureDet (StructFieldGet (S) "c'") #x #x.(S.c');
+  #[global] S_set_c' (x : S.t) y :: go.IsGoStepPureDet (StructFieldSet (S) "c'") (#x, #y) #(x <|S.c' := y|>);
   #[global] S_readBVal_unfold :: MethodUnfold (S) "readBVal" (S__readBValⁱᵐᵖˡ);
   #[global] S'ptr_negateC_unfold :: MethodUnfold (go.PointerType (S)) "negateC" (S__negateCⁱᵐᵖˡ);
   #[global] S'ptr_readA_unfold :: MethodUnfold (go.PointerType (S)) "readA" (S__readAⁱᵐᵖˡ);
@@ -4006,7 +4009,7 @@ Class A_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{
 Module Timestamp.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Definition t  : Type := w64.
+Definition t : Type := w64.
 End def.
 End Timestamp.
 
@@ -4021,7 +4024,7 @@ Class Timestamp_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalCon
 Module UseTypeAbbrev.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Definition t  : Type := w64.
+Definition t : Type := w64.
 End def.
 End UseTypeAbbrev.
 
@@ -4036,7 +4039,7 @@ Class UseTypeAbbrev_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLoca
 Module UseNamedType.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Definition t  : Type := unittest.Timestamp.t.
+Definition t : Type := unittest.Timestamp.t.
 End def.
 End UseNamedType.
 

@@ -5,13 +5,24 @@ Require Export New.code.internal.synctest.
 From New.golang Require Import defn.
 Require Export New.trusted_code.sync.
 Import sync.
+Module pkg_id.
 Definition sync : go_string := "sync".
 
+End pkg_id.
+Export pkg_id.
 Module sync.
 
 Definition Cond {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync.Cond"%go [].
 
+Definition copyChecker {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync.copyChecker"%go [].
+
 Definition noCopy {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync.noCopy"%go [].
+
+Definition Map {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync.Map"%go [].
+
+Definition readOnly {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync.readOnly"%go [].
+
+Definition entry {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync.entry"%go [].
 
 Definition Mutex {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync.Mutex"%go [].
 
@@ -19,37 +30,29 @@ Definition Locker {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go
 
 Definition Once {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync.Once"%go [].
 
+Definition Pool {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync.Pool"%go [].
+
+Definition poolLocalInternal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync.poolLocalInternal"%go [].
+
+Definition poolLocal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync.poolLocal"%go [].
+
+Definition poolDequeue {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync.poolDequeue"%go [].
+
+Definition eface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync.eface"%go [].
+
+Definition dequeueNil {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync.dequeueNil"%go [].
+
+Definition poolChain {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync.poolChain"%go [].
+
+Definition poolChainElt {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync.poolChainElt"%go [].
+
+Definition notifyList {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync.notifyList"%go [].
+
 Definition RWMutex {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync.RWMutex"%go [].
 
 Definition rlocker {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync.rlocker"%go [].
 
 Definition WaitGroup {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync.WaitGroup"%go [].
-
-Axiom copyChecker : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom Map : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom readOnly : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom entry : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom Pool : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom poolLocalInternal : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom poolLocal : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom poolDequeue : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom eface : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom dequeueNil : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom poolChain : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom poolChainElt : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom notifyList : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
 Axiom dequeueBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
 
@@ -766,16 +769,16 @@ Definition WaitGroup__Goⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
     do:  (Fork ("$go" #()));;;
     return: #()).
 
-#[global] Instance info' : PkgInfo sync.sync := 
+#[global] Instance info' : PkgInfo pkg_id.sync :=
 {|
-  pkg_imported_pkgs := [code.sync.atomic.atomic; code.internal.race.race; code.internal.synctest.synctest]
+  pkg_imported_pkgs := [code.sync.atomic.pkg_id.atomic; code.internal.race.pkg_id.race; code.internal.synctest.pkg_id.synctest]
 |}.
 
 Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    package.init sync.sync (λ: <>,
+    package.init pkg_id.sync (λ: <>,
       exception_do (do:  (go.GlobalAlloc expunged (go.PointerType (go.InterfaceType [])) #());;;
       do:  (synctest.initialize' #());;;
       do:  (race.initialize' #());;;
@@ -810,7 +813,7 @@ Class noCopy_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContex
 Module Locker.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Definition t  : Type := interface.t.
+Definition t : Type := interface.t.
 End def.
 End Locker.
 
@@ -822,15 +825,43 @@ Class Locker_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContex
   #[global] Locker_underlying :: go.Underlying (Locker) (Lockerⁱᵐᵖˡ);
 }.
 
+Module notifyList.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End notifyList.
+
+Class notifyList_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] notifyList_type_repr  :: go.TypeRepr notifyList notifyList.t;
+}.
+
+Module copyChecker.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End copyChecker.
+
+Class copyChecker_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] copyChecker_type_repr  :: go.TypeRepr copyChecker copyChecker.t;
+}.
+
 Module Cond.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  noCopy : sync.noCopy.t;
-  L : sync.Locker.t;
-  notify : sync.notifyList.t;
-  checker : sync.copyChecker.t;
+  noCopy' : sync.noCopy.t;
+  L' : sync.Locker.t;
+  notify' : sync.notifyList.t;
+  checker' : sync.copyChecker.t;
 }.
 
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _) (zero_val _)|}.
@@ -851,17 +882,59 @@ Class Cond_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext}
 {
   #[global] Cond_type_repr  :: go.TypeRepr Cond Cond.t;
   #[global] Cond_underlying :: go.Underlying (Cond) (Condⁱᵐᵖˡ);
-  #[global] Cond_get_noCopy (x : Cond.t) :: go.IsGoStepPureDet (StructFieldGet (Cond) "noCopy") #x #x.(Cond.noCopy);
-  #[global] Cond_set_noCopy (x : Cond.t) y :: go.IsGoStepPureDet (StructFieldSet (Cond) "noCopy") (#x, #y) #(x <|Cond.noCopy := y|>);
-  #[global] Cond_get_L (x : Cond.t) :: go.IsGoStepPureDet (StructFieldGet (Cond) "L") #x #x.(Cond.L);
-  #[global] Cond_set_L (x : Cond.t) y :: go.IsGoStepPureDet (StructFieldSet (Cond) "L") (#x, #y) #(x <|Cond.L := y|>);
-  #[global] Cond_get_notify (x : Cond.t) :: go.IsGoStepPureDet (StructFieldGet (Cond) "notify") #x #x.(Cond.notify);
-  #[global] Cond_set_notify (x : Cond.t) y :: go.IsGoStepPureDet (StructFieldSet (Cond) "notify") (#x, #y) #(x <|Cond.notify := y|>);
-  #[global] Cond_get_checker (x : Cond.t) :: go.IsGoStepPureDet (StructFieldGet (Cond) "checker") #x #x.(Cond.checker);
-  #[global] Cond_set_checker (x : Cond.t) y :: go.IsGoStepPureDet (StructFieldSet (Cond) "checker") (#x, #y) #(x <|Cond.checker := y|>);
+  #[global] Cond_get_noCopy' (x : Cond.t) :: go.IsGoStepPureDet (StructFieldGet (Cond) "noCopy'") #x #x.(Cond.noCopy');
+  #[global] Cond_set_noCopy' (x : Cond.t) y :: go.IsGoStepPureDet (StructFieldSet (Cond) "noCopy'") (#x, #y) #(x <|Cond.noCopy' := y|>);
+  #[global] Cond_get_L' (x : Cond.t) :: go.IsGoStepPureDet (StructFieldGet (Cond) "L'") #x #x.(Cond.L');
+  #[global] Cond_set_L' (x : Cond.t) y :: go.IsGoStepPureDet (StructFieldSet (Cond) "L'") (#x, #y) #(x <|Cond.L' := y|>);
+  #[global] Cond_get_notify' (x : Cond.t) :: go.IsGoStepPureDet (StructFieldGet (Cond) "notify'") #x #x.(Cond.notify');
+  #[global] Cond_set_notify' (x : Cond.t) y :: go.IsGoStepPureDet (StructFieldSet (Cond) "notify'") (#x, #y) #(x <|Cond.notify' := y|>);
+  #[global] Cond_get_checker' (x : Cond.t) :: go.IsGoStepPureDet (StructFieldGet (Cond) "checker'") #x #x.(Cond.checker');
+  #[global] Cond_set_checker' (x : Cond.t) y :: go.IsGoStepPureDet (StructFieldSet (Cond) "checker'") (#x, #y) #(x <|Cond.checker' := y|>);
   #[global] Cond'ptr_Broadcast_unfold :: MethodUnfold (go.PointerType (Cond)) "Broadcast" (Cond__Broadcastⁱᵐᵖˡ);
   #[global] Cond'ptr_Signal_unfold :: MethodUnfold (go.PointerType (Cond)) "Signal" (Cond__Signalⁱᵐᵖˡ);
   #[global] Cond'ptr_Wait_unfold :: MethodUnfold (go.PointerType (Cond)) "Wait" (Cond__Waitⁱᵐᵖˡ);
+}.
+
+Module Map.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End Map.
+
+Class Map_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Map_type_repr  :: go.TypeRepr Map Map.t;
+}.
+
+Module readOnly.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End readOnly.
+
+Class readOnly_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] readOnly_type_repr  :: go.TypeRepr readOnly readOnly.t;
+}.
+
+Module entry.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End entry.
+
+Class entry_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] entry_type_repr  :: go.TypeRepr entry entry.t;
 }.
 
 Class Mutex_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -878,9 +951,9 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  _0 : sync.noCopy.t;
-  done : atomic.Bool.t;
-  m : sync.Mutex.t;
+  _0' : sync.noCopy.t;
+  done' : atomic.Bool.t;
+  m' : sync.Mutex.t;
 }.
 
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
@@ -900,12 +973,126 @@ Class Once_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext}
 {
   #[global] Once_type_repr  :: go.TypeRepr Once Once.t;
   #[global] Once_underlying :: go.Underlying (Once) (Onceⁱᵐᵖˡ);
-  #[global] Once_get_done (x : Once.t) :: go.IsGoStepPureDet (StructFieldGet (Once) "done") #x #x.(Once.done);
-  #[global] Once_set_done (x : Once.t) y :: go.IsGoStepPureDet (StructFieldSet (Once) "done") (#x, #y) #(x <|Once.done := y|>);
-  #[global] Once_get_m (x : Once.t) :: go.IsGoStepPureDet (StructFieldGet (Once) "m") #x #x.(Once.m);
-  #[global] Once_set_m (x : Once.t) y :: go.IsGoStepPureDet (StructFieldSet (Once) "m") (#x, #y) #(x <|Once.m := y|>);
+  #[global] Once_get__0' (x : Once.t) :: go.IsGoStepPureDet (StructFieldGet (Once) "_0'") #x #x.(Once._0');
+  #[global] Once_set__0' (x : Once.t) y :: go.IsGoStepPureDet (StructFieldSet (Once) "_0'") (#x, #y) #(x <|Once._0' := y|>);
+  #[global] Once_get_done' (x : Once.t) :: go.IsGoStepPureDet (StructFieldGet (Once) "done'") #x #x.(Once.done');
+  #[global] Once_set_done' (x : Once.t) y :: go.IsGoStepPureDet (StructFieldSet (Once) "done'") (#x, #y) #(x <|Once.done' := y|>);
+  #[global] Once_get_m' (x : Once.t) :: go.IsGoStepPureDet (StructFieldGet (Once) "m'") #x #x.(Once.m');
+  #[global] Once_set_m' (x : Once.t) y :: go.IsGoStepPureDet (StructFieldSet (Once) "m'") (#x, #y) #(x <|Once.m' := y|>);
   #[global] Once'ptr_Do_unfold :: MethodUnfold (go.PointerType (Once)) "Do" (Once__Doⁱᵐᵖˡ);
   #[global] Once'ptr_doSlow_unfold :: MethodUnfold (go.PointerType (Once)) "doSlow" (Once__doSlowⁱᵐᵖˡ);
+}.
+
+Module Pool.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End Pool.
+
+Class Pool_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Pool_type_repr  :: go.TypeRepr Pool Pool.t;
+}.
+
+Module poolLocalInternal.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End poolLocalInternal.
+
+Class poolLocalInternal_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] poolLocalInternal_type_repr  :: go.TypeRepr poolLocalInternal poolLocalInternal.t;
+}.
+
+Module poolLocal.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End poolLocal.
+
+Class poolLocal_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] poolLocal_type_repr  :: go.TypeRepr poolLocal poolLocal.t;
+}.
+
+Module poolDequeue.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End poolDequeue.
+
+Class poolDequeue_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] poolDequeue_type_repr  :: go.TypeRepr poolDequeue poolDequeue.t;
+}.
+
+Module eface.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End eface.
+
+Class eface_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] eface_type_repr  :: go.TypeRepr eface eface.t;
+}.
+
+Module dequeueNil.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End dequeueNil.
+
+Class dequeueNil_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] dequeueNil_type_repr  :: go.TypeRepr dequeueNil dequeueNil.t;
+}.
+
+Module poolChain.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End poolChain.
+
+Class poolChain_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] poolChain_type_repr  :: go.TypeRepr poolChain poolChain.t;
+}.
+
+Module poolChainElt.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End poolChainElt.
+
+Class poolChainElt_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] poolChainElt_type_repr  :: go.TypeRepr poolChainElt poolChainElt.t;
 }.
 
 Module RWMutex.
@@ -913,11 +1100,11 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  w : sync.Mutex.t;
-  writerSem : w32;
-  readerSem : w32;
-  readerCount : atomic.Int32.t;
-  readerWait : atomic.Int32.t;
+  w' : sync.Mutex.t;
+  writerSem' : w32;
+  readerSem' : w32;
+  readerCount' : atomic.Int32.t;
+  readerWait' : atomic.Int32.t;
 }.
 
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _) (zero_val _) (zero_val _)|}.
@@ -939,16 +1126,16 @@ Class RWMutex_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalConte
 {
   #[global] RWMutex_type_repr  :: go.TypeRepr RWMutex RWMutex.t;
   #[global] RWMutex_underlying :: go.Underlying (RWMutex) (RWMutexⁱᵐᵖˡ);
-  #[global] RWMutex_get_w (x : RWMutex.t) :: go.IsGoStepPureDet (StructFieldGet (RWMutex) "w") #x #x.(RWMutex.w);
-  #[global] RWMutex_set_w (x : RWMutex.t) y :: go.IsGoStepPureDet (StructFieldSet (RWMutex) "w") (#x, #y) #(x <|RWMutex.w := y|>);
-  #[global] RWMutex_get_writerSem (x : RWMutex.t) :: go.IsGoStepPureDet (StructFieldGet (RWMutex) "writerSem") #x #x.(RWMutex.writerSem);
-  #[global] RWMutex_set_writerSem (x : RWMutex.t) y :: go.IsGoStepPureDet (StructFieldSet (RWMutex) "writerSem") (#x, #y) #(x <|RWMutex.writerSem := y|>);
-  #[global] RWMutex_get_readerSem (x : RWMutex.t) :: go.IsGoStepPureDet (StructFieldGet (RWMutex) "readerSem") #x #x.(RWMutex.readerSem);
-  #[global] RWMutex_set_readerSem (x : RWMutex.t) y :: go.IsGoStepPureDet (StructFieldSet (RWMutex) "readerSem") (#x, #y) #(x <|RWMutex.readerSem := y|>);
-  #[global] RWMutex_get_readerCount (x : RWMutex.t) :: go.IsGoStepPureDet (StructFieldGet (RWMutex) "readerCount") #x #x.(RWMutex.readerCount);
-  #[global] RWMutex_set_readerCount (x : RWMutex.t) y :: go.IsGoStepPureDet (StructFieldSet (RWMutex) "readerCount") (#x, #y) #(x <|RWMutex.readerCount := y|>);
-  #[global] RWMutex_get_readerWait (x : RWMutex.t) :: go.IsGoStepPureDet (StructFieldGet (RWMutex) "readerWait") #x #x.(RWMutex.readerWait);
-  #[global] RWMutex_set_readerWait (x : RWMutex.t) y :: go.IsGoStepPureDet (StructFieldSet (RWMutex) "readerWait") (#x, #y) #(x <|RWMutex.readerWait := y|>);
+  #[global] RWMutex_get_w' (x : RWMutex.t) :: go.IsGoStepPureDet (StructFieldGet (RWMutex) "w'") #x #x.(RWMutex.w');
+  #[global] RWMutex_set_w' (x : RWMutex.t) y :: go.IsGoStepPureDet (StructFieldSet (RWMutex) "w'") (#x, #y) #(x <|RWMutex.w' := y|>);
+  #[global] RWMutex_get_writerSem' (x : RWMutex.t) :: go.IsGoStepPureDet (StructFieldGet (RWMutex) "writerSem'") #x #x.(RWMutex.writerSem');
+  #[global] RWMutex_set_writerSem' (x : RWMutex.t) y :: go.IsGoStepPureDet (StructFieldSet (RWMutex) "writerSem'") (#x, #y) #(x <|RWMutex.writerSem' := y|>);
+  #[global] RWMutex_get_readerSem' (x : RWMutex.t) :: go.IsGoStepPureDet (StructFieldGet (RWMutex) "readerSem'") #x #x.(RWMutex.readerSem');
+  #[global] RWMutex_set_readerSem' (x : RWMutex.t) y :: go.IsGoStepPureDet (StructFieldSet (RWMutex) "readerSem'") (#x, #y) #(x <|RWMutex.readerSem' := y|>);
+  #[global] RWMutex_get_readerCount' (x : RWMutex.t) :: go.IsGoStepPureDet (StructFieldGet (RWMutex) "readerCount'") #x #x.(RWMutex.readerCount');
+  #[global] RWMutex_set_readerCount' (x : RWMutex.t) y :: go.IsGoStepPureDet (StructFieldSet (RWMutex) "readerCount'") (#x, #y) #(x <|RWMutex.readerCount' := y|>);
+  #[global] RWMutex_get_readerWait' (x : RWMutex.t) :: go.IsGoStepPureDet (StructFieldGet (RWMutex) "readerWait'") #x #x.(RWMutex.readerWait');
+  #[global] RWMutex_set_readerWait' (x : RWMutex.t) y :: go.IsGoStepPureDet (StructFieldSet (RWMutex) "readerWait'") (#x, #y) #(x <|RWMutex.readerWait' := y|>);
   #[global] RWMutex'ptr_Lock_unfold :: MethodUnfold (go.PointerType (RWMutex)) "Lock" (RWMutex__Lockⁱᵐᵖˡ);
   #[global] RWMutex'ptr_RLock_unfold :: MethodUnfold (go.PointerType (RWMutex)) "RLock" (RWMutex__RLockⁱᵐᵖˡ);
   #[global] RWMutex'ptr_RLocker_unfold :: MethodUnfold (go.PointerType (RWMutex)) "RLocker" (RWMutex__RLockerⁱᵐᵖˡ);
@@ -962,7 +1149,7 @@ Class RWMutex_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalConte
 Module rlocker.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Definition t  : Type := sync.RWMutex.t.
+Definition t : Type := sync.RWMutex.t.
 End def.
 End rlocker.
 
@@ -972,16 +1159,6 @@ Class rlocker_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalConte
 {
   #[global] rlocker_type_repr  :: go.TypeRepr rlocker rlocker.t;
   #[global] rlocker_underlying :: go.Underlying (rlocker) (rlockerⁱᵐᵖˡ);
-  #[global] rlocker_get_w (x : rlocker.t) :: go.IsGoStepPureDet (StructFieldGet (rlocker) "w") #x #x.(rlocker.w);
-  #[global] rlocker_set_w (x : rlocker.t) y :: go.IsGoStepPureDet (StructFieldSet (rlocker) "w") (#x, #y) #(x <|rlocker.w := y|>);
-  #[global] rlocker_get_writerSem (x : rlocker.t) :: go.IsGoStepPureDet (StructFieldGet (rlocker) "writerSem") #x #x.(rlocker.writerSem);
-  #[global] rlocker_set_writerSem (x : rlocker.t) y :: go.IsGoStepPureDet (StructFieldSet (rlocker) "writerSem") (#x, #y) #(x <|rlocker.writerSem := y|>);
-  #[global] rlocker_get_readerSem (x : rlocker.t) :: go.IsGoStepPureDet (StructFieldGet (rlocker) "readerSem") #x #x.(rlocker.readerSem);
-  #[global] rlocker_set_readerSem (x : rlocker.t) y :: go.IsGoStepPureDet (StructFieldSet (rlocker) "readerSem") (#x, #y) #(x <|rlocker.readerSem := y|>);
-  #[global] rlocker_get_readerCount (x : rlocker.t) :: go.IsGoStepPureDet (StructFieldGet (rlocker) "readerCount") #x #x.(rlocker.readerCount);
-  #[global] rlocker_set_readerCount (x : rlocker.t) y :: go.IsGoStepPureDet (StructFieldSet (rlocker) "readerCount") (#x, #y) #(x <|rlocker.readerCount := y|>);
-  #[global] rlocker_get_readerWait (x : rlocker.t) :: go.IsGoStepPureDet (StructFieldGet (rlocker) "readerWait") #x #x.(rlocker.readerWait);
-  #[global] rlocker_set_readerWait (x : rlocker.t) y :: go.IsGoStepPureDet (StructFieldSet (rlocker) "readerWait") (#x, #y) #(x <|rlocker.readerWait := y|>);
 }.
 
 Module WaitGroup.
@@ -989,9 +1166,9 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  noCopy : sync.noCopy.t;
-  state : atomic.Uint64.t;
-  sema : w32;
+  noCopy' : sync.noCopy.t;
+  state' : atomic.Uint64.t;
+  sema' : w32;
 }.
 
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
@@ -1011,12 +1188,12 @@ Class WaitGroup_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalCon
 {
   #[global] WaitGroup_type_repr  :: go.TypeRepr WaitGroup WaitGroup.t;
   #[global] WaitGroup_underlying :: go.Underlying (WaitGroup) (WaitGroupⁱᵐᵖˡ);
-  #[global] WaitGroup_get_noCopy (x : WaitGroup.t) :: go.IsGoStepPureDet (StructFieldGet (WaitGroup) "noCopy") #x #x.(WaitGroup.noCopy);
-  #[global] WaitGroup_set_noCopy (x : WaitGroup.t) y :: go.IsGoStepPureDet (StructFieldSet (WaitGroup) "noCopy") (#x, #y) #(x <|WaitGroup.noCopy := y|>);
-  #[global] WaitGroup_get_state (x : WaitGroup.t) :: go.IsGoStepPureDet (StructFieldGet (WaitGroup) "state") #x #x.(WaitGroup.state);
-  #[global] WaitGroup_set_state (x : WaitGroup.t) y :: go.IsGoStepPureDet (StructFieldSet (WaitGroup) "state") (#x, #y) #(x <|WaitGroup.state := y|>);
-  #[global] WaitGroup_get_sema (x : WaitGroup.t) :: go.IsGoStepPureDet (StructFieldGet (WaitGroup) "sema") #x #x.(WaitGroup.sema);
-  #[global] WaitGroup_set_sema (x : WaitGroup.t) y :: go.IsGoStepPureDet (StructFieldSet (WaitGroup) "sema") (#x, #y) #(x <|WaitGroup.sema := y|>);
+  #[global] WaitGroup_get_noCopy' (x : WaitGroup.t) :: go.IsGoStepPureDet (StructFieldGet (WaitGroup) "noCopy'") #x #x.(WaitGroup.noCopy');
+  #[global] WaitGroup_set_noCopy' (x : WaitGroup.t) y :: go.IsGoStepPureDet (StructFieldSet (WaitGroup) "noCopy'") (#x, #y) #(x <|WaitGroup.noCopy' := y|>);
+  #[global] WaitGroup_get_state' (x : WaitGroup.t) :: go.IsGoStepPureDet (StructFieldGet (WaitGroup) "state'") #x #x.(WaitGroup.state');
+  #[global] WaitGroup_set_state' (x : WaitGroup.t) y :: go.IsGoStepPureDet (StructFieldSet (WaitGroup) "state'") (#x, #y) #(x <|WaitGroup.state' := y|>);
+  #[global] WaitGroup_get_sema' (x : WaitGroup.t) :: go.IsGoStepPureDet (StructFieldGet (WaitGroup) "sema'") #x #x.(WaitGroup.sema');
+  #[global] WaitGroup_set_sema' (x : WaitGroup.t) y :: go.IsGoStepPureDet (StructFieldSet (WaitGroup) "sema'") (#x, #y) #(x <|WaitGroup.sema' := y|>);
   #[global] WaitGroup'ptr_Add_unfold :: MethodUnfold (go.PointerType (WaitGroup)) "Add" (WaitGroup__Addⁱᵐᵖˡ);
   #[global] WaitGroup'ptr_Done_unfold :: MethodUnfold (go.PointerType (WaitGroup)) "Done" (WaitGroup__Doneⁱᵐᵖˡ);
   #[global] WaitGroup'ptr_Go_unfold :: MethodUnfold (go.PointerType (WaitGroup)) "Go" (WaitGroup__Goⁱᵐᵖˡ);
@@ -1026,10 +1203,23 @@ Class WaitGroup_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalCon
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Cond_instance :: Cond_Assumptions;
+  #[global] copyChecker_instance :: copyChecker_Assumptions;
   #[global] noCopy_instance :: noCopy_Assumptions;
+  #[global] Map_instance :: Map_Assumptions;
+  #[global] readOnly_instance :: readOnly_Assumptions;
+  #[global] entry_instance :: entry_Assumptions;
   #[global] Mutex_instance :: Mutex_Assumptions;
   #[global] Locker_instance :: Locker_Assumptions;
   #[global] Once_instance :: Once_Assumptions;
+  #[global] Pool_instance :: Pool_Assumptions;
+  #[global] poolLocalInternal_instance :: poolLocalInternal_Assumptions;
+  #[global] poolLocal_instance :: poolLocal_Assumptions;
+  #[global] poolDequeue_instance :: poolDequeue_Assumptions;
+  #[global] eface_instance :: eface_Assumptions;
+  #[global] dequeueNil_instance :: dequeueNil_Assumptions;
+  #[global] poolChain_instance :: poolChain_Assumptions;
+  #[global] poolChainElt_instance :: poolChainElt_Assumptions;
+  #[global] notifyList_instance :: notifyList_Assumptions;
   #[global] RWMutex_instance :: RWMutex_Assumptions;
   #[global] rlocker_instance :: rlocker_Assumptions;
   #[global] WaitGroup_instance :: WaitGroup_Assumptions;

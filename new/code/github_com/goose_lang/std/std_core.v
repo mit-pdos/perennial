@@ -2,8 +2,11 @@
 Require Export New.code.github_com.goose_lang.primitive.
 From New.golang Require Import defn.core.
 From New.golang.defn Require Export slice.
+Module pkg_id.
 Definition std_core : go_string := "github.com/goose-lang/std/std_core".
 
+End pkg_id.
+Export pkg_id.
 Module std_core.
 
 Definition SumNoOverflow {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/std/std_core.SumNoOverflow"%go.
@@ -116,14 +119,14 @@ Definition Permutationⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
     (FuncResolve Shuffle [] #()) "$a0");;;
     return: (![go.SliceType go.uint64] "order")).
 
-#[global] Instance info' : PkgInfo std_core.std_core := 
+#[global] Instance info' : PkgInfo pkg_id.std_core :=
 {|
-  pkg_imported_pkgs := [code.github_com.goose_lang.primitive.primitive]
+  pkg_imported_pkgs := [code.github_com.goose_lang.primitive.pkg_id.primitive]
 |}.
 
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    package.init std_core.std_core (λ: <>,
+    package.init pkg_id.std_core (λ: <>,
       exception_do (do:  (primitive.initialize' #()))
       ).
 

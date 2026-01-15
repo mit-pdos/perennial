@@ -3,8 +3,11 @@ From New.golang Require Import defn.core.
 
 Require Export New.trusted_code.github_com.goose_lang.primitive.
 Import primitive.
+Module pkg_id.
 Definition primitive : go_string := "github.com/goose-lang/primitive".
 
+End pkg_id.
+Export pkg_id.
 Module primitive.
 
 Definition Mutex {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/primitive.Mutex"%go [].
@@ -41,7 +44,7 @@ Definition AssumeNoStringOverflow {ext : ffi_syntax} {go_gctx : GoGlobalContext}
 
 Definition NewProph {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/primitive.NewProph"%go.
 
-#[global] Instance info' : PkgInfo primitive.primitive := 
+#[global] Instance info' : PkgInfo pkg_id.primitive :=
 {|
   pkg_imported_pkgs := []
 |}.
@@ -50,7 +53,7 @@ Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    package.init primitive.primitive (λ: <>,
+    package.init pkg_id.primitive (λ: <>,
       exception_do (do:  #())
       ).
 
@@ -60,6 +63,20 @@ Class Mutex_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext
   #[global] Mutex_underlying :: go.Underlying (Mutex) (Mutexⁱᵐᵖˡ);
   #[global] Mutex'ptr_Lock_unfold :: MethodUnfold (go.PointerType (Mutex)) "Lock" (Mutex__Lockⁱᵐᵖˡ);
   #[global] Mutex'ptr_Unlock_unfold :: MethodUnfold (go.PointerType (Mutex)) "Unlock" (Mutex__Unlockⁱᵐᵖˡ);
+}.
+
+Module prophId.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End prophId.
+
+Class prophId_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] prophId_type_repr  :: go.TypeRepr prophId prophId.t;
 }.
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=

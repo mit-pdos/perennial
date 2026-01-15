@@ -2,8 +2,11 @@
 From New.golang Require Import defn.
 Require Export New.trusted_code.time.
 Import time.
+Module pkg_id.
 Definition time : go_string := "time".
 
+End pkg_id.
+Export pkg_id.
 Module time.
 
 Definition ParseError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "time.ParseError"%go [].
@@ -608,7 +611,7 @@ Definition Time__UnixNanoⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
     exception_do (let: "t" := (GoAlloc Time "t") in
     return: ((((MethodResolve (go.PointerType Time) "unixSec"%go #() "t") #()) *⟨go.int64⟩ #(W64 1000000000)) +⟨go.int64⟩ (s_to_w64 ((MethodResolve (go.PointerType Time) "nsec"%go #() "t") #())))).
 
-#[global] Instance info' : PkgInfo time.time := 
+#[global] Instance info' : PkgInfo pkg_id.time :=
 {|
   pkg_imported_pkgs := []
 |}.
@@ -617,7 +620,7 @@ Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    package.init time.time (λ: <>,
+    package.init pkg_id.time (λ: <>,
       exception_do (do:  (std0x'init #());;;
       do:  (longDayNames'init #());;;
       do:  (shortDayNames'init #());;;
@@ -637,14 +640,28 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
       do:  (platformZoneSources'init #()))
       ).
 
+Module ParseError.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End ParseError.
+
+Class ParseError_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] ParseError_type_repr  :: go.TypeRepr ParseError ParseError.t;
+}.
+
 Module Time.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  wall : w64;
-  ext : w64;
-  loc : loc;
+  wall' : w64;
+  ext' : w64;
+  loc' : loc;
 }.
 
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
@@ -664,12 +681,12 @@ Class Time_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext}
 {
   #[global] Time_type_repr  :: go.TypeRepr Time Time.t;
   #[global] Time_underlying :: go.Underlying (Time) (Timeⁱᵐᵖˡ);
-  #[global] Time_get_wall (x : Time.t) :: go.IsGoStepPureDet (StructFieldGet (Time) "wall") #x #x.(Time.wall);
-  #[global] Time_set_wall (x : Time.t) y :: go.IsGoStepPureDet (StructFieldSet (Time) "wall") (#x, #y) #(x <|Time.wall := y|>);
-  #[global] Time_get_ext (x : Time.t) :: go.IsGoStepPureDet (StructFieldGet (Time) "ext") #x #x.(Time.ext);
-  #[global] Time_set_ext (x : Time.t) y :: go.IsGoStepPureDet (StructFieldSet (Time) "ext") (#x, #y) #(x <|Time.ext := y|>);
-  #[global] Time_get_loc (x : Time.t) :: go.IsGoStepPureDet (StructFieldGet (Time) "loc") #x #x.(Time.loc);
-  #[global] Time_set_loc (x : Time.t) y :: go.IsGoStepPureDet (StructFieldSet (Time) "loc") (#x, #y) #(x <|Time.loc := y|>);
+  #[global] Time_get_wall' (x : Time.t) :: go.IsGoStepPureDet (StructFieldGet (Time) "wall'") #x #x.(Time.wall');
+  #[global] Time_set_wall' (x : Time.t) y :: go.IsGoStepPureDet (StructFieldSet (Time) "wall'") (#x, #y) #(x <|Time.wall' := y|>);
+  #[global] Time_get_ext' (x : Time.t) :: go.IsGoStepPureDet (StructFieldGet (Time) "ext'") #x #x.(Time.ext');
+  #[global] Time_set_ext' (x : Time.t) y :: go.IsGoStepPureDet (StructFieldSet (Time) "ext'") (#x, #y) #(x <|Time.ext' := y|>);
+  #[global] Time_get_loc' (x : Time.t) :: go.IsGoStepPureDet (StructFieldGet (Time) "loc'") #x #x.(Time.loc');
+  #[global] Time_set_loc' (x : Time.t) y :: go.IsGoStepPureDet (StructFieldSet (Time) "loc'") (#x, #y) #(x <|Time.loc' := y|>);
   #[global] Time_UnixNano_unfold :: MethodUnfold (Time) "UnixNano" (Time__UnixNanoⁱᵐᵖˡ);
   #[global] Time'ptr_UnixNano_unfold :: MethodUnfold (go.PointerType (Time)) "UnixNano" (λ: "$r", MethodResolve (Time) "UnixNano" #() (![(Time)] "$r"));
   #[global] Time'ptr_nsec_unfold :: MethodUnfold (go.PointerType (Time)) "nsec" (Time__nsecⁱᵐᵖˡ);
@@ -682,8 +699,8 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  C : loc;
-  initTimer : bool;
+  C' : loc;
+  initTimer' : bool;
 }.
 
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
@@ -702,16 +719,170 @@ Class Timer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext
 {
   #[global] Timer_type_repr  :: go.TypeRepr Timer Timer.t;
   #[global] Timer_underlying :: go.Underlying (Timer) (Timerⁱᵐᵖˡ);
-  #[global] Timer_get_C (x : Timer.t) :: go.IsGoStepPureDet (StructFieldGet (Timer) "C") #x #x.(Timer.C);
-  #[global] Timer_set_C (x : Timer.t) y :: go.IsGoStepPureDet (StructFieldSet (Timer) "C") (#x, #y) #(x <|Timer.C := y|>);
-  #[global] Timer_get_initTimer (x : Timer.t) :: go.IsGoStepPureDet (StructFieldGet (Timer) "initTimer") #x #x.(Timer.initTimer);
-  #[global] Timer_set_initTimer (x : Timer.t) y :: go.IsGoStepPureDet (StructFieldSet (Timer) "initTimer") (#x, #y) #(x <|Timer.initTimer := y|>);
+  #[global] Timer_get_C' (x : Timer.t) :: go.IsGoStepPureDet (StructFieldGet (Timer) "C'") #x #x.(Timer.C');
+  #[global] Timer_set_C' (x : Timer.t) y :: go.IsGoStepPureDet (StructFieldSet (Timer) "C'") (#x, #y) #(x <|Timer.C' := y|>);
+  #[global] Timer_get_initTimer' (x : Timer.t) :: go.IsGoStepPureDet (StructFieldGet (Timer) "initTimer'") #x #x.(Timer.initTimer');
+  #[global] Timer_set_initTimer' (x : Timer.t) y :: go.IsGoStepPureDet (StructFieldSet (Timer) "initTimer'") (#x, #y) #(x <|Timer.initTimer' := y|>);
+}.
+
+Module Ticker.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End Ticker.
+
+Class Ticker_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Ticker_type_repr  :: go.TypeRepr Ticker Ticker.t;
+}.
+
+Module Month.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End Month.
+
+Class Month_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Month_type_repr  :: go.TypeRepr Month Month.t;
+}.
+
+Module Weekday.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End Weekday.
+
+Class Weekday_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Weekday_type_repr  :: go.TypeRepr Weekday Weekday.t;
+}.
+
+Module absSeconds.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End absSeconds.
+
+Class absSeconds_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] absSeconds_type_repr  :: go.TypeRepr absSeconds absSeconds.t;
+}.
+
+Module absDays.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End absDays.
+
+Class absDays_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] absDays_type_repr  :: go.TypeRepr absDays absDays.t;
+}.
+
+Module absCentury.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End absCentury.
+
+Class absCentury_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] absCentury_type_repr  :: go.TypeRepr absCentury absCentury.t;
+}.
+
+Module absCyear.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End absCyear.
+
+Class absCyear_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] absCyear_type_repr  :: go.TypeRepr absCyear absCyear.t;
+}.
+
+Module absYday.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End absYday.
+
+Class absYday_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] absYday_type_repr  :: go.TypeRepr absYday absYday.t;
+}.
+
+Module absMonth.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End absMonth.
+
+Class absMonth_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] absMonth_type_repr  :: go.TypeRepr absMonth absMonth.t;
+}.
+
+Module absLeap.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End absLeap.
+
+Class absLeap_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] absLeap_type_repr  :: go.TypeRepr absLeap absLeap.t;
+}.
+
+Module absJanFeb.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End absJanFeb.
+
+Class absJanFeb_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] absJanFeb_type_repr  :: go.TypeRepr absJanFeb absJanFeb.t;
 }.
 
 Module Duration.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Definition t  : Type := w64.
+Definition t : Type := w64.
 End def.
 End Duration.
 
@@ -721,6 +892,104 @@ Class Duration_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalCont
 {
   #[global] Duration_type_repr  :: go.TypeRepr Duration Duration.t;
   #[global] Duration_underlying :: go.Underlying (Duration) (Durationⁱᵐᵖˡ);
+}.
+
+Module Location.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End Location.
+
+Class Location_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Location_type_repr  :: go.TypeRepr Location Location.t;
+}.
+
+Module zone.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End zone.
+
+Class zone_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] zone_type_repr  :: go.TypeRepr zone zone.t;
+}.
+
+Module zoneTrans.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End zoneTrans.
+
+Class zoneTrans_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] zoneTrans_type_repr  :: go.TypeRepr zoneTrans zoneTrans.t;
+}.
+
+Module ruleKind.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End ruleKind.
+
+Class ruleKind_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] ruleKind_type_repr  :: go.TypeRepr ruleKind ruleKind.t;
+}.
+
+Module rule.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End rule.
+
+Class rule_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] rule_type_repr  :: go.TypeRepr rule rule.t;
+}.
+
+Module fileSizeError.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End fileSizeError.
+
+Class fileSizeError_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] fileSizeError_type_repr  :: go.TypeRepr fileSizeError fileSizeError.t;
+}.
+
+Module dataIO.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End dataIO.
+
+Class dataIO_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] dataIO_type_repr  :: go.TypeRepr dataIO dataIO.t;
 }.
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=

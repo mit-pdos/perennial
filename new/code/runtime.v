@@ -2,693 +2,722 @@
 From New.golang Require Import defn.
 Require Export New.trusted_code.runtime.
 Import runtime.
+Module pkg_id.
 Definition runtime : go_string := "runtime".
 
+End pkg_id.
+Export pkg_id.
 Module runtime.
 
-Axiom userArena : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition userArena {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.userArena"%go [].
 
-Axiom liveUserArenaChunk : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition liveUserArenaChunk {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.liveUserArenaChunk"%go [].
 
-Axiom writeUserArenaHeapBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition writeUserArenaHeapBits {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.writeUserArenaHeapBits"%go [].
 
-Axiom cgoCallers : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition cgoCallers {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.cgoCallers"%go [].
 
-Axiom argset : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition argset {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.argset"%go [].
 
-Axiom hchan : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition hchan {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.hchan"%go [].
 
-Axiom waitq : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition waitq {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.waitq"%go [].
 
-Axiom coro : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition coro {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.coro"%go [].
 
-Axiom cpuProfile : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition cpuProfile {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.cpuProfile"%go [].
 
-Axiom debugCallWrapArgs : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition debugCallWrapArgs {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.debugCallWrapArgs"%go [].
 
-Axiom dloggerImpl : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition dloggerImpl {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.dloggerImpl"%go [].
 
-Axiom dloggerFake : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition dloggerFake {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.dloggerFake"%go [].
 
-Axiom debugLogWriter : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition debugLogWriter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.debugLogWriter"%go [].
 
-Axiom debugLogBuf : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition debugLogBuf {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.debugLogBuf"%go [].
 
-Axiom debugLogReader : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition debugLogReader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.debugLogReader"%go [].
+
+Definition dlogPerM {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.dlogPerM"%go [].
+
+Definition timespec {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.timespec"%go [].
+
+Definition timeval {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.timeval"%go [].
+
+Definition sigactiont {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.sigactiont"%go [].
+
+Definition siginfoFields {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.siginfoFields"%go [].
+
+Definition siginfo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.siginfo"%go [].
+
+Definition itimerspec {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.itimerspec"%go [].
+
+Definition itimerval {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.itimerval"%go [].
+
+Definition sigeventFields {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.sigeventFields"%go [].
+
+Definition sigevent {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.sigevent"%go [].
+
+Definition usigset {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.usigset"%go [].
+
+Definition fpxreg {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.fpxreg"%go [].
+
+Definition xmmreg {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.xmmreg"%go [].
+
+Definition fpstate {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.fpstate"%go [].
+
+Definition fpxreg1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.fpxreg1"%go [].
+
+Definition xmmreg1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.xmmreg1"%go [].
+
+Definition fpstate1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.fpstate1"%go [].
+
+Definition fpreg1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.fpreg1"%go [].
+
+Definition stackt {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.stackt"%go [].
+
+Definition mcontext {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.mcontext"%go [].
+
+Definition ucontext {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.ucontext"%go [].
+
+Definition sigcontext {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.sigcontext"%go [].
+
+Definition sockaddr_un {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.sockaddr_un"%go [].
+
+Definition Error {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.Error"%go [].
+
+Definition TypeAssertionError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.TypeAssertionError"%go [].
+
+Definition errorString {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.errorString"%go [].
+
+Definition errorAddressString {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.errorAddressString"%go [].
+
+Definition plainError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.plainError"%go [].
+
+Definition boundsError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.boundsError"%go [].
+
+Definition boundsErrorCode {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.boundsErrorCode"%go [].
+
+Definition stringer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.stringer"%go [].
+
+Definition typeCacheBucket {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.typeCacheBucket"%go [].
+
+Definition childInfo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.childInfo"%go [].
+
+Definition timeHistogram {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.timeHistogram"%go [].
+
+Definition itabTableType {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.itabTableType"%go [].
+
+Definition uint16InterfacePtr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.uint16InterfacePtr"%go [].
+
+Definition uint32InterfacePtr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.uint32InterfacePtr"%go [].
+
+Definition uint64InterfacePtr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.uint64InterfacePtr"%go [].
+
+Definition stringInterfacePtr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.stringInterfacePtr"%go [].
+
+Definition sliceInterfacePtr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.sliceInterfacePtr"%go [].
+
+Definition lfstack {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.lfstack"%go [].
+
+Definition linknameIter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.linknameIter"%go [].
+
+Definition mWaitList {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.mWaitList"%go [].
+
+Definition lockRank {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.lockRank"%go [].
+
+Definition lockRankStruct {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.lockRankStruct"%go [].
+
+Definition persistentAlloc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.persistentAlloc"%go [].
+
+Definition linearAlloc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.linearAlloc"%go [].
+
+Definition notInHeap {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.notInHeap"%go [].
+
+Definition typePointers {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.typePointers"%go [].
+
+Definition markBits {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.markBits"%go [].
+
+Definition mcache {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.mcache"%go [].
+
+Definition gclink {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.gclink"%go [].
+
+Definition gclinkptr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.gclinkptr"%go [].
+
+Definition stackfreelist {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.stackfreelist"%go [].
+
+Definition mcentral {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.mcentral"%go [].
+
+Definition checkmarksMap {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.checkmarksMap"%go [].
+
+Definition Cleanup {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.Cleanup"%go [].
+
+Definition cleanupBlock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.cleanupBlock"%go [].
+
+Definition cleanupBlockHeader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.cleanupBlockHeader"%go [].
+
+Definition cleanupQueue {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.cleanupQueue"%go [].
+
+Definition metricData {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.metricData"%go [].
+
+Definition metricReader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.metricReader"%go [].
+
+Definition statDep {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.statDep"%go [].
+
+Definition statDepSet {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.statDepSet"%go [].
+
+Definition heapStatsAggregate {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.heapStatsAggregate"%go [].
+
+Definition sysStatsAggregate {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.sysStatsAggregate"%go [].
+
+Definition cpuStatsAggregate {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.cpuStatsAggregate"%go [].
+
+Definition gcStatsAggregate {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.gcStatsAggregate"%go [].
+
+Definition statAggregate {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.statAggregate"%go [].
+
+Definition metricKind {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.metricKind"%go [].
+
+Definition metricSample {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.metricSample"%go [].
+
+Definition metricValue {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.metricValue"%go [].
+
+Definition metricFloat64Histogram {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.metricFloat64Histogram"%go [].
+
+Definition metricName {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.metricName"%go [].
+
+Definition finBlock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.finBlock"%go [].
+
+Definition finalizer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.finalizer"%go [].
+
+Definition fixalloc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.fixalloc"%go [].
+
+Definition mlink {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.mlink"%go [].
+
+Definition gcMarkWorkerMode {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.gcMarkWorkerMode"%go [].
+
+Definition workType {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.workType"%go [].
+
+Definition gcMode {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.gcMode"%go [].
+
+Definition gcTrigger {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.gcTrigger"%go [].
+
+Definition gcTriggerKind {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.gcTriggerKind"%go [].
+
+Definition gcBgMarkWorkerNode {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.gcBgMarkWorkerNode"%go [].
+
+Definition gcBgMarkWorkerNodePadded {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.gcBgMarkWorkerNodePadded"%go [].
+
+Definition gcCPULimiterState {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.gcCPULimiterState"%go [].
+
+Definition limiterEventType {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.limiterEventType"%go [].
+
+Definition limiterEventStamp {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.limiterEventStamp"%go [].
+
+Definition limiterEvent {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.limiterEvent"%go [].
+
+Definition gcDrainFlags {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.gcDrainFlags"%go [].
+
+Definition spanInlineMarkBits {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.spanInlineMarkBits"%go [].
+
+Definition spanQueue {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.spanQueue"%go [].
+
+Definition localSpanQueue {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.localSpanQueue"%go [].
+
+Definition objptr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.objptr"%go [].
+
+Definition sizeClassScanStats {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.sizeClassScanStats"%go [].
+
+Definition gcControllerState {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.gcControllerState"%go [].
+
+Definition scavengerState {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.scavengerState"%go [].
+
+Definition scavengeIndex {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.scavengeIndex"%go [].
+
+Definition atomicScavChunkData {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.atomicScavChunkData"%go [].
+
+Definition scavChunkData {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.scavChunkData"%go [].
+
+Definition scavChunkFlags {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.scavChunkFlags"%go [].
+
+Definition piController {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.piController"%go [].
+
+Definition stackWorkBuf {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.stackWorkBuf"%go [].
+
+Definition stackWorkBufHdr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.stackWorkBufHdr"%go [].
+
+Definition stackObjectBuf {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.stackObjectBuf"%go [].
+
+Definition stackObjectBufHdr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.stackObjectBufHdr"%go [].
+
+Definition stackObject {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.stackObject"%go [].
+
+Definition stackScanState {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.stackScanState"%go [].
+
+Definition sweepdata {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.sweepdata"%go [].
+
+Definition sweepClass {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.sweepClass"%go [].
+
+Definition activeSweep {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.activeSweep"%go [].
+
+Definition sweepLocker {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.sweepLocker"%go [].
+
+Definition sweepLocked {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.sweepLocked"%go [].
+
+Definition gcWork {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.gcWork"%go [].
+
+Definition workbufhdr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.workbufhdr"%go [].
+
+Definition workbuf {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.workbuf"%go [].
+
+Definition mheap {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.mheap"%go [].
+
+Definition heapArena {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.heapArena"%go [].
+
+Definition arenaHint {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.arenaHint"%go [].
+
+Definition mSpanState {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.mSpanState"%go [].
+
+Definition mSpanStateBox {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.mSpanStateBox"%go [].
+
+Definition mspan {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.mspan"%go [].
+
+Definition spanClass {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.spanClass"%go [].
+
+Definition arenaIdx {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.arenaIdx"%go [].
+
+Definition spanAllocType {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.spanAllocType"%go [].
+
+Definition mSpanList {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.mSpanList"%go [].
+
+Definition mSpanQueue {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.mSpanQueue"%go [].
+
+Definition special {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.special"%go [].
+
+Definition specialfinalizer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.specialfinalizer"%go [].
+
+Definition specialCleanup {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.specialCleanup"%go [].
+
+Definition specialCheckFinalizer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.specialCheckFinalizer"%go [].
+
+Definition specialTinyBlock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.specialTinyBlock"%go [].
+
+Definition specialWeakHandle {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.specialWeakHandle"%go [].
+
+Definition immortalWeakHandleMap {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.immortalWeakHandleMap"%go [].
+
+Definition immortalWeakHandle {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.immortalWeakHandle"%go [].
+
+Definition specialprofile {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.specialprofile"%go [].
+
+Definition specialReachable {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.specialReachable"%go [].
+
+Definition specialPinCounter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.specialPinCounter"%go [].
+
+Definition specialsIter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.specialsIter"%go [].
+
+Definition gcBits {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.gcBits"%go [].
+
+Definition gcBitsHeader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.gcBitsHeader"%go [].
+
+Definition gcBitsArena {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.gcBitsArena"%go [].
+
+Definition floaty {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.floaty"%go [].
+
+Definition chunkIdx {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.chunkIdx"%go [].
+
+Definition pageAlloc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.pageAlloc"%go [].
+
+Definition pallocSum {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.pallocSum"%go [].
+
+Definition pageCache {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.pageCache"%go [].
+
+Definition pageBits {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.pageBits"%go [].
+
+Definition pallocBits {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.pallocBits"%go [].
+
+Definition pallocData {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.pallocData"%go [].
+
+Definition bucketType {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.bucketType"%go [].
+
+Definition bucket {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.bucket"%go [].
+
+Definition memRecord {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.memRecord"%go [].
+
+Definition memRecordCycle {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.memRecordCycle"%go [].
+
+Definition blockRecord {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.blockRecord"%go [].
+
+Definition buckhashArray {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.buckhashArray"%go [].
+
+Definition mProfCycleHolder {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.mProfCycleHolder"%go [].
+
+Definition mLockProfile {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.mLockProfile"%go [].
+
+Definition StackRecord {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.StackRecord"%go [].
+
+Definition MemProfileRecord {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.MemProfileRecord"%go [].
+
+Definition BlockProfileRecord {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.BlockProfileRecord"%go [].
+
+Definition goroutineProfileState {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.goroutineProfileState"%go [].
+
+Definition goroutineProfileStateHolder {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.goroutineProfileStateHolder"%go [].
+
+Definition addrRange {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.addrRange"%go [].
+
+Definition offAddr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.offAddr"%go [].
+
+Definition atomicOffAddr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.atomicOffAddr"%go [].
+
+Definition addrRanges {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.addrRanges"%go [].
+
+Definition spanSet {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.spanSet"%go [].
+
+Definition spanSetBlockHeader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.spanSetBlockHeader"%go [].
+
+Definition spanSetBlockHeader2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.spanSetBlockHeader2"%go [].
+
+Definition spanSetBlock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.spanSetBlock"%go [].
+
+Definition atomicSpanSetSpinePointer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.atomicSpanSetSpinePointer"%go [].
+
+Definition spanSetSpinePointer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.spanSetSpinePointer"%go [].
+
+Definition spanSetBlockAlloc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.spanSetBlockAlloc"%go [].
+
+Definition headTailIndex {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.headTailIndex"%go [].
+
+Definition atomicHeadTailIndex {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.atomicHeadTailIndex"%go [].
+
+Definition atomicMSpanPointer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.atomicMSpanPointer"%go [].
+
+Definition mstats {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.mstats"%go [].
+
+Definition MemStats {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.MemStats"%go [].
+
+Definition sysMemStat {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.sysMemStat"%go [].
+
+Definition heapStatsDelta {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.heapStatsDelta"%go [].
+
+Definition consistentHeapStats {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.consistentHeapStats"%go [].
+
+Definition cpuStats {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.cpuStats"%go [].
+
+Definition wbBuf {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.wbBuf"%go [].
+
+Definition pollDesc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.pollDesc"%go [].
+
+Definition pollInfo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.pollInfo"%go [].
+
+Definition pollCache {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.pollCache"%go [].
+
+Definition winlibcall {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.winlibcall"%go [].
+
+Definition note {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.note"%go [].
+
+Definition mOS {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.mOS"%go [].
+
+Definition perThreadSyscallArgs {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.perThreadSyscallArgs"%go [].
+
+Definition sigset {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.sigset"%go [].
+
+Definition throwType {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.throwType"%go [].
+
+Definition PanicNilError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.PanicNilError"%go [].
+
+Definition Pinner {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.Pinner"%go [].
+
+Definition pinner {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.pinner"%go [].
+
+Definition pinState {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.pinState"%go [].
+
+Definition pinnerBits {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.pinnerBits"%go [].
+
+Definition ptabEntry {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.ptabEntry"%go [].
+
+Definition suspendGState {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.suspendGState"%go [].
+
+Definition hex {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.hex"%go [].
+
+Definition stwReason {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.stwReason"%go [].
+
+Definition worldStop {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.worldStop"%go [].
+
+Definition cgothreadstart {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.cgothreadstart"%go [].
+
+Definition sysmontick {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.sysmontick"%go [].
+
+Definition updateMaxProcsGState {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.updateMaxProcsGState"%go [].
+
+Definition pMask {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.pMask"%go [].
+
+Definition gQueue {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.gQueue"%go [].
+
+Definition gList {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.gList"%go [].
+
+Definition randomOrder {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.randomOrder"%go [].
+
+Definition randomEnum {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.randomEnum"%go [].
+
+Definition initTask {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.initTask"%go [].
+
+Definition tracestat {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.tracestat"%go [].
+
+Definition profBuf {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.profBuf"%go [].
+
+Definition profAtomic {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.profAtomic"%go [].
+
+Definition profIndex {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.profIndex"%go [].
+
+Definition profBufReadMode {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.profBufReadMode"%go [].
+
+Definition ticksType {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.ticksType"%go [].
+
+Definition godebugInc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.godebugInc"%go [].
+
+Definition dbgVar {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.dbgVar"%go [].
+
+Definition mutex {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.mutex"%go [].
+
+Definition funcval {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.funcval"%go [].
+
+Definition iface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.iface"%go [].
+
+Definition eface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.eface"%go [].
+
+Definition guintptr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.guintptr"%go [].
+
+Definition puintptr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.puintptr"%go [].
+
+Definition muintptr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.muintptr"%go [].
+
+Definition gobuf {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.gobuf"%go [].
+
+Definition sudog {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.sudog"%go [].
+
+Definition libcall {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.libcall"%go [].
+
+Definition stack {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.stack"%go [].
+
+Definition heldLockInfo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.heldLockInfo"%go [].
+
+Definition g {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.g"%go [].
+
+Definition m {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.m"%go [].
+
+Definition mPadded {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.mPadded"%go [].
+
+Definition p {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.p"%go [].
+
+Definition schedt {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.schedt"%go [].
+
+Definition _func {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime._func"%go [].
+
+Definition funcinl {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.funcinl"%go [].
+
+Definition lfnode {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.lfnode"%go [].
+
+Definition forcegcstate {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.forcegcstate"%go [].
+
+Definition _defer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime._defer"%go [].
+
+Definition _panic {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime._panic"%go [].
+
+Definition savedOpenDeferState {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.savedOpenDeferState"%go [].
+
+Definition ancestorInfo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.ancestorInfo"%go [].
+
+Definition waitReason {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.waitReason"%go [].
+
+Definition rwmutex {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.rwmutex"%go [].
+
+Definition scase {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.scase"%go [].
+
+Definition runtimeSelect {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.runtimeSelect"%go [].
+
+Definition selectDir {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.selectDir"%go [].
+
+Definition semaRoot {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.semaRoot"%go [].
+
+Definition semTable {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.semTable"%go [].
+
+Definition semaProfileFlags {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.semaProfileFlags"%go [].
+
+Definition notifyList {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.notifyList"%go [].
+
+Definition sigctxt {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.sigctxt"%go [].
+
+Definition sigTabT {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.sigTabT"%go [].
+
+Definition gsignalStack {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.gsignalStack"%go [].
+
+Definition slice {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.slice"%go [].
+
+Definition notInHeapSlice {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.notInHeapSlice"%go [].
+
+Definition stackpoolItem {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.stackpoolItem"%go [].
+
+Definition adjustinfo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.adjustinfo"%go [].
+
+Definition bitvector {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.bitvector"%go [].
+
+Definition stackObjectRecord {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.stackObjectRecord"%go [].
+
+Definition stkframe {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.stkframe"%go [].
+
+Definition reflectMethodValue {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.reflectMethodValue"%go [].
+
+Definition tmpBuf {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.tmpBuf"%go [].
+
+Definition stringStruct {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.stringStruct"%go [].
+
+Definition stringStructDWARF {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.stringStructDWARF"%go [].
+
+Definition neverCallThisFunction {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.neverCallThisFunction"%go [].
+
+Definition Frames {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.Frames"%go [].
+
+Definition Frame {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.Frame"%go [].
+
+Definition Func {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.Func"%go [].
+
+Definition pcHeader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.pcHeader"%go [].
+
+Definition moduledata {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.moduledata"%go [].
+
+Definition modulehash {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.modulehash"%go [].
+
+Definition functab {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.functab"%go [].
+
+Definition textsect {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.textsect"%go [].
+
+Definition findfuncbucket {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.findfuncbucket"%go [].
+
+Definition funcInfo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.funcInfo"%go [].
+
+Definition srcFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.srcFunc"%go [].
+
+Definition pcvalueCache {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.pcvalueCache"%go [].
+
+Definition pcvalueCacheEnt {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.pcvalueCacheEnt"%go [].
+
+Definition stackmap {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.stackmap"%go [].
+
+Definition inlinedCall {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.inlinedCall"%go [].
+
+Definition inlineUnwinder {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.inlineUnwinder"%go [].
+
+Definition inlineFrame {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.inlineFrame"%go [].
+
+Definition synctestBubble {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.synctestBubble"%go [].
+
+Definition synctestDeadlockError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.synctestDeadlockError"%go [].
+
+Definition specialBubble {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.specialBubble"%go [].
+
+Definition taggedPointer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.taggedPointer"%go [].
+
+Definition timer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.timer"%go [].
+
+Definition timers {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.timers"%go [].
+
+Definition timerWhen {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.timerWhen"%go [].
+
+Definition timeTimer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.timeTimer"%go [].
+
+Definition traceAdvancerState {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.traceAdvancerState"%go [].
+
+Definition wakeableSleep {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.wakeableSleep"%go [].
+
+Definition unwindFlags {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.unwindFlags"%go [].
+
+Definition unwinder {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.unwinder"%go [].
+
+Definition cgoTracebackArg {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.cgoTracebackArg"%go [].
+
+Definition cgoContextArg {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.cgoContextArg"%go [].
+
+Definition cgoSymbolizerArg {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.cgoSymbolizerArg"%go [].
+
+Definition traceWriter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.traceWriter"%go [].
+
+Definition traceBufQueue {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.traceBufQueue"%go [].
+
+Definition traceBufHeader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.traceBufHeader"%go [].
+
+Definition traceBuf {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.traceBuf"%go [].
+
+Definition traceArg {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.traceArg"%go [].
+
+Definition traceEventWriter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.traceEventWriter"%go [].
+
+Definition traceMap {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.traceMap"%go [].
+
+Definition traceMapNode {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.traceMapNode"%go [].
+
+Definition traceRegionAlloc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.traceRegionAlloc"%go [].
+
+Definition traceRegionAllocBlock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.traceRegionAllocBlock"%go [].
+
+Definition traceRegionAllocBlockHeader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.traceRegionAllocBlockHeader"%go [].
+
+Definition gTraceState {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.gTraceState"%go [].
+
+Definition mTraceState {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.mTraceState"%go [].
+
+Definition pTraceState {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.pTraceState"%go [].
+
+Definition traceBlockReason {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.traceBlockReason"%go [].
+
+Definition traceGoStopReason {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.traceGoStopReason"%go [].
+
+Definition traceLocker {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.traceLocker"%go [].
+
+Definition traceStackTable {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.traceStackTable"%go [].
+
+Definition traceFrame {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.traceFrame"%go [].
+
+Definition traceSchedResourceState {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.traceSchedResourceState"%go [].
+
+Definition traceStringTable {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.traceStringTable"%go [].
+
+Definition traceTime {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.traceTime"%go [].
+
+Definition traceTypeTable {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.traceTypeTable"%go [].
+
+Definition rtype {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.rtype"%go [].
+
+Definition bitCursor {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.bitCursor"%go [].
+
+Definition _typePair {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime._typePair"%go [].
+
+Definition elfSym {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.elfSym"%go [].
+
+Definition elfVerdef {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.elfVerdef"%go [].
+
+Definition elfEhdr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.elfEhdr"%go [].
+
+Definition elfPhdr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.elfPhdr"%go [].
+
+Definition elfShdr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.elfShdr"%go [].
+
+Definition elfDyn {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.elfDyn"%go [].
+
+Definition elfVerdaux {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.elfVerdaux"%go [].
+
+Definition vdsoSymbolKey {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.vdsoSymbolKey"%go [].
+
+Definition vdsoVersionKey {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.vdsoVersionKey"%go [].
+
+Definition vdsoInfo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "runtime.vdsoInfo"%go [].
 
 Axiom dlogger : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom dlogPerM : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom timespec : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom timeval : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom sigactiont : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom siginfoFields : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom siginfo : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom itimerspec : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom itimerval : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom sigeventFields : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom sigevent : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom usigset : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom fpxreg : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom xmmreg : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom fpstate : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom fpxreg1 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom xmmreg1 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom fpstate1 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom fpreg1 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom stackt : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom mcontext : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom ucontext : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom sigcontext : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom sockaddr_un : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom Error : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom TypeAssertionError : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom errorString : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom errorAddressString : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom plainError : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom boundsError : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom boundsErrorCode : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom stringer : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom typeCacheBucket : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom childInfo : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom timeHistogram : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom itabTableType : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom uint16InterfacePtr : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom uint32InterfacePtr : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom uint64InterfacePtr : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom stringInterfacePtr : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom sliceInterfacePtr : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom lfstack : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom linknameIter : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom mWaitList : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom lockRank : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom lockRankStruct : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom persistentAlloc : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom linearAlloc : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom notInHeap : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
 Axiom maptype : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom typePointers : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom markBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom mcache : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom gclink : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom gclinkptr : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom stackfreelist : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom mcentral : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom checkmarksMap : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom Cleanup : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom cleanupBlock : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom cleanupBlockHeader : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom cleanupQueue : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom metricData : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom metricReader : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom statDep : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom statDepSet : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom heapStatsAggregate : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom sysStatsAggregate : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom cpuStatsAggregate : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom gcStatsAggregate : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom statAggregate : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom metricKind : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom metricSample : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom metricValue : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom metricFloat64Histogram : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom metricName : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom finBlock : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom finalizer : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom fixalloc : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom mlink : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom gcMarkWorkerMode : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom workType : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom gcMode : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom gcTrigger : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom gcTriggerKind : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom gcBgMarkWorkerNode : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom gcBgMarkWorkerNodePadded : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom gcCPULimiterState : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom limiterEventType : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom limiterEventStamp : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom limiterEvent : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom gcDrainFlags : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom spanInlineMarkBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom spanQueue : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom localSpanQueue : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom objptr : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom sizeClassScanStats : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom gcControllerState : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom scavengerState : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom scavengeIndex : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom atomicScavChunkData : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom scavChunkData : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom scavChunkFlags : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom piController : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom stackWorkBuf : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom stackWorkBufHdr : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom stackObjectBuf : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom stackObjectBufHdr : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom stackObject : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom stackScanState : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom sweepdata : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom sweepClass : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom activeSweep : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom sweepLocker : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom sweepLocked : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom gcWork : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom workbufhdr : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom workbuf : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom mheap : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom heapArena : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom arenaHint : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom mSpanState : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom mSpanStateBox : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom mspan : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom spanClass : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom arenaIdx : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom spanAllocType : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom mSpanList : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom mSpanQueue : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom special : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom specialfinalizer : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom specialCleanup : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom specialCheckFinalizer : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom specialTinyBlock : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom specialWeakHandle : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom immortalWeakHandleMap : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom immortalWeakHandle : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom specialprofile : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom specialReachable : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom specialPinCounter : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom specialsIter : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom gcBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom gcBitsHeader : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom gcBitsArena : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom floaty : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom chunkIdx : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom pageAlloc : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom pallocSum : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom pageCache : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom pageBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom pallocBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom pallocData : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom bucketType : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom bucket : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom memRecord : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom memRecordCycle : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom blockRecord : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom buckhashArray : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom mProfCycleHolder : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom mLockProfile : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom StackRecord : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom MemProfileRecord : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom BlockProfileRecord : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom goroutineProfileState : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom goroutineProfileStateHolder : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom addrRange : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom offAddr : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom atomicOffAddr : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom addrRanges : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom spanSet : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom spanSetBlockHeader : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom spanSetBlockHeader2 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom spanSetBlock : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom atomicSpanSetSpinePointer : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom spanSetSpinePointer : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom spanSetBlockAlloc : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom headTailIndex : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom atomicHeadTailIndex : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom atomicMSpanPointer : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom mstats : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom MemStats : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom sysMemStat : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom heapStatsDelta : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom consistentHeapStats : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom cpuStats : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom wbBuf : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom pollDesc : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom pollInfo : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom pollCache : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom winlibcall : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom note : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom mOS : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom perThreadSyscallArgs : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom sigset : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom throwType : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom PanicNilError : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom Pinner : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom pinner : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom pinState : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom pinnerBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom ptabEntry : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom suspendGState : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom hex : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom stwReason : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom worldStop : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom cgothreadstart : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom sysmontick : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom updateMaxProcsGState : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom pMask : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom gQueue : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom gList : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom randomOrder : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom randomEnum : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom initTask : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom tracestat : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom profBuf : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom profAtomic : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom profIndex : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom profBufReadMode : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom ticksType : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom godebugInc : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom dbgVar : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom mutex : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom funcval : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom iface : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom eface : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom guintptr : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom puintptr : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom muintptr : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom gobuf : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom sudog : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom libcall : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom stack : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom heldLockInfo : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom g : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom m : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom mPadded : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom p : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom schedt : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom _func : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom funcinl : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
 Axiom itab : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom lfnode : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom forcegcstate : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom _defer : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom _panic : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom savedOpenDeferState : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom ancestorInfo : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom waitReason : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom rwmutex : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom scase : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom runtimeSelect : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom selectDir : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom semaRoot : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom semTable : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom semaProfileFlags : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom notifyList : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom sigctxt : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom sigTabT : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom gsignalStack : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom slice : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom notInHeapSlice : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom stackpoolItem : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom adjustinfo : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom bitvector : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom stackObjectRecord : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom stkframe : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom reflectMethodValue : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom tmpBuf : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom stringStruct : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom stringStructDWARF : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom neverCallThisFunction : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom Frames : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom Frame : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom Func : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom pcHeader : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom moduledata : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom modulehash : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom functab : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom textsect : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom findfuncbucket : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom funcInfo : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom srcFunc : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom pcvalueCache : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom pcvalueCacheEnt : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom stackmap : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom inlinedCall : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom inlineUnwinder : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom inlineFrame : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom synctestBubble : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom synctestDeadlockError : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom specialBubble : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom taggedPointer : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom timer : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom timers : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom timerWhen : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom timeTimer : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom traceAdvancerState : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom wakeableSleep : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom unwindFlags : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom unwinder : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom cgoTracebackArg : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom cgoContextArg : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom cgoSymbolizerArg : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom traceWriter : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom traceBufQueue : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom traceBufHeader : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom traceBuf : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom traceArg : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom traceEventWriter : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom traceMap : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom traceMapNode : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom traceRegionAlloc : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom traceRegionAllocBlock : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom traceRegionAllocBlockHeader : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom gTraceState : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom mTraceState : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom pTraceState : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom traceBlockReason : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom traceGoStopReason : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom traceLocker : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom traceStackTable : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom traceFrame : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom traceSchedResourceState : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom traceStringTable : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom traceTime : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom traceTypeTable : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
 Axiom nameOff : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
@@ -697,10 +726,6 @@ Axiom typeOff : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 Axiom textOff : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
 Axiom _type : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom rtype : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom bitCursor : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
 Axiom uncommontype : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
@@ -719,28 +744,6 @@ Axiom ptrtype : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 Axiom name : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
 Axiom structtype : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom _typePair : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom elfSym : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom elfVerdef : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom elfEhdr : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom elfPhdr : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom elfShdr : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom elfDyn : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom elfVerdaux : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom vdsoSymbolKey : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom vdsoVersionKey : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom vdsoInfo : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
 Axiom c0 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
@@ -6600,7 +6603,7 @@ Definition vgetrandom {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string
 
 Definition writeErr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.writeErr"%go.
 
-#[global] Instance info' : PkgInfo runtime.runtime := 
+#[global] Instance info' : PkgInfo pkg_id.runtime :=
 {|
   pkg_imported_pkgs := []
 |}.
@@ -6609,7 +6612,7 @@ Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    package.init runtime.runtime (λ: <>,
+    package.init pkg_id.runtime (λ: <>,
       exception_do (do:  (cgo_yield'init #());;;
       do:  (containermaxprocs'init #());;;
       do:  (debugPinnerKeepUnpin'init #());;;
@@ -6703,8 +6706,5288 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
       do:  (vdsoSymbolKeys'init #()))
       ).
 
+Module userArena.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End userArena.
+
+Class userArena_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] userArena_type_repr  :: go.TypeRepr userArena userArena.t;
+}.
+
+Module liveUserArenaChunk.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End liveUserArenaChunk.
+
+Class liveUserArenaChunk_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] liveUserArenaChunk_type_repr  :: go.TypeRepr liveUserArenaChunk liveUserArenaChunk.t;
+}.
+
+Module writeUserArenaHeapBits.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End writeUserArenaHeapBits.
+
+Class writeUserArenaHeapBits_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] writeUserArenaHeapBits_type_repr  :: go.TypeRepr writeUserArenaHeapBits writeUserArenaHeapBits.t;
+}.
+
+Module cgoCallers.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End cgoCallers.
+
+Class cgoCallers_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] cgoCallers_type_repr  :: go.TypeRepr cgoCallers cgoCallers.t;
+}.
+
+Module argset.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End argset.
+
+Class argset_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] argset_type_repr  :: go.TypeRepr argset argset.t;
+}.
+
+Module hchan.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End hchan.
+
+Class hchan_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] hchan_type_repr  :: go.TypeRepr hchan hchan.t;
+}.
+
+Module waitq.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End waitq.
+
+Class waitq_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] waitq_type_repr  :: go.TypeRepr waitq waitq.t;
+}.
+
+Module coro.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End coro.
+
+Class coro_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] coro_type_repr  :: go.TypeRepr coro coro.t;
+}.
+
+Module cpuProfile.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End cpuProfile.
+
+Class cpuProfile_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] cpuProfile_type_repr  :: go.TypeRepr cpuProfile cpuProfile.t;
+}.
+
+Module debugCallWrapArgs.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End debugCallWrapArgs.
+
+Class debugCallWrapArgs_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] debugCallWrapArgs_type_repr  :: go.TypeRepr debugCallWrapArgs debugCallWrapArgs.t;
+}.
+
+Module dloggerImpl.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End dloggerImpl.
+
+Class dloggerImpl_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] dloggerImpl_type_repr  :: go.TypeRepr dloggerImpl dloggerImpl.t;
+}.
+
+Module dloggerFake.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End dloggerFake.
+
+Class dloggerFake_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] dloggerFake_type_repr  :: go.TypeRepr dloggerFake dloggerFake.t;
+}.
+
+Module debugLogWriter.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End debugLogWriter.
+
+Class debugLogWriter_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] debugLogWriter_type_repr  :: go.TypeRepr debugLogWriter debugLogWriter.t;
+}.
+
+Module debugLogBuf.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End debugLogBuf.
+
+Class debugLogBuf_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] debugLogBuf_type_repr  :: go.TypeRepr debugLogBuf debugLogBuf.t;
+}.
+
+Module debugLogReader.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End debugLogReader.
+
+Class debugLogReader_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] debugLogReader_type_repr  :: go.TypeRepr debugLogReader debugLogReader.t;
+}.
+
+Module dlogPerM.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End dlogPerM.
+
+Class dlogPerM_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] dlogPerM_type_repr  :: go.TypeRepr dlogPerM dlogPerM.t;
+}.
+
+Module timespec.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End timespec.
+
+Class timespec_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] timespec_type_repr  :: go.TypeRepr timespec timespec.t;
+}.
+
+Module timeval.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End timeval.
+
+Class timeval_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] timeval_type_repr  :: go.TypeRepr timeval timeval.t;
+}.
+
+Module sigactiont.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End sigactiont.
+
+Class sigactiont_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] sigactiont_type_repr  :: go.TypeRepr sigactiont sigactiont.t;
+}.
+
+Module siginfoFields.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End siginfoFields.
+
+Class siginfoFields_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] siginfoFields_type_repr  :: go.TypeRepr siginfoFields siginfoFields.t;
+}.
+
+Module siginfo.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End siginfo.
+
+Class siginfo_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] siginfo_type_repr  :: go.TypeRepr siginfo siginfo.t;
+}.
+
+Module itimerspec.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End itimerspec.
+
+Class itimerspec_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] itimerspec_type_repr  :: go.TypeRepr itimerspec itimerspec.t;
+}.
+
+Module itimerval.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End itimerval.
+
+Class itimerval_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] itimerval_type_repr  :: go.TypeRepr itimerval itimerval.t;
+}.
+
+Module sigeventFields.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End sigeventFields.
+
+Class sigeventFields_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] sigeventFields_type_repr  :: go.TypeRepr sigeventFields sigeventFields.t;
+}.
+
+Module sigevent.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End sigevent.
+
+Class sigevent_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] sigevent_type_repr  :: go.TypeRepr sigevent sigevent.t;
+}.
+
+Module usigset.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End usigset.
+
+Class usigset_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] usigset_type_repr  :: go.TypeRepr usigset usigset.t;
+}.
+
+Module fpxreg.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End fpxreg.
+
+Class fpxreg_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] fpxreg_type_repr  :: go.TypeRepr fpxreg fpxreg.t;
+}.
+
+Module xmmreg.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End xmmreg.
+
+Class xmmreg_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] xmmreg_type_repr  :: go.TypeRepr xmmreg xmmreg.t;
+}.
+
+Module fpstate.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End fpstate.
+
+Class fpstate_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] fpstate_type_repr  :: go.TypeRepr fpstate fpstate.t;
+}.
+
+Module fpxreg1.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End fpxreg1.
+
+Class fpxreg1_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] fpxreg1_type_repr  :: go.TypeRepr fpxreg1 fpxreg1.t;
+}.
+
+Module xmmreg1.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End xmmreg1.
+
+Class xmmreg1_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] xmmreg1_type_repr  :: go.TypeRepr xmmreg1 xmmreg1.t;
+}.
+
+Module fpstate1.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End fpstate1.
+
+Class fpstate1_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] fpstate1_type_repr  :: go.TypeRepr fpstate1 fpstate1.t;
+}.
+
+Module fpreg1.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End fpreg1.
+
+Class fpreg1_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] fpreg1_type_repr  :: go.TypeRepr fpreg1 fpreg1.t;
+}.
+
+Module stackt.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End stackt.
+
+Class stackt_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] stackt_type_repr  :: go.TypeRepr stackt stackt.t;
+}.
+
+Module mcontext.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End mcontext.
+
+Class mcontext_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] mcontext_type_repr  :: go.TypeRepr mcontext mcontext.t;
+}.
+
+Module ucontext.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End ucontext.
+
+Class ucontext_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] ucontext_type_repr  :: go.TypeRepr ucontext ucontext.t;
+}.
+
+Module sigcontext.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End sigcontext.
+
+Class sigcontext_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] sigcontext_type_repr  :: go.TypeRepr sigcontext sigcontext.t;
+}.
+
+Module sockaddr_un.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End sockaddr_un.
+
+Class sockaddr_un_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] sockaddr_un_type_repr  :: go.TypeRepr sockaddr_un sockaddr_un.t;
+}.
+
+Module Error.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End Error.
+
+Class Error_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Error_type_repr  :: go.TypeRepr Error Error.t;
+}.
+
+Module TypeAssertionError.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End TypeAssertionError.
+
+Class TypeAssertionError_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] TypeAssertionError_type_repr  :: go.TypeRepr TypeAssertionError TypeAssertionError.t;
+}.
+
+Module errorString.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End errorString.
+
+Class errorString_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] errorString_type_repr  :: go.TypeRepr errorString errorString.t;
+}.
+
+Module errorAddressString.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End errorAddressString.
+
+Class errorAddressString_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] errorAddressString_type_repr  :: go.TypeRepr errorAddressString errorAddressString.t;
+}.
+
+Module plainError.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End plainError.
+
+Class plainError_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] plainError_type_repr  :: go.TypeRepr plainError plainError.t;
+}.
+
+Module boundsError.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End boundsError.
+
+Class boundsError_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] boundsError_type_repr  :: go.TypeRepr boundsError boundsError.t;
+}.
+
+Module boundsErrorCode.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End boundsErrorCode.
+
+Class boundsErrorCode_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] boundsErrorCode_type_repr  :: go.TypeRepr boundsErrorCode boundsErrorCode.t;
+}.
+
+Module stringer.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End stringer.
+
+Class stringer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] stringer_type_repr  :: go.TypeRepr stringer stringer.t;
+}.
+
+Module typeCacheBucket.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End typeCacheBucket.
+
+Class typeCacheBucket_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] typeCacheBucket_type_repr  :: go.TypeRepr typeCacheBucket typeCacheBucket.t;
+}.
+
+Module childInfo.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End childInfo.
+
+Class childInfo_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] childInfo_type_repr  :: go.TypeRepr childInfo childInfo.t;
+}.
+
+Module timeHistogram.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End timeHistogram.
+
+Class timeHistogram_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] timeHistogram_type_repr  :: go.TypeRepr timeHistogram timeHistogram.t;
+}.
+
+Module itabTableType.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End itabTableType.
+
+Class itabTableType_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] itabTableType_type_repr  :: go.TypeRepr itabTableType itabTableType.t;
+}.
+
+Module uint16InterfacePtr.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End uint16InterfacePtr.
+
+Class uint16InterfacePtr_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] uint16InterfacePtr_type_repr  :: go.TypeRepr uint16InterfacePtr uint16InterfacePtr.t;
+}.
+
+Module uint32InterfacePtr.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End uint32InterfacePtr.
+
+Class uint32InterfacePtr_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] uint32InterfacePtr_type_repr  :: go.TypeRepr uint32InterfacePtr uint32InterfacePtr.t;
+}.
+
+Module uint64InterfacePtr.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End uint64InterfacePtr.
+
+Class uint64InterfacePtr_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] uint64InterfacePtr_type_repr  :: go.TypeRepr uint64InterfacePtr uint64InterfacePtr.t;
+}.
+
+Module stringInterfacePtr.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End stringInterfacePtr.
+
+Class stringInterfacePtr_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] stringInterfacePtr_type_repr  :: go.TypeRepr stringInterfacePtr stringInterfacePtr.t;
+}.
+
+Module sliceInterfacePtr.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End sliceInterfacePtr.
+
+Class sliceInterfacePtr_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] sliceInterfacePtr_type_repr  :: go.TypeRepr sliceInterfacePtr sliceInterfacePtr.t;
+}.
+
+Module lfstack.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End lfstack.
+
+Class lfstack_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] lfstack_type_repr  :: go.TypeRepr lfstack lfstack.t;
+}.
+
+Module linknameIter.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End linknameIter.
+
+Class linknameIter_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] linknameIter_type_repr  :: go.TypeRepr linknameIter linknameIter.t;
+}.
+
+Module mWaitList.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End mWaitList.
+
+Class mWaitList_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] mWaitList_type_repr  :: go.TypeRepr mWaitList mWaitList.t;
+}.
+
+Module lockRank.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End lockRank.
+
+Class lockRank_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] lockRank_type_repr  :: go.TypeRepr lockRank lockRank.t;
+}.
+
+Module lockRankStruct.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End lockRankStruct.
+
+Class lockRankStruct_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] lockRankStruct_type_repr  :: go.TypeRepr lockRankStruct lockRankStruct.t;
+}.
+
+Module persistentAlloc.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End persistentAlloc.
+
+Class persistentAlloc_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] persistentAlloc_type_repr  :: go.TypeRepr persistentAlloc persistentAlloc.t;
+}.
+
+Module linearAlloc.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End linearAlloc.
+
+Class linearAlloc_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] linearAlloc_type_repr  :: go.TypeRepr linearAlloc linearAlloc.t;
+}.
+
+Module notInHeap.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End notInHeap.
+
+Class notInHeap_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] notInHeap_type_repr  :: go.TypeRepr notInHeap notInHeap.t;
+}.
+
+Module typePointers.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End typePointers.
+
+Class typePointers_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] typePointers_type_repr  :: go.TypeRepr typePointers typePointers.t;
+}.
+
+Module markBits.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End markBits.
+
+Class markBits_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] markBits_type_repr  :: go.TypeRepr markBits markBits.t;
+}.
+
+Module mcache.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End mcache.
+
+Class mcache_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] mcache_type_repr  :: go.TypeRepr mcache mcache.t;
+}.
+
+Module gclink.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End gclink.
+
+Class gclink_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] gclink_type_repr  :: go.TypeRepr gclink gclink.t;
+}.
+
+Module gclinkptr.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End gclinkptr.
+
+Class gclinkptr_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] gclinkptr_type_repr  :: go.TypeRepr gclinkptr gclinkptr.t;
+}.
+
+Module stackfreelist.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End stackfreelist.
+
+Class stackfreelist_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] stackfreelist_type_repr  :: go.TypeRepr stackfreelist stackfreelist.t;
+}.
+
+Module mcentral.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End mcentral.
+
+Class mcentral_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] mcentral_type_repr  :: go.TypeRepr mcentral mcentral.t;
+}.
+
+Module checkmarksMap.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End checkmarksMap.
+
+Class checkmarksMap_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] checkmarksMap_type_repr  :: go.TypeRepr checkmarksMap checkmarksMap.t;
+}.
+
+Module Cleanup.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End Cleanup.
+
+Class Cleanup_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Cleanup_type_repr  :: go.TypeRepr Cleanup Cleanup.t;
+}.
+
+Module cleanupBlock.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End cleanupBlock.
+
+Class cleanupBlock_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] cleanupBlock_type_repr  :: go.TypeRepr cleanupBlock cleanupBlock.t;
+}.
+
+Module cleanupBlockHeader.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End cleanupBlockHeader.
+
+Class cleanupBlockHeader_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] cleanupBlockHeader_type_repr  :: go.TypeRepr cleanupBlockHeader cleanupBlockHeader.t;
+}.
+
+Module cleanupQueue.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End cleanupQueue.
+
+Class cleanupQueue_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] cleanupQueue_type_repr  :: go.TypeRepr cleanupQueue cleanupQueue.t;
+}.
+
+Module metricData.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End metricData.
+
+Class metricData_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] metricData_type_repr  :: go.TypeRepr metricData metricData.t;
+}.
+
+Module metricReader.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End metricReader.
+
+Class metricReader_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] metricReader_type_repr  :: go.TypeRepr metricReader metricReader.t;
+}.
+
+Module statDep.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End statDep.
+
+Class statDep_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] statDep_type_repr  :: go.TypeRepr statDep statDep.t;
+}.
+
+Module statDepSet.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End statDepSet.
+
+Class statDepSet_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] statDepSet_type_repr  :: go.TypeRepr statDepSet statDepSet.t;
+}.
+
+Module heapStatsAggregate.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End heapStatsAggregate.
+
+Class heapStatsAggregate_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] heapStatsAggregate_type_repr  :: go.TypeRepr heapStatsAggregate heapStatsAggregate.t;
+}.
+
+Module sysStatsAggregate.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End sysStatsAggregate.
+
+Class sysStatsAggregate_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] sysStatsAggregate_type_repr  :: go.TypeRepr sysStatsAggregate sysStatsAggregate.t;
+}.
+
+Module cpuStatsAggregate.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End cpuStatsAggregate.
+
+Class cpuStatsAggregate_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] cpuStatsAggregate_type_repr  :: go.TypeRepr cpuStatsAggregate cpuStatsAggregate.t;
+}.
+
+Module gcStatsAggregate.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End gcStatsAggregate.
+
+Class gcStatsAggregate_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] gcStatsAggregate_type_repr  :: go.TypeRepr gcStatsAggregate gcStatsAggregate.t;
+}.
+
+Module statAggregate.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End statAggregate.
+
+Class statAggregate_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] statAggregate_type_repr  :: go.TypeRepr statAggregate statAggregate.t;
+}.
+
+Module metricKind.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End metricKind.
+
+Class metricKind_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] metricKind_type_repr  :: go.TypeRepr metricKind metricKind.t;
+}.
+
+Module metricSample.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End metricSample.
+
+Class metricSample_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] metricSample_type_repr  :: go.TypeRepr metricSample metricSample.t;
+}.
+
+Module metricValue.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End metricValue.
+
+Class metricValue_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] metricValue_type_repr  :: go.TypeRepr metricValue metricValue.t;
+}.
+
+Module metricFloat64Histogram.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End metricFloat64Histogram.
+
+Class metricFloat64Histogram_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] metricFloat64Histogram_type_repr  :: go.TypeRepr metricFloat64Histogram metricFloat64Histogram.t;
+}.
+
+Module metricName.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End metricName.
+
+Class metricName_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] metricName_type_repr  :: go.TypeRepr metricName metricName.t;
+}.
+
+Module finBlock.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End finBlock.
+
+Class finBlock_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] finBlock_type_repr  :: go.TypeRepr finBlock finBlock.t;
+}.
+
+Module finalizer.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End finalizer.
+
+Class finalizer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] finalizer_type_repr  :: go.TypeRepr finalizer finalizer.t;
+}.
+
+Module fixalloc.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End fixalloc.
+
+Class fixalloc_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] fixalloc_type_repr  :: go.TypeRepr fixalloc fixalloc.t;
+}.
+
+Module mlink.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End mlink.
+
+Class mlink_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] mlink_type_repr  :: go.TypeRepr mlink mlink.t;
+}.
+
+Module gcMarkWorkerMode.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End gcMarkWorkerMode.
+
+Class gcMarkWorkerMode_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] gcMarkWorkerMode_type_repr  :: go.TypeRepr gcMarkWorkerMode gcMarkWorkerMode.t;
+}.
+
+Module workType.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End workType.
+
+Class workType_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] workType_type_repr  :: go.TypeRepr workType workType.t;
+}.
+
+Module gcMode.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End gcMode.
+
+Class gcMode_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] gcMode_type_repr  :: go.TypeRepr gcMode gcMode.t;
+}.
+
+Module gcTrigger.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End gcTrigger.
+
+Class gcTrigger_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] gcTrigger_type_repr  :: go.TypeRepr gcTrigger gcTrigger.t;
+}.
+
+Module gcTriggerKind.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End gcTriggerKind.
+
+Class gcTriggerKind_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] gcTriggerKind_type_repr  :: go.TypeRepr gcTriggerKind gcTriggerKind.t;
+}.
+
+Module gcBgMarkWorkerNode.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End gcBgMarkWorkerNode.
+
+Class gcBgMarkWorkerNode_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] gcBgMarkWorkerNode_type_repr  :: go.TypeRepr gcBgMarkWorkerNode gcBgMarkWorkerNode.t;
+}.
+
+Module gcBgMarkWorkerNodePadded.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End gcBgMarkWorkerNodePadded.
+
+Class gcBgMarkWorkerNodePadded_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] gcBgMarkWorkerNodePadded_type_repr  :: go.TypeRepr gcBgMarkWorkerNodePadded gcBgMarkWorkerNodePadded.t;
+}.
+
+Module gcCPULimiterState.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End gcCPULimiterState.
+
+Class gcCPULimiterState_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] gcCPULimiterState_type_repr  :: go.TypeRepr gcCPULimiterState gcCPULimiterState.t;
+}.
+
+Module limiterEventType.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End limiterEventType.
+
+Class limiterEventType_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] limiterEventType_type_repr  :: go.TypeRepr limiterEventType limiterEventType.t;
+}.
+
+Module limiterEventStamp.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End limiterEventStamp.
+
+Class limiterEventStamp_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] limiterEventStamp_type_repr  :: go.TypeRepr limiterEventStamp limiterEventStamp.t;
+}.
+
+Module limiterEvent.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End limiterEvent.
+
+Class limiterEvent_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] limiterEvent_type_repr  :: go.TypeRepr limiterEvent limiterEvent.t;
+}.
+
+Module gcDrainFlags.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End gcDrainFlags.
+
+Class gcDrainFlags_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] gcDrainFlags_type_repr  :: go.TypeRepr gcDrainFlags gcDrainFlags.t;
+}.
+
+Module spanInlineMarkBits.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End spanInlineMarkBits.
+
+Class spanInlineMarkBits_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] spanInlineMarkBits_type_repr  :: go.TypeRepr spanInlineMarkBits spanInlineMarkBits.t;
+}.
+
+Module spanQueue.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End spanQueue.
+
+Class spanQueue_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] spanQueue_type_repr  :: go.TypeRepr spanQueue spanQueue.t;
+}.
+
+Module localSpanQueue.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End localSpanQueue.
+
+Class localSpanQueue_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] localSpanQueue_type_repr  :: go.TypeRepr localSpanQueue localSpanQueue.t;
+}.
+
+Module objptr.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End objptr.
+
+Class objptr_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] objptr_type_repr  :: go.TypeRepr objptr objptr.t;
+}.
+
+Module sizeClassScanStats.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End sizeClassScanStats.
+
+Class sizeClassScanStats_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] sizeClassScanStats_type_repr  :: go.TypeRepr sizeClassScanStats sizeClassScanStats.t;
+}.
+
+Module gcControllerState.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End gcControllerState.
+
+Class gcControllerState_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] gcControllerState_type_repr  :: go.TypeRepr gcControllerState gcControllerState.t;
+}.
+
+Module scavengerState.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End scavengerState.
+
+Class scavengerState_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] scavengerState_type_repr  :: go.TypeRepr scavengerState scavengerState.t;
+}.
+
+Module scavengeIndex.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End scavengeIndex.
+
+Class scavengeIndex_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] scavengeIndex_type_repr  :: go.TypeRepr scavengeIndex scavengeIndex.t;
+}.
+
+Module atomicScavChunkData.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End atomicScavChunkData.
+
+Class atomicScavChunkData_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] atomicScavChunkData_type_repr  :: go.TypeRepr atomicScavChunkData atomicScavChunkData.t;
+}.
+
+Module scavChunkData.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End scavChunkData.
+
+Class scavChunkData_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] scavChunkData_type_repr  :: go.TypeRepr scavChunkData scavChunkData.t;
+}.
+
+Module scavChunkFlags.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End scavChunkFlags.
+
+Class scavChunkFlags_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] scavChunkFlags_type_repr  :: go.TypeRepr scavChunkFlags scavChunkFlags.t;
+}.
+
+Module piController.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End piController.
+
+Class piController_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] piController_type_repr  :: go.TypeRepr piController piController.t;
+}.
+
+Module stackWorkBuf.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End stackWorkBuf.
+
+Class stackWorkBuf_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] stackWorkBuf_type_repr  :: go.TypeRepr stackWorkBuf stackWorkBuf.t;
+}.
+
+Module stackWorkBufHdr.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End stackWorkBufHdr.
+
+Class stackWorkBufHdr_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] stackWorkBufHdr_type_repr  :: go.TypeRepr stackWorkBufHdr stackWorkBufHdr.t;
+}.
+
+Module stackObjectBuf.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End stackObjectBuf.
+
+Class stackObjectBuf_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] stackObjectBuf_type_repr  :: go.TypeRepr stackObjectBuf stackObjectBuf.t;
+}.
+
+Module stackObjectBufHdr.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End stackObjectBufHdr.
+
+Class stackObjectBufHdr_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] stackObjectBufHdr_type_repr  :: go.TypeRepr stackObjectBufHdr stackObjectBufHdr.t;
+}.
+
+Module stackObject.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End stackObject.
+
+Class stackObject_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] stackObject_type_repr  :: go.TypeRepr stackObject stackObject.t;
+}.
+
+Module stackScanState.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End stackScanState.
+
+Class stackScanState_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] stackScanState_type_repr  :: go.TypeRepr stackScanState stackScanState.t;
+}.
+
+Module sweepdata.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End sweepdata.
+
+Class sweepdata_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] sweepdata_type_repr  :: go.TypeRepr sweepdata sweepdata.t;
+}.
+
+Module sweepClass.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End sweepClass.
+
+Class sweepClass_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] sweepClass_type_repr  :: go.TypeRepr sweepClass sweepClass.t;
+}.
+
+Module activeSweep.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End activeSweep.
+
+Class activeSweep_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] activeSweep_type_repr  :: go.TypeRepr activeSweep activeSweep.t;
+}.
+
+Module sweepLocker.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End sweepLocker.
+
+Class sweepLocker_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] sweepLocker_type_repr  :: go.TypeRepr sweepLocker sweepLocker.t;
+}.
+
+Module sweepLocked.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End sweepLocked.
+
+Class sweepLocked_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] sweepLocked_type_repr  :: go.TypeRepr sweepLocked sweepLocked.t;
+}.
+
+Module gcWork.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End gcWork.
+
+Class gcWork_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] gcWork_type_repr  :: go.TypeRepr gcWork gcWork.t;
+}.
+
+Module workbufhdr.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End workbufhdr.
+
+Class workbufhdr_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] workbufhdr_type_repr  :: go.TypeRepr workbufhdr workbufhdr.t;
+}.
+
+Module workbuf.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End workbuf.
+
+Class workbuf_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] workbuf_type_repr  :: go.TypeRepr workbuf workbuf.t;
+}.
+
+Module mheap.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End mheap.
+
+Class mheap_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] mheap_type_repr  :: go.TypeRepr mheap mheap.t;
+}.
+
+Module heapArena.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End heapArena.
+
+Class heapArena_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] heapArena_type_repr  :: go.TypeRepr heapArena heapArena.t;
+}.
+
+Module arenaHint.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End arenaHint.
+
+Class arenaHint_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] arenaHint_type_repr  :: go.TypeRepr arenaHint arenaHint.t;
+}.
+
+Module mSpanState.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End mSpanState.
+
+Class mSpanState_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] mSpanState_type_repr  :: go.TypeRepr mSpanState mSpanState.t;
+}.
+
+Module mSpanStateBox.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End mSpanStateBox.
+
+Class mSpanStateBox_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] mSpanStateBox_type_repr  :: go.TypeRepr mSpanStateBox mSpanStateBox.t;
+}.
+
+Module mspan.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End mspan.
+
+Class mspan_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] mspan_type_repr  :: go.TypeRepr mspan mspan.t;
+}.
+
+Module spanClass.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End spanClass.
+
+Class spanClass_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] spanClass_type_repr  :: go.TypeRepr spanClass spanClass.t;
+}.
+
+Module arenaIdx.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End arenaIdx.
+
+Class arenaIdx_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] arenaIdx_type_repr  :: go.TypeRepr arenaIdx arenaIdx.t;
+}.
+
+Module spanAllocType.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End spanAllocType.
+
+Class spanAllocType_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] spanAllocType_type_repr  :: go.TypeRepr spanAllocType spanAllocType.t;
+}.
+
+Module mSpanList.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End mSpanList.
+
+Class mSpanList_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] mSpanList_type_repr  :: go.TypeRepr mSpanList mSpanList.t;
+}.
+
+Module mSpanQueue.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End mSpanQueue.
+
+Class mSpanQueue_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] mSpanQueue_type_repr  :: go.TypeRepr mSpanQueue mSpanQueue.t;
+}.
+
+Module special.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End special.
+
+Class special_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] special_type_repr  :: go.TypeRepr special special.t;
+}.
+
+Module specialfinalizer.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End specialfinalizer.
+
+Class specialfinalizer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] specialfinalizer_type_repr  :: go.TypeRepr specialfinalizer specialfinalizer.t;
+}.
+
+Module specialCleanup.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End specialCleanup.
+
+Class specialCleanup_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] specialCleanup_type_repr  :: go.TypeRepr specialCleanup specialCleanup.t;
+}.
+
+Module specialCheckFinalizer.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End specialCheckFinalizer.
+
+Class specialCheckFinalizer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] specialCheckFinalizer_type_repr  :: go.TypeRepr specialCheckFinalizer specialCheckFinalizer.t;
+}.
+
+Module specialTinyBlock.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End specialTinyBlock.
+
+Class specialTinyBlock_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] specialTinyBlock_type_repr  :: go.TypeRepr specialTinyBlock specialTinyBlock.t;
+}.
+
+Module specialWeakHandle.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End specialWeakHandle.
+
+Class specialWeakHandle_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] specialWeakHandle_type_repr  :: go.TypeRepr specialWeakHandle specialWeakHandle.t;
+}.
+
+Module immortalWeakHandleMap.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End immortalWeakHandleMap.
+
+Class immortalWeakHandleMap_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] immortalWeakHandleMap_type_repr  :: go.TypeRepr immortalWeakHandleMap immortalWeakHandleMap.t;
+}.
+
+Module immortalWeakHandle.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End immortalWeakHandle.
+
+Class immortalWeakHandle_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] immortalWeakHandle_type_repr  :: go.TypeRepr immortalWeakHandle immortalWeakHandle.t;
+}.
+
+Module specialprofile.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End specialprofile.
+
+Class specialprofile_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] specialprofile_type_repr  :: go.TypeRepr specialprofile specialprofile.t;
+}.
+
+Module specialReachable.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End specialReachable.
+
+Class specialReachable_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] specialReachable_type_repr  :: go.TypeRepr specialReachable specialReachable.t;
+}.
+
+Module specialPinCounter.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End specialPinCounter.
+
+Class specialPinCounter_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] specialPinCounter_type_repr  :: go.TypeRepr specialPinCounter specialPinCounter.t;
+}.
+
+Module specialsIter.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End specialsIter.
+
+Class specialsIter_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] specialsIter_type_repr  :: go.TypeRepr specialsIter specialsIter.t;
+}.
+
+Module gcBits.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End gcBits.
+
+Class gcBits_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] gcBits_type_repr  :: go.TypeRepr gcBits gcBits.t;
+}.
+
+Module gcBitsHeader.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End gcBitsHeader.
+
+Class gcBitsHeader_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] gcBitsHeader_type_repr  :: go.TypeRepr gcBitsHeader gcBitsHeader.t;
+}.
+
+Module gcBitsArena.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End gcBitsArena.
+
+Class gcBitsArena_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] gcBitsArena_type_repr  :: go.TypeRepr gcBitsArena gcBitsArena.t;
+}.
+
+Module floaty.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End floaty.
+
+Class floaty_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] floaty_type_repr  :: go.TypeRepr floaty floaty.t;
+}.
+
+Module chunkIdx.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End chunkIdx.
+
+Class chunkIdx_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] chunkIdx_type_repr  :: go.TypeRepr chunkIdx chunkIdx.t;
+}.
+
+Module pageAlloc.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End pageAlloc.
+
+Class pageAlloc_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] pageAlloc_type_repr  :: go.TypeRepr pageAlloc pageAlloc.t;
+}.
+
+Module pallocSum.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End pallocSum.
+
+Class pallocSum_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] pallocSum_type_repr  :: go.TypeRepr pallocSum pallocSum.t;
+}.
+
+Module pageCache.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End pageCache.
+
+Class pageCache_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] pageCache_type_repr  :: go.TypeRepr pageCache pageCache.t;
+}.
+
+Module pageBits.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End pageBits.
+
+Class pageBits_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] pageBits_type_repr  :: go.TypeRepr pageBits pageBits.t;
+}.
+
+Module pallocBits.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End pallocBits.
+
+Class pallocBits_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] pallocBits_type_repr  :: go.TypeRepr pallocBits pallocBits.t;
+}.
+
+Module pallocData.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End pallocData.
+
+Class pallocData_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] pallocData_type_repr  :: go.TypeRepr pallocData pallocData.t;
+}.
+
+Module bucketType.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End bucketType.
+
+Class bucketType_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] bucketType_type_repr  :: go.TypeRepr bucketType bucketType.t;
+}.
+
+Module bucket.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End bucket.
+
+Class bucket_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] bucket_type_repr  :: go.TypeRepr bucket bucket.t;
+}.
+
+Module memRecord.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End memRecord.
+
+Class memRecord_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] memRecord_type_repr  :: go.TypeRepr memRecord memRecord.t;
+}.
+
+Module memRecordCycle.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End memRecordCycle.
+
+Class memRecordCycle_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] memRecordCycle_type_repr  :: go.TypeRepr memRecordCycle memRecordCycle.t;
+}.
+
+Module blockRecord.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End blockRecord.
+
+Class blockRecord_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] blockRecord_type_repr  :: go.TypeRepr blockRecord blockRecord.t;
+}.
+
+Module buckhashArray.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End buckhashArray.
+
+Class buckhashArray_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] buckhashArray_type_repr  :: go.TypeRepr buckhashArray buckhashArray.t;
+}.
+
+Module mProfCycleHolder.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End mProfCycleHolder.
+
+Class mProfCycleHolder_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] mProfCycleHolder_type_repr  :: go.TypeRepr mProfCycleHolder mProfCycleHolder.t;
+}.
+
+Module mLockProfile.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End mLockProfile.
+
+Class mLockProfile_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] mLockProfile_type_repr  :: go.TypeRepr mLockProfile mLockProfile.t;
+}.
+
+Module StackRecord.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End StackRecord.
+
+Class StackRecord_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] StackRecord_type_repr  :: go.TypeRepr StackRecord StackRecord.t;
+}.
+
+Module MemProfileRecord.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End MemProfileRecord.
+
+Class MemProfileRecord_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] MemProfileRecord_type_repr  :: go.TypeRepr MemProfileRecord MemProfileRecord.t;
+}.
+
+Module BlockProfileRecord.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End BlockProfileRecord.
+
+Class BlockProfileRecord_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] BlockProfileRecord_type_repr  :: go.TypeRepr BlockProfileRecord BlockProfileRecord.t;
+}.
+
+Module goroutineProfileState.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End goroutineProfileState.
+
+Class goroutineProfileState_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] goroutineProfileState_type_repr  :: go.TypeRepr goroutineProfileState goroutineProfileState.t;
+}.
+
+Module goroutineProfileStateHolder.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End goroutineProfileStateHolder.
+
+Class goroutineProfileStateHolder_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] goroutineProfileStateHolder_type_repr  :: go.TypeRepr goroutineProfileStateHolder goroutineProfileStateHolder.t;
+}.
+
+Module addrRange.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End addrRange.
+
+Class addrRange_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] addrRange_type_repr  :: go.TypeRepr addrRange addrRange.t;
+}.
+
+Module offAddr.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End offAddr.
+
+Class offAddr_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] offAddr_type_repr  :: go.TypeRepr offAddr offAddr.t;
+}.
+
+Module atomicOffAddr.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End atomicOffAddr.
+
+Class atomicOffAddr_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] atomicOffAddr_type_repr  :: go.TypeRepr atomicOffAddr atomicOffAddr.t;
+}.
+
+Module addrRanges.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End addrRanges.
+
+Class addrRanges_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] addrRanges_type_repr  :: go.TypeRepr addrRanges addrRanges.t;
+}.
+
+Module spanSet.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End spanSet.
+
+Class spanSet_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] spanSet_type_repr  :: go.TypeRepr spanSet spanSet.t;
+}.
+
+Module spanSetBlockHeader.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End spanSetBlockHeader.
+
+Class spanSetBlockHeader_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] spanSetBlockHeader_type_repr  :: go.TypeRepr spanSetBlockHeader spanSetBlockHeader.t;
+}.
+
+Module spanSetBlockHeader2.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End spanSetBlockHeader2.
+
+Class spanSetBlockHeader2_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] spanSetBlockHeader2_type_repr  :: go.TypeRepr spanSetBlockHeader2 spanSetBlockHeader2.t;
+}.
+
+Module spanSetBlock.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End spanSetBlock.
+
+Class spanSetBlock_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] spanSetBlock_type_repr  :: go.TypeRepr spanSetBlock spanSetBlock.t;
+}.
+
+Module atomicSpanSetSpinePointer.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End atomicSpanSetSpinePointer.
+
+Class atomicSpanSetSpinePointer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] atomicSpanSetSpinePointer_type_repr  :: go.TypeRepr atomicSpanSetSpinePointer atomicSpanSetSpinePointer.t;
+}.
+
+Module spanSetSpinePointer.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End spanSetSpinePointer.
+
+Class spanSetSpinePointer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] spanSetSpinePointer_type_repr  :: go.TypeRepr spanSetSpinePointer spanSetSpinePointer.t;
+}.
+
+Module spanSetBlockAlloc.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End spanSetBlockAlloc.
+
+Class spanSetBlockAlloc_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] spanSetBlockAlloc_type_repr  :: go.TypeRepr spanSetBlockAlloc spanSetBlockAlloc.t;
+}.
+
+Module headTailIndex.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End headTailIndex.
+
+Class headTailIndex_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] headTailIndex_type_repr  :: go.TypeRepr headTailIndex headTailIndex.t;
+}.
+
+Module atomicHeadTailIndex.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End atomicHeadTailIndex.
+
+Class atomicHeadTailIndex_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] atomicHeadTailIndex_type_repr  :: go.TypeRepr atomicHeadTailIndex atomicHeadTailIndex.t;
+}.
+
+Module atomicMSpanPointer.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End atomicMSpanPointer.
+
+Class atomicMSpanPointer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] atomicMSpanPointer_type_repr  :: go.TypeRepr atomicMSpanPointer atomicMSpanPointer.t;
+}.
+
+Module mstats.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End mstats.
+
+Class mstats_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] mstats_type_repr  :: go.TypeRepr mstats mstats.t;
+}.
+
+Module MemStats.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End MemStats.
+
+Class MemStats_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] MemStats_type_repr  :: go.TypeRepr MemStats MemStats.t;
+}.
+
+Module sysMemStat.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End sysMemStat.
+
+Class sysMemStat_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] sysMemStat_type_repr  :: go.TypeRepr sysMemStat sysMemStat.t;
+}.
+
+Module heapStatsDelta.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End heapStatsDelta.
+
+Class heapStatsDelta_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] heapStatsDelta_type_repr  :: go.TypeRepr heapStatsDelta heapStatsDelta.t;
+}.
+
+Module consistentHeapStats.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End consistentHeapStats.
+
+Class consistentHeapStats_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] consistentHeapStats_type_repr  :: go.TypeRepr consistentHeapStats consistentHeapStats.t;
+}.
+
+Module cpuStats.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End cpuStats.
+
+Class cpuStats_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] cpuStats_type_repr  :: go.TypeRepr cpuStats cpuStats.t;
+}.
+
+Module wbBuf.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End wbBuf.
+
+Class wbBuf_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] wbBuf_type_repr  :: go.TypeRepr wbBuf wbBuf.t;
+}.
+
+Module pollDesc.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End pollDesc.
+
+Class pollDesc_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] pollDesc_type_repr  :: go.TypeRepr pollDesc pollDesc.t;
+}.
+
+Module pollInfo.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End pollInfo.
+
+Class pollInfo_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] pollInfo_type_repr  :: go.TypeRepr pollInfo pollInfo.t;
+}.
+
+Module pollCache.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End pollCache.
+
+Class pollCache_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] pollCache_type_repr  :: go.TypeRepr pollCache pollCache.t;
+}.
+
+Module winlibcall.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End winlibcall.
+
+Class winlibcall_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] winlibcall_type_repr  :: go.TypeRepr winlibcall winlibcall.t;
+}.
+
+Module note.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End note.
+
+Class note_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] note_type_repr  :: go.TypeRepr note note.t;
+}.
+
+Module mOS.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End mOS.
+
+Class mOS_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] mOS_type_repr  :: go.TypeRepr mOS mOS.t;
+}.
+
+Module perThreadSyscallArgs.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End perThreadSyscallArgs.
+
+Class perThreadSyscallArgs_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] perThreadSyscallArgs_type_repr  :: go.TypeRepr perThreadSyscallArgs perThreadSyscallArgs.t;
+}.
+
+Module sigset.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End sigset.
+
+Class sigset_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] sigset_type_repr  :: go.TypeRepr sigset sigset.t;
+}.
+
+Module throwType.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End throwType.
+
+Class throwType_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] throwType_type_repr  :: go.TypeRepr throwType throwType.t;
+}.
+
+Module PanicNilError.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End PanicNilError.
+
+Class PanicNilError_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] PanicNilError_type_repr  :: go.TypeRepr PanicNilError PanicNilError.t;
+}.
+
+Module Pinner.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End Pinner.
+
+Class Pinner_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Pinner_type_repr  :: go.TypeRepr Pinner Pinner.t;
+}.
+
+Module pinner.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End pinner.
+
+Class pinner_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] pinner_type_repr  :: go.TypeRepr pinner pinner.t;
+}.
+
+Module pinState.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End pinState.
+
+Class pinState_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] pinState_type_repr  :: go.TypeRepr pinState pinState.t;
+}.
+
+Module pinnerBits.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End pinnerBits.
+
+Class pinnerBits_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] pinnerBits_type_repr  :: go.TypeRepr pinnerBits pinnerBits.t;
+}.
+
+Module ptabEntry.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End ptabEntry.
+
+Class ptabEntry_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] ptabEntry_type_repr  :: go.TypeRepr ptabEntry ptabEntry.t;
+}.
+
+Module suspendGState.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End suspendGState.
+
+Class suspendGState_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] suspendGState_type_repr  :: go.TypeRepr suspendGState suspendGState.t;
+}.
+
+Module hex.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End hex.
+
+Class hex_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] hex_type_repr  :: go.TypeRepr hex hex.t;
+}.
+
+Module stwReason.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End stwReason.
+
+Class stwReason_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] stwReason_type_repr  :: go.TypeRepr stwReason stwReason.t;
+}.
+
+Module worldStop.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End worldStop.
+
+Class worldStop_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] worldStop_type_repr  :: go.TypeRepr worldStop worldStop.t;
+}.
+
+Module cgothreadstart.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End cgothreadstart.
+
+Class cgothreadstart_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] cgothreadstart_type_repr  :: go.TypeRepr cgothreadstart cgothreadstart.t;
+}.
+
+Module sysmontick.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End sysmontick.
+
+Class sysmontick_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] sysmontick_type_repr  :: go.TypeRepr sysmontick sysmontick.t;
+}.
+
+Module updateMaxProcsGState.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End updateMaxProcsGState.
+
+Class updateMaxProcsGState_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] updateMaxProcsGState_type_repr  :: go.TypeRepr updateMaxProcsGState updateMaxProcsGState.t;
+}.
+
+Module pMask.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End pMask.
+
+Class pMask_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] pMask_type_repr  :: go.TypeRepr pMask pMask.t;
+}.
+
+Module gQueue.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End gQueue.
+
+Class gQueue_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] gQueue_type_repr  :: go.TypeRepr gQueue gQueue.t;
+}.
+
+Module gList.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End gList.
+
+Class gList_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] gList_type_repr  :: go.TypeRepr gList gList.t;
+}.
+
+Module randomOrder.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End randomOrder.
+
+Class randomOrder_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] randomOrder_type_repr  :: go.TypeRepr randomOrder randomOrder.t;
+}.
+
+Module randomEnum.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End randomEnum.
+
+Class randomEnum_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] randomEnum_type_repr  :: go.TypeRepr randomEnum randomEnum.t;
+}.
+
+Module initTask.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End initTask.
+
+Class initTask_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] initTask_type_repr  :: go.TypeRepr initTask initTask.t;
+}.
+
+Module tracestat.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End tracestat.
+
+Class tracestat_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] tracestat_type_repr  :: go.TypeRepr tracestat tracestat.t;
+}.
+
+Module profBuf.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End profBuf.
+
+Class profBuf_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] profBuf_type_repr  :: go.TypeRepr profBuf profBuf.t;
+}.
+
+Module profAtomic.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End profAtomic.
+
+Class profAtomic_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] profAtomic_type_repr  :: go.TypeRepr profAtomic profAtomic.t;
+}.
+
+Module profIndex.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End profIndex.
+
+Class profIndex_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] profIndex_type_repr  :: go.TypeRepr profIndex profIndex.t;
+}.
+
+Module profBufReadMode.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End profBufReadMode.
+
+Class profBufReadMode_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] profBufReadMode_type_repr  :: go.TypeRepr profBufReadMode profBufReadMode.t;
+}.
+
+Module ticksType.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End ticksType.
+
+Class ticksType_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] ticksType_type_repr  :: go.TypeRepr ticksType ticksType.t;
+}.
+
+Module godebugInc.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End godebugInc.
+
+Class godebugInc_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] godebugInc_type_repr  :: go.TypeRepr godebugInc godebugInc.t;
+}.
+
+Module dbgVar.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End dbgVar.
+
+Class dbgVar_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] dbgVar_type_repr  :: go.TypeRepr dbgVar dbgVar.t;
+}.
+
+Module mutex.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End mutex.
+
+Class mutex_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] mutex_type_repr  :: go.TypeRepr mutex mutex.t;
+}.
+
+Module funcval.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End funcval.
+
+Class funcval_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] funcval_type_repr  :: go.TypeRepr funcval funcval.t;
+}.
+
+Module iface.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End iface.
+
+Class iface_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] iface_type_repr  :: go.TypeRepr iface iface.t;
+}.
+
+Module eface.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End eface.
+
+Class eface_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] eface_type_repr  :: go.TypeRepr eface eface.t;
+}.
+
+Module guintptr.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End guintptr.
+
+Class guintptr_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] guintptr_type_repr  :: go.TypeRepr guintptr guintptr.t;
+}.
+
+Module puintptr.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End puintptr.
+
+Class puintptr_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] puintptr_type_repr  :: go.TypeRepr puintptr puintptr.t;
+}.
+
+Module muintptr.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End muintptr.
+
+Class muintptr_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] muintptr_type_repr  :: go.TypeRepr muintptr muintptr.t;
+}.
+
+Module gobuf.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End gobuf.
+
+Class gobuf_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] gobuf_type_repr  :: go.TypeRepr gobuf gobuf.t;
+}.
+
+Module sudog.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End sudog.
+
+Class sudog_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] sudog_type_repr  :: go.TypeRepr sudog sudog.t;
+}.
+
+Module libcall.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End libcall.
+
+Class libcall_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] libcall_type_repr  :: go.TypeRepr libcall libcall.t;
+}.
+
+Module stack.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End stack.
+
+Class stack_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] stack_type_repr  :: go.TypeRepr stack stack.t;
+}.
+
+Module heldLockInfo.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End heldLockInfo.
+
+Class heldLockInfo_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] heldLockInfo_type_repr  :: go.TypeRepr heldLockInfo heldLockInfo.t;
+}.
+
+Module g.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End g.
+
+Class g_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] g_type_repr  :: go.TypeRepr g g.t;
+}.
+
+Module m.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End m.
+
+Class m_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] m_type_repr  :: go.TypeRepr m m.t;
+}.
+
+Module mPadded.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End mPadded.
+
+Class mPadded_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] mPadded_type_repr  :: go.TypeRepr mPadded mPadded.t;
+}.
+
+Module p.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End p.
+
+Class p_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] p_type_repr  :: go.TypeRepr p p.t;
+}.
+
+Module schedt.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End schedt.
+
+Class schedt_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] schedt_type_repr  :: go.TypeRepr schedt schedt.t;
+}.
+
+Module _func.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End _func.
+
+Class _func_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] _func_type_repr  :: go.TypeRepr _func _func.t;
+}.
+
+Module funcinl.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End funcinl.
+
+Class funcinl_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] funcinl_type_repr  :: go.TypeRepr funcinl funcinl.t;
+}.
+
+Module lfnode.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End lfnode.
+
+Class lfnode_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] lfnode_type_repr  :: go.TypeRepr lfnode lfnode.t;
+}.
+
+Module forcegcstate.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End forcegcstate.
+
+Class forcegcstate_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] forcegcstate_type_repr  :: go.TypeRepr forcegcstate forcegcstate.t;
+}.
+
+Module _defer.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End _defer.
+
+Class _defer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] _defer_type_repr  :: go.TypeRepr _defer _defer.t;
+}.
+
+Module _panic.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End _panic.
+
+Class _panic_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] _panic_type_repr  :: go.TypeRepr _panic _panic.t;
+}.
+
+Module savedOpenDeferState.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End savedOpenDeferState.
+
+Class savedOpenDeferState_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] savedOpenDeferState_type_repr  :: go.TypeRepr savedOpenDeferState savedOpenDeferState.t;
+}.
+
+Module ancestorInfo.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End ancestorInfo.
+
+Class ancestorInfo_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] ancestorInfo_type_repr  :: go.TypeRepr ancestorInfo ancestorInfo.t;
+}.
+
+Module waitReason.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End waitReason.
+
+Class waitReason_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] waitReason_type_repr  :: go.TypeRepr waitReason waitReason.t;
+}.
+
+Module rwmutex.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End rwmutex.
+
+Class rwmutex_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] rwmutex_type_repr  :: go.TypeRepr rwmutex rwmutex.t;
+}.
+
+Module scase.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End scase.
+
+Class scase_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] scase_type_repr  :: go.TypeRepr scase scase.t;
+}.
+
+Module runtimeSelect.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End runtimeSelect.
+
+Class runtimeSelect_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] runtimeSelect_type_repr  :: go.TypeRepr runtimeSelect runtimeSelect.t;
+}.
+
+Module selectDir.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End selectDir.
+
+Class selectDir_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] selectDir_type_repr  :: go.TypeRepr selectDir selectDir.t;
+}.
+
+Module semaRoot.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End semaRoot.
+
+Class semaRoot_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] semaRoot_type_repr  :: go.TypeRepr semaRoot semaRoot.t;
+}.
+
+Module semTable.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End semTable.
+
+Class semTable_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] semTable_type_repr  :: go.TypeRepr semTable semTable.t;
+}.
+
+Module semaProfileFlags.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End semaProfileFlags.
+
+Class semaProfileFlags_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] semaProfileFlags_type_repr  :: go.TypeRepr semaProfileFlags semaProfileFlags.t;
+}.
+
+Module notifyList.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End notifyList.
+
+Class notifyList_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] notifyList_type_repr  :: go.TypeRepr notifyList notifyList.t;
+}.
+
+Module sigctxt.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End sigctxt.
+
+Class sigctxt_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] sigctxt_type_repr  :: go.TypeRepr sigctxt sigctxt.t;
+}.
+
+Module sigTabT.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End sigTabT.
+
+Class sigTabT_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] sigTabT_type_repr  :: go.TypeRepr sigTabT sigTabT.t;
+}.
+
+Module gsignalStack.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End gsignalStack.
+
+Class gsignalStack_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] gsignalStack_type_repr  :: go.TypeRepr gsignalStack gsignalStack.t;
+}.
+
+Module slice.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End slice.
+
+Class slice_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] slice_type_repr  :: go.TypeRepr slice slice.t;
+}.
+
+Module notInHeapSlice.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End notInHeapSlice.
+
+Class notInHeapSlice_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] notInHeapSlice_type_repr  :: go.TypeRepr notInHeapSlice notInHeapSlice.t;
+}.
+
+Module stackpoolItem.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End stackpoolItem.
+
+Class stackpoolItem_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] stackpoolItem_type_repr  :: go.TypeRepr stackpoolItem stackpoolItem.t;
+}.
+
+Module adjustinfo.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End adjustinfo.
+
+Class adjustinfo_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] adjustinfo_type_repr  :: go.TypeRepr adjustinfo adjustinfo.t;
+}.
+
+Module bitvector.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End bitvector.
+
+Class bitvector_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] bitvector_type_repr  :: go.TypeRepr bitvector bitvector.t;
+}.
+
+Module stackObjectRecord.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End stackObjectRecord.
+
+Class stackObjectRecord_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] stackObjectRecord_type_repr  :: go.TypeRepr stackObjectRecord stackObjectRecord.t;
+}.
+
+Module stkframe.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End stkframe.
+
+Class stkframe_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] stkframe_type_repr  :: go.TypeRepr stkframe stkframe.t;
+}.
+
+Module reflectMethodValue.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End reflectMethodValue.
+
+Class reflectMethodValue_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] reflectMethodValue_type_repr  :: go.TypeRepr reflectMethodValue reflectMethodValue.t;
+}.
+
+Module tmpBuf.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End tmpBuf.
+
+Class tmpBuf_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] tmpBuf_type_repr  :: go.TypeRepr tmpBuf tmpBuf.t;
+}.
+
+Module stringStruct.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End stringStruct.
+
+Class stringStruct_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] stringStruct_type_repr  :: go.TypeRepr stringStruct stringStruct.t;
+}.
+
+Module stringStructDWARF.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End stringStructDWARF.
+
+Class stringStructDWARF_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] stringStructDWARF_type_repr  :: go.TypeRepr stringStructDWARF stringStructDWARF.t;
+}.
+
+Module neverCallThisFunction.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End neverCallThisFunction.
+
+Class neverCallThisFunction_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] neverCallThisFunction_type_repr  :: go.TypeRepr neverCallThisFunction neverCallThisFunction.t;
+}.
+
+Module Frames.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End Frames.
+
+Class Frames_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Frames_type_repr  :: go.TypeRepr Frames Frames.t;
+}.
+
+Module Frame.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End Frame.
+
+Class Frame_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Frame_type_repr  :: go.TypeRepr Frame Frame.t;
+}.
+
+Module Func.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End Func.
+
+Class Func_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Func_type_repr  :: go.TypeRepr Func Func.t;
+}.
+
+Module pcHeader.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End pcHeader.
+
+Class pcHeader_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] pcHeader_type_repr  :: go.TypeRepr pcHeader pcHeader.t;
+}.
+
+Module moduledata.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End moduledata.
+
+Class moduledata_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] moduledata_type_repr  :: go.TypeRepr moduledata moduledata.t;
+}.
+
+Module modulehash.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End modulehash.
+
+Class modulehash_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] modulehash_type_repr  :: go.TypeRepr modulehash modulehash.t;
+}.
+
+Module functab.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End functab.
+
+Class functab_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] functab_type_repr  :: go.TypeRepr functab functab.t;
+}.
+
+Module textsect.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End textsect.
+
+Class textsect_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] textsect_type_repr  :: go.TypeRepr textsect textsect.t;
+}.
+
+Module findfuncbucket.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End findfuncbucket.
+
+Class findfuncbucket_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] findfuncbucket_type_repr  :: go.TypeRepr findfuncbucket findfuncbucket.t;
+}.
+
+Module funcInfo.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End funcInfo.
+
+Class funcInfo_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] funcInfo_type_repr  :: go.TypeRepr funcInfo funcInfo.t;
+}.
+
+Module srcFunc.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End srcFunc.
+
+Class srcFunc_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] srcFunc_type_repr  :: go.TypeRepr srcFunc srcFunc.t;
+}.
+
+Module pcvalueCache.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End pcvalueCache.
+
+Class pcvalueCache_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] pcvalueCache_type_repr  :: go.TypeRepr pcvalueCache pcvalueCache.t;
+}.
+
+Module pcvalueCacheEnt.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End pcvalueCacheEnt.
+
+Class pcvalueCacheEnt_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] pcvalueCacheEnt_type_repr  :: go.TypeRepr pcvalueCacheEnt pcvalueCacheEnt.t;
+}.
+
+Module stackmap.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End stackmap.
+
+Class stackmap_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] stackmap_type_repr  :: go.TypeRepr stackmap stackmap.t;
+}.
+
+Module inlinedCall.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End inlinedCall.
+
+Class inlinedCall_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] inlinedCall_type_repr  :: go.TypeRepr inlinedCall inlinedCall.t;
+}.
+
+Module inlineUnwinder.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End inlineUnwinder.
+
+Class inlineUnwinder_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] inlineUnwinder_type_repr  :: go.TypeRepr inlineUnwinder inlineUnwinder.t;
+}.
+
+Module inlineFrame.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End inlineFrame.
+
+Class inlineFrame_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] inlineFrame_type_repr  :: go.TypeRepr inlineFrame inlineFrame.t;
+}.
+
+Module synctestBubble.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End synctestBubble.
+
+Class synctestBubble_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] synctestBubble_type_repr  :: go.TypeRepr synctestBubble synctestBubble.t;
+}.
+
+Module synctestDeadlockError.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End synctestDeadlockError.
+
+Class synctestDeadlockError_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] synctestDeadlockError_type_repr  :: go.TypeRepr synctestDeadlockError synctestDeadlockError.t;
+}.
+
+Module specialBubble.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End specialBubble.
+
+Class specialBubble_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] specialBubble_type_repr  :: go.TypeRepr specialBubble specialBubble.t;
+}.
+
+Module taggedPointer.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End taggedPointer.
+
+Class taggedPointer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] taggedPointer_type_repr  :: go.TypeRepr taggedPointer taggedPointer.t;
+}.
+
+Module timer.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End timer.
+
+Class timer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] timer_type_repr  :: go.TypeRepr timer timer.t;
+}.
+
+Module timers.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End timers.
+
+Class timers_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] timers_type_repr  :: go.TypeRepr timers timers.t;
+}.
+
+Module timerWhen.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End timerWhen.
+
+Class timerWhen_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] timerWhen_type_repr  :: go.TypeRepr timerWhen timerWhen.t;
+}.
+
+Module timeTimer.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End timeTimer.
+
+Class timeTimer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] timeTimer_type_repr  :: go.TypeRepr timeTimer timeTimer.t;
+}.
+
+Module traceAdvancerState.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End traceAdvancerState.
+
+Class traceAdvancerState_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] traceAdvancerState_type_repr  :: go.TypeRepr traceAdvancerState traceAdvancerState.t;
+}.
+
+Module wakeableSleep.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End wakeableSleep.
+
+Class wakeableSleep_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] wakeableSleep_type_repr  :: go.TypeRepr wakeableSleep wakeableSleep.t;
+}.
+
+Module unwindFlags.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End unwindFlags.
+
+Class unwindFlags_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] unwindFlags_type_repr  :: go.TypeRepr unwindFlags unwindFlags.t;
+}.
+
+Module unwinder.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End unwinder.
+
+Class unwinder_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] unwinder_type_repr  :: go.TypeRepr unwinder unwinder.t;
+}.
+
+Module cgoTracebackArg.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End cgoTracebackArg.
+
+Class cgoTracebackArg_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] cgoTracebackArg_type_repr  :: go.TypeRepr cgoTracebackArg cgoTracebackArg.t;
+}.
+
+Module cgoContextArg.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End cgoContextArg.
+
+Class cgoContextArg_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] cgoContextArg_type_repr  :: go.TypeRepr cgoContextArg cgoContextArg.t;
+}.
+
+Module cgoSymbolizerArg.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End cgoSymbolizerArg.
+
+Class cgoSymbolizerArg_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] cgoSymbolizerArg_type_repr  :: go.TypeRepr cgoSymbolizerArg cgoSymbolizerArg.t;
+}.
+
+Module traceWriter.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End traceWriter.
+
+Class traceWriter_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] traceWriter_type_repr  :: go.TypeRepr traceWriter traceWriter.t;
+}.
+
+Module traceBufQueue.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End traceBufQueue.
+
+Class traceBufQueue_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] traceBufQueue_type_repr  :: go.TypeRepr traceBufQueue traceBufQueue.t;
+}.
+
+Module traceBufHeader.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End traceBufHeader.
+
+Class traceBufHeader_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] traceBufHeader_type_repr  :: go.TypeRepr traceBufHeader traceBufHeader.t;
+}.
+
+Module traceBuf.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End traceBuf.
+
+Class traceBuf_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] traceBuf_type_repr  :: go.TypeRepr traceBuf traceBuf.t;
+}.
+
+Module traceArg.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End traceArg.
+
+Class traceArg_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] traceArg_type_repr  :: go.TypeRepr traceArg traceArg.t;
+}.
+
+Module traceEventWriter.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End traceEventWriter.
+
+Class traceEventWriter_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] traceEventWriter_type_repr  :: go.TypeRepr traceEventWriter traceEventWriter.t;
+}.
+
+Module traceMap.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End traceMap.
+
+Class traceMap_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] traceMap_type_repr  :: go.TypeRepr traceMap traceMap.t;
+}.
+
+Module traceMapNode.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End traceMapNode.
+
+Class traceMapNode_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] traceMapNode_type_repr  :: go.TypeRepr traceMapNode traceMapNode.t;
+}.
+
+Module traceRegionAlloc.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End traceRegionAlloc.
+
+Class traceRegionAlloc_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] traceRegionAlloc_type_repr  :: go.TypeRepr traceRegionAlloc traceRegionAlloc.t;
+}.
+
+Module traceRegionAllocBlock.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End traceRegionAllocBlock.
+
+Class traceRegionAllocBlock_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] traceRegionAllocBlock_type_repr  :: go.TypeRepr traceRegionAllocBlock traceRegionAllocBlock.t;
+}.
+
+Module traceRegionAllocBlockHeader.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End traceRegionAllocBlockHeader.
+
+Class traceRegionAllocBlockHeader_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] traceRegionAllocBlockHeader_type_repr  :: go.TypeRepr traceRegionAllocBlockHeader traceRegionAllocBlockHeader.t;
+}.
+
+Module gTraceState.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End gTraceState.
+
+Class gTraceState_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] gTraceState_type_repr  :: go.TypeRepr gTraceState gTraceState.t;
+}.
+
+Module mTraceState.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End mTraceState.
+
+Class mTraceState_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] mTraceState_type_repr  :: go.TypeRepr mTraceState mTraceState.t;
+}.
+
+Module pTraceState.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End pTraceState.
+
+Class pTraceState_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] pTraceState_type_repr  :: go.TypeRepr pTraceState pTraceState.t;
+}.
+
+Module traceBlockReason.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End traceBlockReason.
+
+Class traceBlockReason_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] traceBlockReason_type_repr  :: go.TypeRepr traceBlockReason traceBlockReason.t;
+}.
+
+Module traceGoStopReason.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End traceGoStopReason.
+
+Class traceGoStopReason_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] traceGoStopReason_type_repr  :: go.TypeRepr traceGoStopReason traceGoStopReason.t;
+}.
+
+Module traceLocker.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End traceLocker.
+
+Class traceLocker_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] traceLocker_type_repr  :: go.TypeRepr traceLocker traceLocker.t;
+}.
+
+Module traceStackTable.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End traceStackTable.
+
+Class traceStackTable_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] traceStackTable_type_repr  :: go.TypeRepr traceStackTable traceStackTable.t;
+}.
+
+Module traceFrame.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End traceFrame.
+
+Class traceFrame_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] traceFrame_type_repr  :: go.TypeRepr traceFrame traceFrame.t;
+}.
+
+Module traceSchedResourceState.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End traceSchedResourceState.
+
+Class traceSchedResourceState_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] traceSchedResourceState_type_repr  :: go.TypeRepr traceSchedResourceState traceSchedResourceState.t;
+}.
+
+Module traceStringTable.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End traceStringTable.
+
+Class traceStringTable_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] traceStringTable_type_repr  :: go.TypeRepr traceStringTable traceStringTable.t;
+}.
+
+Module traceTime.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End traceTime.
+
+Class traceTime_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] traceTime_type_repr  :: go.TypeRepr traceTime traceTime.t;
+}.
+
+Module traceTypeTable.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End traceTypeTable.
+
+Class traceTypeTable_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] traceTypeTable_type_repr  :: go.TypeRepr traceTypeTable traceTypeTable.t;
+}.
+
+Module rtype.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End rtype.
+
+Class rtype_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] rtype_type_repr  :: go.TypeRepr rtype rtype.t;
+}.
+
+Module bitCursor.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End bitCursor.
+
+Class bitCursor_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] bitCursor_type_repr  :: go.TypeRepr bitCursor bitCursor.t;
+}.
+
+Module _typePair.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End _typePair.
+
+Class _typePair_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] _typePair_type_repr  :: go.TypeRepr _typePair _typePair.t;
+}.
+
+Module elfSym.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End elfSym.
+
+Class elfSym_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] elfSym_type_repr  :: go.TypeRepr elfSym elfSym.t;
+}.
+
+Module elfVerdef.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End elfVerdef.
+
+Class elfVerdef_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] elfVerdef_type_repr  :: go.TypeRepr elfVerdef elfVerdef.t;
+}.
+
+Module elfEhdr.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End elfEhdr.
+
+Class elfEhdr_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] elfEhdr_type_repr  :: go.TypeRepr elfEhdr elfEhdr.t;
+}.
+
+Module elfPhdr.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End elfPhdr.
+
+Class elfPhdr_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] elfPhdr_type_repr  :: go.TypeRepr elfPhdr elfPhdr.t;
+}.
+
+Module elfShdr.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End elfShdr.
+
+Class elfShdr_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] elfShdr_type_repr  :: go.TypeRepr elfShdr elfShdr.t;
+}.
+
+Module elfDyn.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End elfDyn.
+
+Class elfDyn_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] elfDyn_type_repr  :: go.TypeRepr elfDyn elfDyn.t;
+}.
+
+Module elfVerdaux.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End elfVerdaux.
+
+Class elfVerdaux_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] elfVerdaux_type_repr  :: go.TypeRepr elfVerdaux elfVerdaux.t;
+}.
+
+Module vdsoSymbolKey.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End vdsoSymbolKey.
+
+Class vdsoSymbolKey_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] vdsoSymbolKey_type_repr  :: go.TypeRepr vdsoSymbolKey vdsoSymbolKey.t;
+}.
+
+Module vdsoVersionKey.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End vdsoVersionKey.
+
+Class vdsoVersionKey_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] vdsoVersionKey_type_repr  :: go.TypeRepr vdsoVersionKey vdsoVersionKey.t;
+}.
+
+Module vdsoInfo.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End vdsoInfo.
+
+Class vdsoInfo_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] vdsoInfo_type_repr  :: go.TypeRepr vdsoInfo vdsoInfo.t;
+}.
+
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
+  #[global] userArena_instance :: userArena_Assumptions;
+  #[global] liveUserArenaChunk_instance :: liveUserArenaChunk_Assumptions;
+  #[global] writeUserArenaHeapBits_instance :: writeUserArenaHeapBits_Assumptions;
+  #[global] cgoCallers_instance :: cgoCallers_Assumptions;
+  #[global] argset_instance :: argset_Assumptions;
+  #[global] hchan_instance :: hchan_Assumptions;
+  #[global] waitq_instance :: waitq_Assumptions;
+  #[global] coro_instance :: coro_Assumptions;
+  #[global] cpuProfile_instance :: cpuProfile_Assumptions;
+  #[global] debugCallWrapArgs_instance :: debugCallWrapArgs_Assumptions;
+  #[global] dloggerImpl_instance :: dloggerImpl_Assumptions;
+  #[global] dloggerFake_instance :: dloggerFake_Assumptions;
+  #[global] debugLogWriter_instance :: debugLogWriter_Assumptions;
+  #[global] debugLogBuf_instance :: debugLogBuf_Assumptions;
+  #[global] debugLogReader_instance :: debugLogReader_Assumptions;
+  #[global] dlogPerM_instance :: dlogPerM_Assumptions;
+  #[global] timespec_instance :: timespec_Assumptions;
+  #[global] timeval_instance :: timeval_Assumptions;
+  #[global] sigactiont_instance :: sigactiont_Assumptions;
+  #[global] siginfoFields_instance :: siginfoFields_Assumptions;
+  #[global] siginfo_instance :: siginfo_Assumptions;
+  #[global] itimerspec_instance :: itimerspec_Assumptions;
+  #[global] itimerval_instance :: itimerval_Assumptions;
+  #[global] sigeventFields_instance :: sigeventFields_Assumptions;
+  #[global] sigevent_instance :: sigevent_Assumptions;
+  #[global] usigset_instance :: usigset_Assumptions;
+  #[global] fpxreg_instance :: fpxreg_Assumptions;
+  #[global] xmmreg_instance :: xmmreg_Assumptions;
+  #[global] fpstate_instance :: fpstate_Assumptions;
+  #[global] fpxreg1_instance :: fpxreg1_Assumptions;
+  #[global] xmmreg1_instance :: xmmreg1_Assumptions;
+  #[global] fpstate1_instance :: fpstate1_Assumptions;
+  #[global] fpreg1_instance :: fpreg1_Assumptions;
+  #[global] stackt_instance :: stackt_Assumptions;
+  #[global] mcontext_instance :: mcontext_Assumptions;
+  #[global] ucontext_instance :: ucontext_Assumptions;
+  #[global] sigcontext_instance :: sigcontext_Assumptions;
+  #[global] sockaddr_un_instance :: sockaddr_un_Assumptions;
+  #[global] Error_instance :: Error_Assumptions;
+  #[global] TypeAssertionError_instance :: TypeAssertionError_Assumptions;
+  #[global] errorString_instance :: errorString_Assumptions;
+  #[global] errorAddressString_instance :: errorAddressString_Assumptions;
+  #[global] plainError_instance :: plainError_Assumptions;
+  #[global] boundsError_instance :: boundsError_Assumptions;
+  #[global] boundsErrorCode_instance :: boundsErrorCode_Assumptions;
+  #[global] stringer_instance :: stringer_Assumptions;
+  #[global] typeCacheBucket_instance :: typeCacheBucket_Assumptions;
+  #[global] childInfo_instance :: childInfo_Assumptions;
+  #[global] timeHistogram_instance :: timeHistogram_Assumptions;
+  #[global] itabTableType_instance :: itabTableType_Assumptions;
+  #[global] uint16InterfacePtr_instance :: uint16InterfacePtr_Assumptions;
+  #[global] uint32InterfacePtr_instance :: uint32InterfacePtr_Assumptions;
+  #[global] uint64InterfacePtr_instance :: uint64InterfacePtr_Assumptions;
+  #[global] stringInterfacePtr_instance :: stringInterfacePtr_Assumptions;
+  #[global] sliceInterfacePtr_instance :: sliceInterfacePtr_Assumptions;
+  #[global] lfstack_instance :: lfstack_Assumptions;
+  #[global] linknameIter_instance :: linknameIter_Assumptions;
+  #[global] mWaitList_instance :: mWaitList_Assumptions;
+  #[global] lockRank_instance :: lockRank_Assumptions;
+  #[global] lockRankStruct_instance :: lockRankStruct_Assumptions;
+  #[global] persistentAlloc_instance :: persistentAlloc_Assumptions;
+  #[global] linearAlloc_instance :: linearAlloc_Assumptions;
+  #[global] notInHeap_instance :: notInHeap_Assumptions;
+  #[global] typePointers_instance :: typePointers_Assumptions;
+  #[global] markBits_instance :: markBits_Assumptions;
+  #[global] mcache_instance :: mcache_Assumptions;
+  #[global] gclink_instance :: gclink_Assumptions;
+  #[global] gclinkptr_instance :: gclinkptr_Assumptions;
+  #[global] stackfreelist_instance :: stackfreelist_Assumptions;
+  #[global] mcentral_instance :: mcentral_Assumptions;
+  #[global] checkmarksMap_instance :: checkmarksMap_Assumptions;
+  #[global] Cleanup_instance :: Cleanup_Assumptions;
+  #[global] cleanupBlock_instance :: cleanupBlock_Assumptions;
+  #[global] cleanupBlockHeader_instance :: cleanupBlockHeader_Assumptions;
+  #[global] cleanupQueue_instance :: cleanupQueue_Assumptions;
+  #[global] metricData_instance :: metricData_Assumptions;
+  #[global] metricReader_instance :: metricReader_Assumptions;
+  #[global] statDep_instance :: statDep_Assumptions;
+  #[global] statDepSet_instance :: statDepSet_Assumptions;
+  #[global] heapStatsAggregate_instance :: heapStatsAggregate_Assumptions;
+  #[global] sysStatsAggregate_instance :: sysStatsAggregate_Assumptions;
+  #[global] cpuStatsAggregate_instance :: cpuStatsAggregate_Assumptions;
+  #[global] gcStatsAggregate_instance :: gcStatsAggregate_Assumptions;
+  #[global] statAggregate_instance :: statAggregate_Assumptions;
+  #[global] metricKind_instance :: metricKind_Assumptions;
+  #[global] metricSample_instance :: metricSample_Assumptions;
+  #[global] metricValue_instance :: metricValue_Assumptions;
+  #[global] metricFloat64Histogram_instance :: metricFloat64Histogram_Assumptions;
+  #[global] metricName_instance :: metricName_Assumptions;
+  #[global] finBlock_instance :: finBlock_Assumptions;
+  #[global] finalizer_instance :: finalizer_Assumptions;
+  #[global] fixalloc_instance :: fixalloc_Assumptions;
+  #[global] mlink_instance :: mlink_Assumptions;
+  #[global] gcMarkWorkerMode_instance :: gcMarkWorkerMode_Assumptions;
+  #[global] workType_instance :: workType_Assumptions;
+  #[global] gcMode_instance :: gcMode_Assumptions;
+  #[global] gcTrigger_instance :: gcTrigger_Assumptions;
+  #[global] gcTriggerKind_instance :: gcTriggerKind_Assumptions;
+  #[global] gcBgMarkWorkerNode_instance :: gcBgMarkWorkerNode_Assumptions;
+  #[global] gcBgMarkWorkerNodePadded_instance :: gcBgMarkWorkerNodePadded_Assumptions;
+  #[global] gcCPULimiterState_instance :: gcCPULimiterState_Assumptions;
+  #[global] limiterEventType_instance :: limiterEventType_Assumptions;
+  #[global] limiterEventStamp_instance :: limiterEventStamp_Assumptions;
+  #[global] limiterEvent_instance :: limiterEvent_Assumptions;
+  #[global] gcDrainFlags_instance :: gcDrainFlags_Assumptions;
+  #[global] spanInlineMarkBits_instance :: spanInlineMarkBits_Assumptions;
+  #[global] spanQueue_instance :: spanQueue_Assumptions;
+  #[global] localSpanQueue_instance :: localSpanQueue_Assumptions;
+  #[global] objptr_instance :: objptr_Assumptions;
+  #[global] sizeClassScanStats_instance :: sizeClassScanStats_Assumptions;
+  #[global] gcControllerState_instance :: gcControllerState_Assumptions;
+  #[global] scavengerState_instance :: scavengerState_Assumptions;
+  #[global] scavengeIndex_instance :: scavengeIndex_Assumptions;
+  #[global] atomicScavChunkData_instance :: atomicScavChunkData_Assumptions;
+  #[global] scavChunkData_instance :: scavChunkData_Assumptions;
+  #[global] scavChunkFlags_instance :: scavChunkFlags_Assumptions;
+  #[global] piController_instance :: piController_Assumptions;
+  #[global] stackWorkBuf_instance :: stackWorkBuf_Assumptions;
+  #[global] stackWorkBufHdr_instance :: stackWorkBufHdr_Assumptions;
+  #[global] stackObjectBuf_instance :: stackObjectBuf_Assumptions;
+  #[global] stackObjectBufHdr_instance :: stackObjectBufHdr_Assumptions;
+  #[global] stackObject_instance :: stackObject_Assumptions;
+  #[global] stackScanState_instance :: stackScanState_Assumptions;
+  #[global] sweepdata_instance :: sweepdata_Assumptions;
+  #[global] sweepClass_instance :: sweepClass_Assumptions;
+  #[global] activeSweep_instance :: activeSweep_Assumptions;
+  #[global] sweepLocker_instance :: sweepLocker_Assumptions;
+  #[global] sweepLocked_instance :: sweepLocked_Assumptions;
+  #[global] gcWork_instance :: gcWork_Assumptions;
+  #[global] workbufhdr_instance :: workbufhdr_Assumptions;
+  #[global] workbuf_instance :: workbuf_Assumptions;
+  #[global] mheap_instance :: mheap_Assumptions;
+  #[global] heapArena_instance :: heapArena_Assumptions;
+  #[global] arenaHint_instance :: arenaHint_Assumptions;
+  #[global] mSpanState_instance :: mSpanState_Assumptions;
+  #[global] mSpanStateBox_instance :: mSpanStateBox_Assumptions;
+  #[global] mspan_instance :: mspan_Assumptions;
+  #[global] spanClass_instance :: spanClass_Assumptions;
+  #[global] arenaIdx_instance :: arenaIdx_Assumptions;
+  #[global] spanAllocType_instance :: spanAllocType_Assumptions;
+  #[global] mSpanList_instance :: mSpanList_Assumptions;
+  #[global] mSpanQueue_instance :: mSpanQueue_Assumptions;
+  #[global] special_instance :: special_Assumptions;
+  #[global] specialfinalizer_instance :: specialfinalizer_Assumptions;
+  #[global] specialCleanup_instance :: specialCleanup_Assumptions;
+  #[global] specialCheckFinalizer_instance :: specialCheckFinalizer_Assumptions;
+  #[global] specialTinyBlock_instance :: specialTinyBlock_Assumptions;
+  #[global] specialWeakHandle_instance :: specialWeakHandle_Assumptions;
+  #[global] immortalWeakHandleMap_instance :: immortalWeakHandleMap_Assumptions;
+  #[global] immortalWeakHandle_instance :: immortalWeakHandle_Assumptions;
+  #[global] specialprofile_instance :: specialprofile_Assumptions;
+  #[global] specialReachable_instance :: specialReachable_Assumptions;
+  #[global] specialPinCounter_instance :: specialPinCounter_Assumptions;
+  #[global] specialsIter_instance :: specialsIter_Assumptions;
+  #[global] gcBits_instance :: gcBits_Assumptions;
+  #[global] gcBitsHeader_instance :: gcBitsHeader_Assumptions;
+  #[global] gcBitsArena_instance :: gcBitsArena_Assumptions;
+  #[global] floaty_instance :: floaty_Assumptions;
+  #[global] chunkIdx_instance :: chunkIdx_Assumptions;
+  #[global] pageAlloc_instance :: pageAlloc_Assumptions;
+  #[global] pallocSum_instance :: pallocSum_Assumptions;
+  #[global] pageCache_instance :: pageCache_Assumptions;
+  #[global] pageBits_instance :: pageBits_Assumptions;
+  #[global] pallocBits_instance :: pallocBits_Assumptions;
+  #[global] pallocData_instance :: pallocData_Assumptions;
+  #[global] bucketType_instance :: bucketType_Assumptions;
+  #[global] bucket_instance :: bucket_Assumptions;
+  #[global] memRecord_instance :: memRecord_Assumptions;
+  #[global] memRecordCycle_instance :: memRecordCycle_Assumptions;
+  #[global] blockRecord_instance :: blockRecord_Assumptions;
+  #[global] buckhashArray_instance :: buckhashArray_Assumptions;
+  #[global] mProfCycleHolder_instance :: mProfCycleHolder_Assumptions;
+  #[global] mLockProfile_instance :: mLockProfile_Assumptions;
+  #[global] StackRecord_instance :: StackRecord_Assumptions;
+  #[global] MemProfileRecord_instance :: MemProfileRecord_Assumptions;
+  #[global] BlockProfileRecord_instance :: BlockProfileRecord_Assumptions;
+  #[global] goroutineProfileState_instance :: goroutineProfileState_Assumptions;
+  #[global] goroutineProfileStateHolder_instance :: goroutineProfileStateHolder_Assumptions;
+  #[global] addrRange_instance :: addrRange_Assumptions;
+  #[global] offAddr_instance :: offAddr_Assumptions;
+  #[global] atomicOffAddr_instance :: atomicOffAddr_Assumptions;
+  #[global] addrRanges_instance :: addrRanges_Assumptions;
+  #[global] spanSet_instance :: spanSet_Assumptions;
+  #[global] spanSetBlockHeader_instance :: spanSetBlockHeader_Assumptions;
+  #[global] spanSetBlockHeader2_instance :: spanSetBlockHeader2_Assumptions;
+  #[global] spanSetBlock_instance :: spanSetBlock_Assumptions;
+  #[global] atomicSpanSetSpinePointer_instance :: atomicSpanSetSpinePointer_Assumptions;
+  #[global] spanSetSpinePointer_instance :: spanSetSpinePointer_Assumptions;
+  #[global] spanSetBlockAlloc_instance :: spanSetBlockAlloc_Assumptions;
+  #[global] headTailIndex_instance :: headTailIndex_Assumptions;
+  #[global] atomicHeadTailIndex_instance :: atomicHeadTailIndex_Assumptions;
+  #[global] atomicMSpanPointer_instance :: atomicMSpanPointer_Assumptions;
+  #[global] mstats_instance :: mstats_Assumptions;
+  #[global] MemStats_instance :: MemStats_Assumptions;
+  #[global] sysMemStat_instance :: sysMemStat_Assumptions;
+  #[global] heapStatsDelta_instance :: heapStatsDelta_Assumptions;
+  #[global] consistentHeapStats_instance :: consistentHeapStats_Assumptions;
+  #[global] cpuStats_instance :: cpuStats_Assumptions;
+  #[global] wbBuf_instance :: wbBuf_Assumptions;
+  #[global] pollDesc_instance :: pollDesc_Assumptions;
+  #[global] pollInfo_instance :: pollInfo_Assumptions;
+  #[global] pollCache_instance :: pollCache_Assumptions;
+  #[global] winlibcall_instance :: winlibcall_Assumptions;
+  #[global] note_instance :: note_Assumptions;
+  #[global] mOS_instance :: mOS_Assumptions;
+  #[global] perThreadSyscallArgs_instance :: perThreadSyscallArgs_Assumptions;
+  #[global] sigset_instance :: sigset_Assumptions;
+  #[global] throwType_instance :: throwType_Assumptions;
+  #[global] PanicNilError_instance :: PanicNilError_Assumptions;
+  #[global] Pinner_instance :: Pinner_Assumptions;
+  #[global] pinner_instance :: pinner_Assumptions;
+  #[global] pinState_instance :: pinState_Assumptions;
+  #[global] pinnerBits_instance :: pinnerBits_Assumptions;
+  #[global] ptabEntry_instance :: ptabEntry_Assumptions;
+  #[global] suspendGState_instance :: suspendGState_Assumptions;
+  #[global] hex_instance :: hex_Assumptions;
+  #[global] stwReason_instance :: stwReason_Assumptions;
+  #[global] worldStop_instance :: worldStop_Assumptions;
+  #[global] cgothreadstart_instance :: cgothreadstart_Assumptions;
+  #[global] sysmontick_instance :: sysmontick_Assumptions;
+  #[global] updateMaxProcsGState_instance :: updateMaxProcsGState_Assumptions;
+  #[global] pMask_instance :: pMask_Assumptions;
+  #[global] gQueue_instance :: gQueue_Assumptions;
+  #[global] gList_instance :: gList_Assumptions;
+  #[global] randomOrder_instance :: randomOrder_Assumptions;
+  #[global] randomEnum_instance :: randomEnum_Assumptions;
+  #[global] initTask_instance :: initTask_Assumptions;
+  #[global] tracestat_instance :: tracestat_Assumptions;
+  #[global] profBuf_instance :: profBuf_Assumptions;
+  #[global] profAtomic_instance :: profAtomic_Assumptions;
+  #[global] profIndex_instance :: profIndex_Assumptions;
+  #[global] profBufReadMode_instance :: profBufReadMode_Assumptions;
+  #[global] ticksType_instance :: ticksType_Assumptions;
+  #[global] godebugInc_instance :: godebugInc_Assumptions;
+  #[global] dbgVar_instance :: dbgVar_Assumptions;
+  #[global] mutex_instance :: mutex_Assumptions;
+  #[global] funcval_instance :: funcval_Assumptions;
+  #[global] iface_instance :: iface_Assumptions;
+  #[global] eface_instance :: eface_Assumptions;
+  #[global] guintptr_instance :: guintptr_Assumptions;
+  #[global] puintptr_instance :: puintptr_Assumptions;
+  #[global] muintptr_instance :: muintptr_Assumptions;
+  #[global] gobuf_instance :: gobuf_Assumptions;
+  #[global] sudog_instance :: sudog_Assumptions;
+  #[global] libcall_instance :: libcall_Assumptions;
+  #[global] stack_instance :: stack_Assumptions;
+  #[global] heldLockInfo_instance :: heldLockInfo_Assumptions;
+  #[global] g_instance :: g_Assumptions;
+  #[global] m_instance :: m_Assumptions;
+  #[global] mPadded_instance :: mPadded_Assumptions;
+  #[global] p_instance :: p_Assumptions;
+  #[global] schedt_instance :: schedt_Assumptions;
+  #[global] _func_instance :: _func_Assumptions;
+  #[global] funcinl_instance :: funcinl_Assumptions;
+  #[global] lfnode_instance :: lfnode_Assumptions;
+  #[global] forcegcstate_instance :: forcegcstate_Assumptions;
+  #[global] _defer_instance :: _defer_Assumptions;
+  #[global] _panic_instance :: _panic_Assumptions;
+  #[global] savedOpenDeferState_instance :: savedOpenDeferState_Assumptions;
+  #[global] ancestorInfo_instance :: ancestorInfo_Assumptions;
+  #[global] waitReason_instance :: waitReason_Assumptions;
+  #[global] rwmutex_instance :: rwmutex_Assumptions;
+  #[global] scase_instance :: scase_Assumptions;
+  #[global] runtimeSelect_instance :: runtimeSelect_Assumptions;
+  #[global] selectDir_instance :: selectDir_Assumptions;
+  #[global] semaRoot_instance :: semaRoot_Assumptions;
+  #[global] semTable_instance :: semTable_Assumptions;
+  #[global] semaProfileFlags_instance :: semaProfileFlags_Assumptions;
+  #[global] notifyList_instance :: notifyList_Assumptions;
+  #[global] sigctxt_instance :: sigctxt_Assumptions;
+  #[global] sigTabT_instance :: sigTabT_Assumptions;
+  #[global] gsignalStack_instance :: gsignalStack_Assumptions;
+  #[global] slice_instance :: slice_Assumptions;
+  #[global] notInHeapSlice_instance :: notInHeapSlice_Assumptions;
+  #[global] stackpoolItem_instance :: stackpoolItem_Assumptions;
+  #[global] adjustinfo_instance :: adjustinfo_Assumptions;
+  #[global] bitvector_instance :: bitvector_Assumptions;
+  #[global] stackObjectRecord_instance :: stackObjectRecord_Assumptions;
+  #[global] stkframe_instance :: stkframe_Assumptions;
+  #[global] reflectMethodValue_instance :: reflectMethodValue_Assumptions;
+  #[global] tmpBuf_instance :: tmpBuf_Assumptions;
+  #[global] stringStruct_instance :: stringStruct_Assumptions;
+  #[global] stringStructDWARF_instance :: stringStructDWARF_Assumptions;
+  #[global] neverCallThisFunction_instance :: neverCallThisFunction_Assumptions;
+  #[global] Frames_instance :: Frames_Assumptions;
+  #[global] Frame_instance :: Frame_Assumptions;
+  #[global] Func_instance :: Func_Assumptions;
+  #[global] pcHeader_instance :: pcHeader_Assumptions;
+  #[global] moduledata_instance :: moduledata_Assumptions;
+  #[global] modulehash_instance :: modulehash_Assumptions;
+  #[global] functab_instance :: functab_Assumptions;
+  #[global] textsect_instance :: textsect_Assumptions;
+  #[global] findfuncbucket_instance :: findfuncbucket_Assumptions;
+  #[global] funcInfo_instance :: funcInfo_Assumptions;
+  #[global] srcFunc_instance :: srcFunc_Assumptions;
+  #[global] pcvalueCache_instance :: pcvalueCache_Assumptions;
+  #[global] pcvalueCacheEnt_instance :: pcvalueCacheEnt_Assumptions;
+  #[global] stackmap_instance :: stackmap_Assumptions;
+  #[global] inlinedCall_instance :: inlinedCall_Assumptions;
+  #[global] inlineUnwinder_instance :: inlineUnwinder_Assumptions;
+  #[global] inlineFrame_instance :: inlineFrame_Assumptions;
+  #[global] synctestBubble_instance :: synctestBubble_Assumptions;
+  #[global] synctestDeadlockError_instance :: synctestDeadlockError_Assumptions;
+  #[global] specialBubble_instance :: specialBubble_Assumptions;
+  #[global] taggedPointer_instance :: taggedPointer_Assumptions;
+  #[global] timer_instance :: timer_Assumptions;
+  #[global] timers_instance :: timers_Assumptions;
+  #[global] timerWhen_instance :: timerWhen_Assumptions;
+  #[global] timeTimer_instance :: timeTimer_Assumptions;
+  #[global] traceAdvancerState_instance :: traceAdvancerState_Assumptions;
+  #[global] wakeableSleep_instance :: wakeableSleep_Assumptions;
+  #[global] unwindFlags_instance :: unwindFlags_Assumptions;
+  #[global] unwinder_instance :: unwinder_Assumptions;
+  #[global] cgoTracebackArg_instance :: cgoTracebackArg_Assumptions;
+  #[global] cgoContextArg_instance :: cgoContextArg_Assumptions;
+  #[global] cgoSymbolizerArg_instance :: cgoSymbolizerArg_Assumptions;
+  #[global] traceWriter_instance :: traceWriter_Assumptions;
+  #[global] traceBufQueue_instance :: traceBufQueue_Assumptions;
+  #[global] traceBufHeader_instance :: traceBufHeader_Assumptions;
+  #[global] traceBuf_instance :: traceBuf_Assumptions;
+  #[global] traceArg_instance :: traceArg_Assumptions;
+  #[global] traceEventWriter_instance :: traceEventWriter_Assumptions;
+  #[global] traceMap_instance :: traceMap_Assumptions;
+  #[global] traceMapNode_instance :: traceMapNode_Assumptions;
+  #[global] traceRegionAlloc_instance :: traceRegionAlloc_Assumptions;
+  #[global] traceRegionAllocBlock_instance :: traceRegionAllocBlock_Assumptions;
+  #[global] traceRegionAllocBlockHeader_instance :: traceRegionAllocBlockHeader_Assumptions;
+  #[global] gTraceState_instance :: gTraceState_Assumptions;
+  #[global] mTraceState_instance :: mTraceState_Assumptions;
+  #[global] pTraceState_instance :: pTraceState_Assumptions;
+  #[global] traceBlockReason_instance :: traceBlockReason_Assumptions;
+  #[global] traceGoStopReason_instance :: traceGoStopReason_Assumptions;
+  #[global] traceLocker_instance :: traceLocker_Assumptions;
+  #[global] traceStackTable_instance :: traceStackTable_Assumptions;
+  #[global] traceFrame_instance :: traceFrame_Assumptions;
+  #[global] traceSchedResourceState_instance :: traceSchedResourceState_Assumptions;
+  #[global] traceStringTable_instance :: traceStringTable_Assumptions;
+  #[global] traceTime_instance :: traceTime_Assumptions;
+  #[global] traceTypeTable_instance :: traceTypeTable_Assumptions;
+  #[global] rtype_instance :: rtype_Assumptions;
+  #[global] bitCursor_instance :: bitCursor_Assumptions;
+  #[global] _typePair_instance :: _typePair_Assumptions;
+  #[global] elfSym_instance :: elfSym_Assumptions;
+  #[global] elfVerdef_instance :: elfVerdef_Assumptions;
+  #[global] elfEhdr_instance :: elfEhdr_Assumptions;
+  #[global] elfPhdr_instance :: elfPhdr_Assumptions;
+  #[global] elfShdr_instance :: elfShdr_Assumptions;
+  #[global] elfDyn_instance :: elfDyn_Assumptions;
+  #[global] elfVerdaux_instance :: elfVerdaux_Assumptions;
+  #[global] vdsoSymbolKey_instance :: vdsoSymbolKey_Assumptions;
+  #[global] vdsoVersionKey_instance :: vdsoVersionKey_Assumptions;
+  #[global] vdsoInfo_instance :: vdsoInfo_Assumptions;
   #[global] Gosched_unfold :: FuncUnfold Gosched [] (Goschedⁱᵐᵖˡ);
 }.
 End runtime.

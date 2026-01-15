@@ -2,8 +2,11 @@
 Require Export New.code.github_com.goose_lang.goose.testdata.examples.unittest.
 From New.golang Require Import defn.
 From New Require Import disk_prelude.
+Module pkg_id.
 Definition externalglobals : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/externalglobals".
 
+End pkg_id.
+Export pkg_id.
 Module externalglobals.
 
 Definition f {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/externalglobals.f"%go.
@@ -15,14 +18,14 @@ Definition fⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
     do:  ((GlobalVarAddr unittest.GlobalX #()) <-[go.uint64] "$r0");;;
     return: #()).
 
-#[global] Instance info' : PkgInfo externalglobals.externalglobals := 
+#[global] Instance info' : PkgInfo pkg_id.externalglobals :=
 {|
-  pkg_imported_pkgs := [code.github_com.goose_lang.goose.testdata.examples.unittest.unittest]
+  pkg_imported_pkgs := [code.github_com.goose_lang.goose.testdata.examples.unittest.pkg_id.unittest]
 |}.
 
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    package.init externalglobals.externalglobals (λ: <>,
+    package.init pkg_id.externalglobals (λ: <>,
       exception_do (do:  (unittest.initialize' #()))
       ).
 

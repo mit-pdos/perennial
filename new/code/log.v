@@ -2,8 +2,11 @@
 From New.golang Require Import defn.
 Require Export New.trusted_code.log.
 Import log.
+Module pkg_id.
 Definition log : go_string := "log".
 
+End pkg_id.
+Export pkg_id.
 Module log.
 
 Definition Logger {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "log.Logger"%go [].
@@ -79,7 +82,7 @@ Definition Panicln {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string :=
 
 Definition Output {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "log.Output"%go.
 
-#[global] Instance info' : PkgInfo log.log := 
+#[global] Instance info' : PkgInfo pkg_id.log :=
 {|
   pkg_imported_pkgs := []
 |}.
@@ -88,10 +91,24 @@ Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    package.init log.log (λ: <>,
+    package.init pkg_id.log (λ: <>,
       exception_do (do:  (std'init #());;;
       do:  (bufferPool'init #()))
       ).
+
+Module Logger.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End Logger.
+
+Class Logger_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Logger_type_repr  :: go.TypeRepr Logger Logger.t;
+}.
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {

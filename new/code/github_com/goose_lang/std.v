@@ -5,8 +5,11 @@ Require Export New.code.time.
 Require Export New.code.github_com.goose_lang.primitive.
 Require Export New.code.github_com.goose_lang.std.std_core.
 From New.golang Require Import defn.
+Module pkg_id.
 Definition std : go_string := "github.com/goose-lang/std".
 
+End pkg_id.
+Export pkg_id.
 Module std.
 
 Definition JoinHandle {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/std.JoinHandle"%go [].
@@ -301,14 +304,14 @@ Definition WaitTimeoutⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
        )];;;
     return: #()).
 
-#[global] Instance info' : PkgInfo std.std := 
+#[global] Instance info' : PkgInfo pkg_id.std :=
 {|
-  pkg_imported_pkgs := [code.math.math; code.sync.sync; code.time.time; code.github_com.goose_lang.primitive.primitive; code.github_com.goose_lang.std.std_core.std_core]
+  pkg_imported_pkgs := [code.math.pkg_id.math; code.sync.pkg_id.sync; code.time.pkg_id.time; code.github_com.goose_lang.primitive.pkg_id.primitive; code.github_com.goose_lang.std.std_core.pkg_id.std_core]
 |}.
 
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    package.init std.std (λ: <>,
+    package.init pkg_id.std (λ: <>,
       exception_do (do:  (std_core.initialize' #());;;
       do:  (primitive.initialize' #());;;
       do:  (time.initialize' #());;;
@@ -321,9 +324,9 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  mu : loc;
-  done : bool;
-  cond : loc;
+  mu' : loc;
+  done' : bool;
+  cond' : loc;
 }.
 
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
@@ -343,12 +346,12 @@ Class JoinHandle_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalCo
 {
   #[global] JoinHandle_type_repr  :: go.TypeRepr JoinHandle JoinHandle.t;
   #[global] JoinHandle_underlying :: go.Underlying (JoinHandle) (JoinHandleⁱᵐᵖˡ);
-  #[global] JoinHandle_get_mu (x : JoinHandle.t) :: go.IsGoStepPureDet (StructFieldGet (JoinHandle) "mu") #x #x.(JoinHandle.mu);
-  #[global] JoinHandle_set_mu (x : JoinHandle.t) y :: go.IsGoStepPureDet (StructFieldSet (JoinHandle) "mu") (#x, #y) #(x <|JoinHandle.mu := y|>);
-  #[global] JoinHandle_get_done (x : JoinHandle.t) :: go.IsGoStepPureDet (StructFieldGet (JoinHandle) "done") #x #x.(JoinHandle.done);
-  #[global] JoinHandle_set_done (x : JoinHandle.t) y :: go.IsGoStepPureDet (StructFieldSet (JoinHandle) "done") (#x, #y) #(x <|JoinHandle.done := y|>);
-  #[global] JoinHandle_get_cond (x : JoinHandle.t) :: go.IsGoStepPureDet (StructFieldGet (JoinHandle) "cond") #x #x.(JoinHandle.cond);
-  #[global] JoinHandle_set_cond (x : JoinHandle.t) y :: go.IsGoStepPureDet (StructFieldSet (JoinHandle) "cond") (#x, #y) #(x <|JoinHandle.cond := y|>);
+  #[global] JoinHandle_get_mu' (x : JoinHandle.t) :: go.IsGoStepPureDet (StructFieldGet (JoinHandle) "mu'") #x #x.(JoinHandle.mu');
+  #[global] JoinHandle_set_mu' (x : JoinHandle.t) y :: go.IsGoStepPureDet (StructFieldSet (JoinHandle) "mu'") (#x, #y) #(x <|JoinHandle.mu' := y|>);
+  #[global] JoinHandle_get_done' (x : JoinHandle.t) :: go.IsGoStepPureDet (StructFieldGet (JoinHandle) "done'") #x #x.(JoinHandle.done');
+  #[global] JoinHandle_set_done' (x : JoinHandle.t) y :: go.IsGoStepPureDet (StructFieldSet (JoinHandle) "done'") (#x, #y) #(x <|JoinHandle.done' := y|>);
+  #[global] JoinHandle_get_cond' (x : JoinHandle.t) :: go.IsGoStepPureDet (StructFieldGet (JoinHandle) "cond'") #x #x.(JoinHandle.cond');
+  #[global] JoinHandle_set_cond' (x : JoinHandle.t) y :: go.IsGoStepPureDet (StructFieldSet (JoinHandle) "cond'") (#x, #y) #(x <|JoinHandle.cond' := y|>);
   #[global] JoinHandle'ptr_Join_unfold :: MethodUnfold (go.PointerType (JoinHandle)) "Join" (JoinHandle__Joinⁱᵐᵖˡ);
   #[global] JoinHandle'ptr_finish_unfold :: MethodUnfold (go.PointerType (JoinHandle)) "finish" (JoinHandle__finishⁱᵐᵖˡ);
 }.
