@@ -1,7 +1,6 @@
 translate = ["!*"]
 imports = ["!*"]
 trusted = [
-  "Disk",
   "BlockSize",
   "Get",
   "Read",

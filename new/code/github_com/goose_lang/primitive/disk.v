@@ -50,10 +50,18 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
       do:  (_'init #()))
       ).
 
+Module Disk.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End Disk.
+
 Class Disk_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Disk_type_repr  :: go.TypeRepr Disk Disk.t;
-  #[global] Disk_underlying :: go.Underlying (Disk) (Diskⁱᵐᵖˡ);
 }.
 
 Module FileDisk.
