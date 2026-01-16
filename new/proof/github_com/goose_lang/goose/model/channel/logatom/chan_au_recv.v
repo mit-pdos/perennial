@@ -215,7 +215,7 @@ Proof.
         iNamed "offer". unfold chan_logical. iDestruct "offer" as "[Ho Hoffer]".
         iNamed "Hoffer". unfold chan_cap_valid in Hcapvalid.
         iExFalso.
-        iSpecialize ("Hoffer" with "[//]").
+        iSpecialize ("Hoffer" with "[%]"); first word.
         iDestruct (offer_bundle_agree with "[$offer2 $Hoffer]") as "[%Heq _]".
         discriminate Heq.
       }
@@ -357,7 +357,7 @@ Proof.
           { word. }
           iApply "H" in "slice_cap". iFrame.
           destruct draining.
-          { iFrame "∗#". iIntros "%Hcap". lia. }
+          { iFrame "∗#". iIntros "%Hzero". word. }
           { iFrame. }
         }
         done.

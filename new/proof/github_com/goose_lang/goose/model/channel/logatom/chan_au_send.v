@@ -149,7 +149,7 @@ Qed.
 Lemma wp_Len (ch: loc) (γ: chan_names) :
   {{{ is_channel ch γ }}}
     #(methods (go.PointerType (channel.Channel t)) "Len") #ch #()
-  {{{ (l: w64), RET #l; ⌜0 ≤ sint.Z l ≤ chan_cap γ⌝ }}}.
+  {{{ (l: w64), RET #l; ⌜0 ≤ sint.Z l ≤ sint.Z $ chan_cap γ⌝ }}}.
 Proof.
   wp_start as "#His".
   wp_auto.
@@ -159,7 +159,6 @@ Proof.
   wp_auto.
   wp_apply (wp_Mutex__Lock with "[$lock]") as "[Hlock Hchan]".
   iNamed "Hchan".
-  pose proof (chan_cap_bound γ).
   destruct s.
   - iNamed "phys".
     wp_auto.
@@ -233,7 +232,7 @@ Proof.
     (* length draining > 0 *)
     {
       iNamed "phys".
-      iAssert (⌜1 + (Z.of_nat (length draining)) ≤ chan_cap γ⌝)%I as %Hdraining_bound.
+      iAssert (⌜1 + (Z.of_nat (length draining)) ≤ sint.Z $ chan_cap γ⌝)%I as %Hdraining_bound.
       {
         iNamedSuffix "offer" "2".
         simpl in Hcapvalid2.
@@ -285,8 +284,7 @@ Proof.
       { iFrame "#∗". iPureIntro. unfold chan_cap_valid. done. }
       iDestruct (own_channel_agree with "[$Hown] [$Hoc]") as "%Hseq".
       subst s.
-      pose proof (chan_cap_bound γ) as Hcap_bound.
-      assert (length buff < chan_cap γ).
+      assert (length buff < sint.Z $ chan_cap γ).
       { word. }
 
       iDestruct (own_channel_halves_update (chan_rep.Buffered (buff ++ [v]))
@@ -391,7 +389,7 @@ Proof.
         iNamed "phys". iDestruct "offer" as "[Hoc Hoffer]".
         iNamedSuffix "Hoc" "2".
         unfold chan_cap_valid in *.
-        iNamed "Hoffer". iSpecialize ("Hoffer" with "[//]"). unfold offer_bundle_empty.
+        iNamed "Hoffer". iSpecialize ("Hoffer" with "[%]"); first word. unfold offer_bundle_empty.
         iDestruct (saved_offer_fractional_invalid with "[$offer2] [$Hoffer]") as "H".
         { done. }
         done.
@@ -468,7 +466,7 @@ Proof.
       iNamed "HΦ".
       iAssert (own_channel ch (chan_rep.Closed []) γ)%I
         with "[Hchanrepfrag]" as "Hown".
-      { iFrame "∗#". }
+      { iFrame "∗#%". }
       iDestruct (own_channel_agree with "[$Hoc] [$Hown]") as "%Hseq". subst s.
       done.
     }
@@ -520,7 +518,6 @@ Proof.
       { simpl in *. len. }
       { simpl in *. len. }
       iMod ("Hcont" with "Hchanrepfrag") as "Hstep". iModIntro.
-      assert (sint.Z γ.(chan_cap) = γ.(chan_cap)) by (destruct γ; simpl in *; word).
       iDestruct (slice_array with "tmp") as "Hsl".
       { done. }
       rewrite go.array_index_ref_0.
@@ -629,7 +626,6 @@ Proof.
     iDestruct (own_slice_wf with "[$]") as "%Hwf".
     iDestruct (own_slice_cap_wf with "[$]") as "%Hwf2".
 
-    assert (sint.Z γ.(chan_cap) = γ.(chan_cap)) by (destruct γ; simpl in *; word).
     wp_if_destruct.
     + iApply fupd_wp. iMod "HΦ".
       iMod (lc_fupd_elim_later with "[$] HΦ") as "Hlogatom".
@@ -836,7 +832,7 @@ Qed.
 
 (** Demo of a simple-to-understand AU *)
 #[local] Lemma wp_BlockingSend (ch: loc) (v: V) (γ: chan_names):
-  γ.(chan_cap) > 0 →
+  sint.Z γ.(chan_cap) > 0 →
   ∀ Φ,
   is_channel ch γ -∗
   (£1 ∗ £1 ∗ £1 ∗ £1 -∗ buffered_send_au ch v γ (Φ #())) -∗
@@ -906,7 +902,7 @@ Proof.
       destruct buff.
       { iFrame.
         iIntros "%Hcap0".
-        exfalso; simpl in *; lia.
+        exfalso; simpl in *; word.
       }
       { iFrame. }
     }

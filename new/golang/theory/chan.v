@@ -24,7 +24,7 @@ Context `[!chanG Σ V].
 Context `[!ZeroVal V] `[!TypedPointsto V] `[!IntoValTyped V t] `[!go.TypeRepr t V].
 
 Lemma wp_make (cap : w64) dir :
-  {{{ True }}}
+  {{{ ⌜ 0 ≤ sint.Z cap ⌝ }}}
     #(functions go.make2 [go.ChannelType dir t]) #cap
   {{{ (ch: loc) (γ: chan_names), RET #ch;
       is_channel ch γ ∗
@@ -32,7 +32,7 @@ Lemma wp_make (cap : w64) dir :
       own_channel ch (if decide (cap = 0) then chan_rep.Idle else chan_rep.Buffered []) γ
   }}}.
 Proof.
-  wp_start.
+  wp_start as "%Hle".
   wp_apply wp_NewChannel; first done.
   iFrame.
 Qed.
@@ -41,22 +41,20 @@ Lemma wp_send (ch: loc) (v: V) (γ: chan_names):
   ∀ Φ,
   is_channel ch γ -∗
   (£1 ∗ £1 ∗ £1 ∗ £1 -∗ send_au_slow ch v γ (Φ #())) -∗
-  WP chan.send #t #ch #v {{ Φ }}.
+  WP chan.send t #ch #v {{ Φ }}.
 Proof.
   wp_start as "#Hch".
-  wp_call.
   wp_apply (wp_Send with "[$]").
   iFrame.
 Qed.
 
-Lemma wp_close (ch: loc) (γ: chan_names):
+Lemma wp_close (ch: loc) (γ: chan_names) dir :
   ∀ Φ,
   is_channel ch γ -∗
   (£1 ∗ £1 ∗ £1 ∗ £1 -∗ close_au ch γ (Φ #())) -∗
-  WP chan.close #t #ch {{ Φ }}.
+  WP #(functions go.close [go.ChannelType dir t]) #ch {{ Φ }}.
 Proof.
   wp_start as "#Hch".
-  wp_call.
   wp_apply (wp_Close with "[$]").
   iFrame.
 Qed.
@@ -65,21 +63,19 @@ Lemma wp_receive (ch: loc) (γ: chan_names) :
   ∀ Φ,
   is_channel ch γ -∗
   (£1 ∗ £1 ∗ £1 ∗ £1 -∗ rcv_au_slow ch γ (λ v ok, Φ (#v, #ok)%V)) -∗
-  WP chan.receive #t #ch {{ Φ }}.
+  WP chan.receive t #ch {{ Φ }}.
 Proof.
   wp_start as "#Hch".
-  wp_call.
   wp_apply (wp_Receive with "[$]").
   iFrame.
 Qed.
 
-Lemma wp_cap (ch: loc) (γ: chan_names) :
+Lemma wp_cap (ch: loc) (γ: chan_names) dir :
   {{{ is_channel ch γ }}}
-    chan.cap #t #ch
-  {{{ RET #(W64 (chan_cap γ)); True }}}.
+    #(functions go.cap [go.ChannelType dir t]) #ch
+  {{{ RET #(chan_cap γ); True }}}.
 Proof.
   wp_start as "#Hch".
-  wp_call.
   wp_apply (wp_Cap with "[$Hch]").
   by iApply "HΦ".
 Qed.

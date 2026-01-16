@@ -360,13 +360,13 @@ Proof.
   apply ghost_var_update_halves.
 Qed.
 
-Definition chan_cap_valid (s : chan_rep.t V) (cap: Z) : Prop :=
+Definition chan_cap_valid (s : chan_rep.t V) (cap : Z) : Prop :=
   match s with
   | chan_rep.Buffered buf =>
       (* Buffered is only used for buffered channels, and buffer size is bounded
       by capacity *)
-      (Z.of_nat (length buf) ≤ cap)%Z ∧ (0 < cap)
-  | chan_rep.Closed [] => (0 < cap)
+      (length buf ≤ cap)%Z ∧ (0 < cap)
+  | chan_rep.Closed [] => (0 ≤ cap)
   | chan_rep.Closed draining =>
       (* Draining closed channels are buffered channels, and draining elements
       are bounded by capacity *)
@@ -718,6 +718,7 @@ Definition is_channel (ch: loc) (γ: chan_names) : iProp Σ :=
     "#mu" ∷ ch.[channel.Channel.t V, "mu"] ↦□ mu_loc ∗
     "#lock" ∷ is_lock mu_loc (chan_inv_inner ch γ) ∗
     "%Hnotnull" ∷ ⌜ ch ≠ chan.nil ⌝ ∗
+    "%Hcap" ∷ ⌜ 0 ≤ sint.Z γ.(chan_cap) ⌝.
 #[global] Typeclasses Opaque is_channel.
 #[global] Opaque is_channel.
 #[local] Transparent is_channel.
