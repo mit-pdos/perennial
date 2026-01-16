@@ -45,8 +45,8 @@ def main():
         action="store_true",
     )
     parser.add_argument(
-        "--channel",
-        help="translate channel model",
+        "--models",
+        help="translate goose models (e.g., channels and strings)",
         action="store_true",
     )
     parser.add_argument(
@@ -179,8 +179,9 @@ def main():
     if args.compile:
         compile_goose()
 
-    if args.channel:
+    if args.models:
         run_goose(goose_dir, "./channel")
+        run_goose(goose_dir, "./strings")
 
     if args.goose_examples:
         # generate semantics tests

@@ -262,8 +262,8 @@ def main():
         action="store_true",
     )
     parser.add_argument(
-        "--channel",
-        help="translate channel model",
+        "--models",
+        help="translate Go models (e.g., channels and strings)",
         action="store_true",
     )
     parser.add_argument(
@@ -283,7 +283,7 @@ def main():
 
     if args.all:
         setattr(args, "std_lib", True)
-        setattr(args, "channel", True)
+        setattr(args, "models", True)
         setattr(args, "goose_examples", True)
         for proj in projs:
             proj_path = path.join("..", proj.name)
@@ -381,8 +381,9 @@ def main():
             "./channel",
         )
 
-    if args.channel:
+    if args.models:
         run_goose(goose_dir, "./model/channel")
+        run_goose(goose_dir, "./model/strings")
 
     if args.std_lib:
         # this list of packages comes from the dependencies of etcd-raft and others
