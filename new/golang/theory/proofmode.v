@@ -625,6 +625,33 @@ Tactic Notation "wp_bind" open_constr(e) :=
                  ) in
   f e.
 
+
+Ltac2 expr_is_unknown e : bool :=
+  lazy_match! e with
+  | fill _ _ => false
+  | App _ _                => false
+  | UnOp _ _                     => false
+  | BinOp _ _ _ => false
+  | BinOp _ _ _ => false
+  | If _ _ _ => false
+  | Pair _ _ => false
+  | Pair _ _ => false
+  | Fst _ => false
+  | Snd _ => false
+  | InjL _ => false
+  | InjR _ => false
+  | Case _ _ _ => false
+  | Primitive2 _ _ _ => false
+  | Primitive1 _ _ => false
+  | @ExternalOp _ _ _ => false
+  | CmpXchg _ _ _ => false
+  | CmpXchg _ _ _ => false
+  | CmpXchg _ _ _ => false
+  | ResolveProph _ _ => false
+  | ResolveProph _ _ => false
+  | _ => true
+  end.
+
 Ltac2 wp_bind_next () : unit :=
   lazy_match! goal with
   | [ |- envs_entails _ (wp _  _ ?e _) ] =>
@@ -638,10 +665,12 @@ Ltac2 wp_bind_next () : unit :=
                                                     Ref.set is_call_so_far true
                                   | _ => Ref.set bind_ctx (Some (e,k));
                                         Ref.set is_call_so_far false
-                                  end; Control.zero Walk_expr_more)) with
+                                  end;
+                                  if expr_is_unknown e then ()
+                                  else Control.zero Walk_expr_more)) with
       | Err Walk_expr_not_found => ()
       | Err e => Control.zero e
-      | _ => Control.throw (Tactic_failure (Some (fprintf "wp_bind_next: expected walk_expr to raise an exception")))
+      | Val _ => ()
       end;
       match (Ref.get bind_ctx) with
       | None => ()

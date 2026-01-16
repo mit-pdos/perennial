@@ -95,7 +95,7 @@ Class ChanSemantics `{!GoSemanticsFunctions} :=
          e' =
          (let: ("v", "succeeded") := chan.try_select false clauses' in
           if: "succeeded" then "v"
-          else default_handler #())%E
+          else (λ: <>, default_handler)%V #())%E
     );
   chan_select_blocking clauses :
     is_go_step_pure SelectStmt (SelectStmtClausesV None clauses) =
