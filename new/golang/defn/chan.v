@@ -105,7 +105,7 @@ Class ChanSemantics `{!GoSemanticsFunctions} :=
          e' =
          (let: ("v", "succeeded") := chan.try_select true clauses' in
           if: "succeeded" then "v"
-          else SelectStmt (SelectStmtClauses None clauses))%E
+          else (λ: <>, SelectStmt (SelectStmtClauses None clauses))%V #())%E
     );
   #[global] package_sem :: channel.Assumptions;
 }.
