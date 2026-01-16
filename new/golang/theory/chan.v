@@ -85,122 +85,105 @@ End proof.
 Section select_proof.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
-
-Inductive op :=
-| select_send_f (t: go_type) (v : val) (ch : chan.t) (handler : func.t)
-| select_receive_f (t: go_type) (ch : chan.t) (handler : func.t).
-
-Global Instance into_val_op : IntoVal op :=
-  {|
-    to_val_def := λ o,
-        match o with
-        | select_send_f t v ch f => InjLV (#t, #ch, v, #f)
-        | select_receive_f t ch f => InjRV (#t, #ch, #f)
-        end
-  |}.
-
-Global Instance wp_select_send `{!IntoVal V} `{!IntoValTyped V t} ch (v : val) f :
-  PureWp True (chan.select_send #t #ch v #f)
-    #(select_send_f t v ch f).
-Proof.
-  pure_wp_start. repeat rewrite to_val_unseal /=. by iApply "HΦ".
-Qed.
-
-Global Instance wp_select_receive `{!IntoVal V} `{!IntoValTyped V t} ch f :
-  PureWp True (chan.select_receive #t #ch #f)
-    #(select_receive_f t ch f).
-Proof.
-  pure_wp_start. repeat rewrite to_val_unseal /=. by iApply "HΦ".
-Qed.
+Context {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}
+  {array_sem : go.ArraySemantics} {slice_sem : go.SliceSemantics} {chan_sem : go.ChanSemantics}.
+Local Set Default Proof Using "All".
 
 (* The lemmas use Ψ because the original client-provided `send/rcv_au_slow` will
    have some specific postcondition predicate. We don't want to force the caller
    to transform that into a `send_au_slow` of a different. So, these lemmas are
    written to take a wand that turns Ψ into Φ. *)
-Local Lemma wp_try_select_case_blocking cs Ψ :
+Local Lemma wp_try_comm_clause c Ψ :
   ∀ Φ,
-  (match cs with
-   | select_send_f t send_val send_chan send_handler =>
-       ∃ V γ (v : V) `(!IntoVal V) `(!chanG Σ V) `(!IntoValTyped V t),
-     ⌜ send_val = #v ⌝ ∗
-     is_channel (V:=V) (t:=t) send_chan γ ∗
-     send_au_slow send_chan v γ (WP #send_handler #() {{ Ψ }})
-  | select_receive_f t recv_chan recv_handler =>
-      ∃ V γ `(!IntoVal V) `(!IntoValTyped V t) `(!chanG Σ V),
-     is_channel (V:=V) (t:=t) recv_chan γ ∗
+  (match c with
+   | CommClause (SendCase t send_chan_expr send_val) send_handler =>
+       ∃ V send_chan γ (v : V) `(!ZeroVal V) `(!TypedPointsto V) `(!IntoValTyped V t)
+         `(!go.TypeRepr t V) `(!chanG Σ V),
+     ⌜ send_val = #v ∧ send_chan_expr = #send_chan ⌝ ∗
+     is_channel (V:=V) send_chan γ ∗
+     send_au_slow send_chan v γ (WP send_handler {{ Ψ }})
+   | CommClause (RecvCase t recv_chan_expr) recv_handler =>
+       ∃ V recv_chan γ `(!ZeroVal V) `(!TypedPointsto V) `(!IntoValTyped V t) `(!chanG Σ V)
+         `(!go.TypeRepr t V),
+     ⌜ recv_chan_expr = #recv_chan ⌝ ∗
+     is_channel (V:=V) recv_chan γ ∗
      rcv_au_slow recv_chan γ (λ (v: V) ok,
-                                    WP #recv_handler (#v, #ok)%V {{ Ψ }})
+                                WP (subst "$ok" #ok (subst "$v" #v recv_handler)) {{ Ψ }})
    end
   ) ∧ (Φ (#(), #false)%V) -∗
   (∀ retv, Ψ retv -∗ Φ (retv, #true)%V) -∗
-  WP chan.try_select_case #cs #true {{ Φ }}.
+  WP chan.try_comm_clause c #true {{ Φ }}.
 Proof.
   iIntros (Φ) "HΦ Hwand".
-  wp_call. rewrite [in (_ op)]to_val_unseal /=. destruct cs; wp_auto.
+  wp_call. destruct c as [[|]]; simpl.
   - repeat setoid_rewrite bi.and_exist_r.
-    iDestruct "HΦ" as (V γ v' ? ? ?) "HΦ".
-    iNamed "HΦ". iAssert (⌜ v = #v' ⌝ ∗ is_channel ch γ)%I with "[-]" as "[-> #?]".
-    { iLeft in "HΦ". iDestruct "HΦ" as "(-> & #? & Hau)". iFrame "#". done. }
+    iDestruct "HΦ" as (V send_chan γ v' ? ? ? ? ?) "HΦ".
+    iNamed "HΦ".
+    iAssert (⌜ e = #v' ∧ ch = #send_chan ⌝ ∗ is_channel send_chan γ)%I with "[-]" as "[[-> ->] #?]".
+    { iLeft in "HΦ". iDestruct "HΦ" as "(% & ? & _)". iFrame "∗%". }
+    simpl. wp_auto.
     wp_apply (wp_TrySend with "[$]").
     iSplit.
     + iLeft in "HΦ". iDestruct "HΦ" as "(_ & _ & Hau)".
       iMod "Hau". iModIntro. iNext. iNamed "Hau".
       iFrame. destruct s.
       * iIntros "H". iSpecialize ("Hcont" with "[$]").
-        iMod "Hcont". iModIntro. wp_auto.
-        wp_apply (wp_wand with "Hcont").
+        iMod "Hcont". iModIntro. wp_auto. wp_bind (body).
+        iApply (wp_wand with "Hcont").
         iIntros (?) "HΦ". wp_auto. iApply "Hwand". iFrame.
       * iIntros "H". iSpecialize ("Hcont" with "[$]"). iMod "Hcont". iModIntro.
         iMod "Hcont". iModIntro. iNext. iNamed "Hcont". iFrame.
         destruct s; try iFrame. iIntros "H". iSpecialize ("Hcontinner" with "[$]").
-        iMod "Hcontinner". iModIntro. wp_auto. wp_apply (wp_wand with "Hcontinner").
+        iMod "Hcontinner". iModIntro. wp_auto. wp_bind (body). iApply (wp_wand with "Hcontinner").
         iIntros (v) "HΦ". wp_auto. iApply "Hwand". iFrame.
       * iFrame.
       * iIntros "H". iSpecialize ("Hcont" with "[$]"). iMod "Hcont". iModIntro.
-        wp_auto. wp_apply (wp_wand with "Hcont"). iIntros (v) "HΦ".
+        wp_auto. wp_bind body. iApply (wp_wand with "Hcont"). iIntros (v) "HΦ".
         wp_auto. iApply "Hwand". iFrame.
       * iFrame.
       * iFrame.
       * iFrame.
     + wp_auto. iRight in "HΦ". done.
   - repeat setoid_rewrite bi.and_exist_r.
-    iDestruct "HΦ" as (V γ ? ? ?) "HΦ".
-    iAssert (is_channel ch γ)%I with "[-]" as "#?".
-    { iLeft in "HΦ". iDestruct "HΦ" as "(#? & Hau)". iFrame "#". }
+    iDestruct "HΦ" as (V recv_chan γ ? ? ? ? ?) "HΦ".
+    iAssert (⌜ ch = #recv_chan ⌝ ∗ is_channel recv_chan γ)%I with "[-]" as "#[-> ?]".
+    { iLeft in "HΦ". iDestruct "HΦ" as "(% & ? & _)". iFrame "∗%". }
+    simpl. wp_auto.
     wp_apply (wp_TryReceive with "[$]").
     iSplit.
-    + iLeft in "HΦ". iDestruct "HΦ" as "[_ Hau]".
+    + iLeft in "HΦ". iDestruct "HΦ" as "(_ & _ & Hau)".
       iMod "Hau". iModIntro. iNext.
       iNamed "Hau". iFrame. destruct s.
       * destruct buff.
         -- iFrame.
         -- iIntros "H". iSpecialize ("Hcont" with "[$]").
-           iMod "Hcont". iModIntro. wp_auto.
-           wp_apply (wp_wand with "Hcont").
+           iMod "Hcont". iModIntro. wp_auto. wp_bind (subst _ _ _).
+           iApply (wp_wand with "Hcont").
            iIntros (?) "HΦ". wp_auto. iApply "Hwand". iFrame.
       * iIntros "H". iSpecialize ("Hcont" with "[$]"). iMod "Hcont". iModIntro.
         iMod "Hcont". iModIntro. iNext. iNamed "Hcont". iFrame.
         destruct s; try iFrame.
         -- iIntros "H". iSpecialize ("Hcontinner" with "[$]").
-           iMod "Hcontinner". iModIntro. wp_auto. wp_apply (wp_wand with "Hcontinner").
+           iMod "Hcontinner". iModIntro. wp_auto. wp_bind (subst _ _ _).
+           iApply (wp_wand with "Hcontinner").
            iIntros (ret) "HΦ". wp_auto. iApply "Hwand". iFrame.
         -- destruct draining; try iFrame.
            iIntros "H". iSpecialize ("Hcontinner" with "[$]").
-           iMod "Hcontinner". iModIntro. wp_auto. wp_apply (wp_wand with "Hcontinner").
+           iMod "Hcontinner". iModIntro. wp_auto. wp_bind (subst _ _ _).
+           iApply (wp_wand with "Hcontinner").
            iIntros (ret) "HΦ". wp_auto. iApply "Hwand". iFrame.
       * iIntros "H". iSpecialize ("Hcont" with "[$]").
-        iMod "Hcont". iModIntro. wp_auto. wp_apply (wp_wand with "Hcont").
+        iMod "Hcont". iModIntro. wp_auto. wp_bind (subst _ _ _). iApply (wp_wand with "Hcont").
         iIntros (ret) "HΦ". wp_auto. iApply "Hwand". iFrame.
       * iFrame.
       * iFrame.
       * iFrame.
       * destruct draining.
         -- iIntros "H". iSpecialize ("Hcont" with "[$]").
-           iMod "Hcont". iModIntro. wp_auto. wp_apply (wp_wand with "Hcont").
+           iMod "Hcont". iModIntro. wp_auto. wp_bind (subst _ _ _). iApply (wp_wand with "Hcont").
            iIntros (ret) "HΦ". wp_auto. iApply "Hwand". iFrame.
         -- iIntros "H". iSpecialize ("Hcont" with "[$]").
-           iMod "Hcont". iModIntro. wp_auto. wp_apply (wp_wand with "Hcont").
+           iMod "Hcont". iModIntro. wp_auto. wp_bind (subst _ _ _). iApply (wp_wand with "Hcont").
            iIntros (ret) "HΦ". wp_auto. iApply "Hwand". iFrame.
     + wp_auto. iRight in "HΦ". iFrame.
 Qed.

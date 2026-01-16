@@ -43,13 +43,13 @@ Definition try_comm_clause (c : comm_clause) : val :=
     match case' with
     | SendCase elem_type ch e =>
         let: "success" :=
-          MethodResolve (channel.Channel elem_type) "TrySend" #() ch e "blocking" in
-        if: "success" then (body #(), #true)
+          MethodResolve (go.PointerType $ channel.Channel elem_type) "TrySend" #() ch e "blocking" in
+        if: "success" then ((λ: <>, body)%V #(), #true)
         else (#(), #false)
     | RecvCase elem_type ch =>
         let: (("success", "v"), "ok") :=
-          MethodResolve (channel.Channel elem_type) "TryReceive" #() ch "blocking" in
-        if: "success" then (body ("v", "ok"), #true)
+          MethodResolve (go.PointerType $ channel.Channel elem_type) "TryReceive" #() ch "blocking" in
+        if: "success" then ((λ: "$v" "$ok", body)%V "v" "ok", #true)
         else (#(), #false)
     end.
 
