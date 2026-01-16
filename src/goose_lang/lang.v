@@ -1028,7 +1028,7 @@ Definition un_op_eval (op : un_op) (v : val) : option val :=
   | SToW8Op, LitV (LitByte v)   => Some $ LitV $ LitByte (W8 (sint.Z v))
   | ToStringOp, LitV (LitByte v) => Some $ LitV $ LitString [v]
   | StringLenOp, LitV (LitString v) => Some $ LitV $ LitInt (W64 (Z.of_nat (length v)))
-  | IsNoStringOverflowOp, LitV (LitString v) => Some $ LitV $ LitBool (bool_decide (Z.of_nat (length v) < 2^64))
+  | IsNoStringOverflowOp, LitV (LitString v) => Some $ LitV $ LitBool (bool_decide (Z.of_nat (length v) < 2^63))
   | _, _ => None
   end.
 

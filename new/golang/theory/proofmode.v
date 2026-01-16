@@ -253,7 +253,7 @@ Global Instance wp_StringLength (s : go_string) : PureWp True (StringLength #s) 
 Proof. rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
 Global Instance wp_IsNoStringOverflow (s : go_string) : PureWp True (IsNoStringOverflow #s)
-                                                       #(bool_decide ((length s) < 2^64)).
+                                                       #(bool_decide ((length s) < 2^63)).
 Proof. rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
 (** Binops *)

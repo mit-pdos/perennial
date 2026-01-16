@@ -23,11 +23,11 @@ Definition _new_cap : val :=
 
 Definition for_range (elem_type : go.type) : val :=
   λ: "s" "body",
-  let: "i" := GoAlloc go.int #() in
+  let: "i" := GoAlloc go.int #(W64 0) in
   for: (λ: <>, (![go.int] "i") <⟨go.int⟩
           (FuncResolve go.len [go.SliceType elem_type]) #() "s") ;
                       (λ: <>, "i" <-[go.int] (![go.int] "i") + #(W64 1)) :=
-    (λ: <>, "body" (![go.int] "i") (![elem_type] (IndexRef (go.SliceType elem_type)) ("s", (![go.int] "i")))).
+    (λ: <>, "body" (![go.int] "i") (![elem_type] (IndexRef (go.SliceType elem_type) ("s", (![go.int] "i"))))).
 
 End goose_lang.
 End slice.
@@ -134,7 +134,7 @@ Class SliceSemantics `{!GoSemanticsFunctions} :=
 
   #[global] index_slice elem_type i (s : slice.t) ::
     go.GoExprEq (index (go.SliceType elem_type) i #s)
-    (GoLoad elem_type $ (Index $ go.SliceType elem_type) (#(W64 i), #s)%V);
+    (GoLoad elem_type $ (IndexRef $ go.SliceType elem_type) (#(W64 i), #s)%V);
 
   #[global] len_slice elem_type ::
     FuncUnfold go.len [go.SliceType elem_type]

@@ -337,7 +337,20 @@ Class PredeclaredSemantics `{!GoSemanticsFunctions} :=
   #[global] go_eq_string :: go.AlwaysSafelyComparable go.string go_string;
   #[global] type_repr_string :: go.TypeRepr go.string go_string;
   index_string i (s : go_string) b (Hinrange : s !! (Z.to_nat i) = Some b) :
-    index (go.string) i #s = #b
+    index (go.string) i #s = #b;
+
+  #[global] string_len_unfold :: FuncUnfold len [go.string]
+    (λ: "s",
+       if: IsNoStringOverflow "s" then
+         StringLength "s"
+       else AngelicExit #())%V;
+
+  #[global] string_index (s : go_string) i ::
+    go.GoExprEq (index go.string i #s)
+    (match (s !! (Z.to_nat i)) with
+     | Some b => #b
+     | _ => Panic "index out of bounds"
+     end);
 }.
 
 End defs.

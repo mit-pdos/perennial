@@ -362,7 +362,7 @@ Qed.
 
 Global Instance pure_wp_slice_for_range (sl : slice.t) (body : val) t :
   PureWp True (slice.for_range t #sl body)%E
-       (let: "i" := alloc go.int (# ()) in
+       (let: "i" := alloc go.int #(W64 0) in
         for: (λ: <>, ![go.int] "i" <⟨go.int⟩ FuncResolve go.len [go.SliceType t] (# ()) (# sl)) ;
         (λ: <>, "i" <-[go.int] ![go.int] "i" + # (W64 1)) :=
           λ: <>, body ![go.int] "i" (![t] (IndexRef (go.SliceType t)) (# sl, ![go.int] "i")))%E.
