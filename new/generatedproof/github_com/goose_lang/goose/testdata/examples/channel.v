@@ -22,14 +22,14 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "mu" ∷ l.[(chan_spec_raw_examples.LockedStack.t), "mu"] ↦{dq} v.(chan_spec_raw_examples.LockedStack.mu) ∗
-      "stack" ∷ l.[(chan_spec_raw_examples.LockedStack.t), "stack"] ↦{dq} v.(chan_spec_raw_examples.LockedStack.stack) ∗
+      "mu" ∷ l.[(chan_spec_raw_examples.LockedStack.t), "mu"] ↦{dq} v.(chan_spec_raw_examples.LockedStack.mu') ∗
+      "stack" ∷ l.[(chan_spec_raw_examples.LockedStack.t), "stack"] ↦{dq} v.(chan_spec_raw_examples.LockedStack.stack') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance LockedStack_into_val_typed
+#[global] Instance LockedStack_into_val_typed
    :
   IntoValTyped (chan_spec_raw_examples.LockedStack.t) (chan_spec_raw_examples.LockedStack).
 Proof. solve_into_val_typed_struct. Qed.
@@ -52,14 +52,14 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "base" ∷ l.[(chan_spec_raw_examples.EliminationStack.t), "base"] ↦{dq} v.(chan_spec_raw_examples.EliminationStack.base) ∗
-      "exchanger" ∷ l.[(chan_spec_raw_examples.EliminationStack.t), "exchanger"] ↦{dq} v.(chan_spec_raw_examples.EliminationStack.exchanger) ∗
+      "base" ∷ l.[(chan_spec_raw_examples.EliminationStack.t), "base"] ↦{dq} v.(chan_spec_raw_examples.EliminationStack.base') ∗
+      "exchanger" ∷ l.[(chan_spec_raw_examples.EliminationStack.t), "exchanger"] ↦{dq} v.(chan_spec_raw_examples.EliminationStack.exchanger') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance EliminationStack_into_val_typed
+#[global] Instance EliminationStack_into_val_typed
    :
   IntoValTyped (chan_spec_raw_examples.EliminationStack.t) (chan_spec_raw_examples.EliminationStack).
 Proof. solve_into_val_typed_struct. Qed.
@@ -82,14 +82,14 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "f" ∷ l.[(chan_spec_raw_examples.request.t), "f"] ↦{dq} v.(chan_spec_raw_examples.request.f) ∗
-      "result" ∷ l.[(chan_spec_raw_examples.request.t), "result"] ↦{dq} v.(chan_spec_raw_examples.request.result) ∗
+      "f" ∷ l.[(chan_spec_raw_examples.request.t), "f"] ↦{dq} v.(chan_spec_raw_examples.request.f') ∗
+      "result" ∷ l.[(chan_spec_raw_examples.request.t), "result"] ↦{dq} v.(chan_spec_raw_examples.request.result') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance request_into_val_typed
+#[global] Instance request_into_val_typed
    :
   IntoValTyped (chan_spec_raw_examples.request.t) (chan_spec_raw_examples.request).
 Proof. solve_into_val_typed_struct. Qed.
@@ -112,14 +112,14 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "req" ∷ l.[(chan_spec_raw_examples.stream.t), "req"] ↦{dq} v.(chan_spec_raw_examples.stream.req) ∗
-      "res" ∷ l.[(chan_spec_raw_examples.stream.t), "res"] ↦{dq} v.(chan_spec_raw_examples.stream.res) ∗
+      "req" ∷ l.[(chan_spec_raw_examples.stream.t), "req"] ↦{dq} v.(chan_spec_raw_examples.stream.req') ∗
+      "res" ∷ l.[(chan_spec_raw_examples.stream.t), "res"] ↦{dq} v.(chan_spec_raw_examples.stream.res') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance stream_into_val_typed
+#[global] Instance stream_into_val_typed
    :
   IntoValTyped (chan_spec_raw_examples.stream.t) (chan_spec_raw_examples.stream).
 Proof. solve_into_val_typed_struct. Qed.
@@ -142,15 +142,15 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "req" ∷ l.[(chan_spec_raw_examples.streamold.t), "req"] ↦{dq} v.(chan_spec_raw_examples.streamold.req) ∗
-      "res" ∷ l.[(chan_spec_raw_examples.streamold.t), "res"] ↦{dq} v.(chan_spec_raw_examples.streamold.res) ∗
-      "f" ∷ l.[(chan_spec_raw_examples.streamold.t), "f"] ↦{dq} v.(chan_spec_raw_examples.streamold.f) ∗
+      "req" ∷ l.[(chan_spec_raw_examples.streamold.t), "req"] ↦{dq} v.(chan_spec_raw_examples.streamold.req') ∗
+      "res" ∷ l.[(chan_spec_raw_examples.streamold.t), "res"] ↦{dq} v.(chan_spec_raw_examples.streamold.res') ∗
+      "f" ∷ l.[(chan_spec_raw_examples.streamold.t), "f"] ↦{dq} v.(chan_spec_raw_examples.streamold.f') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance streamold_into_val_typed
+#[global] Instance streamold_into_val_typed
    :
   IntoValTyped (chan_spec_raw_examples.streamold.t) (chan_spec_raw_examples.streamold).
 Proof. solve_into_val_typed_struct. Qed.

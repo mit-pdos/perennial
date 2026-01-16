@@ -22,15 +22,15 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "m" ∷ l.[(append_log.Log.t), "m"] ↦{dq} v.(append_log.Log.m) ∗
-      "sz" ∷ l.[(append_log.Log.t), "sz"] ↦{dq} v.(append_log.Log.sz) ∗
-      "diskSz" ∷ l.[(append_log.Log.t), "diskSz"] ↦{dq} v.(append_log.Log.diskSz) ∗
+      "m" ∷ l.[(append_log.Log.t), "m"] ↦{dq} v.(append_log.Log.m') ∗
+      "sz" ∷ l.[(append_log.Log.t), "sz"] ↦{dq} v.(append_log.Log.sz') ∗
+      "diskSz" ∷ l.[(append_log.Log.t), "diskSz"] ↦{dq} v.(append_log.Log.diskSz') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance Log_into_val_typed
+#[global] Instance Log_into_val_typed
    :
   IntoValTyped (append_log.Log.t) (append_log.Log).
 Proof. solve_into_val_typed_struct. Qed.

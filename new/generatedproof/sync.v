@@ -23,16 +23,16 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "noCopy" ∷ l.[(sync.Cond.t), "noCopy"] ↦{dq} v.(sync.Cond.noCopy) ∗
-      "L" ∷ l.[(sync.Cond.t), "L"] ↦{dq} v.(sync.Cond.L) ∗
-      "notify" ∷ l.[(sync.Cond.t), "notify"] ↦{dq} v.(sync.Cond.notify) ∗
-      "checker" ∷ l.[(sync.Cond.t), "checker"] ↦{dq} v.(sync.Cond.checker) ∗
+      "noCopy" ∷ l.[(sync.Cond.t), "noCopy"] ↦{dq} v.(sync.Cond.noCopy') ∗
+      "L" ∷ l.[(sync.Cond.t), "L"] ↦{dq} v.(sync.Cond.L') ∗
+      "notify" ∷ l.[(sync.Cond.t), "notify"] ↦{dq} v.(sync.Cond.notify') ∗
+      "checker" ∷ l.[(sync.Cond.t), "checker"] ↦{dq} v.(sync.Cond.checker') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance Cond_into_val_typed
+#[global] Instance Cond_into_val_typed
    :
   IntoValTyped (sync.Cond.t) (sync.Cond).
 Proof. solve_into_val_typed_struct. Qed.
@@ -60,7 +60,7 @@ Local Set Default Proof Using "All".
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance noCopy_into_val_typed
+#[global] Instance noCopy_into_val_typed
    :
   IntoValTyped (sync.noCopy.t) (sync.noCopy).
 Proof. solve_into_val_typed_struct. Qed.
@@ -83,15 +83,15 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "_0" ∷ l.[(sync.Once.t), "_0"] ↦{dq} v.(sync.Once._0) ∗
-      "done" ∷ l.[(sync.Once.t), "done"] ↦{dq} v.(sync.Once.done) ∗
-      "m" ∷ l.[(sync.Once.t), "m"] ↦{dq} v.(sync.Once.m) ∗
+      "_0" ∷ l.[(sync.Once.t), "_0"] ↦{dq} v.(sync.Once._0') ∗
+      "done" ∷ l.[(sync.Once.t), "done"] ↦{dq} v.(sync.Once.done') ∗
+      "m" ∷ l.[(sync.Once.t), "m"] ↦{dq} v.(sync.Once.m') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance Once_into_val_typed
+#[global] Instance Once_into_val_typed
    :
   IntoValTyped (sync.Once.t) (sync.Once).
 Proof. solve_into_val_typed_struct. Qed.
@@ -114,17 +114,17 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "w" ∷ l.[(sync.RWMutex.t), "w"] ↦{dq} v.(sync.RWMutex.w) ∗
-      "writerSem" ∷ l.[(sync.RWMutex.t), "writerSem"] ↦{dq} v.(sync.RWMutex.writerSem) ∗
-      "readerSem" ∷ l.[(sync.RWMutex.t), "readerSem"] ↦{dq} v.(sync.RWMutex.readerSem) ∗
-      "readerCount" ∷ l.[(sync.RWMutex.t), "readerCount"] ↦{dq} v.(sync.RWMutex.readerCount) ∗
-      "readerWait" ∷ l.[(sync.RWMutex.t), "readerWait"] ↦{dq} v.(sync.RWMutex.readerWait) ∗
+      "w" ∷ l.[(sync.RWMutex.t), "w"] ↦{dq} v.(sync.RWMutex.w') ∗
+      "writerSem" ∷ l.[(sync.RWMutex.t), "writerSem"] ↦{dq} v.(sync.RWMutex.writerSem') ∗
+      "readerSem" ∷ l.[(sync.RWMutex.t), "readerSem"] ↦{dq} v.(sync.RWMutex.readerSem') ∗
+      "readerCount" ∷ l.[(sync.RWMutex.t), "readerCount"] ↦{dq} v.(sync.RWMutex.readerCount') ∗
+      "readerWait" ∷ l.[(sync.RWMutex.t), "readerWait"] ↦{dq} v.(sync.RWMutex.readerWait') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance RWMutex_into_val_typed
+#[global] Instance RWMutex_into_val_typed
    :
   IntoValTyped (sync.RWMutex.t) (sync.RWMutex).
 Proof. solve_into_val_typed_struct. Qed.
@@ -147,15 +147,15 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "noCopy" ∷ l.[(sync.WaitGroup.t), "noCopy"] ↦{dq} v.(sync.WaitGroup.noCopy) ∗
-      "state" ∷ l.[(sync.WaitGroup.t), "state"] ↦{dq} v.(sync.WaitGroup.state) ∗
-      "sema" ∷ l.[(sync.WaitGroup.t), "sema"] ↦{dq} v.(sync.WaitGroup.sema) ∗
+      "noCopy" ∷ l.[(sync.WaitGroup.t), "noCopy"] ↦{dq} v.(sync.WaitGroup.noCopy') ∗
+      "state" ∷ l.[(sync.WaitGroup.t), "state"] ↦{dq} v.(sync.WaitGroup.state') ∗
+      "sema" ∷ l.[(sync.WaitGroup.t), "sema"] ↦{dq} v.(sync.WaitGroup.sema') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance WaitGroup_into_val_typed
+#[global] Instance WaitGroup_into_val_typed
    :
   IntoValTyped (sync.WaitGroup.t) (sync.WaitGroup).
 Proof. solve_into_val_typed_struct. Qed.

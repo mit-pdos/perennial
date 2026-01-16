@@ -27,7 +27,7 @@ Local Set Default Proof Using "All".
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance importantStruct_into_val_typed
+#[global] Instance importantStruct_into_val_typed
    :
   IntoValTyped (unittest.importantStruct.t) (unittest.importantStruct).
 Proof. solve_into_val_typed_struct. Qed.
@@ -50,13 +50,13 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "d" ∷ l.[(unittest.diskWrapper.t), "d"] ↦{dq} v.(unittest.diskWrapper.d) ∗
+      "d" ∷ l.[(unittest.diskWrapper.t), "d"] ↦{dq} v.(unittest.diskWrapper.d') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance diskWrapper_into_val_typed
+#[global] Instance diskWrapper_into_val_typed
    :
   IntoValTyped (unittest.diskWrapper.t) (unittest.diskWrapper).
 Proof. solve_into_val_typed_struct. Qed.
@@ -79,13 +79,13 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "a" ∷ l.[(unittest.embedA.t), "a"] ↦{dq} v.(unittest.embedA.a) ∗
+      "a" ∷ l.[(unittest.embedA.t), "a"] ↦{dq} v.(unittest.embedA.a') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance embedA_into_val_typed
+#[global] Instance embedA_into_val_typed
    :
   IntoValTyped (unittest.embedA.t) (unittest.embedA).
 Proof. solve_into_val_typed_struct. Qed.
@@ -108,13 +108,13 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "embedA" ∷ l.[(unittest.embedB.t), "embedA"] ↦{dq} v.(unittest.embedB.embedA) ∗
+      "embedA" ∷ l.[(unittest.embedB.t), "embedA"] ↦{dq} v.(unittest.embedB.embedA') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance embedB_into_val_typed
+#[global] Instance embedB_into_val_typed
    :
   IntoValTyped (unittest.embedB.t) (unittest.embedB).
 Proof. solve_into_val_typed_struct. Qed.
@@ -137,13 +137,13 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "embedB" ∷ l.[(unittest.embedC.t), "embedB"] ↦{dq} v.(unittest.embedC.embedB) ∗
+      "embedB" ∷ l.[(unittest.embedC.t), "embedB"] ↦{dq} v.(unittest.embedC.embedB') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance embedC_into_val_typed
+#[global] Instance embedC_into_val_typed
    :
   IntoValTyped (unittest.embedC.t) (unittest.embedC).
 Proof. solve_into_val_typed_struct. Qed.
@@ -166,13 +166,13 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "embedC" ∷ l.[(unittest.embedD.t), "embedC"] ↦{dq} v.(unittest.embedD.embedC) ∗
+      "embedC" ∷ l.[(unittest.embedD.t), "embedC"] ↦{dq} v.(unittest.embedD.embedC') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance embedD_into_val_typed
+#[global] Instance embedD_into_val_typed
    :
   IntoValTyped (unittest.embedD.t) (unittest.embedD).
 Proof. solve_into_val_typed_struct. Qed.
@@ -195,13 +195,13 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "p" ∷ l.[(unittest.Enc.t), "p"] ↦{dq} v.(unittest.Enc.p) ∗
+      "p" ∷ l.[(unittest.Enc.t), "p"] ↦{dq} v.(unittest.Enc.p') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance Enc_into_val_typed
+#[global] Instance Enc_into_val_typed
    :
   IntoValTyped (unittest.Enc.t) (unittest.Enc).
 Proof. solve_into_val_typed_struct. Qed.
@@ -224,13 +224,13 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "p" ∷ l.[(unittest.Dec.t), "p"] ↦{dq} v.(unittest.Dec.p) ∗
+      "p" ∷ l.[(unittest.Dec.t), "p"] ↦{dq} v.(unittest.Dec.p') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance Dec_into_val_typed
+#[global] Instance Dec_into_val_typed
    :
   IntoValTyped (unittest.Dec.t) (unittest.Dec).
 Proof. solve_into_val_typed_struct. Qed.
@@ -253,13 +253,13 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "a" ∷ l.[(unittest.concreteFooer.t), "a"] ↦{dq} v.(unittest.concreteFooer.a) ∗
+      "a" ∷ l.[(unittest.concreteFooer.t), "a"] ↦{dq} v.(unittest.concreteFooer.a') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance concreteFooer_into_val_typed
+#[global] Instance concreteFooer_into_val_typed
    :
   IntoValTyped (unittest.concreteFooer.t) (unittest.concreteFooer).
 Proof. solve_into_val_typed_struct. Qed.
@@ -282,13 +282,13 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "f" ∷ l.[(unittest.FooerUser.t), "f"] ↦{dq} v.(unittest.FooerUser.f) ∗
+      "f" ∷ l.[(unittest.FooerUser.t), "f"] ↦{dq} v.(unittest.FooerUser.f') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance FooerUser_into_val_typed
+#[global] Instance FooerUser_into_val_typed
    :
   IntoValTyped (unittest.FooerUser.t) (unittest.FooerUser).
 Proof. solve_into_val_typed_struct. Qed.
@@ -316,7 +316,7 @@ Local Set Default Proof Using "All".
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance concrete1_into_val_typed
+#[global] Instance concrete1_into_val_typed
    :
   IntoValTyped (unittest.concrete1.t) (unittest.concrete1).
 Proof. solve_into_val_typed_struct. Qed.
@@ -339,15 +339,15 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "int" ∷ l.[(unittest.allTheLiterals.t), "int"] ↦{dq} v.(unittest.allTheLiterals.int) ∗
-      "s" ∷ l.[(unittest.allTheLiterals.t), "s"] ↦{dq} v.(unittest.allTheLiterals.s) ∗
-      "b" ∷ l.[(unittest.allTheLiterals.t), "b"] ↦{dq} v.(unittest.allTheLiterals.b) ∗
+      "int" ∷ l.[(unittest.allTheLiterals.t), "int"] ↦{dq} v.(unittest.allTheLiterals.int') ∗
+      "s" ∷ l.[(unittest.allTheLiterals.t), "s"] ↦{dq} v.(unittest.allTheLiterals.s') ∗
+      "b" ∷ l.[(unittest.allTheLiterals.t), "b"] ↦{dq} v.(unittest.allTheLiterals.b') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance allTheLiterals_into_val_typed
+#[global] Instance allTheLiterals_into_val_typed
    :
   IntoValTyped (unittest.allTheLiterals.t) (unittest.allTheLiterals).
 Proof. solve_into_val_typed_struct. Qed.
@@ -370,13 +370,13 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "cond" ∷ l.[(unittest.hasCondVar.t), "cond"] ↦{dq} v.(unittest.hasCondVar.cond) ∗
+      "cond" ∷ l.[(unittest.hasCondVar.t), "cond"] ↦{dq} v.(unittest.hasCondVar.cond') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance hasCondVar_into_val_typed
+#[global] Instance hasCondVar_into_val_typed
    :
   IntoValTyped (unittest.hasCondVar.t) (unittest.hasCondVar).
 Proof. solve_into_val_typed_struct. Qed.
@@ -399,14 +399,14 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "a" ∷ l.[(unittest.mapElem.t), "a"] ↦{dq} v.(unittest.mapElem.a) ∗
-      "b" ∷ l.[(unittest.mapElem.t), "b"] ↦{dq} v.(unittest.mapElem.b) ∗
+      "a" ∷ l.[(unittest.mapElem.t), "a"] ↦{dq} v.(unittest.mapElem.a') ∗
+      "b" ∷ l.[(unittest.mapElem.t), "b"] ↦{dq} v.(unittest.mapElem.b') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance mapElem_into_val_typed
+#[global] Instance mapElem_into_val_typed
    :
   IntoValTyped (unittest.mapElem.t) (unittest.mapElem).
 Proof. solve_into_val_typed_struct. Qed.
@@ -429,13 +429,13 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "s" ∷ l.[(unittest.containsPointer.t), "s"] ↦{dq} v.(unittest.containsPointer.s) ∗
+      "s" ∷ l.[(unittest.containsPointer.t), "s"] ↦{dq} v.(unittest.containsPointer.s') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance containsPointer_into_val_typed
+#[global] Instance containsPointer_into_val_typed
    :
   IntoValTyped (unittest.containsPointer.t) (unittest.containsPointer).
 Proof. solve_into_val_typed_struct. Qed.
@@ -458,13 +458,13 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "j" ∷ l.[(unittest.wrapExternalStruct.t), "j"] ↦{dq} v.(unittest.wrapExternalStruct.j) ∗
+      "j" ∷ l.[(unittest.wrapExternalStruct.t), "j"] ↦{dq} v.(unittest.wrapExternalStruct.j') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance wrapExternalStruct_into_val_typed
+#[global] Instance wrapExternalStruct_into_val_typed
    :
   IntoValTyped (unittest.wrapExternalStruct.t) (unittest.wrapExternalStruct).
 Proof. solve_into_val_typed_struct. Qed.
@@ -487,13 +487,13 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "proph" ∷ l.[(unittest.typing.t), "proph"] ↦{dq} v.(unittest.typing.proph) ∗
+      "proph" ∷ l.[(unittest.typing.t), "proph"] ↦{dq} v.(unittest.typing.proph') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance typing_into_val_typed
+#[global] Instance typing_into_val_typed
    :
   IntoValTyped (unittest.typing.t) (unittest.typing).
 Proof. solve_into_val_typed_struct. Qed.
@@ -516,14 +516,14 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "a" ∷ l.[(unittest.composite.t), "a"] ↦{dq} v.(unittest.composite.a) ∗
-      "b" ∷ l.[(unittest.composite.t), "b"] ↦{dq} v.(unittest.composite.b) ∗
+      "a" ∷ l.[(unittest.composite.t), "a"] ↦{dq} v.(unittest.composite.a') ∗
+      "b" ∷ l.[(unittest.composite.t), "b"] ↦{dq} v.(unittest.composite.b') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance composite_into_val_typed
+#[global] Instance composite_into_val_typed
    :
   IntoValTyped (unittest.composite.t) (unittest.composite).
 Proof. solve_into_val_typed_struct. Qed.
@@ -551,7 +551,7 @@ Local Set Default Proof Using "All".
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance R_into_val_typed
+#[global] Instance R_into_val_typed
    :
   IntoValTyped (unittest.R.t) (unittest.R).
 Proof. solve_into_val_typed_struct. Qed.
@@ -574,13 +574,13 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "RecursiveEmbedded" ∷ l.[(unittest.Other.t), "RecursiveEmbedded"] ↦{dq} v.(unittest.Other.RecursiveEmbedded) ∗
+      "RecursiveEmbedded" ∷ l.[(unittest.Other.t), "RecursiveEmbedded"] ↦{dq} v.(unittest.Other.RecursiveEmbedded') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance Other_into_val_typed
+#[global] Instance Other_into_val_typed
    :
   IntoValTyped (unittest.Other.t) (unittest.Other).
 Proof. solve_into_val_typed_struct. Qed.
@@ -603,13 +603,13 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "Other" ∷ l.[(unittest.RecursiveEmbedded.t), "Other"] ↦{dq} v.(unittest.RecursiveEmbedded.Other) ∗
+      "Other" ∷ l.[(unittest.RecursiveEmbedded.t), "Other"] ↦{dq} v.(unittest.RecursiveEmbedded.Other') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance RecursiveEmbedded_into_val_typed
+#[global] Instance RecursiveEmbedded_into_val_typed
    :
   IntoValTyped (unittest.RecursiveEmbedded.t) (unittest.RecursiveEmbedded).
 Proof. solve_into_val_typed_struct. Qed.
@@ -632,13 +632,13 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "Value" ∷ l.[(unittest.Block.t), "Value"] ↦{dq} v.(unittest.Block.Value) ∗
+      "Value" ∷ l.[(unittest.Block.t), "Value"] ↦{dq} v.(unittest.Block.Value') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance Block_into_val_typed
+#[global] Instance Block_into_val_typed
    :
   IntoValTyped (unittest.Block.t) (unittest.Block).
 Proof. solve_into_val_typed_struct. Qed.
@@ -661,13 +661,13 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "x" ∷ l.[(unittest.thing.t), "x"] ↦{dq} v.(unittest.thing.x) ∗
+      "x" ∷ l.[(unittest.thing.t), "x"] ↦{dq} v.(unittest.thing.x') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance thing_into_val_typed
+#[global] Instance thing_into_val_typed
    :
   IntoValTyped (unittest.thing.t) (unittest.thing).
 Proof. solve_into_val_typed_struct. Qed.
@@ -690,13 +690,13 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "things" ∷ l.[(unittest.sliceOfThings.t), "things"] ↦{dq} v.(unittest.sliceOfThings.things) ∗
+      "things" ∷ l.[(unittest.sliceOfThings.t), "things"] ↦{dq} v.(unittest.sliceOfThings.things') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance sliceOfThings_into_val_typed
+#[global] Instance sliceOfThings_into_val_typed
    :
   IntoValTyped (unittest.sliceOfThings.t) (unittest.sliceOfThings).
 Proof. solve_into_val_typed_struct. Qed.
@@ -719,14 +719,14 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "x" ∷ l.[(unittest.Point.t), "x"] ↦{dq} v.(unittest.Point.x) ∗
-      "y" ∷ l.[(unittest.Point.t), "y"] ↦{dq} v.(unittest.Point.y) ∗
+      "x" ∷ l.[(unittest.Point.t), "x"] ↦{dq} v.(unittest.Point.x') ∗
+      "y" ∷ l.[(unittest.Point.t), "y"] ↦{dq} v.(unittest.Point.y') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance Point_into_val_typed
+#[global] Instance Point_into_val_typed
    :
   IntoValTyped (unittest.Point.t) (unittest.Point).
 Proof. solve_into_val_typed_struct. Qed.
@@ -749,14 +749,14 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "x" ∷ l.[(unittest.TwoInts.t), "x"] ↦{dq} v.(unittest.TwoInts.x) ∗
-      "y" ∷ l.[(unittest.TwoInts.t), "y"] ↦{dq} v.(unittest.TwoInts.y) ∗
+      "x" ∷ l.[(unittest.TwoInts.t), "x"] ↦{dq} v.(unittest.TwoInts.x') ∗
+      "y" ∷ l.[(unittest.TwoInts.t), "y"] ↦{dq} v.(unittest.TwoInts.y') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance TwoInts_into_val_typed
+#[global] Instance TwoInts_into_val_typed
    :
   IntoValTyped (unittest.TwoInts.t) (unittest.TwoInts).
 Proof. solve_into_val_typed_struct. Qed.
@@ -779,15 +779,15 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "a" ∷ l.[(unittest.S.t), "a"] ↦{dq} v.(unittest.S.a) ∗
-      "b" ∷ l.[(unittest.S.t), "b"] ↦{dq} v.(unittest.S.b) ∗
-      "c" ∷ l.[(unittest.S.t), "c"] ↦{dq} v.(unittest.S.c) ∗
+      "a" ∷ l.[(unittest.S.t), "a"] ↦{dq} v.(unittest.S.a') ∗
+      "b" ∷ l.[(unittest.S.t), "b"] ↦{dq} v.(unittest.S.b') ∗
+      "c" ∷ l.[(unittest.S.t), "c"] ↦{dq} v.(unittest.S.c') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance S_into_val_typed
+#[global] Instance S_into_val_typed
    :
   IntoValTyped (unittest.S.t) (unittest.S).
 Proof. solve_into_val_typed_struct. Qed.
@@ -810,13 +810,13 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "a" ∷ l.[(unittest.B.t), "a"] ↦{dq} v.(unittest.B.a) ∗
+      "a" ∷ l.[(unittest.B.t), "a"] ↦{dq} v.(unittest.B.a') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance B_into_val_typed
+#[global] Instance B_into_val_typed
    :
   IntoValTyped (unittest.B.t) (unittest.B).
 Proof. solve_into_val_typed_struct. Qed.
@@ -844,7 +844,7 @@ Local Set Default Proof Using "All".
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance A_into_val_typed
+#[global] Instance A_into_val_typed
    :
   IntoValTyped (unittest.A.t) (unittest.A).
 Proof. solve_into_val_typed_struct. Qed.

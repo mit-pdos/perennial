@@ -23,14 +23,14 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "_0" ∷ l.[(atomic.Bool.t), "_0"] ↦{dq} v.(atomic.Bool._0) ∗
-      "v" ∷ l.[(atomic.Bool.t), "v"] ↦{dq} v.(atomic.Bool.v) ∗
+      "_0" ∷ l.[(atomic.Bool.t), "_0"] ↦{dq} v.(atomic.Bool._0') ∗
+      "v" ∷ l.[(atomic.Bool.t), "v"] ↦{dq} v.(atomic.Bool.v') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance Bool_into_val_typed
+#[global] Instance Bool_into_val_typed
    :
   IntoValTyped (atomic.Bool.t) (atomic.Bool).
 Proof. solve_into_val_typed_struct. Qed.
@@ -53,15 +53,15 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "_0" ∷ l.[(atomic.Pointer.t T'), "_0"] ↦{dq} v.(atomic.Pointer._0) ∗
-      "_1" ∷ l.[(atomic.Pointer.t T'), "_1"] ↦{dq} v.(atomic.Pointer._1) ∗
-      "v" ∷ l.[(atomic.Pointer.t T'), "v"] ↦{dq} v.(atomic.Pointer.v) ∗
+      "_0" ∷ l.[(atomic.Pointer.t T'), "_0"] ↦{dq} v.(atomic.Pointer._0') ∗
+      "_1" ∷ l.[(atomic.Pointer.t T'), "_1"] ↦{dq} v.(atomic.Pointer._1') ∗
+      "v" ∷ l.[(atomic.Pointer.t T'), "v"] ↦{dq} v.(atomic.Pointer.v') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance Pointer_into_val_typed
+#[global] Instance Pointer_into_val_typed
   `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T} `{!go.TypeRepr T T'}  :
   IntoValTyped (atomic.Pointer.t T') (atomic.Pointer T).
 Proof. solve_into_val_typed_struct. Qed.
@@ -84,14 +84,14 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "_0" ∷ l.[(atomic.Int32.t), "_0"] ↦{dq} v.(atomic.Int32._0) ∗
-      "v" ∷ l.[(atomic.Int32.t), "v"] ↦{dq} v.(atomic.Int32.v) ∗
+      "_0" ∷ l.[(atomic.Int32.t), "_0"] ↦{dq} v.(atomic.Int32._0') ∗
+      "v" ∷ l.[(atomic.Int32.t), "v"] ↦{dq} v.(atomic.Int32.v') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance Int32_into_val_typed
+#[global] Instance Int32_into_val_typed
    :
   IntoValTyped (atomic.Int32.t) (atomic.Int32).
 Proof. solve_into_val_typed_struct. Qed.
@@ -114,15 +114,15 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "_0" ∷ l.[(atomic.Int64.t), "_0"] ↦{dq} v.(atomic.Int64._0) ∗
-      "_1" ∷ l.[(atomic.Int64.t), "_1"] ↦{dq} v.(atomic.Int64._1) ∗
-      "v" ∷ l.[(atomic.Int64.t), "v"] ↦{dq} v.(atomic.Int64.v) ∗
+      "_0" ∷ l.[(atomic.Int64.t), "_0"] ↦{dq} v.(atomic.Int64._0') ∗
+      "_1" ∷ l.[(atomic.Int64.t), "_1"] ↦{dq} v.(atomic.Int64._1') ∗
+      "v" ∷ l.[(atomic.Int64.t), "v"] ↦{dq} v.(atomic.Int64.v') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance Int64_into_val_typed
+#[global] Instance Int64_into_val_typed
    :
   IntoValTyped (atomic.Int64.t) (atomic.Int64).
 Proof. solve_into_val_typed_struct. Qed.
@@ -145,14 +145,14 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "_0" ∷ l.[(atomic.Uint32.t), "_0"] ↦{dq} v.(atomic.Uint32._0) ∗
-      "v" ∷ l.[(atomic.Uint32.t), "v"] ↦{dq} v.(atomic.Uint32.v) ∗
+      "_0" ∷ l.[(atomic.Uint32.t), "_0"] ↦{dq} v.(atomic.Uint32._0') ∗
+      "v" ∷ l.[(atomic.Uint32.t), "v"] ↦{dq} v.(atomic.Uint32.v') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance Uint32_into_val_typed
+#[global] Instance Uint32_into_val_typed
    :
   IntoValTyped (atomic.Uint32.t) (atomic.Uint32).
 Proof. solve_into_val_typed_struct. Qed.
@@ -175,15 +175,15 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "_0" ∷ l.[(atomic.Uint64.t), "_0"] ↦{dq} v.(atomic.Uint64._0) ∗
-      "_1" ∷ l.[(atomic.Uint64.t), "_1"] ↦{dq} v.(atomic.Uint64._1) ∗
-      "v" ∷ l.[(atomic.Uint64.t), "v"] ↦{dq} v.(atomic.Uint64.v) ∗
+      "_0" ∷ l.[(atomic.Uint64.t), "_0"] ↦{dq} v.(atomic.Uint64._0') ∗
+      "_1" ∷ l.[(atomic.Uint64.t), "_1"] ↦{dq} v.(atomic.Uint64._1') ∗
+      "v" ∷ l.[(atomic.Uint64.t), "v"] ↦{dq} v.(atomic.Uint64.v') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance Uint64_into_val_typed
+#[global] Instance Uint64_into_val_typed
    :
   IntoValTyped (atomic.Uint64.t) (atomic.Uint64).
 Proof. solve_into_val_typed_struct. Qed.
@@ -211,7 +211,7 @@ Local Set Default Proof Using "All".
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance noCopy_into_val_typed
+#[global] Instance noCopy_into_val_typed
    :
   IntoValTyped (atomic.noCopy.t) (atomic.noCopy).
 Proof. solve_into_val_typed_struct. Qed.
@@ -239,7 +239,7 @@ Local Set Default Proof Using "All".
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance align64_into_val_typed
+#[global] Instance align64_into_val_typed
    :
   IntoValTyped (atomic.align64.t) (atomic.align64).
 Proof. solve_into_val_typed_struct. Qed.
@@ -262,13 +262,13 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "v" ∷ l.[(atomic.Value.t), "v"] ↦{dq} v.(atomic.Value.v) ∗
+      "v" ∷ l.[(atomic.Value.t), "v"] ↦{dq} v.(atomic.Value.v') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance Value_into_val_typed
+#[global] Instance Value_into_val_typed
    :
   IntoValTyped (atomic.Value.t) (atomic.Value).
 Proof. solve_into_val_typed_struct. Qed.
@@ -291,14 +291,14 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "typ" ∷ l.[(atomic.efaceWords.t), "typ"] ↦{dq} v.(atomic.efaceWords.typ) ∗
-      "data" ∷ l.[(atomic.efaceWords.t), "data"] ↦{dq} v.(atomic.efaceWords.data) ∗
+      "typ" ∷ l.[(atomic.efaceWords.t), "typ"] ↦{dq} v.(atomic.efaceWords.typ') ∗
+      "data" ∷ l.[(atomic.efaceWords.t), "data"] ↦{dq} v.(atomic.efaceWords.data') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance efaceWords_into_val_typed
+#[global] Instance efaceWords_into_val_typed
    :
   IntoValTyped (atomic.efaceWords.t) (atomic.efaceWords).
 Proof. solve_into_val_typed_struct. Qed.

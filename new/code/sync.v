@@ -882,14 +882,14 @@ Class Cond_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext}
 {
   #[global] Cond_type_repr  :: go.TypeRepr Cond Cond.t;
   #[global] Cond_underlying :: go.Underlying (Cond) (Condⁱᵐᵖˡ);
-  #[global] Cond_get_noCopy' (x : Cond.t) :: go.IsGoStepPureDet (StructFieldGet (Cond) "noCopy'") #x #x.(Cond.noCopy');
-  #[global] Cond_set_noCopy' (x : Cond.t) y :: go.IsGoStepPureDet (StructFieldSet (Cond) "noCopy'") (#x, #y) #(x <|Cond.noCopy' := y|>);
-  #[global] Cond_get_L' (x : Cond.t) :: go.IsGoStepPureDet (StructFieldGet (Cond) "L'") #x #x.(Cond.L');
-  #[global] Cond_set_L' (x : Cond.t) y :: go.IsGoStepPureDet (StructFieldSet (Cond) "L'") (#x, #y) #(x <|Cond.L' := y|>);
-  #[global] Cond_get_notify' (x : Cond.t) :: go.IsGoStepPureDet (StructFieldGet (Cond) "notify'") #x #x.(Cond.notify');
-  #[global] Cond_set_notify' (x : Cond.t) y :: go.IsGoStepPureDet (StructFieldSet (Cond) "notify'") (#x, #y) #(x <|Cond.notify' := y|>);
-  #[global] Cond_get_checker' (x : Cond.t) :: go.IsGoStepPureDet (StructFieldGet (Cond) "checker'") #x #x.(Cond.checker');
-  #[global] Cond_set_checker' (x : Cond.t) y :: go.IsGoStepPureDet (StructFieldSet (Cond) "checker'") (#x, #y) #(x <|Cond.checker' := y|>);
+  #[global] Cond_get_noCopy (x : Cond.t) :: go.IsGoStepPureDet (StructFieldGet (Cond) "noCopy") #x #x.(Cond.noCopy');
+  #[global] Cond_set_noCopy (x : Cond.t) y :: go.IsGoStepPureDet (StructFieldSet (Cond) "noCopy") (#x, #y) #(x <|Cond.noCopy' := y|>);
+  #[global] Cond_get_L (x : Cond.t) :: go.IsGoStepPureDet (StructFieldGet (Cond) "L") #x #x.(Cond.L');
+  #[global] Cond_set_L (x : Cond.t) y :: go.IsGoStepPureDet (StructFieldSet (Cond) "L") (#x, #y) #(x <|Cond.L' := y|>);
+  #[global] Cond_get_notify (x : Cond.t) :: go.IsGoStepPureDet (StructFieldGet (Cond) "notify") #x #x.(Cond.notify');
+  #[global] Cond_set_notify (x : Cond.t) y :: go.IsGoStepPureDet (StructFieldSet (Cond) "notify") (#x, #y) #(x <|Cond.notify' := y|>);
+  #[global] Cond_get_checker (x : Cond.t) :: go.IsGoStepPureDet (StructFieldGet (Cond) "checker") #x #x.(Cond.checker');
+  #[global] Cond_set_checker (x : Cond.t) y :: go.IsGoStepPureDet (StructFieldSet (Cond) "checker") (#x, #y) #(x <|Cond.checker' := y|>);
   #[global] Cond'ptr_Broadcast_unfold :: MethodUnfold (go.PointerType (Cond)) "Broadcast" (Cond__Broadcastⁱᵐᵖˡ);
   #[global] Cond'ptr_Signal_unfold :: MethodUnfold (go.PointerType (Cond)) "Signal" (Cond__Signalⁱᵐᵖˡ);
   #[global] Cond'ptr_Wait_unfold :: MethodUnfold (go.PointerType (Cond)) "Wait" (Cond__Waitⁱᵐᵖˡ);
@@ -973,12 +973,12 @@ Class Once_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext}
 {
   #[global] Once_type_repr  :: go.TypeRepr Once Once.t;
   #[global] Once_underlying :: go.Underlying (Once) (Onceⁱᵐᵖˡ);
-  #[global] Once_get__0' (x : Once.t) :: go.IsGoStepPureDet (StructFieldGet (Once) "_0'") #x #x.(Once._0');
-  #[global] Once_set__0' (x : Once.t) y :: go.IsGoStepPureDet (StructFieldSet (Once) "_0'") (#x, #y) #(x <|Once._0' := y|>);
-  #[global] Once_get_done' (x : Once.t) :: go.IsGoStepPureDet (StructFieldGet (Once) "done'") #x #x.(Once.done');
-  #[global] Once_set_done' (x : Once.t) y :: go.IsGoStepPureDet (StructFieldSet (Once) "done'") (#x, #y) #(x <|Once.done' := y|>);
-  #[global] Once_get_m' (x : Once.t) :: go.IsGoStepPureDet (StructFieldGet (Once) "m'") #x #x.(Once.m');
-  #[global] Once_set_m' (x : Once.t) y :: go.IsGoStepPureDet (StructFieldSet (Once) "m'") (#x, #y) #(x <|Once.m' := y|>);
+  #[global] Once_get__ (x : Once.t) :: go.IsGoStepPureDet (StructFieldGet (Once) "_") #x #x.(Once._0');
+  #[global] Once_set__ (x : Once.t) y :: go.IsGoStepPureDet (StructFieldSet (Once) "_") (#x, #y) #(x <|Once._0' := y|>);
+  #[global] Once_get_done (x : Once.t) :: go.IsGoStepPureDet (StructFieldGet (Once) "done") #x #x.(Once.done');
+  #[global] Once_set_done (x : Once.t) y :: go.IsGoStepPureDet (StructFieldSet (Once) "done") (#x, #y) #(x <|Once.done' := y|>);
+  #[global] Once_get_m (x : Once.t) :: go.IsGoStepPureDet (StructFieldGet (Once) "m") #x #x.(Once.m');
+  #[global] Once_set_m (x : Once.t) y :: go.IsGoStepPureDet (StructFieldSet (Once) "m") (#x, #y) #(x <|Once.m' := y|>);
   #[global] Once'ptr_Do_unfold :: MethodUnfold (go.PointerType (Once)) "Do" (Once__Doⁱᵐᵖˡ);
   #[global] Once'ptr_doSlow_unfold :: MethodUnfold (go.PointerType (Once)) "doSlow" (Once__doSlowⁱᵐᵖˡ);
 }.
@@ -1126,16 +1126,16 @@ Class RWMutex_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalConte
 {
   #[global] RWMutex_type_repr  :: go.TypeRepr RWMutex RWMutex.t;
   #[global] RWMutex_underlying :: go.Underlying (RWMutex) (RWMutexⁱᵐᵖˡ);
-  #[global] RWMutex_get_w' (x : RWMutex.t) :: go.IsGoStepPureDet (StructFieldGet (RWMutex) "w'") #x #x.(RWMutex.w');
-  #[global] RWMutex_set_w' (x : RWMutex.t) y :: go.IsGoStepPureDet (StructFieldSet (RWMutex) "w'") (#x, #y) #(x <|RWMutex.w' := y|>);
-  #[global] RWMutex_get_writerSem' (x : RWMutex.t) :: go.IsGoStepPureDet (StructFieldGet (RWMutex) "writerSem'") #x #x.(RWMutex.writerSem');
-  #[global] RWMutex_set_writerSem' (x : RWMutex.t) y :: go.IsGoStepPureDet (StructFieldSet (RWMutex) "writerSem'") (#x, #y) #(x <|RWMutex.writerSem' := y|>);
-  #[global] RWMutex_get_readerSem' (x : RWMutex.t) :: go.IsGoStepPureDet (StructFieldGet (RWMutex) "readerSem'") #x #x.(RWMutex.readerSem');
-  #[global] RWMutex_set_readerSem' (x : RWMutex.t) y :: go.IsGoStepPureDet (StructFieldSet (RWMutex) "readerSem'") (#x, #y) #(x <|RWMutex.readerSem' := y|>);
-  #[global] RWMutex_get_readerCount' (x : RWMutex.t) :: go.IsGoStepPureDet (StructFieldGet (RWMutex) "readerCount'") #x #x.(RWMutex.readerCount');
-  #[global] RWMutex_set_readerCount' (x : RWMutex.t) y :: go.IsGoStepPureDet (StructFieldSet (RWMutex) "readerCount'") (#x, #y) #(x <|RWMutex.readerCount' := y|>);
-  #[global] RWMutex_get_readerWait' (x : RWMutex.t) :: go.IsGoStepPureDet (StructFieldGet (RWMutex) "readerWait'") #x #x.(RWMutex.readerWait');
-  #[global] RWMutex_set_readerWait' (x : RWMutex.t) y :: go.IsGoStepPureDet (StructFieldSet (RWMutex) "readerWait'") (#x, #y) #(x <|RWMutex.readerWait' := y|>);
+  #[global] RWMutex_get_w (x : RWMutex.t) :: go.IsGoStepPureDet (StructFieldGet (RWMutex) "w") #x #x.(RWMutex.w');
+  #[global] RWMutex_set_w (x : RWMutex.t) y :: go.IsGoStepPureDet (StructFieldSet (RWMutex) "w") (#x, #y) #(x <|RWMutex.w' := y|>);
+  #[global] RWMutex_get_writerSem (x : RWMutex.t) :: go.IsGoStepPureDet (StructFieldGet (RWMutex) "writerSem") #x #x.(RWMutex.writerSem');
+  #[global] RWMutex_set_writerSem (x : RWMutex.t) y :: go.IsGoStepPureDet (StructFieldSet (RWMutex) "writerSem") (#x, #y) #(x <|RWMutex.writerSem' := y|>);
+  #[global] RWMutex_get_readerSem (x : RWMutex.t) :: go.IsGoStepPureDet (StructFieldGet (RWMutex) "readerSem") #x #x.(RWMutex.readerSem');
+  #[global] RWMutex_set_readerSem (x : RWMutex.t) y :: go.IsGoStepPureDet (StructFieldSet (RWMutex) "readerSem") (#x, #y) #(x <|RWMutex.readerSem' := y|>);
+  #[global] RWMutex_get_readerCount (x : RWMutex.t) :: go.IsGoStepPureDet (StructFieldGet (RWMutex) "readerCount") #x #x.(RWMutex.readerCount');
+  #[global] RWMutex_set_readerCount (x : RWMutex.t) y :: go.IsGoStepPureDet (StructFieldSet (RWMutex) "readerCount") (#x, #y) #(x <|RWMutex.readerCount' := y|>);
+  #[global] RWMutex_get_readerWait (x : RWMutex.t) :: go.IsGoStepPureDet (StructFieldGet (RWMutex) "readerWait") #x #x.(RWMutex.readerWait');
+  #[global] RWMutex_set_readerWait (x : RWMutex.t) y :: go.IsGoStepPureDet (StructFieldSet (RWMutex) "readerWait") (#x, #y) #(x <|RWMutex.readerWait' := y|>);
   #[global] RWMutex'ptr_Lock_unfold :: MethodUnfold (go.PointerType (RWMutex)) "Lock" (RWMutex__Lockⁱᵐᵖˡ);
   #[global] RWMutex'ptr_RLock_unfold :: MethodUnfold (go.PointerType (RWMutex)) "RLock" (RWMutex__RLockⁱᵐᵖˡ);
   #[global] RWMutex'ptr_RLocker_unfold :: MethodUnfold (go.PointerType (RWMutex)) "RLocker" (RWMutex__RLockerⁱᵐᵖˡ);
@@ -1188,12 +1188,12 @@ Class WaitGroup_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalCon
 {
   #[global] WaitGroup_type_repr  :: go.TypeRepr WaitGroup WaitGroup.t;
   #[global] WaitGroup_underlying :: go.Underlying (WaitGroup) (WaitGroupⁱᵐᵖˡ);
-  #[global] WaitGroup_get_noCopy' (x : WaitGroup.t) :: go.IsGoStepPureDet (StructFieldGet (WaitGroup) "noCopy'") #x #x.(WaitGroup.noCopy');
-  #[global] WaitGroup_set_noCopy' (x : WaitGroup.t) y :: go.IsGoStepPureDet (StructFieldSet (WaitGroup) "noCopy'") (#x, #y) #(x <|WaitGroup.noCopy' := y|>);
-  #[global] WaitGroup_get_state' (x : WaitGroup.t) :: go.IsGoStepPureDet (StructFieldGet (WaitGroup) "state'") #x #x.(WaitGroup.state');
-  #[global] WaitGroup_set_state' (x : WaitGroup.t) y :: go.IsGoStepPureDet (StructFieldSet (WaitGroup) "state'") (#x, #y) #(x <|WaitGroup.state' := y|>);
-  #[global] WaitGroup_get_sema' (x : WaitGroup.t) :: go.IsGoStepPureDet (StructFieldGet (WaitGroup) "sema'") #x #x.(WaitGroup.sema');
-  #[global] WaitGroup_set_sema' (x : WaitGroup.t) y :: go.IsGoStepPureDet (StructFieldSet (WaitGroup) "sema'") (#x, #y) #(x <|WaitGroup.sema' := y|>);
+  #[global] WaitGroup_get_noCopy (x : WaitGroup.t) :: go.IsGoStepPureDet (StructFieldGet (WaitGroup) "noCopy") #x #x.(WaitGroup.noCopy');
+  #[global] WaitGroup_set_noCopy (x : WaitGroup.t) y :: go.IsGoStepPureDet (StructFieldSet (WaitGroup) "noCopy") (#x, #y) #(x <|WaitGroup.noCopy' := y|>);
+  #[global] WaitGroup_get_state (x : WaitGroup.t) :: go.IsGoStepPureDet (StructFieldGet (WaitGroup) "state") #x #x.(WaitGroup.state');
+  #[global] WaitGroup_set_state (x : WaitGroup.t) y :: go.IsGoStepPureDet (StructFieldSet (WaitGroup) "state") (#x, #y) #(x <|WaitGroup.state' := y|>);
+  #[global] WaitGroup_get_sema (x : WaitGroup.t) :: go.IsGoStepPureDet (StructFieldGet (WaitGroup) "sema") #x #x.(WaitGroup.sema');
+  #[global] WaitGroup_set_sema (x : WaitGroup.t) y :: go.IsGoStepPureDet (StructFieldSet (WaitGroup) "sema") (#x, #y) #(x <|WaitGroup.sema' := y|>);
   #[global] WaitGroup'ptr_Add_unfold :: MethodUnfold (go.PointerType (WaitGroup)) "Add" (WaitGroup__Addⁱᵐᵖˡ);
   #[global] WaitGroup'ptr_Done_unfold :: MethodUnfold (go.PointerType (WaitGroup)) "Done" (WaitGroup__Doneⁱᵐᵖˡ);
   #[global] WaitGroup'ptr_Go_unfold :: MethodUnfold (go.PointerType (WaitGroup)) "Go" (WaitGroup__Goⁱᵐᵖˡ);

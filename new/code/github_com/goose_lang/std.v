@@ -346,12 +346,12 @@ Class JoinHandle_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalCo
 {
   #[global] JoinHandle_type_repr  :: go.TypeRepr JoinHandle JoinHandle.t;
   #[global] JoinHandle_underlying :: go.Underlying (JoinHandle) (JoinHandleⁱᵐᵖˡ);
-  #[global] JoinHandle_get_mu' (x : JoinHandle.t) :: go.IsGoStepPureDet (StructFieldGet (JoinHandle) "mu'") #x #x.(JoinHandle.mu');
-  #[global] JoinHandle_set_mu' (x : JoinHandle.t) y :: go.IsGoStepPureDet (StructFieldSet (JoinHandle) "mu'") (#x, #y) #(x <|JoinHandle.mu' := y|>);
-  #[global] JoinHandle_get_done' (x : JoinHandle.t) :: go.IsGoStepPureDet (StructFieldGet (JoinHandle) "done'") #x #x.(JoinHandle.done');
-  #[global] JoinHandle_set_done' (x : JoinHandle.t) y :: go.IsGoStepPureDet (StructFieldSet (JoinHandle) "done'") (#x, #y) #(x <|JoinHandle.done' := y|>);
-  #[global] JoinHandle_get_cond' (x : JoinHandle.t) :: go.IsGoStepPureDet (StructFieldGet (JoinHandle) "cond'") #x #x.(JoinHandle.cond');
-  #[global] JoinHandle_set_cond' (x : JoinHandle.t) y :: go.IsGoStepPureDet (StructFieldSet (JoinHandle) "cond'") (#x, #y) #(x <|JoinHandle.cond' := y|>);
+  #[global] JoinHandle_get_mu (x : JoinHandle.t) :: go.IsGoStepPureDet (StructFieldGet (JoinHandle) "mu") #x #x.(JoinHandle.mu');
+  #[global] JoinHandle_set_mu (x : JoinHandle.t) y :: go.IsGoStepPureDet (StructFieldSet (JoinHandle) "mu") (#x, #y) #(x <|JoinHandle.mu' := y|>);
+  #[global] JoinHandle_get_done (x : JoinHandle.t) :: go.IsGoStepPureDet (StructFieldGet (JoinHandle) "done") #x #x.(JoinHandle.done');
+  #[global] JoinHandle_set_done (x : JoinHandle.t) y :: go.IsGoStepPureDet (StructFieldSet (JoinHandle) "done") (#x, #y) #(x <|JoinHandle.done' := y|>);
+  #[global] JoinHandle_get_cond (x : JoinHandle.t) :: go.IsGoStepPureDet (StructFieldGet (JoinHandle) "cond") #x #x.(JoinHandle.cond');
+  #[global] JoinHandle_set_cond (x : JoinHandle.t) y :: go.IsGoStepPureDet (StructFieldSet (JoinHandle) "cond") (#x, #y) #(x <|JoinHandle.cond' := y|>);
   #[global] JoinHandle'ptr_Join_unfold :: MethodUnfold (go.PointerType (JoinHandle)) "Join" (JoinHandle__Joinⁱᵐᵖˡ);
   #[global] JoinHandle'ptr_finish_unfold :: MethodUnfold (go.PointerType (JoinHandle)) "finish" (JoinHandle__finishⁱᵐᵖˡ);
 }.

@@ -239,10 +239,10 @@ Class Builder_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalConte
 {
   #[global] Builder_type_repr  :: go.TypeRepr Builder Builder.t;
   #[global] Builder_underlying :: go.Underlying (Builder) (Builderⁱᵐᵖˡ);
-  #[global] Builder_get_addr' (x : Builder.t) :: go.IsGoStepPureDet (StructFieldGet (Builder) "addr'") #x #x.(Builder.addr');
-  #[global] Builder_set_addr' (x : Builder.t) y :: go.IsGoStepPureDet (StructFieldSet (Builder) "addr'") (#x, #y) #(x <|Builder.addr' := y|>);
-  #[global] Builder_get_buf' (x : Builder.t) :: go.IsGoStepPureDet (StructFieldGet (Builder) "buf'") #x #x.(Builder.buf');
-  #[global] Builder_set_buf' (x : Builder.t) y :: go.IsGoStepPureDet (StructFieldSet (Builder) "buf'") (#x, #y) #(x <|Builder.buf' := y|>);
+  #[global] Builder_get_addr (x : Builder.t) :: go.IsGoStepPureDet (StructFieldGet (Builder) "addr") #x #x.(Builder.addr');
+  #[global] Builder_set_addr (x : Builder.t) y :: go.IsGoStepPureDet (StructFieldSet (Builder) "addr") (#x, #y) #(x <|Builder.addr' := y|>);
+  #[global] Builder_get_buf (x : Builder.t) :: go.IsGoStepPureDet (StructFieldGet (Builder) "buf") #x #x.(Builder.buf');
+  #[global] Builder_set_buf (x : Builder.t) y :: go.IsGoStepPureDet (StructFieldSet (Builder) "buf") (#x, #y) #(x <|Builder.buf' := y|>);
 }.
 
 Module Reader.

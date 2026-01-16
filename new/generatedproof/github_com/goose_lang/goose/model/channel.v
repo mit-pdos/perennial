@@ -22,17 +22,17 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "cap" ∷ l.[(channel.Channel.t T'), "cap"] ↦{dq} v.(channel.Channel.cap) ∗
-      "mu" ∷ l.[(channel.Channel.t T'), "mu"] ↦{dq} v.(channel.Channel.mu) ∗
-      "state" ∷ l.[(channel.Channel.t T'), "state"] ↦{dq} v.(channel.Channel.state) ∗
-      "buffer" ∷ l.[(channel.Channel.t T'), "buffer"] ↦{dq} v.(channel.Channel.buffer) ∗
-      "v" ∷ l.[(channel.Channel.t T'), "v"] ↦{dq} v.(channel.Channel.v) ∗
+      "cap" ∷ l.[(channel.Channel.t T'), "cap"] ↦{dq} v.(channel.Channel.cap') ∗
+      "mu" ∷ l.[(channel.Channel.t T'), "mu"] ↦{dq} v.(channel.Channel.mu') ∗
+      "state" ∷ l.[(channel.Channel.t T'), "state"] ↦{dq} v.(channel.Channel.state') ∗
+      "buffer" ∷ l.[(channel.Channel.t T'), "buffer"] ↦{dq} v.(channel.Channel.buffer') ∗
+      "v" ∷ l.[(channel.Channel.t T'), "v"] ↦{dq} v.(channel.Channel.v') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance Channel_into_val_typed
+#[global] Instance Channel_into_val_typed
   `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T} `{!go.TypeRepr T T'}  :
   IntoValTyped (channel.Channel.t T') (channel.Channel T).
 Proof. solve_into_val_typed_struct. Qed.

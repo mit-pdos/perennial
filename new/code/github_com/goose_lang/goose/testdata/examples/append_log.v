@@ -213,12 +213,12 @@ Class Log_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} 
 {
   #[global] Log_type_repr  :: go.TypeRepr Log Log.t;
   #[global] Log_underlying :: go.Underlying (Log) (Logⁱᵐᵖˡ);
-  #[global] Log_get_m' (x : Log.t) :: go.IsGoStepPureDet (StructFieldGet (Log) "m'") #x #x.(Log.m');
-  #[global] Log_set_m' (x : Log.t) y :: go.IsGoStepPureDet (StructFieldSet (Log) "m'") (#x, #y) #(x <|Log.m' := y|>);
-  #[global] Log_get_sz' (x : Log.t) :: go.IsGoStepPureDet (StructFieldGet (Log) "sz'") #x #x.(Log.sz');
-  #[global] Log_set_sz' (x : Log.t) y :: go.IsGoStepPureDet (StructFieldSet (Log) "sz'") (#x, #y) #(x <|Log.sz' := y|>);
-  #[global] Log_get_diskSz' (x : Log.t) :: go.IsGoStepPureDet (StructFieldGet (Log) "diskSz'") #x #x.(Log.diskSz');
-  #[global] Log_set_diskSz' (x : Log.t) y :: go.IsGoStepPureDet (StructFieldSet (Log) "diskSz'") (#x, #y) #(x <|Log.diskSz' := y|>);
+  #[global] Log_get_m (x : Log.t) :: go.IsGoStepPureDet (StructFieldGet (Log) "m") #x #x.(Log.m');
+  #[global] Log_set_m (x : Log.t) y :: go.IsGoStepPureDet (StructFieldSet (Log) "m") (#x, #y) #(x <|Log.m' := y|>);
+  #[global] Log_get_sz (x : Log.t) :: go.IsGoStepPureDet (StructFieldGet (Log) "sz") #x #x.(Log.sz');
+  #[global] Log_set_sz (x : Log.t) y :: go.IsGoStepPureDet (StructFieldSet (Log) "sz") (#x, #y) #(x <|Log.sz' := y|>);
+  #[global] Log_get_diskSz (x : Log.t) :: go.IsGoStepPureDet (StructFieldGet (Log) "diskSz") #x #x.(Log.diskSz');
+  #[global] Log_set_diskSz (x : Log.t) y :: go.IsGoStepPureDet (StructFieldSet (Log) "diskSz") (#x, #y) #(x <|Log.diskSz' := y|>);
   #[global] Log'ptr_Append_unfold :: MethodUnfold (go.PointerType (Log)) "Append" (Log__Appendⁱᵐᵖˡ);
   #[global] Log'ptr_Get_unfold :: MethodUnfold (go.PointerType (Log)) "Get" (Log__Getⁱᵐᵖˡ);
   #[global] Log'ptr_Reset_unfold :: MethodUnfold (go.PointerType (Log)) "Reset" (Log__Resetⁱᵐᵖˡ);

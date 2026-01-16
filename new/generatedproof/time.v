@@ -23,14 +23,14 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "C" ∷ l.[(time.Timer.t), "C"] ↦{dq} v.(time.Timer.C) ∗
-      "initTimer" ∷ l.[(time.Timer.t), "initTimer"] ↦{dq} v.(time.Timer.initTimer) ∗
+      "C" ∷ l.[(time.Timer.t), "C"] ↦{dq} v.(time.Timer.C') ∗
+      "initTimer" ∷ l.[(time.Timer.t), "initTimer"] ↦{dq} v.(time.Timer.initTimer') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance Timer_into_val_typed
+#[global] Instance Timer_into_val_typed
    :
   IntoValTyped (time.Timer.t) (time.Timer).
 Proof. solve_into_val_typed_struct. Qed.
@@ -53,15 +53,15 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "wall" ∷ l.[(time.Time.t), "wall"] ↦{dq} v.(time.Time.wall) ∗
-      "ext" ∷ l.[(time.Time.t), "ext"] ↦{dq} v.(time.Time.ext) ∗
-      "loc" ∷ l.[(time.Time.t), "loc"] ↦{dq} v.(time.Time.loc) ∗
+      "wall" ∷ l.[(time.Time.t), "wall"] ↦{dq} v.(time.Time.wall') ∗
+      "ext" ∷ l.[(time.Time.t), "ext"] ↦{dq} v.(time.Time.ext') ∗
+      "loc" ∷ l.[(time.Time.t), "loc"] ↦{dq} v.(time.Time.loc') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance Time_into_val_typed
+#[global] Instance Time_into_val_typed
    :
   IntoValTyped (time.Time.t) (time.Time).
 Proof. solve_into_val_typed_struct. Qed.

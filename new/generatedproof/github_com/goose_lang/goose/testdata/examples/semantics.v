@@ -27,7 +27,7 @@ Local Set Default Proof Using "All".
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance unit_into_val_typed
+#[global] Instance unit_into_val_typed
    :
   IntoValTyped (semantics.unit.t) (semantics.unit).
 Proof. solve_into_val_typed_struct. Qed.
@@ -50,13 +50,13 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "p" ∷ l.[(semantics.Enc.t), "p"] ↦{dq} v.(semantics.Enc.p) ∗
+      "p" ∷ l.[(semantics.Enc.t), "p"] ↦{dq} v.(semantics.Enc.p') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance Enc_into_val_typed
+#[global] Instance Enc_into_val_typed
    :
   IntoValTyped (semantics.Enc.t) (semantics.Enc).
 Proof. solve_into_val_typed_struct. Qed.
@@ -79,13 +79,13 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "p" ∷ l.[(semantics.Dec.t), "p"] ↦{dq} v.(semantics.Dec.p) ∗
+      "p" ∷ l.[(semantics.Dec.t), "p"] ↦{dq} v.(semantics.Dec.p') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance Dec_into_val_typed
+#[global] Instance Dec_into_val_typed
    :
   IntoValTyped (semantics.Dec.t) (semantics.Dec).
 Proof. solve_into_val_typed_struct. Qed.
@@ -108,14 +108,14 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "s" ∷ l.[(semantics.Editor.t), "s"] ↦{dq} v.(semantics.Editor.s) ∗
-      "next_val" ∷ l.[(semantics.Editor.t), "next_val"] ↦{dq} v.(semantics.Editor.next_val) ∗
+      "s" ∷ l.[(semantics.Editor.t), "s"] ↦{dq} v.(semantics.Editor.s') ∗
+      "next_val" ∷ l.[(semantics.Editor.t), "next_val"] ↦{dq} v.(semantics.Editor.next_val') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance Editor_into_val_typed
+#[global] Instance Editor_into_val_typed
    :
   IntoValTyped (semantics.Editor.t) (semantics.Editor).
 Proof. solve_into_val_typed_struct. Qed.
@@ -138,14 +138,14 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "x" ∷ l.[(semantics.Pair.t), "x"] ↦{dq} v.(semantics.Pair.x) ∗
-      "y" ∷ l.[(semantics.Pair.t), "y"] ↦{dq} v.(semantics.Pair.y) ∗
+      "x" ∷ l.[(semantics.Pair.t), "x"] ↦{dq} v.(semantics.Pair.x') ∗
+      "y" ∷ l.[(semantics.Pair.t), "y"] ↦{dq} v.(semantics.Pair.y') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance Pair_into_val_typed
+#[global] Instance Pair_into_val_typed
    :
   IntoValTyped (semantics.Pair.t) (semantics.Pair).
 Proof. solve_into_val_typed_struct. Qed.
@@ -168,13 +168,13 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "Side" ∷ l.[(semantics.SquareStruct.t), "Side"] ↦{dq} v.(semantics.SquareStruct.Side) ∗
+      "Side" ∷ l.[(semantics.SquareStruct.t), "Side"] ↦{dq} v.(semantics.SquareStruct.Side') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance SquareStruct_into_val_typed
+#[global] Instance SquareStruct_into_val_typed
    :
   IntoValTyped (semantics.SquareStruct.t) (semantics.SquareStruct).
 Proof. solve_into_val_typed_struct. Qed.
@@ -197,13 +197,13 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "loopNext" ∷ l.[(semantics.LoopStruct.t), "loopNext"] ↦{dq} v.(semantics.LoopStruct.loopNext) ∗
+      "loopNext" ∷ l.[(semantics.LoopStruct.t), "loopNext"] ↦{dq} v.(semantics.LoopStruct.loopNext') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance LoopStruct_into_val_typed
+#[global] Instance LoopStruct_into_val_typed
    :
   IntoValTyped (semantics.LoopStruct.t) (semantics.LoopStruct).
 Proof. solve_into_val_typed_struct. Qed.
@@ -226,16 +226,16 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "t" ∷ l.[(semantics.BoolTest.t), "t"] ↦{dq} v.(semantics.BoolTest.t) ∗
-      "f" ∷ l.[(semantics.BoolTest.t), "f"] ↦{dq} v.(semantics.BoolTest.f) ∗
-      "tc" ∷ l.[(semantics.BoolTest.t), "tc"] ↦{dq} v.(semantics.BoolTest.tc) ∗
-      "fc" ∷ l.[(semantics.BoolTest.t), "fc"] ↦{dq} v.(semantics.BoolTest.fc) ∗
+      "t" ∷ l.[(semantics.BoolTest.t), "t"] ↦{dq} v.(semantics.BoolTest.t') ∗
+      "f" ∷ l.[(semantics.BoolTest.t), "f"] ↦{dq} v.(semantics.BoolTest.f') ∗
+      "tc" ∷ l.[(semantics.BoolTest.t), "tc"] ↦{dq} v.(semantics.BoolTest.tc') ∗
+      "fc" ∷ l.[(semantics.BoolTest.t), "fc"] ↦{dq} v.(semantics.BoolTest.fc') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance BoolTest_into_val_typed
+#[global] Instance BoolTest_into_val_typed
    :
   IntoValTyped (semantics.BoolTest.t) (semantics.BoolTest).
 Proof. solve_into_val_typed_struct. Qed.
@@ -258,14 +258,14 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "s" ∷ l.[(semantics.ArrayEditor.t), "s"] ↦{dq} v.(semantics.ArrayEditor.s) ∗
-      "next_val" ∷ l.[(semantics.ArrayEditor.t), "next_val"] ↦{dq} v.(semantics.ArrayEditor.next_val) ∗
+      "s" ∷ l.[(semantics.ArrayEditor.t), "s"] ↦{dq} v.(semantics.ArrayEditor.s') ∗
+      "next_val" ∷ l.[(semantics.ArrayEditor.t), "next_val"] ↦{dq} v.(semantics.ArrayEditor.next_val') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance ArrayEditor_into_val_typed
+#[global] Instance ArrayEditor_into_val_typed
    :
   IntoValTyped (semantics.ArrayEditor.t) (semantics.ArrayEditor).
 Proof. solve_into_val_typed_struct. Qed.
@@ -288,14 +288,14 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "a" ∷ l.[(semantics.Bar.t), "a"] ↦{dq} v.(semantics.Bar.a) ∗
-      "b" ∷ l.[(semantics.Bar.t), "b"] ↦{dq} v.(semantics.Bar.b) ∗
+      "a" ∷ l.[(semantics.Bar.t), "a"] ↦{dq} v.(semantics.Bar.a') ∗
+      "b" ∷ l.[(semantics.Bar.t), "b"] ↦{dq} v.(semantics.Bar.b') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance Bar_into_val_typed
+#[global] Instance Bar_into_val_typed
    :
   IntoValTyped (semantics.Bar.t) (semantics.Bar).
 Proof. solve_into_val_typed_struct. Qed.
@@ -318,13 +318,13 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "bar" ∷ l.[(semantics.Foo.t), "bar"] ↦{dq} v.(semantics.Foo.bar) ∗
+      "bar" ∷ l.[(semantics.Foo.t), "bar"] ↦{dq} v.(semantics.Foo.bar') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance Foo_into_val_typed
+#[global] Instance Foo_into_val_typed
    :
   IntoValTyped (semantics.Foo.t) (semantics.Foo).
 Proof. solve_into_val_typed_struct. Qed.
@@ -347,14 +347,14 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "x" ∷ l.[(semantics.TwoInts.t), "x"] ↦{dq} v.(semantics.TwoInts.x) ∗
-      "y" ∷ l.[(semantics.TwoInts.t), "y"] ↦{dq} v.(semantics.TwoInts.y) ∗
+      "x" ∷ l.[(semantics.TwoInts.t), "x"] ↦{dq} v.(semantics.TwoInts.x') ∗
+      "y" ∷ l.[(semantics.TwoInts.t), "y"] ↦{dq} v.(semantics.TwoInts.y') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance TwoInts_into_val_typed
+#[global] Instance TwoInts_into_val_typed
    :
   IntoValTyped (semantics.TwoInts.t) (semantics.TwoInts).
 Proof. solve_into_val_typed_struct. Qed.
@@ -377,15 +377,15 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "a" ∷ l.[(semantics.S.t), "a"] ↦{dq} v.(semantics.S.a) ∗
-      "b" ∷ l.[(semantics.S.t), "b"] ↦{dq} v.(semantics.S.b) ∗
-      "c" ∷ l.[(semantics.S.t), "c"] ↦{dq} v.(semantics.S.c) ∗
+      "a" ∷ l.[(semantics.S.t), "a"] ↦{dq} v.(semantics.S.a') ∗
+      "b" ∷ l.[(semantics.S.t), "b"] ↦{dq} v.(semantics.S.b') ∗
+      "c" ∷ l.[(semantics.S.t), "c"] ↦{dq} v.(semantics.S.c') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance S_into_val_typed
+#[global] Instance S_into_val_typed
    :
   IntoValTyped (semantics.S.t) (semantics.S).
 Proof. solve_into_val_typed_struct. Qed.
@@ -408,13 +408,13 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "i" ∷ l.[(semantics.StructWrap.t), "i"] ↦{dq} v.(semantics.StructWrap.i) ∗
+      "i" ∷ l.[(semantics.StructWrap.t), "i"] ↦{dq} v.(semantics.StructWrap.i') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance StructWrap_into_val_typed
+#[global] Instance StructWrap_into_val_typed
    :
   IntoValTyped (semantics.StructWrap.t) (semantics.StructWrap).
 Proof. solve_into_val_typed_struct. Qed.
@@ -437,13 +437,13 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "fn" ∷ l.[(semantics.StructWithFunc.t), "fn"] ↦{dq} v.(semantics.StructWithFunc.fn) ∗
+      "fn" ∷ l.[(semantics.StructWithFunc.t), "fn"] ↦{dq} v.(semantics.StructWithFunc.fn') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance StructWithFunc_into_val_typed
+#[global] Instance StructWithFunc_into_val_typed
    :
   IntoValTyped (semantics.StructWithFunc.t) (semantics.StructWithFunc).
 Proof. solve_into_val_typed_struct. Qed.
@@ -471,7 +471,7 @@ Local Set Default Proof Using "All".
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance switchConcrete_into_val_typed
+#[global] Instance switchConcrete_into_val_typed
    :
   IntoValTyped (semantics.switchConcrete.t) (semantics.switchConcrete).
 Proof. solve_into_val_typed_struct. Qed.
@@ -494,16 +494,16 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "d" ∷ l.[(semantics.Log.t), "d"] ↦{dq} v.(semantics.Log.d) ∗
-      "l" ∷ l.[(semantics.Log.t), "l"] ↦{dq} v.(semantics.Log.l) ∗
-      "cache" ∷ l.[(semantics.Log.t), "cache"] ↦{dq} v.(semantics.Log.cache) ∗
-      "length" ∷ l.[(semantics.Log.t), "length"] ↦{dq} v.(semantics.Log.length) ∗
+      "d" ∷ l.[(semantics.Log.t), "d"] ↦{dq} v.(semantics.Log.d') ∗
+      "l" ∷ l.[(semantics.Log.t), "l"] ↦{dq} v.(semantics.Log.l') ∗
+      "cache" ∷ l.[(semantics.Log.t), "cache"] ↦{dq} v.(semantics.Log.cache') ∗
+      "length" ∷ l.[(semantics.Log.t), "length"] ↦{dq} v.(semantics.Log.length') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance Log_into_val_typed
+#[global] Instance Log_into_val_typed
    :
   IntoValTyped (semantics.Log.t) (semantics.Log).
 Proof. solve_into_val_typed_struct. Qed.

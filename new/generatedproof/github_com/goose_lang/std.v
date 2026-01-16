@@ -22,15 +22,15 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "mu" ∷ l.[(std.JoinHandle.t), "mu"] ↦{dq} v.(std.JoinHandle.mu) ∗
-      "done" ∷ l.[(std.JoinHandle.t), "done"] ↦{dq} v.(std.JoinHandle.done) ∗
-      "cond" ∷ l.[(std.JoinHandle.t), "cond"] ↦{dq} v.(std.JoinHandle.cond) ∗
+      "mu" ∷ l.[(std.JoinHandle.t), "mu"] ↦{dq} v.(std.JoinHandle.mu') ∗
+      "done" ∷ l.[(std.JoinHandle.t), "done"] ↦{dq} v.(std.JoinHandle.done') ∗
+      "cond" ∷ l.[(std.JoinHandle.t), "cond"] ↦{dq} v.(std.JoinHandle.cond') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance JoinHandle_into_val_typed
+#[global] Instance JoinHandle_into_val_typed
    :
   IntoValTyped (std.JoinHandle.t) (std.JoinHandle).
 Proof. solve_into_val_typed_struct. Qed.

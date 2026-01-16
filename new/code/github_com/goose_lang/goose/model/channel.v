@@ -863,16 +863,16 @@ Class Channel_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalConte
 {
   #[global] Channel_type_repr T T' `{!ZeroVal T'} `{!go.TypeRepr T T'} :: go.TypeRepr (Channel T) (Channel.t T');
   #[global] Channel_underlying T :: go.Underlying (Channel T) (Channelⁱᵐᵖˡ T);
-  #[global] Channel_get_cap' T T' (x : Channel.t T') :: go.IsGoStepPureDet (StructFieldGet (Channel T) "cap'") #x #x.(Channel.cap');
-  #[global] Channel_set_cap' T T' (x : Channel.t T') y :: go.IsGoStepPureDet (StructFieldSet (Channel T) "cap'") (#x, #y) #(x <|Channel.cap' := y|>);
-  #[global] Channel_get_mu' T T' (x : Channel.t T') :: go.IsGoStepPureDet (StructFieldGet (Channel T) "mu'") #x #x.(Channel.mu');
-  #[global] Channel_set_mu' T T' (x : Channel.t T') y :: go.IsGoStepPureDet (StructFieldSet (Channel T) "mu'") (#x, #y) #(x <|Channel.mu' := y|>);
-  #[global] Channel_get_state' T T' (x : Channel.t T') :: go.IsGoStepPureDet (StructFieldGet (Channel T) "state'") #x #x.(Channel.state');
-  #[global] Channel_set_state' T T' (x : Channel.t T') y :: go.IsGoStepPureDet (StructFieldSet (Channel T) "state'") (#x, #y) #(x <|Channel.state' := y|>);
-  #[global] Channel_get_buffer' T T' (x : Channel.t T') :: go.IsGoStepPureDet (StructFieldGet (Channel T) "buffer'") #x #x.(Channel.buffer');
-  #[global] Channel_set_buffer' T T' (x : Channel.t T') y :: go.IsGoStepPureDet (StructFieldSet (Channel T) "buffer'") (#x, #y) #(x <|Channel.buffer' := y|>);
-  #[global] Channel_get_v' T T' (x : Channel.t T') :: go.IsGoStepPureDet (StructFieldGet (Channel T) "v'") #x #x.(Channel.v');
-  #[global] Channel_set_v' T T' (x : Channel.t T') y :: go.IsGoStepPureDet (StructFieldSet (Channel T) "v'") (#x, #y) #(x <|Channel.v' := y|>);
+  #[global] Channel_get_cap T T' (x : Channel.t T') :: go.IsGoStepPureDet (StructFieldGet (Channel T) "cap") #x #x.(Channel.cap');
+  #[global] Channel_set_cap T T' (x : Channel.t T') y :: go.IsGoStepPureDet (StructFieldSet (Channel T) "cap") (#x, #y) #(x <|Channel.cap' := y|>);
+  #[global] Channel_get_mu T T' (x : Channel.t T') :: go.IsGoStepPureDet (StructFieldGet (Channel T) "mu") #x #x.(Channel.mu');
+  #[global] Channel_set_mu T T' (x : Channel.t T') y :: go.IsGoStepPureDet (StructFieldSet (Channel T) "mu") (#x, #y) #(x <|Channel.mu' := y|>);
+  #[global] Channel_get_state T T' (x : Channel.t T') :: go.IsGoStepPureDet (StructFieldGet (Channel T) "state") #x #x.(Channel.state');
+  #[global] Channel_set_state T T' (x : Channel.t T') y :: go.IsGoStepPureDet (StructFieldSet (Channel T) "state") (#x, #y) #(x <|Channel.state' := y|>);
+  #[global] Channel_get_buffer T T' (x : Channel.t T') :: go.IsGoStepPureDet (StructFieldGet (Channel T) "buffer") #x #x.(Channel.buffer');
+  #[global] Channel_set_buffer T T' (x : Channel.t T') y :: go.IsGoStepPureDet (StructFieldSet (Channel T) "buffer") (#x, #y) #(x <|Channel.buffer' := y|>);
+  #[global] Channel_get_v T T' (x : Channel.t T') :: go.IsGoStepPureDet (StructFieldGet (Channel T) "v") #x #x.(Channel.v');
+  #[global] Channel_set_v T T' (x : Channel.t T') y :: go.IsGoStepPureDet (StructFieldSet (Channel T) "v") (#x, #y) #(x <|Channel.v' := y|>);
   #[global] Channel'ptr_Cap_unfold T :: MethodUnfold (go.PointerType (Channel T)) "Cap" (Channel__Capⁱᵐᵖˡ T);
   #[global] Channel'ptr_Close_unfold T :: MethodUnfold (go.PointerType (Channel T)) "Close" (Channel__Closeⁱᵐᵖˡ T);
   #[global] Channel'ptr_Iter_unfold T :: MethodUnfold (go.PointerType (Channel T)) "Iter" (Channel__Iterⁱᵐᵖˡ T);

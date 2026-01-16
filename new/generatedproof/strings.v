@@ -22,14 +22,14 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "addr" ∷ l.[(strings.Builder.t), "addr"] ↦{dq} v.(strings.Builder.addr) ∗
-      "buf" ∷ l.[(strings.Builder.t), "buf"] ↦{dq} v.(strings.Builder.buf) ∗
+      "addr" ∷ l.[(strings.Builder.t), "addr"] ↦{dq} v.(strings.Builder.addr') ∗
+      "buf" ∷ l.[(strings.Builder.t), "buf"] ↦{dq} v.(strings.Builder.buf') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance Builder_into_val_typed
+#[global] Instance Builder_into_val_typed
    :
   IntoValTyped (strings.Builder.t) (strings.Builder).
 Proof. solve_into_val_typed_struct. Qed.

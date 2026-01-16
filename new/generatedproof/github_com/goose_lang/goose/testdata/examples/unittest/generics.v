@@ -22,13 +22,13 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "Value" ∷ l.[(generics.Box.t T'), "Value"] ↦{dq} v.(generics.Box.Value) ∗
+      "Value" ∷ l.[(generics.Box.t T'), "Value"] ↦{dq} v.(generics.Box.Value') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance Box_into_val_typed
+#[global] Instance Box_into_val_typed
   `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T} `{!go.TypeRepr T T'}  :
   IntoValTyped (generics.Box.t T') (generics.Box T).
 Proof. solve_into_val_typed_struct. Qed.
@@ -51,16 +51,16 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "X" ∷ l.[(generics.Container.t T'), "X"] ↦{dq} v.(generics.Container.X) ∗
-      "Y" ∷ l.[(generics.Container.t T'), "Y"] ↦{dq} v.(generics.Container.Y) ∗
-      "Z" ∷ l.[(generics.Container.t T'), "Z"] ↦{dq} v.(generics.Container.Z) ∗
-      "W" ∷ l.[(generics.Container.t T'), "W"] ↦{dq} v.(generics.Container.W) ∗
+      "X" ∷ l.[(generics.Container.t T'), "X"] ↦{dq} v.(generics.Container.X') ∗
+      "Y" ∷ l.[(generics.Container.t T'), "Y"] ↦{dq} v.(generics.Container.Y') ∗
+      "Z" ∷ l.[(generics.Container.t T'), "Z"] ↦{dq} v.(generics.Container.Z') ∗
+      "W" ∷ l.[(generics.Container.t T'), "W"] ↦{dq} v.(generics.Container.W') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance Container_into_val_typed
+#[global] Instance Container_into_val_typed
   `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T} `{!go.TypeRepr T T'}  :
   IntoValTyped (generics.Container.t T') (generics.Container T).
 Proof. solve_into_val_typed_struct. Qed.
@@ -83,13 +83,13 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "X" ∷ l.[(generics.UseContainer.t), "X"] ↦{dq} v.(generics.UseContainer.X) ∗
+      "X" ∷ l.[(generics.UseContainer.t), "X"] ↦{dq} v.(generics.UseContainer.X') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance UseContainer_into_val_typed
+#[global] Instance UseContainer_into_val_typed
    :
   IntoValTyped (generics.UseContainer.t) (generics.UseContainer).
 Proof. solve_into_val_typed_struct. Qed.
@@ -112,14 +112,14 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "X" ∷ l.[(generics.OnlyIndirect.t T'), "X"] ↦{dq} v.(generics.OnlyIndirect.X) ∗
-      "Y" ∷ l.[(generics.OnlyIndirect.t T'), "Y"] ↦{dq} v.(generics.OnlyIndirect.Y) ∗
+      "X" ∷ l.[(generics.OnlyIndirect.t T'), "X"] ↦{dq} v.(generics.OnlyIndirect.X') ∗
+      "Y" ∷ l.[(generics.OnlyIndirect.t T'), "Y"] ↦{dq} v.(generics.OnlyIndirect.Y') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance OnlyIndirect_into_val_typed
+#[global] Instance OnlyIndirect_into_val_typed
   `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T} `{!go.TypeRepr T T'}  :
   IntoValTyped (generics.OnlyIndirect.t T') (generics.OnlyIndirect T).
 Proof. solve_into_val_typed_struct. Qed.
@@ -142,14 +142,14 @@ Local Set Default Proof Using "All".
   {|
     typed_pointsto_def l dq v :=
       (
-      "Y" ∷ l.[(generics.MultiParam.t A' B'), "Y"] ↦{dq} v.(generics.MultiParam.Y) ∗
-      "X" ∷ l.[(generics.MultiParam.t A' B'), "X"] ↦{dq} v.(generics.MultiParam.X) ∗
+      "Y" ∷ l.[(generics.MultiParam.t A' B'), "Y"] ↦{dq} v.(generics.MultiParam.Y') ∗
+      "X" ∷ l.[(generics.MultiParam.t A' B'), "X"] ↦{dq} v.(generics.MultiParam.X') ∗
       "_" ∷ True
       )%I
   |}.
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Instance MultiParam_into_val_typed
+#[global] Instance MultiParam_into_val_typed
   `{!ZeroVal A'} `{!TypedPointsto (Σ:=Σ) A'} `{!IntoValTyped A' A} `{!go.TypeRepr A A'} `{!ZeroVal B'} `{!TypedPointsto (Σ:=Σ) B'} `{!IntoValTyped B' B} `{!go.TypeRepr B B'}  :
   IntoValTyped (generics.MultiParam.t A' B') (generics.MultiParam A B).
 Proof. solve_into_val_typed_struct. Qed.
