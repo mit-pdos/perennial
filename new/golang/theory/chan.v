@@ -1,7 +1,7 @@
 From Perennial.Helpers Require Import List.
 From New.golang.defn Require Export chan.
 From New.proof.github_com.goose_lang.goose.model.channel
-  Require Import chan_au_base chan_au_send chan_au_recv.
+  Require Import chan_init chan_au_base chan_au_send chan_au_recv.
 From iris.base_logic Require Export lib.ghost_var.
 From New.golang.theory Require Export exception loop proofmode.
 From Perennial Require Import base.
@@ -12,31 +12,27 @@ Set Default Proof Using "Type".
 
 Module chan.
 
-#[local] Transparent chan.make chan.receive chan.send chan.close
-  chan.len chan.cap
-  chan.for_range chan.select_nonblocking chan.select_blocking.
+#[local] Transparent chan.receive chan.send chan.for_range.
 
 Section proof.
-
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!chanG Σ V}.
-Context `{!IntoVal V}.
-Context `{!IntoValTyped V t}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
+Context {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}
+  {array_sem : go.ArraySemantics} {slice_sem : go.SliceSemantics} {chan_sem : go.ChanSemantics}.
+Local Set Default Proof Using "All".
 
-Lemma wp_make (cap: Z) {B: BoundedTypeSize t} :
-  0 ≤ cap < 2^63 ->
+Context `[!chanG Σ V].
+Context `[!ZeroVal V] `[!TypedPointsto V] `[!IntoValTyped V t] `[!go.TypeRepr t V].
+
+Lemma wp_make (cap : w64) dir :
   {{{ True }}}
-    chan.make #t #(W64 cap)
+    #(functions go.make2 [go.ChannelType dir t]) #cap
   {{{ (ch: loc) (γ: chan_names), RET #ch;
       is_channel ch γ ∗
-      ⌜chan_cap γ = cap⌝ ∗
+      ⌜chan_cap γ = sint.Z cap⌝ ∗
       own_channel ch (if decide (cap = 0) then chan_rep.Idle else chan_rep.Buffered []) γ
   }}}.
 Proof.
-  intros Hcap.
   wp_start.
-  wp_call.
   wp_apply wp_NewChannel; first done.
   iFrame.
 Qed.

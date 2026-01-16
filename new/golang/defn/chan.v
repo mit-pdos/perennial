@@ -107,6 +107,7 @@ Class ChanSemantics `{!GoSemanticsFunctions} :=
           if: "succeeded" then "v"
           else SelectStmt (SelectStmtClauses None clauses))%E
     );
+  #[global] package_sem :: channel.Assumptions;
 }.
 End defs.
 End go.

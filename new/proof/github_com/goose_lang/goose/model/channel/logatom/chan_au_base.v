@@ -75,8 +75,7 @@ Record chan_names := {
   offer_parked_prop_name : gname;        (* The saved prop that we can leave with the channel to support select *)
   offer_parked_pred_name : gname;        (* The saved continuation for receive, which is a predicate on v, ok *)
   offer_continuation_name : gname;       (* The continuation for send *)
-  chan_cap : Z;                          (* The channel capacity *)
-  chan_cap_bound : 0 ≤ chan_cap < 2^63;
+  chan_cap : w64;                        (* The channel capacity *)
 }.
 
 (** Type class for ghost state associated with channels *)
@@ -367,7 +366,7 @@ Definition chan_cap_valid (s : chan_rep.t V) (cap: Z) : Prop :=
       (* Buffered is only used for buffered channels, and buffer size is bounded
       by capacity *)
       (Z.of_nat (length buf) ≤ cap)%Z ∧ (0 < cap)
-  | chan_rep.Closed [] => True              (* Empty closed channels might have been unbuffered, doesn't matter *)
+  | chan_rep.Closed [] => (0 < cap)
   | chan_rep.Closed draining =>
       (* Draining closed channels are buffered channels, and draining elements
       are bounded by capacity *)
@@ -382,7 +381,7 @@ Definition chan_cap_valid (s : chan_rep.t V) (cap: Z) : Prop :=
 (** Represents ownership of a channel with its logical state *)
 Definition own_channel (ch: loc) (s: chan_rep.t V) (γ: chan_names) : iProp Σ :=
   "Hchanrepfrag" ∷ chan_rep_half γ.(state_name) s ∗
-  "%Hcapvalid" ∷ ⌜chan_cap_valid s (chan_cap γ)⌝.
+  "%Hcapvalid" ∷ ⌜ chan_cap_valid s (sint.Z $ chan_cap γ) ⌝.
 
 Lemma own_channel_agree ch s s' γ :
    own_channel ch s γ -∗ own_channel ch s' γ -∗ ⌜s = s'⌝.
@@ -395,7 +394,7 @@ Qed.
 
 (* Needs [chan_cap_valid s'' cap] as precondition? *)
 Lemma own_channel_halves_update s'' ch s s' γ :
-  chan_cap_valid s'' (chan_cap γ) →
+  chan_cap_valid s'' (sint.Z $ chan_cap γ) →
   own_channel ch s γ -∗ own_channel ch s' γ ==∗
   own_channel ch s'' γ ∗ own_channel ch s'' γ.
 Proof.
@@ -409,7 +408,7 @@ Qed.
 
 Lemma own_channel_buffer_size ch γ buf :
   own_channel ch (chan_rep.Buffered buf) γ -∗
-  ⌜Z.of_nat (length buf) ≤ chan_cap γ⌝.
+  ⌜Z.of_nat (length buf) ≤ sint.Z $ chan_cap γ⌝.
 Proof.
   iNamed 1.
   simpl in Hcapvalid.
@@ -418,10 +417,9 @@ Qed.
 
 Lemma own_channel_drain_size ch γ draining :
   own_channel ch (chan_rep.Closed draining) γ -∗
-  ⌜Z.of_nat (length draining) ≤ chan_cap γ⌝.
+  ⌜Z.of_nat (length draining) ≤ sint.Z $ chan_cap γ⌝.
 Proof.
   iNamed 1.
-  pose proof (chan_cap_bound γ).
   simpl in Hcapvalid.
   destruct draining.
   { simpl. iPureIntro; lia. }
@@ -616,7 +614,7 @@ Definition send_au_fast_alt ch (v : V) γ Φ Φnotready : iProp Σ :=
             | chan_rep.Closed draining => False
             (* Case: Buffered channel *)
             | chan_rep.Buffered buff =>
-                if decide (length buff < chan_cap γ) then
+                if decide (length buff < sint.Z $ chan_cap γ) then
                   (own_channel ch (chan_rep.Buffered (buff ++ [v])) γ ={∅,⊤}=∗ Φ)
                 else
                   (own_channel ch s γ ={∅,⊤}=∗ Φnotready)
@@ -708,17 +706,18 @@ Definition chan_logical (ch: loc) (γ : chan_names) (s : chan_phys_state V): iPr
 Definition chan_inv_inner (ch: loc) (γ: chan_names) : iProp Σ :=
   ∃ (s : chan_phys_state V),
     "phys" ∷ chan_phys ch s ∗
-    "offer" ∷ chan_logical ch γ s.
+    "offer" ∷ chan_logical ch γ s
+.
 
 (* FIXME: is_channel should take [t] explicitly. *)
 (** The public predicate that clients use to interact with channels.
     This is persistent and provides access to the channel's capabilities. *)
 Definition is_channel (ch: loc) (γ: chan_names) : iProp Σ :=
   ∃ (mu_loc: loc),
-    "#cap" ∷ ch.[channel.Channel.t V, "cap"] ↦□ (W64 (chan_cap γ)) ∗
+    "#cap" ∷ ch.[channel.Channel.t V, "cap"] ↦□ (chan_cap γ) ∗
     "#mu" ∷ ch.[channel.Channel.t V, "mu"] ↦□ mu_loc ∗
     "#lock" ∷ is_lock mu_loc (chan_inv_inner ch γ) ∗
-    "%Hnotnull" ∷ ⌜ ch ≠ chan.nil ⌝.
+    "%Hnotnull" ∷ ⌜ ch ≠ chan.nil ⌝ ∗
 #[global] Typeclasses Opaque is_channel.
 #[global] Opaque is_channel.
 #[local] Transparent is_channel.

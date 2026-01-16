@@ -22,23 +22,21 @@ Local Set Default Proof Using "All".
 Context `[!chanG Σ V].
 Context `[!ZeroVal V] `[!TypedPointsto V] `[!IntoValTyped V t] `[!go.TypeRepr t V].
 
-Lemma wp_NewChannel (cap: Z) :
-  0 ≤ cap < 2^63 ->
-  {{{ True }}}
-    channel.NewChannelⁱᵐᵖˡ t #(W64 cap)
+Lemma wp_NewChannel (cap : w64) :
+  {{{ ⌜ 0 ≤ sint.Z cap ⌝ }}}
+    #(functions channel.NewChannel [t]) #cap
   {{{ (ch: loc) (γ: chan_names), RET #ch;
       is_channel ch γ ∗
-      ⌜chan_cap γ = cap⌝ ∗
-      own_channel ch (if decide (cap = 0) then chan_rep.Idle else chan_rep.Buffered []) γ
+      ⌜chan_cap γ = sint.Z cap⌝ ∗
+      own_channel ch (if decide (cap = W64 0) then chan_rep.Idle else chan_rep.Buffered []) γ
   }}}.
 Proof.
-  intros Hcap.
-  wp_start.
+  wp_start as "%Hle".
   wp_auto.
   wp_if_destruct.
   {
     wp_alloc mu as "mu".
-    assert (cap > 0) by word.
+    assert (sint.Z cap > 0) by word.
     rewrite -wp_fupd.
     wp_auto.
     wp_bind.
@@ -65,7 +63,6 @@ Proof.
                offer_parked_pred_name := offer_parked_pred_gname;
                offer_continuation_name := offer_continuation_gname;
                chan_cap := cap;
-               chan_cap_bound := ltac:(auto);
              |}).
     iPersist "Hcap Hmu".
     iMod ((init_lock (chan_inv_inner ch γ )) with "[$mu] [-HΦ Hstate_frag]") as "H".
@@ -86,7 +83,7 @@ Proof.
     rewrite decide_False; [ | word ].
     unfold is_channel. iFrame "∗#". iPureIntro.
     assert (ch ≠ chan.nil) by admit. (* FIXME: non-nilness. *)
-    split; first done. unfold chan_cap_valid. simpl; lia.
+    split; first done. unfold chan_cap_valid. simpl; word.
   }
   {
     assert (cap = 0) by word; subst.
@@ -117,7 +114,6 @@ Proof.
                offer_parked_pred_name := offer_parked_pred_gname;
                offer_continuation_name := offer_continuation_gname;
                chan_cap := 0;
-               chan_cap_bound := ltac:(auto);
              |}).
     iPersist "Hmu Hcap".
     iMod ((init_lock (chan_inv_inner ch γ )) with "[$mu] [-HΦ Hstate_frag]") as "H".
@@ -138,8 +134,8 @@ Admitted.
 
 Lemma wp_Cap (ch: loc) (γ: chan_names) :
   {{{ is_channel ch γ }}}
-    channel.Channel__Capⁱᵐᵖˡ t #ch #()
-  {{{ RET #(W64 (chan_cap γ)); True }}}.
+    #(methods (go.PointerType (channel.Channel t)) "Cap") #ch #()
+  {{{ RET #(chan_cap γ); True }}}.
 Proof.
   wp_start as "#Hch". wp_auto.
   iDestruct (is_channel_not_null with "Hch") as %Hnn.
@@ -152,7 +148,7 @@ Qed.
 
 Lemma wp_Len (ch: loc) (γ: chan_names) :
   {{{ is_channel ch γ }}}
-    channel.Channel__Lenⁱᵐᵖˡ t #ch #()
+    #(methods (go.PointerType (channel.Channel t)) "Len") #ch #()
   {{{ (l: w64), RET #l; ⌜0 ≤ sint.Z l ≤ chan_cap γ⌝ }}}.
 Proof.
   wp_start as "#His".
