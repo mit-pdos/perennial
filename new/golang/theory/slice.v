@@ -365,7 +365,7 @@ Global Instance pure_wp_slice_for_range (sl : slice.t) (body : val) t :
        (let: "i" := alloc go.int #(W64 0) in
         for: (λ: <>, ![go.int] "i" <⟨go.int⟩ FuncResolve go.len [go.SliceType t] (# ()) (# sl)) ;
         (λ: <>, "i" <-[go.int] ![go.int] "i" + # (W64 1)) :=
-          λ: <>, body ![go.int] "i" (![t] (IndexRef (go.SliceType t)) (# sl, ![go.int] "i")))%E.
+          λ: <>, body ![go.int] "i" (![t] (IndexRef (go.SliceType t) (# sl, ![go.int] "i"))))%E.
 Proof.
   iIntros (?????) "HΦ".
   wp_call_lc "?". by iApply "HΦ".

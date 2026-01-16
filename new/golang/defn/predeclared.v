@@ -335,6 +335,7 @@ Class PredeclaredSemantics `{!GoSemanticsFunctions} :=
 
   #[global] comparable_string :: go.IsComparable go.string;
   #[global] go_eq_string :: go.AlwaysSafelyComparable go.string go_string;
+  #[global] plus_string (v1 v2 : go_string) :: go.IsGoOp GoPlus go.string (#v1, #v2) #(v1 ++ v2);
   #[global] type_repr_string :: go.TypeRepr go.string go_string;
   index_string i (s : go_string) b (Hinrange : s !! (Z.to_nat i) = Some b) :
     index (go.string) i #s = #b;

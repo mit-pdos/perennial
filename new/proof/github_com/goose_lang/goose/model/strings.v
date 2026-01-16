@@ -59,3 +59,35 @@ Proof.
     f_equal. word.
   - iApply "HΦ". rewrite take_ge; last len. iFrame.
 Qed.
+
+Lemma wp_ByteSliceToString sl (s : list w8) dq :
+  {{{ sl ↦*{dq} s }}}
+    @! strings.ByteSliceToString #sl
+  {{{ RET #s; sl ↦*{dq} s }}}.
+Proof.
+  wp_start as "Hsl". wp_auto.
+  iDestruct (own_slice_len with "[$]") as %Hlen.
+  iAssert (
+      ∃ (i : w64) (c : w8),
+        "i" ∷ i_ptr ↦ i ∗
+        "c" ∷ c_ptr ↦ c ∗
+        "s" ∷ s_ptr ↦ (take (sint.nat i) s) ∗
+        "%Hi" ∷ ⌜ 0 ≤ sint.Z i ≤ length s ⌝
+    )%I with "[s c i]" as "H".
+  { iFrame. word. }
+  wp_for "H".
+  wp_if_destruct.
+  - rewrite -> decide_True; last word.
+    list_elem s (sint.nat i) as c'.
+    wp_auto. wp_apply (wp_load_slice_index with "[$Hsl]").
+    { word. }
+    { done. }
+    iIntros "Hsl".
+    wp_auto. wp_for_post.
+    iFrame. iSplitL; last word.
+    iApply to_named. iExactEq "s". f_equal.
+    rewrite -take_S_r; last done. f_equal. word.
+  - rewrite take_ge; last word. iApply "HΦ". iFrame.
+Qed.
+
+End wps.
