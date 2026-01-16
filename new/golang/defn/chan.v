@@ -57,7 +57,7 @@ Definition try_comm_clause (c : comm_clause) : val :=
 Definition try_select (blocking : bool) : list comm_clause → expr :=
   foldr (λ clause cases_remaining,
       let: ("v", "done") := try_comm_clause clause #blocking in
-      if: ~"done" then cases_remaining
+      if: ~"done" then (λ: <>, cases_remaining)%V #()
       else ("v", #true))%E
     (#(), #false)%E.
 End defns.

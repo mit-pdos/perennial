@@ -93,7 +93,7 @@ Local Set Default Proof Using "All".
    have some specific postcondition predicate. We don't want to force the caller
    to transform that into a `send_au_slow` of a different. So, these lemmas are
    written to take a wand that turns Ψ into Φ. *)
-Local Lemma wp_try_comm_clause c Ψ :
+Local Lemma wp_try_comm_clause_blocking c Ψ :
   ∀ Φ,
   (match c with
    | CommClause (SendCase t send_chan_expr send_val) send_handler =>
@@ -188,36 +188,38 @@ Proof.
     + wp_auto. iRight in "HΦ". iFrame.
 Qed.
 
-Local Lemma wp_try_select_blocking (cases : list op) :
+Local Lemma wp_try_select_blocking (clauses : list comm_clause) :
   ∀ Ψ Φ,
-  ([∧ list] case ∈ cases,
-     match case with
-     | select_send_f t send_val send_chan send_handler =>
-         ∃ V γ (v : V) `(!IntoVal V) `(!chanG Σ V) `(!IntoValTyped V t),
-     ⌜ send_val = #v ⌝ ∗
-     is_channel (V:=V) (t:=t) send_chan γ ∗
-     send_au_slow send_chan v γ (WP #send_handler #() {{ Ψ }})
-  | select_receive_f t recv_chan recv_handler =>
-      ∃ V γ `(!IntoVal V) `(!IntoValTyped V t) `(!chanG Σ V),
-     is_channel (V:=V) (t:=t) recv_chan γ ∗
-     rcv_au_slow recv_chan γ (λ (v: V) ok,
-                                    WP #recv_handler (#v, #ok)%V {{ Ψ }})
-   end
-  ) ∧ Φ (#(), #false)%V -∗
+  ([∧ list] c ∈ clauses,
+     (match c with
+      | CommClause (SendCase t send_chan_expr send_val) send_handler =>
+          ∃ V send_chan γ (v : V) `(!ZeroVal V) `(!TypedPointsto V) `(!IntoValTyped V t)
+            `(!go.TypeRepr t V) `(!chanG Σ V),
+        ⌜ send_val = #v ∧ send_chan_expr = #send_chan ⌝ ∗
+        is_channel (V:=V) send_chan γ ∗
+        send_au_slow send_chan v γ (WP send_handler {{ Ψ }})
+     | CommClause (RecvCase t recv_chan_expr) recv_handler =>
+         ∃ V recv_chan γ `(!ZeroVal V) `(!TypedPointsto V) `(!IntoValTyped V t) `(!chanG Σ V)
+           `(!go.TypeRepr t V),
+        ⌜ recv_chan_expr = #recv_chan ⌝ ∗
+        is_channel (V:=V) recv_chan γ ∗
+        rcv_au_slow recv_chan γ (λ (v: V) ok,
+                                   WP (subst "$ok" #ok (subst "$v" #v recv_handler)) {{ Ψ }})
+      end
+  )) ∧ (Φ (#(), #false)%V) -∗
   □(∀ retv, Ψ retv -∗ Φ (retv, #true)%V) -∗
-  WP chan.try_select #cases #true {{ Φ }}.
+  WP chan.try_select true clauses {{ Φ }}.
 Proof.
   simpl. iIntros (Ψ Φ) "HΦ #Hwand".
-  iLöb as "IH" forall (cases).
-  wp_call.
-  destruct cases.
+  iLöb as "IH" forall (clauses).
+  destruct clauses.
   { wp_auto. iRight in "HΦ". iApply "HΦ". }
-  wp_auto.
-  wp_apply (wp_try_select_case_blocking _ Ψ with "[-Hwand] [Hwand]").
+  simpl.
+  wp_apply (wp_try_comm_clause_blocking _ Ψ with "[-Hwand] [Hwand]").
   2:{ iIntros (?) "HΨ". wp_auto. iApply "Hwand". iFrame. }
   iSplit.
   { simpl. iLeft in "HΦ". iLeft in "HΦ". iFrame. }
-  wp_auto. wp_apply ("IH" with "[HΦ]"); try iFrame.
+  wp_auto. iApply ("IH" with "[HΦ]"); try iFrame.
   iSplit.
   - iLeft in "HΦ". simpl. iRight in "HΦ". iFrame.
   - iRight in "HΦ". done.
