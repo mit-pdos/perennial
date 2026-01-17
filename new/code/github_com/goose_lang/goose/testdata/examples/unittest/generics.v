@@ -60,7 +60,7 @@ Definition Cloneⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (S E 
   λ: "s",
     exception_do (let: "s" := (GoAlloc S "s") in
     return: (let: "$a0" := (CompositeLiteral S (LiteralValue [])) in
-     let: "$a1" := (![S] "s") in
+     let: "$a1" := (Convert S (go.SliceType E) (![S] "s")) in
      (FuncResolve go.append [S] #()) "$a0" "$a1")).
 
 (* BoxGet is a function getter (rather than a method)

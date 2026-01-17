@@ -9,7 +9,7 @@ Module rand.
 
 Definition reader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "crypto/rand.reader"%go [].
 
-Axiom base32alphabet : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom base32alphabet : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition Reader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "crypto/rand.Reader"%go.
 

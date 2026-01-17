@@ -200,7 +200,7 @@ Definition Searchⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : va
     do:  ("j" <-[go.int] "$r1");;;
     (for: (λ: <>, (![go.int] "i") <⟨go.int⟩ (![go.int] "j")); (λ: <>, #()) := λ: <>,
       let: "h" := (GoAlloc go.int (GoZeroVal go.int #())) in
-      let: "$r0" := (u_to_w64 ((s_to_w64 ((![go.int] "i") +⟨go.int⟩ (![go.int] "j"))) >>⟨go.uint⟩ #(W64 1))) in
+      let: "$r0" := (Convert go.uint go.int ((Convert go.int go.uint ((![go.int] "i") +⟨go.int⟩ (![go.int] "j"))) >>⟨go.uint⟩ (Convert go.untyped_int go.uint #1))) in
       do:  ("h" <-[go.int] "$r0");;;
       (if: (~ (let: "$a0" := (![go.int] "h") in
       (![go.FunctionType (go.Signature [go.int] false [go.bool])] "f") "$a0"))
@@ -251,10 +251,10 @@ Definition Findⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val 
     do:  ("j" <-[go.int] "$r1");;;
     (for: (λ: <>, (![go.int] "i") <⟨go.int⟩ (![go.int] "j")); (λ: <>, #()) := λ: <>,
       let: "h" := (GoAlloc go.int (GoZeroVal go.int #())) in
-      let: "$r0" := (u_to_w64 ((s_to_w64 ((![go.int] "i") +⟨go.int⟩ (![go.int] "j"))) >>⟨go.uint⟩ #(W64 1))) in
+      let: "$r0" := (Convert go.uint go.int ((Convert go.int go.uint ((![go.int] "i") +⟨go.int⟩ (![go.int] "j"))) >>⟨go.uint⟩ (Convert go.untyped_int go.uint #1))) in
       do:  ("h" <-[go.int] "$r0");;;
-      (if: (let: "$a0" := (![go.int] "h") in
-      (![go.FunctionType (go.Signature [go.int] false [go.int])] "cmp") "$a0") >⟨go.int⟩ #(W64 0)
+      (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.int] "h") in
+      (![go.FunctionType (go.Signature [go.int] false [go.int])] "cmp") "$a0") >⟨go.int⟩ #(W64 0))
       then
         let: "$r0" := ((![go.int] "h") +⟨go.int⟩ #(W64 1)) in
         do:  ("i" <-[go.int] "$r0")
@@ -286,9 +286,9 @@ Definition SearchIntsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
 Definition xorshift__Nextⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" <>,
     exception_do (let: "r" := (GoAlloc (go.PointerType xorshift) "r") in
-    do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) ^⟨go.uint64⟩ ((![xorshift] (![go.PointerType xorshift] "r")) <<⟨xorshift⟩ #(W64 13))));;;
-    do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) ^⟨go.uint64⟩ ((![xorshift] (![go.PointerType xorshift] "r")) >>⟨xorshift⟩ #(W64 7))));;;
-    do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) ^⟨go.uint64⟩ ((![xorshift] (![go.PointerType xorshift] "r")) <<⟨xorshift⟩ #(W64 17))));;;
+    do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) ^⟨go.uint64⟩ ((![xorshift] (![go.PointerType xorshift] "r")) <<⟨xorshift⟩ (Convert go.untyped_int xorshift #13))));;;
+    do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) ^⟨go.uint64⟩ ((![xorshift] (![go.PointerType xorshift] "r")) >>⟨xorshift⟩ (Convert go.untyped_int xorshift #7))));;;
+    do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) ^⟨go.uint64⟩ ((![xorshift] (![go.PointerType xorshift] "r")) <<⟨xorshift⟩ (Convert go.untyped_int xorshift #17))));;;
     return: (![xorshift] (![go.PointerType xorshift] "r"))).
 
 #[global] Instance info' : PkgInfo pkg_id.sort :=

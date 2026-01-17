@@ -185,8 +185,8 @@ Definition b32ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :
 Definition Pointer__Loadⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) : val :=
   λ: "x" <>,
     exception_do (let: "x" := (GoAlloc (go.PointerType (Pointer T)) "x") in
-    return: (let: "$a0" := (StructFieldRef (Pointer T) "v"%go (![go.PointerType (Pointer T)] "x")) in
-     (FuncResolve LoadPointer [] #()) "$a0")).
+    return: (Convert unsafe.Pointer (go.PointerType T) (let: "$a0" := (StructFieldRef (Pointer T) "v"%go (![go.PointerType (Pointer T)] "x")) in
+     (FuncResolve LoadPointer [] #()) "$a0"))).
 
 (* Store atomically stores val into x.
 
@@ -196,7 +196,7 @@ Definition Pointer__Storeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
     exception_do (let: "x" := (GoAlloc (go.PointerType (Pointer T)) "x") in
     let: "val" := (GoAlloc (go.PointerType T) "val") in
     do:  (let: "$a0" := (StructFieldRef (Pointer T) "v"%go (![go.PointerType (Pointer T)] "x")) in
-    let: "$a1" := (![go.PointerType T] "val") in
+    let: "$a1" := (Convert (go.PointerType T) unsafe.Pointer (![go.PointerType T] "val")) in
     (FuncResolve StorePointer [] #()) "$a0" "$a1");;;
     return: #()).
 
@@ -208,9 +208,9 @@ Definition Pointer__Swapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
     exception_do (let: "old" := (GoAlloc (go.PointerType T) (GoZeroVal (go.PointerType T) #())) in
     let: "x" := (GoAlloc (go.PointerType (Pointer T)) "x") in
     let: "new" := (GoAlloc (go.PointerType T) "new") in
-    return: (let: "$a0" := (StructFieldRef (Pointer T) "v"%go (![go.PointerType (Pointer T)] "x")) in
-     let: "$a1" := (![go.PointerType T] "new") in
-     (FuncResolve SwapPointer [] #()) "$a0" "$a1")).
+    return: (Convert unsafe.Pointer (go.PointerType T) (let: "$a0" := (StructFieldRef (Pointer T) "v"%go (![go.PointerType (Pointer T)] "x")) in
+     let: "$a1" := (Convert (go.PointerType T) unsafe.Pointer (![go.PointerType T] "new")) in
+     (FuncResolve SwapPointer [] #()) "$a0" "$a1"))).
 
 (* CompareAndSwap executes the compare-and-swap operation for x.
 
@@ -222,8 +222,8 @@ Definition Pointer__CompareAndSwapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGl
     let: "new" := (GoAlloc (go.PointerType T) "new") in
     let: "old" := (GoAlloc (go.PointerType T) "old") in
     return: (let: "$a0" := (StructFieldRef (Pointer T) "v"%go (![go.PointerType (Pointer T)] "x")) in
-     let: "$a1" := (![go.PointerType T] "old") in
-     let: "$a2" := (![go.PointerType T] "new") in
+     let: "$a1" := (Convert (go.PointerType T) unsafe.Pointer (![go.PointerType T] "old")) in
+     let: "$a2" := (Convert (go.PointerType T) unsafe.Pointer (![go.PointerType T] "new")) in
      (FuncResolve CompareAndSwapPointer [] #()) "$a0" "$a1" "$a2")).
 
 (* Load atomically loads and returns the value stored in x.
@@ -575,21 +575,21 @@ Definition Value__Loadⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
     exception_do (let: "val" := (GoAlloc (go.InterfaceType []) (GoZeroVal (go.InterfaceType []) #())) in
     let: "v" := (GoAlloc (go.PointerType Value) "v") in
     let: "vp" := (GoAlloc (go.PointerType efaceWords) (GoZeroVal (go.PointerType efaceWords) #())) in
-    let: "$r0" := (![go.PointerType Value] "v") in
+    let: "$r0" := (Convert unsafe.Pointer (go.PointerType efaceWords) (Convert (go.PointerType Value) unsafe.Pointer (![go.PointerType Value] "v"))) in
     do:  ("vp" <-[go.PointerType efaceWords] "$r0");;;
     let: "typ" := (GoAlloc unsafe.Pointer (GoZeroVal unsafe.Pointer #())) in
     let: "$r0" := (let: "$a0" := (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vp")) in
     (FuncResolve LoadPointer [] #()) "$a0") in
     do:  ("typ" <-[unsafe.Pointer] "$r0");;;
-    (if: ((![unsafe.Pointer] "typ") =⟨unsafe.Pointer⟩ #null) || ((![unsafe.Pointer] "typ") =⟨unsafe.Pointer⟩ (GlobalVarAddr firstStoreInProgress #()))
-    then return: (#interface.nil)
+    (if: Convert go.untyped_bool go.bool (((![unsafe.Pointer] "typ") =⟨unsafe.Pointer⟩ (Convert go.untyped_nil unsafe.Pointer UntypedNil)) || ((![unsafe.Pointer] "typ") =⟨unsafe.Pointer⟩ (Convert (go.PointerType go.byte) unsafe.Pointer (GlobalVarAddr firstStoreInProgress #()))))
+    then return: (Convert go.untyped_nil (go.InterfaceType []) UntypedNil)
     else do:  #());;;
     let: "data" := (GoAlloc unsafe.Pointer (GoZeroVal unsafe.Pointer #())) in
     let: "$r0" := (let: "$a0" := (StructFieldRef efaceWords "data"%go (![go.PointerType efaceWords] "vp")) in
     (FuncResolve LoadPointer [] #()) "$a0") in
     do:  ("data" <-[unsafe.Pointer] "$r0");;;
     let: "vlp" := (GoAlloc (go.PointerType efaceWords) (GoZeroVal (go.PointerType efaceWords) #())) in
-    let: "$r0" := "val" in
+    let: "$r0" := (Convert unsafe.Pointer (go.PointerType efaceWords) (Convert (go.PointerType (go.InterfaceType [])) unsafe.Pointer "val")) in
     do:  ("vlp" <-[go.PointerType efaceWords] "$r0");;;
     let: "$r0" := (![unsafe.Pointer] "typ") in
     do:  ((StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vlp")) <-[unsafe.Pointer] "$r0");;;
@@ -606,28 +606,28 @@ Definition Value__Storeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
   λ: "v" "val",
     exception_do (let: "v" := (GoAlloc (go.PointerType Value) "v") in
     let: "val" := (GoAlloc (go.InterfaceType []) "val") in
-    (if: (![go.InterfaceType []] "val") =⟨go.InterfaceType []⟩ #interface.nil
+    (if: Convert go.untyped_bool go.bool ((![go.InterfaceType []] "val") =⟨go.InterfaceType []⟩ (Convert go.untyped_nil (go.InterfaceType []) UntypedNil))
     then
-      do:  (let: "$a0" := (InterfaceMake go.string #"sync/atomic: store of nil value into Value"%go) in
+      do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"sync/atomic: store of nil value into Value"%go) in
       (FuncResolve go.panic [] #()) "$a0")
     else do:  #());;;
     let: "vp" := (GoAlloc (go.PointerType efaceWords) (GoZeroVal (go.PointerType efaceWords) #())) in
-    let: "$r0" := (![go.PointerType Value] "v") in
+    let: "$r0" := (Convert unsafe.Pointer (go.PointerType efaceWords) (Convert (go.PointerType Value) unsafe.Pointer (![go.PointerType Value] "v"))) in
     do:  ("vp" <-[go.PointerType efaceWords] "$r0");;;
     let: "vlp" := (GoAlloc (go.PointerType efaceWords) (GoZeroVal (go.PointerType efaceWords) #())) in
-    let: "$r0" := "val" in
+    let: "$r0" := (Convert unsafe.Pointer (go.PointerType efaceWords) (Convert (go.PointerType (go.InterfaceType [])) unsafe.Pointer "val")) in
     do:  ("vlp" <-[go.PointerType efaceWords] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       let: "typ" := (GoAlloc unsafe.Pointer (GoZeroVal unsafe.Pointer #())) in
       let: "$r0" := (let: "$a0" := (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vp")) in
       (FuncResolve LoadPointer [] #()) "$a0") in
       do:  ("typ" <-[unsafe.Pointer] "$r0");;;
-      (if: (![unsafe.Pointer] "typ") =⟨unsafe.Pointer⟩ #null
+      (if: Convert go.untyped_bool go.bool ((![unsafe.Pointer] "typ") =⟨unsafe.Pointer⟩ (Convert go.untyped_nil unsafe.Pointer UntypedNil))
       then
         do:  ((FuncResolve runtime_procPin [] #()) #());;;
         (if: (~ (let: "$a0" := (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vp")) in
-        let: "$a1" := #null in
-        let: "$a2" := (GlobalVarAddr firstStoreInProgress #()) in
+        let: "$a1" := (Convert go.untyped_nil unsafe.Pointer UntypedNil) in
+        let: "$a2" := (Convert (go.PointerType go.byte) unsafe.Pointer (GlobalVarAddr firstStoreInProgress #())) in
         (FuncResolve CompareAndSwapPointer [] #()) "$a0" "$a1" "$a2"))
         then
           do:  ((FuncResolve runtime_procUnpin [] #()) #());;;
@@ -642,12 +642,12 @@ Definition Value__Storeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
         do:  ((FuncResolve runtime_procUnpin [] #()) #());;;
         return: (#())
       else do:  #());;;
-      (if: (![unsafe.Pointer] "typ") =⟨unsafe.Pointer⟩ (GlobalVarAddr firstStoreInProgress #())
+      (if: Convert go.untyped_bool go.bool ((![unsafe.Pointer] "typ") =⟨unsafe.Pointer⟩ (Convert (go.PointerType go.byte) unsafe.Pointer (GlobalVarAddr firstStoreInProgress #())))
       then continue: #()
       else do:  #());;;
-      (if: (![unsafe.Pointer] "typ") ≠⟨unsafe.Pointer⟩ (![unsafe.Pointer] (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vlp")))
+      (if: Convert go.untyped_bool go.bool ((![unsafe.Pointer] "typ") ≠⟨unsafe.Pointer⟩ (![unsafe.Pointer] (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vlp"))))
       then
-        do:  (let: "$a0" := (InterfaceMake go.string #"sync/atomic: store of inconsistently typed value into Value"%go) in
+        do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"sync/atomic: store of inconsistently typed value into Value"%go) in
         (FuncResolve go.panic [] #()) "$a0")
       else do:  #());;;
       do:  (let: "$a0" := (StructFieldRef efaceWords "data"%go (![go.PointerType efaceWords] "vp")) in
@@ -668,28 +668,28 @@ Definition Value__Swapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
     exception_do (let: "old" := (GoAlloc (go.InterfaceType []) (GoZeroVal (go.InterfaceType []) #())) in
     let: "v" := (GoAlloc (go.PointerType Value) "v") in
     let: "new" := (GoAlloc (go.InterfaceType []) "new") in
-    (if: (![go.InterfaceType []] "new") =⟨go.InterfaceType []⟩ #interface.nil
+    (if: Convert go.untyped_bool go.bool ((![go.InterfaceType []] "new") =⟨go.InterfaceType []⟩ (Convert go.untyped_nil (go.InterfaceType []) UntypedNil))
     then
-      do:  (let: "$a0" := (InterfaceMake go.string #"sync/atomic: swap of nil value into Value"%go) in
+      do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"sync/atomic: swap of nil value into Value"%go) in
       (FuncResolve go.panic [] #()) "$a0")
     else do:  #());;;
     let: "vp" := (GoAlloc (go.PointerType efaceWords) (GoZeroVal (go.PointerType efaceWords) #())) in
-    let: "$r0" := (![go.PointerType Value] "v") in
+    let: "$r0" := (Convert unsafe.Pointer (go.PointerType efaceWords) (Convert (go.PointerType Value) unsafe.Pointer (![go.PointerType Value] "v"))) in
     do:  ("vp" <-[go.PointerType efaceWords] "$r0");;;
     let: "np" := (GoAlloc (go.PointerType efaceWords) (GoZeroVal (go.PointerType efaceWords) #())) in
-    let: "$r0" := "new" in
+    let: "$r0" := (Convert unsafe.Pointer (go.PointerType efaceWords) (Convert (go.PointerType (go.InterfaceType [])) unsafe.Pointer "new")) in
     do:  ("np" <-[go.PointerType efaceWords] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       let: "typ" := (GoAlloc unsafe.Pointer (GoZeroVal unsafe.Pointer #())) in
       let: "$r0" := (let: "$a0" := (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vp")) in
       (FuncResolve LoadPointer [] #()) "$a0") in
       do:  ("typ" <-[unsafe.Pointer] "$r0");;;
-      (if: (![unsafe.Pointer] "typ") =⟨unsafe.Pointer⟩ #null
+      (if: Convert go.untyped_bool go.bool ((![unsafe.Pointer] "typ") =⟨unsafe.Pointer⟩ (Convert go.untyped_nil unsafe.Pointer UntypedNil))
       then
         do:  ((FuncResolve runtime_procPin [] #()) #());;;
         (if: (~ (let: "$a0" := (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vp")) in
-        let: "$a1" := #null in
-        let: "$a2" := (GlobalVarAddr firstStoreInProgress #()) in
+        let: "$a1" := (Convert go.untyped_nil unsafe.Pointer UntypedNil) in
+        let: "$a2" := (Convert (go.PointerType go.byte) unsafe.Pointer (GlobalVarAddr firstStoreInProgress #())) in
         (FuncResolve CompareAndSwapPointer [] #()) "$a0" "$a1" "$a2"))
         then
           do:  ((FuncResolve runtime_procUnpin [] #()) #());;;
@@ -702,18 +702,18 @@ Definition Value__Swapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
         let: "$a1" := (![unsafe.Pointer] (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "np"))) in
         (FuncResolve StorePointer [] #()) "$a0" "$a1");;;
         do:  ((FuncResolve runtime_procUnpin [] #()) #());;;
-        return: (#interface.nil)
+        return: (Convert go.untyped_nil (go.InterfaceType []) UntypedNil)
       else do:  #());;;
-      (if: (![unsafe.Pointer] "typ") =⟨unsafe.Pointer⟩ (GlobalVarAddr firstStoreInProgress #())
+      (if: Convert go.untyped_bool go.bool ((![unsafe.Pointer] "typ") =⟨unsafe.Pointer⟩ (Convert (go.PointerType go.byte) unsafe.Pointer (GlobalVarAddr firstStoreInProgress #())))
       then continue: #()
       else do:  #());;;
-      (if: (![unsafe.Pointer] "typ") ≠⟨unsafe.Pointer⟩ (![unsafe.Pointer] (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "np")))
+      (if: Convert go.untyped_bool go.bool ((![unsafe.Pointer] "typ") ≠⟨unsafe.Pointer⟩ (![unsafe.Pointer] (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "np"))))
       then
-        do:  (let: "$a0" := (InterfaceMake go.string #"sync/atomic: swap of inconsistently typed value into Value"%go) in
+        do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"sync/atomic: swap of inconsistently typed value into Value"%go) in
         (FuncResolve go.panic [] #()) "$a0")
       else do:  #());;;
       let: "op" := (GoAlloc (go.PointerType efaceWords) (GoZeroVal (go.PointerType efaceWords) #())) in
-      let: "$r0" := "old" in
+      let: "$r0" := (Convert unsafe.Pointer (go.PointerType efaceWords) (Convert (go.PointerType (go.InterfaceType [])) unsafe.Pointer "old")) in
       do:  ("op" <-[go.PointerType efaceWords] "$r0");;;
       let: "$r0" := (![unsafe.Pointer] (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "np"))) in
       let: "$r1" := (let: "$a0" := (StructFieldRef efaceWords "data"%go (![go.PointerType efaceWords] "vp")) in
@@ -736,23 +736,23 @@ Definition Value__CompareAndSwapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
     let: "v" := (GoAlloc (go.PointerType Value) "v") in
     let: "new" := (GoAlloc (go.InterfaceType []) "new") in
     let: "old" := (GoAlloc (go.InterfaceType []) "old") in
-    (if: (![go.InterfaceType []] "new") =⟨go.InterfaceType []⟩ #interface.nil
+    (if: Convert go.untyped_bool go.bool ((![go.InterfaceType []] "new") =⟨go.InterfaceType []⟩ (Convert go.untyped_nil (go.InterfaceType []) UntypedNil))
     then
-      do:  (let: "$a0" := (InterfaceMake go.string #"sync/atomic: compare and swap of nil value into Value"%go) in
+      do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"sync/atomic: compare and swap of nil value into Value"%go) in
       (FuncResolve go.panic [] #()) "$a0")
     else do:  #());;;
     let: "vp" := (GoAlloc (go.PointerType efaceWords) (GoZeroVal (go.PointerType efaceWords) #())) in
-    let: "$r0" := (![go.PointerType Value] "v") in
+    let: "$r0" := (Convert unsafe.Pointer (go.PointerType efaceWords) (Convert (go.PointerType Value) unsafe.Pointer (![go.PointerType Value] "v"))) in
     do:  ("vp" <-[go.PointerType efaceWords] "$r0");;;
     let: "np" := (GoAlloc (go.PointerType efaceWords) (GoZeroVal (go.PointerType efaceWords) #())) in
-    let: "$r0" := "new" in
+    let: "$r0" := (Convert unsafe.Pointer (go.PointerType efaceWords) (Convert (go.PointerType (go.InterfaceType [])) unsafe.Pointer "new")) in
     do:  ("np" <-[go.PointerType efaceWords] "$r0");;;
     let: "op" := (GoAlloc (go.PointerType efaceWords) (GoZeroVal (go.PointerType efaceWords) #())) in
-    let: "$r0" := "old" in
+    let: "$r0" := (Convert unsafe.Pointer (go.PointerType efaceWords) (Convert (go.PointerType (go.InterfaceType [])) unsafe.Pointer "old")) in
     do:  ("op" <-[go.PointerType efaceWords] "$r0");;;
-    (if: ((![unsafe.Pointer] (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "op"))) ≠⟨unsafe.Pointer⟩ #null) && ((![unsafe.Pointer] (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "np"))) ≠⟨unsafe.Pointer⟩ (![unsafe.Pointer] (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "op"))))
+    (if: Convert go.untyped_bool go.bool (((![unsafe.Pointer] (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "op"))) ≠⟨unsafe.Pointer⟩ (Convert go.untyped_nil unsafe.Pointer UntypedNil)) && ((![unsafe.Pointer] (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "np"))) ≠⟨unsafe.Pointer⟩ (![unsafe.Pointer] (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "op")))))
     then
-      do:  (let: "$a0" := (InterfaceMake go.string #"sync/atomic: compare and swap of inconsistently typed values"%go) in
+      do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"sync/atomic: compare and swap of inconsistently typed values"%go) in
       (FuncResolve go.panic [] #()) "$a0")
     else do:  #());;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
@@ -760,15 +760,15 @@ Definition Value__CompareAndSwapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
       let: "$r0" := (let: "$a0" := (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vp")) in
       (FuncResolve LoadPointer [] #()) "$a0") in
       do:  ("typ" <-[unsafe.Pointer] "$r0");;;
-      (if: (![unsafe.Pointer] "typ") =⟨unsafe.Pointer⟩ #null
+      (if: Convert go.untyped_bool go.bool ((![unsafe.Pointer] "typ") =⟨unsafe.Pointer⟩ (Convert go.untyped_nil unsafe.Pointer UntypedNil))
       then
-        (if: (![go.InterfaceType []] "old") ≠⟨go.InterfaceType []⟩ #interface.nil
+        (if: Convert go.untyped_bool go.bool ((![go.InterfaceType []] "old") ≠⟨go.InterfaceType []⟩ (Convert go.untyped_nil (go.InterfaceType []) UntypedNil))
         then return: (#false)
         else do:  #());;;
         do:  ((FuncResolve runtime_procPin [] #()) #());;;
         (if: (~ (let: "$a0" := (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vp")) in
-        let: "$a1" := #null in
-        let: "$a2" := (GlobalVarAddr firstStoreInProgress #()) in
+        let: "$a1" := (Convert go.untyped_nil unsafe.Pointer UntypedNil) in
+        let: "$a2" := (Convert (go.PointerType go.byte) unsafe.Pointer (GlobalVarAddr firstStoreInProgress #())) in
         (FuncResolve CompareAndSwapPointer [] #()) "$a0" "$a1" "$a2"))
         then
           do:  ((FuncResolve runtime_procUnpin [] #()) #());;;
@@ -783,12 +783,12 @@ Definition Value__CompareAndSwapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
         do:  ((FuncResolve runtime_procUnpin [] #()) #());;;
         return: (#true)
       else do:  #());;;
-      (if: (![unsafe.Pointer] "typ") =⟨unsafe.Pointer⟩ (GlobalVarAddr firstStoreInProgress #())
+      (if: Convert go.untyped_bool go.bool ((![unsafe.Pointer] "typ") =⟨unsafe.Pointer⟩ (Convert (go.PointerType go.byte) unsafe.Pointer (GlobalVarAddr firstStoreInProgress #())))
       then continue: #()
       else do:  #());;;
-      (if: (![unsafe.Pointer] "typ") ≠⟨unsafe.Pointer⟩ (![unsafe.Pointer] (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "np")))
+      (if: Convert go.untyped_bool go.bool ((![unsafe.Pointer] "typ") ≠⟨unsafe.Pointer⟩ (![unsafe.Pointer] (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "np"))))
       then
-        do:  (let: "$a0" := (InterfaceMake go.string #"sync/atomic: compare and swap of inconsistently typed value into Value"%go) in
+        do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"sync/atomic: compare and swap of inconsistently typed value into Value"%go) in
         (FuncResolve go.panic [] #()) "$a0")
       else do:  #());;;
       let: "data" := (GoAlloc unsafe.Pointer (GoZeroVal unsafe.Pointer #())) in
@@ -797,10 +797,10 @@ Definition Value__CompareAndSwapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
       do:  ("data" <-[unsafe.Pointer] "$r0");;;
       let: "i" := (GoAlloc (go.InterfaceType []) (GoZeroVal (go.InterfaceType []) #())) in
       let: "$r0" := (![unsafe.Pointer] "typ") in
-      do:  ((StructFieldRef efaceWords "typ"%go "i") <-[unsafe.Pointer] "$r0");;;
+      do:  ((StructFieldRef efaceWords "typ"%go (Convert unsafe.Pointer (go.PointerType efaceWords) (Convert (go.PointerType (go.InterfaceType [])) unsafe.Pointer "i"))) <-[unsafe.Pointer] "$r0");;;
       let: "$r0" := (![unsafe.Pointer] "data") in
-      do:  ((StructFieldRef efaceWords "data"%go "i") <-[unsafe.Pointer] "$r0");;;
-      (if: (![go.InterfaceType []] "i") ≠⟨go.InterfaceType []⟩ (![go.InterfaceType []] "old")
+      do:  ((StructFieldRef efaceWords "data"%go (Convert unsafe.Pointer (go.PointerType efaceWords) (Convert (go.PointerType (go.InterfaceType [])) unsafe.Pointer "i"))) <-[unsafe.Pointer] "$r0");;;
+      (if: Convert go.untyped_bool go.bool ((![go.InterfaceType []] "i") ≠⟨go.InterfaceType []⟩ (![go.InterfaceType []] "old"))
       then return: (#false)
       else do:  #());;;
       return: (let: "$a0" := (StructFieldRef efaceWords "data"%go (![go.PointerType efaceWords] "vp")) in
@@ -868,8 +868,6 @@ Class Bool_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext}
 {
   #[global] Bool_type_repr  :: go.TypeRepr Bool Bool.t;
   #[global] Bool_underlying :: go.Underlying (Bool) (Boolⁱᵐᵖˡ);
-  #[global] Bool_get__ (x : Bool.t) :: go.IsGoStepPureDet (StructFieldGet (Bool) "_") #x #x.(Bool._0');
-  #[global] Bool_set__ (x : Bool.t) y :: go.IsGoStepPureDet (StructFieldSet (Bool) "_") (#x, #y) #(x <|Bool._0' := y|>);
   #[global] Bool_get_v (x : Bool.t) :: go.IsGoStepPureDet (StructFieldGet (Bool) "v") #x #x.(Bool.v');
   #[global] Bool_set_v (x : Bool.t) y :: go.IsGoStepPureDet (StructFieldSet (Bool) "v") (#x, #y) #(x <|Bool.v' := y|>);
   #[global] Bool'ptr_CompareAndSwap_unfold :: MethodUnfold (go.PointerType (Bool)) "CompareAndSwap" (Bool__CompareAndSwapⁱᵐᵖˡ);
@@ -905,10 +903,6 @@ Class Pointer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalConte
 {
   #[global] Pointer_type_repr T T' `{!ZeroVal T'} `{!go.TypeRepr T T'} :: go.TypeRepr (Pointer T) (Pointer.t T');
   #[global] Pointer_underlying T :: go.Underlying (Pointer T) (Pointerⁱᵐᵖˡ T);
-  #[global] Pointer_get__ T T' (x : Pointer.t T') :: go.IsGoStepPureDet (StructFieldGet (Pointer T) "_") #x #x.(Pointer._0');
-  #[global] Pointer_set__ T T' (x : Pointer.t T') y :: go.IsGoStepPureDet (StructFieldSet (Pointer T) "_") (#x, #y) #(x <|Pointer._0' := y|>);
-  #[global] Pointer_get__ T T' (x : Pointer.t T') :: go.IsGoStepPureDet (StructFieldGet (Pointer T) "_") #x #x.(Pointer._1');
-  #[global] Pointer_set__ T T' (x : Pointer.t T') y :: go.IsGoStepPureDet (StructFieldSet (Pointer T) "_") (#x, #y) #(x <|Pointer._1' := y|>);
   #[global] Pointer_get_v T T' (x : Pointer.t T') :: go.IsGoStepPureDet (StructFieldGet (Pointer T) "v") #x #x.(Pointer.v');
   #[global] Pointer_set_v T T' (x : Pointer.t T') y :: go.IsGoStepPureDet (StructFieldSet (Pointer T) "v") (#x, #y) #(x <|Pointer.v' := y|>);
   #[global] Pointer'ptr_CompareAndSwap_unfold T :: MethodUnfold (go.PointerType (Pointer T)) "CompareAndSwap" (Pointer__CompareAndSwapⁱᵐᵖˡ T);
@@ -942,8 +936,6 @@ Class Int32_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext
 {
   #[global] Int32_type_repr  :: go.TypeRepr Int32 Int32.t;
   #[global] Int32_underlying :: go.Underlying (Int32) (Int32ⁱᵐᵖˡ);
-  #[global] Int32_get__ (x : Int32.t) :: go.IsGoStepPureDet (StructFieldGet (Int32) "_") #x #x.(Int32._0');
-  #[global] Int32_set__ (x : Int32.t) y :: go.IsGoStepPureDet (StructFieldSet (Int32) "_") (#x, #y) #(x <|Int32._0' := y|>);
   #[global] Int32_get_v (x : Int32.t) :: go.IsGoStepPureDet (StructFieldGet (Int32) "v") #x #x.(Int32.v');
   #[global] Int32_set_v (x : Int32.t) y :: go.IsGoStepPureDet (StructFieldSet (Int32) "v") (#x, #y) #(x <|Int32.v' := y|>);
   #[global] Int32'ptr_Add_unfold :: MethodUnfold (go.PointerType (Int32)) "Add" (Int32__Addⁱᵐᵖˡ);
@@ -1005,10 +997,6 @@ Class Int64_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext
 {
   #[global] Int64_type_repr  :: go.TypeRepr Int64 Int64.t;
   #[global] Int64_underlying :: go.Underlying (Int64) (Int64ⁱᵐᵖˡ);
-  #[global] Int64_get__ (x : Int64.t) :: go.IsGoStepPureDet (StructFieldGet (Int64) "_") #x #x.(Int64._0');
-  #[global] Int64_set__ (x : Int64.t) y :: go.IsGoStepPureDet (StructFieldSet (Int64) "_") (#x, #y) #(x <|Int64._0' := y|>);
-  #[global] Int64_get__ (x : Int64.t) :: go.IsGoStepPureDet (StructFieldGet (Int64) "_") #x #x.(Int64._1');
-  #[global] Int64_set__ (x : Int64.t) y :: go.IsGoStepPureDet (StructFieldSet (Int64) "_") (#x, #y) #(x <|Int64._1' := y|>);
   #[global] Int64_get_v (x : Int64.t) :: go.IsGoStepPureDet (StructFieldGet (Int64) "v") #x #x.(Int64.v');
   #[global] Int64_set_v (x : Int64.t) y :: go.IsGoStepPureDet (StructFieldSet (Int64) "v") (#x, #y) #(x <|Int64.v' := y|>);
   #[global] Int64'ptr_Add_unfold :: MethodUnfold (go.PointerType (Int64)) "Add" (Int64__Addⁱᵐᵖˡ);
@@ -1045,8 +1033,6 @@ Class Uint32_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContex
 {
   #[global] Uint32_type_repr  :: go.TypeRepr Uint32 Uint32.t;
   #[global] Uint32_underlying :: go.Underlying (Uint32) (Uint32ⁱᵐᵖˡ);
-  #[global] Uint32_get__ (x : Uint32.t) :: go.IsGoStepPureDet (StructFieldGet (Uint32) "_") #x #x.(Uint32._0');
-  #[global] Uint32_set__ (x : Uint32.t) y :: go.IsGoStepPureDet (StructFieldSet (Uint32) "_") (#x, #y) #(x <|Uint32._0' := y|>);
   #[global] Uint32_get_v (x : Uint32.t) :: go.IsGoStepPureDet (StructFieldGet (Uint32) "v") #x #x.(Uint32.v');
   #[global] Uint32_set_v (x : Uint32.t) y :: go.IsGoStepPureDet (StructFieldSet (Uint32) "v") (#x, #y) #(x <|Uint32.v' := y|>);
   #[global] Uint32'ptr_Add_unfold :: MethodUnfold (go.PointerType (Uint32)) "Add" (Uint32__Addⁱᵐᵖˡ);
@@ -1085,10 +1071,6 @@ Class Uint64_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContex
 {
   #[global] Uint64_type_repr  :: go.TypeRepr Uint64 Uint64.t;
   #[global] Uint64_underlying :: go.Underlying (Uint64) (Uint64ⁱᵐᵖˡ);
-  #[global] Uint64_get__ (x : Uint64.t) :: go.IsGoStepPureDet (StructFieldGet (Uint64) "_") #x #x.(Uint64._0');
-  #[global] Uint64_set__ (x : Uint64.t) y :: go.IsGoStepPureDet (StructFieldSet (Uint64) "_") (#x, #y) #(x <|Uint64._0' := y|>);
-  #[global] Uint64_get__ (x : Uint64.t) :: go.IsGoStepPureDet (StructFieldGet (Uint64) "_") #x #x.(Uint64._1');
-  #[global] Uint64_set__ (x : Uint64.t) y :: go.IsGoStepPureDet (StructFieldSet (Uint64) "_") (#x, #y) #(x <|Uint64._1' := y|>);
   #[global] Uint64_get_v (x : Uint64.t) :: go.IsGoStepPureDet (StructFieldGet (Uint64) "v") #x #x.(Uint64.v');
   #[global] Uint64_set_v (x : Uint64.t) y :: go.IsGoStepPureDet (StructFieldSet (Uint64) "v") (#x, #y) #(x <|Uint64.v' := y|>);
   #[global] Uint64'ptr_Add_unfold :: MethodUnfold (go.PointerType (Uint64)) "Add" (Uint64__Addⁱᵐᵖˡ);

@@ -77,7 +77,7 @@ Axiom readdirDirEntry : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom readdirFileInfo : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom blockSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom blockSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom errENOSYS : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
@@ -91,9 +91,9 @@ Axiom statusDone : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom statusReleased : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom pidUnset : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom pidUnset : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom pidReleased : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom pidReleased : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom O_RDONLY : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
@@ -117,7 +117,7 @@ Axiom SEEK_CUR : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom SEEK_END : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _UTIME_OMIT : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _UTIME_OMIT : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom kindNewFile : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
@@ -129,13 +129,13 @@ Axiom kindSock : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom kindNoPoll : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom DevNull : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom DevNull : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom PathSeparator : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom PathSeparator : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom PathListSeparator : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom PathListSeparator : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom rootMaxSymlinks : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom rootMaxSymlinks : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom supportsCreateWithStickyBit : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 

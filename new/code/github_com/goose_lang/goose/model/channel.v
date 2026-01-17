@@ -54,7 +54,7 @@ Definition NewChannelⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
     let: "local_state" := (GoAlloc offerState (GoZeroVal offerState #())) in
     let: "$r0" := idle in
     do:  ("local_state" <-[offerState] "$r0");;;
-    (if: (![go.int] "cap") >⟨go.int⟩ #(W64 0)
+    (if: Convert go.untyped_bool go.bool ((![go.int] "cap") >⟨go.int⟩ #(W64 0))
     then
       let: "$r0" := buffered in
       do:  ("local_state" <-[offerState] "$r0")
@@ -74,13 +74,13 @@ Definition Channel__TrySendⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
     let: "$sw" := (![offerState] (StructFieldRef (Channel T) "state"%go (![go.PointerType (Channel T)] "c"))) in
     (if: "$sw" =⟨offerState⟩ closed
     then
-      do:  (let: "$a0" := (InterfaceMake go.string #"send on closed channel"%go) in
+      do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"send on closed channel"%go) in
       (FuncResolve go.panic [] #()) "$a0")
     else
       (if: "$sw" =⟨offerState⟩ buffered
       then
-        (if: (let: "$a0" := (![go.SliceType T] (StructFieldRef (Channel T) "buffer"%go (![go.PointerType (Channel T)] "c"))) in
-        (FuncResolve go.len [go.SliceType T] #()) "$a0") <⟨go.int⟩ (![go.int] (StructFieldRef (Channel T) "cap"%go (![go.PointerType (Channel T)] "c")))
+        (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType T] (StructFieldRef (Channel T) "buffer"%go (![go.PointerType (Channel T)] "c"))) in
+        (FuncResolve go.len [go.SliceType T] #()) "$a0") <⟨go.int⟩ (![go.int] (StructFieldRef (Channel T) "cap"%go (![go.PointerType (Channel T)] "c"))))
         then
           let: "$r0" := (let: "$a0" := (![go.SliceType T] (StructFieldRef (Channel T) "buffer"%go (![go.PointerType (Channel T)] "c"))) in
           let: "$a1" := ((let: "$sl0" := (![T] "val") in
@@ -127,7 +127,7 @@ Definition Channel__TrySendⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
                   do:  ((MethodResolve (go.PointerType primitive.Mutex) "Unlock"%go #() (![go.PointerType primitive.Mutex] (StructFieldRef (Channel T) "mu"%go (![go.PointerType (Channel T)] "c")))) #());;;
                   return: (#false)
                 else
-                  do:  (let: "$a0" := (InterfaceMake go.string #"Invalid state transition with open receive offer"%go) in
+                  do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"Invalid state transition with open receive offer"%go) in
                   (FuncResolve go.panic [] #()) "$a0")))
             else do:  #());;;
             do:  ((MethodResolve (go.PointerType primitive.Mutex) "Unlock"%go #() (![go.PointerType primitive.Mutex] (StructFieldRef (Channel T) "mu"%go (![go.PointerType (Channel T)] "c")))) #());;;
@@ -147,7 +147,7 @@ Definition Channel__Sendⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
   λ: "c" "v",
     exception_do (let: "c" := (GoAlloc (go.PointerType (Channel T)) "c") in
     let: "v" := (GoAlloc T "v") in
-    (if: (![go.PointerType (Channel T)] "c") =⟨go.PointerType (Channel T)⟩ #null
+    (if: Convert go.untyped_bool go.bool ((![go.PointerType (Channel T)] "c") =⟨go.PointerType (Channel T)⟩ (Convert go.untyped_nil (go.PointerType (Channel T)) UntypedNil))
     then
       (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
         do:  #())
@@ -175,8 +175,8 @@ Definition Channel__TryReceiveⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
     (if: "$sw" =⟨offerState⟩ buffered
     then
       let: "v" := (GoAlloc T (GoZeroVal T #())) in
-      (if: (let: "$a0" := (![go.SliceType T] (StructFieldRef (Channel T) "buffer"%go (![go.PointerType (Channel T)] "c"))) in
-      (FuncResolve go.len [go.SliceType T] #()) "$a0") >⟨go.int⟩ #(W64 0)
+      (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType T] (StructFieldRef (Channel T) "buffer"%go (![go.PointerType (Channel T)] "c"))) in
+      (FuncResolve go.len [go.SliceType T] #()) "$a0") >⟨go.int⟩ #(W64 0))
       then
         let: "val_copy" := (GoAlloc T (GoZeroVal T #())) in
         let: "$r0" := (![T] (IndexRef (go.SliceType T) (![go.SliceType T] (StructFieldRef (Channel T) "buffer"%go (![go.PointerType (Channel T)] "c")), #(W64 0)))) in
@@ -192,8 +192,8 @@ Definition Channel__TryReceiveⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
     else
       (if: "$sw" =⟨offerState⟩ closed
       then
-        (if: (let: "$a0" := (![go.SliceType T] (StructFieldRef (Channel T) "buffer"%go (![go.PointerType (Channel T)] "c"))) in
-        (FuncResolve go.len [go.SliceType T] #()) "$a0") >⟨go.int⟩ #(W64 0)
+        (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType T] (StructFieldRef (Channel T) "buffer"%go (![go.PointerType (Channel T)] "c"))) in
+        (FuncResolve go.len [go.SliceType T] #()) "$a0") >⟨go.int⟩ #(W64 0))
         then
           let: "val_copy" := (GoAlloc T (GoZeroVal T #())) in
           let: "$r0" := (![T] (IndexRef (go.SliceType T) (![go.SliceType T] (StructFieldRef (Channel T) "buffer"%go (![go.PointerType (Channel T)] "c")), #(W64 0)))) in
@@ -241,7 +241,7 @@ Definition Channel__TryReceiveⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
                   do:  ((MethodResolve (go.PointerType primitive.Mutex) "Unlock"%go #() (![go.PointerType primitive.Mutex] (StructFieldRef (Channel T) "mu"%go (![go.PointerType (Channel T)] "c")))) #());;;
                   return: (#true, ![T] "local_val", #true)
                 else
-                  do:  (let: "$a0" := (InterfaceMake go.string #"not supposed to be here!"%go) in
+                  do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"not supposed to be here!"%go) in
                   (FuncResolve go.panic [] #()) "$a0")))
             else do:  #());;;
             do:  ((MethodResolve (go.PointerType primitive.Mutex) "Unlock"%go #() (![go.PointerType primitive.Mutex] (StructFieldRef (Channel T) "mu"%go (![go.PointerType (Channel T)] "c")))) #());;;
@@ -254,7 +254,7 @@ Definition Channel__TryReceiveⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
 Definition Channel__Receiveⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) : val :=
   λ: "c" <>,
     exception_do (let: "c" := (GoAlloc (go.PointerType (Channel T)) "c") in
-    (if: (![go.PointerType (Channel T)] "c") =⟨go.PointerType (Channel T)⟩ #null
+    (if: Convert go.untyped_bool go.bool ((![go.PointerType (Channel T)] "c") =⟨go.PointerType (Channel T)⟩ (Convert go.untyped_nil (go.PointerType (Channel T)) UntypedNil))
     then
       (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
         do:  #())
@@ -287,7 +287,7 @@ Definition Channel__tryCloseⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
     let: "$sw" := (![offerState] (StructFieldRef (Channel T) "state"%go (![go.PointerType (Channel T)] "c"))) in
     (if: "$sw" =⟨offerState⟩ closed
     then
-      do:  (let: "$a0" := (InterfaceMake go.string #"close of closed channel"%go) in
+      do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"close of closed channel"%go) in
       (FuncResolve go.panic [] #()) "$a0")
     else
       (if: ("$sw" =⟨offerState⟩ buffered) || ("$sw" =⟨offerState⟩ idle)
@@ -310,9 +310,9 @@ Definition Channel__tryCloseⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
 Definition Channel__Closeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) : val :=
   λ: "c" <>,
     exception_do (let: "c" := (GoAlloc (go.PointerType (Channel T)) "c") in
-    (if: (![go.PointerType (Channel T)] "c") =⟨go.PointerType (Channel T)⟩ #null
+    (if: Convert go.untyped_bool go.bool ((![go.PointerType (Channel T)] "c") =⟨go.PointerType (Channel T)⟩ (Convert go.untyped_nil (go.PointerType (Channel T)) UntypedNil))
     then
-      do:  (let: "$a0" := (InterfaceMake go.string #"close of nil channel"%go) in
+      do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"close of nil channel"%go) in
       (FuncResolve go.panic [] #()) "$a0")
     else do:  #());;;
     (for: (λ: <>, (~ ((MethodResolve (go.PointerType (Channel T)) "tryClose"%go #() (![go.PointerType (Channel T)] "c")) #()))); (λ: <>, #()) := λ: <>,
@@ -348,7 +348,7 @@ Definition Channel__ReceiveDiscardOkⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : Go
 Definition Channel__Lenⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) : val :=
   λ: "c" <>,
     exception_do (let: "c" := (GoAlloc (go.PointerType (Channel T)) "c") in
-    (if: (![go.PointerType (Channel T)] "c") =⟨go.PointerType (Channel T)⟩ #null
+    (if: Convert go.untyped_bool go.bool ((![go.PointerType (Channel T)] "c") =⟨go.PointerType (Channel T)⟩ (Convert go.untyped_nil (go.PointerType (Channel T)) UntypedNil))
     then return: (#(W64 0))
     else do:  #());;;
     do:  ((MethodResolve (go.PointerType primitive.Mutex) "Lock"%go #() (![go.PointerType primitive.Mutex] (StructFieldRef (Channel T) "mu"%go (![go.PointerType (Channel T)] "c")))) #());;;
@@ -368,7 +368,7 @@ Definition Channel__Lenⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
 Definition Channel__Capⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) : val :=
   λ: "c" <>,
     exception_do (let: "c" := (GoAlloc (go.PointerType (Channel T)) "c") in
-    (if: (![go.PointerType (Channel T)] "c") =⟨go.PointerType (Channel T)⟩ #null
+    (if: Convert go.untyped_bool go.bool ((![go.PointerType (Channel T)] "c") =⟨go.PointerType (Channel T)⟩ (Convert go.untyped_nil (go.PointerType (Channel T)) UntypedNil))
     then return: (#(W64 0))
     else do:  #());;;
     return: (![go.int] (StructFieldRef (Channel T) "cap"%go (![go.PointerType (Channel T)] "c")))).
@@ -417,7 +417,7 @@ Definition NonBlockingSelect1ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
     let: "dir" := (GoAlloc SelectDir "dir") in
     let: "ch" := (GoAlloc (go.PointerType (Channel T)) "ch") in
     let: "zero" := (GoAlloc T (GoZeroVal T #())) in
-    (if: (![SelectDir] "dir") =⟨go.uint64⟩ SelectSend
+    (if: Convert go.untyped_bool go.bool ((![SelectDir] "dir") =⟨go.uint64⟩ SelectSend)
     then
       let: "selected" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
       let: "$r0" := (let: "$a0" := (![T] "value") in
@@ -454,9 +454,9 @@ Definition BlockingSelect2ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
     let: "zero1" := (GoAlloc T1 (GoZeroVal T1 #())) in
     let: "zero2" := (GoAlloc T2 (GoZeroVal T2 #())) in
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      (if: (((FuncResolve primitive.RandomUint64 [] #()) #()) %⟨go.uint64⟩ #(W64 2)) =⟨go.uint64⟩ #(W64 0)
+      (if: Convert go.untyped_bool go.bool ((((FuncResolve primitive.RandomUint64 [] #()) #()) %⟨go.uint64⟩ #(W64 2)) =⟨go.uint64⟩ #(W64 0))
       then
-        (if: (![SelectDir] "dir1") =⟨go.uint64⟩ SelectSend
+        (if: Convert go.untyped_bool go.bool ((![SelectDir] "dir1") =⟨go.uint64⟩ SelectSend)
         then
           (if: let: "$a0" := (![T1] "val1") in
           let: "$a1" := #true in
@@ -479,7 +479,7 @@ Definition BlockingSelect2ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
           then return: (#(W64 0), ![T1] "recv_val", ![T2] "zero2", ![go.bool] "ok")
           else do:  #()))
       else
-        (if: (![SelectDir] "dir2") =⟨go.uint64⟩ SelectSend
+        (if: Convert go.untyped_bool go.bool ((![SelectDir] "dir2") =⟨go.uint64⟩ SelectSend)
         then
           (if: let: "$a0" := (![T2] "val2") in
           let: "$a1" := #true in
@@ -517,9 +517,9 @@ Definition NonBlockingSelect2ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
     let: "ch1" := (GoAlloc (go.PointerType (Channel T1)) "ch1") in
     let: "zero1" := (GoAlloc T1 (GoZeroVal T1 #())) in
     let: "zero2" := (GoAlloc T2 (GoZeroVal T2 #())) in
-    (if: (((FuncResolve primitive.RandomUint64 [] #()) #()) %⟨go.uint64⟩ #(W64 2)) =⟨go.uint64⟩ #(W64 0)
+    (if: Convert go.untyped_bool go.bool ((((FuncResolve primitive.RandomUint64 [] #()) #()) %⟨go.uint64⟩ #(W64 2)) =⟨go.uint64⟩ #(W64 0))
     then
-      (if: (![SelectDir] "dir1") =⟨go.uint64⟩ SelectSend
+      (if: Convert go.untyped_bool go.bool ((![SelectDir] "dir1") =⟨go.uint64⟩ SelectSend)
       then
         (if: let: "$a0" := (![T1] "val1") in
         let: "$a1" := #false in
@@ -541,7 +541,7 @@ Definition NonBlockingSelect2ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
         (if: ![go.bool] "selected"
         then return: (#(W64 0), ![T1] "recv_val", ![T2] "zero2", ![go.bool] "ok")
         else do:  #()));;;
-      (if: (![SelectDir] "dir2") =⟨go.uint64⟩ SelectSend
+      (if: Convert go.untyped_bool go.bool ((![SelectDir] "dir2") =⟨go.uint64⟩ SelectSend)
       then
         (if: let: "$a0" := (![T2] "val2") in
         let: "$a1" := #false in
@@ -564,7 +564,7 @@ Definition NonBlockingSelect2ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
         then return: (#(W64 1), ![T1] "zero1", ![T2] "recv_val", ![go.bool] "ok")
         else do:  #()))
     else
-      (if: (![SelectDir] "dir2") =⟨go.uint64⟩ SelectSend
+      (if: Convert go.untyped_bool go.bool ((![SelectDir] "dir2") =⟨go.uint64⟩ SelectSend)
       then
         (if: let: "$a0" := (![T2] "val2") in
         let: "$a1" := #false in
@@ -586,7 +586,7 @@ Definition NonBlockingSelect2ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
         (if: ![go.bool] "selected"
         then return: (#(W64 1), ![T1] "zero1", ![T2] "recv_val", ![go.bool] "ok")
         else do:  #()));;;
-      (if: (![SelectDir] "dir1") =⟨go.uint64⟩ SelectSend
+      (if: Convert go.untyped_bool go.bool ((![SelectDir] "dir1") =⟨go.uint64⟩ SelectSend)
       then
         (if: let: "$a0" := (![T1] "val1") in
         let: "$a1" := #false in
@@ -632,7 +632,7 @@ Definition BlockingSelect3ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
       let: "$sw" := (![go.uint64] "r") in
       (if: "$sw" =⟨go.uint64⟩ #(W64 0)
       then
-        (if: (![SelectDir] "dir1") =⟨go.uint64⟩ SelectSend
+        (if: Convert go.untyped_bool go.bool ((![SelectDir] "dir1") =⟨go.uint64⟩ SelectSend)
         then
           (if: let: "$a0" := (![T1] "val1") in
           let: "$a1" := #true in
@@ -657,7 +657,7 @@ Definition BlockingSelect3ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
       else
         (if: "$sw" =⟨go.uint64⟩ #(W64 1)
         then
-          (if: (![SelectDir] "dir2") =⟨go.uint64⟩ SelectSend
+          (if: Convert go.untyped_bool go.bool ((![SelectDir] "dir2") =⟨go.uint64⟩ SelectSend)
           then
             (if: let: "$a0" := (![T2] "val2") in
             let: "$a1" := #true in
@@ -680,7 +680,7 @@ Definition BlockingSelect3ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
             then return: (#(W64 1), ![T1] "zero1", ![T2] "recv_val", ![T3] "zero3", ![go.bool] "ok")
             else do:  #()))
         else
-          (if: (![SelectDir] "dir3") =⟨go.uint64⟩ SelectSend
+          (if: Convert go.untyped_bool go.bool ((![SelectDir] "dir3") =⟨go.uint64⟩ SelectSend)
           then
             (if: let: "$a0" := (![T3] "val3") in
             let: "$a1" := #true in
@@ -732,9 +732,9 @@ Definition NonBlockingSelect3ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
       let: "caseIdx" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
       let: "$r0" := (((![go.uint64] "start") +⟨go.uint64⟩ (![go.uint64] "i")) %⟨go.uint64⟩ #(W64 3)) in
       do:  ("caseIdx" <-[go.uint64] "$r0");;;
-      (if: (![go.uint64] "caseIdx") =⟨go.uint64⟩ #(W64 0)
+      (if: Convert go.untyped_bool go.bool ((![go.uint64] "caseIdx") =⟨go.uint64⟩ #(W64 0))
       then
-        (if: (![SelectDir] "dir1") =⟨go.uint64⟩ SelectSend
+        (if: Convert go.untyped_bool go.bool ((![SelectDir] "dir1") =⟨go.uint64⟩ SelectSend)
         then
           (if: let: "$a0" := (![T1] "val1") in
           let: "$a1" := #false in
@@ -757,9 +757,9 @@ Definition NonBlockingSelect3ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
           then return: (#(W64 0), ![T1] "recv_val", ![T2] "zero2", ![T3] "zero3", ![go.bool] "ok")
           else do:  #()))
       else
-        (if: (![go.uint64] "caseIdx") =⟨go.uint64⟩ #(W64 1)
+        (if: Convert go.untyped_bool go.bool ((![go.uint64] "caseIdx") =⟨go.uint64⟩ #(W64 1))
         then
-          (if: (![SelectDir] "dir2") =⟨go.uint64⟩ SelectSend
+          (if: Convert go.untyped_bool go.bool ((![SelectDir] "dir2") =⟨go.uint64⟩ SelectSend)
           then
             (if: let: "$a0" := (![T2] "val2") in
             let: "$a1" := #false in
@@ -782,7 +782,7 @@ Definition NonBlockingSelect3ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
             then return: (#(W64 1), ![T1] "zero1", ![T2] "recv_val", ![T3] "zero3", ![go.bool] "ok")
             else do:  #()))
         else
-          (if: (![SelectDir] "dir3") =⟨go.uint64⟩ SelectSend
+          (if: Convert go.untyped_bool go.bool ((![SelectDir] "dir3") =⟨go.uint64⟩ SelectSend)
           then
             (if: let: "$a0" := (![T3] "val3") in
             let: "$a1" := #false in

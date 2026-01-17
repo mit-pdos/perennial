@@ -749,9 +749,9 @@ Axiom c0 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom c1 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom hashRandomBytes : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom hashRandomBytes : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom userArenaChunkBytesMax : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom userArenaChunkBytesMax : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom userArenaChunkBytes : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
@@ -761,21 +761,21 @@ Axiom userArenaChunkMaxAllocBytes : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalCo
 
 Axiom asanenabled : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom asanenabledBit : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom asanenabledBit : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom cgoCheckPointerFail : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom cgoCheckPointerFail : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom cgoResultFail : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom cgoResultFail : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom cgoWriteBarrierFail : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom cgoWriteBarrierFail : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom maxAlign : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom maxAlign : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom hchanSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom debugChan : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom Compiler : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom Compiler : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom offsetX86HasAVX : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
@@ -793,215 +793,215 @@ Axiom offsetLOONG64HasLSX : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, 
 
 Axiom offsetLOONG64HasLASX : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom avxSupported : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom avxSupported : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom repmovsPreferred : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom repmovsPreferred : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom maxCPUProfStack : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom maxCPUProfStack : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom profBufWordCount : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom profBufWordCount : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom profBufTagCount : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom profBufTagCount : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom canCreateFile : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom debugCallSystemStack : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom debugCallSystemStack : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom debugCallUnknownFunc : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom debugCallUnknownFunc : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom debugCallRuntime : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom debugCallRuntime : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom debugCallUnsafePoint : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom debugCallUnsafePoint : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom debugLogBytes : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom debugLogBytes : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom debugLogStringLimit : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom debugLogStringLimit : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom debugLogUnknown : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom debugLogUnknown : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom debugLogBoolTrue : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom debugLogBoolTrue : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom debugLogBoolFalse : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom debugLogBoolFalse : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom debugLogInt : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom debugLogInt : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom debugLogUint : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom debugLogUint : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom debugLogHex : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom debugLogHex : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom debugLogPtr : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom debugLogPtr : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom debugLogString : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom debugLogString : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom debugLogConstString : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom debugLogConstString : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom debugLogStringOverflow : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom debugLogStringOverflow : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom debugLogPC : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom debugLogPC : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom debugLogTraceback : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom debugLogTraceback : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom debugLogHeaderSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom debugLogHeaderSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom debugLogSyncSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom debugLogSyncSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom dlogEnabled : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _EINTR : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _EINTR : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _EAGAIN : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _EAGAIN : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _ENOMEM : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _ENOMEM : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _PROT_NONE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _PROT_NONE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _PROT_READ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _PROT_READ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _PROT_WRITE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _PROT_WRITE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _PROT_EXEC : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _PROT_EXEC : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _MAP_ANON : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _MAP_ANON : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _MAP_PRIVATE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _MAP_PRIVATE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _MAP_FIXED : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _MAP_FIXED : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _MADV_DONTNEED : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _MADV_DONTNEED : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _MADV_FREE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _MADV_FREE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _MADV_HUGEPAGE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _MADV_HUGEPAGE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _MADV_NOHUGEPAGE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _MADV_NOHUGEPAGE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _MADV_COLLAPSE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _MADV_COLLAPSE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SA_RESTART : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SA_RESTART : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SA_ONSTACK : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SA_ONSTACK : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SA_RESTORER : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SA_RESTORER : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SA_SIGINFO : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SA_SIGINFO : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SI_KERNEL : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SI_KERNEL : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SI_TIMER : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SI_TIMER : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SIGHUP : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SIGHUP : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SIGINT : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SIGINT : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SIGQUIT : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SIGQUIT : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SIGILL : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SIGILL : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SIGTRAP : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SIGTRAP : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SIGABRT : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SIGABRT : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SIGBUS : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SIGBUS : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SIGFPE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SIGFPE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SIGKILL : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SIGKILL : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SIGUSR1 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SIGUSR1 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SIGSEGV : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SIGSEGV : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SIGUSR2 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SIGUSR2 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SIGPIPE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SIGPIPE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SIGALRM : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SIGALRM : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SIGSTKFLT : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SIGSTKFLT : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SIGCHLD : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SIGCHLD : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SIGCONT : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SIGCONT : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SIGSTOP : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SIGSTOP : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SIGTSTP : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SIGTSTP : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SIGTTIN : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SIGTTIN : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SIGTTOU : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SIGTTOU : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SIGURG : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SIGURG : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SIGXCPU : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SIGXCPU : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SIGXFSZ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SIGXFSZ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SIGVTALRM : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SIGVTALRM : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SIGPROF : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SIGPROF : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SIGWINCH : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SIGWINCH : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SIGIO : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SIGIO : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SIGPWR : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SIGPWR : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SIGSYS : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SIGSYS : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SIGRTMIN : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SIGRTMIN : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _FPE_INTDIV : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _FPE_INTDIV : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _FPE_INTOVF : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _FPE_INTOVF : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _FPE_FLTDIV : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _FPE_FLTDIV : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _FPE_FLTOVF : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _FPE_FLTOVF : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _FPE_FLTUND : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _FPE_FLTUND : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _FPE_FLTRES : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _FPE_FLTRES : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _FPE_FLTINV : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _FPE_FLTINV : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _FPE_FLTSUB : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _FPE_FLTSUB : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _BUS_ADRALN : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _BUS_ADRALN : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _BUS_ADRERR : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _BUS_ADRERR : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _BUS_OBJERR : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _BUS_OBJERR : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SEGV_MAPERR : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SEGV_MAPERR : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SEGV_ACCERR : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SEGV_ACCERR : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _ITIMER_REAL : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _ITIMER_REAL : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _ITIMER_VIRTUAL : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _ITIMER_VIRTUAL : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _ITIMER_PROF : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _ITIMER_PROF : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _CLOCK_THREAD_CPUTIME_ID : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _CLOCK_THREAD_CPUTIME_ID : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SIGEV_THREAD_ID : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SIGEV_THREAD_ID : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _AF_UNIX : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _AF_UNIX : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SOCK_DGRAM : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SOCK_DGRAM : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _O_RDONLY : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _O_RDONLY : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _O_WRONLY : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _O_WRONLY : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _O_CREAT : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _O_CREAT : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _O_TRUNC : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _O_TRUNC : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _O_NONBLOCK : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _O_NONBLOCK : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _O_CLOEXEC : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _O_CLOEXEC : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom boundsIndex : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
@@ -1025,107 +1025,107 @@ Axiom GOOS : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom GOARCH : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom fastlogNumBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom fastlogNumBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom float64Mask : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom float64Mask : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom float64Shift : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom float64Shift : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom float64Bias : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom float64Bias : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom m5 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom m5 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom fieldKindEol : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom fieldKindEol : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom fieldKindPtr : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom fieldKindPtr : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom fieldKindIface : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom fieldKindIface : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom fieldKindEface : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom fieldKindEface : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom tagEOF : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom tagEOF : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom tagObject : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom tagObject : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom tagOtherRoot : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom tagOtherRoot : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom tagType : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom tagType : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom tagGoroutine : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom tagGoroutine : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom tagStackFrame : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom tagStackFrame : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom tagParams : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom tagParams : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom tagFinalizer : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom tagFinalizer : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom tagItab : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom tagItab : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom tagOSThread : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom tagOSThread : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom tagMemStats : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom tagMemStats : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom tagQueuedFinalizer : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom tagQueuedFinalizer : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom tagData : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom tagData : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom tagBSS : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom tagBSS : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom tagDefer : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom tagDefer : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom tagPanic : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom tagPanic : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom tagMemProf : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom tagMemProf : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom tagAllocSample : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom tagAllocSample : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom bufSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom bufSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom typeCacheBuckets : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom typeCacheBuckets : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom typeCacheAssoc : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom typeCacheAssoc : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom timeHistMinBucketBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom timeHistMinBucketBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom timeHistMaxBucketBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom timeHistMaxBucketBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom timeHistSubBucketBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom timeHistSubBucketBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom timeHistNumSubBuckets : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom timeHistNumSubBuckets : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom timeHistNumBuckets : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom timeHistNumBuckets : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom timeHistTotalBuckets : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom timeHistTotalBuckets : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom fInf : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom fInf : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom fNegInf : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom fNegInf : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom itabInitSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom itabInitSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom active_spin : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom active_spin : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom active_spin_cnt : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom active_spin_cnt : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom mutexLocked : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom mutexLocked : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom mutexSleeping : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom mutexSleeping : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom mutexSpinning : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom mutexSpinning : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom mutexStackLocked : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom mutexStackLocked : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom mutexMMask : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom mutexMMask : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom mutexMOffset : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom mutexMOffset : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom mutexActiveSpinCount : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom mutexActiveSpinCount : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom mutexActiveSpinSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom mutexActiveSpinSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom mutexPassiveSpinCount : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom mutexPassiveSpinCount : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom mutexTailWakePeriod : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom mutexTailWakePeriod : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom lockRankUnknown : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
@@ -1261,87 +1261,87 @@ Axiom lockRankLeafRank : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val
 
 Axiom staticLockRanking : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom maxTinySize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom maxTinySize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom tinySizeClass : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom maxSmallSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom maxSmallSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom pageSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom pageSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom pageMask : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom pageMask : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _PageSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _PageSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom minSizeForMallocHeader : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom minSizeForMallocHeader : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom mallocHeaderSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom mallocHeaderSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _64bit : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _64bit : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _TinySize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _TinySize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom _TinySizeClass : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _FixAllocChunk : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _FixAllocChunk : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _StackCacheSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _StackCacheSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _NumStackOrders : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _NumStackOrders : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom heapAddrBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom heapAddrBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom maxAlloc : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom maxAlloc : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom heapArenaBytes : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom heapArenaBytes : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom heapArenaWords : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom heapArenaWords : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom logHeapArenaBytes : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom logHeapArenaBytes : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom heapArenaBitmapWords : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom heapArenaBitmapWords : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom pagesPerArena : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom pagesPerArena : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom arenaL1Bits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom arenaL1Bits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom arenaL2Bits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom arenaL2Bits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom arenaL1Shift : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom arenaL1Shift : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom arenaBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom arenaBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom arenaBaseOffset : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom arenaBaseOffset : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom arenaBaseOffsetUintptr : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _MaxGcproc : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _MaxGcproc : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom minLegalPointer : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom minHeapForMetadataHugePages : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom minHeapForMetadataHugePages : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom doubleCheckMalloc : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom persistentChunkSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom persistentChunkSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom loadFactorNum : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom loadFactorNum : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom loadFactorDen : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom loadFactorDen : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom doubleCheckHeapSetType : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom clobberdeadPtr : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom ptrBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom ptrBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom cleanupBlockSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom cleanupBlockSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _EACCES : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _EACCES : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _EINVAL : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _EINVAL : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom madviseUnsupported : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom madviseUnsupported : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom isSbrkPlatform : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
@@ -1363,7 +1363,7 @@ Axiom metricKindFloat64 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, va
 
 Axiom metricKindFloat64Histogram : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom finBlockSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom finBlockSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom fingUninitialized : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
@@ -1375,19 +1375,19 @@ Axiom fingWait : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom fingWake : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _DebugGC : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _DebugGC : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom concurrentSweep : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom debugScanConservative : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom sweepMinHeapDistance : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom sweepMinHeapDistance : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _GCoff : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _GCoff : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _GCmark : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _GCmark : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _GCmarktermination : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _GCmarktermination : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom gcMarkWorkerNotWorker : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
@@ -1409,7 +1409,7 @@ Axiom gcTriggerTime : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom gcTriggerCycle : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom gcBgMarkWorkerNodeRedZoneSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom gcBgMarkWorkerNodeRedZoneSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom gcCPULimiterUpdatePeriod : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
@@ -1425,27 +1425,27 @@ Axiom limiterEventScavengeAssist : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalCon
 
 Axiom limiterEventIdle : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom limiterEventBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom limiterEventBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom limiterEventTypeMask : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom limiterEventStampNone : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom fixedRootFinalizers : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom fixedRootFinalizers : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom fixedRootFreeGStacks : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom fixedRootFreeGStacks : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom fixedRootCleanups : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom fixedRootCleanups : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom fixedRootCount : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom fixedRootCount : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom rootBlockBytes : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom rootBlockBytes : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom maxObletBytes : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom maxObletBytes : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom drainCheckThreshold : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom drainCheckThreshold : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom pagesPerSpanRoot : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom pagesPerSpanRoot : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom gcDrainUntilPreempt : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
@@ -1459,33 +1459,33 @@ Axiom gcGoalUtilization : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, va
 
 Axiom gcBackgroundUtilization : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom gcCreditSlack : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom gcCreditSlack : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom gcAssistTimeSlack : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom gcAssistTimeSlack : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom gcOverAssistWork : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom gcOverAssistWork : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom defaultHeapMinimum : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom defaultHeapMinimum : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom maxStackScanSlack : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom maxStackScanSlack : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom memoryLimitMinHeapGoalHeadroom : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom memoryLimitMinHeapGoalHeadroom : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom memoryLimitHeapGoalHeadroomPercent : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom memoryLimitHeapGoalHeadroomPercent : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom triggerRatioDen : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom triggerRatioDen : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom minTriggerRatioNum : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom minTriggerRatioNum : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom maxTriggerRatioNum : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom maxTriggerRatioNum : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom scavengePercent : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom scavengePercent : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom retainExtraPercent : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom retainExtraPercent : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom reduceExtraPercent : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom reduceExtraPercent : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom maxPagesPerPhysPage : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom maxPagesPerPhysPage : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom scavengeCostRatio : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
@@ -1499,33 +1499,33 @@ Axiom minScavWorkTime : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom scavChunkHasFree : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom scavChunkMaxFlags : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom scavChunkMaxFlags : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom scavChunkFlagsMask : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom scavChunkFlagsMask : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom logScavChunkInUseMax : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom logScavChunkInUseMax : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom scavChunkInUseMask : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom scavChunkInUseMask : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom stackTraceDebug : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom numSweepClasses : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom numSweepClasses : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom sweepClassDone : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom sweepDrainedMask : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom sweepDrainedMask : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _WorkbufSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _WorkbufSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom workbufAlloc : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom workbufAlloc : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom minPhysPageSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom minPhysPageSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom maxPhysPageSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom maxPhysPageSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom maxPhysHugePageSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom maxPhysHugePageSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom pagesPerReclaimerChunk : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom pagesPerReclaimerChunk : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom physPageAlignedStacks : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
@@ -1535,7 +1535,7 @@ Axiom mSpanInUse : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom mSpanManual : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom numSpanClasses : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom numSpanClasses : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom tinySpanClass : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
@@ -1545,61 +1545,61 @@ Axiom spanAllocStack : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom spanAllocWorkBuf : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _KindSpecialTinyBlock : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _KindSpecialTinyBlock : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _KindSpecialFinalizer : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _KindSpecialFinalizer : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _KindSpecialWeakHandle : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _KindSpecialWeakHandle : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _KindSpecialProfile : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _KindSpecialProfile : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _KindSpecialReachable : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _KindSpecialReachable : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _KindSpecialPinCounter : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _KindSpecialPinCounter : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _KindSpecialCleanup : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _KindSpecialCleanup : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _KindSpecialCheckFinalizer : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _KindSpecialCheckFinalizer : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _KindSpecialBubble : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _KindSpecialBubble : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom gcBitsChunkBytes : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom gcBitsHeaderBytes : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom pallocChunkPages : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom pallocChunkPages : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom pallocChunkBytes : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom pallocChunkBytes : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom logPallocChunkPages : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom logPallocChunkPages : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom logPallocChunkBytes : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom logPallocChunkBytes : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom summaryLevelBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom summaryLevelBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom summaryL0Bits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom summaryL0Bits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom pallocChunksL2Bits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom pallocChunksL2Bits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom pallocChunksL1Shift : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom pallocChunksL1Shift : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom vmaNamePageAllocIndex : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom vmaNamePageAllocIndex : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom pallocSumBytes : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom maxPackedValue : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom maxPackedValue : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom logMaxPackedValue : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom logMaxPackedValue : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom freeChunkSum : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom summaryLevels : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom summaryLevels : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom pageAlloc32Bit : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom pageAlloc32Bit : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom pageAlloc64Bit : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom pageAlloc64Bit : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom pallocChunksL1Bits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom pallocChunksL1Bits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom pageCachePages : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
@@ -1609,11 +1609,11 @@ Axiom blockProfile : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom mutexProfile : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom buckHashSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom buckHashSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom maxSkip : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom maxSkip : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom maxProfStackDepth : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom maxProfStackDepth : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom mProfCycleWrap : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
@@ -1625,23 +1625,23 @@ Axiom goroutineProfileSatisfied : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalCont
 
 Axiom msanenabled : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom spanSetBlockEntries : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom spanSetBlockEntries : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom spanSetInitSpineCap : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom spanSetInitSpineCap : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom testSmallBuf : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom wbBufEntries : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom wbBufEntries : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom wbMaxEntriesPerCall : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom wbMaxEntriesPerCall : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom pollNoError : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom pollNoError : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom pollErrClosing : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom pollErrClosing : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom pollErrTimeout : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom pollErrTimeout : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom pollErrNotPollable : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom pollErrNotPollable : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom pdNil : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
@@ -1649,107 +1649,107 @@ Axiom pdReady : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom pdWait : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom pollBlockSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom pollBlockSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom pollClosing : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom pollClosing : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom pollEventErr : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom pollEventErr : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom pollExpiredReadDeadline : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom pollExpiredReadDeadline : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom pollExpiredWriteDeadline : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom pollExpiredWriteDeadline : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom pollFDSeq : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom pollFDSeq : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom pollFDSeqBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom pollFDSeqBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom pollFDSeqMask : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom pollFDSeqMask : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom osRelaxMinNS : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom osRelaxMinNS : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom sigPerThreadSyscall : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom sigPerThreadSyscall : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _FUTEX_PRIVATE_FLAG : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _FUTEX_PRIVATE_FLAG : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _FUTEX_WAIT_PRIVATE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _FUTEX_WAIT_PRIVATE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _FUTEX_WAKE_PRIVATE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _FUTEX_WAKE_PRIVATE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _CLONE_VM : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _CLONE_VM : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _CLONE_FS : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _CLONE_FS : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _CLONE_FILES : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _CLONE_FILES : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _CLONE_SIGHAND : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _CLONE_SIGHAND : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _CLONE_PTRACE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _CLONE_PTRACE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _CLONE_VFORK : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _CLONE_VFORK : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _CLONE_PARENT : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _CLONE_PARENT : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _CLONE_THREAD : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _CLONE_THREAD : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _CLONE_NEWNS : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _CLONE_NEWNS : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _CLONE_SYSVSEM : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _CLONE_SYSVSEM : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _CLONE_SETTLS : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _CLONE_SETTLS : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _CLONE_PARENT_SETTID : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _CLONE_PARENT_SETTID : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _CLONE_CHILD_CLEARTID : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _CLONE_CHILD_CLEARTID : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _CLONE_UNTRACED : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _CLONE_UNTRACED : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _CLONE_CHILD_SETTID : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _CLONE_CHILD_SETTID : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _CLONE_STOPPED : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _CLONE_STOPPED : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _CLONE_NEWUTS : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _CLONE_NEWUTS : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _CLONE_NEWIPC : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _CLONE_NEWIPC : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom cloneFlags : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom cloneFlags : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _AT_NULL : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _AT_NULL : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _AT_PAGESZ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _AT_PAGESZ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _AT_PLATFORM : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _AT_PLATFORM : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _AT_HWCAP : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _AT_HWCAP : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _AT_SECURE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _AT_SECURE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _AT_RANDOM : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _AT_RANDOM : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _AT_HWCAP2 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _AT_HWCAP2 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _si_max_size : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _si_max_size : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _sigev_max_size : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _sigev_max_size : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SI_USER : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SI_USER : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SI_TKILL : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SI_TKILL : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SYS_SECCOMP : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SYS_SECCOMP : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SS_DISABLE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SS_DISABLE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _NSIG : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _NSIG : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SIG_BLOCK : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SIG_BLOCK : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SIG_UNBLOCK : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SIG_UNBLOCK : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SIG_SETMASK : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SIG_SETMASK : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _F_SETFD : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _F_SETFD : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _FD_CLOEXEC : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _FD_CLOEXEC : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom throwTypeNone : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
@@ -1757,21 +1757,21 @@ Axiom throwTypeUser : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom throwTypeRuntime : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom pinnerSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom pinnerSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom pinnerRefStoreSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom crashStackImplemented : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _GoidCacheBatch : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _GoidCacheBatch : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom osHasLowResTimer : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom osHasLowResClockInt : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom osHasLowResClockInt : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom osHasLowResClock : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom freezeStopWait : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom freezeStopWait : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom stwUnknown : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
@@ -1807,13 +1807,13 @@ Axiom stwForTestPageCachePagesLeaked : ∀ {ext : ffi_syntax} {go_gctx : GoGloba
 
 Axiom stwForTestResetDebugLog : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom failthreadcreate : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom failthreadcreate : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom failallocatestack : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom failallocatestack : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom haveSysmon : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom forcePreemptNS : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom forcePreemptNS : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom randomizeScheduler : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
@@ -1827,87 +1827,87 @@ Axiom profBufNonBlocking : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, v
 
 Axiom raceenabled : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom minTimeForTicksPerSecond : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom minTimeForTicksPerSecond : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom tracebackCrash : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom tracebackCrash : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom tracebackAll : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom tracebackAll : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom tracebackShift : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom tracebackShift : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _Gidle : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _Gidle : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _Grunnable : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _Grunnable : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _Grunning : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _Grunning : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _Gsyscall : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _Gsyscall : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _Gwaiting : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _Gwaiting : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _Gmoribund_unused : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _Gmoribund_unused : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _Gdead : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _Gdead : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _Genqueue_unused : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _Genqueue_unused : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _Gcopystack : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _Gcopystack : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _Gpreempted : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _Gpreempted : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _Gscan : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _Gscan : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _Gscanrunnable : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _Gscanrunnable : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _Gscanrunning : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _Gscanrunning : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _Gscansyscall : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _Gscansyscall : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _Gscanwaiting : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _Gscanwaiting : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _Gscanpreempted : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _Gscanpreempted : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _Pidle : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _Pidle : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _Prunning : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _Prunning : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _Psyscall : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _Psyscall : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _Pgcstop : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _Pgcstop : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _Pdead : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _Pdead : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom gTrackingPeriod : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom gTrackingPeriod : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom tlsSlots : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom tlsSlots : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom tlsSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom tlsSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom freeMStack : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom freeMStack : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom freeMRef : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom freeMRef : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom freeMWait : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom freeMWait : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom mRedZoneSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom mRedZoneSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SigNotify : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SigNotify : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SigKill : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SigKill : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SigThrow : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SigThrow : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SigPanic : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SigPanic : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SigDefault : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SigDefault : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SigGoExit : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SigGoExit : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SigSetStack : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SigSetStack : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SigUnblock : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SigUnblock : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SigIgn : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SigIgn : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom waitReasonZero : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
@@ -2005,7 +2005,7 @@ Axiom waitReasonCleanupWait : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
 
 Axiom framepointer_enabled : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom rwmutexMaxReaders : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom rwmutexMaxReaders : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom debugSelect : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
@@ -2015,7 +2015,7 @@ Axiom selectRecv : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom selectDefault : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom semTabSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom semTabSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom semaBlockProfile : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
@@ -2025,21 +2025,21 @@ Axiom _SIG_DFL : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom _SIG_IGN : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom sigPreempt : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom sigPreempt : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom preemptMSupported : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom sigIdle : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom sigIdle : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom sigReceiving : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom sigReceiving : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom sigSending : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom sigSending : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom mantbits64 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom expbits64 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom bias64 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom bias64 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom nan64 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
@@ -2051,7 +2051,7 @@ Axiom mantbits32 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom expbits32 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom bias32 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom bias32 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom nan32 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
@@ -2059,79 +2059,79 @@ Axiom inf32 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom neg32 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stackSystem : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stackSystem : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stackMin : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stackMin : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom fixedStack0 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom fixedStack0 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom fixedStack1 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom fixedStack1 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom fixedStack2 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom fixedStack2 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom fixedStack3 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom fixedStack3 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom fixedStack4 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom fixedStack4 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom fixedStack5 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom fixedStack5 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom fixedStack6 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom fixedStack6 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom fixedStack : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom fixedStack : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stackNosplit : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stackNosplit : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stackGuard : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stackGuard : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stackDebug : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stackDebug : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stackFromSystem : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stackFromSystem : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stackFaultOnFree : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stackFaultOnFree : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stackNoCache : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stackNoCache : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom debugCheckBP : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom uintptrMask : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom uintptrMask : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stackPreempt : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stackPreempt : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stackFork : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stackFork : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stackForceMove : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stackForceMove : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stackPoisonMin : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stackPoisonMin : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom tmpStringBufSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom tmpStringBufSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom hashLoad : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom debugPcln : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom bubbleAssocUnbubbled : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom bubbleAssocUnbubbled : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom bubbleAssocCurrentBubble : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom bubbleAssocCurrentBubble : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom bubbleAssocOtherBubble : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom bubbleAssocOtherBubble : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom minTagBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom minTagBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom tagAlignBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom tagAlignBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom tagAlign : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom tagAlign : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom defaultAddrBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom defaultAddrBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom aixAddrBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom aixAddrBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom freebsdAmd64AddrBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom freebsdAmd64AddrBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom riscv64AddrBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom riscv64AddrBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom addrBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom addrBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom tagBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom tagBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom timerHeaped : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
@@ -2141,23 +2141,23 @@ Axiom timerZombie : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom timerDebug : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom maxWhen : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom maxWhen : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom verifyTimers : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom timerHeapN : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom timerHeapN : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom defaultTraceAdvancePeriod : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom traceAllocFreeTypesBatch : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom traceAllocFreeTypesBatch : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom traceAllocFreeInfoBatch : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom traceAllocFreeInfoBatch : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom usesLR : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom tracebackInnerFrames : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom tracebackInnerFrames : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom tracebackOuterFrames : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom tracebackOuterFrames : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom unwindPrintErrors : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
@@ -2167,7 +2167,7 @@ Axiom unwindTrap : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom unwindJumpStack : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom traceBytesPerNumber : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom traceBytesPerNumber : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom traceRegionAllocBlockData : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
@@ -2215,99 +2215,99 @@ Axiom debugTraceReentrancy : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext},
 
 Axiom logicalStackSentinel : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom traceTimeDiv : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom traceTimeDiv : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom runeError : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom runeError : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom runeSelf : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom runeSelf : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom maxRune : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom maxRune : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom surrogateMin : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom surrogateMin : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom surrogateMax : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom surrogateMax : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom t1 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom t1 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom tx : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom tx : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom t2 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom t2 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom t3 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom t3 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom t4 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom t4 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom t5 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom t5 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom maskx : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom maskx : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom mask2 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom mask2 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom mask3 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom mask3 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom mask4 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom mask4 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom rune1Max : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom rune1Max : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom rune2Max : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom rune2Max : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom rune3Max : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom rune3Max : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom locb : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom locb : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom hicb : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom hicb : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom valgrindenabled : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _AT_SYSINFO_EHDR : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _AT_SYSINFO_EHDR : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _PT_LOAD : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _PT_LOAD : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _PT_DYNAMIC : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _PT_DYNAMIC : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _DT_NULL : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _DT_NULL : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _DT_HASH : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _DT_HASH : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _DT_STRTAB : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _DT_STRTAB : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _DT_SYMTAB : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _DT_SYMTAB : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _DT_GNU_HASH : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _DT_GNU_HASH : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _DT_VERSYM : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _DT_VERSYM : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _DT_VERDEF : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _DT_VERDEF : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _VER_FLG_BASE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _VER_FLG_BASE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SHN_UNDEF : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SHN_UNDEF : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _SHT_DYNSYM : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _SHT_DYNSYM : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _STT_FUNC : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _STT_FUNC : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _STT_NOTYPE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _STT_NOTYPE : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _STB_GLOBAL : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _STB_GLOBAL : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _STB_WEAK : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _STB_WEAK : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _EI_NIDENT : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _EI_NIDENT : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom vdsoSymTabSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom vdsoDynSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom vdsoSymStringsSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom vdsoSymStringsSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom vdsoVerSymSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom vdsoVerSymSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom vdsoHashSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom vdsoHashSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom vdsoBloomSizeScale : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom vdsoArrayMax : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom vdsoArrayMax : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition useAeshash {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "runtime.useAeshash"%go.
 

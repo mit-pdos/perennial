@@ -132,8 +132,8 @@ Definition LockedStack__Popⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
   λ: "s" <>,
     exception_do (let: "s" := (GoAlloc (go.PointerType LockedStack) "s") in
     do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go #() (StructFieldRef LockedStack "mu"%go (![go.PointerType LockedStack] "s"))) #());;;
-    (if: (let: "$a0" := (![go.SliceType go.string] (StructFieldRef LockedStack "stack"%go (![go.PointerType LockedStack] "s"))) in
-    (FuncResolve go.len [go.SliceType go.string] #()) "$a0") =⟨go.int⟩ #(W64 0)
+    (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType go.string] (StructFieldRef LockedStack "stack"%go (![go.PointerType LockedStack] "s"))) in
+    (FuncResolve go.len [go.SliceType go.string] #()) "$a0") =⟨go.int⟩ #(W64 0))
     then
       do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go #() (StructFieldRef LockedStack "mu"%go (![go.PointerType LockedStack] "s"))) #());;;
       return: (#""%go, #false)
@@ -293,8 +293,8 @@ Definition DSPExampleⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
       let: "$r0" := ((![go.int] (![go.PointerType go.int] "ptr")) +⟨go.int⟩ #(W64 2)) in
       do:  ((![go.PointerType go.int] "ptr") <-[go.int] "$r0");;;
       do:  (let: "$chan" := (![go.ChannelType go.sendrecv (go.InterfaceType [])] "signal") in
-      let: "$v" := (InterfaceMake (go.StructType [
-      ]) (CompositeLiteral (go.StructType [
+      let: "$v" := (Convert (go.StructType [
+      ]) (go.InterfaceType []) (CompositeLiteral (go.StructType [
       ]) (LiteralValue []))) in
       chan.send (go.InterfaceType []) "$chan" "$v");;;
       return: #())
@@ -307,7 +307,7 @@ Definition DSPExampleⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
     let: "$r0" := "val" in
     do:  ("ptr" <-[go.PointerType go.int] "$r0");;;
     do:  (let: "$chan" := (![go.ChannelType go.sendrecv (go.InterfaceType [])] "c") in
-    let: "$v" := (InterfaceMake (go.PointerType go.int) (![go.PointerType go.int] "ptr")) in
+    let: "$v" := (Convert (go.PointerType go.int) (go.InterfaceType []) (![go.PointerType go.int] "ptr")) in
     chan.send (go.InterfaceType []) "$chan" "$v");;;
     do:  (Fst (chan.receive (go.InterfaceType []) (![go.ChannelType go.sendrecv (go.InterfaceType [])] "signal")));;;
     return: (![go.int] (![go.PointerType go.int] "ptr"))).
@@ -455,7 +455,7 @@ Definition select_nb_no_panicⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
         )) [(CommClause (RecvCase (go.StructType [
       ]) (![go.ChannelType go.sendrecv (go.StructType [
       ])] "ch")) (λ: "$recvVal",
-        do:  (let: "$a0" := (InterfaceMake go.string #"bad"%go) in
+        do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"bad"%go) in
         (FuncResolve go.panic [] #()) "$a0")
         ))]);;;
       return: #())
@@ -467,7 +467,7 @@ Definition select_nb_no_panicⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
     ]) (![go.ChannelType go.sendrecv (go.StructType [
     ])] "ch") (CompositeLiteral (go.StructType [
     ]) (LiteralValue []))) (λ: <>,
-      do:  (let: "$a0" := (InterfaceMake go.string #"bad"%go) in
+      do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"bad"%go) in
       (FuncResolve go.panic [] #()) "$a0")
       ))]);;;
     return: #()).
@@ -513,9 +513,9 @@ Definition exchangePointerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
       ]) (LiteralValue [])) in
       chan.send (go.StructType [
       ]) "$chan" "$v");;;
-      (if: (![go.int] "y") ≠⟨go.int⟩ #(W64 2)
+      (if: Convert go.untyped_bool go.bool ((![go.int] "y") ≠⟨go.int⟩ #(W64 2))
       then
-        do:  (let: "$a0" := (InterfaceMake go.string #"bad"%go) in
+        do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"bad"%go) in
         (FuncResolve go.panic [] #()) "$a0")
       else do:  #());;;
       return: #())
@@ -526,9 +526,9 @@ Definition exchangePointerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
     do:  (Fst (chan.receive (go.StructType [
     ]) (![go.ChannelType go.sendrecv (go.StructType [
     ])] "ch")));;;
-    (if: (![go.int] "x") ≠⟨go.int⟩ #(W64 1)
+    (if: Convert go.untyped_bool go.bool ((![go.int] "x") ≠⟨go.int⟩ #(W64 1))
     then
-      do:  (let: "$a0" := (InterfaceMake go.string #"bad"%go) in
+      do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"bad"%go) in
       (FuncResolve go.panic [] #()) "$a0")
     else do:  #());;;
     return: #()).
@@ -550,7 +550,7 @@ Definition select_ready_case_no_panicⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : G
     (FuncResolve go.close [go.ChannelType go.sendrecv (go.StructType [
      ])] #()) "$a0");;;
     SelectStmt (SelectStmtClauses (Some (λ: <>,
-      do:  (let: "$a0" := (InterfaceMake go.string #"Shouldn't be possible!"%go) in
+      do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"Shouldn't be possible!"%go) in
       (FuncResolve go.panic [] #()) "$a0")
       )) [(CommClause (RecvCase (go.StructType [
     ]) (![go.ChannelType go.sendrecv (go.StructType [
@@ -568,9 +568,9 @@ Definition TestHelloWorldSyncⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
     exception_do (let: "result" := (GoAlloc go.string (GoZeroVal go.string #())) in
     let: "$r0" := ((FuncResolve HelloWorldSync [] #()) #()) in
     do:  ("result" <-[go.string] "$r0");;;
-    (if: (![go.string] "result") ≠⟨go.string⟩ #"Hello, World!"%go
+    (if: Convert go.untyped_bool go.bool ((![go.string] "result") ≠⟨go.string⟩ #"Hello, World!"%go)
     then
-      do:  (let: "$a0" := (InterfaceMake go.string #"incorrect output"%go) in
+      do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"incorrect output"%go) in
       (FuncResolve go.panic [] #()) "$a0")
     else do:  #());;;
     return: #()).
@@ -581,9 +581,9 @@ Definition TestHelloWorldWithTimeoutⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : Go
     exception_do (let: "result" := (GoAlloc go.string (GoZeroVal go.string #())) in
     let: "$r0" := ((FuncResolve HelloWorldWithTimeout [] #()) #()) in
     do:  ("result" <-[go.string] "$r0");;;
-    (if: ((![go.string] "result") ≠⟨go.string⟩ #"operation timed out"%go) && ((![go.string] "result") ≠⟨go.string⟩ #"Hello, World!"%go)
+    (if: Convert go.untyped_bool go.bool (((![go.string] "result") ≠⟨go.string⟩ #"operation timed out"%go) && ((![go.string] "result") ≠⟨go.string⟩ #"Hello, World!"%go))
     then
-      do:  (let: "$a0" := (InterfaceMake go.string #"incorrect output"%go) in
+      do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"incorrect output"%go) in
       (FuncResolve go.panic [] #()) "$a0")
     else do:  #());;;
     return: #()).
@@ -594,9 +594,9 @@ Definition TestDSPExampleⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
     exception_do (let: "result" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "$r0" := ((FuncResolve DSPExample [] #()) #()) in
     do:  ("result" <-[go.int] "$r0");;;
-    (if: (![go.int] "result") ≠⟨go.int⟩ #(W64 42)
+    (if: Convert go.untyped_bool go.bool ((![go.int] "result") ≠⟨go.int⟩ #(W64 42))
     then
-      do:  (let: "$a0" := (InterfaceMake go.string #"incorrect output"%go) in
+      do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"incorrect output"%go) in
       (FuncResolve go.panic [] #()) "$a0")
     else do:  #());;;
     return: #()).
@@ -610,20 +610,20 @@ Definition TestFibConsumerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
     let: "expected" := (GoAlloc (go.SliceType go.int) (GoZeroVal (go.SliceType go.int) #())) in
     let: "$r0" := (CompositeLiteral (go.SliceType go.int) (LiteralValue [KeyedElement None (ElementExpression #(W64 0)); KeyedElement None (ElementExpression #(W64 1)); KeyedElement None (ElementExpression #(W64 1)); KeyedElement None (ElementExpression #(W64 2)); KeyedElement None (ElementExpression #(W64 3)); KeyedElement None (ElementExpression #(W64 5)); KeyedElement None (ElementExpression #(W64 8)); KeyedElement None (ElementExpression #(W64 13)); KeyedElement None (ElementExpression #(W64 21)); KeyedElement None (ElementExpression #(W64 34))])) in
     do:  ("expected" <-[go.SliceType go.int] "$r0");;;
-    (if: (let: "$a0" := (![go.SliceType go.int] "result") in
+    (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType go.int] "result") in
     (FuncResolve go.len [go.SliceType go.int] #()) "$a0") ≠⟨go.int⟩ (let: "$a0" := (![go.SliceType go.int] "expected") in
-    (FuncResolve go.len [go.SliceType go.int] #()) "$a0")
+    (FuncResolve go.len [go.SliceType go.int] #()) "$a0"))
     then
-      do:  (let: "$a0" := (InterfaceMake go.string #"incorrect output"%go) in
+      do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"incorrect output"%go) in
       (FuncResolve go.panic [] #()) "$a0")
     else do:  #());;;
     let: "$range" := (![go.SliceType go.int] "expected") in
     (let: "i" := (GoAlloc go.int (GoZeroVal go.int #())) in
     slice.for_range go.int "$range" (λ: "$key" "$value",
       do:  ("i" <-[go.int] "$key");;;
-      (if: (![go.int] (IndexRef (go.SliceType go.int) (![go.SliceType go.int] "result", ![go.int] "i"))) ≠⟨go.int⟩ (![go.int] (IndexRef (go.SliceType go.int) (![go.SliceType go.int] "expected", ![go.int] "i")))
+      (if: Convert go.untyped_bool go.bool ((![go.int] (IndexRef (go.SliceType go.int) (![go.SliceType go.int] "result", ![go.int] "i"))) ≠⟨go.int⟩ (![go.int] (IndexRef (go.SliceType go.int) (![go.SliceType go.int] "expected", ![go.int] "i"))))
       then
-        do:  (let: "$a0" := (InterfaceMake go.string #"incorrect output"%go) in
+        do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"incorrect output"%go) in
         (FuncResolve go.panic [] #()) "$a0")
       else do:  #())));;;
     return: #()).
@@ -726,7 +726,7 @@ Definition loadⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val 
   λ: "b" "letter",
     exception_do (let: "letter" := (GoAlloc go.string "letter") in
     let: "b" := (GoAlloc (go.PointerType (go.SliceType go.byte)) "b") in
-    let: "$r0" := (string.to_bytes (![go.string] "letter")) in
+    let: "$r0" := (Convert go.string (go.SliceType go.byte) (![go.string] "letter")) in
     do:  ((![go.PointerType (go.SliceType go.byte)] "b") <-[go.SliceType go.byte] "$r0");;;
     return: #()).
 
@@ -737,7 +737,7 @@ Definition processⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : v
   λ: "b" "output",
     exception_do (let: "output" := (GoAlloc (go.PointerType go.string) "output") in
     let: "b" := (GoAlloc (go.PointerType (go.SliceType go.byte)) "b") in
-    do:  ((![go.PointerType go.string] "output") <-[go.string] ((![go.string] (![go.PointerType go.string] "output")) +⟨go.string⟩ (let: "$a0" := (string.from_bytes (![go.SliceType go.byte] (![go.PointerType (go.SliceType go.byte)] "b"))) in
+    do:  ((![go.PointerType go.string] "output") <-[go.string] ((![go.string] (![go.PointerType go.string] "output")) +⟨go.string⟩ (let: "$a0" := (Convert (go.SliceType go.byte) go.string (![go.SliceType go.byte] (![go.PointerType (go.SliceType go.byte)] "b"))) in
     (FuncResolve strings.ToUpper [] #()) "$a0")));;;
     return: #()).
 
@@ -840,9 +840,9 @@ Definition LeakyBufferPipelineⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
     do:  (Fst (chan.receive (go.StructType [
     ]) (![go.ChannelType go.sendrecv (go.StructType [
     ])] "done")));;;
-    (if: (![go.string] "output") ≠⟨go.string⟩ #"HELLO, WORLD"%go
+    (if: Convert go.untyped_bool go.bool ((![go.string] "output") ≠⟨go.string⟩ #"HELLO, WORLD"%go)
     then
-      do:  (let: "$a0" := (InterfaceMake go.string #"incorrect output"%go) in
+      do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"incorrect output"%go) in
       (FuncResolve go.panic [] #()) "$a0")
     else do:  #());;;
     return: #()).
@@ -1085,7 +1085,7 @@ Definition workerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : va
       do:  ("i" <-[go.int] "$r0");;;
       (for: (λ: <>, (![go.int] "i") ≠⟨go.int⟩ (let: "$a0" := (![go.SliceType go.int] "s") in
       (FuncResolve go.len [go.SliceType go.int] #()) "$a0")); (λ: <>, do:  ("i" <-[go.int] ((![go.int] "i") +⟨go.int⟩ #(W64 1)))) := λ: <>,
-        (if: (![go.int] (IndexRef (go.SliceType go.int) (![go.SliceType go.int] "s", ![go.int] "i"))) =⟨go.int⟩ (![go.int] "x")
+        (if: Convert go.untyped_bool go.bool ((![go.int] (IndexRef (go.SliceType go.int) (![go.SliceType go.int] "s", ![go.int] "i"))) =⟨go.int⟩ (![go.int] "x"))
         then
           let: "$r0" := (![go.int] "y") in
           do:  ((IndexRef (go.SliceType go.int) (![go.SliceType go.int] "s", ![go.int] "i")) <-[go.int] "$r0")
@@ -1099,8 +1099,8 @@ Definition SearchReplaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
     exception_do (let: "y" := (GoAlloc go.int "y") in
     let: "x" := (GoAlloc go.int "x") in
     let: "s" := (GoAlloc (go.SliceType go.int) "s") in
-    (if: (let: "$a0" := (![go.SliceType go.int] "s") in
-    (FuncResolve go.len [go.SliceType go.int] #()) "$a0") =⟨go.int⟩ #(W64 0)
+    (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType go.int] "s") in
+    (FuncResolve go.len [go.SliceType go.int] #()) "$a0") =⟨go.int⟩ #(W64 0))
     then return: (#())
     else do:  #());;;
     let: "workers" := (GoAlloc go.int (GoZeroVal go.int #())) in
@@ -1117,7 +1117,7 @@ Definition SearchReplaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[go.int] "$r0");;;
     (for: (λ: <>, (![go.int] "i") ≠⟨go.int⟩ (![go.int] "workers")); (λ: <>, do:  ("i" <-[go.int] ((![go.int] "i") +⟨go.int⟩ #(W64 1)))) := λ: <>,
-      let: "$a0" := (![go.ChannelType go.sendrecv (go.SliceType go.int)] "c") in
+      let: "$a0" := (Convert (go.ChannelType go.sendrecv (go.SliceType go.int)) (go.ChannelType go.recvonly (go.SliceType go.int)) (![go.ChannelType go.sendrecv (go.SliceType go.int)] "c")) in
       let: "$a1" := "wg" in
       let: "$a2" := (![go.int] "x") in
       let: "$a3" := (![go.int] "y") in
@@ -1131,8 +1131,8 @@ Definition SearchReplaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
       let: "nextOffset" := (GoAlloc go.int (GoZeroVal go.int #())) in
       let: "$r0" := ((![go.int] "offset") +⟨go.int⟩ (![go.int] "workRange")) in
       do:  ("nextOffset" <-[go.int] "$r0");;;
-      (if: (![go.int] "nextOffset") >⟨go.int⟩ (let: "$a0" := (![go.SliceType go.int] "s") in
-      (FuncResolve go.len [go.SliceType go.int] #()) "$a0")
+      (if: Convert go.untyped_bool go.bool ((![go.int] "nextOffset") >⟨go.int⟩ (let: "$a0" := (![go.SliceType go.int] "s") in
+      (FuncResolve go.len [go.SliceType go.int] #()) "$a0"))
       then
         let: "$r0" := (let: "$a0" := (![go.SliceType go.int] "s") in
         (FuncResolve go.len [go.SliceType go.int] #()) "$a0") in

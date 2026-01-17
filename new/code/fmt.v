@@ -43,65 +43,65 @@ Definition ssave {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.
 
 Definition readRune {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "fmt.readRune"%go [].
 
-Axiom ldigits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom ldigits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom udigits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom udigits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom signed : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom unsigned : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom commaSpaceString : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom commaSpaceString : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom nilAngleString : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom nilAngleString : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom nilParenString : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom nilParenString : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom nilString : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom nilString : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom mapString : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom mapString : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom percentBangString : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom percentBangString : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom missingString : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom missingString : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom badIndexString : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom badIndexString : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom panicString : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom panicString : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom extraString : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom extraString : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom badWidthString : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom badWidthString : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom badPrecString : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom badPrecString : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom noVerbString : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom noVerbString : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom invReflectString : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom invReflectString : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom eof : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom eof : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom binaryDigits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom binaryDigits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom octalDigits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom octalDigits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom decimalDigits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom decimalDigits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom hexadecimalDigits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom hexadecimalDigits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom sign : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom sign : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom period : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom period : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom exponent : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom exponent : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom floatVerbs : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom floatVerbs : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom hugeWid : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom hugeWid : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom intBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom intBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom uintptrBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom uintptrBits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition ppFree {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "fmt.ppFree"%go.
 

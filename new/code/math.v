@@ -7,23 +7,23 @@ End pkg_id.
 Export pkg_id.
 Module math.
 
-Axiom uvnan : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom uvnan : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom uvinf : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom uvinf : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom uvneginf : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom uvneginf : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom uvone : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom uvone : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom mask : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom mask : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom shift : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom shift : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom bias : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom bias : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom signMask : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom signMask : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom fracMask : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom fracMask : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom E : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
@@ -55,41 +55,41 @@ Axiom MaxFloat64 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom SmallestNonzeroFloat64 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom intSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom intSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 (* MaxInt32 or MaxInt64 depending on intSize. *)
-Definition MaxInt {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Z := 9223372036854775807.
+Definition MaxInt {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #9223372036854775807.
 
 (* MinInt32 or MinInt64 depending on intSize. *)
-Definition MinInt {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Z := -9223372036854775808.
+Definition MinInt {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #(-9223372036854775808).
 
-Axiom MaxInt8 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom MaxInt8 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom MinInt8 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom MinInt8 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom MaxInt16 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom MaxInt16 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom MinInt16 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom MinInt16 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom MaxInt32 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom MaxInt32 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom MinInt32 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom MinInt32 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 (* 9223372036854775807 *)
-Definition MaxInt64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Z := 9223372036854775807.
+Definition MaxInt64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #9223372036854775807.
 
-Axiom MinInt64 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom MinInt64 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom MaxUint : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom MaxUint : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom MaxUint8 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom MaxUint8 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom MaxUint16 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom MaxUint16 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom MaxUint32 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom MaxUint32 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 (* 18446744073709551615 *)
-Definition MaxUint64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Z := 18446744073709551615.
+Definition MaxUint64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #18446744073709551615.
 
 Axiom haveArchMax : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
@@ -369,7 +369,7 @@ Axiom haveArchTan : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom haveArchTanh : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom reduceThreshold : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom reduceThreshold : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition useFMA {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.useFMA"%go.
 

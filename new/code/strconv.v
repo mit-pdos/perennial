@@ -17,37 +17,37 @@ Definition floatInfo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type :=
 
 Definition decimalSlice {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "strconv.decimalSlice"%go [].
 
-Axiom fnParseComplex : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom fnParseComplex : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom fnParseFloat : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom fnParseFloat : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom intSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom intSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom IntSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom IntSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom maxUint64 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom maxUint64 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom uintSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom uintSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom maxShift : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom maxShift : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom detailedPowersOfTenMinExp10 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom detailedPowersOfTenMinExp10 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom detailedPowersOfTenMaxExp10 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom detailedPowersOfTenMaxExp10 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom fastSmalls : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom nSmalls : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom nSmalls : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom smallsString : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom smallsString : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom host32bit : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom digits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom digits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lowerhex : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom lowerhex : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom upperhex : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom upperhex : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition optimize {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.optimize"%go.
 

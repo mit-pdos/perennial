@@ -15,7 +15,7 @@ Definition asciiSet {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := 
 
 Definition Reader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "bytes.Reader"%go [].
 
-Axiom smallBufferSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom smallBufferSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom opRead : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
@@ -31,7 +31,7 @@ Axiom opReadRune4 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom maxInt : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom MinRead : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom MinRead : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition ErrTooLarge {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "bytes.ErrTooLarge"%go.
 
@@ -210,7 +210,7 @@ Definition Equalⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val
   λ: "a" "b",
     exception_do (let: "b" := (GoAlloc (go.SliceType go.byte) "b") in
     let: "a" := (GoAlloc (go.SliceType go.byte) "a") in
-    return: ((string.from_bytes (![go.SliceType go.byte] "a")) =⟨go.string⟩ (string.from_bytes (![go.SliceType go.byte] "b")))).
+    return: ((Convert (go.SliceType go.byte) go.string (![go.SliceType go.byte] "a")) =⟨go.string⟩ (Convert (go.SliceType go.byte) go.string (![go.SliceType go.byte] "b")))).
 
 (* Clone returns a copy of b[:len(b)].
    The result may have additional unused capacity.
@@ -220,8 +220,8 @@ Definition Equalⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val
 Definition Cloneⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "b",
     exception_do (let: "b" := (GoAlloc (go.SliceType go.byte) "b") in
-    (if: (![go.SliceType go.byte] "b") =⟨go.SliceType go.byte⟩ #slice.nil
-    then return: (#slice.nil)
+    (if: Convert go.untyped_bool go.bool ((![go.SliceType go.byte] "b") =⟨go.SliceType go.byte⟩ (Convert go.untyped_nil (go.SliceType go.byte) UntypedNil))
+    then return: (Convert go.untyped_nil (go.SliceType go.byte) UntypedNil)
     else do:  #());;;
     return: (let: "$a0" := (CompositeLiteral (go.SliceType go.byte) (LiteralValue [])) in
      let: "$a1" := (![go.SliceType go.byte] "b") in

@@ -46,7 +46,7 @@ Definition Assertⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : va
     exception_do (let: "b" := (GoAlloc go.bool "b") in
     (if: (~ (![go.bool] "b"))
     then
-      do:  (let: "$a0" := (InterfaceMake go.string #"assertion failure"%go) in
+      do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"assertion failure"%go) in
       (FuncResolve go.panic [] #()) "$a0")
     else do:  #());;;
     return: #()).
@@ -80,7 +80,7 @@ Definition SignedSumAssumeNoOverflowⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : Go
   λ: "x" "y",
     exception_do (let: "y" := (GoAlloc go.int "y") in
     let: "x" := (GoAlloc go.int "x") in
-    do:  (let: "$a0" := ((((![go.int] "y") ≥⟨go.int⟩ #(W64 0)) && ((![go.int] "x") ≤⟨go.int⟩ (#(W64 math.MaxInt) -⟨go.int⟩ (![go.int] "y")))) || (((![go.int] "y") <⟨go.int⟩ #(W64 0)) && ((![go.int] "x") ≥⟨go.int⟩ (#(W64 math.MinInt) -⟨go.int⟩ (![go.int] "y"))))) in
+    do:  (let: "$a0" := ((((![go.int] "y") ≥⟨go.int⟩ #(W64 0)) && ((![go.int] "x") ≤⟨go.int⟩ ((Convert go.untyped_int go.int math.MaxInt) -⟨go.int⟩ (![go.int] "y")))) || (((![go.int] "y") <⟨go.int⟩ #(W64 0)) && ((![go.int] "x") ≥⟨go.int⟩ ((Convert go.untyped_int go.int math.MinInt) -⟨go.int⟩ (![go.int] "y"))))) in
     (FuncResolve primitive.Assume [] #()) "$a0");;;
     return: ((![go.int] "x") +⟨go.int⟩ (![go.int] "y"))).
 
@@ -95,8 +95,8 @@ Definition BytesEqualⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
     let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "x") in
     (FuncResolve go.len [go.SliceType go.byte] #()) "$a0") in
     do:  ("xlen" <-[go.int] "$r0");;;
-    (if: (![go.int] "xlen") ≠⟨go.int⟩ (let: "$a0" := (![go.SliceType go.byte] "y") in
-    (FuncResolve go.len [go.SliceType go.byte] #()) "$a0")
+    (if: Convert go.untyped_bool go.bool ((![go.int] "xlen") ≠⟨go.int⟩ (let: "$a0" := (![go.SliceType go.byte] "y") in
+    (FuncResolve go.len [go.SliceType go.byte] #()) "$a0"))
     then return: (#false)
     else do:  #());;;
     let: "i" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
@@ -105,8 +105,8 @@ Definition BytesEqualⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
     let: "retval" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
     do:  ("retval" <-[go.bool] "$r0");;;
-    (for: (λ: <>, (![go.uint64] "i") <⟨go.uint64⟩ (s_to_w64 (![go.int] "xlen"))); (λ: <>, #()) := λ: <>,
-      (if: (![go.byte] (IndexRef (go.SliceType go.byte) (![go.SliceType go.byte] "x", u_to_w64 (![go.uint64] "i")))) ≠⟨go.byte⟩ (![go.byte] (IndexRef (go.SliceType go.byte) (![go.SliceType go.byte] "y", u_to_w64 (![go.uint64] "i"))))
+    (for: (λ: <>, (![go.uint64] "i") <⟨go.uint64⟩ (Convert go.int go.uint64 (![go.int] "xlen"))); (λ: <>, #()) := λ: <>,
+      (if: Convert go.untyped_bool go.bool ((![go.byte] (IndexRef (go.SliceType go.byte) (![go.SliceType go.byte] "x", Convert go.uint64 go.int (![go.uint64] "i")))) ≠⟨go.byte⟩ (![go.byte] (IndexRef (go.SliceType go.byte) (![go.SliceType go.byte] "y", Convert go.uint64 go.int (![go.uint64] "i")))))
       then
         let: "$r0" := #false in
         do:  ("retval" <-[go.bool] "$r0");;;
@@ -124,8 +124,8 @@ Definition BytesEqualⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
 Definition BytesCloneⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "b",
     exception_do (let: "b" := (GoAlloc (go.SliceType go.byte) "b") in
-    (if: (![go.SliceType go.byte] "b") =⟨go.SliceType go.byte⟩ #slice.nil
-    then return: (#slice.nil)
+    (if: Convert go.untyped_bool go.bool ((![go.SliceType go.byte] "b") =⟨go.SliceType go.byte⟩ (Convert go.untyped_nil (go.SliceType go.byte) UntypedNil))
+    then return: (Convert go.untyped_nil (go.SliceType go.byte) UntypedNil)
     else do:  #());;;
     return: (let: "$a0" := (CompositeLiteral (go.SliceType go.byte) (LiteralValue [])) in
      let: "$a1" := (![go.SliceType go.byte] "b") in
@@ -152,7 +152,7 @@ Definition newJoinHandleⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
     let: "$r0" := (GoAlloc sync.Mutex (GoZeroVal sync.Mutex #())) in
     do:  ("mu" <-[go.PointerType sync.Mutex] "$r0");;;
     let: "cond" := (GoAlloc (go.PointerType sync.Cond) (GoZeroVal (go.PointerType sync.Cond) #())) in
-    let: "$r0" := (let: "$a0" := (InterfaceMake (go.PointerType sync.Mutex) (![go.PointerType sync.Mutex] "mu")) in
+    let: "$r0" := (let: "$a0" := (Convert (go.PointerType sync.Mutex) sync.Locker (![go.PointerType sync.Mutex] "mu")) in
     (FuncResolve sync.NewCond [] #()) "$a0") in
     do:  ("cond" <-[go.PointerType sync.Cond] "$r0");;;
     return: (GoAlloc JoinHandle (CompositeLiteral JoinHandle (LiteralValue [KeyedElement (Some (KeyField "mu"%go)) (ElementExpression (![go.PointerType sync.Mutex] "mu")); KeyedElement (Some (KeyField "done"%go)) (ElementExpression #false); KeyedElement (Some (KeyField "cond"%go)) (ElementExpression (![go.PointerType sync.Cond] "cond"))])))).
@@ -225,7 +225,7 @@ Definition Multiparⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : 
     let: "$r0" := (GoAlloc sync.Mutex (GoZeroVal sync.Mutex #())) in
     do:  ("num_left_mu" <-[go.PointerType sync.Mutex] "$r0");;;
     let: "num_left_cond" := (GoAlloc (go.PointerType sync.Cond) (GoZeroVal (go.PointerType sync.Cond) #())) in
-    let: "$r0" := (let: "$a0" := (InterfaceMake (go.PointerType sync.Mutex) (![go.PointerType sync.Mutex] "num_left_mu")) in
+    let: "$r0" := (let: "$a0" := (Convert (go.PointerType sync.Mutex) sync.Locker (![go.PointerType sync.Mutex] "num_left_mu")) in
     (FuncResolve sync.NewCond [] #()) "$a0") in
     do:  ("num_left_cond" <-[go.PointerType sync.Cond] "$r0");;;
     (let: "i" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
@@ -292,7 +292,7 @@ Definition WaitTimeoutⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
       return: #())
       ) in
     do:  (Fork ("$go" #()));;;
-    SelectStmt (SelectStmtClauses None [(CommClause (RecvCase time.Time (let: "$a0" := ((u_to_w64 (![go.uint64] "timeoutMs")) *⟨go.int64⟩ time.Millisecond) in
+    SelectStmt (SelectStmtClauses None [(CommClause (RecvCase time.Time (let: "$a0" := ((Convert go.uint64 go.int64 (![go.uint64] "timeoutMs")) *⟨go.int64⟩ time.Millisecond) in
     (FuncResolve time.After [] #()) "$a0")) (λ: "$recvVal",
       do:  ((MethodResolve sync.Locker "Lock"%go #() (![sync.Locker] (StructFieldRef sync.Cond "L"%go (![go.PointerType sync.Cond] "cond")))) #());;;
       return: (#())

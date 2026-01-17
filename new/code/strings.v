@@ -33,19 +33,19 @@ Definition stringFinder {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type
 
 Definition asciiSet {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "strings.asciiSet"%go [].
 
-Axiom countCutOff : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom countCutOff : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom maxInt : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom repeatedSpaces : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom repeatedSpaces : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom repeatedDashes : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom repeatedDashes : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom repeatedZeroes : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom repeatedZeroes : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom repeatedEquals : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom repeatedEquals : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom repeatedTabs : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom repeatedTabs : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition asciiSpace {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.asciiSpace"%go.
 

@@ -46,7 +46,7 @@ Definition Log__writeHdrⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
 Definition Initⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "diskSz",
     exception_do (let: "diskSz" := (GoAlloc go.uint64 "diskSz") in
-    (if: (![go.uint64] "diskSz") <⟨go.uint64⟩ #(W64 1)
+    (if: Convert go.untyped_bool go.bool ((![go.uint64] "diskSz") <⟨go.uint64⟩ #(W64 1))
     then return: (GoAlloc Log (CompositeLiteral Log (LiteralValue [KeyedElement (Some (KeyField "m"%go)) (ElementExpression (GoAlloc sync.Mutex (GoZeroVal sync.Mutex #()))); KeyedElement (Some (KeyField "sz"%go)) (ElementExpression #(W64 0)); KeyedElement (Some (KeyField "diskSz"%go)) (ElementExpression #(W64 0))])), #false)
     else do:  #());;;
     let: "log" := (GoAlloc (go.PointerType Log) (GoZeroVal (go.PointerType Log) #())) in
@@ -82,12 +82,12 @@ Definition Log__getⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : 
     let: "sz" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := (![go.uint64] (StructFieldRef Log "sz"%go (![go.PointerType Log] "log"))) in
     do:  ("sz" <-[go.uint64] "$r0");;;
-    (if: (![go.uint64] "i") <⟨go.uint64⟩ (![go.uint64] "sz")
+    (if: Convert go.untyped_bool go.bool ((![go.uint64] "i") <⟨go.uint64⟩ (![go.uint64] "sz"))
     then
       return: (let: "$a0" := (#(W64 1) +⟨go.uint64⟩ (![go.uint64] "i")) in
        (FuncResolve disk.Read [] #()) "$a0", #true)
     else do:  #());;;
-    return: (#slice.nil, #false)).
+    return: (Convert go.untyped_nil (go.SliceType go.byte) UntypedNil, #false)).
 
 (* go: append_log.go:58:17 *)
 Definition Log__Getⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -117,7 +117,7 @@ Definition writeAllⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : 
     slice.for_range (go.SliceType go.byte) "$range" (λ: "$key" "$value",
       do:  ("bk" <-[go.SliceType go.byte] "$value");;;
       do:  ("i" <-[go.int] "$key");;;
-      do:  (let: "$a0" := ((![go.uint64] "off") +⟨go.uint64⟩ (s_to_w64 (![go.int] "i"))) in
+      do:  (let: "$a0" := ((![go.uint64] "off") +⟨go.uint64⟩ (Convert go.int go.uint64 (![go.int] "i"))) in
       let: "$a1" := (![go.SliceType go.byte] "bk") in
       (FuncResolve disk.Write [] #()) "$a0" "$a1")));;;
     return: #()).
@@ -130,14 +130,14 @@ Definition Log__appendⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
     let: "sz" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := (![go.uint64] (StructFieldRef Log "sz"%go (![go.PointerType Log] "log"))) in
     do:  ("sz" <-[go.uint64] "$r0");;;
-    (if: (s_to_w64 (let: "$a0" := (![go.SliceType (go.SliceType go.byte)] "bks") in
-    (FuncResolve go.len [go.SliceType (go.SliceType go.byte)] #()) "$a0")) ≥⟨go.uint64⟩ (((![go.uint64] (StructFieldRef Log "diskSz"%go (![go.PointerType Log] "log"))) -⟨go.uint64⟩ #(W64 1)) -⟨go.uint64⟩ (![go.uint64] "sz"))
+    (if: Convert go.untyped_bool go.bool ((Convert go.int go.uint64 (let: "$a0" := (![go.SliceType (go.SliceType go.byte)] "bks") in
+    (FuncResolve go.len [go.SliceType (go.SliceType go.byte)] #()) "$a0")) ≥⟨go.uint64⟩ (((![go.uint64] (StructFieldRef Log "diskSz"%go (![go.PointerType Log] "log"))) -⟨go.uint64⟩ #(W64 1)) -⟨go.uint64⟩ (![go.uint64] "sz")))
     then return: (#false)
     else do:  #());;;
     do:  (let: "$a0" := (![go.SliceType (go.SliceType go.byte)] "bks") in
     let: "$a1" := (#(W64 1) +⟨go.uint64⟩ (![go.uint64] "sz")) in
     (FuncResolve writeAll [] #()) "$a0" "$a1");;;
-    do:  ((StructFieldRef Log "sz"%go (![go.PointerType Log] "log")) <-[go.uint64] ((![go.uint64] (StructFieldRef Log "sz"%go (![go.PointerType Log] "log"))) +⟨go.uint64⟩ (s_to_w64 (let: "$a0" := (![go.SliceType (go.SliceType go.byte)] "bks") in
+    do:  ((StructFieldRef Log "sz"%go (![go.PointerType Log] "log")) <-[go.uint64] ((![go.uint64] (StructFieldRef Log "sz"%go (![go.PointerType Log] "log"))) +⟨go.uint64⟩ (Convert go.int go.uint64 (let: "$a0" := (![go.SliceType (go.SliceType go.byte)] "bks") in
     (FuncResolve go.len [go.SliceType (go.SliceType go.byte)] #()) "$a0"))));;;
     do:  ((MethodResolve (go.PointerType Log) "writeHdr"%go #() (![go.PointerType Log] "log")) #());;;
     return: (#true)).

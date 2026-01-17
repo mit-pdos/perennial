@@ -39,7 +39,7 @@ Definition ByteSliceToStringⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
     slice.for_range go.byte "$range" (λ: "$key" "$value",
       do:  ("c" <-[go.byte] "$value");;;
       do:  "$key";;;
-      let: "$r0" := ((![go.string] "s") +⟨go.string⟩ (to_string (![go.byte] "c"))) in
+      let: "$r0" := ((![go.string] "s") +⟨go.string⟩ (Convert go.byte go.string (![go.byte] "c"))) in
       do:  ("s" <-[go.string] "$r0")));;;
     return: (![go.string] "s")).
 

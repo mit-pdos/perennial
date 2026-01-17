@@ -81,11 +81,11 @@ Definition PipeReader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type :
 
 Definition PipeWriter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "io.PipeWriter"%go [].
 
-Axiom SeekStart : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom SeekStart : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom SeekCurrent : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom SeekCurrent : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom SeekEnd : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom SeekEnd : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition ErrShortWrite {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "io.ErrShortWrite"%go.
 

@@ -53,141 +53,141 @@ Definition fileSizeError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.typ
 
 Definition dataIO {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "time.dataIO"%go [].
 
-Axiom Layout : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom Layout : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom ANSIC : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom ANSIC : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom UnixDate : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom UnixDate : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom RubyDate : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom RubyDate : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom RFC822 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom RFC822 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom RFC822Z : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom RFC822Z : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom RFC850 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom RFC850 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom RFC1123 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom RFC1123 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom RFC1123Z : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom RFC1123Z : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom RFC3339 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom RFC3339 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom RFC3339Nano : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom RFC3339Nano : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom Kitchen : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom Kitchen : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom Stamp : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom Stamp : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom StampMilli : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom StampMilli : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom StampMicro : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom StampMicro : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom StampNano : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom StampNano : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom DateTime : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom DateTime : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom DateOnly : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom DateOnly : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom TimeOnly : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom TimeOnly : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stdLongMonth : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stdLongMonth : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stdMonth : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stdMonth : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stdNumMonth : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stdNumMonth : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stdZeroMonth : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stdZeroMonth : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stdLongWeekDay : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stdLongWeekDay : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stdWeekDay : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stdWeekDay : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stdDay : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stdDay : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stdUnderDay : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stdUnderDay : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stdZeroDay : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stdZeroDay : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stdUnderYearDay : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stdUnderYearDay : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stdZeroYearDay : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stdZeroYearDay : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stdHour : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stdHour : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stdHour12 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stdHour12 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stdZeroHour12 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stdZeroHour12 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stdMinute : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stdMinute : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stdZeroMinute : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stdZeroMinute : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stdSecond : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stdSecond : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stdZeroSecond : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stdZeroSecond : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stdLongYear : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stdLongYear : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stdYear : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stdYear : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stdPM : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stdPM : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stdpm : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stdpm : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stdTZ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stdTZ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stdISO8601TZ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stdISO8601TZ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stdISO8601SecondsTZ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stdISO8601SecondsTZ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stdISO8601ShortTZ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stdISO8601ShortTZ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stdISO8601ColonTZ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stdISO8601ColonTZ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stdISO8601ColonSecondsTZ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stdISO8601ColonSecondsTZ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stdNumTZ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stdNumTZ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stdNumSecondsTz : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stdNumSecondsTz : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stdNumShortTZ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stdNumShortTZ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stdNumColonTZ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stdNumColonTZ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stdNumColonSecondsTZ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stdNumColonSecondsTZ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stdFracSecond0 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stdFracSecond0 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stdFracSecond9 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stdFracSecond9 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stdNeedDate : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stdNeedDate : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stdNeedYday : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stdNeedYday : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stdNeedClock : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stdNeedClock : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stdArgShift : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stdArgShift : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stdSeparatorShift : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stdSeparatorShift : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom stdMask : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom stdMask : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom lowerhex : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom lowerhex : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom runeSelf : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom runeSelf : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom runeError : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom runeError : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition hasMonotonic {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Z := 9223372036854775808.
+Definition hasMonotonic {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #9223372036854775808.
 
 Axiom maxWall : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom minWall : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Definition nsecMask {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Z := 1073741823.
+Definition nsecMask {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #1073741823.
 
-Axiom nsecShift : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom nsecShift : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom January : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
@@ -227,21 +227,21 @@ Axiom Friday : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom Saturday : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom secondsPerMinute : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom secondsPerMinute : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom secondsPerHour : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom secondsPerHour : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom secondsPerDay : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom secondsPerDay : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom secondsPerWeek : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom secondsPerWeek : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom daysPer400Years : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom daysPer400Years : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom marchThruDecember : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom marchThruDecember : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom absoluteYears : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom absoluteYears : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom internalYear : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom internalYear : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom absoluteToInternal : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
@@ -277,9 +277,9 @@ Axiom timeBinaryVersionV1 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, 
 
 Axiom timeBinaryVersionV2 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom alpha : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom alpha : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom omega : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom omega : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom ruleJulian : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
@@ -287,13 +287,13 @@ Axiom ruleDOY : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom ruleMonthWeekDay : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom maxFileSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom maxFileSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom seekStart : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom seekStart : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom seekCurrent : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom seekCurrent : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom seekEnd : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom seekEnd : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition std0x {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "time.std0x"%go.
 
@@ -577,7 +577,7 @@ Definition initLocal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string 
 Definition Time__nsecⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "t" <>,
     exception_do (let: "t" := (GoAlloc (go.PointerType Time) "t") in
-    return: (u_to_w32 ((![go.uint64] (StructFieldRef Time "wall"%go (![go.PointerType Time] "t"))) &⟨go.uint64⟩ #(W64 nsecMask)))).
+    return: (Convert go.uint64 go.int32 ((![go.uint64] (StructFieldRef Time "wall"%go (![go.PointerType Time] "t"))) &⟨go.uint64⟩ (Convert go.untyped_int go.uint64 nsecMask)))).
 
 (* sec returns the time's seconds since Jan 1 year 1.
 
@@ -585,8 +585,8 @@ Definition Time__nsecⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
 Definition Time__secⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "t" <>,
     exception_do (let: "t" := (GoAlloc (go.PointerType Time) "t") in
-    (if: ((![go.uint64] (StructFieldRef Time "wall"%go (![go.PointerType Time] "t"))) &⟨go.uint64⟩ #(W64 hasMonotonic)) ≠⟨go.uint64⟩ #(W64 0)
-    then return: (wallToInternal +⟨go.int64⟩ (u_to_w64 (((![go.uint64] (StructFieldRef Time "wall"%go (![go.PointerType Time] "t"))) <<⟨go.uint64⟩ #(W64 1)) >>⟨go.uint64⟩ #(W64 31))))
+    (if: Convert go.untyped_bool go.bool (((![go.uint64] (StructFieldRef Time "wall"%go (![go.PointerType Time] "t"))) &⟨go.uint64⟩ (Convert go.untyped_int go.uint64 hasMonotonic)) ≠⟨go.uint64⟩ #(W64 0))
+    then return: (wallToInternal +⟨go.int64⟩ (Convert go.uint64 go.int64 (((![go.uint64] (StructFieldRef Time "wall"%go (![go.PointerType Time] "t"))) <<⟨go.uint64⟩ (Convert go.untyped_int go.uint64 #1)) >>⟨go.uint64⟩ (Convert go.untyped_int go.uint64 #31))))
     else do:  #());;;
     return: (![go.int64] (StructFieldRef Time "ext"%go (![go.PointerType Time] "t")))).
 
@@ -609,7 +609,7 @@ Definition Time__unixSecⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
 Definition Time__UnixNanoⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "t" <>,
     exception_do (let: "t" := (GoAlloc Time "t") in
-    return: ((((MethodResolve (go.PointerType Time) "unixSec"%go #() "t") #()) *⟨go.int64⟩ #(W64 1000000000)) +⟨go.int64⟩ (s_to_w64 ((MethodResolve (go.PointerType Time) "nsec"%go #() "t") #())))).
+    return: ((((MethodResolve (go.PointerType Time) "unixSec"%go #() "t") #()) *⟨go.int64⟩ #(W64 1000000000)) +⟨go.int64⟩ (Convert go.int32 go.int64 ((MethodResolve (go.PointerType Time) "nsec"%go #() "t") #())))).
 
 #[global] Instance info' : PkgInfo pkg_id.time :=
 {|

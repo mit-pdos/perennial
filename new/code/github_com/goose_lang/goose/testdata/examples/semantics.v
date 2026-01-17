@@ -350,7 +350,7 @@ Definition findKeyⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : v
     do:  ("ok" <-[go.bool] "$r0");;;
     let: "$range" := (![go.MapType go.uint64 unit] "m") in
     (let: "k" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    map.for_range "$range" (λ: "$key" "value",
+    map.for_range go.uint64 unit "$range" (λ: "$key" "value",
       do:  ("k" <-[go.uint64] "$key");;;
       (if: (~ (![go.bool] "ok"))
       then
@@ -507,9 +507,9 @@ Definition testClosureBasicⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
       (![go.FunctionType (go.Signature [go.uint64] false [go.uint64])] "pos") "$a0");;;
       do:  (let: "$a0" := (#(W64 2) *⟨go.uint64⟩ (![go.uint64] "i")) in
       (![go.FunctionType (go.Signature [go.uint64] false [go.uint64])] "doub") "$a0")));;;
-    (if: ((let: "$a0" := #(W64 0) in
+    (if: Convert go.untyped_bool go.bool (((let: "$a0" := #(W64 0) in
     (![go.FunctionType (go.Signature [go.uint64] false [go.uint64])] "pos") "$a0") =⟨go.uint64⟩ #(W64 45)) && ((let: "$a0" := #(W64 0) in
-    (![go.FunctionType (go.Signature [go.uint64] false [go.uint64])] "doub") "$a0") =⟨go.uint64⟩ #(W64 90))
+    (![go.FunctionType (go.Signature [go.uint64] false [go.uint64])] "doub") "$a0") =⟨go.uint64⟩ #(W64 90)))
     then return: (#true)
     else do:  #());;;
     return: (#false)).
@@ -574,7 +574,7 @@ Definition testCompareGEⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
     do:  ("ok" <-[go.bool] "$r0");;;
     let: "$r0" := ((![go.bool] "ok") && ((![go.uint64] "y") ≥⟨go.uint64⟩ (![go.uint64] "x"))) in
     do:  ("ok" <-[go.bool] "$r0");;;
-    (if: (![go.uint64] "y") >⟨go.uint64⟩ #(W64 5)
+    (if: Convert go.untyped_bool go.bool ((![go.uint64] "y") >⟨go.uint64⟩ #(W64 5))
     then return: (#false)
     else do:  #());;;
     return: (![go.bool] "ok")).
@@ -615,7 +615,7 @@ Definition testCompareLEⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
     do:  ("ok" <-[go.bool] "$r0");;;
     let: "$r0" := ((![go.bool] "ok") && ((![go.uint64] "x") ≤⟨go.uint64⟩ (![go.uint64] "y"))) in
     do:  ("ok" <-[go.bool] "$r0");;;
-    (if: (![go.uint64] "y") <⟨go.uint64⟩ #(W64 5)
+    (if: Convert go.untyped_bool go.bool ((![go.uint64] "y") <⟨go.uint64⟩ #(W64 5))
     then return: (#false)
     else do:  #());;;
     return: (![go.bool] "ok")).
@@ -633,7 +633,7 @@ Definition stringToByteSliceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
   λ: "s",
     exception_do (let: "s" := (GoAlloc go.string "s") in
     let: "p" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
-    let: "$r0" := (string.to_bytes (![go.string] "s")) in
+    let: "$r0" := (Convert go.string (go.SliceType go.byte) (![go.string] "s")) in
     do:  ("p" <-[go.SliceType go.byte] "$r0");;;
     return: (![go.SliceType go.byte] "p")).
 
@@ -641,7 +641,7 @@ Definition stringToByteSliceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
 Definition byteSliceToStringⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "p",
     exception_do (let: "p" := (GoAlloc (go.SliceType go.byte) "p") in
-    return: (string.from_bytes (![go.SliceType go.byte] "p"))).
+    return: (Convert (go.SliceType go.byte) go.string (![go.SliceType go.byte] "p"))).
 
 (* tests
 
@@ -690,7 +690,7 @@ Definition testCopyShorterDstⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
     let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) #(W64 10)) in
     do:  ("y" <-[go.SliceType go.byte] "$r0");;;
     let: "n" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    let: "$r0" := (s_to_w64 (let: "$a0" := (![go.SliceType go.byte] "y") in
+    let: "$r0" := (Convert go.int go.uint64 (let: "$a0" := (![go.SliceType go.byte] "y") in
     let: "$a1" := (![go.SliceType go.byte] "x") in
     (FuncResolve go.copy [go.SliceType go.byte] #()) "$a0" "$a1")) in
     do:  ("n" <-[go.uint64] "$r0");;;
@@ -710,7 +710,7 @@ Definition testCopyShorterSrcⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
     let: "$r0" := #(W8 2) in
     do:  ((IndexRef (go.SliceType go.byte) (![go.SliceType go.byte] "y", #(W64 12))) <-[go.byte] "$r0");;;
     let: "n" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    let: "$r0" := (s_to_w64 (let: "$a0" := (![go.SliceType go.byte] "y") in
+    let: "$r0" := (Convert go.int go.uint64 (let: "$a0" := (![go.SliceType go.byte] "y") in
     let: "$a1" := (![go.SliceType go.byte] "x") in
     (FuncResolve go.copy [go.SliceType go.byte] #()) "$a0" "$a1")) in
     do:  ("n" <-[go.uint64] "$r0");;;
@@ -998,15 +998,15 @@ Definition failing_testFunctionOrderingⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx :
     let: "$r0" := (CompositeLiteral Editor (LiteralValue [KeyedElement (Some (KeyField "s"%go)) (ElementExpression (let: "$s" := (![go.SliceType go.uint64] "arr") in
      Slice (go.SliceType go.uint64) ("$s", #(W64 0), FuncResolve go.len [go.SliceType go.uint64] #() (![go.SliceType go.uint64] "arr")))); KeyedElement (Some (KeyField "next_val"%go)) (ElementExpression #(W64 101))])) in
     do:  ("e2" <-[Editor] "$r0");;;
-    (if: ((let: "$a0" := #(W64 2) in
+    (if: Convert go.untyped_bool go.bool (((let: "$a0" := #(W64 2) in
     (MethodResolve (go.PointerType Editor) "AdvanceReturn"%go #() "e1") "$a0") +⟨go.uint64⟩ (let: "$a0" := #(W64 102) in
-    (MethodResolve (go.PointerType Editor) "AdvanceReturn"%go #() "e2") "$a0")) ≠⟨go.uint64⟩ #(W64 102)
+    (MethodResolve (go.PointerType Editor) "AdvanceReturn"%go #() "e2") "$a0")) ≠⟨go.uint64⟩ #(W64 102))
     then return: (#false)
     else do:  #());;;
-    (if: (![go.uint64] (IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "arr", #(W64 0)))) ≠⟨go.uint64⟩ #(W64 101)
+    (if: Convert go.untyped_bool go.bool ((![go.uint64] (IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "arr", #(W64 0)))) ≠⟨go.uint64⟩ #(W64 101))
     then return: (#false)
     else do:  #());;;
-    (if: (let: "$a0" := (let: "$a0" := #(W64 3) in
+    (if: Convert go.untyped_bool go.bool ((let: "$a0" := (let: "$a0" := #(W64 3) in
     (MethodResolve (go.PointerType Editor) "AdvanceReturn"%go #() "e1") "$a0") in
     let: "$a1" := (let: "$a0" := #(W64 103) in
     (MethodResolve (go.PointerType Editor) "AdvanceReturn"%go #() "e2") "$a0") in
@@ -1014,13 +1014,13 @@ Definition failing_testFunctionOrderingⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx :
     (MethodResolve (go.PointerType Editor) "AdvanceReturn"%go #() "e2") "$a0") in
     let: "$a3" := (let: "$a0" := #(W64 4) in
     (MethodResolve (go.PointerType Editor) "AdvanceReturn"%go #() "e1") "$a0") in
-    (FuncResolve addFour64 [] #()) "$a0" "$a1" "$a2" "$a3") ≠⟨go.uint64⟩ #(W64 210)
+    (FuncResolve addFour64 [] #()) "$a0" "$a1" "$a2" "$a3") ≠⟨go.uint64⟩ #(W64 210))
     then return: (#false)
     else do:  #());;;
-    (if: (![go.uint64] (IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "arr", #(W64 1)))) ≠⟨go.uint64⟩ #(W64 102)
+    (if: Convert go.untyped_bool go.bool ((![go.uint64] (IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "arr", #(W64 1)))) ≠⟨go.uint64⟩ #(W64 102))
     then return: (#false)
     else do:  #());;;
-    (if: (![go.uint64] (IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "arr", #(W64 2)))) ≠⟨go.uint64⟩ #(W64 3)
+    (if: Convert go.untyped_bool go.bool ((![go.uint64] (IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "arr", #(W64 2)))) ≠⟨go.uint64⟩ #(W64 3))
     then return: (#false)
     else do:  #());;;
     let: "p" := (GoAlloc Pair (GoZeroVal Pair #())) in
@@ -1028,7 +1028,7 @@ Definition failing_testFunctionOrderingⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx :
      (MethodResolve (go.PointerType Editor) "AdvanceReturn"%go #() "e1") "$a0")); KeyedElement (Some (KeyField "y"%go)) (ElementExpression (let: "$a0" := #(W64 105) in
      (MethodResolve (go.PointerType Editor) "AdvanceReturn"%go #() "e2") "$a0"))])) in
     do:  ("p" <-[Pair] "$r0");;;
-    (if: (![go.uint64] (IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "arr", #(W64 3)))) ≠⟨go.uint64⟩ #(W64 104)
+    (if: Convert go.untyped_bool go.bool ((![go.uint64] (IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "arr", #(W64 3)))) ≠⟨go.uint64⟩ #(W64 104))
     then return: (#false)
     else do:  #());;;
     let: "q" := (GoAlloc Pair (GoZeroVal Pair #())) in
@@ -1036,7 +1036,7 @@ Definition failing_testFunctionOrderingⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx :
      (MethodResolve (go.PointerType Editor) "AdvanceReturn"%go #() "e1") "$a0")); KeyedElement (Some (KeyField "x"%go)) (ElementExpression (let: "$a0" := #(W64 106) in
      (MethodResolve (go.PointerType Editor) "AdvanceReturn"%go #() "e2") "$a0"))])) in
     do:  ("q" <-[Pair] "$r0");;;
-    (if: (![go.uint64] (IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "arr", #(W64 4)))) ≠⟨go.uint64⟩ #(W64 105)
+    (if: Convert go.untyped_bool go.bool ((![go.uint64] (IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "arr", #(W64 4)))) ≠⟨go.uint64⟩ #(W64 105))
     then return: (#false)
     else do:  #());;;
     return: (((![go.uint64] (StructFieldRef Pair "x"%go "p")) +⟨go.uint64⟩ (![go.uint64] (StructFieldRef Pair "x"%go "q"))) =⟨go.uint64⟩ #(W64 109))).
@@ -1089,9 +1089,9 @@ Definition testU64ToU32ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
     let: "y" := (GoAlloc go.uint32 (GoZeroVal go.uint32 #())) in
     let: "$r0" := #(W32 1230) in
     do:  ("y" <-[go.uint32] "$r0");;;
-    let: "$r0" := ((![go.bool] "ok") && ((u_to_w32 (![go.uint64] "x")) =⟨go.uint32⟩ (![go.uint32] "y"))) in
+    let: "$r0" := ((![go.bool] "ok") && ((Convert go.uint64 go.uint32 (![go.uint64] "x")) =⟨go.uint32⟩ (![go.uint32] "y"))) in
     do:  ("ok" <-[go.bool] "$r0");;;
-    let: "$r0" := ((![go.bool] "ok") && ((u_to_w64 (![go.uint32] "y")) =⟨go.uint64⟩ (![go.uint64] "x"))) in
+    let: "$r0" := ((![go.bool] "ok") && ((Convert go.uint32 go.uint64 (![go.uint32] "y")) =⟨go.uint64⟩ (![go.uint64] "x"))) in
     do:  ("ok" <-[go.bool] "$r0");;;
     return: (![go.bool] "ok")).
 
@@ -1101,7 +1101,7 @@ Definition testU32Lenⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
     exception_do (let: "s" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) #(W64 100)) in
     do:  ("s" <-[go.SliceType go.byte] "$r0");;;
-    return: ((s_to_w32 (let: "$a0" := (![go.SliceType go.byte] "s") in
+    return: ((Convert go.int go.uint32 (let: "$a0" := (![go.SliceType go.byte] "s") in
      (FuncResolve go.len [go.SliceType go.byte] #()) "$a0")) =⟨go.uint32⟩ #(W32 100))).
 
 (* https://github.com/goose-lang/goose/issues/14
@@ -1112,7 +1112,7 @@ Definition failing_testU32NewtypeLenⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : Go
     exception_do (let: "s" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) #(W64 20)) in
     do:  ("s" <-[go.SliceType go.byte] "$r0");;;
-    return: ((s_to_w32 (let: "$a0" := (![go.SliceType go.byte] "s") in
+    return: ((Convert go.int go.uint32 (let: "$a0" := (![go.SliceType go.byte] "s") in
      (FuncResolve go.len [go.SliceType go.byte] #()) "$a0")) =⟨go.uint32⟩ #(W32 20))).
 
 (* go: interfaces.go:12:6 *)
@@ -1153,7 +1153,7 @@ Definition testBasicInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
     exception_do (let: "s" := (GoAlloc SquareStruct (GoZeroVal SquareStruct #())) in
     let: "$r0" := (CompositeLiteral SquareStruct (LiteralValue [KeyedElement (Some (KeyField "Side"%go)) (ElementExpression #(W64 2))])) in
     do:  ("s" <-[SquareStruct] "$r0");;;
-    return: ((let: "$a0" := (InterfaceMake SquareStruct (![SquareStruct] "s")) in
+    return: ((let: "$a0" := (Convert SquareStruct geometryInterface (![SquareStruct] "s")) in
      (FuncResolve measureArea [] #()) "$a0") =⟨go.uint64⟩ #(W64 4))).
 
 (* go: interfaces.go:47:6 *)
@@ -1163,7 +1163,7 @@ Definition testAssignInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
     let: "$r0" := (CompositeLiteral SquareStruct (LiteralValue [KeyedElement (Some (KeyField "Side"%go)) (ElementExpression #(W64 3))])) in
     do:  ("s" <-[SquareStruct] "$r0");;;
     let: "area" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    let: "$r0" := (let: "$a0" := (InterfaceMake SquareStruct (![SquareStruct] "s")) in
+    let: "$r0" := (let: "$a0" := (Convert SquareStruct geometryInterface (![SquareStruct] "s")) in
     (FuncResolve measureArea [] #()) "$a0") in
     do:  ("area" <-[go.uint64] "$r0");;;
     return: ((![go.uint64] "area") =⟨go.uint64⟩ #(W64 9))).
@@ -1175,11 +1175,11 @@ Definition testMultipleInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
     let: "$r0" := (CompositeLiteral SquareStruct (LiteralValue [KeyedElement (Some (KeyField "Side"%go)) (ElementExpression #(W64 3))])) in
     do:  ("s" <-[SquareStruct] "$r0");;;
     let: "square1" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    let: "$r0" := (let: "$a0" := (InterfaceMake SquareStruct (![SquareStruct] "s")) in
+    let: "$r0" := (let: "$a0" := (Convert SquareStruct geometryInterface (![SquareStruct] "s")) in
     (FuncResolve measureArea [] #()) "$a0") in
     do:  ("square1" <-[go.uint64] "$r0");;;
     let: "square2" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    let: "$r0" := (let: "$a0" := (InterfaceMake SquareStruct (![SquareStruct] "s")) in
+    let: "$r0" := (let: "$a0" := (Convert SquareStruct geometryInterface (![SquareStruct] "s")) in
     (FuncResolve measureArea [] #()) "$a0") in
     do:  ("square2" <-[go.uint64] "$r0");;;
     return: ((![go.uint64] "square1") =⟨go.uint64⟩ (![go.uint64] "square2"))).
@@ -1191,15 +1191,15 @@ Definition testBinaryExprInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGl
     let: "$r0" := (CompositeLiteral SquareStruct (LiteralValue [KeyedElement (Some (KeyField "Side"%go)) (ElementExpression #(W64 3))])) in
     do:  ("s" <-[SquareStruct] "$r0");;;
     let: "square1" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    let: "$r0" := (let: "$a0" := (InterfaceMake SquareStruct (![SquareStruct] "s")) in
+    let: "$r0" := (let: "$a0" := (Convert SquareStruct geometryInterface (![SquareStruct] "s")) in
     (FuncResolve measureArea [] #()) "$a0") in
     do:  ("square1" <-[go.uint64] "$r0");;;
     let: "square2" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    let: "$r0" := (let: "$a0" := (InterfaceMake SquareStruct (![SquareStruct] "s")) in
+    let: "$r0" := (let: "$a0" := (Convert SquareStruct geometryInterface (![SquareStruct] "s")) in
     (FuncResolve measureVolume [] #()) "$a0") in
     do:  ("square2" <-[go.uint64] "$r0");;;
-    return: (((![go.uint64] "square1") =⟨go.uint64⟩ (let: "$a0" := (InterfaceMake SquareStruct (![SquareStruct] "s")) in
-     (FuncResolve measureArea [] #()) "$a0")) && ((![go.uint64] "square2") =⟨go.uint64⟩ (let: "$a0" := (InterfaceMake SquareStruct (![SquareStruct] "s")) in
+    return: (((![go.uint64] "square1") =⟨go.uint64⟩ (let: "$a0" := (Convert SquareStruct geometryInterface (![SquareStruct] "s")) in
+     (FuncResolve measureArea [] #()) "$a0")) && ((![go.uint64] "square2") =⟨go.uint64⟩ (let: "$a0" := (Convert SquareStruct geometryInterface (![SquareStruct] "s")) in
      (FuncResolve measureVolume [] #()) "$a0")))).
 
 (* go: interfaces.go:73:6 *)
@@ -1208,8 +1208,8 @@ Definition testIfStmtInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
     exception_do (let: "s" := (GoAlloc SquareStruct (GoZeroVal SquareStruct #())) in
     let: "$r0" := (CompositeLiteral SquareStruct (LiteralValue [KeyedElement (Some (KeyField "Side"%go)) (ElementExpression #(W64 3))])) in
     do:  ("s" <-[SquareStruct] "$r0");;;
-    (if: (let: "$a0" := (InterfaceMake SquareStruct (![SquareStruct] "s")) in
-    (FuncResolve measureArea [] #()) "$a0") =⟨go.uint64⟩ #(W64 9)
+    (if: Convert go.untyped_bool go.bool ((let: "$a0" := (Convert SquareStruct geometryInterface (![SquareStruct] "s")) in
+    (FuncResolve measureArea [] #()) "$a0") =⟨go.uint64⟩ #(W64 9))
     then return: (#true)
     else do:  #());;;
     return: (#false)).
@@ -1240,14 +1240,14 @@ Definition standardForLoopⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[go.uint64] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      (if: (![go.uint64] "i") <⟨go.uint64⟩ (s_to_w64 (let: "$a0" := (![go.SliceType go.uint64] "s") in
-      (FuncResolve go.len [go.SliceType go.uint64] #()) "$a0"))
+      (if: Convert go.untyped_bool go.bool ((![go.uint64] "i") <⟨go.uint64⟩ (Convert go.int go.uint64 (let: "$a0" := (![go.SliceType go.uint64] "s") in
+      (FuncResolve go.len [go.SliceType go.uint64] #()) "$a0")))
       then
         let: "sum" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
         let: "$r0" := (![go.uint64] (![go.PointerType go.uint64] "sumPtr")) in
         do:  ("sum" <-[go.uint64] "$r0");;;
         let: "x" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-        let: "$r0" := (![go.uint64] (IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "s", u_to_w64 (![go.uint64] "i")))) in
+        let: "$r0" := (![go.uint64] (IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "s", Convert go.uint64 go.int (![go.uint64] "i")))) in
         do:  ("x" <-[go.uint64] "$r0");;;
         let: "$r0" := ((![go.uint64] "sum") +⟨go.uint64⟩ (![go.uint64] "x")) in
         do:  ((![go.PointerType go.uint64] "sumPtr") <-[go.uint64] "$r0");;;
@@ -1270,7 +1270,7 @@ Definition LoopStruct__forLoopWaitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGl
       let: "nxt" := (GoAlloc (go.PointerType go.uint64) (GoZeroVal (go.PointerType go.uint64) #())) in
       let: "$r0" := (![go.PointerType go.uint64] (StructFieldRef LoopStruct "loopNext"%go "ls")) in
       do:  ("nxt" <-[go.PointerType go.uint64] "$r0");;;
-      (if: (![go.uint64] "i") <⟨go.uint64⟩ (![go.uint64] (![go.PointerType go.uint64] "nxt"))
+      (if: Convert go.untyped_bool go.bool ((![go.uint64] "i") <⟨go.uint64⟩ (![go.uint64] (![go.PointerType go.uint64] "nxt")))
       then break: #()
       else do:  #());;;
       let: "$r0" := ((![go.uint64] (![go.PointerType go.uint64] (StructFieldRef LoopStruct "loopNext"%go "ls"))) +⟨go.uint64⟩ #(W64 1)) in
@@ -1310,7 +1310,7 @@ Definition testBreakFromLoopWithContinueⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx 
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[go.uint64] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      (if: #true
+      (if: Convert go.untyped_bool go.bool #true
       then
         let: "$r0" := ((![go.uint64] "i") +⟨go.uint64⟩ #(W64 1)) in
         do:  ("i" <-[go.uint64] "$r0");;;
@@ -1326,7 +1326,7 @@ Definition testBreakFromLoopNoContinueⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : 
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[go.uint64] "$r0");;;
     (for: (λ: <>, (![go.uint64] "i") <⟨go.uint64⟩ #(W64 3)); (λ: <>, #()) := λ: <>,
-      (if: #true
+      (if: Convert go.untyped_bool go.bool #true
       then
         let: "$r0" := ((![go.uint64] "i") +⟨go.uint64⟩ #(W64 1)) in
         do:  ("i" <-[go.uint64] "$r0");;;
@@ -1343,7 +1343,7 @@ Definition testBreakFromLoopNoContinueDoubleⁱᵐᵖˡ {ext : ffi_syntax} {go_g
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[go.uint64] "$r0");;;
     (for: (λ: <>, (![go.uint64] "i") <⟨go.uint64⟩ #(W64 3)); (λ: <>, #()) := λ: <>,
-      (if: (![go.uint64] "i") =⟨go.uint64⟩ #(W64 1)
+      (if: Convert go.untyped_bool go.bool ((![go.uint64] "i") =⟨go.uint64⟩ #(W64 1))
       then
         let: "$r0" := ((![go.uint64] "i") +⟨go.uint64⟩ #(W64 1)) in
         do:  ("i" <-[go.uint64] "$r0");;;
@@ -1373,7 +1373,7 @@ Definition testBreakFromLoopAssignAndContinueⁱᵐᵖˡ {ext : ffi_syntax} {go_
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[go.uint64] "$r0");;;
     (for: (λ: <>, (![go.uint64] "i") <⟨go.uint64⟩ #(W64 3)); (λ: <>, #()) := λ: <>,
-      (if: #true
+      (if: Convert go.untyped_bool go.bool #true
       then
         let: "$r0" := ((![go.uint64] "i") +⟨go.uint64⟩ #(W64 1)) in
         do:  ("i" <-[go.uint64] "$r0");;;
@@ -1401,7 +1401,7 @@ Definition testNestedLoopsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
       let: "$r0" := #(W64 0) in
       do:  ("j" <-[go.uint64] "$r0");;;
       (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-        (if: (![go.uint64] "j") >⟨go.uint64⟩ #(W64 5)
+        (if: Convert go.untyped_bool go.bool ((![go.uint64] "j") >⟨go.uint64⟩ #(W64 5))
         then break: #()
         else do:  #());;;
         let: "$r0" := ((![go.uint64] "j") +⟨go.uint64⟩ #(W64 1)) in
@@ -1430,7 +1430,7 @@ Definition testNestedGoStyleLoopsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
       let: "$r0" := #(W64 0) in
       do:  ("j" <-[go.uint64] "$r0");;;
       (for: (λ: <>, (![go.uint64] "j") <⟨go.uint64⟩ (![go.uint64] "i")); (λ: <>, do:  ("j" <-[go.uint64] ((![go.uint64] "j") +⟨go.uint64⟩ #(W64 1)))) := λ: <>,
-        (if: #true
+        (if: Convert go.untyped_bool go.bool #true
         then break: #()
         else do:  #());;;
         continue: #()));;;
@@ -1452,7 +1452,7 @@ Definition testNestedGoStyleLoopsNoComparisonⁱᵐᵖˡ {ext : ffi_syntax} {go_
       let: "$r0" := #(W64 0) in
       do:  ("j" <-[go.uint64] "$r0");;;
       (for: (λ: <>, (![go.uint64] "j") <⟨go.uint64⟩ (![go.uint64] "i")); (λ: <>, do:  ("j" <-[go.uint64] ((![go.uint64] "j") +⟨go.uint64⟩ #(W64 1)))) := λ: <>,
-        (if: #true
+        (if: Convert go.untyped_bool go.bool #true
         then break: #()
         else do:  #());;;
         continue: #()));;;
@@ -1467,7 +1467,7 @@ Definition IterateMapKeysⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
     let: "sum" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$range" := (![go.MapType go.uint64 go.uint64] "m") in
     (let: "k" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    map.for_range "$range" (λ: "$key" "value",
+    map.for_range go.uint64 go.uint64 "$range" (λ: "$key" "value",
       do:  ("k" <-[go.uint64] "$key");;;
       let: "$r0" := ((![go.uint64] "sum") +⟨go.uint64⟩ (![go.uint64] "k")) in
       do:  ("sum" <-[go.uint64] "$r0")));;;
@@ -1480,7 +1480,7 @@ Definition IterateMapValuesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
     let: "sum" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$range" := (![go.MapType go.uint64 go.uint64] "m") in
     (let: "v" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    map.for_range "$range" (λ: "$key" "value",
+    map.for_range go.uint64 go.uint64 "$range" (λ: "$key" "value",
       do:  ("v" <-[go.uint64] "$value");;;
       do:  "$key";;;
       let: "$r0" := ((![go.uint64] "sum") +⟨go.uint64⟩ (![go.uint64] "v")) in
@@ -1519,7 +1519,7 @@ Definition testMapSizeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
     let: "m" := (GoAlloc (go.MapType go.uint64 go.uint64) (GoZeroVal (go.MapType go.uint64 go.uint64) #())) in
     let: "$r0" := ((FuncResolve go.make1 [go.MapType go.uint64 go.uint64] #()) #()) in
     do:  ("m" <-[go.MapType go.uint64 go.uint64] "$r0");;;
-    let: "$r0" := ((![go.bool] "ok") && ((s_to_w64 (let: "$a0" := (![go.MapType go.uint64 go.uint64] "m") in
+    let: "$r0" := ((![go.bool] "ok") && ((Convert go.int go.uint64 (let: "$a0" := (![go.MapType go.uint64 go.uint64] "m") in
     (FuncResolve go.len [go.MapType go.uint64 go.uint64] #()) "$a0")) =⟨go.uint64⟩ #(W64 0))) in
     do:  ("ok" <-[go.bool] "$r0");;;
     let: "$r0" := #(W64 1) in
@@ -1528,7 +1528,7 @@ Definition testMapSizeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
     do:  (map.insert go.uint64 (![go.MapType go.uint64 go.uint64] "m") #(W64 1) "$r0");;;
     let: "$r0" := #(W64 4) in
     do:  (map.insert go.uint64 (![go.MapType go.uint64 go.uint64] "m") #(W64 3) "$r0");;;
-    let: "$r0" := ((![go.bool] "ok") && ((s_to_w64 (let: "$a0" := (![go.MapType go.uint64 go.uint64] "m") in
+    let: "$r0" := ((![go.bool] "ok") && ((Convert go.int go.uint64 (let: "$a0" := (![go.MapType go.uint64 go.uint64] "m") in
     (FuncResolve go.len [go.MapType go.uint64 go.uint64] #()) "$a0")) =⟨go.uint64⟩ #(W64 3))) in
     do:  ("ok" <-[go.bool] "$r0");;;
     return: (![go.bool] "ok")).
@@ -1673,7 +1673,7 @@ Definition failing_testCompareSliceToNilⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx 
     exception_do (let: "s" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) #(W64 0)) in
     do:  ("s" <-[go.SliceType go.byte] "$r0");;;
-    return: ((![go.SliceType go.byte] "s") ≠⟨go.SliceType go.byte⟩ #slice.nil)).
+    return: ((![go.SliceType go.byte] "s") ≠⟨go.SliceType go.byte⟩ (Convert go.untyped_nil (go.SliceType go.byte) UntypedNil))).
 
 (* go: nil.go:8:6 *)
 Definition testComparePointerToNilⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -1681,7 +1681,7 @@ Definition testComparePointerToNilⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGl
     exception_do (let: "s" := (GoAlloc (go.PointerType go.uint64) (GoZeroVal (go.PointerType go.uint64) #())) in
     let: "$r0" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     do:  ("s" <-[go.PointerType go.uint64] "$r0");;;
-    return: ((![go.PointerType go.uint64] "s") ≠⟨go.PointerType go.uint64⟩ #null)).
+    return: ((![go.PointerType go.uint64] "s") ≠⟨go.PointerType go.uint64⟩ (Convert go.untyped_nil (go.PointerType go.uint64) UntypedNil))).
 
 (* go: nil.go:13:6 *)
 Definition testCompareNilToNilⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -1689,7 +1689,7 @@ Definition testCompareNilToNilⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
     exception_do (let: "s" := (GoAlloc (go.PointerType (go.PointerType go.uint64)) (GoZeroVal (go.PointerType (go.PointerType go.uint64)) #())) in
     let: "$r0" := (GoAlloc (go.PointerType go.uint64) (GoZeroVal (go.PointerType go.uint64) #())) in
     do:  ("s" <-[go.PointerType (go.PointerType go.uint64)] "$r0");;;
-    return: ((![go.PointerType go.uint64] (![go.PointerType (go.PointerType go.uint64)] "s")) =⟨go.PointerType go.uint64⟩ #null)).
+    return: ((![go.PointerType go.uint64] (![go.PointerType (go.PointerType go.uint64)] "s")) =⟨go.PointerType go.uint64⟩ (Convert go.untyped_nil (go.PointerType go.uint64) UntypedNil))).
 
 (* go: nil.go:18:6 *)
 Definition testComparePointerWrappedToNilⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -1697,13 +1697,13 @@ Definition testComparePointerWrappedToNilⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx
     exception_do (let: "s" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) #(W64 1)) in
     do:  ("s" <-[go.SliceType go.byte] "$r0");;;
-    return: ((![go.SliceType go.byte] "s") ≠⟨go.SliceType go.byte⟩ #slice.nil)).
+    return: ((![go.SliceType go.byte] "s") ≠⟨go.SliceType go.byte⟩ (Convert go.untyped_nil (go.SliceType go.byte) UntypedNil))).
 
 (* go: nil.go:24:6 *)
 Definition testComparePointerWrappedDefaultToNilⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "s" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
-    return: ((![go.SliceType go.byte] "s") =⟨go.SliceType go.byte⟩ #slice.nil)).
+    return: ((![go.SliceType go.byte] "s") =⟨go.SliceType go.byte⟩ (Convert go.untyped_nil (go.SliceType go.byte) UntypedNil))).
 
 (* helpers
 
@@ -1951,7 +1951,7 @@ Definition testPlusTimesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
 (* go: precedence.go:3:6 *)
 Definition testOrCompareSimpleⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    exception_do ((if: #false || #true
+    exception_do ((if: Convert go.untyped_bool go.bool (#false || #true)
     then return: (#true)
     else do:  #());;;
     return: (#false)).
@@ -1962,12 +1962,12 @@ Definition testOrCompareⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
     exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
     do:  ("ok" <-[go.bool] "$r0");;;
-    (if: (~ (#false || #true))
+    (if: Convert go.untyped_bool go.bool (~ (#false || #true))
     then
       let: "$r0" := #false in
       do:  ("ok" <-[go.bool] "$r0")
     else do:  #());;;
-    (if: #false || #false
+    (if: Convert go.untyped_bool go.bool (#false || #false)
     then
       let: "$r0" := #false in
       do:  ("ok" <-[go.bool] "$r0")
@@ -1980,12 +1980,12 @@ Definition testAndCompareⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
     exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
     do:  ("ok" <-[go.bool] "$r0");;;
-    (if: #false && #true
+    (if: Convert go.untyped_bool go.bool (#false && #true)
     then
       let: "$r0" := #false in
       do:  ("ok" <-[go.bool] "$r0")
     else do:  #());;;
-    (if: #true || #true
+    (if: Convert go.untyped_bool go.bool (#true || #true)
     then do:  #()
     else
       let: "$r0" := #false in
@@ -2219,7 +2219,7 @@ Definition testOverwriteArrayⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
     do:  (let: "$a0" := (![go.SliceType go.uint64] "arr") in
     let: "$a1" := #(W64 5) in
     (MethodResolve (go.PointerType ArrayEditor) "Advance"%go #() (![go.PointerType ArrayEditor] "ae1")) "$a0" "$a1");;;
-    (if: ((((![go.uint64] (IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "arr", #(W64 0)))) +⟨go.uint64⟩ (![go.uint64] (IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "arr", #(W64 1))))) +⟨go.uint64⟩ (![go.uint64] (IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "arr", #(W64 2))))) +⟨go.uint64⟩ (![go.uint64] (IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "arr", #(W64 3))))) ≥⟨go.uint64⟩ #(W64 100)
+    (if: Convert go.untyped_bool go.bool (((((![go.uint64] (IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "arr", #(W64 0)))) +⟨go.uint64⟩ (![go.uint64] (IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "arr", #(W64 1))))) +⟨go.uint64⟩ (![go.uint64] (IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "arr", #(W64 2))))) +⟨go.uint64⟩ (![go.uint64] (IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "arr", #(W64 3))))) ≥⟨go.uint64⟩ #(W64 100))
     then return: (#false)
     else do:  #());;;
     return: (((![go.uint64] (IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "arr", #(W64 3)))) =⟨go.uint64⟩ #(W64 4)) && ((![go.uint64] (IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "arr", #(W64 0)))) =⟨go.uint64⟩ #(W64 4)))).
@@ -2263,7 +2263,7 @@ Definition testSliceAppendⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
     let: "$a1" := (![go.SliceType go.byte] "newBytes") in
     (FuncResolve go.append [go.SliceType go.byte] #()) "$a0" "$a1") in
     do:  ("bytes" <-[go.SliceType go.byte] "$r0");;;
-    let: "$r0" := ((![go.bool] "ok") && ((s_to_w64 (let: "$a0" := (![go.SliceType go.byte] "bytes") in
+    let: "$r0" := ((![go.bool] "ok") && ((Convert go.int go.uint64 (let: "$a0" := (![go.SliceType go.byte] "bytes") in
     (FuncResolve go.len [go.SliceType go.byte] #()) "$a0")) =⟨go.uint64⟩ #(W64 3))) in
     do:  ("ok" <-[go.bool] "$r0");;;
     let: "$r0" := ((![go.bool] "ok") && ((![go.byte] (IndexRef (go.SliceType go.byte) (![go.SliceType go.byte] "bytes", #(W64 2)))) =⟨go.byte⟩ #(W8 3))) in
@@ -2427,7 +2427,7 @@ Definition testStructConstructionsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGl
     let: "p4" := (GoAlloc TwoInts (GoZeroVal TwoInts #())) in
     let: "$r0" := (CompositeLiteral TwoInts (LiteralValue [KeyedElement (Some (KeyField "x"%go)) (ElementExpression #(W64 0)); KeyedElement (Some (KeyField "y"%go)) (ElementExpression #(W64 0))])) in
     do:  ("p4" <-[TwoInts] "$r0");;;
-    let: "$r0" := ((![go.bool] "ok") && ((![go.PointerType TwoInts] "p1") =⟨go.PointerType TwoInts⟩ #null)) in
+    let: "$r0" := ((![go.bool] "ok") && ((![go.PointerType TwoInts] "p1") =⟨go.PointerType TwoInts⟩ (Convert go.untyped_nil (go.PointerType TwoInts) UntypedNil))) in
     do:  ("ok" <-[go.bool] "$r0");;;
     let: "$r0" := (GoAlloc TwoInts (GoZeroVal TwoInts #())) in
     do:  ("p1" <-[go.PointerType TwoInts] "$r0");;;
@@ -2511,7 +2511,7 @@ Definition testStoreSliceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
     do:  ("s" <-[go.SliceType go.uint64] "$r0");;;
     let: "$r0" := (![go.SliceType go.uint64] "s") in
     do:  ((![go.PointerType (go.SliceType go.uint64)] "p") <-[go.SliceType go.uint64] "$r0");;;
-    return: ((s_to_w64 (let: "$a0" := (![go.SliceType go.uint64] (![go.PointerType (go.SliceType go.uint64)] "p")) in
+    return: ((Convert go.int go.uint64 (let: "$a0" := (![go.SliceType go.uint64] (![go.PointerType (go.SliceType go.uint64)] "p")) in
      (FuncResolve go.len [go.SliceType go.uint64] #()) "$a0")) =⟨go.uint64⟩ #(W64 3))).
 
 (* go: structs.go:155:6 *)
@@ -2584,14 +2584,14 @@ Definition testSwitchConversionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
     let: "$r0" := (GoAlloc switchConcrete (CompositeLiteral switchConcrete (LiteralValue []))) in
     do:  ("v" <-[go.PointerType switchConcrete] "$r0");;;
     let: "x" := (GoAlloc switchInterface (GoZeroVal switchInterface #())) in
-    let: "$r0" := (InterfaceMake (go.PointerType switchConcrete) (![go.PointerType switchConcrete] "v")) in
+    let: "$r0" := (Convert (go.PointerType switchConcrete) switchInterface (![go.PointerType switchConcrete] "v")) in
     do:  ("x" <-[switchInterface] "$r0");;;
     let: "$sw" := (![switchInterface] "x") in
-    (if: "$sw" =⟨switchInterface⟩ (InterfaceMake (go.PointerType switchConcrete) (![go.PointerType switchConcrete] "v"))
+    (if: "$sw" =⟨switchInterface⟩ (Convert (go.PointerType switchConcrete) switchInterface (![go.PointerType switchConcrete] "v"))
     then do:  #()
     else return: (#false));;;
     let: "$sw" := (![go.PointerType switchConcrete] "v") in
-    (if: (InterfaceMake (go.PointerType switchConcrete) "$sw") =⟨switchInterface⟩ (![switchInterface] "x")
+    (if: (Convert (go.PointerType switchConcrete) switchInterface "$sw") =⟨switchInterface⟩ (![switchInterface] "x")
     then do:  #()
     else return: (#false));;;
     return: (#true)).
@@ -2657,9 +2657,9 @@ Definition Newⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :
     let: "diskSize" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := ((MethodResolve disk.Disk "Size"%go #() (![disk.Disk] "d")) #()) in
     do:  ("diskSize" <-[go.uint64] "$r0");;;
-    (if: (![go.uint64] "diskSize") ≤⟨go.uint64⟩ logLength
+    (if: Convert go.untyped_bool go.bool ((![go.uint64] "diskSize") ≤⟨go.uint64⟩ logLength)
     then
-      do:  (let: "$a0" := (InterfaceMake go.string #"disk is too small to host log"%go) in
+      do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"disk is too small to host log"%go) in
       (FuncResolve go.panic [] #()) "$a0")
     else do:  #());;;
     let: "cache" := (GoAlloc (go.MapType go.uint64 (go.SliceType go.byte)) (GoZeroVal (go.MapType go.uint64 (go.SliceType go.byte)) #())) in
@@ -2708,7 +2708,7 @@ Definition Log__BeginTxnⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
     let: "length" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := (![go.uint64] (![go.PointerType go.uint64] (StructFieldRef Log "length"%go "l"))) in
     do:  ("length" <-[go.uint64] "$r0");;;
-    (if: (![go.uint64] "length") =⟨go.uint64⟩ #(W64 0)
+    (if: Convert go.untyped_bool go.bool ((![go.uint64] "length") =⟨go.uint64⟩ #(W64 0))
     then
       do:  ((MethodResolve Log "unlock"%go #() (![Log] "l")) #());;;
       return: (#true)
@@ -2766,9 +2766,9 @@ Definition Log__Writeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
     let: "length" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := (![go.uint64] (![go.PointerType go.uint64] (StructFieldRef Log "length"%go "l"))) in
     do:  ("length" <-[go.uint64] "$r0");;;
-    (if: (![go.uint64] "length") ≥⟨go.uint64⟩ MaxTxnWrites
+    (if: Convert go.untyped_bool go.bool ((![go.uint64] "length") ≥⟨go.uint64⟩ MaxTxnWrites)
     then
-      do:  (let: "$a0" := (InterfaceMake go.string #"transaction is at capacity"%go) in
+      do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"transaction is at capacity"%go) in
       (FuncResolve go.panic [] #()) "$a0")
     else do:  #());;;
     let: "aBlock" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
@@ -2844,7 +2844,7 @@ Definition applyLogⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : 
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[go.uint64] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      (if: (![go.uint64] "i") <⟨go.uint64⟩ (![go.uint64] "length")
+      (if: Convert go.untyped_bool go.bool ((![go.uint64] "i") <⟨go.uint64⟩ (![go.uint64] "length"))
       then
         let: "v" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
         let: "a" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
@@ -3153,8 +3153,6 @@ Class geometryInterface_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!Go
 {
   #[global] geometryInterface_type_repr  :: go.TypeRepr geometryInterface geometryInterface.t;
   #[global] geometryInterface_underlying :: go.Underlying (geometryInterface) (geometryInterfaceⁱᵐᵖˡ);
-  #[global] geometryInterface_Square_unfold :: MethodUnfold (geometryInterface) "Square" (geometryInterface__Squareⁱᵐᵖˡ);
-  #[global] geometryInterface_Volume_unfold :: MethodUnfold (geometryInterface) "Volume" (geometryInterface__Volumeⁱᵐᵖˡ);
 }.
 
 Module SquareStruct.
@@ -3511,7 +3509,6 @@ Class switchInterface_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLo
 {
   #[global] switchInterface_type_repr  :: go.TypeRepr switchInterface switchInterface.t;
   #[global] switchInterface_underlying :: go.Underlying (switchInterface) (switchInterfaceⁱᵐᵖˡ);
-  #[global] switchInterface_marker_unfold :: MethodUnfold (switchInterface) "marker" (switchInterface__markerⁱᵐᵖˡ);
 }.
 
 Module Log.

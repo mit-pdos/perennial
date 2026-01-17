@@ -12,23 +12,23 @@ Module log.
 Definition Logger {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "log.Logger"%go [].
 
 (* the date in the local time zone: 2009/01/23 *)
-Definition Ldate {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Z := 1.
+Definition Ldate {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #1.
 
 (* the time in the local time zone: 01:23:23 *)
-Definition Ltime {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Z := 2.
+Definition Ltime {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #2.
 
-Axiom Lmicroseconds : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom Lmicroseconds : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom Llongfile : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom Llongfile : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom Lshortfile : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom Lshortfile : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom LUTC : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom LUTC : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom Lmsgprefix : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom Lmsgprefix : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 (* initial values for the standard logger *)
-Definition LstdFlags {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Z := 3.
+Definition LstdFlags {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #3.
 
 Definition std {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "log.std"%go.
 

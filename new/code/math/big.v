@@ -33,25 +33,25 @@ Definition divisor {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := g
 
 Definition Rat {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "math/big.Rat"%go [].
 
-Axiom _Accuracy_name : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom _Accuracy_name : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _S : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _S : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _W : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _W : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _B : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _B : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _M : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom _M : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom maxShift : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom maxShift : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom debugFloat : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom MaxExp : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom MaxExp : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom MinExp : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom MinExp : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom MaxPrec : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom MaxPrec : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom zero : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
@@ -81,15 +81,15 @@ Axiom floatGobVersion : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom intGobVersion : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom digits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom digits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom MaxBase : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom MaxBase : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom maxBaseSmall : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom maxBaseSmall : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom ratGobVersion : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom _RoundingMode_name : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom _RoundingMode_name : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition _Accuracy_index {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/big._Accuracy_index"%go.
 

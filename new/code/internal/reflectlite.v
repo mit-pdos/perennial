@@ -53,7 +53,7 @@ Axiom String : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom Struct : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom flagKindWidth : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom flagKindWidth : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom flagKindMask : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
@@ -67,7 +67,7 @@ Axiom flagAddr : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom flagMethod : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom flagMethodShift : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom flagMethodShift : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom flagRO : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 

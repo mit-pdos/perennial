@@ -81,7 +81,7 @@ Axiom loopPoisonTimer : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom loopPoisonMask : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom fuzzWorkerExitCode : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom fuzzWorkerExitCode : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom seedCorpusOnly : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
@@ -91,15 +91,15 @@ Axiom fuzzWorker : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom marker : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom maxStackLen : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom maxStackLen : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom indent : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom indent : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom normalPanic : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom recoverAndReturnPanic : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom parallelConflict : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go_string.
+Axiom parallelConflict : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition matchBenchmarks {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.matchBenchmarks"%go.
 

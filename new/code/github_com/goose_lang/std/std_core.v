@@ -52,7 +52,7 @@ Definition MulNoOverflowⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
   λ: "x" "y",
     exception_do (let: "y" := (GoAlloc go.uint64 "y") in
     let: "x" := (GoAlloc go.uint64 "x") in
-    (if: ((![go.uint64] "x") =⟨go.uint64⟩ #(W64 0)) || ((![go.uint64] "y") =⟨go.uint64⟩ #(W64 0))
+    (if: Convert go.untyped_bool go.bool (((![go.uint64] "x") =⟨go.uint64⟩ #(W64 0)) || ((![go.uint64] "y") =⟨go.uint64⟩ #(W64 0)))
     then return: (#true)
     else do:  #());;;
     return: ((![go.uint64] "x") ≤⟨go.uint64⟩ (#(W64 18446744073709551615) /⟨go.uint64⟩ (![go.uint64] "y")))).
@@ -78,12 +78,12 @@ Definition MulAssumeNoOverflowⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
 Definition Shuffleⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "xs",
     exception_do (let: "xs" := (GoAlloc (go.SliceType go.uint64) "xs") in
-    (if: (let: "$a0" := (![go.SliceType go.uint64] "xs") in
-    (FuncResolve go.len [go.SliceType go.uint64] #()) "$a0") =⟨go.int⟩ #(W64 0)
+    (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType go.uint64] "xs") in
+    (FuncResolve go.len [go.SliceType go.uint64] #()) "$a0") =⟨go.int⟩ #(W64 0))
     then return: (#())
     else do:  #());;;
     (let: "i" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    let: "$r0" := (s_to_w64 ((let: "$a0" := (![go.SliceType go.uint64] "xs") in
+    let: "$r0" := (Convert go.int go.uint64 ((let: "$a0" := (![go.SliceType go.uint64] "xs") in
     (FuncResolve go.len [go.SliceType go.uint64] #()) "$a0") -⟨go.int⟩ #(W64 1))) in
     do:  ("i" <-[go.uint64] "$r0");;;
     (for: (λ: <>, (![go.uint64] "i") >⟨go.uint64⟩ #(W64 0)); (λ: <>, do:  ("i" <-[go.uint64] ((![go.uint64] "i") -⟨go.uint64⟩ #(W64 1)))) := λ: <>,
@@ -91,12 +91,12 @@ Definition Shuffleⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : v
       let: "$r0" := (((FuncResolve primitive.RandomUint64 [] #()) #()) %⟨go.uint64⟩ ((![go.uint64] "i") +⟨go.uint64⟩ #(W64 1))) in
       do:  ("j" <-[go.uint64] "$r0");;;
       let: "temp" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-      let: "$r0" := (![go.uint64] (IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "xs", u_to_w64 (![go.uint64] "i")))) in
+      let: "$r0" := (![go.uint64] (IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "xs", Convert go.uint64 go.int (![go.uint64] "i")))) in
       do:  ("temp" <-[go.uint64] "$r0");;;
-      let: "$r0" := (![go.uint64] (IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "xs", u_to_w64 (![go.uint64] "j")))) in
-      do:  ((IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "xs", u_to_w64 (![go.uint64] "i"))) <-[go.uint64] "$r0");;;
+      let: "$r0" := (![go.uint64] (IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "xs", Convert go.uint64 go.int (![go.uint64] "j")))) in
+      do:  ((IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "xs", Convert go.uint64 go.int (![go.uint64] "i"))) <-[go.uint64] "$r0");;;
       let: "$r0" := (![go.uint64] "temp") in
-      do:  ((IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "xs", u_to_w64 (![go.uint64] "j"))) <-[go.uint64] "$r0")));;;
+      do:  ((IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "xs", Convert go.uint64 go.int (![go.uint64] "j"))) <-[go.uint64] "$r0")));;;
     return: #()).
 
 (* Permutation returns a random permutation of the integers 0, ..., n-1, using a
@@ -114,7 +114,7 @@ Definition Permutationⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
     do:  ("i" <-[go.uint64] "$r0");;;
     (for: (λ: <>, (![go.uint64] "i") <⟨go.uint64⟩ (![go.uint64] "n")); (λ: <>, do:  ("i" <-[go.uint64] ((![go.uint64] "i") +⟨go.uint64⟩ #(W64 1)))) := λ: <>,
       let: "$r0" := (![go.uint64] "i") in
-      do:  ((IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "order", u_to_w64 (![go.uint64] "i"))) <-[go.uint64] "$r0")));;;
+      do:  ((IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "order", Convert go.uint64 go.int (![go.uint64] "i"))) <-[go.uint64] "$r0")));;;
     do:  (let: "$a0" := (![go.SliceType go.uint64] "order") in
     (FuncResolve Shuffle [] #()) "$a0");;;
     return: (![go.SliceType go.uint64] "order")).

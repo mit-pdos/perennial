@@ -25,15 +25,15 @@ Axiom re : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom rn : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom rngLen : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom rngLen : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom rngTap : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom rngTap : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom rngMax : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom rngMax : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom rngMask : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom rngMask : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom int32max : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, Z.
+Axiom int32max : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition ke {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/rand.ke"%go.
 
