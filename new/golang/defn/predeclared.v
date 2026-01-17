@@ -86,6 +86,8 @@ Definition untyped_int := go.Named "untyped int"%go [].
 Definition untyped_string := go.Named "untyped string"%go [].
 Definition untyped_bool := go.Named "untyped bool"%go [].
 Definition untyped_nil := go.Named "untyped nil"%go [].
+Definition untyped_float := go.Named "untyped float"%go [].
+Definition untyped_rune := untyped_int.
 
 Section defs.
 Context {ext : ffi_syntax}.
