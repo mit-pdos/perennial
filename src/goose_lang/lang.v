@@ -173,6 +173,7 @@ Inductive go_operator : Type :=
 Inductive go_instruction : Type :=
 | AngelicExit
 
+| Convert (from to : go.type)
 | GoOp (o : go_operator) (t : go.type)
 
 | GoLoad (t : go.type)
@@ -281,6 +282,7 @@ with val :=
 
 | LiteralValueV (l : list keyed_element)
 | SelectStmtClausesV (default_handler : option expr) (l : list comm_clause)
+| UntypedNil
 
 (* https://go.dev/ref/spec#Composite_literals *)
 with keyed_element :=
@@ -1217,6 +1219,7 @@ with enc_val (v : val) : tree leaf_type :=
            | Some default_handler => Node "Some" [enc_expr default_handler]
            | None => Node "None" []
            end) :: (enc_comm_clause <$> l))
+  | UntypedNil => Node "UntypedNil" []
   end
 with enc_keyed_element (v : keyed_element) : tree leaf_type :=
   match v with
@@ -1316,6 +1319,7 @@ with dec_val (v : tree leaf_type) : val :=
        | Node "Some" [e] => Some (dec_expr e)
        | _ => inhabitant
        end) (dec_comm_clause <$> l)
+  | Node "UntypedNil" [] => UntypedNil
   | _ => inhabitant
   end
 with dec_keyed_element (v : tree leaf_type) : keyed_element :=

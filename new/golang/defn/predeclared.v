@@ -81,6 +81,12 @@ Definition uint32 : go.type := go.Named "uint32"%go [].
 Definition uint64 : go.type := go.Named "uint64"%go [].
 Definition uintptr : go.type := go.Named "uintptr"%go [].
 
+(* Untyped types *)
+Definition untyped_int := go.Named "untyped int"%go [].
+Definition untyped_string := go.Named "untyped string"%go [].
+Definition untyped_bool := go.Named "untyped bool"%go [].
+Definition untyped_nil := go.Named "untyped nil"%go [].
+
 Section defs.
 Context {ext : ffi_syntax}.
 Context {go_lctx : GoLocalContext} {go_gctx : GoGlobalContext}.
