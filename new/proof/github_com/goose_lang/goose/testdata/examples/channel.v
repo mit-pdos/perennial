@@ -41,17 +41,17 @@ Lemma wp_HelloWorldAsync :
   {{{ is_pkg_init chan_spec_raw_examples  }}}
     @! chan_spec_raw_examples.HelloWorldAsync #()
   {{{ (ch: loc)  (γfut: handoff_names), RET #ch;
-       IsChan ch γfut.(handoff.chan_name)  ∗
-  IsChan_handoff (V:=go_string) γfut ch (λ (v : go_string), ⌜v = "Hello, World!"%go⌝)
+       is_chan ch γfut.(handoff.chan_name)  ∗
+  is_chan_handoff (V:=go_string) γfut ch (λ (v : go_string), ⌜v = "Hello, World!"%go⌝)
     }}}.
 Proof.
   wp_start. wp_auto.
   wp_apply chan.wp_make; first done.
-  iIntros (ch). iIntros (γ). iIntros "(#HIsChan & Hcap & Hownchan)".
+  iIntros (ch). iIntros (γ). iIntros "(#His_chan & Hcap & Hownchan)".
   wp_auto.
   simpl in *.
   iMod ((start_handoff_buffered ch γ (λ (v : go_string), ⌜v = "Hello, World!"%go⌝)%I)
-         with "HIsChan Hownchan") as "(%γdone & %Hd & #Hch)".
+         with "His_chan Hownchan") as "(%γdone & %Hd & #Hch)".
   iPersist "ch".
   wp_apply (wp_fork).
   {
@@ -113,7 +113,7 @@ Proof using chan_idiomG0 chan_idiomG1.
   iIntros (ch γfuture) "[#Hch #Hfut]". wp_auto_lc 1.
   do 2 (iRename select (£1) into "Hlc1").
   iDestruct "Hpre" as "(#H1 & H2)".
-  iAssert ( IsChan (t:=structT []) done_ch γdone.(chan_name)) as "#Hdonech".
+  iAssert ( is_chan (t:=structT []) done_ch γdone.(chan_name)) as "#Hdonech".
   {
     iFrame "#".
     unfold is_done.
@@ -179,7 +179,7 @@ wp_apply (wp_fork with "[HNotify errMsg done]").
 { wp_auto.
   wp_apply wp_Sleep.
   wp_apply (chan.wp_close (V:=()) with "[]") as "(Hlc1 & Hlc2 & Hlc3 & _)".
-  { iApply (done_IsChan with "Hdone"). }
+  { iApply (done_is_chan with "Hdone"). }
   iApply (done_CloseAU (V:=()) with "[$] [$] [$HNotify errMsg]").
   { iFrame. }
   iNext.
@@ -525,10 +525,10 @@ Context `{!chan_idiomG Σ unit}.
 
 (** Invariant: channel must be Idle, all other states are False *)
 Definition is_select_nb_only (γ : chan_names) (ch : loc) : iProp Σ :=
-  "#Hch" ∷ IsChan (V:=unit)  ch γ ∗
+  "#Hch" ∷ is_chan (V:=unit)  ch γ ∗
   "#Hinv" ∷ inv nroot (
     ∃ (s : chan_rep.t unit),
-      "Hoc" ∷ OwnChan  ch s γ ∗
+      "Hoc" ∷ own_chan  ch s γ ∗
       match s with
       | chan_rep.Idle => True
       | _ => False
@@ -538,8 +538,8 @@ Definition is_select_nb_only (γ : chan_names) (ch : loc) : iProp Σ :=
 
 (** Create the idiom from a channel in Idle state *)
 Lemma start_select_nb_only (ch : loc) (γ : chan_names) :
-  IsChan ch γ -∗
-  OwnChan ch chan_rep.Idle γ ={⊤}=∗
+  is_chan ch γ -∗
+  own_chan ch chan_rep.Idle γ ={⊤}=∗
   ∃ γnb, is_select_nb_only γnb ch.
 Proof.
   iIntros "#Hch Hoc".
@@ -555,7 +555,7 @@ Lemma select_nb_only_send_au γ ch v  :
   is_select_nb_only γ ch -∗
   ( False -∗  Φ) -∗
   Φnotready -∗
-  NonBlockingSendAU ch v γ Φ Φnotready.
+  nonblocking_send_au ch v γ Φ Φnotready.
 Proof.
    intros Φ Φnotready.
   iIntros "#Hnb _ Hnotready".
@@ -579,7 +579,7 @@ Lemma select_nb_only_rcv_au γ ch :
   is_select_nb_only  γ ch -∗
   ( ∀ (v:unit), False -∗ Φ v true) -∗
   Φnotready -∗
-  NonBlockingRecvAU ch γ (λ (v:unit) (ok:bool), Φ v ok) Φnotready.
+  nonblocking_recv_au ch γ (λ (v:unit) (ok:bool), Φ v ok) Φnotready.
 Proof.
   intros Φ Φnotready.
   iIntros "#Hnb _ Hnotready".
@@ -603,14 +603,14 @@ Lemma wp_select_nb_no_panic :
 Proof using chan_idiomG0.
   wp_start. wp_auto_lc 2.
   wp_apply chan.wp_make. { done. }
-  iIntros (ch). iIntros (γ). iIntros "(#HIsChan & _Hcap & Hownchan)".
+  iIntros (ch). iIntros (γ). iIntros "(#His_chan & _Hcap & Hownchan)".
   iRename select (£1) into "Hlc1".
   wp_auto_lc 2.
   iRename select (£1) into "Hlc2".
   simpl.
   iPersist "ch".
   do 2 (iRename select (£1) into "Hlc4").
-  iMod (start_select_nb_only ch with "[$HIsChan] [$Hownchan]") as (γnb) "#Hnb".
+  iMod (start_select_nb_only ch with "[$His_chan] [$Hownchan]") as (γnb) "#Hnb".
   wp_apply (wp_fork with "[Hnb]").
   {
   wp_auto_lc 4.
@@ -620,7 +620,7 @@ Proof using chan_idiomG0.
   - (* Prove the receive case - will be vacuous *)
     iSplitL.
     +
-      (* extract IsChan *)
+      (* extract is_chan *)
       iPoseProof "Hnb" as "[$ _]".
       (* Now use our select_nb_only_rcv_au lemma *)
       iRename select (£1) into "Hlc1".
@@ -648,11 +648,11 @@ Proof using chan_idiomG0.
       iExists unit. iExists γnb. iExists _, _, _, _.
       iFrame.
       iSplit.
-      { (* Show IsChan matches *)
+      { (* Show is_chan matches *)
         iNamed "Hnb". iFrame "#". iPureIntro. done.  }
       (* Now use our select_nb_only_rcv_au lemma *)
        iSplit.
-      { (* Show IsChan matches *)
+      { (* Show is_chan matches *)
         iNamed "Hnb". iFrame "#". }
       iFrame "#".
       iApply (select_nb_only_send_au γnb ch () with " [$Hnb] []").
@@ -714,7 +714,7 @@ Proof.
 Qed.
 
 Definition is_request_chan γ (ch: loc): iProp Σ :=
-  IsChan_handoff (V:=request.t) γ ch (λ r, ∃ γfut Q, do_request r γfut Q)%I.
+  is_chan_handoff (V:=request.t) γ ch (λ r, ∃ γfut Q, do_request r γfut Q)%I.
 
 Lemma wp_ho_worker γ ch :
   {{{ is_pkg_init chan_spec_raw_examples ∗ is_request_chan γ ch }}}
@@ -815,11 +815,11 @@ Proof using chan_idiomG0.
   wp_start. wp_auto_lc 3.
       iRename select (£1) into "Hlc".
   wp_apply chan.wp_make; first done.
-  iIntros (ch). iIntros (γ). iIntros "(#HIsChan & _Hcap & Hownchan)".
+  iIntros (ch). iIntros (γ). iIntros "(#His_chan & _Hcap & Hownchan)".
   wp_auto.
   rewrite -fupd_wp.
   simpl.
-  iMod (join.own_join_alloc_buff ch γ 1 with "HIsChan Hownchan") as (γjoin) "[#Hisjoin Hjoin]".
+  iMod (join.own_join_alloc_buff ch γ 1 with "His_chan Hownchan") as (γjoin) "[#Hisjoin Hjoin]".
   iMod ((join.join_alloc_worker γjoin ch
            emp%I ( message_ptr ↦ "Hello, World!"%go) 0)%I with "[$][$Hisjoin] [$Hjoin]")
     as "[Hjoin Hworker]".
@@ -848,11 +848,11 @@ Proof using chan_idiomG0.
   wp_start. wp_auto_lc 3.
   iRename select (£1) into "Hlc1".
   wp_apply chan.wp_make; first done.
-  iIntros (ch γ) "(#HIsChan & _Hcap & Hownchan)".
+  iIntros (ch γ) "(#His_chan & _Hcap & Hownchan)".
   wp_auto.
   rewrite -fupd_wp.
   simpl.
-  iMod (join.own_join_alloc_buff ch γ 2 with "HIsChan Hownchan") as (γjoin) "[#Hisjoin Hjoin]".
+  iMod (join.own_join_alloc_buff ch γ 2 with "His_chan Hownchan") as (γjoin) "[#Hisjoin Hjoin]".
   iRename select (£1) into "Hlc2".
   iMod (join.join_alloc_worker γjoin ch emp (hello_ptr ↦ "Hello"%go) 0
         with "[$Hlc2] [$Hisjoin] [$Hjoin]") as "[Hjoin Hworker1]".
@@ -1055,14 +1055,14 @@ Lemma wp_mkStream (f: func.t) Φpre Φpost :
 Proof.
   wp_start. wp_auto.
       wp_apply (chan.wp_make (V:=go_string)); first done.
-  iIntros (ch). iIntros (γ). iIntros "(#HIsChan & _ & Hownchan)".
+  iIntros (ch). iIntros (γ). iIntros "(#His_chan & _ & Hownchan)".
   wp_auto_lc 1.
       wp_apply (chan.wp_make (V:=go_string)); first done.
-  iIntros (ch1). iIntros (γ1). iIntros "(#HIsChan1 & _ & Hownchan1)".
+  iIntros (ch1). iIntros (γ1). iIntros "(#His_chan1 & _ & Hownchan1)".
   wp_apply wp_fupd.
 
   iMod (dsp_session_init _ ch1 ch _ _ _ _
-          (mapper_service_prot Φpre Φpost) with "HIsChan1 HIsChan Hownchan1
+          (mapper_service_prot Φpre Φpost) with "His_chan1 His_chan Hownchan1
  Hownchan")
                        as (γdsp1 γdsp2) "[Hpl Hpr]";
     [by eauto|by eauto|..].

@@ -33,7 +33,7 @@ Definition worker (γ: join_names) (P: iProp Σ): iProp Σ :=
 
 Definition own_join (γ : join_names) (ch : loc) : iProp Σ :=
   ∃ (workerQ: iProp Σ) (sendNames: gset gname) s count,
-    "Hch" ∷ OwnChan ch s γ.(chan_name) ∗
+    "Hch" ∷ own_chan ch s γ.(chan_name) ∗
     "joinQ" ∷ saved_prop_own γ.(join_prop_name) (DfracOwn (1/2)) workerQ ∗
     "%HnumWaiting" ∷ ⌜size sendNames = count⌝ ∗
     "Hjoincount" ∷ ghost_var γ.(join_counter_name) (DfracOwn (1/2)) count ∗
@@ -53,7 +53,7 @@ Definition own_join (γ : join_names) (ch : loc) : iProp Σ :=
     end.
 
 Definition is_join (γ : join_names) (ch : loc) : iProp Σ :=
-  IsChan ch γ.(chan_name) ∗
+  is_chan ch γ.(chan_name) ∗
   inv nroot ("Hbar" ∷ own_join γ ch)%I.
 
 #[global] Instance is_join_persistent ch γ : Persistent (is_join γ ch) := _.
@@ -77,8 +77,8 @@ Proof.
 Qed.
 
 Lemma own_join_alloc_unbuff (ch : loc) (γch : chan_names):
-  IsChan ch γch -∗
-  OwnChan ch chan_rep.Idle γch ={⊤}=∗
+  is_chan ch γch -∗
+  own_chan ch chan_rep.Idle γch ={⊤}=∗
   ∃ γ,  is_join γ ch ∗ join γ 0 emp.
 Proof.
   iIntros "Hchan_info Hchan_own".
@@ -115,8 +115,8 @@ iExists γ.
 Qed.
 
 Lemma own_join_alloc_buff (ch : loc) (γch : chan_names) (cap:nat) :
-  IsChan ch γch -∗
-  OwnChan ch (chan_rep.Buffered []) γch ={⊤}=∗
+  is_chan ch γch -∗
+  own_chan ch (chan_rep.Buffered []) γch ={⊤}=∗
   ∃ γ, is_join γ ch ∗  join γ 0 emp.
 Proof.
    iIntros "Hchan_info Hchan_own".
@@ -265,7 +265,7 @@ Proof.
     }
     {
       iModIntro.
-      unfold SendNestedAU.
+      unfold send_nested_au.
       iInv "Hinv" as "Hinv_open2" "Hinv_close2".
       iMod (lc_fupd_elim_later with "Hlc2 Hinv_open2") as "Hinv_open2".
       iNamed "Hinv_open2".
@@ -313,7 +313,7 @@ Lemma join_receive_au γ ch n Q Φ :
   is_join γ ch -∗
   join γ (S n) Q -∗
   ▷(∀ (v:V), join γ n Q -∗ Φ v true) -∗
-  RecvAU ch γ.(chan_name) Φ.
+  recv_au ch γ.(chan_name) Φ.
 Proof.
   iIntros "(Hlc1 & Hlc2) #Hjoin HJoin Hau".
   rewrite /join /is_join.

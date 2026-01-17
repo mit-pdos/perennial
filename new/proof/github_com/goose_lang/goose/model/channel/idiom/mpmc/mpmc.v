@@ -19,7 +19,7 @@ From Perennial.algebra Require Import ghost_var.
     Requires Countable V because gmultiset V = gmap V positive.
 *)
 
-#[local] Transparent IsChan OwnChan.
+#[local] Transparent is_chan own_chan.
 
 Section mpmc.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
@@ -199,10 +199,10 @@ Definition inflight_mset (s : chan_rep.t V) : gmultiset V :=
 
 Definition is_mpmc (γ:mpmc_names) (ch:loc) (n_prod n_cons:nat)
                    (P: V → iProp Σ) (R: gmultiset V → iProp Σ) : iProp Σ :=
-    IsChan ch γ.(mpmc_chan_name) ∗
+    is_chan ch γ.(mpmc_chan_name) ∗
     inv nroot (
       ∃ s sent recv,
-        "Hch" ∷ OwnChan ch s γ.(mpmc_chan_name) ∗
+        "Hch" ∷ own_chan ch s γ.(mpmc_chan_name) ∗
         "HsentI" ∷ server γ.(mpmc_sent_name) n_prod sent ∗
         "HrecvI" ∷ server γ.(mpmc_recv_name) n_cons recv ∗
         "%Hrel" ∷ ⌜sent = recv ⊎ inflight_mset s⌝ ∗
@@ -245,8 +245,8 @@ Lemma start_mpmc ch (P : V → iProp Σ) (R : gmultiset V → iProp Σ) γ (n_pr
   end ->
   n_prod > 0 ->
   n_cons > 0 ->
-  IsChan ch γ -∗
-  (OwnChan ch s γ) ={⊤}=∗
+  is_chan ch γ -∗
+  (own_chan ch s γ) ={⊤}=∗
   (∃ γmpmc, is_mpmc γmpmc ch n_prod n_cons P R ∗
             ([∗ list] _ ∈ seq 0 n_prod, mpmc_producer γmpmc ∅) ∗
             ([∗ list] _ ∈ seq 0 n_cons, mpmc_consumer γmpmc ∅)).
@@ -265,7 +265,7 @@ Proof.
     destruct buff; try done.
     iMod (inv_alloc nroot _ (
       ∃ s sent recv,
-        "Hch" ∷ OwnChan ch s γ ∗
+        "Hch" ∷ own_chan ch s γ ∗
         "HsentI" ∷ server γsent n_prod sent ∗
         "HrecvI" ∷ server γrecv n_cons recv ∗
         "%Hrel" ∷ ⌜sent = recv ⊎ inflight_mset s⌝ ∗
@@ -317,7 +317,7 @@ Proof.
   {
     iMod (inv_alloc nroot _ (
       ∃ s sent recv,
-        "Hch" ∷ OwnChan ch s γ ∗
+        "Hch" ∷ own_chan ch s γ ∗
         "HsentI" ∷ server γsent n_prod sent ∗
         "HrecvI" ∷ server γrecv n_cons recv ∗
         "%Hrel" ∷ ⌜sent = recv ⊎ inflight_mset s⌝ ∗
@@ -422,7 +422,7 @@ Proof.
     { apply gmultiset_disj_union_local_update. }
     iMod "Hmask".
     iNamed "Hoc".
-    iAssert (OwnChan ch (chan_rep.SndPending v) γ.(mpmc_chan_name))%I
+    iAssert (own_chan ch (chan_rep.SndPending v) γ.(mpmc_chan_name))%I
       with "[Hchanrepfrag]" as "Hoc".
     { iFrame "∗#". iPureIntro. unfold chan_cap_valid. done. }
     iMod ("Hinv_close" with "[Hoc HsentI HrecvI Hclosed HP]") as "_".
@@ -434,7 +434,7 @@ Proof.
       simpl. iFrame "HP".
       iPureIntro. done.
     }
-    iModIntro. unfold SendNestedAU.
+    iModIntro. unfold send_nested_au.
     iInv "Hinv" as "Hinv_open2" "Hinv_close2".
     iMod (lc_fupd_elim_later with "Hlc2 Hinv_open2") as "Hinv_open2".
     iNamed "Hinv_open2".
@@ -576,7 +576,7 @@ Lemma mpmc_rcv_au γ ch (n_prod n_cons:nat) (P : V → iProp Σ) (R : gmultiset 
     (if ok
       then P v ∗ mpmc_consumer γ (received ⊎ {[+ v +]})
       else is_closed γ ∗ mpmc_consumer γ received ∗ ⌜ v = (default_val V) ⌝ ) -∗ Φ v ok) -∗
-  RecvAU ch γ.(mpmc_chan_name) Φ.
+  recv_au ch γ.(mpmc_chan_name) Φ.
 Proof.
   iIntros "#Hmpmc (Hlc1 & Hlc2) Hcons Hcont".
   unfold is_mpmc.
@@ -585,7 +585,7 @@ Proof.
   iMod (lc_fupd_elim_later with "Hlc1 Hinv_open") as "Hinv_open".
   iNamed "Hinv_open".
   iDestruct (server_agree with "HrecvI Hcons") as %[Hn_pos Hsub].
-  unfold RecvAU.
+  unfold recv_au.
   iExists s. iFrame "Hch".
   iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
   iNext. iFrame.
@@ -624,12 +624,12 @@ Proof.
       iNext.
       iFrame. iFrame "%". iFrame.
     }
-    iModIntro. unfold RecvNestedAU.
+    iModIntro. unfold recv_nested_au.
     iInv "Hinv" as "Hinv_open2" "Hinv_close2".
     iMod (lc_fupd_elim_later with "Hlc2 Hinv_open2") as "Hinv_open2".
     iNamed "Hinv_open2".
     iDestruct (server_agree with "HrecvI Hcons") as %[_ Hsub2].
-    unfold RecvAU.
+    unfold recv_au.
     iExists s. iFrame "Hch".
     iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask1"].
     iNext.

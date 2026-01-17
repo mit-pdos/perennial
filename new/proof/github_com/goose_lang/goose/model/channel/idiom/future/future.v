@@ -61,10 +61,10 @@ Definition fulfill_token (γ : future_names) : iProp Σ :=
 *)
 Definition is_future (γ : future_names) (ch : loc)
                      (P : V → iProp Σ) : iProp Σ :=
-  IsChan ch γ.(chan_name) ∗
+  is_chan ch γ.(chan_name) ∗
   inv nroot (
     ∃ s await_avail fulfill_avail,
-      "Hch" ∷ OwnChan ch s γ.(chan_name) ∗
+      "Hch" ∷ own_chan ch s γ.(chan_name) ∗
       "Hawait" ∷ ghost_var γ.(await_name) half await_avail ∗
       "Hfulfill" ∷ ghost_var γ.(fulfill_name) half fulfill_avail ∗
       (match s with
@@ -84,8 +84,8 @@ Definition is_future (γ : future_names) (ch : loc)
 
 (** Create a Future channel from a capacity-1 buffered channel *)
 Lemma start_future ch (P : V → iProp Σ) γ :
-  IsChan ch γ -∗
-  (OwnChan ch (chan_rep.Buffered []) γ) ={⊤}=∗
+  is_chan ch γ -∗
+  (own_chan ch (chan_rep.Buffered []) γ) ={⊤}=∗
   (∃ γfuture, is_future γfuture ch P ∗ await_token γfuture ∗ fulfill_token γfuture).
 Proof.
   iIntros "#Hch Hoc".
@@ -100,7 +100,7 @@ Proof.
   (* Allocate the invariant *)
   iMod (inv_alloc nroot _ (
     ∃ s await_avail fulfill_avail,
-      "Hch" ∷ OwnChan ch s γ ∗
+      "Hch" ∷ own_chan ch s γ ∗
       "Hawait" ∷ ghost_var γawait half await_avail ∗
       "Hfulfill" ∷ ghost_var γfulfill half fulfill_avail ∗
       (match s with
@@ -125,8 +125,8 @@ Proof.
   iFrame "#". iFrame.
 Qed.
 
-Lemma future_IsChan γfuture ch P :
-  is_future γfuture ch P ⊢ IsChan ch γfuture.(future.chan_name).
+Lemma future_is_chan γfuture ch P :
+  is_future γfuture ch P ⊢ is_chan ch γfuture.(future.chan_name).
 Proof.
   iDestruct 1 as "[$ _]".
 Qed.
@@ -207,13 +207,13 @@ Lemma future_await_au γ ch (P : V → iProp Σ) :
   is_future γ ch P -∗
   £1 ∗ await_token γ -∗
   ▷ (∀ v, P v -∗ Φ v true) -∗
-  RecvAU ch γ.(chan_name) (λ (v:V) (ok:bool), Φ v ok).
+  recv_au ch γ.(chan_name) (λ (v:V) (ok:bool), Φ v ok).
 Proof.
   iIntros (Φ) "#Hfuture [Hlc Hawaitt] HΦcont".
   unfold is_future.
   iDestruct "Hfuture" as "[_ Hinv]".
 
-  unfold RecvAU.
+  unfold recv_au.
   iInv "Hinv" as "Hinv_open" "Hinv_close".
   iDestruct "Hlc" as "[Hlc1 Hrest]".
   iMod (lc_fupd_elim_later with "[$] [$Hinv_open]") as "Hinv_open".

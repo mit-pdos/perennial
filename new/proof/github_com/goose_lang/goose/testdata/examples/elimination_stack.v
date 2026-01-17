@@ -203,12 +203,12 @@ Definition is_EliminationStack s γ N : iProp Σ :=
   ∃ st,
     "#s" ∷ s ↦□ st ∗
     "#Hbase" ∷ is_LockedStack st.(chan_spec_raw_examples.EliminationStack.base') γ.(ls_gn) ∗
-    "#Hch" ∷ IsChan (t:=stringT) st.(chan_spec_raw_examples.EliminationStack.exchanger') γ.(ch_gn) ∗
+    "#Hch" ∷ is_chan (t:=stringT) st.(chan_spec_raw_examples.EliminationStack.exchanger') γ.(ch_gn) ∗
     "#Hinv" ∷ inv (N.@"inv") (
         ∃ stack (exstate : chan_rep.t go_string),
           "Hls" ∷ own_LockedStack γ.(ls_gn) stack ∗
           "Hauth" ∷ ghost_var γ.(spec_gn) (1/2) stack ∗
-          "exchanger" ∷ OwnChan st.(chan_spec_raw_examples.EliminationStack.exchanger') exstate γ.(ch_gn) ∗
+          "exchanger" ∷ own_chan st.(chan_spec_raw_examples.EliminationStack.exchanger') exstate γ.(ch_gn) ∗
           "Hexchanger" ∷ own_exchanger_inv γ (N.@"inv") exstate
       ).
 
@@ -273,7 +273,7 @@ Proof.
 Qed.
 
 (* FIXME *)
-Transparent handoff.IsChan_handoff.
+Transparent handoff.is_chan_handoff.
 
 Lemma wp_EliminationStack__Push v γ s N :
   ∀ Φ,
@@ -449,7 +449,7 @@ Proof.
     + done.
   - iSplit; last done.
     iFrame "#".
-    (* FIXME: need to break is_handoff to get IsChan *)
+    (* FIXME: need to break is_handoff to get is_chan *)
     iPoseProof "Hafter" as "[$ _]".
     iApply (handoff.handoff_rcv_au (V:=time.Time.t) with "[$Hafter] [$]").
     iIntros (t) "_ !>". wp_auto_lc 1.

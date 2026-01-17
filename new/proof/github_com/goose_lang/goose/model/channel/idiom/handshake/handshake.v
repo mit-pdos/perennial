@@ -21,10 +21,10 @@ Context `{!chan_idiomG Σ V}.
 
   ---------------------------------------------------------------------------*)
 Definition is_handshake γ (ch : loc)  (P: V -> iProp Σ) Q : iProp Σ :=
-  IsChan ch γ  ∗
+  is_chan ch γ  ∗
   inv nroot (
       ∃ s,
-        "Hch" ∷ OwnChan ch s γ ∗
+        "Hch" ∷ own_chan ch s γ ∗
     (match s with
      | chan_rep.Idle =>
         True
@@ -38,8 +38,8 @@ Definition is_handshake γ (ch : loc)  (P: V -> iProp Σ) Q : iProp Σ :=
     )).
 
 Lemma start_handshake ch P Q  γ:
-  IsChan  ch γ  -∗
-  OwnChan  ch chan_rep.Idle γ ={⊤}=∗
+  is_chan  ch γ  -∗
+  own_chan  ch chan_rep.Idle γ ={⊤}=∗
   is_handshake γ ch P Q .
 Proof.
     intros.
@@ -55,7 +55,7 @@ Lemma handshake_receive_au γ ch P Q Φ :
   is_handshake γ ch P Q -∗
   Q -∗
   ▷(∀ v, P v -∗ Φ v true) -∗
-  RecvAU ch γ Φ.
+  recv_au ch γ Φ.
 Proof.
   iIntros "(Hlc1 & Hlc2) #His HQ Hau".
   iPoseProof "His" as "[Hchan Hinv]".

@@ -378,12 +378,12 @@ Definition chan_cap_valid (s : chan_rep.t V) (cap: Z) : Prop :=
 (* chan_cap is directly user accessible *)
 
 (** Represents ownership of a channel with its logical state *)
-Definition OwnChan (ch: loc) (s: chan_rep.t V) (γ: chan_names) : iProp Σ :=
+Definition own_chan (ch: loc) (s: chan_rep.t V) (γ: chan_names) : iProp Σ :=
   "Hchanrepfrag" ∷ chan_rep_half γ.(state_name) s ∗
   "%Hcapvalid" ∷ ⌜chan_cap_valid s (chan_cap γ)⌝.
 
-Lemma OwnChan_agree ch s s' γ :
-   OwnChan ch s γ -∗ OwnChan ch s' γ -∗ ⌜s = s'⌝.
+Lemma own_chan_agree ch s s' γ :
+   own_chan ch s γ -∗ own_chan ch s' γ -∗ ⌜s = s'⌝.
 Proof.
   iIntros "H1 H2". iNamedSuffix "H1" "1". iNamedSuffix "H2" "2".
   iDestruct (ghost_var_agree with "[$Hchanrepfrag1] [$Hchanrepfrag2]") as "%Hag".
@@ -392,10 +392,10 @@ Proof.
 Qed.
 
 (* Needs [chan_cap_valid s'' cap] as precondition? *)
-Lemma OwnChan_halves_update s'' ch s s' γ :
+Lemma own_chan_halves_update s'' ch s s' γ :
   chan_cap_valid s'' (chan_cap γ) →
-  OwnChan ch s γ -∗ OwnChan ch s' γ ==∗
-  OwnChan ch s'' γ ∗ OwnChan ch s'' γ.
+  own_chan ch s γ -∗ own_chan ch s' γ ==∗
+  own_chan ch s'' γ ∗ own_chan ch s'' γ.
 Proof.
   intros Hvalid.
   iIntros "(Hv1 & %) (Hv2 & %)". rewrite /named.
@@ -405,8 +405,8 @@ Proof.
   auto.
 Qed.
 
-Lemma OwnChan_buffer_size ch γ buf :
-  OwnChan ch (chan_rep.Buffered buf) γ -∗
+Lemma own_chan_buffer_size ch γ buf :
+  own_chan ch (chan_rep.Buffered buf) γ -∗
   ⌜Z.of_nat (length buf) ≤ chan_cap γ⌝.
 Proof.
   iNamed 1.
@@ -414,8 +414,8 @@ Proof.
   iPureIntro. lia.
 Qed.
 
-Lemma OwnChan_drain_size ch γ drain :
-  OwnChan ch (chan_rep.Closed drain) γ -∗
+Lemma own_chan_drain_size ch γ drain :
+  own_chan ch (chan_rep.Closed drain) γ -∗
   ⌜Z.of_nat (length drain) ≤ chan_cap γ⌝.
 Proof.
   iNamed 1.
@@ -431,80 +431,80 @@ Definition K (Φ : V → bool → iProp Σ) : (V * bool) → iProp Σ :=
   λ '(v,b), Φ v b.
 
 (** Inner atomic update for receive completion (second phase of handshake) *)
-Definition RecvNestedAU ch (γ: chan_names) (Φ : V → bool → iProp Σ) : iProp Σ :=
+Definition recv_nested_au ch (γ: chan_names) (Φ : V → bool → iProp Σ) : iProp Σ :=
    |={⊤,∅}=>
-    ▷∃ s, "Hocinner" ∷ OwnChan ch s γ ∗
+    ▷∃ s, "Hocinner" ∷ own_chan ch s γ ∗
      "Hcontinner" ∷
     (match s with
     (* Case: Sender has committed, complete the exchange *)
-    | chan_rep.SndCommit v => OwnChan ch chan_rep.Idle γ ={∅,⊤}=∗ Φ v true
+    | chan_rep.SndCommit v => own_chan ch chan_rep.Idle γ ={∅,⊤}=∗ Φ v true
     (* Case: Channel is closed with no messages *)
-    | chan_rep.Closed [] => OwnChan ch s γ ={∅,⊤}=∗ Φ (default_val V) false
+    | chan_rep.Closed [] => own_chan ch s γ ={∅,⊤}=∗ Φ (default_val V) false
     | _ => True
     end).
 
 (** Slow path receive: may need to block and wait *)
-Definition RecvAU ch (γ: chan_names) (Φ : V → bool → iProp Σ) : iProp Σ :=
+Definition recv_au ch (γ: chan_names) (Φ : V → bool → iProp Σ) : iProp Σ :=
    |={⊤,∅}=>
-    ▷∃ s, "Hoc" ∷ OwnChan ch s γ ∗
+    ▷∃ s, "Hoc" ∷ own_chan ch s γ ∗
      "Hcont" ∷
     (match s with
     (* Case: Sender is waiting, can complete immediately *)
     | chan_rep.SndPending v =>
-          OwnChan ch chan_rep.RcvCommit γ ={∅,⊤}=∗ Φ v true
+          own_chan ch chan_rep.RcvCommit γ ={∅,⊤}=∗ Φ v true
     (* Case: Channel is idle, need to wait for sender *)
     | chan_rep.Idle =>
-          OwnChan ch (chan_rep.RcvPending) γ ={∅,⊤}=∗
-              RecvNestedAU ch γ Φ
+          own_chan ch (chan_rep.RcvPending) γ ={∅,⊤}=∗
+              recv_nested_au ch γ Φ
     (* Case: Channel is closed *)
-    | chan_rep.Closed [] => OwnChan ch s γ ={∅,⊤}=∗ Φ (default_val V) false
+    | chan_rep.Closed [] => own_chan ch s γ ={∅,⊤}=∗ Φ (default_val V) false
     (* Case: Closed but still have values to drain *)
-    | chan_rep.Closed (v::rest) => (OwnChan ch (chan_rep.Closed rest) γ ={∅,⊤}=∗ Φ v true)
+    | chan_rep.Closed (v::rest) => (own_chan ch (chan_rep.Closed rest) γ ={∅,⊤}=∗ Φ v true)
     (* Case: Buffered channel with values in buffer *)
-    | chan_rep.Buffered (v::rest) => (OwnChan ch (chan_rep.Buffered rest) γ ={∅,⊤}=∗ Φ v true)
+    | chan_rep.Buffered (v::rest) => (own_chan ch (chan_rep.Buffered rest) γ ={∅,⊤}=∗ Φ v true)
     | _ => True
     end).
 
 (** Fast path receive: immediate completion when possible *)
-Definition NonBlockingRecvAU ch γ (Φ : V → bool → iProp Σ) Φnotready : iProp Σ :=
+Definition nonblocking_recv_au ch γ (Φ : V → bool → iProp Σ) Φnotready : iProp Σ :=
   (|={⊤,∅}=>
-     ▷∃ s, "Hoc" ∷ OwnChan ch s γ ∗
+     ▷∃ s, "Hoc" ∷ own_chan ch s γ ∗
            "Hcont" ∷
              match s with
              (* Case: Sender is waiting, can complete immediately *)
              | chan_rep.SndPending v =>
-                 OwnChan ch chan_rep.RcvCommit γ ={∅,⊤}=∗ Φ v true
+                 own_chan ch chan_rep.RcvCommit γ ={∅,⊤}=∗ Φ v true
              (* Case: Channel is closed *)
-             | chan_rep.Closed [] => OwnChan ch s γ ={∅,⊤}=∗ Φ (default_val V) false
+             | chan_rep.Closed [] => own_chan ch s γ ={∅,⊤}=∗ Φ (default_val V) false
              (* Case: Channel is closed but still has values to drain *)
-             | chan_rep.Closed (v::rest) => (OwnChan ch (chan_rep.Closed rest) γ ={∅,⊤}=∗ Φ v true)
+             | chan_rep.Closed (v::rest) => (own_chan ch (chan_rep.Closed rest) γ ={∅,⊤}=∗ Φ v true)
              (* Case: Buffered channel with values *)
-             | chan_rep.Buffered (v::rest) => (OwnChan ch (chan_rep.Buffered rest) γ ={∅,⊤}=∗ Φ v true)
+             | chan_rep.Buffered (v::rest) => (own_chan ch (chan_rep.Buffered rest) γ ={∅,⊤}=∗ Φ v true)
              | _ => True
              end) ∧
   Φnotready.
 
-(** See [NonBlockingSendAU_alt] documentation below.  *)
-Definition NonBlockingRecvAU_alt ch γ (Φ : V → bool → iProp Σ) Φnotready : iProp Σ :=
+(** See [nonblocking_send_au_alt] documentation below.  *)
+Definition nonblocking_recv_au_alt ch γ (Φ : V → bool → iProp Σ) Φnotready : iProp Σ :=
    |={⊤,∅}=>
-    ▷∃ s, "Hoc" ∷ OwnChan ch s γ ∗
+    ▷∃ s, "Hoc" ∷ own_chan ch s γ ∗
      "Hcont" ∷
     (match s with
     (* Case: Sender is waiting, can complete immediately *)
     | chan_rep.SndPending v =>
-          OwnChan ch chan_rep.RcvCommit γ ={∅,⊤}=∗ Φ v true
+          own_chan ch chan_rep.RcvCommit γ ={∅,⊤}=∗ Φ v true
     (* Case: Channel is closed *)
-    | chan_rep.Closed [] => OwnChan ch s γ ={∅,⊤}=∗ Φ (default_val V) false
+    | chan_rep.Closed [] => own_chan ch s γ ={∅,⊤}=∗ Φ (default_val V) false
     (* Case: Channel is closed but still has values to drain *)
-    | chan_rep.Closed (v::rest) => (OwnChan ch (chan_rep.Closed rest) γ ={∅,⊤}=∗ Φ v true)
+    | chan_rep.Closed (v::rest) => (own_chan ch (chan_rep.Closed rest) γ ={∅,⊤}=∗ Φ v true)
     (* Case: Buffered channel with values *)
-    | chan_rep.Buffered (v::rest) => (OwnChan ch (chan_rep.Buffered rest) γ ={∅,⊤}=∗ Φ v true)
-    | _ => (OwnChan ch s γ ={∅,⊤}=∗ Φnotready)
+    | chan_rep.Buffered (v::rest) => (own_chan ch (chan_rep.Buffered rest) γ ={∅,⊤}=∗ Φ v true)
+    | _ => (own_chan ch s γ ={∅,⊤}=∗ Φnotready)
     end).
 
 Lemma blocking_rcv_implies_nonblocking ch γ (Φ : V → bool → iProp Σ) :
-  RecvAU ch γ Φ -∗
-  NonBlockingRecvAU ch γ Φ True.
+  recv_au ch γ Φ -∗
+  nonblocking_recv_au ch γ Φ True.
 Proof.
   iIntros "Hau".
   iSplitL; last done. iMod "Hau" as (s) "[Hoc Hcont]".
@@ -513,14 +513,14 @@ Proof.
 Qed.
 
 (** Inner atomic update for send completion (second phase of handshake) *)
-Definition SendNestedAU ch (γ: chan_names) (Φ : iProp Σ) : iProp Σ :=
+Definition send_nested_au ch (γ: chan_names) (Φ : iProp Σ) : iProp Σ :=
    |={⊤,∅}=>
-    ▷∃ s, "Hocinner" ∷ OwnChan ch s γ ∗
+    ▷∃ s, "Hocinner" ∷ own_chan ch s γ ∗
      "Hcontinner" ∷
     (match s with
     (* Case: Receiver has committed, complete the exchange *)
     | chan_rep.RcvCommit =>
-           OwnChan ch chan_rep.Idle γ ={∅,⊤}=∗ Φ
+           own_chan ch chan_rep.Idle γ ={∅,⊤}=∗ Φ
     (* Case: Channel is closed, operation fails *)
     | chan_rep.Closed drain => False
     | _ => True
@@ -529,40 +529,40 @@ Definition SendNestedAU ch (γ: chan_names) (Φ : iProp Σ) : iProp Σ :=
 (** Slow path send: may need to block and wait *)
 Definition SendAU ch (v : V) (γ: chan_names) (Φ : iProp Σ) : iProp Σ :=
    |={⊤,∅}=>
-    ▷∃ s, "Hoc" ∷ OwnChan ch s γ ∗
+    ▷∃ s, "Hoc" ∷ own_chan ch s γ ∗
      "Hcont" ∷
     (match s with
     (* Case: Receiver is waiting, can complete immediately *)
     | chan_rep.RcvPending =>
-        OwnChan ch (chan_rep.SndCommit v) γ ={∅,⊤}=∗ Φ
+        own_chan ch (chan_rep.SndCommit v) γ ={∅,⊤}=∗ Φ
     (* Case: Channel is idle, need to wait for receiver *)
     | chan_rep.Idle =>
-          OwnChan ch (chan_rep.SndPending v) γ ={∅,⊤}=∗
-              SendNestedAU ch γ Φ
+          own_chan ch (chan_rep.SndPending v) γ ={∅,⊤}=∗
+              send_nested_au ch γ Φ
     (* Case: Channel is closed, client must rule this out *)
     | chan_rep.Closed drain => False
     (* Case: Buffered channel *)
     | chan_rep.Buffered buff =>
-        (* OwnChan implies new buffer size is <= cap, so the whole update is
+        (* own_chan implies new buffer size is <= cap, so the whole update is
         equivalent to True if no space is available *)
-        (OwnChan ch (chan_rep.Buffered (buff ++ [v])) γ ={∅,⊤}=∗ Φ)
+        (own_chan ch (chan_rep.Buffered (buff ++ [v])) γ ={∅,⊤}=∗ Φ)
     | _ => True
     end).
 
 (** Fast path send: immediate completion when possible *)
-Definition NonBlockingSendAU ch (v : V) γ Φ Φnotready : iProp Σ :=
+Definition nonblocking_send_au ch (v : V) γ Φ Φnotready : iProp Σ :=
   (|={⊤,∅}=>
-     ▷∃ s, "Hoc" ∷ OwnChan ch s γ ∗
+     ▷∃ s, "Hoc" ∷ own_chan ch s γ ∗
            "Hcont" ∷
              match s with
              (* Case: Receiver is waiting, can complete immediately *)
              | chan_rep.RcvPending =>
-                 OwnChan ch (chan_rep.SndCommit v) γ ={∅,⊤}=∗ Φ
+                 own_chan ch (chan_rep.SndCommit v) γ ={∅,⊤}=∗ Φ
              (* Case: Channel is closed, client must rule this out *)
              | chan_rep.Closed drain => False
              (* Case: Buffered channel *)
              | chan_rep.Buffered buff =>
-                   (OwnChan ch (chan_rep.Buffered (buff ++ [v])) γ ={∅,⊤}=∗ Φ)
+                   (own_chan ch (chan_rep.Buffered (buff ++ [v])) γ ={∅,⊤}=∗ Φ)
              | _ => True
              end) ∧
   Φnotready.
@@ -570,10 +570,10 @@ Definition NonBlockingSendAU ch (v : V) γ Φ Φnotready : iProp Σ :=
 (* Special case update that only works if the channel is known to be buffered. *)
 Definition buffered_send_au ch (v : V) γ Φ : iProp Σ :=
   |={⊤,∅}=>
-    ▷∃ s, "Hoc" ∷ OwnChan ch s γ ∗
+    ▷∃ s, "Hoc" ∷ own_chan ch s γ ∗
           "Hcont" ∷
             match s with
-            | chan_rep.Buffered buf => OwnChan ch (chan_rep.Buffered (buf ++ [v])) γ ={∅,⊤}=∗ Φ
+            | chan_rep.Buffered buf => own_chan ch (chan_rep.Buffered (buf ++ [v])) γ ={∅,⊤}=∗ Φ
             | chan_rep.Closed _ => False
             | _ => True
             end.
@@ -584,42 +584,42 @@ Definition buffered_send_au ch (v : V) γ Φ : iProp Σ :=
     passed as a precondition to the default handler, allowing for reasoning
     about programs in which it should be _impossible_ to reach the default.
 
-    This is not implied by nor does it imply [NonBlockingSendAU].
-    - [NonBlockingSendAU -∗ NonBlockingSendAU_alt]: the default spec does not provide
+    This is not implied by nor does it imply [nonblocking_send_au].
+    - [nonblocking_send_au -∗ nonblocking_send_au_alt]: the default spec does not provide
       [|={∅,⊤}=>] in the notready case, but it's necessary to somehow close all
-      invariants in [NonBlockingSendAU_alt].
-    - [NonBlockingSendAU_alt -∗ NonBlockingSendAU]: under [NonBlockingSendAU_alt], the notready
+      invariants in [nonblocking_send_au_alt].
+    - [nonblocking_send_au_alt -∗ nonblocking_send_au]: under [nonblocking_send_au_alt], the notready
       predicate is only known to be true if the channel is _actually_ not ready,
-      whereas [NonBlockingSendAU] requires proving it's always OK to skip a case.
+      whereas [nonblocking_send_au] requires proving it's always OK to skip a case.
 
     The writer of this spec does not know a different au which is weaker than
-    both [NonBlockingSendAU] and [NonBlockingSendAU_alt] and which is provable with
+    both [nonblocking_send_au] and [nonblocking_send_au_alt] and which is provable with
     [TrySend]. If such a thing exists, it may enable having a canonical spec for
     nonblocking channel operations. To be worth it, it would also require having
     a canonical version of the select spec, for which there are currently two
     (see [golang/theory/chan.v]). *)
-Definition NonBlockingSendAU_alt ch (v : V) γ Φ Φnotready : iProp Σ :=
+Definition nonblocking_send_au_alt ch (v : V) γ Φ Φnotready : iProp Σ :=
   |={⊤,∅}=>
-    ▷∃ s, "Hoc" ∷ OwnChan ch s γ ∗
+    ▷∃ s, "Hoc" ∷ own_chan ch s γ ∗
           "Hcont" ∷
             match s with
             (* Case: Receiver is waiting, can complete immediately *)
             | chan_rep.RcvPending =>
-                OwnChan ch (chan_rep.SndCommit v) γ ={∅,⊤}=∗ Φ
+                own_chan ch (chan_rep.SndCommit v) γ ={∅,⊤}=∗ Φ
             (* Case: Channel is closed, client must rule this out *)
             | chan_rep.Closed drain => False
             (* Case: Buffered channel *)
             | chan_rep.Buffered buff =>
                 if decide (length buff < chan_cap γ) then
-                  (OwnChan ch (chan_rep.Buffered (buff ++ [v])) γ ={∅,⊤}=∗ Φ)
+                  (own_chan ch (chan_rep.Buffered (buff ++ [v])) γ ={∅,⊤}=∗ Φ)
                 else
-                  (OwnChan ch s γ ={∅,⊤}=∗ Φnotready)
-            | _ => (OwnChan ch s γ ={∅,⊤}=∗ Φnotready)
+                  (own_chan ch s γ ={∅,⊤}=∗ Φnotready)
+            | _ => (own_chan ch s γ ={∅,⊤}=∗ Φnotready)
             end.
 
 Lemma blocking_send_implies_nonblocking ch v γ (Φ : iProp Σ) :
   SendAU ch v γ Φ -∗
-  NonBlockingSendAU ch v γ Φ True.
+  nonblocking_send_au ch v γ Φ True.
 Proof.
   iIntros "Hchan".
   iSplitL; last done.
@@ -630,15 +630,15 @@ Qed.
 
 Definition CloseAU ch (γ: chan_names) (Φ : iProp Σ) : iProp Σ :=
    |={⊤,∅}=>
-    ▷∃ s, "Hocinner" ∷ OwnChan ch s γ ∗
+    ▷∃ s, "Hocinner" ∷ own_chan ch s γ ∗
      "Hcontinner" ∷
     (match s with
     (* Case: Ready to close unbuffered *)
     | chan_rep.Idle =>
-           OwnChan ch (chan_rep.Closed []) γ ={∅,⊤}=∗ Φ
+           own_chan ch (chan_rep.Closed []) γ ={∅,⊤}=∗ Φ
     (* Case: Buffered, go to drain *)
     | chan_rep.Buffered buff =>
-          OwnChan ch (chan_rep.Closed buff) γ ={∅,⊤}=∗ Φ
+          own_chan ch (chan_rep.Closed buff) γ ={∅,⊤}=∗ Φ
     (* Case: Channel is closed already, panic *)
     | chan_rep.Closed drain => False
     | _ => True
@@ -654,7 +654,7 @@ Definition chan_logical (ch: loc) (γ : chan_names) (s : chan_phys_state V): iPr
        ∃ (Φr: V → bool → iProp Σ),
            "Hoffer" ∷ offer_bundle_empty γ ∗
            "Hpred" ∷ saved_pred_own γ.(offer_parked_pred_name) (DfracOwn 1) (K Φr) ∗
-            OwnChan ch chan_rep.Idle γ
+            own_chan ch chan_rep.Idle γ
 
   | SndWait v =>
        ∃ (P: iProp Σ) (Φ: iProp Σ) (Φr: V → bool → iProp Σ),
@@ -662,39 +662,39 @@ Definition chan_logical (ch: loc) (γ : chan_names) (s : chan_phys_state V): iPr
           "HP" ∷ P ∗
           "Hpred" ∷ saved_pred_own γ.(offer_parked_pred_name) (DfracOwn 1) (K Φr) ∗
           "Hau" ∷ (P -∗ SendAU ch v γ Φ) ∗
-           OwnChan ch chan_rep.Idle γ
+           own_chan ch chan_rep.Idle γ
 
   | RcvWait =>
        ∃ (P: iProp Σ) (Φr: V → bool → iProp Σ),
          "Hoffer" ∷ offer_bundle_half γ (Some Rcv) P True ∗
          "HP" ∷ P ∗
          "Hpred" ∷ saved_pred_own γ.(offer_parked_pred_name) (DfracOwn (1/2)) (K Φr) ∗
-         "Hau" ∷ (P -∗ RecvAU ch γ Φr) ∗
-         OwnChan ch chan_rep.Idle γ
+         "Hau" ∷ (P -∗ recv_au ch γ Φr) ∗
+         own_chan ch chan_rep.Idle γ
 
   | SndDone v =>
        ∃ (P: iProp Σ) (Φr: V → bool → iProp Σ),
        "Hpred" ∷ saved_pred_own γ.(offer_parked_pred_name) (DfracOwn (1/2)) (K Φr) ∗
        "Hoffer" ∷ offer_bundle_half γ (Some Rcv) P True ∗
-       "Hau" ∷ RecvNestedAU ch γ Φr ∗
-       OwnChan ch (chan_rep.SndCommit v) γ
+       "Hau" ∷ recv_nested_au ch γ Φr ∗
+       own_chan ch (chan_rep.SndCommit v) γ
 
   | RcvDone =>
        ∃ (P: iProp Σ) (Φ: iProp Σ) (Φr: V → bool → iProp Σ) (v:V),
          "Hoffer" ∷ offer_bundle_half γ (Some (Snd v)) P Φ ∗
          "Hpred" ∷ saved_pred_own γ.(offer_parked_pred_name) (DfracOwn 1) (K Φr) ∗
-         "Hau" ∷ SendNestedAU ch γ Φ ∗
-       OwnChan ch chan_rep.RcvCommit γ
+         "Hau" ∷ send_nested_au ch γ Φ ∗
+       own_chan ch chan_rep.RcvCommit γ
 
   | Closed [] =>
-          OwnChan ch (chan_rep.Closed []) γ ∗
+          own_chan ch (chan_rep.Closed []) γ ∗
            "Hoffer" ∷ (⌜chan_cap γ = 0⌝ -∗ offer_bundle_empty γ)
 
   | Closed drain =>
-          OwnChan ch (chan_rep.Closed drain) γ
+          own_chan ch (chan_rep.Closed drain) γ
 
   | Buffered buff =>
-          OwnChan ch (chan_rep.Buffered buff) γ
+          own_chan ch (chan_rep.Buffered buff) γ
   end.
 
 (** The main invariant protected by the channel's mutex.
@@ -704,23 +704,23 @@ Definition chan_inv_inner (ch: loc) (γ: chan_names) : iProp Σ :=
     "phys" ∷ chan_phys ch s ∗
     "offer" ∷ chan_logical ch γ s.
 
-(* FIXME: IsChan should take [t] explicitly. *)
+(* FIXME: is_chan should take [t] explicitly. *)
 (** The public predicate that clients use to interact with channels.
     This is persistent and provides access to the channel's capabilities. *)
-Definition IsChan (ch: loc) (γ: chan_names) : iProp Σ :=
+Definition is_chan (ch: loc) (γ: chan_names) : iProp Σ :=
   ∃ (mu_loc: loc),
     "#cap" ∷ ch ↦s[(channel.Channel.ty t) :: "cap"]□ (W64 (chan_cap γ)) ∗
     "#mu" ∷ ch ↦s[(channel.Channel.ty t) :: "mu"]□ mu_loc ∗
     "#lock" ∷ is_lock mu_loc (chan_inv_inner ch γ).
 
-Global Instance IsChan_pers ch γ : Persistent (IsChan ch γ).
+Global Instance is_chan_pers ch γ : Persistent (is_chan ch γ).
 Proof. apply _. Qed.
 
-Global Instance OwnChan_timeless ch s γ : Timeless (OwnChan ch s γ).
+Global Instance own_chan_timeless ch s γ : Timeless (own_chan ch s γ).
 Proof. apply _. Qed.
 
-Lemma IsChan_not_null ch γ:
-  IsChan ch γ -∗ ⌜ch ≠ null⌝.
+Lemma is_chan_not_null ch γ:
+  is_chan ch γ -∗ ⌜ch ≠ null⌝.
 Proof.
   iNamed 1.
   iDestruct (field_pointsto_not_null with "cap") as %Hnn; auto.
@@ -729,4 +729,4 @@ Qed.
 
 End base.
 
-#[global] Opaque IsChan OwnChan.
+#[global] Opaque is_chan own_chan.

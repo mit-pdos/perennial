@@ -37,7 +37,7 @@ Definition waitgroupN := nroot .@ "waitgroup".
 
 Lemma wp_worker (γs: handoff_names) (ch: loc) (wg: loc) (x y: w64) :
   {{{ is_pkg_init chan_spec_raw_examples ∗
-      "#Hchan" ∷ IsChan_handoff γs ch (chanP wg x y) }}}
+      "#Hchan" ∷ is_chan_handoff γs ch (chanP wg x y) }}}
     @! chan_spec_raw_examples.worker #ch #wg #x #y
   {{{ RET #(); True }}}.
 Proof.

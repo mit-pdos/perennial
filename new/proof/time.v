@@ -72,7 +72,7 @@ Qed.
 Lemma wp_After (d : time.Duration.t) :
   {{{ is_pkg_init time }}}
     @! time.After #d
-  {{{ (ch: loc) γ, RET #ch; IsChan_handoff γ ch (λ (t: time.Time.t), True)%I }}}.
+  {{{ (ch: loc) γ, RET #ch; is_chan_handoff γ ch (λ (t: time.Time.t), True)%I }}}.
 Proof.
   wp_start.
   change (time.time.__Time) with (time.Time).

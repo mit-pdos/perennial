@@ -21,11 +21,11 @@ Record handoff_names := {
 }.
 
 (* TODO: should not have to be exposed *)
-Definition IsChan_handoff (γ : handoff_names) (ch : loc) (P : V → iProp Σ) : iProp Σ :=
-  "#Hch" ∷ IsChan ch γ.(chan_name) ∗
+Definition is_chan_handoff (γ : handoff_names) (ch : loc) (P : V → iProp Σ) : iProp Σ :=
+  "#Hch" ∷ is_chan ch γ.(chan_name) ∗
   "#Hinv" ∷ inv nroot (
     ∃ (s : chan_rep.t V),
-      "Hch" ∷ OwnChan ch s γ.(chan_name) ∗
+      "Hch" ∷ own_chan ch s γ.(chan_name) ∗
       match s with
       | chan_rep.Idle => True
       | chan_rep.SndPending v => P v
@@ -35,15 +35,15 @@ Definition IsChan_handoff (γ : handoff_names) (ch : loc) (P : V → iProp Σ) :
       | _ => True
       end
   )%I.
-#[global] Opaque IsChan_handoff.
-#[local] Transparent IsChan_handoff.
-#[global] Instance IsChan_handoff_pers γ ch P : Persistent (IsChan_handoff γ ch P).
+#[global] Opaque is_chan_handoff.
+#[local] Transparent is_chan_handoff.
+#[global] Instance is_chan_handoff_pers γ ch P : Persistent (is_chan_handoff γ ch P).
 Proof. apply _. Qed.
 
 Lemma start_handoff (ch : loc) (γ : chan_names) (P : V → iProp Σ) :
-  IsChan ch γ -∗
-  OwnChan ch chan_rep.Idle γ ={⊤}=∗
-  ∃ γhandoff,  ⌜γ = γhandoff.(chan_name)⌝ ∗ IsChan_handoff γhandoff ch P.
+  is_chan ch γ -∗
+  own_chan ch chan_rep.Idle γ ={⊤}=∗
+  ∃ γhandoff,  ⌜γ = γhandoff.(chan_name)⌝ ∗ is_chan_handoff γhandoff ch P.
 Proof.
   iIntros "#Hch Hoc".
   iExists {|
@@ -56,9 +56,9 @@ Proof.
 Qed.
 
 Lemma start_handoff_buffered (ch : loc) (γ : chan_names) (P : V → iProp Σ) :
-  IsChan ch γ -∗
-  OwnChan ch (chan_rep.Buffered []) γ ={⊤}=∗
-  ∃ γhandoff,  ⌜γ = γhandoff.(chan_name)⌝ ∗  IsChan_handoff γhandoff ch P.
+  is_chan ch γ -∗
+  own_chan ch (chan_rep.Buffered []) γ ={⊤}=∗
+  ∃ γhandoff,  ⌜γ = γhandoff.(chan_name)⌝ ∗  is_chan_handoff γhandoff ch P.
 Proof.
   iIntros "#Hch Hoc".
   iExists {|
@@ -71,10 +71,10 @@ Proof.
 Qed.
 
 Lemma handoff_rcv_au γ ch P Φ  :
-  IsChan_handoff γ ch P ⊢
+  is_chan_handoff γ ch P ⊢
   £1 ∗ £1  -∗
   (▷ ∀ v, P v -∗ Φ v true ) -∗
-  RecvAU ch γ.(chan_name) Φ.
+  recv_au ch γ.(chan_name) Φ.
 Proof.
   iIntros "#Hhandoff (Hlc1 & Hlc2 ) HΦ".
   iNamed "Hhandoff".
@@ -109,7 +109,7 @@ Proof.
       iNext. iFrame.
     }
     iModIntro.
-    unfold RecvNestedAU.
+    unfold recv_nested_au.
     iInv "Hinv" as "Hinv_open1" "Hinv_close".
     iMod (lc_fupd_elim_later with "[$] Hinv_open1") as "Hinv_open1".
     iNamed "Hinv_open1".
@@ -176,7 +176,7 @@ Proof.
 Qed.
 
 Lemma wp_handoff_receive γ ch P :
-  {{{ IsChan_handoff γ ch P }}}
+  {{{ is_chan_handoff γ ch P }}}
     chan.receive #t #ch
   {{{ v, RET (#v, #true); P v }}}.
 Proof.
@@ -194,7 +194,7 @@ Proof.
 Qed.
 
 Lemma handoff_send_au γ ch P v (Φ: iProp Σ) :
-  IsChan_handoff γ ch P ∗ £1 ∗ £1 ⊢
+  is_chan_handoff γ ch P ∗ £1 ∗ £1 ⊢
   P v -∗
   (▷ Φ) -∗
   SendAU ch v γ.(chan_name) Φ.
@@ -230,7 +230,7 @@ Proof.
       simpl. iFrame.
     }
     iModIntro.
-    unfold SendNestedAU.
+    unfold send_nested_au.
     iInv "Hinv" as "Hinv_open1" "Hinv_close".
     iMod (lc_fupd_elim_later with "[$] Hinv_open1") as "Hinv_open1".
     iNamed "Hinv_open1".
@@ -277,13 +277,13 @@ Proof.
 Qed.
 
 Lemma wp_handoff_send γ ch v P :
-  {{{ IsChan_handoff γ ch P ∗
+  {{{ is_chan_handoff γ ch P ∗
       P v }}}
     chan.send #t #ch #v
   {{{ RET #(); True }}}.
 Proof.
   wp_start_folded as "[#Hhandoff HP]".
-  unfold IsChan_handoff. iNamed "Hhandoff".
+  unfold is_chan_handoff. iNamed "Hhandoff".
   wp_apply (chan.wp_send ch with "[$Hch]").
   iIntros "(Hlc1 & Hlc2 & ? & ?)".
   iApply (handoff_send_au with "[$] [$HP]").

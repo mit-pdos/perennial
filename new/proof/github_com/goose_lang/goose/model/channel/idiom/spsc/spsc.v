@@ -17,7 +17,7 @@ From Perennial.algebra Require Import ghost_var.
     - Support for resource protocols P (per-value) and R (final state)
 *)
 
-#[local] Transparent IsChan OwnChan.
+#[local] Transparent is_chan own_chan.
 
 Section spsc.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
@@ -72,10 +72,10 @@ Definition inflight (s : chan_rep.t V) : list V :=
 *)
 Definition is_spsc (γ:spsc_names) (ch:loc)
                    (P: Z -> V → iProp Σ) (R: list V → iProp Σ) : iProp Σ :=
-    IsChan ch γ.(chan_name) ∗
+    is_chan ch γ.(chan_name) ∗
     inv nroot (
       ∃ s sent recv,
-        "Hch"    ∷ OwnChan ch s γ.(chan_name) ∗
+        "Hch"    ∷ own_chan ch s γ.(chan_name) ∗
         "HsentI" ∷ ghost_var γ.(spsc_sent_name) (DfracOwn (1/2)) sent ∗
         "HrecvI" ∷ ghost_var γ.(spsc_recv_name) (DfracOwn (1/2)) recv ∗
         "%Hrel"  ∷ ⌜sent = recv ++ inflight s⌝ ∗
@@ -101,8 +101,8 @@ Definition is_spsc (γ:spsc_names) (ch:loc)
 
 (** Create an SPSC channel from a basic channel *)
 Lemma start_spsc ch (P : Z -> V → iProp Σ) (R : list V → iProp Σ) γ:
-  IsChan ch γ -∗
-  (OwnChan ch chan_rep.Idle γ) ∨ (OwnChan ch (chan_rep.Buffered []) γ) ={⊤}=∗
+  is_chan ch γ -∗
+  (own_chan ch chan_rep.Idle γ) ∨ (own_chan ch (chan_rep.Buffered []) γ) ={⊤}=∗
   (∃ γspsc, is_spsc γspsc ch P R ∗  spsc_producer γspsc []  ∗  spsc_consumer γspsc []) .
 Proof.
   iIntros "#Hch Hoc".
@@ -149,7 +149,7 @@ Lemma spsc_rcv_au γ ch (P : Z -> V → iProp Σ) (R : list V → iProp Σ)
      (if ok then P (length received) v ∗ spsc_consumer γ (received ++ [v])
             else R received ∗ ⌜ v = (default_val V) ⌝) -∗
      Φ v ok) -∗
-  RecvAU ch γ.(chan_name) Φ.
+  recv_au ch γ.(chan_name) Φ.
 Proof.
   iIntros "#Hspsc [Hlc1 Hlc2] Hcons Hcont".
   unfold is_spsc.
@@ -163,8 +163,8 @@ Proof.
   (* Establish agreement between our received and invariant's recv *)
   iDestruct (ghost_var_agree with "Hcons HrecvI") as %->.
 
-  (* Provide RecvAU *)
-  unfold RecvAU.
+  (* Provide recv_au *)
+  unfold recv_au.
   iExists s. iFrame "Hch".
   iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
   iNext. iFrame.
@@ -223,8 +223,8 @@ done.
       iPureIntro. rewrite Hrel. simpl. done.
     }
 
-    (* Provide RecvNestedAU for completion *)
-    iModIntro. unfold RecvNestedAU.
+    (* Provide recv_nested_au for completion *)
+    iModIntro. unfold recv_nested_au.
     iInv "Hinv" as "Hinv_open2" "Hinv_close".
     iMod (lc_fupd_elim_later with "Hlc2 Hinv_open2") as "Hinv_open2".
     iNamed "Hinv_open2".
@@ -232,7 +232,7 @@ done.
     (* Establish agreement between our received and invariant's recv *)
     iDestruct (ghost_var_agree with "Hcons HrecvI") as %->.
 
-    unfold RecvAU.
+    unfold recv_au.
     iExists s. iFrame "Hch".
     iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask1"].
     iNext.
@@ -477,7 +477,7 @@ Proof.
 
     iMod "Hmask".
     iNamed "Hoc".
-    iAssert (OwnChan ch (chan_rep.SndPending v) γ.(chan_name))%I
+    iAssert (own_chan ch (chan_rep.SndPending v) γ.(chan_name))%I
       with "[Hchanrepfrag]" as "Hoc".
     { iFrame "∗#". iPureIntro. unfold chan_cap_valid. done. }
 
@@ -491,8 +491,8 @@ Proof.
       iPureIntro. done.
     }
 
-    (* Provide SendNestedAU *)
-    iModIntro. unfold SendNestedAU.
+    (* Provide send_nested_au *)
+    iModIntro. unfold send_nested_au.
 
     iInv "Hinv" as "Hinv_open2" "Hinv_close2".
     iMod (lc_fupd_elim_later with "[$] Hinv_open2") as "Hi".
