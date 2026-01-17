@@ -229,7 +229,7 @@ Class Log_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} 
   #[global] Log'ptr_writeHdr_unfold :: MethodUnfold (go.PointerType (Log)) "writeHdr" (Log__writeHdrⁱᵐᵖˡ);
 }.
 
-Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Log_instance :: Log_Assumptions;
   #[global] Init_unfold :: FuncUnfold Init [] (Initⁱᵐᵖˡ);

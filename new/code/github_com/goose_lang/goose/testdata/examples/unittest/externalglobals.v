@@ -29,7 +29,7 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
       exception_do (do:  (unittest.initialize' #()))
       ).
 
-Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] f_unfold :: FuncUnfold f [] (fⁱᵐᵖˡ);
   #[global] import_unittest_Assumption :: unittest.Assumptions;

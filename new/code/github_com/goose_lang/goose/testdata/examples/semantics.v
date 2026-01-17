@@ -1112,7 +1112,7 @@ Definition failing_testU32NewtypeLenⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : Go
     exception_do (let: "s" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) #(W64 20)) in
     do:  ("s" <-[go.SliceType go.byte] "$r0");;;
-    return: ((Convert go.int go.uint32 (let: "$a0" := (![go.SliceType go.byte] "s") in
+    return: ((Convert go.int Uint32 (let: "$a0" := (![go.SliceType go.byte] "s") in
      (FuncResolve go.len [go.SliceType go.byte] #()) "$a0")) =⟨go.uint32⟩ #(W32 20))).
 
 (* go: interfaces.go:12:6 *)
@@ -3566,7 +3566,7 @@ Class Log_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} 
   #[global] Log'ptr_unlock_unfold :: MethodUnfold (go.PointerType (Log)) "unlock" (λ: "$r", MethodResolve (Log) "unlock" #() (![(Log)] "$r"));
 }.
 
-Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] unit_instance :: unit_Assumptions;
   #[global] Enc_instance :: Enc_Assumptions;

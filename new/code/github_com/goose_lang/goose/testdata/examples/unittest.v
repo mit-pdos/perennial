@@ -990,7 +990,7 @@ Definition testU32NewtypeLenⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
     exception_do (let: "s" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) #(W64 20)) in
     do:  ("s" <-[go.SliceType go.byte] "$r0");;;
-    return: ((Convert go.int go.uint32 (let: "$a0" := (![go.SliceType go.byte] "s") in
+    return: ((Convert go.int Uint32 (let: "$a0" := (![go.SliceType go.byte] "s") in
      (FuncResolve go.len [go.SliceType go.byte] #()) "$a0")) =⟨go.uint32⟩ #(W32 20))).
 
 (* go: conversions.go:48:22 *)
@@ -1411,7 +1411,7 @@ Definition forRangeOldVarsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
 Definition maybeConvertⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (A : go.type) : val :=
   λ: "a",
     exception_do (let: "a" := (GoAlloc A "a") in
-    return: (Convert (go.InterfaceType [go.TypeElem [go.TypeTerm go.int8; go.TypeTerm go.uint8]]) go.uint32 (![A] "a"))).
+    return: (Convert A go.uint32 (![A] "a"))).
 
 (* go: generic_conversion.go:7:6 *)
 Definition maybeConvertToInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (A : go.type) : val :=
@@ -1423,13 +1423,13 @@ Definition maybeConvertToInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGl
 Definition maybeConvertToStringⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (A : go.type) : val :=
   λ: "a",
     exception_do (let: "a" := (GoAlloc A "a") in
-    return: (Convert (go.InterfaceType [go.TypeElem [go.TypeTerm go.string; go.TypeTerm (go.SliceType go.byte)]]) go.string (![A] "a"))).
+    return: (Convert A go.string (![A] "a"))).
 
 (* go: generic_conversion.go:15:6 *)
 Definition maybeConvertFromStringⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (A : go.type) : val :=
   λ: "a",
     exception_do (let: "a" := (GoAlloc A "a") in
-    return: (Convert (go.InterfaceType [go.TypeElem [go.TypeTerm go.string; go.TypeTerm (go.SliceType go.byte)]]) (go.SliceType go.byte) (![A] "a"))).
+    return: (Convert A (go.SliceType go.byte) (![A] "a"))).
 
 (* go: generic_conversion.go:19:6 *)
 Definition assertⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -4123,7 +4123,7 @@ Class UseNamedType_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocal
   #[global] UseNamedType_underlying :: go.Underlying (UseNamedType) (UseNamedTypeⁱᵐᵖˡ);
 }.
 
-Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Foo_instance :: Foo_Assumptions;
   #[global] importantStruct_instance :: importantStruct_Assumptions;

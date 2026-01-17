@@ -637,7 +637,7 @@ Definition breakPatternsCmpFuncⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
     (if: Convert go.untyped_bool go.bool ((![go.int] "length") ≥⟨go.int⟩ #(W64 8))
     then
       let: "random" := (GoAlloc xorshift (GoZeroVal xorshift #())) in
-      let: "$r0" := (Convert go.int go.uint64 (![go.int] "length")) in
+      let: "$r0" := (Convert go.int xorshift (![go.int] "length")) in
       do:  ("random" <-[xorshift] "$r0");;;
       let: "modulus" := (GoAlloc go.uint (GoZeroVal go.uint #())) in
       let: "$r0" := (let: "$a0" := (![go.int] "length") in

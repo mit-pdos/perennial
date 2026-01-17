@@ -292,7 +292,7 @@ Definition WaitTimeoutⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
       return: #())
       ) in
     do:  (Fork ("$go" #()));;;
-    SelectStmt (SelectStmtClauses None [(CommClause (RecvCase time.Time (let: "$a0" := ((Convert go.uint64 go.int64 (![go.uint64] "timeoutMs")) *⟨go.int64⟩ time.Millisecond) in
+    SelectStmt (SelectStmtClauses None [(CommClause (RecvCase time.Time (let: "$a0" := ((Convert go.uint64 time.Duration (![go.uint64] "timeoutMs")) *⟨go.int64⟩ time.Millisecond) in
     (FuncResolve time.After [] #()) "$a0")) (λ: "$recvVal",
       do:  ((MethodResolve sync.Locker "Lock"%go #() (![sync.Locker] (StructFieldRef sync.Cond "L"%go (![go.PointerType sync.Cond] "cond")))) #());;;
       return: (#())
