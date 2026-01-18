@@ -1,5 +1,5 @@
 Require Import New.proof.proof_prelude.
-From New.proof.github_com.goose_lang.goose.model.channel.protocol Require Export base.
+From New.proof.github_com.goose_lang.goose.model.channel.idiom Require Export base.
 From New.golang.theory Require Import chan.
 From Perennial.algebra Require Import ghost_var.
 
@@ -25,7 +25,7 @@ From Perennial.algebra Require Import ghost_var.
 Section lock_channel.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
-Context `{!chan_protocolG Σ V}.
+Context `{!chan_idiomG Σ V}.
 Context `{!IntoVal V}.
 Context `{!IntoValTyped V t}.
 Context `{!ghost_varG Σ bool}.
@@ -37,10 +37,10 @@ Record lock_channel_names := {
 
 Definition is_lock_channel (γ : lock_channel_names) (ch : loc)
                             (R : iProp Σ) : iProp Σ :=
-  "#Hchan" ∷ is_channel ch γ.(lchan_name) ∗
+  "#Hchan" ∷ is_chan ch γ.(lchan_name) ∗
   "#Hinv" ∷ inv nroot (
     ∃ s locked,
-      "Hch" ∷ own_channel ch s γ.(lchan_name) ∗
+      "Hch" ∷ own_chan ch s γ.(lchan_name) ∗
       "%Hcap" ∷ ⌜ chan_cap γ.(lchan_name) = 1 ⌝ ∗
       "Hlocked_ghost" ∷ ghost_var γ.(locked_name) (DfracOwn (1/2)) locked ∗
       (match s with
@@ -64,8 +64,8 @@ Definition has_lock_channel (γ : lock_channel_names) : iProp Σ :=
 
 Lemma start_lock_channel ch (R : iProp Σ) γ :
   chan_cap γ = 1 ->
-  is_channel ch γ -∗
-  own_channel ch (chan_rep.Buffered []) γ -∗
+  is_chan ch γ -∗
+  own_chan ch (chan_rep.Buffered []) γ -∗
   ▷ R ={⊤}=∗
     (∃ γlock, is_lock_channel γlock ch R).
 Proof.
@@ -78,7 +78,7 @@ Proof.
 
  iMod (inv_alloc nroot _ (
     ∃ s locked,
-      "Hch" ∷ own_channel ch s γ ∗
+      "Hch" ∷ own_chan ch s γ ∗
       "%Hcap" ∷ ⌜ chan_cap γ = 1 ⌝ ∗
       "Hlocked_ghost" ∷ ghost_var γlock.(locked_name) (DfracOwn (1/2)) locked ∗
       (match s with
@@ -103,8 +103,8 @@ Proof.
   iFrame "#".
 Qed.
 
-Lemma is_lock_channel_is_channel γ ch R :
-  is_lock_channel γ ch R ⊢ is_channel ch γ.(lchan_name).
+Lemma is_lock_channel_is_chan γ ch R :
+  is_lock_channel γ ch R ⊢ is_chan ch γ.(lchan_name).
 Proof.
   iDestruct 1 as "[$ _]".
 Qed.
@@ -114,13 +114,13 @@ Lemma lock_channel_lock_au γ ch v (R : iProp Σ) :
   is_lock_channel γ ch R -∗
   £1 -∗
   ▷ (has_lock_channel γ ∗ R -∗ Φ) -∗
-  send_au_slow ch v γ.(lchan_name) Φ.
+  SendAU ch v γ.(lchan_name) Φ.
 Proof.
   iIntros (Φ) "#Hlock (HR & Hlc) Hcont".
   unfold has_lock_channel.
   iDestruct "Hlock" as "[#Hchan #Hinv]".
 
-  unfold send_au_slow.
+  unfold SendAU.
   iInv "Hinv" as "Hinv_open" "Hinv_close".
   iMod (lc_fupd_elim_later with "[$] [$Hinv_open]") as "Hinv_open".
   iNamed "Hinv_open".
@@ -148,7 +148,7 @@ Proof.
   {
     destruct rest; try done.
     iIntros "H".
-    iDestruct (own_channel_buffer_size with "H") as "%Hbad".
+    iDestruct (own_chan_buffer_size with "H") as "%Hbad".
     rewrite Hcap in Hbad.
     simpl in Hbad.
     done.
@@ -183,13 +183,13 @@ Lemma lock_channel_unlock_au γ ch (R : iProp Σ) :
   R -∗
   £1 -∗
   ▷ (∀ v, True -∗ Φ v true) -∗
-  rcv_au_slow ch γ.(lchan_name) (λ (v:V) true, Φ v true).
+  recv_au ch γ.(lchan_name) (λ (v:V) true, Φ v true).
 Proof.
   iIntros (Φ) "#Hislock Hhaslock HR Hlc HΦcont".
   unfold has_lock_channel.
 
 
-  unfold rcv_au_slow.
+  unfold recv_au.
   unfold is_lock_channel.
   iNamed "Hislock".
   iInv "Hinv" as "Hinv_open" "Hinv_close".

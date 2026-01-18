@@ -15,8 +15,8 @@ From New.proof.github_com.goose_lang.goose.testdata.examples
 From New.proof.github_com.goose_lang.goose.testdata.examples
   Require channel channel_search_replace elimination_stack.
 
-From New.proof.github_com.goose_lang.goose.model.channel.protocol
-  Require protocols.
+From New.proof.github_com.goose_lang.goose.model.channel.idiom
+  Require idioms.
 (* From New.proof.github_com.goose_lang.goose.model.channel.logatom
   Require chan_au_sel. *)
 

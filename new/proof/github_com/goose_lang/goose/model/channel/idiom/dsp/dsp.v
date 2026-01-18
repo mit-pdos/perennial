@@ -58,7 +58,7 @@ Definition buffer_matches {V}
   match state with
   | chan_rep.Buffered queue => vs = queue
   | chan_rep.SndPending v | chan_rep.SndCommit v => vs = [v]
-  | chan_rep.Closed draining => vs = draining
+  | chan_rep.Closed drain => vs = drain
   | _ => vs = []
   end.
 
@@ -72,8 +72,8 @@ Definition dsp_session_inv
   ∃ lr_state rl_state (vsl vsr : list V),
     ⌜buffer_matches lr_state vsl⌝ ∗
     ⌜buffer_matches rl_state vsr⌝ ∗
-    own_channel lr_chan lr_state (γdsp_names.(chan_lr_name)) ∗
-    own_channel rl_chan rl_state (γdsp_names.(chan_rl_name)) ∗
+    own_chan lr_chan lr_state (γdsp_names.(chan_lr_name)) ∗
+    own_chan rl_chan rl_state (γdsp_names.(chan_rl_name)) ∗
     match lr_state with
     | chan_rep.Closed _ => iProto_own (γdsp_names.(dsp_lr_name)) END
     | _ => token (γdsp_names.(token_lr_name))
@@ -99,8 +99,8 @@ Definition dsp_session
              (γdsp_names : dsp_names)
     (lr_chan rl_chan : loc)
      : iProp Σ :=
-  is_channel lr_chan γdsp_names.(chan_lr_name) ∗
-  is_channel rl_chan γdsp_names.(chan_rl_name) ∗
+  is_chan lr_chan γdsp_names.(chan_lr_name) ∗
+  is_chan rl_chan γdsp_names.(chan_rl_name) ∗
   inv N (dsp_session_inv γdsp_names lr_chan rl_chan).
 
 (** ** DSP Endpoints *)
@@ -142,10 +142,10 @@ Lemma dsp_session_init
     (p : iProto Σ V) :
   (lr_state = chan_rep.Idle ∨ lr_state = chan_rep.Buffered []) →
   (rl_state = chan_rep.Idle ∨ rl_state = chan_rep.Buffered []) →
-  is_channel lr_chan γlr_names -∗
-  is_channel rl_chan γrl_names -∗
-  own_channel lr_chan lr_state γlr_names -∗
-  own_channel rl_chan rl_state γrl_names ={E}=∗
+  is_chan lr_chan γlr_names -∗
+  is_chan rl_chan γrl_names -∗
+  own_chan lr_chan lr_state γlr_names -∗
+  own_chan rl_chan rl_state γrl_names ={E}=∗
   ∃ γdsp1 γdsp2,
   #(lr_chan,rl_chan) ↣{γdsp1}  p ∗ #(rl_chan,lr_chan) ↣{γdsp2} iProto_dual p.
 Proof.
@@ -174,14 +174,14 @@ Qed.
  (*  £1 ∗ £1 -∗ *)
  (*  mpmc_producer γ sent ∗ P v -∗ *)
  (*  ▷(mpmc_producer γ (sent ⊎ {[+ v +]}) -∗ Φ) -∗ *)
- (*  send_au_slow ch v γ.(mpmc_chan_name) Φ. *)
+ (*  SendAU ch v γ.(mpmc_chan_name) Φ. *)
 
 (** Endpoint sends value *)
 Lemma dsp_send_au γ (lr_chan rl_chan : loc) (v : V) (p : iProto Σ V) Φ :
   £1 -∗
   #(lr_chan,rl_chan) ↣{γ} (<!> MSG v; p)%proto -∗
   ▷(#(lr_chan,rl_chan) ↣{γ} p -∗ Φ) -∗
-  send_au_slow lr_chan v γ.(chan_lr_name) Φ.
+  SendAU lr_chan v γ.(chan_lr_name) Φ.
 Proof.
   iIntros "H£ Hc HΦ".
   iDestruct "Hc" as (?? Heq) "(#(Hcl&Hcr&HI)&Hp)".
@@ -257,7 +257,7 @@ Lemma dsp_send_tele_au
   #(lr_chan,rl_chan) ↣{γ} ((<!.. x> MSG (v x) {{ P x }}; p x))%proto -∗
   P tt -∗
   (#(lr_chan,rl_chan) ↣{γ} p tt -∗ Φ) -∗
-  send_au_slow lr_chan (v tt) γ.(chan_lr_name) Φ.
+  SendAU lr_chan (v tt) γ.(chan_lr_name) Φ.
 Proof.
   iIntros "H£ Hc HP HΦ".
   iDestruct (iProto_pointsto_le _ _ _ (<!> MSG v tt; p tt)%proto with "Hc [HP]")
@@ -292,7 +292,7 @@ Lemma dsp_recv_au {TT:tele}
   (£1 ∗ £1) -∗
   #(lr_chan,rl_chan) ↣{γ} (<?.. x> MSG (v x) {{ ▷ P x }}; p x)%proto -∗
    ▷(∀ x, #(lr_chan,rl_chan) ↣{γ} p x ∗ P x -∗ Φ (v x) true) -∗
-  rcv_au_slow rl_chan γ.(chan_rl_name) Φ.
+  recv_au rl_chan γ.(chan_rl_name) Φ.
 Proof.
   iIntros "H£s Hc HΦ".
   iDestruct "Hc" as (?? Heq) "(#(Hcl&Hcr&HI)&Hp)".
@@ -356,7 +356,7 @@ Proof.
       iMod (lc_fupd_elim_later with "H£ H") as "[HP Hp]".
       iModIntro. iRewrite "Hp". by iFrame "#∗".
     + simpl in *. simplify_eq.
-      destruct draining; [|done].
+      destruct drain; [|done].
       iDestruct (iProto_recv_end_inv_l with "Hctx Hp Hcloser") as "H".
       iDestruct "H£s" as "[H£ H£s]".
       iMod (lc_fupd_elim_later with "H£ H") as "[]".
@@ -382,7 +382,7 @@ Proof.
   - done.
   - done.
   - done.
-  - destruct draining.
+  - destruct drain.
     { simpl in *. simplify_eq.
       iDestruct (iProto_recv_end_inv_l with "Hctx Hp Hcloser") as "H".
       iDestruct "H£s" as "[H£ H£s]".
@@ -430,7 +430,7 @@ Qed.
 Lemma wp_dsp_close γ (lr_chan rl_chan : loc) (p : iProto Σ V) Φ :
   #(lr_chan,rl_chan) ↣{γ} END -∗
   (↯{γ} #(lr_chan,rl_chan) -∗ Φ) -∗
-  close_au lr_chan γ.(chan_lr_name) Φ.
+  CloseAU lr_chan γ.(chan_lr_name) Φ.
 Proof.
   iIntros "Hc HΦ".
   iDestruct "Hc" as (?? Heq) "(#(Hcl&Hcr&HI)&Hp)".
@@ -464,7 +464,7 @@ Lemma wp_dsp_recv_end γ (lr_chan rl_chan : loc) Φ :
   (£1 ∗ £1) -∗
   #(lr_chan,rl_chan) ↣{γ} END-∗
   (#(lr_chan,rl_chan) ↣{γ} END -∗ Φ (default_val V) false) -∗
-  rcv_au_slow rl_chan γ.(chan_rl_name) Φ.
+  recv_au rl_chan γ.(chan_rl_name) Φ.
 Proof.
   iIntros "H£s Hc HΦ".
   iDestruct "Hc" as (?? Heq) "(#(Hcl&Hcr&HI)&Hp)".
@@ -505,7 +505,7 @@ Proof.
       iDestruct "H£s" as "[H£ H£s]".
       iMod (lc_fupd_elim_later with "H£ H") as %?.
       by simplify_eq.
-    + destruct draining; last first.
+    + destruct drain; last first.
       { simpl in *. simplify_eq.
         iDestruct (iProto_end_inv_l with "Hctx Hp") as "H".
         iDestruct "H£s" as "[H£ H£s]".
@@ -523,7 +523,7 @@ Proof.
     iDestruct "H£s" as "[H£ H£s]".
     iMod (lc_fupd_elim_later with "H£ H") as %?.
     by simplify_eq.
-  - destruct draining; last first.
+  - destruct drain; last first.
     { simpl in *.
       simplify_eq.
       iDestruct (iProto_end_inv_l with "Hctx Hp") as "H".
@@ -544,7 +544,7 @@ Lemma wp_dsp_recv_closed γ (lr_chan rl_chan : loc) Φ :
   (£1 ∗ £1) -∗
   ↯{γ} #(lr_chan,rl_chan) -∗
   (↯{γ} #(lr_chan,rl_chan) -∗ Φ (default_val V) false) -∗
-  rcv_au_slow rl_chan γ.(chan_rl_name) Φ.
+  recv_au rl_chan γ.(chan_rl_name) Φ.
 Proof.
   iIntros "H£s Hc HΦ".
   iDestruct "Hc" as (?? Heq) "(#(Hcl&Hcr&HI)&Hp)".
@@ -600,7 +600,7 @@ Lemma wp_dsp_recv_false (b : bool) γ (lr_chan rl_chan : loc) Φ :
   (£1 ∗ £1) -∗
   (if b then #(lr_chan,rl_chan) ↣{γ} END else ↯{γ} #(lr_chan,rl_chan)) -∗
   ((if b then #(lr_chan,rl_chan) ↣{γ} END else ↯{γ} #(lr_chan,rl_chan)) -∗ Φ (default_val V) false) -∗
-  rcv_au_slow rl_chan γ.(chan_rl_name) Φ.
+  recv_au rl_chan γ.(chan_rl_name) Φ.
 Proof. destruct b; [apply wp_dsp_recv_end|apply wp_dsp_recv_closed]. Qed.
 
 End dsp.

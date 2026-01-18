@@ -3,9 +3,9 @@ From New.proof.github_com.goose_lang.goose.model.channel Require Import
   chan_au_base.
 From New.golang.theory Require Import chan.
 
-(** * Simple Channel Pattern Verification
+(** * Handoff Channel Pattern Verification
 
-    This file provides verification for the "simple" pattern - a channel with a
+    This file provides verification for the "handoff" pattern - a channel with a
     predicate P over values sent on the channel.
 *)
 
@@ -16,16 +16,16 @@ Context `{!chanG Σ V}.
 Context `{!IntoVal V}.
 Context `{!IntoValTyped V t}.
 
-Record simple_names := {
+Record handoff_names := {
   chan_name : chan_names;
 }.
 
 (* TODO: should not have to be exposed *)
-Definition is_simple (γ : simple_names) (ch : loc) (P : V → iProp Σ) : iProp Σ :=
-  "#Hch" ∷ is_channel ch γ.(chan_name) ∗
+Definition is_chan_handoff (γ : handoff_names) (ch : loc) (P : V → iProp Σ) : iProp Σ :=
+  "#Hch" ∷ is_chan ch γ.(chan_name) ∗
   "#Hinv" ∷ inv nroot (
     ∃ (s : chan_rep.t V),
-      "Hch" ∷ own_channel ch s γ.(chan_name) ∗
+      "Hch" ∷ own_chan ch s γ.(chan_name) ∗
       match s with
       | chan_rep.Idle => True
       | chan_rep.SndPending v => P v
@@ -35,15 +35,15 @@ Definition is_simple (γ : simple_names) (ch : loc) (P : V → iProp Σ) : iProp
       | _ => True
       end
   )%I.
-#[global] Opaque is_simple.
-#[local] Transparent is_simple.
-#[global] Instance is_simple_pers γ ch P : Persistent (is_simple γ ch P).
+#[global] Opaque is_chan_handoff.
+#[local] Transparent is_chan_handoff.
+#[global] Instance is_chan_handoff_pers γ ch P : Persistent (is_chan_handoff γ ch P).
 Proof. apply _. Qed.
 
-Lemma start_simple (ch : loc) (γ : chan_names) (P : V → iProp Σ) :
-  is_channel ch γ -∗
-  own_channel ch chan_rep.Idle γ ={⊤}=∗
-  ∃ γsimple,  ⌜γ = γsimple.(chan_name)⌝ ∗ is_simple γsimple ch P.
+Lemma start_handoff (ch : loc) (γ : chan_names) (P : V → iProp Σ) :
+  is_chan ch γ -∗
+  own_chan ch chan_rep.Idle γ ={⊤}=∗
+  ∃ γhandoff,  ⌜γ = γhandoff.(chan_name)⌝ ∗ is_chan_handoff γhandoff ch P.
 Proof.
   iIntros "#Hch Hoc".
   iExists {|
@@ -55,10 +55,10 @@ Proof.
   by iFrame "#".
 Qed.
 
-Lemma start_simple_buffered (ch : loc) (γ : chan_names) (P : V → iProp Σ) :
-  is_channel ch γ -∗
-  own_channel ch (chan_rep.Buffered []) γ ={⊤}=∗
-  ∃ γsimple,  ⌜γ = γsimple.(chan_name)⌝ ∗  is_simple γsimple ch P.
+Lemma start_handoff_buffered (ch : loc) (γ : chan_names) (P : V → iProp Σ) :
+  is_chan ch γ -∗
+  own_chan ch (chan_rep.Buffered []) γ ={⊤}=∗
+  ∃ γhandoff,  ⌜γ = γhandoff.(chan_name)⌝ ∗  is_chan_handoff γhandoff ch P.
 Proof.
   iIntros "#Hch Hoc".
   iExists {|
@@ -70,14 +70,14 @@ Proof.
   by iFrame "#".
 Qed.
 
-Lemma simple_rcv_au γ ch P Φ  :
-  is_simple γ ch P ⊢
+Lemma handoff_rcv_au γ ch P Φ  :
+  is_chan_handoff γ ch P ⊢
   £1 ∗ £1  -∗
   (▷ ∀ v, P v -∗ Φ v true ) -∗
-  rcv_au_slow ch γ.(chan_name) Φ.
+  recv_au ch γ.(chan_name) Φ.
 Proof.
-  iIntros "#Hsimple (Hlc1 & Hlc2 ) HΦ".
-  iNamed "Hsimple".
+  iIntros "#Hhandoff (Hlc1 & Hlc2 ) HΦ".
+  iNamed "Hhandoff".
   iInv "Hinv" as "Hinv_open" "Hinv_close".
   iMod (lc_fupd_elim_later with "[$] Hinv_open") as "Hinv_open".
   iDestruct "Hch" as "Hch0".
@@ -109,7 +109,7 @@ Proof.
       iNext. iFrame.
     }
     iModIntro.
-    unfold rcv_au_inner.
+    unfold recv_nested_au.
     iInv "Hinv" as "Hinv_open1" "Hinv_close".
     iMod (lc_fupd_elim_later with "[$] Hinv_open1") as "Hinv_open1".
     iNamed "Hinv_open1".
@@ -175,16 +175,16 @@ Proof.
   }
 Qed.
 
-Lemma wp_simple_receive γ ch P :
-  {{{ is_simple γ ch P }}}
+Lemma wp_handoff_receive γ ch P :
+  {{{ is_chan_handoff γ ch P }}}
     chan.receive #t #ch
   {{{ v, RET (#v, #true); P v }}}.
 Proof.
-  wp_start_folded as "#Hsimple".
-  iNamed "Hsimple".
+  wp_start_folded as "#Hhandoff".
+  iNamed "Hhandoff".
   wp_apply (chan.wp_receive ch γ.(chan_name) with "[$Hch]").
   iIntros "(Hlc1 & Hlc2 & Hlc3 & Hlc4)".
-  iApply (simple_rcv_au with "[] [$Hlc1 $Hlc2]").
+  iApply (handoff_rcv_au with "[] [$Hlc1 $Hlc2]").
   {
     iFrame "#".
   }
@@ -193,14 +193,14 @@ Proof.
   }
 Qed.
 
-Lemma simple_send_au γ ch P v (Φ: iProp Σ) :
-  is_simple γ ch P ∗ £1 ∗ £1 ⊢
+Lemma handoff_send_au γ ch P v (Φ: iProp Σ) :
+  is_chan_handoff γ ch P ∗ £1 ∗ £1 ⊢
   P v -∗
   (▷ Φ) -∗
-  send_au_slow ch v γ.(chan_name) Φ.
+  SendAU ch v γ.(chan_name) Φ.
 Proof.
-  iIntros "(#Hsimple & ? & ?) HP HΦ".
-  iNamed "Hsimple".
+  iIntros "(#Hhandoff & ? & ?) HP HΦ".
+  iNamed "Hhandoff".
   iInv "Hinv" as "Hinv_open" "Hinv_close".
   iMod (lc_fupd_elim_later with "[$] Hinv_open") as "Hinv_open".
   iDestruct "Hch" as "Hch0".
@@ -230,7 +230,7 @@ Proof.
       simpl. iFrame.
     }
     iModIntro.
-    unfold send_au_inner.
+    unfold send_nested_au.
     iInv "Hinv" as "Hinv_open1" "Hinv_close".
     iMod (lc_fupd_elim_later with "[$] Hinv_open1") as "Hinv_open1".
     iNamed "Hinv_open1".
@@ -276,17 +276,17 @@ Proof.
     iNext. iFrame.
 Qed.
 
-Lemma wp_simple_send γ ch v P :
-  {{{ is_simple γ ch P ∗
+Lemma wp_handoff_send γ ch v P :
+  {{{ is_chan_handoff γ ch P ∗
       P v }}}
     chan.send #t #ch #v
   {{{ RET #(); True }}}.
 Proof.
-  wp_start_folded as "[#Hsimple HP]".
-  unfold is_simple. iNamed "Hsimple".
+  wp_start_folded as "[#Hhandoff HP]".
+  unfold is_chan_handoff. iNamed "Hhandoff".
   wp_apply (chan.wp_send ch with "[$Hch]").
   iIntros "(Hlc1 & Hlc2 & ? & ?)".
-  iApply (simple_send_au with "[$] [$HP]").
+  iApply (handoff_send_au with "[$] [$HP]").
   iNext. by iApply "HΦ".
 Qed.
 

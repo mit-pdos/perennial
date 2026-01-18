@@ -1,5 +1,5 @@
 Require Import New.proof.proof_prelude.
-From New.proof.github_com.goose_lang.goose.model.channel.protocol Require Export base.
+From New.proof.github_com.goose_lang.goose.model.channel.idiom Require Export base.
 From New.golang.theory Require Import chan.
 From Perennial.algebra Require Import ghost_var.
 
@@ -21,7 +21,7 @@ From Perennial.algebra Require Import ghost_var.
 Section future.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
-Context `{!chan_protocolG Σ V}.
+Context `{!chan_idiomG Σ V}.
 Context `{!IntoVal V}.
 Context `{!IntoValTyped V t}.
 
@@ -61,10 +61,10 @@ Definition fulfill_token (γ : future_names) : iProp Σ :=
 *)
 Definition is_future (γ : future_names) (ch : loc)
                      (P : V → iProp Σ) : iProp Σ :=
-  is_channel ch γ.(chan_name) ∗
+  is_chan ch γ.(chan_name) ∗
   inv nroot (
     ∃ s await_avail fulfill_avail,
-      "Hch" ∷ own_channel ch s γ.(chan_name) ∗
+      "Hch" ∷ own_chan ch s γ.(chan_name) ∗
       "Hawait" ∷ ghost_var γ.(await_name) half await_avail ∗
       "Hfulfill" ∷ ghost_var γ.(fulfill_name) half fulfill_avail ∗
       (match s with
@@ -84,8 +84,8 @@ Definition is_future (γ : future_names) (ch : loc)
 
 (** Create a Future channel from a capacity-1 buffered channel *)
 Lemma start_future ch (P : V → iProp Σ) γ :
-  is_channel ch γ -∗
-  (own_channel ch (chan_rep.Buffered []) γ) ={⊤}=∗
+  is_chan ch γ -∗
+  (own_chan ch (chan_rep.Buffered []) γ) ={⊤}=∗
   (∃ γfuture, is_future γfuture ch P ∗ await_token γfuture ∗ fulfill_token γfuture).
 Proof.
   iIntros "#Hch Hoc".
@@ -100,7 +100,7 @@ Proof.
   (* Allocate the invariant *)
   iMod (inv_alloc nroot _ (
     ∃ s await_avail fulfill_avail,
-      "Hch" ∷ own_channel ch s γ ∗
+      "Hch" ∷ own_chan ch s γ ∗
       "Hawait" ∷ ghost_var γawait half await_avail ∗
       "Hfulfill" ∷ ghost_var γfulfill half fulfill_avail ∗
       (match s with
@@ -125,8 +125,8 @@ Proof.
   iFrame "#". iFrame.
 Qed.
 
-Lemma future_is_channel γfuture ch P :
-  is_future γfuture ch P ⊢ is_channel ch γfuture.(future.chan_name).
+Lemma future_is_chan γfuture ch P :
+  is_future γfuture ch P ⊢ is_chan ch γfuture.(future.chan_name).
 Proof.
   iDestruct 1 as "[$ _]".
 Qed.
@@ -138,13 +138,13 @@ Lemma future_fulfill_au γ ch (P : V → iProp Σ) (v : V) :
   is_future γ ch P -∗
   £1 ∗ fulfill_token γ ∗ P v -∗
   ▷ (True -∗ Φ) -∗
-  send_au_slow ch v γ.(chan_name) Φ.
+  SendAU ch v γ.(chan_name) Φ.
 Proof.
   iIntros (Φ) "#Hfuture (Hlc & Hfulfillt & HP) Hcont".
   unfold is_future.
   iDestruct "Hfuture" as "[#Hchan #Hinv]".
 
-  unfold send_au_slow.
+  unfold SendAU.
   iInv "Hinv" as "Hinv_open" "Hinv_close".
   iDestruct "Hlc" as "[Hlc1 Hrest]".
   iMod (lc_fupd_elim_later with "[$] [$Hinv_open]") as "Hinv_open".
@@ -207,13 +207,13 @@ Lemma future_await_au γ ch (P : V → iProp Σ) :
   is_future γ ch P -∗
   £1 ∗ await_token γ -∗
   ▷ (∀ v, P v -∗ Φ v true) -∗
-  rcv_au_slow ch γ.(chan_name) (λ (v:V) (ok:bool), Φ v ok).
+  recv_au ch γ.(chan_name) (λ (v:V) (ok:bool), Φ v ok).
 Proof.
   iIntros (Φ) "#Hfuture [Hlc Hawaitt] HΦcont".
   unfold is_future.
   iDestruct "Hfuture" as "[_ Hinv]".
 
-  unfold rcv_au_slow.
+  unfold recv_au.
   iInv "Hinv" as "Hinv_open" "Hinv_close".
   iDestruct "Hlc" as "[Hlc1 Hrest]".
   iMod (lc_fupd_elim_later with "[$] [$Hinv_open]") as "Hinv_open".

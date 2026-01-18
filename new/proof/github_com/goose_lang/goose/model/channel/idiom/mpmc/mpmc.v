@@ -1,5 +1,5 @@
 Require Import New.proof.proof_prelude.
-From New.proof.github_com.goose_lang.goose.model.channel Require Import protocol.base.
+From New.proof.github_com.goose_lang.goose.model.channel Require Import idiom.base.
 From New.proof.github_com.goose_lang.goose.model.channel Require Export contrib.
 From New.golang.theory Require Import chan.
 From iris.algebra Require Import gmultiset big_op.
@@ -19,12 +19,12 @@ From Perennial.algebra Require Import ghost_var.
     Requires Countable V because gmultiset V = gmap V positive.
 *)
 
-#[local] Transparent is_channel own_channel.
+#[local] Transparent is_chan own_chan.
 
 Section mpmc.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
-Context `{!chan_protocolG Σ V}.
+Context `{!chan_idiomG Σ V}.
 Context `{!IntoVal V}.
 Context `{!IntoValTyped V t}.
 Context `{!Countable V}.
@@ -193,16 +193,16 @@ Definition inflight_mset (s : chan_rep.t V) : gmultiset V :=
   match s with
   | chan_rep.Buffered buff => list_to_set_disj buff
   | chan_rep.SndPending v | chan_rep.SndCommit v => {[+ v +]}
-  | chan_rep.Closed draining => list_to_set_disj draining
+  | chan_rep.Closed drain => list_to_set_disj drain
   | _ => ∅
   end.
 
 Definition is_mpmc (γ:mpmc_names) (ch:loc) (n_prod n_cons:nat)
                    (P: V → iProp Σ) (R: gmultiset V → iProp Σ) : iProp Σ :=
-    is_channel ch γ.(mpmc_chan_name) ∗
+    is_chan ch γ.(mpmc_chan_name) ∗
     inv nroot (
       ∃ s sent recv,
-        "Hch" ∷ own_channel ch s γ.(mpmc_chan_name) ∗
+        "Hch" ∷ own_chan ch s γ.(mpmc_chan_name) ∗
         "HsentI" ∷ server γ.(mpmc_sent_name) n_prod sent ∗
         "HrecvI" ∷ server γ.(mpmc_recv_name) n_cons recv ∗
         "%Hrel" ∷ ⌜sent = recv ⊎ inflight_mset s⌝ ∗
@@ -222,8 +222,8 @@ Definition is_mpmc (γ:mpmc_names) (ch:loc) (n_prod n_cons:nat)
                         [∗ list] s_i ∈ prods, mpmc_producer γ s_i) ∗
             "HR_or_clients" ∷ (R sent ∨ (∃ conss : list (gmultiset V), ⌜length conss = n_cons⌝ ∗
                                           [∗ list] r_i ∈ conss, mpmc_consumer γ r_i))
-        | chan_rep.Closed draining =>
-            "Hdraining" ∷ ([∗ list] v ∈ draining, P v) ∗
+        | chan_rep.Closed drain =>
+            "Hdrain" ∷ ([∗ list] v ∈ drain, P v) ∗
             "Hprods" ∷ (∃ prods : list (gmultiset V), ⌜length prods = n_prod⌝ ∗
                         [∗ list] s_i ∈ prods, mpmc_producer γ s_i) ∗
             "HR" ∷ R sent
@@ -245,8 +245,8 @@ Lemma start_mpmc ch (P : V → iProp Σ) (R : gmultiset V → iProp Σ) γ (n_pr
   end ->
   n_prod > 0 ->
   n_cons > 0 ->
-  is_channel ch γ -∗
-  (own_channel ch s γ) ={⊤}=∗
+  is_chan ch γ -∗
+  (own_chan ch s γ) ={⊤}=∗
   (∃ γmpmc, is_mpmc γmpmc ch n_prod n_cons P R ∗
             ([∗ list] _ ∈ seq 0 n_prod, mpmc_producer γmpmc ∅) ∗
             ([∗ list] _ ∈ seq 0 n_cons, mpmc_consumer γmpmc ∅)).
@@ -265,7 +265,7 @@ Proof.
     destruct buff; try done.
     iMod (inv_alloc nroot _ (
       ∃ s sent recv,
-        "Hch" ∷ own_channel ch s γ ∗
+        "Hch" ∷ own_chan ch s γ ∗
         "HsentI" ∷ server γsent n_prod sent ∗
         "HrecvI" ∷ server γrecv n_cons recv ∗
         "%Hrel" ∷ ⌜sent = recv ⊎ inflight_mset s⌝ ∗
@@ -285,8 +285,8 @@ Proof.
                         [∗ list] s_i ∈ prods, mpmc_producer γmpmc s_i) ∗
             "HR_or_clients" ∷ (R sent ∨ (∃ conss : list (gmultiset V), ⌜length conss = n_cons⌝ ∗
                                           [∗ list] r_i ∈ conss, mpmc_consumer γmpmc r_i))
-        | chan_rep.Closed draining =>
-            "Hdraining" ∷ ([∗ list] v ∈ draining, P v) ∗
+        | chan_rep.Closed drain =>
+            "Hdrain" ∷ ([∗ list] v ∈ drain, P v) ∗
             "Hprods" ∷ (∃ prods : list (gmultiset V), ⌜length prods = n_prod⌝ ∗
                         [∗ list] s_i ∈ prods, mpmc_producer γmpmc s_i) ∗
             "HR" ∷ R sent
@@ -317,7 +317,7 @@ Proof.
   {
     iMod (inv_alloc nroot _ (
       ∃ s sent recv,
-        "Hch" ∷ own_channel ch s γ ∗
+        "Hch" ∷ own_chan ch s γ ∗
         "HsentI" ∷ server γsent n_prod sent ∗
         "HrecvI" ∷ server γrecv n_cons recv ∗
         "%Hrel" ∷ ⌜sent = recv ⊎ inflight_mset s⌝ ∗
@@ -337,8 +337,8 @@ Proof.
                         [∗ list] s_i ∈ prods, mpmc_producer γmpmc s_i) ∗
             "HR_or_clients" ∷ (R sent ∨ (∃ conss : list (gmultiset V), ⌜length conss = n_cons⌝ ∗
                                           [∗ list] r_i ∈ conss, mpmc_consumer γmpmc r_i))
-        | chan_rep.Closed draining =>
-            "Hdraining" ∷ ([∗ list] v ∈ draining, P v) ∗
+        | chan_rep.Closed drain =>
+            "Hdrain" ∷ ([∗ list] v ∈ drain, P v) ∗
             "Hprods" ∷ (∃ prods : list (gmultiset V), ⌜length prods = n_prod⌝ ∗
                         [∗ list] s_i ∈ prods, mpmc_producer γmpmc s_i) ∗
             "HR" ∷ R sent
@@ -374,7 +374,7 @@ Lemma mpmc_send_au γ ch (n_prod n_cons:nat) (P : V → iProp Σ) (R : gmultiset
   £1 ∗ £1 -∗
   mpmc_producer γ sent ∗ P v -∗
   ▷(mpmc_producer γ (sent ⊎ {[+ v +]}) -∗ Φ) -∗
-  send_au_slow ch v γ.(mpmc_chan_name) Φ.
+  SendAU ch v γ.(mpmc_chan_name) Φ.
 Proof.
   iIntros "#Hmpmc (Hlc1 & Hlc2) [Hprod HP] Hcont".
   iDestruct "Hmpmc" as "[Hchan Hinv]".
@@ -422,7 +422,7 @@ Proof.
     { apply gmultiset_disj_union_local_update. }
     iMod "Hmask".
     iNamed "Hoc".
-    iAssert (own_channel ch (chan_rep.SndPending v) γ.(mpmc_chan_name))%I
+    iAssert (own_chan ch (chan_rep.SndPending v) γ.(mpmc_chan_name))%I
       with "[Hchanrepfrag]" as "Hoc".
     { iFrame "∗#". iPureIntro. unfold chan_cap_valid. done. }
     iMod ("Hinv_close" with "[Hoc HsentI HrecvI Hclosed HP]") as "_".
@@ -434,7 +434,7 @@ Proof.
       simpl. iFrame "HP".
       iPureIntro. done.
     }
-    iModIntro. unfold send_au_inner.
+    iModIntro. unfold send_nested_au.
     iInv "Hinv" as "Hinv_open2" "Hinv_close2".
     iMod (lc_fupd_elim_later with "Hlc2 Hinv_open2") as "Hinv_open2".
     iNamed "Hinv_open2".
@@ -485,7 +485,7 @@ Proof.
       iModIntro. by iApply "Hcont".
     }
     {
-      destruct draining.
+      destruct drain.
       - iNamed "Hinv_open2".
         unfold mpmc_producer.
         iNamed "Hprods".
@@ -527,7 +527,7 @@ Proof.
     }
   }
   {
-    destruct draining.
+    destruct drain.
     - iNamed "Hinv_open".
       unfold mpmc_producer.
       iNamed "Hprods".
@@ -576,7 +576,7 @@ Lemma mpmc_rcv_au γ ch (n_prod n_cons:nat) (P : V → iProp Σ) (R : gmultiset 
     (if ok
       then P v ∗ mpmc_consumer γ (received ⊎ {[+ v +]})
       else is_closed γ ∗ mpmc_consumer γ received ∗ ⌜ v = (default_val V) ⌝ ) -∗ Φ v ok) -∗
-  rcv_au_slow ch γ.(mpmc_chan_name) Φ.
+  recv_au ch γ.(mpmc_chan_name) Φ.
 Proof.
   iIntros "#Hmpmc (Hlc1 & Hlc2) Hcons Hcont".
   unfold is_mpmc.
@@ -585,7 +585,7 @@ Proof.
   iMod (lc_fupd_elim_later with "Hlc1 Hinv_open") as "Hinv_open".
   iNamed "Hinv_open".
   iDestruct (server_agree with "HrecvI Hcons") as %[Hn_pos Hsub].
-  unfold rcv_au_slow.
+  unfold recv_au.
   iExists s. iFrame "Hch".
   iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
   iNext. iFrame.
@@ -624,12 +624,12 @@ Proof.
       iNext.
       iFrame. iFrame "%". iFrame.
     }
-    iModIntro. unfold rcv_au_inner.
+    iModIntro. unfold recv_nested_au.
     iInv "Hinv" as "Hinv_open2" "Hinv_close2".
     iMod (lc_fupd_elim_later with "Hlc2 Hinv_open2") as "Hinv_open2".
     iNamed "Hinv_open2".
     iDestruct (server_agree with "HrecvI Hcons") as %[_ Hsub2].
-    unfold rcv_au_slow.
+    unfold recv_au.
     iExists s. iFrame "Hch".
     iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask1"].
     iNext.
@@ -650,7 +650,7 @@ Proof.
       iModIntro. iApply "Hcont". iFrame.
     }
     {
-      destruct draining as [|v rest]; last done.
+      destruct drain as [|v rest]; last done.
       iIntros "Hoc".
       iMod "Hmask1".
       simpl.
@@ -697,7 +697,7 @@ Proof.
     iModIntro. iApply "Hcont". iFrame.
   }
   {
-    destruct draining as [|v rest].
+    destruct drain as [|v rest].
     {
       iIntros "Hoc".
       iMod "Hmask".
@@ -797,14 +797,14 @@ Proof.
   done.
 Qed.
 
-Lemma mpmc_close_au γ ch (n_prod n_cons:nat) P R (producers : list (gmultiset V)) Φ :
+Lemma mpmc_CloseAU γ ch (n_prod n_cons:nat) P R (producers : list (gmultiset V)) Φ :
   length producers = n_prod →
   is_mpmc γ ch n_prod n_cons P R -∗
   £ 1 -∗
   ([∗ list] s_i ∈ producers, mpmc_producer γ s_i) ∗
         R (foldr (⊎) ∅ producers) -∗
   ▷Φ -∗
-  close_au ch γ.(mpmc_chan_name) Φ.
+  CloseAU ch γ.(mpmc_chan_name) Φ.
 Proof.
   intros.
   iIntros "#Hmpmc Hlc1 (Hprods & HR) Hcont".
@@ -910,7 +910,7 @@ Proof.
     subst n_prod.
     iMod (auth_map_agree γ.(mpmc_sent_name) sent producers with "[$HsentI] [$Hprods]") as "(%Hsent_eq & HsentI & Hprods)".
     replace (foldr (λ acc y : gmultiset V, acc ⊎ y) ∅ producers) with sent by done.
-    destruct draining.
+    destruct drain.
     {
       iDestruct "Hprods" as "Hprods1".
       iNamed "Hinv_open". iNamed "Hprods".
@@ -956,7 +956,7 @@ Proof.
   iPoseProof "Hmpmc" as "[#Hchan _]".
   iApply (chan.wp_close ch γ.(mpmc_chan_name) with "[$Hchan]").
   iIntros "(Hlc1 & _ & _ & _)".
-  iApply (mpmc_close_au with "[$Hmpmc] [$] [$Hprods $HR]").
+  iApply (mpmc_CloseAU with "[$Hmpmc] [$] [$Hprods $HR]").
   { done. }
   iModIntro. by iApply "Hcont".
 Qed.
@@ -979,7 +979,7 @@ Proof.
   iNamed "Hinv_open".
   unfold is_closed.
   destruct s; try (iExFalso;(iDestruct (ghost_var_agree with "Hclosed1 Hclosed") as %Hbad);done).
-  destruct draining.
+  destruct drain.
   - iNamed "Hinv_open".
     iDestruct "HR_or_clients" as "[HR | Hconss]".
     + unfold mpmc_consumer.

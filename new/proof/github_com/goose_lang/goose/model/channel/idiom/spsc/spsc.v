@@ -1,6 +1,6 @@
 Require Import New.proof.proof_prelude.
 From New.golang.theory Require Import chan.
-From New.proof.github_com.goose_lang.goose.model.channel.protocol Require Export base.
+From New.proof.github_com.goose_lang.goose.model.channel.idiom Require Export base.
 From Perennial.algebra Require Import ghost_var.
 
 (** * Single Producer Single Consumer (SPSC) Channel Verification
@@ -17,12 +17,12 @@ From Perennial.algebra Require Import ghost_var.
     - Support for resource protocols P (per-value) and R (final state)
 *)
 
-#[local] Transparent is_channel own_channel.
+#[local] Transparent is_chan own_chan.
 
 Section spsc.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
-Context `{!chan_protocolG Σ V}.
+Context `{!chan_idiomG Σ V}.
 Context `{!IntoVal V}.
 Context `{!IntoValTyped V t}.
 
@@ -52,7 +52,7 @@ Definition inflight (s : chan_rep.t V) : list V :=
   match s with
   | chan_rep.Buffered buff => buff
   | chan_rep.SndPending v | chan_rep.SndCommit v => [v]
-  | chan_rep.Closed draining => draining
+  | chan_rep.Closed drain => drain
   | _ => []
   end.
 
@@ -72,10 +72,10 @@ Definition inflight (s : chan_rep.t V) : list V :=
 *)
 Definition is_spsc (γ:spsc_names) (ch:loc)
                    (P: Z -> V → iProp Σ) (R: list V → iProp Σ) : iProp Σ :=
-    is_channel ch γ.(chan_name) ∗
+    is_chan ch γ.(chan_name) ∗
     inv nroot (
       ∃ s sent recv,
-        "Hch"    ∷ own_channel ch s γ.(chan_name) ∗
+        "Hch"    ∷ own_chan ch s γ.(chan_name) ∗
         "HsentI" ∷ ghost_var γ.(spsc_sent_name) (DfracOwn (1/2)) sent ∗
         "HrecvI" ∷ ghost_var γ.(spsc_recv_name) (DfracOwn (1/2)) recv ∗
         "%Hrel"  ∷ ⌜sent = recv ++ inflight s⌝ ∗
@@ -89,8 +89,8 @@ Definition is_spsc (γ:spsc_names) (ch:loc)
         (* Closed channel: park producer permission, provide R when drained *)
         | chan_rep.Closed [] =>
             spsc_producer γ sent ∗ (R sent ∨ spsc_consumer γ sent)
-        | chan_rep.Closed draining =>
-            ([∗ list] i ↦ v ∈ draining, P ((length recv) + i) v) ∗
+        | chan_rep.Closed drain =>
+            ([∗ list] i ↦ v ∈ drain, P ((length recv) + i) v) ∗
             spsc_producer γ sent ∗
             (R sent ∨ spsc_consumer γ sent)
         | _ => True
@@ -101,8 +101,8 @@ Definition is_spsc (γ:spsc_names) (ch:loc)
 
 (** Create an SPSC channel from a basic channel *)
 Lemma start_spsc ch (P : Z -> V → iProp Σ) (R : list V → iProp Σ) γ:
-  is_channel ch γ -∗
-  (own_channel ch chan_rep.Idle γ) ∨ (own_channel ch (chan_rep.Buffered []) γ) ={⊤}=∗
+  is_chan ch γ -∗
+  (own_chan ch chan_rep.Idle γ) ∨ (own_chan ch (chan_rep.Buffered []) γ) ={⊤}=∗
   (∃ γspsc, is_spsc γspsc ch P R ∗  spsc_producer γspsc []  ∗  spsc_consumer γspsc []) .
 Proof.
   iIntros "#Hch Hoc".
@@ -149,7 +149,7 @@ Lemma spsc_rcv_au γ ch (P : Z -> V → iProp Σ) (R : list V → iProp Σ)
      (if ok then P (length received) v ∗ spsc_consumer γ (received ++ [v])
             else R received ∗ ⌜ v = (default_val V) ⌝) -∗
      Φ v ok) -∗
-  rcv_au_slow ch γ.(chan_name) Φ.
+  recv_au ch γ.(chan_name) Φ.
 Proof.
   iIntros "#Hspsc [Hlc1 Hlc2] Hcons Hcont".
   unfold is_spsc.
@@ -163,8 +163,8 @@ Proof.
   (* Establish agreement between our received and invariant's recv *)
   iDestruct (ghost_var_agree with "Hcons HrecvI") as %->.
 
-  (* Provide rcv_au_slow *)
-  unfold rcv_au_slow.
+  (* Provide recv_au *)
+  unfold recv_au.
   iExists s. iFrame "Hch".
   iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
   iNext. iFrame.
@@ -223,8 +223,8 @@ done.
       iPureIntro. rewrite Hrel. simpl. done.
     }
 
-    (* Provide rcv_au_inner for completion *)
-    iModIntro. unfold rcv_au_inner.
+    (* Provide recv_nested_au for completion *)
+    iModIntro. unfold recv_nested_au.
     iInv "Hinv" as "Hinv_open2" "Hinv_close".
     iMod (lc_fupd_elim_later with "Hlc2 Hinv_open2") as "Hinv_open2".
     iNamed "Hinv_open2".
@@ -232,7 +232,7 @@ done.
     (* Establish agreement between our received and invariant's recv *)
     iDestruct (ghost_var_agree with "Hcons HrecvI") as %->.
 
-    unfold rcv_au_slow.
+    unfold recv_au.
     iExists s. iFrame "Hch".
     iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask1"].
     iNext.
@@ -254,7 +254,7 @@ done.
       iModIntro. iApply "Hcont". iFrame.
     }
     { (* Closed empty case *)
-      destruct draining as [|v rest].
+      destruct drain as [|v rest].
       {
         iIntros "Hoc".
         iMod "Hmask1".
@@ -298,7 +298,7 @@ done.
   }
 
   { (* Case: Closed channel *)
-    destruct draining as [|v rest].
+    destruct drain as [|v rest].
     { (* Empty closed channel - return R *)
       iIntros "Hoc".
       iMod "Hmask".
@@ -324,7 +324,7 @@ done.
         done.
       }
     }
-    { (* Closed channel with draining values *)
+    { (* Closed channel with drain values *)
       iIntros "Hoc".
       iCombine "Hcons HrecvI" as "Hrcv_full".
       iMod (ghost_var_update (recv ++ [v]) with "Hrcv_full") as "[HrecvI_new Hcons_new]".
@@ -424,7 +424,7 @@ Lemma spsc_send_au γ ch (P : Z -> V → iProp Σ) (R : list V → iProp Σ)
   £1 ∗ £1 ∗ £1 -∗
   spsc_producer γ sent ∗ P (length sent) v -∗
   ▷ (spsc_producer γ (sent ++ [v]) -∗ Φ) -∗
-  send_au_slow ch v γ.(chan_name) Φ.
+  SendAU ch v γ.(chan_name) Φ.
 Proof.
   iIntros "#Hspsc (Hlc1 & Hlc2 & Hlc3) [Hprod HP] Hcont".
   iDestruct "Hspsc" as "[Hchan Hinv]".
@@ -477,7 +477,7 @@ Proof.
 
     iMod "Hmask".
     iNamed "Hoc".
-    iAssert (own_channel ch (chan_rep.SndPending v) γ.(chan_name))%I
+    iAssert (own_chan ch (chan_rep.SndPending v) γ.(chan_name))%I
       with "[Hchanrepfrag]" as "Hoc".
     { iFrame "∗#". iPureIntro. unfold chan_cap_valid. done. }
 
@@ -491,8 +491,8 @@ Proof.
       iPureIntro. done.
     }
 
-    (* Provide send_au_inner *)
-    iModIntro. unfold send_au_inner.
+    (* Provide send_nested_au *)
+    iModIntro. unfold send_nested_au.
 
     iInv "Hinv" as "Hinv_open2" "Hinv_close2".
     iMod (lc_fupd_elim_later with "[$] Hinv_open2") as "Hi".
@@ -518,7 +518,7 @@ Proof.
     }
     {
       (* Closed channel - invalid (producer permission conflict) *)
-      destruct draining.
+      destruct drain.
       {
         iDestruct "Hi" as "(Hd & Hspp)".
         unfold spsc_producer.
@@ -563,7 +563,7 @@ Proof.
   }
 
   { (* Case: Closed channel - invalid (producer permission conflict) *)
-    destruct draining.
+    destruct drain.
     {
       iDestruct "Hinv_open" as "(Hd & Hspp)".
       unfold spsc_producer.
@@ -606,12 +606,12 @@ Qed.
 
 (** ** Close Operation *)
 
-Lemma spsc_close_au γ ch P R sent Φ :
+Lemma spsc_CloseAU γ ch P R sent Φ :
   is_spsc γ ch P R -∗
   £1 -∗
   spsc_producer γ sent ∗ R sent -∗
   ▷Φ -∗
-  close_au ch γ.(chan_name) Φ.
+  CloseAU ch γ.(chan_name) Φ.
 Proof.
   iIntros "#Hspsc Hlc1 [Hprod HP] Hcont".
   iDestruct "Hspsc" as "[Hchan #Hinv]".
@@ -638,7 +638,7 @@ Proof.
     iModIntro. by iApply "Hcont".
 
   - (* Closed *)
-    destruct draining.
+    destruct drain.
     + unfold spsc_producer. simpl.
       iDestruct "Hinv_open" as "[Hgv1 HR]".
       iCombine "HsentI HrecvI" as "H".
@@ -664,7 +664,7 @@ Proof.
   iPoseProof "Hspsc" as "[Hchan _]".
   iApply (chan.wp_close ch γ.(chan_name) with "[$Hchan]").
   iIntros "(Hlc1 & _ & _ & _)".
-  iApply (spsc_close_au with "[$Hspsc] [$] [$Hprod $HP]").
+  iApply (spsc_CloseAU with "[$Hspsc] [$] [$Hprod $HP]").
   iModIntro.
   by iApply "Hcont".
 Qed.
