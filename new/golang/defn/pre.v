@@ -2,7 +2,7 @@ From New.golang.defn Require Export exception pkg loop array slice map predeclar
 Export RecordSet RecordSetNotations.
 
 Module go.
-(** [PreGoSemantics] has the parts of Gooses's Go semantics that do not rely on
+(** [go.PreSemantics] has the parts of Gooses's Go semantics that do not rely on
    code written in Go itself. For instance, Goose has a channel model
    implemented in Go so channel semantics are not present here. Instead, the
    channel model proof actually uses the below semantics. *)
