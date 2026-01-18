@@ -31,6 +31,10 @@ Notation "l ↦ dq v" := (typed_pointsto l dq v%V)
                          (at level 20, dq custom dfrac at level 1,
                             format "l  ↦ dq  v") : bi_scope.
 
+(* For empty struct types. *)
+Global Instance true_dfractional : DFractional (λ dq, True%I : iProp Σ).
+Proof. apply _. Qed.
+
 Global Instance typed_pointsto_dfractional `{TypedPointsto V} l (v : V) :
   DFractional (λ dq, typed_pointsto l dq v).
 Proof. rewrite typed_pointsto_unseal. apply typed_pointsto_def_dfractional. Qed.

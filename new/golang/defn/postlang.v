@@ -427,7 +427,7 @@ Class CoreSemantics :=
                 let field_addr := StructFieldRef t field_name "l" in
                 let field_val := StructFieldGet t field_name "v" in
                 GoStore field_type (field_addr, field_val)
-         ) (GoZeroVal t #()) fds)%V;
+         ) (#()) fds)%V;
 
   index_ref_underlying `{!Underlying t t'} : index_ref t = index_ref t';
   index_underlying `{!Underlying t t'} : index t = index t';

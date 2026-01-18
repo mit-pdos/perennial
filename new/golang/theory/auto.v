@@ -350,13 +350,13 @@ Ltac solve_into_val_typed_struct :=
       intros; iIntros "_ HΦ"; rewrite go.alloc_struct;
       wp_auto; wp_apply wp_GoPrealloc as "* %Hnotnull";
       repeat field;
-      iApply "HΦ"; iEval (rewrite typed_pointsto_unseal); iFrame in
+      iApply "HΦ"; iEval (rewrite typed_pointsto_unseal); by iFrame in
     let load :=
       intros; iIntros "Hl HΦ"; rewrite typed_pointsto_unseal;
       iNamed "Hl"; rewrite go.load_struct; simpl; wp_auto;
-      destruct &v; simpl; iApply "HΦ"; iFrame in
+      destruct &v; simpl; iApply "HΦ"; by iFrame in
     let store :=
       intros; iIntros "Hl HΦ"; rewrite typed_pointsto_unseal;
       iNamed "Hl"; rewrite go.store_struct; simpl; wp_auto;
-      destruct &v; simpl; iApply "HΦ"; iFrame in
+      destruct &v; simpl; iApply "HΦ"; by iFrame in
     constructor; [alloc | load | store].
