@@ -10,12 +10,11 @@ Set Default Proof Using "Type".
 Module time.
 Module Timer.
 Section def.
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-(* FIXME: bundling *)
-Context {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}
-  {array_sem : go.ArraySemantics} {slice_sem : go.SliceSemantics}.
 
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
 Context {package_sem' : time.Assumptions}.
+
 Local Set Default Proof Using "All".
 
 #[global] Program Instance Timer_typed_pointsto  :
@@ -40,12 +39,11 @@ End Timer.
 
 Module Time.
 Section def.
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-(* FIXME: bundling *)
-Context {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}
-  {array_sem : go.ArraySemantics} {slice_sem : go.SliceSemantics}.
 
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
 Context {package_sem' : time.Assumptions}.
+
 Local Set Default Proof Using "All".
 
 #[global] Program Instance Time_typed_pointsto  :

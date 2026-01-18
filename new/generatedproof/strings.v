@@ -9,12 +9,11 @@ Set Default Proof Using "Type".
 Module strings.
 Module Builder.
 Section def.
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-(* FIXME: bundling *)
-Context {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}
-  {array_sem : go.ArraySemantics} {slice_sem : go.SliceSemantics}.
 
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
 Context {package_sem' : strings.Assumptions}.
+
 Local Set Default Proof Using "All".
 
 #[global] Program Instance Builder_typed_pointsto  :

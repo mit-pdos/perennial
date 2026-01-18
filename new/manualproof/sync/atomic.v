@@ -1,6 +1,14 @@
 Require Export New.code.sync.atomic.
 From New.proof Require Import proof_prelude.
 
+(* TODO gemini. Fix all the files in
+   new/manualproof. Run e.g. `make new/manualproof/sync/atomic.vos` to see if a
+   particular file is good.
+
+   Look at generatedproof examples to see what this should have; it should be
+   only TypedPointsto and IntoValTyped instances.
+ *)
+
 (* copy of proofgen output from translating atomic.Pointer *)
 (* type atomic.noCopy *)
 Module noCopy.

@@ -10,12 +10,11 @@ Set Default Proof Using "Type".
 Module atomic.
 Module Bool.
 Section def.
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-(* FIXME: bundling *)
-Context {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}
-  {array_sem : go.ArraySemantics} {slice_sem : go.SliceSemantics}.
 
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
 Context {package_sem' : atomic.Assumptions}.
+
 Local Set Default Proof Using "All".
 
 #[global] Program Instance Bool_typed_pointsto  :
@@ -40,12 +39,11 @@ End Bool.
 
 Module Pointer.
 Section def.
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-(* FIXME: bundling *)
-Context {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}
-  {array_sem : go.ArraySemantics} {slice_sem : go.SliceSemantics}.
 
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
 Context {package_sem' : atomic.Assumptions}.
+
 Local Set Default Proof Using "All".
 
 #[global] Program Instance Pointer_typed_pointsto `{!TypedPointsto (Σ:=Σ) T'}  :
@@ -71,12 +69,11 @@ End Pointer.
 
 Module Int32.
 Section def.
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-(* FIXME: bundling *)
-Context {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}
-  {array_sem : go.ArraySemantics} {slice_sem : go.SliceSemantics}.
 
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
 Context {package_sem' : atomic.Assumptions}.
+
 Local Set Default Proof Using "All".
 
 #[global] Program Instance Int32_typed_pointsto  :
@@ -101,12 +98,11 @@ End Int32.
 
 Module Int64.
 Section def.
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-(* FIXME: bundling *)
-Context {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}
-  {array_sem : go.ArraySemantics} {slice_sem : go.SliceSemantics}.
 
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
 Context {package_sem' : atomic.Assumptions}.
+
 Local Set Default Proof Using "All".
 
 #[global] Program Instance Int64_typed_pointsto  :
@@ -132,12 +128,11 @@ End Int64.
 
 Module Uint32.
 Section def.
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-(* FIXME: bundling *)
-Context {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}
-  {array_sem : go.ArraySemantics} {slice_sem : go.SliceSemantics}.
 
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
 Context {package_sem' : atomic.Assumptions}.
+
 Local Set Default Proof Using "All".
 
 #[global] Program Instance Uint32_typed_pointsto  :
@@ -162,12 +157,11 @@ End Uint32.
 
 Module Uint64.
 Section def.
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-(* FIXME: bundling *)
-Context {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}
-  {array_sem : go.ArraySemantics} {slice_sem : go.SliceSemantics}.
 
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
 Context {package_sem' : atomic.Assumptions}.
+
 Local Set Default Proof Using "All".
 
 #[global] Program Instance Uint64_typed_pointsto  :
@@ -193,12 +187,11 @@ End Uint64.
 
 Module noCopy.
 Section def.
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-(* FIXME: bundling *)
-Context {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}
-  {array_sem : go.ArraySemantics} {slice_sem : go.SliceSemantics}.
 
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
 Context {package_sem' : atomic.Assumptions}.
+
 Local Set Default Proof Using "All".
 
 #[global] Program Instance noCopy_typed_pointsto  :
@@ -221,12 +214,11 @@ End noCopy.
 
 Module align64.
 Section def.
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-(* FIXME: bundling *)
-Context {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}
-  {array_sem : go.ArraySemantics} {slice_sem : go.SliceSemantics}.
 
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
 Context {package_sem' : atomic.Assumptions}.
+
 Local Set Default Proof Using "All".
 
 #[global] Program Instance align64_typed_pointsto  :
@@ -249,12 +241,11 @@ End align64.
 
 Module Value.
 Section def.
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-(* FIXME: bundling *)
-Context {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}
-  {array_sem : go.ArraySemantics} {slice_sem : go.SliceSemantics}.
 
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
 Context {package_sem' : atomic.Assumptions}.
+
 Local Set Default Proof Using "All".
 
 #[global] Program Instance Value_typed_pointsto  :
@@ -278,12 +269,11 @@ End Value.
 
 Module efaceWords.
 Section def.
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-(* FIXME: bundling *)
-Context {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}
-  {array_sem : go.ArraySemantics} {slice_sem : go.SliceSemantics}.
 
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
 Context {package_sem' : atomic.Assumptions}.
+
 Local Set Default Proof Using "All".
 
 #[global] Program Instance efaceWords_typed_pointsto  :
