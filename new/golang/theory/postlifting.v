@@ -327,6 +327,11 @@ Program Global Instance typed_pointsto_slice : TypedPointsto slice.t :=
 Final Obligation.
 Proof. iIntros "* H1 H2". iCombine "H1 H2" gives %Heq. naive_solver. Qed.
 
+Program Global Instance typed_pointsto_interface : TypedPointsto interface.t :=
+  {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
+Final Obligation.
+Proof. iIntros "* H1 H2". iCombine "H1 H2" gives %Heq. naive_solver. Qed.
+
 Program Global Instance typed_pointsto_func : TypedPointsto func.t :=
   {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
 Final Obligation.
@@ -378,6 +383,9 @@ Global Instance into_val_typed_func sig : IntoValTyped func.t (go.FunctionType s
 Proof. solve_into_val_typed. Qed.
 
 Global Instance into_val_typed_slice t : IntoValTyped slice.t (go.SliceType t).
+Proof. solve_into_val_typed. Qed.
+
+Global Instance into_val_typed_interface elems : IntoValTyped interface.t (go.InterfaceType elems).
 Proof. solve_into_val_typed. Qed.
 
 Global Instance into_val_typed_chan t b : IntoValTyped chan.t (go.ChannelType b t).
