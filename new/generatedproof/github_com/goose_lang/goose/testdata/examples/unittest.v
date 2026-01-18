@@ -9,7 +9,7 @@ Set Default Proof Using "Type".
 Module unittest.
 Module importantStruct.
 Section def.
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context `{!heapGS Σ}.
 (* FIXME: bundling *)
 Context {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}
   {array_sem : go.ArraySemantics} {slice_sem : go.SliceSemantics}.

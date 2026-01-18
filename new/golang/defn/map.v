@@ -25,7 +25,7 @@ Context {go_lctx : GoLocalContext} {go_gctx : GoGlobalContext}.
 Definition lookup2 (key_type elem_type : go.type) : val :=
   λ: "m" "k",
     (* make sure it's safe to look up *)
-    InterfaceMake key_type "k" =⟨go.any⟩ InterfaceMake key_type "k";;
+    Convert key_type go.any "k" =⟨go.any⟩ Convert key_type go.any "k";;
     if: "m" =⟨go.MapType key_type elem_type⟩ #map.nil then
       (GoZeroVal elem_type #(), #false)
     else InternalMapLookup (Read "m", "k").
@@ -36,7 +36,7 @@ Definition lookup1 (key_type elem_type : go.type) : val :=
 Definition insert (key_type : go.type) : val :=
   λ: "m" "k" "v",
     (* make sure it's safe to look up *)
-    InterfaceMake key_type "k" =⟨go.any⟩ InterfaceMake key_type "k";;
+    Convert key_type go.any "k" =⟨go.any⟩ Convert key_type go.any "k";;
     Store "m" (InternalMapInsert (Read "m", "k", "v")).
 
 (* Does not support modifications to the map during the loop. *)
@@ -126,7 +126,7 @@ Class MapSemantics `{!GoSemanticsFunctions} :=
   #[global] delete_map key_type elem_type ::
     FuncUnfold go.delete [go.MapType key_type elem_type]
     (λ: "m" "k",
-       InterfaceMake key_type "k" =⟨go.any⟩ InterfaceMake key_type "k";;
+       Convert key_type go.any "k" =⟨go.any⟩ Convert key_type go.any "k";;
        Store "m" $ InternalMapDelete (Read "m", "k"))%V;
   #[global] make2_map key_type elem_type ::
     FuncUnfold go.make2 [go.MapType key_type elem_type]

@@ -36,8 +36,6 @@ Definition type_set_contains {go_ctx : GoLocalContext} t t' : bool :=
 
 Class InterfaceSemantics :=
 {
-  #[global] interface_make_step dt v ::
-    go.IsGoStepPureDet (InterfaceMake dt) v #(interface.mk dt v);
   #[global] interface_get_step m i ::
     go.IsGoStepPureDet (InterfaceGet m) #i
     (match i with

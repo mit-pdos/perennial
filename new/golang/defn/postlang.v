@@ -348,7 +348,6 @@ Class CoreSemantics :=
      [l ≠ null]. *)
   #[global] struct_field_ref_step t f l V `{!ZeroVal V} `{!TypeRepr t V} ::
     IsGoStepPureDet (StructFieldRef t f) #l #(struct_field_ref V f l);
-  #[global] go_interface_make_step t v :: IsGoStepPureDet (InterfaceMake t) v #(interface.mk t v);
   #[global] composite_literal_step t (v : val) :: IsGoStepPureDet (CompositeLiteral t) v (composite_literal t v);
 
   (* The language spec doesn't say anything about the addresses of zero-sized
