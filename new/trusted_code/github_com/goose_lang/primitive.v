@@ -1,4 +1,4 @@
-From New.golang.defn Require Import core slice lock.
+From New.golang.defn Require Import pre lock.
 
 Module primitive.
 Section code.

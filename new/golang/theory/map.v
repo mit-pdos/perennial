@@ -3,6 +3,23 @@ From New.golang.theory Require Export mem array predeclared auto.
 
 Set Default Proof Using "Type".
 
+Section safe_map_key.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext} {go_lctx : GoLocalContext}
+  {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
+Local Set Default Proof Using "All".
+Class SafeMapKey {K} key_type (k : K) :=
+  {
+    safe_map_go_eq :
+      ∃ (b : bool), go.GoExprEq (go_eq key_type #k #k) (#b);
+  }.
+
+Global Instance safe_map_key_is_go_eq {K} key_type (k : K) (b : bool) :
+  go.GoExprEq (go_eq key_type #k #k) #b → SafeMapKey key_type k.
+Proof.
+  intros ?. constructor. by eexists.
+Qed.
+End safe_map_key.
+
 Section defns_and_lemmas.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
   {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
@@ -44,7 +61,7 @@ through [IntoValTyped K kt] so that the instance used to type-check [gmap K V]
 is independent of the [IntoValTyped] instance. Otherwise, these proofs end up
 relying on a [gmap] with a particular proof of [EqDecision K]. *)
 Context `[!ZeroVal K] `[!EqDecision K] `[!Countable K] `[!ZeroVal V]
-  `{!Inj (=) (=) (into_val (V:=K))}.
+  `[!go.IntoValInj K].
 
 Definition own_map_def mptr dq (m : gmap K V) : iProp Σ :=
   ∃ (mv : val) mp,
@@ -65,18 +82,6 @@ Proof. rewrite own_map_unseal. apply _. Qed.
 
 Notation "mref ↦$ dq m" := (own_map mref dq m)
                             (at level 20, dq custom dfrac at level 50, format "mref  ↦$ dq  m").
-
-Class SafeMapKey key_type (k : K) :=
-  {
-    safe_map_go_eq :
-      ∃ (b : bool), go.GoExprEq (go_eq key_type #k #k) (#b);
-  }.
-
-Global Instance safe_map_key_is_go_eq key_type k (b : bool) :
-  go.GoExprEq (go_eq key_type #k #k) #b → SafeMapKey key_type k.
-Proof.
-  intros ?. constructor. by eexists.
-Qed.
 
 Lemma wp_map_insert key_type l (m : gmap K V) k v {Hsafe : SafeMapKey key_type k} :
   {{{ l ↦$ m }}}
@@ -137,7 +142,7 @@ Proof.
   + iApply "HΦ". iFrame "∗#%".
 Qed.
 
-Global Instance pure_wp_map_nil_lookup2 key_type elem_type k
+Global Instance pure_wp_map_nil_lookup2 key_type elem_type (k : K)
   `{!TypedPointsto V} `{!IntoValTyped V elem_type} `{!go.TypeRepr elem_type V}
   {Hsafe : SafeMapKey key_type k} :
   PureWp True (map.lookup2 key_type elem_type #map.nil #k) (#(zero_val V), #false)%V.
@@ -155,7 +160,7 @@ Proof.
   wp_start as "Hm". wp_apply (wp_map_lookup2 with "Hm") as "Hm". by iApply "HΦ".
 Qed.
 
-Global Instance pure_wp_map_nil_lookup1 key_type elem_type k
+Global Instance pure_wp_map_nil_lookup1 key_type elem_type (k : K)
   `{!TypedPointsto V} `{!IntoValTyped V elem_type} `{!go.TypeRepr elem_type V}
   {Hsafe : SafeMapKey key_type k} :
   PureWp True (map.lookup1 key_type elem_type #map.nil #k) #(zero_val V).
@@ -371,7 +376,8 @@ Module test.
     iIntros "_".
     wp_auto. wp_apply wp_map_make1.
     iIntros "% Hm". wp_auto.
-    wp_apply (wp_map_insert with "Hm"). iIntros "Hm". wp_auto.
+    wp_apply (wp_map_insert with "Hm").
+    iIntros "Hm". wp_auto.
     wp_apply (wp_map_insert with "Hm"). iIntros "Hm". wp_auto.
   Abort.
 End proof.

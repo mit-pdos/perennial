@@ -302,17 +302,23 @@ Class IntoValUnfold V f :=
 Global Hint Mode IntoValUnfold ! - : typeclass_instances.
 Global Arguments into_val_unfold (V) {_}.
 
+Class IntoValInj V :=
+  {
+    #[global] into_val_inj :: Inj eq eq (into_val (V:=V));
+  }.
+Global Hint Mode IntoValInj ! : typeclass_instances.
+
 Class BasicIntoValInj :=
   {
-    #[global] into_val_loc_inj :: Inj eq eq (into_val (V:=loc));
-    #[global] into_val_slice_inj :: Inj eq eq (into_val (V:=slice.t));
-    #[global] into_val_w64_inj :: Inj eq eq (into_val (V:=w64));
-    #[global] into_val_w32_inj :: Inj eq eq (into_val (V:=w32));
-    #[global] into_val_w16_inj :: Inj eq eq (into_val (V:=w16));
-    #[global] into_val_w8_inj :: Inj eq eq (into_val (V:=w8));
-    #[global] into_val_bool_inj :: Inj eq eq (into_val (V:=bool));
-    #[global] into_val_string_inj :: Inj eq eq (into_val (V:=go_string));
-    #[global] interface_into_val_inj :: Inj eq eq (into_val (V:=interface.t));
+    #[global] into_val_inj_loc :: IntoValInj loc;
+    #[global] into_val_inj_slice :: IntoValInj slice.t;
+    #[global] into_val_inj_w64 :: IntoValInj w64;
+    #[global] into_val_inj_w32 :: IntoValInj w32;
+    #[global] into_val_inj_w16 :: IntoValInj w16;
+    #[global] into_val_inj_w8 :: IntoValInj w8;
+    #[global] into_val_inj_bool :: IntoValInj bool;
+    #[global] into_val_inj_string :: IntoValInj go_string;
+    #[global] into_val_inj_interface :: IntoValInj interface.t;
   }.
 
 Class TypeRepr t V `{!ZeroVal V} `{!GoSemanticsFunctions} : Prop :=
@@ -361,7 +367,7 @@ Class CoreSemantics `{!GoSemanticsFunctions} : Prop :=
     IntoValUnfold func.t (λ f, (rec: f.(func.f) f.(func.x) := f.(func.e))%V);
   #[global] into_val_unfold_bool :: IntoValUnfold _ (λ x, LitV $ LitBool x);
 
-  (* TODO: get rid of these. *)
+  (* Eventually want to get rid of these. *)
   #[global] into_val_unfold_w64 :: IntoValUnfold _ (λ x, LitV $ LitInt x);
   #[global] into_val_unfold_w32 :: IntoValUnfold _ (λ x, LitV $ LitInt32 x);
   #[global] into_val_unfold_w16 :: IntoValUnfold _ (λ x, LitV $ LitInt16 x);

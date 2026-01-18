@@ -1,4 +1,4 @@
-From New.golang Require Import defn.core defn.lock.
+From New.golang Require Import defn.pre defn.lock.
 
 Module sync.
 

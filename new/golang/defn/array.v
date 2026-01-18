@@ -95,6 +95,9 @@ Class ArraySemantics `{!GoSemanticsFunctions} :=
 
   array_index_ref_add t i j l :
     array_index_ref t (i + j) l = array_index_ref t j (array_index_ref t i l);
+
+  #[global] into_val_inj_array V n {inj_V : go.IntoValInj V} ::
+    go.IntoValInj (array.t V n);
 }.
 
 End defs.
