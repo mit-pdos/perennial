@@ -19,7 +19,7 @@ Context {package_sem' : semantics.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Program Instance unit_typed_pointsto  :
+#[global]Program Instance unit_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (semantics.unit.t) :=
   {|
     typed_pointsto_def l dq v :=
@@ -46,7 +46,7 @@ Context {package_sem' : semantics.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Program Instance Enc_typed_pointsto  :
+#[global]Program Instance Enc_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (semantics.Enc.t) :=
   {|
     typed_pointsto_def l dq v :=
@@ -74,7 +74,7 @@ Context {package_sem' : semantics.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Program Instance Dec_typed_pointsto  :
+#[global]Program Instance Dec_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (semantics.Dec.t) :=
   {|
     typed_pointsto_def l dq v :=
@@ -102,7 +102,7 @@ Context {package_sem' : semantics.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Program Instance Editor_typed_pointsto  :
+#[global]Program Instance Editor_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (semantics.Editor.t) :=
   {|
     typed_pointsto_def l dq v :=
@@ -131,7 +131,7 @@ Context {package_sem' : semantics.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Program Instance Pair_typed_pointsto  :
+#[global]Program Instance Pair_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (semantics.Pair.t) :=
   {|
     typed_pointsto_def l dq v :=
@@ -160,7 +160,7 @@ Context {package_sem' : semantics.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Program Instance SquareStruct_typed_pointsto  :
+#[global]Program Instance SquareStruct_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (semantics.SquareStruct.t) :=
   {|
     typed_pointsto_def l dq v :=
@@ -188,7 +188,7 @@ Context {package_sem' : semantics.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Program Instance LoopStruct_typed_pointsto  :
+#[global]Program Instance LoopStruct_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (semantics.LoopStruct.t) :=
   {|
     typed_pointsto_def l dq v :=
@@ -216,7 +216,7 @@ Context {package_sem' : semantics.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Program Instance BoolTest_typed_pointsto  :
+#[global]Program Instance BoolTest_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (semantics.BoolTest.t) :=
   {|
     typed_pointsto_def l dq v :=
@@ -247,7 +247,7 @@ Context {package_sem' : semantics.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Program Instance ArrayEditor_typed_pointsto  :
+#[global]Program Instance ArrayEditor_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (semantics.ArrayEditor.t) :=
   {|
     typed_pointsto_def l dq v :=
@@ -276,7 +276,7 @@ Context {package_sem' : semantics.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Program Instance Bar_typed_pointsto  :
+#[global]Program Instance Bar_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (semantics.Bar.t) :=
   {|
     typed_pointsto_def l dq v :=
@@ -305,7 +305,7 @@ Context {package_sem' : semantics.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Program Instance Foo_typed_pointsto  :
+#[global]Program Instance Foo_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (semantics.Foo.t) :=
   {|
     typed_pointsto_def l dq v :=
@@ -333,7 +333,7 @@ Context {package_sem' : semantics.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Program Instance TwoInts_typed_pointsto  :
+#[global]Program Instance TwoInts_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (semantics.TwoInts.t) :=
   {|
     typed_pointsto_def l dq v :=
@@ -362,7 +362,7 @@ Context {package_sem' : semantics.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Program Instance S_typed_pointsto  :
+#[global]Program Instance S_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (semantics.S.t) :=
   {|
     typed_pointsto_def l dq v :=
@@ -392,7 +392,7 @@ Context {package_sem' : semantics.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Program Instance StructWrap_typed_pointsto  :
+#[global]Program Instance StructWrap_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (semantics.StructWrap.t) :=
   {|
     typed_pointsto_def l dq v :=
@@ -420,7 +420,7 @@ Context {package_sem' : semantics.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Program Instance StructWithFunc_typed_pointsto  :
+#[global]Program Instance StructWithFunc_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (semantics.StructWithFunc.t) :=
   {|
     typed_pointsto_def l dq v :=
@@ -448,7 +448,7 @@ Context {package_sem' : semantics.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Program Instance switchConcrete_typed_pointsto  :
+#[global]Program Instance switchConcrete_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (semantics.switchConcrete.t) :=
   {|
     typed_pointsto_def l dq v :=
@@ -475,7 +475,7 @@ Context {package_sem' : semantics.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Program Instance Log_typed_pointsto  :
+#[global]Program Instance Log_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (semantics.Log.t) :=
   {|
     typed_pointsto_def l dq v :=

@@ -7,4 +7,84 @@ Require Export New.code.bytes.
 Set Default Proof Using "Type".
 
 Module bytes.
+Module Buffer.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : bytes.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Buffer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (bytes.Buffer.t). Admitted.
+
+#[global] Instance Buffer_into_val_typed
+   :
+  IntoValTyped (bytes.Buffer.t) (bytes.Buffer).
+Proof. Admitted.
+
+End def.
+End Buffer.
+
+Module readOp.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : bytes.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance readOp_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (bytes.readOp.t). Admitted.
+
+#[global] Instance readOp_into_val_typed
+   :
+  IntoValTyped (bytes.readOp.t) (bytes.readOp).
+Proof. Admitted.
+
+End def.
+End readOp.
+
+Module asciiSet.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : bytes.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance asciiSet_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (bytes.asciiSet.t). Admitted.
+
+#[global] Instance asciiSet_into_val_typed
+   :
+  IntoValTyped (bytes.asciiSet.t) (bytes.asciiSet).
+Proof. Admitted.
+
+End def.
+End asciiSet.
+
+Module Reader.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : bytes.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Reader_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (bytes.Reader.t). Admitted.
+
+#[global] Instance Reader_into_val_typed
+   :
+  IntoValTyped (bytes.Reader.t) (bytes.Reader).
+Proof. Admitted.
+
+End def.
+End Reader.
+
 End bytes.

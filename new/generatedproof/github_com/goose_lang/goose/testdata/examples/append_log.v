@@ -19,7 +19,7 @@ Context {package_sem' : append_log.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Program Instance Log_typed_pointsto  :
+#[global]Program Instance Log_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (append_log.Log.t) :=
   {|
     typed_pointsto_def l dq v :=

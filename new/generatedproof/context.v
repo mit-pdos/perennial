@@ -8,4 +8,304 @@ Require Export New.code.context.
 Set Default Proof Using "Type".
 
 Module context.
+Module deadlineExceededError.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : context.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance deadlineExceededError_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (context.deadlineExceededError.t). Admitted.
+
+#[global] Instance deadlineExceededError_into_val_typed
+   :
+  IntoValTyped (context.deadlineExceededError.t) (context.deadlineExceededError).
+Proof. Admitted.
+
+End def.
+End deadlineExceededError.
+
+Module emptyCtx.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : context.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance emptyCtx_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (context.emptyCtx.t). Admitted.
+
+#[global] Instance emptyCtx_into_val_typed
+   :
+  IntoValTyped (context.emptyCtx.t) (context.emptyCtx).
+Proof. Admitted.
+
+End def.
+End emptyCtx.
+
+Module backgroundCtx.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : context.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance backgroundCtx_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (context.backgroundCtx.t). Admitted.
+
+#[global] Instance backgroundCtx_into_val_typed
+   :
+  IntoValTyped (context.backgroundCtx.t) (context.backgroundCtx).
+Proof. Admitted.
+
+End def.
+End backgroundCtx.
+
+Module todoCtx.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : context.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance todoCtx_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (context.todoCtx.t). Admitted.
+
+#[global] Instance todoCtx_into_val_typed
+   :
+  IntoValTyped (context.todoCtx.t) (context.todoCtx).
+Proof. Admitted.
+
+End def.
+End todoCtx.
+
+Module CancelFunc.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : context.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance CancelFunc_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (context.CancelFunc.t). Admitted.
+
+#[global] Instance CancelFunc_into_val_typed
+   :
+  IntoValTyped (context.CancelFunc.t) (context.CancelFunc).
+Proof. Admitted.
+
+End def.
+End CancelFunc.
+
+Module CancelCauseFunc.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : context.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance CancelCauseFunc_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (context.CancelCauseFunc.t). Admitted.
+
+#[global] Instance CancelCauseFunc_into_val_typed
+   :
+  IntoValTyped (context.CancelCauseFunc.t) (context.CancelCauseFunc).
+Proof. Admitted.
+
+End def.
+End CancelCauseFunc.
+
+Module afterFuncer.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : context.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance afterFuncer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (context.afterFuncer.t). Admitted.
+
+#[global] Instance afterFuncer_into_val_typed
+   :
+  IntoValTyped (context.afterFuncer.t) (context.afterFuncer).
+Proof. Admitted.
+
+End def.
+End afterFuncer.
+
+Module afterFuncCtx.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : context.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance afterFuncCtx_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (context.afterFuncCtx.t). Admitted.
+
+#[global] Instance afterFuncCtx_into_val_typed
+   :
+  IntoValTyped (context.afterFuncCtx.t) (context.afterFuncCtx).
+Proof. Admitted.
+
+End def.
+End afterFuncCtx.
+
+Module stopCtx.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : context.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance stopCtx_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (context.stopCtx.t). Admitted.
+
+#[global] Instance stopCtx_into_val_typed
+   :
+  IntoValTyped (context.stopCtx.t) (context.stopCtx).
+Proof. Admitted.
+
+End def.
+End stopCtx.
+
+Module canceler.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : context.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance canceler_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (context.canceler.t). Admitted.
+
+#[global] Instance canceler_into_val_typed
+   :
+  IntoValTyped (context.canceler.t) (context.canceler).
+Proof. Admitted.
+
+End def.
+End canceler.
+
+Module cancelCtx.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : context.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance cancelCtx_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (context.cancelCtx.t). Admitted.
+
+#[global] Instance cancelCtx_into_val_typed
+   :
+  IntoValTyped (context.cancelCtx.t) (context.cancelCtx).
+Proof. Admitted.
+
+End def.
+End cancelCtx.
+
+Module stringer.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : context.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance stringer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (context.stringer.t). Admitted.
+
+#[global] Instance stringer_into_val_typed
+   :
+  IntoValTyped (context.stringer.t) (context.stringer).
+Proof. Admitted.
+
+End def.
+End stringer.
+
+Module withoutCancelCtx.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : context.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance withoutCancelCtx_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (context.withoutCancelCtx.t). Admitted.
+
+#[global] Instance withoutCancelCtx_into_val_typed
+   :
+  IntoValTyped (context.withoutCancelCtx.t) (context.withoutCancelCtx).
+Proof. Admitted.
+
+End def.
+End withoutCancelCtx.
+
+Module timerCtx.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : context.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance timerCtx_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (context.timerCtx.t). Admitted.
+
+#[global] Instance timerCtx_into_val_typed
+   :
+  IntoValTyped (context.timerCtx.t) (context.timerCtx).
+Proof. Admitted.
+
+End def.
+End timerCtx.
+
+Module valueCtx.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : context.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance valueCtx_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (context.valueCtx.t). Admitted.
+
+#[global] Instance valueCtx_into_val_typed
+   :
+  IntoValTyped (context.valueCtx.t) (context.valueCtx).
+Proof. Admitted.
+
+End def.
+End valueCtx.
+
 End context.

@@ -7,4 +7,524 @@ Require Export New.code.os.
 Set Default Proof Using "Type".
 
 Module os.
+Module readdirMode.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : os.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance readdirMode_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (os.readdirMode.t). Admitted.
+
+#[global] Instance readdirMode_into_val_typed
+   :
+  IntoValTyped (os.readdirMode.t) (os.readdirMode).
+Proof. Admitted.
+
+End def.
+End readdirMode.
+
+Module dirInfo.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : os.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance dirInfo_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (os.dirInfo.t). Admitted.
+
+#[global] Instance dirInfo_into_val_typed
+   :
+  IntoValTyped (os.dirInfo.t) (os.dirInfo).
+Proof. Admitted.
+
+End def.
+End dirInfo.
+
+Module timeout.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : os.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance timeout_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (os.timeout.t). Admitted.
+
+#[global] Instance timeout_into_val_typed
+   :
+  IntoValTyped (os.timeout.t) (os.timeout).
+Proof. Admitted.
+
+End def.
+End timeout.
+
+Module SyscallError.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : os.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance SyscallError_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (os.SyscallError.t). Admitted.
+
+#[global] Instance SyscallError_into_val_typed
+   :
+  IntoValTyped (os.SyscallError.t) (os.SyscallError).
+Proof. Admitted.
+
+End def.
+End SyscallError.
+
+Module processStatus.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : os.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance processStatus_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (os.processStatus.t). Admitted.
+
+#[global] Instance processStatus_into_val_typed
+   :
+  IntoValTyped (os.processStatus.t) (os.processStatus).
+Proof. Admitted.
+
+End def.
+End processStatus.
+
+Module Process.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : os.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Process_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (os.Process.t). Admitted.
+
+#[global] Instance Process_into_val_typed
+   :
+  IntoValTyped (os.Process.t) (os.Process).
+Proof. Admitted.
+
+End def.
+End Process.
+
+Module processHandle.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : os.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance processHandle_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (os.processHandle.t). Admitted.
+
+#[global] Instance processHandle_into_val_typed
+   :
+  IntoValTyped (os.processHandle.t) (os.processHandle).
+Proof. Admitted.
+
+End def.
+End processHandle.
+
+Module ProcAttr.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : os.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ProcAttr_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (os.ProcAttr.t). Admitted.
+
+#[global] Instance ProcAttr_into_val_typed
+   :
+  IntoValTyped (os.ProcAttr.t) (os.ProcAttr).
+Proof. Admitted.
+
+End def.
+End ProcAttr.
+
+Module Signal.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : os.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Signal_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (os.Signal.t). Admitted.
+
+#[global] Instance Signal_into_val_typed
+   :
+  IntoValTyped (os.Signal.t) (os.Signal).
+Proof. Admitted.
+
+End def.
+End Signal.
+
+Module ProcessState.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : os.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ProcessState_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (os.ProcessState.t). Admitted.
+
+#[global] Instance ProcessState_into_val_typed
+   :
+  IntoValTyped (os.ProcessState.t) (os.ProcessState).
+Proof. Admitted.
+
+End def.
+End ProcessState.
+
+Module LinkError.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : os.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance LinkError_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (os.LinkError.t). Admitted.
+
+#[global] Instance LinkError_into_val_typed
+   :
+  IntoValTyped (os.LinkError.t) (os.LinkError).
+Proof. Admitted.
+
+End def.
+End LinkError.
+
+Module noReadFrom.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : os.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance noReadFrom_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (os.noReadFrom.t). Admitted.
+
+#[global] Instance noReadFrom_into_val_typed
+   :
+  IntoValTyped (os.noReadFrom.t) (os.noReadFrom).
+Proof. Admitted.
+
+End def.
+End noReadFrom.
+
+Module fileWithoutReadFrom.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : os.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance fileWithoutReadFrom_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (os.fileWithoutReadFrom.t). Admitted.
+
+#[global] Instance fileWithoutReadFrom_into_val_typed
+   :
+  IntoValTyped (os.fileWithoutReadFrom.t) (os.fileWithoutReadFrom).
+Proof. Admitted.
+
+End def.
+End fileWithoutReadFrom.
+
+Module noWriteTo.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : os.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance noWriteTo_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (os.noWriteTo.t). Admitted.
+
+#[global] Instance noWriteTo_into_val_typed
+   :
+  IntoValTyped (os.noWriteTo.t) (os.noWriteTo).
+Proof. Admitted.
+
+End def.
+End noWriteTo.
+
+Module fileWithoutWriteTo.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : os.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance fileWithoutWriteTo_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (os.fileWithoutWriteTo.t). Admitted.
+
+#[global] Instance fileWithoutWriteTo_into_val_typed
+   :
+  IntoValTyped (os.fileWithoutWriteTo.t) (os.fileWithoutWriteTo).
+Proof. Admitted.
+
+End def.
+End fileWithoutWriteTo.
+
+Module dirFS.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : os.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance dirFS_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (os.dirFS.t). Admitted.
+
+#[global] Instance dirFS_into_val_typed
+   :
+  IntoValTyped (os.dirFS.t) (os.dirFS).
+Proof. Admitted.
+
+End def.
+End dirFS.
+
+Module file.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : os.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance file_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (os.file.t). Admitted.
+
+#[global] Instance file_into_val_typed
+   :
+  IntoValTyped (os.file.t) (os.file).
+Proof. Admitted.
+
+End def.
+End file.
+
+Module newFileKind.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : os.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance newFileKind_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (os.newFileKind.t). Admitted.
+
+#[global] Instance newFileKind_into_val_typed
+   :
+  IntoValTyped (os.newFileKind.t) (os.newFileKind).
+Proof. Admitted.
+
+End def.
+End newFileKind.
+
+Module unixDirent.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : os.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance unixDirent_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (os.unixDirent.t). Admitted.
+
+#[global] Instance unixDirent_into_val_typed
+   :
+  IntoValTyped (os.unixDirent.t) (os.unixDirent).
+Proof. Admitted.
+
+End def.
+End unixDirent.
+
+Module rawConn.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : os.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance rawConn_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (os.rawConn.t). Admitted.
+
+#[global] Instance rawConn_into_val_typed
+   :
+  IntoValTyped (os.rawConn.t) (os.rawConn).
+Proof. Admitted.
+
+End def.
+End rawConn.
+
+Module Root.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : os.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Root_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (os.Root.t). Admitted.
+
+#[global] Instance Root_into_val_typed
+   :
+  IntoValTyped (os.Root.t) (os.Root).
+Proof. Admitted.
+
+End def.
+End Root.
+
+Module rootFS.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : os.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance rootFS_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (os.rootFS.t). Admitted.
+
+#[global] Instance rootFS_into_val_typed
+   :
+  IntoValTyped (os.rootFS.t) (os.rootFS).
+Proof. Admitted.
+
+End def.
+End rootFS.
+
+Module root.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : os.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance root_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (os.root.t). Admitted.
+
+#[global] Instance root_into_val_typed
+   :
+  IntoValTyped (os.root.t) (os.root).
+Proof. Admitted.
+
+End def.
+End root.
+
+Module errSymlink.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : os.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance errSymlink_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (os.errSymlink.t). Admitted.
+
+#[global] Instance errSymlink_into_val_typed
+   :
+  IntoValTyped (os.errSymlink.t) (os.errSymlink).
+Proof. Admitted.
+
+End def.
+End errSymlink.
+
+Module File.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : os.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance File_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (os.File.t). Admitted.
+
+#[global] Instance File_into_val_typed
+   :
+  IntoValTyped (os.File.t) (os.File).
+Proof. Admitted.
+
+End def.
+End File.
+
+Module fileStat.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : os.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance fileStat_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (os.fileStat.t). Admitted.
+
+#[global] Instance fileStat_into_val_typed
+   :
+  IntoValTyped (os.fileStat.t) (os.fileStat).
+Proof. Admitted.
+
+End def.
+End fileStat.
+
 End os.

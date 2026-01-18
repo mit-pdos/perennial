@@ -7,4 +7,124 @@ Require Export New.code.internal.reflectlite.
 Set Default Proof Using "Type".
 
 Module reflectlite.
+Module Type'.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : reflectlite.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Type'_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (reflectlite.Type'.t). Admitted.
+
+#[global] Instance Type'_into_val_typed
+   :
+  IntoValTyped (reflectlite.Type'.t) (reflectlite.Type').
+Proof. Admitted.
+
+End def.
+End Type'.
+
+Module rtype.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : reflectlite.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance rtype_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (reflectlite.rtype.t). Admitted.
+
+#[global] Instance rtype_into_val_typed
+   :
+  IntoValTyped (reflectlite.rtype.t) (reflectlite.rtype).
+Proof. Admitted.
+
+End def.
+End rtype.
+
+Module name.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : reflectlite.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance name_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (reflectlite.name.t). Admitted.
+
+#[global] Instance name_into_val_typed
+   :
+  IntoValTyped (reflectlite.name.t) (reflectlite.name).
+Proof. Admitted.
+
+End def.
+End name.
+
+Module Value.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : reflectlite.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Value_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (reflectlite.Value.t). Admitted.
+
+#[global] Instance Value_into_val_typed
+   :
+  IntoValTyped (reflectlite.Value.t) (reflectlite.Value).
+Proof. Admitted.
+
+End def.
+End Value.
+
+Module flag.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : reflectlite.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance flag_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (reflectlite.flag.t). Admitted.
+
+#[global] Instance flag_into_val_typed
+   :
+  IntoValTyped (reflectlite.flag.t) (reflectlite.flag).
+Proof. Admitted.
+
+End def.
+End flag.
+
+Module ValueError.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : reflectlite.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ValueError_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (reflectlite.ValueError.t). Admitted.
+
+#[global] Instance ValueError_into_val_typed
+   :
+  IntoValTyped (reflectlite.ValueError.t) (reflectlite.ValueError).
+Proof. Admitted.
+
+End def.
+End ValueError.
+
 End reflectlite.

@@ -7,4 +7,24 @@ Require Export New.code.crypto.rand.
 Set Default Proof Using "Type".
 
 Module rand.
+Module reader.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : rand.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance reader_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (rand.reader.t). Admitted.
+
+#[global] Instance reader_into_val_typed
+   :
+  IntoValTyped (rand.reader.t) (rand.reader).
+Proof. Admitted.
+
+End def.
+End reader.
+
 End rand.

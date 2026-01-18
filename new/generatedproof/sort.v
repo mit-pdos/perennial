@@ -7,4 +7,124 @@ Require Export New.code.sort.
 Set Default Proof Using "Type".
 
 Module sort.
+Module Interface.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : sort.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Interface_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (sort.Interface.t). Admitted.
+
+#[global] Instance Interface_into_val_typed
+   :
+  IntoValTyped (sort.Interface.t) (sort.Interface).
+Proof. Admitted.
+
+End def.
+End Interface.
+
+Module lessSwap.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : sort.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance lessSwap_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (sort.lessSwap.t). Admitted.
+
+#[global] Instance lessSwap_into_val_typed
+   :
+  IntoValTyped (sort.lessSwap.t) (sort.lessSwap).
+Proof. Admitted.
+
+End def.
+End lessSwap.
+
+Module reverse.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : sort.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance reverse_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (sort.reverse.t). Admitted.
+
+#[global] Instance reverse_into_val_typed
+   :
+  IntoValTyped (sort.reverse.t) (sort.reverse).
+Proof. Admitted.
+
+End def.
+End reverse.
+
+Module IntSlice.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : sort.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance IntSlice_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (sort.IntSlice.t). Admitted.
+
+#[global] Instance IntSlice_into_val_typed
+   :
+  IntoValTyped (sort.IntSlice.t) (sort.IntSlice).
+Proof. Admitted.
+
+End def.
+End IntSlice.
+
+Module Float64Slice.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : sort.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Float64Slice_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (sort.Float64Slice.t). Admitted.
+
+#[global] Instance Float64Slice_into_val_typed
+   :
+  IntoValTyped (sort.Float64Slice.t) (sort.Float64Slice).
+Proof. Admitted.
+
+End def.
+End Float64Slice.
+
+Module StringSlice.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : sort.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance StringSlice_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (sort.StringSlice.t). Admitted.
+
+#[global] Instance StringSlice_into_val_typed
+   :
+  IntoValTyped (sort.StringSlice.t) (sort.StringSlice).
+Proof. Admitted.
+
+End def.
+End StringSlice.
+
 End sort.

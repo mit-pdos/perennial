@@ -7,4 +7,44 @@ Require Export New.code.crypto.ed25519.
 Set Default Proof Using "Type".
 
 Module ed25519.
+Module PrivateKey.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : ed25519.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance PrivateKey_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (ed25519.PrivateKey.t). Admitted.
+
+#[global] Instance PrivateKey_into_val_typed
+   :
+  IntoValTyped (ed25519.PrivateKey.t) (ed25519.PrivateKey).
+Proof. Admitted.
+
+End def.
+End PrivateKey.
+
+Module Options.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : ed25519.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Options_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (ed25519.Options.t). Admitted.
+
+#[global] Instance Options_into_val_typed
+   :
+  IntoValTyped (ed25519.Options.t) (ed25519.Options).
+Proof. Admitted.
+
+End def.
+End Options.
+
 End ed25519.

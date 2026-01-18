@@ -7,4 +7,104 @@ Require Export New.code.strconv.
 Set Default Proof Using "Type".
 
 Module strconv.
+Module NumError.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : strconv.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance NumError_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (strconv.NumError.t). Admitted.
+
+#[global] Instance NumError_into_val_typed
+   :
+  IntoValTyped (strconv.NumError.t) (strconv.NumError).
+Proof. Admitted.
+
+End def.
+End NumError.
+
+Module decimal.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : strconv.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance decimal_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (strconv.decimal.t). Admitted.
+
+#[global] Instance decimal_into_val_typed
+   :
+  IntoValTyped (strconv.decimal.t) (strconv.decimal).
+Proof. Admitted.
+
+End def.
+End decimal.
+
+Module leftCheat.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : strconv.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance leftCheat_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (strconv.leftCheat.t). Admitted.
+
+#[global] Instance leftCheat_into_val_typed
+   :
+  IntoValTyped (strconv.leftCheat.t) (strconv.leftCheat).
+Proof. Admitted.
+
+End def.
+End leftCheat.
+
+Module floatInfo.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : strconv.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance floatInfo_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (strconv.floatInfo.t). Admitted.
+
+#[global] Instance floatInfo_into_val_typed
+   :
+  IntoValTyped (strconv.floatInfo.t) (strconv.floatInfo).
+Proof. Admitted.
+
+End def.
+End floatInfo.
+
+Module decimalSlice.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : strconv.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance decimalSlice_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (strconv.decimalSlice.t). Admitted.
+
+#[global] Instance decimalSlice_into_val_typed
+   :
+  IntoValTyped (strconv.decimalSlice.t) (strconv.decimalSlice).
+Proof. Admitted.
+
+End def.
+End decimalSlice.
+
 End strconv.

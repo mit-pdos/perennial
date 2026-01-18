@@ -8,6 +8,33 @@ Require Export New.code.sync.atomic.
 Set Default Proof Using "Type".
 
 Module atomic.
+Module noCopy.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : atomic.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance noCopy_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (atomic.noCopy.t) :=
+  {|
+    typed_pointsto_def l dq v :=
+      (
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance noCopy_into_val_typed
+   :
+  IntoValTyped (atomic.noCopy.t) (atomic.noCopy).
+Proof. solve_into_val_typed_struct. Qed.
+
+End def.
+End noCopy.
+
 Module Bool.
 Section def.
 
@@ -17,7 +44,7 @@ Context {package_sem' : atomic.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Program Instance Bool_typed_pointsto  :
+#[global]Program Instance Bool_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (atomic.Bool.t) :=
   {|
     typed_pointsto_def l dq v :=
@@ -46,7 +73,7 @@ Context {package_sem' : atomic.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Program Instance Pointer_typed_pointsto `{!TypedPointsto (Σ:=Σ) T'}  :
+#[global]Program Instance Pointer_typed_pointsto `{!TypedPointsto (Σ:=Σ) T'}  :
   TypedPointsto (Σ:=Σ) (atomic.Pointer.t T') :=
   {|
     typed_pointsto_def l dq v :=
@@ -76,7 +103,7 @@ Context {package_sem' : atomic.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Program Instance Int32_typed_pointsto  :
+#[global]Program Instance Int32_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (atomic.Int32.t) :=
   {|
     typed_pointsto_def l dq v :=
@@ -96,6 +123,33 @@ Proof. solve_into_val_typed_struct. Qed.
 End def.
 End Int32.
 
+Module align64.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : atomic.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance align64_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (atomic.align64.t) :=
+  {|
+    typed_pointsto_def l dq v :=
+      (
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance align64_into_val_typed
+   :
+  IntoValTyped (atomic.align64.t) (atomic.align64).
+Proof. solve_into_val_typed_struct. Qed.
+
+End def.
+End align64.
+
 Module Int64.
 Section def.
 
@@ -105,7 +159,7 @@ Context {package_sem' : atomic.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Program Instance Int64_typed_pointsto  :
+#[global]Program Instance Int64_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (atomic.Int64.t) :=
   {|
     typed_pointsto_def l dq v :=
@@ -135,7 +189,7 @@ Context {package_sem' : atomic.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Program Instance Uint32_typed_pointsto  :
+#[global]Program Instance Uint32_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (atomic.Uint32.t) :=
   {|
     typed_pointsto_def l dq v :=
@@ -164,7 +218,7 @@ Context {package_sem' : atomic.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Program Instance Uint64_typed_pointsto  :
+#[global]Program Instance Uint64_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (atomic.Uint64.t) :=
   {|
     typed_pointsto_def l dq v :=
@@ -185,7 +239,7 @@ Proof. solve_into_val_typed_struct. Qed.
 End def.
 End Uint64.
 
-Module noCopy.
+Module Uintptr.
 Section def.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
@@ -194,50 +248,16 @@ Context {package_sem' : atomic.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Program Instance noCopy_typed_pointsto  :
-  TypedPointsto (Σ:=Σ) (atomic.noCopy.t) :=
-  {|
-    typed_pointsto_def l dq v :=
-      (
-      "_" ∷ True
-      )%I
-  |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+#[global] Instance Uintptr_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (atomic.Uintptr.t). Admitted.
 
-#[global] Instance noCopy_into_val_typed
+#[global] Instance Uintptr_into_val_typed
    :
-  IntoValTyped (atomic.noCopy.t) (atomic.noCopy).
-Proof. solve_into_val_typed_struct. Qed.
+  IntoValTyped (atomic.Uintptr.t) (atomic.Uintptr).
+Proof. Admitted.
 
 End def.
-End noCopy.
-
-Module align64.
-Section def.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context {sem : go.Semantics}.
-Context {package_sem' : atomic.Assumptions}.
-
-Local Set Default Proof Using "All".
-
-#[global] Program Instance align64_typed_pointsto  :
-  TypedPointsto (Σ:=Σ) (atomic.align64.t) :=
-  {|
-    typed_pointsto_def l dq v :=
-      (
-      "_" ∷ True
-      )%I
-  |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
-
-#[global] Instance align64_into_val_typed
-   :
-  IntoValTyped (atomic.align64.t) (atomic.align64).
-Proof. solve_into_val_typed_struct. Qed.
-
-End def.
-End align64.
+End Uintptr.
 
 Module Value.
 Section def.
@@ -248,7 +268,7 @@ Context {package_sem' : atomic.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Program Instance Value_typed_pointsto  :
+#[global]Program Instance Value_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (atomic.Value.t) :=
   {|
     typed_pointsto_def l dq v :=
@@ -276,7 +296,7 @@ Context {package_sem' : atomic.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Program Instance efaceWords_typed_pointsto  :
+#[global]Program Instance efaceWords_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (atomic.efaceWords.t) :=
   {|
     typed_pointsto_def l dq v :=

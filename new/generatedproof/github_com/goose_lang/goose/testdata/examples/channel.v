@@ -19,7 +19,7 @@ Context {package_sem' : chan_spec_raw_examples.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Program Instance LockedStack_typed_pointsto  :
+#[global]Program Instance LockedStack_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (chan_spec_raw_examples.LockedStack.t) :=
   {|
     typed_pointsto_def l dq v :=
@@ -48,7 +48,7 @@ Context {package_sem' : chan_spec_raw_examples.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Program Instance EliminationStack_typed_pointsto  :
+#[global]Program Instance EliminationStack_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (chan_spec_raw_examples.EliminationStack.t) :=
   {|
     typed_pointsto_def l dq v :=
@@ -77,7 +77,7 @@ Context {package_sem' : chan_spec_raw_examples.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Program Instance request_typed_pointsto  :
+#[global]Program Instance request_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (chan_spec_raw_examples.request.t) :=
   {|
     typed_pointsto_def l dq v :=
@@ -106,7 +106,7 @@ Context {package_sem' : chan_spec_raw_examples.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Program Instance stream_typed_pointsto  :
+#[global]Program Instance stream_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (chan_spec_raw_examples.stream.t) :=
   {|
     typed_pointsto_def l dq v :=
@@ -135,7 +135,7 @@ Context {package_sem' : chan_spec_raw_examples.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Program Instance streamold_typed_pointsto  :
+#[global]Program Instance streamold_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (chan_spec_raw_examples.streamold.t) :=
   {|
     typed_pointsto_def l dq v :=

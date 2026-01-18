@@ -8,7 +8,7 @@ Require Export New.code.time.
 Set Default Proof Using "Type".
 
 Module time.
-Module Timer.
+Module ParseError.
 Section def.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
@@ -17,25 +17,16 @@ Context {package_sem' : time.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Program Instance Timer_typed_pointsto  :
-  TypedPointsto (Σ:=Σ) (time.Timer.t) :=
-  {|
-    typed_pointsto_def l dq v :=
-      (
-      "C" ∷ l.[(time.Timer.t), "C"] ↦{dq} v.(time.Timer.C') ∗
-      "initTimer" ∷ l.[(time.Timer.t), "initTimer"] ↦{dq} v.(time.Timer.initTimer') ∗
-      "_" ∷ True
-      )%I
-  |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+#[global] Instance ParseError_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (time.ParseError.t). Admitted.
 
-#[global] Instance Timer_into_val_typed
+#[global] Instance ParseError_into_val_typed
    :
-  IntoValTyped (time.Timer.t) (time.Timer).
-Proof. solve_into_val_typed_struct. Qed.
+  IntoValTyped (time.ParseError.t) (time.ParseError).
+Proof. Admitted.
 
 End def.
-End Timer.
+End ParseError.
 
 Module Time.
 Section def.
@@ -46,7 +37,7 @@ Context {package_sem' : time.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Program Instance Time_typed_pointsto  :
+#[global]Program Instance Time_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (time.Time.t) :=
   {|
     typed_pointsto_def l dq v :=
@@ -66,5 +57,394 @@ Proof. solve_into_val_typed_struct. Qed.
 
 End def.
 End Time.
+
+Module Timer.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : time.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance Timer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (time.Timer.t) :=
+  {|
+    typed_pointsto_def l dq v :=
+      (
+      "C" ∷ l.[(time.Timer.t), "C"] ↦{dq} v.(time.Timer.C') ∗
+      "initTimer" ∷ l.[(time.Timer.t), "initTimer"] ↦{dq} v.(time.Timer.initTimer') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance Timer_into_val_typed
+   :
+  IntoValTyped (time.Timer.t) (time.Timer).
+Proof. solve_into_val_typed_struct. Qed.
+
+End def.
+End Timer.
+
+Module Ticker.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : time.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Ticker_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (time.Ticker.t). Admitted.
+
+#[global] Instance Ticker_into_val_typed
+   :
+  IntoValTyped (time.Ticker.t) (time.Ticker).
+Proof. Admitted.
+
+End def.
+End Ticker.
+
+Module Month.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : time.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Month_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (time.Month.t). Admitted.
+
+#[global] Instance Month_into_val_typed
+   :
+  IntoValTyped (time.Month.t) (time.Month).
+Proof. Admitted.
+
+End def.
+End Month.
+
+Module Weekday.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : time.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Weekday_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (time.Weekday.t). Admitted.
+
+#[global] Instance Weekday_into_val_typed
+   :
+  IntoValTyped (time.Weekday.t) (time.Weekday).
+Proof. Admitted.
+
+End def.
+End Weekday.
+
+Module absSeconds.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : time.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance absSeconds_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (time.absSeconds.t). Admitted.
+
+#[global] Instance absSeconds_into_val_typed
+   :
+  IntoValTyped (time.absSeconds.t) (time.absSeconds).
+Proof. Admitted.
+
+End def.
+End absSeconds.
+
+Module absDays.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : time.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance absDays_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (time.absDays.t). Admitted.
+
+#[global] Instance absDays_into_val_typed
+   :
+  IntoValTyped (time.absDays.t) (time.absDays).
+Proof. Admitted.
+
+End def.
+End absDays.
+
+Module absCentury.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : time.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance absCentury_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (time.absCentury.t). Admitted.
+
+#[global] Instance absCentury_into_val_typed
+   :
+  IntoValTyped (time.absCentury.t) (time.absCentury).
+Proof. Admitted.
+
+End def.
+End absCentury.
+
+Module absCyear.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : time.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance absCyear_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (time.absCyear.t). Admitted.
+
+#[global] Instance absCyear_into_val_typed
+   :
+  IntoValTyped (time.absCyear.t) (time.absCyear).
+Proof. Admitted.
+
+End def.
+End absCyear.
+
+Module absYday.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : time.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance absYday_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (time.absYday.t). Admitted.
+
+#[global] Instance absYday_into_val_typed
+   :
+  IntoValTyped (time.absYday.t) (time.absYday).
+Proof. Admitted.
+
+End def.
+End absYday.
+
+Module absMonth.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : time.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance absMonth_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (time.absMonth.t). Admitted.
+
+#[global] Instance absMonth_into_val_typed
+   :
+  IntoValTyped (time.absMonth.t) (time.absMonth).
+Proof. Admitted.
+
+End def.
+End absMonth.
+
+Module absLeap.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : time.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance absLeap_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (time.absLeap.t). Admitted.
+
+#[global] Instance absLeap_into_val_typed
+   :
+  IntoValTyped (time.absLeap.t) (time.absLeap).
+Proof. Admitted.
+
+End def.
+End absLeap.
+
+Module absJanFeb.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : time.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance absJanFeb_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (time.absJanFeb.t). Admitted.
+
+#[global] Instance absJanFeb_into_val_typed
+   :
+  IntoValTyped (time.absJanFeb.t) (time.absJanFeb).
+Proof. Admitted.
+
+End def.
+End absJanFeb.
+
+Module Location.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : time.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Location_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (time.Location.t). Admitted.
+
+#[global] Instance Location_into_val_typed
+   :
+  IntoValTyped (time.Location.t) (time.Location).
+Proof. Admitted.
+
+End def.
+End Location.
+
+Module zone.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : time.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance zone_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (time.zone.t). Admitted.
+
+#[global] Instance zone_into_val_typed
+   :
+  IntoValTyped (time.zone.t) (time.zone).
+Proof. Admitted.
+
+End def.
+End zone.
+
+Module zoneTrans.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : time.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance zoneTrans_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (time.zoneTrans.t). Admitted.
+
+#[global] Instance zoneTrans_into_val_typed
+   :
+  IntoValTyped (time.zoneTrans.t) (time.zoneTrans).
+Proof. Admitted.
+
+End def.
+End zoneTrans.
+
+Module ruleKind.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : time.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ruleKind_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (time.ruleKind.t). Admitted.
+
+#[global] Instance ruleKind_into_val_typed
+   :
+  IntoValTyped (time.ruleKind.t) (time.ruleKind).
+Proof. Admitted.
+
+End def.
+End ruleKind.
+
+Module rule.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : time.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance rule_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (time.rule.t). Admitted.
+
+#[global] Instance rule_into_val_typed
+   :
+  IntoValTyped (time.rule.t) (time.rule).
+Proof. Admitted.
+
+End def.
+End rule.
+
+Module fileSizeError.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : time.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance fileSizeError_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (time.fileSizeError.t). Admitted.
+
+#[global] Instance fileSizeError_into_val_typed
+   :
+  IntoValTyped (time.fileSizeError.t) (time.fileSizeError).
+Proof. Admitted.
+
+End def.
+End fileSizeError.
+
+Module dataIO.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : time.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance dataIO_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (time.dataIO.t). Admitted.
+
+#[global] Instance dataIO_into_val_typed
+   :
+  IntoValTyped (time.dataIO.t) (time.dataIO).
+Proof. Admitted.
+
+End def.
+End dataIO.
 
 End time.

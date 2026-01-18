@@ -11,6 +11,73 @@ Require Export New.code.sync.
 Set Default Proof Using "Type".
 
 Module sync.
+Module noCopy.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : sync.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance noCopy_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (sync.noCopy.t) :=
+  {|
+    typed_pointsto_def l dq v :=
+      (
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance noCopy_into_val_typed
+   :
+  IntoValTyped (sync.noCopy.t) (sync.noCopy).
+Proof. solve_into_val_typed_struct. Qed.
+
+End def.
+End noCopy.
+
+Module notifyList.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : sync.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance notifyList_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (sync.notifyList.t). Admitted.
+
+#[global] Instance notifyList_into_val_typed
+   :
+  IntoValTyped (sync.notifyList.t) (sync.notifyList).
+Proof. Admitted.
+
+End def.
+End notifyList.
+
+Module copyChecker.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : sync.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance copyChecker_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (sync.copyChecker.t). Admitted.
+
+#[global] Instance copyChecker_into_val_typed
+   :
+  IntoValTyped (sync.copyChecker.t) (sync.copyChecker).
+Proof. Admitted.
+
+End def.
+End copyChecker.
+
 Module Cond.
 Section def.
 
@@ -20,7 +87,7 @@ Context {package_sem' : sync.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Program Instance Cond_typed_pointsto  :
+#[global]Program Instance Cond_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (sync.Cond.t) :=
   {|
     typed_pointsto_def l dq v :=
@@ -42,7 +109,7 @@ Proof. solve_into_val_typed_struct. Qed.
 End def.
 End Cond.
 
-Module noCopy.
+Module Map.
 Section def.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
@@ -51,23 +118,56 @@ Context {package_sem' : sync.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Program Instance noCopy_typed_pointsto  :
-  TypedPointsto (Σ:=Σ) (sync.noCopy.t) :=
-  {|
-    typed_pointsto_def l dq v :=
-      (
-      "_" ∷ True
-      )%I
-  |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+#[global] Instance Map_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (sync.Map.t). Admitted.
 
-#[global] Instance noCopy_into_val_typed
+#[global] Instance Map_into_val_typed
    :
-  IntoValTyped (sync.noCopy.t) (sync.noCopy).
-Proof. solve_into_val_typed_struct. Qed.
+  IntoValTyped (sync.Map.t) (sync.Map).
+Proof. Admitted.
 
 End def.
-End noCopy.
+End Map.
+
+Module readOnly.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : sync.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance readOnly_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (sync.readOnly.t). Admitted.
+
+#[global] Instance readOnly_into_val_typed
+   :
+  IntoValTyped (sync.readOnly.t) (sync.readOnly).
+Proof. Admitted.
+
+End def.
+End readOnly.
+
+Module entry.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : sync.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance entry_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (sync.entry.t). Admitted.
+
+#[global] Instance entry_into_val_typed
+   :
+  IntoValTyped (sync.entry.t) (sync.entry).
+Proof. Admitted.
+
+End def.
+End entry.
 
 Module Once.
 Section def.
@@ -78,7 +178,7 @@ Context {package_sem' : sync.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Program Instance Once_typed_pointsto  :
+#[global]Program Instance Once_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (sync.Once.t) :=
   {|
     typed_pointsto_def l dq v :=
@@ -99,6 +199,166 @@ Proof. solve_into_val_typed_struct. Qed.
 End def.
 End Once.
 
+Module Pool.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : sync.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Pool_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (sync.Pool.t). Admitted.
+
+#[global] Instance Pool_into_val_typed
+   :
+  IntoValTyped (sync.Pool.t) (sync.Pool).
+Proof. Admitted.
+
+End def.
+End Pool.
+
+Module poolLocalInternal.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : sync.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance poolLocalInternal_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (sync.poolLocalInternal.t). Admitted.
+
+#[global] Instance poolLocalInternal_into_val_typed
+   :
+  IntoValTyped (sync.poolLocalInternal.t) (sync.poolLocalInternal).
+Proof. Admitted.
+
+End def.
+End poolLocalInternal.
+
+Module poolLocal.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : sync.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance poolLocal_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (sync.poolLocal.t). Admitted.
+
+#[global] Instance poolLocal_into_val_typed
+   :
+  IntoValTyped (sync.poolLocal.t) (sync.poolLocal).
+Proof. Admitted.
+
+End def.
+End poolLocal.
+
+Module poolDequeue.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : sync.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance poolDequeue_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (sync.poolDequeue.t). Admitted.
+
+#[global] Instance poolDequeue_into_val_typed
+   :
+  IntoValTyped (sync.poolDequeue.t) (sync.poolDequeue).
+Proof. Admitted.
+
+End def.
+End poolDequeue.
+
+Module eface.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : sync.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance eface_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (sync.eface.t). Admitted.
+
+#[global] Instance eface_into_val_typed
+   :
+  IntoValTyped (sync.eface.t) (sync.eface).
+Proof. Admitted.
+
+End def.
+End eface.
+
+Module dequeueNil.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : sync.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance dequeueNil_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (sync.dequeueNil.t). Admitted.
+
+#[global] Instance dequeueNil_into_val_typed
+   :
+  IntoValTyped (sync.dequeueNil.t) (sync.dequeueNil).
+Proof. Admitted.
+
+End def.
+End dequeueNil.
+
+Module poolChain.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : sync.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance poolChain_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (sync.poolChain.t). Admitted.
+
+#[global] Instance poolChain_into_val_typed
+   :
+  IntoValTyped (sync.poolChain.t) (sync.poolChain).
+Proof. Admitted.
+
+End def.
+End poolChain.
+
+Module poolChainElt.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : sync.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance poolChainElt_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (sync.poolChainElt.t). Admitted.
+
+#[global] Instance poolChainElt_into_val_typed
+   :
+  IntoValTyped (sync.poolChainElt.t) (sync.poolChainElt).
+Proof. Admitted.
+
+End def.
+End poolChainElt.
+
 Module RWMutex.
 Section def.
 
@@ -108,7 +368,7 @@ Context {package_sem' : sync.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Program Instance RWMutex_typed_pointsto  :
+#[global]Program Instance RWMutex_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (sync.RWMutex.t) :=
   {|
     typed_pointsto_def l dq v :=
@@ -140,7 +400,7 @@ Context {package_sem' : sync.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Program Instance WaitGroup_typed_pointsto  :
+#[global]Program Instance WaitGroup_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (sync.WaitGroup.t) :=
   {|
     typed_pointsto_def l dq v :=

@@ -8,4 +8,344 @@ Require Export New.code.fmt.
 Set Default Proof Using "Type".
 
 Module fmt.
+Module wrapError.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : fmt.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance wrapError_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (fmt.wrapError.t). Admitted.
+
+#[global] Instance wrapError_into_val_typed
+   :
+  IntoValTyped (fmt.wrapError.t) (fmt.wrapError).
+Proof. Admitted.
+
+End def.
+End wrapError.
+
+Module wrapErrors.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : fmt.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance wrapErrors_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (fmt.wrapErrors.t). Admitted.
+
+#[global] Instance wrapErrors_into_val_typed
+   :
+  IntoValTyped (fmt.wrapErrors.t) (fmt.wrapErrors).
+Proof. Admitted.
+
+End def.
+End wrapErrors.
+
+Module fmtFlags.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : fmt.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance fmtFlags_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (fmt.fmtFlags.t). Admitted.
+
+#[global] Instance fmtFlags_into_val_typed
+   :
+  IntoValTyped (fmt.fmtFlags.t) (fmt.fmtFlags).
+Proof. Admitted.
+
+End def.
+End fmtFlags.
+
+Module fmt.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : fmt.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance fmt_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (fmt.fmt.t). Admitted.
+
+#[global] Instance fmt_into_val_typed
+   :
+  IntoValTyped (fmt.fmt.t) (fmt.fmt).
+Proof. Admitted.
+
+End def.
+End fmt.
+
+Module State.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : fmt.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance State_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (fmt.State.t). Admitted.
+
+#[global] Instance State_into_val_typed
+   :
+  IntoValTyped (fmt.State.t) (fmt.State).
+Proof. Admitted.
+
+End def.
+End State.
+
+Module Formatter.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : fmt.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Formatter_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (fmt.Formatter.t). Admitted.
+
+#[global] Instance Formatter_into_val_typed
+   :
+  IntoValTyped (fmt.Formatter.t) (fmt.Formatter).
+Proof. Admitted.
+
+End def.
+End Formatter.
+
+Module Stringer.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : fmt.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Stringer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (fmt.Stringer.t). Admitted.
+
+#[global] Instance Stringer_into_val_typed
+   :
+  IntoValTyped (fmt.Stringer.t) (fmt.Stringer).
+Proof. Admitted.
+
+End def.
+End Stringer.
+
+Module GoStringer.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : fmt.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance GoStringer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (fmt.GoStringer.t). Admitted.
+
+#[global] Instance GoStringer_into_val_typed
+   :
+  IntoValTyped (fmt.GoStringer.t) (fmt.GoStringer).
+Proof. Admitted.
+
+End def.
+End GoStringer.
+
+Module buffer.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : fmt.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance buffer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (fmt.buffer.t). Admitted.
+
+#[global] Instance buffer_into_val_typed
+   :
+  IntoValTyped (fmt.buffer.t) (fmt.buffer).
+Proof. Admitted.
+
+End def.
+End buffer.
+
+Module pp.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : fmt.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance pp_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (fmt.pp.t). Admitted.
+
+#[global] Instance pp_into_val_typed
+   :
+  IntoValTyped (fmt.pp.t) (fmt.pp).
+Proof. Admitted.
+
+End def.
+End pp.
+
+Module ScanState.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : fmt.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ScanState_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (fmt.ScanState.t). Admitted.
+
+#[global] Instance ScanState_into_val_typed
+   :
+  IntoValTyped (fmt.ScanState.t) (fmt.ScanState).
+Proof. Admitted.
+
+End def.
+End ScanState.
+
+Module Scanner.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : fmt.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Scanner_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (fmt.Scanner.t). Admitted.
+
+#[global] Instance Scanner_into_val_typed
+   :
+  IntoValTyped (fmt.Scanner.t) (fmt.Scanner).
+Proof. Admitted.
+
+End def.
+End Scanner.
+
+Module stringReader.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : fmt.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance stringReader_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (fmt.stringReader.t). Admitted.
+
+#[global] Instance stringReader_into_val_typed
+   :
+  IntoValTyped (fmt.stringReader.t) (fmt.stringReader).
+Proof. Admitted.
+
+End def.
+End stringReader.
+
+Module scanError.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : fmt.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance scanError_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (fmt.scanError.t). Admitted.
+
+#[global] Instance scanError_into_val_typed
+   :
+  IntoValTyped (fmt.scanError.t) (fmt.scanError).
+Proof. Admitted.
+
+End def.
+End scanError.
+
+Module ss.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : fmt.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ss_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (fmt.ss.t). Admitted.
+
+#[global] Instance ss_into_val_typed
+   :
+  IntoValTyped (fmt.ss.t) (fmt.ss).
+Proof. Admitted.
+
+End def.
+End ss.
+
+Module ssave.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : fmt.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ssave_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (fmt.ssave.t). Admitted.
+
+#[global] Instance ssave_into_val_typed
+   :
+  IntoValTyped (fmt.ssave.t) (fmt.ssave).
+Proof. Admitted.
+
+End def.
+End ssave.
+
+Module readRune.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : fmt.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance readRune_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (fmt.readRune.t). Admitted.
+
+#[global] Instance readRune_into_val_typed
+   :
+  IntoValTyped (fmt.readRune.t) (fmt.readRune).
+Proof. Admitted.
+
+End def.
+End readRune.
+
 End fmt.

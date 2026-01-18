@@ -17,7 +17,7 @@ Context {package_sem' : generics.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Program Instance Box_typed_pointsto `{!TypedPointsto (Σ:=Σ) T'}  :
+#[global]Program Instance Box_typed_pointsto `{!TypedPointsto (Σ:=Σ) T'}  :
   TypedPointsto (Σ:=Σ) (generics.Box.t T') :=
   {|
     typed_pointsto_def l dq v :=
@@ -45,7 +45,7 @@ Context {package_sem' : generics.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Program Instance Container_typed_pointsto `{!TypedPointsto (Σ:=Σ) T'}  :
+#[global]Program Instance Container_typed_pointsto `{!TypedPointsto (Σ:=Σ) T'}  :
   TypedPointsto (Σ:=Σ) (generics.Container.t T') :=
   {|
     typed_pointsto_def l dq v :=
@@ -76,7 +76,7 @@ Context {package_sem' : generics.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Program Instance UseContainer_typed_pointsto  :
+#[global]Program Instance UseContainer_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (generics.UseContainer.t) :=
   {|
     typed_pointsto_def l dq v :=
@@ -104,7 +104,7 @@ Context {package_sem' : generics.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Program Instance OnlyIndirect_typed_pointsto `{!TypedPointsto (Σ:=Σ) T'}  :
+#[global]Program Instance OnlyIndirect_typed_pointsto `{!TypedPointsto (Σ:=Σ) T'}  :
   TypedPointsto (Σ:=Σ) (generics.OnlyIndirect.t T') :=
   {|
     typed_pointsto_def l dq v :=
@@ -133,7 +133,7 @@ Context {package_sem' : generics.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Program Instance MultiParam_typed_pointsto `{!TypedPointsto (Σ:=Σ) A'} `{!TypedPointsto (Σ:=Σ) B'}  :
+#[global]Program Instance MultiParam_typed_pointsto `{!TypedPointsto (Σ:=Σ) A'} `{!TypedPointsto (Σ:=Σ) B'}  :
   TypedPointsto (Σ:=Σ) (generics.MultiParam.t A' B') :=
   {|
     typed_pointsto_def l dq v :=

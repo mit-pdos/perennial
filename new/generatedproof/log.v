@@ -8,4 +8,24 @@ Require Export New.code.log.
 Set Default Proof Using "Type".
 
 Module log.
+Module Logger.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : log.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Logger_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (log.Logger.t). Admitted.
+
+#[global] Instance Logger_into_val_typed
+   :
+  IntoValTyped (log.Logger.t) (log.Logger).
+Proof. Admitted.
+
+End def.
+End Logger.
+
 End log.

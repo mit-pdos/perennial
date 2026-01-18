@@ -7,4 +7,24 @@ Require Export New.code.slices.
 Set Default Proof Using "Type".
 
 Module slices.
+Module sortedHint.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : slices.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance sortedHint_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (slices.sortedHint.t). Admitted.
+
+#[global] Instance sortedHint_into_val_typed
+   :
+  IntoValTyped (slices.sortedHint.t) (slices.sortedHint).
+Proof. Admitted.
+
+End def.
+End sortedHint.
+
 End slices.

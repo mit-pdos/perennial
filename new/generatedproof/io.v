@@ -9,4 +9,684 @@ Require Export New.code.io.
 Set Default Proof Using "Type".
 
 Module io.
+Module Closer.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Closer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.Closer.t). Admitted.
+
+#[global] Instance Closer_into_val_typed
+   :
+  IntoValTyped (io.Closer.t) (io.Closer).
+Proof. Admitted.
+
+End def.
+End Closer.
+
+Module Seeker.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Seeker_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.Seeker.t). Admitted.
+
+#[global] Instance Seeker_into_val_typed
+   :
+  IntoValTyped (io.Seeker.t) (io.Seeker).
+Proof. Admitted.
+
+End def.
+End Seeker.
+
+Module ReadWriter.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ReadWriter_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.ReadWriter.t). Admitted.
+
+#[global] Instance ReadWriter_into_val_typed
+   :
+  IntoValTyped (io.ReadWriter.t) (io.ReadWriter).
+Proof. Admitted.
+
+End def.
+End ReadWriter.
+
+Module ReadCloser.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ReadCloser_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.ReadCloser.t). Admitted.
+
+#[global] Instance ReadCloser_into_val_typed
+   :
+  IntoValTyped (io.ReadCloser.t) (io.ReadCloser).
+Proof. Admitted.
+
+End def.
+End ReadCloser.
+
+Module WriteCloser.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance WriteCloser_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.WriteCloser.t). Admitted.
+
+#[global] Instance WriteCloser_into_val_typed
+   :
+  IntoValTyped (io.WriteCloser.t) (io.WriteCloser).
+Proof. Admitted.
+
+End def.
+End WriteCloser.
+
+Module ReadWriteCloser.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ReadWriteCloser_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.ReadWriteCloser.t). Admitted.
+
+#[global] Instance ReadWriteCloser_into_val_typed
+   :
+  IntoValTyped (io.ReadWriteCloser.t) (io.ReadWriteCloser).
+Proof. Admitted.
+
+End def.
+End ReadWriteCloser.
+
+Module ReadSeeker.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ReadSeeker_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.ReadSeeker.t). Admitted.
+
+#[global] Instance ReadSeeker_into_val_typed
+   :
+  IntoValTyped (io.ReadSeeker.t) (io.ReadSeeker).
+Proof. Admitted.
+
+End def.
+End ReadSeeker.
+
+Module ReadSeekCloser.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ReadSeekCloser_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.ReadSeekCloser.t). Admitted.
+
+#[global] Instance ReadSeekCloser_into_val_typed
+   :
+  IntoValTyped (io.ReadSeekCloser.t) (io.ReadSeekCloser).
+Proof. Admitted.
+
+End def.
+End ReadSeekCloser.
+
+Module WriteSeeker.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance WriteSeeker_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.WriteSeeker.t). Admitted.
+
+#[global] Instance WriteSeeker_into_val_typed
+   :
+  IntoValTyped (io.WriteSeeker.t) (io.WriteSeeker).
+Proof. Admitted.
+
+End def.
+End WriteSeeker.
+
+Module ReadWriteSeeker.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ReadWriteSeeker_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.ReadWriteSeeker.t). Admitted.
+
+#[global] Instance ReadWriteSeeker_into_val_typed
+   :
+  IntoValTyped (io.ReadWriteSeeker.t) (io.ReadWriteSeeker).
+Proof. Admitted.
+
+End def.
+End ReadWriteSeeker.
+
+Module ReaderFrom.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ReaderFrom_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.ReaderFrom.t). Admitted.
+
+#[global] Instance ReaderFrom_into_val_typed
+   :
+  IntoValTyped (io.ReaderFrom.t) (io.ReaderFrom).
+Proof. Admitted.
+
+End def.
+End ReaderFrom.
+
+Module WriterTo.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance WriterTo_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.WriterTo.t). Admitted.
+
+#[global] Instance WriterTo_into_val_typed
+   :
+  IntoValTyped (io.WriterTo.t) (io.WriterTo).
+Proof. Admitted.
+
+End def.
+End WriterTo.
+
+Module ReaderAt.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ReaderAt_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.ReaderAt.t). Admitted.
+
+#[global] Instance ReaderAt_into_val_typed
+   :
+  IntoValTyped (io.ReaderAt.t) (io.ReaderAt).
+Proof. Admitted.
+
+End def.
+End ReaderAt.
+
+Module WriterAt.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance WriterAt_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.WriterAt.t). Admitted.
+
+#[global] Instance WriterAt_into_val_typed
+   :
+  IntoValTyped (io.WriterAt.t) (io.WriterAt).
+Proof. Admitted.
+
+End def.
+End WriterAt.
+
+Module ByteReader.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ByteReader_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.ByteReader.t). Admitted.
+
+#[global] Instance ByteReader_into_val_typed
+   :
+  IntoValTyped (io.ByteReader.t) (io.ByteReader).
+Proof. Admitted.
+
+End def.
+End ByteReader.
+
+Module ByteScanner.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ByteScanner_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.ByteScanner.t). Admitted.
+
+#[global] Instance ByteScanner_into_val_typed
+   :
+  IntoValTyped (io.ByteScanner.t) (io.ByteScanner).
+Proof. Admitted.
+
+End def.
+End ByteScanner.
+
+Module ByteWriter.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ByteWriter_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.ByteWriter.t). Admitted.
+
+#[global] Instance ByteWriter_into_val_typed
+   :
+  IntoValTyped (io.ByteWriter.t) (io.ByteWriter).
+Proof. Admitted.
+
+End def.
+End ByteWriter.
+
+Module RuneReader.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance RuneReader_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.RuneReader.t). Admitted.
+
+#[global] Instance RuneReader_into_val_typed
+   :
+  IntoValTyped (io.RuneReader.t) (io.RuneReader).
+Proof. Admitted.
+
+End def.
+End RuneReader.
+
+Module RuneScanner.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance RuneScanner_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.RuneScanner.t). Admitted.
+
+#[global] Instance RuneScanner_into_val_typed
+   :
+  IntoValTyped (io.RuneScanner.t) (io.RuneScanner).
+Proof. Admitted.
+
+End def.
+End RuneScanner.
+
+Module StringWriter.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance StringWriter_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.StringWriter.t). Admitted.
+
+#[global] Instance StringWriter_into_val_typed
+   :
+  IntoValTyped (io.StringWriter.t) (io.StringWriter).
+Proof. Admitted.
+
+End def.
+End StringWriter.
+
+Module LimitedReader.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance LimitedReader_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.LimitedReader.t). Admitted.
+
+#[global] Instance LimitedReader_into_val_typed
+   :
+  IntoValTyped (io.LimitedReader.t) (io.LimitedReader).
+Proof. Admitted.
+
+End def.
+End LimitedReader.
+
+Module SectionReader.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance SectionReader_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.SectionReader.t). Admitted.
+
+#[global] Instance SectionReader_into_val_typed
+   :
+  IntoValTyped (io.SectionReader.t) (io.SectionReader).
+Proof. Admitted.
+
+End def.
+End SectionReader.
+
+Module OffsetWriter.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance OffsetWriter_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.OffsetWriter.t). Admitted.
+
+#[global] Instance OffsetWriter_into_val_typed
+   :
+  IntoValTyped (io.OffsetWriter.t) (io.OffsetWriter).
+Proof. Admitted.
+
+End def.
+End OffsetWriter.
+
+Module teeReader.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance teeReader_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.teeReader.t). Admitted.
+
+#[global] Instance teeReader_into_val_typed
+   :
+  IntoValTyped (io.teeReader.t) (io.teeReader).
+Proof. Admitted.
+
+End def.
+End teeReader.
+
+Module discard.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance discard_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.discard.t). Admitted.
+
+#[global] Instance discard_into_val_typed
+   :
+  IntoValTyped (io.discard.t) (io.discard).
+Proof. Admitted.
+
+End def.
+End discard.
+
+Module nopCloser.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance nopCloser_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.nopCloser.t). Admitted.
+
+#[global] Instance nopCloser_into_val_typed
+   :
+  IntoValTyped (io.nopCloser.t) (io.nopCloser).
+Proof. Admitted.
+
+End def.
+End nopCloser.
+
+Module nopCloserWriterTo.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance nopCloserWriterTo_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.nopCloserWriterTo.t). Admitted.
+
+#[global] Instance nopCloserWriterTo_into_val_typed
+   :
+  IntoValTyped (io.nopCloserWriterTo.t) (io.nopCloserWriterTo).
+Proof. Admitted.
+
+End def.
+End nopCloserWriterTo.
+
+Module eofReader.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance eofReader_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.eofReader.t). Admitted.
+
+#[global] Instance eofReader_into_val_typed
+   :
+  IntoValTyped (io.eofReader.t) (io.eofReader).
+Proof. Admitted.
+
+End def.
+End eofReader.
+
+Module multiReader.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance multiReader_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.multiReader.t). Admitted.
+
+#[global] Instance multiReader_into_val_typed
+   :
+  IntoValTyped (io.multiReader.t) (io.multiReader).
+Proof. Admitted.
+
+End def.
+End multiReader.
+
+Module multiWriter.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance multiWriter_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.multiWriter.t). Admitted.
+
+#[global] Instance multiWriter_into_val_typed
+   :
+  IntoValTyped (io.multiWriter.t) (io.multiWriter).
+Proof. Admitted.
+
+End def.
+End multiWriter.
+
+Module onceError.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance onceError_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.onceError.t). Admitted.
+
+#[global] Instance onceError_into_val_typed
+   :
+  IntoValTyped (io.onceError.t) (io.onceError).
+Proof. Admitted.
+
+End def.
+End onceError.
+
+Module pipe.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance pipe_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.pipe.t). Admitted.
+
+#[global] Instance pipe_into_val_typed
+   :
+  IntoValTyped (io.pipe.t) (io.pipe).
+Proof. Admitted.
+
+End def.
+End pipe.
+
+Module PipeReader.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance PipeReader_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.PipeReader.t). Admitted.
+
+#[global] Instance PipeReader_into_val_typed
+   :
+  IntoValTyped (io.PipeReader.t) (io.PipeReader).
+Proof. Admitted.
+
+End def.
+End PipeReader.
+
+Module PipeWriter.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance PipeWriter_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.PipeWriter.t). Admitted.
+
+#[global] Instance PipeWriter_into_val_typed
+   :
+  IntoValTyped (io.PipeWriter.t) (io.PipeWriter).
+Proof. Admitted.
+
+End def.
+End PipeWriter.
+
 End io.

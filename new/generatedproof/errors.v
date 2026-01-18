@@ -7,4 +7,44 @@ Require Export New.code.errors.
 Set Default Proof Using "Type".
 
 Module errors.
+Module errorString.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : errors.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance errorString_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (errors.errorString.t). Admitted.
+
+#[global] Instance errorString_into_val_typed
+   :
+  IntoValTyped (errors.errorString.t) (errors.errorString).
+Proof. Admitted.
+
+End def.
+End errorString.
+
+Module joinError.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : errors.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance joinError_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (errors.joinError.t). Admitted.
+
+#[global] Instance joinError_into_val_typed
+   :
+  IntoValTyped (errors.joinError.t) (errors.joinError).
+Proof. Admitted.
+
+End def.
+End joinError.
+
 End errors.

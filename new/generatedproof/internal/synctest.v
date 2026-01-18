@@ -8,4 +8,44 @@ Require Export New.code.internal.synctest.
 Set Default Proof Using "Type".
 
 Module synctest.
+Module Association.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : synctest.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Association_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (synctest.Association.t). Admitted.
+
+#[global] Instance Association_into_val_typed
+   :
+  IntoValTyped (synctest.Association.t) (synctest.Association).
+Proof. Admitted.
+
+End def.
+End Association.
+
+Module Bubble.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : synctest.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Bubble_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (synctest.Bubble.t). Admitted.
+
+#[global] Instance Bubble_into_val_typed
+   :
+  IntoValTyped (synctest.Bubble.t) (synctest.Bubble).
+Proof. Admitted.
+
+End def.
+End Bubble.
+
 End synctest.

@@ -7,4 +7,144 @@ Require Export New.code.math.rand.
 Set Default Proof Using "Type".
 
 Module rand.
+Module Source.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : rand.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Source_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (rand.Source.t). Admitted.
+
+#[global] Instance Source_into_val_typed
+   :
+  IntoValTyped (rand.Source.t) (rand.Source).
+Proof. Admitted.
+
+End def.
+End Source.
+
+Module Source64.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : rand.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Source64_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (rand.Source64.t). Admitted.
+
+#[global] Instance Source64_into_val_typed
+   :
+  IntoValTyped (rand.Source64.t) (rand.Source64).
+Proof. Admitted.
+
+End def.
+End Source64.
+
+Module Rand.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : rand.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Rand_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (rand.Rand.t). Admitted.
+
+#[global] Instance Rand_into_val_typed
+   :
+  IntoValTyped (rand.Rand.t) (rand.Rand).
+Proof. Admitted.
+
+End def.
+End Rand.
+
+Module runtimeSource.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : rand.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance runtimeSource_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (rand.runtimeSource.t). Admitted.
+
+#[global] Instance runtimeSource_into_val_typed
+   :
+  IntoValTyped (rand.runtimeSource.t) (rand.runtimeSource).
+Proof. Admitted.
+
+End def.
+End runtimeSource.
+
+Module lockedSource.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : rand.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance lockedSource_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (rand.lockedSource.t). Admitted.
+
+#[global] Instance lockedSource_into_val_typed
+   :
+  IntoValTyped (rand.lockedSource.t) (rand.lockedSource).
+Proof. Admitted.
+
+End def.
+End lockedSource.
+
+Module rngSource.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : rand.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance rngSource_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (rand.rngSource.t). Admitted.
+
+#[global] Instance rngSource_into_val_typed
+   :
+  IntoValTyped (rand.rngSource.t) (rand.rngSource).
+Proof. Admitted.
+
+End def.
+End rngSource.
+
+Module Zipf.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : rand.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Zipf_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (rand.Zipf.t). Admitted.
+
+#[global] Instance Zipf_into_val_typed
+   :
+  IntoValTyped (rand.Zipf.t) (rand.Zipf).
+Proof. Admitted.
+
+End def.
+End Zipf.
+
 End rand.

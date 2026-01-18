@@ -7,4 +7,684 @@ Require Export New.code.testing.
 Set Default Proof Using "Type".
 
 Module testing.
+Module durationOrCountFlag.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : testing.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance durationOrCountFlag_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (testing.durationOrCountFlag.t). Admitted.
+
+#[global] Instance durationOrCountFlag_into_val_typed
+   :
+  IntoValTyped (testing.durationOrCountFlag.t) (testing.durationOrCountFlag).
+Proof. Admitted.
+
+End def.
+End durationOrCountFlag.
+
+Module InternalBenchmark.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : testing.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance InternalBenchmark_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (testing.InternalBenchmark.t). Admitted.
+
+#[global] Instance InternalBenchmark_into_val_typed
+   :
+  IntoValTyped (testing.InternalBenchmark.t) (testing.InternalBenchmark).
+Proof. Admitted.
+
+End def.
+End InternalBenchmark.
+
+Module B.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : testing.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance B_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (testing.B.t). Admitted.
+
+#[global] Instance B_into_val_typed
+   :
+  IntoValTyped (testing.B.t) (testing.B).
+Proof. Admitted.
+
+End def.
+End B.
+
+Module BenchmarkResult.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : testing.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance BenchmarkResult_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (testing.BenchmarkResult.t). Admitted.
+
+#[global] Instance BenchmarkResult_into_val_typed
+   :
+  IntoValTyped (testing.BenchmarkResult.t) (testing.BenchmarkResult).
+Proof. Admitted.
+
+End def.
+End BenchmarkResult.
+
+Module benchState.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : testing.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance benchState_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (testing.benchState.t). Admitted.
+
+#[global] Instance benchState_into_val_typed
+   :
+  IntoValTyped (testing.benchState.t) (testing.benchState).
+Proof. Admitted.
+
+End def.
+End benchState.
+
+Module PB.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : testing.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance PB_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (testing.PB.t). Admitted.
+
+#[global] Instance PB_into_val_typed
+   :
+  IntoValTyped (testing.PB.t) (testing.PB).
+Proof. Admitted.
+
+End def.
+End PB.
+
+Module discard.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : testing.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance discard_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (testing.discard.t). Admitted.
+
+#[global] Instance discard_into_val_typed
+   :
+  IntoValTyped (testing.discard.t) (testing.discard).
+Proof. Admitted.
+
+End def.
+End discard.
+
+Module CoverBlock.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : testing.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance CoverBlock_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (testing.CoverBlock.t). Admitted.
+
+#[global] Instance CoverBlock_into_val_typed
+   :
+  IntoValTyped (testing.CoverBlock.t) (testing.CoverBlock).
+Proof. Admitted.
+
+End def.
+End CoverBlock.
+
+Module Cover.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : testing.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Cover_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (testing.Cover.t). Admitted.
+
+#[global] Instance Cover_into_val_typed
+   :
+  IntoValTyped (testing.Cover.t) (testing.Cover).
+Proof. Admitted.
+
+End def.
+End Cover.
+
+Module InternalExample.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : testing.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance InternalExample_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (testing.InternalExample.t). Admitted.
+
+#[global] Instance InternalExample_into_val_typed
+   :
+  IntoValTyped (testing.InternalExample.t) (testing.InternalExample).
+Proof. Admitted.
+
+End def.
+End InternalExample.
+
+Module InternalFuzzTarget.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : testing.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance InternalFuzzTarget_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (testing.InternalFuzzTarget.t). Admitted.
+
+#[global] Instance InternalFuzzTarget_into_val_typed
+   :
+  IntoValTyped (testing.InternalFuzzTarget.t) (testing.InternalFuzzTarget).
+Proof. Admitted.
+
+End def.
+End InternalFuzzTarget.
+
+Module F.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : testing.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance F_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (testing.F.t). Admitted.
+
+#[global] Instance F_into_val_typed
+   :
+  IntoValTyped (testing.F.t) (testing.F).
+Proof. Admitted.
+
+End def.
+End F.
+
+Module fuzzResult.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : testing.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance fuzzResult_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (testing.fuzzResult.t). Admitted.
+
+#[global] Instance fuzzResult_into_val_typed
+   :
+  IntoValTyped (testing.fuzzResult.t) (testing.fuzzResult).
+Proof. Admitted.
+
+End def.
+End fuzzResult.
+
+Module fuzzCrashError.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : testing.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance fuzzCrashError_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (testing.fuzzCrashError.t). Admitted.
+
+#[global] Instance fuzzCrashError_into_val_typed
+   :
+  IntoValTyped (testing.fuzzCrashError.t) (testing.fuzzCrashError).
+Proof. Admitted.
+
+End def.
+End fuzzCrashError.
+
+Module fuzzState.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : testing.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance fuzzState_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (testing.fuzzState.t). Admitted.
+
+#[global] Instance fuzzState_into_val_typed
+   :
+  IntoValTyped (testing.fuzzState.t) (testing.fuzzState).
+Proof. Admitted.
+
+End def.
+End fuzzState.
+
+Module fuzzMode.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : testing.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance fuzzMode_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (testing.fuzzMode.t). Admitted.
+
+#[global] Instance fuzzMode_into_val_typed
+   :
+  IntoValTyped (testing.fuzzMode.t) (testing.fuzzMode).
+Proof. Admitted.
+
+End def.
+End fuzzMode.
+
+Module matcher.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : testing.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance matcher_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (testing.matcher.t). Admitted.
+
+#[global] Instance matcher_into_val_typed
+   :
+  IntoValTyped (testing.matcher.t) (testing.matcher).
+Proof. Admitted.
+
+End def.
+End matcher.
+
+Module filterMatch.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : testing.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance filterMatch_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (testing.filterMatch.t). Admitted.
+
+#[global] Instance filterMatch_into_val_typed
+   :
+  IntoValTyped (testing.filterMatch.t) (testing.filterMatch).
+Proof. Admitted.
+
+End def.
+End filterMatch.
+
+Module simpleMatch.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : testing.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance simpleMatch_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (testing.simpleMatch.t). Admitted.
+
+#[global] Instance simpleMatch_into_val_typed
+   :
+  IntoValTyped (testing.simpleMatch.t) (testing.simpleMatch).
+Proof. Admitted.
+
+End def.
+End simpleMatch.
+
+Module alternationMatch.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : testing.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance alternationMatch_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (testing.alternationMatch.t). Admitted.
+
+#[global] Instance alternationMatch_into_val_typed
+   :
+  IntoValTyped (testing.alternationMatch.t) (testing.alternationMatch).
+Proof. Admitted.
+
+End def.
+End alternationMatch.
+
+Module chattyFlag.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : testing.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance chattyFlag_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (testing.chattyFlag.t). Admitted.
+
+#[global] Instance chattyFlag_into_val_typed
+   :
+  IntoValTyped (testing.chattyFlag.t) (testing.chattyFlag).
+Proof. Admitted.
+
+End def.
+End chattyFlag.
+
+Module chattyPrinter.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : testing.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance chattyPrinter_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (testing.chattyPrinter.t). Admitted.
+
+#[global] Instance chattyPrinter_into_val_typed
+   :
+  IntoValTyped (testing.chattyPrinter.t) (testing.chattyPrinter).
+Proof. Admitted.
+
+End def.
+End chattyPrinter.
+
+Module common.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : testing.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance common_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (testing.common.t). Admitted.
+
+#[global] Instance common_into_val_typed
+   :
+  IntoValTyped (testing.common.t) (testing.common).
+Proof. Admitted.
+
+End def.
+End common.
+
+Module indenter.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : testing.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance indenter_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (testing.indenter.t). Admitted.
+
+#[global] Instance indenter_into_val_typed
+   :
+  IntoValTyped (testing.indenter.t) (testing.indenter).
+Proof. Admitted.
+
+End def.
+End indenter.
+
+Module TB.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : testing.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance TB_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (testing.TB.t). Admitted.
+
+#[global] Instance TB_into_val_typed
+   :
+  IntoValTyped (testing.TB.t) (testing.TB).
+Proof. Admitted.
+
+End def.
+End TB.
+
+Module T.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : testing.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance T_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (testing.T.t). Admitted.
+
+#[global] Instance T_into_val_typed
+   :
+  IntoValTyped (testing.T.t) (testing.T).
+Proof. Admitted.
+
+End def.
+End T.
+
+Module outputWriter.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : testing.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance outputWriter_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (testing.outputWriter.t). Admitted.
+
+#[global] Instance outputWriter_into_val_typed
+   :
+  IntoValTyped (testing.outputWriter.t) (testing.outputWriter).
+Proof. Admitted.
+
+End def.
+End outputWriter.
+
+Module panicHandling.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : testing.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance panicHandling_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (testing.panicHandling.t). Admitted.
+
+#[global] Instance panicHandling_into_val_typed
+   :
+  IntoValTyped (testing.panicHandling.t) (testing.panicHandling).
+Proof. Admitted.
+
+End def.
+End panicHandling.
+
+Module InternalTest.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : testing.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance InternalTest_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (testing.InternalTest.t). Admitted.
+
+#[global] Instance InternalTest_into_val_typed
+   :
+  IntoValTyped (testing.InternalTest.t) (testing.InternalTest).
+Proof. Admitted.
+
+End def.
+End InternalTest.
+
+Module testState.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : testing.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance testState_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (testing.testState.t). Admitted.
+
+#[global] Instance testState_into_val_typed
+   :
+  IntoValTyped (testing.testState.t) (testing.testState).
+Proof. Admitted.
+
+End def.
+End testState.
+
+Module matchStringOnly.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : testing.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance matchStringOnly_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (testing.matchStringOnly.t). Admitted.
+
+#[global] Instance matchStringOnly_into_val_typed
+   :
+  IntoValTyped (testing.matchStringOnly.t) (testing.matchStringOnly).
+Proof. Admitted.
+
+End def.
+End matchStringOnly.
+
+Module M.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : testing.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance M_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (testing.M.t). Admitted.
+
+#[global] Instance M_into_val_typed
+   :
+  IntoValTyped (testing.M.t) (testing.M).
+Proof. Admitted.
+
+End def.
+End M.
+
+Module testDeps.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : testing.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance testDeps_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (testing.testDeps.t). Admitted.
+
+#[global] Instance testDeps_into_val_typed
+   :
+  IntoValTyped (testing.testDeps.t) (testing.testDeps).
+Proof. Admitted.
+
+End def.
+End testDeps.
+
+Module highPrecisionTime.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : testing.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance highPrecisionTime_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (testing.highPrecisionTime.t). Admitted.
+
+#[global] Instance highPrecisionTime_into_val_typed
+   :
+  IntoValTyped (testing.highPrecisionTime.t) (testing.highPrecisionTime).
+Proof. Admitted.
+
+End def.
+End highPrecisionTime.
+
 End testing.

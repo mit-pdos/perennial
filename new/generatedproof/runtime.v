@@ -8,4 +8,7044 @@ Require Export New.code.runtime.
 Set Default Proof Using "Type".
 
 Module runtime.
+Module userArena.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance userArena_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.userArena.t). Admitted.
+
+#[global] Instance userArena_into_val_typed
+   :
+  IntoValTyped (runtime.userArena.t) (runtime.userArena).
+Proof. Admitted.
+
+End def.
+End userArena.
+
+Module liveUserArenaChunk.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance liveUserArenaChunk_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.liveUserArenaChunk.t). Admitted.
+
+#[global] Instance liveUserArenaChunk_into_val_typed
+   :
+  IntoValTyped (runtime.liveUserArenaChunk.t) (runtime.liveUserArenaChunk).
+Proof. Admitted.
+
+End def.
+End liveUserArenaChunk.
+
+Module writeUserArenaHeapBits.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance writeUserArenaHeapBits_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.writeUserArenaHeapBits.t). Admitted.
+
+#[global] Instance writeUserArenaHeapBits_into_val_typed
+   :
+  IntoValTyped (runtime.writeUserArenaHeapBits.t) (runtime.writeUserArenaHeapBits).
+Proof. Admitted.
+
+End def.
+End writeUserArenaHeapBits.
+
+Module cgoCallers.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance cgoCallers_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.cgoCallers.t). Admitted.
+
+#[global] Instance cgoCallers_into_val_typed
+   :
+  IntoValTyped (runtime.cgoCallers.t) (runtime.cgoCallers).
+Proof. Admitted.
+
+End def.
+End cgoCallers.
+
+Module argset.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance argset_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.argset.t). Admitted.
+
+#[global] Instance argset_into_val_typed
+   :
+  IntoValTyped (runtime.argset.t) (runtime.argset).
+Proof. Admitted.
+
+End def.
+End argset.
+
+Module hchan.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance hchan_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.hchan.t). Admitted.
+
+#[global] Instance hchan_into_val_typed
+   :
+  IntoValTyped (runtime.hchan.t) (runtime.hchan).
+Proof. Admitted.
+
+End def.
+End hchan.
+
+Module waitq.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance waitq_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.waitq.t). Admitted.
+
+#[global] Instance waitq_into_val_typed
+   :
+  IntoValTyped (runtime.waitq.t) (runtime.waitq).
+Proof. Admitted.
+
+End def.
+End waitq.
+
+Module coro.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance coro_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.coro.t). Admitted.
+
+#[global] Instance coro_into_val_typed
+   :
+  IntoValTyped (runtime.coro.t) (runtime.coro).
+Proof. Admitted.
+
+End def.
+End coro.
+
+Module cpuProfile.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance cpuProfile_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.cpuProfile.t). Admitted.
+
+#[global] Instance cpuProfile_into_val_typed
+   :
+  IntoValTyped (runtime.cpuProfile.t) (runtime.cpuProfile).
+Proof. Admitted.
+
+End def.
+End cpuProfile.
+
+Module debugCallWrapArgs.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance debugCallWrapArgs_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.debugCallWrapArgs.t). Admitted.
+
+#[global] Instance debugCallWrapArgs_into_val_typed
+   :
+  IntoValTyped (runtime.debugCallWrapArgs.t) (runtime.debugCallWrapArgs).
+Proof. Admitted.
+
+End def.
+End debugCallWrapArgs.
+
+Module dloggerImpl.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance dloggerImpl_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.dloggerImpl.t). Admitted.
+
+#[global] Instance dloggerImpl_into_val_typed
+   :
+  IntoValTyped (runtime.dloggerImpl.t) (runtime.dloggerImpl).
+Proof. Admitted.
+
+End def.
+End dloggerImpl.
+
+Module dloggerFake.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance dloggerFake_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.dloggerFake.t). Admitted.
+
+#[global] Instance dloggerFake_into_val_typed
+   :
+  IntoValTyped (runtime.dloggerFake.t) (runtime.dloggerFake).
+Proof. Admitted.
+
+End def.
+End dloggerFake.
+
+Module debugLogWriter.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance debugLogWriter_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.debugLogWriter.t). Admitted.
+
+#[global] Instance debugLogWriter_into_val_typed
+   :
+  IntoValTyped (runtime.debugLogWriter.t) (runtime.debugLogWriter).
+Proof. Admitted.
+
+End def.
+End debugLogWriter.
+
+Module debugLogBuf.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance debugLogBuf_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.debugLogBuf.t). Admitted.
+
+#[global] Instance debugLogBuf_into_val_typed
+   :
+  IntoValTyped (runtime.debugLogBuf.t) (runtime.debugLogBuf).
+Proof. Admitted.
+
+End def.
+End debugLogBuf.
+
+Module debugLogReader.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance debugLogReader_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.debugLogReader.t). Admitted.
+
+#[global] Instance debugLogReader_into_val_typed
+   :
+  IntoValTyped (runtime.debugLogReader.t) (runtime.debugLogReader).
+Proof. Admitted.
+
+End def.
+End debugLogReader.
+
+Module dlogPerM.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance dlogPerM_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.dlogPerM.t). Admitted.
+
+#[global] Instance dlogPerM_into_val_typed
+   :
+  IntoValTyped (runtime.dlogPerM.t) (runtime.dlogPerM).
+Proof. Admitted.
+
+End def.
+End dlogPerM.
+
+Module timespec.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance timespec_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.timespec.t). Admitted.
+
+#[global] Instance timespec_into_val_typed
+   :
+  IntoValTyped (runtime.timespec.t) (runtime.timespec).
+Proof. Admitted.
+
+End def.
+End timespec.
+
+Module timeval.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance timeval_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.timeval.t). Admitted.
+
+#[global] Instance timeval_into_val_typed
+   :
+  IntoValTyped (runtime.timeval.t) (runtime.timeval).
+Proof. Admitted.
+
+End def.
+End timeval.
+
+Module sigactiont.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance sigactiont_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.sigactiont.t). Admitted.
+
+#[global] Instance sigactiont_into_val_typed
+   :
+  IntoValTyped (runtime.sigactiont.t) (runtime.sigactiont).
+Proof. Admitted.
+
+End def.
+End sigactiont.
+
+Module siginfoFields.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance siginfoFields_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.siginfoFields.t). Admitted.
+
+#[global] Instance siginfoFields_into_val_typed
+   :
+  IntoValTyped (runtime.siginfoFields.t) (runtime.siginfoFields).
+Proof. Admitted.
+
+End def.
+End siginfoFields.
+
+Module siginfo.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance siginfo_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.siginfo.t). Admitted.
+
+#[global] Instance siginfo_into_val_typed
+   :
+  IntoValTyped (runtime.siginfo.t) (runtime.siginfo).
+Proof. Admitted.
+
+End def.
+End siginfo.
+
+Module itimerspec.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance itimerspec_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.itimerspec.t). Admitted.
+
+#[global] Instance itimerspec_into_val_typed
+   :
+  IntoValTyped (runtime.itimerspec.t) (runtime.itimerspec).
+Proof. Admitted.
+
+End def.
+End itimerspec.
+
+Module itimerval.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance itimerval_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.itimerval.t). Admitted.
+
+#[global] Instance itimerval_into_val_typed
+   :
+  IntoValTyped (runtime.itimerval.t) (runtime.itimerval).
+Proof. Admitted.
+
+End def.
+End itimerval.
+
+Module sigeventFields.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance sigeventFields_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.sigeventFields.t). Admitted.
+
+#[global] Instance sigeventFields_into_val_typed
+   :
+  IntoValTyped (runtime.sigeventFields.t) (runtime.sigeventFields).
+Proof. Admitted.
+
+End def.
+End sigeventFields.
+
+Module sigevent.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance sigevent_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.sigevent.t). Admitted.
+
+#[global] Instance sigevent_into_val_typed
+   :
+  IntoValTyped (runtime.sigevent.t) (runtime.sigevent).
+Proof. Admitted.
+
+End def.
+End sigevent.
+
+Module usigset.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance usigset_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.usigset.t). Admitted.
+
+#[global] Instance usigset_into_val_typed
+   :
+  IntoValTyped (runtime.usigset.t) (runtime.usigset).
+Proof. Admitted.
+
+End def.
+End usigset.
+
+Module fpxreg.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance fpxreg_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.fpxreg.t). Admitted.
+
+#[global] Instance fpxreg_into_val_typed
+   :
+  IntoValTyped (runtime.fpxreg.t) (runtime.fpxreg).
+Proof. Admitted.
+
+End def.
+End fpxreg.
+
+Module xmmreg.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance xmmreg_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.xmmreg.t). Admitted.
+
+#[global] Instance xmmreg_into_val_typed
+   :
+  IntoValTyped (runtime.xmmreg.t) (runtime.xmmreg).
+Proof. Admitted.
+
+End def.
+End xmmreg.
+
+Module fpstate.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance fpstate_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.fpstate.t). Admitted.
+
+#[global] Instance fpstate_into_val_typed
+   :
+  IntoValTyped (runtime.fpstate.t) (runtime.fpstate).
+Proof. Admitted.
+
+End def.
+End fpstate.
+
+Module fpxreg1.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance fpxreg1_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.fpxreg1.t). Admitted.
+
+#[global] Instance fpxreg1_into_val_typed
+   :
+  IntoValTyped (runtime.fpxreg1.t) (runtime.fpxreg1).
+Proof. Admitted.
+
+End def.
+End fpxreg1.
+
+Module xmmreg1.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance xmmreg1_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.xmmreg1.t). Admitted.
+
+#[global] Instance xmmreg1_into_val_typed
+   :
+  IntoValTyped (runtime.xmmreg1.t) (runtime.xmmreg1).
+Proof. Admitted.
+
+End def.
+End xmmreg1.
+
+Module fpstate1.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance fpstate1_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.fpstate1.t). Admitted.
+
+#[global] Instance fpstate1_into_val_typed
+   :
+  IntoValTyped (runtime.fpstate1.t) (runtime.fpstate1).
+Proof. Admitted.
+
+End def.
+End fpstate1.
+
+Module fpreg1.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance fpreg1_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.fpreg1.t). Admitted.
+
+#[global] Instance fpreg1_into_val_typed
+   :
+  IntoValTyped (runtime.fpreg1.t) (runtime.fpreg1).
+Proof. Admitted.
+
+End def.
+End fpreg1.
+
+Module stackt.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance stackt_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.stackt.t). Admitted.
+
+#[global] Instance stackt_into_val_typed
+   :
+  IntoValTyped (runtime.stackt.t) (runtime.stackt).
+Proof. Admitted.
+
+End def.
+End stackt.
+
+Module mcontext.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance mcontext_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.mcontext.t). Admitted.
+
+#[global] Instance mcontext_into_val_typed
+   :
+  IntoValTyped (runtime.mcontext.t) (runtime.mcontext).
+Proof. Admitted.
+
+End def.
+End mcontext.
+
+Module ucontext.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ucontext_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.ucontext.t). Admitted.
+
+#[global] Instance ucontext_into_val_typed
+   :
+  IntoValTyped (runtime.ucontext.t) (runtime.ucontext).
+Proof. Admitted.
+
+End def.
+End ucontext.
+
+Module sigcontext.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance sigcontext_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.sigcontext.t). Admitted.
+
+#[global] Instance sigcontext_into_val_typed
+   :
+  IntoValTyped (runtime.sigcontext.t) (runtime.sigcontext).
+Proof. Admitted.
+
+End def.
+End sigcontext.
+
+Module sockaddr_un.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance sockaddr_un_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.sockaddr_un.t). Admitted.
+
+#[global] Instance sockaddr_un_into_val_typed
+   :
+  IntoValTyped (runtime.sockaddr_un.t) (runtime.sockaddr_un).
+Proof. Admitted.
+
+End def.
+End sockaddr_un.
+
+Module Error.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Error_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.Error.t). Admitted.
+
+#[global] Instance Error_into_val_typed
+   :
+  IntoValTyped (runtime.Error.t) (runtime.Error).
+Proof. Admitted.
+
+End def.
+End Error.
+
+Module TypeAssertionError.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance TypeAssertionError_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.TypeAssertionError.t). Admitted.
+
+#[global] Instance TypeAssertionError_into_val_typed
+   :
+  IntoValTyped (runtime.TypeAssertionError.t) (runtime.TypeAssertionError).
+Proof. Admitted.
+
+End def.
+End TypeAssertionError.
+
+Module errorString.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance errorString_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.errorString.t). Admitted.
+
+#[global] Instance errorString_into_val_typed
+   :
+  IntoValTyped (runtime.errorString.t) (runtime.errorString).
+Proof. Admitted.
+
+End def.
+End errorString.
+
+Module errorAddressString.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance errorAddressString_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.errorAddressString.t). Admitted.
+
+#[global] Instance errorAddressString_into_val_typed
+   :
+  IntoValTyped (runtime.errorAddressString.t) (runtime.errorAddressString).
+Proof. Admitted.
+
+End def.
+End errorAddressString.
+
+Module plainError.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance plainError_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.plainError.t). Admitted.
+
+#[global] Instance plainError_into_val_typed
+   :
+  IntoValTyped (runtime.plainError.t) (runtime.plainError).
+Proof. Admitted.
+
+End def.
+End plainError.
+
+Module boundsError.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance boundsError_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.boundsError.t). Admitted.
+
+#[global] Instance boundsError_into_val_typed
+   :
+  IntoValTyped (runtime.boundsError.t) (runtime.boundsError).
+Proof. Admitted.
+
+End def.
+End boundsError.
+
+Module boundsErrorCode.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance boundsErrorCode_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.boundsErrorCode.t). Admitted.
+
+#[global] Instance boundsErrorCode_into_val_typed
+   :
+  IntoValTyped (runtime.boundsErrorCode.t) (runtime.boundsErrorCode).
+Proof. Admitted.
+
+End def.
+End boundsErrorCode.
+
+Module stringer.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance stringer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.stringer.t). Admitted.
+
+#[global] Instance stringer_into_val_typed
+   :
+  IntoValTyped (runtime.stringer.t) (runtime.stringer).
+Proof. Admitted.
+
+End def.
+End stringer.
+
+Module typeCacheBucket.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance typeCacheBucket_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.typeCacheBucket.t). Admitted.
+
+#[global] Instance typeCacheBucket_into_val_typed
+   :
+  IntoValTyped (runtime.typeCacheBucket.t) (runtime.typeCacheBucket).
+Proof. Admitted.
+
+End def.
+End typeCacheBucket.
+
+Module childInfo.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance childInfo_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.childInfo.t). Admitted.
+
+#[global] Instance childInfo_into_val_typed
+   :
+  IntoValTyped (runtime.childInfo.t) (runtime.childInfo).
+Proof. Admitted.
+
+End def.
+End childInfo.
+
+Module timeHistogram.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance timeHistogram_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.timeHistogram.t). Admitted.
+
+#[global] Instance timeHistogram_into_val_typed
+   :
+  IntoValTyped (runtime.timeHistogram.t) (runtime.timeHistogram).
+Proof. Admitted.
+
+End def.
+End timeHistogram.
+
+Module itabTableType.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance itabTableType_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.itabTableType.t). Admitted.
+
+#[global] Instance itabTableType_into_val_typed
+   :
+  IntoValTyped (runtime.itabTableType.t) (runtime.itabTableType).
+Proof. Admitted.
+
+End def.
+End itabTableType.
+
+Module uint16InterfacePtr.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance uint16InterfacePtr_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.uint16InterfacePtr.t). Admitted.
+
+#[global] Instance uint16InterfacePtr_into_val_typed
+   :
+  IntoValTyped (runtime.uint16InterfacePtr.t) (runtime.uint16InterfacePtr).
+Proof. Admitted.
+
+End def.
+End uint16InterfacePtr.
+
+Module uint32InterfacePtr.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance uint32InterfacePtr_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.uint32InterfacePtr.t). Admitted.
+
+#[global] Instance uint32InterfacePtr_into_val_typed
+   :
+  IntoValTyped (runtime.uint32InterfacePtr.t) (runtime.uint32InterfacePtr).
+Proof. Admitted.
+
+End def.
+End uint32InterfacePtr.
+
+Module uint64InterfacePtr.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance uint64InterfacePtr_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.uint64InterfacePtr.t). Admitted.
+
+#[global] Instance uint64InterfacePtr_into_val_typed
+   :
+  IntoValTyped (runtime.uint64InterfacePtr.t) (runtime.uint64InterfacePtr).
+Proof. Admitted.
+
+End def.
+End uint64InterfacePtr.
+
+Module stringInterfacePtr.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance stringInterfacePtr_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.stringInterfacePtr.t). Admitted.
+
+#[global] Instance stringInterfacePtr_into_val_typed
+   :
+  IntoValTyped (runtime.stringInterfacePtr.t) (runtime.stringInterfacePtr).
+Proof. Admitted.
+
+End def.
+End stringInterfacePtr.
+
+Module sliceInterfacePtr.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance sliceInterfacePtr_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.sliceInterfacePtr.t). Admitted.
+
+#[global] Instance sliceInterfacePtr_into_val_typed
+   :
+  IntoValTyped (runtime.sliceInterfacePtr.t) (runtime.sliceInterfacePtr).
+Proof. Admitted.
+
+End def.
+End sliceInterfacePtr.
+
+Module lfstack.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance lfstack_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.lfstack.t). Admitted.
+
+#[global] Instance lfstack_into_val_typed
+   :
+  IntoValTyped (runtime.lfstack.t) (runtime.lfstack).
+Proof. Admitted.
+
+End def.
+End lfstack.
+
+Module linknameIter.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance linknameIter_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.linknameIter.t). Admitted.
+
+#[global] Instance linknameIter_into_val_typed
+   :
+  IntoValTyped (runtime.linknameIter.t) (runtime.linknameIter).
+Proof. Admitted.
+
+End def.
+End linknameIter.
+
+Module mWaitList.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance mWaitList_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.mWaitList.t). Admitted.
+
+#[global] Instance mWaitList_into_val_typed
+   :
+  IntoValTyped (runtime.mWaitList.t) (runtime.mWaitList).
+Proof. Admitted.
+
+End def.
+End mWaitList.
+
+Module lockRank.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance lockRank_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.lockRank.t). Admitted.
+
+#[global] Instance lockRank_into_val_typed
+   :
+  IntoValTyped (runtime.lockRank.t) (runtime.lockRank).
+Proof. Admitted.
+
+End def.
+End lockRank.
+
+Module lockRankStruct.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance lockRankStruct_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.lockRankStruct.t). Admitted.
+
+#[global] Instance lockRankStruct_into_val_typed
+   :
+  IntoValTyped (runtime.lockRankStruct.t) (runtime.lockRankStruct).
+Proof. Admitted.
+
+End def.
+End lockRankStruct.
+
+Module persistentAlloc.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance persistentAlloc_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.persistentAlloc.t). Admitted.
+
+#[global] Instance persistentAlloc_into_val_typed
+   :
+  IntoValTyped (runtime.persistentAlloc.t) (runtime.persistentAlloc).
+Proof. Admitted.
+
+End def.
+End persistentAlloc.
+
+Module linearAlloc.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance linearAlloc_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.linearAlloc.t). Admitted.
+
+#[global] Instance linearAlloc_into_val_typed
+   :
+  IntoValTyped (runtime.linearAlloc.t) (runtime.linearAlloc).
+Proof. Admitted.
+
+End def.
+End linearAlloc.
+
+Module notInHeap.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance notInHeap_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.notInHeap.t). Admitted.
+
+#[global] Instance notInHeap_into_val_typed
+   :
+  IntoValTyped (runtime.notInHeap.t) (runtime.notInHeap).
+Proof. Admitted.
+
+End def.
+End notInHeap.
+
+Module typePointers.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance typePointers_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.typePointers.t). Admitted.
+
+#[global] Instance typePointers_into_val_typed
+   :
+  IntoValTyped (runtime.typePointers.t) (runtime.typePointers).
+Proof. Admitted.
+
+End def.
+End typePointers.
+
+Module markBits.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance markBits_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.markBits.t). Admitted.
+
+#[global] Instance markBits_into_val_typed
+   :
+  IntoValTyped (runtime.markBits.t) (runtime.markBits).
+Proof. Admitted.
+
+End def.
+End markBits.
+
+Module mcache.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance mcache_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.mcache.t). Admitted.
+
+#[global] Instance mcache_into_val_typed
+   :
+  IntoValTyped (runtime.mcache.t) (runtime.mcache).
+Proof. Admitted.
+
+End def.
+End mcache.
+
+Module gclink.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance gclink_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.gclink.t). Admitted.
+
+#[global] Instance gclink_into_val_typed
+   :
+  IntoValTyped (runtime.gclink.t) (runtime.gclink).
+Proof. Admitted.
+
+End def.
+End gclink.
+
+Module gclinkptr.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance gclinkptr_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.gclinkptr.t). Admitted.
+
+#[global] Instance gclinkptr_into_val_typed
+   :
+  IntoValTyped (runtime.gclinkptr.t) (runtime.gclinkptr).
+Proof. Admitted.
+
+End def.
+End gclinkptr.
+
+Module stackfreelist.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance stackfreelist_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.stackfreelist.t). Admitted.
+
+#[global] Instance stackfreelist_into_val_typed
+   :
+  IntoValTyped (runtime.stackfreelist.t) (runtime.stackfreelist).
+Proof. Admitted.
+
+End def.
+End stackfreelist.
+
+Module mcentral.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance mcentral_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.mcentral.t). Admitted.
+
+#[global] Instance mcentral_into_val_typed
+   :
+  IntoValTyped (runtime.mcentral.t) (runtime.mcentral).
+Proof. Admitted.
+
+End def.
+End mcentral.
+
+Module checkmarksMap.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance checkmarksMap_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.checkmarksMap.t). Admitted.
+
+#[global] Instance checkmarksMap_into_val_typed
+   :
+  IntoValTyped (runtime.checkmarksMap.t) (runtime.checkmarksMap).
+Proof. Admitted.
+
+End def.
+End checkmarksMap.
+
+Module Cleanup.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Cleanup_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.Cleanup.t). Admitted.
+
+#[global] Instance Cleanup_into_val_typed
+   :
+  IntoValTyped (runtime.Cleanup.t) (runtime.Cleanup).
+Proof. Admitted.
+
+End def.
+End Cleanup.
+
+Module cleanupBlock.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance cleanupBlock_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.cleanupBlock.t). Admitted.
+
+#[global] Instance cleanupBlock_into_val_typed
+   :
+  IntoValTyped (runtime.cleanupBlock.t) (runtime.cleanupBlock).
+Proof. Admitted.
+
+End def.
+End cleanupBlock.
+
+Module cleanupBlockHeader.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance cleanupBlockHeader_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.cleanupBlockHeader.t). Admitted.
+
+#[global] Instance cleanupBlockHeader_into_val_typed
+   :
+  IntoValTyped (runtime.cleanupBlockHeader.t) (runtime.cleanupBlockHeader).
+Proof. Admitted.
+
+End def.
+End cleanupBlockHeader.
+
+Module cleanupQueue.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance cleanupQueue_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.cleanupQueue.t). Admitted.
+
+#[global] Instance cleanupQueue_into_val_typed
+   :
+  IntoValTyped (runtime.cleanupQueue.t) (runtime.cleanupQueue).
+Proof. Admitted.
+
+End def.
+End cleanupQueue.
+
+Module metricData.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance metricData_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.metricData.t). Admitted.
+
+#[global] Instance metricData_into_val_typed
+   :
+  IntoValTyped (runtime.metricData.t) (runtime.metricData).
+Proof. Admitted.
+
+End def.
+End metricData.
+
+Module metricReader.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance metricReader_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.metricReader.t). Admitted.
+
+#[global] Instance metricReader_into_val_typed
+   :
+  IntoValTyped (runtime.metricReader.t) (runtime.metricReader).
+Proof. Admitted.
+
+End def.
+End metricReader.
+
+Module statDep.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance statDep_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.statDep.t). Admitted.
+
+#[global] Instance statDep_into_val_typed
+   :
+  IntoValTyped (runtime.statDep.t) (runtime.statDep).
+Proof. Admitted.
+
+End def.
+End statDep.
+
+Module statDepSet.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance statDepSet_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.statDepSet.t). Admitted.
+
+#[global] Instance statDepSet_into_val_typed
+   :
+  IntoValTyped (runtime.statDepSet.t) (runtime.statDepSet).
+Proof. Admitted.
+
+End def.
+End statDepSet.
+
+Module heapStatsAggregate.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance heapStatsAggregate_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.heapStatsAggregate.t). Admitted.
+
+#[global] Instance heapStatsAggregate_into_val_typed
+   :
+  IntoValTyped (runtime.heapStatsAggregate.t) (runtime.heapStatsAggregate).
+Proof. Admitted.
+
+End def.
+End heapStatsAggregate.
+
+Module sysStatsAggregate.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance sysStatsAggregate_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.sysStatsAggregate.t). Admitted.
+
+#[global] Instance sysStatsAggregate_into_val_typed
+   :
+  IntoValTyped (runtime.sysStatsAggregate.t) (runtime.sysStatsAggregate).
+Proof. Admitted.
+
+End def.
+End sysStatsAggregate.
+
+Module cpuStatsAggregate.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance cpuStatsAggregate_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.cpuStatsAggregate.t). Admitted.
+
+#[global] Instance cpuStatsAggregate_into_val_typed
+   :
+  IntoValTyped (runtime.cpuStatsAggregate.t) (runtime.cpuStatsAggregate).
+Proof. Admitted.
+
+End def.
+End cpuStatsAggregate.
+
+Module gcStatsAggregate.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance gcStatsAggregate_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.gcStatsAggregate.t). Admitted.
+
+#[global] Instance gcStatsAggregate_into_val_typed
+   :
+  IntoValTyped (runtime.gcStatsAggregate.t) (runtime.gcStatsAggregate).
+Proof. Admitted.
+
+End def.
+End gcStatsAggregate.
+
+Module statAggregate.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance statAggregate_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.statAggregate.t). Admitted.
+
+#[global] Instance statAggregate_into_val_typed
+   :
+  IntoValTyped (runtime.statAggregate.t) (runtime.statAggregate).
+Proof. Admitted.
+
+End def.
+End statAggregate.
+
+Module metricKind.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance metricKind_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.metricKind.t). Admitted.
+
+#[global] Instance metricKind_into_val_typed
+   :
+  IntoValTyped (runtime.metricKind.t) (runtime.metricKind).
+Proof. Admitted.
+
+End def.
+End metricKind.
+
+Module metricSample.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance metricSample_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.metricSample.t). Admitted.
+
+#[global] Instance metricSample_into_val_typed
+   :
+  IntoValTyped (runtime.metricSample.t) (runtime.metricSample).
+Proof. Admitted.
+
+End def.
+End metricSample.
+
+Module metricValue.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance metricValue_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.metricValue.t). Admitted.
+
+#[global] Instance metricValue_into_val_typed
+   :
+  IntoValTyped (runtime.metricValue.t) (runtime.metricValue).
+Proof. Admitted.
+
+End def.
+End metricValue.
+
+Module metricFloat64Histogram.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance metricFloat64Histogram_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.metricFloat64Histogram.t). Admitted.
+
+#[global] Instance metricFloat64Histogram_into_val_typed
+   :
+  IntoValTyped (runtime.metricFloat64Histogram.t) (runtime.metricFloat64Histogram).
+Proof. Admitted.
+
+End def.
+End metricFloat64Histogram.
+
+Module metricName.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance metricName_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.metricName.t). Admitted.
+
+#[global] Instance metricName_into_val_typed
+   :
+  IntoValTyped (runtime.metricName.t) (runtime.metricName).
+Proof. Admitted.
+
+End def.
+End metricName.
+
+Module finBlock.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance finBlock_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.finBlock.t). Admitted.
+
+#[global] Instance finBlock_into_val_typed
+   :
+  IntoValTyped (runtime.finBlock.t) (runtime.finBlock).
+Proof. Admitted.
+
+End def.
+End finBlock.
+
+Module finalizer.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance finalizer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.finalizer.t). Admitted.
+
+#[global] Instance finalizer_into_val_typed
+   :
+  IntoValTyped (runtime.finalizer.t) (runtime.finalizer).
+Proof. Admitted.
+
+End def.
+End finalizer.
+
+Module fixalloc.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance fixalloc_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.fixalloc.t). Admitted.
+
+#[global] Instance fixalloc_into_val_typed
+   :
+  IntoValTyped (runtime.fixalloc.t) (runtime.fixalloc).
+Proof. Admitted.
+
+End def.
+End fixalloc.
+
+Module mlink.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance mlink_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.mlink.t). Admitted.
+
+#[global] Instance mlink_into_val_typed
+   :
+  IntoValTyped (runtime.mlink.t) (runtime.mlink).
+Proof. Admitted.
+
+End def.
+End mlink.
+
+Module gcMarkWorkerMode.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance gcMarkWorkerMode_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.gcMarkWorkerMode.t). Admitted.
+
+#[global] Instance gcMarkWorkerMode_into_val_typed
+   :
+  IntoValTyped (runtime.gcMarkWorkerMode.t) (runtime.gcMarkWorkerMode).
+Proof. Admitted.
+
+End def.
+End gcMarkWorkerMode.
+
+Module workType.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance workType_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.workType.t). Admitted.
+
+#[global] Instance workType_into_val_typed
+   :
+  IntoValTyped (runtime.workType.t) (runtime.workType).
+Proof. Admitted.
+
+End def.
+End workType.
+
+Module gcMode.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance gcMode_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.gcMode.t). Admitted.
+
+#[global] Instance gcMode_into_val_typed
+   :
+  IntoValTyped (runtime.gcMode.t) (runtime.gcMode).
+Proof. Admitted.
+
+End def.
+End gcMode.
+
+Module gcTrigger.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance gcTrigger_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.gcTrigger.t). Admitted.
+
+#[global] Instance gcTrigger_into_val_typed
+   :
+  IntoValTyped (runtime.gcTrigger.t) (runtime.gcTrigger).
+Proof. Admitted.
+
+End def.
+End gcTrigger.
+
+Module gcTriggerKind.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance gcTriggerKind_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.gcTriggerKind.t). Admitted.
+
+#[global] Instance gcTriggerKind_into_val_typed
+   :
+  IntoValTyped (runtime.gcTriggerKind.t) (runtime.gcTriggerKind).
+Proof. Admitted.
+
+End def.
+End gcTriggerKind.
+
+Module gcBgMarkWorkerNode.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance gcBgMarkWorkerNode_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.gcBgMarkWorkerNode.t). Admitted.
+
+#[global] Instance gcBgMarkWorkerNode_into_val_typed
+   :
+  IntoValTyped (runtime.gcBgMarkWorkerNode.t) (runtime.gcBgMarkWorkerNode).
+Proof. Admitted.
+
+End def.
+End gcBgMarkWorkerNode.
+
+Module gcBgMarkWorkerNodePadded.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance gcBgMarkWorkerNodePadded_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.gcBgMarkWorkerNodePadded.t). Admitted.
+
+#[global] Instance gcBgMarkWorkerNodePadded_into_val_typed
+   :
+  IntoValTyped (runtime.gcBgMarkWorkerNodePadded.t) (runtime.gcBgMarkWorkerNodePadded).
+Proof. Admitted.
+
+End def.
+End gcBgMarkWorkerNodePadded.
+
+Module gcCPULimiterState.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance gcCPULimiterState_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.gcCPULimiterState.t). Admitted.
+
+#[global] Instance gcCPULimiterState_into_val_typed
+   :
+  IntoValTyped (runtime.gcCPULimiterState.t) (runtime.gcCPULimiterState).
+Proof. Admitted.
+
+End def.
+End gcCPULimiterState.
+
+Module limiterEventType.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance limiterEventType_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.limiterEventType.t). Admitted.
+
+#[global] Instance limiterEventType_into_val_typed
+   :
+  IntoValTyped (runtime.limiterEventType.t) (runtime.limiterEventType).
+Proof. Admitted.
+
+End def.
+End limiterEventType.
+
+Module limiterEventStamp.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance limiterEventStamp_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.limiterEventStamp.t). Admitted.
+
+#[global] Instance limiterEventStamp_into_val_typed
+   :
+  IntoValTyped (runtime.limiterEventStamp.t) (runtime.limiterEventStamp).
+Proof. Admitted.
+
+End def.
+End limiterEventStamp.
+
+Module limiterEvent.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance limiterEvent_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.limiterEvent.t). Admitted.
+
+#[global] Instance limiterEvent_into_val_typed
+   :
+  IntoValTyped (runtime.limiterEvent.t) (runtime.limiterEvent).
+Proof. Admitted.
+
+End def.
+End limiterEvent.
+
+Module gcDrainFlags.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance gcDrainFlags_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.gcDrainFlags.t). Admitted.
+
+#[global] Instance gcDrainFlags_into_val_typed
+   :
+  IntoValTyped (runtime.gcDrainFlags.t) (runtime.gcDrainFlags).
+Proof. Admitted.
+
+End def.
+End gcDrainFlags.
+
+Module spanInlineMarkBits.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance spanInlineMarkBits_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.spanInlineMarkBits.t). Admitted.
+
+#[global] Instance spanInlineMarkBits_into_val_typed
+   :
+  IntoValTyped (runtime.spanInlineMarkBits.t) (runtime.spanInlineMarkBits).
+Proof. Admitted.
+
+End def.
+End spanInlineMarkBits.
+
+Module spanQueue.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance spanQueue_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.spanQueue.t). Admitted.
+
+#[global] Instance spanQueue_into_val_typed
+   :
+  IntoValTyped (runtime.spanQueue.t) (runtime.spanQueue).
+Proof. Admitted.
+
+End def.
+End spanQueue.
+
+Module localSpanQueue.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance localSpanQueue_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.localSpanQueue.t). Admitted.
+
+#[global] Instance localSpanQueue_into_val_typed
+   :
+  IntoValTyped (runtime.localSpanQueue.t) (runtime.localSpanQueue).
+Proof. Admitted.
+
+End def.
+End localSpanQueue.
+
+Module objptr.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance objptr_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.objptr.t). Admitted.
+
+#[global] Instance objptr_into_val_typed
+   :
+  IntoValTyped (runtime.objptr.t) (runtime.objptr).
+Proof. Admitted.
+
+End def.
+End objptr.
+
+Module sizeClassScanStats.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance sizeClassScanStats_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.sizeClassScanStats.t). Admitted.
+
+#[global] Instance sizeClassScanStats_into_val_typed
+   :
+  IntoValTyped (runtime.sizeClassScanStats.t) (runtime.sizeClassScanStats).
+Proof. Admitted.
+
+End def.
+End sizeClassScanStats.
+
+Module gcControllerState.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance gcControllerState_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.gcControllerState.t). Admitted.
+
+#[global] Instance gcControllerState_into_val_typed
+   :
+  IntoValTyped (runtime.gcControllerState.t) (runtime.gcControllerState).
+Proof. Admitted.
+
+End def.
+End gcControllerState.
+
+Module scavengerState.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance scavengerState_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.scavengerState.t). Admitted.
+
+#[global] Instance scavengerState_into_val_typed
+   :
+  IntoValTyped (runtime.scavengerState.t) (runtime.scavengerState).
+Proof. Admitted.
+
+End def.
+End scavengerState.
+
+Module scavengeIndex.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance scavengeIndex_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.scavengeIndex.t). Admitted.
+
+#[global] Instance scavengeIndex_into_val_typed
+   :
+  IntoValTyped (runtime.scavengeIndex.t) (runtime.scavengeIndex).
+Proof. Admitted.
+
+End def.
+End scavengeIndex.
+
+Module atomicScavChunkData.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance atomicScavChunkData_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.atomicScavChunkData.t). Admitted.
+
+#[global] Instance atomicScavChunkData_into_val_typed
+   :
+  IntoValTyped (runtime.atomicScavChunkData.t) (runtime.atomicScavChunkData).
+Proof. Admitted.
+
+End def.
+End atomicScavChunkData.
+
+Module scavChunkData.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance scavChunkData_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.scavChunkData.t). Admitted.
+
+#[global] Instance scavChunkData_into_val_typed
+   :
+  IntoValTyped (runtime.scavChunkData.t) (runtime.scavChunkData).
+Proof. Admitted.
+
+End def.
+End scavChunkData.
+
+Module scavChunkFlags.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance scavChunkFlags_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.scavChunkFlags.t). Admitted.
+
+#[global] Instance scavChunkFlags_into_val_typed
+   :
+  IntoValTyped (runtime.scavChunkFlags.t) (runtime.scavChunkFlags).
+Proof. Admitted.
+
+End def.
+End scavChunkFlags.
+
+Module piController.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance piController_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.piController.t). Admitted.
+
+#[global] Instance piController_into_val_typed
+   :
+  IntoValTyped (runtime.piController.t) (runtime.piController).
+Proof. Admitted.
+
+End def.
+End piController.
+
+Module stackWorkBuf.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance stackWorkBuf_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.stackWorkBuf.t). Admitted.
+
+#[global] Instance stackWorkBuf_into_val_typed
+   :
+  IntoValTyped (runtime.stackWorkBuf.t) (runtime.stackWorkBuf).
+Proof. Admitted.
+
+End def.
+End stackWorkBuf.
+
+Module stackWorkBufHdr.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance stackWorkBufHdr_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.stackWorkBufHdr.t). Admitted.
+
+#[global] Instance stackWorkBufHdr_into_val_typed
+   :
+  IntoValTyped (runtime.stackWorkBufHdr.t) (runtime.stackWorkBufHdr).
+Proof. Admitted.
+
+End def.
+End stackWorkBufHdr.
+
+Module stackObjectBuf.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance stackObjectBuf_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.stackObjectBuf.t). Admitted.
+
+#[global] Instance stackObjectBuf_into_val_typed
+   :
+  IntoValTyped (runtime.stackObjectBuf.t) (runtime.stackObjectBuf).
+Proof. Admitted.
+
+End def.
+End stackObjectBuf.
+
+Module stackObjectBufHdr.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance stackObjectBufHdr_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.stackObjectBufHdr.t). Admitted.
+
+#[global] Instance stackObjectBufHdr_into_val_typed
+   :
+  IntoValTyped (runtime.stackObjectBufHdr.t) (runtime.stackObjectBufHdr).
+Proof. Admitted.
+
+End def.
+End stackObjectBufHdr.
+
+Module stackObject.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance stackObject_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.stackObject.t). Admitted.
+
+#[global] Instance stackObject_into_val_typed
+   :
+  IntoValTyped (runtime.stackObject.t) (runtime.stackObject).
+Proof. Admitted.
+
+End def.
+End stackObject.
+
+Module stackScanState.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance stackScanState_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.stackScanState.t). Admitted.
+
+#[global] Instance stackScanState_into_val_typed
+   :
+  IntoValTyped (runtime.stackScanState.t) (runtime.stackScanState).
+Proof. Admitted.
+
+End def.
+End stackScanState.
+
+Module sweepdata.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance sweepdata_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.sweepdata.t). Admitted.
+
+#[global] Instance sweepdata_into_val_typed
+   :
+  IntoValTyped (runtime.sweepdata.t) (runtime.sweepdata).
+Proof. Admitted.
+
+End def.
+End sweepdata.
+
+Module sweepClass.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance sweepClass_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.sweepClass.t). Admitted.
+
+#[global] Instance sweepClass_into_val_typed
+   :
+  IntoValTyped (runtime.sweepClass.t) (runtime.sweepClass).
+Proof. Admitted.
+
+End def.
+End sweepClass.
+
+Module activeSweep.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance activeSweep_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.activeSweep.t). Admitted.
+
+#[global] Instance activeSweep_into_val_typed
+   :
+  IntoValTyped (runtime.activeSweep.t) (runtime.activeSweep).
+Proof. Admitted.
+
+End def.
+End activeSweep.
+
+Module sweepLocker.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance sweepLocker_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.sweepLocker.t). Admitted.
+
+#[global] Instance sweepLocker_into_val_typed
+   :
+  IntoValTyped (runtime.sweepLocker.t) (runtime.sweepLocker).
+Proof. Admitted.
+
+End def.
+End sweepLocker.
+
+Module sweepLocked.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance sweepLocked_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.sweepLocked.t). Admitted.
+
+#[global] Instance sweepLocked_into_val_typed
+   :
+  IntoValTyped (runtime.sweepLocked.t) (runtime.sweepLocked).
+Proof. Admitted.
+
+End def.
+End sweepLocked.
+
+Module gcWork.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance gcWork_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.gcWork.t). Admitted.
+
+#[global] Instance gcWork_into_val_typed
+   :
+  IntoValTyped (runtime.gcWork.t) (runtime.gcWork).
+Proof. Admitted.
+
+End def.
+End gcWork.
+
+Module workbufhdr.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance workbufhdr_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.workbufhdr.t). Admitted.
+
+#[global] Instance workbufhdr_into_val_typed
+   :
+  IntoValTyped (runtime.workbufhdr.t) (runtime.workbufhdr).
+Proof. Admitted.
+
+End def.
+End workbufhdr.
+
+Module workbuf.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance workbuf_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.workbuf.t). Admitted.
+
+#[global] Instance workbuf_into_val_typed
+   :
+  IntoValTyped (runtime.workbuf.t) (runtime.workbuf).
+Proof. Admitted.
+
+End def.
+End workbuf.
+
+Module mheap.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance mheap_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.mheap.t). Admitted.
+
+#[global] Instance mheap_into_val_typed
+   :
+  IntoValTyped (runtime.mheap.t) (runtime.mheap).
+Proof. Admitted.
+
+End def.
+End mheap.
+
+Module heapArena.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance heapArena_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.heapArena.t). Admitted.
+
+#[global] Instance heapArena_into_val_typed
+   :
+  IntoValTyped (runtime.heapArena.t) (runtime.heapArena).
+Proof. Admitted.
+
+End def.
+End heapArena.
+
+Module arenaHint.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance arenaHint_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.arenaHint.t). Admitted.
+
+#[global] Instance arenaHint_into_val_typed
+   :
+  IntoValTyped (runtime.arenaHint.t) (runtime.arenaHint).
+Proof. Admitted.
+
+End def.
+End arenaHint.
+
+Module mSpanState.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance mSpanState_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.mSpanState.t). Admitted.
+
+#[global] Instance mSpanState_into_val_typed
+   :
+  IntoValTyped (runtime.mSpanState.t) (runtime.mSpanState).
+Proof. Admitted.
+
+End def.
+End mSpanState.
+
+Module mSpanStateBox.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance mSpanStateBox_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.mSpanStateBox.t). Admitted.
+
+#[global] Instance mSpanStateBox_into_val_typed
+   :
+  IntoValTyped (runtime.mSpanStateBox.t) (runtime.mSpanStateBox).
+Proof. Admitted.
+
+End def.
+End mSpanStateBox.
+
+Module mspan.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance mspan_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.mspan.t). Admitted.
+
+#[global] Instance mspan_into_val_typed
+   :
+  IntoValTyped (runtime.mspan.t) (runtime.mspan).
+Proof. Admitted.
+
+End def.
+End mspan.
+
+Module spanClass.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance spanClass_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.spanClass.t). Admitted.
+
+#[global] Instance spanClass_into_val_typed
+   :
+  IntoValTyped (runtime.spanClass.t) (runtime.spanClass).
+Proof. Admitted.
+
+End def.
+End spanClass.
+
+Module arenaIdx.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance arenaIdx_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.arenaIdx.t). Admitted.
+
+#[global] Instance arenaIdx_into_val_typed
+   :
+  IntoValTyped (runtime.arenaIdx.t) (runtime.arenaIdx).
+Proof. Admitted.
+
+End def.
+End arenaIdx.
+
+Module spanAllocType.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance spanAllocType_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.spanAllocType.t). Admitted.
+
+#[global] Instance spanAllocType_into_val_typed
+   :
+  IntoValTyped (runtime.spanAllocType.t) (runtime.spanAllocType).
+Proof. Admitted.
+
+End def.
+End spanAllocType.
+
+Module mSpanList.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance mSpanList_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.mSpanList.t). Admitted.
+
+#[global] Instance mSpanList_into_val_typed
+   :
+  IntoValTyped (runtime.mSpanList.t) (runtime.mSpanList).
+Proof. Admitted.
+
+End def.
+End mSpanList.
+
+Module mSpanQueue.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance mSpanQueue_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.mSpanQueue.t). Admitted.
+
+#[global] Instance mSpanQueue_into_val_typed
+   :
+  IntoValTyped (runtime.mSpanQueue.t) (runtime.mSpanQueue).
+Proof. Admitted.
+
+End def.
+End mSpanQueue.
+
+Module special.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance special_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.special.t). Admitted.
+
+#[global] Instance special_into_val_typed
+   :
+  IntoValTyped (runtime.special.t) (runtime.special).
+Proof. Admitted.
+
+End def.
+End special.
+
+Module specialfinalizer.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance specialfinalizer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.specialfinalizer.t). Admitted.
+
+#[global] Instance specialfinalizer_into_val_typed
+   :
+  IntoValTyped (runtime.specialfinalizer.t) (runtime.specialfinalizer).
+Proof. Admitted.
+
+End def.
+End specialfinalizer.
+
+Module specialCleanup.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance specialCleanup_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.specialCleanup.t). Admitted.
+
+#[global] Instance specialCleanup_into_val_typed
+   :
+  IntoValTyped (runtime.specialCleanup.t) (runtime.specialCleanup).
+Proof. Admitted.
+
+End def.
+End specialCleanup.
+
+Module specialCheckFinalizer.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance specialCheckFinalizer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.specialCheckFinalizer.t). Admitted.
+
+#[global] Instance specialCheckFinalizer_into_val_typed
+   :
+  IntoValTyped (runtime.specialCheckFinalizer.t) (runtime.specialCheckFinalizer).
+Proof. Admitted.
+
+End def.
+End specialCheckFinalizer.
+
+Module specialTinyBlock.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance specialTinyBlock_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.specialTinyBlock.t). Admitted.
+
+#[global] Instance specialTinyBlock_into_val_typed
+   :
+  IntoValTyped (runtime.specialTinyBlock.t) (runtime.specialTinyBlock).
+Proof. Admitted.
+
+End def.
+End specialTinyBlock.
+
+Module specialWeakHandle.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance specialWeakHandle_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.specialWeakHandle.t). Admitted.
+
+#[global] Instance specialWeakHandle_into_val_typed
+   :
+  IntoValTyped (runtime.specialWeakHandle.t) (runtime.specialWeakHandle).
+Proof. Admitted.
+
+End def.
+End specialWeakHandle.
+
+Module immortalWeakHandleMap.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance immortalWeakHandleMap_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.immortalWeakHandleMap.t). Admitted.
+
+#[global] Instance immortalWeakHandleMap_into_val_typed
+   :
+  IntoValTyped (runtime.immortalWeakHandleMap.t) (runtime.immortalWeakHandleMap).
+Proof. Admitted.
+
+End def.
+End immortalWeakHandleMap.
+
+Module immortalWeakHandle.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance immortalWeakHandle_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.immortalWeakHandle.t). Admitted.
+
+#[global] Instance immortalWeakHandle_into_val_typed
+   :
+  IntoValTyped (runtime.immortalWeakHandle.t) (runtime.immortalWeakHandle).
+Proof. Admitted.
+
+End def.
+End immortalWeakHandle.
+
+Module specialprofile.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance specialprofile_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.specialprofile.t). Admitted.
+
+#[global] Instance specialprofile_into_val_typed
+   :
+  IntoValTyped (runtime.specialprofile.t) (runtime.specialprofile).
+Proof. Admitted.
+
+End def.
+End specialprofile.
+
+Module specialReachable.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance specialReachable_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.specialReachable.t). Admitted.
+
+#[global] Instance specialReachable_into_val_typed
+   :
+  IntoValTyped (runtime.specialReachable.t) (runtime.specialReachable).
+Proof. Admitted.
+
+End def.
+End specialReachable.
+
+Module specialPinCounter.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance specialPinCounter_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.specialPinCounter.t). Admitted.
+
+#[global] Instance specialPinCounter_into_val_typed
+   :
+  IntoValTyped (runtime.specialPinCounter.t) (runtime.specialPinCounter).
+Proof. Admitted.
+
+End def.
+End specialPinCounter.
+
+Module specialsIter.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance specialsIter_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.specialsIter.t). Admitted.
+
+#[global] Instance specialsIter_into_val_typed
+   :
+  IntoValTyped (runtime.specialsIter.t) (runtime.specialsIter).
+Proof. Admitted.
+
+End def.
+End specialsIter.
+
+Module gcBits.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance gcBits_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.gcBits.t). Admitted.
+
+#[global] Instance gcBits_into_val_typed
+   :
+  IntoValTyped (runtime.gcBits.t) (runtime.gcBits).
+Proof. Admitted.
+
+End def.
+End gcBits.
+
+Module gcBitsHeader.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance gcBitsHeader_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.gcBitsHeader.t). Admitted.
+
+#[global] Instance gcBitsHeader_into_val_typed
+   :
+  IntoValTyped (runtime.gcBitsHeader.t) (runtime.gcBitsHeader).
+Proof. Admitted.
+
+End def.
+End gcBitsHeader.
+
+Module gcBitsArena.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance gcBitsArena_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.gcBitsArena.t). Admitted.
+
+#[global] Instance gcBitsArena_into_val_typed
+   :
+  IntoValTyped (runtime.gcBitsArena.t) (runtime.gcBitsArena).
+Proof. Admitted.
+
+End def.
+End gcBitsArena.
+
+Module floaty.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance floaty_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.floaty.t). Admitted.
+
+#[global] Instance floaty_into_val_typed
+   :
+  IntoValTyped (runtime.floaty.t) (runtime.floaty).
+Proof. Admitted.
+
+End def.
+End floaty.
+
+Module chunkIdx.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance chunkIdx_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.chunkIdx.t). Admitted.
+
+#[global] Instance chunkIdx_into_val_typed
+   :
+  IntoValTyped (runtime.chunkIdx.t) (runtime.chunkIdx).
+Proof. Admitted.
+
+End def.
+End chunkIdx.
+
+Module pageAlloc.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance pageAlloc_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.pageAlloc.t). Admitted.
+
+#[global] Instance pageAlloc_into_val_typed
+   :
+  IntoValTyped (runtime.pageAlloc.t) (runtime.pageAlloc).
+Proof. Admitted.
+
+End def.
+End pageAlloc.
+
+Module pallocSum.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance pallocSum_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.pallocSum.t). Admitted.
+
+#[global] Instance pallocSum_into_val_typed
+   :
+  IntoValTyped (runtime.pallocSum.t) (runtime.pallocSum).
+Proof. Admitted.
+
+End def.
+End pallocSum.
+
+Module pageCache.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance pageCache_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.pageCache.t). Admitted.
+
+#[global] Instance pageCache_into_val_typed
+   :
+  IntoValTyped (runtime.pageCache.t) (runtime.pageCache).
+Proof. Admitted.
+
+End def.
+End pageCache.
+
+Module pageBits.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance pageBits_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.pageBits.t). Admitted.
+
+#[global] Instance pageBits_into_val_typed
+   :
+  IntoValTyped (runtime.pageBits.t) (runtime.pageBits).
+Proof. Admitted.
+
+End def.
+End pageBits.
+
+Module pallocBits.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance pallocBits_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.pallocBits.t). Admitted.
+
+#[global] Instance pallocBits_into_val_typed
+   :
+  IntoValTyped (runtime.pallocBits.t) (runtime.pallocBits).
+Proof. Admitted.
+
+End def.
+End pallocBits.
+
+Module pallocData.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance pallocData_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.pallocData.t). Admitted.
+
+#[global] Instance pallocData_into_val_typed
+   :
+  IntoValTyped (runtime.pallocData.t) (runtime.pallocData).
+Proof. Admitted.
+
+End def.
+End pallocData.
+
+Module bucketType.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance bucketType_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.bucketType.t). Admitted.
+
+#[global] Instance bucketType_into_val_typed
+   :
+  IntoValTyped (runtime.bucketType.t) (runtime.bucketType).
+Proof. Admitted.
+
+End def.
+End bucketType.
+
+Module bucket.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance bucket_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.bucket.t). Admitted.
+
+#[global] Instance bucket_into_val_typed
+   :
+  IntoValTyped (runtime.bucket.t) (runtime.bucket).
+Proof. Admitted.
+
+End def.
+End bucket.
+
+Module memRecord.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance memRecord_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.memRecord.t). Admitted.
+
+#[global] Instance memRecord_into_val_typed
+   :
+  IntoValTyped (runtime.memRecord.t) (runtime.memRecord).
+Proof. Admitted.
+
+End def.
+End memRecord.
+
+Module memRecordCycle.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance memRecordCycle_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.memRecordCycle.t). Admitted.
+
+#[global] Instance memRecordCycle_into_val_typed
+   :
+  IntoValTyped (runtime.memRecordCycle.t) (runtime.memRecordCycle).
+Proof. Admitted.
+
+End def.
+End memRecordCycle.
+
+Module blockRecord.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance blockRecord_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.blockRecord.t). Admitted.
+
+#[global] Instance blockRecord_into_val_typed
+   :
+  IntoValTyped (runtime.blockRecord.t) (runtime.blockRecord).
+Proof. Admitted.
+
+End def.
+End blockRecord.
+
+Module buckhashArray.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance buckhashArray_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.buckhashArray.t). Admitted.
+
+#[global] Instance buckhashArray_into_val_typed
+   :
+  IntoValTyped (runtime.buckhashArray.t) (runtime.buckhashArray).
+Proof. Admitted.
+
+End def.
+End buckhashArray.
+
+Module mProfCycleHolder.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance mProfCycleHolder_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.mProfCycleHolder.t). Admitted.
+
+#[global] Instance mProfCycleHolder_into_val_typed
+   :
+  IntoValTyped (runtime.mProfCycleHolder.t) (runtime.mProfCycleHolder).
+Proof. Admitted.
+
+End def.
+End mProfCycleHolder.
+
+Module mLockProfile.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance mLockProfile_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.mLockProfile.t). Admitted.
+
+#[global] Instance mLockProfile_into_val_typed
+   :
+  IntoValTyped (runtime.mLockProfile.t) (runtime.mLockProfile).
+Proof. Admitted.
+
+End def.
+End mLockProfile.
+
+Module StackRecord.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance StackRecord_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.StackRecord.t). Admitted.
+
+#[global] Instance StackRecord_into_val_typed
+   :
+  IntoValTyped (runtime.StackRecord.t) (runtime.StackRecord).
+Proof. Admitted.
+
+End def.
+End StackRecord.
+
+Module MemProfileRecord.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance MemProfileRecord_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.MemProfileRecord.t). Admitted.
+
+#[global] Instance MemProfileRecord_into_val_typed
+   :
+  IntoValTyped (runtime.MemProfileRecord.t) (runtime.MemProfileRecord).
+Proof. Admitted.
+
+End def.
+End MemProfileRecord.
+
+Module BlockProfileRecord.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance BlockProfileRecord_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.BlockProfileRecord.t). Admitted.
+
+#[global] Instance BlockProfileRecord_into_val_typed
+   :
+  IntoValTyped (runtime.BlockProfileRecord.t) (runtime.BlockProfileRecord).
+Proof. Admitted.
+
+End def.
+End BlockProfileRecord.
+
+Module goroutineProfileState.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance goroutineProfileState_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.goroutineProfileState.t). Admitted.
+
+#[global] Instance goroutineProfileState_into_val_typed
+   :
+  IntoValTyped (runtime.goroutineProfileState.t) (runtime.goroutineProfileState).
+Proof. Admitted.
+
+End def.
+End goroutineProfileState.
+
+Module goroutineProfileStateHolder.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance goroutineProfileStateHolder_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.goroutineProfileStateHolder.t). Admitted.
+
+#[global] Instance goroutineProfileStateHolder_into_val_typed
+   :
+  IntoValTyped (runtime.goroutineProfileStateHolder.t) (runtime.goroutineProfileStateHolder).
+Proof. Admitted.
+
+End def.
+End goroutineProfileStateHolder.
+
+Module addrRange.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance addrRange_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.addrRange.t). Admitted.
+
+#[global] Instance addrRange_into_val_typed
+   :
+  IntoValTyped (runtime.addrRange.t) (runtime.addrRange).
+Proof. Admitted.
+
+End def.
+End addrRange.
+
+Module offAddr.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance offAddr_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.offAddr.t). Admitted.
+
+#[global] Instance offAddr_into_val_typed
+   :
+  IntoValTyped (runtime.offAddr.t) (runtime.offAddr).
+Proof. Admitted.
+
+End def.
+End offAddr.
+
+Module atomicOffAddr.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance atomicOffAddr_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.atomicOffAddr.t). Admitted.
+
+#[global] Instance atomicOffAddr_into_val_typed
+   :
+  IntoValTyped (runtime.atomicOffAddr.t) (runtime.atomicOffAddr).
+Proof. Admitted.
+
+End def.
+End atomicOffAddr.
+
+Module addrRanges.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance addrRanges_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.addrRanges.t). Admitted.
+
+#[global] Instance addrRanges_into_val_typed
+   :
+  IntoValTyped (runtime.addrRanges.t) (runtime.addrRanges).
+Proof. Admitted.
+
+End def.
+End addrRanges.
+
+Module spanSet.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance spanSet_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.spanSet.t). Admitted.
+
+#[global] Instance spanSet_into_val_typed
+   :
+  IntoValTyped (runtime.spanSet.t) (runtime.spanSet).
+Proof. Admitted.
+
+End def.
+End spanSet.
+
+Module spanSetBlockHeader.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance spanSetBlockHeader_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.spanSetBlockHeader.t). Admitted.
+
+#[global] Instance spanSetBlockHeader_into_val_typed
+   :
+  IntoValTyped (runtime.spanSetBlockHeader.t) (runtime.spanSetBlockHeader).
+Proof. Admitted.
+
+End def.
+End spanSetBlockHeader.
+
+Module spanSetBlockHeader2.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance spanSetBlockHeader2_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.spanSetBlockHeader2.t). Admitted.
+
+#[global] Instance spanSetBlockHeader2_into_val_typed
+   :
+  IntoValTyped (runtime.spanSetBlockHeader2.t) (runtime.spanSetBlockHeader2).
+Proof. Admitted.
+
+End def.
+End spanSetBlockHeader2.
+
+Module spanSetBlock.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance spanSetBlock_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.spanSetBlock.t). Admitted.
+
+#[global] Instance spanSetBlock_into_val_typed
+   :
+  IntoValTyped (runtime.spanSetBlock.t) (runtime.spanSetBlock).
+Proof. Admitted.
+
+End def.
+End spanSetBlock.
+
+Module atomicSpanSetSpinePointer.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance atomicSpanSetSpinePointer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.atomicSpanSetSpinePointer.t). Admitted.
+
+#[global] Instance atomicSpanSetSpinePointer_into_val_typed
+   :
+  IntoValTyped (runtime.atomicSpanSetSpinePointer.t) (runtime.atomicSpanSetSpinePointer).
+Proof. Admitted.
+
+End def.
+End atomicSpanSetSpinePointer.
+
+Module spanSetSpinePointer.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance spanSetSpinePointer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.spanSetSpinePointer.t). Admitted.
+
+#[global] Instance spanSetSpinePointer_into_val_typed
+   :
+  IntoValTyped (runtime.spanSetSpinePointer.t) (runtime.spanSetSpinePointer).
+Proof. Admitted.
+
+End def.
+End spanSetSpinePointer.
+
+Module spanSetBlockAlloc.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance spanSetBlockAlloc_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.spanSetBlockAlloc.t). Admitted.
+
+#[global] Instance spanSetBlockAlloc_into_val_typed
+   :
+  IntoValTyped (runtime.spanSetBlockAlloc.t) (runtime.spanSetBlockAlloc).
+Proof. Admitted.
+
+End def.
+End spanSetBlockAlloc.
+
+Module headTailIndex.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance headTailIndex_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.headTailIndex.t). Admitted.
+
+#[global] Instance headTailIndex_into_val_typed
+   :
+  IntoValTyped (runtime.headTailIndex.t) (runtime.headTailIndex).
+Proof. Admitted.
+
+End def.
+End headTailIndex.
+
+Module atomicHeadTailIndex.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance atomicHeadTailIndex_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.atomicHeadTailIndex.t). Admitted.
+
+#[global] Instance atomicHeadTailIndex_into_val_typed
+   :
+  IntoValTyped (runtime.atomicHeadTailIndex.t) (runtime.atomicHeadTailIndex).
+Proof. Admitted.
+
+End def.
+End atomicHeadTailIndex.
+
+Module atomicMSpanPointer.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance atomicMSpanPointer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.atomicMSpanPointer.t). Admitted.
+
+#[global] Instance atomicMSpanPointer_into_val_typed
+   :
+  IntoValTyped (runtime.atomicMSpanPointer.t) (runtime.atomicMSpanPointer).
+Proof. Admitted.
+
+End def.
+End atomicMSpanPointer.
+
+Module mstats.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance mstats_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.mstats.t). Admitted.
+
+#[global] Instance mstats_into_val_typed
+   :
+  IntoValTyped (runtime.mstats.t) (runtime.mstats).
+Proof. Admitted.
+
+End def.
+End mstats.
+
+Module MemStats.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance MemStats_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.MemStats.t). Admitted.
+
+#[global] Instance MemStats_into_val_typed
+   :
+  IntoValTyped (runtime.MemStats.t) (runtime.MemStats).
+Proof. Admitted.
+
+End def.
+End MemStats.
+
+Module sysMemStat.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance sysMemStat_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.sysMemStat.t). Admitted.
+
+#[global] Instance sysMemStat_into_val_typed
+   :
+  IntoValTyped (runtime.sysMemStat.t) (runtime.sysMemStat).
+Proof. Admitted.
+
+End def.
+End sysMemStat.
+
+Module heapStatsDelta.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance heapStatsDelta_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.heapStatsDelta.t). Admitted.
+
+#[global] Instance heapStatsDelta_into_val_typed
+   :
+  IntoValTyped (runtime.heapStatsDelta.t) (runtime.heapStatsDelta).
+Proof. Admitted.
+
+End def.
+End heapStatsDelta.
+
+Module consistentHeapStats.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance consistentHeapStats_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.consistentHeapStats.t). Admitted.
+
+#[global] Instance consistentHeapStats_into_val_typed
+   :
+  IntoValTyped (runtime.consistentHeapStats.t) (runtime.consistentHeapStats).
+Proof. Admitted.
+
+End def.
+End consistentHeapStats.
+
+Module cpuStats.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance cpuStats_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.cpuStats.t). Admitted.
+
+#[global] Instance cpuStats_into_val_typed
+   :
+  IntoValTyped (runtime.cpuStats.t) (runtime.cpuStats).
+Proof. Admitted.
+
+End def.
+End cpuStats.
+
+Module wbBuf.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance wbBuf_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.wbBuf.t). Admitted.
+
+#[global] Instance wbBuf_into_val_typed
+   :
+  IntoValTyped (runtime.wbBuf.t) (runtime.wbBuf).
+Proof. Admitted.
+
+End def.
+End wbBuf.
+
+Module pollDesc.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance pollDesc_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.pollDesc.t). Admitted.
+
+#[global] Instance pollDesc_into_val_typed
+   :
+  IntoValTyped (runtime.pollDesc.t) (runtime.pollDesc).
+Proof. Admitted.
+
+End def.
+End pollDesc.
+
+Module pollInfo.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance pollInfo_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.pollInfo.t). Admitted.
+
+#[global] Instance pollInfo_into_val_typed
+   :
+  IntoValTyped (runtime.pollInfo.t) (runtime.pollInfo).
+Proof. Admitted.
+
+End def.
+End pollInfo.
+
+Module pollCache.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance pollCache_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.pollCache.t). Admitted.
+
+#[global] Instance pollCache_into_val_typed
+   :
+  IntoValTyped (runtime.pollCache.t) (runtime.pollCache).
+Proof. Admitted.
+
+End def.
+End pollCache.
+
+Module winlibcall.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance winlibcall_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.winlibcall.t). Admitted.
+
+#[global] Instance winlibcall_into_val_typed
+   :
+  IntoValTyped (runtime.winlibcall.t) (runtime.winlibcall).
+Proof. Admitted.
+
+End def.
+End winlibcall.
+
+Module note.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance note_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.note.t). Admitted.
+
+#[global] Instance note_into_val_typed
+   :
+  IntoValTyped (runtime.note.t) (runtime.note).
+Proof. Admitted.
+
+End def.
+End note.
+
+Module mOS.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance mOS_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.mOS.t). Admitted.
+
+#[global] Instance mOS_into_val_typed
+   :
+  IntoValTyped (runtime.mOS.t) (runtime.mOS).
+Proof. Admitted.
+
+End def.
+End mOS.
+
+Module perThreadSyscallArgs.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance perThreadSyscallArgs_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.perThreadSyscallArgs.t). Admitted.
+
+#[global] Instance perThreadSyscallArgs_into_val_typed
+   :
+  IntoValTyped (runtime.perThreadSyscallArgs.t) (runtime.perThreadSyscallArgs).
+Proof. Admitted.
+
+End def.
+End perThreadSyscallArgs.
+
+Module sigset.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance sigset_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.sigset.t). Admitted.
+
+#[global] Instance sigset_into_val_typed
+   :
+  IntoValTyped (runtime.sigset.t) (runtime.sigset).
+Proof. Admitted.
+
+End def.
+End sigset.
+
+Module throwType.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance throwType_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.throwType.t). Admitted.
+
+#[global] Instance throwType_into_val_typed
+   :
+  IntoValTyped (runtime.throwType.t) (runtime.throwType).
+Proof. Admitted.
+
+End def.
+End throwType.
+
+Module PanicNilError.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance PanicNilError_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.PanicNilError.t). Admitted.
+
+#[global] Instance PanicNilError_into_val_typed
+   :
+  IntoValTyped (runtime.PanicNilError.t) (runtime.PanicNilError).
+Proof. Admitted.
+
+End def.
+End PanicNilError.
+
+Module Pinner.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Pinner_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.Pinner.t). Admitted.
+
+#[global] Instance Pinner_into_val_typed
+   :
+  IntoValTyped (runtime.Pinner.t) (runtime.Pinner).
+Proof. Admitted.
+
+End def.
+End Pinner.
+
+Module pinner.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance pinner_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.pinner.t). Admitted.
+
+#[global] Instance pinner_into_val_typed
+   :
+  IntoValTyped (runtime.pinner.t) (runtime.pinner).
+Proof. Admitted.
+
+End def.
+End pinner.
+
+Module pinState.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance pinState_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.pinState.t). Admitted.
+
+#[global] Instance pinState_into_val_typed
+   :
+  IntoValTyped (runtime.pinState.t) (runtime.pinState).
+Proof. Admitted.
+
+End def.
+End pinState.
+
+Module pinnerBits.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance pinnerBits_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.pinnerBits.t). Admitted.
+
+#[global] Instance pinnerBits_into_val_typed
+   :
+  IntoValTyped (runtime.pinnerBits.t) (runtime.pinnerBits).
+Proof. Admitted.
+
+End def.
+End pinnerBits.
+
+Module ptabEntry.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ptabEntry_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.ptabEntry.t). Admitted.
+
+#[global] Instance ptabEntry_into_val_typed
+   :
+  IntoValTyped (runtime.ptabEntry.t) (runtime.ptabEntry).
+Proof. Admitted.
+
+End def.
+End ptabEntry.
+
+Module suspendGState.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance suspendGState_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.suspendGState.t). Admitted.
+
+#[global] Instance suspendGState_into_val_typed
+   :
+  IntoValTyped (runtime.suspendGState.t) (runtime.suspendGState).
+Proof. Admitted.
+
+End def.
+End suspendGState.
+
+Module hex.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance hex_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.hex.t). Admitted.
+
+#[global] Instance hex_into_val_typed
+   :
+  IntoValTyped (runtime.hex.t) (runtime.hex).
+Proof. Admitted.
+
+End def.
+End hex.
+
+Module stwReason.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance stwReason_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.stwReason.t). Admitted.
+
+#[global] Instance stwReason_into_val_typed
+   :
+  IntoValTyped (runtime.stwReason.t) (runtime.stwReason).
+Proof. Admitted.
+
+End def.
+End stwReason.
+
+Module worldStop.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance worldStop_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.worldStop.t). Admitted.
+
+#[global] Instance worldStop_into_val_typed
+   :
+  IntoValTyped (runtime.worldStop.t) (runtime.worldStop).
+Proof. Admitted.
+
+End def.
+End worldStop.
+
+Module cgothreadstart.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance cgothreadstart_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.cgothreadstart.t). Admitted.
+
+#[global] Instance cgothreadstart_into_val_typed
+   :
+  IntoValTyped (runtime.cgothreadstart.t) (runtime.cgothreadstart).
+Proof. Admitted.
+
+End def.
+End cgothreadstart.
+
+Module sysmontick.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance sysmontick_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.sysmontick.t). Admitted.
+
+#[global] Instance sysmontick_into_val_typed
+   :
+  IntoValTyped (runtime.sysmontick.t) (runtime.sysmontick).
+Proof. Admitted.
+
+End def.
+End sysmontick.
+
+Module updateMaxProcsGState.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance updateMaxProcsGState_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.updateMaxProcsGState.t). Admitted.
+
+#[global] Instance updateMaxProcsGState_into_val_typed
+   :
+  IntoValTyped (runtime.updateMaxProcsGState.t) (runtime.updateMaxProcsGState).
+Proof. Admitted.
+
+End def.
+End updateMaxProcsGState.
+
+Module pMask.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance pMask_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.pMask.t). Admitted.
+
+#[global] Instance pMask_into_val_typed
+   :
+  IntoValTyped (runtime.pMask.t) (runtime.pMask).
+Proof. Admitted.
+
+End def.
+End pMask.
+
+Module gQueue.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance gQueue_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.gQueue.t). Admitted.
+
+#[global] Instance gQueue_into_val_typed
+   :
+  IntoValTyped (runtime.gQueue.t) (runtime.gQueue).
+Proof. Admitted.
+
+End def.
+End gQueue.
+
+Module gList.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance gList_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.gList.t). Admitted.
+
+#[global] Instance gList_into_val_typed
+   :
+  IntoValTyped (runtime.gList.t) (runtime.gList).
+Proof. Admitted.
+
+End def.
+End gList.
+
+Module randomOrder.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance randomOrder_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.randomOrder.t). Admitted.
+
+#[global] Instance randomOrder_into_val_typed
+   :
+  IntoValTyped (runtime.randomOrder.t) (runtime.randomOrder).
+Proof. Admitted.
+
+End def.
+End randomOrder.
+
+Module randomEnum.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance randomEnum_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.randomEnum.t). Admitted.
+
+#[global] Instance randomEnum_into_val_typed
+   :
+  IntoValTyped (runtime.randomEnum.t) (runtime.randomEnum).
+Proof. Admitted.
+
+End def.
+End randomEnum.
+
+Module initTask.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance initTask_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.initTask.t). Admitted.
+
+#[global] Instance initTask_into_val_typed
+   :
+  IntoValTyped (runtime.initTask.t) (runtime.initTask).
+Proof. Admitted.
+
+End def.
+End initTask.
+
+Module tracestat.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance tracestat_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.tracestat.t). Admitted.
+
+#[global] Instance tracestat_into_val_typed
+   :
+  IntoValTyped (runtime.tracestat.t) (runtime.tracestat).
+Proof. Admitted.
+
+End def.
+End tracestat.
+
+Module profBuf.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance profBuf_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.profBuf.t). Admitted.
+
+#[global] Instance profBuf_into_val_typed
+   :
+  IntoValTyped (runtime.profBuf.t) (runtime.profBuf).
+Proof. Admitted.
+
+End def.
+End profBuf.
+
+Module profAtomic.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance profAtomic_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.profAtomic.t). Admitted.
+
+#[global] Instance profAtomic_into_val_typed
+   :
+  IntoValTyped (runtime.profAtomic.t) (runtime.profAtomic).
+Proof. Admitted.
+
+End def.
+End profAtomic.
+
+Module profIndex.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance profIndex_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.profIndex.t). Admitted.
+
+#[global] Instance profIndex_into_val_typed
+   :
+  IntoValTyped (runtime.profIndex.t) (runtime.profIndex).
+Proof. Admitted.
+
+End def.
+End profIndex.
+
+Module profBufReadMode.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance profBufReadMode_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.profBufReadMode.t). Admitted.
+
+#[global] Instance profBufReadMode_into_val_typed
+   :
+  IntoValTyped (runtime.profBufReadMode.t) (runtime.profBufReadMode).
+Proof. Admitted.
+
+End def.
+End profBufReadMode.
+
+Module ticksType.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ticksType_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.ticksType.t). Admitted.
+
+#[global] Instance ticksType_into_val_typed
+   :
+  IntoValTyped (runtime.ticksType.t) (runtime.ticksType).
+Proof. Admitted.
+
+End def.
+End ticksType.
+
+Module godebugInc.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance godebugInc_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.godebugInc.t). Admitted.
+
+#[global] Instance godebugInc_into_val_typed
+   :
+  IntoValTyped (runtime.godebugInc.t) (runtime.godebugInc).
+Proof. Admitted.
+
+End def.
+End godebugInc.
+
+Module dbgVar.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance dbgVar_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.dbgVar.t). Admitted.
+
+#[global] Instance dbgVar_into_val_typed
+   :
+  IntoValTyped (runtime.dbgVar.t) (runtime.dbgVar).
+Proof. Admitted.
+
+End def.
+End dbgVar.
+
+Module mutex.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance mutex_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.mutex.t). Admitted.
+
+#[global] Instance mutex_into_val_typed
+   :
+  IntoValTyped (runtime.mutex.t) (runtime.mutex).
+Proof. Admitted.
+
+End def.
+End mutex.
+
+Module funcval.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance funcval_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.funcval.t). Admitted.
+
+#[global] Instance funcval_into_val_typed
+   :
+  IntoValTyped (runtime.funcval.t) (runtime.funcval).
+Proof. Admitted.
+
+End def.
+End funcval.
+
+Module iface.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance iface_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.iface.t). Admitted.
+
+#[global] Instance iface_into_val_typed
+   :
+  IntoValTyped (runtime.iface.t) (runtime.iface).
+Proof. Admitted.
+
+End def.
+End iface.
+
+Module eface.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance eface_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.eface.t). Admitted.
+
+#[global] Instance eface_into_val_typed
+   :
+  IntoValTyped (runtime.eface.t) (runtime.eface).
+Proof. Admitted.
+
+End def.
+End eface.
+
+Module guintptr.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance guintptr_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.guintptr.t). Admitted.
+
+#[global] Instance guintptr_into_val_typed
+   :
+  IntoValTyped (runtime.guintptr.t) (runtime.guintptr).
+Proof. Admitted.
+
+End def.
+End guintptr.
+
+Module puintptr.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance puintptr_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.puintptr.t). Admitted.
+
+#[global] Instance puintptr_into_val_typed
+   :
+  IntoValTyped (runtime.puintptr.t) (runtime.puintptr).
+Proof. Admitted.
+
+End def.
+End puintptr.
+
+Module muintptr.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance muintptr_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.muintptr.t). Admitted.
+
+#[global] Instance muintptr_into_val_typed
+   :
+  IntoValTyped (runtime.muintptr.t) (runtime.muintptr).
+Proof. Admitted.
+
+End def.
+End muintptr.
+
+Module gobuf.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance gobuf_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.gobuf.t). Admitted.
+
+#[global] Instance gobuf_into_val_typed
+   :
+  IntoValTyped (runtime.gobuf.t) (runtime.gobuf).
+Proof. Admitted.
+
+End def.
+End gobuf.
+
+Module sudog.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance sudog_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.sudog.t). Admitted.
+
+#[global] Instance sudog_into_val_typed
+   :
+  IntoValTyped (runtime.sudog.t) (runtime.sudog).
+Proof. Admitted.
+
+End def.
+End sudog.
+
+Module libcall.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance libcall_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.libcall.t). Admitted.
+
+#[global] Instance libcall_into_val_typed
+   :
+  IntoValTyped (runtime.libcall.t) (runtime.libcall).
+Proof. Admitted.
+
+End def.
+End libcall.
+
+Module stack.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance stack_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.stack.t). Admitted.
+
+#[global] Instance stack_into_val_typed
+   :
+  IntoValTyped (runtime.stack.t) (runtime.stack).
+Proof. Admitted.
+
+End def.
+End stack.
+
+Module heldLockInfo.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance heldLockInfo_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.heldLockInfo.t). Admitted.
+
+#[global] Instance heldLockInfo_into_val_typed
+   :
+  IntoValTyped (runtime.heldLockInfo.t) (runtime.heldLockInfo).
+Proof. Admitted.
+
+End def.
+End heldLockInfo.
+
+Module g.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance g_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.g.t). Admitted.
+
+#[global] Instance g_into_val_typed
+   :
+  IntoValTyped (runtime.g.t) (runtime.g).
+Proof. Admitted.
+
+End def.
+End g.
+
+Module m.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance m_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.m.t). Admitted.
+
+#[global] Instance m_into_val_typed
+   :
+  IntoValTyped (runtime.m.t) (runtime.m).
+Proof. Admitted.
+
+End def.
+End m.
+
+Module mPadded.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance mPadded_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.mPadded.t). Admitted.
+
+#[global] Instance mPadded_into_val_typed
+   :
+  IntoValTyped (runtime.mPadded.t) (runtime.mPadded).
+Proof. Admitted.
+
+End def.
+End mPadded.
+
+Module p.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance p_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.p.t). Admitted.
+
+#[global] Instance p_into_val_typed
+   :
+  IntoValTyped (runtime.p.t) (runtime.p).
+Proof. Admitted.
+
+End def.
+End p.
+
+Module schedt.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance schedt_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.schedt.t). Admitted.
+
+#[global] Instance schedt_into_val_typed
+   :
+  IntoValTyped (runtime.schedt.t) (runtime.schedt).
+Proof. Admitted.
+
+End def.
+End schedt.
+
+Module _func.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance _func_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime._func.t). Admitted.
+
+#[global] Instance _func_into_val_typed
+   :
+  IntoValTyped (runtime._func.t) (runtime._func).
+Proof. Admitted.
+
+End def.
+End _func.
+
+Module funcinl.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance funcinl_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.funcinl.t). Admitted.
+
+#[global] Instance funcinl_into_val_typed
+   :
+  IntoValTyped (runtime.funcinl.t) (runtime.funcinl).
+Proof. Admitted.
+
+End def.
+End funcinl.
+
+Module lfnode.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance lfnode_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.lfnode.t). Admitted.
+
+#[global] Instance lfnode_into_val_typed
+   :
+  IntoValTyped (runtime.lfnode.t) (runtime.lfnode).
+Proof. Admitted.
+
+End def.
+End lfnode.
+
+Module forcegcstate.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance forcegcstate_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.forcegcstate.t). Admitted.
+
+#[global] Instance forcegcstate_into_val_typed
+   :
+  IntoValTyped (runtime.forcegcstate.t) (runtime.forcegcstate).
+Proof. Admitted.
+
+End def.
+End forcegcstate.
+
+Module _defer.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance _defer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime._defer.t). Admitted.
+
+#[global] Instance _defer_into_val_typed
+   :
+  IntoValTyped (runtime._defer.t) (runtime._defer).
+Proof. Admitted.
+
+End def.
+End _defer.
+
+Module _panic.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance _panic_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime._panic.t). Admitted.
+
+#[global] Instance _panic_into_val_typed
+   :
+  IntoValTyped (runtime._panic.t) (runtime._panic).
+Proof. Admitted.
+
+End def.
+End _panic.
+
+Module savedOpenDeferState.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance savedOpenDeferState_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.savedOpenDeferState.t). Admitted.
+
+#[global] Instance savedOpenDeferState_into_val_typed
+   :
+  IntoValTyped (runtime.savedOpenDeferState.t) (runtime.savedOpenDeferState).
+Proof. Admitted.
+
+End def.
+End savedOpenDeferState.
+
+Module ancestorInfo.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ancestorInfo_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.ancestorInfo.t). Admitted.
+
+#[global] Instance ancestorInfo_into_val_typed
+   :
+  IntoValTyped (runtime.ancestorInfo.t) (runtime.ancestorInfo).
+Proof. Admitted.
+
+End def.
+End ancestorInfo.
+
+Module waitReason.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance waitReason_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.waitReason.t). Admitted.
+
+#[global] Instance waitReason_into_val_typed
+   :
+  IntoValTyped (runtime.waitReason.t) (runtime.waitReason).
+Proof. Admitted.
+
+End def.
+End waitReason.
+
+Module rwmutex.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance rwmutex_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.rwmutex.t). Admitted.
+
+#[global] Instance rwmutex_into_val_typed
+   :
+  IntoValTyped (runtime.rwmutex.t) (runtime.rwmutex).
+Proof. Admitted.
+
+End def.
+End rwmutex.
+
+Module scase.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance scase_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.scase.t). Admitted.
+
+#[global] Instance scase_into_val_typed
+   :
+  IntoValTyped (runtime.scase.t) (runtime.scase).
+Proof. Admitted.
+
+End def.
+End scase.
+
+Module runtimeSelect.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance runtimeSelect_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.runtimeSelect.t). Admitted.
+
+#[global] Instance runtimeSelect_into_val_typed
+   :
+  IntoValTyped (runtime.runtimeSelect.t) (runtime.runtimeSelect).
+Proof. Admitted.
+
+End def.
+End runtimeSelect.
+
+Module selectDir.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance selectDir_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.selectDir.t). Admitted.
+
+#[global] Instance selectDir_into_val_typed
+   :
+  IntoValTyped (runtime.selectDir.t) (runtime.selectDir).
+Proof. Admitted.
+
+End def.
+End selectDir.
+
+Module semaRoot.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance semaRoot_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.semaRoot.t). Admitted.
+
+#[global] Instance semaRoot_into_val_typed
+   :
+  IntoValTyped (runtime.semaRoot.t) (runtime.semaRoot).
+Proof. Admitted.
+
+End def.
+End semaRoot.
+
+Module semTable.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance semTable_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.semTable.t). Admitted.
+
+#[global] Instance semTable_into_val_typed
+   :
+  IntoValTyped (runtime.semTable.t) (runtime.semTable).
+Proof. Admitted.
+
+End def.
+End semTable.
+
+Module semaProfileFlags.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance semaProfileFlags_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.semaProfileFlags.t). Admitted.
+
+#[global] Instance semaProfileFlags_into_val_typed
+   :
+  IntoValTyped (runtime.semaProfileFlags.t) (runtime.semaProfileFlags).
+Proof. Admitted.
+
+End def.
+End semaProfileFlags.
+
+Module notifyList.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance notifyList_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.notifyList.t). Admitted.
+
+#[global] Instance notifyList_into_val_typed
+   :
+  IntoValTyped (runtime.notifyList.t) (runtime.notifyList).
+Proof. Admitted.
+
+End def.
+End notifyList.
+
+Module sigctxt.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance sigctxt_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.sigctxt.t). Admitted.
+
+#[global] Instance sigctxt_into_val_typed
+   :
+  IntoValTyped (runtime.sigctxt.t) (runtime.sigctxt).
+Proof. Admitted.
+
+End def.
+End sigctxt.
+
+Module sigTabT.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance sigTabT_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.sigTabT.t). Admitted.
+
+#[global] Instance sigTabT_into_val_typed
+   :
+  IntoValTyped (runtime.sigTabT.t) (runtime.sigTabT).
+Proof. Admitted.
+
+End def.
+End sigTabT.
+
+Module gsignalStack.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance gsignalStack_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.gsignalStack.t). Admitted.
+
+#[global] Instance gsignalStack_into_val_typed
+   :
+  IntoValTyped (runtime.gsignalStack.t) (runtime.gsignalStack).
+Proof. Admitted.
+
+End def.
+End gsignalStack.
+
+Module slice.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance slice_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.slice.t). Admitted.
+
+#[global] Instance slice_into_val_typed
+   :
+  IntoValTyped (runtime.slice.t) (runtime.slice).
+Proof. Admitted.
+
+End def.
+End slice.
+
+Module notInHeapSlice.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance notInHeapSlice_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.notInHeapSlice.t). Admitted.
+
+#[global] Instance notInHeapSlice_into_val_typed
+   :
+  IntoValTyped (runtime.notInHeapSlice.t) (runtime.notInHeapSlice).
+Proof. Admitted.
+
+End def.
+End notInHeapSlice.
+
+Module stackpoolItem.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance stackpoolItem_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.stackpoolItem.t). Admitted.
+
+#[global] Instance stackpoolItem_into_val_typed
+   :
+  IntoValTyped (runtime.stackpoolItem.t) (runtime.stackpoolItem).
+Proof. Admitted.
+
+End def.
+End stackpoolItem.
+
+Module adjustinfo.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance adjustinfo_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.adjustinfo.t). Admitted.
+
+#[global] Instance adjustinfo_into_val_typed
+   :
+  IntoValTyped (runtime.adjustinfo.t) (runtime.adjustinfo).
+Proof. Admitted.
+
+End def.
+End adjustinfo.
+
+Module bitvector.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance bitvector_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.bitvector.t). Admitted.
+
+#[global] Instance bitvector_into_val_typed
+   :
+  IntoValTyped (runtime.bitvector.t) (runtime.bitvector).
+Proof. Admitted.
+
+End def.
+End bitvector.
+
+Module stackObjectRecord.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance stackObjectRecord_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.stackObjectRecord.t). Admitted.
+
+#[global] Instance stackObjectRecord_into_val_typed
+   :
+  IntoValTyped (runtime.stackObjectRecord.t) (runtime.stackObjectRecord).
+Proof. Admitted.
+
+End def.
+End stackObjectRecord.
+
+Module stkframe.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance stkframe_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.stkframe.t). Admitted.
+
+#[global] Instance stkframe_into_val_typed
+   :
+  IntoValTyped (runtime.stkframe.t) (runtime.stkframe).
+Proof. Admitted.
+
+End def.
+End stkframe.
+
+Module reflectMethodValue.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance reflectMethodValue_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.reflectMethodValue.t). Admitted.
+
+#[global] Instance reflectMethodValue_into_val_typed
+   :
+  IntoValTyped (runtime.reflectMethodValue.t) (runtime.reflectMethodValue).
+Proof. Admitted.
+
+End def.
+End reflectMethodValue.
+
+Module tmpBuf.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance tmpBuf_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.tmpBuf.t). Admitted.
+
+#[global] Instance tmpBuf_into_val_typed
+   :
+  IntoValTyped (runtime.tmpBuf.t) (runtime.tmpBuf).
+Proof. Admitted.
+
+End def.
+End tmpBuf.
+
+Module stringStruct.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance stringStruct_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.stringStruct.t). Admitted.
+
+#[global] Instance stringStruct_into_val_typed
+   :
+  IntoValTyped (runtime.stringStruct.t) (runtime.stringStruct).
+Proof. Admitted.
+
+End def.
+End stringStruct.
+
+Module stringStructDWARF.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance stringStructDWARF_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.stringStructDWARF.t). Admitted.
+
+#[global] Instance stringStructDWARF_into_val_typed
+   :
+  IntoValTyped (runtime.stringStructDWARF.t) (runtime.stringStructDWARF).
+Proof. Admitted.
+
+End def.
+End stringStructDWARF.
+
+Module neverCallThisFunction.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance neverCallThisFunction_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.neverCallThisFunction.t). Admitted.
+
+#[global] Instance neverCallThisFunction_into_val_typed
+   :
+  IntoValTyped (runtime.neverCallThisFunction.t) (runtime.neverCallThisFunction).
+Proof. Admitted.
+
+End def.
+End neverCallThisFunction.
+
+Module Frames.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Frames_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.Frames.t). Admitted.
+
+#[global] Instance Frames_into_val_typed
+   :
+  IntoValTyped (runtime.Frames.t) (runtime.Frames).
+Proof. Admitted.
+
+End def.
+End Frames.
+
+Module Frame.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Frame_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.Frame.t). Admitted.
+
+#[global] Instance Frame_into_val_typed
+   :
+  IntoValTyped (runtime.Frame.t) (runtime.Frame).
+Proof. Admitted.
+
+End def.
+End Frame.
+
+Module Func.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Func_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.Func.t). Admitted.
+
+#[global] Instance Func_into_val_typed
+   :
+  IntoValTyped (runtime.Func.t) (runtime.Func).
+Proof. Admitted.
+
+End def.
+End Func.
+
+Module pcHeader.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance pcHeader_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.pcHeader.t). Admitted.
+
+#[global] Instance pcHeader_into_val_typed
+   :
+  IntoValTyped (runtime.pcHeader.t) (runtime.pcHeader).
+Proof. Admitted.
+
+End def.
+End pcHeader.
+
+Module moduledata.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance moduledata_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.moduledata.t). Admitted.
+
+#[global] Instance moduledata_into_val_typed
+   :
+  IntoValTyped (runtime.moduledata.t) (runtime.moduledata).
+Proof. Admitted.
+
+End def.
+End moduledata.
+
+Module modulehash.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance modulehash_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.modulehash.t). Admitted.
+
+#[global] Instance modulehash_into_val_typed
+   :
+  IntoValTyped (runtime.modulehash.t) (runtime.modulehash).
+Proof. Admitted.
+
+End def.
+End modulehash.
+
+Module functab.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance functab_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.functab.t). Admitted.
+
+#[global] Instance functab_into_val_typed
+   :
+  IntoValTyped (runtime.functab.t) (runtime.functab).
+Proof. Admitted.
+
+End def.
+End functab.
+
+Module textsect.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance textsect_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.textsect.t). Admitted.
+
+#[global] Instance textsect_into_val_typed
+   :
+  IntoValTyped (runtime.textsect.t) (runtime.textsect).
+Proof. Admitted.
+
+End def.
+End textsect.
+
+Module findfuncbucket.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance findfuncbucket_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.findfuncbucket.t). Admitted.
+
+#[global] Instance findfuncbucket_into_val_typed
+   :
+  IntoValTyped (runtime.findfuncbucket.t) (runtime.findfuncbucket).
+Proof. Admitted.
+
+End def.
+End findfuncbucket.
+
+Module funcInfo.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance funcInfo_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.funcInfo.t). Admitted.
+
+#[global] Instance funcInfo_into_val_typed
+   :
+  IntoValTyped (runtime.funcInfo.t) (runtime.funcInfo).
+Proof. Admitted.
+
+End def.
+End funcInfo.
+
+Module srcFunc.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance srcFunc_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.srcFunc.t). Admitted.
+
+#[global] Instance srcFunc_into_val_typed
+   :
+  IntoValTyped (runtime.srcFunc.t) (runtime.srcFunc).
+Proof. Admitted.
+
+End def.
+End srcFunc.
+
+Module pcvalueCache.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance pcvalueCache_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.pcvalueCache.t). Admitted.
+
+#[global] Instance pcvalueCache_into_val_typed
+   :
+  IntoValTyped (runtime.pcvalueCache.t) (runtime.pcvalueCache).
+Proof. Admitted.
+
+End def.
+End pcvalueCache.
+
+Module pcvalueCacheEnt.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance pcvalueCacheEnt_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.pcvalueCacheEnt.t). Admitted.
+
+#[global] Instance pcvalueCacheEnt_into_val_typed
+   :
+  IntoValTyped (runtime.pcvalueCacheEnt.t) (runtime.pcvalueCacheEnt).
+Proof. Admitted.
+
+End def.
+End pcvalueCacheEnt.
+
+Module stackmap.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance stackmap_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.stackmap.t). Admitted.
+
+#[global] Instance stackmap_into_val_typed
+   :
+  IntoValTyped (runtime.stackmap.t) (runtime.stackmap).
+Proof. Admitted.
+
+End def.
+End stackmap.
+
+Module inlinedCall.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance inlinedCall_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.inlinedCall.t). Admitted.
+
+#[global] Instance inlinedCall_into_val_typed
+   :
+  IntoValTyped (runtime.inlinedCall.t) (runtime.inlinedCall).
+Proof. Admitted.
+
+End def.
+End inlinedCall.
+
+Module inlineUnwinder.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance inlineUnwinder_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.inlineUnwinder.t). Admitted.
+
+#[global] Instance inlineUnwinder_into_val_typed
+   :
+  IntoValTyped (runtime.inlineUnwinder.t) (runtime.inlineUnwinder).
+Proof. Admitted.
+
+End def.
+End inlineUnwinder.
+
+Module inlineFrame.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance inlineFrame_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.inlineFrame.t). Admitted.
+
+#[global] Instance inlineFrame_into_val_typed
+   :
+  IntoValTyped (runtime.inlineFrame.t) (runtime.inlineFrame).
+Proof. Admitted.
+
+End def.
+End inlineFrame.
+
+Module synctestBubble.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance synctestBubble_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.synctestBubble.t). Admitted.
+
+#[global] Instance synctestBubble_into_val_typed
+   :
+  IntoValTyped (runtime.synctestBubble.t) (runtime.synctestBubble).
+Proof. Admitted.
+
+End def.
+End synctestBubble.
+
+Module synctestDeadlockError.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance synctestDeadlockError_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.synctestDeadlockError.t). Admitted.
+
+#[global] Instance synctestDeadlockError_into_val_typed
+   :
+  IntoValTyped (runtime.synctestDeadlockError.t) (runtime.synctestDeadlockError).
+Proof. Admitted.
+
+End def.
+End synctestDeadlockError.
+
+Module specialBubble.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance specialBubble_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.specialBubble.t). Admitted.
+
+#[global] Instance specialBubble_into_val_typed
+   :
+  IntoValTyped (runtime.specialBubble.t) (runtime.specialBubble).
+Proof. Admitted.
+
+End def.
+End specialBubble.
+
+Module taggedPointer.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance taggedPointer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.taggedPointer.t). Admitted.
+
+#[global] Instance taggedPointer_into_val_typed
+   :
+  IntoValTyped (runtime.taggedPointer.t) (runtime.taggedPointer).
+Proof. Admitted.
+
+End def.
+End taggedPointer.
+
+Module timer.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance timer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.timer.t). Admitted.
+
+#[global] Instance timer_into_val_typed
+   :
+  IntoValTyped (runtime.timer.t) (runtime.timer).
+Proof. Admitted.
+
+End def.
+End timer.
+
+Module timers.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance timers_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.timers.t). Admitted.
+
+#[global] Instance timers_into_val_typed
+   :
+  IntoValTyped (runtime.timers.t) (runtime.timers).
+Proof. Admitted.
+
+End def.
+End timers.
+
+Module timerWhen.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance timerWhen_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.timerWhen.t). Admitted.
+
+#[global] Instance timerWhen_into_val_typed
+   :
+  IntoValTyped (runtime.timerWhen.t) (runtime.timerWhen).
+Proof. Admitted.
+
+End def.
+End timerWhen.
+
+Module timeTimer.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance timeTimer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.timeTimer.t). Admitted.
+
+#[global] Instance timeTimer_into_val_typed
+   :
+  IntoValTyped (runtime.timeTimer.t) (runtime.timeTimer).
+Proof. Admitted.
+
+End def.
+End timeTimer.
+
+Module traceAdvancerState.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance traceAdvancerState_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.traceAdvancerState.t). Admitted.
+
+#[global] Instance traceAdvancerState_into_val_typed
+   :
+  IntoValTyped (runtime.traceAdvancerState.t) (runtime.traceAdvancerState).
+Proof. Admitted.
+
+End def.
+End traceAdvancerState.
+
+Module wakeableSleep.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance wakeableSleep_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.wakeableSleep.t). Admitted.
+
+#[global] Instance wakeableSleep_into_val_typed
+   :
+  IntoValTyped (runtime.wakeableSleep.t) (runtime.wakeableSleep).
+Proof. Admitted.
+
+End def.
+End wakeableSleep.
+
+Module unwindFlags.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance unwindFlags_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.unwindFlags.t). Admitted.
+
+#[global] Instance unwindFlags_into_val_typed
+   :
+  IntoValTyped (runtime.unwindFlags.t) (runtime.unwindFlags).
+Proof. Admitted.
+
+End def.
+End unwindFlags.
+
+Module unwinder.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance unwinder_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.unwinder.t). Admitted.
+
+#[global] Instance unwinder_into_val_typed
+   :
+  IntoValTyped (runtime.unwinder.t) (runtime.unwinder).
+Proof. Admitted.
+
+End def.
+End unwinder.
+
+Module cgoTracebackArg.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance cgoTracebackArg_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.cgoTracebackArg.t). Admitted.
+
+#[global] Instance cgoTracebackArg_into_val_typed
+   :
+  IntoValTyped (runtime.cgoTracebackArg.t) (runtime.cgoTracebackArg).
+Proof. Admitted.
+
+End def.
+End cgoTracebackArg.
+
+Module cgoContextArg.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance cgoContextArg_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.cgoContextArg.t). Admitted.
+
+#[global] Instance cgoContextArg_into_val_typed
+   :
+  IntoValTyped (runtime.cgoContextArg.t) (runtime.cgoContextArg).
+Proof. Admitted.
+
+End def.
+End cgoContextArg.
+
+Module cgoSymbolizerArg.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance cgoSymbolizerArg_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.cgoSymbolizerArg.t). Admitted.
+
+#[global] Instance cgoSymbolizerArg_into_val_typed
+   :
+  IntoValTyped (runtime.cgoSymbolizerArg.t) (runtime.cgoSymbolizerArg).
+Proof. Admitted.
+
+End def.
+End cgoSymbolizerArg.
+
+Module traceWriter.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance traceWriter_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.traceWriter.t). Admitted.
+
+#[global] Instance traceWriter_into_val_typed
+   :
+  IntoValTyped (runtime.traceWriter.t) (runtime.traceWriter).
+Proof. Admitted.
+
+End def.
+End traceWriter.
+
+Module traceBufQueue.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance traceBufQueue_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.traceBufQueue.t). Admitted.
+
+#[global] Instance traceBufQueue_into_val_typed
+   :
+  IntoValTyped (runtime.traceBufQueue.t) (runtime.traceBufQueue).
+Proof. Admitted.
+
+End def.
+End traceBufQueue.
+
+Module traceBufHeader.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance traceBufHeader_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.traceBufHeader.t). Admitted.
+
+#[global] Instance traceBufHeader_into_val_typed
+   :
+  IntoValTyped (runtime.traceBufHeader.t) (runtime.traceBufHeader).
+Proof. Admitted.
+
+End def.
+End traceBufHeader.
+
+Module traceBuf.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance traceBuf_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.traceBuf.t). Admitted.
+
+#[global] Instance traceBuf_into_val_typed
+   :
+  IntoValTyped (runtime.traceBuf.t) (runtime.traceBuf).
+Proof. Admitted.
+
+End def.
+End traceBuf.
+
+Module traceArg.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance traceArg_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.traceArg.t). Admitted.
+
+#[global] Instance traceArg_into_val_typed
+   :
+  IntoValTyped (runtime.traceArg.t) (runtime.traceArg).
+Proof. Admitted.
+
+End def.
+End traceArg.
+
+Module traceEventWriter.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance traceEventWriter_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.traceEventWriter.t). Admitted.
+
+#[global] Instance traceEventWriter_into_val_typed
+   :
+  IntoValTyped (runtime.traceEventWriter.t) (runtime.traceEventWriter).
+Proof. Admitted.
+
+End def.
+End traceEventWriter.
+
+Module traceMap.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance traceMap_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.traceMap.t). Admitted.
+
+#[global] Instance traceMap_into_val_typed
+   :
+  IntoValTyped (runtime.traceMap.t) (runtime.traceMap).
+Proof. Admitted.
+
+End def.
+End traceMap.
+
+Module traceMapNode.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance traceMapNode_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.traceMapNode.t). Admitted.
+
+#[global] Instance traceMapNode_into_val_typed
+   :
+  IntoValTyped (runtime.traceMapNode.t) (runtime.traceMapNode).
+Proof. Admitted.
+
+End def.
+End traceMapNode.
+
+Module traceRegionAlloc.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance traceRegionAlloc_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.traceRegionAlloc.t). Admitted.
+
+#[global] Instance traceRegionAlloc_into_val_typed
+   :
+  IntoValTyped (runtime.traceRegionAlloc.t) (runtime.traceRegionAlloc).
+Proof. Admitted.
+
+End def.
+End traceRegionAlloc.
+
+Module traceRegionAllocBlock.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance traceRegionAllocBlock_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.traceRegionAllocBlock.t). Admitted.
+
+#[global] Instance traceRegionAllocBlock_into_val_typed
+   :
+  IntoValTyped (runtime.traceRegionAllocBlock.t) (runtime.traceRegionAllocBlock).
+Proof. Admitted.
+
+End def.
+End traceRegionAllocBlock.
+
+Module traceRegionAllocBlockHeader.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance traceRegionAllocBlockHeader_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.traceRegionAllocBlockHeader.t). Admitted.
+
+#[global] Instance traceRegionAllocBlockHeader_into_val_typed
+   :
+  IntoValTyped (runtime.traceRegionAllocBlockHeader.t) (runtime.traceRegionAllocBlockHeader).
+Proof. Admitted.
+
+End def.
+End traceRegionAllocBlockHeader.
+
+Module gTraceState.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance gTraceState_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.gTraceState.t). Admitted.
+
+#[global] Instance gTraceState_into_val_typed
+   :
+  IntoValTyped (runtime.gTraceState.t) (runtime.gTraceState).
+Proof. Admitted.
+
+End def.
+End gTraceState.
+
+Module mTraceState.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance mTraceState_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.mTraceState.t). Admitted.
+
+#[global] Instance mTraceState_into_val_typed
+   :
+  IntoValTyped (runtime.mTraceState.t) (runtime.mTraceState).
+Proof. Admitted.
+
+End def.
+End mTraceState.
+
+Module pTraceState.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance pTraceState_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.pTraceState.t). Admitted.
+
+#[global] Instance pTraceState_into_val_typed
+   :
+  IntoValTyped (runtime.pTraceState.t) (runtime.pTraceState).
+Proof. Admitted.
+
+End def.
+End pTraceState.
+
+Module traceBlockReason.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance traceBlockReason_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.traceBlockReason.t). Admitted.
+
+#[global] Instance traceBlockReason_into_val_typed
+   :
+  IntoValTyped (runtime.traceBlockReason.t) (runtime.traceBlockReason).
+Proof. Admitted.
+
+End def.
+End traceBlockReason.
+
+Module traceGoStopReason.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance traceGoStopReason_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.traceGoStopReason.t). Admitted.
+
+#[global] Instance traceGoStopReason_into_val_typed
+   :
+  IntoValTyped (runtime.traceGoStopReason.t) (runtime.traceGoStopReason).
+Proof. Admitted.
+
+End def.
+End traceGoStopReason.
+
+Module traceLocker.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance traceLocker_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.traceLocker.t). Admitted.
+
+#[global] Instance traceLocker_into_val_typed
+   :
+  IntoValTyped (runtime.traceLocker.t) (runtime.traceLocker).
+Proof. Admitted.
+
+End def.
+End traceLocker.
+
+Module traceStackTable.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance traceStackTable_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.traceStackTable.t). Admitted.
+
+#[global] Instance traceStackTable_into_val_typed
+   :
+  IntoValTyped (runtime.traceStackTable.t) (runtime.traceStackTable).
+Proof. Admitted.
+
+End def.
+End traceStackTable.
+
+Module traceFrame.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance traceFrame_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.traceFrame.t). Admitted.
+
+#[global] Instance traceFrame_into_val_typed
+   :
+  IntoValTyped (runtime.traceFrame.t) (runtime.traceFrame).
+Proof. Admitted.
+
+End def.
+End traceFrame.
+
+Module traceSchedResourceState.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance traceSchedResourceState_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.traceSchedResourceState.t). Admitted.
+
+#[global] Instance traceSchedResourceState_into_val_typed
+   :
+  IntoValTyped (runtime.traceSchedResourceState.t) (runtime.traceSchedResourceState).
+Proof. Admitted.
+
+End def.
+End traceSchedResourceState.
+
+Module traceStringTable.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance traceStringTable_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.traceStringTable.t). Admitted.
+
+#[global] Instance traceStringTable_into_val_typed
+   :
+  IntoValTyped (runtime.traceStringTable.t) (runtime.traceStringTable).
+Proof. Admitted.
+
+End def.
+End traceStringTable.
+
+Module traceTime.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance traceTime_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.traceTime.t). Admitted.
+
+#[global] Instance traceTime_into_val_typed
+   :
+  IntoValTyped (runtime.traceTime.t) (runtime.traceTime).
+Proof. Admitted.
+
+End def.
+End traceTime.
+
+Module traceTypeTable.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance traceTypeTable_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.traceTypeTable.t). Admitted.
+
+#[global] Instance traceTypeTable_into_val_typed
+   :
+  IntoValTyped (runtime.traceTypeTable.t) (runtime.traceTypeTable).
+Proof. Admitted.
+
+End def.
+End traceTypeTable.
+
+Module rtype.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance rtype_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.rtype.t). Admitted.
+
+#[global] Instance rtype_into_val_typed
+   :
+  IntoValTyped (runtime.rtype.t) (runtime.rtype).
+Proof. Admitted.
+
+End def.
+End rtype.
+
+Module bitCursor.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance bitCursor_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.bitCursor.t). Admitted.
+
+#[global] Instance bitCursor_into_val_typed
+   :
+  IntoValTyped (runtime.bitCursor.t) (runtime.bitCursor).
+Proof. Admitted.
+
+End def.
+End bitCursor.
+
+Module _typePair.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance _typePair_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime._typePair.t). Admitted.
+
+#[global] Instance _typePair_into_val_typed
+   :
+  IntoValTyped (runtime._typePair.t) (runtime._typePair).
+Proof. Admitted.
+
+End def.
+End _typePair.
+
+Module elfSym.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance elfSym_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.elfSym.t). Admitted.
+
+#[global] Instance elfSym_into_val_typed
+   :
+  IntoValTyped (runtime.elfSym.t) (runtime.elfSym).
+Proof. Admitted.
+
+End def.
+End elfSym.
+
+Module elfVerdef.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance elfVerdef_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.elfVerdef.t). Admitted.
+
+#[global] Instance elfVerdef_into_val_typed
+   :
+  IntoValTyped (runtime.elfVerdef.t) (runtime.elfVerdef).
+Proof. Admitted.
+
+End def.
+End elfVerdef.
+
+Module elfEhdr.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance elfEhdr_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.elfEhdr.t). Admitted.
+
+#[global] Instance elfEhdr_into_val_typed
+   :
+  IntoValTyped (runtime.elfEhdr.t) (runtime.elfEhdr).
+Proof. Admitted.
+
+End def.
+End elfEhdr.
+
+Module elfPhdr.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance elfPhdr_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.elfPhdr.t). Admitted.
+
+#[global] Instance elfPhdr_into_val_typed
+   :
+  IntoValTyped (runtime.elfPhdr.t) (runtime.elfPhdr).
+Proof. Admitted.
+
+End def.
+End elfPhdr.
+
+Module elfShdr.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance elfShdr_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.elfShdr.t). Admitted.
+
+#[global] Instance elfShdr_into_val_typed
+   :
+  IntoValTyped (runtime.elfShdr.t) (runtime.elfShdr).
+Proof. Admitted.
+
+End def.
+End elfShdr.
+
+Module elfDyn.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance elfDyn_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.elfDyn.t). Admitted.
+
+#[global] Instance elfDyn_into_val_typed
+   :
+  IntoValTyped (runtime.elfDyn.t) (runtime.elfDyn).
+Proof. Admitted.
+
+End def.
+End elfDyn.
+
+Module elfVerdaux.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance elfVerdaux_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.elfVerdaux.t). Admitted.
+
+#[global] Instance elfVerdaux_into_val_typed
+   :
+  IntoValTyped (runtime.elfVerdaux.t) (runtime.elfVerdaux).
+Proof. Admitted.
+
+End def.
+End elfVerdaux.
+
+Module vdsoSymbolKey.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance vdsoSymbolKey_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.vdsoSymbolKey.t). Admitted.
+
+#[global] Instance vdsoSymbolKey_into_val_typed
+   :
+  IntoValTyped (runtime.vdsoSymbolKey.t) (runtime.vdsoSymbolKey).
+Proof. Admitted.
+
+End def.
+End vdsoSymbolKey.
+
+Module vdsoVersionKey.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance vdsoVersionKey_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.vdsoVersionKey.t). Admitted.
+
+#[global] Instance vdsoVersionKey_into_val_typed
+   :
+  IntoValTyped (runtime.vdsoVersionKey.t) (runtime.vdsoVersionKey).
+Proof. Admitted.
+
+End def.
+End vdsoVersionKey.
+
+Module vdsoInfo.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance vdsoInfo_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.vdsoInfo.t). Admitted.
+
+#[global] Instance vdsoInfo_into_val_typed
+   :
+  IntoValTyped (runtime.vdsoInfo.t) (runtime.vdsoInfo).
+Proof. Admitted.
+
+End def.
+End vdsoInfo.
+
 End runtime.

@@ -8,4 +8,64 @@ Require Export New.code.github_com.goose_lang.primitive.disk.
 Set Default Proof Using "Type".
 
 Module disk.
+Module Disk.
+Section def.
+
+Context `{!heapGS Σ}.
+Context {sem : go.Semantics}.
+Context {package_sem' : disk.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Disk_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (disk.Disk.t). Admitted.
+
+#[global] Instance Disk_into_val_typed
+   :
+  IntoValTyped (disk.Disk.t) (disk.Disk).
+Proof. Admitted.
+
+End def.
+End Disk.
+
+Module FileDisk.
+Section def.
+
+Context `{!heapGS Σ}.
+Context {sem : go.Semantics}.
+Context {package_sem' : disk.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance FileDisk_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (disk.FileDisk.t). Admitted.
+
+#[global] Instance FileDisk_into_val_typed
+   :
+  IntoValTyped (disk.FileDisk.t) (disk.FileDisk).
+Proof. Admitted.
+
+End def.
+End FileDisk.
+
+Module MemDisk.
+Section def.
+
+Context `{!heapGS Σ}.
+Context {sem : go.Semantics}.
+Context {package_sem' : disk.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance MemDisk_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (disk.MemDisk.t). Admitted.
+
+#[global] Instance MemDisk_into_val_typed
+   :
+  IntoValTyped (disk.MemDisk.t) (disk.MemDisk).
+Proof. Admitted.
+
+End def.
+End MemDisk.
+
 End disk.

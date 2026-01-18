@@ -17,7 +17,7 @@ Context {package_sem' : channel.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Program Instance Channel_typed_pointsto `{!TypedPointsto (Σ:=Σ) T'}  :
+#[global]Program Instance Channel_typed_pointsto `{!TypedPointsto (Σ:=Σ) T'}  :
   TypedPointsto (Σ:=Σ) (channel.Channel.t T') :=
   {|
     typed_pointsto_def l dq v :=

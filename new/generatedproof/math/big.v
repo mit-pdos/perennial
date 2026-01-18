@@ -7,4 +7,264 @@ Require Export New.code.math.big.
 Set Default Proof Using "Type".
 
 Module big.
+Module Word.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : big.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Word_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (big.Word.t). Admitted.
+
+#[global] Instance Word_into_val_typed
+   :
+  IntoValTyped (big.Word.t) (big.Word).
+Proof. Admitted.
+
+End def.
+End Word.
+
+Module decimal.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : big.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance decimal_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (big.decimal.t). Admitted.
+
+#[global] Instance decimal_into_val_typed
+   :
+  IntoValTyped (big.decimal.t) (big.decimal).
+Proof. Admitted.
+
+End def.
+End decimal.
+
+Module Float.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : big.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Float_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (big.Float.t). Admitted.
+
+#[global] Instance Float_into_val_typed
+   :
+  IntoValTyped (big.Float.t) (big.Float).
+Proof. Admitted.
+
+End def.
+End Float.
+
+Module ErrNaN.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : big.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ErrNaN_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (big.ErrNaN.t). Admitted.
+
+#[global] Instance ErrNaN_into_val_typed
+   :
+  IntoValTyped (big.ErrNaN.t) (big.ErrNaN).
+Proof. Admitted.
+
+End def.
+End ErrNaN.
+
+Module form.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : big.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance form_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (big.form.t). Admitted.
+
+#[global] Instance form_into_val_typed
+   :
+  IntoValTyped (big.form.t) (big.form).
+Proof. Admitted.
+
+End def.
+End form.
+
+Module RoundingMode.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : big.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance RoundingMode_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (big.RoundingMode.t). Admitted.
+
+#[global] Instance RoundingMode_into_val_typed
+   :
+  IntoValTyped (big.RoundingMode.t) (big.RoundingMode).
+Proof. Admitted.
+
+End def.
+End RoundingMode.
+
+Module Accuracy.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : big.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Accuracy_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (big.Accuracy.t). Admitted.
+
+#[global] Instance Accuracy_into_val_typed
+   :
+  IntoValTyped (big.Accuracy.t) (big.Accuracy).
+Proof. Admitted.
+
+End def.
+End Accuracy.
+
+Module Int.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : big.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Int_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (big.Int.t). Admitted.
+
+#[global] Instance Int_into_val_typed
+   :
+  IntoValTyped (big.Int.t) (big.Int).
+Proof. Admitted.
+
+End def.
+End Int.
+
+Module byteReader.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : big.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance byteReader_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (big.byteReader.t). Admitted.
+
+#[global] Instance byteReader_into_val_typed
+   :
+  IntoValTyped (big.byteReader.t) (big.byteReader).
+Proof. Admitted.
+
+End def.
+End byteReader.
+
+Module nat.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : big.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance nat_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (big.nat.t). Admitted.
+
+#[global] Instance nat_into_val_typed
+   :
+  IntoValTyped (big.nat.t) (big.nat).
+Proof. Admitted.
+
+End def.
+End nat.
+
+Module stack.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : big.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance stack_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (big.stack.t). Admitted.
+
+#[global] Instance stack_into_val_typed
+   :
+  IntoValTyped (big.stack.t) (big.stack).
+Proof. Admitted.
+
+End def.
+End stack.
+
+Module divisor.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : big.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance divisor_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (big.divisor.t). Admitted.
+
+#[global] Instance divisor_into_val_typed
+   :
+  IntoValTyped (big.divisor.t) (big.divisor).
+Proof. Admitted.
+
+End def.
+End divisor.
+
+Module Rat.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : big.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Rat_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (big.Rat.t). Admitted.
+
+#[global] Instance Rat_into_val_typed
+   :
+  IntoValTyped (big.Rat.t) (big.Rat).
+Proof. Admitted.
+
+End def.
+End Rat.
+
 End big.

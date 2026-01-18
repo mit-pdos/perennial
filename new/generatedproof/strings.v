@@ -16,7 +16,7 @@ Context {package_sem' : strings.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Program Instance Builder_typed_pointsto  :
+#[global]Program Instance Builder_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (strings.Builder.t) :=
   {|
     typed_pointsto_def l dq v :=
@@ -35,5 +35,245 @@ Proof. solve_into_val_typed_struct. Qed.
 
 End def.
 End Builder.
+
+Module Reader.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : strings.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Reader_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (strings.Reader.t). Admitted.
+
+#[global] Instance Reader_into_val_typed
+   :
+  IntoValTyped (strings.Reader.t) (strings.Reader).
+Proof. Admitted.
+
+End def.
+End Reader.
+
+Module Replacer.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : strings.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Replacer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (strings.Replacer.t). Admitted.
+
+#[global] Instance Replacer_into_val_typed
+   :
+  IntoValTyped (strings.Replacer.t) (strings.Replacer).
+Proof. Admitted.
+
+End def.
+End Replacer.
+
+Module replacer.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : strings.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance replacer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (strings.replacer.t). Admitted.
+
+#[global] Instance replacer_into_val_typed
+   :
+  IntoValTyped (strings.replacer.t) (strings.replacer).
+Proof. Admitted.
+
+End def.
+End replacer.
+
+Module trieNode.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : strings.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance trieNode_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (strings.trieNode.t). Admitted.
+
+#[global] Instance trieNode_into_val_typed
+   :
+  IntoValTyped (strings.trieNode.t) (strings.trieNode).
+Proof. Admitted.
+
+End def.
+End trieNode.
+
+Module genericReplacer.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : strings.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance genericReplacer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (strings.genericReplacer.t). Admitted.
+
+#[global] Instance genericReplacer_into_val_typed
+   :
+  IntoValTyped (strings.genericReplacer.t) (strings.genericReplacer).
+Proof. Admitted.
+
+End def.
+End genericReplacer.
+
+Module appendSliceWriter.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : strings.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance appendSliceWriter_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (strings.appendSliceWriter.t). Admitted.
+
+#[global] Instance appendSliceWriter_into_val_typed
+   :
+  IntoValTyped (strings.appendSliceWriter.t) (strings.appendSliceWriter).
+Proof. Admitted.
+
+End def.
+End appendSliceWriter.
+
+Module stringWriter.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : strings.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance stringWriter_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (strings.stringWriter.t). Admitted.
+
+#[global] Instance stringWriter_into_val_typed
+   :
+  IntoValTyped (strings.stringWriter.t) (strings.stringWriter).
+Proof. Admitted.
+
+End def.
+End stringWriter.
+
+Module singleStringReplacer.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : strings.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance singleStringReplacer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (strings.singleStringReplacer.t). Admitted.
+
+#[global] Instance singleStringReplacer_into_val_typed
+   :
+  IntoValTyped (strings.singleStringReplacer.t) (strings.singleStringReplacer).
+Proof. Admitted.
+
+End def.
+End singleStringReplacer.
+
+Module byteReplacer.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : strings.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance byteReplacer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (strings.byteReplacer.t). Admitted.
+
+#[global] Instance byteReplacer_into_val_typed
+   :
+  IntoValTyped (strings.byteReplacer.t) (strings.byteReplacer).
+Proof. Admitted.
+
+End def.
+End byteReplacer.
+
+Module byteStringReplacer.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : strings.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance byteStringReplacer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (strings.byteStringReplacer.t). Admitted.
+
+#[global] Instance byteStringReplacer_into_val_typed
+   :
+  IntoValTyped (strings.byteStringReplacer.t) (strings.byteStringReplacer).
+Proof. Admitted.
+
+End def.
+End byteStringReplacer.
+
+Module stringFinder.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : strings.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance stringFinder_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (strings.stringFinder.t). Admitted.
+
+#[global] Instance stringFinder_into_val_typed
+   :
+  IntoValTyped (strings.stringFinder.t) (strings.stringFinder).
+Proof. Admitted.
+
+End def.
+End stringFinder.
+
+Module asciiSet.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : strings.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance asciiSet_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (strings.asciiSet.t). Admitted.
+
+#[global] Instance asciiSet_into_val_typed
+   :
+  IntoValTyped (strings.asciiSet.t) (strings.asciiSet).
+Proof. Admitted.
+
+End def.
+End asciiSet.
 
 End strings.

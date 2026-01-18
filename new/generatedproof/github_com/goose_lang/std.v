@@ -21,7 +21,7 @@ Context {package_sem' : std.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Program Instance JoinHandle_typed_pointsto  :
+#[global]Program Instance JoinHandle_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (std.JoinHandle.t) :=
   {|
     typed_pointsto_def l dq v :=
