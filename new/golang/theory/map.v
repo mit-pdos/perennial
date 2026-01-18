@@ -5,11 +5,8 @@ Set Default Proof Using "Type".
 
 Section defns_and_lemmas.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
-  {core_sem : go.CoreSemantics}
-  {pre_sem : go.PredeclaredSemantics}
-  {map_sem : go.MapSemantics}.
-
-Local Set Default Proof Using "Type core_sem pre_sem map_sem".
+  {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
+Local Set Default Proof Using "All".
 
 (* TODO: reading from nil map. Want to say that an owned map is not nil, which
    requires knowing that wp_ref gives non-null pointers. *)
@@ -85,7 +82,7 @@ Lemma wp_map_insert key_type l (m : gmap K V) k v {Hsafe : SafeMapKey key_type k
   {{{ l ↦$ m }}}
     map.insert key_type #l #k #v
   {{{ RET #(); l ↦$ <[k := v]> m }}}.
-Proof using Inj0 map_sem.
+Proof.
   destruct Hsafe as [[? Hsafe]].
   rewrite own_map_unseal.
   iIntros (?) "Hm HΦ". iNamed "Hm". wp_call. rewrite decide_True //. wp_auto.
@@ -107,7 +104,7 @@ Lemma wp_map_delete l (m : gmap K V) k key_type elem_type {Hsafe : SafeMapKey ke
     #(functions go.delete [go.MapType key_type elem_type])
         #l #k
   {{{ RET #(); l ↦$ delete k m }}}.
-Proof using Inj0 map_sem.
+Proof.
   destruct Hsafe as [[? Hsafe]].
   wp_start as "Hm". rewrite own_map_unseal. iNamed "Hm". rewrite decide_True //. wp_auto.
   wp_apply (_internal_wp_untyped_read with "Hown") as "Hown".
@@ -234,7 +231,7 @@ Lemma wp_map_for_range P stk E (body : func.t) key_type elem_type mref m dq
       (P keys (Z.of_nat (size m)) -∗ Φ execute_val))
   ) -∗
   WP map.for_range key_type elem_type #mref #body @ stk; E {{ Φ }}.
-Proof using Inj0 pre_sem map_sem.
+Proof.
   iIntros "% Hm HΦ".
   wp_call.
   iDestruct (own_map_not_nil with "[$]") as %?.
@@ -352,11 +349,7 @@ Notation "mref ↦$ dq m" := (own_map mref dq m)
 Module test.
   Section proof.
   Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
-    {core_sem : go.CoreSemantics}
-    {pre_sem : go.PredeclaredSemantics}
-    {array_sem : go.ArraySemantics}
-    {slice_sem : go.SliceSemantics}
-    {map_sem : go.MapSemantics}.
+    {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
 
   Definition foo (mref: loc) (m: gmap w64 w64): iProp Σ :=
     own_map mref DfracDiscarded m.

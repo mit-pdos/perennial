@@ -11,8 +11,8 @@ Set Default Proof Using "Type".
 
 Section goose_lang.
 
-  Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} {core_sem : go.CoreSemantics}
-    {pre_sem : go.PredeclaredSemantics}.
+  Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
+    {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
 
   Class AtomicWps V `{!TypedPointsto (Σ:=Σ) V} `{!ZeroVal V} :=
     {
@@ -82,7 +82,8 @@ Qed. *)
 End goose_lang.
 
 Section tac_lemmas.
-  Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} `{!go.CoreSemantics}.
+  Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
+    {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
 
   Class PointsToAccess {V} `{!TypedPointsto V}
     (l : loc) (v : V) dq (P : iProp Σ) (P' : V → iProp Σ) : Prop :=

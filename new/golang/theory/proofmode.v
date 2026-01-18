@@ -4,7 +4,7 @@ From Perennial.Helpers Require Export ipm Tactics.
 From iris.proofmode Require Import coq_tactics.
 (* make sure solve_proper comes from stdpp and not Coq *)
 From stdpp Require Export tactics.
-From New.golang.defn Require Export postlang interface.
+From New.golang.defn Require Export pre.
 From Perennial Require Export base.
 From Ltac2 Require Import Ltac2.
 Import Printf.
@@ -73,7 +73,7 @@ End classes.
 (** Some basic, primitive instances. Adapted to use `IntoVal`. *)
 Section instances.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseGlobalGS Σ, !gooseLocalGS Σ}
-         {core_sem : go.CoreSemantics}.
+         {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
 
 Global Instance wp_injl (v : val) : PureWp True (InjL v) (InjLV v).
 Proof. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
@@ -466,7 +466,7 @@ Proof.
 Qed.
 
 Lemma tac_wp_call_go_func `{ffi_sem: ffi_semantics} `{!ffi_interp ffi}
-  `{!gooseGlobalGS Σ, !gooseLocalGS Σ} `{!go.CoreSemantics}
+  `{!gooseGlobalGS Σ, !gooseLocalGS Σ} {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}
       K f x e v2 Δ Δ' s E Φ :
   MaybeIntoLaterNEnvs 1 Δ Δ' →
   envs_entails Δ' (WP (fill K (subst' x v2 (subst' f #(func.mk f x e) e))) @ s; E {{ Φ }}) →

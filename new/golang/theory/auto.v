@@ -205,7 +205,7 @@ Tactic Notation "wp_auto_lc" int(x) :=
 
 Section bool_lemmas.
 Context {ext : ffi_syntax} {go_lctx : GoLocalContext} {go_gctx : GoGlobalContext}
-  {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}.
+  {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
 Lemma true_neq_false : #true ≠ #false.
 Proof. intros ?%(inj into_val); congruence. Qed.
 Lemma false_neq_true : #false ≠ #true.

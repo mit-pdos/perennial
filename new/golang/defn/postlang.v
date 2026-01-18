@@ -323,15 +323,14 @@ Class TypeRepr t V `{!ZeroVal V} `{!GoSemanticsFunctions} : Prop :=
   }.
 Global Hint Mode TypeRepr ! - - - : typeclass_instances.
 
+
 (** [go.CoreSemantics] defines the basics of when a GoContext is valid,
     excluding predeclared types (including primitives), arrays, slice, map, and
     channels, each of which is in their own file.
 
     The rules prefixed with [_] should not be used in any program proofs. *)
-Class CoreSemantics :=
+Class CoreSemantics `{!GoSemanticsFunctions} : Prop :=
 {
-  (* FIXME: maybe don't put GoSemanticsFunctions in here? *)
-  #[global] core_semantics_data :: GoSemanticsFunctions;
   #[global] basic_into_val_inj :: BasicIntoValInj;
 
   #[global] go_op_step o t args :: IsGoStepPureDet (GoOp o t) args (go_op o t args);

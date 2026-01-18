@@ -209,10 +209,9 @@ Ltac iPkgInit :=
     ).
 
 Section package_init.
-Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
-Context {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}.
-
-Local Set Default Proof Using "Type core_sem pre_sem".
+Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
+  {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
+Local Set Default Proof Using "All".
 
 #[local] Transparent own_initializing.
 Lemma wp_package_init (pkg_name : go_string) `{!PkgInfo pkg_name} (init_func : val) get_is_pkg_init is_pkg_init :

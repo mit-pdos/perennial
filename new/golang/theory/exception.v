@@ -3,7 +3,7 @@ From New.golang.theory Require Export predeclared.
 
 Section wps.
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
-  {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}.
+  {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
 
 Global Instance pure_execute_val (v : val) :
   PureWp True (exception_seq v (execute_val)) (v #()).

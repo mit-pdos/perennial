@@ -102,7 +102,8 @@ Notation "l ↦ dq v" := (typed_pointsto l dq v%V)
                             format "l  ↦ dq  v") : bi_scope.
 
 Section go_wps.
-Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} {core_sem : go.CoreSemantics}.
+Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
+  {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
 
 Global Instance pure_wp_go_step_det i v e :
   go.IsGoStepPureDet i v e →
@@ -220,7 +221,8 @@ Qed.
 End go_wps.
 
 Section mem_lemmas.
-Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} {core_sem : go.CoreSemantics}.
+Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
+  {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
 (* Helper lemmas for establishing [IntoValTyped] *)
 
 Lemma _internal_wp_alloc_untyped stk E v :
@@ -282,7 +284,8 @@ Qed.
 
 End mem_lemmas.
 Section typed_pointsto_instances.
-Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ} {core_sem : go.CoreSemantics}.
+Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
+  {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
 
 Program Global Instance typed_pointsto_loc : TypedPointsto loc :=
   {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.

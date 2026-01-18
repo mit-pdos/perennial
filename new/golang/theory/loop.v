@@ -10,8 +10,8 @@ exported interface of this file. *)
 
 Section wps.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
-  {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}.
-Local Set Default Proof Using "Type core_sem pre_sem".
+  {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
+Local Set Default Proof Using "All".
 
 Global Instance pure_continue_val (v1 : val) :
   PureWp True (exception_seq v1 (continue_val)) (continue_val).

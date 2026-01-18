@@ -10,7 +10,7 @@ End error.
 
 Section into_val_typed_instances.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
-  {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}.
+  {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
 
 Ltac solve_wp_alloc :=
   iIntros "* _ HΦ";
@@ -38,7 +38,7 @@ Existing Class go.is_predeclared.
 Existing Class go.is_predeclared_zero_val.
 #[local] Hint Extern 1 (go.is_predeclared_zero_val ?t ?v) => constructor : typeclass_instances.
 
-Local Set Default Proof Using "Type core_sem pre_sem".
+Local Set Default Proof Using "All".
 Global Instance into_val_typed_uint64 : IntoValTyped w64 go.uint64.
 Proof. solve_into_val_typed. Qed.
 

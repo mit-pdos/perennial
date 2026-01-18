@@ -3,9 +3,7 @@ From New.golang.theory Require Export predeclared.
 
 Section lemmas.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
-  {core_sem : go.CoreSemantics}
-  {pre_sem : go.PredeclaredSemantics}
-  {array_sem : go.ArraySemantics}.
+  {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
 
 Context `{!ZeroVal V}.
 Context `{!TypedPointsto (Σ:=Σ) V}.
@@ -23,7 +21,7 @@ Proof.
   intros. iIntros "* [%Hlen1 H1] [%Hlen2 H2]".
   destruct v1 as [vs1], v2 as [vs2]. simpl in *.
   assert (length vs1 = length vs2) as Hlen by lia.
-  clear -Hlen IntoValTyped0 core_sem array_sem.
+  clear -Hlen IntoValTyped0 pre_sem.
   (iInduction vs1 as [|v1 vs1] "IH" forall (l vs2 Hlen)).
   { simpl in Hlen.
     destruct vs2; simpl in Hlen; try congruence.

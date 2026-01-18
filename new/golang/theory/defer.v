@@ -3,7 +3,7 @@ From New.golang.defn Require Import defer.
 
 Section proof.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
-          {Hcore : go.CoreSemantics}.
+  {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
 
 Lemma wp_with_defer e Φ :
   (∀ (defer : loc),

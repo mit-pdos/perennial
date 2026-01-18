@@ -6,10 +6,7 @@ Transparent slice.for_range.
 
 Section defns_and_lemmas.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
-  {core_sem : go.CoreSemantics}
-  {pre_sem : go.PredeclaredSemantics}
-  {array_sem : go.ArraySemantics}
-  {slice_sem : go.SliceSemantics}.
+  {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
 
 Definition own_slice_def {V} `{!ZeroVal V} `{!TypedPointsto V}
   (s : slice.t) (dq : dfrac) (vs : list V)
@@ -213,7 +210,7 @@ Lemma slice_to_full_slice s low high :
   slice.slice s V low high = slice.full_slice s V low high (slice.cap s).
 Proof. reflexivity. Qed.
 
-Local Set Default Proof Using "Type core_sem pre_sem array_sem slice_sem".
+Local Set Default Proof Using "All".
 
 (* introduce a slice.slice for lemmas that require it *)
 Lemma slice_slice_trivial s :
@@ -286,11 +283,8 @@ Global Notation "s ↦* dq vs" := (own_slice s dq vs)
 
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}
-  {core_sem : go.CoreSemantics}
-  {pre_sem : go.PredeclaredSemantics}
-  {array_sem : go.ArraySemantics}
-  {slice_sem : go.SliceSemantics}.
-Local Set Default Proof Using "Type core_sem pre_sem array_sem slice_sem".
+  {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
+Local Set Default Proof Using "All".
 
 Global Instance pure_wp_slice_len t (s : slice.t) :
   PureWp True (#(functions go.len [go.SliceType t]) (#s)) #(slice.len s).

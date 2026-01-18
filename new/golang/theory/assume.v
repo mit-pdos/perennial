@@ -7,8 +7,8 @@ Set Default Proof Using "Type".
 Section wps.
 
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
-  {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}.
-Local Set Default Proof Using "Type core_sem pre_sem".
+  {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
+Local Set Default Proof Using "All".
 
 Lemma wp_assume (b: bool) Φ stk E:
   (⌜b = true⌝ -∗ Φ #()) -∗

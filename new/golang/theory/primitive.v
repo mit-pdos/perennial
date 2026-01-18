@@ -6,12 +6,13 @@ Set Default Proof Using "Type".
 Section wps.
 
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
-  {core_sem : go.CoreSemantics}.
+  {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
+Local Set Default Proof Using "All".
 
 (* use new goose's to_val for the return value *)
 Lemma wp_fork s E e Φ :
   ▷ WP e @ s; ⊤ {{ _, True }} -∗ ▷ Φ #() -∗ WP Fork e @ s; E {{ Φ }}.
-Proof using core_sem.
+Proof.
   iIntros "Hwp HΦ".
   wp_apply (lifting.wp_fork with "[$Hwp]").
   replace (LitV LitUnit) with #().
@@ -22,7 +23,7 @@ Qed.
 (* use new goose's to_val for the return value *)
 Lemma wp_ArbitraryInt s E Φ :
   ▷ (∀ (x: w64), Φ #x) -∗ WP ArbitraryInt @ s; E {{ Φ }}.
-Proof using core_sem.
+Proof.
   iIntros "HΦ".
   wp_apply (lifting.wp_ArbitraryInt).
   iIntros (x) "_".
