@@ -19,7 +19,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance Channel_typed_pointsto `{!TypedPointsto (Σ:=Σ) T'}  :
   TypedPointsto (Σ:=Σ) (channel.Channel.t T') :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "cap" ∷ l.[(channel.Channel.t T'), "cap"] ↦{dq} v.(channel.Channel.cap') ∗
       "mu" ∷ l.[(channel.Channel.t T'), "mu"] ↦{dq} v.(channel.Channel.mu') ∗

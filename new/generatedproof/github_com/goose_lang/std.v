@@ -23,7 +23,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance JoinHandle_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (std.JoinHandle.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "mu" ∷ l.[(std.JoinHandle.t), "mu"] ↦{dq} v.(std.JoinHandle.mu') ∗
       "done" ∷ l.[(std.JoinHandle.t), "done"] ↦{dq} v.(std.JoinHandle.done') ∗

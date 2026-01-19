@@ -9,16 +9,16 @@ Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
   {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
 
 Definition own_slice_def {V} `{!ZeroVal V} `{!TypedPointsto V}
-  (s : slice.t) (dq : dfrac) (vs : list V)
+  (s : slice.t) (vs : list V) (dq : dfrac)
   : iProp Σ :=
   (s.(slice.ptr) ↦{dq} (array.mk (sint.Z s.(slice.len)) vs)) ∗
   ⌜ sint.Z s.(slice.len) ≤ sint.Z s.(slice.cap) ⌝.
 Program Definition own_slice := sealed @own_slice_def.
 Definition own_slice_unseal : own_slice = _ := seal_eq _.
 
-Global Arguments own_slice {_ _ _} (s dq vs).
+Global Arguments own_slice {_ _ _} (s vs dq).
 
-Notation "s ↦* dq vs" := (own_slice s dq vs)
+Notation "s ↦* dq vs" := (own_slice s vs dq)
                            (at level 20, dq custom dfrac at level 50, format "s  ↦* dq  vs").
 
 Definition own_slice_cap_def {V} `{!ZeroVal V} `{!TypedPointsto V}
@@ -278,7 +278,7 @@ Qed.
 
 End defns_and_lemmas.
 
-Global Notation "s ↦* dq vs" := (own_slice s dq vs)
+Global Notation "s ↦* dq vs" := (own_slice s vs dq)
                             (at level 20, dq custom dfrac at level 50, format "s  ↦* dq  vs").
 
 Section wps.
@@ -841,7 +841,3 @@ Proof.
 Qed.
 
 End wps.
-
-Notation "s ↦* dq vs" := (own_slice s dq vs)
-                            (at level 20, dq custom dfrac at level 50,
-                              vs constr at next level, format "s  ↦* dq  vs").

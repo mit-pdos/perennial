@@ -6,63 +6,43 @@ Require Export New.generatedproof.sync.atomic.
 
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
+Context {sem : go.Semantics} {package_sem : atomic.Assumptions}.
+Local Set Default Proof Using "All".
 
-#[global] Instance : IsPkgInit atomic := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf atomic := build_get_is_pkg_init_wf.
+#[global] Instance : IsPkgInit (iProp Σ) atomic := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ) atomic := build_get_is_pkg_init_wf.
 
 Lemma wp_initialize' get_is_pkg_init :
   get_is_pkg_init_prop atomic get_is_pkg_init →
-  {{{ own_initializing get_is_pkg_init ∗ is_go_context ∗ □ is_pkg_defined atomic }}}
+  {{{ own_initializing get_is_pkg_init }}}
     atomic.initialize' #()
   {{{ RET #(); own_initializing get_is_pkg_init ∗ is_pkg_init atomic }}}.
 Proof.
-  intros Hinit. wp_start as "(Hown & #? & #Hdef)".
-  wp_call. wp_apply (wp_package_init with "[$Hown] HΦ").
+  intros Hinit. wp_start as "Hown".
+  wp_apply (wp_package_init with "[$Hown] HΦ").
   { destruct Hinit as (-> & ?); done. }
-  iIntros "Hown". wp_auto. wp_call.
-  iEval (rewrite is_pkg_init_unfold /=). wp_auto.
-  wp_bind.
-  simpl.
-  eapply (tac_wp_pure_wp []).
-  (* FIXME: generics where type argument is used under pointer *)
-  { Fail apply _. simple apply atomic.wp_struct_make_Pointer. }
-  { done. }
-  { apply _. }
-  simpl fill. wp_auto.
-  wp_alloc _unused as "_".
-  wp_auto. iFrame "∗#". done.
+  iIntros "Hown". wp_auto.
+  iEval (rewrite is_pkg_init_unfold /=).
+  wp_alloc _unused as "_". wp_auto. iFrame "∗#". done.
 Qed.
 
 Lemma noCopy_emp l dq :
-  ⊢ l ↦{dq} atomic.noCopy.mk.
-Proof.
-  rewrite typed_pointsto_unseal /typed_pointsto_def /=.
-  replace (flatten_struct (# _)) with ([] : list val).
-  - auto.
-  - rewrite to_val_unseal /=.
-    rewrite struct.val_aux_nil to_val_unseal //.
-Qed.
+  ⊢ l ↦{dq} atomic.noCopy.mk : iProp Σ.
+Proof. rewrite typed_pointsto_unseal //=. Qed.
 
 Lemma align_emp l dq :
-  ⊢ l ↦{dq} atomic.align64.mk.
-Proof.
-  rewrite typed_pointsto_unseal /typed_pointsto_def /=.
-  replace (flatten_struct (#_)) with ([] : list val).
-  - auto.
-  - rewrite to_val_unseal /=.
-    rewrite struct.val_aux_nil to_val_unseal //.
-Qed.
+  ⊢ l ↦{dq} atomic.align64.mk : iProp Σ.
+Proof. rewrite typed_pointsto_unseal //=. Qed.
 
 (* 64-bit structs have an extra field (align64) *)
 Definition own_Uint64 (u : loc) dq (v : w64) : iProp Σ :=
-  u ↦{dq} atomic.Uint64.mk (default_val _) (default_val _) v.
+  u ↦{dq} atomic.Uint64.mk (zero_val _) (zero_val _) v.
 Definition own_Int64 (u : loc) dq (v : w64) : iProp Σ :=
-  u ↦{dq} atomic.Int64.mk (default_val _) (default_val _) v.
+  u ↦{dq} atomic.Int64.mk (zero_val _) (zero_val _) v.
 Definition own_Uint32 (u : loc) dq (v : w32) : iProp Σ :=
-  u ↦{dq} atomic.Uint32.mk (default_val _) v.
+  u ↦{dq} atomic.Uint32.mk (zero_val _) v.
 Definition own_Int32 (u : loc) dq (v : w32) : iProp Σ :=
-  u ↦{dq} atomic.Int32.mk (default_val _) v.
+  u ↦{dq} atomic.Int32.mk (zero_val _) v.
 
 (* BEGIN TEMPLATE *)
 Lemma wp_LoadUint64 (addr : loc) dq :
@@ -73,7 +53,7 @@ Lemma wp_LoadUint64 (addr : loc) dq :
 Proof.
   wp_start as "_".
   iMod "HΦ" as (?) "[>Haddr HΦ]".
-  unshelve iApply (wp_typed_Load with "[$]"); try tc_solve; done.
+  wp_apply (wp_atomic_load with "[$]"). done.
 Qed.
 
 Lemma wp_SwapUint64 (addr : loc) (v : w64) :
@@ -84,7 +64,7 @@ Lemma wp_SwapUint64 (addr : loc) (v : w64) :
 Proof.
   wp_start as "_".
   iMod "HΦ" as (?) "[>Haddr HΦ]".
-  unshelve iApply (wp_typed_AtomicSwap with "[$]"); try tc_solve; done.
+  wp_apply (wp_atomic_swap with "[$]"). done.
 Qed.
 
 Lemma wp_StoreUint64 (addr : loc) (v : w64) :
@@ -96,9 +76,7 @@ Proof.
   wp_start as "_".
   wp_bind (AtomicSwap _ _).
   iMod "HΦ" as (?) "[>Haddr HΦ]".
-  unshelve iApply (wp_typed_AtomicSwap with "[$]"); try tc_solve.
-  { done. }
-  iIntros "!> Haddr".
+  wp_apply (wp_atomic_swap with "[$]") as "Haddr".
   iMod ("HΦ" with "Haddr") as "HΦ".
   iModIntro. wp_pures.
   iApply "HΦ".
@@ -113,7 +91,7 @@ Proof.
   wp_start as "_".
   iMod "HΦ" as (?) "[Haddr HΦ]".
   rewrite typed_pointsto_unseal /typed_pointsto_def /=.
-  rewrite to_val_unseal /=. rewrite loc_add_0 !right_id.
+  rewrite !go.into_val_unfold /=.
   iApply (wp_atomic_op with "Haddr"); first done.
   iFrame.
 Qed.
@@ -133,45 +111,40 @@ Proof.
   wp_bind (CmpXchg _ _ _).
   iMod "HΦ" as (??) "(>? & >-> & HΦ)".
   rewrite bool_decide_decide.
-  destruct decide.
-  {
-    subst.
-    unshelve iApply (wp_typed_cmpxchg_suc with "[$]"); try tc_solve; try done.
-    iIntros "!> ?". iMod ("HΦ" with "[$]"). iModIntro.
-    by wp_auto.
-  }
-  {
-    unshelve iApply (wp_typed_cmpxchg_fail with "[$]"); try tc_solve; try done.
-    { naive_solver. }
-    iIntros "!> ?". iMod ("HΦ" with "[$]"). iModIntro.
-    by wp_auto.
-  }
+  destruct decide; subst.
+  - wp_apply (wp_cmpxchg_suc with "[$]") as "?"; first done.
+    iMod ("HΦ" with "[$]"). iModIntro. by wp_auto.
+  -  wp_apply (wp_cmpxchg_fail with "[$]") as "?"; first done.
+     iMod ("HΦ" with "[$]"). iModIntro. by wp_auto.
 Qed.
 
 #[global] Opaque own_Uint64.
 #[local] Transparent own_Uint64.
 Global Instance own_Uint64_timeless a b c : Timeless (own_Uint64 a b c) := _.
-Global Instance own_Uint64_fractional u v : Fractional (λ q, own_Uint64 u (DfracOwn q) v) := _.
+Global Instance own_Uint64_fractional u v :
+  Fractional (λ q, own_Uint64 u (DfracOwn q) v).
+Proof. apply fractional_of_dfractional. apply _. Qed.
 Global Instance own_Uint64_as_fractional u q v :
   AsFractional (own_Uint64 u (DfracOwn q) v) (λ q, own_Uint64 u (DfracOwn q) v) q := _.
 Global Instance own_Uint64_combines_gives u v v' dq dq' :
-  CombineSepGives (own_Uint64 u dq v) (own_Uint64 u dq' v') (⌜ ✓(dq⋅dq') ∧ v = v'⌝).
+  CombineSepGives (own_Uint64 u dq v) (own_Uint64 u dq' v') (⌜ v = v'⌝).
 Proof. unfold CombineSepGives.
   iIntros "?". iDestruct (combine_sep_gives with "[$]") as "#H".
-  rewrite go_type_size_unseal. iDestruct "H" as %?. iModIntro. iPureIntro.
+  iDestruct "H" as %?. iModIntro. iPureIntro.
   naive_solver.
 Qed.
 
 Lemma Uint64_unfold l dq (x: w64) :
   own_Uint64 l dq x ⊣⊢
-  l ↦s[atomic.Uint64 :: "v"]{dq} x.
+  l .[ atomic.Uint64.t, "v"] ↦{dq} x.
 Proof.
   iSplit.
   - iIntros "H".
-    iApply struct_fields_split in "H". iNamed "H".
+    rewrite /own_Uint64.
+    iEval (erewrite -> typed_pointsto_unseal) in "H". iNamed "H".
     iFrame.
   - iIntros "Hl".
-    iApply @struct_fields_combine.
+    iEval (rewrite /own_Uint64 typed_pointsto_unseal).
     iFrame "Hl".
     simpl.
     rewrite -?noCopy_emp -?align_emp.
@@ -982,7 +955,7 @@ Proof.
 Qed.
 
 Definition own_Bool (u : loc) dq (v : bool) : iProp Σ :=
-  u ↦{dq} atomic.Bool.mk (default_val _) (b32 v).
+  u ↦{dq} atomic.Bool.mk (zero_val _) (b32 v).
 #[global] Opaque own_Bool.
 #[local] Transparent own_Bool.
 Global Instance own_Bool_timeless a b c : Timeless (own_Bool a b c) := _.
@@ -1125,7 +1098,7 @@ Section pointer.
 Context `{!IntoVal T'} `{!IntoValTyped T' T} `{!BoundedTypeSize T}.
 
 Definition own_Pointer (u : loc) dq (v : loc) : iProp Σ :=
-  u ↦{dq} atomic.Pointer.mk (T:=T) (T':=T') (default_val _) (default_val _) v.
+  u ↦{dq} atomic.Pointer.mk (T:=T) (T':=T') (zero_val _) (zero_val _) v.
 #[global] Opaque own_Pointer.
 #[local] Transparent own_Pointer.
 Global Instance own_Pointer_timeless a b c : Timeless (own_Pointer a b c) := _.

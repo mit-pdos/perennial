@@ -18,7 +18,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance Builder_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (strings.Builder.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "addr" ∷ l.[(strings.Builder.t), "addr"] ↦{dq} v.(strings.Builder.addr') ∗
       "buf" ∷ l.[(strings.Builder.t), "buf"] ↦{dq} v.(strings.Builder.buf') ∗

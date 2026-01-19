@@ -39,7 +39,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance Time_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (time.Time.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "wall" ∷ l.[(time.Time.t), "wall"] ↦{dq} v.(time.Time.wall') ∗
       "ext" ∷ l.[(time.Time.t), "ext"] ↦{dq} v.(time.Time.ext') ∗
@@ -69,7 +69,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance Timer_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (time.Timer.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "C" ∷ l.[(time.Timer.t), "C"] ↦{dq} v.(time.Timer.C') ∗
       "initTimer" ∷ l.[(time.Timer.t), "initTimer"] ↦{dq} v.(time.Timer.initTimer') ∗

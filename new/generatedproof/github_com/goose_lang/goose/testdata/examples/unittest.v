@@ -24,7 +24,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance importantStruct_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (unittest.importantStruct.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "_" ∷ True
       )%I
@@ -51,7 +51,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance diskWrapper_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (unittest.diskWrapper.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "d" ∷ l.[(unittest.diskWrapper.t), "d"] ↦{dq} v.(unittest.diskWrapper.d') ∗
       "_" ∷ True
@@ -79,7 +79,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance embedA_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (unittest.embedA.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "a" ∷ l.[(unittest.embedA.t), "a"] ↦{dq} v.(unittest.embedA.a') ∗
       "_" ∷ True
@@ -107,7 +107,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance embedB_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (unittest.embedB.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "embedA" ∷ l.[(unittest.embedB.t), "embedA"] ↦{dq} v.(unittest.embedB.embedA') ∗
       "_" ∷ True
@@ -135,7 +135,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance embedC_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (unittest.embedC.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "embedB" ∷ l.[(unittest.embedC.t), "embedB"] ↦{dq} v.(unittest.embedC.embedB') ∗
       "_" ∷ True
@@ -163,7 +163,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance embedD_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (unittest.embedD.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "embedC" ∷ l.[(unittest.embedD.t), "embedC"] ↦{dq} v.(unittest.embedD.embedC') ∗
       "_" ∷ True
@@ -191,7 +191,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance Enc_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (unittest.Enc.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "p" ∷ l.[(unittest.Enc.t), "p"] ↦{dq} v.(unittest.Enc.p') ∗
       "_" ∷ True
@@ -219,7 +219,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance Dec_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (unittest.Dec.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "p" ∷ l.[(unittest.Dec.t), "p"] ↦{dq} v.(unittest.Dec.p') ∗
       "_" ∷ True
@@ -247,7 +247,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance concreteFooer_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (unittest.concreteFooer.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "a" ∷ l.[(unittest.concreteFooer.t), "a"] ↦{dq} v.(unittest.concreteFooer.a') ∗
       "_" ∷ True
@@ -275,7 +275,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance FooerUser_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (unittest.FooerUser.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "f" ∷ l.[(unittest.FooerUser.t), "f"] ↦{dq} v.(unittest.FooerUser.f') ∗
       "_" ∷ True
@@ -303,7 +303,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance B_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (unittest.B.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "a" ∷ l.[(unittest.B.t), "a"] ↦{dq} v.(unittest.B.a') ∗
       "_" ∷ True
@@ -331,7 +331,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance concrete1_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (unittest.concrete1.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "_" ∷ True
       )%I
@@ -358,7 +358,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance allTheLiterals_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (unittest.allTheLiterals.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "int" ∷ l.[(unittest.allTheLiterals.t), "int"] ↦{dq} v.(unittest.allTheLiterals.int') ∗
       "s" ∷ l.[(unittest.allTheLiterals.t), "s"] ↦{dq} v.(unittest.allTheLiterals.s') ∗
@@ -388,7 +388,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance hasCondVar_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (unittest.hasCondVar.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "cond" ∷ l.[(unittest.hasCondVar.t), "cond"] ↦{dq} v.(unittest.hasCondVar.cond') ∗
       "_" ∷ True
@@ -416,7 +416,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance mapElem_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (unittest.mapElem.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "a" ∷ l.[(unittest.mapElem.t), "a"] ↦{dq} v.(unittest.mapElem.a') ∗
       "b" ∷ l.[(unittest.mapElem.t), "b"] ↦{dq} v.(unittest.mapElem.b') ∗
@@ -445,7 +445,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance containsPointer_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (unittest.containsPointer.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "s" ∷ l.[(unittest.containsPointer.t), "s"] ↦{dq} v.(unittest.containsPointer.s') ∗
       "_" ∷ True
@@ -473,7 +473,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance wrapExternalStruct_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (unittest.wrapExternalStruct.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "j" ∷ l.[(unittest.wrapExternalStruct.t), "j"] ↦{dq} v.(unittest.wrapExternalStruct.j') ∗
       "_" ∷ True
@@ -501,7 +501,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance typing_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (unittest.typing.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "proph" ∷ l.[(unittest.typing.t), "proph"] ↦{dq} v.(unittest.typing.proph') ∗
       "_" ∷ True
@@ -529,7 +529,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance composite_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (unittest.composite.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "a" ∷ l.[(unittest.composite.t), "a"] ↦{dq} v.(unittest.composite.a') ∗
       "b" ∷ l.[(unittest.composite.t), "b"] ↦{dq} v.(unittest.composite.b') ∗
@@ -558,7 +558,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance R_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (unittest.R.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "_" ∷ True
       )%I
@@ -585,7 +585,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance Other_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (unittest.Other.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "RecursiveEmbedded" ∷ l.[(unittest.Other.t), "RecursiveEmbedded"] ↦{dq} v.(unittest.Other.RecursiveEmbedded') ∗
       "_" ∷ True
@@ -613,7 +613,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance RecursiveEmbedded_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (unittest.RecursiveEmbedded.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "Other" ∷ l.[(unittest.RecursiveEmbedded.t), "Other"] ↦{dq} v.(unittest.RecursiveEmbedded.Other') ∗
       "_" ∷ True
@@ -641,7 +641,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance Block_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (unittest.Block.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "Value" ∷ l.[(unittest.Block.t), "Value"] ↦{dq} v.(unittest.Block.Value') ∗
       "_" ∷ True
@@ -669,7 +669,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance thing_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (unittest.thing.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "x" ∷ l.[(unittest.thing.t), "x"] ↦{dq} v.(unittest.thing.x') ∗
       "_" ∷ True
@@ -697,7 +697,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance sliceOfThings_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (unittest.sliceOfThings.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "things" ∷ l.[(unittest.sliceOfThings.t), "things"] ↦{dq} v.(unittest.sliceOfThings.things') ∗
       "_" ∷ True
@@ -725,7 +725,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance Point_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (unittest.Point.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "x" ∷ l.[(unittest.Point.t), "x"] ↦{dq} v.(unittest.Point.x') ∗
       "y" ∷ l.[(unittest.Point.t), "y"] ↦{dq} v.(unittest.Point.y') ∗
@@ -754,7 +754,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance TwoInts_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (unittest.TwoInts.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "x" ∷ l.[(unittest.TwoInts.t), "x"] ↦{dq} v.(unittest.TwoInts.x') ∗
       "y" ∷ l.[(unittest.TwoInts.t), "y"] ↦{dq} v.(unittest.TwoInts.y') ∗
@@ -783,7 +783,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance S_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (unittest.S.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "a" ∷ l.[(unittest.S.t), "a"] ↦{dq} v.(unittest.S.a') ∗
       "b" ∷ l.[(unittest.S.t), "b"] ↦{dq} v.(unittest.S.b') ∗
@@ -813,7 +813,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance A_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (unittest.A.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "_" ∷ True
       )%I

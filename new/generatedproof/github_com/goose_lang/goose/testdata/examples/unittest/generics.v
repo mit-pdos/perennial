@@ -19,7 +19,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance Box_typed_pointsto `{!TypedPointsto (Σ:=Σ) T'}  :
   TypedPointsto (Σ:=Σ) (generics.Box.t T') :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "Value" ∷ l.[(generics.Box.t T'), "Value"] ↦{dq} v.(generics.Box.Value') ∗
       "_" ∷ True
@@ -47,7 +47,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance Container_typed_pointsto `{!TypedPointsto (Σ:=Σ) T'}  :
   TypedPointsto (Σ:=Σ) (generics.Container.t T') :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "X" ∷ l.[(generics.Container.t T'), "X"] ↦{dq} v.(generics.Container.X') ∗
       "Y" ∷ l.[(generics.Container.t T'), "Y"] ↦{dq} v.(generics.Container.Y') ∗
@@ -78,7 +78,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance UseContainer_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (generics.UseContainer.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "X" ∷ l.[(generics.UseContainer.t), "X"] ↦{dq} v.(generics.UseContainer.X') ∗
       "_" ∷ True
@@ -106,7 +106,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance OnlyIndirect_typed_pointsto `{!TypedPointsto (Σ:=Σ) T'}  :
   TypedPointsto (Σ:=Σ) (generics.OnlyIndirect.t T') :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "X" ∷ l.[(generics.OnlyIndirect.t T'), "X"] ↦{dq} v.(generics.OnlyIndirect.X') ∗
       "Y" ∷ l.[(generics.OnlyIndirect.t T'), "Y"] ↦{dq} v.(generics.OnlyIndirect.Y') ∗
@@ -135,7 +135,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance MultiParam_typed_pointsto `{!TypedPointsto (Σ:=Σ) A'} `{!TypedPointsto (Σ:=Σ) B'}  :
   TypedPointsto (Σ:=Σ) (generics.MultiParam.t A' B') :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "Y" ∷ l.[(generics.MultiParam.t A' B'), "Y"] ↦{dq} v.(generics.MultiParam.Y') ∗
       "X" ∷ l.[(generics.MultiParam.t A' B'), "X"] ↦{dq} v.(generics.MultiParam.X') ∗

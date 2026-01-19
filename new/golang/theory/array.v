@@ -12,7 +12,7 @@ Context `{!IntoValTyped V t}.
 Program Global Instance typed_pointsto_array n :
   TypedPointsto (array.t V n) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def := λ l v dq,
       (⌜ Z.of_nat $ length (array.arr v) = n ⌝ ∗
        [∗ list] i ↦ ve ∈ (array.arr v), array_index_ref V (Z.of_nat i) l ↦{dq} ve)%I;
   |}.

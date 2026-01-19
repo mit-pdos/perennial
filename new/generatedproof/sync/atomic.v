@@ -19,7 +19,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance noCopy_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (atomic.noCopy.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "_" ∷ True
       )%I
@@ -46,7 +46,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance Bool_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (atomic.Bool.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "_0" ∷ l.[(atomic.Bool.t), "_0"] ↦{dq} v.(atomic.Bool._0') ∗
       "v" ∷ l.[(atomic.Bool.t), "v"] ↦{dq} v.(atomic.Bool.v') ∗
@@ -75,7 +75,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance Pointer_typed_pointsto `{!TypedPointsto (Σ:=Σ) T'}  :
   TypedPointsto (Σ:=Σ) (atomic.Pointer.t T') :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "_0" ∷ l.[(atomic.Pointer.t T'), "_0"] ↦{dq} v.(atomic.Pointer._0') ∗
       "_1" ∷ l.[(atomic.Pointer.t T'), "_1"] ↦{dq} v.(atomic.Pointer._1') ∗
@@ -105,7 +105,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance Int32_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (atomic.Int32.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "_0" ∷ l.[(atomic.Int32.t), "_0"] ↦{dq} v.(atomic.Int32._0') ∗
       "v" ∷ l.[(atomic.Int32.t), "v"] ↦{dq} v.(atomic.Int32.v') ∗
@@ -134,7 +134,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance align64_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (atomic.align64.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "_" ∷ True
       )%I
@@ -161,7 +161,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance Int64_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (atomic.Int64.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "_0" ∷ l.[(atomic.Int64.t), "_0"] ↦{dq} v.(atomic.Int64._0') ∗
       "_1" ∷ l.[(atomic.Int64.t), "_1"] ↦{dq} v.(atomic.Int64._1') ∗
@@ -191,7 +191,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance Uint32_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (atomic.Uint32.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "_0" ∷ l.[(atomic.Uint32.t), "_0"] ↦{dq} v.(atomic.Uint32._0') ∗
       "v" ∷ l.[(atomic.Uint32.t), "v"] ↦{dq} v.(atomic.Uint32.v') ∗
@@ -220,7 +220,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance Uint64_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (atomic.Uint64.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "_0" ∷ l.[(atomic.Uint64.t), "_0"] ↦{dq} v.(atomic.Uint64._0') ∗
       "_1" ∷ l.[(atomic.Uint64.t), "_1"] ↦{dq} v.(atomic.Uint64._1') ∗
@@ -270,7 +270,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance Value_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (atomic.Value.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "v" ∷ l.[(atomic.Value.t), "v"] ↦{dq} v.(atomic.Value.v') ∗
       "_" ∷ True
@@ -298,7 +298,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance efaceWords_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (atomic.efaceWords.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "typ" ∷ l.[(atomic.efaceWords.t), "typ"] ↦{dq} v.(atomic.efaceWords.typ') ∗
       "data" ∷ l.[(atomic.efaceWords.t), "data"] ↦{dq} v.(atomic.efaceWords.data') ∗

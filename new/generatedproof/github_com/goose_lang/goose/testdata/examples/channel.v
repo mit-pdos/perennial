@@ -21,7 +21,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance LockedStack_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (chan_spec_raw_examples.LockedStack.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "mu" ∷ l.[(chan_spec_raw_examples.LockedStack.t), "mu"] ↦{dq} v.(chan_spec_raw_examples.LockedStack.mu') ∗
       "stack" ∷ l.[(chan_spec_raw_examples.LockedStack.t), "stack"] ↦{dq} v.(chan_spec_raw_examples.LockedStack.stack') ∗
@@ -50,7 +50,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance EliminationStack_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (chan_spec_raw_examples.EliminationStack.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "base" ∷ l.[(chan_spec_raw_examples.EliminationStack.t), "base"] ↦{dq} v.(chan_spec_raw_examples.EliminationStack.base') ∗
       "exchanger" ∷ l.[(chan_spec_raw_examples.EliminationStack.t), "exchanger"] ↦{dq} v.(chan_spec_raw_examples.EliminationStack.exchanger') ∗
@@ -79,7 +79,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance request_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (chan_spec_raw_examples.request.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "f" ∷ l.[(chan_spec_raw_examples.request.t), "f"] ↦{dq} v.(chan_spec_raw_examples.request.f') ∗
       "result" ∷ l.[(chan_spec_raw_examples.request.t), "result"] ↦{dq} v.(chan_spec_raw_examples.request.result') ∗
@@ -108,7 +108,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance stream_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (chan_spec_raw_examples.stream.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "req" ∷ l.[(chan_spec_raw_examples.stream.t), "req"] ↦{dq} v.(chan_spec_raw_examples.stream.req') ∗
       "res" ∷ l.[(chan_spec_raw_examples.stream.t), "res"] ↦{dq} v.(chan_spec_raw_examples.stream.res') ∗
@@ -137,7 +137,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance streamold_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (chan_spec_raw_examples.streamold.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "req" ∷ l.[(chan_spec_raw_examples.streamold.t), "req"] ↦{dq} v.(chan_spec_raw_examples.streamold.req') ∗
       "res" ∷ l.[(chan_spec_raw_examples.streamold.t), "res"] ↦{dq} v.(chan_spec_raw_examples.streamold.res') ∗

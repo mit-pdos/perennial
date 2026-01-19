@@ -30,23 +30,7 @@ Section goose_lang.
       wp_atomic_swap s E (l : loc) (v v' : V) :
       ({{{ l ↦ v }}} AtomicSwap #l #v' @ s ; E {{{ RET #v; l ↦ v' }}});
     }.
-
-    (* FIXME: ltac to prove atomic swap
-Proof using Type*.
-  intros Hprim.
-  pose proof (to_val_has_go_type v) as Hty_old.
-  pose proof (to_val_has_go_type v') as Hty.
-  rewrite typed_pointsto_unseal /typed_pointsto_def.
-  generalize dependent (#v). generalize dependent (#v').
-  clear dependent V.
-  intros.
-  iIntros "Hl HΦ".
-  destruct t; try by exfalso.
-  all: inversion Hty; subst;
-    inversion Hty_old; inversion Hty; subst;
-    simpl; rewrite to_val_unseal /= loc_add_0 !right_id;
-    iApply (wp_atomic_swap with "[$Hl]"); iFrame.
-Qed. *)
+  Global Hint Mode AtomicWps + - - : typeclass_instances.
 
   Ltac solve_cmpxchg_fail :=
     iIntros "* %Hne % Hl HΦ"; rewrite typed_pointsto_unseal /= !go.into_val_unfold;

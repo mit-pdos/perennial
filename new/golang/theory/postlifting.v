@@ -33,19 +33,19 @@ Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 
 Class TypedPointsto (V : Type) :=
 {
-  typed_pointsto_def (l : loc) (dq : dfrac) (v : V) : iProp Σ;
-  typed_pointsto_def_dfractional l v : DFractional (λ dq, typed_pointsto_def l dq v);
-  typed_pointsto_def_timeless l dq v : Timeless (typed_pointsto_def l dq v);
+  typed_pointsto_def (l : loc) (v : V) (dq : dfrac) : iProp Σ;
+  typed_pointsto_def_dfractional l v : DFractional (typed_pointsto_def l v);
+  typed_pointsto_def_timeless l v dq : Timeless (typed_pointsto_def l v dq);
   typed_pointsto_agree : (∀ l dq1 dq2 v1 v2,
-                            typed_pointsto_def l dq1 v1 -∗
-                            typed_pointsto_def l dq2 v2 -∗
+                            typed_pointsto_def l v1 dq1 -∗
+                            typed_pointsto_def l v2 dq2 -∗
                             ⌜ v1 = v2 ⌝)
 }.
 
 Program Definition typed_pointsto := sealed @typed_pointsto_def.
 Definition typed_pointsto_unseal : typed_pointsto = _ := seal_eq _.
-Global Arguments typed_pointsto {_ _} (l dq v).
-Notation "l ↦ dq v" := (typed_pointsto l dq v%V)
+Global Arguments typed_pointsto {_ _} (l v dq).
+Notation "l ↦ dq v" := (typed_pointsto l v%V dq)
                          (at level 20, dq custom dfrac at level 1,
                             format "l  ↦ dq  v") : bi_scope.
 
@@ -53,16 +53,20 @@ Notation "l ↦ dq v" := (typed_pointsto l dq v%V)
 Global Instance true_dfractional : DFractional (λ dq, True%I : iProp Σ).
 Proof. apply _. Qed.
 
+Global Instance typed_pointsto_dfractional_eta `{TypedPointsto V} l (v : V) :
+  DFractional (λ dq, typed_pointsto l v dq).
+Proof. rewrite typed_pointsto_unseal. apply typed_pointsto_def_dfractional. Qed.
+
 Global Instance typed_pointsto_dfractional `{TypedPointsto V} l (v : V) :
-  DFractional (λ dq, typed_pointsto l dq v).
+  DFractional (typed_pointsto l v).
 Proof. rewrite typed_pointsto_unseal. apply typed_pointsto_def_dfractional. Qed.
 
 Global Instance typed_pointsto_timeless `{TypedPointsto V} l dq (v : V) :
-  Timeless (typed_pointsto l dq v).
+  Timeless (typed_pointsto l v dq).
 Proof. rewrite typed_pointsto_unseal. apply typed_pointsto_def_timeless. Qed.
 
 Global Instance typed_pointsto_as_dfractional `{TypedPointsto V} l dq (v : V) :
-  AsDFractional (typed_pointsto l dq v) (λ dq, typed_pointsto l dq v) dq.
+  AsDFractional (typed_pointsto l v dq) (λ dq, typed_pointsto l v dq) dq.
 Proof. split; try done. apply _. Qed.
 
 (* TODO: move higher upstream. *)
@@ -74,8 +78,7 @@ Proof.
 Qed.
 
 Global Instance typed_pointsto_combine_sep_gives `{TypedPointsto V} l dq1 dq2  (v1 v2 : V) :
-  CombineSepGives (typed_pointsto l dq1 v1)
-    (typed_pointsto l dq2 v2) (⌜ v1 = v2 ⌝).
+  CombineSepGives (typed_pointsto l v1 dq1) (typed_pointsto l v2 dq2) (⌜ v1 = v2 ⌝).
 Proof.
   rewrite typed_pointsto_unseal /CombineSepGives. iIntros "[H1 H2]".
   iDestruct (typed_pointsto_agree with "H1 H2") as %Heq. by iModIntro.
@@ -115,7 +118,7 @@ Global Arguments wp_alloc {_ _ _ _ _ _} [_ _ _ _ _ _ _ _ _] (Φ).
 Global Arguments wp_load {_ _ _ _ _ _} [_ _ _ _ _ _ _ _] (l dq v Φ).
 Global Arguments wp_store {_ _ _ _ _ _} [_ _ _ _ _ _ _ _] (l v w Φ).
 
-Notation "l ↦ dq v" := (typed_pointsto l dq v%V)
+Global Notation "l ↦ dq v" := (typed_pointsto l v%V dq)
                          (at level 20, dq custom dfrac at level 1,
                             format "l  ↦ dq  v") : bi_scope.
 
@@ -306,52 +309,52 @@ Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
   {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
 
 Program Global Instance typed_pointsto_loc : TypedPointsto loc :=
-  {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
+  {| typed_pointsto_def l v dq := heap_pointsto l dq #v |}.
 Final Obligation.
 Proof. iIntros "* H1 H2". iCombine "H1 H2" gives %Heq. naive_solver. Qed.
 
 Program Global Instance typed_pointsto_w64 : TypedPointsto w64 :=
-  {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
+  {| typed_pointsto_def l v dq := heap_pointsto l dq #v |}.
 Final Obligation.
 Proof. iIntros "* H1 H2". iCombine "H1 H2" gives %Heq. naive_solver. Qed.
 
 Program Global Instance typed_pointsto_w32 : TypedPointsto w32 :=
-  {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
+  {| typed_pointsto_def l v dq := heap_pointsto l dq #v |}.
 Final Obligation.
 Proof. iIntros "* H1 H2". iCombine "H1 H2" gives %Heq. naive_solver. Qed.
 
 Program Global Instance typed_pointsto_w16 : TypedPointsto w16 :=
-  {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
+  {| typed_pointsto_def l v dq := heap_pointsto l dq #v |}.
 Final Obligation.
 Proof. iIntros "* H1 H2". iCombine "H1 H2" gives %Heq. naive_solver. Qed.
 
 Program Global Instance typed_pointsto_w8 : TypedPointsto w8 :=
-  {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
+  {| typed_pointsto_def l v dq := heap_pointsto l dq #v |}.
 Final Obligation.
 Proof. iIntros "* H1 H2". iCombine "H1 H2" gives %Heq. naive_solver. Qed.
 
 Program Global Instance typed_pointsto_bool : TypedPointsto bool :=
-  {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
+  {| typed_pointsto_def l v dq := heap_pointsto l dq #v |}.
 Final Obligation.
 Proof. iIntros "* H1 H2". iCombine "H1 H2" gives %Heq. naive_solver. Qed.
 
 Program Global Instance typed_pointsto_string : TypedPointsto go_string :=
-  {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
+  {| typed_pointsto_def l v dq := heap_pointsto l dq #v |}.
 Final Obligation.
 Proof. iIntros "* H1 H2". iCombine "H1 H2" gives %Heq. naive_solver. Qed.
 
 Program Global Instance typed_pointsto_slice : TypedPointsto slice.t :=
-  {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
+  {| typed_pointsto_def l v dq := heap_pointsto l dq #v |}.
 Final Obligation.
 Proof. iIntros "* H1 H2". iCombine "H1 H2" gives %Heq. naive_solver. Qed.
 
 Program Global Instance typed_pointsto_interface : TypedPointsto interface.t :=
-  {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
+  {| typed_pointsto_def l v dq := heap_pointsto l dq #v |}.
 Final Obligation.
 Proof. iIntros "* H1 H2". iCombine "H1 H2" gives %Heq. naive_solver. Qed.
 
 Program Global Instance typed_pointsto_func : TypedPointsto func.t :=
-  {| typed_pointsto_def l dq v := heap_pointsto l dq #v |}.
+  {| typed_pointsto_def l v dq := heap_pointsto l dq #v |}.
 Final Obligation.
 Proof.
   iIntros "* H1 H2". iCombine "H1 H2" gives %Heq.

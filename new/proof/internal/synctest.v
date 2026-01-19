@@ -2,22 +2,23 @@ From New.proof Require Export proof_prelude.
 Require Export New.generatedproof.internal.synctest.
 
 Section wps.
-Context `{heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics} {package_sem : synctest.Assumptions}.
+Local Set Default Proof Using "All".
 
-#[global] Instance : IsPkgInit synctest := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf synctest := build_get_is_pkg_init_wf.
+#[global] Instance : IsPkgInit (iProp Σ) synctest := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ) synctest := build_get_is_pkg_init_wf.
 
 Lemma wp_initialize' get_is_pkg_init :
   get_is_pkg_init_prop synctest get_is_pkg_init →
-  {{{ own_initializing get_is_pkg_init ∗ is_go_context ∗ □ is_pkg_defined synctest }}}
+  {{{ own_initializing get_is_pkg_init }}}
     synctest.initialize' #()
   {{{ RET #(); own_initializing get_is_pkg_init ∗ is_pkg_init synctest }}}.
 Proof.
-  intros Hinit. wp_start as "(Hown & #? & #Hdef)".
-  wp_call. wp_apply (wp_package_init with "[$Hown] HΦ").
+  intros Hinit. wp_start as "Hown".
+  wp_apply (wp_package_init with "[$Hown] HΦ").
   { destruct Hinit as (-> & ?); done. }
-  iIntros "Hown". wp_auto. wp_call.
+  iIntros "Hown". wp_auto.
   iEval (rewrite is_pkg_init_unfold /=). iFrame "∗#". done.
 Qed.
 
@@ -35,6 +36,6 @@ Lemma wp_IsInBubble :
   {{{ is_pkg_init synctest }}}
     @! synctest.IsInBubble #()
   {{{ RET #false; True }}}.
-Proof. wp_start. by iApply "HΦ". Qed.
+Proof. wp_start. wp_end. Qed.
 
 End wps.

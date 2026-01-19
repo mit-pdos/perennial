@@ -21,7 +21,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance Log_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (append_log.Log.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "m" ∷ l.[(append_log.Log.t), "m"] ↦{dq} v.(append_log.Log.m') ∗
       "sz" ∷ l.[(append_log.Log.t), "sz"] ↦{dq} v.(append_log.Log.sz') ∗

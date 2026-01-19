@@ -1,1 +1,1 @@
-From New.golang.theory Require Export pre chan string.
+From New.golang.theory Require Export chan string pre.

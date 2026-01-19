@@ -21,7 +21,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance unit_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (semantics.unit.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "_" ∷ True
       )%I
@@ -48,7 +48,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance Enc_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (semantics.Enc.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "p" ∷ l.[(semantics.Enc.t), "p"] ↦{dq} v.(semantics.Enc.p') ∗
       "_" ∷ True
@@ -76,7 +76,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance Dec_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (semantics.Dec.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "p" ∷ l.[(semantics.Dec.t), "p"] ↦{dq} v.(semantics.Dec.p') ∗
       "_" ∷ True
@@ -104,7 +104,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance Editor_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (semantics.Editor.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "s" ∷ l.[(semantics.Editor.t), "s"] ↦{dq} v.(semantics.Editor.s') ∗
       "next_val" ∷ l.[(semantics.Editor.t), "next_val"] ↦{dq} v.(semantics.Editor.next_val') ∗
@@ -133,7 +133,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance Pair_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (semantics.Pair.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "x" ∷ l.[(semantics.Pair.t), "x"] ↦{dq} v.(semantics.Pair.x') ∗
       "y" ∷ l.[(semantics.Pair.t), "y"] ↦{dq} v.(semantics.Pair.y') ∗
@@ -162,7 +162,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance SquareStruct_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (semantics.SquareStruct.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "Side" ∷ l.[(semantics.SquareStruct.t), "Side"] ↦{dq} v.(semantics.SquareStruct.Side') ∗
       "_" ∷ True
@@ -190,7 +190,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance LoopStruct_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (semantics.LoopStruct.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "loopNext" ∷ l.[(semantics.LoopStruct.t), "loopNext"] ↦{dq} v.(semantics.LoopStruct.loopNext') ∗
       "_" ∷ True
@@ -218,7 +218,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance BoolTest_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (semantics.BoolTest.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "t" ∷ l.[(semantics.BoolTest.t), "t"] ↦{dq} v.(semantics.BoolTest.t') ∗
       "f" ∷ l.[(semantics.BoolTest.t), "f"] ↦{dq} v.(semantics.BoolTest.f') ∗
@@ -249,7 +249,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance ArrayEditor_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (semantics.ArrayEditor.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "s" ∷ l.[(semantics.ArrayEditor.t), "s"] ↦{dq} v.(semantics.ArrayEditor.s') ∗
       "next_val" ∷ l.[(semantics.ArrayEditor.t), "next_val"] ↦{dq} v.(semantics.ArrayEditor.next_val') ∗
@@ -278,7 +278,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance Bar_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (semantics.Bar.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "a" ∷ l.[(semantics.Bar.t), "a"] ↦{dq} v.(semantics.Bar.a') ∗
       "b" ∷ l.[(semantics.Bar.t), "b"] ↦{dq} v.(semantics.Bar.b') ∗
@@ -307,7 +307,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance Foo_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (semantics.Foo.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "bar" ∷ l.[(semantics.Foo.t), "bar"] ↦{dq} v.(semantics.Foo.bar') ∗
       "_" ∷ True
@@ -335,7 +335,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance TwoInts_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (semantics.TwoInts.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "x" ∷ l.[(semantics.TwoInts.t), "x"] ↦{dq} v.(semantics.TwoInts.x') ∗
       "y" ∷ l.[(semantics.TwoInts.t), "y"] ↦{dq} v.(semantics.TwoInts.y') ∗
@@ -364,7 +364,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance S_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (semantics.S.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "a" ∷ l.[(semantics.S.t), "a"] ↦{dq} v.(semantics.S.a') ∗
       "b" ∷ l.[(semantics.S.t), "b"] ↦{dq} v.(semantics.S.b') ∗
@@ -394,7 +394,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance StructWrap_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (semantics.StructWrap.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "i" ∷ l.[(semantics.StructWrap.t), "i"] ↦{dq} v.(semantics.StructWrap.i') ∗
       "_" ∷ True
@@ -422,7 +422,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance StructWithFunc_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (semantics.StructWithFunc.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "fn" ∷ l.[(semantics.StructWithFunc.t), "fn"] ↦{dq} v.(semantics.StructWithFunc.fn') ∗
       "_" ∷ True
@@ -450,7 +450,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance switchConcrete_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (semantics.switchConcrete.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "_" ∷ True
       )%I
@@ -477,7 +477,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance Log_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (semantics.Log.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "d" ∷ l.[(semantics.Log.t), "d"] ↦{dq} v.(semantics.Log.d') ∗
       "l" ∷ l.[(semantics.Log.t), "l"] ↦{dq} v.(semantics.Log.l') ∗

@@ -22,7 +22,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance noCopy_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (sync.noCopy.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "_" ∷ True
       )%I
@@ -89,7 +89,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance Cond_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (sync.Cond.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "noCopy" ∷ l.[(sync.Cond.t), "noCopy"] ↦{dq} v.(sync.Cond.noCopy') ∗
       "L" ∷ l.[(sync.Cond.t), "L"] ↦{dq} v.(sync.Cond.L') ∗
@@ -180,7 +180,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance Once_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (sync.Once.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "_0" ∷ l.[(sync.Once.t), "_0"] ↦{dq} v.(sync.Once._0') ∗
       "done" ∷ l.[(sync.Once.t), "done"] ↦{dq} v.(sync.Once.done') ∗
@@ -370,7 +370,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance RWMutex_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (sync.RWMutex.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "w" ∷ l.[(sync.RWMutex.t), "w"] ↦{dq} v.(sync.RWMutex.w') ∗
       "writerSem" ∷ l.[(sync.RWMutex.t), "writerSem"] ↦{dq} v.(sync.RWMutex.writerSem') ∗
@@ -402,7 +402,7 @@ Local Set Default Proof Using "All".
 #[global]Program Instance WaitGroup_typed_pointsto  :
   TypedPointsto (Σ:=Σ) (sync.WaitGroup.t) :=
   {|
-    typed_pointsto_def l dq v :=
+    typed_pointsto_def l v dq :=
       (
       "noCopy" ∷ l.[(sync.WaitGroup.t), "noCopy"] ↦{dq} v.(sync.WaitGroup.noCopy') ∗
       "state" ∷ l.[(sync.WaitGroup.t), "state"] ↦{dq} v.(sync.WaitGroup.state') ∗
