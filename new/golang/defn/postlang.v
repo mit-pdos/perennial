@@ -494,14 +494,18 @@ Class CoreSemantics `{!GoSemanticsFunctions} : Prop :=
 End defs.
 End go.
 
-Notation "@! func" :=
+Global Notation "@! func" :=
   #(functions func []) (at level 1, no associativity, format "@! func") : expr_scope.
 
-Notation "![ t ] e" := (GoInstruction (GoLoad t) e%E)
-                         (at level 9, right associativity, format "![ t ]  e") : expr_scope.
-Notation "e1 <-[ t ] e2" := (GoInstruction (GoStore t) (Pair e1%E e2%E))
-                             (at level 80, format "e1  <-[ t ]  e2") : expr_scope.
+Global Notation "rcvr @! type @! method" :=
+  (#(methods type method) #rcvr)
+    (at level 1, type at next level, no associativity) : expr_scope.
 
-Notation "s  ≤u  t" := (go.UnderlyingEq s t) (at level 70).
-Notation "s  <u  t" := (go.UnderlyingDirectedEq s t) (at level 70).
-Notation "t  ↓u  tunder" := (go.IsUnderlying t tunder) (at level 70).
+Global Notation "![ t ] e" := (GoInstruction (GoLoad t) e%E)
+                                (at level 9, right associativity, format "![ t ]  e") : expr_scope.
+Global Notation "e1 <-[ t ] e2" := (GoInstruction (GoStore t) (Pair e1%E e2%E))
+                                     (at level 80, format "e1  <-[ t ]  e2") : expr_scope.
+
+Global Notation "s  ≤u  t" := (go.UnderlyingEq s t) (at level 70).
+Global Notation "s  <u  t" := (go.UnderlyingDirectedEq s t) (at level 70).
+Global Notation "t  ↓u  tunder" := (go.IsUnderlying t tunder) (at level 70).

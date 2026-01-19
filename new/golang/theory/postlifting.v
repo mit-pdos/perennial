@@ -412,18 +412,26 @@ Proof. solve_into_val_typed. Qed.
 Global Instance into_val_typed_chan t b : IntoValTyped chan.t (go.ChannelType b t).
 Proof. solve_into_val_typed. Qed.
 
+Lemma typed_pointsto_split `{!TypedPointsto V} l (v : V) dq :
+  l ↦{dq} v ⊢@{iProp Σ} typed_pointsto_def l v dq.
+Proof. rewrite typed_pointsto_unseal //. Qed.
+
+Lemma typed_pointsto_combine `{!TypedPointsto V} l (v : V) dq :
+  typed_pointsto_def l v dq ⊢@{iProp Σ} l ↦{dq} v.
+Proof. rewrite typed_pointsto_unseal //. Qed.
+
 End typed_pointsto_instances.
 
 Tactic Notation "iStructNamed" constr(H) :=
-  iEval (typed_pointsto_unseal) in H;
+  iDestruct (typed_pointsto_split with H) as H;
   iNamed H.
 
 Tactic Notation "iStructNamedSuffix" constr(H) constr(suff):=
-  iEval (rewrite typed_pointsto_unseal /=) in H;
+  iDestruct (typed_pointsto_split with H) as H;
   iNamedSuffix H suff.
 
 Tactic Notation "iStructNamedPrefix" constr(H) constr(pref) :=
-  iEval (rewrite typed_pointsto_unseal /=) in H;
+  iDestruct (typed_pointsto_split with H) as H;
   iNamedPrefix H pref.
 
 Ltac solve_typed_pointsto_agree :=
