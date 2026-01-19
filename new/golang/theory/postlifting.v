@@ -368,7 +368,7 @@ Ltac solve_wp_store :=
 Ltac solve_into_val_typed := constructor; [solve_wp_alloc|solve_wp_load|solve_wp_store].
 
 Global Instance into_val_typed_underlying V `{!ZeroVal V} `{!TypedPointsto V} n ta tunder
-  : go.Underlying (go.Named n ta) tunder → IntoValTyped V tunder → IntoValTyped V (go.Named n ta).
+  : (go.Named n ta ≤u tunder) → IntoValTyped V tunder → IntoValTyped V (go.Named n ta).
 Proof.
   intros. constructor.
   - rewrite go.alloc_underlying. eapply wp_alloc. apply _.
@@ -392,6 +392,20 @@ Global Instance into_val_typed_chan t b : IntoValTyped chan.t (go.ChannelType b 
 Proof. solve_into_val_typed. Qed.
 
 End typed_pointsto_instances.
+
+Section underlying_instances.
+Context {ext : ffi_syntax} {go_lctx : GoLocalContext}
+  {go_gctx : GoGlobalContext} `{!GoSemanticsFunctions}.
+#[global] Instance UnderlyingEq t : t ≤u t.
+Proof. done. Qed.
+
+#[global] Instance is_underlying_unfold `{!t <u t'} `{!t' ↓u tunder} : t ↓u tunder.
+Proof. constructor. rewrite go.underlying_unfold. apply go.is_underlying. Qed.
+
+Lemma underlying_trivial t : t ↓u (underlying t).
+Proof. done. Qed.
+End underlying_instances.
+#[global] Hint Extern 0 (go.NotNamed _) => (constructor; refine I) : typeclass_instances.
 
 Tactic Notation "iStructNamed" constr(H) :=
   iEval (typed_pointsto_unseal) in H;

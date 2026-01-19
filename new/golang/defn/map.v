@@ -59,6 +59,8 @@ Context {ext : ffi_syntax}.
 Context {go_lctx : GoLocalContext} {go_gctx : GoGlobalContext}.
 Class MapSemantics `{!GoSemanticsFunctions} :=
 {
+  go_eq_interface_eq elems elems' :
+    go_eq (go.InterfaceType elems) = go_eq (go.InterfaceType elems');
   #[global] internal_map_lookup_step_pure m k ::
     go.IsGoStepPureDet InternalMapLookup (m, k) (let '(ok, v) := map_lookup m k in (v, #ok));
   #[global] internal_map_insert_step_pure m k v ::

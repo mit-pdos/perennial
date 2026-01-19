@@ -63,7 +63,7 @@ End map.
 
 Class GoSemanticsFunctions {ext : ffi_syntax} :=
   {
-    to_underlying : go.type → go.type;
+    underlying : go.type → go.type;
     global_addr : go_string → loc;
     functions : go_string → list go.type → func.t;
     methods : go.type → go_string → func.t;
@@ -228,19 +228,30 @@ Class AlwaysSafelyComparable t V `{!EqDecision V} `{!GoSemanticsFunctions} : Pro
       ∀ (v1 v2 : V), GoExprEq (go_eq t #v1 #v2) (#(bool_decide (v1 = v2)))%E;
   }.
 
-(* Only declare instances for this when [tunder ≠ t].  This is used to reduce
-   goals involving [t] into goals involving [tunder], so having instances with
-   [t = tunder] will result in infinite loops during typeclass search. *)
-Class Underlying t tunder  `{!GoSemanticsFunctions} : Prop :=
-{
-  to_underlying_unfold : to_underlying t = tunder
-}.
+Class UnderlyingEq s t `{!GoSemanticsFunctions} : Prop :=
+  { underlying_eq : underlying s = underlying t }.
+
+(* This has a transitive instance, so only declare instances in a way that [t']
+   is strictly "more underlying" than [t]. An instance with [t = t'] will cause
+   an infinite loop in typeclass search because of transitivity. *)
+Class UnderlyingDirectedEq t t' `{!GoSemanticsFunctions} : Prop :=
+  { underlying_unfold : underlying t = underlying t' }.
+
+Class NotNamed (t : go.type) : Prop :=
+  { not_named : match t with go.Named _ _ => False | _ => True end }.
+
+Class IsUnderlying t tunder `{!GoSemanticsFunctions} : Prop :=
+  { is_underlying : underlying t = tunder }.
+
+Notation "s  ≤u  t" := (UnderlyingEq s t) (at level 70).
+Notation "s  <u  t" := (UnderlyingDirectedEq s t) (at level 70).
+Notation "t  ↓u  tunder" := (IsUnderlying t tunder) (at level 70).
 
 Class CoreComparisonSemantics `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] go_op_underlying `{!Underlying t tunder} `{!GoExprEq (go_op o tunder args) e} ::
+  #[global] go_op_underlying `{!t <u tunder} `{!GoExprEq (go_op o tunder args) e} ::
     GoExprEq (go_op o t args) e;
-  #[global] go_eq_underlying `{!Underlying t tunder} `{!GoExprEq (go_eq tunder v1 v2) e} ::
+  #[global] go_eq_underlying `{!t <u tunder} `{!GoExprEq (go_eq tunder v1 v2) e} ::
     GoExprEq (go_eq t v1 v2) e;
 
   (* special case equality for functions *)
@@ -338,6 +349,8 @@ Class CoreSemantics `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] basic_into_val_inj :: BasicIntoValInj;
 
+  #[global] underlying_not_named `{!NotNamed t} :: t ↓u t;
+
   #[global] go_op_step o t args :: IsGoStepPureDet (GoOp o t) args (go_op o t args);
   #[global] go_alloc_step t args :: IsGoStepPureDet (GoAlloc t) args (alloc t args);
   #[global] go_load_step t (l : loc) :: IsGoStepPureDet (GoLoad t) #l (load t #l);
@@ -375,7 +388,7 @@ Class CoreSemantics `{!GoSemanticsFunctions} : Prop :=
   #[global] into_val_unfold_loc :: IntoValUnfold _ (λ x, LitV $ LitLoc x);
   #[global] into_val_unfold_unit :: IntoValUnfold unit (λ _, LitV LitUnit);
 
-  go_zero_val_underlying `{!Underlying t t'} : go_zero_val t = go_zero_val t';
+  go_zero_val_underlying `{!t ≤u t'} : go_zero_val t = go_zero_val t';
   #[global] type_repr_pointer t :: TypeRepr (go.PointerType t) loc;
   #[global] type_repr_function sig :: TypeRepr (go.FunctionType sig) func.t;
   #[global] type_repr_slice elem_type :: TypeRepr (go.SliceType elem_type) slice.t;
@@ -383,9 +396,9 @@ Class CoreSemantics `{!GoSemanticsFunctions} : Prop :=
 
   #[global] core_comparison_sem :: CoreComparisonSemantics;
 
-  alloc_underlying `{!Underlying t tunder} : alloc t = alloc tunder;
+  alloc_underlying `{!t ≤u tunder} : alloc t = alloc tunder;
   alloc_primitive t (H : is_primitive t) : alloc t = (λ: "v", ref_one "v")%V;
-  alloc_struct `{!Underlying t (go.StructType fds)} :
+  alloc_struct `{!t ≤u go.StructType fds} :
     alloc t =
     (λ: "v",
         let: "l" := GoPrealloc #() in
@@ -402,9 +415,9 @@ Class CoreSemantics `{!GoSemanticsFunctions} : Prop :=
           ) #() fds ;;
         "l")%V;
 
-  load_underlying `{!Underlying t tunder} : load t = load tunder;
+  load_underlying `{!t ≤u tunder} : load t = load tunder;
   load_primitive t (H : is_primitive t) : load t = (λ: "l", Read "l")%V;
-  load_struct `{!Underlying t (go.StructType fds)} :
+  load_struct `{!t ≤u go.StructType fds} :
     load t =
     (λ: "l",
        foldl (λ struct_so_far fd,
@@ -417,9 +430,9 @@ Class CoreSemantics `{!GoSemanticsFunctions} : Prop :=
                 StructFieldSet t field_name (struct_so_far, field_val)
          ) (GoZeroVal t #()) fds)%V;
 
-  store_underlying `{!Underlying t tunder} : store t = store tunder;
+  store_underlying `{!t ≤u tunder} : store t = store tunder;
   store_primitive t (H : is_primitive t) : store t = (λ: "l" "v", "l" <- "v")%V;
-  store_struct `{!Underlying t (go.StructType fds)} :
+  store_struct `{!t ≤u go.StructType fds} :
     store t =
     (λ: "l" "v",
        foldl (λ store_so_far fd,
@@ -433,8 +446,8 @@ Class CoreSemantics `{!GoSemanticsFunctions} : Prop :=
                 GoStore field_type (field_addr, field_val)
          ) (#()) fds)%V;
 
-  index_ref_underlying `{!Underlying t t'} : index_ref t = index_ref t';
-  index_underlying `{!Underlying t t'} : index t = index t';
+  index_ref_underlying `{!t ≤u t'} : index_ref t = index_ref t';
+  index_underlying `{!t ≤u t'} : index t = index t';
 
   #[global] index_ref_step t (j : w64) (v : val) ::
     IsGoStepPureDet (IndexRef t) (v, #j)%V (index_ref t (sint.Z j) v);
@@ -446,7 +459,7 @@ Class CoreSemantics `{!GoSemanticsFunctions} : Prop :=
     GoExprEq (composite_literal (go.PointerType elem_type) l)
     (GoAlloc elem_type (CompositeLiteral elem_type l));
 
-  #[global] composite_literal_struct `{!Underlying t (go.StructType fds)} l ::
+  #[global] composite_literal_struct `{!t ≤u go.StructType fds} l ::
     GoExprEq (composite_literal t (LiteralValueV l))
     (match l with
      | [] => GoZeroVal t #()
@@ -482,3 +495,7 @@ Notation "![ t ] e" := (GoInstruction (GoLoad t) e%E)
                          (at level 9, right associativity, format "![ t ]  e") : expr_scope.
 Notation "e1 <-[ t ] e2" := (GoInstruction (GoStore t) (Pair e1%E e2%E))
                              (at level 80, format "e1  <-[ t ]  e2") : expr_scope.
+
+Notation "s  ≤u  t" := (go.UnderlyingEq s t) (at level 70).
+Notation "s  <u  t" := (go.UnderlyingDirectedEq s t) (at level 70).
+Notation "t  ↓u  tunder" := (go.IsUnderlying t tunder) (at level 70).

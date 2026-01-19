@@ -144,7 +144,7 @@ Class SliceSemantics `{!GoSemanticsFunctions} :=
     FuncUnfold go.cap [go.SliceType elem_type]
     (λ: "s", InternalSliceCap "s")%V;
 
-  append_underlying t : functions go.append [t] = functions go.append [to_underlying t];
+  append_underlying t : functions go.append [t] = functions go.append [underlying t];
   #[global] append_slice elem_type ::
     FuncUnfold go.append [go.SliceType elem_type]
     (λ: "s" "x",

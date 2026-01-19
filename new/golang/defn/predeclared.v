@@ -311,16 +311,16 @@ Class PredeclaredSemantics `{!GoSemanticsFunctions} :=
   load_predeclared t (H : is_predeclared t) : load t = (λ: "l", Read "l")%V;
   store_predeclared t (H : is_predeclared t) : store t = (λ: "l" "v", "l" <- "v")%V;
 
-  predeclared_underlying t (H : is_predeclared t) : to_underlying t = t;
+  predeclared_underlying t (H : is_predeclared t) : underlying t = t;
 
-  len_underlying t : functions len [t] = functions len [to_underlying t];
-  cap_underlying t : functions cap [t] = functions cap [to_underlying t];
-  clear_underlying t : functions clear [t] = functions clear [to_underlying t];
-  copy_underlying t : functions copy [t] = functions copy [to_underlying t];
-  delete_underlying t : functions delete [t] = functions delete [to_underlying t];
-  make3_underlying t : functions make3 [t] = functions make3 [to_underlying t];
-  make2_underlying t : functions make2 [t] = functions make2 [to_underlying t];
-  make1_underlying t : functions make1 [t] = functions make1 [to_underlying t];
+  len_underlying t : functions len [t] = functions len [underlying t];
+  cap_underlying t : functions cap [t] = functions cap [underlying t];
+  clear_underlying t : functions clear [t] = functions clear [underlying t];
+  copy_underlying t : functions copy [t] = functions copy [underlying t];
+  delete_underlying t : functions delete [t] = functions delete [underlying t];
+  make3_underlying t : functions make3 [t] = functions make3 [underlying t];
+  make2_underlying t : functions make2 [t] = functions make2 [underlying t];
+  make1_underlying t : functions make1 [t] = functions make1 [underlying t];
 
   min_ordered n t : #(functions min (replicate n t)) = minⁱᵐᵖˡ t n;
   max_ordered n t : #(functions max (replicate n t)) = maxⁱᵐᵖˡ t n;

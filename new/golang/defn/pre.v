@@ -1,4 +1,4 @@
-From New.golang.defn Require Export exception pkg loop array slice map predeclared defer.
+From New.golang.defn Require Export exception pkg loop array slice map predeclared defer interface.
 Export RecordSet RecordSetNotations.
 
 Module go.
@@ -10,6 +10,7 @@ Class PreSemantics {ext : ffi_syntax} {go_lctx : GoLocalContext}
   {go_gctx : GoGlobalContext} `{!GoSemanticsFunctions} : Prop :=
   {
     #[global] core_sem :: go.CoreSemantics;
+    #[global] interface_sem :: go.InterfaceSemantics;
     #[global] array_sem :: go.ArraySemantics;
     #[global] map_sem :: go.MapSemantics;
     #[global] slice_sem :: go.SliceSemantics;

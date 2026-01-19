@@ -61,7 +61,7 @@ through [IntoValTyped K kt] so that the instance used to type-check [gmap K V]
 is independent of the [IntoValTyped] instance. Otherwise, these proofs end up
 relying on a [gmap] with a particular proof of [EqDecision K]. *)
 Context `[!ZeroVal K] `[!EqDecision K] `[!Countable K] `[!ZeroVal V]
-  `[!go.IntoValInj K].
+  `[IntoValInj0 : !go.IntoValInj K].
 
 Definition own_map_def mptr dq (m : gmap K V) : iProp Σ :=
   ∃ (mv : val) mp,
@@ -83,6 +83,20 @@ Proof. rewrite own_map_unseal. apply _. Qed.
 Notation "mref ↦$ dq m" := (own_map mref dq m)
                             (at level 20, dq custom dfrac at level 50, format "mref  ↦$ dq  m").
 
+Local Instance safe_key_check (k : K) (v : val) `{!go.GoExprEq (go_eq key_type #k #k) v} :
+  PureWp True (Convert key_type go.any (# k) =⟨go.any⟩ Convert key_type go.any (# k)) v.
+Proof.
+  pure_wp_start. pose proof underlying_trivial key_type.
+  wp_auto_lc 1. destruct go.is_interface_type eqn:Hi.
+    - destruct (underlying key_type); try done.
+      rewrite (go.go_eq_interface_eq _ l).
+      assert (go.GoExprEq (go_eq (go.InterfaceType l) #k #k) v).
+      { unshelve eapply go.go_eq_underlying; last done.
+        constructor. rewrite go.is_underlying go.is_underlying //. }
+      wp_auto. wp_end.
+    - wp_auto. rewrite decide_True //. wp_auto. wp_end.
+Qed.
+
 Lemma wp_map_insert key_type l (m : gmap K V) k v {Hsafe : SafeMapKey key_type k} :
   {{{ l ↦$ m }}}
     map.insert key_type #l #k #v
@@ -90,7 +104,7 @@ Lemma wp_map_insert key_type l (m : gmap K V) k v {Hsafe : SafeMapKey key_type k
 Proof.
   destruct Hsafe as [[? Hsafe]].
   rewrite own_map_unseal.
-  iIntros (?) "Hm HΦ". iNamed "Hm". wp_call. rewrite decide_True //. wp_auto.
+  iIntros (?) "Hm HΦ". iNamed "Hm". wp_call.
   wp_apply (_internal_wp_untyped_read with "Hown"). iIntros "Hown".
   wp_auto.
   wp_apply (_internal_wp_untyped_store with "Hown"). iIntros "Hown".
@@ -111,7 +125,7 @@ Lemma wp_map_delete l (m : gmap K V) k key_type elem_type {Hsafe : SafeMapKey ke
   {{{ RET #(); l ↦$ delete k m }}}.
 Proof.
   destruct Hsafe as [[? Hsafe]].
-  wp_start as "Hm". rewrite own_map_unseal. iNamed "Hm". rewrite decide_True //. wp_auto.
+  wp_start as "Hm". rewrite own_map_unseal. iNamed "Hm".
   wp_apply (_internal_wp_untyped_read with "Hown") as "Hown".
   wp_apply (_internal_wp_untyped_store with "Hown") as "Hown".
   iApply "HΦ". iFrame "Hown".
@@ -133,7 +147,6 @@ Proof.
   wp_start as "Hm".
   rewrite own_map_unseal. iNamed "Hm".
   iDestruct (heap_pointsto_non_null with "Hown") as "%H".
-  rewrite decide_True //. wp_auto.
   wp_if_destruct; first by exfalso.
   wp_apply (_internal_wp_untyped_read with "Hown") as "Hown".
   erewrite go.map_lookup_pure; last done.
@@ -148,8 +161,7 @@ Global Instance pure_wp_map_nil_lookup2 key_type elem_type (k : K)
   PureWp True (map.lookup2 key_type elem_type #map.nil #k) (#(zero_val V), #false)%V.
 Proof.
   destruct Hsafe as [[? Hsafe]].
-  pure_wp_start. rewrite decide_True //. wp_auto.
-  by iApply "HΦ".
+  pure_wp_start. wp_end.
 Qed.
 
 Lemma wp_map_lookup1 key_type elem_type mref (m : gmap K V) k dq {Hsafe : SafeMapKey key_type k} :
