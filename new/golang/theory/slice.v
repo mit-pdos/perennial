@@ -298,6 +298,17 @@ Proof.
   pure_wp_start. rewrite func_unfold. wp_auto_lc 1. by iApply "HΦ".
 Qed.
 
+Global Instance pure_wp_slice_for_range (sl : slice.t) (body : val) t :
+  PureWp True (slice.for_range t #sl body)%E
+       (let: "i" := alloc go.int #(W64 0) in
+        for: (λ: <>, ![go.int] "i" <⟨go.int⟩ FuncResolve go.len [go.SliceType t] (# ()) (# sl)) ;
+        (λ: <>, "i" <-[go.int] ![go.int] "i" + # (W64 1)) :=
+          λ: <>, body ![go.int] "i" (![t] (IndexRef (go.SliceType t) (# sl, ![go.int] "i"))))%E.
+Proof.
+  iIntros (?????) "HΦ".
+  wp_call_lc "?". by iApply "HΦ".
+Qed.
+
 Context [V] `[!ZeroVal V] `[!TypedPointsto (Σ:=Σ) V].
 
 Lemma wp_slice_make3 `[!go.TypeRepr t V] `[!IntoValTyped V t] stk E (len cap : w64) :
@@ -352,17 +363,6 @@ Proof.
   wp_apply wp_slice_make3; first word.
   iIntros (?) "(? & ? & ?)".
   iApply "HΦ". iFrame.
-Qed.
-
-Global Instance pure_wp_slice_for_range (sl : slice.t) (body : val) t :
-  PureWp True (slice.for_range t #sl body)%E
-       (let: "i" := alloc go.int #(W64 0) in
-        for: (λ: <>, ![go.int] "i" <⟨go.int⟩ FuncResolve go.len [go.SliceType t] (# ()) (# sl)) ;
-        (λ: <>, "i" <-[go.int] ![go.int] "i" + # (W64 1)) :=
-          λ: <>, body ![go.int] "i" (![t] (IndexRef (go.SliceType t) (# sl, ![go.int] "i"))))%E.
-Proof.
-  iIntros (?????) "HΦ".
-  wp_call_lc "?". by iApply "HΦ".
 Qed.
 
 Lemma own_slice_split k s dq (vs: list V) low high :

@@ -1,5 +1,6 @@
 From New.proof Require Export proof_prelude.
 From New.golang Require Export defn.lock.
+From New.golang.theory Require Export pre.
 
 From New.proof Require Export tok_set.
 
@@ -9,9 +10,8 @@ From Perennial Require Export base.
 #[local] Transparent lock.trylock lock.lock lock.unlock.
 
 Section proof.
-Context `{heapGS Σ, !ffi_semantics _ _}
-  {core_sem : go.CoreSemantics}
-  {pre_sem : go.PredeclaredSemantics}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
 
 (** This means [m] is a valid mutex with invariant [R]. *)
 Definition is_lock (m: loc) (R : iProp Σ) : iProp Σ :=
@@ -129,7 +129,7 @@ Lemma wp_lock_unlock m R :
   {{{ is_lock m R ∗ own_lock m ∗ ▷ R }}}
     lock.unlock #m
   {{{ RET #(); True }}}.
-Proof using H core_sem ext ffi ffi_interp0 ffi_semantics0 pre_sem Σ.
+Proof.
   wp_start as "(#His & Hlocked & HR)".
   iNamed "His".
   wp_bind (CmpXchg _ _ _).

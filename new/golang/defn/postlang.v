@@ -86,9 +86,6 @@ Class GoSemanticsFunctions {ext : ffi_syntax} :=
     is_type_repr : go.type → Type → Prop;
     struct_field_ref : Type → go_string → loc → loc;
 
-    struct_field_get : go.type → go_string → val → expr;
-    struct_field_set : go.type → go_string → val → val → expr;
-
     (* map index expressions have their own implementation that does not use the
        `Index` primitive. It's statically (even with type parameters) known
        whether an index expression is a map index expression or not a map index
@@ -230,18 +227,21 @@ Class AlwaysSafelyComparable t V `{!EqDecision V} `{!GoSemanticsFunctions} : Pro
 
 Class UnderlyingEq s t `{!GoSemanticsFunctions} : Prop :=
   { underlying_eq : underlying s = underlying t }.
+Global Hint Mode UnderlyingEq + - - : typeclass_instances.
 
 (* This has a transitive instance, so only declare instances in a way that [t']
    is strictly "more underlying" than [t]. An instance with [t = t'] will cause
    an infinite loop in typeclass search because of transitivity. *)
 Class UnderlyingDirectedEq t t' `{!GoSemanticsFunctions} : Prop :=
   { underlying_unfold : underlying t = underlying t' }.
+Global Hint Mode UnderlyingDirectedEq + - - : typeclass_instances.
 
 Class NotNamed (t : go.type) : Prop :=
   { not_named : match t with go.Named _ _ => False | _ => True end }.
 
 Class IsUnderlying t tunder `{!GoSemanticsFunctions} : Prop :=
   { is_underlying : underlying t = tunder }.
+Global Hint Mode IsUnderlying + - - : typeclass_instances.
 
 Notation "s  ≤u  t" := (UnderlyingEq s t) (at level 70).
 Notation "s  <u  t" := (UnderlyingDirectedEq s t) (at level 70).

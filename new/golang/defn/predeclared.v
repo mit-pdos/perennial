@@ -25,6 +25,7 @@ Class Semantics {ext : ffi_syntax} {go_lctx : GoLocalContext}
   {
     #[global] type_repr_Pointer :: go.TypeRepr Pointer loc;
     #[global] go_eq_Pointer :: go.AlwaysSafelyComparable Pointer loc;
+    #[global] underlying_string :: unsafe.Pointer ↓u unsafe.Pointer;
   }.
 End unsafe.
 
@@ -115,6 +116,7 @@ Class IntSemantics `{!GoSemanticsFunctions} :=
 {
   #[global] type_repr_int :: go.TypeRepr go.int w64;
   #[global] comparable_int :: go.IsComparable go.int;
+  #[global] underlying_int :: go.int ↓u go.int;
   #[global] go_eq_int :: go.AlwaysSafelyComparable go.int w64;
   #[global] le_int (v1 v2 : w64) :: go.IsGoOp GoLe go.int (#v1, #v2) #(bool_decide (sint.Z v1 ≤ sint.Z v2));
   #[global] lt_int (v1 v2 : w64) :: go.IsGoOp GoLt go.int (#v1, #v2) #(bool_decide (sint.Z v1 < sint.Z v2));
@@ -133,6 +135,7 @@ Class Int64Semantics `{!GoSemanticsFunctions} :=
 {
   #[global] type_repr_int64 :: go.TypeRepr go.int64 w64;
   #[global] comparable_int64 :: go.IsComparable go.int64;
+  #[global] underlying_int64 :: go.int64 ↓u go.int64;
   #[global] go_eq_int64 :: go.AlwaysSafelyComparable go.int64 w64;
   #[global] le_int64 (v1 v2 : w64) :: go.IsGoOp GoLe go.int64 (#v1, #v2) #(bool_decide (sint.Z v1 ≤ sint.Z v2));
   #[global] lt_int64 (v1 v2 : w64) :: go.IsGoOp GoLt go.int64 (#v1, #v2) #(bool_decide (sint.Z v1 < sint.Z v2));
@@ -151,6 +154,7 @@ Class Int32Semantics `{!GoSemanticsFunctions} :=
 {
   #[global] type_repr_int32 :: go.TypeRepr go.int32 w32;
   #[global] comparable_int32 :: go.IsComparable go.int32;
+  #[global] underlying_int32 :: go.int32 ↓u go.int32;
   #[global] go_eq_int32 :: go.AlwaysSafelyComparable go.int32 w32;
   #[global] le_int32 (v1 v2 : w32) :: go.IsGoOp GoLe go.int32 (#v1, #v2) #(bool_decide (sint.Z v1 ≤ sint.Z v2));
   #[global] lt_int32 (v1 v2 : w32) :: go.IsGoOp GoLt go.int32 (#v1, #v2) #(bool_decide (sint.Z v1 < sint.Z v2));
@@ -169,6 +173,7 @@ Class Int16Semantics `{!GoSemanticsFunctions} :=
 {
   #[global] type_repr_int16 :: go.TypeRepr go.int16 w16;
   #[global] comparable_int16 :: go.IsComparable go.int16;
+  #[global] underlying_int16 :: go.int16 ↓u go.int16;
   #[global] go_eq_int16 :: go.AlwaysSafelyComparable go.int16 w16;
   #[global] le_int16 (v1 v2 : w16) :: go.IsGoOp GoLe go.int16 (#v1, #v2) #(bool_decide (sint.Z v1 ≤ sint.Z v2));
   #[global] lt_int16 (v1 v2 : w16) :: go.IsGoOp GoLt go.int16 (#v1, #v2) #(bool_decide (sint.Z v1 < sint.Z v2));
@@ -187,6 +192,7 @@ Class Int8Semantics `{!GoSemanticsFunctions} :=
 {
   #[global] type_repr_int8 :: go.TypeRepr go.int8 w8;
   #[global] comparable_int8 :: go.IsComparable go.int8;
+  #[global] underlying_int8 :: go.int8 ↓u go.int8;
   #[global] go_eq_int8 :: go.AlwaysSafelyComparable go.int8 w8;
   #[global] le_int8 (v1 v2 : w8) :: go.IsGoOp GoLe go.int8 (#v1, #v2) #(bool_decide (sint.Z v1 ≤ sint.Z v2));
   #[global] lt_int8 (v1 v2 : w8) :: go.IsGoOp GoLt go.int8 (#v1, #v2) #(bool_decide (sint.Z v1 < sint.Z v2));
@@ -205,6 +211,7 @@ Class UintSemantics `{!GoSemanticsFunctions} :=
 {
   #[global] type_repr_uint :: go.TypeRepr go.uint w64;
   #[global] comparable_uint :: go.IsComparable go.uint;
+  #[global] underlying_uint :: go.uint ↓u go.uint;
   #[global] go_eq_uint :: go.AlwaysSafelyComparable go.uint w64;
   #[global] le_uint (v1 v2 : w64) :: go.IsGoOp GoLe go.uint (#v1, #v2) #(bool_decide (uint.Z v1 ≤ uint.Z v2));
   #[global] lt_uint (v1 v2 : w64) :: go.IsGoOp GoLt go.uint (#v1, #v2) #(bool_decide (uint.Z v1 < uint.Z v2));
@@ -223,6 +230,7 @@ Class Uint64Semantics `{!GoSemanticsFunctions} :=
 {
   #[global] type_repr_uint64 :: go.TypeRepr go.uint64 w64;
   #[global] comparable_uint64 :: go.IsComparable go.uint64;
+  #[global] underlying_uint64 :: go.uint64 ↓u go.uint64;
   #[global] go_eq_uint64 :: go.AlwaysSafelyComparable go.uint64 w64;
   #[global] le_uint64 (v1 v2 : w64) :: go.IsGoOp GoLe go.uint64 (#v1, #v2) #(bool_decide (uint.Z v1 ≤ uint.Z v2));
   #[global] lt_uint64 (v1 v2 : w64) :: go.IsGoOp GoLt go.uint64 (#v1, #v2) #(bool_decide (uint.Z v1 < uint.Z v2));
@@ -241,6 +249,7 @@ Class Uint32Semantics `{!GoSemanticsFunctions} :=
 {
   #[global] type_repr_uint32 :: go.TypeRepr go.uint32 w32;
   #[global] comparable_uint32 :: go.IsComparable go.uint32;
+  #[global] underlying_uint32 :: go.uint32 ↓u go.uint32;
   #[global] go_eq_uint32 :: go.AlwaysSafelyComparable go.uint32 w32;
   #[global] le_uint32 (v1 v2 : w32) :: go.IsGoOp GoLe go.uint32 (#v1, #v2) #(bool_decide (uint.Z v1 ≤ uint.Z v2));
   #[global] lt_uint32 (v1 v2 : w32) :: go.IsGoOp GoLt go.uint32 (#v1, #v2) #(bool_decide (uint.Z v1 < uint.Z v2));
@@ -259,6 +268,7 @@ Class Uint16Semantics `{!GoSemanticsFunctions} :=
 {
   #[global] type_repr_uint16 :: go.TypeRepr go.uint16 w16;
   #[global] comparable_uint16 :: go.IsComparable go.uint16;
+  #[global] underlying_uint16 :: go.uint16 ↓u go.uint16;
   #[global] go_eq_uint16 :: go.AlwaysSafelyComparable go.uint16 w16;
   #[global] le_uint16 (v1 v2 : w16) :: go.IsGoOp GoLe go.uint16 (#v1, #v2) #(bool_decide (uint.Z v1 ≤ uint.Z v2));
   #[global] lt_uint16 (v1 v2 : w16) :: go.IsGoOp GoLt go.uint16 (#v1, #v2) #(bool_decide (uint.Z v1 < uint.Z v2));
@@ -277,6 +287,7 @@ Class Uint8Semantics `{!GoSemanticsFunctions} :=
 {
   #[global] type_repr_uint8 :: go.TypeRepr go.uint8 w8;
   #[global] comparable_uint8 :: go.IsComparable go.uint8;
+  #[global] underlying_uint8 :: go.uint8 ↓u go.uint8;
   #[global] go_eq_uint8 :: go.AlwaysSafelyComparable go.uint8 w8;
   #[global] le_uint8 (v1 v2 : w8) :: go.IsGoOp GoLe go.uint8 (#v1, #v2) #(bool_decide (uint.Z v1 ≤ uint.Z v2));
   #[global] lt_uint8 (v1 v2 : w8) :: go.IsGoOp GoLt go.uint8 (#v1, #v2) #(bool_decide (uint.Z v1 < uint.Z v2));
@@ -313,9 +324,13 @@ Class PredeclaredSemantics `{!GoSemanticsFunctions} :=
   max_ordered n t : #(functions max (replicate n t)) = maxⁱᵐᵖˡ t n;
 
   #[global] unsafe_sem :: unsafe.Semantics;
+
   #[global] comparable_bool :: go.IsComparable go.bool;
   #[global] go_eq_bool :: go.AlwaysSafelyComparable go.bool Datatypes.bool;
+  #[global] underlying_bool :: go.bool ↓u go.bool;
   #[global] type_repr_bool :: go.TypeRepr go.bool Datatypes.bool;
+  #[global] convert_untyped_bool `{!to ↓u go.bool} (b : Datatypes.bool) ::
+    go.GoExprEq (Convert go.untyped_bool to #b) #b;
 
   #[global] int_semantics :: IntSemantics;
   #[global] int64_semantics :: Int64Semantics;
@@ -330,23 +345,11 @@ Class PredeclaredSemantics `{!GoSemanticsFunctions} :=
 
   #[global] comparable_string :: go.IsComparable go.string;
   #[global] go_eq_string :: go.AlwaysSafelyComparable go.string go_string;
+  #[global] underlying_string :: go.string ↓u go.string;
   #[global] plus_string (v1 v2 : go_string) :: go.IsGoOp GoPlus go.string (#v1, #v2) #(v1 ++ v2);
   #[global] type_repr_string :: go.TypeRepr go.string go_string;
-  index_string i (s : go_string) b (Hinrange : s !! (Z.to_nat i) = Some b) :
-    index (go.string) i #s = #b;
-
-  #[global] string_len_unfold :: FuncUnfold len [go.string]
-    (λ: "s",
-       if: IsNoStringOverflow "s" then
-         StringLength "s"
-       else AngelicExit #())%V;
-
-  #[global] string_index (s : go_string) i ::
-    go.GoExprEq (index go.string i #s)
-    (match (s !! (Z.to_nat i)) with
-     | Some b => #b
-     | _ => Panic "index out of bounds"
-     end);
+  #[global] convert_untyped_string `{!to ↓u go.string} (s : go_string) ::
+    go.GoExprEq (Convert go.untyped_string to #s) #s;
 }.
 
 End defs.
