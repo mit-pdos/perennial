@@ -98,7 +98,7 @@ Section base.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}
   {sem : go.ChanSemantics}.
-Local Set Default Proof Using "All".
+Local Set Default Proof Using "sem_fn pre_sem sem".
 
 Context `{!chanG Σ V}.
 Context `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}.

@@ -459,6 +459,20 @@ Class PredeclaredSemantics `{!GoSemanticsFunctions} :=
   #[global] type_repr_string :: go.TypeRepr go.string go_string;
   #[global] convert_untyped_string `{!to ↓u go.string} (s : go_string) ::
     go.GoExprEq (Convert go.untyped_string to #s) #s;
+
+  #[global] underlying_untyped_nil :: go.untyped_nil ↓u go.untyped_nil;
+  #[global] convert_nil_pointer elem ::
+    go.ConvertUnderlying go.untyped_nil (go.PointerType elem) UntypedNil #null;
+  #[global] convert_nil_function sig ::
+    go.ConvertUnderlying go.untyped_nil (go.FunctionType sig) UntypedNil #func.nil;
+  #[global] convert_nil_slice elem ::
+    go.ConvertUnderlying go.untyped_nil (go.SliceType elem) UntypedNil #slice.nil;
+  #[global] convert_nil_chan dir elem ::
+    go.ConvertUnderlying go.untyped_nil (go.ChannelType dir elem) UntypedNil #chan.nil;
+  #[global] convert_nil_map key elem ::
+    go.ConvertUnderlying go.untyped_nil (go.MapType key elem) UntypedNil #map.nil;
+  #[global] convert_nil_interface elems ::
+    go.ConvertUnderlying go.untyped_nil (go.InterfaceType elems) UntypedNil #interface.nil;
 }.
 
 End defs.

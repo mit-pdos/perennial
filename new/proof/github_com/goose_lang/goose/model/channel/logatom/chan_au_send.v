@@ -135,7 +135,7 @@ Lemma wp_Cap (ch: loc) (γ: chan_names) :
 Proof.
   wp_start as "#Hch". wp_auto.
   iDestruct (is_channel_not_null with "Hch") as %Hnn.
-  iNamed "Hch". wp_bind.
+  iNamed "Hch".
   rewrite bool_decide_eq_false_2 //.
   wp_auto.
   iApply "HΦ".
