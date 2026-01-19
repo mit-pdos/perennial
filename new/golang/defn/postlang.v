@@ -266,7 +266,7 @@ Class CoreComparisonSemantics `{!GoSemanticsFunctions} : Prop :=
   #[global] is_go_op_go_equals_func_nil_r sig f ::
     IsGoOp GoEquals (go.FunctionType sig) (#func.nil, #f)%V #(bool_decide (f = func.nil));
 
-  #[global] is_comparable_underlying `{!Underlying t tunder} `{!IsComparable tunder} ::
+  #[global] is_comparable_underlying `{!t <u tunder} `{!IsComparable tunder} ::
     IsComparable t;
   #[global] is_comparable_pointer t :: IsComparable (go.PointerType t);
   #[global] go_eq_pointer t :: AlwaysSafelyComparable (go.PointerType t) loc;

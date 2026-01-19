@@ -11,11 +11,9 @@ From Perennial.algebra Require Import ghost_var.
 #[local] Typeclasses Transparent is_channel own_channel.
 
 Section atomic_specs.
-Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
-  {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}.
-Local Set Default Proof Using "All".
-
-Context {package_sem : channel.Assumptions}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}
+  {sem : go.ChanSemantics}.
 Local Set Default Proof Using "All".
 
 Context `[!chanG Σ V].
@@ -38,7 +36,6 @@ Proof.
     assert (sint.Z cap > 0) by word.
     rewrite -wp_fupd.
     wp_auto.
-    wp_bind.
     wp_apply wp_slice_make2; first done.
     iIntros (sl) ("Hsl"). wp_auto.
     wp_alloc ch as "Hch".
@@ -138,7 +135,7 @@ Lemma wp_Cap (ch: loc) (γ: chan_names) :
 Proof.
   wp_start as "#Hch". wp_auto.
   iDestruct (is_channel_not_null with "Hch") as %Hnn.
-  iNamed "Hch".
+  iNamed "Hch". wp_bind.
   rewrite bool_decide_eq_false_2 //.
   wp_auto.
   iApply "HΦ".

@@ -71,6 +71,7 @@ Context {go_lctx : GoLocalContext} {go_gctx : GoGlobalContext}.
 
 Class ChanSemantics `{!GoSemanticsFunctions} :=
 {
+  #[global] package_sem :: channel.Assumptions;
   #[global] make2_chan dir elem_type ::
     FuncUnfold go.make2 [go.ChannelType dir elem_type]
     (λ: "cap", FuncResolve channel.NewChannel [elem_type] #() "cap")%V;
@@ -107,7 +108,6 @@ Class ChanSemantics `{!GoSemanticsFunctions} :=
           if: "succeeded" then "v"
           else (λ: <>, SelectStmt (SelectStmtClauses None clauses))%V #())%E
     );
-  #[global] package_sem :: channel.Assumptions;
 }.
 End defs.
 End go.

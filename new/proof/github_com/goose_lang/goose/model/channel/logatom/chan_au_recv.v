@@ -10,9 +10,8 @@ Require Import New.proof.github_com.goose_lang.primitive.
 
 Section atomic_specs.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}
-  {array_sem : go.ArraySemantics} {slice_sem : go.SliceSemantics}.
-Context {package_sem : channel.Assumptions}.
+Context {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}
+  {sem : go.ChanSemantics}.
 Local Set Default Proof Using "All".
 
 Context `[!chanG Σ V].
