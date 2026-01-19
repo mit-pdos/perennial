@@ -4,11 +4,10 @@ Require Import New.code.github_com.goose_lang.primitive.
 Require Import New.generatedproof.github_com.goose_lang.primitive.
 
 Section wps.
-Context `{hG: heapGS Σ, !ffi_semantics _ _}
-  {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}
-  {array_sem : go.ArraySemantics} {slice_sem : go.SliceSemantics}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
 Context {package_sem : primitive.Assumptions}.
-Local Set Default Proof Using "Type package_sem core_sem pre_sem array_sem slice_sem".
+Local Set Default Proof Using "All".
 
 #[global] Instance : IsPkgInit (iProp Σ) primitive := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf (iProp Σ) primitive := build_get_is_pkg_init_wf.
@@ -85,7 +84,7 @@ Qed.
 Lemma wp_AssumeNoStringOverflow (s: byte_string) :
   {{{ True }}}
     @! primitive.AssumeNoStringOverflow #s
-  {{{ RET #(); ⌜Z.of_nat (length s) < 2^64⌝ }}}.
+  {{{ RET #(); ⌜ Z.of_nat (length s) < 2^63 ⌝ }}}.
 Proof.
   wp_start as "_".
   wp_call.

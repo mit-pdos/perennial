@@ -2,29 +2,22 @@ From New.proof Require Import proof_prelude.
 Require Import New.code.github_com.goose_lang.goose.model.strings.
 Require Import New.generatedproof.github_com.goose_lang.goose.model.strings.
 
-Section string_len_wp.
-Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
-  {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}.
+Section wps.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}
+  {sem : go.StringSemantics}.
+
 Local Set Default Proof Using "All".
 
-Lemma wp_string_len (s : go_string) :
+Lemma wp_string_len (s : go_string) `[!t ↓u go.string] :
   {{{ True }}}
-    (#(functions go.len [go.string]) #s)
+    (#(functions go.len [t]) #s)
   {{{ RET #(W64 (length s)); ⌜ length s < 2^63 ⌝ }}}.
 Proof.
   wp_start. wp_if_destruct.
   - iApply "HΦ". word.
   - wp_apply wp_AngelicExit.
 Qed.
-
-End string_len_wp.
-
-Section wps.
-Context `{hG: heapGS Σ, !ffi_semantics _ _}
-  {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}
-  {array_sem : go.ArraySemantics} {slice_sem : go.SliceSemantics}.
-Context {package_sem : strings.Assumptions}.
-Local Set Default Proof Using "All".
 
 Lemma wp_StringToByteSlice (s : go_string) :
   {{{ True }}}
@@ -83,7 +76,8 @@ Proof.
     { word. }
     { done. }
     iIntros "Hsl".
-    wp_auto. wp_for_post.
+    wp_auto.
+    wp_for_post.
     iFrame. iSplitL; last word.
     iApply to_named. iExactEq "s". f_equal.
     rewrite -take_S_r; last done. f_equal. word.

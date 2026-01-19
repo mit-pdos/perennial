@@ -4,11 +4,10 @@ From New.generatedproof.github_com.goose_lang Require Export std_core.
 From New.proof Require Import github_com.goose_lang.primitive.
 
 Section wps.
-Context `{hG: heapGS Σ, !ffi_semantics _ _}
-  {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}
-  {array_sem : go.ArraySemantics} {slice_sem : go.SliceSemantics}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
 Context {package_sem : std_core.Assumptions}.
-Local Set Default Proof Using "Type package_sem core_sem pre_sem array_sem slice_sem".
+Local Set Default Proof Using "All".
 
 #[global] Instance : IsPkgInit (iProp Σ) std_core := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf (iProp Σ) std_core := build_get_is_pkg_init_wf.

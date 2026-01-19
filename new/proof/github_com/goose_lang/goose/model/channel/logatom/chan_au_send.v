@@ -11,10 +11,10 @@ From Perennial.algebra Require Import ghost_var.
 #[local] Typeclasses Transparent is_channel own_channel.
 
 Section atomic_specs.
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-(* FIXME: bundling? *)
-Context {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}
-  {array_sem : go.ArraySemantics} {slice_sem : go.SliceSemantics}.
+Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
+  {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}.
+Local Set Default Proof Using "All".
+
 
 Context {package_sem : channel.Assumptions}.
 Local Set Default Proof Using "All".
