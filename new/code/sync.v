@@ -973,6 +973,8 @@ Class Once_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext}
 {
   #[global] Once_type_repr  :: go.TypeRepr Once Once.t;
   #[global] Once_underlying :: (Once) <u (Onceⁱᵐᵖˡ);
+  #[global] Once_get__0 (x : Once.t) :: go.IsGoStepPureDet (StructFieldGet (Once) "_0") #x #x.(Once._0');
+  #[global] Once_set__0 (x : Once.t) y :: go.IsGoStepPureDet (StructFieldSet (Once) "_0") (#x, #y) #(x <|Once._0' := y|>);
   #[global] Once_get_done (x : Once.t) :: go.IsGoStepPureDet (StructFieldGet (Once) "done") #x #x.(Once.done');
   #[global] Once_set_done (x : Once.t) y :: go.IsGoStepPureDet (StructFieldSet (Once) "done") (#x, #y) #(x <|Once.done' := y|>);
   #[global] Once_get_m (x : Once.t) :: go.IsGoStepPureDet (StructFieldGet (Once) "m") #x #x.(Once.m');

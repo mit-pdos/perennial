@@ -35,8 +35,6 @@ Ltac solve_into_val_typed := constructor; [solve_wp_alloc|solve_wp_load|solve_wp
 
 Existing Class go.is_predeclared.
 #[local] Hint Extern 1 (go.is_predeclared ?t) => constructor : typeclass_instances.
-Existing Class go.is_predeclared_zero_val.
-#[local] Hint Extern 1 (go.is_predeclared_zero_val ?t ?v) => constructor : typeclass_instances.
 
 Local Set Default Proof Using "All".
 Global Instance into_val_typed_uint64 : IntoValTyped w64 go.uint64.
@@ -73,6 +71,9 @@ Global Instance into_val_typed_bool : IntoValTyped bool go.bool.
 Proof. solve_into_val_typed. Qed.
 
 Global Instance into_val_typed_string : IntoValTyped go_string go.string.
+Proof. solve_into_val_typed. Qed.
+
+Global Instance into_val_typed_Pointer : IntoValTyped loc unsafe.Pointer.
 Proof. solve_into_val_typed. Qed.
 
 End into_val_typed_instances.

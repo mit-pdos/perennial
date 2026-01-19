@@ -868,6 +868,8 @@ Class Bool_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext}
 {
   #[global] Bool_type_repr  :: go.TypeRepr Bool Bool.t;
   #[global] Bool_underlying :: (Bool) <u (Boolⁱᵐᵖˡ);
+  #[global] Bool_get__0 (x : Bool.t) :: go.IsGoStepPureDet (StructFieldGet (Bool) "_0") #x #x.(Bool._0');
+  #[global] Bool_set__0 (x : Bool.t) y :: go.IsGoStepPureDet (StructFieldSet (Bool) "_0") (#x, #y) #(x <|Bool._0' := y|>);
   #[global] Bool_get_v (x : Bool.t) :: go.IsGoStepPureDet (StructFieldGet (Bool) "v") #x #x.(Bool.v');
   #[global] Bool_set_v (x : Bool.t) y :: go.IsGoStepPureDet (StructFieldSet (Bool) "v") (#x, #y) #(x <|Bool.v' := y|>);
   #[global] Bool'ptr_CompareAndSwap_unfold :: MethodUnfold (go.PointerType (Bool)) "CompareAndSwap" (Bool__CompareAndSwapⁱᵐᵖˡ);
@@ -903,6 +905,10 @@ Class Pointer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalConte
 {
   #[global] Pointer_type_repr T T' `{!ZeroVal T'} `{!go.TypeRepr T T'} :: go.TypeRepr (Pointer T) (Pointer.t T');
   #[global] Pointer_underlying T :: (Pointer T) <u (Pointerⁱᵐᵖˡ T);
+  #[global] Pointer_get__0 T T' (x : Pointer.t T') :: go.IsGoStepPureDet (StructFieldGet (Pointer T) "_0") #x #x.(Pointer._0');
+  #[global] Pointer_set__0 T T' (x : Pointer.t T') y :: go.IsGoStepPureDet (StructFieldSet (Pointer T) "_0") (#x, #y) #(x <|Pointer._0' := y|>);
+  #[global] Pointer_get__1 T T' (x : Pointer.t T') :: go.IsGoStepPureDet (StructFieldGet (Pointer T) "_1") #x #x.(Pointer._1');
+  #[global] Pointer_set__1 T T' (x : Pointer.t T') y :: go.IsGoStepPureDet (StructFieldSet (Pointer T) "_1") (#x, #y) #(x <|Pointer._1' := y|>);
   #[global] Pointer_get_v T T' (x : Pointer.t T') :: go.IsGoStepPureDet (StructFieldGet (Pointer T) "v") #x #x.(Pointer.v');
   #[global] Pointer_set_v T T' (x : Pointer.t T') y :: go.IsGoStepPureDet (StructFieldSet (Pointer T) "v") (#x, #y) #(x <|Pointer.v' := y|>);
   #[global] Pointer'ptr_CompareAndSwap_unfold T :: MethodUnfold (go.PointerType (Pointer T)) "CompareAndSwap" (Pointer__CompareAndSwapⁱᵐᵖˡ T);
@@ -936,6 +942,8 @@ Class Int32_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext
 {
   #[global] Int32_type_repr  :: go.TypeRepr Int32 Int32.t;
   #[global] Int32_underlying :: (Int32) <u (Int32ⁱᵐᵖˡ);
+  #[global] Int32_get__0 (x : Int32.t) :: go.IsGoStepPureDet (StructFieldGet (Int32) "_0") #x #x.(Int32._0');
+  #[global] Int32_set__0 (x : Int32.t) y :: go.IsGoStepPureDet (StructFieldSet (Int32) "_0") (#x, #y) #(x <|Int32._0' := y|>);
   #[global] Int32_get_v (x : Int32.t) :: go.IsGoStepPureDet (StructFieldGet (Int32) "v") #x #x.(Int32.v');
   #[global] Int32_set_v (x : Int32.t) y :: go.IsGoStepPureDet (StructFieldSet (Int32) "v") (#x, #y) #(x <|Int32.v' := y|>);
   #[global] Int32'ptr_Add_unfold :: MethodUnfold (go.PointerType (Int32)) "Add" (Int32__Addⁱᵐᵖˡ);
@@ -997,6 +1005,10 @@ Class Int64_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext
 {
   #[global] Int64_type_repr  :: go.TypeRepr Int64 Int64.t;
   #[global] Int64_underlying :: (Int64) <u (Int64ⁱᵐᵖˡ);
+  #[global] Int64_get__0 (x : Int64.t) :: go.IsGoStepPureDet (StructFieldGet (Int64) "_0") #x #x.(Int64._0');
+  #[global] Int64_set__0 (x : Int64.t) y :: go.IsGoStepPureDet (StructFieldSet (Int64) "_0") (#x, #y) #(x <|Int64._0' := y|>);
+  #[global] Int64_get__1 (x : Int64.t) :: go.IsGoStepPureDet (StructFieldGet (Int64) "_1") #x #x.(Int64._1');
+  #[global] Int64_set__1 (x : Int64.t) y :: go.IsGoStepPureDet (StructFieldSet (Int64) "_1") (#x, #y) #(x <|Int64._1' := y|>);
   #[global] Int64_get_v (x : Int64.t) :: go.IsGoStepPureDet (StructFieldGet (Int64) "v") #x #x.(Int64.v');
   #[global] Int64_set_v (x : Int64.t) y :: go.IsGoStepPureDet (StructFieldSet (Int64) "v") (#x, #y) #(x <|Int64.v' := y|>);
   #[global] Int64'ptr_Add_unfold :: MethodUnfold (go.PointerType (Int64)) "Add" (Int64__Addⁱᵐᵖˡ);
@@ -1033,6 +1045,8 @@ Class Uint32_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContex
 {
   #[global] Uint32_type_repr  :: go.TypeRepr Uint32 Uint32.t;
   #[global] Uint32_underlying :: (Uint32) <u (Uint32ⁱᵐᵖˡ);
+  #[global] Uint32_get__0 (x : Uint32.t) :: go.IsGoStepPureDet (StructFieldGet (Uint32) "_0") #x #x.(Uint32._0');
+  #[global] Uint32_set__0 (x : Uint32.t) y :: go.IsGoStepPureDet (StructFieldSet (Uint32) "_0") (#x, #y) #(x <|Uint32._0' := y|>);
   #[global] Uint32_get_v (x : Uint32.t) :: go.IsGoStepPureDet (StructFieldGet (Uint32) "v") #x #x.(Uint32.v');
   #[global] Uint32_set_v (x : Uint32.t) y :: go.IsGoStepPureDet (StructFieldSet (Uint32) "v") (#x, #y) #(x <|Uint32.v' := y|>);
   #[global] Uint32'ptr_Add_unfold :: MethodUnfold (go.PointerType (Uint32)) "Add" (Uint32__Addⁱᵐᵖˡ);
@@ -1071,6 +1085,10 @@ Class Uint64_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContex
 {
   #[global] Uint64_type_repr  :: go.TypeRepr Uint64 Uint64.t;
   #[global] Uint64_underlying :: (Uint64) <u (Uint64ⁱᵐᵖˡ);
+  #[global] Uint64_get__0 (x : Uint64.t) :: go.IsGoStepPureDet (StructFieldGet (Uint64) "_0") #x #x.(Uint64._0');
+  #[global] Uint64_set__0 (x : Uint64.t) y :: go.IsGoStepPureDet (StructFieldSet (Uint64) "_0") (#x, #y) #(x <|Uint64._0' := y|>);
+  #[global] Uint64_get__1 (x : Uint64.t) :: go.IsGoStepPureDet (StructFieldGet (Uint64) "_1") #x #x.(Uint64._1');
+  #[global] Uint64_set__1 (x : Uint64.t) y :: go.IsGoStepPureDet (StructFieldSet (Uint64) "_1") (#x, #y) #(x <|Uint64._1' := y|>);
   #[global] Uint64_get_v (x : Uint64.t) :: go.IsGoStepPureDet (StructFieldGet (Uint64) "v") #x #x.(Uint64.v');
   #[global] Uint64_set_v (x : Uint64.t) y :: go.IsGoStepPureDet (StructFieldSet (Uint64) "v") (#x, #y) #(x <|Uint64.v' := y|>);
   #[global] Uint64'ptr_Add_unfold :: MethodUnfold (go.PointerType (Uint64)) "Add" (Uint64__Addⁱᵐᵖˡ);

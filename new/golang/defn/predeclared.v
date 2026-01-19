@@ -108,21 +108,8 @@ Inductive is_predeclared : go.type → Prop :=
 | is_predeclared_int64 : is_predeclared go.int64
 | is_predeclared_string : is_predeclared go.string
 | is_predeclared_bool : is_predeclared go.bool
+| is_predeclared_Pointer : is_predeclared unsafe.Pointer
 .
-
-Inductive is_predeclared_zero_val : go.type → val → Prop :=
-| is_predeclared_zero_val_uint : is_predeclared_zero_val go.uint #(W64 0)
-| is_predeclared_zero_val_uint8 : is_predeclared_zero_val go.uint8 #(W8 0)
-| is_predeclared_zero_val_uint16 : is_predeclared_zero_val go.uint16 #(W16 0)
-| is_predeclared_zero_val_uint32 : is_predeclared_zero_val go.uint32 #(W32 0)
-| is_predeclared_zero_val_uint64 : is_predeclared_zero_val go.uint64 #(W64 0)
-| is_predeclared_zero_val_int : is_predeclared_zero_val go.int #(W64 0)
-| is_predeclared_zero_val_int8 : is_predeclared_zero_val go.int8 #(W8 0)
-| is_predeclared_zero_val_int16 : is_predeclared_zero_val go.int16 #(W16 0)
-| is_predeclared_zero_val_int32 : is_predeclared_zero_val go.int32 #(W32 0)
-| is_predeclared_zero_val_int64 : is_predeclared_zero_val go.int64 #(W64 0)
-| is_predeclared_zero_val_string : is_predeclared_zero_val go.string #""%go
-| is_predeclared_zero_val_bool : is_predeclared_zero_val go.bool #false.
 
 Class IntSemantics `{!GoSemanticsFunctions} :=
 {
