@@ -91,7 +91,7 @@ Proof.
     - destruct (underlying key_type); try done.
       rewrite (go.go_eq_interface_eq _ l).
       assert (go.GoExprEq (go_eq (go.InterfaceType l) #k #k) v).
-      { unshelve eapply go.go_eq_underlying; last done.
+      { unshelve eapply go.go_eq_underlying.
         constructor. rewrite go.is_underlying go.is_underlying //. }
       wp_auto. wp_end.
     - wp_auto. rewrite decide_True //. wp_auto. wp_end.

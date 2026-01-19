@@ -16,8 +16,8 @@ Module chan.
 
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}
-  {array_sem : go.ArraySemantics} {slice_sem : go.SliceSemantics} {chan_sem : go.ChanSemantics}.
+Context {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}
+  {sem : go.ChanSemantics}.
 Local Set Default Proof Using "All".
 
 Context `[!chanG Σ V].
@@ -83,10 +83,9 @@ Qed.
 End proof.
 
 Section select_proof.
-
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}
-  {array_sem : go.ArraySemantics} {slice_sem : go.SliceSemantics} {chan_sem : go.ChanSemantics}.
+Context {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}
+  {sem : go.ChanSemantics}.
 Local Set Default Proof Using "All".
 
 (* The lemmas use Ψ because the original client-provided `send/rcv_au_slow` will
