@@ -680,7 +680,7 @@ Definition Timeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.t
 Class Time_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Time_type_repr  :: go.TypeRepr Time Time.t;
-  #[global] Time_underlying :: go.Underlying (Time) (Timeⁱᵐᵖˡ);
+  #[global] Time_underlying :: (Time) <u (Timeⁱᵐᵖˡ);
   #[global] Time_get_wall (x : Time.t) :: go.IsGoStepPureDet (StructFieldGet (Time) "wall") #x #x.(Time.wall');
   #[global] Time_set_wall (x : Time.t) y :: go.IsGoStepPureDet (StructFieldSet (Time) "wall") (#x, #y) #(x <|Time.wall' := y|>);
   #[global] Time_get_ext (x : Time.t) :: go.IsGoStepPureDet (StructFieldGet (Time) "ext") #x #x.(Time.ext');
@@ -718,7 +718,7 @@ Definition Timerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.
 Class Timer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Timer_type_repr  :: go.TypeRepr Timer Timer.t;
-  #[global] Timer_underlying :: go.Underlying (Timer) (Timerⁱᵐᵖˡ);
+  #[global] Timer_underlying :: (Timer) <u (Timerⁱᵐᵖˡ);
   #[global] Timer_get_C (x : Timer.t) :: go.IsGoStepPureDet (StructFieldGet (Timer) "C") #x #x.(Timer.C');
   #[global] Timer_set_C (x : Timer.t) y :: go.IsGoStepPureDet (StructFieldSet (Timer) "C") (#x, #y) #(x <|Timer.C' := y|>);
   #[global] Timer_get_initTimer (x : Timer.t) :: go.IsGoStepPureDet (StructFieldGet (Timer) "initTimer") #x #x.(Timer.initTimer');
@@ -891,7 +891,7 @@ Definition Durationⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : 
 Class Duration_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Duration_type_repr  :: go.TypeRepr Duration Duration.t;
-  #[global] Duration_underlying :: go.Underlying (Duration) (Durationⁱᵐᵖˡ);
+  #[global] Duration_underlying :: (Duration) <u (Durationⁱᵐᵖˡ);
 }.
 
 Module Location.

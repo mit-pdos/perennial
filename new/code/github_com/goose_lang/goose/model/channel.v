@@ -829,7 +829,7 @@ Definition offerStateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
 Class offerState_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] offerState_type_repr  :: go.TypeRepr offerState offerState.t;
-  #[global] offerState_underlying :: go.Underlying (offerState) (offerStateⁱᵐᵖˡ);
+  #[global] offerState_underlying :: (offerState) <u (offerStateⁱᵐᵖˡ);
 }.
 
 Module Channel.
@@ -862,7 +862,7 @@ Definition Channelⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T 
 Class Channel_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Channel_type_repr T T' `{!ZeroVal T'} `{!go.TypeRepr T T'} :: go.TypeRepr (Channel T) (Channel.t T');
-  #[global] Channel_underlying T :: go.Underlying (Channel T) (Channelⁱᵐᵖˡ T);
+  #[global] Channel_underlying T :: (Channel T) <u (Channelⁱᵐᵖˡ T);
   #[global] Channel_get_cap T T' (x : Channel.t T') :: go.IsGoStepPureDet (StructFieldGet (Channel T) "cap") #x #x.(Channel.cap');
   #[global] Channel_set_cap T T' (x : Channel.t T') y :: go.IsGoStepPureDet (StructFieldSet (Channel T) "cap") (#x, #y) #(x <|Channel.cap' := y|>);
   #[global] Channel_get_mu T T' (x : Channel.t T') :: go.IsGoStepPureDet (StructFieldGet (Channel T) "mu") #x #x.(Channel.mu');
@@ -897,7 +897,7 @@ Definition SelectDirⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
 Class SelectDir_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] SelectDir_type_repr  :: go.TypeRepr SelectDir SelectDir.t;
-  #[global] SelectDir_underlying :: go.Underlying (SelectDir) (SelectDirⁱᵐᵖˡ);
+  #[global] SelectDir_underlying :: (SelectDir) <u (SelectDirⁱᵐᵖˡ);
 }.
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=

@@ -807,7 +807,7 @@ Definition noCopyⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go
 Class noCopy_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] noCopy_type_repr  :: go.TypeRepr noCopy noCopy.t;
-  #[global] noCopy_underlying :: go.Underlying (noCopy) (noCopyⁱᵐᵖˡ);
+  #[global] noCopy_underlying :: (noCopy) <u (noCopyⁱᵐᵖˡ);
 }.
 
 Module Locker.
@@ -822,7 +822,7 @@ Definition Lockerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go
 Class Locker_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Locker_type_repr  :: go.TypeRepr Locker Locker.t;
-  #[global] Locker_underlying :: go.Underlying (Locker) (Lockerⁱᵐᵖˡ);
+  #[global] Locker_underlying :: (Locker) <u (Lockerⁱᵐᵖˡ);
 }.
 
 Module notifyList.
@@ -881,7 +881,7 @@ Definition Condⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.t
 Class Cond_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Cond_type_repr  :: go.TypeRepr Cond Cond.t;
-  #[global] Cond_underlying :: go.Underlying (Cond) (Condⁱᵐᵖˡ);
+  #[global] Cond_underlying :: (Cond) <u (Condⁱᵐᵖˡ);
   #[global] Cond_get_noCopy (x : Cond.t) :: go.IsGoStepPureDet (StructFieldGet (Cond) "noCopy") #x #x.(Cond.noCopy');
   #[global] Cond_set_noCopy (x : Cond.t) y :: go.IsGoStepPureDet (StructFieldSet (Cond) "noCopy") (#x, #y) #(x <|Cond.noCopy' := y|>);
   #[global] Cond_get_L (x : Cond.t) :: go.IsGoStepPureDet (StructFieldGet (Cond) "L") #x #x.(Cond.L');
@@ -940,7 +940,7 @@ Class entry_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext
 Class Mutex_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Mutex_type_repr  :: go.TypeRepr Mutex Mutex.t;
-  #[global] Mutex_underlying :: go.Underlying (Mutex) (Mutexⁱᵐᵖˡ);
+  #[global] Mutex_underlying :: (Mutex) <u (Mutexⁱᵐᵖˡ);
   #[global] Mutex'ptr_Lock_unfold :: MethodUnfold (go.PointerType (Mutex)) "Lock" (Mutex__Lockⁱᵐᵖˡ);
   #[global] Mutex'ptr_TryLock_unfold :: MethodUnfold (go.PointerType (Mutex)) "TryLock" (Mutex__TryLockⁱᵐᵖˡ);
   #[global] Mutex'ptr_Unlock_unfold :: MethodUnfold (go.PointerType (Mutex)) "Unlock" (Mutex__Unlockⁱᵐᵖˡ);
@@ -972,7 +972,7 @@ Definition Onceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.t
 Class Once_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Once_type_repr  :: go.TypeRepr Once Once.t;
-  #[global] Once_underlying :: go.Underlying (Once) (Onceⁱᵐᵖˡ);
+  #[global] Once_underlying :: (Once) <u (Onceⁱᵐᵖˡ);
   #[global] Once_get_done (x : Once.t) :: go.IsGoStepPureDet (StructFieldGet (Once) "done") #x #x.(Once.done');
   #[global] Once_set_done (x : Once.t) y :: go.IsGoStepPureDet (StructFieldSet (Once) "done") (#x, #y) #(x <|Once.done' := y|>);
   #[global] Once_get_m (x : Once.t) :: go.IsGoStepPureDet (StructFieldGet (Once) "m") #x #x.(Once.m');
@@ -1123,7 +1123,7 @@ Definition RWMutexⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : g
 Class RWMutex_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] RWMutex_type_repr  :: go.TypeRepr RWMutex RWMutex.t;
-  #[global] RWMutex_underlying :: go.Underlying (RWMutex) (RWMutexⁱᵐᵖˡ);
+  #[global] RWMutex_underlying :: (RWMutex) <u (RWMutexⁱᵐᵖˡ);
   #[global] RWMutex_get_w (x : RWMutex.t) :: go.IsGoStepPureDet (StructFieldGet (RWMutex) "w") #x #x.(RWMutex.w');
   #[global] RWMutex_set_w (x : RWMutex.t) y :: go.IsGoStepPureDet (StructFieldSet (RWMutex) "w") (#x, #y) #(x <|RWMutex.w' := y|>);
   #[global] RWMutex_get_writerSem (x : RWMutex.t) :: go.IsGoStepPureDet (StructFieldGet (RWMutex) "writerSem") #x #x.(RWMutex.writerSem');
@@ -1156,7 +1156,7 @@ Definition rlockerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : g
 Class rlocker_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] rlocker_type_repr  :: go.TypeRepr rlocker rlocker.t;
-  #[global] rlocker_underlying :: go.Underlying (rlocker) (rlockerⁱᵐᵖˡ);
+  #[global] rlocker_underlying :: (rlocker) <u (rlockerⁱᵐᵖˡ);
 }.
 
 Module WaitGroup.
@@ -1185,7 +1185,7 @@ Definition WaitGroupⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
 Class WaitGroup_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] WaitGroup_type_repr  :: go.TypeRepr WaitGroup WaitGroup.t;
-  #[global] WaitGroup_underlying :: go.Underlying (WaitGroup) (WaitGroupⁱᵐᵖˡ);
+  #[global] WaitGroup_underlying :: (WaitGroup) <u (WaitGroupⁱᵐᵖˡ);
   #[global] WaitGroup_get_noCopy (x : WaitGroup.t) :: go.IsGoStepPureDet (StructFieldGet (WaitGroup) "noCopy") #x #x.(WaitGroup.noCopy');
   #[global] WaitGroup_set_noCopy (x : WaitGroup.t) y :: go.IsGoStepPureDet (StructFieldSet (WaitGroup) "noCopy") (#x, #y) #(x <|WaitGroup.noCopy' := y|>);
   #[global] WaitGroup_get_state (x : WaitGroup.t) :: go.IsGoStepPureDet (StructFieldGet (WaitGroup) "state") #x #x.(WaitGroup.state');

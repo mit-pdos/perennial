@@ -62,7 +62,7 @@ Definition PublicKeyⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
 Class PublicKey_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] PublicKey_type_repr  :: go.TypeRepr PublicKey PublicKey.t;
-  #[global] PublicKey_underlying :: go.Underlying (PublicKey) (PublicKeyⁱᵐᵖˡ);
+  #[global] PublicKey_underlying :: (PublicKey) <u (PublicKeyⁱᵐᵖˡ);
 }.
 
 Module PrivateKey.

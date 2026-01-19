@@ -212,7 +212,7 @@ Definition Logⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.ty
 Class Log_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Log_type_repr  :: go.TypeRepr Log Log.t;
-  #[global] Log_underlying :: go.Underlying (Log) (Logⁱᵐᵖˡ);
+  #[global] Log_underlying :: (Log) <u (Logⁱᵐᵖˡ);
   #[global] Log_get_m (x : Log.t) :: go.IsGoStepPureDet (StructFieldGet (Log) "m") #x #x.(Log.m');
   #[global] Log_set_m (x : Log.t) y :: go.IsGoStepPureDet (StructFieldSet (Log) "m") (#x, #y) #(x <|Log.m' := y|>);
   #[global] Log_get_sz (x : Log.t) :: go.IsGoStepPureDet (StructFieldGet (Log) "sz") #x #x.(Log.sz');

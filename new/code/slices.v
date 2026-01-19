@@ -1149,7 +1149,7 @@ Definition xorshiftⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : 
 Class xorshift_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] xorshift_type_repr  :: go.TypeRepr xorshift xorshift.t;
-  #[global] xorshift_underlying :: go.Underlying (xorshift) (xorshiftⁱᵐᵖˡ);
+  #[global] xorshift_underlying :: (xorshift) <u (xorshiftⁱᵐᵖˡ);
   #[global] xorshift'ptr_Next_unfold :: MethodUnfold (go.PointerType (xorshift)) "Next" (xorshift__Nextⁱᵐᵖˡ);
 }.
 

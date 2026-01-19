@@ -121,7 +121,7 @@ Definition Contextⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : g
 Class Context_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Context_type_repr  :: go.TypeRepr Context Context.t;
-  #[global] Context_underlying :: go.Underlying (Context) (Contextⁱᵐᵖˡ);
+  #[global] Context_underlying :: (Context) <u (Contextⁱᵐᵖˡ);
 }.
 
 Module deadlineExceededError.
