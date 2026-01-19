@@ -15,7 +15,6 @@ Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
   {core_sem : go.CoreSemantics} {pre_sem : go.PredeclaredSemantics}.
 Local Set Default Proof Using "All".
 
-
 Context {package_sem : channel.Assumptions}.
 Local Set Default Proof Using "All".
 

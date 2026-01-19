@@ -109,8 +109,7 @@ Inductive is_predeclared : go.type → Prop :=
 | is_predeclared_int64 : is_predeclared go.int64
 | is_predeclared_string : is_predeclared go.string
 | is_predeclared_bool : is_predeclared go.bool
-| is_predeclared_Pointer : is_predeclared unsafe.Pointer
-.
+| is_predeclared_Pointer : is_predeclared unsafe.Pointer.
 
 Class IntSemantics `{!GoSemanticsFunctions} :=
 {
@@ -130,6 +129,17 @@ Class IntSemantics `{!GoSemanticsFunctions} :=
   #[global] and_int (v1 v2 : w64) :: go.IsGoOp GoAnd go.int (#v1, #v2) #(word.and v1 v2);
   #[global] or_int (v1 v2 : w64) :: go.IsGoOp GoOr go.int (#v1, #v2) #(word.or v1 v2);
   #[global] xor_int (v1 v2 : w64) :: go.IsGoOp GoXor go.int (#v1, #v2) #(word.xor v1 v2);
+
+  #[global] convert_int_to_int (v : w64) :: go.ConvertUnderlying go.int go.int #v #v;
+  #[global] convert_int64_to_int (v : w64) :: go.ConvertUnderlying go.int64 go.int #v #v;
+  #[global] convert_int32_to_int (v : w32) :: go.ConvertUnderlying go.int32 go.int #v #((W64 $ sint.Z v));
+  #[global] convert_int16_to_int (v : w16) :: go.ConvertUnderlying go.int16 go.int #v #((W64 $ sint.Z v));
+  #[global] convert_int8_to_int (v : w8) :: go.ConvertUnderlying go.int8 go.int #v #((W64 $ sint.Z v));
+  #[global] convert_uint_to_int (v : w64) :: go.ConvertUnderlying go.uint go.int #v #v;
+  #[global] convert_uint64_to_int (v : w64) :: go.ConvertUnderlying go.uint64 go.int #v #v;
+  #[global] convert_uint32_to_int (v : w32) :: go.ConvertUnderlying go.uint32 go.int #v #((W64 $ uint.Z v));
+  #[global] convert_uint16_to_int (v : w16) :: go.ConvertUnderlying go.uint16 go.int #v #((W64 $ uint.Z v));
+  #[global] convert_uint8_to_int (v : w8) :: go.ConvertUnderlying go.uint8 go.int #v #((W64 $ uint.Z v));
 }.
 Class Int64Semantics `{!GoSemanticsFunctions} :=
 {
@@ -149,6 +159,17 @@ Class Int64Semantics `{!GoSemanticsFunctions} :=
   #[global] and_int64 (v1 v2 : w64) :: go.IsGoOp GoAnd go.int64 (#v1, #v2) #(word.and v1 v2);
   #[global] or_int64 (v1 v2 : w64) :: go.IsGoOp GoOr go.int64 (#v1, #v2) #(word.or v1 v2);
   #[global] xor_int64 (v1 v2 : w64) :: go.IsGoOp GoXor go.int64 (#v1, #v2) #(word.xor v1 v2);
+
+  #[global] convert_int_to_int64 (v : w64) :: go.ConvertUnderlying go.int go.int64 #v #v;
+  #[global] convert_int64_to_int64 (v : w64) :: go.ConvertUnderlying go.int64 go.int64 #v #v;
+  #[global] convert_int32_to_int64 (v : w32) :: go.ConvertUnderlying go.int32 go.int64 #v #((W64 $ sint.Z v));
+  #[global] convert_int16_to_int64 (v : w16) :: go.ConvertUnderlying go.int16 go.int64 #v #((W64 $ sint.Z v));
+  #[global] convert_int8_to_int64 (v : w8) :: go.ConvertUnderlying go.int8 go.int64 #v #((W64 $ sint.Z v));
+  #[global] convert_uint_to_int64 (v : w64) :: go.ConvertUnderlying go.uint go.int64 #v #v;
+  #[global] convert_uint64_to_int64 (v : w64) :: go.ConvertUnderlying go.uint64 go.int64 #v #v;
+  #[global] convert_uint32_to_int64 (v : w32) :: go.ConvertUnderlying go.uint32 go.int64 #v #((W64 $ uint.Z v));
+  #[global] convert_uint16_to_int64 (v : w16) :: go.ConvertUnderlying go.uint16 go.int64 #v #((W64 $ uint.Z v));
+  #[global] convert_uint8_to_int64 (v : w8) :: go.ConvertUnderlying go.uint8 go.int64 #v #((W64 $ uint.Z v));
 }.
 Class Int32Semantics `{!GoSemanticsFunctions} :=
 {
@@ -168,6 +189,17 @@ Class Int32Semantics `{!GoSemanticsFunctions} :=
   #[global] and_int32 (v1 v2 : w32) :: go.IsGoOp GoAnd go.int32 (#v1, #v2) #(word.and v1 v2);
   #[global] or_int32 (v1 v2 : w32) :: go.IsGoOp GoOr go.int32 (#v1, #v2) #(word.or v1 v2);
   #[global] xor_int32 (v1 v2 : w32) :: go.IsGoOp GoXor go.int32 (#v1, #v2) #(word.xor v1 v2);
+
+  #[global] convert_int_to_int32 (v : w64) :: go.ConvertUnderlying go.int go.int32 #v #((W32 $ sint.Z v));
+  #[global] convert_int64_to_int32 (v : w64) :: go.ConvertUnderlying go.int64 go.int32 #v #((W32 $ sint.Z v));
+  #[global] convert_int32_to_int32 (v : w32) :: go.ConvertUnderlying go.int32 go.int32 #v #v;
+  #[global] convert_int16_to_int32 (v : w16) :: go.ConvertUnderlying go.int16 go.int32 #v #((W32 $ sint.Z v));
+  #[global] convert_int8_to_int32 (v : w8) :: go.ConvertUnderlying go.int8 go.int32 #v #((W32 $ sint.Z v));
+  #[global] convert_uint_to_int32 (v : w64) :: go.ConvertUnderlying go.uint go.int32 #v #((W32 $ uint.Z v));
+  #[global] convert_uint64_to_int32 (v : w64) :: go.ConvertUnderlying go.uint64 go.int32 #v #((W32 $ uint.Z v));
+  #[global] convert_uint32_to_int32 (v : w32) :: go.ConvertUnderlying go.uint32 go.int32 #v #v;
+  #[global] convert_uint16_to_int32 (v : w16) :: go.ConvertUnderlying go.uint16 go.int32 #v #((W32 $ uint.Z v));
+  #[global] convert_uint8_to_int32 (v : w8) :: go.ConvertUnderlying go.uint8 go.int32 #v #((W32 $ uint.Z v));
 }.
 Class Int16Semantics `{!GoSemanticsFunctions} :=
 {
@@ -187,6 +219,17 @@ Class Int16Semantics `{!GoSemanticsFunctions} :=
   #[global] and_int16 (v1 v2 : w16) :: go.IsGoOp GoAnd go.int16 (#v1, #v2) #(word.and v1 v2);
   #[global] or_int16 (v1 v2 : w16) :: go.IsGoOp GoOr go.int16 (#v1, #v2) #(word.or v1 v2);
   #[global] xor_int16 (v1 v2 : w16) :: go.IsGoOp GoXor go.int16 (#v1, #v2) #(word.xor v1 v2);
+
+  #[global] convert_int_to_int16 (v : w64) :: go.ConvertUnderlying go.int go.int16 #v #((W16 $ sint.Z v));
+  #[global] convert_int64_to_int16 (v : w64) :: go.ConvertUnderlying go.int64 go.int16 #v #((W16 $ sint.Z v));
+  #[global] convert_int32_to_int16 (v : w32) :: go.ConvertUnderlying go.int32 go.int16 #v #((W16 $ sint.Z v));
+  #[global] convert_int16_to_int16 (v : w16) :: go.ConvertUnderlying go.int16 go.int16 #v #v;
+  #[global] convert_int8_to_int16 (v : w8) :: go.ConvertUnderlying go.int8 go.int16 #v #((W16 $ sint.Z v));
+  #[global] convert_uint_to_int16 (v : w64) :: go.ConvertUnderlying go.uint go.int16 #v #((W16 $ uint.Z v));
+  #[global] convert_uint64_to_int16 (v : w64) :: go.ConvertUnderlying go.uint64 go.int16 #v #((W16 $ uint.Z v));
+  #[global] convert_uint32_to_int16 (v : w32) :: go.ConvertUnderlying go.uint32 go.int16 #v #((W16 $ uint.Z v));
+  #[global] convert_uint16_to_int16 (v : w16) :: go.ConvertUnderlying go.uint16 go.int16 #v #v;
+  #[global] convert_uint8_to_int16 (v : w8) :: go.ConvertUnderlying go.uint8 go.int16 #v #((W16 $ uint.Z v));
 }.
 Class Int8Semantics `{!GoSemanticsFunctions} :=
 {
@@ -206,6 +249,17 @@ Class Int8Semantics `{!GoSemanticsFunctions} :=
   #[global] and_int8 (v1 v2 : w8) :: go.IsGoOp GoAnd go.int8 (#v1, #v2) #(word.and v1 v2);
   #[global] or_int8 (v1 v2 : w8) :: go.IsGoOp GoOr go.int8 (#v1, #v2) #(word.or v1 v2);
   #[global] xor_int8 (v1 v2 : w8) :: go.IsGoOp GoXor go.int8 (#v1, #v2) #(word.xor v1 v2);
+
+  #[global] convert_int_to_int8 (v : w64) :: go.ConvertUnderlying go.int go.int8 #v #((W8 $ sint.Z v));
+  #[global] convert_int64_to_int8 (v : w64) :: go.ConvertUnderlying go.int64 go.int8 #v #((W8 $ sint.Z v));
+  #[global] convert_int32_to_int8 (v : w32) :: go.ConvertUnderlying go.int32 go.int8 #v #((W8 $ sint.Z v));
+  #[global] convert_int16_to_int8 (v : w16) :: go.ConvertUnderlying go.int16 go.int8 #v #((W8 $ sint.Z v));
+  #[global] convert_int8_to_int8 (v : w8) :: go.ConvertUnderlying go.int8 go.int8 #v #v;
+  #[global] convert_uint_to_int8 (v : w64) :: go.ConvertUnderlying go.uint go.int8 #v #((W8 $ uint.Z v));
+  #[global] convert_uint64_to_int8 (v : w64) :: go.ConvertUnderlying go.uint64 go.int8 #v #((W8 $ uint.Z v));
+  #[global] convert_uint32_to_int8 (v : w32) :: go.ConvertUnderlying go.uint32 go.int8 #v #((W8 $ uint.Z v));
+  #[global] convert_uint16_to_int8 (v : w16) :: go.ConvertUnderlying go.uint16 go.int8 #v #((W8 $ uint.Z v));
+  #[global] convert_uint8_to_int8 (v : w8) :: go.ConvertUnderlying go.uint8 go.int8 #v #v;
 }.
 Class UintSemantics `{!GoSemanticsFunctions} :=
 {
@@ -225,6 +279,17 @@ Class UintSemantics `{!GoSemanticsFunctions} :=
   #[global] and_uint (v1 v2 : w64) :: go.IsGoOp GoAnd go.uint (#v1, #v2) #(word.and v1 v2);
   #[global] or_uint (v1 v2 : w64) :: go.IsGoOp GoOr go.uint (#v1, #v2) #(word.or v1 v2);
   #[global] xor_uint (v1 v2 : w64) :: go.IsGoOp GoXor go.uint (#v1, #v2) #(word.xor v1 v2);
+
+  #[global] convert_int_to_uint (v : w64) :: go.ConvertUnderlying go.int go.uint #v #v;
+  #[global] convert_int64_to_uint (v : w64) :: go.ConvertUnderlying go.int64 go.uint #v #v;
+  #[global] convert_int32_to_uint (v : w32) :: go.ConvertUnderlying go.int32 go.uint #v #((W64 $ sint.Z v));
+  #[global] convert_int16_to_uint (v : w16) :: go.ConvertUnderlying go.int16 go.uint #v #((W64 $ sint.Z v));
+  #[global] convert_int8_to_uint (v : w8) :: go.ConvertUnderlying go.int8 go.uint #v #((W64 $ sint.Z v));
+  #[global] convert_uint_to_uint (v : w64) :: go.ConvertUnderlying go.uint go.uint #v #v;
+  #[global] convert_uint64_to_uint (v : w64) :: go.ConvertUnderlying go.uint64 go.uint #v #v;
+  #[global] convert_uint32_to_uint (v : w32) :: go.ConvertUnderlying go.uint32 go.uint #v #((W64 $ uint.Z v));
+  #[global] convert_uint16_to_uint (v : w16) :: go.ConvertUnderlying go.uint16 go.uint #v #((W64 $ uint.Z v));
+  #[global] convert_uint8_to_uint (v : w8) :: go.ConvertUnderlying go.uint8 go.uint #v #((W64 $ uint.Z v));
 }.
 Class Uint64Semantics `{!GoSemanticsFunctions} :=
 {
@@ -244,6 +309,17 @@ Class Uint64Semantics `{!GoSemanticsFunctions} :=
   #[global] and_uint64 (v1 v2 : w64) :: go.IsGoOp GoAnd go.uint64 (#v1, #v2) #(word.and v1 v2);
   #[global] or_uint64 (v1 v2 : w64) :: go.IsGoOp GoOr go.uint64 (#v1, #v2) #(word.or v1 v2);
   #[global] xor_uint64 (v1 v2 : w64) :: go.IsGoOp GoXor go.uint64 (#v1, #v2) #(word.xor v1 v2);
+
+  #[global] convert_int_to_uint64 (v : w64) :: go.ConvertUnderlying go.int go.uint64 #v #v;
+  #[global] convert_int64_to_uint64 (v : w64) :: go.ConvertUnderlying go.int64 go.uint64 #v #v;
+  #[global] convert_int32_to_uint64 (v : w32) :: go.ConvertUnderlying go.int32 go.uint64 #v #((W64 $ sint.Z v));
+  #[global] convert_int16_to_uint64 (v : w16) :: go.ConvertUnderlying go.int16 go.uint64 #v #((W64 $ sint.Z v));
+  #[global] convert_int8_to_uint64 (v : w8) :: go.ConvertUnderlying go.int8 go.uint64 #v #((W64 $ sint.Z v));
+  #[global] convert_uint_to_uint64 (v : w64) :: go.ConvertUnderlying go.uint go.uint64 #v #v;
+  #[global] convert_uint64_to_uint64 (v : w64) :: go.ConvertUnderlying go.uint64 go.uint64 #v #v;
+  #[global] convert_uint32_to_uint64 (v : w32) :: go.ConvertUnderlying go.uint32 go.uint64 #v #((W64 $ uint.Z v));
+  #[global] convert_uint16_to_uint64 (v : w16) :: go.ConvertUnderlying go.uint16 go.uint64 #v #((W64 $ uint.Z v));
+  #[global] convert_uint8_to_uint64 (v : w8) :: go.ConvertUnderlying go.uint8 go.uint64 #v #((W64 $ uint.Z v));
 }.
 Class Uint32Semantics `{!GoSemanticsFunctions} :=
 {
@@ -263,6 +339,17 @@ Class Uint32Semantics `{!GoSemanticsFunctions} :=
   #[global] and_uint32 (v1 v2 : w32) :: go.IsGoOp GoAnd go.uint32 (#v1, #v2) #(word.and v1 v2);
   #[global] or_uint32 (v1 v2 : w32) :: go.IsGoOp GoOr go.uint32 (#v1, #v2) #(word.or v1 v2);
   #[global] xor_uint32 (v1 v2 : w32) :: go.IsGoOp GoXor go.uint32 (#v1, #v2) #(word.xor v1 v2);
+
+  #[global] convert_int_to_uint32 (v : w64) :: go.ConvertUnderlying go.int go.uint32 #v #((W32 $ sint.Z v));
+  #[global] convert_int64_to_uint32 (v : w64) :: go.ConvertUnderlying go.int64 go.uint32 #v #((W32 $ sint.Z v));
+  #[global] convert_int32_to_uint32 (v : w32) :: go.ConvertUnderlying go.int32 go.uint32 #v #v;
+  #[global] convert_int16_to_uint32 (v : w16) :: go.ConvertUnderlying go.int16 go.uint32 #v #((W32 $ sint.Z v));
+  #[global] convert_int8_to_uint32 (v : w8) :: go.ConvertUnderlying go.int8 go.uint32 #v #((W32 $ sint.Z v));
+  #[global] convert_uint_to_uint32 (v : w64) :: go.ConvertUnderlying go.uint go.uint32 #v #((W32 $ uint.Z v));
+  #[global] convert_uint64_to_uint32 (v : w64) :: go.ConvertUnderlying go.uint64 go.uint32 #v #((W32 $ uint.Z v));
+  #[global] convert_uint32_to_uint32 (v : w32) :: go.ConvertUnderlying go.uint32 go.uint32 #v #v;
+  #[global] convert_uint16_to_uint32 (v : w16) :: go.ConvertUnderlying go.uint16 go.uint32 #v #((W32 $ uint.Z v));
+  #[global] convert_uint8_to_uint32 (v : w8) :: go.ConvertUnderlying go.uint8 go.uint32 #v #((W32 $ uint.Z v));
 }.
 Class Uint16Semantics `{!GoSemanticsFunctions} :=
 {
@@ -282,6 +369,17 @@ Class Uint16Semantics `{!GoSemanticsFunctions} :=
   #[global] and_uint16 (v1 v2 : w16) :: go.IsGoOp GoAnd go.uint16 (#v1, #v2) #(word.and v1 v2);
   #[global] or_uint16 (v1 v2 : w16) :: go.IsGoOp GoOr go.uint16 (#v1, #v2) #(word.or v1 v2);
   #[global] xor_uint16 (v1 v2 : w16) :: go.IsGoOp GoXor go.uint16 (#v1, #v2) #(word.xor v1 v2);
+
+  #[global] convert_int_to_uint16 (v : w64) :: go.ConvertUnderlying go.int go.uint16 #v #((W16 $ sint.Z v));
+  #[global] convert_int64_to_uint16 (v : w64) :: go.ConvertUnderlying go.int64 go.uint16 #v #((W16 $ sint.Z v));
+  #[global] convert_int32_to_uint16 (v : w32) :: go.ConvertUnderlying go.int32 go.uint16 #v #((W16 $ sint.Z v));
+  #[global] convert_int16_to_uint16 (v : w16) :: go.ConvertUnderlying go.int16 go.uint16 #v #v;
+  #[global] convert_int8_to_uint16 (v : w8) :: go.ConvertUnderlying go.int8 go.uint16 #v #((W16 $ sint.Z v));
+  #[global] convert_uint_to_uint16 (v : w64) :: go.ConvertUnderlying go.uint go.uint16 #v #((W16 $ uint.Z v));
+  #[global] convert_uint64_to_uint16 (v : w64) :: go.ConvertUnderlying go.uint64 go.uint16 #v #((W16 $ uint.Z v));
+  #[global] convert_uint32_to_uint16 (v : w32) :: go.ConvertUnderlying go.uint32 go.uint16 #v #((W16 $ uint.Z v));
+  #[global] convert_uint16_to_uint16 (v : w16) :: go.ConvertUnderlying go.uint16 go.uint16 #v #v;
+  #[global] convert_uint8_to_uint16 (v : w8) :: go.ConvertUnderlying go.uint8 go.uint16 #v #((W16 $ uint.Z v));
 }.
 Class Uint8Semantics `{!GoSemanticsFunctions} :=
 {
@@ -301,6 +399,17 @@ Class Uint8Semantics `{!GoSemanticsFunctions} :=
   #[global] and_uint8 (v1 v2 : w8) :: go.IsGoOp GoAnd go.uint8 (#v1, #v2) #(word.and v1 v2);
   #[global] or_uint8 (v1 v2 : w8) :: go.IsGoOp GoOr go.uint8 (#v1, #v2) #(word.or v1 v2);
   #[global] xor_uint8 (v1 v2 : w8) :: go.IsGoOp GoXor go.uint8 (#v1, #v2) #(word.xor v1 v2);
+
+  #[global] convert_int_to_uint8 (v : w64) :: go.ConvertUnderlying go.int go.uint8 #v #((W8 $ sint.Z v));
+  #[global] convert_int64_to_uint8 (v : w64) :: go.ConvertUnderlying go.int64 go.uint8 #v #((W8 $ sint.Z v));
+  #[global] convert_int32_to_uint8 (v : w32) :: go.ConvertUnderlying go.int32 go.uint8 #v #((W8 $ sint.Z v));
+  #[global] convert_int16_to_uint8 (v : w16) :: go.ConvertUnderlying go.int16 go.uint8 #v #((W8 $ sint.Z v));
+  #[global] convert_int8_to_uint8 (v : w8) :: go.ConvertUnderlying go.int8 go.uint8 #v #v;
+  #[global] convert_uint_to_uint8 (v : w64) :: go.ConvertUnderlying go.uint go.uint8 #v #((W8 $ uint.Z v));
+  #[global] convert_uint64_to_uint8 (v : w64) :: go.ConvertUnderlying go.uint64 go.uint8 #v #((W8 $ uint.Z v));
+  #[global] convert_uint32_to_uint8 (v : w32) :: go.ConvertUnderlying go.uint32 go.uint8 #v #((W8 $ uint.Z v));
+  #[global] convert_uint16_to_uint8 (v : w16) :: go.ConvertUnderlying go.uint16 go.uint8 #v #((W8 $ uint.Z v));
+  #[global] convert_uint8_to_uint8 (v : w8) :: go.ConvertUnderlying go.uint8 go.uint8 #v #v;
 }.
 
 Class PredeclaredSemantics `{!GoSemanticsFunctions} :=

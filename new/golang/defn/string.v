@@ -18,11 +18,8 @@ Class StringSemantics `{!GoSemanticsFunctions} :=
     go.GoExprEq (index t i #s)
     (match (s !! (Z.to_nat i)) with Some b => #b | _ => Panic "index out of bounds" end);
 
-  #[global] convert_byte_to_string (c : w8) `{!from ↓u go.byte} `{!to ↓u go.string} ::
-    go.GoExprEq (Convert from to #c) #([c]);
-
-  convert_byte_slice_to_string (c : w8) `{!from ↓u go.byte} `{!to ↓u go.string} ::
-    go.GoExprEq (Convert from to #c) #([c]);
+  #[global] convert_byte_to_string (c : w8) ::
+    go.ConvertUnderlying go.byte go.string #c #([c]);
 
   convert_bytes_to_string (v : val)
     `{!from ↓u go.SliceType elem_type} `{!elem_type ↓u go.byte} `{!to ↓u go.string} ::

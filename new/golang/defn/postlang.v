@@ -247,6 +247,12 @@ Notation "s  ≤u  t" := (UnderlyingEq s t) (at level 70).
 Notation "s  <u  t" := (UnderlyingDirectedEq s t) (at level 70).
 Notation "t  ↓u  tunder" := (IsUnderlying t tunder) (at level 70).
 
+Class ConvertUnderlying from_under to_under (v v' : val) `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] convert_underlying `{!from ↓u from_under} `{!to ↓u to_under} ::
+    GoExprEq (Convert from to v) v'
+}.
+
 Class CoreComparisonSemantics `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] go_op_underlying `{!t <u tunder} `{!GoExprEq (go_op o tunder args) e} ::
