@@ -1674,8 +1674,8 @@ Definition val_cmpxchg_safe (v : val) : bool :=
   match v with
   | LitV l =>
       match l with
-      | LitInt _ | LitInt32 _ | LitInt16 _ | LitByte _ => true
-      | LitBool _ => true (* for old goose lock.v *)
+      | LitInt _ | LitInt32 _ | LitInt16 _ | LitByte _
+      | LitBool _ | LitLoc _ => true
       | _ => false
       end
   | _ => false
