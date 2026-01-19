@@ -837,8 +837,7 @@ Proof.
       f_equal.
       word.
     }
-    iEval (rewrite (slice_slice_trivial sl (V:=V))).
-    rewrite <- slice_slice_trivial. iFrame.
+    iFrame.
 Qed.
 
 End wps.

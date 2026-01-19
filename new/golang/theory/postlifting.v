@@ -396,8 +396,12 @@ End typed_pointsto_instances.
 Section underlying_instances.
 Context {ext : ffi_syntax} {go_lctx : GoLocalContext}
   {go_gctx : GoGlobalContext} `{!GoSemanticsFunctions}.
-#[global] Instance UnderlyingEq t : t ≤u t.
+
+#[global] Instance underlying_eq t : t ≤u t.
 Proof. done. Qed.
+
+#[global] Instance unfold_to_underlying_eq `{!t <u t'} : t ≤u t'.
+Proof. constructor. rewrite go.underlying_unfold //. Qed.
 
 #[global] Instance is_underlying_unfold `{!t <u t'} `{!t' ↓u tunder} : t ↓u tunder.
 Proof. constructor. rewrite go.underlying_unfold. apply go.is_underlying. Qed.
