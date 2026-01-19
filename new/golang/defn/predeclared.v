@@ -25,7 +25,11 @@ Class Semantics {ext : ffi_syntax} {go_lctx : GoLocalContext}
   {
     #[global] type_repr_Pointer :: go.TypeRepr Pointer loc;
     #[global] go_eq_Pointer :: go.AlwaysSafelyComparable Pointer loc;
-    #[global] underlying_string :: unsafe.Pointer ↓u unsafe.Pointer;
+    #[global] underlying_pointer :: unsafe.Pointer ↓u unsafe.Pointer;
+    #[global] convert_unsafe_to_pointer elem (l : loc) ::
+      go.ConvertUnderlying unsafe.Pointer (go.PointerType elem) #l #l;
+    #[global] convert_pointer_to_unsafe elem (l : loc) ::
+      go.ConvertUnderlying (go.PointerType elem) unsafe.Pointer #l #l;
   }.
 End unsafe.
 
