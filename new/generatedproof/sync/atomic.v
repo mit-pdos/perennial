@@ -2,7 +2,6 @@
 Require Export New.proof.proof_prelude.
 Require Export New.manualproof.sync.atomic.
 Require Export New.golang.theory.
-
 Require Export New.code.sync.atomic.
 
 Set Default Proof Using "Type".

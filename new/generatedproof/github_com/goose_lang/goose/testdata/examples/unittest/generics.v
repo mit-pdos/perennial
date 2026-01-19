@@ -2,7 +2,6 @@
 Require Export New.proof.proof_prelude.
 Require Export New.generatedproof.github_com.goose_lang.goose.testdata.examples.unittest.generics.helpers.
 Require Export New.golang.theory.
-
 Require Export New.code.github_com.goose_lang.goose.testdata.examples.unittest.generics.
 
 Set Default Proof Using "Type".

@@ -7,7 +7,6 @@ Require Export New.generatedproof.github_com.goose_lang.std.
 Require Export New.generatedproof.log.
 Require Export New.generatedproof.sync.
 Require Export New.golang.theory.
-
 Require Export New.code.github_com.goose_lang.goose.testdata.examples.unittest.
 
 Set Default Proof Using "Type".

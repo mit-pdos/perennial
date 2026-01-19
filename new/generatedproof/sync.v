@@ -5,7 +5,6 @@ Require Export New.generatedproof.internal.race.
 Require Export New.generatedproof.internal.synctest.
 Require Export New.generatedproof.sync.atomic.
 Require Export New.golang.theory.
-
 Require Export New.code.sync.
 
 Set Default Proof Using "Type".

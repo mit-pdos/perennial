@@ -4,7 +4,6 @@ Require Export New.generatedproof.github_com.goose_lang.primitive.disk.
 Require Export New.generatedproof.github_com.tchajed.marshal.
 Require Export New.generatedproof.sync.
 Require Export New.golang.theory.
-
 Require Export New.code.github_com.goose_lang.goose.testdata.examples.append_log.
 
 Set Default Proof Using "Type".

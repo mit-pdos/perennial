@@ -2,7 +2,6 @@
 Require Export New.proof.proof_prelude.
 Require Export New.manualproof.internal.synctest.
 Require Export New.golang.theory.
-
 Require Export New.code.internal.synctest.
 
 Set Default Proof Using "Type".

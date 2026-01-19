@@ -2,7 +2,6 @@
 Require Export New.proof.proof_prelude.
 Require Export New.manualproof.time.
 Require Export New.golang.theory.
-
 Require Export New.code.time.
 
 Set Default Proof Using "Type".

@@ -2,7 +2,6 @@
 Require Export New.proof.proof_prelude.
 Require Export New.manualproof.runtime.
 Require Export New.golang.theory.
-
 Require Export New.code.runtime.
 
 Set Default Proof Using "Type".

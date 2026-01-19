@@ -2,7 +2,6 @@
 Require Export New.proof.disk_prelude.
 Require Export New.manualproof.github_com.goose_lang.primitive.disk.
 Require Export New.golang.theory.
-
 Require Export New.code.github_com.goose_lang.primitive.disk.
 
 Set Default Proof Using "Type".

@@ -4,7 +4,6 @@ Require Export New.generatedproof.strings.
 Require Export New.generatedproof.sync.
 Require Export New.generatedproof.time.
 Require Export New.golang.theory.
-
 Require Export New.code.github_com.goose_lang.goose.testdata.examples.channel.
 
 Set Default Proof Using "Type".

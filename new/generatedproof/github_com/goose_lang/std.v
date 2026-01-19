@@ -6,7 +6,6 @@ Require Export New.generatedproof.math.
 Require Export New.generatedproof.sync.
 Require Export New.generatedproof.time.
 Require Export New.golang.theory.
-
 Require Export New.code.github_com.goose_lang.std.
 
 Set Default Proof Using "Type".

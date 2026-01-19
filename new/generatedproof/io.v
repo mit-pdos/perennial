@@ -3,7 +3,6 @@ Require Export New.proof.proof_prelude.
 Require Export New.generatedproof.errors.
 Require Export New.generatedproof.sync.
 Require Export New.golang.theory.
-
 Require Export New.code.io.
 
 Set Default Proof Using "Type".
