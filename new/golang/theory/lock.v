@@ -139,9 +139,8 @@ Proof.
   iCombine "Hl Hlocked" gives %[=]. subst.
   iCombine "Hl Hlocked" as "Hl".
   rewrite Qp.quarter_three_quarter.
-  iApply (wp_cmpxchg_suc with "[$]").
-  { econstructor. }
-  iIntros "!# Hl".
+  wp_apply (wp_cmpxchg_suc with "[$]"); first done.
+  iIntros "Hl".
   iModIntro.
   iSplitR "HΦ"; last by wp_auto; iApply "HΦ".
   iEval (rewrite -Qp.quarter_three_quarter) in "Hl".
