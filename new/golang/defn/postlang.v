@@ -157,6 +157,9 @@ Inductive is_primitive_zero_val : go.type → val → Prop :=
 | is_primitive_zero_val_map kt vt : is_primitive_zero_val (go.MapType kt vt) #null
 | is_primitive_zero_val_channel dir t : is_primitive_zero_val (go.ChannelType dir t) #null.
 
+Global Instance interface_ok_eq_dec : EqDecision interface.t_ok.
+Proof. solve_decision. Qed.
+
 Global Instance interface_eq_dec : EqDecision interface.t.
 Proof. solve_decision. Qed.
 
@@ -273,17 +276,6 @@ Class CoreComparisonSemantics `{!GoSemanticsFunctions} : Prop :=
 
   #[global] is_comparable_channel t dir :: IsComparable (go.ChannelType t dir);
   #[global] go_eq_channel t dir :: AlwaysSafelyComparable (go.ChannelType t dir) loc;
-
-  #[global] is_comparable_interface elems :: IsComparable (go.InterfaceType elems);
-  #[global] go_eq_interface elems i1 i2 ::
-    GoExprEq (go_eq (go.InterfaceType elems) #i1 #i2)
-      (match i1, i2 with
-       | interface.nil, interface.nil => #true
-       | (interface.mk t1 v1), (interface.mk t2 v2) =>
-           if decide (t1 = t2) then go_eq t1 v1 v2
-           else #false
-       | _, _ => #false
-       end);
 
   is_comparable_struct fds :
     IsComparable (go.StructType fds) ↔

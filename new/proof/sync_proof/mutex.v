@@ -77,9 +77,9 @@ Proof.
   by iApply "HΦ".
 Qed.
 
-Definition is_Locker (i : interface.t) (P : iProp Σ) : iProp Σ :=
-  "#H_Lock" ∷ ({{{ True }}} (InterfaceGet "Lock" #i) #() {{{ RET #(); P }}}) ∗
-  "#H_Unlock" ∷ ({{{ P }}} (InterfaceGet "Unlock" #i) #() {{{ RET #(); True }}}).
+Definition is_Locker (i : interface.t_ok) (P : iProp Σ) : iProp Σ :=
+  "#H_Lock" ∷ ({{{ True }}} #(methods i.(interface.ty) "Lock") i.(interface.v) #() {{{ RET #(); P }}}) ∗
+  "#H_Unlock" ∷ ({{{ P }}} #(methods i.(interface.ty) "Unlock") i.(interface.v) #() {{{ RET #(); True }}}).
 
 Global Instance is_Locker_persistent v P : Persistent (is_Locker v P) := _.
 
@@ -90,11 +90,9 @@ Lemma Mutex_is_Locker (m : loc) R :
 Proof.
   iIntros "#? #?".
   iSplitL.
-  - iIntros (?) "!# _ HΦ".
-    wp_auto.
+  - iIntros (?) "!# _ HΦ". simpl.
     by wp_apply (wp_Mutex__Lock with "[$]").
-  - iIntros (?) "!# [? ?] HΦ".
-    wp_auto.
+  - iIntros (?) "!# [? ?] HΦ". simpl.
     wp_apply (wp_Mutex__Unlock with "[-HΦ]").
     { iFrame "#∗". }
     by iApply "HΦ".

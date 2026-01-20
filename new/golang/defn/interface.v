@@ -33,46 +33,49 @@ Definition type_set_contains {go_ctx : GoLocalContext} t t' : bool :=
 
 Class InterfaceSemantics :=
 {
+  #[global] is_comparable_interface elems :: go.IsComparable (go.InterfaceType elems);
+  #[global] go_eq_interface elems i1 i2 ::
+    go.GoExprEq (go_eq (go.InterfaceType elems) #i1 #i2)
+      (match i1, i2 with
+       | interface.nil, interface.nil => #true
+       | (interface.ok i1), (interface.ok i2) =>
+           if decide (i1.(interface.ty) = i2.(interface.ty)) then
+             go_eq i1.(interface.ty) i1.(interface.v) i2.(interface.v)
+           else #false
+       | _, _ => #false
+       end);
   #[global] convert_to_interface (v : val)
     `{!from ↓u funder} `{!to ≤u go.InterfaceType elems} ::
     go.GoExprEq (Convert from to v)
-      (Val (if is_interface_type funder then v else #(interface.mk from v)));
+      (Val (if is_interface_type funder then v else #(interface.mk_ok from v)));
 
-  (* The [InterfaceGet] step could be combined into a single instance (like TypeAssert below),
-     but that would result in InterfaceGet always reducing on any [i :
-     interface.t]. But, the spec for [sync.Locker] is written in terms of specs about
-     [InterfaceGet m i]. So, this here makes sure that InterfaceGet only reduces
-     if there's a concrete term like [#interface.nil] or [#(interface.mk _ _)].
-     It might be better to always reduce, but then require a type for valid
-     interfaces for specs like is_Locker.
-   *)
-  #[global] interface_get_step_nil m ::
-    go.IsGoStepPureDet (InterfaceGet m) #interface.nil
-     (Panic "nil dereference in interface call");
-  #[global] interface_get_step_ok m t v ::
-    go.IsGoStepPureDet (InterfaceGet m) #(interface.mk t v)
-    (λ: "arg1", #(methods t m) v "arg1")%E;
+  #[global] interface_get_step_nil m i ::
+    go.IsGoStepPureDet (InterfaceGet m) #i
+    (match i with
+     | interface.nil => (Panic "nil dereference in interface call")
+     | interface.ok i => (λ: "arg1", #(methods i.(interface.ty) m) i.(interface.v) "arg1")%E
+     end);
 
   #[global] type_assert_step `{!t ↓u tunder} i ::
     go.IsGoStepPureDet (TypeAssert t) #i
     (match i with
      | interface.nil => Panic "type assert failed"
-     | interface.mk dt v =>
+     | interface.ok i =>
          if is_interface_type tunder then
-           if (type_set_contains dt t) then #i else Panic "type assert failed"
+           if (type_set_contains i.(interface.ty) t) then #i else Panic "type assert failed"
          else
-           if decide (t = dt) then v else Panic "type assert failed"
+           if decide (t = i.(interface.ty)) then i.(interface.v) else Panic "type assert failed"
      end);
 
   #[global] type_assert2_interface_step `{!t ↓u tunder} i ::
     go.IsGoStepPureDet (TypeAssert2 t) #i
     (match i with
      | interface.nil => (#interface.nil, #false)%V
-     | interface.mk dt v =>
+     | interface.ok i =>
          if is_interface_type tunder then
-           if (type_set_contains dt t) then (#i, #true)%V else (#interface.nil, #false)%V
+           if (type_set_contains i.(interface.ty) t) then (#i, #true)%V else (#interface.nil, #false)%V
          else
-           if decide (t = dt) then (v, #true)%V else (GoZeroVal t #(), #false)%E
+           if decide (t = i.(interface.ty)) then (i.(interface.v), #true)%V else (GoZeroVal t #(), #false)%E
      end);
 
   method_interface m `{!t ≤u go.InterfaceType elems} :

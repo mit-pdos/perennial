@@ -10,9 +10,9 @@ Local Set Default Proof Using "All".
 Context `{!syncG Σ}.
 
 (** This means [c] is a condvar with underyling Locker at address [m]. *)
-Definition is_Cond (c : loc) (m : interface.t) : iProp Σ :=
+Definition is_Cond (c : loc) (m : interface.t_ok) : iProp Σ :=
   "#Hi" ∷ is_pkg_init sync ∗
-  "#Hc" ∷ c.[sync.Cond.t, "L"] ↦□ m ∗
+  "#Hc" ∷ c.[sync.Cond.t, "L"] ↦□ (interface.ok m) ∗
   (* FIXME: not accurate to assume it never changes, there should be an unknown
   notifyList struct in an invariant *)
   "#?" ∷ c.[sync.Cond.t, "notify"] ↦□ zero_val sync.notifyList.t ∗
@@ -23,9 +23,9 @@ Definition is_Cond (c : loc) (m : interface.t) : iProp Σ :=
 
 Global Instance is_Cond_persistent c m : Persistent (is_Cond c m) := _.
 
-Theorem wp_NewCond (m : interface.t) :
+Theorem wp_NewCond m :
   {{{ is_pkg_init sync }}}
-    @! sync.NewCond #m
+    @! sync.NewCond #(interface.ok m)
   {{{ (c: loc), RET #c; is_Cond c m }}}.
 Proof.
   wp_start as "_".

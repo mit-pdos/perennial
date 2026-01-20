@@ -610,11 +610,19 @@ Module interface.
 Section goose_lang.
 Context `{ffi_syntax}.
 
+Record t_ok :=
+  mk {
+      ty : go.type;
+      v : val;
+    }.
+
 Inductive t :=
-| mk (ty : go.type) (v : val) : t
+| ok (i : t_ok) : t
 | nil : t.
 
+
 End goose_lang.
+Global Notation mk_ok ty' v' := (ok (mk ty' v')).
 End interface.
 
 Module array.
