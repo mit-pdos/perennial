@@ -2,7 +2,6 @@ From iris.proofmode Require Import environments.
 From New.proof.sync_proof Require Import base mutex sema.
 Local Existing Instances tokG wg_totalG rw_ghost_varG rw_ghost_wlG rw_ghost_rwmutexG  wg_auth_inG.
 
-
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics} {package_sem : sync.Assumptions}.
@@ -21,7 +20,7 @@ Record RWMutex_protocol_names :=
 
 Definition rwmutexMaxReaders := 1073741824.
 Definition actualMaxReaders := (1073741824 - 1).
-Example rwmutexMaxReaders_ok : #rwmutexMaxReaders = sync.rwmutexMaxReaders :=
+Lemma rwmutexMaxReaders_ok : #rwmutexMaxReaders = sync.rwmutexMaxReaders :=
   eq_refl.
 
 Local Hint Unfold rwmutexMaxReaders actualMaxReaders : word.
