@@ -1,9 +1,10 @@
 From New.proof.sync_proof Require Import base.
 Local Existing Instances tokG wg_totalG rw_ghost_varG rw_ghost_wlG rw_ghost_rwmutexG  wg_auth_inG.
 
-Section proof.
-Context `{heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
+Section wps.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics} {package_sem : sync.Assumptions}.
+Local Set Default Proof Using "All".
 Context `{!syncG Σ}.
 
 Definition is_sema (x : loc) γ N : iProp Σ :=
@@ -37,10 +38,7 @@ Proof.
   wp_bind (! _)%E.
   iInv "Hsem" as ">Hi" "Hclose".
   iDestruct "Hi" as (?) "[Hs Hv]".
-  unshelve iApply (wp_typed_Load with "[$Hs]"); try tc_solve.
-  { done. }
-  iNext.
-  iIntros "Hs".
+  wp_apply (wp_atomic_load with "[$Hs]") as "Hs".
   iMod ("Hclose" with "[$]") as "_".
   iModIntro.
   wp_auto.
@@ -62,8 +60,7 @@ Proof.
     subst. iMod "HΦ" as (?) "[Hv2 HΦ]".
     iCombine "Hv Hv2" as "Hv" gives %[_ <-].
     iMod (ghost_var_update with "Hv") as "[Hv Hv2]".
-    unshelve iApply (wp_typed_cmpxchg_suc with "[$]"); try tc_solve; try done.
-    iNext. iIntros "Hs".
+    wp_apply (wp_cmpxchg_suc with "[$]") as "Hs"; first done.
     iMod ("HΦ" with "[] [$]") as "HΦ".
     { word. }
     iModIntro.
@@ -74,10 +71,7 @@ Proof.
     done.
   }
   { (* cmpxchg will fail *)
-    unshelve iApply (wp_typed_cmpxchg_fail with "[$]"); try tc_solve.
-    { done. }
-    { naive_solver. }
-    iNext. iIntros "Hs".
+    wp_apply (wp_cmpxchg_fail with "[$]") as "Hs"; first done.
     iMod ("Hclose" with "[$]") as "_".
     iModIntro.
     wp_auto.
@@ -132,7 +126,7 @@ Proof.
   iMod "HΦ" as (?) "[Hs2 HΦ]".
   iCombine "Hs Hs2" gives %[_ ->].
   rewrite typed_pointsto_unseal /typed_pointsto_def /=.
-  rewrite to_val_unseal /=. rewrite loc_add_0 !right_id.
+  rewrite !go.into_val_unfold /=.
   iApply (wp_atomic_op with "[$]"); first done.
   iNext. iIntros "Hptsto".
   iMod (ghost_var_update_2 with "[$] [$]") as "[? ?]".
@@ -142,4 +136,4 @@ Proof.
   wp_auto. iFrame.
 Qed.
 
-End proof.
+End wps.
