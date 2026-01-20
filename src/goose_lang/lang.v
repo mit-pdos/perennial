@@ -170,11 +170,17 @@ Inductive go_operator : Type :=
 | GoShiftl
 | GoShiftr.
 
+Inductive go_unary_operator : Type :=
+| GoNeg
+| GoNot
+| GoComplement.
+
 Inductive go_instruction : Type :=
 | AngelicExit
 
 | Convert (from to : go.type)
 | GoOp (o : go_operator) (t : go.type)
+| GoUnOp (o : go_unary_operator) (t : go.type)
 
 | GoLoad (t : go.type)
 | GoStore (t : go.type)
@@ -837,6 +843,8 @@ Proof. solve_decision. Defined.
 Global Instance prim_op_eq_dec ar : EqDecision (prim_op ar).
 Proof. destruct ar; simpl; apply _. Defined.
 Global Instance go_operator_eq_dec : EqDecision go_operator.
+Proof. solve_decision. Qed.
+Global Instance go_unary_operator_eq_dec : EqDecision go_unary_operator.
 Proof. solve_decision. Qed.
 Global Instance go_instruction_eq_dec : EqDecision go_instruction.
 Proof. solve_decision. Qed.

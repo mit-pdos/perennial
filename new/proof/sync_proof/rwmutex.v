@@ -2,11 +2,13 @@ From iris.proofmode Require Import environments.
 From New.proof.sync_proof Require Import base mutex sema.
 Local Existing Instances tokG wg_totalG rw_ghost_varG rw_ghost_wlG rw_ghost_rwmutexG  wg_auth_inG.
 
-Section proof.
 
-Context `{hG:heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
+Section wps.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics} {package_sem : sync.Assumptions}.
+Local Set Default Proof Using "All".
 Context `{!syncG Σ}.
+
 Section protocol.
 Record RWMutex_protocol_names :=
   {
@@ -17,9 +19,12 @@ Record RWMutex_protocol_names :=
     state_gn : gname;
   }.
 
-Definition actualMaxReaders := (sync.rwmutexMaxReaders - 1).
+Definition rwmutexMaxReaders := 1073741824.
+Definition actualMaxReaders := (1073741824 - 1).
+Example rwmutexMaxReaders_ok : #rwmutexMaxReaders = sync.rwmutexMaxReaders :=
+  eq_refl.
 
-Local Hint Unfold sync.rwmutexMaxReaders actualMaxReaders : word.
+Local Hint Unfold rwmutexMaxReaders actualMaxReaders : word.
 
 Implicit Types γ : RWMutex_protocol_names.
 Local Definition own_RWMutex_invariant γ (writer_sem reader_sem reader_count reader_wait : w32)
@@ -29,12 +34,12 @@ Local Definition own_RWMutex_invariant γ (writer_sem reader_sem reader_count re
     "Hwl" ∷ ghost_var γ.(wlock_gn) (1/2) wl ∗
     "Hrlock_overflow" ∷ own_tok_auth γ.(rlock_overflow_gn) (Z.to_nat actualMaxReaders) ∗
     "Hrlocks" ∷ own_toks γ.(rlock_overflow_gn) (Z.to_nat (sint.Z pos_reader_count)) ∗
-    "%Hpos_reader_count_pos" ∷ ⌜ 0 ≤ sint.Z pos_reader_count < sync.rwmutexMaxReaders ⌝ ∗
+    "%Hpos_reader_count_pos" ∷ ⌜ 0 ≤ sint.Z pos_reader_count < rwmutexMaxReaders ⌝ ∗
 
     "%Hreader_count" ∷
       ⌜ match wl with
       | NotLocked _ => reader_count = pos_reader_count
-      | _ => reader_count = word.sub pos_reader_count (W32 sync.rwmutexMaxReaders)
+      | _ => reader_count = word.sub pos_reader_count (W32 rwmutexMaxReaders)
       end ⌝ ∗
 
     match state with
@@ -62,7 +67,7 @@ Local Definition own_RWMutex_invariant γ (writer_sem reader_sem reader_count re
            sint.Z pos_reader_count = (Z.of_nat num_readers + sint.Z unnotified_readers + uint.Z reader_sem)%Z ⌝)
     | SignalingReaders remaining_readers, RLocked num_readers =>
         "%Hblocked_unsignaled" ∷
-        ⌜ 0 ≤ sint.Z remaining_readers < sync.rwmutexMaxReaders ∧
+        ⌜ 0 ≤ sint.Z remaining_readers < rwmutexMaxReaders ∧
           sint.Z reader_wait ≤ 0 ∧
           (Z.of_nat outstanding_reader_wait + Z.of_nat num_readers + uint.Z reader_sem =
            sint.Z remaining_readers + sint.Z reader_wait)%Z ∧
@@ -146,7 +151,7 @@ Lemma step_RUnlock_readerCount_Add γ writer_sem reader_sem reader_count reader_
   if decide (sint.Z (word.add reader_count (W32 (-1))) < sint.Z 0) then
     "Hwait_tok" ∷ own_toks γ.(read_wait_gn) 1 ∗
     "%" ∷ ⌜ sint.Z reader_count ≠ sint.Z 0 ⌝ ∗
-    "%" ∷ ⌜ sint.Z reader_count ≠ -sint.Z sync.rwmutexMaxReaders ⌝
+    "%" ∷ ⌜ sint.Z reader_count ≠ -sint.Z rwmutexMaxReaders ⌝
   else True.
 Proof.
   iIntros "Hinv". iNamed "Hinv".
@@ -220,13 +225,13 @@ Lemma step_Lock_readerCount_Add γ writer_sem reader_sem reader_count reader_wai
      "%" ∷ ⌜ state = RLocked 0 ⌝ ∗
      "Hwl_inv" ∷ ghost_var γ.(wlock_gn) (1/2) IsLocked ∗
      "Hprot_inv" ∷ own_RWMutex_invariant γ writer_sem reader_sem
-       (word.add reader_count (W32 (-sync.rwmutexMaxReaders))) reader_wait Locked
+       (word.add reader_count (W32 (-rwmutexMaxReaders))) reader_wait Locked
    else
      "Hwl" ∷ ghost_var γ.(wlock_gn) (1/2)
-      (SignalingReaders (word.add (word.add reader_count (W32 (-sync.rwmutexMaxReaders)))
-                           (W32 sync.rwmutexMaxReaders))) ∗
+      (SignalingReaders (word.add (word.add reader_count (W32 (-rwmutexMaxReaders)))
+                           (W32 rwmutexMaxReaders))) ∗
      "Hprot_inv" ∷ own_RWMutex_invariant γ writer_sem reader_sem
-       (word.add reader_count (W32 (-sync.rwmutexMaxReaders))) reader_wait state).
+       (word.add reader_count (W32 (-rwmutexMaxReaders))) reader_wait state).
 Proof.
   iIntros "[Hwl_in Hinv]". iNamed "Hinv". iCombine "Hwl_in Hwl" gives %[_ ?].
   destruct wl, state; iNamed "Hinv"; try done.
@@ -292,7 +297,7 @@ Lemma step_TryLock_readerCount_CompareAndSwap γ writer_sem reader_sem reader_co
   own_RWMutex_invariant γ writer_sem reader_sem reader_count reader_wait state ==∗
   "%" ∷ ⌜ state = RLocked 0 ⌝ ∗
   "Hwl_inv" ∷ ghost_var γ.(wlock_gn) (1/2) IsLocked ∗
-  "Hprot_inv" ∷ own_RWMutex_invariant γ writer_sem reader_sem (word.add reader_count (W32 (-sync.rwmutexMaxReaders)))
+  "Hprot_inv" ∷ own_RWMutex_invariant γ writer_sem reader_sem (word.add reader_count (W32 (-rwmutexMaxReaders)))
     reader_wait Locked.
 Proof.
   iIntros "%Hz [Hwl_in Hinv]". iNamed "Hinv". iCombine "Hwl_in Hwl" gives %[_ ?].
@@ -306,10 +311,10 @@ Qed.
 Lemma step_Unlock_readerCount_Add γ writer_sem reader_sem reader_count reader_wait :
   ghost_var γ.(wlock_gn) (1/2) IsLocked ∗
   own_RWMutex_invariant γ writer_sem reader_sem reader_count reader_wait Locked ==∗
-  "Hwl" ∷ ghost_var γ.(wlock_gn) (1/2) (NotLocked (word.add reader_count (W32 sync.rwmutexMaxReaders))) ∗
-  "Hprot_inv" ∷ own_RWMutex_invariant γ writer_sem reader_sem (word.add reader_count (W32 sync.rwmutexMaxReaders)) reader_wait (RLocked 0) ∗
-  "%" ∷ ⌜ 0 ≤ sint.Z (word.add reader_count (W32 sync.rwmutexMaxReaders)) ⌝ ∗
-  "%" ∷ ⌜ sint.Z (word.add reader_count (W32 sync.rwmutexMaxReaders)) < sint.Z sync.rwmutexMaxReaders ⌝.
+  "Hwl" ∷ ghost_var γ.(wlock_gn) (1/2) (NotLocked (word.add reader_count (W32 rwmutexMaxReaders))) ∗
+  "Hprot_inv" ∷ own_RWMutex_invariant γ writer_sem reader_sem (word.add reader_count (W32 rwmutexMaxReaders)) reader_wait (RLocked 0) ∗
+  "%" ∷ ⌜ 0 ≤ sint.Z (word.add reader_count (W32 rwmutexMaxReaders)) ⌝ ∗
+  "%" ∷ ⌜ sint.Z (word.add reader_count (W32 rwmutexMaxReaders)) < sint.Z rwmutexMaxReaders ⌝.
 Proof.
   iIntros "[Hwl_in Hinv]". iNamed "Hinv". iCombine "Hwl_in Hwl" gives %[_ ?].
   destruct wl; iNamed "Hinv"; try done.
@@ -358,21 +363,21 @@ Hint Extern 100 (Timeless (?n ∷ ?P)) =>
        (change (n ∷ P) with P) : typeclass_instances.
 
 Definition is_RWMutex (rw : loc) γ N : iProp Σ :=
-  "#Hmu" ∷ is_Mutex (struct.field_ref_f sync.RWMutex "w" rw) (ghost_var γ.(prot_gn).(wlock_gn) (1/2) (NotLocked (W32 0))) ∗
-  "#His_readerSem" ∷ is_sema (struct.field_ref_f sync.RWMutex "readerSem" rw) γ.(reader_sem_gn) (N.@"sema") ∗
-  "#His_writerSem" ∷ is_sema (struct.field_ref_f sync.RWMutex "writerSem" rw) γ.(writer_sem_gn) (N.@"sema") ∗
+  "#Hmu" ∷ is_Mutex (struct_field_ref sync.RWMutex.t "w" rw) (ghost_var γ.(prot_gn).(wlock_gn) (1/2) (NotLocked (W32 0))) ∗
+  "#His_readerSem" ∷ is_sema (struct_field_ref sync.RWMutex.t "readerSem" rw) γ.(reader_sem_gn) (N.@"sema") ∗
+  "#His_writerSem" ∷ is_sema (struct_field_ref sync.RWMutex.t "writerSem" rw) γ.(writer_sem_gn) (N.@"sema") ∗
   "#Hinv" ∷ inv (N.@"inv") (
       ∃ writer_sem reader_sem reader_count reader_wait state,
         "Hstate" ∷ ghost_var γ.(prot_gn).(state_gn) (1/2) state ∗
         "HreaderSem" ∷ own_sema γ.(reader_sem_gn) reader_sem ∗
         "HwriterSem" ∷ own_sema γ.(writer_sem_gn) writer_sem ∗
-        "HreaderCount" ∷ own_Int32 (struct.field_ref_f sync.RWMutex "readerCount" rw) (DfracOwn 1)
+        "HreaderCount" ∷ own_Int32 (struct_field_ref sync.RWMutex.t "readerCount" rw) (DfracOwn 1)
           reader_count ∗
-        "HreaderWait" ∷ own_Int32 (struct.field_ref_f sync.RWMutex "readerWait" rw) (DfracOwn 1)
+        "HreaderWait" ∷ own_Int32 (struct_field_ref sync.RWMutex.t "readerWait" rw) (DfracOwn 1)
           reader_wait ∗
         "Hprot" ∷ own_RWMutex_invariant γ.(prot_gn) writer_sem reader_sem reader_count reader_wait state ∗
         "Hlocked" ∷ (match state with
-                     | Locked => own_Mutex (struct.field_ref_f sync.RWMutex "w" rw) ∗
+                     | Locked => own_Mutex (struct_field_ref sync.RWMutex.t "w" rw) ∗
                                 ghost_var γ.(prot_gn).(wlock_gn) (1/2) IsLocked
                      | _ => True
                      end
@@ -417,7 +422,7 @@ Lemma wp_RWMutex__RLock γ rw N :
   is_pkg_init sync ∗ is_RWMutex rw γ N ∗ own_RLock_token γ -∗
   ▷(|={⊤∖↑N,∅}=> ∃ state, own_RWMutex γ state ∗
      (∀ num_readers, ⌜ state = RLocked num_readers ⌝ → own_RWMutex γ (RLocked (S num_readers)) ={∅,⊤∖↑N}=∗ Φ #())) -∗
-  WP rw @ (ptrT.id sync.RWMutex.id) @ "RLock" #() {{ Φ }}.
+  WP rw @! (go.PointerType sync.RWMutex) @! "RLock" #() {{ Φ }}.
 Proof.
   wp_start as "[#His Htok]". iNamed "His". wp_auto.
   wp_apply wp_Int32__Add.
@@ -442,7 +447,7 @@ Lemma wp_RWMutex__TryRLock γ rw N :
                       own_RWMutex γ (RLocked (S num_readers)) ={∅,⊤∖↑N}=∗ Φ #true)) ∧
    Φ #false)
   -∗
-  WP rw @ (ptrT.id sync.RWMutex.id) @ "TryRLock" #() {{ Φ }}.
+  WP rw @! (go.PointerType sync.RWMutex) @! "TryRLock" #() {{ Φ }}.
 Proof.
   wp_start as "[#His Htok]". iNamed "His". wp_auto.
   wp_for. wp_apply wp_Int32__Load.
@@ -470,7 +475,7 @@ Lemma wp_RWMutex__RUnlock γ rw N :
      own_RWMutex γ (RLocked (S num_readers)) ∗
      (own_RWMutex γ (RLocked num_readers) ∗ own_RLock_token γ ={∅,⊤∖↑N}=∗
       Φ #())) -∗
-  WP rw @ (ptrT.id sync.RWMutex.id) @ "RUnlock" #() {{ Φ }}.
+  WP rw @! (go.PointerType sync.RWMutex) @! "RUnlock" #() {{ Φ }}.
 Proof.
   wp_start as "#His". iNamed "His". wp_auto.
   wp_apply wp_Int32__Add.
@@ -482,7 +487,7 @@ Proof.
     wp_method_call. wp_call. iClear "rw r". clear r_ptr rw_ptr.
     wp_auto. rewrite bool_decide_decide. destruct decide. { exfalso. word. }
     wp_auto. rewrite bool_decide_decide. destruct decide. { exfalso.
-                                                            unfold sync.rwmutexMaxReaders in *.
+                                                            unfold rwmutexMaxReaders in *.
                                                             word. }
     wp_auto. wp_apply wp_Int32__Add.
     rwInvStart. rwAtomicStart. iFrame. iIntros "!> H1_inv". rwAtomicEnd.
@@ -502,7 +507,7 @@ Lemma wp_RWMutex__Lock γ rw N :
   is_pkg_init sync ∗ is_RWMutex rw γ N -∗
   ▷(|={⊤∖↑N,∅}=> ∃ state, own_RWMutex γ state ∗
      (⌜ state = RLocked 0 ⌝ → own_RWMutex γ Locked ={∅,⊤∖↑N}=∗ Φ #())) -∗
-  WP rw @ (ptrT.id sync.RWMutex.id) @ "Lock" #() {{ Φ }}.
+  WP rw @! (go.PointerType sync.RWMutex) @! "Lock" #() {{ Φ }}.
 Proof.
   wp_start as "His". iNamed "His". wp_auto.
   wp_apply wp_Mutex__Lock.
@@ -538,7 +543,7 @@ Lemma wp_RWMutex__TryLock γ rw N :
   ▷((|={⊤∖↑N,∅}=> ∃ state, own_RWMutex γ state ∗
     (⌜ state = RLocked 0 ⌝ → own_RWMutex γ Locked ={∅,⊤∖↑N}=∗ Φ #true)) ∧
      Φ #false) -∗
-  WP rw @ (ptrT.id sync.RWMutex.id) @ "TryLock" #() {{ Φ }}.
+  WP rw @! (go.PointerType sync.RWMutex) @! "TryLock" #() {{ Φ }}.
 Proof.
   wp_start as "His". iNamed "His". wp_auto.
   wp_apply wp_Mutex__TryLock.
@@ -561,7 +566,7 @@ Proof.
     iRight in "HΦ". iFrame.
 Qed.
 
-Local Hint Unfold sync.rwmutexMaxReaders actualMaxReaders : word.
+Local Hint Unfold rwmutexMaxReaders actualMaxReaders : word.
 
 Lemma wp_RWMutex__Unlock γ rw N :
   ∀ Φ,
@@ -569,7 +574,7 @@ Lemma wp_RWMutex__Unlock γ rw N :
   ▷(|={⊤∖↑N,∅}=> own_RWMutex γ Locked ∗
     (own_RWMutex γ (RLocked 0) ={∅,⊤∖↑N}=∗ Φ #())
   ) -∗
-  WP rw @ (ptrT.id sync.RWMutex.id) @ "Unlock" #() {{ Φ }}.
+  WP rw @! (go.PointerType sync.RWMutex) @! "Unlock" #() {{ Φ }}.
 Proof.
   wp_start as "His". iNamed "His". wp_auto.
   wp_apply wp_Int32__Add.
@@ -578,7 +583,7 @@ Proof.
   wp_auto. rewrite bool_decide_decide. destruct decide.
   { exfalso. word. }
   wp_auto.
-  set (r:=(word.add reader_count (W32 sync.rwmutexMaxReaders))) in *.
+  set (r:=(word.add reader_count (W32 rwmutexMaxReaders))) in *.
   iAssert (∃ (i : w64) r',
               "i" ∷ i_ptr ↦ i ∗
               "Hwl" ∷ ghost_var γ.(prot_gn).(wlock_gn) (1/2) (NotLocked r') ∗
@@ -591,15 +596,15 @@ Proof.
     wp_auto. wp_apply wp_runtime_Semrelease. { iFrame "#". }
     rwInvStart. rwAtomicStart. iFrame. iIntros "H1_inv".
     iMod (step_Unlock_readerSem_Semrelease with "[$]") as "Hprot_inv".
-    { word. }
+    { subst r. word. }
     iNamed "Hprot_inv". rwAtomicEnd. rwInvEnd.
     wp_auto. wp_for_post.
-    iFrame. iPureIntro. split.
-    { word. }
-    { word. }
+    iFrame. iPureIntro.
+    subst r. word.
   - wp_auto.
     wp_apply (wp_Mutex__Unlock with "[Hlocked Hwl]").
-    { iFrame "#". iFrame. replace (r') with (W32 0) by word. iFrame. }
+    { iFrame "#". iFrame. replace (r') with (W32 0); first iFrame.
+      subst r. word. }
     iFrame.
 Qed.
 
@@ -607,13 +612,11 @@ Local Transparent own_RWMutex_invariant own_Int32.
 Opaque actualMaxReaders.
 
 Lemma init_RWMutex {E} N (rw : loc) :
-  rw ↦ (default_val sync.RWMutex.t) ={E}=∗
+  rw ↦ (zero_val sync.RWMutex.t) ={E}=∗
   ∃ γ, is_RWMutex rw γ N ∗ own_RWMutex γ (RLocked 0) ∗
        [∗] replicate (Z.to_nat actualMaxReaders) (own_RLock_token γ).
 Proof.
-  iIntros "Hrw".
-  iDestruct (struct_fields_split with "Hrw") as "H".
-  iNamed "H".
+  iIntros "Hrw". iStructNamed "Hrw".
 
   (* alloc protocol resources *)
   iMod (own_tok_auth_alloc) as (γread_wait_gn) "Hread_wait".
@@ -653,4 +656,4 @@ Proof.
 Qed.
 
 End wps.
-End proof.
+End wps.

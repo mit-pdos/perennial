@@ -1447,7 +1447,7 @@ Definition assertⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : va
 Definition genericConversionsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "x" := (GoAlloc go.int8 (GoZeroVal go.int8 #())) in
-    let: "$r0" := (Convert go.untyped_int go.int8 (- #1)) in
+    let: "$r0" := (Convert go.untyped_int go.int8 (⟨go.untyped_int⟩- #1)) in
     do:  ("x" <-[go.int8] "$r0");;;
     do:  (let: "$a0" := (((let: "$a0" := (![go.int8] "x") in
     (FuncResolve maybeConvert [go.int8] #()) "$a0") =⟨go.uint32⟩ #(W32 4294967295)) && ((let: "$a0" := (Convert go.int8 go.uint8 (![go.int8] "x")) in
@@ -2257,7 +2257,7 @@ Definition BitwiseAndNotⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
 Definition Negativeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "x" := (GoAlloc go.int64 (GoZeroVal go.int64 #())) in
-    let: "$r0" := (Convert go.untyped_int go.int64 (- #10)) in
+    let: "$r0" := (Convert go.untyped_int go.int64 (⟨go.untyped_int⟩- #10)) in
     do:  ("x" <-[go.int64] "$r0");;;
     do:  ("x" <-[go.int64] ((![go.int64] "x") +⟨go.int64⟩ #(W64 3)));;;
     return: #()).

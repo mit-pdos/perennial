@@ -115,6 +115,23 @@ Inductive is_predeclared : go.type → Prop :=
 | is_predeclared_bool : is_predeclared go.bool
 | is_predeclared_Pointer : is_predeclared unsafe.Pointer.
 
+Class UntypedIntSemantics `{!GoSemanticsFunctions} :=
+{
+  #[global] underlying_untyped_int :: go.untyped_int ↓u go.untyped_int;
+  #[global] neg_untyped_int (v : Z) ::
+    go.IsGoStepPureDet (GoUnOp GoNeg go.untyped_int) #v #(-v);
+
+  #[global] convert_untyped_int_to_int (v : Z) :: go.ConvertUnderlying go.untyped_int go.int #v #(W64 v);
+  #[global] convert_untyped_int_to_int64 (v : Z) :: go.ConvertUnderlying go.untyped_int go.int64 #v #(W64 v);
+  #[global] convert_untyped_int_to_int32 (v : Z) :: go.ConvertUnderlying go.untyped_int go.int32 #v #(W32 v);
+  #[global] convert_untyped_int_to_int16 (v : Z) :: go.ConvertUnderlying go.untyped_int go.int16 #v #(W16 v);
+  #[global] convert_untyped_int_to_int8 (v : Z) :: go.ConvertUnderlying go.untyped_int go.int8 #v #(W8 v);
+  #[global] convert_untyped_int_to_uint (v : Z) :: go.ConvertUnderlying go.untyped_int go.uint #v #(W64 v);
+  #[global] convert_untyped_int_to_uint64 (v : Z) :: go.ConvertUnderlying go.untyped_int go.uint64 #v #(W64 v);
+  #[global] convert_untyped_int_to_uint32 (v : Z) :: go.ConvertUnderlying go.untyped_int go.uint32 #v #(W32 v);
+  #[global] convert_untyped_int_to_uint16 (v : Z) :: go.ConvertUnderlying go.untyped_int go.uint16 #v #(W16 v);
+  #[global] convert_untyped_int_to_uint8 (v : Z) :: go.ConvertUnderlying go.untyped_int go.uint8 #v #(W8 v);
+}.
 Class IntSemantics `{!GoSemanticsFunctions} :=
 {
   #[global] type_repr_int :: go.TypeRepr go.int w64;
@@ -445,6 +462,7 @@ Class PredeclaredSemantics `{!GoSemanticsFunctions} :=
   #[global] convert_untyped_bool `{!to ↓u go.bool} (b : Datatypes.bool) ::
     go.GoExprEq (Convert go.untyped_bool to #b) #b;
 
+  #[global] untyped_int_semantics :: UntypedIntSemantics;
   #[global] int_semantics :: IntSemantics;
   #[global] int64_semantics :: Int64Semantics;
   #[global] int32_semantics :: Int32Semantics;

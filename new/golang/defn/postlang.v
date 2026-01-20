@@ -56,6 +56,15 @@ Global Notation "e1 <<⟨ t ⟩ e2" := (GoInstruction (GoOp GoShiftl t) (e1%E, e
 Global Notation "e1 >>⟨ t ⟩ e2" := (GoInstruction (GoOp GoShiftr t) (e1%E, e2%E)%E)
                              (at level 70, format "e1  >>⟨ t ⟩  e2") : expr_scope.
 
+Global Notation "⟨ t ⟩- e" := (GoInstruction (GoUnOp GoNeg t) e%E)
+                                (at level 70, format "⟨ t ⟩-  e") : expr_scope.
+
+Global Notation "⟨ t ⟩! e" := (GoInstruction (GoUnOp GoNot t) e%E)
+                                (at level 70, format "⟨ t ⟩!  e") : expr_scope.
+
+Global Notation "⟨ t ⟩^ e" := (GoInstruction (GoUnOp GoComplement t) e%E)
+                                (at level 70, format "⟨ t ⟩^  e") : expr_scope.
+
 Module map.
 Definition t := loc.
 Definition nil : t := null.

@@ -345,7 +345,7 @@ Definition RWMutex__RUnlockⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
       do:  ((FuncResolve race.Disable [] #()) #())
     else do:  #());;;
     (let: "r" := (GoAlloc go.int32 (GoZeroVal go.int32 #())) in
-    let: "$r0" := (let: "$a0" := (Convert go.untyped_int go.int32 (- #1)) in
+    let: "$r0" := (let: "$a0" := (Convert go.untyped_int go.int32 (⟨go.untyped_int⟩- #1)) in
     (MethodResolve (go.PointerType atomic.Int32) "Add"%go #() (StructFieldRef RWMutex "readerCount"%go (![go.PointerType RWMutex] "rw"))) "$a0") in
     do:  ("r" <-[go.int32] "$r0");;;
     (if: Convert go.untyped_bool go.bool ((![go.int32] "r") <⟨go.int32⟩ #(W32 0))
@@ -363,13 +363,13 @@ Definition RWMutex__rUnlockSlowⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
   λ: "rw" "r",
     exception_do (let: "rw" := (GoAlloc (go.PointerType RWMutex) "rw") in
     let: "r" := (GoAlloc go.int32 "r") in
-    (if: Convert go.untyped_bool go.bool ((((![go.int32] "r") +⟨go.int32⟩ #(W32 1)) =⟨go.int32⟩ #(W32 0)) || (((![go.int32] "r") +⟨go.int32⟩ #(W32 1)) =⟨go.int32⟩ (Convert go.untyped_int go.int32 (- rwmutexMaxReaders))))
+    (if: Convert go.untyped_bool go.bool ((((![go.int32] "r") +⟨go.int32⟩ #(W32 1)) =⟨go.int32⟩ #(W32 0)) || (((![go.int32] "r") +⟨go.int32⟩ #(W32 1)) =⟨go.int32⟩ (Convert go.untyped_int go.int32 (⟨go.untyped_int⟩- rwmutexMaxReaders))))
     then
       do:  ((FuncResolve race.Enable [] #()) #());;;
       do:  (let: "$a0" := #"sync: RUnlock of unlocked RWMutex"%go in
       (FuncResolve fatal [] #()) "$a0")
     else do:  #());;;
-    (if: Convert go.untyped_bool go.bool ((let: "$a0" := (Convert go.untyped_int go.int32 (- #1)) in
+    (if: Convert go.untyped_bool go.bool ((let: "$a0" := (Convert go.untyped_int go.int32 (⟨go.untyped_int⟩- #1)) in
     (MethodResolve (go.PointerType atomic.Int32) "Add"%go #() (StructFieldRef RWMutex "readerWait"%go (![go.PointerType RWMutex] "rw"))) "$a0") =⟨go.int32⟩ #(W32 0))
     then
       do:  (let: "$a0" := (StructFieldRef RWMutex "writerSem"%go (![go.PointerType RWMutex] "rw")) in
@@ -395,7 +395,7 @@ Definition RWMutex__Lockⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
     else do:  #());;;
     do:  ((MethodResolve (go.PointerType Mutex) "Lock"%go #() (StructFieldRef RWMutex "w"%go (![go.PointerType RWMutex] "rw"))) #());;;
     let: "r" := (GoAlloc go.int32 (GoZeroVal go.int32 #())) in
-    let: "$r0" := ((let: "$a0" := (Convert go.untyped_int go.int32 (- rwmutexMaxReaders)) in
+    let: "$r0" := ((let: "$a0" := (Convert go.untyped_int go.int32 (⟨go.untyped_int⟩- rwmutexMaxReaders)) in
     (MethodResolve (go.PointerType atomic.Int32) "Add"%go #() (StructFieldRef RWMutex "readerCount"%go (![go.PointerType RWMutex] "rw"))) "$a0") +⟨go.int32⟩ (Convert go.untyped_int go.int32 rwmutexMaxReaders)) in
     do:  ("r" <-[go.int32] "$r0");;;
     (if: Convert go.untyped_bool go.bool (((![go.int32] "r") ≠⟨go.int32⟩ #(W32 0)) && ((let: "$a0" := (![go.int32] "r") in
@@ -440,7 +440,7 @@ Definition RWMutex__TryLockⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
       return: (#false)
     else do:  #());;;
     (if: (~ (let: "$a0" := #(W32 0) in
-    let: "$a1" := (Convert go.untyped_int go.int32 (- rwmutexMaxReaders)) in
+    let: "$a1" := (Convert go.untyped_int go.int32 (⟨go.untyped_int⟩- rwmutexMaxReaders)) in
     (MethodResolve (go.PointerType atomic.Int32) "CompareAndSwap"%go #() (StructFieldRef RWMutex "readerCount"%go (![go.PointerType RWMutex] "rw"))) "$a0" "$a1"))
     then
       do:  ((MethodResolve (go.PointerType Mutex) "Unlock"%go #() (StructFieldRef RWMutex "w"%go (![go.PointerType RWMutex] "rw"))) #());;;
@@ -643,7 +643,7 @@ Definition WaitGroup__Addⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
 Definition WaitGroup__Doneⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "wg" <>,
     exception_do (let: "wg" := (GoAlloc (go.PointerType WaitGroup) "wg") in
-    do:  (let: "$a0" := (Convert go.untyped_int go.int (- #1)) in
+    do:  (let: "$a0" := (Convert go.untyped_int go.int (⟨go.untyped_int⟩- #1)) in
     (MethodResolve (go.PointerType WaitGroup) "Add"%go #() (![go.PointerType WaitGroup] "wg")) "$a0");;;
     return: #()).
 
