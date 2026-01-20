@@ -1191,14 +1191,18 @@ Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!G
   #[global] efaceWords_instance :: efaceWords_Assumptions;
   #[global] SwapInt32_unfold :: FuncUnfold SwapInt32 [] (SwapInt32ⁱᵐᵖˡ);
   #[global] SwapUint32_unfold :: FuncUnfold SwapUint32 [] (SwapUint32ⁱᵐᵖˡ);
+  #[global] SwapPointer_unfold :: FuncUnfold SwapPointer [] (SwapPointerⁱᵐᵖˡ);
   #[global] CompareAndSwapInt32_unfold :: FuncUnfold CompareAndSwapInt32 [] (CompareAndSwapInt32ⁱᵐᵖˡ);
   #[global] CompareAndSwapUint32_unfold :: FuncUnfold CompareAndSwapUint32 [] (CompareAndSwapUint32ⁱᵐᵖˡ);
+  #[global] CompareAndSwapPointer_unfold :: FuncUnfold CompareAndSwapPointer [] (CompareAndSwapPointerⁱᵐᵖˡ);
   #[global] AddInt32_unfold :: FuncUnfold AddInt32 [] (AddInt32ⁱᵐᵖˡ);
   #[global] AddUint32_unfold :: FuncUnfold AddUint32 [] (AddUint32ⁱᵐᵖˡ);
   #[global] LoadInt32_unfold :: FuncUnfold LoadInt32 [] (LoadInt32ⁱᵐᵖˡ);
   #[global] LoadUint32_unfold :: FuncUnfold LoadUint32 [] (LoadUint32ⁱᵐᵖˡ);
+  #[global] LoadPointer_unfold :: FuncUnfold LoadPointer [] (LoadPointerⁱᵐᵖˡ);
   #[global] StoreInt32_unfold :: FuncUnfold StoreInt32 [] (StoreInt32ⁱᵐᵖˡ);
   #[global] StoreUint32_unfold :: FuncUnfold StoreUint32 [] (StoreUint32ⁱᵐᵖˡ);
+  #[global] StorePointer_unfold :: FuncUnfold StorePointer [] (StorePointerⁱᵐᵖˡ);
   #[global] SwapInt64_unfold :: FuncUnfold SwapInt64 [] (SwapInt64ⁱᵐᵖˡ);
   #[global] SwapUint64_unfold :: FuncUnfold SwapUint64 [] (SwapUint64ⁱᵐᵖˡ);
   #[global] CompareAndSwapInt64_unfold :: FuncUnfold CompareAndSwapInt64 [] (CompareAndSwapInt64ⁱᵐᵖˡ);

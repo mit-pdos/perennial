@@ -904,11 +904,71 @@ Proof.
 Qed.
 
 (** Pointer *)
+Lemma wp_LoadPointer (addr : loc) dq :
+  ∀ Φ,
+  is_pkg_init atomic -∗
+  (|={⊤,∅}=> ▷ ∃ (v : loc), addr ↦{dq} v ∗ (addr ↦{dq} v ={∅,⊤}=∗ Φ #v)) -∗
+  WP @! atomic.LoadPointer #addr {{ Φ }}.
+Proof.
+  wp_start as "_".
+  iMod "HΦ" as (?) "[>Haddr HΦ]".
+  wp_apply (wp_atomic_load with "[$]"). done.
+Qed.
+
+Lemma wp_SwapPointer (addr : loc) (v : loc) :
+  ∀ Φ,
+  is_pkg_init atomic -∗
+  (|={⊤,∅}=> ▷ ∃ (oldv : loc), addr ↦ oldv ∗ (addr ↦ v ={∅,⊤}=∗ Φ #oldv)) -∗
+  WP @! atomic.SwapPointer #addr #v {{ Φ }}.
+Proof.
+  wp_start as "_".
+  iMod "HΦ" as (?) "[>Haddr HΦ]".
+  wp_apply (wp_atomic_swap with "[$]"). done.
+Qed.
+
+Lemma wp_StorePointer (addr : loc) (v : loc) :
+  ∀ Φ,
+  is_pkg_init atomic -∗
+  (|={⊤,∅}=> ▷ ∃ (oldv : loc), addr ↦ oldv ∗ (addr ↦ v ={∅,⊤}=∗ Φ #())) -∗
+  WP @! atomic.StorePointer #addr #v {{ Φ }}.
+Proof.
+  wp_start as "_".
+  wp_bind (AtomicSwap _ _).
+  iMod "HΦ" as (?) "[>Haddr HΦ]".
+  wp_apply (wp_atomic_swap with "[$]") as "Haddr".
+  iMod ("HΦ" with "Haddr") as "HΦ".
+  iModIntro. wp_pures.
+  wp_end.
+Qed.
+
+Lemma wp_CompareAndSwapPointer (addr : loc) (old new : loc) :
+  ∀ Φ,
+  is_pkg_init atomic -∗
+  (|={⊤,∅}=>
+     ▷ ∃ (v: loc) dq,
+     addr ↦{dq} v ∗
+     ⌜ dq = if decide (v = old) then DfracOwn 1 else dq ⌝ ∗
+     (addr ↦{dq} (if decide (v = old) then new else v) ={∅,⊤}=∗ Φ #(bool_decide (v = old)))
+  ) -∗
+  WP @! atomic.CompareAndSwapPointer #addr #old #new {{ Φ }}.
+Proof.
+  wp_start as "_".
+  wp_bind (CmpXchg _ _ _).
+  iMod "HΦ" as (??) "(>? & >-> & HΦ)".
+  rewrite bool_decide_decide.
+  destruct decide; subst.
+  - wp_apply (wp_cmpxchg_suc with "[$]") as "?"; first done.
+    iMod ("HΦ" with "[$]"). iModIntro. by wp_auto.
+  -  wp_apply (wp_cmpxchg_fail with "[$]") as "?"; first done.
+     iMod ("HΦ" with "[$]"). iModIntro. by wp_auto.
+Qed.
+
+
 Section pointer.
-Context `{!IntoVal T'} `{!IntoValTyped T' T} `{!BoundedTypeSize T}.
+Context `{!ZeroVal T'} `{!TypedPointsto T'} `{!IntoValTyped T' T} `{!go.TypeRepr T T'}.
 
 Definition own_Pointer (u : loc) dq (v : loc) : iProp Σ :=
-  u ↦{dq} atomic.Pointer.mk (T:=T) (T':=T') (zero_val _) (zero_val _) v.
+  u ↦{dq} atomic.Pointer.mk T' (zero_val _) (zero_val _) v.
 #[global] Opaque own_Pointer.
 #[local] Transparent own_Pointer.
 Global Instance own_Pointer_timeless a b c : Timeless (own_Pointer a b c) := _.
@@ -917,69 +977,48 @@ Lemma wp_Pointer__Load u dq :
   ∀ Φ,
   is_pkg_init atomic -∗
   (|={⊤,∅}=> ∃ v, own_Pointer u dq v ∗ (own_Pointer u dq v ={∅,⊤}=∗ Φ #v)) -∗
-  WP u @ (go.PointerType atomic.Pointer) @ "Load" #T {{ Φ }}.
-Proof using BoundedTypeSize0.
-  wp_start as "_".
-  iMod "HΦ" as (?) "[Haddr HΦ]"; try tc_solve.
-  rewrite /own_Pointer.
-  iApply struct_fields_split in "Haddr"; simpl.
-  iNamed "Haddr".
-  unshelve iApply (wp_typed_Load with "[$]"); try tc_solve.
-  { done. }
-  iModIntro.
-  iIntros "Hv".
-  iMod ("HΦ" with "[H_0 H_1 Hv]") as "HΦ".
-  {
-    iApply @typed_pointsto_combine; simpl.
-    iFrame.
-  }
-  done.
+  WP u @! (go.PointerType $ atomic.Pointer T) @! "Load" #() {{ Φ }}.
+Proof.
+  wp_start as "_". wp_auto.
+  wp_bind.
+  wp_apply wp_LoadPointer.
+  iMod "HΦ" as (?) "[Haddr HΦ]".
+  iStructNamed "Haddr". simpl. iFrame.
+  iModIntro. iModIntro. iIntros "Hv".
+  iMod ("HΦ" with "[_0 _1 Hv]") as "HΦ".
+  { iApply typed_pointsto_combine. iFrame. }
+  iModIntro. wp_auto. wp_end.
 Qed.
 
 Lemma wp_Pointer__Swap u v' :
   ∀ Φ,
   is_pkg_init atomic -∗
   (|={⊤,∅}=> ∃ v, own_Pointer u (DfracOwn 1) v ∗ (own_Pointer u (DfracOwn 1) v' ={∅,⊤}=∗ Φ #v)) -∗
-  WP u @ (go.PointerType atomic.Pointer) @ "Swap" #T #v' {{ Φ }}.
-Proof using BoundedTypeSize0.
-  wp_start as "_".
-  iMod "HΦ" as (?) "[Haddr HΦ]"; try tc_solve.
-  rewrite /own_Pointer.
-  iApply struct_fields_split in "Haddr"; simpl.
-  iNamed "Haddr".
-  unshelve iApply (wp_typed_AtomicSwap with "[$]"); try tc_solve.
-  { done. }
-  iModIntro.
-  iIntros "Hv".
-  iMod ("HΦ" with "[H_0 H_1 Hv]") as "HΦ".
-  {
-    iApply @typed_pointsto_combine; simpl.
-    iFrame.
-  }
-  done.
+  WP u @! (go.PointerType (atomic.Pointer T)) @! "Swap" #v' {{ Φ }}.
+Proof.
+  wp_start as "_". wp_auto.
+  wp_apply wp_SwapPointer.
+  iMod "HΦ" as (?) "[Haddr HΦ]".
+  iStructNamed "Haddr". simpl. iFrame.
+  iModIntro. iNext. iIntros "Hv".
+  iMod ("HΦ" with "[_0 _1 Hv]") as "HΦ".
+  { iApply typed_pointsto_combine. iFrame. }
+  iModIntro. wp_auto. wp_end.
 Qed.
 
 Lemma wp_Pointer__Store u v' :
   ∀ Φ,
   is_pkg_init atomic -∗
   (|={⊤,∅}=> ∃ v, own_Pointer u (DfracOwn 1) v ∗ (own_Pointer u (DfracOwn 1) v' ={∅,⊤}=∗ Φ #())) -∗
-  WP u @ (go.PointerType atomic.Pointer) @ "Store" #T #v' {{ Φ }}.
-Proof using BoundedTypeSize0.
-  wp_start as "_".
-  wp_bind (AtomicSwap _ _).
-  iMod "HΦ" as (?) "[Haddr HΦ]"; try tc_solve.
-  rewrite /own_Pointer.
-  iApply struct_fields_split in "Haddr"; simpl.
-  iNamed "Haddr".
-  unshelve iApply (wp_typed_AtomicSwap with "[$]"); try tc_solve.
-  { done. }
-  iModIntro.
-  iIntros "Hv".
-  iMod ("HΦ" with "[H_0 H_1 Hv]") as "HΦ".
-  {
-    iApply @typed_pointsto_combine; simpl.
-    iFrame.
-  }
+  WP u @! (go.PointerType (atomic.Pointer T)) @! "Store" #v' {{ Φ }}.
+Proof.
+  wp_start as "_". wp_auto.
+  wp_apply wp_StorePointer.
+  iMod "HΦ" as (?) "[Haddr HΦ]".
+  iStructNamed "Haddr". simpl. iFrame.
+  iModIntro. iNext. iIntros "Hv".
+  iMod ("HΦ" with "[_0 _1 Hv]") as "HΦ".
+  { iApply typed_pointsto_combine. iFrame. }
   iModIntro.
   wp_pures.
   done.
@@ -991,44 +1030,19 @@ Lemma wp_Pointer__CompareAndSwap u old new :
   (|={⊤,∅}=> ▷ ∃ v dq, own_Pointer u dq v ∗
                     ⌜ dq = if decide (v = old) then DfracOwn 1 else dq ⌝ ∗
   (own_Pointer u dq (if decide (v = old) then new else v) ={∅,⊤}=∗ Φ #(bool_decide (v = old)))) -∗
-  WP u @ (go.PointerType atomic.Pointer) @ "CompareAndSwap" #T #old #new {{ Φ }}.
-Proof using BoundedTypeSize0.
-  wp_start as "_".
-  wp_bind (CmpXchg _ _ _).
+  WP u @! (go.PointerType (atomic.Pointer T)) @! "CompareAndSwap" #old #new {{ Φ }}.
+Proof.
+  wp_start as "_". wp_auto.
+  wp_apply wp_CompareAndSwapPointer.
   iMod "HΦ" as (??) "(>Hown & >-> & HΦ)".
-  rewrite /own_Pointer.
-  iApply struct_fields_split in "Hown"; simpl.
-  iNamed "Hown".
-  rewrite bool_decide_decide.
-  destruct decide.
-  {
-    subst.
-    unshelve iApply (wp_typed_cmpxchg_suc with "[$]"); try tc_solve; try done.
-    iIntros "!> Hv".
-    iMod ("HΦ" with "[-]") as "HΦ".
-    {
-      iApply @typed_pointsto_combine; simpl.
-      iFrame.
-    }
-    iModIntro.
-    by wp_auto.
-  }
-  {
-    unshelve iApply (wp_typed_cmpxchg_fail with "[$]"); try tc_solve; try done.
-    { naive_solver. }
-    iIntros "!> Hv".
-    iMod ("HΦ" with "[-]") as "HΦ".
-    {
-      iApply @typed_pointsto_combine; simpl.
-      iFrame.
-    }
-    iModIntro.
-    by wp_auto.
-  }
+  iStructNamed "Hown". simpl. iFrame.
+  iModIntro. iNext. iSplitR.
+  { by destruct decide. }
+  iIntros "Hv". iMod ("HΦ" with "[_0 _1 Hv]") as "HΦ".
+  { iApply typed_pointsto_combine. iFrame. }
+  iModIntro. wp_auto. wp_end.
 Qed.
 
-
 End pointer.
-
 
 End wps.

@@ -62,6 +62,8 @@ Section goose_lang.
   Proof. solve_atomic_wps. Qed.
   #[global] Instance atomic_wps_bool : AtomicWps bool.
   Proof. solve_atomic_wps. Qed.
+  #[global] Instance atomic_wps_loc : AtomicWps loc.
+  Proof. solve_atomic_wps. Qed.
 
 End goose_lang.
 

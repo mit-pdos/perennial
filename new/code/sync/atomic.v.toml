@@ -42,6 +42,11 @@ trusted = [
   "SwapInt32",
   "AddInt32",
   "CompareAndSwapInt32",
+
+  "LoadPointer",
+  "StorePointer",
+  "SwapPointer",
+  "CompareAndSwapPointer",
 ]
 
 imports = ["!*"]
