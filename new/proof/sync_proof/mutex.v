@@ -2,20 +2,21 @@ From New.proof.sync_proof Require Import base.
 From New.golang.theory Require Import lock.
 Local Existing Instances tokG wg_totalG rw_ghost_varG rw_ghost_wlG rw_ghost_rwmutexG  wg_auth_inG.
 
-Section proof.
-Context `{heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
+Section wps.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics} {package_sem : sync.Assumptions}.
+Local Set Default Proof Using "All".
 Context `{!syncG Σ}.
 
 (** This means [m] is a valid mutex with invariant [R]. *)
 Definition is_Mutex (m: loc) (R : iProp Σ) : iProp Σ :=
-  is_lock (struct.field_ref_f sync.Mutex "state" m) R.
+  is_lock m R.
 #[global] Opaque is_Mutex.
 #[local] Transparent is_Mutex.
 
 (** This resource denotes ownership of the fact that the Mutex is currently
     locked. *)
-Definition own_Mutex (m: loc) : iProp Σ := own_lock (struct.field_ref_f sync.Mutex "state" m).
+Definition own_Mutex (m: loc) : iProp Σ := own_lock m.
 #[global] Opaque own_Mutex.
 #[local] Transparent own_Mutex.
 
@@ -34,19 +35,16 @@ Proof. apply _. Qed.
 Global Instance locked_timeless m : Timeless (own_Mutex m).
 Proof. apply _. Qed.
 
-Theorem init_Mutex R E m : m ↦ (default_val Mutex.t) -∗ ▷ R ={E}=∗ is_Mutex m R.
+Theorem init_Mutex R E m : m ↦ (zero_val sync.Mutex.t) -∗ ▷ R ={E}=∗ is_Mutex m R.
 Proof.
   iIntros "Hl HR".
-  simpl.
-  iDestruct (struct_fields_split with "Hl") as "Hl".
-  iNamed "Hl". simpl.
-  iMod (init_lock with "Hstate HR") as "Hm".
+  iMod (init_lock with "Hl HR") as "Hm".
   done.
 Qed.
 
 Lemma wp_Mutex__TryLock m R :
   {{{ is_pkg_init sync ∗ is_Mutex m R }}}
-    m @ (ptrT.id sync.Mutex.id) @ "TryLock" #()
+    m @! (go.PointerType sync.Mutex) @! "TryLock" #()
   {{{ (locked : bool), RET #locked; if locked then own_Mutex m ∗ R else True }}}.
 Proof.
   wp_start as "#His".
@@ -58,7 +56,7 @@ Qed.
 
 Lemma wp_Mutex__Lock m R :
   {{{ is_pkg_init sync ∗ is_Mutex m R }}}
-    m @ (ptrT.id sync.Mutex.id) @ "Lock" #()
+    m @! (go.PointerType sync.Mutex) @! "Lock" #()
   {{{ RET #(); own_Mutex m ∗ R }}}.
 Proof.
   wp_start as "#His".
@@ -71,7 +69,7 @@ Qed.
 (* this form is useful for defer statements *)
 Lemma wp_Mutex__Unlock m R :
   {{{ is_pkg_init sync ∗ is_Mutex m R ∗ own_Mutex m ∗ ▷ R }}}
-    m @ (ptrT.id sync.Mutex.id) @ "Unlock" #()
+    m @! (go.PointerType sync.Mutex) @! "Unlock" #()
   {{{ RET #(); True }}}.
 Proof.
   wp_start as "(#His & Hlocked & HR)".
@@ -80,15 +78,15 @@ Proof.
 Qed.
 
 Definition is_Locker (i : interface.t) (P : iProp Σ) : iProp Σ :=
-  "#H_Lock" ∷ ({{{ True }}} (interface.get #"Lock" #i) #() {{{ RET #(); P }}}) ∗
-  "#H_Unlock" ∷ ({{{ P }}} (interface.get #"Unlock" #i) #() {{{ RET #(); True }}}).
+  "#H_Lock" ∷ ({{{ True }}} (InterfaceGet "Lock" #i) #() {{{ RET #(); P }}}) ∗
+  "#H_Unlock" ∷ ({{{ P }}} (InterfaceGet "Unlock" #i) #() {{{ RET #(); True }}}).
 
 Global Instance is_Locker_persistent v P : Persistent (is_Locker v P) := _.
 
 Lemma Mutex_is_Locker (m : loc) R :
   is_pkg_init sync -∗
   is_Mutex m R -∗
-  is_Locker (interface.mk (ptrT.id sync.Mutex.id) #m) (own_Mutex m ∗ R).
+  is_Locker (interface.mk (go.PointerType sync.Mutex) #m) (own_Mutex m ∗ R).
 Proof.
   iIntros "#? #?".
   iSplitL.
@@ -102,4 +100,4 @@ Proof.
     by iApply "HΦ".
 Qed.
 
-End proof.
+End wps.

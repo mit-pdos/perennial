@@ -7,21 +7,22 @@ Require Import New.generatedproof.github_com.goose_lang.primitive.disk.
 
 Section wps.
 Context `{!heapGS Σ}.
-Context `{!globalsGS Σ} {go_ctx:GoContext}.
+Context {sem : go.Semantics} {package_sem : disk.Assumptions}.
+Local Set Default Proof Using "All".
 
-#[global] Instance : IsPkgInit disk := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf disk := build_get_is_pkg_init_wf.
+#[global] Instance : IsPkgInit (iProp Σ) disk := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ) disk := build_get_is_pkg_init_wf.
 
 Implicit Types v : val.
 Implicit Types z : Z.
 Implicit Types s : slice.t.
 Implicit Types (stk:stuckness) (E: coPset).
 
-Definition is_block (s:slice.t) (q: dfrac) (b:Block) :=
-  own_slice s q (vec_to_list b).
+Definition is_block s dq (b : Block) : iProp Σ :=
+  s ↦*{dq} vec_to_list b.
 
-Definition is_block_full (s:slice.t) (b:Block) :=
-  own_slice s (DfracOwn 1) (vec_to_list b).
+Definition is_block_full s (b : Block) : iProp Σ :=
+  s ↦* vec_to_list b.
 
 Global Instance is_block_timeless s q b :
   Timeless (is_block s q b) := _.
@@ -29,20 +30,6 @@ Global Instance is_block_timeless s q b :
 Global Instance is_block_dfractional s b :
   DFractional (λ dq, is_block s dq b).
 Proof. apply _. Qed.
-
-Theorem is_block_not_nil s q b :
-  is_block s q b -∗
-  ⌜ s ≠ slice.nil ⌝.
-Proof.
-  iIntros "Hb".
-  rewrite /is_block.
-  iDestruct (own_slice_not_null with "Hb") as "%Hnull"; eauto.
-  { rewrite go_type_size_unseal //. }
-  { rewrite length_vec_to_list.
-    rewrite /block_bytes. lia. }
-  iPureIntro.
-  destruct s. rewrite /slice.nil. simpl in *. congruence.
-Qed.
 
 Definition list_to_block (l: list u8) : Block :=
   match decide (length l = Z.to_nat 4096) with
@@ -94,8 +81,8 @@ Proof.
   auto.
 Qed.
 
-Lemma slice_to_block_array s q b :
-  own_slice s q (vec_to_list b) -∗ pointsto_block s.(slice.ptr_f) q b.
+Lemma slice_to_block_array s dq b :
+  s ↦*{dq} (vec_to_list b) -∗ pointsto_block s.(slice.ptr) dq b.
 Proof.
   rewrite /pointsto_block heap_array_to_list.
   rewrite own_slice_unseal /own_slice_def.

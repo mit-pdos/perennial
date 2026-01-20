@@ -20,14 +20,8 @@ Inductive wlock_state :=
 | IsLocked.
 
 Class syncG Σ := {
-<<<<<<< HEAD
-    #[global] tokG :: tok_setG Σ;
-    #[global] semaG :: ghost_varG Σ w32;
-    #[global] wg_totalG :: ghost_varG Σ Z;
-=======
     #[local] tokG :: tok_setG Σ;
     #[local] wg_totalG :: ghost_varG Σ w32;
->>>>>>> master
 
     #[local] rw_ghost_varG :: ghost_varG Σ ();
     #[local] rw_ghost_wlG :: ghost_varG Σ wlock_state;
@@ -37,64 +31,46 @@ Class syncG Σ := {
   }.
 Local Existing Instances tokG wg_totalG rw_ghost_varG rw_ghost_wlG wg_auth_inG.
 
-<<<<<<< HEAD
-Definition syncΣ := #[tok_setΣ; ghost_varΣ w32; ghost_varΣ Z; ghost_varΣ (); ghost_varΣ wlock_state; ghost_varΣ rwmutex].
-=======
 Definition syncΣ := #[tok_setΣ; ghost_varΣ w32; ghost_varΣ (); ghost_varΣ wlock_state; ghost_varΣ rwmutex; auth_propΣ].
->>>>>>> master
 Global Instance subG_syncΣ{Σ} : subG (syncΣ) Σ → (syncG Σ).
 Proof. solve_inG. Qed.
 
-Section defns.
-Context `{heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
-Context `{!syncG Σ}.
+Section wps.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics} {package_sem : sync.Assumptions}.
+Local Set Default Proof Using "All".
+
+#[global] Instance : IsPkgInit (iProp Σ) sync := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ) sync := build_get_is_pkg_init_wf.
 
 Definition is_initialized : iProp Σ :=
   ∃ (p: loc),
     global_addr sync.expunged ↦□ p ∗
     p ↦□ interface.nil.
 
-#[global] Instance : IsPkgInit sync := define_is_pkg_init (is_initialized).
-#[global] Instance : GetIsPkgInitWf sync := build_get_is_pkg_init_wf.
-
 Lemma wp_initialize' get_is_pkg_init :
   get_is_pkg_init_prop sync get_is_pkg_init →
-  {{{ own_initializing get_is_pkg_init ∗ is_go_context ∗ □ is_pkg_defined sync }}}
+  {{{ own_initializing get_is_pkg_init }}}
     sync.initialize' #()
   {{{ RET #(); own_initializing get_is_pkg_init ∗ is_pkg_init sync }}}.
 Proof.
-  intros Hinit. wp_start as "(Hown & #? & #Hdef)".
-  wp_call. wp_apply (wp_package_init with "[$Hown] HΦ").
+  intros Hinit. wp_start as "Hown".
+  wp_apply (wp_package_init with "[$Hown] HΦ").
   { destruct Hinit as (-> & ?); done. }
   iIntros "Hown". wp_auto.
+  wp_apply wp_GlobalAlloc as "expunged".
   wp_apply (synctest.wp_initialize' with "[$Hown]") as "(Hown & #?)".
   { naive_solver. }
-  { iModIntro. iEval simpl_is_pkg_defined in "Hdef". iPkgInit. }
   wp_apply (race.wp_initialize' with "[$Hown]") as "(Hown & #?)".
   { naive_solver. }
-  { iModIntro. iEval simpl_is_pkg_defined in "Hdef". iPkgInit. }
   wp_apply (atomic.wp_initialize' with "[$Hown]") as "(Hown & #?)".
   { naive_solver. }
-  { iModIntro. iEval simpl_is_pkg_defined in "Hdef". iPkgInit. }
-  wp_call. (* package.alloc sync *)
-  wp_alloc expunged_l as "Hexpunged".
-  wp_auto.
-
-  wp_apply wp_globals_get.
-  wp_apply assume.wp_assume. rewrite bool_decide_eq_true. iIntros (<-).
-  wp_auto.
 
   wp_alloc expunged_p as "Hexpunged_p".
   iPersist "Hexpunged_p".
   wp_auto.
 
-  rewrite -wp_fupd.
-  wp_apply wp_globals_get.
-  iPersist "Hexpunged".
-  iModIntro.
-
-  iEval (rewrite is_pkg_init_unfold /=). iFrame "∗#".
+  iEval (rewrite is_pkg_init_unfold /=). iFrame "∗#". done.
 Qed.
 
-End defns.
+End wps.

@@ -38,12 +38,20 @@ Class InterfaceSemantics :=
     go.GoExprEq (Convert from to v)
       (Val (if is_interface_type funder then v else #(interface.mk from v)));
 
-  #[global] interface_get_step m i ::
-    go.IsGoStepPureDet (InterfaceGet m) #i
-    (match i with
-     | interface.nil => Panic "nil dereference in interface call"
-     | interface.mk t v => (λ: "arg1", #(methods t m) v "arg1")%E
-     end);
+  (* The [InterfaceGet] step could be combined into a single instance (like TypeAssert below),
+     but that would result in InterfaceGet always reducing on any [i :
+     interface.t]. But, the spec for [sync.Locker] is written in terms of specs about
+     [InterfaceGet m i]. So, this here makes sure that InterfaceGet only reduces
+     if there's a concrete term like [#interface.nil] or [#(interface.mk _ _)].
+     It might be better to always reduce, but then require a type for valid
+     interfaces for specs like is_Locker.
+   *)
+  #[global] interface_get_step_nil m ::
+    go.IsGoStepPureDet (InterfaceGet m) #interface.nil
+     (Panic "nil dereference in interface call");
+  #[global] interface_get_step_ok m t v ::
+    go.IsGoStepPureDet (InterfaceGet m) #(interface.mk t v)
+    (λ: "arg1", #(methods t m) v "arg1")%E;
 
   #[global] type_assert_step `{!t ↓u tunder} i ::
     go.IsGoStepPureDet (TypeAssert t) #i
@@ -67,8 +75,8 @@ Class InterfaceSemantics :=
            if decide (t = dt) then (v, #true)%V else (GoZeroVal t #(), #false)%E
      end);
 
-  #[global] method_interface m `{!t ≤u go.InterfaceType elems} ::
-    go.GoExprEq #(methods t m) (InterfaceGet m);
+  method_interface m `{!t ≤u go.InterfaceType elems} :
+    #(methods t m) = (λ: "v", InterfaceGet m "v")%V;
 }.
 End defs.
 End go.

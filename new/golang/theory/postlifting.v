@@ -215,6 +215,19 @@ Proof.
   wp_pure_lc "?". wp_pures. by iApply "HΦ".
 Qed.
 
+Lemma wp_GlobalAlloc v t `{!ZeroVal V} `{!TypedPointsto V} `{!go.TypeRepr t V}
+  `{!IntoValTyped V t} :
+  {{{ True }}}
+    go.GlobalAlloc v t #()
+  {{{ RET #(); global_addr v ↦ (zero_val V) }}}.
+Proof.
+  rewrite go.GlobalAlloc_unseal. iIntros (?) "_ HΦ".
+  wp_call. wp_pures. wp_apply wp_alloc. iIntros (?) "Hl". wp_pures.
+  rewrite bool_decide_decide. destruct decide; wp_pures.
+  - subst. iApply "HΦ". iFrame.
+  - wp_apply wp_AngelicExit.
+Qed.
+
 Lemma wp_fork s E e Φ :
   ▷ WP e @ s; ⊤ {{ _, True }} -∗ ▷ Φ #() -∗ WP Fork e @ s; E {{ Φ }}.
 Proof.
@@ -237,6 +250,14 @@ Proof.
   replace (LitV x) with #x.
   { by iApply "HΦ". }
   rewrite go.into_val_unfold //.
+Qed.
+
+Global Instance method_interface_pure_wp m (i : interface.t) t `{!t ≤u go.InterfaceType elems} :
+  PureWp True (#(methods t m) #i) (InterfaceGet m #i).
+Proof.
+  iIntros "% % * _ % HΦ". wp_pures.
+  rewrite go.method_interface.
+  wp_pure_lc "?". by iApply "HΦ".
 Qed.
 
 End go_wps.

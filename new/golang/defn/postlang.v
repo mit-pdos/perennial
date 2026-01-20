@@ -131,10 +131,10 @@ Context {go_lctx : GoLocalContext} {go_gctx : GoGlobalContext}.
 
 Definition GlobalAlloc_def (v : go_string) (t : go.type) : val :=
   λ: <>,
-    let: "l" := GoAlloc t in
-    if: "l" ≠⟨go.PointerType t⟩ GlobalVarAddr v #() then
+    let: "l" := GoAlloc t (GoZeroVal t #()) in
+    if: "l" ≠⟨go.PointerType t⟩ (GlobalVarAddr v #()) then
       AngelicExit #()
-    else "l".
+    else #().
 Program Definition GlobalAlloc := sealed GlobalAlloc_def.
 Definition GlobalAlloc_unseal : GlobalAlloc = _ := seal_eq _.
 
@@ -398,6 +398,7 @@ Class CoreSemantics `{!GoSemanticsFunctions} : Prop :=
   #[global] type_repr_pointer t :: TypeRepr (go.PointerType t) loc;
   #[global] type_repr_function sig :: TypeRepr (go.FunctionType sig) func.t;
   #[global] type_repr_slice elem_type :: TypeRepr (go.SliceType elem_type) slice.t;
+  #[global] type_repr_interface elems :: TypeRepr (go.InterfaceType elems) interface.t;
   #[global] type_repr_channel dir elem_type :: TypeRepr (go.ChannelType dir elem_type) chan.t;
 
   #[global] core_comparison_sem :: CoreComparisonSemantics;
