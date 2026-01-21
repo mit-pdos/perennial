@@ -1,6 +1,7 @@
 From New.proof.sync_proof Require Import base sema.
 From New.experiments Require Import glob.
 Local Existing Instances tokG wg_totalG rw_ghost_varG rw_ghost_wlG rw_ghost_rwmutexG  wg_auth_inG.
+From coqutil Require Import Z.bitblast.
 
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
@@ -21,11 +22,55 @@ Proof. unfold enc. word. Qed.
 
 Lemma word_and_modu (x : w64) :
   word.and x (W64 2147483647) = word.modu x (W64 2147483648).
-Proof. Admitted.
+Proof.
+  ltac2:(Automation.word.normalize (fun () => ())). apply H.
+  replace (2147483647) with (Z.ones 31) by done.
+  rewrite Z.land_ones; word.
+Qed.
+
+Lemma Zltb_decide a b :
+  Z.ltb a b = (if decide (a < b) then true else false).
+Proof.
+  pose proof (Zlt_cases a b).  destruct (a <? b).
+  - rewrite decide_True //.
+  - rewrite decide_False //.
+Qed.
+
+Lemma Zeqb_decide a b :
+  Z.eqb a b = (if decide (a = b) then true else false).
+Proof.
+  pose proof (Zeq_bool_if a b). destruct (a =? b).
+  - rewrite decide_True //.
+  - rewrite decide_False //.
+Qed.
+
+Ltac bit_solve :=
+  repeat first [
+      rewrite -!Z.land_ones; [|lia..] |
+      rewrite !Z.land_spec |
+      rewrite Z.mul_pow2_bits; last lia |
+      rewrite (Z.testbit_mod_pow2 _ 1); last lia |
+      rewrite Z.div_pow2_bits'; [|lia..] |
+      rewrite Z.pow2_bits_eqb; [|lia..] |
+      rewrite !Zltb_decide |
+      rewrite !Zeqb_decide |
+      destruct decide |
+      progress subst |
+      lia |
+      rewrite !andb_true_r |
+      reflexivity
+    ].
 
 Lemma word_and_div (x : w64) :
-  word.and x (W64 2147483648) = word.modu (word.divu x (W64 2147483648)) (W64 2).
-Proof. Admitted.
+  word.and x (W64 2147483648) =
+  word.slu (word.modu (word.divu x (W64 2147483648)) (W64 2)) (W64 31).
+Proof.
+  ltac2:(Automation.word.normalize (fun () => ())). apply H.
+  Z.bitblast.
+  replace 18446744073709551616 with (2^64) by done.
+  replace 2147483648 with (2^31) by done.
+  bit_solve.
+Qed.
 
 Local Lemma enc_get_wait (wait counter : w32) :
   0 ≤ sint.Z wait →
@@ -64,9 +109,11 @@ Proof.
 
   set (x1:=2 ^ (32 `mod` 2 ^ 64)) in *.
   set (x2:=(2147483648 `mod` 2^64)) in *.
+  set (x3:=(2 ^ (31 `mod` 2 ^ 64))) in *.
+  set (x4:=(2 `mod` 2 ^ 64)) in *.
   set (y1:=2 ^ 32) in *.
   set (y2:=2 ^ 64) in *.
-  compute in x1, x2, y1, y2.
+  compute in x1, x2, x3, x4, y1, y2.
   word.
 Qed.
 
