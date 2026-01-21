@@ -20,7 +20,7 @@ Record RWMutex_protocol_names :=
 
 Definition rwmutexMaxReaders := 1073741824.
 Definition actualMaxReaders := (1073741824 - 1).
-Lemma rwmutexMaxReaders_ok : #rwmutexMaxReaders = sync.rwmutexMaxReaders :=
+Example rwmutexMaxReaders_ok : #rwmutexMaxReaders = sync.rwmutexMaxReaders :=
   eq_refl.
 
 Local Hint Unfold rwmutexMaxReaders actualMaxReaders : word.

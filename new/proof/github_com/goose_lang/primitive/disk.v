@@ -206,11 +206,11 @@ Proof.
   word.
 Qed.
 
-Theorem wp_Write_triple E' (Q: iProp Σ) (a: u64) s q b :
-  {{{ is_pkg_init disk ∗ own_slice s q (vec_to_list b) ∗
+Theorem wp_Write_triple E' (Q: iProp Σ) (a: u64) s dq b :
+  {{{ is_pkg_init disk ∗ s ↦*{dq} (vec_to_list b) ∗
       (|NC={⊤,E'}=> ∃ b0, uint.Z a d↦ b0 ∗ (uint.Z a d↦ b -∗ |NC={E',⊤}=> Q)) }}}
     @! disk.Write #a #s
-  {{{ RET #(); own_slice s q (vec_to_list b) ∗ Q }}}.
+  {{{ RET #(); s ↦*{dq} (vec_to_list b) ∗ Q }}}.
 Proof.
   iIntros (Φ) "[#Hpkg [Hs Hupd]] HΦ".
   iApply (wp_Write_atomic with "[$Hpkg $Hs]").
@@ -223,9 +223,9 @@ Proof.
 Qed.
 
 Theorem wp_Write (a: u64) s q b :
-  {{{ is_pkg_init disk ∗ ∃ b0, uint.Z a d↦ b0 ∗ own_slice s q (vec_to_list b) }}}
+  {{{ is_pkg_init disk ∗ ∃ b0, uint.Z a d↦ b0 ∗ s ↦*{q} (vec_to_list b) }}}
     @! disk.Write #a #s
-  {{{ RET #(); uint.Z a d↦ b ∗ own_slice s q (vec_to_list b) }}}.
+  {{{ RET #(); uint.Z a d↦ b ∗ s ↦*{q} (vec_to_list b) }}}.
 Proof.
   iIntros (Φ) "[#Hpkg Hpre] HΦ".
   iDestruct "Hpre" as (b0) "[Hda Hs]".
@@ -237,9 +237,9 @@ Proof.
 Qed.
 
 Theorem wp_Write' (z: Z) (a: u64) s q b :
-  {{{ is_pkg_init disk ∗ ⌜uint.Z a = z⌝ ∗ ▷ ∃ b0, z d↦ b0 ∗ own_slice s q (vec_to_list b) }}}
+  {{{ is_pkg_init disk ∗ ⌜uint.Z a = z⌝ ∗ ▷ ∃ b0, z d↦ b0 ∗ s ↦*{q} (vec_to_list b) }}}
     @! disk.Write #a #s
-  {{{ RET #(); z d↦ b ∗ own_slice s q (vec_to_list b) }}}.
+  {{{ RET #(); z d↦ b ∗ s ↦*{q} (vec_to_list b) }}}.
 Proof.
   iIntros (Φ) "[#Hpkg [<- >Hpre]] HΦ".
   iApply (wp_Write with "[$Hpkg $Hpre]").
@@ -257,10 +257,10 @@ Proof.
   wp_bind (ExternalOp _ _).
   rewrite difference_empty_L.
   iMod "HΦ" as (b) "[Hda Hupd]".
-  { solve_atomic. rewrite to_val_unseal in H.
+  { solve_atomic. rewrite !go.into_val_unfold in H.
     inversion H. subst. monad_inv. inversion H0. subst. inversion H2. subst.
     inversion H4. subst. inversion H6. subst. inversion H7. econstructor. eauto. }
-  rewrite to_val_unseal. simpl.
+  rewrite [in #a]go.into_val_unfold. simpl.
   iApply (wp_ReadOp with "Hda").
   iNext.
   iIntros (l) "(Hda&Hl)".
@@ -269,8 +269,9 @@ Proof.
   iSpecialize ("HQ" with "Hs"). simpl.
   rewrite length_vec_to_list /block_bytes.
   replace (Z.of_nat (Z.to_nat 4096)) with 4096%Z by lia.
-  wp_pures.
-  rewrite to_val_unseal //.
+  wp_auto.
+  replace (LitV l) with #l; last rewrite go.into_val_unfold //.
+  wp_auto. rewrite go.array_index_ref_0. iApply "HQ".
 Qed.
 
 Lemma wp_Read_triple E' (Q: Block -> iProp Σ) (a: u64) q :
