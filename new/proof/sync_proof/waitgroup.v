@@ -19,10 +19,29 @@ Local Lemma enc_get_counter (wait counter : w32) :
   W32 (uint.Z (word.sru (enc wait counter) (W64 32))) = counter.
 Proof. unfold enc. word. Qed.
 
+Lemma word_and_modu (x : w64) :
+  word.and x (W64 2147483647) = word.modu x (W64 2147483648).
+Proof. Admitted.
+
+Lemma word_and_div (x : w64) :
+  word.and x (W64 2147483648) = word.modu (word.divu x (W64 2147483648)) (W64 2).
+Proof. Admitted.
+
 Local Lemma enc_get_wait (wait counter : w32) :
   0 ≤ sint.Z wait →
   W32 (uint.Z (word.and (enc wait counter) (W64 2147483647))) = wait.
-Proof. unfold enc. Fail word. admit. Admitted.
+Proof.
+  unfold enc. rewrite word_and_modu.
+  (* FIXME: word should do a better job of simplifying constants. *)
+  ltac2:(Automation.word.normalize (fun () => ())).
+
+  set (x1:=2 ^ (32 `mod` 2 ^ 64)) in *.
+  set (x2:=(2147483648 `mod` 2^64)) in *.
+  set (y1:=2 ^ 32) in *.
+  set (y2:=2 ^ 64) in *.
+  compute in x1, x2, y1, y2.
+  word.
+Qed.
 
 Local Lemma enc_add_counter (wait counter delta : w32) :
   word.add (enc wait counter) (word.slu (W64 (sint.Z delta)) (W64 32)) =
@@ -38,7 +57,18 @@ Local Lemma enc_get_waitGroupBubbleFlag (wait counter : w32) :
   0 ≤ sint.Z wait →
   word.and (enc wait counter) (W64 waitGroupBubbleFlag) =
   W64 0.
-Proof. unfold enc. Fail word. Admitted.
+Proof.
+  unfold enc. unfold waitGroupBubbleFlag. rewrite word_and_div.
+  (* FIXME: word should do a better job of simplifying constants. *)
+  ltac2:(Automation.word.normalize (fun () => ())).
+
+  set (x1:=2 ^ (32 `mod` 2 ^ 64)) in *.
+  set (x2:=(2147483648 `mod` 2^64)) in *.
+  set (y1:=2 ^ 32) in *.
+  set (y2:=2 ^ 64) in *.
+  compute in x1, x2, y1, y2.
+  word.
+Qed.
 
 Local Lemma enc_inj (wait counter wait' counter' : w32) :
   enc wait counter = enc wait' counter' →
