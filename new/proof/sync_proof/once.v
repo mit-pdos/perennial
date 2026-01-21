@@ -20,20 +20,22 @@ It is valid to call [Once.Do(f)] with different values of [f], but they must all
 satisfy [{P} #f #() {Q}].
 *)
 
-Section proof.
-Context `{hG:heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
+Section wps.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics} {package_sem : sync.Assumptions}.
+Local Set Default Proof Using "All".
+Context `{!syncG Σ}.
 
 Definition is_Once (o: loc) (P: iProp Σ) (Q: iProp Σ) : iProp Σ :=
   "#Q_persistent" ∷ □(Q -∗ □Q) ∗
   "Qinv" ∷ inv nroot (
     ∃ (done: bool),
-    "done1" ∷ own_Uint32 (struct.field_ref_f sync.Once "done" o) (DfracOwn (1/2)) (W32 (if done then 1 else 0)) ∗
+    "done1" ∷ own_Bool (struct_field_ref sync.Once.t "done" o) (DfracOwn (1/2)) done ∗
     "#HQ" ∷ □(⌜done = true⌝ -∗ Q)
   ) ∗
-  "Hm" ∷ is_Mutex (struct.field_ref_f sync.Once "m" o) (
+  "Hm" ∷ is_Mutex (struct_field_ref sync.Once.t "m" o) (
       ∃ (done: bool),
-      "done2" ∷ own_Uint32 (struct.field_ref_f sync.Once "done" o) (DfracOwn (1/2)) (W32 (if done then 1 else 0)) ∗
+      "done2" ∷ own_Bool (struct_field_ref sync.Once.t "done" o) (DfracOwn (1/2)) done ∗
       "HPQ" ∷ (if done then Q else P)
     )
  .
@@ -42,20 +44,17 @@ Definition is_Once (o: loc) (P: iProp Σ) (Q: iProp Σ) : iProp Σ :=
 
 Lemma init_Once o P Q E :
   Persistent Q →
-  o ↦ default_val sync.Once.t ∗ P ⊢ |={E}=> is_Once o P Q.
+  o ↦ zero_val sync.Once.t ∗ P ⊢ |={E}=> is_Once o P Q.
 Proof.
   intros HQ.
   iIntros "[o HP]".
   iSplitR.
   { iModIntro.
     iIntros "!> #$". }
-  iDestruct (struct_fields_split with "o") as "o". iNamed "o".
-  simpl.
-  iDestruct "Hdone" as "[done1 done2]".
-  iMod (init_Mutex with "Hm [done2 HP]") as "$".
-  {
-    iExists (false). iFrame.
-  }
+  iStructNamed "o". simpl.
+  iDestruct "done" as "[done1 done2]".
+  iMod (init_Mutex with "m [done2 HP]") as "$".
+  { iExists (false). iFrame. }
   iMod (inv_alloc with "[done1]") as "$".
   {
     iExists (false). iFrame.
@@ -66,7 +65,7 @@ Qed.
 
 Lemma wp_Once__doSlow o P Q (f: func.t) :
   {{{ is_pkg_init sync ∗ is_Once o P Q ∗ {{{ P }}} #f #() {{{ RET #(); Q }}} }}}
-    o @ (ptrT.id sync.Once.id) @ "doSlow" #f
+    o @! (go.PointerType sync.Once) @! "doSlow" #f
   {{{ RET #(); Q }}}.
 Proof.
   wp_start as "[#@ #Hf]".
@@ -75,7 +74,7 @@ Proof.
   wp_apply (wp_Mutex__Lock with "[$Hm]").
   iIntros "[Hlocked @]".
   wp_auto.
-  wp_apply wp_Uint32__Load.
+  wp_apply wp_Bool__Load.
   iInv "Qinv" as "Hi" "Hclose".
   iMod (lc_fupd_elim_later with "[$] Hi") as "Hi". iNamedSuffix "Hi" "_inv".
   iApply fupd_mask_intro. { solve_ndisj. } iIntros "Hmask".
@@ -111,7 +110,7 @@ Proof.
       by iApply "Q_persistent".
     }
     wp_auto.
-    wp_apply wp_Uint32__Store.
+    wp_apply wp_Bool__Store.
     iInv "Qinv" as "Hi" "Hclose".
     iMod (lc_fupd_elim_later with "[$] Hi") as "Hi". iNamedSuffix "Hi" "_inv2".
     iApply fupd_mask_intro. { solve_ndisj. } iIntros "Hmask".
@@ -140,17 +139,17 @@ Qed.
 
 Lemma wp_Once__Do o P Q (f: func.t) :
   {{{ is_pkg_init sync ∗ is_Once o P Q ∗ {{{ P }}} #f #() {{{ RET #(); Q }}} }}}
-    o @ (ptrT.id sync.Once.id) @ "Do" #f
+    o @! (go.PointerType sync.Once) @! "Do" #f
   {{{ RET #(); Q }}}.
 Proof.
   wp_start as "[#@ #Hf]".
   wp_auto_lc 1.
-  wp_apply wp_Uint32__Load.
+  wp_apply wp_Bool__Load.
   iInv "Qinv" as "Hi" "Hclose".
   iMod (lc_fupd_elim_later with "[$] Hi") as "Hi". iNamedSuffix "Hi" "_inv".
   iApply fupd_mask_intro. { solve_ndisj. } iIntros "Hmask".
   iExists _.
-  iFrame "done1_inv"; iIntros "!> done1_inv".
+  iFrame "done1_inv". iIntros "done1_inv".
   iMod "Hmask" as "_".
   iMod ("Hclose" with "[done1_inv]") as "_".
   {
@@ -160,11 +159,8 @@ Proof.
   iModIntro.
   wp_auto.
   destruct done.
-  - wp_if_destruct; [ exfalso; word | ].
-    iApply "HΦ".
-    iApply "HQ_inv".
-    done.
-  - wp_if_destruct; [ | exfalso; word ].
+  - wp_auto. iApply "HΦ". iApply "HQ_inv". done.
+  - wp_auto.
     wp_apply wp_Once__doSlow.
     { iFrame "#". }
     iIntros "HQ".
@@ -172,4 +168,4 @@ Proof.
     by iApply "HΦ".
 Qed.
 
-End proof.
+End wps.
