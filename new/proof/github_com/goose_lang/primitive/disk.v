@@ -86,23 +86,21 @@ Lemma slice_to_block_array s dq b :
 Proof.
   rewrite /pointsto_block heap_array_to_list.
   rewrite own_slice_unseal /own_slice_def.
-  iIntros "[Ha %]".
+  rewrite typed_pointsto_unseal.
+  iIntros "((% & Ha) & %)". simpl.
   rewrite big_sepL_fmap.
   iApply (big_sepL_impl with "Ha"); simpl.
   iModIntro.
   iIntros (i x) "% Hl".
-  rewrite typed_pointsto_unseal /typed_pointsto_def.
-  rewrite to_val_unseal. simpl.
-  rewrite go_type_size_unseal. simpl.
-  rewrite loc_add_0.
-  replace (Z.mul 1%nat i) with (Z.of_nat i) by word.
-  iDestruct "Hl" as "[Hl _]".
+  rewrite typed_pointsto_unseal /typed_pointsto_def /=.
+  rewrite go.into_val_unfold /=.
+  rewrite go.array_index_ref_add_loc_add.
   iFrame.
 Qed.
 
-Theorem slice_to_block s q bs :
-  s.(slice.len_f) = 4096 ->
-  own_slice s q bs -∗ pointsto_block s.(slice.ptr_f) q (list_to_block bs).
+Theorem slice_to_block s dq bs :
+  s.(slice.len) = 4096 ->
+  s ↦*{dq} bs -∗ pointsto_block s.(slice.ptr) dq (list_to_block bs).
 Proof.
   iIntros (Hsz) "Hs".
   iDestruct (own_slice_len with "Hs") as "%".
@@ -114,12 +112,12 @@ Proof.
   iFrame.
 Qed.
 
-Lemma block_array_to_slice_mk l q (b: Block) :
-  pointsto_block l q b -∗ own_slice (slice.mk l (length b) (length b)) q (vec_to_list b).
+Lemma block_array_to_slice_mk l dq (b: Block) :
+  pointsto_block l dq b -∗ (slice.mk l (length b) (length b)) ↦*{dq} (vec_to_list b).
 Proof.
   intros.
   rewrite /pointsto_block heap_array_to_list.
-  rewrite own_slice_unseal /own_slice_def.
+  rewrite own_slice_unseal /own_slice_def. rewrite typed_pointsto_unseal.
   iIntros "Hb".
   rewrite big_sepL_fmap.
   iDestruct (big_sepL_impl with "Hb []") as "$"; eauto.
@@ -132,32 +130,28 @@ Proof.
   }
   iModIntro.
   iIntros (i x) "% Hl".
-  rewrite typed_pointsto_unseal /typed_pointsto_def.
-  rewrite to_val_unseal. simpl.
-  rewrite go_type_size_unseal. simpl.
-  rewrite loc_add_0.
-  replace (Z.mul 1%nat i) with (Z.of_nat i) by word.
+  rewrite typed_pointsto_unseal /typed_pointsto_def /=.
+  rewrite go.into_val_unfold /=.
+  rewrite go.array_index_ref_add_loc_add.
   iFrame.
 Qed.
 
-Lemma block_array_to_slice s q (b: Block) :
-  length b = sint.nat s.(slice.len_f) ->
-  0 ≤ sint.Z s.(slice.len_f) ≤ sint.Z s.(slice.cap_f) ->
-  pointsto_block s.(slice.ptr_f) q b -∗ own_slice s q (vec_to_list b).
+Lemma block_array_to_slice s dq (b: Block) :
+  length b = sint.nat s.(slice.len) ->
+  0 ≤ sint.Z s.(slice.len) ≤ sint.Z s.(slice.cap) ->
+  pointsto_block s.(slice.ptr) dq b -∗ s ↦*{dq} (vec_to_list b).
 Proof.
   intros.
   rewrite /pointsto_block heap_array_to_list.
-  rewrite own_slice_unseal /own_slice_def.
+  rewrite own_slice_unseal /own_slice_def typed_pointsto_unseal.
   iIntros "Hb".
   rewrite big_sepL_fmap.
-  iDestruct (big_sepL_impl with "Hb []") as "$"; [ | word ].
+  iDestruct (big_sepL_impl with "Hb []") as "$"; [ | simpl; word ].
   iModIntro.
   iIntros (i x) "% Hl".
-  rewrite typed_pointsto_unseal /typed_pointsto_def.
-  rewrite to_val_unseal. simpl.
-  rewrite go_type_size_unseal. simpl.
-  rewrite loc_add_0.
-  replace (Z.mul 1%nat i) with (Z.of_nat i) by word.
+  rewrite typed_pointsto_unseal /typed_pointsto_def /=.
+  rewrite go.into_val_unfold /=.
+  rewrite go.array_index_ref_add_loc_add.
   iFrame.
 Qed.
 
@@ -176,24 +170,28 @@ Local Ltac solve_atomic :=
     try solve [ apply atomically_is_val in H; auto ]
     |apply ectxi_language_sub_redexes_are_values; intros [] **; naive_solver].
 
-Theorem wp_Write_atomic (a: u64) s q b :
+Theorem wp_Write_atomic (a: u64) s dq b :
   ⊢
-  {{{ is_pkg_init disk ∗ own_slice s q (vec_to_list b) }}}
+  {{{ is_pkg_init disk ∗ s ↦*{dq} (vec_to_list b) }}}
   <<< ∀∀ b0, uint.Z a d↦ b0 >>>
     @! disk.Write #a #s @@ ∅
   <<< uint.Z a d↦ b >>>
-  {{{ RET #(); own_slice s q (vec_to_list b) }}}.
+  {{{ RET #(); s ↦*{dq} (vec_to_list b) }}}.
 Proof.
   wp_start as "Hs".
   iDestruct (own_slice_len with "Hs") as %Hsz.
   iDestruct (own_slice_wf with "Hs") as %Hwf.
+  rewrite -> decide_True; last len.
+  2:{ rewrite length_vec_to_list in Hsz. len. unfold block_bytes in *. word. }
+  wp_auto.
   iApply (wp_ncatomic _ _ ∅).
-  { solve_atomic. rewrite to_val_unseal in H.
+  { solve_atomic. rewrite !go.into_val_unfold in H.
     inversion H. subst. monad_inv. inversion H0. subst. inversion H2. subst.
     inversion H4. subst. inversion H6. subst. inversion H7. econstructor. eauto. }
   rewrite difference_empty_L.
   iMod "HΦ" as (b0) "[Hda Hupd]"; iModIntro.
-  rewrite to_val_unseal.
+  rewrite !go.into_val_unfold.
+  rewrite /slice_index_ref go.array_index_ref_0.
   iApply (wp_WriteOp with "[Hda Hs]").
   { iIntros "!>".
     iExists b0.
