@@ -29,6 +29,10 @@ Local Lemma enc_add_counter (wait counter delta : w32) :
   enc wait (word.add counter delta).
 Proof. unfold enc. word. Qed.
 
+Local Lemma enc_add_wait (wait counter : w32) :
+  0 ≤ sint.Z wait →
+  (word.add (enc wait counter) (W64 1)) = enc (word.add (W32 1) wait) counter.
+Proof. unfold enc. word. Qed.
 
 Local Lemma enc_get_waitGroupBubbleFlag (wait counter : w32) :
   0 ≤ sint.Z wait →
@@ -443,7 +447,7 @@ Lemma wp_WaitGroup__Done (wg : loc) γ N :
        "%Hbounds" ∷ ⌜ 0 ≤ sint.Z oldc - 1 < 2^31 ⌝ ∗
        "HΦ" ∷ (own_WaitGroup γ (word.sub oldc (W32 1)) ={↑N,⊤}=∗ Φ #())
   ) -∗
-  WP wg @ (ptrT.id sync.WaitGroup.id) @ "Done" #() {{ Φ }}.
+  WP wg @! (go.PointerType sync.WaitGroup) @! "Done" #() {{ Φ }}.
 Proof.
   wp_start as "#His".
   wp_auto.
@@ -466,13 +470,11 @@ Lemma wp_WaitGroup__Wait (wg : loc) γ N :
        own_WaitGroup γ oldc ∗ (⌜ sint.Z oldc = 0 ⌝ → own_WaitGroup γ oldc ={∅,⊤∖↑N}=∗
                                own_WaitGroup_wait_token γ -∗ Φ #())
   ) -∗
-  WP wg @ (ptrT.id sync.WaitGroup.id) @ "Wait" #() {{ Φ }}.
+  WP wg @! (go.PointerType sync.WaitGroup) @! "Wait" #() {{ Φ }}.
 Proof.
   wp_start as "(#Hwg & HR_in)". iNamed "Hwg".
   wp_auto.
-  wp_for_core. (* TODO: need to set later credits *)
-  wp_auto.
-  rewrite decide_True //. wp_auto.
+  wp_for.
   wp_apply (wp_Uint64__Load).
   iInv "Hinv" as ">Hi" "Hclose".
   iNamedSuffix "Hi" "_wg".
@@ -493,10 +495,13 @@ Proof.
     iMod ("Hclose" with "[Hi]").
     { iNamed "Hi". by iFrame. }
     iModIntro.
-    wp_auto. rewrite enc_get_high enc_get_low bool_decide_true //=.
     wp_auto.
-    wp_for_post.
-    by iApply "HΦ".
+    rewrite enc_get_counter enc_get_wait; [|lia..].
+    rewrite bool_decide_true //=.
+    wp_auto.
+    wp_if_destruct.
+    - wp_for_post. by iApply "HΦ".
+    - wp_for_post. by iApply "HΦ".
   }
   (* actually go to sleep *)
   iApply fupd_mask_intro.
@@ -514,10 +519,10 @@ Proof.
   { iNamed "Hi". by iFrame. }
   iModIntro.
   wp_auto.
-  rewrite enc_get_high enc_get_low bool_decide_false //.
+  rewrite enc_get_counter enc_get_wait; last lia.
+  rewrite bool_decide_false //.
   wp_auto.
-  replace (1%Z) with (sint.Z (W32 1)) by reflexivity.
-  rewrite -> enc_add_low by word.
+  rewrite -> enc_add_wait by word.
   wp_apply (wp_Uint64__CompareAndSwap).
   iInv "Hinv" as ">Hi" "Hclose".
   iNamedSuffix "Hi" "_wg".
@@ -525,7 +530,7 @@ Proof.
   iApply fupd_mask_intro.
   { solve_ndisj. }
   iIntros "Hmask !>".
-  iExists (enc waiters0 counter0).
+  iExists (enc wait0 counter0).
   destruct (decide (_ = _)) as [Heq|Hneq].
   {
     apply enc_inj in Heq as [-> ->].
@@ -540,18 +545,19 @@ Proof.
     iMod ("Hclose" with "[Hi]") as "_".
     {
       iNext. iNamed "Hi". repeat iExists _. iFrame "Hptsto_wg ∗".
-      replace (uint.nat (word.add waiters (W32 1))) with (1 + uint.nat waiters)%nat by word.
+      replace (sint.nat (word.add (W32 1) wait)) with (1 + sint.nat wait)%nat by word.
       simpl. iFrame.
       iSplitL.
       { by destruct decide. }
-      iPureIntro. split; last done.
-      intros Hun. exfalso. naive_solver.
+      iPureIntro. word.
     }
     iModIntro.
     wp_auto.
     clear sema n unfinished_waiters Hunfinished_zero_wg Hunfinished_bound_wg
-               unfinished_waiters0 Hunfinished_zero_wg0 Hunfinished_bound_wg0.
+      Hwaiter_notbubbled_wg0
+      unfinished_waiters0 Hunfinished_zero_wg0 Hunfinished_bound_wg0.
 
+    rewrite -> enc_get_waitGroupBubbleFlag by lia. wp_auto.
     wp_apply (wp_runtime_SemacquireWaitGroup with "[$]").
     iInv "Hinv" as ">Hi" "Hclose".
     iNamedSuffix "Hi" "_wg".
@@ -576,7 +582,7 @@ Proof.
     wp_auto.
     wp_apply (wp_Uint64__Load).
     iInv "Hinv" as ">Hi" "Hclose".
-    iClear "v w state". clear v_ptr counter w_ptr waiters state_ptr HwaitersLe.
+    iClear "v w state". clear v_ptr counter w_ptr wait state_ptr HwaitersLe Hwaiter_notbubbled_wg.
     clear unfinished_waiters sema n Hsema Hsem Hunfinished_zero_wg Hunfinished_bound_wg.
     iNamedSuffix "Hi" "_wg".
     iMod (fupd_mask_subseteq _) as "Hmask"; last iMod "HΦ" as (?) "[Hwg HΦ]".
@@ -616,4 +622,4 @@ Proof.
   }
 Qed.
 
-End proof.
+End wps.
