@@ -13,27 +13,28 @@ Example waitGroupBubbleFlag_ok : #waitGroupBubbleFlag = sync.waitGroupBubbleFlag
   eq_refl.
 
 Local Definition enc (wait counter : w32) : w64 :=
-  word.add (word.slu (W64 (uint.Z counter)) (W64 32)) (W64 (sint.Z wait)).
+  word.add (word.slu (W64 (uint.Z counter)) (W64 32)) (W64 (uint.Z wait)).
 
 Local Lemma enc_get_counter (wait counter : w32) :
   W32 (uint.Z (word.sru (enc wait counter) (W64 32))) = counter.
 Proof. unfold enc. word. Qed.
 
 Local Lemma enc_get_wait (wait counter : w32) :
-  0 ≤ sint.Z wait < 2^31 →
+  0 ≤ sint.Z wait →
   W32 (uint.Z (word.and (enc wait counter) (W64 2147483647))) = wait.
-Proof. unfold enc. admit. Admitted.
+Proof. unfold enc. Fail word. admit. Admitted.
 
 Local Lemma enc_add_counter (wait counter delta : w32) :
   word.add (enc wait counter) (word.slu (W64 (sint.Z delta)) (W64 32)) =
   enc wait (word.add counter delta).
 Proof. unfold enc. word. Qed.
 
-Local Lemma enc_add_wait (wait counter delta : w32) :
-  sint.Z (word.add wait delta) = sint.Z wait + sint.Z delta →
-  word.add (enc wait counter) (W64 (sint.Z delta)) =
-  enc (word.add wait delta) counter.
-Proof. unfold enc. word. Qed.
+
+Local Lemma enc_get_waitGroupBubbleFlag (wait counter : w32) :
+  0 ≤ sint.Z wait →
+  word.and (enc wait counter) (W64 waitGroupBubbleFlag) =
+  W64 0.
+Proof. unfold enc. Fail word. Admitted.
 
 Local Lemma enc_inj (wait counter wait' counter' : w32) :
   enc wait counter = enc wait' counter' →
@@ -54,8 +55,7 @@ Record WaitGroup_names := {
 Implicit Type γ : WaitGroup_names.
 
 Definition own_WaitGroup_waiters γ (possible_waiters : Z) : iProp Σ :=
-  "%Hnonneg" ∷ ⌜ 0 ≤ possible_waiters ⌝ ∗
-  "Hpossible_waiters" ∷ own_tok_auth_dfrac γ.(waiter_gn) (DfracOwn (1/2)) (Z.to_nat possible_waiters).
+  own_tok_auth_dfrac γ.(waiter_gn) (DfracOwn (1/2)) (Z.to_nat possible_waiters).
 #[global] Opaque own_WaitGroup_waiters.
 #[local] Transparent own_WaitGroup_waiters.
 #[global] Instance own_WaitGroup_waiters_timeless γ w : Timeless (own_WaitGroup_waiters γ w) := _.
@@ -67,19 +67,19 @@ Definition own_WaitGroup_wait_token γ : iProp Σ :=
 #[global] Instance own_WaitGroup_wait_token_timeless γ  : Timeless (own_WaitGroup_wait_token γ) := _.
 
 Local Definition is_WaitGroup_inv wg γ N : iProp Σ :=
-  inv (N.@"wg") (∃ (counter waiters sema : w32) unfinished_waiters possible_waiters,
+  inv (N.@"wg") (∃ (counter wait sema : w32) unfinished_waiters possible_waiters,
   "Hsema" ∷ own_sema γ.(sema_gn) sema ∗
   "Hsema_zerotoks" ∷  own_toks γ.(zerostate_gn) (uint.nat sema) ∗
 
-  "Hptsto" ∷ own_Uint64 (struct_field_ref sync.WaitGroup.t "state" wg) (DfracOwn (1/2)) (enc waiters counter) ∗
+  "Hptsto" ∷ own_Uint64 (struct_field_ref sync.WaitGroup.t "state" wg) (DfracOwn (1/2)) (enc wait counter) ∗
   "Hptsto2" ∷ (
-      if decide (counter = W32 0 ∧ waiters ≠ W32 0) then True
-      else own_Uint64 (struct_field_ref sync.WaitGroup.t "state" wg) (DfracOwn (1/2)) (enc waiters counter)
+      if decide (counter = W32 0 ∧ wait ≠ W32 0) then True
+      else own_Uint64 (struct_field_ref sync.WaitGroup.t "state" wg) (DfracOwn (1/2)) (enc wait counter)
     ) ∗
   "Hctr" ∷ ghost_var γ.(counter_gn) (1/2)%Qp counter ∗
 
   (* When Add's caller has [own_waiters 0], this resource implies that there are no waiters. *)
-  "Hwait_toks" ∷ own_toks γ.(waiter_gn) (sint.nat waiters) ∗
+  "Hwait_toks" ∷ own_toks γ.(waiter_gn) (sint.nat wait) ∗
   "Hunfinished_wait_toks" ∷ own_toks γ.(waiter_gn) unfinished_waiters ∗
 
   "Hzeroauth" ∷ own_tok_auth γ.(zerostate_gn) unfinished_waiters ∗
@@ -88,9 +88,9 @@ Local Definition is_WaitGroup_inv wg γ N : iProp Σ :=
   "Hwaiters_bounded" ∷ own_tok_auth_dfrac γ.(waiter_gn) (DfracOwn (1/2)) possible_waiters ∗
   "%Hpossible_waiters_bound" ∷ ⌜ Z.of_nat possible_waiters < 2^31 ⌝ ∗
 
-  "%Hunfinished_zero" ∷ ⌜ unfinished_waiters ≠ O → waiters = W32 0 ∧ counter = W32 0 ⌝ ∗
+  "%Hunfinished_zero" ∷ ⌜ unfinished_waiters ≠ O → wait = W32 0 ∧ counter = W32 0 ⌝ ∗
   "%Hunfinished_bound" ∷ ⌜ Z.of_nat unfinished_waiters < 2^32 ⌝ ∗
-  "%Hwaiter_notbubbled" ∷ ⌜ 0 ≤ sint.Z waiters < 2^31 ⌝
+  "%Hwaiter_notbubbled" ∷ ⌜ 0 ≤ sint.Z wait < 2^31 ⌝
   )%I.
 
 Definition is_WaitGroup wg γ N : iProp Σ :=
@@ -112,10 +112,10 @@ Lemma alloc_wait_token wg γ N w :
   is_WaitGroup wg γ N -∗
   own_WaitGroup_waiters γ w ={↑N}=∗ own_WaitGroup_waiters γ (w + 1) ∗ own_WaitGroup_wait_token γ.
 Proof.
-  intros H. iIntros "[_ #Hinv] H". iNamed "H".
+  intros H. iIntros "[_ #Hinv] H".
   iInv "Hinv" as ">Hi". iNamed "Hi".
-  iCombine "Hwaiters_bounded Hpossible_waiters" gives %[_ ->].
-  iCombine "Hwaiters_bounded Hpossible_waiters" as "H".
+  iCombine "Hwaiters_bounded H" gives %[_ ->].
+  iCombine "Hwaiters_bounded H" as "H".
   iMod (own_tok_auth_add 1 with "H") as "[H Htok]".
   iModIntro. rewrite <- (Z2Nat.inj_add _ 1) by word.
   iDestruct "H" as "[H1 H2]". iSplitR "Htok H2"; iFrame; word.
@@ -124,8 +124,7 @@ Qed.
 Lemma waiters_none_token_false γ :
   own_WaitGroup_waiters γ 0 -∗ own_WaitGroup_wait_token γ -∗ False.
 Proof.
-  iIntros "H1 H2". iNamed "H1".
-  iCombine "Hpossible_waiters H2" gives %H. word.
+  iIntros "H1 H2". iCombine "H1 H2" gives %H. word.
 Qed.
 
 Lemma dealloc_wait_token wg γ N w :
@@ -135,14 +134,14 @@ Lemma dealloc_wait_token wg γ N w :
   own_WaitGroup_wait_token γ ={↑N}=∗
   own_WaitGroup_waiters γ (w - 1).
 Proof.
-  intros H. iIntros "[_ #Hinv] H Htok". iNamed "H".
+  intros H. iIntros "[_ #Hinv] H Htok".
   iInv "Hinv" as ">Hi". iNamedSuffix "Hi" "_wg".
-  iCombine "Hwaiters_bounded_wg Hpossible_waiters" gives %[_ ->].
-  iCombine "Hwaiters_bounded_wg Hpossible_waiters" as "H".
+  iCombine "Hwaiters_bounded_wg H" gives %[_ ->].
+  iCombine "Hwaiters_bounded_wg H" as "H".
   iCombine "H Hunfinished_wait_toks_wg" gives %Hle.
   iMod (own_tok_auth_sub with "H Htok") as "[H Hwaiters_bounded_wg]".
   iModIntro. iFrame "∗#%".
-  replace (Z.to_nat (w - 1)) with (Z.to_nat w - 1)%nat by word.
+  replace (Z.to_nat w - 1)%nat with (Z.to_nat (w - 1)) by word.
   iFrame. word.
 Qed.
 
@@ -217,7 +216,7 @@ Proof.
     iExFalso.
     destruct Hw as [-> Hw].
     iDestruct "HΦ" as "[(% & _)|(HnoWaiter & HΦ)]"; first by exfalso.
-    iDestruct "HnoWaiter" as "[HnoWaiter _]".
+    iDestruct "HnoWaiter" as "[_ HnoWaiter]".
     iCombine "HnoWaiter Hwait_toks_wg" gives %Hbad.
     exfalso. apply Hw. word.
   }
@@ -230,10 +229,11 @@ Proof.
   2:{
     iExFalso. destruct (Hunfinished_zero_wg ltac:(done)) as [-> ->].
     iDestruct "HΦ" as "[(% & _)|(HnoWaiter & HΦ)]"; first by exfalso.
+    iDestruct "HnoWaiter" as "[_ HnoWaiter]".
     iCombine "HnoWaiter Hunfinished_wait_toks_wg" gives %Hbad. word.
   }
   subst.
-  destruct (decide (word.add oldc delta' = W32 0 ∧ waiters ≠ W32 0)) as [Hwake|HnoWake].
+  destruct (decide (word.add oldc delta' = W32 0 ∧ wait ≠ W32 0)) as [Hwake|HnoWake].
   2:{ (* not done, no need to wake waiters. *)
     iMod "Hmask" as "_".
     iCombineNamed "*_wg" as "Hi".
@@ -249,12 +249,10 @@ Proof.
       - iMod ("HΦ" with "[$] [$]"). done. }
     iModIntro.
     wp_auto.
-    wp_if_destruct.
-    2:{ word. }
-
-    rewrite enc_get_wait.
-    rewrite enc_get_counter.
-    enc_get_wait.
+    rewrite enc_get_waitGroupBubbleFlag; last lia.
+    rewrite bool_decide_true; last done. wp_auto.
+    rewrite -> enc_get_wait; last lia.
+    rewrite -> enc_get_counter.
 
     destruct bool_decide eqn:Hbad.
     {
@@ -307,7 +305,12 @@ Proof.
       - iMod ("HΦ" with "[$]"). done.
       - iMod ("HΦ" with "[$] [$]"). done. }
   iModIntro.
-  wp_auto. rewrite enc_get_high enc_get_low.
+  wp_auto.
+
+  rewrite enc_get_waitGroupBubbleFlag; last lia.
+  rewrite bool_decide_true; last done. wp_auto.
+  rewrite -> enc_get_wait; last lia.
+  rewrite -> enc_get_counter.
 
   destruct bool_decide eqn:Hbad.
   { exfalso. rewrite bool_decide_eq_true in Hbad. word. }
@@ -359,7 +362,7 @@ Proof.
   clear Hunfinished_zero_wg sema.
   iNamedSuffix "Hi" "_wg".
   iClear "Hptsto2_wg".
-  iCombine "Hptsto Hptsto_wg"  gives %[_ Heq].
+  iCombine "Hptsto Hptsto_wg"  gives %Heq.
   apply enc_inj in Heq as [<- <-].
   iCombine "Hptsto Hptsto_wg" as "Hptsto".
   iExists _. iFrame.
@@ -372,7 +375,7 @@ Proof.
   iCombine "Hzeroauth_wg Hsema_zerotoks_wg" gives %Hs.
   replace (sema) with (W32 0) by word.
   clear Huf Hs unfinished_waiters sema.
-  iMod (own_tok_auth_add (uint.nat waiters) with "[$Hzeroauth_wg]") as "[Hzeroauth_wg Hzerotoks_wg]".
+  iMod (own_tok_auth_add (sint.nat wait) with "[$Hzeroauth_wg]") as "[Hzeroauth_wg Hzerotoks_wg]".
   iEval (rewrite enc_0) in "Hptsto".
   iDestruct "Hptsto" as "[Hptsto1_wg Hptsto2_wg]".
   destruct Hwake as [Hwake1 Hwake2].
@@ -381,7 +384,7 @@ Proof.
   iRename "Hzerotoks_wg" into "Hzerotoks". (* remove from invariant. *)
   iCombineNamed "*_wg" as "Hi".
   iMod ("Hclose" with "[Hi]") as "_".
-  { iNext. iNamed "Hi". iFrame "Hptsto1_wg ∗". iPureIntro. split; [done | word]. }
+  { iNext. iNamed "Hi". iFrame "Hptsto1_wg ∗". simpl. iPureIntro. split; [done | word]. }
   iModIntro.
   wp_auto.
   (* call semrelease. *)
@@ -389,8 +392,10 @@ Proof.
   iAssert (
       ∃ (wrem : w32),
         "w" ∷ w_ptr ↦ wrem ∗
-        "Hzerotoks" ∷ own_toks γ.(zerostate_gn) (uint.nat wrem)
-    )%I with "[$]" as "HloopInv".
+        "Hzerotoks" ∷ own_toks γ.(zerostate_gn) (sint.nat wrem) ∗
+        "%Hwrem_nonneg" ∷ ⌜ 0 ≤ sint.Z wrem ⌝
+    )%I with "[w Hzerotoks]" as "HloopInv".
+  { iFrame. word. }
 
   wp_for.
   iNamed "HloopInv".
@@ -415,7 +420,7 @@ Proof.
   iExists _; iFrame "Hsema_wg".
   iIntros "Hsema_wg".
   iMod "Hmask" as "_".
-  replace (uint.nat wrem)%nat with (1+(uint.nat (word.sub wrem (W32 1))))%nat by word.
+  replace (sint.nat wrem)%nat with (1+(sint.nat (word.sub wrem (W32 1))))%nat by word.
   iDestruct (own_toks_add with "Hzerotoks") as "[Hzerotok Hzerotoks]".
   iCombine "Hsema_zerotoks_wg Hzerotok" as "Hsema_zerotok_wg".
   iCombine "Hzeroauth_wg Hsema_zerotok_wg" gives %Hbound.
@@ -426,7 +431,7 @@ Proof.
     replace (uint.nat (word.add sema (W32 1))) with ((uint.nat sema) + 1)%nat by word.
     iFrame. done.
   }
-  iModIntro. wp_auto. wp_for_post. iFrame.
+  iModIntro. wp_auto. wp_for_post. iFrame. word.
 Qed.
 
 Lemma wp_WaitGroup__Done (wg : loc) γ N :

@@ -4,7 +4,6 @@ From iris.bi.lib Require Import fractional.
 From iris.proofmode Require Import proofmode.
 From Perennial.goose_lang Require Import ipersist.
 From Perennial Require Import base.
-From Perennial.Helpers Require Import NamedProps.
 
 (* TODO: move this file to algebra *)
 
@@ -20,14 +19,14 @@ Proof. solve_inG. Qed.
 Section proof.
 
 Context `{!tok_setG Σ}.
-Definition own_tok_auth_dfrac_def γ dq (num_toks : Z) : iProp Σ :=
-  "%Hnonneg" ∷ ⌜ 0 ≤ num_toks ⌝ ∗ "Hown" ∷ own γ (●{dq} (Z.to_nat num_toks)).
+Definition own_tok_auth_dfrac_def γ dq (num_toks : nat) : iProp Σ :=
+  own γ (●{dq} num_toks).
 Program Definition own_tok_auth_dfrac := sealed @own_tok_auth_dfrac_def.
 Definition own_tok_auth_dfrac_unseal : own_tok_auth_dfrac = _ := seal_eq _.
 Notation own_tok_auth γ n := (own_tok_auth_dfrac γ (DfracOwn 1) n).
 
-Definition own_toks_def γ (n : Z) : iProp Σ :=
-  "%Hnonneg" ∷ ⌜ 0 ≤ n ⌝ ∗ "Hown" ∷ own γ (◯ (Z.to_nat n)).
+Definition own_toks_def γ (n : nat) : iProp Σ :=
+  own γ (◯ n).
 Program Definition own_toks := sealed @own_toks_def.
 Definition own_toks_unseal : own_toks = _ := seal_eq _.
 
@@ -38,14 +37,14 @@ Global Instance own_toks_combine_as γ n m :
 Proof. rewrite /CombineSepAs. unseal. rewrite -own_op auth_frag_op //. Qed.
 
 Global Instance own_tok_auth_toks_combine_gives_as γ dq n m :
-  CombineSepGives (own_tok_auth_dfrac γ dq n) (own_toks γ m) (⌜ (m <= n) ⌝).
+  CombineSepGives (own_tok_auth_dfrac γ dq n) (own_toks γ m) (⌜ (m <= n)%nat ⌝).
 Proof.
-  rewrite /CombineSepGives. iIntros "[H1 H2]".
-  unseal. iNamedSuffix "H1" "1". iNamedSuffix "H2" "2".
+  rewrite /CombineSepGives. unseal.
+  rewrite -own_op. iIntros "H".
   iDestruct (own_valid with "H") as %?.
   iModIntro. iPureIntro.
   rewrite auth_both_dfrac_valid_discrete in H.
-  intuition. rewrite nat_included in H. done.
+  intuition. rewrite -nat_included. done.
 Qed.
 
 Global Instance own_tok_auth_combine_as γ dq dq' n :
