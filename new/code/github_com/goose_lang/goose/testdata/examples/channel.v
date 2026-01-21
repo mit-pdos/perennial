@@ -118,24 +118,24 @@ Definition LockedStack__Pushⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
   λ: "s" "value",
     exception_do (let: "s" := (GoAlloc (go.PointerType LockedStack) "s") in
     let: "value" := (GoAlloc go.string "value") in
-    do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go #() (StructFieldRef LockedStack "mu"%go (![go.PointerType LockedStack] "s"))) #());;;
+    do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (StructFieldRef LockedStack "mu"%go (![go.PointerType LockedStack] "s"))) #());;;
     let: "$r0" := (let: "$a0" := (![go.SliceType go.string] (StructFieldRef LockedStack "stack"%go (![go.PointerType LockedStack] "s"))) in
     let: "$a1" := ((let: "$sl0" := (![go.string] "value") in
     CompositeLiteral (go.SliceType go.string) (LiteralValue [KeyedElement None (ElementExpression "$sl0")]))) in
     (FuncResolve go.append [go.SliceType go.string] #()) "$a0" "$a1") in
     do:  ((StructFieldRef LockedStack "stack"%go (![go.PointerType LockedStack] "s")) <-[go.SliceType go.string] "$r0");;;
-    do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go #() (StructFieldRef LockedStack "mu"%go (![go.PointerType LockedStack] "s"))) #());;;
+    do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (StructFieldRef LockedStack "mu"%go (![go.PointerType LockedStack] "s"))) #());;;
     return: #()).
 
 (* go: elimination_stack.go:24:23 *)
 Definition LockedStack__Popⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "s" <>,
     exception_do (let: "s" := (GoAlloc (go.PointerType LockedStack) "s") in
-    do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go #() (StructFieldRef LockedStack "mu"%go (![go.PointerType LockedStack] "s"))) #());;;
+    do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (StructFieldRef LockedStack "mu"%go (![go.PointerType LockedStack] "s"))) #());;;
     (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType go.string] (StructFieldRef LockedStack "stack"%go (![go.PointerType LockedStack] "s"))) in
     (FuncResolve go.len [go.SliceType go.string] #()) "$a0") =⟨go.int⟩ #(W64 0))
     then
-      do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go #() (StructFieldRef LockedStack "mu"%go (![go.PointerType LockedStack] "s"))) #());;;
+      do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (StructFieldRef LockedStack "mu"%go (![go.PointerType LockedStack] "s"))) #());;;
       return: (#""%go, #false)
     else do:  #());;;
     let: "last" := (GoAlloc go.int (GoZeroVal go.int #())) in
@@ -148,7 +148,7 @@ Definition LockedStack__Popⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
     let: "$r0" := (let: "$s" := (![go.SliceType go.string] (StructFieldRef LockedStack "stack"%go (![go.PointerType LockedStack] "s"))) in
     Slice (go.SliceType go.string) ("$s", #(W64 0), ![go.int] "last")) in
     do:  ((StructFieldRef LockedStack "stack"%go (![go.PointerType LockedStack] "s")) <-[go.SliceType go.string] "$r0");;;
-    do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go #() (StructFieldRef LockedStack "mu"%go (![go.PointerType LockedStack] "s"))) #());;;
+    do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (StructFieldRef LockedStack "mu"%go (![go.PointerType LockedStack] "s"))) #());;;
     return: (![go.string] "v", #true)).
 
 (* NewEliminationStack constructs a new elimination stack
@@ -173,7 +173,7 @@ Definition EliminationStack__Pushⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
       do:  #()
       ))]);;;
     do:  (let: "$a0" := (![go.string] "value") in
-    (MethodResolve (go.PointerType LockedStack) "Push"%go #() (![go.PointerType LockedStack] (StructFieldRef EliminationStack "base"%go (![go.PointerType EliminationStack] "s")))) "$a0");;;
+    (MethodResolve (go.PointerType LockedStack) "Push"%go (![go.PointerType LockedStack] (StructFieldRef EliminationStack "base"%go (![go.PointerType EliminationStack] "s")))) "$a0");;;
     return: #()).
 
 (* Pop first tries one-shot elimination; on timeout, falls back to the locked stack.
@@ -191,7 +191,7 @@ Definition EliminationStack__Popⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
     (FuncResolve time.After [] #()) "$a0")) (λ: "$recvVal",
       do:  #()
       ))]);;;
-    let: ("$ret0", "$ret1") := (((MethodResolve (go.PointerType LockedStack) "Pop"%go #() (![go.PointerType LockedStack] (StructFieldRef EliminationStack "base"%go (![go.PointerType EliminationStack] "s")))) #())) in
+    let: ("$ret0", "$ret1") := (((MethodResolve (go.PointerType LockedStack) "Pop"%go (![go.PointerType LockedStack] (StructFieldRef EliminationStack "base"%go (![go.PointerType EliminationStack] "s")))) #())) in
     return: ("$ret0", "$ret1")).
 
 (* Fake syscall for demonstration.
@@ -1090,7 +1090,7 @@ Definition workerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : va
           let: "$r0" := (![go.int] "y") in
           do:  ((IndexRef (go.SliceType go.int) (![go.SliceType go.int] "s", ![go.int] "i")) <-[go.int] "$r0")
         else do:  #())));;;
-      do:  ((MethodResolve (go.PointerType sync.WaitGroup) "Done"%go #() (![go.PointerType sync.WaitGroup] "wg")) #())));;;
+      do:  ((MethodResolve (go.PointerType sync.WaitGroup) "Done"%go (![go.PointerType sync.WaitGroup] "wg")) #())));;;
     return: #()).
 
 (* go: parallel_search_replace.go:24:6 *)
@@ -1143,13 +1143,13 @@ Definition SearchReplaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
       Slice (go.SliceType go.int) ("$s", ![go.int] "offset", ![go.int] "nextOffset")) in
       do:  ("section" <-[go.SliceType go.int] "$r0");;;
       do:  (let: "$a0" := #(W64 1) in
-      (MethodResolve (go.PointerType sync.WaitGroup) "Add"%go #() "wg") "$a0");;;
+      (MethodResolve (go.PointerType sync.WaitGroup) "Add"%go "wg") "$a0");;;
       do:  (let: "$chan" := (![go.ChannelType go.sendrecv (go.SliceType go.int)] "c") in
       let: "$v" := (![go.SliceType go.int] "section") in
       chan.send (go.SliceType go.int) "$chan" "$v");;;
       let: "$r0" := (![go.int] "nextOffset") in
       do:  ("offset" <-[go.int] "$r0")));;;
-    do:  ((MethodResolve (go.PointerType sync.WaitGroup) "Wait"%go #() "wg") #());;;
+    do:  ((MethodResolve (go.PointerType sync.WaitGroup) "Wait"%go "wg") #());;;
     return: #()).
 
 #[global] Instance info' : PkgInfo pkg_id.chan_spec_raw_examples :=

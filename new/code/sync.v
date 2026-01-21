@@ -154,16 +154,16 @@ Definition NewCondⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : v
 Definition Cond__Waitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "c" <>,
     exception_do (let: "c" := (GoAlloc (go.PointerType Cond) "c") in
-    do:  ((MethodResolve (go.PointerType copyChecker) "check"%go #() (StructFieldRef Cond "checker"%go (![go.PointerType Cond] "c"))) #());;;
+    do:  ((MethodResolve (go.PointerType copyChecker) "check"%go (StructFieldRef Cond "checker"%go (![go.PointerType Cond] "c"))) #());;;
     let: "t" := (GoAlloc go.uint32 (GoZeroVal go.uint32 #())) in
     let: "$r0" := (let: "$a0" := (StructFieldRef Cond "notify"%go (![go.PointerType Cond] "c")) in
     (FuncResolve runtime_notifyListAdd [] #()) "$a0") in
     do:  ("t" <-[go.uint32] "$r0");;;
-    do:  ((MethodResolve Locker "Unlock"%go #() (![Locker] (StructFieldRef Cond "L"%go (![go.PointerType Cond] "c")))) #());;;
+    do:  ((MethodResolve Locker "Unlock"%go (![Locker] (StructFieldRef Cond "L"%go (![go.PointerType Cond] "c")))) #());;;
     do:  (let: "$a0" := (StructFieldRef Cond "notify"%go (![go.PointerType Cond] "c")) in
     let: "$a1" := (![go.uint32] "t") in
     (FuncResolve runtime_notifyListWait [] #()) "$a0" "$a1");;;
-    do:  ((MethodResolve Locker "Lock"%go #() (![Locker] (StructFieldRef Cond "L"%go (![go.PointerType Cond] "c")))) #());;;
+    do:  ((MethodResolve Locker "Lock"%go (![Locker] (StructFieldRef Cond "L"%go (![go.PointerType Cond] "c")))) #());;;
     return: #()).
 
 (* Signal wakes one goroutine waiting on c, if there is any.
@@ -178,7 +178,7 @@ Definition Cond__Waitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
 Definition Cond__Signalⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "c" <>,
     exception_do (let: "c" := (GoAlloc (go.PointerType Cond) "c") in
-    do:  ((MethodResolve (go.PointerType copyChecker) "check"%go #() (StructFieldRef Cond "checker"%go (![go.PointerType Cond] "c"))) #());;;
+    do:  ((MethodResolve (go.PointerType copyChecker) "check"%go (StructFieldRef Cond "checker"%go (![go.PointerType Cond] "c"))) #());;;
     do:  (let: "$a0" := (StructFieldRef Cond "notify"%go (![go.PointerType Cond] "c")) in
     (FuncResolve runtime_notifyListNotifyOne [] #()) "$a0");;;
     return: #()).
@@ -192,7 +192,7 @@ Definition Cond__Signalⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
 Definition Cond__Broadcastⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "c" <>,
     exception_do (let: "c" := (GoAlloc (go.PointerType Cond) "c") in
-    do:  ((MethodResolve (go.PointerType copyChecker) "check"%go #() (StructFieldRef Cond "checker"%go (![go.PointerType Cond] "c"))) #());;;
+    do:  ((MethodResolve (go.PointerType copyChecker) "check"%go (StructFieldRef Cond "checker"%go (![go.PointerType Cond] "c"))) #());;;
     do:  (let: "$a0" := (StructFieldRef Cond "notify"%go (![go.PointerType Cond] "c")) in
     (FuncResolve runtime_notifyListNotifyAll [] #()) "$a0");;;
     return: #()).
@@ -223,10 +223,10 @@ Definition Once__Doⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : 
   λ: "o" "f",
     exception_do (let: "o" := (GoAlloc (go.PointerType Once) "o") in
     let: "f" := (GoAlloc (go.FunctionType (go.Signature [] false [])) "f") in
-    (if: (~ ((MethodResolve (go.PointerType atomic.Bool) "Load"%go #() (StructFieldRef Once "done"%go (![go.PointerType Once] "o"))) #()))
+    (if: (~ ((MethodResolve (go.PointerType atomic.Bool) "Load"%go (StructFieldRef Once "done"%go (![go.PointerType Once] "o"))) #()))
     then
       do:  (let: "$a0" := (![go.FunctionType (go.Signature [] false [])] "f") in
-      (MethodResolve (go.PointerType Once) "doSlow"%go #() (![go.PointerType Once] "o")) "$a0")
+      (MethodResolve (go.PointerType Once) "doSlow"%go (![go.PointerType Once] "o")) "$a0")
     else do:  #());;;
     return: #()).
 
@@ -235,17 +235,17 @@ Definition Once__doSlowⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
   λ: "o" "f",
     with_defer: (let: "o" := (GoAlloc (go.PointerType Once) "o") in
     let: "f" := (GoAlloc (go.FunctionType (go.Signature [] false [])) "f") in
-    do:  ((MethodResolve (go.PointerType Mutex) "Lock"%go #() (StructFieldRef Once "m"%go (![go.PointerType Once] "o"))) #());;;
-    do:  (let: "$f" := (MethodResolve (go.PointerType Mutex) "Unlock"%go #() (StructFieldRef Once "m"%go (![go.PointerType Once] "o"))) in
+    do:  ((MethodResolve (go.PointerType Mutex) "Lock"%go (StructFieldRef Once "m"%go (![go.PointerType Once] "o"))) #());;;
+    do:  (let: "$f" := (MethodResolve (go.PointerType Mutex) "Unlock"%go (StructFieldRef Once "m"%go (![go.PointerType Once] "o"))) in
     "$defer" <-[deferType] (let: "$oldf" := (![deferType] "$defer") in
     (λ: <>,
       "$f" #();;
       "$oldf" #()
       )));;;
-    (if: (~ ((MethodResolve (go.PointerType atomic.Bool) "Load"%go #() (StructFieldRef Once "done"%go (![go.PointerType Once] "o"))) #()))
+    (if: (~ ((MethodResolve (go.PointerType atomic.Bool) "Load"%go (StructFieldRef Once "done"%go (![go.PointerType Once] "o"))) #()))
     then
       do:  (let: "$a0" := #true in
-      let: "$f" := (MethodResolve (go.PointerType atomic.Bool) "Store"%go #() (StructFieldRef Once "done"%go (![go.PointerType Once] "o"))) in
+      let: "$f" := (MethodResolve (go.PointerType atomic.Bool) "Store"%go (StructFieldRef Once "done"%go (![go.PointerType Once] "o"))) in
       "$defer" <-[deferType] (let: "$oldf" := (![deferType] "$defer") in
       (λ: <>,
         "$f" "$a0";;
@@ -272,7 +272,7 @@ Definition RWMutex__RLockⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
       do:  ((FuncResolve race.Disable [] #()) #())
     else do:  #());;;
     (if: Convert go.untyped_bool go.bool ((let: "$a0" := #(W32 1) in
-    (MethodResolve (go.PointerType atomic.Int32) "Add"%go #() (StructFieldRef RWMutex "readerCount"%go (![go.PointerType RWMutex] "rw"))) "$a0") <⟨go.int32⟩ #(W32 0))
+    (MethodResolve (go.PointerType atomic.Int32) "Add"%go (StructFieldRef RWMutex "readerCount"%go (![go.PointerType RWMutex] "rw"))) "$a0") <⟨go.int32⟩ #(W32 0))
     then
       do:  (let: "$a0" := (StructFieldRef RWMutex "readerSem"%go (![go.PointerType RWMutex] "rw")) in
       let: "$a1" := #false in
@@ -305,7 +305,7 @@ Definition RWMutex__TryRLockⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
     else do:  #());;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       let: "c" := (GoAlloc go.int32 (GoZeroVal go.int32 #())) in
-      let: "$r0" := ((MethodResolve (go.PointerType atomic.Int32) "Load"%go #() (StructFieldRef RWMutex "readerCount"%go (![go.PointerType RWMutex] "rw"))) #()) in
+      let: "$r0" := ((MethodResolve (go.PointerType atomic.Int32) "Load"%go (StructFieldRef RWMutex "readerCount"%go (![go.PointerType RWMutex] "rw"))) #()) in
       do:  ("c" <-[go.int32] "$r0");;;
       (if: Convert go.untyped_bool go.bool ((![go.int32] "c") <⟨go.int32⟩ #(W32 0))
       then
@@ -316,7 +316,7 @@ Definition RWMutex__TryRLockⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
       else do:  #());;;
       (if: let: "$a0" := (![go.int32] "c") in
       let: "$a1" := ((![go.int32] "c") +⟨go.int32⟩ #(W32 1)) in
-      (MethodResolve (go.PointerType atomic.Int32) "CompareAndSwap"%go #() (StructFieldRef RWMutex "readerCount"%go (![go.PointerType RWMutex] "rw"))) "$a0" "$a1"
+      (MethodResolve (go.PointerType atomic.Int32) "CompareAndSwap"%go (StructFieldRef RWMutex "readerCount"%go (![go.PointerType RWMutex] "rw"))) "$a0" "$a1"
       then
         (if: Convert go.untyped_bool go.bool race.Enabled
         then
@@ -346,12 +346,12 @@ Definition RWMutex__RUnlockⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
     else do:  #());;;
     (let: "r" := (GoAlloc go.int32 (GoZeroVal go.int32 #())) in
     let: "$r0" := (let: "$a0" := (Convert go.untyped_int go.int32 (⟨go.untyped_int⟩- #1)) in
-    (MethodResolve (go.PointerType atomic.Int32) "Add"%go #() (StructFieldRef RWMutex "readerCount"%go (![go.PointerType RWMutex] "rw"))) "$a0") in
+    (MethodResolve (go.PointerType atomic.Int32) "Add"%go (StructFieldRef RWMutex "readerCount"%go (![go.PointerType RWMutex] "rw"))) "$a0") in
     do:  ("r" <-[go.int32] "$r0");;;
     (if: Convert go.untyped_bool go.bool ((![go.int32] "r") <⟨go.int32⟩ #(W32 0))
     then
       do:  (let: "$a0" := (![go.int32] "r") in
-      (MethodResolve (go.PointerType RWMutex) "rUnlockSlow"%go #() (![go.PointerType RWMutex] "rw")) "$a0")
+      (MethodResolve (go.PointerType RWMutex) "rUnlockSlow"%go (![go.PointerType RWMutex] "rw")) "$a0")
     else do:  #()));;;
     (if: Convert go.untyped_bool go.bool race.Enabled
     then do:  ((FuncResolve race.Enable [] #()) #())
@@ -370,7 +370,7 @@ Definition RWMutex__rUnlockSlowⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
       (FuncResolve fatal [] #()) "$a0")
     else do:  #());;;
     (if: Convert go.untyped_bool go.bool ((let: "$a0" := (Convert go.untyped_int go.int32 (⟨go.untyped_int⟩- #1)) in
-    (MethodResolve (go.PointerType atomic.Int32) "Add"%go #() (StructFieldRef RWMutex "readerWait"%go (![go.PointerType RWMutex] "rw"))) "$a0") =⟨go.int32⟩ #(W32 0))
+    (MethodResolve (go.PointerType atomic.Int32) "Add"%go (StructFieldRef RWMutex "readerWait"%go (![go.PointerType RWMutex] "rw"))) "$a0") =⟨go.int32⟩ #(W32 0))
     then
       do:  (let: "$a0" := (StructFieldRef RWMutex "writerSem"%go (![go.PointerType RWMutex] "rw")) in
       let: "$a1" := #false in
@@ -393,13 +393,13 @@ Definition RWMutex__Lockⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
       (FuncResolve race.Read [] #()) "$a0");;;
       do:  ((FuncResolve race.Disable [] #()) #())
     else do:  #());;;
-    do:  ((MethodResolve (go.PointerType Mutex) "Lock"%go #() (StructFieldRef RWMutex "w"%go (![go.PointerType RWMutex] "rw"))) #());;;
+    do:  ((MethodResolve (go.PointerType Mutex) "Lock"%go (StructFieldRef RWMutex "w"%go (![go.PointerType RWMutex] "rw"))) #());;;
     let: "r" := (GoAlloc go.int32 (GoZeroVal go.int32 #())) in
     let: "$r0" := ((let: "$a0" := (Convert go.untyped_int go.int32 (⟨go.untyped_int⟩- rwmutexMaxReaders)) in
-    (MethodResolve (go.PointerType atomic.Int32) "Add"%go #() (StructFieldRef RWMutex "readerCount"%go (![go.PointerType RWMutex] "rw"))) "$a0") +⟨go.int32⟩ (Convert go.untyped_int go.int32 rwmutexMaxReaders)) in
+    (MethodResolve (go.PointerType atomic.Int32) "Add"%go (StructFieldRef RWMutex "readerCount"%go (![go.PointerType RWMutex] "rw"))) "$a0") +⟨go.int32⟩ (Convert go.untyped_int go.int32 rwmutexMaxReaders)) in
     do:  ("r" <-[go.int32] "$r0");;;
     (if: Convert go.untyped_bool go.bool (((![go.int32] "r") ≠⟨go.int32⟩ #(W32 0)) && ((let: "$a0" := (![go.int32] "r") in
-    (MethodResolve (go.PointerType atomic.Int32) "Add"%go #() (StructFieldRef RWMutex "readerWait"%go (![go.PointerType RWMutex] "rw"))) "$a0") ≠⟨go.int32⟩ #(W32 0)))
+    (MethodResolve (go.PointerType atomic.Int32) "Add"%go (StructFieldRef RWMutex "readerWait"%go (![go.PointerType RWMutex] "rw"))) "$a0") ≠⟨go.int32⟩ #(W32 0)))
     then
       do:  (let: "$a0" := (StructFieldRef RWMutex "writerSem"%go (![go.PointerType RWMutex] "rw")) in
       let: "$a1" := #false in
@@ -432,7 +432,7 @@ Definition RWMutex__TryLockⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
       (FuncResolve race.Read [] #()) "$a0");;;
       do:  ((FuncResolve race.Disable [] #()) #())
     else do:  #());;;
-    (if: (~ ((MethodResolve (go.PointerType Mutex) "TryLock"%go #() (StructFieldRef RWMutex "w"%go (![go.PointerType RWMutex] "rw"))) #()))
+    (if: (~ ((MethodResolve (go.PointerType Mutex) "TryLock"%go (StructFieldRef RWMutex "w"%go (![go.PointerType RWMutex] "rw"))) #()))
     then
       (if: Convert go.untyped_bool go.bool race.Enabled
       then do:  ((FuncResolve race.Enable [] #()) #())
@@ -441,9 +441,9 @@ Definition RWMutex__TryLockⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
     else do:  #());;;
     (if: (~ (let: "$a0" := #(W32 0) in
     let: "$a1" := (Convert go.untyped_int go.int32 (⟨go.untyped_int⟩- rwmutexMaxReaders)) in
-    (MethodResolve (go.PointerType atomic.Int32) "CompareAndSwap"%go #() (StructFieldRef RWMutex "readerCount"%go (![go.PointerType RWMutex] "rw"))) "$a0" "$a1"))
+    (MethodResolve (go.PointerType atomic.Int32) "CompareAndSwap"%go (StructFieldRef RWMutex "readerCount"%go (![go.PointerType RWMutex] "rw"))) "$a0" "$a1"))
     then
-      do:  ((MethodResolve (go.PointerType Mutex) "Unlock"%go #() (StructFieldRef RWMutex "w"%go (![go.PointerType RWMutex] "rw"))) #());;;
+      do:  ((MethodResolve (go.PointerType Mutex) "Unlock"%go (StructFieldRef RWMutex "w"%go (![go.PointerType RWMutex] "rw"))) #());;;
       (if: Convert go.untyped_bool go.bool race.Enabled
       then do:  ((FuncResolve race.Enable [] #()) #())
       else do:  #());;;
@@ -480,7 +480,7 @@ Definition RWMutex__Unlockⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
     else do:  #());;;
     let: "r" := (GoAlloc go.int32 (GoZeroVal go.int32 #())) in
     let: "$r0" := (let: "$a0" := (Convert go.untyped_int go.int32 rwmutexMaxReaders) in
-    (MethodResolve (go.PointerType atomic.Int32) "Add"%go #() (StructFieldRef RWMutex "readerCount"%go (![go.PointerType RWMutex] "rw"))) "$a0") in
+    (MethodResolve (go.PointerType atomic.Int32) "Add"%go (StructFieldRef RWMutex "readerCount"%go (![go.PointerType RWMutex] "rw"))) "$a0") in
     do:  ("r" <-[go.int32] "$r0");;;
     (if: Convert go.untyped_bool go.bool ((![go.int32] "r") ≥⟨go.int32⟩ (Convert go.untyped_int go.int32 rwmutexMaxReaders))
     then
@@ -496,7 +496,7 @@ Definition RWMutex__Unlockⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
       let: "$a1" := #false in
       let: "$a2" := #(W64 0) in
       (FuncResolve runtime_Semrelease [] #()) "$a0" "$a1" "$a2")));;;
-    do:  ((MethodResolve (go.PointerType Mutex) "Unlock"%go #() (StructFieldRef RWMutex "w"%go (![go.PointerType RWMutex] "rw"))) #());;;
+    do:  ((MethodResolve (go.PointerType Mutex) "Unlock"%go (StructFieldRef RWMutex "w"%go (![go.PointerType RWMutex] "rw"))) #());;;
     (if: Convert go.untyped_bool go.bool race.Enabled
     then do:  ((FuncResolve race.Enable [] #()) #())
     else do:  #());;;
@@ -568,7 +568,7 @@ Definition WaitGroup__Addⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
             do:  ("bubbled" <-[go.bool] "$r0");;;
             let: "state" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
             let: "$r0" := (let: "$a0" := (Convert go.untyped_int go.uint64 waitGroupBubbleFlag) in
-            (MethodResolve (go.PointerType atomic.Uint64) "Or"%go #() (StructFieldRef WaitGroup "state"%go (![go.PointerType WaitGroup] "wg"))) "$a0") in
+            (MethodResolve (go.PointerType atomic.Uint64) "Or"%go (StructFieldRef WaitGroup "state"%go (![go.PointerType WaitGroup] "wg"))) "$a0") in
             do:  ("state" <-[go.uint64] "$r0");;;
             (if: Convert go.untyped_bool go.bool (((![go.uint64] "state") ≠⟨go.uint64⟩ #(W64 0)) && (((![go.uint64] "state") &⟨go.uint64⟩ (Convert go.untyped_int go.uint64 waitGroupBubbleFlag)) =⟨go.uint64⟩ #(W64 0)))
             then
@@ -579,7 +579,7 @@ Definition WaitGroup__Addⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
     else do:  #());;;
     let: "state" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := (let: "$a0" := ((Convert go.int go.uint64 (![go.int] "delta")) <<⟨go.uint64⟩ (Convert go.untyped_int go.uint64 #32)) in
-    (MethodResolve (go.PointerType atomic.Uint64) "Add"%go #() (StructFieldRef WaitGroup "state"%go (![go.PointerType WaitGroup] "wg"))) "$a0") in
+    (MethodResolve (go.PointerType atomic.Uint64) "Add"%go (StructFieldRef WaitGroup "state"%go (![go.PointerType WaitGroup] "wg"))) "$a0") in
     do:  ("state" <-[go.uint64] "$r0");;;
     (if: (((![go.uint64] "state") &⟨go.uint64⟩ (Convert go.untyped_int go.uint64 waitGroupBubbleFlag)) ≠⟨go.uint64⟩ #(W64 0)) && (~ (![go.bool] "bubbled"))
     then
@@ -610,13 +610,13 @@ Definition WaitGroup__Addⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
     (if: Convert go.untyped_bool go.bool (((![go.int32] "v") >⟨go.int32⟩ #(W32 0)) || ((![go.uint32] "w") =⟨go.uint32⟩ #(W32 0)))
     then return: (#())
     else do:  #());;;
-    (if: Convert go.untyped_bool go.bool (((MethodResolve (go.PointerType atomic.Uint64) "Load"%go #() (StructFieldRef WaitGroup "state"%go (![go.PointerType WaitGroup] "wg"))) #()) ≠⟨go.uint64⟩ (![go.uint64] "state"))
+    (if: Convert go.untyped_bool go.bool (((MethodResolve (go.PointerType atomic.Uint64) "Load"%go (StructFieldRef WaitGroup "state"%go (![go.PointerType WaitGroup] "wg"))) #()) ≠⟨go.uint64⟩ (![go.uint64] "state"))
     then
       do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"sync: WaitGroup misuse: Add called concurrently with Wait"%go) in
       (FuncResolve go.panic [] #()) "$a0")
     else do:  #());;;
     do:  (let: "$a0" := #(W64 0) in
-    (MethodResolve (go.PointerType atomic.Uint64) "Store"%go #() (StructFieldRef WaitGroup "state"%go (![go.PointerType WaitGroup] "wg"))) "$a0");;;
+    (MethodResolve (go.PointerType atomic.Uint64) "Store"%go (StructFieldRef WaitGroup "state"%go (![go.PointerType WaitGroup] "wg"))) "$a0");;;
     (if: ![go.bool] "bubbled"
     then
       do:  (let: "$a0" := (![go.PointerType WaitGroup] "wg") in
@@ -644,7 +644,7 @@ Definition WaitGroup__Doneⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
   λ: "wg" <>,
     exception_do (let: "wg" := (GoAlloc (go.PointerType WaitGroup) "wg") in
     do:  (let: "$a0" := (Convert go.untyped_int go.int (⟨go.untyped_int⟩- #1)) in
-    (MethodResolve (go.PointerType WaitGroup) "Add"%go #() (![go.PointerType WaitGroup] "wg")) "$a0");;;
+    (MethodResolve (go.PointerType WaitGroup) "Add"%go (![go.PointerType WaitGroup] "wg")) "$a0");;;
     return: #()).
 
 (* Wait blocks until the [WaitGroup] task counter is zero.
@@ -658,7 +658,7 @@ Definition WaitGroup__Waitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
     else do:  #());;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       let: "state" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-      let: "$r0" := ((MethodResolve (go.PointerType atomic.Uint64) "Load"%go #() (StructFieldRef WaitGroup "state"%go (![go.PointerType WaitGroup] "wg"))) #()) in
+      let: "$r0" := ((MethodResolve (go.PointerType atomic.Uint64) "Load"%go (StructFieldRef WaitGroup "state"%go (![go.PointerType WaitGroup] "wg"))) #()) in
       do:  ("state" <-[go.uint64] "$r0");;;
       let: "v" := (GoAlloc go.int32 (GoZeroVal go.int32 #())) in
       let: "$r0" := (Convert go.uint64 go.int32 ((![go.uint64] "state") >>⟨go.uint64⟩ (Convert go.untyped_int go.uint64 #32))) in
@@ -679,7 +679,7 @@ Definition WaitGroup__Waitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
         then
           (if: let: "$a0" := (![go.uint64] "state") in
           let: "$a1" := #(W64 0) in
-          (MethodResolve (go.PointerType atomic.Uint64) "CompareAndSwap"%go #() (StructFieldRef WaitGroup "state"%go (![go.PointerType WaitGroup] "wg"))) "$a0" "$a1"
+          (MethodResolve (go.PointerType atomic.Uint64) "CompareAndSwap"%go (StructFieldRef WaitGroup "state"%go (![go.PointerType WaitGroup] "wg"))) "$a0" "$a1"
           then
             do:  (let: "$a0" := (![go.PointerType WaitGroup] "wg") in
             (FuncResolve synctest.Disassociate [WaitGroup] #()) "$a0")
@@ -689,7 +689,7 @@ Definition WaitGroup__Waitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
       else do:  #());;;
       (if: let: "$a0" := (![go.uint64] "state") in
       let: "$a1" := ((![go.uint64] "state") +⟨go.uint64⟩ #(W64 1)) in
-      (MethodResolve (go.PointerType atomic.Uint64) "CompareAndSwap"%go #() (StructFieldRef WaitGroup "state"%go (![go.PointerType WaitGroup] "wg"))) "$a0" "$a1"
+      (MethodResolve (go.PointerType atomic.Uint64) "CompareAndSwap"%go (StructFieldRef WaitGroup "state"%go (![go.PointerType WaitGroup] "wg"))) "$a0" "$a1"
       then
         (if: Convert go.untyped_bool go.bool (race.Enabled && ((![go.uint32] "w") =⟨go.uint32⟩ #(W32 0)))
         then
@@ -717,7 +717,7 @@ Definition WaitGroup__Waitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
         do:  (let: "$a0" := (StructFieldRef WaitGroup "sema"%go (![go.PointerType WaitGroup] "wg")) in
         let: "$a1" := (![go.bool] "synctestDurable") in
         (FuncResolve runtime_SemacquireWaitGroup [] #()) "$a0" "$a1");;;
-        (if: Convert go.untyped_bool go.bool (((MethodResolve (go.PointerType atomic.Uint64) "Load"%go #() (StructFieldRef WaitGroup "state"%go (![go.PointerType WaitGroup] "wg"))) #()) ≠⟨go.uint64⟩ #(W64 0))
+        (if: Convert go.untyped_bool go.bool (((MethodResolve (go.PointerType atomic.Uint64) "Load"%go (StructFieldRef WaitGroup "state"%go (![go.PointerType WaitGroup] "wg"))) #()) ≠⟨go.uint64⟩ #(W64 0))
         then
           do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"sync: WaitGroup is reused before previous Wait has returned"%go) in
           (FuncResolve go.panic [] #()) "$a0")
@@ -755,9 +755,9 @@ Definition WaitGroup__Goⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
     exception_do (let: "wg" := (GoAlloc (go.PointerType WaitGroup) "wg") in
     let: "f" := (GoAlloc (go.FunctionType (go.Signature [] false [])) "f") in
     do:  (let: "$a0" := #(W64 1) in
-    (MethodResolve (go.PointerType WaitGroup) "Add"%go #() (![go.PointerType WaitGroup] "wg")) "$a0");;;
+    (MethodResolve (go.PointerType WaitGroup) "Add"%go (![go.PointerType WaitGroup] "wg")) "$a0");;;
     let: "$go" := (λ: <>,
-      with_defer: (do:  (let: "$f" := (MethodResolve (go.PointerType WaitGroup) "Done"%go #() (![go.PointerType WaitGroup] "wg")) in
+      with_defer: (do:  (let: "$f" := (MethodResolve (go.PointerType WaitGroup) "Done"%go (![go.PointerType WaitGroup] "wg")) in
       "$defer" <-[deferType] (let: "$oldf" := (![deferType] "$defer") in
       (λ: <>,
         "$f" #();;

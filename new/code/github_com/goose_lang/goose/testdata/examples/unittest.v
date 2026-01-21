@@ -816,7 +816,7 @@ Definition condvarWrappingⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
     do:  ("cond1" <-[go.PointerType sync.Cond] "$r0");;;
     let: "$r0" := (GoAlloc sync.Mutex (GoZeroVal sync.Mutex #())) in
     do:  ("mu" <-[go.PointerType sync.Mutex] "$r0");;;
-    do:  ((MethodResolve (go.PointerType sync.Cond) "Wait"%go #() (![go.PointerType sync.Cond] "cond1")) #());;;
+    do:  ((MethodResolve (go.PointerType sync.Cond) "Wait"%go (![go.PointerType sync.Cond] "cond1")) #());;;
     return: #()).
 
 (* go: const.go:37:6 *)
@@ -1006,7 +1006,7 @@ Definition testNumWrapperⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
     exception_do (let: "n" := (GoAlloc numWrapper (GoZeroVal numWrapper #())) in
     let: "$r0" := #(W64 0) in
     do:  ("n" <-[numWrapper] "$r0");;;
-    do:  ((MethodResolve (go.PointerType numWrapper) "inc"%go #() "n") #());;;
+    do:  ((MethodResolve (go.PointerType numWrapper) "inc"%go "n") #());;;
     return: #()).
 
 (* go: copy.go:3:6 *)
@@ -1189,11 +1189,11 @@ Definition diskArgumentⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
     exception_do (let: "d" := (GoAlloc disk.Disk "d") in
     let: "b" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
-    (MethodResolve disk.Disk "Read"%go #() (![disk.Disk] "d")) "$a0") in
+    (MethodResolve disk.Disk "Read"%go (![disk.Disk] "d")) "$a0") in
     do:  ("b" <-[go.SliceType go.byte] "$r0");;;
     do:  (let: "$a0" := #(W64 1) in
     let: "$a1" := (![go.SliceType go.byte] "b") in
-    (MethodResolve disk.Disk "Write"%go #() (![disk.Disk] "d")) "$a0" "$a1");;;
+    (MethodResolve disk.Disk "Write"%go (![disk.Disk] "d")) "$a0" "$a1");;;
     return: #()).
 
 (* go: embedded.go:19:17 *)
@@ -1262,14 +1262,14 @@ Definition useEmbeddedValFieldⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
 Definition useEmbeddedMethodⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "d",
     exception_do (let: "d" := (GoAlloc embedD "d") in
-    return: (((MethodResolve embedD "Foo"%go #() (![embedD] "d")) #()) =⟨go.uint64⟩ ((MethodResolve embedA "Foo"%go #() (![embedA] (StructFieldRef embedB "embedA"%go (![go.PointerType embedB] (StructFieldRef embedC "embedB"%go (StructFieldRef embedD "embedC"%go "d")))))) #()))).
+    return: (((MethodResolve embedD "Foo"%go (![embedD] "d")) #()) =⟨go.uint64⟩ ((MethodResolve embedA "Foo"%go (![embedA] (StructFieldRef embedB "embedA"%go (![go.PointerType embedB] (StructFieldRef embedC "embedB"%go (StructFieldRef embedD "embedC"%go "d")))))) #()))).
 
 (* go: embedded.go:64:6 *)
 Definition useEmbeddedMethod2ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "d",
     exception_do (let: "d" := (GoAlloc embedD "d") in
-    do:  ((MethodResolve embedD "Car"%go #() (![embedD] "d")) #());;;
-    return: (((MethodResolve embedD "Bar"%go #() (![embedD] "d")) #()) =⟨go.uint64⟩ ((MethodResolve (go.PointerType embedB) "Bar"%go #() (![go.PointerType embedB] (StructFieldRef embedC "embedB"%go (StructFieldRef embedD "embedC"%go "d")))) #()))).
+    do:  ((MethodResolve embedD "Car"%go (![embedD] "d")) #());;;
+    return: (((MethodResolve embedD "Bar"%go (![embedD] "d")) #()) =⟨go.uint64⟩ ((MethodResolve (go.PointerType embedB) "Bar"%go (![go.PointerType embedB] (StructFieldRef embedC "embedB"%go (StructFieldRef embedD "embedC"%go "d")))) #()))).
 
 (* go: empty_functions.go:3:6 *)
 Definition emptyⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -1312,7 +1312,7 @@ Definition Enc__UInt64ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
     exception_do (let: "e" := (GoAlloc (go.PointerType Enc) "e") in
     let: "x" := (GoAlloc go.uint64 "x") in
     do:  (let: "$a0" := (let: "$a0" := #(W64 8) in
-    (MethodResolve (go.PointerType Enc) "consume"%go #() (![go.PointerType Enc] "e")) "$a0") in
+    (MethodResolve (go.PointerType Enc) "consume"%go (![go.PointerType Enc] "e")) "$a0") in
     let: "$a1" := (![go.uint64] "x") in
     (FuncResolve primitive.UInt64Put [] #()) "$a0" "$a1");;;
     return: #()).
@@ -1323,7 +1323,7 @@ Definition Enc__UInt32ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
     exception_do (let: "e" := (GoAlloc (go.PointerType Enc) "e") in
     let: "x" := (GoAlloc go.uint32 "x") in
     do:  (let: "$a0" := (let: "$a0" := #(W64 4) in
-    (MethodResolve (go.PointerType Enc) "consume"%go #() (![go.PointerType Enc] "e")) "$a0") in
+    (MethodResolve (go.PointerType Enc) "consume"%go (![go.PointerType Enc] "e")) "$a0") in
     let: "$a1" := (![go.uint32] "x") in
     (FuncResolve primitive.UInt32Put [] #()) "$a0" "$a1");;;
     return: #()).
@@ -1347,7 +1347,7 @@ Definition Dec__UInt64ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
   λ: "d" <>,
     exception_do (let: "d" := (GoAlloc (go.PointerType Dec) "d") in
     return: (let: "$a0" := (let: "$a0" := #(W64 8) in
-     (MethodResolve (go.PointerType Dec) "consume"%go #() (![go.PointerType Dec] "d")) "$a0") in
+     (MethodResolve (go.PointerType Dec) "consume"%go (![go.PointerType Dec] "d")) "$a0") in
      (FuncResolve primitive.UInt64Get [] #()) "$a0")).
 
 (* go: encoding.go:37:15 *)
@@ -1355,7 +1355,7 @@ Definition Dec__UInt32ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
   λ: "d" <>,
     exception_do (let: "d" := (GoAlloc (go.PointerType Dec) "d") in
     return: (let: "$a0" := (let: "$a0" := #(W64 4) in
-     (MethodResolve (go.PointerType Dec) "consume"%go #() (![go.PointerType Dec] "d")) "$a0") in
+     (MethodResolve (go.PointerType Dec) "consume"%go (![go.PointerType Dec] "d")) "$a0") in
      (FuncResolve primitive.UInt32Get [] #()) "$a0")).
 
 (* go: float.go:8:6 *)
@@ -1528,7 +1528,7 @@ Definition concreteFooer__Fooⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
 Definition fooConsumerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "f",
     exception_do (let: "f" := (GoAlloc Fooer "f") in
-    do:  ((MethodResolve Fooer "Foo"%go #() (![Fooer] "f")) #());;;
+    do:  ((MethodResolve Fooer "Foo"%go (![Fooer] "f")) #());;;
     return: #()).
 
 (* go: interfaces.go:22:6 *)
@@ -1555,8 +1555,8 @@ Definition testPassConcreteToInterfaceArgⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx
     do:  ("f" <-[Fooer] "$r0");;;
     do:  (let: "$a0" := (![Fooer] "f") in
     (FuncResolve fooConsumer [] #()) "$a0");;;
-    do:  ((MethodResolve (go.PointerType concreteFooer) "Foo"%go #() (![go.PointerType concreteFooer] "c")) #());;;
-    do:  ((MethodResolve Fooer "Foo"%go #() (![Fooer] "f")) #());;;
+    do:  ((MethodResolve (go.PointerType concreteFooer) "Foo"%go (![go.PointerType concreteFooer] "c")) #());;;
+    do:  ((MethodResolve Fooer "Foo"%go (![Fooer] "f")) #());;;
     return: #()).
 
 (* go: interfaces.go:37:6 *)
@@ -1585,7 +1585,7 @@ Definition testPassConcreteToInterfaceArgSpecialⁱᵐᵖˡ {ext : ffi_syntax} {
 Definition takesVarArgsInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "fs",
     exception_do (let: "fs" := (GoAlloc (go.SliceType Fooer) "fs") in
-    do:  ((MethodResolve Fooer "Foo"%go #() (![Fooer] (IndexRef (go.SliceType Fooer) (![go.SliceType Fooer] "fs", #(W64 0))))) #());;;
+    do:  ((MethodResolve Fooer "Foo"%go (![Fooer] (IndexRef (go.SliceType Fooer) (![go.SliceType Fooer] "fs", #(W64 0))))) #());;;
     return: #()).
 
 (* go: interfaces.go:55:6 *)
@@ -1690,8 +1690,8 @@ Definition testPtrMsetⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
     let: "f" := (GoAlloc Fooer (GoZeroVal Fooer #())) in
     let: "$r0" := (Convert concrete1 Fooer (![concrete1] (![go.PointerType concrete1] "a"))) in
     do:  ("f" <-[Fooer] "$r0");;;
-    do:  ((MethodResolve PointerInterface "B"%go #() (![PointerInterface] "p")) #());;;
-    do:  ((MethodResolve Fooer "Foo"%go #() (![Fooer] "f")) #());;;
+    do:  ((MethodResolve PointerInterface "B"%go (![PointerInterface] "p")) #());;;
+    do:  ((MethodResolve Fooer "Foo"%go (![Fooer] "f")) #());;;
     return: #()).
 
 (* go: interfaces.go:120:6 *)
@@ -1752,8 +1752,8 @@ Definition useLocksⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : 
     exception_do (let: "m" := (GoAlloc (go.PointerType sync.Mutex) (GoZeroVal (go.PointerType sync.Mutex) #())) in
     let: "$r0" := (GoAlloc sync.Mutex (GoZeroVal sync.Mutex #())) in
     do:  ("m" <-[go.PointerType sync.Mutex] "$r0");;;
-    do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go #() (![go.PointerType sync.Mutex] "m")) #());;;
-    do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go #() (![go.PointerType sync.Mutex] "m")) #());;;
+    do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (![go.PointerType sync.Mutex] "m")) #());;;
+    do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (![go.PointerType sync.Mutex] "m")) #());;;
     return: #()).
 
 (* go: locks.go:11:6 *)
@@ -1766,10 +1766,10 @@ Definition useCondVarⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
     let: "$r0" := (let: "$a0" := (Convert (go.PointerType sync.Mutex) sync.Locker (![go.PointerType sync.Mutex] "m")) in
     (FuncResolve sync.NewCond [] #()) "$a0") in
     do:  ("c" <-[go.PointerType sync.Cond] "$r0");;;
-    do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go #() (![go.PointerType sync.Mutex] "m")) #());;;
-    do:  ((MethodResolve (go.PointerType sync.Cond) "Signal"%go #() (![go.PointerType sync.Cond] "c")) #());;;
-    do:  ((MethodResolve (go.PointerType sync.Cond) "Wait"%go #() (![go.PointerType sync.Cond] "c")) #());;;
-    do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go #() (![go.PointerType sync.Mutex] "m")) #());;;
+    do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (![go.PointerType sync.Mutex] "m")) #());;;
+    do:  ((MethodResolve (go.PointerType sync.Cond) "Signal"%go (![go.PointerType sync.Cond] "c")) #());;;
+    do:  ((MethodResolve (go.PointerType sync.Cond) "Wait"%go (![go.PointerType sync.Cond] "c")) #());;;
+    do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (![go.PointerType sync.Mutex] "m")) #());;;
     return: #()).
 
 (* go: log_debugging.go:5:6 *)
@@ -2266,7 +2266,7 @@ Definition Negativeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : 
 Definition wrapExternalStruct__joinⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "w" <>,
     exception_do (let: "w" := (GoAlloc wrapExternalStruct "w") in
-    do:  ((MethodResolve (go.PointerType std.JoinHandle) "Join"%go #() (![go.PointerType std.JoinHandle] (StructFieldRef wrapExternalStruct "j"%go "w"))) #());;;
+    do:  ((MethodResolve (go.PointerType std.JoinHandle) "Join"%go (![go.PointerType std.JoinHandle] (StructFieldRef wrapExternalStruct "j"%go "w"))) #());;;
     return: #()).
 
 (* go: panic.go:3:6 *)
@@ -2314,14 +2314,14 @@ Definition recurⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val
 Definition R__recurMethodⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" <>,
     exception_do (let: "r" := (GoAlloc (go.PointerType R) "r") in
-    do:  ((MethodResolve (go.PointerType R) "recurMethod"%go #() (![go.PointerType R] "r")) #());;;
+    do:  ((MethodResolve (go.PointerType R) "recurMethod"%go (![go.PointerType R] "r")) #());;;
     return: #()).
 
 (* go: recursive.go:22:29 *)
 Definition RecursiveEmbedded__recurEmbeddedMethodⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" <>,
     exception_do (let: "r" := (GoAlloc (go.PointerType RecursiveEmbedded) "r") in
-    do:  ((MethodResolve Other "recurEmbeddedMethod"%go #() (![Other] (StructFieldRef RecursiveEmbedded "Other"%go (![go.PointerType RecursiveEmbedded] "r")))) #());;;
+    do:  ((MethodResolve Other "recurEmbeddedMethod"%go (![Other] (StructFieldRef RecursiveEmbedded "Other"%go (![go.PointerType RecursiveEmbedded] "r")))) #());;;
     return: #()).
 
 (* go: renamedImport.go:7:6 *)
@@ -2589,21 +2589,21 @@ Definition simpleSpawnⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
     let: "$r0" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     do:  ("v" <-[go.PointerType go.uint64] "$r0");;;
     let: "$go" := (λ: <>,
-      exception_do (do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go #() (![go.PointerType sync.Mutex] "l")) #());;;
+      exception_do (do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (![go.PointerType sync.Mutex] "l")) #());;;
       let: "x" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
       let: "$r0" := (![go.uint64] (![go.PointerType go.uint64] "v")) in
       do:  ("x" <-[go.uint64] "$r0");;;
       (if: Convert go.untyped_bool go.bool ((![go.uint64] "x") >⟨go.uint64⟩ #(W64 0))
       then do:  ((FuncResolve Skip [] #()) #())
       else do:  #());;;
-      do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go #() (![go.PointerType sync.Mutex] "l")) #());;;
+      do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (![go.PointerType sync.Mutex] "l")) #());;;
       return: #())
       ) in
     do:  (Fork ("$go" #()));;;
-    do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go #() (![go.PointerType sync.Mutex] "l")) #());;;
+    do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (![go.PointerType sync.Mutex] "l")) #());;;
     let: "$r0" := #(W64 1) in
     do:  ((![go.PointerType go.uint64] "v") <-[go.uint64] "$r0");;;
-    do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go #() (![go.PointerType sync.Mutex] "l")) #());;;
+    do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (![go.PointerType sync.Mutex] "l")) #());;;
     return: #()).
 
 (* go: spawn.go:26:6 *)
@@ -2684,7 +2684,7 @@ Definition UseAddⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : va
     do:  ("c" <-[Point] "$r0");;;
     let: "r" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := (let: "$a0" := #(W64 4) in
-    (MethodResolve Point "Add"%go #() (![Point] "c")) "$a0") in
+    (MethodResolve Point "Add"%go (![Point] "c")) "$a0") in
     do:  ("r" <-[go.uint64] "$r0");;;
     return: (![go.uint64] "r")).
 
@@ -2693,7 +2693,7 @@ Definition UseAddWithLiteralⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
   λ: <>,
     exception_do (let: "r" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := (let: "$a0" := #(W64 4) in
-    (MethodResolve Point "Add"%go #() (CompositeLiteral Point (LiteralValue [KeyedElement (Some (KeyField "x"%go)) (ElementExpression #(W64 2)); KeyedElement (Some (KeyField "y"%go)) (ElementExpression #(W64 3))]))) "$a0") in
+    (MethodResolve Point "Add"%go (CompositeLiteral Point (LiteralValue [KeyedElement (Some (KeyField "x"%go)) (ElementExpression #(W64 2)); KeyedElement (Some (KeyField "y"%go)) (ElementExpression #(W64 3))]))) "$a0") in
     do:  ("r" <-[go.uint64] "$r0");;;
     return: (![go.uint64] "r")).
 
@@ -2795,8 +2795,8 @@ Definition testSwitchMultipleⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
 Definition DoSomeLockingⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "l",
     exception_do (let: "l" := (GoAlloc (go.PointerType sync.Mutex) "l") in
-    do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go #() (![go.PointerType sync.Mutex] "l")) #());;;
-    do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go #() (![go.PointerType sync.Mutex] "l")) #());;;
+    do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (![go.PointerType sync.Mutex] "l")) #());;;
+    do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (![go.PointerType sync.Mutex] "l")) #());;;
     return: #()).
 
 (* go: synchronization.go:15:6 *)

@@ -648,7 +648,7 @@ Definition breakPatternsCmpFuncⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
       do:  ("idx" <-[go.int] "$r0");;;
       (for: (λ: <>, (![go.int] "idx") ≤⟨go.int⟩ (((![go.int] "a") +⟨go.int⟩ (((![go.int] "length") /⟨go.int⟩ #(W64 4)) *⟨go.int⟩ #(W64 2))) +⟨go.int⟩ #(W64 1))); (λ: <>, do:  ("idx" <-[go.int] ((![go.int] "idx") +⟨go.int⟩ #(W64 1)))) := λ: <>,
         let: "other" := (GoAlloc go.int (GoZeroVal go.int #())) in
-        let: "$r0" := (Convert go.uint go.int ((Convert go.uint64 go.uint ((MethodResolve (go.PointerType xorshift) "Next"%go #() "random") #())) &⟨go.uint⟩ ((![go.uint] "modulus") -⟨go.uint⟩ #(W64 1)))) in
+        let: "$r0" := (Convert go.uint go.int ((Convert go.uint64 go.uint ((MethodResolve (go.PointerType xorshift) "Next"%go "random") #())) &⟨go.uint⟩ ((![go.uint] "modulus") -⟨go.uint⟩ #(W64 1)))) in
         do:  ("other" <-[go.int] "$r0");;;
         (if: Convert go.untyped_bool go.bool ((![go.int] "other") ≥⟨go.int⟩ (![go.int] "length"))
         then do:  ("other" <-[go.int] ((![go.int] "other") -⟨go.int⟩ (![go.int] "length")))

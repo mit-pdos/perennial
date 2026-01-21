@@ -596,7 +596,7 @@ Definition Time__secⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
 Definition Time__unixSecⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "t" <>,
     exception_do (let: "t" := (GoAlloc (go.PointerType Time) "t") in
-    return: (((MethodResolve (go.PointerType Time) "sec"%go #() (![go.PointerType Time] "t")) #()) +⟨go.int64⟩ internalToUnix)).
+    return: (((MethodResolve (go.PointerType Time) "sec"%go (![go.PointerType Time] "t")) #()) +⟨go.int64⟩ internalToUnix)).
 
 (* UnixNano returns t as a Unix time, the number of nanoseconds elapsed
    since January 1, 1970 UTC. The result is undefined if the Unix time
@@ -609,7 +609,7 @@ Definition Time__unixSecⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
 Definition Time__UnixNanoⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "t" <>,
     exception_do (let: "t" := (GoAlloc Time "t") in
-    return: ((((MethodResolve (go.PointerType Time) "unixSec"%go #() "t") #()) *⟨go.int64⟩ #(W64 1000000000)) +⟨go.int64⟩ (Convert go.int32 go.int64 ((MethodResolve (go.PointerType Time) "nsec"%go #() "t") #())))).
+    return: ((((MethodResolve (go.PointerType Time) "unixSec"%go "t") #()) *⟨go.int64⟩ #(W64 1000000000)) +⟨go.int64⟩ (Convert go.int32 go.int64 ((MethodResolve (go.PointerType Time) "nsec"%go "t") #())))).
 
 #[global] Instance info' : PkgInfo pkg_id.time :=
 {|
