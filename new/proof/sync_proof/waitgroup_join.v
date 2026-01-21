@@ -6,11 +6,10 @@ Local Existing Instances tokG wg_totalG rw_ghost_varG rw_ghost_wlG rw_ghost_rwmu
 
 Module join.
 Section waitgroup_join_idiom.
-
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
+Context {sem : go.Semantics} {package_sem : sync.Assumptions}.
+Local Set Default Proof Using "All".
 Context `{!syncG Σ}.
-Context `{!waitgroup_joinG Σ}.
 
 Record WaitGroup_join_names :=
   {
@@ -44,7 +43,7 @@ Local Definition is_wgj_inv wg γ : iProp Σ :=
     calling `Wait` will give `P` as postcondition and reset the permission. *)
 Definition own_Adder wg (num_added : w32) (P : iProp Σ) : iProp Σ :=
   ∃ γ P',
-  "Hno_waiters" ∷ own_WaitGroup_waiters γ.(wg_gn) (W32 0) ∗
+  "Hno_waiters" ∷ own_WaitGroup_waiters γ.(wg_gn) 0 ∗
   "Haprop" ∷ own_aprop_auth γ.(wg_aprop_gn) P' (sint.nat num_added) ∗
   "Hadded" ∷ own_tok_auth_dfrac γ.(wg_not_done_gn) (DfracOwn (1/2)) (sint.nat num_added) ∗
   "%Hadded_pos" ∷ ⌜ 0 ≤ sint.Z num_added ⌝ ∗
@@ -65,7 +64,7 @@ Definition own_Done wg (P : iProp Σ) : iProp Σ :=
 Lemma init wg γwg :
   is_WaitGroup wg γwg (wgjN.@"wg") ∗
   own_WaitGroup γwg (W32 0) ∗
-  own_WaitGroup_waiters γwg (W32 0) ={⊤}=∗
+  own_WaitGroup_waiters γwg 0 ={⊤}=∗
   own_Adder wg (W32 0) True.
 Proof.
   iIntros "(#His & Hctr_inv & Hwaiters)".
@@ -84,7 +83,7 @@ Lemma wp_WaitGroup__Add P' wg P num_added :
       "Ha" ∷ own_Adder wg num_added P ∗
       "%Hoverflow" ∷ (⌜ sint.Z num_added < 2^31-1 ⌝)
   }}}
-    wg @ (ptrT.id sync.WaitGroup.id) @ "Add" #(W64 1)
+    wg @! (go.PointerType sync.WaitGroup) @! "Add" #(W64 1)
   {{{ RET #();
       own_Adder wg (word.add num_added (W32 1)) (P ∗ P') ∗
       own_Done wg P'
@@ -118,7 +117,7 @@ Lemma wp_WaitGroup__Done P wg :
       "Ha" ∷ own_Done wg P ∗
       "HP" ∷ P
   }}}
-    wg @ (ptrT.id sync.WaitGroup.id) @ "Done" #()
+    wg @! (go.PointerType sync.WaitGroup) @! "Done" #()
   {{{ RET #(); True }}}.
 Proof.
   wp_start_folded as "Hpre". iNamed "Hpre". iNamed "Ha". iNamed "Hinv".
@@ -139,7 +138,7 @@ Qed.
 
 Lemma wp_WaitGroup__Wait P n wg :
   {{{ is_pkg_init sync ∗ "Ha" ∷ own_Adder wg n P }}}
-    wg @ (ptrT.id sync.WaitGroup.id) @ "Wait" #()
+    wg @! (go.PointerType sync.WaitGroup) @! "Wait" #()
   {{{ RET #(); ▷ P ∗ own_Adder wg (W32 0) True }}}.
 Proof.
   wp_start_folded as "Hpre". iApply wp_fupd. iNamed "Hpre". iNamed "Ha". iNamed "Hinv".
@@ -167,7 +166,6 @@ Proof.
   iMod fupd_mask_subseteq as "Hmask"; last iMod (dealloc_wait_token with "[$] [$] [$]") as "H".
   { solve_ndisj. }
   { word. }
-  replace (word.sub _ _) with (W32 0) by word.
   iMod "Hmask" as "_". iModIntro. iApply "HΦ". iFrame.
   iDestruct "Heq" as "[Heq _]". iFrame "#". iSplitL; last word.
   iApply "HimpliesP". iApply "Heq". done.
