@@ -75,7 +75,7 @@ Class GoSemanticsFunctions {ext : ffi_syntax} :=
     underlying : go.type → go.type;
     global_addr : go_string → loc;
     functions : go_string → list go.type → func.t;
-    methods : go.type → go_string → func.t;
+    methods : go.type → go_string → val → func.t;
     go_op : go_operator → go.type → val → expr;
     go_zero_val : go.type → val;
 
@@ -126,9 +126,9 @@ Class FuncUnfold f type_args f_impl : Prop :=
   }.
 Global Hint Mode FuncUnfold ! ! - : typeclass_instances.
 
-Class MethodUnfold t m m_impl : Prop :=
+Class MethodUnfold t m (m_impl : val) : Prop :=
   {
-    method_unfold : #(methods t m) = m_impl;
+    method_unfold : ∀ v, #(methods t m v) = (λ: "arg1", m_impl v "arg1")%V;
   }.
 Global Hint Mode MethodUnfold ! ! - : typeclass_instances.
 End unfolding_defs.
@@ -363,7 +363,8 @@ Class CoreSemantics `{!GoSemanticsFunctions} : Prop :=
   #[global] go_load_step t (l : loc) :: IsGoStepPureDet (GoLoad t) #l (load t #l);
   #[global] go_store_step t (l : loc) v :: IsGoStepPureDet (GoStore t) (#l, v)%V (store t #l v);
   #[global] go_func_resolve_step n ts :: IsGoStepPureDet (FuncResolve n ts) #() #(functions n ts);
-  #[global] go_method_resolve_step m t :: IsGoStepPureDet (MethodResolve t m) #() #(methods t m);
+  #[global] go_method_resolve_step m t rcvr ::
+    IsGoStepPureDet (MethodResolve t m) rcvr #(methods t m rcvr);
   #[global] go_global_var_addr_step v :: IsGoStepPureDet (GlobalVarAddr v) #() #(global_addr v);
 
   (* FIXME: unsound semantics: simply computing the struct field address will
@@ -500,7 +501,7 @@ Global Notation "@! func" :=
   #(functions func []) (at level 1, no associativity, format "@! func") : expr_scope.
 
 Global Notation "rcvr @! type @! method" :=
-  (#(methods type method) #rcvr)
+  (#(methods type method #rcvr))
     (at level 1, type at next level, no associativity) : expr_scope.
 
 Global Notation "![ t ] e" := (GoInstruction (GoLoad t) e%E)
