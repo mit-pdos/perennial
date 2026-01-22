@@ -78,8 +78,8 @@ Proof.
 Qed.
 
 Definition is_Locker (i : interface.t_ok) (P : iProp Σ) : iProp Σ :=
-  "#H_Lock" ∷ ({{{ True }}} #(methods i.(interface.ty) "Lock") i.(interface.v) #() {{{ RET #(); P }}}) ∗
-  "#H_Unlock" ∷ ({{{ P }}} #(methods i.(interface.ty) "Unlock") i.(interface.v) #() {{{ RET #(); True }}}).
+  "#H_Lock" ∷ ({{{ True }}} #(methods i.(interface.ty) "Lock" i.(interface.v)) #() {{{ RET #(); P }}}) ∗
+  "#H_Unlock" ∷ ({{{ P }}} #(methods i.(interface.ty) "Unlock" i.(interface.v)) #() {{{ RET #(); True }}}).
 
 Global Instance is_Locker_persistent v P : Persistent (is_Locker v P) := _.
 

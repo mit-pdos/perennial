@@ -60,7 +60,7 @@ Tactic Notation "wp_start_folded" "as" constr(pat) :=
 Tactic Notation "wp_start" "as" constr(pat) :=
   wp_start_folded as pat;
   (* only do this if it produces a single goal *)
-  try (first [ wp_func_call | wp_method_call ]; [idtac]);
+  try (first [ wp_func_call| wp_method_call; try wp_call ]; [idtac]);
   try wp_call.
 
 Tactic Notation "wp_start" :=

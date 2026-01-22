@@ -78,8 +78,12 @@ Class InterfaceSemantics :=
            if decide (t = i.(interface.ty)) then (i.(interface.v), #true)%V else (GoZeroVal t #(), #false)%E
      end);
 
-  method_interface m `{!t ≤u go.InterfaceType elems} :
-    #(methods t m) = (λ: "v", InterfaceGet m "v")%V;
+  #[global] method_interface_ok m `{!t ≤u go.InterfaceType elems} (i : interface.t) ::
+    go.IsGoStepPureDet (MethodResolve t m) #i
+    (match i with
+     | interface.nil => (Panic "nil interface")%E
+     | interface.ok i => #(methods i.(interface.ty) m i.(interface.v))
+     end);
 }.
 End defs.
 End go.

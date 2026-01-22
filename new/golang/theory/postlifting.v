@@ -27,6 +27,7 @@ Lemma underlying_trivial t : t ↓u (underlying t).
 Proof. done. Qed.
 End underlying_instances.
 #[global] Hint Extern 0 (go.NotNamed _) => (constructor; refine I) : typeclass_instances.
+#[global] Hint Extern 0 (go.NotInterface _) => (constructor; refine I) : typeclass_instances.
 
 Section into_val_defs.
 Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
@@ -250,14 +251,6 @@ Proof.
   replace (LitV x) with #x.
   { by iApply "HΦ". }
   rewrite go.into_val_unfold //.
-Qed.
-
-Global Instance method_interface_pure_wp m (i : interface.t) t `{!t ≤u go.InterfaceType elems} :
-  PureWp True (#(methods t m) #i) (InterfaceGet m #i).
-Proof.
-  iIntros "% % * _ % HΦ". wp_pures.
-  rewrite go.method_interface.
-  wp_pure_lc "?". by iApply "HΦ".
 Qed.
 
 End go_wps.

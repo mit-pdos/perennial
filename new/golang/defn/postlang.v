@@ -251,6 +251,9 @@ Global Hint Mode UnderlyingDirectedEq + - - : typeclass_instances.
 Class NotNamed (t : go.type) : Prop :=
   { not_named : match t with go.Named _ _ => False | _ => True end }.
 
+Class NotInterface (t : go.type) : Prop :=
+  { not_interface : match t with go.InterfaceType _ => False | _ => True end }.
+
 Class IsUnderlying t tunder `{!GoSemanticsFunctions} : Prop :=
   { is_underlying : underlying t = tunder }.
 Global Hint Mode IsUnderlying + - - : typeclass_instances.
@@ -363,7 +366,7 @@ Class CoreSemantics `{!GoSemanticsFunctions} : Prop :=
   #[global] go_load_step t (l : loc) :: IsGoStepPureDet (GoLoad t) #l (load t #l);
   #[global] go_store_step t (l : loc) v :: IsGoStepPureDet (GoStore t) (#l, v)%V (store t #l v);
   #[global] go_func_resolve_step n ts :: IsGoStepPureDet (FuncResolve n ts) #() #(functions n ts);
-  #[global] go_method_resolve_step m t rcvr ::
+  #[global] go_method_resolve_step m t rcvr `{!t ↓u tunder} `{!NotInterface tunder} ::
     IsGoStepPureDet (MethodResolve t m) rcvr #(methods t m rcvr);
   #[global] go_global_var_addr_step v :: IsGoStepPureDet (GlobalVarAddr v) #() #(global_addr v);
 
