@@ -35,27 +35,27 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
   `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T} `{!go.TypeRepr T T'}  :
   IntoValTyped (channel.Channel.t T') (channel.Channel T).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance Channel_access_cap`{!TypedPointsto (Σ:=Σ) T'}  l (v : (channel.Channel.t T')) dq :
+#[global] Instance Channel_access_cap `{!TypedPointsto (Σ:=Σ) T'} l (v : (channel.Channel.t T')) dq :
   PointsToAccess
     (l.[(channel.Channel.t T'), "cap"]) (v.(channel.Channel.cap')) dq
     (l ↦{dq} v) (λ cap', l ↦{dq} (v <|(channel.Channel.cap') := cap'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance Channel_access_mu`{!TypedPointsto (Σ:=Σ) T'}  l (v : (channel.Channel.t T')) dq :
+#[global] Instance Channel_access_mu `{!TypedPointsto (Σ:=Σ) T'} l (v : (channel.Channel.t T')) dq :
   PointsToAccess
     (l.[(channel.Channel.t T'), "mu"]) (v.(channel.Channel.mu')) dq
     (l ↦{dq} v) (λ mu', l ↦{dq} (v <|(channel.Channel.mu') := mu'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance Channel_access_state`{!TypedPointsto (Σ:=Σ) T'}  l (v : (channel.Channel.t T')) dq :
+#[global] Instance Channel_access_state `{!TypedPointsto (Σ:=Σ) T'} l (v : (channel.Channel.t T')) dq :
   PointsToAccess
     (l.[(channel.Channel.t T'), "state"]) (v.(channel.Channel.state')) dq
     (l ↦{dq} v) (λ state', l ↦{dq} (v <|(channel.Channel.state') := state'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance Channel_access_buffer`{!TypedPointsto (Σ:=Σ) T'}  l (v : (channel.Channel.t T')) dq :
+#[global] Instance Channel_access_buffer `{!TypedPointsto (Σ:=Σ) T'} l (v : (channel.Channel.t T')) dq :
   PointsToAccess
     (l.[(channel.Channel.t T'), "buffer"]) (v.(channel.Channel.buffer')) dq
     (l ↦{dq} v) (λ buffer', l ↦{dq} (v <|(channel.Channel.buffer') := buffer'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance Channel_access_v`{!TypedPointsto (Σ:=Σ) T'}  l (v : (channel.Channel.t T')) dq :
+#[global] Instance Channel_access_v `{!TypedPointsto (Σ:=Σ) T'} l (v : (channel.Channel.t T')) dq :
   PointsToAccess
     (l.[(channel.Channel.t T'), "v"]) (v.(channel.Channel.v')) dq
     (l ↦{dq} v) (λ v', l ↦{dq} (v <|(channel.Channel.v') := v'|>))%I.

@@ -99,17 +99,17 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
   `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T} `{!go.TypeRepr T T'}  :
   IntoValTyped (atomic.Pointer.t T') (atomic.Pointer T).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance Pointer_access__0`{!TypedPointsto (Σ:=Σ) T'}  l (v : (atomic.Pointer.t T')) dq :
+#[global] Instance Pointer_access__0 `{!TypedPointsto (Σ:=Σ) T'} l (v : (atomic.Pointer.t T')) dq :
   PointsToAccess
     (l.[(atomic.Pointer.t T'), "_0"]) (v.(atomic.Pointer._0')) dq
     (l ↦{dq} v) (λ _0', l ↦{dq} (v <|(atomic.Pointer._0') := _0'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance Pointer_access__1`{!TypedPointsto (Σ:=Σ) T'}  l (v : (atomic.Pointer.t T')) dq :
+#[global] Instance Pointer_access__1 `{!TypedPointsto (Σ:=Σ) T'} l (v : (atomic.Pointer.t T')) dq :
   PointsToAccess
     (l.[(atomic.Pointer.t T'), "_1"]) (v.(atomic.Pointer._1')) dq
     (l ↦{dq} v) (λ _1', l ↦{dq} (v <|(atomic.Pointer._1') := _1'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance Pointer_access_v`{!TypedPointsto (Σ:=Σ) T'}  l (v : (atomic.Pointer.t T')) dq :
+#[global] Instance Pointer_access_v `{!TypedPointsto (Σ:=Σ) T'} l (v : (atomic.Pointer.t T')) dq :
   PointsToAccess
     (l.[(atomic.Pointer.t T'), "v"]) (v.(atomic.Pointer.v')) dq
     (l ↦{dq} v) (λ v', l ↦{dq} (v <|(atomic.Pointer.v') := v'|>))%I.
