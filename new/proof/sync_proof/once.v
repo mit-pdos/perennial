@@ -79,7 +79,7 @@ Proof.
   iMod (lc_fupd_elim_later with "[$] Hi") as "Hi". iNamedSuffix "Hi" "_inv".
   iApply fupd_mask_intro. { solve_ndisj. } iIntros "Hmask".
   iFrame "done1_inv"; iIntros "!> done1_inv".
-  iCombine "done1_inv done2" gives %[? ?].
+  iCombine "done1_inv done2" gives %?.
   assert (done0 = done) as ->.
   {
     destruct done0, done; auto; word.
@@ -93,15 +93,13 @@ Proof.
   iModIntro.
   wp_auto.
   destruct done.
-  - rewrite bool_decide_eq_false_2; [ | word ]; wp_auto.
+  - wp_auto.
     iAssert (□Q)%I with "[HPQ]" as "#HQ".
     {
       by iApply "Q_persistent".
     }
     wp_apply (wp_Mutex__Unlock with "[$Hm done2 Hlocked]").
-    { iFrame.
-      iExists (true). iFrame. iFrame "HQ".
-    }
+    { iFrame. iFrame "HQ". }
     iApply "HΦ". iFrame.
   - wp_auto. wp_apply ("Hf" with "HPQ").
     iIntros "Q".
@@ -114,7 +112,7 @@ Proof.
     iInv "Qinv" as "Hi" "Hclose".
     iMod (lc_fupd_elim_later with "[$] Hi") as "Hi". iNamedSuffix "Hi" "_inv2".
     iApply fupd_mask_intro. { solve_ndisj. } iIntros "Hmask".
-    iCombine "done1_inv2 done2" gives %[? ?].
+    iCombine "done1_inv2 done2" gives %?.
     assert (done = false); [ | subst ].
     {
       destruct done; auto; word.
@@ -131,9 +129,7 @@ Proof.
     iModIntro.
     wp_auto.
     wp_apply (wp_Mutex__Unlock with "[$Hm done2 Hlocked]").
-    { iFrame.
-      iExists (true). iFrame. iFrame "HQ".
-    }
+    { iFrame. iFrame "HQ". }
     iApply "HΦ". iFrame.
 Qed.
 
@@ -149,7 +145,7 @@ Proof.
   iMod (lc_fupd_elim_later with "[$] Hi") as "Hi". iNamedSuffix "Hi" "_inv".
   iApply fupd_mask_intro. { solve_ndisj. } iIntros "Hmask".
   iExists _.
-  iFrame "done1_inv". iIntros "done1_inv".
+  iFrame "done1_inv". iIntros "!> done1_inv".
   iMod "Hmask" as "_".
   iMod ("Hclose" with "[done1_inv]") as "_".
   {

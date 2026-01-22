@@ -818,14 +818,14 @@ Qed.
 Lemma wp_Bool__Load u dq :
   ∀ Φ,
   is_pkg_init atomic -∗
-  (|={⊤,∅}=> ∃ v, own_Bool u dq v ∗ (own_Bool u dq v ={∅,⊤}=∗ Φ #v)) -∗
+  (|={⊤,∅}=> ▷∃ v, own_Bool u dq v ∗ (own_Bool u dq v ={∅,⊤}=∗ Φ #v)) -∗
   WP u @! (go.PointerType atomic.Bool) @! "Load" #() {{ Φ }}.
 Proof.
   wp_start as "_".
   wp_auto.
   wp_apply (wp_LoadUint32 with "[$]").
   iMod "HΦ". iModIntro.
-  iDestruct "HΦ" as (?) "[Hown HΦ]".
+  iDestruct "HΦ" as (?) "[>Hown HΦ]".
   iStructNamed "Hown". simpl.
   iExists _. iFrame.
   iIntros "!> Hv".
@@ -851,7 +851,7 @@ Qed.
 Lemma wp_Bool__Store u (v: bool) :
   ∀ Φ,
   is_pkg_init atomic -∗
-  (|={⊤,∅}=> ∃ old, own_Bool u (DfracOwn 1) old ∗ (own_Bool u (DfracOwn 1) v ={∅,⊤}=∗ Φ #())) -∗
+  (|={⊤,∅}=> ▷∃ old, own_Bool u (DfracOwn 1) old ∗ (own_Bool u (DfracOwn 1) v ={∅,⊤}=∗ Φ #())) -∗
   WP u @! (go.PointerType atomic.Bool) @! "Store" #v {{ Φ }}.
 Proof.
   wp_start as "_".
@@ -859,7 +859,7 @@ Proof.
   wp_apply wp_b32.
   wp_apply (wp_StoreUint32 with "[$]").
   iMod "HΦ". iModIntro.
-  iDestruct "HΦ" as (?) "[Hown HΦ]".
+  iDestruct "HΦ" as (?) "[>Hown HΦ]".
 
   iStructNamed "Hown". simpl.
   iExists _. iFrame.
@@ -874,7 +874,7 @@ Qed.
 Lemma wp_Bool__CompareAndSwap u old new :
   ∀ Φ,
   is_pkg_init atomic -∗
-  (|={⊤,∅}=> ∃ v dq, own_Bool u dq v ∗
+  (|={⊤,∅}=> ▷∃ v dq, own_Bool u dq v ∗
                     ⌜ dq = if decide (v = old) then DfracOwn 1 else dq ⌝ ∗
   (own_Bool u dq (if decide (v = old) then new else v) ={∅,⊤}=∗ Φ #(bool_decide (v = old)))) -∗
   WP u @! (go.PointerType atomic.Bool) @! "CompareAndSwap" #old #new {{ Φ }}.
@@ -885,7 +885,7 @@ Proof.
   wp_apply wp_b32.
   wp_apply (wp_CompareAndSwapUint32 with "[$]").
   iMod "HΦ". iModIntro.
-  iDestruct "HΦ" as (??) "(Hown & -> & HΦ)".
+  iDestruct "HΦ" as (??) "(>Hown & >-> & HΦ)".
 
   iStructNamed "Hown". simpl.
   iExists _. iFrame.
