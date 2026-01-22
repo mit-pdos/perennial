@@ -23,9 +23,9 @@ Definition arbitraryTime: val :=
      location of UTC *)
      let: "wall_seconds" := ArbitraryInt in
      CompositeLiteral (go.Named "time.Time"%go []) (LiteralValue [
-        KeyedElement (Some $ KeyField "wall") (ElementExpression #(W64 0));
-        KeyedElement (Some $ KeyField "ext") (ElementExpression "wall_seconds");
-        KeyedElement (Some $ KeyField "loc") (ElementExpression #null)
+        KeyedElement (Some $ KeyField "wall") (ElementExpression go.uint64 #(W64 0));
+        KeyedElement (Some $ KeyField "ext") (ElementExpression go.int64 "wall_seconds");
+        KeyedElement (Some $ KeyField "loc") (ElementExpression unsafe.Pointer #null)
      ]).
 
 Definition Afterⁱᵐᵖˡ : val :=
