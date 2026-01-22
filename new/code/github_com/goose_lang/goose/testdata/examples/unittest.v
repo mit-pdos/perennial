@@ -2868,11 +2868,11 @@ Definition basicTypeSwitchⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
   λ: "x",
     exception_do (let: "x" := (GoAlloc (go.InterfaceType []) "x") in
     let: "$y" := (![go.InterfaceType []] "x") in
-    let: ("$x", "$ok") := (TypeAssert2 go.int "$y" #go.int) in
+    let: ("$x", "$ok") := (TypeAssert2 go.int "$y") in
     (if: "$ok"
     then return: (#(W64 1))
     else
-      let: ("$x", "$ok") := (TypeAssert2 go.string "$y" #go.string) in
+      let: ("$x", "$ok") := (TypeAssert2 go.string "$y") in
       (if: "$ok"
       then return: (#(W64 2))
       else do:  #()));;;
@@ -2887,13 +2887,13 @@ Definition fancyTypeSwitchⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
     (let: "z" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "$r0" := #(W64 0) in
     do:  ("z" <-[go.int] "$r0");;;
-    let: ("$x", "$ok") := (TypeAssert2 go.int "$y" #go.int) in
+    let: ("$x", "$ok") := (TypeAssert2 go.int "$y") in
     (if: "$ok"
     then
       let: "y" := (GoAlloc go.int "$x") in
       return: (![go.int] "y")
     else
-      let: ("$x", "$ok") := (TypeAssert2 go.string "$y" #go.string) in
+      let: ("$x", "$ok") := (TypeAssert2 go.string "$y") in
       (if: "$ok"
       then
         let: "y" := (GoAlloc go.string "$x") in
@@ -2917,7 +2917,7 @@ Definition multiTypeSwitchⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
   λ: "x",
     exception_do (let: "x" := (GoAlloc (go.InterfaceType []) "x") in
     let: "$y" := (![go.InterfaceType []] "x") in
-    let: "$ok" := ((Snd (TypeAssert2 go.int "$y" #go.int)) || (Snd (TypeAssert2 go.int "$y" #go.int))) in
+    let: "$ok" := ((Snd (TypeAssert2 go.int "$y")) || (Snd (TypeAssert2 go.int "$y"))) in
     let: "$x" := "$y" in
     (if: "$ok"
     then return: (#(W64 1))
