@@ -13,18 +13,21 @@ From New.proof Require Import proof_prelude.
 
 Unset Printing Records.
 
-Section proof.
-Context `{hG: !heapGS Σ} `{!globalsGS Σ} {go_ctx : GoContext}.
+Section wps.
+Context `{!heapGS Σ}.
+Context {sem : go.Semantics} {package_sem : unittest.Assumptions}.
+Local Set Default Proof Using "All".
 
-#[global] Instance : IsPkgInit unittest := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf unittest := build_get_is_pkg_init_wf.
+#[global] Instance : IsPkgInit (iProp Σ) unittest := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ) unittest := build_get_is_pkg_init_wf.
 
 Lemma wp_BasicNamedReturn :
   {{{ is_pkg_init unittest }}}
     @! unittest.BasicNamedReturn #()
   {{{ RET #"ok"; True }}}.
 Proof.
-  wp_start. wp_auto. by iApply "HΦ".
+  wp_start.
+  wp_auto. by iApply "HΦ".
 Qed.
 
 Lemma wp_VoidButEndsWithReturn :
@@ -50,14 +53,13 @@ Proof.
 Qed.
 
 Lemma wp_typeAssertInt (x: interface.t) (v: w64) :
-  {{{ is_pkg_init unittest ∗ ⌜x = interface.mk intT.id #v⌝ }}}
+  {{{ is_pkg_init unittest ∗ ⌜ x = interface.mk_ok go.int #v ⌝ }}}
     @! unittest.typeAssertInt #x
   {{{ RET #v; True }}}.
 Proof.
   wp_start as "->". wp_auto.
-  wp_apply wp_interface_type_assert.
-  { done. }
-  by iApply "HΦ".
+  rewrite -> decide_True; last done.
+  wp_end.
 Qed.
 
 Lemma wp_wrapUnwrapInt :
@@ -68,77 +70,55 @@ Proof.
   wp_start as "_".
   wp_apply wp_typeAssertInt.
   { done. }
-  by iApply "HΦ".
+  wp_end.
 Qed.
 
 Lemma wp_checkedTypeAssert (x: interface.t) :
   {{{ is_pkg_init unittest ∗
         ⌜match x with
-        | interface.mk type_id' v0 =>
-            (* a technical side condition is required to show that if i has the
-               correct type identity, then the value it holds has the expected type
-               V *)
-            uint64T.id = type_id' →
-            ∃ (v: w64), v0 = #v
+        | interface.ok i =>
+            if decide (i.(interface.ty) = go.uint64) then
+              ∃ (v: w64), i.(interface.v) = #v
+            else True
         |  interface.nil => True
         end⌝
   }}}
     @! unittest.checkedTypeAssert #x
   {{{ (y: w64), RET #y; True }}}.
 Proof.
-  wp_start as "%Htype". wp_auto.
-  wp_apply (wp_interface_checked_type_assert _ (V:=w64)).
-  { auto. }
-  iIntros (y ok Hpost).
-  wp_auto.
-  destruct ok; subst; wp_auto.
-  - by iApply "HΦ".
-  - by iApply "HΦ".
-
-  Unshelve.
-  apply _.
+  wp_start as "%Htype". wp_auto. destruct x.
+  - destruct decide in *; subst.
+    + destruct Htype as [? ->]. wp_auto. rewrite bool_decide_true; last done. wp_auto. wp_end.
+    + wp_auto. rewrite bool_decide_false; last done. wp_auto. wp_end.
+  - wp_auto. wp_end.
 Qed.
 
 Lemma wp_basicTypeSwitch (x: interface.t) :
   {{{ is_pkg_init unittest ∗
-      ⌜match x with
-      | interface.mk type_id v =>
-          (type_id = intT.id → ∃ (v': w64), v = #v') ∧
-          (type_id = stringT.id → ∃ (v': go_string), v = #v')
-      | _ => True
-      end⌝
+      ⌜ (match x with
+         | interface.ok (interface.mk ty v) =>
+             (ty = go.int → ∃ (v': w64), v = #v') ∧
+             (ty = go.string → ∃ (v': go_string), v = #v')
+         | _ => True
+         end) ⌝
   }}}
     @! unittest.basicTypeSwitch #x
   {{{ (y: w64), RET #y; True }}}.
 Proof.
   wp_start as "%Htype". wp_auto.
-  wp_apply wp_interface_checked_type_assert.
-  {
-    destruct x; intuition.
-  }
-  iIntros (???).
-  wp_auto.
-  destruct ok; subst; wp_auto.
-  { by iApply "HΦ". }
-  wp_apply wp_interface_checked_type_assert.
-  {
-    destruct x; intuition.
-  }
-  iIntros (???).
-  wp_auto.
-  destruct ok; wp_auto.
-  { by iApply "HΦ". }
-  by iApply "HΦ".
-  Unshelve.
-  all: apply _.
+  destruct x as [[]|].
+  - simpl. rewrite bool_decide_decide. destruct decide; subst; wp_auto.
+    { wp_end. }
+    rewrite bool_decide_decide. destruct decide; subst; wp_auto; wp_end.
+  - wp_auto. wp_end.
 Qed.
 
 Lemma wp_fancyTypeSwitch (x: interface.t) :
   {{{ is_pkg_init unittest ∗
       ⌜match x with
-      | interface.mk type_id v =>
-          (type_id = intT.id → ∃ (v': w64), v = #v') ∧
-          (type_id = stringT.id → ∃ (v': go_string), v = #v')
+      | interface.ok (interface.mk ty v) =>
+          (ty = go.int → ∃ (v': w64), v = #v') ∧
+          (ty = go.string → ∃ (v': go_string), v = #v')
       | _ => True
       end⌝
   }}}
@@ -146,31 +126,24 @@ Lemma wp_fancyTypeSwitch (x: interface.t) :
   {{{ (y: w64), RET #y; True }}}.
 Proof.
   wp_start as "%Htype". wp_auto.
-  unshelve wp_apply wp_interface_checked_type_assert; try tc_solve.
-  {
-    destruct x; intuition.
-  }
-  iIntros (???); wp_auto.
-  destruct ok; subst; wp_auto.
-  { by iApply "HΦ". }
-  unshelve wp_apply wp_interface_checked_type_assert; try tc_solve.
-  {
-    destruct x; intuition.
-  }
-  iIntros (???); wp_auto.
-  destruct ok; subst; wp_auto.
-  { by iApply "HΦ". }
-  wp_if_destruct.
-  { by iApply "HΦ". }
-  by iApply "HΦ".
+  destruct x as [[]|].
+  - simpl. rewrite bool_decide_decide. destruct decide.
+    + wp_auto. destruct Htype as [Htype _]. destruct (Htype ltac:(done)) as [? ?]. subst.
+      wp_auto. wp_end.
+    + wp_auto. destruct Htype as [_ Htype].
+      rewrite bool_decide_decide. destruct decide.
+      * destruct (Htype ltac:(done)) as [? ?]. subst.
+        wp_auto. wp_end.
+      * wp_auto. wp_end.
+  - wp_auto. wp_end.
 Qed.
 
 Lemma wp_multiTypeSwitch x :
   {{{ is_pkg_init unittest ∗
       ⌜match x with
-      | interface.mk type_id v =>
-          (type_id = intT.id → ∃ (v': w64), v = #v') ∧
-          (type_id = stringT.id → ∃ (v': go_string), v = #v')
+      | interface.ok (interface.mk ty v) =>
+          (ty = go.int → ∃ (v': w64), v = #v') ∧
+          (ty = go.string → ∃ (v': go_string), v = #v')
       | _ => True
       end⌝
   }}}
@@ -178,15 +151,11 @@ Lemma wp_multiTypeSwitch x :
   {{{ (x : w64), RET #x; True }}}.
 Proof.
   wp_start as "%Htype". wp_auto.
-  unshelve wp_apply wp_interface_checked_type_assert; try tc_solve.
-  { destruct x; intuition. }
-  iIntros (???). wp_auto.
-  destruct ok; subst; wp_auto.
-  { by iApply "HΦ". }
-  unshelve wp_apply wp_interface_checked_type_assert; try tc_solve.
-  { destruct x; intuition. }
-  iIntros (???). wp_auto.
-  destruct ok; subst; wp_auto; by iApply "HΦ".
+  destruct x as [[]|].
+  - rewrite bool_decide_decide. destruct decide; wp_auto.
+    + wp_end.
+    + rewrite bool_decide_decide. destruct decide; wp_auto; wp_end.
+  - wp_auto. wp_end.
 Qed.
 
 Lemma wp_testSwitchMultiple (x: w64) :
@@ -212,10 +181,10 @@ Qed.
 
 Lemma wp_Point__IgnoreReceiver (p : unittest.Point.t) :
   {{{ is_pkg_init unittest }}}
-    p @ unittest.Point.id @ "IgnoreReceiver" #()
+    p @! unittest.Point @! "IgnoreReceiver" #()
   {{{ RET #"ok"; True }}}.
 Proof.
-  wp_start. by iApply "HΦ".
+  wp_start. wp_end.
 Qed.
 
 Lemma wp_mapGetCall :
