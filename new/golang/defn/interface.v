@@ -57,19 +57,26 @@ Class InterfaceSemantics :=
          if is_interface_type tunder then
            if (type_set_contains i.(interface.ty) t) then #i else Panic "type assert failed"
          else
-           if decide (t = i.(interface.ty)) then i.(interface.v) else Panic "type assert failed"
+           if decide (i.(interface.ty) = t) then i.(interface.v) else Panic "type assert failed"
      end);
 
-  #[global] type_assert2_interface_step `{!t ↓u tunder} i ::
+  #[global] type_assert2_interface_step `{!t ↓u tunder} i `{!ZeroVal V} `{!go.TypeRepr t V} ::
     go.IsGoStepPureDet (TypeAssert2 t) #i
-    (match i with
-     | interface.nil => (#interface.nil, #false)%V
-     | interface.ok i =>
-         if is_interface_type tunder then
-           if (type_set_contains i.(interface.ty) t) then (#i, #true)%V else (#interface.nil, #false)%V
-         else
-           if decide (t = i.(interface.ty)) then (i.(interface.v), #true)%V else (GoZeroVal t #(), #false)%E
-     end);
+    ((match i with
+      | interface.nil => #(zero_val V)
+      | interface.ok i =>
+          (if is_interface_type tunder then
+             if (type_set_contains i.(interface.ty) t) then #i else #(zero_val V)
+           else
+             if decide (i.(interface.ty) = t) then i.(interface.v) else #(zero_val V))
+      end),
+       #(match i with
+         | interface.nil => false
+         | interface.ok i =>
+             if is_interface_type tunder then type_set_contains i.(interface.ty) t
+             else bool_decide (i.(interface.ty) = t)
+         end)
+     )%V;
 
   #[global] method_interface_ok m `{!t ≤u go.InterfaceType elems} (i : interface.t) ::
     go.IsGoStepPureDet (MethodResolve t m) #i
