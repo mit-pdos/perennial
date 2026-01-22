@@ -116,7 +116,7 @@ End def.
 End Context.
 
 Definition Contextⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.InterfaceType [go.MethodElem "Deadline"%go (go.Signature [] false [time.Time; go.bool]); go.MethodElem "Done"%go (go.Signature [] false [go.ChannelType go.recvonly (go.StructType [
-  ])]); go.MethodElem "Err"%go (go.Signature [] false [go.error]); go.MethodElem "Value"%go (go.Signature [go.InterfaceType []] false [go.InterfaceType []])].
+  ])]); go.MethodElem "Err"%go (go.Signature [] false [go.error]); go.MethodElem "Value"%go (go.Signature [go.any] false [go.any])].
 
 Class Context_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {

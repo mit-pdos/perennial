@@ -779,12 +779,12 @@ Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init pkg_id.sync (λ: <>,
-      exception_do (do:  (go.GlobalAlloc expunged (go.PointerType (go.InterfaceType [])) #());;;
+      exception_do (do:  (go.GlobalAlloc expunged (go.PointerType go.any) #());;;
       do:  (synctest.initialize' #());;;
       do:  (race.initialize' #());;;
       do:  (atomic.initialize' #());;;
-      let: "$r0" := (GoAlloc (go.InterfaceType []) (GoZeroVal (go.InterfaceType []) #())) in
-      do:  ((GlobalVarAddr expunged #()) <-[go.PointerType (go.InterfaceType [])] "$r0"))
+      let: "$r0" := (GoAlloc go.any (GoZeroVal go.any #())) in
+      do:  ((GlobalVarAddr expunged #()) <-[go.PointerType go.any] "$r0"))
       ).
 
 Module noCopy.

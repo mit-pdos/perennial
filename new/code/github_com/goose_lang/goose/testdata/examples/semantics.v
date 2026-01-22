@@ -493,23 +493,23 @@ Definition adderⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val
 (* go: closures.go:14:6 *)
 Definition testClosureBasicⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    exception_do (let: "pos" := (GoAlloc (go.FunctionType (go.Signature [go.uint64] false [go.uint64])) (GoZeroVal (go.FunctionType (go.Signature [go.uint64] false [go.uint64])) #())) in
+    exception_do (let: "pos" := (GoAlloc AdderType (GoZeroVal AdderType #())) in
     let: "$r0" := ((FuncResolve adder [] #()) #()) in
-    do:  ("pos" <-[go.FunctionType (go.Signature [go.uint64] false [go.uint64])] "$r0");;;
-    let: "doub" := (GoAlloc (go.FunctionType (go.Signature [go.uint64] false [go.uint64])) (GoZeroVal (go.FunctionType (go.Signature [go.uint64] false [go.uint64])) #())) in
+    do:  ("pos" <-[AdderType] "$r0");;;
+    let: "doub" := (GoAlloc AdderType (GoZeroVal AdderType #())) in
     let: "$r0" := ((FuncResolve adder [] #()) #()) in
-    do:  ("doub" <-[go.FunctionType (go.Signature [go.uint64] false [go.uint64])] "$r0");;;
+    do:  ("doub" <-[AdderType] "$r0");;;
     (let: "i" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[go.uint64] "$r0");;;
     (for: (λ: <>, (![go.uint64] "i") <⟨go.uint64⟩ #(W64 10)); (λ: <>, do:  ("i" <-[go.uint64] ((![go.uint64] "i") +⟨go.uint64⟩ #(W64 1)))) := λ: <>,
       do:  (let: "$a0" := (![go.uint64] "i") in
-      (![go.FunctionType (go.Signature [go.uint64] false [go.uint64])] "pos") "$a0");;;
+      (![AdderType] "pos") "$a0");;;
       do:  (let: "$a0" := (#(W64 2) *⟨go.uint64⟩ (![go.uint64] "i")) in
-      (![go.FunctionType (go.Signature [go.uint64] false [go.uint64])] "doub") "$a0")));;;
+      (![AdderType] "doub") "$a0")));;;
     (if: Convert go.untyped_bool go.bool (((let: "$a0" := #(W64 0) in
-    (![go.FunctionType (go.Signature [go.uint64] false [go.uint64])] "pos") "$a0") =⟨go.uint64⟩ #(W64 45)) && ((let: "$a0" := #(W64 0) in
-    (![go.FunctionType (go.Signature [go.uint64] false [go.uint64])] "doub") "$a0") =⟨go.uint64⟩ #(W64 90)))
+    (![AdderType] "pos") "$a0") =⟨go.uint64⟩ #(W64 45)) && ((let: "$a0" := #(W64 0) in
+    (![AdderType] "doub") "$a0") =⟨go.uint64⟩ #(W64 90)))
     then return: (#true)
     else do:  #());;;
     return: (#false)).
@@ -2639,9 +2639,9 @@ Definition intToBlockⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
 (* go: wal.go:31:6 *)
 Definition blockToIntⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "v",
-    exception_do (let: "v" := (GoAlloc (go.SliceType go.byte) "v") in
+    exception_do (let: "v" := (GoAlloc disk.Block "v") in
     let: "a" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "v") in
+    let: "$r0" := (let: "$a0" := (![disk.Block] "v") in
     (FuncResolve primitive.UInt64Get [] #()) "$a0") in
     do:  ("a" <-[go.uint64] "$r0");;;
     return: (![go.uint64] "a")).
@@ -2662,15 +2662,15 @@ Definition Newⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :
       do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"disk is too small to host log"%go) in
       (FuncResolve go.panic [] #()) "$a0")
     else do:  #());;;
-    let: "cache" := (GoAlloc (go.MapType go.uint64 (go.SliceType go.byte)) (GoZeroVal (go.MapType go.uint64 (go.SliceType go.byte)) #())) in
-    let: "$r0" := ((FuncResolve go.make1 [go.MapType go.uint64 (go.SliceType go.byte)] #()) #()) in
-    do:  ("cache" <-[go.MapType go.uint64 (go.SliceType go.byte)] "$r0");;;
-    let: "header" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
+    let: "cache" := (GoAlloc (go.MapType go.uint64 disk.Block) (GoZeroVal (go.MapType go.uint64 disk.Block) #())) in
+    let: "$r0" := ((FuncResolve go.make1 [go.MapType go.uint64 disk.Block] #()) #()) in
+    do:  ("cache" <-[go.MapType go.uint64 disk.Block] "$r0");;;
+    let: "header" := (GoAlloc disk.Block (GoZeroVal disk.Block #())) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
     (FuncResolve intToBlock [] #()) "$a0") in
-    do:  ("header" <-[go.SliceType go.byte] "$r0");;;
+    do:  ("header" <-[disk.Block] "$r0");;;
     do:  (let: "$a0" := #(W64 0) in
-    let: "$a1" := (![go.SliceType go.byte] "header") in
+    let: "$a1" := (![disk.Block] "header") in
     (MethodResolve disk.Disk "Write"%go (![disk.Disk] "d")) "$a0" "$a1");;;
     let: "lengthPtr" := (GoAlloc (go.PointerType go.uint64) (GoZeroVal (go.PointerType go.uint64) #())) in
     let: "$r0" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
@@ -2680,7 +2680,7 @@ Definition Newⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :
     let: "l" := (GoAlloc (go.PointerType sync.Mutex) (GoZeroVal (go.PointerType sync.Mutex) #())) in
     let: "$r0" := (GoAlloc sync.Mutex (GoZeroVal sync.Mutex #())) in
     do:  ("l" <-[go.PointerType sync.Mutex] "$r0");;;
-    return: (CompositeLiteral Log (LiteralValue [KeyedElement (Some (KeyField "d"%go)) (ElementExpression (![disk.Disk] "d")); KeyedElement (Some (KeyField "cache"%go)) (ElementExpression (![go.MapType go.uint64 (go.SliceType go.byte)] "cache")); KeyedElement (Some (KeyField "length"%go)) (ElementExpression (![go.PointerType go.uint64] "lengthPtr")); KeyedElement (Some (KeyField "l"%go)) (ElementExpression (![go.PointerType sync.Mutex] "l"))]))).
+    return: (CompositeLiteral Log (LiteralValue [KeyedElement (Some (KeyField "d"%go)) (ElementExpression (![disk.Disk] "d")); KeyedElement (Some (KeyField "cache"%go)) (ElementExpression (![go.MapType go.uint64 disk.Block] "cache")); KeyedElement (Some (KeyField "length"%go)) (ElementExpression (![go.PointerType go.uint64] "lengthPtr")); KeyedElement (Some (KeyField "l"%go)) (ElementExpression (![go.PointerType sync.Mutex] "l"))]))).
 
 (* go: wal.go:52:14 *)
 Definition Log__lockⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -2727,23 +2727,23 @@ Definition Log__Readⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
     let: "a" := (GoAlloc go.uint64 "a") in
     do:  ((MethodResolve Log "lock"%go (![Log] "l")) #());;;
     let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
-    let: "v" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
-    let: ("$ret0", "$ret1") := (map.lookup2 go.uint64 (go.SliceType go.byte) (![go.MapType go.uint64 (go.SliceType go.byte)] (StructFieldRef Log "cache"%go "l")) (![go.uint64] "a")) in
+    let: "v" := (GoAlloc disk.Block (GoZeroVal disk.Block #())) in
+    let: ("$ret0", "$ret1") := (map.lookup2 go.uint64 disk.Block (![go.MapType go.uint64 disk.Block] (StructFieldRef Log "cache"%go "l")) (![go.uint64] "a")) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("v" <-[go.SliceType go.byte] "$r0");;;
+    do:  ("v" <-[disk.Block] "$r0");;;
     do:  ("ok" <-[go.bool] "$r1");;;
     (if: ![go.bool] "ok"
     then
       do:  ((MethodResolve Log "unlock"%go (![Log] "l")) #());;;
-      return: (![go.SliceType go.byte] "v")
+      return: (![disk.Block] "v")
     else do:  #());;;
     do:  ((MethodResolve Log "unlock"%go (![Log] "l")) #());;;
-    let: "dv" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
+    let: "dv" := (GoAlloc disk.Block (GoZeroVal disk.Block #())) in
     let: "$r0" := (let: "$a0" := (logLength +⟨go.uint64⟩ (![go.uint64] "a")) in
     (MethodResolve disk.Disk "Read"%go (![disk.Disk] (StructFieldRef Log "d"%go "l"))) "$a0") in
-    do:  ("dv" <-[go.SliceType go.byte] "$r0");;;
-    return: (![go.SliceType go.byte] "dv")).
+    do:  ("dv" <-[disk.Block] "$r0");;;
+    return: (![disk.Block] "dv")).
 
 (* go: wal.go:90:14 *)
 Definition Log__Sizeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -2760,7 +2760,7 @@ Definition Log__Sizeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
 Definition Log__Writeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "l" "a" "v",
     exception_do (let: "l" := (GoAlloc Log "l") in
-    let: "v" := (GoAlloc (go.SliceType go.byte) "v") in
+    let: "v" := (GoAlloc disk.Block "v") in
     let: "a" := (GoAlloc go.uint64 "a") in
     do:  ((MethodResolve Log "lock"%go (![Log] "l")) #());;;
     let: "length" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
@@ -2771,21 +2771,21 @@ Definition Log__Writeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
       do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"transaction is at capacity"%go) in
       (FuncResolve go.panic [] #()) "$a0")
     else do:  #());;;
-    let: "aBlock" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
+    let: "aBlock" := (GoAlloc disk.Block (GoZeroVal disk.Block #())) in
     let: "$r0" := (let: "$a0" := (![go.uint64] "a") in
     (FuncResolve intToBlock [] #()) "$a0") in
-    do:  ("aBlock" <-[go.SliceType go.byte] "$r0");;;
+    do:  ("aBlock" <-[disk.Block] "$r0");;;
     let: "nextAddr" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := (#(W64 1) +⟨go.uint64⟩ (#(W64 2) *⟨go.uint64⟩ (![go.uint64] "length"))) in
     do:  ("nextAddr" <-[go.uint64] "$r0");;;
     do:  (let: "$a0" := (![go.uint64] "nextAddr") in
-    let: "$a1" := (![go.SliceType go.byte] "aBlock") in
+    let: "$a1" := (![disk.Block] "aBlock") in
     (MethodResolve disk.Disk "Write"%go (![disk.Disk] (StructFieldRef Log "d"%go "l"))) "$a0" "$a1");;;
     do:  (let: "$a0" := ((![go.uint64] "nextAddr") +⟨go.uint64⟩ #(W64 1)) in
-    let: "$a1" := (![go.SliceType go.byte] "v") in
+    let: "$a1" := (![disk.Block] "v") in
     (MethodResolve disk.Disk "Write"%go (![disk.Disk] (StructFieldRef Log "d"%go "l"))) "$a0" "$a1");;;
-    let: "$r0" := (![go.SliceType go.byte] "v") in
-    do:  (map.insert go.uint64 (![go.MapType go.uint64 (go.SliceType go.byte)] (StructFieldRef Log "cache"%go "l")) (![go.uint64] "a") "$r0");;;
+    let: "$r0" := (![disk.Block] "v") in
+    do:  (map.insert go.uint64 (![go.MapType go.uint64 disk.Block] (StructFieldRef Log "cache"%go "l")) (![go.uint64] "a") "$r0");;;
     let: "$r0" := ((![go.uint64] "length") +⟨go.uint64⟩ #(W64 1)) in
     do:  ((![go.PointerType go.uint64] (StructFieldRef Log "length"%go "l")) <-[go.uint64] "$r0");;;
     do:  ((MethodResolve Log "unlock"%go (![Log] "l")) #());;;
@@ -2802,12 +2802,12 @@ Definition Log__Commitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
     let: "$r0" := (![go.uint64] (![go.PointerType go.uint64] (StructFieldRef Log "length"%go "l"))) in
     do:  ("length" <-[go.uint64] "$r0");;;
     do:  ((MethodResolve Log "unlock"%go (![Log] "l")) #());;;
-    let: "header" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
+    let: "header" := (GoAlloc disk.Block (GoZeroVal disk.Block #())) in
     let: "$r0" := (let: "$a0" := (![go.uint64] "length") in
     (FuncResolve intToBlock [] #()) "$a0") in
-    do:  ("header" <-[go.SliceType go.byte] "$r0");;;
+    do:  ("header" <-[disk.Block] "$r0");;;
     do:  (let: "$a0" := #(W64 0) in
-    let: "$a1" := (![go.SliceType go.byte] "header") in
+    let: "$a1" := (![disk.Block] "header") in
     (MethodResolve disk.Disk "Write"%go (![disk.Disk] (StructFieldRef Log "d"%go "l"))) "$a0" "$a1");;;
     return: #()).
 
@@ -2819,19 +2819,19 @@ Definition getLogEntryⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
     let: "diskAddr" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := (#(W64 1) +⟨go.uint64⟩ (#(W64 2) *⟨go.uint64⟩ (![go.uint64] "logOffset"))) in
     do:  ("diskAddr" <-[go.uint64] "$r0");;;
-    let: "aBlock" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
+    let: "aBlock" := (GoAlloc disk.Block (GoZeroVal disk.Block #())) in
     let: "$r0" := (let: "$a0" := (![go.uint64] "diskAddr") in
     (MethodResolve disk.Disk "Read"%go (![disk.Disk] "d")) "$a0") in
-    do:  ("aBlock" <-[go.SliceType go.byte] "$r0");;;
+    do:  ("aBlock" <-[disk.Block] "$r0");;;
     let: "a" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "aBlock") in
+    let: "$r0" := (let: "$a0" := (![disk.Block] "aBlock") in
     (FuncResolve blockToInt [] #()) "$a0") in
     do:  ("a" <-[go.uint64] "$r0");;;
-    let: "v" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
+    let: "v" := (GoAlloc disk.Block (GoZeroVal disk.Block #())) in
     let: "$r0" := (let: "$a0" := ((![go.uint64] "diskAddr") +⟨go.uint64⟩ #(W64 1)) in
     (MethodResolve disk.Disk "Read"%go (![disk.Disk] "d")) "$a0") in
-    do:  ("v" <-[go.SliceType go.byte] "$r0");;;
-    return: (![go.uint64] "a", ![go.SliceType go.byte] "v")).
+    do:  ("v" <-[disk.Block] "$r0");;;
+    return: (![go.uint64] "a", ![disk.Block] "v")).
 
 (* applyLog assumes we are running sequentially
 
@@ -2846,7 +2846,7 @@ Definition applyLogⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : 
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       (if: Convert go.untyped_bool go.bool ((![go.uint64] "i") <⟨go.uint64⟩ (![go.uint64] "length"))
       then
-        let: "v" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
+        let: "v" := (GoAlloc disk.Block (GoZeroVal disk.Block #())) in
         let: "a" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
         let: ("$ret0", "$ret1") := (let: "$a0" := (![disk.Disk] "d") in
         let: "$a1" := (![go.uint64] "i") in
@@ -2854,9 +2854,9 @@ Definition applyLogⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : 
         let: "$r0" := "$ret0" in
         let: "$r1" := "$ret1" in
         do:  ("a" <-[go.uint64] "$r0");;;
-        do:  ("v" <-[go.SliceType go.byte] "$r1");;;
+        do:  ("v" <-[disk.Block] "$r1");;;
         do:  (let: "$a0" := (logLength +⟨go.uint64⟩ (![go.uint64] "a")) in
-        let: "$a1" := (![go.SliceType go.byte] "v") in
+        let: "$a1" := (![disk.Block] "v") in
         (MethodResolve disk.Disk "Write"%go (![disk.Disk] "d")) "$a0" "$a1");;;
         let: "$r0" := ((![go.uint64] "i") +⟨go.uint64⟩ #(W64 1)) in
         do:  ("i" <-[go.uint64] "$r0");;;
@@ -2869,12 +2869,12 @@ Definition applyLogⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : 
 Definition clearLogⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "d",
     exception_do (let: "d" := (GoAlloc disk.Disk "d") in
-    let: "header" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
+    let: "header" := (GoAlloc disk.Block (GoZeroVal disk.Block #())) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
     (FuncResolve intToBlock [] #()) "$a0") in
-    do:  ("header" <-[go.SliceType go.byte] "$r0");;;
+    do:  ("header" <-[disk.Block] "$r0");;;
     do:  (let: "$a0" := #(W64 0) in
-    let: "$a1" := (![go.SliceType go.byte] "header") in
+    let: "$a1" := (![disk.Block] "header") in
     (MethodResolve disk.Disk "Write"%go (![disk.Disk] "d")) "$a0" "$a1");;;
     return: #()).
 
@@ -2908,12 +2908,12 @@ Definition Openⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val 
     exception_do (let: "d" := (GoAlloc disk.Disk (GoZeroVal disk.Disk #())) in
     let: "$r0" := ((FuncResolve disk.Get [] #()) #()) in
     do:  ("d" <-[disk.Disk] "$r0");;;
-    let: "header" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
+    let: "header" := (GoAlloc disk.Block (GoZeroVal disk.Block #())) in
     let: "$r0" := (let: "$a0" := #(W64 0) in
     (MethodResolve disk.Disk "Read"%go (![disk.Disk] "d")) "$a0") in
-    do:  ("header" <-[go.SliceType go.byte] "$r0");;;
+    do:  ("header" <-[disk.Block] "$r0");;;
     let: "length" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "header") in
+    let: "$r0" := (let: "$a0" := (![disk.Block] "header") in
     (FuncResolve blockToInt [] #()) "$a0") in
     do:  ("length" <-[go.uint64] "$r0");;;
     do:  (let: "$a0" := (![disk.Disk] "d") in
@@ -2921,9 +2921,9 @@ Definition Openⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val 
     (FuncResolve applyLog [] #()) "$a0" "$a1");;;
     do:  (let: "$a0" := (![disk.Disk] "d") in
     (FuncResolve clearLog [] #()) "$a0");;;
-    let: "cache" := (GoAlloc (go.MapType go.uint64 (go.SliceType go.byte)) (GoZeroVal (go.MapType go.uint64 (go.SliceType go.byte)) #())) in
-    let: "$r0" := ((FuncResolve go.make1 [go.MapType go.uint64 (go.SliceType go.byte)] #()) #()) in
-    do:  ("cache" <-[go.MapType go.uint64 (go.SliceType go.byte)] "$r0");;;
+    let: "cache" := (GoAlloc (go.MapType go.uint64 disk.Block) (GoZeroVal (go.MapType go.uint64 disk.Block) #())) in
+    let: "$r0" := ((FuncResolve go.make1 [go.MapType go.uint64 disk.Block] #()) #()) in
+    do:  ("cache" <-[go.MapType go.uint64 disk.Block] "$r0");;;
     let: "lengthPtr" := (GoAlloc (go.PointerType go.uint64) (GoZeroVal (go.PointerType go.uint64) #())) in
     let: "$r0" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     do:  ("lengthPtr" <-[go.PointerType go.uint64] "$r0");;;
@@ -2932,7 +2932,7 @@ Definition Openⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val 
     let: "l" := (GoAlloc (go.PointerType sync.Mutex) (GoZeroVal (go.PointerType sync.Mutex) #())) in
     let: "$r0" := (GoAlloc sync.Mutex (GoZeroVal sync.Mutex #())) in
     do:  ("l" <-[go.PointerType sync.Mutex] "$r0");;;
-    return: (CompositeLiteral Log (LiteralValue [KeyedElement (Some (KeyField "d"%go)) (ElementExpression (![disk.Disk] "d")); KeyedElement (Some (KeyField "cache"%go)) (ElementExpression (![go.MapType go.uint64 (go.SliceType go.byte)] "cache")); KeyedElement (Some (KeyField "length"%go)) (ElementExpression (![go.PointerType go.uint64] "lengthPtr")); KeyedElement (Some (KeyField "l"%go)) (ElementExpression (![go.PointerType sync.Mutex] "l"))]))).
+    return: (CompositeLiteral Log (LiteralValue [KeyedElement (Some (KeyField "d"%go)) (ElementExpression (![disk.Disk] "d")); KeyedElement (Some (KeyField "cache"%go)) (ElementExpression (![go.MapType go.uint64 disk.Block] "cache")); KeyedElement (Some (KeyField "length"%go)) (ElementExpression (![go.PointerType go.uint64] "lengthPtr")); KeyedElement (Some (KeyField "l"%go)) (ElementExpression (![go.PointerType sync.Mutex] "l"))]))).
 
 (* disabled since performance is quite poor
 
@@ -3532,7 +3532,7 @@ End Log.
 Definition Logⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
   (go.FieldDecl "d"%go disk.Disk);
   (go.FieldDecl "l"%go (go.PointerType sync.Mutex));
-  (go.FieldDecl "cache"%go (go.MapType go.uint64 (go.SliceType go.byte)));
+  (go.FieldDecl "cache"%go (go.MapType go.uint64 disk.Block));
   (go.FieldDecl "length"%go (go.PointerType go.uint64))
 ].
 

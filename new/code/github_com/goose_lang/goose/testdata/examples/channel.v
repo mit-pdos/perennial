@@ -280,23 +280,23 @@ Definition HelloWorldWithTimeoutⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
    go: examples.go:51:6 *)
 Definition DSPExampleⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    exception_do (let: "c" := (GoAlloc (go.ChannelType go.sendrecv (go.InterfaceType [])) (GoZeroVal (go.ChannelType go.sendrecv (go.InterfaceType [])) #())) in
-    let: "$r0" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv (go.InterfaceType [])] #()) #()) in
-    do:  ("c" <-[go.ChannelType go.sendrecv (go.InterfaceType [])] "$r0");;;
-    let: "signal" := (GoAlloc (go.ChannelType go.sendrecv (go.InterfaceType [])) (GoZeroVal (go.ChannelType go.sendrecv (go.InterfaceType [])) #())) in
-    let: "$r0" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv (go.InterfaceType [])] #()) #()) in
-    do:  ("signal" <-[go.ChannelType go.sendrecv (go.InterfaceType [])] "$r0");;;
+    exception_do (let: "c" := (GoAlloc (go.ChannelType go.sendrecv go.any) (GoZeroVal (go.ChannelType go.sendrecv go.any) #())) in
+    let: "$r0" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv go.any] #()) #()) in
+    do:  ("c" <-[go.ChannelType go.sendrecv go.any] "$r0");;;
+    let: "signal" := (GoAlloc (go.ChannelType go.sendrecv go.any) (GoZeroVal (go.ChannelType go.sendrecv go.any) #())) in
+    let: "$r0" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv go.any] #()) #()) in
+    do:  ("signal" <-[go.ChannelType go.sendrecv go.any] "$r0");;;
     let: "$go" := (λ: <>,
       exception_do (let: "ptr" := (GoAlloc (go.PointerType go.int) (GoZeroVal (go.PointerType go.int) #())) in
-      let: "$r0" := (TypeAssert (go.PointerType go.int) (Fst (chan.receive (go.InterfaceType []) (![go.ChannelType go.sendrecv (go.InterfaceType [])] "c")))) in
+      let: "$r0" := (TypeAssert (go.PointerType go.int) (Fst (chan.receive go.any (![go.ChannelType go.sendrecv go.any] "c")))) in
       do:  ("ptr" <-[go.PointerType go.int] "$r0");;;
       let: "$r0" := ((![go.int] (![go.PointerType go.int] "ptr")) +⟨go.int⟩ #(W64 2)) in
       do:  ((![go.PointerType go.int] "ptr") <-[go.int] "$r0");;;
-      do:  (let: "$chan" := (![go.ChannelType go.sendrecv (go.InterfaceType [])] "signal") in
+      do:  (let: "$chan" := (![go.ChannelType go.sendrecv go.any] "signal") in
       let: "$v" := (Convert (go.StructType [
-      ]) (go.InterfaceType []) (CompositeLiteral (go.StructType [
+      ]) go.any (CompositeLiteral (go.StructType [
       ]) (LiteralValue []))) in
-      chan.send (go.InterfaceType []) "$chan" "$v");;;
+      chan.send go.any "$chan" "$v");;;
       return: #())
       ) in
     do:  (Fork ("$go" #()));;;
@@ -306,10 +306,10 @@ Definition DSPExampleⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
     let: "ptr" := (GoAlloc (go.PointerType go.int) (GoZeroVal (go.PointerType go.int) #())) in
     let: "$r0" := "val" in
     do:  ("ptr" <-[go.PointerType go.int] "$r0");;;
-    do:  (let: "$chan" := (![go.ChannelType go.sendrecv (go.InterfaceType [])] "c") in
-    let: "$v" := (Convert (go.PointerType go.int) (go.InterfaceType []) (![go.PointerType go.int] "ptr")) in
-    chan.send (go.InterfaceType []) "$chan" "$v");;;
-    do:  (Fst (chan.receive (go.InterfaceType []) (![go.ChannelType go.sendrecv (go.InterfaceType [])] "signal")));;;
+    do:  (let: "$chan" := (![go.ChannelType go.sendrecv go.any] "c") in
+    let: "$v" := (Convert (go.PointerType go.int) go.any (![go.PointerType go.int] "ptr")) in
+    chan.send go.any "$chan" "$v");;;
+    do:  (Fst (chan.receive go.any (![go.ChannelType go.sendrecv go.any] "signal")));;;
     return: (![go.int] (![go.PointerType go.int] "ptr"))).
 
 (* https://go.dev/tour/concurrency/4
