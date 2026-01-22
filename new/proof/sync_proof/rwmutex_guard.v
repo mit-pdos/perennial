@@ -4,10 +4,10 @@ Local Existing Instances tokG wg_totalG rw_ghost_varG rw_ghost_wlG rw_ghost_rwmu
 
 (** A specification for RWMutex which guards a fractional resource [P q].
     [RLock] returns [P rfrac] while [Lock] returns [P 1]. *)
-Section proof.
-
-Context `{hG:heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
+Section wps.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics} {package_sem : sync.Assumptions}.
+Local Set Default Proof Using "All".
 Context `{!syncG Σ}.
 
 Definition rfrac_def : Qp := / pos_to_Qp (Z.to_pos (rwmutex.actualMaxReaders + 1)).
@@ -65,7 +65,7 @@ Instance : Inhabited rwmutex := {| inhabitant := Locked |}.
 
 Lemma wp_RWMutex__RLock rw P :
   {{{ is_pkg_init sync ∗ own_RWMutex rw P }}}
-    rw @ (ptrT.id sync.RWMutex.id) @ "RLock" #()
+    rw @! (go.PointerType sync.RWMutex) @! "RLock" #()
   {{{ RET #(); own_RWMutex_RLocked rw P ∗ ▷ P rfrac }}}.
 Proof.
   wp_start_folded as "Hpre". iNamed "Hpre".
@@ -97,7 +97,7 @@ Qed.
 
 Lemma wp_RWMutex__RUnlock rw P :
   {{{ is_pkg_init sync ∗ own_RWMutex_RLocked rw P ∗ ▷ P rfrac }}}
-    rw @ (ptrT.id sync.RWMutex.id) @ "RUnlock" #()
+    rw @! (go.PointerType sync.RWMutex) @! "RUnlock" #()
   {{{ RET #(); own_RWMutex rw P }}}.
 Proof.
   wp_start_folded as "[Ho HP_in]". iNamed "Ho".
@@ -131,7 +131,7 @@ Qed.
 
 Lemma wp_RWMutex__Lock rw P :
   {{{ is_pkg_init sync ∗ own_RWMutex rw P }}}
-    rw @ (ptrT.id sync.RWMutex.id) @ "Lock" #()
+    rw @! (go.PointerType sync.RWMutex) @! "Lock" #()
   {{{ RET #(); own_RWMutex_Locked rw P ∗ ▷ P 1%Qp }}}.
 Proof.
   wp_start_folded as "Ho". iNamed "Ho".
@@ -149,7 +149,7 @@ Qed.
 
 Lemma wp_RWMutex__Unlock rw P :
   {{{ is_pkg_init sync ∗ own_RWMutex_Locked rw P ∗ ▷ P 1%Qp }}}
-    rw @ (ptrT.id sync.RWMutex.id) @ "Unlock" #()
+    rw @! (go.PointerType sync.RWMutex) @! "Unlock" #()
   {{{ RET #(); own_RWMutex rw P }}}.
 Proof.
   wp_start_folded as "[Ho HP_in]". iNamed "Ho".
@@ -171,7 +171,7 @@ Qed.
 Lemma init_RWMutex P {E} (rw : loc) :
   □(∀ q1 q2, P (q1 + q2)%Qp ∗-∗ P q1 ∗ P q2) -∗
   ▷ P 1%Qp -∗
-  rw ↦ (default_val sync.RWMutex.t) ={E}=∗
+  rw ↦ (zero_val sync.RWMutex.t) ={E}=∗
   [∗] replicate (Z.to_nat rwmutex.actualMaxReaders) (own_RWMutex rw P).
 Proof.
   iIntros "#HPfrac HP Hrw".
@@ -197,4 +197,4 @@ Proof.
   }
 Qed.
 
-End proof.
+End wps.

@@ -1,7 +1,7 @@
 Require Import New.proof.proof_prelude.
 From New.proof.github_com.goose_lang.goose.model.channel Require Import
   chan_au_base.
-From New.golang.theory Require Import chan.
+Require Import New.golang.theory.
 
 (** * Simple Channel Pattern Verification
 
@@ -11,10 +11,10 @@ From New.golang.theory Require Import chan.
 
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
-Context `{!chanG Σ V}.
-Context `{!IntoVal V}.
-Context `{!IntoValTyped V t}.
+Context {sem : go.Semantics}.
+
+Context `[!chanG Σ V].
+Context `[!ZeroVal V] `[!TypedPointsto V] `[!IntoValTyped V t] `[!go.TypeRepr t V].
 
 Record simple_names := {
   chan_name : chan_names;
@@ -69,6 +69,8 @@ Proof.
   simpl.
   by iFrame "#".
 Qed.
+
+Local Set Default Proof Using "All".
 
 Lemma simple_rcv_au γ ch P Φ  :
   is_simple γ ch P ⊢
@@ -177,7 +179,7 @@ Qed.
 
 Lemma wp_simple_receive γ ch P :
   {{{ is_simple γ ch P }}}
-    chan.receive #t #ch
+    chan.receive t #ch
   {{{ v, RET (#v, #true); P v }}}.
 Proof.
   wp_start_folded as "#Hsimple".
@@ -279,7 +281,7 @@ Qed.
 Lemma wp_simple_send γ ch v P :
   {{{ is_simple γ ch P ∗
       P v }}}
-    chan.send #t #ch #v
+    chan.send t #ch #v
   {{{ RET #(); True }}}.
 Proof.
   wp_start_folded as "[#Hsimple HP]".

@@ -30,7 +30,7 @@ Definition arbitraryTime: val :=
 
 Definition Afterⁱᵐᵖˡ : val :=
   λ: "d",
-    let: "ch" := FuncResolve go.make2 [(go.Named "time.Time"%go [])] #() #(W64 0) in
+    let: "ch" := FuncResolve go.make2 [go.ChannelType go.sendrecv (go.Named "time.Time"%go [])] #() #(W64 0) in
     (* delay is modeled as a no-op *)
     Fork (chan.send (go.Named "time.Time"%go []) "ch" (arbitraryTime #()));;
     "ch".

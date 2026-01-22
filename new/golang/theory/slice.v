@@ -56,7 +56,7 @@ Proof.
   iDestruct array_empty as "$". word.
 Qed.
 
-Lemma own_slice_cap_none s :
+Lemma own_slice_cap_empty s :
   s.(slice.len) = s.(slice.cap) →
   0 ≤ sint.Z s.(slice.len) →
   ⊢ own_slice_cap V s (DfracOwn 1).
@@ -332,7 +332,7 @@ Proof.
     wp_auto. iApply "HΦ".
     assert (len = W64 0) by word; subst.
     simpl. iDestruct (own_slice_empty) as "$"; [simpl; word..|].
-    iDestruct (own_slice_cap_none) as "$"; simpl; word. }
+    iDestruct (own_slice_cap_empty) as "$"; simpl; word. }
   iApply "HΦ".
   rewrite own_slice_unseal/ own_slice_def /=.
 

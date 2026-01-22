@@ -1,5 +1,5 @@
 From New.proof Require Import proof_prelude.
-From New.proof Require Import math.
+From New.proof Require Import math time.
 From New.generatedproof.github_com.goose_lang Require Import std.
 From New.proof Require Import github_com.goose_lang.primitive std.std_core sync.
 From iris_named_props Require Import custom_syntax.
@@ -8,34 +8,33 @@ Set Default Proof Using "Type".
 
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
+Context {sem : go.Semantics} {package_sem : std.Assumptions}.
+Local Set Default Proof Using "All".
 
-#[global] Instance : IsPkgInit std := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf std := build_get_is_pkg_init_wf.
+#[global] Instance : IsPkgInit (iProp Σ) std := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ) std := build_get_is_pkg_init_wf.
 
 Lemma wp_initialize' get_is_pkg_init :
   get_is_pkg_init_prop std get_is_pkg_init →
-  {{{ own_initializing get_is_pkg_init ∗ is_go_context ∗ □ is_pkg_defined std }}}
+  {{{ own_initializing get_is_pkg_init }}}
     std.initialize' #()
   {{{ RET #(); own_initializing get_is_pkg_init ∗ is_pkg_init std }}}.
 Proof.
-  intros Hinit. wp_start as "(Hown & #? & #Hdef)".
-  wp_call. wp_apply (wp_package_init with "[$Hown] HΦ").
+  intros Hinit. wp_start as "Hown".
+  wp_apply (wp_package_init with "[$Hown] HΦ").
   { destruct Hinit as (-> & ?); done. }
   iIntros "Hown". wp_auto.
   wp_apply (std_core.wp_initialize' with "[$Hown]") as "(Hown & #?)".
   { naive_solver. }
-  { iModIntro. iEval simpl_is_pkg_defined in "Hdef". iPkgInit. }
   wp_apply (primitive.wp_initialize' with "[$Hown]") as "(Hown & #?)".
   { naive_solver. }
-  { iModIntro. iEval simpl_is_pkg_defined in "Hdef". iPkgInit. }
-  wp_apply (wp_initialize' with "[$Hown]") as "(Hown & #?)".
+  wp_apply (time.wp_initialize' with "[$Hown]") as "(Hown & #?)".
   { naive_solver. }
-  { iModIntro. iEval simpl_is_pkg_defined in "Hdef". iPkgInit. }
+  wp_apply (sync.wp_initialize' with "[$Hown]") as "(Hown & #?)".
+  { naive_solver. }
   wp_apply (math.wp_initialize' with "[$Hown]") as "(Hown & #?)".
   { naive_solver. }
-  { iModIntro. iEval simpl_is_pkg_defined in "Hdef". iPkgInit. }
-  wp_call. iEval (rewrite is_pkg_init_unfold /=). iFrame "∗#". done.
+  iEval (rewrite is_pkg_init_unfold /=). iFrame "∗#". done.
 Qed.
 
 Lemma wp_Assert (cond : bool) :
@@ -72,11 +71,11 @@ Proof.
     wp_for "IH".
     wp_if_destruct.
     - list_elem xs1 (sint.Z i) as x1_i.
-      wp_pure; [ word | ].
-      wp_apply (wp_load_slice_elem with "[$Hs1]") as "Hs1"; [ word | eauto | ].
-      wp_pure; first by word.
+      rewrite -> decide_True; last word. wp_auto.
+      wp_apply (wp_load_slice_index with "[$Hs1]") as "Hs1"; [ word | eauto | ].
+      rewrite -> decide_True; last word. wp_auto.
       list_elem xs2 (sint.Z i) as x2_i.
-      wp_apply (wp_load_slice_elem with "[$Hs2]") as "Hs2"; [ word | eauto | ].
+      wp_apply (wp_load_slice_index with "[$Hs2]") as "Hs2"; [ word | eauto | ].
       destruct (bool_decide_reflect (x1_i = x2_i)); subst; wp_auto.
       + wp_for_post.
         iFrame.
@@ -103,9 +102,9 @@ Proof.
 Qed.
 
 Lemma wp_BytesClone (b:slice.t) (xs:list u8) (dq:dfrac) :
-  {{{ is_pkg_init std ∗ own_slice b dq xs }}}
+  {{{ is_pkg_init std ∗ b ↦*{dq} xs }}}
     @! std.BytesClone #b
-  {{{ b', RET #b'; own_slice b' (DfracOwn 1) xs ∗ own_slice_cap w8 b' (DfracOwn 1) }}}.
+  {{{ b', RET #b'; b' ↦* xs ∗ own_slice_cap w8 b' (DfracOwn 1) }}}.
 Proof.
   wp_start as "Hb". wp_auto.
   wp_if_destruct.
@@ -116,10 +115,10 @@ Proof.
         iDestruct (own_slice_nil (DfracOwn 1)) as "Hnil".
         iApply "Hnil".
       * iApply own_slice_cap_nil.
-  - wp_apply (wp_slice_append with "[$Hb]"). 
-    + iSplitL.
-      * iApply own_slice_nil.
-      * iApply own_slice_cap_nil.
+  - wp_apply (wp_slice_append with "[$Hb]").
+    + rewrite go.array_index_ref_0. iSplitL.
+      * iApply own_slice_empty; done.
+      * iApply own_slice_cap_empty; done.
     + rewrite app_nil_l.
       iIntros (?) "(Hsl & Hcap & Hb)".
       wp_end.
@@ -152,15 +151,7 @@ Lemma wp_SignedSumAssumeNoOverflow (x y : u64) :
 Proof.
   wp_start as "_"; wp_auto.
   unfold math.MaxInt, math.MinInt.
-  repeat (
-            (* BUG: this unshelve avoids trivial shelved goals of type w64 and
-            val (coming from wp_auto) *)
-      unshelve wp_if_destruct
-          || unshelve wp_auto
-          || (wp_apply wp_Assume; iIntros "%")
-          || congruence).
-  - wp_end.
-  - wp_end.
+  (repeat wp_if_destruct); try wp_apply wp_Assume as "%"; wp_end.
 Qed.
 
 Definition is_JoinHandle (l: loc) (P: iProp Σ): iProp _ :=

@@ -35,6 +35,7 @@ Definition syncΣ := #[tok_setΣ; ghost_varΣ w32; ghost_varΣ (); ghost_varΣ w
 Global Instance subG_syncΣ{Σ} : subG (syncΣ) Σ → (syncG Σ).
 Proof. solve_inG. Qed.
 
+Module sync.
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics} {package_sem : sync.Assumptions}.
@@ -74,3 +75,4 @@ Proof.
 Qed.
 
 End wps.
+End sync.
