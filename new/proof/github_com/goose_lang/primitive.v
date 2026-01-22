@@ -86,8 +86,7 @@ Lemma wp_AssumeNoStringOverflow (s: byte_string) :
     @! primitive.AssumeNoStringOverflow #s
   {{{ RET #(); ⌜ Z.of_nat (length s) < 2^63 ⌝ }}}.
 Proof.
-  wp_start as "_".
-  wp_call.
+  wp_start as "_". wp_call.
   wp_if_destruct.
   - iApply "HΦ". done.
   - iLöb as "IH".
@@ -203,7 +202,7 @@ Qed.
 
 Lemma wp_Mutex__Lock m R :
   {{{ is_Mutex m R }}}
-    #(methods (go.PointerType primitive.Mutex) "Lock") #m #()
+    m @! (go.PointerType primitive.Mutex) @! "Lock" #()
   {{{ RET #(); own_Mutex m ∗ R }}}.
 Proof.
   wp_start as "#His".
@@ -216,7 +215,7 @@ Qed.
 (* this form is useful for defer statements *)
 Lemma wp_Mutex__Unlock m R :
   {{{ is_Mutex m R ∗ own_Mutex m ∗ ▷ R }}}
-    #(methods (go.PointerType primitive.Mutex) "Unlock") #m #()
+    m @! (go.PointerType primitive.Mutex) @! "Unlock" #()
   {{{ RET #(); True }}}.
 Proof.
   wp_start as "(#His & Hlocked & HR)".

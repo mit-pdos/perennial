@@ -21,10 +21,9 @@ Local Lemma wp_TryReceive_blocking (ch: loc)  (γ: chan_names) :
   ∀ Φ ,
   is_channel ch γ -∗
   rcv_au_slow ch γ (λ v ok, Φ (#true, #v, #ok)%V) ∧ Φ (#false, #(zero_val V), #true)%V -∗
-  WP #(methods (go.PointerType (channel.Channel t)) "TryReceive") #ch #true {{ Φ }}.
+  WP ch @! (go.PointerType (channel.Channel t)) @! "TryReceive" #true {{ Φ }}.
 Proof.
-  iIntros (?) "Hch HΦ". iNamed "Hch".
-  wp_method_call. wp_call_lc "?".
+  wp_start as "Hch". iNamed "Hch".
   wp_auto_lc 9.
   wp_apply (wp_Mutex__Lock with "[$lock]") as "[Hlock Hchan]".
   iNamed "Hchan".
@@ -378,10 +377,9 @@ Local Lemma wp_TryReceive_nonblocking (ch : loc)  (γ : chan_names) :
   ∀ Φ ,
   is_channel ch γ -∗
   rcv_au_fast ch γ (λ v ok, Φ (#true, #v, #ok)%V) (Φ (#false, #(zero_val V), #true)%V) -∗
-  WP #(methods (go.PointerType (channel.Channel t)) "TryReceive") #ch #false {{ Φ }}.
+  WP ch @! (go.PointerType (channel.Channel t)) @! "TryReceive" #false {{ Φ }}.
 Proof.
-  iIntros (?) "#Hch HΦ". iNamed "Hch".
-  wp_method_call. wp_call_lc "?".
+  wp_start as "#Hch". iNamed "Hch".
   wp_auto_lc 9.
   wp_apply (wp_Mutex__Lock with "[$lock]") as "[Hlock Hchan]".
   iNamedSuffix "Hchan" "_inv".
@@ -550,10 +548,9 @@ Local Lemma wp_TryReceive_nonblocking_alt (ch : loc) (γ : chan_names) :
   ∀ Φ ,
   is_channel ch γ -∗
   rcv_au_fast_alt ch γ (λ v ok, Φ (#true, #v, #ok)%V) (Φ (#false, #(zero_val V), #true)%V) -∗
-  WP #(methods (go.PointerType (channel.Channel t)) "TryReceive") #ch #false {{ Φ }}.
+  WP ch @! (go.PointerType (channel.Channel t)) @! "TryReceive" #false {{ Φ }}.
 Proof.
-  iIntros (?) "#Hch HΦ". iNamed "Hch".
-  wp_method_call. wp_call_lc "?".
+  wp_start as "#Hch". iNamed "Hch".
   wp_auto_lc 9.
   wp_apply (wp_Mutex__Lock with "[$lock]") as "[Hlock Hchan]".
   iNamedSuffix "Hchan" "_inv".
@@ -772,7 +769,7 @@ Lemma wp_TryReceive (ch : loc) (γ : chan_names) (blocking : bool) :
                (λ v ok, Φ (#true, #v, #ok)%V)
                (Φ (#false, #(zero_val V), #true)%V)
   )) -∗
-  WP #(methods (go.PointerType (channel.Channel t)) "TryReceive") #ch #blocking {{ Φ }}.
+  WP ch @! (go.PointerType (channel.Channel t)) @! "TryReceive" #blocking {{ Φ }}.
 Proof.
   iIntros (?) "#? HΦ".
   destruct blocking.
@@ -786,12 +783,11 @@ Lemma wp_Receive (ch: loc) (γ: chan_names) :
   ∀ Φ,
   is_channel ch γ -∗
   (£1 ∗ £1 ∗ £1 ∗ £1 -∗ rcv_au_slow ch γ (λ v ok, Φ (#v, #ok)%V)) -∗
-  WP #(methods (go.PointerType (channel.Channel t)) "Receive") #ch #() {{ Φ }}.
+  WP ch @! (go.PointerType (channel.Channel t)) @! "Receive" #() {{ Φ }}.
 Proof.
-  intros. iIntros "#Hic". iIntros "Hau".
+  wp_start as "#Hic". iRename "HΦ" into "Hau".
   iDestruct (is_channel_not_null with "[$Hic]") as "%Hnn".
-  wp_method_call. wp_call_lc "?".
-  wp_auto_lc 3.
+  wp_auto_lc 4.
   iSpecialize ("Hau" with "[$]").
 
   wp_if_destruct; first done.
