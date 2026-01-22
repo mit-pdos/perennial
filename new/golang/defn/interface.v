@@ -49,13 +49,6 @@ Class InterfaceSemantics :=
     go.GoExprEq (Convert from to v)
       (Val (if is_interface_type funder then v else #(interface.mk_ok from v)));
 
-  #[global] interface_get_step_nil m i ::
-    go.IsGoStepPureDet (InterfaceGet m) #i
-    (match i with
-     | interface.nil => (Panic "nil dereference in interface call")
-     | interface.ok i => (λ: "arg1", #(methods i.(interface.ty) m) i.(interface.v) "arg1")%E
-     end);
-
   #[global] type_assert_step `{!t ↓u tunder} i ::
     go.IsGoStepPureDet (TypeAssert t) #i
     (match i with

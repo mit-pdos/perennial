@@ -191,7 +191,6 @@ Inductive go_instruction : Type :=
 | FuncResolve (f : go_string) (type_args : list go.type)
 | MethodResolve (t : go.type) (m : go_string)
 
-| InterfaceGet (m : go_string)
 | TypeAssert (t : go.type)
 | TypeAssert2 (t : go.type)
 
