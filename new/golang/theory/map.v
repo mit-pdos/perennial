@@ -375,19 +375,21 @@ Module test.
     True -∗
     WP (CompositeLiteral (go.MapType go.int (go.ArrayType 2 go.int32))
           (LiteralValue
-             [KeyedElement (Some $ KeyExpression #(W64 0))
-                (ElementExpression $ CompositeLiteral (go.ArrayType 2 go.int32) $
-                   LiteralValue [KeyedElement None (ElementExpression #(W32 0));
-                                 KeyedElement None (ElementExpression #(W32 1))]);
-              KeyedElement (Some $ KeyExpression #(W64 1))
+             [KeyedElement (Some $ KeyExpression go.int #(W64 0))
+                (ElementExpression (go.ArrayType 2 go.int32)
+                   $ CompositeLiteral (go.ArrayType 2 go.int32) $
+                   LiteralValue [KeyedElement None (ElementExpression go.int32 #(W32 0));
+                                 KeyedElement None (ElementExpression go.int32 #(W32 1))]);
+              KeyedElement (Some $ KeyExpression go.int #(W64 1))
                 (ElementLiteralValue
-                   [KeyedElement None (ElementExpression #(W32 0));
-                    KeyedElement None (ElementExpression #(W32 1))])
+                   [KeyedElement None (ElementExpression go.int32 #(W32 0));
+                    KeyedElement None (ElementExpression go.int32 #(W32 1))])
       ])) {{ Φ }}.
   Proof.
     iIntros "_".
     wp_auto. wp_apply wp_map_make1.
     iIntros "% Hm". wp_auto.
+    wp_bind.
     wp_apply (wp_map_insert with "Hm").
     iIntros "Hm". wp_auto.
     wp_apply (wp_map_insert with "Hm"). iIntros "Hm". wp_auto.

@@ -294,10 +294,10 @@ with keyed_element :=
 with key :=
 | KeyField (f : go_string)
 | KeyInteger (s : Z)
-| KeyExpression (e : expr)
+| KeyExpression (t : go.type) (e : expr)
 | KeyLiteralValue (l : list keyed_element)
 with element :=
-| ElementExpression (e : expr)
+| ElementExpression (t : go.type) (e : expr)
 | ElementLiteralValue (l : list keyed_element)
 
 with comm_clause :=
@@ -853,7 +853,7 @@ Global Instance go_type_inhabited : Inhabited go.type := populate (go.Named "any
 Global Instance val_inhabited : Inhabited val := populate (LitV LitUnit).
 Global Instance expr_inhabited : Inhabited expr := populate (Val inhabitant).
 Global Instance key_inhabited : Inhabited key := populate (KeyField []).
-Global Instance element_inhabited : Inhabited element := populate (ElementExpression inhabitant).
+Global Instance element_inhabited : Inhabited element := populate (ElementExpression inhabitant inhabitant).
 Global Instance keyed_element_inhabited : Inhabited keyed_element :=
   populate (KeyedElement None inhabitant).
 Global Instance comm_case_inhabited : Inhabited comm_case := populate (SendCase inhabitant inhabitant inhabitant).
@@ -974,12 +974,12 @@ match ke with
 | KeyedElement k el =>
     KeyedElement
       (match k with
-       | Some (KeyExpression e) => Some $ KeyExpression (subst x v e)
+       | Some (KeyExpression t e) => Some $ KeyExpression t (subst x v e)
        | Some (KeyLiteralValue l) => Some $ KeyLiteralValue ((subst_keyed_element x v) <$> l)
        | _ => k
        end)
       (match el with
-       | ElementExpression e => ElementExpression (subst x v e)
+       | ElementExpression t e => ElementExpression t (subst x v e)
        | ElementLiteralValue l => ElementLiteralValue ((subst_keyed_element x v) <$> l)
        end)
 end
@@ -1248,12 +1248,12 @@ with enc_key (v : key) : tree leaf_type :=
   match v with
   | KeyField arg1 => Node "KeyField" [Leaf $ GoStringLeaf arg1]
   | KeyInteger arg1 => Node "KeyInteger" [Leaf $ ZLeaf arg1]
-  | KeyExpression arg1 => Node "KeyExpression" [enc_expr arg1]
+  | KeyExpression t arg1 => Node "KeyExpression" [Leaf $ GoTypeLeaf t; enc_expr arg1]
   | KeyLiteralValue arg1 => Node "KeyLiteralValue" (enc_keyed_element <$> arg1)
   end
 with enc_element (v : element) : tree leaf_type :=
   match v with
-  | ElementExpression arg1 => Node "ElementExpression" [enc_expr arg1]
+  | ElementExpression t arg1 => Node "ElementExpression" [Leaf $ GoTypeLeaf t; enc_expr arg1]
   | ElementLiteralValue arg1 => Node "ElementLiteralValue" (enc_keyed_element <$> arg1)
   end
 with enc_comm_clause (v : comm_clause) : tree leaf_type :=
@@ -1352,13 +1352,13 @@ with dec_key (v : tree leaf_type) : key :=
   match v with
   | Node "KeyField" [Leaf (GoStringLeaf arg1)] => KeyField arg1
   | Node "KeyInteger" [Leaf (ZLeaf arg1)] => KeyInteger arg1
-  | Node "KeyExpression" [arg1] => KeyExpression (dec_expr arg1)
+  | Node "KeyExpression" [Leaf (GoTypeLeaf t); arg1] => KeyExpression t (dec_expr arg1)
   | Node "KeyLiteralValue" arg1 => KeyLiteralValue (dec_keyed_element <$> arg1)
   | _ => inhabitant
   end
 with dec_element (v : tree leaf_type) : element :=
   match v with
-  | Node "ElementExpression" [arg1] => ElementExpression (dec_expr arg1)
+  | Node "ElementExpression" [Leaf (GoTypeLeaf t); arg1] => ElementExpression t (dec_expr arg1)
   | Node "ElementLiteralValue" arg1 => ElementLiteralValue (dec_keyed_element <$> arg1)
   | _ => inhabitant
   end

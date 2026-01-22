@@ -148,12 +148,12 @@ Class MapSemantics `{!GoSemanticsFunctions} :=
                match ke with
                | KeyedElement (Some k) v =>
                    let k_expr := (match k with
-                                  | KeyExpression e => e
+                                  | KeyExpression from e => Convert from key_type e
                                   | KeyLiteralValue l => CompositeLiteral key_type (LiteralValue l)
                                   | _ => Panic "invalid map literal"
                                   end) in
                    let v_expr := (match v with
-                                  | ElementExpression e => e
+                                  | ElementExpression from e => Convert from elem_type e
                                   | ElementLiteralValue l => CompositeLiteral elem_type (LiteralValue l)
                                   end) in
                    expr_so_far;; (map.insert key_type "m" k_expr v_expr)

@@ -62,13 +62,13 @@ Class ArraySemantics `{!GoSemanticsFunctions} :=
     go.GoExprEq (composite_literal (go.ArrayType n elem_type) (LiteralValueV kvs))
     (foldl (λ '(cur_index, expr_so_far) ke,
              match ke with
-             | KeyedElement None (ElementExpression e) =>
-                 (cur_index + 1, ArraySet (expr_so_far, (#(W64 cur_index), e))%E)
+             | KeyedElement None (ElementExpression from e) =>
+                 (cur_index + 1, ArraySet (expr_so_far, (#(W64 cur_index), Convert from elem_type e))%E)
              | KeyedElement None (ElementLiteralValue l) =>
                  (cur_index + 1,
                     ArraySet (expr_so_far, (#(W64 cur_index), CompositeLiteral elem_type $ LiteralValue l))%E)
-             | KeyedElement (Some (KeyInteger cur_index)) (ElementExpression e) =>
-                 (cur_index + 1, ArraySet (expr_so_far, (#(W64 cur_index), e))%E)
+             | KeyedElement (Some (KeyInteger cur_index)) (ElementExpression from e) =>
+                 (cur_index + 1, ArraySet (expr_so_far, (#(W64 cur_index), Convert from elem_type e))%E)
              | KeyedElement (Some (KeyInteger cur_index)) (ElementLiteralValue l) =>
                  (cur_index + 1,
                     ArraySet (expr_so_far, (#(W64 cur_index), CompositeLiteral elem_type $ LiteralValue l))%E)

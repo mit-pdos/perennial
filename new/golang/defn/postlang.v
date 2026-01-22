@@ -479,10 +479,11 @@ Class CoreSemantics `{!GoSemanticsFunctions} : Prop :=
      | KeyedElement None _ :: _ =>
          (* unkeyed struct literal *)
          foldl (λ v '(fd, ke),
-                  let field_name := match fd with go.FieldDecl n _ | go.EmbeddedField n _ => n end in
+                  let (field_name, field_type) :=
+                    match fd with go.FieldDecl n t | go.EmbeddedField n t => (n, t) end in
                   match ke with
-                  | KeyedElement None (ElementExpression e) =>
-                      StructFieldSet t field_name (v, e)%E
+                  | KeyedElement None (ElementExpression from e) =>
+                      StructFieldSet t field_name (v, Convert from field_type e)%E
                   | _ => Panic "invalid Go code"
                   end
            ) (GoZeroVal t #()) (zip fds l)
@@ -490,12 +491,14 @@ Class CoreSemantics `{!GoSemanticsFunctions} : Prop :=
          (* keyed struct literal *)
          foldl (λ v ke,
                   match ke with
-                  | KeyedElement (Some (KeyField field_name)) (ElementExpression e) =>
-                      StructFieldSet t field_name (v, e)%E
+                  | KeyedElement (Some (KeyField field_name)) (ElementExpression from e) =>
+                      StructFieldSet t field_name (v, Convert from (struct_field_type field_name fds) e)%E
                   | _ => Panic "invalid Go code"
                   end
            ) (GoZeroVal t #()) l
      end);
+
+  #[global] convert_same t v :: ConvertUnderlying t t v v;
 }.
 
 End defs.
