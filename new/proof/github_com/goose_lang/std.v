@@ -6,10 +6,15 @@ From iris_named_props Require Import custom_syntax.
 
 Set Default Proof Using "Type".
 
+Class stdG Σ := {
+    #[local] std_syncG :: syncG Σ;
+  }.
+
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics} {package_sem : std.Assumptions}.
 Local Set Default Proof Using "All".
+Context `{!stdG Σ}.
 
 #[global] Instance : IsPkgInit (iProp Σ) std := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf (iProp Σ) std := build_get_is_pkg_init_wf.
@@ -156,12 +161,12 @@ Qed.
 
 Definition is_JoinHandle (l: loc) (P: iProp Σ): iProp _ :=
   ∃ (mu_l cond_l: loc),
-  "#mu" ∷ l ↦s[std.JoinHandle :: "mu"]□ mu_l ∗
-  "#cond" ∷ l ↦s[std.JoinHandle :: "cond"]□ cond_l ∗
-  "#Hcond" ∷ is_Cond cond_l (interface.mk (ptrT.id sync.Mutex.id) #mu_l) ∗
+  "#mu" ∷ l.[std.JoinHandle.t, "mu"] ↦□ mu_l ∗
+  "#cond" ∷ l.[std.JoinHandle.t, "cond"] ↦□ cond_l ∗
+  "#Hcond" ∷ is_Cond cond_l (interface.mk (go.PointerType sync.Mutex) #mu_l) ∗
   "#Hlock" ∷ is_Mutex mu_l
      (∃ (done_b: bool),
-         "done_b" ∷ l ↦s[std.JoinHandle :: "done"] done_b ∗
+         "done_b" ∷ l.[std.JoinHandle.t, "done"] ↦ done_b ∗
          "HP" ∷ if done_b then P else True)
 .
 
@@ -172,16 +177,15 @@ Lemma wp_newJoinHandle (P: iProp Σ) :
 Proof.
   wp_start as "_".
   wp_auto.
-  wp_alloc mu as "?".
+  wp_alloc mu as "Hmu".
   wp_auto.
   wp_apply (wp_NewCond with "[#]") as "%cond #His_cond".
-  wp_alloc jh_l as "jh".
-  iApply struct_fields_split in "jh". simpl. iNamed "jh".
-  iPersist "Hmu Hcond".
+  wp_alloc jh_l as "jh". iStructNamedSuffix "jh" "_j".
+  iPersist "mu_j cond_j". simpl.
   iMod (init_Mutex (∃ (done_b: bool),
-         "done_b" ∷ jh_l ↦s[std.JoinHandle :: "done"] done_b ∗
+         "done_b" ∷ jh_l.[std.JoinHandle.t, "done"] ↦ done_b ∗
          "HP" ∷ if done_b then P else True)
-         with "[$] [$]") as "Hlock".
+         with "Hmu [$]") as "Hlock".
   wp_auto.
   wp_end.
   rewrite /is_JoinHandle.
@@ -190,7 +194,7 @@ Qed.
 
 Lemma wp_JoinHandle__finish l (P: iProp Σ) :
   {{{ is_pkg_init std ∗ is_JoinHandle l P ∗ P }}}
-    l @ (ptrT.id std.JoinHandle.id) @ "finish" #()
+    l @! (go.PointerType std.JoinHandle) @! "finish" #()
   {{{ RET #(); True }}}.
 Proof.
   wp_start as "[Hhandle P]".
@@ -227,7 +231,7 @@ Qed.
 
 Lemma wp_JoinHandle__Join l P :
   {{{ is_pkg_init std ∗ is_JoinHandle l P }}}
-    l @ (ptrT.id std.JoinHandle.id) @ "Join" #()
+    l @! (go.PointerType std.JoinHandle) @! "Join" #()
   {{{ RET #(); P }}}.
 Proof.
   wp_start as "Hjh". iNamed "Hjh".
@@ -236,7 +240,7 @@ Proof.
 
   iAssert (∃ (done_b: bool),
            "locked" ∷ own_Mutex mu_l ∗
-           "done" ∷ l ↦s[std.JoinHandle::"done"] done_b ∗
+           "done" ∷ l.[std.JoinHandle.t, "done"]↦ done_b ∗
            "HP" ∷ (if done_b then P else True))%I
           with "[$Hlocked $done_b $HP]" as "HI".
   wp_for "HI".
