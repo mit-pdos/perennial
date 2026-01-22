@@ -39,6 +39,39 @@ Proof. solve_into_val_typed_struct. Qed.
 End def.
 End importantStruct.
 
+Module withInterface.
+Section def.
+
+Context `{!heapGS Σ}.
+Context {sem : go.Semantics}.
+Context {package_sem' : unittest.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance withInterface_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (unittest.withInterface.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "a" ∷ l.[(unittest.withInterface.t), "a"] ↦{dq} v.(unittest.withInterface.a') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance withInterface_into_val_typed
+   :
+  IntoValTyped (unittest.withInterface.t) (unittest.withInterface).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance withInterface_access_a l (v : (unittest.withInterface.t)) dq :
+  PointsToAccess
+    (l.[(unittest.withInterface.t), "a"]) (v.(unittest.withInterface.a')) dq
+    (l ↦{dq} v) (λ a', l ↦{dq} (v <|(unittest.withInterface.a') := a'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+End def.
+End withInterface.
+
 Module diskWrapper.
 Section def.
 

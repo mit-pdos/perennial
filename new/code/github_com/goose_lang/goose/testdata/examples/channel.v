@@ -111,7 +111,7 @@ Definition SearchReplace {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_str
 (* go: elimination_stack.go:14:6 *)
 Definition NewLockedStackⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    exception_do (return: (GoAlloc LockedStack (CompositeLiteral LockedStack (LiteralValue [KeyedElement (Some (KeyField "stack"%go)) (ElementExpression ((FuncResolve go.make2 [go.SliceType go.string] #()) #(W64 0)))])))).
+    exception_do (return: (GoAlloc LockedStack (CompositeLiteral LockedStack (LiteralValue [KeyedElement (Some (KeyField "stack"%go)) (ElementExpression (go.SliceType go.string) ((FuncResolve go.make2 [go.SliceType go.string] #()) #(W64 0)))])))).
 
 (* go: elimination_stack.go:18:23 *)
 Definition LockedStack__Pushⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -121,7 +121,7 @@ Definition LockedStack__Pushⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
     do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (StructFieldRef LockedStack "mu"%go (![go.PointerType LockedStack] "s"))) #());;;
     let: "$r0" := (let: "$a0" := (![go.SliceType go.string] (StructFieldRef LockedStack "stack"%go (![go.PointerType LockedStack] "s"))) in
     let: "$a1" := ((let: "$sl0" := (![go.string] "value") in
-    CompositeLiteral (go.SliceType go.string) (LiteralValue [KeyedElement None (ElementExpression "$sl0")]))) in
+    CompositeLiteral (go.SliceType go.string) (LiteralValue [KeyedElement None (ElementExpression go.string "$sl0")]))) in
     (FuncResolve go.append [go.SliceType go.string] #()) "$a0" "$a1") in
     do:  ((StructFieldRef LockedStack "stack"%go (![go.PointerType LockedStack] "s")) <-[go.SliceType go.string] "$r0");;;
     do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (StructFieldRef LockedStack "mu"%go (![go.PointerType LockedStack] "s"))) #());;;
@@ -157,7 +157,7 @@ Definition LockedStack__Popⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
    go: elimination_stack.go:47:6 *)
 Definition NewEliminationStackⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    exception_do (return: (GoAlloc EliminationStack (CompositeLiteral EliminationStack (LiteralValue [KeyedElement (Some (KeyField "base"%go)) (ElementExpression ((FuncResolve NewLockedStack [] #()) #())); KeyedElement (Some (KeyField "exchanger"%go)) (ElementExpression ((FuncResolve go.make1 [go.ChannelType go.sendrecv go.string] #()) #()))])))).
+    exception_do (return: (GoAlloc EliminationStack (CompositeLiteral EliminationStack (LiteralValue [KeyedElement (Some (KeyField "base"%go)) (ElementExpression (go.PointerType LockedStack) ((FuncResolve NewLockedStack [] #()) #())); KeyedElement (Some (KeyField "exchanger"%go)) (ElementExpression (go.ChannelType go.sendrecv go.string) ((FuncResolve go.make1 [go.ChannelType go.sendrecv go.string] #()) #()))])))).
 
 (* Push first tries one-shot elimination; on timeout, falls back to the locked stack.
 
@@ -360,7 +360,7 @@ Definition fib_consumerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
       do:  ("i" <-[go.int] "$key");;;
       let: "$r0" := (let: "$a0" := (![go.SliceType go.int] "results") in
       let: "$a1" := ((let: "$sl0" := (![go.int] "i") in
-      CompositeLiteral (go.SliceType go.int) (LiteralValue [KeyedElement None (ElementExpression "$sl0")]))) in
+      CompositeLiteral (go.SliceType go.int) (LiteralValue [KeyedElement None (ElementExpression go.int "$sl0")]))) in
       (FuncResolve go.append [go.SliceType go.int] #()) "$a0" "$a1") in
       do:  ("results" <-[go.SliceType go.int] "$r0")));;;
     return: (![go.SliceType go.int] "results")).
@@ -608,7 +608,7 @@ Definition TestFibConsumerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
     let: "$r0" := ((FuncResolve fib_consumer [] #()) #()) in
     do:  ("result" <-[go.SliceType go.int] "$r0");;;
     let: "expected" := (GoAlloc (go.SliceType go.int) (GoZeroVal (go.SliceType go.int) #())) in
-    let: "$r0" := (CompositeLiteral (go.SliceType go.int) (LiteralValue [KeyedElement None (ElementExpression #(W64 0)); KeyedElement None (ElementExpression #(W64 1)); KeyedElement None (ElementExpression #(W64 1)); KeyedElement None (ElementExpression #(W64 2)); KeyedElement None (ElementExpression #(W64 3)); KeyedElement None (ElementExpression #(W64 5)); KeyedElement None (ElementExpression #(W64 8)); KeyedElement None (ElementExpression #(W64 13)); KeyedElement None (ElementExpression #(W64 21)); KeyedElement None (ElementExpression #(W64 34))])) in
+    let: "$r0" := (CompositeLiteral (go.SliceType go.int) (LiteralValue [KeyedElement None (ElementExpression go.int #(W64 0)); KeyedElement None (ElementExpression go.int #(W64 1)); KeyedElement None (ElementExpression go.int #(W64 1)); KeyedElement None (ElementExpression go.int #(W64 2)); KeyedElement None (ElementExpression go.int #(W64 3)); KeyedElement None (ElementExpression go.int #(W64 5)); KeyedElement None (ElementExpression go.int #(W64 8)); KeyedElement None (ElementExpression go.int #(W64 13)); KeyedElement None (ElementExpression go.int #(W64 21)); KeyedElement None (ElementExpression go.int #(W64 34))])) in
     do:  ("expected" <-[go.SliceType go.int] "$r0");;;
     (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType go.int] "result") in
     (FuncResolve go.len [go.SliceType go.int] #()) "$a0") ≠⟨go.int⟩ (let: "$a0" := (![go.SliceType go.int] "expected") in
@@ -660,7 +660,7 @@ Definition TestSelectReadyCaseNoPanicⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : G
 Definition mkRequestⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "f",
     exception_do (let: "f" := (GoAlloc (go.FunctionType (go.Signature [] false [go.string])) "f") in
-    return: (CompositeLiteral request (LiteralValue [KeyedElement (Some (KeyField "f"%go)) (ElementExpression (![go.FunctionType (go.Signature [] false [go.string])] "f")); KeyedElement (Some (KeyField "result"%go)) (ElementExpression ((FuncResolve go.make2 [go.ChannelType go.sendrecv go.string] #()) #(W64 1)))]))).
+    return: (CompositeLiteral request (LiteralValue [KeyedElement (Some (KeyField "f"%go)) (ElementExpression (go.FunctionType (go.Signature [] false [go.string])) (![go.FunctionType (go.Signature [] false [go.string])] "f")); KeyedElement (Some (KeyField "result"%go)) (ElementExpression (go.ChannelType go.sendrecv go.string) ((FuncResolve go.make2 [go.ChannelType go.sendrecv go.string] #()) #(W64 1)))]))).
 
 (* go: higher_order.go:12:6 *)
 Definition ho_workerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -715,7 +715,7 @@ Definition HigherOrderExampleⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
     let: "$v" := (![request] "r3") in
     chan.send request "$chan" "$v");;;
     let: "responses" := (GoAlloc (go.SliceType go.string) (GoZeroVal (go.SliceType go.string) #())) in
-    let: "$r0" := (CompositeLiteral (go.SliceType go.string) (LiteralValue [KeyedElement None (ElementExpression (Fst (chan.receive go.string (![go.ChannelType go.sendrecv go.string] (StructFieldRef request "result"%go "r1"))))); KeyedElement None (ElementExpression (Fst (chan.receive go.string (![go.ChannelType go.sendrecv go.string] (StructFieldRef request "result"%go "r2"))))); KeyedElement None (ElementExpression (Fst (chan.receive go.string (![go.ChannelType go.sendrecv go.string] (StructFieldRef request "result"%go "r3")))))])) in
+    let: "$r0" := (CompositeLiteral (go.SliceType go.string) (LiteralValue [KeyedElement None (ElementExpression go.string (Fst (chan.receive go.string (![go.ChannelType go.sendrecv go.string] (StructFieldRef request "result"%go "r1"))))); KeyedElement None (ElementExpression go.string (Fst (chan.receive go.string (![go.ChannelType go.sendrecv go.string] (StructFieldRef request "result"%go "r2"))))); KeyedElement None (ElementExpression go.string (Fst (chan.receive go.string (![go.ChannelType go.sendrecv go.string] (StructFieldRef request "result"%go "r3")))))])) in
     do:  ("responses" <-[go.SliceType go.string] "$r0");;;
     return: (![go.SliceType go.string] "responses")).
 
@@ -754,7 +754,7 @@ Definition clientⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : va
       do:  "$key";;;
       let: "b" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
       SelectStmt (SelectStmtClauses (Some (λ: <>,
-        let: "$r0" := (CompositeLiteral (go.SliceType go.byte) (LiteralValue [KeyedElement None (ElementExpression #(W8 0))])) in
+        let: "$r0" := (CompositeLiteral (go.SliceType go.byte) (LiteralValue [KeyedElement None (ElementExpression go.byte #(W8 0))])) in
         do:  ("b" <-[go.SliceType go.byte] "$r0")
         )) [(CommClause (RecvCase (go.SliceType go.byte) (![go.ChannelType go.sendrecv (go.SliceType go.byte)] "freeList")) (λ: "$recvVal",
         let: "$r0" := (Fst "$recvVal") in
@@ -833,7 +833,7 @@ Definition LeakyBufferPipelineⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
     ])] "done") in
     let: "$go" := (FuncResolve server [] #()) in
     do:  (Fork ("$go" "$a0" "$a1" "$a2" "$a3"));;;
-    do:  (let: "$a0" := (CompositeLiteral (go.SliceType go.string) (LiteralValue [KeyedElement None (ElementExpression #"h"%go); KeyedElement None (ElementExpression #"e"%go); KeyedElement None (ElementExpression #"l"%go); KeyedElement None (ElementExpression #"l"%go); KeyedElement None (ElementExpression #"o"%go); KeyedElement None (ElementExpression #","%go); KeyedElement None (ElementExpression #" "%go); KeyedElement None (ElementExpression #"w"%go); KeyedElement None (ElementExpression #"o"%go); KeyedElement None (ElementExpression #"r"%go); KeyedElement None (ElementExpression #"l"%go); KeyedElement None (ElementExpression #"d"%go)])) in
+    do:  (let: "$a0" := (CompositeLiteral (go.SliceType go.string) (LiteralValue [KeyedElement None (ElementExpression go.string #"h"%go); KeyedElement None (ElementExpression go.string #"e"%go); KeyedElement None (ElementExpression go.string #"l"%go); KeyedElement None (ElementExpression go.string #"l"%go); KeyedElement None (ElementExpression go.string #"o"%go); KeyedElement None (ElementExpression go.string #","%go); KeyedElement None (ElementExpression go.string #" "%go); KeyedElement None (ElementExpression go.string #"w"%go); KeyedElement None (ElementExpression go.string #"o"%go); KeyedElement None (ElementExpression go.string #"r"%go); KeyedElement None (ElementExpression go.string #"l"%go); KeyedElement None (ElementExpression go.string #"d"%go)])) in
     let: "$a1" := (![go.ChannelType go.sendrecv (go.SliceType go.byte)] "freeList") in
     let: "$a2" := (![go.ChannelType go.sendrecv (go.SliceType go.byte)] "serverChan") in
     (FuncResolve client [] #()) "$a0" "$a1" "$a2");;;
@@ -851,7 +851,7 @@ Definition LeakyBufferPipelineⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
 Definition mkStreamⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "f",
     exception_do (let: "f" := (GoAlloc (go.FunctionType (go.Signature [go.string] false [go.string])) "f") in
-    return: (CompositeLiteral streamold (LiteralValue [KeyedElement None (ElementExpression ((FuncResolve go.make1 [go.ChannelType go.sendrecv go.string] #()) #())); KeyedElement None (ElementExpression ((FuncResolve go.make1 [go.ChannelType go.sendrecv go.string] #()) #())); KeyedElement None (ElementExpression (![go.FunctionType (go.Signature [go.string] false [go.string])] "f"))]))).
+    return: (CompositeLiteral streamold (LiteralValue [KeyedElement None (ElementExpression (go.ChannelType go.sendrecv go.string) ((FuncResolve go.make1 [go.ChannelType go.sendrecv go.string] #()) #())); KeyedElement None (ElementExpression (go.ChannelType go.sendrecv go.string) ((FuncResolve go.make1 [go.ChannelType go.sendrecv go.string] #()) #())); KeyedElement None (ElementExpression (go.FunctionType (go.Signature [go.string] false [go.string])) (![go.FunctionType (go.Signature [go.string] false [go.string])] "f"))]))).
 
 (* go: muxer.go:18:6 *)
 Definition Asyncⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -874,7 +874,7 @@ Definition Serveⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val
   λ: "f",
     exception_do (let: "f" := (GoAlloc (go.FunctionType (go.Signature [go.string] false [go.string])) "f") in
     let: "s" := (GoAlloc stream (GoZeroVal stream #())) in
-    let: "$r0" := (CompositeLiteral stream (LiteralValue [KeyedElement (Some (KeyField "req"%go)) (ElementExpression ((FuncResolve go.make1 [go.ChannelType go.sendrecv go.string] #()) #())); KeyedElement (Some (KeyField "res"%go)) (ElementExpression ((FuncResolve go.make1 [go.ChannelType go.sendrecv go.string] #()) #()))])) in
+    let: "$r0" := (CompositeLiteral stream (LiteralValue [KeyedElement (Some (KeyField "req"%go)) (ElementExpression (go.ChannelType go.sendrecv go.string) ((FuncResolve go.make1 [go.ChannelType go.sendrecv go.string] #()) #())); KeyedElement (Some (KeyField "res"%go)) (ElementExpression (go.ChannelType go.sendrecv go.string) ((FuncResolve go.make1 [go.ChannelType go.sendrecv go.string] #()) #()))])) in
     do:  ("s" <-[stream] "$r0");;;
     let: "$go" := (λ: <>,
       exception_do ((for: (λ: <>, #true); (λ: <>, #()) := λ: <>,

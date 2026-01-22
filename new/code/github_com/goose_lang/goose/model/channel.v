@@ -59,7 +59,7 @@ Definition NewChannelⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
       let: "$r0" := buffered in
       do:  ("local_state" <-[offerState] "$r0")
     else do:  #());;;
-    return: (GoAlloc (Channel T) (CompositeLiteral (Channel T) (LiteralValue [KeyedElement (Some (KeyField "cap"%go)) (ElementExpression (![go.int] "cap")); KeyedElement (Some (KeyField "mu"%go)) (ElementExpression (GoAlloc primitive.Mutex (GoZeroVal primitive.Mutex #()))); KeyedElement (Some (KeyField "buffer"%go)) (ElementExpression ((FuncResolve go.make2 [go.SliceType T] #()) #(W64 0))); KeyedElement (Some (KeyField "state"%go)) (ElementExpression (![offerState] "local_state"))])))).
+    return: (GoAlloc (Channel T) (CompositeLiteral (Channel T) (LiteralValue [KeyedElement (Some (KeyField "cap"%go)) (ElementExpression go.int (![go.int] "cap")); KeyedElement (Some (KeyField "mu"%go)) (ElementExpression (go.PointerType primitive.Mutex) (GoAlloc primitive.Mutex (GoZeroVal primitive.Mutex #()))); KeyedElement (Some (KeyField "buffer"%go)) (ElementExpression (go.SliceType T) ((FuncResolve go.make2 [go.SliceType T] #()) #(W64 0))); KeyedElement (Some (KeyField "state"%go)) (ElementExpression offerState (![offerState] "local_state"))])))).
 
 (* Non-Blocking send operation for select statements. Blocking send and blocking select
    statements simply call this in a for loop until it returns true.
@@ -84,7 +84,7 @@ Definition Channel__TrySendⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
         then
           let: "$r0" := (let: "$a0" := (![go.SliceType T] (StructFieldRef (Channel T) "buffer"%go (![go.PointerType (Channel T)] "c"))) in
           let: "$a1" := ((let: "$sl0" := (![T] "val") in
-          CompositeLiteral (go.SliceType T) (LiteralValue [KeyedElement None (ElementExpression "$sl0")]))) in
+          CompositeLiteral (go.SliceType T) (LiteralValue [KeyedElement None (ElementExpression T "$sl0")]))) in
           (FuncResolve go.append [go.SliceType T] #()) "$a0" "$a1") in
           do:  ((StructFieldRef (Channel T) "buffer"%go (![go.PointerType (Channel T)] "c")) <-[go.SliceType T] "$r0");;;
           do:  ((MethodResolve (go.PointerType primitive.Mutex) "Unlock"%go (![go.PointerType primitive.Mutex] (StructFieldRef (Channel T) "mu"%go (![go.PointerType (Channel T)] "c")))) #());;;

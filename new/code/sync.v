@@ -132,7 +132,7 @@ Definition syscall_hasWaitingReaders {ext : ffi_syntax} {go_gctx : GoGlobalConte
 Definition NewCondⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "l",
     exception_do (let: "l" := (GoAlloc Locker "l") in
-    return: (GoAlloc Cond (CompositeLiteral Cond (LiteralValue [KeyedElement (Some (KeyField "L"%go)) (ElementExpression (![Locker] "l"))])))).
+    return: (GoAlloc Cond (CompositeLiteral Cond (LiteralValue [KeyedElement (Some (KeyField "L"%go)) (ElementExpression Locker (![Locker] "l"))])))).
 
 (* Wait atomically unlocks c.L and suspends execution
    of the calling goroutine. After later resuming execution,
