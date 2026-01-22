@@ -426,6 +426,9 @@ Proof. solve_into_val_typed. Qed.
 Global Instance into_val_typed_chan t b : IntoValTyped chan.t (go.ChannelType b t).
 Proof. solve_into_val_typed. Qed.
 
+Global Instance into_val_typed_map k v : IntoValTyped map.t (go.MapType k v).
+Proof. solve_into_val_typed. Qed.
+
 Lemma typed_pointsto_split `{!TypedPointsto V} l (v : V) dq :
   l ↦{dq} v ⊢@{iProp Σ} typed_pointsto_def l v dq.
 Proof. rewrite typed_pointsto_unseal //. Qed.

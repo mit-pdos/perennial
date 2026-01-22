@@ -192,12 +192,10 @@ Lemma wp_mapGetCall :
     @! unittest.mapGetCall #()
   {{{ RET #(); True }}}.
 Proof.
-  wp_start. wp_auto. unshelve wp_apply (wp_map_make (K:=w64) (V:=func.t)); try tc_solve.
-  { done. }
-  iIntros "* Hm". wp_auto. wp_apply (wp_map_insert with "Hm") as "Hm".
-  wp_apply (wp_map_get with "Hm") as "Hm".
-  rewrite lookup_insert_eq. wp_auto. iApply "HΦ".
-  done.
+  wp_start. wp_auto. wp_apply wp_map_make1 as "* Hm".
+  wp_apply (wp_map_insert with "Hm") as "Hm".
+  wp_bind. wp_bind (map.lookup1 _ _ _ _). wp_apply (wp_map_lookup1 with "Hm") as "Hm".
+  rewrite lookup_insert_eq. wp_auto. wp_end.
 Qed.
 
 Lemma wp_mapLiteralTest :
@@ -206,13 +204,12 @@ Lemma wp_mapLiteralTest :
   }}}
     @! unittest.mapLiteralTest #()
   {{{
-        l, RET #l; l ↦$ {["a"%go := (W64 97); "b"%go := (W64 98); "c"%go := (W64 99)]}
+        l, RET #l; l ↦$ {["c"%go := (W64 99); "b"%go := (W64 98); "a"%go := (W64 97)]}
   }}}.
 Proof.
-  wp_start. wp_auto.
-  wp_apply wp_map_literal; first done.
-  iIntros (?) "Hmap". wp_auto.
-  iApply "HΦ". iFrame.
+  wp_start. wp_auto. wp_apply wp_map_make1 as "% Hm".
+  repeat wp_apply (wp_map_insert with "Hm") as "Hm".
+  rewrite -insert_empty. wp_end.
 Qed.
 
 Lemma wp_useNilField :

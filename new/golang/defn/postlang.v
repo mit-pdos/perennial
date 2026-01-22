@@ -405,6 +405,7 @@ Class CoreSemantics `{!GoSemanticsFunctions} : Prop :=
   #[global] type_repr_slice elem_type :: TypeRepr (go.SliceType elem_type) slice.t;
   #[global] type_repr_interface elems :: TypeRepr (go.InterfaceType elems) interface.t;
   #[global] type_repr_channel dir elem_type :: TypeRepr (go.ChannelType dir elem_type) chan.t;
+  #[global] type_repr_map key_type elem_type :: TypeRepr (go.MapType key_type elem_type) map.t;
 
   #[global] core_comparison_sem :: CoreComparisonSemantics;
 
