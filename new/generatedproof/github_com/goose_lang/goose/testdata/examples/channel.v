@@ -34,6 +34,16 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (chan_spec_raw_examples.LockedStack.t) (chan_spec_raw_examples.LockedStack).
 Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance LockedStack_access_mu l (v : (chan_spec_raw_examples.LockedStack.t)) dq :
+  PointsToAccess
+    (l.[(chan_spec_raw_examples.LockedStack.t), "mu"]) (v.(chan_spec_raw_examples.LockedStack.mu')) dq
+    (l ↦{dq} v) (λ mu', l ↦{dq} (v <|(chan_spec_raw_examples.LockedStack.mu') := mu'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance LockedStack_access_stack l (v : (chan_spec_raw_examples.LockedStack.t)) dq :
+  PointsToAccess
+    (l.[(chan_spec_raw_examples.LockedStack.t), "stack"]) (v.(chan_spec_raw_examples.LockedStack.stack')) dq
+    (l ↦{dq} v) (λ stack', l ↦{dq} (v <|(chan_spec_raw_examples.LockedStack.stack') := stack'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
 
 End def.
 End LockedStack.
@@ -63,6 +73,16 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (chan_spec_raw_examples.EliminationStack.t) (chan_spec_raw_examples.EliminationStack).
 Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance EliminationStack_access_base l (v : (chan_spec_raw_examples.EliminationStack.t)) dq :
+  PointsToAccess
+    (l.[(chan_spec_raw_examples.EliminationStack.t), "base"]) (v.(chan_spec_raw_examples.EliminationStack.base')) dq
+    (l ↦{dq} v) (λ base', l ↦{dq} (v <|(chan_spec_raw_examples.EliminationStack.base') := base'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance EliminationStack_access_exchanger l (v : (chan_spec_raw_examples.EliminationStack.t)) dq :
+  PointsToAccess
+    (l.[(chan_spec_raw_examples.EliminationStack.t), "exchanger"]) (v.(chan_spec_raw_examples.EliminationStack.exchanger')) dq
+    (l ↦{dq} v) (λ exchanger', l ↦{dq} (v <|(chan_spec_raw_examples.EliminationStack.exchanger') := exchanger'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
 
 End def.
 End EliminationStack.
@@ -92,6 +112,16 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (chan_spec_raw_examples.request.t) (chan_spec_raw_examples.request).
 Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance request_access_f l (v : (chan_spec_raw_examples.request.t)) dq :
+  PointsToAccess
+    (l.[(chan_spec_raw_examples.request.t), "f"]) (v.(chan_spec_raw_examples.request.f')) dq
+    (l ↦{dq} v) (λ f', l ↦{dq} (v <|(chan_spec_raw_examples.request.f') := f'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance request_access_result l (v : (chan_spec_raw_examples.request.t)) dq :
+  PointsToAccess
+    (l.[(chan_spec_raw_examples.request.t), "result"]) (v.(chan_spec_raw_examples.request.result')) dq
+    (l ↦{dq} v) (λ result', l ↦{dq} (v <|(chan_spec_raw_examples.request.result') := result'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
 
 End def.
 End request.
@@ -121,6 +151,16 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (chan_spec_raw_examples.stream.t) (chan_spec_raw_examples.stream).
 Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance stream_access_req l (v : (chan_spec_raw_examples.stream.t)) dq :
+  PointsToAccess
+    (l.[(chan_spec_raw_examples.stream.t), "req"]) (v.(chan_spec_raw_examples.stream.req')) dq
+    (l ↦{dq} v) (λ req', l ↦{dq} (v <|(chan_spec_raw_examples.stream.req') := req'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance stream_access_res l (v : (chan_spec_raw_examples.stream.t)) dq :
+  PointsToAccess
+    (l.[(chan_spec_raw_examples.stream.t), "res"]) (v.(chan_spec_raw_examples.stream.res')) dq
+    (l ↦{dq} v) (λ res', l ↦{dq} (v <|(chan_spec_raw_examples.stream.res') := res'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
 
 End def.
 End stream.
@@ -151,6 +191,21 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (chan_spec_raw_examples.streamold.t) (chan_spec_raw_examples.streamold).
 Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance streamold_access_req l (v : (chan_spec_raw_examples.streamold.t)) dq :
+  PointsToAccess
+    (l.[(chan_spec_raw_examples.streamold.t), "req"]) (v.(chan_spec_raw_examples.streamold.req')) dq
+    (l ↦{dq} v) (λ req', l ↦{dq} (v <|(chan_spec_raw_examples.streamold.req') := req'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance streamold_access_res l (v : (chan_spec_raw_examples.streamold.t)) dq :
+  PointsToAccess
+    (l.[(chan_spec_raw_examples.streamold.t), "res"]) (v.(chan_spec_raw_examples.streamold.res')) dq
+    (l ↦{dq} v) (λ res', l ↦{dq} (v <|(chan_spec_raw_examples.streamold.res') := res'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance streamold_access_f l (v : (chan_spec_raw_examples.streamold.t)) dq :
+  PointsToAccess
+    (l.[(chan_spec_raw_examples.streamold.t), "f"]) (v.(chan_spec_raw_examples.streamold.f')) dq
+    (l ↦{dq} v) (λ f', l ↦{dq} (v <|(chan_spec_raw_examples.streamold.f') := f'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
 
 End def.
 End streamold.

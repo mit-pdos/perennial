@@ -35,6 +35,21 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (append_log.Log.t) (append_log.Log).
 Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Log_access_m l (v : (append_log.Log.t)) dq :
+  PointsToAccess
+    (l.[(append_log.Log.t), "m"]) (v.(append_log.Log.m')) dq
+    (l ↦{dq} v) (λ m', l ↦{dq} (v <|(append_log.Log.m') := m'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Log_access_sz l (v : (append_log.Log.t)) dq :
+  PointsToAccess
+    (l.[(append_log.Log.t), "sz"]) (v.(append_log.Log.sz')) dq
+    (l ↦{dq} v) (λ sz', l ↦{dq} (v <|(append_log.Log.sz') := sz'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Log_access_diskSz l (v : (append_log.Log.t)) dq :
+  PointsToAccess
+    (l.[(append_log.Log.t), "diskSz"]) (v.(append_log.Log.diskSz')) dq
+    (l ↦{dq} v) (λ diskSz', l ↦{dq} (v <|(append_log.Log.diskSz') := diskSz'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
 
 End def.
 End Log.

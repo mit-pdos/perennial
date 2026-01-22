@@ -31,6 +31,16 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (strings.Builder.t) (strings.Builder).
 Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Builder_access_addr l (v : (strings.Builder.t)) dq :
+  PointsToAccess
+    (l.[(strings.Builder.t), "addr"]) (v.(strings.Builder.addr')) dq
+    (l ↦{dq} v) (λ addr', l ↦{dq} (v <|(strings.Builder.addr') := addr'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Builder_access_buf l (v : (strings.Builder.t)) dq :
+  PointsToAccess
+    (l.[(strings.Builder.t), "buf"]) (v.(strings.Builder.buf')) dq
+    (l ↦{dq} v) (λ buf', l ↦{dq} (v <|(strings.Builder.buf') := buf'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
 
 End def.
 End Builder.

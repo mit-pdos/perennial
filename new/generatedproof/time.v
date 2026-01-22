@@ -53,6 +53,21 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (time.Time.t) (time.Time).
 Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Time_access_wall l (v : (time.Time.t)) dq :
+  PointsToAccess
+    (l.[(time.Time.t), "wall"]) (v.(time.Time.wall')) dq
+    (l ↦{dq} v) (λ wall', l ↦{dq} (v <|(time.Time.wall') := wall'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Time_access_ext l (v : (time.Time.t)) dq :
+  PointsToAccess
+    (l.[(time.Time.t), "ext"]) (v.(time.Time.ext')) dq
+    (l ↦{dq} v) (λ ext', l ↦{dq} (v <|(time.Time.ext') := ext'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Time_access_loc l (v : (time.Time.t)) dq :
+  PointsToAccess
+    (l.[(time.Time.t), "loc"]) (v.(time.Time.loc')) dq
+    (l ↦{dq} v) (λ loc', l ↦{dq} (v <|(time.Time.loc') := loc'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
 
 End def.
 End Time.
@@ -82,6 +97,16 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (time.Timer.t) (time.Timer).
 Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Timer_access_C l (v : (time.Timer.t)) dq :
+  PointsToAccess
+    (l.[(time.Timer.t), "C"]) (v.(time.Timer.C')) dq
+    (l ↦{dq} v) (λ C', l ↦{dq} (v <|(time.Timer.C') := C'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Timer_access_initTimer l (v : (time.Timer.t)) dq :
+  PointsToAccess
+    (l.[(time.Timer.t), "initTimer"]) (v.(time.Timer.initTimer')) dq
+    (l ↦{dq} v) (λ initTimer', l ↦{dq} (v <|(time.Timer.initTimer') := initTimer'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
 
 End def.
 End Timer.

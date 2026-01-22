@@ -104,6 +104,26 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (sync.Cond.t) (sync.Cond).
 Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Cond_access_noCopy l (v : (sync.Cond.t)) dq :
+  PointsToAccess
+    (l.[(sync.Cond.t), "noCopy"]) (v.(sync.Cond.noCopy')) dq
+    (l ↦{dq} v) (λ noCopy', l ↦{dq} (v <|(sync.Cond.noCopy') := noCopy'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Cond_access_L l (v : (sync.Cond.t)) dq :
+  PointsToAccess
+    (l.[(sync.Cond.t), "L"]) (v.(sync.Cond.L')) dq
+    (l ↦{dq} v) (λ L', l ↦{dq} (v <|(sync.Cond.L') := L'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Cond_access_notify l (v : (sync.Cond.t)) dq :
+  PointsToAccess
+    (l.[(sync.Cond.t), "notify"]) (v.(sync.Cond.notify')) dq
+    (l ↦{dq} v) (λ notify', l ↦{dq} (v <|(sync.Cond.notify') := notify'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Cond_access_checker l (v : (sync.Cond.t)) dq :
+  PointsToAccess
+    (l.[(sync.Cond.t), "checker"]) (v.(sync.Cond.checker')) dq
+    (l ↦{dq} v) (λ checker', l ↦{dq} (v <|(sync.Cond.checker') := checker'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
 
 End def.
 End Cond.
@@ -194,6 +214,21 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (sync.Once.t) (sync.Once).
 Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Once_access__0 l (v : (sync.Once.t)) dq :
+  PointsToAccess
+    (l.[(sync.Once.t), "_0"]) (v.(sync.Once._0')) dq
+    (l ↦{dq} v) (λ _0', l ↦{dq} (v <|(sync.Once._0') := _0'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Once_access_done l (v : (sync.Once.t)) dq :
+  PointsToAccess
+    (l.[(sync.Once.t), "done"]) (v.(sync.Once.done')) dq
+    (l ↦{dq} v) (λ done', l ↦{dq} (v <|(sync.Once.done') := done'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Once_access_m l (v : (sync.Once.t)) dq :
+  PointsToAccess
+    (l.[(sync.Once.t), "m"]) (v.(sync.Once.m')) dq
+    (l ↦{dq} v) (λ m', l ↦{dq} (v <|(sync.Once.m') := m'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
 
 End def.
 End Once.
@@ -386,6 +421,31 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (sync.RWMutex.t) (sync.RWMutex).
 Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance RWMutex_access_w l (v : (sync.RWMutex.t)) dq :
+  PointsToAccess
+    (l.[(sync.RWMutex.t), "w"]) (v.(sync.RWMutex.w')) dq
+    (l ↦{dq} v) (λ w', l ↦{dq} (v <|(sync.RWMutex.w') := w'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance RWMutex_access_writerSem l (v : (sync.RWMutex.t)) dq :
+  PointsToAccess
+    (l.[(sync.RWMutex.t), "writerSem"]) (v.(sync.RWMutex.writerSem')) dq
+    (l ↦{dq} v) (λ writerSem', l ↦{dq} (v <|(sync.RWMutex.writerSem') := writerSem'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance RWMutex_access_readerSem l (v : (sync.RWMutex.t)) dq :
+  PointsToAccess
+    (l.[(sync.RWMutex.t), "readerSem"]) (v.(sync.RWMutex.readerSem')) dq
+    (l ↦{dq} v) (λ readerSem', l ↦{dq} (v <|(sync.RWMutex.readerSem') := readerSem'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance RWMutex_access_readerCount l (v : (sync.RWMutex.t)) dq :
+  PointsToAccess
+    (l.[(sync.RWMutex.t), "readerCount"]) (v.(sync.RWMutex.readerCount')) dq
+    (l ↦{dq} v) (λ readerCount', l ↦{dq} (v <|(sync.RWMutex.readerCount') := readerCount'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance RWMutex_access_readerWait l (v : (sync.RWMutex.t)) dq :
+  PointsToAccess
+    (l.[(sync.RWMutex.t), "readerWait"]) (v.(sync.RWMutex.readerWait')) dq
+    (l ↦{dq} v) (λ readerWait', l ↦{dq} (v <|(sync.RWMutex.readerWait') := readerWait'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
 
 End def.
 End RWMutex.
@@ -416,6 +476,21 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (sync.WaitGroup.t) (sync.WaitGroup).
 Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance WaitGroup_access_noCopy l (v : (sync.WaitGroup.t)) dq :
+  PointsToAccess
+    (l.[(sync.WaitGroup.t), "noCopy"]) (v.(sync.WaitGroup.noCopy')) dq
+    (l ↦{dq} v) (λ noCopy', l ↦{dq} (v <|(sync.WaitGroup.noCopy') := noCopy'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance WaitGroup_access_state l (v : (sync.WaitGroup.t)) dq :
+  PointsToAccess
+    (l.[(sync.WaitGroup.t), "state"]) (v.(sync.WaitGroup.state')) dq
+    (l ↦{dq} v) (λ state', l ↦{dq} (v <|(sync.WaitGroup.state') := state'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance WaitGroup_access_sema l (v : (sync.WaitGroup.t)) dq :
+  PointsToAccess
+    (l.[(sync.WaitGroup.t), "sema"]) (v.(sync.WaitGroup.sema')) dq
+    (l ↦{dq} v) (λ sema', l ↦{dq} (v <|(sync.WaitGroup.sema') := sema'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
 
 End def.
 End WaitGroup.

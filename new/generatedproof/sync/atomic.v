@@ -59,6 +59,16 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (atomic.Bool.t) (atomic.Bool).
 Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Bool_access__0 l (v : (atomic.Bool.t)) dq :
+  PointsToAccess
+    (l.[(atomic.Bool.t), "_0"]) (v.(atomic.Bool._0')) dq
+    (l ↦{dq} v) (λ _0', l ↦{dq} (v <|(atomic.Bool._0') := _0'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Bool_access_v l (v : (atomic.Bool.t)) dq :
+  PointsToAccess
+    (l.[(atomic.Bool.t), "v"]) (v.(atomic.Bool.v')) dq
+    (l ↦{dq} v) (λ v', l ↦{dq} (v <|(atomic.Bool.v') := v'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
 
 End def.
 End Bool.
@@ -89,6 +99,21 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
   `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T} `{!go.TypeRepr T T'}  :
   IntoValTyped (atomic.Pointer.t T') (atomic.Pointer T).
 Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Pointer_access__0`{!TypedPointsto (Σ:=Σ) T'}  l (v : (atomic.Pointer.t T')) dq :
+  PointsToAccess
+    (l.[(atomic.Pointer.t T'), "_0"]) (v.(atomic.Pointer._0')) dq
+    (l ↦{dq} v) (λ _0', l ↦{dq} (v <|(atomic.Pointer._0') := _0'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Pointer_access__1`{!TypedPointsto (Σ:=Σ) T'}  l (v : (atomic.Pointer.t T')) dq :
+  PointsToAccess
+    (l.[(atomic.Pointer.t T'), "_1"]) (v.(atomic.Pointer._1')) dq
+    (l ↦{dq} v) (λ _1', l ↦{dq} (v <|(atomic.Pointer._1') := _1'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Pointer_access_v`{!TypedPointsto (Σ:=Σ) T'}  l (v : (atomic.Pointer.t T')) dq :
+  PointsToAccess
+    (l.[(atomic.Pointer.t T'), "v"]) (v.(atomic.Pointer.v')) dq
+    (l ↦{dq} v) (λ v', l ↦{dq} (v <|(atomic.Pointer.v') := v'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
 
 End def.
 End Pointer.
@@ -118,6 +143,16 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (atomic.Int32.t) (atomic.Int32).
 Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Int32_access__0 l (v : (atomic.Int32.t)) dq :
+  PointsToAccess
+    (l.[(atomic.Int32.t), "_0"]) (v.(atomic.Int32._0')) dq
+    (l ↦{dq} v) (λ _0', l ↦{dq} (v <|(atomic.Int32._0') := _0'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Int32_access_v l (v : (atomic.Int32.t)) dq :
+  PointsToAccess
+    (l.[(atomic.Int32.t), "v"]) (v.(atomic.Int32.v')) dq
+    (l ↦{dq} v) (λ v', l ↦{dq} (v <|(atomic.Int32.v') := v'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
 
 End def.
 End Int32.
@@ -175,6 +210,21 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (atomic.Int64.t) (atomic.Int64).
 Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Int64_access__0 l (v : (atomic.Int64.t)) dq :
+  PointsToAccess
+    (l.[(atomic.Int64.t), "_0"]) (v.(atomic.Int64._0')) dq
+    (l ↦{dq} v) (λ _0', l ↦{dq} (v <|(atomic.Int64._0') := _0'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Int64_access__1 l (v : (atomic.Int64.t)) dq :
+  PointsToAccess
+    (l.[(atomic.Int64.t), "_1"]) (v.(atomic.Int64._1')) dq
+    (l ↦{dq} v) (λ _1', l ↦{dq} (v <|(atomic.Int64._1') := _1'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Int64_access_v l (v : (atomic.Int64.t)) dq :
+  PointsToAccess
+    (l.[(atomic.Int64.t), "v"]) (v.(atomic.Int64.v')) dq
+    (l ↦{dq} v) (λ v', l ↦{dq} (v <|(atomic.Int64.v') := v'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
 
 End def.
 End Int64.
@@ -204,6 +254,16 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (atomic.Uint32.t) (atomic.Uint32).
 Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Uint32_access__0 l (v : (atomic.Uint32.t)) dq :
+  PointsToAccess
+    (l.[(atomic.Uint32.t), "_0"]) (v.(atomic.Uint32._0')) dq
+    (l ↦{dq} v) (λ _0', l ↦{dq} (v <|(atomic.Uint32._0') := _0'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Uint32_access_v l (v : (atomic.Uint32.t)) dq :
+  PointsToAccess
+    (l.[(atomic.Uint32.t), "v"]) (v.(atomic.Uint32.v')) dq
+    (l ↦{dq} v) (λ v', l ↦{dq} (v <|(atomic.Uint32.v') := v'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
 
 End def.
 End Uint32.
@@ -234,6 +294,21 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (atomic.Uint64.t) (atomic.Uint64).
 Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Uint64_access__0 l (v : (atomic.Uint64.t)) dq :
+  PointsToAccess
+    (l.[(atomic.Uint64.t), "_0"]) (v.(atomic.Uint64._0')) dq
+    (l ↦{dq} v) (λ _0', l ↦{dq} (v <|(atomic.Uint64._0') := _0'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Uint64_access__1 l (v : (atomic.Uint64.t)) dq :
+  PointsToAccess
+    (l.[(atomic.Uint64.t), "_1"]) (v.(atomic.Uint64._1')) dq
+    (l ↦{dq} v) (λ _1', l ↦{dq} (v <|(atomic.Uint64._1') := _1'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Uint64_access_v l (v : (atomic.Uint64.t)) dq :
+  PointsToAccess
+    (l.[(atomic.Uint64.t), "v"]) (v.(atomic.Uint64.v')) dq
+    (l ↦{dq} v) (λ v', l ↦{dq} (v <|(atomic.Uint64.v') := v'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
 
 End def.
 End Uint64.
@@ -282,6 +357,11 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (atomic.Value.t) (atomic.Value).
 Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Value_access_v l (v : (atomic.Value.t)) dq :
+  PointsToAccess
+    (l.[(atomic.Value.t), "v"]) (v.(atomic.Value.v')) dq
+    (l ↦{dq} v) (λ v', l ↦{dq} (v <|(atomic.Value.v') := v'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
 
 End def.
 End Value.
@@ -311,6 +391,16 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (atomic.efaceWords.t) (atomic.efaceWords).
 Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance efaceWords_access_typ l (v : (atomic.efaceWords.t)) dq :
+  PointsToAccess
+    (l.[(atomic.efaceWords.t), "typ"]) (v.(atomic.efaceWords.typ')) dq
+    (l ↦{dq} v) (λ typ', l ↦{dq} (v <|(atomic.efaceWords.typ') := typ'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance efaceWords_access_data l (v : (atomic.efaceWords.t)) dq :
+  PointsToAccess
+    (l.[(atomic.efaceWords.t), "data"]) (v.(atomic.efaceWords.data')) dq
+    (l ↦{dq} v) (λ data', l ↦{dq} (v <|(atomic.efaceWords.data') := data'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
 
 End def.
 End efaceWords.

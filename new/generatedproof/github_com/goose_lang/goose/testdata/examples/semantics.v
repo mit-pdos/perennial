@@ -60,6 +60,11 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (semantics.Enc.t) (semantics.Enc).
 Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Enc_access_p l (v : (semantics.Enc.t)) dq :
+  PointsToAccess
+    (l.[(semantics.Enc.t), "p"]) (v.(semantics.Enc.p')) dq
+    (l ↦{dq} v) (λ p', l ↦{dq} (v <|(semantics.Enc.p') := p'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
 
 End def.
 End Enc.
@@ -88,6 +93,11 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (semantics.Dec.t) (semantics.Dec).
 Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Dec_access_p l (v : (semantics.Dec.t)) dq :
+  PointsToAccess
+    (l.[(semantics.Dec.t), "p"]) (v.(semantics.Dec.p')) dq
+    (l ↦{dq} v) (λ p', l ↦{dq} (v <|(semantics.Dec.p') := p'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
 
 End def.
 End Dec.
@@ -117,6 +127,16 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (semantics.Editor.t) (semantics.Editor).
 Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Editor_access_s l (v : (semantics.Editor.t)) dq :
+  PointsToAccess
+    (l.[(semantics.Editor.t), "s"]) (v.(semantics.Editor.s')) dq
+    (l ↦{dq} v) (λ s', l ↦{dq} (v <|(semantics.Editor.s') := s'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Editor_access_next_val l (v : (semantics.Editor.t)) dq :
+  PointsToAccess
+    (l.[(semantics.Editor.t), "next_val"]) (v.(semantics.Editor.next_val')) dq
+    (l ↦{dq} v) (λ next_val', l ↦{dq} (v <|(semantics.Editor.next_val') := next_val'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
 
 End def.
 End Editor.
@@ -146,6 +166,16 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (semantics.Pair.t) (semantics.Pair).
 Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Pair_access_x l (v : (semantics.Pair.t)) dq :
+  PointsToAccess
+    (l.[(semantics.Pair.t), "x"]) (v.(semantics.Pair.x')) dq
+    (l ↦{dq} v) (λ x', l ↦{dq} (v <|(semantics.Pair.x') := x'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Pair_access_y l (v : (semantics.Pair.t)) dq :
+  PointsToAccess
+    (l.[(semantics.Pair.t), "y"]) (v.(semantics.Pair.y')) dq
+    (l ↦{dq} v) (λ y', l ↦{dq} (v <|(semantics.Pair.y') := y'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
 
 End def.
 End Pair.
@@ -174,6 +204,11 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (semantics.SquareStruct.t) (semantics.SquareStruct).
 Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance SquareStruct_access_Side l (v : (semantics.SquareStruct.t)) dq :
+  PointsToAccess
+    (l.[(semantics.SquareStruct.t), "Side"]) (v.(semantics.SquareStruct.Side')) dq
+    (l ↦{dq} v) (λ Side', l ↦{dq} (v <|(semantics.SquareStruct.Side') := Side'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
 
 End def.
 End SquareStruct.
@@ -202,6 +237,11 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (semantics.LoopStruct.t) (semantics.LoopStruct).
 Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance LoopStruct_access_loopNext l (v : (semantics.LoopStruct.t)) dq :
+  PointsToAccess
+    (l.[(semantics.LoopStruct.t), "loopNext"]) (v.(semantics.LoopStruct.loopNext')) dq
+    (l ↦{dq} v) (λ loopNext', l ↦{dq} (v <|(semantics.LoopStruct.loopNext') := loopNext'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
 
 End def.
 End LoopStruct.
@@ -233,6 +273,26 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (semantics.BoolTest.t) (semantics.BoolTest).
 Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance BoolTest_access_t l (v : (semantics.BoolTest.t)) dq :
+  PointsToAccess
+    (l.[(semantics.BoolTest.t), "t"]) (v.(semantics.BoolTest.t')) dq
+    (l ↦{dq} v) (λ t', l ↦{dq} (v <|(semantics.BoolTest.t') := t'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance BoolTest_access_f l (v : (semantics.BoolTest.t)) dq :
+  PointsToAccess
+    (l.[(semantics.BoolTest.t), "f"]) (v.(semantics.BoolTest.f')) dq
+    (l ↦{dq} v) (λ f', l ↦{dq} (v <|(semantics.BoolTest.f') := f'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance BoolTest_access_tc l (v : (semantics.BoolTest.t)) dq :
+  PointsToAccess
+    (l.[(semantics.BoolTest.t), "tc"]) (v.(semantics.BoolTest.tc')) dq
+    (l ↦{dq} v) (λ tc', l ↦{dq} (v <|(semantics.BoolTest.tc') := tc'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance BoolTest_access_fc l (v : (semantics.BoolTest.t)) dq :
+  PointsToAccess
+    (l.[(semantics.BoolTest.t), "fc"]) (v.(semantics.BoolTest.fc')) dq
+    (l ↦{dq} v) (λ fc', l ↦{dq} (v <|(semantics.BoolTest.fc') := fc'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
 
 End def.
 End BoolTest.
@@ -262,6 +322,16 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (semantics.ArrayEditor.t) (semantics.ArrayEditor).
 Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance ArrayEditor_access_s l (v : (semantics.ArrayEditor.t)) dq :
+  PointsToAccess
+    (l.[(semantics.ArrayEditor.t), "s"]) (v.(semantics.ArrayEditor.s')) dq
+    (l ↦{dq} v) (λ s', l ↦{dq} (v <|(semantics.ArrayEditor.s') := s'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance ArrayEditor_access_next_val l (v : (semantics.ArrayEditor.t)) dq :
+  PointsToAccess
+    (l.[(semantics.ArrayEditor.t), "next_val"]) (v.(semantics.ArrayEditor.next_val')) dq
+    (l ↦{dq} v) (λ next_val', l ↦{dq} (v <|(semantics.ArrayEditor.next_val') := next_val'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
 
 End def.
 End ArrayEditor.
@@ -291,6 +361,16 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (semantics.Bar.t) (semantics.Bar).
 Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Bar_access_a l (v : (semantics.Bar.t)) dq :
+  PointsToAccess
+    (l.[(semantics.Bar.t), "a"]) (v.(semantics.Bar.a')) dq
+    (l ↦{dq} v) (λ a', l ↦{dq} (v <|(semantics.Bar.a') := a'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Bar_access_b l (v : (semantics.Bar.t)) dq :
+  PointsToAccess
+    (l.[(semantics.Bar.t), "b"]) (v.(semantics.Bar.b')) dq
+    (l ↦{dq} v) (λ b', l ↦{dq} (v <|(semantics.Bar.b') := b'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
 
 End def.
 End Bar.
@@ -319,6 +399,11 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (semantics.Foo.t) (semantics.Foo).
 Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Foo_access_bar l (v : (semantics.Foo.t)) dq :
+  PointsToAccess
+    (l.[(semantics.Foo.t), "bar"]) (v.(semantics.Foo.bar')) dq
+    (l ↦{dq} v) (λ bar', l ↦{dq} (v <|(semantics.Foo.bar') := bar'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
 
 End def.
 End Foo.
@@ -348,6 +433,16 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (semantics.TwoInts.t) (semantics.TwoInts).
 Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance TwoInts_access_x l (v : (semantics.TwoInts.t)) dq :
+  PointsToAccess
+    (l.[(semantics.TwoInts.t), "x"]) (v.(semantics.TwoInts.x')) dq
+    (l ↦{dq} v) (λ x', l ↦{dq} (v <|(semantics.TwoInts.x') := x'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance TwoInts_access_y l (v : (semantics.TwoInts.t)) dq :
+  PointsToAccess
+    (l.[(semantics.TwoInts.t), "y"]) (v.(semantics.TwoInts.y')) dq
+    (l ↦{dq} v) (λ y', l ↦{dq} (v <|(semantics.TwoInts.y') := y'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
 
 End def.
 End TwoInts.
@@ -378,6 +473,21 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (semantics.S.t) (semantics.S).
 Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance S_access_a l (v : (semantics.S.t)) dq :
+  PointsToAccess
+    (l.[(semantics.S.t), "a"]) (v.(semantics.S.a')) dq
+    (l ↦{dq} v) (λ a', l ↦{dq} (v <|(semantics.S.a') := a'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance S_access_b l (v : (semantics.S.t)) dq :
+  PointsToAccess
+    (l.[(semantics.S.t), "b"]) (v.(semantics.S.b')) dq
+    (l ↦{dq} v) (λ b', l ↦{dq} (v <|(semantics.S.b') := b'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance S_access_c l (v : (semantics.S.t)) dq :
+  PointsToAccess
+    (l.[(semantics.S.t), "c"]) (v.(semantics.S.c')) dq
+    (l ↦{dq} v) (λ c', l ↦{dq} (v <|(semantics.S.c') := c'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
 
 End def.
 End S.
@@ -406,6 +516,11 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (semantics.StructWrap.t) (semantics.StructWrap).
 Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance StructWrap_access_i l (v : (semantics.StructWrap.t)) dq :
+  PointsToAccess
+    (l.[(semantics.StructWrap.t), "i"]) (v.(semantics.StructWrap.i')) dq
+    (l ↦{dq} v) (λ i', l ↦{dq} (v <|(semantics.StructWrap.i') := i'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
 
 End def.
 End StructWrap.
@@ -434,6 +549,11 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (semantics.StructWithFunc.t) (semantics.StructWithFunc).
 Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance StructWithFunc_access_fn l (v : (semantics.StructWithFunc.t)) dq :
+  PointsToAccess
+    (l.[(semantics.StructWithFunc.t), "fn"]) (v.(semantics.StructWithFunc.fn')) dq
+    (l ↦{dq} v) (λ fn', l ↦{dq} (v <|(semantics.StructWithFunc.fn') := fn'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
 
 End def.
 End StructWithFunc.
@@ -492,6 +612,26 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (semantics.Log.t) (semantics.Log).
 Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Log_access_d l (v : (semantics.Log.t)) dq :
+  PointsToAccess
+    (l.[(semantics.Log.t), "d"]) (v.(semantics.Log.d')) dq
+    (l ↦{dq} v) (λ d', l ↦{dq} (v <|(semantics.Log.d') := d'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Log_access_l l (v : (semantics.Log.t)) dq :
+  PointsToAccess
+    (l.[(semantics.Log.t), "l"]) (v.(semantics.Log.l')) dq
+    (l ↦{dq} v) (λ l', l ↦{dq} (v <|(semantics.Log.l') := l'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Log_access_cache l (v : (semantics.Log.t)) dq :
+  PointsToAccess
+    (l.[(semantics.Log.t), "cache"]) (v.(semantics.Log.cache')) dq
+    (l ↦{dq} v) (λ cache', l ↦{dq} (v <|(semantics.Log.cache') := cache'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Log_access_length l (v : (semantics.Log.t)) dq :
+  PointsToAccess
+    (l.[(semantics.Log.t), "length"]) (v.(semantics.Log.length')) dq
+    (l ↦{dq} v) (λ length', l ↦{dq} (v <|(semantics.Log.length') := length'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
 
 End def.
 End Log.

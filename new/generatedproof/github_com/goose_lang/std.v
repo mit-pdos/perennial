@@ -37,6 +37,21 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (std.JoinHandle.t) (std.JoinHandle).
 Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance JoinHandle_access_mu l (v : (std.JoinHandle.t)) dq :
+  PointsToAccess
+    (l.[(std.JoinHandle.t), "mu"]) (v.(std.JoinHandle.mu')) dq
+    (l ↦{dq} v) (λ mu', l ↦{dq} (v <|(std.JoinHandle.mu') := mu'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance JoinHandle_access_done l (v : (std.JoinHandle.t)) dq :
+  PointsToAccess
+    (l.[(std.JoinHandle.t), "done"]) (v.(std.JoinHandle.done')) dq
+    (l ↦{dq} v) (λ done', l ↦{dq} (v <|(std.JoinHandle.done') := done'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance JoinHandle_access_cond l (v : (std.JoinHandle.t)) dq :
+  PointsToAccess
+    (l.[(std.JoinHandle.t), "cond"]) (v.(std.JoinHandle.cond')) dq
+    (l ↦{dq} v) (λ cond', l ↦{dq} (v <|(std.JoinHandle.cond') := cond'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
 
 End def.
 End JoinHandle.
