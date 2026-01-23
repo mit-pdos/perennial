@@ -380,6 +380,11 @@ Proof.
   destruct v1, v2. naive_solver.
 Qed.
 
+Program Global Instance typed_pointsto_proph_id : TypedPointsto proph_id :=
+  {| typed_pointsto_def l v dq := heap_pointsto l dq #v |}.
+Final Obligation.
+Proof. iIntros "* H1 H2". iCombine "H1 H2" gives %Heq. naive_solver. Qed.
+
 Existing Class go.is_primitive.
 #[local] Hint Extern 1 (go.is_primitive ?t) => constructor : typeclass_instances.
 Existing Class go.is_primitive_zero_val.

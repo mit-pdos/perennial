@@ -33,6 +33,11 @@ Class Semantics {ext : ffi_syntax} {go_lctx : GoLocalContext}
   }.
 End unsafe.
 
+Module any.
+Definition t {ext : ffi_syntax} := interface.t.
+End any.
+
+
 Module go.
 
 (* Functions from https://go.dev/ref/spec#Predeclared_identifiers *)
@@ -94,6 +99,8 @@ Definition untyped_nil := go.Named "untyped nil"%go [].
 Definition untyped_float := go.Named "untyped float"%go [].
 Definition untyped_rune := untyped_int.
 
+Definition proph_id := go.Named "proph id"%go [].
+
 Section defs.
 Context {ext : ffi_syntax}.
 Context {go_lctx : GoLocalContext} {go_gctx : GoGlobalContext}.
@@ -113,8 +120,16 @@ Inductive is_predeclared : go.type → Prop :=
 | is_predeclared_int64 : is_predeclared go.int64
 | is_predeclared_string : is_predeclared go.string
 | is_predeclared_bool : is_predeclared go.bool
-| is_predeclared_Pointer : is_predeclared unsafe.Pointer.
+| is_predeclared_Pointer : is_predeclared unsafe.Pointer
 
+(* Treating this like a predeclared too. *)
+| is_predeclared_proph_id : is_predeclared go.proph_id.
+
+Class ProphIdSemantics `{!GoSemanticsFunctions} :=
+{
+  #[global] underlying_proph_id :: go.proph_id ↓u go.proph_id;
+  #[global] type_repr_proph_id :: go.TypeRepr go.proph_id goose_lang.proph_id;
+}.
 Class UntypedIntSemantics `{!GoSemanticsFunctions} :=
 {
   #[global] underlying_untyped_int :: go.untyped_int ↓u go.untyped_int;

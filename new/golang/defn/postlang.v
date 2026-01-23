@@ -346,6 +346,7 @@ Class BasicIntoValInj :=
     #[global] into_val_inj_bool :: IntoValInj bool;
     #[global] into_val_inj_string :: IntoValInj go_string;
     #[global] into_val_inj_interface :: IntoValInj interface.t;
+    #[global] into_val_inj_proph_id :: IntoValInj proph_id;
   }.
 
 Class TypeRepr t V `{!ZeroVal V} `{!GoSemanticsFunctions} : Prop :=

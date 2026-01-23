@@ -731,6 +731,9 @@ Global Instance zero_val_slice : ZeroVal slice.t :=
 Global Instance zero_val_interface : ZeroVal interface.t :=
   {| zero_val_def := interface.nil |}.
 
+Global Instance zero_val_proph_id : ZeroVal goose_lang.proph_id :=
+  {| zero_val_def := 1%positive |}.
+
 End zero_val_instances.
 Notation "()" := tt : val_scope.
 #[global] Opaque to_val.

@@ -6,6 +6,7 @@ trusted = [
   "RandomUint64",
   "AssumeNoStringOverflow",
   "Mutex*",
+  "ProphId",
   # FIXME: add remaining functions
 ]
 [bootstrap]

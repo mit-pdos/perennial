@@ -76,4 +76,7 @@ Proof. solve_into_val_typed. Qed.
 Global Instance into_val_typed_Pointer : IntoValTyped loc unsafe.Pointer.
 Proof. solve_into_val_typed. Qed.
 
+Global Instance into_val_typed_proph_id : IntoValTyped proph_id go.proph_id.
+Proof. solve_into_val_typed. Qed.
+
 End into_val_typed_instances.

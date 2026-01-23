@@ -90,8 +90,11 @@ this in GooseLang, so we just loop. *)
   Definition Mutex__Unlockⁱᵐᵖˡ : val :=
     λ: "m" <>, lock.unlock "m".
 
+  Definition ProphIdⁱᵐᵖˡ := go.proph_id.
+
 End code.
 
 Module Mutex. Definition t := bool. End Mutex.
+Module ProphId. Definition t := proph_id. End ProphId.
 
 End primitive.
