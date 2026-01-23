@@ -48,3 +48,7 @@ _opam
 .filestoinstall
 Makefile.rocq*
 _RocqProject.install
+
+# semantics coverage tool
+instances.txt
+*.cov
