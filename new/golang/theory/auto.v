@@ -343,6 +343,13 @@ Ltac wp_if_destruct :=
       end
   end.
 
+Tactic Notation "wp_if_join" constr(asn) "with" constr(pat) :=
+  wp_pures;
+  iApply (wp_wand _ _ _ asn with pat)%I;
+  [ wp_if_destruct | ].
+
+Tactic Notation "wp_if_join" constr(asn) := wp_if_join asn with "[]".
+
 Ltac wp_end :=
   wp_pures;
   repeat iModIntro;
