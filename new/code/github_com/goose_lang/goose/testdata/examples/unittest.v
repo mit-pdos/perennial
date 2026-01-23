@@ -326,6 +326,8 @@ Definition maybeConvertFromString {ext : ffi_syntax} {go_gctx : GoGlobalContext}
 
 Definition assert {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.assert"%go.
 
+Definition nilConvert {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.nilConvert"%go.
+
 Definition genericConversions {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.genericConversions"%go.
 
 Definition foo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.foo"%go.
@@ -1025,9 +1027,9 @@ Definition testConversionLiteralⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
     let: "$r0" := (CompositeLiteral (go.MapType go.any go.any) (LiteralValue [KeyedElement (Some (KeyExpression go.untyped_nil UntypedNil)) (ElementExpression go.untyped_nil UntypedNil)])) in
     do:  ("m" <-[go.MapType go.any go.any] "$r0");;;
     let: "$r0" := (Convert withInterface go.any (![withInterface] "s")) in
-    do:  (map.insert go.untyped_nil (![go.MapType go.any go.any] "m") (Convert go.untyped_nil go.any UntypedNil) "$r0");;;
+    do:  (map.insert go.any (![go.MapType go.any go.any] "m") (Convert go.untyped_nil go.any UntypedNil) "$r0");;;
     let: "$r0" := (Convert go.untyped_nil go.any UntypedNil) in
-    do:  (map.insert withInterface (![go.MapType go.any go.any] "m") (Convert withInterface go.any (![withInterface] "s")) "$r0");;;
+    do:  (map.insert go.any (![go.MapType go.any go.any] "m") (Convert withInterface go.any (![withInterface] "s")) "$r0");;;
     return: ((map.lookup1 go.any go.any (![go.MapType go.any go.any] "m") (map.lookup1 go.any go.any (![go.MapType go.any go.any] "m") (Convert withInterface go.any (![withInterface] "s")))) =⟨go.InterfaceType []⟩ (Convert withInterface (go.InterfaceType []) (![withInterface] "s")))).
 
 (* go: copy.go:3:6 *)
@@ -1465,6 +1467,11 @@ Definition assertⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : va
     return: #()).
 
 (* go: generic_conversion.go:25:6 *)
+Definition nilConvertⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (A : go.type) : val :=
+  λ: <>,
+    exception_do (return: (CompositeLiteral (go.SliceType A) (LiteralValue [KeyedElement None (ElementExpression go.untyped_nil UntypedNil)]))).
+
+(* go: generic_conversion.go:29:6 *)
 Definition genericConversionsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "x" := (GoAlloc go.int8 (GoZeroVal go.int8 #())) in
@@ -1487,6 +1494,9 @@ Definition genericConversionsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
     do:  (let: "$a0" := ((TypeAssert go.string (let: "$a0" := (let: "$a0" := #"ok"%go in
     (FuncResolve maybeConvertToInterface [go.string] #()) "$a0") in
     (FuncResolve maybeConvertToInterface [go.any] #()) "$a0")) =⟨go.string⟩ #"ok"%go) in
+    let: "$a1" := #""%go in
+    (FuncResolve assert [] #()) "$a0" "$a1");;;
+    do:  (let: "$a0" := ((IndexRef (go.SliceType go.int) (![go.SliceType go.int] (IndexRef (go.SliceType (go.SliceType go.int)) ((FuncResolve nilConvert [go.SliceType go.int] #()) #(), #(W64 0))), #(W64 0))) =⟨go.PointerType go.int⟩ (![go.PointerType go.int] (IndexRef (go.SliceType (go.PointerType go.int)) ((FuncResolve nilConvert [go.PointerType go.int] #()) #(), #(W64 0))))) in
     let: "$a1" := #""%go in
     (FuncResolve assert [] #()) "$a0" "$a1");;;
     return: #()).
@@ -4284,6 +4294,7 @@ Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions
   #[global] maybeConvertToString_unfold A :: FuncUnfold maybeConvertToString [A] (maybeConvertToStringⁱᵐᵖˡ A);
   #[global] maybeConvertFromString_unfold A :: FuncUnfold maybeConvertFromString [A] (maybeConvertFromStringⁱᵐᵖˡ A);
   #[global] assert_unfold :: FuncUnfold assert [] (assertⁱᵐᵖˡ);
+  #[global] nilConvert_unfold A :: FuncUnfold nilConvert [A] (nilConvertⁱᵐᵖˡ A);
   #[global] genericConversions_unfold :: FuncUnfold genericConversions [] (genericConversionsⁱᵐᵖˡ);
   #[global] foo_unfold :: FuncUnfold foo [] (fooⁱᵐᵖˡ);
   #[global] other_unfold :: FuncUnfold other [] (otherⁱᵐᵖˡ);
