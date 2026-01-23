@@ -342,13 +342,6 @@ Proof.
   done.
 Qed.
 
-Tactic Notation "wp_if_join" constr(asn) "with" constr(pat) :=
-  wp_pures;
-  iApply (wp_wand _ _ _ asn with pat)%I;
-  [wp_if_destruct | ].
-
-Tactic Notation "wp_if_join" constr(asn) := wp_if_join asn with "[]".
-
 Lemma wp_ifJoinDemo (arg1 arg2: bool) :
   {{{ is_pkg_init unittest }}}
     @! unittest.ifJoinDemo #arg1 #arg2
@@ -406,7 +399,8 @@ Proof.
                        "Hsl" ∷ sl ↦* xs ∗
                        "Hsl_cap" ∷ own_slice_cap w64 sl (DfracOwn 1))%I
              with "[arr]".
-  { wp_apply (wp_slice_literal (V:=w64)) as "%sl [Hsl _]".
+  {
+    wp_apply (wp_slice_literal (V:=w64)) as "%sl [Hsl _]".
     wp_apply (wp_slice_append (V:=w64) with "[Hsl]") as "%sl1 (Hsl & Hsl_cap & _)".
     {
       iFrame.
@@ -414,12 +408,15 @@ Proof.
       iDestruct (own_slice_cap_nil) as "$".
     }
     iSplit; [ done | ].
-    iFrame. }
-  { iSplit; [ done | ].
+    iFrame.
+  }
+  {
+    iSplit; [ done | ].
     iFrame.
     iExists [].
     iDestruct (own_slice_nil) as "$".
-    iDestruct (own_slice_cap_nil) as "$". }
+    iDestruct (own_slice_cap_nil) as "$".
+  }
   iIntros (v) "[% @]". subst.
   wp_auto.
   wp_if_destruct.
