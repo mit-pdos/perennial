@@ -6,9 +6,9 @@ Section defns.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 
 Definition receive elem_type : val :=
-  λ: "c", MethodResolve (go.PointerType $ channel.Channel elem_type) "Receive" #() "c" #().
+  λ: "c", MethodResolve (go.PointerType $ channel.Channel elem_type) "Receive" "c" #().
 Definition send elem_type : val :=
-  λ: "c", MethodResolve (go.PointerType $ channel.Channel elem_type) "Send" #() "c".
+  λ: "c", MethodResolve (go.PointerType $ channel.Channel elem_type) "Send" "c".
 
 Definition for_range elem_type : val :=
   λ: "c" "body",
@@ -43,12 +43,12 @@ Definition try_comm_clause (c : comm_clause) : val :=
     match case' with
     | SendCase elem_type ch e =>
         let: "success" :=
-          MethodResolve (go.PointerType $ channel.Channel elem_type) "TrySend" #() ch e "blocking" in
+          MethodResolve (go.PointerType $ channel.Channel elem_type) "TrySend" ch e "blocking" in
         if: "success" then ((λ: <>, body)%V #(), #true)
         else (#(), #false)
     | RecvCase elem_type ch =>
         let: (("success", "v"), "ok") :=
-          MethodResolve (go.PointerType $ channel.Channel elem_type) "TryReceive" #() ch "blocking" in
+          MethodResolve (go.PointerType $ channel.Channel elem_type) "TryReceive" ch "blocking" in
         if: "success" then ((λ: "$v" "$ok", body)%V "v" "ok", #true)
         else (#(), #false)
     end.
@@ -80,13 +80,13 @@ Class ChanSemantics `{!GoSemanticsFunctions} :=
     (λ: "<>", FuncResolve go.make2 [elem_type] #() #(W64 0))%V;
   #[global] close_chan dir elem_type ::
     FuncUnfold go.close [go.ChannelType dir elem_type]
-    (λ: "c", MethodResolve (go.PointerType $ channel.Channel elem_type) "Close" #() "c" #())%V;
+    (λ: "c", MethodResolve (go.PointerType $ channel.Channel elem_type) "Close" "c" #())%V;
   #[global] len_chan dir elem_type ::
     FuncUnfold go.len [go.ChannelType dir elem_type]
-    (λ: "c", MethodResolve (go.PointerType $ channel.Channel elem_type) "Len" #() "c" #())%V;
+    (λ: "c", MethodResolve (go.PointerType $ channel.Channel elem_type) "Len" "c" #())%V;
   #[global] cap_chan dir elem_type ::
     FuncUnfold go.cap [go.ChannelType dir elem_type]
-    (λ: "c", MethodResolve (go.PointerType $ channel.Channel elem_type) "Cap" #() "c" #())%V;
+    (λ: "c", MethodResolve (go.PointerType $ channel.Channel elem_type) "Cap" "c" #())%V;
 
   chan_select_nonblocking default_handler clauses :
     is_go_step_pure SelectStmt (SelectStmtClausesV (Some default_handler) clauses) =

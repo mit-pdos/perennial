@@ -504,7 +504,8 @@ Class CoreSemantics `{!GoSemanticsFunctions} : Prop :=
            ) (GoZeroVal t #()) l
      end);
 
-  #[global] convert_same t v :: ConvertUnderlying t t v v;
+  #[global] convert_underlying_same t v :: ConvertUnderlying t t v v;
+  #[global] convert_same t v :: GoExprEq (Convert t t v) v;
 }.
 
 End defs.

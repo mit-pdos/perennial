@@ -479,6 +479,7 @@ Class PredeclaredSemantics `{!GoSemanticsFunctions} :=
   #[global] go_eq_bool :: go.AlwaysSafelyComparable go.bool Datatypes.bool;
   #[global] underlying_bool :: go.bool ↓u go.bool;
   #[global] type_repr_bool :: go.TypeRepr go.bool Datatypes.bool;
+  #[global] underlying_untyped_bool :: go.untyped_bool ↓u go.untyped_bool;
   #[global] convert_untyped_bool (b : Datatypes.bool) ::
     go.ConvertUnderlying go.untyped_bool go.bool #b #b;
 
@@ -499,6 +500,7 @@ Class PredeclaredSemantics `{!GoSemanticsFunctions} :=
   #[global] underlying_string :: go.string ↓u go.string;
   #[global] plus_string (v1 v2 : go_string) :: go.IsGoOp GoPlus go.string (#v1, #v2) #(v1 ++ v2);
   #[global] type_repr_string :: go.TypeRepr go.string go_string;
+  #[global] underlying_untyped_string :: go.untyped_string ↓u go.untyped_string;
   #[global] convert_untyped_string (s : go_string) ::
     go.ConvertUnderlying go.untyped_string go.string #s #s;
 
