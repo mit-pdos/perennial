@@ -220,6 +220,7 @@ Inductive go_instruction : Type :=
 
 (* these are internal steps; the Go map lookup has to be implemented as multiple
    instructions because it is not atomic. *)
+| InternalMapCheckKey (key_type : go.type)
 | InternalMapLookup
 | InternalMapInsert
 | InternalMapDelete

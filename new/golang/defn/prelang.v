@@ -38,6 +38,7 @@ Inductive type :=
 | SliceType : type → _
 | MapType : type → type → _
 | ChannelType : chan_dir → type → _
+| UntypedType : type_name → _
 
 with chan_dir :=
 | sendrecv

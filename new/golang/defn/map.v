@@ -24,8 +24,7 @@ Context {go_lctx : GoLocalContext} {go_gctx : GoGlobalContext}.
 
 Definition lookup2 (key_type elem_type : go.type) : val :=
   λ: "m" "k",
-    (* make sure it's safe to look up *)
-    Convert key_type go.any "k" =⟨go.any⟩ Convert key_type go.any "k";;
+    InternalMapCheckKey key_type "k";;
     if: "m" =⟨go.MapType key_type elem_type⟩ #map.nil then
       (GoZeroVal elem_type #(), #false)
     else InternalMapLookup (Read "m", "k").
@@ -35,8 +34,7 @@ Definition lookup1 (key_type elem_type : go.type) : val :=
 
 Definition insert (key_type : go.type) : val :=
   λ: "m" "k" "v",
-    (* make sure it's safe to look up *)
-    Convert key_type go.any "k" =⟨go.any⟩ Convert key_type go.any "k";;
+    InternalMapCheckKey key_type "k";;
     Store "m" (InternalMapInsert (Read "m", "k", "v")).
 
 (* Does not support modifications to the map during the loop. *)
@@ -59,8 +57,6 @@ Context {ext : ffi_syntax}.
 Context {go_lctx : GoLocalContext} {go_gctx : GoGlobalContext}.
 Class MapSemantics `{!GoSemanticsFunctions} :=
 {
-  go_eq_interface_eq elems elems' :
-    go_eq (go.InterfaceType elems) = go_eq (go.InterfaceType elems');
   #[global] internal_map_lookup_step_pure m k ::
     go.IsGoStepPureDet InternalMapLookup (m, k) (let '(ok, v) := map_lookup m k in (v, #ok));
   #[global] internal_map_insert_step_pure m k v ::
@@ -82,6 +78,8 @@ Class MapSemantics `{!GoSemanticsFunctions} :=
           )%E (return: (do: #()))%E ks);
   #[global] internal_map_make_step_pure v ::
     go.IsGoStepPureDet InternalMapMake v (map_empty v);
+  #[global] internal_map_check_key_step key_type k ::
+    go.IsGoStepPureDet (InternalMapCheckKey key_type) k (go_eq key_type k k);
 
   (* special cases for equality *)
   #[global] is_go_op_go_equals_map_nil_l kt vt s ::
@@ -128,7 +126,7 @@ Class MapSemantics `{!GoSemanticsFunctions} :=
   #[global] delete_map key_type elem_type ::
     FuncUnfold go.delete [go.MapType key_type elem_type]
     (λ: "m" "k",
-       Convert key_type go.any "k" =⟨go.any⟩ Convert key_type go.any "k";;
+       InternalMapCheckKey key_type "k";;
        Store "m" $ InternalMapDelete (Read "m", "k"))%V;
   #[global] make2_map key_type elem_type ::
     FuncUnfold go.make2 [go.MapType key_type elem_type]

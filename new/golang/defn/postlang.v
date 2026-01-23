@@ -264,9 +264,15 @@ Notation "t  ↓u  tunder" := (IsUnderlying t tunder) (at level 70).
 
 Class ConvertUnderlying from_under to_under (v v' : val) `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] convert_underlying `{!from ↓u from_under} `{!to ↓u to_under} ::
+  convert_underlying_def `{!from ↓u from_under} `{!to ↓u to_under} :
     GoExprEq (Convert from to v) v'
 }.
+Global Hint Mode ConvertUnderlying + + + - - : typeclass_instances.
+
+Global Instance convert_underlying from to v from_under to_under v' `{!GoSemanticsFunctions} :
+  from ↓u from_under → to ↓u to_under → ConvertUnderlying from_under to_under v v' →
+  GoExprEq (Convert from to v) v'.
+Proof. intros. apply convert_underlying_def. Qed.
 
 Class CoreComparisonSemantics `{!GoSemanticsFunctions} : Prop :=
 {

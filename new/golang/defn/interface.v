@@ -8,6 +8,9 @@ Context {go_lctx : GoLocalContext} {go_gctx : GoGlobalContext} `{!GoSemanticsFun
 Definition is_interface_type (t : go.type) : bool :=
   match t with go.InterfaceType _ => true | _ => false end.
 
+Definition is_untyped_nil (t : go.type) : bool :=
+  match t with go.Named n [] => ByteString.eqb n "untyped nil" | _ => false end.
+
 (* Based on: https://go.dev/ref/spec#General_interfaces *)
 Definition type_set_term_contains {go_ctx : GoLocalContext} t (e : go.type_term) : bool :=
   match e with
@@ -44,10 +47,13 @@ Class InterfaceSemantics :=
            else #false
        | _, _ => #false
        end);
+
   #[global] convert_to_interface (v : val)
     `{!from ↓u funder} `{!to ≤u go.InterfaceType elems} ::
     go.GoExprEq (Convert from to v)
-      (Val (if is_interface_type funder then v else #(interface.mk_ok from v)));
+    (Val (if is_interface_type funder then v else
+            if is_untyped_nil funder then #interface.nil
+            else #(interface.mk_ok from v)));
 
   #[global] type_assert_step `{!t ↓u tunder} i ::
     go.IsGoStepPureDet (TypeAssert t) #i

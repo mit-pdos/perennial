@@ -212,6 +212,33 @@ Proof.
   rewrite -insert_empty. wp_end.
 Qed.
 
+Lemma wp_testConversionLiteral :
+  {{{ is_pkg_init unittest }}}
+    @! unittest.testConversionLiteral #()
+  {{{ RET #true; True }}}.
+Proof.
+  wp_start.
+  wp_auto.
+  wp_apply wp_map_make1 as "* Hm".
+  wp_apply (wp_map_insert with "Hm") as "Hm".
+  { constructor. iIntros. wp_auto. done. }
+  wp_apply (wp_map_insert with "Hm") as "Hm".
+  { constructor. iIntros. wp_auto. done. }
+  pose proof go.go_eq_struct.
+  wp_apply (wp_map_insert with "Hm") as "Hm".
+  { constructor. iIntros. wp_auto. rewrite -> decide_True; last done.
+    wp_auto. admit. }
+  wp_apply (wp_map_lookup1 with "Hm") as "Hm".
+  { constructor. iIntros. wp_auto. rewrite -> decide_True; last done.
+    wp_auto. admit. }
+  rewrite insert_empty.
+  rewrite lookup_insert_eq /=.
+  wp_apply (wp_map_lookup1 with "Hm") as "Hm".
+  { constructor. iIntros. wp_auto. done. }
+  rewrite lookup_insert_ne; last done. rewrite lookup_insert_eq. simpl.
+  rewrite -> decide_True; last done. wp_auto.
+Admitted.
+
 Lemma wp_useNilField :
   {{{ is_pkg_init unittest }}}
     @! unittest.useNilField #()

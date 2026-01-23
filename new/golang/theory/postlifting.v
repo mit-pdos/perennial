@@ -14,6 +14,10 @@ Section underlying_instances.
 Context {ext : ffi_syntax} {go_lctx : GoLocalContext}
   {go_gctx : GoGlobalContext} `{!GoSemanticsFunctions}.
 
+#[global] Instance countable_interface : Countable interface.t.
+Proof.
+Admitted.
+
 #[global] Instance underlying_eq t : t ≤u t | 100.
 Proof. done. Qed.
 
