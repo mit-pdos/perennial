@@ -94,12 +94,6 @@ Class GoSemanticsFunctions {ext : ffi_syntax} :=
     global_addr : go_string → loc;
     functions : go_string → list go.type → func.t;
     methods : go.type → go_string → val → func.t;
-    go_op : go_operator → go.type → val → expr;
-    go_zero_val : go.type → val;
-
-    (* Go equality function without special cases; e.g. any slice comparison will
-       panic here. *)
-    go_eq : go.type → val → val → expr;
 
     method_set : go.type → gmap go_string go.signature;
 
@@ -126,7 +120,6 @@ Class GoSemanticsFunctions {ext : ffi_syntax} :=
     map_insert : val → val → val → val;
     map_delete : val → val → val;
     is_map_domain : val → list val → Prop;
-    composite_literal : go.type → val → expr;
 
     is_map_pure (v : val) (m : val → bool * val) : Prop;
     map_default : val → val;
@@ -231,31 +224,6 @@ Class IsGoStepPureDet instr args e : Prop :=
     is_go_step_pure_det : is_go_step_pure instr args = eq e;
   }.
 
-(* No-op steps are for producing later credits. Doesn't really change the semantics *)
-Class GoExprEq (e e' : expr) : Prop :=
-  {
-    go_expr_eq : e = (#();; e')%E;
-  }.
-
-#[global] Hint Mode GoExprEq ! - : typeclass_instances.
-
-Class IsGoOp op t args v `{!GoSemanticsFunctions} : Prop :=
-  {
-    #[global] is_go_op :: GoExprEq (go_op op t args) v;
-  }.
-
-Class IsComparable t `{!GoSemanticsFunctions} : Prop :=
-  {
-    is_comparable v1 v2  :: IsGoOp GoEquals t (v1, v2)%V (go_eq t v1 v2)
-  }.
-
-(* Helper definition to cover types for which `a == b` always executes safely. *)
-Class AlwaysSafelyComparable t V `{!EqDecision V} `{!GoSemanticsFunctions} : Prop :=
-  {
-    #[global] is_safely_comparable ::
-      ∀ (v1 v2 : V), GoExprEq (go_eq t #v1 #v2) (#(bool_decide (v1 = v2)))%E;
-  }.
-
 Class UnderlyingEq s t `{!GoSemanticsFunctions} : Prop :=
   { underlying_eq : underlying s = underlying t }.
 Global Hint Mode UnderlyingEq + - - : typeclass_instances.
@@ -281,47 +249,56 @@ Notation "s  ≤u  t" := (UnderlyingEq s t) (at level 70).
 Notation "s  <u  t" := (UnderlyingDirectedEq s t) (at level 70).
 Notation "t  ↓u  tunder" := (IsUnderlying t tunder) (at level 70).
 
-Class ConvertUnderlying from_under to_under (v v' : val) `{!GoSemanticsFunctions} : Prop :=
-{
-  convert_underlying_def `{!from ↓u from_under} `{!to ↓u to_under} :
-    IsGoStepPureDet (Convert from to) v v'
-}.
-Global Hint Mode ConvertUnderlying + + + - - : typeclass_instances.
-
-Global Instance convert_underlying from to v from_under to_under v' `{!GoSemanticsFunctions} :
-  from ↓u from_under → to ↓u to_under → ConvertUnderlying from_under to_under v v' →
+(* Typeclasses to help semantics for underlying-respecting Go semantics. Automation will
+   try to apply the explicit instance (e.g., [is_convert_step]), which first
+   requires using typeclass search to determine the underlying type(s) (e.g., [t_under]),
+   and lastly requires looking for an instance of the typeclass (e.g.,
+   [IsConvert go.int go.uint]). *)
+Class IsConvert from_under to_under (v v' : val) `{!GoSemanticsFunctions} : Prop :=
+{ is_convert_step_def `{!from ↓u from_under} `{!to ↓u to_under} :
+  IsGoStepPureDet (Convert from to) v v' }.
+Global Hint Mode IsConvert + + + - - : typeclass_instances.
+Global Instance is_convert_step from to v from_under to_under v' `{!GoSemanticsFunctions} :
+  from ↓u from_under → to ↓u to_under → IsConvert from_under to_under v v' →
   IsGoStepPureDet (Convert from to) v v'.
-Proof. intros. apply convert_underlying_def. Qed.
+Proof. intros. apply is_convert_step_def. Qed.
+
+Class IsGoOp (o : go_operator) (t_under : go.type) v1 v2 e' `{!GoSemanticsFunctions} : Prop :=
+  { is_go_op_step_def `{!t ↓u t_under} :: IsGoStepPureDet (GoOp o t) (v1, v2)%V e' }.
+Global Hint Mode IsGoOp + + + + - - : typeclass_instances.
+Global Instance is_go_op_step o t t_under v1 v2 e' `{!GoSemanticsFunctions} :
+  t ↓u t_under → IsGoOp o t_under v1 v2 e' →
+  IsGoStepPureDet (GoOp o t) (v1, v2)%V e'.
+Proof. intros. apply is_go_op_step_def. Qed.
+
+Class IsCompositeLiteral (t_under : go.type) v e' `{!GoSemanticsFunctions} : Prop :=
+  { is_composite_literal_step_def `{!t ↓u t_under} :: IsGoStepPureDet (CompositeLiteral t) v (e' t) }.
+Global Hint Mode IsCompositeLiteral + + - - : typeclass_instances.
+Global Instance is_composite_literal_step t t_under v e' `{!GoSemanticsFunctions} :
+  t ↓u t_under → IsCompositeLiteral t_under v e' →
+  IsGoStepPureDet (CompositeLiteral t) v (e' t).
+Proof. intros. apply is_composite_literal_step_def. Qed.
+
+(* Helper definition to cover types for which `a == b` always executes safely. *)
+Class IsStrictlyComparable t V `{!EqDecision V} `{!GoSemanticsFunctions} : Prop :=
+  {
+    #[global] is_strictly_comparable ::
+      ∀ (v1 v2 : V), IsGoOp GoEquals t #v1 #v2 #(bool_decide (v1 = v2));
+  }.
 
 Class CoreComparisonSemantics `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] go_op_underlying `{!t <u tunder} `{!GoExprEq (go_op o tunder args) e} ::
-    GoExprEq (go_op o t args) e;
-  #[global] go_eq_underlying `{!t <u tunder} `{!GoExprEq (go_eq tunder v1 v2) e} ::
-    GoExprEq (go_eq t v1 v2) e;
-
   (* special case equality for functions *)
   #[global] is_go_op_go_equals_func_nil_l sig f ::
-    IsGoOp GoEquals (go.FunctionType sig) (#f, #func.nil)%V #(bool_decide (f = func.nil));
+    IsGoOp GoEquals (go.FunctionType sig) #f #func.nil #(bool_decide (f = func.nil));
   #[global] is_go_op_go_equals_func_nil_r sig f ::
-    IsGoOp GoEquals (go.FunctionType sig) (#func.nil, #f)%V #(bool_decide (f = func.nil));
+    IsGoOp GoEquals (go.FunctionType sig) #func.nil #f #(bool_decide (f = func.nil));
 
-  #[global] is_comparable_underlying `{!t <u tunder} `{!IsComparable tunder} ::
-    IsComparable t;
-  #[global] is_comparable_pointer t :: IsComparable (go.PointerType t);
-  #[global] go_eq_pointer t :: AlwaysSafelyComparable (go.PointerType t) loc;
+  #[global] go_eq_pointer t :: IsStrictlyComparable (go.PointerType t) loc;
+  #[global] go_eq_channel t dir :: IsStrictlyComparable (go.ChannelType t dir) loc;
 
-  #[global] is_comparable_channel t dir :: IsComparable (go.ChannelType t dir);
-  #[global] go_eq_channel t dir :: AlwaysSafelyComparable (go.ChannelType t dir) loc;
-
-  is_comparable_struct fds :
-    IsComparable (go.StructType fds) ↔
-    Forall (λ fd,
-              IsComparable (
-                  match fd with go.FieldDecl n t => t | go.EmbeddedField n t => t end
-      )) fds;
-  go_eq_struct fds v1 v2 ::
-    GoExprEq (go_eq (go.StructType fds) v1 v2)
+  #[global] go_eq_struct fds v1 v2 ::
+    IsGoOp GoEquals (go.StructType fds) v1 v2
     (foldl (λ cmp_so_far fd,
              let (field_name, field_type) :=
                match fd with go.FieldDecl n t => (n, t) | go.EmbeddedField n t => (n, t) end in
@@ -371,23 +348,19 @@ Class BasicIntoValInj :=
 Class TypeRepr t V `{!ZeroVal V} `{!GoSemanticsFunctions} : Prop :=
   {
     type_repr : is_type_repr t V;
-    go_zero_val_eq : go_zero_val t = #(zero_val V);
     #[global] go_zero_val_step :: IsGoStepPureDet (GoZeroVal t) #() #(zero_val V);
   }.
 Global Hint Mode TypeRepr ! - - - : typeclass_instances.
 
 (** [go.CoreSemantics] defines the basics of when a GoContext is valid,
     excluding predeclared types (including primitives), arrays, slice, map, and
-    channels, each of which is in their own file.
-
-    The rules prefixed with [_] should not be used in any program proofs. *)
+    channels, each of which is in their own file. *)
 Class CoreSemantics `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] basic_into_val_inj :: BasicIntoValInj;
 
   #[global] underlying_not_named `{!NotNamed t} :: t ↓u t;
 
-  #[global] go_op_step o t args :: IsGoStepPureDet (GoOp o t) args (go_op o t args);
   #[global] go_alloc_step t args :: IsGoStepPureDet (GoAlloc t) args (alloc t args);
   #[global] go_load_step t (l : loc) :: IsGoStepPureDet (GoLoad t) #l (load t #l);
   #[global] go_store_step t (l : loc) v :: IsGoStepPureDet (GoStore t) (#l, v)%V (store t #l v);
@@ -398,11 +371,10 @@ Class CoreSemantics `{!GoSemanticsFunctions} : Prop :=
 
   (* FIXME: unsound semantics: simply computing the struct field address will
      panic if the base address is nil. This is a bit of a headache because every
-     program step executing [StructFieldRef] will not have a precondition that
-     [l ≠ null]. *)
+     program step executing [StructFieldRef] will need to have a precondition
+     that [l ≠ null]. *)
   #[global] struct_field_ref_step t f l V `{!ZeroVal V} `{!TypeRepr t V} ::
     IsGoStepPureDet (StructFieldRef t f) #l #(struct_field_ref V f l);
-  #[global] composite_literal_step t (v : val) :: IsGoStepPureDet (CompositeLiteral t) v (composite_literal t v);
 
   (* The language spec doesn't say anything about the addresses of zero-sized
      allocation. But, in the runtime, these addresses are non-nil, so the
@@ -425,7 +397,6 @@ Class CoreSemantics `{!GoSemanticsFunctions} : Prop :=
   #[global] into_val_unfold_loc :: IntoValUnfold _ (λ x, LitV $ LitLoc x);
   #[global] into_val_unfold_unit :: IntoValUnfold unit (λ _, LitV LitUnit);
 
-  go_zero_val_underlying `{!t ≤u t'} : go_zero_val t = go_zero_val t';
   #[global] type_repr_pointer t :: TypeRepr (go.PointerType t) loc;
   #[global] type_repr_function sig :: TypeRepr (go.FunctionType sig) func.t;
   #[global] type_repr_slice elem_type :: TypeRepr (go.SliceType elem_type) slice.t;
@@ -495,36 +466,36 @@ Class CoreSemantics `{!GoSemanticsFunctions} : Prop :=
     IsGoStepPureDet (Index t) (v, #j)%V (index t (sint.Z j) v);
 
   #[global] composite_literal_pointer elem_type l ::
-    GoExprEq (composite_literal (go.PointerType elem_type) l)
-    (GoAlloc elem_type (CompositeLiteral elem_type l));
+    IsCompositeLiteral (go.PointerType elem_type) l
+    (λ _, GoAlloc elem_type (CompositeLiteral elem_type l));
 
-  #[global] composite_literal_struct `{!t ≤u go.StructType fds} l ::
-    GoExprEq (composite_literal t (LiteralValueV l))
-    (match l with
-     | [] => GoZeroVal t #()
-     | KeyedElement None _ :: _ =>
-         (* unkeyed struct literal *)
-         foldl (λ v '(fd, ke),
-                  let (field_name, field_type) :=
-                    match fd with go.FieldDecl n t | go.EmbeddedField n t => (n, t) end in
-                  match ke with
-                  | KeyedElement None (ElementExpression from e) =>
-                      StructFieldSet t field_name (v, Convert from field_type e)%E
-                  | _ => Panic "invalid Go code"
-                  end
-           ) (GoZeroVal t #()) (zip fds l)
-     | KeyedElement (Some _) _ :: _ =>
-         (* keyed struct literal *)
-         foldl (λ v ke,
-                  match ke with
-                  | KeyedElement (Some (KeyField field_name)) (ElementExpression from e) =>
-                      StructFieldSet t field_name (v, Convert from (struct_field_type field_name fds) e)%E
-                  | _ => Panic "invalid Go code"
-                  end
-           ) (GoZeroVal t #()) l
-     end);
+  #[global] composite_literal_struct l fds ::
+    IsCompositeLiteral (go.StructType fds) (LiteralValueV l)
+    (λ t, match l with
+          | [] => GoZeroVal t #()
+          | KeyedElement None _ :: _ =>
+              (* unkeyed struct literal *)
+              foldl (λ v '(fd, ke),
+                       let (field_name, field_type) :=
+                         match fd with go.FieldDecl n t | go.EmbeddedField n t => (n, t) end in
+                       match ke with
+                       | KeyedElement None (ElementExpression from e) =>
+                           StructFieldSet t field_name (v, Convert from field_type e)%E
+                       | _ => Panic "invalid Go code"
+                       end
+                ) (GoZeroVal t #()) (zip fds l)
+          | KeyedElement (Some _) _ :: _ =>
+              (* keyed struct literal *)
+              foldl (λ v ke,
+                       match ke with
+                       | KeyedElement (Some (KeyField field_name)) (ElementExpression from e) =>
+                           StructFieldSet t field_name (v, Convert from (struct_field_type field_name fds) e)%E
+                       | _ => Panic "invalid Go code"
+                       end
+                ) (GoZeroVal t #()) l
+          end);
 
-  #[global] convert_underlying_same t v :: ConvertUnderlying t t v v;
+  #[global] is_convert_underlying_same t v :: IsConvert t t v v;
   #[global] convert_same t v :: IsGoStepPureDet (Convert t t) v v;
 }.
 
