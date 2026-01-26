@@ -35,20 +35,44 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (append_log.Log.t) (append_log.Log).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance Log_access_m l (v : (append_log.Log.t)) dq :
-  PointsToAccess
-    (l.[(append_log.Log.t), "m"]) (v.(append_log.Log.m')) dq
-    (l ↦{dq} v) (λ m', l ↦{dq} (v <|(append_log.Log.m') := m'|>))%I.
+#[global] Instance Log_access_load_m l (v : (append_log.Log.t)) dq :
+  AccessStrict
+    (l.[(append_log.Log.t), "m"] ↦{dq} (v.(append_log.Log.m')))
+    (l.[(append_log.Log.t), "m"] ↦{dq} (v.(append_log.Log.m')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
 Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance Log_access_sz l (v : (append_log.Log.t)) dq :
-  PointsToAccess
-    (l.[(append_log.Log.t), "sz"]) (v.(append_log.Log.sz')) dq
-    (l ↦{dq} v) (λ sz', l ↦{dq} (v <|(append_log.Log.sz') := sz'|>))%I.
+
+#[global] Instance Log_access_store_m l (v : (append_log.Log.t)) m' :
+  AccessStrict
+    (l.[(append_log.Log.t), "m"] ↦ (v.(append_log.Log.m')))
+    (l.[(append_log.Log.t), "m"] ↦ m')
+    (l ↦ v) (l ↦ (v <|(append_log.Log.m') := m'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance Log_access_diskSz l (v : (append_log.Log.t)) dq :
-  PointsToAccess
-    (l.[(append_log.Log.t), "diskSz"]) (v.(append_log.Log.diskSz')) dq
-    (l ↦{dq} v) (λ diskSz', l ↦{dq} (v <|(append_log.Log.diskSz') := diskSz'|>))%I.
+#[global] Instance Log_access_load_sz l (v : (append_log.Log.t)) dq :
+  AccessStrict
+    (l.[(append_log.Log.t), "sz"] ↦{dq} (v.(append_log.Log.sz')))
+    (l.[(append_log.Log.t), "sz"] ↦{dq} (v.(append_log.Log.sz')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Log_access_store_sz l (v : (append_log.Log.t)) sz' :
+  AccessStrict
+    (l.[(append_log.Log.t), "sz"] ↦ (v.(append_log.Log.sz')))
+    (l.[(append_log.Log.t), "sz"] ↦ sz')
+    (l ↦ v) (l ↦ (v <|(append_log.Log.sz') := sz'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Log_access_load_diskSz l (v : (append_log.Log.t)) dq :
+  AccessStrict
+    (l.[(append_log.Log.t), "diskSz"] ↦{dq} (v.(append_log.Log.diskSz')))
+    (l.[(append_log.Log.t), "diskSz"] ↦{dq} (v.(append_log.Log.diskSz')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Log_access_store_diskSz l (v : (append_log.Log.t)) diskSz' :
+  AccessStrict
+    (l.[(append_log.Log.t), "diskSz"] ↦ (v.(append_log.Log.diskSz')))
+    (l.[(append_log.Log.t), "diskSz"] ↦ diskSz')
+    (l ↦ v) (l ↦ (v <|(append_log.Log.diskSz') := diskSz'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
 
 End def.

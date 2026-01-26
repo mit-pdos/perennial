@@ -31,15 +31,31 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (strings.Builder.t) (strings.Builder).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance Builder_access_addr l (v : (strings.Builder.t)) dq :
-  PointsToAccess
-    (l.[(strings.Builder.t), "addr"]) (v.(strings.Builder.addr')) dq
-    (l ↦{dq} v) (λ addr', l ↦{dq} (v <|(strings.Builder.addr') := addr'|>))%I.
+#[global] Instance Builder_access_load_addr l (v : (strings.Builder.t)) dq :
+  AccessStrict
+    (l.[(strings.Builder.t), "addr"] ↦{dq} (v.(strings.Builder.addr')))
+    (l.[(strings.Builder.t), "addr"] ↦{dq} (v.(strings.Builder.addr')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
 Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance Builder_access_buf l (v : (strings.Builder.t)) dq :
-  PointsToAccess
-    (l.[(strings.Builder.t), "buf"]) (v.(strings.Builder.buf')) dq
-    (l ↦{dq} v) (λ buf', l ↦{dq} (v <|(strings.Builder.buf') := buf'|>))%I.
+
+#[global] Instance Builder_access_store_addr l (v : (strings.Builder.t)) addr' :
+  AccessStrict
+    (l.[(strings.Builder.t), "addr"] ↦ (v.(strings.Builder.addr')))
+    (l.[(strings.Builder.t), "addr"] ↦ addr')
+    (l ↦ v) (l ↦ (v <|(strings.Builder.addr') := addr'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Builder_access_load_buf l (v : (strings.Builder.t)) dq :
+  AccessStrict
+    (l.[(strings.Builder.t), "buf"] ↦{dq} (v.(strings.Builder.buf')))
+    (l.[(strings.Builder.t), "buf"] ↦{dq} (v.(strings.Builder.buf')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Builder_access_store_buf l (v : (strings.Builder.t)) buf' :
+  AccessStrict
+    (l.[(strings.Builder.t), "buf"] ↦ (v.(strings.Builder.buf')))
+    (l.[(strings.Builder.t), "buf"] ↦ buf')
+    (l ↦ v) (l ↦ (v <|(strings.Builder.buf') := buf'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
 
 End def.

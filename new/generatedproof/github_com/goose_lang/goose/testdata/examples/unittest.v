@@ -63,10 +63,18 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (unittest.withInterface.t) (unittest.withInterface).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance withInterface_access_a l (v : (unittest.withInterface.t)) dq :
-  PointsToAccess
-    (l.[(unittest.withInterface.t), "a"]) (v.(unittest.withInterface.a')) dq
-    (l ↦{dq} v) (λ a', l ↦{dq} (v <|(unittest.withInterface.a') := a'|>))%I.
+#[global] Instance withInterface_access_load_a l (v : (unittest.withInterface.t)) dq :
+  AccessStrict
+    (l.[(unittest.withInterface.t), "a"] ↦{dq} (v.(unittest.withInterface.a')))
+    (l.[(unittest.withInterface.t), "a"] ↦{dq} (v.(unittest.withInterface.a')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance withInterface_access_store_a l (v : (unittest.withInterface.t)) a' :
+  AccessStrict
+    (l.[(unittest.withInterface.t), "a"] ↦ (v.(unittest.withInterface.a')))
+    (l.[(unittest.withInterface.t), "a"] ↦ a')
+    (l ↦ v) (l ↦ (v <|(unittest.withInterface.a') := a'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
 
 End def.
@@ -96,10 +104,18 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (unittest.diskWrapper.t) (unittest.diskWrapper).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance diskWrapper_access_d l (v : (unittest.diskWrapper.t)) dq :
-  PointsToAccess
-    (l.[(unittest.diskWrapper.t), "d"]) (v.(unittest.diskWrapper.d')) dq
-    (l ↦{dq} v) (λ d', l ↦{dq} (v <|(unittest.diskWrapper.d') := d'|>))%I.
+#[global] Instance diskWrapper_access_load_d l (v : (unittest.diskWrapper.t)) dq :
+  AccessStrict
+    (l.[(unittest.diskWrapper.t), "d"] ↦{dq} (v.(unittest.diskWrapper.d')))
+    (l.[(unittest.diskWrapper.t), "d"] ↦{dq} (v.(unittest.diskWrapper.d')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance diskWrapper_access_store_d l (v : (unittest.diskWrapper.t)) d' :
+  AccessStrict
+    (l.[(unittest.diskWrapper.t), "d"] ↦ (v.(unittest.diskWrapper.d')))
+    (l.[(unittest.diskWrapper.t), "d"] ↦ d')
+    (l ↦ v) (l ↦ (v <|(unittest.diskWrapper.d') := d'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
 
 End def.
@@ -129,10 +145,18 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (unittest.embedA.t) (unittest.embedA).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance embedA_access_a l (v : (unittest.embedA.t)) dq :
-  PointsToAccess
-    (l.[(unittest.embedA.t), "a"]) (v.(unittest.embedA.a')) dq
-    (l ↦{dq} v) (λ a', l ↦{dq} (v <|(unittest.embedA.a') := a'|>))%I.
+#[global] Instance embedA_access_load_a l (v : (unittest.embedA.t)) dq :
+  AccessStrict
+    (l.[(unittest.embedA.t), "a"] ↦{dq} (v.(unittest.embedA.a')))
+    (l.[(unittest.embedA.t), "a"] ↦{dq} (v.(unittest.embedA.a')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance embedA_access_store_a l (v : (unittest.embedA.t)) a' :
+  AccessStrict
+    (l.[(unittest.embedA.t), "a"] ↦ (v.(unittest.embedA.a')))
+    (l.[(unittest.embedA.t), "a"] ↦ a')
+    (l ↦ v) (l ↦ (v <|(unittest.embedA.a') := a'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
 
 End def.
@@ -162,10 +186,18 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (unittest.embedB.t) (unittest.embedB).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance embedB_access_embedA l (v : (unittest.embedB.t)) dq :
-  PointsToAccess
-    (l.[(unittest.embedB.t), "embedA"]) (v.(unittest.embedB.embedA')) dq
-    (l ↦{dq} v) (λ embedA', l ↦{dq} (v <|(unittest.embedB.embedA') := embedA'|>))%I.
+#[global] Instance embedB_access_load_embedA l (v : (unittest.embedB.t)) dq :
+  AccessStrict
+    (l.[(unittest.embedB.t), "embedA"] ↦{dq} (v.(unittest.embedB.embedA')))
+    (l.[(unittest.embedB.t), "embedA"] ↦{dq} (v.(unittest.embedB.embedA')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance embedB_access_store_embedA l (v : (unittest.embedB.t)) embedA' :
+  AccessStrict
+    (l.[(unittest.embedB.t), "embedA"] ↦ (v.(unittest.embedB.embedA')))
+    (l.[(unittest.embedB.t), "embedA"] ↦ embedA')
+    (l ↦ v) (l ↦ (v <|(unittest.embedB.embedA') := embedA'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
 
 End def.
@@ -195,10 +227,18 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (unittest.embedC.t) (unittest.embedC).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance embedC_access_embedB l (v : (unittest.embedC.t)) dq :
-  PointsToAccess
-    (l.[(unittest.embedC.t), "embedB"]) (v.(unittest.embedC.embedB')) dq
-    (l ↦{dq} v) (λ embedB', l ↦{dq} (v <|(unittest.embedC.embedB') := embedB'|>))%I.
+#[global] Instance embedC_access_load_embedB l (v : (unittest.embedC.t)) dq :
+  AccessStrict
+    (l.[(unittest.embedC.t), "embedB"] ↦{dq} (v.(unittest.embedC.embedB')))
+    (l.[(unittest.embedC.t), "embedB"] ↦{dq} (v.(unittest.embedC.embedB')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance embedC_access_store_embedB l (v : (unittest.embedC.t)) embedB' :
+  AccessStrict
+    (l.[(unittest.embedC.t), "embedB"] ↦ (v.(unittest.embedC.embedB')))
+    (l.[(unittest.embedC.t), "embedB"] ↦ embedB')
+    (l ↦ v) (l ↦ (v <|(unittest.embedC.embedB') := embedB'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
 
 End def.
@@ -228,10 +268,18 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (unittest.embedD.t) (unittest.embedD).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance embedD_access_embedC l (v : (unittest.embedD.t)) dq :
-  PointsToAccess
-    (l.[(unittest.embedD.t), "embedC"]) (v.(unittest.embedD.embedC')) dq
-    (l ↦{dq} v) (λ embedC', l ↦{dq} (v <|(unittest.embedD.embedC') := embedC'|>))%I.
+#[global] Instance embedD_access_load_embedC l (v : (unittest.embedD.t)) dq :
+  AccessStrict
+    (l.[(unittest.embedD.t), "embedC"] ↦{dq} (v.(unittest.embedD.embedC')))
+    (l.[(unittest.embedD.t), "embedC"] ↦{dq} (v.(unittest.embedD.embedC')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance embedD_access_store_embedC l (v : (unittest.embedD.t)) embedC' :
+  AccessStrict
+    (l.[(unittest.embedD.t), "embedC"] ↦ (v.(unittest.embedD.embedC')))
+    (l.[(unittest.embedD.t), "embedC"] ↦ embedC')
+    (l ↦ v) (l ↦ (v <|(unittest.embedD.embedC') := embedC'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
 
 End def.
@@ -261,10 +309,18 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (unittest.Enc.t) (unittest.Enc).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance Enc_access_p l (v : (unittest.Enc.t)) dq :
-  PointsToAccess
-    (l.[(unittest.Enc.t), "p"]) (v.(unittest.Enc.p')) dq
-    (l ↦{dq} v) (λ p', l ↦{dq} (v <|(unittest.Enc.p') := p'|>))%I.
+#[global] Instance Enc_access_load_p l (v : (unittest.Enc.t)) dq :
+  AccessStrict
+    (l.[(unittest.Enc.t), "p"] ↦{dq} (v.(unittest.Enc.p')))
+    (l.[(unittest.Enc.t), "p"] ↦{dq} (v.(unittest.Enc.p')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Enc_access_store_p l (v : (unittest.Enc.t)) p' :
+  AccessStrict
+    (l.[(unittest.Enc.t), "p"] ↦ (v.(unittest.Enc.p')))
+    (l.[(unittest.Enc.t), "p"] ↦ p')
+    (l ↦ v) (l ↦ (v <|(unittest.Enc.p') := p'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
 
 End def.
@@ -294,10 +350,18 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (unittest.Dec.t) (unittest.Dec).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance Dec_access_p l (v : (unittest.Dec.t)) dq :
-  PointsToAccess
-    (l.[(unittest.Dec.t), "p"]) (v.(unittest.Dec.p')) dq
-    (l ↦{dq} v) (λ p', l ↦{dq} (v <|(unittest.Dec.p') := p'|>))%I.
+#[global] Instance Dec_access_load_p l (v : (unittest.Dec.t)) dq :
+  AccessStrict
+    (l.[(unittest.Dec.t), "p"] ↦{dq} (v.(unittest.Dec.p')))
+    (l.[(unittest.Dec.t), "p"] ↦{dq} (v.(unittest.Dec.p')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Dec_access_store_p l (v : (unittest.Dec.t)) p' :
+  AccessStrict
+    (l.[(unittest.Dec.t), "p"] ↦ (v.(unittest.Dec.p')))
+    (l.[(unittest.Dec.t), "p"] ↦ p')
+    (l ↦ v) (l ↦ (v <|(unittest.Dec.p') := p'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
 
 End def.
@@ -327,10 +391,18 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (unittest.concreteFooer.t) (unittest.concreteFooer).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance concreteFooer_access_a l (v : (unittest.concreteFooer.t)) dq :
-  PointsToAccess
-    (l.[(unittest.concreteFooer.t), "a"]) (v.(unittest.concreteFooer.a')) dq
-    (l ↦{dq} v) (λ a', l ↦{dq} (v <|(unittest.concreteFooer.a') := a'|>))%I.
+#[global] Instance concreteFooer_access_load_a l (v : (unittest.concreteFooer.t)) dq :
+  AccessStrict
+    (l.[(unittest.concreteFooer.t), "a"] ↦{dq} (v.(unittest.concreteFooer.a')))
+    (l.[(unittest.concreteFooer.t), "a"] ↦{dq} (v.(unittest.concreteFooer.a')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance concreteFooer_access_store_a l (v : (unittest.concreteFooer.t)) a' :
+  AccessStrict
+    (l.[(unittest.concreteFooer.t), "a"] ↦ (v.(unittest.concreteFooer.a')))
+    (l.[(unittest.concreteFooer.t), "a"] ↦ a')
+    (l ↦ v) (l ↦ (v <|(unittest.concreteFooer.a') := a'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
 
 End def.
@@ -360,10 +432,18 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (unittest.FooerUser.t) (unittest.FooerUser).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance FooerUser_access_f l (v : (unittest.FooerUser.t)) dq :
-  PointsToAccess
-    (l.[(unittest.FooerUser.t), "f"]) (v.(unittest.FooerUser.f')) dq
-    (l ↦{dq} v) (λ f', l ↦{dq} (v <|(unittest.FooerUser.f') := f'|>))%I.
+#[global] Instance FooerUser_access_load_f l (v : (unittest.FooerUser.t)) dq :
+  AccessStrict
+    (l.[(unittest.FooerUser.t), "f"] ↦{dq} (v.(unittest.FooerUser.f')))
+    (l.[(unittest.FooerUser.t), "f"] ↦{dq} (v.(unittest.FooerUser.f')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance FooerUser_access_store_f l (v : (unittest.FooerUser.t)) f' :
+  AccessStrict
+    (l.[(unittest.FooerUser.t), "f"] ↦ (v.(unittest.FooerUser.f')))
+    (l.[(unittest.FooerUser.t), "f"] ↦ f')
+    (l ↦ v) (l ↦ (v <|(unittest.FooerUser.f') := f'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
 
 End def.
@@ -393,10 +473,18 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (unittest.B.t) (unittest.B).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance B_access_a l (v : (unittest.B.t)) dq :
-  PointsToAccess
-    (l.[(unittest.B.t), "a"]) (v.(unittest.B.a')) dq
-    (l ↦{dq} v) (λ a', l ↦{dq} (v <|(unittest.B.a') := a'|>))%I.
+#[global] Instance B_access_load_a l (v : (unittest.B.t)) dq :
+  AccessStrict
+    (l.[(unittest.B.t), "a"] ↦{dq} (v.(unittest.B.a')))
+    (l.[(unittest.B.t), "a"] ↦{dq} (v.(unittest.B.a')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance B_access_store_a l (v : (unittest.B.t)) a' :
+  AccessStrict
+    (l.[(unittest.B.t), "a"] ↦ (v.(unittest.B.a')))
+    (l.[(unittest.B.t), "a"] ↦ a')
+    (l ↦ v) (l ↦ (v <|(unittest.B.a') := a'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
 
 End def.
@@ -455,20 +543,44 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (unittest.allTheLiterals.t) (unittest.allTheLiterals).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance allTheLiterals_access_int l (v : (unittest.allTheLiterals.t)) dq :
-  PointsToAccess
-    (l.[(unittest.allTheLiterals.t), "int"]) (v.(unittest.allTheLiterals.int')) dq
-    (l ↦{dq} v) (λ int', l ↦{dq} (v <|(unittest.allTheLiterals.int') := int'|>))%I.
+#[global] Instance allTheLiterals_access_load_int l (v : (unittest.allTheLiterals.t)) dq :
+  AccessStrict
+    (l.[(unittest.allTheLiterals.t), "int"] ↦{dq} (v.(unittest.allTheLiterals.int')))
+    (l.[(unittest.allTheLiterals.t), "int"] ↦{dq} (v.(unittest.allTheLiterals.int')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
 Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance allTheLiterals_access_s l (v : (unittest.allTheLiterals.t)) dq :
-  PointsToAccess
-    (l.[(unittest.allTheLiterals.t), "s"]) (v.(unittest.allTheLiterals.s')) dq
-    (l ↦{dq} v) (λ s', l ↦{dq} (v <|(unittest.allTheLiterals.s') := s'|>))%I.
+
+#[global] Instance allTheLiterals_access_store_int l (v : (unittest.allTheLiterals.t)) int' :
+  AccessStrict
+    (l.[(unittest.allTheLiterals.t), "int"] ↦ (v.(unittest.allTheLiterals.int')))
+    (l.[(unittest.allTheLiterals.t), "int"] ↦ int')
+    (l ↦ v) (l ↦ (v <|(unittest.allTheLiterals.int') := int'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance allTheLiterals_access_b l (v : (unittest.allTheLiterals.t)) dq :
-  PointsToAccess
-    (l.[(unittest.allTheLiterals.t), "b"]) (v.(unittest.allTheLiterals.b')) dq
-    (l ↦{dq} v) (λ b', l ↦{dq} (v <|(unittest.allTheLiterals.b') := b'|>))%I.
+#[global] Instance allTheLiterals_access_load_s l (v : (unittest.allTheLiterals.t)) dq :
+  AccessStrict
+    (l.[(unittest.allTheLiterals.t), "s"] ↦{dq} (v.(unittest.allTheLiterals.s')))
+    (l.[(unittest.allTheLiterals.t), "s"] ↦{dq} (v.(unittest.allTheLiterals.s')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance allTheLiterals_access_store_s l (v : (unittest.allTheLiterals.t)) s' :
+  AccessStrict
+    (l.[(unittest.allTheLiterals.t), "s"] ↦ (v.(unittest.allTheLiterals.s')))
+    (l.[(unittest.allTheLiterals.t), "s"] ↦ s')
+    (l ↦ v) (l ↦ (v <|(unittest.allTheLiterals.s') := s'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance allTheLiterals_access_load_b l (v : (unittest.allTheLiterals.t)) dq :
+  AccessStrict
+    (l.[(unittest.allTheLiterals.t), "b"] ↦{dq} (v.(unittest.allTheLiterals.b')))
+    (l.[(unittest.allTheLiterals.t), "b"] ↦{dq} (v.(unittest.allTheLiterals.b')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance allTheLiterals_access_store_b l (v : (unittest.allTheLiterals.t)) b' :
+  AccessStrict
+    (l.[(unittest.allTheLiterals.t), "b"] ↦ (v.(unittest.allTheLiterals.b')))
+    (l.[(unittest.allTheLiterals.t), "b"] ↦ b')
+    (l ↦ v) (l ↦ (v <|(unittest.allTheLiterals.b') := b'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
 
 End def.
@@ -498,10 +610,18 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (unittest.hasCondVar.t) (unittest.hasCondVar).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance hasCondVar_access_cond l (v : (unittest.hasCondVar.t)) dq :
-  PointsToAccess
-    (l.[(unittest.hasCondVar.t), "cond"]) (v.(unittest.hasCondVar.cond')) dq
-    (l ↦{dq} v) (λ cond', l ↦{dq} (v <|(unittest.hasCondVar.cond') := cond'|>))%I.
+#[global] Instance hasCondVar_access_load_cond l (v : (unittest.hasCondVar.t)) dq :
+  AccessStrict
+    (l.[(unittest.hasCondVar.t), "cond"] ↦{dq} (v.(unittest.hasCondVar.cond')))
+    (l.[(unittest.hasCondVar.t), "cond"] ↦{dq} (v.(unittest.hasCondVar.cond')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance hasCondVar_access_store_cond l (v : (unittest.hasCondVar.t)) cond' :
+  AccessStrict
+    (l.[(unittest.hasCondVar.t), "cond"] ↦ (v.(unittest.hasCondVar.cond')))
+    (l.[(unittest.hasCondVar.t), "cond"] ↦ cond')
+    (l ↦ v) (l ↦ (v <|(unittest.hasCondVar.cond') := cond'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
 
 End def.
@@ -532,15 +652,31 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (unittest.mapElem.t) (unittest.mapElem).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance mapElem_access_a l (v : (unittest.mapElem.t)) dq :
-  PointsToAccess
-    (l.[(unittest.mapElem.t), "a"]) (v.(unittest.mapElem.a')) dq
-    (l ↦{dq} v) (λ a', l ↦{dq} (v <|(unittest.mapElem.a') := a'|>))%I.
+#[global] Instance mapElem_access_load_a l (v : (unittest.mapElem.t)) dq :
+  AccessStrict
+    (l.[(unittest.mapElem.t), "a"] ↦{dq} (v.(unittest.mapElem.a')))
+    (l.[(unittest.mapElem.t), "a"] ↦{dq} (v.(unittest.mapElem.a')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
 Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance mapElem_access_b l (v : (unittest.mapElem.t)) dq :
-  PointsToAccess
-    (l.[(unittest.mapElem.t), "b"]) (v.(unittest.mapElem.b')) dq
-    (l ↦{dq} v) (λ b', l ↦{dq} (v <|(unittest.mapElem.b') := b'|>))%I.
+
+#[global] Instance mapElem_access_store_a l (v : (unittest.mapElem.t)) a' :
+  AccessStrict
+    (l.[(unittest.mapElem.t), "a"] ↦ (v.(unittest.mapElem.a')))
+    (l.[(unittest.mapElem.t), "a"] ↦ a')
+    (l ↦ v) (l ↦ (v <|(unittest.mapElem.a') := a'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance mapElem_access_load_b l (v : (unittest.mapElem.t)) dq :
+  AccessStrict
+    (l.[(unittest.mapElem.t), "b"] ↦{dq} (v.(unittest.mapElem.b')))
+    (l.[(unittest.mapElem.t), "b"] ↦{dq} (v.(unittest.mapElem.b')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance mapElem_access_store_b l (v : (unittest.mapElem.t)) b' :
+  AccessStrict
+    (l.[(unittest.mapElem.t), "b"] ↦ (v.(unittest.mapElem.b')))
+    (l.[(unittest.mapElem.t), "b"] ↦ b')
+    (l ↦ v) (l ↦ (v <|(unittest.mapElem.b') := b'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
 
 End def.
@@ -570,10 +706,18 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (unittest.containsPointer.t) (unittest.containsPointer).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance containsPointer_access_s l (v : (unittest.containsPointer.t)) dq :
-  PointsToAccess
-    (l.[(unittest.containsPointer.t), "s"]) (v.(unittest.containsPointer.s')) dq
-    (l ↦{dq} v) (λ s', l ↦{dq} (v <|(unittest.containsPointer.s') := s'|>))%I.
+#[global] Instance containsPointer_access_load_s l (v : (unittest.containsPointer.t)) dq :
+  AccessStrict
+    (l.[(unittest.containsPointer.t), "s"] ↦{dq} (v.(unittest.containsPointer.s')))
+    (l.[(unittest.containsPointer.t), "s"] ↦{dq} (v.(unittest.containsPointer.s')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance containsPointer_access_store_s l (v : (unittest.containsPointer.t)) s' :
+  AccessStrict
+    (l.[(unittest.containsPointer.t), "s"] ↦ (v.(unittest.containsPointer.s')))
+    (l.[(unittest.containsPointer.t), "s"] ↦ s')
+    (l ↦ v) (l ↦ (v <|(unittest.containsPointer.s') := s'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
 
 End def.
@@ -603,10 +747,18 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (unittest.wrapExternalStruct.t) (unittest.wrapExternalStruct).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance wrapExternalStruct_access_j l (v : (unittest.wrapExternalStruct.t)) dq :
-  PointsToAccess
-    (l.[(unittest.wrapExternalStruct.t), "j"]) (v.(unittest.wrapExternalStruct.j')) dq
-    (l ↦{dq} v) (λ j', l ↦{dq} (v <|(unittest.wrapExternalStruct.j') := j'|>))%I.
+#[global] Instance wrapExternalStruct_access_load_j l (v : (unittest.wrapExternalStruct.t)) dq :
+  AccessStrict
+    (l.[(unittest.wrapExternalStruct.t), "j"] ↦{dq} (v.(unittest.wrapExternalStruct.j')))
+    (l.[(unittest.wrapExternalStruct.t), "j"] ↦{dq} (v.(unittest.wrapExternalStruct.j')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance wrapExternalStruct_access_store_j l (v : (unittest.wrapExternalStruct.t)) j' :
+  AccessStrict
+    (l.[(unittest.wrapExternalStruct.t), "j"] ↦ (v.(unittest.wrapExternalStruct.j')))
+    (l.[(unittest.wrapExternalStruct.t), "j"] ↦ j')
+    (l ↦ v) (l ↦ (v <|(unittest.wrapExternalStruct.j') := j'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
 
 End def.
@@ -636,10 +788,18 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (unittest.typing.t) (unittest.typing).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance typing_access_proph l (v : (unittest.typing.t)) dq :
-  PointsToAccess
-    (l.[(unittest.typing.t), "proph"]) (v.(unittest.typing.proph')) dq
-    (l ↦{dq} v) (λ proph', l ↦{dq} (v <|(unittest.typing.proph') := proph'|>))%I.
+#[global] Instance typing_access_load_proph l (v : (unittest.typing.t)) dq :
+  AccessStrict
+    (l.[(unittest.typing.t), "proph"] ↦{dq} (v.(unittest.typing.proph')))
+    (l.[(unittest.typing.t), "proph"] ↦{dq} (v.(unittest.typing.proph')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance typing_access_store_proph l (v : (unittest.typing.t)) proph' :
+  AccessStrict
+    (l.[(unittest.typing.t), "proph"] ↦ (v.(unittest.typing.proph')))
+    (l.[(unittest.typing.t), "proph"] ↦ proph')
+    (l ↦ v) (l ↦ (v <|(unittest.typing.proph') := proph'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
 
 End def.
@@ -670,15 +830,31 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (unittest.composite.t) (unittest.composite).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance composite_access_a l (v : (unittest.composite.t)) dq :
-  PointsToAccess
-    (l.[(unittest.composite.t), "a"]) (v.(unittest.composite.a')) dq
-    (l ↦{dq} v) (λ a', l ↦{dq} (v <|(unittest.composite.a') := a'|>))%I.
+#[global] Instance composite_access_load_a l (v : (unittest.composite.t)) dq :
+  AccessStrict
+    (l.[(unittest.composite.t), "a"] ↦{dq} (v.(unittest.composite.a')))
+    (l.[(unittest.composite.t), "a"] ↦{dq} (v.(unittest.composite.a')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
 Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance composite_access_b l (v : (unittest.composite.t)) dq :
-  PointsToAccess
-    (l.[(unittest.composite.t), "b"]) (v.(unittest.composite.b')) dq
-    (l ↦{dq} v) (λ b', l ↦{dq} (v <|(unittest.composite.b') := b'|>))%I.
+
+#[global] Instance composite_access_store_a l (v : (unittest.composite.t)) a' :
+  AccessStrict
+    (l.[(unittest.composite.t), "a"] ↦ (v.(unittest.composite.a')))
+    (l.[(unittest.composite.t), "a"] ↦ a')
+    (l ↦ v) (l ↦ (v <|(unittest.composite.a') := a'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance composite_access_load_b l (v : (unittest.composite.t)) dq :
+  AccessStrict
+    (l.[(unittest.composite.t), "b"] ↦{dq} (v.(unittest.composite.b')))
+    (l.[(unittest.composite.t), "b"] ↦{dq} (v.(unittest.composite.b')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance composite_access_store_b l (v : (unittest.composite.t)) b' :
+  AccessStrict
+    (l.[(unittest.composite.t), "b"] ↦ (v.(unittest.composite.b')))
+    (l.[(unittest.composite.t), "b"] ↦ b')
+    (l ↦ v) (l ↦ (v <|(unittest.composite.b') := b'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
 
 End def.
@@ -735,10 +911,18 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (unittest.Other.t) (unittest.Other).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance Other_access_RecursiveEmbedded l (v : (unittest.Other.t)) dq :
-  PointsToAccess
-    (l.[(unittest.Other.t), "RecursiveEmbedded"]) (v.(unittest.Other.RecursiveEmbedded')) dq
-    (l ↦{dq} v) (λ RecursiveEmbedded', l ↦{dq} (v <|(unittest.Other.RecursiveEmbedded') := RecursiveEmbedded'|>))%I.
+#[global] Instance Other_access_load_RecursiveEmbedded l (v : (unittest.Other.t)) dq :
+  AccessStrict
+    (l.[(unittest.Other.t), "RecursiveEmbedded"] ↦{dq} (v.(unittest.Other.RecursiveEmbedded')))
+    (l.[(unittest.Other.t), "RecursiveEmbedded"] ↦{dq} (v.(unittest.Other.RecursiveEmbedded')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Other_access_store_RecursiveEmbedded l (v : (unittest.Other.t)) RecursiveEmbedded' :
+  AccessStrict
+    (l.[(unittest.Other.t), "RecursiveEmbedded"] ↦ (v.(unittest.Other.RecursiveEmbedded')))
+    (l.[(unittest.Other.t), "RecursiveEmbedded"] ↦ RecursiveEmbedded')
+    (l ↦ v) (l ↦ (v <|(unittest.Other.RecursiveEmbedded') := RecursiveEmbedded'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
 
 End def.
@@ -768,10 +952,18 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (unittest.RecursiveEmbedded.t) (unittest.RecursiveEmbedded).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance RecursiveEmbedded_access_Other l (v : (unittest.RecursiveEmbedded.t)) dq :
-  PointsToAccess
-    (l.[(unittest.RecursiveEmbedded.t), "Other"]) (v.(unittest.RecursiveEmbedded.Other')) dq
-    (l ↦{dq} v) (λ Other', l ↦{dq} (v <|(unittest.RecursiveEmbedded.Other') := Other'|>))%I.
+#[global] Instance RecursiveEmbedded_access_load_Other l (v : (unittest.RecursiveEmbedded.t)) dq :
+  AccessStrict
+    (l.[(unittest.RecursiveEmbedded.t), "Other"] ↦{dq} (v.(unittest.RecursiveEmbedded.Other')))
+    (l.[(unittest.RecursiveEmbedded.t), "Other"] ↦{dq} (v.(unittest.RecursiveEmbedded.Other')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance RecursiveEmbedded_access_store_Other l (v : (unittest.RecursiveEmbedded.t)) Other' :
+  AccessStrict
+    (l.[(unittest.RecursiveEmbedded.t), "Other"] ↦ (v.(unittest.RecursiveEmbedded.Other')))
+    (l.[(unittest.RecursiveEmbedded.t), "Other"] ↦ Other')
+    (l ↦ v) (l ↦ (v <|(unittest.RecursiveEmbedded.Other') := Other'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
 
 End def.
@@ -801,10 +993,18 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (unittest.Block.t) (unittest.Block).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance Block_access_Value l (v : (unittest.Block.t)) dq :
-  PointsToAccess
-    (l.[(unittest.Block.t), "Value"]) (v.(unittest.Block.Value')) dq
-    (l ↦{dq} v) (λ Value', l ↦{dq} (v <|(unittest.Block.Value') := Value'|>))%I.
+#[global] Instance Block_access_load_Value l (v : (unittest.Block.t)) dq :
+  AccessStrict
+    (l.[(unittest.Block.t), "Value"] ↦{dq} (v.(unittest.Block.Value')))
+    (l.[(unittest.Block.t), "Value"] ↦{dq} (v.(unittest.Block.Value')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Block_access_store_Value l (v : (unittest.Block.t)) Value' :
+  AccessStrict
+    (l.[(unittest.Block.t), "Value"] ↦ (v.(unittest.Block.Value')))
+    (l.[(unittest.Block.t), "Value"] ↦ Value')
+    (l ↦ v) (l ↦ (v <|(unittest.Block.Value') := Value'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
 
 End def.
@@ -834,10 +1034,18 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (unittest.thing.t) (unittest.thing).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance thing_access_x l (v : (unittest.thing.t)) dq :
-  PointsToAccess
-    (l.[(unittest.thing.t), "x"]) (v.(unittest.thing.x')) dq
-    (l ↦{dq} v) (λ x', l ↦{dq} (v <|(unittest.thing.x') := x'|>))%I.
+#[global] Instance thing_access_load_x l (v : (unittest.thing.t)) dq :
+  AccessStrict
+    (l.[(unittest.thing.t), "x"] ↦{dq} (v.(unittest.thing.x')))
+    (l.[(unittest.thing.t), "x"] ↦{dq} (v.(unittest.thing.x')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance thing_access_store_x l (v : (unittest.thing.t)) x' :
+  AccessStrict
+    (l.[(unittest.thing.t), "x"] ↦ (v.(unittest.thing.x')))
+    (l.[(unittest.thing.t), "x"] ↦ x')
+    (l ↦ v) (l ↦ (v <|(unittest.thing.x') := x'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
 
 End def.
@@ -867,10 +1075,18 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (unittest.sliceOfThings.t) (unittest.sliceOfThings).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance sliceOfThings_access_things l (v : (unittest.sliceOfThings.t)) dq :
-  PointsToAccess
-    (l.[(unittest.sliceOfThings.t), "things"]) (v.(unittest.sliceOfThings.things')) dq
-    (l ↦{dq} v) (λ things', l ↦{dq} (v <|(unittest.sliceOfThings.things') := things'|>))%I.
+#[global] Instance sliceOfThings_access_load_things l (v : (unittest.sliceOfThings.t)) dq :
+  AccessStrict
+    (l.[(unittest.sliceOfThings.t), "things"] ↦{dq} (v.(unittest.sliceOfThings.things')))
+    (l.[(unittest.sliceOfThings.t), "things"] ↦{dq} (v.(unittest.sliceOfThings.things')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance sliceOfThings_access_store_things l (v : (unittest.sliceOfThings.t)) things' :
+  AccessStrict
+    (l.[(unittest.sliceOfThings.t), "things"] ↦ (v.(unittest.sliceOfThings.things')))
+    (l.[(unittest.sliceOfThings.t), "things"] ↦ things')
+    (l ↦ v) (l ↦ (v <|(unittest.sliceOfThings.things') := things'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
 
 End def.
@@ -901,15 +1117,31 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (unittest.Point.t) (unittest.Point).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance Point_access_x l (v : (unittest.Point.t)) dq :
-  PointsToAccess
-    (l.[(unittest.Point.t), "x"]) (v.(unittest.Point.x')) dq
-    (l ↦{dq} v) (λ x', l ↦{dq} (v <|(unittest.Point.x') := x'|>))%I.
+#[global] Instance Point_access_load_x l (v : (unittest.Point.t)) dq :
+  AccessStrict
+    (l.[(unittest.Point.t), "x"] ↦{dq} (v.(unittest.Point.x')))
+    (l.[(unittest.Point.t), "x"] ↦{dq} (v.(unittest.Point.x')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
 Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance Point_access_y l (v : (unittest.Point.t)) dq :
-  PointsToAccess
-    (l.[(unittest.Point.t), "y"]) (v.(unittest.Point.y')) dq
-    (l ↦{dq} v) (λ y', l ↦{dq} (v <|(unittest.Point.y') := y'|>))%I.
+
+#[global] Instance Point_access_store_x l (v : (unittest.Point.t)) x' :
+  AccessStrict
+    (l.[(unittest.Point.t), "x"] ↦ (v.(unittest.Point.x')))
+    (l.[(unittest.Point.t), "x"] ↦ x')
+    (l ↦ v) (l ↦ (v <|(unittest.Point.x') := x'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Point_access_load_y l (v : (unittest.Point.t)) dq :
+  AccessStrict
+    (l.[(unittest.Point.t), "y"] ↦{dq} (v.(unittest.Point.y')))
+    (l.[(unittest.Point.t), "y"] ↦{dq} (v.(unittest.Point.y')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Point_access_store_y l (v : (unittest.Point.t)) y' :
+  AccessStrict
+    (l.[(unittest.Point.t), "y"] ↦ (v.(unittest.Point.y')))
+    (l.[(unittest.Point.t), "y"] ↦ y')
+    (l ↦ v) (l ↦ (v <|(unittest.Point.y') := y'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
 
 End def.
@@ -940,15 +1172,31 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (unittest.TwoInts.t) (unittest.TwoInts).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance TwoInts_access_x l (v : (unittest.TwoInts.t)) dq :
-  PointsToAccess
-    (l.[(unittest.TwoInts.t), "x"]) (v.(unittest.TwoInts.x')) dq
-    (l ↦{dq} v) (λ x', l ↦{dq} (v <|(unittest.TwoInts.x') := x'|>))%I.
+#[global] Instance TwoInts_access_load_x l (v : (unittest.TwoInts.t)) dq :
+  AccessStrict
+    (l.[(unittest.TwoInts.t), "x"] ↦{dq} (v.(unittest.TwoInts.x')))
+    (l.[(unittest.TwoInts.t), "x"] ↦{dq} (v.(unittest.TwoInts.x')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
 Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance TwoInts_access_y l (v : (unittest.TwoInts.t)) dq :
-  PointsToAccess
-    (l.[(unittest.TwoInts.t), "y"]) (v.(unittest.TwoInts.y')) dq
-    (l ↦{dq} v) (λ y', l ↦{dq} (v <|(unittest.TwoInts.y') := y'|>))%I.
+
+#[global] Instance TwoInts_access_store_x l (v : (unittest.TwoInts.t)) x' :
+  AccessStrict
+    (l.[(unittest.TwoInts.t), "x"] ↦ (v.(unittest.TwoInts.x')))
+    (l.[(unittest.TwoInts.t), "x"] ↦ x')
+    (l ↦ v) (l ↦ (v <|(unittest.TwoInts.x') := x'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance TwoInts_access_load_y l (v : (unittest.TwoInts.t)) dq :
+  AccessStrict
+    (l.[(unittest.TwoInts.t), "y"] ↦{dq} (v.(unittest.TwoInts.y')))
+    (l.[(unittest.TwoInts.t), "y"] ↦{dq} (v.(unittest.TwoInts.y')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance TwoInts_access_store_y l (v : (unittest.TwoInts.t)) y' :
+  AccessStrict
+    (l.[(unittest.TwoInts.t), "y"] ↦ (v.(unittest.TwoInts.y')))
+    (l.[(unittest.TwoInts.t), "y"] ↦ y')
+    (l ↦ v) (l ↦ (v <|(unittest.TwoInts.y') := y'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
 
 End def.
@@ -980,20 +1228,44 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (unittest.S.t) (unittest.S).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance S_access_a l (v : (unittest.S.t)) dq :
-  PointsToAccess
-    (l.[(unittest.S.t), "a"]) (v.(unittest.S.a')) dq
-    (l ↦{dq} v) (λ a', l ↦{dq} (v <|(unittest.S.a') := a'|>))%I.
+#[global] Instance S_access_load_a l (v : (unittest.S.t)) dq :
+  AccessStrict
+    (l.[(unittest.S.t), "a"] ↦{dq} (v.(unittest.S.a')))
+    (l.[(unittest.S.t), "a"] ↦{dq} (v.(unittest.S.a')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
 Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance S_access_b l (v : (unittest.S.t)) dq :
-  PointsToAccess
-    (l.[(unittest.S.t), "b"]) (v.(unittest.S.b')) dq
-    (l ↦{dq} v) (λ b', l ↦{dq} (v <|(unittest.S.b') := b'|>))%I.
+
+#[global] Instance S_access_store_a l (v : (unittest.S.t)) a' :
+  AccessStrict
+    (l.[(unittest.S.t), "a"] ↦ (v.(unittest.S.a')))
+    (l.[(unittest.S.t), "a"] ↦ a')
+    (l ↦ v) (l ↦ (v <|(unittest.S.a') := a'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance S_access_c l (v : (unittest.S.t)) dq :
-  PointsToAccess
-    (l.[(unittest.S.t), "c"]) (v.(unittest.S.c')) dq
-    (l ↦{dq} v) (λ c', l ↦{dq} (v <|(unittest.S.c') := c'|>))%I.
+#[global] Instance S_access_load_b l (v : (unittest.S.t)) dq :
+  AccessStrict
+    (l.[(unittest.S.t), "b"] ↦{dq} (v.(unittest.S.b')))
+    (l.[(unittest.S.t), "b"] ↦{dq} (v.(unittest.S.b')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance S_access_store_b l (v : (unittest.S.t)) b' :
+  AccessStrict
+    (l.[(unittest.S.t), "b"] ↦ (v.(unittest.S.b')))
+    (l.[(unittest.S.t), "b"] ↦ b')
+    (l ↦ v) (l ↦ (v <|(unittest.S.b') := b'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance S_access_load_c l (v : (unittest.S.t)) dq :
+  AccessStrict
+    (l.[(unittest.S.t), "c"] ↦{dq} (v.(unittest.S.c')))
+    (l.[(unittest.S.t), "c"] ↦{dq} (v.(unittest.S.c')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance S_access_store_c l (v : (unittest.S.t)) c' :
+  AccessStrict
+    (l.[(unittest.S.t), "c"] ↦ (v.(unittest.S.c')))
+    (l.[(unittest.S.t), "c"] ↦ c')
+    (l ↦ v) (l ↦ (v <|(unittest.S.c') := c'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
 
 End def.

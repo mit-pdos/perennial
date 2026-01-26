@@ -31,10 +31,18 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
   `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T} `{!go.TypeRepr T T'}  :
   IntoValTyped (generics.Box.t T') (generics.Box T).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance Box_access_Value `{!TypedPointsto (Σ:=Σ) T'} l (v : (generics.Box.t T')) dq :
-  PointsToAccess
-    (l.[(generics.Box.t T'), "Value"]) (v.(generics.Box.Value')) dq
-    (l ↦{dq} v) (λ Value', l ↦{dq} (v <|(generics.Box.Value') := Value'|>))%I.
+#[global] Instance Box_access_load_Value `{!TypedPointsto (Σ:=Σ) T'} l (v : (generics.Box.t T')) dq :
+  AccessStrict
+    (l.[(generics.Box.t T'), "Value"] ↦{dq} (v.(generics.Box.Value')))
+    (l.[(generics.Box.t T'), "Value"] ↦{dq} (v.(generics.Box.Value')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Box_access_store_Value `{!TypedPointsto (Σ:=Σ) T'} l (v : (generics.Box.t T')) Value' :
+  AccessStrict
+    (l.[(generics.Box.t T'), "Value"] ↦ (v.(generics.Box.Value')))
+    (l.[(generics.Box.t T'), "Value"] ↦ Value')
+    (l ↦ v) (l ↦ (v <|(generics.Box.Value') := Value'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
 
 End def.
@@ -67,25 +75,57 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
   `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T} `{!go.TypeRepr T T'}  :
   IntoValTyped (generics.Container.t T') (generics.Container T).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance Container_access_X `{!TypedPointsto (Σ:=Σ) T'} l (v : (generics.Container.t T')) dq :
-  PointsToAccess
-    (l.[(generics.Container.t T'), "X"]) (v.(generics.Container.X')) dq
-    (l ↦{dq} v) (λ X', l ↦{dq} (v <|(generics.Container.X') := X'|>))%I.
+#[global] Instance Container_access_load_X `{!TypedPointsto (Σ:=Σ) T'} l (v : (generics.Container.t T')) dq :
+  AccessStrict
+    (l.[(generics.Container.t T'), "X"] ↦{dq} (v.(generics.Container.X')))
+    (l.[(generics.Container.t T'), "X"] ↦{dq} (v.(generics.Container.X')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
 Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance Container_access_Y `{!TypedPointsto (Σ:=Σ) T'} l (v : (generics.Container.t T')) dq :
-  PointsToAccess
-    (l.[(generics.Container.t T'), "Y"]) (v.(generics.Container.Y')) dq
-    (l ↦{dq} v) (λ Y', l ↦{dq} (v <|(generics.Container.Y') := Y'|>))%I.
+
+#[global] Instance Container_access_store_X `{!TypedPointsto (Σ:=Σ) T'} l (v : (generics.Container.t T')) X' :
+  AccessStrict
+    (l.[(generics.Container.t T'), "X"] ↦ (v.(generics.Container.X')))
+    (l.[(generics.Container.t T'), "X"] ↦ X')
+    (l ↦ v) (l ↦ (v <|(generics.Container.X') := X'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance Container_access_Z `{!TypedPointsto (Σ:=Σ) T'} l (v : (generics.Container.t T')) dq :
-  PointsToAccess
-    (l.[(generics.Container.t T'), "Z"]) (v.(generics.Container.Z')) dq
-    (l ↦{dq} v) (λ Z', l ↦{dq} (v <|(generics.Container.Z') := Z'|>))%I.
+#[global] Instance Container_access_load_Y `{!TypedPointsto (Σ:=Σ) T'} l (v : (generics.Container.t T')) dq :
+  AccessStrict
+    (l.[(generics.Container.t T'), "Y"] ↦{dq} (v.(generics.Container.Y')))
+    (l.[(generics.Container.t T'), "Y"] ↦{dq} (v.(generics.Container.Y')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
 Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance Container_access_W `{!TypedPointsto (Σ:=Σ) T'} l (v : (generics.Container.t T')) dq :
-  PointsToAccess
-    (l.[(generics.Container.t T'), "W"]) (v.(generics.Container.W')) dq
-    (l ↦{dq} v) (λ W', l ↦{dq} (v <|(generics.Container.W') := W'|>))%I.
+
+#[global] Instance Container_access_store_Y `{!TypedPointsto (Σ:=Σ) T'} l (v : (generics.Container.t T')) Y' :
+  AccessStrict
+    (l.[(generics.Container.t T'), "Y"] ↦ (v.(generics.Container.Y')))
+    (l.[(generics.Container.t T'), "Y"] ↦ Y')
+    (l ↦ v) (l ↦ (v <|(generics.Container.Y') := Y'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Container_access_load_Z `{!TypedPointsto (Σ:=Σ) T'} l (v : (generics.Container.t T')) dq :
+  AccessStrict
+    (l.[(generics.Container.t T'), "Z"] ↦{dq} (v.(generics.Container.Z')))
+    (l.[(generics.Container.t T'), "Z"] ↦{dq} (v.(generics.Container.Z')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Container_access_store_Z `{!TypedPointsto (Σ:=Σ) T'} l (v : (generics.Container.t T')) Z' :
+  AccessStrict
+    (l.[(generics.Container.t T'), "Z"] ↦ (v.(generics.Container.Z')))
+    (l.[(generics.Container.t T'), "Z"] ↦ Z')
+    (l ↦ v) (l ↦ (v <|(generics.Container.Z') := Z'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Container_access_load_W `{!TypedPointsto (Σ:=Σ) T'} l (v : (generics.Container.t T')) dq :
+  AccessStrict
+    (l.[(generics.Container.t T'), "W"] ↦{dq} (v.(generics.Container.W')))
+    (l.[(generics.Container.t T'), "W"] ↦{dq} (v.(generics.Container.W')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Container_access_store_W `{!TypedPointsto (Σ:=Σ) T'} l (v : (generics.Container.t T')) W' :
+  AccessStrict
+    (l.[(generics.Container.t T'), "W"] ↦ (v.(generics.Container.W')))
+    (l.[(generics.Container.t T'), "W"] ↦ W')
+    (l ↦ v) (l ↦ (v <|(generics.Container.W') := W'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
 
 End def.
@@ -115,10 +155,18 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (generics.UseContainer.t) (generics.UseContainer).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance UseContainer_access_X l (v : (generics.UseContainer.t)) dq :
-  PointsToAccess
-    (l.[(generics.UseContainer.t), "X"]) (v.(generics.UseContainer.X')) dq
-    (l ↦{dq} v) (λ X', l ↦{dq} (v <|(generics.UseContainer.X') := X'|>))%I.
+#[global] Instance UseContainer_access_load_X l (v : (generics.UseContainer.t)) dq :
+  AccessStrict
+    (l.[(generics.UseContainer.t), "X"] ↦{dq} (v.(generics.UseContainer.X')))
+    (l.[(generics.UseContainer.t), "X"] ↦{dq} (v.(generics.UseContainer.X')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance UseContainer_access_store_X l (v : (generics.UseContainer.t)) X' :
+  AccessStrict
+    (l.[(generics.UseContainer.t), "X"] ↦ (v.(generics.UseContainer.X')))
+    (l.[(generics.UseContainer.t), "X"] ↦ X')
+    (l ↦ v) (l ↦ (v <|(generics.UseContainer.X') := X'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
 
 End def.
@@ -149,15 +197,31 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
   `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T} `{!go.TypeRepr T T'}  :
   IntoValTyped (generics.OnlyIndirect.t T') (generics.OnlyIndirect T).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance OnlyIndirect_access_X `{!TypedPointsto (Σ:=Σ) T'} l (v : (generics.OnlyIndirect.t T')) dq :
-  PointsToAccess
-    (l.[(generics.OnlyIndirect.t T'), "X"]) (v.(generics.OnlyIndirect.X')) dq
-    (l ↦{dq} v) (λ X', l ↦{dq} (v <|(generics.OnlyIndirect.X') := X'|>))%I.
+#[global] Instance OnlyIndirect_access_load_X `{!TypedPointsto (Σ:=Σ) T'} l (v : (generics.OnlyIndirect.t T')) dq :
+  AccessStrict
+    (l.[(generics.OnlyIndirect.t T'), "X"] ↦{dq} (v.(generics.OnlyIndirect.X')))
+    (l.[(generics.OnlyIndirect.t T'), "X"] ↦{dq} (v.(generics.OnlyIndirect.X')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
 Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance OnlyIndirect_access_Y `{!TypedPointsto (Σ:=Σ) T'} l (v : (generics.OnlyIndirect.t T')) dq :
-  PointsToAccess
-    (l.[(generics.OnlyIndirect.t T'), "Y"]) (v.(generics.OnlyIndirect.Y')) dq
-    (l ↦{dq} v) (λ Y', l ↦{dq} (v <|(generics.OnlyIndirect.Y') := Y'|>))%I.
+
+#[global] Instance OnlyIndirect_access_store_X `{!TypedPointsto (Σ:=Σ) T'} l (v : (generics.OnlyIndirect.t T')) X' :
+  AccessStrict
+    (l.[(generics.OnlyIndirect.t T'), "X"] ↦ (v.(generics.OnlyIndirect.X')))
+    (l.[(generics.OnlyIndirect.t T'), "X"] ↦ X')
+    (l ↦ v) (l ↦ (v <|(generics.OnlyIndirect.X') := X'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance OnlyIndirect_access_load_Y `{!TypedPointsto (Σ:=Σ) T'} l (v : (generics.OnlyIndirect.t T')) dq :
+  AccessStrict
+    (l.[(generics.OnlyIndirect.t T'), "Y"] ↦{dq} (v.(generics.OnlyIndirect.Y')))
+    (l.[(generics.OnlyIndirect.t T'), "Y"] ↦{dq} (v.(generics.OnlyIndirect.Y')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance OnlyIndirect_access_store_Y `{!TypedPointsto (Σ:=Σ) T'} l (v : (generics.OnlyIndirect.t T')) Y' :
+  AccessStrict
+    (l.[(generics.OnlyIndirect.t T'), "Y"] ↦ (v.(generics.OnlyIndirect.Y')))
+    (l.[(generics.OnlyIndirect.t T'), "Y"] ↦ Y')
+    (l ↦ v) (l ↦ (v <|(generics.OnlyIndirect.Y') := Y'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
 
 End def.
@@ -188,15 +252,31 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
   `{!ZeroVal A'} `{!TypedPointsto (Σ:=Σ) A'} `{!IntoValTyped A' A} `{!go.TypeRepr A A'} `{!ZeroVal B'} `{!TypedPointsto (Σ:=Σ) B'} `{!IntoValTyped B' B} `{!go.TypeRepr B B'}  :
   IntoValTyped (generics.MultiParam.t A' B') (generics.MultiParam A B).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance MultiParam_access_Y `{!TypedPointsto (Σ:=Σ) A'} `{!TypedPointsto (Σ:=Σ) B'} l (v : (generics.MultiParam.t A' B')) dq :
-  PointsToAccess
-    (l.[(generics.MultiParam.t A' B'), "Y"]) (v.(generics.MultiParam.Y')) dq
-    (l ↦{dq} v) (λ Y', l ↦{dq} (v <|(generics.MultiParam.Y') := Y'|>))%I.
+#[global] Instance MultiParam_access_load_Y `{!TypedPointsto (Σ:=Σ) A'} `{!TypedPointsto (Σ:=Σ) B'} l (v : (generics.MultiParam.t A' B')) dq :
+  AccessStrict
+    (l.[(generics.MultiParam.t A' B'), "Y"] ↦{dq} (v.(generics.MultiParam.Y')))
+    (l.[(generics.MultiParam.t A' B'), "Y"] ↦{dq} (v.(generics.MultiParam.Y')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
 Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance MultiParam_access_X `{!TypedPointsto (Σ:=Σ) A'} `{!TypedPointsto (Σ:=Σ) B'} l (v : (generics.MultiParam.t A' B')) dq :
-  PointsToAccess
-    (l.[(generics.MultiParam.t A' B'), "X"]) (v.(generics.MultiParam.X')) dq
-    (l ↦{dq} v) (λ X', l ↦{dq} (v <|(generics.MultiParam.X') := X'|>))%I.
+
+#[global] Instance MultiParam_access_store_Y `{!TypedPointsto (Σ:=Σ) A'} `{!TypedPointsto (Σ:=Σ) B'} l (v : (generics.MultiParam.t A' B')) Y' :
+  AccessStrict
+    (l.[(generics.MultiParam.t A' B'), "Y"] ↦ (v.(generics.MultiParam.Y')))
+    (l.[(generics.MultiParam.t A' B'), "Y"] ↦ Y')
+    (l ↦ v) (l ↦ (v <|(generics.MultiParam.Y') := Y'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance MultiParam_access_load_X `{!TypedPointsto (Σ:=Σ) A'} `{!TypedPointsto (Σ:=Σ) B'} l (v : (generics.MultiParam.t A' B')) dq :
+  AccessStrict
+    (l.[(generics.MultiParam.t A' B'), "X"] ↦{dq} (v.(generics.MultiParam.X')))
+    (l.[(generics.MultiParam.t A' B'), "X"] ↦{dq} (v.(generics.MultiParam.X')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance MultiParam_access_store_X `{!TypedPointsto (Σ:=Σ) A'} `{!TypedPointsto (Σ:=Σ) B'} l (v : (generics.MultiParam.t A' B')) X' :
+  AccessStrict
+    (l.[(generics.MultiParam.t A' B'), "X"] ↦ (v.(generics.MultiParam.X')))
+    (l.[(generics.MultiParam.t A' B'), "X"] ↦ X')
+    (l ↦ v) (l ↦ (v <|(generics.MultiParam.X') := X'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
 
 End def.

@@ -34,15 +34,31 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (chan_spec_raw_examples.LockedStack.t) (chan_spec_raw_examples.LockedStack).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance LockedStack_access_mu l (v : (chan_spec_raw_examples.LockedStack.t)) dq :
-  PointsToAccess
-    (l.[(chan_spec_raw_examples.LockedStack.t), "mu"]) (v.(chan_spec_raw_examples.LockedStack.mu')) dq
-    (l ↦{dq} v) (λ mu', l ↦{dq} (v <|(chan_spec_raw_examples.LockedStack.mu') := mu'|>))%I.
+#[global] Instance LockedStack_access_load_mu l (v : (chan_spec_raw_examples.LockedStack.t)) dq :
+  AccessStrict
+    (l.[(chan_spec_raw_examples.LockedStack.t), "mu"] ↦{dq} (v.(chan_spec_raw_examples.LockedStack.mu')))
+    (l.[(chan_spec_raw_examples.LockedStack.t), "mu"] ↦{dq} (v.(chan_spec_raw_examples.LockedStack.mu')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
 Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance LockedStack_access_stack l (v : (chan_spec_raw_examples.LockedStack.t)) dq :
-  PointsToAccess
-    (l.[(chan_spec_raw_examples.LockedStack.t), "stack"]) (v.(chan_spec_raw_examples.LockedStack.stack')) dq
-    (l ↦{dq} v) (λ stack', l ↦{dq} (v <|(chan_spec_raw_examples.LockedStack.stack') := stack'|>))%I.
+
+#[global] Instance LockedStack_access_store_mu l (v : (chan_spec_raw_examples.LockedStack.t)) mu' :
+  AccessStrict
+    (l.[(chan_spec_raw_examples.LockedStack.t), "mu"] ↦ (v.(chan_spec_raw_examples.LockedStack.mu')))
+    (l.[(chan_spec_raw_examples.LockedStack.t), "mu"] ↦ mu')
+    (l ↦ v) (l ↦ (v <|(chan_spec_raw_examples.LockedStack.mu') := mu'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance LockedStack_access_load_stack l (v : (chan_spec_raw_examples.LockedStack.t)) dq :
+  AccessStrict
+    (l.[(chan_spec_raw_examples.LockedStack.t), "stack"] ↦{dq} (v.(chan_spec_raw_examples.LockedStack.stack')))
+    (l.[(chan_spec_raw_examples.LockedStack.t), "stack"] ↦{dq} (v.(chan_spec_raw_examples.LockedStack.stack')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance LockedStack_access_store_stack l (v : (chan_spec_raw_examples.LockedStack.t)) stack' :
+  AccessStrict
+    (l.[(chan_spec_raw_examples.LockedStack.t), "stack"] ↦ (v.(chan_spec_raw_examples.LockedStack.stack')))
+    (l.[(chan_spec_raw_examples.LockedStack.t), "stack"] ↦ stack')
+    (l ↦ v) (l ↦ (v <|(chan_spec_raw_examples.LockedStack.stack') := stack'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
 
 End def.
@@ -73,15 +89,31 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (chan_spec_raw_examples.EliminationStack.t) (chan_spec_raw_examples.EliminationStack).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance EliminationStack_access_base l (v : (chan_spec_raw_examples.EliminationStack.t)) dq :
-  PointsToAccess
-    (l.[(chan_spec_raw_examples.EliminationStack.t), "base"]) (v.(chan_spec_raw_examples.EliminationStack.base')) dq
-    (l ↦{dq} v) (λ base', l ↦{dq} (v <|(chan_spec_raw_examples.EliminationStack.base') := base'|>))%I.
+#[global] Instance EliminationStack_access_load_base l (v : (chan_spec_raw_examples.EliminationStack.t)) dq :
+  AccessStrict
+    (l.[(chan_spec_raw_examples.EliminationStack.t), "base"] ↦{dq} (v.(chan_spec_raw_examples.EliminationStack.base')))
+    (l.[(chan_spec_raw_examples.EliminationStack.t), "base"] ↦{dq} (v.(chan_spec_raw_examples.EliminationStack.base')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
 Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance EliminationStack_access_exchanger l (v : (chan_spec_raw_examples.EliminationStack.t)) dq :
-  PointsToAccess
-    (l.[(chan_spec_raw_examples.EliminationStack.t), "exchanger"]) (v.(chan_spec_raw_examples.EliminationStack.exchanger')) dq
-    (l ↦{dq} v) (λ exchanger', l ↦{dq} (v <|(chan_spec_raw_examples.EliminationStack.exchanger') := exchanger'|>))%I.
+
+#[global] Instance EliminationStack_access_store_base l (v : (chan_spec_raw_examples.EliminationStack.t)) base' :
+  AccessStrict
+    (l.[(chan_spec_raw_examples.EliminationStack.t), "base"] ↦ (v.(chan_spec_raw_examples.EliminationStack.base')))
+    (l.[(chan_spec_raw_examples.EliminationStack.t), "base"] ↦ base')
+    (l ↦ v) (l ↦ (v <|(chan_spec_raw_examples.EliminationStack.base') := base'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance EliminationStack_access_load_exchanger l (v : (chan_spec_raw_examples.EliminationStack.t)) dq :
+  AccessStrict
+    (l.[(chan_spec_raw_examples.EliminationStack.t), "exchanger"] ↦{dq} (v.(chan_spec_raw_examples.EliminationStack.exchanger')))
+    (l.[(chan_spec_raw_examples.EliminationStack.t), "exchanger"] ↦{dq} (v.(chan_spec_raw_examples.EliminationStack.exchanger')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance EliminationStack_access_store_exchanger l (v : (chan_spec_raw_examples.EliminationStack.t)) exchanger' :
+  AccessStrict
+    (l.[(chan_spec_raw_examples.EliminationStack.t), "exchanger"] ↦ (v.(chan_spec_raw_examples.EliminationStack.exchanger')))
+    (l.[(chan_spec_raw_examples.EliminationStack.t), "exchanger"] ↦ exchanger')
+    (l ↦ v) (l ↦ (v <|(chan_spec_raw_examples.EliminationStack.exchanger') := exchanger'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
 
 End def.
@@ -112,15 +144,31 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (chan_spec_raw_examples.request.t) (chan_spec_raw_examples.request).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance request_access_f l (v : (chan_spec_raw_examples.request.t)) dq :
-  PointsToAccess
-    (l.[(chan_spec_raw_examples.request.t), "f"]) (v.(chan_spec_raw_examples.request.f')) dq
-    (l ↦{dq} v) (λ f', l ↦{dq} (v <|(chan_spec_raw_examples.request.f') := f'|>))%I.
+#[global] Instance request_access_load_f l (v : (chan_spec_raw_examples.request.t)) dq :
+  AccessStrict
+    (l.[(chan_spec_raw_examples.request.t), "f"] ↦{dq} (v.(chan_spec_raw_examples.request.f')))
+    (l.[(chan_spec_raw_examples.request.t), "f"] ↦{dq} (v.(chan_spec_raw_examples.request.f')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
 Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance request_access_result l (v : (chan_spec_raw_examples.request.t)) dq :
-  PointsToAccess
-    (l.[(chan_spec_raw_examples.request.t), "result"]) (v.(chan_spec_raw_examples.request.result')) dq
-    (l ↦{dq} v) (λ result', l ↦{dq} (v <|(chan_spec_raw_examples.request.result') := result'|>))%I.
+
+#[global] Instance request_access_store_f l (v : (chan_spec_raw_examples.request.t)) f' :
+  AccessStrict
+    (l.[(chan_spec_raw_examples.request.t), "f"] ↦ (v.(chan_spec_raw_examples.request.f')))
+    (l.[(chan_spec_raw_examples.request.t), "f"] ↦ f')
+    (l ↦ v) (l ↦ (v <|(chan_spec_raw_examples.request.f') := f'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance request_access_load_result l (v : (chan_spec_raw_examples.request.t)) dq :
+  AccessStrict
+    (l.[(chan_spec_raw_examples.request.t), "result"] ↦{dq} (v.(chan_spec_raw_examples.request.result')))
+    (l.[(chan_spec_raw_examples.request.t), "result"] ↦{dq} (v.(chan_spec_raw_examples.request.result')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance request_access_store_result l (v : (chan_spec_raw_examples.request.t)) result' :
+  AccessStrict
+    (l.[(chan_spec_raw_examples.request.t), "result"] ↦ (v.(chan_spec_raw_examples.request.result')))
+    (l.[(chan_spec_raw_examples.request.t), "result"] ↦ result')
+    (l ↦ v) (l ↦ (v <|(chan_spec_raw_examples.request.result') := result'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
 
 End def.
@@ -151,15 +199,31 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (chan_spec_raw_examples.stream.t) (chan_spec_raw_examples.stream).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance stream_access_req l (v : (chan_spec_raw_examples.stream.t)) dq :
-  PointsToAccess
-    (l.[(chan_spec_raw_examples.stream.t), "req"]) (v.(chan_spec_raw_examples.stream.req')) dq
-    (l ↦{dq} v) (λ req', l ↦{dq} (v <|(chan_spec_raw_examples.stream.req') := req'|>))%I.
+#[global] Instance stream_access_load_req l (v : (chan_spec_raw_examples.stream.t)) dq :
+  AccessStrict
+    (l.[(chan_spec_raw_examples.stream.t), "req"] ↦{dq} (v.(chan_spec_raw_examples.stream.req')))
+    (l.[(chan_spec_raw_examples.stream.t), "req"] ↦{dq} (v.(chan_spec_raw_examples.stream.req')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
 Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance stream_access_res l (v : (chan_spec_raw_examples.stream.t)) dq :
-  PointsToAccess
-    (l.[(chan_spec_raw_examples.stream.t), "res"]) (v.(chan_spec_raw_examples.stream.res')) dq
-    (l ↦{dq} v) (λ res', l ↦{dq} (v <|(chan_spec_raw_examples.stream.res') := res'|>))%I.
+
+#[global] Instance stream_access_store_req l (v : (chan_spec_raw_examples.stream.t)) req' :
+  AccessStrict
+    (l.[(chan_spec_raw_examples.stream.t), "req"] ↦ (v.(chan_spec_raw_examples.stream.req')))
+    (l.[(chan_spec_raw_examples.stream.t), "req"] ↦ req')
+    (l ↦ v) (l ↦ (v <|(chan_spec_raw_examples.stream.req') := req'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance stream_access_load_res l (v : (chan_spec_raw_examples.stream.t)) dq :
+  AccessStrict
+    (l.[(chan_spec_raw_examples.stream.t), "res"] ↦{dq} (v.(chan_spec_raw_examples.stream.res')))
+    (l.[(chan_spec_raw_examples.stream.t), "res"] ↦{dq} (v.(chan_spec_raw_examples.stream.res')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance stream_access_store_res l (v : (chan_spec_raw_examples.stream.t)) res' :
+  AccessStrict
+    (l.[(chan_spec_raw_examples.stream.t), "res"] ↦ (v.(chan_spec_raw_examples.stream.res')))
+    (l.[(chan_spec_raw_examples.stream.t), "res"] ↦ res')
+    (l ↦ v) (l ↦ (v <|(chan_spec_raw_examples.stream.res') := res'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
 
 End def.
@@ -191,20 +255,44 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (chan_spec_raw_examples.streamold.t) (chan_spec_raw_examples.streamold).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance streamold_access_req l (v : (chan_spec_raw_examples.streamold.t)) dq :
-  PointsToAccess
-    (l.[(chan_spec_raw_examples.streamold.t), "req"]) (v.(chan_spec_raw_examples.streamold.req')) dq
-    (l ↦{dq} v) (λ req', l ↦{dq} (v <|(chan_spec_raw_examples.streamold.req') := req'|>))%I.
+#[global] Instance streamold_access_load_req l (v : (chan_spec_raw_examples.streamold.t)) dq :
+  AccessStrict
+    (l.[(chan_spec_raw_examples.streamold.t), "req"] ↦{dq} (v.(chan_spec_raw_examples.streamold.req')))
+    (l.[(chan_spec_raw_examples.streamold.t), "req"] ↦{dq} (v.(chan_spec_raw_examples.streamold.req')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
 Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance streamold_access_res l (v : (chan_spec_raw_examples.streamold.t)) dq :
-  PointsToAccess
-    (l.[(chan_spec_raw_examples.streamold.t), "res"]) (v.(chan_spec_raw_examples.streamold.res')) dq
-    (l ↦{dq} v) (λ res', l ↦{dq} (v <|(chan_spec_raw_examples.streamold.res') := res'|>))%I.
+
+#[global] Instance streamold_access_store_req l (v : (chan_spec_raw_examples.streamold.t)) req' :
+  AccessStrict
+    (l.[(chan_spec_raw_examples.streamold.t), "req"] ↦ (v.(chan_spec_raw_examples.streamold.req')))
+    (l.[(chan_spec_raw_examples.streamold.t), "req"] ↦ req')
+    (l ↦ v) (l ↦ (v <|(chan_spec_raw_examples.streamold.req') := req'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance streamold_access_f l (v : (chan_spec_raw_examples.streamold.t)) dq :
-  PointsToAccess
-    (l.[(chan_spec_raw_examples.streamold.t), "f"]) (v.(chan_spec_raw_examples.streamold.f')) dq
-    (l ↦{dq} v) (λ f', l ↦{dq} (v <|(chan_spec_raw_examples.streamold.f') := f'|>))%I.
+#[global] Instance streamold_access_load_res l (v : (chan_spec_raw_examples.streamold.t)) dq :
+  AccessStrict
+    (l.[(chan_spec_raw_examples.streamold.t), "res"] ↦{dq} (v.(chan_spec_raw_examples.streamold.res')))
+    (l.[(chan_spec_raw_examples.streamold.t), "res"] ↦{dq} (v.(chan_spec_raw_examples.streamold.res')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance streamold_access_store_res l (v : (chan_spec_raw_examples.streamold.t)) res' :
+  AccessStrict
+    (l.[(chan_spec_raw_examples.streamold.t), "res"] ↦ (v.(chan_spec_raw_examples.streamold.res')))
+    (l.[(chan_spec_raw_examples.streamold.t), "res"] ↦ res')
+    (l ↦ v) (l ↦ (v <|(chan_spec_raw_examples.streamold.res') := res'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance streamold_access_load_f l (v : (chan_spec_raw_examples.streamold.t)) dq :
+  AccessStrict
+    (l.[(chan_spec_raw_examples.streamold.t), "f"] ↦{dq} (v.(chan_spec_raw_examples.streamold.f')))
+    (l.[(chan_spec_raw_examples.streamold.t), "f"] ↦{dq} (v.(chan_spec_raw_examples.streamold.f')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance streamold_access_store_f l (v : (chan_spec_raw_examples.streamold.t)) f' :
+  AccessStrict
+    (l.[(chan_spec_raw_examples.streamold.t), "f"] ↦ (v.(chan_spec_raw_examples.streamold.f')))
+    (l.[(chan_spec_raw_examples.streamold.t), "f"] ↦ f')
+    (l ↦ v) (l ↦ (v <|(chan_spec_raw_examples.streamold.f') := f'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
 
 End def.

@@ -59,15 +59,31 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (atomic.Bool.t) (atomic.Bool).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance Bool_access__0 l (v : (atomic.Bool.t)) dq :
-  PointsToAccess
-    (l.[(atomic.Bool.t), "_0"]) (v.(atomic.Bool._0')) dq
-    (l ↦{dq} v) (λ _0', l ↦{dq} (v <|(atomic.Bool._0') := _0'|>))%I.
+#[global] Instance Bool_access_load__0 l (v : (atomic.Bool.t)) dq :
+  AccessStrict
+    (l.[(atomic.Bool.t), "_0"] ↦{dq} (v.(atomic.Bool._0')))
+    (l.[(atomic.Bool.t), "_0"] ↦{dq} (v.(atomic.Bool._0')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
 Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance Bool_access_v l (v : (atomic.Bool.t)) dq :
-  PointsToAccess
-    (l.[(atomic.Bool.t), "v"]) (v.(atomic.Bool.v')) dq
-    (l ↦{dq} v) (λ v', l ↦{dq} (v <|(atomic.Bool.v') := v'|>))%I.
+
+#[global] Instance Bool_access_store__0 l (v : (atomic.Bool.t)) _0' :
+  AccessStrict
+    (l.[(atomic.Bool.t), "_0"] ↦ (v.(atomic.Bool._0')))
+    (l.[(atomic.Bool.t), "_0"] ↦ _0')
+    (l ↦ v) (l ↦ (v <|(atomic.Bool._0') := _0'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Bool_access_load_v l (v : (atomic.Bool.t)) dq :
+  AccessStrict
+    (l.[(atomic.Bool.t), "v"] ↦{dq} (v.(atomic.Bool.v')))
+    (l.[(atomic.Bool.t), "v"] ↦{dq} (v.(atomic.Bool.v')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Bool_access_store_v l (v : (atomic.Bool.t)) v' :
+  AccessStrict
+    (l.[(atomic.Bool.t), "v"] ↦ (v.(atomic.Bool.v')))
+    (l.[(atomic.Bool.t), "v"] ↦ v')
+    (l ↦ v) (l ↦ (v <|(atomic.Bool.v') := v'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
 
 End def.
@@ -99,20 +115,44 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
   `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T} `{!go.TypeRepr T T'}  :
   IntoValTyped (atomic.Pointer.t T') (atomic.Pointer T).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance Pointer_access__0 `{!TypedPointsto (Σ:=Σ) T'} l (v : (atomic.Pointer.t T')) dq :
-  PointsToAccess
-    (l.[(atomic.Pointer.t T'), "_0"]) (v.(atomic.Pointer._0')) dq
-    (l ↦{dq} v) (λ _0', l ↦{dq} (v <|(atomic.Pointer._0') := _0'|>))%I.
+#[global] Instance Pointer_access_load__0 `{!TypedPointsto (Σ:=Σ) T'} l (v : (atomic.Pointer.t T')) dq :
+  AccessStrict
+    (l.[(atomic.Pointer.t T'), "_0"] ↦{dq} (v.(atomic.Pointer._0')))
+    (l.[(atomic.Pointer.t T'), "_0"] ↦{dq} (v.(atomic.Pointer._0')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
 Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance Pointer_access__1 `{!TypedPointsto (Σ:=Σ) T'} l (v : (atomic.Pointer.t T')) dq :
-  PointsToAccess
-    (l.[(atomic.Pointer.t T'), "_1"]) (v.(atomic.Pointer._1')) dq
-    (l ↦{dq} v) (λ _1', l ↦{dq} (v <|(atomic.Pointer._1') := _1'|>))%I.
+
+#[global] Instance Pointer_access_store__0 `{!TypedPointsto (Σ:=Σ) T'} l (v : (atomic.Pointer.t T')) _0' :
+  AccessStrict
+    (l.[(atomic.Pointer.t T'), "_0"] ↦ (v.(atomic.Pointer._0')))
+    (l.[(atomic.Pointer.t T'), "_0"] ↦ _0')
+    (l ↦ v) (l ↦ (v <|(atomic.Pointer._0') := _0'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance Pointer_access_v `{!TypedPointsto (Σ:=Σ) T'} l (v : (atomic.Pointer.t T')) dq :
-  PointsToAccess
-    (l.[(atomic.Pointer.t T'), "v"]) (v.(atomic.Pointer.v')) dq
-    (l ↦{dq} v) (λ v', l ↦{dq} (v <|(atomic.Pointer.v') := v'|>))%I.
+#[global] Instance Pointer_access_load__1 `{!TypedPointsto (Σ:=Σ) T'} l (v : (atomic.Pointer.t T')) dq :
+  AccessStrict
+    (l.[(atomic.Pointer.t T'), "_1"] ↦{dq} (v.(atomic.Pointer._1')))
+    (l.[(atomic.Pointer.t T'), "_1"] ↦{dq} (v.(atomic.Pointer._1')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Pointer_access_store__1 `{!TypedPointsto (Σ:=Σ) T'} l (v : (atomic.Pointer.t T')) _1' :
+  AccessStrict
+    (l.[(atomic.Pointer.t T'), "_1"] ↦ (v.(atomic.Pointer._1')))
+    (l.[(atomic.Pointer.t T'), "_1"] ↦ _1')
+    (l ↦ v) (l ↦ (v <|(atomic.Pointer._1') := _1'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Pointer_access_load_v `{!TypedPointsto (Σ:=Σ) T'} l (v : (atomic.Pointer.t T')) dq :
+  AccessStrict
+    (l.[(atomic.Pointer.t T'), "v"] ↦{dq} (v.(atomic.Pointer.v')))
+    (l.[(atomic.Pointer.t T'), "v"] ↦{dq} (v.(atomic.Pointer.v')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Pointer_access_store_v `{!TypedPointsto (Σ:=Σ) T'} l (v : (atomic.Pointer.t T')) v' :
+  AccessStrict
+    (l.[(atomic.Pointer.t T'), "v"] ↦ (v.(atomic.Pointer.v')))
+    (l.[(atomic.Pointer.t T'), "v"] ↦ v')
+    (l ↦ v) (l ↦ (v <|(atomic.Pointer.v') := v'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
 
 End def.
@@ -143,15 +183,31 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (atomic.Int32.t) (atomic.Int32).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance Int32_access__0 l (v : (atomic.Int32.t)) dq :
-  PointsToAccess
-    (l.[(atomic.Int32.t), "_0"]) (v.(atomic.Int32._0')) dq
-    (l ↦{dq} v) (λ _0', l ↦{dq} (v <|(atomic.Int32._0') := _0'|>))%I.
+#[global] Instance Int32_access_load__0 l (v : (atomic.Int32.t)) dq :
+  AccessStrict
+    (l.[(atomic.Int32.t), "_0"] ↦{dq} (v.(atomic.Int32._0')))
+    (l.[(atomic.Int32.t), "_0"] ↦{dq} (v.(atomic.Int32._0')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
 Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance Int32_access_v l (v : (atomic.Int32.t)) dq :
-  PointsToAccess
-    (l.[(atomic.Int32.t), "v"]) (v.(atomic.Int32.v')) dq
-    (l ↦{dq} v) (λ v', l ↦{dq} (v <|(atomic.Int32.v') := v'|>))%I.
+
+#[global] Instance Int32_access_store__0 l (v : (atomic.Int32.t)) _0' :
+  AccessStrict
+    (l.[(atomic.Int32.t), "_0"] ↦ (v.(atomic.Int32._0')))
+    (l.[(atomic.Int32.t), "_0"] ↦ _0')
+    (l ↦ v) (l ↦ (v <|(atomic.Int32._0') := _0'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Int32_access_load_v l (v : (atomic.Int32.t)) dq :
+  AccessStrict
+    (l.[(atomic.Int32.t), "v"] ↦{dq} (v.(atomic.Int32.v')))
+    (l.[(atomic.Int32.t), "v"] ↦{dq} (v.(atomic.Int32.v')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Int32_access_store_v l (v : (atomic.Int32.t)) v' :
+  AccessStrict
+    (l.[(atomic.Int32.t), "v"] ↦ (v.(atomic.Int32.v')))
+    (l.[(atomic.Int32.t), "v"] ↦ v')
+    (l ↦ v) (l ↦ (v <|(atomic.Int32.v') := v'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
 
 End def.
@@ -210,20 +266,44 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (atomic.Int64.t) (atomic.Int64).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance Int64_access__0 l (v : (atomic.Int64.t)) dq :
-  PointsToAccess
-    (l.[(atomic.Int64.t), "_0"]) (v.(atomic.Int64._0')) dq
-    (l ↦{dq} v) (λ _0', l ↦{dq} (v <|(atomic.Int64._0') := _0'|>))%I.
+#[global] Instance Int64_access_load__0 l (v : (atomic.Int64.t)) dq :
+  AccessStrict
+    (l.[(atomic.Int64.t), "_0"] ↦{dq} (v.(atomic.Int64._0')))
+    (l.[(atomic.Int64.t), "_0"] ↦{dq} (v.(atomic.Int64._0')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
 Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance Int64_access__1 l (v : (atomic.Int64.t)) dq :
-  PointsToAccess
-    (l.[(atomic.Int64.t), "_1"]) (v.(atomic.Int64._1')) dq
-    (l ↦{dq} v) (λ _1', l ↦{dq} (v <|(atomic.Int64._1') := _1'|>))%I.
+
+#[global] Instance Int64_access_store__0 l (v : (atomic.Int64.t)) _0' :
+  AccessStrict
+    (l.[(atomic.Int64.t), "_0"] ↦ (v.(atomic.Int64._0')))
+    (l.[(atomic.Int64.t), "_0"] ↦ _0')
+    (l ↦ v) (l ↦ (v <|(atomic.Int64._0') := _0'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance Int64_access_v l (v : (atomic.Int64.t)) dq :
-  PointsToAccess
-    (l.[(atomic.Int64.t), "v"]) (v.(atomic.Int64.v')) dq
-    (l ↦{dq} v) (λ v', l ↦{dq} (v <|(atomic.Int64.v') := v'|>))%I.
+#[global] Instance Int64_access_load__1 l (v : (atomic.Int64.t)) dq :
+  AccessStrict
+    (l.[(atomic.Int64.t), "_1"] ↦{dq} (v.(atomic.Int64._1')))
+    (l.[(atomic.Int64.t), "_1"] ↦{dq} (v.(atomic.Int64._1')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Int64_access_store__1 l (v : (atomic.Int64.t)) _1' :
+  AccessStrict
+    (l.[(atomic.Int64.t), "_1"] ↦ (v.(atomic.Int64._1')))
+    (l.[(atomic.Int64.t), "_1"] ↦ _1')
+    (l ↦ v) (l ↦ (v <|(atomic.Int64._1') := _1'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Int64_access_load_v l (v : (atomic.Int64.t)) dq :
+  AccessStrict
+    (l.[(atomic.Int64.t), "v"] ↦{dq} (v.(atomic.Int64.v')))
+    (l.[(atomic.Int64.t), "v"] ↦{dq} (v.(atomic.Int64.v')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Int64_access_store_v l (v : (atomic.Int64.t)) v' :
+  AccessStrict
+    (l.[(atomic.Int64.t), "v"] ↦ (v.(atomic.Int64.v')))
+    (l.[(atomic.Int64.t), "v"] ↦ v')
+    (l ↦ v) (l ↦ (v <|(atomic.Int64.v') := v'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
 
 End def.
@@ -254,15 +334,31 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (atomic.Uint32.t) (atomic.Uint32).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance Uint32_access__0 l (v : (atomic.Uint32.t)) dq :
-  PointsToAccess
-    (l.[(atomic.Uint32.t), "_0"]) (v.(atomic.Uint32._0')) dq
-    (l ↦{dq} v) (λ _0', l ↦{dq} (v <|(atomic.Uint32._0') := _0'|>))%I.
+#[global] Instance Uint32_access_load__0 l (v : (atomic.Uint32.t)) dq :
+  AccessStrict
+    (l.[(atomic.Uint32.t), "_0"] ↦{dq} (v.(atomic.Uint32._0')))
+    (l.[(atomic.Uint32.t), "_0"] ↦{dq} (v.(atomic.Uint32._0')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
 Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance Uint32_access_v l (v : (atomic.Uint32.t)) dq :
-  PointsToAccess
-    (l.[(atomic.Uint32.t), "v"]) (v.(atomic.Uint32.v')) dq
-    (l ↦{dq} v) (λ v', l ↦{dq} (v <|(atomic.Uint32.v') := v'|>))%I.
+
+#[global] Instance Uint32_access_store__0 l (v : (atomic.Uint32.t)) _0' :
+  AccessStrict
+    (l.[(atomic.Uint32.t), "_0"] ↦ (v.(atomic.Uint32._0')))
+    (l.[(atomic.Uint32.t), "_0"] ↦ _0')
+    (l ↦ v) (l ↦ (v <|(atomic.Uint32._0') := _0'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Uint32_access_load_v l (v : (atomic.Uint32.t)) dq :
+  AccessStrict
+    (l.[(atomic.Uint32.t), "v"] ↦{dq} (v.(atomic.Uint32.v')))
+    (l.[(atomic.Uint32.t), "v"] ↦{dq} (v.(atomic.Uint32.v')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Uint32_access_store_v l (v : (atomic.Uint32.t)) v' :
+  AccessStrict
+    (l.[(atomic.Uint32.t), "v"] ↦ (v.(atomic.Uint32.v')))
+    (l.[(atomic.Uint32.t), "v"] ↦ v')
+    (l ↦ v) (l ↦ (v <|(atomic.Uint32.v') := v'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
 
 End def.
@@ -294,20 +390,44 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (atomic.Uint64.t) (atomic.Uint64).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance Uint64_access__0 l (v : (atomic.Uint64.t)) dq :
-  PointsToAccess
-    (l.[(atomic.Uint64.t), "_0"]) (v.(atomic.Uint64._0')) dq
-    (l ↦{dq} v) (λ _0', l ↦{dq} (v <|(atomic.Uint64._0') := _0'|>))%I.
+#[global] Instance Uint64_access_load__0 l (v : (atomic.Uint64.t)) dq :
+  AccessStrict
+    (l.[(atomic.Uint64.t), "_0"] ↦{dq} (v.(atomic.Uint64._0')))
+    (l.[(atomic.Uint64.t), "_0"] ↦{dq} (v.(atomic.Uint64._0')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
 Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance Uint64_access__1 l (v : (atomic.Uint64.t)) dq :
-  PointsToAccess
-    (l.[(atomic.Uint64.t), "_1"]) (v.(atomic.Uint64._1')) dq
-    (l ↦{dq} v) (λ _1', l ↦{dq} (v <|(atomic.Uint64._1') := _1'|>))%I.
+
+#[global] Instance Uint64_access_store__0 l (v : (atomic.Uint64.t)) _0' :
+  AccessStrict
+    (l.[(atomic.Uint64.t), "_0"] ↦ (v.(atomic.Uint64._0')))
+    (l.[(atomic.Uint64.t), "_0"] ↦ _0')
+    (l ↦ v) (l ↦ (v <|(atomic.Uint64._0') := _0'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance Uint64_access_v l (v : (atomic.Uint64.t)) dq :
-  PointsToAccess
-    (l.[(atomic.Uint64.t), "v"]) (v.(atomic.Uint64.v')) dq
-    (l ↦{dq} v) (λ v', l ↦{dq} (v <|(atomic.Uint64.v') := v'|>))%I.
+#[global] Instance Uint64_access_load__1 l (v : (atomic.Uint64.t)) dq :
+  AccessStrict
+    (l.[(atomic.Uint64.t), "_1"] ↦{dq} (v.(atomic.Uint64._1')))
+    (l.[(atomic.Uint64.t), "_1"] ↦{dq} (v.(atomic.Uint64._1')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Uint64_access_store__1 l (v : (atomic.Uint64.t)) _1' :
+  AccessStrict
+    (l.[(atomic.Uint64.t), "_1"] ↦ (v.(atomic.Uint64._1')))
+    (l.[(atomic.Uint64.t), "_1"] ↦ _1')
+    (l ↦ v) (l ↦ (v <|(atomic.Uint64._1') := _1'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Uint64_access_load_v l (v : (atomic.Uint64.t)) dq :
+  AccessStrict
+    (l.[(atomic.Uint64.t), "v"] ↦{dq} (v.(atomic.Uint64.v')))
+    (l.[(atomic.Uint64.t), "v"] ↦{dq} (v.(atomic.Uint64.v')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Uint64_access_store_v l (v : (atomic.Uint64.t)) v' :
+  AccessStrict
+    (l.[(atomic.Uint64.t), "v"] ↦ (v.(atomic.Uint64.v')))
+    (l.[(atomic.Uint64.t), "v"] ↦ v')
+    (l ↦ v) (l ↦ (v <|(atomic.Uint64.v') := v'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
 
 End def.
@@ -357,10 +477,18 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (atomic.Value.t) (atomic.Value).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance Value_access_v l (v : (atomic.Value.t)) dq :
-  PointsToAccess
-    (l.[(atomic.Value.t), "v"]) (v.(atomic.Value.v')) dq
-    (l ↦{dq} v) (λ v', l ↦{dq} (v <|(atomic.Value.v') := v'|>))%I.
+#[global] Instance Value_access_load_v l (v : (atomic.Value.t)) dq :
+  AccessStrict
+    (l.[(atomic.Value.t), "v"] ↦{dq} (v.(atomic.Value.v')))
+    (l.[(atomic.Value.t), "v"] ↦{dq} (v.(atomic.Value.v')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Value_access_store_v l (v : (atomic.Value.t)) v' :
+  AccessStrict
+    (l.[(atomic.Value.t), "v"] ↦ (v.(atomic.Value.v')))
+    (l.[(atomic.Value.t), "v"] ↦ v')
+    (l ↦ v) (l ↦ (v <|(atomic.Value.v') := v'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
 
 End def.
@@ -391,15 +519,31 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (atomic.efaceWords.t) (atomic.efaceWords).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance efaceWords_access_typ l (v : (atomic.efaceWords.t)) dq :
-  PointsToAccess
-    (l.[(atomic.efaceWords.t), "typ"]) (v.(atomic.efaceWords.typ')) dq
-    (l ↦{dq} v) (λ typ', l ↦{dq} (v <|(atomic.efaceWords.typ') := typ'|>))%I.
+#[global] Instance efaceWords_access_load_typ l (v : (atomic.efaceWords.t)) dq :
+  AccessStrict
+    (l.[(atomic.efaceWords.t), "typ"] ↦{dq} (v.(atomic.efaceWords.typ')))
+    (l.[(atomic.efaceWords.t), "typ"] ↦{dq} (v.(atomic.efaceWords.typ')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
 Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance efaceWords_access_data l (v : (atomic.efaceWords.t)) dq :
-  PointsToAccess
-    (l.[(atomic.efaceWords.t), "data"]) (v.(atomic.efaceWords.data')) dq
-    (l ↦{dq} v) (λ data', l ↦{dq} (v <|(atomic.efaceWords.data') := data'|>))%I.
+
+#[global] Instance efaceWords_access_store_typ l (v : (atomic.efaceWords.t)) typ' :
+  AccessStrict
+    (l.[(atomic.efaceWords.t), "typ"] ↦ (v.(atomic.efaceWords.typ')))
+    (l.[(atomic.efaceWords.t), "typ"] ↦ typ')
+    (l ↦ v) (l ↦ (v <|(atomic.efaceWords.typ') := typ'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance efaceWords_access_load_data l (v : (atomic.efaceWords.t)) dq :
+  AccessStrict
+    (l.[(atomic.efaceWords.t), "data"] ↦{dq} (v.(atomic.efaceWords.data')))
+    (l.[(atomic.efaceWords.t), "data"] ↦{dq} (v.(atomic.efaceWords.data')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance efaceWords_access_store_data l (v : (atomic.efaceWords.t)) data' :
+  AccessStrict
+    (l.[(atomic.efaceWords.t), "data"] ↦ (v.(atomic.efaceWords.data')))
+    (l.[(atomic.efaceWords.t), "data"] ↦ data')
+    (l ↦ v) (l ↦ (v <|(atomic.efaceWords.data') := data'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
 
 End def.

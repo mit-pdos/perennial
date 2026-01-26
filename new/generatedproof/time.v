@@ -53,20 +53,44 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (time.Time.t) (time.Time).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance Time_access_wall l (v : (time.Time.t)) dq :
-  PointsToAccess
-    (l.[(time.Time.t), "wall"]) (v.(time.Time.wall')) dq
-    (l ↦{dq} v) (λ wall', l ↦{dq} (v <|(time.Time.wall') := wall'|>))%I.
+#[global] Instance Time_access_load_wall l (v : (time.Time.t)) dq :
+  AccessStrict
+    (l.[(time.Time.t), "wall"] ↦{dq} (v.(time.Time.wall')))
+    (l.[(time.Time.t), "wall"] ↦{dq} (v.(time.Time.wall')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
 Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance Time_access_ext l (v : (time.Time.t)) dq :
-  PointsToAccess
-    (l.[(time.Time.t), "ext"]) (v.(time.Time.ext')) dq
-    (l ↦{dq} v) (λ ext', l ↦{dq} (v <|(time.Time.ext') := ext'|>))%I.
+
+#[global] Instance Time_access_store_wall l (v : (time.Time.t)) wall' :
+  AccessStrict
+    (l.[(time.Time.t), "wall"] ↦ (v.(time.Time.wall')))
+    (l.[(time.Time.t), "wall"] ↦ wall')
+    (l ↦ v) (l ↦ (v <|(time.Time.wall') := wall'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance Time_access_loc l (v : (time.Time.t)) dq :
-  PointsToAccess
-    (l.[(time.Time.t), "loc"]) (v.(time.Time.loc')) dq
-    (l ↦{dq} v) (λ loc', l ↦{dq} (v <|(time.Time.loc') := loc'|>))%I.
+#[global] Instance Time_access_load_ext l (v : (time.Time.t)) dq :
+  AccessStrict
+    (l.[(time.Time.t), "ext"] ↦{dq} (v.(time.Time.ext')))
+    (l.[(time.Time.t), "ext"] ↦{dq} (v.(time.Time.ext')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Time_access_store_ext l (v : (time.Time.t)) ext' :
+  AccessStrict
+    (l.[(time.Time.t), "ext"] ↦ (v.(time.Time.ext')))
+    (l.[(time.Time.t), "ext"] ↦ ext')
+    (l ↦ v) (l ↦ (v <|(time.Time.ext') := ext'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Time_access_load_loc l (v : (time.Time.t)) dq :
+  AccessStrict
+    (l.[(time.Time.t), "loc"] ↦{dq} (v.(time.Time.loc')))
+    (l.[(time.Time.t), "loc"] ↦{dq} (v.(time.Time.loc')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Time_access_store_loc l (v : (time.Time.t)) loc' :
+  AccessStrict
+    (l.[(time.Time.t), "loc"] ↦ (v.(time.Time.loc')))
+    (l.[(time.Time.t), "loc"] ↦ loc')
+    (l ↦ v) (l ↦ (v <|(time.Time.loc') := loc'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
 
 End def.
@@ -97,15 +121,31 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
    :
   IntoValTyped (time.Timer.t) (time.Timer).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance Timer_access_C l (v : (time.Timer.t)) dq :
-  PointsToAccess
-    (l.[(time.Timer.t), "C"]) (v.(time.Timer.C')) dq
-    (l ↦{dq} v) (λ C', l ↦{dq} (v <|(time.Timer.C') := C'|>))%I.
+#[global] Instance Timer_access_load_C l (v : (time.Timer.t)) dq :
+  AccessStrict
+    (l.[(time.Timer.t), "C"] ↦{dq} (v.(time.Timer.C')))
+    (l.[(time.Timer.t), "C"] ↦{dq} (v.(time.Timer.C')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
 Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance Timer_access_initTimer l (v : (time.Timer.t)) dq :
-  PointsToAccess
-    (l.[(time.Timer.t), "initTimer"]) (v.(time.Timer.initTimer')) dq
-    (l ↦{dq} v) (λ initTimer', l ↦{dq} (v <|(time.Timer.initTimer') := initTimer'|>))%I.
+
+#[global] Instance Timer_access_store_C l (v : (time.Timer.t)) C' :
+  AccessStrict
+    (l.[(time.Timer.t), "C"] ↦ (v.(time.Timer.C')))
+    (l.[(time.Timer.t), "C"] ↦ C')
+    (l ↦ v) (l ↦ (v <|(time.Timer.C') := C'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Timer_access_load_initTimer l (v : (time.Timer.t)) dq :
+  AccessStrict
+    (l.[(time.Timer.t), "initTimer"] ↦{dq} (v.(time.Timer.initTimer')))
+    (l.[(time.Timer.t), "initTimer"] ↦{dq} (v.(time.Timer.initTimer')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Timer_access_store_initTimer l (v : (time.Timer.t)) initTimer' :
+  AccessStrict
+    (l.[(time.Timer.t), "initTimer"] ↦ (v.(time.Timer.initTimer')))
+    (l.[(time.Timer.t), "initTimer"] ↦ initTimer')
+    (l ↦ v) (l ↦ (v <|(time.Timer.initTimer') := initTimer'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
 
 End def.

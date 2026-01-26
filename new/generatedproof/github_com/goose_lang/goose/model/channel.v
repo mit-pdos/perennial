@@ -35,30 +35,70 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
   `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T} `{!go.TypeRepr T T'}  :
   IntoValTyped (channel.Channel.t T') (channel.Channel T).
 Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance Channel_access_cap `{!TypedPointsto (Σ:=Σ) T'} l (v : (channel.Channel.t T')) dq :
-  PointsToAccess
-    (l.[(channel.Channel.t T'), "cap"]) (v.(channel.Channel.cap')) dq
-    (l ↦{dq} v) (λ cap', l ↦{dq} (v <|(channel.Channel.cap') := cap'|>))%I.
+#[global] Instance Channel_access_load_cap `{!TypedPointsto (Σ:=Σ) T'} l (v : (channel.Channel.t T')) dq :
+  AccessStrict
+    (l.[(channel.Channel.t T'), "cap"] ↦{dq} (v.(channel.Channel.cap')))
+    (l.[(channel.Channel.t T'), "cap"] ↦{dq} (v.(channel.Channel.cap')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
 Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance Channel_access_mu `{!TypedPointsto (Σ:=Σ) T'} l (v : (channel.Channel.t T')) dq :
-  PointsToAccess
-    (l.[(channel.Channel.t T'), "mu"]) (v.(channel.Channel.mu')) dq
-    (l ↦{dq} v) (λ mu', l ↦{dq} (v <|(channel.Channel.mu') := mu'|>))%I.
+
+#[global] Instance Channel_access_store_cap `{!TypedPointsto (Σ:=Σ) T'} l (v : (channel.Channel.t T')) cap' :
+  AccessStrict
+    (l.[(channel.Channel.t T'), "cap"] ↦ (v.(channel.Channel.cap')))
+    (l.[(channel.Channel.t T'), "cap"] ↦ cap')
+    (l ↦ v) (l ↦ (v <|(channel.Channel.cap') := cap'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance Channel_access_state `{!TypedPointsto (Σ:=Σ) T'} l (v : (channel.Channel.t T')) dq :
-  PointsToAccess
-    (l.[(channel.Channel.t T'), "state"]) (v.(channel.Channel.state')) dq
-    (l ↦{dq} v) (λ state', l ↦{dq} (v <|(channel.Channel.state') := state'|>))%I.
+#[global] Instance Channel_access_load_mu `{!TypedPointsto (Σ:=Σ) T'} l (v : (channel.Channel.t T')) dq :
+  AccessStrict
+    (l.[(channel.Channel.t T'), "mu"] ↦{dq} (v.(channel.Channel.mu')))
+    (l.[(channel.Channel.t T'), "mu"] ↦{dq} (v.(channel.Channel.mu')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
 Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance Channel_access_buffer `{!TypedPointsto (Σ:=Σ) T'} l (v : (channel.Channel.t T')) dq :
-  PointsToAccess
-    (l.[(channel.Channel.t T'), "buffer"]) (v.(channel.Channel.buffer')) dq
-    (l ↦{dq} v) (λ buffer', l ↦{dq} (v <|(channel.Channel.buffer') := buffer'|>))%I.
+
+#[global] Instance Channel_access_store_mu `{!TypedPointsto (Σ:=Σ) T'} l (v : (channel.Channel.t T')) mu' :
+  AccessStrict
+    (l.[(channel.Channel.t T'), "mu"] ↦ (v.(channel.Channel.mu')))
+    (l.[(channel.Channel.t T'), "mu"] ↦ mu')
+    (l ↦ v) (l ↦ (v <|(channel.Channel.mu') := mu'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance Channel_access_v `{!TypedPointsto (Σ:=Σ) T'} l (v : (channel.Channel.t T')) dq :
-  PointsToAccess
-    (l.[(channel.Channel.t T'), "v"]) (v.(channel.Channel.v')) dq
-    (l ↦{dq} v) (λ v', l ↦{dq} (v <|(channel.Channel.v') := v'|>))%I.
+#[global] Instance Channel_access_load_state `{!TypedPointsto (Σ:=Σ) T'} l (v : (channel.Channel.t T')) dq :
+  AccessStrict
+    (l.[(channel.Channel.t T'), "state"] ↦{dq} (v.(channel.Channel.state')))
+    (l.[(channel.Channel.t T'), "state"] ↦{dq} (v.(channel.Channel.state')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Channel_access_store_state `{!TypedPointsto (Σ:=Σ) T'} l (v : (channel.Channel.t T')) state' :
+  AccessStrict
+    (l.[(channel.Channel.t T'), "state"] ↦ (v.(channel.Channel.state')))
+    (l.[(channel.Channel.t T'), "state"] ↦ state')
+    (l ↦ v) (l ↦ (v <|(channel.Channel.state') := state'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Channel_access_load_buffer `{!TypedPointsto (Σ:=Σ) T'} l (v : (channel.Channel.t T')) dq :
+  AccessStrict
+    (l.[(channel.Channel.t T'), "buffer"] ↦{dq} (v.(channel.Channel.buffer')))
+    (l.[(channel.Channel.t T'), "buffer"] ↦{dq} (v.(channel.Channel.buffer')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Channel_access_store_buffer `{!TypedPointsto (Σ:=Σ) T'} l (v : (channel.Channel.t T')) buffer' :
+  AccessStrict
+    (l.[(channel.Channel.t T'), "buffer"] ↦ (v.(channel.Channel.buffer')))
+    (l.[(channel.Channel.t T'), "buffer"] ↦ buffer')
+    (l ↦ v) (l ↦ (v <|(channel.Channel.buffer') := buffer'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Channel_access_load_v `{!TypedPointsto (Σ:=Σ) T'} l (v : (channel.Channel.t T')) dq :
+  AccessStrict
+    (l.[(channel.Channel.t T'), "v"] ↦{dq} (v.(channel.Channel.v')))
+    (l.[(channel.Channel.t T'), "v"] ↦{dq} (v.(channel.Channel.v')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Channel_access_store_v `{!TypedPointsto (Σ:=Σ) T'} l (v : (channel.Channel.t T')) v' :
+  AccessStrict
+    (l.[(channel.Channel.t T'), "v"] ↦ (v.(channel.Channel.v')))
+    (l.[(channel.Channel.t T'), "v"] ↦ v')
+    (l ↦ v) (l ↦ (v <|(channel.Channel.v') := v'|>))%I.
 Proof. solve_pointsto_access_struct. Qed.
 
 End def.
