@@ -102,10 +102,10 @@ Section tac_lemmas.
     iIntros "[H Henv]".
     destruct is_pers; simpl.
     - iDestruct "H" as "#H".
-      iDestruct (access with "H") as "[H' _]".
+      iDestruct (access (A:=(l ↦{dq} v)) (A':=(l ↦{dq} v)) with "H") as "[H' _]".
       wp_apply (wp_load with "[$]"). iIntros "?".
       iApply HΦ. iApply "Henv". iFrame "#".
-    - iDestruct (access with "H") as "[H Hclose]".
+    - iDestruct (access (A:=(l ↦{dq} v)) (A':=(l ↦{dq} v)) with "H") as "[H Hclose]".
       wp_apply (wp_load with "[$]"). iIntros "?".
       iApply HΦ. iApply "Henv".
       iSpecialize ("Hclose" with "[$]"). iFrame.
@@ -122,7 +122,7 @@ Section tac_lemmas.
     rewrite envs_entails_unseal => ?? HΦ.
     rewrite envs_simple_replace_sound // /=.
     iIntros "[H Henv]".
-    iDestruct (access with "H") as "[H Hclose]".
+    iDestruct (access (A:=(l ↦ v)) (A':=(l ↦ v')) with "H") as "[H Hclose]".
     wp_apply (wp_store with "[$]"). iIntros "H".
     iSpecialize ("Hclose" with "[$]"). iApply HΦ.
     iApply "Henv". iFrame.
