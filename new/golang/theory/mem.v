@@ -1,9 +1,5 @@
-From iris.proofmode Require Import coq_tactics reduction environments.
-From iris.bi.lib Require Import fractional.
-From Perennial.program_logic Require Import weakestpre.
-From New.golang.theory Require Import predeclared.
-From iris.proofmode Require Import string_ident.
-Require Import Coq.Program.Equality.
+From iris.proofmode Require Import coq_tactics reduction environments string_ident.
+From New.golang.theory Require Export predeclared.
 
 From Ltac2 Require Import Ltac2.
 Set Default Proof Mode "Classic".
@@ -67,24 +63,36 @@ Section goose_lang.
 
 End goose_lang.
 
+Class AccessStrict {PROP : bi} (A A' P P' : PROP) :=
+  { access_strict : P -∗ A ∗ (A' -∗ P') }.
+#[global] Hint Mode AccessStrict + ! ! - - : typeclass_instances.
+
+Class Access {PROP : bi} (A A' P P' : PROP) :=
+  { access : P -∗ A ∗ (A' -∗ P') }.
+#[global] Hint Mode Access + ! ! - - : typeclass_instances.
+
+#[global] Instance access_transitive {PROP : bi} (Q P P' Q' A A' : PROP) :
+  AccessStrict A A' P P' → Access P P' Q Q' → Access A A' Q Q'.
+Proof.
+  intros. constructor. iIntros "H".
+  iDestruct (access (A:=P) (A':=P') with "H") as "[H Hwand]".
+  iDestruct (access_strict (A:=A) (A':=A') with "H") as "[H Hwand']".
+  iFrame. iIntros "H".
+  iDestruct ("Hwand'" with "H") as "H".
+  iDestruct ("Hwand" with "H") as "H". iFrame.
+Qed.
+
+#[global] Instance access_trivial {PROP : bi} (P P' : PROP)
+  : Access P P' P P'.
+Proof. constructor. iIntros "$". iIntros "$". Qed.
+
 Section tac_lemmas.
   Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
     {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
 
-  Class PointsToAccess {V} `{!TypedPointsto V}
-    (l : loc) (v : V) dq (P : iProp Σ) (P' : V → iProp Σ) : Prop :=
-    {
-      points_to_acc : P -∗ l ↦{dq} v ∗ (∀ v', l ↦{dq} v' -∗ P' v');
-      points_to_update_eq : P' v ⊣⊢ P;
-    }.
-
-  Global Instance points_to_access_trivial {V} l (v : V) `{!TypedPointsto V} dq
-    : PointsToAccess l v dq (l ↦{dq} v)%I (λ v', l ↦{dq} v')%I.
-  Proof. constructor; [eauto with iFrame|done]. Qed.
-
   Lemma tac_wp_load {V t} `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}
     K (l : loc) (v : V) Δ s E i dq Φ is_pers
-    `{!PointsToAccess l v dq P P'} :
+    `{!Access (l ↦{dq} v) (l ↦{dq} v) P P} :
     envs_lookup i Δ = Some (is_pers, P)%I →
     envs_entails Δ (WP (fill K (Val #v)) @ s; E {{ Φ }}) →
     envs_entails Δ (WP (fill K (load t #l)) @ s; E {{ Φ }}).
@@ -94,28 +102,27 @@ Section tac_lemmas.
     iIntros "[H Henv]".
     destruct is_pers; simpl.
     - iDestruct "H" as "#H".
-      iDestruct (points_to_acc with "H") as "[H' _]".
+      iDestruct (access with "H") as "[H' _]".
       wp_apply (wp_load with "[$]"). iIntros "?".
       iApply HΦ. iApply "Henv". iFrame "#".
-    - iDestruct (points_to_acc with "H") as "[H Hclose]".
+    - iDestruct (access with "H") as "[H Hclose]".
       wp_apply (wp_load with "[$]"). iIntros "?".
       iApply HΦ. iApply "Henv".
-      iSpecialize ("Hclose" with "[$]").
-      rewrite points_to_update_eq. iFrame.
+      iSpecialize ("Hclose" with "[$]"). iFrame.
   Qed.
 
   Lemma tac_wp_store {V t} `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}
     K (l : loc) (v v' : V) Δ Δ' s E i Φ
-    `{!PointsToAccess l v (DfracOwn 1) P P'} :
+    `{!Access (l ↦ v) (l ↦ v') P P'} :
     envs_lookup i Δ = Some (false, P)%I →
-    envs_simple_replace i false (Esnoc Enil i (P' v')) Δ = Some Δ' →
+    envs_simple_replace i false (Esnoc Enil i P') Δ = Some Δ' →
     envs_entails Δ' (WP fill K (Val #()) @ s ; E {{ Φ }}) →
     envs_entails Δ (WP (fill K (store t #l (Val #v'))) @ s; E {{ Φ }}).
   Proof.
     rewrite envs_entails_unseal => ?? HΦ.
     rewrite envs_simple_replace_sound // /=.
     iIntros "[H Henv]".
-    iDestruct (points_to_acc with "H") as "[H Hclose]".
+    iDestruct (access with "H") as "[H Hclose]".
     wp_apply (wp_store with "[$]"). iIntros "H".
     iSpecialize ("Hclose" with "[$]"). iApply HΦ.
     iApply "Henv". iFrame.
