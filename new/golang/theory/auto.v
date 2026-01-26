@@ -342,9 +342,8 @@ Ltac wp_end :=
 
 Ltac solve_pointsto_access_struct :=
   constructor;
-  [ iIntros "H"; iStructNamed "H"; iFrame; iIntros;
-    iApply typed_pointsto_combine; iFrame |
-    by destruct &v ].
+  iIntros "H"; iStructNamed "H"; iFrame; iIntros;
+  iApply typed_pointsto_combine; iFrame.
 
 Ltac solve_into_val_typed_struct :=
     let alloc :=
