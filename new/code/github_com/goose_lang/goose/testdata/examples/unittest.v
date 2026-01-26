@@ -1223,25 +1223,25 @@ Definition diskArgumentⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
 Definition embedA__Fooⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "a" <>,
     exception_do (let: "a" := (GoAlloc embedA "a") in
-    return: (#(W64 0))).
+    return: (#"embedA.Foo()"%go)).
 
 (* go: embedded.go:23:17 *)
 Definition embedB__Fooⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "a" <>,
     exception_do (let: "a" := (GoAlloc embedB "a") in
-    return: (#(W64 10))).
+    return: (#"embedB.Foo()"%go)).
 
 (* go: embedded.go:27:18 *)
 Definition embedA__Barⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "a" <>,
     exception_do (let: "a" := (GoAlloc (go.PointerType embedA) "a") in
-    return: (#(W64 13))).
+    return: (#"*embedA.Bar()"%go)).
 
 (* go: embedded.go:31:18 *)
 Definition embedB__Carⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "a" <>,
     exception_do (let: "a" := (GoAlloc (go.PointerType embedB) "a") in
-    return: (#(W64 14))).
+    return: (#"*embedB.Car()"%go)).
 
 (* go: embedded.go:35:6 *)
 Definition returnEmbedValⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -1257,42 +1257,42 @@ Definition returnEmbedValWithPointerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : Go
 Definition useEmbeddedFieldⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "d",
     exception_do (let: "d" := (GoAlloc embedD "d") in
-    let: "x" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    let: "$r0" := (![go.uint64] (StructFieldRef embedA "a"%go (StructFieldRef embedB "embedA"%go (![go.PointerType embedB] (StructFieldRef embedC "embedB"%go (StructFieldRef embedD "embedC"%go "d")))))) in
-    do:  ("x" <-[go.uint64] "$r0");;;
-    let: "$r0" := (![go.uint64] (StructFieldRef embedA "a"%go (StructFieldRef embedB "embedA"%go (![go.PointerType embedB] (StructFieldRef embedC "embedB"%go (StructFieldRef embedD "embedC"%go "d")))))) in
-    do:  ("x" <-[go.uint64] "$r0");;;
-    let: "$r0" := #(W64 10) in
-    do:  ((StructFieldRef embedA "a"%go (StructFieldRef embedB "embedA"%go (![go.PointerType embedB] (StructFieldRef embedC "embedB"%go (StructFieldRef embedD "embedC"%go "d"))))) <-[go.uint64] "$r0");;;
+    let: "x" := (GoAlloc go.string (GoZeroVal go.string #())) in
+    let: "$r0" := (![go.string] (StructFieldRef embedA "a"%go (StructFieldRef embedB "embedA"%go (![go.PointerType embedB] (StructFieldRef embedC "embedB"%go (StructFieldRef embedD "embedC"%go "d")))))) in
+    do:  ("x" <-[go.string] "$r0");;;
+    let: "$r0" := (![go.string] (StructFieldRef embedA "a"%go (StructFieldRef embedB "embedA"%go (![go.PointerType embedB] (StructFieldRef embedC "embedB"%go (StructFieldRef embedD "embedC"%go "d")))))) in
+    do:  ("x" <-[go.string] "$r0");;;
+    let: "$r0" := #"a1"%go in
+    do:  ((StructFieldRef embedA "a"%go (StructFieldRef embedB "embedA"%go (![go.PointerType embedB] (StructFieldRef embedC "embedB"%go (StructFieldRef embedD "embedC"%go "d"))))) <-[go.string] "$r0");;;
     let: "y" := (GoAlloc (go.PointerType embedD) (GoZeroVal (go.PointerType embedD) #())) in
     let: "$r0" := (GoAlloc embedD (CompositeLiteral embedD (LiteralValue []))) in
     do:  ("y" <-[go.PointerType embedD] "$r0");;;
-    let: "$r0" := #(W64 11) in
-    do:  ((StructFieldRef embedA "a"%go (StructFieldRef embedB "embedA"%go (![go.PointerType embedB] (StructFieldRef embedC "embedB"%go (StructFieldRef embedD "embedC"%go (![go.PointerType embedD] "y")))))) <-[go.uint64] "$r0");;;
-    return: (![go.uint64] "x")).
+    let: "$r0" := #"a2"%go in
+    do:  ((StructFieldRef embedA "a"%go (StructFieldRef embedB "embedA"%go (![go.PointerType embedB] (StructFieldRef embedC "embedB"%go (StructFieldRef embedD "embedC"%go (![go.PointerType embedD] "y")))))) <-[go.string] "$r0");;;
+    return: (![go.string] "x")).
 
 (* go: embedded.go:54:6 *)
 Definition useEmbeddedValFieldⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    exception_do (let: "x" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+    exception_do (let: "x" := (GoAlloc go.string (GoZeroVal go.string #())) in
     let: "$r0" := (StructFieldGet embedA "a" (StructFieldGet embedB "embedA" ((FuncResolve returnEmbedVal [] #()) #()))) in
-    do:  ("x" <-[go.uint64] "$r0");;;
-    let: "$r0" := (![go.uint64] (StructFieldRef embedA "a"%go (StructFieldRef embedB "embedA"%go (StructFieldGet embedC "embedB" (StructFieldGet embedD "embedC" ((FuncResolve returnEmbedValWithPointer [] #()) #())))))) in
-    do:  ("x" <-[go.uint64] "$r0");;;
-    return: (![go.uint64] "x")).
+    do:  ("x" <-[go.string] "$r0");;;
+    let: "$r0" := (![go.string] (StructFieldRef embedA "a"%go (StructFieldRef embedB "embedA"%go (StructFieldGet embedC "embedB" (StructFieldGet embedD "embedC" ((FuncResolve returnEmbedValWithPointer [] #()) #())))))) in
+    do:  ("x" <-[go.string] "$r0");;;
+    return: (![go.string] "x")).
 
 (* go: embedded.go:60:6 *)
 Definition useEmbeddedMethodⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "d",
     exception_do (let: "d" := (GoAlloc embedD "d") in
-    return: (((MethodResolve embedD "Foo"%go (![embedD] "d")) #()) =⟨go.uint64⟩ ((MethodResolve embedA "Foo"%go (![embedA] (StructFieldRef embedB "embedA"%go (![go.PointerType embedB] (StructFieldRef embedC "embedB"%go (StructFieldRef embedD "embedC"%go "d")))))) #()))).
+    return: (((MethodResolve embedD "Bar"%go (![embedD] "d")) #()) =⟨go.string⟩ ((MethodResolve (go.PointerType embedA) "Bar"%go (StructFieldRef embedB "embedA"%go (![go.PointerType embedB] (StructFieldRef embedC "embedB"%go (StructFieldRef embedD "embedC"%go "d"))))) #()))).
 
 (* go: embedded.go:64:6 *)
 Definition useEmbeddedMethod2ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "d",
     exception_do (let: "d" := (GoAlloc embedD "d") in
     do:  ((MethodResolve embedD "Car"%go (![embedD] "d")) #());;;
-    return: (((MethodResolve embedD "Bar"%go (![embedD] "d")) #()) =⟨go.uint64⟩ ((MethodResolve (go.PointerType embedB) "Bar"%go (![go.PointerType embedB] (StructFieldRef embedC "embedB"%go (StructFieldRef embedD "embedC"%go "d")))) #()))).
+    return: (((MethodResolve embedD "Foo"%go (![embedD] "d")) #()) =⟨go.string⟩ ((MethodResolve (go.PointerType embedB) "Foo"%go (![go.PointerType embedB] (StructFieldRef embedC "embedB"%go (StructFieldRef embedD "embedC"%go "d")))) #()))).
 
 (* go: empty_functions.go:3:6 *)
 Definition emptyⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -3207,7 +3207,7 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  a' : w64;
+  a' : go_string;
 }.
 
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
@@ -3218,7 +3218,7 @@ End def.
 End embedA.
 
 Definition embedAⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
-  (go.FieldDecl "a"%go go.uint64)
+  (go.FieldDecl "a"%go go.string)
 ].
 
 Class embedA_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=

@@ -320,6 +320,11 @@ Proof.
   wp_method_call. wp_auto.
   wp_method_call. wp_auto.
   wp_method_call. repeat wp_call. wp_auto.
+  iStructNamed "d".
+  wp_auto.
+  wp_method_call. repeat wp_call.
+  iClear "a". clear a_ptr. wp_auto.
+  rewrite bool_decide_true //.  wp_end.
 Qed.
 
 Lemma wp_pointerAny :
