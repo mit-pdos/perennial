@@ -203,7 +203,7 @@ Class Box_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} 
   #[global] Box_get_Value T T' (x : Box.t T') :: go.IsGoStepPureDet (StructFieldGet (Box T) "Value") #x #x.(Box.Value');
   #[global] Box_set_Value T T' (x : Box.t T') y :: go.IsGoStepPureDet (StructFieldSet (Box T) "Value") (#x, #y) #(x <|Box.Value' := y|>);
   #[global] Box_Get_unfold T :: MethodUnfold (Box T) "Get" (Box__Getⁱᵐᵖˡ T);
-  #[global] Box'ptr_Get_unfold T :: MethodUnfold (go.PointerType (Box T)) "Get" (λ: "$r", MethodResolve (Box T) "Get" #() (![(Box T)] "$r"));
+  #[global] Box'ptr_Get_unfold T :: MethodUnfold (go.PointerType (Box T)) "Get" (λ: "$r", MethodResolve (Box T) "Get" (![(Box T)] "$r"));
 }.
 
 Module Container.

@@ -3182,8 +3182,8 @@ Class SquareStruct_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocal
   #[global] SquareStruct_set_Side (x : SquareStruct.t) y :: go.IsGoStepPureDet (StructFieldSet (SquareStruct) "Side") (#x, #y) #(x <|SquareStruct.Side' := y|>);
   #[global] SquareStruct_Square_unfold :: MethodUnfold (SquareStruct) "Square" (SquareStruct__Squareⁱᵐᵖˡ);
   #[global] SquareStruct_Volume_unfold :: MethodUnfold (SquareStruct) "Volume" (SquareStruct__Volumeⁱᵐᵖˡ);
-  #[global] SquareStruct'ptr_Square_unfold :: MethodUnfold (go.PointerType (SquareStruct)) "Square" (λ: "$r", MethodResolve (SquareStruct) "Square" #() (![(SquareStruct)] "$r"));
-  #[global] SquareStruct'ptr_Volume_unfold :: MethodUnfold (go.PointerType (SquareStruct)) "Volume" (λ: "$r", MethodResolve (SquareStruct) "Volume" #() (![(SquareStruct)] "$r"));
+  #[global] SquareStruct'ptr_Square_unfold :: MethodUnfold (go.PointerType (SquareStruct)) "Square" (λ: "$r", MethodResolve (SquareStruct) "Square" (![(SquareStruct)] "$r"));
+  #[global] SquareStruct'ptr_Volume_unfold :: MethodUnfold (go.PointerType (SquareStruct)) "Volume" (λ: "$r", MethodResolve (SquareStruct) "Volume" (![(SquareStruct)] "$r"));
 }.
 
 Module LoopStruct.
@@ -3212,7 +3212,7 @@ Class LoopStruct_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalCo
   #[global] LoopStruct_get_loopNext (x : LoopStruct.t) :: go.IsGoStepPureDet (StructFieldGet (LoopStruct) "loopNext") #x #x.(LoopStruct.loopNext');
   #[global] LoopStruct_set_loopNext (x : LoopStruct.t) y :: go.IsGoStepPureDet (StructFieldSet (LoopStruct) "loopNext") (#x, #y) #(x <|LoopStruct.loopNext' := y|>);
   #[global] LoopStruct_forLoopWait_unfold :: MethodUnfold (LoopStruct) "forLoopWait" (LoopStruct__forLoopWaitⁱᵐᵖˡ);
-  #[global] LoopStruct'ptr_forLoopWait_unfold :: MethodUnfold (go.PointerType (LoopStruct)) "forLoopWait" (λ: "$r", MethodResolve (LoopStruct) "forLoopWait" #() (![(LoopStruct)] "$r"));
+  #[global] LoopStruct'ptr_forLoopWait_unfold :: MethodUnfold (go.PointerType (LoopStruct)) "forLoopWait" (λ: "$r", MethodResolve (LoopStruct) "forLoopWait" (![(LoopStruct)] "$r"));
 }.
 
 Module BoolTest.
@@ -3414,7 +3414,7 @@ Class S_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{
   #[global] S'ptr_negateC_unfold :: MethodUnfold (go.PointerType (S)) "negateC" (S__negateCⁱᵐᵖˡ);
   #[global] S'ptr_readA_unfold :: MethodUnfold (go.PointerType (S)) "readA" (S__readAⁱᵐᵖˡ);
   #[global] S'ptr_readB_unfold :: MethodUnfold (go.PointerType (S)) "readB" (S__readBⁱᵐᵖˡ);
-  #[global] S'ptr_readBVal_unfold :: MethodUnfold (go.PointerType (S)) "readBVal" (λ: "$r", MethodResolve (S) "readBVal" #() (![(S)] "$r"));
+  #[global] S'ptr_readBVal_unfold :: MethodUnfold (go.PointerType (S)) "readBVal" (λ: "$r", MethodResolve (S) "readBVal" (![(S)] "$r"));
   #[global] S'ptr_updateBValX_unfold :: MethodUnfold (go.PointerType (S)) "updateBValX" (S__updateBValXⁱᵐᵖˡ);
 }.
 
@@ -3556,14 +3556,14 @@ Class Log_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} 
   #[global] Log_Write_unfold :: MethodUnfold (Log) "Write" (Log__Writeⁱᵐᵖˡ);
   #[global] Log_lock_unfold :: MethodUnfold (Log) "lock" (Log__lockⁱᵐᵖˡ);
   #[global] Log_unlock_unfold :: MethodUnfold (Log) "unlock" (Log__unlockⁱᵐᵖˡ);
-  #[global] Log'ptr_Apply_unfold :: MethodUnfold (go.PointerType (Log)) "Apply" (λ: "$r", MethodResolve (Log) "Apply" #() (![(Log)] "$r"));
-  #[global] Log'ptr_BeginTxn_unfold :: MethodUnfold (go.PointerType (Log)) "BeginTxn" (λ: "$r", MethodResolve (Log) "BeginTxn" #() (![(Log)] "$r"));
-  #[global] Log'ptr_Commit_unfold :: MethodUnfold (go.PointerType (Log)) "Commit" (λ: "$r", MethodResolve (Log) "Commit" #() (![(Log)] "$r"));
-  #[global] Log'ptr_Read_unfold :: MethodUnfold (go.PointerType (Log)) "Read" (λ: "$r", MethodResolve (Log) "Read" #() (![(Log)] "$r"));
-  #[global] Log'ptr_Size_unfold :: MethodUnfold (go.PointerType (Log)) "Size" (λ: "$r", MethodResolve (Log) "Size" #() (![(Log)] "$r"));
-  #[global] Log'ptr_Write_unfold :: MethodUnfold (go.PointerType (Log)) "Write" (λ: "$r", MethodResolve (Log) "Write" #() (![(Log)] "$r"));
-  #[global] Log'ptr_lock_unfold :: MethodUnfold (go.PointerType (Log)) "lock" (λ: "$r", MethodResolve (Log) "lock" #() (![(Log)] "$r"));
-  #[global] Log'ptr_unlock_unfold :: MethodUnfold (go.PointerType (Log)) "unlock" (λ: "$r", MethodResolve (Log) "unlock" #() (![(Log)] "$r"));
+  #[global] Log'ptr_Apply_unfold :: MethodUnfold (go.PointerType (Log)) "Apply" (λ: "$r", MethodResolve (Log) "Apply" (![(Log)] "$r"));
+  #[global] Log'ptr_BeginTxn_unfold :: MethodUnfold (go.PointerType (Log)) "BeginTxn" (λ: "$r", MethodResolve (Log) "BeginTxn" (![(Log)] "$r"));
+  #[global] Log'ptr_Commit_unfold :: MethodUnfold (go.PointerType (Log)) "Commit" (λ: "$r", MethodResolve (Log) "Commit" (![(Log)] "$r"));
+  #[global] Log'ptr_Read_unfold :: MethodUnfold (go.PointerType (Log)) "Read" (λ: "$r", MethodResolve (Log) "Read" (![(Log)] "$r"));
+  #[global] Log'ptr_Size_unfold :: MethodUnfold (go.PointerType (Log)) "Size" (λ: "$r", MethodResolve (Log) "Size" (![(Log)] "$r"));
+  #[global] Log'ptr_Write_unfold :: MethodUnfold (go.PointerType (Log)) "Write" (λ: "$r", MethodResolve (Log) "Write" (![(Log)] "$r"));
+  #[global] Log'ptr_lock_unfold :: MethodUnfold (go.PointerType (Log)) "lock" (λ: "$r", MethodResolve (Log) "lock" (![(Log)] "$r"));
+  #[global] Log'ptr_unlock_unfold :: MethodUnfold (go.PointerType (Log)) "unlock" (λ: "$r", MethodResolve (Log) "unlock" (![(Log)] "$r"));
 }.
 
 Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=

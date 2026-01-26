@@ -3229,7 +3229,7 @@ Class embedA_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContex
   #[global] embedA_set_a (x : embedA.t) y :: go.IsGoStepPureDet (StructFieldSet (embedA) "a") (#x, #y) #(x <|embedA.a' := y|>);
   #[global] embedA_Foo_unfold :: MethodUnfold (embedA) "Foo" (embedA__Fooⁱᵐᵖˡ);
   #[global] embedA'ptr_Bar_unfold :: MethodUnfold (go.PointerType (embedA)) "Bar" (embedA__Barⁱᵐᵖˡ);
-  #[global] embedA'ptr_Foo_unfold :: MethodUnfold (go.PointerType (embedA)) "Foo" (λ: "$r", MethodResolve (embedA) "Foo" #() (![(embedA)] "$r"));
+  #[global] embedA'ptr_Foo_unfold :: MethodUnfold (go.PointerType (embedA)) "Foo" (λ: "$r", MethodResolve (embedA) "Foo" (![(embedA)] "$r"));
 }.
 
 Module embedB.
@@ -3258,9 +3258,9 @@ Class embedB_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContex
   #[global] embedB_get_embedA (x : embedB.t) :: go.IsGoStepPureDet (StructFieldGet (embedB) "embedA") #x #x.(embedB.embedA');
   #[global] embedB_set_embedA (x : embedB.t) y :: go.IsGoStepPureDet (StructFieldSet (embedB) "embedA") (#x, #y) #(x <|embedB.embedA' := y|>);
   #[global] embedB_Foo_unfold :: MethodUnfold (embedB) "Foo" (embedB__Fooⁱᵐᵖˡ);
-  #[global] embedB'ptr_Bar_unfold :: MethodUnfold (go.PointerType (embedB)) "Bar" (λ: "$r", MethodResolve (go.PointerType embedA) "Bar" #() (StructFieldRef embedB "embedA"%go "$r"));
+  #[global] embedB'ptr_Bar_unfold :: MethodUnfold (go.PointerType (embedB)) "Bar" (λ: "$r", MethodResolve (go.PointerType embedA) "Bar" (StructFieldRef embedB "embedA"%go "$r"));
   #[global] embedB'ptr_Car_unfold :: MethodUnfold (go.PointerType (embedB)) "Car" (embedB__Carⁱᵐᵖˡ);
-  #[global] embedB'ptr_Foo_unfold :: MethodUnfold (go.PointerType (embedB)) "Foo" (λ: "$r", MethodResolve (embedB) "Foo" #() (![(embedB)] "$r"));
+  #[global] embedB'ptr_Foo_unfold :: MethodUnfold (go.PointerType (embedB)) "Foo" (λ: "$r", MethodResolve (embedB) "Foo" (![(embedB)] "$r"));
 }.
 
 Module embedC.
@@ -3288,12 +3288,12 @@ Class embedC_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContex
   #[global] embedC_underlying :: (embedC) <u (embedCⁱᵐᵖˡ);
   #[global] embedC_get_embedB (x : embedC.t) :: go.IsGoStepPureDet (StructFieldGet (embedC) "embedB") #x #x.(embedC.embedB');
   #[global] embedC_set_embedB (x : embedC.t) y :: go.IsGoStepPureDet (StructFieldSet (embedC) "embedB") (#x, #y) #(x <|embedC.embedB' := y|>);
-  #[global] embedC_Bar_unfold :: MethodUnfold (embedC) "Bar" (λ: "$r", MethodResolve (go.PointerType embedB) "Bar" #() (StructFieldGet (embedC) "embedB" "$r" ))%V;
-  #[global] embedC_Car_unfold :: MethodUnfold (embedC) "Car" (λ: "$r", MethodResolve (go.PointerType embedB) "Car" #() (StructFieldGet (embedC) "embedB" "$r" ))%V;
-  #[global] embedC_Foo_unfold :: MethodUnfold (embedC) "Foo" (λ: "$r", MethodResolve (go.PointerType embedB) "Foo" #() (StructFieldGet (embedC) "embedB" "$r" ))%V;
-  #[global] embedC'ptr_Bar_unfold :: MethodUnfold (go.PointerType (embedC)) "Bar" (λ: "$r", MethodResolve (go.PointerType embedB) "Bar" #() (![go.PointerType embedB] (StructFieldRef embedC "embedB"%go "$r")));
-  #[global] embedC'ptr_Car_unfold :: MethodUnfold (go.PointerType (embedC)) "Car" (λ: "$r", MethodResolve (go.PointerType embedB) "Car" #() (![go.PointerType embedB] (StructFieldRef embedC "embedB"%go "$r")));
-  #[global] embedC'ptr_Foo_unfold :: MethodUnfold (go.PointerType (embedC)) "Foo" (λ: "$r", MethodResolve (go.PointerType embedB) "Foo" #() (![go.PointerType embedB] (StructFieldRef embedC "embedB"%go "$r")));
+  #[global] embedC_Bar_unfold :: MethodUnfold (embedC) "Bar" (λ: "$r", MethodResolve (go.PointerType embedB) "Bar" (StructFieldGet (embedC) "embedB" "$r" ))%V;
+  #[global] embedC_Car_unfold :: MethodUnfold (embedC) "Car" (λ: "$r", MethodResolve (go.PointerType embedB) "Car" (StructFieldGet (embedC) "embedB" "$r" ))%V;
+  #[global] embedC_Foo_unfold :: MethodUnfold (embedC) "Foo" (λ: "$r", MethodResolve (go.PointerType embedB) "Foo" (StructFieldGet (embedC) "embedB" "$r" ))%V;
+  #[global] embedC'ptr_Bar_unfold :: MethodUnfold (go.PointerType (embedC)) "Bar" (λ: "$r", MethodResolve (go.PointerType embedB) "Bar" (![go.PointerType embedB] (StructFieldRef embedC "embedB"%go "$r")));
+  #[global] embedC'ptr_Car_unfold :: MethodUnfold (go.PointerType (embedC)) "Car" (λ: "$r", MethodResolve (go.PointerType embedB) "Car" (![go.PointerType embedB] (StructFieldRef embedC "embedB"%go "$r")));
+  #[global] embedC'ptr_Foo_unfold :: MethodUnfold (go.PointerType (embedC)) "Foo" (λ: "$r", MethodResolve (go.PointerType embedB) "Foo" (![go.PointerType embedB] (StructFieldRef embedC "embedB"%go "$r")));
 }.
 
 Module embedD.
@@ -3321,12 +3321,12 @@ Class embedD_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContex
   #[global] embedD_underlying :: (embedD) <u (embedDⁱᵐᵖˡ);
   #[global] embedD_get_embedC (x : embedD.t) :: go.IsGoStepPureDet (StructFieldGet (embedD) "embedC") #x #x.(embedD.embedC');
   #[global] embedD_set_embedC (x : embedD.t) y :: go.IsGoStepPureDet (StructFieldSet (embedD) "embedC") (#x, #y) #(x <|embedD.embedC' := y|>);
-  #[global] embedD_Bar_unfold :: MethodUnfold (embedD) "Bar" (λ: "$r", MethodResolve embedC "Bar" #() (StructFieldGet (embedD) "embedC" "$r" ))%V;
-  #[global] embedD_Car_unfold :: MethodUnfold (embedD) "Car" (λ: "$r", MethodResolve embedC "Car" #() (StructFieldGet (embedD) "embedC" "$r" ))%V;
-  #[global] embedD_Foo_unfold :: MethodUnfold (embedD) "Foo" (λ: "$r", MethodResolve embedC "Foo" #() (StructFieldGet (embedD) "embedC" "$r" ))%V;
-  #[global] embedD'ptr_Bar_unfold :: MethodUnfold (go.PointerType (embedD)) "Bar" (λ: "$r", MethodResolve (go.PointerType embedC) "Bar" #() (StructFieldRef embedD "embedC"%go "$r"));
-  #[global] embedD'ptr_Car_unfold :: MethodUnfold (go.PointerType (embedD)) "Car" (λ: "$r", MethodResolve (go.PointerType embedC) "Car" #() (StructFieldRef embedD "embedC"%go "$r"));
-  #[global] embedD'ptr_Foo_unfold :: MethodUnfold (go.PointerType (embedD)) "Foo" (λ: "$r", MethodResolve (go.PointerType embedC) "Foo" #() (StructFieldRef embedD "embedC"%go "$r"));
+  #[global] embedD_Bar_unfold :: MethodUnfold (embedD) "Bar" (λ: "$r", MethodResolve embedC "Bar" (StructFieldGet (embedD) "embedC" "$r" ))%V;
+  #[global] embedD_Car_unfold :: MethodUnfold (embedD) "Car" (λ: "$r", MethodResolve embedC "Car" (StructFieldGet (embedD) "embedC" "$r" ))%V;
+  #[global] embedD_Foo_unfold :: MethodUnfold (embedD) "Foo" (λ: "$r", MethodResolve embedC "Foo" (StructFieldGet (embedD) "embedC" "$r" ))%V;
+  #[global] embedD'ptr_Bar_unfold :: MethodUnfold (go.PointerType (embedD)) "Bar" (λ: "$r", MethodResolve (go.PointerType embedC) "Bar" (StructFieldRef embedD "embedC"%go "$r"));
+  #[global] embedD'ptr_Car_unfold :: MethodUnfold (go.PointerType (embedD)) "Car" (λ: "$r", MethodResolve (go.PointerType embedC) "Car" (StructFieldRef embedD "embedC"%go "$r"));
+  #[global] embedD'ptr_Foo_unfold :: MethodUnfold (go.PointerType (embedD)) "Foo" (λ: "$r", MethodResolve (go.PointerType embedC) "Foo" (StructFieldRef embedD "embedC"%go "$r"));
 }.
 
 Module Enc.
@@ -3554,7 +3554,7 @@ Class concrete1_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalCon
   #[global] concrete1_underlying :: (concrete1) <u (concrete1ⁱᵐᵖˡ);
   #[global] concrete1_Foo_unfold :: MethodUnfold (concrete1) "Foo" (concrete1__Fooⁱᵐᵖˡ);
   #[global] concrete1'ptr_B_unfold :: MethodUnfold (go.PointerType (concrete1)) "B" (concrete1__Bⁱᵐᵖˡ);
-  #[global] concrete1'ptr_Foo_unfold :: MethodUnfold (go.PointerType (concrete1)) "Foo" (λ: "$r", MethodResolve (concrete1) "Foo" #() (![(concrete1)] "$r"));
+  #[global] concrete1'ptr_Foo_unfold :: MethodUnfold (go.PointerType (concrete1)) "Foo" (λ: "$r", MethodResolve (concrete1) "Foo" (![(concrete1)] "$r"));
 }.
 
 Module my_u32.
@@ -3763,7 +3763,7 @@ Class wrapExternalStruct_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!G
   #[global] wrapExternalStruct_get_j (x : wrapExternalStruct.t) :: go.IsGoStepPureDet (StructFieldGet (wrapExternalStruct) "j") #x #x.(wrapExternalStruct.j');
   #[global] wrapExternalStruct_set_j (x : wrapExternalStruct.t) y :: go.IsGoStepPureDet (StructFieldSet (wrapExternalStruct) "j") (#x, #y) #(x <|wrapExternalStruct.j' := y|>);
   #[global] wrapExternalStruct_join_unfold :: MethodUnfold (wrapExternalStruct) "join" (wrapExternalStruct__joinⁱᵐᵖˡ);
-  #[global] wrapExternalStruct'ptr_join_unfold :: MethodUnfold (go.PointerType (wrapExternalStruct)) "join" (λ: "$r", MethodResolve (wrapExternalStruct) "join" #() (![(wrapExternalStruct)] "$r"));
+  #[global] wrapExternalStruct'ptr_join_unfold :: MethodUnfold (go.PointerType (wrapExternalStruct)) "join" (λ: "$r", MethodResolve (wrapExternalStruct) "join" (![(wrapExternalStruct)] "$r"));
 }.
 
 Module typing.
@@ -3873,8 +3873,8 @@ Class Other_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext
   #[global] Other_underlying :: (Other) <u (Otherⁱᵐᵖˡ);
   #[global] Other_get_RecursiveEmbedded (x : Other.t) :: go.IsGoStepPureDet (StructFieldGet (Other) "RecursiveEmbedded") #x #x.(Other.RecursiveEmbedded');
   #[global] Other_set_RecursiveEmbedded (x : Other.t) y :: go.IsGoStepPureDet (StructFieldSet (Other) "RecursiveEmbedded") (#x, #y) #(x <|Other.RecursiveEmbedded' := y|>);
-  #[global] Other_recurEmbeddedMethod_unfold :: MethodUnfold (Other) "recurEmbeddedMethod" (λ: "$r", MethodResolve (go.PointerType RecursiveEmbedded) "recurEmbeddedMethod" #() (StructFieldGet (Other) "RecursiveEmbedded" "$r" ))%V;
-  #[global] Other'ptr_recurEmbeddedMethod_unfold :: MethodUnfold (go.PointerType (Other)) "recurEmbeddedMethod" (λ: "$r", MethodResolve (go.PointerType RecursiveEmbedded) "recurEmbeddedMethod" #() (![go.PointerType RecursiveEmbedded] (StructFieldRef Other "RecursiveEmbedded"%go "$r")));
+  #[global] Other_recurEmbeddedMethod_unfold :: MethodUnfold (Other) "recurEmbeddedMethod" (λ: "$r", MethodResolve (go.PointerType RecursiveEmbedded) "recurEmbeddedMethod" (StructFieldGet (Other) "RecursiveEmbedded" "$r" ))%V;
+  #[global] Other'ptr_recurEmbeddedMethod_unfold :: MethodUnfold (go.PointerType (Other)) "recurEmbeddedMethod" (λ: "$r", MethodResolve (go.PointerType RecursiveEmbedded) "recurEmbeddedMethod" (![go.PointerType RecursiveEmbedded] (StructFieldRef Other "RecursiveEmbedded"%go "$r")));
 }.
 
 Module RecursiveEmbedded.
@@ -4000,7 +4000,7 @@ Class sliceOfThings_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLoca
   #[global] sliceOfThings_get_things (x : sliceOfThings.t) :: go.IsGoStepPureDet (StructFieldGet (sliceOfThings) "things") #x #x.(sliceOfThings.things');
   #[global] sliceOfThings_set_things (x : sliceOfThings.t) y :: go.IsGoStepPureDet (StructFieldSet (sliceOfThings) "things") (#x, #y) #(x <|sliceOfThings.things' := y|>);
   #[global] sliceOfThings_getThingRef_unfold :: MethodUnfold (sliceOfThings) "getThingRef" (sliceOfThings__getThingRefⁱᵐᵖˡ);
-  #[global] sliceOfThings'ptr_getThingRef_unfold :: MethodUnfold (go.PointerType (sliceOfThings)) "getThingRef" (λ: "$r", MethodResolve (sliceOfThings) "getThingRef" #() (![(sliceOfThings)] "$r"));
+  #[global] sliceOfThings'ptr_getThingRef_unfold :: MethodUnfold (go.PointerType (sliceOfThings)) "getThingRef" (λ: "$r", MethodResolve (sliceOfThings) "getThingRef" (![(sliceOfThings)] "$r"));
 }.
 
 Module Point.
@@ -4035,9 +4035,9 @@ Class Point_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext
   #[global] Point_Add_unfold :: MethodUnfold (Point) "Add" (Point__Addⁱᵐᵖˡ);
   #[global] Point_GetField_unfold :: MethodUnfold (Point) "GetField" (Point__GetFieldⁱᵐᵖˡ);
   #[global] Point_IgnoreReceiver_unfold :: MethodUnfold (Point) "IgnoreReceiver" (Point__IgnoreReceiverⁱᵐᵖˡ);
-  #[global] Point'ptr_Add_unfold :: MethodUnfold (go.PointerType (Point)) "Add" (λ: "$r", MethodResolve (Point) "Add" #() (![(Point)] "$r"));
-  #[global] Point'ptr_GetField_unfold :: MethodUnfold (go.PointerType (Point)) "GetField" (λ: "$r", MethodResolve (Point) "GetField" #() (![(Point)] "$r"));
-  #[global] Point'ptr_IgnoreReceiver_unfold :: MethodUnfold (go.PointerType (Point)) "IgnoreReceiver" (λ: "$r", MethodResolve (Point) "IgnoreReceiver" #() (![(Point)] "$r"));
+  #[global] Point'ptr_Add_unfold :: MethodUnfold (go.PointerType (Point)) "Add" (λ: "$r", MethodResolve (Point) "Add" (![(Point)] "$r"));
+  #[global] Point'ptr_GetField_unfold :: MethodUnfold (go.PointerType (Point)) "GetField" (λ: "$r", MethodResolve (Point) "GetField" (![(Point)] "$r"));
+  #[global] Point'ptr_IgnoreReceiver_unfold :: MethodUnfold (go.PointerType (Point)) "IgnoreReceiver" (λ: "$r", MethodResolve (Point) "IgnoreReceiver" (![(Point)] "$r"));
 }.
 
 Module TwoInts.
@@ -4108,7 +4108,7 @@ Class S_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{
   #[global] S'ptr_negateC_unfold :: MethodUnfold (go.PointerType (S)) "negateC" (S__negateCⁱᵐᵖˡ);
   #[global] S'ptr_readA_unfold :: MethodUnfold (go.PointerType (S)) "readA" (S__readAⁱᵐᵖˡ);
   #[global] S'ptr_readB_unfold :: MethodUnfold (go.PointerType (S)) "readB" (S__readBⁱᵐᵖˡ);
-  #[global] S'ptr_readBVal_unfold :: MethodUnfold (go.PointerType (S)) "readBVal" (λ: "$r", MethodResolve (S) "readBVal" #() (![(S)] "$r"));
+  #[global] S'ptr_readBVal_unfold :: MethodUnfold (go.PointerType (S)) "readBVal" (λ: "$r", MethodResolve (S) "readBVal" (![(S)] "$r"));
   #[global] S'ptr_refC_unfold :: MethodUnfold (go.PointerType (S)) "refC" (S__refCⁱᵐᵖˡ);
   #[global] S'ptr_writeB_unfold :: MethodUnfold (go.PointerType (S)) "writeB" (S__writeBⁱᵐᵖˡ);
 }.
