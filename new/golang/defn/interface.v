@@ -50,7 +50,7 @@ Class InterfaceSemantics :=
 
   #[global] convert_to_interface (v : val)
     `{!from ↓u funder} `{!to ≤u go.InterfaceType elems} ::
-    go.GoExprEq (Convert from to v)
+    go.IsGoStepPureDet (Convert from to) v
     (Val (if is_interface_type funder then v else
             if is_untyped_nil funder then #interface.nil
             else #(interface.mk_ok from v)));

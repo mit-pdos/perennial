@@ -279,9 +279,7 @@ Lemma wp_useFloat :
     @! unittest.useFloat #()
   {{{ (f : w64), RET #f; True }}}.
 Proof.
-  wp_start. wp_auto.
-  repeat wp_apply wp_make_nondet_float64 as "% _".
-  by iApply "HΦ".
+  wp_start. wp_auto. wp_end.
 Qed.
 
 Lemma wp_intSliceLoop (s: slice.t) (xs: list w64) :
@@ -296,14 +294,14 @@ Proof.
       "i" ∷ i_ptr ↦ i ∗
       "xs" ∷ xs_ptr ↦ s ∗
       "sum" ∷ sum_ptr ↦ sum ∗
-      "%Hi" ∷ ⌜0 ≤ sint.Z i ≤ sint.Z (slice.len_f s)⌝
+      "%Hi" ∷ ⌜0 ≤ sint.Z i ≤ sint.Z (slice.len s)⌝
     )%I with "[$i $sum $xs]" as "IH".
   { word. }
   wp_for "IH".
   wp_if_destruct.
-  - wp_pure; first word.
+  - rewrite -> decide_True; last word. wp_auto.
     list_elem xs (sint.nat i) as x_i.
-    wp_apply (wp_load_slice_elem with "[$Hs]") as "Hs"; first word.
+    wp_apply (wp_load_slice_index with "[$Hs]") as "Hs"; first word.
     { eauto. }
     wp_for_post.
     iFrame.
@@ -312,16 +310,16 @@ Proof.
 Qed.
 
 
-Lemma wp_useEmbeddedMethod (d : unittest.embedD.t) :
-  {{{ is_pkg_init unittest }}}
+Lemma wp_useEmbeddedMethod (d : unittest.embedD.t) (b : unittest.embedB.t) :
+  {{{ is_pkg_init unittest ∗ d.(unittest.embedD.embedC').(unittest.embedC.embedB') ↦ b }}}
     @! unittest.useEmbeddedMethod #d
   {{{ RET #true; True }}}.
 Proof.
   wp_start. wp_auto.
   wp_method_call. wp_auto.
-  Search struct.field_get.
-  (* FIXME: struct.field_get WP *)
-  wp_method_call.
+  wp_method_call. wp_auto.
+  wp_method_call. wp_auto.
+  wp_method_call. repeat wp_call. wp_auto.
 Qed.
 
 Lemma wp_pointerAny :
@@ -330,11 +328,8 @@ Lemma wp_pointerAny :
   {{{ (l:loc), RET #l; l ↦ interface.nil }}}.
 Proof.
   wp_start.
-  wp_auto.
   wp_alloc p as "Hp".
-  wp_auto.
-  iApply "HΦ".
-  iFrame.
+  wp_auto. wp_end.
 Qed.
 
 Lemma wp_useRuneOps (r0: w32) :
@@ -344,8 +339,7 @@ Lemma wp_useRuneOps (r0: w32) :
 Proof.
   wp_start.
   wp_auto.
-  iApply "HΦ".
-  done.
+  wp_end.
 Qed.
 
-End proof.
+End wps.

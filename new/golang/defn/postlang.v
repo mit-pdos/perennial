@@ -70,6 +70,24 @@ Definition t := loc.
 Definition nil : t := null.
 End map.
 
+Class FloatOps :=
+  {
+    float64_neg : w64 → w64;
+    float64_add : w64 → w64 → w64;
+    float64_sub : w64 → w64 → w64;
+    float64_mul : w64 → w64 → w64;
+    float64_div : w64 → w64 → w64;
+    float64_leb : w64 → w64 → bool;
+
+    float32_neg : w32 → w32;
+    float32_add : w32 → w32 → w32;
+    float32_sub : w32 → w32 → w32;
+    float32_mul : w32 → w32 → w32;
+    float32_div : w32 → w32 → w32;
+    float32_leb : w32 → w32 → bool;
+
+    float64_to_float32 : w64 → w32;
+  }.
 Class GoSemanticsFunctions {ext : ffi_syntax} :=
   {
     underlying : go.type → go.type;
@@ -112,6 +130,7 @@ Class GoSemanticsFunctions {ext : ffi_syntax} :=
 
     is_map_pure (v : val) (m : val → bool * val) : Prop;
     map_default : val → val;
+    #[global] float_ops :: FloatOps;
   }.
 
 Global Notation "ptr .[ t , field ]" := (struct_field_ref t field ptr)
@@ -265,13 +284,13 @@ Notation "t  ↓u  tunder" := (IsUnderlying t tunder) (at level 70).
 Class ConvertUnderlying from_under to_under (v v' : val) `{!GoSemanticsFunctions} : Prop :=
 {
   convert_underlying_def `{!from ↓u from_under} `{!to ↓u to_under} :
-    GoExprEq (Convert from to v) v'
+    IsGoStepPureDet (Convert from to) v v'
 }.
 Global Hint Mode ConvertUnderlying + + + - - : typeclass_instances.
 
 Global Instance convert_underlying from to v from_under to_under v' `{!GoSemanticsFunctions} :
   from ↓u from_under → to ↓u to_under → ConvertUnderlying from_under to_under v v' →
-  GoExprEq (Convert from to v) v'.
+  IsGoStepPureDet (Convert from to) v v'.
 Proof. intros. apply convert_underlying_def. Qed.
 
 Class CoreComparisonSemantics `{!GoSemanticsFunctions} : Prop :=
@@ -506,7 +525,7 @@ Class CoreSemantics `{!GoSemanticsFunctions} : Prop :=
      end);
 
   #[global] convert_underlying_same t v :: ConvertUnderlying t t v v;
-  #[global] convert_same t v :: GoExprEq (Convert t t v) v;
+  #[global] convert_same t v :: IsGoStepPureDet (Convert t t) v v;
 }.
 
 End defs.

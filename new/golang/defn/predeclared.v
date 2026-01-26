@@ -121,6 +121,8 @@ Inductive is_predeclared : go.type → Prop :=
 | is_predeclared_string : is_predeclared go.string
 | is_predeclared_bool : is_predeclared go.bool
 | is_predeclared_Pointer : is_predeclared unsafe.Pointer
+| is_predeclared_float32 : is_predeclared go.float32
+| is_predeclared_float64 : is_predeclared go.float64
 
 (* Treating this like a predeclared too. *)
 | is_predeclared_proph_id : is_predeclared go.proph_id.
@@ -467,6 +469,44 @@ Class Uint8Semantics `{!GoSemanticsFunctions} :=
   #[global] convert_uint16_to_uint8 (v : w16) :: go.ConvertUnderlying go.uint16 go.uint8 #v #((W8 $ uint.Z v));
   #[global] convert_uint8_to_uint8 (v : w8) :: go.ConvertUnderlying go.uint8 go.uint8 #v #v;
 }.
+Class UntypedFloatSemantics `{!GoSemanticsFunctions} :=
+{
+  #[global] underlying_untyped_float :: go.untyped_float ↓u go.untyped_float;
+  #[global] convert_untyped_float64 (v : w64) ::
+    go.ConvertUnderlying go.untyped_float go.float64 #v #v;
+  #[global] convert_untyped_float32 (v : w64) ::
+    go.ConvertUnderlying go.untyped_float go.float32 #v #(float64_to_float32 v);
+}.
+Class Float64Semantics `{!GoSemanticsFunctions} :=
+{
+  #[global] type_repr_float64 :: go.TypeRepr go.float64 w64;
+  #[global] comparable_float64:: go.IsComparable go.float64;
+  #[global] underlying_float64 :: go.float64 ↓u go.float64;
+  #[global] go_eq_float64 :: go.AlwaysSafelyComparable go.float64 w64;
+  #[global] le_float64 (v1 v2 : w64) :: go.IsGoOp GoLe go.float64 (#v1, #v2) #(float64_leb v1 v2);
+  #[global] lt_float64 (v1 v2 : w64) :: go.IsGoOp GoLt go.float64 (#v1, #v2) #(float64_leb v1 v2 && bool_decide (v1 ≠ v2));
+  #[global] ge_float64 (v1 v2 : w64) :: go.IsGoOp GoGe go.float64 (#v1, #v2) #(float64_leb v2 v1);
+  #[global] gt_float64 (v1 v2 : w64) :: go.IsGoOp GoGt go.float64 (#v1, #v2) #(float64_leb v2 v1 && bool_decide (v1 ≠ v2));
+  #[global] plus_float64 (v1 v2 : w64) :: go.IsGoOp GoPlus go.float64 (#v1, #v2) #(float64_add v1 v2);
+  #[global] sub_float64 (v1 v2 : w64) :: go.IsGoOp GoSub go.float64 (#v1, #v2) #(float64_sub v1 v2);
+  #[global] mul_float64 (v1 v2 : w64) :: go.IsGoOp GoMul go.float64 (#v1, #v2) #(float64_mul v1 v2);
+  #[global] div_float64 (v1 v2 : w64) :: go.IsGoOp GoDiv go.float64 (#v1, #v2) #(float64_div v1 v2);
+}.
+Class Float32Semantics `{!GoSemanticsFunctions} :=
+{
+  #[global] type_repr_float32 :: go.TypeRepr go.float32 w32;
+  #[global] comparable_float32:: go.IsComparable go.float32;
+  #[global] underlying_float32 :: go.float32 ↓u go.float32;
+  #[global] go_eq_float32 :: go.AlwaysSafelyComparable go.float32 w32;
+  #[global] le_float32 (v1 v2 : w32) :: go.IsGoOp GoLe go.float32 (#v1, #v2) #(float32_leb v1 v2);
+  #[global] lt_float32 (v1 v2 : w32) :: go.IsGoOp GoLt go.float32 (#v1, #v2) #(float32_leb v1 v2 && bool_decide (v1 ≠ v2));
+  #[global] ge_float32 (v1 v2 : w32) :: go.IsGoOp GoGe go.float32 (#v1, #v2) #(float32_leb v2 v1);
+  #[global] gt_float32 (v1 v2 : w32) :: go.IsGoOp GoGt go.float32 (#v1, #v2) #(float32_leb v2 v1 && bool_decide (v1 ≠ v2));
+  #[global] plus_float32 (v1 v2 : w32) :: go.IsGoOp GoPlus go.float32 (#v1, #v2) #(float32_add v1 v2);
+  #[global] sub_float32 (v1 v2 : w32) :: go.IsGoOp GoSub go.float32 (#v1, #v2) #(float32_sub v1 v2);
+  #[global] mul_float32 (v1 v2 : w32) :: go.IsGoOp GoMul go.float32 (#v1, #v2) #(float32_mul v1 v2);
+  #[global] div_float32 (v1 v2 : w32) :: go.IsGoOp GoDiv go.float32 (#v1, #v2) #(float32_div v1 v2);
+}.
 
 Class PredeclaredSemantics `{!GoSemanticsFunctions} :=
 {
@@ -509,6 +549,10 @@ Class PredeclaredSemantics `{!GoSemanticsFunctions} :=
   #[global] uint32_semantics :: Uint32Semantics;
   #[global] uint16_semantics :: Uint16Semantics;
   #[global] uint8_semantics :: Uint8Semantics;
+
+  #[global] untyped_float_semantics :: UntypedFloatSemantics;
+  #[global] float64_semantics :: Float64Semantics;
+  #[global] float32_semantics :: Float32Semantics;
 
   #[global] comparable_string :: go.IsComparable go.string;
   #[global] go_eq_string :: go.AlwaysSafelyComparable go.string go_string;

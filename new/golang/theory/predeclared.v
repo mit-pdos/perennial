@@ -79,4 +79,10 @@ Proof. solve_into_val_typed. Qed.
 Global Instance into_val_typed_proph_id : IntoValTyped proph_id go.proph_id.
 Proof. solve_into_val_typed. Qed.
 
+Global Instance into_val_typed_float64 : IntoValTyped w64 go.float64.
+Proof. solve_into_val_typed. Qed.
+
+Global Instance into_val_typed_float32 : IntoValTyped w32 go.float32.
+Proof. solve_into_val_typed. Qed.
+
 End into_val_typed_instances.
