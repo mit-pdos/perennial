@@ -309,7 +309,6 @@ Proof.
   - iApply "HΦ". iFrame.
 Qed.
 
-
 Lemma wp_useEmbeddedMethod (d : unittest.embedD.t) (b : unittest.embedB.t) :
   {{{ is_pkg_init unittest ∗ d.(unittest.embedD.embedC').(unittest.embedC.embedB') ↦ b }}}
     @! unittest.useEmbeddedMethod #d
@@ -320,8 +319,6 @@ Proof.
   wp_method_call. wp_auto.
   wp_method_call. wp_auto.
   wp_method_call. repeat wp_call. wp_auto.
-  iStructNamed "d".
-  wp_auto.
   wp_method_call. repeat wp_call.
   iClear "a". clear a_ptr. wp_auto.
   rewrite bool_decide_true //.  wp_end.
