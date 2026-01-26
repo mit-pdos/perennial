@@ -384,14 +384,13 @@ Proof.
   - wp_end.
 Qed.
 
-Lemma wp_ifJoinDemo_new_tactic (arg1 arg2: bool) :
+Lemma wp_ifJoinDemo_if_join_tactic (arg1 arg2: bool) :
   {{{ is_pkg_init unittest }}}
     @! unittest.ifJoinDemo #arg1 #arg2
   {{{ RET #(); True }}}.
 Proof.
   wp_start.
   wp_auto.
-  wp_bind (if: _ then _ else _)%E.
   iPersist "arg2".
   wp_if_join (λ v, ⌜v = execute_val⌝ ∗
                    ∃ (sl: slice.t) (xs: list w64),
