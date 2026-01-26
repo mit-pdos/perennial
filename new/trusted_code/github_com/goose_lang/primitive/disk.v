@@ -2,13 +2,20 @@
 From Perennial.goose_lang.ffi Require Export disk_ffi.impl.
 From New.golang Require Import defn.
 
+(* This is generalized over {ext} so functions that are generalized over {ext}
+   can refers to it. The only definition in a goose translation that is
+   specialized to a concrete FFI is the Assumptions propclass.  So, only [ⁱᵐᵖˡ]
+   stuff should be specializd to the ffi in trusted code. *)
+Section disk_consts.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+  Definition BlockSize : val :=
+    #(W64 4096).
+End disk_consts.
+
 #[global]
 Existing Instances disk_op disk_model.
 Section disk.
 Context {go_gctx : GoGlobalContext}.
-
-  Definition BlockSize :=
-    #(W64 4096).
 
   Definition Getⁱᵐᵖˡ : val :=
     λ: <>, ExtV ().
