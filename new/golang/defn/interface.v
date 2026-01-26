@@ -38,12 +38,13 @@ Class InterfaceSemantics :=
 {
   #[global] is_comparable_interface elems :: go.IsComparable (go.InterfaceType elems);
   #[global] go_eq_interface elems i1 i2 ::
-    go.GoExprEq (go_eq (go.InterfaceType elems) #i1 #i2)
+    go.IsGoOp GoEquals (go.InterfaceType elems) #i1 #i2
       (match i1, i2 with
        | interface.nil, interface.nil => #true
        | (interface.ok i1), (interface.ok i2) =>
            if decide (i1.(interface.ty) = i2.(interface.ty)) then
-             go_eq i1.(interface.ty) i1.(interface.v) i2.(interface.v)
+             (CheckComparable i1.(interface.ty);;
+              GoOp GoEquals i1.(interface.ty) (i1.(interface.v), i2.(interface.v))%V)%E
            else #false
        | _, _ => #false
        end);

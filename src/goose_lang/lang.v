@@ -181,6 +181,7 @@ Inductive go_instruction : Type :=
 | Convert (from to : go.type)
 | GoOp (o : go_operator) (t : go.type)
 | GoUnOp (o : go_unary_operator) (t : go.type)
+| CheckComparable (t : go.type)
 
 | GoLoad (t : go.type)
 | GoStore (t : go.type)
