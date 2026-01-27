@@ -213,13 +213,6 @@ Proof.
   by iApply "HΦ".
 Qed.
 
-Global Instance pure_wp_go_op_equals_comparable t (v1 v2 : val) `{!go.IsComparable t} :
-  PureWp True (go_op GoEquals t (v1, v2)%V) (go_eq t v1 v2).
-Proof.
-  iIntros "%%*%% HΦ". pose proof go.is_comparable.
-  wp_pure_lc "?". wp_pures. by iApply "HΦ".
-Qed.
-
 Lemma wp_GlobalAlloc v t `{!ZeroVal V} `{!TypedPointsto V} `{!go.TypeRepr t V}
   `{!IntoValTyped V t} :
   {{{ True }}}

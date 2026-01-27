@@ -36,7 +36,8 @@ Definition type_set_contains {go_ctx : GoLocalContext} t t' : bool :=
 
 Class InterfaceSemantics :=
 {
-  #[global] is_comparable_interface elems :: go.IsComparable (go.InterfaceType elems);
+  #[global] is_comparable_interface elems ::
+    ⟦CheckComparable (go.InterfaceType elems), #()⟧ ⤳[under] #();
   #[global] go_eq_interface elems i1 i2 ::
     ⟦GoOp GoEquals (go.InterfaceType elems), (#i1, #i2)⟧ ⤳[under]
       (match i1, i2 with

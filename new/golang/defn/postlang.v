@@ -279,7 +279,7 @@ Class CoreComparisonSemantics `{!GoSemanticsFunctions} : Prop :=
   #[global] go_eq_channel t dir :: IsStrictlyComparable (go.ChannelType t dir) loc;
 
   #[global] struct_is_comparable fds
-    `{!TCForall (λ fd, IsComparable (match fd with go.FieldDecl _ t | go.EmbeddedField _ t => t end)) fds} ::
+    `{!TCForall (λ fd, ⟦CheckComparable (match fd with go.FieldDecl _ t | go.EmbeddedField _ t => t end), #()⟧ ⤳[under] #()) fds} ::
     ⟦CheckComparable (go.StructType fds), #()⟧ ⤳[under] #();
   #[global] go_eq_struct fds v1 v2 ::
     ⟦GoOp GoEquals (go.StructType fds), (v1, v2)⟧ ⤳[under]
@@ -363,6 +363,8 @@ Class CoreSemantics `{!GoSemanticsFunctions} : Prop :=
    ⟦Index t_under, v⟧ ⤳[under] e → ⟦Index t, v⟧ ⤳ e;
   #[global] index_ref_underlying_typed `{!t ↓u t_under} v e ::
    ⟦IndexRef t_under, v⟧ ⤳[under] e → ⟦IndexRef t, v⟧ ⤳ e;
+  #[global] check_comparable_underlying `{!t ↓u t_under} v e ::
+   ⟦CheckComparable t_under, v⟧ ⤳[under] e → ⟦CheckComparable t, v⟧ ⤳ e;
 
   #[global] go_func_resolve_step n ts :: ⟦FuncResolve n ts, #()⟧ ⤳ #(functions n ts);
   #[global] go_method_resolve_step m t rcvr `{!t ↓u tunder} `{!NotInterface tunder} ::

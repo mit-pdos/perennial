@@ -15,7 +15,8 @@ Class ArraySemantics `{!GoSemanticsFunctions} :=
     ⟦ArrayLength, (ArrayV vs)⟧ ⤳
     (if decide (length vs < 2 ^ 63) then #(W64 (length vs)) else AngelicExit (# ()));
 
-  #[global] equals_array n t (H : go.IsComparable t) :: go.IsComparable (go.ArrayType n t);
+  #[global] equals_array n t (H : ⟦CheckComparable t, #()⟧ ⤳[under] #()) ::
+    ⟦CheckComparable (go.ArrayType n t), #()⟧ ⤳[under] #();
 
   #[global] type_repr_array ty V n `{!ZeroVal V} `{!go.TypeRepr ty V} ::
     go.TypeRepr (go.ArrayType n ty) (array.t V n);
