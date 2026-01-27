@@ -214,6 +214,21 @@ Class IsGoStepPureDet instr args e : Prop :=
     is_go_step_pure_det : is_go_step_pure instr args = eq e;
   }.
 
+Notation "⟦ instr , args ⟧ ⤳ e" := (IsGoStepPureDet instr args%V e%E)
+                                   (at level 1, e at level 70, format "⟦ instr ,  args ⟧  ⤳  e").
+
+Inductive tag := | under | internal.
+Class IsGoStepPureDetTagged (t : tag) instr args e : Prop :=
+  { is_go_step_det_internal : (⟦instr, args⟧ ⤳ e) }.
+
+Notation "⟦ instr , args ⟧ ⤳[ tag ] e" :=
+  (IsGoStepPureDetTagged tag instr args%V e%E)
+    (at level 1, e at level 70, format "⟦ instr ,  args ⟧  ⤳[ tag ]  e" ).
+
+Lemma tagged_steps tag :
+  ∀ instr args e, ⟦instr, args⟧ ⤳[tag] e → ⟦instr, args⟧ ⤳ e.
+Proof. destruct 1. done. Qed.
+
 Class UnderlyingEq s t `{!GoSemanticsFunctions} : Prop :=
   { underlying_eq : underlying s = underlying t }.
 Global Hint Mode UnderlyingEq + - - : typeclass_instances.
@@ -239,59 +254,21 @@ Notation "s  ≤u  t" := (UnderlyingEq s t) (at level 70).
 Notation "s  <u  t" := (UnderlyingDirectedEq s t) (at level 70).
 Notation "t  ↓u  tunder" := (IsUnderlying t tunder) (at level 70).
 
-(* Typeclasses to help semantics for underlying-respecting Go semantics. Automation will
-   try to apply the explicit instance (e.g., [is_convert_step]), which first
-   requires using typeclass search to determine the underlying type(s) (e.g., [t_under]),
-   and lastly requires looking for an instance of the typeclass (e.g.,
-   [IsConvert go.int go.uint]). *)
-Class IsConvert from_under to_under (v v' : val) `{!GoSemanticsFunctions} : Prop :=
-{ is_convert_step_def `{!from ↓u from_under} `{!to ↓u to_under} :
-  IsGoStepPureDet (Convert from to) v v' }.
-Global Hint Mode IsConvert + + + - - : typeclass_instances.
-Global Instance is_convert_step from to v from_under to_under v' `{!GoSemanticsFunctions} :
-  from ↓u from_under → to ↓u to_under → IsConvert from_under to_under v v' →
-  IsGoStepPureDet (Convert from to) v v'.
-Proof. intros. apply is_convert_step_def. Qed.
-
-Class IsGoOp (o : go_operator) (t_under : go.type) v1 v2 e' `{!GoSemanticsFunctions} : Prop :=
-  { is_go_op_step_def `{!t ↓u t_under} : IsGoStepPureDet (GoOp o t) (v1, v2)%V e' }.
-Global Hint Mode IsGoOp + + + + - - : typeclass_instances.
-Global Instance is_go_op_step o t t_under v1 v2 e' `{!GoSemanticsFunctions} :
-  t ↓u t_under → IsGoOp o t_under v1 v2 e' →
-  IsGoStepPureDet (GoOp o t) (v1, v2)%V e'.
-Proof. intros. apply is_go_op_step_def. Qed.
-
-Class IsCompositeLiteral (t_under : go.type) v e' `{!GoSemanticsFunctions} : Prop :=
-  { is_composite_literal_step_def `{!t ↓u t_under} : IsGoStepPureDet (CompositeLiteral t) v (e' t) }.
-Global Hint Mode IsCompositeLiteral + + - - : typeclass_instances.
-Global Instance is_composite_literal_step t t_under v e' `{!GoSemanticsFunctions} :
-  t ↓u t_under → IsCompositeLiteral t_under v e' →
-  IsGoStepPureDet (CompositeLiteral t) v (e' t).
-Proof. intros. apply is_composite_literal_step_def. Qed.
-
-Class IsComparable (t_under : go.type) `{!GoSemanticsFunctions} : Prop :=
-  { is_comparable_check_step_def `{!t ↓u t_under} :: IsGoStepPureDet (CheckComparable t) #() #() }.
-Global Hint Mode IsComparable + - : typeclass_instances.
-Global Instance is_comparable_step t t_under `{!GoSemanticsFunctions} :
-  t ↓u t_under → IsComparable t_under →
-  IsGoStepPureDet (CheckComparable t) #() #().
-Proof. intros. apply is_comparable_check_step_def. Qed.
-
 (* Helper definition to cover types for which `a == b` always executes safely. *)
 Class IsStrictlyComparable t V `{!EqDecision V} `{!GoSemanticsFunctions} : Prop :=
   {
     #[global] is_strictly_comparable ::
-      ∀ (v1 v2 : V), IsGoOp GoEquals t #v1 #v2 #(bool_decide (v1 = v2));
+      ∀ (v1 v2 : V), ⟦GoOp GoEquals t, (#v1, #v2)⟧ ⤳[under] #(bool_decide (v1 = v2));
   }.
 
 Class CoreComparisonSemantics `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] primitive_is_comparable t (H : is_primitive t) :: IsComparable t;
+  #[global] check_comparable_primitive `{!is_primitive t} :: ⟦CheckComparable t, #()⟧ ⤳[under] #();
 
   (* special case equality for functions *)
-  #[global] is_go_op_go_equals_func_nil_l sig f ::
-    IsGoOp GoEquals (go.FunctionType sig) #f #func.nil #(bool_decide (f = func.nil));
-  #[global] is_go_op_go_equals_func_nil_r sig f ::
+  #[global] go_op_go_equals_func_nil_l sig f ::
+    ⟦GoOp GoEquals (go.FunctionType sig), (#f, #func.nil)⟧ ⤳[under] #(bool_decide (f = func.nil));
+  #[global] go_op_go_equals_func_nil_r sig f ::
     IsGoOp GoEquals (go.FunctionType sig) #func.nil #f #(bool_decide (f = func.nil));
 
   #[global] pointer_is_comparable t :: IsComparable (go.PointerType t);
@@ -330,17 +307,10 @@ Class TypeRepr t V `{!ZeroVal V} `{!GoSemanticsFunctions} : Prop :=
   }.
 Global Hint Mode TypeRepr ! - - - : typeclass_instances.
 
-End defs.
-
 Global Notation "s  ≤u  t" := (go.UnderlyingEq s t) (at level 70).
 Global Notation "s  <u  t" := (go.UnderlyingDirectedEq s t) (at level 70).
 Global Notation "t  ↓u  tunder" := (go.IsUnderlying t tunder) (at level 70).
 
-Module mem.
-Section defs.
-Context {ext : ffi_syntax} {go_lctx : GoLocalContext} {go_gctx : GoGlobalContext}.
-Class MemSemantics `{!GoSemanticsFunctions} : Prop :=
-{
   #[export] alloc_primitive `[!t ↓u tunder] v (H : is_primitive tunder) ::
     IsGoStepPureDet (GoAlloc t) v (ref_one v)%E;
   #[export] alloc_struct `[!t ↓u go.StructType fds] v ::
