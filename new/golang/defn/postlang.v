@@ -471,7 +471,7 @@ Class CoreSemantics `{!GoSemanticsFunctions} : Prop :=
                 StructFieldSet t field_name (struct_so_far, field_val)
          )%E (GoZeroVal t #()) fds)%V;
 
-  #[global] store_primitive `[!t ↓u tunder] (H : is_primitive t) l v ::
+  #[global] store_primitive `[!t ↓u tunder] (H : is_primitive tunder) l v ::
     ⟦GoStore t, (l, v)⟧ ⤳[internal] (l <- v)%E;
   #[global] store_struct `[!t ↓u go.StructType fds] l v ::
     ⟦GoStore t, (l, v)⟧ ⤳[internal]

@@ -58,19 +58,19 @@ Notation "l ↦ dq v" := (typed_pointsto l v%V dq)
 Global Instance true_dfractional : DFractional (λ dq, True%I : iProp Σ).
 Proof. apply _. Qed.
 
-Global Instance typed_pointsto_dfractional_eta `{TypedPointsto V} l (v : V) :
+Global Instance typed_pointsto_dfractional_eta `{!TypedPointsto V} l (v : V) :
   DFractional (λ dq, typed_pointsto l v dq).
 Proof. rewrite typed_pointsto_unseal. apply typed_pointsto_def_dfractional. Qed.
 
-Global Instance typed_pointsto_dfractional `{TypedPointsto V} l (v : V) :
+Global Instance typed_pointsto_dfractional `{!TypedPointsto V} l (v : V) :
   DFractional (typed_pointsto l v).
 Proof. rewrite typed_pointsto_unseal. apply typed_pointsto_def_dfractional. Qed.
 
-Global Instance typed_pointsto_timeless `{TypedPointsto V} l dq (v : V) :
+Global Instance typed_pointsto_timeless `{!TypedPointsto V} l dq (v : V) :
   Timeless (typed_pointsto l v dq).
 Proof. rewrite typed_pointsto_unseal. apply typed_pointsto_def_timeless. Qed.
 
-Global Instance typed_pointsto_as_dfractional `{TypedPointsto V} l dq (v : V) :
+Global Instance typed_pointsto_as_dfractional `{!TypedPointsto V} l dq (v : V) :
   AsDFractional (typed_pointsto l v dq) (λ dq, typed_pointsto l v dq) dq.
 Proof. split; try done. apply _. Qed.
 
@@ -82,7 +82,7 @@ Proof.
   unshelve eapply as_dfractional_dfractional; try eassumption.
 Qed.
 
-Global Instance typed_pointsto_combine_sep_gives `{TypedPointsto V} l dq1 dq2  (v1 v2 : V) :
+Global Instance typed_pointsto_combine_sep_gives `{!TypedPointsto V} l dq1 dq2  (v1 v2 : V) :
   CombineSepGives (typed_pointsto l v1 dq1) (typed_pointsto l v2 dq2) (⌜ v1 = v2 ⌝).
 Proof.
   rewrite typed_pointsto_unseal /CombineSepGives. iIntros "[H1 H2]".
@@ -95,33 +95,57 @@ Qed.
     [typed_pointsto_def] is in [IntoValProof] rather than here because `l ↦ v`
     not explicitly mention `t`, and there can be multiple `t`s for a single `V`
     (e.g. int64 and uint64 both have w64). *)
+Class IntoValTypedUnderlying (V : Type) (t_under : go.type) `{!ZeroVal V} `{!TypedPointsto V}
+  `{!GoSemanticsFunctions} :=
+  {
+    wp_alloc_def : (∀ [s E] `[!t ↓u t_under] (v : V),
+                      {{{ True }}}
+                        GoAlloc t #v @ s ; E
+                      {{{ l, RET #l; l ↦ v }}});
+    wp_load_def : (∀ [s E] `[!t ↓u t_under] l dq (v : V),
+                 {{{ l ↦{dq} v }}}
+                   ![t] #l @ s ; E
+                 {{{ RET #v; l ↦{dq} v }}});
+    wp_store_def : (∀ [s E] `[!t ↓u t_under] l (v w : V),
+                  {{{ l ↦ v }}}
+                    #l <-[t] #w @ s ; E
+                  {{{ RET #(); l ↦ w }}});
+  }.
+(* [t] should not be an evar before doing typeclass search *)
+Global Hint Mode IntoValTypedUnderlying - + - - -: typeclass_instances.
+
 Class IntoValTyped (V : Type) (t : go.type) `{!ZeroVal V} `{!TypedPointsto V}
   `{!GoSemanticsFunctions} :=
   {
-    wp_alloc : (∀ {s E} (v : V), {{{ True }}}
-                           alloc t #v @ s ; E
-                         {{{ l, RET #l; l ↦ v }}});
-    wp_load : (∀ {s E} l dq (v : V),
+    wp_alloc : (∀ [s E] (v : V),
+                      {{{ True }}}
+                        GoAlloc t #v @ s ; E
+                      {{{ l, RET #l; l ↦ v }}});
+    wp_load : (∀ [s E] l dq (v : V),
                  {{{ l ↦{dq} v }}}
-                   load t #l @ s ; E
+                   ![t] #l @ s ; E
                  {{{ RET #v; l ↦{dq} v }}});
-    wp_store : (∀ {s E} l (v w : V),
+    wp_store : (∀ [s E] l (v w : V),
                   {{{ l ↦ v }}}
-                    store t #l #w @ s ; E
+                    #l <-[t] #w @ s ; E
                   {{{ RET #(); l ↦ w }}});
   }.
+
+Global Instance x (V : Type) (t_under : go.type) `{!ZeroVal V} `{!TypedPointsto V}
+  `{!GoSemanticsFunctions} t :
+  t ↓u t_under →
+  IntoValTypedUnderlying V t_under →
+  IntoValTyped V t.
+Proof.
+  constructor.
+  { intros. unshelve eapply wp_alloc_def; try tc_solve; tc_solve. }
+  { intros. unshelve eapply wp_load_def; try tc_solve; tc_solve. }
+  { intros. unshelve eapply wp_store_def; try tc_solve; tc_solve. }
+Qed.
+
 End into_val_defs.
 
-(* [t] should not be an evar before doing typeclass search *)
-Global Hint Mode IntoValTyped - - - - - - - ! - - - : typeclass_instances.
-
 Global Hint Mode TypedPointsto - ! : typeclass_instances.
-
-(* Non-maximally insert the arguments related to [t], [IntoVal], etc., so that
-   typeclass search won't be invoked until wp_apply actually unifies the [t]. *)
-Global Arguments wp_alloc {_ _ _ _ _ _} [_ _ _ _ _ _ _ _ _] (Φ).
-Global Arguments wp_load {_ _ _ _ _ _} [_ _ _ _ _ _ _ _] (l dq v Φ).
-Global Arguments wp_store {_ _ _ _ _ _} [_ _ _ _ _ _ _ _] (l v w Φ).
 
 Global Notation "l ↦ dq v" := (typed_pointsto l v%V dq)
                          (at level 20, dq custom dfrac at level 1,
@@ -132,7 +156,7 @@ Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
   {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
 
 Global Instance pure_wp_go_step_det i v e :
-  go.IsGoStepPureDet i v e →
+  ⟦i, v⟧ ⤳ e →
   PureWp True (i v) e.
 Proof.
   iIntros "% % * _ % HΦ". iApply wp_GoInstruction.
@@ -140,12 +164,6 @@ Proof.
   iNext. iIntros "* %Hstep".
   rewrite go.is_go_step_det go.is_go_step_pure_det in Hstep. inv Hstep.
   iIntros "H"; iIntros "$ !>"; by iApply "HΦ".
-Qed.
-
-Global Instance pure_wp_go_expr_eq e e' `{!go.GoExprEq e e'} :
-  PureWp True e e'.
-Proof.
-  rewrite -> go.go_expr_eq. iIntros "% % * _ % HΦ". wp_pure_lc "?". wp_pures. by iApply "HΦ".
 Qed.
 
 Lemma wp_GoPrealloc {stk E} :
@@ -213,14 +231,15 @@ Proof.
   by iApply "HΦ".
 Qed.
 
-Lemma wp_GlobalAlloc v t `{!ZeroVal V} `{!TypedPointsto V} `{!go.TypeRepr t V}
-  `{!IntoValTyped V t} :
+Lemma wp_GlobalAlloc v t `[!t ↓u t_under] `{!ZeroVal V} `{!TypedPointsto V}
+  `{!go.TypeRepr t V} `{!IntoValTyped V t} :
   {{{ True }}}
     go.GlobalAlloc v t #()
   {{{ RET #(); global_addr v ↦ (zero_val V) }}}.
 Proof.
   rewrite go.GlobalAlloc_unseal. iIntros (?) "_ HΦ".
-  wp_call. wp_pures. wp_apply wp_alloc. iIntros (?) "Hl". wp_pures.
+  wp_call. wp_pures. wp_apply wp_alloc.
+  iIntros (?) "Hl". wp_pures.
   rewrite bool_decide_decide. destruct decide; wp_pures.
   - subst. iApply "HΦ". iFrame.
   - wp_apply wp_AngelicExit.
@@ -385,35 +404,26 @@ Existing Class go.is_primitive_zero_val.
 
 Ltac solve_wp_alloc :=
   iIntros "* _ HΦ";
-  rewrite go.alloc_primitive typed_pointsto_unseal /=;
+  rewrite typed_pointsto_unseal /=;
   wp_pures; by wp_apply _internal_wp_alloc_untyped.
 
 Ltac solve_wp_load :=
   iIntros "* Hl HΦ";
-  rewrite go.load_primitive;
   wp_pures; rewrite typed_pointsto_unseal /=;
   wp_apply (_internal_wp_untyped_read with "Hl");
   iIntros "Hl"; by iApply "HΦ".
 
 Ltac solve_wp_store :=
   iIntros "* Hl HΦ";
-  rewrite go.store_primitive;
   wp_pures; rewrite typed_pointsto_unseal /=;
   wp_apply (_internal_wp_untyped_store with "Hl");
   iIntros "Hl"; by iApply "HΦ".
 
-Ltac solve_into_val_typed := constructor; [solve_wp_alloc|solve_wp_load|solve_wp_store].
+Ltac solve_into_val_typed :=
+  pose proof (go.tagged_steps internal);
+  constructor; intros; [solve_wp_alloc|solve_wp_load|solve_wp_store].
 
-Global Instance into_val_typed_underlying V `{!ZeroVal V} `{!TypedPointsto V} t tunder
-  : (t <u tunder) → IntoValTyped V tunder → IntoValTyped V t.
-Proof.
-  intros. constructor.
-  - rewrite go.alloc_underlying. eapply wp_alloc. apply _.
-  - rewrite go.load_underlying. eapply wp_load. apply _.
-  - rewrite go.store_underlying. eapply wp_store. apply _.
-Qed.
-
-Global Instance into_val_typed_loc t : IntoValTyped loc (go.PointerType t).
+Global Instance into_val_typed_loc t : IntoValTypedUnderlying loc (go.PointerType t).
 Proof. solve_into_val_typed. Qed.
 
 Global Instance into_val_typed_func sig : IntoValTyped func.t (go.FunctionType sig).
