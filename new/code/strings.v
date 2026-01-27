@@ -33,6 +33,30 @@ Definition stringFinder {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type
 
 Definition asciiSet {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "strings.asciiSet"%go [].
 
+Axiom Readerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom Replacerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom replacerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom trieNodeⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom genericReplacerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom appendSliceWriterⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom stringWriterⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom singleStringReplacerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom byteReplacerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom byteStringReplacerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom stringFinderⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom asciiSetⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
 Axiom countCutOff : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom maxInt : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
@@ -237,12 +261,12 @@ Definition Builderⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : g
 
 Class Builder_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Builder_type_repr  :: go.TypeRepr Builder Builder.t;
+  #[global] Builder_type_repr  :: go.TypeRepr Builderⁱᵐᵖˡ Builder.t;
   #[global] Builder_underlying :: (Builder) <u (Builderⁱᵐᵖˡ);
-  #[global] Builder_get_addr (x : Builder.t) :: go.IsGoStepPureDet (StructFieldGet (Builder) "addr") #x #x.(Builder.addr');
-  #[global] Builder_set_addr (x : Builder.t) y :: go.IsGoStepPureDet (StructFieldSet (Builder) "addr") (#x, #y) #(x <|Builder.addr' := y|>);
-  #[global] Builder_get_buf (x : Builder.t) :: go.IsGoStepPureDet (StructFieldGet (Builder) "buf") #x #x.(Builder.buf');
-  #[global] Builder_set_buf (x : Builder.t) y :: go.IsGoStepPureDet (StructFieldSet (Builder) "buf") (#x, #y) #(x <|Builder.buf' := y|>);
+  #[global] Builder_get_addr (x : Builder.t) :: ⟦StructFieldGet (Builderⁱᵐᵖˡ) "addr", #x⟧ ⤳[under] #x.(Builder.addr');
+  #[global] Builder_set_addr (x : Builder.t) y :: ⟦StructFieldSet (Builderⁱᵐᵖˡ) "addr", (#x, #y)⟧ ⤳[under] #(x <|Builder.addr' := y|>);
+  #[global] Builder_get_buf (x : Builder.t) :: ⟦StructFieldGet (Builderⁱᵐᵖˡ) "buf", #x⟧ ⤳[under] #x.(Builder.buf');
+  #[global] Builder_set_buf (x : Builder.t) y :: ⟦StructFieldSet (Builderⁱᵐᵖˡ) "buf", (#x, #y)⟧ ⤳[under] #(x <|Builder.buf' := y|>);
 }.
 
 Module Reader.
@@ -256,7 +280,7 @@ End Reader.
 
 Class Reader_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Reader_type_repr  :: go.TypeRepr Reader Reader.t;
+  #[global] Reader_type_repr  :: go.TypeRepr Readerⁱᵐᵖˡ Reader.t;
 }.
 
 Module Replacer.
@@ -270,7 +294,7 @@ End Replacer.
 
 Class Replacer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Replacer_type_repr  :: go.TypeRepr Replacer Replacer.t;
+  #[global] Replacer_type_repr  :: go.TypeRepr Replacerⁱᵐᵖˡ Replacer.t;
 }.
 
 Module replacer.
@@ -284,7 +308,7 @@ End replacer.
 
 Class replacer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] replacer_type_repr  :: go.TypeRepr replacer replacer.t;
+  #[global] replacer_type_repr  :: go.TypeRepr replacerⁱᵐᵖˡ replacer.t;
 }.
 
 Module trieNode.
@@ -298,7 +322,7 @@ End trieNode.
 
 Class trieNode_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] trieNode_type_repr  :: go.TypeRepr trieNode trieNode.t;
+  #[global] trieNode_type_repr  :: go.TypeRepr trieNodeⁱᵐᵖˡ trieNode.t;
 }.
 
 Module genericReplacer.
@@ -312,7 +336,7 @@ End genericReplacer.
 
 Class genericReplacer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] genericReplacer_type_repr  :: go.TypeRepr genericReplacer genericReplacer.t;
+  #[global] genericReplacer_type_repr  :: go.TypeRepr genericReplacerⁱᵐᵖˡ genericReplacer.t;
 }.
 
 Module appendSliceWriter.
@@ -326,7 +350,7 @@ End appendSliceWriter.
 
 Class appendSliceWriter_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] appendSliceWriter_type_repr  :: go.TypeRepr appendSliceWriter appendSliceWriter.t;
+  #[global] appendSliceWriter_type_repr  :: go.TypeRepr appendSliceWriterⁱᵐᵖˡ appendSliceWriter.t;
 }.
 
 Module stringWriter.
@@ -340,7 +364,7 @@ End stringWriter.
 
 Class stringWriter_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] stringWriter_type_repr  :: go.TypeRepr stringWriter stringWriter.t;
+  #[global] stringWriter_type_repr  :: go.TypeRepr stringWriterⁱᵐᵖˡ stringWriter.t;
 }.
 
 Module singleStringReplacer.
@@ -354,7 +378,7 @@ End singleStringReplacer.
 
 Class singleStringReplacer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] singleStringReplacer_type_repr  :: go.TypeRepr singleStringReplacer singleStringReplacer.t;
+  #[global] singleStringReplacer_type_repr  :: go.TypeRepr singleStringReplacerⁱᵐᵖˡ singleStringReplacer.t;
 }.
 
 Module byteReplacer.
@@ -368,7 +392,7 @@ End byteReplacer.
 
 Class byteReplacer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] byteReplacer_type_repr  :: go.TypeRepr byteReplacer byteReplacer.t;
+  #[global] byteReplacer_type_repr  :: go.TypeRepr byteReplacerⁱᵐᵖˡ byteReplacer.t;
 }.
 
 Module byteStringReplacer.
@@ -382,7 +406,7 @@ End byteStringReplacer.
 
 Class byteStringReplacer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] byteStringReplacer_type_repr  :: go.TypeRepr byteStringReplacer byteStringReplacer.t;
+  #[global] byteStringReplacer_type_repr  :: go.TypeRepr byteStringReplacerⁱᵐᵖˡ byteStringReplacer.t;
 }.
 
 Module stringFinder.
@@ -396,7 +420,7 @@ End stringFinder.
 
 Class stringFinder_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] stringFinder_type_repr  :: go.TypeRepr stringFinder stringFinder.t;
+  #[global] stringFinder_type_repr  :: go.TypeRepr stringFinderⁱᵐᵖˡ stringFinder.t;
 }.
 
 Module asciiSet.
@@ -410,7 +434,7 @@ End asciiSet.
 
 Class asciiSet_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] asciiSet_type_repr  :: go.TypeRepr asciiSet asciiSet.t;
+  #[global] asciiSet_type_repr  :: go.TypeRepr asciiSetⁱᵐᵖˡ asciiSet.t;
 }.
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=

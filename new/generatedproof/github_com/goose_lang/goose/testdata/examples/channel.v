@@ -32,7 +32,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance LockedStack_into_val_typed
    :
-  IntoValTyped (chan_spec_raw_examples.LockedStack.t) (chan_spec_raw_examples.LockedStack).
+  IntoValTypedUnderlying (chan_spec_raw_examples.LockedStack.t) (chan_spec_raw_examples.LockedStackⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance LockedStack_access_load_mu l (v : (chan_spec_raw_examples.LockedStack.t)) dq :
   AccessStrict
@@ -87,7 +87,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance EliminationStack_into_val_typed
    :
-  IntoValTyped (chan_spec_raw_examples.EliminationStack.t) (chan_spec_raw_examples.EliminationStack).
+  IntoValTypedUnderlying (chan_spec_raw_examples.EliminationStack.t) (chan_spec_raw_examples.EliminationStackⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance EliminationStack_access_load_base l (v : (chan_spec_raw_examples.EliminationStack.t)) dq :
   AccessStrict
@@ -142,7 +142,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance request_into_val_typed
    :
-  IntoValTyped (chan_spec_raw_examples.request.t) (chan_spec_raw_examples.request).
+  IntoValTypedUnderlying (chan_spec_raw_examples.request.t) (chan_spec_raw_examples.requestⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance request_access_load_f l (v : (chan_spec_raw_examples.request.t)) dq :
   AccessStrict
@@ -197,7 +197,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance stream_into_val_typed
    :
-  IntoValTyped (chan_spec_raw_examples.stream.t) (chan_spec_raw_examples.stream).
+  IntoValTypedUnderlying (chan_spec_raw_examples.stream.t) (chan_spec_raw_examples.streamⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance stream_access_load_req l (v : (chan_spec_raw_examples.stream.t)) dq :
   AccessStrict
@@ -253,7 +253,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance streamold_into_val_typed
    :
-  IntoValTyped (chan_spec_raw_examples.streamold.t) (chan_spec_raw_examples.streamold).
+  IntoValTypedUnderlying (chan_spec_raw_examples.streamold.t) (chan_spec_raw_examples.streamoldⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance streamold_access_load_req l (v : (chan_spec_raw_examples.streamold.t)) dq :
   AccessStrict

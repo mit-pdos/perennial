@@ -28,7 +28,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance noCopy_into_val_typed
    :
-  IntoValTyped (atomic.noCopy.t) (atomic.noCopy).
+  IntoValTypedUnderlying (atomic.noCopy.t) (atomic.noCopyⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -57,7 +57,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance Bool_into_val_typed
    :
-  IntoValTyped (atomic.Bool.t) (atomic.Bool).
+  IntoValTypedUnderlying (atomic.Bool.t) (atomic.Boolⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance Bool_access_load__0 l (v : (atomic.Bool.t)) dq :
   AccessStrict
@@ -113,7 +113,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance Pointer_into_val_typed
   `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T} `{!go.TypeRepr T T'}  :
-  IntoValTyped (atomic.Pointer.t T') (atomic.Pointer T).
+  IntoValTypedUnderlying (atomic.Pointer.t T') (atomic.Pointerⁱᵐᵖˡ T).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance Pointer_access_load__0 `{!TypedPointsto (Σ:=Σ) T'} l (v : (atomic.Pointer.t T')) dq :
   AccessStrict
@@ -181,7 +181,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance Int32_into_val_typed
    :
-  IntoValTyped (atomic.Int32.t) (atomic.Int32).
+  IntoValTypedUnderlying (atomic.Int32.t) (atomic.Int32ⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance Int32_access_load__0 l (v : (atomic.Int32.t)) dq :
   AccessStrict
@@ -234,7 +234,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance align64_into_val_typed
    :
-  IntoValTyped (atomic.align64.t) (atomic.align64).
+  IntoValTypedUnderlying (atomic.align64.t) (atomic.align64ⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -264,7 +264,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance Int64_into_val_typed
    :
-  IntoValTyped (atomic.Int64.t) (atomic.Int64).
+  IntoValTypedUnderlying (atomic.Int64.t) (atomic.Int64ⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance Int64_access_load__0 l (v : (atomic.Int64.t)) dq :
   AccessStrict
@@ -332,7 +332,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance Uint32_into_val_typed
    :
-  IntoValTyped (atomic.Uint32.t) (atomic.Uint32).
+  IntoValTypedUnderlying (atomic.Uint32.t) (atomic.Uint32ⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance Uint32_access_load__0 l (v : (atomic.Uint32.t)) dq :
   AccessStrict
@@ -388,7 +388,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance Uint64_into_val_typed
    :
-  IntoValTyped (atomic.Uint64.t) (atomic.Uint64).
+  IntoValTypedUnderlying (atomic.Uint64.t) (atomic.Uint64ⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance Uint64_access_load__0 l (v : (atomic.Uint64.t)) dq :
   AccessStrict
@@ -447,7 +447,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance Uintptr_into_val_typed
    :
-  IntoValTyped (atomic.Uintptr.t) (atomic.Uintptr).
+  IntoValTypedUnderlying (atomic.Uintptr.t) (atomic.Uintptrⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -475,7 +475,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance Value_into_val_typed
    :
-  IntoValTyped (atomic.Value.t) (atomic.Value).
+  IntoValTypedUnderlying (atomic.Value.t) (atomic.Valueⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance Value_access_load_v l (v : (atomic.Value.t)) dq :
   AccessStrict
@@ -517,7 +517,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance efaceWords_into_val_typed
    :
-  IntoValTyped (atomic.efaceWords.t) (atomic.efaceWords).
+  IntoValTypedUnderlying (atomic.efaceWords.t) (atomic.efaceWordsⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance efaceWords_access_load_typ l (v : (atomic.efaceWords.t)) dq :
   AccessStrict

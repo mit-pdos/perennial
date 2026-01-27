@@ -21,7 +21,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance Association_into_val_typed
    :
-  IntoValTyped (synctest.Association.t) (synctest.Association).
+  IntoValTypedUnderlying (synctest.Association.t) (synctest.Associationⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -41,7 +41,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance Bubble_into_val_typed
    :
-  IntoValTyped (synctest.Bubble.t) (synctest.Bubble).
+  IntoValTypedUnderlying (synctest.Bubble.t) (synctest.Bubbleⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.

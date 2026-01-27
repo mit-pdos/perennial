@@ -11,6 +11,8 @@ Definition sortedHint {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type :
 
 Definition xorshift {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "slices.xorshift"%go [].
 
+Axiom sortedHintⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
 Axiom unknownHint : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom increasingHint : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
@@ -1134,7 +1136,7 @@ End sortedHint.
 
 Class sortedHint_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] sortedHint_type_repr  :: go.TypeRepr sortedHint sortedHint.t;
+  #[global] sortedHint_type_repr  :: go.TypeRepr sortedHintⁱᵐᵖˡ sortedHint.t;
 }.
 
 Module xorshift.
@@ -1148,7 +1150,7 @@ Definition xorshiftⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : 
 
 Class xorshift_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] xorshift_type_repr  :: go.TypeRepr xorshift xorshift.t;
+  #[global] xorshift_type_repr  :: go.TypeRepr xorshiftⁱᵐᵖˡ xorshift.t;
   #[global] xorshift_underlying :: (xorshift) <u (xorshiftⁱᵐᵖˡ);
   #[global] xorshift'ptr_Next_unfold :: MethodUnfold (go.PointerType (xorshift)) "Next" (xorshift__Nextⁱᵐᵖˡ);
 }.

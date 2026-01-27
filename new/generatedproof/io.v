@@ -22,7 +22,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance Closer_into_val_typed
    :
-  IntoValTyped (io.Closer.t) (io.Closer).
+  IntoValTypedUnderlying (io.Closer.t) (io.Closerⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -42,7 +42,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance Seeker_into_val_typed
    :
-  IntoValTyped (io.Seeker.t) (io.Seeker).
+  IntoValTypedUnderlying (io.Seeker.t) (io.Seekerⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -62,7 +62,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance ReadWriter_into_val_typed
    :
-  IntoValTyped (io.ReadWriter.t) (io.ReadWriter).
+  IntoValTypedUnderlying (io.ReadWriter.t) (io.ReadWriterⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -82,7 +82,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance ReadCloser_into_val_typed
    :
-  IntoValTyped (io.ReadCloser.t) (io.ReadCloser).
+  IntoValTypedUnderlying (io.ReadCloser.t) (io.ReadCloserⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -102,7 +102,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance WriteCloser_into_val_typed
    :
-  IntoValTyped (io.WriteCloser.t) (io.WriteCloser).
+  IntoValTypedUnderlying (io.WriteCloser.t) (io.WriteCloserⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -122,7 +122,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance ReadWriteCloser_into_val_typed
    :
-  IntoValTyped (io.ReadWriteCloser.t) (io.ReadWriteCloser).
+  IntoValTypedUnderlying (io.ReadWriteCloser.t) (io.ReadWriteCloserⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -142,7 +142,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance ReadSeeker_into_val_typed
    :
-  IntoValTyped (io.ReadSeeker.t) (io.ReadSeeker).
+  IntoValTypedUnderlying (io.ReadSeeker.t) (io.ReadSeekerⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -162,7 +162,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance ReadSeekCloser_into_val_typed
    :
-  IntoValTyped (io.ReadSeekCloser.t) (io.ReadSeekCloser).
+  IntoValTypedUnderlying (io.ReadSeekCloser.t) (io.ReadSeekCloserⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -182,7 +182,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance WriteSeeker_into_val_typed
    :
-  IntoValTyped (io.WriteSeeker.t) (io.WriteSeeker).
+  IntoValTypedUnderlying (io.WriteSeeker.t) (io.WriteSeekerⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -202,7 +202,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance ReadWriteSeeker_into_val_typed
    :
-  IntoValTyped (io.ReadWriteSeeker.t) (io.ReadWriteSeeker).
+  IntoValTypedUnderlying (io.ReadWriteSeeker.t) (io.ReadWriteSeekerⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -222,7 +222,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance ReaderFrom_into_val_typed
    :
-  IntoValTyped (io.ReaderFrom.t) (io.ReaderFrom).
+  IntoValTypedUnderlying (io.ReaderFrom.t) (io.ReaderFromⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -242,7 +242,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance WriterTo_into_val_typed
    :
-  IntoValTyped (io.WriterTo.t) (io.WriterTo).
+  IntoValTypedUnderlying (io.WriterTo.t) (io.WriterToⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -262,7 +262,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance ReaderAt_into_val_typed
    :
-  IntoValTyped (io.ReaderAt.t) (io.ReaderAt).
+  IntoValTypedUnderlying (io.ReaderAt.t) (io.ReaderAtⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -282,7 +282,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance WriterAt_into_val_typed
    :
-  IntoValTyped (io.WriterAt.t) (io.WriterAt).
+  IntoValTypedUnderlying (io.WriterAt.t) (io.WriterAtⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -302,7 +302,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance ByteReader_into_val_typed
    :
-  IntoValTyped (io.ByteReader.t) (io.ByteReader).
+  IntoValTypedUnderlying (io.ByteReader.t) (io.ByteReaderⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -322,7 +322,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance ByteScanner_into_val_typed
    :
-  IntoValTyped (io.ByteScanner.t) (io.ByteScanner).
+  IntoValTypedUnderlying (io.ByteScanner.t) (io.ByteScannerⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -342,7 +342,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance ByteWriter_into_val_typed
    :
-  IntoValTyped (io.ByteWriter.t) (io.ByteWriter).
+  IntoValTypedUnderlying (io.ByteWriter.t) (io.ByteWriterⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -362,7 +362,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance RuneReader_into_val_typed
    :
-  IntoValTyped (io.RuneReader.t) (io.RuneReader).
+  IntoValTypedUnderlying (io.RuneReader.t) (io.RuneReaderⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -382,7 +382,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance RuneScanner_into_val_typed
    :
-  IntoValTyped (io.RuneScanner.t) (io.RuneScanner).
+  IntoValTypedUnderlying (io.RuneScanner.t) (io.RuneScannerⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -402,7 +402,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance StringWriter_into_val_typed
    :
-  IntoValTyped (io.StringWriter.t) (io.StringWriter).
+  IntoValTypedUnderlying (io.StringWriter.t) (io.StringWriterⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -422,7 +422,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance LimitedReader_into_val_typed
    :
-  IntoValTyped (io.LimitedReader.t) (io.LimitedReader).
+  IntoValTypedUnderlying (io.LimitedReader.t) (io.LimitedReaderⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -442,7 +442,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance SectionReader_into_val_typed
    :
-  IntoValTyped (io.SectionReader.t) (io.SectionReader).
+  IntoValTypedUnderlying (io.SectionReader.t) (io.SectionReaderⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -462,7 +462,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance OffsetWriter_into_val_typed
    :
-  IntoValTyped (io.OffsetWriter.t) (io.OffsetWriter).
+  IntoValTypedUnderlying (io.OffsetWriter.t) (io.OffsetWriterⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -482,7 +482,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance teeReader_into_val_typed
    :
-  IntoValTyped (io.teeReader.t) (io.teeReader).
+  IntoValTypedUnderlying (io.teeReader.t) (io.teeReaderⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -502,7 +502,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance discard_into_val_typed
    :
-  IntoValTyped (io.discard.t) (io.discard).
+  IntoValTypedUnderlying (io.discard.t) (io.discardⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -522,7 +522,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance nopCloser_into_val_typed
    :
-  IntoValTyped (io.nopCloser.t) (io.nopCloser).
+  IntoValTypedUnderlying (io.nopCloser.t) (io.nopCloserⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -542,7 +542,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance nopCloserWriterTo_into_val_typed
    :
-  IntoValTyped (io.nopCloserWriterTo.t) (io.nopCloserWriterTo).
+  IntoValTypedUnderlying (io.nopCloserWriterTo.t) (io.nopCloserWriterToⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -562,7 +562,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance eofReader_into_val_typed
    :
-  IntoValTyped (io.eofReader.t) (io.eofReader).
+  IntoValTypedUnderlying (io.eofReader.t) (io.eofReaderⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -582,7 +582,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance multiReader_into_val_typed
    :
-  IntoValTyped (io.multiReader.t) (io.multiReader).
+  IntoValTypedUnderlying (io.multiReader.t) (io.multiReaderⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -602,7 +602,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance multiWriter_into_val_typed
    :
-  IntoValTyped (io.multiWriter.t) (io.multiWriter).
+  IntoValTypedUnderlying (io.multiWriter.t) (io.multiWriterⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -622,7 +622,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance onceError_into_val_typed
    :
-  IntoValTyped (io.onceError.t) (io.onceError).
+  IntoValTypedUnderlying (io.onceError.t) (io.onceErrorⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -642,7 +642,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance pipe_into_val_typed
    :
-  IntoValTyped (io.pipe.t) (io.pipe).
+  IntoValTypedUnderlying (io.pipe.t) (io.pipeⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -662,7 +662,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance PipeReader_into_val_typed
    :
-  IntoValTyped (io.PipeReader.t) (io.PipeReader).
+  IntoValTypedUnderlying (io.PipeReader.t) (io.PipeReaderⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -682,7 +682,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance PipeWriter_into_val_typed
    :
-  IntoValTyped (io.PipeWriter.t) (io.PipeWriter).
+  IntoValTypedUnderlying (io.PipeWriter.t) (io.PipeWriterⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.

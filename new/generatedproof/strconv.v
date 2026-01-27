@@ -20,7 +20,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance NumError_into_val_typed
    :
-  IntoValTyped (strconv.NumError.t) (strconv.NumError).
+  IntoValTypedUnderlying (strconv.NumError.t) (strconv.NumErrorⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -40,7 +40,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance decimal_into_val_typed
    :
-  IntoValTyped (strconv.decimal.t) (strconv.decimal).
+  IntoValTypedUnderlying (strconv.decimal.t) (strconv.decimalⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -60,7 +60,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance leftCheat_into_val_typed
    :
-  IntoValTyped (strconv.leftCheat.t) (strconv.leftCheat).
+  IntoValTypedUnderlying (strconv.leftCheat.t) (strconv.leftCheatⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -80,7 +80,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance floatInfo_into_val_typed
    :
-  IntoValTyped (strconv.floatInfo.t) (strconv.floatInfo).
+  IntoValTypedUnderlying (strconv.floatInfo.t) (strconv.floatInfoⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -100,7 +100,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance decimalSlice_into_val_typed
    :
-  IntoValTyped (strconv.decimalSlice.t) (strconv.decimalSlice).
+  IntoValTypedUnderlying (strconv.decimalSlice.t) (strconv.decimalSliceⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.

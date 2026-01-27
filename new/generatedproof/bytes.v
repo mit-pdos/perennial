@@ -20,7 +20,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance Buffer_into_val_typed
    :
-  IntoValTyped (bytes.Buffer.t) (bytes.Buffer).
+  IntoValTypedUnderlying (bytes.Buffer.t) (bytes.Bufferⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -40,7 +40,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance readOp_into_val_typed
    :
-  IntoValTyped (bytes.readOp.t) (bytes.readOp).
+  IntoValTypedUnderlying (bytes.readOp.t) (bytes.readOpⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -60,7 +60,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance asciiSet_into_val_typed
    :
-  IntoValTyped (bytes.asciiSet.t) (bytes.asciiSet).
+  IntoValTypedUnderlying (bytes.asciiSet.t) (bytes.asciiSetⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -80,7 +80,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance Reader_into_val_typed
    :
-  IntoValTyped (bytes.Reader.t) (bytes.Reader).
+  IntoValTypedUnderlying (bytes.Reader.t) (bytes.Readerⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.

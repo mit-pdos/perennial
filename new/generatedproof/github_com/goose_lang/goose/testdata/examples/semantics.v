@@ -30,7 +30,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance unit_into_val_typed
    :
-  IntoValTyped (semantics.unit.t) (semantics.unit).
+  IntoValTypedUnderlying (semantics.unit.t) (semantics.unitⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -58,7 +58,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance Enc_into_val_typed
    :
-  IntoValTyped (semantics.Enc.t) (semantics.Enc).
+  IntoValTypedUnderlying (semantics.Enc.t) (semantics.Encⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance Enc_access_load_p l (v : (semantics.Enc.t)) dq :
   AccessStrict
@@ -99,7 +99,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance Dec_into_val_typed
    :
-  IntoValTyped (semantics.Dec.t) (semantics.Dec).
+  IntoValTypedUnderlying (semantics.Dec.t) (semantics.Decⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance Dec_access_load_p l (v : (semantics.Dec.t)) dq :
   AccessStrict
@@ -141,7 +141,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance Editor_into_val_typed
    :
-  IntoValTyped (semantics.Editor.t) (semantics.Editor).
+  IntoValTypedUnderlying (semantics.Editor.t) (semantics.Editorⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance Editor_access_load_s l (v : (semantics.Editor.t)) dq :
   AccessStrict
@@ -196,7 +196,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance Pair_into_val_typed
    :
-  IntoValTyped (semantics.Pair.t) (semantics.Pair).
+  IntoValTypedUnderlying (semantics.Pair.t) (semantics.Pairⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance Pair_access_load_x l (v : (semantics.Pair.t)) dq :
   AccessStrict
@@ -250,7 +250,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance SquareStruct_into_val_typed
    :
-  IntoValTyped (semantics.SquareStruct.t) (semantics.SquareStruct).
+  IntoValTypedUnderlying (semantics.SquareStruct.t) (semantics.SquareStructⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance SquareStruct_access_load_Side l (v : (semantics.SquareStruct.t)) dq :
   AccessStrict
@@ -291,7 +291,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance LoopStruct_into_val_typed
    :
-  IntoValTyped (semantics.LoopStruct.t) (semantics.LoopStruct).
+  IntoValTypedUnderlying (semantics.LoopStruct.t) (semantics.LoopStructⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance LoopStruct_access_load_loopNext l (v : (semantics.LoopStruct.t)) dq :
   AccessStrict
@@ -335,7 +335,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance BoolTest_into_val_typed
    :
-  IntoValTyped (semantics.BoolTest.t) (semantics.BoolTest).
+  IntoValTypedUnderlying (semantics.BoolTest.t) (semantics.BoolTestⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance BoolTest_access_load_t l (v : (semantics.BoolTest.t)) dq :
   AccessStrict
@@ -416,7 +416,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance ArrayEditor_into_val_typed
    :
-  IntoValTyped (semantics.ArrayEditor.t) (semantics.ArrayEditor).
+  IntoValTypedUnderlying (semantics.ArrayEditor.t) (semantics.ArrayEditorⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance ArrayEditor_access_load_s l (v : (semantics.ArrayEditor.t)) dq :
   AccessStrict
@@ -471,7 +471,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance Bar_into_val_typed
    :
-  IntoValTyped (semantics.Bar.t) (semantics.Bar).
+  IntoValTypedUnderlying (semantics.Bar.t) (semantics.Barⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance Bar_access_load_a l (v : (semantics.Bar.t)) dq :
   AccessStrict
@@ -525,7 +525,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance Foo_into_val_typed
    :
-  IntoValTyped (semantics.Foo.t) (semantics.Foo).
+  IntoValTypedUnderlying (semantics.Foo.t) (semantics.Fooⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance Foo_access_load_bar l (v : (semantics.Foo.t)) dq :
   AccessStrict
@@ -567,7 +567,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance TwoInts_into_val_typed
    :
-  IntoValTyped (semantics.TwoInts.t) (semantics.TwoInts).
+  IntoValTypedUnderlying (semantics.TwoInts.t) (semantics.TwoIntsⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance TwoInts_access_load_x l (v : (semantics.TwoInts.t)) dq :
   AccessStrict
@@ -623,7 +623,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance S_into_val_typed
    :
-  IntoValTyped (semantics.S.t) (semantics.S).
+  IntoValTypedUnderlying (semantics.S.t) (semantics.Sⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance S_access_load_a l (v : (semantics.S.t)) dq :
   AccessStrict
@@ -690,7 +690,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance StructWrap_into_val_typed
    :
-  IntoValTyped (semantics.StructWrap.t) (semantics.StructWrap).
+  IntoValTypedUnderlying (semantics.StructWrap.t) (semantics.StructWrapⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance StructWrap_access_load_i l (v : (semantics.StructWrap.t)) dq :
   AccessStrict
@@ -731,7 +731,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance StructWithFunc_into_val_typed
    :
-  IntoValTyped (semantics.StructWithFunc.t) (semantics.StructWithFunc).
+  IntoValTypedUnderlying (semantics.StructWithFunc.t) (semantics.StructWithFuncⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance StructWithFunc_access_load_fn l (v : (semantics.StructWithFunc.t)) dq :
   AccessStrict
@@ -771,7 +771,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance switchConcrete_into_val_typed
    :
-  IntoValTyped (semantics.switchConcrete.t) (semantics.switchConcrete).
+  IntoValTypedUnderlying (semantics.switchConcrete.t) (semantics.switchConcreteⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -802,7 +802,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance Log_into_val_typed
    :
-  IntoValTyped (semantics.Log.t) (semantics.Log).
+  IntoValTypedUnderlying (semantics.Log.t) (semantics.Logⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance Log_access_load_d l (v : (semantics.Log.t)) dq :
   AccessStrict

@@ -1188,12 +1188,12 @@ Definition LockedStackⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
 
 Class LockedStack_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] LockedStack_type_repr  :: go.TypeRepr LockedStack LockedStack.t;
+  #[global] LockedStack_type_repr  :: go.TypeRepr LockedStackⁱᵐᵖˡ LockedStack.t;
   #[global] LockedStack_underlying :: (LockedStack) <u (LockedStackⁱᵐᵖˡ);
-  #[global] LockedStack_get_mu (x : LockedStack.t) :: go.IsGoStepPureDet (StructFieldGet (LockedStack) "mu") #x #x.(LockedStack.mu');
-  #[global] LockedStack_set_mu (x : LockedStack.t) y :: go.IsGoStepPureDet (StructFieldSet (LockedStack) "mu") (#x, #y) #(x <|LockedStack.mu' := y|>);
-  #[global] LockedStack_get_stack (x : LockedStack.t) :: go.IsGoStepPureDet (StructFieldGet (LockedStack) "stack") #x #x.(LockedStack.stack');
-  #[global] LockedStack_set_stack (x : LockedStack.t) y :: go.IsGoStepPureDet (StructFieldSet (LockedStack) "stack") (#x, #y) #(x <|LockedStack.stack' := y|>);
+  #[global] LockedStack_get_mu (x : LockedStack.t) :: ⟦StructFieldGet (LockedStackⁱᵐᵖˡ) "mu", #x⟧ ⤳[under] #x.(LockedStack.mu');
+  #[global] LockedStack_set_mu (x : LockedStack.t) y :: ⟦StructFieldSet (LockedStackⁱᵐᵖˡ) "mu", (#x, #y)⟧ ⤳[under] #(x <|LockedStack.mu' := y|>);
+  #[global] LockedStack_get_stack (x : LockedStack.t) :: ⟦StructFieldGet (LockedStackⁱᵐᵖˡ) "stack", #x⟧ ⤳[under] #x.(LockedStack.stack');
+  #[global] LockedStack_set_stack (x : LockedStack.t) y :: ⟦StructFieldSet (LockedStackⁱᵐᵖˡ) "stack", (#x, #y)⟧ ⤳[under] #(x <|LockedStack.stack' := y|>);
   #[global] LockedStack'ptr_Pop_unfold :: MethodUnfold (go.PointerType (LockedStack)) "Pop" (LockedStack__Popⁱᵐᵖˡ);
   #[global] LockedStack'ptr_Push_unfold :: MethodUnfold (go.PointerType (LockedStack)) "Push" (LockedStack__Pushⁱᵐᵖˡ);
 }.
@@ -1221,12 +1221,12 @@ Definition EliminationStackⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
 
 Class EliminationStack_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] EliminationStack_type_repr  :: go.TypeRepr EliminationStack EliminationStack.t;
+  #[global] EliminationStack_type_repr  :: go.TypeRepr EliminationStackⁱᵐᵖˡ EliminationStack.t;
   #[global] EliminationStack_underlying :: (EliminationStack) <u (EliminationStackⁱᵐᵖˡ);
-  #[global] EliminationStack_get_base (x : EliminationStack.t) :: go.IsGoStepPureDet (StructFieldGet (EliminationStack) "base") #x #x.(EliminationStack.base');
-  #[global] EliminationStack_set_base (x : EliminationStack.t) y :: go.IsGoStepPureDet (StructFieldSet (EliminationStack) "base") (#x, #y) #(x <|EliminationStack.base' := y|>);
-  #[global] EliminationStack_get_exchanger (x : EliminationStack.t) :: go.IsGoStepPureDet (StructFieldGet (EliminationStack) "exchanger") #x #x.(EliminationStack.exchanger');
-  #[global] EliminationStack_set_exchanger (x : EliminationStack.t) y :: go.IsGoStepPureDet (StructFieldSet (EliminationStack) "exchanger") (#x, #y) #(x <|EliminationStack.exchanger' := y|>);
+  #[global] EliminationStack_get_base (x : EliminationStack.t) :: ⟦StructFieldGet (EliminationStackⁱᵐᵖˡ) "base", #x⟧ ⤳[under] #x.(EliminationStack.base');
+  #[global] EliminationStack_set_base (x : EliminationStack.t) y :: ⟦StructFieldSet (EliminationStackⁱᵐᵖˡ) "base", (#x, #y)⟧ ⤳[under] #(x <|EliminationStack.base' := y|>);
+  #[global] EliminationStack_get_exchanger (x : EliminationStack.t) :: ⟦StructFieldGet (EliminationStackⁱᵐᵖˡ) "exchanger", #x⟧ ⤳[under] #x.(EliminationStack.exchanger');
+  #[global] EliminationStack_set_exchanger (x : EliminationStack.t) y :: ⟦StructFieldSet (EliminationStackⁱᵐᵖˡ) "exchanger", (#x, #y)⟧ ⤳[under] #(x <|EliminationStack.exchanger' := y|>);
   #[global] EliminationStack'ptr_Pop_unfold :: MethodUnfold (go.PointerType (EliminationStack)) "Pop" (EliminationStack__Popⁱᵐᵖˡ);
   #[global] EliminationStack'ptr_Push_unfold :: MethodUnfold (go.PointerType (EliminationStack)) "Push" (EliminationStack__Pushⁱᵐᵖˡ);
 }.
@@ -1254,12 +1254,12 @@ Definition requestⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : g
 
 Class request_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] request_type_repr  :: go.TypeRepr request request.t;
+  #[global] request_type_repr  :: go.TypeRepr requestⁱᵐᵖˡ request.t;
   #[global] request_underlying :: (request) <u (requestⁱᵐᵖˡ);
-  #[global] request_get_f (x : request.t) :: go.IsGoStepPureDet (StructFieldGet (request) "f") #x #x.(request.f');
-  #[global] request_set_f (x : request.t) y :: go.IsGoStepPureDet (StructFieldSet (request) "f") (#x, #y) #(x <|request.f' := y|>);
-  #[global] request_get_result (x : request.t) :: go.IsGoStepPureDet (StructFieldGet (request) "result") #x #x.(request.result');
-  #[global] request_set_result (x : request.t) y :: go.IsGoStepPureDet (StructFieldSet (request) "result") (#x, #y) #(x <|request.result' := y|>);
+  #[global] request_get_f (x : request.t) :: ⟦StructFieldGet (requestⁱᵐᵖˡ) "f", #x⟧ ⤳[under] #x.(request.f');
+  #[global] request_set_f (x : request.t) y :: ⟦StructFieldSet (requestⁱᵐᵖˡ) "f", (#x, #y)⟧ ⤳[under] #(x <|request.f' := y|>);
+  #[global] request_get_result (x : request.t) :: ⟦StructFieldGet (requestⁱᵐᵖˡ) "result", #x⟧ ⤳[under] #x.(request.result');
+  #[global] request_set_result (x : request.t) y :: ⟦StructFieldSet (requestⁱᵐᵖˡ) "result", (#x, #y)⟧ ⤳[under] #(x <|request.result' := y|>);
 }.
 
 Module stream.
@@ -1285,12 +1285,12 @@ Definition streamⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go
 
 Class stream_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] stream_type_repr  :: go.TypeRepr stream stream.t;
+  #[global] stream_type_repr  :: go.TypeRepr streamⁱᵐᵖˡ stream.t;
   #[global] stream_underlying :: (stream) <u (streamⁱᵐᵖˡ);
-  #[global] stream_get_req (x : stream.t) :: go.IsGoStepPureDet (StructFieldGet (stream) "req") #x #x.(stream.req');
-  #[global] stream_set_req (x : stream.t) y :: go.IsGoStepPureDet (StructFieldSet (stream) "req") (#x, #y) #(x <|stream.req' := y|>);
-  #[global] stream_get_res (x : stream.t) :: go.IsGoStepPureDet (StructFieldGet (stream) "res") #x #x.(stream.res');
-  #[global] stream_set_res (x : stream.t) y :: go.IsGoStepPureDet (StructFieldSet (stream) "res") (#x, #y) #(x <|stream.res' := y|>);
+  #[global] stream_get_req (x : stream.t) :: ⟦StructFieldGet (streamⁱᵐᵖˡ) "req", #x⟧ ⤳[under] #x.(stream.req');
+  #[global] stream_set_req (x : stream.t) y :: ⟦StructFieldSet (streamⁱᵐᵖˡ) "req", (#x, #y)⟧ ⤳[under] #(x <|stream.req' := y|>);
+  #[global] stream_get_res (x : stream.t) :: ⟦StructFieldGet (streamⁱᵐᵖˡ) "res", #x⟧ ⤳[under] #x.(stream.res');
+  #[global] stream_set_res (x : stream.t) y :: ⟦StructFieldSet (streamⁱᵐᵖˡ) "res", (#x, #y)⟧ ⤳[under] #(x <|stream.res' := y|>);
 }.
 
 Module streamold.
@@ -1318,14 +1318,14 @@ Definition streamoldⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
 
 Class streamold_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] streamold_type_repr  :: go.TypeRepr streamold streamold.t;
+  #[global] streamold_type_repr  :: go.TypeRepr streamoldⁱᵐᵖˡ streamold.t;
   #[global] streamold_underlying :: (streamold) <u (streamoldⁱᵐᵖˡ);
-  #[global] streamold_get_req (x : streamold.t) :: go.IsGoStepPureDet (StructFieldGet (streamold) "req") #x #x.(streamold.req');
-  #[global] streamold_set_req (x : streamold.t) y :: go.IsGoStepPureDet (StructFieldSet (streamold) "req") (#x, #y) #(x <|streamold.req' := y|>);
-  #[global] streamold_get_res (x : streamold.t) :: go.IsGoStepPureDet (StructFieldGet (streamold) "res") #x #x.(streamold.res');
-  #[global] streamold_set_res (x : streamold.t) y :: go.IsGoStepPureDet (StructFieldSet (streamold) "res") (#x, #y) #(x <|streamold.res' := y|>);
-  #[global] streamold_get_f (x : streamold.t) :: go.IsGoStepPureDet (StructFieldGet (streamold) "f") #x #x.(streamold.f');
-  #[global] streamold_set_f (x : streamold.t) y :: go.IsGoStepPureDet (StructFieldSet (streamold) "f") (#x, #y) #(x <|streamold.f' := y|>);
+  #[global] streamold_get_req (x : streamold.t) :: ⟦StructFieldGet (streamoldⁱᵐᵖˡ) "req", #x⟧ ⤳[under] #x.(streamold.req');
+  #[global] streamold_set_req (x : streamold.t) y :: ⟦StructFieldSet (streamoldⁱᵐᵖˡ) "req", (#x, #y)⟧ ⤳[under] #(x <|streamold.req' := y|>);
+  #[global] streamold_get_res (x : streamold.t) :: ⟦StructFieldGet (streamoldⁱᵐᵖˡ) "res", #x⟧ ⤳[under] #x.(streamold.res');
+  #[global] streamold_set_res (x : streamold.t) y :: ⟦StructFieldSet (streamoldⁱᵐᵖˡ) "res", (#x, #y)⟧ ⤳[under] #(x <|streamold.res' := y|>);
+  #[global] streamold_get_f (x : streamold.t) :: ⟦StructFieldGet (streamoldⁱᵐᵖˡ) "f", #x⟧ ⤳[under] #x.(streamold.f');
+  #[global] streamold_set_f (x : streamold.t) y :: ⟦StructFieldSet (streamoldⁱᵐᵖˡ) "f", (#x, #y)⟧ ⤳[under] #(x <|streamold.f' := y|>);
 }.
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=

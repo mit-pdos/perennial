@@ -31,7 +31,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance noCopy_into_val_typed
    :
-  IntoValTyped (sync.noCopy.t) (sync.noCopy).
+  IntoValTypedUnderlying (sync.noCopy.t) (sync.noCopyⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -51,7 +51,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance notifyList_into_val_typed
    :
-  IntoValTyped (sync.notifyList.t) (sync.notifyList).
+  IntoValTypedUnderlying (sync.notifyList.t) (sync.notifyListⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -71,7 +71,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance copyChecker_into_val_typed
    :
-  IntoValTyped (sync.copyChecker.t) (sync.copyChecker).
+  IntoValTypedUnderlying (sync.copyChecker.t) (sync.copyCheckerⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -102,7 +102,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance Cond_into_val_typed
    :
-  IntoValTyped (sync.Cond.t) (sync.Cond).
+  IntoValTypedUnderlying (sync.Cond.t) (sync.Condⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance Cond_access_load_noCopy l (v : (sync.Cond.t)) dq :
   AccessStrict
@@ -174,7 +174,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance Map_into_val_typed
    :
-  IntoValTyped (sync.Map.t) (sync.Map).
+  IntoValTypedUnderlying (sync.Map.t) (sync.Mapⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -194,7 +194,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance readOnly_into_val_typed
    :
-  IntoValTyped (sync.readOnly.t) (sync.readOnly).
+  IntoValTypedUnderlying (sync.readOnly.t) (sync.readOnlyⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -214,7 +214,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance entry_into_val_typed
    :
-  IntoValTyped (sync.entry.t) (sync.entry).
+  IntoValTypedUnderlying (sync.entry.t) (sync.entryⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -244,7 +244,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance Once_into_val_typed
    :
-  IntoValTyped (sync.Once.t) (sync.Once).
+  IntoValTypedUnderlying (sync.Once.t) (sync.Onceⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance Once_access_load__0 l (v : (sync.Once.t)) dq :
   AccessStrict
@@ -303,7 +303,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance Pool_into_val_typed
    :
-  IntoValTyped (sync.Pool.t) (sync.Pool).
+  IntoValTypedUnderlying (sync.Pool.t) (sync.Poolⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -323,7 +323,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance poolLocalInternal_into_val_typed
    :
-  IntoValTyped (sync.poolLocalInternal.t) (sync.poolLocalInternal).
+  IntoValTypedUnderlying (sync.poolLocalInternal.t) (sync.poolLocalInternalⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -343,7 +343,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance poolLocal_into_val_typed
    :
-  IntoValTyped (sync.poolLocal.t) (sync.poolLocal).
+  IntoValTypedUnderlying (sync.poolLocal.t) (sync.poolLocalⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -363,7 +363,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance poolDequeue_into_val_typed
    :
-  IntoValTyped (sync.poolDequeue.t) (sync.poolDequeue).
+  IntoValTypedUnderlying (sync.poolDequeue.t) (sync.poolDequeueⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -383,7 +383,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance eface_into_val_typed
    :
-  IntoValTyped (sync.eface.t) (sync.eface).
+  IntoValTypedUnderlying (sync.eface.t) (sync.efaceⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -403,7 +403,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance dequeueNil_into_val_typed
    :
-  IntoValTyped (sync.dequeueNil.t) (sync.dequeueNil).
+  IntoValTypedUnderlying (sync.dequeueNil.t) (sync.dequeueNilⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -423,7 +423,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance poolChain_into_val_typed
    :
-  IntoValTyped (sync.poolChain.t) (sync.poolChain).
+  IntoValTypedUnderlying (sync.poolChain.t) (sync.poolChainⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -443,7 +443,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance poolChainElt_into_val_typed
    :
-  IntoValTyped (sync.poolChainElt.t) (sync.poolChainElt).
+  IntoValTypedUnderlying (sync.poolChainElt.t) (sync.poolChainEltⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -475,7 +475,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance RWMutex_into_val_typed
    :
-  IntoValTyped (sync.RWMutex.t) (sync.RWMutex).
+  IntoValTypedUnderlying (sync.RWMutex.t) (sync.RWMutexⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance RWMutex_access_load_w l (v : (sync.RWMutex.t)) dq :
   AccessStrict
@@ -570,7 +570,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance WaitGroup_into_val_typed
    :
-  IntoValTyped (sync.WaitGroup.t) (sync.WaitGroup).
+  IntoValTypedUnderlying (sync.WaitGroup.t) (sync.WaitGroupⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance WaitGroup_access_load_noCopy l (v : (sync.WaitGroup.t)) dq :
   AccessStrict

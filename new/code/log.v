@@ -11,6 +11,8 @@ Module log.
 
 Definition Logger {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "log.Logger"%go [].
 
+Axiom Loggerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
 (* the date in the local time zone: 2009/01/23 *)
 Definition Ldate {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #1.
 
@@ -107,7 +109,7 @@ End Logger.
 
 Class Logger_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Logger_type_repr  :: go.TypeRepr Logger Logger.t;
+  #[global] Logger_type_repr  :: go.TypeRepr Loggerⁱᵐᵖˡ Logger.t;
 }.
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=

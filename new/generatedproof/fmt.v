@@ -21,7 +21,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance wrapError_into_val_typed
    :
-  IntoValTyped (fmt.wrapError.t) (fmt.wrapError).
+  IntoValTypedUnderlying (fmt.wrapError.t) (fmt.wrapErrorⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -41,7 +41,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance wrapErrors_into_val_typed
    :
-  IntoValTyped (fmt.wrapErrors.t) (fmt.wrapErrors).
+  IntoValTypedUnderlying (fmt.wrapErrors.t) (fmt.wrapErrorsⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -61,7 +61,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance fmtFlags_into_val_typed
    :
-  IntoValTyped (fmt.fmtFlags.t) (fmt.fmtFlags).
+  IntoValTypedUnderlying (fmt.fmtFlags.t) (fmt.fmtFlagsⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -81,7 +81,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance fmt_into_val_typed
    :
-  IntoValTyped (fmt.fmt.t) (fmt.fmt).
+  IntoValTypedUnderlying (fmt.fmt.t) (fmt.fmtⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -101,7 +101,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance State_into_val_typed
    :
-  IntoValTyped (fmt.State.t) (fmt.State).
+  IntoValTypedUnderlying (fmt.State.t) (fmt.Stateⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -121,7 +121,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance Formatter_into_val_typed
    :
-  IntoValTyped (fmt.Formatter.t) (fmt.Formatter).
+  IntoValTypedUnderlying (fmt.Formatter.t) (fmt.Formatterⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -141,7 +141,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance Stringer_into_val_typed
    :
-  IntoValTyped (fmt.Stringer.t) (fmt.Stringer).
+  IntoValTypedUnderlying (fmt.Stringer.t) (fmt.Stringerⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -161,7 +161,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance GoStringer_into_val_typed
    :
-  IntoValTyped (fmt.GoStringer.t) (fmt.GoStringer).
+  IntoValTypedUnderlying (fmt.GoStringer.t) (fmt.GoStringerⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -181,7 +181,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance buffer_into_val_typed
    :
-  IntoValTyped (fmt.buffer.t) (fmt.buffer).
+  IntoValTypedUnderlying (fmt.buffer.t) (fmt.bufferⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -201,7 +201,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance pp_into_val_typed
    :
-  IntoValTyped (fmt.pp.t) (fmt.pp).
+  IntoValTypedUnderlying (fmt.pp.t) (fmt.ppⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -221,7 +221,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance ScanState_into_val_typed
    :
-  IntoValTyped (fmt.ScanState.t) (fmt.ScanState).
+  IntoValTypedUnderlying (fmt.ScanState.t) (fmt.ScanStateⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -241,7 +241,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance Scanner_into_val_typed
    :
-  IntoValTyped (fmt.Scanner.t) (fmt.Scanner).
+  IntoValTypedUnderlying (fmt.Scanner.t) (fmt.Scannerⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -261,7 +261,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance stringReader_into_val_typed
    :
-  IntoValTyped (fmt.stringReader.t) (fmt.stringReader).
+  IntoValTypedUnderlying (fmt.stringReader.t) (fmt.stringReaderⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -281,7 +281,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance scanError_into_val_typed
    :
-  IntoValTyped (fmt.scanError.t) (fmt.scanError).
+  IntoValTypedUnderlying (fmt.scanError.t) (fmt.scanErrorⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -301,7 +301,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance ss_into_val_typed
    :
-  IntoValTyped (fmt.ss.t) (fmt.ss).
+  IntoValTypedUnderlying (fmt.ss.t) (fmt.ssⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -321,7 +321,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance ssave_into_val_typed
    :
-  IntoValTyped (fmt.ssave.t) (fmt.ssave).
+  IntoValTypedUnderlying (fmt.ssave.t) (fmt.ssaveⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -341,7 +341,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance readRune_into_val_typed
    :
-  IntoValTyped (fmt.readRune.t) (fmt.readRune).
+  IntoValTypedUnderlying (fmt.readRune.t) (fmt.readRuneⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.

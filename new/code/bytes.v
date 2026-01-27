@@ -15,6 +15,14 @@ Definition asciiSet {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := 
 
 Definition Reader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "bytes.Reader"%go [].
 
+Axiom Bufferⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom readOpⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom asciiSetⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom Readerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
 Axiom smallBufferSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom opRead : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
@@ -254,7 +262,7 @@ End Buffer.
 
 Class Buffer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Buffer_type_repr  :: go.TypeRepr Buffer Buffer.t;
+  #[global] Buffer_type_repr  :: go.TypeRepr Bufferⁱᵐᵖˡ Buffer.t;
 }.
 
 Module readOp.
@@ -268,7 +276,7 @@ End readOp.
 
 Class readOp_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] readOp_type_repr  :: go.TypeRepr readOp readOp.t;
+  #[global] readOp_type_repr  :: go.TypeRepr readOpⁱᵐᵖˡ readOp.t;
 }.
 
 Module asciiSet.
@@ -282,7 +290,7 @@ End asciiSet.
 
 Class asciiSet_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] asciiSet_type_repr  :: go.TypeRepr asciiSet asciiSet.t;
+  #[global] asciiSet_type_repr  :: go.TypeRepr asciiSetⁱᵐᵖˡ asciiSet.t;
 }.
 
 Module Reader.
@@ -296,7 +304,7 @@ End Reader.
 
 Class Reader_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Reader_type_repr  :: go.TypeRepr Reader Reader.t;
+  #[global] Reader_type_repr  :: go.TypeRepr Readerⁱᵐᵖˡ Reader.t;
 }.
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=

@@ -43,6 +43,40 @@ Definition ssave {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.
 
 Definition readRune {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "fmt.readRune"%go [].
 
+Axiom wrapErrorⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom wrapErrorsⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom fmtFlagsⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom fmtⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom Stateⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom Formatterⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom Stringerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom GoStringerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom bufferⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom ppⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom ScanStateⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom Scannerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom stringReaderⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom scanErrorⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom ssⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom ssaveⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom readRuneⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
 Axiom ldigits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom udigits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
@@ -223,7 +257,7 @@ End wrapError.
 
 Class wrapError_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] wrapError_type_repr  :: go.TypeRepr wrapError wrapError.t;
+  #[global] wrapError_type_repr  :: go.TypeRepr wrapErrorⁱᵐᵖˡ wrapError.t;
 }.
 
 Module wrapErrors.
@@ -237,7 +271,7 @@ End wrapErrors.
 
 Class wrapErrors_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] wrapErrors_type_repr  :: go.TypeRepr wrapErrors wrapErrors.t;
+  #[global] wrapErrors_type_repr  :: go.TypeRepr wrapErrorsⁱᵐᵖˡ wrapErrors.t;
 }.
 
 Module fmtFlags.
@@ -251,7 +285,7 @@ End fmtFlags.
 
 Class fmtFlags_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] fmtFlags_type_repr  :: go.TypeRepr fmtFlags fmtFlags.t;
+  #[global] fmtFlags_type_repr  :: go.TypeRepr fmtFlagsⁱᵐᵖˡ fmtFlags.t;
 }.
 
 Module fmt.
@@ -265,7 +299,7 @@ End fmt.
 
 Class fmt_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] fmt_type_repr  :: go.TypeRepr fmt fmt.t;
+  #[global] fmt_type_repr  :: go.TypeRepr fmtⁱᵐᵖˡ fmt.t;
 }.
 
 Module State.
@@ -279,7 +313,7 @@ End State.
 
 Class State_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] State_type_repr  :: go.TypeRepr State State.t;
+  #[global] State_type_repr  :: go.TypeRepr Stateⁱᵐᵖˡ State.t;
 }.
 
 Module Formatter.
@@ -293,7 +327,7 @@ End Formatter.
 
 Class Formatter_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Formatter_type_repr  :: go.TypeRepr Formatter Formatter.t;
+  #[global] Formatter_type_repr  :: go.TypeRepr Formatterⁱᵐᵖˡ Formatter.t;
 }.
 
 Module Stringer.
@@ -307,7 +341,7 @@ End Stringer.
 
 Class Stringer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Stringer_type_repr  :: go.TypeRepr Stringer Stringer.t;
+  #[global] Stringer_type_repr  :: go.TypeRepr Stringerⁱᵐᵖˡ Stringer.t;
 }.
 
 Module GoStringer.
@@ -321,7 +355,7 @@ End GoStringer.
 
 Class GoStringer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] GoStringer_type_repr  :: go.TypeRepr GoStringer GoStringer.t;
+  #[global] GoStringer_type_repr  :: go.TypeRepr GoStringerⁱᵐᵖˡ GoStringer.t;
 }.
 
 Module buffer.
@@ -335,7 +369,7 @@ End buffer.
 
 Class buffer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] buffer_type_repr  :: go.TypeRepr buffer buffer.t;
+  #[global] buffer_type_repr  :: go.TypeRepr bufferⁱᵐᵖˡ buffer.t;
 }.
 
 Module pp.
@@ -349,7 +383,7 @@ End pp.
 
 Class pp_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] pp_type_repr  :: go.TypeRepr pp pp.t;
+  #[global] pp_type_repr  :: go.TypeRepr ppⁱᵐᵖˡ pp.t;
 }.
 
 Module ScanState.
@@ -363,7 +397,7 @@ End ScanState.
 
 Class ScanState_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] ScanState_type_repr  :: go.TypeRepr ScanState ScanState.t;
+  #[global] ScanState_type_repr  :: go.TypeRepr ScanStateⁱᵐᵖˡ ScanState.t;
 }.
 
 Module Scanner.
@@ -377,7 +411,7 @@ End Scanner.
 
 Class Scanner_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Scanner_type_repr  :: go.TypeRepr Scanner Scanner.t;
+  #[global] Scanner_type_repr  :: go.TypeRepr Scannerⁱᵐᵖˡ Scanner.t;
 }.
 
 Module stringReader.
@@ -391,7 +425,7 @@ End stringReader.
 
 Class stringReader_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] stringReader_type_repr  :: go.TypeRepr stringReader stringReader.t;
+  #[global] stringReader_type_repr  :: go.TypeRepr stringReaderⁱᵐᵖˡ stringReader.t;
 }.
 
 Module scanError.
@@ -405,7 +439,7 @@ End scanError.
 
 Class scanError_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] scanError_type_repr  :: go.TypeRepr scanError scanError.t;
+  #[global] scanError_type_repr  :: go.TypeRepr scanErrorⁱᵐᵖˡ scanError.t;
 }.
 
 Module ss.
@@ -419,7 +453,7 @@ End ss.
 
 Class ss_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] ss_type_repr  :: go.TypeRepr ss ss.t;
+  #[global] ss_type_repr  :: go.TypeRepr ssⁱᵐᵖˡ ss.t;
 }.
 
 Module ssave.
@@ -433,7 +467,7 @@ End ssave.
 
 Class ssave_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] ssave_type_repr  :: go.TypeRepr ssave ssave.t;
+  #[global] ssave_type_repr  :: go.TypeRepr ssaveⁱᵐᵖˡ ssave.t;
 }.
 
 Module readRune.
@@ -447,7 +481,7 @@ End readRune.
 
 Class readRune_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] readRune_type_repr  :: go.TypeRepr readRune readRune.t;
+  #[global] readRune_type_repr  :: go.TypeRepr readRuneⁱᵐᵖˡ readRune.t;
 }.
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=

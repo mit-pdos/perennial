@@ -19,6 +19,8 @@ Definition flag {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.N
 
 Definition ValueError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "internal/reflectlite.ValueError"%go [].
 
+Axiom Typeⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
 Axiom Kind : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
 Axiom nameOff : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
@@ -26,6 +28,8 @@ Axiom nameOff : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 Axiom typeOff : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
 Axiom textOff : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom rtypeⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
 Axiom uncommonType : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
@@ -42,6 +46,14 @@ Axiom ptrType : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 Axiom sliceType : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
 Axiom structType : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom nameⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom Valueⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom flagⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom ValueErrorⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
 Axiom Ptr : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
@@ -147,7 +159,7 @@ End Type.
 
 Class Type_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Type_type_repr  :: go.TypeRepr Type Type.t;
+  #[global] Type_type_repr  :: go.TypeRepr Typeⁱᵐᵖˡ Type.t;
 }.
 
 Module rtype.
@@ -161,7 +173,7 @@ End rtype.
 
 Class rtype_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] rtype_type_repr  :: go.TypeRepr rtype rtype.t;
+  #[global] rtype_type_repr  :: go.TypeRepr rtypeⁱᵐᵖˡ rtype.t;
 }.
 
 Module name.
@@ -175,7 +187,7 @@ End name.
 
 Class name_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] name_type_repr  :: go.TypeRepr name name.t;
+  #[global] name_type_repr  :: go.TypeRepr nameⁱᵐᵖˡ name.t;
 }.
 
 Module Value.
@@ -189,7 +201,7 @@ End Value.
 
 Class Value_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Value_type_repr  :: go.TypeRepr Value Value.t;
+  #[global] Value_type_repr  :: go.TypeRepr Valueⁱᵐᵖˡ Value.t;
 }.
 
 Module flag.
@@ -203,7 +215,7 @@ End flag.
 
 Class flag_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] flag_type_repr  :: go.TypeRepr flag flag.t;
+  #[global] flag_type_repr  :: go.TypeRepr flagⁱᵐᵖˡ flag.t;
 }.
 
 Module ValueError.
@@ -217,7 +229,7 @@ End ValueError.
 
 Class ValueError_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] ValueError_type_repr  :: go.TypeRepr ValueError ValueError.t;
+  #[global] ValueError_type_repr  :: go.TypeRepr ValueErrorⁱᵐᵖˡ ValueError.t;
 }.
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=

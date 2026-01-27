@@ -11,6 +11,10 @@ Definition errorString {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type 
 
 Definition joinError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "errors.joinError"%go [].
 
+Axiom errorStringⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom joinErrorⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
 Definition ErrUnsupported {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "errors.ErrUnsupported"%go.
 
 Axiom ErrUnsupported'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
@@ -58,7 +62,7 @@ End errorString.
 
 Class errorString_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] errorString_type_repr  :: go.TypeRepr errorString errorString.t;
+  #[global] errorString_type_repr  :: go.TypeRepr errorStringⁱᵐᵖˡ errorString.t;
 }.
 
 Module joinError.
@@ -72,7 +76,7 @@ End joinError.
 
 Class joinError_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] joinError_type_repr  :: go.TypeRepr joinError joinError.t;
+  #[global] joinError_type_repr  :: go.TypeRepr joinErrorⁱᵐᵖˡ joinError.t;
 }.
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=

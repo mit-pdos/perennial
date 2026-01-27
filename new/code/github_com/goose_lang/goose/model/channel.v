@@ -828,7 +828,7 @@ Definition offerStateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
 
 Class offerState_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] offerState_type_repr  :: go.TypeRepr offerState offerState.t;
+  #[global] offerState_type_repr  :: go.TypeRepr offerStateⁱᵐᵖˡ offerState.t;
   #[global] offerState_underlying :: (offerState) <u (offerStateⁱᵐᵖˡ);
 }.
 
@@ -861,18 +861,18 @@ Definition Channelⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T 
 
 Class Channel_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Channel_type_repr T T' `{!ZeroVal T'} `{!go.TypeRepr T T'} :: go.TypeRepr (Channel T) (Channel.t T');
+  #[global] Channel_type_repr T T' `{!ZeroVal T'} `{!go.TypeRepr T T'} :: go.TypeRepr (Channelⁱᵐᵖˡ T) (Channel.t T');
   #[global] Channel_underlying T :: (Channel T) <u (Channelⁱᵐᵖˡ T);
-  #[global] Channel_get_cap T T' (x : Channel.t T') :: go.IsGoStepPureDet (StructFieldGet (Channel T) "cap") #x #x.(Channel.cap');
-  #[global] Channel_set_cap T T' (x : Channel.t T') y :: go.IsGoStepPureDet (StructFieldSet (Channel T) "cap") (#x, #y) #(x <|Channel.cap' := y|>);
-  #[global] Channel_get_mu T T' (x : Channel.t T') :: go.IsGoStepPureDet (StructFieldGet (Channel T) "mu") #x #x.(Channel.mu');
-  #[global] Channel_set_mu T T' (x : Channel.t T') y :: go.IsGoStepPureDet (StructFieldSet (Channel T) "mu") (#x, #y) #(x <|Channel.mu' := y|>);
-  #[global] Channel_get_state T T' (x : Channel.t T') :: go.IsGoStepPureDet (StructFieldGet (Channel T) "state") #x #x.(Channel.state');
-  #[global] Channel_set_state T T' (x : Channel.t T') y :: go.IsGoStepPureDet (StructFieldSet (Channel T) "state") (#x, #y) #(x <|Channel.state' := y|>);
-  #[global] Channel_get_buffer T T' (x : Channel.t T') :: go.IsGoStepPureDet (StructFieldGet (Channel T) "buffer") #x #x.(Channel.buffer');
-  #[global] Channel_set_buffer T T' (x : Channel.t T') y :: go.IsGoStepPureDet (StructFieldSet (Channel T) "buffer") (#x, #y) #(x <|Channel.buffer' := y|>);
-  #[global] Channel_get_v T T' (x : Channel.t T') :: go.IsGoStepPureDet (StructFieldGet (Channel T) "v") #x #x.(Channel.v');
-  #[global] Channel_set_v T T' (x : Channel.t T') y :: go.IsGoStepPureDet (StructFieldSet (Channel T) "v") (#x, #y) #(x <|Channel.v' := y|>);
+  #[global] Channel_get_cap T T' (x : Channel.t T') :: ⟦StructFieldGet (Channelⁱᵐᵖˡ T) "cap", #x⟧ ⤳[under] #x.(Channel.cap');
+  #[global] Channel_set_cap T T' (x : Channel.t T') y :: ⟦StructFieldSet (Channelⁱᵐᵖˡ T) "cap", (#x, #y)⟧ ⤳[under] #(x <|Channel.cap' := y|>);
+  #[global] Channel_get_mu T T' (x : Channel.t T') :: ⟦StructFieldGet (Channelⁱᵐᵖˡ T) "mu", #x⟧ ⤳[under] #x.(Channel.mu');
+  #[global] Channel_set_mu T T' (x : Channel.t T') y :: ⟦StructFieldSet (Channelⁱᵐᵖˡ T) "mu", (#x, #y)⟧ ⤳[under] #(x <|Channel.mu' := y|>);
+  #[global] Channel_get_state T T' (x : Channel.t T') :: ⟦StructFieldGet (Channelⁱᵐᵖˡ T) "state", #x⟧ ⤳[under] #x.(Channel.state');
+  #[global] Channel_set_state T T' (x : Channel.t T') y :: ⟦StructFieldSet (Channelⁱᵐᵖˡ T) "state", (#x, #y)⟧ ⤳[under] #(x <|Channel.state' := y|>);
+  #[global] Channel_get_buffer T T' (x : Channel.t T') :: ⟦StructFieldGet (Channelⁱᵐᵖˡ T) "buffer", #x⟧ ⤳[under] #x.(Channel.buffer');
+  #[global] Channel_set_buffer T T' (x : Channel.t T') y :: ⟦StructFieldSet (Channelⁱᵐᵖˡ T) "buffer", (#x, #y)⟧ ⤳[under] #(x <|Channel.buffer' := y|>);
+  #[global] Channel_get_v T T' (x : Channel.t T') :: ⟦StructFieldGet (Channelⁱᵐᵖˡ T) "v", #x⟧ ⤳[under] #x.(Channel.v');
+  #[global] Channel_set_v T T' (x : Channel.t T') y :: ⟦StructFieldSet (Channelⁱᵐᵖˡ T) "v", (#x, #y)⟧ ⤳[under] #(x <|Channel.v' := y|>);
   #[global] Channel'ptr_Cap_unfold T :: MethodUnfold (go.PointerType (Channel T)) "Cap" (Channel__Capⁱᵐᵖˡ T);
   #[global] Channel'ptr_Close_unfold T :: MethodUnfold (go.PointerType (Channel T)) "Close" (Channel__Closeⁱᵐᵖˡ T);
   #[global] Channel'ptr_Iter_unfold T :: MethodUnfold (go.PointerType (Channel T)) "Iter" (Channel__Iterⁱᵐᵖˡ T);
@@ -896,7 +896,7 @@ Definition SelectDirⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
 
 Class SelectDir_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] SelectDir_type_repr  :: go.TypeRepr SelectDir SelectDir.t;
+  #[global] SelectDir_type_repr  :: go.TypeRepr SelectDirⁱᵐᵖˡ SelectDir.t;
   #[global] SelectDir_underlying :: (SelectDir) <u (SelectDirⁱᵐᵖˡ);
 }.
 

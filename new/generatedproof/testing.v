@@ -20,7 +20,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance durationOrCountFlag_into_val_typed
    :
-  IntoValTyped (testing.durationOrCountFlag.t) (testing.durationOrCountFlag).
+  IntoValTypedUnderlying (testing.durationOrCountFlag.t) (testing.durationOrCountFlagⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -40,7 +40,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance InternalBenchmark_into_val_typed
    :
-  IntoValTyped (testing.InternalBenchmark.t) (testing.InternalBenchmark).
+  IntoValTypedUnderlying (testing.InternalBenchmark.t) (testing.InternalBenchmarkⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -60,7 +60,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance B_into_val_typed
    :
-  IntoValTyped (testing.B.t) (testing.B).
+  IntoValTypedUnderlying (testing.B.t) (testing.Bⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -80,7 +80,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance BenchmarkResult_into_val_typed
    :
-  IntoValTyped (testing.BenchmarkResult.t) (testing.BenchmarkResult).
+  IntoValTypedUnderlying (testing.BenchmarkResult.t) (testing.BenchmarkResultⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -100,7 +100,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance benchState_into_val_typed
    :
-  IntoValTyped (testing.benchState.t) (testing.benchState).
+  IntoValTypedUnderlying (testing.benchState.t) (testing.benchStateⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -120,7 +120,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance PB_into_val_typed
    :
-  IntoValTyped (testing.PB.t) (testing.PB).
+  IntoValTypedUnderlying (testing.PB.t) (testing.PBⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -140,7 +140,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance discard_into_val_typed
    :
-  IntoValTyped (testing.discard.t) (testing.discard).
+  IntoValTypedUnderlying (testing.discard.t) (testing.discardⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -160,7 +160,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance CoverBlock_into_val_typed
    :
-  IntoValTyped (testing.CoverBlock.t) (testing.CoverBlock).
+  IntoValTypedUnderlying (testing.CoverBlock.t) (testing.CoverBlockⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -180,7 +180,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance Cover_into_val_typed
    :
-  IntoValTyped (testing.Cover.t) (testing.Cover).
+  IntoValTypedUnderlying (testing.Cover.t) (testing.Coverⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -200,7 +200,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance InternalExample_into_val_typed
    :
-  IntoValTyped (testing.InternalExample.t) (testing.InternalExample).
+  IntoValTypedUnderlying (testing.InternalExample.t) (testing.InternalExampleⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -220,7 +220,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance InternalFuzzTarget_into_val_typed
    :
-  IntoValTyped (testing.InternalFuzzTarget.t) (testing.InternalFuzzTarget).
+  IntoValTypedUnderlying (testing.InternalFuzzTarget.t) (testing.InternalFuzzTargetⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -240,7 +240,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance F_into_val_typed
    :
-  IntoValTyped (testing.F.t) (testing.F).
+  IntoValTypedUnderlying (testing.F.t) (testing.Fⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -260,7 +260,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance fuzzResult_into_val_typed
    :
-  IntoValTyped (testing.fuzzResult.t) (testing.fuzzResult).
+  IntoValTypedUnderlying (testing.fuzzResult.t) (testing.fuzzResultⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -280,7 +280,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance fuzzCrashError_into_val_typed
    :
-  IntoValTyped (testing.fuzzCrashError.t) (testing.fuzzCrashError).
+  IntoValTypedUnderlying (testing.fuzzCrashError.t) (testing.fuzzCrashErrorⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -300,7 +300,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance fuzzState_into_val_typed
    :
-  IntoValTyped (testing.fuzzState.t) (testing.fuzzState).
+  IntoValTypedUnderlying (testing.fuzzState.t) (testing.fuzzStateⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -320,7 +320,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance fuzzMode_into_val_typed
    :
-  IntoValTyped (testing.fuzzMode.t) (testing.fuzzMode).
+  IntoValTypedUnderlying (testing.fuzzMode.t) (testing.fuzzModeⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -340,7 +340,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance matcher_into_val_typed
    :
-  IntoValTyped (testing.matcher.t) (testing.matcher).
+  IntoValTypedUnderlying (testing.matcher.t) (testing.matcherⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -360,7 +360,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance filterMatch_into_val_typed
    :
-  IntoValTyped (testing.filterMatch.t) (testing.filterMatch).
+  IntoValTypedUnderlying (testing.filterMatch.t) (testing.filterMatchⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -380,7 +380,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance simpleMatch_into_val_typed
    :
-  IntoValTyped (testing.simpleMatch.t) (testing.simpleMatch).
+  IntoValTypedUnderlying (testing.simpleMatch.t) (testing.simpleMatchⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -400,7 +400,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance alternationMatch_into_val_typed
    :
-  IntoValTyped (testing.alternationMatch.t) (testing.alternationMatch).
+  IntoValTypedUnderlying (testing.alternationMatch.t) (testing.alternationMatchⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -420,7 +420,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance chattyFlag_into_val_typed
    :
-  IntoValTyped (testing.chattyFlag.t) (testing.chattyFlag).
+  IntoValTypedUnderlying (testing.chattyFlag.t) (testing.chattyFlagⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -440,7 +440,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance chattyPrinter_into_val_typed
    :
-  IntoValTyped (testing.chattyPrinter.t) (testing.chattyPrinter).
+  IntoValTypedUnderlying (testing.chattyPrinter.t) (testing.chattyPrinterⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -460,7 +460,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance common_into_val_typed
    :
-  IntoValTyped (testing.common.t) (testing.common).
+  IntoValTypedUnderlying (testing.common.t) (testing.commonⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -480,7 +480,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance indenter_into_val_typed
    :
-  IntoValTyped (testing.indenter.t) (testing.indenter).
+  IntoValTypedUnderlying (testing.indenter.t) (testing.indenterⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -500,7 +500,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance TB_into_val_typed
    :
-  IntoValTyped (testing.TB.t) (testing.TB).
+  IntoValTypedUnderlying (testing.TB.t) (testing.TBⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -520,7 +520,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance T_into_val_typed
    :
-  IntoValTyped (testing.T.t) (testing.T).
+  IntoValTypedUnderlying (testing.T.t) (testing.Tⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -540,7 +540,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance outputWriter_into_val_typed
    :
-  IntoValTyped (testing.outputWriter.t) (testing.outputWriter).
+  IntoValTypedUnderlying (testing.outputWriter.t) (testing.outputWriterⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -560,7 +560,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance panicHandling_into_val_typed
    :
-  IntoValTyped (testing.panicHandling.t) (testing.panicHandling).
+  IntoValTypedUnderlying (testing.panicHandling.t) (testing.panicHandlingⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -580,7 +580,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance InternalTest_into_val_typed
    :
-  IntoValTyped (testing.InternalTest.t) (testing.InternalTest).
+  IntoValTypedUnderlying (testing.InternalTest.t) (testing.InternalTestⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -600,7 +600,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance testState_into_val_typed
    :
-  IntoValTyped (testing.testState.t) (testing.testState).
+  IntoValTypedUnderlying (testing.testState.t) (testing.testStateⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -620,7 +620,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance matchStringOnly_into_val_typed
    :
-  IntoValTyped (testing.matchStringOnly.t) (testing.matchStringOnly).
+  IntoValTypedUnderlying (testing.matchStringOnly.t) (testing.matchStringOnlyⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -640,7 +640,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance M_into_val_typed
    :
-  IntoValTyped (testing.M.t) (testing.M).
+  IntoValTypedUnderlying (testing.M.t) (testing.Mⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -660,7 +660,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance testDeps_into_val_typed
    :
-  IntoValTyped (testing.testDeps.t) (testing.testDeps).
+  IntoValTypedUnderlying (testing.testDeps.t) (testing.testDepsⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -680,7 +680,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance highPrecisionTime_into_val_typed
    :
-  IntoValTyped (testing.highPrecisionTime.t) (testing.highPrecisionTime).
+  IntoValTypedUnderlying (testing.highPrecisionTime.t) (testing.highPrecisionTimeⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.

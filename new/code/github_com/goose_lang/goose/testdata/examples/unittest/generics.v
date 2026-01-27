@@ -198,10 +198,10 @@ Definition Boxⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go
 
 Class Box_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Box_type_repr T T' `{!ZeroVal T'} `{!go.TypeRepr T T'} :: go.TypeRepr (Box T) (Box.t T');
+  #[global] Box_type_repr T T' `{!ZeroVal T'} `{!go.TypeRepr T T'} :: go.TypeRepr (Boxⁱᵐᵖˡ T) (Box.t T');
   #[global] Box_underlying T :: (Box T) <u (Boxⁱᵐᵖˡ T);
-  #[global] Box_get_Value T T' (x : Box.t T') :: go.IsGoStepPureDet (StructFieldGet (Box T) "Value") #x #x.(Box.Value');
-  #[global] Box_set_Value T T' (x : Box.t T') y :: go.IsGoStepPureDet (StructFieldSet (Box T) "Value") (#x, #y) #(x <|Box.Value' := y|>);
+  #[global] Box_get_Value T T' (x : Box.t T') :: ⟦StructFieldGet (Boxⁱᵐᵖˡ T) "Value", #x⟧ ⤳[under] #x.(Box.Value');
+  #[global] Box_set_Value T T' (x : Box.t T') y :: ⟦StructFieldSet (Boxⁱᵐᵖˡ T) "Value", (#x, #y)⟧ ⤳[under] #(x <|Box.Value' := y|>);
   #[global] Box_Get_unfold T :: MethodUnfold (Box T) "Get" (Box__Getⁱᵐᵖˡ T);
   #[global] Box'ptr_Get_unfold T :: MethodUnfold (go.PointerType (Box T)) "Get" (λ: "$r", MethodResolve (Box T) "Get" (![(Box T)] "$r"));
 }.
@@ -233,16 +233,16 @@ Definition Containerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (
 
 Class Container_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Container_type_repr T T' `{!ZeroVal T'} `{!go.TypeRepr T T'} :: go.TypeRepr (Container T) (Container.t T');
+  #[global] Container_type_repr T T' `{!ZeroVal T'} `{!go.TypeRepr T T'} :: go.TypeRepr (Containerⁱᵐᵖˡ T) (Container.t T');
   #[global] Container_underlying T :: (Container T) <u (Containerⁱᵐᵖˡ T);
-  #[global] Container_get_X T T' (x : Container.t T') :: go.IsGoStepPureDet (StructFieldGet (Container T) "X") #x #x.(Container.X');
-  #[global] Container_set_X T T' (x : Container.t T') y :: go.IsGoStepPureDet (StructFieldSet (Container T) "X") (#x, #y) #(x <|Container.X' := y|>);
-  #[global] Container_get_Y T T' (x : Container.t T') :: go.IsGoStepPureDet (StructFieldGet (Container T) "Y") #x #x.(Container.Y');
-  #[global] Container_set_Y T T' (x : Container.t T') y :: go.IsGoStepPureDet (StructFieldSet (Container T) "Y") (#x, #y) #(x <|Container.Y' := y|>);
-  #[global] Container_get_Z T T' (x : Container.t T') :: go.IsGoStepPureDet (StructFieldGet (Container T) "Z") #x #x.(Container.Z');
-  #[global] Container_set_Z T T' (x : Container.t T') y :: go.IsGoStepPureDet (StructFieldSet (Container T) "Z") (#x, #y) #(x <|Container.Z' := y|>);
-  #[global] Container_get_W T T' (x : Container.t T') :: go.IsGoStepPureDet (StructFieldGet (Container T) "W") #x #x.(Container.W');
-  #[global] Container_set_W T T' (x : Container.t T') y :: go.IsGoStepPureDet (StructFieldSet (Container T) "W") (#x, #y) #(x <|Container.W' := y|>);
+  #[global] Container_get_X T T' (x : Container.t T') :: ⟦StructFieldGet (Containerⁱᵐᵖˡ T) "X", #x⟧ ⤳[under] #x.(Container.X');
+  #[global] Container_set_X T T' (x : Container.t T') y :: ⟦StructFieldSet (Containerⁱᵐᵖˡ T) "X", (#x, #y)⟧ ⤳[under] #(x <|Container.X' := y|>);
+  #[global] Container_get_Y T T' (x : Container.t T') :: ⟦StructFieldGet (Containerⁱᵐᵖˡ T) "Y", #x⟧ ⤳[under] #x.(Container.Y');
+  #[global] Container_set_Y T T' (x : Container.t T') y :: ⟦StructFieldSet (Containerⁱᵐᵖˡ T) "Y", (#x, #y)⟧ ⤳[under] #(x <|Container.Y' := y|>);
+  #[global] Container_get_Z T T' (x : Container.t T') :: ⟦StructFieldGet (Containerⁱᵐᵖˡ T) "Z", #x⟧ ⤳[under] #x.(Container.Z');
+  #[global] Container_set_Z T T' (x : Container.t T') y :: ⟦StructFieldSet (Containerⁱᵐᵖˡ T) "Z", (#x, #y)⟧ ⤳[under] #(x <|Container.Z' := y|>);
+  #[global] Container_get_W T T' (x : Container.t T') :: ⟦StructFieldGet (Containerⁱᵐᵖˡ T) "W", #x⟧ ⤳[under] #x.(Container.W');
+  #[global] Container_set_W T T' (x : Container.t T') y :: ⟦StructFieldSet (Containerⁱᵐᵖˡ T) "W", (#x, #y)⟧ ⤳[under] #(x <|Container.W' := y|>);
 }.
 
 Module UseContainer.
@@ -266,10 +266,10 @@ Definition UseContainerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
 
 Class UseContainer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] UseContainer_type_repr  :: go.TypeRepr UseContainer UseContainer.t;
+  #[global] UseContainer_type_repr  :: go.TypeRepr UseContainerⁱᵐᵖˡ UseContainer.t;
   #[global] UseContainer_underlying :: (UseContainer) <u (UseContainerⁱᵐᵖˡ);
-  #[global] UseContainer_get_X (x : UseContainer.t) :: go.IsGoStepPureDet (StructFieldGet (UseContainer) "X") #x #x.(UseContainer.X');
-  #[global] UseContainer_set_X (x : UseContainer.t) y :: go.IsGoStepPureDet (StructFieldSet (UseContainer) "X") (#x, #y) #(x <|UseContainer.X' := y|>);
+  #[global] UseContainer_get_X (x : UseContainer.t) :: ⟦StructFieldGet (UseContainerⁱᵐᵖˡ) "X", #x⟧ ⤳[under] #x.(UseContainer.X');
+  #[global] UseContainer_set_X (x : UseContainer.t) y :: ⟦StructFieldSet (UseContainerⁱᵐᵖˡ) "X", (#x, #y)⟧ ⤳[under] #(x <|UseContainer.X' := y|>);
 }.
 
 Module OnlyIndirect.
@@ -295,12 +295,12 @@ Definition OnlyIndirectⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
 
 Class OnlyIndirect_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] OnlyIndirect_type_repr T T' `{!ZeroVal T'} `{!go.TypeRepr T T'} :: go.TypeRepr (OnlyIndirect T) (OnlyIndirect.t T');
+  #[global] OnlyIndirect_type_repr T T' `{!ZeroVal T'} `{!go.TypeRepr T T'} :: go.TypeRepr (OnlyIndirectⁱᵐᵖˡ T) (OnlyIndirect.t T');
   #[global] OnlyIndirect_underlying T :: (OnlyIndirect T) <u (OnlyIndirectⁱᵐᵖˡ T);
-  #[global] OnlyIndirect_get_X T T' (x : OnlyIndirect.t T') :: go.IsGoStepPureDet (StructFieldGet (OnlyIndirect T) "X") #x #x.(OnlyIndirect.X');
-  #[global] OnlyIndirect_set_X T T' (x : OnlyIndirect.t T') y :: go.IsGoStepPureDet (StructFieldSet (OnlyIndirect T) "X") (#x, #y) #(x <|OnlyIndirect.X' := y|>);
-  #[global] OnlyIndirect_get_Y T T' (x : OnlyIndirect.t T') :: go.IsGoStepPureDet (StructFieldGet (OnlyIndirect T) "Y") #x #x.(OnlyIndirect.Y');
-  #[global] OnlyIndirect_set_Y T T' (x : OnlyIndirect.t T') y :: go.IsGoStepPureDet (StructFieldSet (OnlyIndirect T) "Y") (#x, #y) #(x <|OnlyIndirect.Y' := y|>);
+  #[global] OnlyIndirect_get_X T T' (x : OnlyIndirect.t T') :: ⟦StructFieldGet (OnlyIndirectⁱᵐᵖˡ T) "X", #x⟧ ⤳[under] #x.(OnlyIndirect.X');
+  #[global] OnlyIndirect_set_X T T' (x : OnlyIndirect.t T') y :: ⟦StructFieldSet (OnlyIndirectⁱᵐᵖˡ T) "X", (#x, #y)⟧ ⤳[under] #(x <|OnlyIndirect.X' := y|>);
+  #[global] OnlyIndirect_get_Y T T' (x : OnlyIndirect.t T') :: ⟦StructFieldGet (OnlyIndirectⁱᵐᵖˡ T) "Y", #x⟧ ⤳[under] #x.(OnlyIndirect.Y');
+  #[global] OnlyIndirect_set_Y T T' (x : OnlyIndirect.t T') y :: ⟦StructFieldSet (OnlyIndirectⁱᵐᵖˡ T) "Y", (#x, #y)⟧ ⤳[under] #(x <|OnlyIndirect.Y' := y|>);
 }.
 
 Module MultiParam.
@@ -326,12 +326,12 @@ Definition MultiParamⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
 
 Class MultiParam_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] MultiParam_type_repr A A' `{!ZeroVal A'} `{!go.TypeRepr A A'}B B' `{!ZeroVal B'} `{!go.TypeRepr B B'} :: go.TypeRepr (MultiParam A B) (MultiParam.t A' B');
+  #[global] MultiParam_type_repr A A' `{!ZeroVal A'} `{!go.TypeRepr A A'}B B' `{!ZeroVal B'} `{!go.TypeRepr B B'} :: go.TypeRepr (MultiParamⁱᵐᵖˡ A B) (MultiParam.t A' B');
   #[global] MultiParam_underlying A B :: (MultiParam A B) <u (MultiParamⁱᵐᵖˡ A B);
-  #[global] MultiParam_get_Y A B A' B' (x : MultiParam.t A' B') :: go.IsGoStepPureDet (StructFieldGet (MultiParam A B) "Y") #x #x.(MultiParam.Y');
-  #[global] MultiParam_set_Y A B A' B' (x : MultiParam.t A' B') y :: go.IsGoStepPureDet (StructFieldSet (MultiParam A B) "Y") (#x, #y) #(x <|MultiParam.Y' := y|>);
-  #[global] MultiParam_get_X A B A' B' (x : MultiParam.t A' B') :: go.IsGoStepPureDet (StructFieldGet (MultiParam A B) "X") #x #x.(MultiParam.X');
-  #[global] MultiParam_set_X A B A' B' (x : MultiParam.t A' B') y :: go.IsGoStepPureDet (StructFieldSet (MultiParam A B) "X") (#x, #y) #(x <|MultiParam.X' := y|>);
+  #[global] MultiParam_get_Y A B A' B' (x : MultiParam.t A' B') :: ⟦StructFieldGet (MultiParamⁱᵐᵖˡ A B) "Y", #x⟧ ⤳[under] #x.(MultiParam.Y');
+  #[global] MultiParam_set_Y A B A' B' (x : MultiParam.t A' B') y :: ⟦StructFieldSet (MultiParamⁱᵐᵖˡ A B) "Y", (#x, #y)⟧ ⤳[under] #(x <|MultiParam.Y' := y|>);
+  #[global] MultiParam_get_X A B A' B' (x : MultiParam.t A' B') :: ⟦StructFieldGet (MultiParamⁱᵐᵖˡ A B) "X", #x⟧ ⤳[under] #x.(MultiParam.X');
+  #[global] MultiParam_set_X A B A' B' (x : MultiParam.t A' B') y :: ⟦StructFieldSet (MultiParamⁱᵐᵖˡ A B) "X", (#x, #y)⟧ ⤳[under] #(x <|MultiParam.X' := y|>);
 }.
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=

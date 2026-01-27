@@ -75,7 +75,75 @@ Definition testDeps {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := 
 
 Definition highPrecisionTime {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.highPrecisionTime"%go [].
 
+Axiom durationOrCountFlagⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom InternalBenchmarkⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom Bⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom BenchmarkResultⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom benchStateⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom PBⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom discardⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom CoverBlockⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom Coverⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom InternalExampleⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom InternalFuzzTargetⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom Fⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
 Axiom corpusEntry : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom fuzzResultⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom fuzzCrashErrorⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom fuzzStateⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom fuzzModeⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom matcherⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom filterMatchⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom simpleMatchⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom alternationMatchⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom chattyFlagⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom chattyPrinterⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom commonⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom indenterⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom TBⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom Tⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom outputWriterⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom panicHandlingⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom InternalTestⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom testStateⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom matchStringOnlyⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom Mⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom testDepsⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom highPrecisionTimeⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
 Axiom loopPoisonTimer : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
@@ -359,7 +427,7 @@ End durationOrCountFlag.
 
 Class durationOrCountFlag_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] durationOrCountFlag_type_repr  :: go.TypeRepr durationOrCountFlag durationOrCountFlag.t;
+  #[global] durationOrCountFlag_type_repr  :: go.TypeRepr durationOrCountFlagⁱᵐᵖˡ durationOrCountFlag.t;
 }.
 
 Module InternalBenchmark.
@@ -373,7 +441,7 @@ End InternalBenchmark.
 
 Class InternalBenchmark_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] InternalBenchmark_type_repr  :: go.TypeRepr InternalBenchmark InternalBenchmark.t;
+  #[global] InternalBenchmark_type_repr  :: go.TypeRepr InternalBenchmarkⁱᵐᵖˡ InternalBenchmark.t;
 }.
 
 Module B.
@@ -387,7 +455,7 @@ End B.
 
 Class B_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] B_type_repr  :: go.TypeRepr B B.t;
+  #[global] B_type_repr  :: go.TypeRepr Bⁱᵐᵖˡ B.t;
 }.
 
 Module BenchmarkResult.
@@ -401,7 +469,7 @@ End BenchmarkResult.
 
 Class BenchmarkResult_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] BenchmarkResult_type_repr  :: go.TypeRepr BenchmarkResult BenchmarkResult.t;
+  #[global] BenchmarkResult_type_repr  :: go.TypeRepr BenchmarkResultⁱᵐᵖˡ BenchmarkResult.t;
 }.
 
 Module benchState.
@@ -415,7 +483,7 @@ End benchState.
 
 Class benchState_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] benchState_type_repr  :: go.TypeRepr benchState benchState.t;
+  #[global] benchState_type_repr  :: go.TypeRepr benchStateⁱᵐᵖˡ benchState.t;
 }.
 
 Module PB.
@@ -429,7 +497,7 @@ End PB.
 
 Class PB_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] PB_type_repr  :: go.TypeRepr PB PB.t;
+  #[global] PB_type_repr  :: go.TypeRepr PBⁱᵐᵖˡ PB.t;
 }.
 
 Module discard.
@@ -443,7 +511,7 @@ End discard.
 
 Class discard_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] discard_type_repr  :: go.TypeRepr discard discard.t;
+  #[global] discard_type_repr  :: go.TypeRepr discardⁱᵐᵖˡ discard.t;
 }.
 
 Module CoverBlock.
@@ -457,7 +525,7 @@ End CoverBlock.
 
 Class CoverBlock_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] CoverBlock_type_repr  :: go.TypeRepr CoverBlock CoverBlock.t;
+  #[global] CoverBlock_type_repr  :: go.TypeRepr CoverBlockⁱᵐᵖˡ CoverBlock.t;
 }.
 
 Module Cover.
@@ -471,7 +539,7 @@ End Cover.
 
 Class Cover_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Cover_type_repr  :: go.TypeRepr Cover Cover.t;
+  #[global] Cover_type_repr  :: go.TypeRepr Coverⁱᵐᵖˡ Cover.t;
 }.
 
 Module InternalExample.
@@ -485,7 +553,7 @@ End InternalExample.
 
 Class InternalExample_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] InternalExample_type_repr  :: go.TypeRepr InternalExample InternalExample.t;
+  #[global] InternalExample_type_repr  :: go.TypeRepr InternalExampleⁱᵐᵖˡ InternalExample.t;
 }.
 
 Module InternalFuzzTarget.
@@ -499,7 +567,7 @@ End InternalFuzzTarget.
 
 Class InternalFuzzTarget_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] InternalFuzzTarget_type_repr  :: go.TypeRepr InternalFuzzTarget InternalFuzzTarget.t;
+  #[global] InternalFuzzTarget_type_repr  :: go.TypeRepr InternalFuzzTargetⁱᵐᵖˡ InternalFuzzTarget.t;
 }.
 
 Module F.
@@ -513,7 +581,7 @@ End F.
 
 Class F_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] F_type_repr  :: go.TypeRepr F F.t;
+  #[global] F_type_repr  :: go.TypeRepr Fⁱᵐᵖˡ F.t;
 }.
 
 Module fuzzResult.
@@ -527,7 +595,7 @@ End fuzzResult.
 
 Class fuzzResult_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] fuzzResult_type_repr  :: go.TypeRepr fuzzResult fuzzResult.t;
+  #[global] fuzzResult_type_repr  :: go.TypeRepr fuzzResultⁱᵐᵖˡ fuzzResult.t;
 }.
 
 Module fuzzCrashError.
@@ -541,7 +609,7 @@ End fuzzCrashError.
 
 Class fuzzCrashError_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] fuzzCrashError_type_repr  :: go.TypeRepr fuzzCrashError fuzzCrashError.t;
+  #[global] fuzzCrashError_type_repr  :: go.TypeRepr fuzzCrashErrorⁱᵐᵖˡ fuzzCrashError.t;
 }.
 
 Module fuzzState.
@@ -555,7 +623,7 @@ End fuzzState.
 
 Class fuzzState_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] fuzzState_type_repr  :: go.TypeRepr fuzzState fuzzState.t;
+  #[global] fuzzState_type_repr  :: go.TypeRepr fuzzStateⁱᵐᵖˡ fuzzState.t;
 }.
 
 Module fuzzMode.
@@ -569,7 +637,7 @@ End fuzzMode.
 
 Class fuzzMode_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] fuzzMode_type_repr  :: go.TypeRepr fuzzMode fuzzMode.t;
+  #[global] fuzzMode_type_repr  :: go.TypeRepr fuzzModeⁱᵐᵖˡ fuzzMode.t;
 }.
 
 Module matcher.
@@ -583,7 +651,7 @@ End matcher.
 
 Class matcher_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] matcher_type_repr  :: go.TypeRepr matcher matcher.t;
+  #[global] matcher_type_repr  :: go.TypeRepr matcherⁱᵐᵖˡ matcher.t;
 }.
 
 Module filterMatch.
@@ -597,7 +665,7 @@ End filterMatch.
 
 Class filterMatch_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] filterMatch_type_repr  :: go.TypeRepr filterMatch filterMatch.t;
+  #[global] filterMatch_type_repr  :: go.TypeRepr filterMatchⁱᵐᵖˡ filterMatch.t;
 }.
 
 Module simpleMatch.
@@ -611,7 +679,7 @@ End simpleMatch.
 
 Class simpleMatch_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] simpleMatch_type_repr  :: go.TypeRepr simpleMatch simpleMatch.t;
+  #[global] simpleMatch_type_repr  :: go.TypeRepr simpleMatchⁱᵐᵖˡ simpleMatch.t;
 }.
 
 Module alternationMatch.
@@ -625,7 +693,7 @@ End alternationMatch.
 
 Class alternationMatch_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] alternationMatch_type_repr  :: go.TypeRepr alternationMatch alternationMatch.t;
+  #[global] alternationMatch_type_repr  :: go.TypeRepr alternationMatchⁱᵐᵖˡ alternationMatch.t;
 }.
 
 Module chattyFlag.
@@ -639,7 +707,7 @@ End chattyFlag.
 
 Class chattyFlag_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] chattyFlag_type_repr  :: go.TypeRepr chattyFlag chattyFlag.t;
+  #[global] chattyFlag_type_repr  :: go.TypeRepr chattyFlagⁱᵐᵖˡ chattyFlag.t;
 }.
 
 Module chattyPrinter.
@@ -653,7 +721,7 @@ End chattyPrinter.
 
 Class chattyPrinter_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] chattyPrinter_type_repr  :: go.TypeRepr chattyPrinter chattyPrinter.t;
+  #[global] chattyPrinter_type_repr  :: go.TypeRepr chattyPrinterⁱᵐᵖˡ chattyPrinter.t;
 }.
 
 Module common.
@@ -667,7 +735,7 @@ End common.
 
 Class common_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] common_type_repr  :: go.TypeRepr common common.t;
+  #[global] common_type_repr  :: go.TypeRepr commonⁱᵐᵖˡ common.t;
 }.
 
 Module indenter.
@@ -681,7 +749,7 @@ End indenter.
 
 Class indenter_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] indenter_type_repr  :: go.TypeRepr indenter indenter.t;
+  #[global] indenter_type_repr  :: go.TypeRepr indenterⁱᵐᵖˡ indenter.t;
 }.
 
 Module TB.
@@ -695,7 +763,7 @@ End TB.
 
 Class TB_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] TB_type_repr  :: go.TypeRepr TB TB.t;
+  #[global] TB_type_repr  :: go.TypeRepr TBⁱᵐᵖˡ TB.t;
 }.
 
 Module T.
@@ -709,7 +777,7 @@ End T.
 
 Class T_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] T_type_repr  :: go.TypeRepr T T.t;
+  #[global] T_type_repr  :: go.TypeRepr Tⁱᵐᵖˡ T.t;
 }.
 
 Module outputWriter.
@@ -723,7 +791,7 @@ End outputWriter.
 
 Class outputWriter_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] outputWriter_type_repr  :: go.TypeRepr outputWriter outputWriter.t;
+  #[global] outputWriter_type_repr  :: go.TypeRepr outputWriterⁱᵐᵖˡ outputWriter.t;
 }.
 
 Module panicHandling.
@@ -737,7 +805,7 @@ End panicHandling.
 
 Class panicHandling_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] panicHandling_type_repr  :: go.TypeRepr panicHandling panicHandling.t;
+  #[global] panicHandling_type_repr  :: go.TypeRepr panicHandlingⁱᵐᵖˡ panicHandling.t;
 }.
 
 Module InternalTest.
@@ -751,7 +819,7 @@ End InternalTest.
 
 Class InternalTest_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] InternalTest_type_repr  :: go.TypeRepr InternalTest InternalTest.t;
+  #[global] InternalTest_type_repr  :: go.TypeRepr InternalTestⁱᵐᵖˡ InternalTest.t;
 }.
 
 Module testState.
@@ -765,7 +833,7 @@ End testState.
 
 Class testState_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] testState_type_repr  :: go.TypeRepr testState testState.t;
+  #[global] testState_type_repr  :: go.TypeRepr testStateⁱᵐᵖˡ testState.t;
 }.
 
 Module matchStringOnly.
@@ -779,7 +847,7 @@ End matchStringOnly.
 
 Class matchStringOnly_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] matchStringOnly_type_repr  :: go.TypeRepr matchStringOnly matchStringOnly.t;
+  #[global] matchStringOnly_type_repr  :: go.TypeRepr matchStringOnlyⁱᵐᵖˡ matchStringOnly.t;
 }.
 
 Module M.
@@ -793,7 +861,7 @@ End M.
 
 Class M_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] M_type_repr  :: go.TypeRepr M M.t;
+  #[global] M_type_repr  :: go.TypeRepr Mⁱᵐᵖˡ M.t;
 }.
 
 Module testDeps.
@@ -807,7 +875,7 @@ End testDeps.
 
 Class testDeps_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] testDeps_type_repr  :: go.TypeRepr testDeps testDeps.t;
+  #[global] testDeps_type_repr  :: go.TypeRepr testDepsⁱᵐᵖˡ testDeps.t;
 }.
 
 Module highPrecisionTime.
@@ -821,7 +889,7 @@ End highPrecisionTime.
 
 Class highPrecisionTime_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] highPrecisionTime_type_repr  :: go.TypeRepr highPrecisionTime highPrecisionTime.t;
+  #[global] highPrecisionTime_type_repr  :: go.TypeRepr highPrecisionTimeⁱᵐᵖˡ highPrecisionTime.t;
 }.
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=

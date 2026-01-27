@@ -13,6 +13,10 @@ Definition PrivateKey {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type :
 
 Definition Options {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "crypto/ed25519.Options"%go [].
 
+Axiom PrivateKeyⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom Optionsⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
 Axiom PublicKeySize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom PrivateKeySize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
@@ -61,7 +65,7 @@ Definition PublicKeyⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
 
 Class PublicKey_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] PublicKey_type_repr  :: go.TypeRepr PublicKey PublicKey.t;
+  #[global] PublicKey_type_repr  :: go.TypeRepr PublicKeyⁱᵐᵖˡ PublicKey.t;
   #[global] PublicKey_underlying :: (PublicKey) <u (PublicKeyⁱᵐᵖˡ);
 }.
 
@@ -76,7 +80,7 @@ End PrivateKey.
 
 Class PrivateKey_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] PrivateKey_type_repr  :: go.TypeRepr PrivateKey PrivateKey.t;
+  #[global] PrivateKey_type_repr  :: go.TypeRepr PrivateKeyⁱᵐᵖˡ PrivateKey.t;
 }.
 
 Module Options.
@@ -90,7 +94,7 @@ End Options.
 
 Class Options_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Options_type_repr  :: go.TypeRepr Options Options.t;
+  #[global] Options_type_repr  :: go.TypeRepr Optionsⁱᵐᵖˡ Options.t;
 }.
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=

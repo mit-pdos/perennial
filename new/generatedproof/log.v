@@ -21,7 +21,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance Logger_into_val_typed
    :
-  IntoValTyped (log.Logger.t) (log.Logger).
+  IntoValTypedUnderlying (log.Logger.t) (log.Loggerⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.

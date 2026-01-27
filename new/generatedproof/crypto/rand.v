@@ -20,7 +20,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance reader_into_val_typed
    :
-  IntoValTyped (rand.reader.t) (rand.reader).
+  IntoValTypedUnderlying (rand.reader.t) (rand.readerⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.

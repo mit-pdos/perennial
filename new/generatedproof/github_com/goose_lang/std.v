@@ -35,7 +35,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance JoinHandle_into_val_typed
    :
-  IntoValTyped (std.JoinHandle.t) (std.JoinHandle).
+  IntoValTypedUnderlying (std.JoinHandle.t) (std.JoinHandleⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance JoinHandle_access_load_mu l (v : (std.JoinHandle.t)) dq :
   AccessStrict

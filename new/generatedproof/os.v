@@ -20,7 +20,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance readdirMode_into_val_typed
    :
-  IntoValTyped (os.readdirMode.t) (os.readdirMode).
+  IntoValTypedUnderlying (os.readdirMode.t) (os.readdirModeⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -40,7 +40,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance dirInfo_into_val_typed
    :
-  IntoValTyped (os.dirInfo.t) (os.dirInfo).
+  IntoValTypedUnderlying (os.dirInfo.t) (os.dirInfoⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -60,7 +60,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance timeout_into_val_typed
    :
-  IntoValTyped (os.timeout.t) (os.timeout).
+  IntoValTypedUnderlying (os.timeout.t) (os.timeoutⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -80,7 +80,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance SyscallError_into_val_typed
    :
-  IntoValTyped (os.SyscallError.t) (os.SyscallError).
+  IntoValTypedUnderlying (os.SyscallError.t) (os.SyscallErrorⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -100,7 +100,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance processStatus_into_val_typed
    :
-  IntoValTyped (os.processStatus.t) (os.processStatus).
+  IntoValTypedUnderlying (os.processStatus.t) (os.processStatusⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -120,7 +120,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance Process_into_val_typed
    :
-  IntoValTyped (os.Process.t) (os.Process).
+  IntoValTypedUnderlying (os.Process.t) (os.Processⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -140,7 +140,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance processHandle_into_val_typed
    :
-  IntoValTyped (os.processHandle.t) (os.processHandle).
+  IntoValTypedUnderlying (os.processHandle.t) (os.processHandleⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -160,7 +160,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance ProcAttr_into_val_typed
    :
-  IntoValTyped (os.ProcAttr.t) (os.ProcAttr).
+  IntoValTypedUnderlying (os.ProcAttr.t) (os.ProcAttrⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -180,7 +180,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance Signal_into_val_typed
    :
-  IntoValTyped (os.Signal.t) (os.Signal).
+  IntoValTypedUnderlying (os.Signal.t) (os.Signalⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -200,7 +200,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance ProcessState_into_val_typed
    :
-  IntoValTyped (os.ProcessState.t) (os.ProcessState).
+  IntoValTypedUnderlying (os.ProcessState.t) (os.ProcessStateⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -220,7 +220,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance LinkError_into_val_typed
    :
-  IntoValTyped (os.LinkError.t) (os.LinkError).
+  IntoValTypedUnderlying (os.LinkError.t) (os.LinkErrorⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -240,7 +240,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance noReadFrom_into_val_typed
    :
-  IntoValTyped (os.noReadFrom.t) (os.noReadFrom).
+  IntoValTypedUnderlying (os.noReadFrom.t) (os.noReadFromⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -260,7 +260,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance fileWithoutReadFrom_into_val_typed
    :
-  IntoValTyped (os.fileWithoutReadFrom.t) (os.fileWithoutReadFrom).
+  IntoValTypedUnderlying (os.fileWithoutReadFrom.t) (os.fileWithoutReadFromⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -280,7 +280,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance noWriteTo_into_val_typed
    :
-  IntoValTyped (os.noWriteTo.t) (os.noWriteTo).
+  IntoValTypedUnderlying (os.noWriteTo.t) (os.noWriteToⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -300,7 +300,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance fileWithoutWriteTo_into_val_typed
    :
-  IntoValTyped (os.fileWithoutWriteTo.t) (os.fileWithoutWriteTo).
+  IntoValTypedUnderlying (os.fileWithoutWriteTo.t) (os.fileWithoutWriteToⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -320,7 +320,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance dirFS_into_val_typed
    :
-  IntoValTyped (os.dirFS.t) (os.dirFS).
+  IntoValTypedUnderlying (os.dirFS.t) (os.dirFSⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -340,7 +340,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance file_into_val_typed
    :
-  IntoValTyped (os.file.t) (os.file).
+  IntoValTypedUnderlying (os.file.t) (os.fileⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -360,7 +360,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance newFileKind_into_val_typed
    :
-  IntoValTyped (os.newFileKind.t) (os.newFileKind).
+  IntoValTypedUnderlying (os.newFileKind.t) (os.newFileKindⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -380,7 +380,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance unixDirent_into_val_typed
    :
-  IntoValTyped (os.unixDirent.t) (os.unixDirent).
+  IntoValTypedUnderlying (os.unixDirent.t) (os.unixDirentⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -400,7 +400,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance rawConn_into_val_typed
    :
-  IntoValTyped (os.rawConn.t) (os.rawConn).
+  IntoValTypedUnderlying (os.rawConn.t) (os.rawConnⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -420,7 +420,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance Root_into_val_typed
    :
-  IntoValTyped (os.Root.t) (os.Root).
+  IntoValTypedUnderlying (os.Root.t) (os.Rootⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -440,7 +440,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance rootFS_into_val_typed
    :
-  IntoValTyped (os.rootFS.t) (os.rootFS).
+  IntoValTypedUnderlying (os.rootFS.t) (os.rootFSⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -460,7 +460,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance root_into_val_typed
    :
-  IntoValTyped (os.root.t) (os.root).
+  IntoValTypedUnderlying (os.root.t) (os.rootⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -480,7 +480,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance errSymlink_into_val_typed
    :
-  IntoValTyped (os.errSymlink.t) (os.errSymlink).
+  IntoValTypedUnderlying (os.errSymlink.t) (os.errSymlinkⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -500,7 +500,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance File_into_val_typed
    :
-  IntoValTyped (os.File.t) (os.File).
+  IntoValTypedUnderlying (os.File.t) (os.Fileⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -520,7 +520,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance fileStat_into_val_typed
    :
-  IntoValTyped (os.fileStat.t) (os.fileStat).
+  IntoValTypedUnderlying (os.fileStat.t) (os.fileStatⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.

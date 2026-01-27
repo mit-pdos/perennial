@@ -23,6 +23,18 @@ Definition Float64Slice {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type
 
 Definition StringSlice {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sort.StringSlice"%go [].
 
+Axiom Interfaceⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom lessSwapⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom reverseⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom IntSliceⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom Float64Sliceⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom StringSliceⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
 Definition unknownHint {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #(W64 0).
 
 Definition increasingHint {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #(W64 1).
@@ -315,7 +327,7 @@ End Interface.
 
 Class Interface_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Interface_type_repr  :: go.TypeRepr Interface Interface.t;
+  #[global] Interface_type_repr  :: go.TypeRepr Interfaceⁱᵐᵖˡ Interface.t;
 }.
 
 Module sortedHint.
@@ -329,7 +341,7 @@ Definition sortedHintⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
 
 Class sortedHint_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] sortedHint_type_repr  :: go.TypeRepr sortedHint sortedHint.t;
+  #[global] sortedHint_type_repr  :: go.TypeRepr sortedHintⁱᵐᵖˡ sortedHint.t;
   #[global] sortedHint_underlying :: (sortedHint) <u (sortedHintⁱᵐᵖˡ);
 }.
 
@@ -344,7 +356,7 @@ Definition xorshiftⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : 
 
 Class xorshift_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] xorshift_type_repr  :: go.TypeRepr xorshift xorshift.t;
+  #[global] xorshift_type_repr  :: go.TypeRepr xorshiftⁱᵐᵖˡ xorshift.t;
   #[global] xorshift_underlying :: (xorshift) <u (xorshiftⁱᵐᵖˡ);
   #[global] xorshift'ptr_Next_unfold :: MethodUnfold (go.PointerType (xorshift)) "Next" (xorshift__Nextⁱᵐᵖˡ);
 }.
@@ -360,7 +372,7 @@ End lessSwap.
 
 Class lessSwap_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] lessSwap_type_repr  :: go.TypeRepr lessSwap lessSwap.t;
+  #[global] lessSwap_type_repr  :: go.TypeRepr lessSwapⁱᵐᵖˡ lessSwap.t;
 }.
 
 Module reverse.
@@ -374,7 +386,7 @@ End reverse.
 
 Class reverse_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] reverse_type_repr  :: go.TypeRepr reverse reverse.t;
+  #[global] reverse_type_repr  :: go.TypeRepr reverseⁱᵐᵖˡ reverse.t;
 }.
 
 Module IntSlice.
@@ -388,7 +400,7 @@ End IntSlice.
 
 Class IntSlice_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] IntSlice_type_repr  :: go.TypeRepr IntSlice IntSlice.t;
+  #[global] IntSlice_type_repr  :: go.TypeRepr IntSliceⁱᵐᵖˡ IntSlice.t;
 }.
 
 Module Float64Slice.
@@ -402,7 +414,7 @@ End Float64Slice.
 
 Class Float64Slice_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Float64Slice_type_repr  :: go.TypeRepr Float64Slice Float64Slice.t;
+  #[global] Float64Slice_type_repr  :: go.TypeRepr Float64Sliceⁱᵐᵖˡ Float64Slice.t;
 }.
 
 Module StringSlice.
@@ -416,7 +428,7 @@ End StringSlice.
 
 Class StringSlice_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] StringSlice_type_repr  :: go.TypeRepr StringSlice StringSlice.t;
+  #[global] StringSlice_type_repr  :: go.TypeRepr StringSliceⁱᵐᵖˡ StringSlice.t;
 }.
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=

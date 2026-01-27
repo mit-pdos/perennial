@@ -344,14 +344,14 @@ Definition JoinHandleⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
 
 Class JoinHandle_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] JoinHandle_type_repr  :: go.TypeRepr JoinHandle JoinHandle.t;
+  #[global] JoinHandle_type_repr  :: go.TypeRepr JoinHandleⁱᵐᵖˡ JoinHandle.t;
   #[global] JoinHandle_underlying :: (JoinHandle) <u (JoinHandleⁱᵐᵖˡ);
-  #[global] JoinHandle_get_mu (x : JoinHandle.t) :: go.IsGoStepPureDet (StructFieldGet (JoinHandle) "mu") #x #x.(JoinHandle.mu');
-  #[global] JoinHandle_set_mu (x : JoinHandle.t) y :: go.IsGoStepPureDet (StructFieldSet (JoinHandle) "mu") (#x, #y) #(x <|JoinHandle.mu' := y|>);
-  #[global] JoinHandle_get_done (x : JoinHandle.t) :: go.IsGoStepPureDet (StructFieldGet (JoinHandle) "done") #x #x.(JoinHandle.done');
-  #[global] JoinHandle_set_done (x : JoinHandle.t) y :: go.IsGoStepPureDet (StructFieldSet (JoinHandle) "done") (#x, #y) #(x <|JoinHandle.done' := y|>);
-  #[global] JoinHandle_get_cond (x : JoinHandle.t) :: go.IsGoStepPureDet (StructFieldGet (JoinHandle) "cond") #x #x.(JoinHandle.cond');
-  #[global] JoinHandle_set_cond (x : JoinHandle.t) y :: go.IsGoStepPureDet (StructFieldSet (JoinHandle) "cond") (#x, #y) #(x <|JoinHandle.cond' := y|>);
+  #[global] JoinHandle_get_mu (x : JoinHandle.t) :: ⟦StructFieldGet (JoinHandleⁱᵐᵖˡ) "mu", #x⟧ ⤳[under] #x.(JoinHandle.mu');
+  #[global] JoinHandle_set_mu (x : JoinHandle.t) y :: ⟦StructFieldSet (JoinHandleⁱᵐᵖˡ) "mu", (#x, #y)⟧ ⤳[under] #(x <|JoinHandle.mu' := y|>);
+  #[global] JoinHandle_get_done (x : JoinHandle.t) :: ⟦StructFieldGet (JoinHandleⁱᵐᵖˡ) "done", #x⟧ ⤳[under] #x.(JoinHandle.done');
+  #[global] JoinHandle_set_done (x : JoinHandle.t) y :: ⟦StructFieldSet (JoinHandleⁱᵐᵖˡ) "done", (#x, #y)⟧ ⤳[under] #(x <|JoinHandle.done' := y|>);
+  #[global] JoinHandle_get_cond (x : JoinHandle.t) :: ⟦StructFieldGet (JoinHandleⁱᵐᵖˡ) "cond", #x⟧ ⤳[under] #x.(JoinHandle.cond');
+  #[global] JoinHandle_set_cond (x : JoinHandle.t) y :: ⟦StructFieldSet (JoinHandleⁱᵐᵖˡ) "cond", (#x, #y)⟧ ⤳[under] #(x <|JoinHandle.cond' := y|>);
   #[global] JoinHandle'ptr_Join_unfold :: MethodUnfold (go.PointerType (JoinHandle)) "Join" (JoinHandle__Joinⁱᵐᵖˡ);
   #[global] JoinHandle'ptr_finish_unfold :: MethodUnfold (go.PointerType (JoinHandle)) "finish" (JoinHandle__finishⁱᵐᵖˡ);
 }.

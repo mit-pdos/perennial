@@ -13,6 +13,10 @@ Definition Association {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type 
 
 Definition Bubble {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "internal/synctest.Bubble"%go [].
 
+Axiom Associationⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom Bubbleⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
 Axiom Unbubbled : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom CurrentBubble : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
@@ -69,7 +73,7 @@ End Association.
 
 Class Association_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Association_type_repr  :: go.TypeRepr Association Association.t;
+  #[global] Association_type_repr  :: go.TypeRepr Associationⁱᵐᵖˡ Association.t;
 }.
 
 Module Bubble.
@@ -83,7 +87,7 @@ End Bubble.
 
 Class Bubble_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Bubble_type_repr  :: go.TypeRepr Bubble Bubble.t;
+  #[global] Bubble_type_repr  :: go.TypeRepr Bubbleⁱᵐᵖˡ Bubble.t;
 }.
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=

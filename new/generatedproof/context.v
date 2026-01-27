@@ -21,7 +21,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance deadlineExceededError_into_val_typed
    :
-  IntoValTyped (context.deadlineExceededError.t) (context.deadlineExceededError).
+  IntoValTypedUnderlying (context.deadlineExceededError.t) (context.deadlineExceededErrorⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -41,7 +41,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance emptyCtx_into_val_typed
    :
-  IntoValTyped (context.emptyCtx.t) (context.emptyCtx).
+  IntoValTypedUnderlying (context.emptyCtx.t) (context.emptyCtxⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -61,7 +61,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance backgroundCtx_into_val_typed
    :
-  IntoValTyped (context.backgroundCtx.t) (context.backgroundCtx).
+  IntoValTypedUnderlying (context.backgroundCtx.t) (context.backgroundCtxⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -81,7 +81,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance todoCtx_into_val_typed
    :
-  IntoValTyped (context.todoCtx.t) (context.todoCtx).
+  IntoValTypedUnderlying (context.todoCtx.t) (context.todoCtxⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -101,7 +101,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance CancelFunc_into_val_typed
    :
-  IntoValTyped (context.CancelFunc.t) (context.CancelFunc).
+  IntoValTypedUnderlying (context.CancelFunc.t) (context.CancelFuncⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -121,7 +121,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance CancelCauseFunc_into_val_typed
    :
-  IntoValTyped (context.CancelCauseFunc.t) (context.CancelCauseFunc).
+  IntoValTypedUnderlying (context.CancelCauseFunc.t) (context.CancelCauseFuncⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -141,7 +141,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance afterFuncer_into_val_typed
    :
-  IntoValTyped (context.afterFuncer.t) (context.afterFuncer).
+  IntoValTypedUnderlying (context.afterFuncer.t) (context.afterFuncerⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -161,7 +161,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance afterFuncCtx_into_val_typed
    :
-  IntoValTyped (context.afterFuncCtx.t) (context.afterFuncCtx).
+  IntoValTypedUnderlying (context.afterFuncCtx.t) (context.afterFuncCtxⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -181,7 +181,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance stopCtx_into_val_typed
    :
-  IntoValTyped (context.stopCtx.t) (context.stopCtx).
+  IntoValTypedUnderlying (context.stopCtx.t) (context.stopCtxⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -201,7 +201,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance canceler_into_val_typed
    :
-  IntoValTyped (context.canceler.t) (context.canceler).
+  IntoValTypedUnderlying (context.canceler.t) (context.cancelerⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -221,7 +221,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance cancelCtx_into_val_typed
    :
-  IntoValTyped (context.cancelCtx.t) (context.cancelCtx).
+  IntoValTypedUnderlying (context.cancelCtx.t) (context.cancelCtxⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -241,7 +241,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance stringer_into_val_typed
    :
-  IntoValTyped (context.stringer.t) (context.stringer).
+  IntoValTypedUnderlying (context.stringer.t) (context.stringerⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -261,7 +261,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance withoutCancelCtx_into_val_typed
    :
-  IntoValTyped (context.withoutCancelCtx.t) (context.withoutCancelCtx).
+  IntoValTypedUnderlying (context.withoutCancelCtx.t) (context.withoutCancelCtxⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -281,7 +281,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance timerCtx_into_val_typed
    :
-  IntoValTyped (context.timerCtx.t) (context.timerCtx).
+  IntoValTypedUnderlying (context.timerCtx.t) (context.timerCtxⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -301,7 +301,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance valueCtx_into_val_typed
    :
-  IntoValTyped (context.valueCtx.t) (context.valueCtx).
+  IntoValTypedUnderlying (context.valueCtx.t) (context.valueCtxⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.

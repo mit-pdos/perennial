@@ -20,7 +20,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance PrivateKey_into_val_typed
    :
-  IntoValTyped (ed25519.PrivateKey.t) (ed25519.PrivateKey).
+  IntoValTypedUnderlying (ed25519.PrivateKey.t) (ed25519.PrivateKeyⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -40,7 +40,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance Options_into_val_typed
    :
-  IntoValTyped (ed25519.Options.t) (ed25519.Options).
+  IntoValTypedUnderlying (ed25519.Options.t) (ed25519.Optionsⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.

@@ -33,7 +33,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance Log_into_val_typed
    :
-  IntoValTyped (append_log.Log.t) (append_log.Log).
+  IntoValTypedUnderlying (append_log.Log.t) (append_log.Logⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance Log_access_load_m l (v : (append_log.Log.t)) dq :
   AccessStrict

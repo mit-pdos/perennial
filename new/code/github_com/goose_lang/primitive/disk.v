@@ -18,6 +18,12 @@ Definition MemDisk {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := g
 
 Axiom Block : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
+Axiom Diskⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom FileDiskⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom MemDiskⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
 Definition implicitDisk {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/primitive/disk.implicitDisk"%go.
 
 Definition Init {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/primitive/disk.Init"%go.
@@ -61,7 +67,7 @@ End Disk.
 
 Class Disk_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Disk_type_repr  :: go.TypeRepr Disk Disk.t;
+  #[global] Disk_type_repr  :: go.TypeRepr Diskⁱᵐᵖˡ Disk.t;
 }.
 
 Module FileDisk.
@@ -75,7 +81,7 @@ End FileDisk.
 
 Class FileDisk_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] FileDisk_type_repr  :: go.TypeRepr FileDisk FileDisk.t;
+  #[global] FileDisk_type_repr  :: go.TypeRepr FileDiskⁱᵐᵖˡ FileDisk.t;
 }.
 
 Module MemDisk.
@@ -89,7 +95,7 @@ End MemDisk.
 
 Class MemDisk_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] MemDisk_type_repr  :: go.TypeRepr MemDisk MemDisk.t;
+  #[global] MemDisk_type_repr  :: go.TypeRepr MemDiskⁱᵐᵖˡ MemDisk.t;
 }.
 
 Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=

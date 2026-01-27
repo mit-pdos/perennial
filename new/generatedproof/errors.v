@@ -20,7 +20,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance errorString_into_val_typed
    :
-  IntoValTyped (errors.errorString.t) (errors.errorString).
+  IntoValTypedUnderlying (errors.errorString.t) (errors.errorStringⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -40,7 +40,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance joinError_into_val_typed
    :
-  IntoValTyped (errors.joinError.t) (errors.joinError).
+  IntoValTypedUnderlying (errors.joinError.t) (errors.joinErrorⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.

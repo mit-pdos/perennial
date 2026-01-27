@@ -59,17 +59,69 @@ Definition File {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.N
 
 Definition fileStat {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "os.fileStat"%go [].
 
+Axiom readdirModeⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
 Axiom DirEntry : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom dirInfoⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom timeoutⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
 Axiom PathError : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
+Axiom SyscallErrorⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
 Axiom syscallErrorType : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
+Axiom processStatusⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom Processⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom processHandleⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom ProcAttrⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom Signalⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom ProcessStateⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom LinkErrorⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom noReadFromⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom fileWithoutReadFromⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom noWriteToⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom fileWithoutWriteToⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom dirFSⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom fileⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom newFileKindⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom unixDirentⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom rawConnⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom Rootⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom rootFSⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom rootⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom errSymlinkⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
 Axiom sysfdType : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom Fileⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
 Axiom FileInfo : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
 Axiom FileMode : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom fileStatⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
 Axiom readdirName : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
@@ -670,7 +722,7 @@ End readdirMode.
 
 Class readdirMode_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] readdirMode_type_repr  :: go.TypeRepr readdirMode readdirMode.t;
+  #[global] readdirMode_type_repr  :: go.TypeRepr readdirModeⁱᵐᵖˡ readdirMode.t;
 }.
 
 Module dirInfo.
@@ -684,7 +736,7 @@ End dirInfo.
 
 Class dirInfo_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] dirInfo_type_repr  :: go.TypeRepr dirInfo dirInfo.t;
+  #[global] dirInfo_type_repr  :: go.TypeRepr dirInfoⁱᵐᵖˡ dirInfo.t;
 }.
 
 Module timeout.
@@ -698,7 +750,7 @@ End timeout.
 
 Class timeout_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] timeout_type_repr  :: go.TypeRepr timeout timeout.t;
+  #[global] timeout_type_repr  :: go.TypeRepr timeoutⁱᵐᵖˡ timeout.t;
 }.
 
 Module SyscallError.
@@ -712,7 +764,7 @@ End SyscallError.
 
 Class SyscallError_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] SyscallError_type_repr  :: go.TypeRepr SyscallError SyscallError.t;
+  #[global] SyscallError_type_repr  :: go.TypeRepr SyscallErrorⁱᵐᵖˡ SyscallError.t;
 }.
 
 Module processStatus.
@@ -726,7 +778,7 @@ End processStatus.
 
 Class processStatus_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] processStatus_type_repr  :: go.TypeRepr processStatus processStatus.t;
+  #[global] processStatus_type_repr  :: go.TypeRepr processStatusⁱᵐᵖˡ processStatus.t;
 }.
 
 Module Process.
@@ -740,7 +792,7 @@ End Process.
 
 Class Process_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Process_type_repr  :: go.TypeRepr Process Process.t;
+  #[global] Process_type_repr  :: go.TypeRepr Processⁱᵐᵖˡ Process.t;
 }.
 
 Module processHandle.
@@ -754,7 +806,7 @@ End processHandle.
 
 Class processHandle_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] processHandle_type_repr  :: go.TypeRepr processHandle processHandle.t;
+  #[global] processHandle_type_repr  :: go.TypeRepr processHandleⁱᵐᵖˡ processHandle.t;
 }.
 
 Module ProcAttr.
@@ -768,7 +820,7 @@ End ProcAttr.
 
 Class ProcAttr_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] ProcAttr_type_repr  :: go.TypeRepr ProcAttr ProcAttr.t;
+  #[global] ProcAttr_type_repr  :: go.TypeRepr ProcAttrⁱᵐᵖˡ ProcAttr.t;
 }.
 
 Module Signal.
@@ -782,7 +834,7 @@ End Signal.
 
 Class Signal_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Signal_type_repr  :: go.TypeRepr Signal Signal.t;
+  #[global] Signal_type_repr  :: go.TypeRepr Signalⁱᵐᵖˡ Signal.t;
 }.
 
 Module ProcessState.
@@ -796,7 +848,7 @@ End ProcessState.
 
 Class ProcessState_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] ProcessState_type_repr  :: go.TypeRepr ProcessState ProcessState.t;
+  #[global] ProcessState_type_repr  :: go.TypeRepr ProcessStateⁱᵐᵖˡ ProcessState.t;
 }.
 
 Module LinkError.
@@ -810,7 +862,7 @@ End LinkError.
 
 Class LinkError_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] LinkError_type_repr  :: go.TypeRepr LinkError LinkError.t;
+  #[global] LinkError_type_repr  :: go.TypeRepr LinkErrorⁱᵐᵖˡ LinkError.t;
 }.
 
 Module noReadFrom.
@@ -824,7 +876,7 @@ End noReadFrom.
 
 Class noReadFrom_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] noReadFrom_type_repr  :: go.TypeRepr noReadFrom noReadFrom.t;
+  #[global] noReadFrom_type_repr  :: go.TypeRepr noReadFromⁱᵐᵖˡ noReadFrom.t;
 }.
 
 Module fileWithoutReadFrom.
@@ -838,7 +890,7 @@ End fileWithoutReadFrom.
 
 Class fileWithoutReadFrom_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] fileWithoutReadFrom_type_repr  :: go.TypeRepr fileWithoutReadFrom fileWithoutReadFrom.t;
+  #[global] fileWithoutReadFrom_type_repr  :: go.TypeRepr fileWithoutReadFromⁱᵐᵖˡ fileWithoutReadFrom.t;
 }.
 
 Module noWriteTo.
@@ -852,7 +904,7 @@ End noWriteTo.
 
 Class noWriteTo_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] noWriteTo_type_repr  :: go.TypeRepr noWriteTo noWriteTo.t;
+  #[global] noWriteTo_type_repr  :: go.TypeRepr noWriteToⁱᵐᵖˡ noWriteTo.t;
 }.
 
 Module fileWithoutWriteTo.
@@ -866,7 +918,7 @@ End fileWithoutWriteTo.
 
 Class fileWithoutWriteTo_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] fileWithoutWriteTo_type_repr  :: go.TypeRepr fileWithoutWriteTo fileWithoutWriteTo.t;
+  #[global] fileWithoutWriteTo_type_repr  :: go.TypeRepr fileWithoutWriteToⁱᵐᵖˡ fileWithoutWriteTo.t;
 }.
 
 Module dirFS.
@@ -880,7 +932,7 @@ End dirFS.
 
 Class dirFS_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] dirFS_type_repr  :: go.TypeRepr dirFS dirFS.t;
+  #[global] dirFS_type_repr  :: go.TypeRepr dirFSⁱᵐᵖˡ dirFS.t;
 }.
 
 Module file.
@@ -894,7 +946,7 @@ End file.
 
 Class file_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] file_type_repr  :: go.TypeRepr file file.t;
+  #[global] file_type_repr  :: go.TypeRepr fileⁱᵐᵖˡ file.t;
 }.
 
 Module newFileKind.
@@ -908,7 +960,7 @@ End newFileKind.
 
 Class newFileKind_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] newFileKind_type_repr  :: go.TypeRepr newFileKind newFileKind.t;
+  #[global] newFileKind_type_repr  :: go.TypeRepr newFileKindⁱᵐᵖˡ newFileKind.t;
 }.
 
 Module unixDirent.
@@ -922,7 +974,7 @@ End unixDirent.
 
 Class unixDirent_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] unixDirent_type_repr  :: go.TypeRepr unixDirent unixDirent.t;
+  #[global] unixDirent_type_repr  :: go.TypeRepr unixDirentⁱᵐᵖˡ unixDirent.t;
 }.
 
 Module rawConn.
@@ -936,7 +988,7 @@ End rawConn.
 
 Class rawConn_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] rawConn_type_repr  :: go.TypeRepr rawConn rawConn.t;
+  #[global] rawConn_type_repr  :: go.TypeRepr rawConnⁱᵐᵖˡ rawConn.t;
 }.
 
 Module Root.
@@ -950,7 +1002,7 @@ End Root.
 
 Class Root_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Root_type_repr  :: go.TypeRepr Root Root.t;
+  #[global] Root_type_repr  :: go.TypeRepr Rootⁱᵐᵖˡ Root.t;
 }.
 
 Module rootFS.
@@ -964,7 +1016,7 @@ End rootFS.
 
 Class rootFS_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] rootFS_type_repr  :: go.TypeRepr rootFS rootFS.t;
+  #[global] rootFS_type_repr  :: go.TypeRepr rootFSⁱᵐᵖˡ rootFS.t;
 }.
 
 Module root.
@@ -978,7 +1030,7 @@ End root.
 
 Class root_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] root_type_repr  :: go.TypeRepr root root.t;
+  #[global] root_type_repr  :: go.TypeRepr rootⁱᵐᵖˡ root.t;
 }.
 
 Module errSymlink.
@@ -992,7 +1044,7 @@ End errSymlink.
 
 Class errSymlink_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] errSymlink_type_repr  :: go.TypeRepr errSymlink errSymlink.t;
+  #[global] errSymlink_type_repr  :: go.TypeRepr errSymlinkⁱᵐᵖˡ errSymlink.t;
 }.
 
 Module File.
@@ -1006,7 +1058,7 @@ End File.
 
 Class File_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] File_type_repr  :: go.TypeRepr File File.t;
+  #[global] File_type_repr  :: go.TypeRepr Fileⁱᵐᵖˡ File.t;
 }.
 
 Module fileStat.
@@ -1020,7 +1072,7 @@ End fileStat.
 
 Class fileStat_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] fileStat_type_repr  :: go.TypeRepr fileStat fileStat.t;
+  #[global] fileStat_type_repr  :: go.TypeRepr fileStatⁱᵐᵖˡ fileStat.t;
 }.
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=

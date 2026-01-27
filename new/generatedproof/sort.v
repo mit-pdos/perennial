@@ -20,7 +20,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance Interface_into_val_typed
    :
-  IntoValTyped (sort.Interface.t) (sort.Interface).
+  IntoValTypedUnderlying (sort.Interface.t) (sort.Interfaceⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -40,7 +40,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance lessSwap_into_val_typed
    :
-  IntoValTyped (sort.lessSwap.t) (sort.lessSwap).
+  IntoValTypedUnderlying (sort.lessSwap.t) (sort.lessSwapⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -60,7 +60,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance reverse_into_val_typed
    :
-  IntoValTyped (sort.reverse.t) (sort.reverse).
+  IntoValTypedUnderlying (sort.reverse.t) (sort.reverseⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -80,7 +80,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance IntSlice_into_val_typed
    :
-  IntoValTyped (sort.IntSlice.t) (sort.IntSlice).
+  IntoValTypedUnderlying (sort.IntSlice.t) (sort.IntSliceⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -100,7 +100,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance Float64Slice_into_val_typed
    :
-  IntoValTyped (sort.Float64Slice.t) (sort.Float64Slice).
+  IntoValTypedUnderlying (sort.Float64Slice.t) (sort.Float64Sliceⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -120,7 +120,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance StringSlice_into_val_typed
    :
-  IntoValTyped (sort.StringSlice.t) (sort.StringSlice).
+  IntoValTypedUnderlying (sort.StringSlice.t) (sort.StringSliceⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.

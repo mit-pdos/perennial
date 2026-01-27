@@ -29,7 +29,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance Builder_into_val_typed
    :
-  IntoValTyped (strings.Builder.t) (strings.Builder).
+  IntoValTypedUnderlying (strings.Builder.t) (strings.Builderⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance Builder_access_load_addr l (v : (strings.Builder.t)) dq :
   AccessStrict
@@ -75,7 +75,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance Reader_into_val_typed
    :
-  IntoValTyped (strings.Reader.t) (strings.Reader).
+  IntoValTypedUnderlying (strings.Reader.t) (strings.Readerⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -95,7 +95,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance Replacer_into_val_typed
    :
-  IntoValTyped (strings.Replacer.t) (strings.Replacer).
+  IntoValTypedUnderlying (strings.Replacer.t) (strings.Replacerⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -115,7 +115,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance replacer_into_val_typed
    :
-  IntoValTyped (strings.replacer.t) (strings.replacer).
+  IntoValTypedUnderlying (strings.replacer.t) (strings.replacerⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -135,7 +135,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance trieNode_into_val_typed
    :
-  IntoValTyped (strings.trieNode.t) (strings.trieNode).
+  IntoValTypedUnderlying (strings.trieNode.t) (strings.trieNodeⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -155,7 +155,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance genericReplacer_into_val_typed
    :
-  IntoValTyped (strings.genericReplacer.t) (strings.genericReplacer).
+  IntoValTypedUnderlying (strings.genericReplacer.t) (strings.genericReplacerⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -175,7 +175,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance appendSliceWriter_into_val_typed
    :
-  IntoValTyped (strings.appendSliceWriter.t) (strings.appendSliceWriter).
+  IntoValTypedUnderlying (strings.appendSliceWriter.t) (strings.appendSliceWriterⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -195,7 +195,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance stringWriter_into_val_typed
    :
-  IntoValTyped (strings.stringWriter.t) (strings.stringWriter).
+  IntoValTypedUnderlying (strings.stringWriter.t) (strings.stringWriterⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -215,7 +215,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance singleStringReplacer_into_val_typed
    :
-  IntoValTyped (strings.singleStringReplacer.t) (strings.singleStringReplacer).
+  IntoValTypedUnderlying (strings.singleStringReplacer.t) (strings.singleStringReplacerⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -235,7 +235,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance byteReplacer_into_val_typed
    :
-  IntoValTyped (strings.byteReplacer.t) (strings.byteReplacer).
+  IntoValTypedUnderlying (strings.byteReplacer.t) (strings.byteReplacerⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -255,7 +255,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance byteStringReplacer_into_val_typed
    :
-  IntoValTyped (strings.byteStringReplacer.t) (strings.byteStringReplacer).
+  IntoValTypedUnderlying (strings.byteStringReplacer.t) (strings.byteStringReplacerⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -275,7 +275,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance stringFinder_into_val_typed
    :
-  IntoValTyped (strings.stringFinder.t) (strings.stringFinder).
+  IntoValTypedUnderlying (strings.stringFinder.t) (strings.stringFinderⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -295,7 +295,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance asciiSet_into_val_typed
    :
-  IntoValTyped (strings.asciiSet.t) (strings.asciiSet).
+  IntoValTypedUnderlying (strings.asciiSet.t) (strings.asciiSetⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.

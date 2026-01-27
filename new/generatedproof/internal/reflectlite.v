@@ -20,7 +20,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance Type'_into_val_typed
    :
-  IntoValTyped (reflectlite.Type'.t) (reflectlite.Type').
+  IntoValTypedUnderlying (reflectlite.Type'.t) (reflectlite.Type'ⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -40,7 +40,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance rtype_into_val_typed
    :
-  IntoValTyped (reflectlite.rtype.t) (reflectlite.rtype).
+  IntoValTypedUnderlying (reflectlite.rtype.t) (reflectlite.rtypeⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -60,7 +60,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance name_into_val_typed
    :
-  IntoValTyped (reflectlite.name.t) (reflectlite.name).
+  IntoValTypedUnderlying (reflectlite.name.t) (reflectlite.nameⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -80,7 +80,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance Value_into_val_typed
    :
-  IntoValTyped (reflectlite.Value.t) (reflectlite.Value).
+  IntoValTypedUnderlying (reflectlite.Value.t) (reflectlite.Valueⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -100,7 +100,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance flag_into_val_typed
    :
-  IntoValTyped (reflectlite.flag.t) (reflectlite.flag).
+  IntoValTypedUnderlying (reflectlite.flag.t) (reflectlite.flagⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -120,7 +120,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance ValueError_into_val_typed
    :
-  IntoValTyped (reflectlite.ValueError.t) (reflectlite.ValueError).
+  IntoValTypedUnderlying (reflectlite.ValueError.t) (reflectlite.ValueErrorⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.

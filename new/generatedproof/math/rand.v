@@ -20,7 +20,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance Source_into_val_typed
    :
-  IntoValTyped (rand.Source.t) (rand.Source).
+  IntoValTypedUnderlying (rand.Source.t) (rand.Sourceⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -40,7 +40,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance Source64_into_val_typed
    :
-  IntoValTyped (rand.Source64.t) (rand.Source64).
+  IntoValTypedUnderlying (rand.Source64.t) (rand.Source64ⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -60,7 +60,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance Rand_into_val_typed
    :
-  IntoValTyped (rand.Rand.t) (rand.Rand).
+  IntoValTypedUnderlying (rand.Rand.t) (rand.Randⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -80,7 +80,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance runtimeSource_into_val_typed
    :
-  IntoValTyped (rand.runtimeSource.t) (rand.runtimeSource).
+  IntoValTypedUnderlying (rand.runtimeSource.t) (rand.runtimeSourceⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -100,7 +100,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance lockedSource_into_val_typed
    :
-  IntoValTyped (rand.lockedSource.t) (rand.lockedSource).
+  IntoValTypedUnderlying (rand.lockedSource.t) (rand.lockedSourceⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -120,7 +120,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance rngSource_into_val_typed
    :
-  IntoValTyped (rand.rngSource.t) (rand.rngSource).
+  IntoValTypedUnderlying (rand.rngSource.t) (rand.rngSourceⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -140,7 +140,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance Zipf_into_val_typed
    :
-  IntoValTyped (rand.Zipf.t) (rand.Zipf).
+  IntoValTypedUnderlying (rand.Zipf.t) (rand.Zipfⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.

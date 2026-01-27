@@ -17,6 +17,16 @@ Definition floatInfo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type :=
 
 Definition decimalSlice {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "strconv.decimalSlice"%go [].
 
+Axiom NumErrorⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom decimalⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom leftCheatⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom floatInfoⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom decimalSliceⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
 Axiom fnParseComplex : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom fnParseFloat : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
@@ -338,7 +348,7 @@ End NumError.
 
 Class NumError_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] NumError_type_repr  :: go.TypeRepr NumError NumError.t;
+  #[global] NumError_type_repr  :: go.TypeRepr NumErrorⁱᵐᵖˡ NumError.t;
 }.
 
 Module decimal.
@@ -352,7 +362,7 @@ End decimal.
 
 Class decimal_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] decimal_type_repr  :: go.TypeRepr decimal decimal.t;
+  #[global] decimal_type_repr  :: go.TypeRepr decimalⁱᵐᵖˡ decimal.t;
 }.
 
 Module leftCheat.
@@ -366,7 +376,7 @@ End leftCheat.
 
 Class leftCheat_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] leftCheat_type_repr  :: go.TypeRepr leftCheat leftCheat.t;
+  #[global] leftCheat_type_repr  :: go.TypeRepr leftCheatⁱᵐᵖˡ leftCheat.t;
 }.
 
 Module floatInfo.
@@ -380,7 +390,7 @@ End floatInfo.
 
 Class floatInfo_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] floatInfo_type_repr  :: go.TypeRepr floatInfo floatInfo.t;
+  #[global] floatInfo_type_repr  :: go.TypeRepr floatInfoⁱᵐᵖˡ floatInfo.t;
 }.
 
 Module decimalSlice.
@@ -394,7 +404,7 @@ End decimalSlice.
 
 Class decimalSlice_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] decimalSlice_type_repr  :: go.TypeRepr decimalSlice decimalSlice.t;
+  #[global] decimalSlice_type_repr  :: go.TypeRepr decimalSliceⁱᵐᵖˡ decimalSlice.t;
 }.
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=

@@ -211,14 +211,14 @@ Definition Logⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.ty
 
 Class Log_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Log_type_repr  :: go.TypeRepr Log Log.t;
+  #[global] Log_type_repr  :: go.TypeRepr Logⁱᵐᵖˡ Log.t;
   #[global] Log_underlying :: (Log) <u (Logⁱᵐᵖˡ);
-  #[global] Log_get_m (x : Log.t) :: go.IsGoStepPureDet (StructFieldGet (Log) "m") #x #x.(Log.m');
-  #[global] Log_set_m (x : Log.t) y :: go.IsGoStepPureDet (StructFieldSet (Log) "m") (#x, #y) #(x <|Log.m' := y|>);
-  #[global] Log_get_sz (x : Log.t) :: go.IsGoStepPureDet (StructFieldGet (Log) "sz") #x #x.(Log.sz');
-  #[global] Log_set_sz (x : Log.t) y :: go.IsGoStepPureDet (StructFieldSet (Log) "sz") (#x, #y) #(x <|Log.sz' := y|>);
-  #[global] Log_get_diskSz (x : Log.t) :: go.IsGoStepPureDet (StructFieldGet (Log) "diskSz") #x #x.(Log.diskSz');
-  #[global] Log_set_diskSz (x : Log.t) y :: go.IsGoStepPureDet (StructFieldSet (Log) "diskSz") (#x, #y) #(x <|Log.diskSz' := y|>);
+  #[global] Log_get_m (x : Log.t) :: ⟦StructFieldGet (Logⁱᵐᵖˡ) "m", #x⟧ ⤳[under] #x.(Log.m');
+  #[global] Log_set_m (x : Log.t) y :: ⟦StructFieldSet (Logⁱᵐᵖˡ) "m", (#x, #y)⟧ ⤳[under] #(x <|Log.m' := y|>);
+  #[global] Log_get_sz (x : Log.t) :: ⟦StructFieldGet (Logⁱᵐᵖˡ) "sz", #x⟧ ⤳[under] #x.(Log.sz');
+  #[global] Log_set_sz (x : Log.t) y :: ⟦StructFieldSet (Logⁱᵐᵖˡ) "sz", (#x, #y)⟧ ⤳[under] #(x <|Log.sz' := y|>);
+  #[global] Log_get_diskSz (x : Log.t) :: ⟦StructFieldGet (Logⁱᵐᵖˡ) "diskSz", #x⟧ ⤳[under] #x.(Log.diskSz');
+  #[global] Log_set_diskSz (x : Log.t) y :: ⟦StructFieldSet (Logⁱᵐᵖˡ) "diskSz", (#x, #y)⟧ ⤳[under] #(x <|Log.diskSz' := y|>);
   #[global] Log'ptr_Append_unfold :: MethodUnfold (go.PointerType (Log)) "Append" (Log__Appendⁱᵐᵖˡ);
   #[global] Log'ptr_Get_unfold :: MethodUnfold (go.PointerType (Log)) "Get" (Log__Getⁱᵐᵖˡ);
   #[global] Log'ptr_Reset_unfold :: MethodUnfold (go.PointerType (Log)) "Reset" (Log__Resetⁱᵐᵖˡ);

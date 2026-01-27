@@ -20,7 +20,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance sortedHint_into_val_typed
    :
-  IntoValTyped (slices.sortedHint.t) (slices.sortedHint).
+  IntoValTypedUnderlying (slices.sortedHint.t) (slices.sortedHintⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.

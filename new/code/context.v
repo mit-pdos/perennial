@@ -40,6 +40,36 @@ Definition timerCtx {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := 
 
 Definition valueCtx {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "context.valueCtx"%go [].
 
+Axiom deadlineExceededErrorⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom emptyCtxⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom backgroundCtxⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom todoCtxⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom CancelFuncⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom CancelCauseFuncⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom afterFuncerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom afterFuncCtxⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom stopCtxⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom cancelerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom cancelCtxⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom stringerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom withoutCancelCtxⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom timerCtxⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom valueCtxⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
 Definition Canceled {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "context.Canceled"%go.
 
 Axiom Canceled'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
@@ -120,7 +150,7 @@ Definition Contextⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : g
 
 Class Context_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Context_type_repr  :: go.TypeRepr Context Context.t;
+  #[global] Context_type_repr  :: go.TypeRepr Contextⁱᵐᵖˡ Context.t;
   #[global] Context_underlying :: (Context) <u (Contextⁱᵐᵖˡ);
 }.
 
@@ -135,7 +165,7 @@ End deadlineExceededError.
 
 Class deadlineExceededError_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] deadlineExceededError_type_repr  :: go.TypeRepr deadlineExceededError deadlineExceededError.t;
+  #[global] deadlineExceededError_type_repr  :: go.TypeRepr deadlineExceededErrorⁱᵐᵖˡ deadlineExceededError.t;
 }.
 
 Module emptyCtx.
@@ -149,7 +179,7 @@ End emptyCtx.
 
 Class emptyCtx_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] emptyCtx_type_repr  :: go.TypeRepr emptyCtx emptyCtx.t;
+  #[global] emptyCtx_type_repr  :: go.TypeRepr emptyCtxⁱᵐᵖˡ emptyCtx.t;
 }.
 
 Module backgroundCtx.
@@ -163,7 +193,7 @@ End backgroundCtx.
 
 Class backgroundCtx_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] backgroundCtx_type_repr  :: go.TypeRepr backgroundCtx backgroundCtx.t;
+  #[global] backgroundCtx_type_repr  :: go.TypeRepr backgroundCtxⁱᵐᵖˡ backgroundCtx.t;
 }.
 
 Module todoCtx.
@@ -177,7 +207,7 @@ End todoCtx.
 
 Class todoCtx_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] todoCtx_type_repr  :: go.TypeRepr todoCtx todoCtx.t;
+  #[global] todoCtx_type_repr  :: go.TypeRepr todoCtxⁱᵐᵖˡ todoCtx.t;
 }.
 
 Module CancelFunc.
@@ -191,7 +221,7 @@ End CancelFunc.
 
 Class CancelFunc_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] CancelFunc_type_repr  :: go.TypeRepr CancelFunc CancelFunc.t;
+  #[global] CancelFunc_type_repr  :: go.TypeRepr CancelFuncⁱᵐᵖˡ CancelFunc.t;
 }.
 
 Module CancelCauseFunc.
@@ -205,7 +235,7 @@ End CancelCauseFunc.
 
 Class CancelCauseFunc_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] CancelCauseFunc_type_repr  :: go.TypeRepr CancelCauseFunc CancelCauseFunc.t;
+  #[global] CancelCauseFunc_type_repr  :: go.TypeRepr CancelCauseFuncⁱᵐᵖˡ CancelCauseFunc.t;
 }.
 
 Module afterFuncer.
@@ -219,7 +249,7 @@ End afterFuncer.
 
 Class afterFuncer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] afterFuncer_type_repr  :: go.TypeRepr afterFuncer afterFuncer.t;
+  #[global] afterFuncer_type_repr  :: go.TypeRepr afterFuncerⁱᵐᵖˡ afterFuncer.t;
 }.
 
 Module afterFuncCtx.
@@ -233,7 +263,7 @@ End afterFuncCtx.
 
 Class afterFuncCtx_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] afterFuncCtx_type_repr  :: go.TypeRepr afterFuncCtx afterFuncCtx.t;
+  #[global] afterFuncCtx_type_repr  :: go.TypeRepr afterFuncCtxⁱᵐᵖˡ afterFuncCtx.t;
 }.
 
 Module stopCtx.
@@ -247,7 +277,7 @@ End stopCtx.
 
 Class stopCtx_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] stopCtx_type_repr  :: go.TypeRepr stopCtx stopCtx.t;
+  #[global] stopCtx_type_repr  :: go.TypeRepr stopCtxⁱᵐᵖˡ stopCtx.t;
 }.
 
 Module canceler.
@@ -261,7 +291,7 @@ End canceler.
 
 Class canceler_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] canceler_type_repr  :: go.TypeRepr canceler canceler.t;
+  #[global] canceler_type_repr  :: go.TypeRepr cancelerⁱᵐᵖˡ canceler.t;
 }.
 
 Module cancelCtx.
@@ -275,7 +305,7 @@ End cancelCtx.
 
 Class cancelCtx_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] cancelCtx_type_repr  :: go.TypeRepr cancelCtx cancelCtx.t;
+  #[global] cancelCtx_type_repr  :: go.TypeRepr cancelCtxⁱᵐᵖˡ cancelCtx.t;
 }.
 
 Module stringer.
@@ -289,7 +319,7 @@ End stringer.
 
 Class stringer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] stringer_type_repr  :: go.TypeRepr stringer stringer.t;
+  #[global] stringer_type_repr  :: go.TypeRepr stringerⁱᵐᵖˡ stringer.t;
 }.
 
 Module withoutCancelCtx.
@@ -303,7 +333,7 @@ End withoutCancelCtx.
 
 Class withoutCancelCtx_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] withoutCancelCtx_type_repr  :: go.TypeRepr withoutCancelCtx withoutCancelCtx.t;
+  #[global] withoutCancelCtx_type_repr  :: go.TypeRepr withoutCancelCtxⁱᵐᵖˡ withoutCancelCtx.t;
 }.
 
 Module timerCtx.
@@ -317,7 +347,7 @@ End timerCtx.
 
 Class timerCtx_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] timerCtx_type_repr  :: go.TypeRepr timerCtx timerCtx.t;
+  #[global] timerCtx_type_repr  :: go.TypeRepr timerCtxⁱᵐᵖˡ timerCtx.t;
 }.
 
 Module valueCtx.
@@ -331,7 +361,7 @@ End valueCtx.
 
 Class valueCtx_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] valueCtx_type_repr  :: go.TypeRepr valueCtx valueCtx.t;
+  #[global] valueCtx_type_repr  :: go.TypeRepr valueCtxⁱᵐᵖˡ valueCtx.t;
 }.
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=

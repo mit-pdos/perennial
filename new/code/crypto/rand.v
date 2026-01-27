@@ -9,6 +9,8 @@ Module rand.
 
 Definition reader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "crypto/rand.reader"%go [].
 
+Axiom readerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
 Axiom base32alphabet : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition Reader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "crypto/rand.Reader"%go.
@@ -47,7 +49,7 @@ End reader.
 
 Class reader_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] reader_type_repr  :: go.TypeRepr reader reader.t;
+  #[global] reader_type_repr  :: go.TypeRepr readerⁱᵐᵖˡ reader.t;
 }.
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=

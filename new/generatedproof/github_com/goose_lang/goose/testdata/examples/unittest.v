@@ -33,7 +33,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance importantStruct_into_val_typed
    :
-  IntoValTyped (unittest.importantStruct.t) (unittest.importantStruct).
+  IntoValTypedUnderlying (unittest.importantStruct.t) (unittest.importantStructⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -61,7 +61,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance withInterface_into_val_typed
    :
-  IntoValTyped (unittest.withInterface.t) (unittest.withInterface).
+  IntoValTypedUnderlying (unittest.withInterface.t) (unittest.withInterfaceⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance withInterface_access_load_a l (v : (unittest.withInterface.t)) dq :
   AccessStrict
@@ -102,7 +102,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance diskWrapper_into_val_typed
    :
-  IntoValTyped (unittest.diskWrapper.t) (unittest.diskWrapper).
+  IntoValTypedUnderlying (unittest.diskWrapper.t) (unittest.diskWrapperⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance diskWrapper_access_load_d l (v : (unittest.diskWrapper.t)) dq :
   AccessStrict
@@ -143,7 +143,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance embedA_into_val_typed
    :
-  IntoValTyped (unittest.embedA.t) (unittest.embedA).
+  IntoValTypedUnderlying (unittest.embedA.t) (unittest.embedAⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance embedA_access_load_a l (v : (unittest.embedA.t)) dq :
   AccessStrict
@@ -184,7 +184,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance embedB_into_val_typed
    :
-  IntoValTyped (unittest.embedB.t) (unittest.embedB).
+  IntoValTypedUnderlying (unittest.embedB.t) (unittest.embedBⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance embedB_access_load_embedA l (v : (unittest.embedB.t)) dq :
   AccessStrict
@@ -225,7 +225,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance embedC_into_val_typed
    :
-  IntoValTyped (unittest.embedC.t) (unittest.embedC).
+  IntoValTypedUnderlying (unittest.embedC.t) (unittest.embedCⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance embedC_access_load_embedB l (v : (unittest.embedC.t)) dq :
   AccessStrict
@@ -266,7 +266,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance embedD_into_val_typed
    :
-  IntoValTyped (unittest.embedD.t) (unittest.embedD).
+  IntoValTypedUnderlying (unittest.embedD.t) (unittest.embedDⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance embedD_access_load_embedC l (v : (unittest.embedD.t)) dq :
   AccessStrict
@@ -307,7 +307,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance Enc_into_val_typed
    :
-  IntoValTyped (unittest.Enc.t) (unittest.Enc).
+  IntoValTypedUnderlying (unittest.Enc.t) (unittest.Encⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance Enc_access_load_p l (v : (unittest.Enc.t)) dq :
   AccessStrict
@@ -348,7 +348,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance Dec_into_val_typed
    :
-  IntoValTyped (unittest.Dec.t) (unittest.Dec).
+  IntoValTypedUnderlying (unittest.Dec.t) (unittest.Decⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance Dec_access_load_p l (v : (unittest.Dec.t)) dq :
   AccessStrict
@@ -389,7 +389,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance concreteFooer_into_val_typed
    :
-  IntoValTyped (unittest.concreteFooer.t) (unittest.concreteFooer).
+  IntoValTypedUnderlying (unittest.concreteFooer.t) (unittest.concreteFooerⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance concreteFooer_access_load_a l (v : (unittest.concreteFooer.t)) dq :
   AccessStrict
@@ -430,7 +430,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance FooerUser_into_val_typed
    :
-  IntoValTyped (unittest.FooerUser.t) (unittest.FooerUser).
+  IntoValTypedUnderlying (unittest.FooerUser.t) (unittest.FooerUserⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance FooerUser_access_load_f l (v : (unittest.FooerUser.t)) dq :
   AccessStrict
@@ -471,7 +471,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance B_into_val_typed
    :
-  IntoValTyped (unittest.B.t) (unittest.B).
+  IntoValTypedUnderlying (unittest.B.t) (unittest.Bⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance B_access_load_a l (v : (unittest.B.t)) dq :
   AccessStrict
@@ -511,7 +511,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance concrete1_into_val_typed
    :
-  IntoValTyped (unittest.concrete1.t) (unittest.concrete1).
+  IntoValTypedUnderlying (unittest.concrete1.t) (unittest.concrete1ⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -541,7 +541,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance allTheLiterals_into_val_typed
    :
-  IntoValTyped (unittest.allTheLiterals.t) (unittest.allTheLiterals).
+  IntoValTypedUnderlying (unittest.allTheLiterals.t) (unittest.allTheLiteralsⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance allTheLiterals_access_load_int l (v : (unittest.allTheLiterals.t)) dq :
   AccessStrict
@@ -608,7 +608,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance hasCondVar_into_val_typed
    :
-  IntoValTyped (unittest.hasCondVar.t) (unittest.hasCondVar).
+  IntoValTypedUnderlying (unittest.hasCondVar.t) (unittest.hasCondVarⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance hasCondVar_access_load_cond l (v : (unittest.hasCondVar.t)) dq :
   AccessStrict
@@ -650,7 +650,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance mapElem_into_val_typed
    :
-  IntoValTyped (unittest.mapElem.t) (unittest.mapElem).
+  IntoValTypedUnderlying (unittest.mapElem.t) (unittest.mapElemⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance mapElem_access_load_a l (v : (unittest.mapElem.t)) dq :
   AccessStrict
@@ -704,7 +704,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance containsPointer_into_val_typed
    :
-  IntoValTyped (unittest.containsPointer.t) (unittest.containsPointer).
+  IntoValTypedUnderlying (unittest.containsPointer.t) (unittest.containsPointerⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance containsPointer_access_load_s l (v : (unittest.containsPointer.t)) dq :
   AccessStrict
@@ -745,7 +745,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance wrapExternalStruct_into_val_typed
    :
-  IntoValTyped (unittest.wrapExternalStruct.t) (unittest.wrapExternalStruct).
+  IntoValTypedUnderlying (unittest.wrapExternalStruct.t) (unittest.wrapExternalStructⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance wrapExternalStruct_access_load_j l (v : (unittest.wrapExternalStruct.t)) dq :
   AccessStrict
@@ -786,7 +786,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance typing_into_val_typed
    :
-  IntoValTyped (unittest.typing.t) (unittest.typing).
+  IntoValTypedUnderlying (unittest.typing.t) (unittest.typingⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance typing_access_load_proph l (v : (unittest.typing.t)) dq :
   AccessStrict
@@ -828,7 +828,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance composite_into_val_typed
    :
-  IntoValTyped (unittest.composite.t) (unittest.composite).
+  IntoValTypedUnderlying (unittest.composite.t) (unittest.compositeⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance composite_access_load_a l (v : (unittest.composite.t)) dq :
   AccessStrict
@@ -881,7 +881,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance R_into_val_typed
    :
-  IntoValTyped (unittest.R.t) (unittest.R).
+  IntoValTypedUnderlying (unittest.R.t) (unittest.Rⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.
@@ -909,7 +909,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance Other_into_val_typed
    :
-  IntoValTyped (unittest.Other.t) (unittest.Other).
+  IntoValTypedUnderlying (unittest.Other.t) (unittest.Otherⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance Other_access_load_RecursiveEmbedded l (v : (unittest.Other.t)) dq :
   AccessStrict
@@ -950,7 +950,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance RecursiveEmbedded_into_val_typed
    :
-  IntoValTyped (unittest.RecursiveEmbedded.t) (unittest.RecursiveEmbedded).
+  IntoValTypedUnderlying (unittest.RecursiveEmbedded.t) (unittest.RecursiveEmbeddedⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance RecursiveEmbedded_access_load_Other l (v : (unittest.RecursiveEmbedded.t)) dq :
   AccessStrict
@@ -991,7 +991,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance Block_into_val_typed
    :
-  IntoValTyped (unittest.Block.t) (unittest.Block).
+  IntoValTypedUnderlying (unittest.Block.t) (unittest.Blockⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance Block_access_load_Value l (v : (unittest.Block.t)) dq :
   AccessStrict
@@ -1032,7 +1032,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance thing_into_val_typed
    :
-  IntoValTyped (unittest.thing.t) (unittest.thing).
+  IntoValTypedUnderlying (unittest.thing.t) (unittest.thingⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance thing_access_load_x l (v : (unittest.thing.t)) dq :
   AccessStrict
@@ -1073,7 +1073,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance sliceOfThings_into_val_typed
    :
-  IntoValTyped (unittest.sliceOfThings.t) (unittest.sliceOfThings).
+  IntoValTypedUnderlying (unittest.sliceOfThings.t) (unittest.sliceOfThingsⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance sliceOfThings_access_load_things l (v : (unittest.sliceOfThings.t)) dq :
   AccessStrict
@@ -1115,7 +1115,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance Point_into_val_typed
    :
-  IntoValTyped (unittest.Point.t) (unittest.Point).
+  IntoValTypedUnderlying (unittest.Point.t) (unittest.Pointⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance Point_access_load_x l (v : (unittest.Point.t)) dq :
   AccessStrict
@@ -1170,7 +1170,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance TwoInts_into_val_typed
    :
-  IntoValTyped (unittest.TwoInts.t) (unittest.TwoInts).
+  IntoValTypedUnderlying (unittest.TwoInts.t) (unittest.TwoIntsⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance TwoInts_access_load_x l (v : (unittest.TwoInts.t)) dq :
   AccessStrict
@@ -1226,7 +1226,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance S_into_val_typed
    :
-  IntoValTyped (unittest.S.t) (unittest.S).
+  IntoValTypedUnderlying (unittest.S.t) (unittest.Sⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance S_access_load_a l (v : (unittest.S.t)) dq :
   AccessStrict
@@ -1292,7 +1292,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance A_into_val_typed
    :
-  IntoValTyped (unittest.A.t) (unittest.A).
+  IntoValTypedUnderlying (unittest.A.t) (unittest.Aⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 
 End def.

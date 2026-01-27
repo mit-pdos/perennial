@@ -29,7 +29,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance Box_into_val_typed
   `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T} `{!go.TypeRepr T T'}  :
-  IntoValTyped (generics.Box.t T') (generics.Box T).
+  IntoValTypedUnderlying (generics.Box.t T') (generics.Boxⁱᵐᵖˡ T).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance Box_access_load_Value `{!TypedPointsto (Σ:=Σ) T'} l (v : (generics.Box.t T')) dq :
   AccessStrict
@@ -73,7 +73,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance Container_into_val_typed
   `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T} `{!go.TypeRepr T T'}  :
-  IntoValTyped (generics.Container.t T') (generics.Container T).
+  IntoValTypedUnderlying (generics.Container.t T') (generics.Containerⁱᵐᵖˡ T).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance Container_access_load_X `{!TypedPointsto (Σ:=Σ) T'} l (v : (generics.Container.t T')) dq :
   AccessStrict
@@ -153,7 +153,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance UseContainer_into_val_typed
    :
-  IntoValTyped (generics.UseContainer.t) (generics.UseContainer).
+  IntoValTypedUnderlying (generics.UseContainer.t) (generics.UseContainerⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance UseContainer_access_load_X l (v : (generics.UseContainer.t)) dq :
   AccessStrict
@@ -195,7 +195,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance OnlyIndirect_into_val_typed
   `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T} `{!go.TypeRepr T T'}  :
-  IntoValTyped (generics.OnlyIndirect.t T') (generics.OnlyIndirect T).
+  IntoValTypedUnderlying (generics.OnlyIndirect.t T') (generics.OnlyIndirectⁱᵐᵖˡ T).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance OnlyIndirect_access_load_X `{!TypedPointsto (Σ:=Σ) T'} l (v : (generics.OnlyIndirect.t T')) dq :
   AccessStrict
@@ -250,7 +250,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance MultiParam_into_val_typed
   `{!ZeroVal A'} `{!TypedPointsto (Σ:=Σ) A'} `{!IntoValTyped A' A} `{!go.TypeRepr A A'} `{!ZeroVal B'} `{!TypedPointsto (Σ:=Σ) B'} `{!IntoValTyped B' B} `{!go.TypeRepr B B'}  :
-  IntoValTyped (generics.MultiParam.t A' B') (generics.MultiParam A B).
+  IntoValTypedUnderlying (generics.MultiParam.t A' B') (generics.MultiParamⁱᵐᵖˡ A B).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance MultiParam_access_load_Y `{!TypedPointsto (Σ:=Σ) A'} `{!TypedPointsto (Σ:=Σ) B'} l (v : (generics.MultiParam.t A' B')) dq :
   AccessStrict

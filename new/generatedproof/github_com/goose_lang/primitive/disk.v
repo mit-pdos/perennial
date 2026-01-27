@@ -21,7 +21,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance Disk_into_val_typed
    :
-  IntoValTyped (disk.Disk.t) (disk.Disk).
+  IntoValTypedUnderlying (disk.Disk.t) (disk.Diskⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -41,7 +41,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance FileDisk_into_val_typed
    :
-  IntoValTyped (disk.FileDisk.t) (disk.FileDisk).
+  IntoValTypedUnderlying (disk.FileDisk.t) (disk.FileDiskⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -61,7 +61,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance MemDisk_into_val_typed
    :
-  IntoValTyped (disk.MemDisk.t) (disk.MemDisk).
+  IntoValTypedUnderlying (disk.MemDisk.t) (disk.MemDiskⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.

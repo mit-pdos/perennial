@@ -20,7 +20,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance Word_into_val_typed
    :
-  IntoValTyped (big.Word.t) (big.Word).
+  IntoValTypedUnderlying (big.Word.t) (big.Wordⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -40,7 +40,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance decimal_into_val_typed
    :
-  IntoValTyped (big.decimal.t) (big.decimal).
+  IntoValTypedUnderlying (big.decimal.t) (big.decimalⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -60,7 +60,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance Float_into_val_typed
    :
-  IntoValTyped (big.Float.t) (big.Float).
+  IntoValTypedUnderlying (big.Float.t) (big.Floatⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -80,7 +80,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance ErrNaN_into_val_typed
    :
-  IntoValTyped (big.ErrNaN.t) (big.ErrNaN).
+  IntoValTypedUnderlying (big.ErrNaN.t) (big.ErrNaNⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -100,7 +100,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance form_into_val_typed
    :
-  IntoValTyped (big.form.t) (big.form).
+  IntoValTypedUnderlying (big.form.t) (big.formⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -120,7 +120,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance RoundingMode_into_val_typed
    :
-  IntoValTyped (big.RoundingMode.t) (big.RoundingMode).
+  IntoValTypedUnderlying (big.RoundingMode.t) (big.RoundingModeⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -140,7 +140,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance Accuracy_into_val_typed
    :
-  IntoValTyped (big.Accuracy.t) (big.Accuracy).
+  IntoValTypedUnderlying (big.Accuracy.t) (big.Accuracyⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -160,7 +160,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance Int_into_val_typed
    :
-  IntoValTyped (big.Int.t) (big.Int).
+  IntoValTypedUnderlying (big.Int.t) (big.Intⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -180,7 +180,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance byteReader_into_val_typed
    :
-  IntoValTyped (big.byteReader.t) (big.byteReader).
+  IntoValTypedUnderlying (big.byteReader.t) (big.byteReaderⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -200,7 +200,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance nat_into_val_typed
    :
-  IntoValTyped (big.nat.t) (big.nat).
+  IntoValTypedUnderlying (big.nat.t) (big.natⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -220,7 +220,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance stack_into_val_typed
    :
-  IntoValTyped (big.stack.t) (big.stack).
+  IntoValTypedUnderlying (big.stack.t) (big.stackⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -240,7 +240,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance divisor_into_val_typed
    :
-  IntoValTyped (big.divisor.t) (big.divisor).
+  IntoValTypedUnderlying (big.divisor.t) (big.divisorⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -260,7 +260,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance Rat_into_val_typed
    :
-  IntoValTyped (big.Rat.t) (big.Rat).
+  IntoValTypedUnderlying (big.Rat.t) (big.Ratⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.

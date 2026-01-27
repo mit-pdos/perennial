@@ -21,7 +21,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance ParseError_into_val_typed
    :
-  IntoValTyped (time.ParseError.t) (time.ParseError).
+  IntoValTypedUnderlying (time.ParseError.t) (time.ParseErrorⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -51,7 +51,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance Time_into_val_typed
    :
-  IntoValTyped (time.Time.t) (time.Time).
+  IntoValTypedUnderlying (time.Time.t) (time.Timeⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance Time_access_load_wall l (v : (time.Time.t)) dq :
   AccessStrict
@@ -119,7 +119,7 @@ Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance Timer_into_val_typed
    :
-  IntoValTyped (time.Timer.t) (time.Timer).
+  IntoValTypedUnderlying (time.Timer.t) (time.Timerⁱᵐᵖˡ).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance Timer_access_load_C l (v : (time.Timer.t)) dq :
   AccessStrict
@@ -165,7 +165,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance Ticker_into_val_typed
    :
-  IntoValTyped (time.Ticker.t) (time.Ticker).
+  IntoValTypedUnderlying (time.Ticker.t) (time.Tickerⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -185,7 +185,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance Month_into_val_typed
    :
-  IntoValTyped (time.Month.t) (time.Month).
+  IntoValTypedUnderlying (time.Month.t) (time.Monthⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -205,7 +205,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance Weekday_into_val_typed
    :
-  IntoValTyped (time.Weekday.t) (time.Weekday).
+  IntoValTypedUnderlying (time.Weekday.t) (time.Weekdayⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -225,7 +225,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance absSeconds_into_val_typed
    :
-  IntoValTyped (time.absSeconds.t) (time.absSeconds).
+  IntoValTypedUnderlying (time.absSeconds.t) (time.absSecondsⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -245,7 +245,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance absDays_into_val_typed
    :
-  IntoValTyped (time.absDays.t) (time.absDays).
+  IntoValTypedUnderlying (time.absDays.t) (time.absDaysⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -265,7 +265,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance absCentury_into_val_typed
    :
-  IntoValTyped (time.absCentury.t) (time.absCentury).
+  IntoValTypedUnderlying (time.absCentury.t) (time.absCenturyⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -285,7 +285,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance absCyear_into_val_typed
    :
-  IntoValTyped (time.absCyear.t) (time.absCyear).
+  IntoValTypedUnderlying (time.absCyear.t) (time.absCyearⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -305,7 +305,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance absYday_into_val_typed
    :
-  IntoValTyped (time.absYday.t) (time.absYday).
+  IntoValTypedUnderlying (time.absYday.t) (time.absYdayⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -325,7 +325,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance absMonth_into_val_typed
    :
-  IntoValTyped (time.absMonth.t) (time.absMonth).
+  IntoValTypedUnderlying (time.absMonth.t) (time.absMonthⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -345,7 +345,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance absLeap_into_val_typed
    :
-  IntoValTyped (time.absLeap.t) (time.absLeap).
+  IntoValTypedUnderlying (time.absLeap.t) (time.absLeapⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -365,7 +365,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance absJanFeb_into_val_typed
    :
-  IntoValTyped (time.absJanFeb.t) (time.absJanFeb).
+  IntoValTypedUnderlying (time.absJanFeb.t) (time.absJanFebⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -385,7 +385,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance Location_into_val_typed
    :
-  IntoValTyped (time.Location.t) (time.Location).
+  IntoValTypedUnderlying (time.Location.t) (time.Locationⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -405,7 +405,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance zone_into_val_typed
    :
-  IntoValTyped (time.zone.t) (time.zone).
+  IntoValTypedUnderlying (time.zone.t) (time.zoneⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -425,7 +425,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance zoneTrans_into_val_typed
    :
-  IntoValTyped (time.zoneTrans.t) (time.zoneTrans).
+  IntoValTypedUnderlying (time.zoneTrans.t) (time.zoneTransⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -445,7 +445,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance ruleKind_into_val_typed
    :
-  IntoValTyped (time.ruleKind.t) (time.ruleKind).
+  IntoValTypedUnderlying (time.ruleKind.t) (time.ruleKindⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -465,7 +465,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance rule_into_val_typed
    :
-  IntoValTyped (time.rule.t) (time.rule).
+  IntoValTypedUnderlying (time.rule.t) (time.ruleⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -485,7 +485,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance fileSizeError_into_val_typed
    :
-  IntoValTyped (time.fileSizeError.t) (time.fileSizeError).
+  IntoValTypedUnderlying (time.fileSizeError.t) (time.fileSizeErrorⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -505,7 +505,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance dataIO_into_val_typed
    :
-  IntoValTyped (time.dataIO.t) (time.dataIO).
+  IntoValTypedUnderlying (time.dataIO.t) (time.dataIOⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.

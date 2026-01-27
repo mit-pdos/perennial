@@ -21,7 +21,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance userArena_into_val_typed
    :
-  IntoValTyped (runtime.userArena.t) (runtime.userArena).
+  IntoValTypedUnderlying (runtime.userArena.t) (runtime.userArenaⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -41,7 +41,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance liveUserArenaChunk_into_val_typed
    :
-  IntoValTyped (runtime.liveUserArenaChunk.t) (runtime.liveUserArenaChunk).
+  IntoValTypedUnderlying (runtime.liveUserArenaChunk.t) (runtime.liveUserArenaChunkⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -61,7 +61,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance writeUserArenaHeapBits_into_val_typed
    :
-  IntoValTyped (runtime.writeUserArenaHeapBits.t) (runtime.writeUserArenaHeapBits).
+  IntoValTypedUnderlying (runtime.writeUserArenaHeapBits.t) (runtime.writeUserArenaHeapBitsⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -81,7 +81,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance cgoCallers_into_val_typed
    :
-  IntoValTyped (runtime.cgoCallers.t) (runtime.cgoCallers).
+  IntoValTypedUnderlying (runtime.cgoCallers.t) (runtime.cgoCallersⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -101,7 +101,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance argset_into_val_typed
    :
-  IntoValTyped (runtime.argset.t) (runtime.argset).
+  IntoValTypedUnderlying (runtime.argset.t) (runtime.argsetⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -121,7 +121,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance hchan_into_val_typed
    :
-  IntoValTyped (runtime.hchan.t) (runtime.hchan).
+  IntoValTypedUnderlying (runtime.hchan.t) (runtime.hchanⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -141,7 +141,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance waitq_into_val_typed
    :
-  IntoValTyped (runtime.waitq.t) (runtime.waitq).
+  IntoValTypedUnderlying (runtime.waitq.t) (runtime.waitqⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -161,7 +161,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance coro_into_val_typed
    :
-  IntoValTyped (runtime.coro.t) (runtime.coro).
+  IntoValTypedUnderlying (runtime.coro.t) (runtime.coroⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -181,7 +181,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance cpuProfile_into_val_typed
    :
-  IntoValTyped (runtime.cpuProfile.t) (runtime.cpuProfile).
+  IntoValTypedUnderlying (runtime.cpuProfile.t) (runtime.cpuProfileⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -201,7 +201,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance debugCallWrapArgs_into_val_typed
    :
-  IntoValTyped (runtime.debugCallWrapArgs.t) (runtime.debugCallWrapArgs).
+  IntoValTypedUnderlying (runtime.debugCallWrapArgs.t) (runtime.debugCallWrapArgsⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -221,7 +221,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance dloggerImpl_into_val_typed
    :
-  IntoValTyped (runtime.dloggerImpl.t) (runtime.dloggerImpl).
+  IntoValTypedUnderlying (runtime.dloggerImpl.t) (runtime.dloggerImplⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -241,7 +241,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance dloggerFake_into_val_typed
    :
-  IntoValTyped (runtime.dloggerFake.t) (runtime.dloggerFake).
+  IntoValTypedUnderlying (runtime.dloggerFake.t) (runtime.dloggerFakeⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -261,7 +261,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance debugLogWriter_into_val_typed
    :
-  IntoValTyped (runtime.debugLogWriter.t) (runtime.debugLogWriter).
+  IntoValTypedUnderlying (runtime.debugLogWriter.t) (runtime.debugLogWriterⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -281,7 +281,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance debugLogBuf_into_val_typed
    :
-  IntoValTyped (runtime.debugLogBuf.t) (runtime.debugLogBuf).
+  IntoValTypedUnderlying (runtime.debugLogBuf.t) (runtime.debugLogBufⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -301,7 +301,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance debugLogReader_into_val_typed
    :
-  IntoValTyped (runtime.debugLogReader.t) (runtime.debugLogReader).
+  IntoValTypedUnderlying (runtime.debugLogReader.t) (runtime.debugLogReaderⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -321,7 +321,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance dlogPerM_into_val_typed
    :
-  IntoValTyped (runtime.dlogPerM.t) (runtime.dlogPerM).
+  IntoValTypedUnderlying (runtime.dlogPerM.t) (runtime.dlogPerMⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -341,7 +341,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance timespec_into_val_typed
    :
-  IntoValTyped (runtime.timespec.t) (runtime.timespec).
+  IntoValTypedUnderlying (runtime.timespec.t) (runtime.timespecⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -361,7 +361,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance timeval_into_val_typed
    :
-  IntoValTyped (runtime.timeval.t) (runtime.timeval).
+  IntoValTypedUnderlying (runtime.timeval.t) (runtime.timevalⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -381,7 +381,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance sigactiont_into_val_typed
    :
-  IntoValTyped (runtime.sigactiont.t) (runtime.sigactiont).
+  IntoValTypedUnderlying (runtime.sigactiont.t) (runtime.sigactiontⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -401,7 +401,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance siginfoFields_into_val_typed
    :
-  IntoValTyped (runtime.siginfoFields.t) (runtime.siginfoFields).
+  IntoValTypedUnderlying (runtime.siginfoFields.t) (runtime.siginfoFieldsⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -421,7 +421,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance siginfo_into_val_typed
    :
-  IntoValTyped (runtime.siginfo.t) (runtime.siginfo).
+  IntoValTypedUnderlying (runtime.siginfo.t) (runtime.siginfoⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -441,7 +441,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance itimerspec_into_val_typed
    :
-  IntoValTyped (runtime.itimerspec.t) (runtime.itimerspec).
+  IntoValTypedUnderlying (runtime.itimerspec.t) (runtime.itimerspecⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -461,7 +461,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance itimerval_into_val_typed
    :
-  IntoValTyped (runtime.itimerval.t) (runtime.itimerval).
+  IntoValTypedUnderlying (runtime.itimerval.t) (runtime.itimervalⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -481,7 +481,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance sigeventFields_into_val_typed
    :
-  IntoValTyped (runtime.sigeventFields.t) (runtime.sigeventFields).
+  IntoValTypedUnderlying (runtime.sigeventFields.t) (runtime.sigeventFieldsⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -501,7 +501,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance sigevent_into_val_typed
    :
-  IntoValTyped (runtime.sigevent.t) (runtime.sigevent).
+  IntoValTypedUnderlying (runtime.sigevent.t) (runtime.sigeventⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -521,7 +521,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance usigset_into_val_typed
    :
-  IntoValTyped (runtime.usigset.t) (runtime.usigset).
+  IntoValTypedUnderlying (runtime.usigset.t) (runtime.usigsetⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -541,7 +541,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance fpxreg_into_val_typed
    :
-  IntoValTyped (runtime.fpxreg.t) (runtime.fpxreg).
+  IntoValTypedUnderlying (runtime.fpxreg.t) (runtime.fpxregⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -561,7 +561,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance xmmreg_into_val_typed
    :
-  IntoValTyped (runtime.xmmreg.t) (runtime.xmmreg).
+  IntoValTypedUnderlying (runtime.xmmreg.t) (runtime.xmmregⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -581,7 +581,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance fpstate_into_val_typed
    :
-  IntoValTyped (runtime.fpstate.t) (runtime.fpstate).
+  IntoValTypedUnderlying (runtime.fpstate.t) (runtime.fpstateⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -601,7 +601,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance fpxreg1_into_val_typed
    :
-  IntoValTyped (runtime.fpxreg1.t) (runtime.fpxreg1).
+  IntoValTypedUnderlying (runtime.fpxreg1.t) (runtime.fpxreg1ⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -621,7 +621,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance xmmreg1_into_val_typed
    :
-  IntoValTyped (runtime.xmmreg1.t) (runtime.xmmreg1).
+  IntoValTypedUnderlying (runtime.xmmreg1.t) (runtime.xmmreg1ⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -641,7 +641,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance fpstate1_into_val_typed
    :
-  IntoValTyped (runtime.fpstate1.t) (runtime.fpstate1).
+  IntoValTypedUnderlying (runtime.fpstate1.t) (runtime.fpstate1ⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -661,7 +661,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance fpreg1_into_val_typed
    :
-  IntoValTyped (runtime.fpreg1.t) (runtime.fpreg1).
+  IntoValTypedUnderlying (runtime.fpreg1.t) (runtime.fpreg1ⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -681,7 +681,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance stackt_into_val_typed
    :
-  IntoValTyped (runtime.stackt.t) (runtime.stackt).
+  IntoValTypedUnderlying (runtime.stackt.t) (runtime.stacktⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -701,7 +701,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance mcontext_into_val_typed
    :
-  IntoValTyped (runtime.mcontext.t) (runtime.mcontext).
+  IntoValTypedUnderlying (runtime.mcontext.t) (runtime.mcontextⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -721,7 +721,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance ucontext_into_val_typed
    :
-  IntoValTyped (runtime.ucontext.t) (runtime.ucontext).
+  IntoValTypedUnderlying (runtime.ucontext.t) (runtime.ucontextⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -741,7 +741,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance sigcontext_into_val_typed
    :
-  IntoValTyped (runtime.sigcontext.t) (runtime.sigcontext).
+  IntoValTypedUnderlying (runtime.sigcontext.t) (runtime.sigcontextⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -761,7 +761,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance sockaddr_un_into_val_typed
    :
-  IntoValTyped (runtime.sockaddr_un.t) (runtime.sockaddr_un).
+  IntoValTypedUnderlying (runtime.sockaddr_un.t) (runtime.sockaddr_unⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -781,7 +781,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance Error_into_val_typed
    :
-  IntoValTyped (runtime.Error.t) (runtime.Error).
+  IntoValTypedUnderlying (runtime.Error.t) (runtime.Errorⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -801,7 +801,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance TypeAssertionError_into_val_typed
    :
-  IntoValTyped (runtime.TypeAssertionError.t) (runtime.TypeAssertionError).
+  IntoValTypedUnderlying (runtime.TypeAssertionError.t) (runtime.TypeAssertionErrorⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -821,7 +821,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance errorString_into_val_typed
    :
-  IntoValTyped (runtime.errorString.t) (runtime.errorString).
+  IntoValTypedUnderlying (runtime.errorString.t) (runtime.errorStringⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -841,7 +841,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance errorAddressString_into_val_typed
    :
-  IntoValTyped (runtime.errorAddressString.t) (runtime.errorAddressString).
+  IntoValTypedUnderlying (runtime.errorAddressString.t) (runtime.errorAddressStringⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -861,7 +861,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance plainError_into_val_typed
    :
-  IntoValTyped (runtime.plainError.t) (runtime.plainError).
+  IntoValTypedUnderlying (runtime.plainError.t) (runtime.plainErrorⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -881,7 +881,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance boundsError_into_val_typed
    :
-  IntoValTyped (runtime.boundsError.t) (runtime.boundsError).
+  IntoValTypedUnderlying (runtime.boundsError.t) (runtime.boundsErrorⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -901,7 +901,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance boundsErrorCode_into_val_typed
    :
-  IntoValTyped (runtime.boundsErrorCode.t) (runtime.boundsErrorCode).
+  IntoValTypedUnderlying (runtime.boundsErrorCode.t) (runtime.boundsErrorCodeⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -921,7 +921,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance stringer_into_val_typed
    :
-  IntoValTyped (runtime.stringer.t) (runtime.stringer).
+  IntoValTypedUnderlying (runtime.stringer.t) (runtime.stringerⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -941,7 +941,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance typeCacheBucket_into_val_typed
    :
-  IntoValTyped (runtime.typeCacheBucket.t) (runtime.typeCacheBucket).
+  IntoValTypedUnderlying (runtime.typeCacheBucket.t) (runtime.typeCacheBucketⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -961,7 +961,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance childInfo_into_val_typed
    :
-  IntoValTyped (runtime.childInfo.t) (runtime.childInfo).
+  IntoValTypedUnderlying (runtime.childInfo.t) (runtime.childInfoⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -981,7 +981,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance timeHistogram_into_val_typed
    :
-  IntoValTyped (runtime.timeHistogram.t) (runtime.timeHistogram).
+  IntoValTypedUnderlying (runtime.timeHistogram.t) (runtime.timeHistogramⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -1001,7 +1001,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance itabTableType_into_val_typed
    :
-  IntoValTyped (runtime.itabTableType.t) (runtime.itabTableType).
+  IntoValTypedUnderlying (runtime.itabTableType.t) (runtime.itabTableTypeⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -1021,7 +1021,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance uint16InterfacePtr_into_val_typed
    :
-  IntoValTyped (runtime.uint16InterfacePtr.t) (runtime.uint16InterfacePtr).
+  IntoValTypedUnderlying (runtime.uint16InterfacePtr.t) (runtime.uint16InterfacePtrⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -1041,7 +1041,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance uint32InterfacePtr_into_val_typed
    :
-  IntoValTyped (runtime.uint32InterfacePtr.t) (runtime.uint32InterfacePtr).
+  IntoValTypedUnderlying (runtime.uint32InterfacePtr.t) (runtime.uint32InterfacePtrⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -1061,7 +1061,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance uint64InterfacePtr_into_val_typed
    :
-  IntoValTyped (runtime.uint64InterfacePtr.t) (runtime.uint64InterfacePtr).
+  IntoValTypedUnderlying (runtime.uint64InterfacePtr.t) (runtime.uint64InterfacePtrⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -1081,7 +1081,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance stringInterfacePtr_into_val_typed
    :
-  IntoValTyped (runtime.stringInterfacePtr.t) (runtime.stringInterfacePtr).
+  IntoValTypedUnderlying (runtime.stringInterfacePtr.t) (runtime.stringInterfacePtrⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -1101,7 +1101,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance sliceInterfacePtr_into_val_typed
    :
-  IntoValTyped (runtime.sliceInterfacePtr.t) (runtime.sliceInterfacePtr).
+  IntoValTypedUnderlying (runtime.sliceInterfacePtr.t) (runtime.sliceInterfacePtrⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -1121,7 +1121,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance lfstack_into_val_typed
    :
-  IntoValTyped (runtime.lfstack.t) (runtime.lfstack).
+  IntoValTypedUnderlying (runtime.lfstack.t) (runtime.lfstackⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -1141,7 +1141,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance linknameIter_into_val_typed
    :
-  IntoValTyped (runtime.linknameIter.t) (runtime.linknameIter).
+  IntoValTypedUnderlying (runtime.linknameIter.t) (runtime.linknameIterⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -1161,7 +1161,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance mWaitList_into_val_typed
    :
-  IntoValTyped (runtime.mWaitList.t) (runtime.mWaitList).
+  IntoValTypedUnderlying (runtime.mWaitList.t) (runtime.mWaitListⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -1181,7 +1181,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance lockRank_into_val_typed
    :
-  IntoValTyped (runtime.lockRank.t) (runtime.lockRank).
+  IntoValTypedUnderlying (runtime.lockRank.t) (runtime.lockRankⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -1201,7 +1201,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance lockRankStruct_into_val_typed
    :
-  IntoValTyped (runtime.lockRankStruct.t) (runtime.lockRankStruct).
+  IntoValTypedUnderlying (runtime.lockRankStruct.t) (runtime.lockRankStructⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -1221,7 +1221,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance persistentAlloc_into_val_typed
    :
-  IntoValTyped (runtime.persistentAlloc.t) (runtime.persistentAlloc).
+  IntoValTypedUnderlying (runtime.persistentAlloc.t) (runtime.persistentAllocⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -1241,7 +1241,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance linearAlloc_into_val_typed
    :
-  IntoValTyped (runtime.linearAlloc.t) (runtime.linearAlloc).
+  IntoValTypedUnderlying (runtime.linearAlloc.t) (runtime.linearAllocⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -1261,7 +1261,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance notInHeap_into_val_typed
    :
-  IntoValTyped (runtime.notInHeap.t) (runtime.notInHeap).
+  IntoValTypedUnderlying (runtime.notInHeap.t) (runtime.notInHeapⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -1281,7 +1281,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance typePointers_into_val_typed
    :
-  IntoValTyped (runtime.typePointers.t) (runtime.typePointers).
+  IntoValTypedUnderlying (runtime.typePointers.t) (runtime.typePointersⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -1301,7 +1301,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance markBits_into_val_typed
    :
-  IntoValTyped (runtime.markBits.t) (runtime.markBits).
+  IntoValTypedUnderlying (runtime.markBits.t) (runtime.markBitsⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -1321,7 +1321,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance mcache_into_val_typed
    :
-  IntoValTyped (runtime.mcache.t) (runtime.mcache).
+  IntoValTypedUnderlying (runtime.mcache.t) (runtime.mcacheⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -1341,7 +1341,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance gclink_into_val_typed
    :
-  IntoValTyped (runtime.gclink.t) (runtime.gclink).
+  IntoValTypedUnderlying (runtime.gclink.t) (runtime.gclinkⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -1361,7 +1361,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance gclinkptr_into_val_typed
    :
-  IntoValTyped (runtime.gclinkptr.t) (runtime.gclinkptr).
+  IntoValTypedUnderlying (runtime.gclinkptr.t) (runtime.gclinkptrⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -1381,7 +1381,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance stackfreelist_into_val_typed
    :
-  IntoValTyped (runtime.stackfreelist.t) (runtime.stackfreelist).
+  IntoValTypedUnderlying (runtime.stackfreelist.t) (runtime.stackfreelistⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -1401,7 +1401,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance mcentral_into_val_typed
    :
-  IntoValTyped (runtime.mcentral.t) (runtime.mcentral).
+  IntoValTypedUnderlying (runtime.mcentral.t) (runtime.mcentralⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -1421,7 +1421,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance checkmarksMap_into_val_typed
    :
-  IntoValTyped (runtime.checkmarksMap.t) (runtime.checkmarksMap).
+  IntoValTypedUnderlying (runtime.checkmarksMap.t) (runtime.checkmarksMapⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -1441,7 +1441,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance Cleanup_into_val_typed
    :
-  IntoValTyped (runtime.Cleanup.t) (runtime.Cleanup).
+  IntoValTypedUnderlying (runtime.Cleanup.t) (runtime.Cleanupⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -1461,7 +1461,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance cleanupBlock_into_val_typed
    :
-  IntoValTyped (runtime.cleanupBlock.t) (runtime.cleanupBlock).
+  IntoValTypedUnderlying (runtime.cleanupBlock.t) (runtime.cleanupBlockⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -1481,7 +1481,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance cleanupBlockHeader_into_val_typed
    :
-  IntoValTyped (runtime.cleanupBlockHeader.t) (runtime.cleanupBlockHeader).
+  IntoValTypedUnderlying (runtime.cleanupBlockHeader.t) (runtime.cleanupBlockHeaderⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -1501,7 +1501,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance cleanupQueue_into_val_typed
    :
-  IntoValTyped (runtime.cleanupQueue.t) (runtime.cleanupQueue).
+  IntoValTypedUnderlying (runtime.cleanupQueue.t) (runtime.cleanupQueueⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -1521,7 +1521,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance metricData_into_val_typed
    :
-  IntoValTyped (runtime.metricData.t) (runtime.metricData).
+  IntoValTypedUnderlying (runtime.metricData.t) (runtime.metricDataⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -1541,7 +1541,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance metricReader_into_val_typed
    :
-  IntoValTyped (runtime.metricReader.t) (runtime.metricReader).
+  IntoValTypedUnderlying (runtime.metricReader.t) (runtime.metricReaderⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -1561,7 +1561,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance statDep_into_val_typed
    :
-  IntoValTyped (runtime.statDep.t) (runtime.statDep).
+  IntoValTypedUnderlying (runtime.statDep.t) (runtime.statDepⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -1581,7 +1581,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance statDepSet_into_val_typed
    :
-  IntoValTyped (runtime.statDepSet.t) (runtime.statDepSet).
+  IntoValTypedUnderlying (runtime.statDepSet.t) (runtime.statDepSetⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -1601,7 +1601,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance heapStatsAggregate_into_val_typed
    :
-  IntoValTyped (runtime.heapStatsAggregate.t) (runtime.heapStatsAggregate).
+  IntoValTypedUnderlying (runtime.heapStatsAggregate.t) (runtime.heapStatsAggregateⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -1621,7 +1621,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance sysStatsAggregate_into_val_typed
    :
-  IntoValTyped (runtime.sysStatsAggregate.t) (runtime.sysStatsAggregate).
+  IntoValTypedUnderlying (runtime.sysStatsAggregate.t) (runtime.sysStatsAggregateⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -1641,7 +1641,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance cpuStatsAggregate_into_val_typed
    :
-  IntoValTyped (runtime.cpuStatsAggregate.t) (runtime.cpuStatsAggregate).
+  IntoValTypedUnderlying (runtime.cpuStatsAggregate.t) (runtime.cpuStatsAggregateⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -1661,7 +1661,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance gcStatsAggregate_into_val_typed
    :
-  IntoValTyped (runtime.gcStatsAggregate.t) (runtime.gcStatsAggregate).
+  IntoValTypedUnderlying (runtime.gcStatsAggregate.t) (runtime.gcStatsAggregateⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -1681,7 +1681,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance statAggregate_into_val_typed
    :
-  IntoValTyped (runtime.statAggregate.t) (runtime.statAggregate).
+  IntoValTypedUnderlying (runtime.statAggregate.t) (runtime.statAggregateⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -1701,7 +1701,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance metricKind_into_val_typed
    :
-  IntoValTyped (runtime.metricKind.t) (runtime.metricKind).
+  IntoValTypedUnderlying (runtime.metricKind.t) (runtime.metricKindⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -1721,7 +1721,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance metricSample_into_val_typed
    :
-  IntoValTyped (runtime.metricSample.t) (runtime.metricSample).
+  IntoValTypedUnderlying (runtime.metricSample.t) (runtime.metricSampleⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -1741,7 +1741,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance metricValue_into_val_typed
    :
-  IntoValTyped (runtime.metricValue.t) (runtime.metricValue).
+  IntoValTypedUnderlying (runtime.metricValue.t) (runtime.metricValueⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -1761,7 +1761,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance metricFloat64Histogram_into_val_typed
    :
-  IntoValTyped (runtime.metricFloat64Histogram.t) (runtime.metricFloat64Histogram).
+  IntoValTypedUnderlying (runtime.metricFloat64Histogram.t) (runtime.metricFloat64Histogramⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -1781,7 +1781,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance metricName_into_val_typed
    :
-  IntoValTyped (runtime.metricName.t) (runtime.metricName).
+  IntoValTypedUnderlying (runtime.metricName.t) (runtime.metricNameⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -1801,7 +1801,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance finBlock_into_val_typed
    :
-  IntoValTyped (runtime.finBlock.t) (runtime.finBlock).
+  IntoValTypedUnderlying (runtime.finBlock.t) (runtime.finBlockⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -1821,7 +1821,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance finalizer_into_val_typed
    :
-  IntoValTyped (runtime.finalizer.t) (runtime.finalizer).
+  IntoValTypedUnderlying (runtime.finalizer.t) (runtime.finalizerⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -1841,7 +1841,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance fixalloc_into_val_typed
    :
-  IntoValTyped (runtime.fixalloc.t) (runtime.fixalloc).
+  IntoValTypedUnderlying (runtime.fixalloc.t) (runtime.fixallocⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -1861,7 +1861,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance mlink_into_val_typed
    :
-  IntoValTyped (runtime.mlink.t) (runtime.mlink).
+  IntoValTypedUnderlying (runtime.mlink.t) (runtime.mlinkⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -1881,7 +1881,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance gcMarkWorkerMode_into_val_typed
    :
-  IntoValTyped (runtime.gcMarkWorkerMode.t) (runtime.gcMarkWorkerMode).
+  IntoValTypedUnderlying (runtime.gcMarkWorkerMode.t) (runtime.gcMarkWorkerModeⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -1901,7 +1901,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance workType_into_val_typed
    :
-  IntoValTyped (runtime.workType.t) (runtime.workType).
+  IntoValTypedUnderlying (runtime.workType.t) (runtime.workTypeⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -1921,7 +1921,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance gcMode_into_val_typed
    :
-  IntoValTyped (runtime.gcMode.t) (runtime.gcMode).
+  IntoValTypedUnderlying (runtime.gcMode.t) (runtime.gcModeⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -1941,7 +1941,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance gcTrigger_into_val_typed
    :
-  IntoValTyped (runtime.gcTrigger.t) (runtime.gcTrigger).
+  IntoValTypedUnderlying (runtime.gcTrigger.t) (runtime.gcTriggerⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -1961,7 +1961,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance gcTriggerKind_into_val_typed
    :
-  IntoValTyped (runtime.gcTriggerKind.t) (runtime.gcTriggerKind).
+  IntoValTypedUnderlying (runtime.gcTriggerKind.t) (runtime.gcTriggerKindⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -1981,7 +1981,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance gcBgMarkWorkerNode_into_val_typed
    :
-  IntoValTyped (runtime.gcBgMarkWorkerNode.t) (runtime.gcBgMarkWorkerNode).
+  IntoValTypedUnderlying (runtime.gcBgMarkWorkerNode.t) (runtime.gcBgMarkWorkerNodeⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -2001,7 +2001,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance gcBgMarkWorkerNodePadded_into_val_typed
    :
-  IntoValTyped (runtime.gcBgMarkWorkerNodePadded.t) (runtime.gcBgMarkWorkerNodePadded).
+  IntoValTypedUnderlying (runtime.gcBgMarkWorkerNodePadded.t) (runtime.gcBgMarkWorkerNodePaddedⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -2021,7 +2021,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance gcCPULimiterState_into_val_typed
    :
-  IntoValTyped (runtime.gcCPULimiterState.t) (runtime.gcCPULimiterState).
+  IntoValTypedUnderlying (runtime.gcCPULimiterState.t) (runtime.gcCPULimiterStateⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -2041,7 +2041,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance limiterEventType_into_val_typed
    :
-  IntoValTyped (runtime.limiterEventType.t) (runtime.limiterEventType).
+  IntoValTypedUnderlying (runtime.limiterEventType.t) (runtime.limiterEventTypeⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -2061,7 +2061,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance limiterEventStamp_into_val_typed
    :
-  IntoValTyped (runtime.limiterEventStamp.t) (runtime.limiterEventStamp).
+  IntoValTypedUnderlying (runtime.limiterEventStamp.t) (runtime.limiterEventStampⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -2081,7 +2081,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance limiterEvent_into_val_typed
    :
-  IntoValTyped (runtime.limiterEvent.t) (runtime.limiterEvent).
+  IntoValTypedUnderlying (runtime.limiterEvent.t) (runtime.limiterEventⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -2101,7 +2101,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance gcDrainFlags_into_val_typed
    :
-  IntoValTyped (runtime.gcDrainFlags.t) (runtime.gcDrainFlags).
+  IntoValTypedUnderlying (runtime.gcDrainFlags.t) (runtime.gcDrainFlagsⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -2121,7 +2121,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance spanInlineMarkBits_into_val_typed
    :
-  IntoValTyped (runtime.spanInlineMarkBits.t) (runtime.spanInlineMarkBits).
+  IntoValTypedUnderlying (runtime.spanInlineMarkBits.t) (runtime.spanInlineMarkBitsⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -2141,7 +2141,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance spanQueue_into_val_typed
    :
-  IntoValTyped (runtime.spanQueue.t) (runtime.spanQueue).
+  IntoValTypedUnderlying (runtime.spanQueue.t) (runtime.spanQueueⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -2161,7 +2161,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance localSpanQueue_into_val_typed
    :
-  IntoValTyped (runtime.localSpanQueue.t) (runtime.localSpanQueue).
+  IntoValTypedUnderlying (runtime.localSpanQueue.t) (runtime.localSpanQueueⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -2181,7 +2181,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance objptr_into_val_typed
    :
-  IntoValTyped (runtime.objptr.t) (runtime.objptr).
+  IntoValTypedUnderlying (runtime.objptr.t) (runtime.objptrⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -2201,7 +2201,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance sizeClassScanStats_into_val_typed
    :
-  IntoValTyped (runtime.sizeClassScanStats.t) (runtime.sizeClassScanStats).
+  IntoValTypedUnderlying (runtime.sizeClassScanStats.t) (runtime.sizeClassScanStatsⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -2221,7 +2221,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance gcControllerState_into_val_typed
    :
-  IntoValTyped (runtime.gcControllerState.t) (runtime.gcControllerState).
+  IntoValTypedUnderlying (runtime.gcControllerState.t) (runtime.gcControllerStateⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -2241,7 +2241,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance scavengerState_into_val_typed
    :
-  IntoValTyped (runtime.scavengerState.t) (runtime.scavengerState).
+  IntoValTypedUnderlying (runtime.scavengerState.t) (runtime.scavengerStateⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -2261,7 +2261,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance scavengeIndex_into_val_typed
    :
-  IntoValTyped (runtime.scavengeIndex.t) (runtime.scavengeIndex).
+  IntoValTypedUnderlying (runtime.scavengeIndex.t) (runtime.scavengeIndexⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -2281,7 +2281,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance atomicScavChunkData_into_val_typed
    :
-  IntoValTyped (runtime.atomicScavChunkData.t) (runtime.atomicScavChunkData).
+  IntoValTypedUnderlying (runtime.atomicScavChunkData.t) (runtime.atomicScavChunkDataⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -2301,7 +2301,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance scavChunkData_into_val_typed
    :
-  IntoValTyped (runtime.scavChunkData.t) (runtime.scavChunkData).
+  IntoValTypedUnderlying (runtime.scavChunkData.t) (runtime.scavChunkDataⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -2321,7 +2321,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance scavChunkFlags_into_val_typed
    :
-  IntoValTyped (runtime.scavChunkFlags.t) (runtime.scavChunkFlags).
+  IntoValTypedUnderlying (runtime.scavChunkFlags.t) (runtime.scavChunkFlagsⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -2341,7 +2341,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance piController_into_val_typed
    :
-  IntoValTyped (runtime.piController.t) (runtime.piController).
+  IntoValTypedUnderlying (runtime.piController.t) (runtime.piControllerⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -2361,7 +2361,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance stackWorkBuf_into_val_typed
    :
-  IntoValTyped (runtime.stackWorkBuf.t) (runtime.stackWorkBuf).
+  IntoValTypedUnderlying (runtime.stackWorkBuf.t) (runtime.stackWorkBufⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -2381,7 +2381,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance stackWorkBufHdr_into_val_typed
    :
-  IntoValTyped (runtime.stackWorkBufHdr.t) (runtime.stackWorkBufHdr).
+  IntoValTypedUnderlying (runtime.stackWorkBufHdr.t) (runtime.stackWorkBufHdrⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -2401,7 +2401,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance stackObjectBuf_into_val_typed
    :
-  IntoValTyped (runtime.stackObjectBuf.t) (runtime.stackObjectBuf).
+  IntoValTypedUnderlying (runtime.stackObjectBuf.t) (runtime.stackObjectBufⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -2421,7 +2421,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance stackObjectBufHdr_into_val_typed
    :
-  IntoValTyped (runtime.stackObjectBufHdr.t) (runtime.stackObjectBufHdr).
+  IntoValTypedUnderlying (runtime.stackObjectBufHdr.t) (runtime.stackObjectBufHdrⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -2441,7 +2441,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance stackObject_into_val_typed
    :
-  IntoValTyped (runtime.stackObject.t) (runtime.stackObject).
+  IntoValTypedUnderlying (runtime.stackObject.t) (runtime.stackObjectⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -2461,7 +2461,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance stackScanState_into_val_typed
    :
-  IntoValTyped (runtime.stackScanState.t) (runtime.stackScanState).
+  IntoValTypedUnderlying (runtime.stackScanState.t) (runtime.stackScanStateⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -2481,7 +2481,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance sweepdata_into_val_typed
    :
-  IntoValTyped (runtime.sweepdata.t) (runtime.sweepdata).
+  IntoValTypedUnderlying (runtime.sweepdata.t) (runtime.sweepdataⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -2501,7 +2501,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance sweepClass_into_val_typed
    :
-  IntoValTyped (runtime.sweepClass.t) (runtime.sweepClass).
+  IntoValTypedUnderlying (runtime.sweepClass.t) (runtime.sweepClassⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -2521,7 +2521,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance activeSweep_into_val_typed
    :
-  IntoValTyped (runtime.activeSweep.t) (runtime.activeSweep).
+  IntoValTypedUnderlying (runtime.activeSweep.t) (runtime.activeSweepⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -2541,7 +2541,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance sweepLocker_into_val_typed
    :
-  IntoValTyped (runtime.sweepLocker.t) (runtime.sweepLocker).
+  IntoValTypedUnderlying (runtime.sweepLocker.t) (runtime.sweepLockerⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -2561,7 +2561,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance sweepLocked_into_val_typed
    :
-  IntoValTyped (runtime.sweepLocked.t) (runtime.sweepLocked).
+  IntoValTypedUnderlying (runtime.sweepLocked.t) (runtime.sweepLockedⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -2581,7 +2581,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance gcWork_into_val_typed
    :
-  IntoValTyped (runtime.gcWork.t) (runtime.gcWork).
+  IntoValTypedUnderlying (runtime.gcWork.t) (runtime.gcWorkⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -2601,7 +2601,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance workbufhdr_into_val_typed
    :
-  IntoValTyped (runtime.workbufhdr.t) (runtime.workbufhdr).
+  IntoValTypedUnderlying (runtime.workbufhdr.t) (runtime.workbufhdrⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -2621,7 +2621,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance workbuf_into_val_typed
    :
-  IntoValTyped (runtime.workbuf.t) (runtime.workbuf).
+  IntoValTypedUnderlying (runtime.workbuf.t) (runtime.workbufⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -2641,7 +2641,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance mheap_into_val_typed
    :
-  IntoValTyped (runtime.mheap.t) (runtime.mheap).
+  IntoValTypedUnderlying (runtime.mheap.t) (runtime.mheapⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -2661,7 +2661,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance heapArena_into_val_typed
    :
-  IntoValTyped (runtime.heapArena.t) (runtime.heapArena).
+  IntoValTypedUnderlying (runtime.heapArena.t) (runtime.heapArenaⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -2681,7 +2681,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance arenaHint_into_val_typed
    :
-  IntoValTyped (runtime.arenaHint.t) (runtime.arenaHint).
+  IntoValTypedUnderlying (runtime.arenaHint.t) (runtime.arenaHintⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -2701,7 +2701,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance mSpanState_into_val_typed
    :
-  IntoValTyped (runtime.mSpanState.t) (runtime.mSpanState).
+  IntoValTypedUnderlying (runtime.mSpanState.t) (runtime.mSpanStateⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -2721,7 +2721,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance mSpanStateBox_into_val_typed
    :
-  IntoValTyped (runtime.mSpanStateBox.t) (runtime.mSpanStateBox).
+  IntoValTypedUnderlying (runtime.mSpanStateBox.t) (runtime.mSpanStateBoxⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -2741,7 +2741,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance mspan_into_val_typed
    :
-  IntoValTyped (runtime.mspan.t) (runtime.mspan).
+  IntoValTypedUnderlying (runtime.mspan.t) (runtime.mspanⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -2761,7 +2761,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance spanClass_into_val_typed
    :
-  IntoValTyped (runtime.spanClass.t) (runtime.spanClass).
+  IntoValTypedUnderlying (runtime.spanClass.t) (runtime.spanClassⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -2781,7 +2781,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance arenaIdx_into_val_typed
    :
-  IntoValTyped (runtime.arenaIdx.t) (runtime.arenaIdx).
+  IntoValTypedUnderlying (runtime.arenaIdx.t) (runtime.arenaIdxⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -2801,7 +2801,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance spanAllocType_into_val_typed
    :
-  IntoValTyped (runtime.spanAllocType.t) (runtime.spanAllocType).
+  IntoValTypedUnderlying (runtime.spanAllocType.t) (runtime.spanAllocTypeⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -2821,7 +2821,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance mSpanList_into_val_typed
    :
-  IntoValTyped (runtime.mSpanList.t) (runtime.mSpanList).
+  IntoValTypedUnderlying (runtime.mSpanList.t) (runtime.mSpanListⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -2841,7 +2841,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance mSpanQueue_into_val_typed
    :
-  IntoValTyped (runtime.mSpanQueue.t) (runtime.mSpanQueue).
+  IntoValTypedUnderlying (runtime.mSpanQueue.t) (runtime.mSpanQueueⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -2861,7 +2861,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance special_into_val_typed
    :
-  IntoValTyped (runtime.special.t) (runtime.special).
+  IntoValTypedUnderlying (runtime.special.t) (runtime.specialⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -2881,7 +2881,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance specialfinalizer_into_val_typed
    :
-  IntoValTyped (runtime.specialfinalizer.t) (runtime.specialfinalizer).
+  IntoValTypedUnderlying (runtime.specialfinalizer.t) (runtime.specialfinalizerⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -2901,7 +2901,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance specialCleanup_into_val_typed
    :
-  IntoValTyped (runtime.specialCleanup.t) (runtime.specialCleanup).
+  IntoValTypedUnderlying (runtime.specialCleanup.t) (runtime.specialCleanupⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -2921,7 +2921,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance specialCheckFinalizer_into_val_typed
    :
-  IntoValTyped (runtime.specialCheckFinalizer.t) (runtime.specialCheckFinalizer).
+  IntoValTypedUnderlying (runtime.specialCheckFinalizer.t) (runtime.specialCheckFinalizerⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -2941,7 +2941,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance specialTinyBlock_into_val_typed
    :
-  IntoValTyped (runtime.specialTinyBlock.t) (runtime.specialTinyBlock).
+  IntoValTypedUnderlying (runtime.specialTinyBlock.t) (runtime.specialTinyBlockⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -2961,7 +2961,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance specialWeakHandle_into_val_typed
    :
-  IntoValTyped (runtime.specialWeakHandle.t) (runtime.specialWeakHandle).
+  IntoValTypedUnderlying (runtime.specialWeakHandle.t) (runtime.specialWeakHandleⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -2981,7 +2981,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance immortalWeakHandleMap_into_val_typed
    :
-  IntoValTyped (runtime.immortalWeakHandleMap.t) (runtime.immortalWeakHandleMap).
+  IntoValTypedUnderlying (runtime.immortalWeakHandleMap.t) (runtime.immortalWeakHandleMapⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -3001,7 +3001,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance immortalWeakHandle_into_val_typed
    :
-  IntoValTyped (runtime.immortalWeakHandle.t) (runtime.immortalWeakHandle).
+  IntoValTypedUnderlying (runtime.immortalWeakHandle.t) (runtime.immortalWeakHandleⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -3021,7 +3021,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance specialprofile_into_val_typed
    :
-  IntoValTyped (runtime.specialprofile.t) (runtime.specialprofile).
+  IntoValTypedUnderlying (runtime.specialprofile.t) (runtime.specialprofileⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -3041,7 +3041,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance specialReachable_into_val_typed
    :
-  IntoValTyped (runtime.specialReachable.t) (runtime.specialReachable).
+  IntoValTypedUnderlying (runtime.specialReachable.t) (runtime.specialReachableⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -3061,7 +3061,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance specialPinCounter_into_val_typed
    :
-  IntoValTyped (runtime.specialPinCounter.t) (runtime.specialPinCounter).
+  IntoValTypedUnderlying (runtime.specialPinCounter.t) (runtime.specialPinCounterⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -3081,7 +3081,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance specialsIter_into_val_typed
    :
-  IntoValTyped (runtime.specialsIter.t) (runtime.specialsIter).
+  IntoValTypedUnderlying (runtime.specialsIter.t) (runtime.specialsIterⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -3101,7 +3101,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance gcBits_into_val_typed
    :
-  IntoValTyped (runtime.gcBits.t) (runtime.gcBits).
+  IntoValTypedUnderlying (runtime.gcBits.t) (runtime.gcBitsⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -3121,7 +3121,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance gcBitsHeader_into_val_typed
    :
-  IntoValTyped (runtime.gcBitsHeader.t) (runtime.gcBitsHeader).
+  IntoValTypedUnderlying (runtime.gcBitsHeader.t) (runtime.gcBitsHeaderⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -3141,7 +3141,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance gcBitsArena_into_val_typed
    :
-  IntoValTyped (runtime.gcBitsArena.t) (runtime.gcBitsArena).
+  IntoValTypedUnderlying (runtime.gcBitsArena.t) (runtime.gcBitsArenaⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -3161,7 +3161,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance floaty_into_val_typed
    :
-  IntoValTyped (runtime.floaty.t) (runtime.floaty).
+  IntoValTypedUnderlying (runtime.floaty.t) (runtime.floatyⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -3181,7 +3181,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance chunkIdx_into_val_typed
    :
-  IntoValTyped (runtime.chunkIdx.t) (runtime.chunkIdx).
+  IntoValTypedUnderlying (runtime.chunkIdx.t) (runtime.chunkIdxⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -3201,7 +3201,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance pageAlloc_into_val_typed
    :
-  IntoValTyped (runtime.pageAlloc.t) (runtime.pageAlloc).
+  IntoValTypedUnderlying (runtime.pageAlloc.t) (runtime.pageAllocⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -3221,7 +3221,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance pallocSum_into_val_typed
    :
-  IntoValTyped (runtime.pallocSum.t) (runtime.pallocSum).
+  IntoValTypedUnderlying (runtime.pallocSum.t) (runtime.pallocSumⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -3241,7 +3241,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance pageCache_into_val_typed
    :
-  IntoValTyped (runtime.pageCache.t) (runtime.pageCache).
+  IntoValTypedUnderlying (runtime.pageCache.t) (runtime.pageCacheⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -3261,7 +3261,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance pageBits_into_val_typed
    :
-  IntoValTyped (runtime.pageBits.t) (runtime.pageBits).
+  IntoValTypedUnderlying (runtime.pageBits.t) (runtime.pageBitsⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -3281,7 +3281,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance pallocBits_into_val_typed
    :
-  IntoValTyped (runtime.pallocBits.t) (runtime.pallocBits).
+  IntoValTypedUnderlying (runtime.pallocBits.t) (runtime.pallocBitsⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -3301,7 +3301,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance pallocData_into_val_typed
    :
-  IntoValTyped (runtime.pallocData.t) (runtime.pallocData).
+  IntoValTypedUnderlying (runtime.pallocData.t) (runtime.pallocDataⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -3321,7 +3321,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance bucketType_into_val_typed
    :
-  IntoValTyped (runtime.bucketType.t) (runtime.bucketType).
+  IntoValTypedUnderlying (runtime.bucketType.t) (runtime.bucketTypeⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -3341,7 +3341,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance bucket_into_val_typed
    :
-  IntoValTyped (runtime.bucket.t) (runtime.bucket).
+  IntoValTypedUnderlying (runtime.bucket.t) (runtime.bucketⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -3361,7 +3361,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance memRecord_into_val_typed
    :
-  IntoValTyped (runtime.memRecord.t) (runtime.memRecord).
+  IntoValTypedUnderlying (runtime.memRecord.t) (runtime.memRecordⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -3381,7 +3381,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance memRecordCycle_into_val_typed
    :
-  IntoValTyped (runtime.memRecordCycle.t) (runtime.memRecordCycle).
+  IntoValTypedUnderlying (runtime.memRecordCycle.t) (runtime.memRecordCycleⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -3401,7 +3401,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance blockRecord_into_val_typed
    :
-  IntoValTyped (runtime.blockRecord.t) (runtime.blockRecord).
+  IntoValTypedUnderlying (runtime.blockRecord.t) (runtime.blockRecordⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -3421,7 +3421,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance buckhashArray_into_val_typed
    :
-  IntoValTyped (runtime.buckhashArray.t) (runtime.buckhashArray).
+  IntoValTypedUnderlying (runtime.buckhashArray.t) (runtime.buckhashArrayⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -3441,7 +3441,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance mProfCycleHolder_into_val_typed
    :
-  IntoValTyped (runtime.mProfCycleHolder.t) (runtime.mProfCycleHolder).
+  IntoValTypedUnderlying (runtime.mProfCycleHolder.t) (runtime.mProfCycleHolderⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -3461,7 +3461,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance mLockProfile_into_val_typed
    :
-  IntoValTyped (runtime.mLockProfile.t) (runtime.mLockProfile).
+  IntoValTypedUnderlying (runtime.mLockProfile.t) (runtime.mLockProfileⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -3481,7 +3481,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance StackRecord_into_val_typed
    :
-  IntoValTyped (runtime.StackRecord.t) (runtime.StackRecord).
+  IntoValTypedUnderlying (runtime.StackRecord.t) (runtime.StackRecordⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -3501,7 +3501,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance MemProfileRecord_into_val_typed
    :
-  IntoValTyped (runtime.MemProfileRecord.t) (runtime.MemProfileRecord).
+  IntoValTypedUnderlying (runtime.MemProfileRecord.t) (runtime.MemProfileRecordⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -3521,7 +3521,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance BlockProfileRecord_into_val_typed
    :
-  IntoValTyped (runtime.BlockProfileRecord.t) (runtime.BlockProfileRecord).
+  IntoValTypedUnderlying (runtime.BlockProfileRecord.t) (runtime.BlockProfileRecordⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -3541,7 +3541,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance goroutineProfileState_into_val_typed
    :
-  IntoValTyped (runtime.goroutineProfileState.t) (runtime.goroutineProfileState).
+  IntoValTypedUnderlying (runtime.goroutineProfileState.t) (runtime.goroutineProfileStateⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -3561,7 +3561,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance goroutineProfileStateHolder_into_val_typed
    :
-  IntoValTyped (runtime.goroutineProfileStateHolder.t) (runtime.goroutineProfileStateHolder).
+  IntoValTypedUnderlying (runtime.goroutineProfileStateHolder.t) (runtime.goroutineProfileStateHolderⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -3581,7 +3581,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance addrRange_into_val_typed
    :
-  IntoValTyped (runtime.addrRange.t) (runtime.addrRange).
+  IntoValTypedUnderlying (runtime.addrRange.t) (runtime.addrRangeⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -3601,7 +3601,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance offAddr_into_val_typed
    :
-  IntoValTyped (runtime.offAddr.t) (runtime.offAddr).
+  IntoValTypedUnderlying (runtime.offAddr.t) (runtime.offAddrⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -3621,7 +3621,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance atomicOffAddr_into_val_typed
    :
-  IntoValTyped (runtime.atomicOffAddr.t) (runtime.atomicOffAddr).
+  IntoValTypedUnderlying (runtime.atomicOffAddr.t) (runtime.atomicOffAddrⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -3641,7 +3641,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance addrRanges_into_val_typed
    :
-  IntoValTyped (runtime.addrRanges.t) (runtime.addrRanges).
+  IntoValTypedUnderlying (runtime.addrRanges.t) (runtime.addrRangesⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -3661,7 +3661,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance spanSet_into_val_typed
    :
-  IntoValTyped (runtime.spanSet.t) (runtime.spanSet).
+  IntoValTypedUnderlying (runtime.spanSet.t) (runtime.spanSetⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -3681,7 +3681,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance spanSetBlockHeader_into_val_typed
    :
-  IntoValTyped (runtime.spanSetBlockHeader.t) (runtime.spanSetBlockHeader).
+  IntoValTypedUnderlying (runtime.spanSetBlockHeader.t) (runtime.spanSetBlockHeaderⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -3701,7 +3701,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance spanSetBlockHeader2_into_val_typed
    :
-  IntoValTyped (runtime.spanSetBlockHeader2.t) (runtime.spanSetBlockHeader2).
+  IntoValTypedUnderlying (runtime.spanSetBlockHeader2.t) (runtime.spanSetBlockHeader2ⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -3721,7 +3721,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance spanSetBlock_into_val_typed
    :
-  IntoValTyped (runtime.spanSetBlock.t) (runtime.spanSetBlock).
+  IntoValTypedUnderlying (runtime.spanSetBlock.t) (runtime.spanSetBlockⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -3741,7 +3741,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance atomicSpanSetSpinePointer_into_val_typed
    :
-  IntoValTyped (runtime.atomicSpanSetSpinePointer.t) (runtime.atomicSpanSetSpinePointer).
+  IntoValTypedUnderlying (runtime.atomicSpanSetSpinePointer.t) (runtime.atomicSpanSetSpinePointerⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -3761,7 +3761,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance spanSetSpinePointer_into_val_typed
    :
-  IntoValTyped (runtime.spanSetSpinePointer.t) (runtime.spanSetSpinePointer).
+  IntoValTypedUnderlying (runtime.spanSetSpinePointer.t) (runtime.spanSetSpinePointerⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -3781,7 +3781,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance spanSetBlockAlloc_into_val_typed
    :
-  IntoValTyped (runtime.spanSetBlockAlloc.t) (runtime.spanSetBlockAlloc).
+  IntoValTypedUnderlying (runtime.spanSetBlockAlloc.t) (runtime.spanSetBlockAllocⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -3801,7 +3801,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance headTailIndex_into_val_typed
    :
-  IntoValTyped (runtime.headTailIndex.t) (runtime.headTailIndex).
+  IntoValTypedUnderlying (runtime.headTailIndex.t) (runtime.headTailIndexⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -3821,7 +3821,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance atomicHeadTailIndex_into_val_typed
    :
-  IntoValTyped (runtime.atomicHeadTailIndex.t) (runtime.atomicHeadTailIndex).
+  IntoValTypedUnderlying (runtime.atomicHeadTailIndex.t) (runtime.atomicHeadTailIndexⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -3841,7 +3841,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance atomicMSpanPointer_into_val_typed
    :
-  IntoValTyped (runtime.atomicMSpanPointer.t) (runtime.atomicMSpanPointer).
+  IntoValTypedUnderlying (runtime.atomicMSpanPointer.t) (runtime.atomicMSpanPointerⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -3861,7 +3861,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance mstats_into_val_typed
    :
-  IntoValTyped (runtime.mstats.t) (runtime.mstats).
+  IntoValTypedUnderlying (runtime.mstats.t) (runtime.mstatsⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -3881,7 +3881,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance MemStats_into_val_typed
    :
-  IntoValTyped (runtime.MemStats.t) (runtime.MemStats).
+  IntoValTypedUnderlying (runtime.MemStats.t) (runtime.MemStatsⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -3901,7 +3901,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance sysMemStat_into_val_typed
    :
-  IntoValTyped (runtime.sysMemStat.t) (runtime.sysMemStat).
+  IntoValTypedUnderlying (runtime.sysMemStat.t) (runtime.sysMemStatⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -3921,7 +3921,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance heapStatsDelta_into_val_typed
    :
-  IntoValTyped (runtime.heapStatsDelta.t) (runtime.heapStatsDelta).
+  IntoValTypedUnderlying (runtime.heapStatsDelta.t) (runtime.heapStatsDeltaⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -3941,7 +3941,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance consistentHeapStats_into_val_typed
    :
-  IntoValTyped (runtime.consistentHeapStats.t) (runtime.consistentHeapStats).
+  IntoValTypedUnderlying (runtime.consistentHeapStats.t) (runtime.consistentHeapStatsⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -3961,7 +3961,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance cpuStats_into_val_typed
    :
-  IntoValTyped (runtime.cpuStats.t) (runtime.cpuStats).
+  IntoValTypedUnderlying (runtime.cpuStats.t) (runtime.cpuStatsⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -3981,7 +3981,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance wbBuf_into_val_typed
    :
-  IntoValTyped (runtime.wbBuf.t) (runtime.wbBuf).
+  IntoValTypedUnderlying (runtime.wbBuf.t) (runtime.wbBufⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -4001,7 +4001,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance pollDesc_into_val_typed
    :
-  IntoValTyped (runtime.pollDesc.t) (runtime.pollDesc).
+  IntoValTypedUnderlying (runtime.pollDesc.t) (runtime.pollDescⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -4021,7 +4021,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance pollInfo_into_val_typed
    :
-  IntoValTyped (runtime.pollInfo.t) (runtime.pollInfo).
+  IntoValTypedUnderlying (runtime.pollInfo.t) (runtime.pollInfoⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -4041,7 +4041,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance pollCache_into_val_typed
    :
-  IntoValTyped (runtime.pollCache.t) (runtime.pollCache).
+  IntoValTypedUnderlying (runtime.pollCache.t) (runtime.pollCacheⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -4061,7 +4061,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance winlibcall_into_val_typed
    :
-  IntoValTyped (runtime.winlibcall.t) (runtime.winlibcall).
+  IntoValTypedUnderlying (runtime.winlibcall.t) (runtime.winlibcallⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -4081,7 +4081,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance note_into_val_typed
    :
-  IntoValTyped (runtime.note.t) (runtime.note).
+  IntoValTypedUnderlying (runtime.note.t) (runtime.noteⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -4101,7 +4101,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance mOS_into_val_typed
    :
-  IntoValTyped (runtime.mOS.t) (runtime.mOS).
+  IntoValTypedUnderlying (runtime.mOS.t) (runtime.mOSⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -4121,7 +4121,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance perThreadSyscallArgs_into_val_typed
    :
-  IntoValTyped (runtime.perThreadSyscallArgs.t) (runtime.perThreadSyscallArgs).
+  IntoValTypedUnderlying (runtime.perThreadSyscallArgs.t) (runtime.perThreadSyscallArgsⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -4141,7 +4141,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance sigset_into_val_typed
    :
-  IntoValTyped (runtime.sigset.t) (runtime.sigset).
+  IntoValTypedUnderlying (runtime.sigset.t) (runtime.sigsetⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -4161,7 +4161,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance throwType_into_val_typed
    :
-  IntoValTyped (runtime.throwType.t) (runtime.throwType).
+  IntoValTypedUnderlying (runtime.throwType.t) (runtime.throwTypeⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -4181,7 +4181,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance PanicNilError_into_val_typed
    :
-  IntoValTyped (runtime.PanicNilError.t) (runtime.PanicNilError).
+  IntoValTypedUnderlying (runtime.PanicNilError.t) (runtime.PanicNilErrorⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -4201,7 +4201,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance Pinner_into_val_typed
    :
-  IntoValTyped (runtime.Pinner.t) (runtime.Pinner).
+  IntoValTypedUnderlying (runtime.Pinner.t) (runtime.Pinnerⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -4221,7 +4221,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance pinner_into_val_typed
    :
-  IntoValTyped (runtime.pinner.t) (runtime.pinner).
+  IntoValTypedUnderlying (runtime.pinner.t) (runtime.pinnerⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -4241,7 +4241,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance pinState_into_val_typed
    :
-  IntoValTyped (runtime.pinState.t) (runtime.pinState).
+  IntoValTypedUnderlying (runtime.pinState.t) (runtime.pinStateⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -4261,7 +4261,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance pinnerBits_into_val_typed
    :
-  IntoValTyped (runtime.pinnerBits.t) (runtime.pinnerBits).
+  IntoValTypedUnderlying (runtime.pinnerBits.t) (runtime.pinnerBitsⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -4281,7 +4281,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance ptabEntry_into_val_typed
    :
-  IntoValTyped (runtime.ptabEntry.t) (runtime.ptabEntry).
+  IntoValTypedUnderlying (runtime.ptabEntry.t) (runtime.ptabEntryⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -4301,7 +4301,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance suspendGState_into_val_typed
    :
-  IntoValTyped (runtime.suspendGState.t) (runtime.suspendGState).
+  IntoValTypedUnderlying (runtime.suspendGState.t) (runtime.suspendGStateⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -4321,7 +4321,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance hex_into_val_typed
    :
-  IntoValTyped (runtime.hex.t) (runtime.hex).
+  IntoValTypedUnderlying (runtime.hex.t) (runtime.hexⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -4341,7 +4341,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance stwReason_into_val_typed
    :
-  IntoValTyped (runtime.stwReason.t) (runtime.stwReason).
+  IntoValTypedUnderlying (runtime.stwReason.t) (runtime.stwReasonⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -4361,7 +4361,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance worldStop_into_val_typed
    :
-  IntoValTyped (runtime.worldStop.t) (runtime.worldStop).
+  IntoValTypedUnderlying (runtime.worldStop.t) (runtime.worldStopⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -4381,7 +4381,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance cgothreadstart_into_val_typed
    :
-  IntoValTyped (runtime.cgothreadstart.t) (runtime.cgothreadstart).
+  IntoValTypedUnderlying (runtime.cgothreadstart.t) (runtime.cgothreadstartⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -4401,7 +4401,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance sysmontick_into_val_typed
    :
-  IntoValTyped (runtime.sysmontick.t) (runtime.sysmontick).
+  IntoValTypedUnderlying (runtime.sysmontick.t) (runtime.sysmontickⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -4421,7 +4421,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance updateMaxProcsGState_into_val_typed
    :
-  IntoValTyped (runtime.updateMaxProcsGState.t) (runtime.updateMaxProcsGState).
+  IntoValTypedUnderlying (runtime.updateMaxProcsGState.t) (runtime.updateMaxProcsGStateⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -4441,7 +4441,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance pMask_into_val_typed
    :
-  IntoValTyped (runtime.pMask.t) (runtime.pMask).
+  IntoValTypedUnderlying (runtime.pMask.t) (runtime.pMaskⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -4461,7 +4461,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance gQueue_into_val_typed
    :
-  IntoValTyped (runtime.gQueue.t) (runtime.gQueue).
+  IntoValTypedUnderlying (runtime.gQueue.t) (runtime.gQueueⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -4481,7 +4481,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance gList_into_val_typed
    :
-  IntoValTyped (runtime.gList.t) (runtime.gList).
+  IntoValTypedUnderlying (runtime.gList.t) (runtime.gListⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -4501,7 +4501,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance randomOrder_into_val_typed
    :
-  IntoValTyped (runtime.randomOrder.t) (runtime.randomOrder).
+  IntoValTypedUnderlying (runtime.randomOrder.t) (runtime.randomOrderⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -4521,7 +4521,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance randomEnum_into_val_typed
    :
-  IntoValTyped (runtime.randomEnum.t) (runtime.randomEnum).
+  IntoValTypedUnderlying (runtime.randomEnum.t) (runtime.randomEnumⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -4541,7 +4541,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance initTask_into_val_typed
    :
-  IntoValTyped (runtime.initTask.t) (runtime.initTask).
+  IntoValTypedUnderlying (runtime.initTask.t) (runtime.initTaskⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -4561,7 +4561,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance tracestat_into_val_typed
    :
-  IntoValTyped (runtime.tracestat.t) (runtime.tracestat).
+  IntoValTypedUnderlying (runtime.tracestat.t) (runtime.tracestatⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -4581,7 +4581,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance profBuf_into_val_typed
    :
-  IntoValTyped (runtime.profBuf.t) (runtime.profBuf).
+  IntoValTypedUnderlying (runtime.profBuf.t) (runtime.profBufⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -4601,7 +4601,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance profAtomic_into_val_typed
    :
-  IntoValTyped (runtime.profAtomic.t) (runtime.profAtomic).
+  IntoValTypedUnderlying (runtime.profAtomic.t) (runtime.profAtomicⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -4621,7 +4621,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance profIndex_into_val_typed
    :
-  IntoValTyped (runtime.profIndex.t) (runtime.profIndex).
+  IntoValTypedUnderlying (runtime.profIndex.t) (runtime.profIndexⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -4641,7 +4641,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance profBufReadMode_into_val_typed
    :
-  IntoValTyped (runtime.profBufReadMode.t) (runtime.profBufReadMode).
+  IntoValTypedUnderlying (runtime.profBufReadMode.t) (runtime.profBufReadModeⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -4661,7 +4661,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance ticksType_into_val_typed
    :
-  IntoValTyped (runtime.ticksType.t) (runtime.ticksType).
+  IntoValTypedUnderlying (runtime.ticksType.t) (runtime.ticksTypeⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -4681,7 +4681,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance godebugInc_into_val_typed
    :
-  IntoValTyped (runtime.godebugInc.t) (runtime.godebugInc).
+  IntoValTypedUnderlying (runtime.godebugInc.t) (runtime.godebugIncⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -4701,7 +4701,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance dbgVar_into_val_typed
    :
-  IntoValTyped (runtime.dbgVar.t) (runtime.dbgVar).
+  IntoValTypedUnderlying (runtime.dbgVar.t) (runtime.dbgVarⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -4721,7 +4721,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance mutex_into_val_typed
    :
-  IntoValTyped (runtime.mutex.t) (runtime.mutex).
+  IntoValTypedUnderlying (runtime.mutex.t) (runtime.mutexⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -4741,7 +4741,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance funcval_into_val_typed
    :
-  IntoValTyped (runtime.funcval.t) (runtime.funcval).
+  IntoValTypedUnderlying (runtime.funcval.t) (runtime.funcvalⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -4761,7 +4761,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance iface_into_val_typed
    :
-  IntoValTyped (runtime.iface.t) (runtime.iface).
+  IntoValTypedUnderlying (runtime.iface.t) (runtime.ifaceⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -4781,7 +4781,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance eface_into_val_typed
    :
-  IntoValTyped (runtime.eface.t) (runtime.eface).
+  IntoValTypedUnderlying (runtime.eface.t) (runtime.efaceⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -4801,7 +4801,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance guintptr_into_val_typed
    :
-  IntoValTyped (runtime.guintptr.t) (runtime.guintptr).
+  IntoValTypedUnderlying (runtime.guintptr.t) (runtime.guintptrⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -4821,7 +4821,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance puintptr_into_val_typed
    :
-  IntoValTyped (runtime.puintptr.t) (runtime.puintptr).
+  IntoValTypedUnderlying (runtime.puintptr.t) (runtime.puintptrⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -4841,7 +4841,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance muintptr_into_val_typed
    :
-  IntoValTyped (runtime.muintptr.t) (runtime.muintptr).
+  IntoValTypedUnderlying (runtime.muintptr.t) (runtime.muintptrⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -4861,7 +4861,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance gobuf_into_val_typed
    :
-  IntoValTyped (runtime.gobuf.t) (runtime.gobuf).
+  IntoValTypedUnderlying (runtime.gobuf.t) (runtime.gobufⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -4881,7 +4881,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance sudog_into_val_typed
    :
-  IntoValTyped (runtime.sudog.t) (runtime.sudog).
+  IntoValTypedUnderlying (runtime.sudog.t) (runtime.sudogⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -4901,7 +4901,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance libcall_into_val_typed
    :
-  IntoValTyped (runtime.libcall.t) (runtime.libcall).
+  IntoValTypedUnderlying (runtime.libcall.t) (runtime.libcallⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -4921,7 +4921,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance stack_into_val_typed
    :
-  IntoValTyped (runtime.stack.t) (runtime.stack).
+  IntoValTypedUnderlying (runtime.stack.t) (runtime.stackⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -4941,7 +4941,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance heldLockInfo_into_val_typed
    :
-  IntoValTyped (runtime.heldLockInfo.t) (runtime.heldLockInfo).
+  IntoValTypedUnderlying (runtime.heldLockInfo.t) (runtime.heldLockInfoⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -4961,7 +4961,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance g_into_val_typed
    :
-  IntoValTyped (runtime.g.t) (runtime.g).
+  IntoValTypedUnderlying (runtime.g.t) (runtime.gⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -4981,7 +4981,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance m_into_val_typed
    :
-  IntoValTyped (runtime.m.t) (runtime.m).
+  IntoValTypedUnderlying (runtime.m.t) (runtime.mⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -5001,7 +5001,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance mPadded_into_val_typed
    :
-  IntoValTyped (runtime.mPadded.t) (runtime.mPadded).
+  IntoValTypedUnderlying (runtime.mPadded.t) (runtime.mPaddedⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -5021,7 +5021,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance p_into_val_typed
    :
-  IntoValTyped (runtime.p.t) (runtime.p).
+  IntoValTypedUnderlying (runtime.p.t) (runtime.pⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -5041,7 +5041,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance schedt_into_val_typed
    :
-  IntoValTyped (runtime.schedt.t) (runtime.schedt).
+  IntoValTypedUnderlying (runtime.schedt.t) (runtime.schedtⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -5061,7 +5061,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance _func_into_val_typed
    :
-  IntoValTyped (runtime._func.t) (runtime._func).
+  IntoValTypedUnderlying (runtime._func.t) (runtime._funcⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -5081,7 +5081,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance funcinl_into_val_typed
    :
-  IntoValTyped (runtime.funcinl.t) (runtime.funcinl).
+  IntoValTypedUnderlying (runtime.funcinl.t) (runtime.funcinlⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -5101,7 +5101,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance lfnode_into_val_typed
    :
-  IntoValTyped (runtime.lfnode.t) (runtime.lfnode).
+  IntoValTypedUnderlying (runtime.lfnode.t) (runtime.lfnodeⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -5121,7 +5121,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance forcegcstate_into_val_typed
    :
-  IntoValTyped (runtime.forcegcstate.t) (runtime.forcegcstate).
+  IntoValTypedUnderlying (runtime.forcegcstate.t) (runtime.forcegcstateⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -5141,7 +5141,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance _defer_into_val_typed
    :
-  IntoValTyped (runtime._defer.t) (runtime._defer).
+  IntoValTypedUnderlying (runtime._defer.t) (runtime._deferⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -5161,7 +5161,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance _panic_into_val_typed
    :
-  IntoValTyped (runtime._panic.t) (runtime._panic).
+  IntoValTypedUnderlying (runtime._panic.t) (runtime._panicⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -5181,7 +5181,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance savedOpenDeferState_into_val_typed
    :
-  IntoValTyped (runtime.savedOpenDeferState.t) (runtime.savedOpenDeferState).
+  IntoValTypedUnderlying (runtime.savedOpenDeferState.t) (runtime.savedOpenDeferStateⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -5201,7 +5201,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance ancestorInfo_into_val_typed
    :
-  IntoValTyped (runtime.ancestorInfo.t) (runtime.ancestorInfo).
+  IntoValTypedUnderlying (runtime.ancestorInfo.t) (runtime.ancestorInfoⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -5221,7 +5221,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance waitReason_into_val_typed
    :
-  IntoValTyped (runtime.waitReason.t) (runtime.waitReason).
+  IntoValTypedUnderlying (runtime.waitReason.t) (runtime.waitReasonⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -5241,7 +5241,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance rwmutex_into_val_typed
    :
-  IntoValTyped (runtime.rwmutex.t) (runtime.rwmutex).
+  IntoValTypedUnderlying (runtime.rwmutex.t) (runtime.rwmutexⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -5261,7 +5261,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance scase_into_val_typed
    :
-  IntoValTyped (runtime.scase.t) (runtime.scase).
+  IntoValTypedUnderlying (runtime.scase.t) (runtime.scaseⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -5281,7 +5281,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance runtimeSelect_into_val_typed
    :
-  IntoValTyped (runtime.runtimeSelect.t) (runtime.runtimeSelect).
+  IntoValTypedUnderlying (runtime.runtimeSelect.t) (runtime.runtimeSelectⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -5301,7 +5301,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance selectDir_into_val_typed
    :
-  IntoValTyped (runtime.selectDir.t) (runtime.selectDir).
+  IntoValTypedUnderlying (runtime.selectDir.t) (runtime.selectDirⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -5321,7 +5321,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance semaRoot_into_val_typed
    :
-  IntoValTyped (runtime.semaRoot.t) (runtime.semaRoot).
+  IntoValTypedUnderlying (runtime.semaRoot.t) (runtime.semaRootⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -5341,7 +5341,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance semTable_into_val_typed
    :
-  IntoValTyped (runtime.semTable.t) (runtime.semTable).
+  IntoValTypedUnderlying (runtime.semTable.t) (runtime.semTableⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -5361,7 +5361,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance semaProfileFlags_into_val_typed
    :
-  IntoValTyped (runtime.semaProfileFlags.t) (runtime.semaProfileFlags).
+  IntoValTypedUnderlying (runtime.semaProfileFlags.t) (runtime.semaProfileFlagsⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -5381,7 +5381,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance notifyList_into_val_typed
    :
-  IntoValTyped (runtime.notifyList.t) (runtime.notifyList).
+  IntoValTypedUnderlying (runtime.notifyList.t) (runtime.notifyListⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -5401,7 +5401,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance sigctxt_into_val_typed
    :
-  IntoValTyped (runtime.sigctxt.t) (runtime.sigctxt).
+  IntoValTypedUnderlying (runtime.sigctxt.t) (runtime.sigctxtⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -5421,7 +5421,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance sigTabT_into_val_typed
    :
-  IntoValTyped (runtime.sigTabT.t) (runtime.sigTabT).
+  IntoValTypedUnderlying (runtime.sigTabT.t) (runtime.sigTabTⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -5441,7 +5441,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance gsignalStack_into_val_typed
    :
-  IntoValTyped (runtime.gsignalStack.t) (runtime.gsignalStack).
+  IntoValTypedUnderlying (runtime.gsignalStack.t) (runtime.gsignalStackⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -5461,7 +5461,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance slice_into_val_typed
    :
-  IntoValTyped (runtime.slice.t) (runtime.slice).
+  IntoValTypedUnderlying (runtime.slice.t) (runtime.sliceⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -5481,7 +5481,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance notInHeapSlice_into_val_typed
    :
-  IntoValTyped (runtime.notInHeapSlice.t) (runtime.notInHeapSlice).
+  IntoValTypedUnderlying (runtime.notInHeapSlice.t) (runtime.notInHeapSliceⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -5501,7 +5501,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance stackpoolItem_into_val_typed
    :
-  IntoValTyped (runtime.stackpoolItem.t) (runtime.stackpoolItem).
+  IntoValTypedUnderlying (runtime.stackpoolItem.t) (runtime.stackpoolItemⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -5521,7 +5521,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance adjustinfo_into_val_typed
    :
-  IntoValTyped (runtime.adjustinfo.t) (runtime.adjustinfo).
+  IntoValTypedUnderlying (runtime.adjustinfo.t) (runtime.adjustinfoⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -5541,7 +5541,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance bitvector_into_val_typed
    :
-  IntoValTyped (runtime.bitvector.t) (runtime.bitvector).
+  IntoValTypedUnderlying (runtime.bitvector.t) (runtime.bitvectorⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -5561,7 +5561,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance stackObjectRecord_into_val_typed
    :
-  IntoValTyped (runtime.stackObjectRecord.t) (runtime.stackObjectRecord).
+  IntoValTypedUnderlying (runtime.stackObjectRecord.t) (runtime.stackObjectRecordⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -5581,7 +5581,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance stkframe_into_val_typed
    :
-  IntoValTyped (runtime.stkframe.t) (runtime.stkframe).
+  IntoValTypedUnderlying (runtime.stkframe.t) (runtime.stkframeⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -5601,7 +5601,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance reflectMethodValue_into_val_typed
    :
-  IntoValTyped (runtime.reflectMethodValue.t) (runtime.reflectMethodValue).
+  IntoValTypedUnderlying (runtime.reflectMethodValue.t) (runtime.reflectMethodValueⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -5621,7 +5621,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance tmpBuf_into_val_typed
    :
-  IntoValTyped (runtime.tmpBuf.t) (runtime.tmpBuf).
+  IntoValTypedUnderlying (runtime.tmpBuf.t) (runtime.tmpBufⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -5641,7 +5641,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance stringStruct_into_val_typed
    :
-  IntoValTyped (runtime.stringStruct.t) (runtime.stringStruct).
+  IntoValTypedUnderlying (runtime.stringStruct.t) (runtime.stringStructⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -5661,7 +5661,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance stringStructDWARF_into_val_typed
    :
-  IntoValTyped (runtime.stringStructDWARF.t) (runtime.stringStructDWARF).
+  IntoValTypedUnderlying (runtime.stringStructDWARF.t) (runtime.stringStructDWARFⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -5681,7 +5681,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance neverCallThisFunction_into_val_typed
    :
-  IntoValTyped (runtime.neverCallThisFunction.t) (runtime.neverCallThisFunction).
+  IntoValTypedUnderlying (runtime.neverCallThisFunction.t) (runtime.neverCallThisFunctionⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -5701,7 +5701,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance Frames_into_val_typed
    :
-  IntoValTyped (runtime.Frames.t) (runtime.Frames).
+  IntoValTypedUnderlying (runtime.Frames.t) (runtime.Framesⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -5721,7 +5721,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance Frame_into_val_typed
    :
-  IntoValTyped (runtime.Frame.t) (runtime.Frame).
+  IntoValTypedUnderlying (runtime.Frame.t) (runtime.Frameⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -5741,7 +5741,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance Func_into_val_typed
    :
-  IntoValTyped (runtime.Func.t) (runtime.Func).
+  IntoValTypedUnderlying (runtime.Func.t) (runtime.Funcⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -5761,7 +5761,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance pcHeader_into_val_typed
    :
-  IntoValTyped (runtime.pcHeader.t) (runtime.pcHeader).
+  IntoValTypedUnderlying (runtime.pcHeader.t) (runtime.pcHeaderⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -5781,7 +5781,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance moduledata_into_val_typed
    :
-  IntoValTyped (runtime.moduledata.t) (runtime.moduledata).
+  IntoValTypedUnderlying (runtime.moduledata.t) (runtime.moduledataⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -5801,7 +5801,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance modulehash_into_val_typed
    :
-  IntoValTyped (runtime.modulehash.t) (runtime.modulehash).
+  IntoValTypedUnderlying (runtime.modulehash.t) (runtime.modulehashⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -5821,7 +5821,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance functab_into_val_typed
    :
-  IntoValTyped (runtime.functab.t) (runtime.functab).
+  IntoValTypedUnderlying (runtime.functab.t) (runtime.functabⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -5841,7 +5841,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance textsect_into_val_typed
    :
-  IntoValTyped (runtime.textsect.t) (runtime.textsect).
+  IntoValTypedUnderlying (runtime.textsect.t) (runtime.textsectⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -5861,7 +5861,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance findfuncbucket_into_val_typed
    :
-  IntoValTyped (runtime.findfuncbucket.t) (runtime.findfuncbucket).
+  IntoValTypedUnderlying (runtime.findfuncbucket.t) (runtime.findfuncbucketⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -5881,7 +5881,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance funcInfo_into_val_typed
    :
-  IntoValTyped (runtime.funcInfo.t) (runtime.funcInfo).
+  IntoValTypedUnderlying (runtime.funcInfo.t) (runtime.funcInfoⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -5901,7 +5901,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance srcFunc_into_val_typed
    :
-  IntoValTyped (runtime.srcFunc.t) (runtime.srcFunc).
+  IntoValTypedUnderlying (runtime.srcFunc.t) (runtime.srcFuncⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -5921,7 +5921,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance pcvalueCache_into_val_typed
    :
-  IntoValTyped (runtime.pcvalueCache.t) (runtime.pcvalueCache).
+  IntoValTypedUnderlying (runtime.pcvalueCache.t) (runtime.pcvalueCacheⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -5941,7 +5941,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance pcvalueCacheEnt_into_val_typed
    :
-  IntoValTyped (runtime.pcvalueCacheEnt.t) (runtime.pcvalueCacheEnt).
+  IntoValTypedUnderlying (runtime.pcvalueCacheEnt.t) (runtime.pcvalueCacheEntⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -5961,7 +5961,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance stackmap_into_val_typed
    :
-  IntoValTyped (runtime.stackmap.t) (runtime.stackmap).
+  IntoValTypedUnderlying (runtime.stackmap.t) (runtime.stackmapⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -5981,7 +5981,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance inlinedCall_into_val_typed
    :
-  IntoValTyped (runtime.inlinedCall.t) (runtime.inlinedCall).
+  IntoValTypedUnderlying (runtime.inlinedCall.t) (runtime.inlinedCallⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -6001,7 +6001,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance inlineUnwinder_into_val_typed
    :
-  IntoValTyped (runtime.inlineUnwinder.t) (runtime.inlineUnwinder).
+  IntoValTypedUnderlying (runtime.inlineUnwinder.t) (runtime.inlineUnwinderⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -6021,7 +6021,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance inlineFrame_into_val_typed
    :
-  IntoValTyped (runtime.inlineFrame.t) (runtime.inlineFrame).
+  IntoValTypedUnderlying (runtime.inlineFrame.t) (runtime.inlineFrameⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -6041,7 +6041,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance synctestBubble_into_val_typed
    :
-  IntoValTyped (runtime.synctestBubble.t) (runtime.synctestBubble).
+  IntoValTypedUnderlying (runtime.synctestBubble.t) (runtime.synctestBubbleⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -6061,7 +6061,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance synctestDeadlockError_into_val_typed
    :
-  IntoValTyped (runtime.synctestDeadlockError.t) (runtime.synctestDeadlockError).
+  IntoValTypedUnderlying (runtime.synctestDeadlockError.t) (runtime.synctestDeadlockErrorⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -6081,7 +6081,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance specialBubble_into_val_typed
    :
-  IntoValTyped (runtime.specialBubble.t) (runtime.specialBubble).
+  IntoValTypedUnderlying (runtime.specialBubble.t) (runtime.specialBubbleⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -6101,7 +6101,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance taggedPointer_into_val_typed
    :
-  IntoValTyped (runtime.taggedPointer.t) (runtime.taggedPointer).
+  IntoValTypedUnderlying (runtime.taggedPointer.t) (runtime.taggedPointerⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -6121,7 +6121,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance timer_into_val_typed
    :
-  IntoValTyped (runtime.timer.t) (runtime.timer).
+  IntoValTypedUnderlying (runtime.timer.t) (runtime.timerⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -6141,7 +6141,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance timers_into_val_typed
    :
-  IntoValTyped (runtime.timers.t) (runtime.timers).
+  IntoValTypedUnderlying (runtime.timers.t) (runtime.timersⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -6161,7 +6161,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance timerWhen_into_val_typed
    :
-  IntoValTyped (runtime.timerWhen.t) (runtime.timerWhen).
+  IntoValTypedUnderlying (runtime.timerWhen.t) (runtime.timerWhenⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -6181,7 +6181,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance timeTimer_into_val_typed
    :
-  IntoValTyped (runtime.timeTimer.t) (runtime.timeTimer).
+  IntoValTypedUnderlying (runtime.timeTimer.t) (runtime.timeTimerⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -6201,7 +6201,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance traceAdvancerState_into_val_typed
    :
-  IntoValTyped (runtime.traceAdvancerState.t) (runtime.traceAdvancerState).
+  IntoValTypedUnderlying (runtime.traceAdvancerState.t) (runtime.traceAdvancerStateⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -6221,7 +6221,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance wakeableSleep_into_val_typed
    :
-  IntoValTyped (runtime.wakeableSleep.t) (runtime.wakeableSleep).
+  IntoValTypedUnderlying (runtime.wakeableSleep.t) (runtime.wakeableSleepⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -6241,7 +6241,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance unwindFlags_into_val_typed
    :
-  IntoValTyped (runtime.unwindFlags.t) (runtime.unwindFlags).
+  IntoValTypedUnderlying (runtime.unwindFlags.t) (runtime.unwindFlagsⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -6261,7 +6261,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance unwinder_into_val_typed
    :
-  IntoValTyped (runtime.unwinder.t) (runtime.unwinder).
+  IntoValTypedUnderlying (runtime.unwinder.t) (runtime.unwinderⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -6281,7 +6281,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance cgoTracebackArg_into_val_typed
    :
-  IntoValTyped (runtime.cgoTracebackArg.t) (runtime.cgoTracebackArg).
+  IntoValTypedUnderlying (runtime.cgoTracebackArg.t) (runtime.cgoTracebackArgⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -6301,7 +6301,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance cgoContextArg_into_val_typed
    :
-  IntoValTyped (runtime.cgoContextArg.t) (runtime.cgoContextArg).
+  IntoValTypedUnderlying (runtime.cgoContextArg.t) (runtime.cgoContextArgⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -6321,7 +6321,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance cgoSymbolizerArg_into_val_typed
    :
-  IntoValTyped (runtime.cgoSymbolizerArg.t) (runtime.cgoSymbolizerArg).
+  IntoValTypedUnderlying (runtime.cgoSymbolizerArg.t) (runtime.cgoSymbolizerArgⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -6341,7 +6341,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance traceWriter_into_val_typed
    :
-  IntoValTyped (runtime.traceWriter.t) (runtime.traceWriter).
+  IntoValTypedUnderlying (runtime.traceWriter.t) (runtime.traceWriterⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -6361,7 +6361,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance traceBufQueue_into_val_typed
    :
-  IntoValTyped (runtime.traceBufQueue.t) (runtime.traceBufQueue).
+  IntoValTypedUnderlying (runtime.traceBufQueue.t) (runtime.traceBufQueueⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -6381,7 +6381,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance traceBufHeader_into_val_typed
    :
-  IntoValTyped (runtime.traceBufHeader.t) (runtime.traceBufHeader).
+  IntoValTypedUnderlying (runtime.traceBufHeader.t) (runtime.traceBufHeaderⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -6401,7 +6401,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance traceBuf_into_val_typed
    :
-  IntoValTyped (runtime.traceBuf.t) (runtime.traceBuf).
+  IntoValTypedUnderlying (runtime.traceBuf.t) (runtime.traceBufⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -6421,7 +6421,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance traceArg_into_val_typed
    :
-  IntoValTyped (runtime.traceArg.t) (runtime.traceArg).
+  IntoValTypedUnderlying (runtime.traceArg.t) (runtime.traceArgⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -6441,7 +6441,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance traceEventWriter_into_val_typed
    :
-  IntoValTyped (runtime.traceEventWriter.t) (runtime.traceEventWriter).
+  IntoValTypedUnderlying (runtime.traceEventWriter.t) (runtime.traceEventWriterⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -6461,7 +6461,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance traceMap_into_val_typed
    :
-  IntoValTyped (runtime.traceMap.t) (runtime.traceMap).
+  IntoValTypedUnderlying (runtime.traceMap.t) (runtime.traceMapⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -6481,7 +6481,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance traceMapNode_into_val_typed
    :
-  IntoValTyped (runtime.traceMapNode.t) (runtime.traceMapNode).
+  IntoValTypedUnderlying (runtime.traceMapNode.t) (runtime.traceMapNodeⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -6501,7 +6501,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance traceRegionAlloc_into_val_typed
    :
-  IntoValTyped (runtime.traceRegionAlloc.t) (runtime.traceRegionAlloc).
+  IntoValTypedUnderlying (runtime.traceRegionAlloc.t) (runtime.traceRegionAllocⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -6521,7 +6521,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance traceRegionAllocBlock_into_val_typed
    :
-  IntoValTyped (runtime.traceRegionAllocBlock.t) (runtime.traceRegionAllocBlock).
+  IntoValTypedUnderlying (runtime.traceRegionAllocBlock.t) (runtime.traceRegionAllocBlockⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -6541,7 +6541,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance traceRegionAllocBlockHeader_into_val_typed
    :
-  IntoValTyped (runtime.traceRegionAllocBlockHeader.t) (runtime.traceRegionAllocBlockHeader).
+  IntoValTypedUnderlying (runtime.traceRegionAllocBlockHeader.t) (runtime.traceRegionAllocBlockHeaderⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -6561,7 +6561,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance gTraceState_into_val_typed
    :
-  IntoValTyped (runtime.gTraceState.t) (runtime.gTraceState).
+  IntoValTypedUnderlying (runtime.gTraceState.t) (runtime.gTraceStateⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -6581,7 +6581,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance mTraceState_into_val_typed
    :
-  IntoValTyped (runtime.mTraceState.t) (runtime.mTraceState).
+  IntoValTypedUnderlying (runtime.mTraceState.t) (runtime.mTraceStateⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -6601,7 +6601,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance pTraceState_into_val_typed
    :
-  IntoValTyped (runtime.pTraceState.t) (runtime.pTraceState).
+  IntoValTypedUnderlying (runtime.pTraceState.t) (runtime.pTraceStateⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -6621,7 +6621,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance traceBlockReason_into_val_typed
    :
-  IntoValTyped (runtime.traceBlockReason.t) (runtime.traceBlockReason).
+  IntoValTypedUnderlying (runtime.traceBlockReason.t) (runtime.traceBlockReasonⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -6641,7 +6641,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance traceGoStopReason_into_val_typed
    :
-  IntoValTyped (runtime.traceGoStopReason.t) (runtime.traceGoStopReason).
+  IntoValTypedUnderlying (runtime.traceGoStopReason.t) (runtime.traceGoStopReasonⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -6661,7 +6661,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance traceLocker_into_val_typed
    :
-  IntoValTyped (runtime.traceLocker.t) (runtime.traceLocker).
+  IntoValTypedUnderlying (runtime.traceLocker.t) (runtime.traceLockerⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -6681,7 +6681,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance traceStackTable_into_val_typed
    :
-  IntoValTyped (runtime.traceStackTable.t) (runtime.traceStackTable).
+  IntoValTypedUnderlying (runtime.traceStackTable.t) (runtime.traceStackTableⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -6701,7 +6701,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance traceFrame_into_val_typed
    :
-  IntoValTyped (runtime.traceFrame.t) (runtime.traceFrame).
+  IntoValTypedUnderlying (runtime.traceFrame.t) (runtime.traceFrameⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -6721,7 +6721,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance traceSchedResourceState_into_val_typed
    :
-  IntoValTyped (runtime.traceSchedResourceState.t) (runtime.traceSchedResourceState).
+  IntoValTypedUnderlying (runtime.traceSchedResourceState.t) (runtime.traceSchedResourceStateⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -6741,7 +6741,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance traceStringTable_into_val_typed
    :
-  IntoValTyped (runtime.traceStringTable.t) (runtime.traceStringTable).
+  IntoValTypedUnderlying (runtime.traceStringTable.t) (runtime.traceStringTableⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -6761,7 +6761,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance traceTime_into_val_typed
    :
-  IntoValTyped (runtime.traceTime.t) (runtime.traceTime).
+  IntoValTypedUnderlying (runtime.traceTime.t) (runtime.traceTimeⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -6781,7 +6781,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance traceTypeTable_into_val_typed
    :
-  IntoValTyped (runtime.traceTypeTable.t) (runtime.traceTypeTable).
+  IntoValTypedUnderlying (runtime.traceTypeTable.t) (runtime.traceTypeTableⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -6801,7 +6801,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance rtype_into_val_typed
    :
-  IntoValTyped (runtime.rtype.t) (runtime.rtype).
+  IntoValTypedUnderlying (runtime.rtype.t) (runtime.rtypeⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -6821,7 +6821,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance bitCursor_into_val_typed
    :
-  IntoValTyped (runtime.bitCursor.t) (runtime.bitCursor).
+  IntoValTypedUnderlying (runtime.bitCursor.t) (runtime.bitCursorⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -6841,7 +6841,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance _typePair_into_val_typed
    :
-  IntoValTyped (runtime._typePair.t) (runtime._typePair).
+  IntoValTypedUnderlying (runtime._typePair.t) (runtime._typePairⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -6861,7 +6861,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance elfSym_into_val_typed
    :
-  IntoValTyped (runtime.elfSym.t) (runtime.elfSym).
+  IntoValTypedUnderlying (runtime.elfSym.t) (runtime.elfSymⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -6881,7 +6881,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance elfVerdef_into_val_typed
    :
-  IntoValTyped (runtime.elfVerdef.t) (runtime.elfVerdef).
+  IntoValTypedUnderlying (runtime.elfVerdef.t) (runtime.elfVerdefⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -6901,7 +6901,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance elfEhdr_into_val_typed
    :
-  IntoValTyped (runtime.elfEhdr.t) (runtime.elfEhdr).
+  IntoValTypedUnderlying (runtime.elfEhdr.t) (runtime.elfEhdrⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -6921,7 +6921,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance elfPhdr_into_val_typed
    :
-  IntoValTyped (runtime.elfPhdr.t) (runtime.elfPhdr).
+  IntoValTypedUnderlying (runtime.elfPhdr.t) (runtime.elfPhdrⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -6941,7 +6941,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance elfShdr_into_val_typed
    :
-  IntoValTyped (runtime.elfShdr.t) (runtime.elfShdr).
+  IntoValTypedUnderlying (runtime.elfShdr.t) (runtime.elfShdrⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -6961,7 +6961,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance elfDyn_into_val_typed
    :
-  IntoValTyped (runtime.elfDyn.t) (runtime.elfDyn).
+  IntoValTypedUnderlying (runtime.elfDyn.t) (runtime.elfDynⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -6981,7 +6981,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance elfVerdaux_into_val_typed
    :
-  IntoValTyped (runtime.elfVerdaux.t) (runtime.elfVerdaux).
+  IntoValTypedUnderlying (runtime.elfVerdaux.t) (runtime.elfVerdauxⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -7001,7 +7001,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance vdsoSymbolKey_into_val_typed
    :
-  IntoValTyped (runtime.vdsoSymbolKey.t) (runtime.vdsoSymbolKey).
+  IntoValTypedUnderlying (runtime.vdsoSymbolKey.t) (runtime.vdsoSymbolKeyⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -7021,7 +7021,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance vdsoVersionKey_into_val_typed
    :
-  IntoValTyped (runtime.vdsoVersionKey.t) (runtime.vdsoVersionKey).
+  IntoValTypedUnderlying (runtime.vdsoVersionKey.t) (runtime.vdsoVersionKeyⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
@@ -7041,7 +7041,7 @@ Local Set Default Proof Using "All".
 
 #[global] Instance vdsoInfo_into_val_typed
    :
-  IntoValTyped (runtime.vdsoInfo.t) (runtime.vdsoInfo).
+  IntoValTypedUnderlying (runtime.vdsoInfo.t) (runtime.vdsoInfoⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
