@@ -79,7 +79,7 @@ Class MapSemantics `{!GoSemanticsFunctions} :=
   #[global] internal_map_make_step_pure v ::
     ⟦InternalMapMake, v⟧ ⤳ (map_empty v);
   #[global] internal_map_check_key_step key_type k ::
-    ⟦InternalMapCheckKey key_type, k⟧ ⤳ (go_eq key_type k k);
+    ⟦InternalMapCheckKey key_type, k⟧ ⤳ (k =⟨key_type⟩ k);
 
   (* special cases for equality *)
   #[global] is_go_op_go_equals_map_nil_l kt vt s ::
@@ -140,7 +140,7 @@ Class MapSemantics `{!GoSemanticsFunctions} :=
     (λ: "m", InternalMapLength (Read "m"))%V;
 
   #[global] composite_literal_map key_type elem_type (l : list keyed_element) ::
-    go.GoExprEq (composite_literal (go.MapType key_type elem_type) (LiteralValueV l))
+    ⟦CompositeLiteral (go.MapType key_type elem_type), (LiteralValueV l)⟧ ⤳[under]
     (let: "m" := FuncResolve go.make1 [go.MapType key_type elem_type] #() #() in
      (foldl (λ expr_so_far ke,
                match ke with

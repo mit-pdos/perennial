@@ -47,20 +47,18 @@ Class ArraySemantics `{!GoSemanticsFunctions} :=
              (#()) (seqZ 0 n)
     )%E;
 
-
-  #[global] index_ref_array n elem_type i l V `{!ZeroVal V} `{!go.TypeRepr elem_type V} ::
-    go.GoExprEq (index_ref (go.ArrayType n elem_type) i #l)
-      (if decide (i < n) then #(array_index_ref V i l)
-       else Panic "index out of range");
-  #[global] index_array n elem_type i V `{!ZeroVal V} `{!go.TypeRepr elem_type V} (a : array.t V n) ::
-    go.GoExprEq (index (go.ArrayType n elem_type) i #a)
-      (match (array.arr a) !! (Z.to_nat i) with
+  #[global] index_ref_array n elem_type (i : w64) l V `{!ZeroVal V} `{!go.TypeRepr elem_type V} ::
+    ⟦IndexRef (go.ArrayType n elem_type), (#l, #i)⟧ ⤳[under]
+      (if decide (sint.Z i < n) then #(array_index_ref V (sint.Z i) l) else Panic "index out of range");
+  #[global] index_array n elem_type (i : w64) V `{!ZeroVal V} `{!go.TypeRepr elem_type V} (a : array.t V n) ::
+    ⟦Index (go.ArrayType n elem_type), (#a, #i)⟧ ⤳[under]
+      (match (array.arr a) !! (sint.nat i) with
        | Some v => #v
        | None => Panic "index out of range"
        end);
 
   #[global] composite_literal_array n elem_type kvs ::
-    go.GoExprEq (composite_literal (go.ArrayType n elem_type) (LiteralValueV kvs))
+    ⟦CompositeLiteral (go.ArrayType n elem_type), (LiteralValueV kvs)⟧ ⤳[under]
     (foldl (λ '(cur_index, expr_so_far) ke,
              match ke with
              | KeyedElement None (ElementExpression from e) =>

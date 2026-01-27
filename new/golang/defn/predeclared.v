@@ -510,9 +510,12 @@ Class Float32Semantics `{!GoSemanticsFunctions} :=
 
 Class PredeclaredSemantics `{!GoSemanticsFunctions} :=
 {
-  alloc_predeclared t (H : is_predeclared t) : alloc t = (λ: "v", go.ref_one "v")%V;
-  load_predeclared t (H : is_predeclared t) : load t = (λ: "l", Read "l")%V;
-  store_predeclared t (H : is_predeclared t) : store t = (λ: "l" "v", "l" <- "v")%V;
+  #[global] alloc_predeclared t (H : is_predeclared t) v ::
+    ⟦GoAlloc t, v⟧ ⤳[internal] (go.ref_one v)%E;
+  #[global] load_predeclared t (H : is_predeclared t) l ::
+    ⟦GoLoad t, l⟧ ⤳[internal] (Read l)%E;
+  #[global] store_predeclared t (H : is_predeclared t) l v ::
+    ⟦GoStore t, (l, v)⟧ ⤳[internal] (l <- v)%E;
 
   predeclared_underlying t (H : is_predeclared t) : underlying t = t;
 

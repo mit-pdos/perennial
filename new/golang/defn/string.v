@@ -14,20 +14,20 @@ Class StringSemantics `{!GoSemanticsFunctions} :=
     (λ: "s", if: IsNoStringOverflow "s" then StringLength "s"
              else AngelicExit #())%V;
 
-  #[global] string_index (s : go_string) i `{!t ↓u go.string} ::
-    go.GoExprEq (index t i #s)
-    (match (s !! (Z.to_nat i)) with Some b => #b | _ => Panic "index out of bounds" end);
+  #[global] string_index (s : go_string) (i : w64) `{!t ↓u go.string} ::
+    ⟦Index t, (#s, #i)⟧ ⤳
+    (match (s !! (sint.nat i)) with Some b => #b | _ => Panic "index out of bounds" end);
 
   #[global] convert_byte_to_string (c : w8) ::
     ⟦Convert go.byte go.string, #c⟧ ⤳[under] #([c]);
 
-  convert_bytes_to_string (v : val)
+  #[global] convert_bytes_to_string (v : val)
     `{!from ↓u go.SliceType elem_type} `{!elem_type ↓u go.byte} `{!to ↓u go.string} ::
-    go.GoExprEq (Convert from to v) (@! strings.ByteSliceToString v);
+    ⟦Convert from to, v⟧ ⤳[internal] (@! strings.ByteSliceToString v);
 
-  convert_string_to_bytes (v : val)
+  #[global] convert_string_to_bytes (v : val)
     `{!from ↓u go.string} `{!to ↓u go.SliceType elem_type} `{!to ↓u go.byte} ::
-    go.GoExprEq (Convert from to v) (@! strings.StringToByteSlice v);
+    ⟦Convert from to, v⟧ ⤳[internal] (@! strings.StringToByteSlice v);
 }.
 End defs.
 End go.

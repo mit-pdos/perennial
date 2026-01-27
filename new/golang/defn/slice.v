@@ -124,15 +124,15 @@ Class SliceSemantics `{!GoSemanticsFunctions} :=
     FuncUnfold go.make2 [go.SliceType elem_type]
     (λ: "sz", FuncResolve go.make3 [go.SliceType elem_type] #() "sz" "sz")%V;
 
-  #[global] index_ref_slice elem_type i s `{!ZeroVal V} `{!go.TypeRepr elem_type V} ::
-    go.GoExprEq (index_ref (go.SliceType elem_type) i #s)
-    (if decide (0 ≤ i < sint.Z s.(slice.len)) then
-       #(slice_index_ref V i s)
+  #[global] index_ref_slice elem_type (i : w64) s `{!ZeroVal V} `{!go.TypeRepr elem_type V} ::
+    ⟦IndexRef (go.SliceType elem_type), (#s, #i)⟧ ⤳[under]
+    (if decide (0 ≤ sint.Z i < sint.Z s.(slice.len)) then
+       #(slice_index_ref V (sint.Z i) s)
      else Panic "slice index out of bounds");
 
-  #[global] index_slice elem_type i (s : slice.t) ::
-    go.GoExprEq (index (go.SliceType elem_type) i #s)
-    (GoLoad elem_type $ (IndexRef $ go.SliceType elem_type) (#(W64 i), #s)%V);
+  #[global] index_slice elem_type (i : w64) (s : slice.t) ::
+    ⟦Index (go.SliceType elem_type), (#s, #i)⟧ ⤳[under]
+    (GoLoad elem_type $ (IndexRef $ go.SliceType elem_type) (#i, #s)%V);
 
   #[global] len_slice elem_type ::
     FuncUnfold go.len [go.SliceType elem_type]
@@ -163,7 +163,7 @@ Class SliceSemantics `{!GoSemanticsFunctions} :=
          "s_new")%V;
 
   #[global] composite_literal_slice elem_type kvs ::
-    ⟦CompositeLiteral (go.SliceType, elem_type⟧ ⤳[under] (LiteralValueV kvs))
+    ⟦CompositeLiteral (go.SliceType elem_type), (LiteralValueV kvs)⟧ ⤳[under]
     (let len := array_literal_size kvs in
     (let: "tmp" := GoAlloc (go.ArrayType len elem_type) (GoZeroVal (go.ArrayType len elem_type) #()) in
      "tmp" <-[(go.ArrayType len elem_type)]
