@@ -135,7 +135,7 @@ Class MethodUnfold t m (m_impl : val) : Prop :=
 Global Hint Mode MethodUnfold ! ! - : typeclass_instances.
 End unfolding_defs.
 
-Inductive tag := | under | under_type (t : go.type) | internal.
+Inductive tag := | under | internal | internal_under.
 
 Module go.
 Section defs.
@@ -357,14 +357,18 @@ Class CoreSemantics `{!GoSemanticsFunctions} : Prop :=
    ⟦GoOp o t_under, v⟧ ⤳[under] e → ⟦GoOp o t, v⟧ ⤳ e;
   #[global] composite_literal_underlying `{!t ↓u t_under} v e ::
    ⟦CompositeLiteral t_under, v⟧ ⤳[under] e → ⟦CompositeLiteral t, v⟧ ⤳ e;
-  #[global] composite_literal_underlying_typed `{!t ↓u t_under} v e ::
-   ⟦CompositeLiteral t_under, v⟧ ⤳[under_type t] e → ⟦CompositeLiteral t, v⟧ ⤳ e;
   #[global] index_underlying_typed `{!t ↓u t_under} v e ::
    ⟦Index t_under, v⟧ ⤳[under] e → ⟦Index t, v⟧ ⤳ e;
   #[global] index_ref_underlying_typed `{!t ↓u t_under} v e ::
    ⟦IndexRef t_under, v⟧ ⤳[under] e → ⟦IndexRef t, v⟧ ⤳ e;
   #[global] check_comparable_underlying `{!t ↓u t_under} v e ::
    ⟦CheckComparable t_under, v⟧ ⤳[under] e → ⟦CheckComparable t, v⟧ ⤳ e;
+  #[global] struct_field_get_underlying `{!t ↓u t_under} v e f ::
+   ⟦StructFieldGet t_under f, v⟧ ⤳[under] e → ⟦StructFieldGet t f, v⟧ ⤳ e;
+  #[global] struct_field_set_underlying `{!t ↓u t_under} v e f ::
+   ⟦StructFieldSet t_under f, v⟧ ⤳[under] e → ⟦StructFieldSet t f, v⟧ ⤳ e;
+  #[global] struct_field_ref_step_underlying `{!t ↓u t_under} f v e ::
+    ⟦StructFieldRef t_under f, v⟧ ⤳[under] e → ⟦StructFieldRef t f, v⟧ ⤳ e;
 
   #[global] go_func_resolve_step n ts :: ⟦FuncResolve n ts, #()⟧ ⤳ #(functions n ts);
   #[global] go_method_resolve_step m t rcvr `{!t ↓u tunder} `{!NotInterface tunder} ::
@@ -376,7 +380,7 @@ Class CoreSemantics `{!GoSemanticsFunctions} : Prop :=
      program step executing [StructFieldRef] will need to have a precondition
      that [l ≠ null]. *)
   #[global] struct_field_ref_step t f l V `{!ZeroVal V} `{!TypeRepr t V} ::
-    ⟦StructFieldRef t f, #l⟧ ⤳ #(struct_field_ref V f l);
+    ⟦StructFieldRef t f, #l⟧ ⤳[under] #(struct_field_ref V f l);
 
   (* The language spec doesn't say anything about the addresses of zero-sized
      allocation. But, in the runtime, these addresses are non-nil, so the
@@ -412,8 +416,8 @@ Class CoreSemantics `{!GoSemanticsFunctions} : Prop :=
     ⟦CompositeLiteral (go.PointerType elem_type), l⟧ ⤳[under]
     GoAlloc elem_type (CompositeLiteral elem_type l);
 
-  #[global] composite_literal_struct t l fds ::
-    ⟦CompositeLiteral (go.StructType fds), (LiteralValueV l)⟧ ⤳[under]
+  #[global] composite_literal_struct l `{!t ↓u (go.StructType fds)} ::
+    ⟦CompositeLiteral t, (LiteralValueV l)⟧ ⤳[under]
     (match l with
           | [] => GoZeroVal t #()
           | KeyedElement None _ :: _ =>
@@ -426,7 +430,7 @@ Class CoreSemantics `{!GoSemanticsFunctions} : Prop :=
                            StructFieldSet t field_name (v, Convert from field_type e)%E
                        | _ => Panic "invalid Go code"
                        end
-                ) (GoZeroVal (go.StructType fds) #()) (zip fds l)
+                ) (GoZeroVal t #()) (zip fds l)
           | KeyedElement (Some _) _ :: _ =>
               (* keyed struct literal *)
               foldl (λ v ke,
@@ -438,51 +442,58 @@ Class CoreSemantics `{!GoSemanticsFunctions} : Prop :=
                 ) (GoZeroVal t #()) l
           end);
 
-  #[global] alloc_primitive `[!t ↓u tunder] v (H : is_primitive tunder) ::
-    ⟦GoAlloc t, v⟧ ⤳[internal] (ref_one v)%E;
-  #[global] alloc_struct `[!t ↓u go.StructType fds] v ::
-    ⟦GoAlloc t, v⟧ ⤳[internal]
+  #[global] alloc_underlying `[!t ↓u t_under] v e ::
+    ⟦GoAlloc t_under, v⟧ ⤳[internal_under] e → ⟦GoAlloc t, v⟧ ⤳[internal] e;
+  #[global] load_underlying `[!t ↓u t_under] v e ::
+    ⟦GoLoad t_under, v⟧ ⤳[internal_under] e → ⟦GoLoad t, v⟧ ⤳[internal] e;
+  #[global] store_underlying `[!t ↓u t_under] v e ::
+    ⟦GoStore t_under, v⟧ ⤳[internal_under] e → ⟦GoStore t, v⟧ ⤳[internal] e;
+
+  #[global] alloc_primitive v t (H : is_primitive t) ::
+    ⟦GoAlloc t, v⟧ ⤳[internal_under] (ref_one v)%E;
+  #[global] alloc_struct v fds ::
+    ⟦GoAlloc (go.StructType fds), v⟧ ⤳[internal_under]
       (let: "l" := GoPrealloc #() in
        foldr (λ fd alloc_rest,
                 let (field_name, field_type) := match fd with
                                                 | go.FieldDecl n t => pair n t
                                                 | go.EmbeddedField n t => pair n t
                                                 end in
-                let field_addr := StructFieldRef t field_name "l" in
-                let: "l_field" := GoAlloc field_type (StructFieldGet t field_name v) in
+                let field_addr := StructFieldRef (go.StructType fds) field_name "l" in
+                let: "l_field" := GoAlloc field_type (StructFieldGet (go.StructType fds) field_name v) in
                 (if: ("l_field" ≠⟨go.PointerType field_type⟩ field_addr) then AngelicExit #()
                  else #());;
                 alloc_rest
          ) #() fds ;;
        "l")%E;
 
-  #[global] load_primitive `[!t ↓u tunder] (H : is_primitive tunder) l ::
-    ⟦GoLoad t, l⟧ ⤳[internal] (Read l)%E;
+  #[global] load_primitive t (H : is_primitive t) l ::
+    ⟦GoLoad t, l⟧ ⤳[internal_under] (Read l)%E;
 
-  #[global] load_struct `[!t ↓u go.StructType fds] l ::
-    ⟦GoLoad t, l⟧ ⤳[internal]
+  #[global] load_struct fds l ::
+    ⟦GoLoad (go.StructType fds), l⟧ ⤳[internal_under]
       (foldl (λ struct_so_far fd,
                 let (field_name, field_type) := match fd with
                                                 | go.FieldDecl n t => pair n t
                                                 | go.EmbeddedField n t => pair n t
                                                 end in
-                let field_addr := StructFieldRef t field_name l in
+                let field_addr := StructFieldRef (go.StructType fds) field_name l in
                 let field_val := GoLoad field_type field_addr in
-                StructFieldSet t field_name (struct_so_far, field_val)
-         )%E (GoZeroVal t #()) fds)%V;
+                StructFieldSet (go.StructType fds) field_name (struct_so_far, field_val)
+         )%E (GoZeroVal (go.StructType fds) #()) fds)%V;
 
-  #[global] store_primitive `[!t ↓u tunder] (H : is_primitive tunder) l v ::
-    ⟦GoStore t, (l, v)⟧ ⤳[internal] (l <- v)%E;
-  #[global] store_struct `[!t ↓u go.StructType fds] l v ::
-    ⟦GoStore t, (l, v)⟧ ⤳[internal]
+  #[global] store_primitive t (H : is_primitive t) l v ::
+    ⟦GoStore t, (l, v)⟧ ⤳[internal_under] (l <- v)%E;
+  #[global] store_struct fds l v ::
+    ⟦GoStore (go.StructType fds), (l, v)⟧ ⤳[internal_under]
       (foldl (λ store_so_far fd,
                 store_so_far;;
                 let (field_name, field_type) := match fd with
                                                 | go.FieldDecl n t => pair n t
                                                 | go.EmbeddedField n t => pair n t
                                                 end in
-                let field_addr := StructFieldRef t field_name l in
-                let field_val := StructFieldGet t field_name v in
+                let field_addr := StructFieldRef (go.StructType fds) field_name l in
+                let field_val := StructFieldGet (go.StructType fds) field_name v in
                 GoStore field_type (field_addr, field_val)
          )%E (#()) fds)%V;
 

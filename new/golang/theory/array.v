@@ -55,12 +55,13 @@ Qed.
 Context `{!go.TypeRepr t V}.
 Global Instance into_val_typed_array n : IntoValTyped (array.t V n) (go.ArrayType n t).
 Proof.
+  pose proof go.tagged_steps internal.
   split.
   - admit.
   - iIntros "* Hl HΦ".
-    rewrite go.load_array. case_decide.
+    wp_pures. case_decide.
     { wp_pures. wp_apply wp_AngelicExit. }
-    wp_pure. wp_pure.
+    wp_pure.
     assert (∃ m, n = m ∧ 0 ≤ m ≤ n) as (m & Heq & Hm) by (exists n; lia).
     rewrite [in #(W64 n)]Heq.
     simpl. destruct v as [vs]. simpl in *.

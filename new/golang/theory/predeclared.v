@@ -37,52 +37,52 @@ Existing Class go.is_predeclared.
 #[local] Hint Extern 1 (go.is_predeclared ?t) => constructor : typeclass_instances.
 
 Local Set Default Proof Using "All".
-Global Instance into_val_typed_uint64 : IntoValTyped w64 go.uint64.
+Global Instance into_val_typed_uint64 : IntoValTypedUnderlying w64 go.uint64.
 Proof. solve_into_val_typed. Qed.
 
-Global Instance into_val_typed_uint32 : IntoValTyped w32 go.uint32.
+Global Instance into_val_typed_uint32 : IntoValTypedUnderlying w32 go.uint32.
 Proof. solve_into_val_typed. Qed.
 
-Global Instance into_val_typed_uint16 : IntoValTyped w16 go.uint16.
+Global Instance into_val_typed_uint16 : IntoValTypedUnderlying w16 go.uint16.
 Proof. solve_into_val_typed. Qed.
 
-Global Instance into_val_typed_uint8 : IntoValTyped w8 go.uint8.
+Global Instance into_val_typed_uint8 : IntoValTypedUnderlying w8 go.uint8.
 Proof. solve_into_val_typed. Qed.
 
-Global Instance into_val_typed_uint : IntoValTyped w64 go.uint.
+Global Instance into_val_typed_uint : IntoValTypedUnderlying w64 go.uint.
 Proof. solve_into_val_typed. Qed.
 
-Global Instance into_val_typed_int64 : IntoValTyped w64 go.int64.
+Global Instance into_val_typed_int64 : IntoValTypedUnderlying w64 go.int64.
 Proof. solve_into_val_typed. Qed.
 
-Global Instance into_val_typed_int32 : IntoValTyped w32 go.int32.
+Global Instance into_val_typed_int32 : IntoValTypedUnderlying w32 go.int32.
 Proof. solve_into_val_typed. Qed.
 
-Global Instance into_val_typed_int16 : IntoValTyped w16 go.int16.
+Global Instance into_val_typed_int16 : IntoValTypedUnderlying w16 go.int16.
 Proof. solve_into_val_typed. Qed.
 
-Global Instance into_val_typed_int8 : IntoValTyped w8 go.int8.
+Global Instance into_val_typed_int8 : IntoValTypedUnderlying w8 go.int8.
 Proof. solve_into_val_typed. Qed.
 
-Global Instance into_val_typed_int : IntoValTyped w64 go.int.
+Global Instance into_val_typed_int : IntoValTypedUnderlying w64 go.int.
 Proof. solve_into_val_typed. Qed.
 
-Global Instance into_val_typed_bool : IntoValTyped bool go.bool.
+Global Instance into_val_typed_bool : IntoValTypedUnderlying bool go.bool.
 Proof. solve_into_val_typed. Qed.
 
-Global Instance into_val_typed_string : IntoValTyped go_string go.string.
+Global Instance into_val_typed_string : IntoValTypedUnderlying go_string go.string.
 Proof. solve_into_val_typed. Qed.
 
-Global Instance into_val_typed_Pointer : IntoValTyped loc unsafe.Pointer.
+Global Instance into_val_typed_Pointer : IntoValTypedUnderlying loc unsafe.Pointer.
 Proof. solve_into_val_typed. Qed.
 
-Global Instance into_val_typed_proph_id : IntoValTyped proph_id go.proph_id.
+Global Instance into_val_typed_proph_id : IntoValTypedUnderlying proph_id go.proph_id.
 Proof. solve_into_val_typed. Qed.
 
-Global Instance into_val_typed_float64 : IntoValTyped w64 go.float64.
+Global Instance into_val_typed_float64 : IntoValTypedUnderlying w64 go.float64.
 Proof. solve_into_val_typed. Qed.
 
-Global Instance into_val_typed_float32 : IntoValTyped w32 go.float32.
+Global Instance into_val_typed_float32 : IntoValTypedUnderlying w32 go.float32.
 Proof. solve_into_val_typed. Qed.
 
 End into_val_typed_instances.

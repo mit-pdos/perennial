@@ -10,11 +10,12 @@ Local Set Default Proof Using "All".
 
 Class SafeMapKey {K} key_type (k : K) :=
   {
-    wp_go_eq_safe_map_key : ∀ stk E Φ, (∀ v, Φ v) -∗ WP (go_eq key_type #k #k) @ stk; E {{ Φ }};
+    wp_go_eq_safe_map_key : ∀ stk E Φ, (∀ v, Φ v) -∗
+                      WP (GoOp GoEquals key_type (#k, #k)%V) @ stk; E {{ Φ }};
   }.
 
 Global Instance safe_map_key_is_go_eq {K} key_type (k : K) (b : bool) :
-  go.GoExprEq (go_eq key_type #k #k) #b → SafeMapKey key_type k.
+  ⟦GoOp GoEquals key_type, (#k, #k)⟧ ⤳ #b → SafeMapKey key_type k.
 Proof. intros ?. constructor. iIntros. wp_auto. done. Qed.
 
 (* TODO: reading from nil map. Want to say that an owned map is not nil, which
@@ -81,7 +82,9 @@ Lemma wp_map_insert key_type l (m : gmap K V) k v {Hsafe : SafeMapKey key_type k
   {{{ RET #(); l ↦$ <[k := v]> m }}}.
 Proof.
   rewrite own_map_unseal.
-  iIntros (?) "Hm HΦ". iNamed "Hm". wp_call. wp_apply wp_go_eq_safe_map_key as "%".
+  iIntros (?) "Hm HΦ". iNamed "Hm". wp_call.
+  wp_bind.
+  wp_apply wp_go_eq_safe_map_key as "%".
   wp_apply (_internal_wp_untyped_read with "Hown"). iIntros "Hown".
   wp_auto.
   wp_apply (_internal_wp_untyped_store with "Hown"). iIntros "Hown".

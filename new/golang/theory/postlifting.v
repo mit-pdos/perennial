@@ -108,7 +108,7 @@ Class IntoValTypedUnderlying (V : Type) (t_under : go.type) `{!ZeroVal V} `{!Typ
                  {{{ RET #v; l ↦{dq} v }}});
     wp_store_def : (∀ [s E] `[!t ↓u t_under] l (v w : V),
                   {{{ l ↦ v }}}
-                    #l <-[t] #w @ s ; E
+                    GoStore t (#l, #w)%V @ s ; E
                   {{{ RET #(); l ↦ w }}});
   }.
 (* [t] should not be an evar before doing typeclass search *)
@@ -127,7 +127,7 @@ Class IntoValTyped (V : Type) (t : go.type) `{!ZeroVal V} `{!TypedPointsto V}
                  {{{ RET #v; l ↦{dq} v }}});
     wp_store : (∀ [s E] l (v w : V),
                   {{{ l ↦ v }}}
-                    #l <-[t] #w @ s ; E
+                    GoStore t (#l, #w)%V @ s ; E
                   {{{ RET #(); l ↦ w }}});
   }.
 

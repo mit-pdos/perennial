@@ -300,7 +300,7 @@ Qed.
 
 Global Instance pure_wp_slice_for_range (sl : slice.t) (body : val) t :
   PureWp True (slice.for_range t #sl body)%E
-       (let: "i" := alloc go.int #(W64 0) in
+       (let: "i" := GoAlloc go.int #(W64 0) in
         for: (λ: <>, ![go.int] "i" <⟨go.int⟩ FuncResolve go.len [go.SliceType t] (# ()) (# sl)) ;
         (λ: <>, "i" <-[go.int] ![go.int] "i" + # (W64 1)) :=
           λ: <>, body ![go.int] "i" (![t] (IndexRef (go.SliceType t) (# sl, ![go.int] "i"))))%E.
@@ -605,7 +605,7 @@ Qed.
 Lemma wp_load_slice_index `[!IntoValTyped V t] s i (vs : list V) dq v :
   0 ≤ i →
   {{{ s ↦*{dq} vs ∗ ⌜ vs !! (Z.to_nat i) = Some v ⌝ }}}
-    load t #(slice_index_ref V i s)
+    GoLoad t #(slice_index_ref V i s)
   {{{ RET #v; s ↦*{dq} vs }}}.
 Proof.
   intros Hpos.
@@ -624,7 +624,7 @@ Qed.
 
 Lemma wp_store_slice_index `[!IntoValTyped V t] s i (vs : list V) (v' : V) :
   {{{ s ↦* vs ∗ ⌜0 ≤ i < Z.of_nat (length vs)⌝ }}}
-    store t #(slice_index_ref V i s) #v'
+    GoStore t (#(slice_index_ref V i s), #v')%V
   {{{ RET #(); s ↦* (<[Z.to_nat i := v']> vs) }}}.
 Proof.
   iIntros "% [Hs %Hbound] HΦ".
@@ -668,7 +668,7 @@ Proof.
       list_elem vs' (sint.Z i) as y.
       rewrite decide_True //.
       wp_auto. rewrite decide_True; last word.
-      wp_auto. rewrite decide_True; last word. wp_auto.
+      wp_auto. rewrite decide_True; last word.
       wp_apply (wp_load_slice_index with "[$Hs2]") as "Hs2".
       { word. }
       { eauto. }

@@ -95,7 +95,7 @@ Section tac_lemmas.
     `{!Access (l ↦{dq} v) (l ↦{dq} v) P P} :
     envs_lookup i Δ = Some (is_pers, P)%I →
     envs_entails Δ (WP (fill K (Val #v)) @ s; E {{ Φ }}) →
-    envs_entails Δ (WP (fill K (load t #l)) @ s; E {{ Φ }}).
+    envs_entails Δ (WP (fill K (GoLoad t #l)) @ s; E {{ Φ }}).
   Proof using Type*.
     rewrite envs_entails_unseal => ? HΦ.
     rewrite envs_lookup_split //.
@@ -117,7 +117,7 @@ Section tac_lemmas.
     envs_lookup i Δ = Some (false, P)%I →
     envs_simple_replace i false (Esnoc Enil i P') Δ = Some Δ' →
     envs_entails Δ' (WP fill K (Val #()) @ s ; E {{ Φ }}) →
-    envs_entails Δ (WP (fill K (store t #l (Val #v'))) @ s; E {{ Φ }}).
+    envs_entails Δ (WP (fill K (GoStore t (#l, #v')%V)) @ s; E {{ Φ }}).
   Proof.
     rewrite envs_entails_unseal => ?? HΦ.
     rewrite envs_simple_replace_sound // /=.
@@ -131,7 +131,7 @@ Section tac_lemmas.
   Lemma tac_wp_alloc K
     `{!TypedPointsto V} `{!ZeroVal V} `{!IntoValTyped V t} (v : V) Δ stk E Φ :
     (∀ l, envs_entails Δ (l ↦ v -∗ WP (fill K (Val #l)) @ stk; E {{ Φ }})) →
-    envs_entails Δ (WP fill K (alloc t #v) @ stk; E {{ Φ }}).
+    envs_entails Δ (WP fill K (GoAlloc t #v) @ stk; E {{ Φ }}).
   Proof.
     rewrite envs_entails_unseal => Hwp.
     iIntros "Henv".
@@ -146,7 +146,7 @@ Ltac2 tc_solve_many () := solve [ltac1:(typeclasses eauto)].
 Ltac2 ectx_simpl () := cbv [fill flip foldl ectxi_language.fill_item goose_ectxi_lang fill_item].
 
 Ltac2 wp_load_visit e k :=
-  Control.once_plus (fun () => Std.unify e '(load _ (Val _)))
+  Control.once_plus (fun () => Std.unify e '(GoLoad _ (Val _)))
          (fun _ => Control.zero Walk_expr_more);
   Control.once_plus (fun _ => eapply (tac_wp_load $k) > [tc_solve_many ()| ltac1:(iAssumptionCore) | ectx_simpl ()])
     (fun _ => Control.backtrack_tactic_failure "wp_load: could not find a points-to in context covering the address")
@@ -160,7 +160,7 @@ Ltac2 wp_load () :=
   end.
 
 Ltac2 wp_store_visit e k :=
-  Control.once_plus (fun () => (Std.unify e '(store _ _ (Val _))))
+  Control.once_plus (fun () => (Std.unify e '(GoStore _ (Val (PairV _ _)))))
          (fun _ => Control.zero Walk_expr_more);
   Control.once_plus (fun _ => eapply (tac_wp_store $k) > [tc_solve_many ()| ltac1:(iAssumptionCore)
                                            |ltac1:(pm_reflexivity) | ectx_simpl () ])
@@ -175,7 +175,7 @@ Ltac2 wp_store () :=
   end.
 
 Ltac2 wp_alloc_visit e k :=
-  Control.once_plus (fun () => Std.unify e '(alloc _ (Val (#_))))
+  Control.once_plus (fun () => Std.unify e '(GoAlloc _ (Val (#_))))
     (fun _ => Control.zero Walk_expr_more);
   Control.once_plus (fun _ => apply (tac_wp_alloc $k); ectx_simpl ())
     (fun _ => Control.backtrack_tactic_failure "wp_alloc: failed to apply tac_wp_alloc (maybe no IntoValTyped instance?)")
@@ -190,9 +190,9 @@ Ltac2 wp_alloc () :=
 
 Ltac2 wp_alloc_auto_visit e k :=
   lazy_match! e with
-  (* Manually writing out [let: ?var_name := (ref_ty _ (Val _)) in ?e1] to get
+  (* Manually writing out [let: ?var_name := (GoAlloc _ (Val _)) in ?e1] to get
      pattern matching to work. *)
-  | (App (Rec BAnon (BNamed ?var_name) ?e1) (App (Val (alloc _)) (Val (#_)))) =>
+  | (App (Rec BAnon (BNamed ?var_name) ?e1) (App (Val (GoInstruction (GoAlloc _))) (Val (#_)))) =>
       let let_expr1 := '(Rec BAnon (BNamed $var_name) $e1) in
       let ptr_name := Std.eval_vm None constr:($var_name +:+ "_ptr") in
       let k := constr:(@AppRCtx _ $let_expr1 :: $k) in

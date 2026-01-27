@@ -352,16 +352,12 @@ Ltac solve_into_val_typed_struct :=
         last (wp_auto; wp_apply wp_AngelicExit);
         iDestruct "l_field" as "?"; wp_auto
       in
-      intros; iIntros "_ HΦ"; rewrite go.alloc_struct;
-      wp_auto; wp_apply wp_GoPrealloc as "* %Hnotnull";
-      repeat field;
+      iIntros "_ HΦ"; wp_auto; wp_apply wp_GoPrealloc as "* %Hnotnull"; repeat field;
       iApply "HΦ"; iEval (rewrite typed_pointsto_unseal); by iFrame in
     let load :=
-      intros; iIntros "Hl HΦ"; rewrite typed_pointsto_unseal;
-      iNamed "Hl"; rewrite go.load_struct; simpl; wp_auto;
-      destruct &v; simpl; iApply "HΦ"; by iFrame in
+      iIntros "Hl HΦ"; rewrite typed_pointsto_unseal;
+      iNamed "Hl"; simpl; wp_auto; destruct &v; simpl; iApply "HΦ"; by iFrame in
     let store :=
-      intros; iIntros "Hl HΦ"; rewrite typed_pointsto_unseal;
-      iNamed "Hl"; rewrite go.store_struct; simpl; wp_auto;
-      destruct &v; simpl; iApply "HΦ"; by iFrame in
-    constructor; [alloc | load | store].
+      iIntros "Hl HΦ"; rewrite typed_pointsto_unseal;
+      iNamed "Hl"; simpl; wp_auto; destruct &v; simpl; iApply "HΦ"; by iFrame in
+    pose proof (go.tagged_steps internal); constructor; intros; [alloc | load | store].
