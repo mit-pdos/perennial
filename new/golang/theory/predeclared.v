@@ -14,24 +14,24 @@ Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
 
 Ltac solve_wp_alloc :=
   iIntros "* _ HΦ";
-  rewrite go.alloc_predeclared typed_pointsto_unseal /=;
+  rewrite typed_pointsto_unseal /=;
   wp_pures; by wp_apply _internal_wp_alloc_untyped.
 
 Ltac solve_wp_load :=
   iIntros "* Hl HΦ";
-  rewrite go.load_predeclared;
   wp_pures; rewrite typed_pointsto_unseal /=;
   wp_apply (_internal_wp_untyped_read with "Hl");
   iIntros "Hl"; by iApply "HΦ".
 
 Ltac solve_wp_store :=
   iIntros "* Hl HΦ";
-  rewrite go.store_predeclared;
   wp_pures; rewrite typed_pointsto_unseal /=;
   wp_apply (_internal_wp_untyped_store with "Hl");
   iIntros "Hl"; by iApply "HΦ".
 
-Ltac solve_into_val_typed := constructor; [solve_wp_alloc|solve_wp_load|solve_wp_store].
+Ltac solve_into_val_typed :=
+  pose proof (go.tagged_steps internal);
+  constructor; intros; [solve_wp_alloc|solve_wp_load|solve_wp_store].
 
 Existing Class go.is_predeclared.
 #[local] Hint Extern 1 (go.is_predeclared ?t) => constructor : typeclass_instances.
