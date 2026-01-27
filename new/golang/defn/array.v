@@ -8,11 +8,11 @@ Context {go_lctx : GoLocalContext} {go_gctx : GoGlobalContext}.
 Class ArraySemantics `{!GoSemanticsFunctions} :=
 {
   #[global] array_set_step V n (vs : array.t V n) (i : w64) (v : V) ::
-    go.IsGoStepPureDet ArraySet (#vs, (#i, #v))%V
+    ⟦ArraySet, (#vs, (#i, #v))⟧ ⤳
     (# (array.mk n (<[sint.nat i:=v]> (array.arr vs))));
 
   #[global] array_length_step vs ::
-    go.IsGoStepPureDet ArrayLength (ArrayV vs)
+    ⟦ArrayLength, (ArrayV vs)⟧ ⤳
     (if decide (length vs < 2 ^ 63) then #(W64 (length vs)) else AngelicExit (# ()));
 
   #[global] equals_array n t (H : go.IsComparable t) :: go.IsComparable (go.ArrayType n t);
@@ -20,31 +20,31 @@ Class ArraySemantics `{!GoSemanticsFunctions} :=
   #[global] type_repr_array ty V n `{!ZeroVal V} `{!go.TypeRepr ty V} ::
     go.TypeRepr (go.ArrayType n ty) (array.t V n);
 
-  alloc_array n elem : alloc (go.ArrayType n elem) = alloc (go.ArrayType n elem); (* TODO *)
-  load_array n elem_type :
-    load (go.ArrayType n elem_type) =
-    if decide (¬(0 ≤ n < 2^63-1)) then
-      (λ: "l", AngelicExit #())%V
-        (* the compiler guarantees that any compiled code does not have an array this size *)
+  (* TODO: implement alloc_array *)
+  #[global] alloc_array n elem v :: ⟦GoAlloc (go.ArrayType n elem), v⟧ ⤳[internal] AngelicExit #();
+
+  #[global] load_array n elem_type l ::
+    ⟦GoLoad (go.ArrayType n elem_type), l⟧ ⤳[internal]
+    (if decide (¬(0 ≤ n < 2^63-1)) then
+      AngelicExit #()
     else
-      (λ: "l",
-         (rec: "recur" "n" :=
+      (rec: "recur" "n" :=
             if: "n" =⟨go.int⟩ #(W64 0) then GoZeroVal (go.ArrayType n elem_type) #()
             else let: "array_so_far" := "recur" ("n" - #(W64 1)) in
-                 let: "elem_addr" := IndexRef (go.ArrayType n elem_type) ("l", "n" - #(W64 1)) in
+                 let: "elem_addr" := IndexRef (go.ArrayType n elem_type) (l, "n" - #(W64 1)) in
                  let: "elem_val" := GoLoad elem_type "elem_addr" in
                  ArraySet ("array_so_far", ("n" - #(W64 1), "elem_val"))
-         ) #(W64 n))%V;
-  store_array n elem_type :
-    store (go.ArrayType n elem_type) =
-    (λ: "l" "v",
-       foldl (λ str_so_far j,
+         ) #(W64 n))%E;
+
+  #[global] store_array n elem_type l v ::
+    ⟦GoStore (go.ArrayType n elem_type), (l, v)⟧ ⤳[internal]
+    (foldl (λ str_so_far j,
                 str_so_far;;
-                let elem_addr := IndexRef (go.ArrayType n elem_type) ("l", #(W64 j)) in
-                let elem_val := Index (go.ArrayType n elem_type) ("v", #(W64 n)) in
+                let elem_addr := IndexRef (go.ArrayType n elem_type) (l, #(W64 j)) in
+                let elem_val := Index (go.ArrayType n elem_type) (v, #(W64 n)) in
                 GoStore elem_type (elem_addr, elem_val))
              (#()) (seqZ 0 n)
-    )%V;
+    )%E;
 
 
   #[global] index_ref_array n elem_type i l V `{!ZeroVal V} `{!go.TypeRepr elem_type V} ::
@@ -77,7 +77,7 @@ Class ArraySemantics `{!GoSemanticsFunctions} :=
       ) (0, (GoZeroVal (go.ArrayType n elem_type) #())) kvs).2;
 
   #[global] slice_array_step n elem_type p low high `{!ZeroVal V} `{!go.TypeRepr elem_type V} ::
-    go.IsGoStepPureDet (Slice $ go.ArrayType n elem_type) (#p, #low, #high)%V
+    ⟦Slice $ go.ArrayType n elem_type, (#p, #low, #high)⟧ ⤳
        (if decide (0 ≤ sint.Z low ≤ sint.Z high ≤ n) then
           #(slice.mk (array_index_ref V (word.signed low) p)
               (word.sub high low)
@@ -86,8 +86,7 @@ Class ArraySemantics `{!GoSemanticsFunctions} :=
 
   #[global] full_slice_array_step_pure n elem_type p low high max `{!ZeroVal V}
     `{!go.TypeRepr elem_type V} ::
-    go.IsGoStepPureDet (FullSlice (go.ArrayType n elem_type))
-    (#p, #low, #high, #max)%V
+    ⟦FullSlice (go.ArrayType n elem_type), (#p, #low, #high, #max)⟧ ⤳
     (if decide (0 ≤ sint.Z low ≤ sint.Z high ≤ sint.Z max ∧ sint.Z max ≤ n) then
        #(slice.mk (array_index_ref V (sint.Z low) p)
            (word.sub high low) (word.sub max low))

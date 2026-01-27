@@ -58,13 +58,13 @@ Context {go_lctx : GoLocalContext} {go_gctx : GoGlobalContext}.
 Class MapSemantics `{!GoSemanticsFunctions} :=
 {
   #[global] internal_map_lookup_step_pure m k ::
-    go.IsGoStepPureDet InternalMapLookup (m, k) (let '(ok, v) := map_lookup m k in (v, #ok));
+    ⟦InternalMapLookup, (m, k)⟧ ⤳ (let '(ok, v) := map_lookup m k in (v, #ok));
   #[global] internal_map_insert_step_pure m k v ::
-    go.IsGoStepPureDet InternalMapInsert (m, k, v) (map_insert m k v);
+    ⟦InternalMapInsert, (m, k, v)⟧ ⤳ (map_insert m k v);
   #[global] internal_map_delete_step_pure m k ::
-    go.IsGoStepPureDet InternalMapDelete (m, k) (map_delete m k);
+    ⟦InternalMapDelete, (m, k)⟧ ⤳ (map_delete m k);
   #[global] internal_map_length_step_pure m ks (H : is_map_domain m ks) ::
-    go.IsGoStepPureDet InternalMapLength m #(W64 (length ks));
+    ⟦InternalMapLength, m⟧ ⤳ #(W64 (length ks));
   internal_map_domain_literal_step_pure mv m body key_type elem_type (Hm : is_map_pure mv m) :
     is_go_step_pure (InternalMapForRange key_type elem_type) (mv, body)%V =
     (λ e, ∃ ks (His_dom : is_map_domain mv ks),
@@ -77,25 +77,25 @@ Class MapSemantics `{!GoSemanticsFunctions} :=
                  else return: "b"
           )%E (return: (do: #()))%E ks);
   #[global] internal_map_make_step_pure v ::
-    go.IsGoStepPureDet InternalMapMake v (map_empty v);
+    ⟦InternalMapMake, v⟧ ⤳ (map_empty v);
   #[global] internal_map_check_key_step key_type k ::
-    go.IsGoStepPureDet (InternalMapCheckKey key_type) k (go_eq key_type k k);
+    ⟦InternalMapCheckKey key_type, k⟧ ⤳ (go_eq key_type k k);
 
   (* special cases for equality *)
   #[global] is_go_op_go_equals_map_nil_l kt vt s ::
-    go.IsGoOp GoEquals (go.MapType kt vt) (#map.nil, #s)%V #(bool_decide (s = map.nil));
+    ⟦GoOp GoEquals (go.MapType kt vt), (#map.nil, #s)⟧ ⤳[under] #(bool_decide (s = map.nil));
   #[global] is_go_op_go_equals_map_nil_r kt vt s ::
-    go.IsGoOp GoEquals (go.MapType kt vt) (#s, #map.nil)%V #(bool_decide (s = map.nil));
+    ⟦GoOp GoEquals (go.MapType kt vt), (#s, #map.nil)⟧ ⤳[under] #(bool_decide (s = map.nil));
 
   (* internal deterministic steps *)
   #[global] internal_map_lookup_step mv k ::
-    go.IsGoStepPureDet InternalMapLookup (mv, k)%V (let '(ok, v) := map_lookup mv k in (v, #ok));
+    ⟦InternalMapLookup, (mv, k)⟧ ⤳ (let '(ok, v) := map_lookup mv k in (v, #ok));
   #[global] internal_map_insert_step mv k v ::
-    go.IsGoStepPureDet InternalMapInsert (mv, k, v)%V (map_insert mv k v);
+    ⟦InternalMapInsert, (mv, k, v)⟧ ⤳ (map_insert mv k v);
   #[global] internal_map_delete_step mv k ::
-    go.IsGoStepPureDet InternalMapDelete (mv, k)%V (map_delete mv k);
+    ⟦InternalMapDelete, (mv, k)⟧ ⤳ (map_delete mv k);
   #[global] internal_map_make_step v ::
-    go.IsGoStepPureDet InternalMapMake v (map_empty v);
+    ⟦InternalMapMake, v⟧ ⤳ (map_empty v);
 
   is_map_pure_flatten mv m (H : is_map_pure mv m) :
     flatten_struct mv = [mv];

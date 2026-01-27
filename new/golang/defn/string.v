@@ -19,7 +19,7 @@ Class StringSemantics `{!GoSemanticsFunctions} :=
     (match (s !! (Z.to_nat i)) with Some b => #b | _ => Panic "index out of bounds" end);
 
   #[global] convert_byte_to_string (c : w8) ::
-    go.ConvertUnderlying go.byte go.string #c #([c]);
+    ⟦Convert go.byte go.string, #c⟧ ⤳[under] #([c]);
 
   convert_bytes_to_string (v : val)
     `{!from ↓u go.SliceType elem_type} `{!elem_type ↓u go.byte} `{!to ↓u go.string} ::

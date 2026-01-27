@@ -38,7 +38,7 @@ Class InterfaceSemantics :=
 {
   #[global] is_comparable_interface elems :: go.IsComparable (go.InterfaceType elems);
   #[global] go_eq_interface elems i1 i2 ::
-    go.IsGoOp GoEquals (go.InterfaceType elems) #i1 #i2
+    ⟦GoOp GoEquals (go.InterfaceType elems), (#i1, #i2)⟧ ⤳[under]
       (match i1, i2 with
        | interface.nil, interface.nil => #true
        | (interface.ok i1), (interface.ok i2) =>
@@ -51,13 +51,13 @@ Class InterfaceSemantics :=
 
   #[global] convert_to_interface (v : val)
     `{!from ↓u funder} `{!to ≤u go.InterfaceType elems} ::
-    go.IsGoStepPureDet (Convert from to) v
+    ⟦Convert from to, v⟧ ⤳
     (Val (if is_interface_type funder then v else
             if is_untyped_nil funder then #interface.nil
             else #(interface.mk_ok from v)));
 
   #[global] type_assert_step `{!t ↓u tunder} i ::
-    go.IsGoStepPureDet (TypeAssert t) #i
+    ⟦TypeAssert t, #i⟧ ⤳
     (match i with
      | interface.nil => Panic "type assert failed"
      | interface.ok i =>
@@ -68,7 +68,7 @@ Class InterfaceSemantics :=
      end);
 
   #[global] type_assert2_interface_step `{!t ↓u tunder} i `{!ZeroVal V} `{!go.TypeRepr t V} ::
-    go.IsGoStepPureDet (TypeAssert2 t) #i
+    ⟦TypeAssert2 t, #i⟧ ⤳
     ((match i with
       | interface.nil => #(zero_val V)
       | interface.ok i =>
@@ -86,7 +86,7 @@ Class InterfaceSemantics :=
      )%V;
 
   #[global] method_interface_ok m `{!t ≤u go.InterfaceType elems} (i : interface.t) ::
-    go.IsGoStepPureDet (MethodResolve t m) #i
+    ⟦MethodResolve t m, #i⟧ ⤳
     (match i with
      | interface.nil => (Panic "nil interface")%E
      | interface.ok i => #(methods i.(interface.ty) m i.(interface.v))

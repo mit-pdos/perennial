@@ -27,9 +27,9 @@ Class Semantics {ext : ffi_syntax} {go_lctx : GoLocalContext}
     #[global] go_eq_Pointer :: go.IsStrictlyComparable Pointer loc;
     #[global] underlying_pointer :: unsafe.Pointer ↓u unsafe.Pointer;
     #[global] convert_unsafe_to_pointer elem (l : loc) ::
-      go.IsConvert unsafe.Pointer (go.PointerType elem) #l #l;
+      ⟦Convert unsafe.Pointer (go.PointerType elem), #l⟧ ⤳[under] #l;
     #[global] convert_pointer_to_unsafe elem (l : loc) ::
-      go.IsConvert (go.PointerType elem) unsafe.Pointer #l #l;
+      ⟦Convert (go.PointerType elem) unsafe.Pointer, #l⟧ ⤳[under] #l;
   }.
 End unsafe.
 
@@ -136,376 +136,376 @@ Class UntypedIntSemantics `{!GoSemanticsFunctions} :=
 {
   #[global] underlying_untyped_int :: go.untyped_int ↓u go.untyped_int;
   #[global] neg_untyped_int (v : Z) ::
-    go.IsGoStepPureDet (GoUnOp GoNeg go.untyped_int) #v #(-v);
+    ⟦GoUnOp GoNeg go.untyped_int, #v⟧ ⤳ #(-v);
 
-  #[global] convert_untyped_int_to_int (v : Z) :: go.IsConvert go.untyped_int go.int #v #(W64 v);
-  #[global] convert_untyped_int_to_int64 (v : Z) :: go.IsConvert go.untyped_int go.int64 #v #(W64 v);
-  #[global] convert_untyped_int_to_int32 (v : Z) :: go.IsConvert go.untyped_int go.int32 #v #(W32 v);
-  #[global] convert_untyped_int_to_int16 (v : Z) :: go.IsConvert go.untyped_int go.int16 #v #(W16 v);
-  #[global] convert_untyped_int_to_int8 (v : Z) :: go.IsConvert go.untyped_int go.int8 #v #(W8 v);
-  #[global] convert_untyped_int_to_uint (v : Z) :: go.IsConvert go.untyped_int go.uint #v #(W64 v);
-  #[global] convert_untyped_int_to_uint64 (v : Z) :: go.IsConvert go.untyped_int go.uint64 #v #(W64 v);
-  #[global] convert_untyped_int_to_uint32 (v : Z) :: go.IsConvert go.untyped_int go.uint32 #v #(W32 v);
-  #[global] convert_untyped_int_to_uint16 (v : Z) :: go.IsConvert go.untyped_int go.uint16 #v #(W16 v);
-  #[global] convert_untyped_int_to_uint8 (v : Z) :: go.IsConvert go.untyped_int go.uint8 #v #(W8 v);
+  #[global] convert_untyped_int_to_int (v : Z) :: ⟦Convert go.untyped_int go.int, #v⟧ ⤳[under] #(W64 v);
+  #[global] convert_untyped_int_to_int64 (v : Z) :: ⟦Convert go.untyped_int go.int64, #v⟧ ⤳[under] #(W64 v);
+  #[global] convert_untyped_int_to_int32 (v : Z) :: ⟦Convert go.untyped_int go.int32, #v⟧ ⤳[under] #(W32 v);
+  #[global] convert_untyped_int_to_int16 (v : Z) :: ⟦Convert go.untyped_int go.int16, #v⟧ ⤳[under] #(W16 v);
+  #[global] convert_untyped_int_to_int8 (v : Z) :: ⟦Convert go.untyped_int go.int8, #v⟧ ⤳[under] #(W8 v);
+  #[global] convert_untyped_int_to_uint (v : Z) :: ⟦Convert go.untyped_int go.uint, #v⟧ ⤳[under] #(W64 v);
+  #[global] convert_untyped_int_to_uint64 (v : Z) :: ⟦Convert go.untyped_int go.uint64, #v⟧ ⤳[under] #(W64 v);
+  #[global] convert_untyped_int_to_uint32 (v : Z) :: ⟦Convert go.untyped_int go.uint32, #v⟧ ⤳[under] #(W32 v);
+  #[global] convert_untyped_int_to_uint16 (v : Z) :: ⟦Convert go.untyped_int go.uint16, #v⟧ ⤳[under] #(W16 v);
+  #[global] convert_untyped_int_to_uint8 (v : Z) :: ⟦Convert go.untyped_int go.uint8, #v⟧ ⤳[under] #(W8 v);
 }.
 Class IntSemantics `{!GoSemanticsFunctions} :=
 {
   #[global] type_repr_int :: go.TypeRepr go.int w64;
-  #[global] comparable_int :: go.IsComparable go.int;
+  #[global] comparable_int :: IsComparable go.int;
   #[global] underlying_int :: go.int ↓u go.int;
   #[global] go_eq_int :: go.IsStrictlyComparable go.int w64;
-  #[global] le_int (v1 v2 : w64) :: go.IsGoOp GoLe go.int #v1 #v2 #(bool_decide (sint.Z v1 ≤ sint.Z v2));
-  #[global] lt_int (v1 v2 : w64) :: go.IsGoOp GoLt go.int #v1 #v2 #(bool_decide (sint.Z v1 < sint.Z v2));
-  #[global] ge_int (v1 v2 : w64) :: go.IsGoOp GoGe go.int #v1 #v2 #(bool_decide (sint.Z v2 ≤ sint.Z v1));
-  #[global] gt_int (v1 v2 : w64) :: go.IsGoOp GoGt go.int #v1 #v2 #(bool_decide (sint.Z v2 < sint.Z v1));
-  #[global] plus_int (v1 v2 : w64) :: go.IsGoOp GoPlus go.int #v1 #v2 #(word.add v1 v2);
-  #[global] sub_int (v1 v2 : w64) :: go.IsGoOp GoSub go.int #v1 #v2 #(word.sub v1 v2);
-  #[global] mul_int (v1 v2 : w64) :: go.IsGoOp GoMul go.int #v1 #v2 #(word.mul v1 v2);
-  #[global] div_int (v1 v2 : w64) :: go.IsGoOp GoDiv go.int #v1 #v2 #(word.divs v1 v2);
-  #[global] remainder_int (v1 v2 : w64) :: go.IsGoOp GoRemainder go.int #v1 #v2 #(word.mods v1 v2);
-  #[global] and_int (v1 v2 : w64) :: go.IsGoOp GoAnd go.int #v1 #v2 #(word.and v1 v2);
-  #[global] or_int (v1 v2 : w64) :: go.IsGoOp GoOr go.int #v1 #v2 #(word.or v1 v2);
-  #[global] xor_int (v1 v2 : w64) :: go.IsGoOp GoXor go.int #v1 #v2 #(word.xor v1 v2);
-  #[global] shiftl_int (v1 v2 : w64) :: go.IsGoOp GoShiftl go.int #v1 #v2 #(word.slu v1 v2);
-  #[global] shiftr_int (v1 v2 : w64) :: go.IsGoOp GoShiftr go.int #v1 #v2 #(word.srs v1 v2);
+  #[global] le_int (v1 v2 : w64) :: ⟦GoOp GoLe go.int, (#v1, #v2)⟧ ⤳[under] #(bool_decide (sint.Z v1 ≤ sint.Z v2));
+  #[global] lt_int (v1 v2 : w64) :: ⟦GoOp GoLt go.int, (#v1, #v2)⟧ ⤳[under] #(bool_decide (sint.Z v1 < sint.Z v2));
+  #[global] ge_int (v1 v2 : w64) :: ⟦GoOp GoGe go.int, (#v1, #v2)⟧ ⤳[under] #(bool_decide (sint.Z v2 ≤ sint.Z v1));
+  #[global] gt_int (v1 v2 : w64) :: ⟦GoOp GoGt go.int, (#v1, #v2)⟧ ⤳[under] #(bool_decide (sint.Z v2 < sint.Z v1));
+  #[global] plus_int (v1 v2 : w64) :: ⟦GoOp GoPlus go.int, (#v1, #v2)⟧ ⤳[under] #(word.add v1 v2);
+  #[global] sub_int (v1 v2 : w64) :: ⟦GoOp GoSub go.int, (#v1, #v2)⟧ ⤳[under] #(word.sub v1 v2);
+  #[global] mul_int (v1 v2 : w64) :: ⟦GoOp GoMul go.int, (#v1, #v2)⟧ ⤳[under] #(word.mul v1 v2);
+  #[global] div_int (v1 v2 : w64) :: ⟦GoOp GoDiv go.int, (#v1, #v2)⟧ ⤳[under] #(word.divs v1 v2);
+  #[global] remainder_int (v1 v2 : w64) :: ⟦GoOp GoRemainder go.int, (#v1, #v2)⟧ ⤳[under] #(word.mods v1 v2);
+  #[global] and_int (v1 v2 : w64) :: ⟦GoOp GoAnd go.int, (#v1, #v2)⟧ ⤳[under] #(word.and v1 v2);
+  #[global] or_int (v1 v2 : w64) :: ⟦GoOp GoOr go.int, (#v1, #v2)⟧ ⤳[under] #(word.or v1 v2);
+  #[global] xor_int (v1 v2 : w64) :: ⟦GoOp GoXor go.int, (#v1, #v2)⟧ ⤳[under] #(word.xor v1 v2);
+  #[global] shiftl_int (v1 v2 : w64) :: ⟦GoOp GoShiftl go.int, (#v1, #v2)⟧ ⤳[under] #(word.slu v1 v2);
+  #[global] shiftr_int (v1 v2 : w64) :: ⟦GoOp GoShiftr go.int, (#v1, #v2)⟧ ⤳[under] #(word.srs v1 v2);
 
-  #[global] convert_int_to_int (v : w64) :: go.IsConvert go.int go.int #v #v;
-  #[global] convert_int64_to_int (v : w64) :: go.IsConvert go.int64 go.int #v #v;
-  #[global] convert_int32_to_int (v : w32) :: go.IsConvert go.int32 go.int #v #((W64 $ sint.Z v));
-  #[global] convert_int16_to_int (v : w16) :: go.IsConvert go.int16 go.int #v #((W64 $ sint.Z v));
-  #[global] convert_int8_to_int (v : w8) :: go.IsConvert go.int8 go.int #v #((W64 $ sint.Z v));
-  #[global] convert_uint_to_int (v : w64) :: go.IsConvert go.uint go.int #v #v;
-  #[global] convert_uint64_to_int (v : w64) :: go.IsConvert go.uint64 go.int #v #v;
-  #[global] convert_uint32_to_int (v : w32) :: go.IsConvert go.uint32 go.int #v #((W64 $ uint.Z v));
-  #[global] convert_uint16_to_int (v : w16) :: go.IsConvert go.uint16 go.int #v #((W64 $ uint.Z v));
-  #[global] convert_uint8_to_int (v : w8) :: go.IsConvert go.uint8 go.int #v #((W64 $ uint.Z v));
+  #[global] convert_int_to_int (v : w64) :: ⟦Convert go.int go.int, #v⟧ ⤳[under] #v;
+  #[global] convert_int64_to_int (v : w64) :: ⟦Convert go.int64 go.int, #v⟧ ⤳[under] #v;
+  #[global] convert_int32_to_int (v : w32) :: ⟦Convert go.int32 go.int, #v⟧ ⤳[under] #((W64 $ sint.Z v));
+  #[global] convert_int16_to_int (v : w16) :: ⟦Convert go.int16 go.int, #v⟧ ⤳[under] #((W64 $ sint.Z v));
+  #[global] convert_int8_to_int (v : w8) :: ⟦Convert go.int8 go.int, #v⟧ ⤳[under] #((W64 $ sint.Z v));
+  #[global] convert_uint_to_int (v : w64) :: ⟦Convert go.uint go.int, #v⟧ ⤳[under] #v;
+  #[global] convert_uint64_to_int (v : w64) :: ⟦Convert go.uint64 go.int, #v⟧ ⤳[under] #v;
+  #[global] convert_uint32_to_int (v : w32) :: ⟦Convert go.uint32 go.int, #v⟧ ⤳[under] #((W64 $ uint.Z v));
+  #[global] convert_uint16_to_int (v : w16) :: ⟦Convert go.uint16 go.int, #v⟧ ⤳[under] #((W64 $ uint.Z v));
+  #[global] convert_uint8_to_int (v : w8) :: ⟦Convert go.uint8 go.int, #v⟧ ⤳[under] #((W64 $ uint.Z v));
 }.
 Class Int64Semantics `{!GoSemanticsFunctions} :=
 {
   #[global] type_repr_int64 :: go.TypeRepr go.int64 w64;
-  #[global] comparable_int64 :: go.IsComparable go.int64;
+  #[global] comparable_int64 :: IsComparable go.int64;
   #[global] underlying_int64 :: go.int64 ↓u go.int64;
   #[global] go_eq_int64 :: go.IsStrictlyComparable go.int64 w64;
-  #[global] le_int64 (v1 v2 : w64) :: go.IsGoOp GoLe go.int64 #v1 #v2 #(bool_decide (sint.Z v1 ≤ sint.Z v2));
-  #[global] lt_int64 (v1 v2 : w64) :: go.IsGoOp GoLt go.int64 #v1 #v2 #(bool_decide (sint.Z v1 < sint.Z v2));
-  #[global] ge_int64 (v1 v2 : w64) :: go.IsGoOp GoGe go.int64 #v1 #v2 #(bool_decide (sint.Z v2 ≤ sint.Z v1));
-  #[global] gt_int64 (v1 v2 : w64) :: go.IsGoOp GoGt go.int64 #v1 #v2 #(bool_decide (sint.Z v2 < sint.Z v1));
-  #[global] plus_int64 (v1 v2 : w64) :: go.IsGoOp GoPlus go.int64 #v1 #v2 #(word.add v1 v2);
-  #[global] sub_int64 (v1 v2 : w64) :: go.IsGoOp GoSub go.int64 #v1 #v2 #(word.sub v1 v2);
-  #[global] mul_int64 (v1 v2 : w64) :: go.IsGoOp GoMul go.int64 #v1 #v2 #(word.mul v1 v2);
-  #[global] div_int64 (v1 v2 : w64) :: go.IsGoOp GoDiv go.int64 #v1 #v2 #(word.divs v1 v2);
-  #[global] remainder_int64 (v1 v2 : w64) :: go.IsGoOp GoRemainder go.int64 #v1 #v2 #(word.mods v1 v2);
-  #[global] and_int64 (v1 v2 : w64) :: go.IsGoOp GoAnd go.int64 #v1 #v2 #(word.and v1 v2);
-  #[global] or_int64 (v1 v2 : w64) :: go.IsGoOp GoOr go.int64 #v1 #v2 #(word.or v1 v2);
-  #[global] xor_int64 (v1 v2 : w64) :: go.IsGoOp GoXor go.int64 #v1 #v2 #(word.xor v1 v2);
-  #[global] shiftl_int64 (v1 v2 : w64) :: go.IsGoOp GoShiftl go.int64 #v1 #v2 #(word.slu v1 v2);
-  #[global] shiftr_int64 (v1 v2 : w64) :: go.IsGoOp GoShiftr go.int64 #v1 #v2 #(word.srs v1 v2);
+  #[global] le_int64 (v1 v2 : w64) :: ⟦GoOp GoLe go.int64, (#v1, #v2)⟧ ⤳[under] #(bool_decide (sint.Z v1 ≤ sint.Z v2));
+  #[global] lt_int64 (v1 v2 : w64) :: ⟦GoOp GoLt go.int64, (#v1, #v2)⟧ ⤳[under] #(bool_decide (sint.Z v1 < sint.Z v2));
+  #[global] ge_int64 (v1 v2 : w64) :: ⟦GoOp GoGe go.int64, (#v1, #v2)⟧ ⤳[under] #(bool_decide (sint.Z v2 ≤ sint.Z v1));
+  #[global] gt_int64 (v1 v2 : w64) :: ⟦GoOp GoGt go.int64, (#v1, #v2)⟧ ⤳[under] #(bool_decide (sint.Z v2 < sint.Z v1));
+  #[global] plus_int64 (v1 v2 : w64) :: ⟦GoOp GoPlus go.int64, (#v1, #v2)⟧ ⤳[under] #(word.add v1 v2);
+  #[global] sub_int64 (v1 v2 : w64) :: ⟦GoOp GoSub go.int64, (#v1, #v2)⟧ ⤳[under] #(word.sub v1 v2);
+  #[global] mul_int64 (v1 v2 : w64) :: ⟦GoOp GoMul go.int64, (#v1, #v2)⟧ ⤳[under] #(word.mul v1 v2);
+  #[global] div_int64 (v1 v2 : w64) :: ⟦GoOp GoDiv go.int64, (#v1, #v2)⟧ ⤳[under] #(word.divs v1 v2);
+  #[global] remainder_int64 (v1 v2 : w64) :: ⟦GoOp GoRemainder go.int64, (#v1, #v2)⟧ ⤳[under] #(word.mods v1 v2);
+  #[global] and_int64 (v1 v2 : w64) :: ⟦GoOp GoAnd go.int64, (#v1, #v2)⟧ ⤳[under] #(word.and v1 v2);
+  #[global] or_int64 (v1 v2 : w64) :: ⟦GoOp GoOr go.int64, (#v1, #v2)⟧ ⤳[under] #(word.or v1 v2);
+  #[global] xor_int64 (v1 v2 : w64) :: ⟦GoOp GoXor go.int64, (#v1, #v2)⟧ ⤳[under] #(word.xor v1 v2);
+  #[global] shiftl_int64 (v1 v2 : w64) :: ⟦GoOp GoShiftl go.int64, (#v1, #v2)⟧ ⤳[under] #(word.slu v1 v2);
+  #[global] shiftr_int64 (v1 v2 : w64) :: ⟦GoOp GoShiftr go.int64, (#v1, #v2)⟧ ⤳[under] #(word.srs v1 v2);
 
-  #[global] convert_int_to_int64 (v : w64) :: go.IsConvert go.int go.int64 #v #v;
-  #[global] convert_int64_to_int64 (v : w64) :: go.IsConvert go.int64 go.int64 #v #v;
-  #[global] convert_int32_to_int64 (v : w32) :: go.IsConvert go.int32 go.int64 #v #((W64 $ sint.Z v));
-  #[global] convert_int16_to_int64 (v : w16) :: go.IsConvert go.int16 go.int64 #v #((W64 $ sint.Z v));
-  #[global] convert_int8_to_int64 (v : w8) :: go.IsConvert go.int8 go.int64 #v #((W64 $ sint.Z v));
-  #[global] convert_uint_to_int64 (v : w64) :: go.IsConvert go.uint go.int64 #v #v;
-  #[global] convert_uint64_to_int64 (v : w64) :: go.IsConvert go.uint64 go.int64 #v #v;
-  #[global] convert_uint32_to_int64 (v : w32) :: go.IsConvert go.uint32 go.int64 #v #((W64 $ uint.Z v));
-  #[global] convert_uint16_to_int64 (v : w16) :: go.IsConvert go.uint16 go.int64 #v #((W64 $ uint.Z v));
-  #[global] convert_uint8_to_int64 (v : w8) :: go.IsConvert go.uint8 go.int64 #v #((W64 $ uint.Z v));
+  #[global] convert_int_to_int64 (v : w64) :: ⟦Convert go.int go.int64, #v⟧ ⤳[under] #v;
+  #[global] convert_int64_to_int64 (v : w64) :: ⟦Convert go.int64 go.int64, #v⟧ ⤳[under] #v;
+  #[global] convert_int32_to_int64 (v : w32) :: ⟦Convert go.int32 go.int64, #v⟧ ⤳[under] #((W64 $ sint.Z v));
+  #[global] convert_int16_to_int64 (v : w16) :: ⟦Convert go.int16 go.int64, #v⟧ ⤳[under] #((W64 $ sint.Z v));
+  #[global] convert_int8_to_int64 (v : w8) :: ⟦Convert go.int8 go.int64, #v⟧ ⤳[under] #((W64 $ sint.Z v));
+  #[global] convert_uint_to_int64 (v : w64) :: ⟦Convert go.uint go.int64, #v⟧ ⤳[under] #v;
+  #[global] convert_uint64_to_int64 (v : w64) :: ⟦Convert go.uint64 go.int64, #v⟧ ⤳[under] #v;
+  #[global] convert_uint32_to_int64 (v : w32) :: ⟦Convert go.uint32 go.int64, #v⟧ ⤳[under] #((W64 $ uint.Z v));
+  #[global] convert_uint16_to_int64 (v : w16) :: ⟦Convert go.uint16 go.int64, #v⟧ ⤳[under] #((W64 $ uint.Z v));
+  #[global] convert_uint8_to_int64 (v : w8) :: ⟦Convert go.uint8 go.int64, #v⟧ ⤳[under] #((W64 $ uint.Z v));
 }.
 Class Int32Semantics `{!GoSemanticsFunctions} :=
 {
   #[global] type_repr_int32 :: go.TypeRepr go.int32 w32;
-  #[global] comparable_int32 :: go.IsComparable go.int32;
+  #[global] comparable_int32 :: IsComparable go.int32;
   #[global] underlying_int32 :: go.int32 ↓u go.int32;
   #[global] go_eq_int32 :: go.IsStrictlyComparable go.int32 w32;
-  #[global] le_int32 (v1 v2 : w32) :: go.IsGoOp GoLe go.int32 #v1 #v2 #(bool_decide (sint.Z v1 ≤ sint.Z v2));
-  #[global] lt_int32 (v1 v2 : w32) :: go.IsGoOp GoLt go.int32 #v1 #v2 #(bool_decide (sint.Z v1 < sint.Z v2));
-  #[global] ge_int32 (v1 v2 : w32) :: go.IsGoOp GoGe go.int32 #v1 #v2 #(bool_decide (sint.Z v2 ≤ sint.Z v1));
-  #[global] gt_int32 (v1 v2 : w32) :: go.IsGoOp GoGt go.int32 #v1 #v2 #(bool_decide (sint.Z v2 < sint.Z v1));
-  #[global] plus_int32 (v1 v2 : w32) :: go.IsGoOp GoPlus go.int32 #v1 #v2 #(word.add v1 v2);
-  #[global] sub_int32 (v1 v2 : w32) :: go.IsGoOp GoSub go.int32 #v1 #v2 #(word.sub v1 v2);
-  #[global] mul_int32 (v1 v2 : w32) :: go.IsGoOp GoMul go.int32 #v1 #v2 #(word.mul v1 v2);
-  #[global] div_int32 (v1 v2 : w32) :: go.IsGoOp GoDiv go.int32 #v1 #v2 #(word.divs v1 v2);
-  #[global] remainder_int32 (v1 v2 : w32) :: go.IsGoOp GoRemainder go.int32 #v1 #v2 #(word.mods v1 v2);
-  #[global] and_int32 (v1 v2 : w32) :: go.IsGoOp GoAnd go.int32 #v1 #v2 #(word.and v1 v2);
-  #[global] or_int32 (v1 v2 : w32) :: go.IsGoOp GoOr go.int32 #v1 #v2 #(word.or v1 v2);
-  #[global] xor_int32 (v1 v2 : w32) :: go.IsGoOp GoXor go.int32 #v1 #v2 #(word.xor v1 v2);
-  #[global] shiftl_int32 (v1 v2 : w32) :: go.IsGoOp GoShiftl go.int32 #v1 #v2 #(word.slu v1 v2);
-  #[global] shiftr_int32 (v1 v2 : w32) :: go.IsGoOp GoShiftr go.int32 #v1 #v2 #(word.srs v1 v2);
+  #[global] le_int32 (v1 v2 : w32) :: ⟦GoOp GoLe go.int32, (#v1, #v2)⟧ ⤳[under] #(bool_decide (sint.Z v1 ≤ sint.Z v2));
+  #[global] lt_int32 (v1 v2 : w32) :: ⟦GoOp GoLt go.int32, (#v1, #v2)⟧ ⤳[under] #(bool_decide (sint.Z v1 < sint.Z v2));
+  #[global] ge_int32 (v1 v2 : w32) :: ⟦GoOp GoGe go.int32, (#v1, #v2)⟧ ⤳[under] #(bool_decide (sint.Z v2 ≤ sint.Z v1));
+  #[global] gt_int32 (v1 v2 : w32) :: ⟦GoOp GoGt go.int32, (#v1, #v2)⟧ ⤳[under] #(bool_decide (sint.Z v2 < sint.Z v1));
+  #[global] plus_int32 (v1 v2 : w32) :: ⟦GoOp GoPlus go.int32, (#v1, #v2)⟧ ⤳[under] #(word.add v1 v2);
+  #[global] sub_int32 (v1 v2 : w32) :: ⟦GoOp GoSub go.int32, (#v1, #v2)⟧ ⤳[under] #(word.sub v1 v2);
+  #[global] mul_int32 (v1 v2 : w32) :: ⟦GoOp GoMul go.int32, (#v1, #v2)⟧ ⤳[under] #(word.mul v1 v2);
+  #[global] div_int32 (v1 v2 : w32) :: ⟦GoOp GoDiv go.int32, (#v1, #v2)⟧ ⤳[under] #(word.divs v1 v2);
+  #[global] remainder_int32 (v1 v2 : w32) :: ⟦GoOp GoRemainder go.int32, (#v1, #v2)⟧ ⤳[under] #(word.mods v1 v2);
+  #[global] and_int32 (v1 v2 : w32) :: ⟦GoOp GoAnd go.int32, (#v1, #v2)⟧ ⤳[under] #(word.and v1 v2);
+  #[global] or_int32 (v1 v2 : w32) :: ⟦GoOp GoOr go.int32, (#v1, #v2)⟧ ⤳[under] #(word.or v1 v2);
+  #[global] xor_int32 (v1 v2 : w32) :: ⟦GoOp GoXor go.int32, (#v1, #v2)⟧ ⤳[under] #(word.xor v1 v2);
+  #[global] shiftl_int32 (v1 v2 : w32) :: ⟦GoOp GoShiftl go.int32, (#v1, #v2)⟧ ⤳[under] #(word.slu v1 v2);
+  #[global] shiftr_int32 (v1 v2 : w32) :: ⟦GoOp GoShiftr go.int32, (#v1, #v2)⟧ ⤳[under] #(word.srs v1 v2);
 
-  #[global] convert_int_to_int32 (v : w64) :: go.IsConvert go.int go.int32 #v #((W32 $ sint.Z v));
-  #[global] convert_int64_to_int32 (v : w64) :: go.IsConvert go.int64 go.int32 #v #((W32 $ sint.Z v));
-  #[global] convert_int32_to_int32 (v : w32) :: go.IsConvert go.int32 go.int32 #v #v;
-  #[global] convert_int16_to_int32 (v : w16) :: go.IsConvert go.int16 go.int32 #v #((W32 $ sint.Z v));
-  #[global] convert_int8_to_int32 (v : w8) :: go.IsConvert go.int8 go.int32 #v #((W32 $ sint.Z v));
-  #[global] convert_uint_to_int32 (v : w64) :: go.IsConvert go.uint go.int32 #v #((W32 $ uint.Z v));
-  #[global] convert_uint64_to_int32 (v : w64) :: go.IsConvert go.uint64 go.int32 #v #((W32 $ uint.Z v));
-  #[global] convert_uint32_to_int32 (v : w32) :: go.IsConvert go.uint32 go.int32 #v #v;
-  #[global] convert_uint16_to_int32 (v : w16) :: go.IsConvert go.uint16 go.int32 #v #((W32 $ uint.Z v));
-  #[global] convert_uint8_to_int32 (v : w8) :: go.IsConvert go.uint8 go.int32 #v #((W32 $ uint.Z v));
+  #[global] convert_int_to_int32 (v : w64) :: ⟦Convert go.int go.int32, #v⟧ ⤳[under] #((W32 $ sint.Z v));
+  #[global] convert_int64_to_int32 (v : w64) :: ⟦Convert go.int64 go.int32, #v⟧ ⤳[under] #((W32 $ sint.Z v));
+  #[global] convert_int32_to_int32 (v : w32) :: ⟦Convert go.int32 go.int32, #v⟧ ⤳[under] #v;
+  #[global] convert_int16_to_int32 (v : w16) :: ⟦Convert go.int16 go.int32, #v⟧ ⤳[under] #((W32 $ sint.Z v));
+  #[global] convert_int8_to_int32 (v : w8) :: ⟦Convert go.int8 go.int32, #v⟧ ⤳[under] #((W32 $ sint.Z v));
+  #[global] convert_uint_to_int32 (v : w64) :: ⟦Convert go.uint go.int32, #v⟧ ⤳[under] #((W32 $ uint.Z v));
+  #[global] convert_uint64_to_int32 (v : w64) :: ⟦Convert go.uint64 go.int32, #v⟧ ⤳[under] #((W32 $ uint.Z v));
+  #[global] convert_uint32_to_int32 (v : w32) :: ⟦Convert go.uint32 go.int32, #v⟧ ⤳[under] #v;
+  #[global] convert_uint16_to_int32 (v : w16) :: ⟦Convert go.uint16 go.int32, #v⟧ ⤳[under] #((W32 $ uint.Z v));
+  #[global] convert_uint8_to_int32 (v : w8) :: ⟦Convert go.uint8 go.int32, #v⟧ ⤳[under] #((W32 $ uint.Z v));
 }.
 Class Int16Semantics `{!GoSemanticsFunctions} :=
 {
   #[global] type_repr_int16 :: go.TypeRepr go.int16 w16;
-  #[global] comparable_int16 :: go.IsComparable go.int16;
+  #[global] comparable_int16 :: IsComparable go.int16;
   #[global] underlying_int16 :: go.int16 ↓u go.int16;
   #[global] go_eq_int16 :: go.IsStrictlyComparable go.int16 w16;
-  #[global] le_int16 (v1 v2 : w16) :: go.IsGoOp GoLe go.int16 #v1 #v2 #(bool_decide (sint.Z v1 ≤ sint.Z v2));
-  #[global] lt_int16 (v1 v2 : w16) :: go.IsGoOp GoLt go.int16 #v1 #v2 #(bool_decide (sint.Z v1 < sint.Z v2));
-  #[global] ge_int16 (v1 v2 : w16) :: go.IsGoOp GoGe go.int16 #v1 #v2 #(bool_decide (sint.Z v2 ≤ sint.Z v1));
-  #[global] gt_int16 (v1 v2 : w16) :: go.IsGoOp GoGt go.int16 #v1 #v2 #(bool_decide (sint.Z v2 < sint.Z v1));
-  #[global] plus_int16 (v1 v2 : w16) :: go.IsGoOp GoPlus go.int16 #v1 #v2 #(word.add v1 v2);
-  #[global] sub_int16 (v1 v2 : w16) :: go.IsGoOp GoSub go.int16 #v1 #v2 #(word.sub v1 v2);
-  #[global] mul_int16 (v1 v2 : w16) :: go.IsGoOp GoMul go.int16 #v1 #v2 #(word.mul v1 v2);
-  #[global] div_int16 (v1 v2 : w16) :: go.IsGoOp GoDiv go.int16 #v1 #v2 #(word.divs v1 v2);
-  #[global] remainder_int16 (v1 v2 : w16) :: go.IsGoOp GoRemainder go.int16 #v1 #v2 #(word.mods v1 v2);
-  #[global] and_int16 (v1 v2 : w16) :: go.IsGoOp GoAnd go.int16 #v1 #v2 #(word.and v1 v2);
-  #[global] or_int16 (v1 v2 : w16) :: go.IsGoOp GoOr go.int16 #v1 #v2 #(word.or v1 v2);
-  #[global] xor_int16 (v1 v2 : w16) :: go.IsGoOp GoXor go.int16 #v1 #v2 #(word.xor v1 v2);
-  #[global] shiftl_int16 (v1 v2 : w16) :: go.IsGoOp GoShiftl go.int16 #v1 #v2 #(word.slu v1 v2);
-  #[global] shiftr_int16 (v1 v2 : w16) :: go.IsGoOp GoShiftr go.int16 #v1 #v2 #(word.srs v1 v2);
+  #[global] le_int16 (v1 v2 : w16) :: ⟦GoOp GoLe go.int16, (#v1, #v2)⟧ ⤳[under] #(bool_decide (sint.Z v1 ≤ sint.Z v2));
+  #[global] lt_int16 (v1 v2 : w16) :: ⟦GoOp GoLt go.int16, (#v1, #v2)⟧ ⤳[under] #(bool_decide (sint.Z v1 < sint.Z v2));
+  #[global] ge_int16 (v1 v2 : w16) :: ⟦GoOp GoGe go.int16, (#v1, #v2)⟧ ⤳[under] #(bool_decide (sint.Z v2 ≤ sint.Z v1));
+  #[global] gt_int16 (v1 v2 : w16) :: ⟦GoOp GoGt go.int16, (#v1, #v2)⟧ ⤳[under] #(bool_decide (sint.Z v2 < sint.Z v1));
+  #[global] plus_int16 (v1 v2 : w16) :: ⟦GoOp GoPlus go.int16, (#v1, #v2)⟧ ⤳[under] #(word.add v1 v2);
+  #[global] sub_int16 (v1 v2 : w16) :: ⟦GoOp GoSub go.int16, (#v1, #v2)⟧ ⤳[under] #(word.sub v1 v2);
+  #[global] mul_int16 (v1 v2 : w16) :: ⟦GoOp GoMul go.int16, (#v1, #v2)⟧ ⤳[under] #(word.mul v1 v2);
+  #[global] div_int16 (v1 v2 : w16) :: ⟦GoOp GoDiv go.int16, (#v1, #v2)⟧ ⤳[under] #(word.divs v1 v2);
+  #[global] remainder_int16 (v1 v2 : w16) :: ⟦GoOp GoRemainder go.int16, (#v1, #v2)⟧ ⤳[under] #(word.mods v1 v2);
+  #[global] and_int16 (v1 v2 : w16) :: ⟦GoOp GoAnd go.int16, (#v1, #v2)⟧ ⤳[under] #(word.and v1 v2);
+  #[global] or_int16 (v1 v2 : w16) :: ⟦GoOp GoOr go.int16, (#v1, #v2)⟧ ⤳[under] #(word.or v1 v2);
+  #[global] xor_int16 (v1 v2 : w16) :: ⟦GoOp GoXor go.int16, (#v1, #v2)⟧ ⤳[under] #(word.xor v1 v2);
+  #[global] shiftl_int16 (v1 v2 : w16) :: ⟦GoOp GoShiftl go.int16, (#v1, #v2)⟧ ⤳[under] #(word.slu v1 v2);
+  #[global] shiftr_int16 (v1 v2 : w16) :: ⟦GoOp GoShiftr go.int16, (#v1, #v2)⟧ ⤳[under] #(word.srs v1 v2);
 
-  #[global] convert_int_to_int16 (v : w64) :: go.IsConvert go.int go.int16 #v #((W16 $ sint.Z v));
-  #[global] convert_int64_to_int16 (v : w64) :: go.IsConvert go.int64 go.int16 #v #((W16 $ sint.Z v));
-  #[global] convert_int32_to_int16 (v : w32) :: go.IsConvert go.int32 go.int16 #v #((W16 $ sint.Z v));
-  #[global] convert_int16_to_int16 (v : w16) :: go.IsConvert go.int16 go.int16 #v #v;
-  #[global] convert_int8_to_int16 (v : w8) :: go.IsConvert go.int8 go.int16 #v #((W16 $ sint.Z v));
-  #[global] convert_uint_to_int16 (v : w64) :: go.IsConvert go.uint go.int16 #v #((W16 $ uint.Z v));
-  #[global] convert_uint64_to_int16 (v : w64) :: go.IsConvert go.uint64 go.int16 #v #((W16 $ uint.Z v));
-  #[global] convert_uint32_to_int16 (v : w32) :: go.IsConvert go.uint32 go.int16 #v #((W16 $ uint.Z v));
-  #[global] convert_uint16_to_int16 (v : w16) :: go.IsConvert go.uint16 go.int16 #v #v;
-  #[global] convert_uint8_to_int16 (v : w8) :: go.IsConvert go.uint8 go.int16 #v #((W16 $ uint.Z v));
+  #[global] convert_int_to_int16 (v : w64) :: ⟦Convert go.int go.int16, #v⟧ ⤳[under] #((W16 $ sint.Z v));
+  #[global] convert_int64_to_int16 (v : w64) :: ⟦Convert go.int64 go.int16, #v⟧ ⤳[under] #((W16 $ sint.Z v));
+  #[global] convert_int32_to_int16 (v : w32) :: ⟦Convert go.int32 go.int16, #v⟧ ⤳[under] #((W16 $ sint.Z v));
+  #[global] convert_int16_to_int16 (v : w16) :: ⟦Convert go.int16 go.int16, #v⟧ ⤳[under] #v;
+  #[global] convert_int8_to_int16 (v : w8) :: ⟦Convert go.int8 go.int16, #v⟧ ⤳[under] #((W16 $ sint.Z v));
+  #[global] convert_uint_to_int16 (v : w64) :: ⟦Convert go.uint go.int16, #v⟧ ⤳[under] #((W16 $ uint.Z v));
+  #[global] convert_uint64_to_int16 (v : w64) :: ⟦Convert go.uint64 go.int16, #v⟧ ⤳[under] #((W16 $ uint.Z v));
+  #[global] convert_uint32_to_int16 (v : w32) :: ⟦Convert go.uint32 go.int16, #v⟧ ⤳[under] #((W16 $ uint.Z v));
+  #[global] convert_uint16_to_int16 (v : w16) :: ⟦Convert go.uint16 go.int16, #v⟧ ⤳[under] #v;
+  #[global] convert_uint8_to_int16 (v : w8) :: ⟦Convert go.uint8 go.int16, #v⟧ ⤳[under] #((W16 $ uint.Z v));
 }.
 Class Int8Semantics `{!GoSemanticsFunctions} :=
 {
   #[global] type_repr_int8 :: go.TypeRepr go.int8 w8;
-  #[global] comparable_int8 :: go.IsComparable go.int8;
+  #[global] comparable_int8 :: IsComparable go.int8;
   #[global] underlying_int8 :: go.int8 ↓u go.int8;
   #[global] go_eq_int8 :: go.IsStrictlyComparable go.int8 w8;
-  #[global] le_int8 (v1 v2 : w8) :: go.IsGoOp GoLe go.int8 #v1 #v2 #(bool_decide (sint.Z v1 ≤ sint.Z v2));
-  #[global] lt_int8 (v1 v2 : w8) :: go.IsGoOp GoLt go.int8 #v1 #v2 #(bool_decide (sint.Z v1 < sint.Z v2));
-  #[global] ge_int8 (v1 v2 : w8) :: go.IsGoOp GoGe go.int8 #v1 #v2 #(bool_decide (sint.Z v2 ≤ sint.Z v1));
-  #[global] gt_int8 (v1 v2 : w8) :: go.IsGoOp GoGt go.int8 #v1 #v2 #(bool_decide (sint.Z v2 < sint.Z v1));
-  #[global] plus_int8 (v1 v2 : w8) :: go.IsGoOp GoPlus go.int8 #v1 #v2 #(word.add v1 v2);
-  #[global] sub_int8 (v1 v2 : w8) :: go.IsGoOp GoSub go.int8 #v1 #v2 #(word.sub v1 v2);
-  #[global] mul_int8 (v1 v2 : w8) :: go.IsGoOp GoMul go.int8 #v1 #v2 #(word.mul v1 v2);
-  #[global] div_int8 (v1 v2 : w8) :: go.IsGoOp GoDiv go.int8 #v1 #v2 #(word.divs v1 v2);
-  #[global] remainder_int8 (v1 v2 : w8) :: go.IsGoOp GoRemainder go.int8 #v1 #v2 #(word.mods v1 v2);
-  #[global] and_int8 (v1 v2 : w8) :: go.IsGoOp GoAnd go.int8 #v1 #v2 #(word.and v1 v2);
-  #[global] or_int8 (v1 v2 : w8) :: go.IsGoOp GoOr go.int8 #v1 #v2 #(word.or v1 v2);
-  #[global] xor_int8 (v1 v2 : w8) :: go.IsGoOp GoXor go.int8 #v1 #v2 #(word.xor v1 v2);
-  #[global] shiftl_int8 (v1 v2 : w8) :: go.IsGoOp GoShiftl go.int8 #v1 #v2 #(word.slu v1 v2);
-  #[global] shiftr_int8 (v1 v2 : w8) :: go.IsGoOp GoShiftr go.int8 #v1 #v2 #(word.srs v1 v2);
+  #[global] le_int8 (v1 v2 : w8) :: ⟦GoOp GoLe go.int8, (#v1, #v2)⟧ ⤳[under] #(bool_decide (sint.Z v1 ≤ sint.Z v2));
+  #[global] lt_int8 (v1 v2 : w8) :: ⟦GoOp GoLt go.int8, (#v1, #v2)⟧ ⤳[under] #(bool_decide (sint.Z v1 < sint.Z v2));
+  #[global] ge_int8 (v1 v2 : w8) :: ⟦GoOp GoGe go.int8, (#v1, #v2)⟧ ⤳[under] #(bool_decide (sint.Z v2 ≤ sint.Z v1));
+  #[global] gt_int8 (v1 v2 : w8) :: ⟦GoOp GoGt go.int8, (#v1, #v2)⟧ ⤳[under] #(bool_decide (sint.Z v2 < sint.Z v1));
+  #[global] plus_int8 (v1 v2 : w8) :: ⟦GoOp GoPlus go.int8, (#v1, #v2)⟧ ⤳[under] #(word.add v1 v2);
+  #[global] sub_int8 (v1 v2 : w8) :: ⟦GoOp GoSub go.int8, (#v1, #v2)⟧ ⤳[under] #(word.sub v1 v2);
+  #[global] mul_int8 (v1 v2 : w8) :: ⟦GoOp GoMul go.int8, (#v1, #v2)⟧ ⤳[under] #(word.mul v1 v2);
+  #[global] div_int8 (v1 v2 : w8) :: ⟦GoOp GoDiv go.int8, (#v1, #v2)⟧ ⤳[under] #(word.divs v1 v2);
+  #[global] remainder_int8 (v1 v2 : w8) :: ⟦GoOp GoRemainder go.int8, (#v1, #v2)⟧ ⤳[under] #(word.mods v1 v2);
+  #[global] and_int8 (v1 v2 : w8) :: ⟦GoOp GoAnd go.int8, (#v1, #v2)⟧ ⤳[under] #(word.and v1 v2);
+  #[global] or_int8 (v1 v2 : w8) :: ⟦GoOp GoOr go.int8, (#v1, #v2)⟧ ⤳[under] #(word.or v1 v2);
+  #[global] xor_int8 (v1 v2 : w8) :: ⟦GoOp GoXor go.int8, (#v1, #v2)⟧ ⤳[under] #(word.xor v1 v2);
+  #[global] shiftl_int8 (v1 v2 : w8) :: ⟦GoOp GoShiftl go.int8, (#v1, #v2)⟧ ⤳[under] #(word.slu v1 v2);
+  #[global] shiftr_int8 (v1 v2 : w8) :: ⟦GoOp GoShiftr go.int8, (#v1, #v2)⟧ ⤳[under] #(word.srs v1 v2);
 
-  #[global] convert_int_to_int8 (v : w64) :: go.IsConvert go.int go.int8 #v #((W8 $ sint.Z v));
-  #[global] convert_int64_to_int8 (v : w64) :: go.IsConvert go.int64 go.int8 #v #((W8 $ sint.Z v));
-  #[global] convert_int32_to_int8 (v : w32) :: go.IsConvert go.int32 go.int8 #v #((W8 $ sint.Z v));
-  #[global] convert_int16_to_int8 (v : w16) :: go.IsConvert go.int16 go.int8 #v #((W8 $ sint.Z v));
-  #[global] convert_int8_to_int8 (v : w8) :: go.IsConvert go.int8 go.int8 #v #v;
-  #[global] convert_uint_to_int8 (v : w64) :: go.IsConvert go.uint go.int8 #v #((W8 $ uint.Z v));
-  #[global] convert_uint64_to_int8 (v : w64) :: go.IsConvert go.uint64 go.int8 #v #((W8 $ uint.Z v));
-  #[global] convert_uint32_to_int8 (v : w32) :: go.IsConvert go.uint32 go.int8 #v #((W8 $ uint.Z v));
-  #[global] convert_uint16_to_int8 (v : w16) :: go.IsConvert go.uint16 go.int8 #v #((W8 $ uint.Z v));
-  #[global] convert_uint8_to_int8 (v : w8) :: go.IsConvert go.uint8 go.int8 #v #v;
+  #[global] convert_int_to_int8 (v : w64) :: ⟦Convert go.int go.int8, #v⟧ ⤳[under] #((W8 $ sint.Z v));
+  #[global] convert_int64_to_int8 (v : w64) :: ⟦Convert go.int64 go.int8, #v⟧ ⤳[under] #((W8 $ sint.Z v));
+  #[global] convert_int32_to_int8 (v : w32) :: ⟦Convert go.int32 go.int8, #v⟧ ⤳[under] #((W8 $ sint.Z v));
+  #[global] convert_int16_to_int8 (v : w16) :: ⟦Convert go.int16 go.int8, #v⟧ ⤳[under] #((W8 $ sint.Z v));
+  #[global] convert_int8_to_int8 (v : w8) :: ⟦Convert go.int8 go.int8, #v⟧ ⤳[under] #v;
+  #[global] convert_uint_to_int8 (v : w64) :: ⟦Convert go.uint go.int8, #v⟧ ⤳[under] #((W8 $ uint.Z v));
+  #[global] convert_uint64_to_int8 (v : w64) :: ⟦Convert go.uint64 go.int8, #v⟧ ⤳[under] #((W8 $ uint.Z v));
+  #[global] convert_uint32_to_int8 (v : w32) :: ⟦Convert go.uint32 go.int8, #v⟧ ⤳[under] #((W8 $ uint.Z v));
+  #[global] convert_uint16_to_int8 (v : w16) :: ⟦Convert go.uint16 go.int8, #v⟧ ⤳[under] #((W8 $ uint.Z v));
+  #[global] convert_uint8_to_int8 (v : w8) :: ⟦Convert go.uint8 go.int8, #v⟧ ⤳[under] #v;
 }.
 Class UintSemantics `{!GoSemanticsFunctions} :=
 {
   #[global] type_repr_uint :: go.TypeRepr go.uint w64;
-  #[global] comparable_uint :: go.IsComparable go.uint;
+  #[global] comparable_uint :: IsComparable go.uint;
   #[global] underlying_uint :: go.uint ↓u go.uint;
   #[global] go_eq_uint :: go.IsStrictlyComparable go.uint w64;
-  #[global] le_uint (v1 v2 : w64) :: go.IsGoOp GoLe go.uint #v1 #v2 #(bool_decide (uint.Z v1 ≤ uint.Z v2));
-  #[global] lt_uint (v1 v2 : w64) :: go.IsGoOp GoLt go.uint #v1 #v2 #(bool_decide (uint.Z v1 < uint.Z v2));
-  #[global] ge_uint (v1 v2 : w64) :: go.IsGoOp GoGe go.uint #v1 #v2 #(bool_decide (uint.Z v2 ≤ uint.Z v1));
-  #[global] gt_uint (v1 v2 : w64) :: go.IsGoOp GoGt go.uint #v1 #v2 #(bool_decide (uint.Z v2 < uint.Z v1));
-  #[global] plus_uint (v1 v2 : w64) :: go.IsGoOp GoPlus go.uint #v1 #v2 #(word.add v1 v2);
-  #[global] sub_uint (v1 v2 : w64) :: go.IsGoOp GoSub go.uint #v1 #v2 #(word.sub v1 v2);
-  #[global] mul_uint (v1 v2 : w64) :: go.IsGoOp GoMul go.uint #v1 #v2 #(word.mul v1 v2);
-  #[global] div_uint (v1 v2 : w64) :: go.IsGoOp GoDiv go.uint #v1 #v2 #(word.divu v1 v2);
-  #[global] remainder_uint (v1 v2 : w64) :: go.IsGoOp GoRemainder go.uint #v1 #v2 #(word.modu v1 v2);
-  #[global] and_uint (v1 v2 : w64) :: go.IsGoOp GoAnd go.uint #v1 #v2 #(word.and v1 v2);
-  #[global] or_uint (v1 v2 : w64) :: go.IsGoOp GoOr go.uint #v1 #v2 #(word.or v1 v2);
-  #[global] xor_uint (v1 v2 : w64) :: go.IsGoOp GoXor go.uint #v1 #v2 #(word.xor v1 v2);
-  #[global] shiftl_uint (v1 v2 : w64) :: go.IsGoOp GoShiftl go.uint #v1 #v2 #(word.slu v1 v2);
-  #[global] shiftr_uint (v1 v2 : w64) :: go.IsGoOp GoShiftr go.uint #v1 #v2 #(word.sru v1 v2);
+  #[global] le_uint (v1 v2 : w64) :: ⟦GoOp GoLe go.uint, (#v1, #v2)⟧ ⤳[under] #(bool_decide (uint.Z v1 ≤ uint.Z v2));
+  #[global] lt_uint (v1 v2 : w64) :: ⟦GoOp GoLt go.uint, (#v1, #v2)⟧ ⤳[under] #(bool_decide (uint.Z v1 < uint.Z v2));
+  #[global] ge_uint (v1 v2 : w64) :: ⟦GoOp GoGe go.uint, (#v1, #v2)⟧ ⤳[under] #(bool_decide (uint.Z v2 ≤ uint.Z v1));
+  #[global] gt_uint (v1 v2 : w64) :: ⟦GoOp GoGt go.uint, (#v1, #v2)⟧ ⤳[under] #(bool_decide (uint.Z v2 < uint.Z v1));
+  #[global] plus_uint (v1 v2 : w64) :: ⟦GoOp GoPlus go.uint, (#v1, #v2)⟧ ⤳[under] #(word.add v1 v2);
+  #[global] sub_uint (v1 v2 : w64) :: ⟦GoOp GoSub go.uint, (#v1, #v2)⟧ ⤳[under] #(word.sub v1 v2);
+  #[global] mul_uint (v1 v2 : w64) :: ⟦GoOp GoMul go.uint, (#v1, #v2)⟧ ⤳[under] #(word.mul v1 v2);
+  #[global] div_uint (v1 v2 : w64) :: ⟦GoOp GoDiv go.uint, (#v1, #v2)⟧ ⤳[under] #(word.divu v1 v2);
+  #[global] remainder_uint (v1 v2 : w64) :: ⟦GoOp GoRemainder go.uint, (#v1, #v2)⟧ ⤳[under] #(word.modu v1 v2);
+  #[global] and_uint (v1 v2 : w64) :: ⟦GoOp GoAnd go.uint, (#v1, #v2)⟧ ⤳[under] #(word.and v1 v2);
+  #[global] or_uint (v1 v2 : w64) :: ⟦GoOp GoOr go.uint, (#v1, #v2)⟧ ⤳[under] #(word.or v1 v2);
+  #[global] xor_uint (v1 v2 : w64) :: ⟦GoOp GoXor go.uint, (#v1, #v2)⟧ ⤳[under] #(word.xor v1 v2);
+  #[global] shiftl_uint (v1 v2 : w64) :: ⟦GoOp GoShiftl go.uint, (#v1, #v2)⟧ ⤳[under] #(word.slu v1 v2);
+  #[global] shiftr_uint (v1 v2 : w64) :: ⟦GoOp GoShiftr go.uint, (#v1, #v2)⟧ ⤳[under] #(word.sru v1 v2);
 
-  #[global] convert_int_to_uint (v : w64) :: go.IsConvert go.int go.uint #v #v;
-  #[global] convert_int64_to_uint (v : w64) :: go.IsConvert go.int64 go.uint #v #v;
-  #[global] convert_int32_to_uint (v : w32) :: go.IsConvert go.int32 go.uint #v #((W64 $ sint.Z v));
-  #[global] convert_int16_to_uint (v : w16) :: go.IsConvert go.int16 go.uint #v #((W64 $ sint.Z v));
-  #[global] convert_int8_to_uint (v : w8) :: go.IsConvert go.int8 go.uint #v #((W64 $ sint.Z v));
-  #[global] convert_uint_to_uint (v : w64) :: go.IsConvert go.uint go.uint #v #v;
-  #[global] convert_uint64_to_uint (v : w64) :: go.IsConvert go.uint64 go.uint #v #v;
-  #[global] convert_uint32_to_uint (v : w32) :: go.IsConvert go.uint32 go.uint #v #((W64 $ uint.Z v));
-  #[global] convert_uint16_to_uint (v : w16) :: go.IsConvert go.uint16 go.uint #v #((W64 $ uint.Z v));
-  #[global] convert_uint8_to_uint (v : w8) :: go.IsConvert go.uint8 go.uint #v #((W64 $ uint.Z v));
+  #[global] convert_int_to_uint (v : w64) :: ⟦Convert go.int go.uint, #v⟧ ⤳[under] #v;
+  #[global] convert_int64_to_uint (v : w64) :: ⟦Convert go.int64 go.uint, #v⟧ ⤳[under] #v;
+  #[global] convert_int32_to_uint (v : w32) :: ⟦Convert go.int32 go.uint, #v⟧ ⤳[under] #((W64 $ sint.Z v));
+  #[global] convert_int16_to_uint (v : w16) :: ⟦Convert go.int16 go.uint, #v⟧ ⤳[under] #((W64 $ sint.Z v));
+  #[global] convert_int8_to_uint (v : w8) :: ⟦Convert go.int8 go.uint, #v⟧ ⤳[under] #((W64 $ sint.Z v));
+  #[global] convert_uint_to_uint (v : w64) :: ⟦Convert go.uint go.uint, #v⟧ ⤳[under] #v;
+  #[global] convert_uint64_to_uint (v : w64) :: ⟦Convert go.uint64 go.uint, #v⟧ ⤳[under] #v;
+  #[global] convert_uint32_to_uint (v : w32) :: ⟦Convert go.uint32 go.uint, #v⟧ ⤳[under] #((W64 $ uint.Z v));
+  #[global] convert_uint16_to_uint (v : w16) :: ⟦Convert go.uint16 go.uint, #v⟧ ⤳[under] #((W64 $ uint.Z v));
+  #[global] convert_uint8_to_uint (v : w8) :: ⟦Convert go.uint8 go.uint, #v⟧ ⤳[under] #((W64 $ uint.Z v));
 }.
 Class Uint64Semantics `{!GoSemanticsFunctions} :=
 {
   #[global] type_repr_uint64 :: go.TypeRepr go.uint64 w64;
-  #[global] comparable_uint64 :: go.IsComparable go.uint64;
+  #[global] comparable_uint64 :: IsComparable go.uint64;
   #[global] underlying_uint64 :: go.uint64 ↓u go.uint64;
   #[global] go_eq_uint64 :: go.IsStrictlyComparable go.uint64 w64;
-  #[global] le_uint64 (v1 v2 : w64) :: go.IsGoOp GoLe go.uint64 #v1 #v2 #(bool_decide (uint.Z v1 ≤ uint.Z v2));
-  #[global] lt_uint64 (v1 v2 : w64) :: go.IsGoOp GoLt go.uint64 #v1 #v2 #(bool_decide (uint.Z v1 < uint.Z v2));
-  #[global] ge_uint64 (v1 v2 : w64) :: go.IsGoOp GoGe go.uint64 #v1 #v2 #(bool_decide (uint.Z v2 ≤ uint.Z v1));
-  #[global] gt_uint64 (v1 v2 : w64) :: go.IsGoOp GoGt go.uint64 #v1 #v2 #(bool_decide (uint.Z v2 < uint.Z v1));
-  #[global] plus_uint64 (v1 v2 : w64) :: go.IsGoOp GoPlus go.uint64 #v1 #v2 #(word.add v1 v2);
-  #[global] sub_uint64 (v1 v2 : w64) :: go.IsGoOp GoSub go.uint64 #v1 #v2 #(word.sub v1 v2);
-  #[global] mul_uint64 (v1 v2 : w64) :: go.IsGoOp GoMul go.uint64 #v1 #v2 #(word.mul v1 v2);
-  #[global] div_uint64 (v1 v2 : w64) :: go.IsGoOp GoDiv go.uint64 #v1 #v2 #(word.divu v1 v2);
-  #[global] remainder_uint64 (v1 v2 : w64) :: go.IsGoOp GoRemainder go.uint64 #v1 #v2 #(word.modu v1 v2);
-  #[global] and_uint64 (v1 v2 : w64) :: go.IsGoOp GoAnd go.uint64 #v1 #v2 #(word.and v1 v2);
-  #[global] or_uint64 (v1 v2 : w64) :: go.IsGoOp GoOr go.uint64 #v1 #v2 #(word.or v1 v2);
-  #[global] xor_uint64 (v1 v2 : w64) :: go.IsGoOp GoXor go.uint64 #v1 #v2 #(word.xor v1 v2);
-  #[global] shiftl_uint64 (v1 v2 : w64) :: go.IsGoOp GoShiftl go.uint64 #v1 #v2 #(word.slu v1 v2);
-  #[global] shiftr_uint64 (v1 v2 : w64) :: go.IsGoOp GoShiftr go.uint64 #v1 #v2 #(word.sru v1 v2);
+  #[global] le_uint64 (v1 v2 : w64) :: ⟦GoOp GoLe go.uint64, (#v1, #v2)⟧ ⤳[under] #(bool_decide (uint.Z v1 ≤ uint.Z v2));
+  #[global] lt_uint64 (v1 v2 : w64) :: ⟦GoOp GoLt go.uint64, (#v1, #v2)⟧ ⤳[under] #(bool_decide (uint.Z v1 < uint.Z v2));
+  #[global] ge_uint64 (v1 v2 : w64) :: ⟦GoOp GoGe go.uint64, (#v1, #v2)⟧ ⤳[under] #(bool_decide (uint.Z v2 ≤ uint.Z v1));
+  #[global] gt_uint64 (v1 v2 : w64) :: ⟦GoOp GoGt go.uint64, (#v1, #v2)⟧ ⤳[under] #(bool_decide (uint.Z v2 < uint.Z v1));
+  #[global] plus_uint64 (v1 v2 : w64) :: ⟦GoOp GoPlus go.uint64, (#v1, #v2)⟧ ⤳[under] #(word.add v1 v2);
+  #[global] sub_uint64 (v1 v2 : w64) :: ⟦GoOp GoSub go.uint64, (#v1, #v2)⟧ ⤳[under] #(word.sub v1 v2);
+  #[global] mul_uint64 (v1 v2 : w64) :: ⟦GoOp GoMul go.uint64, (#v1, #v2)⟧ ⤳[under] #(word.mul v1 v2);
+  #[global] div_uint64 (v1 v2 : w64) :: ⟦GoOp GoDiv go.uint64, (#v1, #v2)⟧ ⤳[under] #(word.divu v1 v2);
+  #[global] remainder_uint64 (v1 v2 : w64) :: ⟦GoOp GoRemainder go.uint64, (#v1, #v2)⟧ ⤳[under] #(word.modu v1 v2);
+  #[global] and_uint64 (v1 v2 : w64) :: ⟦GoOp GoAnd go.uint64, (#v1, #v2)⟧ ⤳[under] #(word.and v1 v2);
+  #[global] or_uint64 (v1 v2 : w64) :: ⟦GoOp GoOr go.uint64, (#v1, #v2)⟧ ⤳[under] #(word.or v1 v2);
+  #[global] xor_uint64 (v1 v2 : w64) :: ⟦GoOp GoXor go.uint64, (#v1, #v2)⟧ ⤳[under] #(word.xor v1 v2);
+  #[global] shiftl_uint64 (v1 v2 : w64) :: ⟦GoOp GoShiftl go.uint64, (#v1, #v2)⟧ ⤳[under] #(word.slu v1 v2);
+  #[global] shiftr_uint64 (v1 v2 : w64) :: ⟦GoOp GoShiftr go.uint64, (#v1, #v2)⟧ ⤳[under] #(word.sru v1 v2);
 
-  #[global] convert_int_to_uint64 (v : w64) :: go.IsConvert go.int go.uint64 #v #v;
-  #[global] convert_int64_to_uint64 (v : w64) :: go.IsConvert go.int64 go.uint64 #v #v;
-  #[global] convert_int32_to_uint64 (v : w32) :: go.IsConvert go.int32 go.uint64 #v #((W64 $ sint.Z v));
-  #[global] convert_int16_to_uint64 (v : w16) :: go.IsConvert go.int16 go.uint64 #v #((W64 $ sint.Z v));
-  #[global] convert_int8_to_uint64 (v : w8) :: go.IsConvert go.int8 go.uint64 #v #((W64 $ sint.Z v));
-  #[global] convert_uint_to_uint64 (v : w64) :: go.IsConvert go.uint go.uint64 #v #v;
-  #[global] convert_uint64_to_uint64 (v : w64) :: go.IsConvert go.uint64 go.uint64 #v #v;
-  #[global] convert_uint32_to_uint64 (v : w32) :: go.IsConvert go.uint32 go.uint64 #v #((W64 $ uint.Z v));
-  #[global] convert_uint16_to_uint64 (v : w16) :: go.IsConvert go.uint16 go.uint64 #v #((W64 $ uint.Z v));
-  #[global] convert_uint8_to_uint64 (v : w8) :: go.IsConvert go.uint8 go.uint64 #v #((W64 $ uint.Z v));
+  #[global] convert_int_to_uint64 (v : w64) :: ⟦Convert go.int go.uint64, #v⟧ ⤳[under] #v;
+  #[global] convert_int64_to_uint64 (v : w64) :: ⟦Convert go.int64 go.uint64, #v⟧ ⤳[under] #v;
+  #[global] convert_int32_to_uint64 (v : w32) :: ⟦Convert go.int32 go.uint64, #v⟧ ⤳[under] #((W64 $ sint.Z v));
+  #[global] convert_int16_to_uint64 (v : w16) :: ⟦Convert go.int16 go.uint64, #v⟧ ⤳[under] #((W64 $ sint.Z v));
+  #[global] convert_int8_to_uint64 (v : w8) :: ⟦Convert go.int8 go.uint64, #v⟧ ⤳[under] #((W64 $ sint.Z v));
+  #[global] convert_uint_to_uint64 (v : w64) :: ⟦Convert go.uint go.uint64, #v⟧ ⤳[under] #v;
+  #[global] convert_uint64_to_uint64 (v : w64) :: ⟦Convert go.uint64 go.uint64, #v⟧ ⤳[under] #v;
+  #[global] convert_uint32_to_uint64 (v : w32) :: ⟦Convert go.uint32 go.uint64, #v⟧ ⤳[under] #((W64 $ uint.Z v));
+  #[global] convert_uint16_to_uint64 (v : w16) :: ⟦Convert go.uint16 go.uint64, #v⟧ ⤳[under] #((W64 $ uint.Z v));
+  #[global] convert_uint8_to_uint64 (v : w8) :: ⟦Convert go.uint8 go.uint64, #v⟧ ⤳[under] #((W64 $ uint.Z v));
 }.
 Class Uint32Semantics `{!GoSemanticsFunctions} :=
 {
   #[global] type_repr_uint32 :: go.TypeRepr go.uint32 w32;
-  #[global] comparable_uint32 :: go.IsComparable go.uint32;
+  #[global] comparable_uint32 :: IsComparable go.uint32;
   #[global] underlying_uint32 :: go.uint32 ↓u go.uint32;
   #[global] go_eq_uint32 :: go.IsStrictlyComparable go.uint32 w32;
-  #[global] le_uint32 (v1 v2 : w32) :: go.IsGoOp GoLe go.uint32 #v1 #v2 #(bool_decide (uint.Z v1 ≤ uint.Z v2));
-  #[global] lt_uint32 (v1 v2 : w32) :: go.IsGoOp GoLt go.uint32 #v1 #v2 #(bool_decide (uint.Z v1 < uint.Z v2));
-  #[global] ge_uint32 (v1 v2 : w32) :: go.IsGoOp GoGe go.uint32 #v1 #v2 #(bool_decide (uint.Z v2 ≤ uint.Z v1));
-  #[global] gt_uint32 (v1 v2 : w32) :: go.IsGoOp GoGt go.uint32 #v1 #v2 #(bool_decide (uint.Z v2 < uint.Z v1));
-  #[global] plus_uint32 (v1 v2 : w32) :: go.IsGoOp GoPlus go.uint32 #v1 #v2 #(word.add v1 v2);
-  #[global] sub_uint32 (v1 v2 : w32) :: go.IsGoOp GoSub go.uint32 #v1 #v2 #(word.sub v1 v2);
-  #[global] mul_uint32 (v1 v2 : w32) :: go.IsGoOp GoMul go.uint32 #v1 #v2 #(word.mul v1 v2);
-  #[global] div_uint32 (v1 v2 : w32) :: go.IsGoOp GoDiv go.uint32 #v1 #v2 #(word.divs v1 v2);
-  #[global] remainder_uint32 (v1 v2 : w32) :: go.IsGoOp GoRemainder go.uint32 #v1 #v2 #(word.mods v1 v2);
-  #[global] and_uint32 (v1 v2 : w32) :: go.IsGoOp GoAnd go.uint32 #v1 #v2 #(word.and v1 v2);
-  #[global] or_uint32 (v1 v2 : w32) :: go.IsGoOp GoOr go.uint32 #v1 #v2 #(word.or v1 v2);
-  #[global] xor_uint32 (v1 v2 : w32) :: go.IsGoOp GoXor go.uint32 #v1 #v2 #(word.xor v1 v2);
-  #[global] shiftl_uint32 (v1 v2 : w32) :: go.IsGoOp GoShiftl go.uint32 #v1 #v2 #(word.slu v1 v2);
-  #[global] shiftr_uint32 (v1 v2 : w32) :: go.IsGoOp GoShiftr go.uint32 #v1 #v2 #(word.sru v1 v2);
+  #[global] le_uint32 (v1 v2 : w32) :: ⟦GoOp GoLe go.uint32, (#v1, #v2)⟧ ⤳[under] #(bool_decide (uint.Z v1 ≤ uint.Z v2));
+  #[global] lt_uint32 (v1 v2 : w32) :: ⟦GoOp GoLt go.uint32, (#v1, #v2)⟧ ⤳[under] #(bool_decide (uint.Z v1 < uint.Z v2));
+  #[global] ge_uint32 (v1 v2 : w32) :: ⟦GoOp GoGe go.uint32, (#v1, #v2)⟧ ⤳[under] #(bool_decide (uint.Z v2 ≤ uint.Z v1));
+  #[global] gt_uint32 (v1 v2 : w32) :: ⟦GoOp GoGt go.uint32, (#v1, #v2)⟧ ⤳[under] #(bool_decide (uint.Z v2 < uint.Z v1));
+  #[global] plus_uint32 (v1 v2 : w32) :: ⟦GoOp GoPlus go.uint32, (#v1, #v2)⟧ ⤳[under] #(word.add v1 v2);
+  #[global] sub_uint32 (v1 v2 : w32) :: ⟦GoOp GoSub go.uint32, (#v1, #v2)⟧ ⤳[under] #(word.sub v1 v2);
+  #[global] mul_uint32 (v1 v2 : w32) :: ⟦GoOp GoMul go.uint32, (#v1, #v2)⟧ ⤳[under] #(word.mul v1 v2);
+  #[global] div_uint32 (v1 v2 : w32) :: ⟦GoOp GoDiv go.uint32, (#v1, #v2)⟧ ⤳[under] #(word.divs v1 v2);
+  #[global] remainder_uint32 (v1 v2 : w32) :: ⟦GoOp GoRemainder go.uint32, (#v1, #v2)⟧ ⤳[under] #(word.mods v1 v2);
+  #[global] and_uint32 (v1 v2 : w32) :: ⟦GoOp GoAnd go.uint32, (#v1, #v2)⟧ ⤳[under] #(word.and v1 v2);
+  #[global] or_uint32 (v1 v2 : w32) :: ⟦GoOp GoOr go.uint32, (#v1, #v2)⟧ ⤳[under] #(word.or v1 v2);
+  #[global] xor_uint32 (v1 v2 : w32) :: ⟦GoOp GoXor go.uint32, (#v1, #v2)⟧ ⤳[under] #(word.xor v1 v2);
+  #[global] shiftl_uint32 (v1 v2 : w32) :: ⟦GoOp GoShiftl go.uint32, (#v1, #v2)⟧ ⤳[under] #(word.slu v1 v2);
+  #[global] shiftr_uint32 (v1 v2 : w32) :: ⟦GoOp GoShiftr go.uint32, (#v1, #v2)⟧ ⤳[under] #(word.sru v1 v2);
 
-  #[global] convert_int_to_uint32 (v : w64) :: go.IsConvert go.int go.uint32 #v #((W32 $ sint.Z v));
-  #[global] convert_int64_to_uint32 (v : w64) :: go.IsConvert go.int64 go.uint32 #v #((W32 $ sint.Z v));
-  #[global] convert_int32_to_uint32 (v : w32) :: go.IsConvert go.int32 go.uint32 #v #v;
-  #[global] convert_int16_to_uint32 (v : w16) :: go.IsConvert go.int16 go.uint32 #v #((W32 $ sint.Z v));
-  #[global] convert_int8_to_uint32 (v : w8) :: go.IsConvert go.int8 go.uint32 #v #((W32 $ sint.Z v));
-  #[global] convert_uint_to_uint32 (v : w64) :: go.IsConvert go.uint go.uint32 #v #((W32 $ uint.Z v));
-  #[global] convert_uint64_to_uint32 (v : w64) :: go.IsConvert go.uint64 go.uint32 #v #((W32 $ uint.Z v));
-  #[global] convert_uint32_to_uint32 (v : w32) :: go.IsConvert go.uint32 go.uint32 #v #v;
-  #[global] convert_uint16_to_uint32 (v : w16) :: go.IsConvert go.uint16 go.uint32 #v #((W32 $ uint.Z v));
-  #[global] convert_uint8_to_uint32 (v : w8) :: go.IsConvert go.uint8 go.uint32 #v #((W32 $ uint.Z v));
+  #[global] convert_int_to_uint32 (v : w64) :: ⟦Convert go.int go.uint32, #v⟧ ⤳[under] #((W32 $ sint.Z v));
+  #[global] convert_int64_to_uint32 (v : w64) :: ⟦Convert go.int64 go.uint32, #v⟧ ⤳[under] #((W32 $ sint.Z v));
+  #[global] convert_int32_to_uint32 (v : w32) :: ⟦Convert go.int32 go.uint32, #v⟧ ⤳[under] #v;
+  #[global] convert_int16_to_uint32 (v : w16) :: ⟦Convert go.int16 go.uint32, #v⟧ ⤳[under] #((W32 $ sint.Z v));
+  #[global] convert_int8_to_uint32 (v : w8) :: ⟦Convert go.int8 go.uint32, #v⟧ ⤳[under] #((W32 $ sint.Z v));
+  #[global] convert_uint_to_uint32 (v : w64) :: ⟦Convert go.uint go.uint32, #v⟧ ⤳[under] #((W32 $ uint.Z v));
+  #[global] convert_uint64_to_uint32 (v : w64) :: ⟦Convert go.uint64 go.uint32, #v⟧ ⤳[under] #((W32 $ uint.Z v));
+  #[global] convert_uint32_to_uint32 (v : w32) :: ⟦Convert go.uint32 go.uint32, #v⟧ ⤳[under] #v;
+  #[global] convert_uint16_to_uint32 (v : w16) :: ⟦Convert go.uint16 go.uint32, #v⟧ ⤳[under] #((W32 $ uint.Z v));
+  #[global] convert_uint8_to_uint32 (v : w8) :: ⟦Convert go.uint8 go.uint32, #v⟧ ⤳[under] #((W32 $ uint.Z v));
 }.
 Class Uint16Semantics `{!GoSemanticsFunctions} :=
 {
   #[global] type_repr_uint16 :: go.TypeRepr go.uint16 w16;
-  #[global] comparable_uint16 :: go.IsComparable go.uint16;
+  #[global] comparable_uint16 :: IsComparable go.uint16;
   #[global] underlying_uint16 :: go.uint16 ↓u go.uint16;
   #[global] go_eq_uint16 :: go.IsStrictlyComparable go.uint16 w16;
-  #[global] le_uint16 (v1 v2 : w16) :: go.IsGoOp GoLe go.uint16 #v1 #v2 #(bool_decide (uint.Z v1 ≤ uint.Z v2));
-  #[global] lt_uint16 (v1 v2 : w16) :: go.IsGoOp GoLt go.uint16 #v1 #v2 #(bool_decide (uint.Z v1 < uint.Z v2));
-  #[global] ge_uint16 (v1 v2 : w16) :: go.IsGoOp GoGe go.uint16 #v1 #v2 #(bool_decide (uint.Z v2 ≤ uint.Z v1));
-  #[global] gt_uint16 (v1 v2 : w16) :: go.IsGoOp GoGt go.uint16 #v1 #v2 #(bool_decide (uint.Z v2 < uint.Z v1));
-  #[global] plus_uint16 (v1 v2 : w16) :: go.IsGoOp GoPlus go.uint16 #v1 #v2 #(word.add v1 v2);
-  #[global] sub_uint16 (v1 v2 : w16) :: go.IsGoOp GoSub go.uint16 #v1 #v2 #(word.sub v1 v2);
-  #[global] mul_uint16 (v1 v2 : w16) :: go.IsGoOp GoMul go.uint16 #v1 #v2 #(word.mul v1 v2);
-  #[global] div_uint16 (v1 v2 : w16) :: go.IsGoOp GoDiv go.uint16 #v1 #v2 #(word.divu v1 v2);
-  #[global] remainder_uint16 (v1 v2 : w16) :: go.IsGoOp GoRemainder go.uint16 #v1 #v2 #(word.modu v1 v2);
-  #[global] and_uint16 (v1 v2 : w16) :: go.IsGoOp GoAnd go.uint16 #v1 #v2 #(word.and v1 v2);
-  #[global] or_uint16 (v1 v2 : w16) :: go.IsGoOp GoOr go.uint16 #v1 #v2 #(word.or v1 v2);
-  #[global] xor_uint16 (v1 v2 : w16) :: go.IsGoOp GoXor go.uint16 #v1 #v2 #(word.xor v1 v2);
-  #[global] shiftl_uint16 (v1 v2 : w16) :: go.IsGoOp GoShiftl go.uint16 #v1 #v2 #(word.slu v1 v2);
-  #[global] shiftr_uint16 (v1 v2 : w16) :: go.IsGoOp GoShiftr go.uint16 #v1 #v2 #(word.sru v1 v2);
+  #[global] le_uint16 (v1 v2 : w16) :: ⟦GoOp GoLe go.uint16, (#v1, #v2)⟧ ⤳[under] #(bool_decide (uint.Z v1 ≤ uint.Z v2));
+  #[global] lt_uint16 (v1 v2 : w16) :: ⟦GoOp GoLt go.uint16, (#v1, #v2)⟧ ⤳[under] #(bool_decide (uint.Z v1 < uint.Z v2));
+  #[global] ge_uint16 (v1 v2 : w16) :: ⟦GoOp GoGe go.uint16, (#v1, #v2)⟧ ⤳[under] #(bool_decide (uint.Z v2 ≤ uint.Z v1));
+  #[global] gt_uint16 (v1 v2 : w16) :: ⟦GoOp GoGt go.uint16, (#v1, #v2)⟧ ⤳[under] #(bool_decide (uint.Z v2 < uint.Z v1));
+  #[global] plus_uint16 (v1 v2 : w16) :: ⟦GoOp GoPlus go.uint16, (#v1, #v2)⟧ ⤳[under] #(word.add v1 v2);
+  #[global] sub_uint16 (v1 v2 : w16) :: ⟦GoOp GoSub go.uint16, (#v1, #v2)⟧ ⤳[under] #(word.sub v1 v2);
+  #[global] mul_uint16 (v1 v2 : w16) :: ⟦GoOp GoMul go.uint16, (#v1, #v2)⟧ ⤳[under] #(word.mul v1 v2);
+  #[global] div_uint16 (v1 v2 : w16) :: ⟦GoOp GoDiv go.uint16, (#v1, #v2)⟧ ⤳[under] #(word.divu v1 v2);
+  #[global] remainder_uint16 (v1 v2 : w16) :: ⟦GoOp GoRemainder go.uint16, (#v1, #v2)⟧ ⤳[under] #(word.modu v1 v2);
+  #[global] and_uint16 (v1 v2 : w16) :: ⟦GoOp GoAnd go.uint16, (#v1, #v2)⟧ ⤳[under] #(word.and v1 v2);
+  #[global] or_uint16 (v1 v2 : w16) :: ⟦GoOp GoOr go.uint16, (#v1, #v2)⟧ ⤳[under] #(word.or v1 v2);
+  #[global] xor_uint16 (v1 v2 : w16) :: ⟦GoOp GoXor go.uint16, (#v1, #v2)⟧ ⤳[under] #(word.xor v1 v2);
+  #[global] shiftl_uint16 (v1 v2 : w16) :: ⟦GoOp GoShiftl go.uint16, (#v1, #v2)⟧ ⤳[under] #(word.slu v1 v2);
+  #[global] shiftr_uint16 (v1 v2 : w16) :: ⟦GoOp GoShiftr go.uint16, (#v1, #v2)⟧ ⤳[under] #(word.sru v1 v2);
 
-  #[global] convert_int_to_uint16 (v : w64) :: go.IsConvert go.int go.uint16 #v #((W16 $ sint.Z v));
-  #[global] convert_int64_to_uint16 (v : w64) :: go.IsConvert go.int64 go.uint16 #v #((W16 $ sint.Z v));
-  #[global] convert_int32_to_uint16 (v : w32) :: go.IsConvert go.int32 go.uint16 #v #((W16 $ sint.Z v));
-  #[global] convert_int16_to_uint16 (v : w16) :: go.IsConvert go.int16 go.uint16 #v #v;
-  #[global] convert_int8_to_uint16 (v : w8) :: go.IsConvert go.int8 go.uint16 #v #((W16 $ sint.Z v));
-  #[global] convert_uint_to_uint16 (v : w64) :: go.IsConvert go.uint go.uint16 #v #((W16 $ uint.Z v));
-  #[global] convert_uint64_to_uint16 (v : w64) :: go.IsConvert go.uint64 go.uint16 #v #((W16 $ uint.Z v));
-  #[global] convert_uint32_to_uint16 (v : w32) :: go.IsConvert go.uint32 go.uint16 #v #((W16 $ uint.Z v));
-  #[global] convert_uint16_to_uint16 (v : w16) :: go.IsConvert go.uint16 go.uint16 #v #v;
-  #[global] convert_uint8_to_uint16 (v : w8) :: go.IsConvert go.uint8 go.uint16 #v #((W16 $ uint.Z v));
+  #[global] convert_int_to_uint16 (v : w64) :: ⟦Convert go.int go.uint16, #v⟧ ⤳[under] #((W16 $ sint.Z v));
+  #[global] convert_int64_to_uint16 (v : w64) :: ⟦Convert go.int64 go.uint16, #v⟧ ⤳[under] #((W16 $ sint.Z v));
+  #[global] convert_int32_to_uint16 (v : w32) :: ⟦Convert go.int32 go.uint16, #v⟧ ⤳[under] #((W16 $ sint.Z v));
+  #[global] convert_int16_to_uint16 (v : w16) :: ⟦Convert go.int16 go.uint16, #v⟧ ⤳[under] #v;
+  #[global] convert_int8_to_uint16 (v : w8) :: ⟦Convert go.int8 go.uint16, #v⟧ ⤳[under] #((W16 $ sint.Z v));
+  #[global] convert_uint_to_uint16 (v : w64) :: ⟦Convert go.uint go.uint16, #v⟧ ⤳[under] #((W16 $ uint.Z v));
+  #[global] convert_uint64_to_uint16 (v : w64) :: ⟦Convert go.uint64 go.uint16, #v⟧ ⤳[under] #((W16 $ uint.Z v));
+  #[global] convert_uint32_to_uint16 (v : w32) :: ⟦Convert go.uint32 go.uint16, #v⟧ ⤳[under] #((W16 $ uint.Z v));
+  #[global] convert_uint16_to_uint16 (v : w16) :: ⟦Convert go.uint16 go.uint16, #v⟧ ⤳[under] #v;
+  #[global] convert_uint8_to_uint16 (v : w8) :: ⟦Convert go.uint8 go.uint16, #v⟧ ⤳[under] #((W16 $ uint.Z v));
 }.
 Class Uint8Semantics `{!GoSemanticsFunctions} :=
 {
   #[global] type_repr_uint8 :: go.TypeRepr go.uint8 w8;
-  #[global] comparable_uint8 :: go.IsComparable go.uint8;
+  #[global] comparable_uint8 :: IsComparable go.uint8;
   #[global] underlying_uint8 :: go.uint8 ↓u go.uint8;
   #[global] go_eq_uint8 :: go.IsStrictlyComparable go.uint8 w8;
-  #[global] le_uint8 (v1 v2 : w8) :: go.IsGoOp GoLe go.uint8 #v1 #v2 #(bool_decide (uint.Z v1 ≤ uint.Z v2));
-  #[global] lt_uint8 (v1 v2 : w8) :: go.IsGoOp GoLt go.uint8 #v1 #v2 #(bool_decide (uint.Z v1 < uint.Z v2));
-  #[global] ge_uint8 (v1 v2 : w8) :: go.IsGoOp GoGe go.uint8 #v1 #v2 #(bool_decide (uint.Z v2 ≤ uint.Z v1));
-  #[global] gt_uint8 (v1 v2 : w8) :: go.IsGoOp GoGt go.uint8 #v1 #v2 #(bool_decide (uint.Z v2 < uint.Z v1));
-  #[global] plus_uint8 (v1 v2 : w8) :: go.IsGoOp GoPlus go.uint8 #v1 #v2 #(word.add v1 v2);
-  #[global] sub_uint8 (v1 v2 : w8) :: go.IsGoOp GoSub go.uint8 #v1 #v2 #(word.sub v1 v2);
-  #[global] mul_uint8 (v1 v2 : w8) :: go.IsGoOp GoMul go.uint8 #v1 #v2 #(word.mul v1 v2);
-  #[global] div_uint8 (v1 v2 : w8) :: go.IsGoOp GoDiv go.uint8 #v1 #v2 #(word.divu v1 v2);
-  #[global] remainder_uint8 (v1 v2 : w8) :: go.IsGoOp GoRemainder go.uint8 #v1 #v2 #(word.modu v1 v2);
-  #[global] and_uint8 (v1 v2 : w8) :: go.IsGoOp GoAnd go.uint8 #v1 #v2 #(word.and v1 v2);
-  #[global] or_uint8 (v1 v2 : w8) :: go.IsGoOp GoOr go.uint8 #v1 #v2 #(word.or v1 v2);
-  #[global] xor_uint8 (v1 v2 : w8) :: go.IsGoOp GoXor go.uint8 #v1 #v2 #(word.xor v1 v2);
-  #[global] shiftl_uint8 (v1 v2 : w8) :: go.IsGoOp GoShiftl go.uint8 #v1 #v2 #(word.slu v1 v2);
-  #[global] shiftr_uint8 (v1 v2 : w8) :: go.IsGoOp GoShiftr go.uint8 #v1 #v2 #(word.sru v1 v2);
+  #[global] le_uint8 (v1 v2 : w8) :: ⟦GoOp GoLe go.uint8, (#v1, #v2)⟧ ⤳[under] #(bool_decide (uint.Z v1 ≤ uint.Z v2));
+  #[global] lt_uint8 (v1 v2 : w8) :: ⟦GoOp GoLt go.uint8, (#v1, #v2)⟧ ⤳[under] #(bool_decide (uint.Z v1 < uint.Z v2));
+  #[global] ge_uint8 (v1 v2 : w8) :: ⟦GoOp GoGe go.uint8, (#v1, #v2)⟧ ⤳[under] #(bool_decide (uint.Z v2 ≤ uint.Z v1));
+  #[global] gt_uint8 (v1 v2 : w8) :: ⟦GoOp GoGt go.uint8, (#v1, #v2)⟧ ⤳[under] #(bool_decide (uint.Z v2 < uint.Z v1));
+  #[global] plus_uint8 (v1 v2 : w8) :: ⟦GoOp GoPlus go.uint8, (#v1, #v2)⟧ ⤳[under] #(word.add v1 v2);
+  #[global] sub_uint8 (v1 v2 : w8) :: ⟦GoOp GoSub go.uint8, (#v1, #v2)⟧ ⤳[under] #(word.sub v1 v2);
+  #[global] mul_uint8 (v1 v2 : w8) :: ⟦GoOp GoMul go.uint8, (#v1, #v2)⟧ ⤳[under] #(word.mul v1 v2);
+  #[global] div_uint8 (v1 v2 : w8) :: ⟦GoOp GoDiv go.uint8, (#v1, #v2)⟧ ⤳[under] #(word.divu v1 v2);
+  #[global] remainder_uint8 (v1 v2 : w8) :: ⟦GoOp GoRemainder go.uint8, (#v1, #v2)⟧ ⤳[under] #(word.modu v1 v2);
+  #[global] and_uint8 (v1 v2 : w8) :: ⟦GoOp GoAnd go.uint8, (#v1, #v2)⟧ ⤳[under] #(word.and v1 v2);
+  #[global] or_uint8 (v1 v2 : w8) :: ⟦GoOp GoOr go.uint8, (#v1, #v2)⟧ ⤳[under] #(word.or v1 v2);
+  #[global] xor_uint8 (v1 v2 : w8) :: ⟦GoOp GoXor go.uint8, (#v1, #v2)⟧ ⤳[under] #(word.xor v1 v2);
+  #[global] shiftl_uint8 (v1 v2 : w8) :: ⟦GoOp GoShiftl go.uint8, (#v1, #v2)⟧ ⤳[under] #(word.slu v1 v2);
+  #[global] shiftr_uint8 (v1 v2 : w8) :: ⟦GoOp GoShiftr go.uint8, (#v1, #v2)⟧ ⤳[under] #(word.sru v1 v2);
 
-  #[global] convert_int_to_uint8 (v : w64) :: go.IsConvert go.int go.uint8 #v #((W8 $ sint.Z v));
-  #[global] convert_int64_to_uint8 (v : w64) :: go.IsConvert go.int64 go.uint8 #v #((W8 $ sint.Z v));
-  #[global] convert_int32_to_uint8 (v : w32) :: go.IsConvert go.int32 go.uint8 #v #((W8 $ sint.Z v));
-  #[global] convert_int16_to_uint8 (v : w16) :: go.IsConvert go.int16 go.uint8 #v #((W8 $ sint.Z v));
-  #[global] convert_int8_to_uint8 (v : w8) :: go.IsConvert go.int8 go.uint8 #v #v;
-  #[global] convert_uint_to_uint8 (v : w64) :: go.IsConvert go.uint go.uint8 #v #((W8 $ uint.Z v));
-  #[global] convert_uint64_to_uint8 (v : w64) :: go.IsConvert go.uint64 go.uint8 #v #((W8 $ uint.Z v));
-  #[global] convert_uint32_to_uint8 (v : w32) :: go.IsConvert go.uint32 go.uint8 #v #((W8 $ uint.Z v));
-  #[global] convert_uint16_to_uint8 (v : w16) :: go.IsConvert go.uint16 go.uint8 #v #((W8 $ uint.Z v));
-  #[global] convert_uint8_to_uint8 (v : w8) :: go.IsConvert go.uint8 go.uint8 #v #v;
+  #[global] convert_int_to_uint8 (v : w64) :: ⟦Convert go.int go.uint8, #v⟧ ⤳[under] #((W8 $ sint.Z v));
+  #[global] convert_int64_to_uint8 (v : w64) :: ⟦Convert go.int64 go.uint8, #v⟧ ⤳[under] #((W8 $ sint.Z v));
+  #[global] convert_int32_to_uint8 (v : w32) :: ⟦Convert go.int32 go.uint8, #v⟧ ⤳[under] #((W8 $ sint.Z v));
+  #[global] convert_int16_to_uint8 (v : w16) :: ⟦Convert go.int16 go.uint8, #v⟧ ⤳[under] #((W8 $ sint.Z v));
+  #[global] convert_int8_to_uint8 (v : w8) :: ⟦Convert go.int8 go.uint8, #v⟧ ⤳[under] #v;
+  #[global] convert_uint_to_uint8 (v : w64) :: ⟦Convert go.uint go.uint8, #v⟧ ⤳[under] #((W8 $ uint.Z v));
+  #[global] convert_uint64_to_uint8 (v : w64) :: ⟦Convert go.uint64 go.uint8, #v⟧ ⤳[under] #((W8 $ uint.Z v));
+  #[global] convert_uint32_to_uint8 (v : w32) :: ⟦Convert go.uint32 go.uint8, #v⟧ ⤳[under] #((W8 $ uint.Z v));
+  #[global] convert_uint16_to_uint8 (v : w16) :: ⟦Convert go.uint16 go.uint8, #v⟧ ⤳[under] #((W8 $ uint.Z v));
+  #[global] convert_uint8_to_uint8 (v : w8) :: ⟦Convert go.uint8 go.uint8, #v⟧ ⤳[under] #v;
 }.
 Class UntypedFloatSemantics `{!GoSemanticsFunctions} :=
 {
   #[global] underlying_untyped_float :: go.untyped_float ↓u go.untyped_float;
   #[global] convert_untyped_float64 (v : w64) ::
-    go.IsConvert go.untyped_float go.float64 #v #v;
+    ⟦Convert go.untyped_float go.float64, #v⟧ ⤳[under] #v;
   #[global] convert_untyped_float32 (v : w64) ::
-    go.IsConvert go.untyped_float go.float32 #v #(float64_to_float32 v);
+    ⟦Convert go.untyped_float go.float32, #v⟧ ⤳[under] #(float64_to_float32 v);
 }.
 Class Float64Semantics `{!GoSemanticsFunctions} :=
 {
   #[global] type_repr_float64 :: go.TypeRepr go.float64 w64;
-  #[global] comparable_float64:: go.IsComparable go.float64;
+  #[global] comparable_float64:: IsComparable go.float64;
   #[global] underlying_float64 :: go.float64 ↓u go.float64;
   #[global] go_eq_float64 :: go.IsStrictlyComparable go.float64 w64;
-  #[global] le_float64 (v1 v2 : w64) :: go.IsGoOp GoLe go.float64 #v1 #v2 #(float64_leb v1 v2);
-  #[global] lt_float64 (v1 v2 : w64) :: go.IsGoOp GoLt go.float64 #v1 #v2 #(float64_leb v1 v2 && bool_decide (v1 ≠ v2));
-  #[global] ge_float64 (v1 v2 : w64) :: go.IsGoOp GoGe go.float64 #v1 #v2 #(float64_leb v2 v1);
-  #[global] gt_float64 (v1 v2 : w64) :: go.IsGoOp GoGt go.float64 #v1 #v2 #(float64_leb v2 v1 && bool_decide (v1 ≠ v2));
-  #[global] plus_float64 (v1 v2 : w64) :: go.IsGoOp GoPlus go.float64 #v1 #v2 #(float64_add v1 v2);
-  #[global] sub_float64 (v1 v2 : w64) :: go.IsGoOp GoSub go.float64 #v1 #v2 #(float64_sub v1 v2);
-  #[global] mul_float64 (v1 v2 : w64) :: go.IsGoOp GoMul go.float64 #v1 #v2 #(float64_mul v1 v2);
-  #[global] div_float64 (v1 v2 : w64) :: go.IsGoOp GoDiv go.float64 #v1 #v2 #(float64_div v1 v2);
+  #[global] le_float64 (v1 v2 : w64) :: ⟦GoOp GoLe go.float64, (#v1, #v2)⟧ ⤳[under] #(float64_leb v1 v2);
+  #[global] lt_float64 (v1 v2 : w64) :: ⟦GoOp GoLt go.float64, (#v1, #v2)⟧ ⤳[under] #(float64_leb v1 v2 && bool_decide (v1 ≠ v2));
+  #[global] ge_float64 (v1 v2 : w64) :: ⟦GoOp GoGe go.float64, (#v1, #v2)⟧ ⤳[under] #(float64_leb v2 v1);
+  #[global] gt_float64 (v1 v2 : w64) :: ⟦GoOp GoGt go.float64, (#v1, #v2)⟧ ⤳[under] #(float64_leb v2 v1 && bool_decide (v1 ≠ v2));
+  #[global] plus_float64 (v1 v2 : w64) :: ⟦GoOp GoPlus go.float64, (#v1, #v2)⟧ ⤳[under] #(float64_add v1 v2);
+  #[global] sub_float64 (v1 v2 : w64) :: ⟦GoOp GoSub go.float64, (#v1, #v2)⟧ ⤳[under] #(float64_sub v1 v2);
+  #[global] mul_float64 (v1 v2 : w64) :: ⟦GoOp GoMul go.float64, (#v1, #v2)⟧ ⤳[under] #(float64_mul v1 v2);
+  #[global] div_float64 (v1 v2 : w64) :: ⟦GoOp GoDiv go.float64, (#v1, #v2)⟧ ⤳[under] #(float64_div v1 v2);
 }.
 Class Float32Semantics `{!GoSemanticsFunctions} :=
 {
   #[global] type_repr_float32 :: go.TypeRepr go.float32 w32;
-  #[global] comparable_float32:: go.IsComparable go.float32;
+  #[global] comparable_float32:: IsComparable go.float32;
   #[global] underlying_float32 :: go.float32 ↓u go.float32;
   #[global] go_eq_float32 :: go.IsStrictlyComparable go.float32 w32;
-  #[global] le_float32 (v1 v2 : w32) :: go.IsGoOp GoLe go.float32 #v1 #v2 #(float32_leb v1 v2);
-  #[global] lt_float32 (v1 v2 : w32) :: go.IsGoOp GoLt go.float32 #v1 #v2 #(float32_leb v1 v2 && bool_decide (v1 ≠ v2));
-  #[global] ge_float32 (v1 v2 : w32) :: go.IsGoOp GoGe go.float32 #v1 #v2 #(float32_leb v2 v1);
-  #[global] gt_float32 (v1 v2 : w32) :: go.IsGoOp GoGt go.float32 #v1 #v2 #(float32_leb v2 v1 && bool_decide (v1 ≠ v2));
-  #[global] plus_float32 (v1 v2 : w32) :: go.IsGoOp GoPlus go.float32 #v1 #v2 #(float32_add v1 v2);
-  #[global] sub_float32 (v1 v2 : w32) :: go.IsGoOp GoSub go.float32 #v1 #v2 #(float32_sub v1 v2);
-  #[global] mul_float32 (v1 v2 : w32) :: go.IsGoOp GoMul go.float32 #v1 #v2 #(float32_mul v1 v2);
-  #[global] div_float32 (v1 v2 : w32) :: go.IsGoOp GoDiv go.float32 #v1 #v2 #(float32_div v1 v2);
+  #[global] le_float32 (v1 v2 : w32) :: ⟦GoOp GoLe go.float32, (#v1, #v2)⟧ ⤳[under] #(float32_leb v1 v2);
+  #[global] lt_float32 (v1 v2 : w32) :: ⟦GoOp GoLt go.float32, (#v1, #v2)⟧ ⤳[under] #(float32_leb v1 v2 && bool_decide (v1 ≠ v2));
+  #[global] ge_float32 (v1 v2 : w32) :: ⟦GoOp GoGe go.float32, (#v1, #v2)⟧ ⤳[under] #(float32_leb v2 v1);
+  #[global] gt_float32 (v1 v2 : w32) :: ⟦GoOp GoGt go.float32, (#v1, #v2)⟧ ⤳[under] #(float32_leb v2 v1 && bool_decide (v1 ≠ v2));
+  #[global] plus_float32 (v1 v2 : w32) :: ⟦GoOp GoPlus go.float32, (#v1, #v2)⟧ ⤳[under] #(float32_add v1 v2);
+  #[global] sub_float32 (v1 v2 : w32) :: ⟦GoOp GoSub go.float32, (#v1, #v2)⟧ ⤳[under] #(float32_sub v1 v2);
+  #[global] mul_float32 (v1 v2 : w32) :: ⟦GoOp GoMul go.float32, (#v1, #v2)⟧ ⤳[under] #(float32_mul v1 v2);
+  #[global] div_float32 (v1 v2 : w32) :: ⟦GoOp GoDiv go.float32, (#v1, #v2)⟧ ⤳[under] #(float32_div v1 v2);
 }.
 
 Class PredeclaredSemantics `{!GoSemanticsFunctions} :=
@@ -530,13 +530,13 @@ Class PredeclaredSemantics `{!GoSemanticsFunctions} :=
 
   #[global] unsafe_sem :: unsafe.Semantics;
 
-  #[global] comparable_bool :: go.IsComparable go.bool;
+  #[global] comparable_bool :: IsComparable go.bool;
   #[global] go_eq_bool :: go.IsStrictlyComparable go.bool Datatypes.bool;
   #[global] underlying_bool :: go.bool ↓u go.bool;
   #[global] type_repr_bool :: go.TypeRepr go.bool Datatypes.bool;
   #[global] underlying_untyped_bool :: go.untyped_bool ↓u go.untyped_bool;
   #[global] convert_untyped_bool (b : Datatypes.bool) ::
-    go.IsConvert go.untyped_bool go.bool #b #b;
+    ⟦Convert go.untyped_bool go.bool, #b⟧ ⤳[under] #b;
 
   #[global] untyped_int_semantics :: UntypedIntSemantics;
   #[global] int_semantics :: IntSemantics;
@@ -554,28 +554,28 @@ Class PredeclaredSemantics `{!GoSemanticsFunctions} :=
   #[global] float64_semantics :: Float64Semantics;
   #[global] float32_semantics :: Float32Semantics;
 
-  #[global] comparable_string :: go.IsComparable go.string;
+  #[global] comparable_string :: IsComparable go.string;
   #[global] go_eq_string :: go.IsStrictlyComparable go.string go_string;
   #[global] underlying_string :: go.string ↓u go.string;
-  #[global] plus_string (v1 v2 : go_string) :: go.IsGoOp GoPlus go.string #v1 #v2 #(v1 ++ v2);
+  #[global] plus_string (v1 v2 : go_string) :: ⟦GoOp GoPlus go.string, (#v1, #v2)⟧ ⤳[under] #(v1 ++ v2);
   #[global] type_repr_string :: go.TypeRepr go.string go_string;
   #[global] underlying_untyped_string :: go.untyped_string ↓u go.untyped_string;
   #[global] convert_untyped_string (s : go_string) ::
-    go.IsConvert go.untyped_string go.string #s #s;
+    ⟦Convert go.untyped_string go.string, #s⟧ ⤳[under] #s;
 
   #[global] underlying_untyped_nil :: go.untyped_nil ↓u go.untyped_nil;
   #[global] convert_nil_pointer elem ::
-    go.IsConvert go.untyped_nil (go.PointerType elem) UntypedNil #null;
+    ⟦Convert go.untyped_nil (go.PointerType elem), UntypedNil⟧ ⤳[under] #null;
   #[global] convert_nil_function sig ::
-    go.IsConvert go.untyped_nil (go.FunctionType sig) UntypedNil #func.nil;
+    ⟦Convert go.untyped_nil (go.FunctionType sig), UntypedNil⟧ ⤳[under] #func.nil;
   #[global] convert_nil_slice elem ::
-    go.IsConvert go.untyped_nil (go.SliceType elem) UntypedNil #slice.nil;
+    ⟦Convert go.untyped_nil (go.SliceType elem), UntypedNil⟧ ⤳[under] #slice.nil;
   #[global] convert_nil_chan dir elem ::
-    go.IsConvert go.untyped_nil (go.ChannelType dir elem) UntypedNil #chan.nil;
+    ⟦Convert go.untyped_nil (go.ChannelType dir elem), UntypedNil⟧ ⤳[under] #chan.nil;
   #[global] convert_nil_map key elem ::
-    go.IsConvert go.untyped_nil (go.MapType key elem) UntypedNil #map.nil;
+    ⟦Convert go.untyped_nil (go.MapType key elem), UntypedNil⟧ ⤳[under] #map.nil;
   #[global] convert_nil_interface elems ::
-    go.IsConvert go.untyped_nil (go.InterfaceType elems) UntypedNil #interface.nil;
+    ⟦Convert go.untyped_nil (go.InterfaceType elems), UntypedNil⟧ ⤳[under] #interface.nil;
 }.
 
 End defs.

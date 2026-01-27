@@ -53,25 +53,23 @@ Definition array_literal_size kvs : Z :=
 Class SliceSemantics `{!GoSemanticsFunctions} :=
 {
   #[global] internal_len_step s ::
-    go.IsGoStepPureDet InternalSliceLen #s #(s.(slice.len));
+    ⟦InternalSliceLen, #s⟧ ⤳ #(s.(slice.len));
   #[global] internal_cap_step s ::
-    go.IsGoStepPureDet InternalSliceCap #s #(s.(slice.cap));
+    ⟦InternalSliceCap, #s⟧ ⤳ #(s.(slice.cap));
   #[global] internal_make_slice_step p l c ::
-    go.IsGoStepPureDet InternalMakeSlice (#p, #l, #c)%V
+    ⟦InternalMakeSlice, (#p, #l, #c)⟧ ⤳
     #(slice.mk p l c);
   #[global] internal_dynamic_array_alloc_step et (n : w64) ::
-    go.IsGoStepPureDet (InternalDynamicArrayAlloc et) #n
+    ⟦InternalDynamicArrayAlloc et, #n⟧ ⤳
     (GoAlloc (go.ArrayType (sint.Z n) et) (GoZeroVal (go.ArrayType (sint.Z n) et) #()));
   #[global] slice_slice_step_pure elem_type s low high `{!ZeroVal V} `{!go.TypeRepr elem_type V} ::
-    go.IsGoStepPureDet (Slice (go.SliceType elem_type))
-    (#s, #low, #high)%V
+    ⟦Slice (go.SliceType elem_type), (#s, #low, #high)⟧ ⤳
     (if decide (0 ≤ sint.Z low ≤ sint.Z high ≤ sint.Z s.(slice.cap)) then
        #(slice.slice s V low high)
      else Panic "slice bounds out of range");
   #[global] full_slice_slice_step_pure elem_type s low high max `{!ZeroVal V}
     `{!go.TypeRepr elem_type V} ::
-    go.IsGoStepPureDet (FullSlice (go.SliceType elem_type))
-    (#s, #low, #high, #max)%V
+    ⟦FullSlice (go.SliceType elem_type), (#s, #low, #high, #max)⟧ ⤳
     (if decide (0 ≤ sint.Z low ≤ sint.Z high ≤ sint.Z max ∧ sint.Z max ≤ sint.Z s.(slice.cap)) then
        #(slice.full_slice s V low high max)
      else Panic "slice bounds out of range");
@@ -80,9 +78,9 @@ Class SliceSemantics `{!GoSemanticsFunctions} :=
 
   (* special case for slice equality *)
   #[global] is_go_op_go_equals_slice_nil_l elem_type s ::
-    go.IsGoOp GoEquals (go.SliceType elem_type) (#slice.nil, #s)%V #(bool_decide (s = slice.nil));
+    ⟦GoOp GoEquals (go.SliceType elem_type), (#slice.nil, #s)⟧ ⤳[under] #(bool_decide (s = slice.nil));
   #[global] is_go_op_go_equals_slice_nil_r elem_type s ::
-    go.IsGoOp GoEquals (go.SliceType elem_type) (#s, #slice.nil)%V #(bool_decide (s = slice.nil));
+    ⟦GoOp GoEquals (go.SliceType elem_type), (#s, #slice.nil)⟧ ⤳[under] #(bool_decide (s = slice.nil));
 
   #[global] clear_slice elem_type ::
     FuncUnfold go.clear [go.SliceType elem_type]
@@ -120,7 +118,7 @@ Class SliceSemantics `{!GoSemanticsFunctions} :=
          let: "p" := (InternalDynamicArrayAlloc elem_type) "cap" in
          InternalMakeSlice ("p", "len", "cap"))%V;
   #[global] is_go_op_pointer_plus t (l : loc) (x : w64) ::
-    go.IsGoOp GoPlus (go.PointerType t) (#l, #x) (#(loc_add l (sint.Z x)));
+    ⟦GoOp GoPlus (go.PointerType t), (#l, #x)⟧ ⤳[under] (#(loc_add l (sint.Z x)));
 
   #[global] make2_slice elem_type ::
     FuncUnfold go.make2 [go.SliceType elem_type]
@@ -165,7 +163,7 @@ Class SliceSemantics `{!GoSemanticsFunctions} :=
          "s_new")%V;
 
   #[global] composite_literal_slice elem_type kvs ::
-    go.GoExprEq (composite_literal (go.SliceType elem_type) (LiteralValueV kvs))
+    ⟦CompositeLiteral (go.SliceType, elem_type⟧ ⤳[under] (LiteralValueV kvs))
     (let len := array_literal_size kvs in
     (let: "tmp" := GoAlloc (go.ArrayType len elem_type) (GoZeroVal (go.ArrayType len elem_type) #()) in
      "tmp" <-[(go.ArrayType len elem_type)]

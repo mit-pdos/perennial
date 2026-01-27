@@ -135,6 +135,8 @@ Class MethodUnfold t m (m_impl : val) : Prop :=
 Global Hint Mode MethodUnfold ! ! - : typeclass_instances.
 End unfolding_defs.
 
+Inductive tag := | under | under_type (t : go.type) | internal.
+
 Module go.
 Section defs.
 Context {ext : ffi_syntax}.
@@ -214,15 +216,14 @@ Class IsGoStepPureDet instr args e : Prop :=
     is_go_step_pure_det : is_go_step_pure instr args = eq e;
   }.
 
-Notation "⟦ instr , args ⟧ ⤳ e" := (IsGoStepPureDet instr args%V e%E)
+Notation "⟦ instr , args ⟧ ⤳ e" := (IsGoStepPureDet instr args%V e)
                                    (at level 1, e at level 70, format "⟦ instr ,  args ⟧  ⤳  e").
 
-Inductive tag := | under | internal.
 Class IsGoStepPureDetTagged (t : tag) instr args e : Prop :=
   { is_go_step_det_internal : (⟦instr, args⟧ ⤳ e) }.
 
 Notation "⟦ instr , args ⟧ ⤳[ tag ] e" :=
-  (IsGoStepPureDetTagged tag instr args%V e%E)
+  (IsGoStepPureDetTagged tag instr args%V e)
     (at level 1, e at level 70, format "⟦ instr ,  args ⟧  ⤳[ tag ]  e" ).
 
 Lemma tagged_steps tag :
@@ -263,24 +264,25 @@ Class IsStrictlyComparable t V `{!EqDecision V} `{!GoSemanticsFunctions} : Prop 
 
 Class CoreComparisonSemantics `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] check_comparable_primitive `{!is_primitive t} :: ⟦CheckComparable t, #()⟧ ⤳[under] #();
-
   (* special case equality for functions *)
   #[global] go_op_go_equals_func_nil_l sig f ::
     ⟦GoOp GoEquals (go.FunctionType sig), (#f, #func.nil)⟧ ⤳[under] #(bool_decide (f = func.nil));
   #[global] go_op_go_equals_func_nil_r sig f ::
-    IsGoOp GoEquals (go.FunctionType sig) #func.nil #f #(bool_decide (f = func.nil));
+    ⟦GoOp GoEquals (go.FunctionType sig), (#func.nil, #f)⟧ ⤳[under] #(bool_decide (f = func.nil));
 
-  #[global] pointer_is_comparable t :: IsComparable (go.PointerType t);
+  #[global] check_comparable_pointer t ::
+    ⟦CheckComparable (go.PointerType t), #()⟧ ⤳[under] #();
   #[global] go_eq_pointer t :: IsStrictlyComparable (go.PointerType t) loc;
-  #[global] channel_is_comparable dir t :: IsComparable (go.ChannelType dir t);
+
+  #[global] check_comparable_channel dir t ::
+    ⟦CheckComparable (go.ChannelType dir t), #()⟧ ⤳[under] #();
   #[global] go_eq_channel t dir :: IsStrictlyComparable (go.ChannelType t dir) loc;
 
   #[global] struct_is_comparable fds
     `{!TCForall (λ fd, IsComparable (match fd with go.FieldDecl _ t | go.EmbeddedField _ t => t end)) fds} ::
-    IsComparable (go.StructType fds);
+    ⟦CheckComparable (go.StructType fds), #()⟧ ⤳[under] #();
   #[global] go_eq_struct fds v1 v2 ::
-    IsGoOp GoEquals (go.StructType fds) v1 v2
+    ⟦GoOp GoEquals (go.StructType fds), (v1, v2)⟧ ⤳[under]
     (foldl (λ cmp_so_far fd,
              let (field_name, field_type) :=
                match fd with go.FieldDecl n t => (n, t) | go.EmbeddedField n t => (n, t) end in
@@ -303,68 +305,16 @@ Fixpoint struct_field_type (f : go_string) (fds : list go.field_decl) : go.type 
 Class TypeRepr t V `{!ZeroVal V} `{!GoSemanticsFunctions} : Prop :=
   {
     type_repr : is_type_repr t V;
-    #[global] go_zero_val_step :: IsGoStepPureDet (GoZeroVal t) #() #(zero_val V);
+    #[global] go_zero_val_step :: ⟦GoZeroVal t, #()⟧ ⤳ #(zero_val V);
   }.
 Global Hint Mode TypeRepr ! - - - : typeclass_instances.
 
-Global Notation "s  ≤u  t" := (go.UnderlyingEq s t) (at level 70).
-Global Notation "s  <u  t" := (go.UnderlyingDirectedEq s t) (at level 70).
-Global Notation "t  ↓u  tunder" := (go.IsUnderlying t tunder) (at level 70).
+Notation "s  ≤u  t" := (UnderlyingEq s t) (at level 70).
+Notation "s  <u  t" := (UnderlyingDirectedEq s t) (at level 70).
+Notation "t  ↓u  tunder" := (IsUnderlying t tunder) (at level 70).
 
-  #[export] alloc_primitive `[!t ↓u tunder] v (H : is_primitive tunder) ::
-    IsGoStepPureDet (GoAlloc t) v (ref_one v)%E;
-  #[export] alloc_struct `[!t ↓u go.StructType fds] v ::
-    IsGoStepPureDet (GoAlloc t) v
-      (let: "l" := GoPrealloc #() in
-       foldr (λ fd alloc_rest,
-                let (field_name, field_type) := match fd with
-                                                | go.FieldDecl n t => pair n t
-                                                | go.EmbeddedField n t => pair n t
-                                                end in
-                let field_addr := StructFieldRef t field_name "l" in
-                let: "l_field" := GoAlloc field_type (StructFieldGet t field_name v) in
-                (if: ("l_field" ≠⟨go.PointerType field_type⟩ field_addr) then AngelicExit #()
-                 else #());;
-                alloc_rest
-         ) #() fds ;;
-       "l")%E;
 
-  #[export] load_primitive `[!t ↓u tunder] (H : is_primitive tunder) l ::
-    IsGoStepPureDet (GoLoad t) l (Read l)%E;
 
-  #[export] load_struct `[!t ↓u go.StructType fds] l ::
-    IsGoStepPureDet (GoLoad t) l
-      (foldl (λ struct_so_far fd,
-                let (field_name, field_type) := match fd with
-                                                | go.FieldDecl n t => pair n t
-                                                | go.EmbeddedField n t => pair n t
-                                                end in
-                let field_addr := StructFieldRef t field_name l in
-                let field_val := GoLoad field_type field_addr in
-                StructFieldSet t field_name (struct_so_far, field_val)
-         )%E (GoZeroVal t #()) fds)%V;
-
-  #[export] store_primitive `[!t ↓u tunder] (H : is_primitive t) l v ::
-    IsGoStepPureDet (GoStore t) (l, v)%V (l <- v)%E;
-  store_struct `[!t ↓u go.StructType fds] l v :
-    IsGoStepPureDet (GoStore t) (l, v)
-      (foldl (λ store_so_far fd,
-                store_so_far;;
-                let (field_name, field_type) := match fd with
-                                                | go.FieldDecl n t => pair n t
-                                                | go.EmbeddedField n t => pair n t
-                                                end in
-                let field_addr := StructFieldRef t field_name l in
-                let field_val := StructFieldGet t field_name v in
-                GoStore field_type (field_addr, field_val)
-         )%E (#()) fds)%V;
-
-}.
-End defs.
-End mem.
-
-Section defs.
-Context {ext : ffi_syntax} {go_lctx : GoLocalContext} {go_gctx : GoGlobalContext}.
 Class IntoValUnfold V f :=
   {
     into_val_unfold : @into_val _ _ V = f;
@@ -400,17 +350,31 @@ Class CoreSemantics `{!GoSemanticsFunctions} : Prop :=
 
   #[global] underlying_not_named `{!NotNamed t} :: t ↓u t;
 
-  #[global] go_func_resolve_step n ts :: IsGoStepPureDet (FuncResolve n ts) #() #(functions n ts);
+  (* Underlying-respecting instructions *)
+  #[global] convert_underlying `{!from ↓u from_under} `{!to ↓u to_under} v e ::
+   ⟦Convert from_under to_under, v⟧ ⤳[under] e → ⟦Convert from to, v⟧ ⤳ e;
+  #[global] go_op_underlying o `{!t ↓u t_under} v e ::
+   ⟦GoOp o t_under, v⟧ ⤳[under] e → ⟦GoOp o t, v⟧ ⤳ e;
+  #[global] composite_literal_underlying `{!t ↓u t_under} v e ::
+   ⟦CompositeLiteral t_under, v⟧ ⤳[under] e → ⟦CompositeLiteral t, v⟧ ⤳ e;
+  #[global] composite_literal_underlying_typed `{!t ↓u t_under} v e ::
+   ⟦CompositeLiteral t_under, v⟧ ⤳[under_type t] e → ⟦CompositeLiteral t, v⟧ ⤳ e;
+  #[global] index_underlying_typed `{!t ↓u t_under} v e ::
+   ⟦Index t_under, v⟧ ⤳[under] e → ⟦Index t, v⟧ ⤳ e;
+  #[global] index_ref_underlying_typed `{!t ↓u t_under} v e ::
+   ⟦IndexRef t_under, v⟧ ⤳[under] e → ⟦IndexRef t, v⟧ ⤳ e;
+
+  #[global] go_func_resolve_step n ts :: ⟦FuncResolve n ts, #()⟧ ⤳ #(functions n ts);
   #[global] go_method_resolve_step m t rcvr `{!t ↓u tunder} `{!NotInterface tunder} ::
-    IsGoStepPureDet (MethodResolve t m) rcvr #(methods t m rcvr);
-  #[global] go_global_var_addr_step v :: IsGoStepPureDet (GlobalVarAddr v) #() #(global_addr v);
+    ⟦MethodResolve t m, rcvr⟧ ⤳ #(methods t m rcvr);
+  #[global] go_global_var_addr_step v :: ⟦GlobalVarAddr v, #()⟧ ⤳ #(global_addr v);
 
   (* FIXME: unsound semantics: simply computing the struct field address will
      panic if the base address is nil. This is a bit of a headache because every
      program step executing [StructFieldRef] will need to have a precondition
      that [l ≠ null]. *)
   #[global] struct_field_ref_step t f l V `{!ZeroVal V} `{!TypeRepr t V} ::
-    IsGoStepPureDet (StructFieldRef t f) #l #(struct_field_ref V f l);
+    ⟦StructFieldRef t f, #l⟧ ⤳ #(struct_field_ref V f l);
 
   (* The language spec doesn't say anything about the addresses of zero-sized
      allocation. But, in the runtime, these addresses are non-nil, so the
@@ -441,15 +405,14 @@ Class CoreSemantics `{!GoSemanticsFunctions} : Prop :=
   #[global] type_repr_map key_type elem_type :: TypeRepr (go.MapType key_type elem_type) map.t;
 
   #[global] core_comparison_sem :: CoreComparisonSemantics;
-  #[global] core_mem_sem :: mem.MemSemantics;
 
   #[global] composite_literal_pointer elem_type l ::
-    IsCompositeLiteral (go.PointerType elem_type) l
-    (λ _, GoAlloc elem_type (CompositeLiteral elem_type l));
+    ⟦CompositeLiteral (go.PointerType elem_type), l⟧ ⤳[under]
+    GoAlloc elem_type (CompositeLiteral elem_type l);
 
-  #[global] composite_literal_struct l fds ::
-    IsCompositeLiteral (go.StructType fds) (LiteralValueV l)
-    (λ t, match l with
+  #[global] composite_literal_struct t l fds ::
+    ⟦CompositeLiteral (go.StructType fds), (LiteralValueV l)⟧ ⤳[under]
+    (match l with
           | [] => GoZeroVal t #()
           | KeyedElement None _ :: _ =>
               (* unkeyed struct literal *)
@@ -461,7 +424,7 @@ Class CoreSemantics `{!GoSemanticsFunctions} : Prop :=
                            StructFieldSet t field_name (v, Convert from field_type e)%E
                        | _ => Panic "invalid Go code"
                        end
-                ) (GoZeroVal t #()) (zip fds l)
+                ) (GoZeroVal (go.StructType fds) #()) (zip fds l)
           | KeyedElement (Some _) _ :: _ =>
               (* keyed struct literal *)
               foldl (λ v ke,
@@ -473,8 +436,56 @@ Class CoreSemantics `{!GoSemanticsFunctions} : Prop :=
                 ) (GoZeroVal t #()) l
           end);
 
-  #[global] is_convert_underlying_same t v :: IsConvert t t v v;
-  #[global] convert_same t v :: IsGoStepPureDet (Convert t t) v v;
+  #[global] alloc_primitive `[!t ↓u tunder] v (H : is_primitive tunder) ::
+    ⟦GoAlloc t, v⟧ ⤳[internal] (ref_one v)%E;
+  #[global] alloc_struct `[!t ↓u go.StructType fds] v ::
+    ⟦GoAlloc t, v⟧ ⤳[internal]
+      (let: "l" := GoPrealloc #() in
+       foldr (λ fd alloc_rest,
+                let (field_name, field_type) := match fd with
+                                                | go.FieldDecl n t => pair n t
+                                                | go.EmbeddedField n t => pair n t
+                                                end in
+                let field_addr := StructFieldRef t field_name "l" in
+                let: "l_field" := GoAlloc field_type (StructFieldGet t field_name v) in
+                (if: ("l_field" ≠⟨go.PointerType field_type⟩ field_addr) then AngelicExit #()
+                 else #());;
+                alloc_rest
+         ) #() fds ;;
+       "l")%E;
+
+  #[global] load_primitive `[!t ↓u tunder] (H : is_primitive tunder) l ::
+    ⟦GoLoad t, l⟧ ⤳[internal] (Read l)%E;
+
+  #[global] load_struct `[!t ↓u go.StructType fds] l ::
+    ⟦GoLoad t, l⟧ ⤳[internal]
+      (foldl (λ struct_so_far fd,
+                let (field_name, field_type) := match fd with
+                                                | go.FieldDecl n t => pair n t
+                                                | go.EmbeddedField n t => pair n t
+                                                end in
+                let field_addr := StructFieldRef t field_name l in
+                let field_val := GoLoad field_type field_addr in
+                StructFieldSet t field_name (struct_so_far, field_val)
+         )%E (GoZeroVal t #()) fds)%V;
+
+  #[global] store_primitive `[!t ↓u tunder] (H : is_primitive t) l v ::
+    ⟦GoStore t, (l, v)⟧ ⤳[internal] (l <- v)%E;
+  #[global] store_struct `[!t ↓u go.StructType fds] l v ::
+    ⟦GoStore t, (l, v)⟧ ⤳[internal]
+      (foldl (λ store_so_far fd,
+                store_so_far;;
+                let (field_name, field_type) := match fd with
+                                                | go.FieldDecl n t => pair n t
+                                                | go.EmbeddedField n t => pair n t
+                                                end in
+                let field_addr := StructFieldRef t field_name l in
+                let field_val := StructFieldGet t field_name v in
+                GoStore field_type (field_addr, field_val)
+         )%E (#()) fds)%V;
+
+  #[global] is_convert_underlying_same t v :: ⟦Convert t t, v⟧ ⤳[under] v;
+  #[global] convert_same t v :: ⟦Convert t t, v⟧ ⤳ v;
 }.
 
 End defs.
@@ -495,3 +506,11 @@ Global Notation "e1 <-[ t ] e2" := (GoInstruction (GoStore t) (Pair e1%E e2%E))
 Global Notation "s  ≤u  t" := (go.UnderlyingEq s t) (at level 70).
 Global Notation "s  <u  t" := (go.UnderlyingDirectedEq s t) (at level 70).
 Global Notation "t  ↓u  tunder" := (go.IsUnderlying t tunder) (at level 70).
+
+Global Notation "⟦ instr , args ⟧ ⤳ e" :=
+  (go.IsGoStepPureDet instr args%V e)
+    (at level 1, e at level 70, format "⟦ instr ,  args ⟧  ⤳  e").
+
+Global Notation "⟦ instr , args ⟧ ⤳[ tag ] e" :=
+  (go.IsGoStepPureDetTagged tag instr args%V e)
+    (at level 1, e at level 70, format "⟦ instr ,  args ⟧  ⤳[ tag ]  e" ).
