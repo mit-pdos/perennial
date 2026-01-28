@@ -169,7 +169,9 @@ End Source.
 
 Class Source_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Source_type_repr  :: go.TypeRepr Sourceⁱᵐᵖˡ Source.t;
+  #[global] Source_type_repr  :: go.TypeReprUnderlying Sourceⁱᵐᵖˡ Source.t;
+  #[global] Source_underlying :: (Source) <u (Sourceⁱᵐᵖˡ);
+  #[global] Sourceⁱᵐᵖˡ_underlying :: (Sourceⁱᵐᵖˡ) ↓u (Sourceⁱᵐᵖˡ);
 }.
 
 Module Source64.
@@ -183,7 +185,9 @@ End Source64.
 
 Class Source64_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Source64_type_repr  :: go.TypeRepr Source64ⁱᵐᵖˡ Source64.t;
+  #[global] Source64_type_repr  :: go.TypeReprUnderlying Source64ⁱᵐᵖˡ Source64.t;
+  #[global] Source64_underlying :: (Source64) <u (Source64ⁱᵐᵖˡ);
+  #[global] Source64ⁱᵐᵖˡ_underlying :: (Source64ⁱᵐᵖˡ) ↓u (Source64ⁱᵐᵖˡ);
 }.
 
 Module Rand.
@@ -197,7 +201,9 @@ End Rand.
 
 Class Rand_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Rand_type_repr  :: go.TypeRepr Randⁱᵐᵖˡ Rand.t;
+  #[global] Rand_type_repr  :: go.TypeReprUnderlying Randⁱᵐᵖˡ Rand.t;
+  #[global] Rand_underlying :: (Rand) <u (Randⁱᵐᵖˡ);
+  #[global] Randⁱᵐᵖˡ_underlying :: (Randⁱᵐᵖˡ) ↓u (Randⁱᵐᵖˡ);
 }.
 
 Module runtimeSource.
@@ -211,7 +217,9 @@ End runtimeSource.
 
 Class runtimeSource_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] runtimeSource_type_repr  :: go.TypeRepr runtimeSourceⁱᵐᵖˡ runtimeSource.t;
+  #[global] runtimeSource_type_repr  :: go.TypeReprUnderlying runtimeSourceⁱᵐᵖˡ runtimeSource.t;
+  #[global] runtimeSource_underlying :: (runtimeSource) <u (runtimeSourceⁱᵐᵖˡ);
+  #[global] runtimeSourceⁱᵐᵖˡ_underlying :: (runtimeSourceⁱᵐᵖˡ) ↓u (runtimeSourceⁱᵐᵖˡ);
 }.
 
 Module lockedSource.
@@ -225,7 +233,9 @@ End lockedSource.
 
 Class lockedSource_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] lockedSource_type_repr  :: go.TypeRepr lockedSourceⁱᵐᵖˡ lockedSource.t;
+  #[global] lockedSource_type_repr  :: go.TypeReprUnderlying lockedSourceⁱᵐᵖˡ lockedSource.t;
+  #[global] lockedSource_underlying :: (lockedSource) <u (lockedSourceⁱᵐᵖˡ);
+  #[global] lockedSourceⁱᵐᵖˡ_underlying :: (lockedSourceⁱᵐᵖˡ) ↓u (lockedSourceⁱᵐᵖˡ);
 }.
 
 Module rngSource.
@@ -239,7 +249,9 @@ End rngSource.
 
 Class rngSource_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] rngSource_type_repr  :: go.TypeRepr rngSourceⁱᵐᵖˡ rngSource.t;
+  #[global] rngSource_type_repr  :: go.TypeReprUnderlying rngSourceⁱᵐᵖˡ rngSource.t;
+  #[global] rngSource_underlying :: (rngSource) <u (rngSourceⁱᵐᵖˡ);
+  #[global] rngSourceⁱᵐᵖˡ_underlying :: (rngSourceⁱᵐᵖˡ) ↓u (rngSourceⁱᵐᵖˡ);
 }.
 
 Module Zipf.
@@ -253,7 +265,9 @@ End Zipf.
 
 Class Zipf_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Zipf_type_repr  :: go.TypeRepr Zipfⁱᵐᵖˡ Zipf.t;
+  #[global] Zipf_type_repr  :: go.TypeReprUnderlying Zipfⁱᵐᵖˡ Zipf.t;
+  #[global] Zipf_underlying :: (Zipf) <u (Zipfⁱᵐᵖˡ);
+  #[global] Zipfⁱᵐᵖˡ_underlying :: (Zipfⁱᵐᵖˡ) ↓u (Zipfⁱᵐᵖˡ);
 }.
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=

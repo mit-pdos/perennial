@@ -62,7 +62,9 @@ End errorString.
 
 Class errorString_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] errorString_type_repr  :: go.TypeRepr errorStringⁱᵐᵖˡ errorString.t;
+  #[global] errorString_type_repr  :: go.TypeReprUnderlying errorStringⁱᵐᵖˡ errorString.t;
+  #[global] errorString_underlying :: (errorString) <u (errorStringⁱᵐᵖˡ);
+  #[global] errorStringⁱᵐᵖˡ_underlying :: (errorStringⁱᵐᵖˡ) ↓u (errorStringⁱᵐᵖˡ);
 }.
 
 Module joinError.
@@ -76,7 +78,9 @@ End joinError.
 
 Class joinError_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] joinError_type_repr  :: go.TypeRepr joinErrorⁱᵐᵖˡ joinError.t;
+  #[global] joinError_type_repr  :: go.TypeReprUnderlying joinErrorⁱᵐᵖˡ joinError.t;
+  #[global] joinError_underlying :: (joinError) <u (joinErrorⁱᵐᵖˡ);
+  #[global] joinErrorⁱᵐᵖˡ_underlying :: (joinErrorⁱᵐᵖˡ) ↓u (joinErrorⁱᵐᵖˡ);
 }.
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=

@@ -270,7 +270,7 @@ Definition Readerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go
 
 Class Reader_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Reader_type_repr  :: go.TypeRepr Readerⁱᵐᵖˡ Reader.t;
+  #[global] Reader_type_repr  :: go.TypeReprUnderlying Readerⁱᵐᵖˡ Reader.t;
   #[global] Reader_underlying :: (Reader) <u (Readerⁱᵐᵖˡ);
 }.
 
@@ -285,7 +285,7 @@ Definition Writerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go
 
 Class Writer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Writer_type_repr  :: go.TypeRepr Writerⁱᵐᵖˡ Writer.t;
+  #[global] Writer_type_repr  :: go.TypeReprUnderlying Writerⁱᵐᵖˡ Writer.t;
   #[global] Writer_underlying :: (Writer) <u (Writerⁱᵐᵖˡ);
 }.
 
@@ -300,7 +300,9 @@ End Closer.
 
 Class Closer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Closer_type_repr  :: go.TypeRepr Closerⁱᵐᵖˡ Closer.t;
+  #[global] Closer_type_repr  :: go.TypeReprUnderlying Closerⁱᵐᵖˡ Closer.t;
+  #[global] Closer_underlying :: (Closer) <u (Closerⁱᵐᵖˡ);
+  #[global] Closerⁱᵐᵖˡ_underlying :: (Closerⁱᵐᵖˡ) ↓u (Closerⁱᵐᵖˡ);
 }.
 
 Module Seeker.
@@ -314,7 +316,9 @@ End Seeker.
 
 Class Seeker_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Seeker_type_repr  :: go.TypeRepr Seekerⁱᵐᵖˡ Seeker.t;
+  #[global] Seeker_type_repr  :: go.TypeReprUnderlying Seekerⁱᵐᵖˡ Seeker.t;
+  #[global] Seeker_underlying :: (Seeker) <u (Seekerⁱᵐᵖˡ);
+  #[global] Seekerⁱᵐᵖˡ_underlying :: (Seekerⁱᵐᵖˡ) ↓u (Seekerⁱᵐᵖˡ);
 }.
 
 Module ReadWriter.
@@ -328,7 +332,9 @@ End ReadWriter.
 
 Class ReadWriter_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] ReadWriter_type_repr  :: go.TypeRepr ReadWriterⁱᵐᵖˡ ReadWriter.t;
+  #[global] ReadWriter_type_repr  :: go.TypeReprUnderlying ReadWriterⁱᵐᵖˡ ReadWriter.t;
+  #[global] ReadWriter_underlying :: (ReadWriter) <u (ReadWriterⁱᵐᵖˡ);
+  #[global] ReadWriterⁱᵐᵖˡ_underlying :: (ReadWriterⁱᵐᵖˡ) ↓u (ReadWriterⁱᵐᵖˡ);
 }.
 
 Module ReadCloser.
@@ -342,7 +348,9 @@ End ReadCloser.
 
 Class ReadCloser_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] ReadCloser_type_repr  :: go.TypeRepr ReadCloserⁱᵐᵖˡ ReadCloser.t;
+  #[global] ReadCloser_type_repr  :: go.TypeReprUnderlying ReadCloserⁱᵐᵖˡ ReadCloser.t;
+  #[global] ReadCloser_underlying :: (ReadCloser) <u (ReadCloserⁱᵐᵖˡ);
+  #[global] ReadCloserⁱᵐᵖˡ_underlying :: (ReadCloserⁱᵐᵖˡ) ↓u (ReadCloserⁱᵐᵖˡ);
 }.
 
 Module WriteCloser.
@@ -356,7 +364,9 @@ End WriteCloser.
 
 Class WriteCloser_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] WriteCloser_type_repr  :: go.TypeRepr WriteCloserⁱᵐᵖˡ WriteCloser.t;
+  #[global] WriteCloser_type_repr  :: go.TypeReprUnderlying WriteCloserⁱᵐᵖˡ WriteCloser.t;
+  #[global] WriteCloser_underlying :: (WriteCloser) <u (WriteCloserⁱᵐᵖˡ);
+  #[global] WriteCloserⁱᵐᵖˡ_underlying :: (WriteCloserⁱᵐᵖˡ) ↓u (WriteCloserⁱᵐᵖˡ);
 }.
 
 Module ReadWriteCloser.
@@ -370,7 +380,9 @@ End ReadWriteCloser.
 
 Class ReadWriteCloser_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] ReadWriteCloser_type_repr  :: go.TypeRepr ReadWriteCloserⁱᵐᵖˡ ReadWriteCloser.t;
+  #[global] ReadWriteCloser_type_repr  :: go.TypeReprUnderlying ReadWriteCloserⁱᵐᵖˡ ReadWriteCloser.t;
+  #[global] ReadWriteCloser_underlying :: (ReadWriteCloser) <u (ReadWriteCloserⁱᵐᵖˡ);
+  #[global] ReadWriteCloserⁱᵐᵖˡ_underlying :: (ReadWriteCloserⁱᵐᵖˡ) ↓u (ReadWriteCloserⁱᵐᵖˡ);
 }.
 
 Module ReadSeeker.
@@ -384,7 +396,9 @@ End ReadSeeker.
 
 Class ReadSeeker_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] ReadSeeker_type_repr  :: go.TypeRepr ReadSeekerⁱᵐᵖˡ ReadSeeker.t;
+  #[global] ReadSeeker_type_repr  :: go.TypeReprUnderlying ReadSeekerⁱᵐᵖˡ ReadSeeker.t;
+  #[global] ReadSeeker_underlying :: (ReadSeeker) <u (ReadSeekerⁱᵐᵖˡ);
+  #[global] ReadSeekerⁱᵐᵖˡ_underlying :: (ReadSeekerⁱᵐᵖˡ) ↓u (ReadSeekerⁱᵐᵖˡ);
 }.
 
 Module ReadSeekCloser.
@@ -398,7 +412,9 @@ End ReadSeekCloser.
 
 Class ReadSeekCloser_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] ReadSeekCloser_type_repr  :: go.TypeRepr ReadSeekCloserⁱᵐᵖˡ ReadSeekCloser.t;
+  #[global] ReadSeekCloser_type_repr  :: go.TypeReprUnderlying ReadSeekCloserⁱᵐᵖˡ ReadSeekCloser.t;
+  #[global] ReadSeekCloser_underlying :: (ReadSeekCloser) <u (ReadSeekCloserⁱᵐᵖˡ);
+  #[global] ReadSeekCloserⁱᵐᵖˡ_underlying :: (ReadSeekCloserⁱᵐᵖˡ) ↓u (ReadSeekCloserⁱᵐᵖˡ);
 }.
 
 Module WriteSeeker.
@@ -412,7 +428,9 @@ End WriteSeeker.
 
 Class WriteSeeker_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] WriteSeeker_type_repr  :: go.TypeRepr WriteSeekerⁱᵐᵖˡ WriteSeeker.t;
+  #[global] WriteSeeker_type_repr  :: go.TypeReprUnderlying WriteSeekerⁱᵐᵖˡ WriteSeeker.t;
+  #[global] WriteSeeker_underlying :: (WriteSeeker) <u (WriteSeekerⁱᵐᵖˡ);
+  #[global] WriteSeekerⁱᵐᵖˡ_underlying :: (WriteSeekerⁱᵐᵖˡ) ↓u (WriteSeekerⁱᵐᵖˡ);
 }.
 
 Module ReadWriteSeeker.
@@ -426,7 +444,9 @@ End ReadWriteSeeker.
 
 Class ReadWriteSeeker_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] ReadWriteSeeker_type_repr  :: go.TypeRepr ReadWriteSeekerⁱᵐᵖˡ ReadWriteSeeker.t;
+  #[global] ReadWriteSeeker_type_repr  :: go.TypeReprUnderlying ReadWriteSeekerⁱᵐᵖˡ ReadWriteSeeker.t;
+  #[global] ReadWriteSeeker_underlying :: (ReadWriteSeeker) <u (ReadWriteSeekerⁱᵐᵖˡ);
+  #[global] ReadWriteSeekerⁱᵐᵖˡ_underlying :: (ReadWriteSeekerⁱᵐᵖˡ) ↓u (ReadWriteSeekerⁱᵐᵖˡ);
 }.
 
 Module ReaderFrom.
@@ -440,7 +460,9 @@ End ReaderFrom.
 
 Class ReaderFrom_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] ReaderFrom_type_repr  :: go.TypeRepr ReaderFromⁱᵐᵖˡ ReaderFrom.t;
+  #[global] ReaderFrom_type_repr  :: go.TypeReprUnderlying ReaderFromⁱᵐᵖˡ ReaderFrom.t;
+  #[global] ReaderFrom_underlying :: (ReaderFrom) <u (ReaderFromⁱᵐᵖˡ);
+  #[global] ReaderFromⁱᵐᵖˡ_underlying :: (ReaderFromⁱᵐᵖˡ) ↓u (ReaderFromⁱᵐᵖˡ);
 }.
 
 Module WriterTo.
@@ -454,7 +476,9 @@ End WriterTo.
 
 Class WriterTo_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] WriterTo_type_repr  :: go.TypeRepr WriterToⁱᵐᵖˡ WriterTo.t;
+  #[global] WriterTo_type_repr  :: go.TypeReprUnderlying WriterToⁱᵐᵖˡ WriterTo.t;
+  #[global] WriterTo_underlying :: (WriterTo) <u (WriterToⁱᵐᵖˡ);
+  #[global] WriterToⁱᵐᵖˡ_underlying :: (WriterToⁱᵐᵖˡ) ↓u (WriterToⁱᵐᵖˡ);
 }.
 
 Module ReaderAt.
@@ -468,7 +492,9 @@ End ReaderAt.
 
 Class ReaderAt_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] ReaderAt_type_repr  :: go.TypeRepr ReaderAtⁱᵐᵖˡ ReaderAt.t;
+  #[global] ReaderAt_type_repr  :: go.TypeReprUnderlying ReaderAtⁱᵐᵖˡ ReaderAt.t;
+  #[global] ReaderAt_underlying :: (ReaderAt) <u (ReaderAtⁱᵐᵖˡ);
+  #[global] ReaderAtⁱᵐᵖˡ_underlying :: (ReaderAtⁱᵐᵖˡ) ↓u (ReaderAtⁱᵐᵖˡ);
 }.
 
 Module WriterAt.
@@ -482,7 +508,9 @@ End WriterAt.
 
 Class WriterAt_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] WriterAt_type_repr  :: go.TypeRepr WriterAtⁱᵐᵖˡ WriterAt.t;
+  #[global] WriterAt_type_repr  :: go.TypeReprUnderlying WriterAtⁱᵐᵖˡ WriterAt.t;
+  #[global] WriterAt_underlying :: (WriterAt) <u (WriterAtⁱᵐᵖˡ);
+  #[global] WriterAtⁱᵐᵖˡ_underlying :: (WriterAtⁱᵐᵖˡ) ↓u (WriterAtⁱᵐᵖˡ);
 }.
 
 Module ByteReader.
@@ -496,7 +524,9 @@ End ByteReader.
 
 Class ByteReader_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] ByteReader_type_repr  :: go.TypeRepr ByteReaderⁱᵐᵖˡ ByteReader.t;
+  #[global] ByteReader_type_repr  :: go.TypeReprUnderlying ByteReaderⁱᵐᵖˡ ByteReader.t;
+  #[global] ByteReader_underlying :: (ByteReader) <u (ByteReaderⁱᵐᵖˡ);
+  #[global] ByteReaderⁱᵐᵖˡ_underlying :: (ByteReaderⁱᵐᵖˡ) ↓u (ByteReaderⁱᵐᵖˡ);
 }.
 
 Module ByteScanner.
@@ -510,7 +540,9 @@ End ByteScanner.
 
 Class ByteScanner_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] ByteScanner_type_repr  :: go.TypeRepr ByteScannerⁱᵐᵖˡ ByteScanner.t;
+  #[global] ByteScanner_type_repr  :: go.TypeReprUnderlying ByteScannerⁱᵐᵖˡ ByteScanner.t;
+  #[global] ByteScanner_underlying :: (ByteScanner) <u (ByteScannerⁱᵐᵖˡ);
+  #[global] ByteScannerⁱᵐᵖˡ_underlying :: (ByteScannerⁱᵐᵖˡ) ↓u (ByteScannerⁱᵐᵖˡ);
 }.
 
 Module ByteWriter.
@@ -524,7 +556,9 @@ End ByteWriter.
 
 Class ByteWriter_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] ByteWriter_type_repr  :: go.TypeRepr ByteWriterⁱᵐᵖˡ ByteWriter.t;
+  #[global] ByteWriter_type_repr  :: go.TypeReprUnderlying ByteWriterⁱᵐᵖˡ ByteWriter.t;
+  #[global] ByteWriter_underlying :: (ByteWriter) <u (ByteWriterⁱᵐᵖˡ);
+  #[global] ByteWriterⁱᵐᵖˡ_underlying :: (ByteWriterⁱᵐᵖˡ) ↓u (ByteWriterⁱᵐᵖˡ);
 }.
 
 Module RuneReader.
@@ -538,7 +572,9 @@ End RuneReader.
 
 Class RuneReader_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] RuneReader_type_repr  :: go.TypeRepr RuneReaderⁱᵐᵖˡ RuneReader.t;
+  #[global] RuneReader_type_repr  :: go.TypeReprUnderlying RuneReaderⁱᵐᵖˡ RuneReader.t;
+  #[global] RuneReader_underlying :: (RuneReader) <u (RuneReaderⁱᵐᵖˡ);
+  #[global] RuneReaderⁱᵐᵖˡ_underlying :: (RuneReaderⁱᵐᵖˡ) ↓u (RuneReaderⁱᵐᵖˡ);
 }.
 
 Module RuneScanner.
@@ -552,7 +588,9 @@ End RuneScanner.
 
 Class RuneScanner_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] RuneScanner_type_repr  :: go.TypeRepr RuneScannerⁱᵐᵖˡ RuneScanner.t;
+  #[global] RuneScanner_type_repr  :: go.TypeReprUnderlying RuneScannerⁱᵐᵖˡ RuneScanner.t;
+  #[global] RuneScanner_underlying :: (RuneScanner) <u (RuneScannerⁱᵐᵖˡ);
+  #[global] RuneScannerⁱᵐᵖˡ_underlying :: (RuneScannerⁱᵐᵖˡ) ↓u (RuneScannerⁱᵐᵖˡ);
 }.
 
 Module StringWriter.
@@ -566,7 +604,9 @@ End StringWriter.
 
 Class StringWriter_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] StringWriter_type_repr  :: go.TypeRepr StringWriterⁱᵐᵖˡ StringWriter.t;
+  #[global] StringWriter_type_repr  :: go.TypeReprUnderlying StringWriterⁱᵐᵖˡ StringWriter.t;
+  #[global] StringWriter_underlying :: (StringWriter) <u (StringWriterⁱᵐᵖˡ);
+  #[global] StringWriterⁱᵐᵖˡ_underlying :: (StringWriterⁱᵐᵖˡ) ↓u (StringWriterⁱᵐᵖˡ);
 }.
 
 Module LimitedReader.
@@ -580,7 +620,9 @@ End LimitedReader.
 
 Class LimitedReader_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] LimitedReader_type_repr  :: go.TypeRepr LimitedReaderⁱᵐᵖˡ LimitedReader.t;
+  #[global] LimitedReader_type_repr  :: go.TypeReprUnderlying LimitedReaderⁱᵐᵖˡ LimitedReader.t;
+  #[global] LimitedReader_underlying :: (LimitedReader) <u (LimitedReaderⁱᵐᵖˡ);
+  #[global] LimitedReaderⁱᵐᵖˡ_underlying :: (LimitedReaderⁱᵐᵖˡ) ↓u (LimitedReaderⁱᵐᵖˡ);
 }.
 
 Module SectionReader.
@@ -594,7 +636,9 @@ End SectionReader.
 
 Class SectionReader_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] SectionReader_type_repr  :: go.TypeRepr SectionReaderⁱᵐᵖˡ SectionReader.t;
+  #[global] SectionReader_type_repr  :: go.TypeReprUnderlying SectionReaderⁱᵐᵖˡ SectionReader.t;
+  #[global] SectionReader_underlying :: (SectionReader) <u (SectionReaderⁱᵐᵖˡ);
+  #[global] SectionReaderⁱᵐᵖˡ_underlying :: (SectionReaderⁱᵐᵖˡ) ↓u (SectionReaderⁱᵐᵖˡ);
 }.
 
 Module OffsetWriter.
@@ -608,7 +652,9 @@ End OffsetWriter.
 
 Class OffsetWriter_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] OffsetWriter_type_repr  :: go.TypeRepr OffsetWriterⁱᵐᵖˡ OffsetWriter.t;
+  #[global] OffsetWriter_type_repr  :: go.TypeReprUnderlying OffsetWriterⁱᵐᵖˡ OffsetWriter.t;
+  #[global] OffsetWriter_underlying :: (OffsetWriter) <u (OffsetWriterⁱᵐᵖˡ);
+  #[global] OffsetWriterⁱᵐᵖˡ_underlying :: (OffsetWriterⁱᵐᵖˡ) ↓u (OffsetWriterⁱᵐᵖˡ);
 }.
 
 Module teeReader.
@@ -622,7 +668,9 @@ End teeReader.
 
 Class teeReader_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] teeReader_type_repr  :: go.TypeRepr teeReaderⁱᵐᵖˡ teeReader.t;
+  #[global] teeReader_type_repr  :: go.TypeReprUnderlying teeReaderⁱᵐᵖˡ teeReader.t;
+  #[global] teeReader_underlying :: (teeReader) <u (teeReaderⁱᵐᵖˡ);
+  #[global] teeReaderⁱᵐᵖˡ_underlying :: (teeReaderⁱᵐᵖˡ) ↓u (teeReaderⁱᵐᵖˡ);
 }.
 
 Module discard.
@@ -636,7 +684,9 @@ End discard.
 
 Class discard_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] discard_type_repr  :: go.TypeRepr discardⁱᵐᵖˡ discard.t;
+  #[global] discard_type_repr  :: go.TypeReprUnderlying discardⁱᵐᵖˡ discard.t;
+  #[global] discard_underlying :: (discard) <u (discardⁱᵐᵖˡ);
+  #[global] discardⁱᵐᵖˡ_underlying :: (discardⁱᵐᵖˡ) ↓u (discardⁱᵐᵖˡ);
 }.
 
 Module nopCloser.
@@ -650,7 +700,9 @@ End nopCloser.
 
 Class nopCloser_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] nopCloser_type_repr  :: go.TypeRepr nopCloserⁱᵐᵖˡ nopCloser.t;
+  #[global] nopCloser_type_repr  :: go.TypeReprUnderlying nopCloserⁱᵐᵖˡ nopCloser.t;
+  #[global] nopCloser_underlying :: (nopCloser) <u (nopCloserⁱᵐᵖˡ);
+  #[global] nopCloserⁱᵐᵖˡ_underlying :: (nopCloserⁱᵐᵖˡ) ↓u (nopCloserⁱᵐᵖˡ);
 }.
 
 Module nopCloserWriterTo.
@@ -664,7 +716,9 @@ End nopCloserWriterTo.
 
 Class nopCloserWriterTo_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] nopCloserWriterTo_type_repr  :: go.TypeRepr nopCloserWriterToⁱᵐᵖˡ nopCloserWriterTo.t;
+  #[global] nopCloserWriterTo_type_repr  :: go.TypeReprUnderlying nopCloserWriterToⁱᵐᵖˡ nopCloserWriterTo.t;
+  #[global] nopCloserWriterTo_underlying :: (nopCloserWriterTo) <u (nopCloserWriterToⁱᵐᵖˡ);
+  #[global] nopCloserWriterToⁱᵐᵖˡ_underlying :: (nopCloserWriterToⁱᵐᵖˡ) ↓u (nopCloserWriterToⁱᵐᵖˡ);
 }.
 
 Module eofReader.
@@ -678,7 +732,9 @@ End eofReader.
 
 Class eofReader_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] eofReader_type_repr  :: go.TypeRepr eofReaderⁱᵐᵖˡ eofReader.t;
+  #[global] eofReader_type_repr  :: go.TypeReprUnderlying eofReaderⁱᵐᵖˡ eofReader.t;
+  #[global] eofReader_underlying :: (eofReader) <u (eofReaderⁱᵐᵖˡ);
+  #[global] eofReaderⁱᵐᵖˡ_underlying :: (eofReaderⁱᵐᵖˡ) ↓u (eofReaderⁱᵐᵖˡ);
 }.
 
 Module multiReader.
@@ -692,7 +748,9 @@ End multiReader.
 
 Class multiReader_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] multiReader_type_repr  :: go.TypeRepr multiReaderⁱᵐᵖˡ multiReader.t;
+  #[global] multiReader_type_repr  :: go.TypeReprUnderlying multiReaderⁱᵐᵖˡ multiReader.t;
+  #[global] multiReader_underlying :: (multiReader) <u (multiReaderⁱᵐᵖˡ);
+  #[global] multiReaderⁱᵐᵖˡ_underlying :: (multiReaderⁱᵐᵖˡ) ↓u (multiReaderⁱᵐᵖˡ);
 }.
 
 Module multiWriter.
@@ -706,7 +764,9 @@ End multiWriter.
 
 Class multiWriter_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] multiWriter_type_repr  :: go.TypeRepr multiWriterⁱᵐᵖˡ multiWriter.t;
+  #[global] multiWriter_type_repr  :: go.TypeReprUnderlying multiWriterⁱᵐᵖˡ multiWriter.t;
+  #[global] multiWriter_underlying :: (multiWriter) <u (multiWriterⁱᵐᵖˡ);
+  #[global] multiWriterⁱᵐᵖˡ_underlying :: (multiWriterⁱᵐᵖˡ) ↓u (multiWriterⁱᵐᵖˡ);
 }.
 
 Module onceError.
@@ -720,7 +780,9 @@ End onceError.
 
 Class onceError_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] onceError_type_repr  :: go.TypeRepr onceErrorⁱᵐᵖˡ onceError.t;
+  #[global] onceError_type_repr  :: go.TypeReprUnderlying onceErrorⁱᵐᵖˡ onceError.t;
+  #[global] onceError_underlying :: (onceError) <u (onceErrorⁱᵐᵖˡ);
+  #[global] onceErrorⁱᵐᵖˡ_underlying :: (onceErrorⁱᵐᵖˡ) ↓u (onceErrorⁱᵐᵖˡ);
 }.
 
 Module pipe.
@@ -734,7 +796,9 @@ End pipe.
 
 Class pipe_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] pipe_type_repr  :: go.TypeRepr pipeⁱᵐᵖˡ pipe.t;
+  #[global] pipe_type_repr  :: go.TypeReprUnderlying pipeⁱᵐᵖˡ pipe.t;
+  #[global] pipe_underlying :: (pipe) <u (pipeⁱᵐᵖˡ);
+  #[global] pipeⁱᵐᵖˡ_underlying :: (pipeⁱᵐᵖˡ) ↓u (pipeⁱᵐᵖˡ);
 }.
 
 Module PipeReader.
@@ -748,7 +812,9 @@ End PipeReader.
 
 Class PipeReader_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] PipeReader_type_repr  :: go.TypeRepr PipeReaderⁱᵐᵖˡ PipeReader.t;
+  #[global] PipeReader_type_repr  :: go.TypeReprUnderlying PipeReaderⁱᵐᵖˡ PipeReader.t;
+  #[global] PipeReader_underlying :: (PipeReader) <u (PipeReaderⁱᵐᵖˡ);
+  #[global] PipeReaderⁱᵐᵖˡ_underlying :: (PipeReaderⁱᵐᵖˡ) ↓u (PipeReaderⁱᵐᵖˡ);
 }.
 
 Module PipeWriter.
@@ -762,7 +828,9 @@ End PipeWriter.
 
 Class PipeWriter_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] PipeWriter_type_repr  :: go.TypeRepr PipeWriterⁱᵐᵖˡ PipeWriter.t;
+  #[global] PipeWriter_type_repr  :: go.TypeReprUnderlying PipeWriterⁱᵐᵖˡ PipeWriter.t;
+  #[global] PipeWriter_underlying :: (PipeWriter) <u (PipeWriterⁱᵐᵖˡ);
+  #[global] PipeWriterⁱᵐᵖˡ_underlying :: (PipeWriterⁱᵐᵖˡ) ↓u (PipeWriterⁱᵐᵖˡ);
 }.
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=

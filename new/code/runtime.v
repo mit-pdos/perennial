@@ -7421,7 +7421,9 @@ End userArena.
 
 Class userArena_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] userArena_type_repr  :: go.TypeRepr userArenaⁱᵐᵖˡ userArena.t;
+  #[global] userArena_type_repr  :: go.TypeReprUnderlying userArenaⁱᵐᵖˡ userArena.t;
+  #[global] userArena_underlying :: (userArena) <u (userArenaⁱᵐᵖˡ);
+  #[global] userArenaⁱᵐᵖˡ_underlying :: (userArenaⁱᵐᵖˡ) ↓u (userArenaⁱᵐᵖˡ);
 }.
 
 Module liveUserArenaChunk.
@@ -7435,7 +7437,9 @@ End liveUserArenaChunk.
 
 Class liveUserArenaChunk_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] liveUserArenaChunk_type_repr  :: go.TypeRepr liveUserArenaChunkⁱᵐᵖˡ liveUserArenaChunk.t;
+  #[global] liveUserArenaChunk_type_repr  :: go.TypeReprUnderlying liveUserArenaChunkⁱᵐᵖˡ liveUserArenaChunk.t;
+  #[global] liveUserArenaChunk_underlying :: (liveUserArenaChunk) <u (liveUserArenaChunkⁱᵐᵖˡ);
+  #[global] liveUserArenaChunkⁱᵐᵖˡ_underlying :: (liveUserArenaChunkⁱᵐᵖˡ) ↓u (liveUserArenaChunkⁱᵐᵖˡ);
 }.
 
 Module writeUserArenaHeapBits.
@@ -7449,7 +7453,9 @@ End writeUserArenaHeapBits.
 
 Class writeUserArenaHeapBits_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] writeUserArenaHeapBits_type_repr  :: go.TypeRepr writeUserArenaHeapBitsⁱᵐᵖˡ writeUserArenaHeapBits.t;
+  #[global] writeUserArenaHeapBits_type_repr  :: go.TypeReprUnderlying writeUserArenaHeapBitsⁱᵐᵖˡ writeUserArenaHeapBits.t;
+  #[global] writeUserArenaHeapBits_underlying :: (writeUserArenaHeapBits) <u (writeUserArenaHeapBitsⁱᵐᵖˡ);
+  #[global] writeUserArenaHeapBitsⁱᵐᵖˡ_underlying :: (writeUserArenaHeapBitsⁱᵐᵖˡ) ↓u (writeUserArenaHeapBitsⁱᵐᵖˡ);
 }.
 
 Module cgoCallers.
@@ -7463,7 +7469,9 @@ End cgoCallers.
 
 Class cgoCallers_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] cgoCallers_type_repr  :: go.TypeRepr cgoCallersⁱᵐᵖˡ cgoCallers.t;
+  #[global] cgoCallers_type_repr  :: go.TypeReprUnderlying cgoCallersⁱᵐᵖˡ cgoCallers.t;
+  #[global] cgoCallers_underlying :: (cgoCallers) <u (cgoCallersⁱᵐᵖˡ);
+  #[global] cgoCallersⁱᵐᵖˡ_underlying :: (cgoCallersⁱᵐᵖˡ) ↓u (cgoCallersⁱᵐᵖˡ);
 }.
 
 Module argset.
@@ -7477,7 +7485,9 @@ End argset.
 
 Class argset_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] argset_type_repr  :: go.TypeRepr argsetⁱᵐᵖˡ argset.t;
+  #[global] argset_type_repr  :: go.TypeReprUnderlying argsetⁱᵐᵖˡ argset.t;
+  #[global] argset_underlying :: (argset) <u (argsetⁱᵐᵖˡ);
+  #[global] argsetⁱᵐᵖˡ_underlying :: (argsetⁱᵐᵖˡ) ↓u (argsetⁱᵐᵖˡ);
 }.
 
 Module hchan.
@@ -7491,7 +7501,9 @@ End hchan.
 
 Class hchan_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] hchan_type_repr  :: go.TypeRepr hchanⁱᵐᵖˡ hchan.t;
+  #[global] hchan_type_repr  :: go.TypeReprUnderlying hchanⁱᵐᵖˡ hchan.t;
+  #[global] hchan_underlying :: (hchan) <u (hchanⁱᵐᵖˡ);
+  #[global] hchanⁱᵐᵖˡ_underlying :: (hchanⁱᵐᵖˡ) ↓u (hchanⁱᵐᵖˡ);
 }.
 
 Module waitq.
@@ -7505,7 +7517,9 @@ End waitq.
 
 Class waitq_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] waitq_type_repr  :: go.TypeRepr waitqⁱᵐᵖˡ waitq.t;
+  #[global] waitq_type_repr  :: go.TypeReprUnderlying waitqⁱᵐᵖˡ waitq.t;
+  #[global] waitq_underlying :: (waitq) <u (waitqⁱᵐᵖˡ);
+  #[global] waitqⁱᵐᵖˡ_underlying :: (waitqⁱᵐᵖˡ) ↓u (waitqⁱᵐᵖˡ);
 }.
 
 Module coro.
@@ -7519,7 +7533,9 @@ End coro.
 
 Class coro_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] coro_type_repr  :: go.TypeRepr coroⁱᵐᵖˡ coro.t;
+  #[global] coro_type_repr  :: go.TypeReprUnderlying coroⁱᵐᵖˡ coro.t;
+  #[global] coro_underlying :: (coro) <u (coroⁱᵐᵖˡ);
+  #[global] coroⁱᵐᵖˡ_underlying :: (coroⁱᵐᵖˡ) ↓u (coroⁱᵐᵖˡ);
 }.
 
 Module cpuProfile.
@@ -7533,7 +7549,9 @@ End cpuProfile.
 
 Class cpuProfile_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] cpuProfile_type_repr  :: go.TypeRepr cpuProfileⁱᵐᵖˡ cpuProfile.t;
+  #[global] cpuProfile_type_repr  :: go.TypeReprUnderlying cpuProfileⁱᵐᵖˡ cpuProfile.t;
+  #[global] cpuProfile_underlying :: (cpuProfile) <u (cpuProfileⁱᵐᵖˡ);
+  #[global] cpuProfileⁱᵐᵖˡ_underlying :: (cpuProfileⁱᵐᵖˡ) ↓u (cpuProfileⁱᵐᵖˡ);
 }.
 
 Module debugCallWrapArgs.
@@ -7547,7 +7565,9 @@ End debugCallWrapArgs.
 
 Class debugCallWrapArgs_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] debugCallWrapArgs_type_repr  :: go.TypeRepr debugCallWrapArgsⁱᵐᵖˡ debugCallWrapArgs.t;
+  #[global] debugCallWrapArgs_type_repr  :: go.TypeReprUnderlying debugCallWrapArgsⁱᵐᵖˡ debugCallWrapArgs.t;
+  #[global] debugCallWrapArgs_underlying :: (debugCallWrapArgs) <u (debugCallWrapArgsⁱᵐᵖˡ);
+  #[global] debugCallWrapArgsⁱᵐᵖˡ_underlying :: (debugCallWrapArgsⁱᵐᵖˡ) ↓u (debugCallWrapArgsⁱᵐᵖˡ);
 }.
 
 Module dloggerImpl.
@@ -7561,7 +7581,9 @@ End dloggerImpl.
 
 Class dloggerImpl_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] dloggerImpl_type_repr  :: go.TypeRepr dloggerImplⁱᵐᵖˡ dloggerImpl.t;
+  #[global] dloggerImpl_type_repr  :: go.TypeReprUnderlying dloggerImplⁱᵐᵖˡ dloggerImpl.t;
+  #[global] dloggerImpl_underlying :: (dloggerImpl) <u (dloggerImplⁱᵐᵖˡ);
+  #[global] dloggerImplⁱᵐᵖˡ_underlying :: (dloggerImplⁱᵐᵖˡ) ↓u (dloggerImplⁱᵐᵖˡ);
 }.
 
 Module dloggerFake.
@@ -7575,7 +7597,9 @@ End dloggerFake.
 
 Class dloggerFake_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] dloggerFake_type_repr  :: go.TypeRepr dloggerFakeⁱᵐᵖˡ dloggerFake.t;
+  #[global] dloggerFake_type_repr  :: go.TypeReprUnderlying dloggerFakeⁱᵐᵖˡ dloggerFake.t;
+  #[global] dloggerFake_underlying :: (dloggerFake) <u (dloggerFakeⁱᵐᵖˡ);
+  #[global] dloggerFakeⁱᵐᵖˡ_underlying :: (dloggerFakeⁱᵐᵖˡ) ↓u (dloggerFakeⁱᵐᵖˡ);
 }.
 
 Module debugLogWriter.
@@ -7589,7 +7613,9 @@ End debugLogWriter.
 
 Class debugLogWriter_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] debugLogWriter_type_repr  :: go.TypeRepr debugLogWriterⁱᵐᵖˡ debugLogWriter.t;
+  #[global] debugLogWriter_type_repr  :: go.TypeReprUnderlying debugLogWriterⁱᵐᵖˡ debugLogWriter.t;
+  #[global] debugLogWriter_underlying :: (debugLogWriter) <u (debugLogWriterⁱᵐᵖˡ);
+  #[global] debugLogWriterⁱᵐᵖˡ_underlying :: (debugLogWriterⁱᵐᵖˡ) ↓u (debugLogWriterⁱᵐᵖˡ);
 }.
 
 Module debugLogBuf.
@@ -7603,7 +7629,9 @@ End debugLogBuf.
 
 Class debugLogBuf_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] debugLogBuf_type_repr  :: go.TypeRepr debugLogBufⁱᵐᵖˡ debugLogBuf.t;
+  #[global] debugLogBuf_type_repr  :: go.TypeReprUnderlying debugLogBufⁱᵐᵖˡ debugLogBuf.t;
+  #[global] debugLogBuf_underlying :: (debugLogBuf) <u (debugLogBufⁱᵐᵖˡ);
+  #[global] debugLogBufⁱᵐᵖˡ_underlying :: (debugLogBufⁱᵐᵖˡ) ↓u (debugLogBufⁱᵐᵖˡ);
 }.
 
 Module debugLogReader.
@@ -7617,7 +7645,9 @@ End debugLogReader.
 
 Class debugLogReader_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] debugLogReader_type_repr  :: go.TypeRepr debugLogReaderⁱᵐᵖˡ debugLogReader.t;
+  #[global] debugLogReader_type_repr  :: go.TypeReprUnderlying debugLogReaderⁱᵐᵖˡ debugLogReader.t;
+  #[global] debugLogReader_underlying :: (debugLogReader) <u (debugLogReaderⁱᵐᵖˡ);
+  #[global] debugLogReaderⁱᵐᵖˡ_underlying :: (debugLogReaderⁱᵐᵖˡ) ↓u (debugLogReaderⁱᵐᵖˡ);
 }.
 
 Module dlogPerM.
@@ -7631,7 +7661,9 @@ End dlogPerM.
 
 Class dlogPerM_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] dlogPerM_type_repr  :: go.TypeRepr dlogPerMⁱᵐᵖˡ dlogPerM.t;
+  #[global] dlogPerM_type_repr  :: go.TypeReprUnderlying dlogPerMⁱᵐᵖˡ dlogPerM.t;
+  #[global] dlogPerM_underlying :: (dlogPerM) <u (dlogPerMⁱᵐᵖˡ);
+  #[global] dlogPerMⁱᵐᵖˡ_underlying :: (dlogPerMⁱᵐᵖˡ) ↓u (dlogPerMⁱᵐᵖˡ);
 }.
 
 Module timespec.
@@ -7645,7 +7677,9 @@ End timespec.
 
 Class timespec_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] timespec_type_repr  :: go.TypeRepr timespecⁱᵐᵖˡ timespec.t;
+  #[global] timespec_type_repr  :: go.TypeReprUnderlying timespecⁱᵐᵖˡ timespec.t;
+  #[global] timespec_underlying :: (timespec) <u (timespecⁱᵐᵖˡ);
+  #[global] timespecⁱᵐᵖˡ_underlying :: (timespecⁱᵐᵖˡ) ↓u (timespecⁱᵐᵖˡ);
 }.
 
 Module timeval.
@@ -7659,7 +7693,9 @@ End timeval.
 
 Class timeval_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] timeval_type_repr  :: go.TypeRepr timevalⁱᵐᵖˡ timeval.t;
+  #[global] timeval_type_repr  :: go.TypeReprUnderlying timevalⁱᵐᵖˡ timeval.t;
+  #[global] timeval_underlying :: (timeval) <u (timevalⁱᵐᵖˡ);
+  #[global] timevalⁱᵐᵖˡ_underlying :: (timevalⁱᵐᵖˡ) ↓u (timevalⁱᵐᵖˡ);
 }.
 
 Module sigactiont.
@@ -7673,7 +7709,9 @@ End sigactiont.
 
 Class sigactiont_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] sigactiont_type_repr  :: go.TypeRepr sigactiontⁱᵐᵖˡ sigactiont.t;
+  #[global] sigactiont_type_repr  :: go.TypeReprUnderlying sigactiontⁱᵐᵖˡ sigactiont.t;
+  #[global] sigactiont_underlying :: (sigactiont) <u (sigactiontⁱᵐᵖˡ);
+  #[global] sigactiontⁱᵐᵖˡ_underlying :: (sigactiontⁱᵐᵖˡ) ↓u (sigactiontⁱᵐᵖˡ);
 }.
 
 Module siginfoFields.
@@ -7687,7 +7725,9 @@ End siginfoFields.
 
 Class siginfoFields_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] siginfoFields_type_repr  :: go.TypeRepr siginfoFieldsⁱᵐᵖˡ siginfoFields.t;
+  #[global] siginfoFields_type_repr  :: go.TypeReprUnderlying siginfoFieldsⁱᵐᵖˡ siginfoFields.t;
+  #[global] siginfoFields_underlying :: (siginfoFields) <u (siginfoFieldsⁱᵐᵖˡ);
+  #[global] siginfoFieldsⁱᵐᵖˡ_underlying :: (siginfoFieldsⁱᵐᵖˡ) ↓u (siginfoFieldsⁱᵐᵖˡ);
 }.
 
 Module siginfo.
@@ -7701,7 +7741,9 @@ End siginfo.
 
 Class siginfo_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] siginfo_type_repr  :: go.TypeRepr siginfoⁱᵐᵖˡ siginfo.t;
+  #[global] siginfo_type_repr  :: go.TypeReprUnderlying siginfoⁱᵐᵖˡ siginfo.t;
+  #[global] siginfo_underlying :: (siginfo) <u (siginfoⁱᵐᵖˡ);
+  #[global] siginfoⁱᵐᵖˡ_underlying :: (siginfoⁱᵐᵖˡ) ↓u (siginfoⁱᵐᵖˡ);
 }.
 
 Module itimerspec.
@@ -7715,7 +7757,9 @@ End itimerspec.
 
 Class itimerspec_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] itimerspec_type_repr  :: go.TypeRepr itimerspecⁱᵐᵖˡ itimerspec.t;
+  #[global] itimerspec_type_repr  :: go.TypeReprUnderlying itimerspecⁱᵐᵖˡ itimerspec.t;
+  #[global] itimerspec_underlying :: (itimerspec) <u (itimerspecⁱᵐᵖˡ);
+  #[global] itimerspecⁱᵐᵖˡ_underlying :: (itimerspecⁱᵐᵖˡ) ↓u (itimerspecⁱᵐᵖˡ);
 }.
 
 Module itimerval.
@@ -7729,7 +7773,9 @@ End itimerval.
 
 Class itimerval_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] itimerval_type_repr  :: go.TypeRepr itimervalⁱᵐᵖˡ itimerval.t;
+  #[global] itimerval_type_repr  :: go.TypeReprUnderlying itimervalⁱᵐᵖˡ itimerval.t;
+  #[global] itimerval_underlying :: (itimerval) <u (itimervalⁱᵐᵖˡ);
+  #[global] itimervalⁱᵐᵖˡ_underlying :: (itimervalⁱᵐᵖˡ) ↓u (itimervalⁱᵐᵖˡ);
 }.
 
 Module sigeventFields.
@@ -7743,7 +7789,9 @@ End sigeventFields.
 
 Class sigeventFields_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] sigeventFields_type_repr  :: go.TypeRepr sigeventFieldsⁱᵐᵖˡ sigeventFields.t;
+  #[global] sigeventFields_type_repr  :: go.TypeReprUnderlying sigeventFieldsⁱᵐᵖˡ sigeventFields.t;
+  #[global] sigeventFields_underlying :: (sigeventFields) <u (sigeventFieldsⁱᵐᵖˡ);
+  #[global] sigeventFieldsⁱᵐᵖˡ_underlying :: (sigeventFieldsⁱᵐᵖˡ) ↓u (sigeventFieldsⁱᵐᵖˡ);
 }.
 
 Module sigevent.
@@ -7757,7 +7805,9 @@ End sigevent.
 
 Class sigevent_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] sigevent_type_repr  :: go.TypeRepr sigeventⁱᵐᵖˡ sigevent.t;
+  #[global] sigevent_type_repr  :: go.TypeReprUnderlying sigeventⁱᵐᵖˡ sigevent.t;
+  #[global] sigevent_underlying :: (sigevent) <u (sigeventⁱᵐᵖˡ);
+  #[global] sigeventⁱᵐᵖˡ_underlying :: (sigeventⁱᵐᵖˡ) ↓u (sigeventⁱᵐᵖˡ);
 }.
 
 Module usigset.
@@ -7771,7 +7821,9 @@ End usigset.
 
 Class usigset_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] usigset_type_repr  :: go.TypeRepr usigsetⁱᵐᵖˡ usigset.t;
+  #[global] usigset_type_repr  :: go.TypeReprUnderlying usigsetⁱᵐᵖˡ usigset.t;
+  #[global] usigset_underlying :: (usigset) <u (usigsetⁱᵐᵖˡ);
+  #[global] usigsetⁱᵐᵖˡ_underlying :: (usigsetⁱᵐᵖˡ) ↓u (usigsetⁱᵐᵖˡ);
 }.
 
 Module fpxreg.
@@ -7785,7 +7837,9 @@ End fpxreg.
 
 Class fpxreg_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] fpxreg_type_repr  :: go.TypeRepr fpxregⁱᵐᵖˡ fpxreg.t;
+  #[global] fpxreg_type_repr  :: go.TypeReprUnderlying fpxregⁱᵐᵖˡ fpxreg.t;
+  #[global] fpxreg_underlying :: (fpxreg) <u (fpxregⁱᵐᵖˡ);
+  #[global] fpxregⁱᵐᵖˡ_underlying :: (fpxregⁱᵐᵖˡ) ↓u (fpxregⁱᵐᵖˡ);
 }.
 
 Module xmmreg.
@@ -7799,7 +7853,9 @@ End xmmreg.
 
 Class xmmreg_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] xmmreg_type_repr  :: go.TypeRepr xmmregⁱᵐᵖˡ xmmreg.t;
+  #[global] xmmreg_type_repr  :: go.TypeReprUnderlying xmmregⁱᵐᵖˡ xmmreg.t;
+  #[global] xmmreg_underlying :: (xmmreg) <u (xmmregⁱᵐᵖˡ);
+  #[global] xmmregⁱᵐᵖˡ_underlying :: (xmmregⁱᵐᵖˡ) ↓u (xmmregⁱᵐᵖˡ);
 }.
 
 Module fpstate.
@@ -7813,7 +7869,9 @@ End fpstate.
 
 Class fpstate_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] fpstate_type_repr  :: go.TypeRepr fpstateⁱᵐᵖˡ fpstate.t;
+  #[global] fpstate_type_repr  :: go.TypeReprUnderlying fpstateⁱᵐᵖˡ fpstate.t;
+  #[global] fpstate_underlying :: (fpstate) <u (fpstateⁱᵐᵖˡ);
+  #[global] fpstateⁱᵐᵖˡ_underlying :: (fpstateⁱᵐᵖˡ) ↓u (fpstateⁱᵐᵖˡ);
 }.
 
 Module fpxreg1.
@@ -7827,7 +7885,9 @@ End fpxreg1.
 
 Class fpxreg1_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] fpxreg1_type_repr  :: go.TypeRepr fpxreg1ⁱᵐᵖˡ fpxreg1.t;
+  #[global] fpxreg1_type_repr  :: go.TypeReprUnderlying fpxreg1ⁱᵐᵖˡ fpxreg1.t;
+  #[global] fpxreg1_underlying :: (fpxreg1) <u (fpxreg1ⁱᵐᵖˡ);
+  #[global] fpxreg1ⁱᵐᵖˡ_underlying :: (fpxreg1ⁱᵐᵖˡ) ↓u (fpxreg1ⁱᵐᵖˡ);
 }.
 
 Module xmmreg1.
@@ -7841,7 +7901,9 @@ End xmmreg1.
 
 Class xmmreg1_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] xmmreg1_type_repr  :: go.TypeRepr xmmreg1ⁱᵐᵖˡ xmmreg1.t;
+  #[global] xmmreg1_type_repr  :: go.TypeReprUnderlying xmmreg1ⁱᵐᵖˡ xmmreg1.t;
+  #[global] xmmreg1_underlying :: (xmmreg1) <u (xmmreg1ⁱᵐᵖˡ);
+  #[global] xmmreg1ⁱᵐᵖˡ_underlying :: (xmmreg1ⁱᵐᵖˡ) ↓u (xmmreg1ⁱᵐᵖˡ);
 }.
 
 Module fpstate1.
@@ -7855,7 +7917,9 @@ End fpstate1.
 
 Class fpstate1_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] fpstate1_type_repr  :: go.TypeRepr fpstate1ⁱᵐᵖˡ fpstate1.t;
+  #[global] fpstate1_type_repr  :: go.TypeReprUnderlying fpstate1ⁱᵐᵖˡ fpstate1.t;
+  #[global] fpstate1_underlying :: (fpstate1) <u (fpstate1ⁱᵐᵖˡ);
+  #[global] fpstate1ⁱᵐᵖˡ_underlying :: (fpstate1ⁱᵐᵖˡ) ↓u (fpstate1ⁱᵐᵖˡ);
 }.
 
 Module fpreg1.
@@ -7869,7 +7933,9 @@ End fpreg1.
 
 Class fpreg1_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] fpreg1_type_repr  :: go.TypeRepr fpreg1ⁱᵐᵖˡ fpreg1.t;
+  #[global] fpreg1_type_repr  :: go.TypeReprUnderlying fpreg1ⁱᵐᵖˡ fpreg1.t;
+  #[global] fpreg1_underlying :: (fpreg1) <u (fpreg1ⁱᵐᵖˡ);
+  #[global] fpreg1ⁱᵐᵖˡ_underlying :: (fpreg1ⁱᵐᵖˡ) ↓u (fpreg1ⁱᵐᵖˡ);
 }.
 
 Module stackt.
@@ -7883,7 +7949,9 @@ End stackt.
 
 Class stackt_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] stackt_type_repr  :: go.TypeRepr stacktⁱᵐᵖˡ stackt.t;
+  #[global] stackt_type_repr  :: go.TypeReprUnderlying stacktⁱᵐᵖˡ stackt.t;
+  #[global] stackt_underlying :: (stackt) <u (stacktⁱᵐᵖˡ);
+  #[global] stacktⁱᵐᵖˡ_underlying :: (stacktⁱᵐᵖˡ) ↓u (stacktⁱᵐᵖˡ);
 }.
 
 Module mcontext.
@@ -7897,7 +7965,9 @@ End mcontext.
 
 Class mcontext_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] mcontext_type_repr  :: go.TypeRepr mcontextⁱᵐᵖˡ mcontext.t;
+  #[global] mcontext_type_repr  :: go.TypeReprUnderlying mcontextⁱᵐᵖˡ mcontext.t;
+  #[global] mcontext_underlying :: (mcontext) <u (mcontextⁱᵐᵖˡ);
+  #[global] mcontextⁱᵐᵖˡ_underlying :: (mcontextⁱᵐᵖˡ) ↓u (mcontextⁱᵐᵖˡ);
 }.
 
 Module ucontext.
@@ -7911,7 +7981,9 @@ End ucontext.
 
 Class ucontext_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] ucontext_type_repr  :: go.TypeRepr ucontextⁱᵐᵖˡ ucontext.t;
+  #[global] ucontext_type_repr  :: go.TypeReprUnderlying ucontextⁱᵐᵖˡ ucontext.t;
+  #[global] ucontext_underlying :: (ucontext) <u (ucontextⁱᵐᵖˡ);
+  #[global] ucontextⁱᵐᵖˡ_underlying :: (ucontextⁱᵐᵖˡ) ↓u (ucontextⁱᵐᵖˡ);
 }.
 
 Module sigcontext.
@@ -7925,7 +7997,9 @@ End sigcontext.
 
 Class sigcontext_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] sigcontext_type_repr  :: go.TypeRepr sigcontextⁱᵐᵖˡ sigcontext.t;
+  #[global] sigcontext_type_repr  :: go.TypeReprUnderlying sigcontextⁱᵐᵖˡ sigcontext.t;
+  #[global] sigcontext_underlying :: (sigcontext) <u (sigcontextⁱᵐᵖˡ);
+  #[global] sigcontextⁱᵐᵖˡ_underlying :: (sigcontextⁱᵐᵖˡ) ↓u (sigcontextⁱᵐᵖˡ);
 }.
 
 Module sockaddr_un.
@@ -7939,7 +8013,9 @@ End sockaddr_un.
 
 Class sockaddr_un_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] sockaddr_un_type_repr  :: go.TypeRepr sockaddr_unⁱᵐᵖˡ sockaddr_un.t;
+  #[global] sockaddr_un_type_repr  :: go.TypeReprUnderlying sockaddr_unⁱᵐᵖˡ sockaddr_un.t;
+  #[global] sockaddr_un_underlying :: (sockaddr_un) <u (sockaddr_unⁱᵐᵖˡ);
+  #[global] sockaddr_unⁱᵐᵖˡ_underlying :: (sockaddr_unⁱᵐᵖˡ) ↓u (sockaddr_unⁱᵐᵖˡ);
 }.
 
 Module Error.
@@ -7953,7 +8029,9 @@ End Error.
 
 Class Error_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Error_type_repr  :: go.TypeRepr Errorⁱᵐᵖˡ Error.t;
+  #[global] Error_type_repr  :: go.TypeReprUnderlying Errorⁱᵐᵖˡ Error.t;
+  #[global] Error_underlying :: (Error) <u (Errorⁱᵐᵖˡ);
+  #[global] Errorⁱᵐᵖˡ_underlying :: (Errorⁱᵐᵖˡ) ↓u (Errorⁱᵐᵖˡ);
 }.
 
 Module TypeAssertionError.
@@ -7967,7 +8045,9 @@ End TypeAssertionError.
 
 Class TypeAssertionError_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] TypeAssertionError_type_repr  :: go.TypeRepr TypeAssertionErrorⁱᵐᵖˡ TypeAssertionError.t;
+  #[global] TypeAssertionError_type_repr  :: go.TypeReprUnderlying TypeAssertionErrorⁱᵐᵖˡ TypeAssertionError.t;
+  #[global] TypeAssertionError_underlying :: (TypeAssertionError) <u (TypeAssertionErrorⁱᵐᵖˡ);
+  #[global] TypeAssertionErrorⁱᵐᵖˡ_underlying :: (TypeAssertionErrorⁱᵐᵖˡ) ↓u (TypeAssertionErrorⁱᵐᵖˡ);
 }.
 
 Module errorString.
@@ -7981,7 +8061,9 @@ End errorString.
 
 Class errorString_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] errorString_type_repr  :: go.TypeRepr errorStringⁱᵐᵖˡ errorString.t;
+  #[global] errorString_type_repr  :: go.TypeReprUnderlying errorStringⁱᵐᵖˡ errorString.t;
+  #[global] errorString_underlying :: (errorString) <u (errorStringⁱᵐᵖˡ);
+  #[global] errorStringⁱᵐᵖˡ_underlying :: (errorStringⁱᵐᵖˡ) ↓u (errorStringⁱᵐᵖˡ);
 }.
 
 Module errorAddressString.
@@ -7995,7 +8077,9 @@ End errorAddressString.
 
 Class errorAddressString_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] errorAddressString_type_repr  :: go.TypeRepr errorAddressStringⁱᵐᵖˡ errorAddressString.t;
+  #[global] errorAddressString_type_repr  :: go.TypeReprUnderlying errorAddressStringⁱᵐᵖˡ errorAddressString.t;
+  #[global] errorAddressString_underlying :: (errorAddressString) <u (errorAddressStringⁱᵐᵖˡ);
+  #[global] errorAddressStringⁱᵐᵖˡ_underlying :: (errorAddressStringⁱᵐᵖˡ) ↓u (errorAddressStringⁱᵐᵖˡ);
 }.
 
 Module plainError.
@@ -8009,7 +8093,9 @@ End plainError.
 
 Class plainError_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] plainError_type_repr  :: go.TypeRepr plainErrorⁱᵐᵖˡ plainError.t;
+  #[global] plainError_type_repr  :: go.TypeReprUnderlying plainErrorⁱᵐᵖˡ plainError.t;
+  #[global] plainError_underlying :: (plainError) <u (plainErrorⁱᵐᵖˡ);
+  #[global] plainErrorⁱᵐᵖˡ_underlying :: (plainErrorⁱᵐᵖˡ) ↓u (plainErrorⁱᵐᵖˡ);
 }.
 
 Module boundsError.
@@ -8023,7 +8109,9 @@ End boundsError.
 
 Class boundsError_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] boundsError_type_repr  :: go.TypeRepr boundsErrorⁱᵐᵖˡ boundsError.t;
+  #[global] boundsError_type_repr  :: go.TypeReprUnderlying boundsErrorⁱᵐᵖˡ boundsError.t;
+  #[global] boundsError_underlying :: (boundsError) <u (boundsErrorⁱᵐᵖˡ);
+  #[global] boundsErrorⁱᵐᵖˡ_underlying :: (boundsErrorⁱᵐᵖˡ) ↓u (boundsErrorⁱᵐᵖˡ);
 }.
 
 Module boundsErrorCode.
@@ -8037,7 +8125,9 @@ End boundsErrorCode.
 
 Class boundsErrorCode_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] boundsErrorCode_type_repr  :: go.TypeRepr boundsErrorCodeⁱᵐᵖˡ boundsErrorCode.t;
+  #[global] boundsErrorCode_type_repr  :: go.TypeReprUnderlying boundsErrorCodeⁱᵐᵖˡ boundsErrorCode.t;
+  #[global] boundsErrorCode_underlying :: (boundsErrorCode) <u (boundsErrorCodeⁱᵐᵖˡ);
+  #[global] boundsErrorCodeⁱᵐᵖˡ_underlying :: (boundsErrorCodeⁱᵐᵖˡ) ↓u (boundsErrorCodeⁱᵐᵖˡ);
 }.
 
 Module stringer.
@@ -8051,7 +8141,9 @@ End stringer.
 
 Class stringer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] stringer_type_repr  :: go.TypeRepr stringerⁱᵐᵖˡ stringer.t;
+  #[global] stringer_type_repr  :: go.TypeReprUnderlying stringerⁱᵐᵖˡ stringer.t;
+  #[global] stringer_underlying :: (stringer) <u (stringerⁱᵐᵖˡ);
+  #[global] stringerⁱᵐᵖˡ_underlying :: (stringerⁱᵐᵖˡ) ↓u (stringerⁱᵐᵖˡ);
 }.
 
 Module typeCacheBucket.
@@ -8065,7 +8157,9 @@ End typeCacheBucket.
 
 Class typeCacheBucket_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] typeCacheBucket_type_repr  :: go.TypeRepr typeCacheBucketⁱᵐᵖˡ typeCacheBucket.t;
+  #[global] typeCacheBucket_type_repr  :: go.TypeReprUnderlying typeCacheBucketⁱᵐᵖˡ typeCacheBucket.t;
+  #[global] typeCacheBucket_underlying :: (typeCacheBucket) <u (typeCacheBucketⁱᵐᵖˡ);
+  #[global] typeCacheBucketⁱᵐᵖˡ_underlying :: (typeCacheBucketⁱᵐᵖˡ) ↓u (typeCacheBucketⁱᵐᵖˡ);
 }.
 
 Module childInfo.
@@ -8079,7 +8173,9 @@ End childInfo.
 
 Class childInfo_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] childInfo_type_repr  :: go.TypeRepr childInfoⁱᵐᵖˡ childInfo.t;
+  #[global] childInfo_type_repr  :: go.TypeReprUnderlying childInfoⁱᵐᵖˡ childInfo.t;
+  #[global] childInfo_underlying :: (childInfo) <u (childInfoⁱᵐᵖˡ);
+  #[global] childInfoⁱᵐᵖˡ_underlying :: (childInfoⁱᵐᵖˡ) ↓u (childInfoⁱᵐᵖˡ);
 }.
 
 Module timeHistogram.
@@ -8093,7 +8189,9 @@ End timeHistogram.
 
 Class timeHistogram_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] timeHistogram_type_repr  :: go.TypeRepr timeHistogramⁱᵐᵖˡ timeHistogram.t;
+  #[global] timeHistogram_type_repr  :: go.TypeReprUnderlying timeHistogramⁱᵐᵖˡ timeHistogram.t;
+  #[global] timeHistogram_underlying :: (timeHistogram) <u (timeHistogramⁱᵐᵖˡ);
+  #[global] timeHistogramⁱᵐᵖˡ_underlying :: (timeHistogramⁱᵐᵖˡ) ↓u (timeHistogramⁱᵐᵖˡ);
 }.
 
 Module itabTableType.
@@ -8107,7 +8205,9 @@ End itabTableType.
 
 Class itabTableType_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] itabTableType_type_repr  :: go.TypeRepr itabTableTypeⁱᵐᵖˡ itabTableType.t;
+  #[global] itabTableType_type_repr  :: go.TypeReprUnderlying itabTableTypeⁱᵐᵖˡ itabTableType.t;
+  #[global] itabTableType_underlying :: (itabTableType) <u (itabTableTypeⁱᵐᵖˡ);
+  #[global] itabTableTypeⁱᵐᵖˡ_underlying :: (itabTableTypeⁱᵐᵖˡ) ↓u (itabTableTypeⁱᵐᵖˡ);
 }.
 
 Module uint16InterfacePtr.
@@ -8121,7 +8221,9 @@ End uint16InterfacePtr.
 
 Class uint16InterfacePtr_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] uint16InterfacePtr_type_repr  :: go.TypeRepr uint16InterfacePtrⁱᵐᵖˡ uint16InterfacePtr.t;
+  #[global] uint16InterfacePtr_type_repr  :: go.TypeReprUnderlying uint16InterfacePtrⁱᵐᵖˡ uint16InterfacePtr.t;
+  #[global] uint16InterfacePtr_underlying :: (uint16InterfacePtr) <u (uint16InterfacePtrⁱᵐᵖˡ);
+  #[global] uint16InterfacePtrⁱᵐᵖˡ_underlying :: (uint16InterfacePtrⁱᵐᵖˡ) ↓u (uint16InterfacePtrⁱᵐᵖˡ);
 }.
 
 Module uint32InterfacePtr.
@@ -8135,7 +8237,9 @@ End uint32InterfacePtr.
 
 Class uint32InterfacePtr_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] uint32InterfacePtr_type_repr  :: go.TypeRepr uint32InterfacePtrⁱᵐᵖˡ uint32InterfacePtr.t;
+  #[global] uint32InterfacePtr_type_repr  :: go.TypeReprUnderlying uint32InterfacePtrⁱᵐᵖˡ uint32InterfacePtr.t;
+  #[global] uint32InterfacePtr_underlying :: (uint32InterfacePtr) <u (uint32InterfacePtrⁱᵐᵖˡ);
+  #[global] uint32InterfacePtrⁱᵐᵖˡ_underlying :: (uint32InterfacePtrⁱᵐᵖˡ) ↓u (uint32InterfacePtrⁱᵐᵖˡ);
 }.
 
 Module uint64InterfacePtr.
@@ -8149,7 +8253,9 @@ End uint64InterfacePtr.
 
 Class uint64InterfacePtr_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] uint64InterfacePtr_type_repr  :: go.TypeRepr uint64InterfacePtrⁱᵐᵖˡ uint64InterfacePtr.t;
+  #[global] uint64InterfacePtr_type_repr  :: go.TypeReprUnderlying uint64InterfacePtrⁱᵐᵖˡ uint64InterfacePtr.t;
+  #[global] uint64InterfacePtr_underlying :: (uint64InterfacePtr) <u (uint64InterfacePtrⁱᵐᵖˡ);
+  #[global] uint64InterfacePtrⁱᵐᵖˡ_underlying :: (uint64InterfacePtrⁱᵐᵖˡ) ↓u (uint64InterfacePtrⁱᵐᵖˡ);
 }.
 
 Module stringInterfacePtr.
@@ -8163,7 +8269,9 @@ End stringInterfacePtr.
 
 Class stringInterfacePtr_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] stringInterfacePtr_type_repr  :: go.TypeRepr stringInterfacePtrⁱᵐᵖˡ stringInterfacePtr.t;
+  #[global] stringInterfacePtr_type_repr  :: go.TypeReprUnderlying stringInterfacePtrⁱᵐᵖˡ stringInterfacePtr.t;
+  #[global] stringInterfacePtr_underlying :: (stringInterfacePtr) <u (stringInterfacePtrⁱᵐᵖˡ);
+  #[global] stringInterfacePtrⁱᵐᵖˡ_underlying :: (stringInterfacePtrⁱᵐᵖˡ) ↓u (stringInterfacePtrⁱᵐᵖˡ);
 }.
 
 Module sliceInterfacePtr.
@@ -8177,7 +8285,9 @@ End sliceInterfacePtr.
 
 Class sliceInterfacePtr_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] sliceInterfacePtr_type_repr  :: go.TypeRepr sliceInterfacePtrⁱᵐᵖˡ sliceInterfacePtr.t;
+  #[global] sliceInterfacePtr_type_repr  :: go.TypeReprUnderlying sliceInterfacePtrⁱᵐᵖˡ sliceInterfacePtr.t;
+  #[global] sliceInterfacePtr_underlying :: (sliceInterfacePtr) <u (sliceInterfacePtrⁱᵐᵖˡ);
+  #[global] sliceInterfacePtrⁱᵐᵖˡ_underlying :: (sliceInterfacePtrⁱᵐᵖˡ) ↓u (sliceInterfacePtrⁱᵐᵖˡ);
 }.
 
 Module lfstack.
@@ -8191,7 +8301,9 @@ End lfstack.
 
 Class lfstack_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] lfstack_type_repr  :: go.TypeRepr lfstackⁱᵐᵖˡ lfstack.t;
+  #[global] lfstack_type_repr  :: go.TypeReprUnderlying lfstackⁱᵐᵖˡ lfstack.t;
+  #[global] lfstack_underlying :: (lfstack) <u (lfstackⁱᵐᵖˡ);
+  #[global] lfstackⁱᵐᵖˡ_underlying :: (lfstackⁱᵐᵖˡ) ↓u (lfstackⁱᵐᵖˡ);
 }.
 
 Module linknameIter.
@@ -8205,7 +8317,9 @@ End linknameIter.
 
 Class linknameIter_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] linknameIter_type_repr  :: go.TypeRepr linknameIterⁱᵐᵖˡ linknameIter.t;
+  #[global] linknameIter_type_repr  :: go.TypeReprUnderlying linknameIterⁱᵐᵖˡ linknameIter.t;
+  #[global] linknameIter_underlying :: (linknameIter) <u (linknameIterⁱᵐᵖˡ);
+  #[global] linknameIterⁱᵐᵖˡ_underlying :: (linknameIterⁱᵐᵖˡ) ↓u (linknameIterⁱᵐᵖˡ);
 }.
 
 Module mWaitList.
@@ -8219,7 +8333,9 @@ End mWaitList.
 
 Class mWaitList_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] mWaitList_type_repr  :: go.TypeRepr mWaitListⁱᵐᵖˡ mWaitList.t;
+  #[global] mWaitList_type_repr  :: go.TypeReprUnderlying mWaitListⁱᵐᵖˡ mWaitList.t;
+  #[global] mWaitList_underlying :: (mWaitList) <u (mWaitListⁱᵐᵖˡ);
+  #[global] mWaitListⁱᵐᵖˡ_underlying :: (mWaitListⁱᵐᵖˡ) ↓u (mWaitListⁱᵐᵖˡ);
 }.
 
 Module lockRank.
@@ -8233,7 +8349,9 @@ End lockRank.
 
 Class lockRank_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] lockRank_type_repr  :: go.TypeRepr lockRankⁱᵐᵖˡ lockRank.t;
+  #[global] lockRank_type_repr  :: go.TypeReprUnderlying lockRankⁱᵐᵖˡ lockRank.t;
+  #[global] lockRank_underlying :: (lockRank) <u (lockRankⁱᵐᵖˡ);
+  #[global] lockRankⁱᵐᵖˡ_underlying :: (lockRankⁱᵐᵖˡ) ↓u (lockRankⁱᵐᵖˡ);
 }.
 
 Module lockRankStruct.
@@ -8247,7 +8365,9 @@ End lockRankStruct.
 
 Class lockRankStruct_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] lockRankStruct_type_repr  :: go.TypeRepr lockRankStructⁱᵐᵖˡ lockRankStruct.t;
+  #[global] lockRankStruct_type_repr  :: go.TypeReprUnderlying lockRankStructⁱᵐᵖˡ lockRankStruct.t;
+  #[global] lockRankStruct_underlying :: (lockRankStruct) <u (lockRankStructⁱᵐᵖˡ);
+  #[global] lockRankStructⁱᵐᵖˡ_underlying :: (lockRankStructⁱᵐᵖˡ) ↓u (lockRankStructⁱᵐᵖˡ);
 }.
 
 Module persistentAlloc.
@@ -8261,7 +8381,9 @@ End persistentAlloc.
 
 Class persistentAlloc_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] persistentAlloc_type_repr  :: go.TypeRepr persistentAllocⁱᵐᵖˡ persistentAlloc.t;
+  #[global] persistentAlloc_type_repr  :: go.TypeReprUnderlying persistentAllocⁱᵐᵖˡ persistentAlloc.t;
+  #[global] persistentAlloc_underlying :: (persistentAlloc) <u (persistentAllocⁱᵐᵖˡ);
+  #[global] persistentAllocⁱᵐᵖˡ_underlying :: (persistentAllocⁱᵐᵖˡ) ↓u (persistentAllocⁱᵐᵖˡ);
 }.
 
 Module linearAlloc.
@@ -8275,7 +8397,9 @@ End linearAlloc.
 
 Class linearAlloc_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] linearAlloc_type_repr  :: go.TypeRepr linearAllocⁱᵐᵖˡ linearAlloc.t;
+  #[global] linearAlloc_type_repr  :: go.TypeReprUnderlying linearAllocⁱᵐᵖˡ linearAlloc.t;
+  #[global] linearAlloc_underlying :: (linearAlloc) <u (linearAllocⁱᵐᵖˡ);
+  #[global] linearAllocⁱᵐᵖˡ_underlying :: (linearAllocⁱᵐᵖˡ) ↓u (linearAllocⁱᵐᵖˡ);
 }.
 
 Module notInHeap.
@@ -8289,7 +8413,9 @@ End notInHeap.
 
 Class notInHeap_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] notInHeap_type_repr  :: go.TypeRepr notInHeapⁱᵐᵖˡ notInHeap.t;
+  #[global] notInHeap_type_repr  :: go.TypeReprUnderlying notInHeapⁱᵐᵖˡ notInHeap.t;
+  #[global] notInHeap_underlying :: (notInHeap) <u (notInHeapⁱᵐᵖˡ);
+  #[global] notInHeapⁱᵐᵖˡ_underlying :: (notInHeapⁱᵐᵖˡ) ↓u (notInHeapⁱᵐᵖˡ);
 }.
 
 Module typePointers.
@@ -8303,7 +8429,9 @@ End typePointers.
 
 Class typePointers_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] typePointers_type_repr  :: go.TypeRepr typePointersⁱᵐᵖˡ typePointers.t;
+  #[global] typePointers_type_repr  :: go.TypeReprUnderlying typePointersⁱᵐᵖˡ typePointers.t;
+  #[global] typePointers_underlying :: (typePointers) <u (typePointersⁱᵐᵖˡ);
+  #[global] typePointersⁱᵐᵖˡ_underlying :: (typePointersⁱᵐᵖˡ) ↓u (typePointersⁱᵐᵖˡ);
 }.
 
 Module markBits.
@@ -8317,7 +8445,9 @@ End markBits.
 
 Class markBits_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] markBits_type_repr  :: go.TypeRepr markBitsⁱᵐᵖˡ markBits.t;
+  #[global] markBits_type_repr  :: go.TypeReprUnderlying markBitsⁱᵐᵖˡ markBits.t;
+  #[global] markBits_underlying :: (markBits) <u (markBitsⁱᵐᵖˡ);
+  #[global] markBitsⁱᵐᵖˡ_underlying :: (markBitsⁱᵐᵖˡ) ↓u (markBitsⁱᵐᵖˡ);
 }.
 
 Module mcache.
@@ -8331,7 +8461,9 @@ End mcache.
 
 Class mcache_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] mcache_type_repr  :: go.TypeRepr mcacheⁱᵐᵖˡ mcache.t;
+  #[global] mcache_type_repr  :: go.TypeReprUnderlying mcacheⁱᵐᵖˡ mcache.t;
+  #[global] mcache_underlying :: (mcache) <u (mcacheⁱᵐᵖˡ);
+  #[global] mcacheⁱᵐᵖˡ_underlying :: (mcacheⁱᵐᵖˡ) ↓u (mcacheⁱᵐᵖˡ);
 }.
 
 Module gclink.
@@ -8345,7 +8477,9 @@ End gclink.
 
 Class gclink_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] gclink_type_repr  :: go.TypeRepr gclinkⁱᵐᵖˡ gclink.t;
+  #[global] gclink_type_repr  :: go.TypeReprUnderlying gclinkⁱᵐᵖˡ gclink.t;
+  #[global] gclink_underlying :: (gclink) <u (gclinkⁱᵐᵖˡ);
+  #[global] gclinkⁱᵐᵖˡ_underlying :: (gclinkⁱᵐᵖˡ) ↓u (gclinkⁱᵐᵖˡ);
 }.
 
 Module gclinkptr.
@@ -8359,7 +8493,9 @@ End gclinkptr.
 
 Class gclinkptr_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] gclinkptr_type_repr  :: go.TypeRepr gclinkptrⁱᵐᵖˡ gclinkptr.t;
+  #[global] gclinkptr_type_repr  :: go.TypeReprUnderlying gclinkptrⁱᵐᵖˡ gclinkptr.t;
+  #[global] gclinkptr_underlying :: (gclinkptr) <u (gclinkptrⁱᵐᵖˡ);
+  #[global] gclinkptrⁱᵐᵖˡ_underlying :: (gclinkptrⁱᵐᵖˡ) ↓u (gclinkptrⁱᵐᵖˡ);
 }.
 
 Module stackfreelist.
@@ -8373,7 +8509,9 @@ End stackfreelist.
 
 Class stackfreelist_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] stackfreelist_type_repr  :: go.TypeRepr stackfreelistⁱᵐᵖˡ stackfreelist.t;
+  #[global] stackfreelist_type_repr  :: go.TypeReprUnderlying stackfreelistⁱᵐᵖˡ stackfreelist.t;
+  #[global] stackfreelist_underlying :: (stackfreelist) <u (stackfreelistⁱᵐᵖˡ);
+  #[global] stackfreelistⁱᵐᵖˡ_underlying :: (stackfreelistⁱᵐᵖˡ) ↓u (stackfreelistⁱᵐᵖˡ);
 }.
 
 Module mcentral.
@@ -8387,7 +8525,9 @@ End mcentral.
 
 Class mcentral_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] mcentral_type_repr  :: go.TypeRepr mcentralⁱᵐᵖˡ mcentral.t;
+  #[global] mcentral_type_repr  :: go.TypeReprUnderlying mcentralⁱᵐᵖˡ mcentral.t;
+  #[global] mcentral_underlying :: (mcentral) <u (mcentralⁱᵐᵖˡ);
+  #[global] mcentralⁱᵐᵖˡ_underlying :: (mcentralⁱᵐᵖˡ) ↓u (mcentralⁱᵐᵖˡ);
 }.
 
 Module checkmarksMap.
@@ -8401,7 +8541,9 @@ End checkmarksMap.
 
 Class checkmarksMap_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] checkmarksMap_type_repr  :: go.TypeRepr checkmarksMapⁱᵐᵖˡ checkmarksMap.t;
+  #[global] checkmarksMap_type_repr  :: go.TypeReprUnderlying checkmarksMapⁱᵐᵖˡ checkmarksMap.t;
+  #[global] checkmarksMap_underlying :: (checkmarksMap) <u (checkmarksMapⁱᵐᵖˡ);
+  #[global] checkmarksMapⁱᵐᵖˡ_underlying :: (checkmarksMapⁱᵐᵖˡ) ↓u (checkmarksMapⁱᵐᵖˡ);
 }.
 
 Module Cleanup.
@@ -8415,7 +8557,9 @@ End Cleanup.
 
 Class Cleanup_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Cleanup_type_repr  :: go.TypeRepr Cleanupⁱᵐᵖˡ Cleanup.t;
+  #[global] Cleanup_type_repr  :: go.TypeReprUnderlying Cleanupⁱᵐᵖˡ Cleanup.t;
+  #[global] Cleanup_underlying :: (Cleanup) <u (Cleanupⁱᵐᵖˡ);
+  #[global] Cleanupⁱᵐᵖˡ_underlying :: (Cleanupⁱᵐᵖˡ) ↓u (Cleanupⁱᵐᵖˡ);
 }.
 
 Module cleanupBlock.
@@ -8429,7 +8573,9 @@ End cleanupBlock.
 
 Class cleanupBlock_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] cleanupBlock_type_repr  :: go.TypeRepr cleanupBlockⁱᵐᵖˡ cleanupBlock.t;
+  #[global] cleanupBlock_type_repr  :: go.TypeReprUnderlying cleanupBlockⁱᵐᵖˡ cleanupBlock.t;
+  #[global] cleanupBlock_underlying :: (cleanupBlock) <u (cleanupBlockⁱᵐᵖˡ);
+  #[global] cleanupBlockⁱᵐᵖˡ_underlying :: (cleanupBlockⁱᵐᵖˡ) ↓u (cleanupBlockⁱᵐᵖˡ);
 }.
 
 Module cleanupBlockHeader.
@@ -8443,7 +8589,9 @@ End cleanupBlockHeader.
 
 Class cleanupBlockHeader_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] cleanupBlockHeader_type_repr  :: go.TypeRepr cleanupBlockHeaderⁱᵐᵖˡ cleanupBlockHeader.t;
+  #[global] cleanupBlockHeader_type_repr  :: go.TypeReprUnderlying cleanupBlockHeaderⁱᵐᵖˡ cleanupBlockHeader.t;
+  #[global] cleanupBlockHeader_underlying :: (cleanupBlockHeader) <u (cleanupBlockHeaderⁱᵐᵖˡ);
+  #[global] cleanupBlockHeaderⁱᵐᵖˡ_underlying :: (cleanupBlockHeaderⁱᵐᵖˡ) ↓u (cleanupBlockHeaderⁱᵐᵖˡ);
 }.
 
 Module cleanupQueue.
@@ -8457,7 +8605,9 @@ End cleanupQueue.
 
 Class cleanupQueue_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] cleanupQueue_type_repr  :: go.TypeRepr cleanupQueueⁱᵐᵖˡ cleanupQueue.t;
+  #[global] cleanupQueue_type_repr  :: go.TypeReprUnderlying cleanupQueueⁱᵐᵖˡ cleanupQueue.t;
+  #[global] cleanupQueue_underlying :: (cleanupQueue) <u (cleanupQueueⁱᵐᵖˡ);
+  #[global] cleanupQueueⁱᵐᵖˡ_underlying :: (cleanupQueueⁱᵐᵖˡ) ↓u (cleanupQueueⁱᵐᵖˡ);
 }.
 
 Module metricData.
@@ -8471,7 +8621,9 @@ End metricData.
 
 Class metricData_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] metricData_type_repr  :: go.TypeRepr metricDataⁱᵐᵖˡ metricData.t;
+  #[global] metricData_type_repr  :: go.TypeReprUnderlying metricDataⁱᵐᵖˡ metricData.t;
+  #[global] metricData_underlying :: (metricData) <u (metricDataⁱᵐᵖˡ);
+  #[global] metricDataⁱᵐᵖˡ_underlying :: (metricDataⁱᵐᵖˡ) ↓u (metricDataⁱᵐᵖˡ);
 }.
 
 Module metricReader.
@@ -8485,7 +8637,9 @@ End metricReader.
 
 Class metricReader_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] metricReader_type_repr  :: go.TypeRepr metricReaderⁱᵐᵖˡ metricReader.t;
+  #[global] metricReader_type_repr  :: go.TypeReprUnderlying metricReaderⁱᵐᵖˡ metricReader.t;
+  #[global] metricReader_underlying :: (metricReader) <u (metricReaderⁱᵐᵖˡ);
+  #[global] metricReaderⁱᵐᵖˡ_underlying :: (metricReaderⁱᵐᵖˡ) ↓u (metricReaderⁱᵐᵖˡ);
 }.
 
 Module statDep.
@@ -8499,7 +8653,9 @@ End statDep.
 
 Class statDep_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] statDep_type_repr  :: go.TypeRepr statDepⁱᵐᵖˡ statDep.t;
+  #[global] statDep_type_repr  :: go.TypeReprUnderlying statDepⁱᵐᵖˡ statDep.t;
+  #[global] statDep_underlying :: (statDep) <u (statDepⁱᵐᵖˡ);
+  #[global] statDepⁱᵐᵖˡ_underlying :: (statDepⁱᵐᵖˡ) ↓u (statDepⁱᵐᵖˡ);
 }.
 
 Module statDepSet.
@@ -8513,7 +8669,9 @@ End statDepSet.
 
 Class statDepSet_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] statDepSet_type_repr  :: go.TypeRepr statDepSetⁱᵐᵖˡ statDepSet.t;
+  #[global] statDepSet_type_repr  :: go.TypeReprUnderlying statDepSetⁱᵐᵖˡ statDepSet.t;
+  #[global] statDepSet_underlying :: (statDepSet) <u (statDepSetⁱᵐᵖˡ);
+  #[global] statDepSetⁱᵐᵖˡ_underlying :: (statDepSetⁱᵐᵖˡ) ↓u (statDepSetⁱᵐᵖˡ);
 }.
 
 Module heapStatsAggregate.
@@ -8527,7 +8685,9 @@ End heapStatsAggregate.
 
 Class heapStatsAggregate_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] heapStatsAggregate_type_repr  :: go.TypeRepr heapStatsAggregateⁱᵐᵖˡ heapStatsAggregate.t;
+  #[global] heapStatsAggregate_type_repr  :: go.TypeReprUnderlying heapStatsAggregateⁱᵐᵖˡ heapStatsAggregate.t;
+  #[global] heapStatsAggregate_underlying :: (heapStatsAggregate) <u (heapStatsAggregateⁱᵐᵖˡ);
+  #[global] heapStatsAggregateⁱᵐᵖˡ_underlying :: (heapStatsAggregateⁱᵐᵖˡ) ↓u (heapStatsAggregateⁱᵐᵖˡ);
 }.
 
 Module sysStatsAggregate.
@@ -8541,7 +8701,9 @@ End sysStatsAggregate.
 
 Class sysStatsAggregate_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] sysStatsAggregate_type_repr  :: go.TypeRepr sysStatsAggregateⁱᵐᵖˡ sysStatsAggregate.t;
+  #[global] sysStatsAggregate_type_repr  :: go.TypeReprUnderlying sysStatsAggregateⁱᵐᵖˡ sysStatsAggregate.t;
+  #[global] sysStatsAggregate_underlying :: (sysStatsAggregate) <u (sysStatsAggregateⁱᵐᵖˡ);
+  #[global] sysStatsAggregateⁱᵐᵖˡ_underlying :: (sysStatsAggregateⁱᵐᵖˡ) ↓u (sysStatsAggregateⁱᵐᵖˡ);
 }.
 
 Module cpuStatsAggregate.
@@ -8555,7 +8717,9 @@ End cpuStatsAggregate.
 
 Class cpuStatsAggregate_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] cpuStatsAggregate_type_repr  :: go.TypeRepr cpuStatsAggregateⁱᵐᵖˡ cpuStatsAggregate.t;
+  #[global] cpuStatsAggregate_type_repr  :: go.TypeReprUnderlying cpuStatsAggregateⁱᵐᵖˡ cpuStatsAggregate.t;
+  #[global] cpuStatsAggregate_underlying :: (cpuStatsAggregate) <u (cpuStatsAggregateⁱᵐᵖˡ);
+  #[global] cpuStatsAggregateⁱᵐᵖˡ_underlying :: (cpuStatsAggregateⁱᵐᵖˡ) ↓u (cpuStatsAggregateⁱᵐᵖˡ);
 }.
 
 Module gcStatsAggregate.
@@ -8569,7 +8733,9 @@ End gcStatsAggregate.
 
 Class gcStatsAggregate_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] gcStatsAggregate_type_repr  :: go.TypeRepr gcStatsAggregateⁱᵐᵖˡ gcStatsAggregate.t;
+  #[global] gcStatsAggregate_type_repr  :: go.TypeReprUnderlying gcStatsAggregateⁱᵐᵖˡ gcStatsAggregate.t;
+  #[global] gcStatsAggregate_underlying :: (gcStatsAggregate) <u (gcStatsAggregateⁱᵐᵖˡ);
+  #[global] gcStatsAggregateⁱᵐᵖˡ_underlying :: (gcStatsAggregateⁱᵐᵖˡ) ↓u (gcStatsAggregateⁱᵐᵖˡ);
 }.
 
 Module statAggregate.
@@ -8583,7 +8749,9 @@ End statAggregate.
 
 Class statAggregate_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] statAggregate_type_repr  :: go.TypeRepr statAggregateⁱᵐᵖˡ statAggregate.t;
+  #[global] statAggregate_type_repr  :: go.TypeReprUnderlying statAggregateⁱᵐᵖˡ statAggregate.t;
+  #[global] statAggregate_underlying :: (statAggregate) <u (statAggregateⁱᵐᵖˡ);
+  #[global] statAggregateⁱᵐᵖˡ_underlying :: (statAggregateⁱᵐᵖˡ) ↓u (statAggregateⁱᵐᵖˡ);
 }.
 
 Module metricKind.
@@ -8597,7 +8765,9 @@ End metricKind.
 
 Class metricKind_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] metricKind_type_repr  :: go.TypeRepr metricKindⁱᵐᵖˡ metricKind.t;
+  #[global] metricKind_type_repr  :: go.TypeReprUnderlying metricKindⁱᵐᵖˡ metricKind.t;
+  #[global] metricKind_underlying :: (metricKind) <u (metricKindⁱᵐᵖˡ);
+  #[global] metricKindⁱᵐᵖˡ_underlying :: (metricKindⁱᵐᵖˡ) ↓u (metricKindⁱᵐᵖˡ);
 }.
 
 Module metricSample.
@@ -8611,7 +8781,9 @@ End metricSample.
 
 Class metricSample_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] metricSample_type_repr  :: go.TypeRepr metricSampleⁱᵐᵖˡ metricSample.t;
+  #[global] metricSample_type_repr  :: go.TypeReprUnderlying metricSampleⁱᵐᵖˡ metricSample.t;
+  #[global] metricSample_underlying :: (metricSample) <u (metricSampleⁱᵐᵖˡ);
+  #[global] metricSampleⁱᵐᵖˡ_underlying :: (metricSampleⁱᵐᵖˡ) ↓u (metricSampleⁱᵐᵖˡ);
 }.
 
 Module metricValue.
@@ -8625,7 +8797,9 @@ End metricValue.
 
 Class metricValue_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] metricValue_type_repr  :: go.TypeRepr metricValueⁱᵐᵖˡ metricValue.t;
+  #[global] metricValue_type_repr  :: go.TypeReprUnderlying metricValueⁱᵐᵖˡ metricValue.t;
+  #[global] metricValue_underlying :: (metricValue) <u (metricValueⁱᵐᵖˡ);
+  #[global] metricValueⁱᵐᵖˡ_underlying :: (metricValueⁱᵐᵖˡ) ↓u (metricValueⁱᵐᵖˡ);
 }.
 
 Module metricFloat64Histogram.
@@ -8639,7 +8813,9 @@ End metricFloat64Histogram.
 
 Class metricFloat64Histogram_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] metricFloat64Histogram_type_repr  :: go.TypeRepr metricFloat64Histogramⁱᵐᵖˡ metricFloat64Histogram.t;
+  #[global] metricFloat64Histogram_type_repr  :: go.TypeReprUnderlying metricFloat64Histogramⁱᵐᵖˡ metricFloat64Histogram.t;
+  #[global] metricFloat64Histogram_underlying :: (metricFloat64Histogram) <u (metricFloat64Histogramⁱᵐᵖˡ);
+  #[global] metricFloat64Histogramⁱᵐᵖˡ_underlying :: (metricFloat64Histogramⁱᵐᵖˡ) ↓u (metricFloat64Histogramⁱᵐᵖˡ);
 }.
 
 Module metricName.
@@ -8653,7 +8829,9 @@ End metricName.
 
 Class metricName_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] metricName_type_repr  :: go.TypeRepr metricNameⁱᵐᵖˡ metricName.t;
+  #[global] metricName_type_repr  :: go.TypeReprUnderlying metricNameⁱᵐᵖˡ metricName.t;
+  #[global] metricName_underlying :: (metricName) <u (metricNameⁱᵐᵖˡ);
+  #[global] metricNameⁱᵐᵖˡ_underlying :: (metricNameⁱᵐᵖˡ) ↓u (metricNameⁱᵐᵖˡ);
 }.
 
 Module finBlock.
@@ -8667,7 +8845,9 @@ End finBlock.
 
 Class finBlock_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] finBlock_type_repr  :: go.TypeRepr finBlockⁱᵐᵖˡ finBlock.t;
+  #[global] finBlock_type_repr  :: go.TypeReprUnderlying finBlockⁱᵐᵖˡ finBlock.t;
+  #[global] finBlock_underlying :: (finBlock) <u (finBlockⁱᵐᵖˡ);
+  #[global] finBlockⁱᵐᵖˡ_underlying :: (finBlockⁱᵐᵖˡ) ↓u (finBlockⁱᵐᵖˡ);
 }.
 
 Module finalizer.
@@ -8681,7 +8861,9 @@ End finalizer.
 
 Class finalizer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] finalizer_type_repr  :: go.TypeRepr finalizerⁱᵐᵖˡ finalizer.t;
+  #[global] finalizer_type_repr  :: go.TypeReprUnderlying finalizerⁱᵐᵖˡ finalizer.t;
+  #[global] finalizer_underlying :: (finalizer) <u (finalizerⁱᵐᵖˡ);
+  #[global] finalizerⁱᵐᵖˡ_underlying :: (finalizerⁱᵐᵖˡ) ↓u (finalizerⁱᵐᵖˡ);
 }.
 
 Module fixalloc.
@@ -8695,7 +8877,9 @@ End fixalloc.
 
 Class fixalloc_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] fixalloc_type_repr  :: go.TypeRepr fixallocⁱᵐᵖˡ fixalloc.t;
+  #[global] fixalloc_type_repr  :: go.TypeReprUnderlying fixallocⁱᵐᵖˡ fixalloc.t;
+  #[global] fixalloc_underlying :: (fixalloc) <u (fixallocⁱᵐᵖˡ);
+  #[global] fixallocⁱᵐᵖˡ_underlying :: (fixallocⁱᵐᵖˡ) ↓u (fixallocⁱᵐᵖˡ);
 }.
 
 Module mlink.
@@ -8709,7 +8893,9 @@ End mlink.
 
 Class mlink_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] mlink_type_repr  :: go.TypeRepr mlinkⁱᵐᵖˡ mlink.t;
+  #[global] mlink_type_repr  :: go.TypeReprUnderlying mlinkⁱᵐᵖˡ mlink.t;
+  #[global] mlink_underlying :: (mlink) <u (mlinkⁱᵐᵖˡ);
+  #[global] mlinkⁱᵐᵖˡ_underlying :: (mlinkⁱᵐᵖˡ) ↓u (mlinkⁱᵐᵖˡ);
 }.
 
 Module gcMarkWorkerMode.
@@ -8723,7 +8909,9 @@ End gcMarkWorkerMode.
 
 Class gcMarkWorkerMode_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] gcMarkWorkerMode_type_repr  :: go.TypeRepr gcMarkWorkerModeⁱᵐᵖˡ gcMarkWorkerMode.t;
+  #[global] gcMarkWorkerMode_type_repr  :: go.TypeReprUnderlying gcMarkWorkerModeⁱᵐᵖˡ gcMarkWorkerMode.t;
+  #[global] gcMarkWorkerMode_underlying :: (gcMarkWorkerMode) <u (gcMarkWorkerModeⁱᵐᵖˡ);
+  #[global] gcMarkWorkerModeⁱᵐᵖˡ_underlying :: (gcMarkWorkerModeⁱᵐᵖˡ) ↓u (gcMarkWorkerModeⁱᵐᵖˡ);
 }.
 
 Module workType.
@@ -8737,7 +8925,9 @@ End workType.
 
 Class workType_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] workType_type_repr  :: go.TypeRepr workTypeⁱᵐᵖˡ workType.t;
+  #[global] workType_type_repr  :: go.TypeReprUnderlying workTypeⁱᵐᵖˡ workType.t;
+  #[global] workType_underlying :: (workType) <u (workTypeⁱᵐᵖˡ);
+  #[global] workTypeⁱᵐᵖˡ_underlying :: (workTypeⁱᵐᵖˡ) ↓u (workTypeⁱᵐᵖˡ);
 }.
 
 Module gcMode.
@@ -8751,7 +8941,9 @@ End gcMode.
 
 Class gcMode_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] gcMode_type_repr  :: go.TypeRepr gcModeⁱᵐᵖˡ gcMode.t;
+  #[global] gcMode_type_repr  :: go.TypeReprUnderlying gcModeⁱᵐᵖˡ gcMode.t;
+  #[global] gcMode_underlying :: (gcMode) <u (gcModeⁱᵐᵖˡ);
+  #[global] gcModeⁱᵐᵖˡ_underlying :: (gcModeⁱᵐᵖˡ) ↓u (gcModeⁱᵐᵖˡ);
 }.
 
 Module gcTrigger.
@@ -8765,7 +8957,9 @@ End gcTrigger.
 
 Class gcTrigger_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] gcTrigger_type_repr  :: go.TypeRepr gcTriggerⁱᵐᵖˡ gcTrigger.t;
+  #[global] gcTrigger_type_repr  :: go.TypeReprUnderlying gcTriggerⁱᵐᵖˡ gcTrigger.t;
+  #[global] gcTrigger_underlying :: (gcTrigger) <u (gcTriggerⁱᵐᵖˡ);
+  #[global] gcTriggerⁱᵐᵖˡ_underlying :: (gcTriggerⁱᵐᵖˡ) ↓u (gcTriggerⁱᵐᵖˡ);
 }.
 
 Module gcTriggerKind.
@@ -8779,7 +8973,9 @@ End gcTriggerKind.
 
 Class gcTriggerKind_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] gcTriggerKind_type_repr  :: go.TypeRepr gcTriggerKindⁱᵐᵖˡ gcTriggerKind.t;
+  #[global] gcTriggerKind_type_repr  :: go.TypeReprUnderlying gcTriggerKindⁱᵐᵖˡ gcTriggerKind.t;
+  #[global] gcTriggerKind_underlying :: (gcTriggerKind) <u (gcTriggerKindⁱᵐᵖˡ);
+  #[global] gcTriggerKindⁱᵐᵖˡ_underlying :: (gcTriggerKindⁱᵐᵖˡ) ↓u (gcTriggerKindⁱᵐᵖˡ);
 }.
 
 Module gcBgMarkWorkerNode.
@@ -8793,7 +8989,9 @@ End gcBgMarkWorkerNode.
 
 Class gcBgMarkWorkerNode_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] gcBgMarkWorkerNode_type_repr  :: go.TypeRepr gcBgMarkWorkerNodeⁱᵐᵖˡ gcBgMarkWorkerNode.t;
+  #[global] gcBgMarkWorkerNode_type_repr  :: go.TypeReprUnderlying gcBgMarkWorkerNodeⁱᵐᵖˡ gcBgMarkWorkerNode.t;
+  #[global] gcBgMarkWorkerNode_underlying :: (gcBgMarkWorkerNode) <u (gcBgMarkWorkerNodeⁱᵐᵖˡ);
+  #[global] gcBgMarkWorkerNodeⁱᵐᵖˡ_underlying :: (gcBgMarkWorkerNodeⁱᵐᵖˡ) ↓u (gcBgMarkWorkerNodeⁱᵐᵖˡ);
 }.
 
 Module gcBgMarkWorkerNodePadded.
@@ -8807,7 +9005,9 @@ End gcBgMarkWorkerNodePadded.
 
 Class gcBgMarkWorkerNodePadded_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] gcBgMarkWorkerNodePadded_type_repr  :: go.TypeRepr gcBgMarkWorkerNodePaddedⁱᵐᵖˡ gcBgMarkWorkerNodePadded.t;
+  #[global] gcBgMarkWorkerNodePadded_type_repr  :: go.TypeReprUnderlying gcBgMarkWorkerNodePaddedⁱᵐᵖˡ gcBgMarkWorkerNodePadded.t;
+  #[global] gcBgMarkWorkerNodePadded_underlying :: (gcBgMarkWorkerNodePadded) <u (gcBgMarkWorkerNodePaddedⁱᵐᵖˡ);
+  #[global] gcBgMarkWorkerNodePaddedⁱᵐᵖˡ_underlying :: (gcBgMarkWorkerNodePaddedⁱᵐᵖˡ) ↓u (gcBgMarkWorkerNodePaddedⁱᵐᵖˡ);
 }.
 
 Module gcCPULimiterState.
@@ -8821,7 +9021,9 @@ End gcCPULimiterState.
 
 Class gcCPULimiterState_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] gcCPULimiterState_type_repr  :: go.TypeRepr gcCPULimiterStateⁱᵐᵖˡ gcCPULimiterState.t;
+  #[global] gcCPULimiterState_type_repr  :: go.TypeReprUnderlying gcCPULimiterStateⁱᵐᵖˡ gcCPULimiterState.t;
+  #[global] gcCPULimiterState_underlying :: (gcCPULimiterState) <u (gcCPULimiterStateⁱᵐᵖˡ);
+  #[global] gcCPULimiterStateⁱᵐᵖˡ_underlying :: (gcCPULimiterStateⁱᵐᵖˡ) ↓u (gcCPULimiterStateⁱᵐᵖˡ);
 }.
 
 Module limiterEventType.
@@ -8835,7 +9037,9 @@ End limiterEventType.
 
 Class limiterEventType_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] limiterEventType_type_repr  :: go.TypeRepr limiterEventTypeⁱᵐᵖˡ limiterEventType.t;
+  #[global] limiterEventType_type_repr  :: go.TypeReprUnderlying limiterEventTypeⁱᵐᵖˡ limiterEventType.t;
+  #[global] limiterEventType_underlying :: (limiterEventType) <u (limiterEventTypeⁱᵐᵖˡ);
+  #[global] limiterEventTypeⁱᵐᵖˡ_underlying :: (limiterEventTypeⁱᵐᵖˡ) ↓u (limiterEventTypeⁱᵐᵖˡ);
 }.
 
 Module limiterEventStamp.
@@ -8849,7 +9053,9 @@ End limiterEventStamp.
 
 Class limiterEventStamp_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] limiterEventStamp_type_repr  :: go.TypeRepr limiterEventStampⁱᵐᵖˡ limiterEventStamp.t;
+  #[global] limiterEventStamp_type_repr  :: go.TypeReprUnderlying limiterEventStampⁱᵐᵖˡ limiterEventStamp.t;
+  #[global] limiterEventStamp_underlying :: (limiterEventStamp) <u (limiterEventStampⁱᵐᵖˡ);
+  #[global] limiterEventStampⁱᵐᵖˡ_underlying :: (limiterEventStampⁱᵐᵖˡ) ↓u (limiterEventStampⁱᵐᵖˡ);
 }.
 
 Module limiterEvent.
@@ -8863,7 +9069,9 @@ End limiterEvent.
 
 Class limiterEvent_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] limiterEvent_type_repr  :: go.TypeRepr limiterEventⁱᵐᵖˡ limiterEvent.t;
+  #[global] limiterEvent_type_repr  :: go.TypeReprUnderlying limiterEventⁱᵐᵖˡ limiterEvent.t;
+  #[global] limiterEvent_underlying :: (limiterEvent) <u (limiterEventⁱᵐᵖˡ);
+  #[global] limiterEventⁱᵐᵖˡ_underlying :: (limiterEventⁱᵐᵖˡ) ↓u (limiterEventⁱᵐᵖˡ);
 }.
 
 Module gcDrainFlags.
@@ -8877,7 +9085,9 @@ End gcDrainFlags.
 
 Class gcDrainFlags_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] gcDrainFlags_type_repr  :: go.TypeRepr gcDrainFlagsⁱᵐᵖˡ gcDrainFlags.t;
+  #[global] gcDrainFlags_type_repr  :: go.TypeReprUnderlying gcDrainFlagsⁱᵐᵖˡ gcDrainFlags.t;
+  #[global] gcDrainFlags_underlying :: (gcDrainFlags) <u (gcDrainFlagsⁱᵐᵖˡ);
+  #[global] gcDrainFlagsⁱᵐᵖˡ_underlying :: (gcDrainFlagsⁱᵐᵖˡ) ↓u (gcDrainFlagsⁱᵐᵖˡ);
 }.
 
 Module spanInlineMarkBits.
@@ -8891,7 +9101,9 @@ End spanInlineMarkBits.
 
 Class spanInlineMarkBits_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] spanInlineMarkBits_type_repr  :: go.TypeRepr spanInlineMarkBitsⁱᵐᵖˡ spanInlineMarkBits.t;
+  #[global] spanInlineMarkBits_type_repr  :: go.TypeReprUnderlying spanInlineMarkBitsⁱᵐᵖˡ spanInlineMarkBits.t;
+  #[global] spanInlineMarkBits_underlying :: (spanInlineMarkBits) <u (spanInlineMarkBitsⁱᵐᵖˡ);
+  #[global] spanInlineMarkBitsⁱᵐᵖˡ_underlying :: (spanInlineMarkBitsⁱᵐᵖˡ) ↓u (spanInlineMarkBitsⁱᵐᵖˡ);
 }.
 
 Module spanQueue.
@@ -8905,7 +9117,9 @@ End spanQueue.
 
 Class spanQueue_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] spanQueue_type_repr  :: go.TypeRepr spanQueueⁱᵐᵖˡ spanQueue.t;
+  #[global] spanQueue_type_repr  :: go.TypeReprUnderlying spanQueueⁱᵐᵖˡ spanQueue.t;
+  #[global] spanQueue_underlying :: (spanQueue) <u (spanQueueⁱᵐᵖˡ);
+  #[global] spanQueueⁱᵐᵖˡ_underlying :: (spanQueueⁱᵐᵖˡ) ↓u (spanQueueⁱᵐᵖˡ);
 }.
 
 Module localSpanQueue.
@@ -8919,7 +9133,9 @@ End localSpanQueue.
 
 Class localSpanQueue_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] localSpanQueue_type_repr  :: go.TypeRepr localSpanQueueⁱᵐᵖˡ localSpanQueue.t;
+  #[global] localSpanQueue_type_repr  :: go.TypeReprUnderlying localSpanQueueⁱᵐᵖˡ localSpanQueue.t;
+  #[global] localSpanQueue_underlying :: (localSpanQueue) <u (localSpanQueueⁱᵐᵖˡ);
+  #[global] localSpanQueueⁱᵐᵖˡ_underlying :: (localSpanQueueⁱᵐᵖˡ) ↓u (localSpanQueueⁱᵐᵖˡ);
 }.
 
 Module objptr.
@@ -8933,7 +9149,9 @@ End objptr.
 
 Class objptr_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] objptr_type_repr  :: go.TypeRepr objptrⁱᵐᵖˡ objptr.t;
+  #[global] objptr_type_repr  :: go.TypeReprUnderlying objptrⁱᵐᵖˡ objptr.t;
+  #[global] objptr_underlying :: (objptr) <u (objptrⁱᵐᵖˡ);
+  #[global] objptrⁱᵐᵖˡ_underlying :: (objptrⁱᵐᵖˡ) ↓u (objptrⁱᵐᵖˡ);
 }.
 
 Module sizeClassScanStats.
@@ -8947,7 +9165,9 @@ End sizeClassScanStats.
 
 Class sizeClassScanStats_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] sizeClassScanStats_type_repr  :: go.TypeRepr sizeClassScanStatsⁱᵐᵖˡ sizeClassScanStats.t;
+  #[global] sizeClassScanStats_type_repr  :: go.TypeReprUnderlying sizeClassScanStatsⁱᵐᵖˡ sizeClassScanStats.t;
+  #[global] sizeClassScanStats_underlying :: (sizeClassScanStats) <u (sizeClassScanStatsⁱᵐᵖˡ);
+  #[global] sizeClassScanStatsⁱᵐᵖˡ_underlying :: (sizeClassScanStatsⁱᵐᵖˡ) ↓u (sizeClassScanStatsⁱᵐᵖˡ);
 }.
 
 Module gcControllerState.
@@ -8961,7 +9181,9 @@ End gcControllerState.
 
 Class gcControllerState_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] gcControllerState_type_repr  :: go.TypeRepr gcControllerStateⁱᵐᵖˡ gcControllerState.t;
+  #[global] gcControllerState_type_repr  :: go.TypeReprUnderlying gcControllerStateⁱᵐᵖˡ gcControllerState.t;
+  #[global] gcControllerState_underlying :: (gcControllerState) <u (gcControllerStateⁱᵐᵖˡ);
+  #[global] gcControllerStateⁱᵐᵖˡ_underlying :: (gcControllerStateⁱᵐᵖˡ) ↓u (gcControllerStateⁱᵐᵖˡ);
 }.
 
 Module scavengerState.
@@ -8975,7 +9197,9 @@ End scavengerState.
 
 Class scavengerState_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] scavengerState_type_repr  :: go.TypeRepr scavengerStateⁱᵐᵖˡ scavengerState.t;
+  #[global] scavengerState_type_repr  :: go.TypeReprUnderlying scavengerStateⁱᵐᵖˡ scavengerState.t;
+  #[global] scavengerState_underlying :: (scavengerState) <u (scavengerStateⁱᵐᵖˡ);
+  #[global] scavengerStateⁱᵐᵖˡ_underlying :: (scavengerStateⁱᵐᵖˡ) ↓u (scavengerStateⁱᵐᵖˡ);
 }.
 
 Module scavengeIndex.
@@ -8989,7 +9213,9 @@ End scavengeIndex.
 
 Class scavengeIndex_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] scavengeIndex_type_repr  :: go.TypeRepr scavengeIndexⁱᵐᵖˡ scavengeIndex.t;
+  #[global] scavengeIndex_type_repr  :: go.TypeReprUnderlying scavengeIndexⁱᵐᵖˡ scavengeIndex.t;
+  #[global] scavengeIndex_underlying :: (scavengeIndex) <u (scavengeIndexⁱᵐᵖˡ);
+  #[global] scavengeIndexⁱᵐᵖˡ_underlying :: (scavengeIndexⁱᵐᵖˡ) ↓u (scavengeIndexⁱᵐᵖˡ);
 }.
 
 Module atomicScavChunkData.
@@ -9003,7 +9229,9 @@ End atomicScavChunkData.
 
 Class atomicScavChunkData_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] atomicScavChunkData_type_repr  :: go.TypeRepr atomicScavChunkDataⁱᵐᵖˡ atomicScavChunkData.t;
+  #[global] atomicScavChunkData_type_repr  :: go.TypeReprUnderlying atomicScavChunkDataⁱᵐᵖˡ atomicScavChunkData.t;
+  #[global] atomicScavChunkData_underlying :: (atomicScavChunkData) <u (atomicScavChunkDataⁱᵐᵖˡ);
+  #[global] atomicScavChunkDataⁱᵐᵖˡ_underlying :: (atomicScavChunkDataⁱᵐᵖˡ) ↓u (atomicScavChunkDataⁱᵐᵖˡ);
 }.
 
 Module scavChunkData.
@@ -9017,7 +9245,9 @@ End scavChunkData.
 
 Class scavChunkData_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] scavChunkData_type_repr  :: go.TypeRepr scavChunkDataⁱᵐᵖˡ scavChunkData.t;
+  #[global] scavChunkData_type_repr  :: go.TypeReprUnderlying scavChunkDataⁱᵐᵖˡ scavChunkData.t;
+  #[global] scavChunkData_underlying :: (scavChunkData) <u (scavChunkDataⁱᵐᵖˡ);
+  #[global] scavChunkDataⁱᵐᵖˡ_underlying :: (scavChunkDataⁱᵐᵖˡ) ↓u (scavChunkDataⁱᵐᵖˡ);
 }.
 
 Module scavChunkFlags.
@@ -9031,7 +9261,9 @@ End scavChunkFlags.
 
 Class scavChunkFlags_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] scavChunkFlags_type_repr  :: go.TypeRepr scavChunkFlagsⁱᵐᵖˡ scavChunkFlags.t;
+  #[global] scavChunkFlags_type_repr  :: go.TypeReprUnderlying scavChunkFlagsⁱᵐᵖˡ scavChunkFlags.t;
+  #[global] scavChunkFlags_underlying :: (scavChunkFlags) <u (scavChunkFlagsⁱᵐᵖˡ);
+  #[global] scavChunkFlagsⁱᵐᵖˡ_underlying :: (scavChunkFlagsⁱᵐᵖˡ) ↓u (scavChunkFlagsⁱᵐᵖˡ);
 }.
 
 Module piController.
@@ -9045,7 +9277,9 @@ End piController.
 
 Class piController_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] piController_type_repr  :: go.TypeRepr piControllerⁱᵐᵖˡ piController.t;
+  #[global] piController_type_repr  :: go.TypeReprUnderlying piControllerⁱᵐᵖˡ piController.t;
+  #[global] piController_underlying :: (piController) <u (piControllerⁱᵐᵖˡ);
+  #[global] piControllerⁱᵐᵖˡ_underlying :: (piControllerⁱᵐᵖˡ) ↓u (piControllerⁱᵐᵖˡ);
 }.
 
 Module stackWorkBuf.
@@ -9059,7 +9293,9 @@ End stackWorkBuf.
 
 Class stackWorkBuf_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] stackWorkBuf_type_repr  :: go.TypeRepr stackWorkBufⁱᵐᵖˡ stackWorkBuf.t;
+  #[global] stackWorkBuf_type_repr  :: go.TypeReprUnderlying stackWorkBufⁱᵐᵖˡ stackWorkBuf.t;
+  #[global] stackWorkBuf_underlying :: (stackWorkBuf) <u (stackWorkBufⁱᵐᵖˡ);
+  #[global] stackWorkBufⁱᵐᵖˡ_underlying :: (stackWorkBufⁱᵐᵖˡ) ↓u (stackWorkBufⁱᵐᵖˡ);
 }.
 
 Module stackWorkBufHdr.
@@ -9073,7 +9309,9 @@ End stackWorkBufHdr.
 
 Class stackWorkBufHdr_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] stackWorkBufHdr_type_repr  :: go.TypeRepr stackWorkBufHdrⁱᵐᵖˡ stackWorkBufHdr.t;
+  #[global] stackWorkBufHdr_type_repr  :: go.TypeReprUnderlying stackWorkBufHdrⁱᵐᵖˡ stackWorkBufHdr.t;
+  #[global] stackWorkBufHdr_underlying :: (stackWorkBufHdr) <u (stackWorkBufHdrⁱᵐᵖˡ);
+  #[global] stackWorkBufHdrⁱᵐᵖˡ_underlying :: (stackWorkBufHdrⁱᵐᵖˡ) ↓u (stackWorkBufHdrⁱᵐᵖˡ);
 }.
 
 Module stackObjectBuf.
@@ -9087,7 +9325,9 @@ End stackObjectBuf.
 
 Class stackObjectBuf_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] stackObjectBuf_type_repr  :: go.TypeRepr stackObjectBufⁱᵐᵖˡ stackObjectBuf.t;
+  #[global] stackObjectBuf_type_repr  :: go.TypeReprUnderlying stackObjectBufⁱᵐᵖˡ stackObjectBuf.t;
+  #[global] stackObjectBuf_underlying :: (stackObjectBuf) <u (stackObjectBufⁱᵐᵖˡ);
+  #[global] stackObjectBufⁱᵐᵖˡ_underlying :: (stackObjectBufⁱᵐᵖˡ) ↓u (stackObjectBufⁱᵐᵖˡ);
 }.
 
 Module stackObjectBufHdr.
@@ -9101,7 +9341,9 @@ End stackObjectBufHdr.
 
 Class stackObjectBufHdr_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] stackObjectBufHdr_type_repr  :: go.TypeRepr stackObjectBufHdrⁱᵐᵖˡ stackObjectBufHdr.t;
+  #[global] stackObjectBufHdr_type_repr  :: go.TypeReprUnderlying stackObjectBufHdrⁱᵐᵖˡ stackObjectBufHdr.t;
+  #[global] stackObjectBufHdr_underlying :: (stackObjectBufHdr) <u (stackObjectBufHdrⁱᵐᵖˡ);
+  #[global] stackObjectBufHdrⁱᵐᵖˡ_underlying :: (stackObjectBufHdrⁱᵐᵖˡ) ↓u (stackObjectBufHdrⁱᵐᵖˡ);
 }.
 
 Module stackObject.
@@ -9115,7 +9357,9 @@ End stackObject.
 
 Class stackObject_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] stackObject_type_repr  :: go.TypeRepr stackObjectⁱᵐᵖˡ stackObject.t;
+  #[global] stackObject_type_repr  :: go.TypeReprUnderlying stackObjectⁱᵐᵖˡ stackObject.t;
+  #[global] stackObject_underlying :: (stackObject) <u (stackObjectⁱᵐᵖˡ);
+  #[global] stackObjectⁱᵐᵖˡ_underlying :: (stackObjectⁱᵐᵖˡ) ↓u (stackObjectⁱᵐᵖˡ);
 }.
 
 Module stackScanState.
@@ -9129,7 +9373,9 @@ End stackScanState.
 
 Class stackScanState_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] stackScanState_type_repr  :: go.TypeRepr stackScanStateⁱᵐᵖˡ stackScanState.t;
+  #[global] stackScanState_type_repr  :: go.TypeReprUnderlying stackScanStateⁱᵐᵖˡ stackScanState.t;
+  #[global] stackScanState_underlying :: (stackScanState) <u (stackScanStateⁱᵐᵖˡ);
+  #[global] stackScanStateⁱᵐᵖˡ_underlying :: (stackScanStateⁱᵐᵖˡ) ↓u (stackScanStateⁱᵐᵖˡ);
 }.
 
 Module sweepdata.
@@ -9143,7 +9389,9 @@ End sweepdata.
 
 Class sweepdata_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] sweepdata_type_repr  :: go.TypeRepr sweepdataⁱᵐᵖˡ sweepdata.t;
+  #[global] sweepdata_type_repr  :: go.TypeReprUnderlying sweepdataⁱᵐᵖˡ sweepdata.t;
+  #[global] sweepdata_underlying :: (sweepdata) <u (sweepdataⁱᵐᵖˡ);
+  #[global] sweepdataⁱᵐᵖˡ_underlying :: (sweepdataⁱᵐᵖˡ) ↓u (sweepdataⁱᵐᵖˡ);
 }.
 
 Module sweepClass.
@@ -9157,7 +9405,9 @@ End sweepClass.
 
 Class sweepClass_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] sweepClass_type_repr  :: go.TypeRepr sweepClassⁱᵐᵖˡ sweepClass.t;
+  #[global] sweepClass_type_repr  :: go.TypeReprUnderlying sweepClassⁱᵐᵖˡ sweepClass.t;
+  #[global] sweepClass_underlying :: (sweepClass) <u (sweepClassⁱᵐᵖˡ);
+  #[global] sweepClassⁱᵐᵖˡ_underlying :: (sweepClassⁱᵐᵖˡ) ↓u (sweepClassⁱᵐᵖˡ);
 }.
 
 Module activeSweep.
@@ -9171,7 +9421,9 @@ End activeSweep.
 
 Class activeSweep_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] activeSweep_type_repr  :: go.TypeRepr activeSweepⁱᵐᵖˡ activeSweep.t;
+  #[global] activeSweep_type_repr  :: go.TypeReprUnderlying activeSweepⁱᵐᵖˡ activeSweep.t;
+  #[global] activeSweep_underlying :: (activeSweep) <u (activeSweepⁱᵐᵖˡ);
+  #[global] activeSweepⁱᵐᵖˡ_underlying :: (activeSweepⁱᵐᵖˡ) ↓u (activeSweepⁱᵐᵖˡ);
 }.
 
 Module sweepLocker.
@@ -9185,7 +9437,9 @@ End sweepLocker.
 
 Class sweepLocker_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] sweepLocker_type_repr  :: go.TypeRepr sweepLockerⁱᵐᵖˡ sweepLocker.t;
+  #[global] sweepLocker_type_repr  :: go.TypeReprUnderlying sweepLockerⁱᵐᵖˡ sweepLocker.t;
+  #[global] sweepLocker_underlying :: (sweepLocker) <u (sweepLockerⁱᵐᵖˡ);
+  #[global] sweepLockerⁱᵐᵖˡ_underlying :: (sweepLockerⁱᵐᵖˡ) ↓u (sweepLockerⁱᵐᵖˡ);
 }.
 
 Module sweepLocked.
@@ -9199,7 +9453,9 @@ End sweepLocked.
 
 Class sweepLocked_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] sweepLocked_type_repr  :: go.TypeRepr sweepLockedⁱᵐᵖˡ sweepLocked.t;
+  #[global] sweepLocked_type_repr  :: go.TypeReprUnderlying sweepLockedⁱᵐᵖˡ sweepLocked.t;
+  #[global] sweepLocked_underlying :: (sweepLocked) <u (sweepLockedⁱᵐᵖˡ);
+  #[global] sweepLockedⁱᵐᵖˡ_underlying :: (sweepLockedⁱᵐᵖˡ) ↓u (sweepLockedⁱᵐᵖˡ);
 }.
 
 Module gcWork.
@@ -9213,7 +9469,9 @@ End gcWork.
 
 Class gcWork_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] gcWork_type_repr  :: go.TypeRepr gcWorkⁱᵐᵖˡ gcWork.t;
+  #[global] gcWork_type_repr  :: go.TypeReprUnderlying gcWorkⁱᵐᵖˡ gcWork.t;
+  #[global] gcWork_underlying :: (gcWork) <u (gcWorkⁱᵐᵖˡ);
+  #[global] gcWorkⁱᵐᵖˡ_underlying :: (gcWorkⁱᵐᵖˡ) ↓u (gcWorkⁱᵐᵖˡ);
 }.
 
 Module workbufhdr.
@@ -9227,7 +9485,9 @@ End workbufhdr.
 
 Class workbufhdr_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] workbufhdr_type_repr  :: go.TypeRepr workbufhdrⁱᵐᵖˡ workbufhdr.t;
+  #[global] workbufhdr_type_repr  :: go.TypeReprUnderlying workbufhdrⁱᵐᵖˡ workbufhdr.t;
+  #[global] workbufhdr_underlying :: (workbufhdr) <u (workbufhdrⁱᵐᵖˡ);
+  #[global] workbufhdrⁱᵐᵖˡ_underlying :: (workbufhdrⁱᵐᵖˡ) ↓u (workbufhdrⁱᵐᵖˡ);
 }.
 
 Module workbuf.
@@ -9241,7 +9501,9 @@ End workbuf.
 
 Class workbuf_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] workbuf_type_repr  :: go.TypeRepr workbufⁱᵐᵖˡ workbuf.t;
+  #[global] workbuf_type_repr  :: go.TypeReprUnderlying workbufⁱᵐᵖˡ workbuf.t;
+  #[global] workbuf_underlying :: (workbuf) <u (workbufⁱᵐᵖˡ);
+  #[global] workbufⁱᵐᵖˡ_underlying :: (workbufⁱᵐᵖˡ) ↓u (workbufⁱᵐᵖˡ);
 }.
 
 Module mheap.
@@ -9255,7 +9517,9 @@ End mheap.
 
 Class mheap_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] mheap_type_repr  :: go.TypeRepr mheapⁱᵐᵖˡ mheap.t;
+  #[global] mheap_type_repr  :: go.TypeReprUnderlying mheapⁱᵐᵖˡ mheap.t;
+  #[global] mheap_underlying :: (mheap) <u (mheapⁱᵐᵖˡ);
+  #[global] mheapⁱᵐᵖˡ_underlying :: (mheapⁱᵐᵖˡ) ↓u (mheapⁱᵐᵖˡ);
 }.
 
 Module heapArena.
@@ -9269,7 +9533,9 @@ End heapArena.
 
 Class heapArena_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] heapArena_type_repr  :: go.TypeRepr heapArenaⁱᵐᵖˡ heapArena.t;
+  #[global] heapArena_type_repr  :: go.TypeReprUnderlying heapArenaⁱᵐᵖˡ heapArena.t;
+  #[global] heapArena_underlying :: (heapArena) <u (heapArenaⁱᵐᵖˡ);
+  #[global] heapArenaⁱᵐᵖˡ_underlying :: (heapArenaⁱᵐᵖˡ) ↓u (heapArenaⁱᵐᵖˡ);
 }.
 
 Module arenaHint.
@@ -9283,7 +9549,9 @@ End arenaHint.
 
 Class arenaHint_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] arenaHint_type_repr  :: go.TypeRepr arenaHintⁱᵐᵖˡ arenaHint.t;
+  #[global] arenaHint_type_repr  :: go.TypeReprUnderlying arenaHintⁱᵐᵖˡ arenaHint.t;
+  #[global] arenaHint_underlying :: (arenaHint) <u (arenaHintⁱᵐᵖˡ);
+  #[global] arenaHintⁱᵐᵖˡ_underlying :: (arenaHintⁱᵐᵖˡ) ↓u (arenaHintⁱᵐᵖˡ);
 }.
 
 Module mSpanState.
@@ -9297,7 +9565,9 @@ End mSpanState.
 
 Class mSpanState_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] mSpanState_type_repr  :: go.TypeRepr mSpanStateⁱᵐᵖˡ mSpanState.t;
+  #[global] mSpanState_type_repr  :: go.TypeReprUnderlying mSpanStateⁱᵐᵖˡ mSpanState.t;
+  #[global] mSpanState_underlying :: (mSpanState) <u (mSpanStateⁱᵐᵖˡ);
+  #[global] mSpanStateⁱᵐᵖˡ_underlying :: (mSpanStateⁱᵐᵖˡ) ↓u (mSpanStateⁱᵐᵖˡ);
 }.
 
 Module mSpanStateBox.
@@ -9311,7 +9581,9 @@ End mSpanStateBox.
 
 Class mSpanStateBox_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] mSpanStateBox_type_repr  :: go.TypeRepr mSpanStateBoxⁱᵐᵖˡ mSpanStateBox.t;
+  #[global] mSpanStateBox_type_repr  :: go.TypeReprUnderlying mSpanStateBoxⁱᵐᵖˡ mSpanStateBox.t;
+  #[global] mSpanStateBox_underlying :: (mSpanStateBox) <u (mSpanStateBoxⁱᵐᵖˡ);
+  #[global] mSpanStateBoxⁱᵐᵖˡ_underlying :: (mSpanStateBoxⁱᵐᵖˡ) ↓u (mSpanStateBoxⁱᵐᵖˡ);
 }.
 
 Module mspan.
@@ -9325,7 +9597,9 @@ End mspan.
 
 Class mspan_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] mspan_type_repr  :: go.TypeRepr mspanⁱᵐᵖˡ mspan.t;
+  #[global] mspan_type_repr  :: go.TypeReprUnderlying mspanⁱᵐᵖˡ mspan.t;
+  #[global] mspan_underlying :: (mspan) <u (mspanⁱᵐᵖˡ);
+  #[global] mspanⁱᵐᵖˡ_underlying :: (mspanⁱᵐᵖˡ) ↓u (mspanⁱᵐᵖˡ);
 }.
 
 Module spanClass.
@@ -9339,7 +9613,9 @@ End spanClass.
 
 Class spanClass_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] spanClass_type_repr  :: go.TypeRepr spanClassⁱᵐᵖˡ spanClass.t;
+  #[global] spanClass_type_repr  :: go.TypeReprUnderlying spanClassⁱᵐᵖˡ spanClass.t;
+  #[global] spanClass_underlying :: (spanClass) <u (spanClassⁱᵐᵖˡ);
+  #[global] spanClassⁱᵐᵖˡ_underlying :: (spanClassⁱᵐᵖˡ) ↓u (spanClassⁱᵐᵖˡ);
 }.
 
 Module arenaIdx.
@@ -9353,7 +9629,9 @@ End arenaIdx.
 
 Class arenaIdx_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] arenaIdx_type_repr  :: go.TypeRepr arenaIdxⁱᵐᵖˡ arenaIdx.t;
+  #[global] arenaIdx_type_repr  :: go.TypeReprUnderlying arenaIdxⁱᵐᵖˡ arenaIdx.t;
+  #[global] arenaIdx_underlying :: (arenaIdx) <u (arenaIdxⁱᵐᵖˡ);
+  #[global] arenaIdxⁱᵐᵖˡ_underlying :: (arenaIdxⁱᵐᵖˡ) ↓u (arenaIdxⁱᵐᵖˡ);
 }.
 
 Module spanAllocType.
@@ -9367,7 +9645,9 @@ End spanAllocType.
 
 Class spanAllocType_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] spanAllocType_type_repr  :: go.TypeRepr spanAllocTypeⁱᵐᵖˡ spanAllocType.t;
+  #[global] spanAllocType_type_repr  :: go.TypeReprUnderlying spanAllocTypeⁱᵐᵖˡ spanAllocType.t;
+  #[global] spanAllocType_underlying :: (spanAllocType) <u (spanAllocTypeⁱᵐᵖˡ);
+  #[global] spanAllocTypeⁱᵐᵖˡ_underlying :: (spanAllocTypeⁱᵐᵖˡ) ↓u (spanAllocTypeⁱᵐᵖˡ);
 }.
 
 Module mSpanList.
@@ -9381,7 +9661,9 @@ End mSpanList.
 
 Class mSpanList_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] mSpanList_type_repr  :: go.TypeRepr mSpanListⁱᵐᵖˡ mSpanList.t;
+  #[global] mSpanList_type_repr  :: go.TypeReprUnderlying mSpanListⁱᵐᵖˡ mSpanList.t;
+  #[global] mSpanList_underlying :: (mSpanList) <u (mSpanListⁱᵐᵖˡ);
+  #[global] mSpanListⁱᵐᵖˡ_underlying :: (mSpanListⁱᵐᵖˡ) ↓u (mSpanListⁱᵐᵖˡ);
 }.
 
 Module mSpanQueue.
@@ -9395,7 +9677,9 @@ End mSpanQueue.
 
 Class mSpanQueue_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] mSpanQueue_type_repr  :: go.TypeRepr mSpanQueueⁱᵐᵖˡ mSpanQueue.t;
+  #[global] mSpanQueue_type_repr  :: go.TypeReprUnderlying mSpanQueueⁱᵐᵖˡ mSpanQueue.t;
+  #[global] mSpanQueue_underlying :: (mSpanQueue) <u (mSpanQueueⁱᵐᵖˡ);
+  #[global] mSpanQueueⁱᵐᵖˡ_underlying :: (mSpanQueueⁱᵐᵖˡ) ↓u (mSpanQueueⁱᵐᵖˡ);
 }.
 
 Module special.
@@ -9409,7 +9693,9 @@ End special.
 
 Class special_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] special_type_repr  :: go.TypeRepr specialⁱᵐᵖˡ special.t;
+  #[global] special_type_repr  :: go.TypeReprUnderlying specialⁱᵐᵖˡ special.t;
+  #[global] special_underlying :: (special) <u (specialⁱᵐᵖˡ);
+  #[global] specialⁱᵐᵖˡ_underlying :: (specialⁱᵐᵖˡ) ↓u (specialⁱᵐᵖˡ);
 }.
 
 Module specialfinalizer.
@@ -9423,7 +9709,9 @@ End specialfinalizer.
 
 Class specialfinalizer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] specialfinalizer_type_repr  :: go.TypeRepr specialfinalizerⁱᵐᵖˡ specialfinalizer.t;
+  #[global] specialfinalizer_type_repr  :: go.TypeReprUnderlying specialfinalizerⁱᵐᵖˡ specialfinalizer.t;
+  #[global] specialfinalizer_underlying :: (specialfinalizer) <u (specialfinalizerⁱᵐᵖˡ);
+  #[global] specialfinalizerⁱᵐᵖˡ_underlying :: (specialfinalizerⁱᵐᵖˡ) ↓u (specialfinalizerⁱᵐᵖˡ);
 }.
 
 Module specialCleanup.
@@ -9437,7 +9725,9 @@ End specialCleanup.
 
 Class specialCleanup_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] specialCleanup_type_repr  :: go.TypeRepr specialCleanupⁱᵐᵖˡ specialCleanup.t;
+  #[global] specialCleanup_type_repr  :: go.TypeReprUnderlying specialCleanupⁱᵐᵖˡ specialCleanup.t;
+  #[global] specialCleanup_underlying :: (specialCleanup) <u (specialCleanupⁱᵐᵖˡ);
+  #[global] specialCleanupⁱᵐᵖˡ_underlying :: (specialCleanupⁱᵐᵖˡ) ↓u (specialCleanupⁱᵐᵖˡ);
 }.
 
 Module specialCheckFinalizer.
@@ -9451,7 +9741,9 @@ End specialCheckFinalizer.
 
 Class specialCheckFinalizer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] specialCheckFinalizer_type_repr  :: go.TypeRepr specialCheckFinalizerⁱᵐᵖˡ specialCheckFinalizer.t;
+  #[global] specialCheckFinalizer_type_repr  :: go.TypeReprUnderlying specialCheckFinalizerⁱᵐᵖˡ specialCheckFinalizer.t;
+  #[global] specialCheckFinalizer_underlying :: (specialCheckFinalizer) <u (specialCheckFinalizerⁱᵐᵖˡ);
+  #[global] specialCheckFinalizerⁱᵐᵖˡ_underlying :: (specialCheckFinalizerⁱᵐᵖˡ) ↓u (specialCheckFinalizerⁱᵐᵖˡ);
 }.
 
 Module specialTinyBlock.
@@ -9465,7 +9757,9 @@ End specialTinyBlock.
 
 Class specialTinyBlock_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] specialTinyBlock_type_repr  :: go.TypeRepr specialTinyBlockⁱᵐᵖˡ specialTinyBlock.t;
+  #[global] specialTinyBlock_type_repr  :: go.TypeReprUnderlying specialTinyBlockⁱᵐᵖˡ specialTinyBlock.t;
+  #[global] specialTinyBlock_underlying :: (specialTinyBlock) <u (specialTinyBlockⁱᵐᵖˡ);
+  #[global] specialTinyBlockⁱᵐᵖˡ_underlying :: (specialTinyBlockⁱᵐᵖˡ) ↓u (specialTinyBlockⁱᵐᵖˡ);
 }.
 
 Module specialWeakHandle.
@@ -9479,7 +9773,9 @@ End specialWeakHandle.
 
 Class specialWeakHandle_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] specialWeakHandle_type_repr  :: go.TypeRepr specialWeakHandleⁱᵐᵖˡ specialWeakHandle.t;
+  #[global] specialWeakHandle_type_repr  :: go.TypeReprUnderlying specialWeakHandleⁱᵐᵖˡ specialWeakHandle.t;
+  #[global] specialWeakHandle_underlying :: (specialWeakHandle) <u (specialWeakHandleⁱᵐᵖˡ);
+  #[global] specialWeakHandleⁱᵐᵖˡ_underlying :: (specialWeakHandleⁱᵐᵖˡ) ↓u (specialWeakHandleⁱᵐᵖˡ);
 }.
 
 Module immortalWeakHandleMap.
@@ -9493,7 +9789,9 @@ End immortalWeakHandleMap.
 
 Class immortalWeakHandleMap_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] immortalWeakHandleMap_type_repr  :: go.TypeRepr immortalWeakHandleMapⁱᵐᵖˡ immortalWeakHandleMap.t;
+  #[global] immortalWeakHandleMap_type_repr  :: go.TypeReprUnderlying immortalWeakHandleMapⁱᵐᵖˡ immortalWeakHandleMap.t;
+  #[global] immortalWeakHandleMap_underlying :: (immortalWeakHandleMap) <u (immortalWeakHandleMapⁱᵐᵖˡ);
+  #[global] immortalWeakHandleMapⁱᵐᵖˡ_underlying :: (immortalWeakHandleMapⁱᵐᵖˡ) ↓u (immortalWeakHandleMapⁱᵐᵖˡ);
 }.
 
 Module immortalWeakHandle.
@@ -9507,7 +9805,9 @@ End immortalWeakHandle.
 
 Class immortalWeakHandle_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] immortalWeakHandle_type_repr  :: go.TypeRepr immortalWeakHandleⁱᵐᵖˡ immortalWeakHandle.t;
+  #[global] immortalWeakHandle_type_repr  :: go.TypeReprUnderlying immortalWeakHandleⁱᵐᵖˡ immortalWeakHandle.t;
+  #[global] immortalWeakHandle_underlying :: (immortalWeakHandle) <u (immortalWeakHandleⁱᵐᵖˡ);
+  #[global] immortalWeakHandleⁱᵐᵖˡ_underlying :: (immortalWeakHandleⁱᵐᵖˡ) ↓u (immortalWeakHandleⁱᵐᵖˡ);
 }.
 
 Module specialprofile.
@@ -9521,7 +9821,9 @@ End specialprofile.
 
 Class specialprofile_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] specialprofile_type_repr  :: go.TypeRepr specialprofileⁱᵐᵖˡ specialprofile.t;
+  #[global] specialprofile_type_repr  :: go.TypeReprUnderlying specialprofileⁱᵐᵖˡ specialprofile.t;
+  #[global] specialprofile_underlying :: (specialprofile) <u (specialprofileⁱᵐᵖˡ);
+  #[global] specialprofileⁱᵐᵖˡ_underlying :: (specialprofileⁱᵐᵖˡ) ↓u (specialprofileⁱᵐᵖˡ);
 }.
 
 Module specialReachable.
@@ -9535,7 +9837,9 @@ End specialReachable.
 
 Class specialReachable_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] specialReachable_type_repr  :: go.TypeRepr specialReachableⁱᵐᵖˡ specialReachable.t;
+  #[global] specialReachable_type_repr  :: go.TypeReprUnderlying specialReachableⁱᵐᵖˡ specialReachable.t;
+  #[global] specialReachable_underlying :: (specialReachable) <u (specialReachableⁱᵐᵖˡ);
+  #[global] specialReachableⁱᵐᵖˡ_underlying :: (specialReachableⁱᵐᵖˡ) ↓u (specialReachableⁱᵐᵖˡ);
 }.
 
 Module specialPinCounter.
@@ -9549,7 +9853,9 @@ End specialPinCounter.
 
 Class specialPinCounter_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] specialPinCounter_type_repr  :: go.TypeRepr specialPinCounterⁱᵐᵖˡ specialPinCounter.t;
+  #[global] specialPinCounter_type_repr  :: go.TypeReprUnderlying specialPinCounterⁱᵐᵖˡ specialPinCounter.t;
+  #[global] specialPinCounter_underlying :: (specialPinCounter) <u (specialPinCounterⁱᵐᵖˡ);
+  #[global] specialPinCounterⁱᵐᵖˡ_underlying :: (specialPinCounterⁱᵐᵖˡ) ↓u (specialPinCounterⁱᵐᵖˡ);
 }.
 
 Module specialsIter.
@@ -9563,7 +9869,9 @@ End specialsIter.
 
 Class specialsIter_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] specialsIter_type_repr  :: go.TypeRepr specialsIterⁱᵐᵖˡ specialsIter.t;
+  #[global] specialsIter_type_repr  :: go.TypeReprUnderlying specialsIterⁱᵐᵖˡ specialsIter.t;
+  #[global] specialsIter_underlying :: (specialsIter) <u (specialsIterⁱᵐᵖˡ);
+  #[global] specialsIterⁱᵐᵖˡ_underlying :: (specialsIterⁱᵐᵖˡ) ↓u (specialsIterⁱᵐᵖˡ);
 }.
 
 Module gcBits.
@@ -9577,7 +9885,9 @@ End gcBits.
 
 Class gcBits_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] gcBits_type_repr  :: go.TypeRepr gcBitsⁱᵐᵖˡ gcBits.t;
+  #[global] gcBits_type_repr  :: go.TypeReprUnderlying gcBitsⁱᵐᵖˡ gcBits.t;
+  #[global] gcBits_underlying :: (gcBits) <u (gcBitsⁱᵐᵖˡ);
+  #[global] gcBitsⁱᵐᵖˡ_underlying :: (gcBitsⁱᵐᵖˡ) ↓u (gcBitsⁱᵐᵖˡ);
 }.
 
 Module gcBitsHeader.
@@ -9591,7 +9901,9 @@ End gcBitsHeader.
 
 Class gcBitsHeader_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] gcBitsHeader_type_repr  :: go.TypeRepr gcBitsHeaderⁱᵐᵖˡ gcBitsHeader.t;
+  #[global] gcBitsHeader_type_repr  :: go.TypeReprUnderlying gcBitsHeaderⁱᵐᵖˡ gcBitsHeader.t;
+  #[global] gcBitsHeader_underlying :: (gcBitsHeader) <u (gcBitsHeaderⁱᵐᵖˡ);
+  #[global] gcBitsHeaderⁱᵐᵖˡ_underlying :: (gcBitsHeaderⁱᵐᵖˡ) ↓u (gcBitsHeaderⁱᵐᵖˡ);
 }.
 
 Module gcBitsArena.
@@ -9605,7 +9917,9 @@ End gcBitsArena.
 
 Class gcBitsArena_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] gcBitsArena_type_repr  :: go.TypeRepr gcBitsArenaⁱᵐᵖˡ gcBitsArena.t;
+  #[global] gcBitsArena_type_repr  :: go.TypeReprUnderlying gcBitsArenaⁱᵐᵖˡ gcBitsArena.t;
+  #[global] gcBitsArena_underlying :: (gcBitsArena) <u (gcBitsArenaⁱᵐᵖˡ);
+  #[global] gcBitsArenaⁱᵐᵖˡ_underlying :: (gcBitsArenaⁱᵐᵖˡ) ↓u (gcBitsArenaⁱᵐᵖˡ);
 }.
 
 Module floaty.
@@ -9619,7 +9933,9 @@ End floaty.
 
 Class floaty_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] floaty_type_repr  :: go.TypeRepr floatyⁱᵐᵖˡ floaty.t;
+  #[global] floaty_type_repr  :: go.TypeReprUnderlying floatyⁱᵐᵖˡ floaty.t;
+  #[global] floaty_underlying :: (floaty) <u (floatyⁱᵐᵖˡ);
+  #[global] floatyⁱᵐᵖˡ_underlying :: (floatyⁱᵐᵖˡ) ↓u (floatyⁱᵐᵖˡ);
 }.
 
 Module chunkIdx.
@@ -9633,7 +9949,9 @@ End chunkIdx.
 
 Class chunkIdx_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] chunkIdx_type_repr  :: go.TypeRepr chunkIdxⁱᵐᵖˡ chunkIdx.t;
+  #[global] chunkIdx_type_repr  :: go.TypeReprUnderlying chunkIdxⁱᵐᵖˡ chunkIdx.t;
+  #[global] chunkIdx_underlying :: (chunkIdx) <u (chunkIdxⁱᵐᵖˡ);
+  #[global] chunkIdxⁱᵐᵖˡ_underlying :: (chunkIdxⁱᵐᵖˡ) ↓u (chunkIdxⁱᵐᵖˡ);
 }.
 
 Module pageAlloc.
@@ -9647,7 +9965,9 @@ End pageAlloc.
 
 Class pageAlloc_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] pageAlloc_type_repr  :: go.TypeRepr pageAllocⁱᵐᵖˡ pageAlloc.t;
+  #[global] pageAlloc_type_repr  :: go.TypeReprUnderlying pageAllocⁱᵐᵖˡ pageAlloc.t;
+  #[global] pageAlloc_underlying :: (pageAlloc) <u (pageAllocⁱᵐᵖˡ);
+  #[global] pageAllocⁱᵐᵖˡ_underlying :: (pageAllocⁱᵐᵖˡ) ↓u (pageAllocⁱᵐᵖˡ);
 }.
 
 Module pallocSum.
@@ -9661,7 +9981,9 @@ End pallocSum.
 
 Class pallocSum_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] pallocSum_type_repr  :: go.TypeRepr pallocSumⁱᵐᵖˡ pallocSum.t;
+  #[global] pallocSum_type_repr  :: go.TypeReprUnderlying pallocSumⁱᵐᵖˡ pallocSum.t;
+  #[global] pallocSum_underlying :: (pallocSum) <u (pallocSumⁱᵐᵖˡ);
+  #[global] pallocSumⁱᵐᵖˡ_underlying :: (pallocSumⁱᵐᵖˡ) ↓u (pallocSumⁱᵐᵖˡ);
 }.
 
 Module pageCache.
@@ -9675,7 +9997,9 @@ End pageCache.
 
 Class pageCache_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] pageCache_type_repr  :: go.TypeRepr pageCacheⁱᵐᵖˡ pageCache.t;
+  #[global] pageCache_type_repr  :: go.TypeReprUnderlying pageCacheⁱᵐᵖˡ pageCache.t;
+  #[global] pageCache_underlying :: (pageCache) <u (pageCacheⁱᵐᵖˡ);
+  #[global] pageCacheⁱᵐᵖˡ_underlying :: (pageCacheⁱᵐᵖˡ) ↓u (pageCacheⁱᵐᵖˡ);
 }.
 
 Module pageBits.
@@ -9689,7 +10013,9 @@ End pageBits.
 
 Class pageBits_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] pageBits_type_repr  :: go.TypeRepr pageBitsⁱᵐᵖˡ pageBits.t;
+  #[global] pageBits_type_repr  :: go.TypeReprUnderlying pageBitsⁱᵐᵖˡ pageBits.t;
+  #[global] pageBits_underlying :: (pageBits) <u (pageBitsⁱᵐᵖˡ);
+  #[global] pageBitsⁱᵐᵖˡ_underlying :: (pageBitsⁱᵐᵖˡ) ↓u (pageBitsⁱᵐᵖˡ);
 }.
 
 Module pallocBits.
@@ -9703,7 +10029,9 @@ End pallocBits.
 
 Class pallocBits_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] pallocBits_type_repr  :: go.TypeRepr pallocBitsⁱᵐᵖˡ pallocBits.t;
+  #[global] pallocBits_type_repr  :: go.TypeReprUnderlying pallocBitsⁱᵐᵖˡ pallocBits.t;
+  #[global] pallocBits_underlying :: (pallocBits) <u (pallocBitsⁱᵐᵖˡ);
+  #[global] pallocBitsⁱᵐᵖˡ_underlying :: (pallocBitsⁱᵐᵖˡ) ↓u (pallocBitsⁱᵐᵖˡ);
 }.
 
 Module pallocData.
@@ -9717,7 +10045,9 @@ End pallocData.
 
 Class pallocData_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] pallocData_type_repr  :: go.TypeRepr pallocDataⁱᵐᵖˡ pallocData.t;
+  #[global] pallocData_type_repr  :: go.TypeReprUnderlying pallocDataⁱᵐᵖˡ pallocData.t;
+  #[global] pallocData_underlying :: (pallocData) <u (pallocDataⁱᵐᵖˡ);
+  #[global] pallocDataⁱᵐᵖˡ_underlying :: (pallocDataⁱᵐᵖˡ) ↓u (pallocDataⁱᵐᵖˡ);
 }.
 
 Module bucketType.
@@ -9731,7 +10061,9 @@ End bucketType.
 
 Class bucketType_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] bucketType_type_repr  :: go.TypeRepr bucketTypeⁱᵐᵖˡ bucketType.t;
+  #[global] bucketType_type_repr  :: go.TypeReprUnderlying bucketTypeⁱᵐᵖˡ bucketType.t;
+  #[global] bucketType_underlying :: (bucketType) <u (bucketTypeⁱᵐᵖˡ);
+  #[global] bucketTypeⁱᵐᵖˡ_underlying :: (bucketTypeⁱᵐᵖˡ) ↓u (bucketTypeⁱᵐᵖˡ);
 }.
 
 Module bucket.
@@ -9745,7 +10077,9 @@ End bucket.
 
 Class bucket_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] bucket_type_repr  :: go.TypeRepr bucketⁱᵐᵖˡ bucket.t;
+  #[global] bucket_type_repr  :: go.TypeReprUnderlying bucketⁱᵐᵖˡ bucket.t;
+  #[global] bucket_underlying :: (bucket) <u (bucketⁱᵐᵖˡ);
+  #[global] bucketⁱᵐᵖˡ_underlying :: (bucketⁱᵐᵖˡ) ↓u (bucketⁱᵐᵖˡ);
 }.
 
 Module memRecord.
@@ -9759,7 +10093,9 @@ End memRecord.
 
 Class memRecord_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] memRecord_type_repr  :: go.TypeRepr memRecordⁱᵐᵖˡ memRecord.t;
+  #[global] memRecord_type_repr  :: go.TypeReprUnderlying memRecordⁱᵐᵖˡ memRecord.t;
+  #[global] memRecord_underlying :: (memRecord) <u (memRecordⁱᵐᵖˡ);
+  #[global] memRecordⁱᵐᵖˡ_underlying :: (memRecordⁱᵐᵖˡ) ↓u (memRecordⁱᵐᵖˡ);
 }.
 
 Module memRecordCycle.
@@ -9773,7 +10109,9 @@ End memRecordCycle.
 
 Class memRecordCycle_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] memRecordCycle_type_repr  :: go.TypeRepr memRecordCycleⁱᵐᵖˡ memRecordCycle.t;
+  #[global] memRecordCycle_type_repr  :: go.TypeReprUnderlying memRecordCycleⁱᵐᵖˡ memRecordCycle.t;
+  #[global] memRecordCycle_underlying :: (memRecordCycle) <u (memRecordCycleⁱᵐᵖˡ);
+  #[global] memRecordCycleⁱᵐᵖˡ_underlying :: (memRecordCycleⁱᵐᵖˡ) ↓u (memRecordCycleⁱᵐᵖˡ);
 }.
 
 Module blockRecord.
@@ -9787,7 +10125,9 @@ End blockRecord.
 
 Class blockRecord_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] blockRecord_type_repr  :: go.TypeRepr blockRecordⁱᵐᵖˡ blockRecord.t;
+  #[global] blockRecord_type_repr  :: go.TypeReprUnderlying blockRecordⁱᵐᵖˡ blockRecord.t;
+  #[global] blockRecord_underlying :: (blockRecord) <u (blockRecordⁱᵐᵖˡ);
+  #[global] blockRecordⁱᵐᵖˡ_underlying :: (blockRecordⁱᵐᵖˡ) ↓u (blockRecordⁱᵐᵖˡ);
 }.
 
 Module buckhashArray.
@@ -9801,7 +10141,9 @@ End buckhashArray.
 
 Class buckhashArray_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] buckhashArray_type_repr  :: go.TypeRepr buckhashArrayⁱᵐᵖˡ buckhashArray.t;
+  #[global] buckhashArray_type_repr  :: go.TypeReprUnderlying buckhashArrayⁱᵐᵖˡ buckhashArray.t;
+  #[global] buckhashArray_underlying :: (buckhashArray) <u (buckhashArrayⁱᵐᵖˡ);
+  #[global] buckhashArrayⁱᵐᵖˡ_underlying :: (buckhashArrayⁱᵐᵖˡ) ↓u (buckhashArrayⁱᵐᵖˡ);
 }.
 
 Module mProfCycleHolder.
@@ -9815,7 +10157,9 @@ End mProfCycleHolder.
 
 Class mProfCycleHolder_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] mProfCycleHolder_type_repr  :: go.TypeRepr mProfCycleHolderⁱᵐᵖˡ mProfCycleHolder.t;
+  #[global] mProfCycleHolder_type_repr  :: go.TypeReprUnderlying mProfCycleHolderⁱᵐᵖˡ mProfCycleHolder.t;
+  #[global] mProfCycleHolder_underlying :: (mProfCycleHolder) <u (mProfCycleHolderⁱᵐᵖˡ);
+  #[global] mProfCycleHolderⁱᵐᵖˡ_underlying :: (mProfCycleHolderⁱᵐᵖˡ) ↓u (mProfCycleHolderⁱᵐᵖˡ);
 }.
 
 Module mLockProfile.
@@ -9829,7 +10173,9 @@ End mLockProfile.
 
 Class mLockProfile_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] mLockProfile_type_repr  :: go.TypeRepr mLockProfileⁱᵐᵖˡ mLockProfile.t;
+  #[global] mLockProfile_type_repr  :: go.TypeReprUnderlying mLockProfileⁱᵐᵖˡ mLockProfile.t;
+  #[global] mLockProfile_underlying :: (mLockProfile) <u (mLockProfileⁱᵐᵖˡ);
+  #[global] mLockProfileⁱᵐᵖˡ_underlying :: (mLockProfileⁱᵐᵖˡ) ↓u (mLockProfileⁱᵐᵖˡ);
 }.
 
 Module StackRecord.
@@ -9843,7 +10189,9 @@ End StackRecord.
 
 Class StackRecord_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] StackRecord_type_repr  :: go.TypeRepr StackRecordⁱᵐᵖˡ StackRecord.t;
+  #[global] StackRecord_type_repr  :: go.TypeReprUnderlying StackRecordⁱᵐᵖˡ StackRecord.t;
+  #[global] StackRecord_underlying :: (StackRecord) <u (StackRecordⁱᵐᵖˡ);
+  #[global] StackRecordⁱᵐᵖˡ_underlying :: (StackRecordⁱᵐᵖˡ) ↓u (StackRecordⁱᵐᵖˡ);
 }.
 
 Module MemProfileRecord.
@@ -9857,7 +10205,9 @@ End MemProfileRecord.
 
 Class MemProfileRecord_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] MemProfileRecord_type_repr  :: go.TypeRepr MemProfileRecordⁱᵐᵖˡ MemProfileRecord.t;
+  #[global] MemProfileRecord_type_repr  :: go.TypeReprUnderlying MemProfileRecordⁱᵐᵖˡ MemProfileRecord.t;
+  #[global] MemProfileRecord_underlying :: (MemProfileRecord) <u (MemProfileRecordⁱᵐᵖˡ);
+  #[global] MemProfileRecordⁱᵐᵖˡ_underlying :: (MemProfileRecordⁱᵐᵖˡ) ↓u (MemProfileRecordⁱᵐᵖˡ);
 }.
 
 Module BlockProfileRecord.
@@ -9871,7 +10221,9 @@ End BlockProfileRecord.
 
 Class BlockProfileRecord_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] BlockProfileRecord_type_repr  :: go.TypeRepr BlockProfileRecordⁱᵐᵖˡ BlockProfileRecord.t;
+  #[global] BlockProfileRecord_type_repr  :: go.TypeReprUnderlying BlockProfileRecordⁱᵐᵖˡ BlockProfileRecord.t;
+  #[global] BlockProfileRecord_underlying :: (BlockProfileRecord) <u (BlockProfileRecordⁱᵐᵖˡ);
+  #[global] BlockProfileRecordⁱᵐᵖˡ_underlying :: (BlockProfileRecordⁱᵐᵖˡ) ↓u (BlockProfileRecordⁱᵐᵖˡ);
 }.
 
 Module goroutineProfileState.
@@ -9885,7 +10237,9 @@ End goroutineProfileState.
 
 Class goroutineProfileState_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] goroutineProfileState_type_repr  :: go.TypeRepr goroutineProfileStateⁱᵐᵖˡ goroutineProfileState.t;
+  #[global] goroutineProfileState_type_repr  :: go.TypeReprUnderlying goroutineProfileStateⁱᵐᵖˡ goroutineProfileState.t;
+  #[global] goroutineProfileState_underlying :: (goroutineProfileState) <u (goroutineProfileStateⁱᵐᵖˡ);
+  #[global] goroutineProfileStateⁱᵐᵖˡ_underlying :: (goroutineProfileStateⁱᵐᵖˡ) ↓u (goroutineProfileStateⁱᵐᵖˡ);
 }.
 
 Module goroutineProfileStateHolder.
@@ -9899,7 +10253,9 @@ End goroutineProfileStateHolder.
 
 Class goroutineProfileStateHolder_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] goroutineProfileStateHolder_type_repr  :: go.TypeRepr goroutineProfileStateHolderⁱᵐᵖˡ goroutineProfileStateHolder.t;
+  #[global] goroutineProfileStateHolder_type_repr  :: go.TypeReprUnderlying goroutineProfileStateHolderⁱᵐᵖˡ goroutineProfileStateHolder.t;
+  #[global] goroutineProfileStateHolder_underlying :: (goroutineProfileStateHolder) <u (goroutineProfileStateHolderⁱᵐᵖˡ);
+  #[global] goroutineProfileStateHolderⁱᵐᵖˡ_underlying :: (goroutineProfileStateHolderⁱᵐᵖˡ) ↓u (goroutineProfileStateHolderⁱᵐᵖˡ);
 }.
 
 Module addrRange.
@@ -9913,7 +10269,9 @@ End addrRange.
 
 Class addrRange_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] addrRange_type_repr  :: go.TypeRepr addrRangeⁱᵐᵖˡ addrRange.t;
+  #[global] addrRange_type_repr  :: go.TypeReprUnderlying addrRangeⁱᵐᵖˡ addrRange.t;
+  #[global] addrRange_underlying :: (addrRange) <u (addrRangeⁱᵐᵖˡ);
+  #[global] addrRangeⁱᵐᵖˡ_underlying :: (addrRangeⁱᵐᵖˡ) ↓u (addrRangeⁱᵐᵖˡ);
 }.
 
 Module offAddr.
@@ -9927,7 +10285,9 @@ End offAddr.
 
 Class offAddr_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] offAddr_type_repr  :: go.TypeRepr offAddrⁱᵐᵖˡ offAddr.t;
+  #[global] offAddr_type_repr  :: go.TypeReprUnderlying offAddrⁱᵐᵖˡ offAddr.t;
+  #[global] offAddr_underlying :: (offAddr) <u (offAddrⁱᵐᵖˡ);
+  #[global] offAddrⁱᵐᵖˡ_underlying :: (offAddrⁱᵐᵖˡ) ↓u (offAddrⁱᵐᵖˡ);
 }.
 
 Module atomicOffAddr.
@@ -9941,7 +10301,9 @@ End atomicOffAddr.
 
 Class atomicOffAddr_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] atomicOffAddr_type_repr  :: go.TypeRepr atomicOffAddrⁱᵐᵖˡ atomicOffAddr.t;
+  #[global] atomicOffAddr_type_repr  :: go.TypeReprUnderlying atomicOffAddrⁱᵐᵖˡ atomicOffAddr.t;
+  #[global] atomicOffAddr_underlying :: (atomicOffAddr) <u (atomicOffAddrⁱᵐᵖˡ);
+  #[global] atomicOffAddrⁱᵐᵖˡ_underlying :: (atomicOffAddrⁱᵐᵖˡ) ↓u (atomicOffAddrⁱᵐᵖˡ);
 }.
 
 Module addrRanges.
@@ -9955,7 +10317,9 @@ End addrRanges.
 
 Class addrRanges_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] addrRanges_type_repr  :: go.TypeRepr addrRangesⁱᵐᵖˡ addrRanges.t;
+  #[global] addrRanges_type_repr  :: go.TypeReprUnderlying addrRangesⁱᵐᵖˡ addrRanges.t;
+  #[global] addrRanges_underlying :: (addrRanges) <u (addrRangesⁱᵐᵖˡ);
+  #[global] addrRangesⁱᵐᵖˡ_underlying :: (addrRangesⁱᵐᵖˡ) ↓u (addrRangesⁱᵐᵖˡ);
 }.
 
 Module spanSet.
@@ -9969,7 +10333,9 @@ End spanSet.
 
 Class spanSet_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] spanSet_type_repr  :: go.TypeRepr spanSetⁱᵐᵖˡ spanSet.t;
+  #[global] spanSet_type_repr  :: go.TypeReprUnderlying spanSetⁱᵐᵖˡ spanSet.t;
+  #[global] spanSet_underlying :: (spanSet) <u (spanSetⁱᵐᵖˡ);
+  #[global] spanSetⁱᵐᵖˡ_underlying :: (spanSetⁱᵐᵖˡ) ↓u (spanSetⁱᵐᵖˡ);
 }.
 
 Module spanSetBlockHeader.
@@ -9983,7 +10349,9 @@ End spanSetBlockHeader.
 
 Class spanSetBlockHeader_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] spanSetBlockHeader_type_repr  :: go.TypeRepr spanSetBlockHeaderⁱᵐᵖˡ spanSetBlockHeader.t;
+  #[global] spanSetBlockHeader_type_repr  :: go.TypeReprUnderlying spanSetBlockHeaderⁱᵐᵖˡ spanSetBlockHeader.t;
+  #[global] spanSetBlockHeader_underlying :: (spanSetBlockHeader) <u (spanSetBlockHeaderⁱᵐᵖˡ);
+  #[global] spanSetBlockHeaderⁱᵐᵖˡ_underlying :: (spanSetBlockHeaderⁱᵐᵖˡ) ↓u (spanSetBlockHeaderⁱᵐᵖˡ);
 }.
 
 Module spanSetBlockHeader2.
@@ -9997,7 +10365,9 @@ End spanSetBlockHeader2.
 
 Class spanSetBlockHeader2_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] spanSetBlockHeader2_type_repr  :: go.TypeRepr spanSetBlockHeader2ⁱᵐᵖˡ spanSetBlockHeader2.t;
+  #[global] spanSetBlockHeader2_type_repr  :: go.TypeReprUnderlying spanSetBlockHeader2ⁱᵐᵖˡ spanSetBlockHeader2.t;
+  #[global] spanSetBlockHeader2_underlying :: (spanSetBlockHeader2) <u (spanSetBlockHeader2ⁱᵐᵖˡ);
+  #[global] spanSetBlockHeader2ⁱᵐᵖˡ_underlying :: (spanSetBlockHeader2ⁱᵐᵖˡ) ↓u (spanSetBlockHeader2ⁱᵐᵖˡ);
 }.
 
 Module spanSetBlock.
@@ -10011,7 +10381,9 @@ End spanSetBlock.
 
 Class spanSetBlock_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] spanSetBlock_type_repr  :: go.TypeRepr spanSetBlockⁱᵐᵖˡ spanSetBlock.t;
+  #[global] spanSetBlock_type_repr  :: go.TypeReprUnderlying spanSetBlockⁱᵐᵖˡ spanSetBlock.t;
+  #[global] spanSetBlock_underlying :: (spanSetBlock) <u (spanSetBlockⁱᵐᵖˡ);
+  #[global] spanSetBlockⁱᵐᵖˡ_underlying :: (spanSetBlockⁱᵐᵖˡ) ↓u (spanSetBlockⁱᵐᵖˡ);
 }.
 
 Module atomicSpanSetSpinePointer.
@@ -10025,7 +10397,9 @@ End atomicSpanSetSpinePointer.
 
 Class atomicSpanSetSpinePointer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] atomicSpanSetSpinePointer_type_repr  :: go.TypeRepr atomicSpanSetSpinePointerⁱᵐᵖˡ atomicSpanSetSpinePointer.t;
+  #[global] atomicSpanSetSpinePointer_type_repr  :: go.TypeReprUnderlying atomicSpanSetSpinePointerⁱᵐᵖˡ atomicSpanSetSpinePointer.t;
+  #[global] atomicSpanSetSpinePointer_underlying :: (atomicSpanSetSpinePointer) <u (atomicSpanSetSpinePointerⁱᵐᵖˡ);
+  #[global] atomicSpanSetSpinePointerⁱᵐᵖˡ_underlying :: (atomicSpanSetSpinePointerⁱᵐᵖˡ) ↓u (atomicSpanSetSpinePointerⁱᵐᵖˡ);
 }.
 
 Module spanSetSpinePointer.
@@ -10039,7 +10413,9 @@ End spanSetSpinePointer.
 
 Class spanSetSpinePointer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] spanSetSpinePointer_type_repr  :: go.TypeRepr spanSetSpinePointerⁱᵐᵖˡ spanSetSpinePointer.t;
+  #[global] spanSetSpinePointer_type_repr  :: go.TypeReprUnderlying spanSetSpinePointerⁱᵐᵖˡ spanSetSpinePointer.t;
+  #[global] spanSetSpinePointer_underlying :: (spanSetSpinePointer) <u (spanSetSpinePointerⁱᵐᵖˡ);
+  #[global] spanSetSpinePointerⁱᵐᵖˡ_underlying :: (spanSetSpinePointerⁱᵐᵖˡ) ↓u (spanSetSpinePointerⁱᵐᵖˡ);
 }.
 
 Module spanSetBlockAlloc.
@@ -10053,7 +10429,9 @@ End spanSetBlockAlloc.
 
 Class spanSetBlockAlloc_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] spanSetBlockAlloc_type_repr  :: go.TypeRepr spanSetBlockAllocⁱᵐᵖˡ spanSetBlockAlloc.t;
+  #[global] spanSetBlockAlloc_type_repr  :: go.TypeReprUnderlying spanSetBlockAllocⁱᵐᵖˡ spanSetBlockAlloc.t;
+  #[global] spanSetBlockAlloc_underlying :: (spanSetBlockAlloc) <u (spanSetBlockAllocⁱᵐᵖˡ);
+  #[global] spanSetBlockAllocⁱᵐᵖˡ_underlying :: (spanSetBlockAllocⁱᵐᵖˡ) ↓u (spanSetBlockAllocⁱᵐᵖˡ);
 }.
 
 Module headTailIndex.
@@ -10067,7 +10445,9 @@ End headTailIndex.
 
 Class headTailIndex_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] headTailIndex_type_repr  :: go.TypeRepr headTailIndexⁱᵐᵖˡ headTailIndex.t;
+  #[global] headTailIndex_type_repr  :: go.TypeReprUnderlying headTailIndexⁱᵐᵖˡ headTailIndex.t;
+  #[global] headTailIndex_underlying :: (headTailIndex) <u (headTailIndexⁱᵐᵖˡ);
+  #[global] headTailIndexⁱᵐᵖˡ_underlying :: (headTailIndexⁱᵐᵖˡ) ↓u (headTailIndexⁱᵐᵖˡ);
 }.
 
 Module atomicHeadTailIndex.
@@ -10081,7 +10461,9 @@ End atomicHeadTailIndex.
 
 Class atomicHeadTailIndex_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] atomicHeadTailIndex_type_repr  :: go.TypeRepr atomicHeadTailIndexⁱᵐᵖˡ atomicHeadTailIndex.t;
+  #[global] atomicHeadTailIndex_type_repr  :: go.TypeReprUnderlying atomicHeadTailIndexⁱᵐᵖˡ atomicHeadTailIndex.t;
+  #[global] atomicHeadTailIndex_underlying :: (atomicHeadTailIndex) <u (atomicHeadTailIndexⁱᵐᵖˡ);
+  #[global] atomicHeadTailIndexⁱᵐᵖˡ_underlying :: (atomicHeadTailIndexⁱᵐᵖˡ) ↓u (atomicHeadTailIndexⁱᵐᵖˡ);
 }.
 
 Module atomicMSpanPointer.
@@ -10095,7 +10477,9 @@ End atomicMSpanPointer.
 
 Class atomicMSpanPointer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] atomicMSpanPointer_type_repr  :: go.TypeRepr atomicMSpanPointerⁱᵐᵖˡ atomicMSpanPointer.t;
+  #[global] atomicMSpanPointer_type_repr  :: go.TypeReprUnderlying atomicMSpanPointerⁱᵐᵖˡ atomicMSpanPointer.t;
+  #[global] atomicMSpanPointer_underlying :: (atomicMSpanPointer) <u (atomicMSpanPointerⁱᵐᵖˡ);
+  #[global] atomicMSpanPointerⁱᵐᵖˡ_underlying :: (atomicMSpanPointerⁱᵐᵖˡ) ↓u (atomicMSpanPointerⁱᵐᵖˡ);
 }.
 
 Module mstats.
@@ -10109,7 +10493,9 @@ End mstats.
 
 Class mstats_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] mstats_type_repr  :: go.TypeRepr mstatsⁱᵐᵖˡ mstats.t;
+  #[global] mstats_type_repr  :: go.TypeReprUnderlying mstatsⁱᵐᵖˡ mstats.t;
+  #[global] mstats_underlying :: (mstats) <u (mstatsⁱᵐᵖˡ);
+  #[global] mstatsⁱᵐᵖˡ_underlying :: (mstatsⁱᵐᵖˡ) ↓u (mstatsⁱᵐᵖˡ);
 }.
 
 Module MemStats.
@@ -10123,7 +10509,9 @@ End MemStats.
 
 Class MemStats_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] MemStats_type_repr  :: go.TypeRepr MemStatsⁱᵐᵖˡ MemStats.t;
+  #[global] MemStats_type_repr  :: go.TypeReprUnderlying MemStatsⁱᵐᵖˡ MemStats.t;
+  #[global] MemStats_underlying :: (MemStats) <u (MemStatsⁱᵐᵖˡ);
+  #[global] MemStatsⁱᵐᵖˡ_underlying :: (MemStatsⁱᵐᵖˡ) ↓u (MemStatsⁱᵐᵖˡ);
 }.
 
 Module sysMemStat.
@@ -10137,7 +10525,9 @@ End sysMemStat.
 
 Class sysMemStat_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] sysMemStat_type_repr  :: go.TypeRepr sysMemStatⁱᵐᵖˡ sysMemStat.t;
+  #[global] sysMemStat_type_repr  :: go.TypeReprUnderlying sysMemStatⁱᵐᵖˡ sysMemStat.t;
+  #[global] sysMemStat_underlying :: (sysMemStat) <u (sysMemStatⁱᵐᵖˡ);
+  #[global] sysMemStatⁱᵐᵖˡ_underlying :: (sysMemStatⁱᵐᵖˡ) ↓u (sysMemStatⁱᵐᵖˡ);
 }.
 
 Module heapStatsDelta.
@@ -10151,7 +10541,9 @@ End heapStatsDelta.
 
 Class heapStatsDelta_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] heapStatsDelta_type_repr  :: go.TypeRepr heapStatsDeltaⁱᵐᵖˡ heapStatsDelta.t;
+  #[global] heapStatsDelta_type_repr  :: go.TypeReprUnderlying heapStatsDeltaⁱᵐᵖˡ heapStatsDelta.t;
+  #[global] heapStatsDelta_underlying :: (heapStatsDelta) <u (heapStatsDeltaⁱᵐᵖˡ);
+  #[global] heapStatsDeltaⁱᵐᵖˡ_underlying :: (heapStatsDeltaⁱᵐᵖˡ) ↓u (heapStatsDeltaⁱᵐᵖˡ);
 }.
 
 Module consistentHeapStats.
@@ -10165,7 +10557,9 @@ End consistentHeapStats.
 
 Class consistentHeapStats_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] consistentHeapStats_type_repr  :: go.TypeRepr consistentHeapStatsⁱᵐᵖˡ consistentHeapStats.t;
+  #[global] consistentHeapStats_type_repr  :: go.TypeReprUnderlying consistentHeapStatsⁱᵐᵖˡ consistentHeapStats.t;
+  #[global] consistentHeapStats_underlying :: (consistentHeapStats) <u (consistentHeapStatsⁱᵐᵖˡ);
+  #[global] consistentHeapStatsⁱᵐᵖˡ_underlying :: (consistentHeapStatsⁱᵐᵖˡ) ↓u (consistentHeapStatsⁱᵐᵖˡ);
 }.
 
 Module cpuStats.
@@ -10179,7 +10573,9 @@ End cpuStats.
 
 Class cpuStats_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] cpuStats_type_repr  :: go.TypeRepr cpuStatsⁱᵐᵖˡ cpuStats.t;
+  #[global] cpuStats_type_repr  :: go.TypeReprUnderlying cpuStatsⁱᵐᵖˡ cpuStats.t;
+  #[global] cpuStats_underlying :: (cpuStats) <u (cpuStatsⁱᵐᵖˡ);
+  #[global] cpuStatsⁱᵐᵖˡ_underlying :: (cpuStatsⁱᵐᵖˡ) ↓u (cpuStatsⁱᵐᵖˡ);
 }.
 
 Module wbBuf.
@@ -10193,7 +10589,9 @@ End wbBuf.
 
 Class wbBuf_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] wbBuf_type_repr  :: go.TypeRepr wbBufⁱᵐᵖˡ wbBuf.t;
+  #[global] wbBuf_type_repr  :: go.TypeReprUnderlying wbBufⁱᵐᵖˡ wbBuf.t;
+  #[global] wbBuf_underlying :: (wbBuf) <u (wbBufⁱᵐᵖˡ);
+  #[global] wbBufⁱᵐᵖˡ_underlying :: (wbBufⁱᵐᵖˡ) ↓u (wbBufⁱᵐᵖˡ);
 }.
 
 Module pollDesc.
@@ -10207,7 +10605,9 @@ End pollDesc.
 
 Class pollDesc_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] pollDesc_type_repr  :: go.TypeRepr pollDescⁱᵐᵖˡ pollDesc.t;
+  #[global] pollDesc_type_repr  :: go.TypeReprUnderlying pollDescⁱᵐᵖˡ pollDesc.t;
+  #[global] pollDesc_underlying :: (pollDesc) <u (pollDescⁱᵐᵖˡ);
+  #[global] pollDescⁱᵐᵖˡ_underlying :: (pollDescⁱᵐᵖˡ) ↓u (pollDescⁱᵐᵖˡ);
 }.
 
 Module pollInfo.
@@ -10221,7 +10621,9 @@ End pollInfo.
 
 Class pollInfo_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] pollInfo_type_repr  :: go.TypeRepr pollInfoⁱᵐᵖˡ pollInfo.t;
+  #[global] pollInfo_type_repr  :: go.TypeReprUnderlying pollInfoⁱᵐᵖˡ pollInfo.t;
+  #[global] pollInfo_underlying :: (pollInfo) <u (pollInfoⁱᵐᵖˡ);
+  #[global] pollInfoⁱᵐᵖˡ_underlying :: (pollInfoⁱᵐᵖˡ) ↓u (pollInfoⁱᵐᵖˡ);
 }.
 
 Module pollCache.
@@ -10235,7 +10637,9 @@ End pollCache.
 
 Class pollCache_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] pollCache_type_repr  :: go.TypeRepr pollCacheⁱᵐᵖˡ pollCache.t;
+  #[global] pollCache_type_repr  :: go.TypeReprUnderlying pollCacheⁱᵐᵖˡ pollCache.t;
+  #[global] pollCache_underlying :: (pollCache) <u (pollCacheⁱᵐᵖˡ);
+  #[global] pollCacheⁱᵐᵖˡ_underlying :: (pollCacheⁱᵐᵖˡ) ↓u (pollCacheⁱᵐᵖˡ);
 }.
 
 Module winlibcall.
@@ -10249,7 +10653,9 @@ End winlibcall.
 
 Class winlibcall_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] winlibcall_type_repr  :: go.TypeRepr winlibcallⁱᵐᵖˡ winlibcall.t;
+  #[global] winlibcall_type_repr  :: go.TypeReprUnderlying winlibcallⁱᵐᵖˡ winlibcall.t;
+  #[global] winlibcall_underlying :: (winlibcall) <u (winlibcallⁱᵐᵖˡ);
+  #[global] winlibcallⁱᵐᵖˡ_underlying :: (winlibcallⁱᵐᵖˡ) ↓u (winlibcallⁱᵐᵖˡ);
 }.
 
 Module note.
@@ -10263,7 +10669,9 @@ End note.
 
 Class note_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] note_type_repr  :: go.TypeRepr noteⁱᵐᵖˡ note.t;
+  #[global] note_type_repr  :: go.TypeReprUnderlying noteⁱᵐᵖˡ note.t;
+  #[global] note_underlying :: (note) <u (noteⁱᵐᵖˡ);
+  #[global] noteⁱᵐᵖˡ_underlying :: (noteⁱᵐᵖˡ) ↓u (noteⁱᵐᵖˡ);
 }.
 
 Module mOS.
@@ -10277,7 +10685,9 @@ End mOS.
 
 Class mOS_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] mOS_type_repr  :: go.TypeRepr mOSⁱᵐᵖˡ mOS.t;
+  #[global] mOS_type_repr  :: go.TypeReprUnderlying mOSⁱᵐᵖˡ mOS.t;
+  #[global] mOS_underlying :: (mOS) <u (mOSⁱᵐᵖˡ);
+  #[global] mOSⁱᵐᵖˡ_underlying :: (mOSⁱᵐᵖˡ) ↓u (mOSⁱᵐᵖˡ);
 }.
 
 Module perThreadSyscallArgs.
@@ -10291,7 +10701,9 @@ End perThreadSyscallArgs.
 
 Class perThreadSyscallArgs_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] perThreadSyscallArgs_type_repr  :: go.TypeRepr perThreadSyscallArgsⁱᵐᵖˡ perThreadSyscallArgs.t;
+  #[global] perThreadSyscallArgs_type_repr  :: go.TypeReprUnderlying perThreadSyscallArgsⁱᵐᵖˡ perThreadSyscallArgs.t;
+  #[global] perThreadSyscallArgs_underlying :: (perThreadSyscallArgs) <u (perThreadSyscallArgsⁱᵐᵖˡ);
+  #[global] perThreadSyscallArgsⁱᵐᵖˡ_underlying :: (perThreadSyscallArgsⁱᵐᵖˡ) ↓u (perThreadSyscallArgsⁱᵐᵖˡ);
 }.
 
 Module sigset.
@@ -10305,7 +10717,9 @@ End sigset.
 
 Class sigset_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] sigset_type_repr  :: go.TypeRepr sigsetⁱᵐᵖˡ sigset.t;
+  #[global] sigset_type_repr  :: go.TypeReprUnderlying sigsetⁱᵐᵖˡ sigset.t;
+  #[global] sigset_underlying :: (sigset) <u (sigsetⁱᵐᵖˡ);
+  #[global] sigsetⁱᵐᵖˡ_underlying :: (sigsetⁱᵐᵖˡ) ↓u (sigsetⁱᵐᵖˡ);
 }.
 
 Module throwType.
@@ -10319,7 +10733,9 @@ End throwType.
 
 Class throwType_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] throwType_type_repr  :: go.TypeRepr throwTypeⁱᵐᵖˡ throwType.t;
+  #[global] throwType_type_repr  :: go.TypeReprUnderlying throwTypeⁱᵐᵖˡ throwType.t;
+  #[global] throwType_underlying :: (throwType) <u (throwTypeⁱᵐᵖˡ);
+  #[global] throwTypeⁱᵐᵖˡ_underlying :: (throwTypeⁱᵐᵖˡ) ↓u (throwTypeⁱᵐᵖˡ);
 }.
 
 Module PanicNilError.
@@ -10333,7 +10749,9 @@ End PanicNilError.
 
 Class PanicNilError_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] PanicNilError_type_repr  :: go.TypeRepr PanicNilErrorⁱᵐᵖˡ PanicNilError.t;
+  #[global] PanicNilError_type_repr  :: go.TypeReprUnderlying PanicNilErrorⁱᵐᵖˡ PanicNilError.t;
+  #[global] PanicNilError_underlying :: (PanicNilError) <u (PanicNilErrorⁱᵐᵖˡ);
+  #[global] PanicNilErrorⁱᵐᵖˡ_underlying :: (PanicNilErrorⁱᵐᵖˡ) ↓u (PanicNilErrorⁱᵐᵖˡ);
 }.
 
 Module Pinner.
@@ -10347,7 +10765,9 @@ End Pinner.
 
 Class Pinner_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Pinner_type_repr  :: go.TypeRepr Pinnerⁱᵐᵖˡ Pinner.t;
+  #[global] Pinner_type_repr  :: go.TypeReprUnderlying Pinnerⁱᵐᵖˡ Pinner.t;
+  #[global] Pinner_underlying :: (Pinner) <u (Pinnerⁱᵐᵖˡ);
+  #[global] Pinnerⁱᵐᵖˡ_underlying :: (Pinnerⁱᵐᵖˡ) ↓u (Pinnerⁱᵐᵖˡ);
 }.
 
 Module pinner.
@@ -10361,7 +10781,9 @@ End pinner.
 
 Class pinner_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] pinner_type_repr  :: go.TypeRepr pinnerⁱᵐᵖˡ pinner.t;
+  #[global] pinner_type_repr  :: go.TypeReprUnderlying pinnerⁱᵐᵖˡ pinner.t;
+  #[global] pinner_underlying :: (pinner) <u (pinnerⁱᵐᵖˡ);
+  #[global] pinnerⁱᵐᵖˡ_underlying :: (pinnerⁱᵐᵖˡ) ↓u (pinnerⁱᵐᵖˡ);
 }.
 
 Module pinState.
@@ -10375,7 +10797,9 @@ End pinState.
 
 Class pinState_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] pinState_type_repr  :: go.TypeRepr pinStateⁱᵐᵖˡ pinState.t;
+  #[global] pinState_type_repr  :: go.TypeReprUnderlying pinStateⁱᵐᵖˡ pinState.t;
+  #[global] pinState_underlying :: (pinState) <u (pinStateⁱᵐᵖˡ);
+  #[global] pinStateⁱᵐᵖˡ_underlying :: (pinStateⁱᵐᵖˡ) ↓u (pinStateⁱᵐᵖˡ);
 }.
 
 Module pinnerBits.
@@ -10389,7 +10813,9 @@ End pinnerBits.
 
 Class pinnerBits_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] pinnerBits_type_repr  :: go.TypeRepr pinnerBitsⁱᵐᵖˡ pinnerBits.t;
+  #[global] pinnerBits_type_repr  :: go.TypeReprUnderlying pinnerBitsⁱᵐᵖˡ pinnerBits.t;
+  #[global] pinnerBits_underlying :: (pinnerBits) <u (pinnerBitsⁱᵐᵖˡ);
+  #[global] pinnerBitsⁱᵐᵖˡ_underlying :: (pinnerBitsⁱᵐᵖˡ) ↓u (pinnerBitsⁱᵐᵖˡ);
 }.
 
 Module ptabEntry.
@@ -10403,7 +10829,9 @@ End ptabEntry.
 
 Class ptabEntry_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] ptabEntry_type_repr  :: go.TypeRepr ptabEntryⁱᵐᵖˡ ptabEntry.t;
+  #[global] ptabEntry_type_repr  :: go.TypeReprUnderlying ptabEntryⁱᵐᵖˡ ptabEntry.t;
+  #[global] ptabEntry_underlying :: (ptabEntry) <u (ptabEntryⁱᵐᵖˡ);
+  #[global] ptabEntryⁱᵐᵖˡ_underlying :: (ptabEntryⁱᵐᵖˡ) ↓u (ptabEntryⁱᵐᵖˡ);
 }.
 
 Module suspendGState.
@@ -10417,7 +10845,9 @@ End suspendGState.
 
 Class suspendGState_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] suspendGState_type_repr  :: go.TypeRepr suspendGStateⁱᵐᵖˡ suspendGState.t;
+  #[global] suspendGState_type_repr  :: go.TypeReprUnderlying suspendGStateⁱᵐᵖˡ suspendGState.t;
+  #[global] suspendGState_underlying :: (suspendGState) <u (suspendGStateⁱᵐᵖˡ);
+  #[global] suspendGStateⁱᵐᵖˡ_underlying :: (suspendGStateⁱᵐᵖˡ) ↓u (suspendGStateⁱᵐᵖˡ);
 }.
 
 Module hex.
@@ -10431,7 +10861,9 @@ End hex.
 
 Class hex_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] hex_type_repr  :: go.TypeRepr hexⁱᵐᵖˡ hex.t;
+  #[global] hex_type_repr  :: go.TypeReprUnderlying hexⁱᵐᵖˡ hex.t;
+  #[global] hex_underlying :: (hex) <u (hexⁱᵐᵖˡ);
+  #[global] hexⁱᵐᵖˡ_underlying :: (hexⁱᵐᵖˡ) ↓u (hexⁱᵐᵖˡ);
 }.
 
 Module stwReason.
@@ -10445,7 +10877,9 @@ End stwReason.
 
 Class stwReason_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] stwReason_type_repr  :: go.TypeRepr stwReasonⁱᵐᵖˡ stwReason.t;
+  #[global] stwReason_type_repr  :: go.TypeReprUnderlying stwReasonⁱᵐᵖˡ stwReason.t;
+  #[global] stwReason_underlying :: (stwReason) <u (stwReasonⁱᵐᵖˡ);
+  #[global] stwReasonⁱᵐᵖˡ_underlying :: (stwReasonⁱᵐᵖˡ) ↓u (stwReasonⁱᵐᵖˡ);
 }.
 
 Module worldStop.
@@ -10459,7 +10893,9 @@ End worldStop.
 
 Class worldStop_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] worldStop_type_repr  :: go.TypeRepr worldStopⁱᵐᵖˡ worldStop.t;
+  #[global] worldStop_type_repr  :: go.TypeReprUnderlying worldStopⁱᵐᵖˡ worldStop.t;
+  #[global] worldStop_underlying :: (worldStop) <u (worldStopⁱᵐᵖˡ);
+  #[global] worldStopⁱᵐᵖˡ_underlying :: (worldStopⁱᵐᵖˡ) ↓u (worldStopⁱᵐᵖˡ);
 }.
 
 Module cgothreadstart.
@@ -10473,7 +10909,9 @@ End cgothreadstart.
 
 Class cgothreadstart_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] cgothreadstart_type_repr  :: go.TypeRepr cgothreadstartⁱᵐᵖˡ cgothreadstart.t;
+  #[global] cgothreadstart_type_repr  :: go.TypeReprUnderlying cgothreadstartⁱᵐᵖˡ cgothreadstart.t;
+  #[global] cgothreadstart_underlying :: (cgothreadstart) <u (cgothreadstartⁱᵐᵖˡ);
+  #[global] cgothreadstartⁱᵐᵖˡ_underlying :: (cgothreadstartⁱᵐᵖˡ) ↓u (cgothreadstartⁱᵐᵖˡ);
 }.
 
 Module sysmontick.
@@ -10487,7 +10925,9 @@ End sysmontick.
 
 Class sysmontick_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] sysmontick_type_repr  :: go.TypeRepr sysmontickⁱᵐᵖˡ sysmontick.t;
+  #[global] sysmontick_type_repr  :: go.TypeReprUnderlying sysmontickⁱᵐᵖˡ sysmontick.t;
+  #[global] sysmontick_underlying :: (sysmontick) <u (sysmontickⁱᵐᵖˡ);
+  #[global] sysmontickⁱᵐᵖˡ_underlying :: (sysmontickⁱᵐᵖˡ) ↓u (sysmontickⁱᵐᵖˡ);
 }.
 
 Module updateMaxProcsGState.
@@ -10501,7 +10941,9 @@ End updateMaxProcsGState.
 
 Class updateMaxProcsGState_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] updateMaxProcsGState_type_repr  :: go.TypeRepr updateMaxProcsGStateⁱᵐᵖˡ updateMaxProcsGState.t;
+  #[global] updateMaxProcsGState_type_repr  :: go.TypeReprUnderlying updateMaxProcsGStateⁱᵐᵖˡ updateMaxProcsGState.t;
+  #[global] updateMaxProcsGState_underlying :: (updateMaxProcsGState) <u (updateMaxProcsGStateⁱᵐᵖˡ);
+  #[global] updateMaxProcsGStateⁱᵐᵖˡ_underlying :: (updateMaxProcsGStateⁱᵐᵖˡ) ↓u (updateMaxProcsGStateⁱᵐᵖˡ);
 }.
 
 Module pMask.
@@ -10515,7 +10957,9 @@ End pMask.
 
 Class pMask_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] pMask_type_repr  :: go.TypeRepr pMaskⁱᵐᵖˡ pMask.t;
+  #[global] pMask_type_repr  :: go.TypeReprUnderlying pMaskⁱᵐᵖˡ pMask.t;
+  #[global] pMask_underlying :: (pMask) <u (pMaskⁱᵐᵖˡ);
+  #[global] pMaskⁱᵐᵖˡ_underlying :: (pMaskⁱᵐᵖˡ) ↓u (pMaskⁱᵐᵖˡ);
 }.
 
 Module gQueue.
@@ -10529,7 +10973,9 @@ End gQueue.
 
 Class gQueue_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] gQueue_type_repr  :: go.TypeRepr gQueueⁱᵐᵖˡ gQueue.t;
+  #[global] gQueue_type_repr  :: go.TypeReprUnderlying gQueueⁱᵐᵖˡ gQueue.t;
+  #[global] gQueue_underlying :: (gQueue) <u (gQueueⁱᵐᵖˡ);
+  #[global] gQueueⁱᵐᵖˡ_underlying :: (gQueueⁱᵐᵖˡ) ↓u (gQueueⁱᵐᵖˡ);
 }.
 
 Module gList.
@@ -10543,7 +10989,9 @@ End gList.
 
 Class gList_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] gList_type_repr  :: go.TypeRepr gListⁱᵐᵖˡ gList.t;
+  #[global] gList_type_repr  :: go.TypeReprUnderlying gListⁱᵐᵖˡ gList.t;
+  #[global] gList_underlying :: (gList) <u (gListⁱᵐᵖˡ);
+  #[global] gListⁱᵐᵖˡ_underlying :: (gListⁱᵐᵖˡ) ↓u (gListⁱᵐᵖˡ);
 }.
 
 Module randomOrder.
@@ -10557,7 +11005,9 @@ End randomOrder.
 
 Class randomOrder_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] randomOrder_type_repr  :: go.TypeRepr randomOrderⁱᵐᵖˡ randomOrder.t;
+  #[global] randomOrder_type_repr  :: go.TypeReprUnderlying randomOrderⁱᵐᵖˡ randomOrder.t;
+  #[global] randomOrder_underlying :: (randomOrder) <u (randomOrderⁱᵐᵖˡ);
+  #[global] randomOrderⁱᵐᵖˡ_underlying :: (randomOrderⁱᵐᵖˡ) ↓u (randomOrderⁱᵐᵖˡ);
 }.
 
 Module randomEnum.
@@ -10571,7 +11021,9 @@ End randomEnum.
 
 Class randomEnum_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] randomEnum_type_repr  :: go.TypeRepr randomEnumⁱᵐᵖˡ randomEnum.t;
+  #[global] randomEnum_type_repr  :: go.TypeReprUnderlying randomEnumⁱᵐᵖˡ randomEnum.t;
+  #[global] randomEnum_underlying :: (randomEnum) <u (randomEnumⁱᵐᵖˡ);
+  #[global] randomEnumⁱᵐᵖˡ_underlying :: (randomEnumⁱᵐᵖˡ) ↓u (randomEnumⁱᵐᵖˡ);
 }.
 
 Module initTask.
@@ -10585,7 +11037,9 @@ End initTask.
 
 Class initTask_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] initTask_type_repr  :: go.TypeRepr initTaskⁱᵐᵖˡ initTask.t;
+  #[global] initTask_type_repr  :: go.TypeReprUnderlying initTaskⁱᵐᵖˡ initTask.t;
+  #[global] initTask_underlying :: (initTask) <u (initTaskⁱᵐᵖˡ);
+  #[global] initTaskⁱᵐᵖˡ_underlying :: (initTaskⁱᵐᵖˡ) ↓u (initTaskⁱᵐᵖˡ);
 }.
 
 Module tracestat.
@@ -10599,7 +11053,9 @@ End tracestat.
 
 Class tracestat_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] tracestat_type_repr  :: go.TypeRepr tracestatⁱᵐᵖˡ tracestat.t;
+  #[global] tracestat_type_repr  :: go.TypeReprUnderlying tracestatⁱᵐᵖˡ tracestat.t;
+  #[global] tracestat_underlying :: (tracestat) <u (tracestatⁱᵐᵖˡ);
+  #[global] tracestatⁱᵐᵖˡ_underlying :: (tracestatⁱᵐᵖˡ) ↓u (tracestatⁱᵐᵖˡ);
 }.
 
 Module profBuf.
@@ -10613,7 +11069,9 @@ End profBuf.
 
 Class profBuf_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] profBuf_type_repr  :: go.TypeRepr profBufⁱᵐᵖˡ profBuf.t;
+  #[global] profBuf_type_repr  :: go.TypeReprUnderlying profBufⁱᵐᵖˡ profBuf.t;
+  #[global] profBuf_underlying :: (profBuf) <u (profBufⁱᵐᵖˡ);
+  #[global] profBufⁱᵐᵖˡ_underlying :: (profBufⁱᵐᵖˡ) ↓u (profBufⁱᵐᵖˡ);
 }.
 
 Module profAtomic.
@@ -10627,7 +11085,9 @@ End profAtomic.
 
 Class profAtomic_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] profAtomic_type_repr  :: go.TypeRepr profAtomicⁱᵐᵖˡ profAtomic.t;
+  #[global] profAtomic_type_repr  :: go.TypeReprUnderlying profAtomicⁱᵐᵖˡ profAtomic.t;
+  #[global] profAtomic_underlying :: (profAtomic) <u (profAtomicⁱᵐᵖˡ);
+  #[global] profAtomicⁱᵐᵖˡ_underlying :: (profAtomicⁱᵐᵖˡ) ↓u (profAtomicⁱᵐᵖˡ);
 }.
 
 Module profIndex.
@@ -10641,7 +11101,9 @@ End profIndex.
 
 Class profIndex_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] profIndex_type_repr  :: go.TypeRepr profIndexⁱᵐᵖˡ profIndex.t;
+  #[global] profIndex_type_repr  :: go.TypeReprUnderlying profIndexⁱᵐᵖˡ profIndex.t;
+  #[global] profIndex_underlying :: (profIndex) <u (profIndexⁱᵐᵖˡ);
+  #[global] profIndexⁱᵐᵖˡ_underlying :: (profIndexⁱᵐᵖˡ) ↓u (profIndexⁱᵐᵖˡ);
 }.
 
 Module profBufReadMode.
@@ -10655,7 +11117,9 @@ End profBufReadMode.
 
 Class profBufReadMode_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] profBufReadMode_type_repr  :: go.TypeRepr profBufReadModeⁱᵐᵖˡ profBufReadMode.t;
+  #[global] profBufReadMode_type_repr  :: go.TypeReprUnderlying profBufReadModeⁱᵐᵖˡ profBufReadMode.t;
+  #[global] profBufReadMode_underlying :: (profBufReadMode) <u (profBufReadModeⁱᵐᵖˡ);
+  #[global] profBufReadModeⁱᵐᵖˡ_underlying :: (profBufReadModeⁱᵐᵖˡ) ↓u (profBufReadModeⁱᵐᵖˡ);
 }.
 
 Module ticksType.
@@ -10669,7 +11133,9 @@ End ticksType.
 
 Class ticksType_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] ticksType_type_repr  :: go.TypeRepr ticksTypeⁱᵐᵖˡ ticksType.t;
+  #[global] ticksType_type_repr  :: go.TypeReprUnderlying ticksTypeⁱᵐᵖˡ ticksType.t;
+  #[global] ticksType_underlying :: (ticksType) <u (ticksTypeⁱᵐᵖˡ);
+  #[global] ticksTypeⁱᵐᵖˡ_underlying :: (ticksTypeⁱᵐᵖˡ) ↓u (ticksTypeⁱᵐᵖˡ);
 }.
 
 Module godebugInc.
@@ -10683,7 +11149,9 @@ End godebugInc.
 
 Class godebugInc_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] godebugInc_type_repr  :: go.TypeRepr godebugIncⁱᵐᵖˡ godebugInc.t;
+  #[global] godebugInc_type_repr  :: go.TypeReprUnderlying godebugIncⁱᵐᵖˡ godebugInc.t;
+  #[global] godebugInc_underlying :: (godebugInc) <u (godebugIncⁱᵐᵖˡ);
+  #[global] godebugIncⁱᵐᵖˡ_underlying :: (godebugIncⁱᵐᵖˡ) ↓u (godebugIncⁱᵐᵖˡ);
 }.
 
 Module dbgVar.
@@ -10697,7 +11165,9 @@ End dbgVar.
 
 Class dbgVar_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] dbgVar_type_repr  :: go.TypeRepr dbgVarⁱᵐᵖˡ dbgVar.t;
+  #[global] dbgVar_type_repr  :: go.TypeReprUnderlying dbgVarⁱᵐᵖˡ dbgVar.t;
+  #[global] dbgVar_underlying :: (dbgVar) <u (dbgVarⁱᵐᵖˡ);
+  #[global] dbgVarⁱᵐᵖˡ_underlying :: (dbgVarⁱᵐᵖˡ) ↓u (dbgVarⁱᵐᵖˡ);
 }.
 
 Module mutex.
@@ -10711,7 +11181,9 @@ End mutex.
 
 Class mutex_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] mutex_type_repr  :: go.TypeRepr mutexⁱᵐᵖˡ mutex.t;
+  #[global] mutex_type_repr  :: go.TypeReprUnderlying mutexⁱᵐᵖˡ mutex.t;
+  #[global] mutex_underlying :: (mutex) <u (mutexⁱᵐᵖˡ);
+  #[global] mutexⁱᵐᵖˡ_underlying :: (mutexⁱᵐᵖˡ) ↓u (mutexⁱᵐᵖˡ);
 }.
 
 Module funcval.
@@ -10725,7 +11197,9 @@ End funcval.
 
 Class funcval_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] funcval_type_repr  :: go.TypeRepr funcvalⁱᵐᵖˡ funcval.t;
+  #[global] funcval_type_repr  :: go.TypeReprUnderlying funcvalⁱᵐᵖˡ funcval.t;
+  #[global] funcval_underlying :: (funcval) <u (funcvalⁱᵐᵖˡ);
+  #[global] funcvalⁱᵐᵖˡ_underlying :: (funcvalⁱᵐᵖˡ) ↓u (funcvalⁱᵐᵖˡ);
 }.
 
 Module iface.
@@ -10739,7 +11213,9 @@ End iface.
 
 Class iface_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] iface_type_repr  :: go.TypeRepr ifaceⁱᵐᵖˡ iface.t;
+  #[global] iface_type_repr  :: go.TypeReprUnderlying ifaceⁱᵐᵖˡ iface.t;
+  #[global] iface_underlying :: (iface) <u (ifaceⁱᵐᵖˡ);
+  #[global] ifaceⁱᵐᵖˡ_underlying :: (ifaceⁱᵐᵖˡ) ↓u (ifaceⁱᵐᵖˡ);
 }.
 
 Module eface.
@@ -10753,7 +11229,9 @@ End eface.
 
 Class eface_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] eface_type_repr  :: go.TypeRepr efaceⁱᵐᵖˡ eface.t;
+  #[global] eface_type_repr  :: go.TypeReprUnderlying efaceⁱᵐᵖˡ eface.t;
+  #[global] eface_underlying :: (eface) <u (efaceⁱᵐᵖˡ);
+  #[global] efaceⁱᵐᵖˡ_underlying :: (efaceⁱᵐᵖˡ) ↓u (efaceⁱᵐᵖˡ);
 }.
 
 Module guintptr.
@@ -10767,7 +11245,9 @@ End guintptr.
 
 Class guintptr_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] guintptr_type_repr  :: go.TypeRepr guintptrⁱᵐᵖˡ guintptr.t;
+  #[global] guintptr_type_repr  :: go.TypeReprUnderlying guintptrⁱᵐᵖˡ guintptr.t;
+  #[global] guintptr_underlying :: (guintptr) <u (guintptrⁱᵐᵖˡ);
+  #[global] guintptrⁱᵐᵖˡ_underlying :: (guintptrⁱᵐᵖˡ) ↓u (guintptrⁱᵐᵖˡ);
 }.
 
 Module puintptr.
@@ -10781,7 +11261,9 @@ End puintptr.
 
 Class puintptr_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] puintptr_type_repr  :: go.TypeRepr puintptrⁱᵐᵖˡ puintptr.t;
+  #[global] puintptr_type_repr  :: go.TypeReprUnderlying puintptrⁱᵐᵖˡ puintptr.t;
+  #[global] puintptr_underlying :: (puintptr) <u (puintptrⁱᵐᵖˡ);
+  #[global] puintptrⁱᵐᵖˡ_underlying :: (puintptrⁱᵐᵖˡ) ↓u (puintptrⁱᵐᵖˡ);
 }.
 
 Module muintptr.
@@ -10795,7 +11277,9 @@ End muintptr.
 
 Class muintptr_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] muintptr_type_repr  :: go.TypeRepr muintptrⁱᵐᵖˡ muintptr.t;
+  #[global] muintptr_type_repr  :: go.TypeReprUnderlying muintptrⁱᵐᵖˡ muintptr.t;
+  #[global] muintptr_underlying :: (muintptr) <u (muintptrⁱᵐᵖˡ);
+  #[global] muintptrⁱᵐᵖˡ_underlying :: (muintptrⁱᵐᵖˡ) ↓u (muintptrⁱᵐᵖˡ);
 }.
 
 Module gobuf.
@@ -10809,7 +11293,9 @@ End gobuf.
 
 Class gobuf_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] gobuf_type_repr  :: go.TypeRepr gobufⁱᵐᵖˡ gobuf.t;
+  #[global] gobuf_type_repr  :: go.TypeReprUnderlying gobufⁱᵐᵖˡ gobuf.t;
+  #[global] gobuf_underlying :: (gobuf) <u (gobufⁱᵐᵖˡ);
+  #[global] gobufⁱᵐᵖˡ_underlying :: (gobufⁱᵐᵖˡ) ↓u (gobufⁱᵐᵖˡ);
 }.
 
 Module sudog.
@@ -10823,7 +11309,9 @@ End sudog.
 
 Class sudog_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] sudog_type_repr  :: go.TypeRepr sudogⁱᵐᵖˡ sudog.t;
+  #[global] sudog_type_repr  :: go.TypeReprUnderlying sudogⁱᵐᵖˡ sudog.t;
+  #[global] sudog_underlying :: (sudog) <u (sudogⁱᵐᵖˡ);
+  #[global] sudogⁱᵐᵖˡ_underlying :: (sudogⁱᵐᵖˡ) ↓u (sudogⁱᵐᵖˡ);
 }.
 
 Module libcall.
@@ -10837,7 +11325,9 @@ End libcall.
 
 Class libcall_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] libcall_type_repr  :: go.TypeRepr libcallⁱᵐᵖˡ libcall.t;
+  #[global] libcall_type_repr  :: go.TypeReprUnderlying libcallⁱᵐᵖˡ libcall.t;
+  #[global] libcall_underlying :: (libcall) <u (libcallⁱᵐᵖˡ);
+  #[global] libcallⁱᵐᵖˡ_underlying :: (libcallⁱᵐᵖˡ) ↓u (libcallⁱᵐᵖˡ);
 }.
 
 Module stack.
@@ -10851,7 +11341,9 @@ End stack.
 
 Class stack_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] stack_type_repr  :: go.TypeRepr stackⁱᵐᵖˡ stack.t;
+  #[global] stack_type_repr  :: go.TypeReprUnderlying stackⁱᵐᵖˡ stack.t;
+  #[global] stack_underlying :: (stack) <u (stackⁱᵐᵖˡ);
+  #[global] stackⁱᵐᵖˡ_underlying :: (stackⁱᵐᵖˡ) ↓u (stackⁱᵐᵖˡ);
 }.
 
 Module heldLockInfo.
@@ -10865,7 +11357,9 @@ End heldLockInfo.
 
 Class heldLockInfo_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] heldLockInfo_type_repr  :: go.TypeRepr heldLockInfoⁱᵐᵖˡ heldLockInfo.t;
+  #[global] heldLockInfo_type_repr  :: go.TypeReprUnderlying heldLockInfoⁱᵐᵖˡ heldLockInfo.t;
+  #[global] heldLockInfo_underlying :: (heldLockInfo) <u (heldLockInfoⁱᵐᵖˡ);
+  #[global] heldLockInfoⁱᵐᵖˡ_underlying :: (heldLockInfoⁱᵐᵖˡ) ↓u (heldLockInfoⁱᵐᵖˡ);
 }.
 
 Module g.
@@ -10879,7 +11373,9 @@ End g.
 
 Class g_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] g_type_repr  :: go.TypeRepr gⁱᵐᵖˡ g.t;
+  #[global] g_type_repr  :: go.TypeReprUnderlying gⁱᵐᵖˡ g.t;
+  #[global] g_underlying :: (g) <u (gⁱᵐᵖˡ);
+  #[global] gⁱᵐᵖˡ_underlying :: (gⁱᵐᵖˡ) ↓u (gⁱᵐᵖˡ);
 }.
 
 Module m.
@@ -10893,7 +11389,9 @@ End m.
 
 Class m_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] m_type_repr  :: go.TypeRepr mⁱᵐᵖˡ m.t;
+  #[global] m_type_repr  :: go.TypeReprUnderlying mⁱᵐᵖˡ m.t;
+  #[global] m_underlying :: (m) <u (mⁱᵐᵖˡ);
+  #[global] mⁱᵐᵖˡ_underlying :: (mⁱᵐᵖˡ) ↓u (mⁱᵐᵖˡ);
 }.
 
 Module mPadded.
@@ -10907,7 +11405,9 @@ End mPadded.
 
 Class mPadded_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] mPadded_type_repr  :: go.TypeRepr mPaddedⁱᵐᵖˡ mPadded.t;
+  #[global] mPadded_type_repr  :: go.TypeReprUnderlying mPaddedⁱᵐᵖˡ mPadded.t;
+  #[global] mPadded_underlying :: (mPadded) <u (mPaddedⁱᵐᵖˡ);
+  #[global] mPaddedⁱᵐᵖˡ_underlying :: (mPaddedⁱᵐᵖˡ) ↓u (mPaddedⁱᵐᵖˡ);
 }.
 
 Module p.
@@ -10921,7 +11421,9 @@ End p.
 
 Class p_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] p_type_repr  :: go.TypeRepr pⁱᵐᵖˡ p.t;
+  #[global] p_type_repr  :: go.TypeReprUnderlying pⁱᵐᵖˡ p.t;
+  #[global] p_underlying :: (p) <u (pⁱᵐᵖˡ);
+  #[global] pⁱᵐᵖˡ_underlying :: (pⁱᵐᵖˡ) ↓u (pⁱᵐᵖˡ);
 }.
 
 Module schedt.
@@ -10935,7 +11437,9 @@ End schedt.
 
 Class schedt_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] schedt_type_repr  :: go.TypeRepr schedtⁱᵐᵖˡ schedt.t;
+  #[global] schedt_type_repr  :: go.TypeReprUnderlying schedtⁱᵐᵖˡ schedt.t;
+  #[global] schedt_underlying :: (schedt) <u (schedtⁱᵐᵖˡ);
+  #[global] schedtⁱᵐᵖˡ_underlying :: (schedtⁱᵐᵖˡ) ↓u (schedtⁱᵐᵖˡ);
 }.
 
 Module _func.
@@ -10949,7 +11453,9 @@ End _func.
 
 Class _func_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] _func_type_repr  :: go.TypeRepr _funcⁱᵐᵖˡ _func.t;
+  #[global] _func_type_repr  :: go.TypeReprUnderlying _funcⁱᵐᵖˡ _func.t;
+  #[global] _func_underlying :: (_func) <u (_funcⁱᵐᵖˡ);
+  #[global] _funcⁱᵐᵖˡ_underlying :: (_funcⁱᵐᵖˡ) ↓u (_funcⁱᵐᵖˡ);
 }.
 
 Module funcinl.
@@ -10963,7 +11469,9 @@ End funcinl.
 
 Class funcinl_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] funcinl_type_repr  :: go.TypeRepr funcinlⁱᵐᵖˡ funcinl.t;
+  #[global] funcinl_type_repr  :: go.TypeReprUnderlying funcinlⁱᵐᵖˡ funcinl.t;
+  #[global] funcinl_underlying :: (funcinl) <u (funcinlⁱᵐᵖˡ);
+  #[global] funcinlⁱᵐᵖˡ_underlying :: (funcinlⁱᵐᵖˡ) ↓u (funcinlⁱᵐᵖˡ);
 }.
 
 Module lfnode.
@@ -10977,7 +11485,9 @@ End lfnode.
 
 Class lfnode_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] lfnode_type_repr  :: go.TypeRepr lfnodeⁱᵐᵖˡ lfnode.t;
+  #[global] lfnode_type_repr  :: go.TypeReprUnderlying lfnodeⁱᵐᵖˡ lfnode.t;
+  #[global] lfnode_underlying :: (lfnode) <u (lfnodeⁱᵐᵖˡ);
+  #[global] lfnodeⁱᵐᵖˡ_underlying :: (lfnodeⁱᵐᵖˡ) ↓u (lfnodeⁱᵐᵖˡ);
 }.
 
 Module forcegcstate.
@@ -10991,7 +11501,9 @@ End forcegcstate.
 
 Class forcegcstate_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] forcegcstate_type_repr  :: go.TypeRepr forcegcstateⁱᵐᵖˡ forcegcstate.t;
+  #[global] forcegcstate_type_repr  :: go.TypeReprUnderlying forcegcstateⁱᵐᵖˡ forcegcstate.t;
+  #[global] forcegcstate_underlying :: (forcegcstate) <u (forcegcstateⁱᵐᵖˡ);
+  #[global] forcegcstateⁱᵐᵖˡ_underlying :: (forcegcstateⁱᵐᵖˡ) ↓u (forcegcstateⁱᵐᵖˡ);
 }.
 
 Module _defer.
@@ -11005,7 +11517,9 @@ End _defer.
 
 Class _defer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] _defer_type_repr  :: go.TypeRepr _deferⁱᵐᵖˡ _defer.t;
+  #[global] _defer_type_repr  :: go.TypeReprUnderlying _deferⁱᵐᵖˡ _defer.t;
+  #[global] _defer_underlying :: (_defer) <u (_deferⁱᵐᵖˡ);
+  #[global] _deferⁱᵐᵖˡ_underlying :: (_deferⁱᵐᵖˡ) ↓u (_deferⁱᵐᵖˡ);
 }.
 
 Module _panic.
@@ -11019,7 +11533,9 @@ End _panic.
 
 Class _panic_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] _panic_type_repr  :: go.TypeRepr _panicⁱᵐᵖˡ _panic.t;
+  #[global] _panic_type_repr  :: go.TypeReprUnderlying _panicⁱᵐᵖˡ _panic.t;
+  #[global] _panic_underlying :: (_panic) <u (_panicⁱᵐᵖˡ);
+  #[global] _panicⁱᵐᵖˡ_underlying :: (_panicⁱᵐᵖˡ) ↓u (_panicⁱᵐᵖˡ);
 }.
 
 Module savedOpenDeferState.
@@ -11033,7 +11549,9 @@ End savedOpenDeferState.
 
 Class savedOpenDeferState_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] savedOpenDeferState_type_repr  :: go.TypeRepr savedOpenDeferStateⁱᵐᵖˡ savedOpenDeferState.t;
+  #[global] savedOpenDeferState_type_repr  :: go.TypeReprUnderlying savedOpenDeferStateⁱᵐᵖˡ savedOpenDeferState.t;
+  #[global] savedOpenDeferState_underlying :: (savedOpenDeferState) <u (savedOpenDeferStateⁱᵐᵖˡ);
+  #[global] savedOpenDeferStateⁱᵐᵖˡ_underlying :: (savedOpenDeferStateⁱᵐᵖˡ) ↓u (savedOpenDeferStateⁱᵐᵖˡ);
 }.
 
 Module ancestorInfo.
@@ -11047,7 +11565,9 @@ End ancestorInfo.
 
 Class ancestorInfo_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] ancestorInfo_type_repr  :: go.TypeRepr ancestorInfoⁱᵐᵖˡ ancestorInfo.t;
+  #[global] ancestorInfo_type_repr  :: go.TypeReprUnderlying ancestorInfoⁱᵐᵖˡ ancestorInfo.t;
+  #[global] ancestorInfo_underlying :: (ancestorInfo) <u (ancestorInfoⁱᵐᵖˡ);
+  #[global] ancestorInfoⁱᵐᵖˡ_underlying :: (ancestorInfoⁱᵐᵖˡ) ↓u (ancestorInfoⁱᵐᵖˡ);
 }.
 
 Module waitReason.
@@ -11061,7 +11581,9 @@ End waitReason.
 
 Class waitReason_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] waitReason_type_repr  :: go.TypeRepr waitReasonⁱᵐᵖˡ waitReason.t;
+  #[global] waitReason_type_repr  :: go.TypeReprUnderlying waitReasonⁱᵐᵖˡ waitReason.t;
+  #[global] waitReason_underlying :: (waitReason) <u (waitReasonⁱᵐᵖˡ);
+  #[global] waitReasonⁱᵐᵖˡ_underlying :: (waitReasonⁱᵐᵖˡ) ↓u (waitReasonⁱᵐᵖˡ);
 }.
 
 Module rwmutex.
@@ -11075,7 +11597,9 @@ End rwmutex.
 
 Class rwmutex_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] rwmutex_type_repr  :: go.TypeRepr rwmutexⁱᵐᵖˡ rwmutex.t;
+  #[global] rwmutex_type_repr  :: go.TypeReprUnderlying rwmutexⁱᵐᵖˡ rwmutex.t;
+  #[global] rwmutex_underlying :: (rwmutex) <u (rwmutexⁱᵐᵖˡ);
+  #[global] rwmutexⁱᵐᵖˡ_underlying :: (rwmutexⁱᵐᵖˡ) ↓u (rwmutexⁱᵐᵖˡ);
 }.
 
 Module scase.
@@ -11089,7 +11613,9 @@ End scase.
 
 Class scase_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] scase_type_repr  :: go.TypeRepr scaseⁱᵐᵖˡ scase.t;
+  #[global] scase_type_repr  :: go.TypeReprUnderlying scaseⁱᵐᵖˡ scase.t;
+  #[global] scase_underlying :: (scase) <u (scaseⁱᵐᵖˡ);
+  #[global] scaseⁱᵐᵖˡ_underlying :: (scaseⁱᵐᵖˡ) ↓u (scaseⁱᵐᵖˡ);
 }.
 
 Module runtimeSelect.
@@ -11103,7 +11629,9 @@ End runtimeSelect.
 
 Class runtimeSelect_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] runtimeSelect_type_repr  :: go.TypeRepr runtimeSelectⁱᵐᵖˡ runtimeSelect.t;
+  #[global] runtimeSelect_type_repr  :: go.TypeReprUnderlying runtimeSelectⁱᵐᵖˡ runtimeSelect.t;
+  #[global] runtimeSelect_underlying :: (runtimeSelect) <u (runtimeSelectⁱᵐᵖˡ);
+  #[global] runtimeSelectⁱᵐᵖˡ_underlying :: (runtimeSelectⁱᵐᵖˡ) ↓u (runtimeSelectⁱᵐᵖˡ);
 }.
 
 Module selectDir.
@@ -11117,7 +11645,9 @@ End selectDir.
 
 Class selectDir_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] selectDir_type_repr  :: go.TypeRepr selectDirⁱᵐᵖˡ selectDir.t;
+  #[global] selectDir_type_repr  :: go.TypeReprUnderlying selectDirⁱᵐᵖˡ selectDir.t;
+  #[global] selectDir_underlying :: (selectDir) <u (selectDirⁱᵐᵖˡ);
+  #[global] selectDirⁱᵐᵖˡ_underlying :: (selectDirⁱᵐᵖˡ) ↓u (selectDirⁱᵐᵖˡ);
 }.
 
 Module semaRoot.
@@ -11131,7 +11661,9 @@ End semaRoot.
 
 Class semaRoot_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] semaRoot_type_repr  :: go.TypeRepr semaRootⁱᵐᵖˡ semaRoot.t;
+  #[global] semaRoot_type_repr  :: go.TypeReprUnderlying semaRootⁱᵐᵖˡ semaRoot.t;
+  #[global] semaRoot_underlying :: (semaRoot) <u (semaRootⁱᵐᵖˡ);
+  #[global] semaRootⁱᵐᵖˡ_underlying :: (semaRootⁱᵐᵖˡ) ↓u (semaRootⁱᵐᵖˡ);
 }.
 
 Module semTable.
@@ -11145,7 +11677,9 @@ End semTable.
 
 Class semTable_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] semTable_type_repr  :: go.TypeRepr semTableⁱᵐᵖˡ semTable.t;
+  #[global] semTable_type_repr  :: go.TypeReprUnderlying semTableⁱᵐᵖˡ semTable.t;
+  #[global] semTable_underlying :: (semTable) <u (semTableⁱᵐᵖˡ);
+  #[global] semTableⁱᵐᵖˡ_underlying :: (semTableⁱᵐᵖˡ) ↓u (semTableⁱᵐᵖˡ);
 }.
 
 Module semaProfileFlags.
@@ -11159,7 +11693,9 @@ End semaProfileFlags.
 
 Class semaProfileFlags_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] semaProfileFlags_type_repr  :: go.TypeRepr semaProfileFlagsⁱᵐᵖˡ semaProfileFlags.t;
+  #[global] semaProfileFlags_type_repr  :: go.TypeReprUnderlying semaProfileFlagsⁱᵐᵖˡ semaProfileFlags.t;
+  #[global] semaProfileFlags_underlying :: (semaProfileFlags) <u (semaProfileFlagsⁱᵐᵖˡ);
+  #[global] semaProfileFlagsⁱᵐᵖˡ_underlying :: (semaProfileFlagsⁱᵐᵖˡ) ↓u (semaProfileFlagsⁱᵐᵖˡ);
 }.
 
 Module notifyList.
@@ -11173,7 +11709,9 @@ End notifyList.
 
 Class notifyList_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] notifyList_type_repr  :: go.TypeRepr notifyListⁱᵐᵖˡ notifyList.t;
+  #[global] notifyList_type_repr  :: go.TypeReprUnderlying notifyListⁱᵐᵖˡ notifyList.t;
+  #[global] notifyList_underlying :: (notifyList) <u (notifyListⁱᵐᵖˡ);
+  #[global] notifyListⁱᵐᵖˡ_underlying :: (notifyListⁱᵐᵖˡ) ↓u (notifyListⁱᵐᵖˡ);
 }.
 
 Module sigctxt.
@@ -11187,7 +11725,9 @@ End sigctxt.
 
 Class sigctxt_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] sigctxt_type_repr  :: go.TypeRepr sigctxtⁱᵐᵖˡ sigctxt.t;
+  #[global] sigctxt_type_repr  :: go.TypeReprUnderlying sigctxtⁱᵐᵖˡ sigctxt.t;
+  #[global] sigctxt_underlying :: (sigctxt) <u (sigctxtⁱᵐᵖˡ);
+  #[global] sigctxtⁱᵐᵖˡ_underlying :: (sigctxtⁱᵐᵖˡ) ↓u (sigctxtⁱᵐᵖˡ);
 }.
 
 Module sigTabT.
@@ -11201,7 +11741,9 @@ End sigTabT.
 
 Class sigTabT_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] sigTabT_type_repr  :: go.TypeRepr sigTabTⁱᵐᵖˡ sigTabT.t;
+  #[global] sigTabT_type_repr  :: go.TypeReprUnderlying sigTabTⁱᵐᵖˡ sigTabT.t;
+  #[global] sigTabT_underlying :: (sigTabT) <u (sigTabTⁱᵐᵖˡ);
+  #[global] sigTabTⁱᵐᵖˡ_underlying :: (sigTabTⁱᵐᵖˡ) ↓u (sigTabTⁱᵐᵖˡ);
 }.
 
 Module gsignalStack.
@@ -11215,7 +11757,9 @@ End gsignalStack.
 
 Class gsignalStack_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] gsignalStack_type_repr  :: go.TypeRepr gsignalStackⁱᵐᵖˡ gsignalStack.t;
+  #[global] gsignalStack_type_repr  :: go.TypeReprUnderlying gsignalStackⁱᵐᵖˡ gsignalStack.t;
+  #[global] gsignalStack_underlying :: (gsignalStack) <u (gsignalStackⁱᵐᵖˡ);
+  #[global] gsignalStackⁱᵐᵖˡ_underlying :: (gsignalStackⁱᵐᵖˡ) ↓u (gsignalStackⁱᵐᵖˡ);
 }.
 
 Module slice.
@@ -11229,7 +11773,9 @@ End slice.
 
 Class slice_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] slice_type_repr  :: go.TypeRepr sliceⁱᵐᵖˡ slice.t;
+  #[global] slice_type_repr  :: go.TypeReprUnderlying sliceⁱᵐᵖˡ slice.t;
+  #[global] slice_underlying :: (slice) <u (sliceⁱᵐᵖˡ);
+  #[global] sliceⁱᵐᵖˡ_underlying :: (sliceⁱᵐᵖˡ) ↓u (sliceⁱᵐᵖˡ);
 }.
 
 Module notInHeapSlice.
@@ -11243,7 +11789,9 @@ End notInHeapSlice.
 
 Class notInHeapSlice_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] notInHeapSlice_type_repr  :: go.TypeRepr notInHeapSliceⁱᵐᵖˡ notInHeapSlice.t;
+  #[global] notInHeapSlice_type_repr  :: go.TypeReprUnderlying notInHeapSliceⁱᵐᵖˡ notInHeapSlice.t;
+  #[global] notInHeapSlice_underlying :: (notInHeapSlice) <u (notInHeapSliceⁱᵐᵖˡ);
+  #[global] notInHeapSliceⁱᵐᵖˡ_underlying :: (notInHeapSliceⁱᵐᵖˡ) ↓u (notInHeapSliceⁱᵐᵖˡ);
 }.
 
 Module stackpoolItem.
@@ -11257,7 +11805,9 @@ End stackpoolItem.
 
 Class stackpoolItem_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] stackpoolItem_type_repr  :: go.TypeRepr stackpoolItemⁱᵐᵖˡ stackpoolItem.t;
+  #[global] stackpoolItem_type_repr  :: go.TypeReprUnderlying stackpoolItemⁱᵐᵖˡ stackpoolItem.t;
+  #[global] stackpoolItem_underlying :: (stackpoolItem) <u (stackpoolItemⁱᵐᵖˡ);
+  #[global] stackpoolItemⁱᵐᵖˡ_underlying :: (stackpoolItemⁱᵐᵖˡ) ↓u (stackpoolItemⁱᵐᵖˡ);
 }.
 
 Module adjustinfo.
@@ -11271,7 +11821,9 @@ End adjustinfo.
 
 Class adjustinfo_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] adjustinfo_type_repr  :: go.TypeRepr adjustinfoⁱᵐᵖˡ adjustinfo.t;
+  #[global] adjustinfo_type_repr  :: go.TypeReprUnderlying adjustinfoⁱᵐᵖˡ adjustinfo.t;
+  #[global] adjustinfo_underlying :: (adjustinfo) <u (adjustinfoⁱᵐᵖˡ);
+  #[global] adjustinfoⁱᵐᵖˡ_underlying :: (adjustinfoⁱᵐᵖˡ) ↓u (adjustinfoⁱᵐᵖˡ);
 }.
 
 Module bitvector.
@@ -11285,7 +11837,9 @@ End bitvector.
 
 Class bitvector_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] bitvector_type_repr  :: go.TypeRepr bitvectorⁱᵐᵖˡ bitvector.t;
+  #[global] bitvector_type_repr  :: go.TypeReprUnderlying bitvectorⁱᵐᵖˡ bitvector.t;
+  #[global] bitvector_underlying :: (bitvector) <u (bitvectorⁱᵐᵖˡ);
+  #[global] bitvectorⁱᵐᵖˡ_underlying :: (bitvectorⁱᵐᵖˡ) ↓u (bitvectorⁱᵐᵖˡ);
 }.
 
 Module stackObjectRecord.
@@ -11299,7 +11853,9 @@ End stackObjectRecord.
 
 Class stackObjectRecord_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] stackObjectRecord_type_repr  :: go.TypeRepr stackObjectRecordⁱᵐᵖˡ stackObjectRecord.t;
+  #[global] stackObjectRecord_type_repr  :: go.TypeReprUnderlying stackObjectRecordⁱᵐᵖˡ stackObjectRecord.t;
+  #[global] stackObjectRecord_underlying :: (stackObjectRecord) <u (stackObjectRecordⁱᵐᵖˡ);
+  #[global] stackObjectRecordⁱᵐᵖˡ_underlying :: (stackObjectRecordⁱᵐᵖˡ) ↓u (stackObjectRecordⁱᵐᵖˡ);
 }.
 
 Module stkframe.
@@ -11313,7 +11869,9 @@ End stkframe.
 
 Class stkframe_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] stkframe_type_repr  :: go.TypeRepr stkframeⁱᵐᵖˡ stkframe.t;
+  #[global] stkframe_type_repr  :: go.TypeReprUnderlying stkframeⁱᵐᵖˡ stkframe.t;
+  #[global] stkframe_underlying :: (stkframe) <u (stkframeⁱᵐᵖˡ);
+  #[global] stkframeⁱᵐᵖˡ_underlying :: (stkframeⁱᵐᵖˡ) ↓u (stkframeⁱᵐᵖˡ);
 }.
 
 Module reflectMethodValue.
@@ -11327,7 +11885,9 @@ End reflectMethodValue.
 
 Class reflectMethodValue_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] reflectMethodValue_type_repr  :: go.TypeRepr reflectMethodValueⁱᵐᵖˡ reflectMethodValue.t;
+  #[global] reflectMethodValue_type_repr  :: go.TypeReprUnderlying reflectMethodValueⁱᵐᵖˡ reflectMethodValue.t;
+  #[global] reflectMethodValue_underlying :: (reflectMethodValue) <u (reflectMethodValueⁱᵐᵖˡ);
+  #[global] reflectMethodValueⁱᵐᵖˡ_underlying :: (reflectMethodValueⁱᵐᵖˡ) ↓u (reflectMethodValueⁱᵐᵖˡ);
 }.
 
 Module tmpBuf.
@@ -11341,7 +11901,9 @@ End tmpBuf.
 
 Class tmpBuf_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] tmpBuf_type_repr  :: go.TypeRepr tmpBufⁱᵐᵖˡ tmpBuf.t;
+  #[global] tmpBuf_type_repr  :: go.TypeReprUnderlying tmpBufⁱᵐᵖˡ tmpBuf.t;
+  #[global] tmpBuf_underlying :: (tmpBuf) <u (tmpBufⁱᵐᵖˡ);
+  #[global] tmpBufⁱᵐᵖˡ_underlying :: (tmpBufⁱᵐᵖˡ) ↓u (tmpBufⁱᵐᵖˡ);
 }.
 
 Module stringStruct.
@@ -11355,7 +11917,9 @@ End stringStruct.
 
 Class stringStruct_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] stringStruct_type_repr  :: go.TypeRepr stringStructⁱᵐᵖˡ stringStruct.t;
+  #[global] stringStruct_type_repr  :: go.TypeReprUnderlying stringStructⁱᵐᵖˡ stringStruct.t;
+  #[global] stringStruct_underlying :: (stringStruct) <u (stringStructⁱᵐᵖˡ);
+  #[global] stringStructⁱᵐᵖˡ_underlying :: (stringStructⁱᵐᵖˡ) ↓u (stringStructⁱᵐᵖˡ);
 }.
 
 Module stringStructDWARF.
@@ -11369,7 +11933,9 @@ End stringStructDWARF.
 
 Class stringStructDWARF_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] stringStructDWARF_type_repr  :: go.TypeRepr stringStructDWARFⁱᵐᵖˡ stringStructDWARF.t;
+  #[global] stringStructDWARF_type_repr  :: go.TypeReprUnderlying stringStructDWARFⁱᵐᵖˡ stringStructDWARF.t;
+  #[global] stringStructDWARF_underlying :: (stringStructDWARF) <u (stringStructDWARFⁱᵐᵖˡ);
+  #[global] stringStructDWARFⁱᵐᵖˡ_underlying :: (stringStructDWARFⁱᵐᵖˡ) ↓u (stringStructDWARFⁱᵐᵖˡ);
 }.
 
 Module neverCallThisFunction.
@@ -11383,7 +11949,9 @@ End neverCallThisFunction.
 
 Class neverCallThisFunction_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] neverCallThisFunction_type_repr  :: go.TypeRepr neverCallThisFunctionⁱᵐᵖˡ neverCallThisFunction.t;
+  #[global] neverCallThisFunction_type_repr  :: go.TypeReprUnderlying neverCallThisFunctionⁱᵐᵖˡ neverCallThisFunction.t;
+  #[global] neverCallThisFunction_underlying :: (neverCallThisFunction) <u (neverCallThisFunctionⁱᵐᵖˡ);
+  #[global] neverCallThisFunctionⁱᵐᵖˡ_underlying :: (neverCallThisFunctionⁱᵐᵖˡ) ↓u (neverCallThisFunctionⁱᵐᵖˡ);
 }.
 
 Module Frames.
@@ -11397,7 +11965,9 @@ End Frames.
 
 Class Frames_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Frames_type_repr  :: go.TypeRepr Framesⁱᵐᵖˡ Frames.t;
+  #[global] Frames_type_repr  :: go.TypeReprUnderlying Framesⁱᵐᵖˡ Frames.t;
+  #[global] Frames_underlying :: (Frames) <u (Framesⁱᵐᵖˡ);
+  #[global] Framesⁱᵐᵖˡ_underlying :: (Framesⁱᵐᵖˡ) ↓u (Framesⁱᵐᵖˡ);
 }.
 
 Module Frame.
@@ -11411,7 +11981,9 @@ End Frame.
 
 Class Frame_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Frame_type_repr  :: go.TypeRepr Frameⁱᵐᵖˡ Frame.t;
+  #[global] Frame_type_repr  :: go.TypeReprUnderlying Frameⁱᵐᵖˡ Frame.t;
+  #[global] Frame_underlying :: (Frame) <u (Frameⁱᵐᵖˡ);
+  #[global] Frameⁱᵐᵖˡ_underlying :: (Frameⁱᵐᵖˡ) ↓u (Frameⁱᵐᵖˡ);
 }.
 
 Module Func.
@@ -11425,7 +11997,9 @@ End Func.
 
 Class Func_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Func_type_repr  :: go.TypeRepr Funcⁱᵐᵖˡ Func.t;
+  #[global] Func_type_repr  :: go.TypeReprUnderlying Funcⁱᵐᵖˡ Func.t;
+  #[global] Func_underlying :: (Func) <u (Funcⁱᵐᵖˡ);
+  #[global] Funcⁱᵐᵖˡ_underlying :: (Funcⁱᵐᵖˡ) ↓u (Funcⁱᵐᵖˡ);
 }.
 
 Module pcHeader.
@@ -11439,7 +12013,9 @@ End pcHeader.
 
 Class pcHeader_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] pcHeader_type_repr  :: go.TypeRepr pcHeaderⁱᵐᵖˡ pcHeader.t;
+  #[global] pcHeader_type_repr  :: go.TypeReprUnderlying pcHeaderⁱᵐᵖˡ pcHeader.t;
+  #[global] pcHeader_underlying :: (pcHeader) <u (pcHeaderⁱᵐᵖˡ);
+  #[global] pcHeaderⁱᵐᵖˡ_underlying :: (pcHeaderⁱᵐᵖˡ) ↓u (pcHeaderⁱᵐᵖˡ);
 }.
 
 Module moduledata.
@@ -11453,7 +12029,9 @@ End moduledata.
 
 Class moduledata_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] moduledata_type_repr  :: go.TypeRepr moduledataⁱᵐᵖˡ moduledata.t;
+  #[global] moduledata_type_repr  :: go.TypeReprUnderlying moduledataⁱᵐᵖˡ moduledata.t;
+  #[global] moduledata_underlying :: (moduledata) <u (moduledataⁱᵐᵖˡ);
+  #[global] moduledataⁱᵐᵖˡ_underlying :: (moduledataⁱᵐᵖˡ) ↓u (moduledataⁱᵐᵖˡ);
 }.
 
 Module modulehash.
@@ -11467,7 +12045,9 @@ End modulehash.
 
 Class modulehash_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] modulehash_type_repr  :: go.TypeRepr modulehashⁱᵐᵖˡ modulehash.t;
+  #[global] modulehash_type_repr  :: go.TypeReprUnderlying modulehashⁱᵐᵖˡ modulehash.t;
+  #[global] modulehash_underlying :: (modulehash) <u (modulehashⁱᵐᵖˡ);
+  #[global] modulehashⁱᵐᵖˡ_underlying :: (modulehashⁱᵐᵖˡ) ↓u (modulehashⁱᵐᵖˡ);
 }.
 
 Module functab.
@@ -11481,7 +12061,9 @@ End functab.
 
 Class functab_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] functab_type_repr  :: go.TypeRepr functabⁱᵐᵖˡ functab.t;
+  #[global] functab_type_repr  :: go.TypeReprUnderlying functabⁱᵐᵖˡ functab.t;
+  #[global] functab_underlying :: (functab) <u (functabⁱᵐᵖˡ);
+  #[global] functabⁱᵐᵖˡ_underlying :: (functabⁱᵐᵖˡ) ↓u (functabⁱᵐᵖˡ);
 }.
 
 Module textsect.
@@ -11495,7 +12077,9 @@ End textsect.
 
 Class textsect_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] textsect_type_repr  :: go.TypeRepr textsectⁱᵐᵖˡ textsect.t;
+  #[global] textsect_type_repr  :: go.TypeReprUnderlying textsectⁱᵐᵖˡ textsect.t;
+  #[global] textsect_underlying :: (textsect) <u (textsectⁱᵐᵖˡ);
+  #[global] textsectⁱᵐᵖˡ_underlying :: (textsectⁱᵐᵖˡ) ↓u (textsectⁱᵐᵖˡ);
 }.
 
 Module findfuncbucket.
@@ -11509,7 +12093,9 @@ End findfuncbucket.
 
 Class findfuncbucket_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] findfuncbucket_type_repr  :: go.TypeRepr findfuncbucketⁱᵐᵖˡ findfuncbucket.t;
+  #[global] findfuncbucket_type_repr  :: go.TypeReprUnderlying findfuncbucketⁱᵐᵖˡ findfuncbucket.t;
+  #[global] findfuncbucket_underlying :: (findfuncbucket) <u (findfuncbucketⁱᵐᵖˡ);
+  #[global] findfuncbucketⁱᵐᵖˡ_underlying :: (findfuncbucketⁱᵐᵖˡ) ↓u (findfuncbucketⁱᵐᵖˡ);
 }.
 
 Module funcInfo.
@@ -11523,7 +12109,9 @@ End funcInfo.
 
 Class funcInfo_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] funcInfo_type_repr  :: go.TypeRepr funcInfoⁱᵐᵖˡ funcInfo.t;
+  #[global] funcInfo_type_repr  :: go.TypeReprUnderlying funcInfoⁱᵐᵖˡ funcInfo.t;
+  #[global] funcInfo_underlying :: (funcInfo) <u (funcInfoⁱᵐᵖˡ);
+  #[global] funcInfoⁱᵐᵖˡ_underlying :: (funcInfoⁱᵐᵖˡ) ↓u (funcInfoⁱᵐᵖˡ);
 }.
 
 Module srcFunc.
@@ -11537,7 +12125,9 @@ End srcFunc.
 
 Class srcFunc_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] srcFunc_type_repr  :: go.TypeRepr srcFuncⁱᵐᵖˡ srcFunc.t;
+  #[global] srcFunc_type_repr  :: go.TypeReprUnderlying srcFuncⁱᵐᵖˡ srcFunc.t;
+  #[global] srcFunc_underlying :: (srcFunc) <u (srcFuncⁱᵐᵖˡ);
+  #[global] srcFuncⁱᵐᵖˡ_underlying :: (srcFuncⁱᵐᵖˡ) ↓u (srcFuncⁱᵐᵖˡ);
 }.
 
 Module pcvalueCache.
@@ -11551,7 +12141,9 @@ End pcvalueCache.
 
 Class pcvalueCache_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] pcvalueCache_type_repr  :: go.TypeRepr pcvalueCacheⁱᵐᵖˡ pcvalueCache.t;
+  #[global] pcvalueCache_type_repr  :: go.TypeReprUnderlying pcvalueCacheⁱᵐᵖˡ pcvalueCache.t;
+  #[global] pcvalueCache_underlying :: (pcvalueCache) <u (pcvalueCacheⁱᵐᵖˡ);
+  #[global] pcvalueCacheⁱᵐᵖˡ_underlying :: (pcvalueCacheⁱᵐᵖˡ) ↓u (pcvalueCacheⁱᵐᵖˡ);
 }.
 
 Module pcvalueCacheEnt.
@@ -11565,7 +12157,9 @@ End pcvalueCacheEnt.
 
 Class pcvalueCacheEnt_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] pcvalueCacheEnt_type_repr  :: go.TypeRepr pcvalueCacheEntⁱᵐᵖˡ pcvalueCacheEnt.t;
+  #[global] pcvalueCacheEnt_type_repr  :: go.TypeReprUnderlying pcvalueCacheEntⁱᵐᵖˡ pcvalueCacheEnt.t;
+  #[global] pcvalueCacheEnt_underlying :: (pcvalueCacheEnt) <u (pcvalueCacheEntⁱᵐᵖˡ);
+  #[global] pcvalueCacheEntⁱᵐᵖˡ_underlying :: (pcvalueCacheEntⁱᵐᵖˡ) ↓u (pcvalueCacheEntⁱᵐᵖˡ);
 }.
 
 Module stackmap.
@@ -11579,7 +12173,9 @@ End stackmap.
 
 Class stackmap_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] stackmap_type_repr  :: go.TypeRepr stackmapⁱᵐᵖˡ stackmap.t;
+  #[global] stackmap_type_repr  :: go.TypeReprUnderlying stackmapⁱᵐᵖˡ stackmap.t;
+  #[global] stackmap_underlying :: (stackmap) <u (stackmapⁱᵐᵖˡ);
+  #[global] stackmapⁱᵐᵖˡ_underlying :: (stackmapⁱᵐᵖˡ) ↓u (stackmapⁱᵐᵖˡ);
 }.
 
 Module inlinedCall.
@@ -11593,7 +12189,9 @@ End inlinedCall.
 
 Class inlinedCall_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] inlinedCall_type_repr  :: go.TypeRepr inlinedCallⁱᵐᵖˡ inlinedCall.t;
+  #[global] inlinedCall_type_repr  :: go.TypeReprUnderlying inlinedCallⁱᵐᵖˡ inlinedCall.t;
+  #[global] inlinedCall_underlying :: (inlinedCall) <u (inlinedCallⁱᵐᵖˡ);
+  #[global] inlinedCallⁱᵐᵖˡ_underlying :: (inlinedCallⁱᵐᵖˡ) ↓u (inlinedCallⁱᵐᵖˡ);
 }.
 
 Module inlineUnwinder.
@@ -11607,7 +12205,9 @@ End inlineUnwinder.
 
 Class inlineUnwinder_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] inlineUnwinder_type_repr  :: go.TypeRepr inlineUnwinderⁱᵐᵖˡ inlineUnwinder.t;
+  #[global] inlineUnwinder_type_repr  :: go.TypeReprUnderlying inlineUnwinderⁱᵐᵖˡ inlineUnwinder.t;
+  #[global] inlineUnwinder_underlying :: (inlineUnwinder) <u (inlineUnwinderⁱᵐᵖˡ);
+  #[global] inlineUnwinderⁱᵐᵖˡ_underlying :: (inlineUnwinderⁱᵐᵖˡ) ↓u (inlineUnwinderⁱᵐᵖˡ);
 }.
 
 Module inlineFrame.
@@ -11621,7 +12221,9 @@ End inlineFrame.
 
 Class inlineFrame_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] inlineFrame_type_repr  :: go.TypeRepr inlineFrameⁱᵐᵖˡ inlineFrame.t;
+  #[global] inlineFrame_type_repr  :: go.TypeReprUnderlying inlineFrameⁱᵐᵖˡ inlineFrame.t;
+  #[global] inlineFrame_underlying :: (inlineFrame) <u (inlineFrameⁱᵐᵖˡ);
+  #[global] inlineFrameⁱᵐᵖˡ_underlying :: (inlineFrameⁱᵐᵖˡ) ↓u (inlineFrameⁱᵐᵖˡ);
 }.
 
 Module synctestBubble.
@@ -11635,7 +12237,9 @@ End synctestBubble.
 
 Class synctestBubble_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] synctestBubble_type_repr  :: go.TypeRepr synctestBubbleⁱᵐᵖˡ synctestBubble.t;
+  #[global] synctestBubble_type_repr  :: go.TypeReprUnderlying synctestBubbleⁱᵐᵖˡ synctestBubble.t;
+  #[global] synctestBubble_underlying :: (synctestBubble) <u (synctestBubbleⁱᵐᵖˡ);
+  #[global] synctestBubbleⁱᵐᵖˡ_underlying :: (synctestBubbleⁱᵐᵖˡ) ↓u (synctestBubbleⁱᵐᵖˡ);
 }.
 
 Module synctestDeadlockError.
@@ -11649,7 +12253,9 @@ End synctestDeadlockError.
 
 Class synctestDeadlockError_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] synctestDeadlockError_type_repr  :: go.TypeRepr synctestDeadlockErrorⁱᵐᵖˡ synctestDeadlockError.t;
+  #[global] synctestDeadlockError_type_repr  :: go.TypeReprUnderlying synctestDeadlockErrorⁱᵐᵖˡ synctestDeadlockError.t;
+  #[global] synctestDeadlockError_underlying :: (synctestDeadlockError) <u (synctestDeadlockErrorⁱᵐᵖˡ);
+  #[global] synctestDeadlockErrorⁱᵐᵖˡ_underlying :: (synctestDeadlockErrorⁱᵐᵖˡ) ↓u (synctestDeadlockErrorⁱᵐᵖˡ);
 }.
 
 Module specialBubble.
@@ -11663,7 +12269,9 @@ End specialBubble.
 
 Class specialBubble_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] specialBubble_type_repr  :: go.TypeRepr specialBubbleⁱᵐᵖˡ specialBubble.t;
+  #[global] specialBubble_type_repr  :: go.TypeReprUnderlying specialBubbleⁱᵐᵖˡ specialBubble.t;
+  #[global] specialBubble_underlying :: (specialBubble) <u (specialBubbleⁱᵐᵖˡ);
+  #[global] specialBubbleⁱᵐᵖˡ_underlying :: (specialBubbleⁱᵐᵖˡ) ↓u (specialBubbleⁱᵐᵖˡ);
 }.
 
 Module taggedPointer.
@@ -11677,7 +12285,9 @@ End taggedPointer.
 
 Class taggedPointer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] taggedPointer_type_repr  :: go.TypeRepr taggedPointerⁱᵐᵖˡ taggedPointer.t;
+  #[global] taggedPointer_type_repr  :: go.TypeReprUnderlying taggedPointerⁱᵐᵖˡ taggedPointer.t;
+  #[global] taggedPointer_underlying :: (taggedPointer) <u (taggedPointerⁱᵐᵖˡ);
+  #[global] taggedPointerⁱᵐᵖˡ_underlying :: (taggedPointerⁱᵐᵖˡ) ↓u (taggedPointerⁱᵐᵖˡ);
 }.
 
 Module timer.
@@ -11691,7 +12301,9 @@ End timer.
 
 Class timer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] timer_type_repr  :: go.TypeRepr timerⁱᵐᵖˡ timer.t;
+  #[global] timer_type_repr  :: go.TypeReprUnderlying timerⁱᵐᵖˡ timer.t;
+  #[global] timer_underlying :: (timer) <u (timerⁱᵐᵖˡ);
+  #[global] timerⁱᵐᵖˡ_underlying :: (timerⁱᵐᵖˡ) ↓u (timerⁱᵐᵖˡ);
 }.
 
 Module timers.
@@ -11705,7 +12317,9 @@ End timers.
 
 Class timers_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] timers_type_repr  :: go.TypeRepr timersⁱᵐᵖˡ timers.t;
+  #[global] timers_type_repr  :: go.TypeReprUnderlying timersⁱᵐᵖˡ timers.t;
+  #[global] timers_underlying :: (timers) <u (timersⁱᵐᵖˡ);
+  #[global] timersⁱᵐᵖˡ_underlying :: (timersⁱᵐᵖˡ) ↓u (timersⁱᵐᵖˡ);
 }.
 
 Module timerWhen.
@@ -11719,7 +12333,9 @@ End timerWhen.
 
 Class timerWhen_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] timerWhen_type_repr  :: go.TypeRepr timerWhenⁱᵐᵖˡ timerWhen.t;
+  #[global] timerWhen_type_repr  :: go.TypeReprUnderlying timerWhenⁱᵐᵖˡ timerWhen.t;
+  #[global] timerWhen_underlying :: (timerWhen) <u (timerWhenⁱᵐᵖˡ);
+  #[global] timerWhenⁱᵐᵖˡ_underlying :: (timerWhenⁱᵐᵖˡ) ↓u (timerWhenⁱᵐᵖˡ);
 }.
 
 Module timeTimer.
@@ -11733,7 +12349,9 @@ End timeTimer.
 
 Class timeTimer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] timeTimer_type_repr  :: go.TypeRepr timeTimerⁱᵐᵖˡ timeTimer.t;
+  #[global] timeTimer_type_repr  :: go.TypeReprUnderlying timeTimerⁱᵐᵖˡ timeTimer.t;
+  #[global] timeTimer_underlying :: (timeTimer) <u (timeTimerⁱᵐᵖˡ);
+  #[global] timeTimerⁱᵐᵖˡ_underlying :: (timeTimerⁱᵐᵖˡ) ↓u (timeTimerⁱᵐᵖˡ);
 }.
 
 Module traceAdvancerState.
@@ -11747,7 +12365,9 @@ End traceAdvancerState.
 
 Class traceAdvancerState_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] traceAdvancerState_type_repr  :: go.TypeRepr traceAdvancerStateⁱᵐᵖˡ traceAdvancerState.t;
+  #[global] traceAdvancerState_type_repr  :: go.TypeReprUnderlying traceAdvancerStateⁱᵐᵖˡ traceAdvancerState.t;
+  #[global] traceAdvancerState_underlying :: (traceAdvancerState) <u (traceAdvancerStateⁱᵐᵖˡ);
+  #[global] traceAdvancerStateⁱᵐᵖˡ_underlying :: (traceAdvancerStateⁱᵐᵖˡ) ↓u (traceAdvancerStateⁱᵐᵖˡ);
 }.
 
 Module wakeableSleep.
@@ -11761,7 +12381,9 @@ End wakeableSleep.
 
 Class wakeableSleep_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] wakeableSleep_type_repr  :: go.TypeRepr wakeableSleepⁱᵐᵖˡ wakeableSleep.t;
+  #[global] wakeableSleep_type_repr  :: go.TypeReprUnderlying wakeableSleepⁱᵐᵖˡ wakeableSleep.t;
+  #[global] wakeableSleep_underlying :: (wakeableSleep) <u (wakeableSleepⁱᵐᵖˡ);
+  #[global] wakeableSleepⁱᵐᵖˡ_underlying :: (wakeableSleepⁱᵐᵖˡ) ↓u (wakeableSleepⁱᵐᵖˡ);
 }.
 
 Module unwindFlags.
@@ -11775,7 +12397,9 @@ End unwindFlags.
 
 Class unwindFlags_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] unwindFlags_type_repr  :: go.TypeRepr unwindFlagsⁱᵐᵖˡ unwindFlags.t;
+  #[global] unwindFlags_type_repr  :: go.TypeReprUnderlying unwindFlagsⁱᵐᵖˡ unwindFlags.t;
+  #[global] unwindFlags_underlying :: (unwindFlags) <u (unwindFlagsⁱᵐᵖˡ);
+  #[global] unwindFlagsⁱᵐᵖˡ_underlying :: (unwindFlagsⁱᵐᵖˡ) ↓u (unwindFlagsⁱᵐᵖˡ);
 }.
 
 Module unwinder.
@@ -11789,7 +12413,9 @@ End unwinder.
 
 Class unwinder_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] unwinder_type_repr  :: go.TypeRepr unwinderⁱᵐᵖˡ unwinder.t;
+  #[global] unwinder_type_repr  :: go.TypeReprUnderlying unwinderⁱᵐᵖˡ unwinder.t;
+  #[global] unwinder_underlying :: (unwinder) <u (unwinderⁱᵐᵖˡ);
+  #[global] unwinderⁱᵐᵖˡ_underlying :: (unwinderⁱᵐᵖˡ) ↓u (unwinderⁱᵐᵖˡ);
 }.
 
 Module cgoTracebackArg.
@@ -11803,7 +12429,9 @@ End cgoTracebackArg.
 
 Class cgoTracebackArg_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] cgoTracebackArg_type_repr  :: go.TypeRepr cgoTracebackArgⁱᵐᵖˡ cgoTracebackArg.t;
+  #[global] cgoTracebackArg_type_repr  :: go.TypeReprUnderlying cgoTracebackArgⁱᵐᵖˡ cgoTracebackArg.t;
+  #[global] cgoTracebackArg_underlying :: (cgoTracebackArg) <u (cgoTracebackArgⁱᵐᵖˡ);
+  #[global] cgoTracebackArgⁱᵐᵖˡ_underlying :: (cgoTracebackArgⁱᵐᵖˡ) ↓u (cgoTracebackArgⁱᵐᵖˡ);
 }.
 
 Module cgoContextArg.
@@ -11817,7 +12445,9 @@ End cgoContextArg.
 
 Class cgoContextArg_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] cgoContextArg_type_repr  :: go.TypeRepr cgoContextArgⁱᵐᵖˡ cgoContextArg.t;
+  #[global] cgoContextArg_type_repr  :: go.TypeReprUnderlying cgoContextArgⁱᵐᵖˡ cgoContextArg.t;
+  #[global] cgoContextArg_underlying :: (cgoContextArg) <u (cgoContextArgⁱᵐᵖˡ);
+  #[global] cgoContextArgⁱᵐᵖˡ_underlying :: (cgoContextArgⁱᵐᵖˡ) ↓u (cgoContextArgⁱᵐᵖˡ);
 }.
 
 Module cgoSymbolizerArg.
@@ -11831,7 +12461,9 @@ End cgoSymbolizerArg.
 
 Class cgoSymbolizerArg_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] cgoSymbolizerArg_type_repr  :: go.TypeRepr cgoSymbolizerArgⁱᵐᵖˡ cgoSymbolizerArg.t;
+  #[global] cgoSymbolizerArg_type_repr  :: go.TypeReprUnderlying cgoSymbolizerArgⁱᵐᵖˡ cgoSymbolizerArg.t;
+  #[global] cgoSymbolizerArg_underlying :: (cgoSymbolizerArg) <u (cgoSymbolizerArgⁱᵐᵖˡ);
+  #[global] cgoSymbolizerArgⁱᵐᵖˡ_underlying :: (cgoSymbolizerArgⁱᵐᵖˡ) ↓u (cgoSymbolizerArgⁱᵐᵖˡ);
 }.
 
 Module traceWriter.
@@ -11845,7 +12477,9 @@ End traceWriter.
 
 Class traceWriter_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] traceWriter_type_repr  :: go.TypeRepr traceWriterⁱᵐᵖˡ traceWriter.t;
+  #[global] traceWriter_type_repr  :: go.TypeReprUnderlying traceWriterⁱᵐᵖˡ traceWriter.t;
+  #[global] traceWriter_underlying :: (traceWriter) <u (traceWriterⁱᵐᵖˡ);
+  #[global] traceWriterⁱᵐᵖˡ_underlying :: (traceWriterⁱᵐᵖˡ) ↓u (traceWriterⁱᵐᵖˡ);
 }.
 
 Module traceBufQueue.
@@ -11859,7 +12493,9 @@ End traceBufQueue.
 
 Class traceBufQueue_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] traceBufQueue_type_repr  :: go.TypeRepr traceBufQueueⁱᵐᵖˡ traceBufQueue.t;
+  #[global] traceBufQueue_type_repr  :: go.TypeReprUnderlying traceBufQueueⁱᵐᵖˡ traceBufQueue.t;
+  #[global] traceBufQueue_underlying :: (traceBufQueue) <u (traceBufQueueⁱᵐᵖˡ);
+  #[global] traceBufQueueⁱᵐᵖˡ_underlying :: (traceBufQueueⁱᵐᵖˡ) ↓u (traceBufQueueⁱᵐᵖˡ);
 }.
 
 Module traceBufHeader.
@@ -11873,7 +12509,9 @@ End traceBufHeader.
 
 Class traceBufHeader_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] traceBufHeader_type_repr  :: go.TypeRepr traceBufHeaderⁱᵐᵖˡ traceBufHeader.t;
+  #[global] traceBufHeader_type_repr  :: go.TypeReprUnderlying traceBufHeaderⁱᵐᵖˡ traceBufHeader.t;
+  #[global] traceBufHeader_underlying :: (traceBufHeader) <u (traceBufHeaderⁱᵐᵖˡ);
+  #[global] traceBufHeaderⁱᵐᵖˡ_underlying :: (traceBufHeaderⁱᵐᵖˡ) ↓u (traceBufHeaderⁱᵐᵖˡ);
 }.
 
 Module traceBuf.
@@ -11887,7 +12525,9 @@ End traceBuf.
 
 Class traceBuf_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] traceBuf_type_repr  :: go.TypeRepr traceBufⁱᵐᵖˡ traceBuf.t;
+  #[global] traceBuf_type_repr  :: go.TypeReprUnderlying traceBufⁱᵐᵖˡ traceBuf.t;
+  #[global] traceBuf_underlying :: (traceBuf) <u (traceBufⁱᵐᵖˡ);
+  #[global] traceBufⁱᵐᵖˡ_underlying :: (traceBufⁱᵐᵖˡ) ↓u (traceBufⁱᵐᵖˡ);
 }.
 
 Module traceArg.
@@ -11901,7 +12541,9 @@ End traceArg.
 
 Class traceArg_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] traceArg_type_repr  :: go.TypeRepr traceArgⁱᵐᵖˡ traceArg.t;
+  #[global] traceArg_type_repr  :: go.TypeReprUnderlying traceArgⁱᵐᵖˡ traceArg.t;
+  #[global] traceArg_underlying :: (traceArg) <u (traceArgⁱᵐᵖˡ);
+  #[global] traceArgⁱᵐᵖˡ_underlying :: (traceArgⁱᵐᵖˡ) ↓u (traceArgⁱᵐᵖˡ);
 }.
 
 Module traceEventWriter.
@@ -11915,7 +12557,9 @@ End traceEventWriter.
 
 Class traceEventWriter_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] traceEventWriter_type_repr  :: go.TypeRepr traceEventWriterⁱᵐᵖˡ traceEventWriter.t;
+  #[global] traceEventWriter_type_repr  :: go.TypeReprUnderlying traceEventWriterⁱᵐᵖˡ traceEventWriter.t;
+  #[global] traceEventWriter_underlying :: (traceEventWriter) <u (traceEventWriterⁱᵐᵖˡ);
+  #[global] traceEventWriterⁱᵐᵖˡ_underlying :: (traceEventWriterⁱᵐᵖˡ) ↓u (traceEventWriterⁱᵐᵖˡ);
 }.
 
 Module traceMap.
@@ -11929,7 +12573,9 @@ End traceMap.
 
 Class traceMap_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] traceMap_type_repr  :: go.TypeRepr traceMapⁱᵐᵖˡ traceMap.t;
+  #[global] traceMap_type_repr  :: go.TypeReprUnderlying traceMapⁱᵐᵖˡ traceMap.t;
+  #[global] traceMap_underlying :: (traceMap) <u (traceMapⁱᵐᵖˡ);
+  #[global] traceMapⁱᵐᵖˡ_underlying :: (traceMapⁱᵐᵖˡ) ↓u (traceMapⁱᵐᵖˡ);
 }.
 
 Module traceMapNode.
@@ -11943,7 +12589,9 @@ End traceMapNode.
 
 Class traceMapNode_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] traceMapNode_type_repr  :: go.TypeRepr traceMapNodeⁱᵐᵖˡ traceMapNode.t;
+  #[global] traceMapNode_type_repr  :: go.TypeReprUnderlying traceMapNodeⁱᵐᵖˡ traceMapNode.t;
+  #[global] traceMapNode_underlying :: (traceMapNode) <u (traceMapNodeⁱᵐᵖˡ);
+  #[global] traceMapNodeⁱᵐᵖˡ_underlying :: (traceMapNodeⁱᵐᵖˡ) ↓u (traceMapNodeⁱᵐᵖˡ);
 }.
 
 Module traceRegionAlloc.
@@ -11957,7 +12605,9 @@ End traceRegionAlloc.
 
 Class traceRegionAlloc_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] traceRegionAlloc_type_repr  :: go.TypeRepr traceRegionAllocⁱᵐᵖˡ traceRegionAlloc.t;
+  #[global] traceRegionAlloc_type_repr  :: go.TypeReprUnderlying traceRegionAllocⁱᵐᵖˡ traceRegionAlloc.t;
+  #[global] traceRegionAlloc_underlying :: (traceRegionAlloc) <u (traceRegionAllocⁱᵐᵖˡ);
+  #[global] traceRegionAllocⁱᵐᵖˡ_underlying :: (traceRegionAllocⁱᵐᵖˡ) ↓u (traceRegionAllocⁱᵐᵖˡ);
 }.
 
 Module traceRegionAllocBlock.
@@ -11971,7 +12621,9 @@ End traceRegionAllocBlock.
 
 Class traceRegionAllocBlock_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] traceRegionAllocBlock_type_repr  :: go.TypeRepr traceRegionAllocBlockⁱᵐᵖˡ traceRegionAllocBlock.t;
+  #[global] traceRegionAllocBlock_type_repr  :: go.TypeReprUnderlying traceRegionAllocBlockⁱᵐᵖˡ traceRegionAllocBlock.t;
+  #[global] traceRegionAllocBlock_underlying :: (traceRegionAllocBlock) <u (traceRegionAllocBlockⁱᵐᵖˡ);
+  #[global] traceRegionAllocBlockⁱᵐᵖˡ_underlying :: (traceRegionAllocBlockⁱᵐᵖˡ) ↓u (traceRegionAllocBlockⁱᵐᵖˡ);
 }.
 
 Module traceRegionAllocBlockHeader.
@@ -11985,7 +12637,9 @@ End traceRegionAllocBlockHeader.
 
 Class traceRegionAllocBlockHeader_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] traceRegionAllocBlockHeader_type_repr  :: go.TypeRepr traceRegionAllocBlockHeaderⁱᵐᵖˡ traceRegionAllocBlockHeader.t;
+  #[global] traceRegionAllocBlockHeader_type_repr  :: go.TypeReprUnderlying traceRegionAllocBlockHeaderⁱᵐᵖˡ traceRegionAllocBlockHeader.t;
+  #[global] traceRegionAllocBlockHeader_underlying :: (traceRegionAllocBlockHeader) <u (traceRegionAllocBlockHeaderⁱᵐᵖˡ);
+  #[global] traceRegionAllocBlockHeaderⁱᵐᵖˡ_underlying :: (traceRegionAllocBlockHeaderⁱᵐᵖˡ) ↓u (traceRegionAllocBlockHeaderⁱᵐᵖˡ);
 }.
 
 Module gTraceState.
@@ -11999,7 +12653,9 @@ End gTraceState.
 
 Class gTraceState_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] gTraceState_type_repr  :: go.TypeRepr gTraceStateⁱᵐᵖˡ gTraceState.t;
+  #[global] gTraceState_type_repr  :: go.TypeReprUnderlying gTraceStateⁱᵐᵖˡ gTraceState.t;
+  #[global] gTraceState_underlying :: (gTraceState) <u (gTraceStateⁱᵐᵖˡ);
+  #[global] gTraceStateⁱᵐᵖˡ_underlying :: (gTraceStateⁱᵐᵖˡ) ↓u (gTraceStateⁱᵐᵖˡ);
 }.
 
 Module mTraceState.
@@ -12013,7 +12669,9 @@ End mTraceState.
 
 Class mTraceState_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] mTraceState_type_repr  :: go.TypeRepr mTraceStateⁱᵐᵖˡ mTraceState.t;
+  #[global] mTraceState_type_repr  :: go.TypeReprUnderlying mTraceStateⁱᵐᵖˡ mTraceState.t;
+  #[global] mTraceState_underlying :: (mTraceState) <u (mTraceStateⁱᵐᵖˡ);
+  #[global] mTraceStateⁱᵐᵖˡ_underlying :: (mTraceStateⁱᵐᵖˡ) ↓u (mTraceStateⁱᵐᵖˡ);
 }.
 
 Module pTraceState.
@@ -12027,7 +12685,9 @@ End pTraceState.
 
 Class pTraceState_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] pTraceState_type_repr  :: go.TypeRepr pTraceStateⁱᵐᵖˡ pTraceState.t;
+  #[global] pTraceState_type_repr  :: go.TypeReprUnderlying pTraceStateⁱᵐᵖˡ pTraceState.t;
+  #[global] pTraceState_underlying :: (pTraceState) <u (pTraceStateⁱᵐᵖˡ);
+  #[global] pTraceStateⁱᵐᵖˡ_underlying :: (pTraceStateⁱᵐᵖˡ) ↓u (pTraceStateⁱᵐᵖˡ);
 }.
 
 Module traceBlockReason.
@@ -12041,7 +12701,9 @@ End traceBlockReason.
 
 Class traceBlockReason_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] traceBlockReason_type_repr  :: go.TypeRepr traceBlockReasonⁱᵐᵖˡ traceBlockReason.t;
+  #[global] traceBlockReason_type_repr  :: go.TypeReprUnderlying traceBlockReasonⁱᵐᵖˡ traceBlockReason.t;
+  #[global] traceBlockReason_underlying :: (traceBlockReason) <u (traceBlockReasonⁱᵐᵖˡ);
+  #[global] traceBlockReasonⁱᵐᵖˡ_underlying :: (traceBlockReasonⁱᵐᵖˡ) ↓u (traceBlockReasonⁱᵐᵖˡ);
 }.
 
 Module traceGoStopReason.
@@ -12055,7 +12717,9 @@ End traceGoStopReason.
 
 Class traceGoStopReason_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] traceGoStopReason_type_repr  :: go.TypeRepr traceGoStopReasonⁱᵐᵖˡ traceGoStopReason.t;
+  #[global] traceGoStopReason_type_repr  :: go.TypeReprUnderlying traceGoStopReasonⁱᵐᵖˡ traceGoStopReason.t;
+  #[global] traceGoStopReason_underlying :: (traceGoStopReason) <u (traceGoStopReasonⁱᵐᵖˡ);
+  #[global] traceGoStopReasonⁱᵐᵖˡ_underlying :: (traceGoStopReasonⁱᵐᵖˡ) ↓u (traceGoStopReasonⁱᵐᵖˡ);
 }.
 
 Module traceLocker.
@@ -12069,7 +12733,9 @@ End traceLocker.
 
 Class traceLocker_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] traceLocker_type_repr  :: go.TypeRepr traceLockerⁱᵐᵖˡ traceLocker.t;
+  #[global] traceLocker_type_repr  :: go.TypeReprUnderlying traceLockerⁱᵐᵖˡ traceLocker.t;
+  #[global] traceLocker_underlying :: (traceLocker) <u (traceLockerⁱᵐᵖˡ);
+  #[global] traceLockerⁱᵐᵖˡ_underlying :: (traceLockerⁱᵐᵖˡ) ↓u (traceLockerⁱᵐᵖˡ);
 }.
 
 Module traceStackTable.
@@ -12083,7 +12749,9 @@ End traceStackTable.
 
 Class traceStackTable_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] traceStackTable_type_repr  :: go.TypeRepr traceStackTableⁱᵐᵖˡ traceStackTable.t;
+  #[global] traceStackTable_type_repr  :: go.TypeReprUnderlying traceStackTableⁱᵐᵖˡ traceStackTable.t;
+  #[global] traceStackTable_underlying :: (traceStackTable) <u (traceStackTableⁱᵐᵖˡ);
+  #[global] traceStackTableⁱᵐᵖˡ_underlying :: (traceStackTableⁱᵐᵖˡ) ↓u (traceStackTableⁱᵐᵖˡ);
 }.
 
 Module traceFrame.
@@ -12097,7 +12765,9 @@ End traceFrame.
 
 Class traceFrame_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] traceFrame_type_repr  :: go.TypeRepr traceFrameⁱᵐᵖˡ traceFrame.t;
+  #[global] traceFrame_type_repr  :: go.TypeReprUnderlying traceFrameⁱᵐᵖˡ traceFrame.t;
+  #[global] traceFrame_underlying :: (traceFrame) <u (traceFrameⁱᵐᵖˡ);
+  #[global] traceFrameⁱᵐᵖˡ_underlying :: (traceFrameⁱᵐᵖˡ) ↓u (traceFrameⁱᵐᵖˡ);
 }.
 
 Module traceSchedResourceState.
@@ -12111,7 +12781,9 @@ End traceSchedResourceState.
 
 Class traceSchedResourceState_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] traceSchedResourceState_type_repr  :: go.TypeRepr traceSchedResourceStateⁱᵐᵖˡ traceSchedResourceState.t;
+  #[global] traceSchedResourceState_type_repr  :: go.TypeReprUnderlying traceSchedResourceStateⁱᵐᵖˡ traceSchedResourceState.t;
+  #[global] traceSchedResourceState_underlying :: (traceSchedResourceState) <u (traceSchedResourceStateⁱᵐᵖˡ);
+  #[global] traceSchedResourceStateⁱᵐᵖˡ_underlying :: (traceSchedResourceStateⁱᵐᵖˡ) ↓u (traceSchedResourceStateⁱᵐᵖˡ);
 }.
 
 Module traceStringTable.
@@ -12125,7 +12797,9 @@ End traceStringTable.
 
 Class traceStringTable_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] traceStringTable_type_repr  :: go.TypeRepr traceStringTableⁱᵐᵖˡ traceStringTable.t;
+  #[global] traceStringTable_type_repr  :: go.TypeReprUnderlying traceStringTableⁱᵐᵖˡ traceStringTable.t;
+  #[global] traceStringTable_underlying :: (traceStringTable) <u (traceStringTableⁱᵐᵖˡ);
+  #[global] traceStringTableⁱᵐᵖˡ_underlying :: (traceStringTableⁱᵐᵖˡ) ↓u (traceStringTableⁱᵐᵖˡ);
 }.
 
 Module traceTime.
@@ -12139,7 +12813,9 @@ End traceTime.
 
 Class traceTime_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] traceTime_type_repr  :: go.TypeRepr traceTimeⁱᵐᵖˡ traceTime.t;
+  #[global] traceTime_type_repr  :: go.TypeReprUnderlying traceTimeⁱᵐᵖˡ traceTime.t;
+  #[global] traceTime_underlying :: (traceTime) <u (traceTimeⁱᵐᵖˡ);
+  #[global] traceTimeⁱᵐᵖˡ_underlying :: (traceTimeⁱᵐᵖˡ) ↓u (traceTimeⁱᵐᵖˡ);
 }.
 
 Module traceTypeTable.
@@ -12153,7 +12829,9 @@ End traceTypeTable.
 
 Class traceTypeTable_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] traceTypeTable_type_repr  :: go.TypeRepr traceTypeTableⁱᵐᵖˡ traceTypeTable.t;
+  #[global] traceTypeTable_type_repr  :: go.TypeReprUnderlying traceTypeTableⁱᵐᵖˡ traceTypeTable.t;
+  #[global] traceTypeTable_underlying :: (traceTypeTable) <u (traceTypeTableⁱᵐᵖˡ);
+  #[global] traceTypeTableⁱᵐᵖˡ_underlying :: (traceTypeTableⁱᵐᵖˡ) ↓u (traceTypeTableⁱᵐᵖˡ);
 }.
 
 Module rtype.
@@ -12167,7 +12845,9 @@ End rtype.
 
 Class rtype_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] rtype_type_repr  :: go.TypeRepr rtypeⁱᵐᵖˡ rtype.t;
+  #[global] rtype_type_repr  :: go.TypeReprUnderlying rtypeⁱᵐᵖˡ rtype.t;
+  #[global] rtype_underlying :: (rtype) <u (rtypeⁱᵐᵖˡ);
+  #[global] rtypeⁱᵐᵖˡ_underlying :: (rtypeⁱᵐᵖˡ) ↓u (rtypeⁱᵐᵖˡ);
 }.
 
 Module bitCursor.
@@ -12181,7 +12861,9 @@ End bitCursor.
 
 Class bitCursor_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] bitCursor_type_repr  :: go.TypeRepr bitCursorⁱᵐᵖˡ bitCursor.t;
+  #[global] bitCursor_type_repr  :: go.TypeReprUnderlying bitCursorⁱᵐᵖˡ bitCursor.t;
+  #[global] bitCursor_underlying :: (bitCursor) <u (bitCursorⁱᵐᵖˡ);
+  #[global] bitCursorⁱᵐᵖˡ_underlying :: (bitCursorⁱᵐᵖˡ) ↓u (bitCursorⁱᵐᵖˡ);
 }.
 
 Module _typePair.
@@ -12195,7 +12877,9 @@ End _typePair.
 
 Class _typePair_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] _typePair_type_repr  :: go.TypeRepr _typePairⁱᵐᵖˡ _typePair.t;
+  #[global] _typePair_type_repr  :: go.TypeReprUnderlying _typePairⁱᵐᵖˡ _typePair.t;
+  #[global] _typePair_underlying :: (_typePair) <u (_typePairⁱᵐᵖˡ);
+  #[global] _typePairⁱᵐᵖˡ_underlying :: (_typePairⁱᵐᵖˡ) ↓u (_typePairⁱᵐᵖˡ);
 }.
 
 Module elfSym.
@@ -12209,7 +12893,9 @@ End elfSym.
 
 Class elfSym_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] elfSym_type_repr  :: go.TypeRepr elfSymⁱᵐᵖˡ elfSym.t;
+  #[global] elfSym_type_repr  :: go.TypeReprUnderlying elfSymⁱᵐᵖˡ elfSym.t;
+  #[global] elfSym_underlying :: (elfSym) <u (elfSymⁱᵐᵖˡ);
+  #[global] elfSymⁱᵐᵖˡ_underlying :: (elfSymⁱᵐᵖˡ) ↓u (elfSymⁱᵐᵖˡ);
 }.
 
 Module elfVerdef.
@@ -12223,7 +12909,9 @@ End elfVerdef.
 
 Class elfVerdef_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] elfVerdef_type_repr  :: go.TypeRepr elfVerdefⁱᵐᵖˡ elfVerdef.t;
+  #[global] elfVerdef_type_repr  :: go.TypeReprUnderlying elfVerdefⁱᵐᵖˡ elfVerdef.t;
+  #[global] elfVerdef_underlying :: (elfVerdef) <u (elfVerdefⁱᵐᵖˡ);
+  #[global] elfVerdefⁱᵐᵖˡ_underlying :: (elfVerdefⁱᵐᵖˡ) ↓u (elfVerdefⁱᵐᵖˡ);
 }.
 
 Module elfEhdr.
@@ -12237,7 +12925,9 @@ End elfEhdr.
 
 Class elfEhdr_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] elfEhdr_type_repr  :: go.TypeRepr elfEhdrⁱᵐᵖˡ elfEhdr.t;
+  #[global] elfEhdr_type_repr  :: go.TypeReprUnderlying elfEhdrⁱᵐᵖˡ elfEhdr.t;
+  #[global] elfEhdr_underlying :: (elfEhdr) <u (elfEhdrⁱᵐᵖˡ);
+  #[global] elfEhdrⁱᵐᵖˡ_underlying :: (elfEhdrⁱᵐᵖˡ) ↓u (elfEhdrⁱᵐᵖˡ);
 }.
 
 Module elfPhdr.
@@ -12251,7 +12941,9 @@ End elfPhdr.
 
 Class elfPhdr_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] elfPhdr_type_repr  :: go.TypeRepr elfPhdrⁱᵐᵖˡ elfPhdr.t;
+  #[global] elfPhdr_type_repr  :: go.TypeReprUnderlying elfPhdrⁱᵐᵖˡ elfPhdr.t;
+  #[global] elfPhdr_underlying :: (elfPhdr) <u (elfPhdrⁱᵐᵖˡ);
+  #[global] elfPhdrⁱᵐᵖˡ_underlying :: (elfPhdrⁱᵐᵖˡ) ↓u (elfPhdrⁱᵐᵖˡ);
 }.
 
 Module elfShdr.
@@ -12265,7 +12957,9 @@ End elfShdr.
 
 Class elfShdr_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] elfShdr_type_repr  :: go.TypeRepr elfShdrⁱᵐᵖˡ elfShdr.t;
+  #[global] elfShdr_type_repr  :: go.TypeReprUnderlying elfShdrⁱᵐᵖˡ elfShdr.t;
+  #[global] elfShdr_underlying :: (elfShdr) <u (elfShdrⁱᵐᵖˡ);
+  #[global] elfShdrⁱᵐᵖˡ_underlying :: (elfShdrⁱᵐᵖˡ) ↓u (elfShdrⁱᵐᵖˡ);
 }.
 
 Module elfDyn.
@@ -12279,7 +12973,9 @@ End elfDyn.
 
 Class elfDyn_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] elfDyn_type_repr  :: go.TypeRepr elfDynⁱᵐᵖˡ elfDyn.t;
+  #[global] elfDyn_type_repr  :: go.TypeReprUnderlying elfDynⁱᵐᵖˡ elfDyn.t;
+  #[global] elfDyn_underlying :: (elfDyn) <u (elfDynⁱᵐᵖˡ);
+  #[global] elfDynⁱᵐᵖˡ_underlying :: (elfDynⁱᵐᵖˡ) ↓u (elfDynⁱᵐᵖˡ);
 }.
 
 Module elfVerdaux.
@@ -12293,7 +12989,9 @@ End elfVerdaux.
 
 Class elfVerdaux_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] elfVerdaux_type_repr  :: go.TypeRepr elfVerdauxⁱᵐᵖˡ elfVerdaux.t;
+  #[global] elfVerdaux_type_repr  :: go.TypeReprUnderlying elfVerdauxⁱᵐᵖˡ elfVerdaux.t;
+  #[global] elfVerdaux_underlying :: (elfVerdaux) <u (elfVerdauxⁱᵐᵖˡ);
+  #[global] elfVerdauxⁱᵐᵖˡ_underlying :: (elfVerdauxⁱᵐᵖˡ) ↓u (elfVerdauxⁱᵐᵖˡ);
 }.
 
 Module vdsoSymbolKey.
@@ -12307,7 +13005,9 @@ End vdsoSymbolKey.
 
 Class vdsoSymbolKey_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] vdsoSymbolKey_type_repr  :: go.TypeRepr vdsoSymbolKeyⁱᵐᵖˡ vdsoSymbolKey.t;
+  #[global] vdsoSymbolKey_type_repr  :: go.TypeReprUnderlying vdsoSymbolKeyⁱᵐᵖˡ vdsoSymbolKey.t;
+  #[global] vdsoSymbolKey_underlying :: (vdsoSymbolKey) <u (vdsoSymbolKeyⁱᵐᵖˡ);
+  #[global] vdsoSymbolKeyⁱᵐᵖˡ_underlying :: (vdsoSymbolKeyⁱᵐᵖˡ) ↓u (vdsoSymbolKeyⁱᵐᵖˡ);
 }.
 
 Module vdsoVersionKey.
@@ -12321,7 +13021,9 @@ End vdsoVersionKey.
 
 Class vdsoVersionKey_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] vdsoVersionKey_type_repr  :: go.TypeRepr vdsoVersionKeyⁱᵐᵖˡ vdsoVersionKey.t;
+  #[global] vdsoVersionKey_type_repr  :: go.TypeReprUnderlying vdsoVersionKeyⁱᵐᵖˡ vdsoVersionKey.t;
+  #[global] vdsoVersionKey_underlying :: (vdsoVersionKey) <u (vdsoVersionKeyⁱᵐᵖˡ);
+  #[global] vdsoVersionKeyⁱᵐᵖˡ_underlying :: (vdsoVersionKeyⁱᵐᵖˡ) ↓u (vdsoVersionKeyⁱᵐᵖˡ);
 }.
 
 Module vdsoInfo.
@@ -12335,7 +13037,9 @@ End vdsoInfo.
 
 Class vdsoInfo_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] vdsoInfo_type_repr  :: go.TypeRepr vdsoInfoⁱᵐᵖˡ vdsoInfo.t;
+  #[global] vdsoInfo_type_repr  :: go.TypeReprUnderlying vdsoInfoⁱᵐᵖˡ vdsoInfo.t;
+  #[global] vdsoInfo_underlying :: (vdsoInfo) <u (vdsoInfoⁱᵐᵖˡ);
+  #[global] vdsoInfoⁱᵐᵖˡ_underlying :: (vdsoInfoⁱᵐᵖˡ) ↓u (vdsoInfoⁱᵐᵖˡ);
 }.
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=

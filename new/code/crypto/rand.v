@@ -49,7 +49,9 @@ End reader.
 
 Class reader_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] reader_type_repr  :: go.TypeRepr readerⁱᵐᵖˡ reader.t;
+  #[global] reader_type_repr  :: go.TypeReprUnderlying readerⁱᵐᵖˡ reader.t;
+  #[global] reader_underlying :: (reader) <u (readerⁱᵐᵖˡ);
+  #[global] readerⁱᵐᵖˡ_underlying :: (readerⁱᵐᵖˡ) ↓u (readerⁱᵐᵖˡ);
 }.
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=

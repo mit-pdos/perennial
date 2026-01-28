@@ -203,15 +203,20 @@ End def.
 
 End Log.
 
-Definition Logⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
+Definition Log'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
   (go.FieldDecl "m"%go (go.PointerType sync.Mutex));
   (go.FieldDecl "sz"%go go.uint64);
   (go.FieldDecl "diskSz"%go go.uint64)
 ].
+Program Definition Log'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (Log'fds_unsealed).
+Global Instance equals_unfold_Log {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Log'fds =→ Log'fds_unsealed.
+Proof. rewrite /Log'fds seal_eq //. Qed.
+
+Definition Logⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (Log'fds).
 
 Class Log_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Log_type_repr  :: go.TypeRepr Logⁱᵐᵖˡ Log.t;
+  #[global] Log_type_repr  :: go.TypeReprUnderlying Logⁱᵐᵖˡ Log.t;
   #[global] Log_underlying :: (Log) <u (Logⁱᵐᵖˡ);
   #[global] Log_get_m (x : Log.t) :: ⟦StructFieldGet (Logⁱᵐᵖˡ) "m", #x⟧ ⤳[under] #x.(Log.m');
   #[global] Log_set_m (x : Log.t) y :: ⟦StructFieldSet (Logⁱᵐᵖˡ) "m", (#x, #y)⟧ ⤳[under] #(x <|Log.m' := y|>);

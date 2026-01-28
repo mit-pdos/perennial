@@ -73,7 +73,9 @@ End Association.
 
 Class Association_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Association_type_repr  :: go.TypeRepr Associationⁱᵐᵖˡ Association.t;
+  #[global] Association_type_repr  :: go.TypeReprUnderlying Associationⁱᵐᵖˡ Association.t;
+  #[global] Association_underlying :: (Association) <u (Associationⁱᵐᵖˡ);
+  #[global] Associationⁱᵐᵖˡ_underlying :: (Associationⁱᵐᵖˡ) ↓u (Associationⁱᵐᵖˡ);
 }.
 
 Module Bubble.
@@ -87,7 +89,9 @@ End Bubble.
 
 Class Bubble_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Bubble_type_repr  :: go.TypeRepr Bubbleⁱᵐᵖˡ Bubble.t;
+  #[global] Bubble_type_repr  :: go.TypeReprUnderlying Bubbleⁱᵐᵖˡ Bubble.t;
+  #[global] Bubble_underlying :: (Bubble) <u (Bubbleⁱᵐᵖˡ);
+  #[global] Bubbleⁱᵐᵖˡ_underlying :: (Bubbleⁱᵐᵖˡ) ↓u (Bubbleⁱᵐᵖˡ);
 }.
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=

@@ -276,18 +276,24 @@ Definition WaitTimeoutⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
     exception_do (let: "timeoutMs" := (GoAlloc go.uint64 "timeoutMs") in
     let: "cond" := (GoAlloc (go.PointerType sync.Cond) "cond") in
     let: "done" := (GoAlloc (go.ChannelType go.sendrecv (go.StructType [
+
     ])) (GoZeroVal (go.ChannelType go.sendrecv (go.StructType [
+
     ])) #())) in
     let: "$r0" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv (go.StructType [
+
      ])] #()) #()) in
     do:  ("done" <-[go.ChannelType go.sendrecv (go.StructType [
+
     ])] "$r0");;;
     let: "$go" := (λ: <>,
       exception_do (do:  ((MethodResolve (go.PointerType sync.Cond) "Wait"%go (![go.PointerType sync.Cond] "cond")) #());;;
       do:  ((MethodResolve sync.Locker "Unlock"%go (![sync.Locker] (StructFieldRef sync.Cond "L"%go (![go.PointerType sync.Cond] "cond")))) #());;;
       do:  (let: "$a0" := (![go.ChannelType go.sendrecv (go.StructType [
+
       ])] "done") in
       (FuncResolve go.close [go.ChannelType go.sendrecv (go.StructType [
+
        ])] #()) "$a0");;;
       return: #())
       ) in
@@ -297,7 +303,9 @@ Definition WaitTimeoutⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
       do:  ((MethodResolve sync.Locker "Lock"%go (![sync.Locker] (StructFieldRef sync.Cond "L"%go (![go.PointerType sync.Cond] "cond")))) #());;;
       return: (#())
       )); (CommClause (RecvCase (go.StructType [
+
     ]) (![go.ChannelType go.sendrecv (go.StructType [
+
     ])] "done")) (λ: "$recvVal",
       do:  ((MethodResolve sync.Locker "Lock"%go (![sync.Locker] (StructFieldRef sync.Cond "L"%go (![go.PointerType sync.Cond] "cond")))) #());;;
       return: (#())
@@ -336,15 +344,20 @@ End def.
 
 End JoinHandle.
 
-Definition JoinHandleⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
+Definition JoinHandle'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
   (go.FieldDecl "mu"%go (go.PointerType sync.Mutex));
   (go.FieldDecl "done"%go go.bool);
   (go.FieldDecl "cond"%go (go.PointerType sync.Cond))
 ].
+Program Definition JoinHandle'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (JoinHandle'fds_unsealed).
+Global Instance equals_unfold_JoinHandle {ext : ffi_syntax} {go_gctx : GoGlobalContext} : JoinHandle'fds =→ JoinHandle'fds_unsealed.
+Proof. rewrite /JoinHandle'fds seal_eq //. Qed.
+
+Definition JoinHandleⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (JoinHandle'fds).
 
 Class JoinHandle_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] JoinHandle_type_repr  :: go.TypeRepr JoinHandleⁱᵐᵖˡ JoinHandle.t;
+  #[global] JoinHandle_type_repr  :: go.TypeReprUnderlying JoinHandleⁱᵐᵖˡ JoinHandle.t;
   #[global] JoinHandle_underlying :: (JoinHandle) <u (JoinHandleⁱᵐᵖˡ);
   #[global] JoinHandle_get_mu (x : JoinHandle.t) :: ⟦StructFieldGet (JoinHandleⁱᵐᵖˡ) "mu", #x⟧ ⤳[under] #x.(JoinHandle.mu');
   #[global] JoinHandle_set_mu (x : JoinHandle.t) y :: ⟦StructFieldSet (JoinHandleⁱᵐᵖˡ) "mu", (#x, #y)⟧ ⤳[under] #(x <|JoinHandle.mu' := y|>);

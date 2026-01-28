@@ -112,7 +112,7 @@ Local Set Default Proof Using "All".
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance Pointer_into_val_typed
-  `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T} `{!go.TypeRepr T T'}  :
+  `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T}  :
   IntoValTypedUnderlying (atomic.Pointer.t T') (atomic.Pointerⁱᵐᵖˡ T).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance Pointer_access_load__0 `{!TypedPointsto (Σ:=Σ) T'} l (v : (atomic.Pointer.t T')) dq :

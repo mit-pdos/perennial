@@ -348,7 +348,9 @@ End NumError.
 
 Class NumError_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] NumError_type_repr  :: go.TypeRepr NumErrorⁱᵐᵖˡ NumError.t;
+  #[global] NumError_type_repr  :: go.TypeReprUnderlying NumErrorⁱᵐᵖˡ NumError.t;
+  #[global] NumError_underlying :: (NumError) <u (NumErrorⁱᵐᵖˡ);
+  #[global] NumErrorⁱᵐᵖˡ_underlying :: (NumErrorⁱᵐᵖˡ) ↓u (NumErrorⁱᵐᵖˡ);
 }.
 
 Module decimal.
@@ -362,7 +364,9 @@ End decimal.
 
 Class decimal_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] decimal_type_repr  :: go.TypeRepr decimalⁱᵐᵖˡ decimal.t;
+  #[global] decimal_type_repr  :: go.TypeReprUnderlying decimalⁱᵐᵖˡ decimal.t;
+  #[global] decimal_underlying :: (decimal) <u (decimalⁱᵐᵖˡ);
+  #[global] decimalⁱᵐᵖˡ_underlying :: (decimalⁱᵐᵖˡ) ↓u (decimalⁱᵐᵖˡ);
 }.
 
 Module leftCheat.
@@ -376,7 +380,9 @@ End leftCheat.
 
 Class leftCheat_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] leftCheat_type_repr  :: go.TypeRepr leftCheatⁱᵐᵖˡ leftCheat.t;
+  #[global] leftCheat_type_repr  :: go.TypeReprUnderlying leftCheatⁱᵐᵖˡ leftCheat.t;
+  #[global] leftCheat_underlying :: (leftCheat) <u (leftCheatⁱᵐᵖˡ);
+  #[global] leftCheatⁱᵐᵖˡ_underlying :: (leftCheatⁱᵐᵖˡ) ↓u (leftCheatⁱᵐᵖˡ);
 }.
 
 Module floatInfo.
@@ -390,7 +396,9 @@ End floatInfo.
 
 Class floatInfo_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] floatInfo_type_repr  :: go.TypeRepr floatInfoⁱᵐᵖˡ floatInfo.t;
+  #[global] floatInfo_type_repr  :: go.TypeReprUnderlying floatInfoⁱᵐᵖˡ floatInfo.t;
+  #[global] floatInfo_underlying :: (floatInfo) <u (floatInfoⁱᵐᵖˡ);
+  #[global] floatInfoⁱᵐᵖˡ_underlying :: (floatInfoⁱᵐᵖˡ) ↓u (floatInfoⁱᵐᵖˡ);
 }.
 
 Module decimalSlice.
@@ -404,7 +412,9 @@ End decimalSlice.
 
 Class decimalSlice_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] decimalSlice_type_repr  :: go.TypeRepr decimalSliceⁱᵐᵖˡ decimalSlice.t;
+  #[global] decimalSlice_type_repr  :: go.TypeReprUnderlying decimalSliceⁱᵐᵖˡ decimalSlice.t;
+  #[global] decimalSlice_underlying :: (decimalSlice) <u (decimalSliceⁱᵐᵖˡ);
+  #[global] decimalSliceⁱᵐᵖˡ_underlying :: (decimalSliceⁱᵐᵖˡ) ↓u (decimalSliceⁱᵐᵖˡ);
 }.
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=

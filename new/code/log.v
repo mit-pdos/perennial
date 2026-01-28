@@ -109,7 +109,9 @@ End Logger.
 
 Class Logger_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Logger_type_repr  :: go.TypeRepr Loggerⁱᵐᵖˡ Logger.t;
+  #[global] Logger_type_repr  :: go.TypeReprUnderlying Loggerⁱᵐᵖˡ Logger.t;
+  #[global] Logger_underlying :: (Logger) <u (Loggerⁱᵐᵖˡ);
+  #[global] Loggerⁱᵐᵖˡ_underlying :: (Loggerⁱᵐᵖˡ) ↓u (Loggerⁱᵐᵖˡ);
 }.
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=

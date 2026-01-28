@@ -828,7 +828,7 @@ Definition offerStateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
 
 Class offerState_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] offerState_type_repr  :: go.TypeRepr offerStateⁱᵐᵖˡ offerState.t;
+  #[global] offerState_type_repr  :: go.TypeReprUnderlying offerStateⁱᵐᵖˡ offerState.t;
   #[global] offerState_underlying :: (offerState) <u (offerStateⁱᵐᵖˡ);
 }.
 
@@ -851,17 +851,22 @@ End def.
 
 End Channel.
 
-Definition Channelⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) : go.type := go.StructType [
+Definition Channel'fds_unsealed (T : go.type) {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
   (go.FieldDecl "cap"%go go.int);
   (go.FieldDecl "mu"%go (go.PointerType primitive.Mutex));
   (go.FieldDecl "state"%go offerState);
   (go.FieldDecl "buffer"%go (go.SliceType T));
   (go.FieldDecl "v"%go T)
 ].
+Program Definition Channel'fds (T : go.type) {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (Channel'fds_unsealed T).
+Global Instance equals_unfold_Channel T {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Channel'fds T =→ Channel'fds_unsealed T.
+Proof. rewrite /Channel'fds seal_eq //. Qed.
+
+Definition Channelⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) : go.type := go.StructType (Channel'fds T).
 
 Class Channel_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Channel_type_repr T T' `{!ZeroVal T'} `{!go.TypeRepr T T'} :: go.TypeRepr (Channelⁱᵐᵖˡ T) (Channel.t T');
+  #[global] Channel_type_repr T T' `{!ZeroVal T'} `{!TypeRepr T T'} :: go.TypeReprUnderlying (Channelⁱᵐᵖˡ T) (Channel.t T');
   #[global] Channel_underlying T :: (Channel T) <u (Channelⁱᵐᵖˡ T);
   #[global] Channel_get_cap T T' (x : Channel.t T') :: ⟦StructFieldGet (Channelⁱᵐᵖˡ T) "cap", #x⟧ ⤳[under] #x.(Channel.cap');
   #[global] Channel_set_cap T T' (x : Channel.t T') y :: ⟦StructFieldSet (Channelⁱᵐᵖˡ T) "cap", (#x, #y)⟧ ⤳[under] #(x <|Channel.cap' := y|>);
@@ -896,7 +901,7 @@ Definition SelectDirⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
 
 Class SelectDir_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] SelectDir_type_repr  :: go.TypeRepr SelectDirⁱᵐᵖˡ SelectDir.t;
+  #[global] SelectDir_type_repr  :: go.TypeReprUnderlying SelectDirⁱᵐᵖˡ SelectDir.t;
   #[global] SelectDir_underlying :: (SelectDir) <u (SelectDirⁱᵐᵖˡ);
 }.
 

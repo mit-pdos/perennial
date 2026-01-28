@@ -67,7 +67,9 @@ End Disk.
 
 Class Disk_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Disk_type_repr  :: go.TypeRepr Diskⁱᵐᵖˡ Disk.t;
+  #[global] Disk_type_repr  :: go.TypeReprUnderlying Diskⁱᵐᵖˡ Disk.t;
+  #[global] Disk_underlying :: (Disk) <u (Diskⁱᵐᵖˡ);
+  #[global] Diskⁱᵐᵖˡ_underlying :: (Diskⁱᵐᵖˡ) ↓u (Diskⁱᵐᵖˡ);
 }.
 
 Module FileDisk.
@@ -81,7 +83,9 @@ End FileDisk.
 
 Class FileDisk_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] FileDisk_type_repr  :: go.TypeRepr FileDiskⁱᵐᵖˡ FileDisk.t;
+  #[global] FileDisk_type_repr  :: go.TypeReprUnderlying FileDiskⁱᵐᵖˡ FileDisk.t;
+  #[global] FileDisk_underlying :: (FileDisk) <u (FileDiskⁱᵐᵖˡ);
+  #[global] FileDiskⁱᵐᵖˡ_underlying :: (FileDiskⁱᵐᵖˡ) ↓u (FileDiskⁱᵐᵖˡ);
 }.
 
 Module MemDisk.
@@ -95,7 +99,9 @@ End MemDisk.
 
 Class MemDisk_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] MemDisk_type_repr  :: go.TypeRepr MemDiskⁱᵐᵖˡ MemDisk.t;
+  #[global] MemDisk_type_repr  :: go.TypeReprUnderlying MemDiskⁱᵐᵖˡ MemDisk.t;
+  #[global] MemDisk_underlying :: (MemDisk) <u (MemDiskⁱᵐᵖˡ);
+  #[global] MemDiskⁱᵐᵖˡ_underlying :: (MemDiskⁱᵐᵖˡ) ↓u (MemDiskⁱᵐᵖˡ);
 }.
 
 Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=

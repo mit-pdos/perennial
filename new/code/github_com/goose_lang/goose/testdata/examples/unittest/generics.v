@@ -192,13 +192,18 @@ End def.
 
 End Box.
 
-Definition Boxⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) : go.type := go.StructType [
+Definition Box'fds_unsealed (T : go.type) {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
   (go.FieldDecl "Value"%go T)
 ].
+Program Definition Box'fds (T : go.type) {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (Box'fds_unsealed T).
+Global Instance equals_unfold_Box T {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Box'fds T =→ Box'fds_unsealed T.
+Proof. rewrite /Box'fds seal_eq //. Qed.
+
+Definition Boxⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) : go.type := go.StructType (Box'fds T).
 
 Class Box_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Box_type_repr T T' `{!ZeroVal T'} `{!go.TypeRepr T T'} :: go.TypeRepr (Boxⁱᵐᵖˡ T) (Box.t T');
+  #[global] Box_type_repr T T' `{!ZeroVal T'} `{!TypeRepr T T'} :: go.TypeReprUnderlying (Boxⁱᵐᵖˡ T) (Box.t T');
   #[global] Box_underlying T :: (Box T) <u (Boxⁱᵐᵖˡ T);
   #[global] Box_get_Value T T' (x : Box.t T') :: ⟦StructFieldGet (Boxⁱᵐᵖˡ T) "Value", #x⟧ ⤳[under] #x.(Box.Value');
   #[global] Box_set_Value T T' (x : Box.t T') y :: ⟦StructFieldSet (Boxⁱᵐᵖˡ T) "Value", (#x, #y)⟧ ⤳[under] #(x <|Box.Value' := y|>);
@@ -224,16 +229,21 @@ End def.
 
 End Container.
 
-Definition Containerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) : go.type := go.StructType [
+Definition Container'fds_unsealed (T : go.type) {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
   (go.FieldDecl "X"%go T);
   (go.FieldDecl "Y"%go (go.MapType go.int T));
   (go.FieldDecl "Z"%go (go.PointerType T));
   (go.FieldDecl "W"%go go.uint64)
 ].
+Program Definition Container'fds (T : go.type) {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (Container'fds_unsealed T).
+Global Instance equals_unfold_Container T {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Container'fds T =→ Container'fds_unsealed T.
+Proof. rewrite /Container'fds seal_eq //. Qed.
+
+Definition Containerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) : go.type := go.StructType (Container'fds T).
 
 Class Container_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Container_type_repr T T' `{!ZeroVal T'} `{!go.TypeRepr T T'} :: go.TypeRepr (Containerⁱᵐᵖˡ T) (Container.t T');
+  #[global] Container_type_repr T T' `{!ZeroVal T'} `{!TypeRepr T T'} :: go.TypeReprUnderlying (Containerⁱᵐᵖˡ T) (Container.t T');
   #[global] Container_underlying T :: (Container T) <u (Containerⁱᵐᵖˡ T);
   #[global] Container_get_X T T' (x : Container.t T') :: ⟦StructFieldGet (Containerⁱᵐᵖˡ T) "X", #x⟧ ⤳[under] #x.(Container.X');
   #[global] Container_set_X T T' (x : Container.t T') y :: ⟦StructFieldSet (Containerⁱᵐᵖˡ T) "X", (#x, #y)⟧ ⤳[under] #(x <|Container.X' := y|>);
@@ -260,13 +270,18 @@ End def.
 
 End UseContainer.
 
-Definition UseContainerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
+Definition UseContainer'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
   (go.FieldDecl "X"%go (Container go.uint64))
 ].
+Program Definition UseContainer'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (UseContainer'fds_unsealed).
+Global Instance equals_unfold_UseContainer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : UseContainer'fds =→ UseContainer'fds_unsealed.
+Proof. rewrite /UseContainer'fds seal_eq //. Qed.
+
+Definition UseContainerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (UseContainer'fds).
 
 Class UseContainer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] UseContainer_type_repr  :: go.TypeRepr UseContainerⁱᵐᵖˡ UseContainer.t;
+  #[global] UseContainer_type_repr  :: go.TypeReprUnderlying UseContainerⁱᵐᵖˡ UseContainer.t;
   #[global] UseContainer_underlying :: (UseContainer) <u (UseContainerⁱᵐᵖˡ);
   #[global] UseContainer_get_X (x : UseContainer.t) :: ⟦StructFieldGet (UseContainerⁱᵐᵖˡ) "X", #x⟧ ⤳[under] #x.(UseContainer.X');
   #[global] UseContainer_set_X (x : UseContainer.t) y :: ⟦StructFieldSet (UseContainerⁱᵐᵖˡ) "X", (#x, #y)⟧ ⤳[under] #(x <|UseContainer.X' := y|>);
@@ -288,14 +303,19 @@ End def.
 
 End OnlyIndirect.
 
-Definition OnlyIndirectⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) : go.type := go.StructType [
+Definition OnlyIndirect'fds_unsealed (T : go.type) {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
   (go.FieldDecl "X"%go (go.SliceType T));
   (go.FieldDecl "Y"%go (go.PointerType T))
 ].
+Program Definition OnlyIndirect'fds (T : go.type) {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (OnlyIndirect'fds_unsealed T).
+Global Instance equals_unfold_OnlyIndirect T {ext : ffi_syntax} {go_gctx : GoGlobalContext} : OnlyIndirect'fds T =→ OnlyIndirect'fds_unsealed T.
+Proof. rewrite /OnlyIndirect'fds seal_eq //. Qed.
+
+Definition OnlyIndirectⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) : go.type := go.StructType (OnlyIndirect'fds T).
 
 Class OnlyIndirect_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] OnlyIndirect_type_repr T T' `{!ZeroVal T'} `{!go.TypeRepr T T'} :: go.TypeRepr (OnlyIndirectⁱᵐᵖˡ T) (OnlyIndirect.t T');
+  #[global] OnlyIndirect_type_repr T T' `{!ZeroVal T'} `{!TypeRepr T T'} :: go.TypeReprUnderlying (OnlyIndirectⁱᵐᵖˡ T) (OnlyIndirect.t T');
   #[global] OnlyIndirect_underlying T :: (OnlyIndirect T) <u (OnlyIndirectⁱᵐᵖˡ T);
   #[global] OnlyIndirect_get_X T T' (x : OnlyIndirect.t T') :: ⟦StructFieldGet (OnlyIndirectⁱᵐᵖˡ T) "X", #x⟧ ⤳[under] #x.(OnlyIndirect.X');
   #[global] OnlyIndirect_set_X T T' (x : OnlyIndirect.t T') y :: ⟦StructFieldSet (OnlyIndirectⁱᵐᵖˡ T) "X", (#x, #y)⟧ ⤳[under] #(x <|OnlyIndirect.X' := y|>);
@@ -319,14 +339,19 @@ End def.
 
 End MultiParam.
 
-Definition MultiParamⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (A : go.type) (B : go.type) : go.type := go.StructType [
+Definition MultiParam'fds_unsealed (A : go.type) (B : go.type) {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
   (go.FieldDecl "Y"%go B);
   (go.FieldDecl "X"%go A)
 ].
+Program Definition MultiParam'fds (A : go.type) (B : go.type) {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (MultiParam'fds_unsealed A B).
+Global Instance equals_unfold_MultiParam A B {ext : ffi_syntax} {go_gctx : GoGlobalContext} : MultiParam'fds A B =→ MultiParam'fds_unsealed A B.
+Proof. rewrite /MultiParam'fds seal_eq //. Qed.
+
+Definition MultiParamⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (A : go.type) (B : go.type) : go.type := go.StructType (MultiParam'fds A B).
 
 Class MultiParam_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] MultiParam_type_repr A A' `{!ZeroVal A'} `{!go.TypeRepr A A'}B B' `{!ZeroVal B'} `{!go.TypeRepr B B'} :: go.TypeRepr (MultiParamⁱᵐᵖˡ A B) (MultiParam.t A' B');
+  #[global] MultiParam_type_repr A A' `{!ZeroVal A'} `{!TypeRepr A A'}B B' `{!ZeroVal B'} `{!TypeRepr B B'} :: go.TypeReprUnderlying (MultiParamⁱᵐᵖˡ A B) (MultiParam.t A' B');
   #[global] MultiParam_underlying A B :: (MultiParam A B) <u (MultiParamⁱᵐᵖˡ A B);
   #[global] MultiParam_get_Y A B A' B' (x : MultiParam.t A' B') :: ⟦StructFieldGet (MultiParamⁱᵐᵖˡ A B) "Y", #x⟧ ⤳[under] #x.(MultiParam.Y');
   #[global] MultiParam_set_Y A B A' B' (x : MultiParam.t A' B') y :: ⟦StructFieldSet (MultiParamⁱᵐᵖˡ A B) "Y", (#x, #y)⟧ ⤳[under] #(x <|MultiParam.Y' := y|>);

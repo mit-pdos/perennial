@@ -65,7 +65,7 @@ Definition PublicKeyⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
 
 Class PublicKey_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] PublicKey_type_repr  :: go.TypeRepr PublicKeyⁱᵐᵖˡ PublicKey.t;
+  #[global] PublicKey_type_repr  :: go.TypeReprUnderlying PublicKeyⁱᵐᵖˡ PublicKey.t;
   #[global] PublicKey_underlying :: (PublicKey) <u (PublicKeyⁱᵐᵖˡ);
 }.
 
@@ -80,7 +80,9 @@ End PrivateKey.
 
 Class PrivateKey_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] PrivateKey_type_repr  :: go.TypeRepr PrivateKeyⁱᵐᵖˡ PrivateKey.t;
+  #[global] PrivateKey_type_repr  :: go.TypeReprUnderlying PrivateKeyⁱᵐᵖˡ PrivateKey.t;
+  #[global] PrivateKey_underlying :: (PrivateKey) <u (PrivateKeyⁱᵐᵖˡ);
+  #[global] PrivateKeyⁱᵐᵖˡ_underlying :: (PrivateKeyⁱᵐᵖˡ) ↓u (PrivateKeyⁱᵐᵖˡ);
 }.
 
 Module Options.
@@ -94,7 +96,9 @@ End Options.
 
 Class Options_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Options_type_repr  :: go.TypeRepr Optionsⁱᵐᵖˡ Options.t;
+  #[global] Options_type_repr  :: go.TypeReprUnderlying Optionsⁱᵐᵖˡ Options.t;
+  #[global] Options_underlying :: (Options) <u (Optionsⁱᵐᵖˡ);
+  #[global] Optionsⁱᵐᵖˡ_underlying :: (Optionsⁱᵐᵖˡ) ↓u (Optionsⁱᵐᵖˡ);
 }.
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=

@@ -159,7 +159,9 @@ End Type.
 
 Class Type_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Type_type_repr  :: go.TypeRepr Typeⁱᵐᵖˡ Type.t;
+  #[global] Type_type_repr  :: go.TypeReprUnderlying Typeⁱᵐᵖˡ Type.t;
+  #[global] Type_underlying :: (Type) <u (Typeⁱᵐᵖˡ);
+  #[global] Typeⁱᵐᵖˡ_underlying :: (Typeⁱᵐᵖˡ) ↓u (Typeⁱᵐᵖˡ);
 }.
 
 Module rtype.
@@ -173,7 +175,9 @@ End rtype.
 
 Class rtype_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] rtype_type_repr  :: go.TypeRepr rtypeⁱᵐᵖˡ rtype.t;
+  #[global] rtype_type_repr  :: go.TypeReprUnderlying rtypeⁱᵐᵖˡ rtype.t;
+  #[global] rtype_underlying :: (rtype) <u (rtypeⁱᵐᵖˡ);
+  #[global] rtypeⁱᵐᵖˡ_underlying :: (rtypeⁱᵐᵖˡ) ↓u (rtypeⁱᵐᵖˡ);
 }.
 
 Module name.
@@ -187,7 +191,9 @@ End name.
 
 Class name_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] name_type_repr  :: go.TypeRepr nameⁱᵐᵖˡ name.t;
+  #[global] name_type_repr  :: go.TypeReprUnderlying nameⁱᵐᵖˡ name.t;
+  #[global] name_underlying :: (name) <u (nameⁱᵐᵖˡ);
+  #[global] nameⁱᵐᵖˡ_underlying :: (nameⁱᵐᵖˡ) ↓u (nameⁱᵐᵖˡ);
 }.
 
 Module Value.
@@ -201,7 +207,9 @@ End Value.
 
 Class Value_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Value_type_repr  :: go.TypeRepr Valueⁱᵐᵖˡ Value.t;
+  #[global] Value_type_repr  :: go.TypeReprUnderlying Valueⁱᵐᵖˡ Value.t;
+  #[global] Value_underlying :: (Value) <u (Valueⁱᵐᵖˡ);
+  #[global] Valueⁱᵐᵖˡ_underlying :: (Valueⁱᵐᵖˡ) ↓u (Valueⁱᵐᵖˡ);
 }.
 
 Module flag.
@@ -215,7 +223,9 @@ End flag.
 
 Class flag_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] flag_type_repr  :: go.TypeRepr flagⁱᵐᵖˡ flag.t;
+  #[global] flag_type_repr  :: go.TypeReprUnderlying flagⁱᵐᵖˡ flag.t;
+  #[global] flag_underlying :: (flag) <u (flagⁱᵐᵖˡ);
+  #[global] flagⁱᵐᵖˡ_underlying :: (flagⁱᵐᵖˡ) ↓u (flagⁱᵐᵖˡ);
 }.
 
 Module ValueError.
@@ -229,7 +239,9 @@ End ValueError.
 
 Class ValueError_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] ValueError_type_repr  :: go.TypeRepr ValueErrorⁱᵐᵖˡ ValueError.t;
+  #[global] ValueError_type_repr  :: go.TypeReprUnderlying ValueErrorⁱᵐᵖˡ ValueError.t;
+  #[global] ValueError_underlying :: (ValueError) <u (ValueErrorⁱᵐᵖˡ);
+  #[global] ValueErrorⁱᵐᵖˡ_underlying :: (ValueErrorⁱᵐᵖˡ) ↓u (ValueErrorⁱᵐᵖˡ);
 }.
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=

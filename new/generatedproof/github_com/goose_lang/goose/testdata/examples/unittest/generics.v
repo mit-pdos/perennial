@@ -28,7 +28,7 @@ Local Set Default Proof Using "All".
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance Box_into_val_typed
-  `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T} `{!go.TypeRepr T T'}  :
+  `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T}  :
   IntoValTypedUnderlying (generics.Box.t T') (generics.Boxⁱᵐᵖˡ T).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance Box_access_load_Value `{!TypedPointsto (Σ:=Σ) T'} l (v : (generics.Box.t T')) dq :
@@ -72,7 +72,7 @@ Local Set Default Proof Using "All".
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance Container_into_val_typed
-  `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T} `{!go.TypeRepr T T'}  :
+  `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T}  :
   IntoValTypedUnderlying (generics.Container.t T') (generics.Containerⁱᵐᵖˡ T).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance Container_access_load_X `{!TypedPointsto (Σ:=Σ) T'} l (v : (generics.Container.t T')) dq :
@@ -194,7 +194,7 @@ Local Set Default Proof Using "All".
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance OnlyIndirect_into_val_typed
-  `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T} `{!go.TypeRepr T T'}  :
+  `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T}  :
   IntoValTypedUnderlying (generics.OnlyIndirect.t T') (generics.OnlyIndirectⁱᵐᵖˡ T).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance OnlyIndirect_access_load_X `{!TypedPointsto (Σ:=Σ) T'} l (v : (generics.OnlyIndirect.t T')) dq :
@@ -249,7 +249,7 @@ Local Set Default Proof Using "All".
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance MultiParam_into_val_typed
-  `{!ZeroVal A'} `{!TypedPointsto (Σ:=Σ) A'} `{!IntoValTyped A' A} `{!go.TypeRepr A A'} `{!ZeroVal B'} `{!TypedPointsto (Σ:=Σ) B'} `{!IntoValTyped B' B} `{!go.TypeRepr B B'}  :
+  `{!ZeroVal A'} `{!TypedPointsto (Σ:=Σ) A'} `{!IntoValTyped A' A} `{!ZeroVal B'} `{!TypedPointsto (Σ:=Σ) B'} `{!IntoValTyped B' B}  :
   IntoValTypedUnderlying (generics.MultiParam.t A' B') (generics.MultiParamⁱᵐᵖˡ A B).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance MultiParam_access_load_Y `{!TypedPointsto (Σ:=Σ) A'} `{!TypedPointsto (Σ:=Σ) B'} l (v : (generics.MultiParam.t A' B')) dq :

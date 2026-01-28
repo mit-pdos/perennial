@@ -689,7 +689,9 @@ End ParseError.
 
 Class ParseError_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] ParseError_type_repr  :: go.TypeRepr ParseErrorⁱᵐᵖˡ ParseError.t;
+  #[global] ParseError_type_repr  :: go.TypeReprUnderlying ParseErrorⁱᵐᵖˡ ParseError.t;
+  #[global] ParseError_underlying :: (ParseError) <u (ParseErrorⁱᵐᵖˡ);
+  #[global] ParseErrorⁱᵐᵖˡ_underlying :: (ParseErrorⁱᵐᵖˡ) ↓u (ParseErrorⁱᵐᵖˡ);
 }.
 
 Module Time.
@@ -709,15 +711,20 @@ End def.
 
 End Time.
 
-Definition Timeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
+Definition Time'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
   (go.FieldDecl "wall"%go go.uint64);
   (go.FieldDecl "ext"%go go.int64);
   (go.FieldDecl "loc"%go (go.PointerType Location))
 ].
+Program Definition Time'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (Time'fds_unsealed).
+Global Instance equals_unfold_Time {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Time'fds =→ Time'fds_unsealed.
+Proof. rewrite /Time'fds seal_eq //. Qed.
+
+Definition Timeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (Time'fds).
 
 Class Time_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Time_type_repr  :: go.TypeRepr Timeⁱᵐᵖˡ Time.t;
+  #[global] Time_type_repr  :: go.TypeReprUnderlying Timeⁱᵐᵖˡ Time.t;
   #[global] Time_underlying :: (Time) <u (Timeⁱᵐᵖˡ);
   #[global] Time_get_wall (x : Time.t) :: ⟦StructFieldGet (Timeⁱᵐᵖˡ) "wall", #x⟧ ⤳[under] #x.(Time.wall');
   #[global] Time_set_wall (x : Time.t) y :: ⟦StructFieldSet (Timeⁱᵐᵖˡ) "wall", (#x, #y)⟧ ⤳[under] #(x <|Time.wall' := y|>);
@@ -748,14 +755,19 @@ End def.
 
 End Timer.
 
-Definition Timerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
+Definition Timer'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
   (go.FieldDecl "C"%go (go.ChannelType go.recvonly Time));
   (go.FieldDecl "initTimer"%go go.bool)
 ].
+Program Definition Timer'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (Timer'fds_unsealed).
+Global Instance equals_unfold_Timer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Timer'fds =→ Timer'fds_unsealed.
+Proof. rewrite /Timer'fds seal_eq //. Qed.
+
+Definition Timerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (Timer'fds).
 
 Class Timer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Timer_type_repr  :: go.TypeRepr Timerⁱᵐᵖˡ Timer.t;
+  #[global] Timer_type_repr  :: go.TypeReprUnderlying Timerⁱᵐᵖˡ Timer.t;
   #[global] Timer_underlying :: (Timer) <u (Timerⁱᵐᵖˡ);
   #[global] Timer_get_C (x : Timer.t) :: ⟦StructFieldGet (Timerⁱᵐᵖˡ) "C", #x⟧ ⤳[under] #x.(Timer.C');
   #[global] Timer_set_C (x : Timer.t) y :: ⟦StructFieldSet (Timerⁱᵐᵖˡ) "C", (#x, #y)⟧ ⤳[under] #(x <|Timer.C' := y|>);
@@ -774,7 +786,9 @@ End Ticker.
 
 Class Ticker_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Ticker_type_repr  :: go.TypeRepr Tickerⁱᵐᵖˡ Ticker.t;
+  #[global] Ticker_type_repr  :: go.TypeReprUnderlying Tickerⁱᵐᵖˡ Ticker.t;
+  #[global] Ticker_underlying :: (Ticker) <u (Tickerⁱᵐᵖˡ);
+  #[global] Tickerⁱᵐᵖˡ_underlying :: (Tickerⁱᵐᵖˡ) ↓u (Tickerⁱᵐᵖˡ);
 }.
 
 Module Month.
@@ -788,7 +802,9 @@ End Month.
 
 Class Month_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Month_type_repr  :: go.TypeRepr Monthⁱᵐᵖˡ Month.t;
+  #[global] Month_type_repr  :: go.TypeReprUnderlying Monthⁱᵐᵖˡ Month.t;
+  #[global] Month_underlying :: (Month) <u (Monthⁱᵐᵖˡ);
+  #[global] Monthⁱᵐᵖˡ_underlying :: (Monthⁱᵐᵖˡ) ↓u (Monthⁱᵐᵖˡ);
 }.
 
 Module Weekday.
@@ -802,7 +818,9 @@ End Weekday.
 
 Class Weekday_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Weekday_type_repr  :: go.TypeRepr Weekdayⁱᵐᵖˡ Weekday.t;
+  #[global] Weekday_type_repr  :: go.TypeReprUnderlying Weekdayⁱᵐᵖˡ Weekday.t;
+  #[global] Weekday_underlying :: (Weekday) <u (Weekdayⁱᵐᵖˡ);
+  #[global] Weekdayⁱᵐᵖˡ_underlying :: (Weekdayⁱᵐᵖˡ) ↓u (Weekdayⁱᵐᵖˡ);
 }.
 
 Module absSeconds.
@@ -816,7 +834,9 @@ End absSeconds.
 
 Class absSeconds_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] absSeconds_type_repr  :: go.TypeRepr absSecondsⁱᵐᵖˡ absSeconds.t;
+  #[global] absSeconds_type_repr  :: go.TypeReprUnderlying absSecondsⁱᵐᵖˡ absSeconds.t;
+  #[global] absSeconds_underlying :: (absSeconds) <u (absSecondsⁱᵐᵖˡ);
+  #[global] absSecondsⁱᵐᵖˡ_underlying :: (absSecondsⁱᵐᵖˡ) ↓u (absSecondsⁱᵐᵖˡ);
 }.
 
 Module absDays.
@@ -830,7 +850,9 @@ End absDays.
 
 Class absDays_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] absDays_type_repr  :: go.TypeRepr absDaysⁱᵐᵖˡ absDays.t;
+  #[global] absDays_type_repr  :: go.TypeReprUnderlying absDaysⁱᵐᵖˡ absDays.t;
+  #[global] absDays_underlying :: (absDays) <u (absDaysⁱᵐᵖˡ);
+  #[global] absDaysⁱᵐᵖˡ_underlying :: (absDaysⁱᵐᵖˡ) ↓u (absDaysⁱᵐᵖˡ);
 }.
 
 Module absCentury.
@@ -844,7 +866,9 @@ End absCentury.
 
 Class absCentury_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] absCentury_type_repr  :: go.TypeRepr absCenturyⁱᵐᵖˡ absCentury.t;
+  #[global] absCentury_type_repr  :: go.TypeReprUnderlying absCenturyⁱᵐᵖˡ absCentury.t;
+  #[global] absCentury_underlying :: (absCentury) <u (absCenturyⁱᵐᵖˡ);
+  #[global] absCenturyⁱᵐᵖˡ_underlying :: (absCenturyⁱᵐᵖˡ) ↓u (absCenturyⁱᵐᵖˡ);
 }.
 
 Module absCyear.
@@ -858,7 +882,9 @@ End absCyear.
 
 Class absCyear_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] absCyear_type_repr  :: go.TypeRepr absCyearⁱᵐᵖˡ absCyear.t;
+  #[global] absCyear_type_repr  :: go.TypeReprUnderlying absCyearⁱᵐᵖˡ absCyear.t;
+  #[global] absCyear_underlying :: (absCyear) <u (absCyearⁱᵐᵖˡ);
+  #[global] absCyearⁱᵐᵖˡ_underlying :: (absCyearⁱᵐᵖˡ) ↓u (absCyearⁱᵐᵖˡ);
 }.
 
 Module absYday.
@@ -872,7 +898,9 @@ End absYday.
 
 Class absYday_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] absYday_type_repr  :: go.TypeRepr absYdayⁱᵐᵖˡ absYday.t;
+  #[global] absYday_type_repr  :: go.TypeReprUnderlying absYdayⁱᵐᵖˡ absYday.t;
+  #[global] absYday_underlying :: (absYday) <u (absYdayⁱᵐᵖˡ);
+  #[global] absYdayⁱᵐᵖˡ_underlying :: (absYdayⁱᵐᵖˡ) ↓u (absYdayⁱᵐᵖˡ);
 }.
 
 Module absMonth.
@@ -886,7 +914,9 @@ End absMonth.
 
 Class absMonth_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] absMonth_type_repr  :: go.TypeRepr absMonthⁱᵐᵖˡ absMonth.t;
+  #[global] absMonth_type_repr  :: go.TypeReprUnderlying absMonthⁱᵐᵖˡ absMonth.t;
+  #[global] absMonth_underlying :: (absMonth) <u (absMonthⁱᵐᵖˡ);
+  #[global] absMonthⁱᵐᵖˡ_underlying :: (absMonthⁱᵐᵖˡ) ↓u (absMonthⁱᵐᵖˡ);
 }.
 
 Module absLeap.
@@ -900,7 +930,9 @@ End absLeap.
 
 Class absLeap_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] absLeap_type_repr  :: go.TypeRepr absLeapⁱᵐᵖˡ absLeap.t;
+  #[global] absLeap_type_repr  :: go.TypeReprUnderlying absLeapⁱᵐᵖˡ absLeap.t;
+  #[global] absLeap_underlying :: (absLeap) <u (absLeapⁱᵐᵖˡ);
+  #[global] absLeapⁱᵐᵖˡ_underlying :: (absLeapⁱᵐᵖˡ) ↓u (absLeapⁱᵐᵖˡ);
 }.
 
 Module absJanFeb.
@@ -914,7 +946,9 @@ End absJanFeb.
 
 Class absJanFeb_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] absJanFeb_type_repr  :: go.TypeRepr absJanFebⁱᵐᵖˡ absJanFeb.t;
+  #[global] absJanFeb_type_repr  :: go.TypeReprUnderlying absJanFebⁱᵐᵖˡ absJanFeb.t;
+  #[global] absJanFeb_underlying :: (absJanFeb) <u (absJanFebⁱᵐᵖˡ);
+  #[global] absJanFebⁱᵐᵖˡ_underlying :: (absJanFebⁱᵐᵖˡ) ↓u (absJanFebⁱᵐᵖˡ);
 }.
 
 Module Duration.
@@ -928,7 +962,7 @@ Definition Durationⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : 
 
 Class Duration_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Duration_type_repr  :: go.TypeRepr Durationⁱᵐᵖˡ Duration.t;
+  #[global] Duration_type_repr  :: go.TypeReprUnderlying Durationⁱᵐᵖˡ Duration.t;
   #[global] Duration_underlying :: (Duration) <u (Durationⁱᵐᵖˡ);
 }.
 
@@ -943,7 +977,9 @@ End Location.
 
 Class Location_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Location_type_repr  :: go.TypeRepr Locationⁱᵐᵖˡ Location.t;
+  #[global] Location_type_repr  :: go.TypeReprUnderlying Locationⁱᵐᵖˡ Location.t;
+  #[global] Location_underlying :: (Location) <u (Locationⁱᵐᵖˡ);
+  #[global] Locationⁱᵐᵖˡ_underlying :: (Locationⁱᵐᵖˡ) ↓u (Locationⁱᵐᵖˡ);
 }.
 
 Module zone.
@@ -957,7 +993,9 @@ End zone.
 
 Class zone_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] zone_type_repr  :: go.TypeRepr zoneⁱᵐᵖˡ zone.t;
+  #[global] zone_type_repr  :: go.TypeReprUnderlying zoneⁱᵐᵖˡ zone.t;
+  #[global] zone_underlying :: (zone) <u (zoneⁱᵐᵖˡ);
+  #[global] zoneⁱᵐᵖˡ_underlying :: (zoneⁱᵐᵖˡ) ↓u (zoneⁱᵐᵖˡ);
 }.
 
 Module zoneTrans.
@@ -971,7 +1009,9 @@ End zoneTrans.
 
 Class zoneTrans_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] zoneTrans_type_repr  :: go.TypeRepr zoneTransⁱᵐᵖˡ zoneTrans.t;
+  #[global] zoneTrans_type_repr  :: go.TypeReprUnderlying zoneTransⁱᵐᵖˡ zoneTrans.t;
+  #[global] zoneTrans_underlying :: (zoneTrans) <u (zoneTransⁱᵐᵖˡ);
+  #[global] zoneTransⁱᵐᵖˡ_underlying :: (zoneTransⁱᵐᵖˡ) ↓u (zoneTransⁱᵐᵖˡ);
 }.
 
 Module ruleKind.
@@ -985,7 +1025,9 @@ End ruleKind.
 
 Class ruleKind_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] ruleKind_type_repr  :: go.TypeRepr ruleKindⁱᵐᵖˡ ruleKind.t;
+  #[global] ruleKind_type_repr  :: go.TypeReprUnderlying ruleKindⁱᵐᵖˡ ruleKind.t;
+  #[global] ruleKind_underlying :: (ruleKind) <u (ruleKindⁱᵐᵖˡ);
+  #[global] ruleKindⁱᵐᵖˡ_underlying :: (ruleKindⁱᵐᵖˡ) ↓u (ruleKindⁱᵐᵖˡ);
 }.
 
 Module rule.
@@ -999,7 +1041,9 @@ End rule.
 
 Class rule_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] rule_type_repr  :: go.TypeRepr ruleⁱᵐᵖˡ rule.t;
+  #[global] rule_type_repr  :: go.TypeReprUnderlying ruleⁱᵐᵖˡ rule.t;
+  #[global] rule_underlying :: (rule) <u (ruleⁱᵐᵖˡ);
+  #[global] ruleⁱᵐᵖˡ_underlying :: (ruleⁱᵐᵖˡ) ↓u (ruleⁱᵐᵖˡ);
 }.
 
 Module fileSizeError.
@@ -1013,7 +1057,9 @@ End fileSizeError.
 
 Class fileSizeError_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] fileSizeError_type_repr  :: go.TypeRepr fileSizeErrorⁱᵐᵖˡ fileSizeError.t;
+  #[global] fileSizeError_type_repr  :: go.TypeReprUnderlying fileSizeErrorⁱᵐᵖˡ fileSizeError.t;
+  #[global] fileSizeError_underlying :: (fileSizeError) <u (fileSizeErrorⁱᵐᵖˡ);
+  #[global] fileSizeErrorⁱᵐᵖˡ_underlying :: (fileSizeErrorⁱᵐᵖˡ) ↓u (fileSizeErrorⁱᵐᵖˡ);
 }.
 
 Module dataIO.
@@ -1027,7 +1073,9 @@ End dataIO.
 
 Class dataIO_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] dataIO_type_repr  :: go.TypeRepr dataIOⁱᵐᵖˡ dataIO.t;
+  #[global] dataIO_type_repr  :: go.TypeReprUnderlying dataIOⁱᵐᵖˡ dataIO.t;
+  #[global] dataIO_underlying :: (dataIO) <u (dataIOⁱᵐᵖˡ);
+  #[global] dataIOⁱᵐᵖˡ_underlying :: (dataIOⁱᵐᵖˡ) ↓u (dataIOⁱᵐᵖˡ);
 }.
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=

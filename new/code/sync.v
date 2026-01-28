@@ -827,12 +827,18 @@ End def.
 
 End noCopy.
 
-Definition noCopyⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
+Definition noCopy'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
+
 ].
+Program Definition noCopy'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (noCopy'fds_unsealed).
+Global Instance equals_unfold_noCopy {ext : ffi_syntax} {go_gctx : GoGlobalContext} : noCopy'fds =→ noCopy'fds_unsealed.
+Proof. rewrite /noCopy'fds seal_eq //. Qed.
+
+Definition noCopyⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (noCopy'fds).
 
 Class noCopy_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] noCopy_type_repr  :: go.TypeRepr noCopyⁱᵐᵖˡ noCopy.t;
+  #[global] noCopy_type_repr  :: go.TypeReprUnderlying noCopyⁱᵐᵖˡ noCopy.t;
   #[global] noCopy_underlying :: (noCopy) <u (noCopyⁱᵐᵖˡ);
 }.
 
@@ -847,7 +853,7 @@ Definition Lockerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go
 
 Class Locker_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Locker_type_repr  :: go.TypeRepr Lockerⁱᵐᵖˡ Locker.t;
+  #[global] Locker_type_repr  :: go.TypeReprUnderlying Lockerⁱᵐᵖˡ Locker.t;
   #[global] Locker_underlying :: (Locker) <u (Lockerⁱᵐᵖˡ);
 }.
 
@@ -862,7 +868,9 @@ End notifyList.
 
 Class notifyList_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] notifyList_type_repr  :: go.TypeRepr notifyListⁱᵐᵖˡ notifyList.t;
+  #[global] notifyList_type_repr  :: go.TypeReprUnderlying notifyListⁱᵐᵖˡ notifyList.t;
+  #[global] notifyList_underlying :: (notifyList) <u (notifyListⁱᵐᵖˡ);
+  #[global] notifyListⁱᵐᵖˡ_underlying :: (notifyListⁱᵐᵖˡ) ↓u (notifyListⁱᵐᵖˡ);
 }.
 
 Module copyChecker.
@@ -876,7 +884,9 @@ End copyChecker.
 
 Class copyChecker_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] copyChecker_type_repr  :: go.TypeRepr copyCheckerⁱᵐᵖˡ copyChecker.t;
+  #[global] copyChecker_type_repr  :: go.TypeReprUnderlying copyCheckerⁱᵐᵖˡ copyChecker.t;
+  #[global] copyChecker_underlying :: (copyChecker) <u (copyCheckerⁱᵐᵖˡ);
+  #[global] copyCheckerⁱᵐᵖˡ_underlying :: (copyCheckerⁱᵐᵖˡ) ↓u (copyCheckerⁱᵐᵖˡ);
 }.
 
 Module Cond.
@@ -897,16 +907,21 @@ End def.
 
 End Cond.
 
-Definition Condⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
+Definition Cond'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
   (go.FieldDecl "noCopy"%go noCopy);
   (go.FieldDecl "L"%go Locker);
   (go.FieldDecl "notify"%go notifyList);
   (go.FieldDecl "checker"%go copyChecker)
 ].
+Program Definition Cond'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (Cond'fds_unsealed).
+Global Instance equals_unfold_Cond {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Cond'fds =→ Cond'fds_unsealed.
+Proof. rewrite /Cond'fds seal_eq //. Qed.
+
+Definition Condⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (Cond'fds).
 
 Class Cond_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Cond_type_repr  :: go.TypeRepr Condⁱᵐᵖˡ Cond.t;
+  #[global] Cond_type_repr  :: go.TypeReprUnderlying Condⁱᵐᵖˡ Cond.t;
   #[global] Cond_underlying :: (Cond) <u (Condⁱᵐᵖˡ);
   #[global] Cond_get_noCopy (x : Cond.t) :: ⟦StructFieldGet (Condⁱᵐᵖˡ) "noCopy", #x⟧ ⤳[under] #x.(Cond.noCopy');
   #[global] Cond_set_noCopy (x : Cond.t) y :: ⟦StructFieldSet (Condⁱᵐᵖˡ) "noCopy", (#x, #y)⟧ ⤳[under] #(x <|Cond.noCopy' := y|>);
@@ -932,7 +947,9 @@ End Map.
 
 Class Map_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Map_type_repr  :: go.TypeRepr Mapⁱᵐᵖˡ Map.t;
+  #[global] Map_type_repr  :: go.TypeReprUnderlying Mapⁱᵐᵖˡ Map.t;
+  #[global] Map_underlying :: (Map) <u (Mapⁱᵐᵖˡ);
+  #[global] Mapⁱᵐᵖˡ_underlying :: (Mapⁱᵐᵖˡ) ↓u (Mapⁱᵐᵖˡ);
 }.
 
 Module readOnly.
@@ -946,7 +963,9 @@ End readOnly.
 
 Class readOnly_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] readOnly_type_repr  :: go.TypeRepr readOnlyⁱᵐᵖˡ readOnly.t;
+  #[global] readOnly_type_repr  :: go.TypeReprUnderlying readOnlyⁱᵐᵖˡ readOnly.t;
+  #[global] readOnly_underlying :: (readOnly) <u (readOnlyⁱᵐᵖˡ);
+  #[global] readOnlyⁱᵐᵖˡ_underlying :: (readOnlyⁱᵐᵖˡ) ↓u (readOnlyⁱᵐᵖˡ);
 }.
 
 Module entry.
@@ -960,12 +979,14 @@ End entry.
 
 Class entry_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] entry_type_repr  :: go.TypeRepr entryⁱᵐᵖˡ entry.t;
+  #[global] entry_type_repr  :: go.TypeReprUnderlying entryⁱᵐᵖˡ entry.t;
+  #[global] entry_underlying :: (entry) <u (entryⁱᵐᵖˡ);
+  #[global] entryⁱᵐᵖˡ_underlying :: (entryⁱᵐᵖˡ) ↓u (entryⁱᵐᵖˡ);
 }.
 
 Class Mutex_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Mutex_type_repr  :: go.TypeRepr Mutexⁱᵐᵖˡ Mutex.t;
+  #[global] Mutex_type_repr  :: go.TypeReprUnderlying Mutexⁱᵐᵖˡ Mutex.t;
   #[global] Mutex_underlying :: (Mutex) <u (Mutexⁱᵐᵖˡ);
   #[global] Mutex'ptr_Lock_unfold :: MethodUnfold (go.PointerType (Mutex)) "Lock" (Mutex__Lockⁱᵐᵖˡ);
   #[global] Mutex'ptr_TryLock_unfold :: MethodUnfold (go.PointerType (Mutex)) "TryLock" (Mutex__TryLockⁱᵐᵖˡ);
@@ -989,15 +1010,20 @@ End def.
 
 End Once.
 
-Definition Onceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
+Definition Once'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
   (go.FieldDecl "_0"%go noCopy);
   (go.FieldDecl "done"%go atomic.Bool);
   (go.FieldDecl "m"%go Mutex)
 ].
+Program Definition Once'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (Once'fds_unsealed).
+Global Instance equals_unfold_Once {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Once'fds =→ Once'fds_unsealed.
+Proof. rewrite /Once'fds seal_eq //. Qed.
+
+Definition Onceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (Once'fds).
 
 Class Once_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Once_type_repr  :: go.TypeRepr Onceⁱᵐᵖˡ Once.t;
+  #[global] Once_type_repr  :: go.TypeReprUnderlying Onceⁱᵐᵖˡ Once.t;
   #[global] Once_underlying :: (Once) <u (Onceⁱᵐᵖˡ);
   #[global] Once_get__0 (x : Once.t) :: ⟦StructFieldGet (Onceⁱᵐᵖˡ) "_0", #x⟧ ⤳[under] #x.(Once._0');
   #[global] Once_set__0 (x : Once.t) y :: ⟦StructFieldSet (Onceⁱᵐᵖˡ) "_0", (#x, #y)⟧ ⤳[under] #(x <|Once._0' := y|>);
@@ -1020,7 +1046,9 @@ End Pool.
 
 Class Pool_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Pool_type_repr  :: go.TypeRepr Poolⁱᵐᵖˡ Pool.t;
+  #[global] Pool_type_repr  :: go.TypeReprUnderlying Poolⁱᵐᵖˡ Pool.t;
+  #[global] Pool_underlying :: (Pool) <u (Poolⁱᵐᵖˡ);
+  #[global] Poolⁱᵐᵖˡ_underlying :: (Poolⁱᵐᵖˡ) ↓u (Poolⁱᵐᵖˡ);
 }.
 
 Module poolLocalInternal.
@@ -1034,7 +1062,9 @@ End poolLocalInternal.
 
 Class poolLocalInternal_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] poolLocalInternal_type_repr  :: go.TypeRepr poolLocalInternalⁱᵐᵖˡ poolLocalInternal.t;
+  #[global] poolLocalInternal_type_repr  :: go.TypeReprUnderlying poolLocalInternalⁱᵐᵖˡ poolLocalInternal.t;
+  #[global] poolLocalInternal_underlying :: (poolLocalInternal) <u (poolLocalInternalⁱᵐᵖˡ);
+  #[global] poolLocalInternalⁱᵐᵖˡ_underlying :: (poolLocalInternalⁱᵐᵖˡ) ↓u (poolLocalInternalⁱᵐᵖˡ);
 }.
 
 Module poolLocal.
@@ -1048,7 +1078,9 @@ End poolLocal.
 
 Class poolLocal_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] poolLocal_type_repr  :: go.TypeRepr poolLocalⁱᵐᵖˡ poolLocal.t;
+  #[global] poolLocal_type_repr  :: go.TypeReprUnderlying poolLocalⁱᵐᵖˡ poolLocal.t;
+  #[global] poolLocal_underlying :: (poolLocal) <u (poolLocalⁱᵐᵖˡ);
+  #[global] poolLocalⁱᵐᵖˡ_underlying :: (poolLocalⁱᵐᵖˡ) ↓u (poolLocalⁱᵐᵖˡ);
 }.
 
 Module poolDequeue.
@@ -1062,7 +1094,9 @@ End poolDequeue.
 
 Class poolDequeue_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] poolDequeue_type_repr  :: go.TypeRepr poolDequeueⁱᵐᵖˡ poolDequeue.t;
+  #[global] poolDequeue_type_repr  :: go.TypeReprUnderlying poolDequeueⁱᵐᵖˡ poolDequeue.t;
+  #[global] poolDequeue_underlying :: (poolDequeue) <u (poolDequeueⁱᵐᵖˡ);
+  #[global] poolDequeueⁱᵐᵖˡ_underlying :: (poolDequeueⁱᵐᵖˡ) ↓u (poolDequeueⁱᵐᵖˡ);
 }.
 
 Module eface.
@@ -1076,7 +1110,9 @@ End eface.
 
 Class eface_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] eface_type_repr  :: go.TypeRepr efaceⁱᵐᵖˡ eface.t;
+  #[global] eface_type_repr  :: go.TypeReprUnderlying efaceⁱᵐᵖˡ eface.t;
+  #[global] eface_underlying :: (eface) <u (efaceⁱᵐᵖˡ);
+  #[global] efaceⁱᵐᵖˡ_underlying :: (efaceⁱᵐᵖˡ) ↓u (efaceⁱᵐᵖˡ);
 }.
 
 Module dequeueNil.
@@ -1090,7 +1126,9 @@ End dequeueNil.
 
 Class dequeueNil_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] dequeueNil_type_repr  :: go.TypeRepr dequeueNilⁱᵐᵖˡ dequeueNil.t;
+  #[global] dequeueNil_type_repr  :: go.TypeReprUnderlying dequeueNilⁱᵐᵖˡ dequeueNil.t;
+  #[global] dequeueNil_underlying :: (dequeueNil) <u (dequeueNilⁱᵐᵖˡ);
+  #[global] dequeueNilⁱᵐᵖˡ_underlying :: (dequeueNilⁱᵐᵖˡ) ↓u (dequeueNilⁱᵐᵖˡ);
 }.
 
 Module poolChain.
@@ -1104,7 +1142,9 @@ End poolChain.
 
 Class poolChain_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] poolChain_type_repr  :: go.TypeRepr poolChainⁱᵐᵖˡ poolChain.t;
+  #[global] poolChain_type_repr  :: go.TypeReprUnderlying poolChainⁱᵐᵖˡ poolChain.t;
+  #[global] poolChain_underlying :: (poolChain) <u (poolChainⁱᵐᵖˡ);
+  #[global] poolChainⁱᵐᵖˡ_underlying :: (poolChainⁱᵐᵖˡ) ↓u (poolChainⁱᵐᵖˡ);
 }.
 
 Module poolChainElt.
@@ -1118,7 +1158,9 @@ End poolChainElt.
 
 Class poolChainElt_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] poolChainElt_type_repr  :: go.TypeRepr poolChainEltⁱᵐᵖˡ poolChainElt.t;
+  #[global] poolChainElt_type_repr  :: go.TypeReprUnderlying poolChainEltⁱᵐᵖˡ poolChainElt.t;
+  #[global] poolChainElt_underlying :: (poolChainElt) <u (poolChainEltⁱᵐᵖˡ);
+  #[global] poolChainEltⁱᵐᵖˡ_underlying :: (poolChainEltⁱᵐᵖˡ) ↓u (poolChainEltⁱᵐᵖˡ);
 }.
 
 Module RWMutex.
@@ -1140,17 +1182,22 @@ End def.
 
 End RWMutex.
 
-Definition RWMutexⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
+Definition RWMutex'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
   (go.FieldDecl "w"%go Mutex);
   (go.FieldDecl "writerSem"%go go.uint32);
   (go.FieldDecl "readerSem"%go go.uint32);
   (go.FieldDecl "readerCount"%go atomic.Int32);
   (go.FieldDecl "readerWait"%go atomic.Int32)
 ].
+Program Definition RWMutex'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (RWMutex'fds_unsealed).
+Global Instance equals_unfold_RWMutex {ext : ffi_syntax} {go_gctx : GoGlobalContext} : RWMutex'fds =→ RWMutex'fds_unsealed.
+Proof. rewrite /RWMutex'fds seal_eq //. Qed.
+
+Definition RWMutexⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (RWMutex'fds).
 
 Class RWMutex_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] RWMutex_type_repr  :: go.TypeRepr RWMutexⁱᵐᵖˡ RWMutex.t;
+  #[global] RWMutex_type_repr  :: go.TypeReprUnderlying RWMutexⁱᵐᵖˡ RWMutex.t;
   #[global] RWMutex_underlying :: (RWMutex) <u (RWMutexⁱᵐᵖˡ);
   #[global] RWMutex_get_w (x : RWMutex.t) :: ⟦StructFieldGet (RWMutexⁱᵐᵖˡ) "w", #x⟧ ⤳[under] #x.(RWMutex.w');
   #[global] RWMutex_set_w (x : RWMutex.t) y :: ⟦StructFieldSet (RWMutexⁱᵐᵖˡ) "w", (#x, #y)⟧ ⤳[under] #(x <|RWMutex.w' := y|>);
@@ -1183,7 +1230,7 @@ Definition rlockerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : g
 
 Class rlocker_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] rlocker_type_repr  :: go.TypeRepr rlockerⁱᵐᵖˡ rlocker.t;
+  #[global] rlocker_type_repr  :: go.TypeReprUnderlying rlockerⁱᵐᵖˡ rlocker.t;
   #[global] rlocker_underlying :: (rlocker) <u (rlockerⁱᵐᵖˡ);
 }.
 
@@ -1204,15 +1251,20 @@ End def.
 
 End WaitGroup.
 
-Definition WaitGroupⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
+Definition WaitGroup'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
   (go.FieldDecl "noCopy"%go noCopy);
   (go.FieldDecl "state"%go atomic.Uint64);
   (go.FieldDecl "sema"%go go.uint32)
 ].
+Program Definition WaitGroup'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (WaitGroup'fds_unsealed).
+Global Instance equals_unfold_WaitGroup {ext : ffi_syntax} {go_gctx : GoGlobalContext} : WaitGroup'fds =→ WaitGroup'fds_unsealed.
+Proof. rewrite /WaitGroup'fds seal_eq //. Qed.
+
+Definition WaitGroupⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (WaitGroup'fds).
 
 Class WaitGroup_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] WaitGroup_type_repr  :: go.TypeRepr WaitGroupⁱᵐᵖˡ WaitGroup.t;
+  #[global] WaitGroup_type_repr  :: go.TypeReprUnderlying WaitGroupⁱᵐᵖˡ WaitGroup.t;
   #[global] WaitGroup_underlying :: (WaitGroup) <u (WaitGroupⁱᵐᵖˡ);
   #[global] WaitGroup_get_noCopy (x : WaitGroup.t) :: ⟦StructFieldGet (WaitGroupⁱᵐᵖˡ) "noCopy", #x⟧ ⤳[under] #x.(WaitGroup.noCopy');
   #[global] WaitGroup_set_noCopy (x : WaitGroup.t) y :: ⟦StructFieldSet (WaitGroupⁱᵐᵖˡ) "noCopy", (#x, #y)⟧ ⤳[under] #(x <|WaitGroup.noCopy' := y|>);

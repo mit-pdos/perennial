@@ -2997,12 +2997,18 @@ End def.
 
 End unit.
 
-Definition unitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
+Definition unit'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
+
 ].
+Program Definition unit'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (unit'fds_unsealed).
+Global Instance equals_unfold_unit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : unit'fds =→ unit'fds_unsealed.
+Proof. rewrite /unit'fds seal_eq //. Qed.
+
+Definition unitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (unit'fds).
 
 Class unit_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] unit_type_repr  :: go.TypeRepr unitⁱᵐᵖˡ unit.t;
+  #[global] unit_type_repr  :: go.TypeReprUnderlying unitⁱᵐᵖˡ unit.t;
   #[global] unit_underlying :: (unit) <u (unitⁱᵐᵖˡ);
 }.
 
@@ -3021,13 +3027,18 @@ End def.
 
 End Enc.
 
-Definition Encⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
+Definition Enc'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
   (go.FieldDecl "p"%go (go.SliceType go.byte))
 ].
+Program Definition Enc'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (Enc'fds_unsealed).
+Global Instance equals_unfold_Enc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Enc'fds =→ Enc'fds_unsealed.
+Proof. rewrite /Enc'fds seal_eq //. Qed.
+
+Definition Encⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (Enc'fds).
 
 Class Enc_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Enc_type_repr  :: go.TypeRepr Encⁱᵐᵖˡ Enc.t;
+  #[global] Enc_type_repr  :: go.TypeReprUnderlying Encⁱᵐᵖˡ Enc.t;
   #[global] Enc_underlying :: (Enc) <u (Encⁱᵐᵖˡ);
   #[global] Enc_get_p (x : Enc.t) :: ⟦StructFieldGet (Encⁱᵐᵖˡ) "p", #x⟧ ⤳[under] #x.(Enc.p');
   #[global] Enc_set_p (x : Enc.t) y :: ⟦StructFieldSet (Encⁱᵐᵖˡ) "p", (#x, #y)⟧ ⤳[under] #(x <|Enc.p' := y|>);
@@ -3049,13 +3060,18 @@ End def.
 
 End Dec.
 
-Definition Decⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
+Definition Dec'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
   (go.FieldDecl "p"%go (go.SliceType go.byte))
 ].
+Program Definition Dec'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (Dec'fds_unsealed).
+Global Instance equals_unfold_Dec {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Dec'fds =→ Dec'fds_unsealed.
+Proof. rewrite /Dec'fds seal_eq //. Qed.
+
+Definition Decⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (Dec'fds).
 
 Class Dec_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Dec_type_repr  :: go.TypeRepr Decⁱᵐᵖˡ Dec.t;
+  #[global] Dec_type_repr  :: go.TypeReprUnderlying Decⁱᵐᵖˡ Dec.t;
   #[global] Dec_underlying :: (Dec) <u (Decⁱᵐᵖˡ);
   #[global] Dec_get_p (x : Dec.t) :: ⟦StructFieldGet (Decⁱᵐᵖˡ) "p", #x⟧ ⤳[under] #x.(Dec.p');
   #[global] Dec_set_p (x : Dec.t) y :: ⟦StructFieldSet (Decⁱᵐᵖˡ) "p", (#x, #y)⟧ ⤳[under] #(x <|Dec.p' := y|>);
@@ -3078,14 +3094,19 @@ End def.
 
 End Editor.
 
-Definition Editorⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
+Definition Editor'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
   (go.FieldDecl "s"%go (go.SliceType go.uint64));
   (go.FieldDecl "next_val"%go go.uint64)
 ].
+Program Definition Editor'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (Editor'fds_unsealed).
+Global Instance equals_unfold_Editor {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Editor'fds =→ Editor'fds_unsealed.
+Proof. rewrite /Editor'fds seal_eq //. Qed.
+
+Definition Editorⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (Editor'fds).
 
 Class Editor_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Editor_type_repr  :: go.TypeRepr Editorⁱᵐᵖˡ Editor.t;
+  #[global] Editor_type_repr  :: go.TypeReprUnderlying Editorⁱᵐᵖˡ Editor.t;
   #[global] Editor_underlying :: (Editor) <u (Editorⁱᵐᵖˡ);
   #[global] Editor_get_s (x : Editor.t) :: ⟦StructFieldGet (Editorⁱᵐᵖˡ) "s", #x⟧ ⤳[under] #x.(Editor.s');
   #[global] Editor_set_s (x : Editor.t) y :: ⟦StructFieldSet (Editorⁱᵐᵖˡ) "s", (#x, #y)⟧ ⤳[under] #(x <|Editor.s' := y|>);
@@ -3110,14 +3131,19 @@ End def.
 
 End Pair.
 
-Definition Pairⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
+Definition Pair'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
   (go.FieldDecl "x"%go go.uint64);
   (go.FieldDecl "y"%go go.uint64)
 ].
+Program Definition Pair'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (Pair'fds_unsealed).
+Global Instance equals_unfold_Pair {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Pair'fds =→ Pair'fds_unsealed.
+Proof. rewrite /Pair'fds seal_eq //. Qed.
+
+Definition Pairⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (Pair'fds).
 
 Class Pair_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Pair_type_repr  :: go.TypeRepr Pairⁱᵐᵖˡ Pair.t;
+  #[global] Pair_type_repr  :: go.TypeReprUnderlying Pairⁱᵐᵖˡ Pair.t;
   #[global] Pair_underlying :: (Pair) <u (Pairⁱᵐᵖˡ);
   #[global] Pair_get_x (x : Pair.t) :: ⟦StructFieldGet (Pairⁱᵐᵖˡ) "x", #x⟧ ⤳[under] #x.(Pair.x');
   #[global] Pair_set_x (x : Pair.t) y :: ⟦StructFieldSet (Pairⁱᵐᵖˡ) "x", (#x, #y)⟧ ⤳[under] #(x <|Pair.x' := y|>);
@@ -3136,7 +3162,7 @@ Definition Uint32ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go
 
 Class Uint32_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Uint32_type_repr  :: go.TypeRepr Uint32ⁱᵐᵖˡ Uint32.t;
+  #[global] Uint32_type_repr  :: go.TypeReprUnderlying Uint32ⁱᵐᵖˡ Uint32.t;
   #[global] Uint32_underlying :: (Uint32) <u (Uint32ⁱᵐᵖˡ);
 }.
 
@@ -3151,7 +3177,7 @@ Definition geometryInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
 
 Class geometryInterface_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] geometryInterface_type_repr  :: go.TypeRepr geometryInterfaceⁱᵐᵖˡ geometryInterface.t;
+  #[global] geometryInterface_type_repr  :: go.TypeReprUnderlying geometryInterfaceⁱᵐᵖˡ geometryInterface.t;
   #[global] geometryInterface_underlying :: (geometryInterface) <u (geometryInterfaceⁱᵐᵖˡ);
 }.
 
@@ -3170,13 +3196,18 @@ End def.
 
 End SquareStruct.
 
-Definition SquareStructⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
+Definition SquareStruct'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
   (go.FieldDecl "Side"%go go.uint64)
 ].
+Program Definition SquareStruct'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (SquareStruct'fds_unsealed).
+Global Instance equals_unfold_SquareStruct {ext : ffi_syntax} {go_gctx : GoGlobalContext} : SquareStruct'fds =→ SquareStruct'fds_unsealed.
+Proof. rewrite /SquareStruct'fds seal_eq //. Qed.
+
+Definition SquareStructⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (SquareStruct'fds).
 
 Class SquareStruct_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] SquareStruct_type_repr  :: go.TypeRepr SquareStructⁱᵐᵖˡ SquareStruct.t;
+  #[global] SquareStruct_type_repr  :: go.TypeReprUnderlying SquareStructⁱᵐᵖˡ SquareStruct.t;
   #[global] SquareStruct_underlying :: (SquareStruct) <u (SquareStructⁱᵐᵖˡ);
   #[global] SquareStruct_get_Side (x : SquareStruct.t) :: ⟦StructFieldGet (SquareStructⁱᵐᵖˡ) "Side", #x⟧ ⤳[under] #x.(SquareStruct.Side');
   #[global] SquareStruct_set_Side (x : SquareStruct.t) y :: ⟦StructFieldSet (SquareStructⁱᵐᵖˡ) "Side", (#x, #y)⟧ ⤳[under] #(x <|SquareStruct.Side' := y|>);
@@ -3201,13 +3232,18 @@ End def.
 
 End LoopStruct.
 
-Definition LoopStructⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
+Definition LoopStruct'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
   (go.FieldDecl "loopNext"%go (go.PointerType go.uint64))
 ].
+Program Definition LoopStruct'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (LoopStruct'fds_unsealed).
+Global Instance equals_unfold_LoopStruct {ext : ffi_syntax} {go_gctx : GoGlobalContext} : LoopStruct'fds =→ LoopStruct'fds_unsealed.
+Proof. rewrite /LoopStruct'fds seal_eq //. Qed.
+
+Definition LoopStructⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (LoopStruct'fds).
 
 Class LoopStruct_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] LoopStruct_type_repr  :: go.TypeRepr LoopStructⁱᵐᵖˡ LoopStruct.t;
+  #[global] LoopStruct_type_repr  :: go.TypeReprUnderlying LoopStructⁱᵐᵖˡ LoopStruct.t;
   #[global] LoopStruct_underlying :: (LoopStruct) <u (LoopStructⁱᵐᵖˡ);
   #[global] LoopStruct_get_loopNext (x : LoopStruct.t) :: ⟦StructFieldGet (LoopStructⁱᵐᵖˡ) "loopNext", #x⟧ ⤳[under] #x.(LoopStruct.loopNext');
   #[global] LoopStruct_set_loopNext (x : LoopStruct.t) y :: ⟦StructFieldSet (LoopStructⁱᵐᵖˡ) "loopNext", (#x, #y)⟧ ⤳[under] #(x <|LoopStruct.loopNext' := y|>);
@@ -3233,16 +3269,21 @@ End def.
 
 End BoolTest.
 
-Definition BoolTestⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
+Definition BoolTest'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
   (go.FieldDecl "t"%go go.bool);
   (go.FieldDecl "f"%go go.bool);
   (go.FieldDecl "tc"%go go.uint64);
   (go.FieldDecl "fc"%go go.uint64)
 ].
+Program Definition BoolTest'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (BoolTest'fds_unsealed).
+Global Instance equals_unfold_BoolTest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : BoolTest'fds =→ BoolTest'fds_unsealed.
+Proof. rewrite /BoolTest'fds seal_eq //. Qed.
+
+Definition BoolTestⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (BoolTest'fds).
 
 Class BoolTest_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] BoolTest_type_repr  :: go.TypeRepr BoolTestⁱᵐᵖˡ BoolTest.t;
+  #[global] BoolTest_type_repr  :: go.TypeReprUnderlying BoolTestⁱᵐᵖˡ BoolTest.t;
   #[global] BoolTest_underlying :: (BoolTest) <u (BoolTestⁱᵐᵖˡ);
   #[global] BoolTest_get_t (x : BoolTest.t) :: ⟦StructFieldGet (BoolTestⁱᵐᵖˡ) "t", #x⟧ ⤳[under] #x.(BoolTest.t');
   #[global] BoolTest_set_t (x : BoolTest.t) y :: ⟦StructFieldSet (BoolTestⁱᵐᵖˡ) "t", (#x, #y)⟧ ⤳[under] #(x <|BoolTest.t' := y|>);
@@ -3270,14 +3311,19 @@ End def.
 
 End ArrayEditor.
 
-Definition ArrayEditorⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
+Definition ArrayEditor'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
   (go.FieldDecl "s"%go (go.SliceType go.uint64));
   (go.FieldDecl "next_val"%go go.uint64)
 ].
+Program Definition ArrayEditor'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (ArrayEditor'fds_unsealed).
+Global Instance equals_unfold_ArrayEditor {ext : ffi_syntax} {go_gctx : GoGlobalContext} : ArrayEditor'fds =→ ArrayEditor'fds_unsealed.
+Proof. rewrite /ArrayEditor'fds seal_eq //. Qed.
+
+Definition ArrayEditorⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (ArrayEditor'fds).
 
 Class ArrayEditor_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] ArrayEditor_type_repr  :: go.TypeRepr ArrayEditorⁱᵐᵖˡ ArrayEditor.t;
+  #[global] ArrayEditor_type_repr  :: go.TypeReprUnderlying ArrayEditorⁱᵐᵖˡ ArrayEditor.t;
   #[global] ArrayEditor_underlying :: (ArrayEditor) <u (ArrayEditorⁱᵐᵖˡ);
   #[global] ArrayEditor_get_s (x : ArrayEditor.t) :: ⟦StructFieldGet (ArrayEditorⁱᵐᵖˡ) "s", #x⟧ ⤳[under] #x.(ArrayEditor.s');
   #[global] ArrayEditor_set_s (x : ArrayEditor.t) y :: ⟦StructFieldSet (ArrayEditorⁱᵐᵖˡ) "s", (#x, #y)⟧ ⤳[under] #(x <|ArrayEditor.s' := y|>);
@@ -3302,14 +3348,19 @@ End def.
 
 End Bar.
 
-Definition Barⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
+Definition Bar'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
   (go.FieldDecl "a"%go go.uint64);
   (go.FieldDecl "b"%go go.uint64)
 ].
+Program Definition Bar'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (Bar'fds_unsealed).
+Global Instance equals_unfold_Bar {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Bar'fds =→ Bar'fds_unsealed.
+Proof. rewrite /Bar'fds seal_eq //. Qed.
+
+Definition Barⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (Bar'fds).
 
 Class Bar_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Bar_type_repr  :: go.TypeRepr Barⁱᵐᵖˡ Bar.t;
+  #[global] Bar_type_repr  :: go.TypeReprUnderlying Barⁱᵐᵖˡ Bar.t;
   #[global] Bar_underlying :: (Bar) <u (Barⁱᵐᵖˡ);
   #[global] Bar_get_a (x : Bar.t) :: ⟦StructFieldGet (Barⁱᵐᵖˡ) "a", #x⟧ ⤳[under] #x.(Bar.a');
   #[global] Bar_set_a (x : Bar.t) y :: ⟦StructFieldSet (Barⁱᵐᵖˡ) "a", (#x, #y)⟧ ⤳[under] #(x <|Bar.a' := y|>);
@@ -3333,13 +3384,18 @@ End def.
 
 End Foo.
 
-Definition Fooⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
+Definition Foo'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
   (go.FieldDecl "bar"%go Bar)
 ].
+Program Definition Foo'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (Foo'fds_unsealed).
+Global Instance equals_unfold_Foo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Foo'fds =→ Foo'fds_unsealed.
+Proof. rewrite /Foo'fds seal_eq //. Qed.
+
+Definition Fooⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (Foo'fds).
 
 Class Foo_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Foo_type_repr  :: go.TypeRepr Fooⁱᵐᵖˡ Foo.t;
+  #[global] Foo_type_repr  :: go.TypeReprUnderlying Fooⁱᵐᵖˡ Foo.t;
   #[global] Foo_underlying :: (Foo) <u (Fooⁱᵐᵖˡ);
   #[global] Foo_get_bar (x : Foo.t) :: ⟦StructFieldGet (Fooⁱᵐᵖˡ) "bar", #x⟧ ⤳[under] #x.(Foo.bar');
   #[global] Foo_set_bar (x : Foo.t) y :: ⟦StructFieldSet (Fooⁱᵐᵖˡ) "bar", (#x, #y)⟧ ⤳[under] #(x <|Foo.bar' := y|>);
@@ -3362,14 +3418,19 @@ End def.
 
 End TwoInts.
 
-Definition TwoIntsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
+Definition TwoInts'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
   (go.FieldDecl "x"%go go.uint64);
   (go.FieldDecl "y"%go go.uint64)
 ].
+Program Definition TwoInts'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (TwoInts'fds_unsealed).
+Global Instance equals_unfold_TwoInts {ext : ffi_syntax} {go_gctx : GoGlobalContext} : TwoInts'fds =→ TwoInts'fds_unsealed.
+Proof. rewrite /TwoInts'fds seal_eq //. Qed.
+
+Definition TwoIntsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (TwoInts'fds).
 
 Class TwoInts_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] TwoInts_type_repr  :: go.TypeRepr TwoIntsⁱᵐᵖˡ TwoInts.t;
+  #[global] TwoInts_type_repr  :: go.TypeReprUnderlying TwoIntsⁱᵐᵖˡ TwoInts.t;
   #[global] TwoInts_underlying :: (TwoInts) <u (TwoIntsⁱᵐᵖˡ);
   #[global] TwoInts_get_x (x : TwoInts.t) :: ⟦StructFieldGet (TwoIntsⁱᵐᵖˡ) "x", #x⟧ ⤳[under] #x.(TwoInts.x');
   #[global] TwoInts_set_x (x : TwoInts.t) y :: ⟦StructFieldSet (TwoIntsⁱᵐᵖˡ) "x", (#x, #y)⟧ ⤳[under] #(x <|TwoInts.x' := y|>);
@@ -3394,15 +3455,20 @@ End def.
 
 End S.
 
-Definition Sⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
+Definition S'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
   (go.FieldDecl "a"%go go.uint64);
   (go.FieldDecl "b"%go TwoInts);
   (go.FieldDecl "c"%go go.bool)
 ].
+Program Definition S'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (S'fds_unsealed).
+Global Instance equals_unfold_S {ext : ffi_syntax} {go_gctx : GoGlobalContext} : S'fds =→ S'fds_unsealed.
+Proof. rewrite /S'fds seal_eq //. Qed.
+
+Definition Sⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (S'fds).
 
 Class S_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] S_type_repr  :: go.TypeRepr Sⁱᵐᵖˡ S.t;
+  #[global] S_type_repr  :: go.TypeReprUnderlying Sⁱᵐᵖˡ S.t;
   #[global] S_underlying :: (S) <u (Sⁱᵐᵖˡ);
   #[global] S_get_a (x : S.t) :: ⟦StructFieldGet (Sⁱᵐᵖˡ) "a", #x⟧ ⤳[under] #x.(S.a');
   #[global] S_set_a (x : S.t) y :: ⟦StructFieldSet (Sⁱᵐᵖˡ) "a", (#x, #y)⟧ ⤳[under] #(x <|S.a' := y|>);
@@ -3433,13 +3499,18 @@ End def.
 
 End StructWrap.
 
-Definition StructWrapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
+Definition StructWrap'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
   (go.FieldDecl "i"%go go.uint64)
 ].
+Program Definition StructWrap'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (StructWrap'fds_unsealed).
+Global Instance equals_unfold_StructWrap {ext : ffi_syntax} {go_gctx : GoGlobalContext} : StructWrap'fds =→ StructWrap'fds_unsealed.
+Proof. rewrite /StructWrap'fds seal_eq //. Qed.
+
+Definition StructWrapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (StructWrap'fds).
 
 Class StructWrap_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] StructWrap_type_repr  :: go.TypeRepr StructWrapⁱᵐᵖˡ StructWrap.t;
+  #[global] StructWrap_type_repr  :: go.TypeReprUnderlying StructWrapⁱᵐᵖˡ StructWrap.t;
   #[global] StructWrap_underlying :: (StructWrap) <u (StructWrapⁱᵐᵖˡ);
   #[global] StructWrap_get_i (x : StructWrap.t) :: ⟦StructFieldGet (StructWrapⁱᵐᵖˡ) "i", #x⟧ ⤳[under] #x.(StructWrap.i');
   #[global] StructWrap_set_i (x : StructWrap.t) y :: ⟦StructFieldSet (StructWrapⁱᵐᵖˡ) "i", (#x, #y)⟧ ⤳[under] #(x <|StructWrap.i' := y|>);
@@ -3460,13 +3531,18 @@ End def.
 
 End StructWithFunc.
 
-Definition StructWithFuncⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
+Definition StructWithFunc'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
   (go.FieldDecl "fn"%go (go.FunctionType (go.Signature [go.uint64] false [go.uint64])))
 ].
+Program Definition StructWithFunc'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (StructWithFunc'fds_unsealed).
+Global Instance equals_unfold_StructWithFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : StructWithFunc'fds =→ StructWithFunc'fds_unsealed.
+Proof. rewrite /StructWithFunc'fds seal_eq //. Qed.
+
+Definition StructWithFuncⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (StructWithFunc'fds).
 
 Class StructWithFunc_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] StructWithFunc_type_repr  :: go.TypeRepr StructWithFuncⁱᵐᵖˡ StructWithFunc.t;
+  #[global] StructWithFunc_type_repr  :: go.TypeReprUnderlying StructWithFuncⁱᵐᵖˡ StructWithFunc.t;
   #[global] StructWithFunc_underlying :: (StructWithFunc) <u (StructWithFuncⁱᵐᵖˡ);
   #[global] StructWithFunc_get_fn (x : StructWithFunc.t) :: ⟦StructFieldGet (StructWithFuncⁱᵐᵖˡ) "fn", #x⟧ ⤳[under] #x.(StructWithFunc.fn');
   #[global] StructWithFunc_set_fn (x : StructWithFunc.t) y :: ⟦StructFieldSet (StructWithFuncⁱᵐᵖˡ) "fn", (#x, #y)⟧ ⤳[under] #(x <|StructWithFunc.fn' := y|>);
@@ -3486,12 +3562,18 @@ End def.
 
 End switchConcrete.
 
-Definition switchConcreteⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
+Definition switchConcrete'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
+
 ].
+Program Definition switchConcrete'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (switchConcrete'fds_unsealed).
+Global Instance equals_unfold_switchConcrete {ext : ffi_syntax} {go_gctx : GoGlobalContext} : switchConcrete'fds =→ switchConcrete'fds_unsealed.
+Proof. rewrite /switchConcrete'fds seal_eq //. Qed.
+
+Definition switchConcreteⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (switchConcrete'fds).
 
 Class switchConcrete_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] switchConcrete_type_repr  :: go.TypeRepr switchConcreteⁱᵐᵖˡ switchConcrete.t;
+  #[global] switchConcrete_type_repr  :: go.TypeReprUnderlying switchConcreteⁱᵐᵖˡ switchConcrete.t;
   #[global] switchConcrete_underlying :: (switchConcrete) <u (switchConcreteⁱᵐᵖˡ);
   #[global] switchConcrete'ptr_marker_unfold :: MethodUnfold (go.PointerType (switchConcrete)) "marker" (switchConcrete__markerⁱᵐᵖˡ);
 }.
@@ -3507,7 +3589,7 @@ Definition switchInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
 
 Class switchInterface_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] switchInterface_type_repr  :: go.TypeRepr switchInterfaceⁱᵐᵖˡ switchInterface.t;
+  #[global] switchInterface_type_repr  :: go.TypeReprUnderlying switchInterfaceⁱᵐᵖˡ switchInterface.t;
   #[global] switchInterface_underlying :: (switchInterface) <u (switchInterfaceⁱᵐᵖˡ);
 }.
 
@@ -3529,16 +3611,21 @@ End def.
 
 End Log.
 
-Definition Logⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
+Definition Log'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
   (go.FieldDecl "d"%go disk.Disk);
   (go.FieldDecl "l"%go (go.PointerType sync.Mutex));
   (go.FieldDecl "cache"%go (go.MapType go.uint64 disk.Block));
   (go.FieldDecl "length"%go (go.PointerType go.uint64))
 ].
+Program Definition Log'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (Log'fds_unsealed).
+Global Instance equals_unfold_Log {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Log'fds =→ Log'fds_unsealed.
+Proof. rewrite /Log'fds seal_eq //. Qed.
+
+Definition Logⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (Log'fds).
 
 Class Log_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Log_type_repr  :: go.TypeRepr Logⁱᵐᵖˡ Log.t;
+  #[global] Log_type_repr  :: go.TypeReprUnderlying Logⁱᵐᵖˡ Log.t;
   #[global] Log_underlying :: (Log) <u (Logⁱᵐᵖˡ);
   #[global] Log_get_d (x : Log.t) :: ⟦StructFieldGet (Logⁱᵐᵖˡ) "d", #x⟧ ⤳[under] #x.(Log.d');
   #[global] Log_set_d (x : Log.t) y :: ⟦StructFieldSet (Logⁱᵐᵖˡ) "d", (#x, #y)⟧ ⤳[under] #(x <|Log.d' := y|>);

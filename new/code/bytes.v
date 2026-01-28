@@ -262,7 +262,9 @@ End Buffer.
 
 Class Buffer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Buffer_type_repr  :: go.TypeRepr Bufferⁱᵐᵖˡ Buffer.t;
+  #[global] Buffer_type_repr  :: go.TypeReprUnderlying Bufferⁱᵐᵖˡ Buffer.t;
+  #[global] Buffer_underlying :: (Buffer) <u (Bufferⁱᵐᵖˡ);
+  #[global] Bufferⁱᵐᵖˡ_underlying :: (Bufferⁱᵐᵖˡ) ↓u (Bufferⁱᵐᵖˡ);
 }.
 
 Module readOp.
@@ -276,7 +278,9 @@ End readOp.
 
 Class readOp_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] readOp_type_repr  :: go.TypeRepr readOpⁱᵐᵖˡ readOp.t;
+  #[global] readOp_type_repr  :: go.TypeReprUnderlying readOpⁱᵐᵖˡ readOp.t;
+  #[global] readOp_underlying :: (readOp) <u (readOpⁱᵐᵖˡ);
+  #[global] readOpⁱᵐᵖˡ_underlying :: (readOpⁱᵐᵖˡ) ↓u (readOpⁱᵐᵖˡ);
 }.
 
 Module asciiSet.
@@ -290,7 +294,9 @@ End asciiSet.
 
 Class asciiSet_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] asciiSet_type_repr  :: go.TypeRepr asciiSetⁱᵐᵖˡ asciiSet.t;
+  #[global] asciiSet_type_repr  :: go.TypeReprUnderlying asciiSetⁱᵐᵖˡ asciiSet.t;
+  #[global] asciiSet_underlying :: (asciiSet) <u (asciiSetⁱᵐᵖˡ);
+  #[global] asciiSetⁱᵐᵖˡ_underlying :: (asciiSetⁱᵐᵖˡ) ↓u (asciiSetⁱᵐᵖˡ);
 }.
 
 Module Reader.
@@ -304,7 +310,9 @@ End Reader.
 
 Class Reader_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Reader_type_repr  :: go.TypeRepr Readerⁱᵐᵖˡ Reader.t;
+  #[global] Reader_type_repr  :: go.TypeReprUnderlying Readerⁱᵐᵖˡ Reader.t;
+  #[global] Reader_underlying :: (Reader) <u (Readerⁱᵐᵖˡ);
+  #[global] Readerⁱᵐᵖˡ_underlying :: (Readerⁱᵐᵖˡ) ↓u (Readerⁱᵐᵖˡ);
 }.
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=

@@ -228,6 +228,7 @@ Definition HelloWorldCancellableⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
   λ: "done" "err",
     exception_do (let: "err" := (GoAlloc (go.PointerType go.string) "err") in
     let: "done" := (GoAlloc (go.ChannelType go.sendrecv (go.StructType [
+
     ])) "done") in
     let: "future" := (GoAlloc (go.ChannelType go.sendrecv go.string) (GoZeroVal (go.ChannelType go.sendrecv go.string) #())) in
     let: "$r0" := ((FuncResolve HelloWorldAsync [] #()) #()) in
@@ -238,7 +239,9 @@ Definition HelloWorldCancellableⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
       do:  ("resolved" <-[go.string] "$r0");;;
       return: (![go.string] "resolved")
       )); (CommClause (RecvCase (go.StructType [
+
     ]) (![go.ChannelType go.sendrecv (go.StructType [
+
     ])] "done")) (λ: "$recvVal",
       return: (![go.string] (![go.PointerType go.string] "err"))
       ))])).
@@ -249,11 +252,15 @@ Definition HelloWorldCancellableⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
 Definition HelloWorldWithTimeoutⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "done" := (GoAlloc (go.ChannelType go.sendrecv (go.StructType [
+
     ])) (GoZeroVal (go.ChannelType go.sendrecv (go.StructType [
+
     ])) #())) in
     let: "$r0" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv (go.StructType [
+
      ])] #()) #()) in
     do:  ("done" <-[go.ChannelType go.sendrecv (go.StructType [
+
     ])] "$r0");;;
     let: "errMsg" := (GoAlloc go.string (GoZeroVal go.string #())) in
     let: "$r0" := #""%go in
@@ -264,13 +271,16 @@ Definition HelloWorldWithTimeoutⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
       let: "$r0" := #"operation timed out"%go in
       do:  ("errMsg" <-[go.string] "$r0");;;
       do:  (let: "$a0" := (![go.ChannelType go.sendrecv (go.StructType [
+
       ])] "done") in
       (FuncResolve go.close [go.ChannelType go.sendrecv (go.StructType [
+
        ])] #()) "$a0");;;
       return: #())
       ) in
     do:  (Fork ("$go" #()));;;
     return: (let: "$a0" := (![go.ChannelType go.sendrecv (go.StructType [
+
      ])] "done") in
      let: "$a1" := "errMsg" in
      (FuncResolve HelloWorldCancellable [] #()) "$a0" "$a1")).
@@ -294,7 +304,9 @@ Definition DSPExampleⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
       do:  ((![go.PointerType go.int] "ptr") <-[go.int] "$r0");;;
       do:  (let: "$chan" := (![go.ChannelType go.sendrecv go.any] "signal") in
       let: "$v" := (Convert (go.StructType [
+
       ]) go.any (CompositeLiteral (go.StructType [
+
       ]) (LiteralValue []))) in
       chan.send go.any "$chan" "$v");;;
       return: #())
@@ -369,27 +381,36 @@ Definition fib_consumerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
 Definition simple_joinⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "ch" := (GoAlloc (go.ChannelType go.sendrecv (go.StructType [
+
     ])) (GoZeroVal (go.ChannelType go.sendrecv (go.StructType [
+
     ])) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.ChannelType go.sendrecv (go.StructType [
+
      ])] #()) #(W64 1)) in
     do:  ("ch" <-[go.ChannelType go.sendrecv (go.StructType [
+
     ])] "$r0");;;
     let: "message" := (GoAlloc go.string (GoZeroVal go.string #())) in
     let: "$go" := (λ: <>,
       exception_do (let: "$r0" := #"Hello, World!"%go in
       do:  ("message" <-[go.string] "$r0");;;
       do:  (let: "$chan" := (![go.ChannelType go.sendrecv (go.StructType [
+
       ])] "ch") in
       let: "$v" := (CompositeLiteral (go.StructType [
+
       ]) (LiteralValue [])) in
       chan.send (go.StructType [
+
       ]) "$chan" "$v");;;
       return: #())
       ) in
     do:  (Fork ("$go" #()));;;
     do:  (Fst (chan.receive (go.StructType [
+
     ]) (![go.ChannelType go.sendrecv (go.StructType [
+
     ])] "ch")));;;
     return: (![go.string] "message")).
 
@@ -397,11 +418,15 @@ Definition simple_joinⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
 Definition simple_multi_joinⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "ch" := (GoAlloc (go.ChannelType go.sendrecv (go.StructType [
+
     ])) (GoZeroVal (go.ChannelType go.sendrecv (go.StructType [
+
     ])) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.ChannelType go.sendrecv (go.StructType [
+
      ])] #()) #(W64 2)) in
     do:  ("ch" <-[go.ChannelType go.sendrecv (go.StructType [
+
     ])] "$r0");;;
     let: "world" := (GoAlloc go.string (GoZeroVal go.string #())) in
     let: "hello" := (GoAlloc go.string (GoZeroVal go.string #())) in
@@ -409,10 +434,13 @@ Definition simple_multi_joinⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
       exception_do (let: "$r0" := #"Hello"%go in
       do:  ("hello" <-[go.string] "$r0");;;
       do:  (let: "$chan" := (![go.ChannelType go.sendrecv (go.StructType [
+
       ])] "ch") in
       let: "$v" := (CompositeLiteral (go.StructType [
+
       ]) (LiteralValue [])) in
       chan.send (go.StructType [
+
       ]) "$chan" "$v");;;
       return: #())
       ) in
@@ -421,19 +449,26 @@ Definition simple_multi_joinⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
       exception_do (let: "$r0" := #"World"%go in
       do:  ("world" <-[go.string] "$r0");;;
       do:  (let: "$chan" := (![go.ChannelType go.sendrecv (go.StructType [
+
       ])] "ch") in
       let: "$v" := (CompositeLiteral (go.StructType [
+
       ]) (LiteralValue [])) in
       chan.send (go.StructType [
+
       ]) "$chan" "$v");;;
       return: #())
       ) in
     do:  (Fork ("$go" #()));;;
     do:  (Fst (chan.receive (go.StructType [
+
     ]) (![go.ChannelType go.sendrecv (go.StructType [
+
     ])] "ch")));;;
     do:  (Fst (chan.receive (go.StructType [
+
     ]) (![go.ChannelType go.sendrecv (go.StructType [
+
     ])] "ch")));;;
     return: (((![go.string] "hello") +⟨go.string⟩ #" "%go) +⟨go.string⟩ (![go.string] "world"))).
 
@@ -443,17 +478,23 @@ Definition simple_multi_joinⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
 Definition select_nb_no_panicⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "ch" := (GoAlloc (go.ChannelType go.sendrecv (go.StructType [
+
     ])) (GoZeroVal (go.ChannelType go.sendrecv (go.StructType [
+
     ])) #())) in
     let: "$r0" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv (go.StructType [
+
      ])] #()) #()) in
     do:  ("ch" <-[go.ChannelType go.sendrecv (go.StructType [
+
     ])] "$r0");;;
     let: "$go" := (λ: <>,
       exception_do (SelectStmt (SelectStmtClauses (Some (λ: <>,
         do:  #()
         )) [(CommClause (RecvCase (go.StructType [
+
       ]) (![go.ChannelType go.sendrecv (go.StructType [
+
       ])] "ch")) (λ: "$recvVal",
         do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"bad"%go) in
         (FuncResolve go.panic [] #()) "$a0")
@@ -464,8 +505,11 @@ Definition select_nb_no_panicⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
     SelectStmt (SelectStmtClauses (Some (λ: <>,
       do:  #()
       )) [(CommClause (SendCase (go.StructType [
+
     ]) (![go.ChannelType go.sendrecv (go.StructType [
+
     ])] "ch") (CompositeLiteral (go.StructType [
+
     ]) (LiteralValue []))) (λ: <>,
       do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"bad"%go) in
       (FuncResolve go.panic [] #()) "$a0")
@@ -498,20 +542,27 @@ Definition exchangePointerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
     let: "$r0" := #(W64 0) in
     do:  ("y" <-[go.int] "$r0");;;
     let: "ch" := (GoAlloc (go.ChannelType go.sendrecv (go.StructType [
+
     ])) (GoZeroVal (go.ChannelType go.sendrecv (go.StructType [
+
     ])) #())) in
     let: "$r0" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv (go.StructType [
+
      ])] #()) #()) in
     do:  ("ch" <-[go.ChannelType go.sendrecv (go.StructType [
+
     ])] "$r0");;;
     let: "$go" := (λ: <>,
       exception_do (let: "$r0" := #(W64 1) in
       do:  ("x" <-[go.int] "$r0");;;
       do:  (let: "$chan" := (![go.ChannelType go.sendrecv (go.StructType [
+
       ])] "ch") in
       let: "$v" := (CompositeLiteral (go.StructType [
+
       ]) (LiteralValue [])) in
       chan.send (go.StructType [
+
       ]) "$chan" "$v");;;
       (if: Convert go.untyped_bool go.bool ((![go.int] "y") ≠⟨go.int⟩ #(W64 2))
       then
@@ -524,7 +575,9 @@ Definition exchangePointerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
     let: "$r0" := #(W64 2) in
     do:  ("y" <-[go.int] "$r0");;;
     do:  (Fst (chan.receive (go.StructType [
+
     ]) (![go.ChannelType go.sendrecv (go.StructType [
+
     ])] "ch")));;;
     (if: Convert go.untyped_bool go.bool ((![go.int] "x") ≠⟨go.int⟩ #(W64 1))
     then
@@ -539,21 +592,29 @@ Definition exchangePointerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
 Definition select_ready_case_no_panicⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "ch" := (GoAlloc (go.ChannelType go.sendrecv (go.StructType [
+
     ])) (GoZeroVal (go.ChannelType go.sendrecv (go.StructType [
+
     ])) #())) in
     let: "$r0" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv (go.StructType [
+
      ])] #()) #()) in
     do:  ("ch" <-[go.ChannelType go.sendrecv (go.StructType [
+
     ])] "$r0");;;
     do:  (let: "$a0" := (![go.ChannelType go.sendrecv (go.StructType [
+
     ])] "ch") in
     (FuncResolve go.close [go.ChannelType go.sendrecv (go.StructType [
+
      ])] #()) "$a0");;;
     SelectStmt (SelectStmtClauses (Some (λ: <>,
       do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"Shouldn't be possible!"%go) in
       (FuncResolve go.panic [] #()) "$a0")
       )) [(CommClause (RecvCase (go.StructType [
+
     ]) (![go.ChannelType go.sendrecv (go.StructType [
+
     ])] "ch")) (λ: "$recvVal",
       do:  #()
       ))]);;;
@@ -775,6 +836,7 @@ Definition clientⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : va
 Definition serverⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "output" "freeList" "serverChan" "done",
     exception_do (let: "done" := (GoAlloc (go.ChannelType go.sendrecv (go.StructType [
+
     ])) "done") in
     let: "serverChan" := (GoAlloc (go.ChannelType go.sendrecv (go.SliceType go.byte)) "serverChan") in
     let: "freeList" := (GoAlloc (go.ChannelType go.sendrecv (go.SliceType go.byte)) "freeList") in
@@ -790,10 +852,13 @@ Definition serverⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : va
       (if: (~ (![go.bool] "ok"))
       then
         do:  (let: "$chan" := (![go.ChannelType go.sendrecv (go.StructType [
+
         ])] "done") in
         let: "$v" := (CompositeLiteral (go.StructType [
+
         ]) (LiteralValue [])) in
         chan.send (go.StructType [
+
         ]) "$chan" "$v");;;
         return: (#())
       else do:  #());;;
@@ -817,11 +882,15 @@ Definition LeakyBufferPipelineⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
     let: "$r0" := ((FuncResolve go.make2 [go.ChannelType go.sendrecv (go.SliceType go.byte)] #()) #(W64 0)) in
     do:  ("serverChan" <-[go.ChannelType go.sendrecv (go.SliceType go.byte)] "$r0");;;
     let: "done" := (GoAlloc (go.ChannelType go.sendrecv (go.StructType [
+
     ])) (GoZeroVal (go.ChannelType go.sendrecv (go.StructType [
+
     ])) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.ChannelType go.sendrecv (go.StructType [
+
      ])] #()) #(W64 0)) in
     do:  ("done" <-[go.ChannelType go.sendrecv (go.StructType [
+
     ])] "$r0");;;
     let: "output" := (GoAlloc go.string (GoZeroVal go.string #())) in
     let: "$r0" := #""%go in
@@ -830,6 +899,7 @@ Definition LeakyBufferPipelineⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
     let: "$a1" := (![go.ChannelType go.sendrecv (go.SliceType go.byte)] "freeList") in
     let: "$a2" := (![go.ChannelType go.sendrecv (go.SliceType go.byte)] "serverChan") in
     let: "$a3" := (![go.ChannelType go.sendrecv (go.StructType [
+
     ])] "done") in
     let: "$go" := (FuncResolve server [] #()) in
     do:  (Fork ("$go" "$a0" "$a1" "$a2" "$a3"));;;
@@ -838,7 +908,9 @@ Definition LeakyBufferPipelineⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
     let: "$a2" := (![go.ChannelType go.sendrecv (go.SliceType go.byte)] "serverChan") in
     (FuncResolve client [] #()) "$a0" "$a1" "$a2");;;
     do:  (Fst (chan.receive (go.StructType [
+
     ]) (![go.ChannelType go.sendrecv (go.StructType [
+
     ])] "done")));;;
     (if: Convert go.untyped_bool go.bool ((![go.string] "output") ≠⟨go.string⟩ #"HELLO, WORLD"%go)
     then
@@ -1004,6 +1076,7 @@ Definition makeGreetingⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
 Definition CancellableMapServerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "s" "done",
     exception_do (let: "done" := (GoAlloc (go.ChannelType go.sendrecv (go.StructType [
+
     ])) "done") in
     let: "s" := (GoAlloc streamold "s") in
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
@@ -1023,7 +1096,9 @@ Definition CancellableMapServerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
         (![go.FunctionType (go.Signature [go.string] false [go.string])] (StructFieldRef streamold "f"%go "s")) "$a0") in
         chan.send go.string "$chan" "$v")
         )); (CommClause (RecvCase (go.StructType [
+
       ]) (![go.ChannelType go.sendrecv (go.StructType [
+
       ])] "done")) (λ: "$recvVal",
         return: (#())
         ))]));;;
@@ -1036,6 +1111,7 @@ Definition CancellableMuxerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
   λ: "c" "done" "errMsg",
     exception_do (let: "errMsg" := (GoAlloc (go.PointerType go.string) "errMsg") in
     let: "done" := (GoAlloc (go.ChannelType go.sendrecv (go.StructType [
+
     ])) "done") in
     let: "c" := (GoAlloc (go.ChannelType go.sendrecv streamold) "c") in
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
@@ -1052,11 +1128,14 @@ Definition CancellableMuxerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
         else do:  #());;;
         let: "$a0" := (![streamold] "s") in
         let: "$a1" := (![go.ChannelType go.sendrecv (go.StructType [
+
         ])] "done") in
         let: "$go" := (FuncResolve CancellableMapServer [] #()) in
         do:  (Fork ("$go" "$a0" "$a1"))
         )); (CommClause (RecvCase (go.StructType [
+
       ]) (![go.ChannelType go.sendrecv (go.StructType [
+
       ])] "done")) (λ: "$recvVal",
         return: (![go.string] (![go.PointerType go.string] "errMsg"))
         ))]))).
@@ -1181,14 +1260,19 @@ End def.
 
 End LockedStack.
 
-Definition LockedStackⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
+Definition LockedStack'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
   (go.FieldDecl "mu"%go sync.Mutex);
   (go.FieldDecl "stack"%go (go.SliceType go.string))
 ].
+Program Definition LockedStack'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (LockedStack'fds_unsealed).
+Global Instance equals_unfold_LockedStack {ext : ffi_syntax} {go_gctx : GoGlobalContext} : LockedStack'fds =→ LockedStack'fds_unsealed.
+Proof. rewrite /LockedStack'fds seal_eq //. Qed.
+
+Definition LockedStackⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (LockedStack'fds).
 
 Class LockedStack_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] LockedStack_type_repr  :: go.TypeRepr LockedStackⁱᵐᵖˡ LockedStack.t;
+  #[global] LockedStack_type_repr  :: go.TypeReprUnderlying LockedStackⁱᵐᵖˡ LockedStack.t;
   #[global] LockedStack_underlying :: (LockedStack) <u (LockedStackⁱᵐᵖˡ);
   #[global] LockedStack_get_mu (x : LockedStack.t) :: ⟦StructFieldGet (LockedStackⁱᵐᵖˡ) "mu", #x⟧ ⤳[under] #x.(LockedStack.mu');
   #[global] LockedStack_set_mu (x : LockedStack.t) y :: ⟦StructFieldSet (LockedStackⁱᵐᵖˡ) "mu", (#x, #y)⟧ ⤳[under] #(x <|LockedStack.mu' := y|>);
@@ -1214,14 +1298,19 @@ End def.
 
 End EliminationStack.
 
-Definition EliminationStackⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
+Definition EliminationStack'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
   (go.FieldDecl "base"%go (go.PointerType LockedStack));
   (go.FieldDecl "exchanger"%go (go.ChannelType go.sendrecv go.string))
 ].
+Program Definition EliminationStack'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (EliminationStack'fds_unsealed).
+Global Instance equals_unfold_EliminationStack {ext : ffi_syntax} {go_gctx : GoGlobalContext} : EliminationStack'fds =→ EliminationStack'fds_unsealed.
+Proof. rewrite /EliminationStack'fds seal_eq //. Qed.
+
+Definition EliminationStackⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (EliminationStack'fds).
 
 Class EliminationStack_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] EliminationStack_type_repr  :: go.TypeRepr EliminationStackⁱᵐᵖˡ EliminationStack.t;
+  #[global] EliminationStack_type_repr  :: go.TypeReprUnderlying EliminationStackⁱᵐᵖˡ EliminationStack.t;
   #[global] EliminationStack_underlying :: (EliminationStack) <u (EliminationStackⁱᵐᵖˡ);
   #[global] EliminationStack_get_base (x : EliminationStack.t) :: ⟦StructFieldGet (EliminationStackⁱᵐᵖˡ) "base", #x⟧ ⤳[under] #x.(EliminationStack.base');
   #[global] EliminationStack_set_base (x : EliminationStack.t) y :: ⟦StructFieldSet (EliminationStackⁱᵐᵖˡ) "base", (#x, #y)⟧ ⤳[under] #(x <|EliminationStack.base' := y|>);
@@ -1247,14 +1336,19 @@ End def.
 
 End request.
 
-Definition requestⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
+Definition request'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
   (go.FieldDecl "f"%go (go.FunctionType (go.Signature [] false [go.string])));
   (go.FieldDecl "result"%go (go.ChannelType go.sendrecv go.string))
 ].
+Program Definition request'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (request'fds_unsealed).
+Global Instance equals_unfold_request {ext : ffi_syntax} {go_gctx : GoGlobalContext} : request'fds =→ request'fds_unsealed.
+Proof. rewrite /request'fds seal_eq //. Qed.
+
+Definition requestⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (request'fds).
 
 Class request_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] request_type_repr  :: go.TypeRepr requestⁱᵐᵖˡ request.t;
+  #[global] request_type_repr  :: go.TypeReprUnderlying requestⁱᵐᵖˡ request.t;
   #[global] request_underlying :: (request) <u (requestⁱᵐᵖˡ);
   #[global] request_get_f (x : request.t) :: ⟦StructFieldGet (requestⁱᵐᵖˡ) "f", #x⟧ ⤳[under] #x.(request.f');
   #[global] request_set_f (x : request.t) y :: ⟦StructFieldSet (requestⁱᵐᵖˡ) "f", (#x, #y)⟧ ⤳[under] #(x <|request.f' := y|>);
@@ -1278,14 +1372,19 @@ End def.
 
 End stream.
 
-Definition streamⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
+Definition stream'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
   (go.FieldDecl "req"%go (go.ChannelType go.sendrecv go.string));
   (go.FieldDecl "res"%go (go.ChannelType go.sendrecv go.string))
 ].
+Program Definition stream'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (stream'fds_unsealed).
+Global Instance equals_unfold_stream {ext : ffi_syntax} {go_gctx : GoGlobalContext} : stream'fds =→ stream'fds_unsealed.
+Proof. rewrite /stream'fds seal_eq //. Qed.
+
+Definition streamⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (stream'fds).
 
 Class stream_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] stream_type_repr  :: go.TypeRepr streamⁱᵐᵖˡ stream.t;
+  #[global] stream_type_repr  :: go.TypeReprUnderlying streamⁱᵐᵖˡ stream.t;
   #[global] stream_underlying :: (stream) <u (streamⁱᵐᵖˡ);
   #[global] stream_get_req (x : stream.t) :: ⟦StructFieldGet (streamⁱᵐᵖˡ) "req", #x⟧ ⤳[under] #x.(stream.req');
   #[global] stream_set_req (x : stream.t) y :: ⟦StructFieldSet (streamⁱᵐᵖˡ) "req", (#x, #y)⟧ ⤳[under] #(x <|stream.req' := y|>);
@@ -1310,15 +1409,20 @@ End def.
 
 End streamold.
 
-Definition streamoldⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType [
+Definition streamold'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
   (go.FieldDecl "req"%go (go.ChannelType go.sendrecv go.string));
   (go.FieldDecl "res"%go (go.ChannelType go.sendrecv go.string));
   (go.FieldDecl "f"%go (go.FunctionType (go.Signature [go.string] false [go.string])))
 ].
+Program Definition streamold'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (streamold'fds_unsealed).
+Global Instance equals_unfold_streamold {ext : ffi_syntax} {go_gctx : GoGlobalContext} : streamold'fds =→ streamold'fds_unsealed.
+Proof. rewrite /streamold'fds seal_eq //. Qed.
+
+Definition streamoldⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (streamold'fds).
 
 Class streamold_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] streamold_type_repr  :: go.TypeRepr streamoldⁱᵐᵖˡ streamold.t;
+  #[global] streamold_type_repr  :: go.TypeReprUnderlying streamoldⁱᵐᵖˡ streamold.t;
   #[global] streamold_underlying :: (streamold) <u (streamoldⁱᵐᵖˡ);
   #[global] streamold_get_req (x : streamold.t) :: ⟦StructFieldGet (streamoldⁱᵐᵖˡ) "req", #x⟧ ⤳[under] #x.(streamold.req');
   #[global] streamold_set_req (x : streamold.t) y :: ⟦StructFieldSet (streamoldⁱᵐᵖˡ) "req", (#x, #y)⟧ ⤳[under] #(x <|streamold.req' := y|>);

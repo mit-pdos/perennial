@@ -57,7 +57,7 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
 
 Class Mutex_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Mutex_type_repr  :: go.TypeRepr Mutexⁱᵐᵖˡ Mutex.t;
+  #[global] Mutex_type_repr  :: go.TypeReprUnderlying Mutexⁱᵐᵖˡ Mutex.t;
   #[global] Mutex_underlying :: (Mutex) <u (Mutexⁱᵐᵖˡ);
   #[global] Mutex'ptr_Lock_unfold :: MethodUnfold (go.PointerType (Mutex)) "Lock" (Mutex__Lockⁱᵐᵖˡ);
   #[global] Mutex'ptr_Unlock_unfold :: MethodUnfold (go.PointerType (Mutex)) "Unlock" (Mutex__Unlockⁱᵐᵖˡ);
@@ -65,7 +65,7 @@ Class Mutex_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext
 
 Class ProphId_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] ProphId_type_repr  :: go.TypeRepr ProphIdⁱᵐᵖˡ ProphId.t;
+  #[global] ProphId_type_repr  :: go.TypeReprUnderlying ProphIdⁱᵐᵖˡ ProphId.t;
   #[global] ProphId_underlying :: (ProphId) <u (ProphIdⁱᵐᵖˡ);
 }.
 

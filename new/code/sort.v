@@ -327,7 +327,9 @@ End Interface.
 
 Class Interface_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Interface_type_repr  :: go.TypeRepr Interfaceⁱᵐᵖˡ Interface.t;
+  #[global] Interface_type_repr  :: go.TypeReprUnderlying Interfaceⁱᵐᵖˡ Interface.t;
+  #[global] Interface_underlying :: (Interface) <u (Interfaceⁱᵐᵖˡ);
+  #[global] Interfaceⁱᵐᵖˡ_underlying :: (Interfaceⁱᵐᵖˡ) ↓u (Interfaceⁱᵐᵖˡ);
 }.
 
 Module sortedHint.
@@ -341,7 +343,7 @@ Definition sortedHintⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
 
 Class sortedHint_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] sortedHint_type_repr  :: go.TypeRepr sortedHintⁱᵐᵖˡ sortedHint.t;
+  #[global] sortedHint_type_repr  :: go.TypeReprUnderlying sortedHintⁱᵐᵖˡ sortedHint.t;
   #[global] sortedHint_underlying :: (sortedHint) <u (sortedHintⁱᵐᵖˡ);
 }.
 
@@ -356,7 +358,7 @@ Definition xorshiftⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : 
 
 Class xorshift_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] xorshift_type_repr  :: go.TypeRepr xorshiftⁱᵐᵖˡ xorshift.t;
+  #[global] xorshift_type_repr  :: go.TypeReprUnderlying xorshiftⁱᵐᵖˡ xorshift.t;
   #[global] xorshift_underlying :: (xorshift) <u (xorshiftⁱᵐᵖˡ);
   #[global] xorshift'ptr_Next_unfold :: MethodUnfold (go.PointerType (xorshift)) "Next" (xorshift__Nextⁱᵐᵖˡ);
 }.
@@ -372,7 +374,9 @@ End lessSwap.
 
 Class lessSwap_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] lessSwap_type_repr  :: go.TypeRepr lessSwapⁱᵐᵖˡ lessSwap.t;
+  #[global] lessSwap_type_repr  :: go.TypeReprUnderlying lessSwapⁱᵐᵖˡ lessSwap.t;
+  #[global] lessSwap_underlying :: (lessSwap) <u (lessSwapⁱᵐᵖˡ);
+  #[global] lessSwapⁱᵐᵖˡ_underlying :: (lessSwapⁱᵐᵖˡ) ↓u (lessSwapⁱᵐᵖˡ);
 }.
 
 Module reverse.
@@ -386,7 +390,9 @@ End reverse.
 
 Class reverse_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] reverse_type_repr  :: go.TypeRepr reverseⁱᵐᵖˡ reverse.t;
+  #[global] reverse_type_repr  :: go.TypeReprUnderlying reverseⁱᵐᵖˡ reverse.t;
+  #[global] reverse_underlying :: (reverse) <u (reverseⁱᵐᵖˡ);
+  #[global] reverseⁱᵐᵖˡ_underlying :: (reverseⁱᵐᵖˡ) ↓u (reverseⁱᵐᵖˡ);
 }.
 
 Module IntSlice.
@@ -400,7 +406,9 @@ End IntSlice.
 
 Class IntSlice_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] IntSlice_type_repr  :: go.TypeRepr IntSliceⁱᵐᵖˡ IntSlice.t;
+  #[global] IntSlice_type_repr  :: go.TypeReprUnderlying IntSliceⁱᵐᵖˡ IntSlice.t;
+  #[global] IntSlice_underlying :: (IntSlice) <u (IntSliceⁱᵐᵖˡ);
+  #[global] IntSliceⁱᵐᵖˡ_underlying :: (IntSliceⁱᵐᵖˡ) ↓u (IntSliceⁱᵐᵖˡ);
 }.
 
 Module Float64Slice.
@@ -414,7 +422,9 @@ End Float64Slice.
 
 Class Float64Slice_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Float64Slice_type_repr  :: go.TypeRepr Float64Sliceⁱᵐᵖˡ Float64Slice.t;
+  #[global] Float64Slice_type_repr  :: go.TypeReprUnderlying Float64Sliceⁱᵐᵖˡ Float64Slice.t;
+  #[global] Float64Slice_underlying :: (Float64Slice) <u (Float64Sliceⁱᵐᵖˡ);
+  #[global] Float64Sliceⁱᵐᵖˡ_underlying :: (Float64Sliceⁱᵐᵖˡ) ↓u (Float64Sliceⁱᵐᵖˡ);
 }.
 
 Module StringSlice.
@@ -428,7 +438,9 @@ End StringSlice.
 
 Class StringSlice_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] StringSlice_type_repr  :: go.TypeRepr StringSliceⁱᵐᵖˡ StringSlice.t;
+  #[global] StringSlice_type_repr  :: go.TypeReprUnderlying StringSliceⁱᵐᵖˡ StringSlice.t;
+  #[global] StringSlice_underlying :: (StringSlice) <u (StringSliceⁱᵐᵖˡ);
+  #[global] StringSliceⁱᵐᵖˡ_underlying :: (StringSliceⁱᵐᵖˡ) ↓u (StringSliceⁱᵐᵖˡ);
 }.
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=

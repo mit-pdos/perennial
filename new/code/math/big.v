@@ -377,7 +377,9 @@ End Word.
 
 Class Word_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Word_type_repr  :: go.TypeRepr Wordⁱᵐᵖˡ Word.t;
+  #[global] Word_type_repr  :: go.TypeReprUnderlying Wordⁱᵐᵖˡ Word.t;
+  #[global] Word_underlying :: (Word) <u (Wordⁱᵐᵖˡ);
+  #[global] Wordⁱᵐᵖˡ_underlying :: (Wordⁱᵐᵖˡ) ↓u (Wordⁱᵐᵖˡ);
 }.
 
 Module decimal.
@@ -391,7 +393,9 @@ End decimal.
 
 Class decimal_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] decimal_type_repr  :: go.TypeRepr decimalⁱᵐᵖˡ decimal.t;
+  #[global] decimal_type_repr  :: go.TypeReprUnderlying decimalⁱᵐᵖˡ decimal.t;
+  #[global] decimal_underlying :: (decimal) <u (decimalⁱᵐᵖˡ);
+  #[global] decimalⁱᵐᵖˡ_underlying :: (decimalⁱᵐᵖˡ) ↓u (decimalⁱᵐᵖˡ);
 }.
 
 Module Float.
@@ -405,7 +409,9 @@ End Float.
 
 Class Float_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Float_type_repr  :: go.TypeRepr Floatⁱᵐᵖˡ Float.t;
+  #[global] Float_type_repr  :: go.TypeReprUnderlying Floatⁱᵐᵖˡ Float.t;
+  #[global] Float_underlying :: (Float) <u (Floatⁱᵐᵖˡ);
+  #[global] Floatⁱᵐᵖˡ_underlying :: (Floatⁱᵐᵖˡ) ↓u (Floatⁱᵐᵖˡ);
 }.
 
 Module ErrNaN.
@@ -419,7 +425,9 @@ End ErrNaN.
 
 Class ErrNaN_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] ErrNaN_type_repr  :: go.TypeRepr ErrNaNⁱᵐᵖˡ ErrNaN.t;
+  #[global] ErrNaN_type_repr  :: go.TypeReprUnderlying ErrNaNⁱᵐᵖˡ ErrNaN.t;
+  #[global] ErrNaN_underlying :: (ErrNaN) <u (ErrNaNⁱᵐᵖˡ);
+  #[global] ErrNaNⁱᵐᵖˡ_underlying :: (ErrNaNⁱᵐᵖˡ) ↓u (ErrNaNⁱᵐᵖˡ);
 }.
 
 Module form.
@@ -433,7 +441,9 @@ End form.
 
 Class form_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] form_type_repr  :: go.TypeRepr formⁱᵐᵖˡ form.t;
+  #[global] form_type_repr  :: go.TypeReprUnderlying formⁱᵐᵖˡ form.t;
+  #[global] form_underlying :: (form) <u (formⁱᵐᵖˡ);
+  #[global] formⁱᵐᵖˡ_underlying :: (formⁱᵐᵖˡ) ↓u (formⁱᵐᵖˡ);
 }.
 
 Module RoundingMode.
@@ -447,7 +457,9 @@ End RoundingMode.
 
 Class RoundingMode_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] RoundingMode_type_repr  :: go.TypeRepr RoundingModeⁱᵐᵖˡ RoundingMode.t;
+  #[global] RoundingMode_type_repr  :: go.TypeReprUnderlying RoundingModeⁱᵐᵖˡ RoundingMode.t;
+  #[global] RoundingMode_underlying :: (RoundingMode) <u (RoundingModeⁱᵐᵖˡ);
+  #[global] RoundingModeⁱᵐᵖˡ_underlying :: (RoundingModeⁱᵐᵖˡ) ↓u (RoundingModeⁱᵐᵖˡ);
 }.
 
 Module Accuracy.
@@ -461,7 +473,9 @@ End Accuracy.
 
 Class Accuracy_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Accuracy_type_repr  :: go.TypeRepr Accuracyⁱᵐᵖˡ Accuracy.t;
+  #[global] Accuracy_type_repr  :: go.TypeReprUnderlying Accuracyⁱᵐᵖˡ Accuracy.t;
+  #[global] Accuracy_underlying :: (Accuracy) <u (Accuracyⁱᵐᵖˡ);
+  #[global] Accuracyⁱᵐᵖˡ_underlying :: (Accuracyⁱᵐᵖˡ) ↓u (Accuracyⁱᵐᵖˡ);
 }.
 
 Module Int.
@@ -475,7 +489,9 @@ End Int.
 
 Class Int_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Int_type_repr  :: go.TypeRepr Intⁱᵐᵖˡ Int.t;
+  #[global] Int_type_repr  :: go.TypeReprUnderlying Intⁱᵐᵖˡ Int.t;
+  #[global] Int_underlying :: (Int) <u (Intⁱᵐᵖˡ);
+  #[global] Intⁱᵐᵖˡ_underlying :: (Intⁱᵐᵖˡ) ↓u (Intⁱᵐᵖˡ);
 }.
 
 Module byteReader.
@@ -489,7 +505,9 @@ End byteReader.
 
 Class byteReader_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] byteReader_type_repr  :: go.TypeRepr byteReaderⁱᵐᵖˡ byteReader.t;
+  #[global] byteReader_type_repr  :: go.TypeReprUnderlying byteReaderⁱᵐᵖˡ byteReader.t;
+  #[global] byteReader_underlying :: (byteReader) <u (byteReaderⁱᵐᵖˡ);
+  #[global] byteReaderⁱᵐᵖˡ_underlying :: (byteReaderⁱᵐᵖˡ) ↓u (byteReaderⁱᵐᵖˡ);
 }.
 
 Module nat.
@@ -503,7 +521,9 @@ End nat.
 
 Class nat_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] nat_type_repr  :: go.TypeRepr natⁱᵐᵖˡ nat.t;
+  #[global] nat_type_repr  :: go.TypeReprUnderlying natⁱᵐᵖˡ nat.t;
+  #[global] nat_underlying :: (nat) <u (natⁱᵐᵖˡ);
+  #[global] natⁱᵐᵖˡ_underlying :: (natⁱᵐᵖˡ) ↓u (natⁱᵐᵖˡ);
 }.
 
 Module stack.
@@ -517,7 +537,9 @@ End stack.
 
 Class stack_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] stack_type_repr  :: go.TypeRepr stackⁱᵐᵖˡ stack.t;
+  #[global] stack_type_repr  :: go.TypeReprUnderlying stackⁱᵐᵖˡ stack.t;
+  #[global] stack_underlying :: (stack) <u (stackⁱᵐᵖˡ);
+  #[global] stackⁱᵐᵖˡ_underlying :: (stackⁱᵐᵖˡ) ↓u (stackⁱᵐᵖˡ);
 }.
 
 Module divisor.
@@ -531,7 +553,9 @@ End divisor.
 
 Class divisor_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] divisor_type_repr  :: go.TypeRepr divisorⁱᵐᵖˡ divisor.t;
+  #[global] divisor_type_repr  :: go.TypeReprUnderlying divisorⁱᵐᵖˡ divisor.t;
+  #[global] divisor_underlying :: (divisor) <u (divisorⁱᵐᵖˡ);
+  #[global] divisorⁱᵐᵖˡ_underlying :: (divisorⁱᵐᵖˡ) ↓u (divisorⁱᵐᵖˡ);
 }.
 
 Module Rat.
@@ -545,7 +569,9 @@ End Rat.
 
 Class Rat_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Rat_type_repr  :: go.TypeRepr Ratⁱᵐᵖˡ Rat.t;
+  #[global] Rat_type_repr  :: go.TypeReprUnderlying Ratⁱᵐᵖˡ Rat.t;
+  #[global] Rat_underlying :: (Rat) <u (Ratⁱᵐᵖˡ);
+  #[global] Ratⁱᵐᵖˡ_underlying :: (Ratⁱᵐᵖˡ) ↓u (Ratⁱᵐᵖˡ);
 }.
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=

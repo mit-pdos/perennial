@@ -32,7 +32,7 @@ Local Set Default Proof Using "All".
 Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance Channel_into_val_typed
-  `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T} `{!go.TypeRepr T T'}  :
+  `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T}  :
   IntoValTypedUnderlying (channel.Channel.t T') (channel.Channelⁱᵐᵖˡ T).
 Proof. solve_into_val_typed_struct. Qed.
 #[global] Instance Channel_access_load_cap `{!TypedPointsto (Σ:=Σ) T'} l (v : (channel.Channel.t T')) dq :
