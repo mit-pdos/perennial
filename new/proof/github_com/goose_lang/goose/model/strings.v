@@ -72,7 +72,7 @@ Proof.
   wp_if_destruct.
   - rewrite -> decide_True; last word.
     list_elem s (sint.nat i) as c'.
-    wp_auto. wp_apply (wp_load_slice_index with "[$Hsl]").
+    wp_apply (wp_load_slice_index with "[$Hsl]").
     { word. }
     { done. }
     iIntros "Hsl".

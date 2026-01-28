@@ -67,7 +67,6 @@ Proof.
       assert (0 ≤ sint.Z (W64 0) < sint.Z slice_val.(slice.len)) as Hlt.
       { word. }
       rewrite -> decide_True; last word.
-      wp_auto.
       wp_apply (wp_load_slice_index
                  with "[Hclose]"). all: try word.
       { iFrame. done. }
@@ -333,7 +332,7 @@ Proof.
         { move: Hlen_eq; simpl.  (* length (v::draining) = S (length draining) *)
           (* sint.nat len = S _  ⇒  sint.Z len > 0 *)
           word. }
-        rewrite -> decide_True; last word. wp_auto.
+        rewrite -> decide_True; last word.
         wp_apply (wp_load_slice_index with "[Hclose]"). all: try word.
         { iFrame. done. }
         iIntros "Hsl". wp_auto.

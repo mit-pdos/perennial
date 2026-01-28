@@ -76,9 +76,9 @@ Proof.
     wp_for "IH".
     wp_if_destruct.
     - list_elem xs1 (sint.Z i) as x1_i.
-      rewrite -> decide_True; last word. wp_auto.
+      rewrite -> decide_True; last word.
       wp_apply (wp_load_slice_index with "[$Hs1]") as "Hs1"; [ word | eauto | ].
-      rewrite -> decide_True; last word. wp_auto.
+      rewrite -> decide_True; last word.
       list_elem xs2 (sint.Z i) as x2_i.
       wp_apply (wp_load_slice_index with "[$Hs2]") as "Hs2"; [ word | eauto | ].
       destruct (bool_decide_reflect (x1_i = x2_i)); subst; wp_auto.

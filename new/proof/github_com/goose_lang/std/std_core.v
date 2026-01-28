@@ -127,9 +127,9 @@ Proof.
     iIntros (x) "_".
     wp_auto.
     list_elem xs' (sint.Z i) as x_i.
-    rewrite -> decide_True; last word. wp_auto.
+    rewrite -> decide_True; last word.
     wp_apply (wp_load_slice_index with "[$Hs]") as "Hs"; [ word | eauto | ].
-    rewrite -> decide_True; last word. wp_auto.
+    rewrite -> decide_True; last word.
 
     list_elem xs' (sint.nat (word.modu x (word.add i (W64 1)))) as x_i'.
     wp_apply (wp_load_slice_index with "[$Hs]") as "Hs"; [ word | eauto | ].
