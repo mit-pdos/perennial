@@ -299,7 +299,7 @@ Proof.
   { word. }
   wp_for "IH".
   wp_if_destruct.
-  - rewrite -> decide_True; last word. wp_auto.
+  - rewrite -> decide_True; last word.
     list_elem xs (sint.nat i) as x_i.
     wp_apply (wp_load_slice_index with "[$Hs]") as "Hs"; first word.
     { eauto. }
