@@ -828,7 +828,6 @@ Definition offerStateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
 
 Class offerState_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] offerState_type_repr  :: go.TypeReprUnderlying offerStateⁱᵐᵖˡ offerState.t;
   #[global] offerState_underlying :: (offerState) <u (offerStateⁱᵐᵖˡ);
 }.
 
@@ -901,7 +900,6 @@ Definition SelectDirⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
 
 Class SelectDir_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] SelectDir_type_repr  :: go.TypeReprUnderlying SelectDirⁱᵐᵖˡ SelectDir.t;
   #[global] SelectDir_underlying :: (SelectDir) <u (SelectDirⁱᵐᵖˡ);
 }.
 

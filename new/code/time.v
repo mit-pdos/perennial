@@ -962,7 +962,6 @@ Definition Durationⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : 
 
 Class Duration_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Duration_type_repr  :: go.TypeReprUnderlying Durationⁱᵐᵖˡ Duration.t;
   #[global] Duration_underlying :: (Duration) <u (Durationⁱᵐᵖˡ);
 }.
 

@@ -270,7 +270,6 @@ Definition Readerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go
 
 Class Reader_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Reader_type_repr  :: go.TypeReprUnderlying Readerⁱᵐᵖˡ Reader.t;
   #[global] Reader_underlying :: (Reader) <u (Readerⁱᵐᵖˡ);
 }.
 
@@ -285,7 +284,6 @@ Definition Writerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go
 
 Class Writer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Writer_type_repr  :: go.TypeReprUnderlying Writerⁱᵐᵖˡ Writer.t;
   #[global] Writer_underlying :: (Writer) <u (Writerⁱᵐᵖˡ);
 }.
 

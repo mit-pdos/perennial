@@ -853,7 +853,6 @@ Definition Lockerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go
 
 Class Locker_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Locker_type_repr  :: go.TypeReprUnderlying Lockerⁱᵐᵖˡ Locker.t;
   #[global] Locker_underlying :: (Locker) <u (Lockerⁱᵐᵖˡ);
 }.
 
@@ -1230,7 +1229,6 @@ Definition rlockerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : g
 
 Class rlocker_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] rlocker_type_repr  :: go.TypeReprUnderlying rlockerⁱᵐᵖˡ rlocker.t;
   #[global] rlocker_underlying :: (rlocker) <u (rlockerⁱᵐᵖˡ);
 }.
 

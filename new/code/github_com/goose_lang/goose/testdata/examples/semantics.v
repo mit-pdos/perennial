@@ -3162,7 +3162,6 @@ Definition Uint32ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go
 
 Class Uint32_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Uint32_type_repr  :: go.TypeReprUnderlying Uint32ⁱᵐᵖˡ Uint32.t;
   #[global] Uint32_underlying :: (Uint32) <u (Uint32ⁱᵐᵖˡ);
 }.
 
@@ -3177,7 +3176,6 @@ Definition geometryInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
 
 Class geometryInterface_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] geometryInterface_type_repr  :: go.TypeReprUnderlying geometryInterfaceⁱᵐᵖˡ geometryInterface.t;
   #[global] geometryInterface_underlying :: (geometryInterface) <u (geometryInterfaceⁱᵐᵖˡ);
 }.
 
@@ -3589,7 +3587,6 @@ Definition switchInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
 
 Class switchInterface_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] switchInterface_type_repr  :: go.TypeReprUnderlying switchInterfaceⁱᵐᵖˡ switchInterface.t;
   #[global] switchInterface_underlying :: (switchInterface) <u (switchInterfaceⁱᵐᵖˡ);
 }.
 

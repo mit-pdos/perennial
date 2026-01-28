@@ -3075,7 +3075,6 @@ Definition Fooⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.ty
 
 Class Foo_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Foo_type_repr  :: go.TypeReprUnderlying Fooⁱᵐᵖˡ Foo.t;
   #[global] Foo_underlying :: (Foo) <u (Fooⁱᵐᵖˡ);
 }.
 
@@ -3119,7 +3118,6 @@ Definition stringWrapperⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
 
 Class stringWrapper_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] stringWrapper_type_repr  :: go.TypeReprUnderlying stringWrapperⁱᵐᵖˡ stringWrapper.t;
   #[global] stringWrapper_underlying :: (stringWrapper) <u (stringWrapperⁱᵐᵖˡ);
 }.
 
@@ -3134,7 +3132,6 @@ Definition Uint32ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go
 
 Class Uint32_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Uint32_type_repr  :: go.TypeReprUnderlying Uint32ⁱᵐᵖˡ Uint32.t;
   #[global] Uint32_underlying :: (Uint32) <u (Uint32ⁱᵐᵖˡ);
 }.
 
@@ -3149,7 +3146,6 @@ Definition numWrapperⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
 
 Class numWrapper_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] numWrapper_type_repr  :: go.TypeReprUnderlying numWrapperⁱᵐᵖˡ numWrapper.t;
   #[global] numWrapper_underlying :: (numWrapper) <u (numWrapperⁱᵐᵖˡ);
   #[global] numWrapper'ptr_inc_unfold :: MethodUnfold (go.PointerType (numWrapper)) "inc" (numWrapper__incⁱᵐᵖˡ);
 }.
@@ -3446,7 +3442,6 @@ Definition Enum1ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.
 
 Class Enum1_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Enum1_type_repr  :: go.TypeReprUnderlying Enum1ⁱᵐᵖˡ Enum1.t;
   #[global] Enum1_underlying :: (Enum1) <u (Enum1ⁱᵐᵖˡ);
 }.
 
@@ -3461,7 +3456,6 @@ Definition Enum2ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.
 
 Class Enum2_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Enum2_type_repr  :: go.TypeReprUnderlying Enum2ⁱᵐᵖˡ Enum2.t;
   #[global] Enum2_underlying :: (Enum2) <u (Enum2ⁱᵐᵖˡ);
 }.
 
@@ -3476,7 +3470,6 @@ Definition Fooerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.
 
 Class Fooer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Fooer_type_repr  :: go.TypeReprUnderlying Fooerⁱᵐᵖˡ Fooer.t;
   #[global] Fooer_underlying :: (Fooer) <u (Fooerⁱᵐᵖˡ);
 }.
 
@@ -3588,7 +3581,6 @@ Definition PointerInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
 
 Class PointerInterface_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] PointerInterface_type_repr  :: go.TypeReprUnderlying PointerInterfaceⁱᵐᵖˡ PointerInterface.t;
   #[global] PointerInterface_underlying :: (PointerInterface) <u (PointerInterfaceⁱᵐᵖˡ);
 }.
 
@@ -3635,7 +3627,6 @@ Definition my_u32ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go
 
 Class my_u32_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] my_u32_type_repr  :: go.TypeReprUnderlying my_u32ⁱᵐᵖˡ my_u32.t;
   #[global] my_u32_underlying :: (my_u32) <u (my_u32ⁱᵐᵖˡ);
 }.
 
@@ -3650,7 +3641,6 @@ Definition also_u32ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : 
 
 Class also_u32_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] also_u32_type_repr  :: go.TypeReprUnderlying also_u32ⁱᵐᵖˡ also_u32.t;
   #[global] also_u32_underlying :: (also_u32) <u (also_u32ⁱᵐᵖˡ);
 }.
 
@@ -3737,7 +3727,6 @@ Definition IntWrapperⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
 
 Class IntWrapper_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] IntWrapper_type_repr  :: go.TypeReprUnderlying IntWrapperⁱᵐᵖˡ IntWrapper.t;
   #[global] IntWrapper_underlying :: (IntWrapper) <u (IntWrapperⁱᵐᵖˡ);
 }.
 
@@ -3752,7 +3741,6 @@ Definition MapWrapperⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
 
 Class MapWrapper_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] MapWrapper_type_repr  :: go.TypeReprUnderlying MapWrapperⁱᵐᵖˡ MapWrapper.t;
   #[global] MapWrapper_underlying :: (MapWrapper) <u (MapWrapperⁱᵐᵖˡ);
 }.
 
@@ -4066,7 +4054,6 @@ Definition SliceAliasⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
 
 Class SliceAlias_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] SliceAlias_type_repr  :: go.TypeReprUnderlying SliceAliasⁱᵐᵖˡ SliceAlias.t;
   #[global] SliceAlias_underlying :: (SliceAlias) <u (SliceAliasⁱᵐᵖˡ);
 }.
 
@@ -4301,7 +4288,6 @@ Definition Timestampⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
 
 Class Timestamp_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Timestamp_type_repr  :: go.TypeReprUnderlying Timestampⁱᵐᵖˡ Timestamp.t;
   #[global] Timestamp_underlying :: (Timestamp) <u (Timestampⁱᵐᵖˡ);
 }.
 
@@ -4316,7 +4302,6 @@ Definition UseTypeAbbrevⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
 
 Class UseTypeAbbrev_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] UseTypeAbbrev_type_repr  :: go.TypeReprUnderlying UseTypeAbbrevⁱᵐᵖˡ UseTypeAbbrev.t;
   #[global] UseTypeAbbrev_underlying :: (UseTypeAbbrev) <u (UseTypeAbbrevⁱᵐᵖˡ);
 }.
 
@@ -4331,7 +4316,6 @@ Definition UseNamedTypeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
 
 Class UseNamedType_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] UseNamedType_type_repr  :: go.TypeReprUnderlying UseNamedTypeⁱᵐᵖˡ UseNamedType.t;
   #[global] UseNamedType_underlying :: (UseNamedType) <u (UseNamedTypeⁱᵐᵖˡ);
 }.
 

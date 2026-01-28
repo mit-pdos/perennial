@@ -151,7 +151,6 @@ Definition Contextⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : g
 
 Class Context_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Context_type_repr  :: go.TypeReprUnderlying Contextⁱᵐᵖˡ Context.t;
   #[global] Context_underlying :: (Context) <u (Contextⁱᵐᵖˡ);
 }.
 
