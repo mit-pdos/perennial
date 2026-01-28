@@ -17,7 +17,7 @@ Context {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}
 Local Set Default Proof Using "All".
 
 Context `[!chanG Σ V].
-Context `[!ZeroVal V] `[!TypedPointsto V] `[!IntoValTyped V t] `[!go.TypeRepr t V].
+Context `[!ZeroVal V] `[!TypedPointsto V] `[!IntoValTyped V t].
 
 Lemma wp_NewChannel (cap : w64) :
   {{{ ⌜ 0 ≤ sint.Z cap ⌝ }}}

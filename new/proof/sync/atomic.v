@@ -965,7 +965,7 @@ Qed.
 
 
 Section pointer.
-Context `{!ZeroVal T'} `{!TypedPointsto T'} `{!IntoValTyped T' T} `{!go.TypeRepr T T'}.
+Context `{!ZeroVal T'} `{!TypedPointsto T'} `{!IntoValTyped T' T}.
 
 Definition own_Pointer (u : loc) dq (v : loc) : iProp Σ :=
   u ↦{dq} atomic.Pointer.mk T' (zero_val _) (zero_val _) v.

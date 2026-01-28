@@ -14,7 +14,7 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics}.
 
 Context `[!chanG Σ V].
-Context `[!ZeroVal V] `[!TypedPointsto V] `[!IntoValTyped V t] `[!go.TypeRepr t V].
+Context `[!ZeroVal V] `[!TypedPointsto V] `[!IntoValTyped V t].
 
 Record simple_names := {
   chan_name : chan_names;
