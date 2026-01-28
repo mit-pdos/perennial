@@ -298,7 +298,7 @@ Class CoreComparisonSemantics `{!GoSemanticsFunctions} : Prop :=
   #[global] struct_is_comparable fds
     `{!TCForall (λ fd, ⟦CheckComparable (match fd with go.FieldDecl _ t | go.EmbeddedField _ t => t end), #()⟧ ⤳[under] #()) fds} ::
     ⟦CheckComparable (go.StructType fds), #()⟧ ⤳[under] #();
-  #[global] go_eq_struct fds v1 v2 ::
+  #[global] go_eq_struct `{!fds =→ fds_unsealed} v1 v2 ::
     ⟦GoOp GoEquals (go.StructType fds), (v1, v2)⟧ ⤳[under]
     (foldl (λ cmp_so_far fd,
              let (field_name, field_type) :=
@@ -307,7 +307,7 @@ Class CoreComparisonSemantics `{!GoSemanticsFunctions} : Prop :=
                 (StructFieldGet (go.StructType fds) field_name v1) =⟨field_type⟩
                 (StructFieldGet (go.StructType fds) field_name v2)
               else #false)%E
-      ) #true fds);
+      ) #true fds_unsealed);
 }.
 
 Fixpoint struct_field_type (f : go_string) (fds : list go.field_decl) : go.type :=

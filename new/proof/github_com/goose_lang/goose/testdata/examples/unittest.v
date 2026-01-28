@@ -224,20 +224,19 @@ Proof.
   { constructor. iIntros. wp_auto. done. }
   wp_apply (wp_map_insert with "Hm") as "Hm".
   { constructor. iIntros. wp_auto. done. }
-  pose proof go.go_eq_struct.
   wp_apply (wp_map_insert with "Hm") as "Hm".
-  { constructor. iIntros. wp_auto. rewrite -> decide_True; last done.
-    wp_auto. admit. }
+  { constructor. iIntros "* HΦ". wp_auto. rewrite -> decide_True; last done.
+    wp_auto. wp_end. }
   wp_apply (wp_map_lookup1 with "Hm") as "Hm".
-  { constructor. iIntros. wp_auto. rewrite -> decide_True; last done.
-    wp_auto. admit. }
+  { constructor. iIntros "* HΦ". wp_auto. rewrite -> decide_True; last done.
+    wp_auto. wp_end. }
   rewrite insert_empty.
   rewrite lookup_insert_eq /=.
   wp_apply (wp_map_lookup1 with "Hm") as "Hm".
   { constructor. iIntros. wp_auto. done. }
   rewrite lookup_insert_ne; last done. rewrite lookup_insert_eq. simpl.
-  rewrite -> decide_True; last done. wp_auto.
-Admitted.
+  rewrite -> decide_True; last done. wp_auto. wp_end.
+Qed.
 
 Lemma wp_useNilField :
   {{{ is_pkg_init unittest }}}
