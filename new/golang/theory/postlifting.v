@@ -104,12 +104,13 @@ Class IntoValTypedUnderlying (V : Type) (t_under : go.type) `{!ZeroVal V} `{!Typ
                       {{{ l, RET #l; l ↦ v }}});
     wp_load_def : (∀ [s E] `[!t ↓u t_under] l dq (v : V),
                  {{{ l ↦{dq} v }}}
-                   ![t] #l @ s ; E
+                    ![t] #l @ s ; E
                  {{{ RET #v; l ↦{dq} v }}});
     wp_store_def : (∀ [s E] `[!t ↓u t_under] l (v w : V),
                   {{{ l ↦ v }}}
                     GoStore t (#l, #w)%V @ s ; E
                   {{{ RET #(); l ↦ w }}});
+    type_repr_def : go.TypeReprUnderlying t_under V;
   }.
 (* [t] should not be an evar before doing typeclass search *)
 Global Hint Mode IntoValTypedUnderlying - + - - -: typeclass_instances.
@@ -129,10 +130,11 @@ Class IntoValTyped (V : Type) (t : go.type) `{!ZeroVal V} `{!TypedPointsto V}
                   {{{ l ↦ v }}}
                     GoStore t (#l, #w)%V @ s ; E
                   {{{ RET #(); l ↦ w }}});
+    #[global] type_repr :: TypeRepr t V;
   }.
 
-Global Instance x (V : Type) (t_under : go.type) `{!ZeroVal V} `{!TypedPointsto V}
-  `{!GoSemanticsFunctions} t :
+Global Instance underlying_to_into_val_typed (V : Type) (t_under : go.type) `{!ZeroVal V} `{!TypedPointsto V}
+  `{!GoSemanticsFunctions} {pre_sem : go.PreSemantics} t :
   t ↓u t_under →
   IntoValTypedUnderlying V t_under →
   IntoValTyped V t.
@@ -141,9 +143,14 @@ Proof.
   { intros. unshelve eapply wp_alloc_def; try tc_solve; tc_solve. }
   { intros. unshelve eapply wp_load_def; try tc_solve; tc_solve. }
   { intros. unshelve eapply wp_store_def; try tc_solve; tc_solve. }
+  { pose proof @type_repr_def. tc_solve. }
 Qed.
 
 End into_val_defs.
+
+Global Arguments wp_alloc {_ _ _ _ _ _} [_ _ _ _ _ _ _ _ _] (Φ).
+Global Arguments wp_load {_ _ _ _ _ _} [_ _ _ _ _ _ _ _] (l dq v Φ).
+Global Arguments wp_store {_ _ _ _ _ _} [_ _ _ _ _ _ _ _] (l v w Φ).
 
 Global Hint Mode TypedPointsto - ! : typeclass_instances.
 
@@ -231,14 +238,14 @@ Proof.
   by iApply "HΦ".
 Qed.
 
-Lemma wp_GlobalAlloc v t `[!t ↓u t_under] `{!ZeroVal V} `{!TypedPointsto V}
-  `{!go.TypeRepr t V} `{!IntoValTyped V t} :
+Lemma wp_GlobalAlloc v t `[!t ↓u t_under] `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t} :
   {{{ True }}}
     go.GlobalAlloc v t #()
   {{{ RET #(); global_addr v ↦ (zero_val V) }}}.
 Proof.
   rewrite go.GlobalAlloc_unseal. iIntros (?) "_ HΦ".
-  wp_call. wp_pures. wp_apply wp_alloc.
+  wp_call. wp_pures.
+  wp_apply wp_alloc.
   iIntros (?) "Hl". wp_pures.
   rewrite bool_decide_decide. destruct decide; wp_pures.
   - subst. iApply "HΦ". iFrame.
@@ -421,24 +428,24 @@ Ltac solve_wp_store :=
 
 Ltac solve_into_val_typed :=
   pose proof (go.tagged_steps internal);
-  constructor; intros; [solve_wp_alloc|solve_wp_load|solve_wp_store].
+  constructor; intros; [solve_wp_alloc|solve_wp_load|solve_wp_store|tc_solve].
 
 Global Instance into_val_typed_loc t : IntoValTypedUnderlying loc (go.PointerType t).
 Proof. solve_into_val_typed. Qed.
 
-Global Instance into_val_typed_func sig : IntoValTyped func.t (go.FunctionType sig).
+Global Instance into_val_typed_func sig : IntoValTypedUnderlying func.t (go.FunctionType sig).
 Proof. solve_into_val_typed. Qed.
 
-Global Instance into_val_typed_slice t : IntoValTyped slice.t (go.SliceType t).
+Global Instance into_val_typed_slice t : IntoValTypedUnderlying slice.t (go.SliceType t).
 Proof. solve_into_val_typed. Qed.
 
-Global Instance into_val_typed_interface elems : IntoValTyped interface.t (go.InterfaceType elems).
+Global Instance into_val_typed_interface elems : IntoValTypedUnderlying interface.t (go.InterfaceType elems).
 Proof. solve_into_val_typed. Qed.
 
-Global Instance into_val_typed_chan t b : IntoValTyped chan.t (go.ChannelType b t).
+Global Instance into_val_typed_chan t b : IntoValTypedUnderlying chan.t (go.ChannelType b t).
 Proof. solve_into_val_typed. Qed.
 
-Global Instance into_val_typed_map k v : IntoValTyped map.t (go.MapType k v).
+Global Instance into_val_typed_map k v : IntoValTypedUnderlying map.t (go.MapType k v).
 Proof. solve_into_val_typed. Qed.
 
 Lemma typed_pointsto_split `{!TypedPointsto V} l (v : V) dq :

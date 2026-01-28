@@ -346,18 +346,18 @@ Ltac solve_pointsto_access_struct :=
   iApply typed_pointsto_combine; iFrame.
 
 Ltac solve_into_val_typed_struct :=
-    let alloc :=
+    let alloc Hint :=
       let field :=
         rewrite bool_decide_decide; destruct decide; subst;
         last (wp_auto; wp_apply wp_AngelicExit);
         iDestruct "l_field" as "?"; wp_auto
       in
-      iIntros "_ HΦ"; wp_auto; wp_apply wp_GoPrealloc as "* %Hnotnull"; repeat field;
+      iIntros "_ HΦ"; wp_pure; clear Hint; wp_apply wp_GoPrealloc as "* %Hnotnull"; repeat field;
       iApply "HΦ"; iEval (rewrite typed_pointsto_unseal); by iFrame in
-    let load :=
+    let load Hint :=
       iIntros "Hl HΦ"; rewrite typed_pointsto_unseal;
-      iNamed "Hl"; simpl; wp_auto; destruct &v; simpl; iApply "HΦ"; by iFrame in
-    let store :=
+      iNamed "Hl"; simpl; wp_pure; clear Hint; wp_auto; destruct &v; simpl; iApply "HΦ"; by iFrame in
+    let store Hint :=
       iIntros "Hl HΦ"; rewrite typed_pointsto_unseal;
-      iNamed "Hl"; simpl; wp_auto; destruct &v; simpl; iApply "HΦ"; by iFrame in
-    pose proof (go.tagged_steps internal); constructor; intros; [alloc | load | store].
+      iNamed "Hl"; simpl; wp_pure; clear Hint; wp_auto; destruct &v; simpl; iApply "HΦ"; by iFrame in
+    pose proof (go.tagged_steps internal) as Hint; constructor; intros; [alloc Hint | load Hint | store Hint | tc_solve].

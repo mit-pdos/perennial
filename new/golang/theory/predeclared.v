@@ -31,7 +31,7 @@ Ltac solve_wp_store :=
 
 Ltac solve_into_val_typed :=
   pose proof (go.tagged_steps internal);
-  constructor; intros; [solve_wp_alloc|solve_wp_load|solve_wp_store].
+  constructor; intros; [solve_wp_alloc|solve_wp_load|solve_wp_store|tc_solve].
 
 Existing Class go.is_predeclared.
 #[local] Hint Extern 1 (go.is_predeclared ?t) => constructor : typeclass_instances.

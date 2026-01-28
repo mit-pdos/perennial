@@ -311,7 +311,7 @@ Qed.
 
 Context [V] `[!ZeroVal V] `[!TypedPointsto (Σ:=Σ) V].
 
-Lemma wp_slice_make3 `[!go.TypeRepr t V] `[!IntoValTyped V t] stk E (len cap : w64) :
+Lemma wp_slice_make3 `[!IntoValTyped V t] stk E (len cap : w64) :
   0 ≤ sint.Z len ≤ sint.Z cap →
   {{{ True }}}
     (#(functions go.make3 [go.SliceType t]) #len #cap) @ stk; E
@@ -351,7 +351,7 @@ Proof.
   iFrame.
 Qed.
 
-Lemma wp_slice_make2 `[!go.TypeRepr t V] `[!IntoValTyped V t] stk E (len : u64) :
+Lemma wp_slice_make2 `[!IntoValTyped V t] stk E (len : u64) :
   {{{ ⌜0 ≤ sint.Z len⌝ }}}
     #(functions go.make2 [go.SliceType t]) #len @ stk; E
   {{{ sl, RET #sl;
@@ -644,7 +644,7 @@ the number of bytes copied. See https://pkg.go.dev/builtin#copy.
 
 Use [take_ge] and [drop_ge] to simplify the resulting list expression.
  *)
-Lemma wp_slice_copy `[!IntoValTyped V t] `[!go.TypeRepr t V] (s: slice.t) (vs: list V) (s2: slice.t) (vs': list V) dq :
+Lemma wp_slice_copy `[!IntoValTyped V t] (s: slice.t) (vs: list V) (s2: slice.t) (vs': list V) dq :
   {{{ s ↦* vs ∗ s2 ↦*{dq} vs' }}}
     #(functions go.copy [go.SliceType t]) #s #s2
   {{{ (n: w64), RET #n; ⌜sint.nat n = Nat.min (length vs) (length vs')⌝ ∗
@@ -709,7 +709,7 @@ Proof.
     repeat (f_equal; try word).
 Qed.
 
-Lemma wp_slice_clear `[!go.TypeRepr t V] `[!IntoValTyped V t] s (vs : list V) :
+Lemma wp_slice_clear `[!IntoValTyped V t] s (vs : list V) :
   {{{ s ↦* vs }}}
     #(functions go.clear [go.SliceType t]) #s
   {{{ RET #(); s ↦* replicate (length vs) (zero_val V) }}}.
@@ -754,7 +754,7 @@ Proof.
     word.
 Qed.
 
-Lemma wp_slice_append `[!go.TypeRepr t V] `[!IntoValTyped V t] (s: slice.t) (vs: list V) (s2: slice.t) (vs': list V) dq :
+Lemma wp_slice_append `[!IntoValTyped V t] (s: slice.t) (vs: list V) (s2: slice.t) (vs': list V) dq :
   {{{ s ↦* vs ∗ own_slice_cap V s (DfracOwn 1) ∗ s2 ↦*{dq} vs' }}}
     #(functions go.append [go.SliceType t]) #s #s2
   {{{ (s' : slice.t), RET #s';

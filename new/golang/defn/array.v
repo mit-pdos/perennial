@@ -18,8 +18,8 @@ Class ArraySemantics `{!GoSemanticsFunctions} :=
   #[global] equals_array n t (H : ⟦CheckComparable t, #()⟧ ⤳[under] #()) ::
     ⟦CheckComparable (go.ArrayType n t), #()⟧ ⤳[under] #();
 
-  #[global] type_repr_array ty V n `{!ZeroVal V} `{!go.TypeRepr ty V} ::
-    go.TypeRepr (go.ArrayType n ty) (array.t V n);
+  #[global] type_repr_array ty V n `{!ZeroVal V} `{!TypeRepr ty V} ::
+    go.TypeReprUnderlying (go.ArrayType n ty) (array.t V n);
 
   (* TODO: implement alloc_array *)
   #[global] alloc_array n elem v :: ⟦GoAlloc (go.ArrayType n elem), v⟧ ⤳[internal] AngelicExit #();
@@ -47,10 +47,11 @@ Class ArraySemantics `{!GoSemanticsFunctions} :=
              (#()) (seqZ 0 n)
     )%E;
 
-  #[global] index_ref_array n elem_type (i : w64) l V `{!ZeroVal V} `{!go.TypeRepr elem_type V} ::
+  #[global] index_ref_array n elem_type (i : w64) l `{!ZeroVal V} `{!TypeRepr elem_type V} ::
     ⟦IndexRef (go.ArrayType n elem_type), (#l, #i)⟧ ⤳[under]
       (if decide (sint.Z i < n) then #(array_index_ref V (sint.Z i) l) else Panic "index out of range");
-  #[global] index_array n elem_type (i : w64) V `{!ZeroVal V} `{!go.TypeRepr elem_type V} (a : array.t V n) ::
+
+  #[global] index_array n elem_type (i : w64) V (a : array.t V n) ::
     ⟦Index (go.ArrayType n elem_type), (#a, #i)⟧ ⤳[under]
       (match (array.arr a) !! (sint.nat i) with
        | Some v => #v
@@ -75,7 +76,7 @@ Class ArraySemantics `{!GoSemanticsFunctions} :=
              end
       ) (0, (GoZeroVal (go.ArrayType n elem_type) #())) kvs).2;
 
-  #[global] slice_array_step n elem_type p low high `{!ZeroVal V} `{!go.TypeRepr elem_type V} ::
+  #[global] slice_array_step n elem_type p low high `{!ZeroVal V} `{!TypeRepr elem_type V} ::
     ⟦Slice $ go.ArrayType n elem_type, (#p, #low, #high)⟧ ⤳
        (if decide (0 ≤ sint.Z low ≤ sint.Z high ≤ n) then
           #(slice.mk (array_index_ref V (word.signed low) p)
@@ -83,8 +84,7 @@ Class ArraySemantics `{!GoSemanticsFunctions} :=
               (word.sub (W64 n) low))
         else Panic "slice bounds out of range");
 
-  #[global] full_slice_array_step_pure n elem_type p low high max `{!ZeroVal V}
-    `{!go.TypeRepr elem_type V} ::
+  #[global] full_slice_array_step_pure n elem_type p low high max `{!ZeroVal V} `{!TypeRepr elem_type V} ::
     ⟦FullSlice (go.ArrayType n elem_type), (#p, #low, #high, #max)⟧ ⤳
     (if decide (0 ≤ sint.Z low ≤ sint.Z high ≤ sint.Z max ∧ sint.Z max ≤ n) then
        #(slice.mk (array_index_ref V (sint.Z low) p)

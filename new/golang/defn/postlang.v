@@ -4,6 +4,12 @@
 From Perennial.goose_lang Require Export lang.
 From Perennial Require Export base.
 
+Class EqualsUnfold {A : Type} (a a' : A) :=
+  { equals_unfold : a = a' }.
+Global Hint Mode EqualsUnfold + + - : typeclass_instances.
+
+Global Notation "a =→ a'" := (EqualsUnfold a a') (at level 70).
+
 #[warning="-uniform-inheritance"]
 Global Coercion GoInstruction : go_instruction >-> val.
 
@@ -100,7 +106,7 @@ Class GoSemanticsFunctions {ext : ffi_syntax} :=
     (* This uses a Gallina [Type] because there are multiple [go.type]s that
        have the same [Type] representation (e.g. uint64/int64, *X/*Y), but
        offsets are only supposed to depend on the Gallina representation. *)
-    is_type_repr : go.type → Type → Prop;
+    TypeRepr : ∀ (t : go.type) (V : Type) `{!ZeroVal V}, Prop;
     struct_field_ref : Type → go_string → loc → loc;
 
     array_index_ref (elem_type : Type) (i : Z) (l : loc) : loc;
@@ -135,7 +141,7 @@ Class MethodUnfold t m (m_impl : val) : Prop :=
 Global Hint Mode MethodUnfold ! ! - : typeclass_instances.
 End unfolding_defs.
 
-Inductive tag := | under | internal | internal_under.
+Inductive tag := | under | under_t (t : go.type) | internal | internal_under.
 
 Module go.
 Section defs.
@@ -255,6 +261,17 @@ Notation "s  ≤u  t" := (UnderlyingEq s t) (at level 70).
 Notation "s  <u  t" := (UnderlyingDirectedEq s t) (at level 70).
 Notation "t  ↓u  tunder" := (IsUnderlying t tunder) (at level 70).
 
+Existing Class TypeRepr.
+Global Hint Mode TypeRepr - - + - - : typeclass_instances.
+
+Class TypeReprUnderlying u V `{!GoSemanticsFunctions} `{!ZeroVal V} : Prop :=
+  { type_repr_underlying_def `{!t ↓u u} : TypeRepr t V }.
+Global Hint Mode TypeReprUnderlying + - - - : typeclass_instances.
+
+Global Instance type_repr_underlying t u V `{!GoSemanticsFunctions} `{!ZeroVal V} :
+  t ↓u u → TypeReprUnderlying u V → TypeRepr t V.
+Proof. intros. eapply type_repr_underlying_def. Qed.
+
 (* Helper definition to cover types for which `a == b` always executes safely. *)
 Class IsStrictlyComparable t V `{!EqDecision V} `{!GoSemanticsFunctions} : Prop :=
   {
@@ -302,18 +319,9 @@ Fixpoint struct_field_type (f : go_string) (fds : list go.field_decl) : go.type 
       else struct_field_type f fds
   end.
 
-Class TypeRepr t V `{!ZeroVal V} `{!GoSemanticsFunctions} : Prop :=
-  {
-    type_repr : is_type_repr t V;
-    #[global] go_zero_val_step :: ⟦GoZeroVal t, #()⟧ ⤳ #(zero_val V);
-  }.
-Global Hint Mode TypeRepr ! - - - : typeclass_instances.
-
 Notation "s  ≤u  t" := (UnderlyingEq s t) (at level 70).
 Notation "s  <u  t" := (UnderlyingDirectedEq s t) (at level 70).
 Notation "t  ↓u  tunder" := (IsUnderlying t tunder) (at level 70).
-
-
 
 Class IntoValUnfold V f :=
   {
@@ -369,6 +377,8 @@ Class CoreSemantics `{!GoSemanticsFunctions} : Prop :=
    ⟦StructFieldSet t_under f, v⟧ ⤳[under] e → ⟦StructFieldSet t f, v⟧ ⤳ e;
   #[global] struct_field_ref_step_underlying `{!t ↓u t_under} f v e ::
     ⟦StructFieldRef t_under f, v⟧ ⤳[under] e → ⟦StructFieldRef t f, v⟧ ⤳ e;
+  #[global] go_zero_val_step_underlying `{!t ↓u t_under} v e ::
+    ⟦GoZeroVal t_under, v⟧ ⤳[under] e → ⟦GoZeroVal t, v⟧ ⤳ e;
 
   #[global] go_func_resolve_step n ts :: ⟦FuncResolve n ts, #()⟧ ⤳ #(functions n ts);
   #[global] go_method_resolve_step m t rcvr `{!t ↓u tunder} `{!NotInterface tunder} ::
@@ -379,7 +389,7 @@ Class CoreSemantics `{!GoSemanticsFunctions} : Prop :=
      panic if the base address is nil. This is a bit of a headache because every
      program step executing [StructFieldRef] will need to have a precondition
      that [l ≠ null]. *)
-  #[global] struct_field_ref_step t f l V `{!ZeroVal V} `{!TypeRepr t V} ::
+  #[global] struct_field_ref_step t f l `{!ZeroVal V} `{!TypeRepr t V} ::
     ⟦StructFieldRef t f, #l⟧ ⤳[under] #(struct_field_ref V f l);
 
   (* The language spec doesn't say anything about the addresses of zero-sized
@@ -403,12 +413,21 @@ Class CoreSemantics `{!GoSemanticsFunctions} : Prop :=
   #[global] into_val_unfold_loc :: IntoValUnfold _ (λ x, LitV $ LitLoc x);
   #[global] into_val_unfold_unit :: IntoValUnfold unit (λ _, LitV LitUnit);
 
-  #[global] type_repr_pointer t :: TypeRepr (go.PointerType t) loc;
-  #[global] type_repr_function sig :: TypeRepr (go.FunctionType sig) func.t;
-  #[global] type_repr_slice elem_type :: TypeRepr (go.SliceType elem_type) slice.t;
-  #[global] type_repr_interface elems :: TypeRepr (go.InterfaceType elems) interface.t;
-  #[global] type_repr_channel dir elem_type :: TypeRepr (go.ChannelType dir elem_type) chan.t;
-  #[global] type_repr_map key_type elem_type :: TypeRepr (go.MapType key_type elem_type) map.t;
+  #[global] go_zero_val_step `{!ZeroVal V} `{!TypeRepr t V} ::
+    ⟦GoZeroVal t, #()⟧ ⤳ #(zero_val V);
+
+  #[global] go_zero_val_pointer t ::
+    TypeReprUnderlying (go.PointerType t) loc;
+  #[global] go_zero_val_function sig ::
+    TypeReprUnderlying (go.FunctionType sig) func.t;
+  #[global] go_zero_val_slice elem_type ::
+    TypeReprUnderlying (go.SliceType elem_type) slice.t;
+  #[global] go_zero_val_interface elems ::
+    TypeReprUnderlying (go.InterfaceType elems) interface.t;
+  #[global] go_zero_val_channel dir elem_type ::
+    TypeReprUnderlying (go.ChannelType dir elem_type) chan.t;
+  #[global] go_zero_val_map key_type elem_type ::
+    TypeReprUnderlying (go.MapType key_type elem_type) map.t;
 
   #[global] core_comparison_sem :: CoreComparisonSemantics;
 
@@ -416,10 +435,10 @@ Class CoreSemantics `{!GoSemanticsFunctions} : Prop :=
     ⟦CompositeLiteral (go.PointerType elem_type), l⟧ ⤳[under]
     GoAlloc elem_type (CompositeLiteral elem_type l);
 
-  #[global] composite_literal_struct l `{!t ↓u (go.StructType fds)} ::
-    ⟦CompositeLiteral t, (LiteralValueV l)⟧ ⤳[under]
+  #[global] composite_literal_struct l `{!fds =→ fds_unsealed} ::
+    ⟦CompositeLiteral (go.StructType fds), (LiteralValueV l)⟧ ⤳[under]
     (match l with
-          | [] => GoZeroVal t #()
+          | [] => GoZeroVal (go.StructType fds) #()
           | KeyedElement None _ :: _ =>
               (* unkeyed struct literal *)
               foldl (λ v '(fd, ke),
@@ -427,19 +446,19 @@ Class CoreSemantics `{!GoSemanticsFunctions} : Prop :=
                          match fd with go.FieldDecl n t | go.EmbeddedField n t => (n, t) end in
                        match ke with
                        | KeyedElement None (ElementExpression from e) =>
-                           StructFieldSet t field_name (v, Convert from field_type e)%E
+                           StructFieldSet (go.StructType fds) field_name (v, Convert from field_type e)%E
                        | _ => Panic "invalid Go code"
                        end
-                ) (GoZeroVal t #()) (zip fds l)
+                ) (GoZeroVal (go.StructType fds) #()) (zip fds_unsealed l)
           | KeyedElement (Some _) _ :: _ =>
               (* keyed struct literal *)
               foldl (λ v ke,
                        match ke with
                        | KeyedElement (Some (KeyField field_name)) (ElementExpression from e) =>
-                           StructFieldSet t field_name (v, Convert from (struct_field_type field_name fds) e)%E
+                           StructFieldSet (go.StructType fds) field_name (v, Convert from (struct_field_type field_name fds_unsealed) e)%E
                        | _ => Panic "invalid Go code"
                        end
-                ) (GoZeroVal t #()) l
+                ) (GoZeroVal (go.StructType fds) #()) l
           end);
 
   #[global] alloc_underlying `[!t ↓u t_under] v e ::
@@ -449,9 +468,9 @@ Class CoreSemantics `{!GoSemanticsFunctions} : Prop :=
   #[global] store_underlying `[!t ↓u t_under] v e ::
     ⟦GoStore t_under, v⟧ ⤳[internal_under] e → ⟦GoStore t, v⟧ ⤳[internal] e;
 
-  #[global] alloc_primitive v t (H : is_primitive t) ::
-    ⟦GoAlloc t, v⟧ ⤳[internal_under] (ref_one v)%E;
-  #[global] alloc_struct v fds ::
+  #[global] alloc_primitive v u (H : is_primitive u) ::
+    ⟦GoAlloc u, v⟧ ⤳[internal_under] (ref_one v)%E;
+  #[global] alloc_struct v `{!fds =→ fds_unsealed} ::
     ⟦GoAlloc (go.StructType fds), v⟧ ⤳[internal_under]
       (let: "l" := GoPrealloc #() in
        foldr (λ fd alloc_rest,
@@ -464,13 +483,13 @@ Class CoreSemantics `{!GoSemanticsFunctions} : Prop :=
                 (if: ("l_field" ≠⟨go.PointerType field_type⟩ field_addr) then AngelicExit #()
                  else #());;
                 alloc_rest
-         ) #() fds ;;
+         ) #() fds_unsealed ;;
        "l")%E;
 
-  #[global] load_primitive t (H : is_primitive t) l ::
-    ⟦GoLoad t, l⟧ ⤳[internal_under] (Read l)%E;
+  #[global] load_primitive u (H : is_primitive u) l ::
+    ⟦GoLoad u, l⟧ ⤳[internal_under] (Read l)%E;
 
-  #[global] load_struct fds l ::
+  #[global] load_struct fds l `{!fds =→ fds_unsealed} ::
     ⟦GoLoad (go.StructType fds), l⟧ ⤳[internal_under]
       (foldl (λ struct_so_far fd,
                 let (field_name, field_type) := match fd with
@@ -480,11 +499,11 @@ Class CoreSemantics `{!GoSemanticsFunctions} : Prop :=
                 let field_addr := StructFieldRef (go.StructType fds) field_name l in
                 let field_val := GoLoad field_type field_addr in
                 StructFieldSet (go.StructType fds) field_name (struct_so_far, field_val)
-         )%E (GoZeroVal (go.StructType fds) #()) fds)%V;
+         )%E (GoZeroVal (go.StructType fds) #()) fds_unsealed)%V;
 
-  #[global] store_primitive t (H : is_primitive t) l v ::
-    ⟦GoStore t, (l, v)⟧ ⤳[internal_under] (l <- v)%E;
-  #[global] store_struct fds l v ::
+  #[global] store_primitive u (H : is_primitive u) l v ::
+    ⟦GoStore u, (l, v)⟧ ⤳[internal_under] (l <- v)%E;
+  #[global] store_struct `{!fds =→ fds_unsealed} l v ::
     ⟦GoStore (go.StructType fds), (l, v)⟧ ⤳[internal_under]
       (foldl (λ store_so_far fd,
                 store_so_far;;
@@ -495,7 +514,7 @@ Class CoreSemantics `{!GoSemanticsFunctions} : Prop :=
                 let field_addr := StructFieldRef (go.StructType fds) field_name l in
                 let field_val := StructFieldGet (go.StructType fds) field_name v in
                 GoStore field_type (field_addr, field_val)
-         )%E (#()) fds)%V;
+         )%E (#()) fds_unsealed)%V;
 
   #[global] is_convert_underlying_same t v :: ⟦Convert t t, v⟧ ⤳[under] v;
   #[global] convert_same t v :: ⟦Convert t t, v⟧ ⤳ v;

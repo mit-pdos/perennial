@@ -57,31 +57,31 @@ Class InterfaceSemantics :=
             if is_untyped_nil funder then #interface.nil
             else #(interface.mk_ok from v)));
 
-  #[global] type_assert_step `{!t ↓u tunder} i ::
+  #[global] type_assert_step `{!t ↓u t_under} i ::
     ⟦TypeAssert t, #i⟧ ⤳
     (match i with
      | interface.nil => Panic "type assert failed"
      | interface.ok i =>
-         if is_interface_type tunder then
+         if is_interface_type t_under then
            if (type_set_contains i.(interface.ty) t) then #i else Panic "type assert failed"
          else
            if decide (i.(interface.ty) = t) then i.(interface.v) else Panic "type assert failed"
      end);
 
-  #[global] type_assert2_interface_step `{!t ↓u tunder} i `{!ZeroVal V} `{!go.TypeRepr t V} ::
+  #[global] type_assert2_interface_step `{!t ↓u t_under} i `{!⟦GoZeroVal t, #()⟧ ⤳ Val v} ::
     ⟦TypeAssert2 t, #i⟧ ⤳
     ((match i with
-      | interface.nil => #(zero_val V)
+      | interface.nil => v
       | interface.ok i =>
-          (if is_interface_type tunder then
-             if (type_set_contains i.(interface.ty) t) then #i else #(zero_val V)
+          (if is_interface_type t_under then
+             if (type_set_contains i.(interface.ty) t) then #i else v
            else
-             if decide (i.(interface.ty) = t) then i.(interface.v) else #(zero_val V))
+             if decide (i.(interface.ty) = t) then i.(interface.v) else v)
       end),
        #(match i with
          | interface.nil => false
          | interface.ok i =>
-             if is_interface_type tunder then type_set_contains i.(interface.ty) t
+             if is_interface_type t_under then type_set_contains i.(interface.ty) t
              else bool_decide (i.(interface.ty) = t)
          end)
      )%V;

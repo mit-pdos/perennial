@@ -9,11 +9,11 @@ Notation "'sealed' x" := (unseal (_ : seal x)) (at level 200, only parsing).
 (** Override stdpp's setting of Program's Obligation Tactic to [id]. *)
 (* this Ltac is here to support rebinding, if needed *)
 Ltac obligation_tac :=
-  try
-    match goal with
-    | |- seal _ => eexists; reflexivity
-    | _ => solve [ apply _ ]
-    end.
+  try (intros;
+       match goal with
+       | |- seal _ => eexists; reflexivity
+       | _ => solve [ apply _ ]
+       end).
 
 #[global]
 Obligation Tactic := obligation_tac.

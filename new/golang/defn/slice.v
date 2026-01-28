@@ -62,19 +62,16 @@ Class SliceSemantics `{!GoSemanticsFunctions} :=
   #[global] internal_dynamic_array_alloc_step et (n : w64) ::
     ⟦InternalDynamicArrayAlloc et, #n⟧ ⤳
     (GoAlloc (go.ArrayType (sint.Z n) et) (GoZeroVal (go.ArrayType (sint.Z n) et) #()));
-  #[global] slice_slice_step_pure elem_type s low high `{!ZeroVal V} `{!go.TypeRepr elem_type V} ::
+  #[global] slice_slice_step_pure elem_type s low high `{!ZeroVal V} `{!TypeRepr elem_type V} ::
     ⟦Slice (go.SliceType elem_type), (#s, #low, #high)⟧ ⤳
     (if decide (0 ≤ sint.Z low ≤ sint.Z high ≤ sint.Z s.(slice.cap)) then
        #(slice.slice s V low high)
      else Panic "slice bounds out of range");
-  #[global] full_slice_slice_step_pure elem_type s low high max `{!ZeroVal V}
-    `{!go.TypeRepr elem_type V} ::
+  #[global] full_slice_slice_step_pure elem_type s low high max `{!ZeroVal V} `{!TypeRepr elem_type V} ::
     ⟦FullSlice (go.SliceType elem_type), (#s, #low, #high, #max)⟧ ⤳
     (if decide (0 ≤ sint.Z low ≤ sint.Z high ≤ sint.Z max ∧ sint.Z max ≤ sint.Z s.(slice.cap)) then
        #(slice.full_slice s V low high max)
      else Panic "slice bounds out of range");
-
-  #[global] type_repr_slice elem_type :: go.TypeRepr (go.SliceType elem_type) slice.t;
 
   (* special case for slice equality *)
   #[global] is_go_op_go_equals_slice_nil_l elem_type s ::
@@ -124,7 +121,7 @@ Class SliceSemantics `{!GoSemanticsFunctions} :=
     FuncUnfold go.make2 [go.SliceType elem_type]
     (λ: "sz", FuncResolve go.make3 [go.SliceType elem_type] #() "sz" "sz")%V;
 
-  #[global] index_ref_slice elem_type (i : w64) s `{!ZeroVal V} `{!go.TypeRepr elem_type V} ::
+  #[global] index_ref_slice elem_type (i : w64) s `{!ZeroVal V} `{!TypeRepr elem_type V} ::
     ⟦IndexRef (go.SliceType elem_type), (#s, #i)⟧ ⤳[under]
     (if decide (0 ≤ sint.Z i < sint.Z s.(slice.len)) then
        #(slice_index_ref V (sint.Z i) s)
