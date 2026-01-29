@@ -4,7 +4,7 @@ From New.generatedproof Require math.rand testing unsafe.
 
 From New.generatedproof.github_com.stretchr.testify Require assert.
 
-From New.proof Require Import bytes chan context sort slices runtime.
+From New.proof Require Import bytes context sort slices runtime.
 
 From New.proof Require go_etcd_io.raft.v3.
 From New.proof.github_com.mit_pdos.gokv Require gokv cachekv bank.

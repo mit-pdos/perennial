@@ -1,4 +1,3 @@
-From New.golang.theory Require Import chan_old.
 From New.proof.go_etcd_io.etcd.client.v3_proof Require Import base op definitions.
 
 Section wps.

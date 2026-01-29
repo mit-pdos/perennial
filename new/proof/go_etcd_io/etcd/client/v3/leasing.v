@@ -8,8 +8,6 @@ From New.proof Require Import context sync.
 Require Import New.proof.go_etcd_io.etcd.client.v3.concurrency.
 Require Import New.proof.go_etcd_io.etcd.client.v3.
 
-From New.golang.theory Require Import chan_old.
-
 From Perennial.algebra Require Import ghost_var.
 Require Import Perennial.base.
 

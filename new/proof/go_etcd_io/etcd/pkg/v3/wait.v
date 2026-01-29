@@ -1,5 +1,4 @@
 Require Export New.generatedproof.go_etcd_io.etcd.pkg.v3.wait.
-From New.golang.theory Require Import chan_old.
 Require Export New.proof.proof_prelude.
 From New.proof Require Import log sync.
 

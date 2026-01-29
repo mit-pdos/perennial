@@ -1,5 +1,4 @@
 Require Import New.proof.go_etcd_io.raft.v3_proof.base.
-Require Import New.proof.chan.
 
 Module node.
 Axiom t : Type.
