@@ -1,13 +1,6 @@
 From New.golang.defn Require Export predeclared.
 From New.golang.theory Require Export postlifting.
 
-Module error.
-  Section def.
-  Context `{ffi_syntax}.
-  Definition t := interface.t.
-  End def.
-End error.
-
 Section into_val_typed_instances.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
   {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.

@@ -1,5 +1,12 @@
 From New.golang.defn Require Export postlang.
 
+Module error.
+  Section def.
+  Context `{ffi_syntax}.
+  Definition t := interface.t.
+  End def.
+End error.
+
 Section helpers.
 Context {ext : ffi_syntax}.
 (* Implementations for max and min for integer types. *)

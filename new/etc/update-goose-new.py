@@ -253,8 +253,9 @@ def main():
     parser.add_argument(
         "-a",
         "--all",
-        help="translate all code, assuming it is found in `../<proj_name>`",
-        action="store_true",
+        help="translate all code, assuming it is found in `<ALL>/<proj_name>`",
+        metavar="ALL_PATH",
+        default="..",
     )
     parser.add_argument(
         "--goose-examples",
@@ -286,9 +287,10 @@ def main():
         setattr(args, "models", True)
         setattr(args, "goose_examples", True)
         for proj in projs:
-            proj_path = path.join("..", proj.name)
-            if os.path.isdir(proj_path):
-                setattr(args, proj.name.replace("-", "_"), proj_path)
+            proj_path = path.join(args.all, proj.name)
+            proj_arg = proj.name.replace("-", "_")
+            if getattr(args, proj_arg, None) == None and os.path.isdir(proj_path):
+                setattr(args, proj_arg, proj_path)
 
     perennial_dir = path.join(path.dirname(os.path.realpath(__file__)), "../..")
     goose_dir = args.goose
