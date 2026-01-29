@@ -25,32 +25,30 @@ End defn.
 End Context_desc.
 
 Section wps.
-
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
-Context `{contextG Σ}.
+Context {sem : go.Semantics} {package_sem : context.Assumptions}.
+Local Set Default Proof Using "All".
 
-#[global] Instance : IsPkgInit context := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf context := build_get_is_pkg_init_wf.
+#[global] Instance : IsPkgInit (iProp Σ) context := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ) context := build_get_is_pkg_init_wf.
 
 Import Context_desc.
-Definition is_Context (c : interface.t) (s : Context_desc.t) : iProp Σ :=
-  "%Hnotnil" ∷ ⌜ c ≠ interface.nil ⌝ ∗
+Definition is_Context (c : interface.t_ok) (s : Context_desc.t) : iProp Σ :=
   "#HDeadline" ∷
     {{{ True }}}
-      interface.get #"Deadline" #c #()
-    {{{ RET (#(default (default_val time.Time.t) s.(Deadline)),
+      #(methods c.(interface.ty) "Deadline" c.(interface.v)) #()
+    {{{ RET (#(default (zero_val time.Time.t) s.(Deadline)),
              #(match s.(Deadline) with | None => false | _ => true end));
         True
     }}} ∗
   "#HDone" ∷
     {{{ True }}}
-      interface.get #"Done" #c #()
+      #(methods c.(interface.ty) "Done" c.(interface.v)) #()
     {{{ RET #s.(Done); True }}} ∗
   "#HErr" ∷
     (∀ cl,
     {{{ own_closeable_chan s.(Done) s.(PDone) cl }}}
-      interface.get #"Err" #c #()
+      #(methods c.(interface.ty) "Err" c.(interface.v)) #()
     {{{ err, RET #err;
         match cl with
         | closeable.Closed => ⌜ err ≠ interface.nil ⌝
@@ -70,7 +68,7 @@ Lemma wp_propagateCancel (c : loc) (parent : context.Context.t) parent_desc
   {{{
         is_pkg_init context ∗
         "Hparent" ∷ is_Context parent parent_desc ∗
-        "Hc" ∷ c ↦ (default_val context.cancelCtx.t)
+        "Hc" ∷ c ↦ (zero_val context.cancelCtx.t)
   }}}
     c @ (ptrT.id context.cancelCtx.id) @ "propagateCancel" #parent #child
   {{{
