@@ -1337,6 +1337,6 @@ Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!G
   #[global] import_strings_Assumption :: strings.Assumptions;
   #[global] import_slices_Assumption :: slices.Assumptions;
   #[global] import_quorum_Assumption :: quorum.Assumptions;
-  #[global] import_pb_Assumption :: pb.Assumptions;
+  #[global] import_raftpb_Assumption :: raftpb.Assumptions;
 }.
 End tracker.

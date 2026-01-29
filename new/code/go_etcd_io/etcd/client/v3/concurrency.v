@@ -2615,9 +2615,9 @@ Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!G
   #[global] import_context_Assumption :: context.Assumptions;
   #[global] import_errors_Assumption :: errors.Assumptions;
   #[global] import_fmt_Assumption :: fmt.Assumptions;
-  #[global] import_pb_Assumption :: pb.Assumptions;
+  #[global] import_etcdserverpb_Assumption :: etcdserverpb.Assumptions;
   #[global] import_mvccpb_Assumption :: mvccpb.Assumptions;
-  #[global] import_v3_Assumption :: v3.Assumptions;
+  #[global] import_clientv3_Assumption :: clientv3.Assumptions;
   #[global] import_strings_Assumption :: strings.Assumptions;
   #[global] import_sync_Assumption :: sync.Assumptions;
   #[global] import_time_Assumption :: time.Assumptions;

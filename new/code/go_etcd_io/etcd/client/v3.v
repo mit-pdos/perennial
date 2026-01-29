@@ -3734,7 +3734,7 @@ Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!G
   #[global] WithIgnoreValue_unfold :: FuncUnfold WithIgnoreValue [] (WithIgnoreValueⁱᵐᵖˡ);
   #[global] WithIgnoreLease_unfold :: FuncUnfold WithIgnoreLease [] (WithIgnoreLeaseⁱᵐᵖˡ);
   #[global] WithAttachedKeys_unfold :: FuncUnfold WithAttachedKeys [] (WithAttachedKeysⁱᵐᵖˡ);
-  #[global] import_pb_Assumption :: pb.Assumptions;
+  #[global] import_etcdserverpb_Assumption :: etcdserverpb.Assumptions;
   #[global] import_mvccpb_Assumption :: mvccpb.Assumptions;
 }.
 End clientv3.

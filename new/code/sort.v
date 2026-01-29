@@ -51,7 +51,7 @@ Definition SearchFloat64s {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_st
 
 Definition SearchStrings {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.SearchStrings"%go.
 
-Definition Slice {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.Slice"%go.
+Definition Slice' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.Slice"%go.
 
 Definition SliceStable {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sort.SliceStable"%go.
 

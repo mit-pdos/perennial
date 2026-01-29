@@ -59,7 +59,7 @@ Axiom Ptr : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom Interface : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom Slice : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
+Axiom Slice' : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom String : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 

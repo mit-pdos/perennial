@@ -10,7 +10,7 @@ Module err_gk.
 
 Definition E {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/mit-pdos/gokv/vrsm/replica/err_gk.E"%go [].
 
-Definition None {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #(W32 0).
+Definition None' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #(W32 0).
 
 Definition Stale {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #(W32 1).
 

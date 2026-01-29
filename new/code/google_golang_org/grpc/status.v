@@ -24,7 +24,7 @@ Definition FromProto {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string 
 
 Definition FromError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "google.golang.org/grpc/status.FromError"%go.
 
-Definition Convert {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "google.golang.org/grpc/status.Convert"%go.
+Definition Convert' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "google.golang.org/grpc/status.Convert"%go.
 
 Definition Code {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "google.golang.org/grpc/status.Code"%go.
 
@@ -45,6 +45,6 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] import_spb_Assumption :: spb.Assumptions;
+  #[global] import_status_Assumption :: status.Assumptions;
 }.
 End status.

@@ -16,7 +16,7 @@ Definition JointConfig {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type 
 
 Definition MajorityConfig {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3/quorum.MajorityConfig"%go [].
 
-Definition Index {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3/quorum.Index"%go [].
+Definition Index' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3/quorum.Index"%go [].
 
 Definition AckedIndexer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3/quorum.AckedIndexer"%go [].
 
@@ -110,18 +110,18 @@ Definition JointConfig__CommittedIndexⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : 
   λ: "c" "l",
     exception_do (let: "c" := (GoAlloc JointConfig "c") in
     let: "l" := (GoAlloc AckedIndexer "l") in
-    let: "idx0" := (GoAlloc Index (GoZeroVal Index #())) in
+    let: "idx0" := (GoAlloc Index' (GoZeroVal Index' #())) in
     let: "$r0" := (let: "$a0" := (![AckedIndexer] "l") in
     (MethodResolve MajorityConfig "CommittedIndex"%go (![MajorityConfig] (IndexRef JointConfig (![JointConfig] "c", #(W64 0))))) "$a0") in
-    do:  ("idx0" <-[Index] "$r0");;;
-    let: "idx1" := (GoAlloc Index (GoZeroVal Index #())) in
+    do:  ("idx0" <-[Index'] "$r0");;;
+    let: "idx1" := (GoAlloc Index' (GoZeroVal Index' #())) in
     let: "$r0" := (let: "$a0" := (![AckedIndexer] "l") in
     (MethodResolve MajorityConfig "CommittedIndex"%go (![MajorityConfig] (IndexRef JointConfig (![JointConfig] "c", #(W64 1))))) "$a0") in
-    do:  ("idx1" <-[Index] "$r0");;;
-    (if: Convert go.untyped_bool go.bool ((![Index] "idx0") <⟨go.uint64⟩ (![Index] "idx1"))
-    then return: (![Index] "idx0")
+    do:  ("idx1" <-[Index'] "$r0");;;
+    (if: Convert go.untyped_bool go.bool ((![Index'] "idx0") <⟨go.uint64⟩ (![Index'] "idx1"))
+    then return: (![Index'] "idx0")
     else do:  #());;;
-    return: (![Index] "idx1")).
+    return: (![Index'] "idx1")).
 
 (* VoteResult takes a mapping of voters to yes/no (true/false) votes and returns
    a result indicating whether the vote is pending, lost, or won. A joint quorum
@@ -215,15 +215,15 @@ Definition MajorityConfig__Describeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoG
     ]) "$range" (λ: "$key" "value",
       do:  ("id" <-[go.uint64] "$key");;;
       let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
-      let: "idx" := (GoAlloc Index (GoZeroVal Index #())) in
+      let: "idx" := (GoAlloc Index' (GoZeroVal Index' #())) in
       let: ("$ret0", "$ret1") := (let: "$a0" := (![go.uint64] "id") in
       (MethodResolve AckedIndexer "AckedIndex"%go (![AckedIndexer] "l")) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
-      do:  ("idx" <-[Index] "$r0");;;
+      do:  ("idx" <-[Index'] "$r0");;;
       do:  ("ok" <-[go.bool] "$r1");;;
       let: "$r0" := (let: "$a0" := (![go.SliceType slices.Tup] "info") in
-      let: "$a1" := ((let: "$sl0" := (CompositeLiteral slices.Tup (LiteralValue [KeyedElement (Some (KeyField "ID"%go)) (ElementExpression go.uint64 (![go.uint64] "id")); KeyedElement (Some (KeyField "Idx"%go)) (ElementExpression go.uint64 (![Index] "idx")); KeyedElement (Some (KeyField "Ok"%go)) (ElementExpression go.bool (![go.bool] "ok"))])) in
+      let: "$a1" := ((let: "$sl0" := (CompositeLiteral slices.Tup (LiteralValue [KeyedElement (Some (KeyField "ID"%go)) (ElementExpression go.uint64 (![go.uint64] "id")); KeyedElement (Some (KeyField "Idx"%go)) (ElementExpression go.uint64 (![Index'] "idx")); KeyedElement (Some (KeyField "Ok"%go)) (ElementExpression go.bool (![go.bool] "ok"))])) in
       CompositeLiteral (go.SliceType slices.Tup) (LiteralValue [KeyedElement None (ElementExpression slices.Tup "$sl0")]))) in
       (FuncResolve go.append [go.SliceType slices.Tup] #()) "$a0" "$a1") in
       do:  ("info" <-[go.SliceType slices.Tup] "$r0")));;;
@@ -338,7 +338,7 @@ Definition MajorityConfig__CommittedIndexⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx
     (FuncResolve go.len [MajorityConfig] #()) "$a0") in
     do:  ("n" <-[go.int] "$r0");;;
     (if: Convert go.untyped_bool go.bool ((![go.int] "n") =⟨go.int⟩ #(W64 0))
-    then return: (Convert go.untyped_int Index math.MaxUint64)
+    then return: (Convert go.untyped_int Index' math.MaxUint64)
     else do:  #());;;
     let: "stk" := (GoAlloc (go.ArrayType 7 go.uint64) (GoZeroVal (go.ArrayType 7 go.uint64) #())) in
     let: "srt" := (GoAlloc (go.SliceType go.uint64) (GoZeroVal (go.SliceType go.uint64) #())) in
@@ -360,16 +360,16 @@ Definition MajorityConfig__CommittedIndexⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx
     ]) "$range" (λ: "$key" "value",
       do:  ("id" <-[go.uint64] "$key");;;
       (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
-      let: "idx" := (GoAlloc Index (GoZeroVal Index #())) in
+      let: "idx" := (GoAlloc Index' (GoZeroVal Index' #())) in
       let: ("$ret0", "$ret1") := (let: "$a0" := (![go.uint64] "id") in
       (MethodResolve AckedIndexer "AckedIndex"%go (![AckedIndexer] "l")) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
-      do:  ("idx" <-[Index] "$r0");;;
+      do:  ("idx" <-[Index'] "$r0");;;
       do:  ("ok" <-[go.bool] "$r1");;;
       (if: ![go.bool] "ok"
       then
-        let: "$r0" := (![Index] "idx") in
+        let: "$r0" := (![Index'] "idx") in
         do:  ((IndexRef (go.SliceType go.uint64) (![go.SliceType go.uint64] "srt", ![go.int] "i")) <-[go.uint64] "$r0");;;
         do:  ("i" <-[go.int] ((![go.int] "i") -⟨go.int⟩ #(W64 1)))
       else do:  #()))));;;
@@ -432,11 +432,11 @@ Definition MajorityConfig__VoteResultⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : G
 (* go: quorum.go:25:16 *)
 Definition Index__Stringⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "i" <>,
-    exception_do (let: "i" := (GoAlloc Index "i") in
-    (if: Convert go.untyped_bool go.bool ((![Index] "i") =⟨go.uint64⟩ (Convert go.untyped_int Index math.MaxUint64))
+    exception_do (let: "i" := (GoAlloc Index' "i") in
+    (if: Convert go.untyped_bool go.bool ((![Index'] "i") =⟨go.uint64⟩ (Convert go.untyped_int Index' math.MaxUint64))
     then return: (#"∞"%go)
     else do:  #());;;
-    return: (let: "$a0" := (![Index] "i") in
+    return: (let: "$a0" := (![Index'] "i") in
      let: "$a1" := #(W64 10) in
      (FuncResolve strconv.FormatUint [] #()) "$a0" "$a1")).
 
@@ -446,13 +446,13 @@ Definition mapAckIndexer__AckedIndexⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : Go
     exception_do (let: "m" := (GoAlloc mapAckIndexer "m") in
     let: "id" := (GoAlloc go.uint64 "id") in
     let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
-    let: "idx" := (GoAlloc Index (GoZeroVal Index #())) in
-    let: ("$ret0", "$ret1") := (map.lookup2 go.uint64 Index (![mapAckIndexer] "m") (![go.uint64] "id")) in
+    let: "idx" := (GoAlloc Index' (GoZeroVal Index' #())) in
+    let: ("$ret0", "$ret1") := (map.lookup2 go.uint64 Index' (![mapAckIndexer] "m") (![go.uint64] "id")) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("idx" <-[Index] "$r0");;;
+    do:  ("idx" <-[Index'] "$r0");;;
     do:  ("ok" <-[go.bool] "$r1");;;
-    return: (![Index] "idx", ![go.bool] "ok")).
+    return: (![Index'] "idx", ![go.bool] "ok")).
 
 (* go: voteresult_string.go:20:21 *)
 Definition VoteResult__Stringⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -486,30 +486,6 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
       do:  ((GlobalVarAddr _VoteResult_index #()) <-[go.ArrayType 4 go.uint8] "$r0"))
       ).
 
-Module JointConfig.
-Section def.
-Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Definition t : Type := (array.t quorum.MajorityConfig.t 2).
-End def.
-End JointConfig.
-
-Definition JointConfigⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.ArrayType 2 MajorityConfig.
-
-Class JointConfig_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] JointConfig_underlying :: (JointConfig) <u (JointConfigⁱᵐᵖˡ);
-  #[global] JointConfig_CommittedIndex_unfold :: MethodUnfold (JointConfig) "CommittedIndex" (JointConfig__CommittedIndexⁱᵐᵖˡ);
-  #[global] JointConfig_Describe_unfold :: MethodUnfold (JointConfig) "Describe" (JointConfig__Describeⁱᵐᵖˡ);
-  #[global] JointConfig_IDs_unfold :: MethodUnfold (JointConfig) "IDs" (JointConfig__IDsⁱᵐᵖˡ);
-  #[global] JointConfig_String_unfold :: MethodUnfold (JointConfig) "String" (JointConfig__Stringⁱᵐᵖˡ);
-  #[global] JointConfig_VoteResult_unfold :: MethodUnfold (JointConfig) "VoteResult" (JointConfig__VoteResultⁱᵐᵖˡ);
-  #[global] JointConfig'ptr_CommittedIndex_unfold :: MethodUnfold (go.PointerType (JointConfig)) "CommittedIndex" (λ: "$r", MethodResolve (JointConfig) "CommittedIndex" (![(JointConfig)] "$r"));
-  #[global] JointConfig'ptr_Describe_unfold :: MethodUnfold (go.PointerType (JointConfig)) "Describe" (λ: "$r", MethodResolve (JointConfig) "Describe" (![(JointConfig)] "$r"));
-  #[global] JointConfig'ptr_IDs_unfold :: MethodUnfold (go.PointerType (JointConfig)) "IDs" (λ: "$r", MethodResolve (JointConfig) "IDs" (![(JointConfig)] "$r"));
-  #[global] JointConfig'ptr_String_unfold :: MethodUnfold (go.PointerType (JointConfig)) "String" (λ: "$r", MethodResolve (JointConfig) "String" (![(JointConfig)] "$r"));
-  #[global] JointConfig'ptr_VoteResult_unfold :: MethodUnfold (go.PointerType (JointConfig)) "VoteResult" (λ: "$r", MethodResolve (JointConfig) "VoteResult" (![(JointConfig)] "$r"));
-}.
-
 Module MajorityConfig.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
@@ -536,6 +512,30 @@ Class MajorityConfig_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLoc
   #[global] MajorityConfig'ptr_VoteResult_unfold :: MethodUnfold (go.PointerType (MajorityConfig)) "VoteResult" (λ: "$r", MethodResolve (MajorityConfig) "VoteResult" (![(MajorityConfig)] "$r"));
 }.
 
+Module JointConfig.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Definition t : Type := (array.t quorum.MajorityConfig.t 2).
+End def.
+End JointConfig.
+
+Definition JointConfigⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.ArrayType 2 MajorityConfig.
+
+Class JointConfig_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] JointConfig_underlying :: (JointConfig) <u (JointConfigⁱᵐᵖˡ);
+  #[global] JointConfig_CommittedIndex_unfold :: MethodUnfold (JointConfig) "CommittedIndex" (JointConfig__CommittedIndexⁱᵐᵖˡ);
+  #[global] JointConfig_Describe_unfold :: MethodUnfold (JointConfig) "Describe" (JointConfig__Describeⁱᵐᵖˡ);
+  #[global] JointConfig_IDs_unfold :: MethodUnfold (JointConfig) "IDs" (JointConfig__IDsⁱᵐᵖˡ);
+  #[global] JointConfig_String_unfold :: MethodUnfold (JointConfig) "String" (JointConfig__Stringⁱᵐᵖˡ);
+  #[global] JointConfig_VoteResult_unfold :: MethodUnfold (JointConfig) "VoteResult" (JointConfig__VoteResultⁱᵐᵖˡ);
+  #[global] JointConfig'ptr_CommittedIndex_unfold :: MethodUnfold (go.PointerType (JointConfig)) "CommittedIndex" (λ: "$r", MethodResolve (JointConfig) "CommittedIndex" (![(JointConfig)] "$r"));
+  #[global] JointConfig'ptr_Describe_unfold :: MethodUnfold (go.PointerType (JointConfig)) "Describe" (λ: "$r", MethodResolve (JointConfig) "Describe" (![(JointConfig)] "$r"));
+  #[global] JointConfig'ptr_IDs_unfold :: MethodUnfold (go.PointerType (JointConfig)) "IDs" (λ: "$r", MethodResolve (JointConfig) "IDs" (![(JointConfig)] "$r"));
+  #[global] JointConfig'ptr_String_unfold :: MethodUnfold (go.PointerType (JointConfig)) "String" (λ: "$r", MethodResolve (JointConfig) "String" (![(JointConfig)] "$r"));
+  #[global] JointConfig'ptr_VoteResult_unfold :: MethodUnfold (go.PointerType (JointConfig)) "VoteResult" (λ: "$r", MethodResolve (JointConfig) "VoteResult" (![(JointConfig)] "$r"));
+}.
+
 Module Index.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
@@ -547,9 +547,9 @@ Definition Indexⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.
 
 Class Index_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Index_underlying :: (Index) <u (Indexⁱᵐᵖˡ);
-  #[global] Index_String_unfold :: MethodUnfold (Index) "String" (Index__Stringⁱᵐᵖˡ);
-  #[global] Index'ptr_String_unfold :: MethodUnfold (go.PointerType (Index)) "String" (λ: "$r", MethodResolve (Index) "String" (![(Index)] "$r"));
+  #[global] Index_underlying :: (Index') <u (Indexⁱᵐᵖˡ);
+  #[global] Index_String_unfold :: MethodUnfold (Index') "String" (Index__Stringⁱᵐᵖˡ);
+  #[global] Index'ptr_String_unfold :: MethodUnfold (go.PointerType (Index')) "String" (λ: "$r", MethodResolve (Index') "String" (![(Index')] "$r"));
 }.
 
 Module AckedIndexer.
@@ -559,7 +559,7 @@ Definition t : Type := interface.t.
 End def.
 End AckedIndexer.
 
-Definition AckedIndexerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.InterfaceType [go.MethodElem "AckedIndex"%go (go.Signature [go.uint64] false [Index; go.bool])].
+Definition AckedIndexerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.InterfaceType [go.MethodElem "AckedIndex"%go (go.Signature [go.uint64] false [Index'; go.bool])].
 
 Class AckedIndexer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
@@ -573,7 +573,7 @@ Definition t : Type := loc.
 End def.
 End mapAckIndexer.
 
-Definition mapAckIndexerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.MapType go.uint64 Index.
+Definition mapAckIndexerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.MapType go.uint64 Index'.
 
 Class mapAckIndexer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {

@@ -1245,10 +1245,10 @@ Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!G
   #[global] Authenticator_instance :: Authenticator_Assumptions;
   #[global] zapRaftLogger_instance :: zapRaftLogger_Assumptions;
   #[global] import_context_Assumption :: context.Assumptions;
-  #[global] import_pb_Assumption :: pb.Assumptions;
+  #[global] import_etcdserverpb_Assumption :: etcdserverpb.Assumptions;
   #[global] import_time_Assumption :: time.Assumptions;
   #[global] import_config_Assumption :: config.Assumptions;
-  #[global] import_servererrors_Assumption :: servererrors.Assumptions;
+  #[global] import_errors_Assumption :: errors.Assumptions;
   #[global] import_raft_Assumption :: raft.Assumptions;
   #[global] import_prometheus_Assumption :: prometheus.Assumptions;
   #[global] import_idutil_Assumption :: idutil.Assumptions;

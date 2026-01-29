@@ -217,7 +217,7 @@ Definition ReplaceAll {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string
 
 Definition EqualFold {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.EqualFold"%go.
 
-Definition Index {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.Index"%go.
+Definition Index' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.Index"%go.
 
 Definition Cut {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strings.Cut"%go.
 

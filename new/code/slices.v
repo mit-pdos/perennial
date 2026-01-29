@@ -45,7 +45,7 @@ Definition Compare {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string :=
 
 Definition CompareFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.CompareFunc"%go.
 
-Definition Index {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.Index"%go.
+Definition Index' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.Index"%go.
 
 Definition IndexFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "slices.IndexFunc"%go.
 
