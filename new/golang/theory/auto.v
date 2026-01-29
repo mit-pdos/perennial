@@ -361,3 +361,12 @@ Ltac solve_into_val_typed_struct :=
       iIntros "Hl HΦ"; rewrite typed_pointsto_unseal;
       iNamed "Hl"; simpl; wp_pure; clear Hint; wp_auto; destruct &v; simpl; iApply "HΦ"; by iFrame in
     pose proof (go.tagged_steps internal) as Hint; constructor; intros; [alloc Hint | load Hint | store Hint | tc_solve].
+
+Global Instance equals_unfold_nil A : (@nil A) =→ (@nil A).
+Proof. done. Qed.
+
+Global Instance into_val_typed_unit
+  `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
+  {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}
+  : IntoValTypedUnderlying unit (go.StructType []).
+Proof. solve_into_val_typed_struct. Qed.

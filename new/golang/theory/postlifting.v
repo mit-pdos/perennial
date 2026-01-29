@@ -345,6 +345,11 @@ Section typed_pointsto_instances.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
   {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
 
+Program Global Instance typed_pointsto_unit : TypedPointsto () :=
+  {| typed_pointsto_def l v dq := (True%I : iProp Σ) |}.
+Final Obligation.
+Proof. iIntros "* H1 H2". destruct v1, v2. done. Qed.
+
 Program Global Instance typed_pointsto_loc : TypedPointsto loc :=
   {| typed_pointsto_def l v dq := heap_pointsto l dq #v |}.
 Final Obligation.

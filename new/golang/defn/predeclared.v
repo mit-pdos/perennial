@@ -586,6 +586,8 @@ Class PredeclaredSemantics `{!GoSemanticsFunctions} :=
     ⟦Convert go.untyped_nil (go.MapType key elem), UntypedNil⟧ ⤳[under] #map.nil;
   #[global] convert_nil_interface elems ::
     ⟦Convert go.untyped_nil (go.InterfaceType elems), UntypedNil⟧ ⤳[under] #interface.nil;
+
+  #[global] type_repr_empty_struct :: go.TypeReprUnderlying (go.StructType []) ();
 }.
 
 End defs.
