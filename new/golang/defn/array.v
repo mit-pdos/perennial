@@ -22,10 +22,10 @@ Class ArraySemantics `{!GoSemanticsFunctions} :=
     go.TypeReprUnderlying (go.ArrayType n ty) (array.t V n);
 
   (* TODO: implement alloc_array *)
-  #[global] alloc_array n elem v :: ⟦GoAlloc (go.ArrayType n elem), v⟧ ⤳[internal] AngelicExit #();
+  #[global] alloc_array n elem v :: ⟦GoAlloc (go.ArrayType n elem), v⟧ ⤳[internal_under] AngelicExit #();
 
   #[global] load_array n elem_type l ::
-    ⟦GoLoad (go.ArrayType n elem_type), l⟧ ⤳[internal]
+    ⟦GoLoad (go.ArrayType n elem_type), l⟧ ⤳[internal_under]
     (if decide (¬(0 ≤ n < 2^63-1)) then
       AngelicExit #()
     else
@@ -38,7 +38,7 @@ Class ArraySemantics `{!GoSemanticsFunctions} :=
          ) #(W64 n))%E;
 
   #[global] store_array n elem_type l v ::
-    ⟦GoStore (go.ArrayType n elem_type), (l, v)⟧ ⤳[internal]
+    ⟦GoStore (go.ArrayType n elem_type), (l, v)⟧ ⤳[internal_under]
     (foldl (λ str_so_far j,
                 str_so_far;;
                 let elem_addr := IndexRef (go.ArrayType n elem_type) (l, #(W64 j)) in

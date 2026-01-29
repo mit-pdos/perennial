@@ -52,13 +52,12 @@ Proof.
   rewrite seq_S fmap_app /=. f_equal. f_equal. lia.
 Qed.
 
-Context `{!TypeRepr t V}.
-Global Instance into_val_typed_array n : IntoValTyped (array.t V n) (go.ArrayType n t).
+Global Instance into_val_typed_array n : IntoValTypedUnderlying (array.t V n) (go.ArrayType n t).
 Proof.
   pose proof go.tagged_steps internal.
   split.
   - admit.
-  - iIntros "* Hl HΦ".
+  - iIntros "* %Hu * Hl HΦ".
     wp_pures. case_decide.
     { wp_pures. wp_apply wp_AngelicExit. }
     wp_pure.
