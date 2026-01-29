@@ -536,12 +536,12 @@ Class JointConfig_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalC
   #[global] JointConfig'ptr_VoteResult_unfold :: MethodUnfold (go.PointerType (JointConfig)) "VoteResult" (λ: "$r", MethodResolve (JointConfig) "VoteResult" (![(JointConfig)] "$r"));
 }.
 
-Module Index.
+Module Index'.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Definition t : Type := w64.
 End def.
-End Index.
+End Index'.
 
 Definition Indexⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.uint64.
 

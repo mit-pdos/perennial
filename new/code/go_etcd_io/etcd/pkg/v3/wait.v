@@ -327,7 +327,7 @@ Class Wait_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext}
   #[global] Wait_underlying :: (Wait) <u (Waitⁱᵐᵖˡ);
 }.
 
-Module list.
+Module list'.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
@@ -340,7 +340,7 @@ mk {
 #[global] Arguments t : clear implicits.
 End def.
 
-End list.
+End list'.
 
 Definition list'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
   (go.FieldDecl "e"%go (go.SliceType listElement))
@@ -353,13 +353,13 @@ Definition listⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.t
 
 Class list_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] list_type_repr  :: go.TypeReprUnderlying listⁱᵐᵖˡ list.t;
-  #[global] list_underlying :: (list) <u (listⁱᵐᵖˡ);
-  #[global] list_get_e (x : list.t) :: ⟦StructFieldGet (listⁱᵐᵖˡ) "e", #x⟧ ⤳[under] #x.(list.e');
-  #[global] list_set_e (x : list.t) y :: ⟦StructFieldSet (listⁱᵐᵖˡ) "e", (#x, #y)⟧ ⤳[under] #(x <|list.e' := y|>);
-  #[global] list'ptr_IsRegistered_unfold :: MethodUnfold (go.PointerType (list)) "IsRegistered" (list__IsRegisteredⁱᵐᵖˡ);
-  #[global] list'ptr_Register_unfold :: MethodUnfold (go.PointerType (list)) "Register" (list__Registerⁱᵐᵖˡ);
-  #[global] list'ptr_Trigger_unfold :: MethodUnfold (go.PointerType (list)) "Trigger" (list__Triggerⁱᵐᵖˡ);
+  #[global] list_type_repr  :: go.TypeReprUnderlying listⁱᵐᵖˡ list'.t;
+  #[global] list_underlying :: (list') <u (listⁱᵐᵖˡ);
+  #[global] list_get_e (x : list'.t) :: ⟦StructFieldGet (listⁱᵐᵖˡ) "e", #x⟧ ⤳[under] #x.(list'.e');
+  #[global] list_set_e (x : list'.t) y :: ⟦StructFieldSet (listⁱᵐᵖˡ) "e", (#x, #y)⟧ ⤳[under] #(x <|list'.e' := y|>);
+  #[global] list'ptr_IsRegistered_unfold :: MethodUnfold (go.PointerType (list')) "IsRegistered" (list__IsRegisteredⁱᵐᵖˡ);
+  #[global] list'ptr_Register_unfold :: MethodUnfold (go.PointerType (list')) "Register" (list__Registerⁱᵐᵖˡ);
+  #[global] list'ptr_Trigger_unfold :: MethodUnfold (go.PointerType (list')) "Trigger" (list__Triggerⁱᵐᵖˡ);
 }.
 
 Module listElement.

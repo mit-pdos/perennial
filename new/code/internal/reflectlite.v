@@ -148,19 +148,19 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
       exception_do (do:  #())
       ).
 
-Module Type.
+Module Type'.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Axiom t : Type.
 Axiom zero_val : ZeroVal t.
 #[global] Existing Instance zero_val.
 End def.
-End Type.
+End Type'.
 
 Class Type_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Type_type_repr  :: go.TypeReprUnderlying Typeⁱᵐᵖˡ Type.t;
-  #[global] Type_underlying :: (Type) <u (Typeⁱᵐᵖˡ);
+  #[global] Type_type_repr  :: go.TypeReprUnderlying Typeⁱᵐᵖˡ Type'.t;
+  #[global] Type_underlying :: (Type') <u (Typeⁱᵐᵖˡ);
   #[global] Typeⁱᵐᵖˡ_underlying :: (Typeⁱᵐᵖˡ) ↓u (Typeⁱᵐᵖˡ);
 }.
 

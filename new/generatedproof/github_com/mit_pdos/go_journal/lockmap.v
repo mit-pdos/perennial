@@ -2,174 +2,282 @@
 Require Export New.proof.proof_prelude.
 Require Export New.generatedproof.sync.
 Require Export New.golang.theory.
+
 Require Export New.code.github_com.mit_pdos.go_journal.lockmap.
 
 Set Default Proof Using "Type".
 
 Module lockmap.
+
+(* type lockmap.lockState *)
 Module lockState.
 Section def.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context {sem : go.Semantics}.
-Context {package_sem' : lockmap.Assumptions}.
-
-Local Set Default Proof Using "All".
-
-#[global]Program Instance lockState_typed_pointsto  :
-  TypedPointsto (Σ:=Σ) (lockmap.lockState.t) :=
-  {|
-    typed_pointsto_def l v dq :=
-      (
-      "held" ∷ l.[(lockmap.lockState.t), "held"] ↦{dq} v.(lockmap.lockState.held') ∗
-      "cond" ∷ l.[(lockmap.lockState.t), "cond"] ↦{dq} v.(lockmap.lockState.cond') ∗
-      "waiters" ∷ l.[(lockmap.lockState.t), "waiters"] ↦{dq} v.(lockmap.lockState.waiters') ∗
-      "_" ∷ True
-      )%I
-  |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
-
-#[global] Instance lockState_into_val_typed
-   :
-  IntoValTypedUnderlying (lockmap.lockState.t) (lockmap.lockStateⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance lockState_access_load_held l (v : (lockmap.lockState.t)) dq :
-  AccessStrict
-    (l.[(lockmap.lockState.t), "held"] ↦{dq} (v.(lockmap.lockState.held')))
-    (l.[(lockmap.lockState.t), "held"] ↦{dq} (v.(lockmap.lockState.held')))
-    (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
-
-#[global] Instance lockState_access_store_held l (v : (lockmap.lockState.t)) held' :
-  AccessStrict
-    (l.[(lockmap.lockState.t), "held"] ↦ (v.(lockmap.lockState.held')))
-    (l.[(lockmap.lockState.t), "held"] ↦ held')
-    (l ↦ v) (l ↦ (v <|(lockmap.lockState.held') := held'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance lockState_access_load_cond l (v : (lockmap.lockState.t)) dq :
-  AccessStrict
-    (l.[(lockmap.lockState.t), "cond"] ↦{dq} (v.(lockmap.lockState.cond')))
-    (l.[(lockmap.lockState.t), "cond"] ↦{dq} (v.(lockmap.lockState.cond')))
-    (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
-
-#[global] Instance lockState_access_store_cond l (v : (lockmap.lockState.t)) cond' :
-  AccessStrict
-    (l.[(lockmap.lockState.t), "cond"] ↦ (v.(lockmap.lockState.cond')))
-    (l.[(lockmap.lockState.t), "cond"] ↦ cond')
-    (l ↦ v) (l ↦ (v <|(lockmap.lockState.cond') := cond'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance lockState_access_load_waiters l (v : (lockmap.lockState.t)) dq :
-  AccessStrict
-    (l.[(lockmap.lockState.t), "waiters"] ↦{dq} (v.(lockmap.lockState.waiters')))
-    (l.[(lockmap.lockState.t), "waiters"] ↦{dq} (v.(lockmap.lockState.waiters')))
-    (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
-
-#[global] Instance lockState_access_store_waiters l (v : (lockmap.lockState.t)) waiters' :
-  AccessStrict
-    (l.[(lockmap.lockState.t), "waiters"] ↦ (v.(lockmap.lockState.waiters')))
-    (l.[(lockmap.lockState.t), "waiters"] ↦ waiters')
-    (l ↦ v) (l ↦ (v <|(lockmap.lockState.waiters') := waiters'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
-
+Context `{ffi_syntax}.
+Record t := mk {
+  held' : bool;
+  cond' : loc;
+  waiters' : w64;
+}.
 End def.
 End lockState.
 
+Section instances.
+Context `{ffi_syntax}.
+#[local] Transparent lockmap.lockState.
+#[local] Typeclasses Transparent lockmap.lockState.
+
+Global Instance lockState_wf : struct.Wf lockmap.lockState.
+Proof. apply _. Qed.
+
+Global Instance settable_lockState : Settable lockState.t :=
+  settable! lockState.mk < lockState.held'; lockState.cond'; lockState.waiters' >.
+Global Instance into_val_lockState : IntoVal lockState.t :=
+  {| to_val_def v :=
+    struct.val_aux lockmap.lockState [
+    "held" ::= #(lockState.held' v);
+    "cond" ::= #(lockState.cond' v);
+    "waiters" ::= #(lockState.waiters' v)
+    ]%struct
+  |}.
+
+Global Program Instance into_val_typed_lockState : IntoValTyped lockState.t lockmap.lockState :=
+{|
+  default_val := lockState.mk (default_val _) (default_val _) (default_val _);
+|}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
+Global Instance into_val_struct_field_lockState_held : IntoValStructField "held" lockmap.lockState lockState.held'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_lockState_cond : IntoValStructField "cond" lockmap.lockState lockState.cond'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_lockState_waiters : IntoValStructField "waiters" lockmap.lockState lockState.waiters'.
+Proof. solve_into_val_struct_field. Qed.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_lockState held' cond' waiters':
+  PureWp True
+    (struct.make #lockmap.lockState (alist_val [
+      "held" ::= #held';
+      "cond" ::= #cond';
+      "waiters" ::= #waiters'
+    ]))%struct
+    #(lockState.mk held' cond' waiters').
+Proof. solve_struct_make_pure_wp. Qed.
+
+
+Global Instance lockState_struct_fields_split dq l (v : lockState.t) :
+  StructFieldsSplit dq l v (
+    "Hheld" ∷ l ↦s[lockmap.lockState :: "held"]{dq} v.(lockState.held') ∗
+    "Hcond" ∷ l ↦s[lockmap.lockState :: "cond"]{dq} v.(lockState.cond') ∗
+    "Hwaiters" ∷ l ↦s[lockmap.lockState :: "waiters"]{dq} v.(lockState.waiters')
+  ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (lockState.held' v)) (lockmap.lockState) "held"%go.
+  simpl_one_flatten_struct (# (lockState.cond' v)) (lockmap.lockState) "cond"%go.
+
+  solve_field_ref_f.
+Qed.
+
+End instances.
+
+(* type lockmap.lockShard *)
 Module lockShard.
 Section def.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context {sem : go.Semantics}.
-Context {package_sem' : lockmap.Assumptions}.
-
-Local Set Default Proof Using "All".
-
-#[global]Program Instance lockShard_typed_pointsto  :
-  TypedPointsto (Σ:=Σ) (lockmap.lockShard.t) :=
-  {|
-    typed_pointsto_def l v dq :=
-      (
-      "mu" ∷ l.[(lockmap.lockShard.t), "mu"] ↦{dq} v.(lockmap.lockShard.mu') ∗
-      "state" ∷ l.[(lockmap.lockShard.t), "state"] ↦{dq} v.(lockmap.lockShard.state') ∗
-      "_" ∷ True
-      )%I
-  |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
-
-#[global] Instance lockShard_into_val_typed
-   :
-  IntoValTypedUnderlying (lockmap.lockShard.t) (lockmap.lockShardⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance lockShard_access_load_mu l (v : (lockmap.lockShard.t)) dq :
-  AccessStrict
-    (l.[(lockmap.lockShard.t), "mu"] ↦{dq} (v.(lockmap.lockShard.mu')))
-    (l.[(lockmap.lockShard.t), "mu"] ↦{dq} (v.(lockmap.lockShard.mu')))
-    (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
-
-#[global] Instance lockShard_access_store_mu l (v : (lockmap.lockShard.t)) mu' :
-  AccessStrict
-    (l.[(lockmap.lockShard.t), "mu"] ↦ (v.(lockmap.lockShard.mu')))
-    (l.[(lockmap.lockShard.t), "mu"] ↦ mu')
-    (l ↦ v) (l ↦ (v <|(lockmap.lockShard.mu') := mu'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance lockShard_access_load_state l (v : (lockmap.lockShard.t)) dq :
-  AccessStrict
-    (l.[(lockmap.lockShard.t), "state"] ↦{dq} (v.(lockmap.lockShard.state')))
-    (l.[(lockmap.lockShard.t), "state"] ↦{dq} (v.(lockmap.lockShard.state')))
-    (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
-
-#[global] Instance lockShard_access_store_state l (v : (lockmap.lockShard.t)) state' :
-  AccessStrict
-    (l.[(lockmap.lockShard.t), "state"] ↦ (v.(lockmap.lockShard.state')))
-    (l.[(lockmap.lockShard.t), "state"] ↦ state')
-    (l ↦ v) (l ↦ (v <|(lockmap.lockShard.state') := state'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
-
+Context `{ffi_syntax}.
+Record t := mk {
+  mu' : loc;
+  state' : loc;
+}.
 End def.
 End lockShard.
 
+Section instances.
+Context `{ffi_syntax}.
+#[local] Transparent lockmap.lockShard.
+#[local] Typeclasses Transparent lockmap.lockShard.
+
+Global Instance lockShard_wf : struct.Wf lockmap.lockShard.
+Proof. apply _. Qed.
+
+Global Instance settable_lockShard : Settable lockShard.t :=
+  settable! lockShard.mk < lockShard.mu'; lockShard.state' >.
+Global Instance into_val_lockShard : IntoVal lockShard.t :=
+  {| to_val_def v :=
+    struct.val_aux lockmap.lockShard [
+    "mu" ::= #(lockShard.mu' v);
+    "state" ::= #(lockShard.state' v)
+    ]%struct
+  |}.
+
+Global Program Instance into_val_typed_lockShard : IntoValTyped lockShard.t lockmap.lockShard :=
+{|
+  default_val := lockShard.mk (default_val _) (default_val _);
+|}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
+Global Instance into_val_struct_field_lockShard_mu : IntoValStructField "mu" lockmap.lockShard lockShard.mu'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_lockShard_state : IntoValStructField "state" lockmap.lockShard lockShard.state'.
+Proof. solve_into_val_struct_field. Qed.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_lockShard mu' state':
+  PureWp True
+    (struct.make #lockmap.lockShard (alist_val [
+      "mu" ::= #mu';
+      "state" ::= #state'
+    ]))%struct
+    #(lockShard.mk mu' state').
+Proof. solve_struct_make_pure_wp. Qed.
+
+
+Global Instance lockShard_struct_fields_split dq l (v : lockShard.t) :
+  StructFieldsSplit dq l v (
+    "Hmu" ∷ l ↦s[lockmap.lockShard :: "mu"]{dq} v.(lockShard.mu') ∗
+    "Hstate" ∷ l ↦s[lockmap.lockShard :: "state"]{dq} v.(lockShard.state')
+  ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (lockShard.mu' v)) (lockmap.lockShard) "mu"%go.
+
+  solve_field_ref_f.
+Qed.
+
+End instances.
+
+(* type lockmap.LockMap *)
 Module LockMap.
 Section def.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context {sem : go.Semantics}.
-Context {package_sem' : lockmap.Assumptions}.
-
-Local Set Default Proof Using "All".
-
-#[global]Program Instance LockMap_typed_pointsto  :
-  TypedPointsto (Σ:=Σ) (lockmap.LockMap.t) :=
-  {|
-    typed_pointsto_def l v dq :=
-      (
-      "shards" ∷ l.[(lockmap.LockMap.t), "shards"] ↦{dq} v.(lockmap.LockMap.shards') ∗
-      "_" ∷ True
-      )%I
-  |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
-
-#[global] Instance LockMap_into_val_typed
-   :
-  IntoValTypedUnderlying (lockmap.LockMap.t) (lockmap.LockMapⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance LockMap_access_load_shards l (v : (lockmap.LockMap.t)) dq :
-  AccessStrict
-    (l.[(lockmap.LockMap.t), "shards"] ↦{dq} (v.(lockmap.LockMap.shards')))
-    (l.[(lockmap.LockMap.t), "shards"] ↦{dq} (v.(lockmap.LockMap.shards')))
-    (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
-
-#[global] Instance LockMap_access_store_shards l (v : (lockmap.LockMap.t)) shards' :
-  AccessStrict
-    (l.[(lockmap.LockMap.t), "shards"] ↦ (v.(lockmap.LockMap.shards')))
-    (l.[(lockmap.LockMap.t), "shards"] ↦ shards')
-    (l ↦ v) (l ↦ (v <|(lockmap.LockMap.shards') := shards'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
-
+Context `{ffi_syntax}.
+Record t := mk {
+  shards' : slice.t;
+}.
 End def.
 End LockMap.
 
+Section instances.
+Context `{ffi_syntax}.
+#[local] Transparent lockmap.LockMap.
+#[local] Typeclasses Transparent lockmap.LockMap.
+
+Global Instance LockMap_wf : struct.Wf lockmap.LockMap.
+Proof. apply _. Qed.
+
+Global Instance settable_LockMap : Settable LockMap.t :=
+  settable! LockMap.mk < LockMap.shards' >.
+Global Instance into_val_LockMap : IntoVal LockMap.t :=
+  {| to_val_def v :=
+    struct.val_aux lockmap.LockMap [
+    "shards" ::= #(LockMap.shards' v)
+    ]%struct
+  |}.
+
+Global Program Instance into_val_typed_LockMap : IntoValTyped LockMap.t lockmap.LockMap :=
+{|
+  default_val := LockMap.mk (default_val _);
+|}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
+Global Instance into_val_struct_field_LockMap_shards : IntoValStructField "shards" lockmap.LockMap LockMap.shards'.
+Proof. solve_into_val_struct_field. Qed.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_LockMap shards':
+  PureWp True
+    (struct.make #lockmap.LockMap (alist_val [
+      "shards" ::= #shards'
+    ]))%struct
+    #(LockMap.mk shards').
+Proof. solve_struct_make_pure_wp. Qed.
+
+
+Global Instance LockMap_struct_fields_split dq l (v : LockMap.t) :
+  StructFieldsSplit dq l v (
+    "Hshards" ∷ l ↦s[lockmap.LockMap :: "shards"]{dq} v.(LockMap.shards')
+  ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+
+  solve_field_ref_f.
+Qed.
+
+End instances.
+
+Section names.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context `{!globalsGS Σ}.
+Context {go_ctx : GoContext}.
+#[local] Transparent is_pkg_defined is_pkg_defined_pure.
+
+Global Instance is_pkg_defined_pure_lockmap : IsPkgDefinedPure lockmap :=
+  {|
+    is_pkg_defined_pure_def go_ctx :=
+      is_pkg_defined_pure_single lockmap ∧
+      is_pkg_defined_pure code.sync.sync;
+  |}.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_lockmap : IsPkgDefined lockmap :=
+  {|
+    is_pkg_defined_def go_ctx :=
+      (is_pkg_defined_single lockmap ∗
+       is_pkg_defined code.sync.sync)%I
+  |}.
+Final Obligation. iIntros. iFrame "#%". Qed.
+#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
+
+Global Instance wp_func_call_mkLockShard :
+  WpFuncCall lockmap.mkLockShard _ (is_pkg_defined lockmap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_MkLockMap :
+  WpFuncCall lockmap.MkLockMap _ (is_pkg_defined lockmap) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_method_call_lockShard'ptr_acquire :
+  WpMethodCall (ptrT.id lockmap.lockShard.id) "acquire" _ (is_pkg_defined lockmap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_lockShard'ptr_release :
+  WpMethodCall (ptrT.id lockmap.lockShard.id) "release" _ (is_pkg_defined lockmap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LockMap'ptr_Acquire :
+  WpMethodCall (ptrT.id lockmap.LockMap.id) "Acquire" _ (is_pkg_defined lockmap) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_LockMap'ptr_Release :
+  WpMethodCall (ptrT.id lockmap.LockMap.id) "Release" _ (is_pkg_defined lockmap) :=
+  ltac:(solve_wp_method_call).
+
+End names.
 End lockmap.

@@ -2,78 +2,158 @@
 Require Export New.proof.proof_prelude.
 Require Export New.generatedproof.sync.
 Require Export New.golang.theory.
+
 Require Export New.code.github_com.mit_pdos.go_journal.alloc.
 
 Set Default Proof Using "Type".
 
 Module alloc.
+
+(* type alloc.Alloc *)
 Module Alloc.
 Section def.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context {sem : go.Semantics}.
-Context {package_sem' : alloc.Assumptions}.
-
-Local Set Default Proof Using "All".
-
-#[global]Program Instance Alloc_typed_pointsto  :
-  TypedPointsto (Σ:=Σ) (alloc.Alloc.t) :=
-  {|
-    typed_pointsto_def l v dq :=
-      (
-      "mu" ∷ l.[(alloc.Alloc.t), "mu"] ↦{dq} v.(alloc.Alloc.mu') ∗
-      "next" ∷ l.[(alloc.Alloc.t), "next"] ↦{dq} v.(alloc.Alloc.next') ∗
-      "bitmap" ∷ l.[(alloc.Alloc.t), "bitmap"] ↦{dq} v.(alloc.Alloc.bitmap') ∗
-      "_" ∷ True
-      )%I
-  |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
-
-#[global] Instance Alloc_into_val_typed
-   :
-  IntoValTypedUnderlying (alloc.Alloc.t) (alloc.Allocⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance Alloc_access_load_mu l (v : (alloc.Alloc.t)) dq :
-  AccessStrict
-    (l.[(alloc.Alloc.t), "mu"] ↦{dq} (v.(alloc.Alloc.mu')))
-    (l.[(alloc.Alloc.t), "mu"] ↦{dq} (v.(alloc.Alloc.mu')))
-    (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
-
-#[global] Instance Alloc_access_store_mu l (v : (alloc.Alloc.t)) mu' :
-  AccessStrict
-    (l.[(alloc.Alloc.t), "mu"] ↦ (v.(alloc.Alloc.mu')))
-    (l.[(alloc.Alloc.t), "mu"] ↦ mu')
-    (l ↦ v) (l ↦ (v <|(alloc.Alloc.mu') := mu'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance Alloc_access_load_next l (v : (alloc.Alloc.t)) dq :
-  AccessStrict
-    (l.[(alloc.Alloc.t), "next"] ↦{dq} (v.(alloc.Alloc.next')))
-    (l.[(alloc.Alloc.t), "next"] ↦{dq} (v.(alloc.Alloc.next')))
-    (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
-
-#[global] Instance Alloc_access_store_next l (v : (alloc.Alloc.t)) next' :
-  AccessStrict
-    (l.[(alloc.Alloc.t), "next"] ↦ (v.(alloc.Alloc.next')))
-    (l.[(alloc.Alloc.t), "next"] ↦ next')
-    (l ↦ v) (l ↦ (v <|(alloc.Alloc.next') := next'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance Alloc_access_load_bitmap l (v : (alloc.Alloc.t)) dq :
-  AccessStrict
-    (l.[(alloc.Alloc.t), "bitmap"] ↦{dq} (v.(alloc.Alloc.bitmap')))
-    (l.[(alloc.Alloc.t), "bitmap"] ↦{dq} (v.(alloc.Alloc.bitmap')))
-    (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
-
-#[global] Instance Alloc_access_store_bitmap l (v : (alloc.Alloc.t)) bitmap' :
-  AccessStrict
-    (l.[(alloc.Alloc.t), "bitmap"] ↦ (v.(alloc.Alloc.bitmap')))
-    (l.[(alloc.Alloc.t), "bitmap"] ↦ bitmap')
-    (l ↦ v) (l ↦ (v <|(alloc.Alloc.bitmap') := bitmap'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
-
+Context `{ffi_syntax}.
+Record t := mk {
+  mu' : loc;
+  next' : w64;
+  bitmap' : slice.t;
+}.
 End def.
 End Alloc.
 
+Section instances.
+Context `{ffi_syntax}.
+#[local] Transparent alloc.Alloc.
+#[local] Typeclasses Transparent alloc.Alloc.
+
+Global Instance Alloc_wf : struct.Wf alloc.Alloc.
+Proof. apply _. Qed.
+
+Global Instance settable_Alloc : Settable Alloc.t :=
+  settable! Alloc.mk < Alloc.mu'; Alloc.next'; Alloc.bitmap' >.
+Global Instance into_val_Alloc : IntoVal Alloc.t :=
+  {| to_val_def v :=
+    struct.val_aux alloc.Alloc [
+    "mu" ::= #(Alloc.mu' v);
+    "next" ::= #(Alloc.next' v);
+    "bitmap" ::= #(Alloc.bitmap' v)
+    ]%struct
+  |}.
+
+Global Program Instance into_val_typed_Alloc : IntoValTyped Alloc.t alloc.Alloc :=
+{|
+  default_val := Alloc.mk (default_val _) (default_val _) (default_val _);
+|}.
+Next Obligation. solve_to_val_type. Qed.
+Next Obligation. solve_zero_val. Qed.
+Next Obligation. solve_to_val_inj. Qed.
+Final Obligation. solve_decision. Qed.
+
+Global Instance into_val_struct_field_Alloc_mu : IntoValStructField "mu" alloc.Alloc Alloc.mu'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Alloc_next : IntoValStructField "next" alloc.Alloc Alloc.next'.
+Proof. solve_into_val_struct_field. Qed.
+
+Global Instance into_val_struct_field_Alloc_bitmap : IntoValStructField "bitmap" alloc.Alloc Alloc.bitmap'.
+Proof. solve_into_val_struct_field. Qed.
+
+
+Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
+Global Instance wp_struct_make_Alloc mu' next' bitmap':
+  PureWp True
+    (struct.make #alloc.Alloc (alist_val [
+      "mu" ::= #mu';
+      "next" ::= #next';
+      "bitmap" ::= #bitmap'
+    ]))%struct
+    #(Alloc.mk mu' next' bitmap').
+Proof. solve_struct_make_pure_wp. Qed.
+
+
+Global Instance Alloc_struct_fields_split dq l (v : Alloc.t) :
+  StructFieldsSplit dq l v (
+    "Hmu" ∷ l ↦s[alloc.Alloc :: "mu"]{dq} v.(Alloc.mu') ∗
+    "Hnext" ∷ l ↦s[alloc.Alloc :: "next"]{dq} v.(Alloc.next') ∗
+    "Hbitmap" ∷ l ↦s[alloc.Alloc :: "bitmap"]{dq} v.(Alloc.bitmap')
+  ).
+Proof.
+  rewrite /named.
+  apply struct_fields_split_intro.
+  unfold_typed_pointsto; split_pointsto_app.
+
+  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
+  simpl_one_flatten_struct (# (Alloc.mu' v)) (alloc.Alloc) "mu"%go.
+  simpl_one_flatten_struct (# (Alloc.next' v)) (alloc.Alloc) "next"%go.
+
+  solve_field_ref_f.
+Qed.
+
+End instances.
+
+Section names.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context `{!globalsGS Σ}.
+Context {go_ctx : GoContext}.
+#[local] Transparent is_pkg_defined is_pkg_defined_pure.
+
+Global Instance is_pkg_defined_pure_alloc : IsPkgDefinedPure alloc :=
+  {|
+    is_pkg_defined_pure_def go_ctx :=
+      is_pkg_defined_pure_single alloc ∧
+      is_pkg_defined_pure code.sync.sync;
+  |}.
+
+#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
+Global Program Instance is_pkg_defined_alloc : IsPkgDefined alloc :=
+  {|
+    is_pkg_defined_def go_ctx :=
+      (is_pkg_defined_single alloc ∗
+       is_pkg_defined code.sync.sync)%I
+  |}.
+Final Obligation. iIntros. iFrame "#%". Qed.
+#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
+
+Global Instance wp_func_call_MkAlloc :
+  WpFuncCall alloc.MkAlloc _ (is_pkg_defined alloc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_MkMaxAlloc :
+  WpFuncCall alloc.MkMaxAlloc _ (is_pkg_defined alloc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_popCnt :
+  WpFuncCall alloc.popCnt _ (is_pkg_defined alloc) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_method_call_Alloc'ptr_AllocNum :
+  WpMethodCall (ptrT.id alloc.Alloc.id) "AllocNum" _ (is_pkg_defined alloc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Alloc'ptr_FreeNum :
+  WpMethodCall (ptrT.id alloc.Alloc.id) "FreeNum" _ (is_pkg_defined alloc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Alloc'ptr_MarkUsed :
+  WpMethodCall (ptrT.id alloc.Alloc.id) "MarkUsed" _ (is_pkg_defined alloc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Alloc'ptr_NumFree :
+  WpMethodCall (ptrT.id alloc.Alloc.id) "NumFree" _ (is_pkg_defined alloc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Alloc'ptr_allocBit :
+  WpMethodCall (ptrT.id alloc.Alloc.id) "allocBit" _ (is_pkg_defined alloc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Alloc'ptr_freeBit :
+  WpMethodCall (ptrT.id alloc.Alloc.id) "freeBit" _ (is_pkg_defined alloc) :=
+  ltac:(solve_wp_method_call).
+
+Global Instance wp_method_call_Alloc'ptr_incNext :
+  WpMethodCall (ptrT.id alloc.Alloc.id) "incNext" _ (is_pkg_defined alloc) :=
+  ltac:(solve_wp_method_call).
+
+End names.
 End alloc.
