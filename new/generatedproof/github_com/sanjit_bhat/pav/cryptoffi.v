@@ -2,115 +2,89 @@
 Require Export New.proof.proof_prelude.
 Require Export New.generatedproof.crypto.ed25519.
 Require Export New.golang.theory.
-
 Require Export New.code.github_com.sanjit_bhat.pav.cryptoffi.
 
 Set Default Proof Using "Type".
 
 Module cryptoffi.
-
-(* type cryptoffi.Hasher *)
 Module Hasher.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : cryptoffi.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Hasher_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (cryptoffi.Hasher.t). Admitted.
+
+#[global] Instance Hasher_into_val_typed
+   :
+  IntoValTypedUnderlying (cryptoffi.Hasher.t) (cryptoffi.Hasherⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End Hasher.
 
-Global Instance bounded_size_Hasher : BoundedTypeSize cryptoffi.Hasher.
-Admitted.
-
-Global Instance into_val_Hasher `{ffi_syntax} : IntoVal Hasher.t.
-Admitted.
-
-Global Instance into_val_typed_Hasher `{ffi_syntax} : IntoValTyped Hasher.t cryptoffi.Hasher.
-Admitted.
-
-(* type cryptoffi.SigPrivateKey *)
 Module SigPrivateKey.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : cryptoffi.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance SigPrivateKey_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (cryptoffi.SigPrivateKey.t). Admitted.
+
+#[global] Instance SigPrivateKey_into_val_typed
+   :
+  IntoValTypedUnderlying (cryptoffi.SigPrivateKey.t) (cryptoffi.SigPrivateKeyⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End SigPrivateKey.
 
-Global Instance bounded_size_SigPrivateKey : BoundedTypeSize cryptoffi.SigPrivateKey.
-Admitted.
-
-Global Instance into_val_SigPrivateKey `{ffi_syntax} : IntoVal SigPrivateKey.t.
-Admitted.
-
-Global Instance into_val_typed_SigPrivateKey `{ffi_syntax} : IntoValTyped SigPrivateKey.t cryptoffi.SigPrivateKey.
-Admitted.
-
-(* type cryptoffi.SigPublicKey *)
-Module SigPublicKey.
-
-#[global] Transparent cryptoffi.SigPublicKey.
-#[global] Typeclasses Transparent cryptoffi.SigPublicKey.
-Section def.
-Context `{ffi_syntax}.
-Definition t := ed25519.PublicKey.t.
-End def.
-End SigPublicKey.
-
-(* type cryptoffi.VrfPrivateKey *)
 Module VrfPrivateKey.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : cryptoffi.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance VrfPrivateKey_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (cryptoffi.VrfPrivateKey.t). Admitted.
+
+#[global] Instance VrfPrivateKey_into_val_typed
+   :
+  IntoValTypedUnderlying (cryptoffi.VrfPrivateKey.t) (cryptoffi.VrfPrivateKeyⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End VrfPrivateKey.
 
-Global Instance bounded_size_VrfPrivateKey : BoundedTypeSize cryptoffi.VrfPrivateKey.
-Admitted.
-
-Global Instance into_val_VrfPrivateKey `{ffi_syntax} : IntoVal VrfPrivateKey.t.
-Admitted.
-
-Global Instance into_val_typed_VrfPrivateKey `{ffi_syntax} : IntoValTyped VrfPrivateKey.t cryptoffi.VrfPrivateKey.
-Admitted.
-
-(* type cryptoffi.VrfPublicKey *)
 Module VrfPublicKey.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : cryptoffi.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance VrfPublicKey_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (cryptoffi.VrfPublicKey.t). Admitted.
+
+#[global] Instance VrfPublicKey_into_val_typed
+   :
+  IntoValTypedUnderlying (cryptoffi.VrfPublicKey.t) (cryptoffi.VrfPublicKeyⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End VrfPublicKey.
 
-Global Instance bounded_size_VrfPublicKey : BoundedTypeSize cryptoffi.VrfPublicKey.
-Admitted.
-
-Global Instance into_val_VrfPublicKey `{ffi_syntax} : IntoVal VrfPublicKey.t.
-Admitted.
-
-Global Instance into_val_typed_VrfPublicKey `{ffi_syntax} : IntoValTyped VrfPublicKey.t cryptoffi.VrfPublicKey.
-Admitted.
-
-Section names.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext}.
-#[local] Transparent is_pkg_defined is_pkg_defined_pure.
-
-Global Instance is_pkg_defined_pure_cryptoffi : IsPkgDefinedPure cryptoffi :=
-  {|
-    is_pkg_defined_pure_def go_ctx :=
-      is_pkg_defined_pure_single cryptoffi ∧
-      is_pkg_defined_pure code.crypto.ed25519.ed25519;
-  |}.
-
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_cryptoffi : IsPkgDefined cryptoffi :=
-  {|
-    is_pkg_defined_def go_ctx :=
-      (is_pkg_defined_single cryptoffi ∗
-       is_pkg_defined code.crypto.ed25519.ed25519)%I
-  |}.
-Final Obligation. iIntros. iFrame "#%". Qed.
-#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
-
-End names.
 End cryptoffi.

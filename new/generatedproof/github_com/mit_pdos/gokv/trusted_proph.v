@@ -3,55 +3,9 @@ Require Export New.proof.proof_prelude.
 Require Export New.manualproof.github_com.mit_pdos.gokv.trusted_proph.
 Require Export New.generatedproof.github_com.goose_lang.primitive.
 Require Export New.golang.theory.
-
 Require Export New.code.github_com.mit_pdos.gokv.trusted_proph.
 
 Set Default Proof Using "Type".
 
 Module trusted_proph.
-
-(* type trusted_proph.ProphId *)
-Module ProphId.
-
-#[global] Transparent trusted_proph.ProphId.
-#[global] Typeclasses Transparent trusted_proph.ProphId.
-Section def.
-Context `{ffi_syntax}.
-Definition t := loc.
-End def.
-End ProphId.
-
-Section names.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext}.
-#[local] Transparent is_pkg_defined is_pkg_defined_pure.
-
-Global Instance is_pkg_defined_pure_trusted_proph : IsPkgDefinedPure trusted_proph :=
-  {|
-    is_pkg_defined_pure_def go_ctx :=
-      is_pkg_defined_pure_single trusted_proph ∧
-      is_pkg_defined_pure code.github_com.goose_lang.primitive.primitive;
-  |}.
-
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_trusted_proph : IsPkgDefined trusted_proph :=
-  {|
-    is_pkg_defined_def go_ctx :=
-      (is_pkg_defined_single trusted_proph ∗
-       is_pkg_defined code.github_com.goose_lang.primitive.primitive)%I
-  |}.
-Final Obligation. iIntros. iFrame "#%". Qed.
-#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
-
-Global Instance wp_func_call_NewProph :
-  WpFuncCall trusted_proph.NewProph _ (is_pkg_defined trusted_proph) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_ResolveBytes :
-  WpFuncCall trusted_proph.ResolveBytes _ (is_pkg_defined trusted_proph) :=
-  ltac:(solve_wp_func_call).
-
-End names.
 End trusted_proph.

@@ -5,152 +5,78 @@ Require Export New.generatedproof.github_com.goose_lang.std.
 Require Export New.generatedproof.github_com.sanjit_bhat.pav.cryptoffi.
 Require Export New.generatedproof.github_com.sanjit_bhat.pav.cryptoutil.
 Require Export New.golang.theory.
-
 Require Export New.code.github_com.sanjit_bhat.pav.hashchain.
 
 Set Default Proof Using "Type".
 
 Module hashchain.
-
-(* type hashchain.HashChain *)
 Module HashChain.
 Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-  predLastLink' : slice.t;
-  lastLink' : slice.t;
-  vals' : slice.t;
-}.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : hashchain.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance HashChain_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (hashchain.HashChain.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "predLastLink" ∷ l.[(hashchain.HashChain.t), "predLastLink"] ↦{dq} v.(hashchain.HashChain.predLastLink') ∗
+      "lastLink" ∷ l.[(hashchain.HashChain.t), "lastLink"] ↦{dq} v.(hashchain.HashChain.lastLink') ∗
+      "vals" ∷ l.[(hashchain.HashChain.t), "vals"] ↦{dq} v.(hashchain.HashChain.vals') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance HashChain_into_val_typed
+   :
+  IntoValTypedUnderlying (hashchain.HashChain.t) (hashchain.HashChainⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance HashChain_access_load_predLastLink l (v : (hashchain.HashChain.t)) dq :
+  AccessStrict
+    (l.[(hashchain.HashChain.t), "predLastLink"] ↦{dq} (v.(hashchain.HashChain.predLastLink')))
+    (l.[(hashchain.HashChain.t), "predLastLink"] ↦{dq} (v.(hashchain.HashChain.predLastLink')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance HashChain_access_store_predLastLink l (v : (hashchain.HashChain.t)) predLastLink' :
+  AccessStrict
+    (l.[(hashchain.HashChain.t), "predLastLink"] ↦ (v.(hashchain.HashChain.predLastLink')))
+    (l.[(hashchain.HashChain.t), "predLastLink"] ↦ predLastLink')
+    (l ↦ v) (l ↦ (v <|(hashchain.HashChain.predLastLink') := predLastLink'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance HashChain_access_load_lastLink l (v : (hashchain.HashChain.t)) dq :
+  AccessStrict
+    (l.[(hashchain.HashChain.t), "lastLink"] ↦{dq} (v.(hashchain.HashChain.lastLink')))
+    (l.[(hashchain.HashChain.t), "lastLink"] ↦{dq} (v.(hashchain.HashChain.lastLink')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance HashChain_access_store_lastLink l (v : (hashchain.HashChain.t)) lastLink' :
+  AccessStrict
+    (l.[(hashchain.HashChain.t), "lastLink"] ↦ (v.(hashchain.HashChain.lastLink')))
+    (l.[(hashchain.HashChain.t), "lastLink"] ↦ lastLink')
+    (l ↦ v) (l ↦ (v <|(hashchain.HashChain.lastLink') := lastLink'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance HashChain_access_load_vals l (v : (hashchain.HashChain.t)) dq :
+  AccessStrict
+    (l.[(hashchain.HashChain.t), "vals"] ↦{dq} (v.(hashchain.HashChain.vals')))
+    (l.[(hashchain.HashChain.t), "vals"] ↦{dq} (v.(hashchain.HashChain.vals')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance HashChain_access_store_vals l (v : (hashchain.HashChain.t)) vals' :
+  AccessStrict
+    (l.[(hashchain.HashChain.t), "vals"] ↦ (v.(hashchain.HashChain.vals')))
+    (l.[(hashchain.HashChain.t), "vals"] ↦ vals')
+    (l ↦ v) (l ↦ (v <|(hashchain.HashChain.vals') := vals'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End HashChain.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent hashchain.HashChain.
-#[local] Typeclasses Transparent hashchain.HashChain.
-
-Global Instance HashChain_wf : struct.Wf hashchain.HashChain.
-Proof. apply _. Qed.
-
-Global Instance settable_HashChain : Settable HashChain.t :=
-  settable! HashChain.mk < HashChain.predLastLink'; HashChain.lastLink'; HashChain.vals' >.
-Global Instance into_val_HashChain : IntoVal HashChain.t :=
-  {| to_val_def v :=
-    struct.val_aux hashchain.HashChain [
-    "predLastLink" ::= #(HashChain.predLastLink' v);
-    "lastLink" ::= #(HashChain.lastLink' v);
-    "vals" ::= #(HashChain.vals' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_HashChain : IntoValTyped HashChain.t hashchain.HashChain :=
-{|
-  default_val := HashChain.mk (default_val _) (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_HashChain_predLastLink : IntoValStructField "predLastLink" hashchain.HashChain HashChain.predLastLink'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_HashChain_lastLink : IntoValStructField "lastLink" hashchain.HashChain HashChain.lastLink'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_HashChain_vals : IntoValStructField "vals" hashchain.HashChain HashChain.vals'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_HashChain predLastLink' lastLink' vals':
-  PureWp True
-    (struct.make #hashchain.HashChain (alist_val [
-      "predLastLink" ::= #predLastLink';
-      "lastLink" ::= #lastLink';
-      "vals" ::= #vals'
-    ]))%struct
-    #(HashChain.mk predLastLink' lastLink' vals').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance HashChain_struct_fields_split dq l (v : HashChain.t) :
-  StructFieldsSplit dq l v (
-    "HpredLastLink" ∷ l ↦s[hashchain.HashChain :: "predLastLink"]{dq} v.(HashChain.predLastLink') ∗
-    "HlastLink" ∷ l ↦s[hashchain.HashChain :: "lastLink"]{dq} v.(HashChain.lastLink') ∗
-    "Hvals" ∷ l ↦s[hashchain.HashChain :: "vals"]{dq} v.(HashChain.vals')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (HashChain.predLastLink' v)) (hashchain.HashChain) "predLastLink"%go.
-  simpl_one_flatten_struct (# (HashChain.lastLink' v)) (hashchain.HashChain) "lastLink"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-Section names.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext}.
-#[local] Transparent is_pkg_defined is_pkg_defined_pure.
-
-Global Instance is_pkg_defined_pure_hashchain : IsPkgDefinedPure hashchain :=
-  {|
-    is_pkg_defined_pure_def go_ctx :=
-      is_pkg_defined_pure_single hashchain ∧
-      is_pkg_defined_pure code.bytes.bytes ∧
-      is_pkg_defined_pure code.github_com.goose_lang.std.std ∧
-      is_pkg_defined_pure code.github_com.sanjit_bhat.pav.cryptoffi.cryptoffi ∧
-      is_pkg_defined_pure code.github_com.sanjit_bhat.pav.cryptoutil.cryptoutil;
-  |}.
-
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_hashchain : IsPkgDefined hashchain :=
-  {|
-    is_pkg_defined_def go_ctx :=
-      (is_pkg_defined_single hashchain ∗
-       is_pkg_defined code.bytes.bytes ∗
-       is_pkg_defined code.github_com.goose_lang.std.std ∗
-       is_pkg_defined code.github_com.sanjit_bhat.pav.cryptoffi.cryptoffi ∗
-       is_pkg_defined code.github_com.sanjit_bhat.pav.cryptoutil.cryptoutil)%I
-  |}.
-Final Obligation. iIntros. iFrame "#%". Qed.
-#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
-
-Global Instance wp_func_call_Verify :
-  WpFuncCall hashchain.Verify _ (is_pkg_defined hashchain) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_New :
-  WpFuncCall hashchain.New _ (is_pkg_defined hashchain) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_GetEmptyLink :
-  WpFuncCall hashchain.GetEmptyLink _ (is_pkg_defined hashchain) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_GetNextLink :
-  WpFuncCall hashchain.GetNextLink _ (is_pkg_defined hashchain) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_method_call_HashChain'ptr_Append :
-  WpMethodCall (ptrT.id hashchain.HashChain.id) "Append" _ (is_pkg_defined hashchain) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_HashChain'ptr_Bootstrap :
-  WpMethodCall (ptrT.id hashchain.HashChain.id) "Bootstrap" _ (is_pkg_defined hashchain) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_HashChain'ptr_Prove :
-  WpMethodCall (ptrT.id hashchain.HashChain.id) "Prove" _ (is_pkg_defined hashchain) :=
-  ltac:(solve_wp_method_call).
-
-End names.
 End hashchain.

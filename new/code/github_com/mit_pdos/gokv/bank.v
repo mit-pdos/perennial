@@ -3,300 +3,338 @@ Require Export New.code.github_com.goose_lang.primitive.
 Require Export New.code.github_com.mit_pdos.gokv.kv.
 Require Export New.code.github_com.mit_pdos.gokv.lockservice.
 Require Export New.code.github_com.tchajed.marshal.
-
 From New.golang Require Import defn.
+Module pkg_id.
 Definition bank : go_string := "github.com/mit-pdos/gokv/bank".
 
+End pkg_id.
+Export pkg_id.
 Module bank.
 
-Module BankClerk. Definition id : go_string := "github.com/mit-pdos/gokv/bank.BankClerk"%go. End BankClerk.
+Definition BankClerk {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/mit-pdos/gokv/bank.BankClerk"%go [].
 
-Section code.
-Context `{ffi_syntax}.
+Definition BAL_TOTAL {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #(W64 1000).
 
+Definition acquire_two_good {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/mit-pdos/gokv/bank.acquire_two_good"%go.
 
-Definition BAL_TOTAL : val := #(W64 1000).
+Definition acquire_two {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/mit-pdos/gokv/bank.acquire_two"%go.
 
-Definition BankClerk : go_type := structT [
-  "lck" :: ptrT;
-  "kvck" :: kv.Kv;
-  "accts" :: sliceT
-].
-#[global] Typeclasses Opaque BankClerk.
-#[global] Opaque BankClerk.
+Definition release_two {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/mit-pdos/gokv/bank.release_two"%go.
 
-Definition acquire_two_good : go_string := "github.com/mit-pdos/gokv/bank.acquire_two_good"%go.
+Definition encodeInt {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/mit-pdos/gokv/bank.encodeInt"%go.
+
+Definition decodeInt {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/mit-pdos/gokv/bank.decodeInt"%go.
+
+Definition MakeBankClerkSlice {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/mit-pdos/gokv/bank.MakeBankClerkSlice"%go.
+
+Definition MakeBankClerk {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/mit-pdos/gokv/bank.MakeBankClerk"%go.
 
 (* go: bank.go:19:6 *)
-Definition acquire_two_goodⁱᵐᵖˡ : val :=
+Definition acquire_two_goodⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "lck" "l1" "l2",
-    exception_do (let: "l2" := (mem.alloc "l2") in
-    let: "l1" := (mem.alloc "l1") in
-    let: "lck" := (mem.alloc "lck") in
-    (if: (![stringT] "l1") < (![stringT] "l2")
+    exception_do (let: "l2" := (GoAlloc go.string "l2") in
+    let: "l1" := (GoAlloc go.string "l1") in
+    let: "lck" := (GoAlloc (go.PointerType lockservice.LockClerk) "lck") in
+    (if: Convert go.untyped_bool go.bool ((![go.string] "l1") <⟨go.string⟩ (![go.string] "l2"))
     then
-      do:  (let: "$a0" := (![stringT] "l1") in
-      (method_call #(ptrT.id lockservice.LockClerk.id) #"Lock"%go (![ptrT] "lck")) "$a0");;;
-      do:  (let: "$a0" := (![stringT] "l2") in
-      (method_call #(ptrT.id lockservice.LockClerk.id) #"Lock"%go (![ptrT] "lck")) "$a0")
+      do:  (let: "$a0" := (![go.string] "l1") in
+      (MethodResolve (go.PointerType lockservice.LockClerk) "Lock"%go (![go.PointerType lockservice.LockClerk] "lck")) "$a0");;;
+      do:  (let: "$a0" := (![go.string] "l2") in
+      (MethodResolve (go.PointerType lockservice.LockClerk) "Lock"%go (![go.PointerType lockservice.LockClerk] "lck")) "$a0")
     else
-      do:  (let: "$a0" := (![stringT] "l2") in
-      (method_call #(ptrT.id lockservice.LockClerk.id) #"Lock"%go (![ptrT] "lck")) "$a0");;;
-      do:  (let: "$a0" := (![stringT] "l1") in
-      (method_call #(ptrT.id lockservice.LockClerk.id) #"Lock"%go (![ptrT] "lck")) "$a0"));;;
+      do:  (let: "$a0" := (![go.string] "l2") in
+      (MethodResolve (go.PointerType lockservice.LockClerk) "Lock"%go (![go.PointerType lockservice.LockClerk] "lck")) "$a0");;;
+      do:  (let: "$a0" := (![go.string] "l1") in
+      (MethodResolve (go.PointerType lockservice.LockClerk) "Lock"%go (![go.PointerType lockservice.LockClerk] "lck")) "$a0"));;;
     return: (#());;;
     return: #()).
-
-Definition acquire_two : go_string := "github.com/mit-pdos/gokv/bank.acquire_two"%go.
 
 (* go: bank.go:30:6 *)
-Definition acquire_twoⁱᵐᵖˡ : val :=
+Definition acquire_twoⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "lck" "l1" "l2",
-    exception_do (let: "l2" := (mem.alloc "l2") in
-    let: "l1" := (mem.alloc "l1") in
-    let: "lck" := (mem.alloc "lck") in
-    do:  (let: "$a0" := (![stringT] "l1") in
-    (method_call #(ptrT.id lockservice.LockClerk.id) #"Lock"%go (![ptrT] "lck")) "$a0");;;
-    do:  (let: "$a0" := (![stringT] "l2") in
-    (method_call #(ptrT.id lockservice.LockClerk.id) #"Lock"%go (![ptrT] "lck")) "$a0");;;
+    exception_do (let: "l2" := (GoAlloc go.string "l2") in
+    let: "l1" := (GoAlloc go.string "l1") in
+    let: "lck" := (GoAlloc (go.PointerType lockservice.LockClerk) "lck") in
+    do:  (let: "$a0" := (![go.string] "l1") in
+    (MethodResolve (go.PointerType lockservice.LockClerk) "Lock"%go (![go.PointerType lockservice.LockClerk] "lck")) "$a0");;;
+    do:  (let: "$a0" := (![go.string] "l2") in
+    (MethodResolve (go.PointerType lockservice.LockClerk) "Lock"%go (![go.PointerType lockservice.LockClerk] "lck")) "$a0");;;
     return: (#());;;
     return: #()).
-
-Definition release_two : go_string := "github.com/mit-pdos/gokv/bank.release_two"%go.
 
 (* go: bank.go:37:6 *)
-Definition release_twoⁱᵐᵖˡ : val :=
+Definition release_twoⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "lck" "l1" "l2",
-    exception_do (let: "l2" := (mem.alloc "l2") in
-    let: "l1" := (mem.alloc "l1") in
-    let: "lck" := (mem.alloc "lck") in
-    do:  (let: "$a0" := (![stringT] "l1") in
-    (method_call #(ptrT.id lockservice.LockClerk.id) #"Unlock"%go (![ptrT] "lck")) "$a0");;;
-    do:  (let: "$a0" := (![stringT] "l2") in
-    (method_call #(ptrT.id lockservice.LockClerk.id) #"Unlock"%go (![ptrT] "lck")) "$a0");;;
+    exception_do (let: "l2" := (GoAlloc go.string "l2") in
+    let: "l1" := (GoAlloc go.string "l1") in
+    let: "lck" := (GoAlloc (go.PointerType lockservice.LockClerk) "lck") in
+    do:  (let: "$a0" := (![go.string] "l1") in
+    (MethodResolve (go.PointerType lockservice.LockClerk) "Unlock"%go (![go.PointerType lockservice.LockClerk] "lck")) "$a0");;;
+    do:  (let: "$a0" := (![go.string] "l2") in
+    (MethodResolve (go.PointerType lockservice.LockClerk) "Unlock"%go (![go.PointerType lockservice.LockClerk] "lck")) "$a0");;;
     return: (#());;;
     return: #()).
 
-Definition encodeInt : go_string := "github.com/mit-pdos/gokv/bank.encodeInt"%go.
-
 (* go: bank.go:43:6 *)
-Definition encodeIntⁱᵐᵖˡ : val :=
+Definition encodeIntⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "a",
-    exception_do (let: "a" := (mem.alloc "a") in
-    return: (string.from_bytes (let: "$a0" := #slice.nil in
-     let: "$a1" := (![uint64T] "a") in
-     (func_call #marshal.WriteInt) "$a0" "$a1"))).
-
-Definition decodeInt : go_string := "github.com/mit-pdos/gokv/bank.decodeInt"%go.
+    exception_do (let: "a" := (GoAlloc go.uint64 "a") in
+    return: (Convert (go.SliceType go.byte) go.string (let: "$a0" := (Convert go.untyped_nil (go.SliceType go.byte) UntypedNil) in
+     let: "$a1" := (![go.uint64] "a") in
+     (FuncResolve marshal.WriteInt [] #()) "$a0" "$a1"))).
 
 (* go: bank.go:47:6 *)
-Definition decodeIntⁱᵐᵖˡ : val :=
+Definition decodeIntⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "a",
-    exception_do (let: "a" := (mem.alloc "a") in
-    let: "v" := (mem.alloc (type.zero_val uint64T)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (string.to_bytes (![stringT] "a")) in
-    (func_call #marshal.ReadInt) "$a0") in
+    exception_do (let: "a" := (GoAlloc go.string "a") in
+    let: "v" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (Convert go.string (go.SliceType go.byte) (![go.string] "a")) in
+    (FuncResolve marshal.ReadInt [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("v" <-[uint64T] "$r0");;;
+    do:  ("v" <-[go.uint64] "$r0");;;
     do:  "$r1";;;
-    return: (![uint64T] "v")).
+    return: (![go.uint64] "v")).
 
 (* Requires that the account numbers are smaller than num_accounts
    If account balance in acc_from is at least amount, transfer amount to acc_to
 
    go: bank.go:54:23 *)
-Definition BankClerk__transfer_internalⁱᵐᵖˡ : val :=
+Definition BankClerk__transfer_internalⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "bck" "acc_from" "acc_to" "amount",
-    exception_do (let: "bck" := (mem.alloc "bck") in
-    let: "amount" := (mem.alloc "amount") in
-    let: "acc_to" := (mem.alloc "acc_to") in
-    let: "acc_from" := (mem.alloc "acc_from") in
-    do:  (let: "$a0" := (![ptrT] (struct.field_ref ptrT #"lck"%go (![ptrT] "bck"))) in
-    let: "$a1" := (![stringT] "acc_from") in
-    let: "$a2" := (![stringT] "acc_to") in
-    (func_call #acquire_two) "$a0" "$a1" "$a2");;;
-    let: "old_amount" := (mem.alloc (type.zero_val uint64T)) in
-    let: "$r0" := (let: "$a0" := (let: "$a0" := (![stringT] "acc_from") in
-    (interface.get #"Get"%go (![kv.Kv] (struct.field_ref ptrT #"kvck"%go (![ptrT] "bck")))) "$a0") in
-    (func_call #decodeInt) "$a0") in
-    do:  ("old_amount" <-[uint64T] "$r0");;;
-    (if: (![uint64T] "old_amount") ≥ (![uint64T] "amount")
+    exception_do (let: "bck" := (GoAlloc (go.PointerType BankClerk) "bck") in
+    let: "amount" := (GoAlloc go.uint64 "amount") in
+    let: "acc_to" := (GoAlloc go.string "acc_to") in
+    let: "acc_from" := (GoAlloc go.string "acc_from") in
+    do:  (let: "$a0" := (![go.PointerType lockservice.LockClerk] (StructFieldRef BankClerk "lck"%go (![go.PointerType BankClerk] "bck"))) in
+    let: "$a1" := (![go.string] "acc_from") in
+    let: "$a2" := (![go.string] "acc_to") in
+    (FuncResolve acquire_two [] #()) "$a0" "$a1" "$a2");;;
+    let: "old_amount" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+    let: "$r0" := (let: "$a0" := (let: "$a0" := (![go.string] "acc_from") in
+    (MethodResolve kv.Kv "Get"%go (![kv.Kv] (StructFieldRef BankClerk "kvck"%go (![go.PointerType BankClerk] "bck")))) "$a0") in
+    (FuncResolve decodeInt [] #()) "$a0") in
+    do:  ("old_amount" <-[go.uint64] "$r0");;;
+    (if: Convert go.untyped_bool go.bool ((![go.uint64] "old_amount") ≥⟨go.uint64⟩ (![go.uint64] "amount"))
     then
-      do:  (let: "$a0" := (![stringT] "acc_from") in
-      let: "$a1" := (let: "$a0" := ((![uint64T] "old_amount") - (![uint64T] "amount")) in
-      (func_call #encodeInt) "$a0") in
-      (interface.get #"Put"%go (![kv.Kv] (struct.field_ref ptrT #"kvck"%go (![ptrT] "bck")))) "$a0" "$a1");;;
-      do:  (let: "$a0" := (![stringT] "acc_to") in
-      let: "$a1" := (let: "$a0" := ((let: "$a0" := (let: "$a0" := (![stringT] "acc_to") in
-      (interface.get #"Get"%go (![kv.Kv] (struct.field_ref ptrT #"kvck"%go (![ptrT] "bck")))) "$a0") in
-      (func_call #decodeInt) "$a0") + (![uint64T] "amount")) in
-      (func_call #encodeInt) "$a0") in
-      (interface.get #"Put"%go (![kv.Kv] (struct.field_ref ptrT #"kvck"%go (![ptrT] "bck")))) "$a0" "$a1")
+      do:  (let: "$a0" := (![go.string] "acc_from") in
+      let: "$a1" := (let: "$a0" := ((![go.uint64] "old_amount") -⟨go.uint64⟩ (![go.uint64] "amount")) in
+      (FuncResolve encodeInt [] #()) "$a0") in
+      (MethodResolve kv.Kv "Put"%go (![kv.Kv] (StructFieldRef BankClerk "kvck"%go (![go.PointerType BankClerk] "bck")))) "$a0" "$a1");;;
+      do:  (let: "$a0" := (![go.string] "acc_to") in
+      let: "$a1" := (let: "$a0" := ((let: "$a0" := (let: "$a0" := (![go.string] "acc_to") in
+      (MethodResolve kv.Kv "Get"%go (![kv.Kv] (StructFieldRef BankClerk "kvck"%go (![go.PointerType BankClerk] "bck")))) "$a0") in
+      (FuncResolve decodeInt [] #()) "$a0") +⟨go.uint64⟩ (![go.uint64] "amount")) in
+      (FuncResolve encodeInt [] #()) "$a0") in
+      (MethodResolve kv.Kv "Put"%go (![kv.Kv] (StructFieldRef BankClerk "kvck"%go (![go.PointerType BankClerk] "bck")))) "$a0" "$a1")
     else do:  #());;;
-    do:  (let: "$a0" := (![ptrT] (struct.field_ref ptrT #"lck"%go (![ptrT] "bck"))) in
-    let: "$a1" := (![stringT] "acc_from") in
-    let: "$a2" := (![stringT] "acc_to") in
-    (func_call #release_two) "$a0" "$a1" "$a2");;;
+    do:  (let: "$a0" := (![go.PointerType lockservice.LockClerk] (StructFieldRef BankClerk "lck"%go (![go.PointerType BankClerk] "bck"))) in
+    let: "$a1" := (![go.string] "acc_from") in
+    let: "$a2" := (![go.string] "acc_to") in
+    (FuncResolve release_two [] #()) "$a0" "$a1" "$a2");;;
     return: #()).
 
 (* go: bank.go:65:23 *)
-Definition BankClerk__SimpleTransferⁱᵐᵖˡ : val :=
+Definition BankClerk__SimpleTransferⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "bck" <>,
-    exception_do (let: "bck" := (mem.alloc "bck") in
+    exception_do (let: "bck" := (GoAlloc (go.PointerType BankClerk) "bck") in
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      let: "src" := (mem.alloc (type.zero_val uint64T)) in
-      let: "$r0" := ((func_call #primitive.RandomUint64) #()) in
-      do:  ("src" <-[uint64T] "$r0");;;
-      let: "dst" := (mem.alloc (type.zero_val uint64T)) in
-      let: "$r0" := ((func_call #primitive.RandomUint64) #()) in
-      do:  ("dst" <-[uint64T] "$r0");;;
-      let: "amount" := (mem.alloc (type.zero_val uint64T)) in
-      let: "$r0" := ((func_call #primitive.RandomUint64) #()) in
-      do:  ("amount" <-[uint64T] "$r0");;;
-      (if: (((![uint64T] "src") < (s_to_w64 (let: "$a0" := (![sliceT] (struct.field_ref ptrT #"accts"%go (![ptrT] "bck"))) in
-      slice.len "$a0"))) && ((![uint64T] "dst") < (s_to_w64 (let: "$a0" := (![sliceT] (struct.field_ref ptrT #"accts"%go (![ptrT] "bck"))) in
-      slice.len "$a0")))) && ((![uint64T] "src") ≠ (![uint64T] "dst"))
+      let: "src" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+      let: "$r0" := ((FuncResolve primitive.RandomUint64 [] #()) #()) in
+      do:  ("src" <-[go.uint64] "$r0");;;
+      let: "dst" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+      let: "$r0" := ((FuncResolve primitive.RandomUint64 [] #()) #()) in
+      do:  ("dst" <-[go.uint64] "$r0");;;
+      let: "amount" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+      let: "$r0" := ((FuncResolve primitive.RandomUint64 [] #()) #()) in
+      do:  ("amount" <-[go.uint64] "$r0");;;
+      (if: Convert go.untyped_bool go.bool ((((![go.uint64] "src") <⟨go.uint64⟩ (Convert go.int go.uint64 (let: "$a0" := (![go.SliceType go.string] (StructFieldRef BankClerk "accts"%go (![go.PointerType BankClerk] "bck"))) in
+      (FuncResolve go.len [go.SliceType go.string] #()) "$a0"))) && ((![go.uint64] "dst") <⟨go.uint64⟩ (Convert go.int go.uint64 (let: "$a0" := (![go.SliceType go.string] (StructFieldRef BankClerk "accts"%go (![go.PointerType BankClerk] "bck"))) in
+      (FuncResolve go.len [go.SliceType go.string] #()) "$a0")))) && ((![go.uint64] "src") ≠⟨go.uint64⟩ (![go.uint64] "dst")))
       then
-        do:  (let: "$a0" := (![stringT] (slice.elem_ref stringT (![sliceT] (struct.field_ref ptrT #"accts"%go (![ptrT] "bck"))) (![uint64T] "src"))) in
-        let: "$a1" := (![stringT] (slice.elem_ref stringT (![sliceT] (struct.field_ref ptrT #"accts"%go (![ptrT] "bck"))) (![uint64T] "dst"))) in
-        let: "$a2" := (![uint64T] "amount") in
-        (method_call #(ptrT.id BankClerk.id) #"transfer_internal"%go (![ptrT] "bck")) "$a0" "$a1" "$a2")
+        do:  (let: "$a0" := (![go.string] (IndexRef (go.SliceType go.string) (![go.SliceType go.string] (StructFieldRef BankClerk "accts"%go (![go.PointerType BankClerk] "bck")), Convert go.uint64 go.int (![go.uint64] "src")))) in
+        let: "$a1" := (![go.string] (IndexRef (go.SliceType go.string) (![go.SliceType go.string] (StructFieldRef BankClerk "accts"%go (![go.PointerType BankClerk] "bck")), Convert go.uint64 go.int (![go.uint64] "dst")))) in
+        let: "$a2" := (![go.uint64] "amount") in
+        (MethodResolve (go.PointerType BankClerk) "transfer_internal"%go (![go.PointerType BankClerk] "bck")) "$a0" "$a1" "$a2")
       else do:  #()));;;
     return: #()).
 
 (* go: bank.go:76:23 *)
-Definition BankClerk__get_totalⁱᵐᵖˡ : val :=
+Definition BankClerk__get_totalⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "bck" <>,
-    exception_do (let: "bck" := (mem.alloc "bck") in
-    let: "sum" := (mem.alloc (type.zero_val uint64T)) in
-    let: "$range" := (![sliceT] (struct.field_ref ptrT #"accts"%go (![ptrT] "bck"))) in
-    (let: "acct" := (mem.alloc (type.zero_val stringT)) in
-    slice.for_range stringT "$range" (λ: "$key" "$value",
-      do:  ("acct" <-[stringT] "$value");;;
+    exception_do (let: "bck" := (GoAlloc (go.PointerType BankClerk) "bck") in
+    let: "sum" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+    let: "$range" := (![go.SliceType go.string] (StructFieldRef BankClerk "accts"%go (![go.PointerType BankClerk] "bck"))) in
+    (let: "acct" := (GoAlloc go.string (GoZeroVal go.string #())) in
+    slice.for_range go.string "$range" (λ: "$key" "$value",
+      do:  ("acct" <-[go.string] "$value");;;
       do:  "$key";;;
-      do:  (let: "$a0" := (![stringT] "acct") in
-      (method_call #(ptrT.id lockservice.LockClerk.id) #"Lock"%go (![ptrT] (struct.field_ref ptrT #"lck"%go (![ptrT] "bck")))) "$a0");;;
-      let: "$r0" := ((![uint64T] "sum") + (let: "$a0" := (let: "$a0" := (![stringT] "acct") in
-      (interface.get #"Get"%go (![kv.Kv] (struct.field_ref ptrT #"kvck"%go (![ptrT] "bck")))) "$a0") in
-      (func_call #decodeInt) "$a0")) in
-      do:  ("sum" <-[uint64T] "$r0")));;;
-    let: "$range" := (![sliceT] (struct.field_ref ptrT #"accts"%go (![ptrT] "bck"))) in
-    (let: "acct" := (mem.alloc (type.zero_val stringT)) in
-    slice.for_range stringT "$range" (λ: "$key" "$value",
-      do:  ("acct" <-[stringT] "$value");;;
+      do:  (let: "$a0" := (![go.string] "acct") in
+      (MethodResolve (go.PointerType lockservice.LockClerk) "Lock"%go (![go.PointerType lockservice.LockClerk] (StructFieldRef BankClerk "lck"%go (![go.PointerType BankClerk] "bck")))) "$a0");;;
+      let: "$r0" := ((![go.uint64] "sum") +⟨go.uint64⟩ (let: "$a0" := (let: "$a0" := (![go.string] "acct") in
+      (MethodResolve kv.Kv "Get"%go (![kv.Kv] (StructFieldRef BankClerk "kvck"%go (![go.PointerType BankClerk] "bck")))) "$a0") in
+      (FuncResolve decodeInt [] #()) "$a0")) in
+      do:  ("sum" <-[go.uint64] "$r0")));;;
+    let: "$range" := (![go.SliceType go.string] (StructFieldRef BankClerk "accts"%go (![go.PointerType BankClerk] "bck"))) in
+    (let: "acct" := (GoAlloc go.string (GoZeroVal go.string #())) in
+    slice.for_range go.string "$range" (λ: "$key" "$value",
+      do:  ("acct" <-[go.string] "$value");;;
       do:  "$key";;;
-      do:  (let: "$a0" := (![stringT] "acct") in
-      (method_call #(ptrT.id lockservice.LockClerk.id) #"Unlock"%go (![ptrT] (struct.field_ref ptrT #"lck"%go (![ptrT] "bck")))) "$a0")));;;
-    return: (![uint64T] "sum")).
+      do:  (let: "$a0" := (![go.string] "acct") in
+      (MethodResolve (go.PointerType lockservice.LockClerk) "Unlock"%go (![go.PointerType lockservice.LockClerk] (StructFieldRef BankClerk "lck"%go (![go.PointerType BankClerk] "bck")))) "$a0")));;;
+    return: (![go.uint64] "sum")).
 
 (* go: bank.go:92:23 *)
-Definition BankClerk__SimpleAuditⁱᵐᵖˡ : val :=
+Definition BankClerk__SimpleAuditⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "bck" <>,
-    exception_do (let: "bck" := (mem.alloc "bck") in
+    exception_do (let: "bck" := (GoAlloc (go.PointerType BankClerk) "bck") in
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      (if: ((method_call #(ptrT.id BankClerk.id) #"get_total"%go (![ptrT] "bck")) #()) ≠ BAL_TOTAL
+      (if: Convert go.untyped_bool go.bool (((MethodResolve (go.PointerType BankClerk) "get_total"%go (![go.PointerType BankClerk] "bck")) #()) ≠⟨go.uint64⟩ BAL_TOTAL)
       then
-        do:  (let: "$a0" := (interface.make #stringT.id #"Balance total invariant violated"%go) in
-        Panic "$a0")
+        do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"Balance total invariant violated"%go) in
+        (FuncResolve go.panic [] #()) "$a0")
       else do:  #()));;;
     return: #()).
 
-Definition MakeBankClerkSlice : go_string := "github.com/mit-pdos/gokv/bank.MakeBankClerkSlice"%go.
-
 (* go: bank.go:100:6 *)
-Definition MakeBankClerkSliceⁱᵐᵖˡ : val :=
+Definition MakeBankClerkSliceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "lck" "kv" "init_flag" "accts",
-    exception_do (let: "accts" := (mem.alloc "accts") in
-    let: "init_flag" := (mem.alloc "init_flag") in
-    let: "kv" := (mem.alloc "kv") in
-    let: "lck" := (mem.alloc "lck") in
-    let: "bck" := (mem.alloc (type.zero_val ptrT)) in
-    let: "$r0" := (mem.alloc (type.zero_val BankClerk)) in
-    do:  ("bck" <-[ptrT] "$r0");;;
-    let: "$r0" := (![ptrT] "lck") in
-    do:  ((struct.field_ref ptrT #"lck"%go (![ptrT] "bck")) <-[ptrT] "$r0");;;
+    exception_do (let: "accts" := (GoAlloc (go.SliceType go.string) "accts") in
+    let: "init_flag" := (GoAlloc go.string "init_flag") in
+    let: "kv" := (GoAlloc kv.Kv "kv") in
+    let: "lck" := (GoAlloc (go.PointerType lockservice.LockClerk) "lck") in
+    let: "bck" := (GoAlloc (go.PointerType BankClerk) (GoZeroVal (go.PointerType BankClerk) #())) in
+    let: "$r0" := (GoAlloc BankClerk (GoZeroVal BankClerk #())) in
+    do:  ("bck" <-[go.PointerType BankClerk] "$r0");;;
+    let: "$r0" := (![go.PointerType lockservice.LockClerk] "lck") in
+    do:  ((StructFieldRef BankClerk "lck"%go (![go.PointerType BankClerk] "bck")) <-[go.PointerType lockservice.LockClerk] "$r0");;;
     let: "$r0" := (![kv.Kv] "kv") in
-    do:  ((struct.field_ref ptrT #"kvck"%go (![ptrT] "bck")) <-[kv.Kv] "$r0");;;
-    let: "$r0" := (![sliceT] "accts") in
-    do:  ((struct.field_ref ptrT #"accts"%go (![ptrT] "bck")) <-[sliceT] "$r0");;;
-    do:  (let: "$a0" := (![stringT] "init_flag") in
-    (method_call #(ptrT.id lockservice.LockClerk.id) #"Lock"%go (![ptrT] (struct.field_ref ptrT #"lck"%go (![ptrT] "bck")))) "$a0");;;
-    (if: (let: "$a0" := (![stringT] "init_flag") in
-    (interface.get #"Get"%go (![kv.Kv] (struct.field_ref ptrT #"kvck"%go (![ptrT] "bck")))) "$a0") = #""%go
+    do:  ((StructFieldRef BankClerk "kvck"%go (![go.PointerType BankClerk] "bck")) <-[kv.Kv] "$r0");;;
+    let: "$r0" := (![go.SliceType go.string] "accts") in
+    do:  ((StructFieldRef BankClerk "accts"%go (![go.PointerType BankClerk] "bck")) <-[go.SliceType go.string] "$r0");;;
+    do:  (let: "$a0" := (![go.string] "init_flag") in
+    (MethodResolve (go.PointerType lockservice.LockClerk) "Lock"%go (![go.PointerType lockservice.LockClerk] (StructFieldRef BankClerk "lck"%go (![go.PointerType BankClerk] "bck")))) "$a0");;;
+    (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.string] "init_flag") in
+    (MethodResolve kv.Kv "Get"%go (![kv.Kv] (StructFieldRef BankClerk "kvck"%go (![go.PointerType BankClerk] "bck")))) "$a0") =⟨go.string⟩ #""%go)
     then
-      do:  (let: "$a0" := (![stringT] (slice.elem_ref stringT (![sliceT] (struct.field_ref ptrT #"accts"%go (![ptrT] "bck"))) #(W64 0))) in
+      do:  (let: "$a0" := (![go.string] (IndexRef (go.SliceType go.string) (![go.SliceType go.string] (StructFieldRef BankClerk "accts"%go (![go.PointerType BankClerk] "bck")), #(W64 0)))) in
       let: "$a1" := (let: "$a0" := BAL_TOTAL in
-      (func_call #encodeInt) "$a0") in
-      (interface.get #"Put"%go (![kv.Kv] (struct.field_ref ptrT #"kvck"%go (![ptrT] "bck")))) "$a0" "$a1");;;
-      let: "$range" := (let: "$s" := (![sliceT] (struct.field_ref ptrT #"accts"%go (![ptrT] "bck"))) in
-      slice.slice stringT "$s" #(W64 1) (slice.len "$s")) in
-      (let: "acct" := (mem.alloc (type.zero_val stringT)) in
-      slice.for_range stringT "$range" (λ: "$key" "$value",
-        do:  ("acct" <-[stringT] "$value");;;
+      (FuncResolve encodeInt [] #()) "$a0") in
+      (MethodResolve kv.Kv "Put"%go (![kv.Kv] (StructFieldRef BankClerk "kvck"%go (![go.PointerType BankClerk] "bck")))) "$a0" "$a1");;;
+      let: "$range" := (let: "$s" := (![go.SliceType go.string] (StructFieldRef BankClerk "accts"%go (![go.PointerType BankClerk] "bck"))) in
+      Slice (go.SliceType go.string) ("$s", #(W64 1), FuncResolve go.len [go.SliceType go.string] #() (![go.SliceType go.string] (StructFieldRef BankClerk "accts"%go (![go.PointerType BankClerk] "bck"))))) in
+      (let: "acct" := (GoAlloc go.string (GoZeroVal go.string #())) in
+      slice.for_range go.string "$range" (λ: "$key" "$value",
+        do:  ("acct" <-[go.string] "$value");;;
         do:  "$key";;;
-        do:  (let: "$a0" := (![stringT] "acct") in
+        do:  (let: "$a0" := (![go.string] "acct") in
         let: "$a1" := (let: "$a0" := #(W64 0) in
-        (func_call #encodeInt) "$a0") in
-        (interface.get #"Put"%go (![kv.Kv] (struct.field_ref ptrT #"kvck"%go (![ptrT] "bck")))) "$a0" "$a1")));;;
-      do:  (let: "$a0" := (![stringT] "init_flag") in
+        (FuncResolve encodeInt [] #()) "$a0") in
+        (MethodResolve kv.Kv "Put"%go (![kv.Kv] (StructFieldRef BankClerk "kvck"%go (![go.PointerType BankClerk] "bck")))) "$a0" "$a1")));;;
+      do:  (let: "$a0" := (![go.string] "init_flag") in
       let: "$a1" := #"1"%go in
-      (interface.get #"Put"%go (![kv.Kv] (struct.field_ref ptrT #"kvck"%go (![ptrT] "bck")))) "$a0" "$a1")
+      (MethodResolve kv.Kv "Put"%go (![kv.Kv] (StructFieldRef BankClerk "kvck"%go (![go.PointerType BankClerk] "bck")))) "$a0" "$a1")
     else do:  #());;;
-    do:  (let: "$a0" := (![stringT] "init_flag") in
-    (method_call #(ptrT.id lockservice.LockClerk.id) #"Unlock"%go (![ptrT] (struct.field_ref ptrT #"lck"%go (![ptrT] "bck")))) "$a0");;;
-    return: (![ptrT] "bck")).
-
-Definition MakeBankClerk : go_string := "github.com/mit-pdos/gokv/bank.MakeBankClerk"%go.
+    do:  (let: "$a0" := (![go.string] "init_flag") in
+    (MethodResolve (go.PointerType lockservice.LockClerk) "Unlock"%go (![go.PointerType lockservice.LockClerk] (StructFieldRef BankClerk "lck"%go (![go.PointerType BankClerk] "bck")))) "$a0");;;
+    return: (![go.PointerType BankClerk] "bck")).
 
 (* go: bank.go:120:6 *)
-Definition MakeBankClerkⁱᵐᵖˡ : val :=
+Definition MakeBankClerkⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "lck" "kv" "init_flag" "acc1" "acc2",
-    exception_do (let: "acc2" := (mem.alloc "acc2") in
-    let: "acc1" := (mem.alloc "acc1") in
-    let: "init_flag" := (mem.alloc "init_flag") in
-    let: "kv" := (mem.alloc "kv") in
-    let: "lck" := (mem.alloc "lck") in
-    let: "accts" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (let: "$a0" := (![sliceT] "accts") in
-    let: "$a1" := ((let: "$sl0" := (![stringT] "acc1") in
-    slice.literal stringT ["$sl0"])) in
-    (slice.append stringT) "$a0" "$a1") in
-    do:  ("accts" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "accts") in
-    let: "$a1" := ((let: "$sl0" := (![stringT] "acc2") in
-    slice.literal stringT ["$sl0"])) in
-    (slice.append stringT) "$a0" "$a1") in
-    do:  ("accts" <-[sliceT] "$r0");;;
-    return: (let: "$a0" := (![ptrT] "lck") in
+    exception_do (let: "acc2" := (GoAlloc go.string "acc2") in
+    let: "acc1" := (GoAlloc go.string "acc1") in
+    let: "init_flag" := (GoAlloc go.string "init_flag") in
+    let: "kv" := (GoAlloc kv.Kv "kv") in
+    let: "lck" := (GoAlloc (go.PointerType lockservice.LockClerk) "lck") in
+    let: "accts" := (GoAlloc (go.SliceType go.string) (GoZeroVal (go.SliceType go.string) #())) in
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.string] "accts") in
+    let: "$a1" := ((let: "$sl0" := (![go.string] "acc1") in
+    CompositeLiteral (go.SliceType go.string) (LiteralValue [KeyedElement None (ElementExpression go.string "$sl0")]))) in
+    (FuncResolve go.append [go.SliceType go.string] #()) "$a0" "$a1") in
+    do:  ("accts" <-[go.SliceType go.string] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.string] "accts") in
+    let: "$a1" := ((let: "$sl0" := (![go.string] "acc2") in
+    CompositeLiteral (go.SliceType go.string) (LiteralValue [KeyedElement None (ElementExpression go.string "$sl0")]))) in
+    (FuncResolve go.append [go.SliceType go.string] #()) "$a0" "$a1") in
+    do:  ("accts" <-[go.SliceType go.string] "$r0");;;
+    return: (let: "$a0" := (![go.PointerType lockservice.LockClerk] "lck") in
      let: "$a1" := (![kv.Kv] "kv") in
-     let: "$a2" := (![stringT] "init_flag") in
-     let: "$a3" := (![sliceT] "accts") in
-     (func_call #MakeBankClerkSlice) "$a0" "$a1" "$a2" "$a3")).
+     let: "$a2" := (![go.string] "init_flag") in
+     let: "$a3" := (![go.SliceType go.string] "accts") in
+     (FuncResolve MakeBankClerkSlice [] #()) "$a0" "$a1" "$a2" "$a3")).
 
-Definition vars' : list (go_string * go_type) := [].
+#[global] Instance info' : PkgInfo pkg_id.bank :=
+{|
+  pkg_imported_pkgs := [code.github_com.goose_lang.primitive.pkg_id.primitive; code.github_com.mit_pdos.gokv.kv.pkg_id.kv; code.github_com.mit_pdos.gokv.lockservice.pkg_id.lockservice; code.github_com.tchajed.marshal.pkg_id.marshal]
+|}.
 
-Definition functions' : list (go_string * val) := [(acquire_two_good, acquire_two_goodⁱᵐᵖˡ); (acquire_two, acquire_twoⁱᵐᵖˡ); (release_two, release_twoⁱᵐᵖˡ); (encodeInt, encodeIntⁱᵐᵖˡ); (decodeInt, decodeIntⁱᵐᵖˡ); (MakeBankClerkSlice, MakeBankClerkSliceⁱᵐᵖˡ); (MakeBankClerk, MakeBankClerkⁱᵐᵖˡ)].
-
-Definition msets' : list (go_string * (list (go_string * val))) := [(BankClerk.id, []); (ptrT.id BankClerk.id, [("SimpleAudit"%go, BankClerk__SimpleAuditⁱᵐᵖˡ); ("SimpleTransfer"%go, BankClerk__SimpleTransferⁱᵐᵖˡ); ("get_total"%go, BankClerk__get_totalⁱᵐᵖˡ); ("transfer_internal"%go, BankClerk__transfer_internalⁱᵐᵖˡ)])].
-
-#[global] Instance info' : PkgInfo bank.bank :=
-  {|
-    pkg_vars := vars';
-    pkg_functions := functions';
-    pkg_msets := msets';
-    pkg_imported_pkgs := [code.github_com.goose_lang.primitive.primitive; code.github_com.mit_pdos.gokv.kv.kv; code.github_com.mit_pdos.gokv.lockservice.lockservice; code.github_com.tchajed.marshal.marshal];
-  |}.
-
-Definition initialize' : val :=
+Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    package.init #bank.bank (λ: <>,
+    package.init pkg_id.bank (λ: <>,
       exception_do (do:  (marshal.initialize' #());;;
       do:  (lockservice.initialize' #());;;
       do:  (kv.initialize' #());;;
-      do:  (primitive.initialize' #());;;
-      do:  (package.alloc bank.bank #()))
+      do:  (primitive.initialize' #()))
       ).
 
-End code.
+Module BankClerk.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  lck' : loc;
+  kvck' : kv.Kv.t;
+  accts' : slice.t;
+}.
+
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+End def.
+
+End BankClerk.
+
+Definition BankClerk'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
+  (go.FieldDecl "lck"%go (go.PointerType lockservice.LockClerk));
+  (go.FieldDecl "kvck"%go kv.Kv);
+  (go.FieldDecl "accts"%go (go.SliceType go.string))
+].
+Program Definition BankClerk'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (BankClerk'fds_unsealed).
+Global Instance equals_unfold_BankClerk {ext : ffi_syntax} {go_gctx : GoGlobalContext} : BankClerk'fds =→ BankClerk'fds_unsealed.
+Proof. rewrite /BankClerk'fds seal_eq //. Qed.
+
+Definition BankClerkⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (BankClerk'fds).
+
+Class BankClerk_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] BankClerk_type_repr  :: go.TypeReprUnderlying BankClerkⁱᵐᵖˡ BankClerk.t;
+  #[global] BankClerk_underlying :: (BankClerk) <u (BankClerkⁱᵐᵖˡ);
+  #[global] BankClerk_get_lck (x : BankClerk.t) :: ⟦StructFieldGet (BankClerkⁱᵐᵖˡ) "lck", #x⟧ ⤳[under] #x.(BankClerk.lck');
+  #[global] BankClerk_set_lck (x : BankClerk.t) y :: ⟦StructFieldSet (BankClerkⁱᵐᵖˡ) "lck", (#x, #y)⟧ ⤳[under] #(x <|BankClerk.lck' := y|>);
+  #[global] BankClerk_get_kvck (x : BankClerk.t) :: ⟦StructFieldGet (BankClerkⁱᵐᵖˡ) "kvck", #x⟧ ⤳[under] #x.(BankClerk.kvck');
+  #[global] BankClerk_set_kvck (x : BankClerk.t) y :: ⟦StructFieldSet (BankClerkⁱᵐᵖˡ) "kvck", (#x, #y)⟧ ⤳[under] #(x <|BankClerk.kvck' := y|>);
+  #[global] BankClerk_get_accts (x : BankClerk.t) :: ⟦StructFieldGet (BankClerkⁱᵐᵖˡ) "accts", #x⟧ ⤳[under] #x.(BankClerk.accts');
+  #[global] BankClerk_set_accts (x : BankClerk.t) y :: ⟦StructFieldSet (BankClerkⁱᵐᵖˡ) "accts", (#x, #y)⟧ ⤳[under] #(x <|BankClerk.accts' := y|>);
+  #[global] BankClerk'ptr_SimpleAudit_unfold :: MethodUnfold (go.PointerType (BankClerk)) "SimpleAudit" (BankClerk__SimpleAuditⁱᵐᵖˡ);
+  #[global] BankClerk'ptr_SimpleTransfer_unfold :: MethodUnfold (go.PointerType (BankClerk)) "SimpleTransfer" (BankClerk__SimpleTransferⁱᵐᵖˡ);
+  #[global] BankClerk'ptr_get_total_unfold :: MethodUnfold (go.PointerType (BankClerk)) "get_total" (BankClerk__get_totalⁱᵐᵖˡ);
+  #[global] BankClerk'ptr_transfer_internal_unfold :: MethodUnfold (go.PointerType (BankClerk)) "transfer_internal" (BankClerk__transfer_internalⁱᵐᵖˡ);
+}.
+
+Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] BankClerk_instance :: BankClerk_Assumptions;
+  #[global] acquire_two_good_unfold :: FuncUnfold acquire_two_good [] (acquire_two_goodⁱᵐᵖˡ);
+  #[global] acquire_two_unfold :: FuncUnfold acquire_two [] (acquire_twoⁱᵐᵖˡ);
+  #[global] release_two_unfold :: FuncUnfold release_two [] (release_twoⁱᵐᵖˡ);
+  #[global] encodeInt_unfold :: FuncUnfold encodeInt [] (encodeIntⁱᵐᵖˡ);
+  #[global] decodeInt_unfold :: FuncUnfold decodeInt [] (decodeIntⁱᵐᵖˡ);
+  #[global] MakeBankClerkSlice_unfold :: FuncUnfold MakeBankClerkSlice [] (MakeBankClerkSliceⁱᵐᵖˡ);
+  #[global] MakeBankClerk_unfold :: FuncUnfold MakeBankClerk [] (MakeBankClerkⁱᵐᵖˡ);
+  #[global] import_primitive_Assumption :: primitive.Assumptions;
+  #[global] import_kv_Assumption :: kv.Assumptions;
+  #[global] import_lockservice_Assumption :: lockservice.Assumptions;
+  #[global] import_marshal_Assumption :: marshal.Assumptions;
+}.
 End bank.

@@ -5,236 +5,243 @@ Require Export New.code.github_com.mit_pdos.gokv.grove_ffi.
 Require Export New.code.github_com.mit_pdos.gokv.lockservice.
 Require Export New.code.github_com.mit_pdos.gokv.vrsm.apps.vkv.
 Require Export New.code.github_com.mit_pdos.gokv.vrsm.configservice.
-
 From New.golang Require Import defn.
+From New Require Import grove_prelude.
+Module pkg_id.
 Definition closed : go_string := "github.com/mit-pdos/gokv/vrsm/apps/closed".
 
-From New Require Import grove_prelude.
+End pkg_id.
+Export pkg_id.
 Module closed.
 
-Section code.
+Definition dconfigHost {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #(W64 11).
 
+Definition dconfigHostPaxos {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #(W64 12).
 
-Definition dconfigHost : val := #(W64 11).
+Definition dr1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #(W64 1).
 
-Definition dconfigHostPaxos : val := #(W64 12).
+Definition dr2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #(W64 2).
 
-Definition dr1 : val := #(W64 1).
+Definition lconfigHost {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #(W64 111).
 
-Definition dr2 : val := #(W64 2).
+Definition lconfigHostPaxos {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #(W64 112).
 
-Definition lconfigHost : val := #(W64 111).
+Definition lr1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #(W64 101).
 
-Definition lconfigHostPaxos : val := #(W64 112).
+Definition lr2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #(W64 102).
 
-Definition lr1 : val := #(W64 101).
+Definition mk_lconfig_hosts {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/mit-pdos/gokv/vrsm/apps/closed.mk_lconfig_hosts"%go.
 
-Definition lr2 : val := #(W64 102).
+Definition mk_dconfig_hosts {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/mit-pdos/gokv/vrsm/apps/closed.mk_dconfig_hosts"%go.
 
-Definition mk_lconfig_hosts : go_string := "github.com/mit-pdos/gokv/vrsm/apps/closed.mk_lconfig_hosts"%go.
+Definition mk_lconfig_paxosHosts {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/mit-pdos/gokv/vrsm/apps/closed.mk_lconfig_paxosHosts"%go.
+
+Definition mk_dconfig_paxosHosts {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/mit-pdos/gokv/vrsm/apps/closed.mk_dconfig_paxosHosts"%go.
+
+Definition lconfig_main {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/mit-pdos/gokv/vrsm/apps/closed.lconfig_main"%go.
+
+Definition dconfig_main {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/mit-pdos/gokv/vrsm/apps/closed.dconfig_main"%go.
+
+Definition kv_replica_main {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/mit-pdos/gokv/vrsm/apps/closed.kv_replica_main"%go.
+
+Definition makeBankClerk {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/mit-pdos/gokv/vrsm/apps/closed.makeBankClerk"%go.
+
+Definition bank_transferer_main {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/mit-pdos/gokv/vrsm/apps/closed.bank_transferer_main"%go.
+
+Definition bank_auditor_main {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/mit-pdos/gokv/vrsm/apps/closed.bank_auditor_main"%go.
 
 (* go: mains.go:28:6 *)
-Definition mk_lconfig_hostsⁱᵐᵖˡ : val :=
+Definition mk_lconfig_hostsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    exception_do (let: "configHosts" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (slice.make2 uint64T #(W64 0)) in
-    do:  ("configHosts" <-[sliceT] "$r0");;;
-    return: (let: "$a0" := (![sliceT] "configHosts") in
+    exception_do (let: "configHosts" := (GoAlloc (go.SliceType grove_ffi.Address) (GoZeroVal (go.SliceType grove_ffi.Address) #())) in
+    let: "$r0" := ((FuncResolve go.make2 [go.SliceType grove_ffi.Address] #()) #(W64 0)) in
+    do:  ("configHosts" <-[go.SliceType grove_ffi.Address] "$r0");;;
+    return: (let: "$a0" := (![go.SliceType grove_ffi.Address] "configHosts") in
      let: "$a1" := ((let: "$sl0" := lconfigHost in
-     slice.literal uint64T ["$sl0"])) in
-     (slice.append uint64T) "$a0" "$a1")).
-
-Definition mk_dconfig_hosts : go_string := "github.com/mit-pdos/gokv/vrsm/apps/closed.mk_dconfig_hosts"%go.
+     CompositeLiteral (go.SliceType grove_ffi.Address) (LiteralValue [KeyedElement None (ElementExpression grove_ffi.Address "$sl0")]))) in
+     (FuncResolve go.append [go.SliceType grove_ffi.Address] #()) "$a0" "$a1")).
 
 (* go: mains.go:33:6 *)
-Definition mk_dconfig_hostsⁱᵐᵖˡ : val :=
+Definition mk_dconfig_hostsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    exception_do (let: "configHosts" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (slice.make2 uint64T #(W64 0)) in
-    do:  ("configHosts" <-[sliceT] "$r0");;;
-    return: (let: "$a0" := (![sliceT] "configHosts") in
+    exception_do (let: "configHosts" := (GoAlloc (go.SliceType grove_ffi.Address) (GoZeroVal (go.SliceType grove_ffi.Address) #())) in
+    let: "$r0" := ((FuncResolve go.make2 [go.SliceType grove_ffi.Address] #()) #(W64 0)) in
+    do:  ("configHosts" <-[go.SliceType grove_ffi.Address] "$r0");;;
+    return: (let: "$a0" := (![go.SliceType grove_ffi.Address] "configHosts") in
      let: "$a1" := ((let: "$sl0" := dconfigHost in
-     slice.literal uint64T ["$sl0"])) in
-     (slice.append uint64T) "$a0" "$a1")).
-
-Definition mk_lconfig_paxosHosts : go_string := "github.com/mit-pdos/gokv/vrsm/apps/closed.mk_lconfig_paxosHosts"%go.
+     CompositeLiteral (go.SliceType grove_ffi.Address) (LiteralValue [KeyedElement None (ElementExpression grove_ffi.Address "$sl0")]))) in
+     (FuncResolve go.append [go.SliceType grove_ffi.Address] #()) "$a0" "$a1")).
 
 (* go: mains.go:38:6 *)
-Definition mk_lconfig_paxosHostsⁱᵐᵖˡ : val :=
+Definition mk_lconfig_paxosHostsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    exception_do (let: "configHosts" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (slice.make2 uint64T #(W64 0)) in
-    do:  ("configHosts" <-[sliceT] "$r0");;;
-    return: (let: "$a0" := (![sliceT] "configHosts") in
+    exception_do (let: "configHosts" := (GoAlloc (go.SliceType grove_ffi.Address) (GoZeroVal (go.SliceType grove_ffi.Address) #())) in
+    let: "$r0" := ((FuncResolve go.make2 [go.SliceType grove_ffi.Address] #()) #(W64 0)) in
+    do:  ("configHosts" <-[go.SliceType grove_ffi.Address] "$r0");;;
+    return: (let: "$a0" := (![go.SliceType grove_ffi.Address] "configHosts") in
      let: "$a1" := ((let: "$sl0" := lconfigHostPaxos in
-     slice.literal uint64T ["$sl0"])) in
-     (slice.append uint64T) "$a0" "$a1")).
-
-Definition mk_dconfig_paxosHosts : go_string := "github.com/mit-pdos/gokv/vrsm/apps/closed.mk_dconfig_paxosHosts"%go.
+     CompositeLiteral (go.SliceType grove_ffi.Address) (LiteralValue [KeyedElement None (ElementExpression grove_ffi.Address "$sl0")]))) in
+     (FuncResolve go.append [go.SliceType grove_ffi.Address] #()) "$a0" "$a1")).
 
 (* go: mains.go:43:6 *)
-Definition mk_dconfig_paxosHostsⁱᵐᵖˡ : val :=
+Definition mk_dconfig_paxosHostsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    exception_do (let: "configHosts" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (slice.make2 uint64T #(W64 0)) in
-    do:  ("configHosts" <-[sliceT] "$r0");;;
-    return: (let: "$a0" := (![sliceT] "configHosts") in
+    exception_do (let: "configHosts" := (GoAlloc (go.SliceType grove_ffi.Address) (GoZeroVal (go.SliceType grove_ffi.Address) #())) in
+    let: "$r0" := ((FuncResolve go.make2 [go.SliceType grove_ffi.Address] #()) #(W64 0)) in
+    do:  ("configHosts" <-[go.SliceType grove_ffi.Address] "$r0");;;
+    return: (let: "$a0" := (![go.SliceType grove_ffi.Address] "configHosts") in
      let: "$a1" := ((let: "$sl0" := dconfigHostPaxos in
-     slice.literal uint64T ["$sl0"])) in
-     (slice.append uint64T) "$a0" "$a1")).
-
-Definition lconfig_main : go_string := "github.com/mit-pdos/gokv/vrsm/apps/closed.lconfig_main"%go.
+     CompositeLiteral (go.SliceType grove_ffi.Address) (LiteralValue [KeyedElement None (ElementExpression grove_ffi.Address "$sl0")]))) in
+     (FuncResolve go.append [go.SliceType grove_ffi.Address] #()) "$a0" "$a1")).
 
 (* go: mains.go:48:6 *)
-Definition lconfig_mainⁱᵐᵖˡ : val :=
+Definition lconfig_mainⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "fname",
-    exception_do (let: "fname" := (mem.alloc "fname") in
-    let: "servers" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (slice.make2 uint64T #(W64 0)) in
-    do:  ("servers" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "servers") in
+    exception_do (let: "fname" := (GoAlloc go.string "fname") in
+    let: "servers" := (GoAlloc (go.SliceType go.uint64) (GoZeroVal (go.SliceType go.uint64) #())) in
+    let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.uint64] #()) #(W64 0)) in
+    do:  ("servers" <-[go.SliceType go.uint64] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.uint64] "servers") in
     let: "$a1" := ((let: "$sl0" := lr1 in
-    slice.literal uint64T ["$sl0"])) in
-    (slice.append uint64T) "$a0" "$a1") in
-    do:  ("servers" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "servers") in
+    CompositeLiteral (go.SliceType go.uint64) (LiteralValue [KeyedElement None (ElementExpression go.uint64 "$sl0")]))) in
+    (FuncResolve go.append [go.SliceType go.uint64] #()) "$a0" "$a1") in
+    do:  ("servers" <-[go.SliceType go.uint64] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.uint64] "servers") in
     let: "$a1" := ((let: "$sl0" := lr2 in
-    slice.literal uint64T ["$sl0"])) in
-    (slice.append uint64T) "$a0" "$a1") in
-    do:  ("servers" <-[sliceT] "$r0");;;
-    do:  (let: "$a0" := (![stringT] "fname") in
+    CompositeLiteral (go.SliceType go.uint64) (LiteralValue [KeyedElement None (ElementExpression go.uint64 "$sl0")]))) in
+    (FuncResolve go.append [go.SliceType go.uint64] #()) "$a0" "$a1") in
+    do:  ("servers" <-[go.SliceType go.uint64] "$r0");;;
+    do:  (let: "$a0" := (![go.string] "fname") in
     let: "$a1" := lconfigHost in
     let: "$a2" := lconfigHostPaxos in
-    let: "$a3" := ((func_call #mk_lconfig_paxosHosts) #()) in
-    let: "$a4" := (![sliceT] "servers") in
-    (func_call #configservice.StartServer) "$a0" "$a1" "$a2" "$a3" "$a4");;;
+    let: "$a3" := ((FuncResolve mk_lconfig_paxosHosts [] #()) #()) in
+    let: "$a4" := (![go.SliceType go.uint64] "servers") in
+    (FuncResolve configservice.StartServer [] #()) "$a0" "$a1" "$a2" "$a3" "$a4");;;
     return: #()).
-
-Definition dconfig_main : go_string := "github.com/mit-pdos/gokv/vrsm/apps/closed.dconfig_main"%go.
 
 (* go: mains.go:55:6 *)
-Definition dconfig_mainⁱᵐᵖˡ : val :=
+Definition dconfig_mainⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "fname",
-    exception_do (let: "fname" := (mem.alloc "fname") in
-    let: "servers" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (slice.make2 uint64T #(W64 0)) in
-    do:  ("servers" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "servers") in
+    exception_do (let: "fname" := (GoAlloc go.string "fname") in
+    let: "servers" := (GoAlloc (go.SliceType go.uint64) (GoZeroVal (go.SliceType go.uint64) #())) in
+    let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.uint64] #()) #(W64 0)) in
+    do:  ("servers" <-[go.SliceType go.uint64] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.uint64] "servers") in
     let: "$a1" := ((let: "$sl0" := dr1 in
-    slice.literal uint64T ["$sl0"])) in
-    (slice.append uint64T) "$a0" "$a1") in
-    do:  ("servers" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "servers") in
+    CompositeLiteral (go.SliceType go.uint64) (LiteralValue [KeyedElement None (ElementExpression go.uint64 "$sl0")]))) in
+    (FuncResolve go.append [go.SliceType go.uint64] #()) "$a0" "$a1") in
+    do:  ("servers" <-[go.SliceType go.uint64] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.uint64] "servers") in
     let: "$a1" := ((let: "$sl0" := dr2 in
-    slice.literal uint64T ["$sl0"])) in
-    (slice.append uint64T) "$a0" "$a1") in
-    do:  ("servers" <-[sliceT] "$r0");;;
-    do:  (let: "$a0" := (![stringT] "fname") in
+    CompositeLiteral (go.SliceType go.uint64) (LiteralValue [KeyedElement None (ElementExpression go.uint64 "$sl0")]))) in
+    (FuncResolve go.append [go.SliceType go.uint64] #()) "$a0" "$a1") in
+    do:  ("servers" <-[go.SliceType go.uint64] "$r0");;;
+    do:  (let: "$a0" := (![go.string] "fname") in
     let: "$a1" := dconfigHost in
     let: "$a2" := dconfigHostPaxos in
-    let: "$a3" := ((func_call #mk_dconfig_paxosHosts) #()) in
-    let: "$a4" := (![sliceT] "servers") in
-    (func_call #configservice.StartServer) "$a0" "$a1" "$a2" "$a3" "$a4");;;
+    let: "$a3" := ((FuncResolve mk_dconfig_paxosHosts [] #()) #()) in
+    let: "$a4" := (![go.SliceType go.uint64] "servers") in
+    (FuncResolve configservice.StartServer [] #()) "$a0" "$a1" "$a2" "$a3" "$a4");;;
     return: #()).
-
-Definition kv_replica_main : go_string := "github.com/mit-pdos/gokv/vrsm/apps/closed.kv_replica_main"%go.
 
 (* go: mains.go:62:6 *)
-Definition kv_replica_mainⁱᵐᵖˡ : val :=
+Definition kv_replica_mainⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "fname" "me" "configHost",
-    exception_do (let: "configHost" := (mem.alloc "configHost") in
-    let: "me" := (mem.alloc "me") in
-    let: "fname" := (mem.alloc "fname") in
-    let: "x" := (mem.alloc (type.zero_val ptrT)) in
-    let: "$r0" := (mem.alloc (type.zero_val uint64T)) in
-    do:  ("x" <-[ptrT] "$r0");;;
+    exception_do (let: "configHost" := (GoAlloc grove_ffi.Address "configHost") in
+    let: "me" := (GoAlloc grove_ffi.Address "me") in
+    let: "fname" := (GoAlloc go.string "fname") in
+    let: "x" := (GoAlloc (go.PointerType go.uint64) (GoZeroVal (go.PointerType go.uint64) #())) in
+    let: "$r0" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+    do:  ("x" <-[go.PointerType go.uint64] "$r0");;;
     let: "$r0" := #(W64 1) in
-    do:  ((![ptrT] "x") <-[uint64T] "$r0");;;
-    let: "configHosts" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (slice.make2 uint64T #(W64 0)) in
-    do:  ("configHosts" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "configHosts") in
-    let: "$a1" := ((let: "$sl0" := (![uint64T] "configHost") in
-    slice.literal uint64T ["$sl0"])) in
-    (slice.append uint64T) "$a0" "$a1") in
-    do:  ("configHosts" <-[sliceT] "$r0");;;
-    do:  (let: "$a0" := (![stringT] "fname") in
-    let: "$a1" := (![uint64T] "me") in
-    let: "$a2" := (![sliceT] "configHosts") in
-    (func_call #vkv.Start) "$a0" "$a1" "$a2");;;
+    do:  ((![go.PointerType go.uint64] "x") <-[go.uint64] "$r0");;;
+    let: "configHosts" := (GoAlloc (go.SliceType grove_ffi.Address) (GoZeroVal (go.SliceType grove_ffi.Address) #())) in
+    let: "$r0" := ((FuncResolve go.make2 [go.SliceType grove_ffi.Address] #()) #(W64 0)) in
+    do:  ("configHosts" <-[go.SliceType grove_ffi.Address] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType grove_ffi.Address] "configHosts") in
+    let: "$a1" := ((let: "$sl0" := (![grove_ffi.Address] "configHost") in
+    CompositeLiteral (go.SliceType grove_ffi.Address) (LiteralValue [KeyedElement None (ElementExpression grove_ffi.Address "$sl0")]))) in
+    (FuncResolve go.append [go.SliceType grove_ffi.Address] #()) "$a0" "$a1") in
+    do:  ("configHosts" <-[go.SliceType grove_ffi.Address] "$r0");;;
+    do:  (let: "$a0" := (![go.string] "fname") in
+    let: "$a1" := (![grove_ffi.Address] "me") in
+    let: "$a2" := (![go.SliceType grove_ffi.Address] "configHosts") in
+    (FuncResolve vkv.Start [] #()) "$a0" "$a1" "$a2");;;
     return: #()).
 
-Definition makeBankClerk : go_string := "github.com/mit-pdos/gokv/vrsm/apps/closed.makeBankClerk"%go.
-
 (* go: mains.go:70:6 *)
-Definition makeBankClerkⁱᵐᵖˡ : val :=
+Definition makeBankClerkⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    exception_do (let: "kvck" := (mem.alloc (type.zero_val ptrT)) in
-    let: "$r0" := (let: "$a0" := (let: "$a0" := ((func_call #mk_dconfig_hosts) #()) in
-    (func_call #vkv.MakeKv) "$a0") in
-    (func_call #cachekv.Make) "$a0") in
-    do:  ("kvck" <-[ptrT] "$r0");;;
-    let: "lck" := (mem.alloc (type.zero_val ptrT)) in
-    let: "$r0" := (let: "$a0" := (let: "$a0" := ((func_call #mk_lconfig_hosts) #()) in
-    (func_call #vkv.MakeKv) "$a0") in
-    (func_call #lockservice.MakeLockClerk) "$a0") in
-    do:  ("lck" <-[ptrT] "$r0");;;
-    return: (let: "$a0" := (![ptrT] "lck") in
-     let: "$a1" := (interface.make #(ptrT.id cachekv.CacheKv.id) (![ptrT] "kvck")) in
+    exception_do (let: "kvck" := (GoAlloc (go.PointerType cachekv.CacheKv) (GoZeroVal (go.PointerType cachekv.CacheKv) #())) in
+    let: "$r0" := (let: "$a0" := (let: "$a0" := ((FuncResolve mk_dconfig_hosts [] #()) #()) in
+    (FuncResolve vkv.MakeKv [] #()) "$a0") in
+    (FuncResolve cachekv.Make [] #()) "$a0") in
+    do:  ("kvck" <-[go.PointerType cachekv.CacheKv] "$r0");;;
+    let: "lck" := (GoAlloc (go.PointerType lockservice.LockClerk) (GoZeroVal (go.PointerType lockservice.LockClerk) #())) in
+    let: "$r0" := (let: "$a0" := (let: "$a0" := ((FuncResolve mk_lconfig_hosts [] #()) #()) in
+    (FuncResolve vkv.MakeKv [] #()) "$a0") in
+    (FuncResolve lockservice.MakeLockClerk [] #()) "$a0") in
+    do:  ("lck" <-[go.PointerType lockservice.LockClerk] "$r0");;;
+    return: (let: "$a0" := (![go.PointerType lockservice.LockClerk] "lck") in
+     let: "$a1" := (Convert (go.PointerType cachekv.CacheKv) kv.Kv (![go.PointerType cachekv.CacheKv] "kvck")) in
      let: "$a2" := #"init"%go in
      let: "$a3" := #"a1"%go in
      let: "$a4" := #"a2"%go in
-     (func_call #bank.MakeBankClerk) "$a0" "$a1" "$a2" "$a3" "$a4")).
-
-Definition bank_transferer_main : go_string := "github.com/mit-pdos/gokv/vrsm/apps/closed.bank_transferer_main"%go.
+     (FuncResolve bank.MakeBankClerk [] #()) "$a0" "$a1" "$a2" "$a3" "$a4")).
 
 (* go: mains.go:77:6 *)
-Definition bank_transferer_mainⁱᵐᵖˡ : val :=
+Definition bank_transferer_mainⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    exception_do (let: "bck" := (mem.alloc (type.zero_val ptrT)) in
-    let: "$r0" := ((func_call #makeBankClerk) #()) in
-    do:  ("bck" <-[ptrT] "$r0");;;
+    exception_do (let: "bck" := (GoAlloc (go.PointerType bank.BankClerk) (GoZeroVal (go.PointerType bank.BankClerk) #())) in
+    let: "$r0" := ((FuncResolve makeBankClerk [] #()) #()) in
+    do:  ("bck" <-[go.PointerType bank.BankClerk] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      do:  ((method_call #(ptrT.id bank.BankClerk.id) #"SimpleTransfer"%go (![ptrT] "bck")) #()));;;
+      do:  ((MethodResolve (go.PointerType bank.BankClerk) "SimpleTransfer"%go (![go.PointerType bank.BankClerk] "bck")) #()));;;
     return: #()).
-
-Definition bank_auditor_main : go_string := "github.com/mit-pdos/gokv/vrsm/apps/closed.bank_auditor_main"%go.
 
 (* go: mains.go:84:6 *)
-Definition bank_auditor_mainⁱᵐᵖˡ : val :=
+Definition bank_auditor_mainⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    exception_do (let: "bck" := (mem.alloc (type.zero_val ptrT)) in
-    let: "$r0" := ((func_call #makeBankClerk) #()) in
-    do:  ("bck" <-[ptrT] "$r0");;;
+    exception_do (let: "bck" := (GoAlloc (go.PointerType bank.BankClerk) (GoZeroVal (go.PointerType bank.BankClerk) #())) in
+    let: "$r0" := ((FuncResolve makeBankClerk [] #()) #()) in
+    do:  ("bck" <-[go.PointerType bank.BankClerk] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      do:  ((method_call #(ptrT.id bank.BankClerk.id) #"SimpleAudit"%go (![ptrT] "bck")) #()));;;
+      do:  ((MethodResolve (go.PointerType bank.BankClerk) "SimpleAudit"%go (![go.PointerType bank.BankClerk] "bck")) #()));;;
     return: #()).
 
-Definition vars' : list (go_string * go_type) := [].
+#[global] Instance info' : PkgInfo pkg_id.closed :=
+{|
+  pkg_imported_pkgs := [code.github_com.mit_pdos.gokv.bank.pkg_id.bank; code.github_com.mit_pdos.gokv.cachekv.pkg_id.cachekv; code.github_com.mit_pdos.gokv.grove_ffi.pkg_id.grove_ffi; code.github_com.mit_pdos.gokv.lockservice.pkg_id.lockservice; code.github_com.mit_pdos.gokv.vrsm.apps.vkv.pkg_id.vkv; code.github_com.mit_pdos.gokv.vrsm.configservice.pkg_id.configservice]
+|}.
 
-Definition functions' : list (go_string * val) := [(mk_lconfig_hosts, mk_lconfig_hostsⁱᵐᵖˡ); (mk_dconfig_hosts, mk_dconfig_hostsⁱᵐᵖˡ); (mk_lconfig_paxosHosts, mk_lconfig_paxosHostsⁱᵐᵖˡ); (mk_dconfig_paxosHosts, mk_dconfig_paxosHostsⁱᵐᵖˡ); (lconfig_main, lconfig_mainⁱᵐᵖˡ); (dconfig_main, dconfig_mainⁱᵐᵖˡ); (kv_replica_main, kv_replica_mainⁱᵐᵖˡ); (makeBankClerk, makeBankClerkⁱᵐᵖˡ); (bank_transferer_main, bank_transferer_mainⁱᵐᵖˡ); (bank_auditor_main, bank_auditor_mainⁱᵐᵖˡ)].
-
-Definition msets' : list (go_string * (list (go_string * val))) := [].
-
-#[global] Instance info' : PkgInfo closed.closed :=
-  {|
-    pkg_vars := vars';
-    pkg_functions := functions';
-    pkg_msets := msets';
-    pkg_imported_pkgs := [code.github_com.mit_pdos.gokv.bank.bank; code.github_com.mit_pdos.gokv.cachekv.cachekv; code.github_com.mit_pdos.gokv.grove_ffi.grove_ffi; code.github_com.mit_pdos.gokv.lockservice.lockservice; code.github_com.mit_pdos.gokv.vrsm.apps.vkv.vkv; code.github_com.mit_pdos.gokv.vrsm.configservice.configservice];
-  |}.
-
-Definition initialize' : val :=
+Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    package.init #closed.closed (λ: <>,
+    package.init pkg_id.closed (λ: <>,
       exception_do (do:  (configservice.initialize' #());;;
       do:  (vkv.initialize' #());;;
       do:  (lockservice.initialize' #());;;
       do:  (grove_ffi.initialize' #());;;
       do:  (cachekv.initialize' #());;;
-      do:  (bank.initialize' #());;;
-      do:  (package.alloc closed.closed #()))
+      do:  (bank.initialize' #()))
       ).
 
-End code.
+Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] mk_lconfig_hosts_unfold :: FuncUnfold mk_lconfig_hosts [] (mk_lconfig_hostsⁱᵐᵖˡ);
+  #[global] mk_dconfig_hosts_unfold :: FuncUnfold mk_dconfig_hosts [] (mk_dconfig_hostsⁱᵐᵖˡ);
+  #[global] mk_lconfig_paxosHosts_unfold :: FuncUnfold mk_lconfig_paxosHosts [] (mk_lconfig_paxosHostsⁱᵐᵖˡ);
+  #[global] mk_dconfig_paxosHosts_unfold :: FuncUnfold mk_dconfig_paxosHosts [] (mk_dconfig_paxosHostsⁱᵐᵖˡ);
+  #[global] lconfig_main_unfold :: FuncUnfold lconfig_main [] (lconfig_mainⁱᵐᵖˡ);
+  #[global] dconfig_main_unfold :: FuncUnfold dconfig_main [] (dconfig_mainⁱᵐᵖˡ);
+  #[global] kv_replica_main_unfold :: FuncUnfold kv_replica_main [] (kv_replica_mainⁱᵐᵖˡ);
+  #[global] makeBankClerk_unfold :: FuncUnfold makeBankClerk [] (makeBankClerkⁱᵐᵖˡ);
+  #[global] bank_transferer_main_unfold :: FuncUnfold bank_transferer_main [] (bank_transferer_mainⁱᵐᵖˡ);
+  #[global] bank_auditor_main_unfold :: FuncUnfold bank_auditor_main [] (bank_auditor_mainⁱᵐᵖˡ);
+  #[global] import_bank_Assumption :: bank.Assumptions;
+  #[global] import_cachekv_Assumption :: cachekv.Assumptions;
+  #[global] import_grove_ffi_Assumption :: grove_ffi.Assumptions;
+  #[global] import_lockservice_Assumption :: lockservice.Assumptions;
+  #[global] import_vkv_Assumption :: vkv.Assumptions;
+  #[global] import_configservice_Assumption :: configservice.Assumptions;
+}.
 End closed.

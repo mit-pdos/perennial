@@ -3,240 +3,119 @@ Require Export New.proof.proof_prelude.
 Require Export New.generatedproof.github_com.goose_lang.primitive.
 Require Export New.generatedproof.github_com.goose_lang.std.
 Require Export New.golang.theory.
-
 Require Export New.code.github_com.tchajed.marshal.
 
 Set Default Proof Using "Type".
 
 Module marshal.
-
-(* type marshal.Enc *)
 Module Enc.
 Section def.
-Context `{ffi_syntax}.
 
-Record t := mk {
-  b' : slice.t;
-  off' : loc;
-}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : marshal.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance Enc_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (marshal.Enc.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "b" ∷ l.[(marshal.Enc.t), "b"] ↦{dq} v.(marshal.Enc.b') ∗
+      "off" ∷ l.[(marshal.Enc.t), "off"] ↦{dq} v.(marshal.Enc.off') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance Enc_into_val_typed
+   :
+  IntoValTypedUnderlying (marshal.Enc.t) (marshal.Encⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Enc_access_load_b l (v : (marshal.Enc.t)) dq :
+  AccessStrict
+    (l.[(marshal.Enc.t), "b"] ↦{dq} (v.(marshal.Enc.b')))
+    (l.[(marshal.Enc.t), "b"] ↦{dq} (v.(marshal.Enc.b')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Enc_access_store_b l (v : (marshal.Enc.t)) b' :
+  AccessStrict
+    (l.[(marshal.Enc.t), "b"] ↦ (v.(marshal.Enc.b')))
+    (l.[(marshal.Enc.t), "b"] ↦ b')
+    (l ↦ v) (l ↦ (v <|(marshal.Enc.b') := b'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Enc_access_load_off l (v : (marshal.Enc.t)) dq :
+  AccessStrict
+    (l.[(marshal.Enc.t), "off"] ↦{dq} (v.(marshal.Enc.off')))
+    (l.[(marshal.Enc.t), "off"] ↦{dq} (v.(marshal.Enc.off')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Enc_access_store_off l (v : (marshal.Enc.t)) off' :
+  AccessStrict
+    (l.[(marshal.Enc.t), "off"] ↦ (v.(marshal.Enc.off')))
+    (l.[(marshal.Enc.t), "off"] ↦ off')
+    (l ↦ v) (l ↦ (v <|(marshal.Enc.off') := off'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End Enc.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent marshal.Enc.
-#[local] Typeclasses Transparent marshal.Enc.
-
-Global Instance Enc_wf : struct.Wf marshal.Enc.
-Proof. apply _. Qed.
-
-Global Instance settable_Enc : Settable Enc.t :=
-  settable! Enc.mk < Enc.b'; Enc.off' >.
-Global Instance into_val_Enc : IntoVal Enc.t :=
-  {| to_val_def v :=
-    struct.val_aux marshal.Enc [
-    "b" ::= #(Enc.b' v);
-    "off" ::= #(Enc.off' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_Enc : IntoValTyped Enc.t marshal.Enc :=
-{|
-  default_val := Enc.mk (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_Enc_b : IntoValStructField "b" marshal.Enc Enc.b'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Enc_off : IntoValStructField "off" marshal.Enc Enc.off'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-
-
-Global Instance Enc_struct_fields_split dq l (v : Enc.t) :
-  StructFieldsSplit dq l v (
-    "Hb" ∷ l ↦s[marshal.Enc :: "b"]{dq} v.(Enc.b') ∗
-    "Hoff" ∷ l ↦s[marshal.Enc :: "off"]{dq} v.(Enc.off')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Enc.b' v)) (marshal.Enc) "b"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-(* type marshal.Dec *)
 Module Dec.
 Section def.
-Context `{ffi_syntax}.
 
-Record t := mk {
-  b' : slice.t;
-  off' : loc;
-}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : marshal.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance Dec_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (marshal.Dec.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "b" ∷ l.[(marshal.Dec.t), "b"] ↦{dq} v.(marshal.Dec.b') ∗
+      "off" ∷ l.[(marshal.Dec.t), "off"] ↦{dq} v.(marshal.Dec.off') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance Dec_into_val_typed
+   :
+  IntoValTypedUnderlying (marshal.Dec.t) (marshal.Decⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Dec_access_load_b l (v : (marshal.Dec.t)) dq :
+  AccessStrict
+    (l.[(marshal.Dec.t), "b"] ↦{dq} (v.(marshal.Dec.b')))
+    (l.[(marshal.Dec.t), "b"] ↦{dq} (v.(marshal.Dec.b')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Dec_access_store_b l (v : (marshal.Dec.t)) b' :
+  AccessStrict
+    (l.[(marshal.Dec.t), "b"] ↦ (v.(marshal.Dec.b')))
+    (l.[(marshal.Dec.t), "b"] ↦ b')
+    (l ↦ v) (l ↦ (v <|(marshal.Dec.b') := b'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Dec_access_load_off l (v : (marshal.Dec.t)) dq :
+  AccessStrict
+    (l.[(marshal.Dec.t), "off"] ↦{dq} (v.(marshal.Dec.off')))
+    (l.[(marshal.Dec.t), "off"] ↦{dq} (v.(marshal.Dec.off')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Dec_access_store_off l (v : (marshal.Dec.t)) off' :
+  AccessStrict
+    (l.[(marshal.Dec.t), "off"] ↦ (v.(marshal.Dec.off')))
+    (l.[(marshal.Dec.t), "off"] ↦ off')
+    (l ↦ v) (l ↦ (v <|(marshal.Dec.off') := off'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End Dec.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent marshal.Dec.
-#[local] Typeclasses Transparent marshal.Dec.
-
-Global Instance Dec_wf : struct.Wf marshal.Dec.
-Proof. apply _. Qed.
-
-Global Instance settable_Dec : Settable Dec.t :=
-  settable! Dec.mk < Dec.b'; Dec.off' >.
-Global Instance into_val_Dec : IntoVal Dec.t :=
-  {| to_val_def v :=
-    struct.val_aux marshal.Dec [
-    "b" ::= #(Dec.b' v);
-    "off" ::= #(Dec.off' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_Dec : IntoValTyped Dec.t marshal.Dec :=
-{|
-  default_val := Dec.mk (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_Dec_b : IntoValStructField "b" marshal.Dec Dec.b'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Dec_off : IntoValStructField "off" marshal.Dec Dec.off'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-
-
-Global Instance Dec_struct_fields_split dq l (v : Dec.t) :
-  StructFieldsSplit dq l v (
-    "Hb" ∷ l ↦s[marshal.Dec :: "b"]{dq} v.(Dec.b') ∗
-    "Hoff" ∷ l ↦s[marshal.Dec :: "off"]{dq} v.(Dec.off')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Dec.b' v)) (marshal.Dec) "b"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-Section names.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext}.
-#[local] Transparent is_pkg_defined is_pkg_defined_pure.
-
-Global Instance is_pkg_defined_pure_marshal : IsPkgDefinedPure marshal :=
-  {|
-    is_pkg_defined_pure_def go_ctx :=
-      is_pkg_defined_pure_single marshal ∧
-      is_pkg_defined_pure code.github_com.goose_lang.primitive.primitive ∧
-      is_pkg_defined_pure code.github_com.goose_lang.std.std;
-  |}.
-
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_marshal : IsPkgDefined marshal :=
-  {|
-    is_pkg_defined_def go_ctx :=
-      (is_pkg_defined_single marshal ∗
-       is_pkg_defined code.github_com.goose_lang.primitive.primitive ∗
-       is_pkg_defined code.github_com.goose_lang.std.std)%I
-  |}.
-Final Obligation. iIntros. iFrame "#%". Qed.
-#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
-
-Global Instance wp_func_call_compute_new_cap :
-  WpFuncCall marshal.compute_new_cap _ (is_pkg_defined marshal) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_reserve :
-  WpFuncCall marshal.reserve _ (is_pkg_defined marshal) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_ReadInt :
-  WpFuncCall marshal.ReadInt _ (is_pkg_defined marshal) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_ReadInt32 :
-  WpFuncCall marshal.ReadInt32 _ (is_pkg_defined marshal) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_ReadBytes :
-  WpFuncCall marshal.ReadBytes _ (is_pkg_defined marshal) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_ReadBytesCopy :
-  WpFuncCall marshal.ReadBytesCopy _ (is_pkg_defined marshal) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_ReadBool :
-  WpFuncCall marshal.ReadBool _ (is_pkg_defined marshal) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_ReadLenPrefixedBytes :
-  WpFuncCall marshal.ReadLenPrefixedBytes _ (is_pkg_defined marshal) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_WriteInt :
-  WpFuncCall marshal.WriteInt _ (is_pkg_defined marshal) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_WriteInt32 :
-  WpFuncCall marshal.WriteInt32 _ (is_pkg_defined marshal) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_WriteBytes :
-  WpFuncCall marshal.WriteBytes _ (is_pkg_defined marshal) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_WriteBool :
-  WpFuncCall marshal.WriteBool _ (is_pkg_defined marshal) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_WriteLenPrefixedBytes :
-  WpFuncCall marshal.WriteLenPrefixedBytes _ (is_pkg_defined marshal) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_ReadSlice :
-  WpFuncCall marshal.ReadSlice _ (is_pkg_defined marshal) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_ReadSliceLenPrefix :
-  WpFuncCall marshal.ReadSliceLenPrefix _ (is_pkg_defined marshal) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_WriteSlice :
-  WpFuncCall marshal.WriteSlice _ (is_pkg_defined marshal) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_WriteSliceLenPrefix :
-  WpFuncCall marshal.WriteSliceLenPrefix _ (is_pkg_defined marshal) :=
-  ltac:(solve_wp_func_call).
-
-End names.
 End marshal.

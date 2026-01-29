@@ -3,128 +3,78 @@ Require Export New.proof.proof_prelude.
 Require Export New.generatedproof.github_com.goose_lang.std.
 Require Export New.generatedproof.github_com.tchajed.marshal.
 Require Export New.golang.theory.
-
 Require Export New.code.github_com.mit_pdos.gokv.tutorial.objectstore.chunk.writechunk_gk.
 
 Set Default Proof Using "Type".
 
 Module writechunk_gk.
-
-(* type writechunk_gk.S *)
 Module S.
 Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-  WriteId' : w64;
-  Chunk' : slice.t;
-  Index' : w64;
-}.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : writechunk_gk.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance S_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (writechunk_gk.S.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "WriteId" ∷ l.[(writechunk_gk.S.t), "WriteId"] ↦{dq} v.(writechunk_gk.S.WriteId') ∗
+      "Chunk" ∷ l.[(writechunk_gk.S.t), "Chunk"] ↦{dq} v.(writechunk_gk.S.Chunk') ∗
+      "Index" ∷ l.[(writechunk_gk.S.t), "Index"] ↦{dq} v.(writechunk_gk.S.Index') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance S_into_val_typed
+   :
+  IntoValTypedUnderlying (writechunk_gk.S.t) (writechunk_gk.Sⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance S_access_load_WriteId l (v : (writechunk_gk.S.t)) dq :
+  AccessStrict
+    (l.[(writechunk_gk.S.t), "WriteId"] ↦{dq} (v.(writechunk_gk.S.WriteId')))
+    (l.[(writechunk_gk.S.t), "WriteId"] ↦{dq} (v.(writechunk_gk.S.WriteId')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance S_access_store_WriteId l (v : (writechunk_gk.S.t)) WriteId' :
+  AccessStrict
+    (l.[(writechunk_gk.S.t), "WriteId"] ↦ (v.(writechunk_gk.S.WriteId')))
+    (l.[(writechunk_gk.S.t), "WriteId"] ↦ WriteId')
+    (l ↦ v) (l ↦ (v <|(writechunk_gk.S.WriteId') := WriteId'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance S_access_load_Chunk l (v : (writechunk_gk.S.t)) dq :
+  AccessStrict
+    (l.[(writechunk_gk.S.t), "Chunk"] ↦{dq} (v.(writechunk_gk.S.Chunk')))
+    (l.[(writechunk_gk.S.t), "Chunk"] ↦{dq} (v.(writechunk_gk.S.Chunk')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance S_access_store_Chunk l (v : (writechunk_gk.S.t)) Chunk' :
+  AccessStrict
+    (l.[(writechunk_gk.S.t), "Chunk"] ↦ (v.(writechunk_gk.S.Chunk')))
+    (l.[(writechunk_gk.S.t), "Chunk"] ↦ Chunk')
+    (l ↦ v) (l ↦ (v <|(writechunk_gk.S.Chunk') := Chunk'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance S_access_load_Index l (v : (writechunk_gk.S.t)) dq :
+  AccessStrict
+    (l.[(writechunk_gk.S.t), "Index"] ↦{dq} (v.(writechunk_gk.S.Index')))
+    (l.[(writechunk_gk.S.t), "Index"] ↦{dq} (v.(writechunk_gk.S.Index')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance S_access_store_Index l (v : (writechunk_gk.S.t)) Index' :
+  AccessStrict
+    (l.[(writechunk_gk.S.t), "Index"] ↦ (v.(writechunk_gk.S.Index')))
+    (l.[(writechunk_gk.S.t), "Index"] ↦ Index')
+    (l ↦ v) (l ↦ (v <|(writechunk_gk.S.Index') := Index'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End S.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent writechunk_gk.S.
-#[local] Typeclasses Transparent writechunk_gk.S.
-
-Global Instance S_wf : struct.Wf writechunk_gk.S.
-Proof. apply _. Qed.
-
-Global Instance settable_S : Settable S.t :=
-  settable! S.mk < S.WriteId'; S.Chunk'; S.Index' >.
-Global Instance into_val_S : IntoVal S.t :=
-  {| to_val_def v :=
-    struct.val_aux writechunk_gk.S [
-    "WriteId" ::= #(S.WriteId' v);
-    "Chunk" ::= #(S.Chunk' v);
-    "Index" ::= #(S.Index' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_S : IntoValTyped S.t writechunk_gk.S :=
-{|
-  default_val := S.mk (default_val _) (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_S_WriteId : IntoValStructField "WriteId" writechunk_gk.S S.WriteId'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_S_Chunk : IntoValStructField "Chunk" writechunk_gk.S S.Chunk'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_S_Index : IntoValStructField "Index" writechunk_gk.S S.Index'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_S WriteId' Chunk' Index':
-  PureWp True
-    (struct.make #writechunk_gk.S (alist_val [
-      "WriteId" ::= #WriteId';
-      "Chunk" ::= #Chunk';
-      "Index" ::= #Index'
-    ]))%struct
-    #(S.mk WriteId' Chunk' Index').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance S_struct_fields_split dq l (v : S.t) :
-  StructFieldsSplit dq l v (
-    "HWriteId" ∷ l ↦s[writechunk_gk.S :: "WriteId"]{dq} v.(S.WriteId') ∗
-    "HChunk" ∷ l ↦s[writechunk_gk.S :: "Chunk"]{dq} v.(S.Chunk') ∗
-    "HIndex" ∷ l ↦s[writechunk_gk.S :: "Index"]{dq} v.(S.Index')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (S.WriteId' v)) (writechunk_gk.S) "WriteId"%go.
-  simpl_one_flatten_struct (# (S.Chunk' v)) (writechunk_gk.S) "Chunk"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-Section names.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext}.
-#[local] Transparent is_pkg_defined is_pkg_defined_pure.
-
-Global Instance is_pkg_defined_pure_writechunk_gk : IsPkgDefinedPure writechunk_gk :=
-  {|
-    is_pkg_defined_pure_def go_ctx :=
-      is_pkg_defined_pure_single writechunk_gk ∧
-      is_pkg_defined_pure code.github_com.goose_lang.std.std ∧
-      is_pkg_defined_pure code.github_com.tchajed.marshal.marshal;
-  |}.
-
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_writechunk_gk : IsPkgDefined writechunk_gk :=
-  {|
-    is_pkg_defined_def go_ctx :=
-      (is_pkg_defined_single writechunk_gk ∗
-       is_pkg_defined code.github_com.goose_lang.std.std ∗
-       is_pkg_defined code.github_com.tchajed.marshal.marshal)%I
-  |}.
-Final Obligation. iIntros. iFrame "#%". Qed.
-#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
-
-Global Instance wp_func_call_Marshal :
-  WpFuncCall writechunk_gk.Marshal _ (is_pkg_defined writechunk_gk) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_Unmarshal :
-  WpFuncCall writechunk_gk.Unmarshal _ (is_pkg_defined writechunk_gk) :=
-  ltac:(solve_wp_func_call).
-
-End names.
 End writechunk_gk.

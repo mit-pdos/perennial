@@ -5,160 +5,78 @@ Require Export New.generatedproof.github_com.mit_pdos.gokv.kv.
 Require Export New.generatedproof.github_com.mit_pdos.gokv.lockservice.
 Require Export New.generatedproof.github_com.tchajed.marshal.
 Require Export New.golang.theory.
-
 Require Export New.code.github_com.mit_pdos.gokv.bank.
 
 Set Default Proof Using "Type".
 
 Module bank.
-
-(* type bank.BankClerk *)
 Module BankClerk.
 Section def.
-Context `{ffi_syntax}.
 
-Record t := mk {
-  lck' : loc;
-  kvck' : kv.Kv.t;
-  accts' : slice.t;
-}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : bank.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance BankClerk_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (bank.BankClerk.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "lck" ∷ l.[(bank.BankClerk.t), "lck"] ↦{dq} v.(bank.BankClerk.lck') ∗
+      "kvck" ∷ l.[(bank.BankClerk.t), "kvck"] ↦{dq} v.(bank.BankClerk.kvck') ∗
+      "accts" ∷ l.[(bank.BankClerk.t), "accts"] ↦{dq} v.(bank.BankClerk.accts') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance BankClerk_into_val_typed
+   :
+  IntoValTypedUnderlying (bank.BankClerk.t) (bank.BankClerkⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance BankClerk_access_load_lck l (v : (bank.BankClerk.t)) dq :
+  AccessStrict
+    (l.[(bank.BankClerk.t), "lck"] ↦{dq} (v.(bank.BankClerk.lck')))
+    (l.[(bank.BankClerk.t), "lck"] ↦{dq} (v.(bank.BankClerk.lck')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance BankClerk_access_store_lck l (v : (bank.BankClerk.t)) lck' :
+  AccessStrict
+    (l.[(bank.BankClerk.t), "lck"] ↦ (v.(bank.BankClerk.lck')))
+    (l.[(bank.BankClerk.t), "lck"] ↦ lck')
+    (l ↦ v) (l ↦ (v <|(bank.BankClerk.lck') := lck'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance BankClerk_access_load_kvck l (v : (bank.BankClerk.t)) dq :
+  AccessStrict
+    (l.[(bank.BankClerk.t), "kvck"] ↦{dq} (v.(bank.BankClerk.kvck')))
+    (l.[(bank.BankClerk.t), "kvck"] ↦{dq} (v.(bank.BankClerk.kvck')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance BankClerk_access_store_kvck l (v : (bank.BankClerk.t)) kvck' :
+  AccessStrict
+    (l.[(bank.BankClerk.t), "kvck"] ↦ (v.(bank.BankClerk.kvck')))
+    (l.[(bank.BankClerk.t), "kvck"] ↦ kvck')
+    (l ↦ v) (l ↦ (v <|(bank.BankClerk.kvck') := kvck'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance BankClerk_access_load_accts l (v : (bank.BankClerk.t)) dq :
+  AccessStrict
+    (l.[(bank.BankClerk.t), "accts"] ↦{dq} (v.(bank.BankClerk.accts')))
+    (l.[(bank.BankClerk.t), "accts"] ↦{dq} (v.(bank.BankClerk.accts')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance BankClerk_access_store_accts l (v : (bank.BankClerk.t)) accts' :
+  AccessStrict
+    (l.[(bank.BankClerk.t), "accts"] ↦ (v.(bank.BankClerk.accts')))
+    (l.[(bank.BankClerk.t), "accts"] ↦ accts')
+    (l ↦ v) (l ↦ (v <|(bank.BankClerk.accts') := accts'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End BankClerk.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent bank.BankClerk.
-#[local] Typeclasses Transparent bank.BankClerk.
-
-Global Instance BankClerk_wf : struct.Wf bank.BankClerk.
-Proof. apply _. Qed.
-
-Global Instance settable_BankClerk : Settable BankClerk.t :=
-  settable! BankClerk.mk < BankClerk.lck'; BankClerk.kvck'; BankClerk.accts' >.
-Global Instance into_val_BankClerk : IntoVal BankClerk.t :=
-  {| to_val_def v :=
-    struct.val_aux bank.BankClerk [
-    "lck" ::= #(BankClerk.lck' v);
-    "kvck" ::= #(BankClerk.kvck' v);
-    "accts" ::= #(BankClerk.accts' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_BankClerk : IntoValTyped BankClerk.t bank.BankClerk :=
-{|
-  default_val := BankClerk.mk (default_val _) (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_BankClerk_lck : IntoValStructField "lck" bank.BankClerk BankClerk.lck'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_BankClerk_kvck : IntoValStructField "kvck" bank.BankClerk BankClerk.kvck'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_BankClerk_accts : IntoValStructField "accts" bank.BankClerk BankClerk.accts'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-
-
-Global Instance BankClerk_struct_fields_split dq l (v : BankClerk.t) :
-  StructFieldsSplit dq l v (
-    "Hlck" ∷ l ↦s[bank.BankClerk :: "lck"]{dq} v.(BankClerk.lck') ∗
-    "Hkvck" ∷ l ↦s[bank.BankClerk :: "kvck"]{dq} v.(BankClerk.kvck') ∗
-    "Haccts" ∷ l ↦s[bank.BankClerk :: "accts"]{dq} v.(BankClerk.accts')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (BankClerk.lck' v)) (bank.BankClerk) "lck"%go.
-  simpl_one_flatten_struct (# (BankClerk.kvck' v)) (bank.BankClerk) "kvck"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-Section names.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext}.
-#[local] Transparent is_pkg_defined is_pkg_defined_pure.
-
-Global Instance is_pkg_defined_pure_bank : IsPkgDefinedPure bank :=
-  {|
-    is_pkg_defined_pure_def go_ctx :=
-      is_pkg_defined_pure_single bank ∧
-      is_pkg_defined_pure code.github_com.goose_lang.primitive.primitive ∧
-      is_pkg_defined_pure code.github_com.mit_pdos.gokv.kv.kv ∧
-      is_pkg_defined_pure code.github_com.mit_pdos.gokv.lockservice.lockservice ∧
-      is_pkg_defined_pure code.github_com.tchajed.marshal.marshal;
-  |}.
-
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_bank : IsPkgDefined bank :=
-  {|
-    is_pkg_defined_def go_ctx :=
-      (is_pkg_defined_single bank ∗
-       is_pkg_defined code.github_com.goose_lang.primitive.primitive ∗
-       is_pkg_defined code.github_com.mit_pdos.gokv.kv.kv ∗
-       is_pkg_defined code.github_com.mit_pdos.gokv.lockservice.lockservice ∗
-       is_pkg_defined code.github_com.tchajed.marshal.marshal)%I
-  |}.
-Final Obligation. iIntros. iFrame "#%". Qed.
-#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
-
-Global Instance wp_func_call_acquire_two_good :
-  WpFuncCall bank.acquire_two_good _ (is_pkg_defined bank) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_acquire_two :
-  WpFuncCall bank.acquire_two _ (is_pkg_defined bank) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_release_two :
-  WpFuncCall bank.release_two _ (is_pkg_defined bank) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_encodeInt :
-  WpFuncCall bank.encodeInt _ (is_pkg_defined bank) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_decodeInt :
-  WpFuncCall bank.decodeInt _ (is_pkg_defined bank) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_MakeBankClerkSlice :
-  WpFuncCall bank.MakeBankClerkSlice _ (is_pkg_defined bank) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_MakeBankClerk :
-  WpFuncCall bank.MakeBankClerk _ (is_pkg_defined bank) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_method_call_BankClerk'ptr_SimpleAudit :
-  WpMethodCall (ptrT.id bank.BankClerk.id) "SimpleAudit" _ (is_pkg_defined bank) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_BankClerk'ptr_SimpleTransfer :
-  WpMethodCall (ptrT.id bank.BankClerk.id) "SimpleTransfer" _ (is_pkg_defined bank) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_BankClerk'ptr_get_total :
-  WpMethodCall (ptrT.id bank.BankClerk.id) "get_total" _ (is_pkg_defined bank) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_BankClerk'ptr_transfer_internal :
-  WpMethodCall (ptrT.id bank.BankClerk.id) "transfer_internal" _ (is_pkg_defined bank) :=
-  ltac:(solve_wp_method_call).
-
-End names.
 End bank.

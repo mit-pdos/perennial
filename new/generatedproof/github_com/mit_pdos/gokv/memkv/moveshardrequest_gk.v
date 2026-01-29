@@ -2,118 +2,64 @@
 Require Export New.proof.proof_prelude.
 Require Export New.generatedproof.github_com.tchajed.marshal.
 Require Export New.golang.theory.
-
 Require Export New.code.github_com.mit_pdos.gokv.memkv.moveshardrequest_gk.
 
 Set Default Proof Using "Type".
 
 Module moveshardrequest_gk.
-
-(* type moveshardrequest_gk.S *)
 Module S.
 Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-  Sid' : w64;
-  Dst' : w64;
-}.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : moveshardrequest_gk.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance S_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (moveshardrequest_gk.S.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "Sid" ∷ l.[(moveshardrequest_gk.S.t), "Sid"] ↦{dq} v.(moveshardrequest_gk.S.Sid') ∗
+      "Dst" ∷ l.[(moveshardrequest_gk.S.t), "Dst"] ↦{dq} v.(moveshardrequest_gk.S.Dst') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance S_into_val_typed
+   :
+  IntoValTypedUnderlying (moveshardrequest_gk.S.t) (moveshardrequest_gk.Sⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance S_access_load_Sid l (v : (moveshardrequest_gk.S.t)) dq :
+  AccessStrict
+    (l.[(moveshardrequest_gk.S.t), "Sid"] ↦{dq} (v.(moveshardrequest_gk.S.Sid')))
+    (l.[(moveshardrequest_gk.S.t), "Sid"] ↦{dq} (v.(moveshardrequest_gk.S.Sid')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance S_access_store_Sid l (v : (moveshardrequest_gk.S.t)) Sid' :
+  AccessStrict
+    (l.[(moveshardrequest_gk.S.t), "Sid"] ↦ (v.(moveshardrequest_gk.S.Sid')))
+    (l.[(moveshardrequest_gk.S.t), "Sid"] ↦ Sid')
+    (l ↦ v) (l ↦ (v <|(moveshardrequest_gk.S.Sid') := Sid'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance S_access_load_Dst l (v : (moveshardrequest_gk.S.t)) dq :
+  AccessStrict
+    (l.[(moveshardrequest_gk.S.t), "Dst"] ↦{dq} (v.(moveshardrequest_gk.S.Dst')))
+    (l.[(moveshardrequest_gk.S.t), "Dst"] ↦{dq} (v.(moveshardrequest_gk.S.Dst')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance S_access_store_Dst l (v : (moveshardrequest_gk.S.t)) Dst' :
+  AccessStrict
+    (l.[(moveshardrequest_gk.S.t), "Dst"] ↦ (v.(moveshardrequest_gk.S.Dst')))
+    (l.[(moveshardrequest_gk.S.t), "Dst"] ↦ Dst')
+    (l ↦ v) (l ↦ (v <|(moveshardrequest_gk.S.Dst') := Dst'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End S.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent moveshardrequest_gk.S.
-#[local] Typeclasses Transparent moveshardrequest_gk.S.
-
-Global Instance S_wf : struct.Wf moveshardrequest_gk.S.
-Proof. apply _. Qed.
-
-Global Instance settable_S : Settable S.t :=
-  settable! S.mk < S.Sid'; S.Dst' >.
-Global Instance into_val_S : IntoVal S.t :=
-  {| to_val_def v :=
-    struct.val_aux moveshardrequest_gk.S [
-    "Sid" ::= #(S.Sid' v);
-    "Dst" ::= #(S.Dst' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_S : IntoValTyped S.t moveshardrequest_gk.S :=
-{|
-  default_val := S.mk (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_S_Sid : IntoValStructField "Sid" moveshardrequest_gk.S S.Sid'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_S_Dst : IntoValStructField "Dst" moveshardrequest_gk.S S.Dst'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_S Sid' Dst':
-  PureWp True
-    (struct.make #moveshardrequest_gk.S (alist_val [
-      "Sid" ::= #Sid';
-      "Dst" ::= #Dst'
-    ]))%struct
-    #(S.mk Sid' Dst').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance S_struct_fields_split dq l (v : S.t) :
-  StructFieldsSplit dq l v (
-    "HSid" ∷ l ↦s[moveshardrequest_gk.S :: "Sid"]{dq} v.(S.Sid') ∗
-    "HDst" ∷ l ↦s[moveshardrequest_gk.S :: "Dst"]{dq} v.(S.Dst')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (S.Sid' v)) (moveshardrequest_gk.S) "Sid"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-Section names.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext}.
-#[local] Transparent is_pkg_defined is_pkg_defined_pure.
-
-Global Instance is_pkg_defined_pure_moveshardrequest_gk : IsPkgDefinedPure moveshardrequest_gk :=
-  {|
-    is_pkg_defined_pure_def go_ctx :=
-      is_pkg_defined_pure_single moveshardrequest_gk ∧
-      is_pkg_defined_pure code.github_com.tchajed.marshal.marshal;
-  |}.
-
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_moveshardrequest_gk : IsPkgDefined moveshardrequest_gk :=
-  {|
-    is_pkg_defined_def go_ctx :=
-      (is_pkg_defined_single moveshardrequest_gk ∗
-       is_pkg_defined code.github_com.tchajed.marshal.marshal)%I
-  |}.
-Final Obligation. iIntros. iFrame "#%". Qed.
-#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
-
-Global Instance wp_func_call_Marshal :
-  WpFuncCall moveshardrequest_gk.Marshal _ (is_pkg_defined moveshardrequest_gk) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_Unmarshal :
-  WpFuncCall moveshardrequest_gk.Unmarshal _ (is_pkg_defined moveshardrequest_gk) :=
-  ltac:(solve_wp_func_call).
-
-End names.
 End moveshardrequest_gk.

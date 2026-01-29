@@ -2,137 +2,159 @@
 Require Export New.code.github_com.goose_lang.primitive.
 Require Export New.code.github_com.goose_lang.std.
 Require Export New.code.github_com.tchajed.marshal.
-
 From New.golang Require Import defn.
+Module pkg_id.
 Definition conditionalput_gk : go_string := "github.com/mit-pdos/gokv/tutorial/kvservice/conditionalput_gk".
 
+End pkg_id.
+Export pkg_id.
 Module conditionalput_gk.
 
-Module S. Definition id : go_string := "github.com/mit-pdos/gokv/tutorial/kvservice/conditionalput_gk.S"%go. End S.
+Definition S {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/mit-pdos/gokv/tutorial/kvservice/conditionalput_gk.S"%go [].
 
-Section code.
-Context `{ffi_syntax}.
+Definition Marshal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/mit-pdos/gokv/tutorial/kvservice/conditionalput_gk.Marshal"%go.
 
-
-Definition S : go_type := structT [
-  "OpId" :: uint64T;
-  "Key" :: stringT;
-  "ExpectedVal" :: stringT;
-  "NewVal" :: stringT
-].
-#[global] Typeclasses Opaque S.
-#[global] Opaque S.
-
-Definition Marshal : go_string := "github.com/mit-pdos/gokv/tutorial/kvservice/conditionalput_gk.Marshal"%go.
+Definition Unmarshal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/mit-pdos/gokv/tutorial/kvservice/conditionalput_gk.Unmarshal"%go.
 
 (* go: conditionalput_gk.go:21:6 *)
-Definition Marshalⁱᵐᵖˡ : val :=
+Definition Marshalⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "enc" "c",
-    exception_do (let: "c" := (mem.alloc "c") in
-    let: "enc" := (mem.alloc "enc") in
-    let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
-    let: "$a1" := (![#uint64T] (struct.field_ref #S #"OpId"%go "c")) in
-    (func_call #marshal.WriteInt) "$a0" "$a1") in
-    do:  ("enc" <-[#sliceT] "$r0");;;
-    do:  (let: "$a0" := (![#stringT] (struct.field_ref #S #"Key"%go "c")) in
-    (func_call #primitive.AssumeNoStringOverflow) "$a0");;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
-    let: "$a1" := (string.to_bytes (![#stringT] (struct.field_ref #S #"Key"%go "c"))) in
-    (func_call #marshal.WriteLenPrefixedBytes) "$a0" "$a1") in
-    do:  ("enc" <-[#sliceT] "$r0");;;
-    do:  (let: "$a0" := (![#stringT] (struct.field_ref #S #"ExpectedVal"%go "c")) in
-    (func_call #primitive.AssumeNoStringOverflow) "$a0");;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
-    let: "$a1" := (string.to_bytes (![#stringT] (struct.field_ref #S #"ExpectedVal"%go "c"))) in
-    (func_call #marshal.WriteLenPrefixedBytes) "$a0" "$a1") in
-    do:  ("enc" <-[#sliceT] "$r0");;;
-    do:  (let: "$a0" := (![#stringT] (struct.field_ref #S #"NewVal"%go "c")) in
-    (func_call #primitive.AssumeNoStringOverflow) "$a0");;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
-    let: "$a1" := (string.to_bytes (![#stringT] (struct.field_ref #S #"NewVal"%go "c"))) in
-    (func_call #marshal.WriteLenPrefixedBytes) "$a0" "$a1") in
-    do:  ("enc" <-[#sliceT] "$r0");;;
-    return: (![#sliceT] "enc")).
-
-Definition Unmarshal : go_string := "github.com/mit-pdos/gokv/tutorial/kvservice/conditionalput_gk.Unmarshal"%go.
+    exception_do (let: "c" := (GoAlloc S "c") in
+    let: "enc" := (GoAlloc (go.SliceType go.byte) "enc") in
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "enc") in
+    let: "$a1" := (![go.uint64] (StructFieldRef S "OpId"%go "c")) in
+    (FuncResolve marshal.WriteInt [] #()) "$a0" "$a1") in
+    do:  ("enc" <-[go.SliceType go.byte] "$r0");;;
+    do:  (let: "$a0" := (![go.string] (StructFieldRef S "Key"%go "c")) in
+    (FuncResolve primitive.AssumeNoStringOverflow [] #()) "$a0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "enc") in
+    let: "$a1" := (Convert go.string (go.SliceType go.byte) (![go.string] (StructFieldRef S "Key"%go "c"))) in
+    (FuncResolve marshal.WriteLenPrefixedBytes [] #()) "$a0" "$a1") in
+    do:  ("enc" <-[go.SliceType go.byte] "$r0");;;
+    do:  (let: "$a0" := (![go.string] (StructFieldRef S "ExpectedVal"%go "c")) in
+    (FuncResolve primitive.AssumeNoStringOverflow [] #()) "$a0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "enc") in
+    let: "$a1" := (Convert go.string (go.SliceType go.byte) (![go.string] (StructFieldRef S "ExpectedVal"%go "c"))) in
+    (FuncResolve marshal.WriteLenPrefixedBytes [] #()) "$a0" "$a1") in
+    do:  ("enc" <-[go.SliceType go.byte] "$r0");;;
+    do:  (let: "$a0" := (![go.string] (StructFieldRef S "NewVal"%go "c")) in
+    (FuncResolve primitive.AssumeNoStringOverflow [] #()) "$a0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "enc") in
+    let: "$a1" := (Convert go.string (go.SliceType go.byte) (![go.string] (StructFieldRef S "NewVal"%go "c"))) in
+    (FuncResolve marshal.WriteLenPrefixedBytes [] #()) "$a0" "$a1") in
+    do:  ("enc" <-[go.SliceType go.byte] "$r0");;;
+    return: (![go.SliceType go.byte] "enc")).
 
 (* go: conditionalput_gk.go:33:6 *)
-Definition Unmarshalⁱᵐᵖˡ : val :=
+Definition Unmarshalⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "s",
-    exception_do (let: "s" := (mem.alloc "s") in
-    let: "opId" := (mem.alloc (type.zero_val #uint64T)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "s") in
-    (func_call #marshal.ReadInt) "$a0") in
+    exception_do (let: "s" := (GoAlloc (go.SliceType go.byte) "s") in
+    let: "opId" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![go.SliceType go.byte] "s") in
+    (FuncResolve marshal.ReadInt [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("opId" <-[#uint64T] "$r0");;;
-    do:  ("s" <-[#sliceT] "$r1");;;
-    let: "keyBytes" := (mem.alloc (type.zero_val #sliceT)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "s") in
-    (func_call #marshal.ReadLenPrefixedBytes) "$a0") in
+    do:  ("opId" <-[go.uint64] "$r0");;;
+    do:  ("s" <-[go.SliceType go.byte] "$r1");;;
+    let: "keyBytes" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![go.SliceType go.byte] "s") in
+    (FuncResolve marshal.ReadLenPrefixedBytes [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("keyBytes" <-[#sliceT] "$r0");;;
-    do:  ("s" <-[#sliceT] "$r1");;;
-    let: "key" := (mem.alloc (type.zero_val #stringT)) in
-    let: "$r0" := (string.from_bytes (let: "$a0" := (![#sliceT] "keyBytes") in
-    (func_call #std.BytesClone) "$a0")) in
-    do:  ("key" <-[#stringT] "$r0");;;
-    let: "expectedValBytes" := (mem.alloc (type.zero_val #sliceT)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "s") in
-    (func_call #marshal.ReadLenPrefixedBytes) "$a0") in
+    do:  ("keyBytes" <-[go.SliceType go.byte] "$r0");;;
+    do:  ("s" <-[go.SliceType go.byte] "$r1");;;
+    let: "key" := (GoAlloc go.string (GoZeroVal go.string #())) in
+    let: "$r0" := (Convert (go.SliceType go.byte) go.string (let: "$a0" := (![go.SliceType go.byte] "keyBytes") in
+    (FuncResolve std.BytesClone [] #()) "$a0")) in
+    do:  ("key" <-[go.string] "$r0");;;
+    let: "expectedValBytes" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![go.SliceType go.byte] "s") in
+    (FuncResolve marshal.ReadLenPrefixedBytes [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("expectedValBytes" <-[#sliceT] "$r0");;;
-    do:  ("s" <-[#sliceT] "$r1");;;
-    let: "expectedVal" := (mem.alloc (type.zero_val #stringT)) in
-    let: "$r0" := (string.from_bytes (let: "$a0" := (![#sliceT] "expectedValBytes") in
-    (func_call #std.BytesClone) "$a0")) in
-    do:  ("expectedVal" <-[#stringT] "$r0");;;
-    let: "newValBytes" := (mem.alloc (type.zero_val #sliceT)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "s") in
-    (func_call #marshal.ReadLenPrefixedBytes) "$a0") in
+    do:  ("expectedValBytes" <-[go.SliceType go.byte] "$r0");;;
+    do:  ("s" <-[go.SliceType go.byte] "$r1");;;
+    let: "expectedVal" := (GoAlloc go.string (GoZeroVal go.string #())) in
+    let: "$r0" := (Convert (go.SliceType go.byte) go.string (let: "$a0" := (![go.SliceType go.byte] "expectedValBytes") in
+    (FuncResolve std.BytesClone [] #()) "$a0")) in
+    do:  ("expectedVal" <-[go.string] "$r0");;;
+    let: "newValBytes" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![go.SliceType go.byte] "s") in
+    (FuncResolve marshal.ReadLenPrefixedBytes [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("newValBytes" <-[#sliceT] "$r0");;;
-    do:  ("s" <-[#sliceT] "$r1");;;
-    let: "newVal" := (mem.alloc (type.zero_val #stringT)) in
-    let: "$r0" := (string.from_bytes (let: "$a0" := (![#sliceT] "newValBytes") in
-    (func_call #std.BytesClone) "$a0")) in
-    do:  ("newVal" <-[#stringT] "$r0");;;
-    return: (let: "$OpId" := (![#uint64T] "opId") in
-     let: "$Key" := (![#stringT] "key") in
-     let: "$ExpectedVal" := (![#stringT] "expectedVal") in
-     let: "$NewVal" := (![#stringT] "newVal") in
-     struct.make #S [{
-       "OpId" ::= "$OpId";
-       "Key" ::= "$Key";
-       "ExpectedVal" ::= "$ExpectedVal";
-       "NewVal" ::= "$NewVal"
-     }], ![#sliceT] "s")).
+    do:  ("newValBytes" <-[go.SliceType go.byte] "$r0");;;
+    do:  ("s" <-[go.SliceType go.byte] "$r1");;;
+    let: "newVal" := (GoAlloc go.string (GoZeroVal go.string #())) in
+    let: "$r0" := (Convert (go.SliceType go.byte) go.string (let: "$a0" := (![go.SliceType go.byte] "newValBytes") in
+    (FuncResolve std.BytesClone [] #()) "$a0")) in
+    do:  ("newVal" <-[go.string] "$r0");;;
+    return: (CompositeLiteral S (LiteralValue [KeyedElement (Some (KeyField "OpId"%go)) (ElementExpression go.uint64 (![go.uint64] "opId")); KeyedElement (Some (KeyField "Key"%go)) (ElementExpression go.string (![go.string] "key")); KeyedElement (Some (KeyField "ExpectedVal"%go)) (ElementExpression go.string (![go.string] "expectedVal")); KeyedElement (Some (KeyField "NewVal"%go)) (ElementExpression go.string (![go.string] "newVal"))]), ![go.SliceType go.byte] "s")).
 
-Definition vars' : list (go_string * go_type) := [].
+#[global] Instance info' : PkgInfo pkg_id.conditionalput_gk :=
+{|
+  pkg_imported_pkgs := [code.github_com.goose_lang.primitive.pkg_id.primitive; code.github_com.goose_lang.std.pkg_id.std; code.github_com.tchajed.marshal.pkg_id.marshal]
+|}.
 
-Definition functions' : list (go_string * val) := [(Marshal, Marshalⁱᵐᵖˡ); (Unmarshal, Unmarshalⁱᵐᵖˡ)].
-
-Definition msets' : list (go_string * (list (go_string * val))) := [(S.id, []); (ptrT.id S.id, [])].
-
-#[global] Instance info' : PkgInfo conditionalput_gk.conditionalput_gk :=
-  {|
-    pkg_vars := vars';
-    pkg_functions := functions';
-    pkg_msets := msets';
-    pkg_imported_pkgs := [code.github_com.goose_lang.primitive.primitive; code.github_com.goose_lang.std.std; code.github_com.tchajed.marshal.marshal];
-  |}.
-
-Definition initialize' : val :=
+Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    package.init #conditionalput_gk.conditionalput_gk (λ: <>,
+    package.init pkg_id.conditionalput_gk (λ: <>,
       exception_do (do:  (marshal.initialize' #());;;
       do:  (std.initialize' #());;;
-      do:  (primitive.initialize' #());;;
-      do:  (package.alloc conditionalput_gk.conditionalput_gk #()))
+      do:  (primitive.initialize' #()))
       ).
 
-End code.
+Module S.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  OpId' : w64;
+  Key' : go_string;
+  ExpectedVal' : go_string;
+  NewVal' : go_string;
+}.
+
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _) (zero_val _)|}.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+End def.
+
+End S.
+
+Definition S'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
+  (go.FieldDecl "OpId"%go go.uint64);
+  (go.FieldDecl "Key"%go go.string);
+  (go.FieldDecl "ExpectedVal"%go go.string);
+  (go.FieldDecl "NewVal"%go go.string)
+].
+Program Definition S'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (S'fds_unsealed).
+Global Instance equals_unfold_S {ext : ffi_syntax} {go_gctx : GoGlobalContext} : S'fds =→ S'fds_unsealed.
+Proof. rewrite /S'fds seal_eq //. Qed.
+
+Definition Sⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (S'fds).
+
+Class S_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] S_type_repr  :: go.TypeReprUnderlying Sⁱᵐᵖˡ S.t;
+  #[global] S_underlying :: (S) <u (Sⁱᵐᵖˡ);
+  #[global] S_get_OpId (x : S.t) :: ⟦StructFieldGet (Sⁱᵐᵖˡ) "OpId", #x⟧ ⤳[under] #x.(S.OpId');
+  #[global] S_set_OpId (x : S.t) y :: ⟦StructFieldSet (Sⁱᵐᵖˡ) "OpId", (#x, #y)⟧ ⤳[under] #(x <|S.OpId' := y|>);
+  #[global] S_get_Key (x : S.t) :: ⟦StructFieldGet (Sⁱᵐᵖˡ) "Key", #x⟧ ⤳[under] #x.(S.Key');
+  #[global] S_set_Key (x : S.t) y :: ⟦StructFieldSet (Sⁱᵐᵖˡ) "Key", (#x, #y)⟧ ⤳[under] #(x <|S.Key' := y|>);
+  #[global] S_get_ExpectedVal (x : S.t) :: ⟦StructFieldGet (Sⁱᵐᵖˡ) "ExpectedVal", #x⟧ ⤳[under] #x.(S.ExpectedVal');
+  #[global] S_set_ExpectedVal (x : S.t) y :: ⟦StructFieldSet (Sⁱᵐᵖˡ) "ExpectedVal", (#x, #y)⟧ ⤳[under] #(x <|S.ExpectedVal' := y|>);
+  #[global] S_get_NewVal (x : S.t) :: ⟦StructFieldGet (Sⁱᵐᵖˡ) "NewVal", #x⟧ ⤳[under] #x.(S.NewVal');
+  #[global] S_set_NewVal (x : S.t) y :: ⟦StructFieldSet (Sⁱᵐᵖˡ) "NewVal", (#x, #y)⟧ ⤳[under] #(x <|S.NewVal' := y|>);
+}.
+
+Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] S_instance :: S_Assumptions;
+  #[global] Marshal_unfold :: FuncUnfold Marshal [] (Marshalⁱᵐᵖˡ);
+  #[global] Unmarshal_unfold :: FuncUnfold Unmarshal [] (Unmarshalⁱᵐᵖˡ);
+  #[global] import_primitive_Assumption :: primitive.Assumptions;
+  #[global] import_std_Assumption :: std.Assumptions;
+  #[global] import_marshal_Assumption :: marshal.Assumptions;
+}.
 End conditionalput_gk.

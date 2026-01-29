@@ -4,130 +4,78 @@ Require Export New.generatedproof.github_com.goose_lang.primitive.
 Require Export New.generatedproof.github_com.goose_lang.std.
 Require Export New.generatedproof.github_com.tchajed.marshal.
 Require Export New.golang.theory.
-
 Require Export New.code.github_com.mit_pdos.gokv.vrsm.apps.vkv.condputargs_gk.
 
 Set Default Proof Using "Type".
 
 Module condputargs_gk.
-
-(* type condputargs_gk.S *)
 Module S.
 Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-  Key' : go_string;
-  Expect' : go_string;
-  Val' : go_string;
-}.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : condputargs_gk.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance S_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (condputargs_gk.S.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "Key" ∷ l.[(condputargs_gk.S.t), "Key"] ↦{dq} v.(condputargs_gk.S.Key') ∗
+      "Expect" ∷ l.[(condputargs_gk.S.t), "Expect"] ↦{dq} v.(condputargs_gk.S.Expect') ∗
+      "Val" ∷ l.[(condputargs_gk.S.t), "Val"] ↦{dq} v.(condputargs_gk.S.Val') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance S_into_val_typed
+   :
+  IntoValTypedUnderlying (condputargs_gk.S.t) (condputargs_gk.Sⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance S_access_load_Key l (v : (condputargs_gk.S.t)) dq :
+  AccessStrict
+    (l.[(condputargs_gk.S.t), "Key"] ↦{dq} (v.(condputargs_gk.S.Key')))
+    (l.[(condputargs_gk.S.t), "Key"] ↦{dq} (v.(condputargs_gk.S.Key')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance S_access_store_Key l (v : (condputargs_gk.S.t)) Key' :
+  AccessStrict
+    (l.[(condputargs_gk.S.t), "Key"] ↦ (v.(condputargs_gk.S.Key')))
+    (l.[(condputargs_gk.S.t), "Key"] ↦ Key')
+    (l ↦ v) (l ↦ (v <|(condputargs_gk.S.Key') := Key'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance S_access_load_Expect l (v : (condputargs_gk.S.t)) dq :
+  AccessStrict
+    (l.[(condputargs_gk.S.t), "Expect"] ↦{dq} (v.(condputargs_gk.S.Expect')))
+    (l.[(condputargs_gk.S.t), "Expect"] ↦{dq} (v.(condputargs_gk.S.Expect')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance S_access_store_Expect l (v : (condputargs_gk.S.t)) Expect' :
+  AccessStrict
+    (l.[(condputargs_gk.S.t), "Expect"] ↦ (v.(condputargs_gk.S.Expect')))
+    (l.[(condputargs_gk.S.t), "Expect"] ↦ Expect')
+    (l ↦ v) (l ↦ (v <|(condputargs_gk.S.Expect') := Expect'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance S_access_load_Val l (v : (condputargs_gk.S.t)) dq :
+  AccessStrict
+    (l.[(condputargs_gk.S.t), "Val"] ↦{dq} (v.(condputargs_gk.S.Val')))
+    (l.[(condputargs_gk.S.t), "Val"] ↦{dq} (v.(condputargs_gk.S.Val')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance S_access_store_Val l (v : (condputargs_gk.S.t)) Val' :
+  AccessStrict
+    (l.[(condputargs_gk.S.t), "Val"] ↦ (v.(condputargs_gk.S.Val')))
+    (l.[(condputargs_gk.S.t), "Val"] ↦ Val')
+    (l ↦ v) (l ↦ (v <|(condputargs_gk.S.Val') := Val'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End S.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent condputargs_gk.S.
-#[local] Typeclasses Transparent condputargs_gk.S.
-
-Global Instance S_wf : struct.Wf condputargs_gk.S.
-Proof. apply _. Qed.
-
-Global Instance settable_S : Settable S.t :=
-  settable! S.mk < S.Key'; S.Expect'; S.Val' >.
-Global Instance into_val_S : IntoVal S.t :=
-  {| to_val_def v :=
-    struct.val_aux condputargs_gk.S [
-    "Key" ::= #(S.Key' v);
-    "Expect" ::= #(S.Expect' v);
-    "Val" ::= #(S.Val' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_S : IntoValTyped S.t condputargs_gk.S :=
-{|
-  default_val := S.mk (default_val _) (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_S_Key : IntoValStructField "Key" condputargs_gk.S S.Key'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_S_Expect : IntoValStructField "Expect" condputargs_gk.S S.Expect'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_S_Val : IntoValStructField "Val" condputargs_gk.S S.Val'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_S Key' Expect' Val':
-  PureWp True
-    (struct.make #condputargs_gk.S (alist_val [
-      "Key" ::= #Key';
-      "Expect" ::= #Expect';
-      "Val" ::= #Val'
-    ]))%struct
-    #(S.mk Key' Expect' Val').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance S_struct_fields_split dq l (v : S.t) :
-  StructFieldsSplit dq l v (
-    "HKey" ∷ l ↦s[condputargs_gk.S :: "Key"]{dq} v.(S.Key') ∗
-    "HExpect" ∷ l ↦s[condputargs_gk.S :: "Expect"]{dq} v.(S.Expect') ∗
-    "HVal" ∷ l ↦s[condputargs_gk.S :: "Val"]{dq} v.(S.Val')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (S.Key' v)) (condputargs_gk.S) "Key"%go.
-  simpl_one_flatten_struct (# (S.Expect' v)) (condputargs_gk.S) "Expect"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-Section names.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext}.
-#[local] Transparent is_pkg_defined is_pkg_defined_pure.
-
-Global Instance is_pkg_defined_pure_condputargs_gk : IsPkgDefinedPure condputargs_gk :=
-  {|
-    is_pkg_defined_pure_def go_ctx :=
-      is_pkg_defined_pure_single condputargs_gk ∧
-      is_pkg_defined_pure code.github_com.goose_lang.primitive.primitive ∧
-      is_pkg_defined_pure code.github_com.goose_lang.std.std ∧
-      is_pkg_defined_pure code.github_com.tchajed.marshal.marshal;
-  |}.
-
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_condputargs_gk : IsPkgDefined condputargs_gk :=
-  {|
-    is_pkg_defined_def go_ctx :=
-      (is_pkg_defined_single condputargs_gk ∗
-       is_pkg_defined code.github_com.goose_lang.primitive.primitive ∗
-       is_pkg_defined code.github_com.goose_lang.std.std ∗
-       is_pkg_defined code.github_com.tchajed.marshal.marshal)%I
-  |}.
-Final Obligation. iIntros. iFrame "#%". Qed.
-#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
-
-Global Instance wp_func_call_Marshal :
-  WpFuncCall condputargs_gk.Marshal _ (is_pkg_defined condputargs_gk) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_Unmarshal :
-  WpFuncCall condputargs_gk.Unmarshal _ (is_pkg_defined condputargs_gk) :=
-  ltac:(solve_wp_func_call).
-
-End names.
 End condputargs_gk.

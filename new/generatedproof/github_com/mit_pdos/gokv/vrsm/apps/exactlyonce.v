@@ -7,321 +7,258 @@ Require Export New.generatedproof.github_com.mit_pdos.gokv.vrsm.clerk.
 Require Export New.generatedproof.github_com.mit_pdos.gokv.vrsm.storage.
 Require Export New.generatedproof.github_com.tchajed.marshal.
 Require Export New.golang.theory.
-
 Require Export New.code.github_com.mit_pdos.gokv.vrsm.apps.exactlyonce.
 
 Set Default Proof Using "Type".
 
 Module exactlyonce.
-
-(* type exactlyonce.eStateMachine *)
 Module eStateMachine.
 Section def.
-Context `{ffi_syntax}.
 
-Record t := mk {
-  lastSeq' : loc;
-  lastReply' : loc;
-  nextCID' : w64;
-  sm' : loc;
-  esmNextIndex' : w64;
-}.
+Context `{!heapGS Σ}.
+Context {sem : go.Semantics}.
+Context {package_sem' : exactlyonce.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance eStateMachine_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (exactlyonce.eStateMachine.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "lastSeq" ∷ l.[(exactlyonce.eStateMachine.t), "lastSeq"] ↦{dq} v.(exactlyonce.eStateMachine.lastSeq') ∗
+      "lastReply" ∷ l.[(exactlyonce.eStateMachine.t), "lastReply"] ↦{dq} v.(exactlyonce.eStateMachine.lastReply') ∗
+      "nextCID" ∷ l.[(exactlyonce.eStateMachine.t), "nextCID"] ↦{dq} v.(exactlyonce.eStateMachine.nextCID') ∗
+      "sm" ∷ l.[(exactlyonce.eStateMachine.t), "sm"] ↦{dq} v.(exactlyonce.eStateMachine.sm') ∗
+      "esmNextIndex" ∷ l.[(exactlyonce.eStateMachine.t), "esmNextIndex"] ↦{dq} v.(exactlyonce.eStateMachine.esmNextIndex') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance eStateMachine_into_val_typed
+   :
+  IntoValTypedUnderlying (exactlyonce.eStateMachine.t) (exactlyonce.eStateMachineⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance eStateMachine_access_load_lastSeq l (v : (exactlyonce.eStateMachine.t)) dq :
+  AccessStrict
+    (l.[(exactlyonce.eStateMachine.t), "lastSeq"] ↦{dq} (v.(exactlyonce.eStateMachine.lastSeq')))
+    (l.[(exactlyonce.eStateMachine.t), "lastSeq"] ↦{dq} (v.(exactlyonce.eStateMachine.lastSeq')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance eStateMachine_access_store_lastSeq l (v : (exactlyonce.eStateMachine.t)) lastSeq' :
+  AccessStrict
+    (l.[(exactlyonce.eStateMachine.t), "lastSeq"] ↦ (v.(exactlyonce.eStateMachine.lastSeq')))
+    (l.[(exactlyonce.eStateMachine.t), "lastSeq"] ↦ lastSeq')
+    (l ↦ v) (l ↦ (v <|(exactlyonce.eStateMachine.lastSeq') := lastSeq'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance eStateMachine_access_load_lastReply l (v : (exactlyonce.eStateMachine.t)) dq :
+  AccessStrict
+    (l.[(exactlyonce.eStateMachine.t), "lastReply"] ↦{dq} (v.(exactlyonce.eStateMachine.lastReply')))
+    (l.[(exactlyonce.eStateMachine.t), "lastReply"] ↦{dq} (v.(exactlyonce.eStateMachine.lastReply')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance eStateMachine_access_store_lastReply l (v : (exactlyonce.eStateMachine.t)) lastReply' :
+  AccessStrict
+    (l.[(exactlyonce.eStateMachine.t), "lastReply"] ↦ (v.(exactlyonce.eStateMachine.lastReply')))
+    (l.[(exactlyonce.eStateMachine.t), "lastReply"] ↦ lastReply')
+    (l ↦ v) (l ↦ (v <|(exactlyonce.eStateMachine.lastReply') := lastReply'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance eStateMachine_access_load_nextCID l (v : (exactlyonce.eStateMachine.t)) dq :
+  AccessStrict
+    (l.[(exactlyonce.eStateMachine.t), "nextCID"] ↦{dq} (v.(exactlyonce.eStateMachine.nextCID')))
+    (l.[(exactlyonce.eStateMachine.t), "nextCID"] ↦{dq} (v.(exactlyonce.eStateMachine.nextCID')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance eStateMachine_access_store_nextCID l (v : (exactlyonce.eStateMachine.t)) nextCID' :
+  AccessStrict
+    (l.[(exactlyonce.eStateMachine.t), "nextCID"] ↦ (v.(exactlyonce.eStateMachine.nextCID')))
+    (l.[(exactlyonce.eStateMachine.t), "nextCID"] ↦ nextCID')
+    (l ↦ v) (l ↦ (v <|(exactlyonce.eStateMachine.nextCID') := nextCID'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance eStateMachine_access_load_sm l (v : (exactlyonce.eStateMachine.t)) dq :
+  AccessStrict
+    (l.[(exactlyonce.eStateMachine.t), "sm"] ↦{dq} (v.(exactlyonce.eStateMachine.sm')))
+    (l.[(exactlyonce.eStateMachine.t), "sm"] ↦{dq} (v.(exactlyonce.eStateMachine.sm')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance eStateMachine_access_store_sm l (v : (exactlyonce.eStateMachine.t)) sm' :
+  AccessStrict
+    (l.[(exactlyonce.eStateMachine.t), "sm"] ↦ (v.(exactlyonce.eStateMachine.sm')))
+    (l.[(exactlyonce.eStateMachine.t), "sm"] ↦ sm')
+    (l ↦ v) (l ↦ (v <|(exactlyonce.eStateMachine.sm') := sm'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance eStateMachine_access_load_esmNextIndex l (v : (exactlyonce.eStateMachine.t)) dq :
+  AccessStrict
+    (l.[(exactlyonce.eStateMachine.t), "esmNextIndex"] ↦{dq} (v.(exactlyonce.eStateMachine.esmNextIndex')))
+    (l.[(exactlyonce.eStateMachine.t), "esmNextIndex"] ↦{dq} (v.(exactlyonce.eStateMachine.esmNextIndex')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance eStateMachine_access_store_esmNextIndex l (v : (exactlyonce.eStateMachine.t)) esmNextIndex' :
+  AccessStrict
+    (l.[(exactlyonce.eStateMachine.t), "esmNextIndex"] ↦ (v.(exactlyonce.eStateMachine.esmNextIndex')))
+    (l.[(exactlyonce.eStateMachine.t), "esmNextIndex"] ↦ esmNextIndex')
+    (l ↦ v) (l ↦ (v <|(exactlyonce.eStateMachine.esmNextIndex') := esmNextIndex'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End eStateMachine.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent exactlyonce.eStateMachine.
-#[local] Typeclasses Transparent exactlyonce.eStateMachine.
-
-Global Instance eStateMachine_wf : struct.Wf exactlyonce.eStateMachine.
-Proof. apply _. Qed.
-
-Global Instance settable_eStateMachine : Settable eStateMachine.t :=
-  settable! eStateMachine.mk < eStateMachine.lastSeq'; eStateMachine.lastReply'; eStateMachine.nextCID'; eStateMachine.sm'; eStateMachine.esmNextIndex' >.
-Global Instance into_val_eStateMachine : IntoVal eStateMachine.t :=
-  {| to_val_def v :=
-    struct.val_aux exactlyonce.eStateMachine [
-    "lastSeq" ::= #(eStateMachine.lastSeq' v);
-    "lastReply" ::= #(eStateMachine.lastReply' v);
-    "nextCID" ::= #(eStateMachine.nextCID' v);
-    "sm" ::= #(eStateMachine.sm' v);
-    "esmNextIndex" ::= #(eStateMachine.esmNextIndex' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_eStateMachine : IntoValTyped eStateMachine.t exactlyonce.eStateMachine :=
-{|
-  default_val := eStateMachine.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_eStateMachine_lastSeq : IntoValStructField "lastSeq" exactlyonce.eStateMachine eStateMachine.lastSeq'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_eStateMachine_lastReply : IntoValStructField "lastReply" exactlyonce.eStateMachine eStateMachine.lastReply'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_eStateMachine_nextCID : IntoValStructField "nextCID" exactlyonce.eStateMachine eStateMachine.nextCID'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_eStateMachine_sm : IntoValStructField "sm" exactlyonce.eStateMachine eStateMachine.sm'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_eStateMachine_esmNextIndex : IntoValStructField "esmNextIndex" exactlyonce.eStateMachine eStateMachine.esmNextIndex'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-
-
-Global Instance eStateMachine_struct_fields_split dq l (v : eStateMachine.t) :
-  StructFieldsSplit dq l v (
-    "HlastSeq" ∷ l ↦s[exactlyonce.eStateMachine :: "lastSeq"]{dq} v.(eStateMachine.lastSeq') ∗
-    "HlastReply" ∷ l ↦s[exactlyonce.eStateMachine :: "lastReply"]{dq} v.(eStateMachine.lastReply') ∗
-    "HnextCID" ∷ l ↦s[exactlyonce.eStateMachine :: "nextCID"]{dq} v.(eStateMachine.nextCID') ∗
-    "Hsm" ∷ l ↦s[exactlyonce.eStateMachine :: "sm"]{dq} v.(eStateMachine.sm') ∗
-    "HesmNextIndex" ∷ l ↦s[exactlyonce.eStateMachine :: "esmNextIndex"]{dq} v.(eStateMachine.esmNextIndex')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (eStateMachine.lastSeq' v)) (exactlyonce.eStateMachine) "lastSeq"%go.
-  simpl_one_flatten_struct (# (eStateMachine.lastReply' v)) (exactlyonce.eStateMachine) "lastReply"%go.
-  simpl_one_flatten_struct (# (eStateMachine.nextCID' v)) (exactlyonce.eStateMachine) "nextCID"%go.
-  simpl_one_flatten_struct (# (eStateMachine.sm' v)) (exactlyonce.eStateMachine) "sm"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-(* type exactlyonce.Clerk *)
 Module Clerk.
 Section def.
-Context `{ffi_syntax}.
 
-Record t := mk {
-  ck' : loc;
-  cid' : w64;
-  seq' : w64;
-}.
+Context `{!heapGS Σ}.
+Context {sem : go.Semantics}.
+Context {package_sem' : exactlyonce.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance Clerk_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (exactlyonce.Clerk.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "ck" ∷ l.[(exactlyonce.Clerk.t), "ck"] ↦{dq} v.(exactlyonce.Clerk.ck') ∗
+      "cid" ∷ l.[(exactlyonce.Clerk.t), "cid"] ↦{dq} v.(exactlyonce.Clerk.cid') ∗
+      "seq" ∷ l.[(exactlyonce.Clerk.t), "seq"] ↦{dq} v.(exactlyonce.Clerk.seq') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance Clerk_into_val_typed
+   :
+  IntoValTypedUnderlying (exactlyonce.Clerk.t) (exactlyonce.Clerkⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Clerk_access_load_ck l (v : (exactlyonce.Clerk.t)) dq :
+  AccessStrict
+    (l.[(exactlyonce.Clerk.t), "ck"] ↦{dq} (v.(exactlyonce.Clerk.ck')))
+    (l.[(exactlyonce.Clerk.t), "ck"] ↦{dq} (v.(exactlyonce.Clerk.ck')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Clerk_access_store_ck l (v : (exactlyonce.Clerk.t)) ck' :
+  AccessStrict
+    (l.[(exactlyonce.Clerk.t), "ck"] ↦ (v.(exactlyonce.Clerk.ck')))
+    (l.[(exactlyonce.Clerk.t), "ck"] ↦ ck')
+    (l ↦ v) (l ↦ (v <|(exactlyonce.Clerk.ck') := ck'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Clerk_access_load_cid l (v : (exactlyonce.Clerk.t)) dq :
+  AccessStrict
+    (l.[(exactlyonce.Clerk.t), "cid"] ↦{dq} (v.(exactlyonce.Clerk.cid')))
+    (l.[(exactlyonce.Clerk.t), "cid"] ↦{dq} (v.(exactlyonce.Clerk.cid')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Clerk_access_store_cid l (v : (exactlyonce.Clerk.t)) cid' :
+  AccessStrict
+    (l.[(exactlyonce.Clerk.t), "cid"] ↦ (v.(exactlyonce.Clerk.cid')))
+    (l.[(exactlyonce.Clerk.t), "cid"] ↦ cid')
+    (l ↦ v) (l ↦ (v <|(exactlyonce.Clerk.cid') := cid'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Clerk_access_load_seq l (v : (exactlyonce.Clerk.t)) dq :
+  AccessStrict
+    (l.[(exactlyonce.Clerk.t), "seq"] ↦{dq} (v.(exactlyonce.Clerk.seq')))
+    (l.[(exactlyonce.Clerk.t), "seq"] ↦{dq} (v.(exactlyonce.Clerk.seq')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Clerk_access_store_seq l (v : (exactlyonce.Clerk.t)) seq' :
+  AccessStrict
+    (l.[(exactlyonce.Clerk.t), "seq"] ↦ (v.(exactlyonce.Clerk.seq')))
+    (l.[(exactlyonce.Clerk.t), "seq"] ↦ seq')
+    (l ↦ v) (l ↦ (v <|(exactlyonce.Clerk.seq') := seq'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End Clerk.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent exactlyonce.Clerk.
-#[local] Typeclasses Transparent exactlyonce.Clerk.
-
-Global Instance Clerk_wf : struct.Wf exactlyonce.Clerk.
-Proof. apply _. Qed.
-
-Global Instance settable_Clerk : Settable Clerk.t :=
-  settable! Clerk.mk < Clerk.ck'; Clerk.cid'; Clerk.seq' >.
-Global Instance into_val_Clerk : IntoVal Clerk.t :=
-  {| to_val_def v :=
-    struct.val_aux exactlyonce.Clerk [
-    "ck" ::= #(Clerk.ck' v);
-    "cid" ::= #(Clerk.cid' v);
-    "seq" ::= #(Clerk.seq' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_Clerk : IntoValTyped Clerk.t exactlyonce.Clerk :=
-{|
-  default_val := Clerk.mk (default_val _) (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_Clerk_ck : IntoValStructField "ck" exactlyonce.Clerk Clerk.ck'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Clerk_cid : IntoValStructField "cid" exactlyonce.Clerk Clerk.cid'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Clerk_seq : IntoValStructField "seq" exactlyonce.Clerk Clerk.seq'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-
-
-Global Instance Clerk_struct_fields_split dq l (v : Clerk.t) :
-  StructFieldsSplit dq l v (
-    "Hck" ∷ l ↦s[exactlyonce.Clerk :: "ck"]{dq} v.(Clerk.ck') ∗
-    "Hcid" ∷ l ↦s[exactlyonce.Clerk :: "cid"]{dq} v.(Clerk.cid') ∗
-    "Hseq" ∷ l ↦s[exactlyonce.Clerk :: "seq"]{dq} v.(Clerk.seq')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Clerk.ck' v)) (exactlyonce.Clerk) "ck"%go.
-  simpl_one_flatten_struct (# (Clerk.cid' v)) (exactlyonce.Clerk) "cid"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-(* type exactlyonce.VersionedStateMachine *)
 Module VersionedStateMachine.
 Section def.
-Context `{ffi_syntax}.
 
-Record t := mk {
-  ApplyVolatile' : func.t;
-  ApplyReadonly' : func.t;
-  SetState' : func.t;
-  GetState' : func.t;
-}.
+Context `{!heapGS Σ}.
+Context {sem : go.Semantics}.
+Context {package_sem' : exactlyonce.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance VersionedStateMachine_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (exactlyonce.VersionedStateMachine.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "ApplyVolatile" ∷ l.[(exactlyonce.VersionedStateMachine.t), "ApplyVolatile"] ↦{dq} v.(exactlyonce.VersionedStateMachine.ApplyVolatile') ∗
+      "ApplyReadonly" ∷ l.[(exactlyonce.VersionedStateMachine.t), "ApplyReadonly"] ↦{dq} v.(exactlyonce.VersionedStateMachine.ApplyReadonly') ∗
+      "SetState" ∷ l.[(exactlyonce.VersionedStateMachine.t), "SetState"] ↦{dq} v.(exactlyonce.VersionedStateMachine.SetState') ∗
+      "GetState" ∷ l.[(exactlyonce.VersionedStateMachine.t), "GetState"] ↦{dq} v.(exactlyonce.VersionedStateMachine.GetState') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance VersionedStateMachine_into_val_typed
+   :
+  IntoValTypedUnderlying (exactlyonce.VersionedStateMachine.t) (exactlyonce.VersionedStateMachineⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance VersionedStateMachine_access_load_ApplyVolatile l (v : (exactlyonce.VersionedStateMachine.t)) dq :
+  AccessStrict
+    (l.[(exactlyonce.VersionedStateMachine.t), "ApplyVolatile"] ↦{dq} (v.(exactlyonce.VersionedStateMachine.ApplyVolatile')))
+    (l.[(exactlyonce.VersionedStateMachine.t), "ApplyVolatile"] ↦{dq} (v.(exactlyonce.VersionedStateMachine.ApplyVolatile')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance VersionedStateMachine_access_store_ApplyVolatile l (v : (exactlyonce.VersionedStateMachine.t)) ApplyVolatile' :
+  AccessStrict
+    (l.[(exactlyonce.VersionedStateMachine.t), "ApplyVolatile"] ↦ (v.(exactlyonce.VersionedStateMachine.ApplyVolatile')))
+    (l.[(exactlyonce.VersionedStateMachine.t), "ApplyVolatile"] ↦ ApplyVolatile')
+    (l ↦ v) (l ↦ (v <|(exactlyonce.VersionedStateMachine.ApplyVolatile') := ApplyVolatile'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance VersionedStateMachine_access_load_ApplyReadonly l (v : (exactlyonce.VersionedStateMachine.t)) dq :
+  AccessStrict
+    (l.[(exactlyonce.VersionedStateMachine.t), "ApplyReadonly"] ↦{dq} (v.(exactlyonce.VersionedStateMachine.ApplyReadonly')))
+    (l.[(exactlyonce.VersionedStateMachine.t), "ApplyReadonly"] ↦{dq} (v.(exactlyonce.VersionedStateMachine.ApplyReadonly')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance VersionedStateMachine_access_store_ApplyReadonly l (v : (exactlyonce.VersionedStateMachine.t)) ApplyReadonly' :
+  AccessStrict
+    (l.[(exactlyonce.VersionedStateMachine.t), "ApplyReadonly"] ↦ (v.(exactlyonce.VersionedStateMachine.ApplyReadonly')))
+    (l.[(exactlyonce.VersionedStateMachine.t), "ApplyReadonly"] ↦ ApplyReadonly')
+    (l ↦ v) (l ↦ (v <|(exactlyonce.VersionedStateMachine.ApplyReadonly') := ApplyReadonly'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance VersionedStateMachine_access_load_SetState l (v : (exactlyonce.VersionedStateMachine.t)) dq :
+  AccessStrict
+    (l.[(exactlyonce.VersionedStateMachine.t), "SetState"] ↦{dq} (v.(exactlyonce.VersionedStateMachine.SetState')))
+    (l.[(exactlyonce.VersionedStateMachine.t), "SetState"] ↦{dq} (v.(exactlyonce.VersionedStateMachine.SetState')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance VersionedStateMachine_access_store_SetState l (v : (exactlyonce.VersionedStateMachine.t)) SetState' :
+  AccessStrict
+    (l.[(exactlyonce.VersionedStateMachine.t), "SetState"] ↦ (v.(exactlyonce.VersionedStateMachine.SetState')))
+    (l.[(exactlyonce.VersionedStateMachine.t), "SetState"] ↦ SetState')
+    (l ↦ v) (l ↦ (v <|(exactlyonce.VersionedStateMachine.SetState') := SetState'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance VersionedStateMachine_access_load_GetState l (v : (exactlyonce.VersionedStateMachine.t)) dq :
+  AccessStrict
+    (l.[(exactlyonce.VersionedStateMachine.t), "GetState"] ↦{dq} (v.(exactlyonce.VersionedStateMachine.GetState')))
+    (l.[(exactlyonce.VersionedStateMachine.t), "GetState"] ↦{dq} (v.(exactlyonce.VersionedStateMachine.GetState')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance VersionedStateMachine_access_store_GetState l (v : (exactlyonce.VersionedStateMachine.t)) GetState' :
+  AccessStrict
+    (l.[(exactlyonce.VersionedStateMachine.t), "GetState"] ↦ (v.(exactlyonce.VersionedStateMachine.GetState')))
+    (l.[(exactlyonce.VersionedStateMachine.t), "GetState"] ↦ GetState')
+    (l ↦ v) (l ↦ (v <|(exactlyonce.VersionedStateMachine.GetState') := GetState'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End VersionedStateMachine.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent exactlyonce.VersionedStateMachine.
-#[local] Typeclasses Transparent exactlyonce.VersionedStateMachine.
-
-Global Instance VersionedStateMachine_wf : struct.Wf exactlyonce.VersionedStateMachine.
-Proof. apply _. Qed.
-
-Global Instance settable_VersionedStateMachine : Settable VersionedStateMachine.t :=
-  settable! VersionedStateMachine.mk < VersionedStateMachine.ApplyVolatile'; VersionedStateMachine.ApplyReadonly'; VersionedStateMachine.SetState'; VersionedStateMachine.GetState' >.
-Global Instance into_val_VersionedStateMachine : IntoVal VersionedStateMachine.t :=
-  {| to_val_def v :=
-    struct.val_aux exactlyonce.VersionedStateMachine [
-    "ApplyVolatile" ::= #(VersionedStateMachine.ApplyVolatile' v);
-    "ApplyReadonly" ::= #(VersionedStateMachine.ApplyReadonly' v);
-    "SetState" ::= #(VersionedStateMachine.SetState' v);
-    "GetState" ::= #(VersionedStateMachine.GetState' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_VersionedStateMachine : IntoValTyped VersionedStateMachine.t exactlyonce.VersionedStateMachine :=
-{|
-  default_val := VersionedStateMachine.mk (default_val _) (default_val _) (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_VersionedStateMachine_ApplyVolatile : IntoValStructField "ApplyVolatile" exactlyonce.VersionedStateMachine VersionedStateMachine.ApplyVolatile'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_VersionedStateMachine_ApplyReadonly : IntoValStructField "ApplyReadonly" exactlyonce.VersionedStateMachine VersionedStateMachine.ApplyReadonly'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_VersionedStateMachine_SetState : IntoValStructField "SetState" exactlyonce.VersionedStateMachine VersionedStateMachine.SetState'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_VersionedStateMachine_GetState : IntoValStructField "GetState" exactlyonce.VersionedStateMachine VersionedStateMachine.GetState'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-
-
-Global Instance VersionedStateMachine_struct_fields_split dq l (v : VersionedStateMachine.t) :
-  StructFieldsSplit dq l v (
-    "HApplyVolatile" ∷ l ↦s[exactlyonce.VersionedStateMachine :: "ApplyVolatile"]{dq} v.(VersionedStateMachine.ApplyVolatile') ∗
-    "HApplyReadonly" ∷ l ↦s[exactlyonce.VersionedStateMachine :: "ApplyReadonly"]{dq} v.(VersionedStateMachine.ApplyReadonly') ∗
-    "HSetState" ∷ l ↦s[exactlyonce.VersionedStateMachine :: "SetState"]{dq} v.(VersionedStateMachine.SetState') ∗
-    "HGetState" ∷ l ↦s[exactlyonce.VersionedStateMachine :: "GetState"]{dq} v.(VersionedStateMachine.GetState')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (VersionedStateMachine.ApplyVolatile' v)) (exactlyonce.VersionedStateMachine) "ApplyVolatile"%go.
-  simpl_one_flatten_struct (# (VersionedStateMachine.ApplyReadonly' v)) (exactlyonce.VersionedStateMachine) "ApplyReadonly"%go.
-  simpl_one_flatten_struct (# (VersionedStateMachine.SetState' v)) (exactlyonce.VersionedStateMachine) "SetState"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-Section names.
-
-Context `{!heapGS Σ}.
-Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext}.
-#[local] Transparent is_pkg_defined is_pkg_defined_pure.
-
-Global Instance is_pkg_defined_pure_exactlyonce : IsPkgDefinedPure exactlyonce :=
-  {|
-    is_pkg_defined_pure_def go_ctx :=
-      is_pkg_defined_pure_single exactlyonce ∧
-      is_pkg_defined_pure code.github_com.goose_lang.std.std ∧
-      is_pkg_defined_pure code.github_com.mit_pdos.gokv.grove_ffi.grove_ffi ∧
-      is_pkg_defined_pure code.github_com.mit_pdos.gokv.map_marshal.map_marshal ∧
-      is_pkg_defined_pure code.github_com.mit_pdos.gokv.vrsm.clerk.clerk ∧
-      is_pkg_defined_pure code.github_com.mit_pdos.gokv.vrsm.storage.storage ∧
-      is_pkg_defined_pure code.github_com.tchajed.marshal.marshal;
-  |}.
-
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_exactlyonce : IsPkgDefined exactlyonce :=
-  {|
-    is_pkg_defined_def go_ctx :=
-      (is_pkg_defined_single exactlyonce ∗
-       is_pkg_defined code.github_com.goose_lang.std.std ∗
-       is_pkg_defined code.github_com.mit_pdos.gokv.grove_ffi.grove_ffi ∗
-       is_pkg_defined code.github_com.mit_pdos.gokv.map_marshal.map_marshal ∗
-       is_pkg_defined code.github_com.mit_pdos.gokv.vrsm.clerk.clerk ∗
-       is_pkg_defined code.github_com.mit_pdos.gokv.vrsm.storage.storage ∗
-       is_pkg_defined code.github_com.tchajed.marshal.marshal)%I
-  |}.
-Final Obligation. iIntros. iFrame "#%". Qed.
-#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
-
-Global Instance wp_func_call_MakeExactlyOnceStateMachine :
-  WpFuncCall exactlyonce.MakeExactlyOnceStateMachine _ (is_pkg_defined exactlyonce) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_MakeClerk :
-  WpFuncCall exactlyonce.MakeClerk _ (is_pkg_defined exactlyonce) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_method_call_eStateMachine'ptr_applyReadonly :
-  WpMethodCall (ptrT.id exactlyonce.eStateMachine.id) "applyReadonly" _ (is_pkg_defined exactlyonce) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_eStateMachine'ptr_applyVolatile :
-  WpMethodCall (ptrT.id exactlyonce.eStateMachine.id) "applyVolatile" _ (is_pkg_defined exactlyonce) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_eStateMachine'ptr_getState :
-  WpMethodCall (ptrT.id exactlyonce.eStateMachine.id) "getState" _ (is_pkg_defined exactlyonce) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_eStateMachine'ptr_setState :
-  WpMethodCall (ptrT.id exactlyonce.eStateMachine.id) "setState" _ (is_pkg_defined exactlyonce) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Clerk'ptr_ApplyExactlyOnce :
-  WpMethodCall (ptrT.id exactlyonce.Clerk.id) "ApplyExactlyOnce" _ (is_pkg_defined exactlyonce) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Clerk'ptr_ApplyReadonly :
-  WpMethodCall (ptrT.id exactlyonce.Clerk.id) "ApplyReadonly" _ (is_pkg_defined exactlyonce) :=
-  ltac:(solve_wp_method_call).
-
-End names.
 End exactlyonce.

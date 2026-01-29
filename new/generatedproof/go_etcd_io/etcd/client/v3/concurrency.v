@@ -6,1298 +6,830 @@ Require Export New.generatedproof.fmt.
 Require Export New.generatedproof.go_etcd_io.etcd.api.v3.etcdserverpb.
 Require Export New.generatedproof.go_etcd_io.etcd.api.v3.mvccpb.
 Require Export New.generatedproof.go_etcd_io.etcd.client.v3.
+Require Export New.generatedproof.go_uber_org.zap.
+Require Export New.generatedproof.math.
 Require Export New.generatedproof.strings.
 Require Export New.generatedproof.sync.
 Require Export New.generatedproof.time.
-Require Export New.generatedproof.go_uber_org.zap.
-Require Export New.generatedproof.math.
 Require Export New.golang.theory.
-
 Require Export New.code.go_etcd_io.etcd.client.v3.concurrency.
 
 Set Default Proof Using "Type".
 
 Module concurrency.
-
-(* type concurrency.Election *)
 Module Election.
 Section def.
-Context `{ffi_syntax}.
 
-Record t := mk {
-  session' : loc;
-  keyPrefix' : go_string;
-  leaderKey' : go_string;
-  leaderRev' : w64;
-  leaderSession' : loc;
-  hdr' : loc;
-}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : concurrency.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance Election_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (concurrency.Election.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "session" ∷ l.[(concurrency.Election.t), "session"] ↦{dq} v.(concurrency.Election.session') ∗
+      "keyPrefix" ∷ l.[(concurrency.Election.t), "keyPrefix"] ↦{dq} v.(concurrency.Election.keyPrefix') ∗
+      "leaderKey" ∷ l.[(concurrency.Election.t), "leaderKey"] ↦{dq} v.(concurrency.Election.leaderKey') ∗
+      "leaderRev" ∷ l.[(concurrency.Election.t), "leaderRev"] ↦{dq} v.(concurrency.Election.leaderRev') ∗
+      "leaderSession" ∷ l.[(concurrency.Election.t), "leaderSession"] ↦{dq} v.(concurrency.Election.leaderSession') ∗
+      "hdr" ∷ l.[(concurrency.Election.t), "hdr"] ↦{dq} v.(concurrency.Election.hdr') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance Election_into_val_typed
+   :
+  IntoValTypedUnderlying (concurrency.Election.t) (concurrency.Electionⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Election_access_load_session l (v : (concurrency.Election.t)) dq :
+  AccessStrict
+    (l.[(concurrency.Election.t), "session"] ↦{dq} (v.(concurrency.Election.session')))
+    (l.[(concurrency.Election.t), "session"] ↦{dq} (v.(concurrency.Election.session')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Election_access_store_session l (v : (concurrency.Election.t)) session' :
+  AccessStrict
+    (l.[(concurrency.Election.t), "session"] ↦ (v.(concurrency.Election.session')))
+    (l.[(concurrency.Election.t), "session"] ↦ session')
+    (l ↦ v) (l ↦ (v <|(concurrency.Election.session') := session'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Election_access_load_keyPrefix l (v : (concurrency.Election.t)) dq :
+  AccessStrict
+    (l.[(concurrency.Election.t), "keyPrefix"] ↦{dq} (v.(concurrency.Election.keyPrefix')))
+    (l.[(concurrency.Election.t), "keyPrefix"] ↦{dq} (v.(concurrency.Election.keyPrefix')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Election_access_store_keyPrefix l (v : (concurrency.Election.t)) keyPrefix' :
+  AccessStrict
+    (l.[(concurrency.Election.t), "keyPrefix"] ↦ (v.(concurrency.Election.keyPrefix')))
+    (l.[(concurrency.Election.t), "keyPrefix"] ↦ keyPrefix')
+    (l ↦ v) (l ↦ (v <|(concurrency.Election.keyPrefix') := keyPrefix'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Election_access_load_leaderKey l (v : (concurrency.Election.t)) dq :
+  AccessStrict
+    (l.[(concurrency.Election.t), "leaderKey"] ↦{dq} (v.(concurrency.Election.leaderKey')))
+    (l.[(concurrency.Election.t), "leaderKey"] ↦{dq} (v.(concurrency.Election.leaderKey')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Election_access_store_leaderKey l (v : (concurrency.Election.t)) leaderKey' :
+  AccessStrict
+    (l.[(concurrency.Election.t), "leaderKey"] ↦ (v.(concurrency.Election.leaderKey')))
+    (l.[(concurrency.Election.t), "leaderKey"] ↦ leaderKey')
+    (l ↦ v) (l ↦ (v <|(concurrency.Election.leaderKey') := leaderKey'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Election_access_load_leaderRev l (v : (concurrency.Election.t)) dq :
+  AccessStrict
+    (l.[(concurrency.Election.t), "leaderRev"] ↦{dq} (v.(concurrency.Election.leaderRev')))
+    (l.[(concurrency.Election.t), "leaderRev"] ↦{dq} (v.(concurrency.Election.leaderRev')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Election_access_store_leaderRev l (v : (concurrency.Election.t)) leaderRev' :
+  AccessStrict
+    (l.[(concurrency.Election.t), "leaderRev"] ↦ (v.(concurrency.Election.leaderRev')))
+    (l.[(concurrency.Election.t), "leaderRev"] ↦ leaderRev')
+    (l ↦ v) (l ↦ (v <|(concurrency.Election.leaderRev') := leaderRev'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Election_access_load_leaderSession l (v : (concurrency.Election.t)) dq :
+  AccessStrict
+    (l.[(concurrency.Election.t), "leaderSession"] ↦{dq} (v.(concurrency.Election.leaderSession')))
+    (l.[(concurrency.Election.t), "leaderSession"] ↦{dq} (v.(concurrency.Election.leaderSession')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Election_access_store_leaderSession l (v : (concurrency.Election.t)) leaderSession' :
+  AccessStrict
+    (l.[(concurrency.Election.t), "leaderSession"] ↦ (v.(concurrency.Election.leaderSession')))
+    (l.[(concurrency.Election.t), "leaderSession"] ↦ leaderSession')
+    (l ↦ v) (l ↦ (v <|(concurrency.Election.leaderSession') := leaderSession'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Election_access_load_hdr l (v : (concurrency.Election.t)) dq :
+  AccessStrict
+    (l.[(concurrency.Election.t), "hdr"] ↦{dq} (v.(concurrency.Election.hdr')))
+    (l.[(concurrency.Election.t), "hdr"] ↦{dq} (v.(concurrency.Election.hdr')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Election_access_store_hdr l (v : (concurrency.Election.t)) hdr' :
+  AccessStrict
+    (l.[(concurrency.Election.t), "hdr"] ↦ (v.(concurrency.Election.hdr')))
+    (l.[(concurrency.Election.t), "hdr"] ↦ hdr')
+    (l ↦ v) (l ↦ (v <|(concurrency.Election.hdr') := hdr'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End Election.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent concurrency.Election.
-#[local] Typeclasses Transparent concurrency.Election.
-
-Global Instance Election_wf : struct.Wf concurrency.Election.
-Proof. apply _. Qed.
-
-Global Instance settable_Election : Settable Election.t :=
-  settable! Election.mk < Election.session'; Election.keyPrefix'; Election.leaderKey'; Election.leaderRev'; Election.leaderSession'; Election.hdr' >.
-Global Instance into_val_Election : IntoVal Election.t :=
-  {| to_val_def v :=
-    struct.val_aux concurrency.Election [
-    "session" ::= #(Election.session' v);
-    "keyPrefix" ::= #(Election.keyPrefix' v);
-    "leaderKey" ::= #(Election.leaderKey' v);
-    "leaderRev" ::= #(Election.leaderRev' v);
-    "leaderSession" ::= #(Election.leaderSession' v);
-    "hdr" ::= #(Election.hdr' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_Election : IntoValTyped Election.t concurrency.Election :=
-{|
-  default_val := Election.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_Election_session : IntoValStructField "session" concurrency.Election Election.session'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Election_keyPrefix : IntoValStructField "keyPrefix" concurrency.Election Election.keyPrefix'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Election_leaderKey : IntoValStructField "leaderKey" concurrency.Election Election.leaderKey'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Election_leaderRev : IntoValStructField "leaderRev" concurrency.Election Election.leaderRev'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Election_leaderSession : IntoValStructField "leaderSession" concurrency.Election Election.leaderSession'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Election_hdr : IntoValStructField "hdr" concurrency.Election Election.hdr'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-
-
-Global Instance Election_struct_fields_split dq l (v : Election.t) :
-  StructFieldsSplit dq l v (
-    "Hsession" ∷ l ↦s[concurrency.Election :: "session"]{dq} v.(Election.session') ∗
-    "HkeyPrefix" ∷ l ↦s[concurrency.Election :: "keyPrefix"]{dq} v.(Election.keyPrefix') ∗
-    "HleaderKey" ∷ l ↦s[concurrency.Election :: "leaderKey"]{dq} v.(Election.leaderKey') ∗
-    "HleaderRev" ∷ l ↦s[concurrency.Election :: "leaderRev"]{dq} v.(Election.leaderRev') ∗
-    "HleaderSession" ∷ l ↦s[concurrency.Election :: "leaderSession"]{dq} v.(Election.leaderSession') ∗
-    "Hhdr" ∷ l ↦s[concurrency.Election :: "hdr"]{dq} v.(Election.hdr')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Election.session' v)) (concurrency.Election) "session"%go.
-  simpl_one_flatten_struct (# (Election.keyPrefix' v)) (concurrency.Election) "keyPrefix"%go.
-  simpl_one_flatten_struct (# (Election.leaderKey' v)) (concurrency.Election) "leaderKey"%go.
-  simpl_one_flatten_struct (# (Election.leaderRev' v)) (concurrency.Election) "leaderRev"%go.
-  simpl_one_flatten_struct (# (Election.leaderSession' v)) (concurrency.Election) "leaderSession"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-(* type concurrency.Mutex *)
 Module Mutex.
 Section def.
-Context `{ffi_syntax}.
 
-Record t := mk {
-  s' : loc;
-  pfx' : go_string;
-  myKey' : go_string;
-  myRev' : w64;
-  hdr' : loc;
-}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : concurrency.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance Mutex_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (concurrency.Mutex.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "s" ∷ l.[(concurrency.Mutex.t), "s"] ↦{dq} v.(concurrency.Mutex.s') ∗
+      "pfx" ∷ l.[(concurrency.Mutex.t), "pfx"] ↦{dq} v.(concurrency.Mutex.pfx') ∗
+      "myKey" ∷ l.[(concurrency.Mutex.t), "myKey"] ↦{dq} v.(concurrency.Mutex.myKey') ∗
+      "myRev" ∷ l.[(concurrency.Mutex.t), "myRev"] ↦{dq} v.(concurrency.Mutex.myRev') ∗
+      "hdr" ∷ l.[(concurrency.Mutex.t), "hdr"] ↦{dq} v.(concurrency.Mutex.hdr') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance Mutex_into_val_typed
+   :
+  IntoValTypedUnderlying (concurrency.Mutex.t) (concurrency.Mutexⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Mutex_access_load_s l (v : (concurrency.Mutex.t)) dq :
+  AccessStrict
+    (l.[(concurrency.Mutex.t), "s"] ↦{dq} (v.(concurrency.Mutex.s')))
+    (l.[(concurrency.Mutex.t), "s"] ↦{dq} (v.(concurrency.Mutex.s')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Mutex_access_store_s l (v : (concurrency.Mutex.t)) s' :
+  AccessStrict
+    (l.[(concurrency.Mutex.t), "s"] ↦ (v.(concurrency.Mutex.s')))
+    (l.[(concurrency.Mutex.t), "s"] ↦ s')
+    (l ↦ v) (l ↦ (v <|(concurrency.Mutex.s') := s'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Mutex_access_load_pfx l (v : (concurrency.Mutex.t)) dq :
+  AccessStrict
+    (l.[(concurrency.Mutex.t), "pfx"] ↦{dq} (v.(concurrency.Mutex.pfx')))
+    (l.[(concurrency.Mutex.t), "pfx"] ↦{dq} (v.(concurrency.Mutex.pfx')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Mutex_access_store_pfx l (v : (concurrency.Mutex.t)) pfx' :
+  AccessStrict
+    (l.[(concurrency.Mutex.t), "pfx"] ↦ (v.(concurrency.Mutex.pfx')))
+    (l.[(concurrency.Mutex.t), "pfx"] ↦ pfx')
+    (l ↦ v) (l ↦ (v <|(concurrency.Mutex.pfx') := pfx'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Mutex_access_load_myKey l (v : (concurrency.Mutex.t)) dq :
+  AccessStrict
+    (l.[(concurrency.Mutex.t), "myKey"] ↦{dq} (v.(concurrency.Mutex.myKey')))
+    (l.[(concurrency.Mutex.t), "myKey"] ↦{dq} (v.(concurrency.Mutex.myKey')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Mutex_access_store_myKey l (v : (concurrency.Mutex.t)) myKey' :
+  AccessStrict
+    (l.[(concurrency.Mutex.t), "myKey"] ↦ (v.(concurrency.Mutex.myKey')))
+    (l.[(concurrency.Mutex.t), "myKey"] ↦ myKey')
+    (l ↦ v) (l ↦ (v <|(concurrency.Mutex.myKey') := myKey'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Mutex_access_load_myRev l (v : (concurrency.Mutex.t)) dq :
+  AccessStrict
+    (l.[(concurrency.Mutex.t), "myRev"] ↦{dq} (v.(concurrency.Mutex.myRev')))
+    (l.[(concurrency.Mutex.t), "myRev"] ↦{dq} (v.(concurrency.Mutex.myRev')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Mutex_access_store_myRev l (v : (concurrency.Mutex.t)) myRev' :
+  AccessStrict
+    (l.[(concurrency.Mutex.t), "myRev"] ↦ (v.(concurrency.Mutex.myRev')))
+    (l.[(concurrency.Mutex.t), "myRev"] ↦ myRev')
+    (l ↦ v) (l ↦ (v <|(concurrency.Mutex.myRev') := myRev'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Mutex_access_load_hdr l (v : (concurrency.Mutex.t)) dq :
+  AccessStrict
+    (l.[(concurrency.Mutex.t), "hdr"] ↦{dq} (v.(concurrency.Mutex.hdr')))
+    (l.[(concurrency.Mutex.t), "hdr"] ↦{dq} (v.(concurrency.Mutex.hdr')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Mutex_access_store_hdr l (v : (concurrency.Mutex.t)) hdr' :
+  AccessStrict
+    (l.[(concurrency.Mutex.t), "hdr"] ↦ (v.(concurrency.Mutex.hdr')))
+    (l.[(concurrency.Mutex.t), "hdr"] ↦ hdr')
+    (l ↦ v) (l ↦ (v <|(concurrency.Mutex.hdr') := hdr'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End Mutex.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent concurrency.Mutex.
-#[local] Typeclasses Transparent concurrency.Mutex.
-
-Global Instance Mutex_wf : struct.Wf concurrency.Mutex.
-Proof. apply _. Qed.
-
-Global Instance settable_Mutex : Settable Mutex.t :=
-  settable! Mutex.mk < Mutex.s'; Mutex.pfx'; Mutex.myKey'; Mutex.myRev'; Mutex.hdr' >.
-Global Instance into_val_Mutex : IntoVal Mutex.t :=
-  {| to_val_def v :=
-    struct.val_aux concurrency.Mutex [
-    "s" ::= #(Mutex.s' v);
-    "pfx" ::= #(Mutex.pfx' v);
-    "myKey" ::= #(Mutex.myKey' v);
-    "myRev" ::= #(Mutex.myRev' v);
-    "hdr" ::= #(Mutex.hdr' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_Mutex : IntoValTyped Mutex.t concurrency.Mutex :=
-{|
-  default_val := Mutex.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_Mutex_s : IntoValStructField "s" concurrency.Mutex Mutex.s'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Mutex_pfx : IntoValStructField "pfx" concurrency.Mutex Mutex.pfx'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Mutex_myKey : IntoValStructField "myKey" concurrency.Mutex Mutex.myKey'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Mutex_myRev : IntoValStructField "myRev" concurrency.Mutex Mutex.myRev'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Mutex_hdr : IntoValStructField "hdr" concurrency.Mutex Mutex.hdr'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-
-
-Global Instance Mutex_struct_fields_split dq l (v : Mutex.t) :
-  StructFieldsSplit dq l v (
-    "Hs" ∷ l ↦s[concurrency.Mutex :: "s"]{dq} v.(Mutex.s') ∗
-    "Hpfx" ∷ l ↦s[concurrency.Mutex :: "pfx"]{dq} v.(Mutex.pfx') ∗
-    "HmyKey" ∷ l ↦s[concurrency.Mutex :: "myKey"]{dq} v.(Mutex.myKey') ∗
-    "HmyRev" ∷ l ↦s[concurrency.Mutex :: "myRev"]{dq} v.(Mutex.myRev') ∗
-    "Hhdr" ∷ l ↦s[concurrency.Mutex :: "hdr"]{dq} v.(Mutex.hdr')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Mutex.s' v)) (concurrency.Mutex) "s"%go.
-  simpl_one_flatten_struct (# (Mutex.pfx' v)) (concurrency.Mutex) "pfx"%go.
-  simpl_one_flatten_struct (# (Mutex.myKey' v)) (concurrency.Mutex) "myKey"%go.
-  simpl_one_flatten_struct (# (Mutex.myRev' v)) (concurrency.Mutex) "myRev"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-(* type concurrency.lockerMutex *)
 Module lockerMutex.
 Section def.
-Context `{ffi_syntax}.
 
-Record t := mk {
-  Mutex' : loc;
-}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : concurrency.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance lockerMutex_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (concurrency.lockerMutex.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "Mutex" ∷ l.[(concurrency.lockerMutex.t), "Mutex"] ↦{dq} v.(concurrency.lockerMutex.Mutex') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance lockerMutex_into_val_typed
+   :
+  IntoValTypedUnderlying (concurrency.lockerMutex.t) (concurrency.lockerMutexⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance lockerMutex_access_load_Mutex l (v : (concurrency.lockerMutex.t)) dq :
+  AccessStrict
+    (l.[(concurrency.lockerMutex.t), "Mutex"] ↦{dq} (v.(concurrency.lockerMutex.Mutex')))
+    (l.[(concurrency.lockerMutex.t), "Mutex"] ↦{dq} (v.(concurrency.lockerMutex.Mutex')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance lockerMutex_access_store_Mutex l (v : (concurrency.lockerMutex.t)) Mutex' :
+  AccessStrict
+    (l.[(concurrency.lockerMutex.t), "Mutex"] ↦ (v.(concurrency.lockerMutex.Mutex')))
+    (l.[(concurrency.lockerMutex.t), "Mutex"] ↦ Mutex')
+    (l ↦ v) (l ↦ (v <|(concurrency.lockerMutex.Mutex') := Mutex'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End lockerMutex.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent concurrency.lockerMutex.
-#[local] Typeclasses Transparent concurrency.lockerMutex.
-
-Global Instance lockerMutex_wf : struct.Wf concurrency.lockerMutex.
-Proof. apply _. Qed.
-
-Global Instance settable_lockerMutex : Settable lockerMutex.t :=
-  settable! lockerMutex.mk < lockerMutex.Mutex' >.
-Global Instance into_val_lockerMutex : IntoVal lockerMutex.t :=
-  {| to_val_def v :=
-    struct.val_aux concurrency.lockerMutex [
-    "Mutex" ::= #(lockerMutex.Mutex' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_lockerMutex : IntoValTyped lockerMutex.t concurrency.lockerMutex :=
-{|
-  default_val := lockerMutex.mk (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_lockerMutex_Mutex : IntoValStructField "Mutex" concurrency.lockerMutex lockerMutex.Mutex'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-
-
-Global Instance lockerMutex_struct_fields_split dq l (v : lockerMutex.t) :
-  StructFieldsSplit dq l v (
-    "HMutex" ∷ l ↦s[concurrency.lockerMutex :: "Mutex"]{dq} v.(lockerMutex.Mutex')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-(* type concurrency.Session *)
 Module Session.
 Section def.
-Context `{ffi_syntax}.
 
-Record t := mk {
-  client' : loc;
-  opts' : loc;
-  id' : clientv3.LeaseID.t;
-  ctx' : context.Context.t;
-  cancel' : context.CancelFunc.t;
-  donec' : loc;
-}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : concurrency.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance Session_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (concurrency.Session.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "client" ∷ l.[(concurrency.Session.t), "client"] ↦{dq} v.(concurrency.Session.client') ∗
+      "opts" ∷ l.[(concurrency.Session.t), "opts"] ↦{dq} v.(concurrency.Session.opts') ∗
+      "id" ∷ l.[(concurrency.Session.t), "id"] ↦{dq} v.(concurrency.Session.id') ∗
+      "ctx" ∷ l.[(concurrency.Session.t), "ctx"] ↦{dq} v.(concurrency.Session.ctx') ∗
+      "cancel" ∷ l.[(concurrency.Session.t), "cancel"] ↦{dq} v.(concurrency.Session.cancel') ∗
+      "donec" ∷ l.[(concurrency.Session.t), "donec"] ↦{dq} v.(concurrency.Session.donec') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance Session_into_val_typed
+   :
+  IntoValTypedUnderlying (concurrency.Session.t) (concurrency.Sessionⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Session_access_load_client l (v : (concurrency.Session.t)) dq :
+  AccessStrict
+    (l.[(concurrency.Session.t), "client"] ↦{dq} (v.(concurrency.Session.client')))
+    (l.[(concurrency.Session.t), "client"] ↦{dq} (v.(concurrency.Session.client')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Session_access_store_client l (v : (concurrency.Session.t)) client' :
+  AccessStrict
+    (l.[(concurrency.Session.t), "client"] ↦ (v.(concurrency.Session.client')))
+    (l.[(concurrency.Session.t), "client"] ↦ client')
+    (l ↦ v) (l ↦ (v <|(concurrency.Session.client') := client'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Session_access_load_opts l (v : (concurrency.Session.t)) dq :
+  AccessStrict
+    (l.[(concurrency.Session.t), "opts"] ↦{dq} (v.(concurrency.Session.opts')))
+    (l.[(concurrency.Session.t), "opts"] ↦{dq} (v.(concurrency.Session.opts')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Session_access_store_opts l (v : (concurrency.Session.t)) opts' :
+  AccessStrict
+    (l.[(concurrency.Session.t), "opts"] ↦ (v.(concurrency.Session.opts')))
+    (l.[(concurrency.Session.t), "opts"] ↦ opts')
+    (l ↦ v) (l ↦ (v <|(concurrency.Session.opts') := opts'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Session_access_load_id l (v : (concurrency.Session.t)) dq :
+  AccessStrict
+    (l.[(concurrency.Session.t), "id"] ↦{dq} (v.(concurrency.Session.id')))
+    (l.[(concurrency.Session.t), "id"] ↦{dq} (v.(concurrency.Session.id')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Session_access_store_id l (v : (concurrency.Session.t)) id' :
+  AccessStrict
+    (l.[(concurrency.Session.t), "id"] ↦ (v.(concurrency.Session.id')))
+    (l.[(concurrency.Session.t), "id"] ↦ id')
+    (l ↦ v) (l ↦ (v <|(concurrency.Session.id') := id'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Session_access_load_ctx l (v : (concurrency.Session.t)) dq :
+  AccessStrict
+    (l.[(concurrency.Session.t), "ctx"] ↦{dq} (v.(concurrency.Session.ctx')))
+    (l.[(concurrency.Session.t), "ctx"] ↦{dq} (v.(concurrency.Session.ctx')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Session_access_store_ctx l (v : (concurrency.Session.t)) ctx' :
+  AccessStrict
+    (l.[(concurrency.Session.t), "ctx"] ↦ (v.(concurrency.Session.ctx')))
+    (l.[(concurrency.Session.t), "ctx"] ↦ ctx')
+    (l ↦ v) (l ↦ (v <|(concurrency.Session.ctx') := ctx'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Session_access_load_cancel l (v : (concurrency.Session.t)) dq :
+  AccessStrict
+    (l.[(concurrency.Session.t), "cancel"] ↦{dq} (v.(concurrency.Session.cancel')))
+    (l.[(concurrency.Session.t), "cancel"] ↦{dq} (v.(concurrency.Session.cancel')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Session_access_store_cancel l (v : (concurrency.Session.t)) cancel' :
+  AccessStrict
+    (l.[(concurrency.Session.t), "cancel"] ↦ (v.(concurrency.Session.cancel')))
+    (l.[(concurrency.Session.t), "cancel"] ↦ cancel')
+    (l ↦ v) (l ↦ (v <|(concurrency.Session.cancel') := cancel'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Session_access_load_donec l (v : (concurrency.Session.t)) dq :
+  AccessStrict
+    (l.[(concurrency.Session.t), "donec"] ↦{dq} (v.(concurrency.Session.donec')))
+    (l.[(concurrency.Session.t), "donec"] ↦{dq} (v.(concurrency.Session.donec')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Session_access_store_donec l (v : (concurrency.Session.t)) donec' :
+  AccessStrict
+    (l.[(concurrency.Session.t), "donec"] ↦ (v.(concurrency.Session.donec')))
+    (l.[(concurrency.Session.t), "donec"] ↦ donec')
+    (l ↦ v) (l ↦ (v <|(concurrency.Session.donec') := donec'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End Session.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent concurrency.Session.
-#[local] Typeclasses Transparent concurrency.Session.
-
-Global Instance Session_wf : struct.Wf concurrency.Session.
-Proof. apply _. Qed.
-
-Global Instance settable_Session : Settable Session.t :=
-  settable! Session.mk < Session.client'; Session.opts'; Session.id'; Session.ctx'; Session.cancel'; Session.donec' >.
-Global Instance into_val_Session : IntoVal Session.t :=
-  {| to_val_def v :=
-    struct.val_aux concurrency.Session [
-    "client" ::= #(Session.client' v);
-    "opts" ::= #(Session.opts' v);
-    "id" ::= #(Session.id' v);
-    "ctx" ::= #(Session.ctx' v);
-    "cancel" ::= #(Session.cancel' v);
-    "donec" ::= #(Session.donec' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_Session : IntoValTyped Session.t concurrency.Session :=
-{|
-  default_val := Session.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_Session_client : IntoValStructField "client" concurrency.Session Session.client'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Session_opts : IntoValStructField "opts" concurrency.Session Session.opts'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Session_id : IntoValStructField "id" concurrency.Session Session.id'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Session_ctx : IntoValStructField "ctx" concurrency.Session Session.ctx'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Session_cancel : IntoValStructField "cancel" concurrency.Session Session.cancel'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Session_donec : IntoValStructField "donec" concurrency.Session Session.donec'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-
-
-Global Instance Session_struct_fields_split dq l (v : Session.t) :
-  StructFieldsSplit dq l v (
-    "Hclient" ∷ l ↦s[concurrency.Session :: "client"]{dq} v.(Session.client') ∗
-    "Hopts" ∷ l ↦s[concurrency.Session :: "opts"]{dq} v.(Session.opts') ∗
-    "Hid" ∷ l ↦s[concurrency.Session :: "id"]{dq} v.(Session.id') ∗
-    "Hctx" ∷ l ↦s[concurrency.Session :: "ctx"]{dq} v.(Session.ctx') ∗
-    "Hcancel" ∷ l ↦s[concurrency.Session :: "cancel"]{dq} v.(Session.cancel') ∗
-    "Hdonec" ∷ l ↦s[concurrency.Session :: "donec"]{dq} v.(Session.donec')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Session.client' v)) (concurrency.Session) "client"%go.
-  simpl_one_flatten_struct (# (Session.opts' v)) (concurrency.Session) "opts"%go.
-  simpl_one_flatten_struct (# (Session.id' v)) (concurrency.Session) "id"%go.
-  simpl_one_flatten_struct (# (Session.ctx' v)) (concurrency.Session) "ctx"%go.
-  simpl_one_flatten_struct (# (Session.cancel' v)) (concurrency.Session) "cancel"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-(* type concurrency.sessionOptions *)
 Module sessionOptions.
 Section def.
-Context `{ffi_syntax}.
 
-Record t := mk {
-  ttl' : w64;
-  leaseID' : clientv3.LeaseID.t;
-  ctx' : context.Context.t;
-}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : concurrency.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance sessionOptions_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (concurrency.sessionOptions.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "ttl" ∷ l.[(concurrency.sessionOptions.t), "ttl"] ↦{dq} v.(concurrency.sessionOptions.ttl') ∗
+      "leaseID" ∷ l.[(concurrency.sessionOptions.t), "leaseID"] ↦{dq} v.(concurrency.sessionOptions.leaseID') ∗
+      "ctx" ∷ l.[(concurrency.sessionOptions.t), "ctx"] ↦{dq} v.(concurrency.sessionOptions.ctx') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance sessionOptions_into_val_typed
+   :
+  IntoValTypedUnderlying (concurrency.sessionOptions.t) (concurrency.sessionOptionsⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance sessionOptions_access_load_ttl l (v : (concurrency.sessionOptions.t)) dq :
+  AccessStrict
+    (l.[(concurrency.sessionOptions.t), "ttl"] ↦{dq} (v.(concurrency.sessionOptions.ttl')))
+    (l.[(concurrency.sessionOptions.t), "ttl"] ↦{dq} (v.(concurrency.sessionOptions.ttl')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance sessionOptions_access_store_ttl l (v : (concurrency.sessionOptions.t)) ttl' :
+  AccessStrict
+    (l.[(concurrency.sessionOptions.t), "ttl"] ↦ (v.(concurrency.sessionOptions.ttl')))
+    (l.[(concurrency.sessionOptions.t), "ttl"] ↦ ttl')
+    (l ↦ v) (l ↦ (v <|(concurrency.sessionOptions.ttl') := ttl'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance sessionOptions_access_load_leaseID l (v : (concurrency.sessionOptions.t)) dq :
+  AccessStrict
+    (l.[(concurrency.sessionOptions.t), "leaseID"] ↦{dq} (v.(concurrency.sessionOptions.leaseID')))
+    (l.[(concurrency.sessionOptions.t), "leaseID"] ↦{dq} (v.(concurrency.sessionOptions.leaseID')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance sessionOptions_access_store_leaseID l (v : (concurrency.sessionOptions.t)) leaseID' :
+  AccessStrict
+    (l.[(concurrency.sessionOptions.t), "leaseID"] ↦ (v.(concurrency.sessionOptions.leaseID')))
+    (l.[(concurrency.sessionOptions.t), "leaseID"] ↦ leaseID')
+    (l ↦ v) (l ↦ (v <|(concurrency.sessionOptions.leaseID') := leaseID'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance sessionOptions_access_load_ctx l (v : (concurrency.sessionOptions.t)) dq :
+  AccessStrict
+    (l.[(concurrency.sessionOptions.t), "ctx"] ↦{dq} (v.(concurrency.sessionOptions.ctx')))
+    (l.[(concurrency.sessionOptions.t), "ctx"] ↦{dq} (v.(concurrency.sessionOptions.ctx')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance sessionOptions_access_store_ctx l (v : (concurrency.sessionOptions.t)) ctx' :
+  AccessStrict
+    (l.[(concurrency.sessionOptions.t), "ctx"] ↦ (v.(concurrency.sessionOptions.ctx')))
+    (l.[(concurrency.sessionOptions.t), "ctx"] ↦ ctx')
+    (l ↦ v) (l ↦ (v <|(concurrency.sessionOptions.ctx') := ctx'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End sessionOptions.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent concurrency.sessionOptions.
-#[local] Typeclasses Transparent concurrency.sessionOptions.
-
-Global Instance sessionOptions_wf : struct.Wf concurrency.sessionOptions.
-Proof. apply _. Qed.
-
-Global Instance settable_sessionOptions : Settable sessionOptions.t :=
-  settable! sessionOptions.mk < sessionOptions.ttl'; sessionOptions.leaseID'; sessionOptions.ctx' >.
-Global Instance into_val_sessionOptions : IntoVal sessionOptions.t :=
-  {| to_val_def v :=
-    struct.val_aux concurrency.sessionOptions [
-    "ttl" ::= #(sessionOptions.ttl' v);
-    "leaseID" ::= #(sessionOptions.leaseID' v);
-    "ctx" ::= #(sessionOptions.ctx' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_sessionOptions : IntoValTyped sessionOptions.t concurrency.sessionOptions :=
-{|
-  default_val := sessionOptions.mk (default_val _) (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_sessionOptions_ttl : IntoValStructField "ttl" concurrency.sessionOptions sessionOptions.ttl'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_sessionOptions_leaseID : IntoValStructField "leaseID" concurrency.sessionOptions sessionOptions.leaseID'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_sessionOptions_ctx : IntoValStructField "ctx" concurrency.sessionOptions sessionOptions.ctx'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-
-
-Global Instance sessionOptions_struct_fields_split dq l (v : sessionOptions.t) :
-  StructFieldsSplit dq l v (
-    "Httl" ∷ l ↦s[concurrency.sessionOptions :: "ttl"]{dq} v.(sessionOptions.ttl') ∗
-    "HleaseID" ∷ l ↦s[concurrency.sessionOptions :: "leaseID"]{dq} v.(sessionOptions.leaseID') ∗
-    "Hctx" ∷ l ↦s[concurrency.sessionOptions :: "ctx"]{dq} v.(sessionOptions.ctx')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (sessionOptions.ttl' v)) (concurrency.sessionOptions) "ttl"%go.
-  simpl_one_flatten_struct (# (sessionOptions.leaseID' v)) (concurrency.sessionOptions) "leaseID"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-(* type concurrency.SessionOption *)
-Module SessionOption.
-
-#[global] Transparent concurrency.SessionOption.
-#[global] Typeclasses Transparent concurrency.SessionOption.
-Section def.
-Context `{ffi_syntax}.
-Definition t := func.t.
-End def.
-End SessionOption.
-
-(* type concurrency.STM *)
-Module STM.
-
-#[global] Transparent concurrency.STM.
-#[global] Typeclasses Transparent concurrency.STM.
-Section def.
-Context `{ffi_syntax}.
-Definition t := interface.t.
-End def.
-End STM.
-
-(* type concurrency.Isolation *)
-Module Isolation.
-
-#[global] Transparent concurrency.Isolation.
-#[global] Typeclasses Transparent concurrency.Isolation.
-Section def.
-Context `{ffi_syntax}.
-Definition t := w64.
-End def.
-End Isolation.
-
-(* type concurrency.stmError *)
 Module stmError.
 Section def.
-Context `{ffi_syntax}.
 
-Record t := mk {
-  err' : error.t;
-}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : concurrency.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance stmError_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (concurrency.stmError.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "err" ∷ l.[(concurrency.stmError.t), "err"] ↦{dq} v.(concurrency.stmError.err') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance stmError_into_val_typed
+   :
+  IntoValTypedUnderlying (concurrency.stmError.t) (concurrency.stmErrorⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance stmError_access_load_err l (v : (concurrency.stmError.t)) dq :
+  AccessStrict
+    (l.[(concurrency.stmError.t), "err"] ↦{dq} (v.(concurrency.stmError.err')))
+    (l.[(concurrency.stmError.t), "err"] ↦{dq} (v.(concurrency.stmError.err')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance stmError_access_store_err l (v : (concurrency.stmError.t)) err' :
+  AccessStrict
+    (l.[(concurrency.stmError.t), "err"] ↦ (v.(concurrency.stmError.err')))
+    (l.[(concurrency.stmError.t), "err"] ↦ err')
+    (l ↦ v) (l ↦ (v <|(concurrency.stmError.err') := err'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End stmError.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent concurrency.stmError.
-#[local] Typeclasses Transparent concurrency.stmError.
-
-Global Instance stmError_wf : struct.Wf concurrency.stmError.
-Proof. apply _. Qed.
-
-Global Instance settable_stmError : Settable stmError.t :=
-  settable! stmError.mk < stmError.err' >.
-Global Instance into_val_stmError : IntoVal stmError.t :=
-  {| to_val_def v :=
-    struct.val_aux concurrency.stmError [
-    "err" ::= #(stmError.err' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_stmError : IntoValTyped stmError.t concurrency.stmError :=
-{|
-  default_val := stmError.mk (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_stmError_err : IntoValStructField "err" concurrency.stmError stmError.err'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-
-
-Global Instance stmError_struct_fields_split dq l (v : stmError.t) :
-  StructFieldsSplit dq l v (
-    "Herr" ∷ l ↦s[concurrency.stmError :: "err"]{dq} v.(stmError.err')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-(* type concurrency.stmOptions *)
 Module stmOptions.
 Section def.
-Context `{ffi_syntax}.
 
-Record t := mk {
-  iso' : Isolation.t;
-  ctx' : context.Context.t;
-  prefetch' : slice.t;
-}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : concurrency.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance stmOptions_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (concurrency.stmOptions.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "iso" ∷ l.[(concurrency.stmOptions.t), "iso"] ↦{dq} v.(concurrency.stmOptions.iso') ∗
+      "ctx" ∷ l.[(concurrency.stmOptions.t), "ctx"] ↦{dq} v.(concurrency.stmOptions.ctx') ∗
+      "prefetch" ∷ l.[(concurrency.stmOptions.t), "prefetch"] ↦{dq} v.(concurrency.stmOptions.prefetch') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance stmOptions_into_val_typed
+   :
+  IntoValTypedUnderlying (concurrency.stmOptions.t) (concurrency.stmOptionsⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance stmOptions_access_load_iso l (v : (concurrency.stmOptions.t)) dq :
+  AccessStrict
+    (l.[(concurrency.stmOptions.t), "iso"] ↦{dq} (v.(concurrency.stmOptions.iso')))
+    (l.[(concurrency.stmOptions.t), "iso"] ↦{dq} (v.(concurrency.stmOptions.iso')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance stmOptions_access_store_iso l (v : (concurrency.stmOptions.t)) iso' :
+  AccessStrict
+    (l.[(concurrency.stmOptions.t), "iso"] ↦ (v.(concurrency.stmOptions.iso')))
+    (l.[(concurrency.stmOptions.t), "iso"] ↦ iso')
+    (l ↦ v) (l ↦ (v <|(concurrency.stmOptions.iso') := iso'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance stmOptions_access_load_ctx l (v : (concurrency.stmOptions.t)) dq :
+  AccessStrict
+    (l.[(concurrency.stmOptions.t), "ctx"] ↦{dq} (v.(concurrency.stmOptions.ctx')))
+    (l.[(concurrency.stmOptions.t), "ctx"] ↦{dq} (v.(concurrency.stmOptions.ctx')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance stmOptions_access_store_ctx l (v : (concurrency.stmOptions.t)) ctx' :
+  AccessStrict
+    (l.[(concurrency.stmOptions.t), "ctx"] ↦ (v.(concurrency.stmOptions.ctx')))
+    (l.[(concurrency.stmOptions.t), "ctx"] ↦ ctx')
+    (l ↦ v) (l ↦ (v <|(concurrency.stmOptions.ctx') := ctx'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance stmOptions_access_load_prefetch l (v : (concurrency.stmOptions.t)) dq :
+  AccessStrict
+    (l.[(concurrency.stmOptions.t), "prefetch"] ↦{dq} (v.(concurrency.stmOptions.prefetch')))
+    (l.[(concurrency.stmOptions.t), "prefetch"] ↦{dq} (v.(concurrency.stmOptions.prefetch')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance stmOptions_access_store_prefetch l (v : (concurrency.stmOptions.t)) prefetch' :
+  AccessStrict
+    (l.[(concurrency.stmOptions.t), "prefetch"] ↦ (v.(concurrency.stmOptions.prefetch')))
+    (l.[(concurrency.stmOptions.t), "prefetch"] ↦ prefetch')
+    (l ↦ v) (l ↦ (v <|(concurrency.stmOptions.prefetch') := prefetch'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End stmOptions.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent concurrency.stmOptions.
-#[local] Typeclasses Transparent concurrency.stmOptions.
-
-Global Instance stmOptions_wf : struct.Wf concurrency.stmOptions.
-Proof. apply _. Qed.
-
-Global Instance settable_stmOptions : Settable stmOptions.t :=
-  settable! stmOptions.mk < stmOptions.iso'; stmOptions.ctx'; stmOptions.prefetch' >.
-Global Instance into_val_stmOptions : IntoVal stmOptions.t :=
-  {| to_val_def v :=
-    struct.val_aux concurrency.stmOptions [
-    "iso" ::= #(stmOptions.iso' v);
-    "ctx" ::= #(stmOptions.ctx' v);
-    "prefetch" ::= #(stmOptions.prefetch' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_stmOptions : IntoValTyped stmOptions.t concurrency.stmOptions :=
-{|
-  default_val := stmOptions.mk (default_val _) (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_stmOptions_iso : IntoValStructField "iso" concurrency.stmOptions stmOptions.iso'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_stmOptions_ctx : IntoValStructField "ctx" concurrency.stmOptions stmOptions.ctx'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_stmOptions_prefetch : IntoValStructField "prefetch" concurrency.stmOptions stmOptions.prefetch'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-
-
-Global Instance stmOptions_struct_fields_split dq l (v : stmOptions.t) :
-  StructFieldsSplit dq l v (
-    "Hiso" ∷ l ↦s[concurrency.stmOptions :: "iso"]{dq} v.(stmOptions.iso') ∗
-    "Hctx" ∷ l ↦s[concurrency.stmOptions :: "ctx"]{dq} v.(stmOptions.ctx') ∗
-    "Hprefetch" ∷ l ↦s[concurrency.stmOptions :: "prefetch"]{dq} v.(stmOptions.prefetch')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (stmOptions.iso' v)) (concurrency.stmOptions) "iso"%go.
-  simpl_one_flatten_struct (# (stmOptions.ctx' v)) (concurrency.stmOptions) "ctx"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-(* type concurrency.stmOption *)
-Module stmOption.
-
-#[global] Transparent concurrency.stmOption.
-#[global] Typeclasses Transparent concurrency.stmOption.
-Section def.
-Context `{ffi_syntax}.
-Definition t := func.t.
-End def.
-End stmOption.
-
-(* type concurrency.stmResponse *)
 Module stmResponse.
 Section def.
-Context `{ffi_syntax}.
 
-Record t := mk {
-  resp' : loc;
-  err' : error.t;
-}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : concurrency.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance stmResponse_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (concurrency.stmResponse.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "resp" ∷ l.[(concurrency.stmResponse.t), "resp"] ↦{dq} v.(concurrency.stmResponse.resp') ∗
+      "err" ∷ l.[(concurrency.stmResponse.t), "err"] ↦{dq} v.(concurrency.stmResponse.err') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance stmResponse_into_val_typed
+   :
+  IntoValTypedUnderlying (concurrency.stmResponse.t) (concurrency.stmResponseⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance stmResponse_access_load_resp l (v : (concurrency.stmResponse.t)) dq :
+  AccessStrict
+    (l.[(concurrency.stmResponse.t), "resp"] ↦{dq} (v.(concurrency.stmResponse.resp')))
+    (l.[(concurrency.stmResponse.t), "resp"] ↦{dq} (v.(concurrency.stmResponse.resp')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance stmResponse_access_store_resp l (v : (concurrency.stmResponse.t)) resp' :
+  AccessStrict
+    (l.[(concurrency.stmResponse.t), "resp"] ↦ (v.(concurrency.stmResponse.resp')))
+    (l.[(concurrency.stmResponse.t), "resp"] ↦ resp')
+    (l ↦ v) (l ↦ (v <|(concurrency.stmResponse.resp') := resp'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance stmResponse_access_load_err l (v : (concurrency.stmResponse.t)) dq :
+  AccessStrict
+    (l.[(concurrency.stmResponse.t), "err"] ↦{dq} (v.(concurrency.stmResponse.err')))
+    (l.[(concurrency.stmResponse.t), "err"] ↦{dq} (v.(concurrency.stmResponse.err')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance stmResponse_access_store_err l (v : (concurrency.stmResponse.t)) err' :
+  AccessStrict
+    (l.[(concurrency.stmResponse.t), "err"] ↦ (v.(concurrency.stmResponse.err')))
+    (l.[(concurrency.stmResponse.t), "err"] ↦ err')
+    (l ↦ v) (l ↦ (v <|(concurrency.stmResponse.err') := err'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End stmResponse.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent concurrency.stmResponse.
-#[local] Typeclasses Transparent concurrency.stmResponse.
-
-Global Instance stmResponse_wf : struct.Wf concurrency.stmResponse.
-Proof. apply _. Qed.
-
-Global Instance settable_stmResponse : Settable stmResponse.t :=
-  settable! stmResponse.mk < stmResponse.resp'; stmResponse.err' >.
-Global Instance into_val_stmResponse : IntoVal stmResponse.t :=
-  {| to_val_def v :=
-    struct.val_aux concurrency.stmResponse [
-    "resp" ::= #(stmResponse.resp' v);
-    "err" ::= #(stmResponse.err' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_stmResponse : IntoValTyped stmResponse.t concurrency.stmResponse :=
-{|
-  default_val := stmResponse.mk (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_stmResponse_resp : IntoValStructField "resp" concurrency.stmResponse stmResponse.resp'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_stmResponse_err : IntoValStructField "err" concurrency.stmResponse stmResponse.err'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-
-
-Global Instance stmResponse_struct_fields_split dq l (v : stmResponse.t) :
-  StructFieldsSplit dq l v (
-    "Hresp" ∷ l ↦s[concurrency.stmResponse :: "resp"]{dq} v.(stmResponse.resp') ∗
-    "Herr" ∷ l ↦s[concurrency.stmResponse :: "err"]{dq} v.(stmResponse.err')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (stmResponse.resp' v)) (concurrency.stmResponse) "resp"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-(* type concurrency.readSet *)
-Module readSet.
-
-#[global] Transparent concurrency.readSet.
-#[global] Typeclasses Transparent concurrency.readSet.
-Section def.
-Context `{ffi_syntax}.
-Definition t := loc.
-End def.
-End readSet.
-
-(* type concurrency.writeSet *)
-Module writeSet.
-
-#[global] Transparent concurrency.writeSet.
-#[global] Typeclasses Transparent concurrency.writeSet.
-Section def.
-Context `{ffi_syntax}.
-Definition t := loc.
-End def.
-End writeSet.
-
-(* type concurrency.stm *)
 Module stm.
 Section def.
-Context `{ffi_syntax}.
 
-Record t := mk {
-  client' : loc;
-  ctx' : context.Context.t;
-  rset' : readSet.t;
-  wset' : writeSet.t;
-  getOpts' : slice.t;
-  conflicts' : func.t;
-}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : concurrency.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance stm_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (concurrency.stm.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "client" ∷ l.[(concurrency.stm.t), "client"] ↦{dq} v.(concurrency.stm.client') ∗
+      "ctx" ∷ l.[(concurrency.stm.t), "ctx"] ↦{dq} v.(concurrency.stm.ctx') ∗
+      "rset" ∷ l.[(concurrency.stm.t), "rset"] ↦{dq} v.(concurrency.stm.rset') ∗
+      "wset" ∷ l.[(concurrency.stm.t), "wset"] ↦{dq} v.(concurrency.stm.wset') ∗
+      "getOpts" ∷ l.[(concurrency.stm.t), "getOpts"] ↦{dq} v.(concurrency.stm.getOpts') ∗
+      "conflicts" ∷ l.[(concurrency.stm.t), "conflicts"] ↦{dq} v.(concurrency.stm.conflicts') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance stm_into_val_typed
+   :
+  IntoValTypedUnderlying (concurrency.stm.t) (concurrency.stmⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance stm_access_load_client l (v : (concurrency.stm.t)) dq :
+  AccessStrict
+    (l.[(concurrency.stm.t), "client"] ↦{dq} (v.(concurrency.stm.client')))
+    (l.[(concurrency.stm.t), "client"] ↦{dq} (v.(concurrency.stm.client')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance stm_access_store_client l (v : (concurrency.stm.t)) client' :
+  AccessStrict
+    (l.[(concurrency.stm.t), "client"] ↦ (v.(concurrency.stm.client')))
+    (l.[(concurrency.stm.t), "client"] ↦ client')
+    (l ↦ v) (l ↦ (v <|(concurrency.stm.client') := client'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance stm_access_load_ctx l (v : (concurrency.stm.t)) dq :
+  AccessStrict
+    (l.[(concurrency.stm.t), "ctx"] ↦{dq} (v.(concurrency.stm.ctx')))
+    (l.[(concurrency.stm.t), "ctx"] ↦{dq} (v.(concurrency.stm.ctx')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance stm_access_store_ctx l (v : (concurrency.stm.t)) ctx' :
+  AccessStrict
+    (l.[(concurrency.stm.t), "ctx"] ↦ (v.(concurrency.stm.ctx')))
+    (l.[(concurrency.stm.t), "ctx"] ↦ ctx')
+    (l ↦ v) (l ↦ (v <|(concurrency.stm.ctx') := ctx'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance stm_access_load_rset l (v : (concurrency.stm.t)) dq :
+  AccessStrict
+    (l.[(concurrency.stm.t), "rset"] ↦{dq} (v.(concurrency.stm.rset')))
+    (l.[(concurrency.stm.t), "rset"] ↦{dq} (v.(concurrency.stm.rset')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance stm_access_store_rset l (v : (concurrency.stm.t)) rset' :
+  AccessStrict
+    (l.[(concurrency.stm.t), "rset"] ↦ (v.(concurrency.stm.rset')))
+    (l.[(concurrency.stm.t), "rset"] ↦ rset')
+    (l ↦ v) (l ↦ (v <|(concurrency.stm.rset') := rset'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance stm_access_load_wset l (v : (concurrency.stm.t)) dq :
+  AccessStrict
+    (l.[(concurrency.stm.t), "wset"] ↦{dq} (v.(concurrency.stm.wset')))
+    (l.[(concurrency.stm.t), "wset"] ↦{dq} (v.(concurrency.stm.wset')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance stm_access_store_wset l (v : (concurrency.stm.t)) wset' :
+  AccessStrict
+    (l.[(concurrency.stm.t), "wset"] ↦ (v.(concurrency.stm.wset')))
+    (l.[(concurrency.stm.t), "wset"] ↦ wset')
+    (l ↦ v) (l ↦ (v <|(concurrency.stm.wset') := wset'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance stm_access_load_getOpts l (v : (concurrency.stm.t)) dq :
+  AccessStrict
+    (l.[(concurrency.stm.t), "getOpts"] ↦{dq} (v.(concurrency.stm.getOpts')))
+    (l.[(concurrency.stm.t), "getOpts"] ↦{dq} (v.(concurrency.stm.getOpts')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance stm_access_store_getOpts l (v : (concurrency.stm.t)) getOpts' :
+  AccessStrict
+    (l.[(concurrency.stm.t), "getOpts"] ↦ (v.(concurrency.stm.getOpts')))
+    (l.[(concurrency.stm.t), "getOpts"] ↦ getOpts')
+    (l ↦ v) (l ↦ (v <|(concurrency.stm.getOpts') := getOpts'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance stm_access_load_conflicts l (v : (concurrency.stm.t)) dq :
+  AccessStrict
+    (l.[(concurrency.stm.t), "conflicts"] ↦{dq} (v.(concurrency.stm.conflicts')))
+    (l.[(concurrency.stm.t), "conflicts"] ↦{dq} (v.(concurrency.stm.conflicts')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance stm_access_store_conflicts l (v : (concurrency.stm.t)) conflicts' :
+  AccessStrict
+    (l.[(concurrency.stm.t), "conflicts"] ↦ (v.(concurrency.stm.conflicts')))
+    (l.[(concurrency.stm.t), "conflicts"] ↦ conflicts')
+    (l ↦ v) (l ↦ (v <|(concurrency.stm.conflicts') := conflicts'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End stm.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent concurrency.stm.
-#[local] Typeclasses Transparent concurrency.stm.
-
-Global Instance stm_wf : struct.Wf concurrency.stm.
-Proof. apply _. Qed.
-
-Global Instance settable_stm : Settable stm.t :=
-  settable! stm.mk < stm.client'; stm.ctx'; stm.rset'; stm.wset'; stm.getOpts'; stm.conflicts' >.
-Global Instance into_val_stm : IntoVal stm.t :=
-  {| to_val_def v :=
-    struct.val_aux concurrency.stm [
-    "client" ::= #(stm.client' v);
-    "ctx" ::= #(stm.ctx' v);
-    "rset" ::= #(stm.rset' v);
-    "wset" ::= #(stm.wset' v);
-    "getOpts" ::= #(stm.getOpts' v);
-    "conflicts" ::= #(stm.conflicts' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_stm : IntoValTyped stm.t concurrency.stm :=
-{|
-  default_val := stm.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_stm_client : IntoValStructField "client" concurrency.stm stm.client'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_stm_ctx : IntoValStructField "ctx" concurrency.stm stm.ctx'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_stm_rset : IntoValStructField "rset" concurrency.stm stm.rset'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_stm_wset : IntoValStructField "wset" concurrency.stm stm.wset'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_stm_getOpts : IntoValStructField "getOpts" concurrency.stm stm.getOpts'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_stm_conflicts : IntoValStructField "conflicts" concurrency.stm stm.conflicts'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-
-
-Global Instance stm_struct_fields_split dq l (v : stm.t) :
-  StructFieldsSplit dq l v (
-    "Hclient" ∷ l ↦s[concurrency.stm :: "client"]{dq} v.(stm.client') ∗
-    "Hctx" ∷ l ↦s[concurrency.stm :: "ctx"]{dq} v.(stm.ctx') ∗
-    "Hrset" ∷ l ↦s[concurrency.stm :: "rset"]{dq} v.(stm.rset') ∗
-    "Hwset" ∷ l ↦s[concurrency.stm :: "wset"]{dq} v.(stm.wset') ∗
-    "HgetOpts" ∷ l ↦s[concurrency.stm :: "getOpts"]{dq} v.(stm.getOpts') ∗
-    "Hconflicts" ∷ l ↦s[concurrency.stm :: "conflicts"]{dq} v.(stm.conflicts')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (stm.client' v)) (concurrency.stm) "client"%go.
-  simpl_one_flatten_struct (# (stm.ctx' v)) (concurrency.stm) "ctx"%go.
-  simpl_one_flatten_struct (# (stm.rset' v)) (concurrency.stm) "rset"%go.
-  simpl_one_flatten_struct (# (stm.wset' v)) (concurrency.stm) "wset"%go.
-  simpl_one_flatten_struct (# (stm.getOpts' v)) (concurrency.stm) "getOpts"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-(* type concurrency.stmPut *)
 Module stmPut.
 Section def.
-Context `{ffi_syntax}.
 
-Record t := mk {
-  val' : go_string;
-  op' : clientv3.Op.t;
-}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : concurrency.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance stmPut_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (concurrency.stmPut.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "val" ∷ l.[(concurrency.stmPut.t), "val"] ↦{dq} v.(concurrency.stmPut.val') ∗
+      "op" ∷ l.[(concurrency.stmPut.t), "op"] ↦{dq} v.(concurrency.stmPut.op') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance stmPut_into_val_typed
+   :
+  IntoValTypedUnderlying (concurrency.stmPut.t) (concurrency.stmPutⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance stmPut_access_load_val l (v : (concurrency.stmPut.t)) dq :
+  AccessStrict
+    (l.[(concurrency.stmPut.t), "val"] ↦{dq} (v.(concurrency.stmPut.val')))
+    (l.[(concurrency.stmPut.t), "val"] ↦{dq} (v.(concurrency.stmPut.val')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance stmPut_access_store_val l (v : (concurrency.stmPut.t)) val' :
+  AccessStrict
+    (l.[(concurrency.stmPut.t), "val"] ↦ (v.(concurrency.stmPut.val')))
+    (l.[(concurrency.stmPut.t), "val"] ↦ val')
+    (l ↦ v) (l ↦ (v <|(concurrency.stmPut.val') := val'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance stmPut_access_load_op l (v : (concurrency.stmPut.t)) dq :
+  AccessStrict
+    (l.[(concurrency.stmPut.t), "op"] ↦{dq} (v.(concurrency.stmPut.op')))
+    (l.[(concurrency.stmPut.t), "op"] ↦{dq} (v.(concurrency.stmPut.op')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance stmPut_access_store_op l (v : (concurrency.stmPut.t)) op' :
+  AccessStrict
+    (l.[(concurrency.stmPut.t), "op"] ↦ (v.(concurrency.stmPut.op')))
+    (l.[(concurrency.stmPut.t), "op"] ↦ op')
+    (l ↦ v) (l ↦ (v <|(concurrency.stmPut.op') := op'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End stmPut.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent concurrency.stmPut.
-#[local] Typeclasses Transparent concurrency.stmPut.
-
-Global Instance stmPut_wf : struct.Wf concurrency.stmPut.
-Proof. apply _. Qed.
-
-Global Instance settable_stmPut : Settable stmPut.t :=
-  settable! stmPut.mk < stmPut.val'; stmPut.op' >.
-Global Instance into_val_stmPut : IntoVal stmPut.t :=
-  {| to_val_def v :=
-    struct.val_aux concurrency.stmPut [
-    "val" ::= #(stmPut.val' v);
-    "op" ::= #(stmPut.op' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_stmPut : IntoValTyped stmPut.t concurrency.stmPut :=
-{|
-  default_val := stmPut.mk (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_stmPut_val : IntoValStructField "val" concurrency.stmPut stmPut.val'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_stmPut_op : IntoValStructField "op" concurrency.stmPut stmPut.op'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-
-
-Global Instance stmPut_struct_fields_split dq l (v : stmPut.t) :
-  StructFieldsSplit dq l v (
-    "Hval" ∷ l ↦s[concurrency.stmPut :: "val"]{dq} v.(stmPut.val') ∗
-    "Hop" ∷ l ↦s[concurrency.stmPut :: "op"]{dq} v.(stmPut.op')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (stmPut.val' v)) (concurrency.stmPut) "val"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-(* type concurrency.stmSerializable *)
 Module stmSerializable.
 Section def.
-Context `{ffi_syntax}.
 
-Record t := mk {
-  stm' : stm.t;
-  prefetch' : loc;
-}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : concurrency.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance stmSerializable_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (concurrency.stmSerializable.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "stm" ∷ l.[(concurrency.stmSerializable.t), "stm"] ↦{dq} v.(concurrency.stmSerializable.stm') ∗
+      "prefetch" ∷ l.[(concurrency.stmSerializable.t), "prefetch"] ↦{dq} v.(concurrency.stmSerializable.prefetch') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance stmSerializable_into_val_typed
+   :
+  IntoValTypedUnderlying (concurrency.stmSerializable.t) (concurrency.stmSerializableⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance stmSerializable_access_load_stm l (v : (concurrency.stmSerializable.t)) dq :
+  AccessStrict
+    (l.[(concurrency.stmSerializable.t), "stm"] ↦{dq} (v.(concurrency.stmSerializable.stm')))
+    (l.[(concurrency.stmSerializable.t), "stm"] ↦{dq} (v.(concurrency.stmSerializable.stm')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance stmSerializable_access_store_stm l (v : (concurrency.stmSerializable.t)) stm' :
+  AccessStrict
+    (l.[(concurrency.stmSerializable.t), "stm"] ↦ (v.(concurrency.stmSerializable.stm')))
+    (l.[(concurrency.stmSerializable.t), "stm"] ↦ stm')
+    (l ↦ v) (l ↦ (v <|(concurrency.stmSerializable.stm') := stm'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance stmSerializable_access_load_prefetch l (v : (concurrency.stmSerializable.t)) dq :
+  AccessStrict
+    (l.[(concurrency.stmSerializable.t), "prefetch"] ↦{dq} (v.(concurrency.stmSerializable.prefetch')))
+    (l.[(concurrency.stmSerializable.t), "prefetch"] ↦{dq} (v.(concurrency.stmSerializable.prefetch')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance stmSerializable_access_store_prefetch l (v : (concurrency.stmSerializable.t)) prefetch' :
+  AccessStrict
+    (l.[(concurrency.stmSerializable.t), "prefetch"] ↦ (v.(concurrency.stmSerializable.prefetch')))
+    (l.[(concurrency.stmSerializable.t), "prefetch"] ↦ prefetch')
+    (l ↦ v) (l ↦ (v <|(concurrency.stmSerializable.prefetch') := prefetch'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End stmSerializable.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent concurrency.stmSerializable.
-#[local] Typeclasses Transparent concurrency.stmSerializable.
-
-Global Instance stmSerializable_wf : struct.Wf concurrency.stmSerializable.
-Proof. apply _. Qed.
-
-Global Instance settable_stmSerializable : Settable stmSerializable.t :=
-  settable! stmSerializable.mk < stmSerializable.stm'; stmSerializable.prefetch' >.
-Global Instance into_val_stmSerializable : IntoVal stmSerializable.t :=
-  {| to_val_def v :=
-    struct.val_aux concurrency.stmSerializable [
-    "stm" ::= #(stmSerializable.stm' v);
-    "prefetch" ::= #(stmSerializable.prefetch' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_stmSerializable : IntoValTyped stmSerializable.t concurrency.stmSerializable :=
-{|
-  default_val := stmSerializable.mk (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_stmSerializable_stm : IntoValStructField "stm" concurrency.stmSerializable stmSerializable.stm'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_stmSerializable_prefetch : IntoValStructField "prefetch" concurrency.stmSerializable stmSerializable.prefetch'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-
-
-Global Instance stmSerializable_struct_fields_split dq l (v : stmSerializable.t) :
-  StructFieldsSplit dq l v (
-    "Hstm" ∷ l ↦s[concurrency.stmSerializable :: "stm"]{dq} v.(stmSerializable.stm') ∗
-    "Hprefetch" ∷ l ↦s[concurrency.stmSerializable :: "prefetch"]{dq} v.(stmSerializable.prefetch')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (stmSerializable.stm' v)) (concurrency.stmSerializable) "stm"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-Section names.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext}.
-#[local] Transparent is_pkg_defined is_pkg_defined_pure.
-
-Global Instance is_pkg_defined_pure_concurrency : IsPkgDefinedPure concurrency :=
-  {|
-    is_pkg_defined_pure_def go_ctx :=
-      is_pkg_defined_pure_single concurrency ∧
-      is_pkg_defined_pure code.context.context ∧
-      is_pkg_defined_pure code.errors.errors ∧
-      is_pkg_defined_pure code.fmt.fmt ∧
-      is_pkg_defined_pure code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb ∧
-      is_pkg_defined_pure code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb ∧
-      is_pkg_defined_pure code.go_etcd_io.etcd.client.v3.clientv3 ∧
-      is_pkg_defined_pure code.strings.strings ∧
-      is_pkg_defined_pure code.sync.sync ∧
-      is_pkg_defined_pure code.time.time ∧
-      is_pkg_defined_pure code.go_uber_org.zap.zap ∧
-      is_pkg_defined_pure code.math.math;
-  |}.
-
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_concurrency : IsPkgDefined concurrency :=
-  {|
-    is_pkg_defined_def go_ctx :=
-      (is_pkg_defined_single concurrency ∗
-       is_pkg_defined code.context.context ∗
-       is_pkg_defined code.errors.errors ∗
-       is_pkg_defined code.fmt.fmt ∗
-       is_pkg_defined code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb ∗
-       is_pkg_defined code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb ∗
-       is_pkg_defined code.go_etcd_io.etcd.client.v3.clientv3 ∗
-       is_pkg_defined code.strings.strings ∗
-       is_pkg_defined code.sync.sync ∗
-       is_pkg_defined code.time.time ∗
-       is_pkg_defined code.go_uber_org.zap.zap ∗
-       is_pkg_defined code.math.math)%I
-  |}.
-Final Obligation. iIntros. iFrame "#%". Qed.
-#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
-
-Global Instance wp_func_call_NewElection :
-  WpFuncCall concurrency.NewElection _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_ResumeElection :
-  WpFuncCall concurrency.ResumeElection _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_waitDelete :
-  WpFuncCall concurrency.waitDelete _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_waitDeletes :
-  WpFuncCall concurrency.waitDeletes _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_NewMutex :
-  WpFuncCall concurrency.NewMutex _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_NewLocker :
-  WpFuncCall concurrency.NewLocker _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_NewSession :
-  WpFuncCall concurrency.NewSession _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_WithTTL :
-  WpFuncCall concurrency.WithTTL _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_WithLease :
-  WpFuncCall concurrency.WithLease _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_WithContext :
-  WpFuncCall concurrency.WithContext _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_WithIsolation :
-  WpFuncCall concurrency.WithIsolation _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_WithAbortContext :
-  WpFuncCall concurrency.WithAbortContext _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_WithPrefetch :
-  WpFuncCall concurrency.WithPrefetch _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_NewSTM :
-  WpFuncCall concurrency.NewSTM _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_mkSTM :
-  WpFuncCall concurrency.mkSTM _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_runSTM :
-  WpFuncCall concurrency.runSTM _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_isKeyCurrent :
-  WpFuncCall concurrency.isKeyCurrent _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_respToValue :
-  WpFuncCall concurrency.respToValue _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_NewSTMRepeatable :
-  WpFuncCall concurrency.NewSTMRepeatable _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_NewSTMSerializable :
-  WpFuncCall concurrency.NewSTMSerializable _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_NewSTMReadCommitted :
-  WpFuncCall concurrency.NewSTMReadCommitted _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_method_call_Election'ptr_Campaign :
-  WpMethodCall (ptrT.id concurrency.Election.id) "Campaign" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Election'ptr_Header :
-  WpMethodCall (ptrT.id concurrency.Election.id) "Header" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Election'ptr_Key :
-  WpMethodCall (ptrT.id concurrency.Election.id) "Key" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Election'ptr_Leader :
-  WpMethodCall (ptrT.id concurrency.Election.id) "Leader" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Election'ptr_Observe :
-  WpMethodCall (ptrT.id concurrency.Election.id) "Observe" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Election'ptr_Proclaim :
-  WpMethodCall (ptrT.id concurrency.Election.id) "Proclaim" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Election'ptr_Resign :
-  WpMethodCall (ptrT.id concurrency.Election.id) "Resign" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Election'ptr_Rev :
-  WpMethodCall (ptrT.id concurrency.Election.id) "Rev" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Election'ptr_observe :
-  WpMethodCall (ptrT.id concurrency.Election.id) "observe" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Mutex'ptr_Header :
-  WpMethodCall (ptrT.id concurrency.Mutex.id) "Header" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Mutex'ptr_IsOwner :
-  WpMethodCall (ptrT.id concurrency.Mutex.id) "IsOwner" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Mutex'ptr_Key :
-  WpMethodCall (ptrT.id concurrency.Mutex.id) "Key" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Mutex'ptr_Lock :
-  WpMethodCall (ptrT.id concurrency.Mutex.id) "Lock" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Mutex'ptr_TryLock :
-  WpMethodCall (ptrT.id concurrency.Mutex.id) "TryLock" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Mutex'ptr_Unlock :
-  WpMethodCall (ptrT.id concurrency.Mutex.id) "Unlock" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Mutex'ptr_tryAcquire :
-  WpMethodCall (ptrT.id concurrency.Mutex.id) "tryAcquire" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_lockerMutex_Header :
-  WpMethodCall concurrency.lockerMutex.id "Header" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_lockerMutex_IsOwner :
-  WpMethodCall concurrency.lockerMutex.id "IsOwner" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_lockerMutex_Key :
-  WpMethodCall concurrency.lockerMutex.id "Key" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_lockerMutex_TryLock :
-  WpMethodCall concurrency.lockerMutex.id "TryLock" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_lockerMutex_tryAcquire :
-  WpMethodCall concurrency.lockerMutex.id "tryAcquire" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_lockerMutex'ptr_Header :
-  WpMethodCall (ptrT.id concurrency.lockerMutex.id) "Header" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_lockerMutex'ptr_IsOwner :
-  WpMethodCall (ptrT.id concurrency.lockerMutex.id) "IsOwner" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_lockerMutex'ptr_Key :
-  WpMethodCall (ptrT.id concurrency.lockerMutex.id) "Key" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_lockerMutex'ptr_Lock :
-  WpMethodCall (ptrT.id concurrency.lockerMutex.id) "Lock" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_lockerMutex'ptr_TryLock :
-  WpMethodCall (ptrT.id concurrency.lockerMutex.id) "TryLock" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_lockerMutex'ptr_Unlock :
-  WpMethodCall (ptrT.id concurrency.lockerMutex.id) "Unlock" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_lockerMutex'ptr_tryAcquire :
-  WpMethodCall (ptrT.id concurrency.lockerMutex.id) "tryAcquire" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Session'ptr_Client :
-  WpMethodCall (ptrT.id concurrency.Session.id) "Client" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Session'ptr_Close :
-  WpMethodCall (ptrT.id concurrency.Session.id) "Close" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Session'ptr_Ctx :
-  WpMethodCall (ptrT.id concurrency.Session.id) "Ctx" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Session'ptr_Done :
-  WpMethodCall (ptrT.id concurrency.Session.id) "Done" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Session'ptr_Lease :
-  WpMethodCall (ptrT.id concurrency.Session.id) "Lease" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Session'ptr_Orphan :
-  WpMethodCall (ptrT.id concurrency.Session.id) "Orphan" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_stm'ptr_Del :
-  WpMethodCall (ptrT.id concurrency.stm.id) "Del" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_stm'ptr_Get :
-  WpMethodCall (ptrT.id concurrency.stm.id) "Get" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_stm'ptr_Put :
-  WpMethodCall (ptrT.id concurrency.stm.id) "Put" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_stm'ptr_Rev :
-  WpMethodCall (ptrT.id concurrency.stm.id) "Rev" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_stm'ptr_commit :
-  WpMethodCall (ptrT.id concurrency.stm.id) "commit" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_stm'ptr_fetch :
-  WpMethodCall (ptrT.id concurrency.stm.id) "fetch" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_stm'ptr_reset :
-  WpMethodCall (ptrT.id concurrency.stm.id) "reset" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_readSet_add :
-  WpMethodCall concurrency.readSet.id "add" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_readSet_cmps :
-  WpMethodCall concurrency.readSet.id "cmps" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_readSet_first :
-  WpMethodCall concurrency.readSet.id "first" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_readSet'ptr_add :
-  WpMethodCall (ptrT.id concurrency.readSet.id) "add" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_readSet'ptr_cmps :
-  WpMethodCall (ptrT.id concurrency.readSet.id) "cmps" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_readSet'ptr_first :
-  WpMethodCall (ptrT.id concurrency.readSet.id) "first" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_writeSet_cmps :
-  WpMethodCall concurrency.writeSet.id "cmps" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_writeSet_get :
-  WpMethodCall concurrency.writeSet.id "get" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_writeSet_puts :
-  WpMethodCall concurrency.writeSet.id "puts" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_writeSet'ptr_cmps :
-  WpMethodCall (ptrT.id concurrency.writeSet.id) "cmps" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_writeSet'ptr_get :
-  WpMethodCall (ptrT.id concurrency.writeSet.id) "get" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_writeSet'ptr_puts :
-  WpMethodCall (ptrT.id concurrency.writeSet.id) "puts" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_stmSerializable'ptr_Del :
-  WpMethodCall (ptrT.id concurrency.stmSerializable.id) "Del" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_stmSerializable'ptr_Get :
-  WpMethodCall (ptrT.id concurrency.stmSerializable.id) "Get" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_stmSerializable'ptr_Put :
-  WpMethodCall (ptrT.id concurrency.stmSerializable.id) "Put" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_stmSerializable'ptr_Rev :
-  WpMethodCall (ptrT.id concurrency.stmSerializable.id) "Rev" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_stmSerializable'ptr_commit :
-  WpMethodCall (ptrT.id concurrency.stmSerializable.id) "commit" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_stmSerializable'ptr_fetch :
-  WpMethodCall (ptrT.id concurrency.stmSerializable.id) "fetch" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_stmSerializable'ptr_gets :
-  WpMethodCall (ptrT.id concurrency.stmSerializable.id) "gets" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_stmSerializable'ptr_reset :
-  WpMethodCall (ptrT.id concurrency.stmSerializable.id) "reset" _ (is_pkg_defined concurrency) :=
-  ltac:(solve_wp_method_call).
-
-End names.
 End concurrency.

@@ -3,128 +3,78 @@ Require Export New.proof.proof_prelude.
 Require Export New.generatedproof.github_com.goose_lang.std.
 Require Export New.generatedproof.github_com.tchajed.marshal.
 Require Export New.golang.theory.
-
 Require Export New.code.github_com.mit_pdos.gokv.memkv.conditionalputrequest_gk.
 
 Set Default Proof Using "Type".
 
 Module conditionalputrequest_gk.
-
-(* type conditionalputrequest_gk.S *)
 Module S.
 Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-  Key' : w64;
-  ExpectedValue' : slice.t;
-  NewValue' : slice.t;
-}.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : conditionalputrequest_gk.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance S_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (conditionalputrequest_gk.S.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "Key" ∷ l.[(conditionalputrequest_gk.S.t), "Key"] ↦{dq} v.(conditionalputrequest_gk.S.Key') ∗
+      "ExpectedValue" ∷ l.[(conditionalputrequest_gk.S.t), "ExpectedValue"] ↦{dq} v.(conditionalputrequest_gk.S.ExpectedValue') ∗
+      "NewValue" ∷ l.[(conditionalputrequest_gk.S.t), "NewValue"] ↦{dq} v.(conditionalputrequest_gk.S.NewValue') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance S_into_val_typed
+   :
+  IntoValTypedUnderlying (conditionalputrequest_gk.S.t) (conditionalputrequest_gk.Sⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance S_access_load_Key l (v : (conditionalputrequest_gk.S.t)) dq :
+  AccessStrict
+    (l.[(conditionalputrequest_gk.S.t), "Key"] ↦{dq} (v.(conditionalputrequest_gk.S.Key')))
+    (l.[(conditionalputrequest_gk.S.t), "Key"] ↦{dq} (v.(conditionalputrequest_gk.S.Key')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance S_access_store_Key l (v : (conditionalputrequest_gk.S.t)) Key' :
+  AccessStrict
+    (l.[(conditionalputrequest_gk.S.t), "Key"] ↦ (v.(conditionalputrequest_gk.S.Key')))
+    (l.[(conditionalputrequest_gk.S.t), "Key"] ↦ Key')
+    (l ↦ v) (l ↦ (v <|(conditionalputrequest_gk.S.Key') := Key'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance S_access_load_ExpectedValue l (v : (conditionalputrequest_gk.S.t)) dq :
+  AccessStrict
+    (l.[(conditionalputrequest_gk.S.t), "ExpectedValue"] ↦{dq} (v.(conditionalputrequest_gk.S.ExpectedValue')))
+    (l.[(conditionalputrequest_gk.S.t), "ExpectedValue"] ↦{dq} (v.(conditionalputrequest_gk.S.ExpectedValue')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance S_access_store_ExpectedValue l (v : (conditionalputrequest_gk.S.t)) ExpectedValue' :
+  AccessStrict
+    (l.[(conditionalputrequest_gk.S.t), "ExpectedValue"] ↦ (v.(conditionalputrequest_gk.S.ExpectedValue')))
+    (l.[(conditionalputrequest_gk.S.t), "ExpectedValue"] ↦ ExpectedValue')
+    (l ↦ v) (l ↦ (v <|(conditionalputrequest_gk.S.ExpectedValue') := ExpectedValue'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance S_access_load_NewValue l (v : (conditionalputrequest_gk.S.t)) dq :
+  AccessStrict
+    (l.[(conditionalputrequest_gk.S.t), "NewValue"] ↦{dq} (v.(conditionalputrequest_gk.S.NewValue')))
+    (l.[(conditionalputrequest_gk.S.t), "NewValue"] ↦{dq} (v.(conditionalputrequest_gk.S.NewValue')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance S_access_store_NewValue l (v : (conditionalputrequest_gk.S.t)) NewValue' :
+  AccessStrict
+    (l.[(conditionalputrequest_gk.S.t), "NewValue"] ↦ (v.(conditionalputrequest_gk.S.NewValue')))
+    (l.[(conditionalputrequest_gk.S.t), "NewValue"] ↦ NewValue')
+    (l ↦ v) (l ↦ (v <|(conditionalputrequest_gk.S.NewValue') := NewValue'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End S.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent conditionalputrequest_gk.S.
-#[local] Typeclasses Transparent conditionalputrequest_gk.S.
-
-Global Instance S_wf : struct.Wf conditionalputrequest_gk.S.
-Proof. apply _. Qed.
-
-Global Instance settable_S : Settable S.t :=
-  settable! S.mk < S.Key'; S.ExpectedValue'; S.NewValue' >.
-Global Instance into_val_S : IntoVal S.t :=
-  {| to_val_def v :=
-    struct.val_aux conditionalputrequest_gk.S [
-    "Key" ::= #(S.Key' v);
-    "ExpectedValue" ::= #(S.ExpectedValue' v);
-    "NewValue" ::= #(S.NewValue' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_S : IntoValTyped S.t conditionalputrequest_gk.S :=
-{|
-  default_val := S.mk (default_val _) (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_S_Key : IntoValStructField "Key" conditionalputrequest_gk.S S.Key'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_S_ExpectedValue : IntoValStructField "ExpectedValue" conditionalputrequest_gk.S S.ExpectedValue'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_S_NewValue : IntoValStructField "NewValue" conditionalputrequest_gk.S S.NewValue'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_S Key' ExpectedValue' NewValue':
-  PureWp True
-    (struct.make #conditionalputrequest_gk.S (alist_val [
-      "Key" ::= #Key';
-      "ExpectedValue" ::= #ExpectedValue';
-      "NewValue" ::= #NewValue'
-    ]))%struct
-    #(S.mk Key' ExpectedValue' NewValue').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance S_struct_fields_split dq l (v : S.t) :
-  StructFieldsSplit dq l v (
-    "HKey" ∷ l ↦s[conditionalputrequest_gk.S :: "Key"]{dq} v.(S.Key') ∗
-    "HExpectedValue" ∷ l ↦s[conditionalputrequest_gk.S :: "ExpectedValue"]{dq} v.(S.ExpectedValue') ∗
-    "HNewValue" ∷ l ↦s[conditionalputrequest_gk.S :: "NewValue"]{dq} v.(S.NewValue')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (S.Key' v)) (conditionalputrequest_gk.S) "Key"%go.
-  simpl_one_flatten_struct (# (S.ExpectedValue' v)) (conditionalputrequest_gk.S) "ExpectedValue"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-Section names.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext}.
-#[local] Transparent is_pkg_defined is_pkg_defined_pure.
-
-Global Instance is_pkg_defined_pure_conditionalputrequest_gk : IsPkgDefinedPure conditionalputrequest_gk :=
-  {|
-    is_pkg_defined_pure_def go_ctx :=
-      is_pkg_defined_pure_single conditionalputrequest_gk ∧
-      is_pkg_defined_pure code.github_com.goose_lang.std.std ∧
-      is_pkg_defined_pure code.github_com.tchajed.marshal.marshal;
-  |}.
-
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_conditionalputrequest_gk : IsPkgDefined conditionalputrequest_gk :=
-  {|
-    is_pkg_defined_def go_ctx :=
-      (is_pkg_defined_single conditionalputrequest_gk ∗
-       is_pkg_defined code.github_com.goose_lang.std.std ∗
-       is_pkg_defined code.github_com.tchajed.marshal.marshal)%I
-  |}.
-Final Obligation. iIntros. iFrame "#%". Qed.
-#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
-
-Global Instance wp_func_call_Marshal :
-  WpFuncCall conditionalputrequest_gk.Marshal _ (is_pkg_defined conditionalputrequest_gk) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_Unmarshal :
-  WpFuncCall conditionalputrequest_gk.Unmarshal _ (is_pkg_defined conditionalputrequest_gk) :=
-  ltac:(solve_wp_func_call).
-
-End names.
 End conditionalputrequest_gk.

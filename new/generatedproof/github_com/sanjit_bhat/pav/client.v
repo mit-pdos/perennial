@@ -10,722 +10,327 @@ Require Export New.generatedproof.github_com.sanjit_bhat.pav.ktcore.
 Require Export New.generatedproof.github_com.sanjit_bhat.pav.merkle.
 Require Export New.generatedproof.github_com.sanjit_bhat.pav.server.
 Require Export New.golang.theory.
-
 Require Export New.code.github_com.sanjit_bhat.pav.client.
 
 Set Default Proof Using "Type".
 
 Module client.
-
-(* type client.Client *)
 Module Client.
 Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-  uid' : w64;
-  pend' : loc;
-  last' : loc;
-  serv' : loc;
-}.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : client.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance Client_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (client.Client.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "uid" ∷ l.[(client.Client.t), "uid"] ↦{dq} v.(client.Client.uid') ∗
+      "pend" ∷ l.[(client.Client.t), "pend"] ↦{dq} v.(client.Client.pend') ∗
+      "last" ∷ l.[(client.Client.t), "last"] ↦{dq} v.(client.Client.last') ∗
+      "serv" ∷ l.[(client.Client.t), "serv"] ↦{dq} v.(client.Client.serv') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance Client_into_val_typed
+   :
+  IntoValTypedUnderlying (client.Client.t) (client.Clientⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Client_access_load_uid l (v : (client.Client.t)) dq :
+  AccessStrict
+    (l.[(client.Client.t), "uid"] ↦{dq} (v.(client.Client.uid')))
+    (l.[(client.Client.t), "uid"] ↦{dq} (v.(client.Client.uid')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Client_access_store_uid l (v : (client.Client.t)) uid' :
+  AccessStrict
+    (l.[(client.Client.t), "uid"] ↦ (v.(client.Client.uid')))
+    (l.[(client.Client.t), "uid"] ↦ uid')
+    (l ↦ v) (l ↦ (v <|(client.Client.uid') := uid'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Client_access_load_pend l (v : (client.Client.t)) dq :
+  AccessStrict
+    (l.[(client.Client.t), "pend"] ↦{dq} (v.(client.Client.pend')))
+    (l.[(client.Client.t), "pend"] ↦{dq} (v.(client.Client.pend')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Client_access_store_pend l (v : (client.Client.t)) pend' :
+  AccessStrict
+    (l.[(client.Client.t), "pend"] ↦ (v.(client.Client.pend')))
+    (l.[(client.Client.t), "pend"] ↦ pend')
+    (l ↦ v) (l ↦ (v <|(client.Client.pend') := pend'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Client_access_load_last l (v : (client.Client.t)) dq :
+  AccessStrict
+    (l.[(client.Client.t), "last"] ↦{dq} (v.(client.Client.last')))
+    (l.[(client.Client.t), "last"] ↦{dq} (v.(client.Client.last')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Client_access_store_last l (v : (client.Client.t)) last' :
+  AccessStrict
+    (l.[(client.Client.t), "last"] ↦ (v.(client.Client.last')))
+    (l.[(client.Client.t), "last"] ↦ last')
+    (l ↦ v) (l ↦ (v <|(client.Client.last') := last'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Client_access_load_serv l (v : (client.Client.t)) dq :
+  AccessStrict
+    (l.[(client.Client.t), "serv"] ↦{dq} (v.(client.Client.serv')))
+    (l.[(client.Client.t), "serv"] ↦{dq} (v.(client.Client.serv')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Client_access_store_serv l (v : (client.Client.t)) serv' :
+  AccessStrict
+    (l.[(client.Client.t), "serv"] ↦ (v.(client.Client.serv')))
+    (l.[(client.Client.t), "serv"] ↦ serv')
+    (l ↦ v) (l ↦ (v <|(client.Client.serv') := serv'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End Client.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent client.Client.
-#[local] Typeclasses Transparent client.Client.
-
-Global Instance Client_wf : struct.Wf client.Client.
-Proof. apply _. Qed.
-
-Global Instance settable_Client : Settable Client.t :=
-  settable! Client.mk < Client.uid'; Client.pend'; Client.last'; Client.serv' >.
-Global Instance into_val_Client : IntoVal Client.t :=
-  {| to_val_def v :=
-    struct.val_aux client.Client [
-    "uid" ::= #(Client.uid' v);
-    "pend" ::= #(Client.pend' v);
-    "last" ::= #(Client.last' v);
-    "serv" ::= #(Client.serv' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_Client : IntoValTyped Client.t client.Client :=
-{|
-  default_val := Client.mk (default_val _) (default_val _) (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_Client_uid : IntoValStructField "uid" client.Client Client.uid'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Client_pend : IntoValStructField "pend" client.Client Client.pend'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Client_last : IntoValStructField "last" client.Client Client.last'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Client_serv : IntoValStructField "serv" client.Client Client.serv'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Client uid' pend' last' serv':
-  PureWp True
-    (struct.make #client.Client (alist_val [
-      "uid" ::= #uid';
-      "pend" ::= #pend';
-      "last" ::= #last';
-      "serv" ::= #serv'
-    ]))%struct
-    #(Client.mk uid' pend' last' serv').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance Client_struct_fields_split dq l (v : Client.t) :
-  StructFieldsSplit dq l v (
-    "Huid" ∷ l ↦s[client.Client :: "uid"]{dq} v.(Client.uid') ∗
-    "Hpend" ∷ l ↦s[client.Client :: "pend"]{dq} v.(Client.pend') ∗
-    "Hlast" ∷ l ↦s[client.Client :: "last"]{dq} v.(Client.last') ∗
-    "Hserv" ∷ l ↦s[client.Client :: "serv"]{dq} v.(Client.serv')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Client.uid' v)) (client.Client) "uid"%go.
-  simpl_one_flatten_struct (# (Client.pend' v)) (client.Client) "pend"%go.
-  simpl_one_flatten_struct (# (Client.last' v)) (client.Client) "last"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-(* type client.nextVer *)
 Module nextVer.
 Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-  ver' : w64;
-  isPending' : bool;
-  pendingPk' : slice.t;
-}.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : client.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance nextVer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (client.nextVer.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "ver" ∷ l.[(client.nextVer.t), "ver"] ↦{dq} v.(client.nextVer.ver') ∗
+      "isPending" ∷ l.[(client.nextVer.t), "isPending"] ↦{dq} v.(client.nextVer.isPending') ∗
+      "pendingPk" ∷ l.[(client.nextVer.t), "pendingPk"] ↦{dq} v.(client.nextVer.pendingPk') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance nextVer_into_val_typed
+   :
+  IntoValTypedUnderlying (client.nextVer.t) (client.nextVerⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance nextVer_access_load_ver l (v : (client.nextVer.t)) dq :
+  AccessStrict
+    (l.[(client.nextVer.t), "ver"] ↦{dq} (v.(client.nextVer.ver')))
+    (l.[(client.nextVer.t), "ver"] ↦{dq} (v.(client.nextVer.ver')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance nextVer_access_store_ver l (v : (client.nextVer.t)) ver' :
+  AccessStrict
+    (l.[(client.nextVer.t), "ver"] ↦ (v.(client.nextVer.ver')))
+    (l.[(client.nextVer.t), "ver"] ↦ ver')
+    (l ↦ v) (l ↦ (v <|(client.nextVer.ver') := ver'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance nextVer_access_load_isPending l (v : (client.nextVer.t)) dq :
+  AccessStrict
+    (l.[(client.nextVer.t), "isPending"] ↦{dq} (v.(client.nextVer.isPending')))
+    (l.[(client.nextVer.t), "isPending"] ↦{dq} (v.(client.nextVer.isPending')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance nextVer_access_store_isPending l (v : (client.nextVer.t)) isPending' :
+  AccessStrict
+    (l.[(client.nextVer.t), "isPending"] ↦ (v.(client.nextVer.isPending')))
+    (l.[(client.nextVer.t), "isPending"] ↦ isPending')
+    (l ↦ v) (l ↦ (v <|(client.nextVer.isPending') := isPending'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance nextVer_access_load_pendingPk l (v : (client.nextVer.t)) dq :
+  AccessStrict
+    (l.[(client.nextVer.t), "pendingPk"] ↦{dq} (v.(client.nextVer.pendingPk')))
+    (l.[(client.nextVer.t), "pendingPk"] ↦{dq} (v.(client.nextVer.pendingPk')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance nextVer_access_store_pendingPk l (v : (client.nextVer.t)) pendingPk' :
+  AccessStrict
+    (l.[(client.nextVer.t), "pendingPk"] ↦ (v.(client.nextVer.pendingPk')))
+    (l.[(client.nextVer.t), "pendingPk"] ↦ pendingPk')
+    (l ↦ v) (l ↦ (v <|(client.nextVer.pendingPk') := pendingPk'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End nextVer.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent client.nextVer.
-#[local] Typeclasses Transparent client.nextVer.
-
-Global Instance nextVer_wf : struct.Wf client.nextVer.
-Proof. apply _. Qed.
-
-Global Instance settable_nextVer : Settable nextVer.t :=
-  settable! nextVer.mk < nextVer.ver'; nextVer.isPending'; nextVer.pendingPk' >.
-Global Instance into_val_nextVer : IntoVal nextVer.t :=
-  {| to_val_def v :=
-    struct.val_aux client.nextVer [
-    "ver" ::= #(nextVer.ver' v);
-    "isPending" ::= #(nextVer.isPending' v);
-    "pendingPk" ::= #(nextVer.pendingPk' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_nextVer : IntoValTyped nextVer.t client.nextVer :=
-{|
-  default_val := nextVer.mk (default_val _) (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_nextVer_ver : IntoValStructField "ver" client.nextVer nextVer.ver'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_nextVer_isPending : IntoValStructField "isPending" client.nextVer nextVer.isPending'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_nextVer_pendingPk : IntoValStructField "pendingPk" client.nextVer nextVer.pendingPk'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_nextVer ver' isPending' pendingPk':
-  PureWp True
-    (struct.make #client.nextVer (alist_val [
-      "ver" ::= #ver';
-      "isPending" ::= #isPending';
-      "pendingPk" ::= #pendingPk'
-    ]))%struct
-    #(nextVer.mk ver' isPending' pendingPk').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance nextVer_struct_fields_split dq l (v : nextVer.t) :
-  StructFieldsSplit dq l v (
-    "Hver" ∷ l ↦s[client.nextVer :: "ver"]{dq} v.(nextVer.ver') ∗
-    "HisPending" ∷ l ↦s[client.nextVer :: "isPending"]{dq} v.(nextVer.isPending') ∗
-    "HpendingPk" ∷ l ↦s[client.nextVer :: "pendingPk"]{dq} v.(nextVer.pendingPk')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (nextVer.ver' v)) (client.nextVer) "ver"%go.
-  simpl_one_flatten_struct (# (nextVer.isPending' v)) (client.nextVer) "isPending"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-(* type client.epoch *)
 Module epoch.
 Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-  epoch' : w64;
-  dig' : slice.t;
-  link' : slice.t;
-  sig' : slice.t;
-}.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : client.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance epoch_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (client.epoch.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "epoch" ∷ l.[(client.epoch.t), "epoch"] ↦{dq} v.(client.epoch.epoch') ∗
+      "dig" ∷ l.[(client.epoch.t), "dig"] ↦{dq} v.(client.epoch.dig') ∗
+      "link" ∷ l.[(client.epoch.t), "link"] ↦{dq} v.(client.epoch.link') ∗
+      "sig" ∷ l.[(client.epoch.t), "sig"] ↦{dq} v.(client.epoch.sig') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance epoch_into_val_typed
+   :
+  IntoValTypedUnderlying (client.epoch.t) (client.epochⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance epoch_access_load_epoch l (v : (client.epoch.t)) dq :
+  AccessStrict
+    (l.[(client.epoch.t), "epoch"] ↦{dq} (v.(client.epoch.epoch')))
+    (l.[(client.epoch.t), "epoch"] ↦{dq} (v.(client.epoch.epoch')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance epoch_access_store_epoch l (v : (client.epoch.t)) epoch' :
+  AccessStrict
+    (l.[(client.epoch.t), "epoch"] ↦ (v.(client.epoch.epoch')))
+    (l.[(client.epoch.t), "epoch"] ↦ epoch')
+    (l ↦ v) (l ↦ (v <|(client.epoch.epoch') := epoch'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance epoch_access_load_dig l (v : (client.epoch.t)) dq :
+  AccessStrict
+    (l.[(client.epoch.t), "dig"] ↦{dq} (v.(client.epoch.dig')))
+    (l.[(client.epoch.t), "dig"] ↦{dq} (v.(client.epoch.dig')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance epoch_access_store_dig l (v : (client.epoch.t)) dig' :
+  AccessStrict
+    (l.[(client.epoch.t), "dig"] ↦ (v.(client.epoch.dig')))
+    (l.[(client.epoch.t), "dig"] ↦ dig')
+    (l ↦ v) (l ↦ (v <|(client.epoch.dig') := dig'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance epoch_access_load_link l (v : (client.epoch.t)) dq :
+  AccessStrict
+    (l.[(client.epoch.t), "link"] ↦{dq} (v.(client.epoch.link')))
+    (l.[(client.epoch.t), "link"] ↦{dq} (v.(client.epoch.link')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance epoch_access_store_link l (v : (client.epoch.t)) link' :
+  AccessStrict
+    (l.[(client.epoch.t), "link"] ↦ (v.(client.epoch.link')))
+    (l.[(client.epoch.t), "link"] ↦ link')
+    (l ↦ v) (l ↦ (v <|(client.epoch.link') := link'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance epoch_access_load_sig l (v : (client.epoch.t)) dq :
+  AccessStrict
+    (l.[(client.epoch.t), "sig"] ↦{dq} (v.(client.epoch.sig')))
+    (l.[(client.epoch.t), "sig"] ↦{dq} (v.(client.epoch.sig')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance epoch_access_store_sig l (v : (client.epoch.t)) sig' :
+  AccessStrict
+    (l.[(client.epoch.t), "sig"] ↦ (v.(client.epoch.sig')))
+    (l.[(client.epoch.t), "sig"] ↦ sig')
+    (l ↦ v) (l ↦ (v <|(client.epoch.sig') := sig'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End epoch.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent client.epoch.
-#[local] Typeclasses Transparent client.epoch.
-
-Global Instance epoch_wf : struct.Wf client.epoch.
-Proof. apply _. Qed.
-
-Global Instance settable_epoch : Settable epoch.t :=
-  settable! epoch.mk < epoch.epoch'; epoch.dig'; epoch.link'; epoch.sig' >.
-Global Instance into_val_epoch : IntoVal epoch.t :=
-  {| to_val_def v :=
-    struct.val_aux client.epoch [
-    "epoch" ::= #(epoch.epoch' v);
-    "dig" ::= #(epoch.dig' v);
-    "link" ::= #(epoch.link' v);
-    "sig" ::= #(epoch.sig' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_epoch : IntoValTyped epoch.t client.epoch :=
-{|
-  default_val := epoch.mk (default_val _) (default_val _) (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_epoch_epoch : IntoValStructField "epoch" client.epoch epoch.epoch'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_epoch_dig : IntoValStructField "dig" client.epoch epoch.dig'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_epoch_link : IntoValStructField "link" client.epoch epoch.link'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_epoch_sig : IntoValStructField "sig" client.epoch epoch.sig'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_epoch epoch' dig' link' sig':
-  PureWp True
-    (struct.make #client.epoch (alist_val [
-      "epoch" ::= #epoch';
-      "dig" ::= #dig';
-      "link" ::= #link';
-      "sig" ::= #sig'
-    ]))%struct
-    #(epoch.mk epoch' dig' link' sig').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance epoch_struct_fields_split dq l (v : epoch.t) :
-  StructFieldsSplit dq l v (
-    "Hepoch" ∷ l ↦s[client.epoch :: "epoch"]{dq} v.(epoch.epoch') ∗
-    "Hdig" ∷ l ↦s[client.epoch :: "dig"]{dq} v.(epoch.dig') ∗
-    "Hlink" ∷ l ↦s[client.epoch :: "link"]{dq} v.(epoch.link') ∗
-    "Hsig" ∷ l ↦s[client.epoch :: "sig"]{dq} v.(epoch.sig')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (epoch.epoch' v)) (client.epoch) "epoch"%go.
-  simpl_one_flatten_struct (# (epoch.dig' v)) (client.epoch) "dig"%go.
-  simpl_one_flatten_struct (# (epoch.link' v)) (client.epoch) "link"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-(* type client.serv *)
 Module serv.
 Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-  cli' : loc;
-  sigPk' : cryptoffi.SigPublicKey.t;
-  vrfPk' : loc;
-  vrfSig' : slice.t;
-}.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : client.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance serv_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (client.serv.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "cli" ∷ l.[(client.serv.t), "cli"] ↦{dq} v.(client.serv.cli') ∗
+      "sigPk" ∷ l.[(client.serv.t), "sigPk"] ↦{dq} v.(client.serv.sigPk') ∗
+      "vrfPk" ∷ l.[(client.serv.t), "vrfPk"] ↦{dq} v.(client.serv.vrfPk') ∗
+      "vrfSig" ∷ l.[(client.serv.t), "vrfSig"] ↦{dq} v.(client.serv.vrfSig') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance serv_into_val_typed
+   :
+  IntoValTypedUnderlying (client.serv.t) (client.servⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance serv_access_load_cli l (v : (client.serv.t)) dq :
+  AccessStrict
+    (l.[(client.serv.t), "cli"] ↦{dq} (v.(client.serv.cli')))
+    (l.[(client.serv.t), "cli"] ↦{dq} (v.(client.serv.cli')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance serv_access_store_cli l (v : (client.serv.t)) cli' :
+  AccessStrict
+    (l.[(client.serv.t), "cli"] ↦ (v.(client.serv.cli')))
+    (l.[(client.serv.t), "cli"] ↦ cli')
+    (l ↦ v) (l ↦ (v <|(client.serv.cli') := cli'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance serv_access_load_sigPk l (v : (client.serv.t)) dq :
+  AccessStrict
+    (l.[(client.serv.t), "sigPk"] ↦{dq} (v.(client.serv.sigPk')))
+    (l.[(client.serv.t), "sigPk"] ↦{dq} (v.(client.serv.sigPk')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance serv_access_store_sigPk l (v : (client.serv.t)) sigPk' :
+  AccessStrict
+    (l.[(client.serv.t), "sigPk"] ↦ (v.(client.serv.sigPk')))
+    (l.[(client.serv.t), "sigPk"] ↦ sigPk')
+    (l ↦ v) (l ↦ (v <|(client.serv.sigPk') := sigPk'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance serv_access_load_vrfPk l (v : (client.serv.t)) dq :
+  AccessStrict
+    (l.[(client.serv.t), "vrfPk"] ↦{dq} (v.(client.serv.vrfPk')))
+    (l.[(client.serv.t), "vrfPk"] ↦{dq} (v.(client.serv.vrfPk')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance serv_access_store_vrfPk l (v : (client.serv.t)) vrfPk' :
+  AccessStrict
+    (l.[(client.serv.t), "vrfPk"] ↦ (v.(client.serv.vrfPk')))
+    (l.[(client.serv.t), "vrfPk"] ↦ vrfPk')
+    (l ↦ v) (l ↦ (v <|(client.serv.vrfPk') := vrfPk'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance serv_access_load_vrfSig l (v : (client.serv.t)) dq :
+  AccessStrict
+    (l.[(client.serv.t), "vrfSig"] ↦{dq} (v.(client.serv.vrfSig')))
+    (l.[(client.serv.t), "vrfSig"] ↦{dq} (v.(client.serv.vrfSig')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance serv_access_store_vrfSig l (v : (client.serv.t)) vrfSig' :
+  AccessStrict
+    (l.[(client.serv.t), "vrfSig"] ↦ (v.(client.serv.vrfSig')))
+    (l.[(client.serv.t), "vrfSig"] ↦ vrfSig')
+    (l ↦ v) (l ↦ (v <|(client.serv.vrfSig') := vrfSig'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End serv.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent client.serv.
-#[local] Typeclasses Transparent client.serv.
-
-Global Instance serv_wf : struct.Wf client.serv.
-Proof. apply _. Qed.
-
-Global Instance settable_serv : Settable serv.t :=
-  settable! serv.mk < serv.cli'; serv.sigPk'; serv.vrfPk'; serv.vrfSig' >.
-Global Instance into_val_serv : IntoVal serv.t :=
-  {| to_val_def v :=
-    struct.val_aux client.serv [
-    "cli" ::= #(serv.cli' v);
-    "sigPk" ::= #(serv.sigPk' v);
-    "vrfPk" ::= #(serv.vrfPk' v);
-    "vrfSig" ::= #(serv.vrfSig' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_serv : IntoValTyped serv.t client.serv :=
-{|
-  default_val := serv.mk (default_val _) (default_val _) (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_serv_cli : IntoValStructField "cli" client.serv serv.cli'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_serv_sigPk : IntoValStructField "sigPk" client.serv serv.sigPk'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_serv_vrfPk : IntoValStructField "vrfPk" client.serv serv.vrfPk'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_serv_vrfSig : IntoValStructField "vrfSig" client.serv serv.vrfSig'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_serv cli' sigPk' vrfPk' vrfSig':
-  PureWp True
-    (struct.make #client.serv (alist_val [
-      "cli" ::= #cli';
-      "sigPk" ::= #sigPk';
-      "vrfPk" ::= #vrfPk';
-      "vrfSig" ::= #vrfSig'
-    ]))%struct
-    #(serv.mk cli' sigPk' vrfPk' vrfSig').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance serv_struct_fields_split dq l (v : serv.t) :
-  StructFieldsSplit dq l v (
-    "Hcli" ∷ l ↦s[client.serv :: "cli"]{dq} v.(serv.cli') ∗
-    "HsigPk" ∷ l ↦s[client.serv :: "sigPk"]{dq} v.(serv.sigPk') ∗
-    "HvrfPk" ∷ l ↦s[client.serv :: "vrfPk"]{dq} v.(serv.vrfPk') ∗
-    "HvrfSig" ∷ l ↦s[client.serv :: "vrfSig"]{dq} v.(serv.vrfSig')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (serv.cli' v)) (client.serv) "cli"%go.
-  simpl_one_flatten_struct (# (serv.sigPk' v)) (client.serv) "sigPk"%go.
-  simpl_one_flatten_struct (# (serv.vrfPk' v)) (client.serv) "vrfPk"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-(* type client.Evid *)
-Module Evid.
-Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-  vrf' : loc;
-  link' : loc;
-}.
-End def.
-End Evid.
-
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent client.Evid.
-#[local] Typeclasses Transparent client.Evid.
-
-Global Instance Evid_wf : struct.Wf client.Evid.
-Proof. apply _. Qed.
-
-Global Instance settable_Evid : Settable Evid.t :=
-  settable! Evid.mk < Evid.vrf'; Evid.link' >.
-Global Instance into_val_Evid : IntoVal Evid.t :=
-  {| to_val_def v :=
-    struct.val_aux client.Evid [
-    "vrf" ::= #(Evid.vrf' v);
-    "link" ::= #(Evid.link' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_Evid : IntoValTyped Evid.t client.Evid :=
-{|
-  default_val := Evid.mk (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_Evid_vrf : IntoValStructField "vrf" client.Evid Evid.vrf'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Evid_link : IntoValStructField "link" client.Evid Evid.link'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Evid vrf' link':
-  PureWp True
-    (struct.make #client.Evid (alist_val [
-      "vrf" ::= #vrf';
-      "link" ::= #link'
-    ]))%struct
-    #(Evid.mk vrf' link').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance Evid_struct_fields_split dq l (v : Evid.t) :
-  StructFieldsSplit dq l v (
-    "Hvrf" ∷ l ↦s[client.Evid :: "vrf"]{dq} v.(Evid.vrf') ∗
-    "Hlink" ∷ l ↦s[client.Evid :: "link"]{dq} v.(Evid.link')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Evid.vrf' v)) (client.Evid) "vrf"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-(* type client.evidVrf *)
-Module evidVrf.
-Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-  vrfPk0' : slice.t;
-  sig0' : slice.t;
-  vrfPk1' : slice.t;
-  sig1' : slice.t;
-}.
-End def.
-End evidVrf.
-
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent client.evidVrf.
-#[local] Typeclasses Transparent client.evidVrf.
-
-Global Instance evidVrf_wf : struct.Wf client.evidVrf.
-Proof. apply _. Qed.
-
-Global Instance settable_evidVrf : Settable evidVrf.t :=
-  settable! evidVrf.mk < evidVrf.vrfPk0'; evidVrf.sig0'; evidVrf.vrfPk1'; evidVrf.sig1' >.
-Global Instance into_val_evidVrf : IntoVal evidVrf.t :=
-  {| to_val_def v :=
-    struct.val_aux client.evidVrf [
-    "vrfPk0" ::= #(evidVrf.vrfPk0' v);
-    "sig0" ::= #(evidVrf.sig0' v);
-    "vrfPk1" ::= #(evidVrf.vrfPk1' v);
-    "sig1" ::= #(evidVrf.sig1' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_evidVrf : IntoValTyped evidVrf.t client.evidVrf :=
-{|
-  default_val := evidVrf.mk (default_val _) (default_val _) (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_evidVrf_vrfPk0 : IntoValStructField "vrfPk0" client.evidVrf evidVrf.vrfPk0'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_evidVrf_sig0 : IntoValStructField "sig0" client.evidVrf evidVrf.sig0'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_evidVrf_vrfPk1 : IntoValStructField "vrfPk1" client.evidVrf evidVrf.vrfPk1'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_evidVrf_sig1 : IntoValStructField "sig1" client.evidVrf evidVrf.sig1'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_evidVrf vrfPk0' sig0' vrfPk1' sig1':
-  PureWp True
-    (struct.make #client.evidVrf (alist_val [
-      "vrfPk0" ::= #vrfPk0';
-      "sig0" ::= #sig0';
-      "vrfPk1" ::= #vrfPk1';
-      "sig1" ::= #sig1'
-    ]))%struct
-    #(evidVrf.mk vrfPk0' sig0' vrfPk1' sig1').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance evidVrf_struct_fields_split dq l (v : evidVrf.t) :
-  StructFieldsSplit dq l v (
-    "HvrfPk0" ∷ l ↦s[client.evidVrf :: "vrfPk0"]{dq} v.(evidVrf.vrfPk0') ∗
-    "Hsig0" ∷ l ↦s[client.evidVrf :: "sig0"]{dq} v.(evidVrf.sig0') ∗
-    "HvrfPk1" ∷ l ↦s[client.evidVrf :: "vrfPk1"]{dq} v.(evidVrf.vrfPk1') ∗
-    "Hsig1" ∷ l ↦s[client.evidVrf :: "sig1"]{dq} v.(evidVrf.sig1')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (evidVrf.vrfPk0' v)) (client.evidVrf) "vrfPk0"%go.
-  simpl_one_flatten_struct (# (evidVrf.sig0' v)) (client.evidVrf) "sig0"%go.
-  simpl_one_flatten_struct (# (evidVrf.vrfPk1' v)) (client.evidVrf) "vrfPk1"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-(* type client.evidLink *)
-Module evidLink.
-Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-  epoch' : w64;
-  link0' : slice.t;
-  sig0' : slice.t;
-  link1' : slice.t;
-  sig1' : slice.t;
-}.
-End def.
-End evidLink.
-
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent client.evidLink.
-#[local] Typeclasses Transparent client.evidLink.
-
-Global Instance evidLink_wf : struct.Wf client.evidLink.
-Proof. apply _. Qed.
-
-Global Instance settable_evidLink : Settable evidLink.t :=
-  settable! evidLink.mk < evidLink.epoch'; evidLink.link0'; evidLink.sig0'; evidLink.link1'; evidLink.sig1' >.
-Global Instance into_val_evidLink : IntoVal evidLink.t :=
-  {| to_val_def v :=
-    struct.val_aux client.evidLink [
-    "epoch" ::= #(evidLink.epoch' v);
-    "link0" ::= #(evidLink.link0' v);
-    "sig0" ::= #(evidLink.sig0' v);
-    "link1" ::= #(evidLink.link1' v);
-    "sig1" ::= #(evidLink.sig1' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_evidLink : IntoValTyped evidLink.t client.evidLink :=
-{|
-  default_val := evidLink.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_evidLink_epoch : IntoValStructField "epoch" client.evidLink evidLink.epoch'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_evidLink_link0 : IntoValStructField "link0" client.evidLink evidLink.link0'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_evidLink_sig0 : IntoValStructField "sig0" client.evidLink evidLink.sig0'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_evidLink_link1 : IntoValStructField "link1" client.evidLink evidLink.link1'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_evidLink_sig1 : IntoValStructField "sig1" client.evidLink evidLink.sig1'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_evidLink epoch' link0' sig0' link1' sig1':
-  PureWp True
-    (struct.make #client.evidLink (alist_val [
-      "epoch" ::= #epoch';
-      "link0" ::= #link0';
-      "sig0" ::= #sig0';
-      "link1" ::= #link1';
-      "sig1" ::= #sig1'
-    ]))%struct
-    #(evidLink.mk epoch' link0' sig0' link1' sig1').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance evidLink_struct_fields_split dq l (v : evidLink.t) :
-  StructFieldsSplit dq l v (
-    "Hepoch" ∷ l ↦s[client.evidLink :: "epoch"]{dq} v.(evidLink.epoch') ∗
-    "Hlink0" ∷ l ↦s[client.evidLink :: "link0"]{dq} v.(evidLink.link0') ∗
-    "Hsig0" ∷ l ↦s[client.evidLink :: "sig0"]{dq} v.(evidLink.sig0') ∗
-    "Hlink1" ∷ l ↦s[client.evidLink :: "link1"]{dq} v.(evidLink.link1') ∗
-    "Hsig1" ∷ l ↦s[client.evidLink :: "sig1"]{dq} v.(evidLink.sig1')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (evidLink.epoch' v)) (client.evidLink) "epoch"%go.
-  simpl_one_flatten_struct (# (evidLink.link0' v)) (client.evidLink) "link0"%go.
-  simpl_one_flatten_struct (# (evidLink.sig0' v)) (client.evidLink) "sig0"%go.
-  simpl_one_flatten_struct (# (evidLink.link1' v)) (client.evidLink) "link1"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-Section names.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext}.
-#[local] Transparent is_pkg_defined is_pkg_defined_pure.
-
-Global Instance is_pkg_defined_pure_client : IsPkgDefinedPure client :=
-  {|
-    is_pkg_defined_pure_def go_ctx :=
-      is_pkg_defined_pure_single client ∧
-      is_pkg_defined_pure code.bytes.bytes ∧
-      is_pkg_defined_pure code.github_com.goose_lang.std.std ∧
-      is_pkg_defined_pure code.github_com.sanjit_bhat.pav.advrpc.advrpc ∧
-      is_pkg_defined_pure code.github_com.sanjit_bhat.pav.auditor.auditor ∧
-      is_pkg_defined_pure code.github_com.sanjit_bhat.pav.cryptoffi.cryptoffi ∧
-      is_pkg_defined_pure code.github_com.sanjit_bhat.pav.hashchain.hashchain ∧
-      is_pkg_defined_pure code.github_com.sanjit_bhat.pav.ktcore.ktcore ∧
-      is_pkg_defined_pure code.github_com.sanjit_bhat.pav.merkle.merkle ∧
-      is_pkg_defined_pure code.github_com.sanjit_bhat.pav.server.server;
-  |}.
-
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_client : IsPkgDefined client :=
-  {|
-    is_pkg_defined_def go_ctx :=
-      (is_pkg_defined_single client ∗
-       is_pkg_defined code.bytes.bytes ∗
-       is_pkg_defined code.github_com.goose_lang.std.std ∗
-       is_pkg_defined code.github_com.sanjit_bhat.pav.advrpc.advrpc ∗
-       is_pkg_defined code.github_com.sanjit_bhat.pav.auditor.auditor ∗
-       is_pkg_defined code.github_com.sanjit_bhat.pav.cryptoffi.cryptoffi ∗
-       is_pkg_defined code.github_com.sanjit_bhat.pav.hashchain.hashchain ∗
-       is_pkg_defined code.github_com.sanjit_bhat.pav.ktcore.ktcore ∗
-       is_pkg_defined code.github_com.sanjit_bhat.pav.merkle.merkle ∗
-       is_pkg_defined code.github_com.sanjit_bhat.pav.server.server)%I
-  |}.
-Final Obligation. iIntros. iFrame "#%". Qed.
-#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
-
-Global Instance wp_func_call_New :
-  WpFuncCall client.New _ (is_pkg_defined client) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_getNextEp :
-  WpFuncCall client.getNextEp _ (is_pkg_defined client) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_checkMemb :
-  WpFuncCall client.checkMemb _ (is_pkg_defined client) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_checkHist :
-  WpFuncCall client.checkHist _ (is_pkg_defined client) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_checkNonMemb :
-  WpFuncCall client.checkNonMemb _ (is_pkg_defined client) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_checkAuditLink :
-  WpFuncCall client.checkAuditLink _ (is_pkg_defined client) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_checkAuditVrf :
-  WpFuncCall client.checkAuditVrf _ (is_pkg_defined client) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_method_call_Client'ptr_Audit :
-  WpMethodCall (ptrT.id client.Client.id) "Audit" _ (is_pkg_defined client) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Client'ptr_Get :
-  WpMethodCall (ptrT.id client.Client.id) "Get" _ (is_pkg_defined client) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Client'ptr_Put :
-  WpMethodCall (ptrT.id client.Client.id) "Put" _ (is_pkg_defined client) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Client'ptr_SelfMon :
-  WpMethodCall (ptrT.id client.Client.id) "SelfMon" _ (is_pkg_defined client) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Evid'ptr_Check :
-  WpMethodCall (ptrT.id client.Evid.id) "Check" _ (is_pkg_defined client) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_evidVrf'ptr_check :
-  WpMethodCall (ptrT.id client.evidVrf.id) "check" _ (is_pkg_defined client) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_evidLink'ptr_check :
-  WpMethodCall (ptrT.id client.evidLink.id) "check" _ (is_pkg_defined client) :=
-  ltac:(solve_wp_method_call).
-
-End names.
 End client.

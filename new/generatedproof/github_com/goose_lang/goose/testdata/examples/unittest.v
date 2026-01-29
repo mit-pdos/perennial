@@ -449,47 +449,6 @@ Proof. solve_pointsto_access_struct. Qed.
 End def.
 End FooerUser.
 
-Module B.
-Section def.
-
-Context `{!heapGS Σ}.
-Context {sem : go.Semantics}.
-Context {package_sem' : unittest.Assumptions}.
-
-Local Set Default Proof Using "All".
-
-#[global]Program Instance B_typed_pointsto  :
-  TypedPointsto (Σ:=Σ) (unittest.B.t) :=
-  {|
-    typed_pointsto_def l v dq :=
-      (
-      "a" ∷ l.[(unittest.B.t), "a"] ↦{dq} v.(unittest.B.a') ∗
-      "_" ∷ True
-      )%I
-  |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
-
-#[global] Instance B_into_val_typed
-   :
-  IntoValTypedUnderlying (unittest.B.t) (unittest.Bⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance B_access_load_a l (v : (unittest.B.t)) dq :
-  AccessStrict
-    (l.[(unittest.B.t), "a"] ↦{dq} (v.(unittest.B.a')))
-    (l.[(unittest.B.t), "a"] ↦{dq} (v.(unittest.B.a')))
-    (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
-
-#[global] Instance B_access_store_a l (v : (unittest.B.t)) a' :
-  AccessStrict
-    (l.[(unittest.B.t), "a"] ↦ (v.(unittest.B.a')))
-    (l.[(unittest.B.t), "a"] ↦ a')
-    (l ↦ v) (l ↦ (v <|(unittest.B.a') := a'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
-
-End def.
-End B.
-
 Module concrete1.
 Section def.
 
@@ -1270,6 +1229,47 @@ Proof. solve_pointsto_access_struct. Qed.
 
 End def.
 End S.
+
+Module B.
+Section def.
+
+Context `{!heapGS Σ}.
+Context {sem : go.Semantics}.
+Context {package_sem' : unittest.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance B_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (unittest.B.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "a" ∷ l.[(unittest.B.t), "a"] ↦{dq} v.(unittest.B.a') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance B_into_val_typed
+   :
+  IntoValTypedUnderlying (unittest.B.t) (unittest.Bⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance B_access_load_a l (v : (unittest.B.t)) dq :
+  AccessStrict
+    (l.[(unittest.B.t), "a"] ↦{dq} (v.(unittest.B.a')))
+    (l.[(unittest.B.t), "a"] ↦{dq} (v.(unittest.B.a')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance B_access_store_a l (v : (unittest.B.t)) a' :
+  AccessStrict
+    (l.[(unittest.B.t), "a"] ↦ (v.(unittest.B.a')))
+    (l.[(unittest.B.t), "a"] ↦ a')
+    (l ↦ v) (l ↦ (v <|(unittest.B.a') := a'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+End def.
+End B.
 
 Module A.
 Section def.

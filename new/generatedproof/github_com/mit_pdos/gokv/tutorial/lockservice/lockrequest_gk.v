@@ -2,110 +2,50 @@
 Require Export New.proof.proof_prelude.
 Require Export New.generatedproof.github_com.tchajed.marshal.
 Require Export New.golang.theory.
-
 Require Export New.code.github_com.mit_pdos.gokv.tutorial.lockservice.lockrequest_gk.
 
 Set Default Proof Using "Type".
 
 Module lockrequest_gk.
-
-(* type lockrequest_gk.S *)
 Module S.
 Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-  Id' : w64;
-}.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : lockrequest_gk.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance S_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (lockrequest_gk.S.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "Id" ∷ l.[(lockrequest_gk.S.t), "Id"] ↦{dq} v.(lockrequest_gk.S.Id') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance S_into_val_typed
+   :
+  IntoValTypedUnderlying (lockrequest_gk.S.t) (lockrequest_gk.Sⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance S_access_load_Id l (v : (lockrequest_gk.S.t)) dq :
+  AccessStrict
+    (l.[(lockrequest_gk.S.t), "Id"] ↦{dq} (v.(lockrequest_gk.S.Id')))
+    (l.[(lockrequest_gk.S.t), "Id"] ↦{dq} (v.(lockrequest_gk.S.Id')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance S_access_store_Id l (v : (lockrequest_gk.S.t)) Id' :
+  AccessStrict
+    (l.[(lockrequest_gk.S.t), "Id"] ↦ (v.(lockrequest_gk.S.Id')))
+    (l.[(lockrequest_gk.S.t), "Id"] ↦ Id')
+    (l ↦ v) (l ↦ (v <|(lockrequest_gk.S.Id') := Id'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End S.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent lockrequest_gk.S.
-#[local] Typeclasses Transparent lockrequest_gk.S.
-
-Global Instance S_wf : struct.Wf lockrequest_gk.S.
-Proof. apply _. Qed.
-
-Global Instance settable_S : Settable S.t :=
-  settable! S.mk < S.Id' >.
-Global Instance into_val_S : IntoVal S.t :=
-  {| to_val_def v :=
-    struct.val_aux lockrequest_gk.S [
-    "Id" ::= #(S.Id' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_S : IntoValTyped S.t lockrequest_gk.S :=
-{|
-  default_val := S.mk (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_S_Id : IntoValStructField "Id" lockrequest_gk.S S.Id'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_S Id':
-  PureWp True
-    (struct.make #lockrequest_gk.S (alist_val [
-      "Id" ::= #Id'
-    ]))%struct
-    #(S.mk Id').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance S_struct_fields_split dq l (v : S.t) :
-  StructFieldsSplit dq l v (
-    "HId" ∷ l ↦s[lockrequest_gk.S :: "Id"]{dq} v.(S.Id')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-Section names.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext}.
-#[local] Transparent is_pkg_defined is_pkg_defined_pure.
-
-Global Instance is_pkg_defined_pure_lockrequest_gk : IsPkgDefinedPure lockrequest_gk :=
-  {|
-    is_pkg_defined_pure_def go_ctx :=
-      is_pkg_defined_pure_single lockrequest_gk ∧
-      is_pkg_defined_pure code.github_com.tchajed.marshal.marshal;
-  |}.
-
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_lockrequest_gk : IsPkgDefined lockrequest_gk :=
-  {|
-    is_pkg_defined_def go_ctx :=
-      (is_pkg_defined_single lockrequest_gk ∗
-       is_pkg_defined code.github_com.tchajed.marshal.marshal)%I
-  |}.
-Final Obligation. iIntros. iFrame "#%". Qed.
-#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
-
-Global Instance wp_func_call_Marshal :
-  WpFuncCall lockrequest_gk.Marshal _ (is_pkg_defined lockrequest_gk) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_Unmarshal :
-  WpFuncCall lockrequest_gk.Unmarshal _ (is_pkg_defined lockrequest_gk) :=
-  ltac:(solve_wp_func_call).
-
-End names.
 End lockrequest_gk.

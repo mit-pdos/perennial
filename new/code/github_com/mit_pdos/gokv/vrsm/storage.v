@@ -4,327 +4,296 @@ Require Export New.code.github_com.mit_pdos.gokv.aof.
 Require Export New.code.github_com.mit_pdos.gokv.grove_ffi.
 Require Export New.code.github_com.mit_pdos.gokv.vrsm.replica.
 Require Export New.code.github_com.tchajed.marshal.
-
 From New.golang Require Import defn.
+From New Require Import grove_prelude.
+Module pkg_id.
 Definition storage : go_string := "github.com/mit-pdos/gokv/vrsm/storage".
 
-From New Require Import grove_prelude.
+End pkg_id.
+Export pkg_id.
 Module storage.
 
-Module InMemoryStateMachine. Definition id : go_string := "github.com/mit-pdos/gokv/vrsm/storage.InMemoryStateMachine"%go. End InMemoryStateMachine.
-Module StateMachine. Definition id : go_string := "github.com/mit-pdos/gokv/vrsm/storage.StateMachine"%go. End StateMachine.
+Definition InMemoryStateMachine {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/mit-pdos/gokv/vrsm/storage.InMemoryStateMachine"%go [].
 
-Section code.
+Definition StateMachine {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/mit-pdos/gokv/vrsm/storage.StateMachine"%go [].
 
+Definition MAX_LOG_SIZE {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #(W64 68719476736).
 
-Definition InMemoryStateMachine : go_type := structT [
-  "ApplyReadonly" :: funcT;
-  "ApplyVolatile" :: funcT;
-  "GetState" :: funcT;
-  "SetState" :: funcT
-].
-#[global] Typeclasses Opaque InMemoryStateMachine.
-#[global] Opaque InMemoryStateMachine.
+Definition recoverStateMachine {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/mit-pdos/gokv/vrsm/storage.recoverStateMachine"%go.
 
-Definition MAX_LOG_SIZE : val := #(W64 68719476736).
-
-Definition StateMachine : go_type := structT [
-  "fname" :: stringT;
-  "logFile" :: ptrT;
-  "logsize" :: uint64T;
-  "sealed" :: boolT;
-  "epoch" :: uint64T;
-  "nextIndex" :: uint64T;
-  "smMem" :: ptrT
-].
-#[global] Typeclasses Opaque StateMachine.
-#[global] Opaque StateMachine.
+Definition MakePbServer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/mit-pdos/gokv/vrsm/storage.MakePbServer"%go.
 
 (* FIXME: better name; this isn't the same as "MakeDurable"
 
    go: durlog.go:40:24 *)
-Definition StateMachine__makeDurableWithSnapⁱᵐᵖˡ : val :=
+Definition StateMachine__makeDurableWithSnapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "s" "snap",
-    exception_do (let: "s" := (mem.alloc "s") in
-    let: "snap" := (mem.alloc "snap") in
-    let: "enc" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (slice.make3 byteT #(W64 0) (((#(W64 8) + (let: "$a0" := (![sliceT] "snap") in
-    slice.len "$a0")) + #(W64 8)) + #(W64 8))) in
-    do:  ("enc" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "enc") in
-    let: "$a1" := (s_to_w64 (let: "$a0" := (![sliceT] "snap") in
-    slice.len "$a0")) in
-    (func_call #marshal.WriteInt) "$a0" "$a1") in
-    do:  ("enc" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "enc") in
-    let: "$a1" := (![sliceT] "snap") in
-    (func_call #marshal.WriteBytes) "$a0" "$a1") in
-    do:  ("enc" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "enc") in
-    let: "$a1" := (![uint64T] (struct.field_ref ptrT #"epoch"%go (![ptrT] "s"))) in
-    (func_call #marshal.WriteInt) "$a0" "$a1") in
-    do:  ("enc" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "enc") in
-    let: "$a1" := (![uint64T] (struct.field_ref ptrT #"nextIndex"%go (![ptrT] "s"))) in
-    (func_call #marshal.WriteInt) "$a0" "$a1") in
-    do:  ("enc" <-[sliceT] "$r0");;;
-    (if: ![boolT] (struct.field_ref ptrT #"sealed"%go (![ptrT] "s"))
+    exception_do (let: "s" := (GoAlloc (go.PointerType StateMachine) "s") in
+    let: "snap" := (GoAlloc (go.SliceType go.byte) "snap") in
+    let: "enc" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
+    let: "$r0" := ((FuncResolve go.make3 [go.SliceType go.byte] #()) #(W64 0) (((#(W64 8) +⟨go.int⟩ (let: "$a0" := (![go.SliceType go.byte] "snap") in
+    (FuncResolve go.len [go.SliceType go.byte] #()) "$a0")) +⟨go.int⟩ #(W64 8)) +⟨go.int⟩ #(W64 8))) in
+    do:  ("enc" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "enc") in
+    let: "$a1" := (Convert go.int go.uint64 (let: "$a0" := (![go.SliceType go.byte] "snap") in
+    (FuncResolve go.len [go.SliceType go.byte] #()) "$a0")) in
+    (FuncResolve marshal.WriteInt [] #()) "$a0" "$a1") in
+    do:  ("enc" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "enc") in
+    let: "$a1" := (![go.SliceType go.byte] "snap") in
+    (FuncResolve marshal.WriteBytes [] #()) "$a0" "$a1") in
+    do:  ("enc" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "enc") in
+    let: "$a1" := (![go.uint64] (StructFieldRef StateMachine "epoch"%go (![go.PointerType StateMachine] "s"))) in
+    (FuncResolve marshal.WriteInt [] #()) "$a0" "$a1") in
+    do:  ("enc" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "enc") in
+    let: "$a1" := (![go.uint64] (StructFieldRef StateMachine "nextIndex"%go (![go.PointerType StateMachine] "s"))) in
+    (FuncResolve marshal.WriteInt [] #()) "$a0" "$a1") in
+    do:  ("enc" <-[go.SliceType go.byte] "$r0");;;
+    (if: ![go.bool] (StructFieldRef StateMachine "sealed"%go (![go.PointerType StateMachine] "s"))
     then
-      do:  (let: "$a0" := (![sliceT] "enc") in
-      let: "$a1" := (slice.make2 byteT #(W64 1)) in
-      (func_call #marshal.WriteBytes) "$a0" "$a1")
+      do:  (let: "$a0" := (![go.SliceType go.byte] "enc") in
+      let: "$a1" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) #(W64 1)) in
+      (FuncResolve marshal.WriteBytes [] #()) "$a0" "$a1")
     else do:  #());;;
-    do:  ((method_call #(ptrT.id aof.AppendOnlyFile.id) #"Close"%go (![ptrT] (struct.field_ref ptrT #"logFile"%go (![ptrT] "s")))) #());;;
-    do:  (let: "$a0" := (![stringT] (struct.field_ref ptrT #"fname"%go (![ptrT] "s"))) in
-    let: "$a1" := (![sliceT] "enc") in
-    (func_call #grove_ffi.FileWrite) "$a0" "$a1");;;
-    let: "$r0" := (let: "$a0" := (![stringT] (struct.field_ref ptrT #"fname"%go (![ptrT] "s"))) in
-    (func_call #aof.CreateAppendOnlyFile) "$a0") in
-    do:  ((struct.field_ref ptrT #"logFile"%go (![ptrT] "s")) <-[ptrT] "$r0");;;
+    do:  ((MethodResolve (go.PointerType aof.AppendOnlyFile) "Close"%go (![go.PointerType aof.AppendOnlyFile] (StructFieldRef StateMachine "logFile"%go (![go.PointerType StateMachine] "s")))) #());;;
+    do:  (let: "$a0" := (![go.string] (StructFieldRef StateMachine "fname"%go (![go.PointerType StateMachine] "s"))) in
+    let: "$a1" := (![go.SliceType go.byte] "enc") in
+    (FuncResolve grove_ffi.FileWrite [] #()) "$a0" "$a1");;;
+    let: "$r0" := (let: "$a0" := (![go.string] (StructFieldRef StateMachine "fname"%go (![go.PointerType StateMachine] "s"))) in
+    (FuncResolve aof.CreateAppendOnlyFile [] #()) "$a0") in
+    do:  ((StructFieldRef StateMachine "logFile"%go (![go.PointerType StateMachine] "s")) <-[go.PointerType aof.AppendOnlyFile] "$r0");;;
     return: #()).
 
 (* XXX: this is not safe to run concurrently with apply()
    requires that the state machine is not sealed
 
    go: durlog.go:61:24 *)
-Definition StateMachine__truncateAndMakeDurableⁱᵐᵖˡ : val :=
+Definition StateMachine__truncateAndMakeDurableⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "s" <>,
-    exception_do (let: "s" := (mem.alloc "s") in
-    let: "snap" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := ((![funcT] (struct.field_ref ptrT #"GetState"%go (![ptrT] (struct.field_ref ptrT #"smMem"%go (![ptrT] "s"))))) #()) in
-    do:  ("snap" <-[sliceT] "$r0");;;
-    do:  (let: "$a0" := (![sliceT] "snap") in
-    (method_call #(ptrT.id StateMachine.id) #"makeDurableWithSnap"%go (![ptrT] "s")) "$a0");;;
+    exception_do (let: "s" := (GoAlloc (go.PointerType StateMachine) "s") in
+    let: "snap" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
+    let: "$r0" := ((![go.FunctionType (go.Signature [] false [go.SliceType go.byte])] (StructFieldRef InMemoryStateMachine "GetState"%go (![go.PointerType InMemoryStateMachine] (StructFieldRef StateMachine "smMem"%go (![go.PointerType StateMachine] "s"))))) #()) in
+    do:  ("snap" <-[go.SliceType go.byte] "$r0");;;
+    do:  (let: "$a0" := (![go.SliceType go.byte] "snap") in
+    (MethodResolve (go.PointerType StateMachine) "makeDurableWithSnap"%go (![go.PointerType StateMachine] "s")) "$a0");;;
     return: #()).
 
 (* go: durlog.go:66:24 *)
-Definition StateMachine__applyⁱᵐᵖˡ : val :=
+Definition StateMachine__applyⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "s" "op",
-    exception_do (let: "s" := (mem.alloc "s") in
-    let: "op" := (mem.alloc "op") in
-    let: "ret" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (let: "$a0" := (![sliceT] "op") in
-    (![funcT] (struct.field_ref ptrT #"ApplyVolatile"%go (![ptrT] (struct.field_ref ptrT #"smMem"%go (![ptrT] "s"))))) "$a0") in
-    do:  ("ret" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![uint64T] (struct.field_ref ptrT #"nextIndex"%go (![ptrT] "s"))) in
+    exception_do (let: "s" := (GoAlloc (go.PointerType StateMachine) "s") in
+    let: "op" := (GoAlloc (go.SliceType go.byte) "op") in
+    let: "ret" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "op") in
+    (![go.FunctionType (go.Signature [go.SliceType go.byte] false [go.SliceType go.byte])] (StructFieldRef InMemoryStateMachine "ApplyVolatile"%go (![go.PointerType InMemoryStateMachine] (StructFieldRef StateMachine "smMem"%go (![go.PointerType StateMachine] "s"))))) "$a0") in
+    do:  ("ret" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.uint64] (StructFieldRef StateMachine "nextIndex"%go (![go.PointerType StateMachine] "s"))) in
     let: "$a1" := #(W64 1) in
-    (func_call #std.SumAssumeNoOverflow) "$a0" "$a1") in
-    do:  ((struct.field_ref ptrT #"nextIndex"%go (![ptrT] "s")) <-[uint64T] "$r0");;;
-    do:  ((struct.field_ref ptrT #"logsize"%go (![ptrT] "s")) <-[uint64T] ((![uint64T] (struct.field_ref ptrT #"logsize"%go (![ptrT] "s"))) + (s_to_w64 (let: "$a0" := (![sliceT] "op") in
-    slice.len "$a0"))));;;
-    let: "opWithLen" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (slice.make3 byteT #(W64 0) (#(W64 8) + (s_to_w64 (let: "$a0" := (![sliceT] "op") in
-    slice.len "$a0")))) in
-    do:  ("opWithLen" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "opWithLen") in
-    let: "$a1" := (s_to_w64 (let: "$a0" := (![sliceT] "op") in
-    slice.len "$a0")) in
-    (func_call #marshal.WriteInt) "$a0" "$a1") in
-    do:  ("opWithLen" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "opWithLen") in
-    let: "$a1" := (![sliceT] "op") in
-    (func_call #marshal.WriteBytes) "$a0" "$a1") in
-    do:  ("opWithLen" <-[sliceT] "$r0");;;
-    let: "l" := (mem.alloc (type.zero_val uint64T)) in
-    let: "$r0" := (let: "$a0" := (![sliceT] "opWithLen") in
-    (method_call #(ptrT.id aof.AppendOnlyFile.id) #"Append"%go (![ptrT] (struct.field_ref ptrT #"logFile"%go (![ptrT] "s")))) "$a0") in
-    do:  ("l" <-[uint64T] "$r0");;;
-    let: "f" := (mem.alloc (type.zero_val ptrT)) in
-    let: "$r0" := (![ptrT] (struct.field_ref ptrT #"logFile"%go (![ptrT] "s"))) in
-    do:  ("f" <-[ptrT] "$r0");;;
-    let: "waitFn" := (mem.alloc (type.zero_val funcT)) in
+    (FuncResolve std.SumAssumeNoOverflow [] #()) "$a0" "$a1") in
+    do:  ((StructFieldRef StateMachine "nextIndex"%go (![go.PointerType StateMachine] "s")) <-[go.uint64] "$r0");;;
+    do:  ((StructFieldRef StateMachine "logsize"%go (![go.PointerType StateMachine] "s")) <-[go.uint64] ((![go.uint64] (StructFieldRef StateMachine "logsize"%go (![go.PointerType StateMachine] "s"))) +⟨go.uint64⟩ (Convert go.int go.uint64 (let: "$a0" := (![go.SliceType go.byte] "op") in
+    (FuncResolve go.len [go.SliceType go.byte] #()) "$a0"))));;;
+    let: "opWithLen" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
+    let: "$r0" := ((FuncResolve go.make3 [go.SliceType go.byte] #()) #(W64 0) (#(W64 8) +⟨go.uint64⟩ (Convert go.int go.uint64 (let: "$a0" := (![go.SliceType go.byte] "op") in
+    (FuncResolve go.len [go.SliceType go.byte] #()) "$a0")))) in
+    do:  ("opWithLen" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "opWithLen") in
+    let: "$a1" := (Convert go.int go.uint64 (let: "$a0" := (![go.SliceType go.byte] "op") in
+    (FuncResolve go.len [go.SliceType go.byte] #()) "$a0")) in
+    (FuncResolve marshal.WriteInt [] #()) "$a0" "$a1") in
+    do:  ("opWithLen" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "opWithLen") in
+    let: "$a1" := (![go.SliceType go.byte] "op") in
+    (FuncResolve marshal.WriteBytes [] #()) "$a0" "$a1") in
+    do:  ("opWithLen" <-[go.SliceType go.byte] "$r0");;;
+    let: "l" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "opWithLen") in
+    (MethodResolve (go.PointerType aof.AppendOnlyFile) "Append"%go (![go.PointerType aof.AppendOnlyFile] (StructFieldRef StateMachine "logFile"%go (![go.PointerType StateMachine] "s")))) "$a0") in
+    do:  ("l" <-[go.uint64] "$r0");;;
+    let: "f" := (GoAlloc (go.PointerType aof.AppendOnlyFile) (GoZeroVal (go.PointerType aof.AppendOnlyFile) #())) in
+    let: "$r0" := (![go.PointerType aof.AppendOnlyFile] (StructFieldRef StateMachine "logFile"%go (![go.PointerType StateMachine] "s"))) in
+    do:  ("f" <-[go.PointerType aof.AppendOnlyFile] "$r0");;;
+    let: "waitFn" := (GoAlloc (go.FunctionType (go.Signature [] false [])) (GoZeroVal (go.FunctionType (go.Signature [] false [])) #())) in
     let: "$r0" := (λ: <>,
-      exception_do (do:  (let: "$a0" := (![uint64T] "l") in
-      (method_call #(ptrT.id aof.AppendOnlyFile.id) #"WaitAppend"%go (![ptrT] "f")) "$a0");;;
+      exception_do (do:  (let: "$a0" := (![go.uint64] "l") in
+      (MethodResolve (go.PointerType aof.AppendOnlyFile) "WaitAppend"%go (![go.PointerType aof.AppendOnlyFile] "f")) "$a0");;;
       return: #())
       ) in
-    do:  ("waitFn" <-[funcT] "$r0");;;
-    return: (![sliceT] "ret", ![funcT] "waitFn")).
+    do:  ("waitFn" <-[go.FunctionType (go.Signature [] false [])] "$r0");;;
+    return: (![go.SliceType go.byte] "ret", ![go.FunctionType (go.Signature [] false [])] "waitFn")).
 
 (* go: durlog.go:92:24 *)
-Definition StateMachine__applyReadonlyⁱᵐᵖˡ : val :=
+Definition StateMachine__applyReadonlyⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "s" "op",
-    exception_do (let: "s" := (mem.alloc "s") in
-    let: "op" := (mem.alloc "op") in
-    let: ("$ret0", "$ret1") := ((let: "$a0" := (![sliceT] "op") in
-    (![funcT] (struct.field_ref ptrT #"ApplyReadonly"%go (![ptrT] (struct.field_ref ptrT #"smMem"%go (![ptrT] "s"))))) "$a0")) in
+    exception_do (let: "s" := (GoAlloc (go.PointerType StateMachine) "s") in
+    let: "op" := (GoAlloc (go.SliceType go.byte) "op") in
+    let: ("$ret0", "$ret1") := ((let: "$a0" := (![go.SliceType go.byte] "op") in
+    (![go.FunctionType (go.Signature [go.SliceType go.byte] false [go.uint64; go.SliceType go.byte])] (StructFieldRef InMemoryStateMachine "ApplyReadonly"%go (![go.PointerType InMemoryStateMachine] (StructFieldRef StateMachine "smMem"%go (![go.PointerType StateMachine] "s"))))) "$a0")) in
     return: ("$ret0", "$ret1")).
 
 (* TODO: make the nextIndex and epoch argument order consistent with replica.StateMachine
 
    go: durlog.go:97:24 *)
-Definition StateMachine__setStateAndUnsealⁱᵐᵖˡ : val :=
+Definition StateMachine__setStateAndUnsealⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "s" "snap" "nextIndex" "epoch",
-    exception_do (let: "s" := (mem.alloc "s") in
-    let: "epoch" := (mem.alloc "epoch") in
-    let: "nextIndex" := (mem.alloc "nextIndex") in
-    let: "snap" := (mem.alloc "snap") in
-    let: "$r0" := (![uint64T] "epoch") in
-    do:  ((struct.field_ref ptrT #"epoch"%go (![ptrT] "s")) <-[uint64T] "$r0");;;
-    let: "$r0" := (![uint64T] "nextIndex") in
-    do:  ((struct.field_ref ptrT #"nextIndex"%go (![ptrT] "s")) <-[uint64T] "$r0");;;
+    exception_do (let: "s" := (GoAlloc (go.PointerType StateMachine) "s") in
+    let: "epoch" := (GoAlloc go.uint64 "epoch") in
+    let: "nextIndex" := (GoAlloc go.uint64 "nextIndex") in
+    let: "snap" := (GoAlloc (go.SliceType go.byte) "snap") in
+    let: "$r0" := (![go.uint64] "epoch") in
+    do:  ((StructFieldRef StateMachine "epoch"%go (![go.PointerType StateMachine] "s")) <-[go.uint64] "$r0");;;
+    let: "$r0" := (![go.uint64] "nextIndex") in
+    do:  ((StructFieldRef StateMachine "nextIndex"%go (![go.PointerType StateMachine] "s")) <-[go.uint64] "$r0");;;
     let: "$r0" := #false in
-    do:  ((struct.field_ref ptrT #"sealed"%go (![ptrT] "s")) <-[boolT] "$r0");;;
-    do:  (let: "$a0" := (![sliceT] "snap") in
-    let: "$a1" := (![uint64T] "nextIndex") in
-    (![funcT] (struct.field_ref ptrT #"SetState"%go (![ptrT] (struct.field_ref ptrT #"smMem"%go (![ptrT] "s"))))) "$a0" "$a1");;;
-    do:  (let: "$a0" := (![sliceT] "snap") in
-    (method_call #(ptrT.id StateMachine.id) #"makeDurableWithSnap"%go (![ptrT] "s")) "$a0");;;
+    do:  ((StructFieldRef StateMachine "sealed"%go (![go.PointerType StateMachine] "s")) <-[go.bool] "$r0");;;
+    do:  (let: "$a0" := (![go.SliceType go.byte] "snap") in
+    let: "$a1" := (![go.uint64] "nextIndex") in
+    (![go.FunctionType (go.Signature [go.SliceType go.byte; go.uint64] false [])] (StructFieldRef InMemoryStateMachine "SetState"%go (![go.PointerType InMemoryStateMachine] (StructFieldRef StateMachine "smMem"%go (![go.PointerType StateMachine] "s"))))) "$a0" "$a1");;;
+    do:  (let: "$a0" := (![go.SliceType go.byte] "snap") in
+    (MethodResolve (go.PointerType StateMachine) "makeDurableWithSnap"%go (![go.PointerType StateMachine] "s")) "$a0");;;
     return: #()).
 
 (* go: durlog.go:105:24 *)
-Definition StateMachine__getStateAndSealⁱᵐᵖˡ : val :=
+Definition StateMachine__getStateAndSealⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "s" <>,
-    exception_do (let: "s" := (mem.alloc "s") in
-    (if: (~ (![boolT] (struct.field_ref ptrT #"sealed"%go (![ptrT] "s"))))
+    exception_do (let: "s" := (GoAlloc (go.PointerType StateMachine) "s") in
+    (if: (~ (![go.bool] (StructFieldRef StateMachine "sealed"%go (![go.PointerType StateMachine] "s"))))
     then
       let: "$r0" := #true in
-      do:  ((struct.field_ref ptrT #"sealed"%go (![ptrT] "s")) <-[boolT] "$r0");;;
-      let: "l" := (mem.alloc (type.zero_val uint64T)) in
-      let: "$r0" := (let: "$a0" := (slice.make2 byteT #(W64 1)) in
-      (method_call #(ptrT.id aof.AppendOnlyFile.id) #"Append"%go (![ptrT] (struct.field_ref ptrT #"logFile"%go (![ptrT] "s")))) "$a0") in
-      do:  ("l" <-[uint64T] "$r0");;;
-      do:  (let: "$a0" := (![uint64T] "l") in
-      (method_call #(ptrT.id aof.AppendOnlyFile.id) #"WaitAppend"%go (![ptrT] (struct.field_ref ptrT #"logFile"%go (![ptrT] "s")))) "$a0")
+      do:  ((StructFieldRef StateMachine "sealed"%go (![go.PointerType StateMachine] "s")) <-[go.bool] "$r0");;;
+      let: "l" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+      let: "$r0" := (let: "$a0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) #(W64 1)) in
+      (MethodResolve (go.PointerType aof.AppendOnlyFile) "Append"%go (![go.PointerType aof.AppendOnlyFile] (StructFieldRef StateMachine "logFile"%go (![go.PointerType StateMachine] "s")))) "$a0") in
+      do:  ("l" <-[go.uint64] "$r0");;;
+      do:  (let: "$a0" := (![go.uint64] "l") in
+      (MethodResolve (go.PointerType aof.AppendOnlyFile) "WaitAppend"%go (![go.PointerType aof.AppendOnlyFile] (StructFieldRef StateMachine "logFile"%go (![go.PointerType StateMachine] "s")))) "$a0")
     else do:  #());;;
-    let: "snap" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := ((![funcT] (struct.field_ref ptrT #"GetState"%go (![ptrT] (struct.field_ref ptrT #"smMem"%go (![ptrT] "s"))))) #()) in
-    do:  ("snap" <-[sliceT] "$r0");;;
-    return: (![sliceT] "snap")).
-
-Definition recoverStateMachine : go_string := "github.com/mit-pdos/gokv/vrsm/storage.recoverStateMachine"%go.
+    let: "snap" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
+    let: "$r0" := ((![go.FunctionType (go.Signature [] false [go.SliceType go.byte])] (StructFieldRef InMemoryStateMachine "GetState"%go (![go.PointerType InMemoryStateMachine] (StructFieldRef StateMachine "smMem"%go (![go.PointerType StateMachine] "s"))))) #()) in
+    do:  ("snap" <-[go.SliceType go.byte] "$r0");;;
+    return: (![go.SliceType go.byte] "snap")).
 
 (* go: durlog.go:118:6 *)
-Definition recoverStateMachineⁱᵐᵖˡ : val :=
+Definition recoverStateMachineⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "smMem" "fname",
-    exception_do (let: "fname" := (mem.alloc "fname") in
-    let: "smMem" := (mem.alloc "smMem") in
-    let: "s" := (mem.alloc (type.zero_val ptrT)) in
-    let: "$r0" := (mem.alloc (let: "$fname" := (![stringT] "fname") in
-    let: "$smMem" := (![ptrT] "smMem") in
-    struct.make StateMachine [{
-      "fname" ::= "$fname";
-      "logFile" ::= type.zero_val ptrT;
-      "logsize" ::= type.zero_val uint64T;
-      "sealed" ::= type.zero_val boolT;
-      "epoch" ::= type.zero_val uint64T;
-      "nextIndex" ::= type.zero_val uint64T;
-      "smMem" ::= "$smMem"
-    }])) in
-    do:  ("s" <-[ptrT] "$r0");;;
-    let: "enc" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (let: "$a0" := (![stringT] (struct.field_ref ptrT #"fname"%go (![ptrT] "s"))) in
-    (func_call #grove_ffi.FileRead) "$a0") in
-    do:  ("enc" <-[sliceT] "$r0");;;
-    (if: (let: "$a0" := (![sliceT] "enc") in
-    slice.len "$a0") = #(W64 0)
+    exception_do (let: "fname" := (GoAlloc go.string "fname") in
+    let: "smMem" := (GoAlloc (go.PointerType InMemoryStateMachine) "smMem") in
+    let: "s" := (GoAlloc (go.PointerType StateMachine) (GoZeroVal (go.PointerType StateMachine) #())) in
+    let: "$r0" := (GoAlloc StateMachine (CompositeLiteral StateMachine (LiteralValue [KeyedElement (Some (KeyField "fname"%go)) (ElementExpression go.string (![go.string] "fname")); KeyedElement (Some (KeyField "smMem"%go)) (ElementExpression (go.PointerType InMemoryStateMachine) (![go.PointerType InMemoryStateMachine] "smMem"))]))) in
+    do:  ("s" <-[go.PointerType StateMachine] "$r0");;;
+    let: "enc" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
+    let: "$r0" := (let: "$a0" := (![go.string] (StructFieldRef StateMachine "fname"%go (![go.PointerType StateMachine] "s"))) in
+    (FuncResolve grove_ffi.FileRead [] #()) "$a0") in
+    do:  ("enc" <-[go.SliceType go.byte] "$r0");;;
+    (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType go.byte] "enc") in
+    (FuncResolve go.len [go.SliceType go.byte] #()) "$a0") =⟨go.int⟩ #(W64 0))
     then
-      let: "initState" := (mem.alloc (type.zero_val sliceT)) in
-      let: "$r0" := ((![funcT] (struct.field_ref ptrT #"GetState"%go (![ptrT] "smMem"))) #()) in
-      do:  ("initState" <-[sliceT] "$r0");;;
-      let: "initialContents" := (mem.alloc (type.zero_val sliceT)) in
-      let: "$r0" := (slice.make3 byteT #(W64 0) (((#(W64 8) + (s_to_w64 (let: "$a0" := (![sliceT] "initState") in
-      slice.len "$a0"))) + #(W64 8)) + #(W64 8))) in
-      do:  ("initialContents" <-[sliceT] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![sliceT] "initialContents") in
-      let: "$a1" := (s_to_w64 (let: "$a0" := (![sliceT] "initState") in
-      slice.len "$a0")) in
-      (func_call #marshal.WriteInt) "$a0" "$a1") in
-      do:  ("initialContents" <-[sliceT] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![sliceT] "initialContents") in
-      let: "$a1" := (![sliceT] "initState") in
-      (func_call #marshal.WriteBytes) "$a0" "$a1") in
-      do:  ("initialContents" <-[sliceT] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![sliceT] "initialContents") in
+      let: "initState" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
+      let: "$r0" := ((![go.FunctionType (go.Signature [] false [go.SliceType go.byte])] (StructFieldRef InMemoryStateMachine "GetState"%go (![go.PointerType InMemoryStateMachine] "smMem"))) #()) in
+      do:  ("initState" <-[go.SliceType go.byte] "$r0");;;
+      let: "initialContents" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
+      let: "$r0" := ((FuncResolve go.make3 [go.SliceType go.byte] #()) #(W64 0) (((#(W64 8) +⟨go.uint64⟩ (Convert go.int go.uint64 (let: "$a0" := (![go.SliceType go.byte] "initState") in
+      (FuncResolve go.len [go.SliceType go.byte] #()) "$a0"))) +⟨go.uint64⟩ #(W64 8)) +⟨go.uint64⟩ #(W64 8))) in
+      do:  ("initialContents" <-[go.SliceType go.byte] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "initialContents") in
+      let: "$a1" := (Convert go.int go.uint64 (let: "$a0" := (![go.SliceType go.byte] "initState") in
+      (FuncResolve go.len [go.SliceType go.byte] #()) "$a0")) in
+      (FuncResolve marshal.WriteInt [] #()) "$a0" "$a1") in
+      do:  ("initialContents" <-[go.SliceType go.byte] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "initialContents") in
+      let: "$a1" := (![go.SliceType go.byte] "initState") in
+      (FuncResolve marshal.WriteBytes [] #()) "$a0" "$a1") in
+      do:  ("initialContents" <-[go.SliceType go.byte] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "initialContents") in
       let: "$a1" := #(W64 0) in
-      (func_call #marshal.WriteInt) "$a0" "$a1") in
-      do:  ("initialContents" <-[sliceT] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![sliceT] "initialContents") in
+      (FuncResolve marshal.WriteInt [] #()) "$a0" "$a1") in
+      do:  ("initialContents" <-[go.SliceType go.byte] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "initialContents") in
       let: "$a1" := #(W64 0) in
-      (func_call #marshal.WriteInt) "$a0" "$a1") in
-      do:  ("initialContents" <-[sliceT] "$r0");;;
-      do:  (let: "$a0" := (![stringT] (struct.field_ref ptrT #"fname"%go (![ptrT] "s"))) in
-      let: "$a1" := (![sliceT] "initialContents") in
-      (func_call #grove_ffi.FileWrite) "$a0" "$a1");;;
-      let: "$r0" := (let: "$a0" := (![stringT] "fname") in
-      (func_call #aof.CreateAppendOnlyFile) "$a0") in
-      do:  ((struct.field_ref ptrT #"logFile"%go (![ptrT] "s")) <-[ptrT] "$r0");;;
-      return: (![ptrT] "s")
+      (FuncResolve marshal.WriteInt [] #()) "$a0" "$a1") in
+      do:  ("initialContents" <-[go.SliceType go.byte] "$r0");;;
+      do:  (let: "$a0" := (![go.string] (StructFieldRef StateMachine "fname"%go (![go.PointerType StateMachine] "s"))) in
+      let: "$a1" := (![go.SliceType go.byte] "initialContents") in
+      (FuncResolve grove_ffi.FileWrite [] #()) "$a0" "$a1");;;
+      let: "$r0" := (let: "$a0" := (![go.string] "fname") in
+      (FuncResolve aof.CreateAppendOnlyFile [] #()) "$a0") in
+      do:  ((StructFieldRef StateMachine "logFile"%go (![go.PointerType StateMachine] "s")) <-[go.PointerType aof.AppendOnlyFile] "$r0");;;
+      return: (![go.PointerType StateMachine] "s")
     else do:  #());;;
-    let: "$r0" := (let: "$a0" := (![stringT] "fname") in
-    (func_call #aof.CreateAppendOnlyFile) "$a0") in
-    do:  ((struct.field_ref ptrT #"logFile"%go (![ptrT] "s")) <-[ptrT] "$r0");;;
-    let: "snapLen" := (mem.alloc (type.zero_val uint64T)) in
-    let: "snap" := (mem.alloc (type.zero_val sliceT)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "enc") in
-    (func_call #marshal.ReadInt) "$a0") in
+    let: "$r0" := (let: "$a0" := (![go.string] "fname") in
+    (FuncResolve aof.CreateAppendOnlyFile [] #()) "$a0") in
+    do:  ((StructFieldRef StateMachine "logFile"%go (![go.PointerType StateMachine] "s")) <-[go.PointerType aof.AppendOnlyFile] "$r0");;;
+    let: "snapLen" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+    let: "snap" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![go.SliceType go.byte] "enc") in
+    (FuncResolve marshal.ReadInt [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("snapLen" <-[uint64T] "$r0");;;
-    do:  ("enc" <-[sliceT] "$r1");;;
-    let: "$r0" := (let: "$s" := (![sliceT] "enc") in
-    slice.slice byteT "$s" #(W64 0) (![uint64T] "snapLen")) in
-    do:  ("snap" <-[sliceT] "$r0");;;
-    let: "n" := (mem.alloc (type.zero_val intT)) in
-    let: "$r0" := (let: "$a0" := (![sliceT] "enc") in
-    slice.len "$a0") in
-    do:  ("n" <-[intT] "$r0");;;
-    let: "$r0" := (let: "$s" := (![sliceT] "enc") in
-    slice.slice byteT "$s" (![uint64T] "snapLen") (![intT] "n")) in
-    do:  ("enc" <-[sliceT] "$r0");;;
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "enc") in
-    (func_call #marshal.ReadInt) "$a0") in
+    do:  ("snapLen" <-[go.uint64] "$r0");;;
+    do:  ("enc" <-[go.SliceType go.byte] "$r1");;;
+    let: "$r0" := (let: "$s" := (![go.SliceType go.byte] "enc") in
+    Slice (go.SliceType go.byte) ("$s", #(W64 0), ![go.uint64] "snapLen")) in
+    do:  ("snap" <-[go.SliceType go.byte] "$r0");;;
+    let: "n" := (GoAlloc go.int (GoZeroVal go.int #())) in
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "enc") in
+    (FuncResolve go.len [go.SliceType go.byte] #()) "$a0") in
+    do:  ("n" <-[go.int] "$r0");;;
+    let: "$r0" := (let: "$s" := (![go.SliceType go.byte] "enc") in
+    Slice (go.SliceType go.byte) ("$s", ![go.uint64] "snapLen", ![go.int] "n")) in
+    do:  ("enc" <-[go.SliceType go.byte] "$r0");;;
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![go.SliceType go.byte] "enc") in
+    (FuncResolve marshal.ReadInt [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ((struct.field_ref ptrT #"epoch"%go (![ptrT] "s")) <-[uint64T] "$r0");;;
-    do:  ("enc" <-[sliceT] "$r1");;;
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "enc") in
-    (func_call #marshal.ReadInt) "$a0") in
+    do:  ((StructFieldRef StateMachine "epoch"%go (![go.PointerType StateMachine] "s")) <-[go.uint64] "$r0");;;
+    do:  ("enc" <-[go.SliceType go.byte] "$r1");;;
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![go.SliceType go.byte] "enc") in
+    (FuncResolve marshal.ReadInt [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ((struct.field_ref ptrT #"nextIndex"%go (![ptrT] "s")) <-[uint64T] "$r0");;;
-    do:  ("enc" <-[sliceT] "$r1");;;
-    do:  (let: "$a0" := (![sliceT] "snap") in
-    let: "$a1" := (![uint64T] (struct.field_ref ptrT #"nextIndex"%go (![ptrT] "s"))) in
-    (![funcT] (struct.field_ref ptrT #"SetState"%go (![ptrT] (struct.field_ref ptrT #"smMem"%go (![ptrT] "s"))))) "$a0" "$a1");;;
+    do:  ((StructFieldRef StateMachine "nextIndex"%go (![go.PointerType StateMachine] "s")) <-[go.uint64] "$r0");;;
+    do:  ("enc" <-[go.SliceType go.byte] "$r1");;;
+    do:  (let: "$a0" := (![go.SliceType go.byte] "snap") in
+    let: "$a1" := (![go.uint64] (StructFieldRef StateMachine "nextIndex"%go (![go.PointerType StateMachine] "s"))) in
+    (![go.FunctionType (go.Signature [go.SliceType go.byte; go.uint64] false [])] (StructFieldRef InMemoryStateMachine "SetState"%go (![go.PointerType InMemoryStateMachine] (StructFieldRef StateMachine "smMem"%go (![go.PointerType StateMachine] "s"))))) "$a0" "$a1");;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      (if: int_gt (let: "$a0" := (![sliceT] "enc") in
-      slice.len "$a0") #(W64 1)
+      (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType go.byte] "enc") in
+      (FuncResolve go.len [go.SliceType go.byte] #()) "$a0") >⟨go.int⟩ #(W64 1))
       then
-        let: "opLen" := (mem.alloc (type.zero_val uint64T)) in
-        let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "enc") in
-        (func_call #marshal.ReadInt) "$a0") in
+        let: "opLen" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+        let: ("$ret0", "$ret1") := (let: "$a0" := (![go.SliceType go.byte] "enc") in
+        (FuncResolve marshal.ReadInt [] #()) "$a0") in
         let: "$r0" := "$ret0" in
         let: "$r1" := "$ret1" in
-        do:  ("opLen" <-[uint64T] "$r0");;;
-        do:  ("enc" <-[sliceT] "$r1");;;
-        let: "op" := (mem.alloc (type.zero_val sliceT)) in
-        let: "$r0" := (let: "$s" := (![sliceT] "enc") in
-        slice.slice byteT "$s" #(W64 0) (![uint64T] "opLen")) in
-        do:  ("op" <-[sliceT] "$r0");;;
-        let: "n" := (mem.alloc (type.zero_val intT)) in
-        let: "$r0" := (let: "$a0" := (![sliceT] "enc") in
-        slice.len "$a0") in
-        do:  ("n" <-[intT] "$r0");;;
-        let: "$r0" := (let: "$s" := (![sliceT] "enc") in
-        slice.slice byteT "$s" (![uint64T] "opLen") (![intT] "n")) in
-        do:  ("enc" <-[sliceT] "$r0");;;
-        do:  (let: "$a0" := (![sliceT] "op") in
-        (![funcT] (struct.field_ref ptrT #"ApplyVolatile"%go (![ptrT] (struct.field_ref ptrT #"smMem"%go (![ptrT] "s"))))) "$a0");;;
-        let: "$r0" := (let: "$a0" := (![uint64T] (struct.field_ref ptrT #"nextIndex"%go (![ptrT] "s"))) in
+        do:  ("opLen" <-[go.uint64] "$r0");;;
+        do:  ("enc" <-[go.SliceType go.byte] "$r1");;;
+        let: "op" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
+        let: "$r0" := (let: "$s" := (![go.SliceType go.byte] "enc") in
+        Slice (go.SliceType go.byte) ("$s", #(W64 0), ![go.uint64] "opLen")) in
+        do:  ("op" <-[go.SliceType go.byte] "$r0");;;
+        let: "n" := (GoAlloc go.int (GoZeroVal go.int #())) in
+        let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "enc") in
+        (FuncResolve go.len [go.SliceType go.byte] #()) "$a0") in
+        do:  ("n" <-[go.int] "$r0");;;
+        let: "$r0" := (let: "$s" := (![go.SliceType go.byte] "enc") in
+        Slice (go.SliceType go.byte) ("$s", ![go.uint64] "opLen", ![go.int] "n")) in
+        do:  ("enc" <-[go.SliceType go.byte] "$r0");;;
+        do:  (let: "$a0" := (![go.SliceType go.byte] "op") in
+        (![go.FunctionType (go.Signature [go.SliceType go.byte] false [go.SliceType go.byte])] (StructFieldRef InMemoryStateMachine "ApplyVolatile"%go (![go.PointerType InMemoryStateMachine] (StructFieldRef StateMachine "smMem"%go (![go.PointerType StateMachine] "s"))))) "$a0");;;
+        let: "$r0" := (let: "$a0" := (![go.uint64] (StructFieldRef StateMachine "nextIndex"%go (![go.PointerType StateMachine] "s"))) in
         let: "$a1" := #(W64 1) in
-        (func_call #std.SumAssumeNoOverflow) "$a0" "$a1") in
-        do:  ((struct.field_ref ptrT #"nextIndex"%go (![ptrT] "s")) <-[uint64T] "$r0")
+        (FuncResolve std.SumAssumeNoOverflow [] #()) "$a0" "$a1") in
+        do:  ((StructFieldRef StateMachine "nextIndex"%go (![go.PointerType StateMachine] "s")) <-[go.uint64] "$r0")
       else break: #()));;;
-    (if: int_gt (let: "$a0" := (![sliceT] "enc") in
-    slice.len "$a0") #(W64 0)
+    (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType go.byte] "enc") in
+    (FuncResolve go.len [go.SliceType go.byte] #()) "$a0") >⟨go.int⟩ #(W64 0))
     then
       let: "$r0" := #true in
-      do:  ((struct.field_ref ptrT #"sealed"%go (![ptrT] "s")) <-[boolT] "$r0")
+      do:  ((StructFieldRef StateMachine "sealed"%go (![go.PointerType StateMachine] "s")) <-[go.bool] "$r0")
     else do:  #());;;
-    return: (![ptrT] "s")).
-
-Definition MakePbServer : go_string := "github.com/mit-pdos/gokv/vrsm/storage.MakePbServer"%go.
+    return: (![go.PointerType StateMachine] "s")).
 
 (* XXX: putting this here because MakeServer takes nextIndex, epoch, and sealed
    as input, and the user of simplelog won't have access to the private fields
@@ -333,80 +302,178 @@ Definition MakePbServer : go_string := "github.com/mit-pdos/gokv/vrsm/storage.Ma
    Maybe we should make those be a part of replica.StateMachine
 
    go: durlog.go:190:6 *)
-Definition MakePbServerⁱᵐᵖˡ : val :=
+Definition MakePbServerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "smMem" "fname" "confHosts",
-    exception_do (let: "confHosts" := (mem.alloc "confHosts") in
-    let: "fname" := (mem.alloc "fname") in
-    let: "smMem" := (mem.alloc "smMem") in
-    let: "s" := (mem.alloc (type.zero_val ptrT)) in
-    let: "$r0" := (let: "$a0" := (![ptrT] "smMem") in
-    let: "$a1" := (![stringT] "fname") in
-    (func_call #recoverStateMachine) "$a0" "$a1") in
-    do:  ("s" <-[ptrT] "$r0");;;
-    let: "sm" := (mem.alloc (type.zero_val ptrT)) in
-    let: "$r0" := (mem.alloc (let: "$StartApply" := (λ: "op",
-      exception_do (let: "op" := (mem.alloc "op") in
-      let: ("$ret0", "$ret1") := ((let: "$a0" := (![sliceT] "op") in
-      (method_call #(ptrT.id StateMachine.id) #"apply"%go (![ptrT] "s")) "$a0")) in
-      return: ("$ret0", "$ret1"))
-      ) in
-    let: "$ApplyReadonly" := (λ: "op",
-      exception_do (let: "op" := (mem.alloc "op") in
-      let: ("$ret0", "$ret1") := ((let: "$a0" := (![sliceT] "op") in
-      (method_call #(ptrT.id StateMachine.id) #"applyReadonly"%go (![ptrT] "s")) "$a0")) in
-      return: ("$ret0", "$ret1"))
-      ) in
-    let: "$SetStateAndUnseal" := (λ: "snap" "nextIndex" "epoch",
-      exception_do (let: "epoch" := (mem.alloc "epoch") in
-      let: "nextIndex" := (mem.alloc "nextIndex") in
-      let: "snap" := (mem.alloc "snap") in
-      do:  (let: "$a0" := (![sliceT] "snap") in
-      let: "$a1" := (![uint64T] "nextIndex") in
-      let: "$a2" := (![uint64T] "epoch") in
-      (method_call #(ptrT.id StateMachine.id) #"setStateAndUnseal"%go (![ptrT] "s")) "$a0" "$a1" "$a2");;;
-      return: #())
-      ) in
-    let: "$GetStateAndSeal" := (λ: <>,
-      exception_do (return: ((method_call #(ptrT.id StateMachine.id) #"getStateAndSeal"%go (![ptrT] "s")) #()))
-      ) in
-    struct.make replica.StateMachine [{
-      "StartApply" ::= "$StartApply";
-      "ApplyReadonly" ::= "$ApplyReadonly";
-      "SetStateAndUnseal" ::= "$SetStateAndUnseal";
-      "GetStateAndSeal" ::= "$GetStateAndSeal"
-    }])) in
-    do:  ("sm" <-[ptrT] "$r0");;;
-    return: (let: "$a0" := (![ptrT] "sm") in
-     let: "$a1" := (![sliceT] "confHosts") in
-     let: "$a2" := (![uint64T] (struct.field_ref ptrT #"nextIndex"%go (![ptrT] "s"))) in
-     let: "$a3" := (![uint64T] (struct.field_ref ptrT #"epoch"%go (![ptrT] "s"))) in
-     let: "$a4" := (![boolT] (struct.field_ref ptrT #"sealed"%go (![ptrT] "s"))) in
-     (func_call #replica.MakeServer) "$a0" "$a1" "$a2" "$a3" "$a4")).
+    exception_do (let: "confHosts" := (GoAlloc (go.SliceType grove_ffi.Address) "confHosts") in
+    let: "fname" := (GoAlloc go.string "fname") in
+    let: "smMem" := (GoAlloc (go.PointerType InMemoryStateMachine) "smMem") in
+    let: "s" := (GoAlloc (go.PointerType StateMachine) (GoZeroVal (go.PointerType StateMachine) #())) in
+    let: "$r0" := (let: "$a0" := (![go.PointerType InMemoryStateMachine] "smMem") in
+    let: "$a1" := (![go.string] "fname") in
+    (FuncResolve recoverStateMachine [] #()) "$a0" "$a1") in
+    do:  ("s" <-[go.PointerType StateMachine] "$r0");;;
+    let: "sm" := (GoAlloc (go.PointerType replica.StateMachine) (GoZeroVal (go.PointerType replica.StateMachine) #())) in
+    let: "$r0" := (GoAlloc replica.StateMachine (CompositeLiteral replica.StateMachine (LiteralValue [KeyedElement (Some (KeyField "StartApply"%go)) (ElementExpression (go.FunctionType (go.Signature [go.SliceType go.byte] false [go.SliceType go.byte; go.FunctionType (go.Signature [] false [])])) (λ: "op",
+       exception_do (let: "op" := (GoAlloc (go.SliceType go.byte) "op") in
+       let: ("$ret0", "$ret1") := ((let: "$a0" := (![go.SliceType go.byte] "op") in
+       (MethodResolve (go.PointerType StateMachine) "apply"%go (![go.PointerType StateMachine] "s")) "$a0")) in
+       return: ("$ret0", "$ret1"))
+       )); KeyedElement (Some (KeyField "ApplyReadonly"%go)) (ElementExpression (go.FunctionType (go.Signature [go.SliceType go.byte] false [go.uint64; go.SliceType go.byte])) (λ: "op",
+       exception_do (let: "op" := (GoAlloc (go.SliceType go.byte) "op") in
+       let: ("$ret0", "$ret1") := ((let: "$a0" := (![go.SliceType go.byte] "op") in
+       (MethodResolve (go.PointerType StateMachine) "applyReadonly"%go (![go.PointerType StateMachine] "s")) "$a0")) in
+       return: ("$ret0", "$ret1"))
+       )); KeyedElement (Some (KeyField "SetStateAndUnseal"%go)) (ElementExpression (go.FunctionType (go.Signature [go.SliceType go.byte; go.uint64; go.uint64] false [])) (λ: "snap" "nextIndex" "epoch",
+       exception_do (let: "epoch" := (GoAlloc go.uint64 "epoch") in
+       let: "nextIndex" := (GoAlloc go.uint64 "nextIndex") in
+       let: "snap" := (GoAlloc (go.SliceType go.byte) "snap") in
+       do:  (let: "$a0" := (![go.SliceType go.byte] "snap") in
+       let: "$a1" := (![go.uint64] "nextIndex") in
+       let: "$a2" := (![go.uint64] "epoch") in
+       (MethodResolve (go.PointerType StateMachine) "setStateAndUnseal"%go (![go.PointerType StateMachine] "s")) "$a0" "$a1" "$a2");;;
+       return: #())
+       )); KeyedElement (Some (KeyField "GetStateAndSeal"%go)) (ElementExpression (go.FunctionType (go.Signature [] false [go.SliceType go.byte])) (λ: <>,
+       exception_do (return: ((MethodResolve (go.PointerType StateMachine) "getStateAndSeal"%go (![go.PointerType StateMachine] "s")) #()))
+       ))]))) in
+    do:  ("sm" <-[go.PointerType replica.StateMachine] "$r0");;;
+    return: (let: "$a0" := (![go.PointerType replica.StateMachine] "sm") in
+     let: "$a1" := (![go.SliceType grove_ffi.Address] "confHosts") in
+     let: "$a2" := (![go.uint64] (StructFieldRef StateMachine "nextIndex"%go (![go.PointerType StateMachine] "s"))) in
+     let: "$a3" := (![go.uint64] (StructFieldRef StateMachine "epoch"%go (![go.PointerType StateMachine] "s"))) in
+     let: "$a4" := (![go.bool] (StructFieldRef StateMachine "sealed"%go (![go.PointerType StateMachine] "s"))) in
+     (FuncResolve replica.MakeServer [] #()) "$a0" "$a1" "$a2" "$a3" "$a4")).
 
-Definition vars' : list (go_string * go_type) := [].
+#[global] Instance info' : PkgInfo pkg_id.storage :=
+{|
+  pkg_imported_pkgs := [code.github_com.goose_lang.std.pkg_id.std; code.github_com.mit_pdos.gokv.aof.pkg_id.aof; code.github_com.mit_pdos.gokv.grove_ffi.pkg_id.grove_ffi; code.github_com.mit_pdos.gokv.vrsm.replica.pkg_id.replica; code.github_com.tchajed.marshal.pkg_id.marshal]
+|}.
 
-Definition functions' : list (go_string * val) := [(recoverStateMachine, recoverStateMachineⁱᵐᵖˡ); (MakePbServer, MakePbServerⁱᵐᵖˡ)].
-
-Definition msets' : list (go_string * (list (go_string * val))) := [(InMemoryStateMachine.id, []); (ptrT.id InMemoryStateMachine.id, []); (StateMachine.id, []); (ptrT.id StateMachine.id, [("apply"%go, StateMachine__applyⁱᵐᵖˡ); ("applyReadonly"%go, StateMachine__applyReadonlyⁱᵐᵖˡ); ("getStateAndSeal"%go, StateMachine__getStateAndSealⁱᵐᵖˡ); ("makeDurableWithSnap"%go, StateMachine__makeDurableWithSnapⁱᵐᵖˡ); ("setStateAndUnseal"%go, StateMachine__setStateAndUnsealⁱᵐᵖˡ); ("truncateAndMakeDurable"%go, StateMachine__truncateAndMakeDurableⁱᵐᵖˡ)])].
-
-#[global] Instance info' : PkgInfo storage.storage :=
-  {|
-    pkg_vars := vars';
-    pkg_functions := functions';
-    pkg_msets := msets';
-    pkg_imported_pkgs := [code.github_com.goose_lang.std.std; code.github_com.mit_pdos.gokv.aof.aof; code.github_com.mit_pdos.gokv.grove_ffi.grove_ffi; code.github_com.mit_pdos.gokv.vrsm.replica.replica; code.github_com.tchajed.marshal.marshal];
-  |}.
-
-Definition initialize' : val :=
+Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    package.init #storage.storage (λ: <>,
+    package.init pkg_id.storage (λ: <>,
       exception_do (do:  (marshal.initialize' #());;;
       do:  (replica.initialize' #());;;
       do:  (grove_ffi.initialize' #());;;
       do:  (aof.initialize' #());;;
-      do:  (std.initialize' #());;;
-      do:  (package.alloc storage.storage #()))
+      do:  (std.initialize' #()))
       ).
 
-End code.
+Module InMemoryStateMachine.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  ApplyReadonly' : func.t;
+  ApplyVolatile' : func.t;
+  GetState' : func.t;
+  SetState' : func.t;
+}.
+
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _) (zero_val _)|}.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+End def.
+
+End InMemoryStateMachine.
+
+Definition InMemoryStateMachine'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
+  (go.FieldDecl "ApplyReadonly"%go (go.FunctionType (go.Signature [go.SliceType go.byte] false [go.uint64; go.SliceType go.byte])));
+  (go.FieldDecl "ApplyVolatile"%go (go.FunctionType (go.Signature [go.SliceType go.byte] false [go.SliceType go.byte])));
+  (go.FieldDecl "GetState"%go (go.FunctionType (go.Signature [] false [go.SliceType go.byte])));
+  (go.FieldDecl "SetState"%go (go.FunctionType (go.Signature [go.SliceType go.byte; go.uint64] false [])))
+].
+Program Definition InMemoryStateMachine'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (InMemoryStateMachine'fds_unsealed).
+Global Instance equals_unfold_InMemoryStateMachine {ext : ffi_syntax} {go_gctx : GoGlobalContext} : InMemoryStateMachine'fds =→ InMemoryStateMachine'fds_unsealed.
+Proof. rewrite /InMemoryStateMachine'fds seal_eq //. Qed.
+
+Definition InMemoryStateMachineⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (InMemoryStateMachine'fds).
+
+Class InMemoryStateMachine_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] InMemoryStateMachine_type_repr  :: go.TypeReprUnderlying InMemoryStateMachineⁱᵐᵖˡ InMemoryStateMachine.t;
+  #[global] InMemoryStateMachine_underlying :: (InMemoryStateMachine) <u (InMemoryStateMachineⁱᵐᵖˡ);
+  #[global] InMemoryStateMachine_get_ApplyReadonly (x : InMemoryStateMachine.t) :: ⟦StructFieldGet (InMemoryStateMachineⁱᵐᵖˡ) "ApplyReadonly", #x⟧ ⤳[under] #x.(InMemoryStateMachine.ApplyReadonly');
+  #[global] InMemoryStateMachine_set_ApplyReadonly (x : InMemoryStateMachine.t) y :: ⟦StructFieldSet (InMemoryStateMachineⁱᵐᵖˡ) "ApplyReadonly", (#x, #y)⟧ ⤳[under] #(x <|InMemoryStateMachine.ApplyReadonly' := y|>);
+  #[global] InMemoryStateMachine_get_ApplyVolatile (x : InMemoryStateMachine.t) :: ⟦StructFieldGet (InMemoryStateMachineⁱᵐᵖˡ) "ApplyVolatile", #x⟧ ⤳[under] #x.(InMemoryStateMachine.ApplyVolatile');
+  #[global] InMemoryStateMachine_set_ApplyVolatile (x : InMemoryStateMachine.t) y :: ⟦StructFieldSet (InMemoryStateMachineⁱᵐᵖˡ) "ApplyVolatile", (#x, #y)⟧ ⤳[under] #(x <|InMemoryStateMachine.ApplyVolatile' := y|>);
+  #[global] InMemoryStateMachine_get_GetState (x : InMemoryStateMachine.t) :: ⟦StructFieldGet (InMemoryStateMachineⁱᵐᵖˡ) "GetState", #x⟧ ⤳[under] #x.(InMemoryStateMachine.GetState');
+  #[global] InMemoryStateMachine_set_GetState (x : InMemoryStateMachine.t) y :: ⟦StructFieldSet (InMemoryStateMachineⁱᵐᵖˡ) "GetState", (#x, #y)⟧ ⤳[under] #(x <|InMemoryStateMachine.GetState' := y|>);
+  #[global] InMemoryStateMachine_get_SetState (x : InMemoryStateMachine.t) :: ⟦StructFieldGet (InMemoryStateMachineⁱᵐᵖˡ) "SetState", #x⟧ ⤳[under] #x.(InMemoryStateMachine.SetState');
+  #[global] InMemoryStateMachine_set_SetState (x : InMemoryStateMachine.t) y :: ⟦StructFieldSet (InMemoryStateMachineⁱᵐᵖˡ) "SetState", (#x, #y)⟧ ⤳[under] #(x <|InMemoryStateMachine.SetState' := y|>);
+}.
+
+Module StateMachine.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  fname' : go_string;
+  logFile' : loc;
+  logsize' : w64;
+  sealed' : bool;
+  epoch' : w64;
+  nextIndex' : w64;
+  smMem' : loc;
+}.
+
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _) (zero_val _) (zero_val _) (zero_val _) (zero_val _)|}.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+End def.
+
+End StateMachine.
+
+Definition StateMachine'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
+  (go.FieldDecl "fname"%go go.string);
+  (go.FieldDecl "logFile"%go (go.PointerType aof.AppendOnlyFile));
+  (go.FieldDecl "logsize"%go go.uint64);
+  (go.FieldDecl "sealed"%go go.bool);
+  (go.FieldDecl "epoch"%go go.uint64);
+  (go.FieldDecl "nextIndex"%go go.uint64);
+  (go.FieldDecl "smMem"%go (go.PointerType InMemoryStateMachine))
+].
+Program Definition StateMachine'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (StateMachine'fds_unsealed).
+Global Instance equals_unfold_StateMachine {ext : ffi_syntax} {go_gctx : GoGlobalContext} : StateMachine'fds =→ StateMachine'fds_unsealed.
+Proof. rewrite /StateMachine'fds seal_eq //. Qed.
+
+Definition StateMachineⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (StateMachine'fds).
+
+Class StateMachine_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] StateMachine_type_repr  :: go.TypeReprUnderlying StateMachineⁱᵐᵖˡ StateMachine.t;
+  #[global] StateMachine_underlying :: (StateMachine) <u (StateMachineⁱᵐᵖˡ);
+  #[global] StateMachine_get_fname (x : StateMachine.t) :: ⟦StructFieldGet (StateMachineⁱᵐᵖˡ) "fname", #x⟧ ⤳[under] #x.(StateMachine.fname');
+  #[global] StateMachine_set_fname (x : StateMachine.t) y :: ⟦StructFieldSet (StateMachineⁱᵐᵖˡ) "fname", (#x, #y)⟧ ⤳[under] #(x <|StateMachine.fname' := y|>);
+  #[global] StateMachine_get_logFile (x : StateMachine.t) :: ⟦StructFieldGet (StateMachineⁱᵐᵖˡ) "logFile", #x⟧ ⤳[under] #x.(StateMachine.logFile');
+  #[global] StateMachine_set_logFile (x : StateMachine.t) y :: ⟦StructFieldSet (StateMachineⁱᵐᵖˡ) "logFile", (#x, #y)⟧ ⤳[under] #(x <|StateMachine.logFile' := y|>);
+  #[global] StateMachine_get_logsize (x : StateMachine.t) :: ⟦StructFieldGet (StateMachineⁱᵐᵖˡ) "logsize", #x⟧ ⤳[under] #x.(StateMachine.logsize');
+  #[global] StateMachine_set_logsize (x : StateMachine.t) y :: ⟦StructFieldSet (StateMachineⁱᵐᵖˡ) "logsize", (#x, #y)⟧ ⤳[under] #(x <|StateMachine.logsize' := y|>);
+  #[global] StateMachine_get_sealed (x : StateMachine.t) :: ⟦StructFieldGet (StateMachineⁱᵐᵖˡ) "sealed", #x⟧ ⤳[under] #x.(StateMachine.sealed');
+  #[global] StateMachine_set_sealed (x : StateMachine.t) y :: ⟦StructFieldSet (StateMachineⁱᵐᵖˡ) "sealed", (#x, #y)⟧ ⤳[under] #(x <|StateMachine.sealed' := y|>);
+  #[global] StateMachine_get_epoch (x : StateMachine.t) :: ⟦StructFieldGet (StateMachineⁱᵐᵖˡ) "epoch", #x⟧ ⤳[under] #x.(StateMachine.epoch');
+  #[global] StateMachine_set_epoch (x : StateMachine.t) y :: ⟦StructFieldSet (StateMachineⁱᵐᵖˡ) "epoch", (#x, #y)⟧ ⤳[under] #(x <|StateMachine.epoch' := y|>);
+  #[global] StateMachine_get_nextIndex (x : StateMachine.t) :: ⟦StructFieldGet (StateMachineⁱᵐᵖˡ) "nextIndex", #x⟧ ⤳[under] #x.(StateMachine.nextIndex');
+  #[global] StateMachine_set_nextIndex (x : StateMachine.t) y :: ⟦StructFieldSet (StateMachineⁱᵐᵖˡ) "nextIndex", (#x, #y)⟧ ⤳[under] #(x <|StateMachine.nextIndex' := y|>);
+  #[global] StateMachine_get_smMem (x : StateMachine.t) :: ⟦StructFieldGet (StateMachineⁱᵐᵖˡ) "smMem", #x⟧ ⤳[under] #x.(StateMachine.smMem');
+  #[global] StateMachine_set_smMem (x : StateMachine.t) y :: ⟦StructFieldSet (StateMachineⁱᵐᵖˡ) "smMem", (#x, #y)⟧ ⤳[under] #(x <|StateMachine.smMem' := y|>);
+  #[global] StateMachine'ptr_apply_unfold :: MethodUnfold (go.PointerType (StateMachine)) "apply" (StateMachine__applyⁱᵐᵖˡ);
+  #[global] StateMachine'ptr_applyReadonly_unfold :: MethodUnfold (go.PointerType (StateMachine)) "applyReadonly" (StateMachine__applyReadonlyⁱᵐᵖˡ);
+  #[global] StateMachine'ptr_getStateAndSeal_unfold :: MethodUnfold (go.PointerType (StateMachine)) "getStateAndSeal" (StateMachine__getStateAndSealⁱᵐᵖˡ);
+  #[global] StateMachine'ptr_makeDurableWithSnap_unfold :: MethodUnfold (go.PointerType (StateMachine)) "makeDurableWithSnap" (StateMachine__makeDurableWithSnapⁱᵐᵖˡ);
+  #[global] StateMachine'ptr_setStateAndUnseal_unfold :: MethodUnfold (go.PointerType (StateMachine)) "setStateAndUnseal" (StateMachine__setStateAndUnsealⁱᵐᵖˡ);
+  #[global] StateMachine'ptr_truncateAndMakeDurable_unfold :: MethodUnfold (go.PointerType (StateMachine)) "truncateAndMakeDurable" (StateMachine__truncateAndMakeDurableⁱᵐᵖˡ);
+}.
+
+Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] InMemoryStateMachine_instance :: InMemoryStateMachine_Assumptions;
+  #[global] StateMachine_instance :: StateMachine_Assumptions;
+  #[global] recoverStateMachine_unfold :: FuncUnfold recoverStateMachine [] (recoverStateMachineⁱᵐᵖˡ);
+  #[global] MakePbServer_unfold :: FuncUnfold MakePbServer [] (MakePbServerⁱᵐᵖˡ);
+  #[global] import_std_Assumption :: std.Assumptions;
+  #[global] import_aof_Assumption :: aof.Assumptions;
+  #[global] import_grove_ffi_Assumption :: grove_ffi.Assumptions;
+  #[global] import_replica_Assumption :: replica.Assumptions;
+  #[global] import_marshal_Assumption :: marshal.Assumptions;
+}.
 End storage.

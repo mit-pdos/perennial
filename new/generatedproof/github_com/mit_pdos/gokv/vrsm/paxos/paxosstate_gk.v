@@ -3,144 +3,106 @@ Require Export New.proof.proof_prelude.
 Require Export New.generatedproof.github_com.goose_lang.std.
 Require Export New.generatedproof.github_com.tchajed.marshal.
 Require Export New.golang.theory.
-
 Require Export New.code.github_com.mit_pdos.gokv.vrsm.paxos.paxosstate_gk.
 
 Set Default Proof Using "Type".
 
 Module paxosstate_gk.
-
-(* type paxosstate_gk.S *)
 Module S.
 Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-  Epoch' : w64;
-  AcceptedEpoch' : w64;
-  NextIndex' : w64;
-  State' : slice.t;
-  IsLeader' : bool;
-}.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : paxosstate_gk.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance S_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (paxosstate_gk.S.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "Epoch" ∷ l.[(paxosstate_gk.S.t), "Epoch"] ↦{dq} v.(paxosstate_gk.S.Epoch') ∗
+      "AcceptedEpoch" ∷ l.[(paxosstate_gk.S.t), "AcceptedEpoch"] ↦{dq} v.(paxosstate_gk.S.AcceptedEpoch') ∗
+      "NextIndex" ∷ l.[(paxosstate_gk.S.t), "NextIndex"] ↦{dq} v.(paxosstate_gk.S.NextIndex') ∗
+      "State" ∷ l.[(paxosstate_gk.S.t), "State"] ↦{dq} v.(paxosstate_gk.S.State') ∗
+      "IsLeader" ∷ l.[(paxosstate_gk.S.t), "IsLeader"] ↦{dq} v.(paxosstate_gk.S.IsLeader') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance S_into_val_typed
+   :
+  IntoValTypedUnderlying (paxosstate_gk.S.t) (paxosstate_gk.Sⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance S_access_load_Epoch l (v : (paxosstate_gk.S.t)) dq :
+  AccessStrict
+    (l.[(paxosstate_gk.S.t), "Epoch"] ↦{dq} (v.(paxosstate_gk.S.Epoch')))
+    (l.[(paxosstate_gk.S.t), "Epoch"] ↦{dq} (v.(paxosstate_gk.S.Epoch')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance S_access_store_Epoch l (v : (paxosstate_gk.S.t)) Epoch' :
+  AccessStrict
+    (l.[(paxosstate_gk.S.t), "Epoch"] ↦ (v.(paxosstate_gk.S.Epoch')))
+    (l.[(paxosstate_gk.S.t), "Epoch"] ↦ Epoch')
+    (l ↦ v) (l ↦ (v <|(paxosstate_gk.S.Epoch') := Epoch'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance S_access_load_AcceptedEpoch l (v : (paxosstate_gk.S.t)) dq :
+  AccessStrict
+    (l.[(paxosstate_gk.S.t), "AcceptedEpoch"] ↦{dq} (v.(paxosstate_gk.S.AcceptedEpoch')))
+    (l.[(paxosstate_gk.S.t), "AcceptedEpoch"] ↦{dq} (v.(paxosstate_gk.S.AcceptedEpoch')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance S_access_store_AcceptedEpoch l (v : (paxosstate_gk.S.t)) AcceptedEpoch' :
+  AccessStrict
+    (l.[(paxosstate_gk.S.t), "AcceptedEpoch"] ↦ (v.(paxosstate_gk.S.AcceptedEpoch')))
+    (l.[(paxosstate_gk.S.t), "AcceptedEpoch"] ↦ AcceptedEpoch')
+    (l ↦ v) (l ↦ (v <|(paxosstate_gk.S.AcceptedEpoch') := AcceptedEpoch'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance S_access_load_NextIndex l (v : (paxosstate_gk.S.t)) dq :
+  AccessStrict
+    (l.[(paxosstate_gk.S.t), "NextIndex"] ↦{dq} (v.(paxosstate_gk.S.NextIndex')))
+    (l.[(paxosstate_gk.S.t), "NextIndex"] ↦{dq} (v.(paxosstate_gk.S.NextIndex')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance S_access_store_NextIndex l (v : (paxosstate_gk.S.t)) NextIndex' :
+  AccessStrict
+    (l.[(paxosstate_gk.S.t), "NextIndex"] ↦ (v.(paxosstate_gk.S.NextIndex')))
+    (l.[(paxosstate_gk.S.t), "NextIndex"] ↦ NextIndex')
+    (l ↦ v) (l ↦ (v <|(paxosstate_gk.S.NextIndex') := NextIndex'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance S_access_load_State l (v : (paxosstate_gk.S.t)) dq :
+  AccessStrict
+    (l.[(paxosstate_gk.S.t), "State"] ↦{dq} (v.(paxosstate_gk.S.State')))
+    (l.[(paxosstate_gk.S.t), "State"] ↦{dq} (v.(paxosstate_gk.S.State')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance S_access_store_State l (v : (paxosstate_gk.S.t)) State' :
+  AccessStrict
+    (l.[(paxosstate_gk.S.t), "State"] ↦ (v.(paxosstate_gk.S.State')))
+    (l.[(paxosstate_gk.S.t), "State"] ↦ State')
+    (l ↦ v) (l ↦ (v <|(paxosstate_gk.S.State') := State'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance S_access_load_IsLeader l (v : (paxosstate_gk.S.t)) dq :
+  AccessStrict
+    (l.[(paxosstate_gk.S.t), "IsLeader"] ↦{dq} (v.(paxosstate_gk.S.IsLeader')))
+    (l.[(paxosstate_gk.S.t), "IsLeader"] ↦{dq} (v.(paxosstate_gk.S.IsLeader')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance S_access_store_IsLeader l (v : (paxosstate_gk.S.t)) IsLeader' :
+  AccessStrict
+    (l.[(paxosstate_gk.S.t), "IsLeader"] ↦ (v.(paxosstate_gk.S.IsLeader')))
+    (l.[(paxosstate_gk.S.t), "IsLeader"] ↦ IsLeader')
+    (l ↦ v) (l ↦ (v <|(paxosstate_gk.S.IsLeader') := IsLeader'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End S.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent paxosstate_gk.S.
-#[local] Typeclasses Transparent paxosstate_gk.S.
-
-Global Instance S_wf : struct.Wf paxosstate_gk.S.
-Proof. apply _. Qed.
-
-Global Instance settable_S : Settable S.t :=
-  settable! S.mk < S.Epoch'; S.AcceptedEpoch'; S.NextIndex'; S.State'; S.IsLeader' >.
-Global Instance into_val_S : IntoVal S.t :=
-  {| to_val_def v :=
-    struct.val_aux paxosstate_gk.S [
-    "Epoch" ::= #(S.Epoch' v);
-    "AcceptedEpoch" ::= #(S.AcceptedEpoch' v);
-    "NextIndex" ::= #(S.NextIndex' v);
-    "State" ::= #(S.State' v);
-    "IsLeader" ::= #(S.IsLeader' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_S : IntoValTyped S.t paxosstate_gk.S :=
-{|
-  default_val := S.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_S_Epoch : IntoValStructField "Epoch" paxosstate_gk.S S.Epoch'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_S_AcceptedEpoch : IntoValStructField "AcceptedEpoch" paxosstate_gk.S S.AcceptedEpoch'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_S_NextIndex : IntoValStructField "NextIndex" paxosstate_gk.S S.NextIndex'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_S_State : IntoValStructField "State" paxosstate_gk.S S.State'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_S_IsLeader : IntoValStructField "IsLeader" paxosstate_gk.S S.IsLeader'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_S Epoch' AcceptedEpoch' NextIndex' State' IsLeader':
-  PureWp True
-    (struct.make #paxosstate_gk.S (alist_val [
-      "Epoch" ::= #Epoch';
-      "AcceptedEpoch" ::= #AcceptedEpoch';
-      "NextIndex" ::= #NextIndex';
-      "State" ::= #State';
-      "IsLeader" ::= #IsLeader'
-    ]))%struct
-    #(S.mk Epoch' AcceptedEpoch' NextIndex' State' IsLeader').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance S_struct_fields_split dq l (v : S.t) :
-  StructFieldsSplit dq l v (
-    "HEpoch" ∷ l ↦s[paxosstate_gk.S :: "Epoch"]{dq} v.(S.Epoch') ∗
-    "HAcceptedEpoch" ∷ l ↦s[paxosstate_gk.S :: "AcceptedEpoch"]{dq} v.(S.AcceptedEpoch') ∗
-    "HNextIndex" ∷ l ↦s[paxosstate_gk.S :: "NextIndex"]{dq} v.(S.NextIndex') ∗
-    "HState" ∷ l ↦s[paxosstate_gk.S :: "State"]{dq} v.(S.State') ∗
-    "HIsLeader" ∷ l ↦s[paxosstate_gk.S :: "IsLeader"]{dq} v.(S.IsLeader')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (S.Epoch' v)) (paxosstate_gk.S) "Epoch"%go.
-  simpl_one_flatten_struct (# (S.AcceptedEpoch' v)) (paxosstate_gk.S) "AcceptedEpoch"%go.
-  simpl_one_flatten_struct (# (S.NextIndex' v)) (paxosstate_gk.S) "NextIndex"%go.
-  simpl_one_flatten_struct (# (S.State' v)) (paxosstate_gk.S) "State"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-Section names.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext}.
-#[local] Transparent is_pkg_defined is_pkg_defined_pure.
-
-Global Instance is_pkg_defined_pure_paxosstate_gk : IsPkgDefinedPure paxosstate_gk :=
-  {|
-    is_pkg_defined_pure_def go_ctx :=
-      is_pkg_defined_pure_single paxosstate_gk ∧
-      is_pkg_defined_pure code.github_com.goose_lang.std.std ∧
-      is_pkg_defined_pure code.github_com.tchajed.marshal.marshal;
-  |}.
-
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_paxosstate_gk : IsPkgDefined paxosstate_gk :=
-  {|
-    is_pkg_defined_def go_ctx :=
-      (is_pkg_defined_single paxosstate_gk ∗
-       is_pkg_defined code.github_com.goose_lang.std.std ∗
-       is_pkg_defined code.github_com.tchajed.marshal.marshal)%I
-  |}.
-Final Obligation. iIntros. iFrame "#%". Qed.
-#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
-
-Global Instance wp_func_call_Marshal :
-  WpFuncCall paxosstate_gk.Marshal _ (is_pkg_defined paxosstate_gk) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_Unmarshal :
-  WpFuncCall paxosstate_gk.Unmarshal _ (is_pkg_defined paxosstate_gk) :=
-  ltac:(solve_wp_func_call).
-
-End names.
 End paxosstate_gk.

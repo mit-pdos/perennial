@@ -4,138 +4,92 @@ Require Export New.generatedproof.github_com.goose_lang.primitive.
 Require Export New.generatedproof.github_com.goose_lang.std.
 Require Export New.generatedproof.github_com.tchajed.marshal.
 Require Export New.golang.theory.
-
 Require Export New.code.github_com.mit_pdos.gokv.tutorial.kvservice.conditionalput_gk.
 
 Set Default Proof Using "Type".
 
 Module conditionalput_gk.
-
-(* type conditionalput_gk.S *)
 Module S.
 Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-  OpId' : w64;
-  Key' : go_string;
-  ExpectedVal' : go_string;
-  NewVal' : go_string;
-}.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : conditionalput_gk.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance S_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (conditionalput_gk.S.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "OpId" ∷ l.[(conditionalput_gk.S.t), "OpId"] ↦{dq} v.(conditionalput_gk.S.OpId') ∗
+      "Key" ∷ l.[(conditionalput_gk.S.t), "Key"] ↦{dq} v.(conditionalput_gk.S.Key') ∗
+      "ExpectedVal" ∷ l.[(conditionalput_gk.S.t), "ExpectedVal"] ↦{dq} v.(conditionalput_gk.S.ExpectedVal') ∗
+      "NewVal" ∷ l.[(conditionalput_gk.S.t), "NewVal"] ↦{dq} v.(conditionalput_gk.S.NewVal') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance S_into_val_typed
+   :
+  IntoValTypedUnderlying (conditionalput_gk.S.t) (conditionalput_gk.Sⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance S_access_load_OpId l (v : (conditionalput_gk.S.t)) dq :
+  AccessStrict
+    (l.[(conditionalput_gk.S.t), "OpId"] ↦{dq} (v.(conditionalput_gk.S.OpId')))
+    (l.[(conditionalput_gk.S.t), "OpId"] ↦{dq} (v.(conditionalput_gk.S.OpId')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance S_access_store_OpId l (v : (conditionalput_gk.S.t)) OpId' :
+  AccessStrict
+    (l.[(conditionalput_gk.S.t), "OpId"] ↦ (v.(conditionalput_gk.S.OpId')))
+    (l.[(conditionalput_gk.S.t), "OpId"] ↦ OpId')
+    (l ↦ v) (l ↦ (v <|(conditionalput_gk.S.OpId') := OpId'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance S_access_load_Key l (v : (conditionalput_gk.S.t)) dq :
+  AccessStrict
+    (l.[(conditionalput_gk.S.t), "Key"] ↦{dq} (v.(conditionalput_gk.S.Key')))
+    (l.[(conditionalput_gk.S.t), "Key"] ↦{dq} (v.(conditionalput_gk.S.Key')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance S_access_store_Key l (v : (conditionalput_gk.S.t)) Key' :
+  AccessStrict
+    (l.[(conditionalput_gk.S.t), "Key"] ↦ (v.(conditionalput_gk.S.Key')))
+    (l.[(conditionalput_gk.S.t), "Key"] ↦ Key')
+    (l ↦ v) (l ↦ (v <|(conditionalput_gk.S.Key') := Key'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance S_access_load_ExpectedVal l (v : (conditionalput_gk.S.t)) dq :
+  AccessStrict
+    (l.[(conditionalput_gk.S.t), "ExpectedVal"] ↦{dq} (v.(conditionalput_gk.S.ExpectedVal')))
+    (l.[(conditionalput_gk.S.t), "ExpectedVal"] ↦{dq} (v.(conditionalput_gk.S.ExpectedVal')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance S_access_store_ExpectedVal l (v : (conditionalput_gk.S.t)) ExpectedVal' :
+  AccessStrict
+    (l.[(conditionalput_gk.S.t), "ExpectedVal"] ↦ (v.(conditionalput_gk.S.ExpectedVal')))
+    (l.[(conditionalput_gk.S.t), "ExpectedVal"] ↦ ExpectedVal')
+    (l ↦ v) (l ↦ (v <|(conditionalput_gk.S.ExpectedVal') := ExpectedVal'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance S_access_load_NewVal l (v : (conditionalput_gk.S.t)) dq :
+  AccessStrict
+    (l.[(conditionalput_gk.S.t), "NewVal"] ↦{dq} (v.(conditionalput_gk.S.NewVal')))
+    (l.[(conditionalput_gk.S.t), "NewVal"] ↦{dq} (v.(conditionalput_gk.S.NewVal')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance S_access_store_NewVal l (v : (conditionalput_gk.S.t)) NewVal' :
+  AccessStrict
+    (l.[(conditionalput_gk.S.t), "NewVal"] ↦ (v.(conditionalput_gk.S.NewVal')))
+    (l.[(conditionalput_gk.S.t), "NewVal"] ↦ NewVal')
+    (l ↦ v) (l ↦ (v <|(conditionalput_gk.S.NewVal') := NewVal'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End S.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent conditionalput_gk.S.
-#[local] Typeclasses Transparent conditionalput_gk.S.
-
-Global Instance S_wf : struct.Wf conditionalput_gk.S.
-Proof. apply _. Qed.
-
-Global Instance settable_S : Settable S.t :=
-  settable! S.mk < S.OpId'; S.Key'; S.ExpectedVal'; S.NewVal' >.
-Global Instance into_val_S : IntoVal S.t :=
-  {| to_val_def v :=
-    struct.val_aux conditionalput_gk.S [
-    "OpId" ::= #(S.OpId' v);
-    "Key" ::= #(S.Key' v);
-    "ExpectedVal" ::= #(S.ExpectedVal' v);
-    "NewVal" ::= #(S.NewVal' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_S : IntoValTyped S.t conditionalput_gk.S :=
-{|
-  default_val := S.mk (default_val _) (default_val _) (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_S_OpId : IntoValStructField "OpId" conditionalput_gk.S S.OpId'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_S_Key : IntoValStructField "Key" conditionalput_gk.S S.Key'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_S_ExpectedVal : IntoValStructField "ExpectedVal" conditionalput_gk.S S.ExpectedVal'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_S_NewVal : IntoValStructField "NewVal" conditionalput_gk.S S.NewVal'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_S OpId' Key' ExpectedVal' NewVal':
-  PureWp True
-    (struct.make #conditionalput_gk.S (alist_val [
-      "OpId" ::= #OpId';
-      "Key" ::= #Key';
-      "ExpectedVal" ::= #ExpectedVal';
-      "NewVal" ::= #NewVal'
-    ]))%struct
-    #(S.mk OpId' Key' ExpectedVal' NewVal').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance S_struct_fields_split dq l (v : S.t) :
-  StructFieldsSplit dq l v (
-    "HOpId" ∷ l ↦s[conditionalput_gk.S :: "OpId"]{dq} v.(S.OpId') ∗
-    "HKey" ∷ l ↦s[conditionalput_gk.S :: "Key"]{dq} v.(S.Key') ∗
-    "HExpectedVal" ∷ l ↦s[conditionalput_gk.S :: "ExpectedVal"]{dq} v.(S.ExpectedVal') ∗
-    "HNewVal" ∷ l ↦s[conditionalput_gk.S :: "NewVal"]{dq} v.(S.NewVal')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (S.OpId' v)) (conditionalput_gk.S) "OpId"%go.
-  simpl_one_flatten_struct (# (S.Key' v)) (conditionalput_gk.S) "Key"%go.
-  simpl_one_flatten_struct (# (S.ExpectedVal' v)) (conditionalput_gk.S) "ExpectedVal"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-Section names.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext}.
-#[local] Transparent is_pkg_defined is_pkg_defined_pure.
-
-Global Instance is_pkg_defined_pure_conditionalput_gk : IsPkgDefinedPure conditionalput_gk :=
-  {|
-    is_pkg_defined_pure_def go_ctx :=
-      is_pkg_defined_pure_single conditionalput_gk ∧
-      is_pkg_defined_pure code.github_com.goose_lang.primitive.primitive ∧
-      is_pkg_defined_pure code.github_com.goose_lang.std.std ∧
-      is_pkg_defined_pure code.github_com.tchajed.marshal.marshal;
-  |}.
-
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_conditionalput_gk : IsPkgDefined conditionalput_gk :=
-  {|
-    is_pkg_defined_def go_ctx :=
-      (is_pkg_defined_single conditionalput_gk ∗
-       is_pkg_defined code.github_com.goose_lang.primitive.primitive ∗
-       is_pkg_defined code.github_com.goose_lang.std.std ∗
-       is_pkg_defined code.github_com.tchajed.marshal.marshal)%I
-  |}.
-Final Obligation. iIntros. iFrame "#%". Qed.
-#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
-
-Global Instance wp_func_call_Marshal :
-  WpFuncCall conditionalput_gk.Marshal _ (is_pkg_defined conditionalput_gk) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_Unmarshal :
-  WpFuncCall conditionalput_gk.Unmarshal _ (is_pkg_defined conditionalput_gk) :=
-  ltac:(solve_wp_func_call).
-
-End names.
 End conditionalput_gk.

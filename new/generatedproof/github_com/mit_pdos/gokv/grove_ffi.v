@@ -2,108 +2,49 @@
 Require Export New.proof.grove_prelude.
 Require Export New.manualproof.github_com.mit_pdos.gokv.grove_ffi.
 Require Export New.golang.theory.
-
 Require Export New.code.github_com.mit_pdos.gokv.grove_ffi.
 
 Set Default Proof Using "Type".
 
 Module grove_ffi.
-
-(* type grove_ffi.listener *)
 Module listener.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{!heapGS Σ}.
+Context {sem : go.Semantics}.
+Context {package_sem' : grove_ffi.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance listener_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (grove_ffi.listener.t). Admitted.
+
+#[global] Instance listener_into_val_typed
+   :
+  IntoValTypedUnderlying (grove_ffi.listener.t) (grove_ffi.listenerⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End listener.
 
-Global Instance bounded_size_listener : BoundedTypeSize grove_ffi.listener.
-Admitted.
-
-Global Instance into_val_listener `{ffi_syntax} : IntoVal listener.t.
-Admitted.
-
-Global Instance into_val_typed_listener `{ffi_syntax} : IntoValTyped listener.t grove_ffi.listener.
-Admitted.
-
-(* type grove_ffi.connection *)
 Module connection.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{!heapGS Σ}.
+Context {sem : go.Semantics}.
+Context {package_sem' : grove_ffi.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance connection_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (grove_ffi.connection.t). Admitted.
+
+#[global] Instance connection_into_val_typed
+   :
+  IntoValTypedUnderlying (grove_ffi.connection.t) (grove_ffi.connectionⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End connection.
 
-Global Instance bounded_size_connection : BoundedTypeSize grove_ffi.connection.
-Admitted.
-
-Global Instance into_val_connection `{ffi_syntax} : IntoVal connection.t.
-Admitted.
-
-Global Instance into_val_typed_connection `{ffi_syntax} : IntoValTyped connection.t grove_ffi.connection.
-Admitted.
-
-Section names.
-
-Context `{!heapGS Σ}.
-Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext}.
-#[local] Transparent is_pkg_defined is_pkg_defined_pure.
-
-Global Instance is_pkg_defined_pure_grove_ffi : IsPkgDefinedPure grove_ffi :=
-  {|
-    is_pkg_defined_pure_def go_ctx :=
-      is_pkg_defined_pure_single grove_ffi;
-  |}.
-
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_grove_ffi : IsPkgDefined grove_ffi :=
-  {|
-    is_pkg_defined_def go_ctx :=
-      (is_pkg_defined_single grove_ffi)%I
-  |}.
-Final Obligation. iIntros. iFrame "#%". Qed.
-#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
-
-Global Instance wp_func_call_FileWrite :
-  WpFuncCall grove_ffi.FileWrite _ (is_pkg_defined grove_ffi) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_FileRead :
-  WpFuncCall grove_ffi.FileRead _ (is_pkg_defined grove_ffi) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_FileAppend :
-  WpFuncCall grove_ffi.FileAppend _ (is_pkg_defined grove_ffi) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_Listen :
-  WpFuncCall grove_ffi.Listen _ (is_pkg_defined grove_ffi) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_Accept :
-  WpFuncCall grove_ffi.Accept _ (is_pkg_defined grove_ffi) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_Connect :
-  WpFuncCall grove_ffi.Connect _ (is_pkg_defined grove_ffi) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_Send :
-  WpFuncCall grove_ffi.Send _ (is_pkg_defined grove_ffi) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_Receive :
-  WpFuncCall grove_ffi.Receive _ (is_pkg_defined grove_ffi) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_GetTimeRange :
-  WpFuncCall grove_ffi.GetTimeRange _ (is_pkg_defined grove_ffi) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_GetTSC :
-  WpFuncCall grove_ffi.GetTSC _ (is_pkg_defined grove_ffi) :=
-  ltac:(solve_wp_func_call).
-
-End names.
 End grove_ffi.

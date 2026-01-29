@@ -5,365 +5,471 @@ Require Export New.code.github_com.mit_pdos.gokv.map_marshal.
 Require Export New.code.github_com.mit_pdos.gokv.vrsm.clerk.
 Require Export New.code.github_com.mit_pdos.gokv.vrsm.storage.
 Require Export New.code.github_com.tchajed.marshal.
-
 From New.golang Require Import defn.
+From New Require Import grove_prelude.
+Module pkg_id.
 Definition exactlyonce : go_string := "github.com/mit-pdos/gokv/vrsm/apps/exactlyonce".
 
-From New Require Import grove_prelude.
+End pkg_id.
+Export pkg_id.
 Module exactlyonce.
 
-Module eStateMachine. Definition id : go_string := "github.com/mit-pdos/gokv/vrsm/apps/exactlyonce.eStateMachine"%go. End eStateMachine.
-Module Clerk. Definition id : go_string := "github.com/mit-pdos/gokv/vrsm/apps/exactlyonce.Clerk"%go. End Clerk.
-Module VersionedStateMachine. Definition id : go_string := "github.com/mit-pdos/gokv/vrsm/apps/exactlyonce.VersionedStateMachine"%go. End VersionedStateMachine.
+Definition eStateMachine {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/mit-pdos/gokv/vrsm/apps/exactlyonce.eStateMachine"%go [].
 
-Section code.
+Definition Clerk {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/mit-pdos/gokv/vrsm/apps/exactlyonce.Clerk"%go [].
 
+Definition VersionedStateMachine {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/mit-pdos/gokv/vrsm/apps/exactlyonce.VersionedStateMachine"%go [].
 
-Definition eStateMachine : go_type := structT [
-  "lastSeq" :: mapT uint64T uint64T;
-  "lastReply" :: mapT uint64T sliceT;
-  "nextCID" :: uint64T;
-  "sm" :: ptrT;
-  "esmNextIndex" :: uint64T
-].
-#[global] Typeclasses Opaque eStateMachine.
-#[global] Opaque eStateMachine.
+Definition OPTYPE_RW {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #(W8 0).
 
-Definition OPTYPE_RW : val := #(W8 0).
+Definition OPTYPE_GETFRESHCID {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #(W8 1).
 
-Definition OPTYPE_GETFRESHCID : val := #(W8 1).
+Definition OPTYPE_RO {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #(W8 2).
 
-Definition OPTYPE_RO : val := #(W8 2).
+Definition MakeExactlyOnceStateMachine {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/mit-pdos/gokv/vrsm/apps/exactlyonce.MakeExactlyOnceStateMachine"%go.
+
+Definition MakeClerk {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/mit-pdos/gokv/vrsm/apps/exactlyonce.MakeClerk"%go.
 
 (* go: sm.go:26:25 *)
-Definition eStateMachine__applyVolatileⁱᵐᵖˡ : val :=
+Definition eStateMachine__applyVolatileⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "s" "op",
-    exception_do (let: "s" := (mem.alloc "s") in
-    let: "op" := (mem.alloc "op") in
-    let: "ret" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (let: "$a0" := (![uint64T] (struct.field_ref ptrT #"esmNextIndex"%go (![ptrT] "s"))) in
+    exception_do (let: "s" := (GoAlloc (go.PointerType eStateMachine) "s") in
+    let: "op" := (GoAlloc (go.SliceType go.byte) "op") in
+    let: "ret" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
+    let: "$r0" := (let: "$a0" := (![go.uint64] (StructFieldRef eStateMachine "esmNextIndex"%go (![go.PointerType eStateMachine] "s"))) in
     let: "$a1" := #(W64 1) in
-    (func_call #std.SumAssumeNoOverflow) "$a0" "$a1") in
-    do:  ((struct.field_ref ptrT #"esmNextIndex"%go (![ptrT] "s")) <-[uint64T] "$r0");;;
-    (if: (![byteT] (slice.elem_ref byteT (![sliceT] "op") #(W64 0))) = OPTYPE_GETFRESHCID
+    (FuncResolve std.SumAssumeNoOverflow [] #()) "$a0" "$a1") in
+    do:  ((StructFieldRef eStateMachine "esmNextIndex"%go (![go.PointerType eStateMachine] "s")) <-[go.uint64] "$r0");;;
+    (if: Convert go.untyped_bool go.bool ((![go.byte] (IndexRef (go.SliceType go.byte) (![go.SliceType go.byte] "op", #(W64 0)))) =⟨go.byte⟩ OPTYPE_GETFRESHCID)
     then
-      let: "$r0" := (slice.make3 byteT #(W64 0) #(W64 8)) in
-      do:  ("ret" <-[sliceT] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![sliceT] "ret") in
-      let: "$a1" := (![uint64T] (struct.field_ref ptrT #"nextCID"%go (![ptrT] "s"))) in
-      (func_call #marshal.WriteInt) "$a0" "$a1") in
-      do:  ("ret" <-[sliceT] "$r0");;;
-      let: "$r0" := (let: "$a0" := (![uint64T] (struct.field_ref ptrT #"nextCID"%go (![ptrT] "s"))) in
+      let: "$r0" := ((FuncResolve go.make3 [go.SliceType go.byte] #()) #(W64 0) #(W64 8)) in
+      do:  ("ret" <-[go.SliceType go.byte] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "ret") in
+      let: "$a1" := (![go.uint64] (StructFieldRef eStateMachine "nextCID"%go (![go.PointerType eStateMachine] "s"))) in
+      (FuncResolve marshal.WriteInt [] #()) "$a0" "$a1") in
+      do:  ("ret" <-[go.SliceType go.byte] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![go.uint64] (StructFieldRef eStateMachine "nextCID"%go (![go.PointerType eStateMachine] "s"))) in
       let: "$a1" := #(W64 1) in
-      (func_call #std.SumAssumeNoOverflow) "$a0" "$a1") in
-      do:  ((struct.field_ref ptrT #"nextCID"%go (![ptrT] "s")) <-[uint64T] "$r0")
+      (FuncResolve std.SumAssumeNoOverflow [] #()) "$a0" "$a1") in
+      do:  ((StructFieldRef eStateMachine "nextCID"%go (![go.PointerType eStateMachine] "s")) <-[go.uint64] "$r0")
     else
-      (if: (![byteT] (slice.elem_ref byteT (![sliceT] "op") #(W64 0))) = OPTYPE_RW
+      (if: Convert go.untyped_bool go.bool ((![go.byte] (IndexRef (go.SliceType go.byte) (![go.SliceType go.byte] "op", #(W64 0)))) =⟨go.byte⟩ OPTYPE_RW)
       then
-        let: "n" := (mem.alloc (type.zero_val intT)) in
-        let: "$r0" := (let: "$a0" := (![sliceT] "op") in
-        slice.len "$a0") in
-        do:  ("n" <-[intT] "$r0");;;
-        let: "enc" := (mem.alloc (type.zero_val sliceT)) in
-        let: "$r0" := (let: "$s" := (![sliceT] "op") in
-        slice.slice byteT "$s" #(W64 1) (![intT] "n")) in
-        do:  ("enc" <-[sliceT] "$r0");;;
-        let: "enc2" := (mem.alloc (type.zero_val sliceT)) in
-        let: "cid" := (mem.alloc (type.zero_val uint64T)) in
-        let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "enc") in
-        (func_call #marshal.ReadInt) "$a0") in
+        let: "n" := (GoAlloc go.int (GoZeroVal go.int #())) in
+        let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "op") in
+        (FuncResolve go.len [go.SliceType go.byte] #()) "$a0") in
+        do:  ("n" <-[go.int] "$r0");;;
+        let: "enc" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
+        let: "$r0" := (let: "$s" := (![go.SliceType go.byte] "op") in
+        Slice (go.SliceType go.byte) ("$s", #(W64 1), ![go.int] "n")) in
+        do:  ("enc" <-[go.SliceType go.byte] "$r0");;;
+        let: "enc2" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
+        let: "cid" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+        let: ("$ret0", "$ret1") := (let: "$a0" := (![go.SliceType go.byte] "enc") in
+        (FuncResolve marshal.ReadInt [] #()) "$a0") in
         let: "$r0" := "$ret0" in
         let: "$r1" := "$ret1" in
-        do:  ("cid" <-[uint64T] "$r0");;;
-        do:  ("enc2" <-[sliceT] "$r1");;;
-        let: "realOp" := (mem.alloc (type.zero_val sliceT)) in
-        let: "seq" := (mem.alloc (type.zero_val uint64T)) in
-        let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "enc2") in
-        (func_call #marshal.ReadInt) "$a0") in
+        do:  ("cid" <-[go.uint64] "$r0");;;
+        do:  ("enc2" <-[go.SliceType go.byte] "$r1");;;
+        let: "realOp" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
+        let: "seq" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+        let: ("$ret0", "$ret1") := (let: "$a0" := (![go.SliceType go.byte] "enc2") in
+        (FuncResolve marshal.ReadInt [] #()) "$a0") in
         let: "$r0" := "$ret0" in
         let: "$r1" := "$ret1" in
-        do:  ("seq" <-[uint64T] "$r0");;;
-        do:  ("realOp" <-[sliceT] "$r1");;;
-        (if: (Fst (map.get (![mapT uint64T uint64T] (struct.field_ref ptrT #"lastSeq"%go (![ptrT] "s"))) (![uint64T] "cid"))) ≥ (![uint64T] "seq")
+        do:  ("seq" <-[go.uint64] "$r0");;;
+        do:  ("realOp" <-[go.SliceType go.byte] "$r1");;;
+        (if: Convert go.untyped_bool go.bool ((map.lookup1 go.uint64 go.uint64 (![go.MapType go.uint64 go.uint64] (StructFieldRef eStateMachine "lastSeq"%go (![go.PointerType eStateMachine] "s"))) (![go.uint64] "cid")) ≥⟨go.uint64⟩ (![go.uint64] "seq"))
         then
-          let: "$r0" := (Fst (map.get (![mapT uint64T sliceT] (struct.field_ref ptrT #"lastReply"%go (![ptrT] "s"))) (![uint64T] "cid"))) in
-          do:  ("ret" <-[sliceT] "$r0")
+          let: "$r0" := (map.lookup1 go.uint64 (go.SliceType go.byte) (![go.MapType go.uint64 (go.SliceType go.byte)] (StructFieldRef eStateMachine "lastReply"%go (![go.PointerType eStateMachine] "s"))) (![go.uint64] "cid")) in
+          do:  ("ret" <-[go.SliceType go.byte] "$r0")
         else
-          let: "$r0" := (let: "$a0" := (![sliceT] "realOp") in
-          let: "$a1" := (![uint64T] (struct.field_ref ptrT #"esmNextIndex"%go (![ptrT] "s"))) in
-          (![funcT] (struct.field_ref ptrT #"ApplyVolatile"%go (![ptrT] (struct.field_ref ptrT #"sm"%go (![ptrT] "s"))))) "$a0" "$a1") in
-          do:  ("ret" <-[sliceT] "$r0");;;
-          let: "$r0" := (![sliceT] "ret") in
-          do:  (map.insert (![mapT uint64T sliceT] (struct.field_ref ptrT #"lastReply"%go (![ptrT] "s"))) (![uint64T] "cid") "$r0");;;
-          let: "$r0" := (![uint64T] "seq") in
-          do:  (map.insert (![mapT uint64T uint64T] (struct.field_ref ptrT #"lastSeq"%go (![ptrT] "s"))) (![uint64T] "cid") "$r0"))
+          let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "realOp") in
+          let: "$a1" := (![go.uint64] (StructFieldRef eStateMachine "esmNextIndex"%go (![go.PointerType eStateMachine] "s"))) in
+          (![go.FunctionType (go.Signature [go.SliceType go.byte; go.uint64] false [go.SliceType go.byte])] (StructFieldRef VersionedStateMachine "ApplyVolatile"%go (![go.PointerType VersionedStateMachine] (StructFieldRef eStateMachine "sm"%go (![go.PointerType eStateMachine] "s"))))) "$a0" "$a1") in
+          do:  ("ret" <-[go.SliceType go.byte] "$r0");;;
+          let: "$r0" := (![go.SliceType go.byte] "ret") in
+          do:  (map.insert go.uint64 (![go.MapType go.uint64 (go.SliceType go.byte)] (StructFieldRef eStateMachine "lastReply"%go (![go.PointerType eStateMachine] "s"))) (![go.uint64] "cid") "$r0");;;
+          let: "$r0" := (![go.uint64] "seq") in
+          do:  (map.insert go.uint64 (![go.MapType go.uint64 go.uint64] (StructFieldRef eStateMachine "lastSeq"%go (![go.PointerType eStateMachine] "s"))) (![go.uint64] "cid") "$r0"))
       else
-        (if: (![byteT] (slice.elem_ref byteT (![sliceT] "op") #(W64 0))) = OPTYPE_RO
+        (if: Convert go.untyped_bool go.bool ((![go.byte] (IndexRef (go.SliceType go.byte) (![go.SliceType go.byte] "op", #(W64 0)))) =⟨go.byte⟩ OPTYPE_RO)
         then
-          let: "n" := (mem.alloc (type.zero_val intT)) in
-          let: "$r0" := (let: "$a0" := (![sliceT] "op") in
-          slice.len "$a0") in
-          do:  ("n" <-[intT] "$r0");;;
-          let: "realOp" := (mem.alloc (type.zero_val sliceT)) in
-          let: "$r0" := (let: "$s" := (![sliceT] "op") in
-          slice.slice byteT "$s" #(W64 1) (![intT] "n")) in
-          do:  ("realOp" <-[sliceT] "$r0");;;
-          let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "realOp") in
-          (![funcT] (struct.field_ref ptrT #"ApplyReadonly"%go (![ptrT] (struct.field_ref ptrT #"sm"%go (![ptrT] "s"))))) "$a0") in
+          let: "n" := (GoAlloc go.int (GoZeroVal go.int #())) in
+          let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "op") in
+          (FuncResolve go.len [go.SliceType go.byte] #()) "$a0") in
+          do:  ("n" <-[go.int] "$r0");;;
+          let: "realOp" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
+          let: "$r0" := (let: "$s" := (![go.SliceType go.byte] "op") in
+          Slice (go.SliceType go.byte) ("$s", #(W64 1), ![go.int] "n")) in
+          do:  ("realOp" <-[go.SliceType go.byte] "$r0");;;
+          let: ("$ret0", "$ret1") := (let: "$a0" := (![go.SliceType go.byte] "realOp") in
+          (![go.FunctionType (go.Signature [go.SliceType go.byte] false [go.uint64; go.SliceType go.byte])] (StructFieldRef VersionedStateMachine "ApplyReadonly"%go (![go.PointerType VersionedStateMachine] (StructFieldRef eStateMachine "sm"%go (![go.PointerType eStateMachine] "s"))))) "$a0") in
           let: "$r0" := "$ret0" in
           let: "$r1" := "$ret1" in
           do:  "$r0";;;
-          do:  ("ret" <-[sliceT] "$r1")
+          do:  ("ret" <-[go.SliceType go.byte] "$r1")
         else
-          do:  (let: "$a0" := (interface.make #stringT.id #"unexpected ee op type"%go) in
-          Panic "$a0"))));;;
-    return: (![sliceT] "ret")).
+          do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"unexpected ee op type"%go) in
+          (FuncResolve go.panic [] #()) "$a0"))));;;
+    return: (![go.SliceType go.byte] "ret")).
 
 (* go: sm.go:58:25 *)
-Definition eStateMachine__applyReadonlyⁱᵐᵖˡ : val :=
+Definition eStateMachine__applyReadonlyⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "s" "op",
-    exception_do (let: "s" := (mem.alloc "s") in
-    let: "op" := (mem.alloc "op") in
-    (if: (![byteT] (slice.elem_ref byteT (![sliceT] "op") #(W64 0))) = OPTYPE_GETFRESHCID
+    exception_do (let: "s" := (GoAlloc (go.PointerType eStateMachine) "s") in
+    let: "op" := (GoAlloc (go.SliceType go.byte) "op") in
+    (if: Convert go.untyped_bool go.bool ((![go.byte] (IndexRef (go.SliceType go.byte) (![go.SliceType go.byte] "op", #(W64 0)))) =⟨go.byte⟩ OPTYPE_GETFRESHCID)
     then
-      do:  (let: "$a0" := (interface.make #stringT.id #"Got GETFRESHCID as a read-only op"%go) in
-      Panic "$a0")
+      do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"Got GETFRESHCID as a read-only op"%go) in
+      (FuncResolve go.panic [] #()) "$a0")
     else
-      (if: (![byteT] (slice.elem_ref byteT (![sliceT] "op") #(W64 0))) = OPTYPE_RW
+      (if: Convert go.untyped_bool go.bool ((![go.byte] (IndexRef (go.SliceType go.byte) (![go.SliceType go.byte] "op", #(W64 0)))) =⟨go.byte⟩ OPTYPE_RW)
       then
-        do:  (let: "$a0" := (interface.make #stringT.id #"Got RW as a read-only op"%go) in
-        Panic "$a0")
+        do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"Got RW as a read-only op"%go) in
+        (FuncResolve go.panic [] #()) "$a0")
       else
-        (if: (![byteT] (slice.elem_ref byteT (![sliceT] "op") #(W64 0))) ≠ OPTYPE_RO
+        (if: Convert go.untyped_bool go.bool ((![go.byte] (IndexRef (go.SliceType go.byte) (![go.SliceType go.byte] "op", #(W64 0)))) ≠⟨go.byte⟩ OPTYPE_RO)
         then
-          do:  (let: "$a0" := (interface.make #stringT.id #"unexpected ee op type"%go) in
-          Panic "$a0")
+          do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"unexpected ee op type"%go) in
+          (FuncResolve go.panic [] #()) "$a0")
         else do:  #())));;;
-    let: "n" := (mem.alloc (type.zero_val intT)) in
-    let: "$r0" := (let: "$a0" := (![sliceT] "op") in
-    slice.len "$a0") in
-    do:  ("n" <-[intT] "$r0");;;
-    let: "realOp" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (let: "$s" := (![sliceT] "op") in
-    slice.slice byteT "$s" #(W64 1) (![intT] "n")) in
-    do:  ("realOp" <-[sliceT] "$r0");;;
-    let: ("$ret0", "$ret1") := ((let: "$a0" := (![sliceT] "realOp") in
-    (![funcT] (struct.field_ref ptrT #"ApplyReadonly"%go (![ptrT] (struct.field_ref ptrT #"sm"%go (![ptrT] "s"))))) "$a0")) in
+    let: "n" := (GoAlloc go.int (GoZeroVal go.int #())) in
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "op") in
+    (FuncResolve go.len [go.SliceType go.byte] #()) "$a0") in
+    do:  ("n" <-[go.int] "$r0");;;
+    let: "realOp" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
+    let: "$r0" := (let: "$s" := (![go.SliceType go.byte] "op") in
+    Slice (go.SliceType go.byte) ("$s", #(W64 1), ![go.int] "n")) in
+    do:  ("realOp" <-[go.SliceType go.byte] "$r0");;;
+    let: ("$ret0", "$ret1") := ((let: "$a0" := (![go.SliceType go.byte] "realOp") in
+    (![go.FunctionType (go.Signature [go.SliceType go.byte] false [go.uint64; go.SliceType go.byte])] (StructFieldRef VersionedStateMachine "ApplyReadonly"%go (![go.PointerType VersionedStateMachine] (StructFieldRef eStateMachine "sm"%go (![go.PointerType eStateMachine] "s"))))) "$a0")) in
     return: ("$ret0", "$ret1")).
 
 (* go: sm.go:72:25 *)
-Definition eStateMachine__getStateⁱᵐᵖˡ : val :=
+Definition eStateMachine__getStateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "s" <>,
-    exception_do (let: "s" := (mem.alloc "s") in
-    let: "appState" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := ((![funcT] (struct.field_ref ptrT #"GetState"%go (![ptrT] (struct.field_ref ptrT #"sm"%go (![ptrT] "s"))))) #()) in
-    do:  ("appState" <-[sliceT] "$r0");;;
-    let: "enc" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (slice.make3 byteT #(W64 0) #(W64 0)) in
-    do:  ("enc" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "enc") in
-    let: "$a1" := (![uint64T] (struct.field_ref ptrT #"nextCID"%go (![ptrT] "s"))) in
-    (func_call #marshal.WriteInt) "$a0" "$a1") in
-    do:  ("enc" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "enc") in
-    let: "$a1" := (let: "$a0" := (![mapT uint64T uint64T] (struct.field_ref ptrT #"lastSeq"%go (![ptrT] "s"))) in
-    (func_call #map_marshal.EncodeMapU64ToU64) "$a0") in
-    (func_call #marshal.WriteBytes) "$a0" "$a1") in
-    do:  ("enc" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "enc") in
-    let: "$a1" := (let: "$a0" := (![mapT uint64T sliceT] (struct.field_ref ptrT #"lastReply"%go (![ptrT] "s"))) in
-    (func_call #map_marshal.EncodeMapU64ToBytes) "$a0") in
-    (func_call #marshal.WriteBytes) "$a0" "$a1") in
-    do:  ("enc" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "enc") in
-    let: "$a1" := (![sliceT] "appState") in
-    (func_call #marshal.WriteBytes) "$a0" "$a1") in
-    do:  ("enc" <-[sliceT] "$r0");;;
-    return: (![sliceT] "enc")).
+    exception_do (let: "s" := (GoAlloc (go.PointerType eStateMachine) "s") in
+    let: "appState" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
+    let: "$r0" := ((![go.FunctionType (go.Signature [] false [go.SliceType go.byte])] (StructFieldRef VersionedStateMachine "GetState"%go (![go.PointerType VersionedStateMachine] (StructFieldRef eStateMachine "sm"%go (![go.PointerType eStateMachine] "s"))))) #()) in
+    do:  ("appState" <-[go.SliceType go.byte] "$r0");;;
+    let: "enc" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
+    let: "$r0" := ((FuncResolve go.make3 [go.SliceType go.byte] #()) #(W64 0) #(W64 0)) in
+    do:  ("enc" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "enc") in
+    let: "$a1" := (![go.uint64] (StructFieldRef eStateMachine "nextCID"%go (![go.PointerType eStateMachine] "s"))) in
+    (FuncResolve marshal.WriteInt [] #()) "$a0" "$a1") in
+    do:  ("enc" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "enc") in
+    let: "$a1" := (let: "$a0" := (![go.MapType go.uint64 go.uint64] (StructFieldRef eStateMachine "lastSeq"%go (![go.PointerType eStateMachine] "s"))) in
+    (FuncResolve map_marshal.EncodeMapU64ToU64 [] #()) "$a0") in
+    (FuncResolve marshal.WriteBytes [] #()) "$a0" "$a1") in
+    do:  ("enc" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "enc") in
+    let: "$a1" := (let: "$a0" := (![go.MapType go.uint64 (go.SliceType go.byte)] (StructFieldRef eStateMachine "lastReply"%go (![go.PointerType eStateMachine] "s"))) in
+    (FuncResolve map_marshal.EncodeMapU64ToBytes [] #()) "$a0") in
+    (FuncResolve marshal.WriteBytes [] #()) "$a0" "$a1") in
+    do:  ("enc" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "enc") in
+    let: "$a1" := (![go.SliceType go.byte] "appState") in
+    (FuncResolve marshal.WriteBytes [] #()) "$a0" "$a1") in
+    do:  ("enc" <-[go.SliceType go.byte] "$r0");;;
+    return: (![go.SliceType go.byte] "enc")).
 
 (* go: sm.go:85:25 *)
-Definition eStateMachine__setStateⁱᵐᵖˡ : val :=
+Definition eStateMachine__setStateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "s" "state" "nextIndex",
-    exception_do (let: "s" := (mem.alloc "s") in
-    let: "nextIndex" := (mem.alloc "nextIndex") in
-    let: "state" := (mem.alloc "state") in
-    let: "enc" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (![sliceT] "state") in
-    do:  ("enc" <-[sliceT] "$r0");;;
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "enc") in
-    (func_call #marshal.ReadInt) "$a0") in
+    exception_do (let: "s" := (GoAlloc (go.PointerType eStateMachine) "s") in
+    let: "nextIndex" := (GoAlloc go.uint64 "nextIndex") in
+    let: "state" := (GoAlloc (go.SliceType go.byte) "state") in
+    let: "enc" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
+    let: "$r0" := (![go.SliceType go.byte] "state") in
+    do:  ("enc" <-[go.SliceType go.byte] "$r0");;;
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![go.SliceType go.byte] "enc") in
+    (FuncResolve marshal.ReadInt [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ((struct.field_ref ptrT #"nextCID"%go (![ptrT] "s")) <-[uint64T] "$r0");;;
-    do:  ("enc" <-[sliceT] "$r1");;;
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "enc") in
-    (func_call #map_marshal.DecodeMapU64ToU64) "$a0") in
+    do:  ((StructFieldRef eStateMachine "nextCID"%go (![go.PointerType eStateMachine] "s")) <-[go.uint64] "$r0");;;
+    do:  ("enc" <-[go.SliceType go.byte] "$r1");;;
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![go.SliceType go.byte] "enc") in
+    (FuncResolve map_marshal.DecodeMapU64ToU64 [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ((struct.field_ref ptrT #"lastSeq"%go (![ptrT] "s")) <-[mapT uint64T uint64T] "$r0");;;
-    do:  ("enc" <-[sliceT] "$r1");;;
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "enc") in
-    (func_call #map_marshal.DecodeMapU64ToBytes) "$a0") in
+    do:  ((StructFieldRef eStateMachine "lastSeq"%go (![go.PointerType eStateMachine] "s")) <-[go.MapType go.uint64 go.uint64] "$r0");;;
+    do:  ("enc" <-[go.SliceType go.byte] "$r1");;;
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![go.SliceType go.byte] "enc") in
+    (FuncResolve map_marshal.DecodeMapU64ToBytes [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ((struct.field_ref ptrT #"lastReply"%go (![ptrT] "s")) <-[mapT uint64T sliceT] "$r0");;;
-    do:  ("enc" <-[sliceT] "$r1");;;
-    do:  (let: "$a0" := (![sliceT] "enc") in
-    let: "$a1" := (![uint64T] "nextIndex") in
-    (![funcT] (struct.field_ref ptrT #"SetState"%go (![ptrT] (struct.field_ref ptrT #"sm"%go (![ptrT] "s"))))) "$a0" "$a1");;;
-    let: "$r0" := (![uint64T] "nextIndex") in
-    do:  ((struct.field_ref ptrT #"esmNextIndex"%go (![ptrT] "s")) <-[uint64T] "$r0");;;
+    do:  ((StructFieldRef eStateMachine "lastReply"%go (![go.PointerType eStateMachine] "s")) <-[go.MapType go.uint64 (go.SliceType go.byte)] "$r0");;;
+    do:  ("enc" <-[go.SliceType go.byte] "$r1");;;
+    do:  (let: "$a0" := (![go.SliceType go.byte] "enc") in
+    let: "$a1" := (![go.uint64] "nextIndex") in
+    (![go.FunctionType (go.Signature [go.SliceType go.byte; go.uint64] false [])] (StructFieldRef VersionedStateMachine "SetState"%go (![go.PointerType VersionedStateMachine] (StructFieldRef eStateMachine "sm"%go (![go.PointerType eStateMachine] "s"))))) "$a0" "$a1");;;
+    let: "$r0" := (![go.uint64] "nextIndex") in
+    do:  ((StructFieldRef eStateMachine "esmNextIndex"%go (![go.PointerType eStateMachine] "s")) <-[go.uint64] "$r0");;;
     return: #()).
 
-Definition MakeExactlyOnceStateMachine : go_string := "github.com/mit-pdos/gokv/vrsm/apps/exactlyonce.MakeExactlyOnceStateMachine"%go.
-
 (* go: sm.go:94:6 *)
-Definition MakeExactlyOnceStateMachineⁱᵐᵖˡ : val :=
+Definition MakeExactlyOnceStateMachineⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "sm",
-    exception_do (let: "sm" := (mem.alloc "sm") in
-    let: "s" := (mem.alloc (type.zero_val ptrT)) in
-    let: "$r0" := (mem.alloc (type.zero_val eStateMachine)) in
-    do:  ("s" <-[ptrT] "$r0");;;
-    let: "$r0" := (map.make uint64T uint64T) in
-    do:  ((struct.field_ref ptrT #"lastSeq"%go (![ptrT] "s")) <-[mapT uint64T uint64T] "$r0");;;
-    let: "$r0" := (map.make uint64T sliceT) in
-    do:  ((struct.field_ref ptrT #"lastReply"%go (![ptrT] "s")) <-[mapT uint64T sliceT] "$r0");;;
+    exception_do (let: "sm" := (GoAlloc (go.PointerType VersionedStateMachine) "sm") in
+    let: "s" := (GoAlloc (go.PointerType eStateMachine) (GoZeroVal (go.PointerType eStateMachine) #())) in
+    let: "$r0" := (GoAlloc eStateMachine (GoZeroVal eStateMachine #())) in
+    do:  ("s" <-[go.PointerType eStateMachine] "$r0");;;
+    let: "$r0" := ((FuncResolve go.make1 [go.MapType go.uint64 go.uint64] #()) #()) in
+    do:  ((StructFieldRef eStateMachine "lastSeq"%go (![go.PointerType eStateMachine] "s")) <-[go.MapType go.uint64 go.uint64] "$r0");;;
+    let: "$r0" := ((FuncResolve go.make1 [go.MapType go.uint64 (go.SliceType go.byte)] #()) #()) in
+    do:  ((StructFieldRef eStateMachine "lastReply"%go (![go.PointerType eStateMachine] "s")) <-[go.MapType go.uint64 (go.SliceType go.byte)] "$r0");;;
     let: "$r0" := #(W64 0) in
-    do:  ((struct.field_ref ptrT #"nextCID"%go (![ptrT] "s")) <-[uint64T] "$r0");;;
-    let: "$r0" := (![ptrT] "sm") in
-    do:  ((struct.field_ref ptrT #"sm"%go (![ptrT] "s")) <-[ptrT] "$r0");;;
-    return: (mem.alloc (let: "$ApplyReadonly" := (method_call #(ptrT.id eStateMachine.id) #"applyReadonly"%go (![ptrT] "s")) in
-     let: "$ApplyVolatile" := (method_call #(ptrT.id eStateMachine.id) #"applyVolatile"%go (![ptrT] "s")) in
-     let: "$GetState" := (λ: <>,
-       exception_do (return: ((method_call #(ptrT.id eStateMachine.id) #"getState"%go (![ptrT] "s")) #()))
-       ) in
-     let: "$SetState" := (method_call #(ptrT.id eStateMachine.id) #"setState"%go (![ptrT] "s")) in
-     struct.make storage.InMemoryStateMachine [{
-       "ApplyReadonly" ::= "$ApplyReadonly";
-       "ApplyVolatile" ::= "$ApplyVolatile";
-       "GetState" ::= "$GetState";
-       "SetState" ::= "$SetState"
-     }]))).
-
-Definition Clerk : go_type := structT [
-  "ck" :: ptrT;
-  "cid" :: uint64T;
-  "seq" :: uint64T
-].
-#[global] Typeclasses Opaque Clerk.
-#[global] Opaque Clerk.
-
-Definition MakeClerk : go_string := "github.com/mit-pdos/gokv/vrsm/apps/exactlyonce.MakeClerk"%go.
+    do:  ((StructFieldRef eStateMachine "nextCID"%go (![go.PointerType eStateMachine] "s")) <-[go.uint64] "$r0");;;
+    let: "$r0" := (![go.PointerType VersionedStateMachine] "sm") in
+    do:  ((StructFieldRef eStateMachine "sm"%go (![go.PointerType eStateMachine] "s")) <-[go.PointerType VersionedStateMachine] "$r0");;;
+    return: (GoAlloc storage.InMemoryStateMachine (CompositeLiteral storage.InMemoryStateMachine (LiteralValue [KeyedElement (Some (KeyField "ApplyReadonly"%go)) (ElementExpression (go.FunctionType (go.Signature [go.SliceType go.byte] false [go.uint64; go.SliceType go.byte])) (MethodResolve (go.PointerType eStateMachine) "applyReadonly"%go (![go.PointerType eStateMachine] "s"))); KeyedElement (Some (KeyField "ApplyVolatile"%go)) (ElementExpression (go.FunctionType (go.Signature [go.SliceType go.byte] false [go.SliceType go.byte])) (MethodResolve (go.PointerType eStateMachine) "applyVolatile"%go (![go.PointerType eStateMachine] "s"))); KeyedElement (Some (KeyField "GetState"%go)) (ElementExpression (go.FunctionType (go.Signature [] false [go.SliceType go.byte])) (λ: <>,
+        exception_do (return: ((MethodResolve (go.PointerType eStateMachine) "getState"%go (![go.PointerType eStateMachine] "s")) #()))
+        )); KeyedElement (Some (KeyField "SetState"%go)) (ElementExpression (go.FunctionType (go.Signature [go.SliceType go.byte; go.uint64] false [])) (MethodResolve (go.PointerType eStateMachine) "setState"%go (![go.PointerType eStateMachine] "s")))])))).
 
 (* go: sm.go:115:6 *)
-Definition MakeClerkⁱᵐᵖˡ : val :=
+Definition MakeClerkⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "confHosts",
-    exception_do (let: "confHosts" := (mem.alloc "confHosts") in
-    let: "ck" := (mem.alloc (type.zero_val ptrT)) in
-    let: "$r0" := (mem.alloc (type.zero_val Clerk)) in
-    do:  ("ck" <-[ptrT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "confHosts") in
-    (func_call #clerk.Make) "$a0") in
-    do:  ((struct.field_ref ptrT #"ck"%go (![ptrT] "ck")) <-[ptrT] "$r0");;;
-    let: "v" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (slice.make2 byteT #(W64 1)) in
-    do:  ("v" <-[sliceT] "$r0");;;
+    exception_do (let: "confHosts" := (GoAlloc (go.SliceType grove_ffi.Address) "confHosts") in
+    let: "ck" := (GoAlloc (go.PointerType Clerk) (GoZeroVal (go.PointerType Clerk) #())) in
+    let: "$r0" := (GoAlloc Clerk (GoZeroVal Clerk #())) in
+    do:  ("ck" <-[go.PointerType Clerk] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType grove_ffi.Address] "confHosts") in
+    (FuncResolve clerk.Make [] #()) "$a0") in
+    do:  ((StructFieldRef Clerk "ck"%go (![go.PointerType Clerk] "ck")) <-[go.PointerType clerk.Clerk] "$r0");;;
+    let: "v" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
+    let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) #(W64 1)) in
+    do:  ("v" <-[go.SliceType go.byte] "$r0");;;
     let: "$r0" := OPTYPE_GETFRESHCID in
-    do:  ((slice.elem_ref byteT (![sliceT] "v") #(W64 0)) <-[byteT] "$r0");;;
-    let: "cidEnc" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (let: "$a0" := (![sliceT] "v") in
-    (method_call #(ptrT.id clerk.Clerk.id) #"Apply"%go (![ptrT] (struct.field_ref ptrT #"ck"%go (![ptrT] "ck")))) "$a0") in
-    do:  ("cidEnc" <-[sliceT] "$r0");;;
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "cidEnc") in
-    (func_call #marshal.ReadInt) "$a0") in
+    do:  ((IndexRef (go.SliceType go.byte) (![go.SliceType go.byte] "v", #(W64 0))) <-[go.byte] "$r0");;;
+    let: "cidEnc" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "v") in
+    (MethodResolve (go.PointerType clerk.Clerk) "Apply"%go (![go.PointerType clerk.Clerk] (StructFieldRef Clerk "ck"%go (![go.PointerType Clerk] "ck")))) "$a0") in
+    do:  ("cidEnc" <-[go.SliceType go.byte] "$r0");;;
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![go.SliceType go.byte] "cidEnc") in
+    (FuncResolve marshal.ReadInt [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ((struct.field_ref ptrT #"cid"%go (![ptrT] "ck")) <-[uint64T] "$r0");;;
+    do:  ((StructFieldRef Clerk "cid"%go (![go.PointerType Clerk] "ck")) <-[go.uint64] "$r0");;;
     do:  "$r1";;;
     let: "$r0" := #(W64 1) in
-    do:  ((struct.field_ref ptrT #"seq"%go (![ptrT] "ck")) <-[uint64T] "$r0");;;
-    return: (![ptrT] "ck")).
+    do:  ((StructFieldRef Clerk "seq"%go (![go.PointerType Clerk] "ck")) <-[go.uint64] "$r0");;;
+    return: (![go.PointerType Clerk] "ck")).
 
 (* go: sm.go:127:18 *)
-Definition Clerk__ApplyExactlyOnceⁱᵐᵖˡ : val :=
+Definition Clerk__ApplyExactlyOnceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "ck" "req",
-    exception_do (let: "ck" := (mem.alloc "ck") in
-    let: "req" := (mem.alloc "req") in
-    let: "enc" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (slice.make3 byteT #(W64 1) #(W64 1)) in
-    do:  ("enc" <-[sliceT] "$r0");;;
+    exception_do (let: "ck" := (GoAlloc (go.PointerType Clerk) "ck") in
+    let: "req" := (GoAlloc (go.SliceType go.byte) "req") in
+    let: "enc" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
+    let: "$r0" := ((FuncResolve go.make3 [go.SliceType go.byte] #()) #(W64 1) #(W64 1)) in
+    do:  ("enc" <-[go.SliceType go.byte] "$r0");;;
     let: "$r0" := OPTYPE_RW in
-    do:  ((slice.elem_ref byteT (![sliceT] "enc") #(W64 0)) <-[byteT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "enc") in
-    let: "$a1" := (![uint64T] (struct.field_ref ptrT #"cid"%go (![ptrT] "ck"))) in
-    (func_call #marshal.WriteInt) "$a0" "$a1") in
-    do:  ("enc" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "enc") in
-    let: "$a1" := (![uint64T] (struct.field_ref ptrT #"seq"%go (![ptrT] "ck"))) in
-    (func_call #marshal.WriteInt) "$a0" "$a1") in
-    do:  ("enc" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "enc") in
-    let: "$a1" := (![sliceT] "req") in
-    (func_call #marshal.WriteBytes) "$a0" "$a1") in
-    do:  ("enc" <-[sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![uint64T] (struct.field_ref ptrT #"seq"%go (![ptrT] "ck"))) in
+    do:  ((IndexRef (go.SliceType go.byte) (![go.SliceType go.byte] "enc", #(W64 0))) <-[go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "enc") in
+    let: "$a1" := (![go.uint64] (StructFieldRef Clerk "cid"%go (![go.PointerType Clerk] "ck"))) in
+    (FuncResolve marshal.WriteInt [] #()) "$a0" "$a1") in
+    do:  ("enc" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "enc") in
+    let: "$a1" := (![go.uint64] (StructFieldRef Clerk "seq"%go (![go.PointerType Clerk] "ck"))) in
+    (FuncResolve marshal.WriteInt [] #()) "$a0" "$a1") in
+    do:  ("enc" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "enc") in
+    let: "$a1" := (![go.SliceType go.byte] "req") in
+    (FuncResolve marshal.WriteBytes [] #()) "$a0" "$a1") in
+    do:  ("enc" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.uint64] (StructFieldRef Clerk "seq"%go (![go.PointerType Clerk] "ck"))) in
     let: "$a1" := #(W64 1) in
-    (func_call #std.SumAssumeNoOverflow) "$a0" "$a1") in
-    do:  ((struct.field_ref ptrT #"seq"%go (![ptrT] "ck")) <-[uint64T] "$r0");;;
-    return: (let: "$a0" := (![sliceT] "enc") in
-     (method_call #(ptrT.id clerk.Clerk.id) #"Apply"%go (![ptrT] (struct.field_ref ptrT #"ck"%go (![ptrT] "ck")))) "$a0")).
+    (FuncResolve std.SumAssumeNoOverflow [] #()) "$a0" "$a1") in
+    do:  ((StructFieldRef Clerk "seq"%go (![go.PointerType Clerk] "ck")) <-[go.uint64] "$r0");;;
+    return: (let: "$a0" := (![go.SliceType go.byte] "enc") in
+     (MethodResolve (go.PointerType clerk.Clerk) "Apply"%go (![go.PointerType clerk.Clerk] (StructFieldRef Clerk "ck"%go (![go.PointerType Clerk] "ck")))) "$a0")).
 
 (* go: sm.go:138:18 *)
-Definition Clerk__ApplyReadonlyⁱᵐᵖˡ : val :=
+Definition Clerk__ApplyReadonlyⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "ck" "req",
-    exception_do (let: "ck" := (mem.alloc "ck") in
-    let: "req" := (mem.alloc "req") in
-    let: "enc" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (slice.make3 byteT #(W64 1) #(W64 1)) in
-    do:  ("enc" <-[sliceT] "$r0");;;
+    exception_do (let: "ck" := (GoAlloc (go.PointerType Clerk) "ck") in
+    let: "req" := (GoAlloc (go.SliceType go.byte) "req") in
+    let: "enc" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
+    let: "$r0" := ((FuncResolve go.make3 [go.SliceType go.byte] #()) #(W64 1) #(W64 1)) in
+    do:  ("enc" <-[go.SliceType go.byte] "$r0");;;
     let: "$r0" := OPTYPE_RO in
-    do:  ((slice.elem_ref byteT (![sliceT] "enc") #(W64 0)) <-[byteT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "enc") in
-    let: "$a1" := (![sliceT] "req") in
-    (func_call #marshal.WriteBytes) "$a0" "$a1") in
-    do:  ("enc" <-[sliceT] "$r0");;;
-    return: (let: "$a0" := (![sliceT] "enc") in
-     (method_call #(ptrT.id clerk.Clerk.id) #"ApplyRo"%go (![ptrT] (struct.field_ref ptrT #"ck"%go (![ptrT] "ck")))) "$a0")).
+    do:  ((IndexRef (go.SliceType go.byte) (![go.SliceType go.byte] "enc", #(W64 0))) <-[go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "enc") in
+    let: "$a1" := (![go.SliceType go.byte] "req") in
+    (FuncResolve marshal.WriteBytes [] #()) "$a0" "$a1") in
+    do:  ("enc" <-[go.SliceType go.byte] "$r0");;;
+    return: (let: "$a0" := (![go.SliceType go.byte] "enc") in
+     (MethodResolve (go.PointerType clerk.Clerk) "ApplyRo"%go (![go.PointerType clerk.Clerk] (StructFieldRef Clerk "ck"%go (![go.PointerType Clerk] "ck")))) "$a0")).
 
-Definition VersionedStateMachine : go_type := structT [
-  "ApplyVolatile" :: funcT;
-  "ApplyReadonly" :: funcT;
-  "SetState" :: funcT;
-  "GetState" :: funcT
-].
-#[global] Typeclasses Opaque VersionedStateMachine.
-#[global] Opaque VersionedStateMachine.
+#[global] Instance info' : PkgInfo pkg_id.exactlyonce :=
+{|
+  pkg_imported_pkgs := [code.github_com.goose_lang.std.pkg_id.std; code.github_com.mit_pdos.gokv.grove_ffi.pkg_id.grove_ffi; code.github_com.mit_pdos.gokv.map_marshal.pkg_id.map_marshal; code.github_com.mit_pdos.gokv.vrsm.clerk.pkg_id.clerk; code.github_com.mit_pdos.gokv.vrsm.storage.pkg_id.storage; code.github_com.tchajed.marshal.pkg_id.marshal]
+|}.
 
-Definition vars' : list (go_string * go_type) := [].
-
-Definition functions' : list (go_string * val) := [(MakeExactlyOnceStateMachine, MakeExactlyOnceStateMachineⁱᵐᵖˡ); (MakeClerk, MakeClerkⁱᵐᵖˡ)].
-
-Definition msets' : list (go_string * (list (go_string * val))) := [(eStateMachine.id, []); (ptrT.id eStateMachine.id, [("applyReadonly"%go, eStateMachine__applyReadonlyⁱᵐᵖˡ); ("applyVolatile"%go, eStateMachine__applyVolatileⁱᵐᵖˡ); ("getState"%go, eStateMachine__getStateⁱᵐᵖˡ); ("setState"%go, eStateMachine__setStateⁱᵐᵖˡ)]); (Clerk.id, []); (ptrT.id Clerk.id, [("ApplyExactlyOnce"%go, Clerk__ApplyExactlyOnceⁱᵐᵖˡ); ("ApplyReadonly"%go, Clerk__ApplyReadonlyⁱᵐᵖˡ)]); (VersionedStateMachine.id, []); (ptrT.id VersionedStateMachine.id, [])].
-
-#[global] Instance info' : PkgInfo exactlyonce.exactlyonce :=
-  {|
-    pkg_vars := vars';
-    pkg_functions := functions';
-    pkg_msets := msets';
-    pkg_imported_pkgs := [code.github_com.goose_lang.std.std; code.github_com.mit_pdos.gokv.grove_ffi.grove_ffi; code.github_com.mit_pdos.gokv.map_marshal.map_marshal; code.github_com.mit_pdos.gokv.vrsm.clerk.clerk; code.github_com.mit_pdos.gokv.vrsm.storage.storage; code.github_com.tchajed.marshal.marshal];
-  |}.
-
-Definition initialize' : val :=
+Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    package.init #exactlyonce.exactlyonce (λ: <>,
+    package.init pkg_id.exactlyonce (λ: <>,
       exception_do (do:  (marshal.initialize' #());;;
       do:  (storage.initialize' #());;;
       do:  (clerk.initialize' #());;;
       do:  (map_marshal.initialize' #());;;
       do:  (grove_ffi.initialize' #());;;
-      do:  (std.initialize' #());;;
-      do:  (package.alloc exactlyonce.exactlyonce #()))
+      do:  (std.initialize' #()))
       ).
 
-End code.
+Module eStateMachine.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  lastSeq' : loc;
+  lastReply' : loc;
+  nextCID' : w64;
+  sm' : loc;
+  esmNextIndex' : w64;
+}.
+
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _) (zero_val _) (zero_val _)|}.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+End def.
+
+End eStateMachine.
+
+Definition eStateMachine'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
+  (go.FieldDecl "lastSeq"%go (go.MapType go.uint64 go.uint64));
+  (go.FieldDecl "lastReply"%go (go.MapType go.uint64 (go.SliceType go.byte)));
+  (go.FieldDecl "nextCID"%go go.uint64);
+  (go.FieldDecl "sm"%go (go.PointerType VersionedStateMachine));
+  (go.FieldDecl "esmNextIndex"%go go.uint64)
+].
+Program Definition eStateMachine'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (eStateMachine'fds_unsealed).
+Global Instance equals_unfold_eStateMachine {ext : ffi_syntax} {go_gctx : GoGlobalContext} : eStateMachine'fds =→ eStateMachine'fds_unsealed.
+Proof. rewrite /eStateMachine'fds seal_eq //. Qed.
+
+Definition eStateMachineⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (eStateMachine'fds).
+
+Class eStateMachine_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] eStateMachine_type_repr  :: go.TypeReprUnderlying eStateMachineⁱᵐᵖˡ eStateMachine.t;
+  #[global] eStateMachine_underlying :: (eStateMachine) <u (eStateMachineⁱᵐᵖˡ);
+  #[global] eStateMachine_get_lastSeq (x : eStateMachine.t) :: ⟦StructFieldGet (eStateMachineⁱᵐᵖˡ) "lastSeq", #x⟧ ⤳[under] #x.(eStateMachine.lastSeq');
+  #[global] eStateMachine_set_lastSeq (x : eStateMachine.t) y :: ⟦StructFieldSet (eStateMachineⁱᵐᵖˡ) "lastSeq", (#x, #y)⟧ ⤳[under] #(x <|eStateMachine.lastSeq' := y|>);
+  #[global] eStateMachine_get_lastReply (x : eStateMachine.t) :: ⟦StructFieldGet (eStateMachineⁱᵐᵖˡ) "lastReply", #x⟧ ⤳[under] #x.(eStateMachine.lastReply');
+  #[global] eStateMachine_set_lastReply (x : eStateMachine.t) y :: ⟦StructFieldSet (eStateMachineⁱᵐᵖˡ) "lastReply", (#x, #y)⟧ ⤳[under] #(x <|eStateMachine.lastReply' := y|>);
+  #[global] eStateMachine_get_nextCID (x : eStateMachine.t) :: ⟦StructFieldGet (eStateMachineⁱᵐᵖˡ) "nextCID", #x⟧ ⤳[under] #x.(eStateMachine.nextCID');
+  #[global] eStateMachine_set_nextCID (x : eStateMachine.t) y :: ⟦StructFieldSet (eStateMachineⁱᵐᵖˡ) "nextCID", (#x, #y)⟧ ⤳[under] #(x <|eStateMachine.nextCID' := y|>);
+  #[global] eStateMachine_get_sm (x : eStateMachine.t) :: ⟦StructFieldGet (eStateMachineⁱᵐᵖˡ) "sm", #x⟧ ⤳[under] #x.(eStateMachine.sm');
+  #[global] eStateMachine_set_sm (x : eStateMachine.t) y :: ⟦StructFieldSet (eStateMachineⁱᵐᵖˡ) "sm", (#x, #y)⟧ ⤳[under] #(x <|eStateMachine.sm' := y|>);
+  #[global] eStateMachine_get_esmNextIndex (x : eStateMachine.t) :: ⟦StructFieldGet (eStateMachineⁱᵐᵖˡ) "esmNextIndex", #x⟧ ⤳[under] #x.(eStateMachine.esmNextIndex');
+  #[global] eStateMachine_set_esmNextIndex (x : eStateMachine.t) y :: ⟦StructFieldSet (eStateMachineⁱᵐᵖˡ) "esmNextIndex", (#x, #y)⟧ ⤳[under] #(x <|eStateMachine.esmNextIndex' := y|>);
+  #[global] eStateMachine'ptr_applyReadonly_unfold :: MethodUnfold (go.PointerType (eStateMachine)) "applyReadonly" (eStateMachine__applyReadonlyⁱᵐᵖˡ);
+  #[global] eStateMachine'ptr_applyVolatile_unfold :: MethodUnfold (go.PointerType (eStateMachine)) "applyVolatile" (eStateMachine__applyVolatileⁱᵐᵖˡ);
+  #[global] eStateMachine'ptr_getState_unfold :: MethodUnfold (go.PointerType (eStateMachine)) "getState" (eStateMachine__getStateⁱᵐᵖˡ);
+  #[global] eStateMachine'ptr_setState_unfold :: MethodUnfold (go.PointerType (eStateMachine)) "setState" (eStateMachine__setStateⁱᵐᵖˡ);
+}.
+
+Module Clerk.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  ck' : loc;
+  cid' : w64;
+  seq' : w64;
+}.
+
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+End def.
+
+End Clerk.
+
+Definition Clerk'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
+  (go.FieldDecl "ck"%go (go.PointerType clerk.Clerk));
+  (go.FieldDecl "cid"%go go.uint64);
+  (go.FieldDecl "seq"%go go.uint64)
+].
+Program Definition Clerk'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (Clerk'fds_unsealed).
+Global Instance equals_unfold_Clerk {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Clerk'fds =→ Clerk'fds_unsealed.
+Proof. rewrite /Clerk'fds seal_eq //. Qed.
+
+Definition Clerkⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (Clerk'fds).
+
+Class Clerk_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Clerk_type_repr  :: go.TypeReprUnderlying Clerkⁱᵐᵖˡ Clerk.t;
+  #[global] Clerk_underlying :: (Clerk) <u (Clerkⁱᵐᵖˡ);
+  #[global] Clerk_get_ck (x : Clerk.t) :: ⟦StructFieldGet (Clerkⁱᵐᵖˡ) "ck", #x⟧ ⤳[under] #x.(Clerk.ck');
+  #[global] Clerk_set_ck (x : Clerk.t) y :: ⟦StructFieldSet (Clerkⁱᵐᵖˡ) "ck", (#x, #y)⟧ ⤳[under] #(x <|Clerk.ck' := y|>);
+  #[global] Clerk_get_cid (x : Clerk.t) :: ⟦StructFieldGet (Clerkⁱᵐᵖˡ) "cid", #x⟧ ⤳[under] #x.(Clerk.cid');
+  #[global] Clerk_set_cid (x : Clerk.t) y :: ⟦StructFieldSet (Clerkⁱᵐᵖˡ) "cid", (#x, #y)⟧ ⤳[under] #(x <|Clerk.cid' := y|>);
+  #[global] Clerk_get_seq (x : Clerk.t) :: ⟦StructFieldGet (Clerkⁱᵐᵖˡ) "seq", #x⟧ ⤳[under] #x.(Clerk.seq');
+  #[global] Clerk_set_seq (x : Clerk.t) y :: ⟦StructFieldSet (Clerkⁱᵐᵖˡ) "seq", (#x, #y)⟧ ⤳[under] #(x <|Clerk.seq' := y|>);
+  #[global] Clerk'ptr_ApplyExactlyOnce_unfold :: MethodUnfold (go.PointerType (Clerk)) "ApplyExactlyOnce" (Clerk__ApplyExactlyOnceⁱᵐᵖˡ);
+  #[global] Clerk'ptr_ApplyReadonly_unfold :: MethodUnfold (go.PointerType (Clerk)) "ApplyReadonly" (Clerk__ApplyReadonlyⁱᵐᵖˡ);
+}.
+
+Module VersionedStateMachine.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  ApplyVolatile' : func.t;
+  ApplyReadonly' : func.t;
+  SetState' : func.t;
+  GetState' : func.t;
+}.
+
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _) (zero_val _)|}.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+End def.
+
+End VersionedStateMachine.
+
+Definition VersionedStateMachine'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
+  (go.FieldDecl "ApplyVolatile"%go (go.FunctionType (go.Signature [go.SliceType go.byte; go.uint64] false [go.SliceType go.byte])));
+  (go.FieldDecl "ApplyReadonly"%go (go.FunctionType (go.Signature [go.SliceType go.byte] false [go.uint64; go.SliceType go.byte])));
+  (go.FieldDecl "SetState"%go (go.FunctionType (go.Signature [go.SliceType go.byte; go.uint64] false [])));
+  (go.FieldDecl "GetState"%go (go.FunctionType (go.Signature [] false [go.SliceType go.byte])))
+].
+Program Definition VersionedStateMachine'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (VersionedStateMachine'fds_unsealed).
+Global Instance equals_unfold_VersionedStateMachine {ext : ffi_syntax} {go_gctx : GoGlobalContext} : VersionedStateMachine'fds =→ VersionedStateMachine'fds_unsealed.
+Proof. rewrite /VersionedStateMachine'fds seal_eq //. Qed.
+
+Definition VersionedStateMachineⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (VersionedStateMachine'fds).
+
+Class VersionedStateMachine_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] VersionedStateMachine_type_repr  :: go.TypeReprUnderlying VersionedStateMachineⁱᵐᵖˡ VersionedStateMachine.t;
+  #[global] VersionedStateMachine_underlying :: (VersionedStateMachine) <u (VersionedStateMachineⁱᵐᵖˡ);
+  #[global] VersionedStateMachine_get_ApplyVolatile (x : VersionedStateMachine.t) :: ⟦StructFieldGet (VersionedStateMachineⁱᵐᵖˡ) "ApplyVolatile", #x⟧ ⤳[under] #x.(VersionedStateMachine.ApplyVolatile');
+  #[global] VersionedStateMachine_set_ApplyVolatile (x : VersionedStateMachine.t) y :: ⟦StructFieldSet (VersionedStateMachineⁱᵐᵖˡ) "ApplyVolatile", (#x, #y)⟧ ⤳[under] #(x <|VersionedStateMachine.ApplyVolatile' := y|>);
+  #[global] VersionedStateMachine_get_ApplyReadonly (x : VersionedStateMachine.t) :: ⟦StructFieldGet (VersionedStateMachineⁱᵐᵖˡ) "ApplyReadonly", #x⟧ ⤳[under] #x.(VersionedStateMachine.ApplyReadonly');
+  #[global] VersionedStateMachine_set_ApplyReadonly (x : VersionedStateMachine.t) y :: ⟦StructFieldSet (VersionedStateMachineⁱᵐᵖˡ) "ApplyReadonly", (#x, #y)⟧ ⤳[under] #(x <|VersionedStateMachine.ApplyReadonly' := y|>);
+  #[global] VersionedStateMachine_get_SetState (x : VersionedStateMachine.t) :: ⟦StructFieldGet (VersionedStateMachineⁱᵐᵖˡ) "SetState", #x⟧ ⤳[under] #x.(VersionedStateMachine.SetState');
+  #[global] VersionedStateMachine_set_SetState (x : VersionedStateMachine.t) y :: ⟦StructFieldSet (VersionedStateMachineⁱᵐᵖˡ) "SetState", (#x, #y)⟧ ⤳[under] #(x <|VersionedStateMachine.SetState' := y|>);
+  #[global] VersionedStateMachine_get_GetState (x : VersionedStateMachine.t) :: ⟦StructFieldGet (VersionedStateMachineⁱᵐᵖˡ) "GetState", #x⟧ ⤳[under] #x.(VersionedStateMachine.GetState');
+  #[global] VersionedStateMachine_set_GetState (x : VersionedStateMachine.t) y :: ⟦StructFieldSet (VersionedStateMachineⁱᵐᵖˡ) "GetState", (#x, #y)⟧ ⤳[under] #(x <|VersionedStateMachine.GetState' := y|>);
+}.
+
+Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] eStateMachine_instance :: eStateMachine_Assumptions;
+  #[global] Clerk_instance :: Clerk_Assumptions;
+  #[global] VersionedStateMachine_instance :: VersionedStateMachine_Assumptions;
+  #[global] MakeExactlyOnceStateMachine_unfold :: FuncUnfold MakeExactlyOnceStateMachine [] (MakeExactlyOnceStateMachineⁱᵐᵖˡ);
+  #[global] MakeClerk_unfold :: FuncUnfold MakeClerk [] (MakeClerkⁱᵐᵖˡ);
+  #[global] import_std_Assumption :: std.Assumptions;
+  #[global] import_grove_ffi_Assumption :: grove_ffi.Assumptions;
+  #[global] import_map_marshal_Assumption :: map_marshal.Assumptions;
+  #[global] import_clerk_Assumption :: clerk.Assumptions;
+  #[global] import_storage_Assumption :: storage.Assumptions;
+  #[global] import_marshal_Assumption :: marshal.Assumptions;
+}.
 End exactlyonce.

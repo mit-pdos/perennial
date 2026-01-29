@@ -2,52 +2,9 @@
 Require Export New.proof.proof_prelude.
 Require Export New.generatedproof.github_com.tchajed.marshal.
 Require Export New.golang.theory.
-
 Require Export New.code.github_com.mit_pdos.gokv.map_marshal.
 
 Set Default Proof Using "Type".
 
 Module map_marshal.
-
-Section names.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext}.
-#[local] Transparent is_pkg_defined is_pkg_defined_pure.
-
-Global Instance is_pkg_defined_pure_map_marshal : IsPkgDefinedPure map_marshal :=
-  {|
-    is_pkg_defined_pure_def go_ctx :=
-      is_pkg_defined_pure_single map_marshal ∧
-      is_pkg_defined_pure code.github_com.tchajed.marshal.marshal;
-  |}.
-
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_map_marshal : IsPkgDefined map_marshal :=
-  {|
-    is_pkg_defined_def go_ctx :=
-      (is_pkg_defined_single map_marshal ∗
-       is_pkg_defined code.github_com.tchajed.marshal.marshal)%I
-  |}.
-Final Obligation. iIntros. iFrame "#%". Qed.
-#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
-
-Global Instance wp_func_call_EncodeMapU64ToU64 :
-  WpFuncCall map_marshal.EncodeMapU64ToU64 _ (is_pkg_defined map_marshal) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_DecodeMapU64ToU64 :
-  WpFuncCall map_marshal.DecodeMapU64ToU64 _ (is_pkg_defined map_marshal) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_EncodeMapU64ToBytes :
-  WpFuncCall map_marshal.EncodeMapU64ToBytes _ (is_pkg_defined map_marshal) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_DecodeMapU64ToBytes :
-  WpFuncCall map_marshal.DecodeMapU64ToBytes _ (is_pkg_defined map_marshal) :=
-  ltac:(solve_wp_func_call).
-
-End names.
 End map_marshal.

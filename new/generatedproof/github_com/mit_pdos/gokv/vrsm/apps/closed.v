@@ -7,86 +7,9 @@ Require Export New.generatedproof.github_com.mit_pdos.gokv.lockservice.
 Require Export New.generatedproof.github_com.mit_pdos.gokv.vrsm.apps.vkv.
 Require Export New.generatedproof.github_com.mit_pdos.gokv.vrsm.configservice.
 Require Export New.golang.theory.
-
 Require Export New.code.github_com.mit_pdos.gokv.vrsm.apps.closed.
 
 Set Default Proof Using "Type".
 
 Module closed.
-
-Section names.
-
-Context `{!heapGS Σ}.
-Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext}.
-#[local] Transparent is_pkg_defined is_pkg_defined_pure.
-
-Global Instance is_pkg_defined_pure_closed : IsPkgDefinedPure closed :=
-  {|
-    is_pkg_defined_pure_def go_ctx :=
-      is_pkg_defined_pure_single closed ∧
-      is_pkg_defined_pure code.github_com.mit_pdos.gokv.bank.bank ∧
-      is_pkg_defined_pure code.github_com.mit_pdos.gokv.cachekv.cachekv ∧
-      is_pkg_defined_pure code.github_com.mit_pdos.gokv.grove_ffi.grove_ffi ∧
-      is_pkg_defined_pure code.github_com.mit_pdos.gokv.lockservice.lockservice ∧
-      is_pkg_defined_pure code.github_com.mit_pdos.gokv.vrsm.apps.vkv.vkv ∧
-      is_pkg_defined_pure code.github_com.mit_pdos.gokv.vrsm.configservice.configservice;
-  |}.
-
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_closed : IsPkgDefined closed :=
-  {|
-    is_pkg_defined_def go_ctx :=
-      (is_pkg_defined_single closed ∗
-       is_pkg_defined code.github_com.mit_pdos.gokv.bank.bank ∗
-       is_pkg_defined code.github_com.mit_pdos.gokv.cachekv.cachekv ∗
-       is_pkg_defined code.github_com.mit_pdos.gokv.grove_ffi.grove_ffi ∗
-       is_pkg_defined code.github_com.mit_pdos.gokv.lockservice.lockservice ∗
-       is_pkg_defined code.github_com.mit_pdos.gokv.vrsm.apps.vkv.vkv ∗
-       is_pkg_defined code.github_com.mit_pdos.gokv.vrsm.configservice.configservice)%I
-  |}.
-Final Obligation. iIntros. iFrame "#%". Qed.
-#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
-
-Global Instance wp_func_call_mk_lconfig_hosts :
-  WpFuncCall closed.mk_lconfig_hosts _ (is_pkg_defined closed) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_mk_dconfig_hosts :
-  WpFuncCall closed.mk_dconfig_hosts _ (is_pkg_defined closed) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_mk_lconfig_paxosHosts :
-  WpFuncCall closed.mk_lconfig_paxosHosts _ (is_pkg_defined closed) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_mk_dconfig_paxosHosts :
-  WpFuncCall closed.mk_dconfig_paxosHosts _ (is_pkg_defined closed) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_lconfig_main :
-  WpFuncCall closed.lconfig_main _ (is_pkg_defined closed) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_dconfig_main :
-  WpFuncCall closed.dconfig_main _ (is_pkg_defined closed) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_kv_replica_main :
-  WpFuncCall closed.kv_replica_main _ (is_pkg_defined closed) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_makeBankClerk :
-  WpFuncCall closed.makeBankClerk _ (is_pkg_defined closed) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_bank_transferer_main :
-  WpFuncCall closed.bank_transferer_main _ (is_pkg_defined closed) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_bank_auditor_main :
-  WpFuncCall closed.bank_auditor_main _ (is_pkg_defined closed) :=
-  ltac:(solve_wp_func_call).
-
-End names.
 End closed.

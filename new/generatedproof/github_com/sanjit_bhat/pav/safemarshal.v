@@ -2,92 +2,9 @@
 Require Export New.proof.proof_prelude.
 Require Export New.generatedproof.github_com.tchajed.marshal.
 Require Export New.golang.theory.
-
 Require Export New.code.github_com.sanjit_bhat.pav.safemarshal.
 
 Set Default Proof Using "Type".
 
 Module safemarshal.
-
-Section names.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext}.
-#[local] Transparent is_pkg_defined is_pkg_defined_pure.
-
-Global Instance is_pkg_defined_pure_safemarshal : IsPkgDefinedPure safemarshal :=
-  {|
-    is_pkg_defined_pure_def go_ctx :=
-      is_pkg_defined_pure_single safemarshal ∧
-      is_pkg_defined_pure code.github_com.tchajed.marshal.marshal;
-  |}.
-
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_safemarshal : IsPkgDefined safemarshal :=
-  {|
-    is_pkg_defined_def go_ctx :=
-      (is_pkg_defined_single safemarshal ∗
-       is_pkg_defined code.github_com.tchajed.marshal.marshal)%I
-  |}.
-Final Obligation. iIntros. iFrame "#%". Qed.
-#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
-
-Global Instance wp_func_call_ReadBool :
-  WpFuncCall safemarshal.ReadBool _ (is_pkg_defined safemarshal) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_ReadConstBool :
-  WpFuncCall safemarshal.ReadConstBool _ (is_pkg_defined safemarshal) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_ReadInt :
-  WpFuncCall safemarshal.ReadInt _ (is_pkg_defined safemarshal) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_ReadConstInt :
-  WpFuncCall safemarshal.ReadConstInt _ (is_pkg_defined safemarshal) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_ReadByte :
-  WpFuncCall safemarshal.ReadByte _ (is_pkg_defined safemarshal) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_ReadConstByte :
-  WpFuncCall safemarshal.ReadConstByte _ (is_pkg_defined safemarshal) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_WriteByte :
-  WpFuncCall safemarshal.WriteByte _ (is_pkg_defined safemarshal) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_ReadBytes :
-  WpFuncCall safemarshal.ReadBytes _ (is_pkg_defined safemarshal) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_ReadSlice1D :
-  WpFuncCall safemarshal.ReadSlice1D _ (is_pkg_defined safemarshal) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_WriteSlice1D :
-  WpFuncCall safemarshal.WriteSlice1D _ (is_pkg_defined safemarshal) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_ReadSlice2D :
-  WpFuncCall safemarshal.ReadSlice2D _ (is_pkg_defined safemarshal) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_WriteSlice2D :
-  WpFuncCall safemarshal.WriteSlice2D _ (is_pkg_defined safemarshal) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_ReadSlice3D :
-  WpFuncCall safemarshal.ReadSlice3D _ (is_pkg_defined safemarshal) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_WriteSlice3D :
-  WpFuncCall safemarshal.WriteSlice3D _ (is_pkg_defined safemarshal) :=
-  ltac:(solve_wp_func_call).
-
-End names.
 End safemarshal.

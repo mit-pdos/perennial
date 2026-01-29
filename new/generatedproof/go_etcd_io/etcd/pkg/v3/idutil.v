@@ -4,119 +4,64 @@ Require Export New.generatedproof.math.
 Require Export New.generatedproof.sync.atomic.
 Require Export New.generatedproof.time.
 Require Export New.golang.theory.
-
 Require Export New.code.go_etcd_io.etcd.pkg.v3.idutil.
 
 Set Default Proof Using "Type".
 
 Module idutil.
-
-(* type idutil.Generator *)
 Module Generator.
 Section def.
-Context `{ffi_syntax}.
 
-Record t := mk {
-  prefix' : w64;
-  suffix' : w64;
-}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : idutil.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance Generator_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (idutil.Generator.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "prefix" ∷ l.[(idutil.Generator.t), "prefix"] ↦{dq} v.(idutil.Generator.prefix') ∗
+      "suffix" ∷ l.[(idutil.Generator.t), "suffix"] ↦{dq} v.(idutil.Generator.suffix') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance Generator_into_val_typed
+   :
+  IntoValTypedUnderlying (idutil.Generator.t) (idutil.Generatorⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Generator_access_load_prefix l (v : (idutil.Generator.t)) dq :
+  AccessStrict
+    (l.[(idutil.Generator.t), "prefix"] ↦{dq} (v.(idutil.Generator.prefix')))
+    (l.[(idutil.Generator.t), "prefix"] ↦{dq} (v.(idutil.Generator.prefix')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Generator_access_store_prefix l (v : (idutil.Generator.t)) prefix' :
+  AccessStrict
+    (l.[(idutil.Generator.t), "prefix"] ↦ (v.(idutil.Generator.prefix')))
+    (l.[(idutil.Generator.t), "prefix"] ↦ prefix')
+    (l ↦ v) (l ↦ (v <|(idutil.Generator.prefix') := prefix'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Generator_access_load_suffix l (v : (idutil.Generator.t)) dq :
+  AccessStrict
+    (l.[(idutil.Generator.t), "suffix"] ↦{dq} (v.(idutil.Generator.suffix')))
+    (l.[(idutil.Generator.t), "suffix"] ↦{dq} (v.(idutil.Generator.suffix')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Generator_access_store_suffix l (v : (idutil.Generator.t)) suffix' :
+  AccessStrict
+    (l.[(idutil.Generator.t), "suffix"] ↦ (v.(idutil.Generator.suffix')))
+    (l.[(idutil.Generator.t), "suffix"] ↦ suffix')
+    (l ↦ v) (l ↦ (v <|(idutil.Generator.suffix') := suffix'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End Generator.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent idutil.Generator.
-#[local] Typeclasses Transparent idutil.Generator.
-
-Global Instance Generator_wf : struct.Wf idutil.Generator.
-Proof. apply _. Qed.
-
-Global Instance settable_Generator : Settable Generator.t :=
-  settable! Generator.mk < Generator.prefix'; Generator.suffix' >.
-Global Instance into_val_Generator : IntoVal Generator.t :=
-  {| to_val_def v :=
-    struct.val_aux idutil.Generator [
-    "prefix" ::= #(Generator.prefix' v);
-    "suffix" ::= #(Generator.suffix' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_Generator : IntoValTyped Generator.t idutil.Generator :=
-{|
-  default_val := Generator.mk (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_Generator_prefix : IntoValStructField "prefix" idutil.Generator Generator.prefix'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Generator_suffix : IntoValStructField "suffix" idutil.Generator Generator.suffix'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-
-
-Global Instance Generator_struct_fields_split dq l (v : Generator.t) :
-  StructFieldsSplit dq l v (
-    "Hprefix" ∷ l ↦s[idutil.Generator :: "prefix"]{dq} v.(Generator.prefix') ∗
-    "Hsuffix" ∷ l ↦s[idutil.Generator :: "suffix"]{dq} v.(Generator.suffix')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Generator.prefix' v)) (idutil.Generator) "prefix"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-Section names.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext}.
-#[local] Transparent is_pkg_defined is_pkg_defined_pure.
-
-Global Instance is_pkg_defined_pure_idutil : IsPkgDefinedPure idutil :=
-  {|
-    is_pkg_defined_pure_def go_ctx :=
-      is_pkg_defined_pure_single idutil ∧
-      is_pkg_defined_pure code.math.math ∧
-      is_pkg_defined_pure code.sync.atomic.atomic ∧
-      is_pkg_defined_pure code.time.time;
-  |}.
-
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_idutil : IsPkgDefined idutil :=
-  {|
-    is_pkg_defined_def go_ctx :=
-      (is_pkg_defined_single idutil ∗
-       is_pkg_defined code.math.math ∗
-       is_pkg_defined code.sync.atomic.atomic ∗
-       is_pkg_defined code.time.time)%I
-  |}.
-Final Obligation. iIntros. iFrame "#%". Qed.
-#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
-
-Global Instance wp_func_call_NewGenerator :
-  WpFuncCall idutil.NewGenerator _ (is_pkg_defined idutil) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_lowbit :
-  WpFuncCall idutil.lowbit _ (is_pkg_defined idutil) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_method_call_Generator'ptr_Next :
-  WpMethodCall (ptrT.id idutil.Generator.id) "Next" _ (is_pkg_defined idutil) :=
-  ltac:(solve_wp_method_call).
-
-End names.
 End idutil.

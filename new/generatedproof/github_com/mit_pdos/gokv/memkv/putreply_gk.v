@@ -2,110 +2,50 @@
 Require Export New.proof.proof_prelude.
 Require Export New.generatedproof.github_com.mit_pdos.gokv.memkv.error_gk.
 Require Export New.golang.theory.
-
 Require Export New.code.github_com.mit_pdos.gokv.memkv.putreply_gk.
 
 Set Default Proof Using "Type".
 
 Module putreply_gk.
-
-(* type putreply_gk.S *)
 Module S.
 Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-  Err' : error_gk.E.t;
-}.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : putreply_gk.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance S_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (putreply_gk.S.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "Err" ∷ l.[(putreply_gk.S.t), "Err"] ↦{dq} v.(putreply_gk.S.Err') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance S_into_val_typed
+   :
+  IntoValTypedUnderlying (putreply_gk.S.t) (putreply_gk.Sⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance S_access_load_Err l (v : (putreply_gk.S.t)) dq :
+  AccessStrict
+    (l.[(putreply_gk.S.t), "Err"] ↦{dq} (v.(putreply_gk.S.Err')))
+    (l.[(putreply_gk.S.t), "Err"] ↦{dq} (v.(putreply_gk.S.Err')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance S_access_store_Err l (v : (putreply_gk.S.t)) Err' :
+  AccessStrict
+    (l.[(putreply_gk.S.t), "Err"] ↦ (v.(putreply_gk.S.Err')))
+    (l.[(putreply_gk.S.t), "Err"] ↦ Err')
+    (l ↦ v) (l ↦ (v <|(putreply_gk.S.Err') := Err'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End S.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent putreply_gk.S.
-#[local] Typeclasses Transparent putreply_gk.S.
-
-Global Instance S_wf : struct.Wf putreply_gk.S.
-Proof. apply _. Qed.
-
-Global Instance settable_S : Settable S.t :=
-  settable! S.mk < S.Err' >.
-Global Instance into_val_S : IntoVal S.t :=
-  {| to_val_def v :=
-    struct.val_aux putreply_gk.S [
-    "Err" ::= #(S.Err' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_S : IntoValTyped S.t putreply_gk.S :=
-{|
-  default_val := S.mk (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_S_Err : IntoValStructField "Err" putreply_gk.S S.Err'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_S Err':
-  PureWp True
-    (struct.make #putreply_gk.S (alist_val [
-      "Err" ::= #Err'
-    ]))%struct
-    #(S.mk Err').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance S_struct_fields_split dq l (v : S.t) :
-  StructFieldsSplit dq l v (
-    "HErr" ∷ l ↦s[putreply_gk.S :: "Err"]{dq} v.(S.Err')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-Section names.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext}.
-#[local] Transparent is_pkg_defined is_pkg_defined_pure.
-
-Global Instance is_pkg_defined_pure_putreply_gk : IsPkgDefinedPure putreply_gk :=
-  {|
-    is_pkg_defined_pure_def go_ctx :=
-      is_pkg_defined_pure_single putreply_gk ∧
-      is_pkg_defined_pure code.github_com.mit_pdos.gokv.memkv.error_gk.error_gk;
-  |}.
-
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_putreply_gk : IsPkgDefined putreply_gk :=
-  {|
-    is_pkg_defined_def go_ctx :=
-      (is_pkg_defined_single putreply_gk ∗
-       is_pkg_defined code.github_com.mit_pdos.gokv.memkv.error_gk.error_gk)%I
-  |}.
-Final Obligation. iIntros. iFrame "#%". Qed.
-#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
-
-Global Instance wp_func_call_Marshal :
-  WpFuncCall putreply_gk.Marshal _ (is_pkg_defined putreply_gk) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_Unmarshal :
-  WpFuncCall putreply_gk.Unmarshal _ (is_pkg_defined putreply_gk) :=
-  ltac:(solve_wp_func_call).
-
-End names.
 End putreply_gk.

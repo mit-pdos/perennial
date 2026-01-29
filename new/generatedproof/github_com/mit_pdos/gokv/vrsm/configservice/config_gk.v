@@ -2,110 +2,50 @@
 Require Export New.proof.proof_prelude.
 Require Export New.generatedproof.github_com.tchajed.marshal.
 Require Export New.golang.theory.
-
 Require Export New.code.github_com.mit_pdos.gokv.vrsm.configservice.config_gk.
 
 Set Default Proof Using "Type".
 
 Module config_gk.
-
-(* type config_gk.S *)
 Module S.
 Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-  Addrs' : slice.t;
-}.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : config_gk.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance S_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (config_gk.S.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "Addrs" ∷ l.[(config_gk.S.t), "Addrs"] ↦{dq} v.(config_gk.S.Addrs') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance S_into_val_typed
+   :
+  IntoValTypedUnderlying (config_gk.S.t) (config_gk.Sⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance S_access_load_Addrs l (v : (config_gk.S.t)) dq :
+  AccessStrict
+    (l.[(config_gk.S.t), "Addrs"] ↦{dq} (v.(config_gk.S.Addrs')))
+    (l.[(config_gk.S.t), "Addrs"] ↦{dq} (v.(config_gk.S.Addrs')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance S_access_store_Addrs l (v : (config_gk.S.t)) Addrs' :
+  AccessStrict
+    (l.[(config_gk.S.t), "Addrs"] ↦ (v.(config_gk.S.Addrs')))
+    (l.[(config_gk.S.t), "Addrs"] ↦ Addrs')
+    (l ↦ v) (l ↦ (v <|(config_gk.S.Addrs') := Addrs'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End S.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent config_gk.S.
-#[local] Typeclasses Transparent config_gk.S.
-
-Global Instance S_wf : struct.Wf config_gk.S.
-Proof. apply _. Qed.
-
-Global Instance settable_S : Settable S.t :=
-  settable! S.mk < S.Addrs' >.
-Global Instance into_val_S : IntoVal S.t :=
-  {| to_val_def v :=
-    struct.val_aux config_gk.S [
-    "Addrs" ::= #(S.Addrs' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_S : IntoValTyped S.t config_gk.S :=
-{|
-  default_val := S.mk (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_S_Addrs : IntoValStructField "Addrs" config_gk.S S.Addrs'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_S Addrs':
-  PureWp True
-    (struct.make #config_gk.S (alist_val [
-      "Addrs" ::= #Addrs'
-    ]))%struct
-    #(S.mk Addrs').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance S_struct_fields_split dq l (v : S.t) :
-  StructFieldsSplit dq l v (
-    "HAddrs" ∷ l ↦s[config_gk.S :: "Addrs"]{dq} v.(S.Addrs')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-Section names.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext}.
-#[local] Transparent is_pkg_defined is_pkg_defined_pure.
-
-Global Instance is_pkg_defined_pure_config_gk : IsPkgDefinedPure config_gk :=
-  {|
-    is_pkg_defined_pure_def go_ctx :=
-      is_pkg_defined_pure_single config_gk ∧
-      is_pkg_defined_pure code.github_com.tchajed.marshal.marshal;
-  |}.
-
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_config_gk : IsPkgDefined config_gk :=
-  {|
-    is_pkg_defined_def go_ctx :=
-      (is_pkg_defined_single config_gk ∗
-       is_pkg_defined code.github_com.tchajed.marshal.marshal)%I
-  |}.
-Final Obligation. iIntros. iFrame "#%". Qed.
-#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
-
-Global Instance wp_func_call_Marshal :
-  WpFuncCall config_gk.Marshal _ (is_pkg_defined config_gk) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_Unmarshal :
-  WpFuncCall config_gk.Unmarshal _ (is_pkg_defined config_gk) :=
-  ltac:(solve_wp_func_call).
-
-End names.
 End config_gk.

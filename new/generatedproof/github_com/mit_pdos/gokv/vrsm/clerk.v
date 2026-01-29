@@ -7,151 +7,92 @@ Require Export New.generatedproof.github_com.mit_pdos.gokv.vrsm.configservice.
 Require Export New.generatedproof.github_com.mit_pdos.gokv.vrsm.replica.
 Require Export New.generatedproof.github_com.mit_pdos.gokv.vrsm.replica.err_gk.
 Require Export New.golang.theory.
-
 Require Export New.code.github_com.mit_pdos.gokv.vrsm.clerk.
 
 Set Default Proof Using "Type".
 
 Module clerk.
-
-(* type clerk.Clerk *)
 Module Clerk.
 Section def.
-Context `{ffi_syntax}.
 
-Record t := mk {
-  confCk' : loc;
-  replicaClerks' : slice.t;
-  preferredReplica' : w64;
-  lastPreferenceRefresh' : w64;
-}.
+Context `{!heapGS Σ}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clerk.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance Clerk_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clerk.Clerk.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "confCk" ∷ l.[(clerk.Clerk.t), "confCk"] ↦{dq} v.(clerk.Clerk.confCk') ∗
+      "replicaClerks" ∷ l.[(clerk.Clerk.t), "replicaClerks"] ↦{dq} v.(clerk.Clerk.replicaClerks') ∗
+      "preferredReplica" ∷ l.[(clerk.Clerk.t), "preferredReplica"] ↦{dq} v.(clerk.Clerk.preferredReplica') ∗
+      "lastPreferenceRefresh" ∷ l.[(clerk.Clerk.t), "lastPreferenceRefresh"] ↦{dq} v.(clerk.Clerk.lastPreferenceRefresh') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance Clerk_into_val_typed
+   :
+  IntoValTypedUnderlying (clerk.Clerk.t) (clerk.Clerkⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Clerk_access_load_confCk l (v : (clerk.Clerk.t)) dq :
+  AccessStrict
+    (l.[(clerk.Clerk.t), "confCk"] ↦{dq} (v.(clerk.Clerk.confCk')))
+    (l.[(clerk.Clerk.t), "confCk"] ↦{dq} (v.(clerk.Clerk.confCk')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Clerk_access_store_confCk l (v : (clerk.Clerk.t)) confCk' :
+  AccessStrict
+    (l.[(clerk.Clerk.t), "confCk"] ↦ (v.(clerk.Clerk.confCk')))
+    (l.[(clerk.Clerk.t), "confCk"] ↦ confCk')
+    (l ↦ v) (l ↦ (v <|(clerk.Clerk.confCk') := confCk'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Clerk_access_load_replicaClerks l (v : (clerk.Clerk.t)) dq :
+  AccessStrict
+    (l.[(clerk.Clerk.t), "replicaClerks"] ↦{dq} (v.(clerk.Clerk.replicaClerks')))
+    (l.[(clerk.Clerk.t), "replicaClerks"] ↦{dq} (v.(clerk.Clerk.replicaClerks')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Clerk_access_store_replicaClerks l (v : (clerk.Clerk.t)) replicaClerks' :
+  AccessStrict
+    (l.[(clerk.Clerk.t), "replicaClerks"] ↦ (v.(clerk.Clerk.replicaClerks')))
+    (l.[(clerk.Clerk.t), "replicaClerks"] ↦ replicaClerks')
+    (l ↦ v) (l ↦ (v <|(clerk.Clerk.replicaClerks') := replicaClerks'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Clerk_access_load_preferredReplica l (v : (clerk.Clerk.t)) dq :
+  AccessStrict
+    (l.[(clerk.Clerk.t), "preferredReplica"] ↦{dq} (v.(clerk.Clerk.preferredReplica')))
+    (l.[(clerk.Clerk.t), "preferredReplica"] ↦{dq} (v.(clerk.Clerk.preferredReplica')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Clerk_access_store_preferredReplica l (v : (clerk.Clerk.t)) preferredReplica' :
+  AccessStrict
+    (l.[(clerk.Clerk.t), "preferredReplica"] ↦ (v.(clerk.Clerk.preferredReplica')))
+    (l.[(clerk.Clerk.t), "preferredReplica"] ↦ preferredReplica')
+    (l ↦ v) (l ↦ (v <|(clerk.Clerk.preferredReplica') := preferredReplica'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Clerk_access_load_lastPreferenceRefresh l (v : (clerk.Clerk.t)) dq :
+  AccessStrict
+    (l.[(clerk.Clerk.t), "lastPreferenceRefresh"] ↦{dq} (v.(clerk.Clerk.lastPreferenceRefresh')))
+    (l.[(clerk.Clerk.t), "lastPreferenceRefresh"] ↦{dq} (v.(clerk.Clerk.lastPreferenceRefresh')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Clerk_access_store_lastPreferenceRefresh l (v : (clerk.Clerk.t)) lastPreferenceRefresh' :
+  AccessStrict
+    (l.[(clerk.Clerk.t), "lastPreferenceRefresh"] ↦ (v.(clerk.Clerk.lastPreferenceRefresh')))
+    (l.[(clerk.Clerk.t), "lastPreferenceRefresh"] ↦ lastPreferenceRefresh')
+    (l ↦ v) (l ↦ (v <|(clerk.Clerk.lastPreferenceRefresh') := lastPreferenceRefresh'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End Clerk.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent clerk.Clerk.
-#[local] Typeclasses Transparent clerk.Clerk.
-
-Global Instance Clerk_wf : struct.Wf clerk.Clerk.
-Proof. apply _. Qed.
-
-Global Instance settable_Clerk : Settable Clerk.t :=
-  settable! Clerk.mk < Clerk.confCk'; Clerk.replicaClerks'; Clerk.preferredReplica'; Clerk.lastPreferenceRefresh' >.
-Global Instance into_val_Clerk : IntoVal Clerk.t :=
-  {| to_val_def v :=
-    struct.val_aux clerk.Clerk [
-    "confCk" ::= #(Clerk.confCk' v);
-    "replicaClerks" ::= #(Clerk.replicaClerks' v);
-    "preferredReplica" ::= #(Clerk.preferredReplica' v);
-    "lastPreferenceRefresh" ::= #(Clerk.lastPreferenceRefresh' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_Clerk : IntoValTyped Clerk.t clerk.Clerk :=
-{|
-  default_val := Clerk.mk (default_val _) (default_val _) (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_Clerk_confCk : IntoValStructField "confCk" clerk.Clerk Clerk.confCk'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Clerk_replicaClerks : IntoValStructField "replicaClerks" clerk.Clerk Clerk.replicaClerks'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Clerk_preferredReplica : IntoValStructField "preferredReplica" clerk.Clerk Clerk.preferredReplica'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Clerk_lastPreferenceRefresh : IntoValStructField "lastPreferenceRefresh" clerk.Clerk Clerk.lastPreferenceRefresh'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-
-
-Global Instance Clerk_struct_fields_split dq l (v : Clerk.t) :
-  StructFieldsSplit dq l v (
-    "HconfCk" ∷ l ↦s[clerk.Clerk :: "confCk"]{dq} v.(Clerk.confCk') ∗
-    "HreplicaClerks" ∷ l ↦s[clerk.Clerk :: "replicaClerks"]{dq} v.(Clerk.replicaClerks') ∗
-    "HpreferredReplica" ∷ l ↦s[clerk.Clerk :: "preferredReplica"]{dq} v.(Clerk.preferredReplica') ∗
-    "HlastPreferenceRefresh" ∷ l ↦s[clerk.Clerk :: "lastPreferenceRefresh"]{dq} v.(Clerk.lastPreferenceRefresh')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Clerk.confCk' v)) (clerk.Clerk) "confCk"%go.
-  simpl_one_flatten_struct (# (Clerk.replicaClerks' v)) (clerk.Clerk) "replicaClerks"%go.
-  simpl_one_flatten_struct (# (Clerk.preferredReplica' v)) (clerk.Clerk) "preferredReplica"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-Section names.
-
-Context `{!heapGS Σ}.
-Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext}.
-#[local] Transparent is_pkg_defined is_pkg_defined_pure.
-
-Global Instance is_pkg_defined_pure_clerk : IsPkgDefinedPure clerk :=
-  {|
-    is_pkg_defined_pure_def go_ctx :=
-      is_pkg_defined_pure_single clerk ∧
-      is_pkg_defined_pure code.github_com.goose_lang.primitive.primitive ∧
-      is_pkg_defined_pure code.github_com.mit_pdos.gokv.grove_ffi.grove_ffi ∧
-      is_pkg_defined_pure code.github_com.mit_pdos.gokv.trusted_proph.trusted_proph ∧
-      is_pkg_defined_pure code.github_com.mit_pdos.gokv.vrsm.configservice.configservice ∧
-      is_pkg_defined_pure code.github_com.mit_pdos.gokv.vrsm.replica.replica ∧
-      is_pkg_defined_pure code.github_com.mit_pdos.gokv.vrsm.replica.err_gk.err_gk;
-  |}.
-
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_clerk : IsPkgDefined clerk :=
-  {|
-    is_pkg_defined_def go_ctx :=
-      (is_pkg_defined_single clerk ∗
-       is_pkg_defined code.github_com.goose_lang.primitive.primitive ∗
-       is_pkg_defined code.github_com.mit_pdos.gokv.grove_ffi.grove_ffi ∗
-       is_pkg_defined code.github_com.mit_pdos.gokv.trusted_proph.trusted_proph ∗
-       is_pkg_defined code.github_com.mit_pdos.gokv.vrsm.configservice.configservice ∗
-       is_pkg_defined code.github_com.mit_pdos.gokv.vrsm.replica.replica ∗
-       is_pkg_defined code.github_com.mit_pdos.gokv.vrsm.replica.err_gk.err_gk)%I
-  |}.
-Final Obligation. iIntros. iFrame "#%". Qed.
-#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
-
-Global Instance wp_func_call_makeClerks :
-  WpFuncCall clerk.makeClerks _ (is_pkg_defined clerk) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_Make :
-  WpFuncCall clerk.Make _ (is_pkg_defined clerk) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_method_call_Clerk'ptr_Apply :
-  WpMethodCall (ptrT.id clerk.Clerk.id) "Apply" _ (is_pkg_defined clerk) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Clerk'ptr_ApplyRo :
-  WpMethodCall (ptrT.id clerk.Clerk.id) "ApplyRo" _ (is_pkg_defined clerk) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Clerk'ptr_ApplyRo2 :
-  WpMethodCall (ptrT.id clerk.Clerk.id) "ApplyRo2" _ (is_pkg_defined clerk) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Clerk'ptr_maybeRefreshPreference :
-  WpMethodCall (ptrT.id clerk.Clerk.id) "maybeRefreshPreference" _ (is_pkg_defined clerk) :=
-  ltac:(solve_wp_method_call).
-
-End names.
 End clerk.

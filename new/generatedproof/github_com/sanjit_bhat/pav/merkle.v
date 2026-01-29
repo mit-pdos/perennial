@@ -5,393 +5,247 @@ Require Export New.generatedproof.github_com.goose_lang.primitive.
 Require Export New.generatedproof.github_com.goose_lang.std.
 Require Export New.generatedproof.github_com.sanjit_bhat.pav.cryptoffi.
 Require Export New.generatedproof.github_com.sanjit_bhat.pav.cryptoutil.
-Require Export New.generatedproof.github_com.tchajed.marshal.
 Require Export New.generatedproof.github_com.sanjit_bhat.pav.safemarshal.
+Require Export New.generatedproof.github_com.tchajed.marshal.
 Require Export New.golang.theory.
-
 Require Export New.code.github_com.sanjit_bhat.pav.merkle.
 
 Set Default Proof Using "Type".
 
 Module merkle.
-
-(* type merkle.Map *)
 Module Map.
 Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-  root' : loc;
-}.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : merkle.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance Map_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (merkle.Map.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "root" ∷ l.[(merkle.Map.t), "root"] ↦{dq} v.(merkle.Map.root') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance Map_into_val_typed
+   :
+  IntoValTypedUnderlying (merkle.Map.t) (merkle.Mapⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Map_access_load_root l (v : (merkle.Map.t)) dq :
+  AccessStrict
+    (l.[(merkle.Map.t), "root"] ↦{dq} (v.(merkle.Map.root')))
+    (l.[(merkle.Map.t), "root"] ↦{dq} (v.(merkle.Map.root')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Map_access_store_root l (v : (merkle.Map.t)) root' :
+  AccessStrict
+    (l.[(merkle.Map.t), "root"] ↦ (v.(merkle.Map.root')))
+    (l.[(merkle.Map.t), "root"] ↦ root')
+    (l ↦ v) (l ↦ (v <|(merkle.Map.root') := root'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End Map.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent merkle.Map.
-#[local] Typeclasses Transparent merkle.Map.
-
-Global Instance Map_wf : struct.Wf merkle.Map.
-Proof. apply _. Qed.
-
-Global Instance settable_Map : Settable Map.t :=
-  settable! Map.mk < Map.root' >.
-Global Instance into_val_Map : IntoVal Map.t :=
-  {| to_val_def v :=
-    struct.val_aux merkle.Map [
-    "root" ::= #(Map.root' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_Map : IntoValTyped Map.t merkle.Map :=
-{|
-  default_val := Map.mk (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_Map_root : IntoValStructField "root" merkle.Map Map.root'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Map root':
-  PureWp True
-    (struct.make #merkle.Map (alist_val [
-      "root" ::= #root'
-    ]))%struct
-    #(Map.mk root').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance Map_struct_fields_split dq l (v : Map.t) :
-  StructFieldsSplit dq l v (
-    "Hroot" ∷ l ↦s[merkle.Map :: "root"]{dq} v.(Map.root')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-(* type merkle.node *)
 Module node.
 Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-  nodeTy' : w8;
-  hash' : slice.t;
-  child0' : loc;
-  child1' : loc;
-  label' : slice.t;
-  val' : slice.t;
-}.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : merkle.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance node_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (merkle.node.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "nodeTy" ∷ l.[(merkle.node.t), "nodeTy"] ↦{dq} v.(merkle.node.nodeTy') ∗
+      "hash" ∷ l.[(merkle.node.t), "hash"] ↦{dq} v.(merkle.node.hash') ∗
+      "child0" ∷ l.[(merkle.node.t), "child0"] ↦{dq} v.(merkle.node.child0') ∗
+      "child1" ∷ l.[(merkle.node.t), "child1"] ↦{dq} v.(merkle.node.child1') ∗
+      "label" ∷ l.[(merkle.node.t), "label"] ↦{dq} v.(merkle.node.label') ∗
+      "val" ∷ l.[(merkle.node.t), "val"] ↦{dq} v.(merkle.node.val') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance node_into_val_typed
+   :
+  IntoValTypedUnderlying (merkle.node.t) (merkle.nodeⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance node_access_load_nodeTy l (v : (merkle.node.t)) dq :
+  AccessStrict
+    (l.[(merkle.node.t), "nodeTy"] ↦{dq} (v.(merkle.node.nodeTy')))
+    (l.[(merkle.node.t), "nodeTy"] ↦{dq} (v.(merkle.node.nodeTy')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance node_access_store_nodeTy l (v : (merkle.node.t)) nodeTy' :
+  AccessStrict
+    (l.[(merkle.node.t), "nodeTy"] ↦ (v.(merkle.node.nodeTy')))
+    (l.[(merkle.node.t), "nodeTy"] ↦ nodeTy')
+    (l ↦ v) (l ↦ (v <|(merkle.node.nodeTy') := nodeTy'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance node_access_load_hash l (v : (merkle.node.t)) dq :
+  AccessStrict
+    (l.[(merkle.node.t), "hash"] ↦{dq} (v.(merkle.node.hash')))
+    (l.[(merkle.node.t), "hash"] ↦{dq} (v.(merkle.node.hash')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance node_access_store_hash l (v : (merkle.node.t)) hash' :
+  AccessStrict
+    (l.[(merkle.node.t), "hash"] ↦ (v.(merkle.node.hash')))
+    (l.[(merkle.node.t), "hash"] ↦ hash')
+    (l ↦ v) (l ↦ (v <|(merkle.node.hash') := hash'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance node_access_load_child0 l (v : (merkle.node.t)) dq :
+  AccessStrict
+    (l.[(merkle.node.t), "child0"] ↦{dq} (v.(merkle.node.child0')))
+    (l.[(merkle.node.t), "child0"] ↦{dq} (v.(merkle.node.child0')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance node_access_store_child0 l (v : (merkle.node.t)) child0' :
+  AccessStrict
+    (l.[(merkle.node.t), "child0"] ↦ (v.(merkle.node.child0')))
+    (l.[(merkle.node.t), "child0"] ↦ child0')
+    (l ↦ v) (l ↦ (v <|(merkle.node.child0') := child0'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance node_access_load_child1 l (v : (merkle.node.t)) dq :
+  AccessStrict
+    (l.[(merkle.node.t), "child1"] ↦{dq} (v.(merkle.node.child1')))
+    (l.[(merkle.node.t), "child1"] ↦{dq} (v.(merkle.node.child1')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance node_access_store_child1 l (v : (merkle.node.t)) child1' :
+  AccessStrict
+    (l.[(merkle.node.t), "child1"] ↦ (v.(merkle.node.child1')))
+    (l.[(merkle.node.t), "child1"] ↦ child1')
+    (l ↦ v) (l ↦ (v <|(merkle.node.child1') := child1'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance node_access_load_label l (v : (merkle.node.t)) dq :
+  AccessStrict
+    (l.[(merkle.node.t), "label"] ↦{dq} (v.(merkle.node.label')))
+    (l.[(merkle.node.t), "label"] ↦{dq} (v.(merkle.node.label')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance node_access_store_label l (v : (merkle.node.t)) label' :
+  AccessStrict
+    (l.[(merkle.node.t), "label"] ↦ (v.(merkle.node.label')))
+    (l.[(merkle.node.t), "label"] ↦ label')
+    (l ↦ v) (l ↦ (v <|(merkle.node.label') := label'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance node_access_load_val l (v : (merkle.node.t)) dq :
+  AccessStrict
+    (l.[(merkle.node.t), "val"] ↦{dq} (v.(merkle.node.val')))
+    (l.[(merkle.node.t), "val"] ↦{dq} (v.(merkle.node.val')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance node_access_store_val l (v : (merkle.node.t)) val' :
+  AccessStrict
+    (l.[(merkle.node.t), "val"] ↦ (v.(merkle.node.val')))
+    (l.[(merkle.node.t), "val"] ↦ val')
+    (l ↦ v) (l ↦ (v <|(merkle.node.val') := val'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End node.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent merkle.node.
-#[local] Typeclasses Transparent merkle.node.
-
-Global Instance node_wf : struct.Wf merkle.node.
-Proof. apply _. Qed.
-
-Global Instance settable_node : Settable node.t :=
-  settable! node.mk < node.nodeTy'; node.hash'; node.child0'; node.child1'; node.label'; node.val' >.
-Global Instance into_val_node : IntoVal node.t :=
-  {| to_val_def v :=
-    struct.val_aux merkle.node [
-    "nodeTy" ::= #(node.nodeTy' v);
-    "hash" ::= #(node.hash' v);
-    "child0" ::= #(node.child0' v);
-    "child1" ::= #(node.child1' v);
-    "label" ::= #(node.label' v);
-    "val" ::= #(node.val' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_node : IntoValTyped node.t merkle.node :=
-{|
-  default_val := node.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_node_nodeTy : IntoValStructField "nodeTy" merkle.node node.nodeTy'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_node_hash : IntoValStructField "hash" merkle.node node.hash'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_node_child0 : IntoValStructField "child0" merkle.node node.child0'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_node_child1 : IntoValStructField "child1" merkle.node node.child1'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_node_label : IntoValStructField "label" merkle.node node.label'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_node_val : IntoValStructField "val" merkle.node node.val'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_node nodeTy' hash' child0' child1' label' val':
-  PureWp True
-    (struct.make #merkle.node (alist_val [
-      "nodeTy" ::= #nodeTy';
-      "hash" ::= #hash';
-      "child0" ::= #child0';
-      "child1" ::= #child1';
-      "label" ::= #label';
-      "val" ::= #val'
-    ]))%struct
-    #(node.mk nodeTy' hash' child0' child1' label' val').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance node_struct_fields_split dq l (v : node.t) :
-  StructFieldsSplit dq l v (
-    "HnodeTy" ∷ l ↦s[merkle.node :: "nodeTy"]{dq} v.(node.nodeTy') ∗
-    "Hhash" ∷ l ↦s[merkle.node :: "hash"]{dq} v.(node.hash') ∗
-    "Hchild0" ∷ l ↦s[merkle.node :: "child0"]{dq} v.(node.child0') ∗
-    "Hchild1" ∷ l ↦s[merkle.node :: "child1"]{dq} v.(node.child1') ∗
-    "Hlabel" ∷ l ↦s[merkle.node :: "label"]{dq} v.(node.label') ∗
-    "Hval" ∷ l ↦s[merkle.node :: "val"]{dq} v.(node.val')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (node.nodeTy' v)) (merkle.node) "nodeTy"%go.
-  simpl_one_flatten_struct (# (node.hash' v)) (merkle.node) "hash"%go.
-  simpl_one_flatten_struct (# (node.child0' v)) (merkle.node) "child0"%go.
-  simpl_one_flatten_struct (# (node.child1' v)) (merkle.node) "child1"%go.
-  simpl_one_flatten_struct (# (node.label' v)) (merkle.node) "label"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-(* type merkle.Proof *)
 Module Proof.
 Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-  Siblings' : slice.t;
-  IsOtherLeaf' : bool;
-  LeafLabel' : slice.t;
-  LeafVal' : slice.t;
-}.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : merkle.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance Proof_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (merkle.Proof.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "Siblings" ∷ l.[(merkle.Proof.t), "Siblings"] ↦{dq} v.(merkle.Proof.Siblings') ∗
+      "IsOtherLeaf" ∷ l.[(merkle.Proof.t), "IsOtherLeaf"] ↦{dq} v.(merkle.Proof.IsOtherLeaf') ∗
+      "LeafLabel" ∷ l.[(merkle.Proof.t), "LeafLabel"] ↦{dq} v.(merkle.Proof.LeafLabel') ∗
+      "LeafVal" ∷ l.[(merkle.Proof.t), "LeafVal"] ↦{dq} v.(merkle.Proof.LeafVal') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance Proof_into_val_typed
+   :
+  IntoValTypedUnderlying (merkle.Proof.t) (merkle.Proofⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Proof_access_load_Siblings l (v : (merkle.Proof.t)) dq :
+  AccessStrict
+    (l.[(merkle.Proof.t), "Siblings"] ↦{dq} (v.(merkle.Proof.Siblings')))
+    (l.[(merkle.Proof.t), "Siblings"] ↦{dq} (v.(merkle.Proof.Siblings')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Proof_access_store_Siblings l (v : (merkle.Proof.t)) Siblings' :
+  AccessStrict
+    (l.[(merkle.Proof.t), "Siblings"] ↦ (v.(merkle.Proof.Siblings')))
+    (l.[(merkle.Proof.t), "Siblings"] ↦ Siblings')
+    (l ↦ v) (l ↦ (v <|(merkle.Proof.Siblings') := Siblings'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Proof_access_load_IsOtherLeaf l (v : (merkle.Proof.t)) dq :
+  AccessStrict
+    (l.[(merkle.Proof.t), "IsOtherLeaf"] ↦{dq} (v.(merkle.Proof.IsOtherLeaf')))
+    (l.[(merkle.Proof.t), "IsOtherLeaf"] ↦{dq} (v.(merkle.Proof.IsOtherLeaf')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Proof_access_store_IsOtherLeaf l (v : (merkle.Proof.t)) IsOtherLeaf' :
+  AccessStrict
+    (l.[(merkle.Proof.t), "IsOtherLeaf"] ↦ (v.(merkle.Proof.IsOtherLeaf')))
+    (l.[(merkle.Proof.t), "IsOtherLeaf"] ↦ IsOtherLeaf')
+    (l ↦ v) (l ↦ (v <|(merkle.Proof.IsOtherLeaf') := IsOtherLeaf'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Proof_access_load_LeafLabel l (v : (merkle.Proof.t)) dq :
+  AccessStrict
+    (l.[(merkle.Proof.t), "LeafLabel"] ↦{dq} (v.(merkle.Proof.LeafLabel')))
+    (l.[(merkle.Proof.t), "LeafLabel"] ↦{dq} (v.(merkle.Proof.LeafLabel')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Proof_access_store_LeafLabel l (v : (merkle.Proof.t)) LeafLabel' :
+  AccessStrict
+    (l.[(merkle.Proof.t), "LeafLabel"] ↦ (v.(merkle.Proof.LeafLabel')))
+    (l.[(merkle.Proof.t), "LeafLabel"] ↦ LeafLabel')
+    (l ↦ v) (l ↦ (v <|(merkle.Proof.LeafLabel') := LeafLabel'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Proof_access_load_LeafVal l (v : (merkle.Proof.t)) dq :
+  AccessStrict
+    (l.[(merkle.Proof.t), "LeafVal"] ↦{dq} (v.(merkle.Proof.LeafVal')))
+    (l.[(merkle.Proof.t), "LeafVal"] ↦{dq} (v.(merkle.Proof.LeafVal')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Proof_access_store_LeafVal l (v : (merkle.Proof.t)) LeafVal' :
+  AccessStrict
+    (l.[(merkle.Proof.t), "LeafVal"] ↦ (v.(merkle.Proof.LeafVal')))
+    (l.[(merkle.Proof.t), "LeafVal"] ↦ LeafVal')
+    (l ↦ v) (l ↦ (v <|(merkle.Proof.LeafVal') := LeafVal'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End Proof.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent merkle.Proof.
-#[local] Typeclasses Transparent merkle.Proof.
-
-Global Instance Proof_wf : struct.Wf merkle.Proof.
-Proof. apply _. Qed.
-
-Global Instance settable_Proof : Settable Proof.t :=
-  settable! Proof.mk < Proof.Siblings'; Proof.IsOtherLeaf'; Proof.LeafLabel'; Proof.LeafVal' >.
-Global Instance into_val_Proof : IntoVal Proof.t :=
-  {| to_val_def v :=
-    struct.val_aux merkle.Proof [
-    "Siblings" ::= #(Proof.Siblings' v);
-    "IsOtherLeaf" ::= #(Proof.IsOtherLeaf' v);
-    "LeafLabel" ::= #(Proof.LeafLabel' v);
-    "LeafVal" ::= #(Proof.LeafVal' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_Proof : IntoValTyped Proof.t merkle.Proof :=
-{|
-  default_val := Proof.mk (default_val _) (default_val _) (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_Proof_Siblings : IntoValStructField "Siblings" merkle.Proof Proof.Siblings'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Proof_IsOtherLeaf : IntoValStructField "IsOtherLeaf" merkle.Proof Proof.IsOtherLeaf'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Proof_LeafLabel : IntoValStructField "LeafLabel" merkle.Proof Proof.LeafLabel'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Proof_LeafVal : IntoValStructField "LeafVal" merkle.Proof Proof.LeafVal'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Proof Siblings' IsOtherLeaf' LeafLabel' LeafVal':
-  PureWp True
-    (struct.make #merkle.Proof (alist_val [
-      "Siblings" ::= #Siblings';
-      "IsOtherLeaf" ::= #IsOtherLeaf';
-      "LeafLabel" ::= #LeafLabel';
-      "LeafVal" ::= #LeafVal'
-    ]))%struct
-    #(Proof.mk Siblings' IsOtherLeaf' LeafLabel' LeafVal').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance Proof_struct_fields_split dq l (v : Proof.t) :
-  StructFieldsSplit dq l v (
-    "HSiblings" ∷ l ↦s[merkle.Proof :: "Siblings"]{dq} v.(Proof.Siblings') ∗
-    "HIsOtherLeaf" ∷ l ↦s[merkle.Proof :: "IsOtherLeaf"]{dq} v.(Proof.IsOtherLeaf') ∗
-    "HLeafLabel" ∷ l ↦s[merkle.Proof :: "LeafLabel"]{dq} v.(Proof.LeafLabel') ∗
-    "HLeafVal" ∷ l ↦s[merkle.Proof :: "LeafVal"]{dq} v.(Proof.LeafVal')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Proof.Siblings' v)) (merkle.Proof) "Siblings"%go.
-  simpl_one_flatten_struct (# (Proof.IsOtherLeaf' v)) (merkle.Proof) "IsOtherLeaf"%go.
-  simpl_one_flatten_struct (# (Proof.LeafLabel' v)) (merkle.Proof) "LeafLabel"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-Section names.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext}.
-#[local] Transparent is_pkg_defined is_pkg_defined_pure.
-
-Global Instance is_pkg_defined_pure_merkle : IsPkgDefinedPure merkle :=
-  {|
-    is_pkg_defined_pure_def go_ctx :=
-      is_pkg_defined_pure_single merkle ∧
-      is_pkg_defined_pure code.bytes.bytes ∧
-      is_pkg_defined_pure code.github_com.goose_lang.primitive.primitive ∧
-      is_pkg_defined_pure code.github_com.goose_lang.std.std ∧
-      is_pkg_defined_pure code.github_com.sanjit_bhat.pav.cryptoffi.cryptoffi ∧
-      is_pkg_defined_pure code.github_com.sanjit_bhat.pav.cryptoutil.cryptoutil ∧
-      is_pkg_defined_pure code.github_com.tchajed.marshal.marshal ∧
-      is_pkg_defined_pure code.github_com.sanjit_bhat.pav.safemarshal.safemarshal;
-  |}.
-
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_merkle : IsPkgDefined merkle :=
-  {|
-    is_pkg_defined_def go_ctx :=
-      (is_pkg_defined_single merkle ∗
-       is_pkg_defined code.bytes.bytes ∗
-       is_pkg_defined code.github_com.goose_lang.primitive.primitive ∗
-       is_pkg_defined code.github_com.goose_lang.std.std ∗
-       is_pkg_defined code.github_com.sanjit_bhat.pav.cryptoffi.cryptoffi ∗
-       is_pkg_defined code.github_com.sanjit_bhat.pav.cryptoutil.cryptoutil ∗
-       is_pkg_defined code.github_com.tchajed.marshal.marshal ∗
-       is_pkg_defined code.github_com.sanjit_bhat.pav.safemarshal.safemarshal)%I
-  |}.
-Final Obligation. iIntros. iFrame "#%". Qed.
-#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
-
-Global Instance wp_func_call_put :
-  WpFuncCall merkle.put _ (is_pkg_defined merkle) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_getProofCap :
-  WpFuncCall merkle.getProofCap _ (is_pkg_defined merkle) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_VerifyMemb :
-  WpFuncCall merkle.VerifyMemb _ (is_pkg_defined merkle) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_VerifyNonMemb :
-  WpFuncCall merkle.VerifyNonMemb _ (is_pkg_defined merkle) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_VerifyUpdate :
-  WpFuncCall merkle.VerifyUpdate _ (is_pkg_defined merkle) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_proofToTree :
-  WpFuncCall merkle.proofToTree _ (is_pkg_defined merkle) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_newShell :
-  WpFuncCall merkle.newShell _ (is_pkg_defined merkle) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_compEmptyHash :
-  WpFuncCall merkle.compEmptyHash _ (is_pkg_defined merkle) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_compLeafHash :
-  WpFuncCall merkle.compLeafHash _ (is_pkg_defined merkle) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_compInnerHash :
-  WpFuncCall merkle.compInnerHash _ (is_pkg_defined merkle) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_getBit :
-  WpFuncCall merkle.getBit _ (is_pkg_defined merkle) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_ProofEncode :
-  WpFuncCall merkle.ProofEncode _ (is_pkg_defined merkle) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_ProofDecode :
-  WpFuncCall merkle.ProofDecode _ (is_pkg_defined merkle) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_method_call_Map'ptr_Hash :
-  WpMethodCall (ptrT.id merkle.Map.id) "Hash" _ (is_pkg_defined merkle) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Map'ptr_Prove :
-  WpMethodCall (ptrT.id merkle.Map.id) "Prove" _ (is_pkg_defined merkle) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Map'ptr_Put :
-  WpMethodCall (ptrT.id merkle.Map.id) "Put" _ (is_pkg_defined merkle) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_node'ptr_find :
-  WpMethodCall (ptrT.id merkle.node.id) "find" _ (is_pkg_defined merkle) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_node'ptr_getChild :
-  WpMethodCall (ptrT.id merkle.node.id) "getChild" _ (is_pkg_defined merkle) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_node'ptr_getHash :
-  WpMethodCall (ptrT.id merkle.node.id) "getHash" _ (is_pkg_defined merkle) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_node'ptr_prove :
-  WpMethodCall (ptrT.id merkle.node.id) "prove" _ (is_pkg_defined merkle) :=
-  ltac:(solve_wp_method_call).
-
-End names.
 End merkle.

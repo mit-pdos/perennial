@@ -3538,38 +3538,6 @@ Class FooerUser_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalCon
   #[global] FooerUser_set_f (x : FooerUser.t) y :: ⟦StructFieldSet (FooerUserⁱᵐᵖˡ) "f", (#x, #y)⟧ ⤳[under] #(x <|FooerUser.f' := y|>);
 }.
 
-Module B.
-Section def.
-Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Record t :=
-mk {
-  a' : slice.t;
-}.
-
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
-#[global] Arguments mk : clear implicits.
-#[global] Arguments t : clear implicits.
-End def.
-
-End B.
-
-Definition B'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
-  (go.FieldDecl "a"%go (go.SliceType A))
-].
-Program Definition B'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (B'fds_unsealed).
-Global Instance equals_unfold_B {ext : ffi_syntax} {go_gctx : GoGlobalContext} : B'fds =→ B'fds_unsealed.
-Proof. rewrite /B'fds seal_eq //. Qed.
-
-Definition Bⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (B'fds).
-
-Class B_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] B_type_repr  :: go.TypeReprUnderlying Bⁱᵐᵖˡ B.t;
-  #[global] B_underlying :: (B) <u (Bⁱᵐᵖˡ);
-  #[global] B_get_a (x : B.t) :: ⟦StructFieldGet (Bⁱᵐᵖˡ) "a", #x⟧ ⤳[under] #x.(B.a');
-  #[global] B_set_a (x : B.t) y :: ⟦StructFieldSet (Bⁱᵐᵖˡ) "a", (#x, #y)⟧ ⤳[under] #(x <|B.a' := y|>);
-}.
-
 Module PointerInterface.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
@@ -3851,7 +3819,7 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  proph' : primitive.ProphId.t;
+  proph' : loc;
 }.
 
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
@@ -4246,6 +4214,38 @@ Class S_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{
   #[global] S'ptr_readBVal_unfold :: MethodUnfold (go.PointerType (S)) "readBVal" (λ: "$r", MethodResolve (S) "readBVal" (![(S)] "$r"));
   #[global] S'ptr_refC_unfold :: MethodUnfold (go.PointerType (S)) "refC" (S__refCⁱᵐᵖˡ);
   #[global] S'ptr_writeB_unfold :: MethodUnfold (go.PointerType (S)) "writeB" (S__writeBⁱᵐᵖˡ);
+}.
+
+Module B.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  a' : slice.t;
+}.
+
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+End def.
+
+End B.
+
+Definition B'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
+  (go.FieldDecl "a"%go (go.SliceType A))
+].
+Program Definition B'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (B'fds_unsealed).
+Global Instance equals_unfold_B {ext : ffi_syntax} {go_gctx : GoGlobalContext} : B'fds =→ B'fds_unsealed.
+Proof. rewrite /B'fds seal_eq //. Qed.
+
+Definition Bⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (B'fds).
+
+Class B_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] B_type_repr  :: go.TypeReprUnderlying Bⁱᵐᵖˡ B.t;
+  #[global] B_underlying :: (B) <u (Bⁱᵐᵖˡ);
+  #[global] B_get_a (x : B.t) :: ⟦StructFieldGet (Bⁱᵐᵖˡ) "a", #x⟧ ⤳[under] #x.(B.a');
+  #[global] B_set_a (x : B.t) y :: ⟦StructFieldSet (Bⁱᵐᵖˡ) "a", (#x, #y)⟧ ⤳[under] #(x <|B.a' := y|>);
 }.
 
 Module A.

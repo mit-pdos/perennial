@@ -5,312 +5,290 @@ Require Export New.code.github_com.mit_pdos.gokv.trusted_proph.
 Require Export New.code.github_com.mit_pdos.gokv.vrsm.configservice.
 Require Export New.code.github_com.mit_pdos.gokv.vrsm.replica.
 Require Export New.code.github_com.mit_pdos.gokv.vrsm.replica.err_gk.
-
 From New.golang Require Import defn.
+From New Require Import grove_prelude.
+Module pkg_id.
 Definition clerk : go_string := "github.com/mit-pdos/gokv/vrsm/clerk".
 
-From New Require Import grove_prelude.
+End pkg_id.
+Export pkg_id.
 Module clerk.
 
-Module Clerk. Definition id : go_string := "github.com/mit-pdos/gokv/vrsm/clerk.Clerk"%go. End Clerk.
-
-Section code.
-
+Definition Clerk {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/mit-pdos/gokv/vrsm/clerk.Clerk"%go [].
 
 (* 1 second *)
-Definition PreferenceRefreshTime : val := #(W64 1000000000).
+Definition PreferenceRefreshTime {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #(W64 1000000000).
 
-Definition Clerk : go_type := structT [
-  "confCk" :: ptrT;
-  "replicaClerks" :: sliceT;
-  "preferredReplica" :: uint64T;
-  "lastPreferenceRefresh" :: uint64T
-].
-#[global] Typeclasses Opaque Clerk.
-#[global] Opaque Clerk.
+Definition makeClerks {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/mit-pdos/gokv/vrsm/clerk.makeClerks"%go.
 
-Definition makeClerks : go_string := "github.com/mit-pdos/gokv/vrsm/clerk.makeClerks"%go.
+Definition Make {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/mit-pdos/gokv/vrsm/clerk.Make"%go.
 
 (* go: clerk.go:23:6 *)
-Definition makeClerksⁱᵐᵖˡ : val :=
+Definition makeClerksⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "servers",
-    exception_do (let: "servers" := (mem.alloc "servers") in
-    let: "clerks" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (slice.make2 ptrT (let: "$a0" := (![sliceT] "servers") in
-    slice.len "$a0")) in
-    do:  ("clerks" <-[sliceT] "$r0");;;
-    let: "i" := (mem.alloc (type.zero_val uint64T)) in
+    exception_do (let: "servers" := (GoAlloc (go.SliceType grove_ffi.Address) "servers") in
+    let: "clerks" := (GoAlloc (go.SliceType (go.PointerType replica.Clerk)) (GoZeroVal (go.SliceType (go.PointerType replica.Clerk)) #())) in
+    let: "$r0" := ((FuncResolve go.make2 [go.SliceType (go.PointerType replica.Clerk)] #()) (let: "$a0" := (![go.SliceType grove_ffi.Address] "servers") in
+    (FuncResolve go.len [go.SliceType grove_ffi.Address] #()) "$a0")) in
+    do:  ("clerks" <-[go.SliceType (go.PointerType replica.Clerk)] "$r0");;;
+    let: "i" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 0) in
-    do:  ("i" <-[uint64T] "$r0");;;
-    (for: (λ: <>, (![uint64T] "i") < (s_to_w64 (let: "$a0" := (![sliceT] "clerks") in
-    slice.len "$a0"))); (λ: <>, #()) := λ: <>,
-      let: "$r0" := (let: "$a0" := (![uint64T] (slice.elem_ref uint64T (![sliceT] "servers") (![uint64T] "i"))) in
-      (func_call #replica.MakeClerk) "$a0") in
-      do:  ((slice.elem_ref ptrT (![sliceT] "clerks") (![uint64T] "i")) <-[ptrT] "$r0");;;
-      do:  ("i" <-[uint64T] ((![uint64T] "i") + #(W64 1))));;;
-    return: (![sliceT] "clerks")).
-
-Definition Make : go_string := "github.com/mit-pdos/gokv/vrsm/clerk.Make"%go.
+    do:  ("i" <-[go.uint64] "$r0");;;
+    (for: (λ: <>, (![go.uint64] "i") <⟨go.uint64⟩ (Convert go.int go.uint64 (let: "$a0" := (![go.SliceType (go.PointerType replica.Clerk)] "clerks") in
+    (FuncResolve go.len [go.SliceType (go.PointerType replica.Clerk)] #()) "$a0"))); (λ: <>, #()) := λ: <>,
+      let: "$r0" := (let: "$a0" := (![grove_ffi.Address] (IndexRef (go.SliceType grove_ffi.Address) (![go.SliceType grove_ffi.Address] "servers", Convert go.uint64 go.int (![go.uint64] "i")))) in
+      (FuncResolve replica.MakeClerk [] #()) "$a0") in
+      do:  ((IndexRef (go.SliceType (go.PointerType replica.Clerk)) (![go.SliceType (go.PointerType replica.Clerk)] "clerks", Convert go.uint64 go.int (![go.uint64] "i"))) <-[go.PointerType replica.Clerk] "$r0");;;
+      do:  ("i" <-[go.uint64] ((![go.uint64] "i") +⟨go.uint64⟩ #(W64 1))));;;
+    return: (![go.SliceType (go.PointerType replica.Clerk)] "clerks")).
 
 (* go: clerk.go:33:6 *)
-Definition Makeⁱᵐᵖˡ : val :=
+Definition Makeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "confHosts",
-    exception_do (let: "confHosts" := (mem.alloc "confHosts") in
-    let: "ck" := (mem.alloc (type.zero_val ptrT)) in
-    let: "$r0" := (mem.alloc (type.zero_val Clerk)) in
-    do:  ("ck" <-[ptrT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![sliceT] "confHosts") in
-    (func_call #configservice.MakeClerk) "$a0") in
-    do:  ((struct.field_ref ptrT #"confCk"%go (![ptrT] "ck")) <-[ptrT] "$r0");;;
+    exception_do (let: "confHosts" := (GoAlloc (go.SliceType grove_ffi.Address) "confHosts") in
+    let: "ck" := (GoAlloc (go.PointerType Clerk) (GoZeroVal (go.PointerType Clerk) #())) in
+    let: "$r0" := (GoAlloc Clerk (GoZeroVal Clerk #())) in
+    do:  ("ck" <-[go.PointerType Clerk] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType grove_ffi.Address] "confHosts") in
+    (FuncResolve configservice.MakeClerk [] #()) "$a0") in
+    do:  ((StructFieldRef Clerk "confCk"%go (![go.PointerType Clerk] "ck")) <-[go.PointerType configservice.Clerk] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-<<<<<<< HEAD
-      let: "config" := (mem.alloc (type.zero_val sliceT)) in
-      let: "$r0" := ((method_call #(ptrT.id configservice.Clerk.id) #"GetConfig"%go (![ptrT] (struct.field_ref ptrT #"confCk"%go (![ptrT] "ck")))) #()) in
-      do:  ("config" <-[sliceT] "$r0");;;
-      (if: (let: "$a0" := (![sliceT] "config") in
-      slice.len "$a0") = #(W64 0)
+      let: "config" := (GoAlloc config_gk.S (GoZeroVal config_gk.S #())) in
+      let: "$r0" := ((MethodResolve (go.PointerType configservice.Clerk) "GetConfig"%go (![go.PointerType configservice.Clerk] (StructFieldRef Clerk "confCk"%go (![go.PointerType Clerk] "ck")))) #()) in
+      do:  ("config" <-[config_gk.S] "$r0");;;
+      (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType go.uint64] (StructFieldRef config_gk.S "Addrs"%go "config")) in
+      (FuncResolve go.len [go.SliceType go.uint64] #()) "$a0") =⟨go.int⟩ #(W64 0))
       then continue: #()
       else
-        let: "$r0" := (let: "$a0" := (![sliceT] "config") in
-=======
-      let: "config" := (mem.alloc (type.zero_val #config_gk.S)) in
-      let: "$r0" := ((method_call #(ptrT.id configservice.Clerk.id) #"GetConfig"%go (![#ptrT] (struct.field_ref #Clerk #"confCk"%go (![#ptrT] "ck")))) #()) in
-      do:  ("config" <-[#config_gk.S] "$r0");;;
-      (if: (let: "$a0" := (![#sliceT] (struct.field_ref #config_gk.S #"Addrs"%go "config")) in
-      slice.len "$a0") = #(W64 0)
-      then continue: #()
-      else
-        let: "$r0" := (let: "$a0" := (![#sliceT] (struct.field_ref #config_gk.S #"Addrs"%go "config")) in
->>>>>>> master
-        (func_call #makeClerks) "$a0") in
-        do:  ((struct.field_ref ptrT #"replicaClerks"%go (![ptrT] "ck")) <-[sliceT] "$r0");;;
+        let: "$r0" := (let: "$a0" := (![go.SliceType go.uint64] (StructFieldRef config_gk.S "Addrs"%go "config")) in
+        (FuncResolve makeClerks [] #()) "$a0") in
+        do:  ((StructFieldRef Clerk "replicaClerks"%go (![go.PointerType Clerk] "ck")) <-[go.SliceType (go.PointerType replica.Clerk)] "$r0");;;
         break: #()));;;
-    let: "$r0" := (((func_call #primitive.RandomUint64) #()) `rem` (s_to_w64 (let: "$a0" := (![sliceT] (struct.field_ref ptrT #"replicaClerks"%go (![ptrT] "ck"))) in
-    slice.len "$a0"))) in
-    do:  ((struct.field_ref ptrT #"preferredReplica"%go (![ptrT] "ck")) <-[uint64T] "$r0");;;
-    let: ("$ret0", "$ret1") := ((func_call #grove_ffi.GetTimeRange) #()) in
+    let: "$r0" := (((FuncResolve primitive.RandomUint64 [] #()) #()) %⟨go.uint64⟩ (Convert go.int go.uint64 (let: "$a0" := (![go.SliceType (go.PointerType replica.Clerk)] (StructFieldRef Clerk "replicaClerks"%go (![go.PointerType Clerk] "ck"))) in
+    (FuncResolve go.len [go.SliceType (go.PointerType replica.Clerk)] #()) "$a0"))) in
+    do:  ((StructFieldRef Clerk "preferredReplica"%go (![go.PointerType Clerk] "ck")) <-[go.uint64] "$r0");;;
+    let: ("$ret0", "$ret1") := ((FuncResolve grove_ffi.GetTimeRange [] #()) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ((struct.field_ref ptrT #"lastPreferenceRefresh"%go (![ptrT] "ck")) <-[uint64T] "$r0");;;
+    do:  ((StructFieldRef Clerk "lastPreferenceRefresh"%go (![go.PointerType Clerk] "ck")) <-[go.uint64] "$r0");;;
     do:  "$r1";;;
-    return: (![ptrT] "ck")).
+    return: (![go.PointerType Clerk] "ck")).
 
 (* will retry forever
 
    go: clerk.go:51:18 *)
-Definition Clerk__Applyⁱᵐᵖˡ : val :=
+Definition Clerk__Applyⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "ck" "op",
-    exception_do (let: "ck" := (mem.alloc "ck") in
-    let: "op" := (mem.alloc "op") in
-    let: "ret" := (mem.alloc (type.zero_val sliceT)) in
+    exception_do (let: "ck" := (GoAlloc (go.PointerType Clerk) "ck") in
+    let: "op" := (GoAlloc (go.SliceType go.byte) "op") in
+    let: "ret" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-<<<<<<< HEAD
-      let: "err" := (mem.alloc (type.zero_val uint64T)) in
-      let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "op") in
-      (method_call #(ptrT.id replica.Clerk.id) #"Apply"%go (![ptrT] (slice.elem_ref ptrT (![sliceT] (struct.field_ref ptrT #"replicaClerks"%go (![ptrT] "ck"))) #(W64 0)))) "$a0") in
+      let: "err" := (GoAlloc err_gk.E (GoZeroVal err_gk.E #())) in
+      let: ("$ret0", "$ret1") := (let: "$a0" := (![go.SliceType go.byte] "op") in
+      (MethodResolve (go.PointerType replica.Clerk) "Apply"%go (![go.PointerType replica.Clerk] (IndexRef (go.SliceType (go.PointerType replica.Clerk)) (![go.SliceType (go.PointerType replica.Clerk)] (StructFieldRef Clerk "replicaClerks"%go (![go.PointerType Clerk] "ck")), #(W64 0))))) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
-      do:  ("err" <-[uint64T] "$r0");;;
-      do:  ("ret" <-[sliceT] "$r1");;;
-      (if: (![uint64T] "err") = e.None
-=======
-      let: "err" := (mem.alloc (type.zero_val #err_gk.E)) in
-      let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "op") in
-      (method_call #(ptrT.id replica.Clerk.id) #"Apply"%go (![#ptrT] (slice.elem_ref #ptrT (![#sliceT] (struct.field_ref #Clerk #"replicaClerks"%go (![#ptrT] "ck"))) #(W64 0)))) "$a0") in
-      let: "$r0" := "$ret0" in
-      let: "$r1" := "$ret1" in
-      do:  ("err" <-[#err_gk.E] "$r0");;;
-      do:  ("ret" <-[#sliceT] "$r1");;;
-      (if: (![#err_gk.E] "err") = err_gk.None
->>>>>>> master
+      do:  ("err" <-[err_gk.E] "$r0");;;
+      do:  ("ret" <-[go.SliceType go.byte] "$r1");;;
+      (if: Convert go.untyped_bool go.bool ((![err_gk.E] "err") =⟨go.uint32⟩ err_gk.None)
       then break: #()
       else
-        do:  (let: "$a0" := (#(W64 100) * #(W64 1000000)) in
-        (func_call #primitive.Sleep) "$a0");;;
-<<<<<<< HEAD
-        let: "config" := (mem.alloc (type.zero_val sliceT)) in
-        let: "$r0" := ((method_call #(ptrT.id configservice.Clerk.id) #"GetConfig"%go (![ptrT] (struct.field_ref ptrT #"confCk"%go (![ptrT] "ck")))) #()) in
-        do:  ("config" <-[sliceT] "$r0");;;
-        (if: int_gt (let: "$a0" := (![sliceT] "config") in
-        slice.len "$a0") #(W64 0)
+        do:  (let: "$a0" := (#(W64 100) *⟨go.uint64⟩ #(W64 1000000)) in
+        (FuncResolve primitive.Sleep [] #()) "$a0");;;
+        let: "config" := (GoAlloc config_gk.S (GoZeroVal config_gk.S #())) in
+        let: "$r0" := ((MethodResolve (go.PointerType configservice.Clerk) "GetConfig"%go (![go.PointerType configservice.Clerk] (StructFieldRef Clerk "confCk"%go (![go.PointerType Clerk] "ck")))) #()) in
+        do:  ("config" <-[config_gk.S] "$r0");;;
+        (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType go.uint64] (StructFieldRef config_gk.S "Addrs"%go "config")) in
+        (FuncResolve go.len [go.SliceType go.uint64] #()) "$a0") >⟨go.int⟩ #(W64 0))
         then
-          let: "$r0" := (let: "$a0" := (![sliceT] "config") in
-=======
-        let: "config" := (mem.alloc (type.zero_val #config_gk.S)) in
-        let: "$r0" := ((method_call #(ptrT.id configservice.Clerk.id) #"GetConfig"%go (![#ptrT] (struct.field_ref #Clerk #"confCk"%go (![#ptrT] "ck")))) #()) in
-        do:  ("config" <-[#config_gk.S] "$r0");;;
-        (if: int_gt (let: "$a0" := (![#sliceT] (struct.field_ref #config_gk.S #"Addrs"%go "config")) in
-        slice.len "$a0") #(W64 0)
-        then
-          let: "$r0" := (let: "$a0" := (![#sliceT] (struct.field_ref #config_gk.S #"Addrs"%go "config")) in
->>>>>>> master
-          (func_call #makeClerks) "$a0") in
-          do:  ((struct.field_ref ptrT #"replicaClerks"%go (![ptrT] "ck")) <-[sliceT] "$r0")
+          let: "$r0" := (let: "$a0" := (![go.SliceType go.uint64] (StructFieldRef config_gk.S "Addrs"%go "config")) in
+          (FuncResolve makeClerks [] #()) "$a0") in
+          do:  ((StructFieldRef Clerk "replicaClerks"%go (![go.PointerType Clerk] "ck")) <-[go.SliceType (go.PointerType replica.Clerk)] "$r0")
         else do:  #());;;
         continue: #()));;;
-    return: (![sliceT] "ret")).
+    return: (![go.SliceType go.byte] "ret")).
 
 (* go: clerk.go:71:18 *)
-Definition Clerk__maybeRefreshPreferenceⁱᵐᵖˡ : val :=
+Definition Clerk__maybeRefreshPreferenceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "ck" <>,
-    exception_do (let: "ck" := (mem.alloc "ck") in
-    let: "now" := (mem.alloc (type.zero_val uint64T)) in
-    let: ("$ret0", "$ret1") := ((func_call #grove_ffi.GetTimeRange) #()) in
+    exception_do (let: "ck" := (GoAlloc (go.PointerType Clerk) "ck") in
+    let: "now" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+    let: ("$ret0", "$ret1") := ((FuncResolve grove_ffi.GetTimeRange [] #()) #()) in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("now" <-[uint64T] "$r0");;;
+    do:  ("now" <-[go.uint64] "$r0");;;
     do:  "$r1";;;
-    (if: (![uint64T] "now") > ((![uint64T] (struct.field_ref ptrT #"lastPreferenceRefresh"%go (![ptrT] "ck"))) + PreferenceRefreshTime)
+    (if: Convert go.untyped_bool go.bool ((![go.uint64] "now") >⟨go.uint64⟩ ((![go.uint64] (StructFieldRef Clerk "lastPreferenceRefresh"%go (![go.PointerType Clerk] "ck"))) +⟨go.uint64⟩ PreferenceRefreshTime))
     then
-      let: "$r0" := (((func_call #primitive.RandomUint64) #()) `rem` (s_to_w64 (let: "$a0" := (![sliceT] (struct.field_ref ptrT #"replicaClerks"%go (![ptrT] "ck"))) in
-      slice.len "$a0"))) in
-      do:  ((struct.field_ref ptrT #"preferredReplica"%go (![ptrT] "ck")) <-[uint64T] "$r0");;;
-      let: ("$ret0", "$ret1") := ((func_call #grove_ffi.GetTimeRange) #()) in
+      let: "$r0" := (((FuncResolve primitive.RandomUint64 [] #()) #()) %⟨go.uint64⟩ (Convert go.int go.uint64 (let: "$a0" := (![go.SliceType (go.PointerType replica.Clerk)] (StructFieldRef Clerk "replicaClerks"%go (![go.PointerType Clerk] "ck"))) in
+      (FuncResolve go.len [go.SliceType (go.PointerType replica.Clerk)] #()) "$a0"))) in
+      do:  ((StructFieldRef Clerk "preferredReplica"%go (![go.PointerType Clerk] "ck")) <-[go.uint64] "$r0");;;
+      let: ("$ret0", "$ret1") := ((FuncResolve grove_ffi.GetTimeRange [] #()) #()) in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
-      do:  ((struct.field_ref ptrT #"lastPreferenceRefresh"%go (![ptrT] "ck")) <-[uint64T] "$r0");;;
+      do:  ((StructFieldRef Clerk "lastPreferenceRefresh"%go (![go.PointerType Clerk] "ck")) <-[go.uint64] "$r0");;;
       do:  "$r1"
     else do:  #());;;
     return: #()).
 
 (* go: clerk.go:79:18 *)
-Definition Clerk__ApplyRo2ⁱᵐᵖˡ : val :=
+Definition Clerk__ApplyRo2ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "ck" "op",
-    exception_do (let: "ck" := (mem.alloc "ck") in
-    let: "op" := (mem.alloc "op") in
-    let: "ret" := (mem.alloc (type.zero_val sliceT)) in
-    do:  ((method_call #(ptrT.id Clerk.id) #"maybeRefreshPreference"%go (![ptrT] "ck")) #());;;
+    exception_do (let: "ck" := (GoAlloc (go.PointerType Clerk) "ck") in
+    let: "op" := (GoAlloc (go.SliceType go.byte) "op") in
+    let: "ret" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
+    do:  ((MethodResolve (go.PointerType Clerk) "maybeRefreshPreference"%go (![go.PointerType Clerk] "ck")) #());;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-<<<<<<< HEAD
-      let: "offset" := (mem.alloc (type.zero_val uint64T)) in
-      let: "$r0" := (![uint64T] (struct.field_ref ptrT #"preferredReplica"%go (![ptrT] "ck"))) in
-      do:  ("offset" <-[uint64T] "$r0");;;
-      let: "err" := (mem.alloc (type.zero_val uint64T)) in
-      let: "i" := (mem.alloc (type.zero_val uint64T)) in
-      (for: (λ: <>, (![uint64T] "i") < (s_to_w64 (let: "$a0" := (![sliceT] (struct.field_ref ptrT #"replicaClerks"%go (![ptrT] "ck"))) in
-=======
-      let: "offset" := (mem.alloc (type.zero_val #uint64T)) in
-      let: "$r0" := (![#uint64T] (struct.field_ref #Clerk #"preferredReplica"%go (![#ptrT] "ck"))) in
-      do:  ("offset" <-[#uint64T] "$r0");;;
-      let: "err" := (mem.alloc (type.zero_val #err_gk.E)) in
-      let: "i" := (mem.alloc (type.zero_val #uint64T)) in
-      (for: (λ: <>, (![#uint64T] "i") < (s_to_w64 (let: "$a0" := (![#sliceT] (struct.field_ref #Clerk #"replicaClerks"%go (![#ptrT] "ck"))) in
->>>>>>> master
-      slice.len "$a0"))); (λ: <>, #()) := λ: <>,
-        let: "k" := (mem.alloc (type.zero_val uint64T)) in
-        let: "$r0" := (((![uint64T] "i") + (![uint64T] "offset")) `rem` (s_to_w64 (let: "$a0" := (![sliceT] (struct.field_ref ptrT #"replicaClerks"%go (![ptrT] "ck"))) in
-        slice.len "$a0"))) in
-        do:  ("k" <-[uint64T] "$r0");;;
-        let: ("$ret0", "$ret1") := (let: "$a0" := (![sliceT] "op") in
-        (method_call #(ptrT.id replica.Clerk.id) #"ApplyRo"%go (![ptrT] (slice.elem_ref ptrT (![sliceT] (struct.field_ref ptrT #"replicaClerks"%go (![ptrT] "ck"))) (![uint64T] "k")))) "$a0") in
+      let: "offset" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+      let: "$r0" := (![go.uint64] (StructFieldRef Clerk "preferredReplica"%go (![go.PointerType Clerk] "ck"))) in
+      do:  ("offset" <-[go.uint64] "$r0");;;
+      let: "err" := (GoAlloc err_gk.E (GoZeroVal err_gk.E #())) in
+      let: "i" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+      (for: (λ: <>, (![go.uint64] "i") <⟨go.uint64⟩ (Convert go.int go.uint64 (let: "$a0" := (![go.SliceType (go.PointerType replica.Clerk)] (StructFieldRef Clerk "replicaClerks"%go (![go.PointerType Clerk] "ck"))) in
+      (FuncResolve go.len [go.SliceType (go.PointerType replica.Clerk)] #()) "$a0"))); (λ: <>, #()) := λ: <>,
+        let: "k" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+        let: "$r0" := (((![go.uint64] "i") +⟨go.uint64⟩ (![go.uint64] "offset")) %⟨go.uint64⟩ (Convert go.int go.uint64 (let: "$a0" := (![go.SliceType (go.PointerType replica.Clerk)] (StructFieldRef Clerk "replicaClerks"%go (![go.PointerType Clerk] "ck"))) in
+        (FuncResolve go.len [go.SliceType (go.PointerType replica.Clerk)] #()) "$a0"))) in
+        do:  ("k" <-[go.uint64] "$r0");;;
+        let: ("$ret0", "$ret1") := (let: "$a0" := (![go.SliceType go.byte] "op") in
+        (MethodResolve (go.PointerType replica.Clerk) "ApplyRo"%go (![go.PointerType replica.Clerk] (IndexRef (go.SliceType (go.PointerType replica.Clerk)) (![go.SliceType (go.PointerType replica.Clerk)] (StructFieldRef Clerk "replicaClerks"%go (![go.PointerType Clerk] "ck")), Convert go.uint64 go.int (![go.uint64] "k"))))) "$a0") in
         let: "$r0" := "$ret0" in
         let: "$r1" := "$ret1" in
-<<<<<<< HEAD
-        do:  ("err" <-[uint64T] "$r0");;;
-        do:  ("ret" <-[sliceT] "$r1");;;
-        (if: (![uint64T] "err") = e.None
-=======
-        do:  ("err" <-[#err_gk.E] "$r0");;;
-        do:  ("ret" <-[#sliceT] "$r1");;;
-        (if: (![#err_gk.E] "err") = err_gk.None
->>>>>>> master
+        do:  ("err" <-[err_gk.E] "$r0");;;
+        do:  ("ret" <-[go.SliceType go.byte] "$r1");;;
+        (if: Convert go.untyped_bool go.bool ((![err_gk.E] "err") =⟨go.uint32⟩ err_gk.None)
         then
-          let: "$r0" := (![uint64T] "k") in
-          do:  ((struct.field_ref ptrT #"preferredReplica"%go (![ptrT] "ck")) <-[uint64T] "$r0");;;
+          let: "$r0" := (![go.uint64] "k") in
+          do:  ((StructFieldRef Clerk "preferredReplica"%go (![go.PointerType Clerk] "ck")) <-[go.uint64] "$r0");;;
           break: #()
         else do:  #());;;
-        do:  ("i" <-[uint64T] ((![uint64T] "i") + #(W64 1)));;;
-        let: ("$ret0", "$ret1") := ((func_call #grove_ffi.GetTimeRange) #()) in
+        do:  ("i" <-[go.uint64] ((![go.uint64] "i") +⟨go.uint64⟩ #(W64 1)));;;
+        let: ("$ret0", "$ret1") := ((FuncResolve grove_ffi.GetTimeRange [] #()) #()) in
         let: "$r0" := "$ret0" in
         let: "$r1" := "$ret1" in
-        do:  ((struct.field_ref ptrT #"lastPreferenceRefresh"%go (![ptrT] "ck")) <-[uint64T] "$r0");;;
+        do:  ((StructFieldRef Clerk "lastPreferenceRefresh"%go (![go.PointerType Clerk] "ck")) <-[go.uint64] "$r0");;;
         do:  "$r1";;;
         continue: #());;;
-<<<<<<< HEAD
-      (if: (![uint64T] "err") = e.None
-=======
-      (if: (![#err_gk.E] "err") = err_gk.None
->>>>>>> master
+      (if: Convert go.untyped_bool go.bool ((![err_gk.E] "err") =⟨go.uint32⟩ err_gk.None)
       then break: #()
       else
-        let: "timeToSleep" := (mem.alloc (type.zero_val uint64T)) in
-        let: "$r0" := (#(W64 5) + (((func_call #primitive.RandomUint64) #()) `rem` #(W64 10))) in
-        do:  ("timeToSleep" <-[uint64T] "$r0");;;
-        do:  (let: "$a0" := ((![uint64T] "timeToSleep") * #(W64 1000000)) in
-        (func_call #primitive.Sleep) "$a0");;;
-<<<<<<< HEAD
-        let: "config" := (mem.alloc (type.zero_val sliceT)) in
-        let: "$r0" := ((method_call #(ptrT.id configservice.Clerk.id) #"GetConfig"%go (![ptrT] (struct.field_ref ptrT #"confCk"%go (![ptrT] "ck")))) #()) in
-        do:  ("config" <-[sliceT] "$r0");;;
-        (if: int_gt (let: "$a0" := (![sliceT] "config") in
-        slice.len "$a0") #(W64 0)
+        let: "timeToSleep" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+        let: "$r0" := (#(W64 5) +⟨go.uint64⟩ (((FuncResolve primitive.RandomUint64 [] #()) #()) %⟨go.uint64⟩ #(W64 10))) in
+        do:  ("timeToSleep" <-[go.uint64] "$r0");;;
+        do:  (let: "$a0" := ((![go.uint64] "timeToSleep") *⟨go.uint64⟩ #(W64 1000000)) in
+        (FuncResolve primitive.Sleep [] #()) "$a0");;;
+        let: "config" := (GoAlloc config_gk.S (GoZeroVal config_gk.S #())) in
+        let: "$r0" := ((MethodResolve (go.PointerType configservice.Clerk) "GetConfig"%go (![go.PointerType configservice.Clerk] (StructFieldRef Clerk "confCk"%go (![go.PointerType Clerk] "ck")))) #()) in
+        do:  ("config" <-[config_gk.S] "$r0");;;
+        (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType go.uint64] (StructFieldRef config_gk.S "Addrs"%go "config")) in
+        (FuncResolve go.len [go.SliceType go.uint64] #()) "$a0") >⟨go.int⟩ #(W64 0))
         then
-          let: "$r0" := (let: "$a0" := (![sliceT] "config") in
-=======
-        let: "config" := (mem.alloc (type.zero_val #config_gk.S)) in
-        let: "$r0" := ((method_call #(ptrT.id configservice.Clerk.id) #"GetConfig"%go (![#ptrT] (struct.field_ref #Clerk #"confCk"%go (![#ptrT] "ck")))) #()) in
-        do:  ("config" <-[#config_gk.S] "$r0");;;
-        (if: int_gt (let: "$a0" := (![#sliceT] (struct.field_ref #config_gk.S #"Addrs"%go "config")) in
-        slice.len "$a0") #(W64 0)
-        then
-          let: "$r0" := (let: "$a0" := (![#sliceT] (struct.field_ref #config_gk.S #"Addrs"%go "config")) in
->>>>>>> master
-          (func_call #makeClerks) "$a0") in
-          do:  ((struct.field_ref ptrT #"replicaClerks"%go (![ptrT] "ck")) <-[sliceT] "$r0");;;
-          let: ("$ret0", "$ret1") := ((func_call #grove_ffi.GetTimeRange) #()) in
+          let: "$r0" := (let: "$a0" := (![go.SliceType go.uint64] (StructFieldRef config_gk.S "Addrs"%go "config")) in
+          (FuncResolve makeClerks [] #()) "$a0") in
+          do:  ((StructFieldRef Clerk "replicaClerks"%go (![go.PointerType Clerk] "ck")) <-[go.SliceType (go.PointerType replica.Clerk)] "$r0");;;
+          let: ("$ret0", "$ret1") := ((FuncResolve grove_ffi.GetTimeRange [] #()) #()) in
           let: "$r0" := "$ret0" in
           let: "$r1" := "$ret1" in
-          do:  ((struct.field_ref ptrT #"lastPreferenceRefresh"%go (![ptrT] "ck")) <-[uint64T] "$r0");;;
+          do:  ((StructFieldRef Clerk "lastPreferenceRefresh"%go (![go.PointerType Clerk] "ck")) <-[go.uint64] "$r0");;;
           do:  "$r1";;;
-          let: "$r0" := (((func_call #primitive.RandomUint64) #()) `rem` (s_to_w64 (let: "$a0" := (![sliceT] (struct.field_ref ptrT #"replicaClerks"%go (![ptrT] "ck"))) in
-          slice.len "$a0"))) in
-          do:  ((struct.field_ref ptrT #"preferredReplica"%go (![ptrT] "ck")) <-[uint64T] "$r0")
+          let: "$r0" := (((FuncResolve primitive.RandomUint64 [] #()) #()) %⟨go.uint64⟩ (Convert go.int go.uint64 (let: "$a0" := (![go.SliceType (go.PointerType replica.Clerk)] (StructFieldRef Clerk "replicaClerks"%go (![go.PointerType Clerk] "ck"))) in
+          (FuncResolve go.len [go.SliceType (go.PointerType replica.Clerk)] #()) "$a0"))) in
+          do:  ((StructFieldRef Clerk "preferredReplica"%go (![go.PointerType Clerk] "ck")) <-[go.uint64] "$r0")
         else do:  #());;;
         continue: #()));;;
-    return: (![sliceT] "ret")).
+    return: (![go.SliceType go.byte] "ret")).
 
 (* go: clerk.go:118:18 *)
-Definition Clerk__ApplyRoⁱᵐᵖˡ : val :=
+Definition Clerk__ApplyRoⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "ck" "op",
-    exception_do (let: "ck" := (mem.alloc "ck") in
-    let: "op" := (mem.alloc "op") in
-    let: "p" := (mem.alloc (type.zero_val ptrT)) in
-    let: "$r0" := ((func_call #trusted_proph.NewProph) #()) in
-    do:  ("p" <-[ptrT] "$r0");;;
-    let: "v" := (mem.alloc (type.zero_val sliceT)) in
-    let: "$r0" := (let: "$a0" := (![sliceT] "op") in
-    (method_call #(ptrT.id Clerk.id) #"ApplyRo2"%go (![ptrT] "ck")) "$a0") in
-    do:  ("v" <-[sliceT] "$r0");;;
-    do:  (let: "$a0" := (![ptrT] "p") in
-    let: "$a1" := (![sliceT] "v") in
-    (func_call #trusted_proph.ResolveBytes) "$a0" "$a1");;;
-    return: (![sliceT] "v")).
+    exception_do (let: "ck" := (GoAlloc (go.PointerType Clerk) "ck") in
+    let: "op" := (GoAlloc (go.SliceType go.byte) "op") in
+    let: "p" := (GoAlloc trusted_proph.ProphId (GoZeroVal trusted_proph.ProphId #())) in
+    let: "$r0" := ((FuncResolve trusted_proph.NewProph [] #()) #()) in
+    do:  ("p" <-[trusted_proph.ProphId] "$r0");;;
+    let: "v" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "op") in
+    (MethodResolve (go.PointerType Clerk) "ApplyRo2"%go (![go.PointerType Clerk] "ck")) "$a0") in
+    do:  ("v" <-[go.SliceType go.byte] "$r0");;;
+    do:  (let: "$a0" := (![trusted_proph.ProphId] "p") in
+    let: "$a1" := (![go.SliceType go.byte] "v") in
+    (FuncResolve trusted_proph.ResolveBytes [] #()) "$a0" "$a1");;;
+    return: (![go.SliceType go.byte] "v")).
 
-Definition vars' : list (go_string * go_type) := [].
+#[global] Instance info' : PkgInfo pkg_id.clerk :=
+{|
+  pkg_imported_pkgs := [code.github_com.goose_lang.primitive.pkg_id.primitive; code.github_com.mit_pdos.gokv.grove_ffi.pkg_id.grove_ffi; code.github_com.mit_pdos.gokv.trusted_proph.pkg_id.trusted_proph; code.github_com.mit_pdos.gokv.vrsm.configservice.pkg_id.configservice; code.github_com.mit_pdos.gokv.vrsm.replica.pkg_id.replica; code.github_com.mit_pdos.gokv.vrsm.replica.err_gk.pkg_id.err_gk]
+|}.
 
-Definition functions' : list (go_string * val) := [(makeClerks, makeClerksⁱᵐᵖˡ); (Make, Makeⁱᵐᵖˡ)].
-
-Definition msets' : list (go_string * (list (go_string * val))) := [(Clerk.id, []); (ptrT.id Clerk.id, [("Apply"%go, Clerk__Applyⁱᵐᵖˡ); ("ApplyRo"%go, Clerk__ApplyRoⁱᵐᵖˡ); ("ApplyRo2"%go, Clerk__ApplyRo2ⁱᵐᵖˡ); ("maybeRefreshPreference"%go, Clerk__maybeRefreshPreferenceⁱᵐᵖˡ)])].
-
-#[global] Instance info' : PkgInfo clerk.clerk :=
-  {|
-    pkg_vars := vars';
-    pkg_functions := functions';
-    pkg_msets := msets';
-    pkg_imported_pkgs := [code.github_com.goose_lang.primitive.primitive; code.github_com.mit_pdos.gokv.grove_ffi.grove_ffi; code.github_com.mit_pdos.gokv.trusted_proph.trusted_proph; code.github_com.mit_pdos.gokv.vrsm.configservice.configservice; code.github_com.mit_pdos.gokv.vrsm.replica.replica; code.github_com.mit_pdos.gokv.vrsm.replica.err_gk.err_gk];
-  |}.
-
-Definition initialize' : val :=
+Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    package.init #clerk.clerk (λ: <>,
+    package.init pkg_id.clerk (λ: <>,
       exception_do (do:  (err_gk.initialize' #());;;
       do:  (replica.initialize' #());;;
       do:  (configservice.initialize' #());;;
       do:  (trusted_proph.initialize' #());;;
       do:  (grove_ffi.initialize' #());;;
-      do:  (primitive.initialize' #());;;
-      do:  (package.alloc clerk.clerk #()))
+      do:  (primitive.initialize' #()))
       ).
 
-End code.
+Module Clerk.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  confCk' : loc;
+  replicaClerks' : slice.t;
+  preferredReplica' : w64;
+  lastPreferenceRefresh' : w64;
+}.
+
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _) (zero_val _)|}.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+End def.
+
+End Clerk.
+
+Definition Clerk'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
+  (go.FieldDecl "confCk"%go (go.PointerType configservice.Clerk));
+  (go.FieldDecl "replicaClerks"%go (go.SliceType (go.PointerType replica.Clerk)));
+  (go.FieldDecl "preferredReplica"%go go.uint64);
+  (go.FieldDecl "lastPreferenceRefresh"%go go.uint64)
+].
+Program Definition Clerk'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (Clerk'fds_unsealed).
+Global Instance equals_unfold_Clerk {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Clerk'fds =→ Clerk'fds_unsealed.
+Proof. rewrite /Clerk'fds seal_eq //. Qed.
+
+Definition Clerkⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (Clerk'fds).
+
+Class Clerk_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Clerk_type_repr  :: go.TypeReprUnderlying Clerkⁱᵐᵖˡ Clerk.t;
+  #[global] Clerk_underlying :: (Clerk) <u (Clerkⁱᵐᵖˡ);
+  #[global] Clerk_get_confCk (x : Clerk.t) :: ⟦StructFieldGet (Clerkⁱᵐᵖˡ) "confCk", #x⟧ ⤳[under] #x.(Clerk.confCk');
+  #[global] Clerk_set_confCk (x : Clerk.t) y :: ⟦StructFieldSet (Clerkⁱᵐᵖˡ) "confCk", (#x, #y)⟧ ⤳[under] #(x <|Clerk.confCk' := y|>);
+  #[global] Clerk_get_replicaClerks (x : Clerk.t) :: ⟦StructFieldGet (Clerkⁱᵐᵖˡ) "replicaClerks", #x⟧ ⤳[under] #x.(Clerk.replicaClerks');
+  #[global] Clerk_set_replicaClerks (x : Clerk.t) y :: ⟦StructFieldSet (Clerkⁱᵐᵖˡ) "replicaClerks", (#x, #y)⟧ ⤳[under] #(x <|Clerk.replicaClerks' := y|>);
+  #[global] Clerk_get_preferredReplica (x : Clerk.t) :: ⟦StructFieldGet (Clerkⁱᵐᵖˡ) "preferredReplica", #x⟧ ⤳[under] #x.(Clerk.preferredReplica');
+  #[global] Clerk_set_preferredReplica (x : Clerk.t) y :: ⟦StructFieldSet (Clerkⁱᵐᵖˡ) "preferredReplica", (#x, #y)⟧ ⤳[under] #(x <|Clerk.preferredReplica' := y|>);
+  #[global] Clerk_get_lastPreferenceRefresh (x : Clerk.t) :: ⟦StructFieldGet (Clerkⁱᵐᵖˡ) "lastPreferenceRefresh", #x⟧ ⤳[under] #x.(Clerk.lastPreferenceRefresh');
+  #[global] Clerk_set_lastPreferenceRefresh (x : Clerk.t) y :: ⟦StructFieldSet (Clerkⁱᵐᵖˡ) "lastPreferenceRefresh", (#x, #y)⟧ ⤳[under] #(x <|Clerk.lastPreferenceRefresh' := y|>);
+  #[global] Clerk'ptr_Apply_unfold :: MethodUnfold (go.PointerType (Clerk)) "Apply" (Clerk__Applyⁱᵐᵖˡ);
+  #[global] Clerk'ptr_ApplyRo_unfold :: MethodUnfold (go.PointerType (Clerk)) "ApplyRo" (Clerk__ApplyRoⁱᵐᵖˡ);
+  #[global] Clerk'ptr_ApplyRo2_unfold :: MethodUnfold (go.PointerType (Clerk)) "ApplyRo2" (Clerk__ApplyRo2ⁱᵐᵖˡ);
+  #[global] Clerk'ptr_maybeRefreshPreference_unfold :: MethodUnfold (go.PointerType (Clerk)) "maybeRefreshPreference" (Clerk__maybeRefreshPreferenceⁱᵐᵖˡ);
+}.
+
+Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Clerk_instance :: Clerk_Assumptions;
+  #[global] makeClerks_unfold :: FuncUnfold makeClerks [] (makeClerksⁱᵐᵖˡ);
+  #[global] Make_unfold :: FuncUnfold Make [] (Makeⁱᵐᵖˡ);
+  #[global] import_primitive_Assumption :: primitive.Assumptions;
+  #[global] import_grove_ffi_Assumption :: grove_ffi.Assumptions;
+  #[global] import_trusted_proph_Assumption :: trusted_proph.Assumptions;
+  #[global] import_configservice_Assumption :: configservice.Assumptions;
+  #[global] import_replica_Assumption :: replica.Assumptions;
+  #[global] import_err_gk_Assumption :: err_gk.Assumptions;
+}.
 End clerk.

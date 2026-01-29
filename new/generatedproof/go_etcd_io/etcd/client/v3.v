@@ -3,2579 +3,2429 @@ Require Export New.proof.proof_prelude.
 Require Export New.generatedproof.go_etcd_io.etcd.api.v3.etcdserverpb.
 Require Export New.generatedproof.go_etcd_io.etcd.api.v3.mvccpb.
 Require Export New.golang.theory.
-
 Require Export New.code.go_etcd_io.etcd.client.v3.
 
 Set Default Proof Using "Type".
 
 Module clientv3.
-
-(* type clientv3.AuthEnableResponse *)
 Module AuthEnableResponse.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance AuthEnableResponse_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.AuthEnableResponse.t). Admitted.
+
+#[global] Instance AuthEnableResponse_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.AuthEnableResponse.t) (clientv3.AuthEnableResponseⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End AuthEnableResponse.
 
-Global Instance bounded_size_AuthEnableResponse : BoundedTypeSize clientv3.AuthEnableResponse.
-Admitted.
-
-Global Instance into_val_AuthEnableResponse `{ffi_syntax} : IntoVal AuthEnableResponse.t.
-Admitted.
-
-Global Instance into_val_typed_AuthEnableResponse `{ffi_syntax} : IntoValTyped AuthEnableResponse.t clientv3.AuthEnableResponse.
-Admitted.
-
-(* type clientv3.AuthDisableResponse *)
 Module AuthDisableResponse.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance AuthDisableResponse_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.AuthDisableResponse.t). Admitted.
+
+#[global] Instance AuthDisableResponse_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.AuthDisableResponse.t) (clientv3.AuthDisableResponseⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End AuthDisableResponse.
 
-Global Instance bounded_size_AuthDisableResponse : BoundedTypeSize clientv3.AuthDisableResponse.
-Admitted.
-
-Global Instance into_val_AuthDisableResponse `{ffi_syntax} : IntoVal AuthDisableResponse.t.
-Admitted.
-
-Global Instance into_val_typed_AuthDisableResponse `{ffi_syntax} : IntoValTyped AuthDisableResponse.t clientv3.AuthDisableResponse.
-Admitted.
-
-(* type clientv3.AuthStatusResponse *)
 Module AuthStatusResponse.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance AuthStatusResponse_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.AuthStatusResponse.t). Admitted.
+
+#[global] Instance AuthStatusResponse_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.AuthStatusResponse.t) (clientv3.AuthStatusResponseⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End AuthStatusResponse.
 
-Global Instance bounded_size_AuthStatusResponse : BoundedTypeSize clientv3.AuthStatusResponse.
-Admitted.
-
-Global Instance into_val_AuthStatusResponse `{ffi_syntax} : IntoVal AuthStatusResponse.t.
-Admitted.
-
-Global Instance into_val_typed_AuthStatusResponse `{ffi_syntax} : IntoValTyped AuthStatusResponse.t clientv3.AuthStatusResponse.
-Admitted.
-
-(* type clientv3.AuthenticateResponse *)
 Module AuthenticateResponse.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance AuthenticateResponse_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.AuthenticateResponse.t). Admitted.
+
+#[global] Instance AuthenticateResponse_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.AuthenticateResponse.t) (clientv3.AuthenticateResponseⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End AuthenticateResponse.
 
-Global Instance bounded_size_AuthenticateResponse : BoundedTypeSize clientv3.AuthenticateResponse.
-Admitted.
-
-Global Instance into_val_AuthenticateResponse `{ffi_syntax} : IntoVal AuthenticateResponse.t.
-Admitted.
-
-Global Instance into_val_typed_AuthenticateResponse `{ffi_syntax} : IntoValTyped AuthenticateResponse.t clientv3.AuthenticateResponse.
-Admitted.
-
-(* type clientv3.AuthUserAddResponse *)
 Module AuthUserAddResponse.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance AuthUserAddResponse_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.AuthUserAddResponse.t). Admitted.
+
+#[global] Instance AuthUserAddResponse_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.AuthUserAddResponse.t) (clientv3.AuthUserAddResponseⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End AuthUserAddResponse.
 
-Global Instance bounded_size_AuthUserAddResponse : BoundedTypeSize clientv3.AuthUserAddResponse.
-Admitted.
-
-Global Instance into_val_AuthUserAddResponse `{ffi_syntax} : IntoVal AuthUserAddResponse.t.
-Admitted.
-
-Global Instance into_val_typed_AuthUserAddResponse `{ffi_syntax} : IntoValTyped AuthUserAddResponse.t clientv3.AuthUserAddResponse.
-Admitted.
-
-(* type clientv3.AuthUserDeleteResponse *)
 Module AuthUserDeleteResponse.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance AuthUserDeleteResponse_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.AuthUserDeleteResponse.t). Admitted.
+
+#[global] Instance AuthUserDeleteResponse_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.AuthUserDeleteResponse.t) (clientv3.AuthUserDeleteResponseⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End AuthUserDeleteResponse.
 
-Global Instance bounded_size_AuthUserDeleteResponse : BoundedTypeSize clientv3.AuthUserDeleteResponse.
-Admitted.
-
-Global Instance into_val_AuthUserDeleteResponse `{ffi_syntax} : IntoVal AuthUserDeleteResponse.t.
-Admitted.
-
-Global Instance into_val_typed_AuthUserDeleteResponse `{ffi_syntax} : IntoValTyped AuthUserDeleteResponse.t clientv3.AuthUserDeleteResponse.
-Admitted.
-
-(* type clientv3.AuthUserChangePasswordResponse *)
 Module AuthUserChangePasswordResponse.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance AuthUserChangePasswordResponse_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.AuthUserChangePasswordResponse.t). Admitted.
+
+#[global] Instance AuthUserChangePasswordResponse_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.AuthUserChangePasswordResponse.t) (clientv3.AuthUserChangePasswordResponseⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End AuthUserChangePasswordResponse.
 
-Global Instance bounded_size_AuthUserChangePasswordResponse : BoundedTypeSize clientv3.AuthUserChangePasswordResponse.
-Admitted.
-
-Global Instance into_val_AuthUserChangePasswordResponse `{ffi_syntax} : IntoVal AuthUserChangePasswordResponse.t.
-Admitted.
-
-Global Instance into_val_typed_AuthUserChangePasswordResponse `{ffi_syntax} : IntoValTyped AuthUserChangePasswordResponse.t clientv3.AuthUserChangePasswordResponse.
-Admitted.
-
-(* type clientv3.AuthUserGrantRoleResponse *)
 Module AuthUserGrantRoleResponse.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance AuthUserGrantRoleResponse_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.AuthUserGrantRoleResponse.t). Admitted.
+
+#[global] Instance AuthUserGrantRoleResponse_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.AuthUserGrantRoleResponse.t) (clientv3.AuthUserGrantRoleResponseⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End AuthUserGrantRoleResponse.
 
-Global Instance bounded_size_AuthUserGrantRoleResponse : BoundedTypeSize clientv3.AuthUserGrantRoleResponse.
-Admitted.
-
-Global Instance into_val_AuthUserGrantRoleResponse `{ffi_syntax} : IntoVal AuthUserGrantRoleResponse.t.
-Admitted.
-
-Global Instance into_val_typed_AuthUserGrantRoleResponse `{ffi_syntax} : IntoValTyped AuthUserGrantRoleResponse.t clientv3.AuthUserGrantRoleResponse.
-Admitted.
-
-(* type clientv3.AuthUserGetResponse *)
 Module AuthUserGetResponse.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance AuthUserGetResponse_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.AuthUserGetResponse.t). Admitted.
+
+#[global] Instance AuthUserGetResponse_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.AuthUserGetResponse.t) (clientv3.AuthUserGetResponseⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End AuthUserGetResponse.
 
-Global Instance bounded_size_AuthUserGetResponse : BoundedTypeSize clientv3.AuthUserGetResponse.
-Admitted.
-
-Global Instance into_val_AuthUserGetResponse `{ffi_syntax} : IntoVal AuthUserGetResponse.t.
-Admitted.
-
-Global Instance into_val_typed_AuthUserGetResponse `{ffi_syntax} : IntoValTyped AuthUserGetResponse.t clientv3.AuthUserGetResponse.
-Admitted.
-
-(* type clientv3.AuthUserRevokeRoleResponse *)
 Module AuthUserRevokeRoleResponse.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance AuthUserRevokeRoleResponse_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.AuthUserRevokeRoleResponse.t). Admitted.
+
+#[global] Instance AuthUserRevokeRoleResponse_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.AuthUserRevokeRoleResponse.t) (clientv3.AuthUserRevokeRoleResponseⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End AuthUserRevokeRoleResponse.
 
-Global Instance bounded_size_AuthUserRevokeRoleResponse : BoundedTypeSize clientv3.AuthUserRevokeRoleResponse.
-Admitted.
-
-Global Instance into_val_AuthUserRevokeRoleResponse `{ffi_syntax} : IntoVal AuthUserRevokeRoleResponse.t.
-Admitted.
-
-Global Instance into_val_typed_AuthUserRevokeRoleResponse `{ffi_syntax} : IntoValTyped AuthUserRevokeRoleResponse.t clientv3.AuthUserRevokeRoleResponse.
-Admitted.
-
-(* type clientv3.AuthRoleAddResponse *)
 Module AuthRoleAddResponse.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance AuthRoleAddResponse_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.AuthRoleAddResponse.t). Admitted.
+
+#[global] Instance AuthRoleAddResponse_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.AuthRoleAddResponse.t) (clientv3.AuthRoleAddResponseⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End AuthRoleAddResponse.
 
-Global Instance bounded_size_AuthRoleAddResponse : BoundedTypeSize clientv3.AuthRoleAddResponse.
-Admitted.
-
-Global Instance into_val_AuthRoleAddResponse `{ffi_syntax} : IntoVal AuthRoleAddResponse.t.
-Admitted.
-
-Global Instance into_val_typed_AuthRoleAddResponse `{ffi_syntax} : IntoValTyped AuthRoleAddResponse.t clientv3.AuthRoleAddResponse.
-Admitted.
-
-(* type clientv3.AuthRoleGrantPermissionResponse *)
 Module AuthRoleGrantPermissionResponse.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance AuthRoleGrantPermissionResponse_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.AuthRoleGrantPermissionResponse.t). Admitted.
+
+#[global] Instance AuthRoleGrantPermissionResponse_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.AuthRoleGrantPermissionResponse.t) (clientv3.AuthRoleGrantPermissionResponseⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End AuthRoleGrantPermissionResponse.
 
-Global Instance bounded_size_AuthRoleGrantPermissionResponse : BoundedTypeSize clientv3.AuthRoleGrantPermissionResponse.
-Admitted.
-
-Global Instance into_val_AuthRoleGrantPermissionResponse `{ffi_syntax} : IntoVal AuthRoleGrantPermissionResponse.t.
-Admitted.
-
-Global Instance into_val_typed_AuthRoleGrantPermissionResponse `{ffi_syntax} : IntoValTyped AuthRoleGrantPermissionResponse.t clientv3.AuthRoleGrantPermissionResponse.
-Admitted.
-
-(* type clientv3.AuthRoleGetResponse *)
 Module AuthRoleGetResponse.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance AuthRoleGetResponse_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.AuthRoleGetResponse.t). Admitted.
+
+#[global] Instance AuthRoleGetResponse_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.AuthRoleGetResponse.t) (clientv3.AuthRoleGetResponseⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End AuthRoleGetResponse.
 
-Global Instance bounded_size_AuthRoleGetResponse : BoundedTypeSize clientv3.AuthRoleGetResponse.
-Admitted.
-
-Global Instance into_val_AuthRoleGetResponse `{ffi_syntax} : IntoVal AuthRoleGetResponse.t.
-Admitted.
-
-Global Instance into_val_typed_AuthRoleGetResponse `{ffi_syntax} : IntoValTyped AuthRoleGetResponse.t clientv3.AuthRoleGetResponse.
-Admitted.
-
-(* type clientv3.AuthRoleRevokePermissionResponse *)
 Module AuthRoleRevokePermissionResponse.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance AuthRoleRevokePermissionResponse_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.AuthRoleRevokePermissionResponse.t). Admitted.
+
+#[global] Instance AuthRoleRevokePermissionResponse_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.AuthRoleRevokePermissionResponse.t) (clientv3.AuthRoleRevokePermissionResponseⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End AuthRoleRevokePermissionResponse.
 
-Global Instance bounded_size_AuthRoleRevokePermissionResponse : BoundedTypeSize clientv3.AuthRoleRevokePermissionResponse.
-Admitted.
-
-Global Instance into_val_AuthRoleRevokePermissionResponse `{ffi_syntax} : IntoVal AuthRoleRevokePermissionResponse.t.
-Admitted.
-
-Global Instance into_val_typed_AuthRoleRevokePermissionResponse `{ffi_syntax} : IntoValTyped AuthRoleRevokePermissionResponse.t clientv3.AuthRoleRevokePermissionResponse.
-Admitted.
-
-(* type clientv3.AuthRoleDeleteResponse *)
 Module AuthRoleDeleteResponse.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance AuthRoleDeleteResponse_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.AuthRoleDeleteResponse.t). Admitted.
+
+#[global] Instance AuthRoleDeleteResponse_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.AuthRoleDeleteResponse.t) (clientv3.AuthRoleDeleteResponseⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End AuthRoleDeleteResponse.
 
-Global Instance bounded_size_AuthRoleDeleteResponse : BoundedTypeSize clientv3.AuthRoleDeleteResponse.
-Admitted.
-
-Global Instance into_val_AuthRoleDeleteResponse `{ffi_syntax} : IntoVal AuthRoleDeleteResponse.t.
-Admitted.
-
-Global Instance into_val_typed_AuthRoleDeleteResponse `{ffi_syntax} : IntoValTyped AuthRoleDeleteResponse.t clientv3.AuthRoleDeleteResponse.
-Admitted.
-
-(* type clientv3.AuthUserListResponse *)
 Module AuthUserListResponse.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance AuthUserListResponse_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.AuthUserListResponse.t). Admitted.
+
+#[global] Instance AuthUserListResponse_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.AuthUserListResponse.t) (clientv3.AuthUserListResponseⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End AuthUserListResponse.
 
-Global Instance bounded_size_AuthUserListResponse : BoundedTypeSize clientv3.AuthUserListResponse.
-Admitted.
-
-Global Instance into_val_AuthUserListResponse `{ffi_syntax} : IntoVal AuthUserListResponse.t.
-Admitted.
-
-Global Instance into_val_typed_AuthUserListResponse `{ffi_syntax} : IntoValTyped AuthUserListResponse.t clientv3.AuthUserListResponse.
-Admitted.
-
-(* type clientv3.AuthRoleListResponse *)
 Module AuthRoleListResponse.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance AuthRoleListResponse_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.AuthRoleListResponse.t). Admitted.
+
+#[global] Instance AuthRoleListResponse_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.AuthRoleListResponse.t) (clientv3.AuthRoleListResponseⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End AuthRoleListResponse.
 
-Global Instance bounded_size_AuthRoleListResponse : BoundedTypeSize clientv3.AuthRoleListResponse.
-Admitted.
-
-Global Instance into_val_AuthRoleListResponse `{ffi_syntax} : IntoVal AuthRoleListResponse.t.
-Admitted.
-
-Global Instance into_val_typed_AuthRoleListResponse `{ffi_syntax} : IntoValTyped AuthRoleListResponse.t clientv3.AuthRoleListResponse.
-Admitted.
-
-(* type clientv3.PermissionType *)
 Module PermissionType.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance PermissionType_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.PermissionType.t). Admitted.
+
+#[global] Instance PermissionType_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.PermissionType.t) (clientv3.PermissionTypeⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End PermissionType.
 
-Global Instance bounded_size_PermissionType : BoundedTypeSize clientv3.PermissionType.
-Admitted.
-
-Global Instance into_val_PermissionType `{ffi_syntax} : IntoVal PermissionType.t.
-Admitted.
-
-Global Instance into_val_typed_PermissionType `{ffi_syntax} : IntoValTyped PermissionType.t clientv3.PermissionType.
-Admitted.
-
-(* type clientv3.Permission *)
 Module Permission.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Permission_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.Permission.t). Admitted.
+
+#[global] Instance Permission_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.Permission.t) (clientv3.Permissionⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End Permission.
 
-Global Instance bounded_size_Permission : BoundedTypeSize clientv3.Permission.
-Admitted.
-
-Global Instance into_val_Permission `{ffi_syntax} : IntoVal Permission.t.
-Admitted.
-
-Global Instance into_val_typed_Permission `{ffi_syntax} : IntoValTyped Permission.t clientv3.Permission.
-Admitted.
-
-(* type clientv3.UserAddOptions *)
 Module UserAddOptions.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance UserAddOptions_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.UserAddOptions.t). Admitted.
+
+#[global] Instance UserAddOptions_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.UserAddOptions.t) (clientv3.UserAddOptionsⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End UserAddOptions.
 
-Global Instance bounded_size_UserAddOptions : BoundedTypeSize clientv3.UserAddOptions.
-Admitted.
-
-Global Instance into_val_UserAddOptions `{ffi_syntax} : IntoVal UserAddOptions.t.
-Admitted.
-
-Global Instance into_val_typed_UserAddOptions `{ffi_syntax} : IntoValTyped UserAddOptions.t clientv3.UserAddOptions.
-Admitted.
-
-(* type clientv3.Auth *)
 Module Auth.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Auth_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.Auth.t). Admitted.
+
+#[global] Instance Auth_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.Auth.t) (clientv3.Authⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End Auth.
 
-Global Instance bounded_size_Auth : BoundedTypeSize clientv3.Auth.
-Admitted.
-
-Global Instance into_val_Auth `{ffi_syntax} : IntoVal Auth.t.
-Admitted.
-
-Global Instance into_val_typed_Auth `{ffi_syntax} : IntoValTyped Auth.t clientv3.Auth.
-Admitted.
-
-(* type clientv3.authClient *)
 Module authClient.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance authClient_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.authClient.t). Admitted.
+
+#[global] Instance authClient_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.authClient.t) (clientv3.authClientⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End authClient.
 
-Global Instance bounded_size_authClient : BoundedTypeSize clientv3.authClient.
-Admitted.
-
-Global Instance into_val_authClient `{ffi_syntax} : IntoVal authClient.t.
-Admitted.
-
-Global Instance into_val_typed_authClient `{ffi_syntax} : IntoValTyped authClient.t clientv3.authClient.
-Admitted.
-
-(* type clientv3.Client *)
 Module Client.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Client_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.Client.t). Admitted.
+
+#[global] Instance Client_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.Client.t) (clientv3.Clientⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End Client.
 
-Global Instance bounded_size_Client : BoundedTypeSize clientv3.Client.
-Admitted.
-
-Global Instance into_val_Client `{ffi_syntax} : IntoVal Client.t.
-Admitted.
-
-Global Instance into_val_typed_Client `{ffi_syntax} : IntoValTyped Client.t clientv3.Client.
-Admitted.
-
-(* type clientv3.Option *)
 Module Option.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Option_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.Option.t). Admitted.
+
+#[global] Instance Option_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.Option.t) (clientv3.Optionⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End Option.
 
-Global Instance bounded_size_Option : BoundedTypeSize clientv3.Option.
-Admitted.
-
-Global Instance into_val_Option `{ffi_syntax} : IntoVal Option.t.
-Admitted.
-
-Global Instance into_val_typed_Option `{ffi_syntax} : IntoValTyped Option.t clientv3.Option.
-Admitted.
-
-(* type clientv3.Member *)
 Module Member.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Member_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.Member.t). Admitted.
+
+#[global] Instance Member_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.Member.t) (clientv3.Memberⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End Member.
 
-Global Instance bounded_size_Member : BoundedTypeSize clientv3.Member.
-Admitted.
-
-Global Instance into_val_Member `{ffi_syntax} : IntoVal Member.t.
-Admitted.
-
-Global Instance into_val_typed_Member `{ffi_syntax} : IntoValTyped Member.t clientv3.Member.
-Admitted.
-
-(* type clientv3.MemberListResponse *)
 Module MemberListResponse.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance MemberListResponse_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.MemberListResponse.t). Admitted.
+
+#[global] Instance MemberListResponse_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.MemberListResponse.t) (clientv3.MemberListResponseⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End MemberListResponse.
 
-Global Instance bounded_size_MemberListResponse : BoundedTypeSize clientv3.MemberListResponse.
-Admitted.
-
-Global Instance into_val_MemberListResponse `{ffi_syntax} : IntoVal MemberListResponse.t.
-Admitted.
-
-Global Instance into_val_typed_MemberListResponse `{ffi_syntax} : IntoValTyped MemberListResponse.t clientv3.MemberListResponse.
-Admitted.
-
-(* type clientv3.MemberAddResponse *)
 Module MemberAddResponse.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance MemberAddResponse_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.MemberAddResponse.t). Admitted.
+
+#[global] Instance MemberAddResponse_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.MemberAddResponse.t) (clientv3.MemberAddResponseⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End MemberAddResponse.
 
-Global Instance bounded_size_MemberAddResponse : BoundedTypeSize clientv3.MemberAddResponse.
-Admitted.
-
-Global Instance into_val_MemberAddResponse `{ffi_syntax} : IntoVal MemberAddResponse.t.
-Admitted.
-
-Global Instance into_val_typed_MemberAddResponse `{ffi_syntax} : IntoValTyped MemberAddResponse.t clientv3.MemberAddResponse.
-Admitted.
-
-(* type clientv3.MemberRemoveResponse *)
 Module MemberRemoveResponse.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance MemberRemoveResponse_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.MemberRemoveResponse.t). Admitted.
+
+#[global] Instance MemberRemoveResponse_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.MemberRemoveResponse.t) (clientv3.MemberRemoveResponseⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End MemberRemoveResponse.
 
-Global Instance bounded_size_MemberRemoveResponse : BoundedTypeSize clientv3.MemberRemoveResponse.
-Admitted.
-
-Global Instance into_val_MemberRemoveResponse `{ffi_syntax} : IntoVal MemberRemoveResponse.t.
-Admitted.
-
-Global Instance into_val_typed_MemberRemoveResponse `{ffi_syntax} : IntoValTyped MemberRemoveResponse.t clientv3.MemberRemoveResponse.
-Admitted.
-
-(* type clientv3.MemberUpdateResponse *)
 Module MemberUpdateResponse.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance MemberUpdateResponse_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.MemberUpdateResponse.t). Admitted.
+
+#[global] Instance MemberUpdateResponse_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.MemberUpdateResponse.t) (clientv3.MemberUpdateResponseⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End MemberUpdateResponse.
 
-Global Instance bounded_size_MemberUpdateResponse : BoundedTypeSize clientv3.MemberUpdateResponse.
-Admitted.
-
-Global Instance into_val_MemberUpdateResponse `{ffi_syntax} : IntoVal MemberUpdateResponse.t.
-Admitted.
-
-Global Instance into_val_typed_MemberUpdateResponse `{ffi_syntax} : IntoValTyped MemberUpdateResponse.t clientv3.MemberUpdateResponse.
-Admitted.
-
-(* type clientv3.MemberPromoteResponse *)
 Module MemberPromoteResponse.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance MemberPromoteResponse_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.MemberPromoteResponse.t). Admitted.
+
+#[global] Instance MemberPromoteResponse_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.MemberPromoteResponse.t) (clientv3.MemberPromoteResponseⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End MemberPromoteResponse.
 
-Global Instance bounded_size_MemberPromoteResponse : BoundedTypeSize clientv3.MemberPromoteResponse.
-Admitted.
-
-Global Instance into_val_MemberPromoteResponse `{ffi_syntax} : IntoVal MemberPromoteResponse.t.
-Admitted.
-
-Global Instance into_val_typed_MemberPromoteResponse `{ffi_syntax} : IntoValTyped MemberPromoteResponse.t clientv3.MemberPromoteResponse.
-Admitted.
-
-(* type clientv3.Cluster *)
-Module Cluster.
-
-#[global] Transparent clientv3.Cluster.
-#[global] Typeclasses Transparent clientv3.Cluster.
-Section def.
-Context `{ffi_syntax}.
-Definition t := interface.t.
-End def.
-End Cluster.
-
-(* type clientv3.cluster *)
 Module cluster.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance cluster_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.cluster.t). Admitted.
+
+#[global] Instance cluster_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.cluster.t) (clientv3.clusterⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End cluster.
 
-Global Instance bounded_size_cluster : BoundedTypeSize clientv3.cluster.
-Admitted.
-
-Global Instance into_val_cluster `{ffi_syntax} : IntoVal cluster.t.
-Admitted.
-
-Global Instance into_val_typed_cluster `{ffi_syntax} : IntoValTyped cluster.t clientv3.cluster.
-Admitted.
-
-(* type clientv3.CompactOp *)
 Module CompactOp.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance CompactOp_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.CompactOp.t). Admitted.
+
+#[global] Instance CompactOp_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.CompactOp.t) (clientv3.CompactOpⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End CompactOp.
 
-Global Instance bounded_size_CompactOp : BoundedTypeSize clientv3.CompactOp.
-Admitted.
-
-Global Instance into_val_CompactOp `{ffi_syntax} : IntoVal CompactOp.t.
-Admitted.
-
-Global Instance into_val_typed_CompactOp `{ffi_syntax} : IntoValTyped CompactOp.t clientv3.CompactOp.
-Admitted.
-
-(* type clientv3.CompactOption *)
 Module CompactOption.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance CompactOption_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.CompactOption.t). Admitted.
+
+#[global] Instance CompactOption_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.CompactOption.t) (clientv3.CompactOptionⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End CompactOption.
 
-Global Instance bounded_size_CompactOption : BoundedTypeSize clientv3.CompactOption.
-Admitted.
-
-Global Instance into_val_CompactOption `{ffi_syntax} : IntoVal CompactOption.t.
-Admitted.
-
-Global Instance into_val_typed_CompactOption `{ffi_syntax} : IntoValTyped CompactOption.t clientv3.CompactOption.
-Admitted.
-
-(* type clientv3.CompareTarget *)
 Module CompareTarget.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance CompareTarget_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.CompareTarget.t). Admitted.
+
+#[global] Instance CompareTarget_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.CompareTarget.t) (clientv3.CompareTargetⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End CompareTarget.
 
-Global Instance bounded_size_CompareTarget : BoundedTypeSize clientv3.CompareTarget.
-Admitted.
-
-Global Instance into_val_CompareTarget `{ffi_syntax} : IntoVal CompareTarget.t.
-Admitted.
-
-Global Instance into_val_typed_CompareTarget `{ffi_syntax} : IntoValTyped CompareTarget.t clientv3.CompareTarget.
-Admitted.
-
-(* type clientv3.CompareResult *)
 Module CompareResult.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance CompareResult_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.CompareResult.t). Admitted.
+
+#[global] Instance CompareResult_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.CompareResult.t) (clientv3.CompareResultⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End CompareResult.
 
-Global Instance bounded_size_CompareResult : BoundedTypeSize clientv3.CompareResult.
-Admitted.
-
-Global Instance into_val_CompareResult `{ffi_syntax} : IntoVal CompareResult.t.
-Admitted.
-
-Global Instance into_val_typed_CompareResult `{ffi_syntax} : IntoValTyped CompareResult.t clientv3.CompareResult.
-Admitted.
-
-(* type clientv3.Cmp *)
-Module Cmp.
-
-#[global] Transparent clientv3.Cmp.
-#[global] Typeclasses Transparent clientv3.Cmp.
-Section def.
-Context `{ffi_syntax}.
-Definition t := etcdserverpb.Compare.t.
-End def.
-End Cmp.
-
-(* type clientv3.Config *)
 Module Config.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Config_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.Config.t). Admitted.
+
+#[global] Instance Config_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.Config.t) (clientv3.Configⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End Config.
 
-Global Instance bounded_size_Config : BoundedTypeSize clientv3.Config.
-Admitted.
-
-Global Instance into_val_Config `{ffi_syntax} : IntoVal Config.t.
-Admitted.
-
-Global Instance into_val_typed_Config `{ffi_syntax} : IntoValTyped Config.t clientv3.Config.
-Admitted.
-
-(* type clientv3.ConfigSpec *)
 Module ConfigSpec.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ConfigSpec_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.ConfigSpec.t). Admitted.
+
+#[global] Instance ConfigSpec_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.ConfigSpec.t) (clientv3.ConfigSpecⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End ConfigSpec.
 
-Global Instance bounded_size_ConfigSpec : BoundedTypeSize clientv3.ConfigSpec.
-Admitted.
-
-Global Instance into_val_ConfigSpec `{ffi_syntax} : IntoVal ConfigSpec.t.
-Admitted.
-
-Global Instance into_val_typed_ConfigSpec `{ffi_syntax} : IntoValTyped ConfigSpec.t clientv3.ConfigSpec.
-Admitted.
-
-(* type clientv3.SecureConfig *)
 Module SecureConfig.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance SecureConfig_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.SecureConfig.t). Admitted.
+
+#[global] Instance SecureConfig_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.SecureConfig.t) (clientv3.SecureConfigⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End SecureConfig.
 
-Global Instance bounded_size_SecureConfig : BoundedTypeSize clientv3.SecureConfig.
-Admitted.
-
-Global Instance into_val_SecureConfig `{ffi_syntax} : IntoVal SecureConfig.t.
-Admitted.
-
-Global Instance into_val_typed_SecureConfig `{ffi_syntax} : IntoValTyped SecureConfig.t clientv3.SecureConfig.
-Admitted.
-
-(* type clientv3.AuthConfig *)
 Module AuthConfig.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance AuthConfig_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.AuthConfig.t). Admitted.
+
+#[global] Instance AuthConfig_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.AuthConfig.t) (clientv3.AuthConfigⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End AuthConfig.
 
-Global Instance bounded_size_AuthConfig : BoundedTypeSize clientv3.AuthConfig.
-Admitted.
-
-Global Instance into_val_AuthConfig `{ffi_syntax} : IntoVal AuthConfig.t.
-Admitted.
-
-Global Instance into_val_typed_AuthConfig `{ffi_syntax} : IntoValTyped AuthConfig.t clientv3.AuthConfig.
-Admitted.
-
-(* type clientv3.CompactResponse *)
 Module CompactResponse.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance CompactResponse_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.CompactResponse.t). Admitted.
+
+#[global] Instance CompactResponse_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.CompactResponse.t) (clientv3.CompactResponseⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End CompactResponse.
 
-Global Instance bounded_size_CompactResponse : BoundedTypeSize clientv3.CompactResponse.
-Admitted.
-
-Global Instance into_val_CompactResponse `{ffi_syntax} : IntoVal CompactResponse.t.
-Admitted.
-
-Global Instance into_val_typed_CompactResponse `{ffi_syntax} : IntoValTyped CompactResponse.t clientv3.CompactResponse.
-Admitted.
-
-(* type clientv3.PutResponse *)
-Module PutResponse.
-
-#[global] Transparent clientv3.PutResponse.
-#[global] Typeclasses Transparent clientv3.PutResponse.
-Section def.
-Context `{ffi_syntax}.
-Definition t := etcdserverpb.PutResponse.t.
-End def.
-End PutResponse.
-
-(* type clientv3.GetResponse *)
-Module GetResponse.
-
-#[global] Transparent clientv3.GetResponse.
-#[global] Typeclasses Transparent clientv3.GetResponse.
-Section def.
-Context `{ffi_syntax}.
-Definition t := etcdserverpb.RangeResponse.t.
-End def.
-End GetResponse.
-
-(* type clientv3.DeleteResponse *)
-Module DeleteResponse.
-
-#[global] Transparent clientv3.DeleteResponse.
-#[global] Typeclasses Transparent clientv3.DeleteResponse.
-Section def.
-Context `{ffi_syntax}.
-Definition t := etcdserverpb.DeleteRangeResponse.t.
-End def.
-End DeleteResponse.
-
-(* type clientv3.TxnResponse *)
-Module TxnResponse.
-
-#[global] Transparent clientv3.TxnResponse.
-#[global] Typeclasses Transparent clientv3.TxnResponse.
-Section def.
-Context `{ffi_syntax}.
-Definition t := etcdserverpb.TxnResponse.t.
-End def.
-End TxnResponse.
-
-(* type clientv3.KV *)
-Module KV.
-
-#[global] Transparent clientv3.KV.
-#[global] Typeclasses Transparent clientv3.KV.
-Section def.
-Context `{ffi_syntax}.
-Definition t := interface.t.
-End def.
-End KV.
-
-(* type clientv3.OpResponse *)
 Module OpResponse.
 Section def.
-Context `{ffi_syntax}.
 
-Record t := mk {
-  put' : loc;
-  get' : loc;
-  del' : loc;
-  txn' : loc;
-}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance OpResponse_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.OpResponse.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "put" ∷ l.[(clientv3.OpResponse.t), "put"] ↦{dq} v.(clientv3.OpResponse.put') ∗
+      "get" ∷ l.[(clientv3.OpResponse.t), "get"] ↦{dq} v.(clientv3.OpResponse.get') ∗
+      "del" ∷ l.[(clientv3.OpResponse.t), "del"] ↦{dq} v.(clientv3.OpResponse.del') ∗
+      "txn" ∷ l.[(clientv3.OpResponse.t), "txn"] ↦{dq} v.(clientv3.OpResponse.txn') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance OpResponse_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.OpResponse.t) (clientv3.OpResponseⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance OpResponse_access_load_put l (v : (clientv3.OpResponse.t)) dq :
+  AccessStrict
+    (l.[(clientv3.OpResponse.t), "put"] ↦{dq} (v.(clientv3.OpResponse.put')))
+    (l.[(clientv3.OpResponse.t), "put"] ↦{dq} (v.(clientv3.OpResponse.put')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance OpResponse_access_store_put l (v : (clientv3.OpResponse.t)) put' :
+  AccessStrict
+    (l.[(clientv3.OpResponse.t), "put"] ↦ (v.(clientv3.OpResponse.put')))
+    (l.[(clientv3.OpResponse.t), "put"] ↦ put')
+    (l ↦ v) (l ↦ (v <|(clientv3.OpResponse.put') := put'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance OpResponse_access_load_get l (v : (clientv3.OpResponse.t)) dq :
+  AccessStrict
+    (l.[(clientv3.OpResponse.t), "get"] ↦{dq} (v.(clientv3.OpResponse.get')))
+    (l.[(clientv3.OpResponse.t), "get"] ↦{dq} (v.(clientv3.OpResponse.get')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance OpResponse_access_store_get l (v : (clientv3.OpResponse.t)) get' :
+  AccessStrict
+    (l.[(clientv3.OpResponse.t), "get"] ↦ (v.(clientv3.OpResponse.get')))
+    (l.[(clientv3.OpResponse.t), "get"] ↦ get')
+    (l ↦ v) (l ↦ (v <|(clientv3.OpResponse.get') := get'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance OpResponse_access_load_del l (v : (clientv3.OpResponse.t)) dq :
+  AccessStrict
+    (l.[(clientv3.OpResponse.t), "del"] ↦{dq} (v.(clientv3.OpResponse.del')))
+    (l.[(clientv3.OpResponse.t), "del"] ↦{dq} (v.(clientv3.OpResponse.del')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance OpResponse_access_store_del l (v : (clientv3.OpResponse.t)) del' :
+  AccessStrict
+    (l.[(clientv3.OpResponse.t), "del"] ↦ (v.(clientv3.OpResponse.del')))
+    (l.[(clientv3.OpResponse.t), "del"] ↦ del')
+    (l ↦ v) (l ↦ (v <|(clientv3.OpResponse.del') := del'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance OpResponse_access_load_txn l (v : (clientv3.OpResponse.t)) dq :
+  AccessStrict
+    (l.[(clientv3.OpResponse.t), "txn"] ↦{dq} (v.(clientv3.OpResponse.txn')))
+    (l.[(clientv3.OpResponse.t), "txn"] ↦{dq} (v.(clientv3.OpResponse.txn')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance OpResponse_access_store_txn l (v : (clientv3.OpResponse.t)) txn' :
+  AccessStrict
+    (l.[(clientv3.OpResponse.t), "txn"] ↦ (v.(clientv3.OpResponse.txn')))
+    (l.[(clientv3.OpResponse.t), "txn"] ↦ txn')
+    (l ↦ v) (l ↦ (v <|(clientv3.OpResponse.txn') := txn'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End OpResponse.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent clientv3.OpResponse.
-#[local] Typeclasses Transparent clientv3.OpResponse.
-
-Global Instance OpResponse_wf : struct.Wf clientv3.OpResponse.
-Proof. apply _. Qed.
-
-Global Instance settable_OpResponse : Settable OpResponse.t :=
-  settable! OpResponse.mk < OpResponse.put'; OpResponse.get'; OpResponse.del'; OpResponse.txn' >.
-Global Instance into_val_OpResponse : IntoVal OpResponse.t :=
-  {| to_val_def v :=
-    struct.val_aux clientv3.OpResponse [
-    "put" ::= #(OpResponse.put' v);
-    "get" ::= #(OpResponse.get' v);
-    "del" ::= #(OpResponse.del' v);
-    "txn" ::= #(OpResponse.txn' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_OpResponse : IntoValTyped OpResponse.t clientv3.OpResponse :=
-{|
-  default_val := OpResponse.mk (default_val _) (default_val _) (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_OpResponse_put : IntoValStructField "put" clientv3.OpResponse OpResponse.put'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_OpResponse_get : IntoValStructField "get" clientv3.OpResponse OpResponse.get'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_OpResponse_del : IntoValStructField "del" clientv3.OpResponse OpResponse.del'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_OpResponse_txn : IntoValStructField "txn" clientv3.OpResponse OpResponse.txn'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-
-
-Global Instance OpResponse_struct_fields_split dq l (v : OpResponse.t) :
-  StructFieldsSplit dq l v (
-    "Hput" ∷ l ↦s[clientv3.OpResponse :: "put"]{dq} v.(OpResponse.put') ∗
-    "Hget" ∷ l ↦s[clientv3.OpResponse :: "get"]{dq} v.(OpResponse.get') ∗
-    "Hdel" ∷ l ↦s[clientv3.OpResponse :: "del"]{dq} v.(OpResponse.del') ∗
-    "Htxn" ∷ l ↦s[clientv3.OpResponse :: "txn"]{dq} v.(OpResponse.txn')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (OpResponse.put' v)) (clientv3.OpResponse) "put"%go.
-  simpl_one_flatten_struct (# (OpResponse.get' v)) (clientv3.OpResponse) "get"%go.
-  simpl_one_flatten_struct (# (OpResponse.del' v)) (clientv3.OpResponse) "del"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-(* type clientv3.kv *)
 Module kv.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance kv_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.kv.t). Admitted.
+
+#[global] Instance kv_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.kv.t) (clientv3.kvⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End kv.
 
-Global Instance bounded_size_kv : BoundedTypeSize clientv3.kv.
-Admitted.
-
-Global Instance into_val_kv `{ffi_syntax} : IntoVal kv.t.
-Admitted.
-
-Global Instance into_val_typed_kv `{ffi_syntax} : IntoValTyped kv.t clientv3.kv.
-Admitted.
-
-(* type clientv3.LeaseRevokeResponse *)
 Module LeaseRevokeResponse.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance LeaseRevokeResponse_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.LeaseRevokeResponse.t). Admitted.
+
+#[global] Instance LeaseRevokeResponse_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.LeaseRevokeResponse.t) (clientv3.LeaseRevokeResponseⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End LeaseRevokeResponse.
 
-Global Instance bounded_size_LeaseRevokeResponse : BoundedTypeSize clientv3.LeaseRevokeResponse.
-Admitted.
-
-Global Instance into_val_LeaseRevokeResponse `{ffi_syntax} : IntoVal LeaseRevokeResponse.t.
-Admitted.
-
-Global Instance into_val_typed_LeaseRevokeResponse `{ffi_syntax} : IntoValTyped LeaseRevokeResponse.t clientv3.LeaseRevokeResponse.
-Admitted.
-
-(* type clientv3.LeaseID *)
-Module LeaseID.
-
-#[global] Transparent clientv3.LeaseID.
-#[global] Typeclasses Transparent clientv3.LeaseID.
-Section def.
-Context `{ffi_syntax}.
-Definition t := w64.
-End def.
-End LeaseID.
-
-(* type clientv3.LeaseGrantResponse *)
 Module LeaseGrantResponse.
 Section def.
-Context `{ffi_syntax}.
 
-Record t := mk {
-  ResponseHeader' : loc;
-  ID' : LeaseID.t;
-  TTL' : w64;
-  Error' : go_string;
-}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance LeaseGrantResponse_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.LeaseGrantResponse.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "ResponseHeader" ∷ l.[(clientv3.LeaseGrantResponse.t), "ResponseHeader"] ↦{dq} v.(clientv3.LeaseGrantResponse.ResponseHeader') ∗
+      "ID" ∷ l.[(clientv3.LeaseGrantResponse.t), "ID"] ↦{dq} v.(clientv3.LeaseGrantResponse.ID') ∗
+      "TTL" ∷ l.[(clientv3.LeaseGrantResponse.t), "TTL"] ↦{dq} v.(clientv3.LeaseGrantResponse.TTL') ∗
+      "Error" ∷ l.[(clientv3.LeaseGrantResponse.t), "Error"] ↦{dq} v.(clientv3.LeaseGrantResponse.Error') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance LeaseGrantResponse_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.LeaseGrantResponse.t) (clientv3.LeaseGrantResponseⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance LeaseGrantResponse_access_load_ResponseHeader l (v : (clientv3.LeaseGrantResponse.t)) dq :
+  AccessStrict
+    (l.[(clientv3.LeaseGrantResponse.t), "ResponseHeader"] ↦{dq} (v.(clientv3.LeaseGrantResponse.ResponseHeader')))
+    (l.[(clientv3.LeaseGrantResponse.t), "ResponseHeader"] ↦{dq} (v.(clientv3.LeaseGrantResponse.ResponseHeader')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance LeaseGrantResponse_access_store_ResponseHeader l (v : (clientv3.LeaseGrantResponse.t)) ResponseHeader' :
+  AccessStrict
+    (l.[(clientv3.LeaseGrantResponse.t), "ResponseHeader"] ↦ (v.(clientv3.LeaseGrantResponse.ResponseHeader')))
+    (l.[(clientv3.LeaseGrantResponse.t), "ResponseHeader"] ↦ ResponseHeader')
+    (l ↦ v) (l ↦ (v <|(clientv3.LeaseGrantResponse.ResponseHeader') := ResponseHeader'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance LeaseGrantResponse_access_load_ID l (v : (clientv3.LeaseGrantResponse.t)) dq :
+  AccessStrict
+    (l.[(clientv3.LeaseGrantResponse.t), "ID"] ↦{dq} (v.(clientv3.LeaseGrantResponse.ID')))
+    (l.[(clientv3.LeaseGrantResponse.t), "ID"] ↦{dq} (v.(clientv3.LeaseGrantResponse.ID')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance LeaseGrantResponse_access_store_ID l (v : (clientv3.LeaseGrantResponse.t)) ID' :
+  AccessStrict
+    (l.[(clientv3.LeaseGrantResponse.t), "ID"] ↦ (v.(clientv3.LeaseGrantResponse.ID')))
+    (l.[(clientv3.LeaseGrantResponse.t), "ID"] ↦ ID')
+    (l ↦ v) (l ↦ (v <|(clientv3.LeaseGrantResponse.ID') := ID'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance LeaseGrantResponse_access_load_TTL l (v : (clientv3.LeaseGrantResponse.t)) dq :
+  AccessStrict
+    (l.[(clientv3.LeaseGrantResponse.t), "TTL"] ↦{dq} (v.(clientv3.LeaseGrantResponse.TTL')))
+    (l.[(clientv3.LeaseGrantResponse.t), "TTL"] ↦{dq} (v.(clientv3.LeaseGrantResponse.TTL')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance LeaseGrantResponse_access_store_TTL l (v : (clientv3.LeaseGrantResponse.t)) TTL' :
+  AccessStrict
+    (l.[(clientv3.LeaseGrantResponse.t), "TTL"] ↦ (v.(clientv3.LeaseGrantResponse.TTL')))
+    (l.[(clientv3.LeaseGrantResponse.t), "TTL"] ↦ TTL')
+    (l ↦ v) (l ↦ (v <|(clientv3.LeaseGrantResponse.TTL') := TTL'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance LeaseGrantResponse_access_load_Error l (v : (clientv3.LeaseGrantResponse.t)) dq :
+  AccessStrict
+    (l.[(clientv3.LeaseGrantResponse.t), "Error"] ↦{dq} (v.(clientv3.LeaseGrantResponse.Error')))
+    (l.[(clientv3.LeaseGrantResponse.t), "Error"] ↦{dq} (v.(clientv3.LeaseGrantResponse.Error')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance LeaseGrantResponse_access_store_Error l (v : (clientv3.LeaseGrantResponse.t)) Error' :
+  AccessStrict
+    (l.[(clientv3.LeaseGrantResponse.t), "Error"] ↦ (v.(clientv3.LeaseGrantResponse.Error')))
+    (l.[(clientv3.LeaseGrantResponse.t), "Error"] ↦ Error')
+    (l ↦ v) (l ↦ (v <|(clientv3.LeaseGrantResponse.Error') := Error'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End LeaseGrantResponse.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent clientv3.LeaseGrantResponse.
-#[local] Typeclasses Transparent clientv3.LeaseGrantResponse.
-
-Global Instance LeaseGrantResponse_wf : struct.Wf clientv3.LeaseGrantResponse.
-Proof. apply _. Qed.
-
-Global Instance settable_LeaseGrantResponse : Settable LeaseGrantResponse.t :=
-  settable! LeaseGrantResponse.mk < LeaseGrantResponse.ResponseHeader'; LeaseGrantResponse.ID'; LeaseGrantResponse.TTL'; LeaseGrantResponse.Error' >.
-Global Instance into_val_LeaseGrantResponse : IntoVal LeaseGrantResponse.t :=
-  {| to_val_def v :=
-    struct.val_aux clientv3.LeaseGrantResponse [
-    "ResponseHeader" ::= #(LeaseGrantResponse.ResponseHeader' v);
-    "ID" ::= #(LeaseGrantResponse.ID' v);
-    "TTL" ::= #(LeaseGrantResponse.TTL' v);
-    "Error" ::= #(LeaseGrantResponse.Error' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_LeaseGrantResponse : IntoValTyped LeaseGrantResponse.t clientv3.LeaseGrantResponse :=
-{|
-  default_val := LeaseGrantResponse.mk (default_val _) (default_val _) (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_LeaseGrantResponse_ResponseHeader : IntoValStructField "ResponseHeader" clientv3.LeaseGrantResponse LeaseGrantResponse.ResponseHeader'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_LeaseGrantResponse_ID : IntoValStructField "ID" clientv3.LeaseGrantResponse LeaseGrantResponse.ID'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_LeaseGrantResponse_TTL : IntoValStructField "TTL" clientv3.LeaseGrantResponse LeaseGrantResponse.TTL'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_LeaseGrantResponse_Error : IntoValStructField "Error" clientv3.LeaseGrantResponse LeaseGrantResponse.Error'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-
-
-Global Instance LeaseGrantResponse_struct_fields_split dq l (v : LeaseGrantResponse.t) :
-  StructFieldsSplit dq l v (
-    "HResponseHeader" ∷ l ↦s[clientv3.LeaseGrantResponse :: "ResponseHeader"]{dq} v.(LeaseGrantResponse.ResponseHeader') ∗
-    "HID" ∷ l ↦s[clientv3.LeaseGrantResponse :: "ID"]{dq} v.(LeaseGrantResponse.ID') ∗
-    "HTTL" ∷ l ↦s[clientv3.LeaseGrantResponse :: "TTL"]{dq} v.(LeaseGrantResponse.TTL') ∗
-    "HError" ∷ l ↦s[clientv3.LeaseGrantResponse :: "Error"]{dq} v.(LeaseGrantResponse.Error')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (LeaseGrantResponse.ResponseHeader' v)) (clientv3.LeaseGrantResponse) "ResponseHeader"%go.
-  simpl_one_flatten_struct (# (LeaseGrantResponse.ID' v)) (clientv3.LeaseGrantResponse) "ID"%go.
-  simpl_one_flatten_struct (# (LeaseGrantResponse.TTL' v)) (clientv3.LeaseGrantResponse) "TTL"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-(* type clientv3.LeaseKeepAliveResponse *)
 Module LeaseKeepAliveResponse.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance LeaseKeepAliveResponse_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.LeaseKeepAliveResponse.t). Admitted.
+
+#[global] Instance LeaseKeepAliveResponse_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.LeaseKeepAliveResponse.t) (clientv3.LeaseKeepAliveResponseⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End LeaseKeepAliveResponse.
 
-Global Instance bounded_size_LeaseKeepAliveResponse : BoundedTypeSize clientv3.LeaseKeepAliveResponse.
-Admitted.
-
-Global Instance into_val_LeaseKeepAliveResponse `{ffi_syntax} : IntoVal LeaseKeepAliveResponse.t.
-Admitted.
-
-Global Instance into_val_typed_LeaseKeepAliveResponse `{ffi_syntax} : IntoValTyped LeaseKeepAliveResponse.t clientv3.LeaseKeepAliveResponse.
-Admitted.
-
-(* type clientv3.LeaseTimeToLiveResponse *)
 Module LeaseTimeToLiveResponse.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance LeaseTimeToLiveResponse_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.LeaseTimeToLiveResponse.t). Admitted.
+
+#[global] Instance LeaseTimeToLiveResponse_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.LeaseTimeToLiveResponse.t) (clientv3.LeaseTimeToLiveResponseⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End LeaseTimeToLiveResponse.
 
-Global Instance bounded_size_LeaseTimeToLiveResponse : BoundedTypeSize clientv3.LeaseTimeToLiveResponse.
-Admitted.
-
-Global Instance into_val_LeaseTimeToLiveResponse `{ffi_syntax} : IntoVal LeaseTimeToLiveResponse.t.
-Admitted.
-
-Global Instance into_val_typed_LeaseTimeToLiveResponse `{ffi_syntax} : IntoValTyped LeaseTimeToLiveResponse.t clientv3.LeaseTimeToLiveResponse.
-Admitted.
-
-(* type clientv3.LeaseStatus *)
 Module LeaseStatus.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance LeaseStatus_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.LeaseStatus.t). Admitted.
+
+#[global] Instance LeaseStatus_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.LeaseStatus.t) (clientv3.LeaseStatusⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End LeaseStatus.
 
-Global Instance bounded_size_LeaseStatus : BoundedTypeSize clientv3.LeaseStatus.
-Admitted.
-
-Global Instance into_val_LeaseStatus `{ffi_syntax} : IntoVal LeaseStatus.t.
-Admitted.
-
-Global Instance into_val_typed_LeaseStatus `{ffi_syntax} : IntoValTyped LeaseStatus.t clientv3.LeaseStatus.
-Admitted.
-
-(* type clientv3.LeaseLeasesResponse *)
 Module LeaseLeasesResponse.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance LeaseLeasesResponse_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.LeaseLeasesResponse.t). Admitted.
+
+#[global] Instance LeaseLeasesResponse_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.LeaseLeasesResponse.t) (clientv3.LeaseLeasesResponseⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End LeaseLeasesResponse.
 
-Global Instance bounded_size_LeaseLeasesResponse : BoundedTypeSize clientv3.LeaseLeasesResponse.
-Admitted.
-
-Global Instance into_val_LeaseLeasesResponse `{ffi_syntax} : IntoVal LeaseLeasesResponse.t.
-Admitted.
-
-Global Instance into_val_typed_LeaseLeasesResponse `{ffi_syntax} : IntoValTyped LeaseLeasesResponse.t clientv3.LeaseLeasesResponse.
-Admitted.
-
-(* type clientv3.ErrKeepAliveHalted *)
 Module ErrKeepAliveHalted.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ErrKeepAliveHalted_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.ErrKeepAliveHalted.t). Admitted.
+
+#[global] Instance ErrKeepAliveHalted_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.ErrKeepAliveHalted.t) (clientv3.ErrKeepAliveHaltedⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End ErrKeepAliveHalted.
 
-Global Instance bounded_size_ErrKeepAliveHalted : BoundedTypeSize clientv3.ErrKeepAliveHalted.
-Admitted.
-
-Global Instance into_val_ErrKeepAliveHalted `{ffi_syntax} : IntoVal ErrKeepAliveHalted.t.
-Admitted.
-
-Global Instance into_val_typed_ErrKeepAliveHalted `{ffi_syntax} : IntoValTyped ErrKeepAliveHalted.t clientv3.ErrKeepAliveHalted.
-Admitted.
-
-(* type clientv3.Lease *)
-Module Lease.
-
-#[global] Transparent clientv3.Lease.
-#[global] Typeclasses Transparent clientv3.Lease.
-Section def.
-Context `{ffi_syntax}.
-Definition t := interface.t.
-End def.
-End Lease.
-
-(* type clientv3.lessor *)
 Module lessor.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance lessor_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.lessor.t). Admitted.
+
+#[global] Instance lessor_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.lessor.t) (clientv3.lessorⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End lessor.
 
-Global Instance bounded_size_lessor : BoundedTypeSize clientv3.lessor.
-Admitted.
-
-Global Instance into_val_lessor `{ffi_syntax} : IntoVal lessor.t.
-Admitted.
-
-Global Instance into_val_typed_lessor `{ffi_syntax} : IntoValTyped lessor.t clientv3.lessor.
-Admitted.
-
-(* type clientv3.keepAlive *)
 Module keepAlive.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance keepAlive_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.keepAlive.t). Admitted.
+
+#[global] Instance keepAlive_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.keepAlive.t) (clientv3.keepAliveⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End keepAlive.
 
-Global Instance bounded_size_keepAlive : BoundedTypeSize clientv3.keepAlive.
-Admitted.
-
-Global Instance into_val_keepAlive `{ffi_syntax} : IntoVal keepAlive.t.
-Admitted.
-
-Global Instance into_val_typed_keepAlive `{ffi_syntax} : IntoValTyped keepAlive.t clientv3.keepAlive.
-Admitted.
-
-(* type clientv3.keepAliveCtxKey *)
 Module keepAliveCtxKey.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance keepAliveCtxKey_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.keepAliveCtxKey.t). Admitted.
+
+#[global] Instance keepAliveCtxKey_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.keepAliveCtxKey.t) (clientv3.keepAliveCtxKeyⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End keepAliveCtxKey.
 
-Global Instance bounded_size_keepAliveCtxKey : BoundedTypeSize clientv3.keepAliveCtxKey.
-Admitted.
-
-Global Instance into_val_keepAliveCtxKey `{ffi_syntax} : IntoVal keepAliveCtxKey.t.
-Admitted.
-
-Global Instance into_val_typed_keepAliveCtxKey `{ffi_syntax} : IntoValTyped keepAliveCtxKey.t clientv3.keepAliveCtxKey.
-Admitted.
-
-(* type clientv3.DefragmentResponse *)
 Module DefragmentResponse.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance DefragmentResponse_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.DefragmentResponse.t). Admitted.
+
+#[global] Instance DefragmentResponse_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.DefragmentResponse.t) (clientv3.DefragmentResponseⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End DefragmentResponse.
 
-Global Instance bounded_size_DefragmentResponse : BoundedTypeSize clientv3.DefragmentResponse.
-Admitted.
-
-Global Instance into_val_DefragmentResponse `{ffi_syntax} : IntoVal DefragmentResponse.t.
-Admitted.
-
-Global Instance into_val_typed_DefragmentResponse `{ffi_syntax} : IntoValTyped DefragmentResponse.t clientv3.DefragmentResponse.
-Admitted.
-
-(* type clientv3.AlarmResponse *)
 Module AlarmResponse.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance AlarmResponse_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.AlarmResponse.t). Admitted.
+
+#[global] Instance AlarmResponse_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.AlarmResponse.t) (clientv3.AlarmResponseⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End AlarmResponse.
 
-Global Instance bounded_size_AlarmResponse : BoundedTypeSize clientv3.AlarmResponse.
-Admitted.
-
-Global Instance into_val_AlarmResponse `{ffi_syntax} : IntoVal AlarmResponse.t.
-Admitted.
-
-Global Instance into_val_typed_AlarmResponse `{ffi_syntax} : IntoValTyped AlarmResponse.t clientv3.AlarmResponse.
-Admitted.
-
-(* type clientv3.AlarmMember *)
 Module AlarmMember.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance AlarmMember_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.AlarmMember.t). Admitted.
+
+#[global] Instance AlarmMember_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.AlarmMember.t) (clientv3.AlarmMemberⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End AlarmMember.
 
-Global Instance bounded_size_AlarmMember : BoundedTypeSize clientv3.AlarmMember.
-Admitted.
-
-Global Instance into_val_AlarmMember `{ffi_syntax} : IntoVal AlarmMember.t.
-Admitted.
-
-Global Instance into_val_typed_AlarmMember `{ffi_syntax} : IntoValTyped AlarmMember.t clientv3.AlarmMember.
-Admitted.
-
-(* type clientv3.StatusResponse *)
 Module StatusResponse.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance StatusResponse_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.StatusResponse.t). Admitted.
+
+#[global] Instance StatusResponse_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.StatusResponse.t) (clientv3.StatusResponseⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End StatusResponse.
 
-Global Instance bounded_size_StatusResponse : BoundedTypeSize clientv3.StatusResponse.
-Admitted.
-
-Global Instance into_val_StatusResponse `{ffi_syntax} : IntoVal StatusResponse.t.
-Admitted.
-
-Global Instance into_val_typed_StatusResponse `{ffi_syntax} : IntoValTyped StatusResponse.t clientv3.StatusResponse.
-Admitted.
-
-(* type clientv3.HashKVResponse *)
 Module HashKVResponse.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance HashKVResponse_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.HashKVResponse.t). Admitted.
+
+#[global] Instance HashKVResponse_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.HashKVResponse.t) (clientv3.HashKVResponseⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End HashKVResponse.
 
-Global Instance bounded_size_HashKVResponse : BoundedTypeSize clientv3.HashKVResponse.
-Admitted.
-
-Global Instance into_val_HashKVResponse `{ffi_syntax} : IntoVal HashKVResponse.t.
-Admitted.
-
-Global Instance into_val_typed_HashKVResponse `{ffi_syntax} : IntoValTyped HashKVResponse.t clientv3.HashKVResponse.
-Admitted.
-
-(* type clientv3.MoveLeaderResponse *)
 Module MoveLeaderResponse.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance MoveLeaderResponse_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.MoveLeaderResponse.t). Admitted.
+
+#[global] Instance MoveLeaderResponse_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.MoveLeaderResponse.t) (clientv3.MoveLeaderResponseⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End MoveLeaderResponse.
 
-Global Instance bounded_size_MoveLeaderResponse : BoundedTypeSize clientv3.MoveLeaderResponse.
-Admitted.
-
-Global Instance into_val_MoveLeaderResponse `{ffi_syntax} : IntoVal MoveLeaderResponse.t.
-Admitted.
-
-Global Instance into_val_typed_MoveLeaderResponse `{ffi_syntax} : IntoValTyped MoveLeaderResponse.t clientv3.MoveLeaderResponse.
-Admitted.
-
-(* type clientv3.DowngradeResponse *)
 Module DowngradeResponse.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance DowngradeResponse_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.DowngradeResponse.t). Admitted.
+
+#[global] Instance DowngradeResponse_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.DowngradeResponse.t) (clientv3.DowngradeResponseⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End DowngradeResponse.
 
-Global Instance bounded_size_DowngradeResponse : BoundedTypeSize clientv3.DowngradeResponse.
-Admitted.
-
-Global Instance into_val_DowngradeResponse `{ffi_syntax} : IntoVal DowngradeResponse.t.
-Admitted.
-
-Global Instance into_val_typed_DowngradeResponse `{ffi_syntax} : IntoValTyped DowngradeResponse.t clientv3.DowngradeResponse.
-Admitted.
-
-(* type clientv3.DowngradeAction *)
 Module DowngradeAction.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance DowngradeAction_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.DowngradeAction.t). Admitted.
+
+#[global] Instance DowngradeAction_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.DowngradeAction.t) (clientv3.DowngradeActionⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End DowngradeAction.
 
-Global Instance bounded_size_DowngradeAction : BoundedTypeSize clientv3.DowngradeAction.
-Admitted.
-
-Global Instance into_val_DowngradeAction `{ffi_syntax} : IntoVal DowngradeAction.t.
-Admitted.
-
-Global Instance into_val_typed_DowngradeAction `{ffi_syntax} : IntoValTyped DowngradeAction.t clientv3.DowngradeAction.
-Admitted.
-
-(* type clientv3.Maintenance *)
 Module Maintenance.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Maintenance_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.Maintenance.t). Admitted.
+
+#[global] Instance Maintenance_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.Maintenance.t) (clientv3.Maintenanceⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End Maintenance.
 
-Global Instance bounded_size_Maintenance : BoundedTypeSize clientv3.Maintenance.
-Admitted.
-
-Global Instance into_val_Maintenance `{ffi_syntax} : IntoVal Maintenance.t.
-Admitted.
-
-Global Instance into_val_typed_Maintenance `{ffi_syntax} : IntoValTyped Maintenance.t clientv3.Maintenance.
-Admitted.
-
-(* type clientv3.SnapshotResponse *)
 Module SnapshotResponse.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance SnapshotResponse_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.SnapshotResponse.t). Admitted.
+
+#[global] Instance SnapshotResponse_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.SnapshotResponse.t) (clientv3.SnapshotResponseⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End SnapshotResponse.
 
-Global Instance bounded_size_SnapshotResponse : BoundedTypeSize clientv3.SnapshotResponse.
-Admitted.
-
-Global Instance into_val_SnapshotResponse `{ffi_syntax} : IntoVal SnapshotResponse.t.
-Admitted.
-
-Global Instance into_val_typed_SnapshotResponse `{ffi_syntax} : IntoValTyped SnapshotResponse.t clientv3.SnapshotResponse.
-Admitted.
-
-(* type clientv3.maintenance *)
 Module maintenance.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance maintenance_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.maintenance.t). Admitted.
+
+#[global] Instance maintenance_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.maintenance.t) (clientv3.maintenanceⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End maintenance.
 
-Global Instance bounded_size_maintenance : BoundedTypeSize clientv3.maintenance.
-Admitted.
-
-Global Instance into_val_maintenance `{ffi_syntax} : IntoVal maintenance.t.
-Admitted.
-
-Global Instance into_val_typed_maintenance `{ffi_syntax} : IntoValTyped maintenance.t clientv3.maintenance.
-Admitted.
-
-(* type clientv3.snapshotReadCloser *)
 Module snapshotReadCloser.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance snapshotReadCloser_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.snapshotReadCloser.t). Admitted.
+
+#[global] Instance snapshotReadCloser_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.snapshotReadCloser.t) (clientv3.snapshotReadCloserⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End snapshotReadCloser.
 
-Global Instance bounded_size_snapshotReadCloser : BoundedTypeSize clientv3.snapshotReadCloser.
-Admitted.
-
-Global Instance into_val_snapshotReadCloser `{ffi_syntax} : IntoVal snapshotReadCloser.t.
-Admitted.
-
-Global Instance into_val_typed_snapshotReadCloser `{ffi_syntax} : IntoValTyped snapshotReadCloser.t clientv3.snapshotReadCloser.
-Admitted.
-
-(* type clientv3.opType *)
-Module opType.
-
-#[global] Transparent clientv3.opType.
-#[global] Typeclasses Transparent clientv3.opType.
-Section def.
-Context `{ffi_syntax}.
-Definition t := w64.
-End def.
-End opType.
-
-(* type clientv3.Op *)
 Module Op.
 Section def.
-Context `{ffi_syntax}.
 
-Record t := mk {
-  t' : opType.t;
-  key' : slice.t;
-  end' : slice.t;
-  limit' : w64;
-  sort' : loc;
-  serializable' : bool;
-  keysOnly' : bool;
-  countOnly' : bool;
-  minModRev' : w64;
-  maxModRev' : w64;
-  minCreateRev' : w64;
-  maxCreateRev' : w64;
-  rev' : w64;
-  prevKV' : bool;
-  fragment' : bool;
-  ignoreValue' : bool;
-  ignoreLease' : bool;
-  progressNotify' : bool;
-  createdNotify' : bool;
-  filterPut' : bool;
-  filterDelete' : bool;
-  val' : slice.t;
-  leaseID' : LeaseID.t;
-  cmps' : slice.t;
-  thenOps' : slice.t;
-  elseOps' : slice.t;
-  isOptsWithFromKey' : bool;
-  isOptsWithPrefix' : bool;
-}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance Op_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.Op.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "t" ∷ l.[(clientv3.Op.t), "t"] ↦{dq} v.(clientv3.Op.t') ∗
+      "key" ∷ l.[(clientv3.Op.t), "key"] ↦{dq} v.(clientv3.Op.key') ∗
+      "end" ∷ l.[(clientv3.Op.t), "end"] ↦{dq} v.(clientv3.Op.end') ∗
+      "limit" ∷ l.[(clientv3.Op.t), "limit"] ↦{dq} v.(clientv3.Op.limit') ∗
+      "sort" ∷ l.[(clientv3.Op.t), "sort"] ↦{dq} v.(clientv3.Op.sort') ∗
+      "serializable" ∷ l.[(clientv3.Op.t), "serializable"] ↦{dq} v.(clientv3.Op.serializable') ∗
+      "keysOnly" ∷ l.[(clientv3.Op.t), "keysOnly"] ↦{dq} v.(clientv3.Op.keysOnly') ∗
+      "countOnly" ∷ l.[(clientv3.Op.t), "countOnly"] ↦{dq} v.(clientv3.Op.countOnly') ∗
+      "minModRev" ∷ l.[(clientv3.Op.t), "minModRev"] ↦{dq} v.(clientv3.Op.minModRev') ∗
+      "maxModRev" ∷ l.[(clientv3.Op.t), "maxModRev"] ↦{dq} v.(clientv3.Op.maxModRev') ∗
+      "minCreateRev" ∷ l.[(clientv3.Op.t), "minCreateRev"] ↦{dq} v.(clientv3.Op.minCreateRev') ∗
+      "maxCreateRev" ∷ l.[(clientv3.Op.t), "maxCreateRev"] ↦{dq} v.(clientv3.Op.maxCreateRev') ∗
+      "rev" ∷ l.[(clientv3.Op.t), "rev"] ↦{dq} v.(clientv3.Op.rev') ∗
+      "prevKV" ∷ l.[(clientv3.Op.t), "prevKV"] ↦{dq} v.(clientv3.Op.prevKV') ∗
+      "fragment" ∷ l.[(clientv3.Op.t), "fragment"] ↦{dq} v.(clientv3.Op.fragment') ∗
+      "ignoreValue" ∷ l.[(clientv3.Op.t), "ignoreValue"] ↦{dq} v.(clientv3.Op.ignoreValue') ∗
+      "ignoreLease" ∷ l.[(clientv3.Op.t), "ignoreLease"] ↦{dq} v.(clientv3.Op.ignoreLease') ∗
+      "progressNotify" ∷ l.[(clientv3.Op.t), "progressNotify"] ↦{dq} v.(clientv3.Op.progressNotify') ∗
+      "createdNotify" ∷ l.[(clientv3.Op.t), "createdNotify"] ↦{dq} v.(clientv3.Op.createdNotify') ∗
+      "filterPut" ∷ l.[(clientv3.Op.t), "filterPut"] ↦{dq} v.(clientv3.Op.filterPut') ∗
+      "filterDelete" ∷ l.[(clientv3.Op.t), "filterDelete"] ↦{dq} v.(clientv3.Op.filterDelete') ∗
+      "val" ∷ l.[(clientv3.Op.t), "val"] ↦{dq} v.(clientv3.Op.val') ∗
+      "leaseID" ∷ l.[(clientv3.Op.t), "leaseID"] ↦{dq} v.(clientv3.Op.leaseID') ∗
+      "cmps" ∷ l.[(clientv3.Op.t), "cmps"] ↦{dq} v.(clientv3.Op.cmps') ∗
+      "thenOps" ∷ l.[(clientv3.Op.t), "thenOps"] ↦{dq} v.(clientv3.Op.thenOps') ∗
+      "elseOps" ∷ l.[(clientv3.Op.t), "elseOps"] ↦{dq} v.(clientv3.Op.elseOps') ∗
+      "isOptsWithFromKey" ∷ l.[(clientv3.Op.t), "isOptsWithFromKey"] ↦{dq} v.(clientv3.Op.isOptsWithFromKey') ∗
+      "isOptsWithPrefix" ∷ l.[(clientv3.Op.t), "isOptsWithPrefix"] ↦{dq} v.(clientv3.Op.isOptsWithPrefix') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance Op_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.Op.t) (clientv3.Opⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Op_access_load_t l (v : (clientv3.Op.t)) dq :
+  AccessStrict
+    (l.[(clientv3.Op.t), "t"] ↦{dq} (v.(clientv3.Op.t')))
+    (l.[(clientv3.Op.t), "t"] ↦{dq} (v.(clientv3.Op.t')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Op_access_store_t l (v : (clientv3.Op.t)) t' :
+  AccessStrict
+    (l.[(clientv3.Op.t), "t"] ↦ (v.(clientv3.Op.t')))
+    (l.[(clientv3.Op.t), "t"] ↦ t')
+    (l ↦ v) (l ↦ (v <|(clientv3.Op.t') := t'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Op_access_load_key l (v : (clientv3.Op.t)) dq :
+  AccessStrict
+    (l.[(clientv3.Op.t), "key"] ↦{dq} (v.(clientv3.Op.key')))
+    (l.[(clientv3.Op.t), "key"] ↦{dq} (v.(clientv3.Op.key')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Op_access_store_key l (v : (clientv3.Op.t)) key' :
+  AccessStrict
+    (l.[(clientv3.Op.t), "key"] ↦ (v.(clientv3.Op.key')))
+    (l.[(clientv3.Op.t), "key"] ↦ key')
+    (l ↦ v) (l ↦ (v <|(clientv3.Op.key') := key'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Op_access_load_end l (v : (clientv3.Op.t)) dq :
+  AccessStrict
+    (l.[(clientv3.Op.t), "end"] ↦{dq} (v.(clientv3.Op.end')))
+    (l.[(clientv3.Op.t), "end"] ↦{dq} (v.(clientv3.Op.end')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Op_access_store_end l (v : (clientv3.Op.t)) end' :
+  AccessStrict
+    (l.[(clientv3.Op.t), "end"] ↦ (v.(clientv3.Op.end')))
+    (l.[(clientv3.Op.t), "end"] ↦ end')
+    (l ↦ v) (l ↦ (v <|(clientv3.Op.end') := end'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Op_access_load_limit l (v : (clientv3.Op.t)) dq :
+  AccessStrict
+    (l.[(clientv3.Op.t), "limit"] ↦{dq} (v.(clientv3.Op.limit')))
+    (l.[(clientv3.Op.t), "limit"] ↦{dq} (v.(clientv3.Op.limit')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Op_access_store_limit l (v : (clientv3.Op.t)) limit' :
+  AccessStrict
+    (l.[(clientv3.Op.t), "limit"] ↦ (v.(clientv3.Op.limit')))
+    (l.[(clientv3.Op.t), "limit"] ↦ limit')
+    (l ↦ v) (l ↦ (v <|(clientv3.Op.limit') := limit'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Op_access_load_sort l (v : (clientv3.Op.t)) dq :
+  AccessStrict
+    (l.[(clientv3.Op.t), "sort"] ↦{dq} (v.(clientv3.Op.sort')))
+    (l.[(clientv3.Op.t), "sort"] ↦{dq} (v.(clientv3.Op.sort')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Op_access_store_sort l (v : (clientv3.Op.t)) sort' :
+  AccessStrict
+    (l.[(clientv3.Op.t), "sort"] ↦ (v.(clientv3.Op.sort')))
+    (l.[(clientv3.Op.t), "sort"] ↦ sort')
+    (l ↦ v) (l ↦ (v <|(clientv3.Op.sort') := sort'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Op_access_load_serializable l (v : (clientv3.Op.t)) dq :
+  AccessStrict
+    (l.[(clientv3.Op.t), "serializable"] ↦{dq} (v.(clientv3.Op.serializable')))
+    (l.[(clientv3.Op.t), "serializable"] ↦{dq} (v.(clientv3.Op.serializable')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Op_access_store_serializable l (v : (clientv3.Op.t)) serializable' :
+  AccessStrict
+    (l.[(clientv3.Op.t), "serializable"] ↦ (v.(clientv3.Op.serializable')))
+    (l.[(clientv3.Op.t), "serializable"] ↦ serializable')
+    (l ↦ v) (l ↦ (v <|(clientv3.Op.serializable') := serializable'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Op_access_load_keysOnly l (v : (clientv3.Op.t)) dq :
+  AccessStrict
+    (l.[(clientv3.Op.t), "keysOnly"] ↦{dq} (v.(clientv3.Op.keysOnly')))
+    (l.[(clientv3.Op.t), "keysOnly"] ↦{dq} (v.(clientv3.Op.keysOnly')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Op_access_store_keysOnly l (v : (clientv3.Op.t)) keysOnly' :
+  AccessStrict
+    (l.[(clientv3.Op.t), "keysOnly"] ↦ (v.(clientv3.Op.keysOnly')))
+    (l.[(clientv3.Op.t), "keysOnly"] ↦ keysOnly')
+    (l ↦ v) (l ↦ (v <|(clientv3.Op.keysOnly') := keysOnly'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Op_access_load_countOnly l (v : (clientv3.Op.t)) dq :
+  AccessStrict
+    (l.[(clientv3.Op.t), "countOnly"] ↦{dq} (v.(clientv3.Op.countOnly')))
+    (l.[(clientv3.Op.t), "countOnly"] ↦{dq} (v.(clientv3.Op.countOnly')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Op_access_store_countOnly l (v : (clientv3.Op.t)) countOnly' :
+  AccessStrict
+    (l.[(clientv3.Op.t), "countOnly"] ↦ (v.(clientv3.Op.countOnly')))
+    (l.[(clientv3.Op.t), "countOnly"] ↦ countOnly')
+    (l ↦ v) (l ↦ (v <|(clientv3.Op.countOnly') := countOnly'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Op_access_load_minModRev l (v : (clientv3.Op.t)) dq :
+  AccessStrict
+    (l.[(clientv3.Op.t), "minModRev"] ↦{dq} (v.(clientv3.Op.minModRev')))
+    (l.[(clientv3.Op.t), "minModRev"] ↦{dq} (v.(clientv3.Op.minModRev')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Op_access_store_minModRev l (v : (clientv3.Op.t)) minModRev' :
+  AccessStrict
+    (l.[(clientv3.Op.t), "minModRev"] ↦ (v.(clientv3.Op.minModRev')))
+    (l.[(clientv3.Op.t), "minModRev"] ↦ minModRev')
+    (l ↦ v) (l ↦ (v <|(clientv3.Op.minModRev') := minModRev'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Op_access_load_maxModRev l (v : (clientv3.Op.t)) dq :
+  AccessStrict
+    (l.[(clientv3.Op.t), "maxModRev"] ↦{dq} (v.(clientv3.Op.maxModRev')))
+    (l.[(clientv3.Op.t), "maxModRev"] ↦{dq} (v.(clientv3.Op.maxModRev')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Op_access_store_maxModRev l (v : (clientv3.Op.t)) maxModRev' :
+  AccessStrict
+    (l.[(clientv3.Op.t), "maxModRev"] ↦ (v.(clientv3.Op.maxModRev')))
+    (l.[(clientv3.Op.t), "maxModRev"] ↦ maxModRev')
+    (l ↦ v) (l ↦ (v <|(clientv3.Op.maxModRev') := maxModRev'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Op_access_load_minCreateRev l (v : (clientv3.Op.t)) dq :
+  AccessStrict
+    (l.[(clientv3.Op.t), "minCreateRev"] ↦{dq} (v.(clientv3.Op.minCreateRev')))
+    (l.[(clientv3.Op.t), "minCreateRev"] ↦{dq} (v.(clientv3.Op.minCreateRev')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Op_access_store_minCreateRev l (v : (clientv3.Op.t)) minCreateRev' :
+  AccessStrict
+    (l.[(clientv3.Op.t), "minCreateRev"] ↦ (v.(clientv3.Op.minCreateRev')))
+    (l.[(clientv3.Op.t), "minCreateRev"] ↦ minCreateRev')
+    (l ↦ v) (l ↦ (v <|(clientv3.Op.minCreateRev') := minCreateRev'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Op_access_load_maxCreateRev l (v : (clientv3.Op.t)) dq :
+  AccessStrict
+    (l.[(clientv3.Op.t), "maxCreateRev"] ↦{dq} (v.(clientv3.Op.maxCreateRev')))
+    (l.[(clientv3.Op.t), "maxCreateRev"] ↦{dq} (v.(clientv3.Op.maxCreateRev')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Op_access_store_maxCreateRev l (v : (clientv3.Op.t)) maxCreateRev' :
+  AccessStrict
+    (l.[(clientv3.Op.t), "maxCreateRev"] ↦ (v.(clientv3.Op.maxCreateRev')))
+    (l.[(clientv3.Op.t), "maxCreateRev"] ↦ maxCreateRev')
+    (l ↦ v) (l ↦ (v <|(clientv3.Op.maxCreateRev') := maxCreateRev'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Op_access_load_rev l (v : (clientv3.Op.t)) dq :
+  AccessStrict
+    (l.[(clientv3.Op.t), "rev"] ↦{dq} (v.(clientv3.Op.rev')))
+    (l.[(clientv3.Op.t), "rev"] ↦{dq} (v.(clientv3.Op.rev')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Op_access_store_rev l (v : (clientv3.Op.t)) rev' :
+  AccessStrict
+    (l.[(clientv3.Op.t), "rev"] ↦ (v.(clientv3.Op.rev')))
+    (l.[(clientv3.Op.t), "rev"] ↦ rev')
+    (l ↦ v) (l ↦ (v <|(clientv3.Op.rev') := rev'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Op_access_load_prevKV l (v : (clientv3.Op.t)) dq :
+  AccessStrict
+    (l.[(clientv3.Op.t), "prevKV"] ↦{dq} (v.(clientv3.Op.prevKV')))
+    (l.[(clientv3.Op.t), "prevKV"] ↦{dq} (v.(clientv3.Op.prevKV')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Op_access_store_prevKV l (v : (clientv3.Op.t)) prevKV' :
+  AccessStrict
+    (l.[(clientv3.Op.t), "prevKV"] ↦ (v.(clientv3.Op.prevKV')))
+    (l.[(clientv3.Op.t), "prevKV"] ↦ prevKV')
+    (l ↦ v) (l ↦ (v <|(clientv3.Op.prevKV') := prevKV'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Op_access_load_fragment l (v : (clientv3.Op.t)) dq :
+  AccessStrict
+    (l.[(clientv3.Op.t), "fragment"] ↦{dq} (v.(clientv3.Op.fragment')))
+    (l.[(clientv3.Op.t), "fragment"] ↦{dq} (v.(clientv3.Op.fragment')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Op_access_store_fragment l (v : (clientv3.Op.t)) fragment' :
+  AccessStrict
+    (l.[(clientv3.Op.t), "fragment"] ↦ (v.(clientv3.Op.fragment')))
+    (l.[(clientv3.Op.t), "fragment"] ↦ fragment')
+    (l ↦ v) (l ↦ (v <|(clientv3.Op.fragment') := fragment'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Op_access_load_ignoreValue l (v : (clientv3.Op.t)) dq :
+  AccessStrict
+    (l.[(clientv3.Op.t), "ignoreValue"] ↦{dq} (v.(clientv3.Op.ignoreValue')))
+    (l.[(clientv3.Op.t), "ignoreValue"] ↦{dq} (v.(clientv3.Op.ignoreValue')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Op_access_store_ignoreValue l (v : (clientv3.Op.t)) ignoreValue' :
+  AccessStrict
+    (l.[(clientv3.Op.t), "ignoreValue"] ↦ (v.(clientv3.Op.ignoreValue')))
+    (l.[(clientv3.Op.t), "ignoreValue"] ↦ ignoreValue')
+    (l ↦ v) (l ↦ (v <|(clientv3.Op.ignoreValue') := ignoreValue'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Op_access_load_ignoreLease l (v : (clientv3.Op.t)) dq :
+  AccessStrict
+    (l.[(clientv3.Op.t), "ignoreLease"] ↦{dq} (v.(clientv3.Op.ignoreLease')))
+    (l.[(clientv3.Op.t), "ignoreLease"] ↦{dq} (v.(clientv3.Op.ignoreLease')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Op_access_store_ignoreLease l (v : (clientv3.Op.t)) ignoreLease' :
+  AccessStrict
+    (l.[(clientv3.Op.t), "ignoreLease"] ↦ (v.(clientv3.Op.ignoreLease')))
+    (l.[(clientv3.Op.t), "ignoreLease"] ↦ ignoreLease')
+    (l ↦ v) (l ↦ (v <|(clientv3.Op.ignoreLease') := ignoreLease'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Op_access_load_progressNotify l (v : (clientv3.Op.t)) dq :
+  AccessStrict
+    (l.[(clientv3.Op.t), "progressNotify"] ↦{dq} (v.(clientv3.Op.progressNotify')))
+    (l.[(clientv3.Op.t), "progressNotify"] ↦{dq} (v.(clientv3.Op.progressNotify')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Op_access_store_progressNotify l (v : (clientv3.Op.t)) progressNotify' :
+  AccessStrict
+    (l.[(clientv3.Op.t), "progressNotify"] ↦ (v.(clientv3.Op.progressNotify')))
+    (l.[(clientv3.Op.t), "progressNotify"] ↦ progressNotify')
+    (l ↦ v) (l ↦ (v <|(clientv3.Op.progressNotify') := progressNotify'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Op_access_load_createdNotify l (v : (clientv3.Op.t)) dq :
+  AccessStrict
+    (l.[(clientv3.Op.t), "createdNotify"] ↦{dq} (v.(clientv3.Op.createdNotify')))
+    (l.[(clientv3.Op.t), "createdNotify"] ↦{dq} (v.(clientv3.Op.createdNotify')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Op_access_store_createdNotify l (v : (clientv3.Op.t)) createdNotify' :
+  AccessStrict
+    (l.[(clientv3.Op.t), "createdNotify"] ↦ (v.(clientv3.Op.createdNotify')))
+    (l.[(clientv3.Op.t), "createdNotify"] ↦ createdNotify')
+    (l ↦ v) (l ↦ (v <|(clientv3.Op.createdNotify') := createdNotify'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Op_access_load_filterPut l (v : (clientv3.Op.t)) dq :
+  AccessStrict
+    (l.[(clientv3.Op.t), "filterPut"] ↦{dq} (v.(clientv3.Op.filterPut')))
+    (l.[(clientv3.Op.t), "filterPut"] ↦{dq} (v.(clientv3.Op.filterPut')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Op_access_store_filterPut l (v : (clientv3.Op.t)) filterPut' :
+  AccessStrict
+    (l.[(clientv3.Op.t), "filterPut"] ↦ (v.(clientv3.Op.filterPut')))
+    (l.[(clientv3.Op.t), "filterPut"] ↦ filterPut')
+    (l ↦ v) (l ↦ (v <|(clientv3.Op.filterPut') := filterPut'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Op_access_load_filterDelete l (v : (clientv3.Op.t)) dq :
+  AccessStrict
+    (l.[(clientv3.Op.t), "filterDelete"] ↦{dq} (v.(clientv3.Op.filterDelete')))
+    (l.[(clientv3.Op.t), "filterDelete"] ↦{dq} (v.(clientv3.Op.filterDelete')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Op_access_store_filterDelete l (v : (clientv3.Op.t)) filterDelete' :
+  AccessStrict
+    (l.[(clientv3.Op.t), "filterDelete"] ↦ (v.(clientv3.Op.filterDelete')))
+    (l.[(clientv3.Op.t), "filterDelete"] ↦ filterDelete')
+    (l ↦ v) (l ↦ (v <|(clientv3.Op.filterDelete') := filterDelete'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Op_access_load_val l (v : (clientv3.Op.t)) dq :
+  AccessStrict
+    (l.[(clientv3.Op.t), "val"] ↦{dq} (v.(clientv3.Op.val')))
+    (l.[(clientv3.Op.t), "val"] ↦{dq} (v.(clientv3.Op.val')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Op_access_store_val l (v : (clientv3.Op.t)) val' :
+  AccessStrict
+    (l.[(clientv3.Op.t), "val"] ↦ (v.(clientv3.Op.val')))
+    (l.[(clientv3.Op.t), "val"] ↦ val')
+    (l ↦ v) (l ↦ (v <|(clientv3.Op.val') := val'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Op_access_load_leaseID l (v : (clientv3.Op.t)) dq :
+  AccessStrict
+    (l.[(clientv3.Op.t), "leaseID"] ↦{dq} (v.(clientv3.Op.leaseID')))
+    (l.[(clientv3.Op.t), "leaseID"] ↦{dq} (v.(clientv3.Op.leaseID')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Op_access_store_leaseID l (v : (clientv3.Op.t)) leaseID' :
+  AccessStrict
+    (l.[(clientv3.Op.t), "leaseID"] ↦ (v.(clientv3.Op.leaseID')))
+    (l.[(clientv3.Op.t), "leaseID"] ↦ leaseID')
+    (l ↦ v) (l ↦ (v <|(clientv3.Op.leaseID') := leaseID'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Op_access_load_cmps l (v : (clientv3.Op.t)) dq :
+  AccessStrict
+    (l.[(clientv3.Op.t), "cmps"] ↦{dq} (v.(clientv3.Op.cmps')))
+    (l.[(clientv3.Op.t), "cmps"] ↦{dq} (v.(clientv3.Op.cmps')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Op_access_store_cmps l (v : (clientv3.Op.t)) cmps' :
+  AccessStrict
+    (l.[(clientv3.Op.t), "cmps"] ↦ (v.(clientv3.Op.cmps')))
+    (l.[(clientv3.Op.t), "cmps"] ↦ cmps')
+    (l ↦ v) (l ↦ (v <|(clientv3.Op.cmps') := cmps'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Op_access_load_thenOps l (v : (clientv3.Op.t)) dq :
+  AccessStrict
+    (l.[(clientv3.Op.t), "thenOps"] ↦{dq} (v.(clientv3.Op.thenOps')))
+    (l.[(clientv3.Op.t), "thenOps"] ↦{dq} (v.(clientv3.Op.thenOps')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Op_access_store_thenOps l (v : (clientv3.Op.t)) thenOps' :
+  AccessStrict
+    (l.[(clientv3.Op.t), "thenOps"] ↦ (v.(clientv3.Op.thenOps')))
+    (l.[(clientv3.Op.t), "thenOps"] ↦ thenOps')
+    (l ↦ v) (l ↦ (v <|(clientv3.Op.thenOps') := thenOps'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Op_access_load_elseOps l (v : (clientv3.Op.t)) dq :
+  AccessStrict
+    (l.[(clientv3.Op.t), "elseOps"] ↦{dq} (v.(clientv3.Op.elseOps')))
+    (l.[(clientv3.Op.t), "elseOps"] ↦{dq} (v.(clientv3.Op.elseOps')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Op_access_store_elseOps l (v : (clientv3.Op.t)) elseOps' :
+  AccessStrict
+    (l.[(clientv3.Op.t), "elseOps"] ↦ (v.(clientv3.Op.elseOps')))
+    (l.[(clientv3.Op.t), "elseOps"] ↦ elseOps')
+    (l ↦ v) (l ↦ (v <|(clientv3.Op.elseOps') := elseOps'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Op_access_load_isOptsWithFromKey l (v : (clientv3.Op.t)) dq :
+  AccessStrict
+    (l.[(clientv3.Op.t), "isOptsWithFromKey"] ↦{dq} (v.(clientv3.Op.isOptsWithFromKey')))
+    (l.[(clientv3.Op.t), "isOptsWithFromKey"] ↦{dq} (v.(clientv3.Op.isOptsWithFromKey')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Op_access_store_isOptsWithFromKey l (v : (clientv3.Op.t)) isOptsWithFromKey' :
+  AccessStrict
+    (l.[(clientv3.Op.t), "isOptsWithFromKey"] ↦ (v.(clientv3.Op.isOptsWithFromKey')))
+    (l.[(clientv3.Op.t), "isOptsWithFromKey"] ↦ isOptsWithFromKey')
+    (l ↦ v) (l ↦ (v <|(clientv3.Op.isOptsWithFromKey') := isOptsWithFromKey'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Op_access_load_isOptsWithPrefix l (v : (clientv3.Op.t)) dq :
+  AccessStrict
+    (l.[(clientv3.Op.t), "isOptsWithPrefix"] ↦{dq} (v.(clientv3.Op.isOptsWithPrefix')))
+    (l.[(clientv3.Op.t), "isOptsWithPrefix"] ↦{dq} (v.(clientv3.Op.isOptsWithPrefix')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Op_access_store_isOptsWithPrefix l (v : (clientv3.Op.t)) isOptsWithPrefix' :
+  AccessStrict
+    (l.[(clientv3.Op.t), "isOptsWithPrefix"] ↦ (v.(clientv3.Op.isOptsWithPrefix')))
+    (l.[(clientv3.Op.t), "isOptsWithPrefix"] ↦ isOptsWithPrefix')
+    (l ↦ v) (l ↦ (v <|(clientv3.Op.isOptsWithPrefix') := isOptsWithPrefix'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End Op.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent clientv3.Op.
-#[local] Typeclasses Transparent clientv3.Op.
-
-Global Instance Op_wf : struct.Wf clientv3.Op.
-Proof. apply _. Qed.
-
-Global Instance settable_Op : Settable Op.t :=
-  settable! Op.mk < Op.t'; Op.key'; Op.end'; Op.limit'; Op.sort'; Op.serializable'; Op.keysOnly'; Op.countOnly'; Op.minModRev'; Op.maxModRev'; Op.minCreateRev'; Op.maxCreateRev'; Op.rev'; Op.prevKV'; Op.fragment'; Op.ignoreValue'; Op.ignoreLease'; Op.progressNotify'; Op.createdNotify'; Op.filterPut'; Op.filterDelete'; Op.val'; Op.leaseID'; Op.cmps'; Op.thenOps'; Op.elseOps'; Op.isOptsWithFromKey'; Op.isOptsWithPrefix' >.
-Global Instance into_val_Op : IntoVal Op.t :=
-  {| to_val_def v :=
-    struct.val_aux clientv3.Op [
-    "t" ::= #(Op.t' v);
-    "key" ::= #(Op.key' v);
-    "end" ::= #(Op.end' v);
-    "limit" ::= #(Op.limit' v);
-    "sort" ::= #(Op.sort' v);
-    "serializable" ::= #(Op.serializable' v);
-    "keysOnly" ::= #(Op.keysOnly' v);
-    "countOnly" ::= #(Op.countOnly' v);
-    "minModRev" ::= #(Op.minModRev' v);
-    "maxModRev" ::= #(Op.maxModRev' v);
-    "minCreateRev" ::= #(Op.minCreateRev' v);
-    "maxCreateRev" ::= #(Op.maxCreateRev' v);
-    "rev" ::= #(Op.rev' v);
-    "prevKV" ::= #(Op.prevKV' v);
-    "fragment" ::= #(Op.fragment' v);
-    "ignoreValue" ::= #(Op.ignoreValue' v);
-    "ignoreLease" ::= #(Op.ignoreLease' v);
-    "progressNotify" ::= #(Op.progressNotify' v);
-    "createdNotify" ::= #(Op.createdNotify' v);
-    "filterPut" ::= #(Op.filterPut' v);
-    "filterDelete" ::= #(Op.filterDelete' v);
-    "val" ::= #(Op.val' v);
-    "leaseID" ::= #(Op.leaseID' v);
-    "cmps" ::= #(Op.cmps' v);
-    "thenOps" ::= #(Op.thenOps' v);
-    "elseOps" ::= #(Op.elseOps' v);
-    "isOptsWithFromKey" ::= #(Op.isOptsWithFromKey' v);
-    "isOptsWithPrefix" ::= #(Op.isOptsWithPrefix' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_Op : IntoValTyped Op.t clientv3.Op :=
-{|
-  default_val := Op.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_Op_t : IntoValStructField "t" clientv3.Op Op.t'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Op_key : IntoValStructField "key" clientv3.Op Op.key'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Op_end : IntoValStructField "end" clientv3.Op Op.end'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Op_limit : IntoValStructField "limit" clientv3.Op Op.limit'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Op_sort : IntoValStructField "sort" clientv3.Op Op.sort'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Op_serializable : IntoValStructField "serializable" clientv3.Op Op.serializable'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Op_keysOnly : IntoValStructField "keysOnly" clientv3.Op Op.keysOnly'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Op_countOnly : IntoValStructField "countOnly" clientv3.Op Op.countOnly'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Op_minModRev : IntoValStructField "minModRev" clientv3.Op Op.minModRev'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Op_maxModRev : IntoValStructField "maxModRev" clientv3.Op Op.maxModRev'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Op_minCreateRev : IntoValStructField "minCreateRev" clientv3.Op Op.minCreateRev'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Op_maxCreateRev : IntoValStructField "maxCreateRev" clientv3.Op Op.maxCreateRev'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Op_rev : IntoValStructField "rev" clientv3.Op Op.rev'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Op_prevKV : IntoValStructField "prevKV" clientv3.Op Op.prevKV'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Op_fragment : IntoValStructField "fragment" clientv3.Op Op.fragment'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Op_ignoreValue : IntoValStructField "ignoreValue" clientv3.Op Op.ignoreValue'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Op_ignoreLease : IntoValStructField "ignoreLease" clientv3.Op Op.ignoreLease'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Op_progressNotify : IntoValStructField "progressNotify" clientv3.Op Op.progressNotify'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Op_createdNotify : IntoValStructField "createdNotify" clientv3.Op Op.createdNotify'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Op_filterPut : IntoValStructField "filterPut" clientv3.Op Op.filterPut'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Op_filterDelete : IntoValStructField "filterDelete" clientv3.Op Op.filterDelete'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Op_val : IntoValStructField "val" clientv3.Op Op.val'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Op_leaseID : IntoValStructField "leaseID" clientv3.Op Op.leaseID'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Op_cmps : IntoValStructField "cmps" clientv3.Op Op.cmps'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Op_thenOps : IntoValStructField "thenOps" clientv3.Op Op.thenOps'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Op_elseOps : IntoValStructField "elseOps" clientv3.Op Op.elseOps'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Op_isOptsWithFromKey : IntoValStructField "isOptsWithFromKey" clientv3.Op Op.isOptsWithFromKey'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Op_isOptsWithPrefix : IntoValStructField "isOptsWithPrefix" clientv3.Op Op.isOptsWithPrefix'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-
-
-Global Instance Op_struct_fields_split dq l (v : Op.t) :
-  StructFieldsSplit dq l v (
-    "Ht" ∷ l ↦s[clientv3.Op :: "t"]{dq} v.(Op.t') ∗
-    "Hkey" ∷ l ↦s[clientv3.Op :: "key"]{dq} v.(Op.key') ∗
-    "Hend" ∷ l ↦s[clientv3.Op :: "end"]{dq} v.(Op.end') ∗
-    "Hlimit" ∷ l ↦s[clientv3.Op :: "limit"]{dq} v.(Op.limit') ∗
-    "Hsort" ∷ l ↦s[clientv3.Op :: "sort"]{dq} v.(Op.sort') ∗
-    "Hserializable" ∷ l ↦s[clientv3.Op :: "serializable"]{dq} v.(Op.serializable') ∗
-    "HkeysOnly" ∷ l ↦s[clientv3.Op :: "keysOnly"]{dq} v.(Op.keysOnly') ∗
-    "HcountOnly" ∷ l ↦s[clientv3.Op :: "countOnly"]{dq} v.(Op.countOnly') ∗
-    "HminModRev" ∷ l ↦s[clientv3.Op :: "minModRev"]{dq} v.(Op.minModRev') ∗
-    "HmaxModRev" ∷ l ↦s[clientv3.Op :: "maxModRev"]{dq} v.(Op.maxModRev') ∗
-    "HminCreateRev" ∷ l ↦s[clientv3.Op :: "minCreateRev"]{dq} v.(Op.minCreateRev') ∗
-    "HmaxCreateRev" ∷ l ↦s[clientv3.Op :: "maxCreateRev"]{dq} v.(Op.maxCreateRev') ∗
-    "Hrev" ∷ l ↦s[clientv3.Op :: "rev"]{dq} v.(Op.rev') ∗
-    "HprevKV" ∷ l ↦s[clientv3.Op :: "prevKV"]{dq} v.(Op.prevKV') ∗
-    "Hfragment" ∷ l ↦s[clientv3.Op :: "fragment"]{dq} v.(Op.fragment') ∗
-    "HignoreValue" ∷ l ↦s[clientv3.Op :: "ignoreValue"]{dq} v.(Op.ignoreValue') ∗
-    "HignoreLease" ∷ l ↦s[clientv3.Op :: "ignoreLease"]{dq} v.(Op.ignoreLease') ∗
-    "HprogressNotify" ∷ l ↦s[clientv3.Op :: "progressNotify"]{dq} v.(Op.progressNotify') ∗
-    "HcreatedNotify" ∷ l ↦s[clientv3.Op :: "createdNotify"]{dq} v.(Op.createdNotify') ∗
-    "HfilterPut" ∷ l ↦s[clientv3.Op :: "filterPut"]{dq} v.(Op.filterPut') ∗
-    "HfilterDelete" ∷ l ↦s[clientv3.Op :: "filterDelete"]{dq} v.(Op.filterDelete') ∗
-    "Hval" ∷ l ↦s[clientv3.Op :: "val"]{dq} v.(Op.val') ∗
-    "HleaseID" ∷ l ↦s[clientv3.Op :: "leaseID"]{dq} v.(Op.leaseID') ∗
-    "Hcmps" ∷ l ↦s[clientv3.Op :: "cmps"]{dq} v.(Op.cmps') ∗
-    "HthenOps" ∷ l ↦s[clientv3.Op :: "thenOps"]{dq} v.(Op.thenOps') ∗
-    "HelseOps" ∷ l ↦s[clientv3.Op :: "elseOps"]{dq} v.(Op.elseOps') ∗
-    "HisOptsWithFromKey" ∷ l ↦s[clientv3.Op :: "isOptsWithFromKey"]{dq} v.(Op.isOptsWithFromKey') ∗
-    "HisOptsWithPrefix" ∷ l ↦s[clientv3.Op :: "isOptsWithPrefix"]{dq} v.(Op.isOptsWithPrefix')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Op.t' v)) (clientv3.Op) "t"%go.
-  simpl_one_flatten_struct (# (Op.key' v)) (clientv3.Op) "key"%go.
-  simpl_one_flatten_struct (# (Op.end' v)) (clientv3.Op) "end"%go.
-  simpl_one_flatten_struct (# (Op.limit' v)) (clientv3.Op) "limit"%go.
-  simpl_one_flatten_struct (# (Op.sort' v)) (clientv3.Op) "sort"%go.
-  simpl_one_flatten_struct (# (Op.serializable' v)) (clientv3.Op) "serializable"%go.
-  simpl_one_flatten_struct (# (Op.keysOnly' v)) (clientv3.Op) "keysOnly"%go.
-  simpl_one_flatten_struct (# (Op.countOnly' v)) (clientv3.Op) "countOnly"%go.
-  simpl_one_flatten_struct (# (Op.minModRev' v)) (clientv3.Op) "minModRev"%go.
-  simpl_one_flatten_struct (# (Op.maxModRev' v)) (clientv3.Op) "maxModRev"%go.
-  simpl_one_flatten_struct (# (Op.minCreateRev' v)) (clientv3.Op) "minCreateRev"%go.
-  simpl_one_flatten_struct (# (Op.maxCreateRev' v)) (clientv3.Op) "maxCreateRev"%go.
-  simpl_one_flatten_struct (# (Op.rev' v)) (clientv3.Op) "rev"%go.
-  simpl_one_flatten_struct (# (Op.prevKV' v)) (clientv3.Op) "prevKV"%go.
-  simpl_one_flatten_struct (# (Op.fragment' v)) (clientv3.Op) "fragment"%go.
-  simpl_one_flatten_struct (# (Op.ignoreValue' v)) (clientv3.Op) "ignoreValue"%go.
-  simpl_one_flatten_struct (# (Op.ignoreLease' v)) (clientv3.Op) "ignoreLease"%go.
-  simpl_one_flatten_struct (# (Op.progressNotify' v)) (clientv3.Op) "progressNotify"%go.
-  simpl_one_flatten_struct (# (Op.createdNotify' v)) (clientv3.Op) "createdNotify"%go.
-  simpl_one_flatten_struct (# (Op.filterPut' v)) (clientv3.Op) "filterPut"%go.
-  simpl_one_flatten_struct (# (Op.filterDelete' v)) (clientv3.Op) "filterDelete"%go.
-  simpl_one_flatten_struct (# (Op.val' v)) (clientv3.Op) "val"%go.
-  simpl_one_flatten_struct (# (Op.leaseID' v)) (clientv3.Op) "leaseID"%go.
-  simpl_one_flatten_struct (# (Op.cmps' v)) (clientv3.Op) "cmps"%go.
-  simpl_one_flatten_struct (# (Op.thenOps' v)) (clientv3.Op) "thenOps"%go.
-  simpl_one_flatten_struct (# (Op.elseOps' v)) (clientv3.Op) "elseOps"%go.
-  simpl_one_flatten_struct (# (Op.isOptsWithFromKey' v)) (clientv3.Op) "isOptsWithFromKey"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-(* type clientv3.OpOption *)
-Module OpOption.
-
-#[global] Transparent clientv3.OpOption.
-#[global] Typeclasses Transparent clientv3.OpOption.
-Section def.
-Context `{ffi_syntax}.
-Definition t := func.t.
-End def.
-End OpOption.
-
-(* type clientv3.LeaseOp *)
 Module LeaseOp.
 Section def.
-Context `{ffi_syntax}.
 
-Record t := mk {
-  id' : LeaseID.t;
-  attachedKeys' : bool;
-}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance LeaseOp_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.LeaseOp.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "id" ∷ l.[(clientv3.LeaseOp.t), "id"] ↦{dq} v.(clientv3.LeaseOp.id') ∗
+      "attachedKeys" ∷ l.[(clientv3.LeaseOp.t), "attachedKeys"] ↦{dq} v.(clientv3.LeaseOp.attachedKeys') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance LeaseOp_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.LeaseOp.t) (clientv3.LeaseOpⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance LeaseOp_access_load_id l (v : (clientv3.LeaseOp.t)) dq :
+  AccessStrict
+    (l.[(clientv3.LeaseOp.t), "id"] ↦{dq} (v.(clientv3.LeaseOp.id')))
+    (l.[(clientv3.LeaseOp.t), "id"] ↦{dq} (v.(clientv3.LeaseOp.id')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance LeaseOp_access_store_id l (v : (clientv3.LeaseOp.t)) id' :
+  AccessStrict
+    (l.[(clientv3.LeaseOp.t), "id"] ↦ (v.(clientv3.LeaseOp.id')))
+    (l.[(clientv3.LeaseOp.t), "id"] ↦ id')
+    (l ↦ v) (l ↦ (v <|(clientv3.LeaseOp.id') := id'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance LeaseOp_access_load_attachedKeys l (v : (clientv3.LeaseOp.t)) dq :
+  AccessStrict
+    (l.[(clientv3.LeaseOp.t), "attachedKeys"] ↦{dq} (v.(clientv3.LeaseOp.attachedKeys')))
+    (l.[(clientv3.LeaseOp.t), "attachedKeys"] ↦{dq} (v.(clientv3.LeaseOp.attachedKeys')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance LeaseOp_access_store_attachedKeys l (v : (clientv3.LeaseOp.t)) attachedKeys' :
+  AccessStrict
+    (l.[(clientv3.LeaseOp.t), "attachedKeys"] ↦ (v.(clientv3.LeaseOp.attachedKeys')))
+    (l.[(clientv3.LeaseOp.t), "attachedKeys"] ↦ attachedKeys')
+    (l ↦ v) (l ↦ (v <|(clientv3.LeaseOp.attachedKeys') := attachedKeys'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End LeaseOp.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent clientv3.LeaseOp.
-#[local] Typeclasses Transparent clientv3.LeaseOp.
-
-Global Instance LeaseOp_wf : struct.Wf clientv3.LeaseOp.
-Proof. apply _. Qed.
-
-Global Instance settable_LeaseOp : Settable LeaseOp.t :=
-  settable! LeaseOp.mk < LeaseOp.id'; LeaseOp.attachedKeys' >.
-Global Instance into_val_LeaseOp : IntoVal LeaseOp.t :=
-  {| to_val_def v :=
-    struct.val_aux clientv3.LeaseOp [
-    "id" ::= #(LeaseOp.id' v);
-    "attachedKeys" ::= #(LeaseOp.attachedKeys' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_LeaseOp : IntoValTyped LeaseOp.t clientv3.LeaseOp :=
-{|
-  default_val := LeaseOp.mk (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_LeaseOp_id : IntoValStructField "id" clientv3.LeaseOp LeaseOp.id'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_LeaseOp_attachedKeys : IntoValStructField "attachedKeys" clientv3.LeaseOp LeaseOp.attachedKeys'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-
-
-Global Instance LeaseOp_struct_fields_split dq l (v : LeaseOp.t) :
-  StructFieldsSplit dq l v (
-    "Hid" ∷ l ↦s[clientv3.LeaseOp :: "id"]{dq} v.(LeaseOp.id') ∗
-    "HattachedKeys" ∷ l ↦s[clientv3.LeaseOp :: "attachedKeys"]{dq} v.(LeaseOp.attachedKeys')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (LeaseOp.id' v)) (clientv3.LeaseOp) "id"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-(* type clientv3.LeaseOption *)
-Module LeaseOption.
-
-#[global] Transparent clientv3.LeaseOption.
-#[global] Typeclasses Transparent clientv3.LeaseOption.
-Section def.
-Context `{ffi_syntax}.
-Definition t := func.t.
-End def.
-End LeaseOption.
-
-(* type clientv3.retryPolicy *)
 Module retryPolicy.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance retryPolicy_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.retryPolicy.t). Admitted.
+
+#[global] Instance retryPolicy_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.retryPolicy.t) (clientv3.retryPolicyⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End retryPolicy.
 
-Global Instance bounded_size_retryPolicy : BoundedTypeSize clientv3.retryPolicy.
-Admitted.
-
-Global Instance into_val_retryPolicy `{ffi_syntax} : IntoVal retryPolicy.t.
-Admitted.
-
-Global Instance into_val_typed_retryPolicy `{ffi_syntax} : IntoValTyped retryPolicy.t clientv3.retryPolicy.
-Admitted.
-
-(* type clientv3.retryKVClient *)
 Module retryKVClient.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance retryKVClient_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.retryKVClient.t). Admitted.
+
+#[global] Instance retryKVClient_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.retryKVClient.t) (clientv3.retryKVClientⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End retryKVClient.
 
-Global Instance bounded_size_retryKVClient : BoundedTypeSize clientv3.retryKVClient.
-Admitted.
-
-Global Instance into_val_retryKVClient `{ffi_syntax} : IntoVal retryKVClient.t.
-Admitted.
-
-Global Instance into_val_typed_retryKVClient `{ffi_syntax} : IntoValTyped retryKVClient.t clientv3.retryKVClient.
-Admitted.
-
-(* type clientv3.retryLeaseClient *)
 Module retryLeaseClient.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance retryLeaseClient_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.retryLeaseClient.t). Admitted.
+
+#[global] Instance retryLeaseClient_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.retryLeaseClient.t) (clientv3.retryLeaseClientⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End retryLeaseClient.
 
-Global Instance bounded_size_retryLeaseClient : BoundedTypeSize clientv3.retryLeaseClient.
-Admitted.
-
-Global Instance into_val_retryLeaseClient `{ffi_syntax} : IntoVal retryLeaseClient.t.
-Admitted.
-
-Global Instance into_val_typed_retryLeaseClient `{ffi_syntax} : IntoValTyped retryLeaseClient.t clientv3.retryLeaseClient.
-Admitted.
-
-(* type clientv3.retryClusterClient *)
 Module retryClusterClient.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance retryClusterClient_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.retryClusterClient.t). Admitted.
+
+#[global] Instance retryClusterClient_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.retryClusterClient.t) (clientv3.retryClusterClientⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End retryClusterClient.
 
-Global Instance bounded_size_retryClusterClient : BoundedTypeSize clientv3.retryClusterClient.
-Admitted.
-
-Global Instance into_val_retryClusterClient `{ffi_syntax} : IntoVal retryClusterClient.t.
-Admitted.
-
-Global Instance into_val_typed_retryClusterClient `{ffi_syntax} : IntoValTyped retryClusterClient.t clientv3.retryClusterClient.
-Admitted.
-
-(* type clientv3.retryMaintenanceClient *)
 Module retryMaintenanceClient.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance retryMaintenanceClient_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.retryMaintenanceClient.t). Admitted.
+
+#[global] Instance retryMaintenanceClient_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.retryMaintenanceClient.t) (clientv3.retryMaintenanceClientⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End retryMaintenanceClient.
 
-Global Instance bounded_size_retryMaintenanceClient : BoundedTypeSize clientv3.retryMaintenanceClient.
-Admitted.
-
-Global Instance into_val_retryMaintenanceClient `{ffi_syntax} : IntoVal retryMaintenanceClient.t.
-Admitted.
-
-Global Instance into_val_typed_retryMaintenanceClient `{ffi_syntax} : IntoValTyped retryMaintenanceClient.t clientv3.retryMaintenanceClient.
-Admitted.
-
-(* type clientv3.retryAuthClient *)
 Module retryAuthClient.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance retryAuthClient_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.retryAuthClient.t). Admitted.
+
+#[global] Instance retryAuthClient_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.retryAuthClient.t) (clientv3.retryAuthClientⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End retryAuthClient.
 
-Global Instance bounded_size_retryAuthClient : BoundedTypeSize clientv3.retryAuthClient.
-Admitted.
-
-Global Instance into_val_retryAuthClient `{ffi_syntax} : IntoVal retryAuthClient.t.
-Admitted.
-
-Global Instance into_val_typed_retryAuthClient `{ffi_syntax} : IntoValTyped retryAuthClient.t clientv3.retryAuthClient.
-Admitted.
-
-(* type clientv3.serverStreamingRetryingStream *)
 Module serverStreamingRetryingStream.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance serverStreamingRetryingStream_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.serverStreamingRetryingStream.t). Admitted.
+
+#[global] Instance serverStreamingRetryingStream_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.serverStreamingRetryingStream.t) (clientv3.serverStreamingRetryingStreamⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End serverStreamingRetryingStream.
 
-Global Instance bounded_size_serverStreamingRetryingStream : BoundedTypeSize clientv3.serverStreamingRetryingStream.
-Admitted.
-
-Global Instance into_val_serverStreamingRetryingStream `{ffi_syntax} : IntoVal serverStreamingRetryingStream.t.
-Admitted.
-
-Global Instance into_val_typed_serverStreamingRetryingStream `{ffi_syntax} : IntoValTyped serverStreamingRetryingStream.t clientv3.serverStreamingRetryingStream.
-Admitted.
-
-(* type clientv3.backoffFunc *)
 Module backoffFunc.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance backoffFunc_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.backoffFunc.t). Admitted.
+
+#[global] Instance backoffFunc_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.backoffFunc.t) (clientv3.backoffFuncⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End backoffFunc.
 
-Global Instance bounded_size_backoffFunc : BoundedTypeSize clientv3.backoffFunc.
-Admitted.
-
-Global Instance into_val_backoffFunc `{ffi_syntax} : IntoVal backoffFunc.t.
-Admitted.
-
-Global Instance into_val_typed_backoffFunc `{ffi_syntax} : IntoValTyped backoffFunc.t clientv3.backoffFunc.
-Admitted.
-
-(* type clientv3.options *)
 Module options.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance options_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.options.t). Admitted.
+
+#[global] Instance options_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.options.t) (clientv3.optionsⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End options.
 
-Global Instance bounded_size_options : BoundedTypeSize clientv3.options.
-Admitted.
-
-Global Instance into_val_options `{ffi_syntax} : IntoVal options.t.
-Admitted.
-
-Global Instance into_val_typed_options `{ffi_syntax} : IntoValTyped options.t clientv3.options.
-Admitted.
-
-(* type clientv3.retryOption *)
 Module retryOption.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance retryOption_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.retryOption.t). Admitted.
+
+#[global] Instance retryOption_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.retryOption.t) (clientv3.retryOptionⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End retryOption.
 
-Global Instance bounded_size_retryOption : BoundedTypeSize clientv3.retryOption.
-Admitted.
-
-Global Instance into_val_retryOption `{ffi_syntax} : IntoVal retryOption.t.
-Admitted.
-
-Global Instance into_val_typed_retryOption `{ffi_syntax} : IntoValTyped retryOption.t clientv3.retryOption.
-Admitted.
-
-(* type clientv3.SortTarget *)
-Module SortTarget.
-
-#[global] Transparent clientv3.SortTarget.
-#[global] Typeclasses Transparent clientv3.SortTarget.
-Section def.
-Context `{ffi_syntax}.
-Definition t := w64.
-End def.
-End SortTarget.
-
-(* type clientv3.SortOrder *)
-Module SortOrder.
-
-#[global] Transparent clientv3.SortOrder.
-#[global] Typeclasses Transparent clientv3.SortOrder.
-Section def.
-Context `{ffi_syntax}.
-Definition t := w64.
-End def.
-End SortOrder.
-
-(* type clientv3.SortOption *)
 Module SortOption.
 Section def.
-Context `{ffi_syntax}.
 
-Record t := mk {
-  Target' : SortTarget.t;
-  Order' : SortOrder.t;
-}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance SortOption_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.SortOption.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "Target" ∷ l.[(clientv3.SortOption.t), "Target"] ↦{dq} v.(clientv3.SortOption.Target') ∗
+      "Order" ∷ l.[(clientv3.SortOption.t), "Order"] ↦{dq} v.(clientv3.SortOption.Order') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance SortOption_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.SortOption.t) (clientv3.SortOptionⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance SortOption_access_load_Target l (v : (clientv3.SortOption.t)) dq :
+  AccessStrict
+    (l.[(clientv3.SortOption.t), "Target"] ↦{dq} (v.(clientv3.SortOption.Target')))
+    (l.[(clientv3.SortOption.t), "Target"] ↦{dq} (v.(clientv3.SortOption.Target')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance SortOption_access_store_Target l (v : (clientv3.SortOption.t)) Target' :
+  AccessStrict
+    (l.[(clientv3.SortOption.t), "Target"] ↦ (v.(clientv3.SortOption.Target')))
+    (l.[(clientv3.SortOption.t), "Target"] ↦ Target')
+    (l ↦ v) (l ↦ (v <|(clientv3.SortOption.Target') := Target'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance SortOption_access_load_Order l (v : (clientv3.SortOption.t)) dq :
+  AccessStrict
+    (l.[(clientv3.SortOption.t), "Order"] ↦{dq} (v.(clientv3.SortOption.Order')))
+    (l.[(clientv3.SortOption.t), "Order"] ↦{dq} (v.(clientv3.SortOption.Order')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance SortOption_access_store_Order l (v : (clientv3.SortOption.t)) Order' :
+  AccessStrict
+    (l.[(clientv3.SortOption.t), "Order"] ↦ (v.(clientv3.SortOption.Order')))
+    (l.[(clientv3.SortOption.t), "Order"] ↦ Order')
+    (l ↦ v) (l ↦ (v <|(clientv3.SortOption.Order') := Order'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End SortOption.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent clientv3.SortOption.
-#[local] Typeclasses Transparent clientv3.SortOption.
-
-Global Instance SortOption_wf : struct.Wf clientv3.SortOption.
-Proof. apply _. Qed.
-
-Global Instance settable_SortOption : Settable SortOption.t :=
-  settable! SortOption.mk < SortOption.Target'; SortOption.Order' >.
-Global Instance into_val_SortOption : IntoVal SortOption.t :=
-  {| to_val_def v :=
-    struct.val_aux clientv3.SortOption [
-    "Target" ::= #(SortOption.Target' v);
-    "Order" ::= #(SortOption.Order' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_SortOption : IntoValTyped SortOption.t clientv3.SortOption :=
-{|
-  default_val := SortOption.mk (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_SortOption_Target : IntoValStructField "Target" clientv3.SortOption SortOption.Target'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_SortOption_Order : IntoValStructField "Order" clientv3.SortOption SortOption.Order'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-
-
-Global Instance SortOption_struct_fields_split dq l (v : SortOption.t) :
-  StructFieldsSplit dq l v (
-    "HTarget" ∷ l ↦s[clientv3.SortOption :: "Target"]{dq} v.(SortOption.Target') ∗
-    "HOrder" ∷ l ↦s[clientv3.SortOption :: "Order"]{dq} v.(SortOption.Order')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (SortOption.Target' v)) (clientv3.SortOption) "Target"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-(* type clientv3.Txn *)
-Module Txn.
-
-#[global] Transparent clientv3.Txn.
-#[global] Typeclasses Transparent clientv3.Txn.
-Section def.
-Context `{ffi_syntax}.
-Definition t := interface.t.
-End def.
-End Txn.
-
-(* type clientv3.txn *)
 Module txn.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance txn_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.txn.t). Admitted.
+
+#[global] Instance txn_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.txn.t) (clientv3.txnⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End txn.
 
-Global Instance bounded_size_txn : BoundedTypeSize clientv3.txn.
-Admitted.
-
-Global Instance into_val_txn `{ffi_syntax} : IntoVal txn.t.
-Admitted.
-
-Global Instance into_val_typed_txn `{ffi_syntax} : IntoValTyped txn.t clientv3.txn.
-Admitted.
-
-(* type clientv3.Event *)
-Module Event.
-
-#[global] Transparent clientv3.Event.
-#[global] Typeclasses Transparent clientv3.Event.
-Section def.
-Context `{ffi_syntax}.
-Definition t := mvccpb.Event.t.
-End def.
-End Event.
-
-(* type clientv3.WatchChan *)
-Module WatchChan.
-
-#[global] Transparent clientv3.WatchChan.
-#[global] Typeclasses Transparent clientv3.WatchChan.
-Section def.
-Context `{ffi_syntax}.
-Definition t := loc.
-End def.
-End WatchChan.
-
-(* type clientv3.Watcher *)
-Module Watcher.
-
-#[global] Transparent clientv3.Watcher.
-#[global] Typeclasses Transparent clientv3.Watcher.
-Section def.
-Context `{ffi_syntax}.
-Definition t := interface.t.
-End def.
-End Watcher.
-
-(* type clientv3.WatchResponse *)
 Module WatchResponse.
 Section def.
-Context `{ffi_syntax}.
 
-Record t := mk {
-  Header' : etcdserverpb.ResponseHeader.t;
-  Events' : slice.t;
-  CompactRevision' : w64;
-  Canceled' : bool;
-  Created' : bool;
-  closeErr' : error.t;
-  cancelReason' : go_string;
-}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance WatchResponse_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.WatchResponse.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "Header" ∷ l.[(clientv3.WatchResponse.t), "Header"] ↦{dq} v.(clientv3.WatchResponse.Header') ∗
+      "Events" ∷ l.[(clientv3.WatchResponse.t), "Events"] ↦{dq} v.(clientv3.WatchResponse.Events') ∗
+      "CompactRevision" ∷ l.[(clientv3.WatchResponse.t), "CompactRevision"] ↦{dq} v.(clientv3.WatchResponse.CompactRevision') ∗
+      "Canceled" ∷ l.[(clientv3.WatchResponse.t), "Canceled"] ↦{dq} v.(clientv3.WatchResponse.Canceled') ∗
+      "Created" ∷ l.[(clientv3.WatchResponse.t), "Created"] ↦{dq} v.(clientv3.WatchResponse.Created') ∗
+      "closeErr" ∷ l.[(clientv3.WatchResponse.t), "closeErr"] ↦{dq} v.(clientv3.WatchResponse.closeErr') ∗
+      "cancelReason" ∷ l.[(clientv3.WatchResponse.t), "cancelReason"] ↦{dq} v.(clientv3.WatchResponse.cancelReason') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance WatchResponse_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.WatchResponse.t) (clientv3.WatchResponseⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance WatchResponse_access_load_Header l (v : (clientv3.WatchResponse.t)) dq :
+  AccessStrict
+    (l.[(clientv3.WatchResponse.t), "Header"] ↦{dq} (v.(clientv3.WatchResponse.Header')))
+    (l.[(clientv3.WatchResponse.t), "Header"] ↦{dq} (v.(clientv3.WatchResponse.Header')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance WatchResponse_access_store_Header l (v : (clientv3.WatchResponse.t)) Header' :
+  AccessStrict
+    (l.[(clientv3.WatchResponse.t), "Header"] ↦ (v.(clientv3.WatchResponse.Header')))
+    (l.[(clientv3.WatchResponse.t), "Header"] ↦ Header')
+    (l ↦ v) (l ↦ (v <|(clientv3.WatchResponse.Header') := Header'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance WatchResponse_access_load_Events l (v : (clientv3.WatchResponse.t)) dq :
+  AccessStrict
+    (l.[(clientv3.WatchResponse.t), "Events"] ↦{dq} (v.(clientv3.WatchResponse.Events')))
+    (l.[(clientv3.WatchResponse.t), "Events"] ↦{dq} (v.(clientv3.WatchResponse.Events')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance WatchResponse_access_store_Events l (v : (clientv3.WatchResponse.t)) Events' :
+  AccessStrict
+    (l.[(clientv3.WatchResponse.t), "Events"] ↦ (v.(clientv3.WatchResponse.Events')))
+    (l.[(clientv3.WatchResponse.t), "Events"] ↦ Events')
+    (l ↦ v) (l ↦ (v <|(clientv3.WatchResponse.Events') := Events'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance WatchResponse_access_load_CompactRevision l (v : (clientv3.WatchResponse.t)) dq :
+  AccessStrict
+    (l.[(clientv3.WatchResponse.t), "CompactRevision"] ↦{dq} (v.(clientv3.WatchResponse.CompactRevision')))
+    (l.[(clientv3.WatchResponse.t), "CompactRevision"] ↦{dq} (v.(clientv3.WatchResponse.CompactRevision')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance WatchResponse_access_store_CompactRevision l (v : (clientv3.WatchResponse.t)) CompactRevision' :
+  AccessStrict
+    (l.[(clientv3.WatchResponse.t), "CompactRevision"] ↦ (v.(clientv3.WatchResponse.CompactRevision')))
+    (l.[(clientv3.WatchResponse.t), "CompactRevision"] ↦ CompactRevision')
+    (l ↦ v) (l ↦ (v <|(clientv3.WatchResponse.CompactRevision') := CompactRevision'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance WatchResponse_access_load_Canceled l (v : (clientv3.WatchResponse.t)) dq :
+  AccessStrict
+    (l.[(clientv3.WatchResponse.t), "Canceled"] ↦{dq} (v.(clientv3.WatchResponse.Canceled')))
+    (l.[(clientv3.WatchResponse.t), "Canceled"] ↦{dq} (v.(clientv3.WatchResponse.Canceled')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance WatchResponse_access_store_Canceled l (v : (clientv3.WatchResponse.t)) Canceled' :
+  AccessStrict
+    (l.[(clientv3.WatchResponse.t), "Canceled"] ↦ (v.(clientv3.WatchResponse.Canceled')))
+    (l.[(clientv3.WatchResponse.t), "Canceled"] ↦ Canceled')
+    (l ↦ v) (l ↦ (v <|(clientv3.WatchResponse.Canceled') := Canceled'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance WatchResponse_access_load_Created l (v : (clientv3.WatchResponse.t)) dq :
+  AccessStrict
+    (l.[(clientv3.WatchResponse.t), "Created"] ↦{dq} (v.(clientv3.WatchResponse.Created')))
+    (l.[(clientv3.WatchResponse.t), "Created"] ↦{dq} (v.(clientv3.WatchResponse.Created')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance WatchResponse_access_store_Created l (v : (clientv3.WatchResponse.t)) Created' :
+  AccessStrict
+    (l.[(clientv3.WatchResponse.t), "Created"] ↦ (v.(clientv3.WatchResponse.Created')))
+    (l.[(clientv3.WatchResponse.t), "Created"] ↦ Created')
+    (l ↦ v) (l ↦ (v <|(clientv3.WatchResponse.Created') := Created'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance WatchResponse_access_load_closeErr l (v : (clientv3.WatchResponse.t)) dq :
+  AccessStrict
+    (l.[(clientv3.WatchResponse.t), "closeErr"] ↦{dq} (v.(clientv3.WatchResponse.closeErr')))
+    (l.[(clientv3.WatchResponse.t), "closeErr"] ↦{dq} (v.(clientv3.WatchResponse.closeErr')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance WatchResponse_access_store_closeErr l (v : (clientv3.WatchResponse.t)) closeErr' :
+  AccessStrict
+    (l.[(clientv3.WatchResponse.t), "closeErr"] ↦ (v.(clientv3.WatchResponse.closeErr')))
+    (l.[(clientv3.WatchResponse.t), "closeErr"] ↦ closeErr')
+    (l ↦ v) (l ↦ (v <|(clientv3.WatchResponse.closeErr') := closeErr'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance WatchResponse_access_load_cancelReason l (v : (clientv3.WatchResponse.t)) dq :
+  AccessStrict
+    (l.[(clientv3.WatchResponse.t), "cancelReason"] ↦{dq} (v.(clientv3.WatchResponse.cancelReason')))
+    (l.[(clientv3.WatchResponse.t), "cancelReason"] ↦{dq} (v.(clientv3.WatchResponse.cancelReason')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance WatchResponse_access_store_cancelReason l (v : (clientv3.WatchResponse.t)) cancelReason' :
+  AccessStrict
+    (l.[(clientv3.WatchResponse.t), "cancelReason"] ↦ (v.(clientv3.WatchResponse.cancelReason')))
+    (l.[(clientv3.WatchResponse.t), "cancelReason"] ↦ cancelReason')
+    (l ↦ v) (l ↦ (v <|(clientv3.WatchResponse.cancelReason') := cancelReason'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End WatchResponse.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent clientv3.WatchResponse.
-#[local] Typeclasses Transparent clientv3.WatchResponse.
-
-Global Instance WatchResponse_wf : struct.Wf clientv3.WatchResponse.
-Proof. apply _. Qed.
-
-Global Instance settable_WatchResponse : Settable WatchResponse.t :=
-  settable! WatchResponse.mk < WatchResponse.Header'; WatchResponse.Events'; WatchResponse.CompactRevision'; WatchResponse.Canceled'; WatchResponse.Created'; WatchResponse.closeErr'; WatchResponse.cancelReason' >.
-Global Instance into_val_WatchResponse : IntoVal WatchResponse.t :=
-  {| to_val_def v :=
-    struct.val_aux clientv3.WatchResponse [
-    "Header" ::= #(WatchResponse.Header' v);
-    "Events" ::= #(WatchResponse.Events' v);
-    "CompactRevision" ::= #(WatchResponse.CompactRevision' v);
-    "Canceled" ::= #(WatchResponse.Canceled' v);
-    "Created" ::= #(WatchResponse.Created' v);
-    "closeErr" ::= #(WatchResponse.closeErr' v);
-    "cancelReason" ::= #(WatchResponse.cancelReason' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_WatchResponse : IntoValTyped WatchResponse.t clientv3.WatchResponse :=
-{|
-  default_val := WatchResponse.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_WatchResponse_Header : IntoValStructField "Header" clientv3.WatchResponse WatchResponse.Header'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_WatchResponse_Events : IntoValStructField "Events" clientv3.WatchResponse WatchResponse.Events'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_WatchResponse_CompactRevision : IntoValStructField "CompactRevision" clientv3.WatchResponse WatchResponse.CompactRevision'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_WatchResponse_Canceled : IntoValStructField "Canceled" clientv3.WatchResponse WatchResponse.Canceled'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_WatchResponse_Created : IntoValStructField "Created" clientv3.WatchResponse WatchResponse.Created'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_WatchResponse_closeErr : IntoValStructField "closeErr" clientv3.WatchResponse WatchResponse.closeErr'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_WatchResponse_cancelReason : IntoValStructField "cancelReason" clientv3.WatchResponse WatchResponse.cancelReason'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-
-
-Global Instance WatchResponse_struct_fields_split dq l (v : WatchResponse.t) :
-  StructFieldsSplit dq l v (
-    "HHeader" ∷ l ↦s[clientv3.WatchResponse :: "Header"]{dq} v.(WatchResponse.Header') ∗
-    "HEvents" ∷ l ↦s[clientv3.WatchResponse :: "Events"]{dq} v.(WatchResponse.Events') ∗
-    "HCompactRevision" ∷ l ↦s[clientv3.WatchResponse :: "CompactRevision"]{dq} v.(WatchResponse.CompactRevision') ∗
-    "HCanceled" ∷ l ↦s[clientv3.WatchResponse :: "Canceled"]{dq} v.(WatchResponse.Canceled') ∗
-    "HCreated" ∷ l ↦s[clientv3.WatchResponse :: "Created"]{dq} v.(WatchResponse.Created') ∗
-    "HcloseErr" ∷ l ↦s[clientv3.WatchResponse :: "closeErr"]{dq} v.(WatchResponse.closeErr') ∗
-    "HcancelReason" ∷ l ↦s[clientv3.WatchResponse :: "cancelReason"]{dq} v.(WatchResponse.cancelReason')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (WatchResponse.Header' v)) (clientv3.WatchResponse) "Header"%go.
-  simpl_one_flatten_struct (# (WatchResponse.Events' v)) (clientv3.WatchResponse) "Events"%go.
-  simpl_one_flatten_struct (# (WatchResponse.CompactRevision' v)) (clientv3.WatchResponse) "CompactRevision"%go.
-  simpl_one_flatten_struct (# (WatchResponse.Canceled' v)) (clientv3.WatchResponse) "Canceled"%go.
-  simpl_one_flatten_struct (# (WatchResponse.Created' v)) (clientv3.WatchResponse) "Created"%go.
-  simpl_one_flatten_struct (# (WatchResponse.closeErr' v)) (clientv3.WatchResponse) "closeErr"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-(* type clientv3.watcher *)
 Module watcher.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance watcher_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.watcher.t). Admitted.
+
+#[global] Instance watcher_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.watcher.t) (clientv3.watcherⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End watcher.
 
-Global Instance bounded_size_watcher : BoundedTypeSize clientv3.watcher.
-Admitted.
-
-Global Instance into_val_watcher `{ffi_syntax} : IntoVal watcher.t.
-Admitted.
-
-Global Instance into_val_typed_watcher `{ffi_syntax} : IntoValTyped watcher.t clientv3.watcher.
-Admitted.
-
-(* type clientv3.watchGRPCStream *)
 Module watchGRPCStream.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance watchGRPCStream_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.watchGRPCStream.t). Admitted.
+
+#[global] Instance watchGRPCStream_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.watchGRPCStream.t) (clientv3.watchGRPCStreamⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End watchGRPCStream.
 
-Global Instance bounded_size_watchGRPCStream : BoundedTypeSize clientv3.watchGRPCStream.
-Admitted.
-
-Global Instance into_val_watchGRPCStream `{ffi_syntax} : IntoVal watchGRPCStream.t.
-Admitted.
-
-Global Instance into_val_typed_watchGRPCStream `{ffi_syntax} : IntoValTyped watchGRPCStream.t clientv3.watchGRPCStream.
-Admitted.
-
-(* type clientv3.watchStreamRequest *)
 Module watchStreamRequest.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance watchStreamRequest_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.watchStreamRequest.t). Admitted.
+
+#[global] Instance watchStreamRequest_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.watchStreamRequest.t) (clientv3.watchStreamRequestⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End watchStreamRequest.
 
-Global Instance bounded_size_watchStreamRequest : BoundedTypeSize clientv3.watchStreamRequest.
-Admitted.
-
-Global Instance into_val_watchStreamRequest `{ffi_syntax} : IntoVal watchStreamRequest.t.
-Admitted.
-
-Global Instance into_val_typed_watchStreamRequest `{ffi_syntax} : IntoValTyped watchStreamRequest.t clientv3.watchStreamRequest.
-Admitted.
-
-(* type clientv3.watchRequest *)
 Module watchRequest.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance watchRequest_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.watchRequest.t). Admitted.
+
+#[global] Instance watchRequest_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.watchRequest.t) (clientv3.watchRequestⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End watchRequest.
 
-Global Instance bounded_size_watchRequest : BoundedTypeSize clientv3.watchRequest.
-Admitted.
-
-Global Instance into_val_watchRequest `{ffi_syntax} : IntoVal watchRequest.t.
-Admitted.
-
-Global Instance into_val_typed_watchRequest `{ffi_syntax} : IntoValTyped watchRequest.t clientv3.watchRequest.
-Admitted.
-
-(* type clientv3.progressRequest *)
 Module progressRequest.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance progressRequest_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.progressRequest.t). Admitted.
+
+#[global] Instance progressRequest_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.progressRequest.t) (clientv3.progressRequestⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End progressRequest.
 
-Global Instance bounded_size_progressRequest : BoundedTypeSize clientv3.progressRequest.
-Admitted.
-
-Global Instance into_val_progressRequest `{ffi_syntax} : IntoVal progressRequest.t.
-Admitted.
-
-Global Instance into_val_typed_progressRequest `{ffi_syntax} : IntoValTyped progressRequest.t clientv3.progressRequest.
-Admitted.
-
-(* type clientv3.watcherStream *)
 Module watcherStream.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance watcherStream_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.watcherStream.t). Admitted.
+
+#[global] Instance watcherStream_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.watcherStream.t) (clientv3.watcherStreamⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End watcherStream.
 
-Global Instance bounded_size_watcherStream : BoundedTypeSize clientv3.watcherStream.
-Admitted.
-
-Global Instance into_val_watcherStream `{ffi_syntax} : IntoVal watcherStream.t.
-Admitted.
-
-Global Instance into_val_typed_watcherStream `{ffi_syntax} : IntoValTyped watcherStream.t clientv3.watcherStream.
-Admitted.
-
-(* type clientv3.valCtx *)
 Module valCtx.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : clientv3.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance valCtx_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (clientv3.valCtx.t). Admitted.
+
+#[global] Instance valCtx_into_val_typed
+   :
+  IntoValTypedUnderlying (clientv3.valCtx.t) (clientv3.valCtxⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End valCtx.
 
-Global Instance bounded_size_valCtx : BoundedTypeSize clientv3.valCtx.
-Admitted.
-
-Global Instance into_val_valCtx `{ffi_syntax} : IntoVal valCtx.t.
-Admitted.
-
-Global Instance into_val_typed_valCtx `{ffi_syntax} : IntoValTyped valCtx.t clientv3.valCtx.
-Admitted.
-
-Section names.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext}.
-#[local] Transparent is_pkg_defined is_pkg_defined_pure.
-
-Global Instance is_pkg_defined_pure_clientv3 : IsPkgDefinedPure clientv3 :=
-  {|
-    is_pkg_defined_pure_def go_ctx :=
-      is_pkg_defined_pure_single clientv3 ∧
-      is_pkg_defined_pure code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb ∧
-      is_pkg_defined_pure code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb;
-  |}.
-
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_clientv3 : IsPkgDefined clientv3 :=
-  {|
-    is_pkg_defined_def go_ctx :=
-      (is_pkg_defined_single clientv3 ∗
-       is_pkg_defined code.go_etcd_io.etcd.api.v3.etcdserverpb.etcdserverpb ∗
-       is_pkg_defined code.go_etcd_io.etcd.api.v3.mvccpb.mvccpb)%I
-  |}.
-Final Obligation. iIntros. iFrame "#%". Qed.
-#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
-
-Global Instance wp_func_call_WithZapLogger :
-  WpFuncCall clientv3.WithZapLogger _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_OpGet :
-  WpFuncCall clientv3.OpGet _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_OpDelete :
-  WpFuncCall clientv3.OpDelete _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_OpPut :
-  WpFuncCall clientv3.OpPut _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_OpTxn :
-  WpFuncCall clientv3.OpTxn _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_WithLease :
-  WpFuncCall clientv3.WithLease _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_WithLimit :
-  WpFuncCall clientv3.WithLimit _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_WithRev :
-  WpFuncCall clientv3.WithRev _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_WithSort :
-  WpFuncCall clientv3.WithSort _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_WithPrefix :
-  WpFuncCall clientv3.WithPrefix _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_WithRange :
-  WpFuncCall clientv3.WithRange _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_WithFromKey :
-  WpFuncCall clientv3.WithFromKey _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_WithSerializable :
-  WpFuncCall clientv3.WithSerializable _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_WithKeysOnly :
-  WpFuncCall clientv3.WithKeysOnly _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_WithCountOnly :
-  WpFuncCall clientv3.WithCountOnly _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_WithMinModRev :
-  WpFuncCall clientv3.WithMinModRev _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_WithMaxModRev :
-  WpFuncCall clientv3.WithMaxModRev _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_WithMinCreateRev :
-  WpFuncCall clientv3.WithMinCreateRev _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_WithMaxCreateRev :
-  WpFuncCall clientv3.WithMaxCreateRev _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_WithFirstCreate :
-  WpFuncCall clientv3.WithFirstCreate _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_WithLastCreate :
-  WpFuncCall clientv3.WithLastCreate _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_WithFirstKey :
-  WpFuncCall clientv3.WithFirstKey _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_WithLastKey :
-  WpFuncCall clientv3.WithLastKey _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_WithFirstRev :
-  WpFuncCall clientv3.WithFirstRev _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_WithLastRev :
-  WpFuncCall clientv3.WithLastRev _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_WithProgressNotify :
-  WpFuncCall clientv3.WithProgressNotify _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_WithCreatedNotify :
-  WpFuncCall clientv3.WithCreatedNotify _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_WithFilterPut :
-  WpFuncCall clientv3.WithFilterPut _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_WithFilterDelete :
-  WpFuncCall clientv3.WithFilterDelete _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_WithPrevKV :
-  WpFuncCall clientv3.WithPrevKV _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_WithFragment :
-  WpFuncCall clientv3.WithFragment _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_WithIgnoreValue :
-  WpFuncCall clientv3.WithIgnoreValue _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_WithIgnoreLease :
-  WpFuncCall clientv3.WithIgnoreLease _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_WithAttachedKeys :
-  WpFuncCall clientv3.WithAttachedKeys _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_method_call_Op_IsCountOnly :
-  WpMethodCall clientv3.Op.id "IsCountOnly" _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op_IsDelete :
-  WpMethodCall clientv3.Op.id "IsDelete" _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op_IsGet :
-  WpMethodCall clientv3.Op.id "IsGet" _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op_IsKeysOnly :
-  WpMethodCall clientv3.Op.id "IsKeysOnly" _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op_IsOptsWithFromKey :
-  WpMethodCall clientv3.Op.id "IsOptsWithFromKey" _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op_IsOptsWithPrefix :
-  WpMethodCall clientv3.Op.id "IsOptsWithPrefix" _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op_IsPut :
-  WpMethodCall clientv3.Op.id "IsPut" _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op_IsSerializable :
-  WpMethodCall clientv3.Op.id "IsSerializable" _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op_IsSortOptionValid :
-  WpMethodCall clientv3.Op.id "IsSortOptionValid" _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op_IsTxn :
-  WpMethodCall clientv3.Op.id "IsTxn" _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op_KeyBytes :
-  WpMethodCall clientv3.Op.id "KeyBytes" _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op_MaxCreateRev :
-  WpMethodCall clientv3.Op.id "MaxCreateRev" _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op_MaxModRev :
-  WpMethodCall clientv3.Op.id "MaxModRev" _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op_MinCreateRev :
-  WpMethodCall clientv3.Op.id "MinCreateRev" _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op_MinModRev :
-  WpMethodCall clientv3.Op.id "MinModRev" _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op_RangeBytes :
-  WpMethodCall clientv3.Op.id "RangeBytes" _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op_Rev :
-  WpMethodCall clientv3.Op.id "Rev" _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op_Txn :
-  WpMethodCall clientv3.Op.id "Txn" _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op_ValueBytes :
-  WpMethodCall clientv3.Op.id "ValueBytes" _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op_isWrite :
-  WpMethodCall clientv3.Op.id "isWrite" _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op_toRangeRequest :
-  WpMethodCall clientv3.Op.id "toRangeRequest" _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op_toRequestOp :
-  WpMethodCall clientv3.Op.id "toRequestOp" _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op_toTxnRequest :
-  WpMethodCall clientv3.Op.id "toTxnRequest" _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op'ptr_IsCountOnly :
-  WpMethodCall (ptrT.id clientv3.Op.id) "IsCountOnly" _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op'ptr_IsDelete :
-  WpMethodCall (ptrT.id clientv3.Op.id) "IsDelete" _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op'ptr_IsGet :
-  WpMethodCall (ptrT.id clientv3.Op.id) "IsGet" _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op'ptr_IsKeysOnly :
-  WpMethodCall (ptrT.id clientv3.Op.id) "IsKeysOnly" _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op'ptr_IsOptsWithFromKey :
-  WpMethodCall (ptrT.id clientv3.Op.id) "IsOptsWithFromKey" _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op'ptr_IsOptsWithPrefix :
-  WpMethodCall (ptrT.id clientv3.Op.id) "IsOptsWithPrefix" _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op'ptr_IsPut :
-  WpMethodCall (ptrT.id clientv3.Op.id) "IsPut" _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op'ptr_IsSerializable :
-  WpMethodCall (ptrT.id clientv3.Op.id) "IsSerializable" _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op'ptr_IsSortOptionValid :
-  WpMethodCall (ptrT.id clientv3.Op.id) "IsSortOptionValid" _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op'ptr_IsTxn :
-  WpMethodCall (ptrT.id clientv3.Op.id) "IsTxn" _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op'ptr_KeyBytes :
-  WpMethodCall (ptrT.id clientv3.Op.id) "KeyBytes" _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op'ptr_MaxCreateRev :
-  WpMethodCall (ptrT.id clientv3.Op.id) "MaxCreateRev" _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op'ptr_MaxModRev :
-  WpMethodCall (ptrT.id clientv3.Op.id) "MaxModRev" _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op'ptr_MinCreateRev :
-  WpMethodCall (ptrT.id clientv3.Op.id) "MinCreateRev" _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op'ptr_MinModRev :
-  WpMethodCall (ptrT.id clientv3.Op.id) "MinModRev" _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op'ptr_RangeBytes :
-  WpMethodCall (ptrT.id clientv3.Op.id) "RangeBytes" _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op'ptr_Rev :
-  WpMethodCall (ptrT.id clientv3.Op.id) "Rev" _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op'ptr_Txn :
-  WpMethodCall (ptrT.id clientv3.Op.id) "Txn" _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op'ptr_ValueBytes :
-  WpMethodCall (ptrT.id clientv3.Op.id) "ValueBytes" _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op'ptr_WithKeyBytes :
-  WpMethodCall (ptrT.id clientv3.Op.id) "WithKeyBytes" _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op'ptr_WithRangeBytes :
-  WpMethodCall (ptrT.id clientv3.Op.id) "WithRangeBytes" _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op'ptr_WithValueBytes :
-  WpMethodCall (ptrT.id clientv3.Op.id) "WithValueBytes" _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op'ptr_applyOpts :
-  WpMethodCall (ptrT.id clientv3.Op.id) "applyOpts" _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op'ptr_isWrite :
-  WpMethodCall (ptrT.id clientv3.Op.id) "isWrite" _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op'ptr_toRangeRequest :
-  WpMethodCall (ptrT.id clientv3.Op.id) "toRangeRequest" _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op'ptr_toRequestOp :
-  WpMethodCall (ptrT.id clientv3.Op.id) "toRequestOp" _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op'ptr_toTxnRequest :
-  WpMethodCall (ptrT.id clientv3.Op.id) "toTxnRequest" _ (is_pkg_defined clientv3) :=
-  ltac:(solve_wp_method_call).
-
-End names.
 End clientv3.

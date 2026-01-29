@@ -27,75 +27,6 @@ Proof. Admitted.
 End def.
 End ParseError.
 
-Module Time.
-Section def.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context {sem : go.Semantics}.
-Context {package_sem' : time.Assumptions}.
-
-Local Set Default Proof Using "All".
-
-#[global]Program Instance Time_typed_pointsto  :
-  TypedPointsto (Σ:=Σ) (time.Time.t) :=
-  {|
-    typed_pointsto_def l v dq :=
-      (
-      "wall" ∷ l.[(time.Time.t), "wall"] ↦{dq} v.(time.Time.wall') ∗
-      "ext" ∷ l.[(time.Time.t), "ext"] ↦{dq} v.(time.Time.ext') ∗
-      "loc" ∷ l.[(time.Time.t), "loc"] ↦{dq} v.(time.Time.loc') ∗
-      "_" ∷ True
-      )%I
-  |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
-
-#[global] Instance Time_into_val_typed
-   :
-  IntoValTypedUnderlying (time.Time.t) (time.Timeⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
-#[global] Instance Time_access_load_wall l (v : (time.Time.t)) dq :
-  AccessStrict
-    (l.[(time.Time.t), "wall"] ↦{dq} (v.(time.Time.wall')))
-    (l.[(time.Time.t), "wall"] ↦{dq} (v.(time.Time.wall')))
-    (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
-
-#[global] Instance Time_access_store_wall l (v : (time.Time.t)) wall' :
-  AccessStrict
-    (l.[(time.Time.t), "wall"] ↦ (v.(time.Time.wall')))
-    (l.[(time.Time.t), "wall"] ↦ wall')
-    (l ↦ v) (l ↦ (v <|(time.Time.wall') := wall'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance Time_access_load_ext l (v : (time.Time.t)) dq :
-  AccessStrict
-    (l.[(time.Time.t), "ext"] ↦{dq} (v.(time.Time.ext')))
-    (l.[(time.Time.t), "ext"] ↦{dq} (v.(time.Time.ext')))
-    (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
-
-#[global] Instance Time_access_store_ext l (v : (time.Time.t)) ext' :
-  AccessStrict
-    (l.[(time.Time.t), "ext"] ↦ (v.(time.Time.ext')))
-    (l.[(time.Time.t), "ext"] ↦ ext')
-    (l ↦ v) (l ↦ (v <|(time.Time.ext') := ext'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
-#[global] Instance Time_access_load_loc l (v : (time.Time.t)) dq :
-  AccessStrict
-    (l.[(time.Time.t), "loc"] ↦{dq} (v.(time.Time.loc')))
-    (l.[(time.Time.t), "loc"] ↦{dq} (v.(time.Time.loc')))
-    (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
-
-#[global] Instance Time_access_store_loc l (v : (time.Time.t)) loc' :
-  AccessStrict
-    (l.[(time.Time.t), "loc"] ↦ (v.(time.Time.loc')))
-    (l.[(time.Time.t), "loc"] ↦ loc')
-    (l ↦ v) (l ↦ (v <|(time.Time.loc') := loc'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
-
-End def.
-End Time.
-
 Module Timer.
 Section def.
 
@@ -170,6 +101,75 @@ Proof. Admitted.
 
 End def.
 End Ticker.
+
+Module Time.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : time.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance Time_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (time.Time.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "wall" ∷ l.[(time.Time.t), "wall"] ↦{dq} v.(time.Time.wall') ∗
+      "ext" ∷ l.[(time.Time.t), "ext"] ↦{dq} v.(time.Time.ext') ∗
+      "loc" ∷ l.[(time.Time.t), "loc"] ↦{dq} v.(time.Time.loc') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance Time_into_val_typed
+   :
+  IntoValTypedUnderlying (time.Time.t) (time.Timeⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Time_access_load_wall l (v : (time.Time.t)) dq :
+  AccessStrict
+    (l.[(time.Time.t), "wall"] ↦{dq} (v.(time.Time.wall')))
+    (l.[(time.Time.t), "wall"] ↦{dq} (v.(time.Time.wall')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Time_access_store_wall l (v : (time.Time.t)) wall' :
+  AccessStrict
+    (l.[(time.Time.t), "wall"] ↦ (v.(time.Time.wall')))
+    (l.[(time.Time.t), "wall"] ↦ wall')
+    (l ↦ v) (l ↦ (v <|(time.Time.wall') := wall'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Time_access_load_ext l (v : (time.Time.t)) dq :
+  AccessStrict
+    (l.[(time.Time.t), "ext"] ↦{dq} (v.(time.Time.ext')))
+    (l.[(time.Time.t), "ext"] ↦{dq} (v.(time.Time.ext')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Time_access_store_ext l (v : (time.Time.t)) ext' :
+  AccessStrict
+    (l.[(time.Time.t), "ext"] ↦ (v.(time.Time.ext')))
+    (l.[(time.Time.t), "ext"] ↦ ext')
+    (l ↦ v) (l ↦ (v <|(time.Time.ext') := ext'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Time_access_load_loc l (v : (time.Time.t)) dq :
+  AccessStrict
+    (l.[(time.Time.t), "loc"] ↦{dq} (v.(time.Time.loc')))
+    (l.[(time.Time.t), "loc"] ↦{dq} (v.(time.Time.loc')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Time_access_store_loc l (v : (time.Time.t)) loc' :
+  AccessStrict
+    (l.[(time.Time.t), "loc"] ↦ (v.(time.Time.loc')))
+    (l.[(time.Time.t), "loc"] ↦ loc')
+    (l ↦ v) (l ↦ (v <|(time.Time.loc') := loc'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+End def.
+End Time.
 
 Module Month.
 Section def.

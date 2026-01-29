@@ -4,114 +4,50 @@ Require Export New.generatedproof.github_com.goose_lang.primitive.
 Require Export New.generatedproof.github_com.goose_lang.std.
 Require Export New.generatedproof.github_com.tchajed.marshal.
 Require Export New.golang.theory.
-
 Require Export New.code.github_com.mit_pdos.gokv.vrsm.apps.vkv.getargs_gk.
 
 Set Default Proof Using "Type".
 
 Module getargs_gk.
-
-(* type getargs_gk.S *)
 Module S.
 Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-  Get' : go_string;
-}.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : getargs_gk.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance S_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (getargs_gk.S.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "Get" ∷ l.[(getargs_gk.S.t), "Get"] ↦{dq} v.(getargs_gk.S.Get') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance S_into_val_typed
+   :
+  IntoValTypedUnderlying (getargs_gk.S.t) (getargs_gk.Sⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance S_access_load_Get l (v : (getargs_gk.S.t)) dq :
+  AccessStrict
+    (l.[(getargs_gk.S.t), "Get"] ↦{dq} (v.(getargs_gk.S.Get')))
+    (l.[(getargs_gk.S.t), "Get"] ↦{dq} (v.(getargs_gk.S.Get')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance S_access_store_Get l (v : (getargs_gk.S.t)) Get' :
+  AccessStrict
+    (l.[(getargs_gk.S.t), "Get"] ↦ (v.(getargs_gk.S.Get')))
+    (l.[(getargs_gk.S.t), "Get"] ↦ Get')
+    (l ↦ v) (l ↦ (v <|(getargs_gk.S.Get') := Get'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End S.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent getargs_gk.S.
-#[local] Typeclasses Transparent getargs_gk.S.
-
-Global Instance S_wf : struct.Wf getargs_gk.S.
-Proof. apply _. Qed.
-
-Global Instance settable_S : Settable S.t :=
-  settable! S.mk < S.Get' >.
-Global Instance into_val_S : IntoVal S.t :=
-  {| to_val_def v :=
-    struct.val_aux getargs_gk.S [
-    "Get" ::= #(S.Get' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_S : IntoValTyped S.t getargs_gk.S :=
-{|
-  default_val := S.mk (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_S_Get : IntoValStructField "Get" getargs_gk.S S.Get'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_S Get':
-  PureWp True
-    (struct.make #getargs_gk.S (alist_val [
-      "Get" ::= #Get'
-    ]))%struct
-    #(S.mk Get').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance S_struct_fields_split dq l (v : S.t) :
-  StructFieldsSplit dq l v (
-    "HGet" ∷ l ↦s[getargs_gk.S :: "Get"]{dq} v.(S.Get')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-Section names.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext}.
-#[local] Transparent is_pkg_defined is_pkg_defined_pure.
-
-Global Instance is_pkg_defined_pure_getargs_gk : IsPkgDefinedPure getargs_gk :=
-  {|
-    is_pkg_defined_pure_def go_ctx :=
-      is_pkg_defined_pure_single getargs_gk ∧
-      is_pkg_defined_pure code.github_com.goose_lang.primitive.primitive ∧
-      is_pkg_defined_pure code.github_com.goose_lang.std.std ∧
-      is_pkg_defined_pure code.github_com.tchajed.marshal.marshal;
-  |}.
-
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_getargs_gk : IsPkgDefined getargs_gk :=
-  {|
-    is_pkg_defined_def go_ctx :=
-      (is_pkg_defined_single getargs_gk ∗
-       is_pkg_defined code.github_com.goose_lang.primitive.primitive ∗
-       is_pkg_defined code.github_com.goose_lang.std.std ∗
-       is_pkg_defined code.github_com.tchajed.marshal.marshal)%I
-  |}.
-Final Obligation. iIntros. iFrame "#%". Qed.
-#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
-
-Global Instance wp_func_call_Marshal :
-  WpFuncCall getargs_gk.Marshal _ (is_pkg_defined getargs_gk) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_Unmarshal :
-  WpFuncCall getargs_gk.Unmarshal _ (is_pkg_defined getargs_gk) :=
-  ltac:(solve_wp_func_call).
-
-End names.
 End getargs_gk.

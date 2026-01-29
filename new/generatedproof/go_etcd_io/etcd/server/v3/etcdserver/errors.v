@@ -3,113 +3,64 @@ Require Export New.proof.proof_prelude.
 Require Export New.generatedproof.errors.
 Require Export New.generatedproof.fmt.
 Require Export New.golang.theory.
-
 Require Export New.code.go_etcd_io.etcd.server.v3.etcdserver.errors.
 
 Set Default Proof Using "Type".
 
 Module errors.
-
-(* type errors.DiscoveryError *)
 Module DiscoveryError.
 Section def.
-Context `{ffi_syntax}.
 
-Record t := mk {
-  Op' : go_string;
-  Err' : error.t;
-}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : errors.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance DiscoveryError_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (errors.DiscoveryError.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "Op" ∷ l.[(errors.DiscoveryError.t), "Op"] ↦{dq} v.(errors.DiscoveryError.Op') ∗
+      "Err" ∷ l.[(errors.DiscoveryError.t), "Err"] ↦{dq} v.(errors.DiscoveryError.Err') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance DiscoveryError_into_val_typed
+   :
+  IntoValTypedUnderlying (errors.DiscoveryError.t) (errors.DiscoveryErrorⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance DiscoveryError_access_load_Op l (v : (errors.DiscoveryError.t)) dq :
+  AccessStrict
+    (l.[(errors.DiscoveryError.t), "Op"] ↦{dq} (v.(errors.DiscoveryError.Op')))
+    (l.[(errors.DiscoveryError.t), "Op"] ↦{dq} (v.(errors.DiscoveryError.Op')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance DiscoveryError_access_store_Op l (v : (errors.DiscoveryError.t)) Op' :
+  AccessStrict
+    (l.[(errors.DiscoveryError.t), "Op"] ↦ (v.(errors.DiscoveryError.Op')))
+    (l.[(errors.DiscoveryError.t), "Op"] ↦ Op')
+    (l ↦ v) (l ↦ (v <|(errors.DiscoveryError.Op') := Op'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance DiscoveryError_access_load_Err l (v : (errors.DiscoveryError.t)) dq :
+  AccessStrict
+    (l.[(errors.DiscoveryError.t), "Err"] ↦{dq} (v.(errors.DiscoveryError.Err')))
+    (l.[(errors.DiscoveryError.t), "Err"] ↦{dq} (v.(errors.DiscoveryError.Err')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance DiscoveryError_access_store_Err l (v : (errors.DiscoveryError.t)) Err' :
+  AccessStrict
+    (l.[(errors.DiscoveryError.t), "Err"] ↦ (v.(errors.DiscoveryError.Err')))
+    (l.[(errors.DiscoveryError.t), "Err"] ↦ Err')
+    (l ↦ v) (l ↦ (v <|(errors.DiscoveryError.Err') := Err'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End DiscoveryError.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent errors.DiscoveryError.
-#[local] Typeclasses Transparent errors.DiscoveryError.
-
-Global Instance DiscoveryError_wf : struct.Wf errors.DiscoveryError.
-Proof. apply _. Qed.
-
-Global Instance settable_DiscoveryError : Settable DiscoveryError.t :=
-  settable! DiscoveryError.mk < DiscoveryError.Op'; DiscoveryError.Err' >.
-Global Instance into_val_DiscoveryError : IntoVal DiscoveryError.t :=
-  {| to_val_def v :=
-    struct.val_aux errors.DiscoveryError [
-    "Op" ::= #(DiscoveryError.Op' v);
-    "Err" ::= #(DiscoveryError.Err' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_DiscoveryError : IntoValTyped DiscoveryError.t errors.DiscoveryError :=
-{|
-  default_val := DiscoveryError.mk (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_DiscoveryError_Op : IntoValStructField "Op" errors.DiscoveryError DiscoveryError.Op'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_DiscoveryError_Err : IntoValStructField "Err" errors.DiscoveryError DiscoveryError.Err'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-
-
-Global Instance DiscoveryError_struct_fields_split dq l (v : DiscoveryError.t) :
-  StructFieldsSplit dq l v (
-    "HOp" ∷ l ↦s[errors.DiscoveryError :: "Op"]{dq} v.(DiscoveryError.Op') ∗
-    "HErr" ∷ l ↦s[errors.DiscoveryError :: "Err"]{dq} v.(DiscoveryError.Err')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (DiscoveryError.Op' v)) (errors.DiscoveryError) "Op"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-Section names.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext}.
-#[local] Transparent is_pkg_defined is_pkg_defined_pure.
-
-Global Instance is_pkg_defined_pure_errors : IsPkgDefinedPure errors :=
-  {|
-    is_pkg_defined_pure_def go_ctx :=
-      is_pkg_defined_pure_single errors ∧
-      is_pkg_defined_pure code.errors.errors ∧
-      is_pkg_defined_pure code.fmt.fmt;
-  |}.
-
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_errors : IsPkgDefined errors :=
-  {|
-    is_pkg_defined_def go_ctx :=
-      (is_pkg_defined_single errors ∗
-       is_pkg_defined code.errors.errors ∗
-       is_pkg_defined code.fmt.fmt)%I
-  |}.
-Final Obligation. iIntros. iFrame "#%". Qed.
-#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
-
-Global Instance wp_method_call_DiscoveryError_Error :
-  WpMethodCall errors.DiscoveryError.id "Error" _ (is_pkg_defined errors) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_DiscoveryError'ptr_Error :
-  WpMethodCall (ptrT.id errors.DiscoveryError.id) "Error" _ (is_pkg_defined errors) :=
-  ltac:(solve_wp_method_call).
-
-End names.
 End errors.

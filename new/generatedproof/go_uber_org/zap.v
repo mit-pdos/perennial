@@ -2,784 +2,869 @@
 Require Export New.proof.proof_prelude.
 Require Export New.generatedproof.go_uber_org.zap.zapcore.
 Require Export New.golang.theory.
-
 Require Export New.code.go_uber_org.zap.
 
 Set Default Proof Using "Type".
 
 Module zap.
-
-(* type zap.objects *)
 Module objects.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zap.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance objects_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zap.objects.t). Admitted.
+
+#[global] Instance objects_into_val_typed
+   :
+  IntoValTypedUnderlying (zap.objects.t) (zap.objectsⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End objects.
 
-Global Instance bounded_size_objects : BoundedTypeSize zap.objects.
-Admitted.
-
-Global Instance into_val_objects `{ffi_syntax} : IntoVal objects.t.
-Admitted.
-
-Global Instance into_val_typed_objects `{ffi_syntax} : IntoValTyped objects.t zap.objects.
-Admitted.
-
-(* type zap.ObjectMarshalerPtr *)
 Module ObjectMarshalerPtr.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zap.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ObjectMarshalerPtr_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zap.ObjectMarshalerPtr.t). Admitted.
+
+#[global] Instance ObjectMarshalerPtr_into_val_typed
+   :
+  IntoValTypedUnderlying (zap.ObjectMarshalerPtr.t) (zap.ObjectMarshalerPtrⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End ObjectMarshalerPtr.
 
-Global Instance bounded_size_ObjectMarshalerPtr : BoundedTypeSize zap.ObjectMarshalerPtr.
-Admitted.
-
-Global Instance into_val_ObjectMarshalerPtr `{ffi_syntax} : IntoVal ObjectMarshalerPtr.t.
-Admitted.
-
-Global Instance into_val_typed_ObjectMarshalerPtr `{ffi_syntax} : IntoValTyped ObjectMarshalerPtr.t zap.ObjectMarshalerPtr.
-Admitted.
-
-(* type zap.objectValues *)
 Module objectValues.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zap.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance objectValues_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zap.objectValues.t). Admitted.
+
+#[global] Instance objectValues_into_val_typed
+   :
+  IntoValTypedUnderlying (zap.objectValues.t) (zap.objectValuesⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End objectValues.
 
-Global Instance bounded_size_objectValues : BoundedTypeSize zap.objectValues.
-Admitted.
-
-Global Instance into_val_objectValues `{ffi_syntax} : IntoVal objectValues.t.
-Admitted.
-
-Global Instance into_val_typed_objectValues `{ffi_syntax} : IntoValTyped objectValues.t zap.objectValues.
-Admitted.
-
-(* type zap.stringers *)
 Module stringers.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zap.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance stringers_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zap.stringers.t). Admitted.
+
+#[global] Instance stringers_into_val_typed
+   :
+  IntoValTypedUnderlying (zap.stringers.t) (zap.stringersⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End stringers.
 
-Global Instance bounded_size_stringers : BoundedTypeSize zap.stringers.
-Admitted.
-
-Global Instance into_val_stringers `{ffi_syntax} : IntoVal stringers.t.
-Admitted.
-
-Global Instance into_val_typed_stringers `{ffi_syntax} : IntoValTyped stringers.t zap.stringers.
-Admitted.
-
-(* type zap.bools *)
 Module bools.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zap.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance bools_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zap.bools.t). Admitted.
+
+#[global] Instance bools_into_val_typed
+   :
+  IntoValTypedUnderlying (zap.bools.t) (zap.boolsⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End bools.
 
-Global Instance bounded_size_bools : BoundedTypeSize zap.bools.
-Admitted.
-
-Global Instance into_val_bools `{ffi_syntax} : IntoVal bools.t.
-Admitted.
-
-Global Instance into_val_typed_bools `{ffi_syntax} : IntoValTyped bools.t zap.bools.
-Admitted.
-
-(* type zap.byteStringsArray *)
 Module byteStringsArray.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zap.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance byteStringsArray_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zap.byteStringsArray.t). Admitted.
+
+#[global] Instance byteStringsArray_into_val_typed
+   :
+  IntoValTypedUnderlying (zap.byteStringsArray.t) (zap.byteStringsArrayⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End byteStringsArray.
 
-Global Instance bounded_size_byteStringsArray : BoundedTypeSize zap.byteStringsArray.
-Admitted.
-
-Global Instance into_val_byteStringsArray `{ffi_syntax} : IntoVal byteStringsArray.t.
-Admitted.
-
-Global Instance into_val_typed_byteStringsArray `{ffi_syntax} : IntoValTyped byteStringsArray.t zap.byteStringsArray.
-Admitted.
-
-(* type zap.complex128s *)
 Module complex128s.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zap.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance complex128s_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zap.complex128s.t). Admitted.
+
+#[global] Instance complex128s_into_val_typed
+   :
+  IntoValTypedUnderlying (zap.complex128s.t) (zap.complex128sⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End complex128s.
 
-Global Instance bounded_size_complex128s : BoundedTypeSize zap.complex128s.
-Admitted.
-
-Global Instance into_val_complex128s `{ffi_syntax} : IntoVal complex128s.t.
-Admitted.
-
-Global Instance into_val_typed_complex128s `{ffi_syntax} : IntoValTyped complex128s.t zap.complex128s.
-Admitted.
-
-(* type zap.complex64s *)
 Module complex64s.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zap.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance complex64s_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zap.complex64s.t). Admitted.
+
+#[global] Instance complex64s_into_val_typed
+   :
+  IntoValTypedUnderlying (zap.complex64s.t) (zap.complex64sⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End complex64s.
 
-Global Instance bounded_size_complex64s : BoundedTypeSize zap.complex64s.
-Admitted.
-
-Global Instance into_val_complex64s `{ffi_syntax} : IntoVal complex64s.t.
-Admitted.
-
-Global Instance into_val_typed_complex64s `{ffi_syntax} : IntoValTyped complex64s.t zap.complex64s.
-Admitted.
-
-(* type zap.durations *)
 Module durations.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zap.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance durations_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zap.durations.t). Admitted.
+
+#[global] Instance durations_into_val_typed
+   :
+  IntoValTypedUnderlying (zap.durations.t) (zap.durationsⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End durations.
 
-Global Instance bounded_size_durations : BoundedTypeSize zap.durations.
-Admitted.
-
-Global Instance into_val_durations `{ffi_syntax} : IntoVal durations.t.
-Admitted.
-
-Global Instance into_val_typed_durations `{ffi_syntax} : IntoValTyped durations.t zap.durations.
-Admitted.
-
-(* type zap.float64s *)
 Module float64s.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zap.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance float64s_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zap.float64s.t). Admitted.
+
+#[global] Instance float64s_into_val_typed
+   :
+  IntoValTypedUnderlying (zap.float64s.t) (zap.float64sⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End float64s.
 
-Global Instance bounded_size_float64s : BoundedTypeSize zap.float64s.
-Admitted.
-
-Global Instance into_val_float64s `{ffi_syntax} : IntoVal float64s.t.
-Admitted.
-
-Global Instance into_val_typed_float64s `{ffi_syntax} : IntoValTyped float64s.t zap.float64s.
-Admitted.
-
-(* type zap.float32s *)
 Module float32s.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zap.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance float32s_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zap.float32s.t). Admitted.
+
+#[global] Instance float32s_into_val_typed
+   :
+  IntoValTypedUnderlying (zap.float32s.t) (zap.float32sⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End float32s.
 
-Global Instance bounded_size_float32s : BoundedTypeSize zap.float32s.
-Admitted.
-
-Global Instance into_val_float32s `{ffi_syntax} : IntoVal float32s.t.
-Admitted.
-
-Global Instance into_val_typed_float32s `{ffi_syntax} : IntoValTyped float32s.t zap.float32s.
-Admitted.
-
-(* type zap.ints *)
 Module ints.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zap.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ints_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zap.ints.t). Admitted.
+
+#[global] Instance ints_into_val_typed
+   :
+  IntoValTypedUnderlying (zap.ints.t) (zap.intsⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End ints.
 
-Global Instance bounded_size_ints : BoundedTypeSize zap.ints.
-Admitted.
-
-Global Instance into_val_ints `{ffi_syntax} : IntoVal ints.t.
-Admitted.
-
-Global Instance into_val_typed_ints `{ffi_syntax} : IntoValTyped ints.t zap.ints.
-Admitted.
-
-(* type zap.int64s *)
 Module int64s.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zap.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance int64s_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zap.int64s.t). Admitted.
+
+#[global] Instance int64s_into_val_typed
+   :
+  IntoValTypedUnderlying (zap.int64s.t) (zap.int64sⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End int64s.
 
-Global Instance bounded_size_int64s : BoundedTypeSize zap.int64s.
-Admitted.
-
-Global Instance into_val_int64s `{ffi_syntax} : IntoVal int64s.t.
-Admitted.
-
-Global Instance into_val_typed_int64s `{ffi_syntax} : IntoValTyped int64s.t zap.int64s.
-Admitted.
-
-(* type zap.int32s *)
 Module int32s.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zap.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance int32s_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zap.int32s.t). Admitted.
+
+#[global] Instance int32s_into_val_typed
+   :
+  IntoValTypedUnderlying (zap.int32s.t) (zap.int32sⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End int32s.
 
-Global Instance bounded_size_int32s : BoundedTypeSize zap.int32s.
-Admitted.
-
-Global Instance into_val_int32s `{ffi_syntax} : IntoVal int32s.t.
-Admitted.
-
-Global Instance into_val_typed_int32s `{ffi_syntax} : IntoValTyped int32s.t zap.int32s.
-Admitted.
-
-(* type zap.int16s *)
 Module int16s.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zap.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance int16s_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zap.int16s.t). Admitted.
+
+#[global] Instance int16s_into_val_typed
+   :
+  IntoValTypedUnderlying (zap.int16s.t) (zap.int16sⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End int16s.
 
-Global Instance bounded_size_int16s : BoundedTypeSize zap.int16s.
-Admitted.
-
-Global Instance into_val_int16s `{ffi_syntax} : IntoVal int16s.t.
-Admitted.
-
-Global Instance into_val_typed_int16s `{ffi_syntax} : IntoValTyped int16s.t zap.int16s.
-Admitted.
-
-(* type zap.int8s *)
 Module int8s.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zap.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance int8s_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zap.int8s.t). Admitted.
+
+#[global] Instance int8s_into_val_typed
+   :
+  IntoValTypedUnderlying (zap.int8s.t) (zap.int8sⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End int8s.
 
-Global Instance bounded_size_int8s : BoundedTypeSize zap.int8s.
-Admitted.
-
-Global Instance into_val_int8s `{ffi_syntax} : IntoVal int8s.t.
-Admitted.
-
-Global Instance into_val_typed_int8s `{ffi_syntax} : IntoValTyped int8s.t zap.int8s.
-Admitted.
-
-(* type zap.stringArray *)
 Module stringArray.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zap.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance stringArray_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zap.stringArray.t). Admitted.
+
+#[global] Instance stringArray_into_val_typed
+   :
+  IntoValTypedUnderlying (zap.stringArray.t) (zap.stringArrayⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End stringArray.
 
-Global Instance bounded_size_stringArray : BoundedTypeSize zap.stringArray.
-Admitted.
-
-Global Instance into_val_stringArray `{ffi_syntax} : IntoVal stringArray.t.
-Admitted.
-
-Global Instance into_val_typed_stringArray `{ffi_syntax} : IntoValTyped stringArray.t zap.stringArray.
-Admitted.
-
-(* type zap.times *)
 Module times.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zap.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance times_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zap.times.t). Admitted.
+
+#[global] Instance times_into_val_typed
+   :
+  IntoValTypedUnderlying (zap.times.t) (zap.timesⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End times.
 
-Global Instance bounded_size_times : BoundedTypeSize zap.times.
-Admitted.
-
-Global Instance into_val_times `{ffi_syntax} : IntoVal times.t.
-Admitted.
-
-Global Instance into_val_typed_times `{ffi_syntax} : IntoValTyped times.t zap.times.
-Admitted.
-
-(* type zap.uints *)
 Module uints.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zap.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance uints_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zap.uints.t). Admitted.
+
+#[global] Instance uints_into_val_typed
+   :
+  IntoValTypedUnderlying (zap.uints.t) (zap.uintsⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End uints.
 
-Global Instance bounded_size_uints : BoundedTypeSize zap.uints.
-Admitted.
-
-Global Instance into_val_uints `{ffi_syntax} : IntoVal uints.t.
-Admitted.
-
-Global Instance into_val_typed_uints `{ffi_syntax} : IntoValTyped uints.t zap.uints.
-Admitted.
-
-(* type zap.uint64s *)
 Module uint64s.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zap.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance uint64s_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zap.uint64s.t). Admitted.
+
+#[global] Instance uint64s_into_val_typed
+   :
+  IntoValTypedUnderlying (zap.uint64s.t) (zap.uint64sⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End uint64s.
 
-Global Instance bounded_size_uint64s : BoundedTypeSize zap.uint64s.
-Admitted.
-
-Global Instance into_val_uint64s `{ffi_syntax} : IntoVal uint64s.t.
-Admitted.
-
-Global Instance into_val_typed_uint64s `{ffi_syntax} : IntoValTyped uint64s.t zap.uint64s.
-Admitted.
-
-(* type zap.uint32s *)
 Module uint32s.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zap.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance uint32s_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zap.uint32s.t). Admitted.
+
+#[global] Instance uint32s_into_val_typed
+   :
+  IntoValTypedUnderlying (zap.uint32s.t) (zap.uint32sⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End uint32s.
 
-Global Instance bounded_size_uint32s : BoundedTypeSize zap.uint32s.
-Admitted.
-
-Global Instance into_val_uint32s `{ffi_syntax} : IntoVal uint32s.t.
-Admitted.
-
-Global Instance into_val_typed_uint32s `{ffi_syntax} : IntoValTyped uint32s.t zap.uint32s.
-Admitted.
-
-(* type zap.uint16s *)
 Module uint16s.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zap.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance uint16s_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zap.uint16s.t). Admitted.
+
+#[global] Instance uint16s_into_val_typed
+   :
+  IntoValTypedUnderlying (zap.uint16s.t) (zap.uint16sⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End uint16s.
 
-Global Instance bounded_size_uint16s : BoundedTypeSize zap.uint16s.
-Admitted.
-
-Global Instance into_val_uint16s `{ffi_syntax} : IntoVal uint16s.t.
-Admitted.
-
-Global Instance into_val_typed_uint16s `{ffi_syntax} : IntoValTyped uint16s.t zap.uint16s.
-Admitted.
-
-(* type zap.uint8s *)
 Module uint8s.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zap.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance uint8s_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zap.uint8s.t). Admitted.
+
+#[global] Instance uint8s_into_val_typed
+   :
+  IntoValTypedUnderlying (zap.uint8s.t) (zap.uint8sⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End uint8s.
 
-Global Instance bounded_size_uint8s : BoundedTypeSize zap.uint8s.
-Admitted.
-
-Global Instance into_val_uint8s `{ffi_syntax} : IntoVal uint8s.t.
-Admitted.
-
-Global Instance into_val_typed_uint8s `{ffi_syntax} : IntoValTyped uint8s.t zap.uint8s.
-Admitted.
-
-(* type zap.uintptrs *)
 Module uintptrs.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zap.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance uintptrs_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zap.uintptrs.t). Admitted.
+
+#[global] Instance uintptrs_into_val_typed
+   :
+  IntoValTypedUnderlying (zap.uintptrs.t) (zap.uintptrsⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End uintptrs.
 
-Global Instance bounded_size_uintptrs : BoundedTypeSize zap.uintptrs.
-Admitted.
-
-Global Instance into_val_uintptrs `{ffi_syntax} : IntoVal uintptrs.t.
-Admitted.
-
-Global Instance into_val_typed_uintptrs `{ffi_syntax} : IntoValTyped uintptrs.t zap.uintptrs.
-Admitted.
-
-(* type zap.SamplingConfig *)
 Module SamplingConfig.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zap.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance SamplingConfig_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zap.SamplingConfig.t). Admitted.
+
+#[global] Instance SamplingConfig_into_val_typed
+   :
+  IntoValTypedUnderlying (zap.SamplingConfig.t) (zap.SamplingConfigⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End SamplingConfig.
 
-Global Instance bounded_size_SamplingConfig : BoundedTypeSize zap.SamplingConfig.
-Admitted.
-
-Global Instance into_val_SamplingConfig `{ffi_syntax} : IntoVal SamplingConfig.t.
-Admitted.
-
-Global Instance into_val_typed_SamplingConfig `{ffi_syntax} : IntoValTyped SamplingConfig.t zap.SamplingConfig.
-Admitted.
-
-(* type zap.Config *)
 Module Config.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zap.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Config_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zap.Config.t). Admitted.
+
+#[global] Instance Config_into_val_typed
+   :
+  IntoValTypedUnderlying (zap.Config.t) (zap.Configⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End Config.
 
-Global Instance bounded_size_Config : BoundedTypeSize zap.Config.
-Admitted.
-
-Global Instance into_val_Config `{ffi_syntax} : IntoVal Config.t.
-Admitted.
-
-Global Instance into_val_typed_Config `{ffi_syntax} : IntoValTyped Config.t zap.Config.
-Admitted.
-
-(* type zap.errArray *)
 Module errArray.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zap.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance errArray_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zap.errArray.t). Admitted.
+
+#[global] Instance errArray_into_val_typed
+   :
+  IntoValTypedUnderlying (zap.errArray.t) (zap.errArrayⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End errArray.
 
-Global Instance bounded_size_errArray : BoundedTypeSize zap.errArray.
-Admitted.
-
-Global Instance into_val_errArray `{ffi_syntax} : IntoVal errArray.t.
-Admitted.
-
-Global Instance into_val_typed_errArray `{ffi_syntax} : IntoValTyped errArray.t zap.errArray.
-Admitted.
-
-(* type zap.errArrayElem *)
 Module errArrayElem.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zap.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance errArrayElem_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zap.errArrayElem.t). Admitted.
+
+#[global] Instance errArrayElem_into_val_typed
+   :
+  IntoValTypedUnderlying (zap.errArrayElem.t) (zap.errArrayElemⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End errArrayElem.
 
-Global Instance bounded_size_errArrayElem : BoundedTypeSize zap.errArrayElem.
-Admitted.
-
-Global Instance into_val_errArrayElem `{ffi_syntax} : IntoVal errArrayElem.t.
-Admitted.
-
-Global Instance into_val_typed_errArrayElem `{ffi_syntax} : IntoValTyped errArrayElem.t zap.errArrayElem.
-Admitted.
-
-(* type zap.Field *)
-Module Field.
-Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
-End def.
-End Field.
-
-Global Instance bounded_size_Field : BoundedTypeSize zap.Field.
-Admitted.
-
-Global Instance into_val_Field `{ffi_syntax} : IntoVal Field.t.
-Admitted.
-
-Global Instance into_val_typed_Field `{ffi_syntax} : IntoValTyped Field.t zap.Field.
-Admitted.
-
-(* type zap.dictObject *)
 Module dictObject.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zap.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance dictObject_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zap.dictObject.t). Admitted.
+
+#[global] Instance dictObject_into_val_typed
+   :
+  IntoValTypedUnderlying (zap.dictObject.t) (zap.dictObjectⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End dictObject.
 
-Global Instance bounded_size_dictObject : BoundedTypeSize zap.dictObject.
-Admitted.
-
-Global Instance into_val_dictObject `{ffi_syntax} : IntoVal dictObject.t.
-Admitted.
-
-Global Instance into_val_typed_dictObject `{ffi_syntax} : IntoValTyped dictObject.t zap.dictObject.
-Admitted.
-
-(* type zap.anyFieldC *)
 Module anyFieldC.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zap.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance anyFieldC_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zap.anyFieldC.t). Admitted.
+
+#[global] Instance anyFieldC_into_val_typed
+   :
+  IntoValTypedUnderlying (zap.anyFieldC.t) (zap.anyFieldCⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End anyFieldC.
 
-Global Instance bounded_size_anyFieldC : BoundedTypeSize zap.anyFieldC.
-Admitted.
-
-Global Instance into_val_anyFieldC `{ffi_syntax} : IntoVal anyFieldC.t.
-Admitted.
-
-Global Instance into_val_typed_anyFieldC `{ffi_syntax} : IntoValTyped anyFieldC.t zap.anyFieldC.
-Admitted.
-
-(* type zap.loggerWriter *)
 Module loggerWriter.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zap.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance loggerWriter_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zap.loggerWriter.t). Admitted.
+
+#[global] Instance loggerWriter_into_val_typed
+   :
+  IntoValTypedUnderlying (zap.loggerWriter.t) (zap.loggerWriterⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End loggerWriter.
 
-Global Instance bounded_size_loggerWriter : BoundedTypeSize zap.loggerWriter.
-Admitted.
-
-Global Instance into_val_loggerWriter `{ffi_syntax} : IntoVal loggerWriter.t.
-Admitted.
-
-Global Instance into_val_typed_loggerWriter `{ffi_syntax} : IntoValTyped loggerWriter.t zap.loggerWriter.
-Admitted.
-
-(* type zap.LevelEnablerFunc *)
 Module LevelEnablerFunc.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zap.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance LevelEnablerFunc_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zap.LevelEnablerFunc.t). Admitted.
+
+#[global] Instance LevelEnablerFunc_into_val_typed
+   :
+  IntoValTypedUnderlying (zap.LevelEnablerFunc.t) (zap.LevelEnablerFuncⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End LevelEnablerFunc.
 
-Global Instance bounded_size_LevelEnablerFunc : BoundedTypeSize zap.LevelEnablerFunc.
-Admitted.
-
-Global Instance into_val_LevelEnablerFunc `{ffi_syntax} : IntoVal LevelEnablerFunc.t.
-Admitted.
-
-Global Instance into_val_typed_LevelEnablerFunc `{ffi_syntax} : IntoValTyped LevelEnablerFunc.t zap.LevelEnablerFunc.
-Admitted.
-
-(* type zap.AtomicLevel *)
 Module AtomicLevel.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zap.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance AtomicLevel_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zap.AtomicLevel.t). Admitted.
+
+#[global] Instance AtomicLevel_into_val_typed
+   :
+  IntoValTypedUnderlying (zap.AtomicLevel.t) (zap.AtomicLevelⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End AtomicLevel.
 
-Global Instance bounded_size_AtomicLevel : BoundedTypeSize zap.AtomicLevel.
-Admitted.
-
-Global Instance into_val_AtomicLevel `{ffi_syntax} : IntoVal AtomicLevel.t.
-Admitted.
-
-Global Instance into_val_typed_AtomicLevel `{ffi_syntax} : IntoValTyped AtomicLevel.t zap.AtomicLevel.
-Admitted.
-
-(* type zap.Logger *)
 Module Logger.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zap.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Logger_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zap.Logger.t). Admitted.
+
+#[global] Instance Logger_into_val_typed
+   :
+  IntoValTypedUnderlying (zap.Logger.t) (zap.Loggerⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End Logger.
 
-Global Instance bounded_size_Logger : BoundedTypeSize zap.Logger.
-Admitted.
-
-Global Instance into_val_Logger `{ffi_syntax} : IntoVal Logger.t.
-Admitted.
-
-Global Instance into_val_typed_Logger `{ffi_syntax} : IntoValTyped Logger.t zap.Logger.
-Admitted.
-
-(* type zap.Option *)
 Module Option.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zap.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Option_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zap.Option.t). Admitted.
+
+#[global] Instance Option_into_val_typed
+   :
+  IntoValTypedUnderlying (zap.Option.t) (zap.Optionⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End Option.
 
-Global Instance bounded_size_Option : BoundedTypeSize zap.Option.
-Admitted.
-
-Global Instance into_val_Option `{ffi_syntax} : IntoVal Option.t.
-Admitted.
-
-Global Instance into_val_typed_Option `{ffi_syntax} : IntoValTyped Option.t zap.Option.
-Admitted.
-
-(* type zap.optionFunc *)
 Module optionFunc.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zap.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance optionFunc_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zap.optionFunc.t). Admitted.
+
+#[global] Instance optionFunc_into_val_typed
+   :
+  IntoValTypedUnderlying (zap.optionFunc.t) (zap.optionFuncⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End optionFunc.
 
-Global Instance bounded_size_optionFunc : BoundedTypeSize zap.optionFunc.
-Admitted.
-
-Global Instance into_val_optionFunc `{ffi_syntax} : IntoVal optionFunc.t.
-Admitted.
-
-Global Instance into_val_typed_optionFunc `{ffi_syntax} : IntoValTyped optionFunc.t zap.optionFunc.
-Admitted.
-
-(* type zap.Sink *)
 Module Sink.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zap.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Sink_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zap.Sink.t). Admitted.
+
+#[global] Instance Sink_into_val_typed
+   :
+  IntoValTypedUnderlying (zap.Sink.t) (zap.Sinkⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End Sink.
 
-Global Instance bounded_size_Sink : BoundedTypeSize zap.Sink.
-Admitted.
-
-Global Instance into_val_Sink `{ffi_syntax} : IntoVal Sink.t.
-Admitted.
-
-Global Instance into_val_typed_Sink `{ffi_syntax} : IntoValTyped Sink.t zap.Sink.
-Admitted.
-
-(* type zap.errSinkNotFound *)
 Module errSinkNotFound.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zap.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance errSinkNotFound_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zap.errSinkNotFound.t). Admitted.
+
+#[global] Instance errSinkNotFound_into_val_typed
+   :
+  IntoValTypedUnderlying (zap.errSinkNotFound.t) (zap.errSinkNotFoundⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End errSinkNotFound.
 
-Global Instance bounded_size_errSinkNotFound : BoundedTypeSize zap.errSinkNotFound.
-Admitted.
-
-Global Instance into_val_errSinkNotFound `{ffi_syntax} : IntoVal errSinkNotFound.t.
-Admitted.
-
-Global Instance into_val_typed_errSinkNotFound `{ffi_syntax} : IntoValTyped errSinkNotFound.t zap.errSinkNotFound.
-Admitted.
-
-(* type zap.nopCloserSink *)
 Module nopCloserSink.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zap.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance nopCloserSink_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zap.nopCloserSink.t). Admitted.
+
+#[global] Instance nopCloserSink_into_val_typed
+   :
+  IntoValTypedUnderlying (zap.nopCloserSink.t) (zap.nopCloserSinkⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End nopCloserSink.
 
-Global Instance bounded_size_nopCloserSink : BoundedTypeSize zap.nopCloserSink.
-Admitted.
-
-Global Instance into_val_nopCloserSink `{ffi_syntax} : IntoVal nopCloserSink.t.
-Admitted.
-
-Global Instance into_val_typed_nopCloserSink `{ffi_syntax} : IntoValTyped nopCloserSink.t zap.nopCloserSink.
-Admitted.
-
-(* type zap.sinkRegistry *)
 Module sinkRegistry.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zap.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance sinkRegistry_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zap.sinkRegistry.t). Admitted.
+
+#[global] Instance sinkRegistry_into_val_typed
+   :
+  IntoValTypedUnderlying (zap.sinkRegistry.t) (zap.sinkRegistryⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End sinkRegistry.
 
-Global Instance bounded_size_sinkRegistry : BoundedTypeSize zap.sinkRegistry.
-Admitted.
-
-Global Instance into_val_sinkRegistry `{ffi_syntax} : IntoVal sinkRegistry.t.
-Admitted.
-
-Global Instance into_val_typed_sinkRegistry `{ffi_syntax} : IntoValTyped sinkRegistry.t zap.sinkRegistry.
-Admitted.
-
-(* type zap.SugaredLogger *)
 Module SugaredLogger.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zap.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance SugaredLogger_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zap.SugaredLogger.t). Admitted.
+
+#[global] Instance SugaredLogger_into_val_typed
+   :
+  IntoValTypedUnderlying (zap.SugaredLogger.t) (zap.SugaredLoggerⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End SugaredLogger.
 
-Global Instance bounded_size_SugaredLogger : BoundedTypeSize zap.SugaredLogger.
-Admitted.
-
-Global Instance into_val_SugaredLogger `{ffi_syntax} : IntoVal SugaredLogger.t.
-Admitted.
-
-Global Instance into_val_typed_SugaredLogger `{ffi_syntax} : IntoValTyped SugaredLogger.t zap.SugaredLogger.
-Admitted.
-
-(* type zap.invalidPair *)
 Module invalidPair.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zap.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance invalidPair_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zap.invalidPair.t). Admitted.
+
+#[global] Instance invalidPair_into_val_typed
+   :
+  IntoValTypedUnderlying (zap.invalidPair.t) (zap.invalidPairⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End invalidPair.
 
-Global Instance bounded_size_invalidPair : BoundedTypeSize zap.invalidPair.
-Admitted.
-
-Global Instance into_val_invalidPair `{ffi_syntax} : IntoVal invalidPair.t.
-Admitted.
-
-Global Instance into_val_typed_invalidPair `{ffi_syntax} : IntoValTyped invalidPair.t zap.invalidPair.
-Admitted.
-
-(* type zap.invalidPairs *)
 Module invalidPairs.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zap.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance invalidPairs_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zap.invalidPairs.t). Admitted.
+
+#[global] Instance invalidPairs_into_val_typed
+   :
+  IntoValTypedUnderlying (zap.invalidPairs.t) (zap.invalidPairsⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End invalidPairs.
 
-Global Instance bounded_size_invalidPairs : BoundedTypeSize zap.invalidPairs.
-Admitted.
-
-Global Instance into_val_invalidPairs `{ffi_syntax} : IntoVal invalidPairs.t.
-Admitted.
-
-Global Instance into_val_typed_invalidPairs `{ffi_syntax} : IntoValTyped invalidPairs.t zap.invalidPairs.
-Admitted.
-
-Section names.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext}.
-#[local] Transparent is_pkg_defined is_pkg_defined_pure.
-
-Global Instance is_pkg_defined_pure_zap : IsPkgDefinedPure zap :=
-  {|
-    is_pkg_defined_pure_def go_ctx :=
-      is_pkg_defined_pure_single zap ∧
-      is_pkg_defined_pure code.go_uber_org.zap.zapcore.zapcore;
-  |}.
-
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_zap : IsPkgDefined zap :=
-  {|
-    is_pkg_defined_def go_ctx :=
-      (is_pkg_defined_single zap ∗
-       is_pkg_defined code.go_uber_org.zap.zapcore.zapcore)%I
-  |}.
-Final Obligation. iIntros. iFrame "#%". Qed.
-#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
-
-End names.
 End zap.

@@ -6,259 +6,217 @@ Require Export New.generatedproof.github_com.mit_pdos.gokv.grove_ffi.
 Require Export New.generatedproof.github_com.mit_pdos.gokv.vrsm.replica.
 Require Export New.generatedproof.github_com.tchajed.marshal.
 Require Export New.golang.theory.
-
 Require Export New.code.github_com.mit_pdos.gokv.vrsm.storage.
 
 Set Default Proof Using "Type".
 
 Module storage.
-
-(* type storage.InMemoryStateMachine *)
 Module InMemoryStateMachine.
 Section def.
-Context `{ffi_syntax}.
 
-Record t := mk {
-  ApplyReadonly' : func.t;
-  ApplyVolatile' : func.t;
-  GetState' : func.t;
-  SetState' : func.t;
-}.
+Context `{!heapGS Σ}.
+Context {sem : go.Semantics}.
+Context {package_sem' : storage.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance InMemoryStateMachine_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (storage.InMemoryStateMachine.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "ApplyReadonly" ∷ l.[(storage.InMemoryStateMachine.t), "ApplyReadonly"] ↦{dq} v.(storage.InMemoryStateMachine.ApplyReadonly') ∗
+      "ApplyVolatile" ∷ l.[(storage.InMemoryStateMachine.t), "ApplyVolatile"] ↦{dq} v.(storage.InMemoryStateMachine.ApplyVolatile') ∗
+      "GetState" ∷ l.[(storage.InMemoryStateMachine.t), "GetState"] ↦{dq} v.(storage.InMemoryStateMachine.GetState') ∗
+      "SetState" ∷ l.[(storage.InMemoryStateMachine.t), "SetState"] ↦{dq} v.(storage.InMemoryStateMachine.SetState') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance InMemoryStateMachine_into_val_typed
+   :
+  IntoValTypedUnderlying (storage.InMemoryStateMachine.t) (storage.InMemoryStateMachineⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance InMemoryStateMachine_access_load_ApplyReadonly l (v : (storage.InMemoryStateMachine.t)) dq :
+  AccessStrict
+    (l.[(storage.InMemoryStateMachine.t), "ApplyReadonly"] ↦{dq} (v.(storage.InMemoryStateMachine.ApplyReadonly')))
+    (l.[(storage.InMemoryStateMachine.t), "ApplyReadonly"] ↦{dq} (v.(storage.InMemoryStateMachine.ApplyReadonly')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance InMemoryStateMachine_access_store_ApplyReadonly l (v : (storage.InMemoryStateMachine.t)) ApplyReadonly' :
+  AccessStrict
+    (l.[(storage.InMemoryStateMachine.t), "ApplyReadonly"] ↦ (v.(storage.InMemoryStateMachine.ApplyReadonly')))
+    (l.[(storage.InMemoryStateMachine.t), "ApplyReadonly"] ↦ ApplyReadonly')
+    (l ↦ v) (l ↦ (v <|(storage.InMemoryStateMachine.ApplyReadonly') := ApplyReadonly'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance InMemoryStateMachine_access_load_ApplyVolatile l (v : (storage.InMemoryStateMachine.t)) dq :
+  AccessStrict
+    (l.[(storage.InMemoryStateMachine.t), "ApplyVolatile"] ↦{dq} (v.(storage.InMemoryStateMachine.ApplyVolatile')))
+    (l.[(storage.InMemoryStateMachine.t), "ApplyVolatile"] ↦{dq} (v.(storage.InMemoryStateMachine.ApplyVolatile')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance InMemoryStateMachine_access_store_ApplyVolatile l (v : (storage.InMemoryStateMachine.t)) ApplyVolatile' :
+  AccessStrict
+    (l.[(storage.InMemoryStateMachine.t), "ApplyVolatile"] ↦ (v.(storage.InMemoryStateMachine.ApplyVolatile')))
+    (l.[(storage.InMemoryStateMachine.t), "ApplyVolatile"] ↦ ApplyVolatile')
+    (l ↦ v) (l ↦ (v <|(storage.InMemoryStateMachine.ApplyVolatile') := ApplyVolatile'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance InMemoryStateMachine_access_load_GetState l (v : (storage.InMemoryStateMachine.t)) dq :
+  AccessStrict
+    (l.[(storage.InMemoryStateMachine.t), "GetState"] ↦{dq} (v.(storage.InMemoryStateMachine.GetState')))
+    (l.[(storage.InMemoryStateMachine.t), "GetState"] ↦{dq} (v.(storage.InMemoryStateMachine.GetState')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance InMemoryStateMachine_access_store_GetState l (v : (storage.InMemoryStateMachine.t)) GetState' :
+  AccessStrict
+    (l.[(storage.InMemoryStateMachine.t), "GetState"] ↦ (v.(storage.InMemoryStateMachine.GetState')))
+    (l.[(storage.InMemoryStateMachine.t), "GetState"] ↦ GetState')
+    (l ↦ v) (l ↦ (v <|(storage.InMemoryStateMachine.GetState') := GetState'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance InMemoryStateMachine_access_load_SetState l (v : (storage.InMemoryStateMachine.t)) dq :
+  AccessStrict
+    (l.[(storage.InMemoryStateMachine.t), "SetState"] ↦{dq} (v.(storage.InMemoryStateMachine.SetState')))
+    (l.[(storage.InMemoryStateMachine.t), "SetState"] ↦{dq} (v.(storage.InMemoryStateMachine.SetState')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance InMemoryStateMachine_access_store_SetState l (v : (storage.InMemoryStateMachine.t)) SetState' :
+  AccessStrict
+    (l.[(storage.InMemoryStateMachine.t), "SetState"] ↦ (v.(storage.InMemoryStateMachine.SetState')))
+    (l.[(storage.InMemoryStateMachine.t), "SetState"] ↦ SetState')
+    (l ↦ v) (l ↦ (v <|(storage.InMemoryStateMachine.SetState') := SetState'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End InMemoryStateMachine.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent storage.InMemoryStateMachine.
-#[local] Typeclasses Transparent storage.InMemoryStateMachine.
-
-Global Instance InMemoryStateMachine_wf : struct.Wf storage.InMemoryStateMachine.
-Proof. apply _. Qed.
-
-Global Instance settable_InMemoryStateMachine : Settable InMemoryStateMachine.t :=
-  settable! InMemoryStateMachine.mk < InMemoryStateMachine.ApplyReadonly'; InMemoryStateMachine.ApplyVolatile'; InMemoryStateMachine.GetState'; InMemoryStateMachine.SetState' >.
-Global Instance into_val_InMemoryStateMachine : IntoVal InMemoryStateMachine.t :=
-  {| to_val_def v :=
-    struct.val_aux storage.InMemoryStateMachine [
-    "ApplyReadonly" ::= #(InMemoryStateMachine.ApplyReadonly' v);
-    "ApplyVolatile" ::= #(InMemoryStateMachine.ApplyVolatile' v);
-    "GetState" ::= #(InMemoryStateMachine.GetState' v);
-    "SetState" ::= #(InMemoryStateMachine.SetState' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_InMemoryStateMachine : IntoValTyped InMemoryStateMachine.t storage.InMemoryStateMachine :=
-{|
-  default_val := InMemoryStateMachine.mk (default_val _) (default_val _) (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_InMemoryStateMachine_ApplyReadonly : IntoValStructField "ApplyReadonly" storage.InMemoryStateMachine InMemoryStateMachine.ApplyReadonly'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_InMemoryStateMachine_ApplyVolatile : IntoValStructField "ApplyVolatile" storage.InMemoryStateMachine InMemoryStateMachine.ApplyVolatile'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_InMemoryStateMachine_GetState : IntoValStructField "GetState" storage.InMemoryStateMachine InMemoryStateMachine.GetState'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_InMemoryStateMachine_SetState : IntoValStructField "SetState" storage.InMemoryStateMachine InMemoryStateMachine.SetState'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-
-
-Global Instance InMemoryStateMachine_struct_fields_split dq l (v : InMemoryStateMachine.t) :
-  StructFieldsSplit dq l v (
-    "HApplyReadonly" ∷ l ↦s[storage.InMemoryStateMachine :: "ApplyReadonly"]{dq} v.(InMemoryStateMachine.ApplyReadonly') ∗
-    "HApplyVolatile" ∷ l ↦s[storage.InMemoryStateMachine :: "ApplyVolatile"]{dq} v.(InMemoryStateMachine.ApplyVolatile') ∗
-    "HGetState" ∷ l ↦s[storage.InMemoryStateMachine :: "GetState"]{dq} v.(InMemoryStateMachine.GetState') ∗
-    "HSetState" ∷ l ↦s[storage.InMemoryStateMachine :: "SetState"]{dq} v.(InMemoryStateMachine.SetState')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (InMemoryStateMachine.ApplyReadonly' v)) (storage.InMemoryStateMachine) "ApplyReadonly"%go.
-  simpl_one_flatten_struct (# (InMemoryStateMachine.ApplyVolatile' v)) (storage.InMemoryStateMachine) "ApplyVolatile"%go.
-  simpl_one_flatten_struct (# (InMemoryStateMachine.GetState' v)) (storage.InMemoryStateMachine) "GetState"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-(* type storage.StateMachine *)
 Module StateMachine.
 Section def.
-Context `{ffi_syntax}.
 
-Record t := mk {
-  fname' : go_string;
-  logFile' : loc;
-  logsize' : w64;
-  sealed' : bool;
-  epoch' : w64;
-  nextIndex' : w64;
-  smMem' : loc;
-}.
+Context `{!heapGS Σ}.
+Context {sem : go.Semantics}.
+Context {package_sem' : storage.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance StateMachine_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (storage.StateMachine.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "fname" ∷ l.[(storage.StateMachine.t), "fname"] ↦{dq} v.(storage.StateMachine.fname') ∗
+      "logFile" ∷ l.[(storage.StateMachine.t), "logFile"] ↦{dq} v.(storage.StateMachine.logFile') ∗
+      "logsize" ∷ l.[(storage.StateMachine.t), "logsize"] ↦{dq} v.(storage.StateMachine.logsize') ∗
+      "sealed" ∷ l.[(storage.StateMachine.t), "sealed"] ↦{dq} v.(storage.StateMachine.sealed') ∗
+      "epoch" ∷ l.[(storage.StateMachine.t), "epoch"] ↦{dq} v.(storage.StateMachine.epoch') ∗
+      "nextIndex" ∷ l.[(storage.StateMachine.t), "nextIndex"] ↦{dq} v.(storage.StateMachine.nextIndex') ∗
+      "smMem" ∷ l.[(storage.StateMachine.t), "smMem"] ↦{dq} v.(storage.StateMachine.smMem') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance StateMachine_into_val_typed
+   :
+  IntoValTypedUnderlying (storage.StateMachine.t) (storage.StateMachineⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance StateMachine_access_load_fname l (v : (storage.StateMachine.t)) dq :
+  AccessStrict
+    (l.[(storage.StateMachine.t), "fname"] ↦{dq} (v.(storage.StateMachine.fname')))
+    (l.[(storage.StateMachine.t), "fname"] ↦{dq} (v.(storage.StateMachine.fname')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance StateMachine_access_store_fname l (v : (storage.StateMachine.t)) fname' :
+  AccessStrict
+    (l.[(storage.StateMachine.t), "fname"] ↦ (v.(storage.StateMachine.fname')))
+    (l.[(storage.StateMachine.t), "fname"] ↦ fname')
+    (l ↦ v) (l ↦ (v <|(storage.StateMachine.fname') := fname'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance StateMachine_access_load_logFile l (v : (storage.StateMachine.t)) dq :
+  AccessStrict
+    (l.[(storage.StateMachine.t), "logFile"] ↦{dq} (v.(storage.StateMachine.logFile')))
+    (l.[(storage.StateMachine.t), "logFile"] ↦{dq} (v.(storage.StateMachine.logFile')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance StateMachine_access_store_logFile l (v : (storage.StateMachine.t)) logFile' :
+  AccessStrict
+    (l.[(storage.StateMachine.t), "logFile"] ↦ (v.(storage.StateMachine.logFile')))
+    (l.[(storage.StateMachine.t), "logFile"] ↦ logFile')
+    (l ↦ v) (l ↦ (v <|(storage.StateMachine.logFile') := logFile'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance StateMachine_access_load_logsize l (v : (storage.StateMachine.t)) dq :
+  AccessStrict
+    (l.[(storage.StateMachine.t), "logsize"] ↦{dq} (v.(storage.StateMachine.logsize')))
+    (l.[(storage.StateMachine.t), "logsize"] ↦{dq} (v.(storage.StateMachine.logsize')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance StateMachine_access_store_logsize l (v : (storage.StateMachine.t)) logsize' :
+  AccessStrict
+    (l.[(storage.StateMachine.t), "logsize"] ↦ (v.(storage.StateMachine.logsize')))
+    (l.[(storage.StateMachine.t), "logsize"] ↦ logsize')
+    (l ↦ v) (l ↦ (v <|(storage.StateMachine.logsize') := logsize'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance StateMachine_access_load_sealed l (v : (storage.StateMachine.t)) dq :
+  AccessStrict
+    (l.[(storage.StateMachine.t), "sealed"] ↦{dq} (v.(storage.StateMachine.sealed')))
+    (l.[(storage.StateMachine.t), "sealed"] ↦{dq} (v.(storage.StateMachine.sealed')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance StateMachine_access_store_sealed l (v : (storage.StateMachine.t)) sealed' :
+  AccessStrict
+    (l.[(storage.StateMachine.t), "sealed"] ↦ (v.(storage.StateMachine.sealed')))
+    (l.[(storage.StateMachine.t), "sealed"] ↦ sealed')
+    (l ↦ v) (l ↦ (v <|(storage.StateMachine.sealed') := sealed'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance StateMachine_access_load_epoch l (v : (storage.StateMachine.t)) dq :
+  AccessStrict
+    (l.[(storage.StateMachine.t), "epoch"] ↦{dq} (v.(storage.StateMachine.epoch')))
+    (l.[(storage.StateMachine.t), "epoch"] ↦{dq} (v.(storage.StateMachine.epoch')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance StateMachine_access_store_epoch l (v : (storage.StateMachine.t)) epoch' :
+  AccessStrict
+    (l.[(storage.StateMachine.t), "epoch"] ↦ (v.(storage.StateMachine.epoch')))
+    (l.[(storage.StateMachine.t), "epoch"] ↦ epoch')
+    (l ↦ v) (l ↦ (v <|(storage.StateMachine.epoch') := epoch'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance StateMachine_access_load_nextIndex l (v : (storage.StateMachine.t)) dq :
+  AccessStrict
+    (l.[(storage.StateMachine.t), "nextIndex"] ↦{dq} (v.(storage.StateMachine.nextIndex')))
+    (l.[(storage.StateMachine.t), "nextIndex"] ↦{dq} (v.(storage.StateMachine.nextIndex')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance StateMachine_access_store_nextIndex l (v : (storage.StateMachine.t)) nextIndex' :
+  AccessStrict
+    (l.[(storage.StateMachine.t), "nextIndex"] ↦ (v.(storage.StateMachine.nextIndex')))
+    (l.[(storage.StateMachine.t), "nextIndex"] ↦ nextIndex')
+    (l ↦ v) (l ↦ (v <|(storage.StateMachine.nextIndex') := nextIndex'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance StateMachine_access_load_smMem l (v : (storage.StateMachine.t)) dq :
+  AccessStrict
+    (l.[(storage.StateMachine.t), "smMem"] ↦{dq} (v.(storage.StateMachine.smMem')))
+    (l.[(storage.StateMachine.t), "smMem"] ↦{dq} (v.(storage.StateMachine.smMem')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance StateMachine_access_store_smMem l (v : (storage.StateMachine.t)) smMem' :
+  AccessStrict
+    (l.[(storage.StateMachine.t), "smMem"] ↦ (v.(storage.StateMachine.smMem')))
+    (l.[(storage.StateMachine.t), "smMem"] ↦ smMem')
+    (l ↦ v) (l ↦ (v <|(storage.StateMachine.smMem') := smMem'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End StateMachine.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent storage.StateMachine.
-#[local] Typeclasses Transparent storage.StateMachine.
-
-Global Instance StateMachine_wf : struct.Wf storage.StateMachine.
-Proof. apply _. Qed.
-
-Global Instance settable_StateMachine : Settable StateMachine.t :=
-  settable! StateMachine.mk < StateMachine.fname'; StateMachine.logFile'; StateMachine.logsize'; StateMachine.sealed'; StateMachine.epoch'; StateMachine.nextIndex'; StateMachine.smMem' >.
-Global Instance into_val_StateMachine : IntoVal StateMachine.t :=
-  {| to_val_def v :=
-    struct.val_aux storage.StateMachine [
-    "fname" ::= #(StateMachine.fname' v);
-    "logFile" ::= #(StateMachine.logFile' v);
-    "logsize" ::= #(StateMachine.logsize' v);
-    "sealed" ::= #(StateMachine.sealed' v);
-    "epoch" ::= #(StateMachine.epoch' v);
-    "nextIndex" ::= #(StateMachine.nextIndex' v);
-    "smMem" ::= #(StateMachine.smMem' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_StateMachine : IntoValTyped StateMachine.t storage.StateMachine :=
-{|
-  default_val := StateMachine.mk (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_StateMachine_fname : IntoValStructField "fname" storage.StateMachine StateMachine.fname'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_StateMachine_logFile : IntoValStructField "logFile" storage.StateMachine StateMachine.logFile'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_StateMachine_logsize : IntoValStructField "logsize" storage.StateMachine StateMachine.logsize'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_StateMachine_sealed : IntoValStructField "sealed" storage.StateMachine StateMachine.sealed'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_StateMachine_epoch : IntoValStructField "epoch" storage.StateMachine StateMachine.epoch'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_StateMachine_nextIndex : IntoValStructField "nextIndex" storage.StateMachine StateMachine.nextIndex'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_StateMachine_smMem : IntoValStructField "smMem" storage.StateMachine StateMachine.smMem'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-
-
-Global Instance StateMachine_struct_fields_split dq l (v : StateMachine.t) :
-  StructFieldsSplit dq l v (
-    "Hfname" ∷ l ↦s[storage.StateMachine :: "fname"]{dq} v.(StateMachine.fname') ∗
-    "HlogFile" ∷ l ↦s[storage.StateMachine :: "logFile"]{dq} v.(StateMachine.logFile') ∗
-    "Hlogsize" ∷ l ↦s[storage.StateMachine :: "logsize"]{dq} v.(StateMachine.logsize') ∗
-    "Hsealed" ∷ l ↦s[storage.StateMachine :: "sealed"]{dq} v.(StateMachine.sealed') ∗
-    "Hepoch" ∷ l ↦s[storage.StateMachine :: "epoch"]{dq} v.(StateMachine.epoch') ∗
-    "HnextIndex" ∷ l ↦s[storage.StateMachine :: "nextIndex"]{dq} v.(StateMachine.nextIndex') ∗
-    "HsmMem" ∷ l ↦s[storage.StateMachine :: "smMem"]{dq} v.(StateMachine.smMem')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (StateMachine.fname' v)) (storage.StateMachine) "fname"%go.
-  simpl_one_flatten_struct (# (StateMachine.logFile' v)) (storage.StateMachine) "logFile"%go.
-  simpl_one_flatten_struct (# (StateMachine.logsize' v)) (storage.StateMachine) "logsize"%go.
-  simpl_one_flatten_struct (# (StateMachine.sealed' v)) (storage.StateMachine) "sealed"%go.
-  simpl_one_flatten_struct (# (StateMachine.epoch' v)) (storage.StateMachine) "epoch"%go.
-  simpl_one_flatten_struct (# (StateMachine.nextIndex' v)) (storage.StateMachine) "nextIndex"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-Section names.
-
-Context `{!heapGS Σ}.
-Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext}.
-#[local] Transparent is_pkg_defined is_pkg_defined_pure.
-
-Global Instance is_pkg_defined_pure_storage : IsPkgDefinedPure storage :=
-  {|
-    is_pkg_defined_pure_def go_ctx :=
-      is_pkg_defined_pure_single storage ∧
-      is_pkg_defined_pure code.github_com.goose_lang.std.std ∧
-      is_pkg_defined_pure code.github_com.mit_pdos.gokv.aof.aof ∧
-      is_pkg_defined_pure code.github_com.mit_pdos.gokv.grove_ffi.grove_ffi ∧
-      is_pkg_defined_pure code.github_com.mit_pdos.gokv.vrsm.replica.replica ∧
-      is_pkg_defined_pure code.github_com.tchajed.marshal.marshal;
-  |}.
-
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_storage : IsPkgDefined storage :=
-  {|
-    is_pkg_defined_def go_ctx :=
-      (is_pkg_defined_single storage ∗
-       is_pkg_defined code.github_com.goose_lang.std.std ∗
-       is_pkg_defined code.github_com.mit_pdos.gokv.aof.aof ∗
-       is_pkg_defined code.github_com.mit_pdos.gokv.grove_ffi.grove_ffi ∗
-       is_pkg_defined code.github_com.mit_pdos.gokv.vrsm.replica.replica ∗
-       is_pkg_defined code.github_com.tchajed.marshal.marshal)%I
-  |}.
-Final Obligation. iIntros. iFrame "#%". Qed.
-#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
-
-Global Instance wp_func_call_recoverStateMachine :
-  WpFuncCall storage.recoverStateMachine _ (is_pkg_defined storage) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_MakePbServer :
-  WpFuncCall storage.MakePbServer _ (is_pkg_defined storage) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_method_call_StateMachine'ptr_apply :
-  WpMethodCall (ptrT.id storage.StateMachine.id) "apply" _ (is_pkg_defined storage) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_StateMachine'ptr_applyReadonly :
-  WpMethodCall (ptrT.id storage.StateMachine.id) "applyReadonly" _ (is_pkg_defined storage) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_StateMachine'ptr_getStateAndSeal :
-  WpMethodCall (ptrT.id storage.StateMachine.id) "getStateAndSeal" _ (is_pkg_defined storage) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_StateMachine'ptr_makeDurableWithSnap :
-  WpMethodCall (ptrT.id storage.StateMachine.id) "makeDurableWithSnap" _ (is_pkg_defined storage) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_StateMachine'ptr_setStateAndUnseal :
-  WpMethodCall (ptrT.id storage.StateMachine.id) "setStateAndUnseal" _ (is_pkg_defined storage) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_StateMachine'ptr_truncateAndMakeDurable :
-  WpMethodCall (ptrT.id storage.StateMachine.id) "truncateAndMakeDurable" _ (is_pkg_defined storage) :=
-  ltac:(solve_wp_method_call).
-
-End names.
 End storage.

@@ -2,105 +2,126 @@
 Require Export New.code.math.
 Require Export New.code.sync.atomic.
 Require Export New.code.time.
-
 From New.golang Require Import defn.
+Module pkg_id.
 Definition idutil : go_string := "go.etcd.io/etcd/pkg/v3/idutil".
 
+End pkg_id.
+Export pkg_id.
 Module idutil.
 
-Module Generator. Definition id : go_string := "go.etcd.io/etcd/pkg/v3/idutil.Generator"%go. End Generator.
+Definition Generator {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/pkg/v3/idutil.Generator"%go [].
 
-Section code.
-Context `{ffi_syntax}.
+Definition tsLen {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #40.
 
+Definition cntLen {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #8.
 
-Definition tsLen : Z := 40.
+Definition suffixLen {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #48.
 
-Definition cntLen : Z := 8.
+Definition NewGenerator {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "go.etcd.io/etcd/pkg/v3/idutil.NewGenerator"%go.
 
-Definition suffixLen : Z := 48.
-
-Definition Generator : go_type := structT [
-  "prefix" :: uint64T;
-  "suffix" :: uint64T
-].
-#[global] Typeclasses Opaque Generator.
-#[global] Opaque Generator.
-
-Definition NewGenerator : go_string := "go.etcd.io/etcd/pkg/v3/idutil.NewGenerator"%go.
-
-Definition lowbit : go_string := "go.etcd.io/etcd/pkg/v3/idutil.lowbit"%go.
+Definition lowbit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "go.etcd.io/etcd/pkg/v3/idutil.lowbit"%go.
 
 (* go: id.go:56:6 *)
-Definition NewGeneratorⁱᵐᵖˡ : val :=
+Definition NewGeneratorⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "memberID" "now",
-    exception_do (let: "now" := (mem.alloc "now") in
-    let: "memberID" := (mem.alloc "memberID") in
-    let: "prefix" := (mem.alloc (type.zero_val uint64T)) in
-    let: "$r0" := ((u_to_w64 (![uint16T] "memberID")) ≪ #(W64 suffixLen)) in
-    do:  ("prefix" <-[uint64T] "$r0");;;
-    let: "unixMilli" := (mem.alloc (type.zero_val uint64T)) in
-    let: "$r0" := ((s_to_w64 ((method_call #(ptrT.id time.Time.id) #"UnixNano"%go "now") #())) `quot` (s_to_w64 (time.Millisecond `quots` time.Nanosecond))) in
-    do:  ("unixMilli" <-[uint64T] "$r0");;;
-    let: "suffix" := (mem.alloc (type.zero_val uint64T)) in
-    let: "$r0" := ((let: "$a0" := (![uint64T] "unixMilli") in
-    let: "$a1" := #(W64 tsLen) in
-    (func_call #lowbit) "$a0" "$a1") ≪ #(W64 cntLen)) in
-    do:  ("suffix" <-[uint64T] "$r0");;;
-    return: (mem.alloc (let: "$prefix" := (![uint64T] "prefix") in
-     let: "$suffix" := (![uint64T] "suffix") in
-     struct.make Generator [{
-       "prefix" ::= "$prefix";
-       "suffix" ::= "$suffix"
-     }]))).
+    exception_do (let: "now" := (GoAlloc time.Time "now") in
+    let: "memberID" := (GoAlloc go.uint16 "memberID") in
+    let: "prefix" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+    let: "$r0" := ((Convert go.uint16 go.uint64 (![go.uint16] "memberID")) <<⟨go.uint64⟩ (Convert go.untyped_int go.uint64 suffixLen)) in
+    do:  ("prefix" <-[go.uint64] "$r0");;;
+    let: "unixMilli" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+    let: "$r0" := ((Convert go.int64 go.uint64 ((MethodResolve time.Time "UnixNano"%go (![time.Time] "now")) #())) /⟨go.uint64⟩ (Convert time.Duration go.uint64 (time.Millisecond /⟨go.int64⟩ time.Nanosecond))) in
+    do:  ("unixMilli" <-[go.uint64] "$r0");;;
+    let: "suffix" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+    let: "$r0" := ((let: "$a0" := (![go.uint64] "unixMilli") in
+    let: "$a1" := (Convert go.untyped_int go.uint tsLen) in
+    (FuncResolve lowbit [] #()) "$a0" "$a1") <<⟨go.uint64⟩ (Convert go.untyped_int go.uint64 cntLen)) in
+    do:  ("suffix" <-[go.uint64] "$r0");;;
+    return: (GoAlloc Generator (CompositeLiteral Generator (LiteralValue [KeyedElement (Some (KeyField "prefix"%go)) (ElementExpression go.uint64 (![go.uint64] "prefix")); KeyedElement (Some (KeyField "suffix"%go)) (ElementExpression go.uint64 (![go.uint64] "suffix"))])))).
 
 (* Next generates a id that is unique.
 
    go: id.go:67:21 *)
-Definition Generator__Nextⁱᵐᵖˡ : val :=
+Definition Generator__Nextⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "g" <>,
-    exception_do (let: "g" := (mem.alloc "g") in
-    let: "suffix" := (mem.alloc (type.zero_val uint64T)) in
-    let: "$r0" := (let: "$a0" := (struct.field_ref ptrT #"suffix"%go (![ptrT] "g")) in
+    exception_do (let: "g" := (GoAlloc (go.PointerType Generator) "g") in
+    let: "suffix" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+    let: "$r0" := (let: "$a0" := (StructFieldRef Generator "suffix"%go (![go.PointerType Generator] "g")) in
     let: "$a1" := #(W64 1) in
-    (func_call #atomic.AddUint64) "$a0" "$a1") in
-    do:  ("suffix" <-[uint64T] "$r0");;;
-    let: "id" := (mem.alloc (type.zero_val uint64T)) in
-    let: "$r0" := ((![uint64T] (struct.field_ref ptrT #"prefix"%go (![ptrT] "g"))) `or` (let: "$a0" := (![uint64T] "suffix") in
-    let: "$a1" := #(W64 suffixLen) in
-    (func_call #lowbit) "$a0" "$a1")) in
-    do:  ("id" <-[uint64T] "$r0");;;
-    return: (![uint64T] "id")).
+    (FuncResolve atomic.AddUint64 [] #()) "$a0" "$a1") in
+    do:  ("suffix" <-[go.uint64] "$r0");;;
+    let: "id" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+    let: "$r0" := ((![go.uint64] (StructFieldRef Generator "prefix"%go (![go.PointerType Generator] "g"))) |⟨go.uint64⟩ (let: "$a0" := (![go.uint64] "suffix") in
+    let: "$a1" := (Convert go.untyped_int go.uint suffixLen) in
+    (FuncResolve lowbit [] #()) "$a0" "$a1")) in
+    do:  ("id" <-[go.uint64] "$r0");;;
+    return: (![go.uint64] "id")).
 
 (* go: id.go:73:6 *)
-Definition lowbitⁱᵐᵖˡ : val :=
+Definition lowbitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "x" "n",
-    exception_do (let: "n" := (mem.alloc "n") in
-    let: "x" := (mem.alloc "x") in
-    return: ((![uint64T] "x") `and` (#(W64 math.MaxUint64) ≫ (u_to_w64 (#(W64 64) - (![uintT] "n")))))).
+    exception_do (let: "n" := (GoAlloc go.uint "n") in
+    let: "x" := (GoAlloc go.uint64 "x") in
+    return: ((![go.uint64] "x") &⟨go.uint64⟩ ((Convert go.untyped_int go.uint64 math.MaxUint64) >>⟨go.uint64⟩ (Convert go.uint go.uint64 (#(W64 64) -⟨go.uint⟩ (![go.uint] "n")))))).
 
-Definition vars' : list (go_string * go_type) := [].
+#[global] Instance info' : PkgInfo pkg_id.idutil :=
+{|
+  pkg_imported_pkgs := [code.math.pkg_id.math; code.sync.atomic.pkg_id.atomic; code.time.pkg_id.time]
+|}.
 
-Definition functions' : list (go_string * val) := [(NewGenerator, NewGeneratorⁱᵐᵖˡ); (lowbit, lowbitⁱᵐᵖˡ)].
-
-Definition msets' : list (go_string * (list (go_string * val))) := [(Generator.id, []); (ptrT.id Generator.id, [("Next"%go, Generator__Nextⁱᵐᵖˡ)])].
-
-#[global] Instance info' : PkgInfo idutil.idutil :=
-  {|
-    pkg_vars := vars';
-    pkg_functions := functions';
-    pkg_msets := msets';
-    pkg_imported_pkgs := [code.math.math; code.sync.atomic.atomic; code.time.time];
-  |}.
-
-Definition initialize' : val :=
+Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    package.init #idutil.idutil (λ: <>,
+    package.init pkg_id.idutil (λ: <>,
       exception_do (do:  (time.initialize' #());;;
       do:  (atomic.initialize' #());;;
-      do:  (math.initialize' #());;;
-      do:  (package.alloc idutil.idutil #()))
+      do:  (math.initialize' #()))
       ).
 
-End code.
+Module Generator.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  prefix' : w64;
+  suffix' : w64;
+}.
+
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+End def.
+
+End Generator.
+
+Definition Generator'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
+  (go.FieldDecl "prefix"%go go.uint64);
+  (go.FieldDecl "suffix"%go go.uint64)
+].
+Program Definition Generator'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (Generator'fds_unsealed).
+Global Instance equals_unfold_Generator {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Generator'fds =→ Generator'fds_unsealed.
+Proof. rewrite /Generator'fds seal_eq //. Qed.
+
+Definition Generatorⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (Generator'fds).
+
+Class Generator_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Generator_type_repr  :: go.TypeReprUnderlying Generatorⁱᵐᵖˡ Generator.t;
+  #[global] Generator_underlying :: (Generator) <u (Generatorⁱᵐᵖˡ);
+  #[global] Generator_get_prefix (x : Generator.t) :: ⟦StructFieldGet (Generatorⁱᵐᵖˡ) "prefix", #x⟧ ⤳[under] #x.(Generator.prefix');
+  #[global] Generator_set_prefix (x : Generator.t) y :: ⟦StructFieldSet (Generatorⁱᵐᵖˡ) "prefix", (#x, #y)⟧ ⤳[under] #(x <|Generator.prefix' := y|>);
+  #[global] Generator_get_suffix (x : Generator.t) :: ⟦StructFieldGet (Generatorⁱᵐᵖˡ) "suffix", #x⟧ ⤳[under] #x.(Generator.suffix');
+  #[global] Generator_set_suffix (x : Generator.t) y :: ⟦StructFieldSet (Generatorⁱᵐᵖˡ) "suffix", (#x, #y)⟧ ⤳[under] #(x <|Generator.suffix' := y|>);
+  #[global] Generator'ptr_Next_unfold :: MethodUnfold (go.PointerType (Generator)) "Next" (Generator__Nextⁱᵐᵖˡ);
+}.
+
+Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Generator_instance :: Generator_Assumptions;
+  #[global] NewGenerator_unfold :: FuncUnfold NewGenerator [] (NewGeneratorⁱᵐᵖˡ);
+  #[global] lowbit_unfold :: FuncUnfold lowbit [] (lowbitⁱᵐᵖˡ);
+  #[global] import_math_Assumption :: math.Assumptions;
+  #[global] import_atomic_Assumption :: atomic.Assumptions;
+  #[global] import_time_Assumption :: time.Assumptions;
+}.
 End idutil.

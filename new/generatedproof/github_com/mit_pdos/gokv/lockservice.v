@@ -2,108 +2,50 @@
 Require Export New.proof.proof_prelude.
 Require Export New.generatedproof.github_com.mit_pdos.gokv.kv.
 Require Export New.golang.theory.
-
 Require Export New.code.github_com.mit_pdos.gokv.lockservice.
 
 Set Default Proof Using "Type".
 
 Module lockservice.
-
-(* type lockservice.LockClerk *)
 Module LockClerk.
 Section def.
-Context `{ffi_syntax}.
 
-Record t := mk {
-  kv' : kv.KvCput.t;
-}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : lockservice.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance LockClerk_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (lockservice.LockClerk.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "kv" ∷ l.[(lockservice.LockClerk.t), "kv"] ↦{dq} v.(lockservice.LockClerk.kv') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance LockClerk_into_val_typed
+   :
+  IntoValTypedUnderlying (lockservice.LockClerk.t) (lockservice.LockClerkⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance LockClerk_access_load_kv l (v : (lockservice.LockClerk.t)) dq :
+  AccessStrict
+    (l.[(lockservice.LockClerk.t), "kv"] ↦{dq} (v.(lockservice.LockClerk.kv')))
+    (l.[(lockservice.LockClerk.t), "kv"] ↦{dq} (v.(lockservice.LockClerk.kv')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance LockClerk_access_store_kv l (v : (lockservice.LockClerk.t)) kv' :
+  AccessStrict
+    (l.[(lockservice.LockClerk.t), "kv"] ↦ (v.(lockservice.LockClerk.kv')))
+    (l.[(lockservice.LockClerk.t), "kv"] ↦ kv')
+    (l ↦ v) (l ↦ (v <|(lockservice.LockClerk.kv') := kv'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End LockClerk.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent lockservice.LockClerk.
-#[local] Typeclasses Transparent lockservice.LockClerk.
-
-Global Instance LockClerk_wf : struct.Wf lockservice.LockClerk.
-Proof. apply _. Qed.
-
-Global Instance settable_LockClerk : Settable LockClerk.t :=
-  settable! LockClerk.mk < LockClerk.kv' >.
-Global Instance into_val_LockClerk : IntoVal LockClerk.t :=
-  {| to_val_def v :=
-    struct.val_aux lockservice.LockClerk [
-    "kv" ::= #(LockClerk.kv' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_LockClerk : IntoValTyped LockClerk.t lockservice.LockClerk :=
-{|
-  default_val := LockClerk.mk (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_LockClerk_kv : IntoValStructField "kv" lockservice.LockClerk LockClerk.kv'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-
-
-Global Instance LockClerk_struct_fields_split dq l (v : LockClerk.t) :
-  StructFieldsSplit dq l v (
-    "Hkv" ∷ l ↦s[lockservice.LockClerk :: "kv"]{dq} v.(LockClerk.kv')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-Section names.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext}.
-#[local] Transparent is_pkg_defined is_pkg_defined_pure.
-
-Global Instance is_pkg_defined_pure_lockservice : IsPkgDefinedPure lockservice :=
-  {|
-    is_pkg_defined_pure_def go_ctx :=
-      is_pkg_defined_pure_single lockservice ∧
-      is_pkg_defined_pure code.github_com.mit_pdos.gokv.kv.kv;
-  |}.
-
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_lockservice : IsPkgDefined lockservice :=
-  {|
-    is_pkg_defined_def go_ctx :=
-      (is_pkg_defined_single lockservice ∗
-       is_pkg_defined code.github_com.mit_pdos.gokv.kv.kv)%I
-  |}.
-Final Obligation. iIntros. iFrame "#%". Qed.
-#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
-
-Global Instance wp_func_call_MakeLockClerk :
-  WpFuncCall lockservice.MakeLockClerk _ (is_pkg_defined lockservice) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_method_call_LockClerk'ptr_Lock :
-  WpMethodCall (ptrT.id lockservice.LockClerk.id) "Lock" _ (is_pkg_defined lockservice) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_LockClerk'ptr_Unlock :
-  WpMethodCall (ptrT.id lockservice.LockClerk.id) "Unlock" _ (is_pkg_defined lockservice) :=
-  ltac:(solve_wp_method_call).
-
-End names.
 End lockservice.

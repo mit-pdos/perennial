@@ -3,128 +3,78 @@ Require Export New.proof.proof_prelude.
 Require Export New.generatedproof.github_com.goose_lang.std.
 Require Export New.generatedproof.github_com.tchajed.marshal.
 Require Export New.golang.theory.
-
 Require Export New.code.github_com.mit_pdos.gokv.vrsm.paxos.applyasfollowerargs_gk.
 
 Set Default Proof Using "Type".
 
 Module applyasfollowerargs_gk.
-
-(* type applyasfollowerargs_gk.S *)
 Module S.
 Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-  Epoch' : w64;
-  NextIndex' : w64;
-  State' : slice.t;
-}.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : applyasfollowerargs_gk.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance S_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (applyasfollowerargs_gk.S.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "Epoch" ∷ l.[(applyasfollowerargs_gk.S.t), "Epoch"] ↦{dq} v.(applyasfollowerargs_gk.S.Epoch') ∗
+      "NextIndex" ∷ l.[(applyasfollowerargs_gk.S.t), "NextIndex"] ↦{dq} v.(applyasfollowerargs_gk.S.NextIndex') ∗
+      "State" ∷ l.[(applyasfollowerargs_gk.S.t), "State"] ↦{dq} v.(applyasfollowerargs_gk.S.State') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance S_into_val_typed
+   :
+  IntoValTypedUnderlying (applyasfollowerargs_gk.S.t) (applyasfollowerargs_gk.Sⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance S_access_load_Epoch l (v : (applyasfollowerargs_gk.S.t)) dq :
+  AccessStrict
+    (l.[(applyasfollowerargs_gk.S.t), "Epoch"] ↦{dq} (v.(applyasfollowerargs_gk.S.Epoch')))
+    (l.[(applyasfollowerargs_gk.S.t), "Epoch"] ↦{dq} (v.(applyasfollowerargs_gk.S.Epoch')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance S_access_store_Epoch l (v : (applyasfollowerargs_gk.S.t)) Epoch' :
+  AccessStrict
+    (l.[(applyasfollowerargs_gk.S.t), "Epoch"] ↦ (v.(applyasfollowerargs_gk.S.Epoch')))
+    (l.[(applyasfollowerargs_gk.S.t), "Epoch"] ↦ Epoch')
+    (l ↦ v) (l ↦ (v <|(applyasfollowerargs_gk.S.Epoch') := Epoch'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance S_access_load_NextIndex l (v : (applyasfollowerargs_gk.S.t)) dq :
+  AccessStrict
+    (l.[(applyasfollowerargs_gk.S.t), "NextIndex"] ↦{dq} (v.(applyasfollowerargs_gk.S.NextIndex')))
+    (l.[(applyasfollowerargs_gk.S.t), "NextIndex"] ↦{dq} (v.(applyasfollowerargs_gk.S.NextIndex')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance S_access_store_NextIndex l (v : (applyasfollowerargs_gk.S.t)) NextIndex' :
+  AccessStrict
+    (l.[(applyasfollowerargs_gk.S.t), "NextIndex"] ↦ (v.(applyasfollowerargs_gk.S.NextIndex')))
+    (l.[(applyasfollowerargs_gk.S.t), "NextIndex"] ↦ NextIndex')
+    (l ↦ v) (l ↦ (v <|(applyasfollowerargs_gk.S.NextIndex') := NextIndex'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance S_access_load_State l (v : (applyasfollowerargs_gk.S.t)) dq :
+  AccessStrict
+    (l.[(applyasfollowerargs_gk.S.t), "State"] ↦{dq} (v.(applyasfollowerargs_gk.S.State')))
+    (l.[(applyasfollowerargs_gk.S.t), "State"] ↦{dq} (v.(applyasfollowerargs_gk.S.State')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance S_access_store_State l (v : (applyasfollowerargs_gk.S.t)) State' :
+  AccessStrict
+    (l.[(applyasfollowerargs_gk.S.t), "State"] ↦ (v.(applyasfollowerargs_gk.S.State')))
+    (l.[(applyasfollowerargs_gk.S.t), "State"] ↦ State')
+    (l ↦ v) (l ↦ (v <|(applyasfollowerargs_gk.S.State') := State'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End S.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent applyasfollowerargs_gk.S.
-#[local] Typeclasses Transparent applyasfollowerargs_gk.S.
-
-Global Instance S_wf : struct.Wf applyasfollowerargs_gk.S.
-Proof. apply _. Qed.
-
-Global Instance settable_S : Settable S.t :=
-  settable! S.mk < S.Epoch'; S.NextIndex'; S.State' >.
-Global Instance into_val_S : IntoVal S.t :=
-  {| to_val_def v :=
-    struct.val_aux applyasfollowerargs_gk.S [
-    "Epoch" ::= #(S.Epoch' v);
-    "NextIndex" ::= #(S.NextIndex' v);
-    "State" ::= #(S.State' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_S : IntoValTyped S.t applyasfollowerargs_gk.S :=
-{|
-  default_val := S.mk (default_val _) (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_S_Epoch : IntoValStructField "Epoch" applyasfollowerargs_gk.S S.Epoch'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_S_NextIndex : IntoValStructField "NextIndex" applyasfollowerargs_gk.S S.NextIndex'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_S_State : IntoValStructField "State" applyasfollowerargs_gk.S S.State'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_S Epoch' NextIndex' State':
-  PureWp True
-    (struct.make #applyasfollowerargs_gk.S (alist_val [
-      "Epoch" ::= #Epoch';
-      "NextIndex" ::= #NextIndex';
-      "State" ::= #State'
-    ]))%struct
-    #(S.mk Epoch' NextIndex' State').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance S_struct_fields_split dq l (v : S.t) :
-  StructFieldsSplit dq l v (
-    "HEpoch" ∷ l ↦s[applyasfollowerargs_gk.S :: "Epoch"]{dq} v.(S.Epoch') ∗
-    "HNextIndex" ∷ l ↦s[applyasfollowerargs_gk.S :: "NextIndex"]{dq} v.(S.NextIndex') ∗
-    "HState" ∷ l ↦s[applyasfollowerargs_gk.S :: "State"]{dq} v.(S.State')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (S.Epoch' v)) (applyasfollowerargs_gk.S) "Epoch"%go.
-  simpl_one_flatten_struct (# (S.NextIndex' v)) (applyasfollowerargs_gk.S) "NextIndex"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-Section names.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext}.
-#[local] Transparent is_pkg_defined is_pkg_defined_pure.
-
-Global Instance is_pkg_defined_pure_applyasfollowerargs_gk : IsPkgDefinedPure applyasfollowerargs_gk :=
-  {|
-    is_pkg_defined_pure_def go_ctx :=
-      is_pkg_defined_pure_single applyasfollowerargs_gk ∧
-      is_pkg_defined_pure code.github_com.goose_lang.std.std ∧
-      is_pkg_defined_pure code.github_com.tchajed.marshal.marshal;
-  |}.
-
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_applyasfollowerargs_gk : IsPkgDefined applyasfollowerargs_gk :=
-  {|
-    is_pkg_defined_def go_ctx :=
-      (is_pkg_defined_single applyasfollowerargs_gk ∗
-       is_pkg_defined code.github_com.goose_lang.std.std ∗
-       is_pkg_defined code.github_com.tchajed.marshal.marshal)%I
-  |}.
-Final Obligation. iIntros. iFrame "#%". Qed.
-#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
-
-Global Instance wp_func_call_Marshal :
-  WpFuncCall applyasfollowerargs_gk.Marshal _ (is_pkg_defined applyasfollowerargs_gk) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_Unmarshal :
-  WpFuncCall applyasfollowerargs_gk.Unmarshal _ (is_pkg_defined applyasfollowerargs_gk) :=
-  ltac:(solve_wp_func_call).
-
-End names.
 End applyasfollowerargs_gk.

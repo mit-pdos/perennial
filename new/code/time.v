@@ -694,51 +694,6 @@ Class ParseError_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalCo
   #[global] ParseErrorⁱᵐᵖˡ_underlying :: (ParseErrorⁱᵐᵖˡ) ↓u (ParseErrorⁱᵐᵖˡ);
 }.
 
-Module Time.
-Section def.
-Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Record t :=
-mk {
-  wall' : w64;
-  ext' : w64;
-  loc' : loc;
-}.
-
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
-#[global] Arguments mk : clear implicits.
-#[global] Arguments t : clear implicits.
-End def.
-
-End Time.
-
-Definition Time'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
-  (go.FieldDecl "wall"%go go.uint64);
-  (go.FieldDecl "ext"%go go.int64);
-  (go.FieldDecl "loc"%go (go.PointerType Location))
-].
-Program Definition Time'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (Time'fds_unsealed).
-Global Instance equals_unfold_Time {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Time'fds =→ Time'fds_unsealed.
-Proof. rewrite /Time'fds seal_eq //. Qed.
-
-Definition Timeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (Time'fds).
-
-Class Time_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] Time_type_repr  :: go.TypeReprUnderlying Timeⁱᵐᵖˡ Time.t;
-  #[global] Time_underlying :: (Time) <u (Timeⁱᵐᵖˡ);
-  #[global] Time_get_wall (x : Time.t) :: ⟦StructFieldGet (Timeⁱᵐᵖˡ) "wall", #x⟧ ⤳[under] #x.(Time.wall');
-  #[global] Time_set_wall (x : Time.t) y :: ⟦StructFieldSet (Timeⁱᵐᵖˡ) "wall", (#x, #y)⟧ ⤳[under] #(x <|Time.wall' := y|>);
-  #[global] Time_get_ext (x : Time.t) :: ⟦StructFieldGet (Timeⁱᵐᵖˡ) "ext", #x⟧ ⤳[under] #x.(Time.ext');
-  #[global] Time_set_ext (x : Time.t) y :: ⟦StructFieldSet (Timeⁱᵐᵖˡ) "ext", (#x, #y)⟧ ⤳[under] #(x <|Time.ext' := y|>);
-  #[global] Time_get_loc (x : Time.t) :: ⟦StructFieldGet (Timeⁱᵐᵖˡ) "loc", #x⟧ ⤳[under] #x.(Time.loc');
-  #[global] Time_set_loc (x : Time.t) y :: ⟦StructFieldSet (Timeⁱᵐᵖˡ) "loc", (#x, #y)⟧ ⤳[under] #(x <|Time.loc' := y|>);
-  #[global] Time_UnixNano_unfold :: MethodUnfold (Time) "UnixNano" (Time__UnixNanoⁱᵐᵖˡ);
-  #[global] Time'ptr_UnixNano_unfold :: MethodUnfold (go.PointerType (Time)) "UnixNano" (λ: "$r", MethodResolve (Time) "UnixNano" (![(Time)] "$r"));
-  #[global] Time'ptr_nsec_unfold :: MethodUnfold (go.PointerType (Time)) "nsec" (Time__nsecⁱᵐᵖˡ);
-  #[global] Time'ptr_sec_unfold :: MethodUnfold (go.PointerType (Time)) "sec" (Time__secⁱᵐᵖˡ);
-  #[global] Time'ptr_unixSec_unfold :: MethodUnfold (go.PointerType (Time)) "unixSec" (Time__unixSecⁱᵐᵖˡ);
-}.
-
 Module Timer.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
@@ -789,6 +744,51 @@ Class Ticker_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContex
   #[global] Ticker_type_repr  :: go.TypeReprUnderlying Tickerⁱᵐᵖˡ Ticker.t;
   #[global] Ticker_underlying :: (Ticker) <u (Tickerⁱᵐᵖˡ);
   #[global] Tickerⁱᵐᵖˡ_underlying :: (Tickerⁱᵐᵖˡ) ↓u (Tickerⁱᵐᵖˡ);
+}.
+
+Module Time.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  wall' : w64;
+  ext' : w64;
+  loc' : loc;
+}.
+
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+End def.
+
+End Time.
+
+Definition Time'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
+  (go.FieldDecl "wall"%go go.uint64);
+  (go.FieldDecl "ext"%go go.int64);
+  (go.FieldDecl "loc"%go (go.PointerType Location))
+].
+Program Definition Time'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (Time'fds_unsealed).
+Global Instance equals_unfold_Time {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Time'fds =→ Time'fds_unsealed.
+Proof. rewrite /Time'fds seal_eq //. Qed.
+
+Definition Timeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (Time'fds).
+
+Class Time_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Time_type_repr  :: go.TypeReprUnderlying Timeⁱᵐᵖˡ Time.t;
+  #[global] Time_underlying :: (Time) <u (Timeⁱᵐᵖˡ);
+  #[global] Time_get_wall (x : Time.t) :: ⟦StructFieldGet (Timeⁱᵐᵖˡ) "wall", #x⟧ ⤳[under] #x.(Time.wall');
+  #[global] Time_set_wall (x : Time.t) y :: ⟦StructFieldSet (Timeⁱᵐᵖˡ) "wall", (#x, #y)⟧ ⤳[under] #(x <|Time.wall' := y|>);
+  #[global] Time_get_ext (x : Time.t) :: ⟦StructFieldGet (Timeⁱᵐᵖˡ) "ext", #x⟧ ⤳[under] #x.(Time.ext');
+  #[global] Time_set_ext (x : Time.t) y :: ⟦StructFieldSet (Timeⁱᵐᵖˡ) "ext", (#x, #y)⟧ ⤳[under] #(x <|Time.ext' := y|>);
+  #[global] Time_get_loc (x : Time.t) :: ⟦StructFieldGet (Timeⁱᵐᵖˡ) "loc", #x⟧ ⤳[under] #x.(Time.loc');
+  #[global] Time_set_loc (x : Time.t) y :: ⟦StructFieldSet (Timeⁱᵐᵖˡ) "loc", (#x, #y)⟧ ⤳[under] #(x <|Time.loc' := y|>);
+  #[global] Time_UnixNano_unfold :: MethodUnfold (Time) "UnixNano" (Time__UnixNanoⁱᵐᵖˡ);
+  #[global] Time'ptr_UnixNano_unfold :: MethodUnfold (go.PointerType (Time)) "UnixNano" (λ: "$r", MethodResolve (Time) "UnixNano" (![(Time)] "$r"));
+  #[global] Time'ptr_nsec_unfold :: MethodUnfold (go.PointerType (Time)) "nsec" (Time__nsecⁱᵐᵖˡ);
+  #[global] Time'ptr_sec_unfold :: MethodUnfold (go.PointerType (Time)) "sec" (Time__secⁱᵐᵖˡ);
+  #[global] Time'ptr_unixSec_unfold :: MethodUnfold (go.PointerType (Time)) "unixSec" (Time__unixSecⁱᵐᵖˡ);
 }.
 
 Module Month.

@@ -3,120 +3,64 @@ Require Export New.proof.proof_prelude.
 Require Export New.generatedproof.github_com.goose_lang.std.
 Require Export New.generatedproof.github_com.tchajed.marshal.
 Require Export New.golang.theory.
-
 Require Export New.code.github_com.mit_pdos.gokv.memkv.putrequest_gk.
 
 Set Default Proof Using "Type".
 
 Module putrequest_gk.
-
-(* type putrequest_gk.S *)
 Module S.
 Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-  Key' : w64;
-  Value' : slice.t;
-}.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : putrequest_gk.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance S_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (putrequest_gk.S.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "Key" ∷ l.[(putrequest_gk.S.t), "Key"] ↦{dq} v.(putrequest_gk.S.Key') ∗
+      "Value" ∷ l.[(putrequest_gk.S.t), "Value"] ↦{dq} v.(putrequest_gk.S.Value') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance S_into_val_typed
+   :
+  IntoValTypedUnderlying (putrequest_gk.S.t) (putrequest_gk.Sⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance S_access_load_Key l (v : (putrequest_gk.S.t)) dq :
+  AccessStrict
+    (l.[(putrequest_gk.S.t), "Key"] ↦{dq} (v.(putrequest_gk.S.Key')))
+    (l.[(putrequest_gk.S.t), "Key"] ↦{dq} (v.(putrequest_gk.S.Key')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance S_access_store_Key l (v : (putrequest_gk.S.t)) Key' :
+  AccessStrict
+    (l.[(putrequest_gk.S.t), "Key"] ↦ (v.(putrequest_gk.S.Key')))
+    (l.[(putrequest_gk.S.t), "Key"] ↦ Key')
+    (l ↦ v) (l ↦ (v <|(putrequest_gk.S.Key') := Key'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance S_access_load_Value l (v : (putrequest_gk.S.t)) dq :
+  AccessStrict
+    (l.[(putrequest_gk.S.t), "Value"] ↦{dq} (v.(putrequest_gk.S.Value')))
+    (l.[(putrequest_gk.S.t), "Value"] ↦{dq} (v.(putrequest_gk.S.Value')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance S_access_store_Value l (v : (putrequest_gk.S.t)) Value' :
+  AccessStrict
+    (l.[(putrequest_gk.S.t), "Value"] ↦ (v.(putrequest_gk.S.Value')))
+    (l.[(putrequest_gk.S.t), "Value"] ↦ Value')
+    (l ↦ v) (l ↦ (v <|(putrequest_gk.S.Value') := Value'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End S.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent putrequest_gk.S.
-#[local] Typeclasses Transparent putrequest_gk.S.
-
-Global Instance S_wf : struct.Wf putrequest_gk.S.
-Proof. apply _. Qed.
-
-Global Instance settable_S : Settable S.t :=
-  settable! S.mk < S.Key'; S.Value' >.
-Global Instance into_val_S : IntoVal S.t :=
-  {| to_val_def v :=
-    struct.val_aux putrequest_gk.S [
-    "Key" ::= #(S.Key' v);
-    "Value" ::= #(S.Value' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_S : IntoValTyped S.t putrequest_gk.S :=
-{|
-  default_val := S.mk (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_S_Key : IntoValStructField "Key" putrequest_gk.S S.Key'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_S_Value : IntoValStructField "Value" putrequest_gk.S S.Value'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_S Key' Value':
-  PureWp True
-    (struct.make #putrequest_gk.S (alist_val [
-      "Key" ::= #Key';
-      "Value" ::= #Value'
-    ]))%struct
-    #(S.mk Key' Value').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance S_struct_fields_split dq l (v : S.t) :
-  StructFieldsSplit dq l v (
-    "HKey" ∷ l ↦s[putrequest_gk.S :: "Key"]{dq} v.(S.Key') ∗
-    "HValue" ∷ l ↦s[putrequest_gk.S :: "Value"]{dq} v.(S.Value')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (S.Key' v)) (putrequest_gk.S) "Key"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-Section names.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext}.
-#[local] Transparent is_pkg_defined is_pkg_defined_pure.
-
-Global Instance is_pkg_defined_pure_putrequest_gk : IsPkgDefinedPure putrequest_gk :=
-  {|
-    is_pkg_defined_pure_def go_ctx :=
-      is_pkg_defined_pure_single putrequest_gk ∧
-      is_pkg_defined_pure code.github_com.goose_lang.std.std ∧
-      is_pkg_defined_pure code.github_com.tchajed.marshal.marshal;
-  |}.
-
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_putrequest_gk : IsPkgDefined putrequest_gk :=
-  {|
-    is_pkg_defined_def go_ctx :=
-      (is_pkg_defined_single putrequest_gk ∗
-       is_pkg_defined code.github_com.goose_lang.std.std ∗
-       is_pkg_defined code.github_com.tchajed.marshal.marshal)%I
-  |}.
-Final Obligation. iIntros. iFrame "#%". Qed.
-#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
-
-Global Instance wp_func_call_Marshal :
-  WpFuncCall putrequest_gk.Marshal _ (is_pkg_defined putrequest_gk) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_Unmarshal :
-  WpFuncCall putrequest_gk.Unmarshal _ (is_pkg_defined putrequest_gk) :=
-  ltac:(solve_wp_func_call).
-
-End names.
 End putrequest_gk.

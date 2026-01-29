@@ -2,63 +2,9 @@
 Require Export New.proof.proof_prelude.
 Require Export New.generatedproof.github_com.tchajed.marshal.
 Require Export New.golang.theory.
-
 Require Export New.code.github_com.mit_pdos.gokv.reconfig.replica.error_gk.
 
 Set Default Proof Using "Type".
 
 Module error_gk.
-
-(* type error_gk.E *)
-Module E.
-
-#[global] Transparent error_gk.E.
-#[global] Typeclasses Transparent error_gk.E.
-Section def.
-Context `{ffi_syntax}.
-Definition t := w32.
-End def.
-End E.
-
-Section names.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext}.
-#[local] Transparent is_pkg_defined is_pkg_defined_pure.
-
-Global Instance is_pkg_defined_pure_error_gk : IsPkgDefinedPure error_gk :=
-  {|
-    is_pkg_defined_pure_def go_ctx :=
-      is_pkg_defined_pure_single error_gk ∧
-      is_pkg_defined_pure code.github_com.tchajed.marshal.marshal;
-  |}.
-
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_error_gk : IsPkgDefined error_gk :=
-  {|
-    is_pkg_defined_def go_ctx :=
-      (is_pkg_defined_single error_gk ∗
-       is_pkg_defined code.github_com.tchajed.marshal.marshal)%I
-  |}.
-Final Obligation. iIntros. iFrame "#%". Qed.
-#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
-
-Global Instance wp_func_call_Marshal :
-  WpFuncCall error_gk.Marshal _ (is_pkg_defined error_gk) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_Unmarshal :
-  WpFuncCall error_gk.Unmarshal _ (is_pkg_defined error_gk) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_method_call_E_String :
-  WpMethodCall error_gk.E.id "String" _ (is_pkg_defined error_gk) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_E'ptr_String :
-  WpMethodCall (ptrT.id error_gk.E.id) "String" _ (is_pkg_defined error_gk) :=
-  ltac:(solve_wp_method_call).
-
-End names.
 End error_gk.

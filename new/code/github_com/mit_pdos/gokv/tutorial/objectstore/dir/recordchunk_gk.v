@@ -2,125 +2,147 @@
 Require Export New.code.github_com.goose_lang.primitive.
 Require Export New.code.github_com.goose_lang.std.
 Require Export New.code.github_com.tchajed.marshal.
-
 From New.golang Require Import defn.
+Module pkg_id.
 Definition recordchunk_gk : go_string := "github.com/mit-pdos/gokv/tutorial/objectstore/dir/recordchunk_gk".
 
+End pkg_id.
+Export pkg_id.
 Module recordchunk_gk.
 
-Module S. Definition id : go_string := "github.com/mit-pdos/gokv/tutorial/objectstore/dir/recordchunk_gk.S"%go. End S.
+Definition S {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/mit-pdos/gokv/tutorial/objectstore/dir/recordchunk_gk.S"%go [].
 
-Section code.
-Context `{ffi_syntax}.
+Definition Marshal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/mit-pdos/gokv/tutorial/objectstore/dir/recordchunk_gk.Marshal"%go.
 
-
-Definition S : go_type := structT [
-  "WriteId" :: uint64T;
-  "Server" :: uint64T;
-  "ContentHash" :: stringT;
-  "Index" :: uint64T
-].
-#[global] Typeclasses Opaque S.
-#[global] Opaque S.
-
-Definition Marshal : go_string := "github.com/mit-pdos/gokv/tutorial/objectstore/dir/recordchunk_gk.Marshal"%go.
+Definition Unmarshal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/mit-pdos/gokv/tutorial/objectstore/dir/recordchunk_gk.Unmarshal"%go.
 
 (* go: recordchunk_gk.go:21:6 *)
-Definition Marshalⁱᵐᵖˡ : val :=
+Definition Marshalⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "enc" "r",
-    exception_do (let: "r" := (mem.alloc "r") in
-    let: "enc" := (mem.alloc "enc") in
-    let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
-    let: "$a1" := (![#uint64T] (struct.field_ref #S #"WriteId"%go "r")) in
-    (func_call #marshal.WriteInt) "$a0" "$a1") in
-    do:  ("enc" <-[#sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
-    let: "$a1" := (![#uint64T] (struct.field_ref #S #"Server"%go "r")) in
-    (func_call #marshal.WriteInt) "$a0" "$a1") in
-    do:  ("enc" <-[#sliceT] "$r0");;;
-    do:  (let: "$a0" := (![#stringT] (struct.field_ref #S #"ContentHash"%go "r")) in
-    (func_call #primitive.AssumeNoStringOverflow) "$a0");;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
-    let: "$a1" := (string.to_bytes (![#stringT] (struct.field_ref #S #"ContentHash"%go "r"))) in
-    (func_call #marshal.WriteLenPrefixedBytes) "$a0" "$a1") in
-    do:  ("enc" <-[#sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := (![#sliceT] "enc") in
-    let: "$a1" := (![#uint64T] (struct.field_ref #S #"Index"%go "r")) in
-    (func_call #marshal.WriteInt) "$a0" "$a1") in
-    do:  ("enc" <-[#sliceT] "$r0");;;
-    return: (![#sliceT] "enc")).
-
-Definition Unmarshal : go_string := "github.com/mit-pdos/gokv/tutorial/objectstore/dir/recordchunk_gk.Unmarshal"%go.
+    exception_do (let: "r" := (GoAlloc S "r") in
+    let: "enc" := (GoAlloc (go.SliceType go.byte) "enc") in
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "enc") in
+    let: "$a1" := (![go.uint64] (StructFieldRef S "WriteId"%go "r")) in
+    (FuncResolve marshal.WriteInt [] #()) "$a0" "$a1") in
+    do:  ("enc" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "enc") in
+    let: "$a1" := (![go.uint64] (StructFieldRef S "Server"%go "r")) in
+    (FuncResolve marshal.WriteInt [] #()) "$a0" "$a1") in
+    do:  ("enc" <-[go.SliceType go.byte] "$r0");;;
+    do:  (let: "$a0" := (![go.string] (StructFieldRef S "ContentHash"%go "r")) in
+    (FuncResolve primitive.AssumeNoStringOverflow [] #()) "$a0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "enc") in
+    let: "$a1" := (Convert go.string (go.SliceType go.byte) (![go.string] (StructFieldRef S "ContentHash"%go "r"))) in
+    (FuncResolve marshal.WriteLenPrefixedBytes [] #()) "$a0" "$a1") in
+    do:  ("enc" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "enc") in
+    let: "$a1" := (![go.uint64] (StructFieldRef S "Index"%go "r")) in
+    (FuncResolve marshal.WriteInt [] #()) "$a0" "$a1") in
+    do:  ("enc" <-[go.SliceType go.byte] "$r0");;;
+    return: (![go.SliceType go.byte] "enc")).
 
 (* go: recordchunk_gk.go:31:6 *)
-Definition Unmarshalⁱᵐᵖˡ : val :=
+Definition Unmarshalⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "s",
-    exception_do (let: "s" := (mem.alloc "s") in
-    let: "writeId" := (mem.alloc (type.zero_val #uint64T)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "s") in
-    (func_call #marshal.ReadInt) "$a0") in
+    exception_do (let: "s" := (GoAlloc (go.SliceType go.byte) "s") in
+    let: "writeId" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![go.SliceType go.byte] "s") in
+    (FuncResolve marshal.ReadInt [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("writeId" <-[#uint64T] "$r0");;;
-    do:  ("s" <-[#sliceT] "$r1");;;
-    let: "server" := (mem.alloc (type.zero_val #uint64T)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "s") in
-    (func_call #marshal.ReadInt) "$a0") in
+    do:  ("writeId" <-[go.uint64] "$r0");;;
+    do:  ("s" <-[go.SliceType go.byte] "$r1");;;
+    let: "server" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![go.SliceType go.byte] "s") in
+    (FuncResolve marshal.ReadInt [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("server" <-[#uint64T] "$r0");;;
-    do:  ("s" <-[#sliceT] "$r1");;;
-    let: "contentHashBytes" := (mem.alloc (type.zero_val #sliceT)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "s") in
-    (func_call #marshal.ReadLenPrefixedBytes) "$a0") in
+    do:  ("server" <-[go.uint64] "$r0");;;
+    do:  ("s" <-[go.SliceType go.byte] "$r1");;;
+    let: "contentHashBytes" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![go.SliceType go.byte] "s") in
+    (FuncResolve marshal.ReadLenPrefixedBytes [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("contentHashBytes" <-[#sliceT] "$r0");;;
-    do:  ("s" <-[#sliceT] "$r1");;;
-    let: "contentHash" := (mem.alloc (type.zero_val #stringT)) in
-    let: "$r0" := (string.from_bytes (let: "$a0" := (![#sliceT] "contentHashBytes") in
-    (func_call #std.BytesClone) "$a0")) in
-    do:  ("contentHash" <-[#stringT] "$r0");;;
-    let: "index" := (mem.alloc (type.zero_val #uint64T)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "s") in
-    (func_call #marshal.ReadInt) "$a0") in
+    do:  ("contentHashBytes" <-[go.SliceType go.byte] "$r0");;;
+    do:  ("s" <-[go.SliceType go.byte] "$r1");;;
+    let: "contentHash" := (GoAlloc go.string (GoZeroVal go.string #())) in
+    let: "$r0" := (Convert (go.SliceType go.byte) go.string (let: "$a0" := (![go.SliceType go.byte] "contentHashBytes") in
+    (FuncResolve std.BytesClone [] #()) "$a0")) in
+    do:  ("contentHash" <-[go.string] "$r0");;;
+    let: "index" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![go.SliceType go.byte] "s") in
+    (FuncResolve marshal.ReadInt [] #()) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("index" <-[#uint64T] "$r0");;;
-    do:  ("s" <-[#sliceT] "$r1");;;
-    return: (let: "$WriteId" := (![#uint64T] "writeId") in
-     let: "$Server" := (![#uint64T] "server") in
-     let: "$ContentHash" := (![#stringT] "contentHash") in
-     let: "$Index" := (![#uint64T] "index") in
-     struct.make #S [{
-       "WriteId" ::= "$WriteId";
-       "Server" ::= "$Server";
-       "ContentHash" ::= "$ContentHash";
-       "Index" ::= "$Index"
-     }], ![#sliceT] "s")).
+    do:  ("index" <-[go.uint64] "$r0");;;
+    do:  ("s" <-[go.SliceType go.byte] "$r1");;;
+    return: (CompositeLiteral S (LiteralValue [KeyedElement (Some (KeyField "WriteId"%go)) (ElementExpression go.uint64 (![go.uint64] "writeId")); KeyedElement (Some (KeyField "Server"%go)) (ElementExpression go.uint64 (![go.uint64] "server")); KeyedElement (Some (KeyField "ContentHash"%go)) (ElementExpression go.string (![go.string] "contentHash")); KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 (![go.uint64] "index"))]), ![go.SliceType go.byte] "s")).
 
-Definition vars' : list (go_string * go_type) := [].
+#[global] Instance info' : PkgInfo pkg_id.recordchunk_gk :=
+{|
+  pkg_imported_pkgs := [code.github_com.goose_lang.primitive.pkg_id.primitive; code.github_com.goose_lang.std.pkg_id.std; code.github_com.tchajed.marshal.pkg_id.marshal]
+|}.
 
-Definition functions' : list (go_string * val) := [(Marshal, Marshalⁱᵐᵖˡ); (Unmarshal, Unmarshalⁱᵐᵖˡ)].
-
-Definition msets' : list (go_string * (list (go_string * val))) := [(S.id, []); (ptrT.id S.id, [])].
-
-#[global] Instance info' : PkgInfo recordchunk_gk.recordchunk_gk :=
-  {|
-    pkg_vars := vars';
-    pkg_functions := functions';
-    pkg_msets := msets';
-    pkg_imported_pkgs := [code.github_com.goose_lang.primitive.primitive; code.github_com.goose_lang.std.std; code.github_com.tchajed.marshal.marshal];
-  |}.
-
-Definition initialize' : val :=
+Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    package.init #recordchunk_gk.recordchunk_gk (λ: <>,
+    package.init pkg_id.recordchunk_gk (λ: <>,
       exception_do (do:  (marshal.initialize' #());;;
       do:  (std.initialize' #());;;
-      do:  (primitive.initialize' #());;;
-      do:  (package.alloc recordchunk_gk.recordchunk_gk #()))
+      do:  (primitive.initialize' #()))
       ).
 
-End code.
+Module S.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  WriteId' : w64;
+  Server' : w64;
+  ContentHash' : go_string;
+  Index' : w64;
+}.
+
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _) (zero_val _)|}.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+End def.
+
+End S.
+
+Definition S'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
+  (go.FieldDecl "WriteId"%go go.uint64);
+  (go.FieldDecl "Server"%go go.uint64);
+  (go.FieldDecl "ContentHash"%go go.string);
+  (go.FieldDecl "Index"%go go.uint64)
+].
+Program Definition S'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (S'fds_unsealed).
+Global Instance equals_unfold_S {ext : ffi_syntax} {go_gctx : GoGlobalContext} : S'fds =→ S'fds_unsealed.
+Proof. rewrite /S'fds seal_eq //. Qed.
+
+Definition Sⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (S'fds).
+
+Class S_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] S_type_repr  :: go.TypeReprUnderlying Sⁱᵐᵖˡ S.t;
+  #[global] S_underlying :: (S) <u (Sⁱᵐᵖˡ);
+  #[global] S_get_WriteId (x : S.t) :: ⟦StructFieldGet (Sⁱᵐᵖˡ) "WriteId", #x⟧ ⤳[under] #x.(S.WriteId');
+  #[global] S_set_WriteId (x : S.t) y :: ⟦StructFieldSet (Sⁱᵐᵖˡ) "WriteId", (#x, #y)⟧ ⤳[under] #(x <|S.WriteId' := y|>);
+  #[global] S_get_Server (x : S.t) :: ⟦StructFieldGet (Sⁱᵐᵖˡ) "Server", #x⟧ ⤳[under] #x.(S.Server');
+  #[global] S_set_Server (x : S.t) y :: ⟦StructFieldSet (Sⁱᵐᵖˡ) "Server", (#x, #y)⟧ ⤳[under] #(x <|S.Server' := y|>);
+  #[global] S_get_ContentHash (x : S.t) :: ⟦StructFieldGet (Sⁱᵐᵖˡ) "ContentHash", #x⟧ ⤳[under] #x.(S.ContentHash');
+  #[global] S_set_ContentHash (x : S.t) y :: ⟦StructFieldSet (Sⁱᵐᵖˡ) "ContentHash", (#x, #y)⟧ ⤳[under] #(x <|S.ContentHash' := y|>);
+  #[global] S_get_Index (x : S.t) :: ⟦StructFieldGet (Sⁱᵐᵖˡ) "Index", #x⟧ ⤳[under] #x.(S.Index');
+  #[global] S_set_Index (x : S.t) y :: ⟦StructFieldSet (Sⁱᵐᵖˡ) "Index", (#x, #y)⟧ ⤳[under] #(x <|S.Index' := y|>);
+}.
+
+Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] S_instance :: S_Assumptions;
+  #[global] Marshal_unfold :: FuncUnfold Marshal [] (Marshalⁱᵐᵖˡ);
+  #[global] Unmarshal_unfold :: FuncUnfold Unmarshal [] (Unmarshalⁱᵐᵖˡ);
+  #[global] import_primitive_Assumption :: primitive.Assumptions;
+  #[global] import_std_Assumption :: std.Assumptions;
+  #[global] import_marshal_Assumption :: marshal.Assumptions;
+}.
 End recordchunk_gk.

@@ -3,167 +3,91 @@ Require Export New.proof.proof_prelude.
 Require Export New.generatedproof.google_golang_org.grpc.codes.
 Require Export New.generatedproof.google_golang_org.grpc.status.
 Require Export New.golang.theory.
-
 Require Export New.code.go_etcd_io.etcd.api.v3.v3rpc.rpctypes.
 
 Set Default Proof Using "Type".
 
 Module rpctypes.
-
-(* type rpctypes.EtcdError *)
 Module EtcdError.
 Section def.
-Context `{ffi_syntax}.
 
-Record t := mk {
-  code' : codes.Code.t;
-  desc' : go_string;
-}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : rpctypes.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance EtcdError_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (rpctypes.EtcdError.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "code" ∷ l.[(rpctypes.EtcdError.t), "code"] ↦{dq} v.(rpctypes.EtcdError.code') ∗
+      "desc" ∷ l.[(rpctypes.EtcdError.t), "desc"] ↦{dq} v.(rpctypes.EtcdError.desc') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance EtcdError_into_val_typed
+   :
+  IntoValTypedUnderlying (rpctypes.EtcdError.t) (rpctypes.EtcdErrorⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance EtcdError_access_load_code l (v : (rpctypes.EtcdError.t)) dq :
+  AccessStrict
+    (l.[(rpctypes.EtcdError.t), "code"] ↦{dq} (v.(rpctypes.EtcdError.code')))
+    (l.[(rpctypes.EtcdError.t), "code"] ↦{dq} (v.(rpctypes.EtcdError.code')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance EtcdError_access_store_code l (v : (rpctypes.EtcdError.t)) code' :
+  AccessStrict
+    (l.[(rpctypes.EtcdError.t), "code"] ↦ (v.(rpctypes.EtcdError.code')))
+    (l.[(rpctypes.EtcdError.t), "code"] ↦ code')
+    (l ↦ v) (l ↦ (v <|(rpctypes.EtcdError.code') := code'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance EtcdError_access_load_desc l (v : (rpctypes.EtcdError.t)) dq :
+  AccessStrict
+    (l.[(rpctypes.EtcdError.t), "desc"] ↦{dq} (v.(rpctypes.EtcdError.desc')))
+    (l.[(rpctypes.EtcdError.t), "desc"] ↦{dq} (v.(rpctypes.EtcdError.desc')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance EtcdError_access_store_desc l (v : (rpctypes.EtcdError.t)) desc' :
+  AccessStrict
+    (l.[(rpctypes.EtcdError.t), "desc"] ↦ (v.(rpctypes.EtcdError.desc')))
+    (l.[(rpctypes.EtcdError.t), "desc"] ↦ desc')
+    (l ↦ v) (l ↦ (v <|(rpctypes.EtcdError.desc') := desc'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End EtcdError.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent rpctypes.EtcdError.
-#[local] Typeclasses Transparent rpctypes.EtcdError.
-
-Global Instance EtcdError_wf : struct.Wf rpctypes.EtcdError.
-Proof. apply _. Qed.
-
-Global Instance settable_EtcdError : Settable EtcdError.t :=
-  settable! EtcdError.mk < EtcdError.code'; EtcdError.desc' >.
-Global Instance into_val_EtcdError : IntoVal EtcdError.t :=
-  {| to_val_def v :=
-    struct.val_aux rpctypes.EtcdError [
-    "code" ::= #(EtcdError.code' v);
-    "desc" ::= #(EtcdError.desc' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_EtcdError : IntoValTyped EtcdError.t rpctypes.EtcdError :=
-{|
-  default_val := EtcdError.mk (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_EtcdError_code : IntoValStructField "code" rpctypes.EtcdError EtcdError.code'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_EtcdError_desc : IntoValStructField "desc" rpctypes.EtcdError EtcdError.desc'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-
-
-Global Instance EtcdError_struct_fields_split dq l (v : EtcdError.t) :
-  StructFieldsSplit dq l v (
-    "Hcode" ∷ l ↦s[rpctypes.EtcdError :: "code"]{dq} v.(EtcdError.code') ∗
-    "Hdesc" ∷ l ↦s[rpctypes.EtcdError :: "desc"]{dq} v.(EtcdError.desc')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (EtcdError.code' v)) (rpctypes.EtcdError) "code"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-(* type rpctypes.TokenFieldNameGRPCKey *)
 Module TokenFieldNameGRPCKey.
 Section def.
-Context `{ffi_syntax}.
 
-Record t := mk {
-}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : rpctypes.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance TokenFieldNameGRPCKey_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (rpctypes.TokenFieldNameGRPCKey.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance TokenFieldNameGRPCKey_into_val_typed
+   :
+  IntoValTypedUnderlying (rpctypes.TokenFieldNameGRPCKey.t) (rpctypes.TokenFieldNameGRPCKeyⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+
 End def.
 End TokenFieldNameGRPCKey.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent rpctypes.TokenFieldNameGRPCKey.
-#[local] Typeclasses Transparent rpctypes.TokenFieldNameGRPCKey.
-
-Global Instance TokenFieldNameGRPCKey_wf : struct.Wf rpctypes.TokenFieldNameGRPCKey.
-Proof. apply _. Qed.
-
-Global Instance into_val_TokenFieldNameGRPCKey : IntoVal TokenFieldNameGRPCKey.t :=
-  {| to_val_def v :=
-    struct.val_aux rpctypes.TokenFieldNameGRPCKey [
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_TokenFieldNameGRPCKey : IntoValTyped TokenFieldNameGRPCKey.t rpctypes.TokenFieldNameGRPCKey :=
-{|
-  default_val := TokenFieldNameGRPCKey.mk;
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-
-End instances.
-
-Section names.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext}.
-#[local] Transparent is_pkg_defined is_pkg_defined_pure.
-
-Global Instance is_pkg_defined_pure_rpctypes : IsPkgDefinedPure rpctypes :=
-  {|
-    is_pkg_defined_pure_def go_ctx :=
-      is_pkg_defined_pure_single rpctypes ∧
-      is_pkg_defined_pure code.google_golang_org.grpc.codes.codes ∧
-      is_pkg_defined_pure code.google_golang_org.grpc.status.status;
-  |}.
-
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_rpctypes : IsPkgDefined rpctypes :=
-  {|
-    is_pkg_defined_def go_ctx :=
-      (is_pkg_defined_single rpctypes ∗
-       is_pkg_defined code.google_golang_org.grpc.codes.codes ∗
-       is_pkg_defined code.google_golang_org.grpc.status.status)%I
-  |}.
-Final Obligation. iIntros. iFrame "#%". Qed.
-#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
-
-Global Instance wp_func_call_Error :
-  WpFuncCall rpctypes.Error _ (is_pkg_defined rpctypes) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_ErrorDesc :
-  WpFuncCall rpctypes.ErrorDesc _ (is_pkg_defined rpctypes) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_method_call_EtcdError_Code :
-  WpMethodCall rpctypes.EtcdError.id "Code" _ (is_pkg_defined rpctypes) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_EtcdError_Error :
-  WpMethodCall rpctypes.EtcdError.id "Error" _ (is_pkg_defined rpctypes) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_EtcdError'ptr_Code :
-  WpMethodCall (ptrT.id rpctypes.EtcdError.id) "Code" _ (is_pkg_defined rpctypes) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_EtcdError'ptr_Error :
-  WpMethodCall (ptrT.id rpctypes.EtcdError.id) "Error" _ (is_pkg_defined rpctypes) :=
-  ltac:(solve_wp_method_call).
-
-End names.
 End rpctypes.

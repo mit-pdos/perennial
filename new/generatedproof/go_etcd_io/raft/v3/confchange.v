@@ -2,103 +2,64 @@
 Require Export New.proof.proof_prelude.
 Require Export New.generatedproof.go_etcd_io.raft.v3.tracker.
 Require Export New.golang.theory.
-
 Require Export New.code.go_etcd_io.raft.v3.confchange.
 
 Set Default Proof Using "Type".
 
 Module confchange.
-
-(* type confchange.Changer *)
 Module Changer.
 Section def.
-Context `{ffi_syntax}.
 
-Record t := mk {
-  Tracker' : tracker.ProgressTracker.t;
-  LastIndex' : w64;
-}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : confchange.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance Changer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (confchange.Changer.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "Tracker" ∷ l.[(confchange.Changer.t), "Tracker"] ↦{dq} v.(confchange.Changer.Tracker') ∗
+      "LastIndex" ∷ l.[(confchange.Changer.t), "LastIndex"] ↦{dq} v.(confchange.Changer.LastIndex') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance Changer_into_val_typed
+   :
+  IntoValTypedUnderlying (confchange.Changer.t) (confchange.Changerⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Changer_access_load_Tracker l (v : (confchange.Changer.t)) dq :
+  AccessStrict
+    (l.[(confchange.Changer.t), "Tracker"] ↦{dq} (v.(confchange.Changer.Tracker')))
+    (l.[(confchange.Changer.t), "Tracker"] ↦{dq} (v.(confchange.Changer.Tracker')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Changer_access_store_Tracker l (v : (confchange.Changer.t)) Tracker' :
+  AccessStrict
+    (l.[(confchange.Changer.t), "Tracker"] ↦ (v.(confchange.Changer.Tracker')))
+    (l.[(confchange.Changer.t), "Tracker"] ↦ Tracker')
+    (l ↦ v) (l ↦ (v <|(confchange.Changer.Tracker') := Tracker'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Changer_access_load_LastIndex l (v : (confchange.Changer.t)) dq :
+  AccessStrict
+    (l.[(confchange.Changer.t), "LastIndex"] ↦{dq} (v.(confchange.Changer.LastIndex')))
+    (l.[(confchange.Changer.t), "LastIndex"] ↦{dq} (v.(confchange.Changer.LastIndex')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Changer_access_store_LastIndex l (v : (confchange.Changer.t)) LastIndex' :
+  AccessStrict
+    (l.[(confchange.Changer.t), "LastIndex"] ↦ (v.(confchange.Changer.LastIndex')))
+    (l.[(confchange.Changer.t), "LastIndex"] ↦ LastIndex')
+    (l ↦ v) (l ↦ (v <|(confchange.Changer.LastIndex') := LastIndex'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End Changer.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent confchange.Changer.
-#[local] Typeclasses Transparent confchange.Changer.
-
-Global Instance Changer_wf : struct.Wf confchange.Changer.
-Proof. apply _. Qed.
-
-Global Instance settable_Changer : Settable Changer.t :=
-  settable! Changer.mk < Changer.Tracker'; Changer.LastIndex' >.
-Global Instance into_val_Changer : IntoVal Changer.t :=
-  {| to_val_def v :=
-    struct.val_aux confchange.Changer [
-    "Tracker" ::= #(Changer.Tracker' v);
-    "LastIndex" ::= #(Changer.LastIndex' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_Changer : IntoValTyped Changer.t confchange.Changer :=
-{|
-  default_val := Changer.mk (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_Changer_Tracker : IntoValStructField "Tracker" confchange.Changer Changer.Tracker'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Changer_LastIndex : IntoValStructField "LastIndex" confchange.Changer Changer.LastIndex'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-
-
-Global Instance Changer_struct_fields_split dq l (v : Changer.t) :
-  StructFieldsSplit dq l v (
-    "HTracker" ∷ l ↦s[confchange.Changer :: "Tracker"]{dq} v.(Changer.Tracker') ∗
-    "HLastIndex" ∷ l ↦s[confchange.Changer :: "LastIndex"]{dq} v.(Changer.LastIndex')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Changer.Tracker' v)) (confchange.Changer) "Tracker"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-Section names.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext}.
-#[local] Transparent is_pkg_defined is_pkg_defined_pure.
-
-Global Instance is_pkg_defined_pure_confchange : IsPkgDefinedPure confchange :=
-  {|
-    is_pkg_defined_pure_def go_ctx :=
-      is_pkg_defined_pure_single confchange ∧
-      is_pkg_defined_pure code.go_etcd_io.raft.v3.tracker.tracker;
-  |}.
-
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_confchange : IsPkgDefined confchange :=
-  {|
-    is_pkg_defined_def go_ctx :=
-      (is_pkg_defined_single confchange ∗
-       is_pkg_defined code.go_etcd_io.raft.v3.tracker.tracker)%I
-  |}.
-Final Obligation. iIntros. iFrame "#%". Qed.
-#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
-
-End names.
 End confchange.

@@ -3,110 +3,97 @@ Require Export New.code.github_com.mit_pdos.go_journal.addr.
 Require Export New.code.github_com.mit_pdos.go_journal.buf.
 Require Export New.code.github_com.mit_pdos.go_journal.obj.
 Require Export New.code.github_com.mit_pdos.go_journal.util.
-
 From New.golang Require Import defn.
+From New Require Import disk_prelude.
+Module pkg_id.
 Definition jrnl : go_string := "github.com/mit-pdos/go-journal/jrnl".
 
-From New Require Import disk_prelude.
+End pkg_id.
+Export pkg_id.
 Module jrnl.
 
-Module Op. Definition id : go_string := "github.com/mit-pdos/go-journal/jrnl.Op"%go. End Op.
+Definition Op {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/mit-pdos/go-journal/jrnl.Op"%go [].
 
-Section code.
+Definition LogBlocks {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #(W64 511).
 
+Definition LogBytes {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #(W64 2093056).
 
-Definition LogBlocks : val := #(W64 511).
-
-Definition LogBytes : val := #(W64 2093056).
-
-Definition Op : go_type := structT [
-  "log" :: ptrT;
-  "bufs" :: ptrT
-].
-#[global] Typeclasses Opaque Op.
-#[global] Opaque Op.
-
-Definition Begin : go_string := "github.com/mit-pdos/go-journal/jrnl.Begin"%go.
+Definition Begin {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/mit-pdos/go-journal/jrnl.Begin"%go.
 
 (* Begin starts a local journal operation with no writes from a global object
    manager.
 
    go: jrnl.go:60:6 *)
-Definition Beginⁱᵐᵖˡ : val :=
+Definition Beginⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "log",
-    exception_do (let: "log" := (mem.alloc "log") in
-    let: "trans" := (mem.alloc (type.zero_val ptrT)) in
-    let: "$r0" := (mem.alloc (let: "$log" := (![ptrT] "log") in
-    let: "$bufs" := ((func_call #buf.MkBufMap) #()) in
-    struct.make Op [{
-      "log" ::= "$log";
-      "bufs" ::= "$bufs"
-    }])) in
-    do:  ("trans" <-[ptrT] "$r0");;;
+    exception_do (let: "log" := (GoAlloc (go.PointerType obj.Log) "log") in
+    let: "trans" := (GoAlloc (go.PointerType Op) (GoZeroVal (go.PointerType Op) #())) in
+    let: "$r0" := (GoAlloc Op (CompositeLiteral Op (LiteralValue [KeyedElement (Some (KeyField "log"%go)) (ElementExpression (go.PointerType obj.Log) (![go.PointerType obj.Log] "log")); KeyedElement (Some (KeyField "bufs"%go)) (ElementExpression (go.PointerType buf.BufMap) ((FuncResolve buf.MkBufMap [] #()) #()))]))) in
+    do:  ("trans" <-[go.PointerType Op] "$r0");;;
     do:  (let: "$a0" := #(W64 3) in
     let: "$a1" := #"Begin: %v
     "%go in
-    let: "$a2" := ((let: "$sl0" := (interface.make #(ptrT.id Op.id) (![ptrT] "trans")) in
-    slice.literal interfaceT ["$sl0"])) in
-    (func_call #util.DPrintf) "$a0" "$a1" "$a2");;;
-    return: (![ptrT] "trans")).
+    let: "$a2" := ((let: "$sl0" := (Convert (go.PointerType Op) (go.InterfaceType []) (![go.PointerType Op] "trans")) in
+    CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0")]))) in
+    (FuncResolve util.DPrintf [] #()) "$a0" "$a1" "$a2");;;
+    return: (![go.PointerType Op] "trans")).
 
 (* go: jrnl.go:69:15 *)
-Definition Op__ReadBufⁱᵐᵖˡ : val :=
+Definition Op__ReadBufⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "op" "addr" "sz",
-    exception_do (let: "op" := (mem.alloc "op") in
-    let: "sz" := (mem.alloc "sz") in
-    let: "addr" := (mem.alloc "addr") in
-    let: "b" := (mem.alloc (type.zero_val ptrT)) in
+    exception_do (let: "op" := (GoAlloc (go.PointerType Op) "op") in
+    let: "sz" := (GoAlloc go.uint64 "sz") in
+    let: "addr" := (GoAlloc addr.Addr "addr") in
+    let: "b" := (GoAlloc (go.PointerType buf.Buf) (GoZeroVal (go.PointerType buf.Buf) #())) in
     let: "$r0" := (let: "$a0" := (![addr.Addr] "addr") in
-    (method_call #(ptrT.id buf.BufMap.id) #"Lookup"%go (![ptrT] (struct.field_ref ptrT #"bufs"%go (![ptrT] "op")))) "$a0") in
-    do:  ("b" <-[ptrT] "$r0");;;
-    (if: (![ptrT] "b") = #null
+    (MethodResolve (go.PointerType buf.BufMap) "Lookup"%go (![go.PointerType buf.BufMap] (StructFieldRef Op "bufs"%go (![go.PointerType Op] "op")))) "$a0") in
+    do:  ("b" <-[go.PointerType buf.Buf] "$r0");;;
+    (if: Convert go.untyped_bool go.bool ((![go.PointerType buf.Buf] "b") =⟨go.PointerType buf.Buf⟩ (Convert go.untyped_nil (go.PointerType buf.Buf) UntypedNil))
     then
-      let: "buf" := (mem.alloc (type.zero_val ptrT)) in
+      let: "buf" := (GoAlloc (go.PointerType buf.Buf) (GoZeroVal (go.PointerType buf.Buf) #())) in
       let: "$r0" := (let: "$a0" := (![addr.Addr] "addr") in
-      let: "$a1" := (![uint64T] "sz") in
-      (method_call #(ptrT.id obj.Log.id) #"Load"%go (![ptrT] (struct.field_ref ptrT #"log"%go (![ptrT] "op")))) "$a0" "$a1") in
-      do:  ("buf" <-[ptrT] "$r0");;;
-      do:  (let: "$a0" := (![ptrT] "buf") in
-      (method_call #(ptrT.id buf.BufMap.id) #"Insert"%go (![ptrT] (struct.field_ref ptrT #"bufs"%go (![ptrT] "op")))) "$a0");;;
+      let: "$a1" := (![go.uint64] "sz") in
+      (MethodResolve (go.PointerType obj.Log) "Load"%go (![go.PointerType obj.Log] (StructFieldRef Op "log"%go (![go.PointerType Op] "op")))) "$a0" "$a1") in
+      do:  ("buf" <-[go.PointerType buf.Buf] "$r0");;;
+      do:  (let: "$a0" := (![go.PointerType buf.Buf] "buf") in
+      (MethodResolve (go.PointerType buf.BufMap) "Insert"%go (![go.PointerType buf.BufMap] (StructFieldRef Op "bufs"%go (![go.PointerType Op] "op")))) "$a0");;;
       return: (let: "$a0" := (![addr.Addr] "addr") in
-       (method_call #(ptrT.id buf.BufMap.id) #"Lookup"%go (![ptrT] (struct.field_ref ptrT #"bufs"%go (![ptrT] "op")))) "$a0")
+       (MethodResolve (go.PointerType buf.BufMap) "Lookup"%go (![go.PointerType buf.BufMap] (StructFieldRef Op "bufs"%go (![go.PointerType Op] "op")))) "$a0")
     else do:  #());;;
-    return: (![ptrT] "b")).
+    return: (![go.PointerType buf.Buf] "b")).
 
 (* OverWrite writes an object to addr
 
    go: jrnl.go:80:15 *)
-Definition Op__OverWriteⁱᵐᵖˡ : val :=
+Definition Op__OverWriteⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "op" "addr" "sz" "data",
-    exception_do (let: "op" := (mem.alloc "op") in
-    let: "data" := (mem.alloc "data") in
-    let: "sz" := (mem.alloc "sz") in
-    let: "addr" := (mem.alloc "addr") in
-    let: "b" := (mem.alloc (type.zero_val ptrT)) in
+    exception_do (let: "op" := (GoAlloc (go.PointerType Op) "op") in
+    let: "data" := (GoAlloc (go.SliceType go.byte) "data") in
+    let: "sz" := (GoAlloc go.uint64 "sz") in
+    let: "addr" := (GoAlloc addr.Addr "addr") in
+    let: "b" := (GoAlloc (go.PointerType buf.Buf) (GoZeroVal (go.PointerType buf.Buf) #())) in
     let: "$r0" := (let: "$a0" := (![addr.Addr] "addr") in
-    (method_call #(ptrT.id buf.BufMap.id) #"Lookup"%go (![ptrT] (struct.field_ref ptrT #"bufs"%go (![ptrT] "op")))) "$a0") in
-    do:  ("b" <-[ptrT] "$r0");;;
-    (if: (![ptrT] "b") = #null
+    (MethodResolve (go.PointerType buf.BufMap) "Lookup"%go (![go.PointerType buf.BufMap] (StructFieldRef Op "bufs"%go (![go.PointerType Op] "op")))) "$a0") in
+    do:  ("b" <-[go.PointerType buf.Buf] "$r0");;;
+    (if: Convert go.untyped_bool go.bool ((![go.PointerType buf.Buf] "b") =⟨go.PointerType buf.Buf⟩ (Convert go.untyped_nil (go.PointerType buf.Buf) UntypedNil))
     then
       let: "$r0" := (let: "$a0" := (![addr.Addr] "addr") in
-      let: "$a1" := (![uint64T] "sz") in
-      let: "$a2" := (![sliceT] "data") in
-      (func_call #buf.MkBuf) "$a0" "$a1" "$a2") in
-      do:  ("b" <-[ptrT] "$r0");;;
-      do:  ((method_call #(ptrT.id buf.Buf.id) #"SetDirty"%go (![ptrT] "b")) #());;;
-      do:  (let: "$a0" := (![ptrT] "b") in
-      (method_call #(ptrT.id buf.BufMap.id) #"Insert"%go (![ptrT] (struct.field_ref ptrT #"bufs"%go (![ptrT] "op")))) "$a0")
+      let: "$a1" := (![go.uint64] "sz") in
+      let: "$a2" := (![go.SliceType go.byte] "data") in
+      (FuncResolve buf.MkBuf [] #()) "$a0" "$a1" "$a2") in
+      do:  ("b" <-[go.PointerType buf.Buf] "$r0");;;
+      do:  ((MethodResolve (go.PointerType buf.Buf) "SetDirty"%go (![go.PointerType buf.Buf] "b")) #());;;
+      do:  (let: "$a0" := (![go.PointerType buf.Buf] "b") in
+      (MethodResolve (go.PointerType buf.BufMap) "Insert"%go (![go.PointerType buf.BufMap] (StructFieldRef Op "bufs"%go (![go.PointerType Op] "op")))) "$a0")
     else
-      (if: (![uint64T] "sz") ≠ (![uint64T] (struct.field_ref ptrT #"Sz"%go (![ptrT] "b")))
+      (if: Convert go.untyped_bool go.bool ((![go.uint64] "sz") ≠⟨go.uint64⟩ (![go.uint64] (StructFieldRef buf.Buf "Sz"%go (![go.PointerType buf.Buf] "b"))))
       then
-        do:  (let: "$a0" := (interface.make #stringT.id #"overwrite"%go) in
-        Panic "$a0")
+        do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"overwrite"%go) in
+        (FuncResolve go.panic [] #()) "$a0")
       else do:  #());;;
-      let: "$r0" := (![sliceT] "data") in
-      do:  ((struct.field_ref ptrT #"Data"%go (![ptrT] "b")) <-[sliceT] "$r0");;;
-      do:  ((method_call #(ptrT.id buf.Buf.id) #"SetDirty"%go (![ptrT] "b")) #()));;;
+      let: "$r0" := (![go.SliceType go.byte] "data") in
+      do:  ((StructFieldRef buf.Buf "Data"%go (![go.PointerType buf.Buf] "b")) <-[go.SliceType go.byte] "$r0");;;
+      do:  ((MethodResolve (go.PointerType buf.Buf) "SetDirty"%go (![go.PointerType buf.Buf] "b")) #()));;;
     return: #()).
 
 (* NDirty reports an upper bound on the size of this transaction when committed.
@@ -115,10 +102,10 @@ Definition Op__OverWriteⁱᵐᵖˡ : val :=
    safety.
 
    go: jrnl.go:99:15 *)
-Definition Op__NDirtyⁱᵐᵖˡ : val :=
+Definition Op__NDirtyⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "op" <>,
-    exception_do (let: "op" := (mem.alloc "op") in
-    return: ((method_call #(ptrT.id buf.BufMap.id) #"Ndirty"%go (![ptrT] (struct.field_ref ptrT #"bufs"%go (![ptrT] "op")))) #())).
+    exception_do (let: "op" := (GoAlloc (go.PointerType Op) "op") in
+    return: ((MethodResolve (go.PointerType buf.BufMap) "Ndirty"%go (![go.PointerType buf.BufMap] (StructFieldRef Op "bufs"%go (![go.PointerType Op] "op")))) #())).
 
 (* CommitWait commits the writes in the transaction to disk.
 
@@ -133,47 +120,85 @@ Definition Op__NDirtyⁱᵐᵖˡ : val :=
    Flush.
 
    go: jrnl.go:114:15 *)
-Definition Op__CommitWaitⁱᵐᵖˡ : val :=
+Definition Op__CommitWaitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "op" "wait",
-    exception_do (let: "op" := (mem.alloc "op") in
-    let: "wait" := (mem.alloc "wait") in
+    exception_do (let: "op" := (GoAlloc (go.PointerType Op) "op") in
+    let: "wait" := (GoAlloc go.bool "wait") in
     do:  (let: "$a0" := #(W64 3) in
     let: "$a1" := #"Commit %p w %v
     "%go in
-    let: "$a2" := ((let: "$sl0" := (interface.make #(ptrT.id Op.id) (![ptrT] "op")) in
-    let: "$sl1" := (interface.make #boolT.id (![boolT] "wait")) in
-    slice.literal interfaceT ["$sl0"; "$sl1"])) in
-    (func_call #util.DPrintf) "$a0" "$a1" "$a2");;;
-    let: "ok" := (mem.alloc (type.zero_val boolT)) in
-    let: "$r0" := (let: "$a0" := ((method_call #(ptrT.id buf.BufMap.id) #"DirtyBufs"%go (![ptrT] (struct.field_ref ptrT #"bufs"%go (![ptrT] "op")))) #()) in
-    let: "$a1" := (![boolT] "wait") in
-    (method_call #(ptrT.id obj.Log.id) #"CommitWait"%go (![ptrT] (struct.field_ref ptrT #"log"%go (![ptrT] "op")))) "$a0" "$a1") in
-    do:  ("ok" <-[boolT] "$r0");;;
-    return: (![boolT] "ok")).
+    let: "$a2" := ((let: "$sl0" := (Convert (go.PointerType Op) (go.InterfaceType []) (![go.PointerType Op] "op")) in
+    let: "$sl1" := (Convert go.bool (go.InterfaceType []) (![go.bool] "wait")) in
+    CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl1")]))) in
+    (FuncResolve util.DPrintf [] #()) "$a0" "$a1" "$a2");;;
+    let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
+    let: "$r0" := (let: "$a0" := ((MethodResolve (go.PointerType buf.BufMap) "DirtyBufs"%go (![go.PointerType buf.BufMap] (StructFieldRef Op "bufs"%go (![go.PointerType Op] "op")))) #()) in
+    let: "$a1" := (![go.bool] "wait") in
+    (MethodResolve (go.PointerType obj.Log) "CommitWait"%go (![go.PointerType obj.Log] (StructFieldRef Op "log"%go (![go.PointerType Op] "op")))) "$a0" "$a1") in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    return: (![go.bool] "ok")).
 
-Definition vars' : list (go_string * go_type) := [].
+#[global] Instance info' : PkgInfo pkg_id.jrnl :=
+{|
+  pkg_imported_pkgs := [code.github_com.mit_pdos.go_journal.addr.pkg_id.addr; code.github_com.mit_pdos.go_journal.buf.pkg_id.buf; code.github_com.mit_pdos.go_journal.obj.pkg_id.obj; code.github_com.mit_pdos.go_journal.util.pkg_id.util]
+|}.
 
-Definition functions' : list (go_string * val) := [(Begin, Beginⁱᵐᵖˡ)].
-
-Definition msets' : list (go_string * (list (go_string * val))) := [(Op.id, []); (ptrT.id Op.id, [("CommitWait"%go, Op__CommitWaitⁱᵐᵖˡ); ("NDirty"%go, Op__NDirtyⁱᵐᵖˡ); ("OverWrite"%go, Op__OverWriteⁱᵐᵖˡ); ("ReadBuf"%go, Op__ReadBufⁱᵐᵖˡ)])].
-
-#[global] Instance info' : PkgInfo jrnl.jrnl :=
-  {|
-    pkg_vars := vars';
-    pkg_functions := functions';
-    pkg_msets := msets';
-    pkg_imported_pkgs := [code.github_com.mit_pdos.go_journal.addr.addr; code.github_com.mit_pdos.go_journal.buf.buf; code.github_com.mit_pdos.go_journal.obj.obj; code.github_com.mit_pdos.go_journal.util.util];
-  |}.
-
-Definition initialize' : val :=
+Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    package.init #jrnl.jrnl (λ: <>,
+    package.init pkg_id.jrnl (λ: <>,
       exception_do (do:  (util.initialize' #());;;
       do:  (obj.initialize' #());;;
       do:  (buf.initialize' #());;;
-      do:  (addr.initialize' #());;;
-      do:  (package.alloc jrnl.jrnl #()))
+      do:  (addr.initialize' #()))
       ).
 
-End code.
+Module Op.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  log' : loc;
+  bufs' : loc;
+}.
+
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+End def.
+
+End Op.
+
+Definition Op'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
+  (go.FieldDecl "log"%go (go.PointerType obj.Log));
+  (go.FieldDecl "bufs"%go (go.PointerType buf.BufMap))
+].
+Program Definition Op'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (Op'fds_unsealed).
+Global Instance equals_unfold_Op {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Op'fds =→ Op'fds_unsealed.
+Proof. rewrite /Op'fds seal_eq //. Qed.
+
+Definition Opⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (Op'fds).
+
+Class Op_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Op_type_repr  :: go.TypeReprUnderlying Opⁱᵐᵖˡ Op.t;
+  #[global] Op_underlying :: (Op) <u (Opⁱᵐᵖˡ);
+  #[global] Op_get_log (x : Op.t) :: ⟦StructFieldGet (Opⁱᵐᵖˡ) "log", #x⟧ ⤳[under] #x.(Op.log');
+  #[global] Op_set_log (x : Op.t) y :: ⟦StructFieldSet (Opⁱᵐᵖˡ) "log", (#x, #y)⟧ ⤳[under] #(x <|Op.log' := y|>);
+  #[global] Op_get_bufs (x : Op.t) :: ⟦StructFieldGet (Opⁱᵐᵖˡ) "bufs", #x⟧ ⤳[under] #x.(Op.bufs');
+  #[global] Op_set_bufs (x : Op.t) y :: ⟦StructFieldSet (Opⁱᵐᵖˡ) "bufs", (#x, #y)⟧ ⤳[under] #(x <|Op.bufs' := y|>);
+  #[global] Op'ptr_CommitWait_unfold :: MethodUnfold (go.PointerType (Op)) "CommitWait" (Op__CommitWaitⁱᵐᵖˡ);
+  #[global] Op'ptr_NDirty_unfold :: MethodUnfold (go.PointerType (Op)) "NDirty" (Op__NDirtyⁱᵐᵖˡ);
+  #[global] Op'ptr_OverWrite_unfold :: MethodUnfold (go.PointerType (Op)) "OverWrite" (Op__OverWriteⁱᵐᵖˡ);
+  #[global] Op'ptr_ReadBuf_unfold :: MethodUnfold (go.PointerType (Op)) "ReadBuf" (Op__ReadBufⁱᵐᵖˡ);
+}.
+
+Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Op_instance :: Op_Assumptions;
+  #[global] Begin_unfold :: FuncUnfold Begin [] (Beginⁱᵐᵖˡ);
+  #[global] import_addr_Assumption :: addr.Assumptions;
+  #[global] import_buf_Assumption :: buf.Assumptions;
+  #[global] import_obj_Assumption :: obj.Assumptions;
+  #[global] import_util_Assumption :: util.Assumptions;
+}.
 End jrnl.

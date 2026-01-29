@@ -2,110 +2,50 @@
 Require Export New.proof.proof_prelude.
 Require Export New.generatedproof.github_com.tchajed.marshal.
 Require Export New.golang.theory.
-
 Require Export New.code.github_com.mit_pdos.gokv.vrsm.replica.increasecommitargs_gk.
 
 Set Default Proof Using "Type".
 
 Module increasecommitargs_gk.
-
-(* type increasecommitargs_gk.S *)
 Module S.
 Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-  V' : w64;
-}.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : increasecommitargs_gk.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance S_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (increasecommitargs_gk.S.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "V" ∷ l.[(increasecommitargs_gk.S.t), "V"] ↦{dq} v.(increasecommitargs_gk.S.V') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance S_into_val_typed
+   :
+  IntoValTypedUnderlying (increasecommitargs_gk.S.t) (increasecommitargs_gk.Sⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance S_access_load_V l (v : (increasecommitargs_gk.S.t)) dq :
+  AccessStrict
+    (l.[(increasecommitargs_gk.S.t), "V"] ↦{dq} (v.(increasecommitargs_gk.S.V')))
+    (l.[(increasecommitargs_gk.S.t), "V"] ↦{dq} (v.(increasecommitargs_gk.S.V')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance S_access_store_V l (v : (increasecommitargs_gk.S.t)) V' :
+  AccessStrict
+    (l.[(increasecommitargs_gk.S.t), "V"] ↦ (v.(increasecommitargs_gk.S.V')))
+    (l.[(increasecommitargs_gk.S.t), "V"] ↦ V')
+    (l ↦ v) (l ↦ (v <|(increasecommitargs_gk.S.V') := V'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End S.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent increasecommitargs_gk.S.
-#[local] Typeclasses Transparent increasecommitargs_gk.S.
-
-Global Instance S_wf : struct.Wf increasecommitargs_gk.S.
-Proof. apply _. Qed.
-
-Global Instance settable_S : Settable S.t :=
-  settable! S.mk < S.V' >.
-Global Instance into_val_S : IntoVal S.t :=
-  {| to_val_def v :=
-    struct.val_aux increasecommitargs_gk.S [
-    "V" ::= #(S.V' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_S : IntoValTyped S.t increasecommitargs_gk.S :=
-{|
-  default_val := S.mk (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_S_V : IntoValStructField "V" increasecommitargs_gk.S S.V'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_S V':
-  PureWp True
-    (struct.make #increasecommitargs_gk.S (alist_val [
-      "V" ::= #V'
-    ]))%struct
-    #(S.mk V').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance S_struct_fields_split dq l (v : S.t) :
-  StructFieldsSplit dq l v (
-    "HV" ∷ l ↦s[increasecommitargs_gk.S :: "V"]{dq} v.(S.V')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-Section names.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext}.
-#[local] Transparent is_pkg_defined is_pkg_defined_pure.
-
-Global Instance is_pkg_defined_pure_increasecommitargs_gk : IsPkgDefinedPure increasecommitargs_gk :=
-  {|
-    is_pkg_defined_pure_def go_ctx :=
-      is_pkg_defined_pure_single increasecommitargs_gk ∧
-      is_pkg_defined_pure code.github_com.tchajed.marshal.marshal;
-  |}.
-
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_increasecommitargs_gk : IsPkgDefined increasecommitargs_gk :=
-  {|
-    is_pkg_defined_def go_ctx :=
-      (is_pkg_defined_single increasecommitargs_gk ∗
-       is_pkg_defined code.github_com.tchajed.marshal.marshal)%I
-  |}.
-Final Obligation. iIntros. iFrame "#%". Qed.
-#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
-
-Global Instance wp_func_call_Marshal :
-  WpFuncCall increasecommitargs_gk.Marshal _ (is_pkg_defined increasecommitargs_gk) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_Unmarshal :
-  WpFuncCall increasecommitargs_gk.Unmarshal _ (is_pkg_defined increasecommitargs_gk) :=
-  ltac:(solve_wp_func_call).
-
-End names.
 End increasecommitargs_gk.

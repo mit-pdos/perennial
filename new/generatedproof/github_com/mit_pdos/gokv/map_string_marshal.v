@@ -2,44 +2,9 @@
 Require Export New.proof.proof_prelude.
 Require Export New.generatedproof.github_com.tchajed.marshal.
 Require Export New.golang.theory.
-
 Require Export New.code.github_com.mit_pdos.gokv.map_string_marshal.
 
 Set Default Proof Using "Type".
 
 Module map_string_marshal.
-
-Section names.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext}.
-#[local] Transparent is_pkg_defined is_pkg_defined_pure.
-
-Global Instance is_pkg_defined_pure_map_string_marshal : IsPkgDefinedPure map_string_marshal :=
-  {|
-    is_pkg_defined_pure_def go_ctx :=
-      is_pkg_defined_pure_single map_string_marshal ∧
-      is_pkg_defined_pure code.github_com.tchajed.marshal.marshal;
-  |}.
-
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_map_string_marshal : IsPkgDefined map_string_marshal :=
-  {|
-    is_pkg_defined_def go_ctx :=
-      (is_pkg_defined_single map_string_marshal ∗
-       is_pkg_defined code.github_com.tchajed.marshal.marshal)%I
-  |}.
-Final Obligation. iIntros. iFrame "#%". Qed.
-#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
-
-Global Instance wp_func_call_EncodeStringMap :
-  WpFuncCall map_string_marshal.EncodeStringMap _ (is_pkg_defined map_string_marshal) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_DecodeStringMap :
-  WpFuncCall map_string_marshal.DecodeStringMap _ (is_pkg_defined map_string_marshal) :=
-  ltac:(solve_wp_func_call).
-
-End names.
 End map_string_marshal.
