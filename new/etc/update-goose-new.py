@@ -135,6 +135,7 @@ projs = [
         pkgs=[
             "math",
             "google.golang.org/grpc",
+            "go.etcd.io/etcd/api/v3/membershippb",
             "go.etcd.io/etcd/api/v3/etcdserverpb",
             "go.etcd.io/etcd/api/v3/mvccpb",
             "go.etcd.io/etcd/client/v3",

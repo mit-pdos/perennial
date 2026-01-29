@@ -28,4 +28,4 @@ translate = [
   "!*.String",             # Uses proto.proto
 ]
 
-imports = ["!*"]
+imports = ["!*", "go.etcd.io/etcd/api/v3/membershippb", "go.etcd.io/etcd/api/v3/mvccpb"]
