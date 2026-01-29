@@ -1,10 +1,11 @@
 Require Export New.generatedproof.errors.
 
-Section defns.
+Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
+Context {sem : go.Semantics} {package_sem : errors.Assumptions}.
+Local Set Default Proof Using "All".
 
-#[global] Instance : IsPkgInit errors := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf errors := build_get_is_pkg_init_wf.
+#[global] Instance : IsPkgInit (iProp Σ) errors := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ) errors := build_get_is_pkg_init_wf.
 
-End defns.
+End wps.

@@ -1,5 +1,5 @@
 From New.generatedproof Require Import fmt.
-From New.proof Require Import proof_prelude.
+From New.proof Require Import io.
 
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.

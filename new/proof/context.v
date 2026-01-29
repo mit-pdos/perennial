@@ -5,11 +5,6 @@ From New.proof Require Import sync.atomic sync time errors.
 
 Require Import Perennial.Helpers.CountableTactics.
 
-Class contextG Σ :=
-  {
-    closeable_inG :: closeable_chanG Σ
-  }.
-
 (* Context logical descriptor. *)
 Module Context_desc.
 Section defn.
