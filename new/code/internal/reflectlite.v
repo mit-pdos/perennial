@@ -159,9 +159,9 @@ End Type'.
 
 Class Type_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Type_type_repr  :: go.TypeReprUnderlying Typeⁱᵐᵖˡ Type'.t;
-  #[global] Type_underlying :: (Type') <u (Typeⁱᵐᵖˡ);
-  #[global] Typeⁱᵐᵖˡ_underlying :: (Typeⁱᵐᵖˡ) ↓u (Typeⁱᵐᵖˡ);
+  #[global] Type_type_repr  :: go.TypeReprUnderlying Type'ⁱᵐᵖˡ Type'.t;
+  #[global] Type_underlying :: (Type') <u (Type'ⁱᵐᵖˡ);
+  #[global] Type'ⁱᵐᵖˡ_underlying :: (Type'ⁱᵐᵖˡ) ↓u (Type'ⁱᵐᵖˡ);
 }.
 
 Module rtype.

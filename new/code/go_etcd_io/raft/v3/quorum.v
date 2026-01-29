@@ -543,11 +543,11 @@ Definition t : Type := w64.
 End def.
 End Index'.
 
-Definition Indexⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.uint64.
+Definition Index'ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.uint64.
 
 Class Index_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] Index_underlying :: (Index') <u (Indexⁱᵐᵖˡ);
+  #[global] Index_underlying :: (Index') <u (Index'ⁱᵐᵖˡ);
   #[global] Index_String_unfold :: MethodUnfold (Index') "String" (Index__Stringⁱᵐᵖˡ);
   #[global] Index'ptr_String_unfold :: MethodUnfold (go.PointerType (Index')) "String" (λ: "$r", MethodResolve (Index') "String" (![(Index')] "$r"));
 }.
