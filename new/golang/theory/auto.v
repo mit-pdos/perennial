@@ -328,12 +328,12 @@ Ltac wp_if_destruct :=
           cleanup_bool_decide;
           try wp_auto;
           cleanup_bool_decide
-      | context[@into_val _ bool _ ?b] =>
+      | context[@into_val _ _ bool ?b] =>
           is_var b; destruct b;
           cleanup_bool_decide;
           try wp_auto;
           cleanup_bool_decide
-      | context[@into_val _ bool _ (negb ?b)] =>
+      | context[@into_val _ _ bool (negb ?b)] =>
           is_var b; destruct b;
           cleanup_bool_decide;
           try wp_auto;
@@ -356,8 +356,7 @@ Ltac wp_if_destruct :=
         3) Prove the remainder with [asn] as an assumption.
 **)
 Tactic Notation "wp_if_join" constr(asn) "with" constr(pat) :=
-  wp_bind (if: _ then _ else _)%E;
-  wp_pures;
+  wp_bind (if: (Val _) then _ else _)%E;
   iApply (wp_wand _ _ _ asn with pat)%I;
   [ wp_if_destruct | ].
 

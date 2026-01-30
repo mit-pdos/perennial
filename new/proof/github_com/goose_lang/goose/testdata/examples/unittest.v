@@ -251,7 +251,7 @@ Lemma wp_testU32NewtypeLen :
     @! unittest.testU32NewtypeLen #()
   {{{ RET #true; True }}}.
 Proof.
-  wp_start. wp_auto. wp_apply (wp_slice_make2 (V:=w8)) as "* [? ?]".
+  wp_start. wp_auto. wp_apply wp_slice_make2 as "* [? ?]".
   { word. }
   iDestruct (own_slice_len with "[$]") as "%". rewrite bool_decide_true.
   2:{ revert H. len. }
@@ -318,8 +318,7 @@ Proof.
   wp_method_call. wp_auto.
   wp_method_call. wp_auto.
   wp_method_call. repeat wp_call. wp_auto.
-  wp_method_call. repeat wp_call.
-  iClear "a". clear a_ptr. wp_auto.
+  wp_method_call. repeat wp_call. wp_auto.
   rewrite bool_decide_true //.  wp_end.
 Qed.
 
@@ -343,8 +342,6 @@ Proof.
   wp_end.
 Qed.
 
-FIXME:
-
 Lemma wp_ifJoinDemo (arg1 arg2: bool) :
   {{{ is_pkg_init unittest }}}
     @! unittest.ifJoinDemo #arg1 #arg2
@@ -362,27 +359,29 @@ Proof.
                 "Hsl_cap" ∷ own_slice_cap w64 sl (DfracOwn 1))%I
          with "[arr]").
   {
+    rename tmp_ptr into tmp1_ptr.
     wp_if_destruct.
-    - wp_apply (wp_slice_literal (V:=w64)) as "%sl [Hsl _]".
-      wp_apply (wp_slice_append (V:=w64) with "[Hsl]") as "%sl1 (Hsl & Hsl_cap & _)".
+    - iDestruct (slice_array with "tmp") as "Hsl"; [by len..|].
+      rewrite !go.array_index_ref_0.
+      wp_apply (wp_slice_append with "[Hsl]") as "%sl1 (Hsl & Hsl_cap & _)".
       {
         iFrame.
-        iDestruct (own_slice_nil) as "$".
-        iDestruct (own_slice_cap_nil) as "$".
+        iDestruct (own_slice_empty) as "$"; simpl; [by len..|].
+        iDestruct (own_slice_cap_empty) as "$"; simpl; by len.
       }
       iSplit; [ done | ].
       iFrame.
     - iSplit; [ done | ].
       iFrame.
       iExists [].
-      iDestruct (own_slice_nil) as "$".
-      iDestruct (own_slice_cap_nil) as "$".
+      iDestruct (own_slice_empty) as "$"; simpl; [by len..|].
+      iDestruct (own_slice_cap_empty) as "$"; simpl; by len.
   }
   iIntros (v) "[% @]". subst.
-  wp_auto.
-  wp_if_destruct.
-  - wp_apply (wp_slice_literal (V:=w64)) as "%sl2 [Hsl2 _]".
-    wp_apply (wp_slice_append (V:=w64) with "[$Hsl $Hsl_cap $Hsl2]") as "%sl1 (Hsl & Hsl_cap & _)".
+  wp_auto. wp_if_destruct.
+  - iDestruct (slice_array with "tmp") as "Hsl2"; [by len..|].
+    rewrite !go.array_index_ref_0.
+    wp_apply (wp_slice_append with "[$Hsl $Hsl_cap $Hsl2]") as "%sl1 (Hsl & Hsl_cap & _)".
     wp_end.
   - wp_end.
 Qed.
@@ -395,6 +394,8 @@ Proof.
   wp_start.
   wp_auto.
   iPersist "arg2".
+  wp_bind (if: _ then _ else _)%E.
+
   wp_if_join (λ v, ⌜v = execute_val⌝ ∗
                    ∃ (sl: slice.t) (xs: list w64),
                        "arr" ∷ arr_ptr ↦ sl ∗
@@ -402,12 +403,14 @@ Proof.
                        "Hsl_cap" ∷ own_slice_cap w64 sl (DfracOwn 1))%I
              with "[arr]".
   {
-    wp_apply (wp_slice_literal (V:=w64)) as "%sl [Hsl _]".
-    wp_apply (wp_slice_append (V:=w64) with "[Hsl]") as "%sl1 (Hsl & Hsl_cap & _)".
+    rename tmp_ptr into tmp1_ptr. wp_auto.
+    iDestruct (slice_array with "tmp") as "Hsl"; [by len..|].
+    rewrite !go.array_index_ref_0.
+    wp_apply (wp_slice_append with "[Hsl]") as "%sl1 (Hsl & Hsl_cap & _)".
     {
       iFrame.
-      iDestruct (own_slice_nil) as "$".
-      iDestruct (own_slice_cap_nil) as "$".
+      iDestruct (own_slice_empty) as "$"; [by len..|].
+      iDestruct (own_slice_cap_empty) as "$"; by len.
     }
     iSplit; [ done | ].
     iFrame.
@@ -416,14 +419,14 @@ Proof.
     iSplit; [ done | ].
     iFrame.
     iExists [].
-    iDestruct (own_slice_nil) as "$".
-    iDestruct (own_slice_cap_nil) as "$".
+    iDestruct (own_slice_empty) as "$"; [by len..|].
+    iDestruct (own_slice_cap_empty) as "$"; by len.
   }
   iIntros (v) "[% @]". subst.
   wp_auto.
   wp_if_destruct.
-  - wp_apply (wp_slice_literal (V:=w64)) as "%sl2 [Hsl2 _]".
-    wp_apply (wp_slice_append (V:=w64) with "[$Hsl $Hsl_cap $Hsl2]") as "%sl1 (Hsl & Hsl_cap & _)".
+  - iDestruct (slice_array with "tmp") as "Hsl2"; [by len..|]. rewrite !go.array_index_ref_0.
+    wp_apply (wp_slice_append with "[$Hsl $Hsl_cap $Hsl2]") as "%sl1 (Hsl & Hsl_cap & _)".
     wp_end.
   - wp_end.
 Qed.
