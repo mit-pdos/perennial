@@ -840,4 +840,25 @@ Proof.
     iFrame.
 Qed.
 
+Lemma wp_slice_literal `[!IntoValTyped V t] `{!st ↓u (go.SliceType t)} (l : list V) kvs Φ :
+  let len := (go.array_literal_size kvs) in
+  (∀ Ψ, Ψ #(array.mk len l) -∗
+        WP (CompositeLiteral (go.ArrayType len t) (LiteralValueV kvs)) {{ Ψ }}) -∗
+  (∀ sl_ptr, (slice.mk sl_ptr (W64 len) (W64 len)) ↦* l -∗ Φ #(slice.mk sl_ptr (W64 len) (W64 len))) -∗
+  WP (CompositeLiteral st (LiteralValueV kvs)) {{ Φ }}.
+Proof.
+  iIntros "* Harr HΦ".
+  pose proof go.composite_literal_slice.
+  wp_pures. destruct decide; last by iApply wp_AngelicExit.
+  wp_pures. wp_alloc_auto. wp_pure. wp_pure.
+  wp_apply "Harr". rewrite -> decide_True.
+  2:{ enough (0 ≤ go.array_literal_size kvs) by word.
+    unfold go.array_literal_size. destruct foldl. lia. }
+  wp_auto. iDestruct (array_len with "tmp") as %Hlen.
+  rewrite !go.array_index_ref_0 /=.
+  wp_end.
+  - iDestruct (slice_array with "tmp") as "$". simpl. word.
+  - ereplace (word.sub ?[a] ?[b]) with (?a) by word. done.
+Qed.
+
 End wps.

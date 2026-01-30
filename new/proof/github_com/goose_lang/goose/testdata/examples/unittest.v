@@ -349,83 +349,31 @@ Lemma wp_ifJoinDemo (arg1 arg2: bool) :
 Proof.
   wp_start.
   wp_auto.
-  wp_bind (if: _ then _ else _)%E.
+  wp_apply wp_slice_literal as "% _"; [iIntros; by wp_auto | ].
   iPersist "arg2".
-  iApply (wp_wand _ _ _
-            (λ v, ⌜v = execute_val⌝ ∗
-              ∃ (sl: slice.t) (xs: list w64),
-                "arr" ∷ arr_ptr ↦ sl ∗
-                "Hsl" ∷ sl ↦* xs ∗
-                "Hsl_cap" ∷ own_slice_cap w64 sl (DfracOwn 1))%I
-         with "[arr]").
-  {
-    rename tmp_ptr into tmp1_ptr.
-    wp_if_destruct.
-    - iDestruct (slice_array with "tmp") as "Hsl"; [by len..|].
-      rewrite !go.array_index_ref_0.
-      wp_apply (wp_slice_append with "[Hsl]") as "%sl1 (Hsl & Hsl_cap & _)".
-      {
-        iFrame.
-        iDestruct (own_slice_empty) as "$"; simpl; [by len..|].
-        iDestruct (own_slice_cap_empty) as "$"; simpl; by len.
-      }
-      iSplit; [ done | ].
-      iFrame.
-    - iSplit; [ done | ].
-      iFrame.
-      iExists [].
-      iDestruct (own_slice_empty) as "$"; simpl; [by len..|].
-      iDestruct (own_slice_cap_empty) as "$"; simpl; by len.
-  }
-  iIntros (v) "[% @]". subst.
-  wp_auto. wp_if_destruct.
-  - iDestruct (slice_array with "tmp") as "Hsl2"; [by len..|].
-    rewrite !go.array_index_ref_0.
-    wp_apply (wp_slice_append with "[$Hsl $Hsl_cap $Hsl2]") as "%sl1 (Hsl & Hsl_cap & _)".
-    wp_end.
-  - wp_end.
-Qed.
-
-Lemma wp_ifJoinDemo_if_join_tactic (arg1 arg2: bool) :
-  {{{ is_pkg_init unittest }}}
-    @! unittest.ifJoinDemo #arg1 #arg2
-  {{{ RET #(); True }}}.
-Proof.
-  wp_start.
-  wp_auto.
-  iPersist "arg2".
-  wp_bind (if: _ then _ else _)%E.
-
   wp_if_join (λ v, ⌜v = execute_val⌝ ∗
                    ∃ (sl: slice.t) (xs: list w64),
-                       "arr" ∷ arr_ptr ↦ sl ∗
-                       "Hsl" ∷ sl ↦* xs ∗
-                       "Hsl_cap" ∷ own_slice_cap w64 sl (DfracOwn 1))%I
-             with "[arr]".
-  {
-    rename tmp_ptr into tmp1_ptr. wp_auto.
-    iDestruct (slice_array with "tmp") as "Hsl"; [by len..|].
-    rewrite !go.array_index_ref_0.
+                     "arr" ∷ arr_ptr ↦ sl ∗
+                     "Hsl" ∷ sl ↦* xs ∗
+                     "Hsl_cap" ∷ own_slice_cap w64 sl (DfracOwn 1))%I
+         with "[arr]".
+  { wp_apply wp_slice_literal as "% Hsl"; first (iIntros; by wp_auto).
     wp_apply (wp_slice_append with "[Hsl]") as "%sl1 (Hsl & Hsl_cap & _)".
     {
-      iFrame.
-      iDestruct (own_slice_empty) as "$"; [by len..|].
-      iDestruct (own_slice_cap_empty) as "$"; by len.
+      iFrame. simpl in *.
+      iDestruct (own_slice_empty) as "$"; simpl; [by len..|].
+      iDestruct (own_slice_cap_empty) as "$"; simpl; try by len.
     }
     iSplit; [ done | ].
-    iFrame.
-  }
-  {
-    iSplit; [ done | ].
+    iFrame. }
+  { iSplit; [ done | ].
     iFrame.
     iExists [].
-    iDestruct (own_slice_empty) as "$"; [by len..|].
-    iDestruct (own_slice_cap_empty) as "$"; by len.
-  }
+    iDestruct (own_slice_empty) as "$"; simpl; [by len..|].
+    iDestruct (own_slice_cap_empty) as "$"; simpl; by len. }
   iIntros (v) "[% @]". subst.
-  wp_auto.
-  wp_if_destruct.
-  - iDestruct (slice_array with "tmp") as "Hsl2"; [by len..|]. rewrite !go.array_index_ref_0.
+  wp_auto. wp_if_destruct.
+  - wp_apply wp_slice_literal as "% Hsl2"; first (iIntros; by wp_auto).
     wp_apply (wp_slice_append with "[$Hsl $Hsl_cap $Hsl2]") as "%sl1 (Hsl & Hsl_cap & _)".
     wp_end.
   - wp_end.

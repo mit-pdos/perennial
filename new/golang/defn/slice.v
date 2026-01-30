@@ -45,10 +45,10 @@ Definition array_literal_size kvs : Z :=
                               | KeyedElement None _ => (cur_index + 1, max_so_far)
                               | KeyedElement (Some (KeyInteger cur_index')) _ =>
                                   (cur_index' + 1, cur_index `max` max_so_far)
-                              | _ => (-1, -1)
+                              | _ => (0, 0)
                               end
                        ) (0, 0) kvs) in
-  last `max` m.
+  (last `max` m) `max` 0.
 
 Class SliceSemantics `{!GoSemanticsFunctions} :=
 {
@@ -159,14 +159,17 @@ Class SliceSemantics `{!GoSemanticsFunctions} :=
          FuncResolve go.copy [st] #() (Slice st ("s_new", FuncResolve go.len [st] #() "s", "new_len")) "x" ;;
          "s_new")%V;
 
-  #[global] composite_literal_slice elem_type kvs ::
+  composite_literal_slice elem_type kvs ::
     ⟦CompositeLiteral (go.SliceType elem_type), (LiteralValueV kvs)⟧ ⤳[under]
-    (let len := array_literal_size kvs in
-    (let: "tmp" := GoAlloc (go.ArrayType len elem_type) (GoZeroVal (go.ArrayType len elem_type) #()) in
-     "tmp" <-[(go.ArrayType len elem_type)]
-              CompositeLiteral (go.ArrayType len elem_type) (LiteralValue kvs);;
-     Slice (go.ArrayType len elem_type) ("tmp", #(W64 0), #(W64 len))
-    )%E);
+    (
+      let len := array_literal_size kvs in
+      if decide (len < 2^63) then
+        (let: "tmp" := GoAlloc (go.ArrayType len elem_type) (GoZeroVal (go.ArrayType len elem_type) #()) in
+         "tmp" <-[(go.ArrayType len elem_type)]
+                  CompositeLiteral (go.ArrayType len elem_type) (LiteralValueV kvs);;
+         Slice (go.ArrayType len elem_type) ("tmp", #(W64 0), #(W64 len)))
+      else AngelicExit #()
+        )%E;
 
   array_index_ref_0 t l : array_index_ref t 0 l = l;
 }.

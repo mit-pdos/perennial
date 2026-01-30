@@ -39,9 +39,8 @@ Proof.
   wp_apply wp_string_len as "%Hoverflow".
   wp_if_destruct.
   - list_elem s (sint.nat i) as c.
-    rewrite Hc_lookup. wp_auto. rewrite go.array_index_ref_0.
-    iDestruct (slice_array with "tmp") as "Hsl".
-    { simpl. len. }
+    rewrite Hc_lookup. wp_auto. wp_apply wp_slice_literal as "%sl Hsl".
+    { iIntros. by wp_auto. }
     wp_apply (wp_slice_append with "[$Ha $Ha_cap $Hsl]").
     iIntros "* (Ha & Ha_cap & _)". wp_auto.
     wp_for_post.
