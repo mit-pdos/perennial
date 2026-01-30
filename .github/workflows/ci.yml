@@ -37,7 +37,7 @@ jobs:
           rocq-version: "${{ matrix.rocq-version }}"
       - name: Install build dependencies
         run: |
-          opam install --deps-only .
+          opam install --deps-only ./perennial.opam
       - name: Rocq build
         run: |
           make -j4 -k ci
@@ -61,41 +61,19 @@ jobs:
           go-version: "1.24.9"
           # repo doesn't have go.sum file. nothing to cache.
           cache: false
-      - name: build ci-use-goose-pr
+      - name: install gh-paired-pr
         run: |
-          cd etc/ci-use-goose-pr
-          go install .
+          go install github.com/tchajed/gh-paired-pr@latest
       - name: check that Goosed files are clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            ci-use-goose-pr -pr ${{ github.event.number }} -verbose
-            ./etc/ci-goose-check.py --new-goose-url "$( ci-use-goose-pr -pr ${{ github.event.number }} )"
+            gh-paired-pr -base mit-pdos/perennial -dependency goose-lang/goose -pr ${{ github.event.number }} -verbose
+            ./etc/ci-goose-check.py --new-goose-url "$( gh-paired-pr -base mit-pdos/perennial -dependency goose-lang/goose -pr ${{ github.event.number }} )"
           else
             ./etc/ci-goose-check.py
           fi
-
-  check-grackle:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-      - name: Install uv
-        uses: astral-sh/setup-uv@v7
-        with:
-          version: ${{ env.UV_VERSION }}
-      - name: Install protoc
-        run: sudo apt-get install protobuf-compiler -y
-      - name: Install Go
-        uses: actions/setup-go@v6
-        with:
-          go-version: "1.24"
-          cache: false
-      - name: Check Grackle
-        run: |
-          ./etc/ci-grackle-check.py
-          git diff --exit-code
 
   python:
     runs-on: ubuntu-latest

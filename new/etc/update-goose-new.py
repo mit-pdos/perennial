@@ -167,23 +167,6 @@ projs = [
         ],
     ),
     create_proj(repo="mit-pdos/go-journal"),
-    create_proj(
-        repo="sanjit-bhat/pav",
-        pkgs=[
-            "./advrpc",
-            "./alicebob",
-            "./auditor",
-            "./client",
-            "./cryptoffi",
-            "./cryptoutil",
-            "./hashchain",
-            "./ktcore",
-            "./merkle",
-            "./netffi",
-            "./safemarshal",
-            "./server",
-        ],
-    ),
     create_proj(repo="mit-pdos/go-liveness"),
 ]
 

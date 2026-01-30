@@ -659,7 +659,7 @@ Proof.
     wp_auto.
     wp_apply (wp_Uint64__Load).
     iInv "Hinv" as ">Hi" "Hclose".
-    iClear "v w state". clear v_ptr counter w_ptr wait state_ptr HwaitersLe Hwaiter_notbubbled_wg.
+    clear counter waiters HwaitersLe.
     clear unfinished_waiters sema n Hsema Hsem Hunfinished_zero_wg Hunfinished_bound_wg.
     iNamedSuffix "Hi" "_wg".
     iMod (fupd_mask_subseteq _) as "Hmask"; last iMod "HΦ" as (?) "[Hwg HΦ]".

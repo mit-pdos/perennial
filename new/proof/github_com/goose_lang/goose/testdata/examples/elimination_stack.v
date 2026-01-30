@@ -3,7 +3,7 @@
 From New.proof Require Export proof_prelude.
 From New.golang.theory Require Import chan.
 From New.proof.github_com.goose_lang.goose.model.channel
-  Require Import chan_au_base protocol.base.
+  Require Import chan_au_base idiom.base.
 From New.proof Require Import sync strings time.
 From New.generatedproof.github_com.goose_lang.goose.testdata.examples Require Import channel.
 From iris.base_logic.lib Require Import token.
@@ -65,7 +65,7 @@ Proof.
   wp_start as "#His". wp_auto. iNamed "His".
   wp_apply (wp_Mutex__Lock with "[$Hmu]"). iIntros "[Hlocked Hi]".
   iNamedSuffix "Hi" "_inv". wp_auto.
-  wp_apply wp_slice_literal. iIntros "% Htmp". wp_auto.
+  wp_apply wp_slice_literal. iIntros "% [Htmp _]". wp_auto.
   wp_apply (wp_slice_append with "[$Hsl_inv $Hcap_inv $Htmp]").
   iIntros (stack_sl') "(Hsl_inv & Hcap_inv & _)". wp_auto.
   iApply fupd_wp. iMod "HΦ" as "(% & Hl & HΦ)". iCombine "Hl Hauth_inv" gives %[_ ->].
@@ -149,7 +149,7 @@ Class elimination_stackG {ext : ffi_syntax} Σ :=
     #[local] es_var_inG :: ghost_varG Σ (list go_string);
     #[local] es_chan_inG :: chanG Σ go_string;
     #[local] es_afterChan_inG :: chanG Σ unit;
-    #[local] es_time_inG :: chan_protocolG Σ time.Time.t;
+    #[local] es_time_inG :: chan_idiomG Σ time.Time.t;
     #[local] es_token_pointer_inG :: ghost_varG Σ gname;
     #[local] es_send_token_inG :: tokenG Σ;
     #[local] es_reply_token_inG :: ghost_varG Σ go_string;
@@ -203,12 +203,12 @@ Definition is_EliminationStack s γ N : iProp Σ :=
   ∃ st,
     "#s" ∷ s ↦□ st ∗
     "#Hbase" ∷ is_LockedStack st.(chan_spec_raw_examples.EliminationStack.base') γ.(ls_gn) ∗
-    "#Hch" ∷ is_channel (t:=stringT) st.(chan_spec_raw_examples.EliminationStack.exchanger') γ.(ch_gn) ∗
+    "#Hch" ∷ is_chan (t:=stringT) st.(chan_spec_raw_examples.EliminationStack.exchanger') γ.(ch_gn) ∗
     "#Hinv" ∷ inv (N.@"inv") (
         ∃ stack (exstate : chan_rep.t go_string),
           "Hls" ∷ own_LockedStack γ.(ls_gn) stack ∗
           "Hauth" ∷ ghost_var γ.(spec_gn) (1/2) stack ∗
-          "exchanger" ∷ own_channel st.(chan_spec_raw_examples.EliminationStack.exchanger') exstate γ.(ch_gn) ∗
+          "exchanger" ∷ own_chan st.(chan_spec_raw_examples.EliminationStack.exchanger') exstate γ.(ch_gn) ∗
           "Hexchanger" ∷ own_exchanger_inv γ (N.@"inv") exstate
       ).
 
@@ -273,7 +273,7 @@ Proof.
 Qed.
 
 (* FIXME *)
-Transparent simple.is_simple.
+Transparent handoff.is_chan_handoff.
 
 Lemma wp_EliminationStack__Push v γ s N :
   ∀ Φ,
@@ -350,7 +350,7 @@ Proof.
   - iSplit; last done.
     iFrame "#".
     iPoseProof "Hafter" as "[$ _]".
-    iApply (simple.simple_rcv_au (V:=time.Time.t) with "[$Hafter] [$]").
+    iApply (handoff.handoff_rcv_au (V:=time.Time.t) with "[$Hafter] [$]").
     iIntros (t) "_ !>". wp_auto_lc 1.
     wp_apply wp_LockedStack__Push.
     { iFrame "#". }
@@ -449,9 +449,9 @@ Proof.
     + done.
   - iSplit; last done.
     iFrame "#".
-    (* FIXME: need to break is_simple to get is_channel *)
+    (* FIXME: need to break is_handoff to get is_chan *)
     iPoseProof "Hafter" as "[$ _]".
-    iApply (simple.simple_rcv_au (V:=time.Time.t) with "[$Hafter] [$]").
+    iApply (handoff.handoff_rcv_au (V:=time.Time.t) with "[$Hafter] [$]").
     iIntros (t) "_ !>". wp_auto_lc 1.
     wp_apply wp_LockedStack__Pop.
     { iFrame "#". }

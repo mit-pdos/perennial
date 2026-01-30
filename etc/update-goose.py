@@ -15,9 +15,7 @@ def run_command(args, dry_run=False, verbose=False):
 def main():
     import argparse
 
-    parser = argparse.ArgumentParser(
-        description="Update goose output from goose tests and go-nfsd"
-    )
+    parser = argparse.ArgumentParser(description="Update goose output")
     parser.add_argument(
         "--compile", help="also compile and install goose", action="store_true"
     )
@@ -50,18 +48,6 @@ def main():
         action="store_true",
     )
     parser.add_argument(
-        "--nfsd",
-        help="path to go-nfsd repo (skip translation if not provided)",
-        metavar="GO_NFSD_PATH",
-        default=None,
-    )
-    parser.add_argument(
-        "--journal",
-        help="path to go-journal repo (skip translation if not provided)",
-        metavar="GO_JOURNAL_PATH",
-        default=None,
-    )
-    parser.add_argument(
         "--examples",
         help="path to perennial-examples repo (skip translation if not provided)",
         metavar="PERENNIAL_EXAMPLES_PATH",
@@ -79,72 +65,23 @@ def main():
         metavar="STD_PATH",
         default=None,
     )
-    parser.add_argument(
-        "--gokv",
-        help="path to gokv repo (skip translation if not provided)",
-        metavar="GOKV_PATH",
-        default=None,
-    )
-    parser.add_argument(
-        "--mvcc",
-        help="path to vmvcc repo (skip translation if not provided)",
-        metavar="MVCC_PATH",
-        default=None,
-    )
-    parser.add_argument(
-        "--rsm",
-        help="path to rsm repo (skip translation if not provided)",
-        metavar="RSM_PATH",
-        default=None,
-    )
-    parser.add_argument(
-        "--tulip",
-        help="path to tulip repo (skip translation if not provided)",
-        metavar="TULIP_PATH",
-        default=None,
-    )
-    parser.add_argument(
-        "--pav",
-        help="path to pav repo (skip translation if not provided)",
-        metavar="PAV_PATH",
-        default=None,
-    )
 
     args = parser.parse_args()
 
     goose_dir = args.goose
-    go_nfsd_dir = args.nfsd
-    journal_dir = args.journal
     perennial_dir = path.join(path.dirname(os.path.realpath(__file__)), "..")
     examples_dir = args.examples
-    gokv_dir = args.gokv
-    mvcc_dir = args.mvcc
-    rsm_dir = args.rsm
-    tulip_dir = args.tulip
     marshal_dir = args.marshal
     std_dir = args.std
-    pav_dir = args.pav
 
     if not os.path.isdir(goose_dir):
         parser.error("goose directory does not exist")
-    if go_nfsd_dir is not None and not os.path.isdir(go_nfsd_dir):
-        parser.error("go-nfsd directory does not exist")
-    if journal_dir is not None and not os.path.isdir(journal_dir):
-        parser.error("go-journal directory does not exist")
     if examples_dir is not None and not os.path.isdir(examples_dir):
         parser.error("perennial-examples directory does not exist")
-    if gokv_dir is not None and not os.path.isdir(gokv_dir):
-        parser.error("gokv directory does not exist")
-    if mvcc_dir is not None and not os.path.isdir(mvcc_dir):
-        parser.error("mvcc directory does not exist")
-    if rsm_dir is not None and not os.path.isdir(rsm_dir):
-        parser.error("rsm directory does not exist")
     if marshal_dir is not None and not os.path.isdir(marshal_dir):
         parser.error("marshal directory does not exist")
     if std_dir is not None and not os.path.isdir(std_dir):
         parser.error("std directory does not exist")
-    if pav_dir is not None and not os.path.isdir(pav_dir):
-        parser.error("pav directory does not exist")
 
     def do_run(cmd_args):
         run_command(cmd_args, dry_run=args.dry_run, verbose=args.verbose)
@@ -205,30 +142,6 @@ def main():
         )
 
     run_goose(
-        journal_dir,
-        "./addr",
-        "./alloc",
-        "./buf",
-        "./jrnl",
-        "./common",
-        "./lockmap",
-        "./obj",
-        "./util",
-        "./wal",
-        "./jrnl_replication",
-        "./txn",
-    )
-
-    run_goose(
-        go_nfsd_dir,
-        "./kvs",
-        "./super",
-        "./fh",
-        "./simple",
-        "./nfstypes",
-    )
-
-    run_goose(
         examples_dir,
         "./replicated_block",
         "./alloc",
@@ -245,119 +158,6 @@ def main():
         "./async_mem_alloc_inode",
         "./async_mem_alloc_dir",
         "./async_durable_alloc",
-    )
-
-    if gokv_dir is not None:
-        pkgs = [
-            "./asyncfile",
-            "./urpc",
-            "./memkv",
-            "./kv",
-            "./memkv/...",
-            "./connman",
-            "./paxi/single",
-            "./bank",
-            "./lockservice",
-            "./ctrexample/client",
-            "./ctrexample/server",
-            "./fencing/ctr",
-            "./fencing/config",
-            "./fencing/frontend",
-            "./fencing/client",
-            "./fencing/loopclient",
-            "./erpc",
-            "./paxi/reconf",
-            "./map_string_marshal",
-            "./vrsm/replica",
-            "./vrsm/reconfig",
-            "./vrsm/configservice",
-            "./vrsm/apps/exactlyonce",
-            "./vrsm/apps/vkv",
-            "./vrsm/paxos",
-            "./aof",
-            "./reconnectclient",
-            "./vrsm/e",
-            "./vrsm/clerk",
-            "./vrsm/storage",
-            "./vrsm/apps/closed",
-            "./tutorial",  # atomic commit
-            "./tutorial/objectstore/dir",
-            "./tutorial/objectstore/dir/chunkhandle_gk",
-            "./tutorial/objectstore/dir/finishwrite_gk",
-            "./tutorial/objectstore/dir/recordchunk_gk",
-            "./tutorial/objectstore/chunk",
-            "./tutorial/objectstore/chunk/writechunk_gk",
-            "./tutorial/objectstore/client",
-            "./tutorial/lockservice",
-            "./tutorial/lockservice/lockrequest_gk",
-            "./tutorial/kvservice",
-            "./tutorial/kvservice/conditionalput_gk",
-            "./tutorial/kvservice/get_gk",
-            "./tutorial/kvservice/put_gk",
-            "./tutorial/basics",
-            "./tutorial/queue",
-            "./map_marshal",
-            "./minlease",
-            "./dmvcc/...",
-            "./cachekv",
-        ]
-
-        run_goose(
-            gokv_dir,
-            *pkgs,
-            # XXX: need to change the Coq import statement for lockservice/ from
-            # "From Goose Require github_com.mit_pdos.lockservice.lockservice." to
-            # "From Goose Require github_com.mit_pdos.lockservice."
-        )
-
-    run_goose(
-        pav_dir,
-        "./advrpc",
-        "./alicebob",
-        "./cryptoutil",
-        "./kt",
-        "./marshalutil",
-        "./merkle",
-    )
-
-    run_goose(
-        mvcc_dir,
-        "./vmvcc",
-        "./txnsite",
-        "./index",
-        "./tuple",
-        "./wrbuf",
-        "./tid",
-        "./config",
-        "./common",
-        "./examples",
-        "./examples/strnum",
-    )
-
-    run_goose(
-        rsm_dir,
-        "./spaxos",
-        "./mpaxos",
-        "./distx",
-        "./tpl",
-        "./pcr",
-    )
-
-    run_goose(
-        tulip_dir,
-        "./backup",
-        "./gcoord",
-        "./index",
-        "./message",
-        "./params",
-        "./paxos",
-        "./quorum",
-        "./replica",
-        "./tulip",
-        "./tuple",
-        "./txn",
-        "./txnlog",
-        "./util",
     )
 
     run_goose(marshal_dir, ".", extra_args=["-skip-interfaces"])

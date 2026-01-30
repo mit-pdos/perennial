@@ -7,14 +7,14 @@ From New.generatedproof.github_com.stretchr.testify Require assert.
 From New.proof Require Import bytes context sort slices runtime.
 
 From New.proof Require go_etcd_io.raft.v3.
-From New.proof.github_com.mit_pdos.gokv Require gokv cachekv bank.
+From New.proof.github_com.mit_pdos.gokv Require gokv.
 From New.proof.github_com.goose_lang.goose.testdata.examples
   Require unittest unittest.generics.
 From New.proof.github_com.goose_lang.goose.testdata.examples
   Require channel channel_search_replace elimination_stack.
 
-From New.proof.github_com.goose_lang.goose.model.channel.protocol
-  Require protocols.
+From New.proof.github_com.goose_lang.goose.model.channel.idiom
+  Require idioms.
 (* From New.proof.github_com.goose_lang.goose.model.channel.logatom
   Require chan_au_sel. *)
 
@@ -26,9 +26,6 @@ From New.proof.github_com.mit_pdos.go_journal Require
   common addr util lockmap alloc buf wal.
 
 From New.proof Require Import inG_problem.
-
-From New.proof.github_com.sanjit_bhat.pav Require alicebob.
-From New.proof.github_com.sanjit_bhat.pav.experiments Require should_build.
 
 Require New.proof.go_etcd_io.etcd.server.v3.etcdserver.
 

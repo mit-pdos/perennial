@@ -533,7 +533,6 @@ Lemma wp_leasingKV__put ctx ctx_desc lkv γ op put_req :
   }}}.
 Proof.
   wp_start. iNamed "Hpre". wp_auto.
-  wp_alloc errs_ptr as "errs". wp_auto.
   wp_apply (wp_leasingKV__waitSession with "[$Hlkv]").
   { iFrame "#". }
   iIntros "* [Hlkv Hready]".
@@ -557,7 +556,6 @@ Proof.
   }
   rewrite !decide_True //.
   rename err_ptr into outer_err_ptr. iRename "err" into "outer_err".
-  wp_auto.
   (* wp_apply wp_leasingKV__tryModifyOp. *)
 Admitted.
 

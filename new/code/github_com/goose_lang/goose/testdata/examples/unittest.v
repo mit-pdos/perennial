@@ -486,6 +486,10 @@ Definition recur {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "
 
 Definition useRenamedImport {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.useRenamedImport"%go.
 
+Definition ifJoinDemo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.ifJoinDemo"%go.
+
+Definition repeatLocalVars {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.repeatLocalVars"%go.
+
 Definition TwoDiskWrite {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.TwoDiskWrite"%go.
 
 Definition TwoDiskRead {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest.TwoDiskRead"%go.
@@ -2361,6 +2365,55 @@ Definition useRenamedImportⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
     exception_do (do:  (let: "$a0" := ((let: "$sl0" := (Convert go.string go.any #"blah"%go) in
     CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0")]))) in
     (FuncResolve fmt.Print [] #()) "$a0");;;
+    return: #()).
+
+(* go: repeat_vars.go:3:6 *)
+Definition ifJoinDemoⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "arg1" "arg2",
+    exception_do (let: "arg2" := (GoAlloc go.bool "arg2") in
+    let: "arg1" := (GoAlloc go.bool "arg1") in
+    let: "arr" := (GoAlloc (go.SliceType go.int) (GoZeroVal (go.SliceType go.int) #())) in
+    let: "$r0" := (CompositeLiteral (go.SliceType go.int) (LiteralValue [])) in
+    do:  ("arr" <-[go.SliceType go.int] "$r0");;;
+    (if: ![go.bool] "arg1"
+    then
+      let: "$r0" := (let: "$a0" := (![go.SliceType go.int] "arr") in
+      let: "$a1" := ((let: "$sl0" := #(W64 2) in
+      CompositeLiteral (go.SliceType go.int) (LiteralValue [KeyedElement None (ElementExpression go.int "$sl0")]))) in
+      (FuncResolve go.append [go.SliceType go.int] #()) "$a0" "$a1") in
+      do:  ("arr" <-[go.SliceType go.int] "$r0")
+    else do:  #());;;
+    (if: ![go.bool] "arg2"
+    then
+      let: "$r0" := (let: "$a0" := (![go.SliceType go.int] "arr") in
+      let: "$a1" := ((let: "$sl0" := #(W64 3) in
+      CompositeLiteral (go.SliceType go.int) (LiteralValue [KeyedElement None (ElementExpression go.int "$sl0")]))) in
+      (FuncResolve go.append [go.SliceType go.int] #()) "$a0" "$a1") in
+      do:  ("arr" <-[go.SliceType go.int] "$r0")
+    else do:  #());;;
+    return: #()).
+
+(* go: repeat_vars.go:13:6 *)
+Definition repeatLocalVarsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: <>,
+    exception_do (let: "g" := (GoAlloc go.int (GoZeroVal go.int #())) in
+    let: "$r0" := #(W64 0) in
+    do:  ("g" <-[go.int] "$r0");;;
+    let: "a" := (GoAlloc go.int (GoZeroVal go.int #())) in
+    let: "$r0" := #(W64 2) in
+    do:  ("a" <-[go.int] "$r0");;;
+    let: "$r0" := (![go.int] "a") in
+    do:  ("g" <-[go.int] "$r0");;;
+    let: "a" := (GoAlloc go.int (GoZeroVal go.int #())) in
+    let: "$r0" := #(W64 3) in
+    do:  ("a" <-[go.int] "$r0");;;
+    let: "$r0" := (![go.int] "a") in
+    do:  ("g" <-[go.int] "$r0");;;
+    (if: Convert go.untyped_bool go.bool ((![go.int] "g") ≠⟨go.int⟩ #(W64 3))
+    then
+      do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"failure"%go) in
+      (FuncResolve go.panic [] #()) "$a0")
+    else do:  #());;;
     return: #()).
 
 (* TwoDiskWrite is a dummy function to represent the base layer's disk write
@@ -4512,6 +4565,8 @@ Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions
   #[global] ReassignVars_unfold :: FuncUnfold ReassignVars [] (ReassignVarsⁱᵐᵖˡ);
   #[global] recur_unfold :: FuncUnfold recur [] (recurⁱᵐᵖˡ);
   #[global] useRenamedImport_unfold :: FuncUnfold useRenamedImport [] (useRenamedImportⁱᵐᵖˡ);
+  #[global] ifJoinDemo_unfold :: FuncUnfold ifJoinDemo [] (ifJoinDemoⁱᵐᵖˡ);
+  #[global] repeatLocalVars_unfold :: FuncUnfold repeatLocalVars [] (repeatLocalVarsⁱᵐᵖˡ);
   #[global] TwoDiskWrite_unfold :: FuncUnfold TwoDiskWrite [] (TwoDiskWriteⁱᵐᵖˡ);
   #[global] TwoDiskRead_unfold :: FuncUnfold TwoDiskRead [] (TwoDiskReadⁱᵐᵖˡ);
   #[global] TwoDiskLock_unfold :: FuncUnfold TwoDiskLock [] (TwoDiskLockⁱᵐᵖˡ);

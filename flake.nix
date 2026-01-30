@@ -2,16 +2,27 @@
   description = "A Flake for Perennial development, with Goose and Grackle";
 
   inputs = {
-    nixpkgs.url = "github:/NixOS/nixpkgs/8913c168d1c56dc49a7718685968f38752171c3b";
+    nixpkgs.url = "github:/NixOS/nixpkgs/f61125a668a320878494449750330ca58b78c557";
     flake-utils.url = "github:numtide/flake-utils";
     grackle.url = "github:mjschwenne/grackle";
-    self.submodules = true;
+    opam-nix.url = "github:tweag/opam-nix";
+    opam-repository = {
+      url = "github:ocaml/opam-repository";
+      flake = false;
+    };
+    opam-rocq-repo = {
+      url = "github:rocq-prover/opam";
+      flake = false;
+    };
   };
 
   outputs = {
     nixpkgs,
     flake-utils,
     grackle,
+    opam-nix,
+    opam-repository,
+    opam-rocq-repo,
     ...
   }:
     flake-utils.lib.eachDefaultSystem (
@@ -19,73 +30,70 @@
         pkgs = import nixpkgs {
           inherit system;
         };
-        rocq = pkgs.rocq-core;
-        rocq-std = pkgs.rocqPackages.stdlib;
-        rocqv = rocq.rocq-version;
-        perennial = pkgs.stdenv.mkDerivation {
-          pname = "perennial";
-          version = "unstable-rocq${rocqv}";
-
-          src = ./.;
-
-          nativeBuildInputs = [
-            rocq
-            rocq-std
-          ];
-          enableParallelBuilding = true;
-
-          # Compile both perennial and ALL files in the dependent libraries, so they can be used
-          # by downstream projects.
+        inherit (opam-nix.lib.${system}) buildOpamProject;
+        perennialPkgs' =
+          buildOpamProject {
+            repos = ["${opam-repository}" "${opam-rocq-repo}/released"];
+          } "perennial"
+          ./. {};
+        perennial = perennialPkgs'.perennial.overrideAttrs (finalAttrs: previousAttrs: {
+          nativeBuildInputs = with pkgs; [python3] ++ previousAttrs.nativeBuildInputs;
+          preBuild = ''
+            # swap ROCQPATH for COQPATH, avoiding overriding the complex configurationPhase
+            export ROCQPATH=$COQPATH
+            unset COQPATH
+          '';
           buildPhase = ''
-            make TIMED=false -j$NIX_BUILD_CORES $(find external/coqutil -not -path "external/coqutil/etc/coq-scripts/*" -name "*.v" | sed -e "s/\.v\$/\.vo/g")
-            make TIMED=false -j$NIX_BUILD_CORES $(find external/iris -not -path "external/iris/tests/*" -name "*.v" | sed -e "s/\.v\$/\.vo/g")
-            make TIMED=false -j$NIX_BUILD_CORES $(find external/iris-named-props -name "*.v" | sed -e "s/\.v\$/\.vo/g")
-            make TIMED=false -j$NIX_BUILD_CORES $(find external/record-update -name "*.v" | sed -e "s/\.v\$/\.vo/g")
-            make TIMED=false -j$NIX_BUILD_CORES $(find external/stdpp -not -path "external/stdpp/tests/*" -name "*.v" | sed -e "s/\.v\$/\.vo/g")
-            make TIMED=false -j$NIX_BUILD_CORES
+            runHook preBuild
+            make -j$NIX_BUILD_CORES all
+            runHook postBuild
           '';
-          # Install perennial AND all it's dependencies to ensure the correct version,
-          # down to the commit hash, is installed
           installPhase = ''
-            mkdir -p $out/lib/coq/${rocqv}/user-contrib
-
-            cp -r src $out/lib/coq/${rocqv}/user-contrib/Perennial/
-            cp -r new $out/lib/coq/${rocqv}/user-contrib/New/
-            cp -r external/Goose $out/lib/coq/${rocqv}/user-contrib/
-
-            cp -r external/coqutil/src/coqutil $out/lib/coq/${rocqv}/user-contrib/
-            cp -r external/iris/iris $out/lib/coq/${rocqv}/user-contrib/
-            cp -r external/iris/iris_deprecated $out/lib/coq/${rocqv}/user-contrib/iris/deprecated
-            cp -r external/iris/iris_heap_lang $out/lib/coq/${rocqv}/user-contrib/iris/heap_lang
-            cp -r external/iris/iris_unstable $out/lib/coq/${rocqv}/user-contrib/iris/unstable
-            cp -r external/iris-named-props/src $out/lib/coq/${rocqv}/user-contrib/iris_named_props
-            cp -r external/record-update/src $out/lib/coq/${rocqv}/user-contrib/RecordUpdate
-            cp -r external/stdpp/stdpp $out/lib/coq/${rocqv}/user-contrib/
-            cp -r external/stdpp/stdpp_unstable $out/lib/coq/${rocqv}/user-contrib/stdpp/unstable
-            cp -r external/stdpp/stdpp_bitvector $out/lib/coq/${rocqv}/user-contrib/stdpp/bitvector
+            runHook preInstall
+            ./etc/install.sh all
+            runHook postInstall
           '';
-        };
+        });
+        # remove the perennial package from perennialPkgs since it won't build without python
+        perennialPkgs = removeAttrs perennialPkgs' ["perennial"];
       in {
         packages = {
-          inherit perennial;
+          inherit perennialPkgs perennial;
           default = perennial;
         };
         devShells.default = with pkgs;
           mkShell {
-            buildInputs = [
-              rocq-core
-              rocqPackages.stdlib
+            buildInputs =
+              [
+                opam
+                python3
 
-              go
-              grackle.packages.${system}.default
-              grackle.packages.${system}.goose
-              protobuf
+                go
+                grackle.packages.${system}.default
+                grackle.packages.${system}.goose
+                protobuf
 
-              # nix helpers
-              nix-update
-            ];
+                # nix helpers
+                nix-update
+
+                # opam related system dependencies
+                pkg-config
+                gmp
+                findutils
+              ]
+              ++ (with perennialPkgs; [
+                rocq-runtime
+                rocq-stdlib
+                coq-coqutil
+                coq-record-update
+                rocq-stdpp
+                rocq-iris
+                iris-named-props
+              ]);
 
             shellHook = ''
+              # swap ROCQPATH for COQPATH
+              export ROCQPATH=$COQPATH
               unset COQPATH
             '';
           };

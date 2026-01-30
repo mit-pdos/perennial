@@ -11,12 +11,6 @@ from __future__ import print_function
 import sqlite3
 import pandas as pd
 
-try:
-    pd.set_option("future.no_silent_downcasting", True)
-except pd.errors.OptionError:
-    # ignore if not supported
-    pass
-
 
 def read_db(fname):
     conn = sqlite3.connect(fname)

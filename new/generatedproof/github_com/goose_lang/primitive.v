@@ -7,24 +7,4 @@ Require Export New.code.github_com.goose_lang.primitive.
 Set Default Proof Using "Type".
 
 Module primitive.
-Module prophId.
-Section def.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
-Context {package_sem' : primitive.Assumptions}.
-
-Local Set Default Proof Using "All".
-
-#[global] Instance prophId_typed_pointsto  :
-  TypedPointsto (Σ:=Σ) (primitive.prophId.t). Admitted.
-
-#[global] Instance prophId_into_val_typed
-   :
-  IntoValTypedUnderlying (primitive.prophId.t) (primitive.prophIdⁱᵐᵖˡ).
-Proof. Admitted.
-
-End def.
-End prophId.
-
 End primitive.

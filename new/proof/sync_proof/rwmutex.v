@@ -483,7 +483,7 @@ Proof.
   rwStep step_RUnlock_readerCount_Add; rwLinearizeEnd; rwInvEnd.
   - (* decrease number of readers Lock() is waiting for *)
     wp_auto. rewrite bool_decide_true //. wp_auto.
-    wp_method_call. wp_call. wp_call. iClear "rw r". clear r_ptr rw_ptr.
+    wp_method_call. wp_call. wp_call.
     wp_auto. rewrite bool_decide_decide. destruct decide. { exfalso. word. }
     wp_auto. rewrite bool_decide_decide. destruct decide. { exfalso.
                                                             unfold rwmutexMaxReaders in *.

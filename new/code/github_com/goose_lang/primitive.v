@@ -12,9 +12,7 @@ Module primitive.
 
 Definition Mutex {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/primitive.Mutex"%go [].
 
-Definition prophId {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/primitive.prophId"%go [].
-
-Axiom prophIdⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Definition ProphId {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/primitive.ProphId"%go [].
 
 Definition UInt64Get {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/primitive.UInt64Get"%go.
 
@@ -35,8 +33,6 @@ Definition Assume {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := 
 Definition Assert {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/primitive.Assert"%go.
 
 Definition Exit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/primitive.Exit"%go.
-
-Definition WaitTimeout {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/primitive.WaitTimeout"%go.
 
 Definition TimeNow {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/primitive.TimeNow"%go.
 
@@ -67,26 +63,16 @@ Class Mutex_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext
   #[global] Mutex'ptr_Unlock_unfold :: MethodUnfold (go.PointerType (Mutex)) "Unlock" (Mutex__Unlockⁱᵐᵖˡ);
 }.
 
-Module prophId.
-Section def.
-Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Axiom t : Type.
-Axiom zero_val : ZeroVal t.
-#[global] Existing Instance zero_val.
-End def.
-End prophId.
-
-Class prophId_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+Class ProphId_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] prophId_type_repr  :: go.TypeReprUnderlying prophIdⁱᵐᵖˡ prophId.t;
-  #[global] prophId_underlying :: (prophId) <u (prophIdⁱᵐᵖˡ);
-  #[global] prophIdⁱᵐᵖˡ_underlying :: (prophIdⁱᵐᵖˡ) ↓u (prophIdⁱᵐᵖˡ);
+  #[global] ProphId_type_repr  :: go.TypeReprUnderlying ProphIdⁱᵐᵖˡ ProphId.t;
+  #[global] ProphId_underlying :: (ProphId) <u (ProphIdⁱᵐᵖˡ);
 }.
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] Mutex_instance :: Mutex_Assumptions;
-  #[global] prophId_instance :: prophId_Assumptions;
+  #[global] ProphId_instance :: ProphId_Assumptions;
   #[global] UInt64Put_unfold :: FuncUnfold UInt64Put [] (UInt64Putⁱᵐᵖˡ);
   #[global] RandomUint64_unfold :: FuncUnfold RandomUint64 [] (RandomUint64ⁱᵐᵖˡ);
   #[global] Assume_unfold :: FuncUnfold Assume [] (Assumeⁱᵐᵖˡ);

@@ -2,76 +2,122 @@ From Stdlib.Logic Require Import Classical.
 From stdpp Require Import list ssreflect.
 From Perennial.Helpers Require Import ListLen.
 
-Set Default Proof Using "Type".
-Set Default Goal Selector "!".
-
 (* these lemmas require specific forms of A, so they don't include it as a
 context variable. *)
 Section list_misc.
 
-  Lemma last_replicate {A} (x : A) n :
-    last (replicate n x) = match n with 0 => None | S _ => Some x end.
-  Proof.
-    rewrite last_lookup length_replicate.
-    destruct n; [done|].
-    rewrite lookup_replicate_2; [done|lia].
-  Qed.
+Lemma last_replicate {A} (x : A) n :
+  last (replicate n x) = match n with 0 => None | S _ => Some x end.
+Proof.
+  rewrite last_lookup length_replicate.
+  destruct n; [done|].
+  rewrite lookup_replicate_2; [done|lia].
+Qed.
 
-  Lemma last_replicate_option_app {A} (l : list (option A)) n :
-    mjoin $ last (l ++ replicate n (mjoin $ last l)) = mjoin $ last l.
-  Proof.
-    rewrite last_app last_replicate.
-    repeat case_match; try done.
-    naive_solver.
-  Qed.
+Lemma last_replicate_option_app {A} (l : list (option A)) n :
+  mjoin $ last (l ++ replicate n (mjoin $ last l)) = mjoin $ last l.
+Proof.
+  rewrite last_app last_replicate.
+  repeat case_match; try done.
+  naive_solver.
+Qed.
 
 End list_misc.
 
+(* a relation over successive list elems. *)
+Definition list_reln {A} (l : list A) R : Prop :=
+  ∀ i x y, l !! i = Some x → l !! (S i) = Some y → R x y.
+
+Section list_reln.
+Context {A : Type}.
+Context (R : relation A).
+Implicit Types l : list A.
+
+Lemma list_reln_snoc l a :
+  list_reln l R →
+  (∀ x, last l = Some x → R x a) →
+  list_reln (l ++ [a]) R.
+Proof.
+  intros Hreln HR.
+  destruct l using rev_ind; [done|].
+  clear IHl.
+  rewrite last_snoc in HR.
+  rewrite /list_reln in Hreln |-*.
+  intros i * Hlook0 Hlook1.
+  assert (i < length l ∨ i = length l) as [?|?].
+  { apply lookup_lt_Some in Hlook1.
+    autorewrite with len in *. lia. }
+  - rewrite lookup_app_l in Hlook0; [|len].
+    rewrite lookup_app_l in Hlook1; [|len].
+    naive_solver.
+  - list_simplifier.
+    rewrite lookup_app_r in Hlook0; [|len].
+    rewrite lookup_app_r in Hlook1; [|len].
+    replace (_ - _) with 0 in Hlook0 by lia.
+    replace (_ - _) with 1 in Hlook1 by lia.
+    naive_solver.
+Qed.
+
+End list_reln.
+
+Section list_reln_trans.
+Context {A : Type}.
+Context (R : relation A).
+Context `{!Transitive R}.
+Implicit Types l : list A.
+
+(* these lemmas pick up the [Transitive R] var. *)
+Set Default Proof Using "Type*".
+
+Local Lemma list_reln_trans_aux l :
+  list_reln l R →
+  (∀ i k x y, l !! i = Some x → l !! S (i + k) = Some y → R x y).
+Proof.
+  intros Hcons ???? Hi Hk.
+  generalize dependent y.
+  induction k.
+  - intros ? Hk.
+    replace (i + 0) with (i) in Hk by lia.
+    by eapply Hcons.
+  - intros ? Hk.
+    apply lookup_lt_Some in Hk as ?.
+    list_elem l (i + S k) as z.
+    trans z.
+    + replace (S (i + k)) with (i + S k) in IHk by lia.
+      by eapply IHk.
+    + by eapply Hcons.
+Qed.
+
+Lemma list_reln_trans l :
+  list_reln l R →
+  (∀ i j x y, l !! i = Some x → l !! j = Some y → i < j → R x y).
+Proof.
+  intros Hcons.
+  opose proof (list_reln_trans_aux _ Hcons) as Hskip.
+  intros ????? Hj ?.
+  replace j with (S (i + (j - i - 1))) in Hj by lia.
+  by eapply Hskip.
+Qed.
+
+Lemma list_reln_trans_refl `{!Reflexive R} l :
+  list_reln l R →
+  (∀ i j x y, l !! i = Some x → l !! j = Some y → i ≤ j → R x y).
+Proof.
+  intros Hcons.
+  opose proof (list_reln_trans _ Hcons) as Hskip.
+  intros ????? Hj ?.
+  destruct (decide (i = j)).
+  - by simplify_eq/=.
+  - eapply Hskip; [done..|]. lia.
+Qed.
+
+Unset Default Proof Using.
+
+End list_reln_trans.
+
 Section list.
   Context {A : Type}.
-  Implicit Types l : (list A).
-
-  Local Lemma list_reln_trans_aux R `{!Transitive R} l :
-    (∀ i x y, l !! i = Some x → l !! S i = Some y → R x y) →
-    (∀ i k x y, l !! i = Some x → l !! S (i + k) = Some y → R x y).
-  Proof.
-    intros Hcons ???? Hi Hk.
-    generalize dependent y.
-    induction k.
-    - intros ? Hk.
-      replace (i + 0) with (i) in Hk by lia.
-      by eapply Hcons.
-    - intros ? Hk.
-      apply lookup_lt_Some in Hk as ?.
-      list_elem l (i + S k) as z.
-      trans z.
-      + replace (S (i + k)) with (i + S k) in IHk by lia.
-        by eapply IHk.
-      + by eapply Hcons.
-  Qed.
-
-  Lemma list_reln_trans R `{!Transitive R} l :
-    (∀ i x y, l !! i = Some x → l !! S i = Some y → R x y) →
-    (∀ i j x y, l !! i = Some x → l !! j = Some y → i < j → R x y).
-  Proof.
-    intros Hcons.
-    opose proof (list_reln_trans_aux _ _ Hcons) as Hskip.
-    intros ????? Hj ?.
-    replace j with (S (i + (j - i - 1))) in Hj by lia.
-    by eapply Hskip.
-  Qed.
-
-  Lemma list_reln_trans_refl R `{!Transitive R, !Reflexive R} l :
-    (∀ i x y, l !! i = Some x → l !! S i = Some y → R x y) →
-    (∀ i j x y, l !! i = Some x → l !! j = Some y → i ≤ j → R x y).
-  Proof.
-    intros Hcons.
-    opose proof (list_reln_trans _ _ Hcons) as Hskip.
-    intros ????? Hj ?.
-    destruct (decide (i = j)).
-    - by simplify_eq/=.
-    - eapply Hskip; [done..|]. lia.
-  Qed.
+  Implicit Types l : list A.
 
   Lemma snoc_to_cons x l : ∃ x' l', l ++ [x] = x' :: l'.
   Proof. destruct l; naive_solver. Qed.

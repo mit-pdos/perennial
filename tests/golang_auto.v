@@ -47,6 +47,18 @@ Proof.
   word.
 Qed.
 
+Lemma wp_repeatLocalVars :
+  {{{ is_pkg_init unittest }}}
+    @! unittest.repeatLocalVars #()
+  {{{ RET #(); True }}}.
+Proof.
+  wp_start.
+  wp_auto.
+  (* all points-tos should be gone *)
+  Show 1.
+  wp_end.
+Qed.
+
 Lemma wp_load_pointsto_not_found (x_l y_l: loc) (x: w64) :
   {{{ x_l ↦ x }}}
     ![#uint64T] #y_l

@@ -66,6 +66,24 @@ Tactic Notation "wp_start" "as" constr(pat) :=
 Tactic Notation "wp_start" :=
   wp_start as "Hpre".
 
+Ltac wp_clear_unused_pointsto :=
+  match goal with
+  | |- environments.envs_entails _ ?g =>
+      (* conservative check: if there's an evar, it could be filled in with
+      iNamedAccu and use any hypothesis (TODO: check for iProp evars
+      specifically) *)
+      has_evar g
+  | _ =>
+    repeat
+      match goal with
+      | |- context[environments.Esnoc _ ?name (typed_pointsto ?l _ _)] =>
+          (* only succeeds if l is not used anywhere (after clearing this
+              points-to) *)
+          iClear name;
+          clear l
+      end
+  end.
+
 Ltac2 wp_auto_lc (num_lc_wanted : int) :=
   let num_lc_wanted := Ref.ref num_lc_wanted in
   let wp_pure_maybe_lc () :=
@@ -76,7 +94,8 @@ Ltac2 wp_auto_lc (num_lc_wanted : int) :=
       repeat (first [ wp_pure_maybe_lc ()
                     | wp_load ()
                     | wp_store ()
-                    | wp_alloc_auto () ]);
+                    | wp_alloc_auto ()
+                    | ltac1:(progress wp_clear_unused_pointsto)]);
       if (Int.gt (Ref.get num_lc_wanted) 0) then
         Control.backtrack_tactic_failure "wp_auto_lc: unable to generate enough later credits"
       else
@@ -321,6 +340,28 @@ Ltac wp_if_destruct :=
           cleanup_bool_decide
       end
   end.
+
+(** [wp_if_join] joins two branches of an if expression into a shared assertion
+    [asn], which becomes available for the proof of subsequent statements.
+
+    Usage:
+        wp_if_join asn with pat
+        wp_if_join asn
+
+    [asn] is the join assertion (a function from value to iProp). [pat] is an
+    optional Iris intro pattern specifying spatial hypotheses needed to prove
+    the if expression. The goal is split into three subgoals:
+        1) Prove [asn] in the true branch.
+        2) Prove [asn] in the false branch.
+        3) Prove the remainder with [asn] as an assumption.
+**)
+Tactic Notation "wp_if_join" constr(asn) "with" constr(pat) :=
+  wp_bind (if: _ then _ else _)%E;
+  wp_pures;
+  iApply (wp_wand _ _ _ asn with pat)%I;
+  [ wp_if_destruct | ].
+
+Tactic Notation "wp_if_join" constr(asn) := wp_if_join asn with "[]".
 
 Ltac wp_end :=
   wp_pures;
