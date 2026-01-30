@@ -50,13 +50,6 @@ old-goose:
 old-goose.vos:
 	$(Q)$(MAKE) $$(./etc/package-sources.sh old-goose | sed 's/\.v$$/\.vos/')
 
-check-assumptions: \
-	src/program_proof/examples/print_assumptions.vo \
-	src/program_proof/simple/print_assumptions.vo \
-	src/program_proof/mvcc/print_assumptions.vo \
-	src/program_proof/memkv/print_assumptions.vo \
-	src/program_proof/vrsm/apps/print_assumptions.vo
-
 .rocqdeps.d: $(ALL_VFILES) _RocqProject
 	@echo "ROCQ DEP $@"
 	$(Q)rocq dep -vos -f _RocqProject $(ROCQ_DEP_ARGS) $(ALL_VFILES) > $@
@@ -91,7 +84,6 @@ endif
 SLOW_QED_FILES := src/goose_lang/interpreter/disk_interpreter.v\
 	src/goose_lang/interpreter/interpreter.v\
 	src/goose_lang/logical_reln_fund.v\
-	$(shell find src/program_proof/ -name "*.v" )
 
 skip-qed:
 	$(Q)./etc/disable-qed.sh $(SLOW_QED_FILES)
