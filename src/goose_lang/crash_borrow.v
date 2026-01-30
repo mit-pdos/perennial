@@ -1,7 +1,6 @@
 From iris.algebra Require Import gmap auth agree gset coPset excl csum.
 From Perennial.program_logic Require Import staged_invariant post_expr.
 From Perennial.goose_lang Require Import crash_modality lifting recovery_lifting.
-From Perennial.goose_lang Require Import wpc_proofmode.
 From Perennial.base_logic.lib Require Import saved_prop.
 From Perennial.Helpers Require Import Qextra.
 
