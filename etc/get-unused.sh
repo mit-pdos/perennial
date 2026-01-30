@@ -13,23 +13,24 @@ fi
 
 cd "$PROJECT_ROOT"
 
-if [ "$#" -ne 1 ]; then
-    echo "Usage: $0 <file.v>" >&2
+if [ "$#" -lt 1 ]; then
+    echo "Usage: $0 <file1.v> [file2.v ...]" >&2
     exit 1
 fi
 
-TARGET_V="$1"
+TARGET_VOS=""
 
-if [ ! -f "$TARGET_V" ]; then
-    echo "Error: File '$TARGET_V' not found." >&2
-    exit 1
-fi
-
-# Canonicalize target path relative to project root to match Makefile paths
-TARGET_V=$(realpath --relative-to="$PROJECT_ROOT" "$TARGET_V")
-
-# Target the .vo file to ensure full compilation dependency graph
-TARGET_VO="${TARGET_V%.v}.vo"
+for arg in "$@"; do
+    if [ ! -f "$arg" ]; then
+        echo "Error: File '$arg' not found." >&2
+        exit 1
+    fi
+    # Canonicalize path
+    REL_PATH=$(realpath --relative-to="$PROJECT_ROOT" "$arg")
+    # Convert .v to .vo
+    VO_PATH="${REL_PATH%.v}.vo"
+    TARGET_VOS="$TARGET_VOS $VO_PATH"
+done
 
 # Ensure dependency file exists so make knows the graph
 # (Output silenced to avoid noise)
@@ -41,7 +42,8 @@ make .rocqdeps.d >/dev/null 2>&1 || true
 # The Makefile uses: @echo "ROCQ COMPILE $<"
 # We extract the filename from the echo output.
 # usage of .* handles potential leading whitespace in make output
-USED_FILES=$(make -Bn "$TARGET_VO" 2>/dev/null | grep 'echo "ROCQ COMPILE ' | sed 's/.*echo "ROCQ COMPILE //; s/"//' | sort -u)
+# passing multiple targets to make will build the union of their dependencies
+USED_FILES=$(make -Bn $TARGET_VOS 2>/dev/null | grep 'echo "ROCQ COMPILE ' | sed 's/.*echo "ROCQ COMPILE //; s/"//' | sort -u)
 
 # 2. Get list of all project files
 # Matches Makefile ALL_VFILES logic
