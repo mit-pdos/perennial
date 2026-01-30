@@ -26,38 +26,38 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance Changer_into_val_typed
    :
   IntoValTypedUnderlying (confchange.Changer.t) (confchange.Changerⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance Changer_access_load_Tracker l (v : (confchange.Changer.t)) dq :
   AccessStrict
     (l.[(confchange.Changer.t), "Tracker"] ↦{dq} (v.(confchange.Changer.Tracker')))
     (l.[(confchange.Changer.t), "Tracker"] ↦{dq} (v.(confchange.Changer.Tracker')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Changer_access_store_Tracker l (v : (confchange.Changer.t)) Tracker' :
   AccessStrict
     (l.[(confchange.Changer.t), "Tracker"] ↦ (v.(confchange.Changer.Tracker')))
     (l.[(confchange.Changer.t), "Tracker"] ↦ Tracker')
     (l ↦ v) (l ↦ (v <|(confchange.Changer.Tracker') := Tracker'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Changer_access_load_LastIndex l (v : (confchange.Changer.t)) dq :
   AccessStrict
     (l.[(confchange.Changer.t), "LastIndex"] ↦{dq} (v.(confchange.Changer.LastIndex')))
     (l.[(confchange.Changer.t), "LastIndex"] ↦{dq} (v.(confchange.Changer.LastIndex')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Changer_access_store_LastIndex l (v : (confchange.Changer.t)) LastIndex' :
   AccessStrict
     (l.[(confchange.Changer.t), "LastIndex"] ↦ (v.(confchange.Changer.LastIndex')))
     (l.[(confchange.Changer.t), "LastIndex"] ↦ LastIndex')
     (l ↦ v) (l ↦ (v <|(confchange.Changer.LastIndex') := LastIndex'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End Changer.

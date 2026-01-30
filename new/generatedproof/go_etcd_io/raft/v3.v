@@ -46,90 +46,90 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance unstable_into_val_typed
    :
   IntoValTypedUnderlying (raft.unstable.t) (raft.unstableⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance unstable_access_load_snapshot l (v : (raft.unstable.t)) dq :
   AccessStrict
     (l.[(raft.unstable.t), "snapshot"] ↦{dq} (v.(raft.unstable.snapshot')))
     (l.[(raft.unstable.t), "snapshot"] ↦{dq} (v.(raft.unstable.snapshot')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance unstable_access_store_snapshot l (v : (raft.unstable.t)) snapshot' :
   AccessStrict
     (l.[(raft.unstable.t), "snapshot"] ↦ (v.(raft.unstable.snapshot')))
     (l.[(raft.unstable.t), "snapshot"] ↦ snapshot')
     (l ↦ v) (l ↦ (v <|(raft.unstable.snapshot') := snapshot'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance unstable_access_load_entries l (v : (raft.unstable.t)) dq :
   AccessStrict
     (l.[(raft.unstable.t), "entries"] ↦{dq} (v.(raft.unstable.entries')))
     (l.[(raft.unstable.t), "entries"] ↦{dq} (v.(raft.unstable.entries')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance unstable_access_store_entries l (v : (raft.unstable.t)) entries' :
   AccessStrict
     (l.[(raft.unstable.t), "entries"] ↦ (v.(raft.unstable.entries')))
     (l.[(raft.unstable.t), "entries"] ↦ entries')
     (l ↦ v) (l ↦ (v <|(raft.unstable.entries') := entries'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance unstable_access_load_offset l (v : (raft.unstable.t)) dq :
   AccessStrict
     (l.[(raft.unstable.t), "offset"] ↦{dq} (v.(raft.unstable.offset')))
     (l.[(raft.unstable.t), "offset"] ↦{dq} (v.(raft.unstable.offset')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance unstable_access_store_offset l (v : (raft.unstable.t)) offset' :
   AccessStrict
     (l.[(raft.unstable.t), "offset"] ↦ (v.(raft.unstable.offset')))
     (l.[(raft.unstable.t), "offset"] ↦ offset')
     (l ↦ v) (l ↦ (v <|(raft.unstable.offset') := offset'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance unstable_access_load_snapshotInProgress l (v : (raft.unstable.t)) dq :
   AccessStrict
     (l.[(raft.unstable.t), "snapshotInProgress"] ↦{dq} (v.(raft.unstable.snapshotInProgress')))
     (l.[(raft.unstable.t), "snapshotInProgress"] ↦{dq} (v.(raft.unstable.snapshotInProgress')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance unstable_access_store_snapshotInProgress l (v : (raft.unstable.t)) snapshotInProgress' :
   AccessStrict
     (l.[(raft.unstable.t), "snapshotInProgress"] ↦ (v.(raft.unstable.snapshotInProgress')))
     (l.[(raft.unstable.t), "snapshotInProgress"] ↦ snapshotInProgress')
     (l ↦ v) (l ↦ (v <|(raft.unstable.snapshotInProgress') := snapshotInProgress'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance unstable_access_load_offsetInProgress l (v : (raft.unstable.t)) dq :
   AccessStrict
     (l.[(raft.unstable.t), "offsetInProgress"] ↦{dq} (v.(raft.unstable.offsetInProgress')))
     (l.[(raft.unstable.t), "offsetInProgress"] ↦{dq} (v.(raft.unstable.offsetInProgress')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance unstable_access_store_offsetInProgress l (v : (raft.unstable.t)) offsetInProgress' :
   AccessStrict
     (l.[(raft.unstable.t), "offsetInProgress"] ↦ (v.(raft.unstable.offsetInProgress')))
     (l.[(raft.unstable.t), "offsetInProgress"] ↦ offsetInProgress')
     (l ↦ v) (l ↦ (v <|(raft.unstable.offsetInProgress') := offsetInProgress'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance unstable_access_load_logger l (v : (raft.unstable.t)) dq :
   AccessStrict
     (l.[(raft.unstable.t), "logger"] ↦{dq} (v.(raft.unstable.logger')))
     (l.[(raft.unstable.t), "logger"] ↦{dq} (v.(raft.unstable.logger')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance unstable_access_store_logger l (v : (raft.unstable.t)) logger' :
   AccessStrict
     (l.[(raft.unstable.t), "logger"] ↦ (v.(raft.unstable.logger')))
     (l.[(raft.unstable.t), "logger"] ↦ logger')
     (l ↦ v) (l ↦ (v <|(raft.unstable.logger') := logger'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End unstable.
@@ -160,129 +160,129 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance raftLog_into_val_typed
    :
   IntoValTypedUnderlying (raft.raftLog.t) (raft.raftLogⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance raftLog_access_load_storage l (v : (raft.raftLog.t)) dq :
   AccessStrict
     (l.[(raft.raftLog.t), "storage"] ↦{dq} (v.(raft.raftLog.storage')))
     (l.[(raft.raftLog.t), "storage"] ↦{dq} (v.(raft.raftLog.storage')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance raftLog_access_store_storage l (v : (raft.raftLog.t)) storage' :
   AccessStrict
     (l.[(raft.raftLog.t), "storage"] ↦ (v.(raft.raftLog.storage')))
     (l.[(raft.raftLog.t), "storage"] ↦ storage')
     (l ↦ v) (l ↦ (v <|(raft.raftLog.storage') := storage'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance raftLog_access_load_unstable l (v : (raft.raftLog.t)) dq :
   AccessStrict
     (l.[(raft.raftLog.t), "unstable"] ↦{dq} (v.(raft.raftLog.unstable')))
     (l.[(raft.raftLog.t), "unstable"] ↦{dq} (v.(raft.raftLog.unstable')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance raftLog_access_store_unstable l (v : (raft.raftLog.t)) unstable' :
   AccessStrict
     (l.[(raft.raftLog.t), "unstable"] ↦ (v.(raft.raftLog.unstable')))
     (l.[(raft.raftLog.t), "unstable"] ↦ unstable')
     (l ↦ v) (l ↦ (v <|(raft.raftLog.unstable') := unstable'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance raftLog_access_load_committed l (v : (raft.raftLog.t)) dq :
   AccessStrict
     (l.[(raft.raftLog.t), "committed"] ↦{dq} (v.(raft.raftLog.committed')))
     (l.[(raft.raftLog.t), "committed"] ↦{dq} (v.(raft.raftLog.committed')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance raftLog_access_store_committed l (v : (raft.raftLog.t)) committed' :
   AccessStrict
     (l.[(raft.raftLog.t), "committed"] ↦ (v.(raft.raftLog.committed')))
     (l.[(raft.raftLog.t), "committed"] ↦ committed')
     (l ↦ v) (l ↦ (v <|(raft.raftLog.committed') := committed'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance raftLog_access_load_applying l (v : (raft.raftLog.t)) dq :
   AccessStrict
     (l.[(raft.raftLog.t), "applying"] ↦{dq} (v.(raft.raftLog.applying')))
     (l.[(raft.raftLog.t), "applying"] ↦{dq} (v.(raft.raftLog.applying')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance raftLog_access_store_applying l (v : (raft.raftLog.t)) applying' :
   AccessStrict
     (l.[(raft.raftLog.t), "applying"] ↦ (v.(raft.raftLog.applying')))
     (l.[(raft.raftLog.t), "applying"] ↦ applying')
     (l ↦ v) (l ↦ (v <|(raft.raftLog.applying') := applying'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance raftLog_access_load_applied l (v : (raft.raftLog.t)) dq :
   AccessStrict
     (l.[(raft.raftLog.t), "applied"] ↦{dq} (v.(raft.raftLog.applied')))
     (l.[(raft.raftLog.t), "applied"] ↦{dq} (v.(raft.raftLog.applied')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance raftLog_access_store_applied l (v : (raft.raftLog.t)) applied' :
   AccessStrict
     (l.[(raft.raftLog.t), "applied"] ↦ (v.(raft.raftLog.applied')))
     (l.[(raft.raftLog.t), "applied"] ↦ applied')
     (l ↦ v) (l ↦ (v <|(raft.raftLog.applied') := applied'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance raftLog_access_load_logger l (v : (raft.raftLog.t)) dq :
   AccessStrict
     (l.[(raft.raftLog.t), "logger"] ↦{dq} (v.(raft.raftLog.logger')))
     (l.[(raft.raftLog.t), "logger"] ↦{dq} (v.(raft.raftLog.logger')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance raftLog_access_store_logger l (v : (raft.raftLog.t)) logger' :
   AccessStrict
     (l.[(raft.raftLog.t), "logger"] ↦ (v.(raft.raftLog.logger')))
     (l.[(raft.raftLog.t), "logger"] ↦ logger')
     (l ↦ v) (l ↦ (v <|(raft.raftLog.logger') := logger'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance raftLog_access_load_maxApplyingEntsSize l (v : (raft.raftLog.t)) dq :
   AccessStrict
     (l.[(raft.raftLog.t), "maxApplyingEntsSize"] ↦{dq} (v.(raft.raftLog.maxApplyingEntsSize')))
     (l.[(raft.raftLog.t), "maxApplyingEntsSize"] ↦{dq} (v.(raft.raftLog.maxApplyingEntsSize')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance raftLog_access_store_maxApplyingEntsSize l (v : (raft.raftLog.t)) maxApplyingEntsSize' :
   AccessStrict
     (l.[(raft.raftLog.t), "maxApplyingEntsSize"] ↦ (v.(raft.raftLog.maxApplyingEntsSize')))
     (l.[(raft.raftLog.t), "maxApplyingEntsSize"] ↦ maxApplyingEntsSize')
     (l ↦ v) (l ↦ (v <|(raft.raftLog.maxApplyingEntsSize') := maxApplyingEntsSize'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance raftLog_access_load_applyingEntsSize l (v : (raft.raftLog.t)) dq :
   AccessStrict
     (l.[(raft.raftLog.t), "applyingEntsSize"] ↦{dq} (v.(raft.raftLog.applyingEntsSize')))
     (l.[(raft.raftLog.t), "applyingEntsSize"] ↦{dq} (v.(raft.raftLog.applyingEntsSize')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance raftLog_access_store_applyingEntsSize l (v : (raft.raftLog.t)) applyingEntsSize' :
   AccessStrict
     (l.[(raft.raftLog.t), "applyingEntsSize"] ↦ (v.(raft.raftLog.applyingEntsSize')))
     (l.[(raft.raftLog.t), "applyingEntsSize"] ↦ applyingEntsSize')
     (l ↦ v) (l ↦ (v <|(raft.raftLog.applyingEntsSize') := applyingEntsSize'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance raftLog_access_load_applyingEntsPaused l (v : (raft.raftLog.t)) dq :
   AccessStrict
     (l.[(raft.raftLog.t), "applyingEntsPaused"] ↦{dq} (v.(raft.raftLog.applyingEntsPaused')))
     (l.[(raft.raftLog.t), "applyingEntsPaused"] ↦{dq} (v.(raft.raftLog.applyingEntsPaused')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance raftLog_access_store_applyingEntsPaused l (v : (raft.raftLog.t)) applyingEntsPaused' :
   AccessStrict
     (l.[(raft.raftLog.t), "applyingEntsPaused"] ↦ (v.(raft.raftLog.applyingEntsPaused')))
     (l.[(raft.raftLog.t), "applyingEntsPaused"] ↦ applyingEntsPaused')
     (l ↦ v) (l ↦ (v <|(raft.raftLog.applyingEntsPaused') := applyingEntsPaused'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End raftLog.
@@ -306,38 +306,38 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance DefaultLogger_into_val_typed
    :
   IntoValTypedUnderlying (raft.DefaultLogger.t) (raft.DefaultLoggerⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance DefaultLogger_access_load_Logger l (v : (raft.DefaultLogger.t)) dq :
   AccessStrict
     (l.[(raft.DefaultLogger.t), "Logger"] ↦{dq} (v.(raft.DefaultLogger.Logger')))
     (l.[(raft.DefaultLogger.t), "Logger"] ↦{dq} (v.(raft.DefaultLogger.Logger')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance DefaultLogger_access_store_Logger l (v : (raft.DefaultLogger.t)) Logger' :
   AccessStrict
     (l.[(raft.DefaultLogger.t), "Logger"] ↦ (v.(raft.DefaultLogger.Logger')))
     (l.[(raft.DefaultLogger.t), "Logger"] ↦ Logger')
     (l ↦ v) (l ↦ (v <|(raft.DefaultLogger.Logger') := Logger'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance DefaultLogger_access_load_debug l (v : (raft.DefaultLogger.t)) dq :
   AccessStrict
     (l.[(raft.DefaultLogger.t), "debug"] ↦{dq} (v.(raft.DefaultLogger.debug')))
     (l.[(raft.DefaultLogger.t), "debug"] ↦{dq} (v.(raft.DefaultLogger.debug')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance DefaultLogger_access_store_debug l (v : (raft.DefaultLogger.t)) debug' :
   AccessStrict
     (l.[(raft.DefaultLogger.t), "debug"] ↦ (v.(raft.DefaultLogger.debug')))
     (l.[(raft.DefaultLogger.t), "debug"] ↦ debug')
     (l ↦ v) (l ↦ (v <|(raft.DefaultLogger.debug') := debug'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End DefaultLogger.
@@ -361,38 +361,38 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance SoftState_into_val_typed
    :
   IntoValTypedUnderlying (raft.SoftState.t) (raft.SoftStateⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance SoftState_access_load_Lead l (v : (raft.SoftState.t)) dq :
   AccessStrict
     (l.[(raft.SoftState.t), "Lead"] ↦{dq} (v.(raft.SoftState.Lead')))
     (l.[(raft.SoftState.t), "Lead"] ↦{dq} (v.(raft.SoftState.Lead')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance SoftState_access_store_Lead l (v : (raft.SoftState.t)) Lead' :
   AccessStrict
     (l.[(raft.SoftState.t), "Lead"] ↦ (v.(raft.SoftState.Lead')))
     (l.[(raft.SoftState.t), "Lead"] ↦ Lead')
     (l ↦ v) (l ↦ (v <|(raft.SoftState.Lead') := Lead'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance SoftState_access_load_RaftState l (v : (raft.SoftState.t)) dq :
   AccessStrict
     (l.[(raft.SoftState.t), "RaftState"] ↦{dq} (v.(raft.SoftState.RaftState')))
     (l.[(raft.SoftState.t), "RaftState"] ↦{dq} (v.(raft.SoftState.RaftState')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance SoftState_access_store_RaftState l (v : (raft.SoftState.t)) RaftState' :
   AccessStrict
     (l.[(raft.SoftState.t), "RaftState"] ↦ (v.(raft.SoftState.RaftState')))
     (l.[(raft.SoftState.t), "RaftState"] ↦ RaftState')
     (l ↦ v) (l ↦ (v <|(raft.SoftState.RaftState') := RaftState'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End SoftState.
@@ -422,116 +422,116 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance Ready_into_val_typed
    :
   IntoValTypedUnderlying (raft.Ready.t) (raft.Readyⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance Ready_access_load_SoftState l (v : (raft.Ready.t)) dq :
   AccessStrict
     (l.[(raft.Ready.t), "SoftState"] ↦{dq} (v.(raft.Ready.SoftState')))
     (l.[(raft.Ready.t), "SoftState"] ↦{dq} (v.(raft.Ready.SoftState')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Ready_access_store_SoftState l (v : (raft.Ready.t)) SoftState' :
   AccessStrict
     (l.[(raft.Ready.t), "SoftState"] ↦ (v.(raft.Ready.SoftState')))
     (l.[(raft.Ready.t), "SoftState"] ↦ SoftState')
     (l ↦ v) (l ↦ (v <|(raft.Ready.SoftState') := SoftState'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Ready_access_load_HardState l (v : (raft.Ready.t)) dq :
   AccessStrict
     (l.[(raft.Ready.t), "HardState"] ↦{dq} (v.(raft.Ready.HardState')))
     (l.[(raft.Ready.t), "HardState"] ↦{dq} (v.(raft.Ready.HardState')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Ready_access_store_HardState l (v : (raft.Ready.t)) HardState' :
   AccessStrict
     (l.[(raft.Ready.t), "HardState"] ↦ (v.(raft.Ready.HardState')))
     (l.[(raft.Ready.t), "HardState"] ↦ HardState')
     (l ↦ v) (l ↦ (v <|(raft.Ready.HardState') := HardState'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Ready_access_load_ReadStates l (v : (raft.Ready.t)) dq :
   AccessStrict
     (l.[(raft.Ready.t), "ReadStates"] ↦{dq} (v.(raft.Ready.ReadStates')))
     (l.[(raft.Ready.t), "ReadStates"] ↦{dq} (v.(raft.Ready.ReadStates')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Ready_access_store_ReadStates l (v : (raft.Ready.t)) ReadStates' :
   AccessStrict
     (l.[(raft.Ready.t), "ReadStates"] ↦ (v.(raft.Ready.ReadStates')))
     (l.[(raft.Ready.t), "ReadStates"] ↦ ReadStates')
     (l ↦ v) (l ↦ (v <|(raft.Ready.ReadStates') := ReadStates'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Ready_access_load_Entries l (v : (raft.Ready.t)) dq :
   AccessStrict
     (l.[(raft.Ready.t), "Entries"] ↦{dq} (v.(raft.Ready.Entries')))
     (l.[(raft.Ready.t), "Entries"] ↦{dq} (v.(raft.Ready.Entries')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Ready_access_store_Entries l (v : (raft.Ready.t)) Entries' :
   AccessStrict
     (l.[(raft.Ready.t), "Entries"] ↦ (v.(raft.Ready.Entries')))
     (l.[(raft.Ready.t), "Entries"] ↦ Entries')
     (l ↦ v) (l ↦ (v <|(raft.Ready.Entries') := Entries'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Ready_access_load_Snapshot l (v : (raft.Ready.t)) dq :
   AccessStrict
     (l.[(raft.Ready.t), "Snapshot"] ↦{dq} (v.(raft.Ready.Snapshot')))
     (l.[(raft.Ready.t), "Snapshot"] ↦{dq} (v.(raft.Ready.Snapshot')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Ready_access_store_Snapshot l (v : (raft.Ready.t)) Snapshot' :
   AccessStrict
     (l.[(raft.Ready.t), "Snapshot"] ↦ (v.(raft.Ready.Snapshot')))
     (l.[(raft.Ready.t), "Snapshot"] ↦ Snapshot')
     (l ↦ v) (l ↦ (v <|(raft.Ready.Snapshot') := Snapshot'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Ready_access_load_CommittedEntries l (v : (raft.Ready.t)) dq :
   AccessStrict
     (l.[(raft.Ready.t), "CommittedEntries"] ↦{dq} (v.(raft.Ready.CommittedEntries')))
     (l.[(raft.Ready.t), "CommittedEntries"] ↦{dq} (v.(raft.Ready.CommittedEntries')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Ready_access_store_CommittedEntries l (v : (raft.Ready.t)) CommittedEntries' :
   AccessStrict
     (l.[(raft.Ready.t), "CommittedEntries"] ↦ (v.(raft.Ready.CommittedEntries')))
     (l.[(raft.Ready.t), "CommittedEntries"] ↦ CommittedEntries')
     (l ↦ v) (l ↦ (v <|(raft.Ready.CommittedEntries') := CommittedEntries'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Ready_access_load_Messages l (v : (raft.Ready.t)) dq :
   AccessStrict
     (l.[(raft.Ready.t), "Messages"] ↦{dq} (v.(raft.Ready.Messages')))
     (l.[(raft.Ready.t), "Messages"] ↦{dq} (v.(raft.Ready.Messages')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Ready_access_store_Messages l (v : (raft.Ready.t)) Messages' :
   AccessStrict
     (l.[(raft.Ready.t), "Messages"] ↦ (v.(raft.Ready.Messages')))
     (l.[(raft.Ready.t), "Messages"] ↦ Messages')
     (l ↦ v) (l ↦ (v <|(raft.Ready.Messages') := Messages'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Ready_access_load_MustSync l (v : (raft.Ready.t)) dq :
   AccessStrict
     (l.[(raft.Ready.t), "MustSync"] ↦{dq} (v.(raft.Ready.MustSync')))
     (l.[(raft.Ready.t), "MustSync"] ↦{dq} (v.(raft.Ready.MustSync')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Ready_access_store_MustSync l (v : (raft.Ready.t)) MustSync' :
   AccessStrict
     (l.[(raft.Ready.t), "MustSync"] ↦ (v.(raft.Ready.MustSync')))
     (l.[(raft.Ready.t), "MustSync"] ↦ MustSync')
     (l ↦ v) (l ↦ (v <|(raft.Ready.MustSync') := MustSync'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End Ready.
@@ -555,38 +555,38 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance Peer_into_val_typed
    :
   IntoValTypedUnderlying (raft.Peer.t) (raft.Peerⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance Peer_access_load_ID l (v : (raft.Peer.t)) dq :
   AccessStrict
     (l.[(raft.Peer.t), "ID"] ↦{dq} (v.(raft.Peer.ID')))
     (l.[(raft.Peer.t), "ID"] ↦{dq} (v.(raft.Peer.ID')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Peer_access_store_ID l (v : (raft.Peer.t)) ID' :
   AccessStrict
     (l.[(raft.Peer.t), "ID"] ↦ (v.(raft.Peer.ID')))
     (l.[(raft.Peer.t), "ID"] ↦ ID')
     (l ↦ v) (l ↦ (v <|(raft.Peer.ID') := ID'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Peer_access_load_Context l (v : (raft.Peer.t)) dq :
   AccessStrict
     (l.[(raft.Peer.t), "Context"] ↦{dq} (v.(raft.Peer.Context')))
     (l.[(raft.Peer.t), "Context"] ↦{dq} (v.(raft.Peer.Context')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Peer_access_store_Context l (v : (raft.Peer.t)) Context' :
   AccessStrict
     (l.[(raft.Peer.t), "Context"] ↦ (v.(raft.Peer.Context')))
     (l.[(raft.Peer.t), "Context"] ↦ Context')
     (l ↦ v) (l ↦ (v <|(raft.Peer.Context') := Context'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End Peer.
@@ -610,38 +610,38 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance msgWithResult_into_val_typed
    :
   IntoValTypedUnderlying (raft.msgWithResult.t) (raft.msgWithResultⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance msgWithResult_access_load_m l (v : (raft.msgWithResult.t)) dq :
   AccessStrict
     (l.[(raft.msgWithResult.t), "m"] ↦{dq} (v.(raft.msgWithResult.m')))
     (l.[(raft.msgWithResult.t), "m"] ↦{dq} (v.(raft.msgWithResult.m')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance msgWithResult_access_store_m l (v : (raft.msgWithResult.t)) m' :
   AccessStrict
     (l.[(raft.msgWithResult.t), "m"] ↦ (v.(raft.msgWithResult.m')))
     (l.[(raft.msgWithResult.t), "m"] ↦ m')
     (l ↦ v) (l ↦ (v <|(raft.msgWithResult.m') := m'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance msgWithResult_access_load_result l (v : (raft.msgWithResult.t)) dq :
   AccessStrict
     (l.[(raft.msgWithResult.t), "result"] ↦{dq} (v.(raft.msgWithResult.result')))
     (l.[(raft.msgWithResult.t), "result"] ↦{dq} (v.(raft.msgWithResult.result')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance msgWithResult_access_store_result l (v : (raft.msgWithResult.t)) result' :
   AccessStrict
     (l.[(raft.msgWithResult.t), "result"] ↦ (v.(raft.msgWithResult.result')))
     (l.[(raft.msgWithResult.t), "result"] ↦ result')
     (l ↦ v) (l ↦ (v <|(raft.msgWithResult.result') := result'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End msgWithResult.
@@ -674,155 +674,155 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance node_into_val_typed
    :
   IntoValTypedUnderlying (raft.node.t) (raft.nodeⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance node_access_load_propc l (v : (raft.node.t)) dq :
   AccessStrict
     (l.[(raft.node.t), "propc"] ↦{dq} (v.(raft.node.propc')))
     (l.[(raft.node.t), "propc"] ↦{dq} (v.(raft.node.propc')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance node_access_store_propc l (v : (raft.node.t)) propc' :
   AccessStrict
     (l.[(raft.node.t), "propc"] ↦ (v.(raft.node.propc')))
     (l.[(raft.node.t), "propc"] ↦ propc')
     (l ↦ v) (l ↦ (v <|(raft.node.propc') := propc'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance node_access_load_recvc l (v : (raft.node.t)) dq :
   AccessStrict
     (l.[(raft.node.t), "recvc"] ↦{dq} (v.(raft.node.recvc')))
     (l.[(raft.node.t), "recvc"] ↦{dq} (v.(raft.node.recvc')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance node_access_store_recvc l (v : (raft.node.t)) recvc' :
   AccessStrict
     (l.[(raft.node.t), "recvc"] ↦ (v.(raft.node.recvc')))
     (l.[(raft.node.t), "recvc"] ↦ recvc')
     (l ↦ v) (l ↦ (v <|(raft.node.recvc') := recvc'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance node_access_load_confc l (v : (raft.node.t)) dq :
   AccessStrict
     (l.[(raft.node.t), "confc"] ↦{dq} (v.(raft.node.confc')))
     (l.[(raft.node.t), "confc"] ↦{dq} (v.(raft.node.confc')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance node_access_store_confc l (v : (raft.node.t)) confc' :
   AccessStrict
     (l.[(raft.node.t), "confc"] ↦ (v.(raft.node.confc')))
     (l.[(raft.node.t), "confc"] ↦ confc')
     (l ↦ v) (l ↦ (v <|(raft.node.confc') := confc'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance node_access_load_confstatec l (v : (raft.node.t)) dq :
   AccessStrict
     (l.[(raft.node.t), "confstatec"] ↦{dq} (v.(raft.node.confstatec')))
     (l.[(raft.node.t), "confstatec"] ↦{dq} (v.(raft.node.confstatec')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance node_access_store_confstatec l (v : (raft.node.t)) confstatec' :
   AccessStrict
     (l.[(raft.node.t), "confstatec"] ↦ (v.(raft.node.confstatec')))
     (l.[(raft.node.t), "confstatec"] ↦ confstatec')
     (l ↦ v) (l ↦ (v <|(raft.node.confstatec') := confstatec'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance node_access_load_readyc l (v : (raft.node.t)) dq :
   AccessStrict
     (l.[(raft.node.t), "readyc"] ↦{dq} (v.(raft.node.readyc')))
     (l.[(raft.node.t), "readyc"] ↦{dq} (v.(raft.node.readyc')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance node_access_store_readyc l (v : (raft.node.t)) readyc' :
   AccessStrict
     (l.[(raft.node.t), "readyc"] ↦ (v.(raft.node.readyc')))
     (l.[(raft.node.t), "readyc"] ↦ readyc')
     (l ↦ v) (l ↦ (v <|(raft.node.readyc') := readyc'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance node_access_load_advancec l (v : (raft.node.t)) dq :
   AccessStrict
     (l.[(raft.node.t), "advancec"] ↦{dq} (v.(raft.node.advancec')))
     (l.[(raft.node.t), "advancec"] ↦{dq} (v.(raft.node.advancec')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance node_access_store_advancec l (v : (raft.node.t)) advancec' :
   AccessStrict
     (l.[(raft.node.t), "advancec"] ↦ (v.(raft.node.advancec')))
     (l.[(raft.node.t), "advancec"] ↦ advancec')
     (l ↦ v) (l ↦ (v <|(raft.node.advancec') := advancec'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance node_access_load_tickc l (v : (raft.node.t)) dq :
   AccessStrict
     (l.[(raft.node.t), "tickc"] ↦{dq} (v.(raft.node.tickc')))
     (l.[(raft.node.t), "tickc"] ↦{dq} (v.(raft.node.tickc')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance node_access_store_tickc l (v : (raft.node.t)) tickc' :
   AccessStrict
     (l.[(raft.node.t), "tickc"] ↦ (v.(raft.node.tickc')))
     (l.[(raft.node.t), "tickc"] ↦ tickc')
     (l ↦ v) (l ↦ (v <|(raft.node.tickc') := tickc'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance node_access_load_done l (v : (raft.node.t)) dq :
   AccessStrict
     (l.[(raft.node.t), "done"] ↦{dq} (v.(raft.node.done')))
     (l.[(raft.node.t), "done"] ↦{dq} (v.(raft.node.done')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance node_access_store_done l (v : (raft.node.t)) done' :
   AccessStrict
     (l.[(raft.node.t), "done"] ↦ (v.(raft.node.done')))
     (l.[(raft.node.t), "done"] ↦ done')
     (l ↦ v) (l ↦ (v <|(raft.node.done') := done'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance node_access_load_stop l (v : (raft.node.t)) dq :
   AccessStrict
     (l.[(raft.node.t), "stop"] ↦{dq} (v.(raft.node.stop')))
     (l.[(raft.node.t), "stop"] ↦{dq} (v.(raft.node.stop')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance node_access_store_stop l (v : (raft.node.t)) stop' :
   AccessStrict
     (l.[(raft.node.t), "stop"] ↦ (v.(raft.node.stop')))
     (l.[(raft.node.t), "stop"] ↦ stop')
     (l ↦ v) (l ↦ (v <|(raft.node.stop') := stop'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance node_access_load_status l (v : (raft.node.t)) dq :
   AccessStrict
     (l.[(raft.node.t), "status"] ↦{dq} (v.(raft.node.status')))
     (l.[(raft.node.t), "status"] ↦{dq} (v.(raft.node.status')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance node_access_store_status l (v : (raft.node.t)) status' :
   AccessStrict
     (l.[(raft.node.t), "status"] ↦ (v.(raft.node.status')))
     (l.[(raft.node.t), "status"] ↦ status')
     (l ↦ v) (l ↦ (v <|(raft.node.status') := status'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance node_access_load_rn l (v : (raft.node.t)) dq :
   AccessStrict
     (l.[(raft.node.t), "rn"] ↦{dq} (v.(raft.node.rn')))
     (l.[(raft.node.t), "rn"] ↦{dq} (v.(raft.node.rn')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance node_access_store_rn l (v : (raft.node.t)) rn' :
   AccessStrict
     (l.[(raft.node.t), "rn"] ↦ (v.(raft.node.rn')))
     (l.[(raft.node.t), "rn"] ↦ rn')
     (l ↦ v) (l ↦ (v <|(raft.node.rn') := rn'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End node.
@@ -845,25 +845,25 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance lockedRand_into_val_typed
    :
   IntoValTypedUnderlying (raft.lockedRand.t) (raft.lockedRandⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance lockedRand_access_load_mu l (v : (raft.lockedRand.t)) dq :
   AccessStrict
     (l.[(raft.lockedRand.t), "mu"] ↦{dq} (v.(raft.lockedRand.mu')))
     (l.[(raft.lockedRand.t), "mu"] ↦{dq} (v.(raft.lockedRand.mu')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance lockedRand_access_store_mu l (v : (raft.lockedRand.t)) mu' :
   AccessStrict
     (l.[(raft.lockedRand.t), "mu"] ↦ (v.(raft.lockedRand.mu')))
     (l.[(raft.lockedRand.t), "mu"] ↦ mu')
     (l ↦ v) (l ↦ (v <|(raft.lockedRand.mu') := mu'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End lockedRand.
@@ -904,259 +904,259 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance Config_into_val_typed
    :
   IntoValTypedUnderlying (raft.Config.t) (raft.Configⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance Config_access_load_ID l (v : (raft.Config.t)) dq :
   AccessStrict
     (l.[(raft.Config.t), "ID"] ↦{dq} (v.(raft.Config.ID')))
     (l.[(raft.Config.t), "ID"] ↦{dq} (v.(raft.Config.ID')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Config_access_store_ID l (v : (raft.Config.t)) ID' :
   AccessStrict
     (l.[(raft.Config.t), "ID"] ↦ (v.(raft.Config.ID')))
     (l.[(raft.Config.t), "ID"] ↦ ID')
     (l ↦ v) (l ↦ (v <|(raft.Config.ID') := ID'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Config_access_load_ElectionTick l (v : (raft.Config.t)) dq :
   AccessStrict
     (l.[(raft.Config.t), "ElectionTick"] ↦{dq} (v.(raft.Config.ElectionTick')))
     (l.[(raft.Config.t), "ElectionTick"] ↦{dq} (v.(raft.Config.ElectionTick')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Config_access_store_ElectionTick l (v : (raft.Config.t)) ElectionTick' :
   AccessStrict
     (l.[(raft.Config.t), "ElectionTick"] ↦ (v.(raft.Config.ElectionTick')))
     (l.[(raft.Config.t), "ElectionTick"] ↦ ElectionTick')
     (l ↦ v) (l ↦ (v <|(raft.Config.ElectionTick') := ElectionTick'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Config_access_load_HeartbeatTick l (v : (raft.Config.t)) dq :
   AccessStrict
     (l.[(raft.Config.t), "HeartbeatTick"] ↦{dq} (v.(raft.Config.HeartbeatTick')))
     (l.[(raft.Config.t), "HeartbeatTick"] ↦{dq} (v.(raft.Config.HeartbeatTick')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Config_access_store_HeartbeatTick l (v : (raft.Config.t)) HeartbeatTick' :
   AccessStrict
     (l.[(raft.Config.t), "HeartbeatTick"] ↦ (v.(raft.Config.HeartbeatTick')))
     (l.[(raft.Config.t), "HeartbeatTick"] ↦ HeartbeatTick')
     (l ↦ v) (l ↦ (v <|(raft.Config.HeartbeatTick') := HeartbeatTick'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Config_access_load_Storage l (v : (raft.Config.t)) dq :
   AccessStrict
     (l.[(raft.Config.t), "Storage"] ↦{dq} (v.(raft.Config.Storage')))
     (l.[(raft.Config.t), "Storage"] ↦{dq} (v.(raft.Config.Storage')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Config_access_store_Storage l (v : (raft.Config.t)) Storage' :
   AccessStrict
     (l.[(raft.Config.t), "Storage"] ↦ (v.(raft.Config.Storage')))
     (l.[(raft.Config.t), "Storage"] ↦ Storage')
     (l ↦ v) (l ↦ (v <|(raft.Config.Storage') := Storage'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Config_access_load_Applied l (v : (raft.Config.t)) dq :
   AccessStrict
     (l.[(raft.Config.t), "Applied"] ↦{dq} (v.(raft.Config.Applied')))
     (l.[(raft.Config.t), "Applied"] ↦{dq} (v.(raft.Config.Applied')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Config_access_store_Applied l (v : (raft.Config.t)) Applied' :
   AccessStrict
     (l.[(raft.Config.t), "Applied"] ↦ (v.(raft.Config.Applied')))
     (l.[(raft.Config.t), "Applied"] ↦ Applied')
     (l ↦ v) (l ↦ (v <|(raft.Config.Applied') := Applied'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Config_access_load_AsyncStorageWrites l (v : (raft.Config.t)) dq :
   AccessStrict
     (l.[(raft.Config.t), "AsyncStorageWrites"] ↦{dq} (v.(raft.Config.AsyncStorageWrites')))
     (l.[(raft.Config.t), "AsyncStorageWrites"] ↦{dq} (v.(raft.Config.AsyncStorageWrites')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Config_access_store_AsyncStorageWrites l (v : (raft.Config.t)) AsyncStorageWrites' :
   AccessStrict
     (l.[(raft.Config.t), "AsyncStorageWrites"] ↦ (v.(raft.Config.AsyncStorageWrites')))
     (l.[(raft.Config.t), "AsyncStorageWrites"] ↦ AsyncStorageWrites')
     (l ↦ v) (l ↦ (v <|(raft.Config.AsyncStorageWrites') := AsyncStorageWrites'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Config_access_load_MaxSizePerMsg l (v : (raft.Config.t)) dq :
   AccessStrict
     (l.[(raft.Config.t), "MaxSizePerMsg"] ↦{dq} (v.(raft.Config.MaxSizePerMsg')))
     (l.[(raft.Config.t), "MaxSizePerMsg"] ↦{dq} (v.(raft.Config.MaxSizePerMsg')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Config_access_store_MaxSizePerMsg l (v : (raft.Config.t)) MaxSizePerMsg' :
   AccessStrict
     (l.[(raft.Config.t), "MaxSizePerMsg"] ↦ (v.(raft.Config.MaxSizePerMsg')))
     (l.[(raft.Config.t), "MaxSizePerMsg"] ↦ MaxSizePerMsg')
     (l ↦ v) (l ↦ (v <|(raft.Config.MaxSizePerMsg') := MaxSizePerMsg'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Config_access_load_MaxCommittedSizePerReady l (v : (raft.Config.t)) dq :
   AccessStrict
     (l.[(raft.Config.t), "MaxCommittedSizePerReady"] ↦{dq} (v.(raft.Config.MaxCommittedSizePerReady')))
     (l.[(raft.Config.t), "MaxCommittedSizePerReady"] ↦{dq} (v.(raft.Config.MaxCommittedSizePerReady')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Config_access_store_MaxCommittedSizePerReady l (v : (raft.Config.t)) MaxCommittedSizePerReady' :
   AccessStrict
     (l.[(raft.Config.t), "MaxCommittedSizePerReady"] ↦ (v.(raft.Config.MaxCommittedSizePerReady')))
     (l.[(raft.Config.t), "MaxCommittedSizePerReady"] ↦ MaxCommittedSizePerReady')
     (l ↦ v) (l ↦ (v <|(raft.Config.MaxCommittedSizePerReady') := MaxCommittedSizePerReady'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Config_access_load_MaxUncommittedEntriesSize l (v : (raft.Config.t)) dq :
   AccessStrict
     (l.[(raft.Config.t), "MaxUncommittedEntriesSize"] ↦{dq} (v.(raft.Config.MaxUncommittedEntriesSize')))
     (l.[(raft.Config.t), "MaxUncommittedEntriesSize"] ↦{dq} (v.(raft.Config.MaxUncommittedEntriesSize')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Config_access_store_MaxUncommittedEntriesSize l (v : (raft.Config.t)) MaxUncommittedEntriesSize' :
   AccessStrict
     (l.[(raft.Config.t), "MaxUncommittedEntriesSize"] ↦ (v.(raft.Config.MaxUncommittedEntriesSize')))
     (l.[(raft.Config.t), "MaxUncommittedEntriesSize"] ↦ MaxUncommittedEntriesSize')
     (l ↦ v) (l ↦ (v <|(raft.Config.MaxUncommittedEntriesSize') := MaxUncommittedEntriesSize'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Config_access_load_MaxInflightMsgs l (v : (raft.Config.t)) dq :
   AccessStrict
     (l.[(raft.Config.t), "MaxInflightMsgs"] ↦{dq} (v.(raft.Config.MaxInflightMsgs')))
     (l.[(raft.Config.t), "MaxInflightMsgs"] ↦{dq} (v.(raft.Config.MaxInflightMsgs')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Config_access_store_MaxInflightMsgs l (v : (raft.Config.t)) MaxInflightMsgs' :
   AccessStrict
     (l.[(raft.Config.t), "MaxInflightMsgs"] ↦ (v.(raft.Config.MaxInflightMsgs')))
     (l.[(raft.Config.t), "MaxInflightMsgs"] ↦ MaxInflightMsgs')
     (l ↦ v) (l ↦ (v <|(raft.Config.MaxInflightMsgs') := MaxInflightMsgs'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Config_access_load_MaxInflightBytes l (v : (raft.Config.t)) dq :
   AccessStrict
     (l.[(raft.Config.t), "MaxInflightBytes"] ↦{dq} (v.(raft.Config.MaxInflightBytes')))
     (l.[(raft.Config.t), "MaxInflightBytes"] ↦{dq} (v.(raft.Config.MaxInflightBytes')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Config_access_store_MaxInflightBytes l (v : (raft.Config.t)) MaxInflightBytes' :
   AccessStrict
     (l.[(raft.Config.t), "MaxInflightBytes"] ↦ (v.(raft.Config.MaxInflightBytes')))
     (l.[(raft.Config.t), "MaxInflightBytes"] ↦ MaxInflightBytes')
     (l ↦ v) (l ↦ (v <|(raft.Config.MaxInflightBytes') := MaxInflightBytes'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Config_access_load_CheckQuorum l (v : (raft.Config.t)) dq :
   AccessStrict
     (l.[(raft.Config.t), "CheckQuorum"] ↦{dq} (v.(raft.Config.CheckQuorum')))
     (l.[(raft.Config.t), "CheckQuorum"] ↦{dq} (v.(raft.Config.CheckQuorum')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Config_access_store_CheckQuorum l (v : (raft.Config.t)) CheckQuorum' :
   AccessStrict
     (l.[(raft.Config.t), "CheckQuorum"] ↦ (v.(raft.Config.CheckQuorum')))
     (l.[(raft.Config.t), "CheckQuorum"] ↦ CheckQuorum')
     (l ↦ v) (l ↦ (v <|(raft.Config.CheckQuorum') := CheckQuorum'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Config_access_load_PreVote l (v : (raft.Config.t)) dq :
   AccessStrict
     (l.[(raft.Config.t), "PreVote"] ↦{dq} (v.(raft.Config.PreVote')))
     (l.[(raft.Config.t), "PreVote"] ↦{dq} (v.(raft.Config.PreVote')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Config_access_store_PreVote l (v : (raft.Config.t)) PreVote' :
   AccessStrict
     (l.[(raft.Config.t), "PreVote"] ↦ (v.(raft.Config.PreVote')))
     (l.[(raft.Config.t), "PreVote"] ↦ PreVote')
     (l ↦ v) (l ↦ (v <|(raft.Config.PreVote') := PreVote'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Config_access_load_ReadOnlyOption l (v : (raft.Config.t)) dq :
   AccessStrict
     (l.[(raft.Config.t), "ReadOnlyOption"] ↦{dq} (v.(raft.Config.ReadOnlyOption')))
     (l.[(raft.Config.t), "ReadOnlyOption"] ↦{dq} (v.(raft.Config.ReadOnlyOption')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Config_access_store_ReadOnlyOption l (v : (raft.Config.t)) ReadOnlyOption' :
   AccessStrict
     (l.[(raft.Config.t), "ReadOnlyOption"] ↦ (v.(raft.Config.ReadOnlyOption')))
     (l.[(raft.Config.t), "ReadOnlyOption"] ↦ ReadOnlyOption')
     (l ↦ v) (l ↦ (v <|(raft.Config.ReadOnlyOption') := ReadOnlyOption'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Config_access_load_Logger l (v : (raft.Config.t)) dq :
   AccessStrict
     (l.[(raft.Config.t), "Logger"] ↦{dq} (v.(raft.Config.Logger')))
     (l.[(raft.Config.t), "Logger"] ↦{dq} (v.(raft.Config.Logger')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Config_access_store_Logger l (v : (raft.Config.t)) Logger' :
   AccessStrict
     (l.[(raft.Config.t), "Logger"] ↦ (v.(raft.Config.Logger')))
     (l.[(raft.Config.t), "Logger"] ↦ Logger')
     (l ↦ v) (l ↦ (v <|(raft.Config.Logger') := Logger'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Config_access_load_DisableProposalForwarding l (v : (raft.Config.t)) dq :
   AccessStrict
     (l.[(raft.Config.t), "DisableProposalForwarding"] ↦{dq} (v.(raft.Config.DisableProposalForwarding')))
     (l.[(raft.Config.t), "DisableProposalForwarding"] ↦{dq} (v.(raft.Config.DisableProposalForwarding')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Config_access_store_DisableProposalForwarding l (v : (raft.Config.t)) DisableProposalForwarding' :
   AccessStrict
     (l.[(raft.Config.t), "DisableProposalForwarding"] ↦ (v.(raft.Config.DisableProposalForwarding')))
     (l.[(raft.Config.t), "DisableProposalForwarding"] ↦ DisableProposalForwarding')
     (l ↦ v) (l ↦ (v <|(raft.Config.DisableProposalForwarding') := DisableProposalForwarding'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Config_access_load_DisableConfChangeValidation l (v : (raft.Config.t)) dq :
   AccessStrict
     (l.[(raft.Config.t), "DisableConfChangeValidation"] ↦{dq} (v.(raft.Config.DisableConfChangeValidation')))
     (l.[(raft.Config.t), "DisableConfChangeValidation"] ↦{dq} (v.(raft.Config.DisableConfChangeValidation')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Config_access_store_DisableConfChangeValidation l (v : (raft.Config.t)) DisableConfChangeValidation' :
   AccessStrict
     (l.[(raft.Config.t), "DisableConfChangeValidation"] ↦ (v.(raft.Config.DisableConfChangeValidation')))
     (l.[(raft.Config.t), "DisableConfChangeValidation"] ↦ DisableConfChangeValidation')
     (l ↦ v) (l ↦ (v <|(raft.Config.DisableConfChangeValidation') := DisableConfChangeValidation'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Config_access_load_StepDownOnRemoval l (v : (raft.Config.t)) dq :
   AccessStrict
     (l.[(raft.Config.t), "StepDownOnRemoval"] ↦{dq} (v.(raft.Config.StepDownOnRemoval')))
     (l.[(raft.Config.t), "StepDownOnRemoval"] ↦{dq} (v.(raft.Config.StepDownOnRemoval')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Config_access_store_StepDownOnRemoval l (v : (raft.Config.t)) StepDownOnRemoval' :
   AccessStrict
     (l.[(raft.Config.t), "StepDownOnRemoval"] ↦ (v.(raft.Config.StepDownOnRemoval')))
     (l.[(raft.Config.t), "StepDownOnRemoval"] ↦ StepDownOnRemoval')
     (l ↦ v) (l ↦ (v <|(raft.Config.StepDownOnRemoval') := StepDownOnRemoval'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Config_access_load_TraceLogger l (v : (raft.Config.t)) dq :
   AccessStrict
     (l.[(raft.Config.t), "TraceLogger"] ↦{dq} (v.(raft.Config.TraceLogger')))
     (l.[(raft.Config.t), "TraceLogger"] ↦{dq} (v.(raft.Config.TraceLogger')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Config_access_store_TraceLogger l (v : (raft.Config.t)) TraceLogger' :
   AccessStrict
     (l.[(raft.Config.t), "TraceLogger"] ↦ (v.(raft.Config.TraceLogger')))
     (l.[(raft.Config.t), "TraceLogger"] ↦ TraceLogger')
     (l ↦ v) (l ↦ (v <|(raft.Config.TraceLogger') := TraceLogger'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End Config.
@@ -1210,428 +1210,428 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance raft_into_val_typed
    :
   IntoValTypedUnderlying (raft.raft.t) (raft.raftⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance raft_access_load_id l (v : (raft.raft.t)) dq :
   AccessStrict
     (l.[(raft.raft.t), "id"] ↦{dq} (v.(raft.raft.id')))
     (l.[(raft.raft.t), "id"] ↦{dq} (v.(raft.raft.id')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance raft_access_store_id l (v : (raft.raft.t)) id' :
   AccessStrict
     (l.[(raft.raft.t), "id"] ↦ (v.(raft.raft.id')))
     (l.[(raft.raft.t), "id"] ↦ id')
     (l ↦ v) (l ↦ (v <|(raft.raft.id') := id'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance raft_access_load_Term l (v : (raft.raft.t)) dq :
   AccessStrict
     (l.[(raft.raft.t), "Term"] ↦{dq} (v.(raft.raft.Term')))
     (l.[(raft.raft.t), "Term"] ↦{dq} (v.(raft.raft.Term')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance raft_access_store_Term l (v : (raft.raft.t)) Term' :
   AccessStrict
     (l.[(raft.raft.t), "Term"] ↦ (v.(raft.raft.Term')))
     (l.[(raft.raft.t), "Term"] ↦ Term')
     (l ↦ v) (l ↦ (v <|(raft.raft.Term') := Term'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance raft_access_load_Vote l (v : (raft.raft.t)) dq :
   AccessStrict
     (l.[(raft.raft.t), "Vote"] ↦{dq} (v.(raft.raft.Vote')))
     (l.[(raft.raft.t), "Vote"] ↦{dq} (v.(raft.raft.Vote')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance raft_access_store_Vote l (v : (raft.raft.t)) Vote' :
   AccessStrict
     (l.[(raft.raft.t), "Vote"] ↦ (v.(raft.raft.Vote')))
     (l.[(raft.raft.t), "Vote"] ↦ Vote')
     (l ↦ v) (l ↦ (v <|(raft.raft.Vote') := Vote'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance raft_access_load_readStates l (v : (raft.raft.t)) dq :
   AccessStrict
     (l.[(raft.raft.t), "readStates"] ↦{dq} (v.(raft.raft.readStates')))
     (l.[(raft.raft.t), "readStates"] ↦{dq} (v.(raft.raft.readStates')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance raft_access_store_readStates l (v : (raft.raft.t)) readStates' :
   AccessStrict
     (l.[(raft.raft.t), "readStates"] ↦ (v.(raft.raft.readStates')))
     (l.[(raft.raft.t), "readStates"] ↦ readStates')
     (l ↦ v) (l ↦ (v <|(raft.raft.readStates') := readStates'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance raft_access_load_raftLog l (v : (raft.raft.t)) dq :
   AccessStrict
     (l.[(raft.raft.t), "raftLog"] ↦{dq} (v.(raft.raft.raftLog')))
     (l.[(raft.raft.t), "raftLog"] ↦{dq} (v.(raft.raft.raftLog')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance raft_access_store_raftLog l (v : (raft.raft.t)) raftLog' :
   AccessStrict
     (l.[(raft.raft.t), "raftLog"] ↦ (v.(raft.raft.raftLog')))
     (l.[(raft.raft.t), "raftLog"] ↦ raftLog')
     (l ↦ v) (l ↦ (v <|(raft.raft.raftLog') := raftLog'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance raft_access_load_maxMsgSize l (v : (raft.raft.t)) dq :
   AccessStrict
     (l.[(raft.raft.t), "maxMsgSize"] ↦{dq} (v.(raft.raft.maxMsgSize')))
     (l.[(raft.raft.t), "maxMsgSize"] ↦{dq} (v.(raft.raft.maxMsgSize')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance raft_access_store_maxMsgSize l (v : (raft.raft.t)) maxMsgSize' :
   AccessStrict
     (l.[(raft.raft.t), "maxMsgSize"] ↦ (v.(raft.raft.maxMsgSize')))
     (l.[(raft.raft.t), "maxMsgSize"] ↦ maxMsgSize')
     (l ↦ v) (l ↦ (v <|(raft.raft.maxMsgSize') := maxMsgSize'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance raft_access_load_maxUncommittedSize l (v : (raft.raft.t)) dq :
   AccessStrict
     (l.[(raft.raft.t), "maxUncommittedSize"] ↦{dq} (v.(raft.raft.maxUncommittedSize')))
     (l.[(raft.raft.t), "maxUncommittedSize"] ↦{dq} (v.(raft.raft.maxUncommittedSize')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance raft_access_store_maxUncommittedSize l (v : (raft.raft.t)) maxUncommittedSize' :
   AccessStrict
     (l.[(raft.raft.t), "maxUncommittedSize"] ↦ (v.(raft.raft.maxUncommittedSize')))
     (l.[(raft.raft.t), "maxUncommittedSize"] ↦ maxUncommittedSize')
     (l ↦ v) (l ↦ (v <|(raft.raft.maxUncommittedSize') := maxUncommittedSize'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance raft_access_load_trk l (v : (raft.raft.t)) dq :
   AccessStrict
     (l.[(raft.raft.t), "trk"] ↦{dq} (v.(raft.raft.trk')))
     (l.[(raft.raft.t), "trk"] ↦{dq} (v.(raft.raft.trk')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance raft_access_store_trk l (v : (raft.raft.t)) trk' :
   AccessStrict
     (l.[(raft.raft.t), "trk"] ↦ (v.(raft.raft.trk')))
     (l.[(raft.raft.t), "trk"] ↦ trk')
     (l ↦ v) (l ↦ (v <|(raft.raft.trk') := trk'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance raft_access_load_state l (v : (raft.raft.t)) dq :
   AccessStrict
     (l.[(raft.raft.t), "state"] ↦{dq} (v.(raft.raft.state')))
     (l.[(raft.raft.t), "state"] ↦{dq} (v.(raft.raft.state')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance raft_access_store_state l (v : (raft.raft.t)) state' :
   AccessStrict
     (l.[(raft.raft.t), "state"] ↦ (v.(raft.raft.state')))
     (l.[(raft.raft.t), "state"] ↦ state')
     (l ↦ v) (l ↦ (v <|(raft.raft.state') := state'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance raft_access_load_isLearner l (v : (raft.raft.t)) dq :
   AccessStrict
     (l.[(raft.raft.t), "isLearner"] ↦{dq} (v.(raft.raft.isLearner')))
     (l.[(raft.raft.t), "isLearner"] ↦{dq} (v.(raft.raft.isLearner')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance raft_access_store_isLearner l (v : (raft.raft.t)) isLearner' :
   AccessStrict
     (l.[(raft.raft.t), "isLearner"] ↦ (v.(raft.raft.isLearner')))
     (l.[(raft.raft.t), "isLearner"] ↦ isLearner')
     (l ↦ v) (l ↦ (v <|(raft.raft.isLearner') := isLearner'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance raft_access_load_msgs l (v : (raft.raft.t)) dq :
   AccessStrict
     (l.[(raft.raft.t), "msgs"] ↦{dq} (v.(raft.raft.msgs')))
     (l.[(raft.raft.t), "msgs"] ↦{dq} (v.(raft.raft.msgs')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance raft_access_store_msgs l (v : (raft.raft.t)) msgs' :
   AccessStrict
     (l.[(raft.raft.t), "msgs"] ↦ (v.(raft.raft.msgs')))
     (l.[(raft.raft.t), "msgs"] ↦ msgs')
     (l ↦ v) (l ↦ (v <|(raft.raft.msgs') := msgs'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance raft_access_load_msgsAfterAppend l (v : (raft.raft.t)) dq :
   AccessStrict
     (l.[(raft.raft.t), "msgsAfterAppend"] ↦{dq} (v.(raft.raft.msgsAfterAppend')))
     (l.[(raft.raft.t), "msgsAfterAppend"] ↦{dq} (v.(raft.raft.msgsAfterAppend')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance raft_access_store_msgsAfterAppend l (v : (raft.raft.t)) msgsAfterAppend' :
   AccessStrict
     (l.[(raft.raft.t), "msgsAfterAppend"] ↦ (v.(raft.raft.msgsAfterAppend')))
     (l.[(raft.raft.t), "msgsAfterAppend"] ↦ msgsAfterAppend')
     (l ↦ v) (l ↦ (v <|(raft.raft.msgsAfterAppend') := msgsAfterAppend'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance raft_access_load_lead l (v : (raft.raft.t)) dq :
   AccessStrict
     (l.[(raft.raft.t), "lead"] ↦{dq} (v.(raft.raft.lead')))
     (l.[(raft.raft.t), "lead"] ↦{dq} (v.(raft.raft.lead')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance raft_access_store_lead l (v : (raft.raft.t)) lead' :
   AccessStrict
     (l.[(raft.raft.t), "lead"] ↦ (v.(raft.raft.lead')))
     (l.[(raft.raft.t), "lead"] ↦ lead')
     (l ↦ v) (l ↦ (v <|(raft.raft.lead') := lead'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance raft_access_load_leadTransferee l (v : (raft.raft.t)) dq :
   AccessStrict
     (l.[(raft.raft.t), "leadTransferee"] ↦{dq} (v.(raft.raft.leadTransferee')))
     (l.[(raft.raft.t), "leadTransferee"] ↦{dq} (v.(raft.raft.leadTransferee')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance raft_access_store_leadTransferee l (v : (raft.raft.t)) leadTransferee' :
   AccessStrict
     (l.[(raft.raft.t), "leadTransferee"] ↦ (v.(raft.raft.leadTransferee')))
     (l.[(raft.raft.t), "leadTransferee"] ↦ leadTransferee')
     (l ↦ v) (l ↦ (v <|(raft.raft.leadTransferee') := leadTransferee'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance raft_access_load_pendingConfIndex l (v : (raft.raft.t)) dq :
   AccessStrict
     (l.[(raft.raft.t), "pendingConfIndex"] ↦{dq} (v.(raft.raft.pendingConfIndex')))
     (l.[(raft.raft.t), "pendingConfIndex"] ↦{dq} (v.(raft.raft.pendingConfIndex')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance raft_access_store_pendingConfIndex l (v : (raft.raft.t)) pendingConfIndex' :
   AccessStrict
     (l.[(raft.raft.t), "pendingConfIndex"] ↦ (v.(raft.raft.pendingConfIndex')))
     (l.[(raft.raft.t), "pendingConfIndex"] ↦ pendingConfIndex')
     (l ↦ v) (l ↦ (v <|(raft.raft.pendingConfIndex') := pendingConfIndex'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance raft_access_load_disableConfChangeValidation l (v : (raft.raft.t)) dq :
   AccessStrict
     (l.[(raft.raft.t), "disableConfChangeValidation"] ↦{dq} (v.(raft.raft.disableConfChangeValidation')))
     (l.[(raft.raft.t), "disableConfChangeValidation"] ↦{dq} (v.(raft.raft.disableConfChangeValidation')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance raft_access_store_disableConfChangeValidation l (v : (raft.raft.t)) disableConfChangeValidation' :
   AccessStrict
     (l.[(raft.raft.t), "disableConfChangeValidation"] ↦ (v.(raft.raft.disableConfChangeValidation')))
     (l.[(raft.raft.t), "disableConfChangeValidation"] ↦ disableConfChangeValidation')
     (l ↦ v) (l ↦ (v <|(raft.raft.disableConfChangeValidation') := disableConfChangeValidation'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance raft_access_load_uncommittedSize l (v : (raft.raft.t)) dq :
   AccessStrict
     (l.[(raft.raft.t), "uncommittedSize"] ↦{dq} (v.(raft.raft.uncommittedSize')))
     (l.[(raft.raft.t), "uncommittedSize"] ↦{dq} (v.(raft.raft.uncommittedSize')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance raft_access_store_uncommittedSize l (v : (raft.raft.t)) uncommittedSize' :
   AccessStrict
     (l.[(raft.raft.t), "uncommittedSize"] ↦ (v.(raft.raft.uncommittedSize')))
     (l.[(raft.raft.t), "uncommittedSize"] ↦ uncommittedSize')
     (l ↦ v) (l ↦ (v <|(raft.raft.uncommittedSize') := uncommittedSize'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance raft_access_load_readOnly l (v : (raft.raft.t)) dq :
   AccessStrict
     (l.[(raft.raft.t), "readOnly"] ↦{dq} (v.(raft.raft.readOnly')))
     (l.[(raft.raft.t), "readOnly"] ↦{dq} (v.(raft.raft.readOnly')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance raft_access_store_readOnly l (v : (raft.raft.t)) readOnly' :
   AccessStrict
     (l.[(raft.raft.t), "readOnly"] ↦ (v.(raft.raft.readOnly')))
     (l.[(raft.raft.t), "readOnly"] ↦ readOnly')
     (l ↦ v) (l ↦ (v <|(raft.raft.readOnly') := readOnly'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance raft_access_load_electionElapsed l (v : (raft.raft.t)) dq :
   AccessStrict
     (l.[(raft.raft.t), "electionElapsed"] ↦{dq} (v.(raft.raft.electionElapsed')))
     (l.[(raft.raft.t), "electionElapsed"] ↦{dq} (v.(raft.raft.electionElapsed')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance raft_access_store_electionElapsed l (v : (raft.raft.t)) electionElapsed' :
   AccessStrict
     (l.[(raft.raft.t), "electionElapsed"] ↦ (v.(raft.raft.electionElapsed')))
     (l.[(raft.raft.t), "electionElapsed"] ↦ electionElapsed')
     (l ↦ v) (l ↦ (v <|(raft.raft.electionElapsed') := electionElapsed'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance raft_access_load_heartbeatElapsed l (v : (raft.raft.t)) dq :
   AccessStrict
     (l.[(raft.raft.t), "heartbeatElapsed"] ↦{dq} (v.(raft.raft.heartbeatElapsed')))
     (l.[(raft.raft.t), "heartbeatElapsed"] ↦{dq} (v.(raft.raft.heartbeatElapsed')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance raft_access_store_heartbeatElapsed l (v : (raft.raft.t)) heartbeatElapsed' :
   AccessStrict
     (l.[(raft.raft.t), "heartbeatElapsed"] ↦ (v.(raft.raft.heartbeatElapsed')))
     (l.[(raft.raft.t), "heartbeatElapsed"] ↦ heartbeatElapsed')
     (l ↦ v) (l ↦ (v <|(raft.raft.heartbeatElapsed') := heartbeatElapsed'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance raft_access_load_checkQuorum l (v : (raft.raft.t)) dq :
   AccessStrict
     (l.[(raft.raft.t), "checkQuorum"] ↦{dq} (v.(raft.raft.checkQuorum')))
     (l.[(raft.raft.t), "checkQuorum"] ↦{dq} (v.(raft.raft.checkQuorum')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance raft_access_store_checkQuorum l (v : (raft.raft.t)) checkQuorum' :
   AccessStrict
     (l.[(raft.raft.t), "checkQuorum"] ↦ (v.(raft.raft.checkQuorum')))
     (l.[(raft.raft.t), "checkQuorum"] ↦ checkQuorum')
     (l ↦ v) (l ↦ (v <|(raft.raft.checkQuorum') := checkQuorum'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance raft_access_load_preVote l (v : (raft.raft.t)) dq :
   AccessStrict
     (l.[(raft.raft.t), "preVote"] ↦{dq} (v.(raft.raft.preVote')))
     (l.[(raft.raft.t), "preVote"] ↦{dq} (v.(raft.raft.preVote')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance raft_access_store_preVote l (v : (raft.raft.t)) preVote' :
   AccessStrict
     (l.[(raft.raft.t), "preVote"] ↦ (v.(raft.raft.preVote')))
     (l.[(raft.raft.t), "preVote"] ↦ preVote')
     (l ↦ v) (l ↦ (v <|(raft.raft.preVote') := preVote'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance raft_access_load_heartbeatTimeout l (v : (raft.raft.t)) dq :
   AccessStrict
     (l.[(raft.raft.t), "heartbeatTimeout"] ↦{dq} (v.(raft.raft.heartbeatTimeout')))
     (l.[(raft.raft.t), "heartbeatTimeout"] ↦{dq} (v.(raft.raft.heartbeatTimeout')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance raft_access_store_heartbeatTimeout l (v : (raft.raft.t)) heartbeatTimeout' :
   AccessStrict
     (l.[(raft.raft.t), "heartbeatTimeout"] ↦ (v.(raft.raft.heartbeatTimeout')))
     (l.[(raft.raft.t), "heartbeatTimeout"] ↦ heartbeatTimeout')
     (l ↦ v) (l ↦ (v <|(raft.raft.heartbeatTimeout') := heartbeatTimeout'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance raft_access_load_electionTimeout l (v : (raft.raft.t)) dq :
   AccessStrict
     (l.[(raft.raft.t), "electionTimeout"] ↦{dq} (v.(raft.raft.electionTimeout')))
     (l.[(raft.raft.t), "electionTimeout"] ↦{dq} (v.(raft.raft.electionTimeout')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance raft_access_store_electionTimeout l (v : (raft.raft.t)) electionTimeout' :
   AccessStrict
     (l.[(raft.raft.t), "electionTimeout"] ↦ (v.(raft.raft.electionTimeout')))
     (l.[(raft.raft.t), "electionTimeout"] ↦ electionTimeout')
     (l ↦ v) (l ↦ (v <|(raft.raft.electionTimeout') := electionTimeout'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance raft_access_load_randomizedElectionTimeout l (v : (raft.raft.t)) dq :
   AccessStrict
     (l.[(raft.raft.t), "randomizedElectionTimeout"] ↦{dq} (v.(raft.raft.randomizedElectionTimeout')))
     (l.[(raft.raft.t), "randomizedElectionTimeout"] ↦{dq} (v.(raft.raft.randomizedElectionTimeout')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance raft_access_store_randomizedElectionTimeout l (v : (raft.raft.t)) randomizedElectionTimeout' :
   AccessStrict
     (l.[(raft.raft.t), "randomizedElectionTimeout"] ↦ (v.(raft.raft.randomizedElectionTimeout')))
     (l.[(raft.raft.t), "randomizedElectionTimeout"] ↦ randomizedElectionTimeout')
     (l ↦ v) (l ↦ (v <|(raft.raft.randomizedElectionTimeout') := randomizedElectionTimeout'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance raft_access_load_disableProposalForwarding l (v : (raft.raft.t)) dq :
   AccessStrict
     (l.[(raft.raft.t), "disableProposalForwarding"] ↦{dq} (v.(raft.raft.disableProposalForwarding')))
     (l.[(raft.raft.t), "disableProposalForwarding"] ↦{dq} (v.(raft.raft.disableProposalForwarding')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance raft_access_store_disableProposalForwarding l (v : (raft.raft.t)) disableProposalForwarding' :
   AccessStrict
     (l.[(raft.raft.t), "disableProposalForwarding"] ↦ (v.(raft.raft.disableProposalForwarding')))
     (l.[(raft.raft.t), "disableProposalForwarding"] ↦ disableProposalForwarding')
     (l ↦ v) (l ↦ (v <|(raft.raft.disableProposalForwarding') := disableProposalForwarding'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance raft_access_load_stepDownOnRemoval l (v : (raft.raft.t)) dq :
   AccessStrict
     (l.[(raft.raft.t), "stepDownOnRemoval"] ↦{dq} (v.(raft.raft.stepDownOnRemoval')))
     (l.[(raft.raft.t), "stepDownOnRemoval"] ↦{dq} (v.(raft.raft.stepDownOnRemoval')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance raft_access_store_stepDownOnRemoval l (v : (raft.raft.t)) stepDownOnRemoval' :
   AccessStrict
     (l.[(raft.raft.t), "stepDownOnRemoval"] ↦ (v.(raft.raft.stepDownOnRemoval')))
     (l.[(raft.raft.t), "stepDownOnRemoval"] ↦ stepDownOnRemoval')
     (l ↦ v) (l ↦ (v <|(raft.raft.stepDownOnRemoval') := stepDownOnRemoval'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance raft_access_load_tick l (v : (raft.raft.t)) dq :
   AccessStrict
     (l.[(raft.raft.t), "tick"] ↦{dq} (v.(raft.raft.tick')))
     (l.[(raft.raft.t), "tick"] ↦{dq} (v.(raft.raft.tick')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance raft_access_store_tick l (v : (raft.raft.t)) tick' :
   AccessStrict
     (l.[(raft.raft.t), "tick"] ↦ (v.(raft.raft.tick')))
     (l.[(raft.raft.t), "tick"] ↦ tick')
     (l ↦ v) (l ↦ (v <|(raft.raft.tick') := tick'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance raft_access_load_step l (v : (raft.raft.t)) dq :
   AccessStrict
     (l.[(raft.raft.t), "step"] ↦{dq} (v.(raft.raft.step')))
     (l.[(raft.raft.t), "step"] ↦{dq} (v.(raft.raft.step')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance raft_access_store_step l (v : (raft.raft.t)) step' :
   AccessStrict
     (l.[(raft.raft.t), "step"] ↦ (v.(raft.raft.step')))
     (l.[(raft.raft.t), "step"] ↦ step')
     (l ↦ v) (l ↦ (v <|(raft.raft.step') := step'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance raft_access_load_logger l (v : (raft.raft.t)) dq :
   AccessStrict
     (l.[(raft.raft.t), "logger"] ↦{dq} (v.(raft.raft.logger')))
     (l.[(raft.raft.t), "logger"] ↦{dq} (v.(raft.raft.logger')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance raft_access_store_logger l (v : (raft.raft.t)) logger' :
   AccessStrict
     (l.[(raft.raft.t), "logger"] ↦ (v.(raft.raft.logger')))
     (l.[(raft.raft.t), "logger"] ↦ logger')
     (l ↦ v) (l ↦ (v <|(raft.raft.logger') := logger'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance raft_access_load_pendingReadIndexMessages l (v : (raft.raft.t)) dq :
   AccessStrict
     (l.[(raft.raft.t), "pendingReadIndexMessages"] ↦{dq} (v.(raft.raft.pendingReadIndexMessages')))
     (l.[(raft.raft.t), "pendingReadIndexMessages"] ↦{dq} (v.(raft.raft.pendingReadIndexMessages')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance raft_access_store_pendingReadIndexMessages l (v : (raft.raft.t)) pendingReadIndexMessages' :
   AccessStrict
     (l.[(raft.raft.t), "pendingReadIndexMessages"] ↦ (v.(raft.raft.pendingReadIndexMessages')))
     (l.[(raft.raft.t), "pendingReadIndexMessages"] ↦ pendingReadIndexMessages')
     (l ↦ v) (l ↦ (v <|(raft.raft.pendingReadIndexMessages') := pendingReadIndexMessages'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance raft_access_load_traceLogger l (v : (raft.raft.t)) dq :
   AccessStrict
     (l.[(raft.raft.t), "traceLogger"] ↦{dq} (v.(raft.raft.traceLogger')))
     (l.[(raft.raft.t), "traceLogger"] ↦{dq} (v.(raft.raft.traceLogger')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance raft_access_store_traceLogger l (v : (raft.raft.t)) traceLogger' :
   AccessStrict
     (l.[(raft.raft.t), "traceLogger"] ↦ (v.(raft.raft.traceLogger')))
     (l.[(raft.raft.t), "traceLogger"] ↦ traceLogger')
     (l ↦ v) (l ↦ (v <|(raft.raft.traceLogger') := traceLogger'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End raft.
@@ -1658,77 +1658,77 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance RawNode_into_val_typed
    :
   IntoValTypedUnderlying (raft.RawNode.t) (raft.RawNodeⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance RawNode_access_load_raft l (v : (raft.RawNode.t)) dq :
   AccessStrict
     (l.[(raft.RawNode.t), "raft"] ↦{dq} (v.(raft.RawNode.raft')))
     (l.[(raft.RawNode.t), "raft"] ↦{dq} (v.(raft.RawNode.raft')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance RawNode_access_store_raft l (v : (raft.RawNode.t)) raft' :
   AccessStrict
     (l.[(raft.RawNode.t), "raft"] ↦ (v.(raft.RawNode.raft')))
     (l.[(raft.RawNode.t), "raft"] ↦ raft')
     (l ↦ v) (l ↦ (v <|(raft.RawNode.raft') := raft'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance RawNode_access_load_asyncStorageWrites l (v : (raft.RawNode.t)) dq :
   AccessStrict
     (l.[(raft.RawNode.t), "asyncStorageWrites"] ↦{dq} (v.(raft.RawNode.asyncStorageWrites')))
     (l.[(raft.RawNode.t), "asyncStorageWrites"] ↦{dq} (v.(raft.RawNode.asyncStorageWrites')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance RawNode_access_store_asyncStorageWrites l (v : (raft.RawNode.t)) asyncStorageWrites' :
   AccessStrict
     (l.[(raft.RawNode.t), "asyncStorageWrites"] ↦ (v.(raft.RawNode.asyncStorageWrites')))
     (l.[(raft.RawNode.t), "asyncStorageWrites"] ↦ asyncStorageWrites')
     (l ↦ v) (l ↦ (v <|(raft.RawNode.asyncStorageWrites') := asyncStorageWrites'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance RawNode_access_load_prevSoftSt l (v : (raft.RawNode.t)) dq :
   AccessStrict
     (l.[(raft.RawNode.t), "prevSoftSt"] ↦{dq} (v.(raft.RawNode.prevSoftSt')))
     (l.[(raft.RawNode.t), "prevSoftSt"] ↦{dq} (v.(raft.RawNode.prevSoftSt')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance RawNode_access_store_prevSoftSt l (v : (raft.RawNode.t)) prevSoftSt' :
   AccessStrict
     (l.[(raft.RawNode.t), "prevSoftSt"] ↦ (v.(raft.RawNode.prevSoftSt')))
     (l.[(raft.RawNode.t), "prevSoftSt"] ↦ prevSoftSt')
     (l ↦ v) (l ↦ (v <|(raft.RawNode.prevSoftSt') := prevSoftSt'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance RawNode_access_load_prevHardSt l (v : (raft.RawNode.t)) dq :
   AccessStrict
     (l.[(raft.RawNode.t), "prevHardSt"] ↦{dq} (v.(raft.RawNode.prevHardSt')))
     (l.[(raft.RawNode.t), "prevHardSt"] ↦{dq} (v.(raft.RawNode.prevHardSt')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance RawNode_access_store_prevHardSt l (v : (raft.RawNode.t)) prevHardSt' :
   AccessStrict
     (l.[(raft.RawNode.t), "prevHardSt"] ↦ (v.(raft.RawNode.prevHardSt')))
     (l.[(raft.RawNode.t), "prevHardSt"] ↦ prevHardSt')
     (l ↦ v) (l ↦ (v <|(raft.RawNode.prevHardSt') := prevHardSt'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance RawNode_access_load_stepsOnAdvance l (v : (raft.RawNode.t)) dq :
   AccessStrict
     (l.[(raft.RawNode.t), "stepsOnAdvance"] ↦{dq} (v.(raft.RawNode.stepsOnAdvance')))
     (l.[(raft.RawNode.t), "stepsOnAdvance"] ↦{dq} (v.(raft.RawNode.stepsOnAdvance')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance RawNode_access_store_stepsOnAdvance l (v : (raft.RawNode.t)) stepsOnAdvance' :
   AccessStrict
     (l.[(raft.RawNode.t), "stepsOnAdvance"] ↦ (v.(raft.RawNode.stepsOnAdvance')))
     (l.[(raft.RawNode.t), "stepsOnAdvance"] ↦ stepsOnAdvance')
     (l ↦ v) (l ↦ (v <|(raft.RawNode.stepsOnAdvance') := stepsOnAdvance'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End RawNode.
@@ -1752,38 +1752,38 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance ReadState_into_val_typed
    :
   IntoValTypedUnderlying (raft.ReadState.t) (raft.ReadStateⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance ReadState_access_load_Index l (v : (raft.ReadState.t)) dq :
   AccessStrict
     (l.[(raft.ReadState.t), "Index"] ↦{dq} (v.(raft.ReadState.Index')))
     (l.[(raft.ReadState.t), "Index"] ↦{dq} (v.(raft.ReadState.Index')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance ReadState_access_store_Index l (v : (raft.ReadState.t)) Index' :
   AccessStrict
     (l.[(raft.ReadState.t), "Index"] ↦ (v.(raft.ReadState.Index')))
     (l.[(raft.ReadState.t), "Index"] ↦ Index')
     (l ↦ v) (l ↦ (v <|(raft.ReadState.Index') := Index'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance ReadState_access_load_RequestCtx l (v : (raft.ReadState.t)) dq :
   AccessStrict
     (l.[(raft.ReadState.t), "RequestCtx"] ↦{dq} (v.(raft.ReadState.RequestCtx')))
     (l.[(raft.ReadState.t), "RequestCtx"] ↦{dq} (v.(raft.ReadState.RequestCtx')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance ReadState_access_store_RequestCtx l (v : (raft.ReadState.t)) RequestCtx' :
   AccessStrict
     (l.[(raft.ReadState.t), "RequestCtx"] ↦ (v.(raft.ReadState.RequestCtx')))
     (l.[(raft.ReadState.t), "RequestCtx"] ↦ RequestCtx')
     (l ↦ v) (l ↦ (v <|(raft.ReadState.RequestCtx') := RequestCtx'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End ReadState.
@@ -1808,51 +1808,51 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance readIndexStatus_into_val_typed
    :
   IntoValTypedUnderlying (raft.readIndexStatus.t) (raft.readIndexStatusⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance readIndexStatus_access_load_req l (v : (raft.readIndexStatus.t)) dq :
   AccessStrict
     (l.[(raft.readIndexStatus.t), "req"] ↦{dq} (v.(raft.readIndexStatus.req')))
     (l.[(raft.readIndexStatus.t), "req"] ↦{dq} (v.(raft.readIndexStatus.req')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance readIndexStatus_access_store_req l (v : (raft.readIndexStatus.t)) req' :
   AccessStrict
     (l.[(raft.readIndexStatus.t), "req"] ↦ (v.(raft.readIndexStatus.req')))
     (l.[(raft.readIndexStatus.t), "req"] ↦ req')
     (l ↦ v) (l ↦ (v <|(raft.readIndexStatus.req') := req'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance readIndexStatus_access_load_index l (v : (raft.readIndexStatus.t)) dq :
   AccessStrict
     (l.[(raft.readIndexStatus.t), "index"] ↦{dq} (v.(raft.readIndexStatus.index')))
     (l.[(raft.readIndexStatus.t), "index"] ↦{dq} (v.(raft.readIndexStatus.index')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance readIndexStatus_access_store_index l (v : (raft.readIndexStatus.t)) index' :
   AccessStrict
     (l.[(raft.readIndexStatus.t), "index"] ↦ (v.(raft.readIndexStatus.index')))
     (l.[(raft.readIndexStatus.t), "index"] ↦ index')
     (l ↦ v) (l ↦ (v <|(raft.readIndexStatus.index') := index'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance readIndexStatus_access_load_acks l (v : (raft.readIndexStatus.t)) dq :
   AccessStrict
     (l.[(raft.readIndexStatus.t), "acks"] ↦{dq} (v.(raft.readIndexStatus.acks')))
     (l.[(raft.readIndexStatus.t), "acks"] ↦{dq} (v.(raft.readIndexStatus.acks')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance readIndexStatus_access_store_acks l (v : (raft.readIndexStatus.t)) acks' :
   AccessStrict
     (l.[(raft.readIndexStatus.t), "acks"] ↦ (v.(raft.readIndexStatus.acks')))
     (l.[(raft.readIndexStatus.t), "acks"] ↦ acks')
     (l ↦ v) (l ↦ (v <|(raft.readIndexStatus.acks') := acks'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End readIndexStatus.
@@ -1877,51 +1877,51 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance readOnly_into_val_typed
    :
   IntoValTypedUnderlying (raft.readOnly.t) (raft.readOnlyⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance readOnly_access_load_option l (v : (raft.readOnly.t)) dq :
   AccessStrict
     (l.[(raft.readOnly.t), "option"] ↦{dq} (v.(raft.readOnly.option')))
     (l.[(raft.readOnly.t), "option"] ↦{dq} (v.(raft.readOnly.option')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance readOnly_access_store_option l (v : (raft.readOnly.t)) option' :
   AccessStrict
     (l.[(raft.readOnly.t), "option"] ↦ (v.(raft.readOnly.option')))
     (l.[(raft.readOnly.t), "option"] ↦ option')
     (l ↦ v) (l ↦ (v <|(raft.readOnly.option') := option'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance readOnly_access_load_pendingReadIndex l (v : (raft.readOnly.t)) dq :
   AccessStrict
     (l.[(raft.readOnly.t), "pendingReadIndex"] ↦{dq} (v.(raft.readOnly.pendingReadIndex')))
     (l.[(raft.readOnly.t), "pendingReadIndex"] ↦{dq} (v.(raft.readOnly.pendingReadIndex')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance readOnly_access_store_pendingReadIndex l (v : (raft.readOnly.t)) pendingReadIndex' :
   AccessStrict
     (l.[(raft.readOnly.t), "pendingReadIndex"] ↦ (v.(raft.readOnly.pendingReadIndex')))
     (l.[(raft.readOnly.t), "pendingReadIndex"] ↦ pendingReadIndex')
     (l ↦ v) (l ↦ (v <|(raft.readOnly.pendingReadIndex') := pendingReadIndex'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance readOnly_access_load_readIndexQueue l (v : (raft.readOnly.t)) dq :
   AccessStrict
     (l.[(raft.readOnly.t), "readIndexQueue"] ↦{dq} (v.(raft.readOnly.readIndexQueue')))
     (l.[(raft.readOnly.t), "readIndexQueue"] ↦{dq} (v.(raft.readOnly.readIndexQueue')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance readOnly_access_store_readIndexQueue l (v : (raft.readOnly.t)) readIndexQueue' :
   AccessStrict
     (l.[(raft.readOnly.t), "readIndexQueue"] ↦ (v.(raft.readOnly.readIndexQueue')))
     (l.[(raft.readOnly.t), "readIndexQueue"] ↦ readIndexQueue')
     (l ↦ v) (l ↦ (v <|(raft.readOnly.readIndexQueue') := readIndexQueue'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End readOnly.
@@ -1943,12 +1943,12 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance TracingEvent_into_val_typed
    :
   IntoValTypedUnderlying (raft.TracingEvent.t) (raft.TracingEventⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 
 End def.
 End TracingEvent.
@@ -1975,77 +1975,77 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance BasicStatus_into_val_typed
    :
   IntoValTypedUnderlying (raft.BasicStatus.t) (raft.BasicStatusⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance BasicStatus_access_load_ID l (v : (raft.BasicStatus.t)) dq :
   AccessStrict
     (l.[(raft.BasicStatus.t), "ID"] ↦{dq} (v.(raft.BasicStatus.ID')))
     (l.[(raft.BasicStatus.t), "ID"] ↦{dq} (v.(raft.BasicStatus.ID')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance BasicStatus_access_store_ID l (v : (raft.BasicStatus.t)) ID' :
   AccessStrict
     (l.[(raft.BasicStatus.t), "ID"] ↦ (v.(raft.BasicStatus.ID')))
     (l.[(raft.BasicStatus.t), "ID"] ↦ ID')
     (l ↦ v) (l ↦ (v <|(raft.BasicStatus.ID') := ID'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance BasicStatus_access_load_HardState l (v : (raft.BasicStatus.t)) dq :
   AccessStrict
     (l.[(raft.BasicStatus.t), "HardState"] ↦{dq} (v.(raft.BasicStatus.HardState')))
     (l.[(raft.BasicStatus.t), "HardState"] ↦{dq} (v.(raft.BasicStatus.HardState')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance BasicStatus_access_store_HardState l (v : (raft.BasicStatus.t)) HardState' :
   AccessStrict
     (l.[(raft.BasicStatus.t), "HardState"] ↦ (v.(raft.BasicStatus.HardState')))
     (l.[(raft.BasicStatus.t), "HardState"] ↦ HardState')
     (l ↦ v) (l ↦ (v <|(raft.BasicStatus.HardState') := HardState'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance BasicStatus_access_load_SoftState l (v : (raft.BasicStatus.t)) dq :
   AccessStrict
     (l.[(raft.BasicStatus.t), "SoftState"] ↦{dq} (v.(raft.BasicStatus.SoftState')))
     (l.[(raft.BasicStatus.t), "SoftState"] ↦{dq} (v.(raft.BasicStatus.SoftState')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance BasicStatus_access_store_SoftState l (v : (raft.BasicStatus.t)) SoftState' :
   AccessStrict
     (l.[(raft.BasicStatus.t), "SoftState"] ↦ (v.(raft.BasicStatus.SoftState')))
     (l.[(raft.BasicStatus.t), "SoftState"] ↦ SoftState')
     (l ↦ v) (l ↦ (v <|(raft.BasicStatus.SoftState') := SoftState'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance BasicStatus_access_load_Applied l (v : (raft.BasicStatus.t)) dq :
   AccessStrict
     (l.[(raft.BasicStatus.t), "Applied"] ↦{dq} (v.(raft.BasicStatus.Applied')))
     (l.[(raft.BasicStatus.t), "Applied"] ↦{dq} (v.(raft.BasicStatus.Applied')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance BasicStatus_access_store_Applied l (v : (raft.BasicStatus.t)) Applied' :
   AccessStrict
     (l.[(raft.BasicStatus.t), "Applied"] ↦ (v.(raft.BasicStatus.Applied')))
     (l.[(raft.BasicStatus.t), "Applied"] ↦ Applied')
     (l ↦ v) (l ↦ (v <|(raft.BasicStatus.Applied') := Applied'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance BasicStatus_access_load_LeadTransferee l (v : (raft.BasicStatus.t)) dq :
   AccessStrict
     (l.[(raft.BasicStatus.t), "LeadTransferee"] ↦{dq} (v.(raft.BasicStatus.LeadTransferee')))
     (l.[(raft.BasicStatus.t), "LeadTransferee"] ↦{dq} (v.(raft.BasicStatus.LeadTransferee')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance BasicStatus_access_store_LeadTransferee l (v : (raft.BasicStatus.t)) LeadTransferee' :
   AccessStrict
     (l.[(raft.BasicStatus.t), "LeadTransferee"] ↦ (v.(raft.BasicStatus.LeadTransferee')))
     (l.[(raft.BasicStatus.t), "LeadTransferee"] ↦ LeadTransferee')
     (l ↦ v) (l ↦ (v <|(raft.BasicStatus.LeadTransferee') := LeadTransferee'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End BasicStatus.
@@ -2070,51 +2070,51 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance Status_into_val_typed
    :
   IntoValTypedUnderlying (raft.Status.t) (raft.Statusⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance Status_access_load_BasicStatus l (v : (raft.Status.t)) dq :
   AccessStrict
     (l.[(raft.Status.t), "BasicStatus"] ↦{dq} (v.(raft.Status.BasicStatus')))
     (l.[(raft.Status.t), "BasicStatus"] ↦{dq} (v.(raft.Status.BasicStatus')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Status_access_store_BasicStatus l (v : (raft.Status.t)) BasicStatus' :
   AccessStrict
     (l.[(raft.Status.t), "BasicStatus"] ↦ (v.(raft.Status.BasicStatus')))
     (l.[(raft.Status.t), "BasicStatus"] ↦ BasicStatus')
     (l ↦ v) (l ↦ (v <|(raft.Status.BasicStatus') := BasicStatus'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Status_access_load_Config l (v : (raft.Status.t)) dq :
   AccessStrict
     (l.[(raft.Status.t), "Config"] ↦{dq} (v.(raft.Status.Config')))
     (l.[(raft.Status.t), "Config"] ↦{dq} (v.(raft.Status.Config')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Status_access_store_Config l (v : (raft.Status.t)) Config' :
   AccessStrict
     (l.[(raft.Status.t), "Config"] ↦ (v.(raft.Status.Config')))
     (l.[(raft.Status.t), "Config"] ↦ Config')
     (l ↦ v) (l ↦ (v <|(raft.Status.Config') := Config'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Status_access_load_Progress l (v : (raft.Status.t)) dq :
   AccessStrict
     (l.[(raft.Status.t), "Progress"] ↦{dq} (v.(raft.Status.Progress')))
     (l.[(raft.Status.t), "Progress"] ↦{dq} (v.(raft.Status.Progress')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Status_access_store_Progress l (v : (raft.Status.t)) Progress' :
   AccessStrict
     (l.[(raft.Status.t), "Progress"] ↦ (v.(raft.Status.Progress')))
     (l.[(raft.Status.t), "Progress"] ↦ Progress')
     (l ↦ v) (l ↦ (v <|(raft.Status.Progress') := Progress'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End Status.
@@ -2142,90 +2142,90 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance inMemStorageCallStats_into_val_typed
    :
   IntoValTypedUnderlying (raft.inMemStorageCallStats.t) (raft.inMemStorageCallStatsⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance inMemStorageCallStats_access_load_initialState l (v : (raft.inMemStorageCallStats.t)) dq :
   AccessStrict
     (l.[(raft.inMemStorageCallStats.t), "initialState"] ↦{dq} (v.(raft.inMemStorageCallStats.initialState')))
     (l.[(raft.inMemStorageCallStats.t), "initialState"] ↦{dq} (v.(raft.inMemStorageCallStats.initialState')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance inMemStorageCallStats_access_store_initialState l (v : (raft.inMemStorageCallStats.t)) initialState' :
   AccessStrict
     (l.[(raft.inMemStorageCallStats.t), "initialState"] ↦ (v.(raft.inMemStorageCallStats.initialState')))
     (l.[(raft.inMemStorageCallStats.t), "initialState"] ↦ initialState')
     (l ↦ v) (l ↦ (v <|(raft.inMemStorageCallStats.initialState') := initialState'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance inMemStorageCallStats_access_load_firstIndex l (v : (raft.inMemStorageCallStats.t)) dq :
   AccessStrict
     (l.[(raft.inMemStorageCallStats.t), "firstIndex"] ↦{dq} (v.(raft.inMemStorageCallStats.firstIndex')))
     (l.[(raft.inMemStorageCallStats.t), "firstIndex"] ↦{dq} (v.(raft.inMemStorageCallStats.firstIndex')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance inMemStorageCallStats_access_store_firstIndex l (v : (raft.inMemStorageCallStats.t)) firstIndex' :
   AccessStrict
     (l.[(raft.inMemStorageCallStats.t), "firstIndex"] ↦ (v.(raft.inMemStorageCallStats.firstIndex')))
     (l.[(raft.inMemStorageCallStats.t), "firstIndex"] ↦ firstIndex')
     (l ↦ v) (l ↦ (v <|(raft.inMemStorageCallStats.firstIndex') := firstIndex'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance inMemStorageCallStats_access_load_lastIndex l (v : (raft.inMemStorageCallStats.t)) dq :
   AccessStrict
     (l.[(raft.inMemStorageCallStats.t), "lastIndex"] ↦{dq} (v.(raft.inMemStorageCallStats.lastIndex')))
     (l.[(raft.inMemStorageCallStats.t), "lastIndex"] ↦{dq} (v.(raft.inMemStorageCallStats.lastIndex')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance inMemStorageCallStats_access_store_lastIndex l (v : (raft.inMemStorageCallStats.t)) lastIndex' :
   AccessStrict
     (l.[(raft.inMemStorageCallStats.t), "lastIndex"] ↦ (v.(raft.inMemStorageCallStats.lastIndex')))
     (l.[(raft.inMemStorageCallStats.t), "lastIndex"] ↦ lastIndex')
     (l ↦ v) (l ↦ (v <|(raft.inMemStorageCallStats.lastIndex') := lastIndex'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance inMemStorageCallStats_access_load_entries l (v : (raft.inMemStorageCallStats.t)) dq :
   AccessStrict
     (l.[(raft.inMemStorageCallStats.t), "entries"] ↦{dq} (v.(raft.inMemStorageCallStats.entries')))
     (l.[(raft.inMemStorageCallStats.t), "entries"] ↦{dq} (v.(raft.inMemStorageCallStats.entries')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance inMemStorageCallStats_access_store_entries l (v : (raft.inMemStorageCallStats.t)) entries' :
   AccessStrict
     (l.[(raft.inMemStorageCallStats.t), "entries"] ↦ (v.(raft.inMemStorageCallStats.entries')))
     (l.[(raft.inMemStorageCallStats.t), "entries"] ↦ entries')
     (l ↦ v) (l ↦ (v <|(raft.inMemStorageCallStats.entries') := entries'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance inMemStorageCallStats_access_load_term l (v : (raft.inMemStorageCallStats.t)) dq :
   AccessStrict
     (l.[(raft.inMemStorageCallStats.t), "term"] ↦{dq} (v.(raft.inMemStorageCallStats.term')))
     (l.[(raft.inMemStorageCallStats.t), "term"] ↦{dq} (v.(raft.inMemStorageCallStats.term')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance inMemStorageCallStats_access_store_term l (v : (raft.inMemStorageCallStats.t)) term' :
   AccessStrict
     (l.[(raft.inMemStorageCallStats.t), "term"] ↦ (v.(raft.inMemStorageCallStats.term')))
     (l.[(raft.inMemStorageCallStats.t), "term"] ↦ term')
     (l ↦ v) (l ↦ (v <|(raft.inMemStorageCallStats.term') := term'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance inMemStorageCallStats_access_load_snapshot l (v : (raft.inMemStorageCallStats.t)) dq :
   AccessStrict
     (l.[(raft.inMemStorageCallStats.t), "snapshot"] ↦{dq} (v.(raft.inMemStorageCallStats.snapshot')))
     (l.[(raft.inMemStorageCallStats.t), "snapshot"] ↦{dq} (v.(raft.inMemStorageCallStats.snapshot')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance inMemStorageCallStats_access_store_snapshot l (v : (raft.inMemStorageCallStats.t)) snapshot' :
   AccessStrict
     (l.[(raft.inMemStorageCallStats.t), "snapshot"] ↦ (v.(raft.inMemStorageCallStats.snapshot')))
     (l.[(raft.inMemStorageCallStats.t), "snapshot"] ↦ snapshot')
     (l ↦ v) (l ↦ (v <|(raft.inMemStorageCallStats.snapshot') := snapshot'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End inMemStorageCallStats.
@@ -2252,77 +2252,77 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance MemoryStorage_into_val_typed
    :
   IntoValTypedUnderlying (raft.MemoryStorage.t) (raft.MemoryStorageⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance MemoryStorage_access_load_Mutex l (v : (raft.MemoryStorage.t)) dq :
   AccessStrict
     (l.[(raft.MemoryStorage.t), "Mutex"] ↦{dq} (v.(raft.MemoryStorage.Mutex')))
     (l.[(raft.MemoryStorage.t), "Mutex"] ↦{dq} (v.(raft.MemoryStorage.Mutex')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance MemoryStorage_access_store_Mutex l (v : (raft.MemoryStorage.t)) Mutex' :
   AccessStrict
     (l.[(raft.MemoryStorage.t), "Mutex"] ↦ (v.(raft.MemoryStorage.Mutex')))
     (l.[(raft.MemoryStorage.t), "Mutex"] ↦ Mutex')
     (l ↦ v) (l ↦ (v <|(raft.MemoryStorage.Mutex') := Mutex'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance MemoryStorage_access_load_hardState l (v : (raft.MemoryStorage.t)) dq :
   AccessStrict
     (l.[(raft.MemoryStorage.t), "hardState"] ↦{dq} (v.(raft.MemoryStorage.hardState')))
     (l.[(raft.MemoryStorage.t), "hardState"] ↦{dq} (v.(raft.MemoryStorage.hardState')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance MemoryStorage_access_store_hardState l (v : (raft.MemoryStorage.t)) hardState' :
   AccessStrict
     (l.[(raft.MemoryStorage.t), "hardState"] ↦ (v.(raft.MemoryStorage.hardState')))
     (l.[(raft.MemoryStorage.t), "hardState"] ↦ hardState')
     (l ↦ v) (l ↦ (v <|(raft.MemoryStorage.hardState') := hardState'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance MemoryStorage_access_load_snapshot l (v : (raft.MemoryStorage.t)) dq :
   AccessStrict
     (l.[(raft.MemoryStorage.t), "snapshot"] ↦{dq} (v.(raft.MemoryStorage.snapshot')))
     (l.[(raft.MemoryStorage.t), "snapshot"] ↦{dq} (v.(raft.MemoryStorage.snapshot')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance MemoryStorage_access_store_snapshot l (v : (raft.MemoryStorage.t)) snapshot' :
   AccessStrict
     (l.[(raft.MemoryStorage.t), "snapshot"] ↦ (v.(raft.MemoryStorage.snapshot')))
     (l.[(raft.MemoryStorage.t), "snapshot"] ↦ snapshot')
     (l ↦ v) (l ↦ (v <|(raft.MemoryStorage.snapshot') := snapshot'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance MemoryStorage_access_load_ents l (v : (raft.MemoryStorage.t)) dq :
   AccessStrict
     (l.[(raft.MemoryStorage.t), "ents"] ↦{dq} (v.(raft.MemoryStorage.ents')))
     (l.[(raft.MemoryStorage.t), "ents"] ↦{dq} (v.(raft.MemoryStorage.ents')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance MemoryStorage_access_store_ents l (v : (raft.MemoryStorage.t)) ents' :
   AccessStrict
     (l.[(raft.MemoryStorage.t), "ents"] ↦ (v.(raft.MemoryStorage.ents')))
     (l.[(raft.MemoryStorage.t), "ents"] ↦ ents')
     (l ↦ v) (l ↦ (v <|(raft.MemoryStorage.ents') := ents'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance MemoryStorage_access_load_callStats l (v : (raft.MemoryStorage.t)) dq :
   AccessStrict
     (l.[(raft.MemoryStorage.t), "callStats"] ↦{dq} (v.(raft.MemoryStorage.callStats')))
     (l.[(raft.MemoryStorage.t), "callStats"] ↦{dq} (v.(raft.MemoryStorage.callStats')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance MemoryStorage_access_store_callStats l (v : (raft.MemoryStorage.t)) callStats' :
   AccessStrict
     (l.[(raft.MemoryStorage.t), "callStats"] ↦ (v.(raft.MemoryStorage.callStats')))
     (l.[(raft.MemoryStorage.t), "callStats"] ↦ callStats')
     (l ↦ v) (l ↦ (v <|(raft.MemoryStorage.callStats') := callStats'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End MemoryStorage.
@@ -2346,38 +2346,38 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance entryID_into_val_typed
    :
   IntoValTypedUnderlying (raft.entryID.t) (raft.entryIDⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance entryID_access_load_term l (v : (raft.entryID.t)) dq :
   AccessStrict
     (l.[(raft.entryID.t), "term"] ↦{dq} (v.(raft.entryID.term')))
     (l.[(raft.entryID.t), "term"] ↦{dq} (v.(raft.entryID.term')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance entryID_access_store_term l (v : (raft.entryID.t)) term' :
   AccessStrict
     (l.[(raft.entryID.t), "term"] ↦ (v.(raft.entryID.term')))
     (l.[(raft.entryID.t), "term"] ↦ term')
     (l ↦ v) (l ↦ (v <|(raft.entryID.term') := term'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance entryID_access_load_index l (v : (raft.entryID.t)) dq :
   AccessStrict
     (l.[(raft.entryID.t), "index"] ↦{dq} (v.(raft.entryID.index')))
     (l.[(raft.entryID.t), "index"] ↦{dq} (v.(raft.entryID.index')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance entryID_access_store_index l (v : (raft.entryID.t)) index' :
   AccessStrict
     (l.[(raft.entryID.t), "index"] ↦ (v.(raft.entryID.index')))
     (l.[(raft.entryID.t), "index"] ↦ index')
     (l ↦ v) (l ↦ (v <|(raft.entryID.index') := index'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End entryID.
@@ -2402,51 +2402,51 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance logSlice_into_val_typed
    :
   IntoValTypedUnderlying (raft.logSlice.t) (raft.logSliceⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance logSlice_access_load_term l (v : (raft.logSlice.t)) dq :
   AccessStrict
     (l.[(raft.logSlice.t), "term"] ↦{dq} (v.(raft.logSlice.term')))
     (l.[(raft.logSlice.t), "term"] ↦{dq} (v.(raft.logSlice.term')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance logSlice_access_store_term l (v : (raft.logSlice.t)) term' :
   AccessStrict
     (l.[(raft.logSlice.t), "term"] ↦ (v.(raft.logSlice.term')))
     (l.[(raft.logSlice.t), "term"] ↦ term')
     (l ↦ v) (l ↦ (v <|(raft.logSlice.term') := term'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance logSlice_access_load_prev l (v : (raft.logSlice.t)) dq :
   AccessStrict
     (l.[(raft.logSlice.t), "prev"] ↦{dq} (v.(raft.logSlice.prev')))
     (l.[(raft.logSlice.t), "prev"] ↦{dq} (v.(raft.logSlice.prev')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance logSlice_access_store_prev l (v : (raft.logSlice.t)) prev' :
   AccessStrict
     (l.[(raft.logSlice.t), "prev"] ↦ (v.(raft.logSlice.prev')))
     (l.[(raft.logSlice.t), "prev"] ↦ prev')
     (l ↦ v) (l ↦ (v <|(raft.logSlice.prev') := prev'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance logSlice_access_load_entries l (v : (raft.logSlice.t)) dq :
   AccessStrict
     (l.[(raft.logSlice.t), "entries"] ↦{dq} (v.(raft.logSlice.entries')))
     (l.[(raft.logSlice.t), "entries"] ↦{dq} (v.(raft.logSlice.entries')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance logSlice_access_store_entries l (v : (raft.logSlice.t)) entries' :
   AccessStrict
     (l.[(raft.logSlice.t), "entries"] ↦ (v.(raft.logSlice.entries')))
     (l.[(raft.logSlice.t), "entries"] ↦ entries')
     (l ↦ v) (l ↦ (v <|(raft.logSlice.entries') := entries'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End logSlice.

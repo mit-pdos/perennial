@@ -27,64 +27,64 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance Entry_into_val_typed
    :
   IntoValTypedUnderlying (raftpb.Entry.t) (raftpb.Entryⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance Entry_access_load_Term l (v : (raftpb.Entry.t)) dq :
   AccessStrict
     (l.[(raftpb.Entry.t), "Term"] ↦{dq} (v.(raftpb.Entry.Term')))
     (l.[(raftpb.Entry.t), "Term"] ↦{dq} (v.(raftpb.Entry.Term')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Entry_access_store_Term l (v : (raftpb.Entry.t)) Term' :
   AccessStrict
     (l.[(raftpb.Entry.t), "Term"] ↦ (v.(raftpb.Entry.Term')))
     (l.[(raftpb.Entry.t), "Term"] ↦ Term')
     (l ↦ v) (l ↦ (v <|(raftpb.Entry.Term') := Term'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Entry_access_load_Index l (v : (raftpb.Entry.t)) dq :
   AccessStrict
     (l.[(raftpb.Entry.t), "Index"] ↦{dq} (v.(raftpb.Entry.Index')))
     (l.[(raftpb.Entry.t), "Index"] ↦{dq} (v.(raftpb.Entry.Index')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Entry_access_store_Index l (v : (raftpb.Entry.t)) Index' :
   AccessStrict
     (l.[(raftpb.Entry.t), "Index"] ↦ (v.(raftpb.Entry.Index')))
     (l.[(raftpb.Entry.t), "Index"] ↦ Index')
     (l ↦ v) (l ↦ (v <|(raftpb.Entry.Index') := Index'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Entry_access_load_Type l (v : (raftpb.Entry.t)) dq :
   AccessStrict
     (l.[(raftpb.Entry.t), "Type"] ↦{dq} (v.(raftpb.Entry.Type')))
     (l.[(raftpb.Entry.t), "Type"] ↦{dq} (v.(raftpb.Entry.Type')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Entry_access_store_Type l (v : (raftpb.Entry.t)) Type' :
   AccessStrict
     (l.[(raftpb.Entry.t), "Type"] ↦ (v.(raftpb.Entry.Type')))
     (l.[(raftpb.Entry.t), "Type"] ↦ Type')
     (l ↦ v) (l ↦ (v <|(raftpb.Entry.Type') := Type'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Entry_access_load_Data l (v : (raftpb.Entry.t)) dq :
   AccessStrict
     (l.[(raftpb.Entry.t), "Data"] ↦{dq} (v.(raftpb.Entry.Data')))
     (l.[(raftpb.Entry.t), "Data"] ↦{dq} (v.(raftpb.Entry.Data')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Entry_access_store_Data l (v : (raftpb.Entry.t)) Data' :
   AccessStrict
     (l.[(raftpb.Entry.t), "Data"] ↦ (v.(raftpb.Entry.Data')))
     (l.[(raftpb.Entry.t), "Data"] ↦ Data')
     (l ↦ v) (l ↦ (v <|(raftpb.Entry.Data') := Data'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End Entry.
@@ -111,77 +111,77 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance ConfState_into_val_typed
    :
   IntoValTypedUnderlying (raftpb.ConfState.t) (raftpb.ConfStateⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance ConfState_access_load_Voters l (v : (raftpb.ConfState.t)) dq :
   AccessStrict
     (l.[(raftpb.ConfState.t), "Voters"] ↦{dq} (v.(raftpb.ConfState.Voters')))
     (l.[(raftpb.ConfState.t), "Voters"] ↦{dq} (v.(raftpb.ConfState.Voters')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance ConfState_access_store_Voters l (v : (raftpb.ConfState.t)) Voters' :
   AccessStrict
     (l.[(raftpb.ConfState.t), "Voters"] ↦ (v.(raftpb.ConfState.Voters')))
     (l.[(raftpb.ConfState.t), "Voters"] ↦ Voters')
     (l ↦ v) (l ↦ (v <|(raftpb.ConfState.Voters') := Voters'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance ConfState_access_load_Learners l (v : (raftpb.ConfState.t)) dq :
   AccessStrict
     (l.[(raftpb.ConfState.t), "Learners"] ↦{dq} (v.(raftpb.ConfState.Learners')))
     (l.[(raftpb.ConfState.t), "Learners"] ↦{dq} (v.(raftpb.ConfState.Learners')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance ConfState_access_store_Learners l (v : (raftpb.ConfState.t)) Learners' :
   AccessStrict
     (l.[(raftpb.ConfState.t), "Learners"] ↦ (v.(raftpb.ConfState.Learners')))
     (l.[(raftpb.ConfState.t), "Learners"] ↦ Learners')
     (l ↦ v) (l ↦ (v <|(raftpb.ConfState.Learners') := Learners'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance ConfState_access_load_VotersOutgoing l (v : (raftpb.ConfState.t)) dq :
   AccessStrict
     (l.[(raftpb.ConfState.t), "VotersOutgoing"] ↦{dq} (v.(raftpb.ConfState.VotersOutgoing')))
     (l.[(raftpb.ConfState.t), "VotersOutgoing"] ↦{dq} (v.(raftpb.ConfState.VotersOutgoing')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance ConfState_access_store_VotersOutgoing l (v : (raftpb.ConfState.t)) VotersOutgoing' :
   AccessStrict
     (l.[(raftpb.ConfState.t), "VotersOutgoing"] ↦ (v.(raftpb.ConfState.VotersOutgoing')))
     (l.[(raftpb.ConfState.t), "VotersOutgoing"] ↦ VotersOutgoing')
     (l ↦ v) (l ↦ (v <|(raftpb.ConfState.VotersOutgoing') := VotersOutgoing'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance ConfState_access_load_LearnersNext l (v : (raftpb.ConfState.t)) dq :
   AccessStrict
     (l.[(raftpb.ConfState.t), "LearnersNext"] ↦{dq} (v.(raftpb.ConfState.LearnersNext')))
     (l.[(raftpb.ConfState.t), "LearnersNext"] ↦{dq} (v.(raftpb.ConfState.LearnersNext')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance ConfState_access_store_LearnersNext l (v : (raftpb.ConfState.t)) LearnersNext' :
   AccessStrict
     (l.[(raftpb.ConfState.t), "LearnersNext"] ↦ (v.(raftpb.ConfState.LearnersNext')))
     (l.[(raftpb.ConfState.t), "LearnersNext"] ↦ LearnersNext')
     (l ↦ v) (l ↦ (v <|(raftpb.ConfState.LearnersNext') := LearnersNext'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance ConfState_access_load_AutoLeave l (v : (raftpb.ConfState.t)) dq :
   AccessStrict
     (l.[(raftpb.ConfState.t), "AutoLeave"] ↦{dq} (v.(raftpb.ConfState.AutoLeave')))
     (l.[(raftpb.ConfState.t), "AutoLeave"] ↦{dq} (v.(raftpb.ConfState.AutoLeave')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance ConfState_access_store_AutoLeave l (v : (raftpb.ConfState.t)) AutoLeave' :
   AccessStrict
     (l.[(raftpb.ConfState.t), "AutoLeave"] ↦ (v.(raftpb.ConfState.AutoLeave')))
     (l.[(raftpb.ConfState.t), "AutoLeave"] ↦ AutoLeave')
     (l ↦ v) (l ↦ (v <|(raftpb.ConfState.AutoLeave') := AutoLeave'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End ConfState.
@@ -206,51 +206,51 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance SnapshotMetadata_into_val_typed
    :
   IntoValTypedUnderlying (raftpb.SnapshotMetadata.t) (raftpb.SnapshotMetadataⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance SnapshotMetadata_access_load_ConfState l (v : (raftpb.SnapshotMetadata.t)) dq :
   AccessStrict
     (l.[(raftpb.SnapshotMetadata.t), "ConfState"] ↦{dq} (v.(raftpb.SnapshotMetadata.ConfState')))
     (l.[(raftpb.SnapshotMetadata.t), "ConfState"] ↦{dq} (v.(raftpb.SnapshotMetadata.ConfState')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance SnapshotMetadata_access_store_ConfState l (v : (raftpb.SnapshotMetadata.t)) ConfState' :
   AccessStrict
     (l.[(raftpb.SnapshotMetadata.t), "ConfState"] ↦ (v.(raftpb.SnapshotMetadata.ConfState')))
     (l.[(raftpb.SnapshotMetadata.t), "ConfState"] ↦ ConfState')
     (l ↦ v) (l ↦ (v <|(raftpb.SnapshotMetadata.ConfState') := ConfState'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance SnapshotMetadata_access_load_Index l (v : (raftpb.SnapshotMetadata.t)) dq :
   AccessStrict
     (l.[(raftpb.SnapshotMetadata.t), "Index"] ↦{dq} (v.(raftpb.SnapshotMetadata.Index')))
     (l.[(raftpb.SnapshotMetadata.t), "Index"] ↦{dq} (v.(raftpb.SnapshotMetadata.Index')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance SnapshotMetadata_access_store_Index l (v : (raftpb.SnapshotMetadata.t)) Index' :
   AccessStrict
     (l.[(raftpb.SnapshotMetadata.t), "Index"] ↦ (v.(raftpb.SnapshotMetadata.Index')))
     (l.[(raftpb.SnapshotMetadata.t), "Index"] ↦ Index')
     (l ↦ v) (l ↦ (v <|(raftpb.SnapshotMetadata.Index') := Index'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance SnapshotMetadata_access_load_Term l (v : (raftpb.SnapshotMetadata.t)) dq :
   AccessStrict
     (l.[(raftpb.SnapshotMetadata.t), "Term"] ↦{dq} (v.(raftpb.SnapshotMetadata.Term')))
     (l.[(raftpb.SnapshotMetadata.t), "Term"] ↦{dq} (v.(raftpb.SnapshotMetadata.Term')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance SnapshotMetadata_access_store_Term l (v : (raftpb.SnapshotMetadata.t)) Term' :
   AccessStrict
     (l.[(raftpb.SnapshotMetadata.t), "Term"] ↦ (v.(raftpb.SnapshotMetadata.Term')))
     (l.[(raftpb.SnapshotMetadata.t), "Term"] ↦ Term')
     (l ↦ v) (l ↦ (v <|(raftpb.SnapshotMetadata.Term') := Term'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End SnapshotMetadata.
@@ -274,38 +274,38 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance Snapshot_into_val_typed
    :
   IntoValTypedUnderlying (raftpb.Snapshot.t) (raftpb.Snapshotⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance Snapshot_access_load_Data l (v : (raftpb.Snapshot.t)) dq :
   AccessStrict
     (l.[(raftpb.Snapshot.t), "Data"] ↦{dq} (v.(raftpb.Snapshot.Data')))
     (l.[(raftpb.Snapshot.t), "Data"] ↦{dq} (v.(raftpb.Snapshot.Data')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Snapshot_access_store_Data l (v : (raftpb.Snapshot.t)) Data' :
   AccessStrict
     (l.[(raftpb.Snapshot.t), "Data"] ↦ (v.(raftpb.Snapshot.Data')))
     (l.[(raftpb.Snapshot.t), "Data"] ↦ Data')
     (l ↦ v) (l ↦ (v <|(raftpb.Snapshot.Data') := Data'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Snapshot_access_load_Metadata l (v : (raftpb.Snapshot.t)) dq :
   AccessStrict
     (l.[(raftpb.Snapshot.t), "Metadata"] ↦{dq} (v.(raftpb.Snapshot.Metadata')))
     (l.[(raftpb.Snapshot.t), "Metadata"] ↦{dq} (v.(raftpb.Snapshot.Metadata')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Snapshot_access_store_Metadata l (v : (raftpb.Snapshot.t)) Metadata' :
   AccessStrict
     (l.[(raftpb.Snapshot.t), "Metadata"] ↦ (v.(raftpb.Snapshot.Metadata')))
     (l.[(raftpb.Snapshot.t), "Metadata"] ↦ Metadata')
     (l ↦ v) (l ↦ (v <|(raftpb.Snapshot.Metadata') := Metadata'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End Snapshot.
@@ -341,194 +341,194 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance Message_into_val_typed
    :
   IntoValTypedUnderlying (raftpb.Message.t) (raftpb.Messageⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance Message_access_load_Type l (v : (raftpb.Message.t)) dq :
   AccessStrict
     (l.[(raftpb.Message.t), "Type"] ↦{dq} (v.(raftpb.Message.Type')))
     (l.[(raftpb.Message.t), "Type"] ↦{dq} (v.(raftpb.Message.Type')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Message_access_store_Type l (v : (raftpb.Message.t)) Type' :
   AccessStrict
     (l.[(raftpb.Message.t), "Type"] ↦ (v.(raftpb.Message.Type')))
     (l.[(raftpb.Message.t), "Type"] ↦ Type')
     (l ↦ v) (l ↦ (v <|(raftpb.Message.Type') := Type'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Message_access_load_To l (v : (raftpb.Message.t)) dq :
   AccessStrict
     (l.[(raftpb.Message.t), "To"] ↦{dq} (v.(raftpb.Message.To')))
     (l.[(raftpb.Message.t), "To"] ↦{dq} (v.(raftpb.Message.To')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Message_access_store_To l (v : (raftpb.Message.t)) To' :
   AccessStrict
     (l.[(raftpb.Message.t), "To"] ↦ (v.(raftpb.Message.To')))
     (l.[(raftpb.Message.t), "To"] ↦ To')
     (l ↦ v) (l ↦ (v <|(raftpb.Message.To') := To'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Message_access_load_From l (v : (raftpb.Message.t)) dq :
   AccessStrict
     (l.[(raftpb.Message.t), "From"] ↦{dq} (v.(raftpb.Message.From')))
     (l.[(raftpb.Message.t), "From"] ↦{dq} (v.(raftpb.Message.From')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Message_access_store_From l (v : (raftpb.Message.t)) From' :
   AccessStrict
     (l.[(raftpb.Message.t), "From"] ↦ (v.(raftpb.Message.From')))
     (l.[(raftpb.Message.t), "From"] ↦ From')
     (l ↦ v) (l ↦ (v <|(raftpb.Message.From') := From'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Message_access_load_Term l (v : (raftpb.Message.t)) dq :
   AccessStrict
     (l.[(raftpb.Message.t), "Term"] ↦{dq} (v.(raftpb.Message.Term')))
     (l.[(raftpb.Message.t), "Term"] ↦{dq} (v.(raftpb.Message.Term')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Message_access_store_Term l (v : (raftpb.Message.t)) Term' :
   AccessStrict
     (l.[(raftpb.Message.t), "Term"] ↦ (v.(raftpb.Message.Term')))
     (l.[(raftpb.Message.t), "Term"] ↦ Term')
     (l ↦ v) (l ↦ (v <|(raftpb.Message.Term') := Term'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Message_access_load_LogTerm l (v : (raftpb.Message.t)) dq :
   AccessStrict
     (l.[(raftpb.Message.t), "LogTerm"] ↦{dq} (v.(raftpb.Message.LogTerm')))
     (l.[(raftpb.Message.t), "LogTerm"] ↦{dq} (v.(raftpb.Message.LogTerm')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Message_access_store_LogTerm l (v : (raftpb.Message.t)) LogTerm' :
   AccessStrict
     (l.[(raftpb.Message.t), "LogTerm"] ↦ (v.(raftpb.Message.LogTerm')))
     (l.[(raftpb.Message.t), "LogTerm"] ↦ LogTerm')
     (l ↦ v) (l ↦ (v <|(raftpb.Message.LogTerm') := LogTerm'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Message_access_load_Index l (v : (raftpb.Message.t)) dq :
   AccessStrict
     (l.[(raftpb.Message.t), "Index"] ↦{dq} (v.(raftpb.Message.Index')))
     (l.[(raftpb.Message.t), "Index"] ↦{dq} (v.(raftpb.Message.Index')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Message_access_store_Index l (v : (raftpb.Message.t)) Index' :
   AccessStrict
     (l.[(raftpb.Message.t), "Index"] ↦ (v.(raftpb.Message.Index')))
     (l.[(raftpb.Message.t), "Index"] ↦ Index')
     (l ↦ v) (l ↦ (v <|(raftpb.Message.Index') := Index'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Message_access_load_Entries l (v : (raftpb.Message.t)) dq :
   AccessStrict
     (l.[(raftpb.Message.t), "Entries"] ↦{dq} (v.(raftpb.Message.Entries')))
     (l.[(raftpb.Message.t), "Entries"] ↦{dq} (v.(raftpb.Message.Entries')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Message_access_store_Entries l (v : (raftpb.Message.t)) Entries' :
   AccessStrict
     (l.[(raftpb.Message.t), "Entries"] ↦ (v.(raftpb.Message.Entries')))
     (l.[(raftpb.Message.t), "Entries"] ↦ Entries')
     (l ↦ v) (l ↦ (v <|(raftpb.Message.Entries') := Entries'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Message_access_load_Commit l (v : (raftpb.Message.t)) dq :
   AccessStrict
     (l.[(raftpb.Message.t), "Commit"] ↦{dq} (v.(raftpb.Message.Commit')))
     (l.[(raftpb.Message.t), "Commit"] ↦{dq} (v.(raftpb.Message.Commit')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Message_access_store_Commit l (v : (raftpb.Message.t)) Commit' :
   AccessStrict
     (l.[(raftpb.Message.t), "Commit"] ↦ (v.(raftpb.Message.Commit')))
     (l.[(raftpb.Message.t), "Commit"] ↦ Commit')
     (l ↦ v) (l ↦ (v <|(raftpb.Message.Commit') := Commit'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Message_access_load_Vote l (v : (raftpb.Message.t)) dq :
   AccessStrict
     (l.[(raftpb.Message.t), "Vote"] ↦{dq} (v.(raftpb.Message.Vote')))
     (l.[(raftpb.Message.t), "Vote"] ↦{dq} (v.(raftpb.Message.Vote')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Message_access_store_Vote l (v : (raftpb.Message.t)) Vote' :
   AccessStrict
     (l.[(raftpb.Message.t), "Vote"] ↦ (v.(raftpb.Message.Vote')))
     (l.[(raftpb.Message.t), "Vote"] ↦ Vote')
     (l ↦ v) (l ↦ (v <|(raftpb.Message.Vote') := Vote'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Message_access_load_Snapshot l (v : (raftpb.Message.t)) dq :
   AccessStrict
     (l.[(raftpb.Message.t), "Snapshot"] ↦{dq} (v.(raftpb.Message.Snapshot')))
     (l.[(raftpb.Message.t), "Snapshot"] ↦{dq} (v.(raftpb.Message.Snapshot')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Message_access_store_Snapshot l (v : (raftpb.Message.t)) Snapshot' :
   AccessStrict
     (l.[(raftpb.Message.t), "Snapshot"] ↦ (v.(raftpb.Message.Snapshot')))
     (l.[(raftpb.Message.t), "Snapshot"] ↦ Snapshot')
     (l ↦ v) (l ↦ (v <|(raftpb.Message.Snapshot') := Snapshot'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Message_access_load_Reject l (v : (raftpb.Message.t)) dq :
   AccessStrict
     (l.[(raftpb.Message.t), "Reject"] ↦{dq} (v.(raftpb.Message.Reject')))
     (l.[(raftpb.Message.t), "Reject"] ↦{dq} (v.(raftpb.Message.Reject')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Message_access_store_Reject l (v : (raftpb.Message.t)) Reject' :
   AccessStrict
     (l.[(raftpb.Message.t), "Reject"] ↦ (v.(raftpb.Message.Reject')))
     (l.[(raftpb.Message.t), "Reject"] ↦ Reject')
     (l ↦ v) (l ↦ (v <|(raftpb.Message.Reject') := Reject'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Message_access_load_RejectHint l (v : (raftpb.Message.t)) dq :
   AccessStrict
     (l.[(raftpb.Message.t), "RejectHint"] ↦{dq} (v.(raftpb.Message.RejectHint')))
     (l.[(raftpb.Message.t), "RejectHint"] ↦{dq} (v.(raftpb.Message.RejectHint')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Message_access_store_RejectHint l (v : (raftpb.Message.t)) RejectHint' :
   AccessStrict
     (l.[(raftpb.Message.t), "RejectHint"] ↦ (v.(raftpb.Message.RejectHint')))
     (l.[(raftpb.Message.t), "RejectHint"] ↦ RejectHint')
     (l ↦ v) (l ↦ (v <|(raftpb.Message.RejectHint') := RejectHint'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Message_access_load_Context l (v : (raftpb.Message.t)) dq :
   AccessStrict
     (l.[(raftpb.Message.t), "Context"] ↦{dq} (v.(raftpb.Message.Context')))
     (l.[(raftpb.Message.t), "Context"] ↦{dq} (v.(raftpb.Message.Context')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Message_access_store_Context l (v : (raftpb.Message.t)) Context' :
   AccessStrict
     (l.[(raftpb.Message.t), "Context"] ↦ (v.(raftpb.Message.Context')))
     (l.[(raftpb.Message.t), "Context"] ↦ Context')
     (l ↦ v) (l ↦ (v <|(raftpb.Message.Context') := Context'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Message_access_load_Responses l (v : (raftpb.Message.t)) dq :
   AccessStrict
     (l.[(raftpb.Message.t), "Responses"] ↦{dq} (v.(raftpb.Message.Responses')))
     (l.[(raftpb.Message.t), "Responses"] ↦{dq} (v.(raftpb.Message.Responses')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Message_access_store_Responses l (v : (raftpb.Message.t)) Responses' :
   AccessStrict
     (l.[(raftpb.Message.t), "Responses"] ↦ (v.(raftpb.Message.Responses')))
     (l.[(raftpb.Message.t), "Responses"] ↦ Responses')
     (l ↦ v) (l ↦ (v <|(raftpb.Message.Responses') := Responses'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End Message.
@@ -553,51 +553,51 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance HardState_into_val_typed
    :
   IntoValTypedUnderlying (raftpb.HardState.t) (raftpb.HardStateⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance HardState_access_load_Term l (v : (raftpb.HardState.t)) dq :
   AccessStrict
     (l.[(raftpb.HardState.t), "Term"] ↦{dq} (v.(raftpb.HardState.Term')))
     (l.[(raftpb.HardState.t), "Term"] ↦{dq} (v.(raftpb.HardState.Term')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance HardState_access_store_Term l (v : (raftpb.HardState.t)) Term' :
   AccessStrict
     (l.[(raftpb.HardState.t), "Term"] ↦ (v.(raftpb.HardState.Term')))
     (l.[(raftpb.HardState.t), "Term"] ↦ Term')
     (l ↦ v) (l ↦ (v <|(raftpb.HardState.Term') := Term'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance HardState_access_load_Vote l (v : (raftpb.HardState.t)) dq :
   AccessStrict
     (l.[(raftpb.HardState.t), "Vote"] ↦{dq} (v.(raftpb.HardState.Vote')))
     (l.[(raftpb.HardState.t), "Vote"] ↦{dq} (v.(raftpb.HardState.Vote')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance HardState_access_store_Vote l (v : (raftpb.HardState.t)) Vote' :
   AccessStrict
     (l.[(raftpb.HardState.t), "Vote"] ↦ (v.(raftpb.HardState.Vote')))
     (l.[(raftpb.HardState.t), "Vote"] ↦ Vote')
     (l ↦ v) (l ↦ (v <|(raftpb.HardState.Vote') := Vote'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance HardState_access_load_Commit l (v : (raftpb.HardState.t)) dq :
   AccessStrict
     (l.[(raftpb.HardState.t), "Commit"] ↦{dq} (v.(raftpb.HardState.Commit')))
     (l.[(raftpb.HardState.t), "Commit"] ↦{dq} (v.(raftpb.HardState.Commit')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance HardState_access_store_Commit l (v : (raftpb.HardState.t)) Commit' :
   AccessStrict
     (l.[(raftpb.HardState.t), "Commit"] ↦ (v.(raftpb.HardState.Commit')))
     (l.[(raftpb.HardState.t), "Commit"] ↦ Commit')
     (l ↦ v) (l ↦ (v <|(raftpb.HardState.Commit') := Commit'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End HardState.
@@ -623,64 +623,64 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance ConfChange_into_val_typed
    :
   IntoValTypedUnderlying (raftpb.ConfChange.t) (raftpb.ConfChangeⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance ConfChange_access_load_Type l (v : (raftpb.ConfChange.t)) dq :
   AccessStrict
     (l.[(raftpb.ConfChange.t), "Type"] ↦{dq} (v.(raftpb.ConfChange.Type')))
     (l.[(raftpb.ConfChange.t), "Type"] ↦{dq} (v.(raftpb.ConfChange.Type')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance ConfChange_access_store_Type l (v : (raftpb.ConfChange.t)) Type' :
   AccessStrict
     (l.[(raftpb.ConfChange.t), "Type"] ↦ (v.(raftpb.ConfChange.Type')))
     (l.[(raftpb.ConfChange.t), "Type"] ↦ Type')
     (l ↦ v) (l ↦ (v <|(raftpb.ConfChange.Type') := Type'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance ConfChange_access_load_NodeID l (v : (raftpb.ConfChange.t)) dq :
   AccessStrict
     (l.[(raftpb.ConfChange.t), "NodeID"] ↦{dq} (v.(raftpb.ConfChange.NodeID')))
     (l.[(raftpb.ConfChange.t), "NodeID"] ↦{dq} (v.(raftpb.ConfChange.NodeID')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance ConfChange_access_store_NodeID l (v : (raftpb.ConfChange.t)) NodeID' :
   AccessStrict
     (l.[(raftpb.ConfChange.t), "NodeID"] ↦ (v.(raftpb.ConfChange.NodeID')))
     (l.[(raftpb.ConfChange.t), "NodeID"] ↦ NodeID')
     (l ↦ v) (l ↦ (v <|(raftpb.ConfChange.NodeID') := NodeID'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance ConfChange_access_load_Context l (v : (raftpb.ConfChange.t)) dq :
   AccessStrict
     (l.[(raftpb.ConfChange.t), "Context"] ↦{dq} (v.(raftpb.ConfChange.Context')))
     (l.[(raftpb.ConfChange.t), "Context"] ↦{dq} (v.(raftpb.ConfChange.Context')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance ConfChange_access_store_Context l (v : (raftpb.ConfChange.t)) Context' :
   AccessStrict
     (l.[(raftpb.ConfChange.t), "Context"] ↦ (v.(raftpb.ConfChange.Context')))
     (l.[(raftpb.ConfChange.t), "Context"] ↦ Context')
     (l ↦ v) (l ↦ (v <|(raftpb.ConfChange.Context') := Context'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance ConfChange_access_load_ID l (v : (raftpb.ConfChange.t)) dq :
   AccessStrict
     (l.[(raftpb.ConfChange.t), "ID"] ↦{dq} (v.(raftpb.ConfChange.ID')))
     (l.[(raftpb.ConfChange.t), "ID"] ↦{dq} (v.(raftpb.ConfChange.ID')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance ConfChange_access_store_ID l (v : (raftpb.ConfChange.t)) ID' :
   AccessStrict
     (l.[(raftpb.ConfChange.t), "ID"] ↦ (v.(raftpb.ConfChange.ID')))
     (l.[(raftpb.ConfChange.t), "ID"] ↦ ID')
     (l ↦ v) (l ↦ (v <|(raftpb.ConfChange.ID') := ID'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End ConfChange.
@@ -725,51 +725,51 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance ConfChangeV2_into_val_typed
    :
   IntoValTypedUnderlying (raftpb.ConfChangeV2.t) (raftpb.ConfChangeV2ⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance ConfChangeV2_access_load_Transition l (v : (raftpb.ConfChangeV2.t)) dq :
   AccessStrict
     (l.[(raftpb.ConfChangeV2.t), "Transition"] ↦{dq} (v.(raftpb.ConfChangeV2.Transition')))
     (l.[(raftpb.ConfChangeV2.t), "Transition"] ↦{dq} (v.(raftpb.ConfChangeV2.Transition')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance ConfChangeV2_access_store_Transition l (v : (raftpb.ConfChangeV2.t)) Transition' :
   AccessStrict
     (l.[(raftpb.ConfChangeV2.t), "Transition"] ↦ (v.(raftpb.ConfChangeV2.Transition')))
     (l.[(raftpb.ConfChangeV2.t), "Transition"] ↦ Transition')
     (l ↦ v) (l ↦ (v <|(raftpb.ConfChangeV2.Transition') := Transition'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance ConfChangeV2_access_load_Changes l (v : (raftpb.ConfChangeV2.t)) dq :
   AccessStrict
     (l.[(raftpb.ConfChangeV2.t), "Changes"] ↦{dq} (v.(raftpb.ConfChangeV2.Changes')))
     (l.[(raftpb.ConfChangeV2.t), "Changes"] ↦{dq} (v.(raftpb.ConfChangeV2.Changes')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance ConfChangeV2_access_store_Changes l (v : (raftpb.ConfChangeV2.t)) Changes' :
   AccessStrict
     (l.[(raftpb.ConfChangeV2.t), "Changes"] ↦ (v.(raftpb.ConfChangeV2.Changes')))
     (l.[(raftpb.ConfChangeV2.t), "Changes"] ↦ Changes')
     (l ↦ v) (l ↦ (v <|(raftpb.ConfChangeV2.Changes') := Changes'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance ConfChangeV2_access_load_Context l (v : (raftpb.ConfChangeV2.t)) dq :
   AccessStrict
     (l.[(raftpb.ConfChangeV2.t), "Context"] ↦{dq} (v.(raftpb.ConfChangeV2.Context')))
     (l.[(raftpb.ConfChangeV2.t), "Context"] ↦{dq} (v.(raftpb.ConfChangeV2.Context')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance ConfChangeV2_access_store_Context l (v : (raftpb.ConfChangeV2.t)) Context' :
   AccessStrict
     (l.[(raftpb.ConfChangeV2.t), "Context"] ↦ (v.(raftpb.ConfChangeV2.Context')))
     (l.[(raftpb.ConfChangeV2.t), "Context"] ↦ Context')
     (l ↦ v) (l ↦ (v <|(raftpb.ConfChangeV2.Context') := Context'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End ConfChangeV2.

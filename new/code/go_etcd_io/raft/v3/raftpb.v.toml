@@ -51,3 +51,5 @@ translate = [
 ]
 
 imports = ["!*"]
+
+trust_proofgen = true
