@@ -10,20 +10,6 @@ Require Import New.proof.github_com.mit_pdos.go_journal.buf_proof.defs.
 From Perennial.Helpers Require Import bytes.
 From Coq Require Import Program.Equality.
 
-(*
-From RecordUpdate Require Import RecordSet.
-Import RecordSetNotations.
-
-From Perennial.Helpers Require Import Map.
-From Perennial.program_proof Require Import disk_prelude.
-From Goose.github_com.mit_pdos.go_journal Require Import buf.
-From Perennial.program_proof Require Import util_proof disk_lib.
-From Perennial.program_proof Require Export buf.defs.
-From Perennial.program_proof Require Import addr.addr_proof wal.abstraction.
-From Perennial.Helpers Require Import NamedProps PropRestore NatDivMod.
-From Perennial.goose_lang.lib Require Import slice.typed_slice.
-*)
-
 (* an object is the data for a sub-block object, a dynamic bundle of a kind and
 data of the appropriate size *)
 (* NOTE(tej): not necessarily the best name, because it's so general as to be

@@ -1,7 +1,6 @@
 From Perennial.algebra Require Import gen_heap_names.
 From Perennial.program_logic Require Import dist_lang.
 From Perennial.goose_lang Require Import lang notation lifting.
-From Perennial.goose_lang Require Import prelude.
 From Perennial.goose_lang Require Import ffi.grove_ffi.grove_ffi.
 
 From Perennial.goose_lang Require Import adequacy recovery_adequacy dist_adequacy.

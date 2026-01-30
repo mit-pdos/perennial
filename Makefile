@@ -1,5 +1,5 @@
-SRC_DIRS := 'src' 'external' 'new'
-# ALL_VFILES is used to calculate dependencies so includes external
+SRC_DIRS := 'src' 'new'
+# ALL_VFILES is used to calculate dependencies
 ALL_VFILES := $(shell find $(SRC_DIRS) \
 	-type f -not -name "*__nobuild.v" -name "*.v")
 # PROJ_VFILES is for the all target
