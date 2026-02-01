@@ -140,7 +140,9 @@ Proof.
   iDestruct "Hi" as (?) "[>Hstate HP]".
   iFrame. iApply fupd_mask_intro. { solve_ndisj. } iIntros "Hmask".
   iIntros "% Hst". subst.
-  rewrite rfrac_unseal. rewrite /rfrac_def Qp.mul_inv_r.
+  rewrite rfrac_unseal /rfrac_def.
+  replace (_ + _ - _) with (rwmutex.actualMaxReaders + 1) by lia.
+  rewrite Qp.mul_inv_r.
   iDestruct "HP" as "(? & ? & >Hl & HP)".
   iDestruct ("HΦ" with "[$]") as "$".
   iMod "Hmask" as "_".
@@ -165,7 +167,10 @@ Proof.
   iMod "Hmask" as "_".
   iMod ("Hclose" with "[-]"); last done.
   iFrame.
-  rewrite rfrac_unseal. rewrite /rfrac_def Qp.mul_inv_r. iFrame.
+  rewrite rfrac_unseal /rfrac_def.
+  replace (_ + _ - _) with (rwmutex.actualMaxReaders + 1) by lia.
+  rewrite Qp.mul_inv_r.
+  iFrame.
 Qed.
 
 Lemma init_RWMutex P {E} (rw : loc) :
@@ -193,7 +198,11 @@ Proof.
   iApply ("IHn" with "[$] [$]").
   Unshelve.
   2:{
-    iFrame. rewrite rfrac_unseal. rewrite /rfrac_def Qp.mul_inv_r. iFrame.
+    iFrame.
+    rewrite rfrac_unseal /rfrac_def.
+    replace (_ + _ - _) with (rwmutex.actualMaxReaders + 1) by lia.
+    rewrite Qp.mul_inv_r.
+    iFrame.
   }
 Qed.
 
