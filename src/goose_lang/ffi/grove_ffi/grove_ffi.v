@@ -4,7 +4,7 @@ From RecordUpdate Require Import RecordSet.
 From iris.algebra Require Import numbers.
 From Perennial.algebra Require Import gen_heap_names.
 From iris.proofmode Require Import proofmode.
-From Perennial.base_logic Require Import ghost_map mono_nat.
+From Perennial.base_logic Require Import ghost_map.
 From Perennial.program_logic Require Import ectx_lifting atomic.
 
 From Perennial.Helpers Require Import CountableTactics Transitions Integers.

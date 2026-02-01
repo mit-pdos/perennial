@@ -5,6 +5,7 @@ set -e
 # Resolve project root (assuming script is in etc/)
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 PROJECT_ROOT="$(dirname "$DIR")"
+
 cd "$PROJECT_ROOT"
 
 if [ "$#" -lt 1 ]; then
@@ -14,14 +15,20 @@ fi
 
 make .rocqdeps.d
 
-# 1. Get list of files used in the build (dependencies)
-# We use get-deps.py for each input and union the results.
 USED_FILES_TMP=$(mktemp)
+ALL_FILES_TMP=$(mktemp)
 
+# Clean up on exit
+# trap 'rm -f "$USED_FILES_TMP" "$ALL_FILES_TMP"' EXIT
+
+# 1. Get list of all project files
+find -type f -name "*.v" -printf "%P\n" | sort > "$ALL_FILES_TMP"
+echo "DONE"
+
+# 2. Get list of files used in the build (dependencies)
 for arg in "$@"; do
     if [ ! -f "$arg" ]; then
         echo "Error: File '$arg' not found." >&2
-        rm -f "$USED_FILES_TMP"
         exit 1
     fi
     # Canonicalize path
@@ -35,12 +42,11 @@ for arg in "$@"; do
     ./etc/get-deps.py "$VO_PATH" >> "$USED_FILES_TMP"
 done
 
-USED_FILES_SORTED=$(sort -u "$USED_FILES_TMP")
-rm -f "$USED_FILES_TMP"
-
-# 2. Get list of all project files
-# Matches Makefile ALL_VFILES logic
-ALL_FILES=$(find -type f -name "*.v" | sort)
+# Sort and unique the used files
+# We sort into a new temp file to avoid reading/writing to same file in pipe
+USED_FILES_SORTED_TMP=$(mktemp)
+sort -u "$USED_FILES_TMP" > "$USED_FILES_SORTED_TMP"
+mv "$USED_FILES_SORTED_TMP" "$USED_FILES_TMP"
 
 # 3. Compute Set Difference: All - Used = Unused
-comm -23 <(echo "$ALL_FILES") <(echo "$USED_FILES_SORTED")
+comm -3 "$ALL_FILES_TMP" "$USED_FILES_TMP"

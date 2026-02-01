@@ -2,8 +2,6 @@ Require Import New.proof.proof_prelude.
 Require Import New.proof.github_com.mit_pdos.go_journal.wal_proof.abstraction.
 Require Import New.proof.github_com.goose_lang.primitive.disk.
 
-Require Import Perennial.goose_lang.ffi.disk_prelude.
-
 Implicit Types (txn_id:nat) (pos: u64).
 
 #[global]

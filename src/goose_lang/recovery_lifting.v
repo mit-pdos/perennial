@@ -1,8 +1,8 @@
 From iris.proofmode Require Import proofmode.
 From iris.algebra Require Import auth.
-From Perennial.goose_lang Require Import proofmode notation.
+From Perennial.goose_lang Require Import notation.
 From Perennial.program_logic Require Import recovery_weakestpre recovery_adequacy.
-From Perennial.goose_lang Require Import crash_modality typing adequacy lang.
+From Perennial.goose_lang Require Import crash_modality adequacy lang.
 Set Default Proof Using "Type".
 
 Section wpr_definitions.

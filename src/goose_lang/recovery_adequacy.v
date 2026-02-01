@@ -1,9 +1,9 @@
 From iris.proofmode Require Import proofmode.
 From iris.algebra Require Import auth.
-From Perennial.goose_lang Require Import proofmode notation.
+From Perennial.goose_lang Require Import notation.
 From Perennial.program_logic Require Import recovery_weakestpre recovery_adequacy.
 From Perennial.goose_lang Require Export recovery_lifting.
-From Perennial.goose_lang Require Import typing adequacy lang crash_borrow.
+From Perennial.goose_lang Require Import adequacy lang crash_borrow.
 Set Default Proof Using "Type".
 
 Theorem goose_recv_adequacy `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} {Hffi_adequacy:ffi_interp_adequacy} Σ `{hPre: !gooseGpreS Σ} s e r σ g φ φr φinv n :

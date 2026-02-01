@@ -1,5 +1,4 @@
 From New.proof Require Import proof_prelude.
-From Perennial.goose_lang Require Import proofmode.
 From New.proof.github_com.goose_lang.goose.model.channel
      Require Export chan_au_send chan_au_recv chan_au_base chan_init.
 From New.proof.github_com.goose_lang.goose.model.channel Require Export dsp_ghost_theory.
