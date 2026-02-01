@@ -15,9 +15,10 @@ Set Default Proof Mode "Classic".
   expressions together along with (in)equalities. E.g.  [word.mul (W32 4)
   (word.add x y)] is a "linear" expression.
 
-    [word] automatically unfolds user-specified defs, using the [word] HintDb.
-  add a def with [Hint Unfold foo : word.],
-  or [Hint Rewrite foo_unseal : word.] for opaque / sealed defs.
+    To unfold a constant, use the [word] HintDb.
+  For normal constants, do [Hint Unfold foo : word].
+  For sealed constants, do [Hint Rewrite foo_unseal : word] and
+  [Hint Unfold foo_def : word].
 
     [word] is likely to fail at handling non-linear expressions, e.g. [word.mul
   x y] where [x] and [y] are both non-constants. In some proofs, it is possible
