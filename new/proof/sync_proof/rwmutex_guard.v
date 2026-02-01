@@ -173,13 +173,12 @@ Proof.
   iFrame.
 Qed.
 
-Lemma init_RWMutex P {E} (rw : loc) :
-  □(∀ q1 q2, P (q1 + q2)%Qp ∗-∗ P q1 ∗ P q2) -∗
+Lemma init_RWMutex P {E} (rw : loc) {HPfrac : fractional.Fractional P} :
   ▷ P 1%Qp -∗
   rw ↦ (default_val sync.RWMutex.t) ={E}=∗
   [∗] replicate (Z.to_nat rwmutex.actualMaxReaders) (own_RWMutex rw P).
 Proof.
-  iIntros "#HPfrac HP Hrw".
+  iIntros "HP Hrw".
   iMod (rwmutex.init_RWMutex (nroot.@"rw") with "[$]") as (?) "(#His & Hstate & Hrtoks)".
   iMod own_tok_auth_alloc as (γmax) "Hauth".
   iMod (own_tok_auth_add (Z.to_nat rwmutex.actualMaxReaders) with "Hauth") as "[Hauth Htoks]".
@@ -195,6 +194,10 @@ Proof.
   iDestruct (own_toks_add _ 1 with "Htoks") as "[? ?]".
   iDestruct "Hrtoks" as "[? ?]".
   iThaw "Hauth". iFrame "∗#".
+  iSplit.
+  { rewrite /fractional.Fractional in HPfrac.
+    iIntros "!> *".
+    by iDestruct equiv_wand_iff as "$". }
   iApply ("IHn" with "[$] [$]").
   Unshelve.
   2:{
