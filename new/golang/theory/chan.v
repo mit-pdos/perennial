@@ -33,7 +33,7 @@ Lemma wp_make (cap : w64) dir :
   {{{ ch γ, RET #ch;
       is_chan ch γ V ∗
       ⌜ chan_cap γ = sint.Z cap ⌝ ∗
-      own_chan γ (if decide (cap = 0) then chan_rep.Idle else chan_rep.Buffered (@nil V))
+      own_chan γ (if decide (cap = 0) then chanstate.Idle else chanstate.Buffered (@nil V))
   }}}.
 Proof.
   wp_start as "%Hle".

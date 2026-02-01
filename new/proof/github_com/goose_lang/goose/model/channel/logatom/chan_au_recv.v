@@ -42,7 +42,7 @@ Proof.
         word.
       }
       iLeft in "HΦ".
-      iAssert (own_chan γ (chan_rep.Buffered (v :: rest)))%I
+      iAssert (own_chan γ (chanstate.Buffered (v :: rest)))%I
         with "[Hchanrepfrag]" as "Hown".
       { iFrame. iPureIntro. unfold chan_cap_valid. done. }
       iMod (lc_fupd_elim_later with "[$] HΦ") as "HΦ".
@@ -52,7 +52,7 @@ Proof.
       iNamed "HΦ".
       iDestruct (own_chan_agree with "Hown Hoc") as %Heq.
       subst s.
-      iMod (own_chan_halves_update (chan_rep.Buffered rest) with "Hown Hoc")
+      iMod (own_chan_halves_update (chanstate.Buffered rest) with "Hown Hoc")
         as "[Hown1 Hown2]".
       { simpl in *. lia. }
       iMod ("Hcont" with "Hown1") as "Hcont".
@@ -168,11 +168,11 @@ Proof.
       iMod "Hau".
       iMod (lc_fupd_elim_later with "[$] Hau") as "HP".
       iNamed "HP".
-      iAssert (own_chan γ (chan_rep.SndCommit v0))%I
+      iAssert (own_chan γ (chanstate.SndCommit v0))%I
         with "[Hchanrepfrag]" as "Hown".
       { iFrame "∗#". iPureIntro. cbn [chan_cap_valid]. done. }
       iDestruct (own_chan_agree with "[$Hocinner] [$Hown]") as "%Hseq". subst s.
-      iDestruct (own_chan_halves_update (chan_rep.Idle)
+      iDestruct (own_chan_halves_update (chanstate.Idle)
                   with "[$Hocinner] [$Hown]") as ">[Hgv1 Hgv2]".
       { done. }
       iMod ("Hcontinner" with "Hgv1") as "Hcont".
@@ -229,14 +229,14 @@ Proof.
     iApply fupd_wp. iMod "HP".
     iMod (lc_fupd_elim_later with "[$] HP") as "HP". iNamed "HP".
     iDestruct "Hoc" as "(H1 & H2)".
-    iDestruct (chan_rep_agree with "[$H1] [$Hchanrepfrag]") as "%Hseq". subst s.
-    iAssert (own_chan γ (chan_rep.Idle))%I
+    iDestruct (chanstate_agree with "[$H1] [$Hchanrepfrag]") as "%Hseq". subst s.
+    iAssert (own_chan γ (chanstate.Idle))%I
       with "[Hchanrepfrag]" as "Hown".
     { iFrame "∗#". iPureIntro. done. }
-    iAssert (own_chan γ (chan_rep.Idle))%I
+    iAssert (own_chan γ (chanstate.Idle))%I
       with "[H1]" as "Hown1".
     { iFrame. iPureIntro. done. }
-    iDestruct (own_chan_halves_update (chan_rep.SndPending v)
+    iDestruct (own_chan_halves_update (chanstate.SndPending v)
                 with "[$Hown] [$Hown1]") as ">[Hgv1 Hgv2]".
     { simpl in *. done. }
     iMod ("Hcont" with "Hgv2") as "Hcont1". iModIntro.
@@ -244,7 +244,7 @@ Proof.
     iMod (lc_fupd_elim_later with "[$] HΦ") as "HP".
     iNamed "HP".
     iDestruct (own_chan_agree with "[$Hgv1] [$Hoc]") as "%Hseq". subst s.
-    iDestruct (own_chan_halves_update (chan_rep.RcvCommit)
+    iDestruct (own_chan_halves_update (chanstate.RcvCommit)
                 with "[$Hgv1] [$Hoc]") as ">[Hgv1 Hgv2]".
     { done. }
     iMod ("Hcont" with "Hgv2") as "Hcont". iModIntro.
@@ -302,7 +302,7 @@ Proof.
       wp_if_destruct.
       {
         iLeft in "HΦ".
-        iAssert (own_chan γ (chan_rep.Closed (v :: buffer)))%I
+        iAssert (own_chan γ (chanstate.Closed (v :: buffer)))%I
           with "[Hchanrepfrag]" as "Hown".
         { iFrame. iPureIntro. done. }
         iApply fupd_wp.
@@ -311,7 +311,7 @@ Proof.
         iNamed "HΦ".
         iDestruct (own_chan_agree with "Hown Hoc") as %Heq.
         subst s.
-        iMod (own_chan_halves_update (chan_rep.Closed buffer) with "Hown Hoc")
+        iMod (own_chan_halves_update (chanstate.Closed buffer) with "Hown Hoc")
           as "[Hown1 Hown2]".
         { simpl. destruct buffer; [ done | ].
           move: Hcapvalid; len.
@@ -396,7 +396,7 @@ Proof.
       iMod (lc_fupd_elim_later with "[$] HΦ") as "HΦ".
       iNamed "HΦ". iNamed "Hoc".
       iCombine "Hchanrepfrag Hchanrepfrag_inv" gives %[_ Heq]. subst.
-      iMod (own_chan_halves_update (chan_rep.Buffered rest) with "[$Hchanrepfrag_inv] [$Hchanrepfrag]")
+      iMod (own_chan_halves_update (chanstate.Buffered rest) with "[$Hchanrepfrag_inv] [$Hchanrepfrag]")
         as "[Hchanrepfrag Hchanrepfrag_inv]";
         [ (simpl in *; word) .. | ].
       iMod ("Hcont" with "Hchanrepfrag") as "Hcont".
@@ -439,8 +439,8 @@ Proof.
     iApply fupd_wp. iApply "Hau_inv" in "HP_inv". iMod "HP_inv".
     iMod (lc_fupd_elim_later with "[$] HP_inv") as "HP_inv". iNamed "HP_inv".
     iNamed "Hoc".
-    iDestruct (chan_rep_agree with "[$] [$]") as "%Hseq". subst s.
-    iDestruct (own_chan_halves_update (chan_rep.SndPending v)
+    iDestruct (chanstate_agree with "[$] [$]") as "%Hseq". subst s.
+    iDestruct (own_chan_halves_update (chanstate.SndPending v)
                 with "[$Hchanrepfrag] [$Hchanrepfrag_inv]") as ">[Hchanrepfrag Hchanrepfrag_inv]";
       [done.. |].
     iMod ("Hcont" with "Hchanrepfrag") as "Hcont1_inv". iModIntro.
@@ -450,7 +450,7 @@ Proof.
     iMod (lc_fupd_elim_later with "[$] HΦ") as "HΦ".
     iNamed "HΦ".
     iDestruct (own_chan_agree with "[$] [$]") as "%Hseq". subst s.
-    iDestruct (own_chan_halves_update (chan_rep.RcvCommit)
+    iDestruct (own_chan_halves_update (chanstate.RcvCommit)
                 with "[$] [$]") as ">[Hchanrepfrag Hchanrepfrag_inv]".
     { done. }
 
@@ -506,7 +506,7 @@ Proof.
       iNamed "HΦ". simpl. iDestruct "offer_inv" as "Hoc_inv".
       iDestruct (own_chan_agree with "Hoc_inv Hoc") as %Heq.
       subst s. iNamed "Hoc".
-      iMod (own_chan_halves_update (chan_rep.Closed buffer) with "Hoc_inv [$Hchanrepfrag]")
+      iMod (own_chan_halves_update (chanstate.Closed buffer) with "Hoc_inv [$Hchanrepfrag]")
         as "[Hoc_inv Hoc]".
       { simpl. destruct buffer; [done|].
         simpl in *. len. }
@@ -564,7 +564,7 @@ Proof.
       iMod (lc_fupd_elim_later with "[$] HΦ") as "HΦ".
       iNamed "HΦ". iNamed "Hoc".
       iCombine "Hchanrepfrag Hchanrepfrag_inv" gives %[_ Heq]. subst.
-      iMod (own_chan_halves_update (chan_rep.Buffered rest) with "[$Hchanrepfrag_inv] [$Hchanrepfrag]")
+      iMod (own_chan_halves_update (chanstate.Buffered rest) with "[$Hchanrepfrag_inv] [$Hchanrepfrag]")
         as "[Hchanrepfrag Hchanrepfrag_inv]";
         [ (simpl in *; word) .. | ].
       iMod ("Hcont" with "Hchanrepfrag") as "Hcont".
@@ -624,8 +624,8 @@ Proof.
     iApply fupd_wp. iApply "Hau_inv" in "HP_inv". iMod "HP_inv".
     iMod (lc_fupd_elim_later with "[$] HP_inv") as "HP_inv". iNamed "HP_inv".
     iNamed "Hoc".
-    iDestruct (chan_rep_agree with "[$] [$]") as "%Hseq". subst s.
-    iDestruct (own_chan_halves_update (chan_rep.SndPending v)
+    iDestruct (chanstate_agree with "[$] [$]") as "%Hseq". subst s.
+    iDestruct (own_chan_halves_update (chanstate.SndPending v)
                 with "[$Hchanrepfrag] [$Hchanrepfrag_inv]") as ">[Hchanrepfrag Hchanrepfrag_inv]";
       [done.. |].
     iMod ("Hcont" with "Hchanrepfrag") as "Hcont1_inv". iModIntro.
@@ -634,7 +634,7 @@ Proof.
     iMod (lc_fupd_elim_later with "[$] HΦ") as "HΦ".
     iNamed "HΦ".
     iDestruct (own_chan_agree with "[$] [$]") as "%Hseq". subst s.
-    iDestruct (own_chan_halves_update (chan_rep.RcvCommit)
+    iDestruct (own_chan_halves_update (chanstate.RcvCommit)
                 with "[$] [$]") as ">[Hchanrepfrag Hchanrepfrag_inv]".
     { done. }
 
@@ -719,7 +719,7 @@ Proof.
       iNamed "HΦ". simpl. iDestruct "offer_inv" as "Hoc_inv".
       iDestruct (own_chan_agree with "Hoc_inv Hoc") as %Heq.
       subst s. iNamed "Hoc".
-      iMod (own_chan_halves_update (chan_rep.Closed buffer) with "Hoc_inv [$Hchanrepfrag]")
+      iMod (own_chan_halves_update (chanstate.Closed buffer) with "Hoc_inv [$Hchanrepfrag]")
         as "[Hoc_inv Hoc]".
       { simpl. destruct buffer; [done|].
         simpl in *. len. }

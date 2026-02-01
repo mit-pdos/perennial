@@ -7,7 +7,7 @@ Require Export New.code.github_com.goose_lang.goose.model.channel.
 From New.generatedproof.github_com.goose_lang.goose Require Import model.channel.
 
 (** The specification state for a channel. *)
-Module chan_rep.
+Module chanstate.
 Inductive t (V : Type) : Type :=
 | Buffered (buff : list V)     (* Buffered channel with pending messages *)
 | Idle                        (* Empty unbuffered channel, ready for operations *)
@@ -27,7 +27,7 @@ Global Arguments SndCommit {V}.
 Global Arguments RcvCommit {V}.
 Global Arguments Closed {V}.
 
-End chan_rep.
+End chanstate.
 
 (** The state machine representation matching the model implementation.
     This is slightly different from the mathematical representation
@@ -75,7 +75,7 @@ Record chan_names := {
 }.
 
 Class chanG Σ V := ChanG {
-  offerG :: ghost_varG Σ (chan_rep.t V);
+  offerG :: ghost_varG Σ (chanstate.t V);
   offer_lockG :: ghost_varG Σ (option (offer_lock V));
   offer_parked_propG :: savedPropG Σ;
   offer_parked_predG :: savedPredG Σ (V * bool);
@@ -84,7 +84,7 @@ Global Hint Mode chanG - + : typeclass_instances.
 Local Hint Mode chanG - - : typeclass_instances.
 
 Definition chanΣ V : gFunctors :=
-  #[ ghost_varΣ (chan_rep.t V); ghost_varΣ (option (offer_lock V));
+  #[ ghost_varΣ (chanstate.t V); ghost_varΣ (option (offer_lock V));
      savedPropΣ; savedPredΣ  (V * bool) ].
 
 #[global] Instance subG_chanG Σ V :
@@ -99,17 +99,17 @@ Context {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}
 Context (ch : loc) (γ : chan_names) (V : Type) (v : V) `{!chanG Σ V}.
 Context `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}.
 
-Definition chan_rep (q : Qp) (s : chan_rep.t V) : iProp Σ :=
+Definition chanstate (q : Qp) (s : chanstate.t V) : iProp Σ :=
   ghost_var γ.(state_name) q s.
 
-Definition chan_cap_valid (s : chan_rep.t V) (cap : Z) : Prop :=
+Definition chan_cap_valid (s : chanstate.t V) (cap : Z) : Prop :=
   match s with
-  | chan_rep.Buffered buf =>
+  | chanstate.Buffered buf =>
       (* Buffered is only used for buffered channels, and buffer size is bounded
       by capacity *)
       (length buf ≤ cap)%Z ∧ (0 < cap)
-  | chan_rep.Closed [] => (0 ≤ cap)
-  | chan_rep.Closed drain =>
+  | chanstate.Closed [] => (0 ≤ cap)
+  | chanstate.Closed drain =>
       (* Draining closed channels are buffered channels, and draining elements
       are bounded by capacity *)
       (Z.of_nat (length drain) ≤ cap) ∧ (0 < cap)
@@ -117,8 +117,8 @@ Definition chan_cap_valid (s : chan_rep.t V) (cap : Z) : Prop :=
   end.
 
 (** Represents ownership of a channel with its logical state *)
-Definition own_chan (s: chan_rep.t V) : iProp Σ :=
-  "Hchanrepfrag" ∷ chan_rep (1/2) s ∗
+Definition own_chan (s: chanstate.t V) : iProp Σ :=
+  "Hchanrepfrag" ∷ chanstate (1/2) s ∗
   "%Hcapvalid" ∷ ⌜ chan_cap_valid s (sint.Z $ chan_cap γ) ⌝.
 
 (** Inner atomic update for receive completion (second phase of handshake) *)
@@ -128,9 +128,9 @@ Definition recv_nested_au (Φ : V → bool → iProp Σ) : iProp Σ :=
      "Hcontinner" ∷
     (match s with
     (* Case: Sender has committed, complete the exchange *)
-    | chan_rep.SndCommit v => own_chan chan_rep.Idle ={∅,⊤}=∗ Φ v true
+    | chanstate.SndCommit v => own_chan chanstate.Idle ={∅,⊤}=∗ Φ v true
     (* Case: Channel is closed with no messages *)
-    | chan_rep.Closed [] => own_chan s ={∅,⊤}=∗ Φ (zero_val V) false
+    | chanstate.Closed [] => own_chan s ={∅,⊤}=∗ Φ (zero_val V) false
     | _ => True
     end).
 
@@ -141,18 +141,18 @@ Definition recv_au (Φ : V → bool → iProp Σ) : iProp Σ :=
      "Hcont" ∷
     (match s with
     (* Case: Sender is waiting, can complete immediately *)
-    | chan_rep.SndPending v =>
-          own_chan chan_rep.RcvCommit ={∅,⊤}=∗ Φ v true
+    | chanstate.SndPending v =>
+          own_chan chanstate.RcvCommit ={∅,⊤}=∗ Φ v true
     (* Case: Channel is idle, need to wait for sender *)
-    | chan_rep.Idle =>
-          own_chan (chan_rep.RcvPending) ={∅,⊤}=∗
+    | chanstate.Idle =>
+          own_chan (chanstate.RcvPending) ={∅,⊤}=∗
               recv_nested_au Φ
     (* Case: Channel is closed *)
-    | chan_rep.Closed [] => own_chan s ={∅,⊤}=∗ Φ (zero_val V) false
+    | chanstate.Closed [] => own_chan s ={∅,⊤}=∗ Φ (zero_val V) false
     (* Case: Closed but still have values to drain *)
-    | chan_rep.Closed (v::rest) => (own_chan (chan_rep.Closed rest) ={∅,⊤}=∗ Φ v true)
+    | chanstate.Closed (v::rest) => (own_chan (chanstate.Closed rest) ={∅,⊤}=∗ Φ v true)
     (* Case: Buffered channel with values in buffer *)
-    | chan_rep.Buffered (v::rest) => (own_chan (chan_rep.Buffered rest) ={∅,⊤}=∗ Φ v true)
+    | chanstate.Buffered (v::rest) => (own_chan (chanstate.Buffered rest) ={∅,⊤}=∗ Φ v true)
     | _ => True
     end).
 
@@ -163,14 +163,14 @@ Definition nonblocking_recv_au (Φ : V → bool → iProp Σ) Φnotready : iProp
            "Hcont" ∷
              match s with
              (* Case: Sender is waiting, can complete immediately *)
-             | chan_rep.SndPending v =>
-                 own_chan chan_rep.RcvCommit ={∅,⊤}=∗ Φ v true
+             | chanstate.SndPending v =>
+                 own_chan chanstate.RcvCommit ={∅,⊤}=∗ Φ v true
              (* Case: Channel is closed *)
-             | chan_rep.Closed [] => own_chan s ={∅,⊤}=∗ Φ (zero_val V) false
+             | chanstate.Closed [] => own_chan s ={∅,⊤}=∗ Φ (zero_val V) false
              (* Case: Channel is closed but still has values to drain *)
-             | chan_rep.Closed (v::rest) => (own_chan (chan_rep.Closed rest) ={∅,⊤}=∗ Φ v true)
+             | chanstate.Closed (v::rest) => (own_chan (chanstate.Closed rest) ={∅,⊤}=∗ Φ v true)
              (* Case: Buffered channel with values *)
-             | chan_rep.Buffered (v::rest) => (own_chan (chan_rep.Buffered rest) ={∅,⊤}=∗ Φ v true)
+             | chanstate.Buffered (v::rest) => (own_chan (chanstate.Buffered rest) ={∅,⊤}=∗ Φ v true)
              | _ => True
              end) ∧
   Φnotready.
@@ -182,14 +182,14 @@ Definition nonblocking_recv_au_alt (Φ : V → bool → iProp Σ) Φnotready : i
      "Hcont" ∷
     (match s with
     (* Case: Sender is waiting, can complete immediately *)
-    | chan_rep.SndPending v =>
-          own_chan chan_rep.RcvCommit ={∅,⊤}=∗ Φ v true
+    | chanstate.SndPending v =>
+          own_chan chanstate.RcvCommit ={∅,⊤}=∗ Φ v true
     (* Case: Channel is closed *)
-    | chan_rep.Closed [] => own_chan s ={∅,⊤}=∗ Φ (zero_val V) false
+    | chanstate.Closed [] => own_chan s ={∅,⊤}=∗ Φ (zero_val V) false
     (* Case: Channel is closed but still has values to drain *)
-    | chan_rep.Closed (v::rest) => (own_chan (chan_rep.Closed rest) ={∅,⊤}=∗ Φ v true)
+    | chanstate.Closed (v::rest) => (own_chan (chanstate.Closed rest) ={∅,⊤}=∗ Φ v true)
     (* Case: Buffered channel with values *)
-    | chan_rep.Buffered (v::rest) => (own_chan (chan_rep.Buffered rest) ={∅,⊤}=∗ Φ v true)
+    | chanstate.Buffered (v::rest) => (own_chan (chanstate.Buffered rest) ={∅,⊤}=∗ Φ v true)
     | _ => (own_chan s ={∅,⊤}=∗ Φnotready)
     end).
 
@@ -200,10 +200,10 @@ Definition send_nested_au (Φ : iProp Σ) : iProp Σ :=
      "Hcontinner" ∷
     (match s with
     (* Case: Receiver has committed, complete the exchange *)
-    | chan_rep.RcvCommit =>
-           own_chan chan_rep.Idle ={∅,⊤}=∗ Φ
+    | chanstate.RcvCommit =>
+           own_chan chanstate.Idle ={∅,⊤}=∗ Φ
     (* Case: Channel is closed, operation fails *)
-    | chan_rep.Closed drain => False
+    | chanstate.Closed drain => False
     | _ => True
     end).
 
@@ -214,19 +214,19 @@ Definition send_au (Φ : iProp Σ) : iProp Σ :=
      "Hcont" ∷
     (match s with
     (* Case: Receiver is waiting, can complete immediately *)
-    | chan_rep.RcvPending =>
-        own_chan (chan_rep.SndCommit v) ={∅,⊤}=∗ Φ
+    | chanstate.RcvPending =>
+        own_chan (chanstate.SndCommit v) ={∅,⊤}=∗ Φ
     (* Case: Channel is idle, need to wait for receiver *)
-    | chan_rep.Idle =>
-          own_chan (chan_rep.SndPending v) ={∅,⊤}=∗
+    | chanstate.Idle =>
+          own_chan (chanstate.SndPending v) ={∅,⊤}=∗
               send_nested_au Φ
     (* Case: Channel is closed, client must rule this out *)
-    | chan_rep.Closed drain => False
+    | chanstate.Closed drain => False
     (* Case: Buffered channel *)
-    | chan_rep.Buffered buff =>
+    | chanstate.Buffered buff =>
         (* own_chan implies new buffer size is <= cap, so the whole update is
         equivalent to True if no space is available *)
-        (own_chan (chan_rep.Buffered (buff ++ [v])) ={∅,⊤}=∗ Φ)
+        (own_chan (chanstate.Buffered (buff ++ [v])) ={∅,⊤}=∗ Φ)
     | _ => True
     end).
 
@@ -237,13 +237,13 @@ Definition nonblocking_send_au Φ Φnotready : iProp Σ :=
            "Hcont" ∷
              match s with
              (* Case: Receiver is waiting, can complete immediately *)
-             | chan_rep.RcvPending =>
-                 own_chan (chan_rep.SndCommit v) ={∅,⊤}=∗ Φ
+             | chanstate.RcvPending =>
+                 own_chan (chanstate.SndCommit v) ={∅,⊤}=∗ Φ
              (* Case: Channel is closed, client must rule this out *)
-             | chan_rep.Closed drain => False
+             | chanstate.Closed drain => False
              (* Case: Buffered channel *)
-             | chan_rep.Buffered buff =>
-                   (own_chan (chan_rep.Buffered (buff ++ [v])) ={∅,⊤}=∗ Φ)
+             | chanstate.Buffered buff =>
+                   (own_chan (chanstate.Buffered (buff ++ [v])) ={∅,⊤}=∗ Φ)
              | _ => True
              end) ∧
   Φnotready.
@@ -255,8 +255,8 @@ Definition buffered_send_au Φ : iProp Σ :=
     ▷∃ s, "Hoc" ∷ own_chan s ∗
           "Hcont" ∷
             match s with
-            | chan_rep.Buffered buf => own_chan (chan_rep.Buffered (buf ++ [v])) ={∅,⊤}=∗ Φ
-            | chan_rep.Closed _ => False
+            | chanstate.Buffered buf => own_chan (chanstate.Buffered (buf ++ [v])) ={∅,⊤}=∗ Φ
+            | chanstate.Closed _ => False
             | _ => True
             end.
 
@@ -286,14 +286,14 @@ Definition nonblocking_send_au_alt Φ Φnotready : iProp Σ :=
           "Hcont" ∷
             match s with
             (* Case: Receiver is waiting, can complete immediately *)
-            | chan_rep.RcvPending =>
-                own_chan (chan_rep.SndCommit v) ={∅,⊤}=∗ Φ
+            | chanstate.RcvPending =>
+                own_chan (chanstate.SndCommit v) ={∅,⊤}=∗ Φ
             (* Case: Channel is closed, client must rule this out *)
-            | chan_rep.Closed drain => False
+            | chanstate.Closed drain => False
             (* Case: Buffered channel *)
-            | chan_rep.Buffered buff =>
+            | chanstate.Buffered buff =>
                 if decide (length buff < sint.Z $ chan_cap γ) then
-                  (own_chan (chan_rep.Buffered (buff ++ [v])) ={∅,⊤}=∗ Φ)
+                  (own_chan (chanstate.Buffered (buff ++ [v])) ={∅,⊤}=∗ Φ)
                 else
                   (own_chan s ={∅,⊤}=∗ Φnotready)
             | _ => (own_chan s ={∅,⊤}=∗ Φnotready)
@@ -305,13 +305,13 @@ Definition close_au (Φ : iProp Σ) : iProp Σ :=
      "Hcontinner" ∷
     (match s with
     (* Case: Ready to close unbuffered *)
-    | chan_rep.Idle =>
-           own_chan (chan_rep.Closed []) ={∅,⊤}=∗ Φ
+    | chanstate.Idle =>
+           own_chan (chanstate.Closed []) ={∅,⊤}=∗ Φ
     (* Case: Buffered, go to drain *)
-    | chan_rep.Buffered buff =>
-          own_chan (chan_rep.Closed buff) ={∅,⊤}=∗ Φ
+    | chanstate.Buffered buff =>
+          own_chan (chanstate.Closed buff) ={∅,⊤}=∗ Φ
     (* Case: Channel is closed already, panic *)
-    | chan_rep.Closed drain => False
+    | chanstate.Closed drain => False
     | _ => True
     end).
 
@@ -407,7 +407,7 @@ Definition chan_logical (s : chan_phys_state V): iProp Σ :=
        ∃ (Φr: V → bool → iProp Σ),
            "Hoffer" ∷ saved_offer 1 None True True ∗
            "Hpred" ∷ saved_pred_own γ.(offer_parked_pred_name) (DfracOwn 1) (uncurry Φr) ∗
-            own_chan γ chan_rep.Idle
+            own_chan γ chanstate.Idle
 
   | SndWait v =>
        ∃ (P: iProp Σ) (Φ: iProp Σ) (Φr: V → bool → iProp Σ),
@@ -415,7 +415,7 @@ Definition chan_logical (s : chan_phys_state V): iProp Σ :=
           "HP" ∷ P ∗
           "Hpred" ∷ saved_pred_own γ.(offer_parked_pred_name) (DfracOwn 1) (uncurry Φr) ∗
           "Hau" ∷ (P -∗ send_au γ v Φ) ∗
-           own_chan γ chan_rep.Idle
+           own_chan γ chanstate.Idle
 
   | RcvWait =>
        ∃ (P: iProp Σ) (Φr: V → bool → iProp Σ),
@@ -423,31 +423,31 @@ Definition chan_logical (s : chan_phys_state V): iProp Σ :=
          "HP" ∷ P ∗
          "Hpred" ∷ saved_pred_own γ.(offer_parked_pred_name) (DfracOwn (1/2)) (uncurry Φr) ∗
          "Hau" ∷ (P -∗ recv_au γ V Φr) ∗
-         own_chan γ chan_rep.Idle
+         own_chan γ chanstate.Idle
 
   | SndDone v =>
        ∃ (P: iProp Σ) (Φr: V → bool → iProp Σ),
        "Hpred" ∷ saved_pred_own γ.(offer_parked_pred_name) (DfracOwn (1/2)) (uncurry Φr) ∗
        "Hoffer" ∷ saved_offer (1/2) (Some Rcv) P True ∗
        "Hau" ∷ recv_nested_au γ V Φr ∗
-       own_chan γ (chan_rep.SndCommit v)
+       own_chan γ (chanstate.SndCommit v)
 
   | RcvDone =>
        ∃ (P: iProp Σ) (Φ: iProp Σ) (Φr: V → bool → iProp Σ) (v:V),
          "Hoffer" ∷ saved_offer (1/2) (Some (Snd v)) P Φ ∗
          "Hpred" ∷ saved_pred_own γ.(offer_parked_pred_name) (DfracOwn 1) (uncurry Φr) ∗
          "Hau" ∷ send_nested_au γ V Φ ∗
-       own_chan γ chan_rep.RcvCommit
+       own_chan γ chanstate.RcvCommit
 
   | Closed [] =>
-          own_chan γ (chan_rep.Closed []) ∗
+          own_chan γ (chanstate.Closed []) ∗
            "Hoffer" ∷ (⌜chan_cap γ = 0⌝ -∗ saved_offer 1 None True True)
 
   | Closed drain =>
-          own_chan γ (chan_rep.Closed drain)
+          own_chan γ (chanstate.Closed drain)
 
   | Buffered buff =>
-          own_chan γ (chan_rep.Buffered buff)
+          own_chan γ (chanstate.Buffered buff)
   end.
 
 (** The main invariant protected by the channel's mutex.
@@ -628,31 +628,31 @@ Proof.
   compute_done. (* 1/2 + 1 = 3/2 > 1 *)
 Qed.
 
-Lemma chan_rep_update s s' :
-  chan_rep γ V 1 s ==∗ chan_rep γ V 1 s'.
+Lemma chanstate_update s s' :
+  chanstate γ V 1 s ==∗ chanstate γ V 1 s'.
 Proof.
   iApply ghost_var_update.
 Qed.
 
-Lemma chan_rep_agree q1 q2 s s' :
-  chan_rep γ V q1 s -∗ chan_rep γ V q2 s' -∗ ⌜s = s'⌝.
+Lemma chanstate_agree q1 q2 s s' :
+  chanstate γ V q1 s -∗ chanstate γ V q2 s' -∗ ⌜s = s'⌝.
 Proof.
   iIntros "H1 H2". by iApply (ghost_var_agree with "H1 H2").
 Qed.
 
 (* NOTE: unused *)
-#[local] Lemma chan_rep_combine s s' :
-  chan_rep γ V (1/2) s -∗ chan_rep γ V (1/2) s' -∗ chan_rep γ V 1 s.
+#[local] Lemma chanstate_combine s s' :
+  chanstate γ V (1/2) s -∗ chanstate γ V (1/2) s' -∗ chanstate γ V 1 s.
 Proof.
-  iIntros "H1 H2". iDestruct (chan_rep_agree with "H1 H2") as %->.
+  iIntros "H1 H2". iDestruct (chanstate_agree with "H1 H2") as %->.
   iCombine "H1 H2" as "H". done.
 Qed.
 
-Lemma chan_rep_halves_update s1 s2 s' :
-  chan_rep γ V (1/2) s1 -∗ chan_rep γ V (1/2) s2 ==∗
-  chan_rep γ V (1/2) s' ∗ chan_rep γ V (1/2) s'.
+Lemma chanstate_halves_update s1 s2 s' :
+  chanstate γ V (1/2) s1 -∗ chanstate γ V (1/2) s2 ==∗
+  chanstate γ V (1/2) s' ∗ chanstate γ V (1/2) s'.
 Proof.
-  rewrite /chan_rep.
+  rewrite /chanstate.
   apply ghost_var_update_halves.
 Qed.
 
@@ -674,14 +674,14 @@ Lemma own_chan_halves_update s'' s s' :
 Proof.
   intros Hvalid.
   iIntros "(Hv1 & %) (Hv2 & %)". rewrite /named.
-  iMod (chan_rep_halves_update with "Hv1 Hv2") as "[$ $]".
+  iMod (chanstate_halves_update with "Hv1 Hv2") as "[$ $]".
   iFrame "#∗".
   iPureIntro.
   auto.
 Qed.
 
 Lemma own_chan_buffer_size buf :
-  own_chan γ (chan_rep.Buffered buf) -∗
+  own_chan γ (chanstate.Buffered buf) -∗
   ⌜Z.of_nat (length buf) ≤ sint.Z $ chan_cap γ⌝.
 Proof.
   iNamed 1.
@@ -690,7 +690,7 @@ Proof.
 Qed.
 
 Lemma own_chan_drain_size drain :
-  own_chan γ (chan_rep.Closed drain) -∗
+  own_chan γ (chanstate.Closed drain) -∗
   ⌜Z.of_nat (length drain) ≤ sint.Z $ chan_cap γ⌝.
 Proof.
   iNamed 1.
