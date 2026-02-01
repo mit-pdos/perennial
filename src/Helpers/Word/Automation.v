@@ -15,9 +15,10 @@ Set Default Proof Mode "Classic".
   expressions together along with (in)equalities. E.g.  [word.mul (W32 4)
   (word.add x y)] is a "linear" expression.
 
-    [word] automatically unfolds user-specified defs, using the [word] HintDb.
-  add a def with [Hint Unfold foo : word.],
-  or [Hint Rewrite foo_unseal : word.] for opaque / sealed defs.
+    To unfold a constant, use the [word] HintDb.
+  For normal constants, do [Hint Unfold foo : word].
+  For sealed constants, do [Hint Rewrite foo_unseal : word] and
+  [Hint Unfold foo_def : word].
 
     [word] is likely to fail at handling non-linear expressions, e.g. [word.mul
   x y] where [x] and [y] are both non-constants. In some proofs, it is possible
@@ -130,9 +131,9 @@ Ltac2 handle_goal logger :=
 Create HintDb word.
 
 Ltac2 unfold_w_whatever () :=
-  (* unlike autounfold, autorewrite fails if empty DB, so wrap in try. *)
-  ltac1:(try autorewrite with word in * );
-  ltac1:(autounfold with word in * );
+  (* unlike autounfold, autorewrite fails if empty DB, so wrap in [try]. *)
+  (* executing one hint may expose terms that another hint can act on. *)
+  ltac1:(repeat (progress (try autorewrite with word in * ; autounfold with word in * )));
   unfold W64, W32, W16, W8, w64, w32, w16, w8 in *.
 
 (* Runs [t] and panics unrecoverably if it throws an exception. *)

@@ -140,7 +140,9 @@ Proof.
   iDestruct "Hi" as (?) "[>Hstate HP]".
   iFrame. iApply fupd_mask_intro. { solve_ndisj. } iIntros "Hmask".
   iIntros "% Hst". subst.
-  rewrite rfrac_unseal. rewrite /rfrac_def Qp.mul_inv_r.
+  rewrite rfrac_unseal /rfrac_def.
+  replace (_ + _ - _) with (rwmutex.actualMaxReaders + 1) by lia.
+  rewrite Qp.mul_inv_r.
   iDestruct "HP" as "(? & ? & >Hl & HP)".
   iDestruct ("HΦ" with "[$]") as "$".
   iMod "Hmask" as "_".
@@ -165,16 +167,18 @@ Proof.
   iMod "Hmask" as "_".
   iMod ("Hclose" with "[-]"); last done.
   iFrame.
-  rewrite rfrac_unseal. rewrite /rfrac_def Qp.mul_inv_r. iFrame.
+  rewrite rfrac_unseal /rfrac_def.
+  replace (_ + _ - _) with (rwmutex.actualMaxReaders + 1) by lia.
+  rewrite Qp.mul_inv_r.
+  iFrame.
 Qed.
 
-Lemma init_RWMutex P {E} (rw : loc) :
-  □(∀ q1 q2, P (q1 + q2)%Qp ∗-∗ P q1 ∗ P q2) -∗
+Lemma init_RWMutex P {E} (rw : loc) {HPfrac : fractional.Fractional P} :
   ▷ P 1%Qp -∗
   rw ↦ (default_val sync.RWMutex.t) ={E}=∗
   [∗] replicate (Z.to_nat rwmutex.actualMaxReaders) (own_RWMutex rw P).
 Proof.
-  iIntros "#HPfrac HP Hrw".
+  iIntros "HP Hrw".
   iMod (rwmutex.init_RWMutex (nroot.@"rw") with "[$]") as (?) "(#His & Hstate & Hrtoks)".
   iMod own_tok_auth_alloc as (γmax) "Hauth".
   iMod (own_tok_auth_add (Z.to_nat rwmutex.actualMaxReaders) with "Hauth") as "[Hauth Htoks]".
@@ -190,10 +194,18 @@ Proof.
   iDestruct (own_toks_add _ 1 with "Htoks") as "[? ?]".
   iDestruct "Hrtoks" as "[? ?]".
   iThaw "Hauth". iFrame "∗#".
+  iSplit.
+  { rewrite /fractional.Fractional in HPfrac.
+    iIntros "!> *".
+    by iDestruct equiv_wand_iff as "$". }
   iApply ("IHn" with "[$] [$]").
   Unshelve.
   2:{
-    iFrame. rewrite rfrac_unseal. rewrite /rfrac_def Qp.mul_inv_r. iFrame.
+    iFrame.
+    rewrite rfrac_unseal /rfrac_def.
+    replace (_ + _ - _) with (rwmutex.actualMaxReaders + 1) by lia.
+    rewrite Qp.mul_inv_r.
+    iFrame.
   }
 Qed.
 
