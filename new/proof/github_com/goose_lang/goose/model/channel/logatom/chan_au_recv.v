@@ -17,10 +17,11 @@ Local Set Default Proof Using "All".
 Context `[!chanG Σ V].
 Context `[!ZeroVal V] `[!TypedPointsto V] `[!IntoValTyped V t].
 
-Local Lemma wp_TryReceive_blocking (ch: loc)  (γ: chan_names) :
+
+Local Lemma wp_TryReceive_blocking ch γ :
   ∀ Φ ,
-  is_chan ch γ -∗
-  recv_au ch γ (λ v ok, Φ (#true, #v, #ok)%V) ∧ Φ (#false, #(zero_val V), #true)%V -∗
+  is_chan ch γ V -∗
+  recv_au γ V (λ v ok, Φ (#true, #v, #ok)%V) ∧ Φ (#false, #(zero_val V), #true)%V -∗
   WP ch @! (go.PointerType (channel.Channel t)) @! "TryReceive" #true {{ Φ }}.
 Proof.
   wp_start as "Hch". iNamed "Hch".
@@ -41,7 +42,7 @@ Proof.
         word.
       }
       iLeft in "HΦ".
-      iAssert (own_chan ch (chan_rep.Buffered (v :: rest)) γ)%I
+      iAssert (own_chan γ (chan_rep.Buffered (v :: rest)))%I
         with "[Hchanrepfrag]" as "Hown".
       { iFrame. iPureIntro. unfold chan_cap_valid. done. }
       iMod (lc_fupd_elim_later with "[$] HΦ") as "HΦ".
@@ -109,7 +110,7 @@ Proof.
   - iNamed "phys". wp_auto_lc 5.
     iNamed "offer".
     iDestruct (offer_idle_to_recv with "Hoffer") as ">[offer1 offer2]".
-    iMod ((saved_prop.saved_pred_update (K (λ (v0 : V) (ok : bool), Φ (# true, # v0, # ok)%V)
+    iMod ((saved_prop.saved_pred_update (uncurry (λ (v0 : V) (ok : bool), Φ (# true, # v0, # ok)%V)
           )) with "Hpred") as "[Hpred1 Hpred2]".
     wp_apply (wp_Mutex__Unlock
                with "[$lock state v slice slice_cap buffer  offer1 Hpred1 Hchanrepfrag HΦ $Hlock]").
@@ -130,7 +131,6 @@ Proof.
     {
       iNamed "phys". wp_auto_lc 5.
       iNamed "offer".
-      unfold offer_bundle_empty.
       iExFalso.
       iApply (saved_offer_half_full_invalid with "offer2 Hoffer").
 
@@ -139,15 +139,15 @@ Proof.
       iNamed "phys". wp_auto_lc 5.
       iNamed "offer".
       iExFalso.
-      iDestruct (offer_bundle_agree with "[$offer2 $Hoffer]") as "[%Heq _]".
+      iDestruct (saved_offer_agree with "[$offer2 $Hoffer]") as "[%Heq _]".
       congruence.
 
     }
     {
       unfold chan_phys. iNamed "phys". wp_auto_lc 5.
       iNamed "offer".
-      iDestruct (offer_bundle_lc_agree with "[$] [$offer2] [$Hoffer]") as ">(%Heq & Hpeq & H & H1)".
-      iMod ((saved_prop.saved_pred_update_halves (K Φr0)
+      iDestruct (saved_offer_lc_agree with "[$] [$offer2] [$Hoffer]") as ">(%Heq & Hpeq & H & H1)".
+      iMod ((saved_prop.saved_pred_update_halves (uncurry Φr0)
             ) with "Hpred2 Hpred") as "[Hpred1 Hpred2]".
       iCombine "Hpred1 Hpred2" as "Hp".
       wp_apply (wp_Mutex__Unlock
@@ -168,7 +168,7 @@ Proof.
       iMod "Hau".
       iMod (lc_fupd_elim_later with "[$] Hau") as "HP".
       iNamed "HP".
-      iAssert (own_chan ch (chan_rep.SndCommit v0) γ)%I
+      iAssert (own_chan γ (chan_rep.SndCommit v0))%I
         with "[Hchanrepfrag]" as "Hown".
       { iFrame "∗#". iPureIntro. cbn [chan_cap_valid]. done. }
       iDestruct (own_chan_agree with "[$Hocinner] [$Hown]") as "%Hseq". subst s.
@@ -179,25 +179,25 @@ Proof.
       iModIntro.
       iDestruct (saved_prop.saved_pred_agree γ.(offer_parked_pred_name)
                                                  (DfracOwn (1/2)) (DfracOwn (1/2))
-                                                 (K (λ (v1 : V) (ok : bool), Φ (# true, # v1, # ok)%V))
-                                                 (K Φr0)
+                                                 (uncurry (λ (v1 : V) (ok : bool), Φ (# true, # v1, # ok)%V))
+                                                 (uncurry Φr0)
                                                  (v0, true)
                   with "[$Hpred2] [$Hpred]") as "#Hagree".
       iCombine "Hpred2 Hpred" as "offer".
       rewrite dfrac_op_own Qp.half_half.
-      iDestruct (offer_bundle_lc_agree with "[$] [$offer2] [$Hoffer]") as ">(%Heq & Hpeq & H & H1)".
+      iDestruct (saved_offer_lc_agree with "[$] [$offer2] [$Hoffer]") as ">(%Heq & Hpeq & H & H1)".
       wp_apply (wp_Mutex__Unlock
                  with "[$lock state v slice slice_cap buffer H1   Hgv2 offer   $Hlock]").
       { unfold chan_inv_inner. iExists (Idle). iFrame.
       }
-      unfold K.
+      unfold uncurry.
       iRewrite -"Hagree" in "Hcont". done.
     }
     {
       iNamed "phys". wp_auto.
       iNamed "offer".
       iExFalso.
-      iDestruct (offer_bundle_agree with "[$offer2 $Hoffer]") as "[%Heq _]".
+      iDestruct (saved_offer_agree with "[$offer2 $Hoffer]") as "[%Heq _]".
       discriminate Heq.
 
     }
@@ -211,7 +211,7 @@ Proof.
         iNamed "Hoffer". unfold chan_cap_valid in Hcapvalid.
         iExFalso.
         iSpecialize ("Hoffer" with "[%]"); first word.
-        iDestruct (offer_bundle_agree with "[$offer2 $Hoffer]") as "[%Heq _]".
+        iDestruct (saved_offer_agree with "[$offer2 $Hoffer]") as "[%Heq _]".
         discriminate Heq.
       }
       {
@@ -230,10 +230,10 @@ Proof.
     iMod (lc_fupd_elim_later with "[$] HP") as "HP". iNamed "HP".
     iDestruct "Hoc" as "(H1 & H2)".
     iDestruct (chan_rep_agree with "[$H1] [$Hchanrepfrag]") as "%Hseq". subst s.
-    iAssert (own_chan ch (chan_rep.Idle) γ)%I
+    iAssert (own_chan γ (chan_rep.Idle))%I
       with "[Hchanrepfrag]" as "Hown".
     { iFrame "∗#". iPureIntro. done. }
-    iAssert (own_chan ch (chan_rep.Idle) γ)%I
+    iAssert (own_chan γ (chan_rep.Idle))%I
       with "[H1]" as "Hown1".
     { iFrame. iPureIntro. done. }
     iDestruct (own_chan_halves_update (chan_rep.SndPending v)
@@ -302,7 +302,7 @@ Proof.
       wp_if_destruct.
       {
         iLeft in "HΦ".
-        iAssert (own_chan ch (chan_rep.Closed (v :: buffer)) γ)%I
+        iAssert (own_chan γ (chan_rep.Closed (v :: buffer)))%I
           with "[Hchanrepfrag]" as "Hown".
         { iFrame. iPureIntro. done. }
         iApply fupd_wp.
@@ -369,10 +369,10 @@ Proof.
     }
 Qed.
 
-Local Lemma wp_TryReceive_nonblocking (ch : loc)  (γ : chan_names) :
+Local Lemma wp_TryReceive_nonblocking ch γ :
   ∀ Φ ,
-  is_chan ch γ -∗
-  nonblocking_recv_au ch γ (λ v ok, Φ (#true, #v, #ok)%V) (Φ (#false, #(zero_val V), #true)%V) -∗
+  is_chan ch γ V -∗
+  nonblocking_recv_au γ V (λ v ok, Φ (#true, #v, #ok)%V) (Φ (#false, #(zero_val V), #true)%V) -∗
   WP ch @! (go.PointerType (channel.Channel t)) @! "TryReceive" #false {{ Φ }}.
 Proof.
   wp_start as "#Hch". iNamed "Hch".
@@ -539,10 +539,10 @@ Proof.
       done.
 Qed.
 
-Local Lemma wp_TryReceive_nonblocking_alt (ch : loc) (γ : chan_names) :
+Local Lemma wp_TryReceive_nonblocking_alt ch γ :
   ∀ Φ ,
-  is_chan ch γ -∗
-  nonblocking_recv_au_alt ch γ (λ v ok, Φ (#true, #v, #ok)%V) (Φ (#false, #(zero_val V), #true)%V) -∗
+  is_chan ch γ V -∗
+  nonblocking_recv_au_alt γ V (λ v ok, Φ (#true, #v, #ok)%V) (Φ (#false, #(zero_val V), #true)%V) -∗
   WP ch @! (go.PointerType (channel.Channel t)) @! "TryReceive" #false {{ Φ }}.
 Proof.
   wp_start as "#Hch". iNamed "Hch".
@@ -752,15 +752,15 @@ Proof.
       done.
 Qed.
 
-Lemma wp_TryReceive (ch : loc) (γ : chan_names) (blocking : bool) :
+Lemma wp_TryReceive ch γ (blocking : bool) :
   ∀ (Φ : val → iProp Σ),
-  is_chan ch γ -∗
-  (if blocking then recv_au ch γ (λ v ok, Φ (#true, #v, #ok)%V) ∧
+  is_chan ch γ V -∗
+  (if blocking then recv_au γ V (λ v ok, Φ (#true, #v, #ok)%V) ∧
                     Φ (#false, #(zero_val V), #true)%V
-   else (nonblocking_recv_au ch γ
+   else (nonblocking_recv_au γ V
            (λ v ok, Φ (#true, #v, #ok)%V)
            (Φ (#false, #(zero_val V), #true)%V)
-           ∨ nonblocking_recv_au_alt ch γ
+           ∨ nonblocking_recv_au_alt γ V
                (λ v ok, Φ (#true, #v, #ok)%V)
                (Φ (#false, #(zero_val V), #true)%V)
   )) -∗
@@ -774,10 +774,10 @@ Proof.
     + wp_apply (wp_TryReceive_nonblocking_alt with "[$] [$]").
 Qed.
 
-Lemma wp_Receive (ch: loc) (γ: chan_names) :
+Lemma wp_Receive ch γ :
   ∀ Φ,
-  is_chan ch γ -∗
-  (£1 ∗ £1 ∗ £1 ∗ £1 -∗ recv_au ch γ (λ v ok, Φ (#v, #ok)%V)) -∗
+  is_chan ch γ V -∗
+  (£1 ∗ £1 ∗ £1 ∗ £1 -∗ recv_au γ V (λ v ok, Φ (#v, #ok)%V)) -∗
   WP ch @! (go.PointerType (channel.Channel t)) @! "Receive" #() {{ Φ }}.
 Proof.
   wp_start as "#Hic". iRename "HΦ" into "Hau".

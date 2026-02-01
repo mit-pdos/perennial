@@ -91,81 +91,13 @@ Definition chanΣ V : gFunctors :=
   subG (chanΣ V) Σ → chanG Σ V.
 Proof. solve_inG. Qed.
 
-Section defns.
+Section au_defns.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}
   {sem : go.ChanSemantics}.
-Local Set Default Proof Using "sem_fn pre_sem sem".
 
-Context (ch : loc) (γ : chan_names) (V : Type) `{!chanG Σ V}.
+Context (ch : loc) (γ : chan_names) (V : Type) (v : V) `{!chanG Σ V}.
 Context `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}.
-
-(** Maps physical channel states to their heap representations.
-    Each state corresponds to specific field values in the Go struct. *)
-Definition chan_phys (s: chan_phys_state V) : iProp Σ :=
-  match s with
-    | Closed [] =>
-        (∃ (slice_val: slice.t),
-            "state" ∷ (ch.[channel.Channel.t V , "state"] ↦ (W64 6)) ∗
-            "slice" ∷ slice_val ↦* ([] : list V) ∗
-            "slice_cap" ∷ own_slice_cap V slice_val (DfracOwn 1) ∗
-            "buffer" ∷ ch.[channel.Channel.t V, "buffer"] ↦ slice_val)
-    | Closed drain =>
-        ∃ (slice_val: slice.t),
-        "state" ∷ ch.[channel.Channel.t V, "state"] ↦ (W64 6) ∗
-        "slice" ∷ slice_val ↦* drain ∗
-        "slice_cap" ∷ own_slice_cap V slice_val (DfracOwn 1) ∗
-        "buffer" ∷ ch.[channel.Channel.t V, "buffer"] ↦ slice_val
-    | Buffered buff =>
-        ∃ (slice_val: slice.t),
-        "state" ∷ ch.[channel.Channel.t V, "state"] ↦ (W64 0) ∗
-        "slice" ∷ slice_val ↦* buff ∗
-        "slice_cap" ∷ own_slice_cap V slice_val (DfracOwn 1) ∗
-        "buffer" ∷ ch.[channel.Channel.t V, "buffer"] ↦ slice_val
-    | Idle =>
-        ∃ (v:V) (slice_val: slice.t),
-        "state" ∷ ch.[channel.Channel.t V, "state"] ↦ (W64 1) ∗
-        "v" ∷ ch.[channel.Channel.t V, "v"] ↦ v ∗
-        "slice" ∷ slice_val ↦* ([] : list V) ∗
-        "slice_cap" ∷ own_slice_cap V slice_val (DfracOwn 1) ∗
-        "buffer" ∷ ch.[channel.Channel.t V, "buffer"] ↦ slice_val
-    | SndWait v =>
-        ∃ (slice_val: slice.t),
-        "state" ∷ ch.[channel.Channel.t V, "state"] ↦ (W64 2) ∗
-        "v" ∷ ch.[channel.Channel.t V, "v"] ↦ v ∗
-        "slice" ∷ slice_val ↦* ([] : list V) ∗
-        "slice_cap" ∷ own_slice_cap V slice_val (DfracOwn 1) ∗
-        "buffer" ∷ ch.[channel.Channel.t V, "buffer"] ↦ slice_val
-    | RcvWait =>
-        ∃ (v:V) (slice_val: slice.t),
-        "state" ∷ ch.[channel.Channel.t V, "state"] ↦ (W64 3) ∗
-        "v" ∷ ch.[channel.Channel.t V, "v"] ↦ v ∗
-        "slice" ∷ slice_val ↦* ([] : list V) ∗
-        "slice_cap" ∷ own_slice_cap V slice_val (DfracOwn 1) ∗
-        "buffer" ∷ ch.[channel.Channel.t V, "buffer"] ↦ slice_val
-    | SndDone v =>
-        ∃ (slice_val: slice.t),
-        "state" ∷ ch.[channel.Channel.t V, "state"] ↦ (W64 4) ∗
-        "v" ∷ ch.[channel.Channel.t V, "v"] ↦ v ∗
-        "slice" ∷ slice_val ↦* ([] : list V) ∗
-        "slice_cap" ∷ own_slice_cap V slice_val (DfracOwn 1) ∗
-        "buffer" ∷ ch.[channel.Channel.t V, "buffer"] ↦ slice_val
-    | RcvDone =>
-        ∃ (v : V) (slice_val: slice.t),
-        "state" ∷ ch.[channel.Channel.t V, "state"] ↦ (W64 5) ∗
-        "v" ∷ ch.[channel.Channel.t V, "v"] ↦ v ∗
-        "slice" ∷ slice_val ↦* ([] : list V) ∗
-        "slice_cap" ∷ own_slice_cap V slice_val (DfracOwn 1) ∗
-        "buffer" ∷ ch.[channel.Channel.t V, "buffer"] ↦ slice_val
-    end.
-
-(** Bundles together offer-related ghost state for atomic operations *)
-Definition saved_offer (q : Qp)
-  (lock_val : option (offer_lock V))
-  (parked_prop continuation_prop : iProp Σ) : iProp Σ :=
-  ghost_var γ.(offer_lock_name) q lock_val ∗
-  saved_prop_own γ.(offer_parked_prop_name) (DfracOwn q) parked_prop ∗
-  saved_prop_own γ.(offer_continuation_name) (DfracOwn q) continuation_prop.
 
 Definition chan_rep (q : Qp) (s : chan_rep.t V) : iProp Σ :=
   ghost_var γ.(state_name) q s.
@@ -183,8 +115,6 @@ Definition chan_cap_valid (s : chan_rep.t V) (cap : Z) : Prop :=
       (Z.of_nat (length drain) ≤ cap) ∧ (0 < cap)
   | _ => cap = 0                            (* All other states are unbuffered *)
   end.
-
-(** ** Channel Ownership Predicate *)
 
 (** Represents ownership of a channel with its logical state *)
 Definition own_chan (s: chan_rep.t V) : iProp Σ :=
@@ -278,7 +208,7 @@ Definition send_nested_au (Φ : iProp Σ) : iProp Σ :=
     end).
 
 (** Slow path send: may need to block and wait *)
-Definition send_au (v : V) (Φ : iProp Σ) : iProp Σ :=
+Definition send_au (Φ : iProp Σ) : iProp Σ :=
    |={⊤,∅}=>
     ▷∃ s, "Hoc" ∷ own_chan s ∗
      "Hcont" ∷
@@ -301,7 +231,7 @@ Definition send_au (v : V) (Φ : iProp Σ) : iProp Σ :=
     end).
 
 (** Fast path send: immediate completion when possible *)
-Definition nonblocking_send_au (v : V) Φ Φnotready : iProp Σ :=
+Definition nonblocking_send_au Φ Φnotready : iProp Σ :=
   (|={⊤,∅}=>
      ▷∃ s, "Hoc" ∷ own_chan s ∗
            "Hcont" ∷
@@ -320,7 +250,7 @@ Definition nonblocking_send_au (v : V) Φ Φnotready : iProp Σ :=
 
 (* Special case update that only works if the channel is known to be buffered.
    This is only an illustrative example. Proofs and specs should always use [send_au_slow] *)
-Definition buffered_send_au (v : V) Φ : iProp Σ :=
+Definition buffered_send_au Φ : iProp Σ :=
   |={⊤,∅}=>
     ▷∃ s, "Hoc" ∷ own_chan s ∗
           "Hcont" ∷
@@ -350,7 +280,7 @@ Definition buffered_send_au (v : V) Φ : iProp Σ :=
     nonblocking channel operations. To be worth it, it would also require having
     a canonical version of the select spec, for which there are currently two
     (see [golang/theory/chan.v]). *)
-Definition nonblocking_send_au_alt (v : V) Φ Φnotready : iProp Σ :=
+Definition nonblocking_send_au_alt Φ Φnotready : iProp Σ :=
   |={⊤,∅}=>
     ▷∃ s, "Hoc" ∷ own_chan s ∗
           "Hcont" ∷
@@ -385,6 +315,88 @@ Definition close_au (Φ : iProp Σ) : iProp Σ :=
     | _ => True
     end).
 
+End au_defns.
+
+Global Arguments own_chan {_} (γ) {V _} (s).
+Global Arguments send_au {_ _ _ _ _ _} (γ) {V} (v) {_} (Φ).
+Global Arguments nonblocking_send_au {_ _ _ _ _ _} (γ) {V} (v) {_} (Φ).
+Global Arguments nonblocking_send_au_alt {_ _ _ _ _ _} (γ) {V} (v) {_} (Φ).
+Global Arguments chan_cap_valid {_} (s cap).
+
+Section defns.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}
+  {sem : go.ChanSemantics}.
+
+Context (ch : loc) (γ : chan_names) (V : Type) `{!chanG Σ V}.
+Context `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}.
+
+(** Maps physical channel states to their heap representations.
+    Each state corresponds to specific field values in the Go struct. *)
+Definition chan_phys (s: chan_phys_state V) : iProp Σ :=
+  match s with
+    | Closed [] =>
+        (∃ (slice_val: slice.t),
+            "state" ∷ (ch.[channel.Channel.t V , "state"] ↦ (W64 6)) ∗
+            "slice" ∷ slice_val ↦* ([] : list V) ∗
+            "slice_cap" ∷ own_slice_cap V slice_val (DfracOwn 1) ∗
+            "buffer" ∷ ch.[channel.Channel.t V, "buffer"] ↦ slice_val)
+    | Closed drain =>
+        ∃ (slice_val: slice.t),
+        "state" ∷ ch.[channel.Channel.t V, "state"] ↦ (W64 6) ∗
+        "slice" ∷ slice_val ↦* drain ∗
+        "slice_cap" ∷ own_slice_cap V slice_val (DfracOwn 1) ∗
+        "buffer" ∷ ch.[channel.Channel.t V, "buffer"] ↦ slice_val
+    | Buffered buff =>
+        ∃ (slice_val: slice.t),
+        "state" ∷ ch.[channel.Channel.t V, "state"] ↦ (W64 0) ∗
+        "slice" ∷ slice_val ↦* buff ∗
+        "slice_cap" ∷ own_slice_cap V slice_val (DfracOwn 1) ∗
+        "buffer" ∷ ch.[channel.Channel.t V, "buffer"] ↦ slice_val
+    | Idle =>
+        ∃ (v:V) (slice_val: slice.t),
+        "state" ∷ ch.[channel.Channel.t V, "state"] ↦ (W64 1) ∗
+        "v" ∷ ch.[channel.Channel.t V, "v"] ↦ v ∗
+        "slice" ∷ slice_val ↦* ([] : list V) ∗
+        "slice_cap" ∷ own_slice_cap V slice_val (DfracOwn 1) ∗
+        "buffer" ∷ ch.[channel.Channel.t V, "buffer"] ↦ slice_val
+    | SndWait v =>
+        ∃ (slice_val: slice.t),
+        "state" ∷ ch.[channel.Channel.t V, "state"] ↦ (W64 2) ∗
+        "v" ∷ ch.[channel.Channel.t V, "v"] ↦ v ∗
+        "slice" ∷ slice_val ↦* ([] : list V) ∗
+        "slice_cap" ∷ own_slice_cap V slice_val (DfracOwn 1) ∗
+        "buffer" ∷ ch.[channel.Channel.t V, "buffer"] ↦ slice_val
+    | RcvWait =>
+        ∃ (v:V) (slice_val: slice.t),
+        "state" ∷ ch.[channel.Channel.t V, "state"] ↦ (W64 3) ∗
+        "v" ∷ ch.[channel.Channel.t V, "v"] ↦ v ∗
+        "slice" ∷ slice_val ↦* ([] : list V) ∗
+        "slice_cap" ∷ own_slice_cap V slice_val (DfracOwn 1) ∗
+        "buffer" ∷ ch.[channel.Channel.t V, "buffer"] ↦ slice_val
+    | SndDone v =>
+        ∃ (slice_val: slice.t),
+        "state" ∷ ch.[channel.Channel.t V, "state"] ↦ (W64 4) ∗
+        "v" ∷ ch.[channel.Channel.t V, "v"] ↦ v ∗
+        "slice" ∷ slice_val ↦* ([] : list V) ∗
+        "slice_cap" ∷ own_slice_cap V slice_val (DfracOwn 1) ∗
+        "buffer" ∷ ch.[channel.Channel.t V, "buffer"] ↦ slice_val
+    | RcvDone =>
+        ∃ (v : V) (slice_val: slice.t),
+        "state" ∷ ch.[channel.Channel.t V, "state"] ↦ (W64 5) ∗
+        "v" ∷ ch.[channel.Channel.t V, "v"] ↦ v ∗
+        "slice" ∷ slice_val ↦* ([] : list V) ∗
+        "slice_cap" ∷ own_slice_cap V slice_val (DfracOwn 1) ∗
+        "buffer" ∷ ch.[channel.Channel.t V, "buffer"] ↦ slice_val
+    end.
+
+(** Bundles together offer-related ghost state for atomic operations *)
+Definition saved_offer (q : Qp)
+  (lock_val : option (offer_lock V))
+  (parked_prop continuation_prop : iProp Σ) : iProp Σ :=
+  ghost_var γ.(offer_lock_name) q lock_val ∗
+  saved_prop_own γ.(offer_parked_prop_name) (DfracOwn q) parked_prop ∗
+  saved_prop_own γ.(offer_continuation_name) (DfracOwn q) continuation_prop.
 
 (** Maps physical states to their logical representations with ghost state.
     This is the key invariant that connects the physical implementation
@@ -395,48 +407,47 @@ Definition chan_logical (s : chan_phys_state V): iProp Σ :=
        ∃ (Φr: V → bool → iProp Σ),
            "Hoffer" ∷ saved_offer 1 None True True ∗
            "Hpred" ∷ saved_pred_own γ.(offer_parked_pred_name) (DfracOwn 1) (uncurry Φr) ∗
-            own_chan chan_rep.Idle
+            own_chan γ chan_rep.Idle
 
   | SndWait v =>
        ∃ (P: iProp Σ) (Φ: iProp Σ) (Φr: V → bool → iProp Σ),
           "Hoffer" ∷ saved_offer (1/2) (Some (Snd v)) P Φ ∗
-           "Hoffer" ∷ saved_offer (1/2) None True True ∗
           "HP" ∷ P ∗
           "Hpred" ∷ saved_pred_own γ.(offer_parked_pred_name) (DfracOwn 1) (uncurry Φr) ∗
-          "Hau" ∷ (P -∗ send_au v Φ) ∗
-           own_chan chan_rep.Idle
+          "Hau" ∷ (P -∗ send_au γ v Φ) ∗
+           own_chan γ chan_rep.Idle
 
   | RcvWait =>
        ∃ (P: iProp Σ) (Φr: V → bool → iProp Σ),
          "Hoffer" ∷ saved_offer (1/2) (Some Rcv) P True ∗
          "HP" ∷ P ∗
          "Hpred" ∷ saved_pred_own γ.(offer_parked_pred_name) (DfracOwn (1/2)) (uncurry Φr) ∗
-         "Hau" ∷ (P -∗ recv_au Φr) ∗
-         own_chan chan_rep.Idle
+         "Hau" ∷ (P -∗ recv_au γ V Φr) ∗
+         own_chan γ chan_rep.Idle
 
   | SndDone v =>
        ∃ (P: iProp Σ) (Φr: V → bool → iProp Σ),
        "Hpred" ∷ saved_pred_own γ.(offer_parked_pred_name) (DfracOwn (1/2)) (uncurry Φr) ∗
        "Hoffer" ∷ saved_offer (1/2) (Some Rcv) P True ∗
-       "Hau" ∷ recv_nested_au Φr ∗
-       own_chan (chan_rep.SndCommit v)
+       "Hau" ∷ recv_nested_au γ V Φr ∗
+       own_chan γ (chan_rep.SndCommit v)
 
   | RcvDone =>
        ∃ (P: iProp Σ) (Φ: iProp Σ) (Φr: V → bool → iProp Σ) (v:V),
          "Hoffer" ∷ saved_offer (1/2) (Some (Snd v)) P Φ ∗
          "Hpred" ∷ saved_pred_own γ.(offer_parked_pred_name) (DfracOwn 1) (uncurry Φr) ∗
-         "Hau" ∷ send_nested_au Φ ∗
-       own_chan chan_rep.RcvCommit
+         "Hau" ∷ send_nested_au γ V Φ ∗
+       own_chan γ chan_rep.RcvCommit
 
   | Closed [] =>
-          own_chan (chan_rep.Closed []) ∗
+          own_chan γ (chan_rep.Closed []) ∗
            "Hoffer" ∷ (⌜chan_cap γ = 0⌝ -∗ saved_offer 1 None True True)
 
   | Closed drain =>
-          own_chan (chan_rep.Closed drain)
+          own_chan γ (chan_rep.Closed drain)
 
   | Buffered buff =>
-          own_chan (chan_rep.Buffered buff)
+          own_chan γ (chan_rep.Buffered buff)
   end.
 
 (** The main invariant protected by the channel's mutex.
@@ -462,8 +473,8 @@ Definition is_chan : iProp Σ :=
 #[local] Typeclasses Transparent is_chan.
 
 Lemma blocking_rcv_implies_nonblocking (Φ : V → bool → iProp Σ) :
-  recv_au Φ -∗
-  nonblocking_recv_au Φ True.
+  recv_au γ V Φ -∗
+  nonblocking_recv_au γ V Φ True.
 Proof.
   iIntros "Hau".
   iSplitL; last done. iMod "Hau" as (s) "[Hoc Hcont]".
@@ -471,9 +482,9 @@ Proof.
   destruct s; try done.
 Qed.
 
-Lemma blocking_send_implies_nonblocking v (Φ : iProp Σ) :
-  send_au v Φ -∗
-  nonblocking_send_au v Φ True.
+Lemma blocking_send_implies_nonblocking (Φ : iProp Σ) v :
+  send_au γ v Φ -∗
+  nonblocking_send_au γ v Φ True.
 Proof.
   iIntros "Hchan".
   iSplitL; last done.
@@ -482,7 +493,7 @@ Proof.
   destruct s; try done.
 Qed.
 
-Lemma offer_idle_to_send v parked_prop cont :
+Lemma offer_idle_to_send parked_prop cont v :
   saved_offer 1 None True True ==∗
   saved_offer (1/2) (Some (Snd v)) parked_prop cont ∗
   saved_offer (1/2) (Some (Snd v)) parked_prop cont.
@@ -540,7 +551,7 @@ Proof.
   iFrame.
 Qed.
 
-Lemma offer_bundle_agree q1 q2
+Lemma saved_offer_agree q1 q2
   lock1 parked1 cont1 lock2 parked2 cont2 :
   saved_offer q1 lock1 parked1 cont1 ∗
   saved_offer q2 lock2 parked2 cont2 ⊢
@@ -554,7 +565,7 @@ Proof.
   auto.
 Qed.
 
-Lemma offer_bundle_lc_agree
+Lemma saved_offer_lc_agree
   lock1 parked1 cont1 lock2 parked2 cont2 :
   £ 1 -∗
   saved_offer (1/2) lock1 parked1 cont1 -∗
@@ -618,28 +629,28 @@ Proof.
 Qed.
 
 Lemma chan_rep_update s s' :
-  chan_rep 1 s ==∗ chan_rep 1 s'.
+  chan_rep γ V 1 s ==∗ chan_rep γ V 1 s'.
 Proof.
   iApply ghost_var_update.
 Qed.
 
 Lemma chan_rep_agree q1 q2 s s' :
-  chan_rep q1 s -∗ chan_rep q2 s' -∗ ⌜s = s'⌝.
+  chan_rep γ V q1 s -∗ chan_rep γ V q2 s' -∗ ⌜s = s'⌝.
 Proof.
   iIntros "H1 H2". by iApply (ghost_var_agree with "H1 H2").
 Qed.
 
 (* NOTE: unused *)
 #[local] Lemma chan_rep_combine s s' :
-  chan_rep (1/2) s -∗ chan_rep (1/2) s' -∗ chan_rep 1 s.
+  chan_rep γ V (1/2) s -∗ chan_rep γ V (1/2) s' -∗ chan_rep γ V 1 s.
 Proof.
   iIntros "H1 H2". iDestruct (chan_rep_agree with "H1 H2") as %->.
   iCombine "H1 H2" as "H". done.
 Qed.
 
 Lemma chan_rep_halves_update s1 s2 s' :
-  chan_rep (1/2) s1 -∗ chan_rep (1/2) s2 ==∗
-  chan_rep (1/2) s' ∗ chan_rep (1/2) s'.
+  chan_rep γ V (1/2) s1 -∗ chan_rep γ V (1/2) s2 ==∗
+  chan_rep γ V (1/2) s' ∗ chan_rep γ V (1/2) s'.
 Proof.
   rewrite /chan_rep.
   apply ghost_var_update_halves.
@@ -647,7 +658,7 @@ Qed.
 
 (* FIXME: iCombine instances. *)
 Lemma own_chan_agree s s' :
-   own_chan s -∗ own_chan s' -∗ ⌜s = s'⌝.
+   own_chan γ s -∗ own_chan γ s' -∗ ⌜s = s'⌝.
 Proof.
   iIntros "H1 H2". iNamedSuffix "H1" "1". iNamedSuffix "H2" "2".
   iDestruct (ghost_var_agree with "[$Hchanrepfrag1] [$Hchanrepfrag2]") as "%Hag".
@@ -658,8 +669,8 @@ Qed.
 (* Needs [chan_cap_valid s'' cap] as precondition? *)
 Lemma own_chan_halves_update s'' s s' :
   chan_cap_valid s'' (sint.Z $ chan_cap γ) →
-  own_chan s -∗ own_chan s' ==∗
-  own_chan s'' ∗ own_chan s''.
+  own_chan γ s -∗ own_chan γ s' ==∗
+  own_chan γ s'' ∗ own_chan γ s''.
 Proof.
   intros Hvalid.
   iIntros "(Hv1 & %) (Hv2 & %)". rewrite /named.
@@ -670,7 +681,7 @@ Proof.
 Qed.
 
 Lemma own_chan_buffer_size buf :
-  own_chan (chan_rep.Buffered buf) -∗
+  own_chan γ (chan_rep.Buffered buf) -∗
   ⌜Z.of_nat (length buf) ≤ sint.Z $ chan_cap γ⌝.
 Proof.
   iNamed 1.
@@ -679,7 +690,7 @@ Proof.
 Qed.
 
 Lemma own_chan_drain_size drain :
-  own_chan (chan_rep.Closed drain) -∗
+  own_chan γ (chan_rep.Closed drain) -∗
   ⌜Z.of_nat (length drain) ≤ sint.Z $ chan_cap γ⌝.
 Proof.
   iNamed 1.
@@ -689,11 +700,10 @@ Proof.
   iPureIntro. lia.
 Qed.
 
-
 Global Instance is_chan_pers : Persistent is_chan.
 Proof. apply _. Qed.
 
-Global Instance own_chan_timeless s : Timeless (own_chan s).
+Global Instance own_chan_timeless s : Timeless (own_chan γ s).
 Proof. apply _. Qed.
 
 Lemma is_chan_not_null :
@@ -703,3 +713,5 @@ Proof. iNamed 1. done. Qed.
 End defns.
 
 #[global] Opaque is_chan own_chan.
+
+Global Arguments own_chan_halves_update {_ _ _ _} (_).
