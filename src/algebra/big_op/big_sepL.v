@@ -24,6 +24,20 @@ Section list.
   Implicit Types (P Q : PROP).
   Implicit Types (A : Type).
 
+  Lemma big_sepL_replicate_impl (Φ Ψ : PROP) (n : nat) :
+    ([∗] replicate n Φ) -∗
+    □ (Φ -∗ Ψ) -∗
+    ([∗] replicate n Ψ).
+  Proof.
+    iIntros "HΦ #Himpl".
+    assert (n = length (replicate n 0)) as ->.
+    { by rewrite length_replicate. }
+    rewrite !big_sepL_replicate.
+    iApply (big_sepL_impl with "HΦ").
+    iIntros "!> **".
+    by iApply "Himpl".
+  Qed.
+
   Lemma big_sepL_take {A} `{!BiAffine PROP} (Φ: nat → A → PROP) (m: list A) (n: nat):
     ([∗ list] k ↦ x ∈ m, Φ k x) ⊢ ([∗ list] k ↦ x ∈ take n m, Φ k x).
   Proof.
