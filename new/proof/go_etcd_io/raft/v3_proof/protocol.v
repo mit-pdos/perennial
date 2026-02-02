@@ -1,4 +1,7 @@
 Require Import New.proof.go_etcd_io.raft.v3_proof.base.
+From New.proof.chan_proof Require Import closeable.
+From New.proof.github_com.goose_lang.goose.model.channel
+  Require Import logatom.chan_au_base idiom.handoff.handoff.
 
 Module node.
 Axiom t : Type.
@@ -34,36 +37,36 @@ Axiom is_raft_log_pers : ∀ γ log, Persistent (is_raft_log γ log).
 
 End axioms.
 
-Section raft.
+Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
+Context {sem : go.Semantics} {package_sem : raft.Assumptions}.
+Local Set Default Proof Using "All".
+
 Context `{!closeable_chanG Σ}.
 Context `{!contextG Σ}.
+Context `{!chanG Σ error.t}.
 
 Implicit Type γraft : raft_names.
 
-(* FIXME: maybe generally useful and should go somewhere else? *)
-Definition unreceived {V} (s : chanstate.t V) : list V :=
-  drop s.(chanstate.received) s.(chanstate.sent).
-
-(* FIXME: goose could translate typed constants as a typed value? Or maybe
-   emit that in proofgen, since there could be a struct-typed constant. *)
 Definition MsgProp := (W32 2).
 
 Definition own_propose_message γraft (pm : raft.msgWithResult.t) : iProp Σ :=
-  ∃ data_sl (data : list w8),
+  ∃ data_sl (data : list w8) γch,
     let m := pm.(raft.msgWithResult.m') in
   "Hmsg" ∷ ⌜ m.(raftpb.Message.Type') = MsgProp ⌝ ∗
   "Hentries" ∷ m.(raftpb.Message.Entries') ↦* [data_sl] ∗
   "data_sl" ∷ data_sl ↦* data ∗
   "Hupd" ∷ (|={⊤,∅}=> ∃ log, own_raft_log γraft log ∗ (own_raft_log γraft (log ++ [data]) ={∅,⊤}=∗ True)) ∗
-  "Hresult" ∷ inv nroot (∃ (s : chanstate.t error.t), own_chan pm.(raft.msgWithResult.result') s).
+  (* FIXME: probably can only send once. *)
+  "Hresult" ∷ is_chan_handoff γch pm.(raft.msgWithResult.result') (λ (_ : error.t), True%I)
+.
 
 Local Definition is_node_inner γraft (n : raft.node.t) : iProp Σ :=
-  "#Hpropc" ∷ inv nroot
-    (∃ s, own_chan n.(raft.node.propc') s ∗ [∗ list] v ∈ (unreceived s), own_propose_message γraft v) ∗
-  "#Hadvancec" ∷ inv nroot (∃ (s : chanstate.t unit), own_chan n.(raft.node.advancec') s) ∗
-  "#Hdone" ∷ own_closeable_chan n.(raft.node.done') True closeable.Unknown.
+  ∃ γp γa γd,
+  "#Hpropc" ∷ is_chan_handoff γp n.(raft.node.propc') (λ (_ : error.t), True%I) ∗
+  "#Hadvancec_is" ∷ is_chan n.(raft.node.advancec') γa unit ∗
+  "#Hadvancec" ∷ inv nroot (∃ s, own_chan γa unit s) ∗
+  "#Hdone" ∷ own_closeable_chan n.(raft.node.done') γd True closeable.Unknown.
 
 Definition is_node γraft (n : loc) : iProp Σ :=
   ∃ nd,
@@ -72,26 +75,16 @@ Definition is_node γraft (n : loc) : iProp Σ :=
 
 Lemma wp_node__Ready γraft (n : loc) :
   {{{ is_pkg_init raft ∗ is_node γraft n }}}
-    n @ (ptrT.id raft.node.id) @ "Ready" #()
+    n @! (go.PointerType raft.node) @! "Ready" #()
   {{{ (ready : chan.t), RET #ready; True }}}.
 Proof.
   wp_start. iNamed "Hpre". wp_auto.
   by iApply "HΦ".
 Qed.
 
-(* FIXME: anonymous struct{} *)
-Global Instance wp_struct_make_unit:
-  PureWp True
-    (struct.make #(structT []) (alist_val []))%struct
-    #().
-Proof.
-  erewrite <- struct_val_aux_nil.
-  apply wp_struct_make; cbn; auto.
-Qed.
-
 Lemma wp_node__Advance γraft (n : loc) :
   {{{ is_pkg_init raft ∗ is_node γraft n }}}
-    n @ (ptrT.id raft.node.id) @ "Advance" #()
+    n @ (go.PointerType raft.node) @ "Advance" #()
   {{{ RET #(); True }}}.
 Proof.
   wp_start. wp_auto.
@@ -116,7 +109,7 @@ Lemma wp_node__Propose γraft n (ctx : context.Context.t) ctx_desc (data_sl : sl
       "data_sl" ∷ data_sl ↦* data ∗
       "Hupd" ∷ (|={⊤,∅}=> ∃ log, own_raft_log γraft log ∗ (own_raft_log γraft (log ++ [data]) ={∅,⊤}=∗ True))
   }}}
-    n @ (ptrT.id raft.node.id) @ "Propose" #ctx #data_sl
+    n @ (go.PointerType raft.node) @ "Propose" #ctx #data_sl
   {{{ (err : error.t), RET #err; if decide (err = interface.nil) then True else True }}}.
 Proof.
   (* Inlining proofs of [stepWait] and [stepWithWaitOption (wait:=true)] here. *)

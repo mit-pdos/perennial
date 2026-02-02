@@ -1,4 +1,5 @@
 (** Iris reasoning principles for core Grove FFI *)
+From iris.base_logic Require Export lib.mono_nat.
 From stdpp Require Import gmap vector fin_maps.
 From RecordUpdate Require Import RecordSet.
 From iris.algebra Require Import numbers.
@@ -301,7 +302,7 @@ lemmas. *)
       opose proof (Hl i _ _) as Hl; [lia..|].
       opose proof (Hm0 i _ _) as Hm0; [lia..|].
       destruct (σ1.(heap) !! (l +ₗ i)) as [[[] v'']|]; try done.
-      destruct v'' as [lit| | | | | | | |]; try done.
+      destruct v'' as [lit| | | | | | | | | | |]; try done.
       destruct lit; try done.
       rewrite Nat2Z.id in Hl Hm0. rewrite Hl -Hm0. done. }
     iIntros "!> /=".
@@ -498,7 +499,7 @@ lemmas. *)
       opose proof (Hl i _ _) as Hl; [lia..|].
       opose proof (Hm0 i _ _) as Hm0; [lia..|].
       destruct (σ1.(heap) !! (l +ₗ i)) as [[[] v'']|]; try done.
-      destruct v'' as [lit| | | | | | | |]; try done.
+      destruct v'' as [lit| | | | | | | | | | |]; try done.
       destruct lit; try done.
       rewrite Nat2Z.id in Hl Hm0. rewrite Hl -Hm0. done. }
     iIntros "!> /=".
@@ -564,7 +565,7 @@ lemmas. *)
     { iPureIntro. clear -Halen Hfilebound.
       intros f' c'. destruct (decide (f = f')) as [<-|Hne].
       - rewrite lookup_insert_eq=>-[<-]. word.
-      - rewrite lookup_insert_ne //. eapply Hfilebound. } 
+      - rewrite lookup_insert_ne //. eapply Hfilebound. }
     iApply "HΦ".
     by iFrame.
   Qed.
