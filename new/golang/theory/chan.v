@@ -33,7 +33,7 @@ Lemma wp_make2 (cap : w64) `{!ct ↓u go.ChannelType dir t} :
   {{{ ch γ, RET #ch;
       is_chan ch γ V ∗
       ⌜ chan_cap γ = sint.Z cap ⌝ ∗
-      own_chan γ (if decide (cap = 0) then chanstate.Idle else chanstate.Buffered (@nil V))
+      own_chan γ V (if decide (cap = 0) then chanstate.Idle else chanstate.Buffered (@nil V))
   }}}.
 Proof.
   wp_start as "%Hle".
@@ -47,7 +47,7 @@ Lemma wp_make1  `{!ct ↓u go.ChannelType dir t} :
   {{{ ch γ, RET #ch;
       is_chan ch γ V ∗
       ⌜ chan_cap γ = 0 ⌝ ∗
-      own_chan (V:=V) γ chanstate.Idle
+      own_chan γ V chanstate.Idle
   }}}.
 Proof.
   wp_start.

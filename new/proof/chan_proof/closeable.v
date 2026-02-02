@@ -29,7 +29,7 @@ Context `{!closeable_chanG Σ}.
   "#His_ch" ∷ is_chan ch γ unit ∗
   "#Hinv" ∷ inv nroot (
       ∃ (st : chanstate.t unit),
-        "Hch" ∷ own_chan γ st ∗
+        "Hch" ∷ own_chan γ unit st ∗
         "Hs" ∷ (match st with
                 | chanstate.Idle
                 | chanstate.RcvPending =>
@@ -149,7 +149,7 @@ Qed.
 
 Lemma alloc_closeable_chan {E} Pclose γ ch (s : chanstate.t unit) :
   is_chan ch γ unit -∗
-  own_chan (V:=unit) γ chanstate.Idle ={E}=∗
+  own_chan γ unit chanstate.Idle ={E}=∗
   own_closeable_chan ch γ Pclose Open.
 Proof.
   iIntros "#? Hch".

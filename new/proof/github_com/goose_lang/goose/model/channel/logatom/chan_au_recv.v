@@ -42,7 +42,7 @@ Proof.
         word.
       }
       iLeft in "HΦ".
-      iAssert (own_chan γ (chanstate.Buffered (v :: rest)))%I
+      iAssert (own_chan γ V (chanstate.Buffered (v :: rest)))%I
         with "[Hchanrepfrag]" as "Hown".
       { iFrame. iPureIntro. unfold chan_cap_valid. done. }
       iMod (lc_fupd_elim_later with "[$] HΦ") as "HΦ".
@@ -168,7 +168,7 @@ Proof.
       iMod "Hau".
       iMod (lc_fupd_elim_later with "[$] Hau") as "HP".
       iNamed "HP".
-      iAssert (own_chan γ (chanstate.SndCommit v0))%I
+      iAssert (own_chan γ V (chanstate.SndCommit v0))%I
         with "[Hchanrepfrag]" as "Hown".
       { iFrame "∗#". iPureIntro. cbn [chan_cap_valid]. done. }
       iDestruct (own_chan_agree with "[$Hocinner] [$Hown]") as "%Hseq". subst s.
@@ -230,10 +230,10 @@ Proof.
     iMod (lc_fupd_elim_later with "[$] HP") as "HP". iNamed "HP".
     iDestruct "Hoc" as "(H1 & H2)".
     iDestruct (chanstate_agree with "[$H1] [$Hchanrepfrag]") as "%Hseq". subst s.
-    iAssert (own_chan γ (chanstate.Idle))%I
+    iAssert (own_chan γ V (chanstate.Idle))%I
       with "[Hchanrepfrag]" as "Hown".
     { iFrame "∗#". iPureIntro. done. }
-    iAssert (own_chan γ (chanstate.Idle))%I
+    iAssert (own_chan γ V (chanstate.Idle))%I
       with "[H1]" as "Hown1".
     { iFrame. iPureIntro. done. }
     iDestruct (own_chan_halves_update (chanstate.SndPending v)
@@ -302,7 +302,7 @@ Proof.
       wp_if_destruct.
       {
         iLeft in "HΦ".
-        iAssert (own_chan γ (chanstate.Closed (v :: buffer)))%I
+        iAssert (own_chan γ V (chanstate.Closed (v :: buffer)))%I
           with "[Hchanrepfrag]" as "Hown".
         { iFrame. iPureIntro. done. }
         iApply fupd_wp.

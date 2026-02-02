@@ -317,7 +317,7 @@ Definition close_au (Φ : iProp Σ) : iProp Σ :=
 
 End au_defns.
 
-Global Arguments own_chan {_} (γ) {V _} (s).
+Global Arguments own_chan {_} (γ V) {_} (s).
 Global Arguments send_au {_ _ _ _ _ _} (γ) {V} (v) {_} (Φ).
 Global Arguments nonblocking_send_au {_ _ _ _ _ _} (γ) {V} (v) {_} (Φ).
 Global Arguments nonblocking_send_au_alt {_ _ _ _ _ _} (γ) {V} (v) {_} (Φ).
@@ -407,7 +407,7 @@ Definition chan_logical (s : chan_phys_state V): iProp Σ :=
        ∃ (Φr: V → bool → iProp Σ),
            "Hoffer" ∷ saved_offer 1 None True True ∗
            "Hpred" ∷ saved_pred_own γ.(offer_parked_pred_name) (DfracOwn 1) (uncurry Φr) ∗
-            own_chan γ chanstate.Idle
+            own_chan γ V chanstate.Idle
 
   | SndWait v =>
        ∃ (P: iProp Σ) (Φ: iProp Σ) (Φr: V → bool → iProp Σ),
@@ -415,7 +415,7 @@ Definition chan_logical (s : chan_phys_state V): iProp Σ :=
           "HP" ∷ P ∗
           "Hpred" ∷ saved_pred_own γ.(offer_parked_pred_name) (DfracOwn 1) (uncurry Φr) ∗
           "Hau" ∷ (P -∗ send_au γ v Φ) ∗
-           own_chan γ chanstate.Idle
+           own_chan γ V chanstate.Idle
 
   | RcvWait =>
        ∃ (P: iProp Σ) (Φr: V → bool → iProp Σ),
@@ -423,31 +423,31 @@ Definition chan_logical (s : chan_phys_state V): iProp Σ :=
          "HP" ∷ P ∗
          "Hpred" ∷ saved_pred_own γ.(offer_parked_pred_name) (DfracOwn (1/2)) (uncurry Φr) ∗
          "Hau" ∷ (P -∗ recv_au γ V Φr) ∗
-         own_chan γ chanstate.Idle
+         own_chan γ V chanstate.Idle
 
   | SndDone v =>
        ∃ (P: iProp Σ) (Φr: V → bool → iProp Σ),
        "Hpred" ∷ saved_pred_own γ.(offer_parked_pred_name) (DfracOwn (1/2)) (uncurry Φr) ∗
        "Hoffer" ∷ saved_offer (1/2) (Some Rcv) P True ∗
        "Hau" ∷ recv_nested_au γ V Φr ∗
-       own_chan γ (chanstate.SndCommit v)
+       own_chan γ V (chanstate.SndCommit v)
 
   | RcvDone =>
        ∃ (P: iProp Σ) (Φ: iProp Σ) (Φr: V → bool → iProp Σ) (v:V),
          "Hoffer" ∷ saved_offer (1/2) (Some (Snd v)) P Φ ∗
          "Hpred" ∷ saved_pred_own γ.(offer_parked_pred_name) (DfracOwn 1) (uncurry Φr) ∗
          "Hau" ∷ send_nested_au γ V Φ ∗
-       own_chan γ chanstate.RcvCommit
+       own_chan γ V chanstate.RcvCommit
 
   | Closed [] =>
-          own_chan γ (chanstate.Closed []) ∗
+          own_chan γ V (chanstate.Closed []) ∗
            "Hoffer" ∷ (⌜chan_cap γ = 0⌝ -∗ saved_offer 1 None True True)
 
   | Closed drain =>
-          own_chan γ (chanstate.Closed drain)
+          own_chan γ V (chanstate.Closed drain)
 
   | Buffered buff =>
-          own_chan γ (chanstate.Buffered buff)
+          own_chan γ V (chanstate.Buffered buff)
   end.
 
 (** The main invariant protected by the channel's mutex.
@@ -658,7 +658,7 @@ Qed.
 
 (* FIXME: iCombine instances. *)
 Lemma own_chan_agree s s' :
-   own_chan γ s -∗ own_chan γ s' -∗ ⌜s = s'⌝.
+   own_chan γ V s -∗ own_chan γ V s' -∗ ⌜s = s'⌝.
 Proof.
   iIntros "H1 H2". iNamedSuffix "H1" "1". iNamedSuffix "H2" "2".
   iDestruct (ghost_var_agree with "[$Hchanrepfrag1] [$Hchanrepfrag2]") as "%Hag".
@@ -669,8 +669,8 @@ Qed.
 (* Needs [chan_cap_valid s'' cap] as precondition? *)
 Lemma own_chan_halves_update s'' s s' :
   chan_cap_valid s'' (sint.Z $ chan_cap γ) →
-  own_chan γ s -∗ own_chan γ s' ==∗
-  own_chan γ s'' ∗ own_chan γ s''.
+  own_chan γ V s -∗ own_chan γ V s' ==∗
+  own_chan γ V s'' ∗ own_chan γ V s''.
 Proof.
   intros Hvalid.
   iIntros "(Hv1 & %) (Hv2 & %)". rewrite /named.
@@ -681,7 +681,7 @@ Proof.
 Qed.
 
 Lemma own_chan_buffer_size buf :
-  own_chan γ (chanstate.Buffered buf) -∗
+  own_chan γ V (chanstate.Buffered buf) -∗
   ⌜Z.of_nat (length buf) ≤ sint.Z $ chan_cap γ⌝.
 Proof.
   iNamed 1.
@@ -690,7 +690,7 @@ Proof.
 Qed.
 
 Lemma own_chan_drain_size drain :
-  own_chan γ (chanstate.Closed drain) -∗
+  own_chan γ V (chanstate.Closed drain) -∗
   ⌜Z.of_nat (length drain) ≤ sint.Z $ chan_cap γ⌝.
 Proof.
   iNamed 1.
@@ -703,7 +703,7 @@ Qed.
 Global Instance is_chan_pers : Persistent is_chan.
 Proof. apply _. Qed.
 
-Global Instance own_chan_timeless s : Timeless (own_chan γ s).
+Global Instance own_chan_timeless s : Timeless (own_chan γ V s).
 Proof. apply _. Qed.
 
 Lemma is_chan_not_null :

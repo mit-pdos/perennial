@@ -1,8 +1,11 @@
 translate = [
-  "!*",
-  "Context",
+  "*",
+  "!WithValue",
+  "!stringify",
+  "!contextName",
 ]
 
 imports = [
-  "time",
+  "*",
+  "!internal/reflectlite",
 ]

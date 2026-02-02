@@ -2,8 +2,14 @@ From New Require Import code.context.
 From New Require Export generatedproof.context.
 From New Require Import proof.proof_prelude.
 From New.proof Require Import sync.atomic sync time errors.
+From New.proof Require Import chan_proof.closeable.
 
 Require Import Perennial.Helpers.CountableTactics.
+
+Class contextG Σ :=
+  {
+    #[local] context_closeableG :: closeable_chanG Σ;
+  }.
 
 (* Context logical descriptor. *)
 Module Context_desc.
@@ -17,17 +23,18 @@ Record t :=
       Values : gmap interface.t interface.t;
       Deadline : option time.Time.t;
       Done: chan.t;
+      Done_gn : chan_names;
       PDone: PROP;
     }.
 Global Instance eta : Settable _ :=
-  settable! mk <Values; Deadline; Done; PDone>.
+  settable! mk <Values; Deadline; Done; Done_gn; PDone>.
 End defn.
 End Context_desc.
 
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics} {package_sem : context.Assumptions}.
-Local Set Default Proof Using "All".
+Context `{!contextG Σ}.
 
 #[global] Instance : IsPkgInit (iProp Σ) context := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf (iProp Σ) context := build_get_is_pkg_init_wf.
@@ -47,41 +54,46 @@ Definition is_Context (c : interface.t_ok) (s : Context_desc.t) : iProp Σ :=
     {{{ RET #s.(Done); True }}} ∗
   "#HErr" ∷
     (∀ cl,
-    {{{ own_closeable_chan s.(Done) s.(PDone) cl }}}
+    {{{ own_closeable_chan s.(Done) s.(Done_gn) s.(PDone) cl }}}
       #(methods c.(interface.ty) "Err" c.(interface.v)) #()
     {{{ err, RET #err;
         match cl with
         | closeable.Closed => ⌜ err ≠ interface.nil ⌝
-        | _ => if decide (err = interface.nil) then own_closeable_chan s.(Done) s.(PDone) cl
-              else own_closeable_chan s.(Done) s.(PDone) closeable.Closed
+        | _ => if decide (err = interface.nil) then own_closeable_chan s.(Done) s.(Done_gn) s.(PDone) cl
+              else own_closeable_chan s.(Done) s.(Done_gn) s.(PDone) closeable.Closed
         end
     }}}) ∗
-  "#HDone_ch" ∷ own_closeable_chan s.(Done) s.(PDone) closeable.Unknown.
+  "#HDone_ch" ∷ own_closeable_chan s.(Done) s.(Done_gn) s.(PDone) closeable.Unknown.
 #[global] Typeclasses Opaque is_Context.
 #[global] Opaque is_Context.
 
 #[global] Transparent is_Context.
 #[global] Typeclasses Transparent is_Context.
 
-Lemma wp_propagateCancel (c : loc) (parent : context.Context.t) parent_desc
+Lemma wp_propagateCancel (c : loc) parent parent_desc
   (child : context.canceler.t) :
   {{{
         is_pkg_init context ∗
         "Hparent" ∷ is_Context parent parent_desc ∗
         "Hc" ∷ c ↦ (zero_val context.cancelCtx.t)
   }}}
-    c @ (ptrT.id context.cancelCtx.id) @ "propagateCancel" #parent #child
+    c @! (go.PointerType context.cancelCtx) @! "propagateCancel" #(interface.ok parent) #child
   {{{
         RET #(); True
   }}}.
 Proof.
-  wp_start. iNamed "Hpre". (* wp_auto.
+  wp_start. iNamed "Hpre". wp_auto.
   iNamed "Hparent".
   wp_apply "HDone".
   rewrite bool_decide_decide. case_decide.
   { wp_auto. by iApply "HΦ". }
   wp_auto.
-  wp_apply (wp_chan_select_nonblocking [True]%I).
+  wp_apply (chan.wp_select_nonblocking_alt [True]%I with "[] [-]").
+  2: iNamedAccu.
+  {
+    simpl. iSplit; last done.
+    repeat iExists _.
+    (* FIXME: translation: need let bindings for select channels. *)
   { done. }
   iSplit.
   {

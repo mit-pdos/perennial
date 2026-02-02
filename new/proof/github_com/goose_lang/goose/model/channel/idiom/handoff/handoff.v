@@ -22,16 +22,16 @@ Record handoff_names := {
 
 (* TODO: should not have to be exposed *)
 Definition is_chan_handoff (γ : handoff_names) (ch : loc) (P : V → iProp Σ) : iProp Σ :=
-  "#Hch" ∷ is_chan ch γ.(chan_name) ∗
+  "#Hch" ∷ is_chan ch γ.(chan_name) V ∗
   "#Hinv" ∷ inv nroot (
-    ∃ (s : chan_rep.t V),
-      "Hch" ∷ own_chan ch s γ.(chan_name) ∗
+    ∃ (s : chanstate.t V),
+      "Hch" ∷ own_chan γ.(chan_name) V s ∗
       match s with
-      | chan_rep.Idle => True
-      | chan_rep.SndPending v => P v
-      | chan_rep.SndCommit v => P v
-      | chan_rep.Buffered vs => [∗ list] v ∈ vs, P v
-      | chan_rep.Closed buffer => False
+      | chanstate.Idle => True
+      | chanstate.SndPending v => P v
+      | chanstate.SndCommit v => P v
+      | chanstate.Buffered vs => [∗ list] v ∈ vs, P v
+      | chanstate.Closed buffer => False
       | _ => True
       end
   )%I.
@@ -41,8 +41,8 @@ Definition is_chan_handoff (γ : handoff_names) (ch : loc) (P : V → iProp Σ) 
 Proof. apply _. Qed.
 
 Lemma start_handoff (ch : loc) (γ : chan_names) (P : V → iProp Σ) :
-  is_chan ch γ -∗
-  own_chan ch chan_rep.Idle γ ={⊤}=∗
+  is_chan ch γ V -∗
+  own_chan γ V chanstate.Idle ={⊤}=∗
   ∃ γhandoff,  ⌜γ = γhandoff.(chan_name)⌝ ∗ is_chan_handoff γhandoff ch P.
 Proof.
   iIntros "#Hch Hoc".
@@ -56,8 +56,8 @@ Proof.
 Qed.
 
 Lemma start_handoff_buffered (ch : loc) (γ : chan_names) (P : V → iProp Σ) :
-  is_chan ch γ -∗
-  own_chan ch (chan_rep.Buffered []) γ ={⊤}=∗
+  is_chan ch γ V -∗
+  own_chan γ V (chanstate.Buffered []) ={⊤}=∗
   ∃ γhandoff,  ⌜γ = γhandoff.(chan_name)⌝ ∗  is_chan_handoff γhandoff ch P.
 Proof.
   iIntros "#Hch Hoc".
@@ -76,7 +76,7 @@ Lemma handoff_rcv_au γ ch P Φ  :
   is_chan_handoff γ ch P ⊢
   £1 ∗ £1  -∗
   (▷ ∀ v, P v -∗ Φ v true ) -∗
-  recv_au ch γ.(chan_name) Φ.
+  recv_au γ.(chan_name) V Φ.
 Proof.
   iIntros "#Hhandoff (Hlc1 & Hlc2 ) HΦ".
   iNamed "Hhandoff".
@@ -199,7 +199,7 @@ Lemma handoff_send_au γ ch P v (Φ: iProp Σ) :
   is_chan_handoff γ ch P ∗ £1 ∗ £1 ⊢
   P v -∗
   (▷ Φ) -∗
-  send_au ch v γ.(chan_name) Φ.
+  send_au γ.(chan_name) v Φ.
 Proof.
   iIntros "(#Hhandoff & ? & ?) HP HΦ".
   iNamed "Hhandoff".
@@ -279,8 +279,7 @@ Proof.
 Qed.
 
 Lemma wp_handoff_send γ ch v P :
-  {{{ is_chan_handoff γ ch P ∗
-      P v }}}
+  {{{ is_chan_handoff γ ch P ∗ P v }}}
     chan.send t #ch #v
   {{{ RET #(); True }}}.
 Proof.
