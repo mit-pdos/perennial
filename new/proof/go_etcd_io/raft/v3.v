@@ -7,7 +7,6 @@ From New.proof Require Import grove_prelude.
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
-Context `{!contextG Σ}.
 
 Definition is_Node (γ : raft_names) (n : raft.Node.t) : iProp Σ :=
   ∃ (n_ptr : loc),

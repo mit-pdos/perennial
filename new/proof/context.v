@@ -6,10 +6,6 @@ From New.proof Require Import chan_proof.closeable.
 
 Require Import Perennial.Helpers.CountableTactics.
 
-Class contextG Σ :=
-  {
-    #[local] context_closeableG :: closeable_chanG Σ;
-  }.
 
 (* Context logical descriptor. *)
 Module Context_desc.
@@ -34,7 +30,9 @@ End Context_desc.
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics} {package_sem : context.Assumptions}.
-Context `{!contextG Σ}.
+(* XXX: not putting this in contextG because higher-level code might also have
+   its own closeable_chan, and this would conflict with that. *)
+Context `{!closeable_chanG Σ}.
 
 Definition is_init : iProp Σ :=
   "Hgoroutines" ∷

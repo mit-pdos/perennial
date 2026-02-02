@@ -43,7 +43,7 @@ Context {sem : go.Semantics} {package_sem : raft.Assumptions}.
 Local Set Default Proof Using "All".
 
 Context `{!closeable_chanG Σ}.
-Context `{!contextG Σ}.
+Context `{!chanG Σ ()}.
 Context `{!chanG Σ error.t}.
 
 Implicit Type γraft : raft_names.
@@ -83,12 +83,12 @@ Qed.
 
 Lemma wp_node__Advance γraft (n : loc) :
   {{{ is_pkg_init raft ∗ is_node γraft n }}}
-    n @ (go.PointerType raft.node) @ "Advance" #()
+    n @! (go.PointerType raft.node) @! "Advance" #()
   {{{ RET #(); True }}}.
 Proof.
   wp_start. wp_auto.
   iNamed "Hpre". wp_auto.
-  wp_apply wp_chan_select_blocking.
+  wp_apply chan.wp_select_blocking.
   rewrite big_andL_cons big_andL_singleton.
   iSplit.
   - (* able to send on advancec *)
@@ -96,37 +96,52 @@ Proof.
     { iPureIntro. done. }
     iNamed "Hinner".
     admit. (* just prove the send atomic update then trivial postcondition *)
-  - repeat iExists _. iNamed "Hinner".
-    iApply (closeable_chan_receive with "Hdone").
+  - iNamed "Hinner". repeat iExists _.
+    iSplitR; first done. iSplitR; first admit.
+    iDestruct (closeable_chan_receive with "Hdone [-]") as "H".
+    2:{
+      iExactEq "H". f_equal.
+      (* FIXME: chanG0 needs to match closeable_chanG0.... *)
+      admit.
+    }
     iIntros "[_ _]". wp_auto. iApply "HΦ". done.
 Admitted.
 
-Lemma wp_node__Propose γraft n (ctx : context.Context.t) ctx_desc (data_sl : slice.t) (data : list w8) :
+Lemma wp_node__Propose γraft n ctx ctx_desc (data_sl : slice.t) (data : list w8) :
   {{{ is_pkg_init raft ∗
       "#Hctx" ∷ is_Context ctx ctx_desc ∗
       "#Hnode" ∷ is_node γraft n ∗
       "data_sl" ∷ data_sl ↦* data ∗
       "Hupd" ∷ (|={⊤,∅}=> ∃ log, own_raft_log γraft log ∗ (own_raft_log γraft (log ++ [data]) ={∅,⊤}=∗ True))
   }}}
-    n @ (go.PointerType raft.node) @ "Propose" #ctx #data_sl
+    n @! (go.PointerType raft.node) @! "Propose" #(interface.ok ctx) #data_sl
   {{{ (err : error.t), RET #err; if decide (err = interface.nil) then True else True }}}.
 Proof.
   (* Inlining proofs of [stepWait] and [stepWithWaitOption (wait:=true)] here. *)
   wp_start. iNamed "Hpre". wp_auto.
-  wp_apply wp_slice_literal. iIntros "%entries_sl [entries_sl _]".
-  wp_auto. wp_bind. wp_method_call. wp_call.
-  wp_auto. wp_bind. wp_method_call. wp_call.
-  wp_auto. iNamed "Hnode". wp_auto. wp_apply (wp_chan_make (V:=error.t)).
+  iPersist "data". wp_apply wp_slice_literal as "%entries_sl [entries_sl _]".
+  { iIntros. wp_auto. iFrame. }
+  wp_bind. wp_method_call. wp_call. wp_call.
+  wp_auto. wp_bind. wp_method_call. wp_call. wp_call.
+  wp_auto. iNamed "Hnode". wp_auto. wp_apply chan.wp_make2.
+  { word. }
   iIntros "%result %result_init Hch". wp_auto.
   iNamed "Hctx". wp_apply "HDone".
-  wp_apply wp_chan_select_blocking.
+  wp_apply chan.wp_select_blocking.
   rewrite !big_andL_cons big_andL_nil. rewrite right_id.
   iSplit.
   2:{
     iSplit.
     - (* case: got something from ctx.Done() channel *)
-      repeat iExists _.
-      iApply (closeable_chan_receive with "HDone_ch").
+      repeat iExists _. iSplitR; first done. iSplitR; first admit.
+      instantiate (1:=ctx_desc.(Context_desc.Done_gn)).
+      Set Printing All.
+      iClear "Hinner".
+      clear closeable_chanG0.
+      iDestruct (@closeable_chan_receive with "HDone_ch []") as "H".
+      2:{
+        iExactEq "H".
+        f_equal.
       iIntros "[_ #HDone_closed]". wp_auto. wp_apply ("HErr" with "HDone_closed").
       iIntros (err) "%Herr". wp_auto.
       iApply "HΦ". rewrite decide_False //.

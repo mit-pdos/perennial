@@ -7,8 +7,8 @@ Require Import New.golang.theory.
     readers. *)
 Class closeable_chanG Σ :=
   {
-    chanG :: chanG Σ ();
-    close_tok_inG :: inG Σ (dfrac_agreeR boolO);
+    #[local] chanG :: chanG Σ ();
+    #[local] close_tok_inG :: inG Σ (dfrac_agreeR boolO);
   }.
 
 Record closeable_internal_names :=
