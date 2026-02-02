@@ -234,15 +234,12 @@ Definition Election__Campaignⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
     do:  ("err" <-[go.error] "$r0");;;
     (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
     then
-      SelectStmt (SelectStmtClauses (Some (λ: <>,
-        let: "$r0" := (Convert go.untyped_nil (go.PointerType Session) UntypedNil) in
-        do:  ((StructFieldRef Election "leaderSession"%go (![go.PointerType Election] "e")) <-[go.PointerType Session] "$r0")
-        )) [(CommClause (RecvCase (go.StructType [
+      let: "$ch0" := ((MethodResolve context.Context "Done"%go (![context.Context] "ctx")) #()) in
+      SelectStmt (SelectStmtClauses (Some (let: "$r0" := (Convert go.untyped_nil (go.PointerType Session) UntypedNil) in
+      do:  ((StructFieldRef Election "leaderSession"%go (![go.PointerType Election] "e")) <-[go.PointerType Session] "$r0"))) [(CommClause (RecvCase (go.StructType [
 
-      ]) ((MethodResolve context.Context "Done"%go (![context.Context] "ctx")) #())) (λ: "$recvVal",
-        do:  (let: "$a0" := ((MethodResolve (go.PointerType clientv3.Client) "Ctx"%go (![go.PointerType clientv3.Client] "client")) #()) in
-        (MethodResolve (go.PointerType Election) "Resign"%go (![go.PointerType Election] "e")) "$a0")
-        ))]);;;
+      ]) "$ch0") (do:  (let: "$a0" := ((MethodResolve (go.PointerType clientv3.Client) "Ctx"%go (![go.PointerType clientv3.Client] "client")) #()) in
+      (MethodResolve (go.PointerType Election) "Resign"%go (![go.PointerType Election] "e")) "$a0")))]);;;
       return: (![go.error] "err")
     else do:  #());;;
     let: "$r0" := (![go.PointerType etcdserverpb.ResponseHeader] (StructFieldRef clientv3.TxnResponse "Header"%go (![go.PointerType clientv3.TxnResponse] "resp"))) in
@@ -488,13 +485,11 @@ Definition Election__observeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
         let: "$r1" := (![go.PointerType mvccpb.KeyValue] (IndexRef (go.SliceType (go.PointerType mvccpb.KeyValue)) (![go.SliceType (go.PointerType mvccpb.KeyValue)] (StructFieldRef clientv3.GetResponse "Kvs"%go (![go.PointerType clientv3.GetResponse] "resp")), #(W64 0)))) in
         do:  ("hdr" <-[go.PointerType etcdserverpb.ResponseHeader] "$r0");;;
         do:  ("kv" <-[go.PointerType mvccpb.KeyValue] "$r1"));;;
-      SelectStmt (SelectStmtClauses None [(CommClause (SendCase clientv3.GetResponse (![go.ChannelType go.sendonly clientv3.GetResponse] "ch") (CompositeLiteral clientv3.GetResponse (LiteralValue [KeyedElement (Some (KeyField "Header"%go)) (ElementExpression (go.PointerType etcdserverpb.ResponseHeader) (![go.PointerType etcdserverpb.ResponseHeader] "hdr")); KeyedElement (Some (KeyField "Kvs"%go)) (ElementExpression (go.SliceType (go.PointerType mvccpb.KeyValue)) (CompositeLiteral (go.SliceType (go.PointerType mvccpb.KeyValue)) (LiteralValue [KeyedElement None (ElementExpression (go.PointerType mvccpb.KeyValue) (![go.PointerType mvccpb.KeyValue] "kv"))])))]))) (λ: <>,
-        do:  #()
-        )); (CommClause (RecvCase (go.StructType [
+      let: "$ch0" := (![go.ChannelType go.sendonly clientv3.GetResponse] "ch") in
+      let: "$ch1" := ((MethodResolve context.Context "Done"%go (![context.Context] "ctx")) #()) in
+      SelectStmt (SelectStmtClauses None [(CommClause (SendCase clientv3.GetResponse "$ch0" (CompositeLiteral clientv3.GetResponse (LiteralValue [KeyedElement (Some (KeyField "Header"%go)) (ElementExpression (go.PointerType etcdserverpb.ResponseHeader) (![go.PointerType etcdserverpb.ResponseHeader] "hdr")); KeyedElement (Some (KeyField "Kvs"%go)) (ElementExpression (go.SliceType (go.PointerType mvccpb.KeyValue)) (CompositeLiteral (go.SliceType (go.PointerType mvccpb.KeyValue)) (LiteralValue [KeyedElement None (ElementExpression (go.PointerType mvccpb.KeyValue) (![go.PointerType mvccpb.KeyValue] "kv"))])))]))) (do:  #())); (CommClause (RecvCase (go.StructType [
 
-      ]) ((MethodResolve context.Context "Done"%go (![context.Context] "ctx")) #())) (λ: "$recvVal",
-        return: (#())
-        ))]);;;
+      ]) "$ch1") (return: (#())))]);;;
       let: "cancel" := (GoAlloc context.CancelFunc (GoZeroVal context.CancelFunc #())) in
       let: "cctx" := (GoAlloc context.Context (GoZeroVal context.Context #())) in
       let: ("$ret0", "$ret1") := (let: "$a0" := (![context.Context] "ctx") in
@@ -542,14 +537,12 @@ Definition Election__observeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
           do:  ((StructFieldRef clientv3.GetResponse "Header"%go (![go.PointerType clientv3.GetResponse] "resp")) <-[go.PointerType etcdserverpb.ResponseHeader] "$r0");;;
           let: "$r0" := (CompositeLiteral (go.SliceType (go.PointerType mvccpb.KeyValue)) (LiteralValue [KeyedElement None (ElementExpression (go.PointerType mvccpb.KeyValue) (![go.PointerType mvccpb.KeyValue] (StructFieldRef clientv3.Event "Kv"%go (![go.PointerType clientv3.Event] "ev"))))])) in
           do:  ((StructFieldRef clientv3.GetResponse "Kvs"%go (![go.PointerType clientv3.GetResponse] "resp")) <-[go.SliceType (go.PointerType mvccpb.KeyValue)] "$r0");;;
-          SelectStmt (SelectStmtClauses None [(CommClause (SendCase clientv3.GetResponse (![go.ChannelType go.sendonly clientv3.GetResponse] "ch") (![clientv3.GetResponse] (![go.PointerType clientv3.GetResponse] "resp"))) (λ: <>,
-            do:  #()
-            )); (CommClause (RecvCase (go.StructType [
+          let: "$ch0" := (![go.ChannelType go.sendonly clientv3.GetResponse] "ch") in
+          let: "$ch1" := ((MethodResolve context.Context "Done"%go (![context.Context] "cctx")) #()) in
+          SelectStmt (SelectStmtClauses None [(CommClause (SendCase clientv3.GetResponse "$ch0" (![clientv3.GetResponse] (![go.PointerType clientv3.GetResponse] "resp"))) (do:  #())); (CommClause (RecvCase (go.StructType [
 
-          ]) ((MethodResolve context.Context "Done"%go (![context.Context] "cctx")) #())) (λ: "$recvVal",
-            do:  ((![context.CancelFunc] "cancel") #());;;
-            return: (#())
-            ))]))));;;
+          ]) "$ch1") (do:  ((![context.CancelFunc] "cancel") #());;;
+          return: (#())))]))));;;
       do:  ((![context.CancelFunc] "cancel") #()));;;
     return: #()).
 
@@ -1443,7 +1436,7 @@ Definition readSet__addⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
       do:  ("resp" <-[go.PointerType etcdserverpb.ResponseOp] "$value");;;
       do:  ("i" <-[go.int] "$key");;;
       let: "$r0" := (Convert (go.PointerType etcdserverpb.RangeResponse) (go.PointerType clientv3.GetResponse) ((MethodResolve (go.PointerType etcdserverpb.ResponseOp) "GetResponseRange"%go (![go.PointerType etcdserverpb.ResponseOp] "resp")) #())) in
-      do:  (map.insert go.string (![readSet] "rs") (![go.string] (IndexRef (go.SliceType go.string) (![go.SliceType go.string] "keys", ![go.int] "i"))) "$r0")));;;
+      do:  ((IndexRef readSet (![readSet] "rs", ![go.string] (IndexRef (go.SliceType go.string) (![go.SliceType go.string] "keys", ![go.int] "i")))) <-[go.PointerType clientv3.GetResponse] "$r0")));;;
     return: #()).
 
 (* first returns the store revision from the first fetch
@@ -1592,7 +1585,7 @@ Definition stm__Putⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : 
      let: "$a1" := (![go.string] "val") in
      let: "$a2" := (![go.SliceType clientv3.OpOption] "opts") in
      (FuncResolve clientv3.OpPut [] #()) "$a0" "$a1" "$a2"))])) in
-    do:  (map.insert go.string (![writeSet] (StructFieldRef stm "wset"%go (![go.PointerType stm] "s"))) (![go.string] "key") "$r0");;;
+    do:  ((IndexRef writeSet (![writeSet] (StructFieldRef stm "wset"%go (![go.PointerType stm] "s")), ![go.string] "key")) <-[stmPut] "$r0");;;
     return: #()).
 
 (* go: stm.go:256:15 *)
@@ -1603,7 +1596,7 @@ Definition stm__Delⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : 
     let: "$r0" := (CompositeLiteral stmPut (LiteralValue [KeyedElement None (ElementExpression go.string #""%go); KeyedElement None (ElementExpression clientv3.Op (let: "$a0" := (![go.string] "key") in
      let: "$a1" := #slice.nil in
      (FuncResolve clientv3.OpDelete [] #()) "$a0" "$a1"))])) in
-    do:  (map.insert go.string (![writeSet] (StructFieldRef stm "wset"%go (![go.PointerType stm] "s"))) (![go.string] "key") "$r0");;;
+    do:  ((IndexRef writeSet (![writeSet] (StructFieldRef stm "wset"%go (![go.PointerType stm] "s")), ![go.string] "key")) <-[stmPut] "$r0");;;
     return: #()).
 
 (* go: stm.go:258:15 *)
@@ -1746,7 +1739,7 @@ Definition stmSerializable__Getⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
         let: "$a1" := (![go.string] "key") in
         (FuncResolve go.delete [go.MapType go.string (go.PointerType clientv3.GetResponse)] #()) "$a0" "$a1");;;
         let: "$r0" := (![go.PointerType clientv3.GetResponse] "resp") in
-        do:  (map.insert go.string (![readSet] (StructFieldRef stm "rset"%go (StructFieldRef stmSerializable "stm"%go (![go.PointerType stmSerializable] "s")))) (![go.string] "key") "$r0")
+        do:  ((IndexRef readSet (![readSet] (StructFieldRef stm "rset"%go (StructFieldRef stmSerializable "stm"%go (![go.PointerType stmSerializable] "s"))), ![go.string] "key")) <-[go.PointerType clientv3.GetResponse] "$r0")
       else do:  #()))));;;
     let: "resp" := (GoAlloc (go.PointerType clientv3.GetResponse) (GoZeroVal (go.PointerType clientv3.GetResponse) #())) in
     let: "$r0" := (let: "$a0" := (![go.SliceType go.string] "keys") in

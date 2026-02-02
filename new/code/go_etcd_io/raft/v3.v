@@ -2025,21 +2025,19 @@ Definition newNodeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : v
 Definition node__Stopⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "n" <>,
     exception_do (let: "n" := (GoAlloc (go.PointerType node) "n") in
+    let: "$ch0" := (![go.ChannelType go.sendrecv (go.StructType [
+
+    ])] (StructFieldRef node "stop"%go (![go.PointerType node] "n"))) in
+    let: "$ch1" := (![go.ChannelType go.sendrecv (go.StructType [
+
+    ])] (StructFieldRef node "done"%go (![go.PointerType node] "n"))) in
     SelectStmt (SelectStmtClauses None [(CommClause (SendCase (go.StructType [
 
-    ]) (![go.ChannelType go.sendrecv (go.StructType [
+    ]) "$ch0" (CompositeLiteral (go.StructType [
 
-    ])] (StructFieldRef node "stop"%go (![go.PointerType node] "n"))) (CompositeLiteral (go.StructType [
+    ]) (LiteralValue []))) (do:  #())); (CommClause (RecvCase (go.StructType [
 
-    ]) (LiteralValue []))) (λ: <>,
-      do:  #()
-      )); (CommClause (RecvCase (go.StructType [
-
-    ]) (![go.ChannelType go.sendrecv (go.StructType [
-
-    ])] (StructFieldRef node "done"%go (![go.PointerType node] "n")))) (λ: "$recvVal",
-      return: (#())
-      ))]);;;
+    ]) "$ch1") (return: (#())))]);;;
     do:  (Fst (chan.receive (go.StructType [
 
     ]) (![go.ChannelType go.sendrecv (go.StructType [
@@ -2113,153 +2111,143 @@ Definition node__runⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
         let: "$r0" := (![go.uint64] (StructFieldRef raft "lead"%go (![go.PointerType raft] "r"))) in
         do:  ("lead" <-[go.uint64] "$r0")
       else do:  #());;;
-      SelectStmt (SelectStmtClauses None [(CommClause (RecvCase msgWithResult (![go.ChannelType go.sendrecv msgWithResult] "propc")) (λ: "$recvVal",
-        let: "pm" := (GoAlloc msgWithResult (GoZeroVal msgWithResult #())) in
-        let: "$r0" := (Fst "$recvVal") in
-        do:  ("pm" <-[msgWithResult] "$r0");;;
-        let: "m" := (GoAlloc raftpb.Message (GoZeroVal raftpb.Message #())) in
-        let: "$r0" := (![raftpb.Message] (StructFieldRef msgWithResult "m"%go "pm")) in
-        do:  ("m" <-[raftpb.Message] "$r0");;;
-        let: "$r0" := (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r"))) in
-        do:  ((StructFieldRef raftpb.Message "From"%go "m") <-[go.uint64] "$r0");;;
-        let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-        let: "$r0" := (let: "$a0" := (![raftpb.Message] "m") in
-        (MethodResolve (go.PointerType raft) "Step"%go (![go.PointerType raft] "r")) "$a0") in
-        do:  ("err" <-[go.error] "$r0");;;
-        (if: Convert go.untyped_bool go.bool ((![go.ChannelType go.sendrecv go.error] (StructFieldRef msgWithResult "result"%go "pm")) ≠⟨go.ChannelType go.sendrecv go.error⟩ (Convert go.untyped_nil (go.ChannelType go.sendrecv go.error) UntypedNil))
-        then
-          do:  (let: "$chan" := (![go.ChannelType go.sendrecv go.error] (StructFieldRef msgWithResult "result"%go "pm")) in
-          let: "$v" := (![go.error] "err") in
-          chan.send go.error "$chan" "$v");;;
-          do:  (let: "$a0" := (![go.ChannelType go.sendrecv go.error] (StructFieldRef msgWithResult "result"%go "pm")) in
-          (FuncResolve go.close [go.ChannelType go.sendrecv go.error] #()) "$a0")
-        else do:  #())
-        )); (CommClause (RecvCase raftpb.Message (![go.ChannelType go.sendrecv raftpb.Message] (StructFieldRef node "recvc"%go (![go.PointerType node] "n")))) (λ: "$recvVal",
-        let: "m" := (GoAlloc raftpb.Message (GoZeroVal raftpb.Message #())) in
-        let: "$r0" := (Fst "$recvVal") in
-        do:  ("m" <-[raftpb.Message] "$r0");;;
-        (if: ((let: "$a0" := (![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m")) in
-        (FuncResolve IsResponseMsg [] #()) "$a0") && (~ (let: "$a0" := (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m")) in
-        (FuncResolve IsLocalMsgTarget [] #()) "$a0"))) && ((map.lookup1 go.uint64 (go.PointerType tracker.Progress) (![tracker.ProgressMap] (StructFieldRef tracker.ProgressTracker "Progress"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r")))) (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m"))) =⟨go.PointerType tracker.Progress⟩ (Convert go.untyped_nil (go.PointerType tracker.Progress) UntypedNil))
-        then break: #()
-        else do:  #());;;
-        do:  (let: "$a0" := (![raftpb.Message] "m") in
-        (MethodResolve (go.PointerType raft) "Step"%go (![go.PointerType raft] "r")) "$a0")
-        )); (CommClause (RecvCase raftpb.ConfChangeV2 (![go.ChannelType go.sendrecv raftpb.ConfChangeV2] (StructFieldRef node "confc"%go (![go.PointerType node] "n")))) (λ: "$recvVal",
-        let: "cc" := (GoAlloc raftpb.ConfChangeV2 (GoZeroVal raftpb.ConfChangeV2 #())) in
-        let: "$r0" := (Fst "$recvVal") in
-        do:  ("cc" <-[raftpb.ConfChangeV2] "$r0");;;
-        let: "okBefore" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
-        let: ("$ret0", "$ret1") := (map.lookup2 go.uint64 (go.PointerType tracker.Progress) (![tracker.ProgressMap] (StructFieldRef tracker.ProgressTracker "Progress"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r")))) (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))) in
-        let: "$r0" := "$ret0" in
-        let: "$r1" := "$ret1" in
-        do:  "$r0";;;
-        do:  ("okBefore" <-[go.bool] "$r1");;;
-        let: "cs" := (GoAlloc raftpb.ConfState (GoZeroVal raftpb.ConfState #())) in
-        let: "$r0" := (let: "$a0" := (![raftpb.ConfChangeV2] "cc") in
-        (MethodResolve (go.PointerType raft) "applyConfChange"%go (![go.PointerType raft] "r")) "$a0") in
-        do:  ("cs" <-[raftpb.ConfState] "$r0");;;
-        (let: "okAfter" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
-        let: ("$ret0", "$ret1") := (map.lookup2 go.uint64 (go.PointerType tracker.Progress) (![tracker.ProgressMap] (StructFieldRef tracker.ProgressTracker "Progress"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r")))) (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))) in
-        let: "$r0" := "$ret0" in
-        let: "$r1" := "$ret1" in
-        do:  "$r0";;;
-        do:  ("okAfter" <-[go.bool] "$r1");;;
-        (if: (![go.bool] "okBefore") && (~ (![go.bool] "okAfter"))
-        then
-          let: "found" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
-          let: "$range" := (CompositeLiteral (go.SliceType (go.SliceType go.uint64)) (LiteralValue [KeyedElement None (ElementExpression (go.SliceType go.uint64) (![go.SliceType go.uint64] (StructFieldRef raftpb.ConfState "Voters"%go "cs"))); KeyedElement None (ElementExpression (go.SliceType go.uint64) (![go.SliceType go.uint64] (StructFieldRef raftpb.ConfState "VotersOutgoing"%go "cs")))])) in
-          (let: "sl" := (GoAlloc (go.SliceType go.uint64) (GoZeroVal (go.SliceType go.uint64) #())) in
-          slice.for_range (go.SliceType go.uint64) "$range" (λ: "$key" "$value",
-            do:  ("sl" <-[go.SliceType go.uint64] "$value");;;
+      let: "$ch0" := (![go.ChannelType go.sendrecv msgWithResult] "propc") in
+      let: "$ch1" := (![go.ChannelType go.sendrecv raftpb.Message] (StructFieldRef node "recvc"%go (![go.PointerType node] "n"))) in
+      let: "$ch2" := (![go.ChannelType go.sendrecv raftpb.ConfChangeV2] (StructFieldRef node "confc"%go (![go.PointerType node] "n"))) in
+      let: "$ch3" := (![go.ChannelType go.sendrecv (go.StructType [
+
+      ])] (StructFieldRef node "tickc"%go (![go.PointerType node] "n"))) in
+      let: "$ch4" := (![go.ChannelType go.sendrecv Ready] "readyc") in
+      let: "$ch5" := (![go.ChannelType go.sendrecv (go.StructType [
+
+      ])] "advancec") in
+      let: "$ch6" := (![go.ChannelType go.sendrecv (go.ChannelType go.sendrecv Status)] (StructFieldRef node "status"%go (![go.PointerType node] "n"))) in
+      let: "$ch7" := (![go.ChannelType go.sendrecv (go.StructType [
+
+      ])] (StructFieldRef node "stop"%go (![go.PointerType node] "n"))) in
+      SelectStmt (SelectStmtClauses None [(CommClause (RecvCase msgWithResult "$ch0") (let: "pm" := (GoAlloc msgWithResult (GoZeroVal msgWithResult #())) in
+      let: "$r0" := (Fst "$recvVal") in
+      do:  ("pm" <-[msgWithResult] "$r0");;;
+      let: "m" := (GoAlloc raftpb.Message (GoZeroVal raftpb.Message #())) in
+      let: "$r0" := (![raftpb.Message] (StructFieldRef msgWithResult "m"%go "pm")) in
+      do:  ("m" <-[raftpb.Message] "$r0");;;
+      let: "$r0" := (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r"))) in
+      do:  ((StructFieldRef raftpb.Message "From"%go "m") <-[go.uint64] "$r0");;;
+      let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
+      let: "$r0" := (let: "$a0" := (![raftpb.Message] "m") in
+      (MethodResolve (go.PointerType raft) "Step"%go (![go.PointerType raft] "r")) "$a0") in
+      do:  ("err" <-[go.error] "$r0");;;
+      (if: Convert go.untyped_bool go.bool ((![go.ChannelType go.sendrecv go.error] (StructFieldRef msgWithResult "result"%go "pm")) ≠⟨go.ChannelType go.sendrecv go.error⟩ (Convert go.untyped_nil (go.ChannelType go.sendrecv go.error) UntypedNil))
+      then
+        do:  (let: "$chan" := (![go.ChannelType go.sendrecv go.error] (StructFieldRef msgWithResult "result"%go "pm")) in
+        let: "$v" := (![go.error] "err") in
+        chan.send go.error "$chan" "$v");;;
+        do:  (let: "$a0" := (![go.ChannelType go.sendrecv go.error] (StructFieldRef msgWithResult "result"%go "pm")) in
+        (FuncResolve go.close [go.ChannelType go.sendrecv go.error] #()) "$a0")
+      else do:  #()))); (CommClause (RecvCase raftpb.Message "$ch1") (let: "m" := (GoAlloc raftpb.Message (GoZeroVal raftpb.Message #())) in
+      let: "$r0" := (Fst "$recvVal") in
+      do:  ("m" <-[raftpb.Message] "$r0");;;
+      (if: ((let: "$a0" := (![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m")) in
+      (FuncResolve IsResponseMsg [] #()) "$a0") && (~ (let: "$a0" := (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m")) in
+      (FuncResolve IsLocalMsgTarget [] #()) "$a0"))) && ((map.lookup1 go.uint64 (go.PointerType tracker.Progress) (![tracker.ProgressMap] (StructFieldRef tracker.ProgressTracker "Progress"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r")))) (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m"))) =⟨go.PointerType tracker.Progress⟩ (Convert go.untyped_nil (go.PointerType tracker.Progress) UntypedNil))
+      then break: #()
+      else do:  #());;;
+      do:  (let: "$a0" := (![raftpb.Message] "m") in
+      (MethodResolve (go.PointerType raft) "Step"%go (![go.PointerType raft] "r")) "$a0"))); (CommClause (RecvCase raftpb.ConfChangeV2 "$ch2") (let: "cc" := (GoAlloc raftpb.ConfChangeV2 (GoZeroVal raftpb.ConfChangeV2 #())) in
+      let: "$r0" := (Fst "$recvVal") in
+      do:  ("cc" <-[raftpb.ConfChangeV2] "$r0");;;
+      let: "okBefore" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
+      let: ("$ret0", "$ret1") := (map.lookup2 go.uint64 (go.PointerType tracker.Progress) (![tracker.ProgressMap] (StructFieldRef tracker.ProgressTracker "Progress"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r")))) (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))) in
+      let: "$r0" := "$ret0" in
+      let: "$r1" := "$ret1" in
+      do:  "$r0";;;
+      do:  ("okBefore" <-[go.bool] "$r1");;;
+      let: "cs" := (GoAlloc raftpb.ConfState (GoZeroVal raftpb.ConfState #())) in
+      let: "$r0" := (let: "$a0" := (![raftpb.ConfChangeV2] "cc") in
+      (MethodResolve (go.PointerType raft) "applyConfChange"%go (![go.PointerType raft] "r")) "$a0") in
+      do:  ("cs" <-[raftpb.ConfState] "$r0");;;
+      (let: "okAfter" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
+      let: ("$ret0", "$ret1") := (map.lookup2 go.uint64 (go.PointerType tracker.Progress) (![tracker.ProgressMap] (StructFieldRef tracker.ProgressTracker "Progress"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r")))) (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))) in
+      let: "$r0" := "$ret0" in
+      let: "$r1" := "$ret1" in
+      do:  "$r0";;;
+      do:  ("okAfter" <-[go.bool] "$r1");;;
+      (if: (![go.bool] "okBefore") && (~ (![go.bool] "okAfter"))
+      then
+        let: "found" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
+        let: "$range" := (CompositeLiteral (go.SliceType (go.SliceType go.uint64)) (LiteralValue [KeyedElement None (ElementExpression (go.SliceType go.uint64) (![go.SliceType go.uint64] (StructFieldRef raftpb.ConfState "Voters"%go "cs"))); KeyedElement None (ElementExpression (go.SliceType go.uint64) (![go.SliceType go.uint64] (StructFieldRef raftpb.ConfState "VotersOutgoing"%go "cs")))])) in
+        (let: "sl" := (GoAlloc (go.SliceType go.uint64) (GoZeroVal (go.SliceType go.uint64) #())) in
+        slice.for_range (go.SliceType go.uint64) "$range" (λ: "$key" "$value",
+          do:  ("sl" <-[go.SliceType go.uint64] "$value");;;
+          do:  "$key";;;
+          let: "$range" := (![go.SliceType go.uint64] "sl") in
+          (let: "id" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+          slice.for_range go.uint64 "$range" (λ: "$key" "$value",
+            do:  ("id" <-[go.uint64] "$value");;;
             do:  "$key";;;
-            let: "$range" := (![go.SliceType go.uint64] "sl") in
-            (let: "id" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-            slice.for_range go.uint64 "$range" (λ: "$key" "$value",
-              do:  ("id" <-[go.uint64] "$value");;;
-              do:  "$key";;;
-              (if: Convert go.untyped_bool go.bool ((![go.uint64] "id") =⟨go.uint64⟩ (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r"))))
-              then
-                let: "$r0" := #true in
-                do:  ("found" <-[go.bool] "$r0");;;
-                break: #()
-              else do:  #())));;;
-            (if: ![go.bool] "found"
-            then break: #()
+            (if: Convert go.untyped_bool go.bool ((![go.uint64] "id") =⟨go.uint64⟩ (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r"))))
+            then
+              let: "$r0" := #true in
+              do:  ("found" <-[go.bool] "$r0");;;
+              break: #()
             else do:  #())));;;
-          (if: (~ (![go.bool] "found"))
-          then
-            let: "$r0" := (Convert go.untyped_nil (go.ChannelType go.sendrecv msgWithResult) UntypedNil) in
-            do:  ("propc" <-[go.ChannelType go.sendrecv msgWithResult] "$r0")
-          else do:  #())
-        else do:  #()));;;
-        SelectStmt (SelectStmtClauses None [(CommClause (SendCase raftpb.ConfState (![go.ChannelType go.sendrecv raftpb.ConfState] (StructFieldRef node "confstatec"%go (![go.PointerType node] "n"))) (![raftpb.ConfState] "cs")) (λ: <>,
-          do:  #()
-          )); (CommClause (RecvCase (go.StructType [
-
-        ]) (![go.ChannelType go.sendrecv (go.StructType [
-
-        ])] (StructFieldRef node "done"%go (![go.PointerType node] "n")))) (λ: "$recvVal",
-          do:  #()
-          ))])
-        )); (CommClause (RecvCase (go.StructType [
-
-      ]) (![go.ChannelType go.sendrecv (go.StructType [
-
-      ])] (StructFieldRef node "tickc"%go (![go.PointerType node] "n")))) (λ: "$recvVal",
-        do:  ((MethodResolve (go.PointerType RawNode) "Tick"%go (![go.PointerType RawNode] (StructFieldRef node "rn"%go (![go.PointerType node] "n")))) #())
-        )); (CommClause (SendCase Ready (![go.ChannelType go.sendrecv Ready] "readyc") (![Ready] "rd")) (λ: <>,
-        do:  (let: "$a0" := (![Ready] "rd") in
-        (MethodResolve (go.PointerType RawNode) "acceptReady"%go (![go.PointerType RawNode] (StructFieldRef node "rn"%go (![go.PointerType node] "n")))) "$a0");;;
-        (if: (~ (![go.bool] (StructFieldRef RawNode "asyncStorageWrites"%go (![go.PointerType RawNode] (StructFieldRef node "rn"%go (![go.PointerType node] "n"))))))
+          (if: ![go.bool] "found"
+          then break: #()
+          else do:  #())));;;
+        (if: (~ (![go.bool] "found"))
         then
-          let: "$r0" := (![go.ChannelType go.sendrecv (go.StructType [
+          let: "$r0" := (Convert go.untyped_nil (go.ChannelType go.sendrecv msgWithResult) UntypedNil) in
+          do:  ("propc" <-[go.ChannelType go.sendrecv msgWithResult] "$r0")
+        else do:  #())
+      else do:  #()));;;
+      let: "$ch0" := (![go.ChannelType go.sendrecv raftpb.ConfState] (StructFieldRef node "confstatec"%go (![go.PointerType node] "n"))) in
+      let: "$ch1" := (![go.ChannelType go.sendrecv (go.StructType [
 
-          ])] (StructFieldRef node "advancec"%go (![go.PointerType node] "n"))) in
-          do:  ("advancec" <-[go.ChannelType go.sendrecv (go.StructType [
+      ])] (StructFieldRef node "done"%go (![go.PointerType node] "n"))) in
+      SelectStmt (SelectStmtClauses None [(CommClause (SendCase raftpb.ConfState "$ch0" (![raftpb.ConfState] "cs")) (do:  #())); (CommClause (RecvCase (go.StructType [
 
-          ])] "$r0")
-        else
-          let: "$r0" := (CompositeLiteral Ready (LiteralValue [])) in
-          do:  ("rd" <-[Ready] "$r0"));;;
-        let: "$r0" := (Convert go.untyped_nil (go.ChannelType go.sendrecv Ready) UntypedNil) in
-        do:  ("readyc" <-[go.ChannelType go.sendrecv Ready] "$r0")
-        )); (CommClause (RecvCase (go.StructType [
+      ]) "$ch1") (do:  #()))]))); (CommClause (RecvCase (go.StructType [
 
-      ]) (![go.ChannelType go.sendrecv (go.StructType [
+      ]) "$ch3") (do:  ((MethodResolve (go.PointerType RawNode) "Tick"%go (![go.PointerType RawNode] (StructFieldRef node "rn"%go (![go.PointerType node] "n")))) #()))); (CommClause (SendCase Ready "$ch4" (![Ready] "rd")) (do:  (let: "$a0" := (![Ready] "rd") in
+      (MethodResolve (go.PointerType RawNode) "acceptReady"%go (![go.PointerType RawNode] (StructFieldRef node "rn"%go (![go.PointerType node] "n")))) "$a0");;;
+      (if: (~ (![go.bool] (StructFieldRef RawNode "asyncStorageWrites"%go (![go.PointerType RawNode] (StructFieldRef node "rn"%go (![go.PointerType node] "n"))))))
+      then
+        let: "$r0" := (![go.ChannelType go.sendrecv (go.StructType [
 
-      ])] "advancec")) (λ: "$recvVal",
-        do:  (let: "$a0" := (![Ready] "rd") in
-        (MethodResolve (go.PointerType RawNode) "Advance"%go (![go.PointerType RawNode] (StructFieldRef node "rn"%go (![go.PointerType node] "n")))) "$a0");;;
-        let: "$r0" := (CompositeLiteral Ready (LiteralValue [])) in
-        do:  ("rd" <-[Ready] "$r0");;;
-        let: "$r0" := (Convert go.untyped_nil (go.ChannelType go.sendrecv (go.StructType [
-
-        ])) UntypedNil) in
+        ])] (StructFieldRef node "advancec"%go (![go.PointerType node] "n"))) in
         do:  ("advancec" <-[go.ChannelType go.sendrecv (go.StructType [
 
         ])] "$r0")
-        )); (CommClause (RecvCase (go.ChannelType go.sendrecv Status) (![go.ChannelType go.sendrecv (go.ChannelType go.sendrecv Status)] (StructFieldRef node "status"%go (![go.PointerType node] "n")))) (λ: "$recvVal",
-        let: "c" := (GoAlloc (go.ChannelType go.sendrecv Status) (GoZeroVal (go.ChannelType go.sendrecv Status) #())) in
-        let: "$r0" := (Fst "$recvVal") in
-        do:  ("c" <-[go.ChannelType go.sendrecv Status] "$r0");;;
-        do:  (let: "$chan" := (![go.ChannelType go.sendrecv Status] "c") in
-        let: "$v" := (let: "$a0" := (![go.PointerType raft] "r") in
-        (FuncResolve getStatus [] #()) "$a0") in
-        chan.send Status "$chan" "$v")
-        )); (CommClause (RecvCase (go.StructType [
+      else
+        let: "$r0" := (CompositeLiteral Ready (LiteralValue [])) in
+        do:  ("rd" <-[Ready] "$r0"));;;
+      let: "$r0" := (Convert go.untyped_nil (go.ChannelType go.sendrecv Ready) UntypedNil) in
+      do:  ("readyc" <-[go.ChannelType go.sendrecv Ready] "$r0"))); (CommClause (RecvCase (go.StructType [
 
-      ]) (![go.ChannelType go.sendrecv (go.StructType [
+      ]) "$ch5") (do:  (let: "$a0" := (![Ready] "rd") in
+      (MethodResolve (go.PointerType RawNode) "Advance"%go (![go.PointerType RawNode] (StructFieldRef node "rn"%go (![go.PointerType node] "n")))) "$a0");;;
+      let: "$r0" := (CompositeLiteral Ready (LiteralValue [])) in
+      do:  ("rd" <-[Ready] "$r0");;;
+      let: "$r0" := (Convert go.untyped_nil (go.ChannelType go.sendrecv (go.StructType [
 
-      ])] (StructFieldRef node "stop"%go (![go.PointerType node] "n")))) (λ: "$recvVal",
-        do:  (let: "$a0" := (![go.ChannelType go.sendrecv (go.StructType [
+      ])) UntypedNil) in
+      do:  ("advancec" <-[go.ChannelType go.sendrecv (go.StructType [
 
-        ])] (StructFieldRef node "done"%go (![go.PointerType node] "n"))) in
-        (FuncResolve go.close [go.ChannelType go.sendrecv (go.StructType [
+      ])] "$r0"))); (CommClause (RecvCase (go.ChannelType go.sendrecv Status) "$ch6") (let: "c" := (GoAlloc (go.ChannelType go.sendrecv Status) (GoZeroVal (go.ChannelType go.sendrecv Status) #())) in
+      let: "$r0" := (Fst "$recvVal") in
+      do:  ("c" <-[go.ChannelType go.sendrecv Status] "$r0");;;
+      do:  (let: "$chan" := (![go.ChannelType go.sendrecv Status] "c") in
+      let: "$v" := (let: "$a0" := (![go.PointerType raft] "r") in
+      (FuncResolve getStatus [] #()) "$a0") in
+      chan.send Status "$chan" "$v"))); (CommClause (RecvCase (go.StructType [
 
-         ])] #()) "$a0");;;
-        return: (#())
-        ))]));;;
+      ]) "$ch7") (do:  (let: "$a0" := (![go.ChannelType go.sendrecv (go.StructType [
+
+      ])] (StructFieldRef node "done"%go (![go.PointerType node] "n"))) in
+      (FuncResolve go.close [go.ChannelType go.sendrecv (go.StructType [
+
+       ])] #()) "$a0");;;
+      return: (#())))]));;;
     return: #()).
 
 (* Tick increments the internal logical clock for this Node. Election timeouts
@@ -2269,26 +2257,22 @@ Definition node__runⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
 Definition node__Tickⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "n" <>,
     exception_do (let: "n" := (GoAlloc (go.PointerType node) "n") in
-    SelectStmt (SelectStmtClauses (Some (λ: <>,
-      do:  (let: "$a0" := #"%x A tick missed to fire. Node blocks too long!"%go in
-      let: "$a1" := ((let: "$sl0" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] (StructFieldRef node "rn"%go (![go.PointerType node] "n")))))))) in
-      CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0")]))) in
-      (MethodResolve Logger "Warningf"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] (StructFieldRef node "rn"%go (![go.PointerType node] "n")))))))) "$a0" "$a1")
-      )) [(CommClause (SendCase (go.StructType [
+    let: "$ch0" := (![go.ChannelType go.sendrecv (go.StructType [
 
-    ]) (![go.ChannelType go.sendrecv (go.StructType [
+    ])] (StructFieldRef node "tickc"%go (![go.PointerType node] "n"))) in
+    let: "$ch1" := (![go.ChannelType go.sendrecv (go.StructType [
 
-    ])] (StructFieldRef node "tickc"%go (![go.PointerType node] "n"))) (CompositeLiteral (go.StructType [
+    ])] (StructFieldRef node "done"%go (![go.PointerType node] "n"))) in
+    SelectStmt (SelectStmtClauses (Some (do:  (let: "$a0" := #"%x A tick missed to fire. Node blocks too long!"%go in
+    let: "$a1" := ((let: "$sl0" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] (StructFieldRef node "rn"%go (![go.PointerType node] "n")))))))) in
+    CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0")]))) in
+    (MethodResolve Logger "Warningf"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] (StructFieldRef node "rn"%go (![go.PointerType node] "n")))))))) "$a0" "$a1"))) [(CommClause (SendCase (go.StructType [
 
-    ]) (LiteralValue []))) (λ: <>,
-      do:  #()
-      )); (CommClause (RecvCase (go.StructType [
+    ]) "$ch0" (CompositeLiteral (go.StructType [
 
-    ]) (![go.ChannelType go.sendrecv (go.StructType [
+    ]) (LiteralValue []))) (do:  #())); (CommClause (RecvCase (go.StructType [
 
-    ])] (StructFieldRef node "done"%go (![go.PointerType node] "n")))) (λ: "$recvVal",
-      do:  #()
-      ))]);;;
+    ]) "$ch1") (do:  #()))]);;;
     return: #()).
 
 (* go: node.go:467:16 *)
@@ -2400,19 +2384,16 @@ Definition node__stepWithWaitOptionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoG
     let: "ctx" := (GoAlloc context.Context "ctx") in
     (if: Convert go.untyped_bool go.bool ((![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m")) ≠⟨go.int32⟩ raftpb.MsgProp)
     then
-      SelectStmt (SelectStmtClauses None [(CommClause (SendCase raftpb.Message (![go.ChannelType go.sendrecv raftpb.Message] (StructFieldRef node "recvc"%go (![go.PointerType node] "n"))) (![raftpb.Message] "m")) (λ: <>,
-        return: (Convert go.untyped_nil go.error UntypedNil)
-        )); (CommClause (RecvCase (go.StructType [
+      let: "$ch0" := (![go.ChannelType go.sendrecv raftpb.Message] (StructFieldRef node "recvc"%go (![go.PointerType node] "n"))) in
+      let: "$ch1" := ((MethodResolve context.Context "Done"%go (![context.Context] "ctx")) #()) in
+      let: "$ch2" := (![go.ChannelType go.sendrecv (go.StructType [
 
-      ]) ((MethodResolve context.Context "Done"%go (![context.Context] "ctx")) #())) (λ: "$recvVal",
-        return: ((MethodResolve context.Context "Err"%go (![context.Context] "ctx")) #())
-        )); (CommClause (RecvCase (go.StructType [
+      ])] (StructFieldRef node "done"%go (![go.PointerType node] "n"))) in
+      SelectStmt (SelectStmtClauses None [(CommClause (SendCase raftpb.Message "$ch0" (![raftpb.Message] "m")) (return: (Convert go.untyped_nil go.error UntypedNil))); (CommClause (RecvCase (go.StructType [
 
-      ]) (![go.ChannelType go.sendrecv (go.StructType [
+      ]) "$ch1") (return: ((MethodResolve context.Context "Err"%go (![context.Context] "ctx")) #()))); (CommClause (RecvCase (go.StructType [
 
-      ])] (StructFieldRef node "done"%go (![go.PointerType node] "n")))) (λ: "$recvVal",
-        return: (![go.error] (GlobalVarAddr ErrStopped #()))
-        ))])
+      ]) "$ch2") (return: (![go.error] (GlobalVarAddr ErrStopped #()))))])
     else do:  #());;;
     let: "ch" := (GoAlloc (go.ChannelType go.sendrecv msgWithResult) (GoZeroVal (go.ChannelType go.sendrecv msgWithResult) #())) in
     let: "$r0" := (![go.ChannelType go.sendrecv msgWithResult] (StructFieldRef node "propc"%go (![go.PointerType node] "n"))) in
@@ -2425,39 +2406,33 @@ Definition node__stepWithWaitOptionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoG
       let: "$r0" := ((FuncResolve go.make2 [go.ChannelType go.sendrecv go.error] #()) #(W64 1)) in
       do:  ((StructFieldRef msgWithResult "result"%go "pm") <-[go.ChannelType go.sendrecv go.error] "$r0")
     else do:  #());;;
-    SelectStmt (SelectStmtClauses None [(CommClause (SendCase msgWithResult (![go.ChannelType go.sendrecv msgWithResult] "ch") (![msgWithResult] "pm")) (λ: <>,
-      (if: (~ (![go.bool] "wait"))
-      then return: (Convert go.untyped_nil go.error UntypedNil)
-      else do:  #())
-      )); (CommClause (RecvCase (go.StructType [
+    let: "$ch0" := (![go.ChannelType go.sendrecv msgWithResult] "ch") in
+    let: "$ch1" := ((MethodResolve context.Context "Done"%go (![context.Context] "ctx")) #()) in
+    let: "$ch2" := (![go.ChannelType go.sendrecv (go.StructType [
 
-    ]) ((MethodResolve context.Context "Done"%go (![context.Context] "ctx")) #())) (λ: "$recvVal",
-      return: ((MethodResolve context.Context "Err"%go (![context.Context] "ctx")) #())
-      )); (CommClause (RecvCase (go.StructType [
+    ])] (StructFieldRef node "done"%go (![go.PointerType node] "n"))) in
+    SelectStmt (SelectStmtClauses None [(CommClause (SendCase msgWithResult "$ch0" (![msgWithResult] "pm")) ((if: (~ (![go.bool] "wait"))
+    then return: (Convert go.untyped_nil go.error UntypedNil)
+    else do:  #()))); (CommClause (RecvCase (go.StructType [
 
-    ]) (![go.ChannelType go.sendrecv (go.StructType [
+    ]) "$ch1") (return: ((MethodResolve context.Context "Err"%go (![context.Context] "ctx")) #()))); (CommClause (RecvCase (go.StructType [
 
-    ])] (StructFieldRef node "done"%go (![go.PointerType node] "n")))) (λ: "$recvVal",
-      return: (![go.error] (GlobalVarAddr ErrStopped #()))
-      ))]);;;
-    SelectStmt (SelectStmtClauses None [(CommClause (RecvCase go.error (![go.ChannelType go.sendrecv go.error] (StructFieldRef msgWithResult "result"%go "pm"))) (λ: "$recvVal",
-      let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-      let: "$r0" := (Fst "$recvVal") in
-      do:  ("err" <-[go.error] "$r0");;;
-      (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
-      then return: (![go.error] "err")
-      else do:  #())
-      )); (CommClause (RecvCase (go.StructType [
+    ]) "$ch2") (return: (![go.error] (GlobalVarAddr ErrStopped #()))))]);;;
+    let: "$ch0" := (![go.ChannelType go.sendrecv go.error] (StructFieldRef msgWithResult "result"%go "pm")) in
+    let: "$ch1" := ((MethodResolve context.Context "Done"%go (![context.Context] "ctx")) #()) in
+    let: "$ch2" := (![go.ChannelType go.sendrecv (go.StructType [
 
-    ]) ((MethodResolve context.Context "Done"%go (![context.Context] "ctx")) #())) (λ: "$recvVal",
-      return: ((MethodResolve context.Context "Err"%go (![context.Context] "ctx")) #())
-      )); (CommClause (RecvCase (go.StructType [
+    ])] (StructFieldRef node "done"%go (![go.PointerType node] "n"))) in
+    SelectStmt (SelectStmtClauses None [(CommClause (RecvCase go.error "$ch0") (let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
+    let: "$r0" := (Fst "$recvVal") in
+    do:  ("err" <-[go.error] "$r0");;;
+    (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
+    then return: (![go.error] "err")
+    else do:  #()))); (CommClause (RecvCase (go.StructType [
 
-    ]) (![go.ChannelType go.sendrecv (go.StructType [
+    ]) "$ch1") (return: ((MethodResolve context.Context "Err"%go (![context.Context] "ctx")) #()))); (CommClause (RecvCase (go.StructType [
 
-    ])] (StructFieldRef node "done"%go (![go.PointerType node] "n")))) (λ: "$recvVal",
-      return: (![go.error] (GlobalVarAddr ErrStopped #()))
-      ))]);;;
+    ]) "$ch2") (return: (![go.error] (GlobalVarAddr ErrStopped #()))))]);;;
     return: (Convert go.untyped_nil go.error UntypedNil)).
 
 (* go: node.go:547:16 *)
@@ -2470,21 +2445,19 @@ Definition node__Readyⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
 Definition node__Advanceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "n" <>,
     exception_do (let: "n" := (GoAlloc (go.PointerType node) "n") in
+    let: "$ch0" := (![go.ChannelType go.sendrecv (go.StructType [
+
+    ])] (StructFieldRef node "advancec"%go (![go.PointerType node] "n"))) in
+    let: "$ch1" := (![go.ChannelType go.sendrecv (go.StructType [
+
+    ])] (StructFieldRef node "done"%go (![go.PointerType node] "n"))) in
     SelectStmt (SelectStmtClauses None [(CommClause (SendCase (go.StructType [
 
-    ]) (![go.ChannelType go.sendrecv (go.StructType [
+    ]) "$ch0" (CompositeLiteral (go.StructType [
 
-    ])] (StructFieldRef node "advancec"%go (![go.PointerType node] "n"))) (CompositeLiteral (go.StructType [
+    ]) (LiteralValue []))) (do:  #())); (CommClause (RecvCase (go.StructType [
 
-    ]) (LiteralValue []))) (λ: <>,
-      do:  #()
-      )); (CommClause (RecvCase (go.StructType [
-
-    ]) (![go.ChannelType go.sendrecv (go.StructType [
-
-    ])] (StructFieldRef node "done"%go (![go.PointerType node] "n")))) (λ: "$recvVal",
-      do:  #()
-      ))]);;;
+    ]) "$ch1") (do:  #()))]);;;
     return: #()).
 
 (* go: node.go:556:16 *)
@@ -2493,26 +2466,22 @@ Definition node__ApplyConfChangeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
     exception_do (let: "n" := (GoAlloc (go.PointerType node) "n") in
     let: "cc" := (GoAlloc raftpb.ConfChangeI "cc") in
     let: "cs" := (GoAlloc raftpb.ConfState (GoZeroVal raftpb.ConfState #())) in
-    SelectStmt (SelectStmtClauses None [(CommClause (SendCase raftpb.ConfChangeV2 (![go.ChannelType go.sendrecv raftpb.ConfChangeV2] (StructFieldRef node "confc"%go (![go.PointerType node] "n"))) ((MethodResolve raftpb.ConfChangeI "AsV2"%go (![raftpb.ConfChangeI] "cc")) #())) (λ: <>,
-      do:  #()
-      )); (CommClause (RecvCase (go.StructType [
+    let: "$ch0" := (![go.ChannelType go.sendrecv raftpb.ConfChangeV2] (StructFieldRef node "confc"%go (![go.PointerType node] "n"))) in
+    let: "$ch1" := (![go.ChannelType go.sendrecv (go.StructType [
 
-    ]) (![go.ChannelType go.sendrecv (go.StructType [
+    ])] (StructFieldRef node "done"%go (![go.PointerType node] "n"))) in
+    SelectStmt (SelectStmtClauses None [(CommClause (SendCase raftpb.ConfChangeV2 "$ch0" ((MethodResolve raftpb.ConfChangeI "AsV2"%go (![raftpb.ConfChangeI] "cc")) #())) (do:  #())); (CommClause (RecvCase (go.StructType [
 
-    ])] (StructFieldRef node "done"%go (![go.PointerType node] "n")))) (λ: "$recvVal",
-      do:  #()
-      ))]);;;
-    SelectStmt (SelectStmtClauses None [(CommClause (RecvCase raftpb.ConfState (![go.ChannelType go.sendrecv raftpb.ConfState] (StructFieldRef node "confstatec"%go (![go.PointerType node] "n")))) (λ: "$recvVal",
-      let: "$r0" := (Fst "$recvVal") in
-      do:  ("cs" <-[raftpb.ConfState] "$r0");;;
-      do:  #()
-      )); (CommClause (RecvCase (go.StructType [
+    ]) "$ch1") (do:  #()))]);;;
+    let: "$ch0" := (![go.ChannelType go.sendrecv raftpb.ConfState] (StructFieldRef node "confstatec"%go (![go.PointerType node] "n"))) in
+    let: "$ch1" := (![go.ChannelType go.sendrecv (go.StructType [
 
-    ]) (![go.ChannelType go.sendrecv (go.StructType [
+    ])] (StructFieldRef node "done"%go (![go.PointerType node] "n"))) in
+    SelectStmt (SelectStmtClauses None [(CommClause (RecvCase raftpb.ConfState "$ch0") (let: "$r0" := (Fst "$recvVal") in
+    do:  ("cs" <-[raftpb.ConfState] "$r0");;;
+    do:  #())); (CommClause (RecvCase (go.StructType [
 
-    ])] (StructFieldRef node "done"%go (![go.PointerType node] "n")))) (λ: "$recvVal",
-      do:  #()
-      ))]);;;
+    ]) "$ch1") (do:  #()))]);;;
     return: ("cs")).
 
 (* go: node.go:569:16 *)
@@ -2522,30 +2491,26 @@ Definition node__Statusⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
     let: "c" := (GoAlloc (go.ChannelType go.sendrecv Status) (GoZeroVal (go.ChannelType go.sendrecv Status) #())) in
     let: "$r0" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv Status] #()) #()) in
     do:  ("c" <-[go.ChannelType go.sendrecv Status] "$r0");;;
-    SelectStmt (SelectStmtClauses None [(CommClause (SendCase (go.ChannelType go.sendrecv Status) (![go.ChannelType go.sendrecv (go.ChannelType go.sendrecv Status)] (StructFieldRef node "status"%go (![go.PointerType node] "n"))) (![go.ChannelType go.sendrecv Status] "c")) (λ: <>,
-      return: (Fst (chan.receive Status (![go.ChannelType go.sendrecv Status] "c")))
-      )); (CommClause (RecvCase (go.StructType [
+    let: "$ch0" := (![go.ChannelType go.sendrecv (go.ChannelType go.sendrecv Status)] (StructFieldRef node "status"%go (![go.PointerType node] "n"))) in
+    let: "$ch1" := (![go.ChannelType go.sendrecv (go.StructType [
 
-    ]) (![go.ChannelType go.sendrecv (go.StructType [
+    ])] (StructFieldRef node "done"%go (![go.PointerType node] "n"))) in
+    SelectStmt (SelectStmtClauses None [(CommClause (SendCase (go.ChannelType go.sendrecv Status) "$ch0" (![go.ChannelType go.sendrecv Status] "c")) (return: (Fst (chan.receive Status (![go.ChannelType go.sendrecv Status] "c"))))); (CommClause (RecvCase (go.StructType [
 
-    ])] (StructFieldRef node "done"%go (![go.PointerType node] "n")))) (λ: "$recvVal",
-      return: (CompositeLiteral Status (LiteralValue []))
-      ))])).
+    ]) "$ch1") (return: (CompositeLiteral Status (LiteralValue []))))])).
 
 (* go: node.go:579:16 *)
 Definition node__ReportUnreachableⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "n" "id",
     exception_do (let: "n" := (GoAlloc (go.PointerType node) "n") in
     let: "id" := (GoAlloc go.uint64 "id") in
-    SelectStmt (SelectStmtClauses None [(CommClause (SendCase raftpb.Message (![go.ChannelType go.sendrecv raftpb.Message] (StructFieldRef node "recvc"%go (![go.PointerType node] "n"))) (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType raftpb.MsgUnreachable); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 (![go.uint64] "id"))]))) (λ: <>,
-      do:  #()
-      )); (CommClause (RecvCase (go.StructType [
+    let: "$ch0" := (![go.ChannelType go.sendrecv raftpb.Message] (StructFieldRef node "recvc"%go (![go.PointerType node] "n"))) in
+    let: "$ch1" := (![go.ChannelType go.sendrecv (go.StructType [
 
-    ]) (![go.ChannelType go.sendrecv (go.StructType [
+    ])] (StructFieldRef node "done"%go (![go.PointerType node] "n"))) in
+    SelectStmt (SelectStmtClauses None [(CommClause (SendCase raftpb.Message "$ch0" (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType raftpb.MsgUnreachable); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 (![go.uint64] "id"))]))) (do:  #())); (CommClause (RecvCase (go.StructType [
 
-    ])] (StructFieldRef node "done"%go (![go.PointerType node] "n")))) (λ: "$recvVal",
-      do:  #()
-      ))]);;;
+    ]) "$ch1") (do:  #()))]);;;
     return: #()).
 
 (* go: node.go:586:16 *)
@@ -2557,15 +2522,13 @@ Definition node__ReportSnapshotⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
     let: "rej" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := ((![SnapshotStatus] "status") =⟨go.int⟩ SnapshotFailure) in
     do:  ("rej" <-[go.bool] "$r0");;;
-    SelectStmt (SelectStmtClauses None [(CommClause (SendCase raftpb.Message (![go.ChannelType go.sendrecv raftpb.Message] (StructFieldRef node "recvc"%go (![go.PointerType node] "n"))) (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType raftpb.MsgSnapStatus); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 (![go.uint64] "id")); KeyedElement (Some (KeyField "Reject"%go)) (ElementExpression go.bool (![go.bool] "rej"))]))) (λ: <>,
-      do:  #()
-      )); (CommClause (RecvCase (go.StructType [
+    let: "$ch0" := (![go.ChannelType go.sendrecv raftpb.Message] (StructFieldRef node "recvc"%go (![go.PointerType node] "n"))) in
+    let: "$ch1" := (![go.ChannelType go.sendrecv (go.StructType [
 
-    ]) (![go.ChannelType go.sendrecv (go.StructType [
+    ])] (StructFieldRef node "done"%go (![go.PointerType node] "n"))) in
+    SelectStmt (SelectStmtClauses None [(CommClause (SendCase raftpb.Message "$ch0" (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType raftpb.MsgSnapStatus); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 (![go.uint64] "id")); KeyedElement (Some (KeyField "Reject"%go)) (ElementExpression go.bool (![go.bool] "rej"))]))) (do:  #())); (CommClause (RecvCase (go.StructType [
 
-    ])] (StructFieldRef node "done"%go (![go.PointerType node] "n")))) (λ: "$recvVal",
-      do:  #()
-      ))]);;;
+    ]) "$ch1") (do:  #()))]);;;
     return: #()).
 
 (* go: node.go:595:16 *)
@@ -2575,19 +2538,16 @@ Definition node__TransferLeadershipⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoG
     let: "transferee" := (GoAlloc go.uint64 "transferee") in
     let: "lead" := (GoAlloc go.uint64 "lead") in
     let: "ctx" := (GoAlloc context.Context "ctx") in
-    SelectStmt (SelectStmtClauses None [(CommClause (SendCase raftpb.Message (![go.ChannelType go.sendrecv raftpb.Message] (StructFieldRef node "recvc"%go (![go.PointerType node] "n"))) (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType raftpb.MsgTransferLeader); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 (![go.uint64] "transferee")); KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 (![go.uint64] "lead"))]))) (λ: <>,
-      do:  #()
-      )); (CommClause (RecvCase (go.StructType [
+    let: "$ch0" := (![go.ChannelType go.sendrecv raftpb.Message] (StructFieldRef node "recvc"%go (![go.PointerType node] "n"))) in
+    let: "$ch1" := (![go.ChannelType go.sendrecv (go.StructType [
 
-    ]) (![go.ChannelType go.sendrecv (go.StructType [
+    ])] (StructFieldRef node "done"%go (![go.PointerType node] "n"))) in
+    let: "$ch2" := ((MethodResolve context.Context "Done"%go (![context.Context] "ctx")) #()) in
+    SelectStmt (SelectStmtClauses None [(CommClause (SendCase raftpb.Message "$ch0" (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType raftpb.MsgTransferLeader); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 (![go.uint64] "transferee")); KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 (![go.uint64] "lead"))]))) (do:  #())); (CommClause (RecvCase (go.StructType [
 
-    ])] (StructFieldRef node "done"%go (![go.PointerType node] "n")))) (λ: "$recvVal",
-      do:  #()
-      )); (CommClause (RecvCase (go.StructType [
+    ]) "$ch1") (do:  #())); (CommClause (RecvCase (go.StructType [
 
-    ]) ((MethodResolve context.Context "Done"%go (![context.Context] "ctx")) #())) (λ: "$recvVal",
-      do:  #()
-      ))]);;;
+    ]) "$ch2") (do:  #()))]);;;
     return: #()).
 
 (* go: node.go:604:16 *)

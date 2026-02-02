@@ -575,20 +575,17 @@ Definition cancelCtx__propagateCancelⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : G
     ])) UntypedNil))
     then return: (#())
     else do:  #());;;
-    SelectStmt (SelectStmtClauses (Some (λ: <>,
-      do:  #()
-      )) [(CommClause (RecvCase (go.StructType [
+    let: "$ch0" := (![go.ChannelType go.recvonly (go.StructType [
 
-    ]) (![go.ChannelType go.recvonly (go.StructType [
+    ])] "done") in
+    SelectStmt (SelectStmtClauses (Some (do:  #())) [(CommClause (RecvCase (go.StructType [
 
-    ])] "done")) (λ: "$recvVal",
-      do:  (let: "$a0" := #false in
-      let: "$a1" := ((MethodResolve Context "Err"%go (![Context] "parent")) #()) in
-      let: "$a2" := (let: "$a0" := (![Context] "parent") in
-      (FuncResolve Cause [] #()) "$a0") in
-      (MethodResolve canceler "cancel"%go (![canceler] "child")) "$a0" "$a1" "$a2");;;
-      return: (#())
-      ))]);;;
+    ]) "$ch0") (do:  (let: "$a0" := #false in
+    let: "$a1" := ((MethodResolve Context "Err"%go (![Context] "parent")) #()) in
+    let: "$a2" := (let: "$a0" := (![Context] "parent") in
+    (FuncResolve Cause [] #()) "$a0") in
+    (MethodResolve canceler "cancel"%go (![canceler] "child")) "$a0" "$a1" "$a2");;;
+    return: (#())))]);;;
     (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "p" := (GoAlloc (go.PointerType cancelCtx) (GoZeroVal (go.PointerType cancelCtx) #())) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![Context] "parent") in
@@ -663,19 +660,17 @@ Definition cancelCtx__propagateCancelⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : G
     do:  (let: "$a0" := #(W32 1) in
     (MethodResolve (go.PointerType atomic.Int32) "Add"%go (GlobalVarAddr goroutines #())) "$a0");;;
     let: "$go" := (λ: <>,
-      exception_do (SelectStmt (SelectStmtClauses None [(CommClause (RecvCase (go.StructType [
+      exception_do (let: "$ch0" := ((MethodResolve Context "Done"%go (![Context] "parent")) #()) in
+      let: "$ch1" := ((MethodResolve canceler "Done"%go (![canceler] "child")) #()) in
+      SelectStmt (SelectStmtClauses None [(CommClause (RecvCase (go.StructType [
 
-      ]) ((MethodResolve Context "Done"%go (![Context] "parent")) #())) (λ: "$recvVal",
-        do:  (let: "$a0" := #false in
-        let: "$a1" := ((MethodResolve Context "Err"%go (![Context] "parent")) #()) in
-        let: "$a2" := (let: "$a0" := (![Context] "parent") in
-        (FuncResolve Cause [] #()) "$a0") in
-        (MethodResolve canceler "cancel"%go (![canceler] "child")) "$a0" "$a1" "$a2")
-        )); (CommClause (RecvCase (go.StructType [
+      ]) "$ch0") (do:  (let: "$a0" := #false in
+      let: "$a1" := ((MethodResolve Context "Err"%go (![Context] "parent")) #()) in
+      let: "$a2" := (let: "$a0" := (![Context] "parent") in
+      (FuncResolve Cause [] #()) "$a0") in
+      (MethodResolve canceler "cancel"%go (![canceler] "child")) "$a0" "$a1" "$a2"))); (CommClause (RecvCase (go.StructType [
 
-      ]) ((MethodResolve canceler "Done"%go (![canceler] "child")) #())) (λ: "$recvVal",
-        do:  #()
-        ))]);;;
+      ]) "$ch1") (do:  #()))]);;;
       return: #())
       ) in
     do:  (Fork ("$go" #()));;;

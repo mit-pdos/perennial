@@ -584,17 +584,15 @@ Definition leaseCache__Getⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
     (if: Convert go.untyped_bool go.bool ((![go.PointerType leaseKey] "li") =⟨go.PointerType leaseKey⟩ (Convert go.untyped_nil (go.PointerType leaseKey) UntypedNil))
     then return: (Convert go.untyped_nil (go.PointerType clientv3.GetResponse) UntypedNil, #true)
     else do:  #());;;
+    let: "$ch0" := (![go.ChannelType go.recvonly (go.StructType [
+
+    ])] "wc") in
+    let: "$ch1" := ((MethodResolve context.Context "Done"%go (![context.Context] "ctx")) #()) in
     SelectStmt (SelectStmtClauses None [(CommClause (RecvCase (go.StructType [
 
-    ]) (![go.ChannelType go.recvonly (go.StructType [
+    ]) "$ch0") (do:  #())); (CommClause (RecvCase (go.StructType [
 
-    ])] "wc")) (λ: "$recvVal",
-      do:  #()
-      )); (CommClause (RecvCase (go.StructType [
-
-    ]) ((MethodResolve context.Context "Done"%go (![context.Context] "ctx")) #())) (λ: "$recvVal",
-      return: (Convert go.untyped_nil (go.PointerType clientv3.GetResponse) UntypedNil, #true)
-      ))]);;;
+    ]) "$ch1") (return: (Convert go.untyped_nil (go.PointerType clientv3.GetResponse) UntypedNil, #true)))]);;;
     do:  ((MethodResolve (go.PointerType sync.RWMutex) "RLock"%go (StructFieldRef leaseCache "mu"%go (![go.PointerType leaseCache] "lc"))) #());;;
     let: "lk" := (GoAlloc leaseKey (GoZeroVal leaseKey #())) in
     let: "$r0" := (![leaseKey] (![go.PointerType leaseKey] "li")) in
@@ -691,29 +689,27 @@ Definition leaseCache__clearOldRevokesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : 
     exception_do (let: "lc" := (GoAlloc (go.PointerType leaseCache) "lc") in
     let: "ctx" := (GoAlloc context.Context "ctx") in
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
+      let: "$ch0" := ((MethodResolve context.Context "Done"%go (![context.Context] "ctx")) #()) in
+      let: "$ch1" := (let: "$a0" := time.Second in
+      (FuncResolve time.After [] #()) "$a0") in
       SelectStmt (SelectStmtClauses None [(CommClause (RecvCase (go.StructType [
 
-      ]) ((MethodResolve context.Context "Done"%go (![context.Context] "ctx")) #())) (λ: "$recvVal",
-        return: (#())
-        )); (CommClause (RecvCase time.Time (let: "$a0" := time.Second in
-      (FuncResolve time.After [] #()) "$a0")) (λ: "$recvVal",
-        do:  ((MethodResolve (go.PointerType sync.RWMutex) "Lock"%go (StructFieldRef leaseCache "mu"%go (![go.PointerType leaseCache] "lc"))) #());;;
-        let: "$range" := (![go.MapType go.string time.Time] (StructFieldRef leaseCache "revokes"%go (![go.PointerType leaseCache] "lc"))) in
-        (let: "lr" := (GoAlloc time.Time (GoZeroVal time.Time #())) in
-        let: "k" := (GoAlloc go.string (GoZeroVal go.string #())) in
-        map.for_range go.string time.Time "$range" (λ: "$key" "value",
-          do:  ("lr" <-[time.Time] "$value");;;
-          do:  ("k" <-[go.string] "$key");;;
-          (if: Convert go.untyped_bool go.bool ((let: "$a0" := (let: "$a0" := revokeBackoff in
-          (MethodResolve time.Time "Add"%go (![time.Time] "lr")) "$a0") in
-          (FuncResolve time.Since [] #()) "$a0") >⟨go.int64⟩ #(W64 0))
-          then
-            do:  (let: "$a0" := (![go.MapType go.string time.Time] (StructFieldRef leaseCache "revokes"%go (![go.PointerType leaseCache] "lc"))) in
-            let: "$a1" := (![go.string] "k") in
-            (FuncResolve go.delete [go.MapType go.string time.Time] #()) "$a0" "$a1")
-          else do:  #())));;;
-        do:  ((MethodResolve (go.PointerType sync.RWMutex) "Unlock"%go (StructFieldRef leaseCache "mu"%go (![go.PointerType leaseCache] "lc"))) #())
-        ))]));;;
+      ]) "$ch0") (return: (#()))); (CommClause (RecvCase time.Time "$ch1") (do:  ((MethodResolve (go.PointerType sync.RWMutex) "Lock"%go (StructFieldRef leaseCache "mu"%go (![go.PointerType leaseCache] "lc"))) #());;;
+      let: "$range" := (![go.MapType go.string time.Time] (StructFieldRef leaseCache "revokes"%go (![go.PointerType leaseCache] "lc"))) in
+      (let: "lr" := (GoAlloc time.Time (GoZeroVal time.Time #())) in
+      let: "k" := (GoAlloc go.string (GoZeroVal go.string #())) in
+      map.for_range go.string time.Time "$range" (λ: "$key" "value",
+        do:  ("lr" <-[time.Time] "$value");;;
+        do:  ("k" <-[go.string] "$key");;;
+        (if: Convert go.untyped_bool go.bool ((let: "$a0" := (let: "$a0" := revokeBackoff in
+        (MethodResolve time.Time "Add"%go (![time.Time] "lr")) "$a0") in
+        (FuncResolve time.Since [] #()) "$a0") >⟨go.int64⟩ #(W64 0))
+        then
+          do:  (let: "$a0" := (![go.MapType go.string time.Time] (StructFieldRef leaseCache "revokes"%go (![go.PointerType leaseCache] "lc"))) in
+          let: "$a1" := (![go.string] "k") in
+          (FuncResolve go.delete [go.MapType go.string time.Time] #()) "$a0" "$a1")
+        else do:  #())));;;
+      do:  ((MethodResolve (go.PointerType sync.RWMutex) "Unlock"%go (StructFieldRef leaseCache "mu"%go (![go.PointerType leaseCache] "lc"))) #())))]));;;
     return: #()).
 
 (* go: cache.go:268:23 *)
@@ -985,31 +981,26 @@ Definition leasingKV__monitorSessionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : Go
     (for: (λ: <>, ((MethodResolve context.Context "Err"%go (![context.Context] (StructFieldRef leasingKV "ctx"%go (![go.PointerType leasingKV] "lkv")))) #()) =⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil)); (λ: <>, #()) := λ: <>,
       (if: Convert go.untyped_bool go.bool ((![go.PointerType concurrency.Session] (StructFieldRef leasingKV "session"%go (![go.PointerType leasingKV] "lkv"))) ≠⟨go.PointerType concurrency.Session⟩ (Convert go.untyped_nil (go.PointerType concurrency.Session) UntypedNil))
       then
+        let: "$ch0" := ((MethodResolve (go.PointerType concurrency.Session) "Done"%go (![go.PointerType concurrency.Session] (StructFieldRef leasingKV "session"%go (![go.PointerType leasingKV] "lkv")))) #()) in
+        let: "$ch1" := ((MethodResolve context.Context "Done"%go (![context.Context] (StructFieldRef leasingKV "ctx"%go (![go.PointerType leasingKV] "lkv")))) #()) in
         SelectStmt (SelectStmtClauses None [(CommClause (RecvCase (go.StructType [
 
-        ]) ((MethodResolve (go.PointerType concurrency.Session) "Done"%go (![go.PointerType concurrency.Session] (StructFieldRef leasingKV "session"%go (![go.PointerType leasingKV] "lkv")))) #())) (λ: "$recvVal",
-          do:  #()
-          )); (CommClause (RecvCase (go.StructType [
+        ]) "$ch0") (do:  #())); (CommClause (RecvCase (go.StructType [
 
-        ]) ((MethodResolve context.Context "Done"%go (![context.Context] (StructFieldRef leasingKV "ctx"%go (![go.PointerType leasingKV] "lkv")))) #())) (λ: "$recvVal",
-          return: (#())
-          ))])
+        ]) "$ch1") (return: (#())))])
       else do:  #());;;
       do:  ((MethodResolve (go.PointerType sync.RWMutex) "Lock"%go (StructFieldRef leaseCache "mu"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] "lkv")))) #());;;
-      SelectStmt (SelectStmtClauses (Some (λ: <>,
-        do:  #()
-        )) [(CommClause (RecvCase (go.StructType [
+      let: "$ch0" := (![go.ChannelType go.sendrecv (go.StructType [
 
-      ]) (![go.ChannelType go.sendrecv (go.StructType [
+      ])] (StructFieldRef leasingKV "sessionc"%go (![go.PointerType leasingKV] "lkv"))) in
+      SelectStmt (SelectStmtClauses (Some (do:  #())) [(CommClause (RecvCase (go.StructType [
 
-      ])] (StructFieldRef leasingKV "sessionc"%go (![go.PointerType leasingKV] "lkv")))) (λ: "$recvVal",
-        let: "$r0" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv (go.StructType [
+      ]) "$ch0") (let: "$r0" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv (go.StructType [
 
-         ])] #()) #()) in
-        do:  ((StructFieldRef leasingKV "sessionc"%go (![go.PointerType leasingKV] "lkv")) <-[go.ChannelType go.sendrecv (go.StructType [
+       ])] #()) #()) in
+      do:  ((StructFieldRef leasingKV "sessionc"%go (![go.PointerType leasingKV] "lkv")) <-[go.ChannelType go.sendrecv (go.StructType [
 
-        ])] "$r0")
-        ))]);;;
+      ])] "$r0")))]);;;
       let: "$r0" := ((FuncResolve go.make1 [go.MapType go.string (go.PointerType leaseKey)] #()) #()) in
       do:  ((StructFieldRef leaseCache "entries"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] "lkv"))) <-[go.MapType go.string (go.PointerType leaseKey)] "$r0");;;
       do:  ((MethodResolve (go.PointerType sync.RWMutex) "Unlock"%go (StructFieldRef leaseCache "mu"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] "lkv")))) #());;;
@@ -1934,21 +1925,18 @@ Definition leasingKV__waitSessionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
 
     ])] "$r0");;;
     do:  ((MethodResolve (go.PointerType sync.RWMutex) "RUnlock"%go (StructFieldRef leaseCache "mu"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] "lkv")))) #());;;
+    let: "$ch0" := (![go.ChannelType go.sendrecv (go.StructType [
+
+    ])] "sessionc") in
+    let: "$ch1" := ((MethodResolve context.Context "Done"%go (![context.Context] (StructFieldRef leasingKV "ctx"%go (![go.PointerType leasingKV] "lkv")))) #()) in
+    let: "$ch2" := ((MethodResolve context.Context "Done"%go (![context.Context] "ctx")) #()) in
     SelectStmt (SelectStmtClauses None [(CommClause (RecvCase (go.StructType [
 
-    ]) (![go.ChannelType go.sendrecv (go.StructType [
+    ]) "$ch0") (return: (Convert go.untyped_nil go.error UntypedNil))); (CommClause (RecvCase (go.StructType [
 
-    ])] "sessionc")) (λ: "$recvVal",
-      return: (Convert go.untyped_nil go.error UntypedNil)
-      )); (CommClause (RecvCase (go.StructType [
+    ]) "$ch1") (return: ((MethodResolve context.Context "Err"%go (![context.Context] (StructFieldRef leasingKV "ctx"%go (![go.PointerType leasingKV] "lkv")))) #()))); (CommClause (RecvCase (go.StructType [
 
-    ]) ((MethodResolve context.Context "Done"%go (![context.Context] (StructFieldRef leasingKV "ctx"%go (![go.PointerType leasingKV] "lkv")))) #())) (λ: "$recvVal",
-      return: ((MethodResolve context.Context "Err"%go (![context.Context] (StructFieldRef leasingKV "ctx"%go (![go.PointerType leasingKV] "lkv")))) #())
-      )); (CommClause (RecvCase (go.StructType [
-
-    ]) ((MethodResolve context.Context "Done"%go (![context.Context] "ctx")) #())) (λ: "$recvVal",
-      return: ((MethodResolve context.Context "Err"%go (![context.Context] "ctx")) #())
-      ))])).
+    ]) "$ch2") (return: ((MethodResolve context.Context "Err"%go (![context.Context] "ctx")) #())))])).
 
 (* go: kv.go:467:23 *)
 Definition leasingKV__readySessionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -1964,13 +1952,10 @@ Definition leasingKV__readySessionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGl
     (if: Convert go.untyped_bool go.bool ((![go.PointerType concurrency.Session] (StructFieldRef leasingKV "session"%go (![go.PointerType leasingKV] "lkv"))) =⟨go.PointerType concurrency.Session⟩ (Convert go.untyped_nil (go.PointerType concurrency.Session) UntypedNil))
     then return: (#false)
     else do:  #());;;
-    SelectStmt (SelectStmtClauses (Some (λ: <>,
-      return: (#true)
-      )) [(CommClause (RecvCase (go.StructType [
+    let: "$ch0" := ((MethodResolve (go.PointerType concurrency.Session) "Done"%go (![go.PointerType concurrency.Session] (StructFieldRef leasingKV "session"%go (![go.PointerType leasingKV] "lkv")))) #()) in
+    SelectStmt (SelectStmtClauses (Some (return: (#true))) [(CommClause (RecvCase (go.StructType [
 
-    ]) ((MethodResolve (go.PointerType concurrency.Session) "Done"%go (![go.PointerType concurrency.Session] (StructFieldRef leasingKV "session"%go (![go.PointerType leasingKV] "lkv")))) #())) (λ: "$recvVal",
-      do:  #()
-      ))]);;;
+    ]) "$ch0") (do:  #()))]);;;
     return: (#false)).
 
 (* go: kv.go:481:23 *)
@@ -2084,17 +2069,15 @@ Definition txnLeasing__evalⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
 
       ])] "$value");;;
       do:  "$key";;;
+      let: "$ch0" := (![go.ChannelType go.recvonly (go.StructType [
+
+      ])] "ch") in
+      let: "$ch1" := ((MethodResolve context.Context "Done"%go (![context.Context] (StructFieldRef txnLeasing "ctx"%go (![go.PointerType txnLeasing] "txn")))) #()) in
       SelectStmt (SelectStmtClauses None [(CommClause (RecvCase (go.StructType [
 
-      ]) (![go.ChannelType go.recvonly (go.StructType [
+      ]) "$ch0") (do:  #())); (CommClause (RecvCase (go.StructType [
 
-      ])] "ch")) (λ: "$recvVal",
-        do:  #()
-        )); (CommClause (RecvCase (go.StructType [
-
-      ]) ((MethodResolve context.Context "Done"%go (![context.Context] (StructFieldRef txnLeasing "ctx"%go (![go.PointerType txnLeasing] "txn")))) #())) (λ: "$recvVal",
-        return: (Convert go.untyped_nil (go.PointerType clientv3.TxnResponse) UntypedNil, (MethodResolve context.Context "Err"%go (![context.Context] (StructFieldRef txnLeasing "ctx"%go (![go.PointerType txnLeasing] "txn")))) #())
-        ))])));;;
+      ]) "$ch1") (return: (Convert go.untyped_nil (go.PointerType clientv3.TxnResponse) UntypedNil, (MethodResolve context.Context "Err"%go (![context.Context] (StructFieldRef txnLeasing "ctx"%go (![go.PointerType txnLeasing] "txn")))) #())))])));;;
     do:  ((MethodResolve (go.PointerType sync.RWMutex) "RLock"%go (StructFieldRef leaseCache "mu"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] (StructFieldRef txnLeasing "lkv"%go (![go.PointerType txnLeasing] "txn")))))) #());;;
     do:  (let: "$f" := (MethodResolve (go.PointerType sync.RWMutex) "RUnlock"%go (StructFieldRef leaseCache "mu"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] (StructFieldRef txnLeasing "lkv"%go (![go.PointerType txnLeasing] "txn")))))) in
     "$defer" <-[deferType] (let: "$oldf" := (![deferType] "$defer") in

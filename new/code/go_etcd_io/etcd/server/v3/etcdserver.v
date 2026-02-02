@@ -540,28 +540,25 @@ Definition EtcdServer__processInternalRaftRequestOnceⁱᵐᵖˡ {ext : ffi_synt
       "$f" #();;
       "$oldf" #()
       )));;;
-    SelectStmt (SelectStmtClauses None [(CommClause (RecvCase go.any (![go.ChannelType go.recvonly go.any] "ch")) (λ: "$recvVal",
-      let: "x" := (GoAlloc go.any (GoZeroVal go.any #())) in
-      let: "$r0" := (Fst "$recvVal") in
-      do:  ("x" <-[go.any] "$r0");;;
-      return: (TypeAssert (go.PointerType apply.Result) (![go.any] "x"), Convert go.untyped_nil go.error UntypedNil)
-      )); (CommClause (RecvCase (go.StructType [
+    let: "$ch0" := (![go.ChannelType go.recvonly go.any] "ch") in
+    let: "$ch1" := ((MethodResolve context.Context "Done"%go (![context.Context] "cctx")) #()) in
+    let: "$ch2" := (![go.ChannelType go.sendrecv (go.StructType [
 
-    ]) ((MethodResolve context.Context "Done"%go (![context.Context] "cctx")) #())) (λ: "$recvVal",
-      do:  ((MethodResolve prometheus.Counter "Inc"%go (![prometheus.Counter] (GlobalVarAddr proposalsFailed #()))) #());;;
-      do:  (let: "$a0" := (![go.uint64] "id") in
-      let: "$a1" := (Convert go.untyped_nil go.any UntypedNil) in
-      (MethodResolve wait.Wait "Trigger"%go (![wait.Wait] (StructFieldRef EtcdServer "w"%go (![go.PointerType EtcdServer] "s")))) "$a0" "$a1");;;
-      return: (Convert go.untyped_nil (go.PointerType apply.Result) UntypedNil, let: "$a0" := ((MethodResolve context.Context "Err"%go (![context.Context] "cctx")) #()) in
-       let: "$a1" := (![time.Time] "start") in
-       (MethodResolve (go.PointerType EtcdServer) "parseProposeCtxErr"%go (![go.PointerType EtcdServer] "s")) "$a0" "$a1")
-      )); (CommClause (RecvCase (go.StructType [
+    ])] (StructFieldRef EtcdServer "done"%go (![go.PointerType EtcdServer] "s"))) in
+    SelectStmt (SelectStmtClauses None [(CommClause (RecvCase go.any "$ch0") (let: "x" := (GoAlloc go.any (GoZeroVal go.any #())) in
+    let: "$r0" := (Fst "$recvVal") in
+    do:  ("x" <-[go.any] "$r0");;;
+    return: (TypeAssert (go.PointerType apply.Result) (![go.any] "x"), Convert go.untyped_nil go.error UntypedNil))); (CommClause (RecvCase (go.StructType [
 
-    ]) (![go.ChannelType go.sendrecv (go.StructType [
+    ]) "$ch1") (do:  ((MethodResolve prometheus.Counter "Inc"%go (![prometheus.Counter] (GlobalVarAddr proposalsFailed #()))) #());;;
+    do:  (let: "$a0" := (![go.uint64] "id") in
+    let: "$a1" := (Convert go.untyped_nil go.any UntypedNil) in
+    (MethodResolve wait.Wait "Trigger"%go (![wait.Wait] (StructFieldRef EtcdServer "w"%go (![go.PointerType EtcdServer] "s")))) "$a0" "$a1");;;
+    return: (Convert go.untyped_nil (go.PointerType apply.Result) UntypedNil, let: "$a0" := ((MethodResolve context.Context "Err"%go (![context.Context] "cctx")) #()) in
+     let: "$a1" := (![time.Time] "start") in
+     (MethodResolve (go.PointerType EtcdServer) "parseProposeCtxErr"%go (![go.PointerType EtcdServer] "s")) "$a0" "$a1"))); (CommClause (RecvCase (go.StructType [
 
-    ])] (StructFieldRef EtcdServer "done"%go (![go.PointerType EtcdServer] "s")))) (λ: "$recvVal",
-      return: (Convert go.untyped_nil (go.PointerType apply.Result) UntypedNil, ![go.error] (GlobalVarAddr errors.ErrStopped #()))
-      ))])).
+    ]) "$ch2") (return: (Convert go.untyped_nil (go.PointerType apply.Result) UntypedNil, ![go.error] (GlobalVarAddr errors.ErrStopped #()))))])).
 
 #[global] Instance info' : PkgInfo pkg_id.etcdserver :=
 {|
