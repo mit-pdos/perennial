@@ -61,28 +61,28 @@ Class InterfaceSemantics :=
     ⟦TypeAssert t, #i⟧ ⤳
     (match i with
      | interface.nil => Panic "type assert failed"
-     | interface.ok i =>
+     | interface.ok ii =>
          if is_interface_type t_under then
-           if (type_set_contains i.(interface.ty) t) then #i else Panic "type assert failed"
+           if (type_set_contains ii.(interface.ty) t) then #i else Panic "type assert failed"
          else
-           if decide (i.(interface.ty) = t) then i.(interface.v) else Panic "type assert failed"
+           if decide (ii.(interface.ty) = t) then ii.(interface.v) else Panic "type assert failed"
      end);
 
   #[global] type_assert2_interface_step `{!t ↓u t_under} i `{!⟦GoZeroVal t, #()⟧ ⤳ Val v} ::
     ⟦TypeAssert2 t, #i⟧ ⤳
     ((match i with
       | interface.nil => v
-      | interface.ok i =>
+      | interface.ok ii =>
           (if is_interface_type t_under then
-             if (type_set_contains i.(interface.ty) t) then #i else v
+             if (type_set_contains ii.(interface.ty) t) then #i else v
            else
-             if decide (i.(interface.ty) = t) then i.(interface.v) else v)
+             if decide (ii.(interface.ty) = t) then ii.(interface.v) else v)
       end),
        #(match i with
          | interface.nil => false
-         | interface.ok i =>
-             if is_interface_type t_under then type_set_contains i.(interface.ty) t
-             else bool_decide (i.(interface.ty) = t)
+         | interface.ok ii =>
+             if is_interface_type t_under then type_set_contains ii.(interface.ty) t
+             else bool_decide (ii.(interface.ty) = t)
          end)
      )%V;
 
