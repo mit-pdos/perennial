@@ -36,7 +36,14 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics} {package_sem : context.Assumptions}.
 Context `{!contextG Σ}.
 
-#[global] Instance : IsPkgInit (iProp Σ) context := define_is_pkg_init True%I.
+Definition is_init : iProp Σ :=
+  "Hgoroutines" ∷
+    inv nroot (
+      ∃ g, own_Int32 (global_addr context.goroutines) (DfracOwn 1) g
+    ) ∗
+  "_" ∷ True.
+
+#[global] Instance : IsPkgInit (iProp Σ) context := define_is_pkg_init is_init.
 #[global] Instance : GetIsPkgInitWf (iProp Σ) context := build_get_is_pkg_init_wf.
 
 Import Context_desc.
@@ -145,11 +152,23 @@ Proof.
     wp_auto.
     (* XXX: mutex seems unnecessary here, because this is never called
        concurrently with other methods on `c`. *)
-    (* TODO: afterFuncer spec *)
+    (* TODO afterFuncer spec *)
     admit.
   }
   wp_auto.
-  (* TODO: pkg invariant owns `goroutines` global variable. *)
+  wp_apply wp_Int32__Add.
+  iDestruct (is_pkg_init_access with "[$]") as "#Hi".
+  iNamed "Hi". iInv "Hgoroutines" as "Hi" "Hclose". iFrame.
+  iApply fupd_mask_intro; [solve_ndisj| iIntros "Hmask"].
+  iDestruct "Hi" as "[% $]". iIntros "!> Hg". iMod "Hmask" as "_".
+  iMod ("Hclose" with "[$Hg]") as "_". iModIntro.
+  iPersist "parent child".
+  wp_auto. wp_apply wp_fork.
+  { wp_auto.
+    wp_apply "HDone".
+    admit. (* TODO child context *)
+  }
+  wp_end.
 Admitted.
 
 Lemma wp_withCancel PDone' ctx ctx_desc :
