@@ -72,20 +72,20 @@ Context {go_lctx : GoLocalContext} {go_gctx : GoGlobalContext}.
 Class ChanSemantics `{!GoSemanticsFunctions} :=
 {
   #[global] package_sem :: channel.Assumptions;
-  #[global] make2_chan dir elem_type ::
-    FuncUnfold go.make2 [go.ChannelType dir elem_type]
+  #[global] make2_chan `{!t ↓u go.ChannelType dir elem_type} ::
+    FuncUnfold go.make2 [t]
     (λ: "cap", FuncResolve channel.NewChannel [elem_type] #() "cap")%V;
-  #[global] make1_chan dir elem_type ::
-    FuncUnfold go.make1 [go.ChannelType dir elem_type]
-    (λ: "<>", FuncResolve go.make2 [elem_type] #() #(W64 0))%V;
-  #[global] close_chan dir elem_type ::
-    FuncUnfold go.close [go.ChannelType dir elem_type]
+  #[global] make1_chan `{!t ↓u go.ChannelType dir elem_type} ::
+    FuncUnfold go.make1 [t]
+    (λ: "<>", FuncResolve go.make2 [t] #() #(W64 0))%V;
+  #[global] close_chan `{!t ↓u go.ChannelType dir elem_type} ::
+    FuncUnfold go.close [t]
     (λ: "c", MethodResolve (go.PointerType $ channel.Channel elem_type) "Close" "c" #())%V;
-  #[global] len_chan dir elem_type ::
-    FuncUnfold go.len [go.ChannelType dir elem_type]
+  #[global] len_chan `{!t ↓u go.ChannelType dir elem_type} ::
+    FuncUnfold go.len [t]
     (λ: "c", MethodResolve (go.PointerType $ channel.Channel elem_type) "Len" "c" #())%V;
-  #[global] cap_chan dir elem_type ::
-    FuncUnfold go.cap [go.ChannelType dir elem_type]
+  #[global] cap_chan `{!t ↓u go.ChannelType dir elem_type} ::
+    FuncUnfold go.cap [t]
     (λ: "c", MethodResolve (go.PointerType $ channel.Channel elem_type) "Cap" "c" #())%V;
 
   chan_select_nonblocking default_handler clauses :

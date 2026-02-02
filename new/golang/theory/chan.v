@@ -27,9 +27,9 @@ Context `[!ZeroVal V] `[!TypedPointsto V] `[!IntoValTyped V t].
 
 Implicit Types (ch : loc) (v : V) (γ : chan_names).
 
-Lemma wp_make (cap : w64) dir :
+Lemma wp_make2 (cap : w64) `{!ct ↓u go.ChannelType dir t} :
   {{{ ⌜ 0 ≤ sint.Z cap ⌝ }}}
-    #(functions go.make2 [go.ChannelType dir t]) #cap
+    #(functions go.make2 [ct]) #cap
   {{{ ch γ, RET #ch;
       is_chan ch γ V ∗
       ⌜ chan_cap γ = sint.Z cap ⌝ ∗
@@ -38,6 +38,20 @@ Lemma wp_make (cap : w64) dir :
 Proof.
   wp_start as "%Hle".
   wp_apply wp_NewChannel; first done.
+  iFrame.
+Qed.
+
+Lemma wp_make1  `{!ct ↓u go.ChannelType dir t} :
+  {{{ True }}}
+    #(functions go.make1 [ct]) #()
+  {{{ ch γ, RET #ch;
+      is_chan ch γ V ∗
+      ⌜ chan_cap γ = 0 ⌝ ∗
+      own_chan (V:=V) γ chanstate.Idle
+  }}}.
+Proof.
+  wp_start.
+  wp_apply wp_make2; first done.
   iFrame.
 Qed.
 
@@ -52,11 +66,11 @@ Proof.
   iFrame.
 Qed.
 
-Lemma wp_close ch γ dir :
+Lemma wp_close `{!ct ↓u go.ChannelType dir t} ch γ :
   ∀ Φ,
   is_chan ch γ V -∗
   (£1 ∗ £1 ∗ £1 ∗ £1 -∗ close_au γ V (Φ #())) -∗
-  WP #(functions go.close [go.ChannelType dir t]) #ch {{ Φ }}.
+  WP #(functions go.close [ct]) #ch {{ Φ }}.
 Proof.
   wp_start as "#Hch".
   wp_apply (wp_Close with "[$]").
@@ -74,9 +88,9 @@ Proof.
   iFrame.
 Qed.
 
-Lemma wp_cap ch γ dir :
+Lemma wp_cap `{!ct ↓u go.ChannelType dir t} ch γ :
   {{{ is_chan ch γ V }}}
-    #(functions go.cap [go.ChannelType dir t]) #ch
+    #(functions go.cap [ct]) #ch
   {{{ RET #(chan_cap γ); True }}}.
 Proof.
   wp_start as "#Hch".
