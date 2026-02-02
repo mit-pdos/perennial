@@ -72,6 +72,10 @@ Context {go_lctx : GoLocalContext} {go_gctx : GoGlobalContext}.
 Class ChanSemantics `{!GoSemanticsFunctions} :=
 {
   #[global] package_sem :: channel.Assumptions;
+
+  #[global] convert_channel dir1 dir2 elem (c : chan.t) ::
+    ⟦Convert (go.ChannelType dir1 elem) (go.ChannelType dir2 elem), #c⟧ ⤳[under] #c;
+
   #[global] make2_chan `{!t ↓u go.ChannelType dir elem_type} ::
     FuncUnfold go.make2 [t]
     (λ: "cap", FuncResolve channel.NewChannel [elem_type] #() "cap")%V;

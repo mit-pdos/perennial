@@ -78,8 +78,7 @@ Lemma wp_node__Ready γraft (n : loc) :
     n @! (go.PointerType raft.node) @! "Ready" #()
   {{{ (ready : chan.t), RET #ready; True }}}.
 Proof.
-  wp_start. iNamed "Hpre". wp_auto.
-  by iApply "HΦ".
+  wp_start. iNamed "Hpre". wp_auto. wp_end.
 Qed.
 
 Lemma wp_node__Advance γraft (n : loc) :
