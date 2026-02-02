@@ -1180,7 +1180,7 @@ Class Progress_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalCont
 Module ProgressMap.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Definition t : Type := loc.
+Definition t : Type := map.t.
 End def.
 End ProgressMap.
 
@@ -1200,8 +1200,8 @@ Record t :=
 mk {
   Voters' : quorum.JointConfig.t;
   AutoLeave' : bool;
-  Learners' : loc;
-  LearnersNext' : loc;
+  Learners' : map.t;
+  LearnersNext' : map.t;
 }.
 
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _) (zero_val _)|}.
@@ -1251,7 +1251,7 @@ Record t :=
 mk {
   Config' : tracker.Config.t;
   Progress' : tracker.ProgressMap.t;
-  Votes' : loc;
+  Votes' : map.t;
   MaxInflight' : w64;
   MaxInflightBytes' : w64;
 }.
@@ -1308,7 +1308,7 @@ Class ProgressTracker_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLo
 Module matchAckIndexer.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Definition t : Type := loc.
+Definition t : Type := map.t.
 End def.
 End matchAckIndexer.
 

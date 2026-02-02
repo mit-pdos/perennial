@@ -3401,7 +3401,7 @@ Class Event_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext
 Module WatchChan.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Definition t : Type := loc.
+Definition t : Type := chan.t.
 End def.
 End WatchChan.
 

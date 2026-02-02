@@ -489,7 +489,7 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
 Module MajorityConfig.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Definition t : Type := loc.
+Definition t : Type := map.t.
 End def.
 End MajorityConfig.
 
@@ -569,7 +569,7 @@ Class AckedIndexer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocal
 Module mapAckIndexer.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Definition t : Type := loc.
+Definition t : Type := map.t.
 End def.
 End mapAckIndexer.
 

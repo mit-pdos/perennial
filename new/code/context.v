@@ -1360,7 +1360,7 @@ mk {
   Context' : context.Context.t;
   mu' : sync.Mutex.t;
   done' : atomic.Value.t;
-  children' : loc;
+  children' : map.t;
   err' : atomic.Value.t;
   cause' : error.t;
 }.

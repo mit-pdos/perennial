@@ -7838,7 +7838,7 @@ Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
   m' : raftpb.Message.t;
-  result' : loc;
+  result' : chan.t;
 }.
 
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
@@ -7873,16 +7873,16 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  propc' : loc;
-  recvc' : loc;
-  confc' : loc;
-  confstatec' : loc;
-  readyc' : loc;
-  advancec' : loc;
-  tickc' : loc;
-  done' : loc;
-  stop' : loc;
-  status' : loc;
+  propc' : chan.t;
+  recvc' : chan.t;
+  confc' : chan.t;
+  confstatec' : chan.t;
+  readyc' : chan.t;
+  advancec' : chan.t;
+  tickc' : chan.t;
+  done' : chan.t;
+  stop' : chan.t;
+  status' : chan.t;
   rn' : loc;
 }.
 
@@ -8501,7 +8501,7 @@ Record t :=
 mk {
   req' : raftpb.Message.t;
   index' : w64;
-  acks' : loc;
+  acks' : map.t;
 }.
 
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
@@ -8540,7 +8540,7 @@ Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
   option' : raft.ReadOnlyOption.t;
-  pendingReadIndex' : loc;
+  pendingReadIndex' : map.t;
   readIndexQueue' : slice.t;
 }.
 
@@ -8677,7 +8677,7 @@ Record t :=
 mk {
   BasicStatus' : raft.BasicStatus.t;
   Config' : tracker.Config.t;
-  Progress' : loc;
+  Progress' : map.t;
 }.
 
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.

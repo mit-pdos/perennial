@@ -388,7 +388,7 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  handlers' : loc;
+  handlers' : map.t;
 }.
 
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
@@ -466,7 +466,7 @@ mk {
   mu' : loc;
   conn' : grove_ffi.Connection.t;
   seq' : w64;
-  pending' : loc;
+  pending' : map.t;
 }.
 
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _) (zero_val _)|}.

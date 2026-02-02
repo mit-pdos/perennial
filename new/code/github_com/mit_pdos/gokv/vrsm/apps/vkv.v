@@ -459,8 +459,8 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  kvs' : loc;
-  vnums' : loc;
+  kvs' : map.t;
+  vnums' : map.t;
   minVnum' : w64;
 }.
 

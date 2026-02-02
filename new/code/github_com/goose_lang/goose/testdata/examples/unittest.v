@@ -3745,7 +3745,7 @@ Class IntWrapper_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalCo
 Module MapWrapper.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Definition t : Type := loc.
+Definition t : Type := map.t.
 End def.
 End MapWrapper.
 

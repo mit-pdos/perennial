@@ -325,8 +325,8 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  lastSeq' : loc;
-  lastReply' : loc;
+  lastSeq' : map.t;
+  lastReply' : map.t;
   nextCID' : w64;
   sm' : loc;
   esmNextIndex' : w64;

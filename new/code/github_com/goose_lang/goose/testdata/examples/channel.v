@@ -1260,7 +1260,7 @@ Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
   base' : loc;
-  exchanger' : loc;
+  exchanger' : chan.t;
 }.
 
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
@@ -1298,7 +1298,7 @@ Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
   f' : func.t;
-  result' : loc;
+  result' : chan.t;
 }.
 
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
@@ -1333,8 +1333,8 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  req' : loc;
-  res' : loc;
+  req' : chan.t;
+  res' : chan.t;
 }.
 
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
@@ -1369,8 +1369,8 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  req' : loc;
-  res' : loc;
+  req' : chan.t;
+  res' : chan.t;
   f' : func.t;
 }.
 

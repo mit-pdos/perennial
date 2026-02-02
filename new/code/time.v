@@ -699,7 +699,7 @@ Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
-  C' : loc;
+  C' : chan.t;
   initTimer' : bool;
 }.
 

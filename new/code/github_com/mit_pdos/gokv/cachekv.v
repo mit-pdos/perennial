@@ -186,7 +186,7 @@ Record t :=
 mk {
   kv' : kv.KvCput.t;
   mu' : loc;
-  cache' : loc;
+  cache' : map.t;
 }.
 
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.

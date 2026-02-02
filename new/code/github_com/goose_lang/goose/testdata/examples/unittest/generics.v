@@ -217,7 +217,7 @@ Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t {T : Type} :=
 mk {
   X' : T;
-  Y' : loc;
+  Y' : map.t;
   Z' : loc;
   W' : w64;
 }.

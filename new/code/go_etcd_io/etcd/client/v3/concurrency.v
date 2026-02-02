@@ -2132,7 +2132,7 @@ mk {
   id' : clientv3.LeaseID.t;
   ctx' : context.Context.t;
   cancel' : context.CancelFunc.t;
-  donec' : loc;
+  donec' : chan.t;
 }.
 
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _) (zero_val _) (zero_val _) (zero_val _)|}.
@@ -2389,7 +2389,7 @@ Class stmResponse_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalC
 Module readSet.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Definition t : Type := loc.
+Definition t : Type := map.t.
 End def.
 End readSet.
 
@@ -2409,7 +2409,7 @@ Class readSet_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalConte
 Module writeSet.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Definition t : Type := loc.
+Definition t : Type := map.t.
 End def.
 End writeSet.
 
@@ -2527,7 +2527,7 @@ Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Record t :=
 mk {
   stm' : concurrency.stm.t;
-  prefetch' : loc;
+  prefetch' : map.t;
 }.
 
 #[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.

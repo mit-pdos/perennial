@@ -1121,7 +1121,7 @@ mk {
   isPrimary' : bool;
   clerks' : slice.t;
   isPrimary_cond' : loc;
-  opAppliedConds' : loc;
+  opAppliedConds' : map.t;
   leaseExpiration' : w64;
   leaseValid' : bool;
   committedNextIndex' : w64;
