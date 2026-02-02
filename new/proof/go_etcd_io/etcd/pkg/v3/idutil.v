@@ -5,19 +5,21 @@ From New.proof Require Import time math sync.atomic.
 
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
+Context {sem : go.Semantics} {package_sem : idutil.Assumptions}.
+Local Set Default Proof Using "All".
 
-#[global] Instance : IsPkgInit idutil := define_is_pkg_init True%I.
+#[global] Instance : IsPkgInit (iProp Σ) idutil := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ) idutil := build_get_is_pkg_init_wf.
 
 (* FIXME: id.go says that the overflowing of cnt into timestamp is intentional
    "to extend the event window to 2^56". However, there are only 48 bits in the
    suffix, and the documentation is a typo from an older version of the code. *)
 Definition is_Generator (g : loc) (R : w64 → iProp Σ) : iProp Σ :=
   ∃ (prefix : Z),
-    "#prefix" ∷ g ↦s[idutil.Generator :: "prefix"]□ (W64 (prefix * 2^48)) ∗
+    "#prefix" ∷ g.[idutil.Generator.t, "prefix"] ↦□ (W64 (prefix * 2^48)) ∗
     "#Hinv" ∷
       inv nroot (∃ (init num_used : Z),
-          "suffix" ∷ struct.field_ref_f idutil.Generator "suffix" g ↦ W64 (init + num_used) ∗
+          "suffix" ∷ g.[idutil.Generator.t, "suffix"] ↦ W64 (init + num_used) ∗
           "HR" ∷ ([∗ list] i ∈ seqZ (init + num_used + 1) (2^48 - num_used),
                     R (W64 (prefix * 2^48 + i `mod` 2^48)))
       ) ∗
@@ -45,7 +47,7 @@ Proof.
   replace (uint.Z (word.sub (W64 _) _)) with (64 - uint.Z n)%Z by word.
   replace (_ `div` _) with (Z.ones (uint.Z n)).
   2:{
-    change (uint.Z (W64 math.MaxUint64)) with (Z.ones 64).
+    change (uint.Z (W64 18446744073709551615)) with (Z.ones 64).
     Z.bitblast.
   }
   rewrite Z.land_ones //. word.
@@ -53,7 +55,7 @@ Qed.
 
 Lemma wp_Generator__Next g R :
   {{{ is_pkg_init idutil ∗ is_Generator g R }}}
-    g @ (ptrT.id idutil.Generator.id) @ "Next" #()
+    g @! (go.PointerType idutil.Generator) @! "Next" #()
   {{{ (i : w64), RET #i; R i }}}.
 Proof.
   wp_start as "H". iNamed "H". wp_auto_lc 1. wp_bind.
@@ -107,14 +109,11 @@ Lemma wp_NewGenerator R (memberID : w16) (now : time.Time.t) :
   {{{ g, RET #g; is_Generator g R }}}.
 Proof.
   wp_start as "HR". wp_auto.
-  wp_method_call.
-  { rewrite is_pkg_init_unfold /=. iPkgInit. }
-  wp_auto. wp_apply wp_Time__UnixNano as "%nowNano _".
+  wp_apply wp_Time__UnixNano as "%nowNano _".
   rewrite /idutil.tsLen /idutil.cntLen /idutil.suffixLen.
   wp_apply wp_lowbit; first word. wp_alloc g as "Hg".
   iApply wp_fupd. wp_auto. iApply "HΦ". iFrame "∗#".
-  iDestruct (struct_fields_split with "Hg") as "Hg". iNamed "Hg".
-  iPersist "Hprefix".
+  iStructNamedPrefix "Hg" "H". iPersist "Hprefix".
   iMod (inv_alloc with "[Hsuffix HR]") as "$".
   { iEval (simpl) in "Hsuffix". iExists _, 0. iNext.
     iSplitL "Hsuffix".
