@@ -37,6 +37,29 @@ Definition As {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "err
 
 Definition as' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "errors.as"%go.
 
+(* Unwrap returns the result of calling the Unwrap method on err, if err's
+   type contains an Unwrap method returning error.
+   Otherwise, Unwrap returns nil.
+
+   Unwrap only calls a method of the form "Unwrap() error".
+   In particular Unwrap does not unwrap errors returned by [Join].
+
+   go: wrap.go:17:6 *)
+Definition Unwrapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "err",
+    exception_do (let: "err" := (GoAlloc go.error "err") in
+    let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
+    let: "u" := (GoAlloc (go.InterfaceType [go.MethodElem "Unwrap"%go (go.Signature [] false [go.error])]) (GoZeroVal (go.InterfaceType [go.MethodElem "Unwrap"%go (go.Signature [] false [go.error])]) #())) in
+    let: ("$ret0", "$ret1") := (TypeAssert2 (go.InterfaceType [go.MethodElem "Unwrap"%go (go.Signature [] false [go.error])]) (![go.error] "err")) in
+    let: "$r0" := "$ret0" in
+    let: "$r1" := "$ret1" in
+    do:  ("u" <-[go.InterfaceType [go.MethodElem "Unwrap"%go (go.Signature [] false [go.error])]] "$r0");;;
+    do:  ("ok" <-[go.bool] "$r1");;;
+    (if: (~ (![go.bool] "ok"))
+    then return: (Convert go.untyped_nil go.error UntypedNil)
+    else do:  #());;;
+    return: ((MethodResolve (go.InterfaceType [go.MethodElem "Unwrap"%go (go.Signature [] false [go.error])]) "Unwrap"%go (![go.InterfaceType [go.MethodElem "Unwrap"%go (go.Signature [] false [go.error])]] "u")) #())).
+
 #[global] Instance info' : PkgInfo pkg_id.errors :=
 {|
   pkg_imported_pkgs := []
@@ -87,5 +110,6 @@ Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!G
 {
   #[global] errorString_instance :: errorString_Assumptions;
   #[global] joinError_instance :: joinError_Assumptions;
+  #[global] Unwrap_unfold :: FuncUnfold Unwrap [] (Unwrapⁱᵐᵖˡ);
 }.
 End errors.
