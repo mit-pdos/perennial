@@ -1,4 +1,3 @@
-From iris.algebra.lib Require Import dfrac_agree.
 Require Import New.proof.proof_prelude.
 Require Import New.golang.theory.
 
@@ -8,7 +7,6 @@ Require Import New.golang.theory.
 Class closeable_chanG Σ :=
   {
     #[local] chanG :: chanG Σ ();
-    #[local] close_tok_inG :: inG Σ (dfrac_agreeR boolO);
   }.
 
 Record closeable_internal_names :=

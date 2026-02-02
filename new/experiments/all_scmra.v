@@ -3,6 +3,9 @@ From iris.algebra.lib Require Import mono_list mono_nat dfrac_agree gmap_view.
 From Coq Require Import Logic.ClassicalEpsilon.
 
 Module cmra_expr.
+Section defn.
+Context (Σ : gFunctors).
+
 Inductive t :=
 | prod (A B : t)
 | gmap (K : Type) `{Countable K} (V : t)
@@ -12,6 +15,7 @@ Inductive t :=
 | agree (A : Type)
 | excl (A : Type)
 | gmap_view (K : Type) `{Countable K} (V : t)
+| saved_pred (A : Type)
 .
 
 Fixpoint interpret (x : t) : cmra :=
@@ -24,8 +28,13 @@ Fixpoint interpret (x : t) : cmra :=
   | agree A => agreeR (leibnizO A)
   | excl A => exclR (leibnizO A)
   | gmap_view K V => gmap_viewR K (interpret V)
+  | saved_pred A => (dfrac_agreeR (oFunctor_apply (A -d> ▶ ∙) (iPropO Σ)))
   end.
+End defn.
 End cmra_expr.
+
+Section defn.
+Context (Σ : gFunctors).
 
 (* This would require ucmra for everything, which would exclude exclR. *)
 (* Definition any_cmra : Type := discrete_funUR cmra_expr.interpret. *)
@@ -33,45 +42,45 @@ End cmra_expr.
 Inductive csigT {A : Type} P :=
 | CexistT : ∀ (x : A), P x → csigT P
 | Cinvalid : csigT P.
-Arguments CexistT {_ _} (_).
-Arguments Cinvalid {_ _}.
+Global Arguments CexistT {_ _} (_).
+Global Arguments Cinvalid {_ _}.
 
-Definition any_cmra : Type := csigT cmra_expr.interpret.
+Definition any_cmra Σ : Type := csigT (cmra_expr.interpret Σ).
 
-Inductive any_cmra_equiv_instance : Equiv any_cmra :=
+Inductive any_cmra_equiv_instance : Equiv (any_cmra Σ) :=
 | CexistT_equiv {A} a b : a ≡ b → (CexistT A a) ≡ (CexistT A b)
 | Cinvalid_equiv : Cinvalid ≡ Cinvalid.
 Local Existing Instance any_cmra_equiv_instance.
 
-Inductive any_cmra_dist_instance : Dist any_cmra :=
+Inductive any_cmra_dist_instance : Dist (any_cmra Σ) :=
 | CexistT_dist {A} a b i : a ≡{i}≡ b → (CexistT A a) ≡{i}≡ (CexistT A b)
 | Cinvalid_dist i : Cinvalid ≡{i}≡ Cinvalid.
 Local Existing Instance any_cmra_dist_instance.
 
-Local Instance any_cmra_valid_instance : Valid any_cmra :=
+Local Instance any_cmra_valid_instance : Valid (any_cmra Σ):=
   λ x, match x with CexistT A a => ✓ a | _ => False end.
 
-Local Instance any_cmra_validN_instance : ValidN any_cmra :=
+Local Instance any_cmra_validN_instance : ValidN (any_cmra Σ) :=
   λ n x, match x with CexistT A a => ✓{n} a | _ => False end.
 
-Local Instance any_cmra_pcore_instance : PCore any_cmra :=
+Local Instance any_cmra_pcore_instance : PCore (any_cmra Σ) :=
   λ x, match x with CexistT A a => CexistT A <$> pcore a | _ => Some Cinvalid end.
 
-Local Instance any_cmra_op_instance : Op any_cmra :=
+Local Instance any_cmra_op_instance : Op (any_cmra Σ) :=
   λ x y,
     match x, y with
     | CexistT A a, CexistT A' a' =>
         match (excluded_middle_informative (A = A')) with
         | right _ => Cinvalid
         | left eq_proof =>
-            CexistT A' ((eq_rect A cmra_expr.interpret a A' eq_proof) ⋅ a')
+            CexistT A' ((eq_rect A (cmra_expr.interpret Σ) a A' eq_proof) ⋅ a')
         end
     | _, _ => Cinvalid
     end.
 
 (* Q: does [inj_pair2] *require* [classical]? *)
 
-Local Instance any_cmra_dist_equivalence n : Equivalence (dist n (A:=any_cmra)).
+Local Instance any_cmra_dist_equivalence n : Equivalence (dist n (A:=any_cmra Σ)).
 split.
 + intros ?. destruct x; constructor. apply reflexivity.
 + intros ?? Heq. oinversion Heq; subst; constructor.
@@ -80,7 +89,7 @@ split.
   apply inj_pair2 in H4. subst. by etransitivity.
 Qed.
 
-Local Instance any_cmra_equiv_equivalence : Equivalence (equiv (A:=any_cmra)).
+Local Instance any_cmra_equiv_equivalence : Equivalence (equiv (A:=any_cmra Σ)).
 split.
 + intros ?. destruct x; constructor. apply reflexivity.
 + intros ?? Heq. oinversion Heq; subst; constructor.
@@ -89,7 +98,7 @@ split.
   apply inj_pair2 in H3. subst. by etransitivity.
 Qed.
 
-Lemma any_cmra_ofe_mixin : OfeMixin any_cmra.
+Lemma any_cmra_ofe_mixin : OfeMixin (any_cmra Σ).
 Proof.
   split.
   - intros; split.
@@ -137,7 +146,7 @@ Proof.
       eexists (CexistT x0 i). rewrite CexistT_op. constructor. done.
 Qed.
 
-Lemma any_cmra_cmra_mixin : CmraMixin any_cmra.
+Lemma any_cmra_cmra_mixin : CmraMixin (any_cmra Σ).
 Proof.
   split.
   - intros [] ? ? ? H.
@@ -196,10 +205,10 @@ Proof.
     + destruct y1 as [a1|], y2 as [a2|]; try by exfalso; inversion Hx'.
 Qed.
 
-Canonical Structure any_cmraO : ofe := Ofe any_cmra any_cmra_ofe_mixin.
-Canonical Structure any_cmraR := Cmra any_cmra any_cmra_cmra_mixin.
+Canonical Structure any_cmraO : ofe := Ofe (any_cmra Σ) any_cmra_ofe_mixin.
+Canonical Structure any_cmraR := Cmra (any_cmra Σ) any_cmra_cmra_mixin.
 
-Definition to_any (A : cmra_expr.t) a : any_cmra :=
+Definition to_any (A : cmra_expr.t) a : any_cmra Σ :=
   CexistT A a.
 
 Lemma any_cmra_validN_op A B a b n :
@@ -233,17 +242,19 @@ Proof.
     specialize (Hupd n None). by apply Hupd.
 Qed.
 
+End defn.
+
 Section own.
-Context `{!inG Σ any_cmraR}.
+Context `{!inG Σ (any_cmraR Σ)}.
 
 Class SimpleCmra A :=
   {
     Aexp : cmra_expr.t;
-    eq_proof : A = cmra_expr.interpret Aexp;
+    eq_proof : A = cmra_expr.interpret Σ Aexp;
   }.
 
 Definition own_any {A : cmra} γ (a : A) : iProp Σ :=
-  ∃ (_ : SimpleCmra A), own γ (CexistT Aexp (eq_rect A id a _ eq_proof) : any_cmra).
+  ∃ (_ : SimpleCmra A), own γ (CexistT Aexp (eq_rect A id a _ eq_proof) : any_cmra Σ).
 
 Lemma own_any_update γ {A : cmra} (a a' : A) :
   a ~~> a' →
@@ -261,7 +272,7 @@ Lemma own_any_alloc `{!SimpleCmra A} (a : A) :
   ⊢ |==> ∃ γ, own_any γ a.
 Proof.
   intros Hvalid.
-  iMod (own_alloc (CexistT Aexp (eq_rect A id a _ eq_proof) : any_cmra)) as (γ) "H".
+  iMod (own_alloc (CexistT Aexp (eq_rect A id a _ eq_proof) : any_cmra Σ)) as (γ) "H".
   { rewrite any_cmra_valid. simpl. destruct SimpleCmra0.
     simpl in *. destruct eq_proof0. simpl in *. done. }
   by iFrame.
@@ -275,7 +286,106 @@ Lemma own_any_mono_list (l : list nat) :
 Proof.
   iApply own_any_alloc. apply mono_list_auth_valid.
 Qed.
+
+Global Instance own_ne A γ : NonExpansive (@own_any A γ).
+Proof.
+  intros ???. intros.
+  unfold own_any.
+  apply bi.exist_ne.
+  intros ?.
+  rewrite !own.own_eq. simpl.
+  rewrite /own.own_def.
+Admitted.
+
+Instance own_proper :
+  ∀ {A : cmra} (γ : gname), Proper (equiv ==> equiv) (@own_any A γ).
+Proof. intros. apply (ne_proper _). Qed.
+
+
+Global Instance any_cmra_is_op (x y : any_cmraR Σ) : IsOp (x ⋅ y) x y.
+Proof. Admitted.
+
+Lemma interpret_inj a a' :
+  cmra_expr.interpret Σ a = cmra_expr.interpret Σ a' →
+  a = a'.
+Proof.
+Admitted.
+
+Global Instance own_any_combine {A : cmra} γ (a b : A) :
+  CombineSepAs (own_any γ a) (own_any γ b) (own_any γ (a ⋅ b)).
+Proof.
+  rewrite /CombineSepAs. iIntros "[H1 H2]".
+  rewrite /own_any. iDestruct "H1" as "[% H1]".
+  iDestruct "H2" as "[% H2]". iExists _.
+  iCombine "H1 H2" as "H".
+  iExactEq "H". f_equal.
+  destruct H, H0. subst.
+  simpl. pose proof (interpret_inj _ _ eq_proof1).
+  subst.
+  rewrite -is_op.
+
+  Search cmra_op.
+  rewrite is_op.
+  simpl.
+  rewrite
+  rewrite
+  constructor. sijkmpl.
+  intros ?.
+Qed.
+
+Section saved_pred.
+Context {A : Type}.
+Definition saved_pred_own (γ : gname) (dq : dfrac) (Φ : A → iProp Σ) :=
+  own_any γ (to_dfrac_agree (DfracOwn 1)
+               (Next ∘ Φ : oFunctor_apply (A -d> ▶ ∙) (iPropO Σ))).
+
+Global Instance saved_pred_own_contractive `{!savedPredG Σ A} γ dq :
+  Contractive (saved_pred_own γ dq : (A -d> iPropO Σ) → iProp Σ).
+Proof.
+Abort.
+
+Global Instance saved_pred_discarded_persistent γ Φ :
+  Persistent (saved_pred_own γ DfracDiscarded Φ).
+Proof.
+Abort.
+
+Lemma saved_pred_alloc (Φ : A → iProp Σ) dq :
+  ✓ dq →
+  ⊢ |==> ∃ γ, saved_pred_own γ dq Φ.
+Proof.
+  intros.
+  iApply @own_any_alloc.
+  { by eexists (cmra_expr.saved_pred _). }
+  { done. }
+Qed.
+
+
+Lemma saved_pred_valid_2 γ dq1 dq2 Φ Ψ x :
+  saved_pred_own γ dq1 Φ -∗ saved_pred_own γ dq2 Ψ -∗ ⌜✓ (dq1 ⋅ dq2)⌝ ∗ ▷ (Φ x ≡ Ψ x).
+Proof.
+  iIntros "HΦ HΨ".
+  iCombine "HΦ HΨ" gives "($ & Hag)".
+  iApply later_equivI. by iApply (discrete_fun_equivI with "Hag").
+Qed.
+
+Lemma saved_pred_agree γ dq1 dq2 Φ Ψ x :
+  saved_pred_own γ dq1 Φ -∗ saved_pred_own γ dq2 Ψ -∗ ▷ (Φ x ≡ Ψ x).
+Proof.
+  iIntros "HΦ HΨ".
+  iPoseProof (saved_pred_valid_2 with "HΦ HΨ") as "[_ $]".
+Qed.
+
+Lemma own_saved_prop (P : iProp Σ) :
+  ⊢ |==> ∃ γ, own_any γ (to_dfrac_agree (DfracOwn 1)
+                        (Next ∘ (λ _, P): oFunctor_apply (unit -d> ▶ ∙) (iPropO Σ))).
+Proof.
+  iApply @own_any_alloc.
+  { by eexists (cmra_expr.saved_pred unit). }
+  { done. }
+Qed.
+
 End own.
+
 
 (* Print Assumptions own_any_mono_list.
   constructive_indefinite_description : ∀ (A : Type) (P : A → Prop), (∃ x : A, P x) → {x : A | P x}
