@@ -485,9 +485,10 @@ Definition Election__observeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
         let: "$r1" := (![go.PointerType mvccpb.KeyValue] (IndexRef (go.SliceType (go.PointerType mvccpb.KeyValue)) (![go.SliceType (go.PointerType mvccpb.KeyValue)] (StructFieldRef clientv3.GetResponse "Kvs"%go (![go.PointerType clientv3.GetResponse] "resp")), #(W64 0)))) in
         do:  ("hdr" <-[go.PointerType etcdserverpb.ResponseHeader] "$r0");;;
         do:  ("kv" <-[go.PointerType mvccpb.KeyValue] "$r1"));;;
+      let: "$v0" := (CompositeLiteral clientv3.GetResponse (LiteralValue [KeyedElement (Some (KeyField "Header"%go)) (ElementExpression (go.PointerType etcdserverpb.ResponseHeader) (![go.PointerType etcdserverpb.ResponseHeader] "hdr")); KeyedElement (Some (KeyField "Kvs"%go)) (ElementExpression (go.SliceType (go.PointerType mvccpb.KeyValue)) (CompositeLiteral (go.SliceType (go.PointerType mvccpb.KeyValue)) (LiteralValue [KeyedElement None (ElementExpression (go.PointerType mvccpb.KeyValue) (![go.PointerType mvccpb.KeyValue] "kv"))])))])) in
       let: "$ch0" := (![go.ChannelType go.sendonly clientv3.GetResponse] "ch") in
       let: "$ch1" := ((MethodResolve context.Context "Done"%go (![context.Context] "ctx")) #()) in
-      SelectStmt (SelectStmtClauses None [(CommClause (SendCase clientv3.GetResponse "$ch0" (CompositeLiteral clientv3.GetResponse (LiteralValue [KeyedElement (Some (KeyField "Header"%go)) (ElementExpression (go.PointerType etcdserverpb.ResponseHeader) (![go.PointerType etcdserverpb.ResponseHeader] "hdr")); KeyedElement (Some (KeyField "Kvs"%go)) (ElementExpression (go.SliceType (go.PointerType mvccpb.KeyValue)) (CompositeLiteral (go.SliceType (go.PointerType mvccpb.KeyValue)) (LiteralValue [KeyedElement None (ElementExpression (go.PointerType mvccpb.KeyValue) (![go.PointerType mvccpb.KeyValue] "kv"))])))]))) (do:  #())); (CommClause (RecvCase (go.StructType [
+      SelectStmt (SelectStmtClauses None [(CommClause (SendCase clientv3.GetResponse "$ch0" "$v0") (do:  #())); (CommClause (RecvCase (go.StructType [
 
       ]) "$ch1") (return: (#())))]);;;
       let: "cancel" := (GoAlloc context.CancelFunc (GoZeroVal context.CancelFunc #())) in
@@ -537,9 +538,10 @@ Definition Election__observeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
           do:  ((StructFieldRef clientv3.GetResponse "Header"%go (![go.PointerType clientv3.GetResponse] "resp")) <-[go.PointerType etcdserverpb.ResponseHeader] "$r0");;;
           let: "$r0" := (CompositeLiteral (go.SliceType (go.PointerType mvccpb.KeyValue)) (LiteralValue [KeyedElement None (ElementExpression (go.PointerType mvccpb.KeyValue) (![go.PointerType mvccpb.KeyValue] (StructFieldRef clientv3.Event "Kv"%go (![go.PointerType clientv3.Event] "ev"))))])) in
           do:  ((StructFieldRef clientv3.GetResponse "Kvs"%go (![go.PointerType clientv3.GetResponse] "resp")) <-[go.SliceType (go.PointerType mvccpb.KeyValue)] "$r0");;;
+          let: "$v0" := (![clientv3.GetResponse] (![go.PointerType clientv3.GetResponse] "resp")) in
           let: "$ch0" := (![go.ChannelType go.sendonly clientv3.GetResponse] "ch") in
           let: "$ch1" := ((MethodResolve context.Context "Done"%go (![context.Context] "cctx")) #()) in
-          SelectStmt (SelectStmtClauses None [(CommClause (SendCase clientv3.GetResponse "$ch0" (![clientv3.GetResponse] (![go.PointerType clientv3.GetResponse] "resp"))) (do:  #())); (CommClause (RecvCase (go.StructType [
+          SelectStmt (SelectStmtClauses None [(CommClause (SendCase clientv3.GetResponse "$ch0" "$v0") (do:  #())); (CommClause (RecvCase (go.StructType [
 
           ]) "$ch1") (do:  ((![context.CancelFunc] "cancel") #());;;
           return: (#())))]))));;;

@@ -166,10 +166,11 @@ Definition EliminationStack__Pushⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
   λ: "s" "value",
     exception_do (let: "s" := (GoAlloc (go.PointerType EliminationStack) "s") in
     let: "value" := (GoAlloc go.string "value") in
+    let: "$v0" := (![go.string] "value") in
     let: "$ch0" := (![go.ChannelType go.sendrecv go.string] (StructFieldRef EliminationStack "exchanger"%go (![go.PointerType EliminationStack] "s"))) in
     let: "$ch1" := (let: "$a0" := timeout in
     (FuncResolve time.After [] #()) "$a0") in
-    SelectStmt (SelectStmtClauses None [(CommClause (SendCase go.string "$ch0" (![go.string] "value")) (return: (#()))); (CommClause (RecvCase time.Time "$ch1") (do:  #()))]);;;
+    SelectStmt (SelectStmtClauses None [(CommClause (SendCase go.string "$ch0" "$v0") (return: (#()))); (CommClause (RecvCase time.Time "$ch1") (do:  #()))]);;;
     do:  (let: "$a0" := (![go.string] "value") in
     (MethodResolve (go.PointerType LockedStack) "Push"%go (![go.PointerType LockedStack] (StructFieldRef EliminationStack "base"%go (![go.PointerType EliminationStack] "s")))) "$a0");;;
     return: #()).
@@ -493,14 +494,15 @@ Definition select_nb_no_panicⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
       return: #())
       ) in
     do:  (Fork ("$go" #()));;;
+    let: "$v0" := (CompositeLiteral (go.StructType [
+
+    ]) (LiteralValue [])) in
     let: "$ch0" := (![go.ChannelType go.sendrecv (go.StructType [
 
     ])] "ch") in
     SelectStmt (SelectStmtClauses (Some (do:  #())) [(CommClause (SendCase (go.StructType [
 
-    ]) "$ch0" (CompositeLiteral (go.StructType [
-
-    ]) (LiteralValue []))) (do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"bad"%go) in
+    ]) "$ch0" "$v0") (do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"bad"%go) in
     (FuncResolve go.panic [] #()) "$a0")))]);;;
     return: #()).
 
@@ -844,8 +846,9 @@ Definition serverⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : va
       do:  (let: "$a0" := "b" in
       let: "$a1" := (![go.PointerType go.string] "output") in
       (FuncResolve process [] #()) "$a0" "$a1");;;
+      let: "$v0" := (![go.SliceType go.byte] "b") in
       let: "$ch0" := (![go.ChannelType go.sendrecv (go.SliceType go.byte)] "freeList") in
-      SelectStmt (SelectStmtClauses (Some (do:  #())) [(CommClause (SendCase (go.SliceType go.byte) "$ch0" (![go.SliceType go.byte] "b")) (do:  #()))]));;;
+      SelectStmt (SelectStmtClauses (Some (do:  #())) [(CommClause (SendCase (go.SliceType go.byte) "$ch0" "$v0") (do:  #()))]));;;
     return: #()).
 
 (* go: leaky_buffer.go:61:6 *)

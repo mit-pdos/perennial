@@ -2025,6 +2025,9 @@ Definition newNodeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : v
 Definition node__Stopⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "n" <>,
     exception_do (let: "n" := (GoAlloc (go.PointerType node) "n") in
+    let: "$v0" := (CompositeLiteral (go.StructType [
+
+    ]) (LiteralValue [])) in
     let: "$ch0" := (![go.ChannelType go.sendrecv (go.StructType [
 
     ])] (StructFieldRef node "stop"%go (![go.PointerType node] "n"))) in
@@ -2033,9 +2036,7 @@ Definition node__Stopⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
     ])] (StructFieldRef node "done"%go (![go.PointerType node] "n"))) in
     SelectStmt (SelectStmtClauses None [(CommClause (SendCase (go.StructType [
 
-    ]) "$ch0" (CompositeLiteral (go.StructType [
-
-    ]) (LiteralValue []))) (do:  #())); (CommClause (RecvCase (go.StructType [
+    ]) "$ch0" "$v0") (do:  #())); (CommClause (RecvCase (go.StructType [
 
     ]) "$ch1") (return: (#())))]);;;
     do:  (Fst (chan.receive (go.StructType [
@@ -2117,6 +2118,7 @@ Definition node__runⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
       let: "$ch3" := (![go.ChannelType go.sendrecv (go.StructType [
 
       ])] (StructFieldRef node "tickc"%go (![go.PointerType node] "n"))) in
+      let: "$v4" := (![Ready] "rd") in
       let: "$ch4" := (![go.ChannelType go.sendrecv Ready] "readyc") in
       let: "$ch5" := (![go.ChannelType go.sendrecv (go.StructType [
 
@@ -2200,15 +2202,16 @@ Definition node__runⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
           do:  ("propc" <-[go.ChannelType go.sendrecv msgWithResult] "$r0")
         else do:  #())
       else do:  #()));;;
+      let: "$v0" := (![raftpb.ConfState] "cs") in
       let: "$ch0" := (![go.ChannelType go.sendrecv raftpb.ConfState] (StructFieldRef node "confstatec"%go (![go.PointerType node] "n"))) in
       let: "$ch1" := (![go.ChannelType go.sendrecv (go.StructType [
 
       ])] (StructFieldRef node "done"%go (![go.PointerType node] "n"))) in
-      SelectStmt (SelectStmtClauses None [(CommClause (SendCase raftpb.ConfState "$ch0" (![raftpb.ConfState] "cs")) (do:  #())); (CommClause (RecvCase (go.StructType [
+      SelectStmt (SelectStmtClauses None [(CommClause (SendCase raftpb.ConfState "$ch0" "$v0") (do:  #())); (CommClause (RecvCase (go.StructType [
 
       ]) "$ch1") (do:  #()))]))); (CommClause (RecvCase (go.StructType [
 
-      ]) "$ch3") (do:  ((MethodResolve (go.PointerType RawNode) "Tick"%go (![go.PointerType RawNode] (StructFieldRef node "rn"%go (![go.PointerType node] "n")))) #()))); (CommClause (SendCase Ready "$ch4" (![Ready] "rd")) (do:  (let: "$a0" := (![Ready] "rd") in
+      ]) "$ch3") (do:  ((MethodResolve (go.PointerType RawNode) "Tick"%go (![go.PointerType RawNode] (StructFieldRef node "rn"%go (![go.PointerType node] "n")))) #()))); (CommClause (SendCase Ready "$ch4" "$v4") (do:  (let: "$a0" := (![Ready] "rd") in
       (MethodResolve (go.PointerType RawNode) "acceptReady"%go (![go.PointerType RawNode] (StructFieldRef node "rn"%go (![go.PointerType node] "n")))) "$a0");;;
       (if: (~ (![go.bool] (StructFieldRef RawNode "asyncStorageWrites"%go (![go.PointerType RawNode] (StructFieldRef node "rn"%go (![go.PointerType node] "n"))))))
       then
@@ -2257,6 +2260,9 @@ Definition node__runⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
 Definition node__Tickⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "n" <>,
     exception_do (let: "n" := (GoAlloc (go.PointerType node) "n") in
+    let: "$v0" := (CompositeLiteral (go.StructType [
+
+    ]) (LiteralValue [])) in
     let: "$ch0" := (![go.ChannelType go.sendrecv (go.StructType [
 
     ])] (StructFieldRef node "tickc"%go (![go.PointerType node] "n"))) in
@@ -2268,9 +2274,7 @@ Definition node__Tickⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
     CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0")]))) in
     (MethodResolve Logger "Warningf"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] (StructFieldRef node "rn"%go (![go.PointerType node] "n")))))))) "$a0" "$a1"))) [(CommClause (SendCase (go.StructType [
 
-    ]) "$ch0" (CompositeLiteral (go.StructType [
-
-    ]) (LiteralValue []))) (do:  #())); (CommClause (RecvCase (go.StructType [
+    ]) "$ch0" "$v0") (do:  #())); (CommClause (RecvCase (go.StructType [
 
     ]) "$ch1") (do:  #()))]);;;
     return: #()).
@@ -2384,12 +2388,13 @@ Definition node__stepWithWaitOptionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoG
     let: "ctx" := (GoAlloc context.Context "ctx") in
     (if: Convert go.untyped_bool go.bool ((![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m")) ≠⟨go.int32⟩ raftpb.MsgProp)
     then
+      let: "$v0" := (![raftpb.Message] "m") in
       let: "$ch0" := (![go.ChannelType go.sendrecv raftpb.Message] (StructFieldRef node "recvc"%go (![go.PointerType node] "n"))) in
       let: "$ch1" := ((MethodResolve context.Context "Done"%go (![context.Context] "ctx")) #()) in
       let: "$ch2" := (![go.ChannelType go.sendrecv (go.StructType [
 
       ])] (StructFieldRef node "done"%go (![go.PointerType node] "n"))) in
-      SelectStmt (SelectStmtClauses None [(CommClause (SendCase raftpb.Message "$ch0" (![raftpb.Message] "m")) (return: (Convert go.untyped_nil go.error UntypedNil))); (CommClause (RecvCase (go.StructType [
+      SelectStmt (SelectStmtClauses None [(CommClause (SendCase raftpb.Message "$ch0" "$v0") (return: (Convert go.untyped_nil go.error UntypedNil))); (CommClause (RecvCase (go.StructType [
 
       ]) "$ch1") (return: ((MethodResolve context.Context "Err"%go (![context.Context] "ctx")) #()))); (CommClause (RecvCase (go.StructType [
 
@@ -2406,12 +2411,13 @@ Definition node__stepWithWaitOptionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoG
       let: "$r0" := ((FuncResolve go.make2 [go.ChannelType go.sendrecv go.error] #()) #(W64 1)) in
       do:  ((StructFieldRef msgWithResult "result"%go "pm") <-[go.ChannelType go.sendrecv go.error] "$r0")
     else do:  #());;;
+    let: "$v0" := (![msgWithResult] "pm") in
     let: "$ch0" := (![go.ChannelType go.sendrecv msgWithResult] "ch") in
     let: "$ch1" := ((MethodResolve context.Context "Done"%go (![context.Context] "ctx")) #()) in
     let: "$ch2" := (![go.ChannelType go.sendrecv (go.StructType [
 
     ])] (StructFieldRef node "done"%go (![go.PointerType node] "n"))) in
-    SelectStmt (SelectStmtClauses None [(CommClause (SendCase msgWithResult "$ch0" (![msgWithResult] "pm")) ((if: (~ (![go.bool] "wait"))
+    SelectStmt (SelectStmtClauses None [(CommClause (SendCase msgWithResult "$ch0" "$v0") ((if: (~ (![go.bool] "wait"))
     then return: (Convert go.untyped_nil go.error UntypedNil)
     else do:  #()))); (CommClause (RecvCase (go.StructType [
 
@@ -2445,6 +2451,9 @@ Definition node__Readyⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
 Definition node__Advanceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "n" <>,
     exception_do (let: "n" := (GoAlloc (go.PointerType node) "n") in
+    let: "$v0" := (CompositeLiteral (go.StructType [
+
+    ]) (LiteralValue [])) in
     let: "$ch0" := (![go.ChannelType go.sendrecv (go.StructType [
 
     ])] (StructFieldRef node "advancec"%go (![go.PointerType node] "n"))) in
@@ -2453,9 +2462,7 @@ Definition node__Advanceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
     ])] (StructFieldRef node "done"%go (![go.PointerType node] "n"))) in
     SelectStmt (SelectStmtClauses None [(CommClause (SendCase (go.StructType [
 
-    ]) "$ch0" (CompositeLiteral (go.StructType [
-
-    ]) (LiteralValue []))) (do:  #())); (CommClause (RecvCase (go.StructType [
+    ]) "$ch0" "$v0") (do:  #())); (CommClause (RecvCase (go.StructType [
 
     ]) "$ch1") (do:  #()))]);;;
     return: #()).
@@ -2466,11 +2473,12 @@ Definition node__ApplyConfChangeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
     exception_do (let: "n" := (GoAlloc (go.PointerType node) "n") in
     let: "cc" := (GoAlloc raftpb.ConfChangeI "cc") in
     let: "cs" := (GoAlloc raftpb.ConfState (GoZeroVal raftpb.ConfState #())) in
+    let: "$v0" := ((MethodResolve raftpb.ConfChangeI "AsV2"%go (![raftpb.ConfChangeI] "cc")) #()) in
     let: "$ch0" := (![go.ChannelType go.sendrecv raftpb.ConfChangeV2] (StructFieldRef node "confc"%go (![go.PointerType node] "n"))) in
     let: "$ch1" := (![go.ChannelType go.sendrecv (go.StructType [
 
     ])] (StructFieldRef node "done"%go (![go.PointerType node] "n"))) in
-    SelectStmt (SelectStmtClauses None [(CommClause (SendCase raftpb.ConfChangeV2 "$ch0" ((MethodResolve raftpb.ConfChangeI "AsV2"%go (![raftpb.ConfChangeI] "cc")) #())) (do:  #())); (CommClause (RecvCase (go.StructType [
+    SelectStmt (SelectStmtClauses None [(CommClause (SendCase raftpb.ConfChangeV2 "$ch0" "$v0") (do:  #())); (CommClause (RecvCase (go.StructType [
 
     ]) "$ch1") (do:  #()))]);;;
     let: "$ch0" := (![go.ChannelType go.sendrecv raftpb.ConfState] (StructFieldRef node "confstatec"%go (![go.PointerType node] "n"))) in
@@ -2491,11 +2499,12 @@ Definition node__Statusⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
     let: "c" := (GoAlloc (go.ChannelType go.sendrecv Status) (GoZeroVal (go.ChannelType go.sendrecv Status) #())) in
     let: "$r0" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv Status] #()) #()) in
     do:  ("c" <-[go.ChannelType go.sendrecv Status] "$r0");;;
+    let: "$v0" := (![go.ChannelType go.sendrecv Status] "c") in
     let: "$ch0" := (![go.ChannelType go.sendrecv (go.ChannelType go.sendrecv Status)] (StructFieldRef node "status"%go (![go.PointerType node] "n"))) in
     let: "$ch1" := (![go.ChannelType go.sendrecv (go.StructType [
 
     ])] (StructFieldRef node "done"%go (![go.PointerType node] "n"))) in
-    SelectStmt (SelectStmtClauses None [(CommClause (SendCase (go.ChannelType go.sendrecv Status) "$ch0" (![go.ChannelType go.sendrecv Status] "c")) (return: (Fst (chan.receive Status (![go.ChannelType go.sendrecv Status] "c"))))); (CommClause (RecvCase (go.StructType [
+    SelectStmt (SelectStmtClauses None [(CommClause (SendCase (go.ChannelType go.sendrecv Status) "$ch0" "$v0") (return: (Fst (chan.receive Status (![go.ChannelType go.sendrecv Status] "c"))))); (CommClause (RecvCase (go.StructType [
 
     ]) "$ch1") (return: (CompositeLiteral Status (LiteralValue []))))])).
 
@@ -2504,11 +2513,12 @@ Definition node__ReportUnreachableⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGl
   λ: "n" "id",
     exception_do (let: "n" := (GoAlloc (go.PointerType node) "n") in
     let: "id" := (GoAlloc go.uint64 "id") in
+    let: "$v0" := (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType raftpb.MsgUnreachable); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 (![go.uint64] "id"))])) in
     let: "$ch0" := (![go.ChannelType go.sendrecv raftpb.Message] (StructFieldRef node "recvc"%go (![go.PointerType node] "n"))) in
     let: "$ch1" := (![go.ChannelType go.sendrecv (go.StructType [
 
     ])] (StructFieldRef node "done"%go (![go.PointerType node] "n"))) in
-    SelectStmt (SelectStmtClauses None [(CommClause (SendCase raftpb.Message "$ch0" (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType raftpb.MsgUnreachable); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 (![go.uint64] "id"))]))) (do:  #())); (CommClause (RecvCase (go.StructType [
+    SelectStmt (SelectStmtClauses None [(CommClause (SendCase raftpb.Message "$ch0" "$v0") (do:  #())); (CommClause (RecvCase (go.StructType [
 
     ]) "$ch1") (do:  #()))]);;;
     return: #()).
@@ -2522,11 +2532,12 @@ Definition node__ReportSnapshotⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
     let: "rej" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := ((![SnapshotStatus] "status") =⟨go.int⟩ SnapshotFailure) in
     do:  ("rej" <-[go.bool] "$r0");;;
+    let: "$v0" := (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType raftpb.MsgSnapStatus); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 (![go.uint64] "id")); KeyedElement (Some (KeyField "Reject"%go)) (ElementExpression go.bool (![go.bool] "rej"))])) in
     let: "$ch0" := (![go.ChannelType go.sendrecv raftpb.Message] (StructFieldRef node "recvc"%go (![go.PointerType node] "n"))) in
     let: "$ch1" := (![go.ChannelType go.sendrecv (go.StructType [
 
     ])] (StructFieldRef node "done"%go (![go.PointerType node] "n"))) in
-    SelectStmt (SelectStmtClauses None [(CommClause (SendCase raftpb.Message "$ch0" (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType raftpb.MsgSnapStatus); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 (![go.uint64] "id")); KeyedElement (Some (KeyField "Reject"%go)) (ElementExpression go.bool (![go.bool] "rej"))]))) (do:  #())); (CommClause (RecvCase (go.StructType [
+    SelectStmt (SelectStmtClauses None [(CommClause (SendCase raftpb.Message "$ch0" "$v0") (do:  #())); (CommClause (RecvCase (go.StructType [
 
     ]) "$ch1") (do:  #()))]);;;
     return: #()).
@@ -2538,12 +2549,13 @@ Definition node__TransferLeadershipⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoG
     let: "transferee" := (GoAlloc go.uint64 "transferee") in
     let: "lead" := (GoAlloc go.uint64 "lead") in
     let: "ctx" := (GoAlloc context.Context "ctx") in
+    let: "$v0" := (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType raftpb.MsgTransferLeader); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 (![go.uint64] "transferee")); KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 (![go.uint64] "lead"))])) in
     let: "$ch0" := (![go.ChannelType go.sendrecv raftpb.Message] (StructFieldRef node "recvc"%go (![go.PointerType node] "n"))) in
     let: "$ch1" := (![go.ChannelType go.sendrecv (go.StructType [
 
     ])] (StructFieldRef node "done"%go (![go.PointerType node] "n"))) in
     let: "$ch2" := ((MethodResolve context.Context "Done"%go (![context.Context] "ctx")) #()) in
-    SelectStmt (SelectStmtClauses None [(CommClause (SendCase raftpb.Message "$ch0" (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType raftpb.MsgTransferLeader); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 (![go.uint64] "transferee")); KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 (![go.uint64] "lead"))]))) (do:  #())); (CommClause (RecvCase (go.StructType [
+    SelectStmt (SelectStmtClauses None [(CommClause (SendCase raftpb.Message "$ch0" "$v0") (do:  #())); (CommClause (RecvCase (go.StructType [
 
     ]) "$ch1") (do:  #())); (CommClause (RecvCase (go.StructType [
 

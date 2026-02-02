@@ -701,6 +701,7 @@ Definition chanSelectⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
     let: "i1" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "$ch0" := (![go.ChannelType go.sendrecv go.int] "c3") in
     let: "$ch1" := (![go.ChannelType go.sendrecv go.int] "c1") in
+    let: "$v2" := (![go.int] "i2") in
     let: "$ch2" := (![go.ChannelType go.sendrecv go.int] "c2") in
     let: "$ch3" := (![go.ChannelType go.sendrecv go.int] "c3") in
     let: "$ch4" := (![go.ChannelType go.sendrecv go.int] "c4") in
@@ -714,7 +715,7 @@ Definition chanSelectⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
     let: "$sl2" := (Convert go.string go.any #" from c1
     "%go) in
     CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0"); KeyedElement None (ElementExpression go.any "$sl1"); KeyedElement None (ElementExpression go.any "$sl2")]))) in
-    (FuncResolve fmt.Print [] #()) "$a0"))); (CommClause (SendCase go.int "$ch2" (![go.int] "i2")) (do:  (let: "$a0" := ((let: "$sl0" := (Convert go.string go.any #"sent "%go) in
+    (FuncResolve fmt.Print [] #()) "$a0"))); (CommClause (SendCase go.int "$ch2" "$v2") (do:  (let: "$a0" := ((let: "$sl0" := (Convert go.string go.any #"sent "%go) in
     let: "$sl1" := (Convert go.int go.any (![go.int] "i2")) in
     let: "$sl2" := (Convert go.string go.any #" to c2
     "%go) in
@@ -742,9 +743,11 @@ Definition chanSelectⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
     do:  ((IndexRef (go.SliceType go.int) (![go.SliceType go.int] "a", (FuncResolve f [] #()) #())) <-[go.int] "$r0");;;
     do:  #()))]);;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
+      let: "$v0" := #(W64 0) in
       let: "$ch0" := (![go.ChannelType go.sendrecv go.int] "c") in
+      let: "$v1" := #(W64 1) in
       let: "$ch1" := (![go.ChannelType go.sendrecv go.int] "c") in
-      SelectStmt (SelectStmtClauses None [(CommClause (SendCase go.int "$ch0" #(W64 0)) (do:  #())); (CommClause (SendCase go.int "$ch1" #(W64 1)) (do:  #()))]));;;
+      SelectStmt (SelectStmtClauses None [(CommClause (SendCase go.int "$ch0" "$v0") (do:  #())); (CommClause (SendCase go.int "$ch1" "$v1") (do:  #()))]));;;
     SelectStmt (SelectStmtClauses None []);;;
     return: #()).
 
