@@ -10,14 +10,14 @@ Local Set Default Proof Using "All".
 
 Definition is_unwrappable (err : error.t) : iProp Σ :=
   □(match err with
-  | interface.nil => True
-  | interface.ok ii =>
-      if decide (method_set ii.(interface.ty) !! "Unwrap"%go = Some $ go.Signature [] false [go.error]) then
-        ({{{ True }}}
-           #(methods ii.(interface.ty) "Unwrap" ii.(interface.v)) #()
-         {{{ err, RET #(interface.ok err); True }}})%I
-      else True%I
-  end).
+    | interface.nil => True
+    | interface.ok ii =>
+        if decide (method_set ii.(interface.ty) !! "Unwrap"%go = Some $ go.Signature [] false [go.error]) then
+          ({{{ True }}}
+             #(methods ii.(interface.ty) "Unwrap" ii.(interface.v)) #()
+           {{{ err, RET #(interface.ok err); True }}})%I
+        else True%I
+    end).
 
 Lemma wp_Unwrap (err : error.t) :
   {{{ is_unwrappable err }}}
