@@ -1,5 +1,6 @@
 From New.proof Require Import proof_prelude.
 From iris.algebra.lib Require Import mono_list mono_nat dfrac_agree gmap_view.
+From iris.bi Require Import fractional.
 From Coq Require Import Logic.ClassicalEpsilon.
 
 Module cmra_expr.
@@ -260,6 +261,7 @@ Qed.
 
 End core.
 
+Section derived.
 Global Instance own_any_combine {A : cmra} γ (a b : A) :
   CombineSepAs (owna γ a) (owna γ b) (owna γ (a ⋅ b)).
 Proof.
@@ -267,15 +269,49 @@ Proof.
   rewrite owna_op. iFrame.
 Qed.
 
-Lemma owna_alloc `{!SimpleCmra A} (a : A) :
-  ✓ a →
-  ⊢ |==> ∃ γ, owna γ a.
+Global Instance own_any_combine_gives {A : cmra} γ (a b : A) :
+  CombineSepGives (owna γ a) (owna γ b) (✓ (a ⋅ b)).
 Proof.
-  iIntros "%Hvalid".
-  iMod (owna_alloc_strong_dep (const a) (λ γ, True)) as (?) "[_ H]"; try done.
-  { intros g. eexists (fresh g). by split; last apply infinite_is_fresh. }
-  by iFrame.
+  rewrite /CombineSepGives. iIntros "[H1 H2]".
+  iCombine "H1 H2" as "H". iDestruct (owna_valid with "H") as "#$".
 Qed.
+
+Section needs_simple.
+Context `{!SimpleCmra A}.
+Implicit Type (a : A).
+Local Set Default Proof Using "All".
+Lemma owna_alloc_cofinite_dep (f : gname → A) (G : gset gname) :
+  (∀ γ, γ ∉ G → ✓ (f γ)) → ⊢ |==> ∃ γ, ⌜γ ∉ G⌝ ∗ owna γ (f γ).
+Proof.
+  intros Ha.
+  apply (owna_alloc_strong_dep f (λ γ, γ ∉ G))=> //.
+  apply (pred_infinite_set (C:=gset gname)).
+  intros E. set (γ := fresh (G ∪ E)).
+  exists γ. apply not_elem_of_union, is_fresh.
+Qed.
+Lemma owna_alloc_dep (f : gname → A) :
+  (∀ γ, ✓ (f γ)) → ⊢ |==> ∃ γ, owna γ (f γ).
+Proof.
+  intros Ha. rewrite /bi_emp_valid (owna_alloc_cofinite_dep f ∅) //; [].
+  apply bupd_mono, exist_mono=>?. apply: sep_elim_r.
+Qed.
+
+Lemma owna_alloc_strong a (P : gname → Prop) :
+  pred_infinite P →
+  ✓ a → ⊢ |==> ∃ γ, ⌜P γ⌝ ∗ owna γ a.
+Proof. intros HP Ha. eapply (owna_alloc_strong_dep (λ _, a)); eauto. Qed.
+Lemma owna_alloc_cofinite a (G : gset gname) :
+  ✓ a → ⊢ |==> ∃ γ, ⌜γ ∉ G⌝ ∗ owna γ a.
+Proof. intros Ha. eapply (owna_alloc_cofinite_dep (λ _, a)); eauto. Qed.
+Lemma owna_alloc a : ✓ a → ⊢ |==> ∃ γ, owna γ a.
+Proof. intros Ha. eapply (owna_alloc_dep (λ _, a)); eauto. Qed.
+End needs_simple.
+
+Lemma owna_update_2 {A : cmra} γ (a1 a2 a' : A) :
+  a1 ⋅ a2 ~~> a' → owna γ a1 -∗ owna γ a2 ==∗ owna γ a'.
+Proof. intros. apply entails_wand, wand_intro_r. rewrite -owna_op. by iApply owna_update. Qed.
+
+End derived.
 
 Instance mlist_simple_cmra (A : Type) : SimpleCmra (mono_listR (leibnizO A)).
 Proof. by eexists (cmra_expr.mono_list A). Qed.
@@ -290,67 +326,109 @@ Instance own_proper :
   ∀ {A : cmra} (γ : gname), Proper (equiv ==> equiv) (@owna A γ).
 Proof. intros. apply (ne_proper _). Qed.
 
-
-Global Instance any_cmra_is_op (x y : any_cmraR PROP) : IsOp (x ⋅ y) x y.
-Proof. Admitted.
-
-Lemma interpret_inj a a' :
-  cmra_expr.interpret PROP a = cmra_expr.interpret PROP a' →
-  a = a'.
-Proof.
-Admitted.
-
 Section saved_pred.
-Context {A : Type}.
-Definition saved_pred_own (γ : gname) (dq : dfrac) (Φ : A → iProp PROP) :=
-  owna γ (to_dfrac_agree dq (Next ∘ Φ : oFunctor_apply (A -d> ▶ ∙) (iPropO PROP))).
+  Context {A : Type}.
 
-Global Instance saved_pred_own_contractive `{!savedPredG PROP A} γ dq :
-  Contractive (saved_pred_own γ dq : (A -d> iPropO PROP) → iProp PROP).
-Proof.
-Abort.
+  Local Instance s :
+    SimpleCmra (dfrac_agreeR (oFunctor_apply (A -d> ▶ ∙) (iPropO Σ))).
+  Proof.
+    refine {| Aexp := cmra_expr.saved_pred A; eq_proof := eq_refl |}.
+  Qed.
 
-Global Instance saved_pred_discarded_persistent γ Φ :
-  Persistent (saved_pred_own γ DfracDiscarded Φ).
-Proof.
-Abort.
+  Definition saved_pred_own (γ : gname) (dq : dfrac) (Φ : A → iProp Σ) :=
+    owna γ (to_dfrac_agree dq (Next ∘ Φ : oFunctor_apply (A -d> ▶ ∙) (iPropO Σ))).
 
-Lemma saved_pred_alloc (Φ : A → iProp PROP) dq :
-  ✓ dq →
-  ⊢ |==> ∃ γ, saved_pred_own γ dq Φ.
-Proof.
-  intros.
-  iApply @own_any_alloc.
-  { by eexists (cmra_expr.saved_pred _). }
-  { done. }
-Qed.
+  Global Instance saved_pred_own_contractive `{!savedPredG Σ A} γ dq :
+    Contractive (saved_pred_own γ dq : (A -d> iPropO Σ) → iProp Σ).
+  Proof.
+    solve_proper_core ltac:(fun _ => first [ intros ?; progress simpl | by auto | f_contractive | f_equiv ]).
+  Qed.
 
+  Global Instance saved_pred_discarded_persistent γ Φ :
+    Persistent (saved_pred_own γ DfracDiscarded Φ).
+  Proof. apply _. Qed.
 
-Lemma saved_pred_valid_2 γ dq1 dq2 Φ Ψ x :
-  saved_pred_own γ dq1 Φ -∗ saved_pred_own γ dq2 Ψ -∗ ⌜✓ (dq1 ⋅ dq2)⌝ ∗ ▷ (Φ x ≡ Ψ x).
-Proof.
-  iIntros "HΦ HΨ".
-  iCombine "HΦ HΨ" as "HP".
-Qed.
+  Global Instance saved_pred_fractional γ Φ : Fractional (λ q, saved_pred_own γ (DfracOwn q) Φ).
+  Proof. intros q1 q2. rewrite /saved_pred_own -owna_op -dfrac_agree_op //. Qed.
+  Global Instance saved_pred_as_fractional γ Φ q :
+    AsFractional (saved_pred_own γ (DfracOwn q) Φ) (λ q, saved_pred_own γ (DfracOwn q) Φ) q.
+  Proof. split; [done|]. apply _. Qed.
 
-Lemma saved_pred_agree γ dq1 dq2 Φ Ψ x :
-  saved_pred_own γ dq1 Φ -∗ saved_pred_own γ dq2 Ψ -∗ ▷ (Φ x ≡ Ψ x).
-Proof.
-  iIntros "HΦ HΨ".
-  iPoseProof (saved_pred_valid_2 with "HΦ HΨ") as "[_ $]".
-Qed.
+  (** Allocation *)
+  Lemma saved_pred_alloc_strong (I : gname → Prop) (Φ : A → iProp Σ) dq :
+    ✓ dq →
+    pred_infinite I →
+    ⊢ |==> ∃ γ, ⌜I γ⌝ ∗ saved_pred_own γ dq Φ.
+  Proof. intros ??. by apply owna_alloc_strong. Qed.
 
-Lemma own_saved_prop (P : iProp PROP) :
-  ⊢ |==> ∃ γ, owna γ (to_dfrac_agree (DfracOwn 1)
-                        (Next ∘ (λ _, P): oFunctor_apply (unit -d> ▶ ∙) (iPropO PROP))).
-Proof.
-  iApply @own_any_alloc.
-  { by eexists (cmra_expr.saved_pred unit). }
-  { done. }
-Qed.
+  Lemma saved_pred_alloc_cofinite (G : gset gname) (Φ : A → iProp Σ) dq :
+    ✓ dq →
+    ⊢ |==> ∃ γ, ⌜γ ∉ G⌝ ∗ saved_pred_own γ dq Φ.
+  Proof. intros ?. by apply owna_alloc_cofinite. Qed.
 
-End own.
+  Lemma saved_pred_alloc (Φ : A → iProp Σ) dq :
+    ✓ dq →
+    ⊢ |==> ∃ γ, saved_pred_own γ dq Φ.
+  Proof. intros ?. by apply owna_alloc. Qed.
 
+  (** Validity *)
+  Lemma saved_pred_valid γ dq Φ :
+    saved_pred_own γ dq Φ -∗ ⌜✓ dq⌝.
+  Proof.
+    rewrite /saved_pred_own owna_valid dfrac_agree_validI //. eauto.
+  Qed.
+  Lemma saved_pred_valid_2 γ dq1 dq2 Φ Ψ x :
+    saved_pred_own γ dq1 Φ -∗ saved_pred_own γ dq2 Ψ -∗ ⌜✓ (dq1 ⋅ dq2)⌝ ∗ ▷ (Φ x ≡ Ψ x).
+  Proof.
+    iIntros "Hx Hy". rewrite /saved_pred_own.
+    iCombine "Hx Hy" gives "Hv".
+    rewrite dfrac_agree_validI_2. iDestruct "Hv" as "[$ Hag]".
+    iApply later_equivI. by iApply (discrete_fun_equivI with "Hag").
+  Qed.
+  Lemma saved_pred_agree γ dq1 dq2 Φ Ψ x :
+    saved_pred_own γ dq1 Φ -∗ saved_pred_own γ dq2 Ψ -∗ ▷ (Φ x ≡ Ψ x).
+  Proof. iIntros "HΦ HΨ". iPoseProof (saved_pred_valid_2 with "HΦ HΨ") as "[_ $]". Qed.
+
+  (** Make an element read-only. *)
+  Lemma saved_pred_persist γ dq Φ :
+    saved_pred_own γ dq Φ ==∗ saved_pred_own γ DfracDiscarded Φ.
+  Proof.
+    iApply owna_update. apply dfrac_agree_persist.
+  Qed.
+
+  (* FIXME: own_updateP *)
+  (* (** Recover fractional ownership for read-only element. *) *)
+  (* Lemma saved_pred_unpersist γ Φ: *)
+  (*   saved_pred_own γ DfracDiscarded Φ ==∗ ∃ q, saved_pred_own γ (DfracOwn q) Φ. *)
+  (* Proof. *)
+  (*   iIntros "H". *)
+  (*   iMod (own_updateP with "H") as "H"; *)
+  (*     first by apply dfrac_agree_unpersist. *)
+  (*   iDestruct "H" as (? (q&->)) "H". *)
+  (*   iIntros "!>". iExists q. done. *)
+  (* Qed. *)
+
+  (** Updates *)
+  Lemma saved_pred_update Ψ γ Φ :
+    saved_pred_own γ (DfracOwn 1) Φ ==∗ saved_pred_own γ (DfracOwn 1) Ψ.
+  Proof.
+    iApply owna_update. apply cmra_update_exclusive. done.
+  Qed.
+  Lemma saved_pred_update_2 Ψ γ q1 q2 Φ1 Φ2 :
+    (q1 + q2 = 1)%Qp →
+    saved_pred_own γ (DfracOwn q1) Φ1 -∗ saved_pred_own γ (DfracOwn q2) Φ2 ==∗
+    saved_pred_own γ (DfracOwn q1) Ψ ∗ saved_pred_own γ (DfracOwn q2) Ψ.
+  Proof.
+    intros Hq. rewrite -owna_op. iApply owna_update_2.
+    apply dfrac_agree_update_2.
+    rewrite dfrac_op_own Hq //.
+  Qed.
+  Lemma saved_pred_update_halves Ψ γ Φ1 Φ2 :
+    saved_pred_own γ (DfracOwn (1/2)) Φ1 -∗
+    saved_pred_own γ (DfracOwn (1/2)) Φ2 ==∗
+    saved_pred_own γ (DfracOwn (1/2)) Ψ ∗ saved_pred_own γ (DfracOwn (1/2)) Ψ.
+  Proof. iApply saved_pred_update_2. apply Qp.half_half. Qed.
+End saved_pred.
 
 (* Print Assumptions own_any_mono_list.
   constructive_indefinite_description : ∀ (A : Type) (P : A → Prop), (∃ x : A, P x) → {x : A | P x}
