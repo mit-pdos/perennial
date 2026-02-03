@@ -14,8 +14,7 @@ Inductive t :=
 | agree (A : Type)
 | excl (A : Type)
 | gmap_view (K : Type) `{Countable K} (V : t)
-| saved_pred (A : Type)
-.
+| saved_pred (A : Type).
 
 Fixpoint interpret (PROP : ofe) `{!Cofe PROP} (x : t) : cmra :=
   match x with
@@ -45,107 +44,93 @@ Fixpoint interpretF (x : t) : rFunctor :=
 End defn.
 End cmra_expr.
 
-Section defn.
-Context (PROP : ofe) `{!Cofe PROP}.
+Definition allUR (PROP : ofe) `{!Cofe PROP}
+  : Type := discrete_funUR (optionUR ∘ cmra_expr.interpret PROP).
 
-Definition any_cmra : Type := discrete_funUR (optionUR ∘ cmra_expr.interpret PROP).
+Definition allURF := discrete_funURF (λ A, optionURF (cmra_expr.interpretF A)).
 
-Definition cast {A B : cmra} (a : A) (e : A = B) : B :=
-  match e in (_ = A) return A with eq_refl => a end.
-
-Definition to_any (A : cmra_expr.t) (a : cmra_expr.interpret PROP A) : any_cmra :=
-  λ (B : cmra_expr.t),
-
-    match (excluded_middle_informative
-             (cmra_expr.interpret PROP A = cmra_expr.interpret PROP B)) with
-    | right _ => None
-    | left eq_proof =>
-        Some (cast a eq_proof)
-    end.
-
-Lemma any_cmra_update {A : cmra_expr.t} a b :
-  a ~~> b →
-  to_any A a ~~> to_any A b.
-Proof.
-  intros H. apply functions.discrete_fun_update. intros B. unfold to_any.
-  destruct excluded_middle_informative; last done.
-  simpl in *. destruct e. simpl in *. by apply option_update.
-Qed.
-
-Lemma any_cmra_op {M : cmra} {A B : cmra_expr.t} (a b : M)
-  (eq_a : M = cmra_expr.interpret PROP A) (eq_b : M = cmra_expr.interpret PROP B) :
-  to_any A (cast a eq_a) ⋅ to_any B (cast b eq_b) = to_any A (cast (a ⋅ b) eq_a).
-Proof.
-  rewrite /to_any. simpl.
-  apply FunctionalExtensionality.functional_extensionality_dep_good.
-  intros C. rewrite discrete_fun_lookup_op.
-  subst.
-  destruct excluded_middle_informative as [Heq|Hbad];
-    destruct excluded_middle_informative as [Heq'|Hbad'].
-  2:{ exfalso. apply Hbad'. rewrite -Heq. naive_solver. }
-  2:{ exfalso. apply Hbad. rewrite -Heq'. naive_solver. }
-  2:{ done. }
-  simpl in *. destruct Heq, Heq'.
-  progress simpl in *.
-  pose proof (UIP_refl _ _ eq_b). subst.
-  simpl. done.
-Qed.
-
-Definition any_cmraUR := discrete_funUR (optionUR ∘ (cmra_expr.interpret PROP)).
-
-Definition any_cmraURF := discrete_funURF (λ A, optionURF (cmra_expr.interpretF A)).
-
-Global Instance contr :
-  urFunctorContractive any_cmraURF.
+Global Instance all_contractive : urFunctorContractive allURF.
 Proof.
   apply discrete_funURF_contractive.
   intro A. apply optionURF_contractive.
   induction A; simpl in *; tc_solve.
 Qed.
-End defn.
 
-Definition anyΣ : gFunctors :=
-  #[ GFunctor (urFunctor_to_rFunctor any_cmraURF) ].
+Definition allΣ : gFunctors :=
+  #[ GFunctor (urFunctor_to_rFunctor allURF) ].
 
-Class anyG Σ :=
-  {
-    any_inG :: inG Σ (any_cmraUR (iPropO Σ));
-  }.
+Class allG Σ :=
+  { #[local] any_inG :: inG Σ (allUR (iPropO Σ)); }.
 
-
-Lemma x A Σ :
-  (rFunctor_apply (cmra_expr.interpretF A) (iPropO Σ)) =
+Local Lemma interpret_eq_interpretF A Σ :
+  (cmra_expr.interpretF A).(rFunctor_car) (iPropO Σ) (iPropO Σ) =
   (cmra_expr.interpret (iPropO Σ) A).
 Proof.
   induction A; simpl in *; try done.
-  - unfold rFunctor_apply in *. simpl in *.
-    rewrite IHA1 IHA2 //.
-  - unfold rFunctor_apply in *. simpl in *.
-    rewrite IHA //.
-  - unfold rFunctor_apply in *. simpl in *.
-    rewrite IHA. done.
+  - unfold rFunctor_apply in *. rewrite IHA1 IHA2 //.
+  - unfold rFunctor_apply in *. rewrite IHA //.
+  - unfold rFunctor_apply in *. rewrite IHA //.
 Qed.
 
-Global Instance subG_anyΣ Σ :
-  subG (anyΣ) Σ → anyG Σ.
+Global Instance subG_allΣ Σ :
+  subG (allΣ) Σ → allG Σ.
 Proof.
   intros. constructor.
   apply subG_inv in H. destruct H.
   apply subG_inG in s. simpl in *.
-  exact_eq s.
-  unfold any_cmraUR.
-  simpl.
-  assert (
-      (λ c : cmra_expr.t, optionUR ((cmra_expr.interpretF c).(rFunctor_car) (iPropO Σ) (iPropO Σ)))
-        = (optionUR ∘ cmra_expr.interpret (iPropO Σ))).
-  2:{ rewrite H //. }
+  exact_eq s. rewrite /allUR.
+  apply (f_equal ucmra_cmraR).
+  apply (f_equal discrete_funUR).
   apply FunctionalExtensionality.functional_extensionality_dep_good.
-  intros A. simpl.
-  rewrite -x. done.
+  intros. rewrite interpret_eq_interpretF //.
+Qed.
+
+Definition cast {A B : cmra} (a : A) (e : A = B) : B :=
+  match e in (_ = A) return A with eq_refl => a end.
+
+Definition to_all (PROP : ofe) `{!Cofe PROP}
+  (A : cmra_expr.t) (a : cmra_expr.interpret PROP A) : allUR PROP :=
+  λ (B : cmra_expr.t),
+    match (excluded_middle_informative (cmra_expr.interpret PROP A = cmra_expr.interpret PROP B)) with
+    | right _ => None
+    | left eq_proof =>
+        Some (cast a eq_proof)
+    end.
+
+Local Lemma to_all_update
+  {PROP : ofe} `{!Cofe PROP}
+  {A : cmra_expr.t} a b :
+  a ~~> b →
+  to_all PROP A a ~~> to_all PROP A b.
+Proof.
+  intros H. apply functions.discrete_fun_update. intros B. rewrite /to_all.
+  destruct excluded_middle_informative; last done.
+  simpl in *. destruct e. simpl in *. by apply option_update.
+Qed.
+
+Lemma cast_self {A : cmra} (a : A) (eq_A : A = A) :
+  (cast a eq_A) = a.
+Proof.
+  pose proof (UIP_refl _ _ eq_A). subst. done.
+Qed.
+
+Lemma to_all_op {PROP : ofe} `{!Cofe PROP} {A B : cmra_expr.t}
+  (a b : cmra_expr.interpret PROP A)
+  (eq_pf : cmra_expr.interpret PROP A = cmra_expr.interpret PROP B) :
+  to_all PROP A a ⋅ to_all PROP B (cast b eq_pf) = to_all PROP A (a ⋅ b).
+Proof.
+  apply FunctionalExtensionality.functional_extensionality_dep_good.
+  intros C. rewrite discrete_fun_lookup_op. subst. simpl.
+  rewrite /to_all.
+  destruct excluded_middle_informative as [Heq|Hbad];
+    destruct excluded_middle_informative as [Heq'|Hbad']; try done.
+  2:{ exfalso. rewrite -Heq in Hbad'. done. }
+  2:{ exfalso. rewrite -Heq' in Hbad. done. }
+  destruct Heq, Heq'. simpl in *. rewrite cast_self //.
 Qed.
 
 Section own.
-Context `{!anyG Σ}.
+Context `{!allG Σ}.
 
 Class SimpleCmra A :=
   {
@@ -153,53 +138,142 @@ Class SimpleCmra A :=
     eq_proof : A = cmra_expr.interpret (iProp Σ) Aexp;
   }.
 
-Definition own_any {A : cmra} γ (a : A) : iProp Σ :=
-  ∃ (_ : SimpleCmra A), own γ (to_any (iProp Σ) Aexp (cast a eq_proof) : any_cmra (iProp Σ)).
+Definition owna_def {A : cmra} γ (a : A) : iProp Σ :=
+  ∃ (S : SimpleCmra A), own γ (to_all (iProp Σ) Aexp (cast a eq_proof) : allUR (iProp Σ)).
+Program Definition owna := sealed @owna_def.
+Final Obligation. econstructor. done. Qed.
+Definition owna_unseal : owna = _ := seal_eq _.
 
-Lemma own_any_update γ {A : cmra} (a a' : A) :
-  a ~~> a' →
-  own_any γ a ==∗ own_any γ a'.
+Global Arguments owna {A} (γ a).
+
+(** Core facts that requires unfolding [owna] *)
+Section core.
+
+(*
+  [*] own_ne
+  [*] own_op
+  [*] own_valid
+  [*] own_timeless
+  [*] own_persistent
+  [ ] later_own
+  [*] own_alloc_strong_dep
+  [ ] own_updateP
+  [ ] own_unit
+  [ ] own_forall
+ *)
+
+Global Instance owna_ne A γ : NonExpansive (@owna A γ).
 Proof.
+  rewrite owna_unseal.
+  intros ???. intros.
+  apply bi.exist_ne. intros ?. apply own_ne.
+  intros ?. rewrite /to_all. destruct excluded_middle_informative; try done.
+  simpl in *. destruct e. simpl.
+  destruct a. subst. simpl. apply Some_ne. done.
+Qed.
+
+Lemma owna_op {A : cmra} γ (a1 a2 : A) :
+  owna γ (a1 ⋅ a2) ⊣⊢ owna γ a1 ∗ owna γ a2.
+Proof.
+  rewrite owna_unseal.
+  iSplit.
+  - iIntros "[% H]". destruct S. subst. simpl in *.
+    rewrite -(to_all_op (B:=Aexp0)). iDestruct "H" as "[H1 H2]". simpl.
+    iSplitL "H1"; iExists {| Aexp := Aexp0; eq_proof := eq_refl |}; iFrame.
+  - iIntros "[[% H1] [% H2]]". destruct S, S0. subst.
+    iExists {| Aexp := Aexp0; eq_proof := eq_refl |}. simpl.
+    iCombine "H1 H2" as "H". simpl. iExactEq "H". f_equal. rewrite to_all_op //.
+Qed.
+
+Lemma owna_valid γ {A : cmra} (a : A) :
+  owna γ a ⊢ ✓ a.
+Proof.
+  rewrite owna_unseal.
+  iIntros "[% Hown]". iDestruct (own_valid with "Hown") as "Hv".
+  rewrite discrete_fun_validI. destruct S. subst.
+  iSpecialize ("Hv" $! Aexp0). rewrite option_validI. simpl.
+  rewrite /to_all. destruct excluded_middle_informative; try done.
+  simpl in *. destruct e. done.
+Qed.
+
+Global Instance owna_timeless {A : cmra} `{!SimpleCmra A} γ (a : A) :
+  Discrete a → Timeless (owna γ a).
+Proof.
+  rewrite /Timeless. rewrite !owna_unseal /owna_def. intros ?.
+  iIntros "H". assert (Inhabited (SimpleCmra A)) by done.
+  iDestruct "H" as (?) "H". iExists _.
+  destruct S. subst. simpl in *.
+  assert (Discrete (to_all (iProp Σ) Aexp0 a)).
+  - rewrite /to_all. intros a' Heq. intros B. specialize (Heq B).
+    simpl in *. destruct excluded_middle_informative.
+    + simpl in *. destruct a'; try done.
+      * rewrite dist_Some in Heq.
+        destruct e. simpl in *.
+        apply H in Heq. setoid_rewrite Heq. done.
+      * exfalso. rewrite dist_None // in Heq.
+    + simpl in *. destruct a'; try done.
+      exfalso. symmetry in Heq. rewrite dist_None // in Heq.
+  - iMod "H". iFrame.
+Qed.
+
+Global Instance owna_core_persistent {A : cmra} γ (a : A) : CoreId a → Persistent (owna γ a).
+Proof.
+  rewrite !owna_unseal. intros Hcore.
+  apply exist_persistent. intros S. apply own_core_persistent.
+  rewrite /CoreId. rewrite /to_all.
+  rewrite cmra_pcore_core. apply Some_proper.
+  intros B. rewrite /core /=.
+  destruct excluded_middle_informative; try done.
+  destruct S. simpl in *. destruct e. simpl in *.
+  destruct eq_proof0. simpl in *. done.
+Qed.
+
+Lemma owna_update γ {A : cmra} (a a' : A) :
+  a ~~> a' →
+  owna γ a ==∗ owna γ a'.
+Proof.
+  rewrite owna_unseal.
   intros Hupd. iIntros "[% Hown]".
   iExists _. iApply (own_update with "Hown").
-  apply any_cmra_update. simpl. destruct H.
+  apply to_all_update. destruct S.
   simpl in *. destruct eq_proof0. simpl.
   apply Hupd.
 Qed.
 
-Global Instance own_any_combine {A : cmra} γ (a b : A) :
-  CombineSepAs (own_any γ a) (own_any γ b) (own_any γ (a ⋅ b)).
+Lemma owna_alloc_strong_dep {A} {S : SimpleCmra A} (f : gname → A) (P : gname → Prop) :
+  pred_infinite P →
+  (∀ γ, P γ → ✓ (f γ)) →
+  ⊢ |==> ∃ γ, ⌜P γ⌝ ∗ owna γ (f γ).
 Proof.
-  rewrite /CombineSepAs. iIntros "[H1 H2]".
-  rewrite /own_any. iDestruct "H1" as "[% H1]".
-  iDestruct "H2" as "[% H2]". iExists _.
-  iCombine "H1 H2" as "H".
-  iExactEq "H". f_equal.
-  destruct H, H0. simpl in *.
-  unfold to_any.
-  apply FunctionalExtensionality.functional_extensionality_dep_good.
-  intros C. rewrite discrete_fun_lookup_op.
-  destruct excluded_middle_informative as [Heq|Hbad];
-    destruct excluded_middle_informative as [Heq'|Hbad'].
-  2:{ exfalso. apply Hbad'. rewrite -Heq. naive_solver. }
-  2:{ exfalso. apply Hbad. rewrite -Heq'. naive_solver. }
-  2:{ done. }
-  subst. simpl in *.
-  destruct Heq, Heq'. simpl in *.
-  pose proof (UIP_refl _ _ eq_proof1). subst. done.
-  (* FIXME: use [any_cmra_op] instead of manually proving? *)
+  rewrite owna_unseal. intros Hpred Hvalid.
+  iMod (own_alloc_strong_dep
+          (λ γ,
+             (to_all (iProp Σ) Aexp (eq_rect A id (f γ) _ eq_proof) : allUR (iProp Σ))) P
+          ) as (γ) "H".
+  { done. }
+  { intros γ HP. rewrite /= /to_all. intros B.
+    destruct excluded_middle_informative as [Heq|Hbad]; last done.
+    destruct S. subst. simpl in *. destruct Heq. simpl in *.
+    apply Some_valid. apply Hvalid. done. }
+  by iDestruct "H" as "($ & $)".
 Qed.
 
-Lemma own_any_alloc `{!SimpleCmra A} (a : A) :
-  ✓ a →
-  ⊢ |==> ∃ γ, own_any γ a.
+End core.
+
+Global Instance own_any_combine {A : cmra} γ (a b : A) :
+  CombineSepAs (owna γ a) (owna γ b) (owna γ (a ⋅ b)).
 Proof.
-  intros Hvalid.
-  iMod (own_alloc (to_any PROP Aexp (eq_rect A id a _ eq_proof) : any_cmra PROP)) as (γ) "H".
-  { intros ?. rewrite /= /to_any.
-    destruct excluded_middle_informative as [Heq|Hbad]; last done.
-    destruct Heq. simpl in *. destruct SimpleCmra0.
-    subst. done. }
+  rewrite /CombineSepAs. iIntros "[H1 H2]".
+  rewrite owna_op. iFrame.
+Qed.
+
+Lemma owna_alloc `{!SimpleCmra A} (a : A) :
+  ✓ a →
+  ⊢ |==> ∃ γ, owna γ a.
+Proof.
+  iIntros "%Hvalid".
+  iMod (owna_alloc_strong_dep (const a) (λ γ, True)) as (?) "[_ H]"; try done.
+  { intros g. eexists (fresh g). by split; last apply infinite_is_fresh. }
   by iFrame.
 Qed.
 
@@ -207,23 +281,13 @@ Instance mlist_simple_cmra (A : Type) : SimpleCmra (mono_listR (leibnizO A)).
 Proof. by eexists (cmra_expr.mono_list A). Qed.
 
 Lemma own_any_mono_list (l : list nat) :
-  ⊢ |==> ∃ γ, own_any γ (●ML l).
+  ⊢ |==> ∃ γ, owna γ (●ML l).
 Proof.
-  iApply own_any_alloc. apply mono_list_auth_valid.
+  iApply owna_alloc. apply mono_list_auth_valid.
 Qed.
 
-Global Instance own_ne A γ : NonExpansive (@own_any A γ).
-Proof.
-  intros ???. intros.
-  unfold own_any.
-  apply bi.exist_ne.
-  intros ?.
-  rewrite !own.own_eq. simpl.
-  rewrite /own.own_def.
-Admitted.
-
 Instance own_proper :
-  ∀ {A : cmra} (γ : gname), Proper (equiv ==> equiv) (@own_any A γ).
+  ∀ {A : cmra} (γ : gname), Proper (equiv ==> equiv) (@owna A γ).
 Proof. intros. apply (ne_proper _). Qed.
 
 
@@ -239,7 +303,7 @@ Admitted.
 Section saved_pred.
 Context {A : Type}.
 Definition saved_pred_own (γ : gname) (dq : dfrac) (Φ : A → iProp PROP) :=
-  own_any γ (to_dfrac_agree dq (Next ∘ Φ : oFunctor_apply (A -d> ▶ ∙) (iPropO PROP))).
+  owna γ (to_dfrac_agree dq (Next ∘ Φ : oFunctor_apply (A -d> ▶ ∙) (iPropO PROP))).
 
 Global Instance saved_pred_own_contractive `{!savedPredG PROP A} γ dq :
   Contractive (saved_pred_own γ dq : (A -d> iPropO PROP) → iProp PROP).
@@ -277,7 +341,7 @@ Proof.
 Qed.
 
 Lemma own_saved_prop (P : iProp PROP) :
-  ⊢ |==> ∃ γ, own_any γ (to_dfrac_agree (DfracOwn 1)
+  ⊢ |==> ∃ γ, owna γ (to_dfrac_agree (DfracOwn 1)
                         (Next ∘ (λ _, P): oFunctor_apply (unit -d> ▶ ∙) (iPropO PROP))).
 Proof.
   iApply @own_any_alloc.
