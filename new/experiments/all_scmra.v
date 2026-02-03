@@ -37,8 +37,9 @@ Section defn.
 Context (Σ : gFunctors).
 
 (* This would require ucmra for everything, which would exclude exclR. *)
-(* Definition any_cmra : Type := discrete_funUR cmra_expr.interpret. *)
+Definition any_cmra : Type := discrete_funUR (optionUR ∘ cmra_expr.interpret Σ).
 
+(*
 Inductive csigT {A : Type} P :=
 | CexistT : ∀ (x : A), P x → csigT P
 | Cinvalid : csigT P.
@@ -208,9 +209,6 @@ Qed.
 Canonical Structure any_cmraO : ofe := Ofe (any_cmra Σ) any_cmra_ofe_mixin.
 Canonical Structure any_cmraR := Cmra (any_cmra Σ) any_cmra_cmra_mixin.
 
-Definition to_any (A : cmra_expr.t) a : any_cmra Σ :=
-  CexistT A a.
-
 Lemma any_cmra_validN_op A B a b n :
   ✓{n} (CexistT A a ⋅ CexistT B b) ↔
   ∃ (pf : A = B), ✓{n}((eq_rect A _ a B pf) ⋅ b).
@@ -227,19 +225,47 @@ Proof. done. Qed.
 
 Lemma any_cmra_validN_op_invalid_l A a n :
   ✓{n} (Cinvalid ⋅ CexistT A a) → False.
-Proof. done. Qed.
+Proof. done. Qed. *)
+
+Definition cast {A B : cmra} (a : A) (e : A = B) : B :=
+  match e in (_ = A) return A with eq_refl => a end.
+
+Definition to_any (A : cmra_expr.t) (a : cmra_expr.interpret Σ A) : any_cmra :=
+  λ (B : cmra_expr.t),
+
+    match (excluded_middle_informative
+             (cmra_expr.interpret Σ A = cmra_expr.interpret Σ B)) with
+    | right _ => None
+    | left eq_proof =>
+        Some (cast a eq_proof)
+    end.
 
 Lemma any_cmra_update {A : cmra_expr.t} a b :
   a ~~> b →
   to_any A a ~~> to_any A b.
 Proof.
-  unfold to_any. intros Hupd n [[]|] Hvalid.
-  - rewrite any_cmra_validN_op in Hvalid. destruct Hvalid as [-> Hvalid].
-    simpl. rewrite any_cmra_validN_op. eexists eq_refl.
-    simpl in *. specialize (Hupd n (Some c)). by apply Hupd.
-  - simpl in *. by apply any_cmra_validN_op_invalid_r in Hvalid.
-  - simpl in *. rewrite !any_cmra_validN in Hvalid |- *.
-    specialize (Hupd n None). by apply Hupd.
+  intros H. apply functions.discrete_fun_update. intros B. unfold to_any.
+  destruct excluded_middle_informative; last done.
+  simpl in *. destruct e. simpl in *. by apply option_update.
+Qed.
+
+Lemma any_cmra_op {M : cmra} {A B : cmra_expr.t} (a b : M)
+  (eq_a : M = cmra_expr.interpret Σ A) (eq_b : M = cmra_expr.interpret Σ B) :
+  to_any A (cast a eq_a) ⋅ to_any B (cast b eq_b) = to_any A (cast (a ⋅ b) eq_a).
+Proof.
+  rewrite /to_any. simpl.
+  apply FunctionalExtensionality.functional_extensionality_dep_good.
+  intros C. rewrite discrete_fun_lookup_op.
+  subst.
+  destruct excluded_middle_informative as [Heq|Hbad];
+    destruct excluded_middle_informative as [Heq'|Hbad'].
+  2:{ exfalso. apply Hbad'. rewrite -Heq. naive_solver. }
+  2:{ exfalso. apply Hbad. rewrite -Heq'. naive_solver. }
+  2:{ done. }
+  simpl in *. destruct Heq, Heq'.
+  progress simpl in *.
+  pose proof (UIP_refl _ _ eq_b). subst.
+  simpl. done.
 Qed.
 
 End defn.
