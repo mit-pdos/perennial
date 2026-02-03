@@ -4,7 +4,6 @@ From Coq Require Import Logic.ClassicalEpsilon.
 
 Module cmra_expr.
 Section defn.
-Context (Σ : gFunctors).
 
 Inductive t :=
 | prod (A B : t)
@@ -18,34 +17,47 @@ Inductive t :=
 | saved_pred (A : Type)
 .
 
-Fixpoint interpret (x : t) : cmra :=
+Fixpoint interpret (PROP : ofe) `{!Cofe PROP} (x : t) : cmra :=
   match x with
-  | prod A B => prodR (interpret A) (interpret B)
-  | gmap K V => gmapR K (interpret V)
+  | prod A B => prodR (interpret PROP A) (interpret PROP B)
+  | gmap K V => gmapR K (interpret PROP V)
   | mono_list A => mono_listR (leibnizO A)
   | frac => fracR
   | dfrac => dfracR
   | agree A => agreeR (leibnizO A)
   | excl A => exclR (leibnizO A)
-  | gmap_view K V => gmap_viewR K (interpret V)
-  | saved_pred A => (dfrac_agreeR (oFunctor_apply (A -d> ▶ ∙) (iPropO Σ)))
+  | gmap_view K V => gmap_viewR K (interpret PROP V)
+  | saved_pred A => (dfrac_agreeR (A -d> laterO ( PROP)))
+  end.
+
+Fixpoint interpretF (x : t) : rFunctor :=
+  match x with
+  | prod A B => prodRF (interpretF A) (interpretF B)
+  | gmap K V => gmapRF K (interpretF V)
+  | mono_list A => mono_listRF (leibnizO A)
+  | frac => fracR
+  | dfrac => dfracR
+  | agree A => agreeRF (leibnizO A)
+  | excl A => exclRF (leibnizO A)
+  | gmap_view K V => gmap_viewRF K (interpretF V)
+  | saved_pred A => (dfrac_agreeRF (A -d> ▶ ∙))
   end.
 End defn.
 End cmra_expr.
 
 Section defn.
-Context (Σ : gFunctors).
+Context (PROP : ofe) `{!Cofe PROP}.
 
-Definition any_cmra : Type := discrete_funUR (optionUR ∘ cmra_expr.interpret Σ).
+Definition any_cmra : Type := discrete_funUR (optionUR ∘ cmra_expr.interpret PROP).
 
 Definition cast {A B : cmra} (a : A) (e : A = B) : B :=
   match e in (_ = A) return A with eq_refl => a end.
 
-Definition to_any (A : cmra_expr.t) (a : cmra_expr.interpret Σ A) : any_cmra :=
+Definition to_any (A : cmra_expr.t) (a : cmra_expr.interpret PROP A) : any_cmra :=
   λ (B : cmra_expr.t),
 
     match (excluded_middle_informative
-             (cmra_expr.interpret Σ A = cmra_expr.interpret Σ B)) with
+             (cmra_expr.interpret PROP A = cmra_expr.interpret PROP B)) with
     | right _ => None
     | left eq_proof =>
         Some (cast a eq_proof)
@@ -61,7 +73,7 @@ Proof.
 Qed.
 
 Lemma any_cmra_op {M : cmra} {A B : cmra_expr.t} (a b : M)
-  (eq_a : M = cmra_expr.interpret Σ A) (eq_b : M = cmra_expr.interpret Σ B) :
+  (eq_a : M = cmra_expr.interpret PROP A) (eq_b : M = cmra_expr.interpret PROP B) :
   to_any A (cast a eq_a) ⋅ to_any B (cast b eq_b) = to_any A (cast (a ⋅ b) eq_a).
 Proof.
   rewrite /to_any. simpl.
@@ -79,21 +91,70 @@ Proof.
   simpl. done.
 Qed.
 
-Definition any_cmraR Σ := discrete_funR (optionUR ∘ cmra_expr.interpret Σ).
+Definition any_cmraUR := discrete_funUR (optionUR ∘ (cmra_expr.interpret PROP)).
 
+Definition any_cmraURF := discrete_funURF (λ A, optionURF (cmra_expr.interpretF A)).
+
+Global Instance contr :
+  urFunctorContractive any_cmraURF.
+Proof.
+  apply discrete_funURF_contractive.
+  intro A. apply optionURF_contractive.
+  induction A; simpl in *; tc_solve.
+Qed.
 End defn.
 
+Definition anyΣ : gFunctors :=
+  #[ GFunctor (urFunctor_to_rFunctor any_cmraURF) ].
+
+Class anyG Σ :=
+  {
+    any_inG :: inG Σ (any_cmraUR (iPropO Σ));
+  }.
+
+
+Lemma x A Σ :
+  (rFunctor_apply (cmra_expr.interpretF A) (iPropO Σ)) =
+  (cmra_expr.interpret (iPropO Σ) A).
+Proof.
+  induction A; simpl in *; try done.
+  - unfold rFunctor_apply in *. simpl in *.
+    rewrite IHA1 IHA2 //.
+  - unfold rFunctor_apply in *. simpl in *.
+    rewrite IHA //.
+  - unfold rFunctor_apply in *. simpl in *.
+    rewrite IHA. done.
+Qed.
+
+Global Instance subG_anyΣ Σ :
+  subG (anyΣ) Σ → anyG Σ.
+Proof.
+  intros. constructor.
+  apply subG_inv in H. destruct H.
+  apply subG_inG in s. simpl in *.
+  exact_eq s.
+  unfold any_cmraUR.
+  simpl.
+  assert (
+      (λ c : cmra_expr.t, optionUR ((cmra_expr.interpretF c).(rFunctor_car) (iPropO Σ) (iPropO Σ)))
+        = (optionUR ∘ cmra_expr.interpret (iPropO Σ))).
+  2:{ rewrite H //. }
+  apply FunctionalExtensionality.functional_extensionality_dep_good.
+  intros A. simpl.
+  rewrite -x. done.
+Qed.
+
 Section own.
-Context `{!inG Σ (any_cmraR Σ)}.
+Context `{!anyG Σ}.
 
 Class SimpleCmra A :=
   {
     Aexp : cmra_expr.t;
-    eq_proof : A = cmra_expr.interpret Σ Aexp;
+    eq_proof : A = cmra_expr.interpret (iProp Σ) Aexp;
   }.
 
 Definition own_any {A : cmra} γ (a : A) : iProp Σ :=
-  ∃ (_ : SimpleCmra A), own γ (to_any Σ Aexp (cast a eq_proof) : any_cmra Σ).
+  ∃ (_ : SimpleCmra A), own γ (to_any (iProp Σ) Aexp (cast a eq_proof) : any_cmra (iProp Σ)).
 
 Lemma own_any_update γ {A : cmra} (a a' : A) :
   a ~~> a' →
@@ -134,7 +195,7 @@ Lemma own_any_alloc `{!SimpleCmra A} (a : A) :
   ⊢ |==> ∃ γ, own_any γ a.
 Proof.
   intros Hvalid.
-  iMod (own_alloc (to_any Σ Aexp (eq_rect A id a _ eq_proof) : any_cmra Σ)) as (γ) "H".
+  iMod (own_alloc (to_any PROP Aexp (eq_rect A id a _ eq_proof) : any_cmra PROP)) as (γ) "H".
   { intros ?. rewrite /= /to_any.
     destruct excluded_middle_informative as [Heq|Hbad]; last done.
     destruct Heq. simpl in *. destruct SimpleCmra0.
@@ -166,23 +227,22 @@ Instance own_proper :
 Proof. intros. apply (ne_proper _). Qed.
 
 
-Global Instance any_cmra_is_op (x y : any_cmraR Σ) : IsOp (x ⋅ y) x y.
+Global Instance any_cmra_is_op (x y : any_cmraR PROP) : IsOp (x ⋅ y) x y.
 Proof. Admitted.
 
 Lemma interpret_inj a a' :
-  cmra_expr.interpret Σ a = cmra_expr.interpret Σ a' →
+  cmra_expr.interpret PROP a = cmra_expr.interpret PROP a' →
   a = a'.
 Proof.
 Admitted.
 
 Section saved_pred.
 Context {A : Type}.
-Definition saved_pred_own (γ : gname) (dq : dfrac) (Φ : A → iProp Σ) :=
-  own_any γ (to_dfrac_agree (DfracOwn 1)
-               (Next ∘ Φ : oFunctor_apply (A -d> ▶ ∙) (iPropO Σ))).
+Definition saved_pred_own (γ : gname) (dq : dfrac) (Φ : A → iProp PROP) :=
+  own_any γ (to_dfrac_agree dq (Next ∘ Φ : oFunctor_apply (A -d> ▶ ∙) (iPropO PROP))).
 
-Global Instance saved_pred_own_contractive `{!savedPredG Σ A} γ dq :
-  Contractive (saved_pred_own γ dq : (A -d> iPropO Σ) → iProp Σ).
+Global Instance saved_pred_own_contractive `{!savedPredG PROP A} γ dq :
+  Contractive (saved_pred_own γ dq : (A -d> iPropO PROP) → iProp PROP).
 Proof.
 Abort.
 
@@ -191,7 +251,7 @@ Global Instance saved_pred_discarded_persistent γ Φ :
 Proof.
 Abort.
 
-Lemma saved_pred_alloc (Φ : A → iProp Σ) dq :
+Lemma saved_pred_alloc (Φ : A → iProp PROP) dq :
   ✓ dq →
   ⊢ |==> ∃ γ, saved_pred_own γ dq Φ.
 Proof.
@@ -206,8 +266,7 @@ Lemma saved_pred_valid_2 γ dq1 dq2 Φ Ψ x :
   saved_pred_own γ dq1 Φ -∗ saved_pred_own γ dq2 Ψ -∗ ⌜✓ (dq1 ⋅ dq2)⌝ ∗ ▷ (Φ x ≡ Ψ x).
 Proof.
   iIntros "HΦ HΨ".
-  iCombine "HΦ HΨ" gives "($ & Hag)".
-  iApply later_equivI. by iApply (discrete_fun_equivI with "Hag").
+  iCombine "HΦ HΨ" as "HP".
 Qed.
 
 Lemma saved_pred_agree γ dq1 dq2 Φ Ψ x :
@@ -217,9 +276,9 @@ Proof.
   iPoseProof (saved_pred_valid_2 with "HΦ HΨ") as "[_ $]".
 Qed.
 
-Lemma own_saved_prop (P : iProp Σ) :
+Lemma own_saved_prop (P : iProp PROP) :
   ⊢ |==> ∃ γ, own_any γ (to_dfrac_agree (DfracOwn 1)
-                        (Next ∘ (λ _, P): oFunctor_apply (unit -d> ▶ ∙) (iPropO Σ))).
+                        (Next ∘ (λ _, P): oFunctor_apply (unit -d> ▶ ∙) (iPropO PROP))).
 Proof.
   iApply @own_any_alloc.
   { by eexists (cmra_expr.saved_pred unit). }
