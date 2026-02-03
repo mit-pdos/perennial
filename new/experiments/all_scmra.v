@@ -262,6 +262,10 @@ Qed.
 End core.
 
 Section derived.
+
+Global Instance owna_proper {A} γ :
+  Proper ((≡) ==> (⊣⊢)) (@owna A γ) := ne_proper _.
+
 Global Instance own_any_combine {A : cmra} γ (a b : A) :
   CombineSepAs (owna γ a) (owna γ b) (owna γ (a ⋅ b)).
 Proof.
@@ -312,25 +316,14 @@ Lemma owna_update_2 {A : cmra} γ (a1 a2 a' : A) :
 Proof. intros. apply entails_wand, wand_intro_r. rewrite -owna_op. by iApply owna_update. Qed.
 
 End derived.
-
-Instance mlist_simple_cmra (A : Type) : SimpleCmra (mono_listR (leibnizO A)).
-Proof. by eexists (cmra_expr.mono_list A). Qed.
-
-Lemma own_any_mono_list (l : list nat) :
-  ⊢ |==> ∃ γ, owna γ (●ML l).
-Proof.
-  iApply owna_alloc. apply mono_list_auth_valid.
-Qed.
-
-Instance own_proper :
-  ∀ {A : cmra} (γ : gname), Proper (equiv ==> equiv) (@owna A γ).
-Proof. intros. apply (ne_proper _). Qed.
+End own.
 
 Section saved_pred.
+  Context `{!allG Σ}.
   Context {A : Type}.
 
   Local Instance s :
-    SimpleCmra (dfrac_agreeR (oFunctor_apply (A -d> ▶ ∙) (iPropO Σ))).
+    SimpleCmra (Σ:=Σ) (dfrac_agreeR (oFunctor_apply (A -d> ▶ ∙) (iPropO Σ))).
   Proof.
     refine {| Aexp := cmra_expr.saved_pred A; eq_proof := eq_refl |}.
   Qed.
