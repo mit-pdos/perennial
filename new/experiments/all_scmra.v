@@ -103,11 +103,11 @@ end.
 
 Class Is (A : cmra) (e : syntax.cmra) :=
   { eq_cmra : A = interpret e; }.
-Global Hint Mode Is + - : typeclass_instances.
+Global Hint Mode Is ! - : typeclass_instances.
 
 Class IsU (A : ucmra) (e : syntax.ucmra) :=
   { eq_ucmra : A = interpret_u e; }.
-Global Hint Mode IsU + - : typeclass_instances.
+Global Hint Mode IsU ! - : typeclass_instances.
 
 Local Ltac s :=
   constructor; simpl;
@@ -201,8 +201,10 @@ Definition owna_def `{!Is (iProp Σ) A e} γ (a : A) : iProp Σ :=
 Program Definition owna := sealed @owna_def.
 Final Obligation. econstructor. done. Qed.
 Definition owna_unseal : owna = _ := seal_eq _.
-
 Global Arguments owna {A _ _} (γ a).
+
+Context {A e} {HC : Is (iProp Σ) A e}.
+Implicit Types (a : A).
 
 (** Core facts that requires unfolding [owna] *)
 Section core.
@@ -220,15 +222,13 @@ Section core.
   [ ] own_forall
  *)
 
-Section with_A.
-Context {A e} {HC : cmra_expr.Is (PROP:=iProp Σ) A e}.
-
 Ltac start :=
   rewrite owna_unseal /owna_def; destruct HC; clear HC; subst; simpl in *.
+
 Global Instance owna_ne γ : NonExpansive (owna (A:=A) γ).
 Proof. start. solve_proper. Qed.
 
-Lemma owna_op  γ (a1 a2 : A) :
+Lemma owna_op γ (a1 a2 : A) :
   owna γ (a1 ⋅ a2) ⊣⊢ owna γ a1 ∗ owna γ a2.
 Proof.
   start. rewrite -own_op discrete_fun_singleton_op Some_op //.
@@ -267,20 +267,18 @@ Proof.
   intros ?. rewrite discrete_fun_singleton_valid Some_valid. apply Hvalid.
 Qed.
 
-End with_A.
-
-Lemma owna_unit {A : ucmra} e {HC : cmra_expr.Is A e} γ :
-  ⊢ |==> owna γ (ε : A).
+Lemma owna_unit {B : ucmra} Be {HB : Is (iProp Σ) B Be} γ :
+  ⊢ |==> owna γ (ε : B).
 Proof.
-  destruct HC; subst; simpl in *. rewrite owna_unseal.
+  destruct HB; subst; simpl in *. rewrite owna_unseal.
   simpl in *. rewrite /owna_def.
   iMod own_unit as "H". iApply (own_update with "H"). simpl.
   apply discrete_fun_singleton_update_empty.
   intros n []; simpl in *.
   - intros H. rewrite left_id in H. destruct c.
     + rewrite -Some_op Some_validN.
-      replace (c) with (cmra_transport eq_proof (cmra_transport (eq_sym eq_proof) c)).
-      2:{ clear. destruct eq_proof. done. }
+      replace (c) with (cmra_transport eq_cmra0 (cmra_transport (eq_sym eq_cmra0) c)).
+      2:{ clear. destruct eq_cmra0. done. }
       rewrite -cmra_transport_op. apply cmra_transport_validN.
       rewrite Some_validN in H. rewrite -cmra_transport_validN in H.
       rewrite left_id //.
@@ -294,12 +292,8 @@ End core.
 Section derived.
 
 Global Instance owna_proper γ :
-  Proper ((≡) ==> (⊣⊢)) (@owna A γ) := ne_proper _.
+  Proper ((≡) ==> (⊣⊢)) (@owna A _ _ γ) := ne_proper _.
 
-Section needs_simple.
-Context `{!SimpleCmra A}.
-Implicit Type (a : A).
-Local Set Default Proof Using "All".
 Lemma owna_alloc_cofinite_dep (f : gname → A) (G : gset gname) :
   (∀ γ, γ ∉ G → ✓ (f γ)) → ⊢ |==> ∃ γ, ⌜γ ∉ G⌝ ∗ owna γ (f γ).
 Proof.
@@ -325,48 +319,98 @@ Lemma owna_alloc_cofinite a (G : gset gname) :
 Proof. intros Ha. eapply (owna_alloc_cofinite_dep (λ _, a)); eauto. Qed.
 Lemma owna_alloc a : ✓ a → ⊢ |==> ∃ γ, owna γ a.
 Proof. intros Ha. eapply (owna_alloc_dep (λ _, a)); eauto. Qed.
-End needs_simple.
 
-Lemma owna_update_2 {A : cmra} γ (a1 a2 a' : A) :
+Lemma owna_update γ a a' : a ~~> a' → owna γ a ⊢ |==> owna γ a'.
+Proof.
+  intros. iIntros "?".
+  iMod (owna_updateP (a' =.) with "[$]") as (a'') "[-> $]".
+  { by apply cmra_update_updateP. }
+  done.
+Qed.
+Lemma owna_update_2 γ a1 a2 a' :
   a1 ⋅ a2 ~~> a' → owna γ a1 -∗ owna γ a2 ==∗ owna γ a'.
 Proof. intros. apply entails_wand, wand_intro_r. rewrite -owna_op. by iApply owna_update. Qed.
+Lemma owna_update_3 γ a1 a2 a3 a' :
+  a1 ⋅ a2 ⋅ a3 ~~> a' → owna γ a1 -∗ owna γ a2 -∗ owna γ a3 ==∗ owna γ a'.
+Proof. intros. apply entails_wand. do 2 apply wand_intro_r. rewrite -!owna_op. by iApply owna_update. Qed.
 
+Section big_op_instances.
+  Context {U : ucmra} Ue {HU : Is (iProp Σ) U Ue}.
+
+  Global Instance own_cmra_sep_homomorphism γ :
+    WeakMonoidHomomorphism op uPred_sep (≡) (owna (A:=U) γ).
+  Proof. split; try apply _. Admitted.
+
+  Lemma big_opL_owna {B} γ (f : nat → B → U) (l : list B) :
+    l ≠ [] →
+    owna γ ([^op list] k↦x ∈ l, f k x) ⊣⊢ [∗ list] k↦x ∈ l, owna γ (f k x).
+  Proof. apply (big_opL_commute1 _). Qed.
+  Lemma big_opM_owna `{Countable K} {B} γ (g : K → B → U) (m : gmap K B) :
+    m ≠ ∅ →
+    owna γ ([^op map] k↦x ∈ m, g k x) ⊣⊢ [∗ map] k↦x ∈ m, owna γ (g k x).
+  Proof. apply (big_opM_commute1 _). Qed.
+  Lemma big_opS_owna `{Countable B} γ (g : B → U) (X : gset B) :
+    X ≠ ∅ →
+    owna γ ([^op set] x ∈ X, g x) ⊣⊢ [∗ set] x ∈ X, owna γ (g x).
+  Proof. apply (big_opS_commute1 _). Qed.
+  Lemma big_opMS_owna `{Countable B} γ (g : B → U) (X : gmultiset B) :
+    X ≠ ∅ →
+    owna γ ([^op mset] x ∈ X, g x) ⊣⊢ [∗ mset] x ∈ X, owna γ (g x).
+  Proof. apply (big_opMS_commute1 _). Qed.
+
+  Global Instance owna_cmra_sep_entails_homomorphism γ :
+    MonoidHomomorphism op uPred_sep (⊢) (owna (A:=U) γ).
+  Proof.
+  Admitted.
+
+  Lemma big_opL_owna_1 {B} γ (f : nat → B → U) (l : list B) :
+    owna γ ([^op list] k↦x ∈ l, f k x) ⊢ [∗ list] k↦x ∈ l, owna γ (f k x).
+  Proof. apply (big_opL_commute _). Qed.
+  Lemma big_opM_owna_1 `{Countable K} {B} γ (g : K → B → U) (m : gmap K B) :
+    owna γ ([^op map] k↦x ∈ m, g k x) ⊢ [∗ map] k↦x ∈ m, owna γ (g k x).
+  Proof. apply (big_opM_commute _). Qed.
+  Lemma big_opS_owna_1 `{Countable B} γ (g : B → U) (X : gset B) :
+    owna γ ([^op set] x ∈ X, g x) ⊢ [∗ set] x ∈ X, owna γ (g x).
+  Proof. apply (big_opS_commute _). Qed.
+  Lemma big_opMS_owna_1 `{Countable B} γ (g : B → U) (X : gmultiset B) :
+    owna γ ([^op mset] x ∈ X, g x) ⊢ [∗ mset] x ∈ X, owna γ (g x).
+  Proof. apply (big_opMS_commute _). Qed.
+End big_op_instances.
 
 Section proofmode_instances.
-  Context {A : cmra}.
-  Implicit Types a b : A.
+Implicit Types b : A.
 
-  Global Instance into_sep_owna γ a b1 b2 :
-    IsOp a b1 b2 → IntoSep (owna γ a) (owna γ b1) (owna γ b2).
-  Proof. intros. by rewrite /IntoSep (is_op a) owna_op. Qed.
-  Global Instance into_and_owna p γ a b1 b2 :
-    IsOp a b1 b2 → IntoAnd p (owna γ a) (owna γ b1) (owna γ b2).
-  Proof. intros. by rewrite /IntoAnd (is_op a) owna_op sep_and. Qed.
+Global Instance into_sep_owna γ a b1 b2 :
+  IsOp a b1 b2 → IntoSep (owna γ a) (owna γ b1) (owna γ b2).
+Proof. intros. by rewrite /IntoSep (is_op a) owna_op. Qed.
+Global Instance into_and_owna p γ a b1 b2 :
+  IsOp a b1 b2 → IntoAnd p (owna γ a) (owna γ b1) (owna γ b2).
+Proof. intros. by rewrite /IntoAnd (is_op a) owna_op sep_and. Qed.
 
-  Global Instance from_sep_owna γ a b1 b2 :
-    IsOp a b1 b2 → FromSep (owna γ a) (owna γ b1) (owna γ b2).
-  Proof. intros. by rewrite /FromSep -owna_op -is_op. Qed.
-  (* TODO: Improve this instance with generic owna simplification machinery
+Global Instance from_sep_owna γ a b1 b2 :
+  IsOp a b1 b2 → FromSep (owna γ a) (owna γ b1) (owna γ b2).
+Proof. intros. by rewrite /FromSep -owna_op -is_op. Qed.
+(* TODO: Improve this instance with generic owna simplification machinery
   once https://gitlab.mpi-sws.org/iris/iris/-/issues/460 is fixed *)
-  (* Cost > 50 to give priority to [combine_sep_as_fractional]. *)
-  Global Instance combine_sep_as_owna γ a b1 b2 :
-    IsOp a b1 b2 → CombineSepAs (owna γ b1) (owna γ b2) (owna γ a) | 60.
-  Proof. intros. by rewrite /CombineSepAs -owna_op -is_op. Qed.
-  (* TODO: Improve this instance with generic owna validity simplification
+(* Cost > 50 to give priority to [combine_sep_as_fractional]. *)
+Global Instance combine_sep_as_owna γ a b1 b2 :
+  IsOp a b1 b2 → CombineSepAs (owna γ b1) (owna γ b2) (owna γ a) | 60.
+Proof. intros. by rewrite /CombineSepAs -owna_op -is_op. Qed.
+(* TODO: Improve this instance with generic owna validity simplification
   machinery once https://gitlab.mpi-sws.org/iris/iris/-/issues/460 is fixed *)
-  Global Instance combine_sep_gives_owna γ b1 b2 :
-    CombineSepGives (owna γ b1) (owna γ b2) (✓ (b1 ⋅ b2)).
-  Proof.
-    intros. rewrite /CombineSepGives -owna_op owna_valid.
-    by apply: bi.persistently_intro.
-  Qed.
-  Global Instance from_and_owna_persistent γ a b1 b2 :
-    IsOp a b1 b2 → TCOr (CoreId b1) (CoreId b2) →
-    FromAnd (owna γ a) (owna γ b1) (owna γ b2).
-  Proof.
-    intros ? Hb. rewrite /FromAnd (is_op a) owna_op.
-    destruct Hb; by rewrite persistent_and_sep.
-  Qed.
+Global Instance combine_sep_gives_owna γ b1 b2 :
+  CombineSepGives (owna γ b1) (owna γ b2) (✓ (b1 ⋅ b2)).
+Proof.
+  intros. rewrite /CombineSepGives -owna_op owna_valid.
+  by apply: bi.persistently_intro.
+Qed.
+Global Instance from_and_owna_persistent γ a b1 b2 :
+  IsOp a b1 b2 → TCOr (CoreId b1) (CoreId b2) →
+  FromAnd (owna γ a) (owna γ b1) (owna γ b2).
+Proof.
+  intros ? Hb. rewrite /FromAnd (is_op a) owna_op.
+  destruct Hb; by rewrite persistent_and_sep.
+Qed.
 End proofmode_instances.
 
 End derived.
@@ -377,10 +421,9 @@ Section saved_pred.
   Context {A : Type}.
 
   Local Instance s :
-    SimpleCmra (Σ:=Σ) (dfrac_agreeR (oFunctor_apply (A -d> ▶ ∙) (iPropO Σ))).
-  Proof.
-    refine {| Aexp := cmra_expr.saved_pred A; eq_proof := eq_refl |}.
-  Qed.
+    Is (iProp Σ) (dfrac_agreeR (oFunctor_apply (A -d> ▶ ∙) (iPropO Σ)))
+      (syntax.saved_predR A).
+  Proof. done. Qed.
 
   Definition saved_pred_own (γ : gname) (dq : dfrac) (Φ : A → iProp Σ) :=
     owna γ (to_dfrac_agree dq (Next ∘ Φ : oFunctor_apply (A -d> ▶ ∙) (iPropO Σ))).
@@ -443,17 +486,16 @@ Section saved_pred.
     iApply owna_update. apply dfrac_agree_persist.
   Qed.
 
-  (* FIXME: own_updateP *)
-  (* (** Recover fractional ownership for read-only element. *) *)
-  (* Lemma saved_pred_unpersist γ Φ: *)
-  (*   saved_pred_own γ DfracDiscarded Φ ==∗ ∃ q, saved_pred_own γ (DfracOwn q) Φ. *)
-  (* Proof. *)
-  (*   iIntros "H". *)
-  (*   iMod (own_updateP with "H") as "H"; *)
-  (*     first by apply dfrac_agree_unpersist. *)
-  (*   iDestruct "H" as (? (q&->)) "H". *)
-  (*   iIntros "!>". iExists q. done. *)
-  (* Qed. *)
+  (** Recover fractional ownership for read-only element. *)
+  Lemma saved_pred_unpersist γ Φ:
+    saved_pred_own γ DfracDiscarded Φ ==∗ ∃ q, saved_pred_own γ (DfracOwn q) Φ.
+  Proof.
+    iIntros "H".
+    iMod (owna_updateP with "H") as "H";
+      first by apply dfrac_agree_unpersist.
+    iDestruct "H" as (? (q&->)) "H".
+    iIntros "!>". iExists q. done.
+  Qed.
 
   (** Updates *)
   Lemma saved_pred_update Ψ γ Φ :
@@ -477,20 +519,14 @@ Section saved_pred.
   Proof. iApply saved_pred_update_2. apply Qp.half_half. Qed.
 End saved_pred.
 
-(* Print Assumptions own_any_mono_list.
-  constructive_indefinite_description : ∀ (A : Type) (P : A → Prop), (∃ x : A, P x) → {x : A | P x}
-  classic : ∀ P : Prop, P ∨ ¬ P
-*)
-
 Section ghost_map.
 
 Section instance.
 Context `{!allG Σ}.
 Context `{Countable K} {V : Type}.
-Local Instance simple : SimpleCmra (Σ:=Σ) (gmap_viewR K (agreeR $ leibnizO V)).
-Proof.
-  refine {| Aexp := cmra_expr.gmap_view K (cmra_expr.agree V); eq_proof := eq_refl |}.
-Qed.
+Local Instance simple : Is (iProp Σ) (gmap_viewR K (agreeR $ leibnizO V))
+                          (syntax.gmap_viewR K (syntax.agreeR V)).
+Proof. done. Qed.
 End instance.
 
 Existing Instance simple.
@@ -550,9 +586,9 @@ Section lemmas.
       gmap_view_frag (V:=agreeR (leibnizO V)) k dq (to_agree v)).
   Proof.
     unseal. destruct (decide (m = ∅)) as [->|Hne].
-    - rewrite !big_opM_empty. iIntros "_". (* iApply owna_unit. *) admit. (* FIXME: primitive *)
-    - (* rewrite big_opM_own //. iIntros "?". done. *) admit. (* FIXME: lemma *)
-  Admitted.
+    - rewrite !big_opM_empty. iIntros "_". iApply owna_unit.
+    - rewrite big_opM_owna //. iIntros "?". done.
+  Qed.
 
   Lemma ghost_map_elem_valid k γ dq v : k ↪[γ]{dq} v -∗ ⌜✓ dq⌝.
   Proof.
@@ -619,12 +655,11 @@ Section lemmas.
     k ↪[γ]□ v ==∗ ∃ q, k ↪[γ]{# q} v.
   Proof.
     unseal. iIntros "H".
-  (*   iMod (owna_updateP with "H") as "H"; *)
-  (*     first by apply gmap_view_frag_unpersist. *)
-  (*   iDestruct "H" as (? (q&->)) "H". *)
-  (*   iIntros "!>". iExists q. done. *)
-  (* Qed. *)
-  Admitted. (* FIXME: *)
+    iMod (owna_updateP with "H") as "H";
+      first by apply gmap_view_frag_unpersist.
+    iDestruct "H" as (? (q&->)) "H".
+    iIntros "!>". iExists q. done.
+  Qed.
 
   (** * Lemmas about [ghost_map_auth] *)
   Lemma ghost_map_alloc_strong P m :
@@ -638,7 +673,7 @@ Section lemmas.
     { eapply gmap_view_auth_valid. }
     iExists γ. iSplitR; first done.
     rewrite -big_opM_owna_1 -owna_op. iApply (owna_update with "Hauth").
-    etrans; first apply (gmap_view_alloc_big _ (to_agree <$> m) (DfracOwna 1)).
+    etrans; first apply (gmap_view_alloc_big _ (to_agree <$> m) (DfracOwn 1)).
     - apply map_disjoint_empty_r.
     - done.
     - by apply map_Forall_fmap.
@@ -773,7 +808,7 @@ Section lemmas.
     ghost_map_auth γ 1 (m' ∪ m) ∗ ([∗ map] k ↦ v ∈ m', k ↪[γ] v).
   Proof.
     unseal. intros ?. rewrite -big_opM_owna_1 -owna_op. iApply owna_update.
-    etrans; first apply: (gmap_view_alloc_big _ (to_agree <$> m') (DfracOwna 1)).
+    etrans; first apply: (gmap_view_alloc_big _ (to_agree <$> m') (DfracOwn 1)).
     - apply map_disjoint_fmap. done.
     - done.
     - by apply map_Forall_fmap.
@@ -814,7 +849,7 @@ Section lemmas.
     unseal. rewrite -big_opM_owna_1 -owna_op.
     iApply (owna_update_2 with "Hauth Hfrag").
     rewrite map_fmap_union.
-    rewrite -!(big_opM_fmap to_agree (λ k, gmap_view_frag k (DfracOwna 1))).
+    rewrite -!(big_opM_fmap to_agree (λ k, gmap_view_frag k (DfracOwn 1))).
     apply: gmap_view_replace_big.
     - rewrite !dom_fmap_L. done.
     - by apply map_Forall_fmap.
