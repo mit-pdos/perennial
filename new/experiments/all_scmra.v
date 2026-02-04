@@ -1,12 +1,105 @@
 From New.proof Require Import proof_prelude.
-From iris.algebra.lib Require Import mono_list mono_nat dfrac_agree gmap_view.
-From iris.algebra Require Import functions.
+From iris.algebra Require Import
+  gset functions reservation_map mra dyn_reservation_map view gmultiset csum
+  ufrac.
+
+(* mono_list mono_nat dfrac_agree gmap_view *)
 From iris.bi Require Import fractional.
 From Coq Require Import Logic.ClassicalEpsilon.
 
-Module cmra_expr.
-Section defn.
+Module syntax.
+Inductive ucmra :=
+| gsetUR (K : Type) `{Countable K}
+| gset_disjUR (K : Type) `{Countable K}
+| natUR
+| max_natUR
+| ZUR
+| reservation_mapUR (A : cmra)
+| mraUR {A : Type} (R : relation A)
+| gmapUR (K : Type) `{Countable K} (V : cmra)
+| dyn_reservation_mapUR (A : cmra)
+| viewUR (A : ofe)
+| gmultisetUR (K : Type) `{Countable K}
+| coPsetUR
+| coPset_disjUR
+| unitUR
+| prodUR (A B : ucmra)
+| optionUR (A : cmra)
 
+with cmra :=
+| reservation_mapR (A : cmra)
+| dyn_reservation_mapR (A : cmra)
+| agreeR (A : ofe)
+| mraR {A : Type} (R : relation A)
+| gmapR (K : Type) `{Countable K} (V : cmra)
+| viewR (A : ofe) (B : ucmra) (rel : view_rel A B)
+| unitR
+| Empty_setR
+| prodR (A B : cmra)
+| optionR (A : cmra)
+| csumR (A B : cmra)
+| exclR (A : ofe)
+(* | discreteR (A : Type) *)
+| natR
+| max_natR
+| min_natR
+| positiveR
+| ZR
+| max_ZR
+| coPsetR
+| coPset_disjR
+| gmultisetR
+| fracR
+| ufracR
+| gsetR
+| gset_disjR
+| dfracR
+.
+End syntax.
+
+Section denote.
+Context (PROP : ofe) `{!Cofe PROP} .
+Fixpoint interpret (x : syntax.cmra) : cmra :=
+  match x with
+  | syntax.reservation_mapR A => reservation_mapR (interpret A)
+  | syntax.dyn_reservation_mapR A => dyn_reservation_mapR (interpret A)
+  | syntax.agreeR A  => agreeR A
+  | syntax.mraR R => mraR R
+  | syntax.gmapR K V => gmapR K (interpret V)
+  | syntax.viewR A => viewR (interpret A)
+  | syntax.unitR => unitR
+  | syntax.Empty_setR => Empty_setR
+  | syntax.prodR A B => prodR A B
+  | syntax.optionR A => optionR A
+  | syntax.csumR A B => csumR A B
+  | syntax.exclR A => exclR A
+
+  | syntax.natR => natR
+  | syntax.max_natR => max_natR
+  | syntax.min_natR => min_natR
+  | syntax.positiveR => positiveR
+  | syntax.ZR => ZR
+  | syntax.max_ZR => max_ZR
+  | syntax.coPsetR => coPsetR
+  | syntax.coPset_disjR => coPset_disjR
+  | syntax.gmultisetR => gmultisetR
+  | syntax.fracR => fracR
+  | syntax.ufracR => ufracR
+  | syntax.gsetR => gsetR
+  | syntax.gset_disjR => gset_disjR
+  | syntax.dfracR => dfracR
+
+  | _ => dfracR
+  end.
+
+  | syntax.prodR A B => prodR (interpret A) (interpret B)
+  | syntax.reservation_mapR A =>
+  end.
+
+
+End ucmra_expr.
+
+Module cmra_expr.
 Inductive t :=
 | prod (A B : t)
 | gmap (K : Type) `{Countable K} (V : t)
@@ -28,7 +121,7 @@ Fixpoint interpret (PROP : ofe) `{!Cofe PROP} (x : t) : cmra :=
   | agree A => agreeR (leibnizO A)
   | excl A => exclR (leibnizO A)
   | gmap_view K V => gmap_viewR K (interpret PROP V)
-  | saved_pred A => (dfrac_agreeR (A -d> laterO ( PROP)))
+  | saved_pred A => (dfrac_agreeR (A -d> laterO PROP))
   end.
 
 Fixpoint interpretF (x : t) : rFunctor :=
@@ -44,9 +137,31 @@ Fixpoint interpretF (x : t) : rFunctor :=
   | saved_pred A => (dfrac_agreeRF (A -d> ▶ ∙))
   end.
 
-Class Is `{!Cofe PROP} (A : cmra) (e : t) :=
+Class Is PROP `{!Cofe PROP} (A : cmra) (e : t) :=
   { eq_proof : A = interpret PROP e; }.
 Global Hint Mode Is + - + - : typeclass_instances.
+
+Context `{!Cofe PROP}.
+
+Local Ltac s :=
+  constructor; simpl;
+  repeat (lazymatch goal with
+          | H : Is _ _ _ |- _ => apply @eq_proof in H; rewrite -H; clear H
+          end);
+  try done.
+
+#[global] Instance is_prodR `{!Is PROP A Ae} `{!Is PROP B Be} :
+  Is PROP (prodR A B) (prod Ae Be).
+Proof. s. Qed.
+#[global] Instance is_prodUR {A B : ucmra} `{!Is PROP A Ae} `{!Is PROP B Be} :
+  Is PROP (prodUR A B) (prod Ae Be).
+Proof. s. Qed.
+
+#[global] Instance is_prodR `{!Is PROP A Ae} `{!Is PROP B Be} :
+  Is PROP (prodR A B) (prod Ae Be).
+Proof.
+  constructor. apply @eq_proof in Is0, Is1. subst. done.
+Qed.
 
 End defn.
 End cmra_expr.
@@ -83,6 +198,7 @@ Qed.
 Global Instance subG_allΣ Σ :
   subG (allΣ) Σ → allG Σ.
 Proof.
+  solve_subG.
   intros. constructor.
   apply subG_inv in H. destruct H.
   apply subG_inG in s. simpl in *.
