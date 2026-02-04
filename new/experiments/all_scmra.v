@@ -134,7 +134,6 @@ Qed.
 (*   (∀ a, f a ~~>: P a) → (∀ f', (∀ a, P a (f' a)) → Q f') → f ~~>: Q. *)
 (* Proof. *)
 (*   repeat setoid_rewrite cmra_total_updateP. intros Hf HP n h Hh. *)
-(*   Search "choice". *)
 (*   destruct (finite.finite_choice *)
 (*               (λ a y, P a y ∧ ✓{n} (y ⋅ (h a)))) as [f' Hf']; first naive_solver. *)
 (*   naive_solver. *)
@@ -178,6 +177,54 @@ Proof.
     destruct e0. simpl in *.
     apply Hupd in Hvalid2.
 Abort.
+
+Lemma to_all_updateP_false {PROP : ofe} `{!Cofe PROP} :
+  ∀ (dfrac_exprs : positive → cmra_expr.t) (inv_dfrac_exprs : cmra_expr.t → positive),
+  (∀ n, cmra_expr.interpret PROP (dfrac_exprs n) = dfracR) →
+  (∀ n, inv_dfrac_exprs (dfrac_exprs n) = n) →
+  (∀ {A : cmra_expr.t} a P,
+     a ~~>: P →
+     to_all PROP A a ~~>:
+       (λ b, ∃ a, P a ∧ b = to_all PROP A a)) → False.
+Proof.
+  intros ?? Hd Hinv. intros to_all_updateP.
+  pose proof dfrac_undiscard_update as Ha.
+  apply (to_all_updateP cmra_expr.dfrac) in Ha.
+  set (F := λ n, ((pos_to_Qp $ n) / (1 + (pos_to_Qp n)))%Qp).
+  set (F' := λ n, (1 / (1 + (pos_to_Qp n)))%Qp).
+  set (c :=
+         λ B,
+           (match (excluded_middle_informative (dfracR = cmra_expr.interpret PROP B)) with
+            | right _ => None
+            | left eq_pf => Some $ cast (DfracOwn (F $ inv_dfrac_exprs B)) eq_pf
+            end)
+      ).
+  specialize (Ha 0 (Some c)).
+  simpl in Ha. opose proof (Ha _).
+  { intros B. rewrite discrete_fun_lookup_op. rewrite /to_all.
+    subst c. simpl. destruct excluded_middle_informative; try done.
+    destruct e. simpl.
+    enough ((pos_to_Qp (inv_dfrac_exprs B) / (1 + pos_to_Qp (inv_dfrac_exprs B))) < 1)%Qp by done.
+    rewrite (Qp.mul_lt_mono_r _ _ (1 + pos_to_Qp (inv_dfrac_exprs B))).
+    rewrite Qp.mul_div_l. rewrite left_id.
+    apply Qp.lt_add_r. }
+  clear to_all_updateP Ha. destruct H as (f & (dq & [[q ->] ->]) & H').
+  assert (∀ q, ∃ n, F' n < q)%Qp as Hlim. {admit. } (* FIXME: lim F' = 0. *)
+  destruct (Hlim q) as (n & Hl).
+  set (Bad:=dfrac_exprs n).
+  specialize (H' Bad) as Hbad.
+  subst c. rewrite /to_all in Hbad.
+  rewrite /= discrete_fun_lookup_op in Hbad.
+  destruct excluded_middle_informative.
+  2:{ subst Bad. rewrite Hd in n0. done. }
+  rewrite -Some_op Some_validN in Hbad.
+  destruct e. simpl in Hbad.
+  assert (q + (F (inv_dfrac_exprs Bad)) ≤ 1)%Qp by done.
+  subst Bad. rewrite Hinv in H.
+  apply Qp.lt_nge in Hl. apply Hl. clear Hl.
+  rewrite (Qp.add_le_mono_r _ _ (F n)).
+  subst F' F. rewrite -Qp.div_add_distr Qp.div_diag //.
+Admitted.
 
 Section own.
 Context `{!allG Σ}.
@@ -293,7 +340,6 @@ Proof.
     iExists _. subst. iFrame. done.
   }
   intros x.
-  Search discrete_fun cmra_updateP.
   intros x.
 Qed.
 
