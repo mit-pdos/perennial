@@ -42,6 +42,41 @@ Fixpoint interpretF (x : t) : rFunctor :=
   | gmap_view K V => gmap_viewRF K (interpretF V)
   | saved_pred A => (dfrac_agreeRF (A -d> ▶ ∙))
   end.
+
+
+(* FIXME: can avoid this problem by requiring owna to depend on cmra_expr.t. Still no inGs.
+   Libraries like `ghost_map` would have no assumptions for `ghost_map_elem`
+   etc. When using `owna`, it's just important to make sure the canonical
+   `SimpleCmra` instance is being used.
+ *)
+
+Lemma interpret_inj `{!Cofe PROP} x1 x2 :
+  (interpret PROP x1) = (interpret PROP x2) → x1 = x2.
+Proof.
+  revert x2. induction x1; intros x2 Heq; destruct x2; try done.
+  {
+    simpl in *.
+    destruct (excluded_middle_informative (x1_1 = x2_1)).
+    {
+      subst. admit.
+    }
+    {
+      exfalso. apply n.
+    }
+
+    assert ((interpret PROP x1_1) * (interpret PROP x1_2) =
+            (interpret PROP x2_1) * (interpret PROP x2_2))%type.
+    { admit. }
+    Search (prod _ _ = prod _ _).
+    apply (f_equal cmra_car) in Heq.
+    assert (
+        (interpret PROP x1_1) * (interpret PROP x1_2)
+      )
+    simpl in *.
+    simpl in *.
+    rewrite IHx1_1.
+  }
+Qed.
 End defn.
 End cmra_expr.
 
