@@ -93,9 +93,6 @@ Proof.
   intros. rewrite interpret_eq_interpretF //.
 Qed.
 
-Definition cast {A B : cmra} (a : A) (e : A = B) : B :=
-  match e in (_ = A) return A with eq_refl => a end.
-
 Local Instance cmra_expr_eq_decision : EqDecision cmra_expr.t.
 Proof.
   intros A B. destruct (excluded_middle_informative (A = B)); [left|right]; done.
@@ -110,7 +107,7 @@ Context `{!allG Σ}.
 
 Definition owna_def `{!cmra_expr.Is A e} γ (a : A) : iProp Σ :=
   own γ (discrete_fun_singleton (B:=optionUR ∘ cmra_expr.interpret (iProp Σ)) e
-           (Some (cast a cmra_expr.eq_proof))).
+           (Some (cmra_transport cmra_expr.eq_proof a))).
 
 Program Definition owna := sealed @owna_def.
 Final Obligation. econstructor. done. Qed.
@@ -129,13 +126,13 @@ Section core.
   [*] own_persistent
   [ ] later_own
   [*] own_alloc_strong_dep
-  [ ] own_updateP
-  [ ] own_unit
+  [*] own_updateP
+  [*] own_unit
   [ ] own_forall
  *)
 
+Section with_A.
 Context {A e} {HC : cmra_expr.Is (PROP:=iProp Σ) A e}.
-
 
 Ltac start :=
   rewrite owna_unseal /owna_def; destruct HC; clear HC; subst; simpl in *.
@@ -181,11 +178,33 @@ Proof.
   intros ?. rewrite discrete_fun_singleton_valid Some_valid. apply Hvalid.
 Qed.
 
+End with_A.
+
+Lemma owna_unit {A : ucmra} e {HC : cmra_expr.Is A e} γ :
+  ⊢ |==> owna γ (ε : A).
+Proof.
+  destruct HC; subst; simpl in *. rewrite owna_unseal.
+  simpl in *. rewrite /owna_def.
+  iMod own_unit as "H". iApply (own_update with "H"). simpl.
+  apply discrete_fun_singleton_update_empty.
+  intros n []; simpl in *.
+  - intros H. rewrite left_id in H. destruct c.
+    + rewrite -Some_op Some_validN.
+      replace (c) with (cmra_transport eq_proof (cmra_transport (eq_sym eq_proof) c)).
+      2:{ clear. destruct eq_proof. done. }
+      rewrite -cmra_transport_op. apply cmra_transport_validN.
+      rewrite Some_validN in H. rewrite -cmra_transport_validN in H.
+      rewrite left_id //.
+    + rewrite right_id. apply cmra_transport_validN, ucmra_unit_validN.
+  - intros Hbad. apply Some_validN.
+    apply cmra_transport_validN, ucmra_unit_validN.
+Qed.
+
 End core.
 
 Section derived.
 
-Global Instance owna_proper {A} γ :
+Global Instance owna_proper γ :
   Proper ((≡) ==> (⊣⊢)) (@owna A γ) := ne_proper _.
 
 Section needs_simple.
