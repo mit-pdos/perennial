@@ -130,6 +130,55 @@ Proof.
   destruct Heq, Heq'. simpl in *. rewrite cast_self //.
 Qed.
 
+(* Lemma discrete_fun_updateP `{!Cofe PROP} (f : allUR PROP) P Q : *)
+(*   (∀ a, f a ~~>: P a) → (∀ f', (∀ a, P a (f' a)) → Q f') → f ~~>: Q. *)
+(* Proof. *)
+(*   repeat setoid_rewrite cmra_total_updateP. intros Hf HP n h Hh. *)
+(*   Search "choice". *)
+(*   destruct (finite.finite_choice *)
+(*               (λ a y, P a y ∧ ✓{n} (y ⋅ (h a)))) as [f' Hf']; first naive_solver. *)
+(*   naive_solver. *)
+(* Qed. *)
+
+Local Lemma to_all_updateP {PROP : ofe} `{!Cofe PROP} {A : cmra_expr.t} a P :
+  a ~~>: P →
+  to_all PROP A a ~~>:
+    (λ b, ∃ a, P a ∧ b = to_all PROP A a).
+Proof.
+  repeat setoid_rewrite cmra_total_updateP.
+  intros Hupd n c. intros Hvalid.
+  simpl in *.
+
+  pose proof Hvalid as Hvalid2.
+  specialize (Hvalid A).
+  rewrite /to_all in Hvalid.
+  simpl in Hvalid.
+  rewrite discrete_fun_lookup_op in Hvalid.
+  destruct excluded_middle_informative; try done.
+  simpl in *. rewrite cast_self in Hvalid.
+  opose proof (Hupd n (c A) _) as H. { by destruct c. }
+  destruct H as (y & HP & Hy_valid).
+  exists (to_all PROP A y). split; first by eexists.
+  intros B. specialize (Hvalid2 B).
+  rewrite discrete_fun_lookup_op.
+  rewrite discrete_fun_lookup_op in Hvalid2.
+  rewrite /to_all in Hvalid2 |- *.
+  destruct excluded_middle_informative; try done.
+  unshelve eset (x := (_ : option (cmra_expr.interpret PROP A))).
+  { rewrite e0. apply c. }
+  simpl in *.
+  specialize (Hupd n x).
+  simpl in *.
+  destruct (c B) in *; try done.
+  {
+    rewrite -Some_op in Hvalid2.
+    rewrite -Some_op.
+    rewrite Some_validN in Hvalid2.
+    rewrite Some_validN. subst x.
+    destruct e0. simpl in *.
+    apply Hupd in Hvalid2.
+Abort.
+
 Section own.
 Context `{!allG Σ}.
 
@@ -229,16 +278,23 @@ Proof.
   destruct eq_proof0. simpl in *. done.
 Qed.
 
-Lemma owna_update γ {A : cmra} (a a' : A) :
-  a ~~> a' →
-  owna γ a ==∗ owna γ a'.
+Lemma own_updateP {A : cmra} P γ (a : A) : a ~~>: P → owna γ a ⊢ |==> ∃ a', ⌜P a'⌝ ∗ owna γ a'.
 Proof.
   rewrite owna_unseal.
   intros Hupd. iIntros "[% Hown]".
-  iExists _. iApply (own_update with "Hown").
-  apply to_all_update. destruct S.
-  simpl in *. destruct eq_proof0. simpl.
-  apply Hupd.
+  iMod (own_updateP
+          (λ b, ∃ a', P a' ∧
+                      b = (to_all (iProp Σ) S.(Aexp) (cast a' S.(eq_proof)))
+          )
+         with "Hown") as (a') "Hown".
+  2:{
+    iDestruct "Hown" as (?) "Hown". destruct H as (? & H & ?).
+    iExists x. iSplitR; first done.
+    iExists _. subst. iFrame. done.
+  }
+  intros x.
+  Search discrete_fun cmra_updateP.
+  intros x.
 Qed.
 
 Lemma owna_alloc_strong_dep {A} {S : SimpleCmra A} (f : gname → A) (P : gname → Prop) :
@@ -589,11 +645,12 @@ Section lemmas.
     k ↪[γ]□ v ==∗ ∃ q, k ↪[γ]{# q} v.
   Proof.
     unseal. iIntros "H".
-    iMod (owna_updateP with "H") as "H";
-      first by apply gmap_view_frag_unpersist.
-    iDestruct "H" as (? (q&->)) "H".
-    iIntros "!>". iExists q. done.
-  Qed.
+  (*   iMod (owna_updateP with "H") as "H"; *)
+  (*     first by apply gmap_view_frag_unpersist. *)
+  (*   iDestruct "H" as (? (q&->)) "H". *)
+  (*   iIntros "!>". iExists q. done. *)
+  (* Qed. *)
+  Admitted. (* FIXME: *)
 
   (** * Lemmas about [ghost_map_auth] *)
   Lemma ghost_map_alloc_strong P m :
@@ -602,9 +659,9 @@ Section lemmas.
   Proof.
     unseal. intros.
     iMod (owna_alloc_strong
-      (gmap_view_auth (V:=agreeR (leibnizO V)) (DfracOwna 1) ∅) P)
+      (gmap_view_auth (V:=agreeR (leibnizO V)) (DfracOwn 1) ∅) P)
       as (γ) "[% Hauth]"; first done.
-    { apply gmap_view_auth_valid. }
+    { eapply gmap_view_auth_valid. }
     iExists γ. iSplitR; first done.
     rewrite -big_opM_owna_1 -owna_op. iApply (owna_update with "Hauth").
     etrans; first apply (gmap_view_alloc_big _ (to_agree <$> m) (DfracOwna 1)).
