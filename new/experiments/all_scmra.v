@@ -1,78 +1,54 @@
 From New.proof Require Import proof_prelude.
 From iris.algebra Require Import
   gset functions reservation_map mra dyn_reservation_map view gmultiset csum
-  ufrac.
-
-(* mono_list mono_nat dfrac_agree gmap_view *)
+  gmap_view max_prefix_list dfrac_agree.
 From iris.bi Require Import fractional.
 From Coq Require Import Logic.ClassicalEpsilon.
 
 Module syntax.
-Inductive ucmra :=
-| gsetUR (K : Type) `{Countable K}
-| gset_disjUR (K : Type) `{Countable K}
-| natUR
-| max_natUR
-| ZUR
-| reservation_mapUR (A : cmra)
-| mraUR {A : Type} (R : relation A)
-| gmapUR (K : Type) `{Countable K} (V : cmra)
-| dyn_reservation_mapUR (A : cmra)
-| viewUR (A : ofe)
-| gmultisetUR (K : Type) `{Countable K}
-| coPsetUR
-| coPset_disjUR
-| unitUR
-| prodUR (A B : ucmra)
-| optionUR (A : cmra)
+Inductive cmra :=
+| authR (A : ucmra)
+| gmap_viewR (K : Type) `{Countable K} (V : cmra)
+| saved_propR
+| saved_predR (A : Type)
 
-with cmra :=
-| reservation_mapR (A : cmra)
-| dyn_reservation_mapR (A : cmra)
-| agreeR (A : ofe)
-| mraR {A : Type} (R : relation A)
+| agreeR (A : Type)
 | gmapR (K : Type) `{Countable K} (V : cmra)
-| viewR (A : ofe) (B : ucmra) (rel : view_rel A B)
-| unitR
-| Empty_setR
 | prodR (A B : cmra)
 | optionR (A : cmra)
 | csumR (A B : cmra)
-| exclR (A : ofe)
-(* | discreteR (A : Type) *)
+| exclR (A : Type)
 | natR
 | max_natR
 | min_natR
 | positiveR
 | ZR
 | max_ZR
-| coPsetR
-| coPset_disjR
-| gmultisetR
+| gmultisetR (K : Type) `{Countable K}
 | fracR
-| ufracR
-| gsetR
-| gset_disjR
+| gsetR (K : Type) `{Countable K}
 | dfracR
-.
+with ucmra :=
+| gset_disjUR (K : Type) `{Countable K}
+| max_prefix_listUR (A : Type)
+| gmapUR (K : Type) `{Countable K} (V : cmra).
 End syntax.
 
 Section denote.
 Context (PROP : ofe) `{!Cofe PROP} .
 Fixpoint interpret (x : syntax.cmra) : cmra :=
   match x with
-  | syntax.reservation_mapR A => reservation_mapR (interpret A)
-  | syntax.dyn_reservation_mapR A => dyn_reservation_mapR (interpret A)
-  | syntax.agreeR A  => agreeR A
-  | syntax.mraR R => mraR R
+  | syntax.authR A => authR (interpret_u A)
+  | syntax.gmap_viewR K V => gmap_viewR K (interpret V)
+  | syntax.saved_propR => dfrac_agreeR (laterO PROP)
+  | syntax.saved_predR A => dfrac_agreeR (A -d> laterO PROP)
+
+  | syntax.agreeR A => agreeR (leibnizO A)
   | syntax.gmapR K V => gmapR K (interpret V)
-  | syntax.viewR A => viewR (interpret A)
-  | syntax.unitR => unitR
-  | syntax.Empty_setR => Empty_setR
-  | syntax.prodR A B => prodR A B
-  | syntax.optionR A => optionR A
-  | syntax.csumR A B => csumR A B
-  | syntax.exclR A => exclR A
+  | syntax.prodR A B => prodR (interpret A) (interpret B)
+  | syntax.optionR A => optionR (interpret A)
+  | syntax.csumR A B => csumR (interpret A) (interpret B)
+  | syntax.exclR A => exclR (leibnizO A)
 
   | syntax.natR => natR
   | syntax.max_natR => max_natR
@@ -80,103 +56,89 @@ Fixpoint interpret (x : syntax.cmra) : cmra :=
   | syntax.positiveR => positiveR
   | syntax.ZR => ZR
   | syntax.max_ZR => max_ZR
-  | syntax.coPsetR => coPsetR
-  | syntax.coPset_disjR => coPset_disjR
-  | syntax.gmultisetR => gmultisetR
+  | syntax.gmultisetR K => gmultisetR K
   | syntax.fracR => fracR
-  | syntax.ufracR => ufracR
-  | syntax.gsetR => gsetR
-  | syntax.gset_disjR => gset_disjR
+  | syntax.gsetR K => gsetR K
   | syntax.dfracR => dfracR
+  end
+with interpret_u (x : syntax.ucmra) : ucmra :=
+match x with
+| syntax.gset_disjUR K => gset_disjUR K
+| syntax.max_prefix_listUR A => max_prefix_listUR (leibnizO A)
+| syntax.gmapUR K V => gmapUR K (interpret V)
+end.
 
-  | _ => dfracR
-  end.
-
-  | syntax.prodR A B => prodR (interpret A) (interpret B)
-  | syntax.reservation_mapR A =>
-  end.
-
-
-End ucmra_expr.
-
-Module cmra_expr.
-Inductive t :=
-| prod (A B : t)
-| gmap (K : Type) `{Countable K} (V : t)
-| mono_list (E : Type)
-| frac
-| dfrac
-| agree (A : Type)
-| excl (A : Type)
-| gmap_view (K : Type) `{Countable K} (V : t)
-| saved_pred (A : Type).
-
-Fixpoint interpret (PROP : ofe) `{!Cofe PROP} (x : t) : cmra :=
+Fixpoint interpretF (x : syntax.cmra) : rFunctor :=
   match x with
-  | prod A B => prodR (interpret PROP A) (interpret PROP B)
-  | gmap K V => gmapR K (interpret PROP V)
-  | mono_list A => mono_listR (leibnizO A)
-  | frac => fracR
-  | dfrac => dfracR
-  | agree A => agreeR (leibnizO A)
-  | excl A => exclR (leibnizO A)
-  | gmap_view K V => gmap_viewR K (interpret PROP V)
-  | saved_pred A => (dfrac_agreeR (A -d> laterO PROP))
-  end.
+  | syntax.authR A => authRF (interpretF_u A)
+  | syntax.gmap_viewR K V => gmap_viewRF K (interpretF V)
 
-Fixpoint interpretF (x : t) : rFunctor :=
-  match x with
-  | prod A B => prodRF (interpretF A) (interpretF B)
-  | gmap K V => gmapRF K (interpretF V)
-  | mono_list A => mono_listRF (leibnizO A)
-  | frac => fracR
-  | dfrac => dfracR
-  | agree A => agreeRF (leibnizO A)
-  | excl A => exclRF (leibnizO A)
-  | gmap_view K V => gmap_viewRF K (interpretF V)
-  | saved_pred A => (dfrac_agreeRF (A -d> ▶ ∙))
-  end.
+  | syntax.saved_propR => (dfrac_agreeRF (▶ ∙))
+  | syntax.saved_predR A => (dfrac_agreeRF (A -d> ▶ ∙))
 
-Class Is PROP `{!Cofe PROP} (A : cmra) (e : t) :=
-  { eq_proof : A = interpret PROP e; }.
-Global Hint Mode Is + - + - : typeclass_instances.
+  | syntax.agreeR A => agreeR (leibnizO A)
+  | syntax.gmapR K V => gmapRF K (interpretF V)
+  | syntax.prodR A B => prodRF (interpretF A) (interpretF B)
+  | syntax.optionR A => optionRF (interpretF A)
+  | syntax.csumR A B => csumRF (interpretF A) (interpretF B)
+  | syntax.exclR A => exclR (leibnizO A)
 
-Context `{!Cofe PROP}.
+  | syntax.natR => natR
+  | syntax.max_natR => max_natR
+  | syntax.min_natR => min_natR
+  | syntax.positiveR => positiveR
+  | syntax.ZR => ZR
+  | syntax.max_ZR => max_ZR
+  | syntax.gmultisetR K => gmultisetR K
+  | syntax.fracR => fracR
+  | syntax.gsetR K => gsetR K
+  | syntax.dfracR => dfracR
+  end
+with interpretF_u (x : syntax.ucmra) : urFunctor :=
+match x with
+| syntax.gset_disjUR K => gset_disjUR K
+| syntax.max_prefix_listUR A => max_prefix_listUR (leibnizO A)
+| syntax.gmapUR K V => gmapURF K (interpretF V)
+end.
+
+Class Is (A : cmra) (e : syntax.cmra) :=
+  { eq_cmra : A = interpret e; }.
+Global Hint Mode Is + - : typeclass_instances.
+
+Class IsU (A : ucmra) (e : syntax.ucmra) :=
+  { eq_ucmra : A = interpret_u e; }.
+Global Hint Mode IsU + - : typeclass_instances.
 
 Local Ltac s :=
   constructor; simpl;
   repeat (lazymatch goal with
-          | H : Is _ _ _ |- _ => apply @eq_proof in H; rewrite -H; clear H
+          | H : Is _ _ |- _ => apply @eq_cmra in H; rewrite -H; clear H
+          | H : IsU _ _ |- _ => apply @eq_ucmra in H; rewrite -H; clear H
           end);
   try done.
 
-#[global] Instance is_prodR `{!Is PROP A Ae} `{!Is PROP B Be} :
-  Is PROP (prodR A B) (prod Ae Be).
-Proof. s. Qed.
-#[global] Instance is_prodUR {A B : ucmra} `{!Is PROP A Ae} `{!Is PROP B Be} :
-  Is PROP (prodUR A B) (prod Ae Be).
+#[global] Instance is_prodR `{!Is A Ae} `{!Is B Be} :
+  Is (prodR A B) (syntax.prodR Ae Be).
 Proof. s. Qed.
 
-#[global] Instance is_prodR `{!Is PROP A Ae} `{!Is PROP B Be} :
-  Is PROP (prodR A B) (prod Ae Be).
-Proof.
-  constructor. apply @eq_proof in Is0, Is1. subst. done.
-Qed.
+End denote.
 
-End defn.
-End cmra_expr.
-
+Arguments eq_cmra {_ _ _ _}.
+Arguments eq_ucmra {_ _ _ _}.
 
 Definition allUR (PROP : ofe) `{!Cofe PROP}
-  : Type := discrete_funUR (optionUR ∘ cmra_expr.interpret PROP).
+  : Type := discrete_funUR (optionUR ∘ interpret PROP).
 
-Definition allURF := discrete_funURF (λ A, optionURF (cmra_expr.interpretF A)).
+Definition allURF := discrete_funURF (λ A, optionURF (interpretF A)).
 
 Global Instance all_contractive : urFunctorContractive allURF.
 Proof.
   apply discrete_funURF_contractive.
-  intro A. apply optionURF_contractive.
-  induction A; simpl in *; tc_solve.
+  intro A. apply optionURF_contractive. revert A.
+  fix I 1 with
+    (pf_u A : urFunctorContractive (interpretF_u A)); intros A.
+  { induction A; simpl in *; try tc_solve. }
+  { induction A; simpl in *; try tc_solve. }
 Qed.
 
 Definition allΣ : gFunctors :=
@@ -186,19 +148,25 @@ Class allG Σ :=
   { #[local] any_inG :: inG Σ (allUR (iPropO Σ)); }.
 
 Local Lemma interpret_eq_interpretF A Σ :
-  (cmra_expr.interpretF A).(rFunctor_car) (iPropO Σ) (iPropO Σ) =
-  (cmra_expr.interpret (iPropO Σ) A).
+  (interpretF A).(rFunctor_car) (iPropO Σ) (iPropO Σ) =
+  (interpret (iPropO Σ) A).
 Proof.
-  induction A; simpl in *; try done.
-  - unfold rFunctor_apply in *. rewrite IHA1 IHA2 //.
-  - unfold rFunctor_apply in *. rewrite IHA //.
-  - unfold rFunctor_apply in *. rewrite IHA //.
+  revert A.
+  fix I 1 with
+    (pf_u A : (interpretF_u A).(urFunctor_car) (iPropO Σ) (iPropO Σ) = interpret_u (iPropO Σ) A
+    ); intros A.
+  - induction A; simpl in *; rewrite ?pf_u; try done.
+    + unfold rFunctor_apply in *. rewrite IHA //.
+    + unfold rFunctor_apply in *. rewrite IHA //.
+    + unfold rFunctor_apply in *. rewrite IHA1 IHA2 //.
+    + unfold rFunctor_apply in *. rewrite IHA //.
+    + unfold rFunctor_apply in *. rewrite IHA1 IHA2 //.
+  - induction A; simpl in *; rewrite ?I; try done.
 Qed.
 
 Global Instance subG_allΣ Σ :
   subG (allΣ) Σ → allG Σ.
 Proof.
-  solve_subG.
   intros. constructor.
   apply subG_inv in H. destruct H.
   apply subG_inG in s. simpl in *.
@@ -209,21 +177,26 @@ Proof.
   intros. rewrite interpret_eq_interpretF //.
 Qed.
 
-Local Instance cmra_expr_eq_decision : EqDecision cmra_expr.t.
+Local Instance ucmra_expr_eq_decision : EqDecision syntax.ucmra.
+Proof.
+  intros A B. destruct (excluded_middle_informative (A = B)); [left|right]; done.
+Qed.
+
+Local Instance cmra_expr_eq_decision : EqDecision syntax.cmra.
 Proof.
   intros A B. destruct (excluded_middle_informative (A = B)); [left|right]; done.
 Qed.
 
 Definition to_all (PROP : ofe) `{!Cofe PROP}
-  (A : cmra_expr.t) (a : cmra_expr.interpret PROP A) : allUR PROP :=
-    discrete_fun_singleton (B:=optionUR ∘ cmra_expr.interpret PROP) A (Some a).
+  (A : syntax.cmra) (a : interpret PROP A) : allUR PROP :=
+    discrete_fun_singleton (B:=optionUR ∘ interpret PROP) A (Some a).
 
 Section own.
 Context `{!allG Σ}.
 
-Definition owna_def `{!cmra_expr.Is A e} γ (a : A) : iProp Σ :=
-  own γ (discrete_fun_singleton (B:=optionUR ∘ cmra_expr.interpret (iProp Σ)) e
-           (Some (cmra_transport cmra_expr.eq_proof a))).
+Definition owna_def `{!Is (iProp Σ) A e} γ (a : A) : iProp Σ :=
+  own γ (discrete_fun_singleton (B:=optionUR ∘ interpret (iProp Σ)) e
+           (Some (cmra_transport eq_cmra a))).
 
 Program Definition owna := sealed @owna_def.
 Final Obligation. econstructor. done. Qed.
