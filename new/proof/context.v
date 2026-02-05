@@ -32,6 +32,7 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics} {package_sem : context.Assumptions}.
 (* XXX: not putting this in contextG because higher-level code might also have
    its own closeable_chan, and this would conflict with that. *)
+Context `{!closeable_chanG Σ}.
 
 Definition is_init : iProp Σ :=
   "Hgoroutines" ∷

@@ -1,6 +1,5 @@
 From New.proof Require Import disk_prelude.
 From New Require Export atomic_fupd.
-Require Import Perennial.goose_lang.ffi.disk_ffi.specs.
 Require Import New.code.github_com.goose_lang.primitive.disk.
 Require Import New.generatedproof.github_com.goose_lang.primitive.disk.
 

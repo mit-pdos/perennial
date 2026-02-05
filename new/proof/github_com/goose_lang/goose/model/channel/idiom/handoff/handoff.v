@@ -1,7 +1,7 @@
+Require Import New.proof.proof_prelude.
 From New.proof.github_com.goose_lang.goose.model.channel Require Import
   chan_au_base.
 Require Import New.golang.theory.
-Require Import New.proof.proof_prelude.
 
 (** * Handoff Channel Pattern Verification
 
@@ -13,7 +13,7 @@ Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics}.
 
-Context `[!allG Σ].
+Context `[!chanG Σ V].
 Context `[!ZeroVal V] `[!TypedPointsto V] `[!IntoValTyped V t].
 
 Record handoff_names := {
@@ -69,6 +69,8 @@ Proof.
   simpl.
   by iFrame "#".
 Qed.
+
+Local Set Default Proof Using "All".
 
 Lemma handoff_rcv_au γ ch P Φ  :
   is_chan_handoff γ ch P ⊢
@@ -179,7 +181,7 @@ Lemma wp_handoff_receive γ ch P :
   {{{ is_chan_handoff γ ch P }}}
     chan.receive t #ch
   {{{ v, RET (#v, #true); P v }}}.
-Proof using All.
+Proof.
   wp_start_folded as "#Hhandoff".
   iNamed "Hhandoff".
   wp_apply (chan.wp_receive ch γ.(chan_name) with "[$Hch]").
@@ -280,7 +282,7 @@ Lemma wp_handoff_send γ ch v P :
   {{{ is_chan_handoff γ ch P ∗ P v }}}
     chan.send t #ch #v
   {{{ RET #(); True }}}.
-Proof using All.
+Proof.
   wp_start_folded as "[#Hhandoff HP]".
   unfold is_chan_handoff. iNamed "Hhandoff".
   wp_apply (chan.wp_send ch with "[$Hch]").

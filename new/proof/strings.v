@@ -3,12 +3,11 @@ From New.proof Require Export std.
 From New.generatedproof Require Export strings.
 From Perennial Require Import base.
 
-Section wps.
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context {sem : go.Semantics} {package_sem : strings.Assumptions}.
-Local Set Default Proof Using "All".
+Section proof.
+Context `{hG: heapGS Σ} `{!ffi_semantics _ _}.
+Context `{!globalsGS Σ} {go_ctx: GoContext}.
 
-#[global] Instance : IsPkgInit (iProp Σ) strings := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf (iProp Σ) strings := build_get_is_pkg_init_wf.
+#[global] Instance : IsPkgInit strings := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf strings := build_get_is_pkg_init_wf.
 
-End wps.
+End proof.

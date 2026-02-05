@@ -1,11 +1,22 @@
+From iris.base_logic.lib Require Import saved_prop ghost_map.
 From Perennial.Helpers Require Export ipm NamedProps.
-Require Import New.experiments.a.
 
 Set Default Proof Using "Type".
 
 Section auth_prop.
 
-Context `{!allG Σ}.
+Class auth_propG Σ :=
+  {
+    #[local] savedProp_inG :: savedPropG Σ;
+    #[local] gnameSet_inG :: ghost_mapG Σ gname ();
+  }.
+
+Definition auth_propΣ : gFunctors :=
+  #[ savedPropΣ ; ghost_mapΣ gname () ].
+Global Instance subG_auth_propΣ {Σ} : subG (auth_propΣ) Σ → (auth_propG Σ).
+Proof. solve_inG. Qed.
+
+Context `{!auth_propG Σ}.
 
 Definition own_aprop_auth γ (P : iProp Σ) (n : nat) : iProp Σ :=
   ∃ gns,

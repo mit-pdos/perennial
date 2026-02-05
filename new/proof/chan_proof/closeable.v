@@ -1,9 +1,16 @@
+From iris.algebra.lib Require Import dfrac_agree.
 Require Import New.proof.proof_prelude.
 Require Import New.golang.theory.
 
 (** A pattern for channel usage: a channel that never has anything sent, and is
     only closed at some point. Closing transfers a persistent proposition to
     readers. *)
+Class closeable_chanG Σ :=
+  {
+    #[local] chanG :: chanG Σ ();
+    #[local] close_tok_inG :: inG Σ (dfrac_agreeR boolO);
+  }.
+
 Record closeable_internal_names :=
   { closed_gn : gname }.
 
