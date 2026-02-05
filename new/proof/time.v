@@ -78,13 +78,13 @@ Proof.
   wp_start. wp_apply wp_ArbitraryInt as "%x _". by iApply "HΦ".
 Qed.
 
-Lemma wp_After (d : time.Duration.t) :
+Lemma wp_After `{!chanG Σ time.Time.t} (d : time.Duration.t) :
   {{{ is_pkg_init time }}}
     @! time.After #d
   {{{ (ch: loc) γ, RET #ch; is_chan_handoff γ ch (λ (t: time.Time.t), True)%I }}}.
 Proof.
   wp_start.
-  wp_apply chan.wp_make; first word.
+  wp_apply chan.wp_make2; first word.
   iIntros (ch γ) "(His & Hcap & Hown)".
   simpl.
   iMod (start_handoff _ _ (λ t, True)%I

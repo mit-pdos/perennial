@@ -120,8 +120,10 @@ Proof.
         iDestruct (own_slice_nil (DfracOwn 1)) as "Hnil".
         iApply "Hnil".
       * iApply own_slice_cap_nil.
-  - wp_apply (wp_slice_append with "[$Hb]").
-    + rewrite go.array_index_ref_0. iSplitL.
+  - wp_apply wp_slice_literal as "% _".
+    { iIntros. wp_auto. iFrame. }
+    wp_apply (wp_slice_append with "[$Hb]").
+    + iSplitL.
       * iApply own_slice_empty; done.
       * iApply own_slice_cap_empty; done.
     + rewrite app_nil_l.
