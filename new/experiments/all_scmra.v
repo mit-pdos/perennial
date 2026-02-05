@@ -13,18 +13,23 @@ Global Set Default Proof Using "Type".
 Global Set Printing Projections.
 
 Module syntax.
+Inductive ofe :=
+| unitO
+| leibnizO (A : Type)
+.
+
 Inductive cmra :=
 | authR (A : ucmra)
 | gmap_viewR (K : Type) `{Countable K} (V : cmra)
 | saved_propR
 | saved_predR (A : Type)
 
-| agreeR (A : Type)
+| agreeR (A : ofe)
 | gmapR (K : Type) `{Countable K} (V : cmra)
 | prodR (A B : cmra)
 | optionR (A : cmra)
 | csumR (A B : cmra)
-| exclR (A : Type)
+| exclR (A : ofe)
 | natR
 | max_natR
 | min_natR
@@ -37,26 +42,33 @@ Inductive cmra :=
 | dfracR
 with ucmra :=
 | gset_disjUR (K : Type) `{Countable K}
-| max_prefix_listUR (A : Type)
+| max_prefix_listUR (A : ofe)
 | gmapUR (K : Type) `{Countable K} (V : cmra)
 | natUR.
 End syntax.
 
 Section denote.
 Context (PROP : ofe) `{!Cofe PROP} .
-Fixpoint interpret (x : syntax.cmra) : cmra :=
+
+Definition int_ofe (x : syntax.ofe) : ofe :=
   match x with
-  | syntax.authR A => authR (interpret_u A)
-  | syntax.gmap_viewR K V => gmap_viewR K (interpret V)
+  | syntax.unitO => unitO
+  | syntax.leibnizO A => leibnizO A
+  end.
+
+Fixpoint int_cmra (x : syntax.cmra) : cmra :=
+  match x with
+  | syntax.authR A => authR (int_ucmra A)
+  | syntax.gmap_viewR K V => gmap_viewR K (int_cmra V)
   | syntax.saved_propR => dfrac_agreeR (laterO PROP)
   | syntax.saved_predR A => dfrac_agreeR (A -d> laterO PROP)
 
-  | syntax.agreeR A => agreeR (leibnizO A)
-  | syntax.gmapR K V => gmapR K (interpret V)
-  | syntax.prodR A B => prodR (interpret A) (interpret B)
-  | syntax.optionR A => optionR (interpret A)
-  | syntax.csumR A B => csumR (interpret A) (interpret B)
-  | syntax.exclR A => exclR (leibnizO A)
+  | syntax.agreeR A => agreeR (int_ofe A)
+  | syntax.gmapR K V => gmapR K (int_cmra V)
+  | syntax.prodR A B => prodR (int_cmra A) (int_cmra B)
+  | syntax.optionR A => optionR (int_cmra A)
+  | syntax.csumR A B => csumR (int_cmra A) (int_cmra B)
+  | syntax.exclR A => exclR (int_ofe A)
 
   | syntax.natR => natR
   | syntax.max_natR => max_natR
@@ -69,28 +81,28 @@ Fixpoint interpret (x : syntax.cmra) : cmra :=
   | syntax.gsetR K => gsetR K
   | syntax.dfracR => dfracR
   end
-with interpret_u (x : syntax.ucmra) : ucmra :=
-match x with
-| syntax.gset_disjUR K => gset_disjUR K
-| syntax.max_prefix_listUR A => max_prefix_listUR (leibnizO A)
-| syntax.gmapUR K V => gmapUR K (interpret V)
-| syntax.natUR => natUR
-end.
-
-Fixpoint interpretF (x : syntax.cmra) : rFunctor :=
+with int_ucmra (x : syntax.ucmra) : ucmra :=
   match x with
-  | syntax.authR A => authRF (interpretF_u A)
-  | syntax.gmap_viewR K V => gmap_viewRF K (interpretF V)
+  | syntax.gset_disjUR K => gset_disjUR K
+  | syntax.max_prefix_listUR A => max_prefix_listUR (int_ofe A)
+  | syntax.gmapUR K V => gmapUR K (int_cmra V)
+  | syntax.natUR => natUR
+  end.
+
+Fixpoint intF_cmra (x : syntax.cmra) : rFunctor :=
+  match x with
+  | syntax.authR A => authRF (intF_ucmra A)
+  | syntax.gmap_viewR K V => gmap_viewRF K (intF_cmra V)
 
   | syntax.saved_propR => (dfrac_agreeRF (▶ ∙))
   | syntax.saved_predR A => (dfrac_agreeRF (A -d> ▶ ∙))
 
-  | syntax.agreeR A => agreeR (leibnizO A)
-  | syntax.gmapR K V => gmapRF K (interpretF V)
-  | syntax.prodR A B => prodRF (interpretF A) (interpretF B)
-  | syntax.optionR A => optionRF (interpretF A)
-  | syntax.csumR A B => csumRF (interpretF A) (interpretF B)
-  | syntax.exclR A => exclR (leibnizO A)
+  | syntax.agreeR A => agreeR (int_ofe A)
+  | syntax.gmapR K V => gmapRF K (intF_cmra V)
+  | syntax.prodR A B => prodRF (intF_cmra A) (intF_cmra B)
+  | syntax.optionR A => optionRF (intF_cmra A)
+  | syntax.csumR A B => csumRF (intF_cmra A) (intF_cmra B)
+  | syntax.exclR A => exclR (int_ofe A)
 
   | syntax.natR => natR
   | syntax.max_natR => max_natR
@@ -103,86 +115,95 @@ Fixpoint interpretF (x : syntax.cmra) : rFunctor :=
   | syntax.gsetR K => gsetR K
   | syntax.dfracR => dfracR
   end
-with interpretF_u (x : syntax.ucmra) : urFunctor :=
+with intF_ucmra (x : syntax.ucmra) : urFunctor :=
 match x with
 | syntax.gset_disjUR K => gset_disjUR K
-| syntax.max_prefix_listUR A => max_prefix_listUR (leibnizO A)
-| syntax.gmapUR K V => gmapURF K (interpretF V)
+| syntax.max_prefix_listUR A => max_prefix_listUR (int_ofe A)
+| syntax.gmapUR K V => gmapURF K (intF_cmra V)
 | syntax.natUR => natUR
 end.
 
-Class Is (A : cmra) (e : syntax.cmra) :=
-  { eq_cmra : A = interpret e; }.
-Global Hint Mode Is ! - : typeclass_instances.
-
-Class IsU (A : ucmra) (e : syntax.ucmra) :=
-  { eq_ucmra : A = interpret_u e; }.
-Global Hint Mode IsU ! - : typeclass_instances.
+Class IsCmra (A : cmra) (e : syntax.cmra) :=
+  { eq_cmra : A = int_cmra e; }.
+Global Hint Mode IsCmra ! - : typeclass_instances.
+Class IsUcmra (A : ucmra) (e : syntax.ucmra) :=
+  { eq_ucmra : A = int_ucmra e; }.
+Global Hint Mode IsUcmra ! - : typeclass_instances.
+Class IsOfe (A : ofe) (e : syntax.ofe) :=
+  { eq_ofe : A = int_ofe e; }.
+Global Hint Mode IsOfe ! - : typeclass_instances.
 
 Local Ltac s :=
   constructor; simpl;
   repeat (lazymatch goal with
-          | H : Is _ _ |- _ => apply @eq_cmra in H; rewrite -H; clear H
-          | H : IsU _ _ |- _ => apply @eq_ucmra in H; rewrite -H; clear H
+          | H : IsCmra _ _ |- _ => apply @eq_cmra in H; rewrite -H; clear H
+          | H : IsUcmra _ _ |- _ => apply @eq_ucmra in H; rewrite -H; clear H
+          | H : IsOfe _ _ |- _ => apply @eq_ofe in H; rewrite -H; clear H
           end);
   try done.
 
-#[global] Instance is_prodR `{!Is A Ae} `{!Is B Be} : Is (prodR A B) (syntax.prodR Ae Be).
+#[global] Instance is_prodR `{!IsCmra A Ae} `{!IsCmra B Be} : IsCmra (prodR A B) (syntax.prodR Ae Be).
 Proof. s. Qed.
-#[global] Instance is_authR `{!IsU A Ae} : Is (authR A) (syntax.authR Ae).
+#[global] Instance is_authR `{!IsUcmra A Ae} : IsCmra (authR A) (syntax.authR Ae).
 Proof. s. Qed.
-#[global] Instance is_gmap_viewR K `{Countable K} `{!Is V Ve} :
-  Is (gmap_viewR K V) (syntax.gmap_viewR K Ve).
+#[global] Instance is_gmap_viewR K `{Countable K} `{!IsCmra V Ve} :
+  IsCmra (gmap_viewR K V) (syntax.gmap_viewR K Ve).
 Proof. s. Qed.
-#[global] Instance is_saved_propR : Is (dfrac_agreeR (laterO PROP)) (syntax.saved_propR).
+#[global] Instance is_saved_propR : IsCmra (dfrac_agreeR (laterO PROP)) (syntax.saved_propR).
 Proof. s. Qed.
-#[global] Instance is_saved_predR A : Is (dfrac_agreeR (A -d> laterO PROP)) (syntax.saved_predR A).
+#[global] Instance is_saved_predR A : IsCmra (dfrac_agreeR (A -d> laterO PROP)) (syntax.saved_predR A).
 Proof. s. Qed.
-#[global] Instance is_agreeR A :
-  Is (agreeR (leibnizO A)) (syntax.agreeR A).
+#[global] Instance is_agreeR `{!IsOfe A Ae} :
+  IsCmra (agreeR A) (syntax.agreeR Ae).
 Proof. s. Qed.
-#[global] Instance is_gmapR K `{Countable K} `{!Is V Ve} :
-  Is (gmapR K V) (syntax.gmapR K Ve).
+#[global] Instance is_gmapR K `{Countable K} `{!IsCmra V Ve} :
+  IsCmra (gmapR K V) (syntax.gmapR K Ve).
 Proof. s. Qed.
-#[global] Instance is_optionR `{!Is A Ae} :
-  Is (optionR A) (syntax.optionR Ae).
+#[global] Instance is_optionR `{!IsCmra A Ae} :
+  IsCmra (optionR A) (syntax.optionR Ae).
 Proof. s. Qed.
-#[global] Instance is_csumR `{!Is A Ae} `{!Is B Be} :
-  Is (csumR A B) (syntax.csumR Ae Be).
+#[global] Instance is_csumR `{!IsCmra A Ae} `{!IsCmra B Be} :
+  IsCmra (csumR A B) (syntax.csumR Ae Be).
 Proof. s. Qed.
-#[global] Instance is_exclR A :
-  Is (exclR (leibnizO A)) (syntax.exclR A).
+#[global] Instance is_exclR `{!IsOfe A Ae} :
+  IsCmra (exclR A) (syntax.exclR Ae).
 Proof. s. Qed.
-#[global] Instance is_natR : Is natR syntax.natR.
+#[global] Instance is_natR : IsCmra natR syntax.natR.
 Proof. s. Qed.
-#[global] Instance is_max_natR : Is max_natR syntax.max_natR.
+#[global] Instance is_max_natR : IsCmra max_natR syntax.max_natR.
 Proof. s. Qed.
-#[global] Instance is_min_natR : Is min_natR syntax.min_natR.
+#[global] Instance is_min_natR : IsCmra min_natR syntax.min_natR.
 Proof. s. Qed.
-#[global] Instance is_positiveR : Is positiveR syntax.positiveR.
+#[global] Instance is_positiveR : IsCmra positiveR syntax.positiveR.
 Proof. s. Qed.
-#[global] Instance is_ZR : Is ZR syntax.ZR.
+#[global] Instance is_ZR : IsCmra ZR syntax.ZR.
 Proof. s. Qed.
-#[global] Instance is_max_ZR : Is max_ZR syntax.max_ZR.
+#[global] Instance is_max_ZR : IsCmra max_ZR syntax.max_ZR.
 Proof. s. Qed.
-#[global] Instance is_gmultisetR K `{Countable K} : Is (gmultisetR K) (syntax.gmultisetR K).
+#[global] Instance is_gmultisetR K `{Countable K} : IsCmra (gmultisetR K) (syntax.gmultisetR K).
 Proof. s. Qed.
-#[global] Instance is_fracR : Is fracR syntax.fracR.
+#[global] Instance is_fracR : IsCmra fracR syntax.fracR.
 Proof. s. Qed.
-#[global] Instance is_gsetR K `{Countable K} : Is (gsetR K) (syntax.gsetR K).
+#[global] Instance is_gsetR K `{Countable K} : IsCmra (gsetR K) (syntax.gsetR K).
 Proof. s. Qed.
-#[global] Instance is_dfracR : Is dfracR syntax.dfracR.
+#[global] Instance is_dfracR : IsCmra dfracR syntax.dfracR.
 Proof. s. Qed.
-#[global] Instance is_gset_disjUR K `{Countable K} : IsU (gset_disjUR K) (syntax.gset_disjUR K).
+#[global] Instance is_gset_disjUR K `{Countable K} : IsUcmra (gset_disjUR K) (syntax.gset_disjUR K).
 Proof. s. Qed.
-#[global] Instance is_max_prefix_listUR A :
-  IsU (max_prefix_listUR (leibnizO A)) (syntax.max_prefix_listUR A).
+#[global] Instance is_max_prefix_listUR `{!IsOfe A Ae} :
+  IsUcmra (max_prefix_listUR A) (syntax.max_prefix_listUR Ae).
 Proof. s. Qed.
-#[global] Instance is_gmapUR K `{Countable K} `{!Is V Ve} :
-  IsU (gmapUR K V) (syntax.gmapUR K Ve).
+#[global] Instance is_gmapUR K `{Countable K} `{!IsCmra V Ve} :
+  IsUcmra (gmapUR K V) (syntax.gmapUR K Ve).
 Proof. s. Qed.
 #[global] Instance is_natUR :
-  IsU natUR syntax.natUR.
+  IsUcmra natUR syntax.natUR.
+Proof. s. Qed.
+#[global] Instance is_unitO :
+  IsOfe unitO syntax.unitO.
+Proof. s. Qed.
+#[global] Instance is_leibnizO A :
+  IsOfe (leibnizO A) (syntax.leibnizO A).
 Proof. s. Qed.
 End denote.
 
@@ -190,16 +211,16 @@ Arguments eq_cmra {_ _ _ _}.
 Arguments eq_ucmra {_ _ _ _}.
 
 Definition allUR (PROP : ofe) `{!Cofe PROP}
-  : Type := discrete_funUR (optionUR ∘ interpret PROP).
+  : Type := discrete_funUR (optionUR ∘ int_cmra PROP).
 
-Definition allURF := discrete_funURF (λ A, optionURF (interpretF A)).
+Definition allURF := discrete_funURF (λ A, optionURF (intF_cmra A)).
 
 Global Instance all_contractive : urFunctorContractive allURF.
 Proof.
   apply discrete_funURF_contractive.
   intro A. apply optionURF_contractive. revert A.
   fix I 1 with
-    (pf_u A : urFunctorContractive (interpretF_u A)); intros A.
+    (pf_u A : urFunctorContractive (intF_ucmra A)); intros A.
   { induction A; simpl in *; try tc_solve. }
   { induction A; simpl in *; try tc_solve. }
 Qed.
@@ -210,13 +231,13 @@ Definition allΣ : gFunctors :=
 Class allG Σ :=
   { #[local] any_inG :: inG Σ (allUR (iPropO Σ)); }.
 
-Local Lemma interpret_eq_interpretF A Σ :
-  (interpretF A).(rFunctor_car) (iPropO Σ) (iPropO Σ) =
-  (interpret (iPropO Σ) A).
+Local Lemma interpret_eq_intF A Σ :
+  (intF_cmra A).(rFunctor_car) (iPropO Σ) (iPropO Σ) =
+  (int_cmra (iPropO Σ) A).
 Proof.
   revert A.
   fix I 1 with
-    (pf_u A : (interpretF_u A).(urFunctor_car) (iPropO Σ) (iPropO Σ) = interpret_u (iPropO Σ) A
+    (pf_u A : (intF_ucmra A).(urFunctor_car) (iPropO Σ) (iPropO Σ) = int_ucmra (iPropO Σ) A
     ); intros A.
   - induction A; simpl in *; rewrite ?pf_u; try done.
     + unfold rFunctor_apply in *. rewrite IHA //.
@@ -237,7 +258,7 @@ Proof.
   apply (f_equal ucmra_cmraR).
   apply (f_equal discrete_funUR).
   apply functional_extensionality_dep_good.
-  intros. rewrite interpret_eq_interpretF //.
+  intros. rewrite interpret_eq_intF //.
 Qed.
 
 Local Instance ucmra_expr_eq_decision : EqDecision syntax.ucmra.
@@ -250,22 +271,18 @@ Proof.
   intros A B. destruct (excluded_middle_informative (A = B)); [left|right]; done.
 Qed.
 
-Definition to_all (PROP : ofe) `{!Cofe PROP}
-  (A : syntax.cmra) (a : interpret PROP A) : allUR PROP :=
-    discrete_fun_singleton (B:=optionUR ∘ interpret PROP) A (Some a).
-
 Section own.
 Context `{!allG Σ}.
 
-Definition own_def `{!Is (iProp Σ) A e} γ (a : A) : iProp Σ :=
-  own γ (discrete_fun_singleton (B:=optionUR ∘ interpret (iProp Σ)) e
+Definition own_def `{!IsCmra (iProp Σ) A e} γ (a : A) : iProp Σ :=
+  own γ (discrete_fun_singleton (B:=optionUR ∘ int_cmra (iProp Σ)) e
            (Some (cmra_transport eq_cmra a))).
 
 Program Definition own := sealed @own_def.
 Definition own_unseal : own = _ := seal_eq _.
 Global Arguments own {A _ _} (γ a).
 
-Context {A e} {HC : Is (iProp Σ) A e}.
+Context {A e} {HC : IsCmra (iProp Σ) A e}.
 Implicit Types (a : A).
 
 (** Core facts that requires unfolding [own] *)
@@ -329,7 +346,7 @@ Proof.
   intros ?. rewrite discrete_fun_singleton_valid Some_valid. apply Hvalid.
 Qed.
 
-Lemma own_unit {B : ucmra} Be {HB : Is (iProp Σ) B Be} γ :
+Lemma own_unit {B : ucmra} Be {HB : IsCmra (iProp Σ) B Be} γ :
   ⊢ |==> own γ (ε : B).
 Proof.
   destruct HB; subst; simpl in *. rewrite own_unseal.
