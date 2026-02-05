@@ -4,11 +4,6 @@ Require Import New.golang.theory.
 (** A pattern for channel usage: a channel that never has anything sent, and is
     only closed at some point. Closing transfers a persistent proposition to
     readers. *)
-Class closeable_chanG Σ :=
-  {
-    #[local] chanG :: chanG Σ ();
-  }.
-
 Record closeable_internal_names :=
   { closed_gn : gname }.
 

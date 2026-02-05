@@ -14,7 +14,7 @@ Context {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}
   {sem : go.ChanSemantics}.
 Local Set Default Proof Using "All".
 
-Context `[!chanG Σ V].
+Context `[!allG Σ].
 Context `[!ZeroVal V] `[!TypedPointsto V] `[!IntoValTyped V t].
 
 
