@@ -74,29 +74,12 @@ Record chan_names := {
   chan_cap : w64;                        (* The channel capacity *)
 }.
 
-Class chanG Σ V := ChanG {
-  offerG :: ghost_varG Σ (chanstate.t V);
-  offer_lockG :: ghost_varG Σ (option (offer_lock V));
-  offer_parked_propG :: savedPropG Σ;
-  offer_parked_predG :: savedPredG Σ (V * bool);
-}.
-Global Hint Mode chanG - + : typeclass_instances.
-Local Hint Mode chanG - - : typeclass_instances.
-
-Definition chanΣ V : gFunctors :=
-  #[ ghost_varΣ (chanstate.t V); ghost_varΣ (option (offer_lock V));
-     savedPropΣ; savedPredΣ  (V * bool) ].
-
-#[global] Instance subG_chanG Σ V :
-  subG (chanΣ V) Σ → chanG Σ V.
-Proof. solve_inG. Qed.
-
 Section au_defns.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}
   {sem : go.ChanSemantics}.
 
-Context (ch : loc) (γ : chan_names) (V : Type) (v : V) `{!chanG Σ V}.
+Context (ch : loc) (γ : chan_names) (V : Type) (v : V) `{!allG Σ}.
 Context `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}.
 
 Definition chanstate (q : Qp) (s : chanstate.t V) : iProp Σ :=
@@ -328,7 +311,7 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}
   {sem : go.ChanSemantics}.
 
-Context (ch : loc) (γ : chan_names) (V : Type) `{!chanG Σ V}.
+Context (ch : loc) (γ : chan_names) (V : Type) `{!allG Σ}.
 Context `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}.
 
 (** Maps physical channel states to their heap representations.
@@ -482,7 +465,7 @@ Proof.
   destruct s; try done.
 Qed.
 
-Lemma blocking_send_implies_nonblocking (Φ : iProp Σ) v :
+Lemma blocking_send_implies_nonblocking (Φ : iProp Σ) (v : V) :
   send_au γ v Φ -∗
   nonblocking_send_au γ v Φ True.
 Proof.
@@ -521,10 +504,6 @@ Proof.
   iCombine "Hoffer Hoffer2" as "Hoffer".
   iMod (ghost_var_update None with "Hlock") as "Hlock".
   iModIntro. iFrame.
-  unfold saved_prop_own.
-  rewrite dfrac_op_own.
-  rewrite Qp.half_half.
-  iFrame.
 Qed.
 
 Lemma offer_idle_to_recv parked_prop cont:
@@ -598,12 +577,7 @@ Proof.
   (* Combine the updated halves to get full ownership *)
   iCombine "Hp1 Hp2" as "Hparked".
   iCombine "Hc1 Hc2" as "Hcont".
-
-  (* Simplify the combined fractions *)
-  rewrite dfrac_op_own Qp.half_half.
-
-  iFrame.
-  auto.
+  iFrame. auto.
 Qed.
 
 Lemma saved_offer_fractional_invalid q1 q2 lock1 parked1 cont1 lock2 parked2 cont2 :
