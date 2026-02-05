@@ -2,7 +2,7 @@ From New.experiments Require Export all_scmra.
 
 (** * Properties about ghost ownership *)
 Section global.
-Context `{!allG Σ} `{!Is (iProp Σ) A e}.
+Context `{!allG Σ} `{!IsCmra (iProp Σ) A e}.
 Implicit Types a : A.
 
 (** ** Properties of [own] *)
@@ -155,7 +155,7 @@ Global Arguments own_update_3 {_ _} [_] _ _ _ _ _ _.
 
 (** Big op class instances *)
 Section big_op_instances.
-  Context {A : ucmra} `{!allG Σ} `{!Is (iProp Σ) A e}.
+  Context {A : ucmra} `{!allG Σ} `{!IsCmra (iProp Σ) A e}.
 
   Global Instance own_cmra_sep_homomorphism γ :
     WeakMonoidHomomorphism op uPred_sep (≡) (own γ).
@@ -202,7 +202,7 @@ End big_op_instances.
 
 (** Proofmode class instances *)
 Section proofmode_instances.
-  Context `{!allG Σ} {A e} {HC : Is (iProp Σ) A e}.
+  Context `{!allG Σ} {A e} {HC : IsCmra (iProp Σ) A e}.
   Implicit Types a b : A.
 
   Global Instance into_sep_own γ a b1 b2 :
