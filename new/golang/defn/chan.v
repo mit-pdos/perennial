@@ -49,7 +49,7 @@ Definition try_comm_clause (c : comm_clause) : val :=
     | RecvCase elem_type ch =>
         let: (("success", "v"), "ok") :=
           MethodResolve (go.PointerType $ channel.Channel elem_type) "TryReceive" ch "blocking" in
-        if: "success" then ((λ: "$v" "$ok", body)%V "v" "ok", #true)
+        if: "success" then ((λ: "$recvVal", body)%V ("v", "ok"), #true)
         else (#(), #false)
     end.
 

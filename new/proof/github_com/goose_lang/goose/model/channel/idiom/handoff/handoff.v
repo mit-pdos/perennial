@@ -70,8 +70,6 @@ Proof.
   by iFrame "#".
 Qed.
 
-Local Set Default Proof Using "All".
-
 Lemma handoff_rcv_au γ ch P Φ  :
   is_chan_handoff γ ch P ⊢
   £1 ∗ £1  -∗
@@ -181,7 +179,7 @@ Lemma wp_handoff_receive γ ch P :
   {{{ is_chan_handoff γ ch P }}}
     chan.receive t #ch
   {{{ v, RET (#v, #true); P v }}}.
-Proof.
+Proof using All.
   wp_start_folded as "#Hhandoff".
   iNamed "Hhandoff".
   wp_apply (chan.wp_receive ch γ.(chan_name) with "[$Hch]").
@@ -282,7 +280,7 @@ Lemma wp_handoff_send γ ch v P :
   {{{ is_chan_handoff γ ch P ∗ P v }}}
     chan.send t #ch #v
   {{{ RET #(); True }}}.
-Proof.
+Proof using All.
   wp_start_folded as "[#Hhandoff HP]".
   unfold is_chan_handoff. iNamed "Hhandoff".
   wp_apply (chan.wp_send ch with "[$Hch]").
