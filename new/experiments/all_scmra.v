@@ -38,7 +38,8 @@ Inductive cmra :=
 with ucmra :=
 | gset_disjUR (K : Type) `{Countable K}
 | max_prefix_listUR (A : Type)
-| gmapUR (K : Type) `{Countable K} (V : cmra).
+| gmapUR (K : Type) `{Countable K} (V : cmra)
+| natUR.
 End syntax.
 
 Section denote.
@@ -73,6 +74,7 @@ match x with
 | syntax.gset_disjUR K => gset_disjUR K
 | syntax.max_prefix_listUR A => max_prefix_listUR (leibnizO A)
 | syntax.gmapUR K V => gmapUR K (interpret V)
+| syntax.natUR => natUR
 end.
 
 Fixpoint interpretF (x : syntax.cmra) : rFunctor :=
@@ -106,6 +108,7 @@ match x with
 | syntax.gset_disjUR K => gset_disjUR K
 | syntax.max_prefix_listUR A => max_prefix_listUR (leibnizO A)
 | syntax.gmapUR K V => gmapURF K (interpretF V)
+| syntax.natUR => natUR
 end.
 
 Class Is (A : cmra) (e : syntax.cmra) :=
@@ -126,79 +129,60 @@ Local Ltac s :=
 
 #[global] Instance is_prodR `{!Is A Ae} `{!Is B Be} : Is (prodR A B) (syntax.prodR Ae Be).
 Proof. s. Qed.
-
 #[global] Instance is_authR `{!IsU A Ae} : Is (authR A) (syntax.authR Ae).
 Proof. s. Qed.
-
 #[global] Instance is_gmap_viewR K `{Countable K} `{!Is V Ve} :
   Is (gmap_viewR K V) (syntax.gmap_viewR K Ve).
 Proof. s. Qed.
-
 #[global] Instance is_saved_propR : Is (dfrac_agreeR (laterO PROP)) (syntax.saved_propR).
 Proof. s. Qed.
-
 #[global] Instance is_saved_predR A : Is (dfrac_agreeR (A -d> laterO PROP)) (syntax.saved_predR A).
 Proof. s. Qed.
-
 #[global] Instance is_agreeR A :
   Is (agreeR (leibnizO A)) (syntax.agreeR A).
 Proof. s. Qed.
-
 #[global] Instance is_gmapR K `{Countable K} `{!Is V Ve} :
   Is (gmapR K V) (syntax.gmapR K Ve).
 Proof. s. Qed.
-
 #[global] Instance is_optionR `{!Is A Ae} :
   Is (optionR A) (syntax.optionR Ae).
 Proof. s. Qed.
-
 #[global] Instance is_csumR `{!Is A Ae} `{!Is B Be} :
   Is (csumR A B) (syntax.csumR Ae Be).
 Proof. s. Qed.
-
 #[global] Instance is_exclR A :
   Is (exclR (leibnizO A)) (syntax.exclR A).
 Proof. s. Qed.
-
 #[global] Instance is_natR : Is natR syntax.natR.
 Proof. s. Qed.
-
 #[global] Instance is_max_natR : Is max_natR syntax.max_natR.
 Proof. s. Qed.
-
 #[global] Instance is_min_natR : Is min_natR syntax.min_natR.
 Proof. s. Qed.
-
 #[global] Instance is_positiveR : Is positiveR syntax.positiveR.
 Proof. s. Qed.
-
 #[global] Instance is_ZR : Is ZR syntax.ZR.
 Proof. s. Qed.
-
 #[global] Instance is_max_ZR : Is max_ZR syntax.max_ZR.
 Proof. s. Qed.
-
 #[global] Instance is_gmultisetR K `{Countable K} : Is (gmultisetR K) (syntax.gmultisetR K).
 Proof. s. Qed.
-
 #[global] Instance is_fracR : Is fracR syntax.fracR.
 Proof. s. Qed.
-
 #[global] Instance is_gsetR K `{Countable K} : Is (gsetR K) (syntax.gsetR K).
 Proof. s. Qed.
-
 #[global] Instance is_dfracR : Is dfracR syntax.dfracR.
 Proof. s. Qed.
-
 #[global] Instance is_gset_disjUR K `{Countable K} : IsU (gset_disjUR K) (syntax.gset_disjUR K).
 Proof. s. Qed.
-
 #[global] Instance is_max_prefix_listUR A :
   IsU (max_prefix_listUR (leibnizO A)) (syntax.max_prefix_listUR A).
 Proof. s. Qed.
-
 #[global] Instance is_gmapUR K `{Countable K} `{!Is V Ve} :
   IsU (gmapUR K V) (syntax.gmapUR K Ve).
+Proof. s. Qed.
+#[global] Instance is_natUR :
+  IsU natUR syntax.natUR.
 Proof. s. Qed.
 End denote.
 
