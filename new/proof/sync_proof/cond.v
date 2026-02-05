@@ -1,13 +1,11 @@
 From New.proof.sync_proof Require Import base mutex.
-Local Existing Instances tokG wg_totalG rw_ghost_varG rw_ghost_wlG rw_ghost_rwmutexG  wg_auth_inG.
 
 Local Unset Printing Projections.
 
 Section wps.
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _} `{!allG Σ}.
 Context {sem : go.Semantics} {package_sem : sync.Assumptions}.
 Local Set Default Proof Using "All".
-Context `{!syncG Σ}.
 
 (** This means [c] is a condvar with underyling Locker at address [m]. *)
 Definition is_Cond (c : loc) (m : interface.t_ok) : iProp Σ :=

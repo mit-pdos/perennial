@@ -6,15 +6,10 @@ From iris_named_props Require Import custom_syntax.
 
 Set Default Proof Using "Type".
 
-Class stdG Σ := {
-    #[local] std_syncG :: syncG Σ;
-  }.
-
 Section wps.
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _} `{!allG Σ}.
 Context {sem : go.Semantics} {package_sem : std.Assumptions}.
 Local Set Default Proof Using "All".
-Context `{!stdG Σ}.
 
 #[global] Instance : IsPkgInit (iProp Σ) std := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf (iProp Σ) std := build_get_is_pkg_init_wf.
@@ -120,8 +115,10 @@ Proof.
         iDestruct (own_slice_nil (DfracOwn 1)) as "Hnil".
         iApply "Hnil".
       * iApply own_slice_cap_nil.
-  - wp_apply (wp_slice_append with "[$Hb]").
-    + rewrite go.array_index_ref_0. iSplitL.
+  - wp_apply wp_slice_literal as "% _".
+    { iIntros. wp_auto. iFrame. }
+    wp_apply (wp_slice_append with "[$Hb]").
+    + iSplitL.
       * iApply own_slice_empty; done.
       * iApply own_slice_cap_empty; done.
     + rewrite app_nil_l.

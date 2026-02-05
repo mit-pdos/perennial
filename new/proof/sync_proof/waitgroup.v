@@ -1,13 +1,11 @@
 From New.proof.sync_proof Require Import base sema.
 From New.experiments Require Import glob.
-Local Existing Instances tokG wg_totalG rw_ghost_varG rw_ghost_wlG rw_ghost_rwmutexG  wg_auth_inG.
 From coqutil Require Import Z.bitblast.
 
 Section wps.
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _} `{!allG Σ}.
 Context {sem : go.Semantics} {package_sem : sync.Assumptions}.
 Local Set Default Proof Using "All".
-Context `{!syncG Σ}.
 
 Local Definition waitGroupBubbleFlag := 2147483648.
 Example waitGroupBubbleFlag_ok : #waitGroupBubbleFlag = sync.waitGroupBubbleFlag :=

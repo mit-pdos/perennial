@@ -1,24 +1,14 @@
-From iris.algebra Require Import numbers auth.
-From iris.base_logic.lib Require Export own.
 From iris.bi.lib Require Import fractional.
 From iris.proofmode Require Import proofmode.
 From Perennial.goose_lang Require Import ipersist.
 From Perennial Require Import base.
+Require Export New.experiments.own.
 
 (* TODO: move this file to algebra *)
 
-Class tok_setG Σ := {
-    tok_set_inG :: inG Σ (authUR natR)
-  }.
-
-Definition tok_setΣ : gFunctors := #[GFunctor $ authUR natR].
-
-Global Instance subG_tok_setΣ{Σ} : subG (tok_setΣ) Σ → (tok_setG Σ).
-Proof. solve_inG. Qed.
-
 Section proof.
 
-Context `{!tok_setG Σ}.
+Context `{!allG Σ}.
 Definition own_tok_auth_dfrac_def γ dq (num_toks : nat) : iProp Σ :=
   own γ (●{dq} num_toks).
 Program Definition own_tok_auth_dfrac := sealed @own_tok_auth_dfrac_def.
