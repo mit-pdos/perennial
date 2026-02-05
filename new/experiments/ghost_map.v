@@ -1,4 +1,6 @@
-From New.experiments Require Import own.
+(* Slightly modified version of https://gitlab.mpi-sws.org/iris/iris/-/blob/849f50f421114ad1b8caf0cd1b66aff338e4abfa/iris/base_logic/lib/ghost_map.v *)
+
+From New.experiments Require Export own.
 
 (** A "ghost map" (or "ghost heap") with a proposition controlling authoritative
 ownership of the entire heap, and a "points-to-like" proposition for (mutable,
