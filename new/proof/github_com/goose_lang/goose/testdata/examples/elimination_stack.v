@@ -40,7 +40,7 @@ Lemma wp_NewLockedStack :
     @! chan_spec_raw_examples.NewLockedStack #()
   {{{ s γ, RET #s; is_LockedStack s γ ∗ own_LockedStack γ [] }}}.
 Proof.
-  wp_start. unshelve wp_apply wp_slice_make2; try tc_solve; first word.
+  wp_start. wp_apply wp_slice_make2; first done.
   iIntros (stack_sl) "[stack_sl cap]". rewrite replicate_0.
   wp_auto. wp_alloc s as "Hs".
   iApply wp_fupd. wp_auto.
