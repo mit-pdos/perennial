@@ -4,7 +4,7 @@ From New.proof.github_com.goose_lang.goose.model.channel
   Require Import logatom.chan_au_base idiom.handoff.handoff.
 
 Section wps.
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _} `{!allG Σ}.
 Context {sem : go.Semantics} {package_sem : time.Assumptions}.
 
 #[global] Instance : IsPkgInit (iProp Σ) time := define_is_pkg_init True%I.
@@ -84,7 +84,7 @@ Lemma wp_After `{!chanG Σ time.Time.t} (d : time.Duration.t) :
   {{{ (ch: loc) γ, RET #ch; is_chan_handoff γ ch (λ (t: time.Time.t), True)%I }}}.
 Proof.
   wp_start.
-  wp_apply chan.wp_make; first word.
+  wp_apply chan.wp_make2; first word.
   iIntros (ch γ) "(His & Hcap & Hown)".
   simpl.
   iMod (start_handoff _ _ (λ t, True)%I

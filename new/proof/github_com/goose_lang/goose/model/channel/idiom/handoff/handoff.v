@@ -1,7 +1,7 @@
-Require Import New.proof.proof_prelude.
 From New.proof.github_com.goose_lang.goose.model.channel Require Import
   chan_au_base.
 Require Import New.golang.theory.
+Require Import New.proof.proof_prelude.
 
 (** * Handoff Channel Pattern Verification
 
@@ -13,7 +13,7 @@ Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics}.
 
-Context `[!chanG Σ V].
+Context `[!allG Σ].
 Context `[!ZeroVal V] `[!TypedPointsto V] `[!IntoValTyped V t].
 
 Record handoff_names := {
