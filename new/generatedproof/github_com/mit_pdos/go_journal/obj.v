@@ -8,166 +8,78 @@ Require Export New.generatedproof.github_com.mit_pdos.go_journal.util.
 Require Export New.generatedproof.github_com.mit_pdos.go_journal.wal.
 Require Export New.generatedproof.sync.
 Require Export New.golang.theory.
-
 Require Export New.code.github_com.mit_pdos.go_journal.obj.
 
 Set Default Proof Using "Type".
 
 Module obj.
-
-(* type obj.Log *)
 Module Log.
 Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-  mu' : loc;
-  log' : loc;
-  pos' : wal.LogPosition.t;
-}.
+
+Context `{!heapGS Σ}.
+Context {sem : go.Semantics}.
+Context {package_sem' : obj.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance Log_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (obj.Log.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "mu" ∷ l.[(obj.Log.t), "mu"] ↦{dq} v.(obj.Log.mu') ∗
+      "log" ∷ l.[(obj.Log.t), "log"] ↦{dq} v.(obj.Log.log') ∗
+      "pos" ∷ l.[(obj.Log.t), "pos"] ↦{dq} v.(obj.Log.pos') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance Log_into_val_typed
+   :
+  IntoValTypedUnderlying (obj.Log.t) (obj.Logⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Log_access_load_mu l (v : (obj.Log.t)) dq :
+  AccessStrict
+    (l.[(obj.Log.t), "mu"] ↦{dq} (v.(obj.Log.mu')))
+    (l.[(obj.Log.t), "mu"] ↦{dq} (v.(obj.Log.mu')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Log_access_store_mu l (v : (obj.Log.t)) mu' :
+  AccessStrict
+    (l.[(obj.Log.t), "mu"] ↦ (v.(obj.Log.mu')))
+    (l.[(obj.Log.t), "mu"] ↦ mu')
+    (l ↦ v) (l ↦ (v <|(obj.Log.mu') := mu'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Log_access_load_log l (v : (obj.Log.t)) dq :
+  AccessStrict
+    (l.[(obj.Log.t), "log"] ↦{dq} (v.(obj.Log.log')))
+    (l.[(obj.Log.t), "log"] ↦{dq} (v.(obj.Log.log')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Log_access_store_log l (v : (obj.Log.t)) log' :
+  AccessStrict
+    (l.[(obj.Log.t), "log"] ↦ (v.(obj.Log.log')))
+    (l.[(obj.Log.t), "log"] ↦ log')
+    (l ↦ v) (l ↦ (v <|(obj.Log.log') := log'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Log_access_load_pos l (v : (obj.Log.t)) dq :
+  AccessStrict
+    (l.[(obj.Log.t), "pos"] ↦{dq} (v.(obj.Log.pos')))
+    (l.[(obj.Log.t), "pos"] ↦{dq} (v.(obj.Log.pos')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Log_access_store_pos l (v : (obj.Log.t)) pos' :
+  AccessStrict
+    (l.[(obj.Log.t), "pos"] ↦ (v.(obj.Log.pos')))
+    (l.[(obj.Log.t), "pos"] ↦ pos')
+    (l ↦ v) (l ↦ (v <|(obj.Log.pos') := pos'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End Log.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent obj.Log.
-#[local] Typeclasses Transparent obj.Log.
-
-Global Instance Log_wf : struct.Wf obj.Log.
-Proof. apply _. Qed.
-
-Global Instance settable_Log : Settable Log.t :=
-  settable! Log.mk < Log.mu'; Log.log'; Log.pos' >.
-Global Instance into_val_Log : IntoVal Log.t :=
-  {| to_val_def v :=
-    struct.val_aux obj.Log [
-    "mu" ::= #(Log.mu' v);
-    "log" ::= #(Log.log' v);
-    "pos" ::= #(Log.pos' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_Log : IntoValTyped Log.t obj.Log :=
-{|
-  default_val := Log.mk (default_val _) (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_Log_mu : IntoValStructField "mu" obj.Log Log.mu'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Log_log : IntoValStructField "log" obj.Log Log.log'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Log_pos : IntoValStructField "pos" obj.Log Log.pos'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Log mu' log' pos':
-  PureWp True
-    (struct.make #obj.Log (alist_val [
-      "mu" ::= #mu';
-      "log" ::= #log';
-      "pos" ::= #pos'
-    ]))%struct
-    #(Log.mk mu' log' pos').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance Log_struct_fields_split dq l (v : Log.t) :
-  StructFieldsSplit dq l v (
-    "Hmu" ∷ l ↦s[obj.Log :: "mu"]{dq} v.(Log.mu') ∗
-    "Hlog" ∷ l ↦s[obj.Log :: "log"]{dq} v.(Log.log') ∗
-    "Hpos" ∷ l ↦s[obj.Log :: "pos"]{dq} v.(Log.pos')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Log.mu' v)) (obj.Log) "mu"%go.
-  simpl_one_flatten_struct (# (Log.log' v)) (obj.Log) "log"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-Section names.
-
-Context `{!heapGS Σ}.
-Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext}.
-#[local] Transparent is_pkg_defined is_pkg_defined_pure.
-
-Global Instance is_pkg_defined_pure_obj : IsPkgDefinedPure obj :=
-  {|
-    is_pkg_defined_pure_def go_ctx :=
-      is_pkg_defined_pure_single obj ∧
-      is_pkg_defined_pure code.github_com.goose_lang.primitive.disk.disk ∧
-      is_pkg_defined_pure code.github_com.mit_pdos.go_journal.addr.addr ∧
-      is_pkg_defined_pure code.github_com.mit_pdos.go_journal.buf.buf ∧
-      is_pkg_defined_pure code.github_com.mit_pdos.go_journal.common.common ∧
-      is_pkg_defined_pure code.github_com.mit_pdos.go_journal.util.util ∧
-      is_pkg_defined_pure code.github_com.mit_pdos.go_journal.wal.wal ∧
-      is_pkg_defined_pure code.sync.sync;
-  |}.
-
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_obj : IsPkgDefined obj :=
-  {|
-    is_pkg_defined_def go_ctx :=
-      (is_pkg_defined_single obj ∗
-       is_pkg_defined code.github_com.goose_lang.primitive.disk.disk ∗
-       is_pkg_defined code.github_com.mit_pdos.go_journal.addr.addr ∗
-       is_pkg_defined code.github_com.mit_pdos.go_journal.buf.buf ∗
-       is_pkg_defined code.github_com.mit_pdos.go_journal.common.common ∗
-       is_pkg_defined code.github_com.mit_pdos.go_journal.util.util ∗
-       is_pkg_defined code.github_com.mit_pdos.go_journal.wal.wal ∗
-       is_pkg_defined code.sync.sync)%I
-  |}.
-Final Obligation. iIntros. iFrame "#%". Qed.
-#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
-
-Global Instance wp_func_call_MkLog :
-  WpFuncCall obj.MkLog _ (is_pkg_defined obj) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_method_call_Log'ptr_CommitWait :
-  WpMethodCall (ptrT.id obj.Log.id) "CommitWait" _ (is_pkg_defined obj) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Log'ptr_Flush :
-  WpMethodCall (ptrT.id obj.Log.id) "Flush" _ (is_pkg_defined obj) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Log'ptr_Load :
-  WpMethodCall (ptrT.id obj.Log.id) "Load" _ (is_pkg_defined obj) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Log'ptr_LogSz :
-  WpMethodCall (ptrT.id obj.Log.id) "LogSz" _ (is_pkg_defined obj) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Log'ptr_Shutdown :
-  WpMethodCall (ptrT.id obj.Log.id) "Shutdown" _ (is_pkg_defined obj) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Log'ptr_doCommit :
-  WpMethodCall (ptrT.id obj.Log.id) "doCommit" _ (is_pkg_defined obj) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Log'ptr_installBufs :
-  WpMethodCall (ptrT.id obj.Log.id) "installBufs" _ (is_pkg_defined obj) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Log'ptr_installBufsMap :
-  WpMethodCall (ptrT.id obj.Log.id) "installBufsMap" _ (is_pkg_defined obj) :=
-  ltac:(solve_wp_method_call).
-
-End names.
 End obj.

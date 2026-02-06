@@ -5,220 +5,193 @@ Require Export New.code.github_com.mit_pdos.go_journal.jrnl.
 Require Export New.code.github_com.mit_pdos.go_journal.lockmap.
 Require Export New.code.github_com.mit_pdos.go_journal.obj.
 Require Export New.code.github_com.mit_pdos.go_journal.util.
-
 From New.golang Require Import defn.
+From New Require Import disk_prelude.
+Module pkg_id.
 Definition txn : go_string := "github.com/mit-pdos/go-journal/txn".
 
-From New Require Import disk_prelude.
+End pkg_id.
+Export pkg_id.
 Module txn.
 
-Module Log. Definition id : go_string := "github.com/mit-pdos/go-journal/txn.Log"%go. End Log.
-Module Txn. Definition id : go_string := "github.com/mit-pdos/go-journal/txn.Txn"%go. End Txn.
+Definition Log {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/mit-pdos/go-journal/txn.Log"%go [].
 
-Section code.
+Definition Txn {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/mit-pdos/go-journal/txn.Txn"%go [].
 
+Definition Init {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/mit-pdos/go-journal/txn.Init"%go.
 
-Definition Log : go_type := structT [
-  "log" :: ptrT;
-  "locks" :: ptrT
-].
-#[global] Typeclasses Opaque Log.
-#[global] Opaque Log.
+Definition Begin {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/mit-pdos/go-journal/txn.Begin"%go.
 
-Definition Txn : go_type := structT [
-  "buftxn" :: ptrT;
-  "locks" :: ptrT;
-  "acquired" :: mapT uint64T boolT
-].
-#[global] Typeclasses Opaque Txn.
-#[global] Opaque Txn.
-
-Definition Init : go_string := "github.com/mit-pdos/go-journal/txn.Init"%go.
+Definition bitToByte {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/mit-pdos/go-journal/txn.bitToByte"%go.
 
 (* go: txn.go:29:6 *)
-Definition Initⁱᵐᵖˡ : val :=
+Definition Initⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "d",
-    exception_do (let: "d" := (mem.alloc "d") in
-    let: "twophasePre" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (let: "$log" := (let: "$a0" := (![#disk.Disk] "d") in
-    (func_call #obj.MkLog) "$a0") in
-    let: "$locks" := ((func_call #lockmap.MkLockMap) #()) in
-    struct.make #Log [{
-      "log" ::= "$log";
-      "locks" ::= "$locks"
-    }])) in
-    do:  ("twophasePre" <-[#ptrT] "$r0");;;
-    return: (![#ptrT] "twophasePre")).
-
-Definition Begin : go_string := "github.com/mit-pdos/go-journal/txn.Begin"%go.
+    exception_do (let: "d" := (GoAlloc disk.Disk "d") in
+    let: "twophasePre" := (GoAlloc (go.PointerType Log) (GoZeroVal (go.PointerType Log) #())) in
+    let: "$r0" := (GoAlloc Log (CompositeLiteral Log (LiteralValue [KeyedElement (Some (KeyField "log"%go)) (ElementExpression (go.PointerType obj.Log) (let: "$a0" := (![disk.Disk] "d") in
+     (FuncResolve obj.MkLog [] #()) "$a0")); KeyedElement (Some (KeyField "locks"%go)) (ElementExpression (go.PointerType lockmap.LockMap) ((FuncResolve lockmap.MkLockMap [] #()) #()))]))) in
+    do:  ("twophasePre" <-[go.PointerType Log] "$r0");;;
+    return: (![go.PointerType Log] "twophasePre")).
 
 (* Start a local transaction with no writes from a global Log.
 
    go: txn.go:38:6 *)
-Definition Beginⁱᵐᵖˡ : val :=
+Definition Beginⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "tsys",
-    exception_do (let: "tsys" := (mem.alloc "tsys") in
-    let: "trans" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (let: "$buftxn" := (let: "$a0" := (![#ptrT] (struct.field_ref #Log #"log"%go (![#ptrT] "tsys"))) in
-    (func_call #jrnl.Begin) "$a0") in
-    let: "$locks" := (![#ptrT] (struct.field_ref #Log #"locks"%go (![#ptrT] "tsys"))) in
-    let: "$acquired" := (map.make #uint64T #boolT) in
-    struct.make #Txn [{
-      "buftxn" ::= "$buftxn";
-      "locks" ::= "$locks";
-      "acquired" ::= "$acquired"
-    }])) in
-    do:  ("trans" <-[#ptrT] "$r0");;;
+    exception_do (let: "tsys" := (GoAlloc (go.PointerType Log) "tsys") in
+    let: "trans" := (GoAlloc (go.PointerType Txn) (GoZeroVal (go.PointerType Txn) #())) in
+    let: "$r0" := (GoAlloc Txn (CompositeLiteral Txn (LiteralValue [KeyedElement (Some (KeyField "buftxn"%go)) (ElementExpression (go.PointerType jrnl.Op) (let: "$a0" := (![go.PointerType obj.Log] (StructFieldRef Log "log"%go (![go.PointerType Log] "tsys"))) in
+     (FuncResolve jrnl.Begin [] #()) "$a0")); KeyedElement (Some (KeyField "locks"%go)) (ElementExpression (go.PointerType lockmap.LockMap) (![go.PointerType lockmap.LockMap] (StructFieldRef Log "locks"%go (![go.PointerType Log] "tsys")))); KeyedElement (Some (KeyField "acquired"%go)) (ElementExpression (go.MapType go.uint64 go.bool) ((FuncResolve go.make1 [go.MapType go.uint64 go.bool] #()) #()))]))) in
+    do:  ("trans" <-[go.PointerType Txn] "$r0");;;
     do:  (let: "$a0" := #(W64 5) in
     let: "$a1" := #"tp Begin: %v
     "%go in
-    let: "$a2" := ((let: "$sl0" := (interface.make #(ptrT.id Txn.id) (![#ptrT] "trans")) in
-    slice.literal #interfaceT ["$sl0"])) in
-    (func_call #util.DPrintf) "$a0" "$a1" "$a2");;;
-    return: (![#ptrT] "trans")).
+    let: "$a2" := ((let: "$sl0" := (Convert (go.PointerType Txn) (go.InterfaceType []) (![go.PointerType Txn] "trans")) in
+    CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0")]))) in
+    (FuncResolve util.DPrintf [] #()) "$a0" "$a1" "$a2");;;
+    return: (![go.PointerType Txn] "trans")).
 
 (* go: txn.go:48:18 *)
-Definition Log__Flushⁱᵐᵖˡ : val :=
+Definition Log__Flushⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "tsys" <>,
-    exception_do (let: "tsys" := (mem.alloc "tsys") in
-    do:  ((method_call #(ptrT.id obj.Log.id) #"Flush"%go (![#ptrT] (struct.field_ref #Log #"log"%go (![#ptrT] "tsys")))) #());;;
+    exception_do (let: "tsys" := (GoAlloc (go.PointerType Log) "tsys") in
+    do:  ((MethodResolve (go.PointerType obj.Log) "Flush"%go (![go.PointerType obj.Log] (StructFieldRef Log "log"%go (![go.PointerType Log] "tsys")))) #());;;
     return: #()).
 
 (* go: txn.go:52:17 *)
-Definition Txn__acquireNoCheckⁱᵐᵖˡ : val :=
+Definition Txn__acquireNoCheckⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "txn" "addr",
-    exception_do (let: "txn" := (mem.alloc "txn") in
-    let: "addr" := (mem.alloc "addr") in
-    let: "flatAddr" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := ((method_call #addr.Addr.id #"Flatid"%go (![#addr.Addr] "addr")) #()) in
-    do:  ("flatAddr" <-[#uint64T] "$r0");;;
-    do:  (let: "$a0" := (![#uint64T] "flatAddr") in
-    (method_call #(ptrT.id lockmap.LockMap.id) #"Acquire"%go (![#ptrT] (struct.field_ref #Txn #"locks"%go (![#ptrT] "txn")))) "$a0");;;
+    exception_do (let: "txn" := (GoAlloc (go.PointerType Txn) "txn") in
+    let: "addr" := (GoAlloc addr.Addr "addr") in
+    let: "flatAddr" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+    let: "$r0" := ((MethodResolve addr.Addr "Flatid"%go (![addr.Addr] "addr")) #()) in
+    do:  ("flatAddr" <-[go.uint64] "$r0");;;
+    do:  (let: "$a0" := (![go.uint64] "flatAddr") in
+    (MethodResolve (go.PointerType lockmap.LockMap) "Acquire"%go (![go.PointerType lockmap.LockMap] (StructFieldRef Txn "locks"%go (![go.PointerType Txn] "txn")))) "$a0");;;
     let: "$r0" := #true in
-    do:  (map.insert (![type.mapT #uint64T #boolT] (struct.field_ref #Txn #"acquired"%go (![#ptrT] "txn"))) (![#uint64T] "flatAddr") "$r0");;;
+    do:  (map.insert go.uint64 (![go.MapType go.uint64 go.bool] (StructFieldRef Txn "acquired"%go (![go.PointerType Txn] "txn"))) (![go.uint64] "flatAddr") "$r0");;;
     return: #()).
 
 (* go: txn.go:58:17 *)
-Definition Txn__isAlreadyAcquiredⁱᵐᵖˡ : val :=
+Definition Txn__isAlreadyAcquiredⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "txn" "addr",
-    exception_do (let: "txn" := (mem.alloc "txn") in
-    let: "addr" := (mem.alloc "addr") in
-    let: "flatAddr" := (mem.alloc (type.zero_val #uint64T)) in
-    let: "$r0" := ((method_call #addr.Addr.id #"Flatid"%go (![#addr.Addr] "addr")) #()) in
-    do:  ("flatAddr" <-[#uint64T] "$r0");;;
-    return: (Fst (map.get (![type.mapT #uint64T #boolT] (struct.field_ref #Txn #"acquired"%go (![#ptrT] "txn"))) (![#uint64T] "flatAddr")))).
+    exception_do (let: "txn" := (GoAlloc (go.PointerType Txn) "txn") in
+    let: "addr" := (GoAlloc addr.Addr "addr") in
+    let: "flatAddr" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+    let: "$r0" := ((MethodResolve addr.Addr "Flatid"%go (![addr.Addr] "addr")) #()) in
+    do:  ("flatAddr" <-[go.uint64] "$r0");;;
+    return: (map.lookup1 go.uint64 go.bool (![go.MapType go.uint64 go.bool] (StructFieldRef Txn "acquired"%go (![go.PointerType Txn] "txn"))) (![go.uint64] "flatAddr"))).
 
 (* go: txn.go:63:17 *)
-Definition Txn__Acquireⁱᵐᵖˡ : val :=
+Definition Txn__Acquireⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "txn" "addr",
-    exception_do (let: "txn" := (mem.alloc "txn") in
-    let: "addr" := (mem.alloc "addr") in
-    let: "already_acquired" := (mem.alloc (type.zero_val #boolT)) in
-    let: "$r0" := (let: "$a0" := (![#addr.Addr] "addr") in
-    (method_call #(ptrT.id Txn.id) #"isAlreadyAcquired"%go (![#ptrT] "txn")) "$a0") in
-    do:  ("already_acquired" <-[#boolT] "$r0");;;
-    (if: (~ (![#boolT] "already_acquired"))
+    exception_do (let: "txn" := (GoAlloc (go.PointerType Txn) "txn") in
+    let: "addr" := (GoAlloc addr.Addr "addr") in
+    let: "already_acquired" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
+    let: "$r0" := (let: "$a0" := (![addr.Addr] "addr") in
+    (MethodResolve (go.PointerType Txn) "isAlreadyAcquired"%go (![go.PointerType Txn] "txn")) "$a0") in
+    do:  ("already_acquired" <-[go.bool] "$r0");;;
+    (if: (~ (![go.bool] "already_acquired"))
     then
-      do:  (let: "$a0" := (![#addr.Addr] "addr") in
-      (method_call #(ptrT.id Txn.id) #"acquireNoCheck"%go (![#ptrT] "txn")) "$a0")
+      do:  (let: "$a0" := (![addr.Addr] "addr") in
+      (MethodResolve (go.PointerType Txn) "acquireNoCheck"%go (![go.PointerType Txn] "txn")) "$a0")
     else do:  #());;;
     return: #()).
 
 (* go: txn.go:70:17 *)
-Definition Txn__ReleaseAllⁱᵐᵖˡ : val :=
+Definition Txn__ReleaseAllⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "txn" <>,
-    exception_do (let: "txn" := (mem.alloc "txn") in
-    let: "$range" := (![type.mapT #uint64T #boolT] (struct.field_ref #Txn #"acquired"%go (![#ptrT] "txn"))) in
-    (let: "flatAddr" := (mem.alloc (type.zero_val #uint64T)) in
-    map.for_range "$range" (λ: "$key" "value",
-      do:  ("flatAddr" <-[#uint64T] "$key");;;
-      do:  (let: "$a0" := (![#uint64T] "flatAddr") in
-      (method_call #(ptrT.id lockmap.LockMap.id) #"Release"%go (![#ptrT] (struct.field_ref #Txn #"locks"%go (![#ptrT] "txn")))) "$a0")));;;
+    exception_do (let: "txn" := (GoAlloc (go.PointerType Txn) "txn") in
+    let: "$range" := (![go.MapType go.uint64 go.bool] (StructFieldRef Txn "acquired"%go (![go.PointerType Txn] "txn"))) in
+    (let: "flatAddr" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+    map.for_range go.uint64 go.bool "$range" (λ: "$key" "value",
+      do:  ("flatAddr" <-[go.uint64] "$key");;;
+      do:  (let: "$a0" := (![go.uint64] "flatAddr") in
+      (MethodResolve (go.PointerType lockmap.LockMap) "Release"%go (![go.PointerType lockmap.LockMap] (StructFieldRef Txn "locks"%go (![go.PointerType Txn] "txn")))) "$a0")));;;
     return: #()).
 
 (* go: txn.go:76:17 *)
-Definition Txn__readBufNoAcquireⁱᵐᵖˡ : val :=
+Definition Txn__readBufNoAcquireⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "txn" "addr" "sz",
-    exception_do (let: "txn" := (mem.alloc "txn") in
-    let: "sz" := (mem.alloc "sz") in
-    let: "addr" := (mem.alloc "addr") in
-    let: "s" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (let: "$a0" := (![#sliceT] (struct.field_ref #buf.Buf #"Data"%go (let: "$a0" := (![#addr.Addr] "addr") in
-    let: "$a1" := (![#uint64T] "sz") in
-    (method_call #(ptrT.id jrnl.Op.id) #"ReadBuf"%go (![#ptrT] (struct.field_ref #Txn #"buftxn"%go (![#ptrT] "txn")))) "$a0" "$a1"))) in
-    (func_call #util.CloneByteSlice) "$a0") in
-    do:  ("s" <-[#sliceT] "$r0");;;
-    return: (![#sliceT] "s")).
+    exception_do (let: "txn" := (GoAlloc (go.PointerType Txn) "txn") in
+    let: "sz" := (GoAlloc go.uint64 "sz") in
+    let: "addr" := (GoAlloc addr.Addr "addr") in
+    let: "s" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
+    let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] (StructFieldRef buf.Buf "Data"%go (let: "$a0" := (![addr.Addr] "addr") in
+    let: "$a1" := (![go.uint64] "sz") in
+    (MethodResolve (go.PointerType jrnl.Op) "ReadBuf"%go (![go.PointerType jrnl.Op] (StructFieldRef Txn "buftxn"%go (![go.PointerType Txn] "txn")))) "$a0" "$a1"))) in
+    (FuncResolve util.CloneByteSlice [] #()) "$a0") in
+    do:  ("s" <-[go.SliceType go.byte] "$r0");;;
+    return: (![go.SliceType go.byte] "s")).
 
 (* go: txn.go:85:17 *)
-Definition Txn__ReadBufⁱᵐᵖˡ : val :=
+Definition Txn__ReadBufⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "txn" "addr" "sz",
-    exception_do (let: "txn" := (mem.alloc "txn") in
-    let: "sz" := (mem.alloc "sz") in
-    let: "addr" := (mem.alloc "addr") in
-    do:  (let: "$a0" := (![#addr.Addr] "addr") in
-    (method_call #(ptrT.id Txn.id) #"Acquire"%go (![#ptrT] "txn")) "$a0");;;
-    return: (let: "$a0" := (![#addr.Addr] "addr") in
-     let: "$a1" := (![#uint64T] "sz") in
-     (method_call #(ptrT.id Txn.id) #"readBufNoAcquire"%go (![#ptrT] "txn")) "$a0" "$a1")).
+    exception_do (let: "txn" := (GoAlloc (go.PointerType Txn) "txn") in
+    let: "sz" := (GoAlloc go.uint64 "sz") in
+    let: "addr" := (GoAlloc addr.Addr "addr") in
+    do:  (let: "$a0" := (![addr.Addr] "addr") in
+    (MethodResolve (go.PointerType Txn) "Acquire"%go (![go.PointerType Txn] "txn")) "$a0");;;
+    return: (let: "$a0" := (![addr.Addr] "addr") in
+     let: "$a1" := (![go.uint64] "sz") in
+     (MethodResolve (go.PointerType Txn) "readBufNoAcquire"%go (![go.PointerType Txn] "txn")) "$a0" "$a1")).
 
 (* OverWrite writes an object to addr
 
    go: txn.go:91:17 *)
-Definition Txn__OverWriteⁱᵐᵖˡ : val :=
+Definition Txn__OverWriteⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "txn" "addr" "sz" "data",
-    exception_do (let: "txn" := (mem.alloc "txn") in
-    let: "data" := (mem.alloc "data") in
-    let: "sz" := (mem.alloc "sz") in
-    let: "addr" := (mem.alloc "addr") in
-    do:  (let: "$a0" := (![#addr.Addr] "addr") in
-    (method_call #(ptrT.id Txn.id) #"Acquire"%go (![#ptrT] "txn")) "$a0");;;
-    do:  (let: "$a0" := (![#addr.Addr] "addr") in
-    let: "$a1" := (![#uint64T] "sz") in
-    let: "$a2" := (![#sliceT] "data") in
-    (method_call #(ptrT.id jrnl.Op.id) #"OverWrite"%go (![#ptrT] (struct.field_ref #Txn #"buftxn"%go (![#ptrT] "txn")))) "$a0" "$a1" "$a2");;;
+    exception_do (let: "txn" := (GoAlloc (go.PointerType Txn) "txn") in
+    let: "data" := (GoAlloc (go.SliceType go.byte) "data") in
+    let: "sz" := (GoAlloc go.uint64 "sz") in
+    let: "addr" := (GoAlloc addr.Addr "addr") in
+    do:  (let: "$a0" := (![addr.Addr] "addr") in
+    (MethodResolve (go.PointerType Txn) "Acquire"%go (![go.PointerType Txn] "txn")) "$a0");;;
+    do:  (let: "$a0" := (![addr.Addr] "addr") in
+    let: "$a1" := (![go.uint64] "sz") in
+    let: "$a2" := (![go.SliceType go.byte] "data") in
+    (MethodResolve (go.PointerType jrnl.Op) "OverWrite"%go (![go.PointerType jrnl.Op] (StructFieldRef Txn "buftxn"%go (![go.PointerType Txn] "txn")))) "$a0" "$a1" "$a2");;;
     return: #()).
 
 (* go: txn.go:96:17 *)
-Definition Txn__ReadBufBitⁱᵐᵖˡ : val :=
+Definition Txn__ReadBufBitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "txn" "addr",
-    exception_do (let: "txn" := (mem.alloc "txn") in
-    let: "addr" := (mem.alloc "addr") in
-    let: "dataByte" := (mem.alloc (type.zero_val #byteT)) in
-    let: "$r0" := (![#byteT] (slice.elem_ref #byteT (let: "$a0" := (![#addr.Addr] "addr") in
-    let: "$a1" := #(W64 1) in
-    (method_call #(ptrT.id Txn.id) #"ReadBuf"%go (![#ptrT] "txn")) "$a0" "$a1") #(W64 0))) in
-    do:  ("dataByte" <-[#byteT] "$r0");;;
-    return: (#(W8 1) = (((![#byteT] "dataByte") ≫ (u_to_w8 ((![#uint64T] (struct.field_ref #addr.Addr #"Off"%go "addr")) `rem` #(W64 8)))) `and` #(W8 1)))).
-
-Definition bitToByte : go_string := "github.com/mit-pdos/go-journal/txn.bitToByte"%go.
+    exception_do (let: "txn" := (GoAlloc (go.PointerType Txn) "txn") in
+    let: "addr" := (GoAlloc addr.Addr "addr") in
+    let: "dataByte" := (GoAlloc go.byte (GoZeroVal go.byte #())) in
+    let: "$r0" := (![go.byte] (IndexRef (go.SliceType go.byte) (let: "$a0" := (![addr.Addr] "addr") in
+     let: "$a1" := #(W64 1) in
+     (MethodResolve (go.PointerType Txn) "ReadBuf"%go (![go.PointerType Txn] "txn")) "$a0" "$a1", #(W64 0)))) in
+    do:  ("dataByte" <-[go.byte] "$r0");;;
+    return: (#(W8 1) =⟨go.byte⟩ (((![go.byte] "dataByte") >>⟨go.byte⟩ (Convert go.uint64 go.byte ((![go.uint64] (StructFieldRef addr.Addr "Off"%go "addr")) %⟨go.uint64⟩ #(W64 8)))) &⟨go.byte⟩ #(W8 1)))).
 
 (* go: txn.go:101:6 *)
-Definition bitToByteⁱᵐᵖˡ : val :=
+Definition bitToByteⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "off" "data",
-    exception_do (let: "data" := (mem.alloc "data") in
-    let: "off" := (mem.alloc "off") in
-    (if: ![#boolT] "data"
-    then return: (#(W8 1) ≪ (u_to_w8 (![#uint64T] "off")))
+    exception_do (let: "data" := (GoAlloc go.bool "data") in
+    let: "off" := (GoAlloc go.uint64 "off") in
+    (if: ![go.bool] "data"
+    then return: (#(W8 1) <<⟨go.byte⟩ (Convert go.uint64 go.byte (![go.uint64] "off")))
     else return: (#(W8 0)))).
 
 (* go: txn.go:109:17 *)
-Definition Txn__OverWriteBitⁱᵐᵖˡ : val :=
+Definition Txn__OverWriteBitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "txn" "addr" "data",
-    exception_do (let: "txn" := (mem.alloc "txn") in
-    let: "data" := (mem.alloc "data") in
-    let: "addr" := (mem.alloc "addr") in
-    let: "dataBytes" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make2 #byteT #(W64 1)) in
-    do:  ("dataBytes" <-[#sliceT] "$r0");;;
-    let: "$r0" := (let: "$a0" := ((![#uint64T] (struct.field_ref #addr.Addr #"Off"%go "addr")) `rem` #(W64 8)) in
-    let: "$a1" := (![#boolT] "data") in
-    (func_call #bitToByte) "$a0" "$a1") in
-    do:  ((slice.elem_ref #byteT (![#sliceT] "dataBytes") #(W64 0)) <-[#byteT] "$r0");;;
-    do:  (let: "$a0" := (![#addr.Addr] "addr") in
+    exception_do (let: "txn" := (GoAlloc (go.PointerType Txn) "txn") in
+    let: "data" := (GoAlloc go.bool "data") in
+    let: "addr" := (GoAlloc addr.Addr "addr") in
+    let: "dataBytes" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
+    let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) #(W64 1)) in
+    do:  ("dataBytes" <-[go.SliceType go.byte] "$r0");;;
+    let: "$r0" := (let: "$a0" := ((![go.uint64] (StructFieldRef addr.Addr "Off"%go "addr")) %⟨go.uint64⟩ #(W64 8)) in
+    let: "$a1" := (![go.bool] "data") in
+    (FuncResolve bitToByte [] #()) "$a0" "$a1") in
+    do:  ((IndexRef (go.SliceType go.byte) (![go.SliceType go.byte] "dataBytes", #(W64 0))) <-[go.byte] "$r0");;;
+    do:  (let: "$a0" := (![addr.Addr] "addr") in
     let: "$a1" := #(W64 1) in
-    let: "$a2" := (![#sliceT] "dataBytes") in
-    (method_call #(ptrT.id Txn.id) #"OverWrite"%go (![#ptrT] "txn")) "$a0" "$a1" "$a2");;;
+    let: "$a2" := (![go.SliceType go.byte] "dataBytes") in
+    (MethodResolve (go.PointerType Txn) "OverWrite"%go (![go.PointerType Txn] "txn")) "$a0" "$a1" "$a2");;;
     return: #()).
 
 (* NDirty reports an upper bound on the size of this transaction when committed.
@@ -229,62 +202,154 @@ Definition Txn__OverWriteBitⁱᵐᵖˡ : val :=
    safety.
 
    go: txn.go:121:17 *)
-Definition Txn__NDirtyⁱᵐᵖˡ : val :=
+Definition Txn__NDirtyⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "txn" <>,
-    exception_do (let: "txn" := (mem.alloc "txn") in
-    return: ((method_call #(ptrT.id jrnl.Op.id) #"NDirty"%go (![#ptrT] (struct.field_ref #Txn #"buftxn"%go (![#ptrT] "txn")))) #())).
+    exception_do (let: "txn" := (GoAlloc (go.PointerType Txn) "txn") in
+    return: ((MethodResolve (go.PointerType jrnl.Op) "NDirty"%go (![go.PointerType jrnl.Op] (StructFieldRef Txn "buftxn"%go (![go.PointerType Txn] "txn")))) #())).
 
 (* go: txn.go:125:17 *)
-Definition Txn__commitNoReleaseⁱᵐᵖˡ : val :=
+Definition Txn__commitNoReleaseⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "txn" "wait",
-    exception_do (let: "txn" := (mem.alloc "txn") in
-    let: "wait" := (mem.alloc "wait") in
+    exception_do (let: "txn" := (GoAlloc (go.PointerType Txn) "txn") in
+    let: "wait" := (GoAlloc go.bool "wait") in
     do:  (let: "$a0" := #(W64 5) in
     let: "$a1" := #"tp Commit %p
     "%go in
-    let: "$a2" := ((let: "$sl0" := (interface.make #(ptrT.id Txn.id) (![#ptrT] "txn")) in
-    slice.literal #interfaceT ["$sl0"])) in
-    (func_call #util.DPrintf) "$a0" "$a1" "$a2");;;
-    return: (let: "$a0" := (![#boolT] "wait") in
-     (method_call #(ptrT.id jrnl.Op.id) #"CommitWait"%go (![#ptrT] (struct.field_ref #Txn #"buftxn"%go (![#ptrT] "txn")))) "$a0")).
+    let: "$a2" := ((let: "$sl0" := (Convert (go.PointerType Txn) (go.InterfaceType []) (![go.PointerType Txn] "txn")) in
+    CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0")]))) in
+    (FuncResolve util.DPrintf [] #()) "$a0" "$a1" "$a2");;;
+    return: (let: "$a0" := (![go.bool] "wait") in
+     (MethodResolve (go.PointerType jrnl.Op) "CommitWait"%go (![go.PointerType jrnl.Op] (StructFieldRef Txn "buftxn"%go (![go.PointerType Txn] "txn")))) "$a0")).
 
 (* go: txn.go:130:17 *)
-Definition Txn__Commitⁱᵐᵖˡ : val :=
+Definition Txn__Commitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "txn" "wait",
-    exception_do (let: "txn" := (mem.alloc "txn") in
-    let: "wait" := (mem.alloc "wait") in
-    let: "ok" := (mem.alloc (type.zero_val #boolT)) in
-    let: "$r0" := (let: "$a0" := (![#boolT] "wait") in
-    (method_call #(ptrT.id Txn.id) #"commitNoRelease"%go (![#ptrT] "txn")) "$a0") in
-    do:  ("ok" <-[#boolT] "$r0");;;
-    do:  ((method_call #(ptrT.id Txn.id) #"ReleaseAll"%go (![#ptrT] "txn")) #());;;
-    return: (![#boolT] "ok")).
+    exception_do (let: "txn" := (GoAlloc (go.PointerType Txn) "txn") in
+    let: "wait" := (GoAlloc go.bool "wait") in
+    let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
+    let: "$r0" := (let: "$a0" := (![go.bool] "wait") in
+    (MethodResolve (go.PointerType Txn) "commitNoRelease"%go (![go.PointerType Txn] "txn")) "$a0") in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    do:  ((MethodResolve (go.PointerType Txn) "ReleaseAll"%go (![go.PointerType Txn] "txn")) #());;;
+    return: (![go.bool] "ok")).
 
-Definition vars' : list (go_string * go_type) := [].
+#[global] Instance info' : PkgInfo pkg_id.txn :=
+{|
+  pkg_imported_pkgs := [code.github_com.goose_lang.primitive.disk.pkg_id.disk; code.github_com.mit_pdos.go_journal.addr.pkg_id.addr; code.github_com.mit_pdos.go_journal.jrnl.pkg_id.jrnl; code.github_com.mit_pdos.go_journal.lockmap.pkg_id.lockmap; code.github_com.mit_pdos.go_journal.obj.pkg_id.obj; code.github_com.mit_pdos.go_journal.util.pkg_id.util]
+|}.
 
-Definition functions' : list (go_string * val) := [(Init, Initⁱᵐᵖˡ); (Begin, Beginⁱᵐᵖˡ); (bitToByte, bitToByteⁱᵐᵖˡ)].
-
-Definition msets' : list (go_string * (list (go_string * val))) := [(Log.id, []); (ptrT.id Log.id, [("Flush"%go, Log__Flushⁱᵐᵖˡ)]); (Txn.id, []); (ptrT.id Txn.id, [("Acquire"%go, Txn__Acquireⁱᵐᵖˡ); ("Commit"%go, Txn__Commitⁱᵐᵖˡ); ("NDirty"%go, Txn__NDirtyⁱᵐᵖˡ); ("OverWrite"%go, Txn__OverWriteⁱᵐᵖˡ); ("OverWriteBit"%go, Txn__OverWriteBitⁱᵐᵖˡ); ("ReadBuf"%go, Txn__ReadBufⁱᵐᵖˡ); ("ReadBufBit"%go, Txn__ReadBufBitⁱᵐᵖˡ); ("ReleaseAll"%go, Txn__ReleaseAllⁱᵐᵖˡ); ("acquireNoCheck"%go, Txn__acquireNoCheckⁱᵐᵖˡ); ("commitNoRelease"%go, Txn__commitNoReleaseⁱᵐᵖˡ); ("isAlreadyAcquired"%go, Txn__isAlreadyAcquiredⁱᵐᵖˡ); ("readBufNoAcquire"%go, Txn__readBufNoAcquireⁱᵐᵖˡ)])].
-
-#[global] Instance info' : PkgInfo txn.txn :=
-  {|
-    pkg_vars := vars';
-    pkg_functions := functions';
-    pkg_msets := msets';
-    pkg_imported_pkgs := [code.github_com.goose_lang.primitive.disk.disk; code.github_com.mit_pdos.go_journal.addr.addr; code.github_com.mit_pdos.go_journal.jrnl.jrnl; code.github_com.mit_pdos.go_journal.lockmap.lockmap; code.github_com.mit_pdos.go_journal.obj.obj; code.github_com.mit_pdos.go_journal.util.util];
-  |}.
-
-Definition initialize' : val :=
+Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    package.init #txn.txn (λ: <>,
+    package.init pkg_id.txn (λ: <>,
       exception_do (do:  (util.initialize' #());;;
       do:  (obj.initialize' #());;;
       do:  (lockmap.initialize' #());;;
       do:  (jrnl.initialize' #());;;
       do:  (addr.initialize' #());;;
-      do:  (disk.initialize' #());;;
-      do:  (package.alloc txn.txn #()))
+      do:  (disk.initialize' #()))
       ).
 
-End code.
+Module Log.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  log' : loc;
+  locks' : loc;
+}.
+
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+End def.
+
+End Log.
+
+Definition Log'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
+  (go.FieldDecl "log"%go (go.PointerType obj.Log));
+  (go.FieldDecl "locks"%go (go.PointerType lockmap.LockMap))
+].
+Program Definition Log'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (Log'fds_unsealed).
+Global Instance equals_unfold_Log {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Log'fds =→ Log'fds_unsealed.
+Proof. rewrite /Log'fds seal_eq //. Qed.
+
+Definition Logⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (Log'fds).
+
+Class Log_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Log_type_repr  :: go.TypeReprUnderlying Logⁱᵐᵖˡ Log.t;
+  #[global] Log_underlying :: (Log) <u (Logⁱᵐᵖˡ);
+  #[global] Log_get_log (x : Log.t) :: ⟦StructFieldGet (Logⁱᵐᵖˡ) "log", #x⟧ ⤳[under] #x.(Log.log');
+  #[global] Log_set_log (x : Log.t) y :: ⟦StructFieldSet (Logⁱᵐᵖˡ) "log", (#x, #y)⟧ ⤳[under] #(x <|Log.log' := y|>);
+  #[global] Log_get_locks (x : Log.t) :: ⟦StructFieldGet (Logⁱᵐᵖˡ) "locks", #x⟧ ⤳[under] #x.(Log.locks');
+  #[global] Log_set_locks (x : Log.t) y :: ⟦StructFieldSet (Logⁱᵐᵖˡ) "locks", (#x, #y)⟧ ⤳[under] #(x <|Log.locks' := y|>);
+  #[global] Log'ptr_Flush_unfold :: MethodUnfold (go.PointerType (Log)) "Flush" (Log__Flushⁱᵐᵖˡ);
+}.
+
+Module Txn.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  buftxn' : loc;
+  locks' : loc;
+  acquired' : map.t;
+}.
+
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+End def.
+
+End Txn.
+
+Definition Txn'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
+  (go.FieldDecl "buftxn"%go (go.PointerType jrnl.Op));
+  (go.FieldDecl "locks"%go (go.PointerType lockmap.LockMap));
+  (go.FieldDecl "acquired"%go (go.MapType go.uint64 go.bool))
+].
+Program Definition Txn'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (Txn'fds_unsealed).
+Global Instance equals_unfold_Txn {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Txn'fds =→ Txn'fds_unsealed.
+Proof. rewrite /Txn'fds seal_eq //. Qed.
+
+Definition Txnⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (Txn'fds).
+
+Class Txn_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Txn_type_repr  :: go.TypeReprUnderlying Txnⁱᵐᵖˡ Txn.t;
+  #[global] Txn_underlying :: (Txn) <u (Txnⁱᵐᵖˡ);
+  #[global] Txn_get_buftxn (x : Txn.t) :: ⟦StructFieldGet (Txnⁱᵐᵖˡ) "buftxn", #x⟧ ⤳[under] #x.(Txn.buftxn');
+  #[global] Txn_set_buftxn (x : Txn.t) y :: ⟦StructFieldSet (Txnⁱᵐᵖˡ) "buftxn", (#x, #y)⟧ ⤳[under] #(x <|Txn.buftxn' := y|>);
+  #[global] Txn_get_locks (x : Txn.t) :: ⟦StructFieldGet (Txnⁱᵐᵖˡ) "locks", #x⟧ ⤳[under] #x.(Txn.locks');
+  #[global] Txn_set_locks (x : Txn.t) y :: ⟦StructFieldSet (Txnⁱᵐᵖˡ) "locks", (#x, #y)⟧ ⤳[under] #(x <|Txn.locks' := y|>);
+  #[global] Txn_get_acquired (x : Txn.t) :: ⟦StructFieldGet (Txnⁱᵐᵖˡ) "acquired", #x⟧ ⤳[under] #x.(Txn.acquired');
+  #[global] Txn_set_acquired (x : Txn.t) y :: ⟦StructFieldSet (Txnⁱᵐᵖˡ) "acquired", (#x, #y)⟧ ⤳[under] #(x <|Txn.acquired' := y|>);
+  #[global] Txn'ptr_Acquire_unfold :: MethodUnfold (go.PointerType (Txn)) "Acquire" (Txn__Acquireⁱᵐᵖˡ);
+  #[global] Txn'ptr_Commit_unfold :: MethodUnfold (go.PointerType (Txn)) "Commit" (Txn__Commitⁱᵐᵖˡ);
+  #[global] Txn'ptr_NDirty_unfold :: MethodUnfold (go.PointerType (Txn)) "NDirty" (Txn__NDirtyⁱᵐᵖˡ);
+  #[global] Txn'ptr_OverWrite_unfold :: MethodUnfold (go.PointerType (Txn)) "OverWrite" (Txn__OverWriteⁱᵐᵖˡ);
+  #[global] Txn'ptr_OverWriteBit_unfold :: MethodUnfold (go.PointerType (Txn)) "OverWriteBit" (Txn__OverWriteBitⁱᵐᵖˡ);
+  #[global] Txn'ptr_ReadBuf_unfold :: MethodUnfold (go.PointerType (Txn)) "ReadBuf" (Txn__ReadBufⁱᵐᵖˡ);
+  #[global] Txn'ptr_ReadBufBit_unfold :: MethodUnfold (go.PointerType (Txn)) "ReadBufBit" (Txn__ReadBufBitⁱᵐᵖˡ);
+  #[global] Txn'ptr_ReleaseAll_unfold :: MethodUnfold (go.PointerType (Txn)) "ReleaseAll" (Txn__ReleaseAllⁱᵐᵖˡ);
+  #[global] Txn'ptr_acquireNoCheck_unfold :: MethodUnfold (go.PointerType (Txn)) "acquireNoCheck" (Txn__acquireNoCheckⁱᵐᵖˡ);
+  #[global] Txn'ptr_commitNoRelease_unfold :: MethodUnfold (go.PointerType (Txn)) "commitNoRelease" (Txn__commitNoReleaseⁱᵐᵖˡ);
+  #[global] Txn'ptr_isAlreadyAcquired_unfold :: MethodUnfold (go.PointerType (Txn)) "isAlreadyAcquired" (Txn__isAlreadyAcquiredⁱᵐᵖˡ);
+  #[global] Txn'ptr_readBufNoAcquire_unfold :: MethodUnfold (go.PointerType (Txn)) "readBufNoAcquire" (Txn__readBufNoAcquireⁱᵐᵖˡ);
+}.
+
+Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Log_instance :: Log_Assumptions;
+  #[global] Txn_instance :: Txn_Assumptions;
+  #[global] Init_unfold :: FuncUnfold Init [] (Initⁱᵐᵖˡ);
+  #[global] Begin_unfold :: FuncUnfold Begin [] (Beginⁱᵐᵖˡ);
+  #[global] bitToByte_unfold :: FuncUnfold bitToByte [] (bitToByteⁱᵐᵖˡ);
+  #[global] import_disk_Assumption :: disk.Assumptions;
+  #[global] import_addr_Assumption :: addr.Assumptions;
+  #[global] import_jrnl_Assumption :: jrnl.Assumptions;
+  #[global] import_lockmap_Assumption :: lockmap.Assumptions;
+  #[global] import_obj_Assumption :: obj.Assumptions;
+  #[global] import_util_Assumption :: util.Assumptions;
+}.
 End txn.

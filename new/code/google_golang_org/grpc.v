@@ -459,21 +459,21 @@ Axiom ServerStreamⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContex
 
 Axiom serverStreamⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom ServerStreamingClientⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Axiom ServerStreamingClientⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, ∀ (Res : go.type), go.type.
 
-Axiom ServerStreamingServerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Axiom ServerStreamingServerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, ∀ (Res : go.type), go.type.
 
-Axiom ClientStreamingClientⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Axiom ClientStreamingClientⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, ∀ (Req Res : go.type), go.type.
 
-Axiom ClientStreamingServerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Axiom ClientStreamingServerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, ∀ (Req Res : go.type), go.type.
 
-Axiom BidiStreamingClientⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Axiom BidiStreamingClientⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, ∀ (Req Res : go.type), go.type.
 
-Axiom BidiStreamingServerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Axiom BidiStreamingServerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, ∀ (Req Res : go.type), go.type.
 
-Axiom GenericClientStreamⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Axiom GenericClientStreamⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, ∀ (Req Res : go.type), go.type.
 
-Axiom GenericServerStreamⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Axiom GenericServerStreamⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, ∀ (Req Res : go.type), go.type.
 
 Axiom traceEventLogⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
@@ -2729,8 +2729,8 @@ Class serverStream_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocal
 Module ServerStreamingClient.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Axiom t : ∀ {Res : Type}, Type.
-Axiom zero_val : ∀ `{!ZeroVal Res}, ZeroVal t.
+Axiom t : ∀ (Res : Type), Type.
+Axiom zero_val : ∀ `{!ZeroVal Res}, ZeroVal ( Res).
 #[global] Existing Instance zero_val.
 End def.
 End ServerStreamingClient.
@@ -2745,8 +2745,8 @@ Class ServerStreamingClient_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `
 Module ServerStreamingServer.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Axiom t : ∀ {Res : Type}, Type.
-Axiom zero_val : ∀ `{!ZeroVal Res}, ZeroVal t.
+Axiom t : ∀ (Res : Type), Type.
+Axiom zero_val : ∀ `{!ZeroVal Res}, ZeroVal ( Res).
 #[global] Existing Instance zero_val.
 End def.
 End ServerStreamingServer.
@@ -2761,8 +2761,8 @@ Class ServerStreamingServer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `
 Module ClientStreamingClient.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Axiom t : ∀ {Req Res : Type}, Type.
-Axiom zero_val : ∀ `{!ZeroVal Req} `{!ZeroVal Res}, ZeroVal t.
+Axiom t : ∀ (Req Res : Type), Type.
+Axiom zero_val : ∀ `{!ZeroVal Req} `{!ZeroVal Res}, ZeroVal ( Req Res).
 #[global] Existing Instance zero_val.
 End def.
 End ClientStreamingClient.
@@ -2777,8 +2777,8 @@ Class ClientStreamingClient_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `
 Module ClientStreamingServer.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Axiom t : ∀ {Req Res : Type}, Type.
-Axiom zero_val : ∀ `{!ZeroVal Req} `{!ZeroVal Res}, ZeroVal t.
+Axiom t : ∀ (Req Res : Type), Type.
+Axiom zero_val : ∀ `{!ZeroVal Req} `{!ZeroVal Res}, ZeroVal ( Req Res).
 #[global] Existing Instance zero_val.
 End def.
 End ClientStreamingServer.
@@ -2793,8 +2793,8 @@ Class ClientStreamingServer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `
 Module BidiStreamingClient.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Axiom t : ∀ {Req Res : Type}, Type.
-Axiom zero_val : ∀ `{!ZeroVal Req} `{!ZeroVal Res}, ZeroVal t.
+Axiom t : ∀ (Req Res : Type), Type.
+Axiom zero_val : ∀ `{!ZeroVal Req} `{!ZeroVal Res}, ZeroVal ( Req Res).
 #[global] Existing Instance zero_val.
 End def.
 End BidiStreamingClient.
@@ -2809,8 +2809,8 @@ Class BidiStreamingClient_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!
 Module BidiStreamingServer.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Axiom t : ∀ {Req Res : Type}, Type.
-Axiom zero_val : ∀ `{!ZeroVal Req} `{!ZeroVal Res}, ZeroVal t.
+Axiom t : ∀ (Req Res : Type), Type.
+Axiom zero_val : ∀ `{!ZeroVal Req} `{!ZeroVal Res}, ZeroVal ( Req Res).
 #[global] Existing Instance zero_val.
 End def.
 End BidiStreamingServer.
@@ -2825,8 +2825,8 @@ Class BidiStreamingServer_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!
 Module GenericClientStream.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Axiom t : ∀ {Req Res : Type}, Type.
-Axiom zero_val : ∀ `{!ZeroVal Req} `{!ZeroVal Res}, ZeroVal t.
+Axiom t : ∀ (Req Res : Type), Type.
+Axiom zero_val : ∀ `{!ZeroVal Req} `{!ZeroVal Res}, ZeroVal ( Req Res).
 #[global] Existing Instance zero_val.
 End def.
 End GenericClientStream.
@@ -2841,8 +2841,8 @@ Class GenericClientStream_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!
 Module GenericServerStream.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Axiom t : ∀ {Req Res : Type}, Type.
-Axiom zero_val : ∀ `{!ZeroVal Req} `{!ZeroVal Res}, ZeroVal t.
+Axiom t : ∀ (Req Res : Type), Type.
+Axiom zero_val : ∀ `{!ZeroVal Req} `{!ZeroVal Res}, ZeroVal ( Req Res).
 #[global] Existing Instance zero_val.
 End def.
 End GenericServerStream.

@@ -94,13 +94,13 @@ Definition invalidPair {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type 
 
 Definition invalidPairs {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap.invalidPairs"%go [].
 
-Axiom objectsⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Axiom objectsⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, ∀ (T : go.type), go.type.
 
-Axiom ObjectMarshalerPtrⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Axiom ObjectMarshalerPtrⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, ∀ (T : go.type), go.type.
 
-Axiom objectValuesⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Axiom objectValuesⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, ∀ (T P : go.type), go.type.
 
-Axiom stringersⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Axiom stringersⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, ∀ (T : go.type), go.type.
 
 Axiom boolsⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
@@ -154,7 +154,7 @@ Axiom Field : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
 Axiom dictObjectⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom anyFieldCⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+Axiom anyFieldCⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, ∀ (T : go.type), go.type.
 
 Axiom loggerWriterⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
@@ -533,8 +533,8 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
 Module objects.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Axiom t : ∀ {T : Type}, Type.
-Axiom zero_val : ∀ `{!ZeroVal T}, ZeroVal t.
+Axiom t : ∀ (T : Type), Type.
+Axiom zero_val : ∀ `{!ZeroVal T}, ZeroVal ( T).
 #[global] Existing Instance zero_val.
 End def.
 End objects.
@@ -549,8 +549,8 @@ Class objects_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalConte
 Module ObjectMarshalerPtr.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Axiom t : ∀ {T : Type}, Type.
-Axiom zero_val : ∀ `{!ZeroVal T}, ZeroVal t.
+Axiom t : ∀ (T : Type), Type.
+Axiom zero_val : ∀ `{!ZeroVal T}, ZeroVal ( T).
 #[global] Existing Instance zero_val.
 End def.
 End ObjectMarshalerPtr.
@@ -565,8 +565,8 @@ Class ObjectMarshalerPtr_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!G
 Module objectValues.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Axiom t : ∀ {T P : Type}, Type.
-Axiom zero_val : ∀ `{!ZeroVal T} `{!ZeroVal P}, ZeroVal t.
+Axiom t : ∀ (T P : Type), Type.
+Axiom zero_val : ∀ `{!ZeroVal T} `{!ZeroVal P}, ZeroVal ( T P).
 #[global] Existing Instance zero_val.
 End def.
 End objectValues.
@@ -581,8 +581,8 @@ Class objectValues_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocal
 Module stringers.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Axiom t : ∀ {T : Type}, Type.
-Axiom zero_val : ∀ `{!ZeroVal T}, ZeroVal t.
+Axiom t : ∀ (T : Type), Type.
+Axiom zero_val : ∀ `{!ZeroVal T}, ZeroVal ( T).
 #[global] Existing Instance zero_val.
 End def.
 End stringers.
@@ -997,8 +997,8 @@ Class dictObject_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalCo
 Module anyFieldC.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Axiom t : ∀ {T : Type}, Type.
-Axiom zero_val : ∀ `{!ZeroVal T}, ZeroVal t.
+Axiom t : ∀ (T : Type), Type.
+Axiom zero_val : ∀ `{!ZeroVal T}, ZeroVal ( T).
 #[global] Existing Instance zero_val.
 End def.
 End anyFieldC.

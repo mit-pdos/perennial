@@ -5,136 +5,64 @@ Require Export New.generatedproof.github_com.mit_pdos.go_journal.buf.
 Require Export New.generatedproof.github_com.mit_pdos.go_journal.obj.
 Require Export New.generatedproof.github_com.mit_pdos.go_journal.util.
 Require Export New.golang.theory.
-
 Require Export New.code.github_com.mit_pdos.go_journal.jrnl.
 
 Set Default Proof Using "Type".
 
 Module jrnl.
-
-(* type jrnl.Op *)
 Module Op.
 Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-  log' : loc;
-  bufs' : loc;
-}.
+
+Context `{!heapGS Σ}.
+Context {sem : go.Semantics}.
+Context {package_sem' : jrnl.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance Op_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (jrnl.Op.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "log" ∷ l.[(jrnl.Op.t), "log"] ↦{dq} v.(jrnl.Op.log') ∗
+      "bufs" ∷ l.[(jrnl.Op.t), "bufs"] ↦{dq} v.(jrnl.Op.bufs') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance Op_into_val_typed
+   :
+  IntoValTypedUnderlying (jrnl.Op.t) (jrnl.Opⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Op_access_load_log l (v : (jrnl.Op.t)) dq :
+  AccessStrict
+    (l.[(jrnl.Op.t), "log"] ↦{dq} (v.(jrnl.Op.log')))
+    (l.[(jrnl.Op.t), "log"] ↦{dq} (v.(jrnl.Op.log')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Op_access_store_log l (v : (jrnl.Op.t)) log' :
+  AccessStrict
+    (l.[(jrnl.Op.t), "log"] ↦ (v.(jrnl.Op.log')))
+    (l.[(jrnl.Op.t), "log"] ↦ log')
+    (l ↦ v) (l ↦ (v <|(jrnl.Op.log') := log'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Op_access_load_bufs l (v : (jrnl.Op.t)) dq :
+  AccessStrict
+    (l.[(jrnl.Op.t), "bufs"] ↦{dq} (v.(jrnl.Op.bufs')))
+    (l.[(jrnl.Op.t), "bufs"] ↦{dq} (v.(jrnl.Op.bufs')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Op_access_store_bufs l (v : (jrnl.Op.t)) bufs' :
+  AccessStrict
+    (l.[(jrnl.Op.t), "bufs"] ↦ (v.(jrnl.Op.bufs')))
+    (l.[(jrnl.Op.t), "bufs"] ↦ bufs')
+    (l ↦ v) (l ↦ (v <|(jrnl.Op.bufs') := bufs'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End Op.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent jrnl.Op.
-#[local] Typeclasses Transparent jrnl.Op.
-
-Global Instance Op_wf : struct.Wf jrnl.Op.
-Proof. apply _. Qed.
-
-Global Instance settable_Op : Settable Op.t :=
-  settable! Op.mk < Op.log'; Op.bufs' >.
-Global Instance into_val_Op : IntoVal Op.t :=
-  {| to_val_def v :=
-    struct.val_aux jrnl.Op [
-    "log" ::= #(Op.log' v);
-    "bufs" ::= #(Op.bufs' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_Op : IntoValTyped Op.t jrnl.Op :=
-{|
-  default_val := Op.mk (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_Op_log : IntoValStructField "log" jrnl.Op Op.log'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Op_bufs : IntoValStructField "bufs" jrnl.Op Op.bufs'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Op log' bufs':
-  PureWp True
-    (struct.make #jrnl.Op (alist_val [
-      "log" ::= #log';
-      "bufs" ::= #bufs'
-    ]))%struct
-    #(Op.mk log' bufs').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance Op_struct_fields_split dq l (v : Op.t) :
-  StructFieldsSplit dq l v (
-    "Hlog" ∷ l ↦s[jrnl.Op :: "log"]{dq} v.(Op.log') ∗
-    "Hbufs" ∷ l ↦s[jrnl.Op :: "bufs"]{dq} v.(Op.bufs')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Op.log' v)) (jrnl.Op) "log"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-Section names.
-
-Context `{!heapGS Σ}.
-Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext}.
-#[local] Transparent is_pkg_defined is_pkg_defined_pure.
-
-Global Instance is_pkg_defined_pure_jrnl : IsPkgDefinedPure jrnl :=
-  {|
-    is_pkg_defined_pure_def go_ctx :=
-      is_pkg_defined_pure_single jrnl ∧
-      is_pkg_defined_pure code.github_com.mit_pdos.go_journal.addr.addr ∧
-      is_pkg_defined_pure code.github_com.mit_pdos.go_journal.buf.buf ∧
-      is_pkg_defined_pure code.github_com.mit_pdos.go_journal.obj.obj ∧
-      is_pkg_defined_pure code.github_com.mit_pdos.go_journal.util.util;
-  |}.
-
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_jrnl : IsPkgDefined jrnl :=
-  {|
-    is_pkg_defined_def go_ctx :=
-      (is_pkg_defined_single jrnl ∗
-       is_pkg_defined code.github_com.mit_pdos.go_journal.addr.addr ∗
-       is_pkg_defined code.github_com.mit_pdos.go_journal.buf.buf ∗
-       is_pkg_defined code.github_com.mit_pdos.go_journal.obj.obj ∗
-       is_pkg_defined code.github_com.mit_pdos.go_journal.util.util)%I
-  |}.
-Final Obligation. iIntros. iFrame "#%". Qed.
-#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
-
-Global Instance wp_func_call_Begin :
-  WpFuncCall jrnl.Begin _ (is_pkg_defined jrnl) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_method_call_Op'ptr_CommitWait :
-  WpMethodCall (ptrT.id jrnl.Op.id) "CommitWait" _ (is_pkg_defined jrnl) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op'ptr_NDirty :
-  WpMethodCall (ptrT.id jrnl.Op.id) "NDirty" _ (is_pkg_defined jrnl) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op'ptr_OverWrite :
-  WpMethodCall (ptrT.id jrnl.Op.id) "OverWrite" _ (is_pkg_defined jrnl) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Op'ptr_ReadBuf :
-  WpMethodCall (ptrT.id jrnl.Op.id) "ReadBuf" _ (is_pkg_defined jrnl) :=
-  ltac:(solve_wp_method_call).
-
-End names.
 End jrnl.

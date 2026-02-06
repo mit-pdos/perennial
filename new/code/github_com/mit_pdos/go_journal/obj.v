@@ -6,274 +6,307 @@ Require Export New.code.github_com.mit_pdos.go_journal.common.
 Require Export New.code.github_com.mit_pdos.go_journal.util.
 Require Export New.code.github_com.mit_pdos.go_journal.wal.
 Require Export New.code.sync.
-
 From New.golang Require Import defn.
+From New Require Import disk_prelude.
+Module pkg_id.
 Definition obj : go_string := "github.com/mit-pdos/go-journal/obj".
 
-From New Require Import disk_prelude.
+End pkg_id.
+Export pkg_id.
 Module obj.
 
-Module Log. Definition id : go_string := "github.com/mit-pdos/go-journal/obj.Log"%go. End Log.
+Definition Log {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/mit-pdos/go-journal/obj.Log"%go [].
 
-Section code.
-
-
-Definition Log : go_type := structT [
-  "mu" :: ptrT;
-  "log" :: ptrT;
-  "pos" :: wal.LogPosition
-].
-#[global] Typeclasses Opaque Log.
-#[global] Opaque Log.
-
-Definition MkLog : go_string := "github.com/mit-pdos/go-journal/obj.MkLog"%go.
+Definition MkLog {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/mit-pdos/go-journal/obj.MkLog"%go.
 
 (* MkLog recovers the object logging system
    (or initializes from an all-zero disk).
 
    go: obj.go:29:6 *)
-Definition MkLogⁱᵐᵖˡ : val :=
+Definition MkLogⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "d",
-    exception_do (let: "d" := (mem.alloc "d") in
-    let: "log" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (mem.alloc (let: "$mu" := (mem.alloc (type.zero_val #sync.Mutex)) in
-    let: "$log" := (let: "$a0" := (![#disk.Disk] "d") in
-    (func_call #wal.MkLog) "$a0") in
-    let: "$pos" := #(W64 0) in
-    struct.make #Log [{
-      "mu" ::= "$mu";
-      "log" ::= "$log";
-      "pos" ::= "$pos"
-    }])) in
-    do:  ("log" <-[#ptrT] "$r0");;;
-    return: (![#ptrT] "log")).
+    exception_do (let: "d" := (GoAlloc disk.Disk "d") in
+    let: "log" := (GoAlloc (go.PointerType Log) (GoZeroVal (go.PointerType Log) #())) in
+    let: "$r0" := (GoAlloc Log (CompositeLiteral Log (LiteralValue [KeyedElement (Some (KeyField "mu"%go)) (ElementExpression (go.PointerType sync.Mutex) (GoAlloc sync.Mutex (GoZeroVal sync.Mutex #()))); KeyedElement (Some (KeyField "log"%go)) (ElementExpression (go.PointerType wal.Walog) (let: "$a0" := (![disk.Disk] "d") in
+     (FuncResolve wal.MkLog [] #()) "$a0")); KeyedElement (Some (KeyField "pos"%go)) (ElementExpression wal.LogPosition #(W64 0))]))) in
+    do:  ("log" <-[go.PointerType Log] "$r0");;;
+    return: (![go.PointerType Log] "log")).
 
 (* Read a disk object into buf
 
    go: obj.go:39:15 *)
-Definition Log__Loadⁱᵐᵖˡ : val :=
+Definition Log__Loadⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "l" "addr" "sz",
-    exception_do (let: "l" := (mem.alloc "l") in
-    let: "sz" := (mem.alloc "sz") in
-    let: "addr" := (mem.alloc "addr") in
-    let: "blk" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (let: "$a0" := (![#uint64T] (struct.field_ref #addr.Addr #"Blkno"%go "addr")) in
-    (method_call #(ptrT.id wal.Walog.id) #"Read"%go (![#ptrT] (struct.field_ref #Log #"log"%go (![#ptrT] "l")))) "$a0") in
-    do:  ("blk" <-[#sliceT] "$r0");;;
-    let: "b" := (mem.alloc (type.zero_val #ptrT)) in
-    let: "$r0" := (let: "$a0" := (![#addr.Addr] "addr") in
-    let: "$a1" := (![#uint64T] "sz") in
-    let: "$a2" := (![#sliceT] "blk") in
-    (func_call #buf.MkBufLoad) "$a0" "$a1" "$a2") in
-    do:  ("b" <-[#ptrT] "$r0");;;
-    return: (![#ptrT] "b")).
+    exception_do (let: "l" := (GoAlloc (go.PointerType Log) "l") in
+    let: "sz" := (GoAlloc go.uint64 "sz") in
+    let: "addr" := (GoAlloc addr.Addr "addr") in
+    let: "blk" := (GoAlloc disk.Block (GoZeroVal disk.Block #())) in
+    let: "$r0" := (let: "$a0" := (![common.Bnum] (StructFieldRef addr.Addr "Blkno"%go "addr")) in
+    (MethodResolve (go.PointerType wal.Walog) "Read"%go (![go.PointerType wal.Walog] (StructFieldRef Log "log"%go (![go.PointerType Log] "l")))) "$a0") in
+    do:  ("blk" <-[disk.Block] "$r0");;;
+    let: "b" := (GoAlloc (go.PointerType buf.Buf) (GoZeroVal (go.PointerType buf.Buf) #())) in
+    let: "$r0" := (let: "$a0" := (![addr.Addr] "addr") in
+    let: "$a1" := (![go.uint64] "sz") in
+    let: "$a2" := (![disk.Block] "blk") in
+    (FuncResolve buf.MkBufLoad [] #()) "$a0" "$a1" "$a2") in
+    do:  ("b" <-[go.PointerType buf.Buf] "$r0");;;
+    return: (![go.PointerType buf.Buf] "b")).
 
 (* Installs bufs into their blocks and returns the blocks.
    A buf may only partially update a disk block and several bufs may
    apply to the same disk block. Assume caller holds commit lock.
 
    go: obj.go:48:15 *)
-Definition Log__installBufsMapⁱᵐᵖˡ : val :=
+Definition Log__installBufsMapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "l" "bufs",
-    exception_do (let: "l" := (mem.alloc "l") in
-    let: "bufs" := (mem.alloc "bufs") in
-    let: "blks" := (mem.alloc (type.zero_val (type.mapT #uint64T #sliceT))) in
-    let: "$r0" := (map.make #uint64T #sliceT) in
-    do:  ("blks" <-[type.mapT #uint64T #sliceT] "$r0");;;
-    let: "$range" := (![#sliceT] "bufs") in
-    (let: "b" := (mem.alloc (type.zero_val #ptrT)) in
-    slice.for_range #ptrT "$range" (λ: "$key" "$value",
-      do:  ("b" <-[#ptrT] "$value");;;
+    exception_do (let: "l" := (GoAlloc (go.PointerType Log) "l") in
+    let: "bufs" := (GoAlloc (go.SliceType (go.PointerType buf.Buf)) "bufs") in
+    let: "blks" := (GoAlloc (go.MapType common.Bnum (go.SliceType go.byte)) (GoZeroVal (go.MapType common.Bnum (go.SliceType go.byte)) #())) in
+    let: "$r0" := ((FuncResolve go.make1 [go.MapType common.Bnum (go.SliceType go.byte)] #()) #()) in
+    do:  ("blks" <-[go.MapType common.Bnum (go.SliceType go.byte)] "$r0");;;
+    let: "$range" := (![go.SliceType (go.PointerType buf.Buf)] "bufs") in
+    (let: "b" := (GoAlloc (go.PointerType buf.Buf) (GoZeroVal (go.PointerType buf.Buf) #())) in
+    slice.for_range (go.PointerType buf.Buf) "$range" (λ: "$key" "$value",
+      do:  ("b" <-[go.PointerType buf.Buf] "$value");;;
       do:  "$key";;;
-      (if: (![#uint64T] (struct.field_ref #buf.Buf #"Sz"%go (![#ptrT] "b"))) = common.NBITBLOCK
+      (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef buf.Buf "Sz"%go (![go.PointerType buf.Buf] "b"))) =⟨go.uint64⟩ common.NBITBLOCK)
       then
-        let: "$r0" := (![#sliceT] (struct.field_ref #buf.Buf #"Data"%go (![#ptrT] "b"))) in
-        do:  (map.insert (![type.mapT #uint64T #sliceT] "blks") (![#uint64T] (struct.field_ref #addr.Addr #"Blkno"%go (struct.field_ref #buf.Buf #"Addr"%go (![#ptrT] "b")))) "$r0")
+        let: "$r0" := (![go.SliceType go.byte] (StructFieldRef buf.Buf "Data"%go (![go.PointerType buf.Buf] "b"))) in
+        do:  (map.insert common.Bnum (![go.MapType common.Bnum (go.SliceType go.byte)] "blks") (![common.Bnum] (StructFieldRef addr.Addr "Blkno"%go (StructFieldRef buf.Buf "Addr"%go (![go.PointerType buf.Buf] "b")))) "$r0")
       else
-        let: "blk" := (mem.alloc (type.zero_val #sliceT)) in
-        let: "ok" := (mem.alloc (type.zero_val #boolT)) in
-        let: "mapblk" := (mem.alloc (type.zero_val #sliceT)) in
-        let: ("$ret0", "$ret1") := (map.get (![type.mapT #uint64T #sliceT] "blks") (![#uint64T] (struct.field_ref #addr.Addr #"Blkno"%go (struct.field_ref #buf.Buf #"Addr"%go (![#ptrT] "b"))))) in
+        let: "blk" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
+        let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
+        let: "mapblk" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
+        let: ("$ret0", "$ret1") := (map.lookup2 common.Bnum (go.SliceType go.byte) (![go.MapType common.Bnum (go.SliceType go.byte)] "blks") (![common.Bnum] (StructFieldRef addr.Addr "Blkno"%go (StructFieldRef buf.Buf "Addr"%go (![go.PointerType buf.Buf] "b"))))) in
         let: "$r0" := "$ret0" in
         let: "$r1" := "$ret1" in
-        do:  ("mapblk" <-[#sliceT] "$r0");;;
-        do:  ("ok" <-[#boolT] "$r1");;;
-        (if: ![#boolT] "ok"
+        do:  ("mapblk" <-[go.SliceType go.byte] "$r0");;;
+        do:  ("ok" <-[go.bool] "$r1");;;
+        (if: ![go.bool] "ok"
         then
-          let: "$r0" := (![#sliceT] "mapblk") in
-          do:  ("blk" <-[#sliceT] "$r0")
+          let: "$r0" := (![go.SliceType go.byte] "mapblk") in
+          do:  ("blk" <-[go.SliceType go.byte] "$r0")
         else
-          let: "$r0" := (let: "$a0" := (![#uint64T] (struct.field_ref #addr.Addr #"Blkno"%go (struct.field_ref #buf.Buf #"Addr"%go (![#ptrT] "b")))) in
-          (method_call #(ptrT.id wal.Walog.id) #"Read"%go (![#ptrT] (struct.field_ref #Log #"log"%go (![#ptrT] "l")))) "$a0") in
-          do:  ("blk" <-[#sliceT] "$r0");;;
-          let: "$r0" := (![#sliceT] "blk") in
-          do:  (map.insert (![type.mapT #uint64T #sliceT] "blks") (![#uint64T] (struct.field_ref #addr.Addr #"Blkno"%go (struct.field_ref #buf.Buf #"Addr"%go (![#ptrT] "b")))) "$r0"));;;
-        do:  (let: "$a0" := (![#sliceT] "blk") in
-        (method_call #(ptrT.id buf.Buf.id) #"Install"%go (![#ptrT] "b")) "$a0"))));;;
-    return: (![type.mapT #uint64T #sliceT] "blks")).
+          let: "$r0" := (let: "$a0" := (![common.Bnum] (StructFieldRef addr.Addr "Blkno"%go (StructFieldRef buf.Buf "Addr"%go (![go.PointerType buf.Buf] "b")))) in
+          (MethodResolve (go.PointerType wal.Walog) "Read"%go (![go.PointerType wal.Walog] (StructFieldRef Log "log"%go (![go.PointerType Log] "l")))) "$a0") in
+          do:  ("blk" <-[go.SliceType go.byte] "$r0");;;
+          let: "$r0" := (![go.SliceType go.byte] "blk") in
+          do:  (map.insert common.Bnum (![go.MapType common.Bnum (go.SliceType go.byte)] "blks") (![common.Bnum] (StructFieldRef addr.Addr "Blkno"%go (StructFieldRef buf.Buf "Addr"%go (![go.PointerType buf.Buf] "b")))) "$r0"));;;
+        do:  (let: "$a0" := (![go.SliceType go.byte] "blk") in
+        (MethodResolve (go.PointerType buf.Buf) "Install"%go (![go.PointerType buf.Buf] "b")) "$a0"))));;;
+    return: (![go.MapType common.Bnum (go.SliceType go.byte)] "blks")).
 
 (* go: obj.go:70:15 *)
-Definition Log__installBufsⁱᵐᵖˡ : val :=
+Definition Log__installBufsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "l" "bufs",
-    exception_do (let: "l" := (mem.alloc "l") in
-    let: "bufs" := (mem.alloc "bufs") in
-    let: "bufmap" := (mem.alloc (type.zero_val (type.mapT #uint64T #sliceT))) in
-    let: "$r0" := (let: "$a0" := (![#sliceT] "bufs") in
-    (method_call #(ptrT.id Log.id) #"installBufsMap"%go (![#ptrT] "l")) "$a0") in
-    do:  ("bufmap" <-[type.mapT #uint64T #sliceT] "$r0");;;
-    let: "blks" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (slice.make3 #wal.Update #(W64 0) (let: "$a0" := (![type.mapT #uint64T #sliceT] "bufmap") in
-    map.len "$a0")) in
-    do:  ("blks" <-[#sliceT] "$r0");;;
-    let: "$range" := (![type.mapT #uint64T #sliceT] "bufmap") in
-    (let: "data" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "blkno" := (mem.alloc (type.zero_val #uint64T)) in
-    map.for_range "$range" (λ: "$key" "value",
-      do:  ("data" <-[#sliceT] "$value");;;
-      do:  ("blkno" <-[#uint64T] "$key");;;
-      let: "$r0" := (let: "$a0" := (![#sliceT] "blks") in
-      let: "$a1" := ((let: "$sl0" := (let: "$a0" := (![#uint64T] "blkno") in
-      let: "$a1" := (![#sliceT] "data") in
-      (func_call #wal.MkBlockData) "$a0" "$a1") in
-      slice.literal #wal.Update ["$sl0"])) in
-      (slice.append #wal.Update) "$a0" "$a1") in
-      do:  ("blks" <-[#sliceT] "$r0")));;;
-    return: (![#sliceT] "blks")).
+    exception_do (let: "l" := (GoAlloc (go.PointerType Log) "l") in
+    let: "bufs" := (GoAlloc (go.SliceType (go.PointerType buf.Buf)) "bufs") in
+    let: "bufmap" := (GoAlloc (go.MapType common.Bnum (go.SliceType go.byte)) (GoZeroVal (go.MapType common.Bnum (go.SliceType go.byte)) #())) in
+    let: "$r0" := (let: "$a0" := (![go.SliceType (go.PointerType buf.Buf)] "bufs") in
+    (MethodResolve (go.PointerType Log) "installBufsMap"%go (![go.PointerType Log] "l")) "$a0") in
+    do:  ("bufmap" <-[go.MapType common.Bnum (go.SliceType go.byte)] "$r0");;;
+    let: "blks" := (GoAlloc (go.SliceType wal.Update) (GoZeroVal (go.SliceType wal.Update) #())) in
+    let: "$r0" := ((FuncResolve go.make3 [go.SliceType wal.Update] #()) #(W64 0) (let: "$a0" := (![go.MapType common.Bnum (go.SliceType go.byte)] "bufmap") in
+    (FuncResolve go.len [go.MapType common.Bnum (go.SliceType go.byte)] #()) "$a0")) in
+    do:  ("blks" <-[go.SliceType wal.Update] "$r0");;;
+    let: "$range" := (![go.MapType common.Bnum (go.SliceType go.byte)] "bufmap") in
+    (let: "data" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
+    let: "blkno" := (GoAlloc common.Bnum (GoZeroVal common.Bnum #())) in
+    map.for_range common.Bnum (go.SliceType go.byte) "$range" (λ: "$key" "value",
+      do:  ("data" <-[go.SliceType go.byte] "$value");;;
+      do:  ("blkno" <-[common.Bnum] "$key");;;
+      let: "$r0" := (let: "$a0" := (![go.SliceType wal.Update] "blks") in
+      let: "$a1" := ((let: "$sl0" := (let: "$a0" := (![common.Bnum] "blkno") in
+      let: "$a1" := (![go.SliceType go.byte] "data") in
+      (FuncResolve wal.MkBlockData [] #()) "$a0" "$a1") in
+      CompositeLiteral (go.SliceType wal.Update) (LiteralValue [KeyedElement None (ElementExpression wal.Update "$sl0")]))) in
+      (FuncResolve go.append [go.SliceType wal.Update] #()) "$a0" "$a1") in
+      do:  ("blks" <-[go.SliceType wal.Update] "$r0")));;;
+    return: (![go.SliceType wal.Update] "blks")).
 
 (* Acquires the commit log, installs the buffers into their
    blocks, and appends the blocks to the in-memory log.
 
    go: obj.go:81:15 *)
-Definition Log__doCommitⁱᵐᵖˡ : val :=
+Definition Log__doCommitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "l" "bufs",
-    exception_do (let: "l" := (mem.alloc "l") in
-    let: "bufs" := (mem.alloc "bufs") in
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![#ptrT] (struct.field_ref #Log #"mu"%go (![#ptrT] "l")))) #());;;
-    let: "blks" := (mem.alloc (type.zero_val #sliceT)) in
-    let: "$r0" := (let: "$a0" := (![#sliceT] "bufs") in
-    (method_call #(ptrT.id Log.id) #"installBufs"%go (![#ptrT] "l")) "$a0") in
-    do:  ("blks" <-[#sliceT] "$r0");;;
+    exception_do (let: "l" := (GoAlloc (go.PointerType Log) "l") in
+    let: "bufs" := (GoAlloc (go.SliceType (go.PointerType buf.Buf)) "bufs") in
+    do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (![go.PointerType sync.Mutex] (StructFieldRef Log "mu"%go (![go.PointerType Log] "l")))) #());;;
+    let: "blks" := (GoAlloc (go.SliceType wal.Update) (GoZeroVal (go.SliceType wal.Update) #())) in
+    let: "$r0" := (let: "$a0" := (![go.SliceType (go.PointerType buf.Buf)] "bufs") in
+    (MethodResolve (go.PointerType Log) "installBufs"%go (![go.PointerType Log] "l")) "$a0") in
+    do:  ("blks" <-[go.SliceType wal.Update] "$r0");;;
     do:  (let: "$a0" := #(W64 3) in
     let: "$a1" := #"doCommit: %v bufs
     "%go in
-    let: "$a2" := ((let: "$sl0" := (interface.make #intT.id (let: "$a0" := (![#sliceT] "blks") in
-    slice.len "$a0")) in
-    slice.literal #interfaceT ["$sl0"])) in
-    (func_call #util.DPrintf) "$a0" "$a1" "$a2");;;
-    let: "ok" := (mem.alloc (type.zero_val #boolT)) in
-    let: "n" := (mem.alloc (type.zero_val #wal.LogPosition)) in
-    let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "blks") in
-    (method_call #(ptrT.id wal.Walog.id) #"MemAppend"%go (![#ptrT] (struct.field_ref #Log #"log"%go (![#ptrT] "l")))) "$a0") in
+    let: "$a2" := ((let: "$sl0" := (Convert go.int (go.InterfaceType []) (let: "$a0" := (![go.SliceType wal.Update] "blks") in
+    (FuncResolve go.len [go.SliceType wal.Update] #()) "$a0")) in
+    CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0")]))) in
+    (FuncResolve util.DPrintf [] #()) "$a0" "$a1" "$a2");;;
+    let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
+    let: "n" := (GoAlloc wal.LogPosition (GoZeroVal wal.LogPosition #())) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![go.SliceType wal.Update] "blks") in
+    (MethodResolve (go.PointerType wal.Walog) "MemAppend"%go (![go.PointerType wal.Walog] (StructFieldRef Log "log"%go (![go.PointerType Log] "l")))) "$a0") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
-    do:  ("n" <-[#wal.LogPosition] "$r0");;;
-    do:  ("ok" <-[#boolT] "$r1");;;
-    let: "$r0" := (![#wal.LogPosition] "n") in
-    do:  ((struct.field_ref #Log #"pos"%go (![#ptrT] "l")) <-[#wal.LogPosition] "$r0");;;
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref #Log #"mu"%go (![#ptrT] "l")))) #());;;
-    return: (![#wal.LogPosition] "n", ![#boolT] "ok")).
+    do:  ("n" <-[wal.LogPosition] "$r0");;;
+    do:  ("ok" <-[go.bool] "$r1");;;
+    let: "$r0" := (![wal.LogPosition] "n") in
+    do:  ((StructFieldRef Log "pos"%go (![go.PointerType Log] "l")) <-[wal.LogPosition] "$r0");;;
+    do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (![go.PointerType sync.Mutex] (StructFieldRef Log "mu"%go (![go.PointerType Log] "l")))) #());;;
+    return: (![wal.LogPosition] "n", ![go.bool] "ok")).
 
 (* Commit dirty bufs of the transaction into the log, and perhaps wait.
 
    go: obj.go:98:15 *)
-Definition Log__CommitWaitⁱᵐᵖˡ : val :=
+Definition Log__CommitWaitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "l" "bufs" "wait",
-    exception_do (let: "l" := (mem.alloc "l") in
-    let: "wait" := (mem.alloc "wait") in
-    let: "bufs" := (mem.alloc "bufs") in
-    let: "commit" := (mem.alloc (type.zero_val #boolT)) in
+    exception_do (let: "l" := (GoAlloc (go.PointerType Log) "l") in
+    let: "wait" := (GoAlloc go.bool "wait") in
+    let: "bufs" := (GoAlloc (go.SliceType (go.PointerType buf.Buf)) "bufs") in
+    let: "commit" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := #true in
-    do:  ("commit" <-[#boolT] "$r0");;;
-    (if: int_gt (let: "$a0" := (![#sliceT] "bufs") in
-    slice.len "$a0") #(W64 0)
+    do:  ("commit" <-[go.bool] "$r0");;;
+    (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType (go.PointerType buf.Buf)] "bufs") in
+    (FuncResolve go.len [go.SliceType (go.PointerType buf.Buf)] #()) "$a0") >⟨go.int⟩ #(W64 0))
     then
-      let: "ok" := (mem.alloc (type.zero_val #boolT)) in
-      let: "n" := (mem.alloc (type.zero_val #wal.LogPosition)) in
-      let: ("$ret0", "$ret1") := (let: "$a0" := (![#sliceT] "bufs") in
-      (method_call #(ptrT.id Log.id) #"doCommit"%go (![#ptrT] "l")) "$a0") in
+      let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
+      let: "n" := (GoAlloc wal.LogPosition (GoZeroVal wal.LogPosition #())) in
+      let: ("$ret0", "$ret1") := (let: "$a0" := (![go.SliceType (go.PointerType buf.Buf)] "bufs") in
+      (MethodResolve (go.PointerType Log) "doCommit"%go (![go.PointerType Log] "l")) "$a0") in
       let: "$r0" := "$ret0" in
       let: "$r1" := "$ret1" in
-      do:  ("n" <-[#wal.LogPosition] "$r0");;;
-      do:  ("ok" <-[#boolT] "$r1");;;
-      (if: (~ (![#boolT] "ok"))
+      do:  ("n" <-[wal.LogPosition] "$r0");;;
+      do:  ("ok" <-[go.bool] "$r1");;;
+      (if: (~ (![go.bool] "ok"))
       then
         do:  (let: "$a0" := #(W64 10) in
         let: "$a1" := #"memappend failed; log is too small
         "%go in
         let: "$a2" := #slice.nil in
-        (func_call #util.DPrintf) "$a0" "$a1" "$a2");;;
+        (FuncResolve util.DPrintf [] #()) "$a0" "$a1" "$a2");;;
         let: "$r0" := #false in
-        do:  ("commit" <-[#boolT] "$r0")
+        do:  ("commit" <-[go.bool] "$r0")
       else
-        (if: ![#boolT] "wait"
+        (if: ![go.bool] "wait"
         then
-          do:  (let: "$a0" := (![#wal.LogPosition] "n") in
-          (method_call #(ptrT.id wal.Walog.id) #"Flush"%go (![#ptrT] (struct.field_ref #Log #"log"%go (![#ptrT] "l")))) "$a0")
+          do:  (let: "$a0" := (![wal.LogPosition] "n") in
+          (MethodResolve (go.PointerType wal.Walog) "Flush"%go (![go.PointerType wal.Walog] (StructFieldRef Log "log"%go (![go.PointerType Log] "l")))) "$a0")
         else do:  #()))
     else
       do:  (let: "$a0" := #(W64 5) in
       let: "$a1" := #"commit read-only trans
       "%go in
       let: "$a2" := #slice.nil in
-      (func_call #util.DPrintf) "$a0" "$a1" "$a2"));;;
-    return: (![#boolT] "commit")).
+      (FuncResolve util.DPrintf [] #()) "$a0" "$a1" "$a2"));;;
+    return: (![go.bool] "commit")).
 
 (* NOTE: this is coarse-grained and unattached to the transaction ID
 
    go: obj.go:117:15 *)
-Definition Log__Flushⁱᵐᵖˡ : val :=
+Definition Log__Flushⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "l" <>,
-    exception_do (let: "l" := (mem.alloc "l") in
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Lock"%go (![#ptrT] (struct.field_ref #Log #"mu"%go (![#ptrT] "l")))) #());;;
-    let: "pos" := (mem.alloc (type.zero_val #wal.LogPosition)) in
-    let: "$r0" := (![#wal.LogPosition] (struct.field_ref #Log #"pos"%go (![#ptrT] "l"))) in
-    do:  ("pos" <-[#wal.LogPosition] "$r0");;;
-    do:  ((method_call #(ptrT.id sync.Mutex.id) #"Unlock"%go (![#ptrT] (struct.field_ref #Log #"mu"%go (![#ptrT] "l")))) #());;;
-    do:  (let: "$a0" := (![#wal.LogPosition] "pos") in
-    (method_call #(ptrT.id wal.Walog.id) #"Flush"%go (![#ptrT] (struct.field_ref #Log #"log"%go (![#ptrT] "l")))) "$a0");;;
+    exception_do (let: "l" := (GoAlloc (go.PointerType Log) "l") in
+    do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (![go.PointerType sync.Mutex] (StructFieldRef Log "mu"%go (![go.PointerType Log] "l")))) #());;;
+    let: "pos" := (GoAlloc wal.LogPosition (GoZeroVal wal.LogPosition #())) in
+    let: "$r0" := (![wal.LogPosition] (StructFieldRef Log "pos"%go (![go.PointerType Log] "l"))) in
+    do:  ("pos" <-[wal.LogPosition] "$r0");;;
+    do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (![go.PointerType sync.Mutex] (StructFieldRef Log "mu"%go (![go.PointerType Log] "l")))) #());;;
+    do:  (let: "$a0" := (![wal.LogPosition] "pos") in
+    (MethodResolve (go.PointerType wal.Walog) "Flush"%go (![go.PointerType wal.Walog] (StructFieldRef Log "log"%go (![go.PointerType Log] "l")))) "$a0");;;
     return: (#true)).
 
 (* LogSz returns 511 (the size of the wal log)
 
    go: obj.go:127:15 *)
-Definition Log__LogSzⁱᵐᵖˡ : val :=
+Definition Log__LogSzⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "l" <>,
-    exception_do (let: "l" := (mem.alloc "l") in
+    exception_do (let: "l" := (GoAlloc (go.PointerType Log) "l") in
     return: (wal.LOGSZ)).
 
 (* go: obj.go:131:15 *)
-Definition Log__Shutdownⁱᵐᵖˡ : val :=
+Definition Log__Shutdownⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "l" <>,
-    exception_do (let: "l" := (mem.alloc "l") in
-    do:  ((method_call #(ptrT.id wal.Walog.id) #"Shutdown"%go (![#ptrT] (struct.field_ref #Log #"log"%go (![#ptrT] "l")))) #());;;
+    exception_do (let: "l" := (GoAlloc (go.PointerType Log) "l") in
+    do:  ((MethodResolve (go.PointerType wal.Walog) "Shutdown"%go (![go.PointerType wal.Walog] (StructFieldRef Log "log"%go (![go.PointerType Log] "l")))) #());;;
     return: #()).
 
-Definition vars' : list (go_string * go_type) := [].
+#[global] Instance info' : PkgInfo pkg_id.obj :=
+{|
+  pkg_imported_pkgs := [code.github_com.goose_lang.primitive.disk.pkg_id.disk; code.github_com.mit_pdos.go_journal.addr.pkg_id.addr; code.github_com.mit_pdos.go_journal.buf.pkg_id.buf; code.github_com.mit_pdos.go_journal.common.pkg_id.common; code.github_com.mit_pdos.go_journal.util.pkg_id.util; code.github_com.mit_pdos.go_journal.wal.pkg_id.wal; code.sync.pkg_id.sync]
+|}.
 
-Definition functions' : list (go_string * val) := [(MkLog, MkLogⁱᵐᵖˡ)].
-
-Definition msets' : list (go_string * (list (go_string * val))) := [(Log.id, []); (ptrT.id Log.id, [("CommitWait"%go, Log__CommitWaitⁱᵐᵖˡ); ("Flush"%go, Log__Flushⁱᵐᵖˡ); ("Load"%go, Log__Loadⁱᵐᵖˡ); ("LogSz"%go, Log__LogSzⁱᵐᵖˡ); ("Shutdown"%go, Log__Shutdownⁱᵐᵖˡ); ("doCommit"%go, Log__doCommitⁱᵐᵖˡ); ("installBufs"%go, Log__installBufsⁱᵐᵖˡ); ("installBufsMap"%go, Log__installBufsMapⁱᵐᵖˡ)])].
-
-#[global] Instance info' : PkgInfo obj.obj :=
-  {|
-    pkg_vars := vars';
-    pkg_functions := functions';
-    pkg_msets := msets';
-    pkg_imported_pkgs := [code.github_com.goose_lang.primitive.disk.disk; code.github_com.mit_pdos.go_journal.addr.addr; code.github_com.mit_pdos.go_journal.buf.buf; code.github_com.mit_pdos.go_journal.common.common; code.github_com.mit_pdos.go_journal.util.util; code.github_com.mit_pdos.go_journal.wal.wal; code.sync.sync];
-  |}.
-
-Definition initialize' : val :=
+Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    package.init #obj.obj (λ: <>,
+    package.init pkg_id.obj (λ: <>,
       exception_do (do:  (sync.initialize' #());;;
       do:  (wal.initialize' #());;;
       do:  (util.initialize' #());;;
       do:  (common.initialize' #());;;
       do:  (buf.initialize' #());;;
       do:  (addr.initialize' #());;;
-      do:  (disk.initialize' #());;;
-      do:  (package.alloc obj.obj #()))
+      do:  (disk.initialize' #()))
       ).
 
-End code.
+Module Log.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  mu' : loc;
+  log' : loc;
+  pos' : wal.LogPosition.t;
+}.
+
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _) (zero_val _)|}.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+End def.
+
+End Log.
+
+Definition Log'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
+  (go.FieldDecl "mu"%go (go.PointerType sync.Mutex));
+  (go.FieldDecl "log"%go (go.PointerType wal.Walog));
+  (go.FieldDecl "pos"%go wal.LogPosition)
+].
+Program Definition Log'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (Log'fds_unsealed).
+Global Instance equals_unfold_Log {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Log'fds =→ Log'fds_unsealed.
+Proof. rewrite /Log'fds seal_eq //. Qed.
+
+Definition Logⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (Log'fds).
+
+Class Log_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Log_type_repr  :: go.TypeReprUnderlying Logⁱᵐᵖˡ Log.t;
+  #[global] Log_underlying :: (Log) <u (Logⁱᵐᵖˡ);
+  #[global] Log_get_mu (x : Log.t) :: ⟦StructFieldGet (Logⁱᵐᵖˡ) "mu", #x⟧ ⤳[under] #x.(Log.mu');
+  #[global] Log_set_mu (x : Log.t) y :: ⟦StructFieldSet (Logⁱᵐᵖˡ) "mu", (#x, #y)⟧ ⤳[under] #(x <|Log.mu' := y|>);
+  #[global] Log_get_log (x : Log.t) :: ⟦StructFieldGet (Logⁱᵐᵖˡ) "log", #x⟧ ⤳[under] #x.(Log.log');
+  #[global] Log_set_log (x : Log.t) y :: ⟦StructFieldSet (Logⁱᵐᵖˡ) "log", (#x, #y)⟧ ⤳[under] #(x <|Log.log' := y|>);
+  #[global] Log_get_pos (x : Log.t) :: ⟦StructFieldGet (Logⁱᵐᵖˡ) "pos", #x⟧ ⤳[under] #x.(Log.pos');
+  #[global] Log_set_pos (x : Log.t) y :: ⟦StructFieldSet (Logⁱᵐᵖˡ) "pos", (#x, #y)⟧ ⤳[under] #(x <|Log.pos' := y|>);
+  #[global] Log'ptr_CommitWait_unfold :: MethodUnfold (go.PointerType (Log)) "CommitWait" (Log__CommitWaitⁱᵐᵖˡ);
+  #[global] Log'ptr_Flush_unfold :: MethodUnfold (go.PointerType (Log)) "Flush" (Log__Flushⁱᵐᵖˡ);
+  #[global] Log'ptr_Load_unfold :: MethodUnfold (go.PointerType (Log)) "Load" (Log__Loadⁱᵐᵖˡ);
+  #[global] Log'ptr_LogSz_unfold :: MethodUnfold (go.PointerType (Log)) "LogSz" (Log__LogSzⁱᵐᵖˡ);
+  #[global] Log'ptr_Shutdown_unfold :: MethodUnfold (go.PointerType (Log)) "Shutdown" (Log__Shutdownⁱᵐᵖˡ);
+  #[global] Log'ptr_doCommit_unfold :: MethodUnfold (go.PointerType (Log)) "doCommit" (Log__doCommitⁱᵐᵖˡ);
+  #[global] Log'ptr_installBufs_unfold :: MethodUnfold (go.PointerType (Log)) "installBufs" (Log__installBufsⁱᵐᵖˡ);
+  #[global] Log'ptr_installBufsMap_unfold :: MethodUnfold (go.PointerType (Log)) "installBufsMap" (Log__installBufsMapⁱᵐᵖˡ);
+}.
+
+Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Log_instance :: Log_Assumptions;
+  #[global] MkLog_unfold :: FuncUnfold MkLog [] (MkLogⁱᵐᵖˡ);
+  #[global] import_disk_Assumption :: disk.Assumptions;
+  #[global] import_addr_Assumption :: addr.Assumptions;
+  #[global] import_buf_Assumption :: buf.Assumptions;
+  #[global] import_common_Assumption :: common.Assumptions;
+  #[global] import_util_Assumption :: util.Assumptions;
+  #[global] import_wal_Assumption :: wal.Assumptions;
+  #[global] import_sync_Assumption :: sync.Assumptions;
+}.
 End obj.

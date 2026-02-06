@@ -5,45 +5,5 @@ Require Export New.code.go_etcd_io.etcd.server.v3.config.
 
 Set Default Proof Using "Type".
 
-Module config.
-Module ServerConfig.
-Section def.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context {sem : go.Semantics}.
-Context {package_sem' : config.Assumptions}.
-
-Local Set Default Proof Using "All".
-
-#[global] Instance ServerConfig_typed_pointsto  :
-  TypedPointsto (Σ:=Σ) (config.ServerConfig.t). Admitted.
-
-#[global] Instance ServerConfig_into_val_typed
-   :
-  IntoValTypedUnderlying (config.ServerConfig.t) (config.ServerConfigⁱᵐᵖˡ).
-Proof. Admitted.
-
-End def.
-End ServerConfig.
-
-Module V2DeprecationEnum.
-Section def.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context {sem : go.Semantics}.
-Context {package_sem' : config.Assumptions}.
-
-Local Set Default Proof Using "All".
-
-#[global] Instance V2DeprecationEnum_typed_pointsto  :
-  TypedPointsto (Σ:=Σ) (config.V2DeprecationEnum.t). Admitted.
-
-#[global] Instance V2DeprecationEnum_into_val_typed
-   :
-  IntoValTypedUnderlying (config.V2DeprecationEnum.t) (config.V2DeprecationEnumⁱᵐᵖˡ).
-Proof. Admitted.
-
-End def.
-End V2DeprecationEnum.
-
-End config.
+Module .
+End .
