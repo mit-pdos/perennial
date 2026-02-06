@@ -56,7 +56,7 @@ Lemma wp_make2 (cap : w64) :
       ⌜ chan_cap γ = sint.Z cap ⌝ ∗
       own_chan γ V (if decide (cap = 0) then chanstate.Idle else chanstate.Buffered (@nil V))
   }}}.
-Proof using W Hunder.
+Proof using W Hunder IntoValTyped0.
   wp_start as "%Hle".
   wp_apply wp_NewChannel; first done.
   iFrame.
@@ -70,7 +70,7 @@ Lemma wp_make1 :
       ⌜ chan_cap γ = 0 ⌝ ∗
       own_chan γ V chanstate.Idle
   }}}.
-Proof using W Hunder.
+Proof using W Hunder IntoValTyped0.
   wp_start.
   wp_apply wp_make2; first done.
   iFrame.

@@ -21,7 +21,8 @@ From Perennial.algebra Require Import ghost_var.
 Section future.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics}.
-Local Set Default Proof Using "All".
+Collection W := sem.
+
 Context `{!chan_idiomG Σ V}.
 Context `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}.
 

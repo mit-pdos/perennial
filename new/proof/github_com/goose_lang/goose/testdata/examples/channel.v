@@ -17,6 +17,7 @@ Context {sem : go.Semantics} {package_sem : chan_spec_raw_examples.Assumptions}.
 
 #[global] Instance : IsPkgInit (iProp Σ) chan_spec_raw_examples := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf (iProp Σ) chan_spec_raw_examples := build_get_is_pkg_init_wf.
+Local Set Default Proof Using "All".
 
 (* Instance stream_countable : Countable streamold.t. *)
 (* Proof. *)
@@ -28,7 +29,6 @@ Context {sem : go.Semantics} {package_sem : chan_spec_raw_examples.Assumptions}.
 
 Section hello_world.
 Context `{!chan_idiomG Σ go_string}.
-Local Set Default Proof Using "All".
 
 Lemma wp_sys_hello_world :
   {{{ is_pkg_init chan_spec_raw_examples }}}
@@ -103,7 +103,7 @@ Lemma wp_HelloWorldCancellable
 (result: go_string), RET #result;
       ⌜result = err_msg ∨ result = "Hello, World!"%go⌝
     }}}.
-Proof using All.
+Proof.
   wp_start. wp_apply wp_alloc.
   iIntros (l). iIntros "Herr".
   wp_auto_lc 4.
@@ -154,7 +154,7 @@ Lemma wp_HelloWorldWithTimeout :
       ⌜result = "Hello, World!"%go ∨
         result = "operation timed out"%go⌝
   }}}.
-Proof using All.
+Proof.
   wp_start.
   wp_auto. wp_apply chan.wp_make1.
   iIntros (ch γ) "(#Hchan & _Hcap & Hoc)".
@@ -347,7 +347,7 @@ Lemma wp_fib_consumer:
 
 
   }}}.
-Proof.
+Proof .
   wp_start. wp_auto.
   wp_apply chan.wp_make2; first done.
   iIntros (c γ) "(#Hchan & %Hcap_eq & Hown)".
@@ -562,7 +562,7 @@ Lemma wp_select_nb_no_panic :
   {{{ is_pkg_init chan_spec_raw_examples}}}
     @! chan_spec_raw_examples.select_nb_no_panic #()
   {{{ RET #(); True }}}.
-Proof using chan_idiomG0.
+Proof.
   wp_start. wp_auto_lc 2.
   wp_apply chan.wp_make1.
   iIntros (ch). iIntros (γ). iIntros "(#His_chan & _Hcap & Hownchan)".
@@ -624,27 +624,26 @@ Qed.
 End select_panic.
 
 Section higher_order_example.
-Context `{!chan_idiomG Σ request.t}.
+Context `{!chan_idiomG Σ chan_spec_raw_examples.request.t}.
 Context `{!chan_idiomG Σ go_string}.
 
-Definition do_request (r: request.t) γfut (Q: go_string → iProp Σ) : iProp Σ :=
-  "Hf" ∷ WP #r.(request.f') #() {{ λ v, ∃ (s: go_string), ⌜v = #s⌝ ∗ Q s }} ∗
-  "#Hfut" ∷ is_future γfut r.(request.result') Q ∗
+Definition do_request (r: chan_spec_raw_examples.request.t) γfut (Q: go_string → iProp Σ) : iProp Σ :=
+  "Hf" ∷ WP #r.(chan_spec_raw_examples.request.f') #() {{ λ v, ∃ (s: go_string), ⌜v = #s⌝ ∗ Q s }} ∗
+  "#Hfut" ∷ is_future γfut r.(chan_spec_raw_examples.request.result') Q ∗
   "Hfut_tok" ∷ fulfill_token γfut.
 
-Definition await_request (r: request.t) γfut (Q: go_string → iProp Σ) : iProp Σ :=
-  "#Hfut" ∷ is_future γfut r.(request.result') Q ∗
+Definition await_request r γfut (Q: go_string → iProp Σ) : iProp Σ :=
+  "#Hfut" ∷ is_future γfut r.(chan_spec_raw_examples.request.result') Q ∗
   "Hfut_await" ∷ await_token γfut.
 
 Lemma wp_mkRequest {f: func.t} (Q: go_string → iProp Σ) :
   {{{ is_pkg_init chan_spec_raw_examples ∗ WP #f #() {{ λ v, ∃ (s: go_string), ⌜v = #s⌝ ∗ Q s }} }}}
     @! chan_spec_raw_examples.mkRequest #f
-  {{{ γfut (r: request.t), RET #r; do_request r γfut Q ∗ await_request r γfut Q }}}.
+  {{{ γfut r, RET #r; do_request r γfut Q ∗ await_request r γfut Q }}}.
 Proof.
   wp_start as "Hf".
   wp_auto.
-  wp_apply chan.wp_make.
-  { word. }
+  wp_apply chan.wp_make2; first done.
   iIntros (ch γ) "(His & _Hcap & Hown)".
   simpl. (* for decide *)
   iMod (start_future with "His Hown") as (γfuture) "(#Hfut & Hawait & Hfulfill)".
@@ -653,9 +652,9 @@ Proof.
   iFrame "Hfut ∗".
 Qed.
 
-#[local] Lemma wp_get_response (r: request.t) γfut Q :
+#[local] Lemma wp_get_response r γfut Q :
   {{{ await_request r γfut Q }}}
-    chan.receive #stringT #r.(request.result')
+    chan.receive go.string #r.(chan_spec_raw_examples.request.result')
   {{{ (s: go_string), RET (#s, #true); Q s }}}.
 Proof.
   wp_start as "Hawait". iNamed "Hawait".
@@ -665,7 +664,7 @@ Proof.
 Qed.
 
 Definition is_request_chan γ (ch: loc): iProp Σ :=
-  is_chan_handoff (V:=request.t) γ ch (λ r, ∃ γfut Q, do_request r γfut Q)%I.
+  is_chan_handoff (V:=chan_spec_raw_examples.request.t) γ ch (λ r, ∃ γfut Q, do_request r γfut Q)%I.
 
 Lemma wp_ho_worker γ ch :
   {{{ is_pkg_init chan_spec_raw_examples ∗ is_request_chan γ ch }}}
@@ -675,15 +674,13 @@ Proof.
   wp_start as "#His".
   rewrite /is_request_chan.
   wp_auto.
-  rewrite /chan.for_range.
-  wp_auto.
-  iAssert (∃ (r0: request.t),
+  iAssert (∃ (r0: chan_spec_raw_examples.request.t),
       "r" ∷ r_ptr ↦ r0
     )%I with "[$r]" as "IH".
   wp_for "IH".
-  wp_apply (wp_handoff_receive (V:=request.t) with "[$His]") as "%r Hreq".
+  wp_apply (wp_handoff_receive with "[$His]") as "%r Hreq".
   iNamed "Hreq".
-  wp_bind (#r.(request.f') _)%E.
+  wp_bind.
   iApply (wp_wand with "[Hf]").
   { iApply "Hf". }
   iIntros (v) "HQ".
@@ -699,12 +696,10 @@ Lemma wp_HigherOrderExample :
   {{{ is_pkg_init chan_spec_raw_examples }}}
     @! chan_spec_raw_examples.HigherOrderExample #()
   {{{ (s:slice.t), RET #s; s ↦* ["hello world"%go; "HELLO"%go; "world"%go] }}}.
-Proof using chan_idiomG0 chan_idiomG1.
+Proof.
   wp_start.
-  (* TODO: why is the string unfolded here? *)
   wp_auto.
-  wp_apply (chan.wp_make (V:=request.t)).
-  { done. }
+  wp_apply chan.wp_make1.
   iIntros (req_ch γ) "(His & _Hcap & Hown)".
   simpl.
   iMod (start_handoff with "His Hown") as "(%γdone & %Hsimpch & #Hch)".
@@ -737,11 +732,17 @@ Proof using chan_idiomG0 chan_idiomG1.
     wp_auto.
     eauto.
   }
-  wp_apply (wp_handoff_send (V:=request.t) with "[$Hch $Hdo_r1]").
-  wp_apply (wp_handoff_send (V:=request.t) with "[$Hch $Hdo_r2]").
-  wp_apply (wp_handoff_send (V:=request.t) with "[$Hch $Hdo_r3]").
-  wp_apply (wp_get_response with "[$Hawait_r1]") as "%s %Heq".
-  subst.
+  wp_apply (wp_handoff_send with "[$Hch $Hdo_r1]").
+  wp_apply (wp_handoff_send with "[$Hch $Hdo_r2]").
+  wp_apply (wp_handoff_send with "[$Hch $Hdo_r3]").
+  iPersist "r1".
+  wp_apply wp_slice_literal.
+  { iIntros. wp_auto. wp_bind.
+    rewrite /go.array_literal_size /= /Z.add /= /Pos.add /= /Z.max /=.
+    (* TODO goose: more let bindings *)
+    wp_apply (wp_get_response with "[$Hawait_r1]") as "%s %Heq".
+    subst.
+  iIntros (sl) "[Hresponse _]".
   wp_apply (wp_get_response with "[$Hawait_r2]") as "%s %Heq".
   subst.
   wp_apply (wp_get_response with "[$Hawait_r3]") as "%s %Heq".
@@ -762,7 +763,7 @@ Lemma wp_simple_join :
   {{{ is_pkg_init chan_spec_raw_examples ∗ is_pkg_init channel    }}}
     @! chan_spec_raw_examples.simple_join #()
   {{{  RET #("Hello, World!"); True }}}.
-Proof using chan_idiomG0.
+Proof.
   wp_start. wp_auto_lc 3.
       iRename select (£1) into "Hlc".
   wp_apply chan.wp_make; first done.
@@ -795,7 +796,7 @@ Lemma wp_simple_multi_join :
   {{{ is_pkg_init chan_spec_raw_examples ∗ is_pkg_init channel }}}
     @! chan_spec_raw_examples.simple_multi_join #()
   {{{ RET #("Hello World"); True }}}.
-Proof using chan_idiomG0.
+Proof.
   wp_start. wp_auto_lc 3.
   iRename select (£1) into "Hlc1".
   wp_apply chan.wp_make; first done.
@@ -869,7 +870,7 @@ Lemma wp_Serve (f: func.t) Φpre Φpost  :
     @! chan_spec_raw_examples.Serve #f
   {{{ stream γ , RET #stream;
       # (stream.(stream.req'), stream.(stream.res'))  ↣{γ} service_prot Φpre Φpost }}}.
-Proof using chan_idiomG0 dspG0 globalsGS0.
+Proof.
   wp_start.
   iNamed "Hpre".
   wp_auto.
@@ -936,7 +937,7 @@ Lemma wp_appWrld (s: go_string) :
   {{{ is_pkg_init chan_spec_raw_examples }}}
     @! chan_spec_raw_examples.appWrld #s
   {{{ RET #(s ++ ", World!"%go); True }}}.
-Proof using globalsGS0.
+Proof.
   wp_start.
   wp_auto.
   by iApply "HΦ".
@@ -946,7 +947,7 @@ Lemma wp_Client:
   {{{ is_pkg_init chan_spec_raw_examples }}}
     @! chan_spec_raw_examples.Client #()
   {{{ RET #"Hello, World!"; True%I }}}.
-Proof using chan_idiomG0 dspG0 globalsGS0.
+Proof.
   wp_start.
   wp_auto.
 
@@ -1030,7 +1031,7 @@ Lemma wp_MapServer (my_stream: streamold.t) :
   {{{ is_pkg_init chan_spec_raw_examples ∗ is_mapper_stream my_stream }}}
     @! chan_spec_raw_examples.MapServer #my_stream
   {{{ RET #(); True }}}.
-Proof using chan_idiomG0 chan_idiomG1 globalsGS0.
+Proof.
   wp_start.
   iNamed "Hpre".
   wp_auto.
@@ -1069,7 +1070,7 @@ Lemma wp_MapClient (my_stream: streamold.t) :
   {{{ is_pkg_init chan_spec_raw_examples ∗ is_mapper_stream my_stream }}}
     @! chan_spec_raw_examples.ClientOld #()
   {{{ RET #"Hello, World!"; True%I }}}.
-Proof using chan_idiomG0 chan_idiomG1 contributionG0 H dspG0 globalsGS0.
+Proof.
   wp_start.
   wp_auto.
     wp_apply (wp_mkStream _ (λ _, True)%I (λ s1 s2, ⌜s2 = s1 ++ ","%go⌝)%I).
@@ -1115,7 +1116,7 @@ Lemma wp_Muxer (c: loc) γmpmc (n_prod n_cons: nat) :
       "Hcons" ∷ mpmc_consumer γmpmc (∅ : gmultiset streamold.t) }}}
     @! chan_spec_raw_examples.Muxer #c
   {{{ RET #(); True%I }}}.
-Proof using chan_idiomG0 chan_idiomG1 globalsGS0.
+Proof.
    wp_start. wp_auto_lc 3. iNamed "Hpre".
     rewrite /chan.for_range.
   wp_auto_lc 3.
@@ -1158,7 +1159,7 @@ Lemma wp_makeGreeting :
   {{{ is_pkg_init chan_spec_raw_examples }}}
     @! chan_spec_raw_examples.makeGreeting #()
   {{{ RET #"Hello, World!"; True%I }}}.
-Proof using chan_idiomG0 chan_idiomG1 contributionG0 H dspG0 globalsGS0.
+Proof.
   wp_start. wp_auto.
   wp_apply (chan.wp_make (V:=streamold.t) 2); [done|].
   iIntros (c γ) "(#Hic & _ & Hoc)". wp_auto.
@@ -1204,7 +1205,7 @@ Lemma wp_select_no_double_close :
   {{{ is_pkg_init chan_spec_raw_examples }}}
     @! chan_spec_raw_examples.select_no_double_close #()
   {{{ RET #(); True }}}.
-Proof using chanG0.
+Proof.
   wp_start. wp_auto.
   wp_apply chan.wp_make; first done.
   iIntros "* (#His_ch & %Hcap & Hch)". simpl.
@@ -1231,7 +1232,7 @@ Lemma wp_exchangePointer :
   {{{ is_pkg_init chan_spec_raw_examples }}}
     @! chan_spec_raw_examples.exchangePointer #()
   {{{ RET #(); True }}}.
-Proof using chan_idiomG0.
+Proof.
   wp_start. wp_auto.
   wp_apply (chan.wp_make (t:=structT [])); [done|].
   iIntros (ch γ) "(#His_ch & % & Hch)". wp_auto. simpl.
