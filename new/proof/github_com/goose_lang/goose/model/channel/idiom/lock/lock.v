@@ -24,11 +24,10 @@ From Perennial.algebra Require Import ghost_var.
 
 Section lock_channel.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
+Context {sem : go.Semantics}.
+Local Set Default Proof Using "All".
 Context `{!chan_idiomG Σ V}.
-Context `{!IntoVal V}.
-Context `{!IntoValTyped V t}.
-Context `{!ghost_varG Σ bool}.
+Context `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}.
 
 Record lock_channel_names := {
   lchan_name : chan_names;      (* Underlying channel ghost state *)
@@ -37,16 +36,16 @@ Record lock_channel_names := {
 
 Definition is_lock_channel (γ : lock_channel_names) (ch : loc)
                             (R : iProp Σ) : iProp Σ :=
-  "#Hchan" ∷ is_chan ch γ.(lchan_name) ∗
+  "#Hchan" ∷ is_chan ch γ.(lchan_name) V ∗
   "#Hinv" ∷ inv nroot (
     ∃ s locked,
-      "Hch" ∷ own_chan ch s γ.(lchan_name) ∗
+      "Hch" ∷ own_chan γ.(lchan_name) V s ∗
       "%Hcap" ∷ ⌜ chan_cap γ.(lchan_name) = 1 ⌝ ∗
       "Hlocked_ghost" ∷ ghost_var γ.(locked_name) (DfracOwn (1/2)) locked ∗
       (match s with
-       | chan_rep.Buffered [] =>
+       | chanstate.Buffered [] =>
           ⌜locked = false⌝ ∗ ghost_var γ.(locked_name) (DfracOwn (1/2)) locked ∗ R
-       | chan_rep.Buffered [v] =>
+       | chanstate.Buffered [v] =>
            ⌜locked = true⌝
        | _ =>
            (* Ban unbuffered and close states *)
@@ -64,36 +63,33 @@ Definition has_lock_channel (γ : lock_channel_names) : iProp Σ :=
 
 Lemma start_lock_channel ch (R : iProp Σ) γ :
   chan_cap γ = 1 ->
-  is_chan ch γ -∗
-  own_chan ch (chan_rep.Buffered []) γ -∗
+  is_chan ch γ V -∗
+  own_chan γ V (chanstate.Buffered []) -∗
   ▷ R ={⊤}=∗
     (∃ γlock, is_lock_channel γlock ch R).
 Proof.
   intros Hcap.
   iIntros "#Hch Hoc HR".
-   iMod (ghost_var_alloc false) as (γlocked) "[HlockedI HlockedF]".
-
+  iMod (ghost_var_alloc false) as (γlocked) "[HlockedI HlockedF]".
   set (γlock := {| lchan_name := γ; locked_name := γlocked |}).
 
-
- iMod (inv_alloc nroot _ (
-    ∃ s locked,
-      "Hch" ∷ own_chan ch s γ ∗
-      "%Hcap" ∷ ⌜ chan_cap γ = 1 ⌝ ∗
-      "Hlocked_ghost" ∷ ghost_var γlock.(locked_name) (DfracOwn (1/2)) locked ∗
-      (match s with
-       | chan_rep.Buffered [] =>
-         ⌜locked = false⌝ ∗ ghost_var γlock.(locked_name) (DfracOwn (1/2)) locked  ∗ R
-       | chan_rep.Buffered [v] =>
-           ⌜locked = true⌝
-       | _ =>
-           False
-       end)
-  ) with "[Hoc HlockedI HlockedF HR]") as "#Hinv".
- {
-  iNext.  iFrame. replace (γlocked) with (γlock.(locked_name)) by done.  iFrame. done.
- }
-
+  iMod (inv_alloc nroot _ (
+            ∃ s locked,
+              "Hch" ∷ own_chan γ V s ∗
+              "%Hcap" ∷ ⌜ chan_cap γ = 1 ⌝ ∗
+              "Hlocked_ghost" ∷ ghost_var γlock.(locked_name) (DfracOwn (1/2)) locked ∗
+              (match s with
+               | chanstate.Buffered [] =>
+                   ⌜locked = false⌝ ∗ ghost_var γlock.(locked_name) (DfracOwn (1/2)) locked  ∗ R
+               | chanstate.Buffered [v] =>
+                   ⌜locked = true⌝
+               | _ =>
+                   False
+               end)
+          ) with "[Hoc HlockedI HlockedF HR]") as "#Hinv".
+  {
+    iNext.  iFrame. replace (γlocked) with (γlock.(locked_name)) by done.  iFrame. done.
+  }
   iModIntro.
   unfold has_lock_channel.
   iFrame "#".
@@ -104,23 +100,22 @@ Proof.
 Qed.
 
 Lemma is_lock_channel_is_chan γ ch R :
-  is_lock_channel γ ch R ⊢ is_chan ch γ.(lchan_name).
+  is_lock_channel γ ch R ⊢ is_chan ch γ.(lchan_name) V.
 Proof.
   iDestruct 1 as "[$ _]".
 Qed.
 
-Lemma lock_channel_lock_au γ ch v (R : iProp Σ) :
+Lemma lock_channel_lock_au γ ch (v : V) (R : iProp Σ) :
   ∀ (Φ: iProp Σ),
   is_lock_channel γ ch R -∗
   £1 -∗
   ▷ (has_lock_channel γ ∗ R -∗ Φ) -∗
-  SendAU ch v γ.(lchan_name) Φ.
+  send_au γ.(lchan_name) v Φ.
 Proof.
   iIntros (Φ) "#Hlock (HR & Hlc) Hcont".
   unfold has_lock_channel.
   iDestruct "Hlock" as "[#Hchan #Hinv]".
 
-  unfold SendAU.
   iInv "Hinv" as "Hinv_open" "Hinv_close".
   iMod (lc_fupd_elim_later with "[$] [$Hinv_open]") as "Hinv_open".
   iNamed "Hinv_open".
@@ -139,7 +134,7 @@ Proof.
       iMod (ghost_var_update (true) with "Hgv") as "[Hlock1 Hlock2]".
     iMod ("Hinv_close" with "[Hlock1 Hoc]") as "_".
     {
-      iNext. iExists (chan_rep.Buffered [v]). iExists true. iFrame.
+      iNext. iExists (chanstate.Buffered [v]). iExists true. iFrame.
       done.
     }
     iModIntro. iApply "Hcont".
@@ -157,7 +152,7 @@ Proof.
 
 Lemma wp_lock_channel_lock γ ch (v:V) (R : iProp Σ) :
   {{{ is_lock_channel γ ch R }}}
-    chan.send #t #ch #v
+    chan.send t #ch #v
   {{{ RET #();  has_lock_channel γ ∗ R }}}.
 Proof.
   iIntros (Φ) "(#Hlock & HR) Hcont".
@@ -183,7 +178,7 @@ Lemma lock_channel_unlock_au γ ch (R : iProp Σ) :
   R -∗
   £1 -∗
   ▷ (∀ v, True -∗ Φ v true) -∗
-  recv_au ch γ.(lchan_name) (λ (v:V) true, Φ v true).
+  recv_au γ.(lchan_name) V (λ (v:V) true, Φ v true).
 Proof.
   iIntros (Φ) "#Hislock Hhaslock HR Hlc HΦcont".
   unfold has_lock_channel.
@@ -211,7 +206,7 @@ Proof.
       iMod (ghost_var_update (false) with "Hgv") as "[Hlock1 Hlock2]".
   iMod ("Hinv_close" with "[Hoc HR Hlock1 Hlock2]") as "_".
   {
-    iNext. iExists (chan_rep.Buffered []). iFrame.
+    iNext. iExists (chanstate.Buffered []). iFrame.
     done.
   }
   iModIntro. iApply "HΦcont". done.
@@ -219,7 +214,7 @@ Qed.
 
 Lemma wp_lock_channel_unlock γ ch (R : iProp Σ) :
   {{{ is_lock_channel γ ch R ∗ has_lock_channel γ ∗ R }}}
-    chan.receive #t #ch
+    chan.receive t #ch
   {{{ (v : V), RET (#v, #true); True }}}.
 Proof.
   iIntros (Φ) "(#Hlock & Hlocked) Hcont".
