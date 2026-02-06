@@ -23,7 +23,6 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics}.
 Local Set Default Proof Using "All".
 Context `{!chan_idiomG Σ V}.
-
 Context `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}.
 
 (** ** Ghost State Names *)
