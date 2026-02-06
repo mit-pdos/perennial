@@ -125,9 +125,11 @@ End classes.
 
 Section lang.
   Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-  Context `{!chanG Σ V} `{!IntoVal V} `{!IntoValTyped V tV}.
-  Context `{!globalsGS Σ} {go_ctx : GoContext}.
+  Context {sem : go.Semantics}.
+  Local Set Default Proof Using "All".
+  Context `{!chanG Σ V}.
   Context `{!dspG Σ V}.
+  Context `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}.
   Implicit Types TT : tele.
   Implicit Types p : iProto Σ V.
   Implicit Types m : iMsg Σ V.
@@ -156,26 +158,27 @@ End lang.
 
 (** * Symbolic execution tactics *)
 (* TODO: Maybe strip laters from other hypotheses in the future? *)
-Lemma tac_wp_recv `{hG: heapGS Σ, !ffi_semantics _ _} `{!chanG Σ V}
-  `{!IntoVal V} `{!IntoValTyped V tV} `{!globalsGS Σ} {go_ctx : GoContext} `{!dspG Σ V}
+Lemma tac_wp_recv
+  `{hG: heapGS Σ, !ffi_semantics _ _} {sem : go.Semantics} `{!chanG Σ V} `{!dspG Σ V}
+  `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}
   {TT : tele} Δ i j K (lr_chan rl_chan:loc) γ p m (tv : TT -t> V) tP tP' tp Φ :
-  envs_lookup i Δ = Some (false, #(lr_chan, rl_chan) ↣{γ} p)%I →
+  envs_lookup i Δ = Some (false, (lr_chan, rl_chan) ↣{γ} p)%I →
   ProtoNormalize false p [] (<?> m) →
   MsgTele m tv tP tp →
   (∀.. x, MaybeIntoLaterN false 1 (tele_app tP x) (tele_app tP' x)) →
   let Δ' := envs_delete false i false Δ in
   (∀.. x : TT,
     match envs_app false
-        (Esnoc (Esnoc Enil j (tele_app tP' x)) i (#(lr_chan,rl_chan) ↣{γ} tele_app tp x)) Δ' with
+        (Esnoc (Esnoc Enil j (tele_app tP' x)) i ((lr_chan,rl_chan) ↣{γ} tele_app tp x)) Δ' with
     | Some Δ'' => envs_entails Δ'' (WP fill K (of_val (#(tele_app tv x), #true)) {{ Φ }})
     | None => False
     end) →
-  envs_entails Δ (WP fill K (chan.receive #tV #rl_chan) {{ Φ }}).
+  envs_entails Δ (WP fill K (chan.receive t #rl_chan) {{ Φ }}).
 Proof.
   rewrite envs_entails_unseal /ProtoNormalize /MsgTele /MaybeIntoLaterN /=.
   rewrite !tforall_forall right_id.
   intros ? Hp Hm HP HΦ. rewrite envs_lookup_sound //; simpl.
-  assert (#(lr_chan,rl_chan) ↣{γ} p ⊢ #(lr_chan,rl_chan) ↣{γ} <?.. x>
+  assert ((lr_chan,rl_chan) ↣{γ} p ⊢ (lr_chan,rl_chan) ↣{γ} <?.. x>
     MSG tele_app tv x {{ ▷ tele_app tP' x }}; tele_app tp x) as ->.
   { iIntros "Hc". iApply (iProto_pointsto_le with "Hc"). iIntros "!>".
     iApply iProto_le_trans; [iApply Hp|rewrite Hm].
@@ -189,6 +192,53 @@ Proof.
   specialize (HΦ x). destruct (envs_app _ _) as [Δ'|] eqn:HΔ'=> //.
   rewrite envs_app_sound //; simpl. by rewrite right_id HΦ.
 Qed.
+
+(** The tactic [reshape_expr e tac] decomposes the expression [e] into an
+evaluation context [K] and a subexpression [e']. It calls the tactic [tac K e']
+for each possible decomposition until [tac] succeeds. *)
+Ltac reshape_expr e tac :=
+  (* Note that the current context is spread into a list of fully-constructed
+     items [K], and a list of pairs of values [vs] (prophecy identifier and
+     resolution value) that is only non-empty if a [ResolveLCtx] item (maybe
+     having several levels) is in the process of being constructed. Note that
+     a fully-constructed item is inserted into [K] by calling [add_item], and
+     that is only the case when a non-[ResolveLCtx] item is built. When [vs]
+     is non-empty, [add_item] also wraps the item under several [ResolveLCtx]
+     constructors: one for each pair in [vs]. *)
+  let rec go K e :=
+    match e with
+    | _                               => tac K e
+    | App ?e (Val ?v)                 => add_item (@AppLCtx _ v) K e
+    | App ?e1 ?e2                     => add_item (@AppRCtx _ e1) K e2
+    | UnOp ?op ?e                     => add_item (@UnOpCtx _ op) K e
+    | BinOp ?op (Val ?v) ?e           => add_item (@BinOpRCtx _ op v) K e
+    | BinOp ?op ?e1 ?e2               => add_item (@BinOpLCtx _ op e2) K e1
+    | If ?e0 ?e1 ?e2                  => add_item (IfCtx e1 e2) K e0
+    | Pair (Val ?v) ?e                => add_item (PairRCtx v) K e
+    | Pair ?e1 ?e2                    => add_item (PairLCtx e2) K e1
+    | Fst ?e                          => add_item (@FstCtx _) K e
+    | Snd ?e                          => add_item (@SndCtx _) K e
+    | InjL ?e                         => add_item (@InjLCtx _) K e
+    | InjR ?e                         => add_item (@InjRCtx _) K e
+    | Case ?e0 ?e1 ?e2                => add_item (CaseCtx e1 e2) K e0
+    | Primitive2 ?op (Val ?v) ?e      => add_item (@Primitive2RCtx _ op v) K e
+    | Primitive2 ?op ?e1 ?e2          => add_item (@Primitive2LCtx _ op e2) K e1
+    | Primitive1 ?op ?e               => add_item (@Primitive1Ctx _ op) K e
+    | ExternalOp ?op ?e               => add_item (@ExternalOpCtx _ op) K e
+    (* | Primitive3 ?op (Val ?v0) (Val ?v1) ?e2 => add_item (Primitive3RCtx op v0 v1) K e2
+    | Primitive3 ?op (Val ?v0) ?e1 ?e2     => add_item (Primitive3MCtx op v0 e2) K e1
+    | Primitive3 ?op ?e0 ?e1 ?e2           => add_item (Primitive3LCtx op e1 e2) K e0 *)
+    | CmpXchg (Val ?v0) (Val ?v1) ?e2 => add_item (CmpXchgRCtx v0 v1) K e2
+    | CmpXchg (Val ?v0) ?e1 ?e2       => add_item (CmpXchgMCtx v0 e2) K e1
+    | CmpXchg ?e0 ?e1 ?e2             => add_item (CmpXchgLCtx e1 e2) K e0
+    | ResolveProph (Val ?v) ?e        => add_item (@ResolveProphRCtx _ v) K e
+    | ResolveProph ?e1 ?e2            => add_item (@ResolveProphLCtx _ e2) K e1
+    | fill ?K' ?e                     => match K with [] => go K' e end
+    end
+  with add_item Ki K e :=
+    go (Ki :: K) e
+  in
+  go (@nil ectx_item) e.
 
 Tactic Notation "wp_recv_core" tactic3(tac_intros) "as" tactic3(tac) :=
   let solve_pointsto _ :=
@@ -207,7 +257,7 @@ Tactic Notation "wp_recv_core" tactic3(tac_intros) "as" tactic3(tac) :=
     |tc_solve
     |pm_reduce; simpl; tac_intros;
      tac Hnew;
-     wp_finish]
+     pm_prettify]
   | _ => fail "wp_recv: not a 'wp'"
   end.
 
@@ -220,17 +270,18 @@ Tactic Notation "wp_recv" "(" simple_intropattern_list(xs) ")" "as"
     "(" ne_simple_intropattern_list(ys) ")" constr(pat) :=
   wp_recv_core (intros xs) as (fun H => _iDestructHyp H ys pat).
 
-Lemma tac_wp_send `{hG: heapGS Σ, !ffi_semantics _ _} `{!chanG Σ V}
-  `{!IntoVal V} `{!IntoValTyped V tV} `{!globalsGS Σ} {go_ctx : GoContext} `{!dspG Σ V}
+Lemma tac_wp_send
+  `{hG: heapGS Σ, !ffi_semantics _ _} {sem : go.Semantics} `{!chanG Σ V} `{!dspG Σ V}
+  `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}
   {TT : tele} Δ neg i js K (lr_chan rl_chan : loc) γ v p m tv tP tp Φ :
-  envs_lookup i Δ = Some (false, #(lr_chan,rl_chan) ↣{γ} p)%I →
+  envs_lookup i Δ = Some (false, (lr_chan,rl_chan) ↣{γ} p)%I →
   ProtoNormalize false p [] (<!> m) →
   MsgTele m tv tP tp →
   let Δ' := envs_delete false i false Δ in
   (∃.. x : TT,
     match envs_split (if neg is true then base.Right else base.Left) js Δ' with
     | Some (Δ1,Δ2) =>
-       match envs_app false (Esnoc Enil i (#(lr_chan,rl_chan) ↣{γ} tele_app tp x)) Δ2 with
+       match envs_app false (Esnoc Enil i ((lr_chan,rl_chan) ↣{γ} tele_app tp x)) Δ2 with
        | Some Δ2' =>
           v = tele_app tv x ∧
           envs_entails Δ1 (tele_app tP x) ∧
@@ -239,7 +290,7 @@ Lemma tac_wp_send `{hG: heapGS Σ, !ffi_semantics _ _} `{!chanG Σ V}
        end
     | None => False
     end) →
-  envs_entails Δ (WP fill K (chan.send #tV #lr_chan #v) {{ Φ }}).
+  envs_entails Δ (WP fill K (chan.send t #lr_chan #v) {{ Φ }}).
 Proof.
   rewrite envs_entails_unseal /ProtoNormalize /MsgTele /= right_id texist_exist.
   intros ? Hp Hm [x HΦ]. rewrite envs_lookup_sound //; simpl.
@@ -247,8 +298,8 @@ Proof.
   destruct (envs_app _ _ _) as [Δ2'|] eqn:? => //.
   rewrite envs_split_sound //; rewrite (envs_app_sound Δ2) //; simpl.
   destruct HΦ as (-> & -> & ->). rewrite right_id assoc.
-  assert (#(lr_chan,rl_chan) ↣{γ} p ⊢
-    #(lr_chan,rl_chan) ↣{γ} <!.. (x : TT)> MSG tele_app tv x {{ tele_app tP x }}; tele_app tp x) as ->.
+  assert ((lr_chan,rl_chan) ↣{γ} p ⊢
+    (lr_chan,rl_chan) ↣{γ} <!.. (x : TT)> MSG tele_app tv x {{ tele_app tP x }}; tele_app tp x) as ->.
   { iIntros "Hc". iApply (iProto_pointsto_le with "Hc"); iIntros "!>".
     iApply iProto_le_trans; [iApply Hp|]. by rewrite Hm. }
   eapply bi.wand_apply; [rewrite -wp_bind; by eapply bi.wand_entails, wp_dsp_send_tele|].
@@ -287,7 +338,7 @@ Tactic Notation "wp_send_core" tactic3(tac_exist) "with" constr(pat) :=
         | |- False => fail "wp_send:" Hs' "not found"
         | _ => notypeclasses refine (conj (eq_refl _) (conj _ _));
                 [iFrame Hs_frame; solve_done d
-                |wp_finish]
+                |pm_prettify]
         end]
      | _ => fail "wp_send: not a 'wp'"
      end
