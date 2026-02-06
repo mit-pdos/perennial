@@ -12,7 +12,7 @@ Section atomic_specs.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}
   {sem : go.ChanSemantics}.
-Local Set Default Proof Using "All".
+Collection W := sem_fn + pre_sem + sem.
 
 Context `[!chanG Σ V].
 Context `[!ZeroVal V] `[!TypedPointsto V] `[!IntoValTyped V t].
@@ -27,7 +27,7 @@ Lemma wp_NewChannel (cap : w64) :
       ⌜chan_cap γ = sint.Z cap⌝ ∗
       own_chan γ V (if decide (cap = W64 0) then chanstate.Idle else chanstate.Buffered (@nil V))
   }}}.
-Proof.
+Proof using W.
   wp_start as "%Hle".
   wp_auto.
   wp_if_destruct.
@@ -132,7 +132,7 @@ Lemma wp_Cap ch γ :
   {{{ is_chan ch γ V }}}
     ch @! (go.PointerType (channel.Channel t)) @! "Cap" #()
   {{{ RET #(chan_cap γ); True }}}.
-Proof.
+Proof using W.
   wp_start as "#Hch".
   wp_auto.
   iDestruct (is_chan_not_null with "Hch") as %Hnn.
@@ -147,7 +147,7 @@ Lemma wp_Len ch γ :
   {{{ is_chan ch γ V }}}
     ch @! (go.PointerType (channel.Channel t)) @! "Len" #()
   {{{ (l: w64), RET #l; ⌜0 ≤ sint.Z l ≤ sint.Z $ chan_cap γ⌝ }}}.
-Proof.
+Proof using W.
   wp_start as "#His".
   wp_auto.
   iDestruct (is_chan_not_null with "His") as %Hnn.
@@ -251,7 +251,7 @@ Local Lemma wp_TrySend_blocking ch v γ :
   is_chan ch γ V -∗
   send_au γ v (Φ (#true)) ∧ Φ (#false) -∗
   WP ch @! (go.PointerType (channel.Channel t)) @! "TrySend" #v #true {{ Φ }}.
-Proof.
+Proof using W.
   wp_start as "Hunb". iNamed "Hunb".
   wp_auto_lc 5.
   wp_apply (wp_Mutex__Lock with "[$lock]") as "[Hlock Hchan]".
@@ -482,7 +482,7 @@ Local Lemma wp_TrySend_nonblocking ch v γ :
   is_chan ch γ V -∗
   nonblocking_send_au γ v (Φ (#true)) (Φ (#false)) -∗
   WP ch @! (go.PointerType (channel.Channel t)) @! "TrySend" #v #false {{ Φ }}.
-Proof.
+Proof using W.
   wp_start as "Hunb". iNamed "Hunb". wp_auto_lc 5.
   wp_apply (wp_Mutex__Lock with "[$lock]") as "[Hlock Hchan]".
   iNamedSuffix "Hchan" "_inv".
@@ -597,7 +597,7 @@ Local Lemma wp_TrySend_nonblocking_alt ch v γ :
   is_chan ch γ V -∗
   nonblocking_send_au_alt γ v (Φ (#true)) (Φ (#false)) -∗
   WP ch @! (go.PointerType (channel.Channel t)) @! "TrySend" #v #false {{ Φ }}.
-Proof.
+Proof using W.
   wp_start as "Hunb". iNamed "Hunb". wp_auto.
   wp_apply (wp_Mutex__Lock with "[$lock]") as "[Hlock Hchan]".
   iNamedSuffix "Hchan" "_inv".
@@ -751,7 +751,7 @@ Lemma wp_TrySend ch v γ (blocking : bool) :
    else (nonblocking_send_au γ v (Φ (#true)) (Φ (#false)) ∨ nonblocking_send_au_alt γ v (Φ (#true)) (Φ (#false))))
   -∗
   WP ch @! (go.PointerType (channel.Channel t)) @! "TrySend" #v #blocking {{ Φ }}.
-Proof.
+Proof using W.
   iIntros (?) "#? HΦ".
   destruct blocking.
   - wp_apply (wp_TrySend_blocking with "[$] [$]").
@@ -765,7 +765,7 @@ Lemma wp_Send ch v γ :
   is_chan ch γ V -∗
   (£1 ∗ £1 ∗ £1 ∗ £1 -∗ send_au γ v (Φ #())) -∗
   WP ch @! (go.PointerType (channel.Channel t)) @! "Send" #v {{ Φ }}.
-Proof.
+Proof using W.
   wp_start as "#Hic". iRename "HΦ" into "Hau".
   iDestruct (is_chan_not_null with "[$Hic]") as "%Hnn".
   wp_auto_lc 4.
@@ -822,7 +822,7 @@ Qed.
   is_chan ch γ V -∗
   (£1 ∗ £1 ∗ £1 ∗ £1 -∗ buffered_send_au γ V v (Φ #())) -∗
   WP ch @! (go.PointerType (channel.Channel t)) @! "Send" #v {{ Φ }}.
-Proof.
+Proof using W.
   iIntros (Hcapnz Φ) "#Hunb HΦ".
   iApply (wp_Send with "[$Hunb]").
   iIntros "Hlc".
@@ -845,7 +845,7 @@ Local Lemma wp_tryClose ch γ :
   is_chan ch γ V -∗
   close_au γ V (Φ (#true)) ∧ Φ (#false) -∗
   WP ch @! (go.PointerType (channel.Channel t)) @! "tryClose" #() {{ Φ }}.
-Proof.
+Proof using W.
   wp_start as "#Hunb". iNamed "Hunb".
   wp_auto_lc 1.
 
@@ -976,7 +976,7 @@ Lemma wp_Close ch γ :
   is_chan ch γ V -∗
   (£1 ∗ £1 ∗ £1 ∗ £1 -∗ close_au γ V (Φ #())) -∗
   WP ch @! (go.PointerType (channel.Channel t)) @! "Close" #() {{ Φ }}.
-Proof.
+Proof using W.
   wp_start as "#Hic". iRename "HΦ" into "Hau".
   iDestruct (is_chan_not_null with "[$Hic]") as "%Hnn".
   wp_auto_lc 4.

@@ -465,7 +465,6 @@ Proof.
   iIntros (c γ) "(#Hic & _Hcap & Hoc)". wp_auto.
   wp_apply chan.wp_make1.
   iIntros (signal γ') "(#Hicsignal & _Hcapsignal & Hocsignal)". wp_auto.
-  FIXME: this shouldn't depend on t.
   iMod (dsp_session_init _ _ _ _ _ _ _ ref_prot with "Hic Hicsignal Hoc Hocsignal")
                        as (γdsp1 γdsp2) "[Hc Hcsignal]";
     [by eauto|by eauto|..].
@@ -489,7 +488,7 @@ Context `{!chan_idiomG Σ unit}.
 
 (** Invariant: channel must be Idle, all other states are False *)
 Definition is_select_nb_only (γ : chan_names) (ch : loc) : iProp Σ :=
-  "#Hch" ∷ is_chan (V:=unit)  ch γ ∗
+  "#Hch" ∷ is_chan (V:=unit) ch γ ∗
   "#Hinv" ∷ inv nroot (
     ∃ (s : chan_rep.t unit),
       "Hoc" ∷ own_chan  ch s γ ∗

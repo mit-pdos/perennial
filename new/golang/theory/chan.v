@@ -20,7 +20,8 @@ Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}
   {sem : go.ChanSemantics}.
-Local Set Default Proof Using "All".
+
+Collection W := sem_fn + pre_sem + sem.
 
 Global Instance pure_wp_chan_for_range (c : chan.t) elem_type (body : val) :
   PureWp True (chan.for_range elem_type #c body)%E
@@ -33,18 +34,21 @@ Global Instance pure_wp_chan_for_range (c : chan.t) elem_type (body : val) :
             (* channel is closed *)
             break: #()
     )).
-Proof.
+Proof using W.
   iIntros (?????) "HΦ". unfold chan.for_range.
   wp_pure_lc "?". wp_pure. wp_pure. by iApply "HΦ".
 Qed.
 
-Context [ct dir t] `[!ct ↓u go.ChannelType dir t].
-Context [V] `[!chanG Σ V].
-Context `[!ZeroVal V] `[!TypedPointsto V] `[!IntoValTyped V t].
+(* These are carefully ordered so that when the lemmas are applied, typeclass
+   search can fill everything in. Do not change the order or add new things here
+   without considering how it will affect TC search when lemmas are applied. *)
+Context [ct dir t] [Hunder : ct ↓u go.ChannelType dir t].
+Context [V] `[!ZeroVal V] `[!TypedPointsto V] `[!IntoValTyped V t].
+Context `[!chanG Σ V].
 
 Implicit Types (ch : loc) (v : V) (γ : chan_names).
 
-Lemma wp_make2 (cap : w64) `[!ct ↓u go.ChannelType dir t] :
+Lemma wp_make2 (cap : w64) :
   {{{ ⌜ 0 ≤ sint.Z cap ⌝ }}}
     #(functions go.make2 [ct]) #cap
   {{{ ch γ, RET #ch;
@@ -52,7 +56,7 @@ Lemma wp_make2 (cap : w64) `[!ct ↓u go.ChannelType dir t] :
       ⌜ chan_cap γ = sint.Z cap ⌝ ∗
       own_chan γ V (if decide (cap = 0) then chanstate.Idle else chanstate.Buffered (@nil V))
   }}}.
-Proof.
+Proof using W Hunder.
   wp_start as "%Hle".
   wp_apply wp_NewChannel; first done.
   iFrame.
@@ -66,7 +70,7 @@ Lemma wp_make1 :
       ⌜ chan_cap γ = 0 ⌝ ∗
       own_chan γ V chanstate.Idle
   }}}.
-Proof.
+Proof using W Hunder.
   wp_start.
   wp_apply wp_make2; first done.
   iFrame.
@@ -77,7 +81,7 @@ Lemma wp_send ch v γ:
   is_chan ch γ V -∗
   (£1 ∗ £1 ∗ £1 ∗ £1 -∗ send_au γ v (Φ #())) -∗
   WP chan.send t #ch #v {{ Φ }}.
-Proof using All.
+Proof using W.
   wp_start as "#Hch".
   wp_apply (wp_Send with "[$]").
   iFrame.
@@ -88,7 +92,7 @@ Lemma wp_close ch γ :
   is_chan ch γ V -∗
   (£1 ∗ £1 ∗ £1 ∗ £1 -∗ close_au γ V (Φ #())) -∗
   WP #(functions go.close [ct]) #ch {{ Φ }}.
-Proof.
+Proof using W Hunder.
   wp_start as "#Hch".
   wp_apply (wp_Close with "[$]").
   iFrame.
@@ -99,7 +103,7 @@ Lemma wp_receive ch γ :
   is_chan ch γ V -∗
   (£1 ∗ £1 ∗ £1 ∗ £1 -∗ recv_au γ V (λ v ok, Φ (#v, #ok)%V)) -∗
   WP chan.receive t #ch {{ Φ }}.
-Proof using All.
+Proof using W.
   wp_start as "#Hch".
   wp_apply (wp_Receive with "[$]").
   iFrame.
@@ -109,7 +113,7 @@ Lemma wp_cap ch γ :
   {{{ is_chan ch γ V }}}
     #(functions go.cap [ct]) #ch
   {{{ RET #(chan_cap γ); True }}}.
-Proof.
+Proof using W Hunder.
   wp_start as "#Hch".
   wp_apply (wp_Cap with "[$Hch]").
   by iApply "HΦ".

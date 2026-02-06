@@ -12,18 +12,18 @@ Section atomic_specs.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}
   {sem : go.ChanSemantics}.
-Local Set Default Proof Using "All".
 
 Context `[!chanG Σ V].
 Context `[!ZeroVal V] `[!TypedPointsto V] `[!IntoValTyped V t].
 
+Collection W := sem_fn + pre_sem + sem.
 
 Local Lemma wp_TryReceive_blocking ch γ :
   ∀ Φ ,
   is_chan ch γ V -∗
   recv_au γ V (λ v ok, Φ (#true, #v, #ok)%V) ∧ Φ (#false, #(zero_val V), #true)%V -∗
   WP ch @! (go.PointerType (channel.Channel t)) @! "TryReceive" #true {{ Φ }}.
-Proof.
+Proof using W.
   wp_start as "Hch". iNamed "Hch".
   wp_auto_lc 9.
   wp_apply (wp_Mutex__Lock with "[$lock]") as "[Hlock Hchan]".
@@ -374,7 +374,7 @@ Local Lemma wp_TryReceive_nonblocking ch γ :
   is_chan ch γ V -∗
   nonblocking_recv_au γ V (λ v ok, Φ (#true, #v, #ok)%V) (Φ (#false, #(zero_val V), #true)%V) -∗
   WP ch @! (go.PointerType (channel.Channel t)) @! "TryReceive" #false {{ Φ }}.
-Proof.
+Proof using W.
   wp_start as "#Hch". iNamed "Hch".
   wp_auto_lc 9.
   wp_apply (wp_Mutex__Lock with "[$lock]") as "[Hlock Hchan]".
@@ -544,7 +544,7 @@ Local Lemma wp_TryReceive_nonblocking_alt ch γ :
   is_chan ch γ V -∗
   nonblocking_recv_au_alt γ V (λ v ok, Φ (#true, #v, #ok)%V) (Φ (#false, #(zero_val V), #true)%V) -∗
   WP ch @! (go.PointerType (channel.Channel t)) @! "TryReceive" #false {{ Φ }}.
-Proof.
+Proof using W.
   wp_start as "#Hch". iNamed "Hch".
   wp_auto_lc 9.
   wp_apply (wp_Mutex__Lock with "[$lock]") as "[Hlock Hchan]".
@@ -765,7 +765,7 @@ Lemma wp_TryReceive ch γ (blocking : bool) :
                (Φ (#false, #(zero_val V), #true)%V)
   )) -∗
   WP ch @! (go.PointerType (channel.Channel t)) @! "TryReceive" #blocking {{ Φ }}.
-Proof.
+Proof using W.
   iIntros (?) "#? HΦ".
   destruct blocking.
   - wp_apply (wp_TryReceive_blocking with "[$] [$]").
@@ -779,7 +779,7 @@ Lemma wp_Receive ch γ :
   is_chan ch γ V -∗
   (£1 ∗ £1 ∗ £1 ∗ £1 -∗ recv_au γ V (λ v ok, Φ (#v, #ok)%V)) -∗
   WP ch @! (go.PointerType (channel.Channel t)) @! "Receive" #() {{ Φ }}.
-Proof.
+Proof using W.
   wp_start as "#Hic". iRename "HΦ" into "Hau".
   iDestruct (is_chan_not_null with "[$Hic]") as "%Hnn".
   wp_auto_lc 4.

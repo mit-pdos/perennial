@@ -46,7 +46,6 @@ Section dsp.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics}.
-Local Set Default Proof Using "All".
 Context `{!chanG Σ V}.
 Context `{!dspG Σ V}.
 
