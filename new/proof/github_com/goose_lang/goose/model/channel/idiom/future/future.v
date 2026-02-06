@@ -15,15 +15,16 @@ From Perennial.algebra Require Import ghost_var.
     - Exactly one await operation allowed per future
     - Uses buffered channel with capacity 1
     - Ghost state tracks whether fulfill/await tokens have been consumed
-    - Close operations are banned 
+    - Close operations are banned
 *)
 
 Section future.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
+Context {sem : go.Semantics}.
+Local Set Default Proof Using "All".
 Context `{!chan_idiomG Σ V}.
-Context `{!IntoVal V}.
-Context `{!IntoValTyped V t}.
+
+Context `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}.
 
 (** ** Ghost State Names *)
 
@@ -61,19 +62,19 @@ Definition fulfill_token (γ : future_names) : iProp Σ :=
 *)
 Definition is_future (γ : future_names) (ch : loc)
                      (P : V → iProp Σ) : iProp Σ :=
-  is_chan ch γ.(chan_name) ∗
+  is_chan ch γ.(chan_name) V ∗
   inv nroot (
     ∃ s await_avail fulfill_avail,
-      "Hch" ∷ own_chan ch s γ.(chan_name) ∗
+      "Hch" ∷ own_chan γ.(chan_name) V s ∗
       "Hawait" ∷ ghost_var γ.(await_name) half await_avail ∗
       "Hfulfill" ∷ ghost_var γ.(fulfill_name) half fulfill_avail ∗
       (match s with
       (* Empty buffer: either initial state or final state *)
-      | chan_rep.Buffered [] =>
+      | chanstate.Buffered [] =>
           ⌜(await_avail = true ∧ fulfill_avail = true) ∨
            (await_avail = false ∧ fulfill_avail = false)⌝
       (* Fulfilled state: value in buffer, only await token available *)
-      | chan_rep.Buffered [v] =>
+      | chanstate.Buffered [v] =>
           ⌜await_avail = true ∧ fulfill_avail = false⌝ ∗ P v
       (* No unbuffered or closing allowed *)
       | _ => False
@@ -84,8 +85,8 @@ Definition is_future (γ : future_names) (ch : loc)
 
 (** Create a Future channel from a capacity-1 buffered channel *)
 Lemma start_future ch (P : V → iProp Σ) γ :
-  is_chan ch γ -∗
-  (own_chan ch (chan_rep.Buffered []) γ) ={⊤}=∗
+  is_chan ch γ V -∗
+  (own_chan γ V (chanstate.Buffered [])) ={⊤}=∗
   (∃ γfuture, is_future γfuture ch P ∗ await_token γfuture ∗ fulfill_token γfuture).
 Proof.
   iIntros "#Hch Hoc".
@@ -100,14 +101,14 @@ Proof.
   (* Allocate the invariant *)
   iMod (inv_alloc nroot _ (
     ∃ s await_avail fulfill_avail,
-      "Hch" ∷ own_chan ch s γ ∗
+      "Hch" ∷ own_chan γ V s ∗
       "Hawait" ∷ ghost_var γawait half await_avail ∗
       "Hfulfill" ∷ ghost_var γfulfill half fulfill_avail ∗
       (match s with
-       | chan_rep.Buffered [] =>
+       | chanstate.Buffered [] =>
            ⌜(await_avail = true ∧ fulfill_avail = true) ∨
             (await_avail = false ∧ fulfill_avail = false)⌝
-       | chan_rep.Buffered [v] =>
+       | chanstate.Buffered [v] =>
            ⌜await_avail = true ∧ fulfill_avail = false⌝ ∗ P v
        | _ =>
            False
@@ -115,7 +116,7 @@ Proof.
   ) with "[Hoc HawaitA HfulfillA]") as "#Hinv".
   {
     (* Prove the invariant holds initially *)
-    iNext. iExists (chan_rep.Buffered []), true, true. iFrame.
+    iNext. iExists (chanstate.Buffered []), true, true. iFrame.
     iPureIntro. left. split; done.
   }
 
@@ -126,7 +127,7 @@ Proof.
 Qed.
 
 Lemma future_is_chan γfuture ch P :
-  is_future γfuture ch P ⊢ is_chan ch γfuture.(future.chan_name).
+  is_future γfuture ch P ⊢ is_chan ch γfuture.(future.chan_name) V.
 Proof.
   iDestruct 1 as "[$ _]".
 Qed.
@@ -138,13 +139,12 @@ Lemma future_fulfill_au γ ch (P : V → iProp Σ) (v : V) :
   is_future γ ch P -∗
   £1 ∗ fulfill_token γ ∗ P v -∗
   ▷ (True -∗ Φ) -∗
-  SendAU ch v γ.(chan_name) Φ.
+  send_au γ.(chan_name) v Φ.
 Proof.
   iIntros (Φ) "#Hfuture (Hlc & Hfulfillt & HP) Hcont".
   unfold is_future.
   iDestruct "Hfuture" as "[#Hchan #Hinv]".
 
-  unfold SendAU.
   iInv "Hinv" as "Hinv_open" "Hinv_close".
   iDestruct "Hlc" as "[Hlc1 Hrest]".
   iMod (lc_fupd_elim_later with "[$] [$Hinv_open]") as "Hinv_open".
@@ -159,7 +159,7 @@ Proof.
   destruct s; try done.
   destruct buff as [|v_buf rest].
 {
-  
+
   iDestruct "Hinv_open" as %Hdisj.
   destruct Hdisj as [[Hawait_eq Hfulfill_eq] | [Hawait_eq Hfulfill_eq]]; subst.
   - (* Initial state - can fulfill *)
@@ -170,7 +170,7 @@ Proof.
     iMod (ghost_var_update false with "Hfulfill_full") as "[HfulfillI_new _]".
     iMod ("Hinv_close" with "[Hoc Hawait HP HfulfillI_new]") as "_".
     {
-      iNext. iExists (chan_rep.Buffered [v]), true, false.
+      iNext. iExists (chanstate.Buffered [v]), true, false.
       iFrame. iPureIntro. split; done.
     }
     iModIntro. iApply "Hcont".
@@ -187,7 +187,7 @@ Qed.
 
 Lemma wp_future_fulfill γ ch (P : V → iProp Σ) (v : V) :
   {{{ is_future γ ch P ∗ fulfill_token γ ∗ P v }}}
-    chan.send #t #ch #v
+    chan.send t #ch #v
   {{{ RET #(); True }}}.
 Proof.
   iIntros (Φ) "(#Hfuture & Hfulfillt & HP) Hcont".
@@ -207,7 +207,7 @@ Lemma future_await_au γ ch (P : V → iProp Σ) :
   is_future γ ch P -∗
   £1 ∗ await_token γ -∗
   ▷ (∀ v, P v -∗ Φ v true) -∗
-  recv_au ch γ.(chan_name) (λ (v:V) (ok:bool), Φ v ok).
+  recv_au γ.(chan_name) V (λ (v:V) (ok:bool), Φ v ok).
 Proof.
   iIntros (Φ) "#Hfuture [Hlc Hawaitt] HΦcont".
   unfold is_future.
@@ -237,7 +237,7 @@ Proof.
   iMod (ghost_var_update false with "Hawait_full") as "[HawaitI_new _]".
   iMod ("Hinv_close" with "[Hoc HawaitI_new Hfulfill]") as "_".
   {
-    iNext. iExists (chan_rep.Buffered []), false, false.
+    iNext. iExists (chanstate.Buffered []), false, false.
     iFrame. iPureIntro. right. split; done.
   }
   iModIntro. iApply "HΦcont". done.
@@ -246,14 +246,14 @@ Qed.
 (** Future await operation - consumes await token to receive value and P(v) *)
 Lemma wp_future_await γ ch (P : V → iProp Σ) :
   {{{ is_future γ ch P ∗ await_token γ }}}
-    chan.receive #t #ch
+    chan.receive t #ch
   {{{ (v : V), RET (#v, #true); P v }}}.
 Proof.
   iIntros (Φ) "(#Hfuture & Hawaitt) Hcont".
 
   unfold is_future.
   iDestruct "Hfuture" as "[#Hchan #Hinv]".
-  
+
   iApply (chan.wp_receive ch γ.(chan_name) with "[$Hchan]").
   iIntros "(Hlc1 & Hlc2)".
 
