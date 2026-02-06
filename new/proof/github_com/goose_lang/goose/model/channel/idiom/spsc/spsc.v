@@ -22,9 +22,8 @@ From Perennial.algebra Require Import ghost_var.
 Section spsc.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics}.
-Local Set Default Proof Using "All".
-Context `{!chan_idiomG Σ V}.
-Context `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}.
+Context [V] `[!chan_idiomG Σ V].
+Context `[!ZeroVal V] `[!TypedPointsto V] `[!IntoValTyped V t].
 
 (** ** Ghost State Names *)
 
@@ -405,7 +404,7 @@ Lemma wp_spsc_receive γ ch (P : Z -> V → iProp Σ) (R : list V → iProp Σ)
   {{{ (v:V) (ok:bool), RET (#v, #ok);
       (if ok then P (length received) v ∗ spsc_consumer γ (received ++ [v])
             else R received ∗ ⌜ v = (zero_val V) ⌝ )%I }}}.
-Proof.
+Proof using All.
   iIntros (Φ) "(#Hspsc & Hcons) Hcont".
 
   (* Extract channel info from SPSC predicate *)
@@ -589,7 +588,7 @@ Lemma wp_spsc_send γ ch (P : Z -> V → iProp Σ) (R : list V → iProp Σ)
   {{{ is_spsc γ ch P R ∗ spsc_producer γ sent ∗ P (length sent) v }}}
     chan.send t #ch #v
   {{{ RET #(); spsc_producer γ (sent ++ [v]) }}}.
-Proof.
+Proof using All.
   iIntros (Φ) "(#Hspsc & Hprod & HP) Hcont".
 
   (* Extract channel info from SPSC predicate *)
@@ -658,7 +657,7 @@ Lemma wp_spsc_close γ ch P R sent `[ct ↓u go.ChannelType dir t] :
   {{{  is_spsc γ ch P R ∗ spsc_producer γ sent ∗ R sent }}}
     #(functions go.close [ct]) #ch
   {{{ RET #(); True }}}.
-Proof.
+Proof using All.
   iIntros (Φ) "( #Hspsc & Hprod & HP) Hcont".
   iPoseProof "Hspsc" as "[Hchan _]".
   iApply (chan.wp_close with "Hchan").

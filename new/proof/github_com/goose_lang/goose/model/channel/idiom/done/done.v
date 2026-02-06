@@ -20,11 +20,9 @@ From iris.base_logic.lib Require Import saved_prop.
 Section done.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics}.
-Local Set Default Proof Using "All".
-Context `{!chan_idiomG Σ V}.
+Context `[!chan_idiomG Σ V].
 
-Context `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}.
-
+Context `[!ZeroVal V] `[!TypedPointsto V] `[!IntoValTyped V t].
 
 Record done_names := {
   chan_name : chan_names;
@@ -308,7 +306,7 @@ Lemma wp_done_close γ ch R `[ct ↓u go.ChannelType dir t]:
       Notify γ R ∗ R }}}
     #(functions go.close [ct]) #ch
   {{{ RET #(); True }}}.
-Proof.
+Proof using All.
   iIntros (Φ). iIntros "(#Hdone & Hrest)".  iNamed "Hrest".
   iDestruct "Hrest" as "[HNh HR]".
   iIntros "Hphi".
@@ -467,7 +465,7 @@ Lemma wp_done_receive γ ch Q :
       Notified γ Q }}}
     chan.receive t #ch
   {{{ RET (#(zero_val V), #false); Q }}}.
-Proof.
+Proof using All.
   iIntros (Φ) "(#Hdone & HNotified) Hcont".
   unfold is_done. iDestruct "Hdone" as "[#Hch #Hinv]".
   iApply (chan.wp_receive ch γ.(chan_name) with "[$Hch]").

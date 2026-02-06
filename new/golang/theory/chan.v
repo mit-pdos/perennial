@@ -22,7 +22,24 @@ Context {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}
   {sem : go.ChanSemantics}.
 Local Set Default Proof Using "All".
 
-Context `[!chanG Σ V].
+Global Instance pure_wp_chan_for_range (c : chan.t) elem_type (body : val) :
+  PureWp True (chan.for_range elem_type #c body)%E
+    ((for: (λ: <>, #true)%V; (λ: <>, Skip)%V :=
+        λ: <>,
+          let: ("v", "ok") := chan.receive elem_type #c in
+          if: "ok" then
+            body "v"
+          else
+            (* channel is closed *)
+            break: #()
+    )).
+Proof.
+  iIntros (?????) "HΦ". unfold chan.for_range.
+  wp_pure_lc "?". wp_pure. wp_pure. by iApply "HΦ".
+Qed.
+
+Context [ct dir t] `[!ct ↓u go.ChannelType dir t].
+Context [V] `[!chanG Σ V].
 Context `[!ZeroVal V] `[!TypedPointsto V] `[!IntoValTyped V t].
 
 Implicit Types (ch : loc) (v : V) (γ : chan_names).
@@ -41,7 +58,7 @@ Proof.
   iFrame.
 Qed.
 
-Lemma wp_make1 ct dir `[!ct ↓u go.ChannelType dir t] :
+Lemma wp_make1 :
   {{{ True }}}
     #(functions go.make1 [ct]) #()
   {{{ ch γ, RET #ch;
@@ -60,13 +77,13 @@ Lemma wp_send ch v γ:
   is_chan ch γ V -∗
   (£1 ∗ £1 ∗ £1 ∗ £1 -∗ send_au γ v (Φ #())) -∗
   WP chan.send t #ch #v {{ Φ }}.
-Proof.
+Proof using All.
   wp_start as "#Hch".
   wp_apply (wp_Send with "[$]").
   iFrame.
 Qed.
 
-Lemma wp_close ct dir `[!ct ↓u go.ChannelType dir t] ch γ :
+Lemma wp_close ch γ :
   ∀ Φ,
   is_chan ch γ V -∗
   (£1 ∗ £1 ∗ £1 ∗ £1 -∗ close_au γ V (Φ #())) -∗
@@ -82,13 +99,13 @@ Lemma wp_receive ch γ :
   is_chan ch γ V -∗
   (£1 ∗ £1 ∗ £1 ∗ £1 -∗ recv_au γ V (λ v ok, Φ (#v, #ok)%V)) -∗
   WP chan.receive t #ch {{ Φ }}.
-Proof.
+Proof using All.
   wp_start as "#Hch".
   wp_apply (wp_Receive with "[$]").
   iFrame.
 Qed.
 
-Lemma wp_cap ct dir `[!ct ↓u go.ChannelType dir t] ch γ :
+Lemma wp_cap ch γ :
   {{{ is_chan ch γ V }}}
     #(functions go.cap [ct]) #ch
   {{{ RET #(chan_cap γ); True }}}.

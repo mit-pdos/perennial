@@ -13,20 +13,23 @@ Set Default Proof Using "Type".
 
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
+Context {sem : go.Semantics} {package_sem : chan_spec_raw_examples.Assumptions}.
+Local Set Default Proof Using "All".
 
-#[global] Instance : IsPkgInit chan_spec_raw_examples := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf chan_spec_raw_examples := build_get_is_pkg_init_wf.
-Instance stream_countable : Countable streamold.t.
-Proof.
-  refine (inj_countable'
-           (λ x, (streamold.req' x, streamold.res' x, streamold.f' x))
-          (λ '(a, b, c), streamold.mk a b c) _).
-  by intros [].
-Defined.
+#[global] Instance : IsPkgInit (iProp Σ) chan_spec_raw_examples := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ) chan_spec_raw_examples := build_get_is_pkg_init_wf.
+
+(* Instance stream_countable : Countable streamold.t. *)
+(* Proof. *)
+(*   refine (inj_countable' *)
+(*            (λ x, (streamold.req' x, streamold.res' x, streamold.f' x)) *)
+(*           (λ '(a, b, c), streamold.mk a b c) _). *)
+(*   by intros []. *)
+(* Defined. *)
 
 Section hello_world.
 Context `{!chan_idiomG Σ go_string}.
+Local Set Default Proof Using "All".
 
 Lemma wp_sys_hello_world :
   {{{ is_pkg_init chan_spec_raw_examples }}}
@@ -40,12 +43,12 @@ Lemma wp_HelloWorldAsync :
   {{{ is_pkg_init chan_spec_raw_examples  }}}
     @! chan_spec_raw_examples.HelloWorldAsync #()
   {{{ (ch: loc)  (γfut: handoff_names), RET #ch;
-       is_chan ch γfut.(handoff.chan_name)  ∗
+       is_chan ch γfut.(handoff.chan_name) go_string ∗
   is_chan_handoff (V:=go_string) γfut ch (λ (v : go_string), ⌜v = "Hello, World!"%go⌝)
     }}}.
-Proof.
+Proof using All.
   wp_start. wp_auto.
-  wp_apply chan.wp_make; first done.
+  wp_apply chan.wp_make2; first done.
   iIntros (ch). iIntros (γ). iIntros "(#His_chan & Hcap & Hownchan)".
   wp_auto.
   simpl in *.
@@ -67,12 +70,11 @@ Proof.
   iFrame "∗#".
 Qed.
 
-
 Lemma wp_HelloWorldSync :
   {{{ is_pkg_init chan_spec_raw_examples }}}
     @! chan_spec_raw_examples.HelloWorldSync #()
   {{{ RET #("Hello, World!"); True }}}.
-Proof using chan_idiomG0.
+Proof.
   wp_start.
   wp_apply wp_HelloWorldAsync.
   iIntros (ch γfuture) "[#Hchan #Hfut]".
@@ -95,15 +97,14 @@ Lemma wp_HelloWorldCancellable
   (done_ch : loc) (err_ptr1: loc) (err_msg: go_string)
   (γdone: done_names) :
   {{{ is_pkg_init chan_spec_raw_examples ∗
-        is_done (V:=unit) (t:=structT []) γdone done_ch ∗
+        is_done (V:=unit) γdone done_ch ∗
         Notified (V:=unit) γdone (err_ptr1 ↦ err_msg)  }}}
     @! chan_spec_raw_examples.HelloWorldCancellable #done_ch #err_ptr1
     {{{
 (result: go_string), RET #result;
       ⌜result = err_msg ∨ result = "Hello, World!"%go⌝
     }}}.
-Proof using chan_idiomG0 chan_idiomG1.
-
+Proof.
   wp_start. wp_apply wp_alloc.
   iIntros (l). iIntros "Herr".
   wp_auto_lc 4.
@@ -112,7 +113,7 @@ Proof using chan_idiomG0 chan_idiomG1.
   iIntros (ch γfuture) "[#Hch #Hfut]". wp_auto_lc 1.
   do 2 (iRename select (£1) into "Hlc1").
   iDestruct "Hpre" as "(#H1 & H2)".
-  iAssert ( is_chan (t:=structT []) done_ch γdone.(chan_name)) as "#Hdonech".
+  iAssert (is_chan done_ch γdone.(chan_name) unit) as "#Hdonech".
   {
     iFrame "#".
     unfold is_done.
@@ -124,10 +125,9 @@ Proof using chan_idiomG0 chan_idiomG1.
   simpl.
     iSplit.
     {
-      iFrame "#".
+      repeat iExists _; iSplitR; first done. iFrame "#".
 
-      iApply ((handoff_rcv_au  (V:=go_string)  γfuture ch)
-               with " [$Hfut] [$]").
+      iApply (handoff_rcv_au γfuture ch with "[$Hfut] [$]").
       iNext. iIntros (v). iIntros "%Hw".
       wp_auto.
       subst v.
@@ -136,20 +136,14 @@ Proof using chan_idiomG0 chan_idiomG1.
       right. done.
     }
     {
-      iFrame "Hdonech".
+      iSplitL; last done. repeat iExists _; iSplitR; first done. iFrame "#".
 
-      iApply ((done_receive_au (V:=unit) γdone done_ch  (err_ptr1 ↦ err_msg)%I )
-               with " [$H1] [H2] [HΦ Herr] [$]").
+      iApply (done_receive_au with "[$H1] [$H2] [HΦ Herr] [$]").
       {
-        iFrame.
-       }
-       {
-
         iNext. iIntros "Herr'".
-      wp_auto. iApply "HΦ". iLeft. done.
+        wp_auto. iApply "HΦ". iLeft. done.
       }
-      }
-
+    }
 Qed.
 
 
@@ -161,37 +155,36 @@ Lemma wp_HelloWorldWithTimeout :
       ⌜result = "Hello, World!"%go ∨
         result = "operation timed out"%go⌝
   }}}.
-  Proof using chan_idiomG0 chan_idiomG1.
+Proof.
   wp_start.
-  wp_auto.
-  wp_apply (chan.wp_make (t:=structT [])); first done.
+  wp_auto. wp_apply chan.wp_make1.
   iIntros (ch γ) "(#Hchan & _Hcap & Hoc)".
   simpl.
   iDestruct (start_done ch γ with "Hchan") as "Hstart".
-iMod ("Hstart" with "Hoc") as (γdone) "(#Hdone & Hnot)".
-wp_auto.
-iPersist "done".
-
-iMod (done_alloc_notified (t:=structT []) γdone ch True (errMsg_ptr ↦ "operation timed out"%go)%I
-      with "[$Hdone] [$Hnot]") as "[HNotify HNotified]".
-wp_apply (wp_fork with "[HNotify errMsg done]").
-{ wp_auto.
-  wp_apply wp_Sleep.
-  wp_apply (chan.wp_close (V:=()) with "[]") as "(Hlc1 & Hlc2 & Hlc3 & _)".
-  { iApply (done_is_chan with "Hdone"). }
-  iApply (done_CloseAU (V:=()) with "[$] [$] [$HNotify errMsg]").
-  { iFrame. }
-  iNext.
+  iMod ("Hstart" with "Hoc") as (γdone) "(#Hdone & Hnot)".
   wp_auto.
-  done. }
+  iPersist "done".
 
-wp_apply (wp_HelloWorldCancellable with "[$Hdone $HNotified][HΦ]").
-{
-  iIntros (result).
-  iIntros "%Hres".
-  wp_auto.
-  iApply "HΦ".
-  iPureIntro. destruct Hres; auto. }
+  iMod (done_alloc_notified (V:=unit) _ _ _ (errMsg_ptr ↦ "operation timed out"%go)%I
+         with "[$Hdone] [$Hnot]") as "[HNotify HNotified]".
+  wp_apply (wp_fork with "[HNotify errMsg done]").
+  { wp_auto.
+    wp_apply wp_Sleep.
+    wp_apply (chan.wp_close with "[]") as "(Hlc1 & Hlc2 & Hlc3 & _)".
+    { iApply (done_is_chan with "Hdone"). }
+    iApply (done_close_au (V:=()) with "[$] [$] [$HNotify errMsg]").
+    { iFrame. }
+    iNext.
+    wp_auto.
+    done. }
+
+  wp_apply (wp_HelloWorldCancellable with "[$Hdone $HNotified][HΦ]").
+  {
+    iIntros (result).
+    iIntros "%Hres".
+    wp_auto.
+    iApply "HΦ".
+    iPureIntro. destruct Hres; auto. }
 Qed.
 
 End cancellable.
@@ -252,67 +245,63 @@ Proof.
   wp_alloc_auto.
   wp_auto.
 
- iAssert (∃ (i: nat) (sent: list w64),
-           "Hprod" ∷ spsc_producer γ sent ∗
-           "x"     ∷ x_ptr ↦ fib i ∗
-           "y"     ∷ y_ptr ↦ fib (S i) ∗
-           "i"     ∷ i_ptr ↦ W64 i ∗
-           "c"     ∷ c_ptr ↦ c_ptr0 ∗
-           "%Hil"  ∷ ⌜i = length sent⌝ ∗
-           "%Hsl"  ∷ ⌜sent = fib_list i⌝ ∗
-           "%Hi"   ∷ ⌜0 ≤ i ≤ sint.Z n⌝)%I
-  with "[x y i c Hprod]" as "IH".
-{
-  iFrame.
-  iExists 0%nat.
-  iFrame.
-  iPureIntro. simpl. unfold fib_list.
-  simpl.
-  split;first done.
-  split;first done.
-  lia.
-}
+  iAssert (∃ (i: nat) (sent: list w64),
+              "Hprod" ∷ spsc_producer γ sent ∗
+              "x"     ∷ x_ptr ↦ fib i ∗
+              "y"     ∷ y_ptr ↦ fib (S i) ∗
+              "i"     ∷ i_ptr ↦ W64 i ∗
+              "c"     ∷ c_ptr ↦ c_ptr0 ∗
+              "%Hil"  ∷ ⌜i = length sent⌝ ∗
+              "%Hsl"  ∷ ⌜sent = fib_list i⌝ ∗
+              "%Hi"   ∷ ⌜0 ≤ i ≤ sint.Z n⌝)%I
+    with "[x y i c Hprod]" as "IH".
+  {
+    iFrame.
+    iExists 0%nat.
+    iFrame.
+    iPureIntro. simpl. unfold fib_list.
+    simpl.
+    split;first done.
+    split;first done.
+    lia.
+  }
 
-    wp_for "IH".
+  wp_for "IH".
   wp_if_destruct.
   {
 
-     wp_apply (wp_spsc_send (V:=w64) (t:=intT) γ c_ptr0
-             (λ (i : Z) (v : w64), ⌜v = fib (Z.to_nat i)⌝%I)
-              (λ sent0 : list w64, ⌜sent0 = fib_list (sint.nat n)⌝%I) sent
+    wp_apply (wp_spsc_send with "[Hspsc Hprod]").
+    { iFrame "#".  iFrame.  simpl.
+      replace (Z.to_nat (length sent)) with (length sent) by lia.
+      word.
+    }
+    iIntros "Hprod".
+    wp_auto.
+    wp_for_post.
+    iFrame.
+    iExists ((length sent) + 1)%nat.
+    iFrame.
 
-              with "[ Hspsc Hprod]").
-     { iFrame "#".  iFrame.  simpl.
-       replace (Z.to_nat (length sent)) with (length sent) by lia.
-       word.
-       }
-     iIntros "Hprod".
-     wp_auto.
-     wp_for_post.
-     iFrame.
-      iExists ((length sent) + 1)%nat.
-      iFrame.
+    iFrame.
+    replace (length sent + 1)%nat with (S (length sent)) by lia.
+    destruct (length sent) eqn: H.
+    {
+      iFrame.  iPureIntro. rewrite app_length.  rewrite H. simpl. unfold fib_list. simpl.
+      split;first done.
+      rewrite Hsl.
+      split;first done.
+      lia.
+    }
+    iFrame.
 
-      iFrame.
-      replace (length sent + 1)%nat with (S (length sent)) by lia.
-      destruct (length sent) eqn: H.
-      {
-        iFrame.  iPureIntro. rewrite app_length.  rewrite H. simpl. unfold fib_list. simpl.
-        split;first done.
-        rewrite Hsl.
-        split;first done.
-        lia.
-      }
-      iFrame.
-
-(* y: turn the add(...) form into fib (S (length sent + 1)) *)
-     (* add (fib (S k)) (fib k) → fib (S (S k)) *)
+    (* y: turn the add(...) form into fib (S (length sent + 1)) *)
+    (* add (fib (S k)) (fib k) → fib (S (S k)) *)
     replace   (w64_word_instance.(word.add)
-                  (fib (S n0))
-                  (w64_word_instance.(word.add)
-                     (fib (S n0))
-                     (fib n0)))
-                with  (fib (S (S (S n0)))).
+                                   (fib (S n0))
+                                   (w64_word_instance.(word.add)
+                                                        (fib (S n0))
+                                                        (fib n0)))
+      with  (fib (S (S (S n0)))).
     {
       iFrame.
       replace ( w64_word_instance.(word.add) (W64 (S n0)) (W64 1)) with (W64 (S (S n0))).
@@ -320,51 +309,33 @@ Proof.
         iFrame. iPureIntro.
         split.
         { rewrite length_app.  rewrite singleton_length.  rewrite H. lia.
-          }
-          split.
+        }
+        split.
         {
-
-
           subst sent.
           rewrite <- fib_list_succ.
           done.
-
+        }
+        { word. }
       }
-      {
-        word.
-      }
+      { word. }
     }
-    {
-      word.
-    }
-    }
-    {
-      rewrite fib_succ.
-      rewrite fib_succ.
-      word.
-    }
-    }
-    {
-    wp_apply (wp_spsc_close (V:=w64) (t:=intT) γ c_ptr0
-             (λ (i : Z) (v : w64), ⌜v = fib (Z.to_nat i)⌝%I)
-              (λ sent0 : list w64, ⌜sent0 = fib_list (sint.nat n)⌝%I) sent
-
-              with "[ $Hspsc $Hprod]").
+    { rewrite !fib_succ. word. }
+  }
+  {
+    wp_apply (wp_spsc_close with "[$Hspsc $Hprod]").
     { iFrame "#".   iPureIntro. rewrite Hsl.
       assert ((length sent) = sint.nat n).
       {
-       assert (length sent < 2^64). { lia. }
-
-       word.
+        assert (length sent < 2^64). { lia. }
+        word.
       }
- destruct (length sent) eqn: H1.
-      { word.
-
-      }
+      destruct (length sent) eqn: H1.
+      { word. }
       rewrite H. done.
-        }
+    }
     iApply "HΦ". done.
-}
+  }
 Qed.
 
 Lemma wp_fib_consumer:
@@ -376,59 +347,57 @@ Lemma wp_fib_consumer:
 
 
   }}}.
-Proof using chan_idiomG0.
+Proof.
   wp_start. wp_auto.
-  wp_apply (chan.wp_make); first done.
+  wp_apply chan.wp_make2; first done.
   iIntros (c γ) "(#Hchan & %Hcap_eq & Hown)".
   wp_auto.
   simpl.
-   iMod (start_spsc c (λ i v, ⌜v = fib (Z.to_nat i)⌝%I)
-                  (λ sent, ⌜sent = fib_list 10 ⌝%I)  γ
-    with "[Hchan] [Hown]") as (γspsc) "(#Hspsc & Hprod & Hcons)".
-   {
-      iFrame "#".
-   }
-   {
-     iFrame.
-     }
+  iMod (start_spsc c (λ i v, ⌜v = fib (Z.to_nat i)⌝%I)
+          (λ sent, ⌜sent = fib_list 10 ⌝%I)  γ
+         with "[Hchan] [Hown]") as (γspsc) "(#Hspsc & Hprod & Hcons)".
+  {
+    iFrame "#".
+  }
+  {
+    iFrame.
+  }
   wp_apply (chan.wp_cap with "[$Hchan]").
   wp_apply (wp_fork with "[Hprod]").
-   {
+  {
 
-   wp_apply ((wp_fibonacci) with "[$Hprod]").
-   {
-     word.
-   }
-   {
-     iFrame "#".
-     replace (sint.nat (W64 (γ.(chan_cap)))) with 10%nat by word.
-     iFrame "#".
-   }
-   done.
-   }
-  iDestruct (theory.slice.own_slice_nil  (DfracOwn 1)) as "Hnil".
-   iDestruct (theory.slice.own_slice_cap_nil (V:=w64)) as "Hnil_cap".
-   simpl.
- iAssert (∃ (i: nat) (i_v: w64) sl,
-             "i" ∷ i_ptr ↦ i_v ∗
-  "Hcons"  ∷ spsc_consumer γspsc (fib_list i) ∗
-  "Hsl"  ∷ sl ↦* (fib_list i) ∗
-  "results"  ∷ results_ptr ↦ sl ∗
-  "oslc"  ∷ theory.slice.own_slice_cap w64 sl (DfracOwn 1)
-)%I
-  with "[ i Hcons results]" as "IH".
-{
-  iExists 0%nat.
-  iFrame.
-  unfold fib_list. iFrame "#".
-}
+    wp_apply ((wp_fibonacci) with "[$Hprod]").
+    {
+      word.
+    }
+    {
+      iFrame "#".
+      replace (sint.nat (γ.(chan_cap))) with 10%nat by word.
+      iFrame "#".
+    }
+    done.
+  }
+  simpl.
+  wp_apply wp_slice_literal as "% _".
+  { iIntros. wp_auto. iFrame. }
+  iAssert (∃ (i: nat) (i_v: w64) sl,
+              "i" ∷ i_ptr ↦ i_v ∗
+              "Hcons"  ∷ spsc_consumer γspsc (fib_list i) ∗
+              "Hsl"  ∷ sl ↦* (fib_list i) ∗
+              "results"  ∷ results_ptr ↦ sl ∗
+              "oslc"  ∷ theory.slice.own_slice_cap w64 sl (DfracOwn 1)
+          )%I
+    with "[ i Hcons results]" as "IH".
+  {
+    iExists 0%nat.
+    iFrame.
+    unfold fib_list. iFrame "#".
+    iDestruct own_slice_empty as "$"; [done..|].
+    iDestruct own_slice_cap_empty as "$"; done.
+  }
 
-
-  rewrite /chan.for_range.
-  wp_auto.
   wp_for "IH".
-   wp_apply ((wp_spsc_receive (t:=intT) γspsc c (λ i v, ⌜v = fib (Z.to_nat i)⌝%I)
-                  (λ sent, ⌜sent = fib_list 10 ⌝%I) (fib_list i) _) with "[Hcons]").
+   wp_apply (wp_spsc_receive with "[Hcons]").
    { iFrame "#".  iFrame.   }
    iIntros (v ok).
    destruct ok.
@@ -441,15 +410,11 @@ Proof using chan_idiomG0.
       iDestruct (slice.own_slice_len with "Hsl") as "[%Hlen_slice %Hslgtz]".
 
 
-wp_apply wp_slice_literal. iIntros (sl0) "[Hsl0 _]".
+wp_apply wp_slice_literal. { iIntros. wp_auto. iFrame. } iIntros (sl0) "[Hsl0 _]".
       iDestruct (slice.own_slice_len with "Hsl0") as "[%Hl0 %Hcap0]".
       iDestruct (slice.own_slice_len with "Hsl0") as "[%Hlen_slice0 %Hslgtz0]".
 wp_auto.
-wp_apply (wp_slice_append (t:=intT)
-          sl (fib_list i)
-          sl0 [v]
-          (DfracOwn 1)
-          with "[$Hsl $Hsl0 $oslc ]").
+wp_apply (wp_slice_append with "[$Hsl $Hsl0 $oslc ]").
 
      iIntros (sl') "Hsl'".
      wp_auto.
@@ -487,19 +452,20 @@ Context `{!chan_idiomG Σ interface.t}.
 Context `{!dspG Σ interface.t}.
 
 Definition ref_prot : iProto Σ interface.t :=
-  <! (l:loc) (x:Z)> MSG (interface.mk (ptrT.id intT.id) #l) {{ l ↦ W64 x }} ;
-  <?> MSG (interface.mk (structT.id []) #()) {{ l ↦ w64_word_instance.(word.add) (W64 x) (W64 2) }} ;
+  <! (l:loc) (x:Z)> MSG (interface.mk_ok (go.PointerType go.int) #l) {{ l ↦ W64 x }} ;
+  <?> MSG (interface.mk_ok (go.StructType []) #()) {{ l ↦ w64_word_instance.(word.add) (W64 x) (W64 2) }} ;
   END.
 Lemma wp_DSPExample :
   {{{ is_pkg_init chan_spec_raw_examples }}}
     @! chan_spec_raw_examples.DSPExample #()
   {{{ RET #(W64 42); True }}}.
-Proof using chan_idiomG0 globalsGS0 dspG0.
+Proof.
   wp_start. wp_auto.
-  wp_apply (chan.wp_make (V:=interface.t) (t:=interfaceT) 0); [done|].
+  wp_apply chan.wp_make1.
   iIntros (c γ) "(#Hic & _Hcap & Hoc)". wp_auto.
-  wp_apply (chan.wp_make (V:=interface.t) (t:=interfaceT) 0); [done|].
+  wp_apply chan.wp_make1.
   iIntros (signal γ') "(#Hicsignal & _Hcapsignal & Hocsignal)". wp_auto.
+  FIXME: this shouldn't depend on t.
   iMod (dsp_session_init _ _ _ _ _ _ _ ref_prot with "Hic Hicsignal Hoc Hocsignal")
                        as (γdsp1 γdsp2) "[Hc Hcsignal]";
     [by eauto|by eauto|..].
@@ -507,8 +473,7 @@ Proof using chan_idiomG0 globalsGS0 dspG0.
   wp_apply (wp_fork with "[Hcsignal]").
   { wp_auto.
     wp_recv (l x) as "Hl".
-    wp_auto.
-    wp_apply wp_interface_type_assert; [done|].
+    wp_auto. rewrite -> decide_True; last done. wp_auto.
     wp_send with "[$Hl]".
     by wp_auto. }
   wp_send with "[$val]".
