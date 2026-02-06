@@ -14,7 +14,6 @@ Set Default Proof Using "Type".
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics} {package_sem : chan_spec_raw_examples.Assumptions}.
-Local Set Default Proof Using "All".
 
 #[global] Instance : IsPkgInit (iProp Σ) chan_spec_raw_examples := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf (iProp Σ) chan_spec_raw_examples := build_get_is_pkg_init_wf.
@@ -46,7 +45,7 @@ Lemma wp_HelloWorldAsync :
        is_chan ch γfut.(handoff.chan_name) go_string ∗
   is_chan_handoff (V:=go_string) γfut ch (λ (v : go_string), ⌜v = "Hello, World!"%go⌝)
     }}}.
-Proof using All.
+Proof.
   wp_start. wp_auto.
   wp_apply chan.wp_make2; first done.
   iIntros (ch). iIntros (γ). iIntros "(#His_chan & Hcap & Hownchan)".
@@ -90,8 +89,8 @@ End hello_world.
 
 
 Section cancellable.
-Context `{!chan_idiomG Σ unit}.
 Context `{!chan_idiomG Σ go_string}.
+Context `{!chan_idiomG Σ unit}.
 
 Lemma wp_HelloWorldCancellable
   (done_ch : loc) (err_ptr1: loc) (err_msg: go_string)
@@ -104,7 +103,7 @@ Lemma wp_HelloWorldCancellable
 (result: go_string), RET #result;
       ⌜result = err_msg ∨ result = "Hello, World!"%go⌝
     }}}.
-Proof.
+Proof using All.
   wp_start. wp_apply wp_alloc.
   iIntros (l). iIntros "Herr".
   wp_auto_lc 4.
@@ -155,7 +154,7 @@ Lemma wp_HelloWorldWithTimeout :
       ⌜result = "Hello, World!"%go ∨
         result = "operation timed out"%go⌝
   }}}.
-Proof.
+Proof using All.
   wp_start.
   wp_auto. wp_apply chan.wp_make1.
   iIntros (ch γ) "(#Hchan & _Hcap & Hoc)".
@@ -165,21 +164,22 @@ Proof.
   wp_auto.
   iPersist "done".
 
-  iMod (done_alloc_notified (V:=unit) _ _ _ (errMsg_ptr ↦ "operation timed out"%go)%I
+  iMod (done_alloc_notified  _ _ _ (errMsg_ptr ↦ "operation timed out"%go)%I
          with "[$Hdone] [$Hnot]") as "[HNotify HNotified]".
   wp_apply (wp_fork with "[HNotify errMsg done]").
   { wp_auto.
     wp_apply wp_Sleep.
     wp_apply (chan.wp_close with "[]") as "(Hlc1 & Hlc2 & Hlc3 & _)".
     { iApply (done_is_chan with "Hdone"). }
-    iApply (done_close_au (V:=()) with "[$] [$] [$HNotify errMsg]").
+    iApply (done_close_au with "[$] [$] [$HNotify errMsg]").
     { iFrame. }
     iNext.
     wp_auto.
     done. }
 
-  wp_apply (wp_HelloWorldCancellable with "[$Hdone $HNotified][HΦ]").
+  wp_apply (wp_HelloWorldCancellable with "[$Hdone $HNotified] [HΦ]").
   {
+    iFrame "#".
     iIntros (result).
     iIntros "%Hres".
     wp_auto.
@@ -488,37 +488,37 @@ Context `{!chan_idiomG Σ unit}.
 
 (** Invariant: channel must be Idle, all other states are False *)
 Definition is_select_nb_only (γ : chan_names) (ch : loc) : iProp Σ :=
-  "#Hch" ∷ is_chan (V:=unit) ch γ ∗
+  "#Hch" ∷ is_chan ch γ unit ∗
   "#Hinv" ∷ inv nroot (
-    ∃ (s : chan_rep.t unit),
-      "Hoc" ∷ own_chan  ch s γ ∗
-      match s with
-      | chan_rep.Idle => True
-      | _ => False
-      end
+      ∃ s,
+        "Hoc" ∷ own_chan γ unit s ∗
+        "%" ∷ ⌜ (match s with
+                | chanstate.Idle => True
+                | _ => False
+                end) ⌝
   ).
 
 
 (** Create the idiom from a channel in Idle state *)
 Lemma start_select_nb_only (ch : loc) (γ : chan_names) :
-  is_chan ch γ -∗
-  own_chan ch chan_rep.Idle γ ={⊤}=∗
-  ∃ γnb, is_select_nb_only γnb ch.
+  is_chan ch γ unit -∗
+  own_chan γ unit chanstate.Idle ={⊤}=∗
+  is_select_nb_only γ ch.
 Proof.
   iIntros "#Hch Hoc".
   iMod (inv_alloc nroot with "[Hoc]") as "$".
   { iNext. iFrame. }
   simpl.
   by iFrame "#".
-  Qed.
+Qed.
 
 (** Nonblocking send AU - vacuous since we ban all send preconditions *)
-Lemma select_nb_only_send_au γ ch v  :
+Lemma select_nb_only_send_au γ ch (v : unit) :
   ∀ Φ Φnotready,
   is_select_nb_only γ ch -∗
   ( False -∗  Φ) -∗
   Φnotready -∗
-  nonblocking_send_au ch v γ Φ Φnotready.
+  nonblocking_send_au γ v Φ Φnotready.
 Proof.
    intros Φ Φnotready.
   iIntros "#Hnb _ Hnotready".
@@ -535,14 +535,13 @@ Proof.
 Qed.
 
 
-
 (** Nonblocking receive AU - vacuous since we ban all receive preconditions *)
 Lemma select_nb_only_rcv_au γ ch :
    ∀ (Φ: unit → bool → iProp Σ) (Φnotready: iProp Σ),
-  is_select_nb_only  γ ch -∗
-  ( ∀ (v:unit), False -∗ Φ v true) -∗
+  is_select_nb_only γ ch -∗
+  (∀ (v:unit), False -∗ Φ v true) -∗
   Φnotready -∗
-  nonblocking_recv_au ch γ (λ (v:unit) (ok:bool), Φ v ok) Φnotready.
+  nonblocking_recv_au γ unit (λ (v:unit) (ok:bool), Φ v ok) Φnotready.
 Proof.
   intros Φ Φnotready.
   iIntros "#Hnb _ Hnotready".
@@ -565,7 +564,7 @@ Lemma wp_select_nb_no_panic :
   {{{ RET #(); True }}}.
 Proof using chan_idiomG0.
   wp_start. wp_auto_lc 2.
-  wp_apply chan.wp_make. { done. }
+  wp_apply chan.wp_make1.
   iIntros (ch). iIntros (γ). iIntros "(#His_chan & _Hcap & Hownchan)".
   iRename select (£1) into "Hlc1".
   wp_auto_lc 2.
@@ -573,7 +572,7 @@ Proof using chan_idiomG0.
   simpl.
   iPersist "ch".
   do 2 (iRename select (£1) into "Hlc4").
-  iMod (start_select_nb_only ch with "[$His_chan] [$Hownchan]") as (γnb) "#Hnb".
+  iMod (start_select_nb_only ch with "[$His_chan] [$Hownchan]") as "#Hnb".
   wp_apply (wp_fork with "[Hnb]").
   {
   wp_auto_lc 4.
@@ -583,6 +582,7 @@ Proof using chan_idiomG0.
   - (* Prove the receive case - will be vacuous *)
     iSplitL.
     +
+      repeat iExists _; iSplitR; first done.
       (* extract is_chan *)
       iPoseProof "Hnb" as "[$ _]".
       (* Now use our select_nb_only_rcv_au lemma *)
@@ -606,26 +606,14 @@ Proof using chan_idiomG0.
     simpl.
     iSplitL "Hlc1 Hlc4".
   - (* Prove the receive case - will be vacuous *)
-    iSplitL.
-    +
-      iExists unit. iExists γnb. iExists _, _, _, _.
-      iFrame.
-      iSplit.
-      { (* Show is_chan matches *)
-        iNamed "Hnb". iFrame "#". iPureIntro. done.  }
-      (* Now use our select_nb_only_rcv_au lemma *)
-       iSplit.
-      { (* Show is_chan matches *)
-        iNamed "Hnb". iFrame "#". }
-      iFrame "#".
-      iApply (select_nb_only_send_au γnb ch () with " [$Hnb] []").
-      {
-        iIntros "Hf".
-          done.
-      }
-      iFrame.
-    + (* True case *)
+    iSplitL; last done.
+    repeat iExists _; iSplitR; first done. iFrame "#". iClear "His_chan".
+    iApply (select_nb_only_send_au with "[$Hnb] []").
+    {
+      iIntros "Hf".
       done.
+    }
+    iFrame.
   - (* Prove the default case *)
     wp_auto.
     iApply "HΦ".
