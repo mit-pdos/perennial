@@ -18,10 +18,6 @@ Definition connection {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type :
 
 Definition Connection {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/mit-pdos/gokv/grove_ffi.Connection"%go [].
 
-Definition ConnectRet {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/mit-pdos/gokv/grove_ffi.ConnectRet"%go [].
-
-Definition ReceiveRet {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/mit-pdos/gokv/grove_ffi.ReceiveRet"%go [].
-
 Axiom listenerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
 Axiom connectionⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
@@ -113,26 +109,12 @@ Class Connection_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalCo
   #[global] Connection_underlying :: (Connection) <u (Connectionⁱᵐᵖˡ);
 }.
 
-Class ConnectRet_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] ConnectRet_type_repr  :: go.TypeReprUnderlying ConnectRetⁱᵐᵖˡ ConnectRet.t;
-  #[global] ConnectRet_underlying :: (ConnectRet) <u (ConnectRetⁱᵐᵖˡ);
-}.
-
-Class ReceiveRet_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] ReceiveRet_type_repr  :: go.TypeReprUnderlying ReceiveRetⁱᵐᵖˡ ReceiveRet.t;
-  #[global] ReceiveRet_underlying :: (ReceiveRet) <u (ReceiveRetⁱᵐᵖˡ);
-}.
-
 Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] listener_instance :: listener_Assumptions;
   #[global] Listener_instance :: Listener_Assumptions;
   #[global] connection_instance :: connection_Assumptions;
   #[global] Connection_instance :: Connection_Assumptions;
-  #[global] ConnectRet_instance :: ConnectRet_Assumptions;
-  #[global] ReceiveRet_instance :: ReceiveRet_Assumptions;
   #[global] FileWrite_unfold :: FuncUnfold FileWrite [] (FileWriteⁱᵐᵖˡ);
   #[global] FileRead_unfold :: FuncUnfold FileRead [] (FileReadⁱᵐᵖˡ);
   #[global] FileAppend_unfold :: FuncUnfold FileAppend [] (FileAppendⁱᵐᵖˡ);

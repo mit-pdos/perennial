@@ -2,13 +2,12 @@ From iris.proofmode Require Import proofmode.
 From iris.algebra Require Import auth.
 From Perennial.goose_lang Require Import notation.
 From Perennial.program_logic Require Import recovery_weakestpre recovery_adequacy.
-From Perennial.goose_lang Require Import crash_modality adequacy lang.
+From Perennial.goose_lang Require Import crash_modality adequacy lang lifting.
 Set Default Proof Using "Type".
 
 Section wpr_definitions.
 
 Context `{ffi_sem: ffi_semantics}.
-Context {ext_tys: ext_types ext}.
 Context `{!ffi_interp ffi}.
 
 Definition wpr `{hG: !gooseGlobalGS Σ, hL: !gooseLocalGS Σ} (s: stuckness) (E: coPset)
@@ -57,7 +56,9 @@ Qed.
 Lemma idempotence_wpr `{!ffi_interp_adequacy} s E1 e rec Φx
   (Φinv : heapGS Σ → iProp Σ)
   (Φrx : heapGS Σ → val → iProp Σ)
-  (Φcx : heapGS Σ → iProp Σ):
+  (Φcx : heapGS Σ → iProp Σ)
+  (init : ∀ {_ : GoGlobalContext} {_ : GoLocalContext}, Prop)
+  :
   ⊢ WPC e @ s ; E1 {{ Φx }} {{ Φcx _ }} -∗
    (□ ∀ (hL': gooseLocalGS Σ) σ σ'
         (HC: goose_crash σ σ'),
@@ -77,21 +78,23 @@ Proof.
   iModIntro. iIntros (HG' σ_pre_crash g σ_post_crash Hcrash ns mj D κs ?) "(%HL' & -> & H)".
   iSpecialize ("Hidemp" $! HL' _ _ Hcrash with "H").
   rewrite /state_interp.
-  iIntros "(_&Hffi_old&Htrace_auth&Horacle_auth) Hg".
+  simpl. iIntros "@ Hg".
   iMod (na_heap.na_heap_reinit _ tls σ_post_crash.(heap)) as (name_na_heap) "Hh".
   iDestruct "Hg" as "(Hgffi&Hg)".
-  iMod (ffi_crash _ σ_pre_crash.(world) σ_post_crash.(world) with "Hffi_old") as (ffi_names) "(Hw&Hcrel&Hc)".
+  iMod (ffi_crash _ σ_pre_crash.(world) σ_post_crash.(world) with "Hffi") as (ffi_names) "(Hw&Hcrel&Hc)".
   { inversion Hcrash; subst; eauto. }
   iMod (trace_reinit _ σ_post_crash.(trace) σ_post_crash.(oracle)) as (name_trace) "(Htr&Htrfrag&Hor&Hofrag)".
-  iMod (globals_reinit _) as (globals_name) "[Hg_auth Hglobals]".
+  iClear "Hg_auth".
+  iMod (go_state_reinit _) as (globals_name) "[Hg_auth Hglobals]".
   iModIntro.
   iNext.
   iMod (NC_alloc) as (Hc') "HNC".
   (* TODO(RJ): reformulate na_heap_reinit and trace_reinit to better match what we need here. *)
   set (hL' := GooseLocalGS Σ Hc' ffi_names
+                _
                 (na_heapGS_update _ name_na_heap)
                 (traceGS_update Σ _ name_trace)
-                (globalsGS_update Σ _ globals_name)
+                (go_stateGS_update Σ _ globals_name)
       ).
   iExists (goose_generationGS (L:=hL')).
   iSpecialize ("Hidemp" $! σ_pre_crash.(world) σ_post_crash.(world) hL' with "Hcrel").
@@ -102,12 +105,13 @@ Proof.
   iDestruct "Hg" as "($&$&Hc&$)".
   iMod (cred_interp_incr_k _ (9 * ns + 10) with "Hc") as "(Hc&_)".
   assert (ns + (9 * ns + 10) = 10 * (ns + 1))%nat as -> by lia.
-  iModIntro. iFrame.
-  iSplit.
-  - iDestruct "Hidemp" as "[H _]". iExists hL'. by iFrame.
+  iModIntro. iFrame "∗#%".
+  repeat iSplit.
+  - admit. (* FIXME: need to have user-chosen init predicates about semantics state. *)
+  - iDestruct "Hidemp" as "[H _]". iExists _. iFrame. done.
   - iDestruct "Hidemp" as "[_ H]".
     iApply (wpc_mono with "H"); eauto.
-Qed.
+Admitted.
 
 End wpr.
 End wpr_definitions.

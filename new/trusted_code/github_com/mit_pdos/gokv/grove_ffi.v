@@ -8,19 +8,9 @@ Section grove.
   Context {go_gctx : GoGlobalContext}.
 
   (** These are pointers in Go. *)
-  Definition Listener : go.type := unsafe.Pointer.
-  Definition Connection : go.type := unsafe.Pointer.
-  Definition Address : go.type := go.uint64.
-
-  Definition ConnectRet := go.StructType [
-                               go.FieldDecl "Err" go.bool;
-                               go.FieldDecl "Connection" Connection
-                             ].
-
-  Definition ReceiveRet := go.StructType [
-                               go.FieldDecl "Err" go.bool;
-                               go.FieldDecl "Data" (go.SliceType go.byte)
-                             ].
+  Definition Listenerⁱᵐᵖˡ : go.type := unsafe.Pointer.
+  Definition Connectionⁱᵐᵖˡ : go.type := unsafe.Pointer.
+  Definition Addressⁱᵐᵖˡ : go.type := go.uint64.
 
   (** Type: func(uint64) Listener *)
   Definition Listenⁱᵐᵖˡ : val :=
@@ -32,12 +22,7 @@ Section grove.
       let: "c" := ExternalOp ConnectOp "e" in
       let: "err" := Fst "c" in
       let: "socket" := ref (Snd "c") in
-      CompositeLiteral ConnectRet (
-          LiteralValue [
-              KeyedElement None (ElementExpression go.bool "err");
-              KeyedElement None (ElementExpression Connection "socket")
-            ]
-      ).
+      ("err", "socket").
 
   (** Type: func(Listener) Connection *)
   Definition Acceptⁱᵐᵖˡ : val :=
@@ -57,14 +42,7 @@ Section grove.
       let: "ptr" := Fst "slice" in
       let: "len" := Snd "slice" in
 
-      CompositeLiteral ConnectRet (
-          LiteralValue [
-              KeyedElement None (ElementExpression go.bool "err");
-              KeyedElement None
-                (ElementExpression (go.SliceType go.byte) (InternalMakeSlice ("ptr", "len", "len")))
-            ]
-        ).
-
+      ("err", (InternalMakeSlice ("ptr", "len", "len"))).
 
   (** FileRead pretends that the operation can never fail.
       The Go implementation will accordingly abort the program if an I/O error occurs. *)

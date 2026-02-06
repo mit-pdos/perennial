@@ -26,26 +26,18 @@ class Proj:
 
 
 projs = {
-    "goose": Proj.make(
-        "goose", "https://github.com/goose-lang/goose/", commit="master"
-    ),
-    "new_goose": Proj.make(
-        "new_goose", "https://github.com/goose-lang/goose/", commit="new"
-    ),
-    # starting in v0.7.0, std uses features only supported by new goose
-    "std": Proj.make(
-        "std", "https://github.com/goose-lang/std", commit="master", old="v0.6.1"
-    ),
-    "primitive": Proj.make("primitive", "https://github.com/goose-lang/primitive"),
+    "goose": Proj.make("goose", "https://github.com/goose-lang/goose/", commit="upamanyus-fixes"),
+    "std": Proj.make("std", "https://github.com/goose-lang/std", commit="upamanyus-fixes"),
+    "primitive": Proj.make("primitive", "https://github.com/goose-lang/primitive", commit="upamanyus-fixes"),
     "marshal": Proj.make("marshal", "https://github.com/tchajed/marshal"),
     "examples": Proj.make("examples", "https://github.com/mit-pdos/perennial-examples"),
-    "new_gokv": Proj.make("new_gokv", "https://github.com/mit-pdos/gokv", commit="new"),
+    "gokv": Proj.make("gokv", "https://github.com/mit-pdos/gokv", commit="upamanyus-fixes"),
     "etcd-raft": Proj.make("etcd-raft", "https://github.com/upamanyus/etcd-raft"),
     "etcd": Proj.make("etcd", "https://github.com/upamanyus/etcd"),
 }
 
 
-def checkout(proj: Proj, old: bool):
+def checkout(proj: Proj):
     print(f"Checking out {proj.name}")
     path = proj.path()
     shared_args = {"check": True, "cwd": path}
@@ -64,11 +56,8 @@ def checkout(proj: Proj, old: bool):
         shutil.rmtree(path, ignore_errors=True)
         sp.run(["git", "clone", proj.repo, path], check=True)
 
-    commit = proj.commit
-    if old:
-        commit = proj.commit_old
-    if commit is not None:
-        sp.run(["git", "checkout", commit], **shared_args)
+    if proj.commit is not None:
+        sp.run(["git", "checkout", proj.commit], **shared_args)
 
 
 def parse_github_tree_url(url):
@@ -81,57 +70,34 @@ def parse_github_tree_url(url):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--new-goose-url",
+        "--goose-url",
         default="https://github.com/goose-lang/goose/tree/new",
-        help="location of new goose",
+        help="location of goose",
     )
 
     args = parser.parse_args()
-    if args.new_goose_url == "":
-        args.new_goose_url = "https://github.com/goose-lang/goose/tree/new"
-    new_goose_repo, new_goose_commit = parse_github_tree_url(args.new_goose_url)
+    if args.goose_url == "":
+        args.goose_url = "https://github.com/goose-lang/goose/tree/new"
+    goose_repo, goose_commit = parse_github_tree_url(args.goose_url)
 
-    projs["new_goose"].repo = new_goose_repo
-    projs["new_goose"].commit = new_goose_commit
+    projs["goose"].repo = goose_repo
+    projs["goose"].commit = goose_commit
 
     for proj in projs.values():
-        checkout(proj, True)
+        checkout(proj)
 
     print("\nRunning Goose")
-    sp.run(
-        [
-            "etc/update-goose.py",
-            "--compile",
-            "--goose",
-            projs["goose"].path(),
-            "--goose-examples",
-            "--channel",
-            "--std",
-            projs["std"].path(),
-            "--marshal",
-            projs["marshal"].path(),
-            "--examples",
-            projs["examples"].path(),
-        ],
-        check=True,
-    )
-
-    for proj in projs.values():
-        if proj.commit != proj.commit_old:
-            checkout(proj, False)
-
-    print("\nRunning new Goose")
     sp.run(
         [
             "new/etc/update-goose-new.py",
             "--compile",
             "--goose",
-            projs["new_goose"].path(),
+            projs["goose"].path(),
             "--std-lib",
             "--goose-examples",
-            "--channel",
+            "--models",
             "--gokv",
-            projs["new_gokv"].path(),
+            projs["gokv"].path(),
             "--marshal",
             projs["marshal"].path(),
             "--std",

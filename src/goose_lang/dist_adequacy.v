@@ -2,14 +2,15 @@ From iris.proofmode Require Import proofmode.
 From iris.algebra Require Import auth.
 From Perennial.goose_lang Require Import notation.
 From Perennial.program_logic Require Import recovery_weakestpre dist_weakestpre dist_adequacy.
-From Perennial.goose_lang Require Export recovery_lifting dist_lifting.
+From Perennial.goose_lang Require Export lifting recovery_lifting dist_lifting.
 From Perennial.goose_lang Require Import adequacy lang.
 From Perennial.goose_lang Require Import crash_modality.
 Set Default Proof Using "Type".
 
 Theorem goose_dist_adequacy `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} {Hffi_adequacy:ffi_interp_adequacy}
         Σ `{hPre: !gooseGpreS Σ} (ebσs : list node_init_cfg)
-        g φinv (HINITG: ffi_initgP g.(global_world)) (HINIT: ∀ σ, σ ∈ init_local_state <$> ebσs → ffi_initP σ.(world) g.(global_world)) :
+        g φinv (HINITG: ffi_initgP g.(global_world)) (HINIT: ∀ σ, σ ∈ init_local_state <$> ebσs → ffi_initP σ.(world) g.(global_world))
+        {go_gctx : GoGlobalContext} :
   (∀ `(HG : !gooseGlobalGS Σ),
       ⊢
         ffi_global_start goose_ffiGlobalGS g.(global_world) ={⊤}=∗
@@ -24,7 +25,7 @@ Proof.
   iMod (credit_name_init (crash_borrow_ginv_number)) as (name_credit) "(Hcred_auth&Hcred&Htok)".
   iMod (proph_map_init κs g.(used_proph_id)) as (proph_names) "Hproph".
 
-  set (hG := GooseGlobalGS _ _ proph_names (creditGS_update_pre _ _ name_credit) ffi_namesg).
+  set (hG := GooseGlobalGS _ _ _ proph_names (creditGS_update_pre _ _ name_credit) ffi_namesg).
 
   iExists global_state_interp, fork_post.
   iExists _, _.
@@ -35,6 +36,7 @@ Proof.
   { rewrite /crash_borrow_ginv. iApply (inv_alloc _). iNext. eauto. }
   iModIntro.
   iFrame "Hgw Hinv Hcred_auth Htok Hproph".
+  FIXME:
   iSplitR; first by eauto.
   iSplitL "Hwp"; last first.
   { iIntros (???) "Hσ".

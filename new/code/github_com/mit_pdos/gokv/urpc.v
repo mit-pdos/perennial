@@ -88,16 +88,17 @@ Definition Server__readThreadⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
     exception_do (let: "srv" := (GoAlloc (go.PointerType Server) "srv") in
     let: "conn" := (GoAlloc grove_ffi.Connection "conn") in
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      let: "r" := (GoAlloc grove_ffi.ReceiveRet (GoZeroVal grove_ffi.ReceiveRet #())) in
-      let: "$r0" := (let: "$a0" := (![grove_ffi.Connection] "conn") in
+      let: "data" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
+      let: "err" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
+      let: ("$ret0", "$ret1") := (let: "$a0" := (![grove_ffi.Connection] "conn") in
       (FuncResolve grove_ffi.Receive [] #()) "$a0") in
-      do:  ("r" <-[grove_ffi.ReceiveRet] "$r0");;;
-      (if: ![go.bool] (StructFieldRef grove_ffi.ReceiveRet "Err"%go "r")
+      let: "$r0" := "$ret0" in
+      let: "$r1" := "$ret1" in
+      do:  ("err" <-[go.bool] "$r0");;;
+      do:  ("data" <-[go.SliceType go.byte] "$r1");;;
+      (if: ![go.bool] "err"
       then break: #()
       else do:  #());;;
-      let: "data" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
-      let: "$r0" := (![go.SliceType go.byte] (StructFieldRef grove_ffi.ReceiveRet "Data"%go "r")) in
-      do:  ("data" <-[go.SliceType go.byte] "$r0");;;
       let: "rpcid" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
       let: ("$ret0", "$ret1") := (let: "$a0" := (![go.SliceType go.byte] "data") in
       (FuncResolve marshal.ReadInt [] #()) "$a0") in
@@ -127,7 +128,7 @@ Definition Server__readThreadⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
       continue: #());;;
     return: #()).
 
-(* go: urpc.go:58:20 *)
+(* go: urpc.go:57:20 *)
 Definition Server__Serveⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "srv" "host",
     exception_do (let: "srv" := (GoAlloc (go.PointerType Server) "srv") in
@@ -153,16 +154,20 @@ Definition Server__Serveⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
     do:  (Fork ("$go" #()));;;
     return: #()).
 
-(* go: urpc.go:88:19 *)
+(* go: urpc.go:87:19 *)
 Definition Client__replyThreadⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "cl" <>,
     exception_do (let: "cl" := (GoAlloc (go.PointerType Client) "cl") in
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      let: "r" := (GoAlloc grove_ffi.ReceiveRet (GoZeroVal grove_ffi.ReceiveRet #())) in
-      let: "$r0" := (let: "$a0" := (![grove_ffi.Connection] (StructFieldRef Client "conn"%go (![go.PointerType Client] "cl"))) in
+      let: "data" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
+      let: "err" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
+      let: ("$ret0", "$ret1") := (let: "$a0" := (![grove_ffi.Connection] (StructFieldRef Client "conn"%go (![go.PointerType Client] "cl"))) in
       (FuncResolve grove_ffi.Receive [] #()) "$a0") in
-      do:  ("r" <-[grove_ffi.ReceiveRet] "$r0");;;
-      (if: ![go.bool] (StructFieldRef grove_ffi.ReceiveRet "Err"%go "r")
+      let: "$r0" := "$ret0" in
+      let: "$r1" := "$ret1" in
+      do:  ("err" <-[go.bool] "$r0");;;
+      do:  ("data" <-[go.SliceType go.byte] "$r1");;;
+      (if: ![go.bool] "err"
       then
         do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (![go.PointerType sync.Mutex] (StructFieldRef Client "mu"%go (![go.PointerType Client] "cl")))) #());;;
         let: "$range" := (![go.MapType go.uint64 (go.PointerType Callback)] (StructFieldRef Client "pending"%go (![go.PointerType Client] "cl"))) in
@@ -176,9 +181,6 @@ Definition Client__replyThreadⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
         do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (![go.PointerType sync.Mutex] (StructFieldRef Client "mu"%go (![go.PointerType Client] "cl")))) #());;;
         break: #()
       else do:  #());;;
-      let: "data" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
-      let: "$r0" := (![go.SliceType go.byte] (StructFieldRef grove_ffi.ReceiveRet "Data"%go "r")) in
-      do:  ("data" <-[go.SliceType go.byte] "$r0");;;
       let: "seqno" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
       let: ("$ret0", "$ret1") := (let: "$a0" := (![go.SliceType go.byte] "data") in
       (FuncResolve marshal.ReadInt [] #()) "$a0") in
@@ -212,23 +214,27 @@ Definition Client__replyThreadⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
       continue: #());;;
     return: #()).
 
-(* go: urpc.go:120:6 *)
+(* go: urpc.go:118:6 *)
 Definition TryMakeClientⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "host_name",
     exception_do (let: "host_name" := (GoAlloc grove_ffi.Address "host_name") in
     let: "host" := (GoAlloc grove_ffi.Address (GoZeroVal grove_ffi.Address #())) in
     let: "$r0" := (![grove_ffi.Address] "host_name") in
     do:  ("host" <-[grove_ffi.Address] "$r0");;;
-    let: "a" := (GoAlloc grove_ffi.ConnectRet (GoZeroVal grove_ffi.ConnectRet #())) in
-    let: "$r0" := (let: "$a0" := (![grove_ffi.Address] "host") in
+    let: "conn" := (GoAlloc grove_ffi.Connection (GoZeroVal grove_ffi.Connection #())) in
+    let: "err" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
+    let: ("$ret0", "$ret1") := (let: "$a0" := (![grove_ffi.Address] "host") in
     (FuncResolve grove_ffi.Connect [] #()) "$a0") in
-    do:  ("a" <-[grove_ffi.ConnectRet] "$r0");;;
+    let: "$r0" := "$ret0" in
+    let: "$r1" := "$ret1" in
+    do:  ("err" <-[go.bool] "$r0");;;
+    do:  ("conn" <-[grove_ffi.Connection] "$r1");;;
     let: "nilClient" := (GoAlloc (go.PointerType Client) (GoZeroVal (go.PointerType Client) #())) in
-    (if: ![go.bool] (StructFieldRef grove_ffi.ConnectRet "Err"%go "a")
+    (if: ![go.bool] "err"
     then return: (#(W64 1), ![go.PointerType Client] "nilClient")
     else do:  #());;;
     let: "cl" := (GoAlloc (go.PointerType Client) (GoZeroVal (go.PointerType Client) #())) in
-    let: "$r0" := (GoAlloc Client (CompositeLiteral Client (LiteralValue [KeyedElement (Some (KeyField "conn"%go)) (ElementExpression grove_ffi.Connection (![grove_ffi.Connection] (StructFieldRef grove_ffi.ConnectRet "Connection"%go "a"))); KeyedElement (Some (KeyField "mu"%go)) (ElementExpression (go.PointerType sync.Mutex) (GoAlloc sync.Mutex (GoZeroVal sync.Mutex #()))); KeyedElement (Some (KeyField "seq"%go)) (ElementExpression go.uint64 #(W64 1)); KeyedElement (Some (KeyField "pending"%go)) (ElementExpression (go.MapType go.uint64 (go.PointerType Callback)) ((FuncResolve go.make1 [go.MapType go.uint64 (go.PointerType Callback)] #()) #()))]))) in
+    let: "$r0" := (GoAlloc Client (CompositeLiteral Client (LiteralValue [KeyedElement (Some (KeyField "conn"%go)) (ElementExpression grove_ffi.Connection (![grove_ffi.Connection] "conn")); KeyedElement (Some (KeyField "mu"%go)) (ElementExpression (go.PointerType sync.Mutex) (GoAlloc sync.Mutex (GoZeroVal sync.Mutex #()))); KeyedElement (Some (KeyField "seq"%go)) (ElementExpression go.uint64 #(W64 1)); KeyedElement (Some (KeyField "pending"%go)) (ElementExpression (go.MapType go.uint64 (go.PointerType Callback)) ((FuncResolve go.make1 [go.MapType go.uint64 (go.PointerType Callback)] #()) #()))]))) in
     do:  ("cl" <-[go.PointerType Client] "$r0");;;
     let: "$go" := (λ: <>,
       exception_do (do:  ((MethodResolve (go.PointerType Client) "replyThread"%go (![go.PointerType Client] "cl")) #());;;
@@ -237,7 +243,7 @@ Definition TryMakeClientⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
     do:  (Fork ("$go" #()));;;
     return: (#(W64 0), ![go.PointerType Client] "cl")).
 
-(* go: urpc.go:140:6 *)
+(* go: urpc.go:138:6 *)
 Definition MakeClientⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "host_name",
     exception_do (let: "host_name" := (GoAlloc grove_ffi.Address "host_name") in
@@ -261,7 +267,7 @@ Definition MakeClientⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
     (FuncResolve primitive.Assume [] #()) "$a0");;;
     return: (![go.PointerType Client] "cl")).
 
-(* go: urpc.go:155:19 *)
+(* go: urpc.go:153:19 *)
 Definition Client__CallStartⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "cl" "rpcid" "args",
     exception_do (let: "cl" := (GoAlloc (go.PointerType Client) "cl") in
@@ -313,7 +319,7 @@ Definition Client__CallStartⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
     else do:  #());;;
     return: (![go.PointerType Callback] "cb", ErrNone)).
 
-(* go: urpc.go:188:19 *)
+(* go: urpc.go:186:19 *)
 Definition Client__CallCompleteⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "cl" "cb" "reply" "timeout_ms",
     exception_do (let: "cl" := (GoAlloc (go.PointerType Client) "cl") in
@@ -342,7 +348,7 @@ Definition Client__CallCompleteⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
       then return: (ErrDisconnect)
       else return: (ErrTimeout)))).
 
-(* go: urpc.go:215:19 *)
+(* go: urpc.go:213:19 *)
 Definition Client__Callⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "cl" "rpcid" "args" "reply" "timeout_ms",
     exception_do (let: "cl" := (GoAlloc (go.PointerType Client) "cl") in
