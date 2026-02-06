@@ -21,10 +21,10 @@ From Perennial.algebra Require Import ghost_var.
 
 Section spsc.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
+Context {sem : go.Semantics}.
+Local Set Default Proof Using "All".
 Context `{!chan_idiomG Σ V}.
-Context `{!IntoVal V}.
-Context `{!IntoValTyped V t}.
+Context `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}.
 
 (** ** Ghost State Names *)
 
@@ -48,11 +48,11 @@ Definition spsc_consumer (γ:spsc_names) (received:list V) : iProp Σ :=
 (** ** In-Flight Values *)
 
 (** Values that have been sent but not yet received *)
-Definition inflight (s : chan_rep.t V) : list V :=
+Definition inflight (s : chanstate.t V) : list V :=
   match s with
-  | chan_rep.Buffered buff => buff
-  | chan_rep.SndPending v | chan_rep.SndCommit v => [v]
-  | chan_rep.Closed drain => drain
+  | chanstate.Buffered buff => buff
+  | chanstate.SndPending v | chanstate.SndCommit v => [v]
+  | chanstate.Closed drain => drain
   | _ => []
   end.
 
@@ -72,24 +72,24 @@ Definition inflight (s : chan_rep.t V) : list V :=
 *)
 Definition is_spsc (γ:spsc_names) (ch:loc)
                    (P: Z -> V → iProp Σ) (R: list V → iProp Σ) : iProp Σ :=
-    is_chan ch γ.(chan_name) ∗
+    is_chan ch γ.(chan_name) V ∗
     inv nroot (
       ∃ s sent recv,
-        "Hch"    ∷ own_chan ch s γ.(chan_name) ∗
+        "Hch"    ∷ own_chan γ.(chan_name) V s ∗
         "HsentI" ∷ ghost_var γ.(spsc_sent_name) (DfracOwn (1/2)) sent ∗
         "HrecvI" ∷ ghost_var γ.(spsc_recv_name) (DfracOwn (1/2)) recv ∗
         "%Hrel"  ∷ ⌜sent = recv ++ inflight s⌝ ∗
         (match s with
         (* P holds for all buffered values *)
-        | chan_rep.Buffered buff =>
+        | chanstate.Buffered buff =>
             [∗ list] i ↦ v ∈ buff, P ((length recv) + i) v
         (* P holds for pending/committed values *)
-        | chan_rep.SndPending v | chan_rep.SndCommit v =>
+        | chanstate.SndPending v | chanstate.SndCommit v =>
             P (length recv) v
         (* Closed channel: park producer permission, provide R when drained *)
-        | chan_rep.Closed [] =>
+        | chanstate.Closed [] =>
             spsc_producer γ sent ∗ (R sent ∨ spsc_consumer γ sent)
-        | chan_rep.Closed drain =>
+        | chanstate.Closed drain =>
             ([∗ list] i ↦ v ∈ drain, P ((length recv) + i) v) ∗
             spsc_producer γ sent ∗
             (R sent ∨ spsc_consumer γ sent)
@@ -101,8 +101,8 @@ Definition is_spsc (γ:spsc_names) (ch:loc)
 
 (** Create an SPSC channel from a basic channel *)
 Lemma start_spsc ch (P : Z -> V → iProp Σ) (R : list V → iProp Σ) γ:
-  is_chan ch γ -∗
-  (own_chan ch chan_rep.Idle γ) ∨ (own_chan ch (chan_rep.Buffered []) γ) ={⊤}=∗
+  is_chan ch γ V -∗
+  (own_chan γ V chanstate.Idle) ∨ (own_chan γ V (chanstate.Buffered [])) ={⊤}=∗
   (∃ γspsc, is_spsc γspsc ch P R ∗  spsc_producer γspsc []  ∗  spsc_consumer γspsc []) .
 Proof.
   iIntros "#Hch Hoc".
@@ -122,11 +122,11 @@ Proof.
     (* Prove the invariant holds initially *)
   {
     simpl.
-    iNext. iExists chan_rep.Idle, [], []. iFrame.
+    iNext. iExists chanstate.Idle, [], []. iFrame.
     iPureIntro. simpl. done.
     }
     {
-       iNext. iExists (chan_rep.Buffered []), [], []. iFrame.
+       iNext. iExists (chanstate.Buffered []), [], []. iFrame.
        simpl.
        iFrame.
     iPureIntro. simpl. done.
@@ -147,9 +147,9 @@ Lemma spsc_rcv_au γ ch (P : Z -> V → iProp Σ) (R : list V → iProp Σ)
   spsc_consumer γ received -∗
   (▷ ∀ v (ok:bool),
      (if ok then P (length received) v ∗ spsc_consumer γ (received ++ [v])
-            else R received ∗ ⌜ v = (default_val V) ⌝) -∗
+            else R received ∗ ⌜ v = (zero_val V) ⌝) -∗
      Φ v ok) -∗
-  recv_au ch γ.(chan_name) Φ.
+  recv_au γ.(chan_name) V Φ.
 Proof.
   iIntros "#Hspsc [Hlc1 Hlc2] Hcons Hcont".
   unfold is_spsc.
@@ -189,7 +189,7 @@ Proof.
       iMod "Hmask".
       iMod ("Hinv_close" with "[Hoc HsentI HrecvI_new Hrest]") as "_".
       {
-        iNext. iExists (chan_rep.Buffered rest), sent, (recv ++ [v]).
+        iNext. iExists (chanstate.Buffered rest), sent, (recv ++ [v]).
         iFrame. rewrite  length_app.
 
         rewrite singleton_length. iSplitR "Hrest". {
@@ -218,7 +218,7 @@ done.
     iMod "Hmask".
     iMod ("Hinv_close" with "[Hoc HsentI HrecvI]") as "_".
     {
-      iNext. iExists chan_rep.RcvPending, sent, recv.
+      iNext. iExists chanstate.RcvPending, sent, recv.
       iFrame.
       iPureIntro. rewrite Hrel. simpl. done.
     }
@@ -247,7 +247,7 @@ done.
       iMod "Hmask1".
       iMod ("Hinv_close" with "[HsentI HrecvI_new Hoc]") as "_".
       {
-        iNext. iExists chan_rep.Idle, sent0, (recv0 ++ [v]).
+        iNext. iExists chanstate.Idle, sent0, (recv0 ++ [v]).
         iFrame.
         iPureIntro. rewrite Hrel0. simpl. rewrite app_nil_r. done.
       }
@@ -401,10 +401,10 @@ Qed.
 Lemma wp_spsc_receive γ ch (P : Z -> V → iProp Σ) (R : list V → iProp Σ)
                       (received : list V) :
   {{{ is_spsc γ ch P R ∗ spsc_consumer γ received }}}
-    chan.receive #t #ch
+    chan.receive t #ch
   {{{ (v:V) (ok:bool), RET (#v, #ok);
       (if ok then P (length received) v ∗ spsc_consumer γ (received ++ [v])
-            else R received ∗ ⌜ v = (default_val V) ⌝ )%I }}}.
+            else R received ∗ ⌜ v = (zero_val V) ⌝ )%I }}}.
 Proof.
   iIntros (Φ) "(#Hspsc & Hcons) Hcont".
 
@@ -424,7 +424,7 @@ Lemma spsc_send_au γ ch (P : Z -> V → iProp Σ) (R : list V → iProp Σ)
   £1 ∗ £1 ∗ £1 -∗
   spsc_producer γ sent ∗ P (length sent) v -∗
   ▷ (spsc_producer γ (sent ++ [v]) -∗ Φ) -∗
-  SendAU ch v γ.(chan_name) Φ.
+  send_au γ.(chan_name) v Φ.
 Proof.
   iIntros "#Hspsc (Hlc1 & Hlc2 & Hlc3) [Hprod HP] Hcont".
   iDestruct "Hspsc" as "[Hchan Hinv]".
@@ -457,7 +457,7 @@ Proof.
     iMod "Hmask".
     iMod ("Hinv_close" with "[Hoc HsentI_new HrecvI Hinv_open HP]") as "_".
     {
-      iNext. iExists (chan_rep.Buffered (buff ++ [v])), (sent0 ++ [v]), recv.
+      iNext. iExists (chanstate.Buffered (buff ++ [v])), (sent0 ++ [v]), recv.
       iFrame. simpl.
       subst sent0. iFrame. unfold inflight. rewrite length_app.
       replace (Z.of_nat (length recv + length buff))  with  (Z.of_nat (length recv) + Z.of_nat (length buff + 0)) by lia.
@@ -477,14 +477,14 @@ Proof.
 
     iMod "Hmask".
     iNamed "Hoc".
-    iAssert (own_chan ch (chan_rep.SndPending v) γ.(chan_name))%I
+    iAssert (own_chan γ.(chan_name) V (chanstate.SndPending v))%I
       with "[Hchanrepfrag]" as "Hoc".
     { iFrame "∗#". iPureIntro. unfold chan_cap_valid. done. }
 
     (* Close invariant with SndPending state *)
     iMod ("Hinv_close" with "[Hoc HsentI_new HrecvI HP]") as "_".
     {
-      iNext. iExists (chan_rep.SndPending v), (sent0 ++ [v]), recv.
+      iNext. iExists (chanstate.SndPending v), (sent0 ++ [v]), recv.
       iFrame.
       unfold inflight in Hrel. simpl in *. rewrite app_nil_r in Hrel.
       subst sent0. iFrame.
@@ -510,7 +510,7 @@ Proof.
       iMod "Hmask1".
       iMod ("Hinv_close2" with "[HsentI HrecvI Hoc]") as "_".
       {
-        iNext. iExists chan_rep.Idle, sent, recv0.
+        iNext. iExists chanstate.Idle, sent, recv0.
         iFrame.
         iPureIntro. rewrite Hrel0. simpl. done.
       }
@@ -550,7 +550,7 @@ Proof.
     (* Close invariant with SndCommit state *)
     iMod ("Hinv_close" with "[Hoc HsentI_new HrecvI HP]") as "_".
     {
-      iNext. iExists (chan_rep.SndCommit v), (sent0 ++ [v]), recv.
+      iNext. iExists (chanstate.SndCommit v), (sent0 ++ [v]), recv.
       iFrame.
       unfold inflight in Hrel. simpl in *. rewrite app_nil_r in Hrel.
       subst sent0. iFrame.
@@ -587,7 +587,7 @@ Qed.
 Lemma wp_spsc_send γ ch (P : Z -> V → iProp Σ) (R : list V → iProp Σ)
                    (sent : list V) (v : V) :
   {{{ is_spsc γ ch P R ∗ spsc_producer γ sent ∗ P (length sent) v }}}
-    chan.send #t #ch #v
+    chan.send t #ch #v
   {{{ RET #(); spsc_producer γ (sent ++ [v]) }}}.
 Proof.
   iIntros (Φ) "(#Hspsc & Hprod & HP) Hcont".
@@ -606,12 +606,12 @@ Qed.
 
 (** ** Close Operation *)
 
-Lemma spsc_CloseAU γ ch P R sent Φ :
+Lemma spsc_close_au γ ch P R sent Φ :
   is_spsc γ ch P R -∗
   £1 -∗
   spsc_producer γ sent ∗ R sent -∗
-  ▷Φ -∗
-  CloseAU ch γ.(chan_name) Φ.
+  ▷ Φ -∗
+  close_au γ.(chan_name) V Φ.
 Proof.
   iIntros "#Hspsc Hlc1 [Hprod HP] Hcont".
   iDestruct "Hspsc" as "[Hchan #Hinv]".
@@ -654,17 +654,16 @@ Proof.
 Qed.
 
 (** SPSC close operation *)
-Lemma wp_spsc_close γ ch P R sent :
-  {{{  is_spsc γ ch P R ∗
-      spsc_producer γ sent ∗ R sent }}}
-    chan.close #t #ch
+Lemma wp_spsc_close γ ch P R sent `[ct ↓u go.ChannelType dir t] :
+  {{{  is_spsc γ ch P R ∗ spsc_producer γ sent ∗ R sent }}}
+    #(functions go.close [ct]) #ch
   {{{ RET #(); True }}}.
 Proof.
   iIntros (Φ) "( #Hspsc & Hprod & HP) Hcont".
   iPoseProof "Hspsc" as "[Hchan _]".
-  iApply (chan.wp_close ch γ.(chan_name) with "[$Hchan]").
+  iApply (chan.wp_close with "Hchan").
   iIntros "(Hlc1 & _ & _ & _)".
-  iApply (spsc_CloseAU with "[$Hspsc] [$] [$Hprod $HP]").
+  iApply (spsc_close_au with "[$Hspsc] [$] [$Hprod $HP]").
   iModIntro.
   by iApply "Hcont".
 Qed.
