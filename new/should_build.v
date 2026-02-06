@@ -20,7 +20,8 @@ From New.proof.github_com.goose_lang.goose.model.channel.idiom
 
 From New.proof Require go_etcd_io.etcd.client.v3.leasing leasing_proof.protocol.
 
-Require New.generatedproof.github_com.mit_pdos.gokv.vrsm.apps.closed.
+(* FIXME: requires updating gokv to use new primitive library.... *)
+(* Require New.generatedproof.github_com.mit_pdos.gokv.vrsm.apps.closed. *)
 
 From New.proof.github_com.mit_pdos.go_journal Require
   common addr util lockmap alloc buf wal.

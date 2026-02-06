@@ -5,20 +5,21 @@ From Perennial.goose_lang.ffi.grove_ffi Require Export impl.
 Existing Instances grove_op grove_model.
 (** * Grove user-facing operations. *)
 Section grove.
+  Context {go_gctx : GoGlobalContext}.
 
   (** These are pointers in Go. *)
-  Definition Listener : go_type := ptrT.
-  Definition Connection : go_type := ptrT.
-  Definition Address : go_type := uint64T.
+  Definition Listener : go.type := unsafe.Pointer.
+  Definition Connection : go.type := unsafe.Pointer.
+  Definition Address : go.type := go.uint64.
 
-  Definition ConnectRet := structT [
-                               "Err" :: boolT;
-                               "Connection" :: Connection
+  Definition ConnectRet := go.StructType [
+                               go.FieldDecl "Err" go.bool;
+                               go.FieldDecl "Connection" Connection
                              ].
 
-  Definition ReceiveRet := structT [
-                               "Err" :: boolT;
-                               "Data" :: sliceT
+  Definition ReceiveRet := go.StructType [
+                               go.FieldDecl "Err" go.bool;
+                               go.FieldDecl "Data" (go.SliceType go.byte)
                              ].
 
   (** Type: func(uint64) Listener *)
@@ -31,10 +32,12 @@ Section grove.
       let: "c" := ExternalOp ConnectOp "e" in
       let: "err" := Fst "c" in
       let: "socket" := ref (Snd "c") in
-      struct.make ConnectRet [{
-        "Err" ::= "err" ;
-        "Connection" ::= "socket"
-      }].
+      CompositeLiteral ConnectRet (
+          LiteralValue [
+              KeyedElement None (ElementExpression go.bool "err");
+              KeyedElement None (ElementExpression Connection "socket")
+            ]
+      ).
 
   (** Type: func(Listener) Connection *)
   Definition Acceptⁱᵐᵖˡ : val :=
@@ -42,7 +45,8 @@ Section grove.
 
   (** Type: func(Connection, []byte) *)
   Definition Sendⁱᵐᵖˡ : val :=
-    λ: "e" "m", ExternalOp SendOp (!"e", (slice.ptr "m", slice.len "m")).
+    λ: "e" "m", ExternalOp SendOp (!"e", (IndexRef (go.SliceType go.byte) ("m", #(W64 0)),
+                                            FuncResolve go.len [go.SliceType go.byte] "m")).
 
   (** Type: func(Connection) (bool, []byte) *)
   Definition Receiveⁱᵐᵖˡ : val :=
@@ -52,10 +56,14 @@ Section grove.
       let: "slice" := Snd "r" in
       let: "ptr" := Fst "slice" in
       let: "len" := Snd "slice" in
-      struct.make ReceiveRet [{
-        "Err" ::= "err" ;
-        "Data" ::= InjL ("ptr", "len", "len")
-      }].
+
+      CompositeLiteral ConnectRet (
+          LiteralValue [
+              KeyedElement None (ElementExpression go.bool "err");
+              KeyedElement None
+                (ElementExpression (go.SliceType go.byte) (InternalMakeSlice ("ptr", "len", "len")))
+            ]
+        ).
 
 
   (** FileRead pretends that the operation can never fail.
@@ -65,7 +73,7 @@ Section grove.
       let: "ret" := ExternalOp FileReadOp "f" in
       let: "err" := Fst "ret" in
       let: "slice" := Snd "ret" in
-      if: "err" then control.impl.Exit #() else
+      if: "err" then AngelicExit #() else
       let: "ptr" := Fst "slice" in
       let: "len" := Snd "slice" in
       InjL ("ptr", "len", "len").
@@ -74,16 +82,18 @@ Section grove.
       The Go implementation will accordingly abort the program if an I/O error occurs. *)
   Definition FileWriteⁱᵐᵖˡ : val :=
     λ: "f" "c",
-      let: "err" := ExternalOp FileWriteOp ("f", (slice.ptr "c", slice.len "c")) in
-      if: "err" then control.impl.Exit #() else
+      let: "err" := ExternalOp FileWriteOp ("f", (IndexRef (go.SliceType go.byte) ("c", #(W64 0)),
+                                                 FuncResolve go.len [go.SliceType go.byte] "c")) in
+      if: "err" then AngelicExit #() else
       #().
 
   (** FileAppend pretends that the operation can never fail.
       The Go implementation will accordingly abort the program if an I/O error occurs. *)
   Definition FileAppendⁱᵐᵖˡ : val :=
     λ: "f" "c",
-      let: "err" := ExternalOp FileAppendOp ("f", (slice.ptr "c", slice.len "c")) in
-      if: "err" then control.impl.Exit #() else
+      let: "err" := ExternalOp FileAppendOp ("f", (IndexRef (go.SliceType go.byte) ("c", #(W64 0)),
+                                                 FuncResolve go.len [go.SliceType go.byte] "c")) in
+      if: "err" then AngelicExit #() else
       #().
 
   (** Type: func() uint64 *)

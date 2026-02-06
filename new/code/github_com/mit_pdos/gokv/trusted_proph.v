@@ -10,10 +10,6 @@ End pkg_id.
 Export pkg_id.
 Module trusted_proph.
 
-Definition ProphId {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.PointerType primitive.prophId.
-
-Definition NewProph {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/mit-pdos/gokv/trusted_proph.NewProph"%go.
-
 Definition ResolveBytes {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/mit-pdos/gokv/trusted_proph.ResolveBytes"%go.
 
 #[global] Instance info' : PkgInfo pkg_id.trusted_proph :=
@@ -31,7 +27,6 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] NewProph_unfold :: FuncUnfold NewProph [] (NewProphⁱᵐᵖˡ);
   #[global] ResolveBytes_unfold :: FuncUnfold ResolveBytes [] (ResolveBytesⁱᵐᵖˡ);
   #[global] import_primitive_Assumption :: primitive.Assumptions;
 }.
