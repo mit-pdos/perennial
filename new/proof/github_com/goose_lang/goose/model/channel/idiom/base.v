@@ -8,7 +8,7 @@ Class chan_idiomG Σ V := ChanIdiomG {
     chan_idiom_chanG :: chanG Σ V;
     chan_idiom_ghost_mapG :: ghost_mapG Σ nat gname;
     (* already in chanG *)
-    (* chan_idiom_savedPropG :: savedPropG Σ; *)
+    chan_idiom_savedPropG :: savedPropG Σ;
     chan_idiom_ghost_boolG :: ghost_varG Σ bool;
     chan_idiom_ghost_listG :: ghost_varG Σ (list V);
     chan_idiom_setG :: auth_setG Σ gname;

@@ -19,11 +19,11 @@ From iris.base_logic.lib Require Import saved_prop.
 
 Section done.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
+Context {sem : go.Semantics}.
+Local Set Default Proof Using "All".
 Context `{!chan_idiomG Σ V}.
 
-Context `{!IntoVal V}.
-Context `{!IntoValTyped V t}.
+Context `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}.
 
 
 Record done_names := {
@@ -32,13 +32,12 @@ Record done_names := {
   acc_name         : gname
 }.
 
-
 Definition NotifyInternal (γ : done_names) (Qs : list (iProp Σ)) : iProp Σ :=
   ∃ (m : gmap nat gname),
     ghost_map_auth γ.(receivers_map_name) (1/2) m ∗
     ⌜∀ i, i ≥ length Qs → m !! i = None⌝ ∗
     [∗ list] i ↦ Q ∈ Qs,
-      ∃ prop_gname,
+      ∃ (prop_gname : gname),
         i ↪[γ.(receivers_map_name)]{#1/2} prop_gname ∗
         saved_prop_own prop_gname (DfracOwn(1/2)) Q.
 
@@ -54,13 +53,13 @@ Definition Notified (γ : done_names) (Q : iProp Σ) : iProp Σ :=
 Definition is_done (γ : done_names) (ch : loc) : iProp Σ :=
   is_chan ch γ.(chan_name) ∗
   inv nroot (
-    ∃ (s : chan_rep.t V) (m : gmap nat gname) (Qs: list (iProp Σ)),
+    ∃ (s : chanstate.t V) (m : gmap nat gname) (Qs: list (iProp Σ)),
       "Hch" ∷ own_chan ch s γ.(chan_name) ∗
       "Hmap" ∷ ghost_map_auth γ.(receivers_map_name) (1/2)%Qp m ∗
       match s with
-      | chan_rep.Idle => True
-      | chan_rep.RcvPending => True
-      | chan_rep.Closed [] =>
+      | chanstate.Idle => True
+      | chanstate.RcvPending => True
+      | chanstate.Closed [] =>
           "%Hbound" ∷ ⌜∀ i, i ≥ length Qs → m !! i = None⌝ ∗
           "Hgm" ∷ ghost_map_auth γ.(receivers_map_name) (1/2)%Qp m ∗
           "Hrecv" ∷
@@ -120,7 +119,7 @@ iMod (saved_prop_update (R ∗ Q) with "Hsp") as "Hsp".
   {
     iMod ("Hinv_close" with "[Hch_own Hauth_half2 Hstate]").
     {
-      iNext. iExists chan_rep.Idle. iExists (<[i := prop_gname]> m'). iFrame. iExists [].
+      iNext. iExists chanstate.Idle. iExists (<[i := prop_gname]> m'). iFrame. iExists [].
       done.
     }
     {
@@ -189,7 +188,7 @@ Qed.
 
 Lemma start_done (ch : loc) (γ : chan_names) :
   is_chan ch γ -∗
-  own_chan ch chan_rep.Idle γ ={⊤}=∗
+  own_chan ch chanstate.Idle γ ={⊤}=∗
   ∃ γdone, is_done γdone ch ∗ Notify γdone True.
 Proof.
   iIntros "#Hch Hoc".
@@ -209,9 +208,9 @@ Proof.
       "Hch" ∷ own_chan ch s γ ∗
       "Hmap" ∷ ghost_map_auth γmap (1/2)%Qp m ∗
       match s with
-      | chan_rep.Idle => True
-      | chan_rep.RcvPending => True
-      | chan_rep.Closed [] =>
+      | chanstate.Idle => True
+      | chanstate.RcvPending => True
+      | chanstate.Closed [] =>
           "%Hbound" ∷ ⌜∀ i, i ≥ length Qs → m !! i = None⌝ ∗
           "Hgm" ∷ ghost_map_auth γmap (1/2)%Qp m ∗
           "Hrecv" ∷
@@ -224,7 +223,7 @@ Proof.
       end
   )%I with "[Hoc Hmap_auth1]") as "#Hinv".
   {
-    iNext. iExists chan_rep.Idle, ∅.
+    iNext. iExists chanstate.Idle, ∅.
     iFrame. iExists []. done.
   }
   iModIntro. iExists γdone. iFrame "#".
@@ -235,7 +234,7 @@ Proof.
   iSplitR "".
   {
 
-  
+
   iFrame.
   iSplitL "". { iFrame. iPureIntro. done. }
   simpl.
@@ -280,7 +279,7 @@ Proof.
     iApply "Hrs" in "HR".
     iMod ("Hinv_close" with "[Hmap_half Hsp Hoc HR Hgm HQs]") as "_".
     {
-      iNext. iExists (chan_rep.Closed []), m'. iFrame "Hmap_half".
+      iNext. iExists (chanstate.Closed []), m'. iFrame "Hmap_half".
       iFrame. iExists Qs.
       iSplitL "". { iPureIntro. done. }
 
@@ -394,7 +393,7 @@ Proof.
           iMod (lc_fupd_elim_later with "[$] HQQi") as "#Hp_eq2".
           iMod ("Hinv_close" with "[Hoc H2 Hmap Hgm H3 Hn2 Hprop_half]") as "Hc".
           {
-            iCombine "Hprop_half" "Hn2" as "H". iModIntro. iExists (chan_rep.Closed []). iFrame. iExists Qs0. iSplitL ""; first done. iFrame. iApply "H2".
+            iCombine "Hprop_half" "Hn2" as "H". iModIntro. iExists (chanstate.Closed []). iFrame. iExists Qs0. iSplitL ""; first done. iFrame. iApply "H2".
             iFrame. iRight. unfold saved_prop_own. iFrame.
             replace (DfracOwn (1 / 2) ⋅ DfracOwn (1 / 2)) with (DfracOwn 1) by (rewrite dfrac_op_own; rewrite Qp.half_half; done).
             done.
@@ -443,7 +442,7 @@ Proof.
         iMod (lc_fupd_elim_later with "[$] HQQi") as "#Hp_eq2".
         iMod ("Hinv_close" with "[Hoc H2 Hmap Hgm H3 Hn2 Hprop_half]") as "Hc".
         {
-          iCombine "Hprop_half" "Hn2" as "H". iModIntro. iExists (chan_rep.Closed []). iFrame.
+          iCombine "Hprop_half" "Hn2" as "H". iModIntro. iExists (chanstate.Closed []). iFrame.
           iExists Qs. iSplitL ""; first done. iFrame. iApply "H2".
           iFrame. iRight. unfold saved_prop_own. iFrame.
           replace (DfracOwn (1 / 2) ⋅ DfracOwn (1 / 2)) with (DfracOwn 1) by (rewrite dfrac_op_own; rewrite Qp.half_half; done).
