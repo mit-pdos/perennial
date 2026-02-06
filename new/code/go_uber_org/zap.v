@@ -534,7 +534,7 @@ Module objects.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Axiom t : ∀ (T : Type), Type.
-Axiom zero_val : ∀ `{!ZeroVal T}, ZeroVal ( T).
+Axiom zero_val : ∀ `{!ZeroVal T}, ZeroVal (t T).
 #[global] Existing Instance zero_val.
 End def.
 End objects.
@@ -550,7 +550,7 @@ Module ObjectMarshalerPtr.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Axiom t : ∀ (T : Type), Type.
-Axiom zero_val : ∀ `{!ZeroVal T}, ZeroVal ( T).
+Axiom zero_val : ∀ `{!ZeroVal T}, ZeroVal (t T).
 #[global] Existing Instance zero_val.
 End def.
 End ObjectMarshalerPtr.
@@ -566,7 +566,7 @@ Module objectValues.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Axiom t : ∀ (T P : Type), Type.
-Axiom zero_val : ∀ `{!ZeroVal T} `{!ZeroVal P}, ZeroVal ( T P).
+Axiom zero_val : ∀ `{!ZeroVal T} `{!ZeroVal P}, ZeroVal (t T P).
 #[global] Existing Instance zero_val.
 End def.
 End objectValues.
@@ -582,7 +582,7 @@ Module stringers.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Axiom t : ∀ (T : Type), Type.
-Axiom zero_val : ∀ `{!ZeroVal T}, ZeroVal ( T).
+Axiom zero_val : ∀ `{!ZeroVal T}, ZeroVal (t T).
 #[global] Existing Instance zero_val.
 End def.
 End stringers.
@@ -998,7 +998,7 @@ Module anyFieldC.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Axiom t : ∀ (T : Type), Type.
-Axiom zero_val : ∀ `{!ZeroVal T}, ZeroVal ( T).
+Axiom zero_val : ∀ `{!ZeroVal T}, ZeroVal (t T).
 #[global] Existing Instance zero_val.
 End def.
 End anyFieldC.

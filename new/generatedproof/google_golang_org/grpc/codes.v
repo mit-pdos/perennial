@@ -5,5 +5,5 @@ Require Export New.code.google_golang_org.grpc.codes.
 
 Set Default Proof Using "Type".
 
-Module .
-End .
+Module codes.
+End codes.

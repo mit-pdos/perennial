@@ -5,5 +5,1102 @@ Require Export New.code.go_uber_org.zap.zapcore.
 
 Set Default Proof Using "Type".
 
-Module .
-End .
+Module zapcore.
+Module BufferedWriteSyncer.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance BufferedWriteSyncer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.BufferedWriteSyncer.t). Admitted.
+
+#[global] Instance BufferedWriteSyncer_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.BufferedWriteSyncer.t) (zapcore.BufferedWriteSyncerⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End BufferedWriteSyncer.
+
+Module Clock.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Clock_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.Clock.t). Admitted.
+
+#[global] Instance Clock_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.Clock.t) (zapcore.Clockⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End Clock.
+
+Module systemClock.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance systemClock_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.systemClock.t). Admitted.
+
+#[global] Instance systemClock_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.systemClock.t) (zapcore.systemClockⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End systemClock.
+
+Module consoleEncoder.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance consoleEncoder_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.consoleEncoder.t). Admitted.
+
+#[global] Instance consoleEncoder_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.consoleEncoder.t) (zapcore.consoleEncoderⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End consoleEncoder.
+
+Module Core.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Core_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.Core.t). Admitted.
+
+#[global] Instance Core_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.Core.t) (zapcore.Coreⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End Core.
+
+Module nopCore.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance nopCore_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.nopCore.t). Admitted.
+
+#[global] Instance nopCore_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.nopCore.t) (zapcore.nopCoreⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End nopCore.
+
+Module ioCore.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ioCore_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.ioCore.t). Admitted.
+
+#[global] Instance ioCore_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.ioCore.t) (zapcore.ioCoreⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End ioCore.
+
+Module LevelEncoder.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance LevelEncoder_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.LevelEncoder.t). Admitted.
+
+#[global] Instance LevelEncoder_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.LevelEncoder.t) (zapcore.LevelEncoderⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End LevelEncoder.
+
+Module TimeEncoder.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance TimeEncoder_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.TimeEncoder.t). Admitted.
+
+#[global] Instance TimeEncoder_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.TimeEncoder.t) (zapcore.TimeEncoderⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End TimeEncoder.
+
+Module DurationEncoder.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance DurationEncoder_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.DurationEncoder.t). Admitted.
+
+#[global] Instance DurationEncoder_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.DurationEncoder.t) (zapcore.DurationEncoderⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End DurationEncoder.
+
+Module CallerEncoder.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance CallerEncoder_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.CallerEncoder.t). Admitted.
+
+#[global] Instance CallerEncoder_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.CallerEncoder.t) (zapcore.CallerEncoderⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End CallerEncoder.
+
+Module NameEncoder.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance NameEncoder_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.NameEncoder.t). Admitted.
+
+#[global] Instance NameEncoder_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.NameEncoder.t) (zapcore.NameEncoderⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End NameEncoder.
+
+Module EncoderConfig.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance EncoderConfig_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.EncoderConfig.t). Admitted.
+
+#[global] Instance EncoderConfig_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.EncoderConfig.t) (zapcore.EncoderConfigⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End EncoderConfig.
+
+Module ObjectEncoder.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ObjectEncoder_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.ObjectEncoder.t). Admitted.
+
+#[global] Instance ObjectEncoder_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.ObjectEncoder.t) (zapcore.ObjectEncoderⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End ObjectEncoder.
+
+Module ArrayEncoder.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ArrayEncoder_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.ArrayEncoder.t). Admitted.
+
+#[global] Instance ArrayEncoder_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.ArrayEncoder.t) (zapcore.ArrayEncoderⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End ArrayEncoder.
+
+Module PrimitiveArrayEncoder.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance PrimitiveArrayEncoder_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.PrimitiveArrayEncoder.t). Admitted.
+
+#[global] Instance PrimitiveArrayEncoder_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.PrimitiveArrayEncoder.t) (zapcore.PrimitiveArrayEncoderⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End PrimitiveArrayEncoder.
+
+Module Encoder.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Encoder_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.Encoder.t). Admitted.
+
+#[global] Instance Encoder_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.Encoder.t) (zapcore.Encoderⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End Encoder.
+
+Module EntryCaller.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance EntryCaller_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.EntryCaller.t). Admitted.
+
+#[global] Instance EntryCaller_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.EntryCaller.t) (zapcore.EntryCallerⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End EntryCaller.
+
+Module Entry.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Entry_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.Entry.t). Admitted.
+
+#[global] Instance Entry_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.Entry.t) (zapcore.Entryⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End Entry.
+
+Module CheckWriteHook.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance CheckWriteHook_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.CheckWriteHook.t). Admitted.
+
+#[global] Instance CheckWriteHook_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.CheckWriteHook.t) (zapcore.CheckWriteHookⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End CheckWriteHook.
+
+Module CheckWriteAction.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance CheckWriteAction_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.CheckWriteAction.t). Admitted.
+
+#[global] Instance CheckWriteAction_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.CheckWriteAction.t) (zapcore.CheckWriteActionⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End CheckWriteAction.
+
+Module CheckedEntry.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance CheckedEntry_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.CheckedEntry.t). Admitted.
+
+#[global] Instance CheckedEntry_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.CheckedEntry.t) (zapcore.CheckedEntryⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End CheckedEntry.
+
+Module errorGroup.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance errorGroup_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.errorGroup.t). Admitted.
+
+#[global] Instance errorGroup_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.errorGroup.t) (zapcore.errorGroupⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End errorGroup.
+
+Module errArray.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance errArray_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.errArray.t). Admitted.
+
+#[global] Instance errArray_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.errArray.t) (zapcore.errArrayⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End errArray.
+
+Module errArrayElem.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance errArrayElem_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.errArrayElem.t). Admitted.
+
+#[global] Instance errArrayElem_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.errArrayElem.t) (zapcore.errArrayElemⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End errArrayElem.
+
+Module Field.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance Field_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.Field.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "Key" ∷ l.[(zapcore.Field.t), "Key"] ↦{dq} v.(zapcore.Field.Key') ∗
+      "Type" ∷ l.[(zapcore.Field.t), "Type"] ↦{dq} v.(zapcore.Field.Type') ∗
+      "Integer" ∷ l.[(zapcore.Field.t), "Integer"] ↦{dq} v.(zapcore.Field.Integer') ∗
+      "String" ∷ l.[(zapcore.Field.t), "String"] ↦{dq} v.(zapcore.Field.String') ∗
+      "Interface" ∷ l.[(zapcore.Field.t), "Interface"] ↦{dq} v.(zapcore.Field.Interface') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance Field_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.Field.t) (zapcore.Fieldⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Field_access_load_Key l (v : (zapcore.Field.t)) dq :
+  AccessStrict
+    (l.[(zapcore.Field.t), "Key"] ↦{dq} (v.(zapcore.Field.Key')))
+    (l.[(zapcore.Field.t), "Key"] ↦{dq} (v.(zapcore.Field.Key')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Field_access_store_Key l (v : (zapcore.Field.t)) Key' :
+  AccessStrict
+    (l.[(zapcore.Field.t), "Key"] ↦ (v.(zapcore.Field.Key')))
+    (l.[(zapcore.Field.t), "Key"] ↦ Key')
+    (l ↦ v) (l ↦ (v <|(zapcore.Field.Key') := Key'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Field_access_load_Type l (v : (zapcore.Field.t)) dq :
+  AccessStrict
+    (l.[(zapcore.Field.t), "Type"] ↦{dq} (v.(zapcore.Field.Type')))
+    (l.[(zapcore.Field.t), "Type"] ↦{dq} (v.(zapcore.Field.Type')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Field_access_store_Type l (v : (zapcore.Field.t)) Type' :
+  AccessStrict
+    (l.[(zapcore.Field.t), "Type"] ↦ (v.(zapcore.Field.Type')))
+    (l.[(zapcore.Field.t), "Type"] ↦ Type')
+    (l ↦ v) (l ↦ (v <|(zapcore.Field.Type') := Type'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Field_access_load_Integer l (v : (zapcore.Field.t)) dq :
+  AccessStrict
+    (l.[(zapcore.Field.t), "Integer"] ↦{dq} (v.(zapcore.Field.Integer')))
+    (l.[(zapcore.Field.t), "Integer"] ↦{dq} (v.(zapcore.Field.Integer')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Field_access_store_Integer l (v : (zapcore.Field.t)) Integer' :
+  AccessStrict
+    (l.[(zapcore.Field.t), "Integer"] ↦ (v.(zapcore.Field.Integer')))
+    (l.[(zapcore.Field.t), "Integer"] ↦ Integer')
+    (l ↦ v) (l ↦ (v <|(zapcore.Field.Integer') := Integer'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Field_access_load_String l (v : (zapcore.Field.t)) dq :
+  AccessStrict
+    (l.[(zapcore.Field.t), "String"] ↦{dq} (v.(zapcore.Field.String')))
+    (l.[(zapcore.Field.t), "String"] ↦{dq} (v.(zapcore.Field.String')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Field_access_store_String l (v : (zapcore.Field.t)) String' :
+  AccessStrict
+    (l.[(zapcore.Field.t), "String"] ↦ (v.(zapcore.Field.String')))
+    (l.[(zapcore.Field.t), "String"] ↦ String')
+    (l ↦ v) (l ↦ (v <|(zapcore.Field.String') := String'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Field_access_load_Interface l (v : (zapcore.Field.t)) dq :
+  AccessStrict
+    (l.[(zapcore.Field.t), "Interface"] ↦{dq} (v.(zapcore.Field.Interface')))
+    (l.[(zapcore.Field.t), "Interface"] ↦{dq} (v.(zapcore.Field.Interface')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Field_access_store_Interface l (v : (zapcore.Field.t)) Interface' :
+  AccessStrict
+    (l.[(zapcore.Field.t), "Interface"] ↦ (v.(zapcore.Field.Interface')))
+    (l.[(zapcore.Field.t), "Interface"] ↦ Interface')
+    (l ↦ v) (l ↦ (v <|(zapcore.Field.Interface') := Interface'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+End def.
+End Field.
+
+Module hooked.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance hooked_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.hooked.t). Admitted.
+
+#[global] Instance hooked_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.hooked.t) (zapcore.hookedⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End hooked.
+
+Module levelFilterCore.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance levelFilterCore_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.levelFilterCore.t). Admitted.
+
+#[global] Instance levelFilterCore_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.levelFilterCore.t) (zapcore.levelFilterCoreⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End levelFilterCore.
+
+Module jsonEncoder.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance jsonEncoder_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.jsonEncoder.t). Admitted.
+
+#[global] Instance jsonEncoder_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.jsonEncoder.t) (zapcore.jsonEncoderⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End jsonEncoder.
+
+Module lazyWithCore.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance lazyWithCore_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.lazyWithCore.t). Admitted.
+
+#[global] Instance lazyWithCore_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.lazyWithCore.t) (zapcore.lazyWithCoreⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End lazyWithCore.
+
+Module Level.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Level_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.Level.t). Admitted.
+
+#[global] Instance Level_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.Level.t) (zapcore.Levelⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End Level.
+
+Module leveledEnabler.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance leveledEnabler_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.leveledEnabler.t). Admitted.
+
+#[global] Instance leveledEnabler_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.leveledEnabler.t) (zapcore.leveledEnablerⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End leveledEnabler.
+
+Module LevelEnabler.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance LevelEnabler_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.LevelEnabler.t). Admitted.
+
+#[global] Instance LevelEnabler_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.LevelEnabler.t) (zapcore.LevelEnablerⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End LevelEnabler.
+
+Module ObjectMarshaler.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ObjectMarshaler_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.ObjectMarshaler.t). Admitted.
+
+#[global] Instance ObjectMarshaler_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.ObjectMarshaler.t) (zapcore.ObjectMarshalerⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End ObjectMarshaler.
+
+Module ObjectMarshalerFunc.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ObjectMarshalerFunc_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.ObjectMarshalerFunc.t). Admitted.
+
+#[global] Instance ObjectMarshalerFunc_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.ObjectMarshalerFunc.t) (zapcore.ObjectMarshalerFuncⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End ObjectMarshalerFunc.
+
+Module ArrayMarshaler.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ArrayMarshaler_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.ArrayMarshaler.t). Admitted.
+
+#[global] Instance ArrayMarshaler_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.ArrayMarshaler.t) (zapcore.ArrayMarshalerⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End ArrayMarshaler.
+
+Module ArrayMarshalerFunc.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ArrayMarshalerFunc_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.ArrayMarshalerFunc.t). Admitted.
+
+#[global] Instance ArrayMarshalerFunc_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.ArrayMarshalerFunc.t) (zapcore.ArrayMarshalerFuncⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End ArrayMarshalerFunc.
+
+Module MapObjectEncoder.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance MapObjectEncoder_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.MapObjectEncoder.t). Admitted.
+
+#[global] Instance MapObjectEncoder_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.MapObjectEncoder.t) (zapcore.MapObjectEncoderⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End MapObjectEncoder.
+
+Module sliceArrayEncoder.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance sliceArrayEncoder_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.sliceArrayEncoder.t). Admitted.
+
+#[global] Instance sliceArrayEncoder_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.sliceArrayEncoder.t) (zapcore.sliceArrayEncoderⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End sliceArrayEncoder.
+
+Module ReflectedEncoder.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ReflectedEncoder_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.ReflectedEncoder.t). Admitted.
+
+#[global] Instance ReflectedEncoder_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.ReflectedEncoder.t) (zapcore.ReflectedEncoderⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End ReflectedEncoder.
+
+Module counter.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance counter_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.counter.t). Admitted.
+
+#[global] Instance counter_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.counter.t) (zapcore.counterⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End counter.
+
+Module counters.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance counters_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.counters.t). Admitted.
+
+#[global] Instance counters_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.counters.t) (zapcore.countersⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End counters.
+
+Module SamplingDecision.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance SamplingDecision_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.SamplingDecision.t). Admitted.
+
+#[global] Instance SamplingDecision_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.SamplingDecision.t) (zapcore.SamplingDecisionⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End SamplingDecision.
+
+Module optionFunc.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance optionFunc_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.optionFunc.t). Admitted.
+
+#[global] Instance optionFunc_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.optionFunc.t) (zapcore.optionFuncⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End optionFunc.
+
+Module SamplerOption.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance SamplerOption_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.SamplerOption.t). Admitted.
+
+#[global] Instance SamplerOption_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.SamplerOption.t) (zapcore.SamplerOptionⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End SamplerOption.
+
+Module sampler.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance sampler_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.sampler.t). Admitted.
+
+#[global] Instance sampler_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.sampler.t) (zapcore.samplerⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End sampler.
+
+Module multiCore.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance multiCore_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.multiCore.t). Admitted.
+
+#[global] Instance multiCore_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.multiCore.t) (zapcore.multiCoreⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End multiCore.
+
+Module WriteSyncer.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance WriteSyncer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.WriteSyncer.t). Admitted.
+
+#[global] Instance WriteSyncer_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.WriteSyncer.t) (zapcore.WriteSyncerⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End WriteSyncer.
+
+Module lockedWriteSyncer.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance lockedWriteSyncer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.lockedWriteSyncer.t). Admitted.
+
+#[global] Instance lockedWriteSyncer_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.lockedWriteSyncer.t) (zapcore.lockedWriteSyncerⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End lockedWriteSyncer.
+
+Module writerWrapper.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance writerWrapper_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.writerWrapper.t). Admitted.
+
+#[global] Instance writerWrapper_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.writerWrapper.t) (zapcore.writerWrapperⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End writerWrapper.
+
+Module multiWriteSyncer.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : zapcore.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance multiWriteSyncer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (zapcore.multiWriteSyncer.t). Admitted.
+
+#[global] Instance multiWriteSyncer_into_val_typed
+   :
+  IntoValTypedUnderlying (zapcore.multiWriteSyncer.t) (zapcore.multiWriteSyncerⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End multiWriteSyncer.
+
+End zapcore.

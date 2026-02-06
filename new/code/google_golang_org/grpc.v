@@ -2730,7 +2730,7 @@ Module ServerStreamingClient.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Axiom t : ∀ (Res : Type), Type.
-Axiom zero_val : ∀ `{!ZeroVal Res}, ZeroVal ( Res).
+Axiom zero_val : ∀ `{!ZeroVal Res}, ZeroVal (t Res).
 #[global] Existing Instance zero_val.
 End def.
 End ServerStreamingClient.
@@ -2746,7 +2746,7 @@ Module ServerStreamingServer.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Axiom t : ∀ (Res : Type), Type.
-Axiom zero_val : ∀ `{!ZeroVal Res}, ZeroVal ( Res).
+Axiom zero_val : ∀ `{!ZeroVal Res}, ZeroVal (t Res).
 #[global] Existing Instance zero_val.
 End def.
 End ServerStreamingServer.
@@ -2762,7 +2762,7 @@ Module ClientStreamingClient.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Axiom t : ∀ (Req Res : Type), Type.
-Axiom zero_val : ∀ `{!ZeroVal Req} `{!ZeroVal Res}, ZeroVal ( Req Res).
+Axiom zero_val : ∀ `{!ZeroVal Req} `{!ZeroVal Res}, ZeroVal (t Req Res).
 #[global] Existing Instance zero_val.
 End def.
 End ClientStreamingClient.
@@ -2778,7 +2778,7 @@ Module ClientStreamingServer.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Axiom t : ∀ (Req Res : Type), Type.
-Axiom zero_val : ∀ `{!ZeroVal Req} `{!ZeroVal Res}, ZeroVal ( Req Res).
+Axiom zero_val : ∀ `{!ZeroVal Req} `{!ZeroVal Res}, ZeroVal (t Req Res).
 #[global] Existing Instance zero_val.
 End def.
 End ClientStreamingServer.
@@ -2794,7 +2794,7 @@ Module BidiStreamingClient.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Axiom t : ∀ (Req Res : Type), Type.
-Axiom zero_val : ∀ `{!ZeroVal Req} `{!ZeroVal Res}, ZeroVal ( Req Res).
+Axiom zero_val : ∀ `{!ZeroVal Req} `{!ZeroVal Res}, ZeroVal (t Req Res).
 #[global] Existing Instance zero_val.
 End def.
 End BidiStreamingClient.
@@ -2810,7 +2810,7 @@ Module BidiStreamingServer.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Axiom t : ∀ (Req Res : Type), Type.
-Axiom zero_val : ∀ `{!ZeroVal Req} `{!ZeroVal Res}, ZeroVal ( Req Res).
+Axiom zero_val : ∀ `{!ZeroVal Req} `{!ZeroVal Res}, ZeroVal (t Req Res).
 #[global] Existing Instance zero_val.
 End def.
 End BidiStreamingServer.
@@ -2826,7 +2826,7 @@ Module GenericClientStream.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Axiom t : ∀ (Req Res : Type), Type.
-Axiom zero_val : ∀ `{!ZeroVal Req} `{!ZeroVal Res}, ZeroVal ( Req Res).
+Axiom zero_val : ∀ `{!ZeroVal Req} `{!ZeroVal Res}, ZeroVal (t Req Res).
 #[global] Existing Instance zero_val.
 End def.
 End GenericClientStream.
@@ -2842,7 +2842,7 @@ Module GenericServerStream.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 Axiom t : ∀ (Req Res : Type), Type.
-Axiom zero_val : ∀ `{!ZeroVal Req} `{!ZeroVal Res}, ZeroVal ( Req Res).
+Axiom zero_val : ∀ `{!ZeroVal Req} `{!ZeroVal Res}, ZeroVal (t Req Res).
 #[global] Existing Instance zero_val.
 End def.
 End GenericServerStream.

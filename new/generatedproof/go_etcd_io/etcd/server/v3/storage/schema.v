@@ -5,5 +5,305 @@ Require Export New.code.go_etcd_io.etcd.server.v3.storage.schema.
 
 Set Default Proof Using "Type".
 
-Module .
-End .
+Module schema.
+Module action.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : schema.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance action_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (schema.action.t). Admitted.
+
+#[global] Instance action_into_val_typed
+   :
+  IntoValTypedUnderlying (schema.action.t) (schema.actionⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End action.
+
+Module setKeyAction.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : schema.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance setKeyAction_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (schema.setKeyAction.t). Admitted.
+
+#[global] Instance setKeyAction_into_val_typed
+   :
+  IntoValTypedUnderlying (schema.setKeyAction.t) (schema.setKeyActionⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End setKeyAction.
+
+Module deleteKeyAction.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : schema.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance deleteKeyAction_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (schema.deleteKeyAction.t). Admitted.
+
+#[global] Instance deleteKeyAction_into_val_typed
+   :
+  IntoValTypedUnderlying (schema.deleteKeyAction.t) (schema.deleteKeyActionⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End deleteKeyAction.
+
+Module ActionList.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : schema.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ActionList_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (schema.ActionList.t). Admitted.
+
+#[global] Instance ActionList_into_val_typed
+   :
+  IntoValTypedUnderlying (schema.ActionList.t) (schema.ActionListⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End ActionList.
+
+Module alarmBackend.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : schema.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance alarmBackend_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (schema.alarmBackend.t). Admitted.
+
+#[global] Instance alarmBackend_into_val_typed
+   :
+  IntoValTypedUnderlying (schema.alarmBackend.t) (schema.alarmBackendⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End alarmBackend.
+
+Module authBackend.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : schema.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance authBackend_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (schema.authBackend.t). Admitted.
+
+#[global] Instance authBackend_into_val_typed
+   :
+  IntoValTypedUnderlying (schema.authBackend.t) (schema.authBackendⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End authBackend.
+
+Module authReadTx.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : schema.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance authReadTx_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (schema.authReadTx.t). Admitted.
+
+#[global] Instance authReadTx_into_val_typed
+   :
+  IntoValTypedUnderlying (schema.authReadTx.t) (schema.authReadTxⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End authReadTx.
+
+Module authBatchTx.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : schema.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance authBatchTx_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (schema.authBatchTx.t). Admitted.
+
+#[global] Instance authBatchTx_into_val_typed
+   :
+  IntoValTypedUnderlying (schema.authBatchTx.t) (schema.authBatchTxⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End authBatchTx.
+
+Module bucket.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : schema.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance bucket_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (schema.bucket.t). Admitted.
+
+#[global] Instance bucket_into_val_typed
+   :
+  IntoValTypedUnderlying (schema.bucket.t) (schema.bucketⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End bucket.
+
+Module schemaChange.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : schema.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance schemaChange_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (schema.schemaChange.t). Admitted.
+
+#[global] Instance schemaChange_into_val_typed
+   :
+  IntoValTypedUnderlying (schema.schemaChange.t) (schema.schemaChangeⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End schemaChange.
+
+Module simpleSchemaChange.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : schema.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance simpleSchemaChange_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (schema.simpleSchemaChange.t). Admitted.
+
+#[global] Instance simpleSchemaChange_into_val_typed
+   :
+  IntoValTypedUnderlying (schema.simpleSchemaChange.t) (schema.simpleSchemaChangeⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End simpleSchemaChange.
+
+Module membershipBackend.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : schema.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance membershipBackend_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (schema.membershipBackend.t). Admitted.
+
+#[global] Instance membershipBackend_into_val_typed
+   :
+  IntoValTypedUnderlying (schema.membershipBackend.t) (schema.membershipBackendⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End membershipBackend.
+
+Module migrationPlan.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : schema.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance migrationPlan_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (schema.migrationPlan.t). Admitted.
+
+#[global] Instance migrationPlan_into_val_typed
+   :
+  IntoValTypedUnderlying (schema.migrationPlan.t) (schema.migrationPlanⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End migrationPlan.
+
+Module migrationStep.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : schema.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance migrationStep_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (schema.migrationStep.t). Admitted.
+
+#[global] Instance migrationStep_into_val_typed
+   :
+  IntoValTypedUnderlying (schema.migrationStep.t) (schema.migrationStepⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End migrationStep.
+
+Module WALVersion.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : schema.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance WALVersion_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (schema.WALVersion.t). Admitted.
+
+#[global] Instance WALVersion_into_val_typed
+   :
+  IntoValTypedUnderlying (schema.WALVersion.t) (schema.WALVersionⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End WALVersion.
+
+End schema.

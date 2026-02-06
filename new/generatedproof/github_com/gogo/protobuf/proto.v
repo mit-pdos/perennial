@@ -5,5 +5,1505 @@ Require Export New.code.github_com.gogo.protobuf.proto.
 
 Set Default Proof Using "Type".
 
-Module .
-End .
+Module proto.
+Module Merger.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Merger_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.Merger.t). Admitted.
+
+#[global] Instance Merger_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.Merger.t) (proto.Mergerⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End Merger.
+
+Module generatedMerger.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance generatedMerger_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.generatedMerger.t). Admitted.
+
+#[global] Instance generatedMerger_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.generatedMerger.t) (proto.generatedMergerⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End generatedMerger.
+
+Module custom.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance custom_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.custom.t). Admitted.
+
+#[global] Instance custom_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.custom.t) (proto.customⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End custom.
+
+Module Unmarshaler.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Unmarshaler_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.Unmarshaler.t). Admitted.
+
+#[global] Instance Unmarshaler_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.Unmarshaler.t) (proto.Unmarshalerⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End Unmarshaler.
+
+Module newUnmarshaler.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance newUnmarshaler_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.newUnmarshaler.t). Admitted.
+
+#[global] Instance newUnmarshaler_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.newUnmarshaler.t) (proto.newUnmarshalerⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End newUnmarshaler.
+
+Module Stats.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Stats_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.Stats.t). Admitted.
+
+#[global] Instance Stats_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.Stats.t) (proto.Statsⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End Stats.
+
+Module generatedDiscarder.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance generatedDiscarder_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.generatedDiscarder.t). Admitted.
+
+#[global] Instance generatedDiscarder_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.generatedDiscarder.t) (proto.generatedDiscarderⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End generatedDiscarder.
+
+Module discardInfo.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance discardInfo_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.discardInfo.t). Admitted.
+
+#[global] Instance discardInfo_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.discardInfo.t) (proto.discardInfoⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End discardInfo.
+
+Module discardFieldInfo.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance discardFieldInfo_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.discardFieldInfo.t). Admitted.
+
+#[global] Instance discardFieldInfo_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.discardFieldInfo.t) (proto.discardFieldInfoⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End discardFieldInfo.
+
+Module duration.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance duration_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.duration.t). Admitted.
+
+#[global] Instance duration_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.duration.t) (proto.durationⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End duration.
+
+Module Marshaler.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Marshaler_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.Marshaler.t). Admitted.
+
+#[global] Instance Marshaler_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.Marshaler.t) (proto.Marshalerⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End Marshaler.
+
+Module ExtensionRange.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ExtensionRange_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.ExtensionRange.t). Admitted.
+
+#[global] Instance ExtensionRange_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.ExtensionRange.t) (proto.ExtensionRangeⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End ExtensionRange.
+
+Module extendableProto.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance extendableProto_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.extendableProto.t). Admitted.
+
+#[global] Instance extendableProto_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.extendableProto.t) (proto.extendableProtoⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End extendableProto.
+
+Module extendableProtoV1.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance extendableProtoV1_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.extendableProtoV1.t). Admitted.
+
+#[global] Instance extendableProtoV1_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.extendableProtoV1.t) (proto.extendableProtoV1ⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End extendableProtoV1.
+
+Module extensionAdapter.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance extensionAdapter_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.extensionAdapter.t). Admitted.
+
+#[global] Instance extensionAdapter_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.extensionAdapter.t) (proto.extensionAdapterⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End extensionAdapter.
+
+Module notLocker.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance notLocker_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.notLocker.t). Admitted.
+
+#[global] Instance notLocker_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.notLocker.t) (proto.notLockerⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End notLocker.
+
+Module XXX_InternalExtensions.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance XXX_InternalExtensions_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.XXX_InternalExtensions.t). Admitted.
+
+#[global] Instance XXX_InternalExtensions_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.XXX_InternalExtensions.t) (proto.XXX_InternalExtensionsⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End XXX_InternalExtensions.
+
+Module ExtensionDesc.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ExtensionDesc_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.ExtensionDesc.t). Admitted.
+
+#[global] Instance ExtensionDesc_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.ExtensionDesc.t) (proto.ExtensionDescⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End ExtensionDesc.
+
+Module Extension.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Extension_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.Extension.t). Admitted.
+
+#[global] Instance Extension_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.Extension.t) (proto.Extensionⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End Extension.
+
+Module extPropKey.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance extPropKey_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.extPropKey.t). Admitted.
+
+#[global] Instance extPropKey_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.extPropKey.t) (proto.extPropKeyⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End extPropKey.
+
+Module extensionsBytes.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance extensionsBytes_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.extensionsBytes.t). Admitted.
+
+#[global] Instance extensionsBytes_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.extensionsBytes.t) (proto.extensionsBytesⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End extensionsBytes.
+
+Module slowExtensionAdapter.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance slowExtensionAdapter_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.slowExtensionAdapter.t). Admitted.
+
+#[global] Instance slowExtensionAdapter_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.slowExtensionAdapter.t) (proto.slowExtensionAdapterⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End slowExtensionAdapter.
+
+Module sortableMapElem.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance sortableMapElem_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.sortableMapElem.t). Admitted.
+
+#[global] Instance sortableMapElem_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.sortableMapElem.t) (proto.sortableMapElemⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End sortableMapElem.
+
+Module sortableExtensions.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance sortableExtensions_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.sortableExtensions.t). Admitted.
+
+#[global] Instance sortableExtensions_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.sortableExtensions.t) (proto.sortableExtensionsⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End sortableExtensions.
+
+Module RequiredNotSetError.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance RequiredNotSetError_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.RequiredNotSetError.t). Admitted.
+
+#[global] Instance RequiredNotSetError_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.RequiredNotSetError.t) (proto.RequiredNotSetErrorⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End RequiredNotSetError.
+
+Module invalidUTF8Error.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance invalidUTF8Error_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.invalidUTF8Error.t). Admitted.
+
+#[global] Instance invalidUTF8Error_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.invalidUTF8Error.t) (proto.invalidUTF8Errorⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End invalidUTF8Error.
+
+Module nonFatal.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance nonFatal_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.nonFatal.t). Admitted.
+
+#[global] Instance nonFatal_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.nonFatal.t) (proto.nonFatalⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End nonFatal.
+
+Module Message.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Message_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.Message.t). Admitted.
+
+#[global] Instance Message_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.Message.t) (proto.Messageⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End Message.
+
+Module Buffer.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Buffer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.Buffer.t). Admitted.
+
+#[global] Instance Buffer_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.Buffer.t) (proto.Bufferⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End Buffer.
+
+Module defaultMessage.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance defaultMessage_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.defaultMessage.t). Admitted.
+
+#[global] Instance defaultMessage_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.defaultMessage.t) (proto.defaultMessageⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End defaultMessage.
+
+Module scalarField.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance scalarField_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.scalarField.t). Admitted.
+
+#[global] Instance scalarField_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.scalarField.t) (proto.scalarFieldⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End scalarField.
+
+Module mapKeySorter.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance mapKeySorter_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.mapKeySorter.t). Admitted.
+
+#[global] Instance mapKeySorter_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.mapKeySorter.t) (proto.mapKeySorterⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End mapKeySorter.
+
+Module InternalMessageInfo.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance InternalMessageInfo_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.InternalMessageInfo.t). Admitted.
+
+#[global] Instance InternalMessageInfo_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.InternalMessageInfo.t) (proto.InternalMessageInfoⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End InternalMessageInfo.
+
+Module Sizer.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Sizer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.Sizer.t). Admitted.
+
+#[global] Instance Sizer_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.Sizer.t) (proto.Sizerⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End Sizer.
+
+Module ProtoSizer.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ProtoSizer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.ProtoSizer.t). Admitted.
+
+#[global] Instance ProtoSizer_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.ProtoSizer.t) (proto.ProtoSizerⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End ProtoSizer.
+
+Module _MessageSet_Item.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance _MessageSet_Item_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto._MessageSet_Item.t). Admitted.
+
+#[global] Instance _MessageSet_Item_into_val_typed
+   :
+  IntoValTypedUnderlying (proto._MessageSet_Item.t) (proto._MessageSet_Itemⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End _MessageSet_Item.
+
+Module messageSet.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance messageSet_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.messageSet.t). Admitted.
+
+#[global] Instance messageSet_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.messageSet.t) (proto.messageSetⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End messageSet.
+
+Module messageTypeIder.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance messageTypeIder_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.messageTypeIder.t). Admitted.
+
+#[global] Instance messageTypeIder_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.messageTypeIder.t) (proto.messageTypeIderⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End messageTypeIder.
+
+Module field.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance field_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.field.t). Admitted.
+
+#[global] Instance field_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.field.t) (proto.fieldⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End field.
+
+Module pointer.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance pointer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.pointer.t). Admitted.
+
+#[global] Instance pointer_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.pointer.t) (proto.pointerⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End pointer.
+
+Module tagMap.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance tagMap_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.tagMap.t). Admitted.
+
+#[global] Instance tagMap_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.tagMap.t) (proto.tagMapⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End tagMap.
+
+Module StructProperties.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance StructProperties_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.StructProperties.t). Admitted.
+
+#[global] Instance StructProperties_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.StructProperties.t) (proto.StructPropertiesⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End StructProperties.
+
+Module OneofProperties.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance OneofProperties_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.OneofProperties.t). Admitted.
+
+#[global] Instance OneofProperties_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.OneofProperties.t) (proto.OneofPropertiesⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End OneofProperties.
+
+Module Properties.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Properties_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.Properties.t). Admitted.
+
+#[global] Instance Properties_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.Properties.t) (proto.Propertiesⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End Properties.
+
+Module oneofFuncsIface.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance oneofFuncsIface_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.oneofFuncsIface.t). Admitted.
+
+#[global] Instance oneofFuncsIface_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.oneofFuncsIface.t) (proto.oneofFuncsIfaceⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End oneofFuncsIface.
+
+Module oneofWrappersIface.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance oneofWrappersIface_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.oneofWrappersIface.t). Admitted.
+
+#[global] Instance oneofWrappersIface_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.oneofWrappersIface.t) (proto.oneofWrappersIfaceⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End oneofWrappersIface.
+
+Module sizer.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance sizer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.sizer.t). Admitted.
+
+#[global] Instance sizer_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.sizer.t) (proto.sizerⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End sizer.
+
+Module marshaler.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance marshaler_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.marshaler.t). Admitted.
+
+#[global] Instance marshaler_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.marshaler.t) (proto.marshalerⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End marshaler.
+
+Module marshalInfo.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance marshalInfo_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.marshalInfo.t). Admitted.
+
+#[global] Instance marshalInfo_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.marshalInfo.t) (proto.marshalInfoⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End marshalInfo.
+
+Module marshalFieldInfo.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance marshalFieldInfo_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.marshalFieldInfo.t). Admitted.
+
+#[global] Instance marshalFieldInfo_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.marshalFieldInfo.t) (proto.marshalFieldInfoⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End marshalFieldInfo.
+
+Module marshalElemInfo.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance marshalElemInfo_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.marshalElemInfo.t). Admitted.
+
+#[global] Instance marshalElemInfo_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.marshalElemInfo.t) (proto.marshalElemInfoⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End marshalElemInfo.
+
+Module byTag.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance byTag_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.byTag.t). Admitted.
+
+#[global] Instance byTag_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.byTag.t) (proto.byTagⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End byTag.
+
+Module newMarshaler.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance newMarshaler_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.newMarshaler.t). Admitted.
+
+#[global] Instance newMarshaler_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.newMarshaler.t) (proto.newMarshalerⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End newMarshaler.
+
+Module mergeInfo.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance mergeInfo_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.mergeInfo.t). Admitted.
+
+#[global] Instance mergeInfo_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.mergeInfo.t) (proto.mergeInfoⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End mergeInfo.
+
+Module mergeFieldInfo.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance mergeFieldInfo_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.mergeFieldInfo.t). Admitted.
+
+#[global] Instance mergeFieldInfo_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.mergeFieldInfo.t) (proto.mergeFieldInfoⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End mergeFieldInfo.
+
+Module unmarshalInfo.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance unmarshalInfo_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.unmarshalInfo.t). Admitted.
+
+#[global] Instance unmarshalInfo_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.unmarshalInfo.t) (proto.unmarshalInfoⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End unmarshalInfo.
+
+Module unmarshaler.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance unmarshaler_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.unmarshaler.t). Admitted.
+
+#[global] Instance unmarshaler_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.unmarshaler.t) (proto.unmarshalerⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End unmarshaler.
+
+Module unmarshalFieldInfo.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance unmarshalFieldInfo_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.unmarshalFieldInfo.t). Admitted.
+
+#[global] Instance unmarshalFieldInfo_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.unmarshalFieldInfo.t) (proto.unmarshalFieldInfoⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End unmarshalFieldInfo.
+
+Module writer.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance writer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.writer.t). Admitted.
+
+#[global] Instance writer_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.writer.t) (proto.writerⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End writer.
+
+Module textWriter.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance textWriter_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.textWriter.t). Admitted.
+
+#[global] Instance textWriter_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.textWriter.t) (proto.textWriterⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End textWriter.
+
+Module int32Slice.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance int32Slice_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.int32Slice.t). Admitted.
+
+#[global] Instance int32Slice_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.int32Slice.t) (proto.int32Sliceⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End int32Slice.
+
+Module TextMarshaler.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance TextMarshaler_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.TextMarshaler.t). Admitted.
+
+#[global] Instance TextMarshaler_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.TextMarshaler.t) (proto.TextMarshalerⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End TextMarshaler.
+
+Module ParseError.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ParseError_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.ParseError.t). Admitted.
+
+#[global] Instance ParseError_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.ParseError.t) (proto.ParseErrorⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End ParseError.
+
+Module token.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance token_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.token.t). Admitted.
+
+#[global] Instance token_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.token.t) (proto.tokenⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End token.
+
+Module textParser.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance textParser_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.textParser.t). Admitted.
+
+#[global] Instance textParser_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.textParser.t) (proto.textParserⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End textParser.
+
+Module timestamp.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance timestamp_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.timestamp.t). Admitted.
+
+#[global] Instance timestamp_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.timestamp.t) (proto.timestampⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End timestamp.
+
+Module float64Value.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance float64Value_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.float64Value.t). Admitted.
+
+#[global] Instance float64Value_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.float64Value.t) (proto.float64Valueⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End float64Value.
+
+Module float32Value.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance float32Value_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.float32Value.t). Admitted.
+
+#[global] Instance float32Value_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.float32Value.t) (proto.float32Valueⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End float32Value.
+
+Module int64Value.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance int64Value_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.int64Value.t). Admitted.
+
+#[global] Instance int64Value_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.int64Value.t) (proto.int64Valueⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End int64Value.
+
+Module uint64Value.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance uint64Value_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.uint64Value.t). Admitted.
+
+#[global] Instance uint64Value_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.uint64Value.t) (proto.uint64Valueⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End uint64Value.
+
+Module int32Value.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance int32Value_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.int32Value.t). Admitted.
+
+#[global] Instance int32Value_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.int32Value.t) (proto.int32Valueⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End int32Value.
+
+Module uint32Value.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance uint32Value_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.uint32Value.t). Admitted.
+
+#[global] Instance uint32Value_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.uint32Value.t) (proto.uint32Valueⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End uint32Value.
+
+Module boolValue.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance boolValue_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.boolValue.t). Admitted.
+
+#[global] Instance boolValue_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.boolValue.t) (proto.boolValueⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End boolValue.
+
+Module stringValue.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance stringValue_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.stringValue.t). Admitted.
+
+#[global] Instance stringValue_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.stringValue.t) (proto.stringValueⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End stringValue.
+
+Module bytesValue.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : proto.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance bytesValue_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (proto.bytesValue.t). Admitted.
+
+#[global] Instance bytesValue_into_val_typed
+   :
+  IntoValTypedUnderlying (proto.bytesValue.t) (proto.bytesValueⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End bytesValue.
+
+End proto.

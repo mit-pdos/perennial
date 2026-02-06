@@ -5,5 +5,1685 @@ Require Export New.code.github_com.prometheus.client_golang.prometheus.
 
 Set Default Proof Using "Type".
 
-Module .
-End .
+Module prometheus.
+Module Collector.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Collector_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.Collector.t). Admitted.
+
+#[global] Instance Collector_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.Collector.t) (prometheus.Collectorⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End Collector.
+
+Module selfCollector.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance selfCollector_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.selfCollector.t). Admitted.
+
+#[global] Instance selfCollector_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.selfCollector.t) (prometheus.selfCollectorⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End selfCollector.
+
+Module collectorMetric.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance collectorMetric_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.collectorMetric.t). Admitted.
+
+#[global] Instance collectorMetric_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.collectorMetric.t) (prometheus.collectorMetricⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End collectorMetric.
+
+Module Counter.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Counter_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.Counter.t). Admitted.
+
+#[global] Instance Counter_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.Counter.t) (prometheus.Counterⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End Counter.
+
+Module ExemplarAdder.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ExemplarAdder_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.ExemplarAdder.t). Admitted.
+
+#[global] Instance ExemplarAdder_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.ExemplarAdder.t) (prometheus.ExemplarAdderⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End ExemplarAdder.
+
+Module CounterOpts.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance CounterOpts_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.CounterOpts.t). Admitted.
+
+#[global] Instance CounterOpts_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.CounterOpts.t) (prometheus.CounterOptsⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End CounterOpts.
+
+Module CounterVecOpts.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance CounterVecOpts_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.CounterVecOpts.t). Admitted.
+
+#[global] Instance CounterVecOpts_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.CounterVecOpts.t) (prometheus.CounterVecOptsⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End CounterVecOpts.
+
+Module counter.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance counter_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.counter.t). Admitted.
+
+#[global] Instance counter_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.counter.t) (prometheus.counterⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End counter.
+
+Module CounterVec.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance CounterVec_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.CounterVec.t). Admitted.
+
+#[global] Instance CounterVec_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.CounterVec.t) (prometheus.CounterVecⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End CounterVec.
+
+Module CounterFunc.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance CounterFunc_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.CounterFunc.t). Admitted.
+
+#[global] Instance CounterFunc_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.CounterFunc.t) (prometheus.CounterFuncⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End CounterFunc.
+
+Module Desc.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Desc_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.Desc.t). Admitted.
+
+#[global] Instance Desc_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.Desc.t) (prometheus.Descⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End Desc.
+
+Module expvarCollector.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance expvarCollector_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.expvarCollector.t). Admitted.
+
+#[global] Instance expvarCollector_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.expvarCollector.t) (prometheus.expvarCollectorⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End expvarCollector.
+
+Module Gauge.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Gauge_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.Gauge.t). Admitted.
+
+#[global] Instance Gauge_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.Gauge.t) (prometheus.Gaugeⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End Gauge.
+
+Module GaugeOpts.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance GaugeOpts_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.GaugeOpts.t). Admitted.
+
+#[global] Instance GaugeOpts_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.GaugeOpts.t) (prometheus.GaugeOptsⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End GaugeOpts.
+
+Module GaugeVecOpts.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance GaugeVecOpts_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.GaugeVecOpts.t). Admitted.
+
+#[global] Instance GaugeVecOpts_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.GaugeVecOpts.t) (prometheus.GaugeVecOptsⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End GaugeVecOpts.
+
+Module gauge.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance gauge_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.gauge.t). Admitted.
+
+#[global] Instance gauge_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.gauge.t) (prometheus.gaugeⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End gauge.
+
+Module GaugeVec.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance GaugeVec_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.GaugeVec.t). Admitted.
+
+#[global] Instance GaugeVec_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.GaugeVec.t) (prometheus.GaugeVecⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End GaugeVec.
+
+Module GaugeFunc.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance GaugeFunc_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.GaugeFunc.t). Admitted.
+
+#[global] Instance GaugeFunc_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.GaugeFunc.t) (prometheus.GaugeFuncⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End GaugeFunc.
+
+Module baseGoCollector.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance baseGoCollector_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.baseGoCollector.t). Admitted.
+
+#[global] Instance baseGoCollector_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.baseGoCollector.t) (prometheus.baseGoCollectorⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End baseGoCollector.
+
+Module memStatsMetrics.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance memStatsMetrics_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.memStatsMetrics.t). Admitted.
+
+#[global] Instance memStatsMetrics_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.memStatsMetrics.t) (prometheus.memStatsMetricsⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End memStatsMetrics.
+
+Module goCollector.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance goCollector_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.goCollector.t). Admitted.
+
+#[global] Instance goCollector_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.goCollector.t) (prometheus.goCollectorⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End goCollector.
+
+Module rmMetricDesc.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance rmMetricDesc_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.rmMetricDesc.t). Admitted.
+
+#[global] Instance rmMetricDesc_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.rmMetricDesc.t) (prometheus.rmMetricDescⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End rmMetricDesc.
+
+Module batchHistogram.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance batchHistogram_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.batchHistogram.t). Admitted.
+
+#[global] Instance batchHistogram_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.batchHistogram.t) (prometheus.batchHistogramⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End batchHistogram.
+
+Module Histogram.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Histogram_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.Histogram.t). Admitted.
+
+#[global] Instance Histogram_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.Histogram.t) (prometheus.Histogramⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End Histogram.
+
+Module HistogramOpts.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance HistogramOpts_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.HistogramOpts.t). Admitted.
+
+#[global] Instance HistogramOpts_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.HistogramOpts.t) (prometheus.HistogramOptsⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End HistogramOpts.
+
+Module HistogramVecOpts.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance HistogramVecOpts_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.HistogramVecOpts.t). Admitted.
+
+#[global] Instance HistogramVecOpts_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.HistogramVecOpts.t) (prometheus.HistogramVecOptsⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End HistogramVecOpts.
+
+Module histogramCounts.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance histogramCounts_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.histogramCounts.t). Admitted.
+
+#[global] Instance histogramCounts_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.histogramCounts.t) (prometheus.histogramCountsⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End histogramCounts.
+
+Module histogram.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance histogram_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.histogram.t). Admitted.
+
+#[global] Instance histogram_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.histogram.t) (prometheus.histogramⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End histogram.
+
+Module HistogramVec.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance HistogramVec_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.HistogramVec.t). Admitted.
+
+#[global] Instance HistogramVec_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.HistogramVec.t) (prometheus.HistogramVecⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End HistogramVec.
+
+Module constHistogram.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance constHistogram_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.constHistogram.t). Admitted.
+
+#[global] Instance constHistogram_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.constHistogram.t) (prometheus.constHistogramⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End constHistogram.
+
+Module buckSort.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance buckSort_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.buckSort.t). Admitted.
+
+#[global] Instance buckSort_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.buckSort.t) (prometheus.buckSortⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End buckSort.
+
+Module nativeExemplars.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance nativeExemplars_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.nativeExemplars.t). Admitted.
+
+#[global] Instance nativeExemplars_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.nativeExemplars.t) (prometheus.nativeExemplarsⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End nativeExemplars.
+
+Module Labels.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Labels_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.Labels.t). Admitted.
+
+#[global] Instance Labels_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.Labels.t) (prometheus.Labelsⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End Labels.
+
+Module LabelConstraint.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance LabelConstraint_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.LabelConstraint.t). Admitted.
+
+#[global] Instance LabelConstraint_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.LabelConstraint.t) (prometheus.LabelConstraintⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End LabelConstraint.
+
+Module ConstrainedLabel.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ConstrainedLabel_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.ConstrainedLabel.t). Admitted.
+
+#[global] Instance ConstrainedLabel_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.ConstrainedLabel.t) (prometheus.ConstrainedLabelⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End ConstrainedLabel.
+
+Module ConstrainableLabels.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ConstrainableLabels_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.ConstrainableLabels.t). Admitted.
+
+#[global] Instance ConstrainableLabels_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.ConstrainableLabels.t) (prometheus.ConstrainableLabelsⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End ConstrainableLabels.
+
+Module ConstrainedLabels.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ConstrainedLabels_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.ConstrainedLabels.t). Admitted.
+
+#[global] Instance ConstrainedLabels_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.ConstrainedLabels.t) (prometheus.ConstrainedLabelsⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End ConstrainedLabels.
+
+Module UnconstrainedLabels.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance UnconstrainedLabels_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.UnconstrainedLabels.t). Admitted.
+
+#[global] Instance UnconstrainedLabels_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.UnconstrainedLabels.t) (prometheus.UnconstrainedLabelsⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End UnconstrainedLabels.
+
+Module compiledLabels.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance compiledLabels_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.compiledLabels.t). Admitted.
+
+#[global] Instance compiledLabels_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.compiledLabels.t) (prometheus.compiledLabelsⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End compiledLabels.
+
+Module Metric.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Metric_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.Metric.t). Admitted.
+
+#[global] Instance Metric_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.Metric.t) (prometheus.Metricⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End Metric.
+
+Module Opts.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Opts_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.Opts.t). Admitted.
+
+#[global] Instance Opts_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.Opts.t) (prometheus.Optsⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End Opts.
+
+Module invalidMetric.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance invalidMetric_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.invalidMetric.t). Admitted.
+
+#[global] Instance invalidMetric_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.invalidMetric.t) (prometheus.invalidMetricⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End invalidMetric.
+
+Module timestampedMetric.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance timestampedMetric_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.timestampedMetric.t). Admitted.
+
+#[global] Instance timestampedMetric_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.timestampedMetric.t) (prometheus.timestampedMetricⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End timestampedMetric.
+
+Module withExemplarsMetric.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance withExemplarsMetric_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.withExemplarsMetric.t). Admitted.
+
+#[global] Instance withExemplarsMetric_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.withExemplarsMetric.t) (prometheus.withExemplarsMetricⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End withExemplarsMetric.
+
+Module Exemplar.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Exemplar_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.Exemplar.t). Admitted.
+
+#[global] Instance Exemplar_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.Exemplar.t) (prometheus.Exemplarⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End Exemplar.
+
+Module Observer.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Observer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.Observer.t). Admitted.
+
+#[global] Instance Observer_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.Observer.t) (prometheus.Observerⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End Observer.
+
+Module ObserverFunc.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ObserverFunc_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.ObserverFunc.t). Admitted.
+
+#[global] Instance ObserverFunc_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.ObserverFunc.t) (prometheus.ObserverFuncⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End ObserverFunc.
+
+Module ObserverVec.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ObserverVec_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.ObserverVec.t). Admitted.
+
+#[global] Instance ObserverVec_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.ObserverVec.t) (prometheus.ObserverVecⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End ObserverVec.
+
+Module ExemplarObserver.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ExemplarObserver_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.ExemplarObserver.t). Admitted.
+
+#[global] Instance ExemplarObserver_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.ExemplarObserver.t) (prometheus.ExemplarObserverⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End ExemplarObserver.
+
+Module processCollector.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance processCollector_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.processCollector.t). Admitted.
+
+#[global] Instance processCollector_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.processCollector.t) (prometheus.processCollectorⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End processCollector.
+
+Module ProcessCollectorOpts.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ProcessCollectorOpts_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.ProcessCollectorOpts.t). Admitted.
+
+#[global] Instance ProcessCollectorOpts_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.ProcessCollectorOpts.t) (prometheus.ProcessCollectorOptsⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End ProcessCollectorOpts.
+
+Module Registerer.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Registerer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.Registerer.t). Admitted.
+
+#[global] Instance Registerer_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.Registerer.t) (prometheus.Registererⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End Registerer.
+
+Module Gatherer.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Gatherer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.Gatherer.t). Admitted.
+
+#[global] Instance Gatherer_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.Gatherer.t) (prometheus.Gathererⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End Gatherer.
+
+Module GathererFunc.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance GathererFunc_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.GathererFunc.t). Admitted.
+
+#[global] Instance GathererFunc_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.GathererFunc.t) (prometheus.GathererFuncⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End GathererFunc.
+
+Module AlreadyRegisteredError.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance AlreadyRegisteredError_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.AlreadyRegisteredError.t). Admitted.
+
+#[global] Instance AlreadyRegisteredError_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.AlreadyRegisteredError.t) (prometheus.AlreadyRegisteredErrorⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End AlreadyRegisteredError.
+
+Module MultiError.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance MultiError_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.MultiError.t). Admitted.
+
+#[global] Instance MultiError_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.MultiError.t) (prometheus.MultiErrorⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End MultiError.
+
+Module Registry.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Registry_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.Registry.t). Admitted.
+
+#[global] Instance Registry_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.Registry.t) (prometheus.Registryⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End Registry.
+
+Module Gatherers.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Gatherers_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.Gatherers.t). Admitted.
+
+#[global] Instance Gatherers_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.Gatherers.t) (prometheus.Gatherersⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End Gatherers.
+
+Module MultiTRegistry.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance MultiTRegistry_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.MultiTRegistry.t). Admitted.
+
+#[global] Instance MultiTRegistry_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.MultiTRegistry.t) (prometheus.MultiTRegistryⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End MultiTRegistry.
+
+Module TransactionalGatherer.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance TransactionalGatherer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.TransactionalGatherer.t). Admitted.
+
+#[global] Instance TransactionalGatherer_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.TransactionalGatherer.t) (prometheus.TransactionalGathererⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End TransactionalGatherer.
+
+Module noTransactionGatherer.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance noTransactionGatherer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.noTransactionGatherer.t). Admitted.
+
+#[global] Instance noTransactionGatherer_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.noTransactionGatherer.t) (prometheus.noTransactionGathererⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End noTransactionGatherer.
+
+Module Summary.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Summary_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.Summary.t). Admitted.
+
+#[global] Instance Summary_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.Summary.t) (prometheus.Summaryⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End Summary.
+
+Module SummaryOpts.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance SummaryOpts_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.SummaryOpts.t). Admitted.
+
+#[global] Instance SummaryOpts_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.SummaryOpts.t) (prometheus.SummaryOptsⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End SummaryOpts.
+
+Module SummaryVecOpts.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance SummaryVecOpts_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.SummaryVecOpts.t). Admitted.
+
+#[global] Instance SummaryVecOpts_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.SummaryVecOpts.t) (prometheus.SummaryVecOptsⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End SummaryVecOpts.
+
+Module summary.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance summary_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.summary.t). Admitted.
+
+#[global] Instance summary_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.summary.t) (prometheus.summaryⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End summary.
+
+Module summaryCounts.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance summaryCounts_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.summaryCounts.t). Admitted.
+
+#[global] Instance summaryCounts_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.summaryCounts.t) (prometheus.summaryCountsⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End summaryCounts.
+
+Module noObjectivesSummary.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance noObjectivesSummary_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.noObjectivesSummary.t). Admitted.
+
+#[global] Instance noObjectivesSummary_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.noObjectivesSummary.t) (prometheus.noObjectivesSummaryⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End noObjectivesSummary.
+
+Module quantSort.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance quantSort_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.quantSort.t). Admitted.
+
+#[global] Instance quantSort_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.quantSort.t) (prometheus.quantSortⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End quantSort.
+
+Module SummaryVec.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance SummaryVec_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.SummaryVec.t). Admitted.
+
+#[global] Instance SummaryVec_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.SummaryVec.t) (prometheus.SummaryVecⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End SummaryVec.
+
+Module constSummary.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance constSummary_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.constSummary.t). Admitted.
+
+#[global] Instance constSummary_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.constSummary.t) (prometheus.constSummaryⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End constSummary.
+
+Module Timer.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Timer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.Timer.t). Admitted.
+
+#[global] Instance Timer_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.Timer.t) (prometheus.Timerⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End Timer.
+
+Module UntypedOpts.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance UntypedOpts_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.UntypedOpts.t). Admitted.
+
+#[global] Instance UntypedOpts_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.UntypedOpts.t) (prometheus.UntypedOptsⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End UntypedOpts.
+
+Module UntypedFunc.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance UntypedFunc_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.UntypedFunc.t). Admitted.
+
+#[global] Instance UntypedFunc_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.UntypedFunc.t) (prometheus.UntypedFuncⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End UntypedFunc.
+
+Module ValueType.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ValueType_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.ValueType.t). Admitted.
+
+#[global] Instance ValueType_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.ValueType.t) (prometheus.ValueTypeⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End ValueType.
+
+Module valueFunc.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance valueFunc_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.valueFunc.t). Admitted.
+
+#[global] Instance valueFunc_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.valueFunc.t) (prometheus.valueFuncⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End valueFunc.
+
+Module constMetric.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance constMetric_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.constMetric.t). Admitted.
+
+#[global] Instance constMetric_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.constMetric.t) (prometheus.constMetricⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End constMetric.
+
+Module MetricVec.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance MetricVec_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.MetricVec.t). Admitted.
+
+#[global] Instance MetricVec_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.MetricVec.t) (prometheus.MetricVecⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End MetricVec.
+
+Module metricWithLabelValues.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance metricWithLabelValues_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.metricWithLabelValues.t). Admitted.
+
+#[global] Instance metricWithLabelValues_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.metricWithLabelValues.t) (prometheus.metricWithLabelValuesⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End metricWithLabelValues.
+
+Module curriedLabelValue.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance curriedLabelValue_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.curriedLabelValue.t). Admitted.
+
+#[global] Instance curriedLabelValue_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.curriedLabelValue.t) (prometheus.curriedLabelValueⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End curriedLabelValue.
+
+Module metricMap.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance metricMap_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.metricMap.t). Admitted.
+
+#[global] Instance metricMap_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.metricMap.t) (prometheus.metricMapⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End metricMap.
+
+Module v2.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance v2_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.v2.t). Admitted.
+
+#[global] Instance v2_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.v2.t) (prometheus.v2ⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End v2.
+
+Module wrappingRegisterer.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance wrappingRegisterer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.wrappingRegisterer.t). Admitted.
+
+#[global] Instance wrappingRegisterer_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.wrappingRegisterer.t) (prometheus.wrappingRegistererⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End wrappingRegisterer.
+
+Module wrappingCollector.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance wrappingCollector_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.wrappingCollector.t). Admitted.
+
+#[global] Instance wrappingCollector_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.wrappingCollector.t) (prometheus.wrappingCollectorⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End wrappingCollector.
+
+Module wrappingMetric.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : prometheus.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance wrappingMetric_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (prometheus.wrappingMetric.t). Admitted.
+
+#[global] Instance wrappingMetric_into_val_typed
+   :
+  IntoValTypedUnderlying (prometheus.wrappingMetric.t) (prometheus.wrappingMetricⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End wrappingMetric.
+
+End prometheus.

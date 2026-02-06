@@ -5,5 +5,125 @@ Require Export New.code.go_etcd_io.etcd.api.v3.membershippb.
 
 Set Default Proof Using "Type".
 
-Module .
-End .
+Module membershippb.
+Module RaftAttributes.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : membershippb.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance RaftAttributes_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (membershippb.RaftAttributes.t). Admitted.
+
+#[global] Instance RaftAttributes_into_val_typed
+   :
+  IntoValTypedUnderlying (membershippb.RaftAttributes.t) (membershippb.RaftAttributesⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End RaftAttributes.
+
+Module Attributes.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : membershippb.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Attributes_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (membershippb.Attributes.t). Admitted.
+
+#[global] Instance Attributes_into_val_typed
+   :
+  IntoValTypedUnderlying (membershippb.Attributes.t) (membershippb.Attributesⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End Attributes.
+
+Module Member.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : membershippb.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Member_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (membershippb.Member.t). Admitted.
+
+#[global] Instance Member_into_val_typed
+   :
+  IntoValTypedUnderlying (membershippb.Member.t) (membershippb.Memberⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End Member.
+
+Module ClusterVersionSetRequest.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : membershippb.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ClusterVersionSetRequest_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (membershippb.ClusterVersionSetRequest.t). Admitted.
+
+#[global] Instance ClusterVersionSetRequest_into_val_typed
+   :
+  IntoValTypedUnderlying (membershippb.ClusterVersionSetRequest.t) (membershippb.ClusterVersionSetRequestⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End ClusterVersionSetRequest.
+
+Module ClusterMemberAttrSetRequest.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : membershippb.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ClusterMemberAttrSetRequest_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (membershippb.ClusterMemberAttrSetRequest.t). Admitted.
+
+#[global] Instance ClusterMemberAttrSetRequest_into_val_typed
+   :
+  IntoValTypedUnderlying (membershippb.ClusterMemberAttrSetRequest.t) (membershippb.ClusterMemberAttrSetRequestⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End ClusterMemberAttrSetRequest.
+
+Module DowngradeInfoSetRequest.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : membershippb.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance DowngradeInfoSetRequest_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (membershippb.DowngradeInfoSetRequest.t). Admitted.
+
+#[global] Instance DowngradeInfoSetRequest_into_val_typed
+   :
+  IntoValTypedUnderlying (membershippb.DowngradeInfoSetRequest.t) (membershippb.DowngradeInfoSetRequestⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End DowngradeInfoSetRequest.
+
+End membershippb.

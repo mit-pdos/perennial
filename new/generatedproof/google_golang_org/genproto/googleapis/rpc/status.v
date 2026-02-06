@@ -5,5 +5,25 @@ Require Export New.code.google_golang_org.genproto.googleapis.rpc.status.
 
 Set Default Proof Using "Type".
 
-Module .
-End .
+Module status.
+Module Status.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : status.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Status_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (status.Status.t). Admitted.
+
+#[global] Instance Status_into_val_typed
+   :
+  IntoValTypedUnderlying (status.Status.t) (status.Statusⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End Status.
+
+End status.
