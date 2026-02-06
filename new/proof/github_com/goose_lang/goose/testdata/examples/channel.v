@@ -760,7 +760,7 @@ Section join.
 Context `{!chan_idiomG Σ unit}.
 
 Lemma wp_simple_join :
-  {{{ is_pkg_init chan_spec_raw_examples ∗ is_pkg_init channel    }}}
+  {{{ is_pkg_init chan_spec_raw_examples ∗ is_pkg_init channel }}}
     @! chan_spec_raw_examples.simple_join #()
   {{{  RET #("Hello, World!"); True }}}.
 Proof.

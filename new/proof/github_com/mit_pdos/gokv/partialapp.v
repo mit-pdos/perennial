@@ -4,13 +4,13 @@ Require Import New.generatedproof.github_com.mit_pdos.gokv.partialapp.
 (* End imports. *)
 
 Section proof.
-Context `{ffi_sem: ffi_semantics}.
-Context `{!ffi_interp ffi}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics} {package_sem : main.Assumptions}.
+Local Set Default Proof Using "All".
 
-Context `{!heapGS Σ} `{!globalsGS Σ} {go_ctx : GoContext}.
+#[global] Instance : IsPkgInit (iProp Σ) main := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ) main := build_get_is_pkg_init_wf.
 
-#[global] Instance : IsPkgInit main := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf main := build_get_is_pkg_init_wf.
 
 Lemma wp_partiallyApplyMe (s : go_string) (x : w64):
   Z.of_nat (length s) = sint.Z x →
@@ -19,14 +19,14 @@ Lemma wp_partiallyApplyMe (s : go_string) (x : w64):
   {{{ RET #(); True }}}.
 Proof.
   intros ?. wp_start as "_".
-  wp_auto.
+  wp_auto. wp_bind. wp_apply strings.wp_string_len as "%".
   rewrite -> bool_decide_true by word.
   wp_auto. by iApply "HΦ".
 Qed.
 
 Lemma wp_Foo__someMethod (f : main.Foo.t) :
   {{{ is_pkg_init main }}}
-    f @ main.Foo.id @ "someMethod" #()
+    f @! main.Foo @! "someMethod" #()
   {{{ RET #(); True }}}.
 Proof.
   wp_start as "_".
@@ -36,7 +36,7 @@ Qed.
 Lemma wp_Foo__someMethodWithArgs (f : main.Foo.t) (y : go_string) (z : w64) :
   Z.of_nat (length (f ++ y)) = sint.Z z →
   {{{ is_pkg_init main }}}
-    f @ main.Foo.id @ "someMethodWithArgs" #y #z
+    f @! main.Foo @! "someMethodWithArgs" #y #z
   {{{ RET #(); True }}}.
 Proof.
   intros ?. wp_start as "_".

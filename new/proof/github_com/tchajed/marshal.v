@@ -8,31 +8,30 @@ From New.proof.github_com.goose_lang Require Import std.
 From New.proof Require Import proof_prelude.
 From New.generatedproof.github_com.tchajed Require Import marshal.
 
-Section goose_lang.
-Context `{hG: heapGS Σ, !ffi_semantics _ _} `{!globalsGS Σ} {go_ctx : GoContext}.
+Section wps.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics} {package_sem : marshal.Assumptions}.
+Context `{!stdG Σ}.
+Local Set Default Proof Using "All".
 
-#[global] Instance : IsPkgInit marshal := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf marshal := build_get_is_pkg_init_wf.
+#[global] Instance : IsPkgInit (iProp Σ) marshal := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ) marshal := build_get_is_pkg_init_wf.
 
 Lemma wp_initialize' get_is_pkg_init :
   get_is_pkg_init_prop marshal get_is_pkg_init →
-  {{{ own_initializing get_is_pkg_init ∗ is_go_context ∗ □ is_pkg_defined marshal }}}
+  {{{ own_initializing get_is_pkg_init }}}
     marshal.initialize' #()
-  {{{ RET #(); own_initializing get_is_pkg_init  ∗ is_pkg_init marshal }}}.
+  {{{ RET #(); own_initializing get_is_pkg_init ∗ is_pkg_init marshal }}}.
 Proof.
-  intros Hinit. wp_start as "(Hown & #? & #Hdef)".
-  wp_call. wp_apply (wp_package_init with "[$Hown] HΦ").
-  { destruct Hinit as (-> & ?); done. }
-
+  intros Hinit. wp_start as "Hown".
+  wp_apply (wp_package_init with "[$Hown] HΦ").
+  { destruct Hinit as (-> & ?). reflexivity. }
   iIntros "Hown". wp_auto. wp_apply (std.wp_initialize' with "[$Hown]").
   { naive_solver. }
-  { iEval simpl_is_pkg_defined in "Hdef". iModIntro. iPkgInit. }
   iIntros "(Hown & #?)". wp_auto. wp_apply (primitive.wp_initialize' with "[$Hown]").
   { naive_solver. }
-  { iEval simpl_is_pkg_defined in "Hdef". iModIntro. iPkgInit. }
   iIntros "(Hown & #?)". wp_auto.
-  wp_call. iFrame. iModIntro.
-  iEval (rewrite is_pkg_init_unfold /=). iFrame "#". done.
+  iEval (rewrite is_pkg_init_unfold /=). iFrame "∗#". done.
 Qed.
 
 (* Some helper definition for working with slices of primitive values. *)
@@ -52,23 +51,10 @@ Definition string_has_encoding (encoded : list u8) (x : byte_string) : Prop :=
 Definition byte_has_encoding (encoded : list u8) (x : list u8) : Prop :=
   encoded = x.
 
-Definition own_prim {X : Type} `{!IntoVal X} {goT: go_type} `{!IntoValTyped X goT} 
-  (x__v:X) (x__c:X) (dq:dfrac) : iProp Σ :=
-  ⌜ x__v = x__c ⌝.
-
-Lemma own_prim_eq {X:Type} `{!IntoVal X} {goT: go_type} `{!IntoValTyped X goT}
-  (x__v:X) (x__c:X) (dq: dfrac) :
-  own_prim x__v x__c dq ⊢@{_} ⌜x__v = x__c⌝.
-Proof.
-  iIntros "Hown".
-  iUnfold own_prim in "Hown".
-  iFrame.
-Qed.
-
-Theorem wp_ReadInt tail (s: slice.t) q x :
-  {{{ is_pkg_init marshal ∗ own_slice s q (u64_le x ++ tail) }}}
+Theorem wp_ReadInt tail (s : slice.t) dq x :
+  {{{ is_pkg_init marshal ∗ s ↦*{dq} (u64_le x ++ tail) }}}
     @! marshal.ReadInt #s
-  {{{ s', RET (#x, #s'); own_slice s' q tail }}}.
+  {{{ s', RET (#x, #s'); s' ↦*{dq} tail }}}.
 Proof.
   wp_start as "Hs". wp_auto.
   (*
@@ -83,10 +69,10 @@ Qed.
 *)
 Admitted.
 
-Theorem wp_ReadInt32 tail s q (x: u32) :
-  {{{ is_pkg_init marshal ∗ own_slice s q (u32_le x ++ tail) }}}
+Theorem wp_ReadInt32 tail s dq (x: u32) :
+  {{{ is_pkg_init marshal ∗ s ↦*{dq} (u32_le x ++ tail) }}}
     @! marshal.ReadInt32 #s
-  {{{ s', RET (#x, #s'); own_slice s' q tail }}}.
+  {{{ s', RET (#x, #s'); s' ↦*{dq} tail }}}.
 Proof.
   wp_start as "Hs". wp_auto.
 (*
@@ -101,11 +87,11 @@ Qed.
 *)
 Admitted.
 
-Theorem wp_ReadBytes s q (len: u64) (head tail : list u8) :
+Theorem wp_ReadBytes s dq (len: u64) (head tail : list u8) :
   length head = uint.nat len →
-  {{{ is_pkg_init marshal ∗ own_slice s q (head ++ tail) }}}
+  {{{ is_pkg_init marshal ∗ s ↦*{dq} (head ++ tail) }}}
     @! marshal.ReadBytes #s #len
-  {{{ b s', RET (#b, #s'); own_slice b q head ∗ own_slice s' q tail }}}.
+  {{{ b s', RET (#b, #s'); b ↦*{dq} head ∗ s' ↦*{dq} tail }}}.
 Proof.
   iIntros (Hlen). wp_start as "Hs". wp_auto.
 (*
@@ -130,9 +116,9 @@ Admitted.
 
 Theorem wp_ReadBytesCopy s q (len: u64) (head tail : list u8) :
   length head = uint.nat len →
-  {{{ is_pkg_init marshal ∗ own_slice s q (head ++ tail) }}}
+  {{{ is_pkg_init marshal ∗ s ↦*{q} (head ++ tail) }}}
     @! marshal.ReadBytesCopy #s #len
-  {{{ b s', RET (#b, #s'); own_slice b (DfracOwn 1) head ∗ own_slice s' q tail }}}.
+  {{{ b s', RET (#b, #s'); b ↦*{DfracOwn 1} head ∗ s' ↦*{q} tail }}}.
 Proof.
   iIntros (Hlen). wp_start as "Hs". wp_auto.
 (*
@@ -165,11 +151,11 @@ Theorem wp_ReadLenPrefixedBytes s q (len: u64) (head tail : list u8):
   length head = uint.nat len →
   {{{
         is_pkg_init marshal ∗
-        own_slice s q ((u64_le len) ++ head ++ tail)
+        s ↦*{q} ((u64_le len) ++ head ++ tail)
   }}}
     @! marshal.ReadLenPrefixedBytes #s
   {{{
-        b s', RET (#b, #s'); own_slice b q head ∗ own_slice s' q tail
+        b s', RET (#b, #s'); b ↦*{q} head ∗ s' ↦*{q} tail
   }}}.
 Proof.
   iIntros (Hlen).
@@ -182,11 +168,11 @@ Proof.
 Qed.
 
 Theorem wp_ReadBool s q (bit: u8) (tail: list u8) :
-  {{{ is_pkg_init marshal ∗ own_slice s q (bit :: tail) }}}
+  {{{ is_pkg_init marshal ∗ s ↦*{q} (bit :: tail) }}}
     @! marshal.ReadBool (#s)
   {{{ (b: bool) s', RET (#b, #s');
       ⌜b = bool_decide (uint.Z bit ≠ 0)⌝ ∗
-      own_slice s' q tail }}}.
+      s' ↦*{q} tail }}}.
 Proof.
   wp_start as "Hs". wp_auto.
 (*
@@ -229,108 +215,6 @@ Fixpoint encodes {A:Type} (enc : list u8) (xs : list A) (has_encoding : list u8 
     | x :: xs' => exists bs bs', xs = x :: xs' /\ enc = bs ++ bs' /\ has_encoding bs x /\ encodes bs' xs' has_encoding
   end.
 
-Theorem wp_ReadSlice {X : Type} `{!IntoVal X} {goT: go_type} `{!IntoValTyped X goT} {C: Type}
-  (enc : list u8) (enc_sl : slice.t) (cs : list C) (count : w64)
-  (has_encoding : list u8 -> C -> Prop) (own: X -> C -> dfrac -> iProp Σ) (readOne : func.t)
-  (suffix : list u8) (dq : dfrac) :
-  {{{ is_pkg_init marshal ∗
-      "Hsl" ∷ own_slice enc_sl dq (enc ++ suffix) ∗
-      "%Henc" ∷ ⌜encodes enc cs has_encoding⌝ ∗
-      "%Hcount" ∷ ⌜uint.nat count = length cs⌝ ∗
-      "#HreadOne" ∷ ∀ enc' enc_sl' suffix' x,
-      {{{ own_slice enc_sl' dq (enc' ++ suffix') ∗
-          ⌜has_encoding enc' x⌝
-      }}}
-        #readOne (#enc_sl')
-      {{{ v suff_sl, RET (#v, #suff_sl);
-          own v x (DfracOwn 1) ∗
-          own_slice suff_sl dq suffix'
-      }}}
-  }}}
-    @! marshal.ReadSlice #goT #enc_sl #count #readOne
-  {{{ vals xs b2, RET (#vals, #b2);
-       own_slice vals (DfracOwn 1) xs ∗
-       ([∗ list] x;s ∈ xs;cs, own x s (DfracOwn 1)) ∗
-       own_slice b2 dq suffix
-  }}}.
-Proof.
-  wp_start as "Hpre". iNamed "Hpre". wp_auto.
-(*
-  wp_apply (wp_ref_to); first val_ty. iIntros (l__b2) "Henc_sl".
-  wp_auto.
-
-  wp_apply (wp_NewSlice). iIntros (gxs) "Hgxs".
-  wp_apply (wp_ref_to); first val_ty. iIntros (l__xs) "Hxs_sl".
-  wp_auto.
-
-  wp_apply (wp_ref_to); first val_ty. iIntros (l__i) "Hi".
-  wp_auto.
-
-  wp_apply (wp_forUpto'
-              (λ i, ∃ (enc' : list u8) (enc_sl' gxs' : slice.t),
-                   (* Loop Bounds *)
-                   "%Hi_ge" ∷ ⌜0 ≤ uint.nat i⌝ ∗
-                   "%Hi_le" ∷ ⌜uint.nat i <= length xs⌝ ∗
-                   (* Encoding *)
-                   "%H_b2_enc" ∷ ⌜encodes enc' (drop (uint.nat i) xs) has_encoding⌝ ∗
-                   "H_b2_sl" ∷ own_slice enc_sl' dq (enc' ++ suffix) ∗
-                   (* Outside variables *)
-                   "Henc_sl" ∷ l__b2 ↦[slice.T byteT] enc_sl' ∗
-                   "Hxs_sl" ∷ l__xs ↦[slice.T goT] gxs' ∗
-                   "Hxs" ∷ own_slice gxs' goT (DfracOwn 1) (take (uint.nat i) xs)
-              )%I
-              with "[$Hi $Hsl $Henc_sl $Hgxs $Hxs_sl]"
-           ).
-  - iSplit. { word. }
-    iPureIntro.
-    split; first word. split; first word. done.
-  - clear ϕ. iIntros "!>" (i Φ) "[IH (i & %Hle)] HΦ". iNamed "IH".
-    wp_auto. wp_load.
-    assert ((uint.nat i <= length xs)%nat) as Hi_length. { word. }
-    assert ((uint.nat i < length xs)%nat) as Hi_l_ne. { word. }
-    apply drop_lt in Hi_l_ne.
-    unfold encodes in H_b2_enc.
-    destruct (drop (uint.nat i) xs) eqn:Hdrop. { contradiction. }
-    destruct H_b2_enc as (H_b2_bs & H_b2_bs' & H_b2_enc & H_b2_enc' & H_b2_encoding & H_b2_enc_next).
-    rewrite H_b2_enc'. rewrite <- app_assoc.
-    wp_apply ("HreadOne" with "[$H_b2_sl //]").
-    iIntros (??) "(Hown_x & Hsuff_sl)".
-    wp_auto. wp_load.
-    pose proof (Hown_val v x (DfracOwn 1)) as Hto_val.
-    iApply Hto_val in "Hown_x". iDestruct "Hown_x" as "%Hown_x".
-    rewrite Hown_x.
-    wp_apply (wp_SliceAppend with "[$Hxs]"). iIntros (s') "Hs'".
-    wp_store. wp_store.
-
-    iModIntro. iApply "HΦ". iFrame.
-    pose proof (take_drop (uint.nat i) xs) as H_td.
-    rewrite Hdrop in H_td.
-    pose proof (length_take_le xs $ uint.nat i) as H_tl.
-    apply H_tl in Hi_length. symmetry in Hi_length.
-    pose proof (list_lookup_middle (take (uint.nat i) xs) l x $ uint.nat i) as Hmiddle.
-    apply Hmiddle in Hi_length as Hlookup.
-    apply take_S_r in Hlookup as Htake.
-    rewrite H_td in Htake.
-    rewrite <- Htake.
-    replace (uint.nat (w64_word_instance.(word.add) i (W64 1))) with (S (uint.nat i)) by word.
-    iFrame. iPureIntro.
-    split; first word. split; first word.
-    apply drop_succ in Hdrop.
-    + rewrite Hdrop. done.
-    + rewrite <- H_td. done.
-  - iIntros "[Hloop Hi]". iNamed "Hloop".
-    wp_auto. wp_load. wp_load. wp_auto.
-    iModIntro. iApply "HΦ".
-    replace (uint.nat (W64 (length xs))) with (length xs) by word.
-    replace (uint.nat (W64 (length xs))) with (length xs) in H_b2_enc by word.
-    rewrite take_ge; [ | word ].
-    rewrite drop_ge in H_b2_enc; [ | word ].
-    unfold encodes in H_b2_enc. rewrite H_b2_enc. rewrite app_nil_l.
-    iFrame.
-Qed.
-*)
-Admitted.
-
 Local Theorem wp_compute_new_cap (old_cap min_cap : u64) :
   {{{ is_pkg_init marshal }}}
     @! marshal.compute_new_cap #old_cap #min_cap
@@ -343,11 +227,11 @@ Proof.
 Qed.
 
 Local Theorem wp_reserve s (extra : u64) (vs : list u8) :
-  {{{ is_pkg_init marshal ∗ own_slice s (DfracOwn 1) vs ∗ own_slice_cap w8 s (DfracOwn 1) }}}
+  {{{ is_pkg_init marshal ∗ s ↦*{DfracOwn 1} vs ∗ own_slice_cap w8 s (DfracOwn 1) }}}
     @! marshal.reserve (#s) #extra
   {{{ s', RET #s';
-      ⌜uint.Z extra ≤ uint.Z (slice.cap_f s') - uint.Z (slice.len_f s')⌝ ∗
-      own_slice s' (DfracOwn 1) vs ∗ own_slice_cap w8 s' (DfracOwn 1) }}}.
+      ⌜uint.Z extra ≤ uint.Z (slice.cap s') - uint.Z (slice.len s')⌝ ∗
+      s' ↦*{DfracOwn 1} vs ∗ own_slice_cap w8 s' (DfracOwn 1) }}}.
 Proof.
   wp_start as "[Hs Hcap]". wp_auto.
 (*
@@ -378,9 +262,9 @@ Qed.
 Admitted.
 
 Theorem wp_WriteInt s x (vs : list u8) :
-  {{{ is_pkg_init marshal ∗ own_slice s (DfracOwn 1) vs ∗ own_slice_cap w8 s (DfracOwn 1) }}}
+  {{{ is_pkg_init marshal ∗ s ↦*{DfracOwn 1} vs ∗ own_slice_cap w8 s (DfracOwn 1) }}}
     @! marshal.WriteInt (#s) #x
-  {{{ s', RET #s'; own_slice s' (DfracOwn 1) (vs ++ u64_le x) ∗ own_slice_cap w8 s' (DfracOwn 1) }}}.
+  {{{ s', RET #s'; s' ↦*{DfracOwn 1} (vs ++ u64_le x) ∗ own_slice_cap w8 s' (DfracOwn 1) }}}.
 Proof.
   wp_start as "[Hs Hcap]". wp_auto.
 (*
@@ -410,9 +294,9 @@ Qed.
 Admitted.
 
 Theorem wp_WriteInt32 s x (vs : list u8) :
-  {{{ is_pkg_init marshal ∗ own_slice s (DfracOwn 1) vs ∗ own_slice_cap w8 s (DfracOwn 1) }}}
+  {{{ is_pkg_init marshal ∗ s ↦*{DfracOwn 1} vs ∗ own_slice_cap w8 s (DfracOwn 1) }}}
     @! marshal.WriteInt32 (#s) #x
-  {{{ s', RET #s'; own_slice s' (DfracOwn 1) (vs ++ u32_le x) ∗ own_slice_cap w8 s' (DfracOwn 1) }}}.
+  {{{ s', RET #s'; s' ↦*{DfracOwn 1} (vs ++ u32_le x) ∗ own_slice_cap w8 s' (DfracOwn 1) }}}.
 Proof.
   wp_start as "[Hs Hcap]". wp_auto.
 (*
@@ -442,12 +326,12 @@ Qed.
 Admitted.
 
 Theorem wp_WriteBytes s (vs : list u8) data_sl q (data : list u8) :
-  {{{ is_pkg_init marshal ∗ own_slice s (DfracOwn 1) vs ∗ own_slice data_sl q data ∗ own_slice_cap w8 s (DfracOwn 1) }}}
+  {{{ is_pkg_init marshal ∗ s ↦*{DfracOwn 1} vs ∗ data_sl ↦*{q} data ∗ own_slice_cap w8 s (DfracOwn 1) }}}
     @! marshal.WriteBytes (#s) (#data_sl)
   {{{ s', RET #s';
-    own_slice s' (DfracOwn 1) (vs ++ data) ∗
+    s' ↦*{DfracOwn 1} (vs ++ data) ∗
     own_slice_cap w8 s' (DfracOwn 1) ∗
-    own_slice data_sl q data
+    data_sl ↦*{q} data
   }}}.
 Proof.
   wp_start as "(Hs & Hcap & Hdata)". wp_auto.
@@ -462,16 +346,16 @@ Admitted.
 Theorem wp_WriteLenPrefixedBytes s (vs : list u8) data_sl q (data : list u8) :
   {{{
         is_pkg_init marshal ∗
-        own_slice s (DfracOwn 1) vs ∗
-        own_slice data_sl q data ∗
+        s ↦*{DfracOwn 1} vs ∗
+        data_sl ↦*{q} data ∗
         own_slice_cap w8 s (DfracOwn 1)
   }}}
     @! marshal.WriteLenPrefixedBytes #s #data_sl
   {{{
         s', RET #s';
-        own_slice s' (DfracOwn 1) (vs ++ (u64_le $ length data) ++ data) ∗
+        s' ↦*{DfracOwn 1} (vs ++ (u64_le $ length data) ++ data) ∗
         own_slice_cap w8 s' (DfracOwn 1) ∗
-        own_slice data_sl q data
+        data_sl ↦*{q} data
   }}}.
 Proof.
   wp_start as "(Hs & Hdata & Hscap)". wp_auto.
@@ -489,10 +373,10 @@ Proof.
 Qed.
 
 Theorem wp_WriteBool s (vs: list u8) (b: bool) :
-  {{{ is_pkg_init marshal ∗ own_slice s (DfracOwn 1) vs ∗ own_slice_cap w8 s (DfracOwn 1) }}}
+  {{{ is_pkg_init marshal ∗ s ↦*{DfracOwn 1} vs ∗ own_slice_cap w8 s (DfracOwn 1) }}}
     @! marshal.WriteBool #s #b
   {{{ s', RET (#s');
-      own_slice s' (DfracOwn 1) (vs ++ [if b then W8 1 else W8 0]) ∗
+      s' ↦*{DfracOwn 1} (vs ++ [if b then W8 1 else W8 0]) ∗
       own_slice_cap w8 s' (DfracOwn 1)
    }}}.
 Proof.
@@ -505,98 +389,4 @@ Qed.
 *)
 Admitted.
 
-Theorem wp_WriteSlice {X : Type} `{!IntoVal X} {goT : go_type} `{!IntoValTyped X goT} {C: Type}
-  (pre_sl : slice.t) (prefix : list u8) (xsl : slice.t) (xs : list X) (cs: list C)
-  (has_encoding : list u8 -> C -> Prop) (own : X -> C -> dfrac -> iProp Σ) (writeOne : func.t) (dq : dfrac) :
-  {{{   is_pkg_init marshal ∗
-        "Hsl" ∷ own_slice pre_sl (DfracOwn 1) prefix ∗
-        "Hcap" ∷ own_slice_cap w8 pre_sl (DfracOwn 1) ∗
-        "Hown" ∷ own_slice xsl dq xs ∗
-        "Hpred" ∷ ([∗ list] x;c ∈ xs;cs, own x c dq) ∗ 
-        "#Hwriteone" ∷ ∀ pre_sl' (prefix' : list u8) x c,
-          {{{
-                own x c dq ∗
-                own_slice pre_sl' (DfracOwn 1) prefix' ∗
-                own_slice_cap w8 pre_sl' (DfracOwn 1)
-          }}}
-            #writeOne #pre_sl' #x
-          {{{
-                (enc : list u8) (enc_sl : slice.t), RET #enc_sl;
-                ⌜ has_encoding enc c ⌝ ∗
-                own x c dq ∗
-                own_slice enc_sl (DfracOwn 1) (prefix' ++ enc) ∗
-                own_slice_cap w8 enc_sl (DfracOwn 1)
-          }}}
-  }}}
-    @! marshal.WriteSlice #goT #pre_sl #xsl #writeOne
-  {{{
-        enc enc_sl, RET #enc_sl;
-        own_slice xsl dq xs ∗
-        ([∗ list] x;c ∈ xs;cs, own x c dq) ∗ 
-        ⌜ encodes enc cs has_encoding ⌝ ∗
-        own_slice enc_sl (DfracOwn 1) (prefix ++ enc) ∗
-        own_slice_cap w8 enc_sl (DfracOwn 1)
-  }}}.
-Proof.
-  wp_start as "Hpre". iNamed "Hpre". wp_auto.
-(*
-  wp_apply (wp_ref_to); first val_ty. iIntros (l__b2) "Hb2".
-  wp_pures.
-
-  iUnfold is_pred_slice in "Hown".
-  iDestruct "Hown" as "[%vs [Hxsl Hown]]".
-  iDestruct (own_slice_small_sz with "Hxsl") as "%Hxsz".
-  iDestruct (big_sepL2_length with "Hown") as "%Hlen".
-
-  wp_apply (pred_slice.wp_forSlice own
-              (λ i, ∃ (enc' : list u8) (enc_sl' : Slice.t),
-                  (* Encoding *)
-                  "%H_b2_enc" ∷ ⌜ encodes enc' (take (uint.nat i) xs) has_encoding ⌝ ∗
-                  "H_b2_sl" ∷ own_slice enc_sl' byteT (DfracOwn 1) (prefix ++ enc') ∗
-                  (* Outside Variables *)
-                  "Henc_sl" ∷ l__b2 ↦[slice.T byteT] enc_sl'
-              )%I
-             with "[] [Hxsl Hown Hsl $Hb2]").
-  2:{ iUnfold is_pred_slice. iSplitL "Hsl".
-      + iExists []. rewrite app_nil_r. iFrame. done.
-      + iExists vs. iFrame. }
-  {
-    clear Φ.
-    iIntros (??? Φ) "!> (HI0 & Hownx & %Hsz & %Hxsi) HΦ".
-    iNamed "HI0". wp_pures.
-    wp_load.
-    wp_apply ("HwriteOne" with "[$Hownx $H_b2_sl]").
-    iIntros (encx enc_slx) "(%Hencx & Hownx & Hsl)".
-    rewrite <- app_assoc.
-    wp_store.
-
-    iModIntro. iApply "HΦ".
-    iSplitR "Hownx".
-    + iExists (enc' ++ encx), enc_slx. iFrame.
-      iPureIntro. 
-      replace (uint.nat (word.add i 1)) with (S (uint.nat i)) by word.
-      assert (uint.nat i < length xs) as Hixs by word.
-      pose proof (take_S_r xs (uint.nat i) x) as Htsr.
-      apply Htsr in Hxsi as Htsrs.
-      rewrite Htsrs.
-      destruct (take (uint.nat i) xs) eqn:Htake.
-      - unfold encodes in H_b2_enc.
-        rewrite H_b2_enc.
-        simpl. exists encx, [].
-        repeat split.
-        { rewrite app_nil_r. reflexivity. }
-        done.
-      - apply encodes_app. done.
-    + iFrame.
-  }
-  iIntros "[Hloop Hsl]". iNamed "Hloop".
-  wp_pures. wp_load. iModIntro.
-  iApply "HΦ". iFrame.
-  rewrite Hlen in Hxsz.
-  rewrite <- Hxsz in H_b2_enc.
-  rewrite firstn_all in H_b2_enc.
-  done.
-*)
-Admitted.
-
-End goose_lang.
+End wps.
