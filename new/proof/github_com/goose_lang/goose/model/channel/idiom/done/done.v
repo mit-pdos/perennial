@@ -251,7 +251,7 @@ Proof.
   iDestruct 1 as "[$ _]".
 Qed.
 
-Lemma done_CloseAU γ ch R Φ :
+Lemma done_close_au γ ch R Φ :
   is_done γ ch -∗
   £1 ∗ £1 ∗ £1 -∗
   Notify γ R ∗ R -∗
@@ -315,7 +315,7 @@ Proof.
   unfold is_done. iDestruct "Hdone" as "[Hch Hinv]".
   iApply (chan.wp_close with "Hch").
   iIntros "Hlc". iDestruct "Hlc" as "[Hlc Hlcrest]".
-  iApply (done_CloseAU with "[][$][$HNh $HR][Hphi]").
+  iApply (done_close_au with "[][$][$HNh $HR][Hphi]").
   { iFrame "#". }
   iNext. iApply "Hphi". done.
 Qed.
