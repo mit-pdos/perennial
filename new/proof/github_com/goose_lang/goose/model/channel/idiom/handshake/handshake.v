@@ -4,10 +4,10 @@ From New.golang.theory Require Import chan.
 
 Section handshake.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
-Context `{!IntoVal V}.
-Context `{!IntoValTyped V t}.
+Context {sem : go.Semantics}.
+Local Set Default Proof Using "All".
 Context `{!chan_idiomG Σ V}.
+Context `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}.
 
 (*----------------------------------------------------------------------------
   Invariant for a simple handshake on an unbuffered channel with unit payloads.
@@ -21,16 +21,16 @@ Context `{!chan_idiomG Σ V}.
 
   ---------------------------------------------------------------------------*)
 Definition is_handshake γ (ch : loc)  (P: V -> iProp Σ) Q : iProp Σ :=
-  is_chan ch γ  ∗
+  is_chan ch γ V  ∗
   inv nroot (
       ∃ s,
-        "Hch" ∷ own_chan ch s γ ∗
+        "Hch" ∷ own_chan γ V s ∗
     (match s with
-     | chan_rep.Idle =>
+     | chanstate.Idle =>
         True
-     | chan_rep.SndPending v | chan_rep.SndCommit v =>
+     | chanstate.SndPending v | chanstate.SndCommit v =>
          P v
-     | chan_rep.RcvPending | chan_rep.RcvCommit =>
+     | chanstate.RcvPending | chanstate.RcvCommit =>
          Q
      (* Can't use buffered channel and we don't close here. *)
      | _ => False
@@ -38,16 +38,16 @@ Definition is_handshake γ (ch : loc)  (P: V -> iProp Σ) Q : iProp Σ :=
     )).
 
 Lemma start_handshake ch P Q  γ:
-  is_chan  ch γ  -∗
-  own_chan  ch chan_rep.Idle γ ={⊤}=∗
+  is_chan ch γ V -∗
+  own_chan γ V chanstate.Idle ={⊤}=∗
   is_handshake γ ch P Q .
 Proof.
-    intros.
+  intros.
   iIntros "#? Hchan".
   iFrame "#". iFrame. simpl.
   iApply inv_alloc.
- iExists chan_rep.Idle.
- iFrame "∗%#".
+  iExists chanstate.Idle.
+  iFrame "∗%#".
 Qed.
 
 Lemma handshake_receive_au γ ch P Q Φ :
@@ -55,7 +55,7 @@ Lemma handshake_receive_au γ ch P Q Φ :
   is_handshake γ ch P Q -∗
   Q -∗
   ▷(∀ v, P v -∗ Φ v true) -∗
-  recv_au ch γ Φ.
+  recv_au γ V Φ.
 Proof.
   iIntros "(Hlc1 & Hlc2) #His HQ Hau".
   iPoseProof "His" as "[Hchan Hinv]".
@@ -67,7 +67,7 @@ Proof.
    destruct s. all:try done.
    -   iIntros "H".
     iMod "Hmask" as "_". iMod ("Hclose" with "[-Hau Hlc1]").
-    +  iModIntro. iExists chan_rep.RcvPending.  iFrame.
+    +  iModIntro. iExists chanstate.RcvPending.  iFrame.
     + iModIntro.  iInv "Hinv" as "Hi" "Hclose".
       iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
    iNamed "Hi".  iApply fupd_mask_intro; [ solve_ndisj | iIntros "Hmask"].
@@ -88,7 +88,7 @@ Lemma wp_handshake_receive γ ch P Q :
       is_handshake γ ch P Q  ∗
       Q
   }}}
-    chan.receive #t #ch
+    chan.receive t #ch
   {{{
       v, RET (#v, #true); P v
   }}}.
@@ -105,7 +105,7 @@ Lemma handshake_send_au γ ch v P Q Φ :
   is_handshake γ ch P Q -∗
   P v -∗
   ▷(Q -∗ Φ) -∗
-  SendAU ch v γ Φ.
+  send_au γ v Φ.
 Proof.
   iIntros "(Hlc1 & Hlc2 & Hlc3) #Hchan HP Hau".
   iDestruct "Hchan" as "[Hchan Hinv]".
@@ -115,9 +115,9 @@ Proof.
    iApply fupd_mask_intro; [ solve_ndisj | iIntros "Hmask"].
   iNext. iNamed "Hi". iFrame.
    destruct s. all:try done.
-   -   iIntros "H".
+   - iIntros "H".
     iMod "Hmask" as "_". iMod ("Hclose" with "[-Hau Hlc1]").
-    +  iModIntro. iExists (chan_rep.SndPending v).  iFrame.
+    + iModIntro. iExists (chanstate.SndPending v).  iFrame.
     + iModIntro.  iInv "Hinv" as "Hi" "Hclose".
       iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
    iNamed "Hi".  iApply fupd_mask_intro; [ solve_ndisj | iIntros "Hmask"].
@@ -137,7 +137,7 @@ Lemma wp_handshake_send γ ch v P Q :
       is_handshake γ ch P Q ∗
       P v
   }}}
-    chan.send #t #ch #v
+    chan.send t #ch #v
   {{{
       RET (#()); Q
   }}}.
