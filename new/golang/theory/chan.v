@@ -27,7 +27,7 @@ Context `[!ZeroVal V] `[!TypedPointsto V] `[!IntoValTyped V t].
 
 Implicit Types (ch : loc) (v : V) (γ : chan_names).
 
-Lemma wp_make2 (cap : w64) `{!ct ↓u go.ChannelType dir t} :
+Lemma wp_make2 (cap : w64) `[!ct ↓u go.ChannelType dir t] :
   {{{ ⌜ 0 ≤ sint.Z cap ⌝ }}}
     #(functions go.make2 [ct]) #cap
   {{{ ch γ, RET #ch;
@@ -41,7 +41,7 @@ Proof.
   iFrame.
 Qed.
 
-Lemma wp_make1  `{!ct ↓u go.ChannelType dir t} :
+Lemma wp_make1 ct dir `[!ct ↓u go.ChannelType dir t] :
   {{{ True }}}
     #(functions go.make1 [ct]) #()
   {{{ ch γ, RET #ch;
@@ -66,7 +66,7 @@ Proof.
   iFrame.
 Qed.
 
-Lemma wp_close `{!ct ↓u go.ChannelType dir t} ch γ :
+Lemma wp_close ct dir `[!ct ↓u go.ChannelType dir t] ch γ :
   ∀ Φ,
   is_chan ch γ V -∗
   (£1 ∗ £1 ∗ £1 ∗ £1 -∗ close_au γ V (Φ #())) -∗
@@ -88,7 +88,7 @@ Proof.
   iFrame.
 Qed.
 
-Lemma wp_cap `{!ct ↓u go.ChannelType dir t} ch γ :
+Lemma wp_cap ct dir `[!ct ↓u go.ChannelType dir t] ch γ :
   {{{ is_chan ch γ V }}}
     #(functions go.cap [ct]) #ch
   {{{ RET #(chan_cap γ); True }}}.

@@ -51,10 +51,10 @@ Definition Notified (γ : done_names) (Q : iProp Σ) : iProp Σ :=
     saved_prop_own prop_gname (DfracOwn (1/2)) Q.
 
 Definition is_done (γ : done_names) (ch : loc) : iProp Σ :=
-  is_chan ch γ.(chan_name) ∗
+  is_chan ch γ.(chan_name) V ∗
   inv nroot (
-    ∃ (s : chanstate.t V) (m : gmap nat gname) (Qs: list (iProp Σ)),
-      "Hch" ∷ own_chan ch s γ.(chan_name) ∗
+    ∃ s (m : gmap nat gname) (Qs: list (iProp Σ)),
+      "Hch" ∷ own_chan γ.(chan_name) V s ∗
       "Hmap" ∷ ghost_map_auth γ.(receivers_map_name) (1/2)%Qp m ∗
       match s with
       | chanstate.Idle => True
@@ -187,8 +187,8 @@ iMod (saved_prop_update (R ∗ Q) with "Hsp") as "Hsp".
 Qed.
 
 Lemma start_done (ch : loc) (γ : chan_names) :
-  is_chan ch γ -∗
-  own_chan ch chanstate.Idle γ ={⊤}=∗
+  is_chan ch γ V -∗
+  own_chan γ V chanstate.Idle ={⊤}=∗
   ∃ γdone, is_done γdone ch ∗ Notify γdone True.
 Proof.
   iIntros "#Hch Hoc".
@@ -205,7 +205,7 @@ Proof.
   |}).
   iMod (inv_alloc nroot _ (
     ∃ s m Qs,
-      "Hch" ∷ own_chan ch s γ ∗
+      "Hch" ∷ own_chan γ V s ∗
       "Hmap" ∷ ghost_map_auth γmap (1/2)%Qp m ∗
       match s with
       | chanstate.Idle => True
@@ -246,7 +246,7 @@ Proof.
 Qed.
 
 Lemma done_is_chan γ ch :
-  is_done γ ch ⊢ is_chan ch γ.(chan_name).
+  is_done γ ch ⊢ is_chan ch γ.(chan_name) V.
 Proof.
   iDestruct 1 as "[$ _]".
 Qed.
@@ -256,7 +256,7 @@ Lemma done_CloseAU γ ch R Φ :
   £1 ∗ £1 ∗ £1 -∗
   Notify γ R ∗ R -∗
   ▷ Φ -∗
-  CloseAU ch γ.(chan_name) Φ.
+  close_au γ.(chan_name) V Φ.
 Proof.
   iIntros "#Hdone". iIntros "(Hlc1 & Hlc2 & Hlc3)". iIntros "[HNh HR]".
   unfold Notify. iNamed "HNh". iDestruct "HNh" as "[HProps Hsp]".
@@ -303,17 +303,17 @@ Proof.
     exact Hvalid1.
 Qed.
 
-Lemma wp_done_close γ ch R :
+Lemma wp_done_close γ ch R `[ct ↓u go.ChannelType dir t]:
   {{{ is_done γ ch ∗
       Notify γ R ∗ R }}}
-    chan.close #t #ch
+    #(functions go.close [ct]) #ch
   {{{ RET #(); True }}}.
 Proof.
   iIntros (Φ). iIntros "(#Hdone & Hrest)".  iNamed "Hrest".
   iDestruct "Hrest" as "[HNh HR]".
   iIntros "Hphi".
   unfold is_done. iDestruct "Hdone" as "[Hch Hinv]".
-  iApply (chan.wp_close ch γ.(chan_name) with "[$Hch]").
+  iApply (chan.wp_close with "Hch").
   iIntros "Hlc". iDestruct "Hlc" as "[Hlc Hlcrest]".
   iApply (done_CloseAU with "[][$][$HNh $HR][Hphi]").
   { iFrame "#". }
@@ -324,9 +324,9 @@ Lemma done_receive_au γ ch Q  :
   ∀ (Φ: V → bool → iProp Σ),
   is_done γ ch -∗
   Notified γ Q -∗
-  ▷ (Q -∗ Φ (default_val V) false) -∗
+  ▷ (Q -∗ Φ (zero_val V) false) -∗
   £1 ∗ £1 ∗ £1 ∗ £1 -∗
-  recv_au ch γ.(chan_name) (λ (v:V) (ok:bool), Φ v ok).
+  recv_au γ.(chan_name) V (λ (v:V) (ok:bool), Φ v ok).
 Proof.
   intros Φ.
   iIntros "#Hdone".
@@ -465,15 +465,12 @@ Qed.
 Lemma wp_done_receive γ ch Q :
   {{{ is_done γ ch ∗
       Notified γ Q }}}
-    chan.receive #t #ch
-  {{{ RET (#(default_val V), #false); Q }}}.
+    chan.receive t #ch
+  {{{ RET (#(zero_val V), #false); Q }}}.
 Proof.
   iIntros (Φ) "(#Hdone & HNotified) Hcont".
   unfold is_done. iDestruct "Hdone" as "[#Hch #Hinv]".
-   iApply (chan.wp_receive ch γ.(chan_name) with "[$Hch]").
-
-
-
+  iApply (chan.wp_receive ch γ.(chan_name) with "[$Hch]").
   iApply ((done_receive_au _ _ _   ) with "[] [$HNotified] [Hcont] ").
   { unfold is_done. iFrame "#". }
   { iNext. iIntros "HQ". iApply "Hcont". iFrame. }
