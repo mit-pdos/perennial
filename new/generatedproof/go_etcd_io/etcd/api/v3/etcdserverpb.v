@@ -71,90 +71,90 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance RequestHeader_into_val_typed
    :
   IntoValTypedUnderlying (etcdserverpb.RequestHeader.t) (etcdserverpb.RequestHeaderⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance RequestHeader_access_load_ID l (v : (etcdserverpb.RequestHeader.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.RequestHeader.t), "ID"] ↦{dq} (v.(etcdserverpb.RequestHeader.ID')))
     (l.[(etcdserverpb.RequestHeader.t), "ID"] ↦{dq} (v.(etcdserverpb.RequestHeader.ID')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance RequestHeader_access_store_ID l (v : (etcdserverpb.RequestHeader.t)) ID' :
   AccessStrict
     (l.[(etcdserverpb.RequestHeader.t), "ID"] ↦ (v.(etcdserverpb.RequestHeader.ID')))
     (l.[(etcdserverpb.RequestHeader.t), "ID"] ↦ ID')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.RequestHeader.ID') := ID'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance RequestHeader_access_load_Username l (v : (etcdserverpb.RequestHeader.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.RequestHeader.t), "Username"] ↦{dq} (v.(etcdserverpb.RequestHeader.Username')))
     (l.[(etcdserverpb.RequestHeader.t), "Username"] ↦{dq} (v.(etcdserverpb.RequestHeader.Username')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance RequestHeader_access_store_Username l (v : (etcdserverpb.RequestHeader.t)) Username' :
   AccessStrict
     (l.[(etcdserverpb.RequestHeader.t), "Username"] ↦ (v.(etcdserverpb.RequestHeader.Username')))
     (l.[(etcdserverpb.RequestHeader.t), "Username"] ↦ Username')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.RequestHeader.Username') := Username'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance RequestHeader_access_load_AuthRevision l (v : (etcdserverpb.RequestHeader.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.RequestHeader.t), "AuthRevision"] ↦{dq} (v.(etcdserverpb.RequestHeader.AuthRevision')))
     (l.[(etcdserverpb.RequestHeader.t), "AuthRevision"] ↦{dq} (v.(etcdserverpb.RequestHeader.AuthRevision')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance RequestHeader_access_store_AuthRevision l (v : (etcdserverpb.RequestHeader.t)) AuthRevision' :
   AccessStrict
     (l.[(etcdserverpb.RequestHeader.t), "AuthRevision"] ↦ (v.(etcdserverpb.RequestHeader.AuthRevision')))
     (l.[(etcdserverpb.RequestHeader.t), "AuthRevision"] ↦ AuthRevision')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.RequestHeader.AuthRevision') := AuthRevision'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance RequestHeader_access_load_XXX_NoUnkeyedLiteral l (v : (etcdserverpb.RequestHeader.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.RequestHeader.t), "XXX_NoUnkeyedLiteral"] ↦{dq} (v.(etcdserverpb.RequestHeader.XXX_NoUnkeyedLiteral')))
     (l.[(etcdserverpb.RequestHeader.t), "XXX_NoUnkeyedLiteral"] ↦{dq} (v.(etcdserverpb.RequestHeader.XXX_NoUnkeyedLiteral')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance RequestHeader_access_store_XXX_NoUnkeyedLiteral l (v : (etcdserverpb.RequestHeader.t)) XXX_NoUnkeyedLiteral' :
   AccessStrict
     (l.[(etcdserverpb.RequestHeader.t), "XXX_NoUnkeyedLiteral"] ↦ (v.(etcdserverpb.RequestHeader.XXX_NoUnkeyedLiteral')))
     (l.[(etcdserverpb.RequestHeader.t), "XXX_NoUnkeyedLiteral"] ↦ XXX_NoUnkeyedLiteral')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.RequestHeader.XXX_NoUnkeyedLiteral') := XXX_NoUnkeyedLiteral'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance RequestHeader_access_load_XXX_unrecognized l (v : (etcdserverpb.RequestHeader.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.RequestHeader.t), "XXX_unrecognized"] ↦{dq} (v.(etcdserverpb.RequestHeader.XXX_unrecognized')))
     (l.[(etcdserverpb.RequestHeader.t), "XXX_unrecognized"] ↦{dq} (v.(etcdserverpb.RequestHeader.XXX_unrecognized')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance RequestHeader_access_store_XXX_unrecognized l (v : (etcdserverpb.RequestHeader.t)) XXX_unrecognized' :
   AccessStrict
     (l.[(etcdserverpb.RequestHeader.t), "XXX_unrecognized"] ↦ (v.(etcdserverpb.RequestHeader.XXX_unrecognized')))
     (l.[(etcdserverpb.RequestHeader.t), "XXX_unrecognized"] ↦ XXX_unrecognized')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.RequestHeader.XXX_unrecognized') := XXX_unrecognized'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance RequestHeader_access_load_XXX_sizecache l (v : (etcdserverpb.RequestHeader.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.RequestHeader.t), "XXX_sizecache"] ↦{dq} (v.(etcdserverpb.RequestHeader.XXX_sizecache')))
     (l.[(etcdserverpb.RequestHeader.t), "XXX_sizecache"] ↦{dq} (v.(etcdserverpb.RequestHeader.XXX_sizecache')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance RequestHeader_access_store_XXX_sizecache l (v : (etcdserverpb.RequestHeader.t)) XXX_sizecache' :
   AccessStrict
     (l.[(etcdserverpb.RequestHeader.t), "XXX_sizecache"] ↦ (v.(etcdserverpb.RequestHeader.XXX_sizecache')))
     (l.[(etcdserverpb.RequestHeader.t), "XXX_sizecache"] ↦ XXX_sizecache')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.RequestHeader.XXX_sizecache') := XXX_sizecache'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End RequestHeader.
@@ -211,467 +211,467 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance InternalRaftRequest_into_val_typed
    :
   IntoValTypedUnderlying (etcdserverpb.InternalRaftRequest.t) (etcdserverpb.InternalRaftRequestⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance InternalRaftRequest_access_load_Header l (v : (etcdserverpb.InternalRaftRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "Header"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.Header')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "Header"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.Header')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance InternalRaftRequest_access_store_Header l (v : (etcdserverpb.InternalRaftRequest.t)) Header' :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "Header"] ↦ (v.(etcdserverpb.InternalRaftRequest.Header')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "Header"] ↦ Header')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.InternalRaftRequest.Header') := Header'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance InternalRaftRequest_access_load_ID l (v : (etcdserverpb.InternalRaftRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "ID"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.ID')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "ID"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.ID')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance InternalRaftRequest_access_store_ID l (v : (etcdserverpb.InternalRaftRequest.t)) ID' :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "ID"] ↦ (v.(etcdserverpb.InternalRaftRequest.ID')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "ID"] ↦ ID')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.InternalRaftRequest.ID') := ID'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance InternalRaftRequest_access_load_V2 l (v : (etcdserverpb.InternalRaftRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "V2"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.V2')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "V2"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.V2')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance InternalRaftRequest_access_store_V2 l (v : (etcdserverpb.InternalRaftRequest.t)) V2' :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "V2"] ↦ (v.(etcdserverpb.InternalRaftRequest.V2')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "V2"] ↦ V2')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.InternalRaftRequest.V2') := V2'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance InternalRaftRequest_access_load_Range l (v : (etcdserverpb.InternalRaftRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "Range"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.Range')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "Range"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.Range')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance InternalRaftRequest_access_store_Range l (v : (etcdserverpb.InternalRaftRequest.t)) Range' :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "Range"] ↦ (v.(etcdserverpb.InternalRaftRequest.Range')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "Range"] ↦ Range')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.InternalRaftRequest.Range') := Range'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance InternalRaftRequest_access_load_Put l (v : (etcdserverpb.InternalRaftRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "Put"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.Put')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "Put"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.Put')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance InternalRaftRequest_access_store_Put l (v : (etcdserverpb.InternalRaftRequest.t)) Put' :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "Put"] ↦ (v.(etcdserverpb.InternalRaftRequest.Put')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "Put"] ↦ Put')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.InternalRaftRequest.Put') := Put'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance InternalRaftRequest_access_load_DeleteRange l (v : (etcdserverpb.InternalRaftRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "DeleteRange"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.DeleteRange')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "DeleteRange"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.DeleteRange')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance InternalRaftRequest_access_store_DeleteRange l (v : (etcdserverpb.InternalRaftRequest.t)) DeleteRange' :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "DeleteRange"] ↦ (v.(etcdserverpb.InternalRaftRequest.DeleteRange')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "DeleteRange"] ↦ DeleteRange')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.InternalRaftRequest.DeleteRange') := DeleteRange'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance InternalRaftRequest_access_load_Txn l (v : (etcdserverpb.InternalRaftRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "Txn"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.Txn')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "Txn"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.Txn')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance InternalRaftRequest_access_store_Txn l (v : (etcdserverpb.InternalRaftRequest.t)) Txn' :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "Txn"] ↦ (v.(etcdserverpb.InternalRaftRequest.Txn')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "Txn"] ↦ Txn')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.InternalRaftRequest.Txn') := Txn'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance InternalRaftRequest_access_load_Compaction l (v : (etcdserverpb.InternalRaftRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "Compaction"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.Compaction')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "Compaction"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.Compaction')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance InternalRaftRequest_access_store_Compaction l (v : (etcdserverpb.InternalRaftRequest.t)) Compaction' :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "Compaction"] ↦ (v.(etcdserverpb.InternalRaftRequest.Compaction')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "Compaction"] ↦ Compaction')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.InternalRaftRequest.Compaction') := Compaction'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance InternalRaftRequest_access_load_LeaseGrant l (v : (etcdserverpb.InternalRaftRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "LeaseGrant"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.LeaseGrant')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "LeaseGrant"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.LeaseGrant')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance InternalRaftRequest_access_store_LeaseGrant l (v : (etcdserverpb.InternalRaftRequest.t)) LeaseGrant' :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "LeaseGrant"] ↦ (v.(etcdserverpb.InternalRaftRequest.LeaseGrant')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "LeaseGrant"] ↦ LeaseGrant')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.InternalRaftRequest.LeaseGrant') := LeaseGrant'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance InternalRaftRequest_access_load_LeaseRevoke l (v : (etcdserverpb.InternalRaftRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "LeaseRevoke"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.LeaseRevoke')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "LeaseRevoke"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.LeaseRevoke')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance InternalRaftRequest_access_store_LeaseRevoke l (v : (etcdserverpb.InternalRaftRequest.t)) LeaseRevoke' :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "LeaseRevoke"] ↦ (v.(etcdserverpb.InternalRaftRequest.LeaseRevoke')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "LeaseRevoke"] ↦ LeaseRevoke')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.InternalRaftRequest.LeaseRevoke') := LeaseRevoke'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance InternalRaftRequest_access_load_Alarm l (v : (etcdserverpb.InternalRaftRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "Alarm"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.Alarm')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "Alarm"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.Alarm')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance InternalRaftRequest_access_store_Alarm l (v : (etcdserverpb.InternalRaftRequest.t)) Alarm' :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "Alarm"] ↦ (v.(etcdserverpb.InternalRaftRequest.Alarm')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "Alarm"] ↦ Alarm')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.InternalRaftRequest.Alarm') := Alarm'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance InternalRaftRequest_access_load_LeaseCheckpoint l (v : (etcdserverpb.InternalRaftRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "LeaseCheckpoint"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.LeaseCheckpoint')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "LeaseCheckpoint"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.LeaseCheckpoint')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance InternalRaftRequest_access_store_LeaseCheckpoint l (v : (etcdserverpb.InternalRaftRequest.t)) LeaseCheckpoint' :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "LeaseCheckpoint"] ↦ (v.(etcdserverpb.InternalRaftRequest.LeaseCheckpoint')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "LeaseCheckpoint"] ↦ LeaseCheckpoint')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.InternalRaftRequest.LeaseCheckpoint') := LeaseCheckpoint'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance InternalRaftRequest_access_load_AuthEnable l (v : (etcdserverpb.InternalRaftRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthEnable"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.AuthEnable')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthEnable"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.AuthEnable')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance InternalRaftRequest_access_store_AuthEnable l (v : (etcdserverpb.InternalRaftRequest.t)) AuthEnable' :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthEnable"] ↦ (v.(etcdserverpb.InternalRaftRequest.AuthEnable')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthEnable"] ↦ AuthEnable')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.InternalRaftRequest.AuthEnable') := AuthEnable'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance InternalRaftRequest_access_load_AuthDisable l (v : (etcdserverpb.InternalRaftRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthDisable"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.AuthDisable')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthDisable"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.AuthDisable')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance InternalRaftRequest_access_store_AuthDisable l (v : (etcdserverpb.InternalRaftRequest.t)) AuthDisable' :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthDisable"] ↦ (v.(etcdserverpb.InternalRaftRequest.AuthDisable')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthDisable"] ↦ AuthDisable')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.InternalRaftRequest.AuthDisable') := AuthDisable'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance InternalRaftRequest_access_load_AuthStatus l (v : (etcdserverpb.InternalRaftRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthStatus"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.AuthStatus')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthStatus"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.AuthStatus')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance InternalRaftRequest_access_store_AuthStatus l (v : (etcdserverpb.InternalRaftRequest.t)) AuthStatus' :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthStatus"] ↦ (v.(etcdserverpb.InternalRaftRequest.AuthStatus')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthStatus"] ↦ AuthStatus')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.InternalRaftRequest.AuthStatus') := AuthStatus'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance InternalRaftRequest_access_load_Authenticate l (v : (etcdserverpb.InternalRaftRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "Authenticate"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.Authenticate')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "Authenticate"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.Authenticate')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance InternalRaftRequest_access_store_Authenticate l (v : (etcdserverpb.InternalRaftRequest.t)) Authenticate' :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "Authenticate"] ↦ (v.(etcdserverpb.InternalRaftRequest.Authenticate')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "Authenticate"] ↦ Authenticate')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.InternalRaftRequest.Authenticate') := Authenticate'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance InternalRaftRequest_access_load_AuthUserAdd l (v : (etcdserverpb.InternalRaftRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthUserAdd"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.AuthUserAdd')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthUserAdd"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.AuthUserAdd')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance InternalRaftRequest_access_store_AuthUserAdd l (v : (etcdserverpb.InternalRaftRequest.t)) AuthUserAdd' :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthUserAdd"] ↦ (v.(etcdserverpb.InternalRaftRequest.AuthUserAdd')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthUserAdd"] ↦ AuthUserAdd')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.InternalRaftRequest.AuthUserAdd') := AuthUserAdd'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance InternalRaftRequest_access_load_AuthUserDelete l (v : (etcdserverpb.InternalRaftRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthUserDelete"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.AuthUserDelete')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthUserDelete"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.AuthUserDelete')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance InternalRaftRequest_access_store_AuthUserDelete l (v : (etcdserverpb.InternalRaftRequest.t)) AuthUserDelete' :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthUserDelete"] ↦ (v.(etcdserverpb.InternalRaftRequest.AuthUserDelete')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthUserDelete"] ↦ AuthUserDelete')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.InternalRaftRequest.AuthUserDelete') := AuthUserDelete'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance InternalRaftRequest_access_load_AuthUserGet l (v : (etcdserverpb.InternalRaftRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthUserGet"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.AuthUserGet')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthUserGet"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.AuthUserGet')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance InternalRaftRequest_access_store_AuthUserGet l (v : (etcdserverpb.InternalRaftRequest.t)) AuthUserGet' :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthUserGet"] ↦ (v.(etcdserverpb.InternalRaftRequest.AuthUserGet')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthUserGet"] ↦ AuthUserGet')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.InternalRaftRequest.AuthUserGet') := AuthUserGet'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance InternalRaftRequest_access_load_AuthUserChangePassword l (v : (etcdserverpb.InternalRaftRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthUserChangePassword"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.AuthUserChangePassword')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthUserChangePassword"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.AuthUserChangePassword')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance InternalRaftRequest_access_store_AuthUserChangePassword l (v : (etcdserverpb.InternalRaftRequest.t)) AuthUserChangePassword' :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthUserChangePassword"] ↦ (v.(etcdserverpb.InternalRaftRequest.AuthUserChangePassword')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthUserChangePassword"] ↦ AuthUserChangePassword')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.InternalRaftRequest.AuthUserChangePassword') := AuthUserChangePassword'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance InternalRaftRequest_access_load_AuthUserGrantRole l (v : (etcdserverpb.InternalRaftRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthUserGrantRole"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.AuthUserGrantRole')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthUserGrantRole"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.AuthUserGrantRole')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance InternalRaftRequest_access_store_AuthUserGrantRole l (v : (etcdserverpb.InternalRaftRequest.t)) AuthUserGrantRole' :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthUserGrantRole"] ↦ (v.(etcdserverpb.InternalRaftRequest.AuthUserGrantRole')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthUserGrantRole"] ↦ AuthUserGrantRole')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.InternalRaftRequest.AuthUserGrantRole') := AuthUserGrantRole'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance InternalRaftRequest_access_load_AuthUserRevokeRole l (v : (etcdserverpb.InternalRaftRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthUserRevokeRole"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.AuthUserRevokeRole')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthUserRevokeRole"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.AuthUserRevokeRole')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance InternalRaftRequest_access_store_AuthUserRevokeRole l (v : (etcdserverpb.InternalRaftRequest.t)) AuthUserRevokeRole' :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthUserRevokeRole"] ↦ (v.(etcdserverpb.InternalRaftRequest.AuthUserRevokeRole')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthUserRevokeRole"] ↦ AuthUserRevokeRole')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.InternalRaftRequest.AuthUserRevokeRole') := AuthUserRevokeRole'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance InternalRaftRequest_access_load_AuthUserList l (v : (etcdserverpb.InternalRaftRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthUserList"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.AuthUserList')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthUserList"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.AuthUserList')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance InternalRaftRequest_access_store_AuthUserList l (v : (etcdserverpb.InternalRaftRequest.t)) AuthUserList' :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthUserList"] ↦ (v.(etcdserverpb.InternalRaftRequest.AuthUserList')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthUserList"] ↦ AuthUserList')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.InternalRaftRequest.AuthUserList') := AuthUserList'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance InternalRaftRequest_access_load_AuthRoleList l (v : (etcdserverpb.InternalRaftRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthRoleList"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.AuthRoleList')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthRoleList"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.AuthRoleList')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance InternalRaftRequest_access_store_AuthRoleList l (v : (etcdserverpb.InternalRaftRequest.t)) AuthRoleList' :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthRoleList"] ↦ (v.(etcdserverpb.InternalRaftRequest.AuthRoleList')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthRoleList"] ↦ AuthRoleList')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.InternalRaftRequest.AuthRoleList') := AuthRoleList'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance InternalRaftRequest_access_load_AuthRoleAdd l (v : (etcdserverpb.InternalRaftRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthRoleAdd"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.AuthRoleAdd')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthRoleAdd"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.AuthRoleAdd')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance InternalRaftRequest_access_store_AuthRoleAdd l (v : (etcdserverpb.InternalRaftRequest.t)) AuthRoleAdd' :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthRoleAdd"] ↦ (v.(etcdserverpb.InternalRaftRequest.AuthRoleAdd')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthRoleAdd"] ↦ AuthRoleAdd')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.InternalRaftRequest.AuthRoleAdd') := AuthRoleAdd'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance InternalRaftRequest_access_load_AuthRoleDelete l (v : (etcdserverpb.InternalRaftRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthRoleDelete"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.AuthRoleDelete')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthRoleDelete"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.AuthRoleDelete')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance InternalRaftRequest_access_store_AuthRoleDelete l (v : (etcdserverpb.InternalRaftRequest.t)) AuthRoleDelete' :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthRoleDelete"] ↦ (v.(etcdserverpb.InternalRaftRequest.AuthRoleDelete')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthRoleDelete"] ↦ AuthRoleDelete')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.InternalRaftRequest.AuthRoleDelete') := AuthRoleDelete'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance InternalRaftRequest_access_load_AuthRoleGet l (v : (etcdserverpb.InternalRaftRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthRoleGet"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.AuthRoleGet')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthRoleGet"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.AuthRoleGet')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance InternalRaftRequest_access_store_AuthRoleGet l (v : (etcdserverpb.InternalRaftRequest.t)) AuthRoleGet' :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthRoleGet"] ↦ (v.(etcdserverpb.InternalRaftRequest.AuthRoleGet')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthRoleGet"] ↦ AuthRoleGet')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.InternalRaftRequest.AuthRoleGet') := AuthRoleGet'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance InternalRaftRequest_access_load_AuthRoleGrantPermission l (v : (etcdserverpb.InternalRaftRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthRoleGrantPermission"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.AuthRoleGrantPermission')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthRoleGrantPermission"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.AuthRoleGrantPermission')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance InternalRaftRequest_access_store_AuthRoleGrantPermission l (v : (etcdserverpb.InternalRaftRequest.t)) AuthRoleGrantPermission' :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthRoleGrantPermission"] ↦ (v.(etcdserverpb.InternalRaftRequest.AuthRoleGrantPermission')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthRoleGrantPermission"] ↦ AuthRoleGrantPermission')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.InternalRaftRequest.AuthRoleGrantPermission') := AuthRoleGrantPermission'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance InternalRaftRequest_access_load_AuthRoleRevokePermission l (v : (etcdserverpb.InternalRaftRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthRoleRevokePermission"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.AuthRoleRevokePermission')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthRoleRevokePermission"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.AuthRoleRevokePermission')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance InternalRaftRequest_access_store_AuthRoleRevokePermission l (v : (etcdserverpb.InternalRaftRequest.t)) AuthRoleRevokePermission' :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthRoleRevokePermission"] ↦ (v.(etcdserverpb.InternalRaftRequest.AuthRoleRevokePermission')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "AuthRoleRevokePermission"] ↦ AuthRoleRevokePermission')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.InternalRaftRequest.AuthRoleRevokePermission') := AuthRoleRevokePermission'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance InternalRaftRequest_access_load_ClusterVersionSet l (v : (etcdserverpb.InternalRaftRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "ClusterVersionSet"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.ClusterVersionSet')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "ClusterVersionSet"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.ClusterVersionSet')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance InternalRaftRequest_access_store_ClusterVersionSet l (v : (etcdserverpb.InternalRaftRequest.t)) ClusterVersionSet' :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "ClusterVersionSet"] ↦ (v.(etcdserverpb.InternalRaftRequest.ClusterVersionSet')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "ClusterVersionSet"] ↦ ClusterVersionSet')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.InternalRaftRequest.ClusterVersionSet') := ClusterVersionSet'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance InternalRaftRequest_access_load_ClusterMemberAttrSet l (v : (etcdserverpb.InternalRaftRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "ClusterMemberAttrSet"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.ClusterMemberAttrSet')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "ClusterMemberAttrSet"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.ClusterMemberAttrSet')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance InternalRaftRequest_access_store_ClusterMemberAttrSet l (v : (etcdserverpb.InternalRaftRequest.t)) ClusterMemberAttrSet' :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "ClusterMemberAttrSet"] ↦ (v.(etcdserverpb.InternalRaftRequest.ClusterMemberAttrSet')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "ClusterMemberAttrSet"] ↦ ClusterMemberAttrSet')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.InternalRaftRequest.ClusterMemberAttrSet') := ClusterMemberAttrSet'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance InternalRaftRequest_access_load_DowngradeInfoSet l (v : (etcdserverpb.InternalRaftRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "DowngradeInfoSet"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.DowngradeInfoSet')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "DowngradeInfoSet"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.DowngradeInfoSet')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance InternalRaftRequest_access_store_DowngradeInfoSet l (v : (etcdserverpb.InternalRaftRequest.t)) DowngradeInfoSet' :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "DowngradeInfoSet"] ↦ (v.(etcdserverpb.InternalRaftRequest.DowngradeInfoSet')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "DowngradeInfoSet"] ↦ DowngradeInfoSet')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.InternalRaftRequest.DowngradeInfoSet') := DowngradeInfoSet'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance InternalRaftRequest_access_load_XXX_NoUnkeyedLiteral l (v : (etcdserverpb.InternalRaftRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "XXX_NoUnkeyedLiteral"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.XXX_NoUnkeyedLiteral')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "XXX_NoUnkeyedLiteral"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.XXX_NoUnkeyedLiteral')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance InternalRaftRequest_access_store_XXX_NoUnkeyedLiteral l (v : (etcdserverpb.InternalRaftRequest.t)) XXX_NoUnkeyedLiteral' :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "XXX_NoUnkeyedLiteral"] ↦ (v.(etcdserverpb.InternalRaftRequest.XXX_NoUnkeyedLiteral')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "XXX_NoUnkeyedLiteral"] ↦ XXX_NoUnkeyedLiteral')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.InternalRaftRequest.XXX_NoUnkeyedLiteral') := XXX_NoUnkeyedLiteral'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance InternalRaftRequest_access_load_XXX_unrecognized l (v : (etcdserverpb.InternalRaftRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "XXX_unrecognized"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.XXX_unrecognized')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "XXX_unrecognized"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.XXX_unrecognized')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance InternalRaftRequest_access_store_XXX_unrecognized l (v : (etcdserverpb.InternalRaftRequest.t)) XXX_unrecognized' :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "XXX_unrecognized"] ↦ (v.(etcdserverpb.InternalRaftRequest.XXX_unrecognized')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "XXX_unrecognized"] ↦ XXX_unrecognized')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.InternalRaftRequest.XXX_unrecognized') := XXX_unrecognized'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance InternalRaftRequest_access_load_XXX_sizecache l (v : (etcdserverpb.InternalRaftRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "XXX_sizecache"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.XXX_sizecache')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "XXX_sizecache"] ↦{dq} (v.(etcdserverpb.InternalRaftRequest.XXX_sizecache')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance InternalRaftRequest_access_store_XXX_sizecache l (v : (etcdserverpb.InternalRaftRequest.t)) XXX_sizecache' :
   AccessStrict
     (l.[(etcdserverpb.InternalRaftRequest.t), "XXX_sizecache"] ↦ (v.(etcdserverpb.InternalRaftRequest.XXX_sizecache')))
     (l.[(etcdserverpb.InternalRaftRequest.t), "XXX_sizecache"] ↦ XXX_sizecache')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.InternalRaftRequest.XXX_sizecache') := XXX_sizecache'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End InternalRaftRequest.
@@ -920,103 +920,103 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance ResponseHeader_into_val_typed
    :
   IntoValTypedUnderlying (etcdserverpb.ResponseHeader.t) (etcdserverpb.ResponseHeaderⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance ResponseHeader_access_load_ClusterId l (v : (etcdserverpb.ResponseHeader.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.ResponseHeader.t), "ClusterId"] ↦{dq} (v.(etcdserverpb.ResponseHeader.ClusterId')))
     (l.[(etcdserverpb.ResponseHeader.t), "ClusterId"] ↦{dq} (v.(etcdserverpb.ResponseHeader.ClusterId')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance ResponseHeader_access_store_ClusterId l (v : (etcdserverpb.ResponseHeader.t)) ClusterId' :
   AccessStrict
     (l.[(etcdserverpb.ResponseHeader.t), "ClusterId"] ↦ (v.(etcdserverpb.ResponseHeader.ClusterId')))
     (l.[(etcdserverpb.ResponseHeader.t), "ClusterId"] ↦ ClusterId')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.ResponseHeader.ClusterId') := ClusterId'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance ResponseHeader_access_load_MemberId l (v : (etcdserverpb.ResponseHeader.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.ResponseHeader.t), "MemberId"] ↦{dq} (v.(etcdserverpb.ResponseHeader.MemberId')))
     (l.[(etcdserverpb.ResponseHeader.t), "MemberId"] ↦{dq} (v.(etcdserverpb.ResponseHeader.MemberId')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance ResponseHeader_access_store_MemberId l (v : (etcdserverpb.ResponseHeader.t)) MemberId' :
   AccessStrict
     (l.[(etcdserverpb.ResponseHeader.t), "MemberId"] ↦ (v.(etcdserverpb.ResponseHeader.MemberId')))
     (l.[(etcdserverpb.ResponseHeader.t), "MemberId"] ↦ MemberId')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.ResponseHeader.MemberId') := MemberId'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance ResponseHeader_access_load_Revision l (v : (etcdserverpb.ResponseHeader.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.ResponseHeader.t), "Revision"] ↦{dq} (v.(etcdserverpb.ResponseHeader.Revision')))
     (l.[(etcdserverpb.ResponseHeader.t), "Revision"] ↦{dq} (v.(etcdserverpb.ResponseHeader.Revision')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance ResponseHeader_access_store_Revision l (v : (etcdserverpb.ResponseHeader.t)) Revision' :
   AccessStrict
     (l.[(etcdserverpb.ResponseHeader.t), "Revision"] ↦ (v.(etcdserverpb.ResponseHeader.Revision')))
     (l.[(etcdserverpb.ResponseHeader.t), "Revision"] ↦ Revision')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.ResponseHeader.Revision') := Revision'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance ResponseHeader_access_load_RaftTerm l (v : (etcdserverpb.ResponseHeader.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.ResponseHeader.t), "RaftTerm"] ↦{dq} (v.(etcdserverpb.ResponseHeader.RaftTerm')))
     (l.[(etcdserverpb.ResponseHeader.t), "RaftTerm"] ↦{dq} (v.(etcdserverpb.ResponseHeader.RaftTerm')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance ResponseHeader_access_store_RaftTerm l (v : (etcdserverpb.ResponseHeader.t)) RaftTerm' :
   AccessStrict
     (l.[(etcdserverpb.ResponseHeader.t), "RaftTerm"] ↦ (v.(etcdserverpb.ResponseHeader.RaftTerm')))
     (l.[(etcdserverpb.ResponseHeader.t), "RaftTerm"] ↦ RaftTerm')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.ResponseHeader.RaftTerm') := RaftTerm'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance ResponseHeader_access_load_XXX_NoUnkeyedLiteral l (v : (etcdserverpb.ResponseHeader.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.ResponseHeader.t), "XXX_NoUnkeyedLiteral"] ↦{dq} (v.(etcdserverpb.ResponseHeader.XXX_NoUnkeyedLiteral')))
     (l.[(etcdserverpb.ResponseHeader.t), "XXX_NoUnkeyedLiteral"] ↦{dq} (v.(etcdserverpb.ResponseHeader.XXX_NoUnkeyedLiteral')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance ResponseHeader_access_store_XXX_NoUnkeyedLiteral l (v : (etcdserverpb.ResponseHeader.t)) XXX_NoUnkeyedLiteral' :
   AccessStrict
     (l.[(etcdserverpb.ResponseHeader.t), "XXX_NoUnkeyedLiteral"] ↦ (v.(etcdserverpb.ResponseHeader.XXX_NoUnkeyedLiteral')))
     (l.[(etcdserverpb.ResponseHeader.t), "XXX_NoUnkeyedLiteral"] ↦ XXX_NoUnkeyedLiteral')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.ResponseHeader.XXX_NoUnkeyedLiteral') := XXX_NoUnkeyedLiteral'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance ResponseHeader_access_load_XXX_unrecognized l (v : (etcdserverpb.ResponseHeader.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.ResponseHeader.t), "XXX_unrecognized"] ↦{dq} (v.(etcdserverpb.ResponseHeader.XXX_unrecognized')))
     (l.[(etcdserverpb.ResponseHeader.t), "XXX_unrecognized"] ↦{dq} (v.(etcdserverpb.ResponseHeader.XXX_unrecognized')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance ResponseHeader_access_store_XXX_unrecognized l (v : (etcdserverpb.ResponseHeader.t)) XXX_unrecognized' :
   AccessStrict
     (l.[(etcdserverpb.ResponseHeader.t), "XXX_unrecognized"] ↦ (v.(etcdserverpb.ResponseHeader.XXX_unrecognized')))
     (l.[(etcdserverpb.ResponseHeader.t), "XXX_unrecognized"] ↦ XXX_unrecognized')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.ResponseHeader.XXX_unrecognized') := XXX_unrecognized'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance ResponseHeader_access_load_XXX_sizecache l (v : (etcdserverpb.ResponseHeader.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.ResponseHeader.t), "XXX_sizecache"] ↦{dq} (v.(etcdserverpb.ResponseHeader.XXX_sizecache')))
     (l.[(etcdserverpb.ResponseHeader.t), "XXX_sizecache"] ↦{dq} (v.(etcdserverpb.ResponseHeader.XXX_sizecache')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance ResponseHeader_access_store_XXX_sizecache l (v : (etcdserverpb.ResponseHeader.t)) XXX_sizecache' :
   AccessStrict
     (l.[(etcdserverpb.ResponseHeader.t), "XXX_sizecache"] ↦ (v.(etcdserverpb.ResponseHeader.XXX_sizecache')))
     (l.[(etcdserverpb.ResponseHeader.t), "XXX_sizecache"] ↦ XXX_sizecache')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.ResponseHeader.XXX_sizecache') := XXX_sizecache'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End ResponseHeader.
@@ -1054,220 +1054,220 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance RangeRequest_into_val_typed
    :
   IntoValTypedUnderlying (etcdserverpb.RangeRequest.t) (etcdserverpb.RangeRequestⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance RangeRequest_access_load_Key l (v : (etcdserverpb.RangeRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.RangeRequest.t), "Key"] ↦{dq} (v.(etcdserverpb.RangeRequest.Key')))
     (l.[(etcdserverpb.RangeRequest.t), "Key"] ↦{dq} (v.(etcdserverpb.RangeRequest.Key')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance RangeRequest_access_store_Key l (v : (etcdserverpb.RangeRequest.t)) Key' :
   AccessStrict
     (l.[(etcdserverpb.RangeRequest.t), "Key"] ↦ (v.(etcdserverpb.RangeRequest.Key')))
     (l.[(etcdserverpb.RangeRequest.t), "Key"] ↦ Key')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.RangeRequest.Key') := Key'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance RangeRequest_access_load_RangeEnd l (v : (etcdserverpb.RangeRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.RangeRequest.t), "RangeEnd"] ↦{dq} (v.(etcdserverpb.RangeRequest.RangeEnd')))
     (l.[(etcdserverpb.RangeRequest.t), "RangeEnd"] ↦{dq} (v.(etcdserverpb.RangeRequest.RangeEnd')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance RangeRequest_access_store_RangeEnd l (v : (etcdserverpb.RangeRequest.t)) RangeEnd' :
   AccessStrict
     (l.[(etcdserverpb.RangeRequest.t), "RangeEnd"] ↦ (v.(etcdserverpb.RangeRequest.RangeEnd')))
     (l.[(etcdserverpb.RangeRequest.t), "RangeEnd"] ↦ RangeEnd')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.RangeRequest.RangeEnd') := RangeEnd'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance RangeRequest_access_load_Limit l (v : (etcdserverpb.RangeRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.RangeRequest.t), "Limit"] ↦{dq} (v.(etcdserverpb.RangeRequest.Limit')))
     (l.[(etcdserverpb.RangeRequest.t), "Limit"] ↦{dq} (v.(etcdserverpb.RangeRequest.Limit')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance RangeRequest_access_store_Limit l (v : (etcdserverpb.RangeRequest.t)) Limit' :
   AccessStrict
     (l.[(etcdserverpb.RangeRequest.t), "Limit"] ↦ (v.(etcdserverpb.RangeRequest.Limit')))
     (l.[(etcdserverpb.RangeRequest.t), "Limit"] ↦ Limit')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.RangeRequest.Limit') := Limit'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance RangeRequest_access_load_Revision l (v : (etcdserverpb.RangeRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.RangeRequest.t), "Revision"] ↦{dq} (v.(etcdserverpb.RangeRequest.Revision')))
     (l.[(etcdserverpb.RangeRequest.t), "Revision"] ↦{dq} (v.(etcdserverpb.RangeRequest.Revision')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance RangeRequest_access_store_Revision l (v : (etcdserverpb.RangeRequest.t)) Revision' :
   AccessStrict
     (l.[(etcdserverpb.RangeRequest.t), "Revision"] ↦ (v.(etcdserverpb.RangeRequest.Revision')))
     (l.[(etcdserverpb.RangeRequest.t), "Revision"] ↦ Revision')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.RangeRequest.Revision') := Revision'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance RangeRequest_access_load_SortOrder l (v : (etcdserverpb.RangeRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.RangeRequest.t), "SortOrder"] ↦{dq} (v.(etcdserverpb.RangeRequest.SortOrder')))
     (l.[(etcdserverpb.RangeRequest.t), "SortOrder"] ↦{dq} (v.(etcdserverpb.RangeRequest.SortOrder')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance RangeRequest_access_store_SortOrder l (v : (etcdserverpb.RangeRequest.t)) SortOrder' :
   AccessStrict
     (l.[(etcdserverpb.RangeRequest.t), "SortOrder"] ↦ (v.(etcdserverpb.RangeRequest.SortOrder')))
     (l.[(etcdserverpb.RangeRequest.t), "SortOrder"] ↦ SortOrder')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.RangeRequest.SortOrder') := SortOrder'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance RangeRequest_access_load_SortTarget l (v : (etcdserverpb.RangeRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.RangeRequest.t), "SortTarget"] ↦{dq} (v.(etcdserverpb.RangeRequest.SortTarget')))
     (l.[(etcdserverpb.RangeRequest.t), "SortTarget"] ↦{dq} (v.(etcdserverpb.RangeRequest.SortTarget')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance RangeRequest_access_store_SortTarget l (v : (etcdserverpb.RangeRequest.t)) SortTarget' :
   AccessStrict
     (l.[(etcdserverpb.RangeRequest.t), "SortTarget"] ↦ (v.(etcdserverpb.RangeRequest.SortTarget')))
     (l.[(etcdserverpb.RangeRequest.t), "SortTarget"] ↦ SortTarget')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.RangeRequest.SortTarget') := SortTarget'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance RangeRequest_access_load_Serializable l (v : (etcdserverpb.RangeRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.RangeRequest.t), "Serializable"] ↦{dq} (v.(etcdserverpb.RangeRequest.Serializable')))
     (l.[(etcdserverpb.RangeRequest.t), "Serializable"] ↦{dq} (v.(etcdserverpb.RangeRequest.Serializable')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance RangeRequest_access_store_Serializable l (v : (etcdserverpb.RangeRequest.t)) Serializable' :
   AccessStrict
     (l.[(etcdserverpb.RangeRequest.t), "Serializable"] ↦ (v.(etcdserverpb.RangeRequest.Serializable')))
     (l.[(etcdserverpb.RangeRequest.t), "Serializable"] ↦ Serializable')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.RangeRequest.Serializable') := Serializable'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance RangeRequest_access_load_KeysOnly l (v : (etcdserverpb.RangeRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.RangeRequest.t), "KeysOnly"] ↦{dq} (v.(etcdserverpb.RangeRequest.KeysOnly')))
     (l.[(etcdserverpb.RangeRequest.t), "KeysOnly"] ↦{dq} (v.(etcdserverpb.RangeRequest.KeysOnly')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance RangeRequest_access_store_KeysOnly l (v : (etcdserverpb.RangeRequest.t)) KeysOnly' :
   AccessStrict
     (l.[(etcdserverpb.RangeRequest.t), "KeysOnly"] ↦ (v.(etcdserverpb.RangeRequest.KeysOnly')))
     (l.[(etcdserverpb.RangeRequest.t), "KeysOnly"] ↦ KeysOnly')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.RangeRequest.KeysOnly') := KeysOnly'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance RangeRequest_access_load_CountOnly l (v : (etcdserverpb.RangeRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.RangeRequest.t), "CountOnly"] ↦{dq} (v.(etcdserverpb.RangeRequest.CountOnly')))
     (l.[(etcdserverpb.RangeRequest.t), "CountOnly"] ↦{dq} (v.(etcdserverpb.RangeRequest.CountOnly')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance RangeRequest_access_store_CountOnly l (v : (etcdserverpb.RangeRequest.t)) CountOnly' :
   AccessStrict
     (l.[(etcdserverpb.RangeRequest.t), "CountOnly"] ↦ (v.(etcdserverpb.RangeRequest.CountOnly')))
     (l.[(etcdserverpb.RangeRequest.t), "CountOnly"] ↦ CountOnly')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.RangeRequest.CountOnly') := CountOnly'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance RangeRequest_access_load_MinModRevision l (v : (etcdserverpb.RangeRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.RangeRequest.t), "MinModRevision"] ↦{dq} (v.(etcdserverpb.RangeRequest.MinModRevision')))
     (l.[(etcdserverpb.RangeRequest.t), "MinModRevision"] ↦{dq} (v.(etcdserverpb.RangeRequest.MinModRevision')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance RangeRequest_access_store_MinModRevision l (v : (etcdserverpb.RangeRequest.t)) MinModRevision' :
   AccessStrict
     (l.[(etcdserverpb.RangeRequest.t), "MinModRevision"] ↦ (v.(etcdserverpb.RangeRequest.MinModRevision')))
     (l.[(etcdserverpb.RangeRequest.t), "MinModRevision"] ↦ MinModRevision')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.RangeRequest.MinModRevision') := MinModRevision'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance RangeRequest_access_load_MaxModRevision l (v : (etcdserverpb.RangeRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.RangeRequest.t), "MaxModRevision"] ↦{dq} (v.(etcdserverpb.RangeRequest.MaxModRevision')))
     (l.[(etcdserverpb.RangeRequest.t), "MaxModRevision"] ↦{dq} (v.(etcdserverpb.RangeRequest.MaxModRevision')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance RangeRequest_access_store_MaxModRevision l (v : (etcdserverpb.RangeRequest.t)) MaxModRevision' :
   AccessStrict
     (l.[(etcdserverpb.RangeRequest.t), "MaxModRevision"] ↦ (v.(etcdserverpb.RangeRequest.MaxModRevision')))
     (l.[(etcdserverpb.RangeRequest.t), "MaxModRevision"] ↦ MaxModRevision')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.RangeRequest.MaxModRevision') := MaxModRevision'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance RangeRequest_access_load_MinCreateRevision l (v : (etcdserverpb.RangeRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.RangeRequest.t), "MinCreateRevision"] ↦{dq} (v.(etcdserverpb.RangeRequest.MinCreateRevision')))
     (l.[(etcdserverpb.RangeRequest.t), "MinCreateRevision"] ↦{dq} (v.(etcdserverpb.RangeRequest.MinCreateRevision')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance RangeRequest_access_store_MinCreateRevision l (v : (etcdserverpb.RangeRequest.t)) MinCreateRevision' :
   AccessStrict
     (l.[(etcdserverpb.RangeRequest.t), "MinCreateRevision"] ↦ (v.(etcdserverpb.RangeRequest.MinCreateRevision')))
     (l.[(etcdserverpb.RangeRequest.t), "MinCreateRevision"] ↦ MinCreateRevision')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.RangeRequest.MinCreateRevision') := MinCreateRevision'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance RangeRequest_access_load_MaxCreateRevision l (v : (etcdserverpb.RangeRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.RangeRequest.t), "MaxCreateRevision"] ↦{dq} (v.(etcdserverpb.RangeRequest.MaxCreateRevision')))
     (l.[(etcdserverpb.RangeRequest.t), "MaxCreateRevision"] ↦{dq} (v.(etcdserverpb.RangeRequest.MaxCreateRevision')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance RangeRequest_access_store_MaxCreateRevision l (v : (etcdserverpb.RangeRequest.t)) MaxCreateRevision' :
   AccessStrict
     (l.[(etcdserverpb.RangeRequest.t), "MaxCreateRevision"] ↦ (v.(etcdserverpb.RangeRequest.MaxCreateRevision')))
     (l.[(etcdserverpb.RangeRequest.t), "MaxCreateRevision"] ↦ MaxCreateRevision')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.RangeRequest.MaxCreateRevision') := MaxCreateRevision'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance RangeRequest_access_load_XXX_NoUnkeyedLiteral l (v : (etcdserverpb.RangeRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.RangeRequest.t), "XXX_NoUnkeyedLiteral"] ↦{dq} (v.(etcdserverpb.RangeRequest.XXX_NoUnkeyedLiteral')))
     (l.[(etcdserverpb.RangeRequest.t), "XXX_NoUnkeyedLiteral"] ↦{dq} (v.(etcdserverpb.RangeRequest.XXX_NoUnkeyedLiteral')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance RangeRequest_access_store_XXX_NoUnkeyedLiteral l (v : (etcdserverpb.RangeRequest.t)) XXX_NoUnkeyedLiteral' :
   AccessStrict
     (l.[(etcdserverpb.RangeRequest.t), "XXX_NoUnkeyedLiteral"] ↦ (v.(etcdserverpb.RangeRequest.XXX_NoUnkeyedLiteral')))
     (l.[(etcdserverpb.RangeRequest.t), "XXX_NoUnkeyedLiteral"] ↦ XXX_NoUnkeyedLiteral')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.RangeRequest.XXX_NoUnkeyedLiteral') := XXX_NoUnkeyedLiteral'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance RangeRequest_access_load_XXX_unrecognized l (v : (etcdserverpb.RangeRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.RangeRequest.t), "XXX_unrecognized"] ↦{dq} (v.(etcdserverpb.RangeRequest.XXX_unrecognized')))
     (l.[(etcdserverpb.RangeRequest.t), "XXX_unrecognized"] ↦{dq} (v.(etcdserverpb.RangeRequest.XXX_unrecognized')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance RangeRequest_access_store_XXX_unrecognized l (v : (etcdserverpb.RangeRequest.t)) XXX_unrecognized' :
   AccessStrict
     (l.[(etcdserverpb.RangeRequest.t), "XXX_unrecognized"] ↦ (v.(etcdserverpb.RangeRequest.XXX_unrecognized')))
     (l.[(etcdserverpb.RangeRequest.t), "XXX_unrecognized"] ↦ XXX_unrecognized')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.RangeRequest.XXX_unrecognized') := XXX_unrecognized'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance RangeRequest_access_load_XXX_sizecache l (v : (etcdserverpb.RangeRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.RangeRequest.t), "XXX_sizecache"] ↦{dq} (v.(etcdserverpb.RangeRequest.XXX_sizecache')))
     (l.[(etcdserverpb.RangeRequest.t), "XXX_sizecache"] ↦{dq} (v.(etcdserverpb.RangeRequest.XXX_sizecache')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance RangeRequest_access_store_XXX_sizecache l (v : (etcdserverpb.RangeRequest.t)) XXX_sizecache' :
   AccessStrict
     (l.[(etcdserverpb.RangeRequest.t), "XXX_sizecache"] ↦ (v.(etcdserverpb.RangeRequest.XXX_sizecache')))
     (l.[(etcdserverpb.RangeRequest.t), "XXX_sizecache"] ↦ XXX_sizecache')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.RangeRequest.XXX_sizecache') := XXX_sizecache'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End RangeRequest.
@@ -1296,103 +1296,103 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance RangeResponse_into_val_typed
    :
   IntoValTypedUnderlying (etcdserverpb.RangeResponse.t) (etcdserverpb.RangeResponseⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance RangeResponse_access_load_Header l (v : (etcdserverpb.RangeResponse.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.RangeResponse.t), "Header"] ↦{dq} (v.(etcdserverpb.RangeResponse.Header')))
     (l.[(etcdserverpb.RangeResponse.t), "Header"] ↦{dq} (v.(etcdserverpb.RangeResponse.Header')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance RangeResponse_access_store_Header l (v : (etcdserverpb.RangeResponse.t)) Header' :
   AccessStrict
     (l.[(etcdserverpb.RangeResponse.t), "Header"] ↦ (v.(etcdserverpb.RangeResponse.Header')))
     (l.[(etcdserverpb.RangeResponse.t), "Header"] ↦ Header')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.RangeResponse.Header') := Header'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance RangeResponse_access_load_Kvs l (v : (etcdserverpb.RangeResponse.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.RangeResponse.t), "Kvs"] ↦{dq} (v.(etcdserverpb.RangeResponse.Kvs')))
     (l.[(etcdserverpb.RangeResponse.t), "Kvs"] ↦{dq} (v.(etcdserverpb.RangeResponse.Kvs')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance RangeResponse_access_store_Kvs l (v : (etcdserverpb.RangeResponse.t)) Kvs' :
   AccessStrict
     (l.[(etcdserverpb.RangeResponse.t), "Kvs"] ↦ (v.(etcdserverpb.RangeResponse.Kvs')))
     (l.[(etcdserverpb.RangeResponse.t), "Kvs"] ↦ Kvs')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.RangeResponse.Kvs') := Kvs'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance RangeResponse_access_load_More l (v : (etcdserverpb.RangeResponse.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.RangeResponse.t), "More"] ↦{dq} (v.(etcdserverpb.RangeResponse.More')))
     (l.[(etcdserverpb.RangeResponse.t), "More"] ↦{dq} (v.(etcdserverpb.RangeResponse.More')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance RangeResponse_access_store_More l (v : (etcdserverpb.RangeResponse.t)) More' :
   AccessStrict
     (l.[(etcdserverpb.RangeResponse.t), "More"] ↦ (v.(etcdserverpb.RangeResponse.More')))
     (l.[(etcdserverpb.RangeResponse.t), "More"] ↦ More')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.RangeResponse.More') := More'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance RangeResponse_access_load_Count l (v : (etcdserverpb.RangeResponse.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.RangeResponse.t), "Count"] ↦{dq} (v.(etcdserverpb.RangeResponse.Count')))
     (l.[(etcdserverpb.RangeResponse.t), "Count"] ↦{dq} (v.(etcdserverpb.RangeResponse.Count')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance RangeResponse_access_store_Count l (v : (etcdserverpb.RangeResponse.t)) Count' :
   AccessStrict
     (l.[(etcdserverpb.RangeResponse.t), "Count"] ↦ (v.(etcdserverpb.RangeResponse.Count')))
     (l.[(etcdserverpb.RangeResponse.t), "Count"] ↦ Count')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.RangeResponse.Count') := Count'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance RangeResponse_access_load_XXX_NoUnkeyedLiteral l (v : (etcdserverpb.RangeResponse.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.RangeResponse.t), "XXX_NoUnkeyedLiteral"] ↦{dq} (v.(etcdserverpb.RangeResponse.XXX_NoUnkeyedLiteral')))
     (l.[(etcdserverpb.RangeResponse.t), "XXX_NoUnkeyedLiteral"] ↦{dq} (v.(etcdserverpb.RangeResponse.XXX_NoUnkeyedLiteral')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance RangeResponse_access_store_XXX_NoUnkeyedLiteral l (v : (etcdserverpb.RangeResponse.t)) XXX_NoUnkeyedLiteral' :
   AccessStrict
     (l.[(etcdserverpb.RangeResponse.t), "XXX_NoUnkeyedLiteral"] ↦ (v.(etcdserverpb.RangeResponse.XXX_NoUnkeyedLiteral')))
     (l.[(etcdserverpb.RangeResponse.t), "XXX_NoUnkeyedLiteral"] ↦ XXX_NoUnkeyedLiteral')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.RangeResponse.XXX_NoUnkeyedLiteral') := XXX_NoUnkeyedLiteral'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance RangeResponse_access_load_XXX_unrecognized l (v : (etcdserverpb.RangeResponse.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.RangeResponse.t), "XXX_unrecognized"] ↦{dq} (v.(etcdserverpb.RangeResponse.XXX_unrecognized')))
     (l.[(etcdserverpb.RangeResponse.t), "XXX_unrecognized"] ↦{dq} (v.(etcdserverpb.RangeResponse.XXX_unrecognized')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance RangeResponse_access_store_XXX_unrecognized l (v : (etcdserverpb.RangeResponse.t)) XXX_unrecognized' :
   AccessStrict
     (l.[(etcdserverpb.RangeResponse.t), "XXX_unrecognized"] ↦ (v.(etcdserverpb.RangeResponse.XXX_unrecognized')))
     (l.[(etcdserverpb.RangeResponse.t), "XXX_unrecognized"] ↦ XXX_unrecognized')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.RangeResponse.XXX_unrecognized') := XXX_unrecognized'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance RangeResponse_access_load_XXX_sizecache l (v : (etcdserverpb.RangeResponse.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.RangeResponse.t), "XXX_sizecache"] ↦{dq} (v.(etcdserverpb.RangeResponse.XXX_sizecache')))
     (l.[(etcdserverpb.RangeResponse.t), "XXX_sizecache"] ↦{dq} (v.(etcdserverpb.RangeResponse.XXX_sizecache')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance RangeResponse_access_store_XXX_sizecache l (v : (etcdserverpb.RangeResponse.t)) XXX_sizecache' :
   AccessStrict
     (l.[(etcdserverpb.RangeResponse.t), "XXX_sizecache"] ↦ (v.(etcdserverpb.RangeResponse.XXX_sizecache')))
     (l.[(etcdserverpb.RangeResponse.t), "XXX_sizecache"] ↦ XXX_sizecache')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.RangeResponse.XXX_sizecache') := XXX_sizecache'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End RangeResponse.
@@ -1423,129 +1423,129 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance PutRequest_into_val_typed
    :
   IntoValTypedUnderlying (etcdserverpb.PutRequest.t) (etcdserverpb.PutRequestⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance PutRequest_access_load_Key l (v : (etcdserverpb.PutRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.PutRequest.t), "Key"] ↦{dq} (v.(etcdserverpb.PutRequest.Key')))
     (l.[(etcdserverpb.PutRequest.t), "Key"] ↦{dq} (v.(etcdserverpb.PutRequest.Key')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance PutRequest_access_store_Key l (v : (etcdserverpb.PutRequest.t)) Key' :
   AccessStrict
     (l.[(etcdserverpb.PutRequest.t), "Key"] ↦ (v.(etcdserverpb.PutRequest.Key')))
     (l.[(etcdserverpb.PutRequest.t), "Key"] ↦ Key')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.PutRequest.Key') := Key'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance PutRequest_access_load_Value l (v : (etcdserverpb.PutRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.PutRequest.t), "Value"] ↦{dq} (v.(etcdserverpb.PutRequest.Value')))
     (l.[(etcdserverpb.PutRequest.t), "Value"] ↦{dq} (v.(etcdserverpb.PutRequest.Value')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance PutRequest_access_store_Value l (v : (etcdserverpb.PutRequest.t)) Value' :
   AccessStrict
     (l.[(etcdserverpb.PutRequest.t), "Value"] ↦ (v.(etcdserverpb.PutRequest.Value')))
     (l.[(etcdserverpb.PutRequest.t), "Value"] ↦ Value')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.PutRequest.Value') := Value'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance PutRequest_access_load_Lease l (v : (etcdserverpb.PutRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.PutRequest.t), "Lease"] ↦{dq} (v.(etcdserverpb.PutRequest.Lease')))
     (l.[(etcdserverpb.PutRequest.t), "Lease"] ↦{dq} (v.(etcdserverpb.PutRequest.Lease')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance PutRequest_access_store_Lease l (v : (etcdserverpb.PutRequest.t)) Lease' :
   AccessStrict
     (l.[(etcdserverpb.PutRequest.t), "Lease"] ↦ (v.(etcdserverpb.PutRequest.Lease')))
     (l.[(etcdserverpb.PutRequest.t), "Lease"] ↦ Lease')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.PutRequest.Lease') := Lease'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance PutRequest_access_load_PrevKv l (v : (etcdserverpb.PutRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.PutRequest.t), "PrevKv"] ↦{dq} (v.(etcdserverpb.PutRequest.PrevKv')))
     (l.[(etcdserverpb.PutRequest.t), "PrevKv"] ↦{dq} (v.(etcdserverpb.PutRequest.PrevKv')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance PutRequest_access_store_PrevKv l (v : (etcdserverpb.PutRequest.t)) PrevKv' :
   AccessStrict
     (l.[(etcdserverpb.PutRequest.t), "PrevKv"] ↦ (v.(etcdserverpb.PutRequest.PrevKv')))
     (l.[(etcdserverpb.PutRequest.t), "PrevKv"] ↦ PrevKv')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.PutRequest.PrevKv') := PrevKv'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance PutRequest_access_load_IgnoreValue l (v : (etcdserverpb.PutRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.PutRequest.t), "IgnoreValue"] ↦{dq} (v.(etcdserverpb.PutRequest.IgnoreValue')))
     (l.[(etcdserverpb.PutRequest.t), "IgnoreValue"] ↦{dq} (v.(etcdserverpb.PutRequest.IgnoreValue')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance PutRequest_access_store_IgnoreValue l (v : (etcdserverpb.PutRequest.t)) IgnoreValue' :
   AccessStrict
     (l.[(etcdserverpb.PutRequest.t), "IgnoreValue"] ↦ (v.(etcdserverpb.PutRequest.IgnoreValue')))
     (l.[(etcdserverpb.PutRequest.t), "IgnoreValue"] ↦ IgnoreValue')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.PutRequest.IgnoreValue') := IgnoreValue'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance PutRequest_access_load_IgnoreLease l (v : (etcdserverpb.PutRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.PutRequest.t), "IgnoreLease"] ↦{dq} (v.(etcdserverpb.PutRequest.IgnoreLease')))
     (l.[(etcdserverpb.PutRequest.t), "IgnoreLease"] ↦{dq} (v.(etcdserverpb.PutRequest.IgnoreLease')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance PutRequest_access_store_IgnoreLease l (v : (etcdserverpb.PutRequest.t)) IgnoreLease' :
   AccessStrict
     (l.[(etcdserverpb.PutRequest.t), "IgnoreLease"] ↦ (v.(etcdserverpb.PutRequest.IgnoreLease')))
     (l.[(etcdserverpb.PutRequest.t), "IgnoreLease"] ↦ IgnoreLease')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.PutRequest.IgnoreLease') := IgnoreLease'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance PutRequest_access_load_XXX_NoUnkeyedLiteral l (v : (etcdserverpb.PutRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.PutRequest.t), "XXX_NoUnkeyedLiteral"] ↦{dq} (v.(etcdserverpb.PutRequest.XXX_NoUnkeyedLiteral')))
     (l.[(etcdserverpb.PutRequest.t), "XXX_NoUnkeyedLiteral"] ↦{dq} (v.(etcdserverpb.PutRequest.XXX_NoUnkeyedLiteral')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance PutRequest_access_store_XXX_NoUnkeyedLiteral l (v : (etcdserverpb.PutRequest.t)) XXX_NoUnkeyedLiteral' :
   AccessStrict
     (l.[(etcdserverpb.PutRequest.t), "XXX_NoUnkeyedLiteral"] ↦ (v.(etcdserverpb.PutRequest.XXX_NoUnkeyedLiteral')))
     (l.[(etcdserverpb.PutRequest.t), "XXX_NoUnkeyedLiteral"] ↦ XXX_NoUnkeyedLiteral')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.PutRequest.XXX_NoUnkeyedLiteral') := XXX_NoUnkeyedLiteral'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance PutRequest_access_load_XXX_unrecognized l (v : (etcdserverpb.PutRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.PutRequest.t), "XXX_unrecognized"] ↦{dq} (v.(etcdserverpb.PutRequest.XXX_unrecognized')))
     (l.[(etcdserverpb.PutRequest.t), "XXX_unrecognized"] ↦{dq} (v.(etcdserverpb.PutRequest.XXX_unrecognized')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance PutRequest_access_store_XXX_unrecognized l (v : (etcdserverpb.PutRequest.t)) XXX_unrecognized' :
   AccessStrict
     (l.[(etcdserverpb.PutRequest.t), "XXX_unrecognized"] ↦ (v.(etcdserverpb.PutRequest.XXX_unrecognized')))
     (l.[(etcdserverpb.PutRequest.t), "XXX_unrecognized"] ↦ XXX_unrecognized')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.PutRequest.XXX_unrecognized') := XXX_unrecognized'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance PutRequest_access_load_XXX_sizecache l (v : (etcdserverpb.PutRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.PutRequest.t), "XXX_sizecache"] ↦{dq} (v.(etcdserverpb.PutRequest.XXX_sizecache')))
     (l.[(etcdserverpb.PutRequest.t), "XXX_sizecache"] ↦{dq} (v.(etcdserverpb.PutRequest.XXX_sizecache')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance PutRequest_access_store_XXX_sizecache l (v : (etcdserverpb.PutRequest.t)) XXX_sizecache' :
   AccessStrict
     (l.[(etcdserverpb.PutRequest.t), "XXX_sizecache"] ↦ (v.(etcdserverpb.PutRequest.XXX_sizecache')))
     (l.[(etcdserverpb.PutRequest.t), "XXX_sizecache"] ↦ XXX_sizecache')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.PutRequest.XXX_sizecache') := XXX_sizecache'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End PutRequest.
@@ -1572,77 +1572,77 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance PutResponse_into_val_typed
    :
   IntoValTypedUnderlying (etcdserverpb.PutResponse.t) (etcdserverpb.PutResponseⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance PutResponse_access_load_Header l (v : (etcdserverpb.PutResponse.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.PutResponse.t), "Header"] ↦{dq} (v.(etcdserverpb.PutResponse.Header')))
     (l.[(etcdserverpb.PutResponse.t), "Header"] ↦{dq} (v.(etcdserverpb.PutResponse.Header')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance PutResponse_access_store_Header l (v : (etcdserverpb.PutResponse.t)) Header' :
   AccessStrict
     (l.[(etcdserverpb.PutResponse.t), "Header"] ↦ (v.(etcdserverpb.PutResponse.Header')))
     (l.[(etcdserverpb.PutResponse.t), "Header"] ↦ Header')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.PutResponse.Header') := Header'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance PutResponse_access_load_PrevKv l (v : (etcdserverpb.PutResponse.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.PutResponse.t), "PrevKv"] ↦{dq} (v.(etcdserverpb.PutResponse.PrevKv')))
     (l.[(etcdserverpb.PutResponse.t), "PrevKv"] ↦{dq} (v.(etcdserverpb.PutResponse.PrevKv')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance PutResponse_access_store_PrevKv l (v : (etcdserverpb.PutResponse.t)) PrevKv' :
   AccessStrict
     (l.[(etcdserverpb.PutResponse.t), "PrevKv"] ↦ (v.(etcdserverpb.PutResponse.PrevKv')))
     (l.[(etcdserverpb.PutResponse.t), "PrevKv"] ↦ PrevKv')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.PutResponse.PrevKv') := PrevKv'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance PutResponse_access_load_XXX_NoUnkeyedLiteral l (v : (etcdserverpb.PutResponse.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.PutResponse.t), "XXX_NoUnkeyedLiteral"] ↦{dq} (v.(etcdserverpb.PutResponse.XXX_NoUnkeyedLiteral')))
     (l.[(etcdserverpb.PutResponse.t), "XXX_NoUnkeyedLiteral"] ↦{dq} (v.(etcdserverpb.PutResponse.XXX_NoUnkeyedLiteral')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance PutResponse_access_store_XXX_NoUnkeyedLiteral l (v : (etcdserverpb.PutResponse.t)) XXX_NoUnkeyedLiteral' :
   AccessStrict
     (l.[(etcdserverpb.PutResponse.t), "XXX_NoUnkeyedLiteral"] ↦ (v.(etcdserverpb.PutResponse.XXX_NoUnkeyedLiteral')))
     (l.[(etcdserverpb.PutResponse.t), "XXX_NoUnkeyedLiteral"] ↦ XXX_NoUnkeyedLiteral')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.PutResponse.XXX_NoUnkeyedLiteral') := XXX_NoUnkeyedLiteral'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance PutResponse_access_load_XXX_unrecognized l (v : (etcdserverpb.PutResponse.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.PutResponse.t), "XXX_unrecognized"] ↦{dq} (v.(etcdserverpb.PutResponse.XXX_unrecognized')))
     (l.[(etcdserverpb.PutResponse.t), "XXX_unrecognized"] ↦{dq} (v.(etcdserverpb.PutResponse.XXX_unrecognized')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance PutResponse_access_store_XXX_unrecognized l (v : (etcdserverpb.PutResponse.t)) XXX_unrecognized' :
   AccessStrict
     (l.[(etcdserverpb.PutResponse.t), "XXX_unrecognized"] ↦ (v.(etcdserverpb.PutResponse.XXX_unrecognized')))
     (l.[(etcdserverpb.PutResponse.t), "XXX_unrecognized"] ↦ XXX_unrecognized')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.PutResponse.XXX_unrecognized') := XXX_unrecognized'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance PutResponse_access_load_XXX_sizecache l (v : (etcdserverpb.PutResponse.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.PutResponse.t), "XXX_sizecache"] ↦{dq} (v.(etcdserverpb.PutResponse.XXX_sizecache')))
     (l.[(etcdserverpb.PutResponse.t), "XXX_sizecache"] ↦{dq} (v.(etcdserverpb.PutResponse.XXX_sizecache')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance PutResponse_access_store_XXX_sizecache l (v : (etcdserverpb.PutResponse.t)) XXX_sizecache' :
   AccessStrict
     (l.[(etcdserverpb.PutResponse.t), "XXX_sizecache"] ↦ (v.(etcdserverpb.PutResponse.XXX_sizecache')))
     (l.[(etcdserverpb.PutResponse.t), "XXX_sizecache"] ↦ XXX_sizecache')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.PutResponse.XXX_sizecache') := XXX_sizecache'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End PutResponse.
@@ -1670,90 +1670,90 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance DeleteRangeRequest_into_val_typed
    :
   IntoValTypedUnderlying (etcdserverpb.DeleteRangeRequest.t) (etcdserverpb.DeleteRangeRequestⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance DeleteRangeRequest_access_load_Key l (v : (etcdserverpb.DeleteRangeRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.DeleteRangeRequest.t), "Key"] ↦{dq} (v.(etcdserverpb.DeleteRangeRequest.Key')))
     (l.[(etcdserverpb.DeleteRangeRequest.t), "Key"] ↦{dq} (v.(etcdserverpb.DeleteRangeRequest.Key')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance DeleteRangeRequest_access_store_Key l (v : (etcdserverpb.DeleteRangeRequest.t)) Key' :
   AccessStrict
     (l.[(etcdserverpb.DeleteRangeRequest.t), "Key"] ↦ (v.(etcdserverpb.DeleteRangeRequest.Key')))
     (l.[(etcdserverpb.DeleteRangeRequest.t), "Key"] ↦ Key')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.DeleteRangeRequest.Key') := Key'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance DeleteRangeRequest_access_load_RangeEnd l (v : (etcdserverpb.DeleteRangeRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.DeleteRangeRequest.t), "RangeEnd"] ↦{dq} (v.(etcdserverpb.DeleteRangeRequest.RangeEnd')))
     (l.[(etcdserverpb.DeleteRangeRequest.t), "RangeEnd"] ↦{dq} (v.(etcdserverpb.DeleteRangeRequest.RangeEnd')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance DeleteRangeRequest_access_store_RangeEnd l (v : (etcdserverpb.DeleteRangeRequest.t)) RangeEnd' :
   AccessStrict
     (l.[(etcdserverpb.DeleteRangeRequest.t), "RangeEnd"] ↦ (v.(etcdserverpb.DeleteRangeRequest.RangeEnd')))
     (l.[(etcdserverpb.DeleteRangeRequest.t), "RangeEnd"] ↦ RangeEnd')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.DeleteRangeRequest.RangeEnd') := RangeEnd'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance DeleteRangeRequest_access_load_PrevKv l (v : (etcdserverpb.DeleteRangeRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.DeleteRangeRequest.t), "PrevKv"] ↦{dq} (v.(etcdserverpb.DeleteRangeRequest.PrevKv')))
     (l.[(etcdserverpb.DeleteRangeRequest.t), "PrevKv"] ↦{dq} (v.(etcdserverpb.DeleteRangeRequest.PrevKv')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance DeleteRangeRequest_access_store_PrevKv l (v : (etcdserverpb.DeleteRangeRequest.t)) PrevKv' :
   AccessStrict
     (l.[(etcdserverpb.DeleteRangeRequest.t), "PrevKv"] ↦ (v.(etcdserverpb.DeleteRangeRequest.PrevKv')))
     (l.[(etcdserverpb.DeleteRangeRequest.t), "PrevKv"] ↦ PrevKv')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.DeleteRangeRequest.PrevKv') := PrevKv'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance DeleteRangeRequest_access_load_XXX_NoUnkeyedLiteral l (v : (etcdserverpb.DeleteRangeRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.DeleteRangeRequest.t), "XXX_NoUnkeyedLiteral"] ↦{dq} (v.(etcdserverpb.DeleteRangeRequest.XXX_NoUnkeyedLiteral')))
     (l.[(etcdserverpb.DeleteRangeRequest.t), "XXX_NoUnkeyedLiteral"] ↦{dq} (v.(etcdserverpb.DeleteRangeRequest.XXX_NoUnkeyedLiteral')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance DeleteRangeRequest_access_store_XXX_NoUnkeyedLiteral l (v : (etcdserverpb.DeleteRangeRequest.t)) XXX_NoUnkeyedLiteral' :
   AccessStrict
     (l.[(etcdserverpb.DeleteRangeRequest.t), "XXX_NoUnkeyedLiteral"] ↦ (v.(etcdserverpb.DeleteRangeRequest.XXX_NoUnkeyedLiteral')))
     (l.[(etcdserverpb.DeleteRangeRequest.t), "XXX_NoUnkeyedLiteral"] ↦ XXX_NoUnkeyedLiteral')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.DeleteRangeRequest.XXX_NoUnkeyedLiteral') := XXX_NoUnkeyedLiteral'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance DeleteRangeRequest_access_load_XXX_unrecognized l (v : (etcdserverpb.DeleteRangeRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.DeleteRangeRequest.t), "XXX_unrecognized"] ↦{dq} (v.(etcdserverpb.DeleteRangeRequest.XXX_unrecognized')))
     (l.[(etcdserverpb.DeleteRangeRequest.t), "XXX_unrecognized"] ↦{dq} (v.(etcdserverpb.DeleteRangeRequest.XXX_unrecognized')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance DeleteRangeRequest_access_store_XXX_unrecognized l (v : (etcdserverpb.DeleteRangeRequest.t)) XXX_unrecognized' :
   AccessStrict
     (l.[(etcdserverpb.DeleteRangeRequest.t), "XXX_unrecognized"] ↦ (v.(etcdserverpb.DeleteRangeRequest.XXX_unrecognized')))
     (l.[(etcdserverpb.DeleteRangeRequest.t), "XXX_unrecognized"] ↦ XXX_unrecognized')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.DeleteRangeRequest.XXX_unrecognized') := XXX_unrecognized'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance DeleteRangeRequest_access_load_XXX_sizecache l (v : (etcdserverpb.DeleteRangeRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.DeleteRangeRequest.t), "XXX_sizecache"] ↦{dq} (v.(etcdserverpb.DeleteRangeRequest.XXX_sizecache')))
     (l.[(etcdserverpb.DeleteRangeRequest.t), "XXX_sizecache"] ↦{dq} (v.(etcdserverpb.DeleteRangeRequest.XXX_sizecache')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance DeleteRangeRequest_access_store_XXX_sizecache l (v : (etcdserverpb.DeleteRangeRequest.t)) XXX_sizecache' :
   AccessStrict
     (l.[(etcdserverpb.DeleteRangeRequest.t), "XXX_sizecache"] ↦ (v.(etcdserverpb.DeleteRangeRequest.XXX_sizecache')))
     (l.[(etcdserverpb.DeleteRangeRequest.t), "XXX_sizecache"] ↦ XXX_sizecache')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.DeleteRangeRequest.XXX_sizecache') := XXX_sizecache'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End DeleteRangeRequest.
@@ -1781,90 +1781,90 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance DeleteRangeResponse_into_val_typed
    :
   IntoValTypedUnderlying (etcdserverpb.DeleteRangeResponse.t) (etcdserverpb.DeleteRangeResponseⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance DeleteRangeResponse_access_load_Header l (v : (etcdserverpb.DeleteRangeResponse.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.DeleteRangeResponse.t), "Header"] ↦{dq} (v.(etcdserverpb.DeleteRangeResponse.Header')))
     (l.[(etcdserverpb.DeleteRangeResponse.t), "Header"] ↦{dq} (v.(etcdserverpb.DeleteRangeResponse.Header')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance DeleteRangeResponse_access_store_Header l (v : (etcdserverpb.DeleteRangeResponse.t)) Header' :
   AccessStrict
     (l.[(etcdserverpb.DeleteRangeResponse.t), "Header"] ↦ (v.(etcdserverpb.DeleteRangeResponse.Header')))
     (l.[(etcdserverpb.DeleteRangeResponse.t), "Header"] ↦ Header')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.DeleteRangeResponse.Header') := Header'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance DeleteRangeResponse_access_load_Deleted l (v : (etcdserverpb.DeleteRangeResponse.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.DeleteRangeResponse.t), "Deleted"] ↦{dq} (v.(etcdserverpb.DeleteRangeResponse.Deleted')))
     (l.[(etcdserverpb.DeleteRangeResponse.t), "Deleted"] ↦{dq} (v.(etcdserverpb.DeleteRangeResponse.Deleted')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance DeleteRangeResponse_access_store_Deleted l (v : (etcdserverpb.DeleteRangeResponse.t)) Deleted' :
   AccessStrict
     (l.[(etcdserverpb.DeleteRangeResponse.t), "Deleted"] ↦ (v.(etcdserverpb.DeleteRangeResponse.Deleted')))
     (l.[(etcdserverpb.DeleteRangeResponse.t), "Deleted"] ↦ Deleted')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.DeleteRangeResponse.Deleted') := Deleted'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance DeleteRangeResponse_access_load_PrevKvs l (v : (etcdserverpb.DeleteRangeResponse.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.DeleteRangeResponse.t), "PrevKvs"] ↦{dq} (v.(etcdserverpb.DeleteRangeResponse.PrevKvs')))
     (l.[(etcdserverpb.DeleteRangeResponse.t), "PrevKvs"] ↦{dq} (v.(etcdserverpb.DeleteRangeResponse.PrevKvs')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance DeleteRangeResponse_access_store_PrevKvs l (v : (etcdserverpb.DeleteRangeResponse.t)) PrevKvs' :
   AccessStrict
     (l.[(etcdserverpb.DeleteRangeResponse.t), "PrevKvs"] ↦ (v.(etcdserverpb.DeleteRangeResponse.PrevKvs')))
     (l.[(etcdserverpb.DeleteRangeResponse.t), "PrevKvs"] ↦ PrevKvs')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.DeleteRangeResponse.PrevKvs') := PrevKvs'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance DeleteRangeResponse_access_load_XXX_NoUnkeyedLiteral l (v : (etcdserverpb.DeleteRangeResponse.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.DeleteRangeResponse.t), "XXX_NoUnkeyedLiteral"] ↦{dq} (v.(etcdserverpb.DeleteRangeResponse.XXX_NoUnkeyedLiteral')))
     (l.[(etcdserverpb.DeleteRangeResponse.t), "XXX_NoUnkeyedLiteral"] ↦{dq} (v.(etcdserverpb.DeleteRangeResponse.XXX_NoUnkeyedLiteral')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance DeleteRangeResponse_access_store_XXX_NoUnkeyedLiteral l (v : (etcdserverpb.DeleteRangeResponse.t)) XXX_NoUnkeyedLiteral' :
   AccessStrict
     (l.[(etcdserverpb.DeleteRangeResponse.t), "XXX_NoUnkeyedLiteral"] ↦ (v.(etcdserverpb.DeleteRangeResponse.XXX_NoUnkeyedLiteral')))
     (l.[(etcdserverpb.DeleteRangeResponse.t), "XXX_NoUnkeyedLiteral"] ↦ XXX_NoUnkeyedLiteral')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.DeleteRangeResponse.XXX_NoUnkeyedLiteral') := XXX_NoUnkeyedLiteral'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance DeleteRangeResponse_access_load_XXX_unrecognized l (v : (etcdserverpb.DeleteRangeResponse.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.DeleteRangeResponse.t), "XXX_unrecognized"] ↦{dq} (v.(etcdserverpb.DeleteRangeResponse.XXX_unrecognized')))
     (l.[(etcdserverpb.DeleteRangeResponse.t), "XXX_unrecognized"] ↦{dq} (v.(etcdserverpb.DeleteRangeResponse.XXX_unrecognized')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance DeleteRangeResponse_access_store_XXX_unrecognized l (v : (etcdserverpb.DeleteRangeResponse.t)) XXX_unrecognized' :
   AccessStrict
     (l.[(etcdserverpb.DeleteRangeResponse.t), "XXX_unrecognized"] ↦ (v.(etcdserverpb.DeleteRangeResponse.XXX_unrecognized')))
     (l.[(etcdserverpb.DeleteRangeResponse.t), "XXX_unrecognized"] ↦ XXX_unrecognized')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.DeleteRangeResponse.XXX_unrecognized') := XXX_unrecognized'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance DeleteRangeResponse_access_load_XXX_sizecache l (v : (etcdserverpb.DeleteRangeResponse.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.DeleteRangeResponse.t), "XXX_sizecache"] ↦{dq} (v.(etcdserverpb.DeleteRangeResponse.XXX_sizecache')))
     (l.[(etcdserverpb.DeleteRangeResponse.t), "XXX_sizecache"] ↦{dq} (v.(etcdserverpb.DeleteRangeResponse.XXX_sizecache')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance DeleteRangeResponse_access_store_XXX_sizecache l (v : (etcdserverpb.DeleteRangeResponse.t)) XXX_sizecache' :
   AccessStrict
     (l.[(etcdserverpb.DeleteRangeResponse.t), "XXX_sizecache"] ↦ (v.(etcdserverpb.DeleteRangeResponse.XXX_sizecache')))
     (l.[(etcdserverpb.DeleteRangeResponse.t), "XXX_sizecache"] ↦ XXX_sizecache')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.DeleteRangeResponse.XXX_sizecache') := XXX_sizecache'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End DeleteRangeResponse.
@@ -1890,64 +1890,64 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance RequestOp_into_val_typed
    :
   IntoValTypedUnderlying (etcdserverpb.RequestOp.t) (etcdserverpb.RequestOpⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance RequestOp_access_load_Request l (v : (etcdserverpb.RequestOp.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.RequestOp.t), "Request"] ↦{dq} (v.(etcdserverpb.RequestOp.Request')))
     (l.[(etcdserverpb.RequestOp.t), "Request"] ↦{dq} (v.(etcdserverpb.RequestOp.Request')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance RequestOp_access_store_Request l (v : (etcdserverpb.RequestOp.t)) Request' :
   AccessStrict
     (l.[(etcdserverpb.RequestOp.t), "Request"] ↦ (v.(etcdserverpb.RequestOp.Request')))
     (l.[(etcdserverpb.RequestOp.t), "Request"] ↦ Request')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.RequestOp.Request') := Request'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance RequestOp_access_load_XXX_NoUnkeyedLiteral l (v : (etcdserverpb.RequestOp.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.RequestOp.t), "XXX_NoUnkeyedLiteral"] ↦{dq} (v.(etcdserverpb.RequestOp.XXX_NoUnkeyedLiteral')))
     (l.[(etcdserverpb.RequestOp.t), "XXX_NoUnkeyedLiteral"] ↦{dq} (v.(etcdserverpb.RequestOp.XXX_NoUnkeyedLiteral')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance RequestOp_access_store_XXX_NoUnkeyedLiteral l (v : (etcdserverpb.RequestOp.t)) XXX_NoUnkeyedLiteral' :
   AccessStrict
     (l.[(etcdserverpb.RequestOp.t), "XXX_NoUnkeyedLiteral"] ↦ (v.(etcdserverpb.RequestOp.XXX_NoUnkeyedLiteral')))
     (l.[(etcdserverpb.RequestOp.t), "XXX_NoUnkeyedLiteral"] ↦ XXX_NoUnkeyedLiteral')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.RequestOp.XXX_NoUnkeyedLiteral') := XXX_NoUnkeyedLiteral'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance RequestOp_access_load_XXX_unrecognized l (v : (etcdserverpb.RequestOp.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.RequestOp.t), "XXX_unrecognized"] ↦{dq} (v.(etcdserverpb.RequestOp.XXX_unrecognized')))
     (l.[(etcdserverpb.RequestOp.t), "XXX_unrecognized"] ↦{dq} (v.(etcdserverpb.RequestOp.XXX_unrecognized')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance RequestOp_access_store_XXX_unrecognized l (v : (etcdserverpb.RequestOp.t)) XXX_unrecognized' :
   AccessStrict
     (l.[(etcdserverpb.RequestOp.t), "XXX_unrecognized"] ↦ (v.(etcdserverpb.RequestOp.XXX_unrecognized')))
     (l.[(etcdserverpb.RequestOp.t), "XXX_unrecognized"] ↦ XXX_unrecognized')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.RequestOp.XXX_unrecognized') := XXX_unrecognized'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance RequestOp_access_load_XXX_sizecache l (v : (etcdserverpb.RequestOp.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.RequestOp.t), "XXX_sizecache"] ↦{dq} (v.(etcdserverpb.RequestOp.XXX_sizecache')))
     (l.[(etcdserverpb.RequestOp.t), "XXX_sizecache"] ↦{dq} (v.(etcdserverpb.RequestOp.XXX_sizecache')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance RequestOp_access_store_XXX_sizecache l (v : (etcdserverpb.RequestOp.t)) XXX_sizecache' :
   AccessStrict
     (l.[(etcdserverpb.RequestOp.t), "XXX_sizecache"] ↦ (v.(etcdserverpb.RequestOp.XXX_sizecache')))
     (l.[(etcdserverpb.RequestOp.t), "XXX_sizecache"] ↦ XXX_sizecache')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.RequestOp.XXX_sizecache') := XXX_sizecache'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End RequestOp.
@@ -1970,25 +1970,25 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance RequestOp_RequestRange_into_val_typed
    :
   IntoValTypedUnderlying (etcdserverpb.RequestOp_RequestRange.t) (etcdserverpb.RequestOp_RequestRangeⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance RequestOp_RequestRange_access_load_RequestRange l (v : (etcdserverpb.RequestOp_RequestRange.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.RequestOp_RequestRange.t), "RequestRange"] ↦{dq} (v.(etcdserverpb.RequestOp_RequestRange.RequestRange')))
     (l.[(etcdserverpb.RequestOp_RequestRange.t), "RequestRange"] ↦{dq} (v.(etcdserverpb.RequestOp_RequestRange.RequestRange')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance RequestOp_RequestRange_access_store_RequestRange l (v : (etcdserverpb.RequestOp_RequestRange.t)) RequestRange' :
   AccessStrict
     (l.[(etcdserverpb.RequestOp_RequestRange.t), "RequestRange"] ↦ (v.(etcdserverpb.RequestOp_RequestRange.RequestRange')))
     (l.[(etcdserverpb.RequestOp_RequestRange.t), "RequestRange"] ↦ RequestRange')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.RequestOp_RequestRange.RequestRange') := RequestRange'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End RequestOp_RequestRange.
@@ -2011,25 +2011,25 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance RequestOp_RequestPut_into_val_typed
    :
   IntoValTypedUnderlying (etcdserverpb.RequestOp_RequestPut.t) (etcdserverpb.RequestOp_RequestPutⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance RequestOp_RequestPut_access_load_RequestPut l (v : (etcdserverpb.RequestOp_RequestPut.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.RequestOp_RequestPut.t), "RequestPut"] ↦{dq} (v.(etcdserverpb.RequestOp_RequestPut.RequestPut')))
     (l.[(etcdserverpb.RequestOp_RequestPut.t), "RequestPut"] ↦{dq} (v.(etcdserverpb.RequestOp_RequestPut.RequestPut')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance RequestOp_RequestPut_access_store_RequestPut l (v : (etcdserverpb.RequestOp_RequestPut.t)) RequestPut' :
   AccessStrict
     (l.[(etcdserverpb.RequestOp_RequestPut.t), "RequestPut"] ↦ (v.(etcdserverpb.RequestOp_RequestPut.RequestPut')))
     (l.[(etcdserverpb.RequestOp_RequestPut.t), "RequestPut"] ↦ RequestPut')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.RequestOp_RequestPut.RequestPut') := RequestPut'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End RequestOp_RequestPut.
@@ -2052,25 +2052,25 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance RequestOp_RequestDeleteRange_into_val_typed
    :
   IntoValTypedUnderlying (etcdserverpb.RequestOp_RequestDeleteRange.t) (etcdserverpb.RequestOp_RequestDeleteRangeⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance RequestOp_RequestDeleteRange_access_load_RequestDeleteRange l (v : (etcdserverpb.RequestOp_RequestDeleteRange.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.RequestOp_RequestDeleteRange.t), "RequestDeleteRange"] ↦{dq} (v.(etcdserverpb.RequestOp_RequestDeleteRange.RequestDeleteRange')))
     (l.[(etcdserverpb.RequestOp_RequestDeleteRange.t), "RequestDeleteRange"] ↦{dq} (v.(etcdserverpb.RequestOp_RequestDeleteRange.RequestDeleteRange')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance RequestOp_RequestDeleteRange_access_store_RequestDeleteRange l (v : (etcdserverpb.RequestOp_RequestDeleteRange.t)) RequestDeleteRange' :
   AccessStrict
     (l.[(etcdserverpb.RequestOp_RequestDeleteRange.t), "RequestDeleteRange"] ↦ (v.(etcdserverpb.RequestOp_RequestDeleteRange.RequestDeleteRange')))
     (l.[(etcdserverpb.RequestOp_RequestDeleteRange.t), "RequestDeleteRange"] ↦ RequestDeleteRange')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.RequestOp_RequestDeleteRange.RequestDeleteRange') := RequestDeleteRange'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End RequestOp_RequestDeleteRange.
@@ -2093,25 +2093,25 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance RequestOp_RequestTxn_into_val_typed
    :
   IntoValTypedUnderlying (etcdserverpb.RequestOp_RequestTxn.t) (etcdserverpb.RequestOp_RequestTxnⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance RequestOp_RequestTxn_access_load_RequestTxn l (v : (etcdserverpb.RequestOp_RequestTxn.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.RequestOp_RequestTxn.t), "RequestTxn"] ↦{dq} (v.(etcdserverpb.RequestOp_RequestTxn.RequestTxn')))
     (l.[(etcdserverpb.RequestOp_RequestTxn.t), "RequestTxn"] ↦{dq} (v.(etcdserverpb.RequestOp_RequestTxn.RequestTxn')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance RequestOp_RequestTxn_access_store_RequestTxn l (v : (etcdserverpb.RequestOp_RequestTxn.t)) RequestTxn' :
   AccessStrict
     (l.[(etcdserverpb.RequestOp_RequestTxn.t), "RequestTxn"] ↦ (v.(etcdserverpb.RequestOp_RequestTxn.RequestTxn')))
     (l.[(etcdserverpb.RequestOp_RequestTxn.t), "RequestTxn"] ↦ RequestTxn')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.RequestOp_RequestTxn.RequestTxn') := RequestTxn'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End RequestOp_RequestTxn.
@@ -2137,64 +2137,64 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance ResponseOp_into_val_typed
    :
   IntoValTypedUnderlying (etcdserverpb.ResponseOp.t) (etcdserverpb.ResponseOpⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance ResponseOp_access_load_Response l (v : (etcdserverpb.ResponseOp.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.ResponseOp.t), "Response"] ↦{dq} (v.(etcdserverpb.ResponseOp.Response')))
     (l.[(etcdserverpb.ResponseOp.t), "Response"] ↦{dq} (v.(etcdserverpb.ResponseOp.Response')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance ResponseOp_access_store_Response l (v : (etcdserverpb.ResponseOp.t)) Response' :
   AccessStrict
     (l.[(etcdserverpb.ResponseOp.t), "Response"] ↦ (v.(etcdserverpb.ResponseOp.Response')))
     (l.[(etcdserverpb.ResponseOp.t), "Response"] ↦ Response')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.ResponseOp.Response') := Response'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance ResponseOp_access_load_XXX_NoUnkeyedLiteral l (v : (etcdserverpb.ResponseOp.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.ResponseOp.t), "XXX_NoUnkeyedLiteral"] ↦{dq} (v.(etcdserverpb.ResponseOp.XXX_NoUnkeyedLiteral')))
     (l.[(etcdserverpb.ResponseOp.t), "XXX_NoUnkeyedLiteral"] ↦{dq} (v.(etcdserverpb.ResponseOp.XXX_NoUnkeyedLiteral')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance ResponseOp_access_store_XXX_NoUnkeyedLiteral l (v : (etcdserverpb.ResponseOp.t)) XXX_NoUnkeyedLiteral' :
   AccessStrict
     (l.[(etcdserverpb.ResponseOp.t), "XXX_NoUnkeyedLiteral"] ↦ (v.(etcdserverpb.ResponseOp.XXX_NoUnkeyedLiteral')))
     (l.[(etcdserverpb.ResponseOp.t), "XXX_NoUnkeyedLiteral"] ↦ XXX_NoUnkeyedLiteral')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.ResponseOp.XXX_NoUnkeyedLiteral') := XXX_NoUnkeyedLiteral'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance ResponseOp_access_load_XXX_unrecognized l (v : (etcdserverpb.ResponseOp.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.ResponseOp.t), "XXX_unrecognized"] ↦{dq} (v.(etcdserverpb.ResponseOp.XXX_unrecognized')))
     (l.[(etcdserverpb.ResponseOp.t), "XXX_unrecognized"] ↦{dq} (v.(etcdserverpb.ResponseOp.XXX_unrecognized')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance ResponseOp_access_store_XXX_unrecognized l (v : (etcdserverpb.ResponseOp.t)) XXX_unrecognized' :
   AccessStrict
     (l.[(etcdserverpb.ResponseOp.t), "XXX_unrecognized"] ↦ (v.(etcdserverpb.ResponseOp.XXX_unrecognized')))
     (l.[(etcdserverpb.ResponseOp.t), "XXX_unrecognized"] ↦ XXX_unrecognized')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.ResponseOp.XXX_unrecognized') := XXX_unrecognized'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance ResponseOp_access_load_XXX_sizecache l (v : (etcdserverpb.ResponseOp.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.ResponseOp.t), "XXX_sizecache"] ↦{dq} (v.(etcdserverpb.ResponseOp.XXX_sizecache')))
     (l.[(etcdserverpb.ResponseOp.t), "XXX_sizecache"] ↦{dq} (v.(etcdserverpb.ResponseOp.XXX_sizecache')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance ResponseOp_access_store_XXX_sizecache l (v : (etcdserverpb.ResponseOp.t)) XXX_sizecache' :
   AccessStrict
     (l.[(etcdserverpb.ResponseOp.t), "XXX_sizecache"] ↦ (v.(etcdserverpb.ResponseOp.XXX_sizecache')))
     (l.[(etcdserverpb.ResponseOp.t), "XXX_sizecache"] ↦ XXX_sizecache')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.ResponseOp.XXX_sizecache') := XXX_sizecache'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End ResponseOp.
@@ -2217,25 +2217,25 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance ResponseOp_ResponseRange_into_val_typed
    :
   IntoValTypedUnderlying (etcdserverpb.ResponseOp_ResponseRange.t) (etcdserverpb.ResponseOp_ResponseRangeⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance ResponseOp_ResponseRange_access_load_ResponseRange l (v : (etcdserverpb.ResponseOp_ResponseRange.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.ResponseOp_ResponseRange.t), "ResponseRange"] ↦{dq} (v.(etcdserverpb.ResponseOp_ResponseRange.ResponseRange')))
     (l.[(etcdserverpb.ResponseOp_ResponseRange.t), "ResponseRange"] ↦{dq} (v.(etcdserverpb.ResponseOp_ResponseRange.ResponseRange')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance ResponseOp_ResponseRange_access_store_ResponseRange l (v : (etcdserverpb.ResponseOp_ResponseRange.t)) ResponseRange' :
   AccessStrict
     (l.[(etcdserverpb.ResponseOp_ResponseRange.t), "ResponseRange"] ↦ (v.(etcdserverpb.ResponseOp_ResponseRange.ResponseRange')))
     (l.[(etcdserverpb.ResponseOp_ResponseRange.t), "ResponseRange"] ↦ ResponseRange')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.ResponseOp_ResponseRange.ResponseRange') := ResponseRange'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End ResponseOp_ResponseRange.
@@ -2258,25 +2258,25 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance ResponseOp_ResponsePut_into_val_typed
    :
   IntoValTypedUnderlying (etcdserverpb.ResponseOp_ResponsePut.t) (etcdserverpb.ResponseOp_ResponsePutⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance ResponseOp_ResponsePut_access_load_ResponsePut l (v : (etcdserverpb.ResponseOp_ResponsePut.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.ResponseOp_ResponsePut.t), "ResponsePut"] ↦{dq} (v.(etcdserverpb.ResponseOp_ResponsePut.ResponsePut')))
     (l.[(etcdserverpb.ResponseOp_ResponsePut.t), "ResponsePut"] ↦{dq} (v.(etcdserverpb.ResponseOp_ResponsePut.ResponsePut')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance ResponseOp_ResponsePut_access_store_ResponsePut l (v : (etcdserverpb.ResponseOp_ResponsePut.t)) ResponsePut' :
   AccessStrict
     (l.[(etcdserverpb.ResponseOp_ResponsePut.t), "ResponsePut"] ↦ (v.(etcdserverpb.ResponseOp_ResponsePut.ResponsePut')))
     (l.[(etcdserverpb.ResponseOp_ResponsePut.t), "ResponsePut"] ↦ ResponsePut')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.ResponseOp_ResponsePut.ResponsePut') := ResponsePut'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End ResponseOp_ResponsePut.
@@ -2299,25 +2299,25 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance ResponseOp_ResponseDeleteRange_into_val_typed
    :
   IntoValTypedUnderlying (etcdserverpb.ResponseOp_ResponseDeleteRange.t) (etcdserverpb.ResponseOp_ResponseDeleteRangeⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance ResponseOp_ResponseDeleteRange_access_load_ResponseDeleteRange l (v : (etcdserverpb.ResponseOp_ResponseDeleteRange.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.ResponseOp_ResponseDeleteRange.t), "ResponseDeleteRange"] ↦{dq} (v.(etcdserverpb.ResponseOp_ResponseDeleteRange.ResponseDeleteRange')))
     (l.[(etcdserverpb.ResponseOp_ResponseDeleteRange.t), "ResponseDeleteRange"] ↦{dq} (v.(etcdserverpb.ResponseOp_ResponseDeleteRange.ResponseDeleteRange')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance ResponseOp_ResponseDeleteRange_access_store_ResponseDeleteRange l (v : (etcdserverpb.ResponseOp_ResponseDeleteRange.t)) ResponseDeleteRange' :
   AccessStrict
     (l.[(etcdserverpb.ResponseOp_ResponseDeleteRange.t), "ResponseDeleteRange"] ↦ (v.(etcdserverpb.ResponseOp_ResponseDeleteRange.ResponseDeleteRange')))
     (l.[(etcdserverpb.ResponseOp_ResponseDeleteRange.t), "ResponseDeleteRange"] ↦ ResponseDeleteRange')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.ResponseOp_ResponseDeleteRange.ResponseDeleteRange') := ResponseDeleteRange'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End ResponseOp_ResponseDeleteRange.
@@ -2340,25 +2340,25 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance ResponseOp_ResponseTxn_into_val_typed
    :
   IntoValTypedUnderlying (etcdserverpb.ResponseOp_ResponseTxn.t) (etcdserverpb.ResponseOp_ResponseTxnⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance ResponseOp_ResponseTxn_access_load_ResponseTxn l (v : (etcdserverpb.ResponseOp_ResponseTxn.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.ResponseOp_ResponseTxn.t), "ResponseTxn"] ↦{dq} (v.(etcdserverpb.ResponseOp_ResponseTxn.ResponseTxn')))
     (l.[(etcdserverpb.ResponseOp_ResponseTxn.t), "ResponseTxn"] ↦{dq} (v.(etcdserverpb.ResponseOp_ResponseTxn.ResponseTxn')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance ResponseOp_ResponseTxn_access_store_ResponseTxn l (v : (etcdserverpb.ResponseOp_ResponseTxn.t)) ResponseTxn' :
   AccessStrict
     (l.[(etcdserverpb.ResponseOp_ResponseTxn.t), "ResponseTxn"] ↦ (v.(etcdserverpb.ResponseOp_ResponseTxn.ResponseTxn')))
     (l.[(etcdserverpb.ResponseOp_ResponseTxn.t), "ResponseTxn"] ↦ ResponseTxn')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.ResponseOp_ResponseTxn.ResponseTxn') := ResponseTxn'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End ResponseOp_ResponseTxn.
@@ -2388,116 +2388,116 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance Compare_into_val_typed
    :
   IntoValTypedUnderlying (etcdserverpb.Compare.t) (etcdserverpb.Compareⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance Compare_access_load_Result l (v : (etcdserverpb.Compare.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.Compare.t), "Result"] ↦{dq} (v.(etcdserverpb.Compare.Result')))
     (l.[(etcdserverpb.Compare.t), "Result"] ↦{dq} (v.(etcdserverpb.Compare.Result')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Compare_access_store_Result l (v : (etcdserverpb.Compare.t)) Result' :
   AccessStrict
     (l.[(etcdserverpb.Compare.t), "Result"] ↦ (v.(etcdserverpb.Compare.Result')))
     (l.[(etcdserverpb.Compare.t), "Result"] ↦ Result')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.Compare.Result') := Result'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Compare_access_load_Target l (v : (etcdserverpb.Compare.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.Compare.t), "Target"] ↦{dq} (v.(etcdserverpb.Compare.Target')))
     (l.[(etcdserverpb.Compare.t), "Target"] ↦{dq} (v.(etcdserverpb.Compare.Target')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Compare_access_store_Target l (v : (etcdserverpb.Compare.t)) Target' :
   AccessStrict
     (l.[(etcdserverpb.Compare.t), "Target"] ↦ (v.(etcdserverpb.Compare.Target')))
     (l.[(etcdserverpb.Compare.t), "Target"] ↦ Target')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.Compare.Target') := Target'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Compare_access_load_Key l (v : (etcdserverpb.Compare.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.Compare.t), "Key"] ↦{dq} (v.(etcdserverpb.Compare.Key')))
     (l.[(etcdserverpb.Compare.t), "Key"] ↦{dq} (v.(etcdserverpb.Compare.Key')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Compare_access_store_Key l (v : (etcdserverpb.Compare.t)) Key' :
   AccessStrict
     (l.[(etcdserverpb.Compare.t), "Key"] ↦ (v.(etcdserverpb.Compare.Key')))
     (l.[(etcdserverpb.Compare.t), "Key"] ↦ Key')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.Compare.Key') := Key'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Compare_access_load_TargetUnion l (v : (etcdserverpb.Compare.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.Compare.t), "TargetUnion"] ↦{dq} (v.(etcdserverpb.Compare.TargetUnion')))
     (l.[(etcdserverpb.Compare.t), "TargetUnion"] ↦{dq} (v.(etcdserverpb.Compare.TargetUnion')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Compare_access_store_TargetUnion l (v : (etcdserverpb.Compare.t)) TargetUnion' :
   AccessStrict
     (l.[(etcdserverpb.Compare.t), "TargetUnion"] ↦ (v.(etcdserverpb.Compare.TargetUnion')))
     (l.[(etcdserverpb.Compare.t), "TargetUnion"] ↦ TargetUnion')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.Compare.TargetUnion') := TargetUnion'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Compare_access_load_RangeEnd l (v : (etcdserverpb.Compare.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.Compare.t), "RangeEnd"] ↦{dq} (v.(etcdserverpb.Compare.RangeEnd')))
     (l.[(etcdserverpb.Compare.t), "RangeEnd"] ↦{dq} (v.(etcdserverpb.Compare.RangeEnd')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Compare_access_store_RangeEnd l (v : (etcdserverpb.Compare.t)) RangeEnd' :
   AccessStrict
     (l.[(etcdserverpb.Compare.t), "RangeEnd"] ↦ (v.(etcdserverpb.Compare.RangeEnd')))
     (l.[(etcdserverpb.Compare.t), "RangeEnd"] ↦ RangeEnd')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.Compare.RangeEnd') := RangeEnd'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Compare_access_load_XXX_NoUnkeyedLiteral l (v : (etcdserverpb.Compare.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.Compare.t), "XXX_NoUnkeyedLiteral"] ↦{dq} (v.(etcdserverpb.Compare.XXX_NoUnkeyedLiteral')))
     (l.[(etcdserverpb.Compare.t), "XXX_NoUnkeyedLiteral"] ↦{dq} (v.(etcdserverpb.Compare.XXX_NoUnkeyedLiteral')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Compare_access_store_XXX_NoUnkeyedLiteral l (v : (etcdserverpb.Compare.t)) XXX_NoUnkeyedLiteral' :
   AccessStrict
     (l.[(etcdserverpb.Compare.t), "XXX_NoUnkeyedLiteral"] ↦ (v.(etcdserverpb.Compare.XXX_NoUnkeyedLiteral')))
     (l.[(etcdserverpb.Compare.t), "XXX_NoUnkeyedLiteral"] ↦ XXX_NoUnkeyedLiteral')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.Compare.XXX_NoUnkeyedLiteral') := XXX_NoUnkeyedLiteral'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Compare_access_load_XXX_unrecognized l (v : (etcdserverpb.Compare.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.Compare.t), "XXX_unrecognized"] ↦{dq} (v.(etcdserverpb.Compare.XXX_unrecognized')))
     (l.[(etcdserverpb.Compare.t), "XXX_unrecognized"] ↦{dq} (v.(etcdserverpb.Compare.XXX_unrecognized')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Compare_access_store_XXX_unrecognized l (v : (etcdserverpb.Compare.t)) XXX_unrecognized' :
   AccessStrict
     (l.[(etcdserverpb.Compare.t), "XXX_unrecognized"] ↦ (v.(etcdserverpb.Compare.XXX_unrecognized')))
     (l.[(etcdserverpb.Compare.t), "XXX_unrecognized"] ↦ XXX_unrecognized')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.Compare.XXX_unrecognized') := XXX_unrecognized'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Compare_access_load_XXX_sizecache l (v : (etcdserverpb.Compare.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.Compare.t), "XXX_sizecache"] ↦{dq} (v.(etcdserverpb.Compare.XXX_sizecache')))
     (l.[(etcdserverpb.Compare.t), "XXX_sizecache"] ↦{dq} (v.(etcdserverpb.Compare.XXX_sizecache')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Compare_access_store_XXX_sizecache l (v : (etcdserverpb.Compare.t)) XXX_sizecache' :
   AccessStrict
     (l.[(etcdserverpb.Compare.t), "XXX_sizecache"] ↦ (v.(etcdserverpb.Compare.XXX_sizecache')))
     (l.[(etcdserverpb.Compare.t), "XXX_sizecache"] ↦ XXX_sizecache')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.Compare.XXX_sizecache') := XXX_sizecache'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End Compare.
@@ -2520,25 +2520,25 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance Compare_Version_into_val_typed
    :
   IntoValTypedUnderlying (etcdserverpb.Compare_Version.t) (etcdserverpb.Compare_Versionⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance Compare_Version_access_load_Version l (v : (etcdserverpb.Compare_Version.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.Compare_Version.t), "Version"] ↦{dq} (v.(etcdserverpb.Compare_Version.Version')))
     (l.[(etcdserverpb.Compare_Version.t), "Version"] ↦{dq} (v.(etcdserverpb.Compare_Version.Version')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Compare_Version_access_store_Version l (v : (etcdserverpb.Compare_Version.t)) Version' :
   AccessStrict
     (l.[(etcdserverpb.Compare_Version.t), "Version"] ↦ (v.(etcdserverpb.Compare_Version.Version')))
     (l.[(etcdserverpb.Compare_Version.t), "Version"] ↦ Version')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.Compare_Version.Version') := Version'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End Compare_Version.
@@ -2561,25 +2561,25 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance Compare_CreateRevision_into_val_typed
    :
   IntoValTypedUnderlying (etcdserverpb.Compare_CreateRevision.t) (etcdserverpb.Compare_CreateRevisionⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance Compare_CreateRevision_access_load_CreateRevision l (v : (etcdserverpb.Compare_CreateRevision.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.Compare_CreateRevision.t), "CreateRevision"] ↦{dq} (v.(etcdserverpb.Compare_CreateRevision.CreateRevision')))
     (l.[(etcdserverpb.Compare_CreateRevision.t), "CreateRevision"] ↦{dq} (v.(etcdserverpb.Compare_CreateRevision.CreateRevision')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Compare_CreateRevision_access_store_CreateRevision l (v : (etcdserverpb.Compare_CreateRevision.t)) CreateRevision' :
   AccessStrict
     (l.[(etcdserverpb.Compare_CreateRevision.t), "CreateRevision"] ↦ (v.(etcdserverpb.Compare_CreateRevision.CreateRevision')))
     (l.[(etcdserverpb.Compare_CreateRevision.t), "CreateRevision"] ↦ CreateRevision')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.Compare_CreateRevision.CreateRevision') := CreateRevision'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End Compare_CreateRevision.
@@ -2602,25 +2602,25 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance Compare_ModRevision_into_val_typed
    :
   IntoValTypedUnderlying (etcdserverpb.Compare_ModRevision.t) (etcdserverpb.Compare_ModRevisionⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance Compare_ModRevision_access_load_ModRevision l (v : (etcdserverpb.Compare_ModRevision.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.Compare_ModRevision.t), "ModRevision"] ↦{dq} (v.(etcdserverpb.Compare_ModRevision.ModRevision')))
     (l.[(etcdserverpb.Compare_ModRevision.t), "ModRevision"] ↦{dq} (v.(etcdserverpb.Compare_ModRevision.ModRevision')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Compare_ModRevision_access_store_ModRevision l (v : (etcdserverpb.Compare_ModRevision.t)) ModRevision' :
   AccessStrict
     (l.[(etcdserverpb.Compare_ModRevision.t), "ModRevision"] ↦ (v.(etcdserverpb.Compare_ModRevision.ModRevision')))
     (l.[(etcdserverpb.Compare_ModRevision.t), "ModRevision"] ↦ ModRevision')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.Compare_ModRevision.ModRevision') := ModRevision'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End Compare_ModRevision.
@@ -2643,25 +2643,25 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance Compare_Value_into_val_typed
    :
   IntoValTypedUnderlying (etcdserverpb.Compare_Value.t) (etcdserverpb.Compare_Valueⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance Compare_Value_access_load_Value l (v : (etcdserverpb.Compare_Value.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.Compare_Value.t), "Value"] ↦{dq} (v.(etcdserverpb.Compare_Value.Value')))
     (l.[(etcdserverpb.Compare_Value.t), "Value"] ↦{dq} (v.(etcdserverpb.Compare_Value.Value')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Compare_Value_access_store_Value l (v : (etcdserverpb.Compare_Value.t)) Value' :
   AccessStrict
     (l.[(etcdserverpb.Compare_Value.t), "Value"] ↦ (v.(etcdserverpb.Compare_Value.Value')))
     (l.[(etcdserverpb.Compare_Value.t), "Value"] ↦ Value')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.Compare_Value.Value') := Value'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End Compare_Value.
@@ -2684,25 +2684,25 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance Compare_Lease_into_val_typed
    :
   IntoValTypedUnderlying (etcdserverpb.Compare_Lease.t) (etcdserverpb.Compare_Leaseⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance Compare_Lease_access_load_Lease l (v : (etcdserverpb.Compare_Lease.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.Compare_Lease.t), "Lease"] ↦{dq} (v.(etcdserverpb.Compare_Lease.Lease')))
     (l.[(etcdserverpb.Compare_Lease.t), "Lease"] ↦{dq} (v.(etcdserverpb.Compare_Lease.Lease')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Compare_Lease_access_store_Lease l (v : (etcdserverpb.Compare_Lease.t)) Lease' :
   AccessStrict
     (l.[(etcdserverpb.Compare_Lease.t), "Lease"] ↦ (v.(etcdserverpb.Compare_Lease.Lease')))
     (l.[(etcdserverpb.Compare_Lease.t), "Lease"] ↦ Lease')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.Compare_Lease.Lease') := Lease'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End Compare_Lease.
@@ -2730,90 +2730,90 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance TxnRequest_into_val_typed
    :
   IntoValTypedUnderlying (etcdserverpb.TxnRequest.t) (etcdserverpb.TxnRequestⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance TxnRequest_access_load_Compare l (v : (etcdserverpb.TxnRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.TxnRequest.t), "Compare"] ↦{dq} (v.(etcdserverpb.TxnRequest.Compare')))
     (l.[(etcdserverpb.TxnRequest.t), "Compare"] ↦{dq} (v.(etcdserverpb.TxnRequest.Compare')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance TxnRequest_access_store_Compare l (v : (etcdserverpb.TxnRequest.t)) Compare' :
   AccessStrict
     (l.[(etcdserverpb.TxnRequest.t), "Compare"] ↦ (v.(etcdserverpb.TxnRequest.Compare')))
     (l.[(etcdserverpb.TxnRequest.t), "Compare"] ↦ Compare')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.TxnRequest.Compare') := Compare'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance TxnRequest_access_load_Success l (v : (etcdserverpb.TxnRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.TxnRequest.t), "Success"] ↦{dq} (v.(etcdserverpb.TxnRequest.Success')))
     (l.[(etcdserverpb.TxnRequest.t), "Success"] ↦{dq} (v.(etcdserverpb.TxnRequest.Success')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance TxnRequest_access_store_Success l (v : (etcdserverpb.TxnRequest.t)) Success' :
   AccessStrict
     (l.[(etcdserverpb.TxnRequest.t), "Success"] ↦ (v.(etcdserverpb.TxnRequest.Success')))
     (l.[(etcdserverpb.TxnRequest.t), "Success"] ↦ Success')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.TxnRequest.Success') := Success'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance TxnRequest_access_load_Failure l (v : (etcdserverpb.TxnRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.TxnRequest.t), "Failure"] ↦{dq} (v.(etcdserverpb.TxnRequest.Failure')))
     (l.[(etcdserverpb.TxnRequest.t), "Failure"] ↦{dq} (v.(etcdserverpb.TxnRequest.Failure')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance TxnRequest_access_store_Failure l (v : (etcdserverpb.TxnRequest.t)) Failure' :
   AccessStrict
     (l.[(etcdserverpb.TxnRequest.t), "Failure"] ↦ (v.(etcdserverpb.TxnRequest.Failure')))
     (l.[(etcdserverpb.TxnRequest.t), "Failure"] ↦ Failure')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.TxnRequest.Failure') := Failure'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance TxnRequest_access_load_XXX_NoUnkeyedLiteral l (v : (etcdserverpb.TxnRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.TxnRequest.t), "XXX_NoUnkeyedLiteral"] ↦{dq} (v.(etcdserverpb.TxnRequest.XXX_NoUnkeyedLiteral')))
     (l.[(etcdserverpb.TxnRequest.t), "XXX_NoUnkeyedLiteral"] ↦{dq} (v.(etcdserverpb.TxnRequest.XXX_NoUnkeyedLiteral')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance TxnRequest_access_store_XXX_NoUnkeyedLiteral l (v : (etcdserverpb.TxnRequest.t)) XXX_NoUnkeyedLiteral' :
   AccessStrict
     (l.[(etcdserverpb.TxnRequest.t), "XXX_NoUnkeyedLiteral"] ↦ (v.(etcdserverpb.TxnRequest.XXX_NoUnkeyedLiteral')))
     (l.[(etcdserverpb.TxnRequest.t), "XXX_NoUnkeyedLiteral"] ↦ XXX_NoUnkeyedLiteral')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.TxnRequest.XXX_NoUnkeyedLiteral') := XXX_NoUnkeyedLiteral'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance TxnRequest_access_load_XXX_unrecognized l (v : (etcdserverpb.TxnRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.TxnRequest.t), "XXX_unrecognized"] ↦{dq} (v.(etcdserverpb.TxnRequest.XXX_unrecognized')))
     (l.[(etcdserverpb.TxnRequest.t), "XXX_unrecognized"] ↦{dq} (v.(etcdserverpb.TxnRequest.XXX_unrecognized')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance TxnRequest_access_store_XXX_unrecognized l (v : (etcdserverpb.TxnRequest.t)) XXX_unrecognized' :
   AccessStrict
     (l.[(etcdserverpb.TxnRequest.t), "XXX_unrecognized"] ↦ (v.(etcdserverpb.TxnRequest.XXX_unrecognized')))
     (l.[(etcdserverpb.TxnRequest.t), "XXX_unrecognized"] ↦ XXX_unrecognized')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.TxnRequest.XXX_unrecognized') := XXX_unrecognized'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance TxnRequest_access_load_XXX_sizecache l (v : (etcdserverpb.TxnRequest.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.TxnRequest.t), "XXX_sizecache"] ↦{dq} (v.(etcdserverpb.TxnRequest.XXX_sizecache')))
     (l.[(etcdserverpb.TxnRequest.t), "XXX_sizecache"] ↦{dq} (v.(etcdserverpb.TxnRequest.XXX_sizecache')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance TxnRequest_access_store_XXX_sizecache l (v : (etcdserverpb.TxnRequest.t)) XXX_sizecache' :
   AccessStrict
     (l.[(etcdserverpb.TxnRequest.t), "XXX_sizecache"] ↦ (v.(etcdserverpb.TxnRequest.XXX_sizecache')))
     (l.[(etcdserverpb.TxnRequest.t), "XXX_sizecache"] ↦ XXX_sizecache')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.TxnRequest.XXX_sizecache') := XXX_sizecache'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End TxnRequest.
@@ -2841,90 +2841,90 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance TxnResponse_into_val_typed
    :
   IntoValTypedUnderlying (etcdserverpb.TxnResponse.t) (etcdserverpb.TxnResponseⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance TxnResponse_access_load_Header l (v : (etcdserverpb.TxnResponse.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.TxnResponse.t), "Header"] ↦{dq} (v.(etcdserverpb.TxnResponse.Header')))
     (l.[(etcdserverpb.TxnResponse.t), "Header"] ↦{dq} (v.(etcdserverpb.TxnResponse.Header')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance TxnResponse_access_store_Header l (v : (etcdserverpb.TxnResponse.t)) Header' :
   AccessStrict
     (l.[(etcdserverpb.TxnResponse.t), "Header"] ↦ (v.(etcdserverpb.TxnResponse.Header')))
     (l.[(etcdserverpb.TxnResponse.t), "Header"] ↦ Header')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.TxnResponse.Header') := Header'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance TxnResponse_access_load_Succeeded l (v : (etcdserverpb.TxnResponse.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.TxnResponse.t), "Succeeded"] ↦{dq} (v.(etcdserverpb.TxnResponse.Succeeded')))
     (l.[(etcdserverpb.TxnResponse.t), "Succeeded"] ↦{dq} (v.(etcdserverpb.TxnResponse.Succeeded')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance TxnResponse_access_store_Succeeded l (v : (etcdserverpb.TxnResponse.t)) Succeeded' :
   AccessStrict
     (l.[(etcdserverpb.TxnResponse.t), "Succeeded"] ↦ (v.(etcdserverpb.TxnResponse.Succeeded')))
     (l.[(etcdserverpb.TxnResponse.t), "Succeeded"] ↦ Succeeded')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.TxnResponse.Succeeded') := Succeeded'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance TxnResponse_access_load_Responses l (v : (etcdserverpb.TxnResponse.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.TxnResponse.t), "Responses"] ↦{dq} (v.(etcdserverpb.TxnResponse.Responses')))
     (l.[(etcdserverpb.TxnResponse.t), "Responses"] ↦{dq} (v.(etcdserverpb.TxnResponse.Responses')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance TxnResponse_access_store_Responses l (v : (etcdserverpb.TxnResponse.t)) Responses' :
   AccessStrict
     (l.[(etcdserverpb.TxnResponse.t), "Responses"] ↦ (v.(etcdserverpb.TxnResponse.Responses')))
     (l.[(etcdserverpb.TxnResponse.t), "Responses"] ↦ Responses')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.TxnResponse.Responses') := Responses'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance TxnResponse_access_load_XXX_NoUnkeyedLiteral l (v : (etcdserverpb.TxnResponse.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.TxnResponse.t), "XXX_NoUnkeyedLiteral"] ↦{dq} (v.(etcdserverpb.TxnResponse.XXX_NoUnkeyedLiteral')))
     (l.[(etcdserverpb.TxnResponse.t), "XXX_NoUnkeyedLiteral"] ↦{dq} (v.(etcdserverpb.TxnResponse.XXX_NoUnkeyedLiteral')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance TxnResponse_access_store_XXX_NoUnkeyedLiteral l (v : (etcdserverpb.TxnResponse.t)) XXX_NoUnkeyedLiteral' :
   AccessStrict
     (l.[(etcdserverpb.TxnResponse.t), "XXX_NoUnkeyedLiteral"] ↦ (v.(etcdserverpb.TxnResponse.XXX_NoUnkeyedLiteral')))
     (l.[(etcdserverpb.TxnResponse.t), "XXX_NoUnkeyedLiteral"] ↦ XXX_NoUnkeyedLiteral')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.TxnResponse.XXX_NoUnkeyedLiteral') := XXX_NoUnkeyedLiteral'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance TxnResponse_access_load_XXX_unrecognized l (v : (etcdserverpb.TxnResponse.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.TxnResponse.t), "XXX_unrecognized"] ↦{dq} (v.(etcdserverpb.TxnResponse.XXX_unrecognized')))
     (l.[(etcdserverpb.TxnResponse.t), "XXX_unrecognized"] ↦{dq} (v.(etcdserverpb.TxnResponse.XXX_unrecognized')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance TxnResponse_access_store_XXX_unrecognized l (v : (etcdserverpb.TxnResponse.t)) XXX_unrecognized' :
   AccessStrict
     (l.[(etcdserverpb.TxnResponse.t), "XXX_unrecognized"] ↦ (v.(etcdserverpb.TxnResponse.XXX_unrecognized')))
     (l.[(etcdserverpb.TxnResponse.t), "XXX_unrecognized"] ↦ XXX_unrecognized')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.TxnResponse.XXX_unrecognized') := XXX_unrecognized'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance TxnResponse_access_load_XXX_sizecache l (v : (etcdserverpb.TxnResponse.t)) dq :
   AccessStrict
     (l.[(etcdserverpb.TxnResponse.t), "XXX_sizecache"] ↦{dq} (v.(etcdserverpb.TxnResponse.XXX_sizecache')))
     (l.[(etcdserverpb.TxnResponse.t), "XXX_sizecache"] ↦{dq} (v.(etcdserverpb.TxnResponse.XXX_sizecache')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance TxnResponse_access_store_XXX_sizecache l (v : (etcdserverpb.TxnResponse.t)) XXX_sizecache' :
   AccessStrict
     (l.[(etcdserverpb.TxnResponse.t), "XXX_sizecache"] ↦ (v.(etcdserverpb.TxnResponse.XXX_sizecache')))
     (l.[(etcdserverpb.TxnResponse.t), "XXX_sizecache"] ↦ XXX_sizecache')
     (l ↦ v) (l ↦ (v <|(etcdserverpb.TxnResponse.XXX_sizecache') := XXX_sizecache'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End TxnResponse.
