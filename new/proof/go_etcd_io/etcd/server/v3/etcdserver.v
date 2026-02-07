@@ -13,7 +13,11 @@ Class etcdserverG Σ :=
   }.
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
+Context {sem : go.Semantics} {package_sem : proto.Assumptions}.
+Collection W := sem + package_sem.
+
+#[global] Instance : IsPkgInit (iProp Σ) proto := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ) proto := build_get_is_pkg_init_wf.
 Context `{!etcdserverG Σ}.
 
 #[global] Instance : IsPkgInit proto := define_is_pkg_init True%I.

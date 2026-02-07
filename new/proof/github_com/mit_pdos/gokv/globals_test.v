@@ -12,8 +12,12 @@ Section proof.
 Context `{!heapGS Σ}.
 Context `{!globalsGS Σ}.
 Context `{!ghost_varG Σ ()}.
-Context {go_ctx : GoContext}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics} {package_sem : globals_test.main.Assumptions}.
+Collection W := sem + package_sem.
 
+#[global] Instance : IsPkgInit (iProp Σ) globals_test.main := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ) globals_test.main := build_get_is_pkg_init_wf.
 (** A proof can refer to global variable addresses as [global_addr
     PKG_NAME.VAR_NAME], as in this package-specific helper definition. *)
 Local Definition own_initialized : iProp Σ :=

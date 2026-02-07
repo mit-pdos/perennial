@@ -14,7 +14,11 @@ End Op.
 
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
+Context {sem : go.Semantics} {package_sem : clientv3.Assumptions}.
+Collection W := sem + package_sem.
+
+#[global] Instance : IsPkgInit (iProp Σ) clientv3 := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ) clientv3 := build_get_is_pkg_init_wf.
 Context `{!clientv3G Σ}.
 Implicit Types (γ : clientv3_names).
 

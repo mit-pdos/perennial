@@ -35,8 +35,12 @@ better. And its comments in the proof were actually helpful. *)
 Unset Printing Projections.
 
 Section proof.
-Context  `{hG: heapGS Σ, !ffi_semantics _ _} `{!globalsGS Σ} {go_ctx : GoContext}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics} {package_sem : sort.Assumptions}.
+Collection W := sem + package_sem.
 
+#[global] Instance : IsPkgInit (iProp Σ) sort := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ) sort := build_get_is_pkg_init_wf.
 (* The predicate function must implement a pure boolean function over in-bounds
    indices, with an arbitrary invariant I that it requires and preserves *)
 Definition pred_implements (f_code: func.t) (f: Z → bool) (n: Z) (I: iProp Σ) : iProp Σ :=

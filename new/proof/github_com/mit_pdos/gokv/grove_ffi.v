@@ -72,11 +72,12 @@ Section grove.
   Existing Instances grove_op grove_model grove_semantics grove_interp goose_groveGS goose_groveNodeGS.
 
   Context `{!heapGS Σ}.
-  Context `{!globalsGS Σ} {go_ctx : GoContext}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics} {package_sem : grove_ffi.Assumptions}.
+Collection W := sem + package_sem.
 
-  #[global] Instance : IsPkgInit grove_ffi := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf grove_ffi := build_get_is_pkg_init_wf.
-
+#[global] Instance : IsPkgInit (iProp Σ) grove_ffi := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ) grove_ffi := build_get_is_pkg_init_wf.
   Definition is_Listener (l : loc) (host : u64) : iProp Σ :=
     is_pkg_init grove_ffi ∗
     heap_pointsto l (DfracDiscarded) (listen_socket host).

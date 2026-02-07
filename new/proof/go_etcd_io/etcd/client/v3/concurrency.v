@@ -17,7 +17,12 @@ Section proof.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics} {package_sem : zapcore.Assumptions}.
+Collection W := sem + package_sem.
+
+#[global] Instance : IsPkgInit (iProp Σ) zapcore := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ) zapcore := build_get_is_pkg_init_wf.
 Context `{concurrencyG Σ}.
 
 (* FIXME: move these *)

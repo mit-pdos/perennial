@@ -40,7 +40,12 @@ Proof. solve_inG. Qed.
 Section asyncfile_proof.
 
 Context `{!heapGS Σ}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics} {package_sem : asyncfile.Assumptions}.
+Collection W := sem + package_sem.
+
+#[global] Instance : IsPkgInit (iProp Σ) asyncfile := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ) asyncfile := build_get_is_pkg_init_wf.
 Context `{!asyncfileG Σ}.
 Implicit Types (P: list u8 → iProp Σ).
 

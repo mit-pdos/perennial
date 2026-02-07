@@ -6,8 +6,11 @@ From New.proof Require Import grove_prelude.
 
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
+Context {sem : go.Semantics} {package_sem : raft.Assumptions}.
+Collection W := sem + package_sem.
 
+#[global] Instance : IsPkgInit (iProp Σ) raft := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ) raft := build_get_is_pkg_init_wf.
 Definition is_Node (γ : raft_names) (n : raft.Node.t) : iProp Σ :=
   ∃ (n_ptr : loc),
     "%Hn" ∷ ⌜ n = interface.mk (ptrT.id raft.node.id) #n_ptr ⌝ ∗

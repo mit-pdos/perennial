@@ -11,12 +11,12 @@ Section proof.
 
 Context `{!heapGS Σ}.
 Context `{!ghost_mapG Σ w64 bool}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics} {package_sem : ticketlock.Assumptions}.
+Collection W := sem + package_sem.
 
-#[global] Instance : IsPkgInit ticketlock := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf ticketlock := build_get_is_pkg_init_wf.
-
-
+#[global] Instance : IsPkgInit (iProp Σ) ticketlock := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ) ticketlock := build_get_is_pkg_init_wf.
 Definition own_ticketlock_inner (ptr: loc) (cur: w64) (next: w64) : iProp Σ :=
   "Hcur" ∷ own_Uint64 (struct.field_ref_f ticketlock.TicketLock "cur" ptr) (DfracOwn 1) cur ∗
   "Hnext" ∷ own_Uint64 (struct.field_ref_f ticketlock.TicketLock "next" ptr) (DfracOwn 1) next.
