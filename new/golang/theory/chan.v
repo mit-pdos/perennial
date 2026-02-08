@@ -44,7 +44,7 @@ Qed.
 Lemma wp_send (ch: loc) (v: V) (γ: chan_names):
   ∀ Φ,
   is_chan ch γ -∗
-  (£1 ∗ £1 ∗ £1 ∗ £1 -∗ SendAU ch v γ (Φ #())) -∗
+  (£1 ∗ £1 ∗ £1 ∗ £1 -∗ send_au ch v γ (Φ #())) -∗
   WP chan.send #t #ch #v {{ Φ }}.
 Proof.
   wp_start as "#Hch".
@@ -56,7 +56,7 @@ Qed.
 Lemma wp_close (ch: loc) (γ: chan_names):
   ∀ Φ,
   is_chan ch γ -∗
-  (£1 ∗ £1 ∗ £1 ∗ £1 -∗ CloseAU ch γ (Φ #())) -∗
+  (£1 ∗ £1 ∗ £1 ∗ £1 -∗ close_au ch γ (Φ #())) -∗
   WP chan.close #t #ch {{ Φ }}.
 Proof.
   wp_start as "#Hch".
@@ -124,7 +124,7 @@ Qed.
 
 (* The lemmas use Ψ because the original client-provided `send/recv_au` will
    have some specific postcondition predicate. We don't want to force the caller
-   to transform that into a `SendAU` of a different. So, these lemmas are
+   to transform that into a `send_au` of a different. So, these lemmas are
    written to take a wand that turns Ψ into Φ. *)
 Local Lemma wp_try_select_case_blocking cs Ψ :
   ∀ Φ,
@@ -133,7 +133,7 @@ Local Lemma wp_try_select_case_blocking cs Ψ :
        ∃ V γ (v : V) `(!IntoVal V) `(!chanG Σ V) `(!IntoValTyped V t),
      ⌜ send_val = #v ⌝ ∗
      is_chan (V:=V) (t:=t) send_chan γ ∗
-     SendAU send_chan v γ (WP #send_handler #() {{ Ψ }})
+     send_au send_chan v γ (WP #send_handler #() {{ Ψ }})
   | select_receive_f t recv_chan recv_handler =>
       ∃ V γ `(!IntoVal V) `(!IntoValTyped V t) `(!chanG Σ V),
      is_chan (V:=V) (t:=t) recv_chan γ ∗
@@ -221,7 +221,7 @@ Local Lemma wp_try_select_blocking (cases : list op) :
          ∃ V γ (v : V) `(!IntoVal V) `(!chanG Σ V) `(!IntoValTyped V t),
      ⌜ send_val = #v ⌝ ∗
      is_chan (V:=V) (t:=t) send_chan γ ∗
-     SendAU send_chan v γ (WP #send_handler #() {{ Ψ }})
+     send_au send_chan v γ (WP #send_handler #() {{ Ψ }})
   | select_receive_f t recv_chan recv_handler =>
       ∃ V γ `(!IntoVal V) `(!IntoValTyped V t) `(!chanG Σ V),
      is_chan (V:=V) (t:=t) recv_chan γ ∗
@@ -257,7 +257,7 @@ Lemma wp_select_blocking (cases : list op) :
          ∃ V γ (v : V) `(!IntoVal V) `(!chanG Σ V) `(!IntoValTyped V t),
              ⌜ send_val = #v ⌝ ∗
              is_chan (V:=V) (t:=t) send_chan γ ∗
-             SendAU send_chan v γ (WP #send_handler #() {{ Φ }})
+             send_au send_chan v γ (WP #send_handler #() {{ Φ }})
      | select_receive_f t recv_chan recv_handler =>
          ∃ V γ `(!IntoVal V) `(!IntoValTyped V t) `(!chanG Σ V),
              is_chan (V:=V) (t:=t) recv_chan γ ∗

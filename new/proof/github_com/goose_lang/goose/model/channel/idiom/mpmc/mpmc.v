@@ -374,7 +374,7 @@ Lemma mpmc_send_au γ ch (n_prod n_cons:nat) (P : V → iProp Σ) (R : gmultiset
   £1 ∗ £1 -∗
   mpmc_producer γ sent ∗ P v -∗
   ▷(mpmc_producer γ (sent ⊎ {[+ v +]}) -∗ Φ) -∗
-  SendAU ch v γ.(mpmc_chan_name) Φ.
+  send_au ch v γ.(mpmc_chan_name) Φ.
 Proof.
   iIntros "#Hmpmc (Hlc1 & Hlc2) [Hprod HP] Hcont".
   iDestruct "Hmpmc" as "[Hchan Hinv]".
@@ -797,14 +797,14 @@ Proof.
   done.
 Qed.
 
-Lemma mpmc_CloseAU γ ch (n_prod n_cons:nat) P R (producers : list (gmultiset V)) Φ :
+Lemma mpmc_close_au γ ch (n_prod n_cons:nat) P R (producers : list (gmultiset V)) Φ :
   length producers = n_prod →
   is_mpmc γ ch n_prod n_cons P R -∗
   £ 1 -∗
   ([∗ list] s_i ∈ producers, mpmc_producer γ s_i) ∗
         R (foldr (⊎) ∅ producers) -∗
   ▷Φ -∗
-  CloseAU ch γ.(mpmc_chan_name) Φ.
+  close_au ch γ.(mpmc_chan_name) Φ.
 Proof.
   intros.
   iIntros "#Hmpmc Hlc1 (Hprods & HR) Hcont".
@@ -956,7 +956,7 @@ Proof.
   iPoseProof "Hmpmc" as "[#Hchan _]".
   iApply (chan.wp_close ch γ.(mpmc_chan_name) with "[$Hchan]").
   iIntros "(Hlc1 & _ & _ & _)".
-  iApply (mpmc_CloseAU with "[$Hmpmc] [$] [$Hprods $HR]").
+  iApply (mpmc_close_au with "[$Hmpmc] [$] [$Hprods $HR]").
   { done. }
   iModIntro. by iApply "Hcont".
 Qed.
