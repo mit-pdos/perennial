@@ -234,7 +234,7 @@ Proof.
     iNamed "phys". wp_auto.
     iNamed "offer".
     iApply "Hau" in "HP".
-    unfold SendAU.
+    unfold send_au.
     iApply fupd_wp. iMod "HP".
     iMod (lc_fupd_elim_later with "[$] HP") as "HP". iNamed "HP".
     iDestruct "Hoc" as "(H1 & H2)".

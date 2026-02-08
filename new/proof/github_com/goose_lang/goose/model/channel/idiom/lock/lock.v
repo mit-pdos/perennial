@@ -114,13 +114,13 @@ Lemma lock_channel_lock_au γ ch v (R : iProp Σ) :
   is_lock_channel γ ch R -∗
   £1 -∗
   ▷ (has_lock_channel γ ∗ R -∗ Φ) -∗
-  SendAU ch v γ.(lchan_name) Φ.
+  send_au ch v γ.(lchan_name) Φ.
 Proof.
   iIntros (Φ) "#Hlock (HR & Hlc) Hcont".
   unfold has_lock_channel.
   iDestruct "Hlock" as "[#Hchan #Hinv]".
 
-  unfold SendAU.
+  unfold send_au.
   iInv "Hinv" as "Hinv_open" "Hinv_close".
   iMod (lc_fupd_elim_later with "[$] [$Hinv_open]") as "Hinv_open".
   iNamed "Hinv_open".
