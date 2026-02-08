@@ -138,13 +138,13 @@ Lemma future_fulfill_au γ ch (P : V → iProp Σ) (v : V) :
   is_future γ ch P -∗
   £1 ∗ fulfill_token γ ∗ P v -∗
   ▷ (True -∗ Φ) -∗
-  SendAU ch v γ.(chan_name) Φ.
+  send_au ch v γ.(chan_name) Φ.
 Proof.
   iIntros (Φ) "#Hfuture (Hlc & Hfulfillt & HP) Hcont".
   unfold is_future.
   iDestruct "Hfuture" as "[#Hchan #Hinv]".
 
-  unfold SendAU.
+  unfold send_au.
   iInv "Hinv" as "Hinv_open" "Hinv_close".
   iDestruct "Hlc" as "[Hlc1 Hrest]".
   iMod (lc_fupd_elim_later with "[$] [$Hinv_open]") as "Hinv_open".

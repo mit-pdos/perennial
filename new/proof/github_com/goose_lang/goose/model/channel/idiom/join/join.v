@@ -228,7 +228,7 @@ Lemma join_send_au γ ch P Φ :
   worker γ P -∗
   P -∗
   ▷(True -∗ Φ) -∗
-  SendAU ch (default_val V) γ.(chan_name) Φ.
+  send_au ch (default_val V) γ.(chan_name) Φ.
 Proof.
   iIntros "(Hlc1 & Hlc2 & Hlc3) #Hjoin HWorker HP Hau".
   rewrite /worker /is_join.

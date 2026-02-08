@@ -527,7 +527,7 @@ Definition send_nested_au ch (γ: chan_names) (Φ : iProp Σ) : iProp Σ :=
     end).
 
 (** Slow path send: may need to block and wait *)
-Definition SendAU ch (v : V) (γ: chan_names) (Φ : iProp Σ) : iProp Σ :=
+Definition send_au ch (v : V) (γ: chan_names) (Φ : iProp Σ) : iProp Σ :=
    |={⊤,∅}=>
     ▷∃ s, "Hoc" ∷ own_chan ch s γ ∗
      "Hcont" ∷
@@ -618,7 +618,7 @@ Definition nonblocking_send_au_alt ch (v : V) γ Φ Φnotready : iProp Σ :=
             end.
 
 Lemma blocking_send_implies_nonblocking ch v γ (Φ : iProp Σ) :
-  SendAU ch v γ Φ -∗
+  send_au ch v γ Φ -∗
   nonblocking_send_au ch v γ Φ True.
 Proof.
   iIntros "Hchan".
@@ -628,7 +628,7 @@ Proof.
   destruct s; try done.
 Qed.
 
-Definition CloseAU ch (γ: chan_names) (Φ : iProp Σ) : iProp Σ :=
+Definition close_au ch (γ: chan_names) (Φ : iProp Σ) : iProp Σ :=
    |={⊤,∅}=>
     ▷∃ s, "Hocinner" ∷ own_chan ch s γ ∗
      "Hcontinner" ∷
@@ -661,7 +661,7 @@ Definition chan_logical (ch: loc) (γ : chan_names) (s : chan_phys_state V): iPr
           "Hoffer" ∷ offer_bundle_half γ (Some (Snd v)) P Φ ∗
           "HP" ∷ P ∗
           "Hpred" ∷ saved_pred_own γ.(offer_parked_pred_name) (DfracOwn 1) (K Φr) ∗
-          "Hau" ∷ (P -∗ SendAU ch v γ Φ) ∗
+          "Hau" ∷ (P -∗ send_au ch v γ Φ) ∗
            own_chan ch chan_rep.Idle γ
 
   | RcvWait =>

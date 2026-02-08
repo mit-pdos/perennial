@@ -170,18 +170,13 @@ Qed.
 
 (** ** Endpoint Operations *)
 
- (* is_mpmc γ ch n_prod n_cons P R -∗ *)
- (*  £1 ∗ £1 -∗ *)
- (*  mpmc_producer γ sent ∗ P v -∗ *)
- (*  ▷(mpmc_producer γ (sent ⊎ {[+ v +]}) -∗ Φ) -∗ *)
- (*  SendAU ch v γ.(mpmc_chan_name) Φ. *)
 
 (** Endpoint sends value *)
 Lemma dsp_send_au γ (lr_chan rl_chan : loc) (v : V) (p : iProto Σ V) Φ :
   £1 -∗
   #(lr_chan,rl_chan) ↣{γ} (<!> MSG v; p)%proto -∗
   ▷(#(lr_chan,rl_chan) ↣{γ} p -∗ Φ) -∗
-  SendAU lr_chan v γ.(chan_lr_name) Φ.
+  send_au lr_chan v γ.(chan_lr_name) Φ.
 Proof.
   iIntros "H£ Hc HΦ".
   iDestruct "Hc" as (?? Heq) "(#(Hcl&Hcr&HI)&Hp)".
@@ -257,7 +252,7 @@ Lemma dsp_send_tele_au
   #(lr_chan,rl_chan) ↣{γ} ((<!.. x> MSG (v x) {{ P x }}; p x))%proto -∗
   P tt -∗
   (#(lr_chan,rl_chan) ↣{γ} p tt -∗ Φ) -∗
-  SendAU lr_chan (v tt) γ.(chan_lr_name) Φ.
+  send_au lr_chan (v tt) γ.(chan_lr_name) Φ.
 Proof.
   iIntros "H£ Hc HP HΦ".
   iDestruct (iProto_pointsto_le _ _ _ (<!> MSG v tt; p tt)%proto with "Hc [HP]")
@@ -430,7 +425,7 @@ Qed.
 Lemma wp_dsp_close γ (lr_chan rl_chan : loc) (p : iProto Σ V) Φ :
   #(lr_chan,rl_chan) ↣{γ} END -∗
   (↯{γ} #(lr_chan,rl_chan) -∗ Φ) -∗
-  CloseAU lr_chan γ.(chan_lr_name) Φ.
+  close_au lr_chan γ.(chan_lr_name) Φ.
 Proof.
   iIntros "Hc HΦ".
   iDestruct "Hc" as (?? Heq) "(#(Hcl&Hcr&HI)&Hp)".
