@@ -497,6 +497,150 @@ Definition exchangePointerⁱᵐᵖˡ : val :=
     else do:  #());;;
     return: #()).
 
+Definition BroadcastExample : go_string := "github.com/goose-lang/goose/testdata/examples/channel.BroadcastExample"%go.
+
+(* go: examples.go:168:6 *)
+Definition BroadcastExampleⁱᵐᵖˡ : val :=
+  λ: <>,
+    exception_do (let: "done" := (mem.alloc (type.zero_val (type.chanT (type.structT [
+    ])))) in
+    let: "$r0" := (chan.make (type.structT [
+    ]) #(W64 0)) in
+    do:  ("done" <-[type.chanT (type.structT [
+    ])] "$r0");;;
+    let: "result1" := (mem.alloc (type.zero_val (type.chanT #uint64T))) in
+    let: "$r0" := (chan.make #uint64T #(W64 0)) in
+    do:  ("result1" <-[type.chanT #uint64T] "$r0");;;
+    let: "result2" := (mem.alloc (type.zero_val (type.chanT #uint64T))) in
+    let: "$r0" := (chan.make #uint64T #(W64 0)) in
+    do:  ("result2" <-[type.chanT #uint64T] "$r0");;;
+    let: "sharedValue" := (mem.alloc (type.zero_val #uint64T)) in
+    let: "$go" := (λ: <>,
+      exception_do (do:  (Fst (chan.receive (type.structT [
+      ]) (![type.chanT (type.structT [
+      ])] "done")));;;
+      let: "val" := (mem.alloc (type.zero_val #uint64T)) in
+      let: "$r0" := (![#uint64T] "sharedValue") in
+      do:  ("val" <-[#uint64T] "$r0");;;
+      do:  (let: "$chan" := (![type.chanT #uint64T] "result1") in
+      let: "$v" := ((![#uint64T] "val") * #(W64 3)) in
+      chan.send #uint64T "$chan" "$v");;;
+      return: #())
+      ) in
+    do:  (Fork ("$go" #()));;;
+    let: "$go" := (λ: <>,
+      exception_do (do:  (Fst (chan.receive (type.structT [
+      ]) (![type.chanT (type.structT [
+      ])] "done")));;;
+      let: "val" := (mem.alloc (type.zero_val #uint64T)) in
+      let: "$r0" := (![#uint64T] "sharedValue") in
+      do:  ("val" <-[#uint64T] "$r0");;;
+      do:  (let: "$chan" := (![type.chanT #uint64T] "result2") in
+      let: "$v" := ((![#uint64T] "val") * #(W64 5)) in
+      chan.send #uint64T "$chan" "$v");;;
+      return: #())
+      ) in
+    do:  (Fork ("$go" #()));;;
+    let: "$r0" := #(W64 2) in
+    do:  ("sharedValue" <-[#uint64T] "$r0");;;
+    do:  (let: "$a0" := (![type.chanT (type.structT [
+    ])] "done") in
+    (chan.close (type.structT [
+    ])) "$a0");;;
+    let: "r1" := (mem.alloc (type.zero_val #uint64T)) in
+    let: "$r0" := (Fst (chan.receive #uint64T (![type.chanT #uint64T] "result1"))) in
+    do:  ("r1" <-[#uint64T] "$r0");;;
+    let: "r2" := (mem.alloc (type.zero_val #uint64T)) in
+    let: "$r0" := (Fst (chan.receive #uint64T (![type.chanT #uint64T] "result2"))) in
+    do:  ("r2" <-[#uint64T] "$r0");;;
+    (if: (![#uint64T] "r1") ≠ #(W64 6)
+    then
+      do:  (let: "$a0" := (interface.make #stringT.id #"receiver 1 got wrong value"%go) in
+      Panic "$a0")
+    else do:  #());;;
+    (if: (![#uint64T] "r2") ≠ #(W64 10)
+    then
+      do:  (let: "$a0" := (interface.make #stringT.id #"receiver 2 got wrong value"%go) in
+      Panic "$a0")
+    else do:  #());;;
+    return: #()).
+
+Definition Web : go_string := "github.com/goose-lang/goose/testdata/examples/channel.Web"%go.
+
+(* go: examples.go:204:6 *)
+Definition Webⁱᵐᵖˡ : val :=
+  λ: "query",
+    exception_do (let: "query" := (mem.alloc "query") in
+    return: ((![#stringT] "query") + #".html"%go)).
+
+Definition Image : go_string := "github.com/goose-lang/goose/testdata/examples/channel.Image"%go.
+
+(* go: examples.go:208:6 *)
+Definition Imageⁱᵐᵖˡ : val :=
+  λ: "query",
+    exception_do (let: "query" := (mem.alloc "query") in
+    return: ((![#stringT] "query") + #".png"%go)).
+
+Definition Video : go_string := "github.com/goose-lang/goose/testdata/examples/channel.Video"%go.
+
+(* go: examples.go:212:6 *)
+Definition Videoⁱᵐᵖˡ : val :=
+  λ: "query",
+    exception_do (let: "query" := (mem.alloc "query") in
+    return: ((![#stringT] "query") + #".mp4"%go)).
+
+Definition Google : go_string := "github.com/goose-lang/goose/testdata/examples/channel.Google"%go.
+
+(* https://go.dev/talks/2012/concurrency.slide#46
+
+   go: examples.go:217:6 *)
+Definition Googleⁱᵐᵖˡ : val :=
+  λ: "query",
+    exception_do (let: "query" := (mem.alloc "query") in
+    let: "c" := (mem.alloc (type.zero_val (type.chanT #stringT))) in
+    let: "$r0" := (chan.make #stringT #(W64 3)) in
+    do:  ("c" <-[type.chanT #stringT] "$r0");;;
+    let: "$go" := (λ: <>,
+      exception_do (do:  (let: "$chan" := (![type.chanT #stringT] "c") in
+      let: "$v" := (let: "$a0" := (![#stringT] "query") in
+      (func_call #Web) "$a0") in
+      chan.send #stringT "$chan" "$v");;;
+      return: #())
+      ) in
+    do:  (Fork ("$go" #()));;;
+    let: "$go" := (λ: <>,
+      exception_do (do:  (let: "$chan" := (![type.chanT #stringT] "c") in
+      let: "$v" := (let: "$a0" := (![#stringT] "query") in
+      (func_call #Image) "$a0") in
+      chan.send #stringT "$chan" "$v");;;
+      return: #())
+      ) in
+    do:  (Fork ("$go" #()));;;
+    let: "$go" := (λ: <>,
+      exception_do (do:  (let: "$chan" := (![type.chanT #stringT] "c") in
+      let: "$v" := (let: "$a0" := (![#stringT] "query") in
+      (func_call #Video) "$a0") in
+      chan.send #stringT "$chan" "$v");;;
+      return: #())
+      ) in
+    do:  (Fork ("$go" #()));;;
+    let: "results" := (mem.alloc (type.zero_val #sliceT)) in
+    let: "$r0" := (slice.make3 #stringT #(W64 0) #(W64 3)) in
+    do:  ("results" <-[#sliceT] "$r0");;;
+    (let: "i" := (mem.alloc (type.zero_val #intT)) in
+    let: "$r0" := #(W64 0) in
+    do:  ("i" <-[#intT] "$r0");;;
+    (for: (λ: <>, int_lt (![#intT] "i") #(W64 3)); (λ: <>, do:  ("i" <-[#intT] ((![#intT] "i") + #(W64 1)))) := λ: <>,
+      let: "r" := (mem.alloc (type.zero_val #stringT)) in
+      let: "$r0" := (Fst (chan.receive #stringT (![type.chanT #stringT] "c"))) in
+      do:  ("r" <-[#stringT] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![#sliceT] "results") in
+      let: "$a1" := ((let: "$sl0" := (![#stringT] "r") in
+      slice.literal #stringT ["$sl0"])) in
+      (slice.append #stringT) "$a0" "$a1") in
+      do:  ("results" <-[#sliceT] "$r0")));;;
+    return: (![#sliceT] "results")).
+
 Definition select_ready_case_no_panic : go_string := "github.com/goose-lang/goose/testdata/examples/channel.select_ready_case_no_panic"%go.
 
 (* Show that a guaranteed to be ready case makes default impossible
@@ -1232,7 +1376,7 @@ Definition SearchReplaceⁱᵐᵖˡ : val :=
 
 Definition vars' : list (go_string * go_type) := [].
 
-Definition functions' : list (go_string * val) := [(NewLockedStack, NewLockedStackⁱᵐᵖˡ); (NewEliminationStack, NewEliminationStackⁱᵐᵖˡ); (sys_hello_world, sys_hello_worldⁱᵐᵖˡ); (HelloWorldAsync, HelloWorldAsyncⁱᵐᵖˡ); (HelloWorldSync, HelloWorldSyncⁱᵐᵖˡ); (HelloWorldCancellable, HelloWorldCancellableⁱᵐᵖˡ); (HelloWorldWithTimeout, HelloWorldWithTimeoutⁱᵐᵖˡ); (DSPExample, DSPExampleⁱᵐᵖˡ); (fibonacci, fibonacciⁱᵐᵖˡ); (fib_consumer, fib_consumerⁱᵐᵖˡ); (simple_join, simple_joinⁱᵐᵖˡ); (simple_multi_join, simple_multi_joinⁱᵐᵖˡ); (select_nb_no_panic, select_nb_no_panicⁱᵐᵖˡ); (select_no_double_close, select_no_double_closeⁱᵐᵖˡ); (exchangePointer, exchangePointerⁱᵐᵖˡ); (select_ready_case_no_panic, select_ready_case_no_panicⁱᵐᵖˡ); (TestHelloWorldSync, TestHelloWorldSyncⁱᵐᵖˡ); (TestHelloWorldWithTimeout, TestHelloWorldWithTimeoutⁱᵐᵖˡ); (TestDSPExample, TestDSPExampleⁱᵐᵖˡ); (TestFibConsumer, TestFibConsumerⁱᵐᵖˡ); (TestSelectNbNoPanic, TestSelectNbNoPanicⁱᵐᵖˡ); (TestSelectReadyCaseNoPanic, TestSelectReadyCaseNoPanicⁱᵐᵖˡ); (mkRequest, mkRequestⁱᵐᵖˡ); (ho_worker, ho_workerⁱᵐᵖˡ); (HigherOrderExample, HigherOrderExampleⁱᵐᵖˡ); (load, loadⁱᵐᵖˡ); (process, processⁱᵐᵖˡ); (client, clientⁱᵐᵖˡ); (server, serverⁱᵐᵖˡ); (LeakyBufferPipeline, LeakyBufferPipelineⁱᵐᵖˡ); (mkStream, mkStreamⁱᵐᵖˡ); (Async, Asyncⁱᵐᵖˡ); (Serve, Serveⁱᵐᵖˡ); (appWrld, appWrldⁱᵐᵖˡ); (Client, Clientⁱᵐᵖˡ); (MapServer, MapServerⁱᵐᵖˡ); (ClientOld, ClientOldⁱᵐᵖˡ); (Muxer, Muxerⁱᵐᵖˡ); (makeGreeting, makeGreetingⁱᵐᵖˡ); (CancellableMapServer, CancellableMapServerⁱᵐᵖˡ); (CancellableMuxer, CancellableMuxerⁱᵐᵖˡ); (worker, workerⁱᵐᵖˡ); (SearchReplace, SearchReplaceⁱᵐᵖˡ)].
+Definition functions' : list (go_string * val) := [(NewLockedStack, NewLockedStackⁱᵐᵖˡ); (NewEliminationStack, NewEliminationStackⁱᵐᵖˡ); (sys_hello_world, sys_hello_worldⁱᵐᵖˡ); (HelloWorldAsync, HelloWorldAsyncⁱᵐᵖˡ); (HelloWorldSync, HelloWorldSyncⁱᵐᵖˡ); (HelloWorldCancellable, HelloWorldCancellableⁱᵐᵖˡ); (HelloWorldWithTimeout, HelloWorldWithTimeoutⁱᵐᵖˡ); (DSPExample, DSPExampleⁱᵐᵖˡ); (fibonacci, fibonacciⁱᵐᵖˡ); (fib_consumer, fib_consumerⁱᵐᵖˡ); (simple_join, simple_joinⁱᵐᵖˡ); (simple_multi_join, simple_multi_joinⁱᵐᵖˡ); (select_nb_no_panic, select_nb_no_panicⁱᵐᵖˡ); (select_no_double_close, select_no_double_closeⁱᵐᵖˡ); (exchangePointer, exchangePointerⁱᵐᵖˡ); (BroadcastExample, BroadcastExampleⁱᵐᵖˡ); (Web, Webⁱᵐᵖˡ); (Image, Imageⁱᵐᵖˡ); (Video, Videoⁱᵐᵖˡ); (Google, Googleⁱᵐᵖˡ); (select_ready_case_no_panic, select_ready_case_no_panicⁱᵐᵖˡ); (TestHelloWorldSync, TestHelloWorldSyncⁱᵐᵖˡ); (TestHelloWorldWithTimeout, TestHelloWorldWithTimeoutⁱᵐᵖˡ); (TestDSPExample, TestDSPExampleⁱᵐᵖˡ); (TestFibConsumer, TestFibConsumerⁱᵐᵖˡ); (TestSelectNbNoPanic, TestSelectNbNoPanicⁱᵐᵖˡ); (TestSelectReadyCaseNoPanic, TestSelectReadyCaseNoPanicⁱᵐᵖˡ); (mkRequest, mkRequestⁱᵐᵖˡ); (ho_worker, ho_workerⁱᵐᵖˡ); (HigherOrderExample, HigherOrderExampleⁱᵐᵖˡ); (load, loadⁱᵐᵖˡ); (process, processⁱᵐᵖˡ); (client, clientⁱᵐᵖˡ); (server, serverⁱᵐᵖˡ); (LeakyBufferPipeline, LeakyBufferPipelineⁱᵐᵖˡ); (mkStream, mkStreamⁱᵐᵖˡ); (Async, Asyncⁱᵐᵖˡ); (Serve, Serveⁱᵐᵖˡ); (appWrld, appWrldⁱᵐᵖˡ); (Client, Clientⁱᵐᵖˡ); (MapServer, MapServerⁱᵐᵖˡ); (ClientOld, ClientOldⁱᵐᵖˡ); (Muxer, Muxerⁱᵐᵖˡ); (makeGreeting, makeGreetingⁱᵐᵖˡ); (CancellableMapServer, CancellableMapServerⁱᵐᵖˡ); (CancellableMuxer, CancellableMuxerⁱᵐᵖˡ); (worker, workerⁱᵐᵖˡ); (SearchReplace, SearchReplaceⁱᵐᵖˡ)].
 
 Definition msets' : list (go_string * (list (go_string * val))) := [(LockedStack.id, []); (ptrT.id LockedStack.id, [("Pop"%go, LockedStack__Popⁱᵐᵖˡ); ("Push"%go, LockedStack__Pushⁱᵐᵖˡ)]); (EliminationStack.id, []); (ptrT.id EliminationStack.id, [("Pop"%go, EliminationStack__Popⁱᵐᵖˡ); ("Push"%go, EliminationStack__Pushⁱᵐᵖˡ)]); (request.id, []); (ptrT.id request.id, []); (stream.id, []); (ptrT.id stream.id, []); (streamold.id, []); (ptrT.id streamold.id, [])].
 

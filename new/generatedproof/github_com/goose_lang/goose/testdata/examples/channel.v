@@ -477,6 +477,26 @@ Global Instance wp_func_call_exchangePointer :
   WpFuncCall chan_spec_raw_examples.exchangePointer _ (is_pkg_defined chan_spec_raw_examples) :=
   ltac:(solve_wp_func_call).
 
+Global Instance wp_func_call_BroadcastExample :
+  WpFuncCall chan_spec_raw_examples.BroadcastExample _ (is_pkg_defined chan_spec_raw_examples) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Web :
+  WpFuncCall chan_spec_raw_examples.Web _ (is_pkg_defined chan_spec_raw_examples) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Image :
+  WpFuncCall chan_spec_raw_examples.Image _ (is_pkg_defined chan_spec_raw_examples) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Video :
+  WpFuncCall chan_spec_raw_examples.Video _ (is_pkg_defined chan_spec_raw_examples) :=
+  ltac:(solve_wp_func_call).
+
+Global Instance wp_func_call_Google :
+  WpFuncCall chan_spec_raw_examples.Google _ (is_pkg_defined chan_spec_raw_examples) :=
+  ltac:(solve_wp_func_call).
+
 Global Instance wp_func_call_select_ready_case_no_panic :
   WpFuncCall chan_spec_raw_examples.select_ready_case_no_panic _ (is_pkg_defined chan_spec_raw_examples) :=
   ltac:(solve_wp_func_call).
