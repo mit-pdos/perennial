@@ -10,7 +10,7 @@ Section grove.
   (** These are pointers in Go. *)
   Definition Listenerⁱᵐᵖˡ : go.type := unsafe.Pointer.
   Definition Connectionⁱᵐᵖˡ : go.type := unsafe.Pointer.
-  Definition Addressⁱᵐᵖˡ : go.type := go.uint64.
+  Definition Address : go.type := go.uint64.
 
   (** Type: func(uint64) Listener *)
   Definition Listenⁱᵐᵖˡ : val :=
@@ -83,3 +83,11 @@ Section grove.
     λ: <>, ExternalOp GetTimeRangeOp #().
 
 End grove.
+
+Module Connection.
+Definition t := loc.
+End Connection.
+
+Module Listener.
+Definition t := loc.
+End Listener.

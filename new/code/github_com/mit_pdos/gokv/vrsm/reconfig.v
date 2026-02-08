@@ -67,7 +67,7 @@ Definition EnterNewConfigⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
     let: "$r0" := (let: "$a0" := (GoAlloc getstateargs_gk.S (CompositeLiteral getstateargs_gk.S (LiteralValue [KeyedElement (Some (KeyField "Epoch"%go)) (ElementExpression go.uint64 (![go.uint64] "epoch"))]))) in
     (MethodResolve (go.PointerType replica.Clerk) "GetState"%go (![go.PointerType replica.Clerk] "oldClerk")) "$a0") in
     do:  ("reply" <-[go.PointerType getstatereply_gk.S] "$r0");;;
-    (if: Convert go.untyped_bool go.bool ((![err_gk.E] (StructFieldRef getstatereply_gk.S "Err"%go (![go.PointerType getstatereply_gk.S] "reply"))) ≠⟨go.uint32⟩ err_gk.None)
+    (if: Convert go.untyped_bool go.bool ((![err_gk.E] (StructFieldRef getstatereply_gk.S "Err"%go (![go.PointerType getstatereply_gk.S] "reply"))) ≠⟨go.uint32⟩ err_gk.None')
     then
       do:  (let: "$a0" := #"Error while getting state and sealing in epoch %d"%go in
       let: "$a1" := ((let: "$sl0" := (Convert go.uint64 go.any (![go.uint64] "epoch")) in
@@ -118,7 +118,7 @@ Definition EnterNewConfigⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
       do:  ("i" <-[go.uint64] ((![go.uint64] "i") +⟨go.uint64⟩ #(W64 1))));;;
     do:  ((MethodResolve (go.PointerType sync.WaitGroup) "Wait"%go (![go.PointerType sync.WaitGroup] "wg")) #());;;
     let: "err" := (GoAlloc err_gk.E (GoZeroVal err_gk.E #())) in
-    let: "$r0" := err_gk.None in
+    let: "$r0" := err_gk.None' in
     do:  ("err" <-[err_gk.E] "$r0");;;
     let: "$r0" := #(W64 0) in
     do:  ("i" <-[go.uint64] "$r0");;;
@@ -127,13 +127,13 @@ Definition EnterNewConfigⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
       let: "err2" := (GoAlloc err_gk.E (GoZeroVal err_gk.E #())) in
       let: "$r0" := (![err_gk.E] (IndexRef (go.SliceType err_gk.E) (![go.SliceType err_gk.E] "errs", Convert go.uint64 go.int (![go.uint64] "i")))) in
       do:  ("err2" <-[err_gk.E] "$r0");;;
-      (if: Convert go.untyped_bool go.bool ((![err_gk.E] "err2") ≠⟨go.uint32⟩ err_gk.None)
+      (if: Convert go.untyped_bool go.bool ((![err_gk.E] "err2") ≠⟨go.uint32⟩ err_gk.None')
       then
         let: "$r0" := (![err_gk.E] "err2") in
         do:  ("err" <-[err_gk.E] "$r0")
       else do:  #());;;
       do:  ("i" <-[go.uint64] ((![go.uint64] "i") +⟨go.uint64⟩ #(W64 1))));;;
-    (if: Convert go.untyped_bool go.bool ((![err_gk.E] "err") ≠⟨go.uint32⟩ err_gk.None)
+    (if: Convert go.untyped_bool go.bool ((![err_gk.E] "err") ≠⟨go.uint32⟩ err_gk.None')
     then
       do:  (let: "$a0" := ((let: "$sl0" := (Convert go.string go.any #"Error while setting state and entering new epoch"%go) in
       CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0")]))) in
@@ -142,7 +142,7 @@ Definition EnterNewConfigⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
     else do:  #());;;
     (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.uint64] "epoch") in
     let: "$a1" := (CompositeLiteral config_gk.S (LiteralValue [KeyedElement (Some (KeyField "Addrs"%go)) (ElementExpression (go.SliceType grove_ffi.Address) (![go.SliceType grove_ffi.Address] "servers"))])) in
-    (MethodResolve (go.PointerType configservice.Clerk) "TryWriteConfig"%go (![go.PointerType configservice.Clerk] "configCk")) "$a0" "$a1") ≠⟨go.uint32⟩ err_gk.None)
+    (MethodResolve (go.PointerType configservice.Clerk) "TryWriteConfig"%go (![go.PointerType configservice.Clerk] "configCk")) "$a0" "$a1") ≠⟨go.uint32⟩ err_gk.None')
     then
       do:  (let: "$a0" := ((let: "$sl0" := (Convert go.string go.any #"Error while writing to config service"%go) in
       CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0")]))) in
@@ -151,7 +151,7 @@ Definition EnterNewConfigⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
     else do:  #());;;
     do:  (let: "$a0" := (GoAlloc becomeprimaryargs_gk.S (CompositeLiteral becomeprimaryargs_gk.S (LiteralValue [KeyedElement (Some (KeyField "Epoch"%go)) (ElementExpression go.uint64 (![go.uint64] "epoch")); KeyedElement (Some (KeyField "Conf"%go)) (ElementExpression configuration_gk.S (CompositeLiteral configuration_gk.S (LiteralValue [KeyedElement (Some (KeyField "Replicas"%go)) (ElementExpression (go.SliceType grove_ffi.Address) (![go.SliceType grove_ffi.Address] "servers"))])))]))) in
     (MethodResolve (go.PointerType replica.Clerk) "BecomePrimary"%go (![go.PointerType replica.Clerk] (IndexRef (go.SliceType (go.PointerType replica.Clerk)) (![go.SliceType (go.PointerType replica.Clerk)] "clerks", #(W64 0))))) "$a0");;;
-    return: (err_gk.None)).
+    return: (err_gk.None')).
 
 (* go: init.go:10:6 *)
 Definition InitializeSystemⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=

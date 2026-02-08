@@ -90,7 +90,7 @@ Definition Clerk__Applyⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
       let: "$r1" := "$ret1" in
       do:  ("err" <-[err_gk.E] "$r0");;;
       do:  ("ret" <-[go.SliceType go.byte] "$r1");;;
-      (if: Convert go.untyped_bool go.bool ((![err_gk.E] "err") =⟨go.uint32⟩ err_gk.None)
+      (if: Convert go.untyped_bool go.bool ((![err_gk.E] "err") =⟨go.uint32⟩ err_gk.None')
       then break: #()
       else
         do:  (let: "$a0" := (#(W64 100) *⟨go.uint64⟩ #(W64 1000000)) in
@@ -156,7 +156,7 @@ Definition Clerk__ApplyRo2ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
         let: "$r1" := "$ret1" in
         do:  ("err" <-[err_gk.E] "$r0");;;
         do:  ("ret" <-[go.SliceType go.byte] "$r1");;;
-        (if: Convert go.untyped_bool go.bool ((![err_gk.E] "err") =⟨go.uint32⟩ err_gk.None)
+        (if: Convert go.untyped_bool go.bool ((![err_gk.E] "err") =⟨go.uint32⟩ err_gk.None')
         then
           let: "$r0" := (![go.uint64] "k") in
           do:  ((StructFieldRef Clerk "preferredReplica"%go (![go.PointerType Clerk] "ck")) <-[go.uint64] "$r0");;;
@@ -169,7 +169,7 @@ Definition Clerk__ApplyRo2ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
         do:  ((StructFieldRef Clerk "lastPreferenceRefresh"%go (![go.PointerType Clerk] "ck")) <-[go.uint64] "$r0");;;
         do:  "$r1";;;
         continue: #());;;
-      (if: Convert go.untyped_bool go.bool ((![err_gk.E] "err") =⟨go.uint32⟩ err_gk.None)
+      (if: Convert go.untyped_bool go.bool ((![err_gk.E] "err") =⟨go.uint32⟩ err_gk.None')
       then break: #()
       else
         let: "timeToSleep" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in

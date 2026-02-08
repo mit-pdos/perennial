@@ -1373,7 +1373,7 @@ Definition runSTMⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : va
     let: "$go" := (λ: <>,
       with_defer: (do:  (let: "$f" := (λ: <>,
         exception_do ((let: "r" := (GoAlloc (go.InterfaceType []) (GoZeroVal (go.InterfaceType []) #())) in
-        let: "$r0" := (recover #()) in
+        let: "$r0" := ((FuncResolve go.recover [] #()) #()) in
         do:  ("r" <-[go.InterfaceType []] "$r0");;;
         (if: Convert go.untyped_bool go.bool ((![go.InterfaceType []] "r") ≠⟨go.InterfaceType []⟩ (Convert go.untyped_nil (go.InterfaceType []) UntypedNil))
         then

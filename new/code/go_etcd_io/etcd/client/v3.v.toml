@@ -48,4 +48,6 @@ translate = [
 imports = [
   "go.etcd.io/etcd/api/v3/etcdserverpb",
   "go.etcd.io/etcd/api/v3/mvccpb",
+  "go.uber.org/zap",
+  "context",
 ]

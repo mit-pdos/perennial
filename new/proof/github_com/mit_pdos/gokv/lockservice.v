@@ -24,18 +24,10 @@ Definition is_lock N `{invGS Σ} γ key R :=
 
 End defns.
 
-Section proof.
-Context `{!heapGS Σ}.
+Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics} {package_sem : lockservice.Assumptions}.
 Collection W := sem + package_sem.
-
-#[global] Instance : IsPkgInit (iProp Σ) lockservice := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf (iProp Σ) lockservice := build_get_is_pkg_init_wf.
-Section wps.
-Context `{!heapGS Σ}.
-Context {sem : go.Semantics} {package_sem : lockservice.Assumptions}.
-Local Set Default Proof Using "All".
 
 #[global] Instance : IsPkgInit (iProp Σ) lockservice := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf (iProp Σ) lockservice := build_get_is_pkg_init_wf.
@@ -76,7 +68,7 @@ Lemma wp_MakeLockClerk kv kvptsto E :
        (ck:loc), RET #ck; is_LockClerk ck (mk_lockservice_params kvptsto)
   }}}
 .
-Proof.
+Proof using W.
   wp_start as "[#? %]".
   wp_auto. wp_alloc l as "l".
   iStructNamed "l". iPersist "kv".
@@ -91,9 +83,8 @@ Lemma wp_LockClerk__Lock ck key γ R :
     ck @! (go.PointerType lockservice.LockClerk) @! "Lock" #key
   {{{
        RET #(); R
-  }}}
-.
-Proof.
+  }}}.
+Proof using W.
   wp_start as "(#Hck&#Hlock)".
   iNamed "Hck".
   iNamed "Hkv_is".
@@ -132,9 +123,8 @@ Lemma wp_LockClerk__Unlock ck key γ R :
     ck @! (go.PointerType lockservice.LockClerk) @! "Unlock" #key
   {{{
        RET #(); True
-  }}}
-.
-Proof.
+  }}}.
+Proof using W.
   wp_start as "(#Hck&#Hlock&HR)".
   iNamed "Hck".
   iNamed "Hkv_is".

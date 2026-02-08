@@ -16,12 +16,12 @@ Context {package_sem' : zap.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Instance objects_typed_pointsto  :
-  TypedPointsto (Σ:=Σ) (zap.objects.t). Admitted.
+#[global] Instance objects_typed_pointsto `{!TypedPointsto (Σ:=Σ) T'}  :
+  TypedPointsto (Σ:=Σ) (zap.objects.t T'). Admitted.
 
 #[global] Instance objects_into_val_typed
-   :
-  IntoValTypedUnderlying (zap.objects.t) (zap.objectsⁱᵐᵖˡ).
+  `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T}  :
+  IntoValTypedUnderlying (zap.objects.t T') (zap.objectsⁱᵐᵖˡ T).
 Proof. Admitted.
 
 End def.
@@ -36,12 +36,12 @@ Context {package_sem' : zap.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Instance ObjectMarshalerPtr_typed_pointsto  :
-  TypedPointsto (Σ:=Σ) (zap.ObjectMarshalerPtr.t). Admitted.
+#[global] Instance ObjectMarshalerPtr_typed_pointsto `{!TypedPointsto (Σ:=Σ) T'}  :
+  TypedPointsto (Σ:=Σ) (zap.ObjectMarshalerPtr.t T'). Admitted.
 
 #[global] Instance ObjectMarshalerPtr_into_val_typed
-   :
-  IntoValTypedUnderlying (zap.ObjectMarshalerPtr.t) (zap.ObjectMarshalerPtrⁱᵐᵖˡ).
+  `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T}  :
+  IntoValTypedUnderlying (zap.ObjectMarshalerPtr.t T') (zap.ObjectMarshalerPtrⁱᵐᵖˡ T).
 Proof. Admitted.
 
 End def.
@@ -56,12 +56,12 @@ Context {package_sem' : zap.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Instance objectValues_typed_pointsto  :
-  TypedPointsto (Σ:=Σ) (zap.objectValues.t). Admitted.
+#[global] Instance objectValues_typed_pointsto `{!TypedPointsto (Σ:=Σ) T'} `{!TypedPointsto (Σ:=Σ) P'}  :
+  TypedPointsto (Σ:=Σ) (zap.objectValues.t T' P'). Admitted.
 
 #[global] Instance objectValues_into_val_typed
-   :
-  IntoValTypedUnderlying (zap.objectValues.t) (zap.objectValuesⁱᵐᵖˡ).
+  `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T} `{!ZeroVal P'} `{!TypedPointsto (Σ:=Σ) P'} `{!IntoValTyped P' P}  :
+  IntoValTypedUnderlying (zap.objectValues.t T' P') (zap.objectValuesⁱᵐᵖˡ T P).
 Proof. Admitted.
 
 End def.
@@ -76,12 +76,12 @@ Context {package_sem' : zap.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Instance stringers_typed_pointsto  :
-  TypedPointsto (Σ:=Σ) (zap.stringers.t). Admitted.
+#[global] Instance stringers_typed_pointsto `{!TypedPointsto (Σ:=Σ) T'}  :
+  TypedPointsto (Σ:=Σ) (zap.stringers.t T'). Admitted.
 
 #[global] Instance stringers_into_val_typed
-   :
-  IntoValTypedUnderlying (zap.stringers.t) (zap.stringersⁱᵐᵖˡ).
+  `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T}  :
+  IntoValTypedUnderlying (zap.stringers.t T') (zap.stringersⁱᵐᵖˡ T).
 Proof. Admitted.
 
 End def.
@@ -596,12 +596,12 @@ Context {package_sem' : zap.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Instance anyFieldC_typed_pointsto  :
-  TypedPointsto (Σ:=Σ) (zap.anyFieldC.t). Admitted.
+#[global] Instance anyFieldC_typed_pointsto `{!TypedPointsto (Σ:=Σ) T'}  :
+  TypedPointsto (Σ:=Σ) (zap.anyFieldC.t T'). Admitted.
 
 #[global] Instance anyFieldC_into_val_typed
-   :
-  IntoValTypedUnderlying (zap.anyFieldC.t) (zap.anyFieldCⁱᵐᵖˡ).
+  `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T}  :
+  IntoValTypedUnderlying (zap.anyFieldC.t T') (zap.anyFieldCⁱᵐᵖˡ T).
 Proof. Admitted.
 
 End def.

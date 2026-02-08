@@ -256,7 +256,7 @@ Definition Server__ApplyRoWaitForCommitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx :
     do:  ("reply" <-[go.PointerType applyreply_gk.S] "$r0");;;
     let: "$r0" := (Convert go.untyped_nil (go.SliceType go.byte) UntypedNil) in
     do:  ((StructFieldRef applyreply_gk.S "Reply"%go (![go.PointerType applyreply_gk.S] "reply")) <-[go.SliceType go.byte] "$r0");;;
-    let: "$r0" := err_gk.None in
+    let: "$r0" := err_gk.None' in
     do:  ((StructFieldRef applyreply_gk.S "Err"%go (![go.PointerType applyreply_gk.S] "reply")) <-[err_gk.E] "$r0");;;
     do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (![go.PointerType sync.Mutex] (StructFieldRef Server "mu"%go (![go.PointerType Server] "s")))) #());;;
     (if: (~ (![go.bool] (StructFieldRef Server "leaseValid"%go (![go.PointerType Server] "s"))))
@@ -314,7 +314,7 @@ Definition Server__ApplyRoWaitForCommitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx :
       else
         (if: Convert go.untyped_bool go.bool ((![go.uint64] "lastModifiedIndex") ≤⟨go.uint64⟩ (![go.uint64] (StructFieldRef Server "committedNextIndex"%go (![go.PointerType Server] "s"))))
         then
-          let: "$r0" := err_gk.None in
+          let: "$r0" := err_gk.None' in
           do:  ((StructFieldRef applyreply_gk.S "Err"%go (![go.PointerType applyreply_gk.S] "reply")) <-[err_gk.E] "$r0");;;
           break: #()
         else
@@ -442,7 +442,7 @@ Definition Server__Applyⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
     do:  ((MethodResolve (go.PointerType sync.WaitGroup) "Wait"%go (![go.PointerType sync.WaitGroup] "wg")) #());;;
     do:  ((![go.FunctionType (go.Signature [] false [])] "waitForDurable") #());;;
     let: "err" := (GoAlloc err_gk.E (GoZeroVal err_gk.E #())) in
-    let: "$r0" := err_gk.None in
+    let: "$r0" := err_gk.None' in
     do:  ("err" <-[err_gk.E] "$r0");;;
     let: "i" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := #(W64 0) in
@@ -452,7 +452,7 @@ Definition Server__Applyⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
       let: "err2" := (GoAlloc err_gk.E (GoZeroVal err_gk.E #())) in
       let: "$r0" := (![err_gk.E] (IndexRef (go.SliceType err_gk.E) (![go.SliceType err_gk.E] "errs", Convert go.uint64 go.int (![go.uint64] "i")))) in
       do:  ("err2" <-[err_gk.E] "$r0");;;
-      (if: Convert go.untyped_bool go.bool ((![err_gk.E] "err2") ≠⟨go.uint32⟩ err_gk.None)
+      (if: Convert go.untyped_bool go.bool ((![err_gk.E] "err2") ≠⟨go.uint32⟩ err_gk.None')
       then
         let: "$r0" := (![err_gk.E] "err2") in
         do:  ("err" <-[err_gk.E] "$r0")
@@ -460,7 +460,7 @@ Definition Server__Applyⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
       do:  ("i" <-[go.uint64] ((![go.uint64] "i") +⟨go.uint64⟩ #(W64 1))));;;
     let: "$r0" := (![err_gk.E] "err") in
     do:  ((StructFieldRef applyreply_gk.S "Err"%go (![go.PointerType applyreply_gk.S] "reply")) <-[err_gk.E] "$r0");;;
-    (if: Convert go.untyped_bool go.bool ((![err_gk.E] "err") =⟨go.uint32⟩ err_gk.None)
+    (if: Convert go.untyped_bool go.bool ((![err_gk.E] "err") =⟨go.uint32⟩ err_gk.None')
     then
       do:  (let: "$a0" := (![go.uint64] "nextIndex") in
       (MethodResolve (go.PointerType Server) "IncreaseCommitIndex"%go (![go.PointerType Server] "s")) "$a0")
@@ -489,7 +489,7 @@ Definition Server__leaseRenewalThreadⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : G
       do:  ("leaseErr" <-[err_gk.E] "$r0");;;
       do:  ("leaseExpiration" <-[go.uint64] "$r1");;;
       do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (![go.PointerType sync.Mutex] (StructFieldRef Server "mu"%go (![go.PointerType Server] "s")))) #());;;
-      (if: Convert go.untyped_bool go.bool (((![go.uint64] (StructFieldRef Server "epoch"%go (![go.PointerType Server] "s"))) =⟨go.uint64⟩ (![go.uint64] "latestEpoch")) && ((![err_gk.E] "leaseErr") =⟨go.uint32⟩ err_gk.None))
+      (if: Convert go.untyped_bool go.bool (((![go.uint64] (StructFieldRef Server "epoch"%go (![go.PointerType Server] "s"))) =⟨go.uint64⟩ (![go.uint64] "latestEpoch")) && ((![err_gk.E] "leaseErr") =⟨go.uint32⟩ err_gk.None'))
       then
         let: "$r0" := (![go.uint64] "leaseExpiration") in
         do:  ((StructFieldRef Server "leaseExpiration"%go (![go.PointerType Server] "s")) <-[go.uint64] "$r0");;;
@@ -549,7 +549,7 @@ Definition Server__sendIncreaseCommitThreadⁱᵐᵖˡ {ext : ffi_syntax} {go_gc
             let: "$r0" := (let: "$a0" := (![go.uint64] "newCommittedNextIndex") in
             (MethodResolve (go.PointerType Clerk) "IncreaseCommitIndex"%go (![go.PointerType Clerk] "clerk")) "$a0") in
             do:  ("err" <-[err_gk.E] "$r0");;;
-            (if: Convert go.untyped_bool go.bool ((![err_gk.E] "err") =⟨go.uint32⟩ err_gk.None)
+            (if: Convert go.untyped_bool go.bool ((![err_gk.E] "err") =⟨go.uint32⟩ err_gk.None')
             then break: #()
             else continue: #()));;;
           do:  ((MethodResolve (go.PointerType sync.WaitGroup) "Done"%go (![go.PointerType sync.WaitGroup] "wg")) #());;;
@@ -637,7 +637,7 @@ Definition Server__ApplyAsBackupⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
     else do:  #());;;
     do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (![go.PointerType sync.Mutex] (StructFieldRef Server "mu"%go (![go.PointerType Server] "s")))) #());;;
     do:  ((![go.FunctionType (go.Signature [] false [])] "waitFn") #());;;
-    return: (err_gk.None)).
+    return: (err_gk.None')).
 
 (* go: server.go:346:18 *)
 Definition Server__SetStateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -653,7 +653,7 @@ Definition Server__SetStateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
       (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef Server "epoch"%go (![go.PointerType Server] "s"))) =⟨go.uint64⟩ (![go.uint64] (StructFieldRef setstateargs_gk.S "Epoch"%go (![go.PointerType setstateargs_gk.S] "args"))))
       then
         do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (![go.PointerType sync.Mutex] (StructFieldRef Server "mu"%go (![go.PointerType Server] "s")))) #());;;
-        return: (err_gk.None)
+        return: (err_gk.None')
       else
         do:  (let: "$a0" := ((let: "$sl0" := (Convert go.string go.any #"Entered new epoch"%go) in
         CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0")]))) in
@@ -686,7 +686,7 @@ Definition Server__SetStateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
         do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (![go.PointerType sync.Mutex] (StructFieldRef Server "mu"%go (![go.PointerType Server] "s")))) #());;;
         do:  (let: "$a0" := (![go.uint64] (StructFieldRef setstateargs_gk.S "CommittedNextIndex"%go (![go.PointerType setstateargs_gk.S] "args"))) in
         (MethodResolve (go.PointerType Server) "IncreaseCommitIndex"%go (![go.PointerType Server] "s")) "$a0");;;
-        return: (err_gk.None)))).
+        return: (err_gk.None')))).
 
 (* XXX: probably should rename to GetStateAndSeal
 
@@ -722,7 +722,7 @@ Definition Server__GetStateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
     do:  ((StructFieldRef Server "opAppliedConds"%go (![go.PointerType Server] "s")) <-[go.MapType go.uint64 (go.PointerType sync.Cond)] "$r0");;;
     do:  ((MethodResolve (go.PointerType sync.Cond) "Broadcast"%go (![go.PointerType sync.Cond] (StructFieldRef Server "committedNextIndex_cond"%go (![go.PointerType Server] "s")))) #());;;
     do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (![go.PointerType sync.Mutex] (StructFieldRef Server "mu"%go (![go.PointerType Server] "s")))) #());;;
-    return: (GoAlloc getstatereply_gk.S (CompositeLiteral getstatereply_gk.S (LiteralValue [KeyedElement (Some (KeyField "Err"%go)) (ElementExpression err_gk.E err_gk.None); KeyedElement (Some (KeyField "State"%go)) (ElementExpression (go.SliceType go.byte) (![go.SliceType go.byte] "ret")); KeyedElement (Some (KeyField "NextIndex"%go)) (ElementExpression go.uint64 (![go.uint64] "nextIndex")); KeyedElement (Some (KeyField "CommittedNextIndex"%go)) (ElementExpression go.uint64 (![go.uint64] "committedNextIndex"))])))).
+    return: (GoAlloc getstatereply_gk.S (CompositeLiteral getstatereply_gk.S (LiteralValue [KeyedElement (Some (KeyField "Err"%go)) (ElementExpression err_gk.E err_gk.None'); KeyedElement (Some (KeyField "State"%go)) (ElementExpression (go.SliceType go.byte) (![go.SliceType go.byte] "ret")); KeyedElement (Some (KeyField "NextIndex"%go)) (ElementExpression go.uint64 (![go.uint64] "nextIndex")); KeyedElement (Some (KeyField "CommittedNextIndex"%go)) (ElementExpression go.uint64 (![go.uint64] "committedNextIndex"))])))).
 
 (* go: server.go:400:18 *)
 Definition Server__BecomePrimaryⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -774,7 +774,7 @@ Definition Server__BecomePrimaryⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
       do:  ((IndexRef (go.SliceType (go.SliceType (go.PointerType Clerk))) (![go.SliceType (go.SliceType (go.PointerType Clerk))] (StructFieldRef Server "clerks"%go (![go.PointerType Server] "s")), Convert go.uint64 go.int (![go.uint64] "j"))) <-[go.SliceType (go.PointerType Clerk)] "$r0");;;
       do:  ("j" <-[go.uint64] ((![go.uint64] "j") +⟨go.uint64⟩ #(W64 1))));;;
     do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (![go.PointerType sync.Mutex] (StructFieldRef Server "mu"%go (![go.PointerType Server] "s")))) #());;;
-    return: (err_gk.None)).
+    return: (err_gk.None')).
 
 (* go: server.go:434:6 *)
 Definition MakeServerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=

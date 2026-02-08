@@ -108,7 +108,7 @@ Definition Clerk__ReserveEpochAndGetConfigⁱᵐᵖˡ {ext : ffi_syntax} {go_gct
         do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (![go.PointerType sync.Mutex] (StructFieldRef Clerk "mu"%go (![go.PointerType Clerk] "ck")))) #());;;
         continue: #()
       else do:  #());;;
-      (if: Convert go.untyped_bool go.bool ((![err_gk.E] "err2") =⟨go.uint32⟩ err_gk.None)
+      (if: Convert go.untyped_bool go.bool ((![err_gk.E] "err2") =⟨go.uint32⟩ err_gk.None')
       then break: #()
       else do:  #()));;;
     let: "epoch" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
@@ -446,7 +446,7 @@ Definition Server__ReserveEpochAndGetConfigⁱᵐᵖˡ {ext : ffi_syntax} {go_gc
     (FuncResolve go.len [go.SliceType go.uint64] #()) "$a0")))) in
     do:  ((![go.PointerType (go.SliceType go.byte)] "reply") <-[go.SliceType go.byte] "$r0");;;
     let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] (![go.PointerType (go.SliceType go.byte)] "reply")) in
-    let: "$a1" := err_gk.None in
+    let: "$a1" := err_gk.None' in
     (FuncResolve err_gk.Marshal [] #()) "$a0" "$a1") in
     do:  ((![go.PointerType (go.SliceType go.byte)] "reply") <-[go.SliceType go.byte] "$r0");;;
     let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] (![go.PointerType (go.SliceType go.byte)] "reply")) in
@@ -554,7 +554,7 @@ Definition Server__TryWriteConfigⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
             CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0"); KeyedElement None (ElementExpression go.any "$sl1")]))) in
             (FuncResolve log.Println [] #()) "$a0");;;
             let: "$r0" := (let: "$a0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) #(W64 0)) in
-            let: "$a1" := err_gk.None in
+            let: "$a1" := err_gk.None' in
             (FuncResolve err_gk.Marshal [] #()) "$a0" "$a1") in
             do:  ((![go.PointerType (go.SliceType go.byte)] "reply") <-[go.SliceType go.byte] "$r0");;;
             break: #()
@@ -577,7 +577,7 @@ Definition Server__TryWriteConfigⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
           then break: #()
           else do:  #());;;
           let: "$r0" := (let: "$a0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) #(W64 0)) in
-          let: "$a1" := err_gk.None in
+          let: "$a1" := err_gk.None' in
           (FuncResolve err_gk.Marshal [] #()) "$a0" "$a1") in
           do:  ((![go.PointerType (go.SliceType go.byte)] "reply") <-[go.SliceType go.byte] "$r0");;;
           break: #())));;;
@@ -656,7 +656,7 @@ Definition Server__GetLeaseⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
     then return: (#())
     else do:  #());;;
     let: "$r0" := (let: "$a0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) #(W64 0)) in
-    let: "$a1" := err_gk.None in
+    let: "$a1" := err_gk.None' in
     (FuncResolve err_gk.Marshal [] #()) "$a0" "$a1") in
     do:  ((![go.PointerType (go.SliceType go.byte)] "reply") <-[go.SliceType go.byte] "$r0");;;
     let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] (![go.PointerType (go.SliceType go.byte)] "reply")) in
