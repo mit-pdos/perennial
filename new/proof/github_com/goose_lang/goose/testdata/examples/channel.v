@@ -1,7 +1,6 @@
-
 From New.proof Require Export proof_prelude.
 From New.proof.github_com.goose_lang.goose.model.channel
-     Require Import idiom.base handoff future spsc done dsp dsp_proofmode mpmc join handshake.
+Require Import idiom.base handoff future spsc done done_bc dsp dsp_proofmode mpmc join handshake.
 From New.proof Require Import strings time sync.
 From New.generatedproof.github_com.goose_lang.goose.testdata.examples Require Import channel.
 From iris.base_logic Require Import ghost_map.
@@ -180,7 +179,7 @@ wp_apply (wp_fork with "[HNotify errMsg done]").
   wp_apply wp_Sleep.
   wp_apply (chan.wp_close (V:=()) with "[]") as "(Hlc1 & Hlc2 & Hlc3 & _)".
   { iApply (done_is_chan with "Hdone"). }
-  iApply (done_CloseAU (V:=()) with "[$] [$] [$HNotify errMsg]").
+  iApply (done_close_au (V:=()) with "[$] [$] [$HNotify errMsg]").
   { iFrame. }
   iNext.
   wp_auto.
@@ -675,31 +674,35 @@ End select_panic.
 Section higher_order_example.
 Context `{!chan_idiomG Σ request.t}.
 Context `{!chan_idiomG Σ go_string}.
+Context `{!ghost_mapG Σ gname (go_string → iProp Σ)}.
+Context `{inG0: inG Σ unitR}.
 
 Definition do_request (r: request.t) γfut (Q: go_string → iProp Σ) : iProp Σ :=
   "Hf" ∷ WP #r.(request.f') #() {{ λ v, ∃ (s: go_string), ⌜v = #s⌝ ∗ Q s }} ∗
-  "#Hfut" ∷ is_future γfut r.(request.result') Q ∗
-  "Hfut_tok" ∷ fulfill_token γfut.
+  "#Hfut" ∷ is_future γfut r.(request.result') ∗
+  "Hpromise" ∷ Promise γfut Q.
 
 Definition await_request (r: request.t) γfut (Q: go_string → iProp Σ) : iProp Σ :=
-  "#Hfut" ∷ is_future γfut r.(request.result') Q ∗
-  "Hfut_await" ∷ await_token γfut.
+  "#Hfut" ∷ is_future γfut r.(request.result') ∗
+  "HAwait" ∷ Await γfut [Q].
 
 Lemma wp_mkRequest {f: func.t} (Q: go_string → iProp Σ) :
   {{{ is_pkg_init chan_spec_raw_examples ∗ WP #f #() {{ λ v, ∃ (s: go_string), ⌜v = #s⌝ ∗ Q s }} }}}
     @! chan_spec_raw_examples.mkRequest #f
   {{{ γfut (r: request.t), RET #r; do_request r γfut Q ∗ await_request r γfut Q }}}.
-Proof.
+  Proof using chan_idiomG1 ext ffi ffi_interp0 ffi_semantics0 ghost_mapG0 go_ctx hG inG0 Σ.
   wp_start as "Hf".
   wp_auto.
   wp_apply chan.wp_make.
   { word. }
   iIntros (ch γ) "(His & _Hcap & Hown)".
-  simpl. (* for decide *)
-  iMod (start_future with "His Hown") as (γfuture) "(#Hfut & Hawait & Hfulfill)".
+  simpl.
+  iMod (start_future (V:=go_string) (t:=stringT)  ch γ (chan_rep.Buffered []) with "[$His] [$Hown]") as (γfuture) "(#Hfut & HAwait)".
+  { right. done. }
+  iMod (future_alloc_promise γfuture ch Q [] with "Hfut HAwait") as "(Hpromise & HAwait)".
   wp_auto.
   iApply "HΦ".
-  iFrame "Hfut ∗".
+  iFrame "Hfut Hf Hpromise HAwait".
 Qed.
 
 #[local] Lemma wp_get_response (r: request.t) γfut Q :
@@ -708,9 +711,18 @@ Qed.
   {{{ (s: go_string), RET (#s, #true); Q s }}}.
 Proof.
   wp_start as "Hawait". iNamed "Hawait".
-  wp_apply (wp_future_await with "[$Hfut $Hfut_await]").
-  iIntros (v) "HQ".
-  iApply "HΦ". done.
+  wp_apply (wp_future_await with "[$Hfut $HAwait]").
+  iIntros (v P pre post) "(%Hsplit & HP & _HAwait)".
+  destruct pre as [|? pre']; simpl in Hsplit.
+  - injection Hsplit as <-. 
+    destruct post as [|? post']; last done.
+    iApply "HΦ". iFrame.
+  -  iApply "HΦ". exfalso.
+    assert (length [Q] = length (u :: pre' ++ P :: post)) as Hlen by (rewrite Hsplit; done).
+    simpl in Hlen.
+    rewrite app_length in Hlen.
+    simpl in Hlen.
+    lia.
 Qed.
 
 Definition is_request_chan γ (ch: loc): iProp Σ :=
@@ -738,7 +750,7 @@ Proof.
   iIntros (v) "HQ".
   iDestruct "HQ" as (s) "[-> HQ]".
   wp_auto.
-  wp_apply (wp_future_fulfill with "[$Hfut $Hfut_tok HQ]").
+  wp_apply (wp_future_fulfill with "[$Hfut $Hpromise HQ]").
   { done. }
   wp_for_post.
   iFrame.
@@ -748,7 +760,8 @@ Lemma wp_HigherOrderExample :
   {{{ is_pkg_init chan_spec_raw_examples }}}
     @! chan_spec_raw_examples.HigherOrderExample #()
   {{{ (s:slice.t), RET #s; s ↦* ["hello world"%go; "HELLO"%go; "world"%go] }}}.
-Proof using chan_idiomG0 chan_idiomG1.
+Proof using chan_idiomG0 chan_idiomG1 ext ffi ffi_interp0 ffi_semantics0 ghost_mapG0
+go_ctx hG inG0 Σ.
   wp_start.
   (* TODO: why is the string unfolded here? *)
   wp_auto.
@@ -1292,5 +1305,619 @@ Proof using chan_idiomG0.
 Qed.
 
 End exchange_pointer_proof.
+
+Section broadcast_example_proof.
+Context `{!chan_idiomG Σ unit}.
+Context `{!chan_idiomG Σ w64}.
+Context `{!inG Σ (exclR unitO)}.
+
+(* This proof uses the duplicable-facts-only done idiom which is easier to use *)
+Lemma wp_BroadcastExample :
+  {{{ is_pkg_init chan_spec_raw_examples }}}
+    @! chan_spec_raw_examples.BroadcastExample #()
+  {{{ RET #(); True }}}.
+  Proof using chan_idiomG0 chan_idiomG1 ext ffi ffi_interp0 ffi_semantics0 go_ctx hG inG0 Σ.
+  wp_start. wp_auto.
+  
+  wp_apply (chan.wp_make (t:=structT [])); first done.
+  iIntros (done_ch γdone) "(#Hdone_is_chan & _ & Hdone_own)". wp_auto. simpl.
+  
+  wp_apply (chan.wp_make (t:=intT)); first done.
+  iIntros (result1_ch γr1) "(#Hr1_is_chan & _ & Hr1_own)". wp_auto. simpl.
+  
+  wp_apply (chan.wp_make (t:=intT)); first done.
+  iIntros (result2_ch γr2) "(#Hr2_is_chan & _ & Hr2_own)". wp_auto. simpl.
+  
+  
+  iMod (start_handoff result1_ch γr1 (λ v, ⌜v = W64 6⌝)%I with "Hr1_is_chan Hr1_own") 
+    as (γh1) "[%Heq1 #Hhandoff1]".
+  iMod (start_handoff result2_ch γr2 (λ v, ⌜v = W64 10⌝)%I with "Hr2_is_chan Hr2_own")
+    as (γh2) "[%Heq2 #Hhandoff2]".
+  
+  iMod (start_done_bc done_ch γdone (sharedValue_ptr ↦□ W64 2)%I with "Hdone_is_chan Hdone_own")
+    as (γbc) "[#Hbc HBcast]".
+  
+  
+  iPersist "done result1 result2".
+  
+  wp_apply (wp_fork with "[result1 result2 done]").
+  {
+    rename done_ch into done_ch_1.
+    wp_auto_lc 1.
+    wp_apply ((wp_done_bc_receive (V:=unit) γbc done_ch_1)  with "[$Hbc]").
+
+    iIntros "HShared".
+    wp_auto.
+    wp_apply (wp_handoff_send with "[$Hhandoff1]").
+    { iPureIntro. word. }
+    done.
+  }
+
+   wp_apply (wp_fork with "[result1 result2 done]").
+  {
+    rename done_ch into done_ch_1.
+    wp_auto_lc 1.
+    wp_apply ((wp_done_bc_receive (V:=unit) γbc done_ch_1)  with "[$Hbc]").
+
+    iIntros "HShared".
+    wp_auto.
+    wp_apply (wp_handoff_send with "[$Hhandoff2]").
+    { iPureIntro. word. }
+    done.
+  }
+  iPersist "sharedValue".
+
+  wp_apply ((wp_done_bc_close (V:=unit) γbc done_ch) with "[$Hbc $HBcast]").
+  {
+    iFrame "#".
+  }
+
+  wp_apply (wp_handoff_receive with "Hhandoff1").
+  iIntros (v1) "%Hv1". subst v1.
+  wp_auto.
+  wp_apply (wp_handoff_receive with "Hhandoff2").
+  iIntros (v2) "%Hv2". subst v2.
+  wp_auto.
+  
+
+  iApply "HΦ". done.
+Qed.
+
+(* This proof uses the standard done idiom which is more powerful but requires more bookeeping than necessary for strictly duplicable resource transfer *)
+Lemma wp_BroadcastExample_done' :
+  {{{ is_pkg_init chan_spec_raw_examples }}}
+    @! chan_spec_raw_examples.BroadcastExample #()
+  {{{ RET #(); True }}}.
+  Proof using chan_idiomG0 chan_idiomG1 ext ffi ffi_interp0 ffi_semantics0 go_ctx hG inG0 Σ.
+  wp_start. wp_auto.
+  
+  wp_apply (chan.wp_make (t:=structT [])); first done.
+  iIntros (done_ch γdone_ch) "(#Hdone_is_chan & _ & Hdone_own)". wp_auto. simpl.
+  
+  wp_apply (chan.wp_make (t:=intT)); first done.
+  iIntros (result1_ch γr1) "(#Hr1_is_chan & _ & Hr1_own)". wp_auto. simpl.
+  
+  wp_apply (chan.wp_make (t:=intT)); first done.
+  iIntros (result2_ch γr2) "(#Hr2_is_chan & _ & Hr2_own)". wp_auto. simpl.
+  
+  
+  iMod (start_handoff result1_ch γr1 (λ v, ⌜v = W64 6⌝)%I with "Hr1_is_chan Hr1_own") 
+    as (γh1) "[%Heq1 #Hhandoff1]".
+  iMod (start_handoff result2_ch γr2 (λ v, ⌜v = W64 10⌝)%I with "Hr2_is_chan Hr2_own")
+    as (γh2) "[%Heq2 #Hhandoff2]".
+  
+  iMod (start_done done_ch γdone_ch with "Hdone_is_chan Hdone_own")
+    as (γdone) "[#Hdone HNotify]".
+  
+  (* Allocate 2 notified handles. Since the resource here is duplicable this adds no extra obligation to the closer. *)
+  iMod (done_alloc_notified γdone done_ch True (sharedValue_ptr ↦□ W64 2)%I
+        with "Hdone HNotify") as "[HNotify HNotified1]".
+  iMod (done_alloc_notified γdone done_ch (True ∗ sharedValue_ptr ↦□ W64 2) 
+                                          (sharedValue_ptr ↦□ W64 2)%I
+        with "Hdone HNotify") as "[HNotify HNotified2]".
+  
+  iPersist "done result1 result2".
+  
+  wp_apply (wp_fork with "[HNotified1]").
+  {
+    wp_auto.
+    wp_apply (wp_done_receive (V:=unit) with "[$Hdone $HNotified1]").
+    iIntros "#HShared".
+    wp_auto.
+    wp_apply (wp_handoff_send with "[$Hhandoff1]").
+    { iPureIntro. word. }
+    done.
+  }
+  
+  wp_apply (wp_fork with "[HNotified2]").
+  {
+    wp_auto.
+    wp_apply (wp_done_receive (V:=unit) with "[$Hdone $HNotified2]").
+    iIntros "#HShared".
+    wp_auto.
+    wp_apply (wp_handoff_send with "[$Hhandoff2]").
+    { iPureIntro. word. }
+    done.
+  }
+  
+  iPersist "sharedValue".
+  wp_apply (wp_done_close (V:=unit) with "[$Hdone $HNotify]").
+  {
+    iFrame. iFrame "#".
+  }
+  
+  wp_apply (wp_handoff_receive with "Hhandoff1").
+  iIntros (v1) "%Hv1". subst v1.
+  
+  wp_auto.
+  wp_apply (wp_handoff_receive with "Hhandoff2").
+  iIntros (v2) "%Hv2". subst v2.
+  wp_auto.
+  iApply "HΦ". done.
+Qed.
+
+End broadcast_example_proof.
+
+Section google_example.
+
+Context `{!chan_idiomG Σ go_string}.
+Context `{!inG Σ unitR}.
+Context `{!ghost_mapG Σ gname (go_string → iProp Σ)}.
+
+Lemma wp_Web (q : go_string) :
+  {{{ is_pkg_init chan_spec_raw_examples }}}
+    @! chan_spec_raw_examples.Web #q
+  {{{ RET #(q ++ ".html"%go); True }}}.
+Proof. wp_start. wp_auto. iApply "HΦ". done. Qed.
+
+Lemma wp_Image (q : go_string) :
+  {{{ is_pkg_init chan_spec_raw_examples }}}
+    @! chan_spec_raw_examples.Image #q
+  {{{ RET #(q ++ ".png"%go); True }}}.
+Proof. wp_start. wp_auto. iApply "HΦ". done. Qed.
+
+Lemma wp_Video (q : go_string) :
+  {{{ is_pkg_init chan_spec_raw_examples }}}
+    @! chan_spec_raw_examples.Video #q
+  {{{ RET #(q ++ ".mp4"%go); True }}}.
+Proof. wp_start. wp_auto. iApply "HΦ". done. Qed.
+
+
+Definition google_expected (q: go_string) : list go_string :=
+  [ q ++ ".html"%go; q ++ ".png"%go; q ++ ".mp4"%go ].
+
+
+Inductive kind := KWeb | KImg | KVid.
+
+Definition kind_eq_dec : ∀ x y : kind, {x = y} + {x ≠ y}.
+Proof. decide equality. Defined.
+
+Definition value_of (q:go_string) (k:kind) : go_string :=
+  match k with
+  | KWeb => q ++ ".html"%go
+  | KImg => q ++ ".png"%go
+  | KVid => q ++ ".mp4"%go
+  end.
+
+Definition pure_contract_of (q:go_string) (k:kind) : go_string → Prop :=
+  λ v, v = value_of q k.
+
+Definition contract_of (q:go_string) (k:kind) : go_string → iProp Σ :=
+  λ v, ⌜pure_contract_of q k v⌝%I.
+
+Lemma pure_contract_of_inj (q:go_string) (k1 k2:kind) :
+  pure_contract_of q k1 = pure_contract_of q k2 → k1 = k2.
+Proof.
+  
+  intro Heq.
+  destruct k1, k2; try done.
+  all: exfalso.
+  all: 
+    set v := value_of q KWeb.
+    {
+    have Heqv : pure_contract_of q KWeb v = pure_contract_of q KImg v by (exact (f_equal (fun f => f v) Heq)).
+    rewrite /pure_contract_of in Heqv.
+     subst v.
+  unfold value_of in Heqv.
+
+  symmetry in Heqv.
+  assert (q ++ ".html"%go ≠ q ++ ".png"%go).
+  {
+   destruct q.
+   {
+    set_solver.
+   }
+   set_solver. 
+  }
+  {
+    assert ((q ++ ".html"%go = q ++ ".html"%go)).
+    {
+      done.
+    }
+  assert (q ++ ".html"%go = q ++ ".png"%go).
+  { rewrite Heqv. reflexivity. }
+  congruence.
+  }
+    }
+      {
+    have Heqv : pure_contract_of q KWeb v = pure_contract_of q KVid v by (exact (f_equal (fun f => f v) Heq)).
+    rewrite /pure_contract_of in Heqv.
+     subst v.
+  unfold value_of in Heqv.
+
+  symmetry in Heqv.
+  assert (q ++ ".html"%go ≠ q ++ ".mp4"%go).
+  {
+   destruct q.
+   {
+    set_solver.
+   }
+   set_solver. 
+  }
+  {
+    assert ((q ++ ".html"%go = q ++ ".html"%go)).
+    {
+      done.
+    }
+  assert (q ++ ".html"%go = q ++ ".mp4"%go).
+  { rewrite Heqv. reflexivity. }
+  congruence.
+  }
+    }
+    {
+    have Heqv : pure_contract_of q KImg v = pure_contract_of q KWeb v by (exact (f_equal (fun f => f v) Heq)).
+    rewrite /pure_contract_of in Heqv.
+     subst v.
+  unfold value_of in Heqv.
+
+  symmetry in Heqv.
+  assert (q ++ ".html"%go ≠ q ++ ".png"%go).
+  {
+   destruct q.
+   {
+    set_solver.
+   }
+   set_solver. 
+  }
+  {
+    assert ((q ++ ".html"%go = q ++ ".html"%go)).
+    {
+      done.
+    }
+  assert (q ++ ".html"%go = q ++ ".png"%go).
+  { 
+    rewrite Heqv in H0.
+  done.
+  }
+  congruence.
+  }
+
+    }
+
+       {
+  unfold pure_contract_of in Heq.
+  assert (value_of q KImg = value_of q KVid) as Hbad.
+  { apply (f_equal (fun f => f (value_of q KImg))) in Heq.
+    unfold value_of in Heq. simpl in Heq.
+    symmetry in Heq.
+    assert (q ++ ".png"%go = q ++ ".mp4"%go).
+    { rewrite Heq. reflexivity. }
+    assumption.
+  }
+  
+  unfold value_of in Hbad. simpl in Hbad.
+  
+  assert (q ++ ".png"%go ≠ q ++ ".mp4"%go).
+  { intros Heq_bad.
+    set_solver.
+  }
+  congruence.
+       }
+         {
+  unfold pure_contract_of in Heq.
+  
+  assert (value_of q KVid = value_of q KWeb) as Hbad.
+  { apply (f_equal (fun f => f (value_of q KVid))) in Heq.
+    unfold value_of in Heq. simpl in Heq.
+    symmetry in Heq.
+    assert (q ++ ".mp4"%go = q ++ ".html"%go).
+    { rewrite Heq. reflexivity. }
+    assumption.
+  }
+  
+  unfold value_of in Hbad. simpl in Hbad.
+  assert (q ++ ".mp4"%go ≠ q ++ ".html"%go).
+  { intros Heq_bad.
+    set_solver.
+  }
+  congruence.
+       }
+        {
+  unfold pure_contract_of in Heq.
+  
+  assert (value_of q KVid = value_of q KImg) as Hbad.
+  { apply (f_equal (fun f => f (value_of q KVid))) in Heq.
+    unfold value_of in Heq. simpl in Heq.
+    symmetry in Heq.
+    assert (q ++ ".mp4"%go = q ++ ".png"%go).
+    { rewrite Heq. reflexivity. }
+    assumption.
+  }
+  
+  unfold value_of in Hbad. simpl in Hbad.
+  assert (q ++ ".mp4"%go ≠ q ++ ".png"%go).
+  { intros Heq_bad.
+    set_solver.
+  }
+  congruence.
+       }
+Qed.
+
+Definition pendingk : list kind := [KWeb; KImg; KVid].
+
+Lemma pendingk_nodup : NoDup pendingk.
+Proof. unfold pendingk. repeat constructor; set_solver. Qed.
+
+Lemma contract_of_sound (q:go_string) (k:kind) (v:go_string) :
+  contract_of q k v ⊢ ⌜v = value_of q k⌝.
+Proof. iIntros "%Hv". iPureIntro. exact Hv. Qed.
+
+Lemma mem_map_contract_of (q:go_string) (remk:list kind) (P:go_string→iProp Σ) :
+  P ∈ map (contract_of q) remk →
+  ∃ k, k ∈ remk ∧ P = contract_of q k.
+Proof.
+  intro HP.
+  rewrite -(list_fmap_map (contract_of q) remk) in HP.
+  apply (proj1 (list_elem_of_fmap _ _ _)) in HP.
+  destruct HP as (k & -> & Hk). eauto.
+Qed.
+
+Lemma delete_middle {A} (l1 : list A) (x : A) (l2 : list A) :
+  delete (length l1) (l1 ++ x :: l2) = l1 ++ l2.
+Proof.
+  induction l1 as [|a l1 IH]; simpl; [done|].
+  by rewrite IH.
+Qed.
+
+Lemma wp_Google (q : go_string) :
+  {{{ is_pkg_init chan_spec_raw_examples }}}
+    @! chan_spec_raw_examples.Google #q
+  {{{ (sl : slice.t), RET #sl;
+      ∃ xs, sl ↦* xs ∗ ⌜xs ≡ₚ google_expected q⌝ }}}.
+Proof using chan_idiomG0 ext ffi ffi_interp0 ffi_semantics0 
+go_ctx hG Σ inG0 ghost_mapG0.
+  wp_start.
+
+  wp_auto.
+  wp_apply (chan.wp_make (V:=go_string) (t:=stringT) 3); first done.
+  iIntros (c γch) "(#Hchan & %Hcap3 & Hown)". simpl in *.
+  iMod (start_future (V:=go_string) (t:=stringT) c γch (chan_rep.Buffered [])
+        with "[$Hchan] [$Hown]") as (γmf) "(#Hmf & HAwait)".
+  { right. done. }
+  wp_auto.
+
+  iMod (future_alloc_promise γmf c (contract_of q KWeb) [] with "[$Hmf] [$HAwait]")
+    as "(Hprom_web & HAwait)".
+  iMod (future_alloc_promise γmf c (contract_of q KImg) _ with "[$Hmf] [$HAwait]")
+    as "(Hprom_img & HAwait)".
+  iMod (future_alloc_promise γmf c (contract_of q KVid) _ with "[$Hmf] [$HAwait]")
+    as "(Hprom_vid & HAwait)".
+  simpl. iPersist "c query".
+
+  wp_apply (wp_fork with "[Hprom_web]").
+  { wp_auto. wp_apply (wp_Web q).
+    wp_apply (wp_future_fulfill (V:=go_string) (t:=stringT) γmf c (value_of q KWeb)
+              with "[$Hmf $Hprom_web]").
+    { iPureIntro. reflexivity. } done. }
+
+  wp_apply (wp_fork with "[Hprom_img]").
+  { wp_auto. wp_apply (wp_Image q).
+    wp_apply (wp_future_fulfill (V:=go_string) (t:=stringT) γmf c (value_of q KImg)
+              with "[$Hmf $Hprom_img]").
+    { iPureIntro. reflexivity. } done. }
+
+  wp_apply (wp_fork with "[Hprom_vid]").
+  { wp_auto. wp_apply (wp_Video q).
+    wp_apply (wp_future_fulfill (V:=go_string) (t:=stringT) γmf c (value_of q KVid)
+              with "[$Hmf $Hprom_vid]").
+    { iPureIntro. reflexivity. } done. }
+
+  wp_apply (wp_slice_make3 (V:=go_string) (t:=stringT)).
+  { word. }
+  iIntros (sl) "[Hsl [Hcap_sl %Hcap]]".
+  wp_auto.
+
+  iAssert (∃ (i:nat) (xs:list go_string) (donek remk:list kind) (sl0:slice.t),
+    "i"       ∷ i_ptr ↦ W64 i ∗
+    "results" ∷ results_ptr ↦ sl0 ∗
+    "Hsl"     ∷ sl0 ↦* xs ∗
+    "Hcap"    ∷ own_slice_cap go_string sl0 (DfracOwn 1) ∗
+    "HAwait"  ∷ Await γmf (map (contract_of q) remk) ∗
+    "%Hlen"   ∷ ⌜length xs = i⌝ ∗
+    "%Hi"     ∷ ⌜i ≤ 3⌝ ∗
+    "%Hrem"   ∷ ⌜length remk = 3 - i⌝ ∗
+    "%Hnodup_rem" ∷ ⌜NoDup remk⌝ ∗
+    "%Hsplit" ∷ ⌜pendingk ≡ₚ donek ++ remk⌝ ∗
+    "%Hperm"  ∷ ⌜xs ≡ₚ map (value_of q) donek⌝
+  )%I with "[i results Hsl Hcap_sl HAwait]" as "IH".
+  {
+    iFrame. iExists 0. iExists  ([]:list kind).
+    iFrame. iExists ([KWeb;KImg;KVid]).
+    iSplitL "HAwait".
+    {
+     iNamedAccu. 
+    }
+    iFrame. repeat (iSplit; [iPureIntro; try reflexivity; try lia; auto using pendingk_nodup|]).
+    iPureIntro. simpl. reflexivity.
+  }
+
+  wp_for "IH". wp_if_destruct.
+  - wp_apply (wp_future_await (V:=go_string) (t:=stringT) γmf c (map (contract_of q) remk)
+              with "[$Hmf HAwait]").
+              {
+               iNamedAccu. 
+              }
+    iIntros (v P pre post) "(%HsplitP & HPv & HAwait')".
+
+    have HPmem : P ∈ map (contract_of q) remk by (rewrite HsplitP; set_solver).
+    destruct (mem_map_contract_of q remk P HPmem) as (k & Hkin & ->).
+    iDestruct (contract_of_sound q k v with "HPv") as %->.
+
+    wp_auto.
+    wp_apply wp_slice_literal.
+    iIntros (sl1) "[Hsl1 Hsl1cap]".
+    wp_auto.
+    wp_apply (wp_slice_append with "[$Hsl $Hcap $Hsl1]").
+    iIntros (sl') "[Hsl' Hcap']".
+    wp_auto.
+
+    set j := length pre.
+    set remk' := delete j remk.
+    have Hj_lt_map : j < length (map (contract_of q) remk).
+  { subst j.
+    rewrite HsplitP.
+    rewrite app_length /=.
+    lia.
+  }
+
+  have Hj_lt : j < length remk.
+  { 
+  rewrite length_map in Hj_lt_map.
+  done.
+  }
+
+
+    have Hlook_map : (map (contract_of q) remk) !! j = Some (contract_of q k).
+   {
+  subst j.
+  rewrite HsplitP.
+  rewrite lookup_app_r; last lia.
+  replace (length pre - length pre) with 0 by lia.
+  simpl. done.
+}
+
+    apply (list_lookup_fmap_Some (contract_of q) remk j (contract_of q k)) in Hlook_map
+      as (k0 & Hk0 & Hk0eq).
+    apply (f_equal (fun f => f (value_of q k0))) in Hk0. simpl in Hk0.
+    iAssert (⌜value_of q k0 = value_of q k⌝%I) as "%Hbad".
+       { 
+       unfold contract_of, pure_contract_of in Hk0.
+       iEval (rewrite Hk0). done.
+        }
+
+    have Heq_k0_k : k0 = k.
+    { 
+      apply (pure_contract_of_inj q). unfold contract_of, pure_contract_of in Hk0.
+       unfold contract_of, pure_contract_of.
+       rewrite Hbad.
+      done.
+    }
+
+    have Hlook_remk : remk !! j = Some k by (replace k with k0 by done; done).
+    have Hdecomp : take j remk ++ k :: drop (S j) remk = remk
+      by exact (take_drop_middle remk j k Hlook_remk).
+
+    have Hrem' : length remk' = 3 - S (length xs).
+    { rewrite /remk' length_delete; [|by apply lookup_lt_is_Some_2]. lia. }
+
+    have Hmap_remk' : map (contract_of q) remk' = pre ++ post.
+    { subst remk' j. rewrite -!list_fmap_map list_fmap_delete list_fmap_map.
+      rewrite HsplitP delete_middle. done. }
+
+    set donek' := donek ++ [k].
+
+    have Hsplit' : pendingk ≡ₚ donek' ++ remk'.
+    { unfold donek', remk'. subst j.
+      eapply Permutation_trans; [exact Hsplit|].
+      rewrite (delete_take_drop remk) -Hdecomp.
+      repeat rewrite -app_assoc. simpl. apply Permutation_app_head.
+      rewrite Permutation_middle Hdecomp.
+      rewrite Hdecomp.
+      done.
+      }
+
+    have Hperm' : (xs ++ [value_of q k]) ≡ₚ map (value_of q) donek'.
+    { unfold donek'. rewrite map_app /=. etransitivity; [|reflexivity].
+      rewrite Hperm. reflexivity. }
+
+    have Hnodup_rem' : NoDup remk'.
+    { apply (sublist_NoDup _ _ Hnodup_rem). apply sublist_delete. }
+
+    wp_for_post.
+    iFrame "HΦ". iExists (S (length xs)), (xs ++ [value_of q k]), donek', remk', sl'.
+    iFrame "#%". iFrame.
+    iSplitL "i". { replace (W64 (S (length xs))) with (w64_word_instance .(word.add) (W64 (length xs)) (W64 1)) by word. done. }
+    iDestruct "Hcap'" as "[Hcap Hsl]". iFrame.
+    iSplitL "HAwait'". { rewrite Hmap_remk'. done. }
+    repeat (iSplit; [iPureIntro; auto; try (rewrite length_app singleton_length; lia)|]).
+    iPureIntro. lia.
+
+  - iApply "HΦ". iExists xs. iFrame "Hsl". iPureIntro.
+    
+    have Hlenxs : length xs = 3. {
+       (have : ¬ length xs < 3 by (intro; apply n; word); lia).
+    have Hremk_nil : remk = []. {
+       apply length_zero_iff_nil. rewrite Hrem. 
+       assert (length xs = 3).
+       {
+        destruct (length xs). all: try done.
+        destruct n0. { done. }
+        destruct n0. { done. }
+        destruct n0. { done. }
+        lia.
+       }
+       {
+        lia.
+       }
+    }
+    have Hdone : pendingk ≡ₚ donek by (subst remk; rewrite app_nil_r in Hsplit; done).
+
+have Hmap : map (value_of q) pendingk ≡ₚ map (value_of q) donek :=
+  Permutation_map (value_of q) Hdone.
+
+have Hexp : map (value_of q) pendingk = google_expected q.
+{ 
+  reflexivity.  
+}
+intros Hs.
+destruct (length xs). all: try done.
+        destruct n0. { done. }
+        destruct n0. { done. }
+        destruct n0. { done. }
+        lia.
+    }
+
+etransitivity; [exact Hperm|].
+have Hdone : pendingk ≡ₚ donek.
+{
+  have Hremk_nil : remk = []. {
+    apply length_zero_iff_nil. rewrite Hrem. 
+    assert (length xs = 3).
+    {
+    destruct (length xs). all: try done.
+    }
+    lia.
+}
+subst remk.
+rewrite app_nil_r in Hsplit. done.
+}
+
+have Hmap : map (value_of q) pendingk ≡ₚ map (value_of q) donek :=
+  Permutation_map (value_of q) Hdone.
+
+have Hexp : map (value_of q) pendingk = google_expected q.
+{ 
+  reflexivity.  
+}
+
+eapply Permutation_trans.
+{
+ exact (Permutation_sym Hmap).        
+}
+rewrite Hexp. apply Permutation_refl.
+
+Qed.
+
+End google_example.
 
 End proof.
