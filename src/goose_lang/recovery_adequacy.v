@@ -2,18 +2,18 @@ From iris.proofmode Require Import proofmode.
 From iris.algebra Require Import auth.
 From Perennial.goose_lang Require Import lang.
 From Perennial.program_logic Require Import recovery_weakestpre recovery_adequacy.
-From Perennial.goose_lang Require Export recovery_lifting.
+From Perennial.goose_lang Require Export lifting recovery_lifting.
 From Perennial.goose_lang Require Import adequacy lang crash_borrow.
 Set Default Proof Using "Type".
 
-Theorem goose_recv_adequacy `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} {Hffi_adequacy:ffi_interp_adequacy} Σ `{hPre: !gooseGpreS Σ} s e r σ g φ φr φinv n :
+Theorem goose_recv_adequacy `{ffi_sem: ffi_semantics} `{!ffi_interp ffi}
+  {go_gctx : GoGlobalContext}
+  {Hffi_adequacy:ffi_interp_adequacy} Σ `{hPre: !gooseGpreS Σ} s e r σ g φ φr φinv n :
   ffi_initgP g.(global_world) → ffi_initP σ.(world) g.(global_world) →
   (∀ `(Hheap : !heapGS Σ), ∃ Φinv,
      ⊢ ffi_global_start goose_ffiGlobalGS g.(global_world) -∗
        ffi_local_start goose_ffiLocalGS σ.(world) -∗
-       own_globals (DfracOwn 1) σ.(globals) -∗
-       trace_frag σ.(trace) -∗
-       oracle_frag σ.(oracle) -∗
+       own_go_state σ.(go_state).(package_state) -∗
        pre_borrowN n ={⊤}=∗
        □ (∀ σ nt, state_interp σ nt -∗ |NC={⊤, ∅}=> ⌜ φinv σ ⌝) ∗
        □ (∀ hL : gooseLocalGS Σ,
@@ -28,8 +28,7 @@ Proof.
   iMod (na_heap_name_init tls σ.(heap)) as (name_na_heap) "Hh".
   iMod (ffi_global_init _ _ g.(global_world)) as (ffi_namesg) "(Hgw&Hgstart)"; first by eauto.
   iMod (ffi_local_init _ _ σ.(world)) as (ffi_names) "(Hw&Hstart)"; first by eauto.
-  iMod (trace_name_init σ.(trace) σ.(oracle)) as (name_trace) "(Htr&Htrfrag&Hor&Hofrag)".
-  iMod (globals_name_init _ σ.(globals)) as (globals_name) "(Hg & Hgfrag)".
+  iMod (go_state_init _ σ.(go_state).(package_state)) as (globals_name) "(Hg & Hgfrag)".
   iMod (credit_name_init (n*4 + crash_borrow_ginv_number)) as (name_credit) "(Hcred_auth&Hcred&Htok)".
   iDestruct (cred_frag_split with "Hcred") as "(Hpre&Hcred)".
   iMod (proph_map_init κs g.(used_proph_id)) as (proph_names) "Hproph".
@@ -38,14 +37,16 @@ Proof.
   { rewrite /crash_borrow_ginv. iApply (inv_alloc _). iNext. eauto. }
   (* TODO(RJ): reformulate init lemmas to better match what we need here. *)
   set (hG := GooseGlobalGS _ _ proph_names (creditGS_update_pre _ _ name_credit) ffi_namesg).
-  set (hL := GooseLocalGS Σ Hc ffi_names (na_heapGS_update_pre _ name_na_heap) (traceGS_update_pre Σ _ name_trace)
-                          (globalsGS_update_pre Σ _ globals_name)).
+  set (hL := GooseLocalGS Σ Hc ffi_names
+                          (σ.(go_state).(go_lctx))
+                          (na_heapGS_update_pre _ name_na_heap)
+                          (go_stateGS_update_pre Σ _ globals_name)).
   destruct (Hwp (HeapGS _ hG hL)) as [Φinv Hwp']. clear Hwp.
   iExists state_interp, global_state_interp, fork_post.
   iExists _, _.
   iExists ((λ Hinv hGen, ∃ hL:gooseLocalGS Σ, ⌜hGen = goose_generationGS (L:=hL)⌝ ∗ Φinv (HeapGS _ _ hL)))%I.
-  iDestruct (@cred_frag_to_pre_borrowN _ _ _ _ _ hG n with "Hpre") as "Hpre".
-  iMod (Hwp' with "[$] [$] [$] [$] [$] [$]") as "(#H1&#H2&Hwp)".
+  iDestruct (@cred_frag_to_pre_borrowN _ _ _ _ _ hG _ n with "Hpre") as "Hpre".
+  iMod (Hwp' with "[$] [$] [$] [$]") as "(#H1&#H2&Hwp)".
   iModIntro.
   iSplitR.
   { iModIntro. iIntros (??) "Hσ".
@@ -56,7 +57,7 @@ Proof.
     iModIntro. iIntros (HG') "(%hL' & -> & H)".
     iApply "H2". done.
   }
-  iFrame. iFrame "Hinv". iSplitR; first done.
+  iFrame. iFrame "Hinv". iSplitR; first done. iSplitR; first done.
   rewrite /wpr.
   iApply (recovery_weakestpre.wpr_strong_mono with "Hwp").
   iSplit; first by eauto.
@@ -67,6 +68,7 @@ Qed.
 Section failstop.
 
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} {Hffi_adequacy:ffi_interp_adequacy}.
+Context {go_gctx : GoGlobalContext}.
 
 (* We can model failstop execution by just having the restart thread be a trivial program that just halts.
    Thus, the machine "restarts" after a crash but it does not do anything. *)
@@ -88,7 +90,7 @@ Theorem goose_recv_adequacy_failstop
 Proof.
   intros Hinitg Hinit Hwp. eapply goose_recv_adequacy with (n:=0%nat); [done..|].
   intros hHeap. exists (λ _, True)%I.
-  iIntros "Hstartg Hstart _ _ _ _".
+  iIntros "Hstartg Hstart _ _".
   iMod (Hwp with "Hstartg Hstart") as "Hwp". iModIntro.
   iSplitR.
   { iIntros "!> * _". iApply ncfupd_mask_intro; auto. }

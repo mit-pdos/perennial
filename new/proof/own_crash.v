@@ -19,6 +19,7 @@ Proof. solve_inG. Qed.
 
 Section defns_and_lemmas.
   Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
+  Context {go_gctx : GoGlobalContext}.
   Context `{!simpleCrashG Σ}.
   Context (N : namespace).
   Definition own_crash_concrete P Pc : iProp Σ :=

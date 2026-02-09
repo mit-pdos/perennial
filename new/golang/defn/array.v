@@ -31,10 +31,10 @@ Class ArraySemantics `{!GoSemanticsFunctions} :=
     else
       (rec: "recur" "n" :=
             if: "n" =⟨go.int⟩ #(W64 0) then GoZeroVal (go.ArrayType n elem_type) #()
-            else let: "array_so_far" := "recur" ("n" - #(W64 1)) in
-                 let: "elem_addr" := IndexRef (go.ArrayType n elem_type) (l, "n" - #(W64 1)) in
+            else let: "array_so_far" := "recur" ("n" -⟨go.int⟩ #(W64 1)) in
+                 let: "elem_addr" := IndexRef (go.ArrayType n elem_type) (l, "n" -⟨go.int⟩ #(W64 1)) in
                  let: "elem_val" := GoLoad elem_type "elem_addr" in
-                 ArraySet ("array_so_far", ("n" - #(W64 1), "elem_val"))
+                 ArraySet ("array_so_far", ("n" -⟨go.int⟩ #(W64 1), "elem_val"))
          ) #(W64 n))%E;
 
   #[global] store_array n elem_type l v ::

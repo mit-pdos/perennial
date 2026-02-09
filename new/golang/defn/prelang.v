@@ -84,4 +84,6 @@ Fixpoint type_to_string (t : type) : go_string :=
   | _ => ""%go
   end.
 
+Definition bool : go.type := go.Named "bool"%go [].
+
 End go.

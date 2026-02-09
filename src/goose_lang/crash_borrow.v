@@ -12,6 +12,7 @@ Context `{ffi_sem: ffi_semantics}.
 Context `{!ffi_interp ffi}.
 
 Context `{!gooseGlobalGS Σ, !gooseLocalGS Σ}.
+Context {go_gctx : GoGlobalContext}.
 Context `{!stagedG Σ}.
 
 Global Instance later_tokG_heap : later_tokG (goose_irisGS).
@@ -83,14 +84,14 @@ Proof.
   - iIntros (???). rewrite ownfCP_inf_op_plus. by iIntros "$ $".
   - iIntros (q E) "H". by iApply (ownfCP_inf_le1).
   - iIntros (?????) "Hg". iDestruct "Hg" as "(?&?&?&?&?&?)". eauto.
-  - iIntros (??????) "%Hlt Hg". iDestruct "Hg" as "(?&?&?&?&%Hle2&Hp&%)".
+  - iIntros (??????) "%Hlt Hg". iDestruct "Hg" as "(?&?&?&?&%Hle2&Hp)".
     iDestruct (ownfCP_op_plus with "Hp") as "(Hp1&$)".
     iFrame "∗#%". iSplit.
     { iPureIntro. split; auto. transitivity (q1 + q2)%Qp; last by naive_solver.
       apply Qp.le_add_r. }
-    iIntros (???) "Hg". iDestruct "Hg" as "(?&?&?&?&%Hle2'&Hp&%)".
+    iIntros (???) "Hg". iDestruct "Hg" as "(?&?&?&?&%Hle2'&Hp)".
     iFrame "∗#%". iApply ownfCP_op_plus. iFrame.
-  - iIntros (?????) "%Hlt (Hg&Hp')". iDestruct "Hg" as "(?&?&?&?&%Hle2&Hp&%)".
+  - iIntros (?????) "%Hlt (Hg&Hp')". iDestruct "Hg" as "(?&?&?&?&%Hle2&Hp)".
     iFrame. iDestruct "Hp'" as "(%Hinf&Hp')".
     iDestruct (ownfCP_op_plus with "[$Hp' $Hp]") as "Hp".
     iDestruct (ownfCP_inf_le1 with "[$Hp //]") as %Hle3.
@@ -99,24 +100,24 @@ Proof.
     apply Qp.lt_add_r.
   - iIntros (g ns q D κ) "Hg".
     iMod (ownfCP_inf_init (coPset_name credit_cr_names)) as (E) "H".
-    iDestruct "Hg" as "($&$&$&$&$&Hp&%)".
+    iDestruct "Hg" as "($&$&$&$&$&Hp)".
     iDestruct "H" as "(%Hinf&H)".
     iExists E.
     iDestruct (ownfCP_disj1 with "[$Hp H]") as %Hdisj.
     { iFrame; eauto. }
     iFrame. eauto.
   - iIntros (E g ns q D κ) "(Hp&Hg)".
-    iDestruct "Hg" as "($&$&$&$&%Hle&Hp'&%)".
+    iDestruct "Hg" as "($&$&$&$&%Hle&Hp')".
     iFrame "%".
     iDestruct (ownfCP_disj_gt2 with "[$Hp $Hp']") as %Hdisj; first naive_solver.
     iDestruct "Hp" as "(Hinf&Hp)".
     iModIntro. iApply ownfCP_op_union; auto.
     iFrame.
   - iIntros (E g ns q D κ) "((%Hdisj&%Hinf)&Hg)".
-    iDestruct "Hg" as "($&$&$&$&$&Hp&%)".
+    iDestruct "Hg" as "($&$&$&$&$&Hp)".
     iDestruct (ownfCP_op_union with "Hp") as "($&$)"; auto.
   - iIntros (g ns q1 q2 D κ E) "(Hg&Hp')".
-    iDestruct "Hg" as "(?&?&?&?&%Hle&Hp&%)".
+    iDestruct "Hg" as "(?&?&?&?&%Hle&Hp)".
     iApply (ownfCP_disj with "[$]").
 Qed.
 

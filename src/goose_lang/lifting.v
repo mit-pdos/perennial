@@ -177,7 +177,7 @@ Proof.
   compute_done.
 Qed.
 
-Lemma globals_name_init `(hT: go_state_preG Σ) package_inited :
+Lemma go_state_init `(hT: go_state_preG Σ) package_inited :
   ⊢ |==> ∃ new_package_inited_name : gname,
     let _ := go_stateGS_update_pre Σ hT new_package_inited_name in
     own_go_state_ctx package_inited ∗ own_go_state package_inited.
@@ -389,7 +389,6 @@ Qed.
 (** Global ghost state for GooseLang. *)
 Class gooseGlobalGS Σ := GooseGlobalGS {
   goose_invGS : invGS Σ;
-  #[global] goose_go_global_context :: GoGlobalContext;
   #[global] goose_prophGS :: proph_mapGS proph_id val Σ;
   #[global] goose_creditGS :: creditGS Σ;
   goose_ffiGlobalGS : ffiGlobalGS Σ;

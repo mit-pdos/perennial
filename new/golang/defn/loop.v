@@ -22,13 +22,13 @@ Definition do_continue_unseal : do_continue = _ := seal_eq _.
 Local Definition do_for_def : val :=
   rec: "loop" "cond" "body" "post" :=
    exception_do (
-   if: ~("cond" #()) then (return: (do: #()))
-   else
+   if: ("cond" #()) then
      let: "b" := "body" #() in
      if: (Fst "b") =⟨go.string⟩ #"break" then (return: (do: #())) else (do: #()) ;;;
      if: (Fst "b" =⟨go.string⟩ #"continue") || (Fst $ Var "b" =⟨go.string⟩ #"execute")
           then (do: "post" #();;; return: "loop" "cond" "body" "post") else do: #() ;;;
      return: "b"
+   else (return: (do: #()))
   ).
 
 Program Definition do_for := sealed @do_for_def.

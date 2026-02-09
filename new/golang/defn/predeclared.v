@@ -71,7 +71,7 @@ Definition recover : go_string := "recover".
 
 (* Types from https://go.dev/ref/spec#Predeclared_identifiers *)
 Definition any : go.type := go.InterfaceType [].
-Definition bool : go.type := go.Named "bool"%go [].
+(*         bool is declard in prelang . *)
 (*         byte is aliased below *)
 (*         comparable is omitted: it's only used in type
            constraints and does not affect executions *)
@@ -592,6 +592,3 @@ Class PredeclaredSemantics `{!GoSemanticsFunctions} :=
 
 End defs.
 End go.
-
-Global Notation "e1 ≠⟨ t ⟩ e2" := (⟨go.bool⟩! e1 =⟨t⟩ e2)%E
-                             (at level 70, format "e1  ≠⟨ t ⟩  e2") : expr_scope.

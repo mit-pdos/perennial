@@ -18,7 +18,7 @@ Definition full_slice (sl : slice.t) (V : Type) (low high max : u64) : slice.t :
 Definition _new_cap : val :=
   λ: "len",
     let: "extra" := ArbitraryInt in
-    if: "len" <⟨go.int⟩ ("len" +⟨go.int⟩ "extra") then "len" + "extra"
+    if: "len" <⟨go.int⟩ ("len" +⟨go.int⟩ "extra") then "len" +⟨go.int⟩ "extra"
     else "len".
 
 Definition for_range (elem_type : go.type) : val :=
@@ -26,7 +26,7 @@ Definition for_range (elem_type : go.type) : val :=
   let: "i" := GoAlloc go.int #(W64 0) in
   for: (λ: <>, (![go.int] "i") <⟨go.int⟩
           (FuncResolve go.len [go.SliceType elem_type]) #() "s") ;
-                      (λ: <>, "i" <-[go.int] (![go.int] "i") + #(W64 1)) :=
+                      (λ: <>, "i" <-[go.int] (![go.int] "i") +⟨go.int⟩ #(W64 1)) :=
     (λ: <>, "body" (![go.int] "i") (![elem_type] (IndexRef (go.SliceType elem_type) ("s", (![go.int] "i"))))).
 
 End goose_lang.
@@ -93,12 +93,12 @@ Class SliceSemantics `{!GoSemanticsFunctions} :=
        let st : go.type := go.SliceType elem_type in
        let: "i" := GoAlloc go.int (GoZeroVal go.int #()) in
        (for: (λ: <>, (![go.int] "i" <⟨go.int⟩ FuncResolve go.len [st] #() "dst") &&
-                (![go.int] "i" <⟨go.int⟩ FuncResolve go.len [st] #() "src")) ; (λ: <>, Skip) :=
+                (![go.int] "i" <⟨go.int⟩ FuncResolve go.len [st] #() "src")) ; (λ: <>, #()) :=
           (λ: <>,
              do: (let: "i_val" := ![go.int] "i" in
                   IndexRef st ("dst", "i_val")
                       <-[elem_type] ![elem_type] (IndexRef st ("src", "i_val"));;
-                  "i" <-[go.int] "i_val" + #(W64 1))));;
+                  "i" <-[go.int] "i_val" +⟨go.int⟩ #(W64 1))));;
        ![go.int] "i")%V;
 
 

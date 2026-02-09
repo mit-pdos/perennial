@@ -69,6 +69,9 @@ Global Notation "⟨ t ⟩! e" := (GoInstruction (GoUnOp GoNot t) e%E)
 Global Notation "⟨ t ⟩^ e" := (GoInstruction (GoUnOp GoComplement t) e%E)
                                 (at level 70, format "⟨ t ⟩^  e") : expr_scope.
 
+Global Notation "e1 ≠⟨ t ⟩ e2" := (⟨go.bool⟩! e1 =⟨t⟩ e2)%E
+                             (at level 70, format "e1  ≠⟨ t ⟩  e2") : expr_scope.
+
 Module map.
 Definition t := loc.
 Definition nil : t := null.

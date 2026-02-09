@@ -10,7 +10,10 @@ Section wpr_definitions.
 Context `{ffi_sem: ffi_semantics}.
 Context `{!ffi_interp ffi}.
 
-Definition wpr `{hG: !gooseGlobalGS Σ, hL: !gooseLocalGS Σ} (s: stuckness) (E: coPset)
+(* FIXME: to be useful with new goose, this will require the package.Assumptions
+   to be threaded through. E.g. [idempotence_wpr] will need to have
+   package.Assumptions as precondition in the restart case. *)
+Definition wpr {go_goctx : GoGlobalContext} `{hG: !gooseGlobalGS Σ, hL: !gooseLocalGS Σ} (s: stuckness) (E: coPset)
   (e: expr) (recv: expr) (Φ: val → iProp Σ) (Φinv: heapGS Σ → iProp Σ) (Φr: heapGS Σ → val → iProp Σ) :=
   wpr goose_crash_lang s _ E e recv
               Φ
@@ -18,7 +21,7 @@ Definition wpr `{hG: !gooseGlobalGS Σ, hL: !gooseLocalGS Σ} (s: stuckness) (E:
               (λ hGen v, ∃ hL:gooseLocalGS Σ, ⌜hGen = goose_generationGS (L:=hL)⌝ ∗ Φr (HeapGS _ _ hL) v)%I.
 
 Section wpr.
-Context `{hG: !heapGS Σ}.
+Context `{hG: !heapGS Σ} {go_gctx : GoGlobalContext}.
 Implicit Types s : stuckness.
 Implicit Types P : iProp Σ.
 Implicit Types Φ : val → iProp Σ.
@@ -56,9 +59,7 @@ Qed.
 Lemma idempotence_wpr `{!ffi_interp_adequacy} s E1 e rec Φx
   (Φinv : heapGS Σ → iProp Σ)
   (Φrx : heapGS Σ → val → iProp Σ)
-  (Φcx : heapGS Σ → iProp Σ)
-  (init : ∀ {_ : GoGlobalContext} {_ : GoLocalContext}, Prop)
-  :
+  (Φcx : heapGS Σ → iProp Σ) :
   ⊢ WPC e @ s ; E1 {{ Φx }} {{ Φcx _ }} -∗
    (□ ∀ (hL': gooseLocalGS Σ) σ σ'
         (HC: goose_crash σ σ'),
@@ -83,7 +84,6 @@ Proof.
   iDestruct "Hg" as "(Hgffi&Hg)".
   iMod (ffi_crash _ σ_pre_crash.(world) σ_post_crash.(world) with "Hffi") as (ffi_names) "(Hw&Hcrel&Hc)".
   { inversion Hcrash; subst; eauto. }
-  iMod (trace_reinit _ σ_post_crash.(trace) σ_post_crash.(oracle)) as (name_trace) "(Htr&Htrfrag&Hor&Hofrag)".
   iClear "Hg_auth".
   iMod (go_state_reinit _) as (globals_name) "[Hg_auth Hglobals]".
   iModIntro.
@@ -91,9 +91,8 @@ Proof.
   iMod (NC_alloc) as (Hc') "HNC".
   (* TODO(RJ): reformulate na_heap_reinit and trace_reinit to better match what we need here. *)
   set (hL' := GooseLocalGS Σ Hc' ffi_names
-                _
+                σ_post_crash.(go_state).(go_lctx)
                 (na_heapGS_update _ name_na_heap)
-                (traceGS_update Σ _ name_trace)
                 (go_stateGS_update Σ _ globals_name)
       ).
   iExists (goose_generationGS (L:=hL')).
@@ -107,11 +106,11 @@ Proof.
   assert (ns + (9 * ns + 10) = 10 * (ns + 1))%nat as -> by lia.
   iModIntro. iFrame "∗#%".
   repeat iSplit.
-  - admit. (* FIXME: need to have user-chosen init predicates about semantics state. *)
+  - done.
   - iDestruct "Hidemp" as "[H _]". iExists _. iFrame. done.
   - iDestruct "Hidemp" as "[_ H]".
     iApply (wpc_mono with "H"); eauto.
-Admitted.
+Qed.
 
 End wpr.
 End wpr_definitions.
