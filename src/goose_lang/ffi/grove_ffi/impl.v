@@ -115,6 +115,7 @@ Section grove.
   Existing Instances grove_op grove_model.
 
   Existing Instances r_mbind r_fmap.
+  Context {go_gctx : GoGlobalContext}.
 
   Definition isFreshChan (fg : ffi_global_state) (c : option endpoint) : Prop :=
     match c with
@@ -132,131 +133,84 @@ Section grove.
     modify (λ '(σ, g), (set world f σ, g)).
 
   Local Definition is_grove_ffi_step (op : GroveOp) (v : val) (e' : expr)
-    (go_gctx : GoGlobalContext) (σ σ' : state) (g g' : ffi_global_state) : Prop :=
+    (σ σ' : ffi_state) (g g' : ffi_global_state) : Prop :=
     match op with
     (* Network *)
-    | ListenOp => (∀ c, v = (into_val c) →
-                       σ = σ' ∧ g = g' ∧ e' = (ExtV (ListenSocketV c)))
-    | ConnectOp => (∀ c_l c_r, isFreshChan g c_l →
-                    match c_l with
-                    | None =>
-                       σ = σ' ∧ g = g' ∧ e' = Val $ ((*err*)#true, ExtV BadSocketV)%V
-                    | Some c_l =>
-                        σ = σ' ∧ g' = ((set grove_net $ λ g, <[ c_l := ∅ ]> g) g) ∧
+    | ListenOp =>
+        σ = σ' ∧ g = g' ∧ (∀ c, v = (into_val c) → e' = (ExtV (ListenSocketV c)))
+    | ConnectOp =>
+        σ = σ' ∧
+        (∀ c_l c_r,
+           isFreshChan g c_l →
+           match c_l with
+           | None => g = g' ∧ e' = Val $ ((*err*)#true, ExtV BadSocketV)%V
+           | Some c_l => g' = ((set grove_net <[ c_l := ∅ ]>) g) ∧
                         e' = ((*err*)#false, ExtV (ConnectionSocketV c_l c_r))%V
-                    end)
-    | _ => False
+           end)
+    | AcceptOp =>
+        σ = σ' ∧ g = g' ∧ (∀ c_l c_r, v = ExtV (ListenSocketV c_l) →
+                                      g = g' ∧ e' = Val $ (ExtV (ConnectionSocketV c_l c_r)))
+    | SendOp =>
+        σ = σ' ∧
+        (∀ data c_l c_r (b : bool),
+           v = (ExtV (ConnectionSocketV c_l c_r), #data)%V ∧
+           match g.(grove_net) !! c_r with
+           | Some ms => g' = (set grove_net <[ c_r := ms ∪ {[Message c_l data]} ]> g) ∧ e' = #b
+           | _ => e' = Panic "invalid"
+           end)
+    | RecvOp =>
+        σ = σ' ∧ g = g' ∧
+        (∀ c_l c_r (err : bool),
+           v = ExtV (ConnectionSocketV c_l c_r) ∧
+           match g.(grove_net) !! c_l with
+           | Some ms => (if err then e' = (#true, #(@nil w8))%V
+                        else ∀ m, m ∈ ms → e' = (#false, #m)%V)
+           | _ => e' = Panic "invalid"
+           end)
+    | FileReadOp =>
+        σ = σ' ∧ g = g' ∧
+        (∀ (name : go_string) (err : bool),
+           v = #name ∧
+           if err then e' = (#true, #(@nil w8))%V
+           else match σ.(grove_node_files) !! name with
+                | Some data => e' = (#true, #data)%V
+                | _ => e' = Panic "invalid"
+                end)
+    | FileWriteOp =>
+        g = g' ∧
+        (∀ (name : go_string) (data : list w8),
+           v = (#name, #data)%V ∧ e' = #() ∧
+           σ' = (set grove_node_files <[ name := data ]> σ))
+    | FileAppendOp =>
+        g = g' ∧
+        (∀ (name : go_string) (data : list w8),
+           v = (#name, #data)%V ∧
+           match σ.(grove_node_files) !! name with
+           | Some old =>
+               σ' = (set grove_node_files <[ name := old ++ data ]> σ) ∧ e' = #()
+           | _ => e' = Panic "invalid"
+           end)
+    | GetTscOp =>
+        g = g' ∧
+        (∀ (new_time : w64),
+           sint.nat σ.(grove_node_tsc) ≤ sint.nat new_time →
+           σ' = set grove_node_tsc (const new_time) σ ∧ e' = #new_time)
+    | GetTimeRangeOp =>
+        σ = σ' ∧
+        (∀ (new_time low high : w64),
+           sint.nat g.(grove_global_time) ≤ sint.nat new_time →
+           sint.nat low ≤ sint.nat new_time ≤ sint.nat high →
+           g' = set grove_global_time (const new_time) g ∧
+           e' = (#low, #high)%V
+        )
     end.
-    | ConnectOp, LitV (LitInt c_r) =>
-        c_l ← suchThat isFreshChan;
-  match c_l with
-  | None => ret $ Val $ ((*err*)#true, ExtV BadSocketV)%V
-  | Some c_l =>
-      modify_g (set grove_net $ λ g, <[ c_l := ∅ ]> g);;
-      ret $ Val $ ((*err*)#false, ExtV (ConnectionSocketV c_l c_r))%V
-  end
-    | AcceptOp, ExtV (ListenSocketV c_l) =>
-      c_r ← any chan;
-      ret $ Val $ (ExtV (ConnectionSocketV c_l c_r))
-    | SendOp, (ExtV (ConnectionSocketV c_l c_r), (LitV (LitLoc l), LitV (LitInt len)))%V =>
-      err_early ← any bool;
-      if err_early is true then ret $ Val $ (*err*)#true else
-      data ← suchThat (gen:=fun _ _ => None) (λ '(σ,g) (data : list byte),
-            Z.of_nat (length data) = sint.Z len ∧ forall (i:Z), 0 <= i -> i < length data ->
-                match σ.(heap) !! (l +ₗ i) with
-                | Some (Reading _, LitV (LitByte v)) => data !! Z.to_nat i = Some v
-                | _ => False
-                end);
-      ms ← reads (λ '(σ,g), g.(global_world).(grove_net) !! c_r) ≫= unwrap;
-      modify_g (set grove_net $ λ g, <[ c_r := ms ∪ {[Message c_l data]} ]> g);;
-      err_late ← any bool;
-      ret $ Val $ (*err*)#(err_late : bool)
-    | RecvOp, ExtV (ConnectionSocketV c_l c_r) =>
-      ms ← reads (λ '(σ,g), g.(global_world).(grove_net) !! c_l) ≫= unwrap;
-      (* NOTE: assumes m has length bounded by 2^63, but we could prove it by
-      tracking it from SendOp *)
-      m ← suchThat (gen:=fun _ _ => None) (λ _ (m : option message),
-            m = None ∨ ∃ m', m = Some m' ∧ m' ∈ ms ∧ m'.(msg_sender) = c_r ∧ Z.of_nat (length m'.(msg_data)) < 2^63);
-      match m with
-      | None =>
-        (* We errored *)
-        ret $ Val $ ((*err*)#true, (#locations.null, #0))%V
-      | Some m =>
-        l ← allocateN;
-        modify (λ '(σ,g), (state_insert_list l ((λ b, #(LitByte b)) <$> m.(msg_data)) σ, g));;
-        ret $ Val $ ((*err*)#false, (#(l : loc), #(length m.(msg_data))))%V
-      end
-    (* File *)
-    | FileReadOp, LitV (LitString name) =>
-      err ← any bool;
-      if err is true then ret $ Val ((*err*)#true, (#locations.null, #0))%V else
-      content ← reads (λ '(σ,g), σ.(world).(grove_node_files) !! name) ≫= unwrap;
-      l ← allocateN;
-      modify (λ '(σ,g), (state_insert_list l ((λ b, #(LitByte b)) <$> content) σ, g));;
-      ret $ Val ((*err*)#false, (#(l : loc), #(length content)))%V
-    | FileWriteOp, (LitV (LitString name), (LitV (LitLoc l), LitV (LitInt len)))%V =>
-      err_early ← any bool;
-      if err_early is true then ret $ Val $ (*err*)#true else
-      new_content ← suchThat (gen:=fun _ _ => None) (λ '(σ,g) (data : list byte),
-            length data = uint.nat len ∧ forall (i:Z), 0 <= i -> i < length data ->
-                match σ.(heap) !! (l +ₗ i) with
-                | Some (Reading _, LitV (LitByte v)) => data !! Z.to_nat i = Some v
-                | _ => False
-                end);
-      (* we read the content just to ensure the file exists *)
-      old_content ← reads (λ '(σ,g), σ.(world).(grove_node_files) !! name) ≫= unwrap;
-      modify_n (set grove_node_files $ <[ name := new_content ]>);;
-      ret $ Val $ (*err*)#false
-    | FileAppendOp, (LitV (LitString name), (LitV (LitLoc l), LitV (LitInt len)))%V =>
-      err_early ← any bool;
-      if err_early is true then ret $ Val $ (*err*)#true else
-      new_content ← suchThat (gen:=fun _ _ => None) (λ '(σ,g) (data : list byte),
-            length data = uint.nat len ∧ forall (i:Z), 0 <= i -> i < length data ->
-                match σ.(heap) !! (l +ₗ i) with
-                | Some (Reading _, LitV (LitByte v)) => data !! Z.to_nat i = Some v
-                | _ => False
-                end);
-      old_content ← reads (λ '(σ,g), σ.(world).(grove_node_files) !! name) ≫= unwrap;
-      (* Files cannot become bigger than 2^63 bytes on real systems, so we also
-      reject that here. *)
-      if bool_decide (length (old_content ++ new_content) >= 2^63) then ret $ Val #true else
-      modify_n (set grove_node_files $ <[ name := old_content ++ new_content ]>);;
-      ret $ Val $ (*err*)#false
-    (* Time *)
-    | GetTscOp, LitV LitUnit =>
-      time_since_last ← any u64;
-      modify_n (set grove_node_tsc (λ old_time,
-        let new_time := word.add old_time time_since_last in
-        (* TODO: why does this use [word.ltu] rather than a [decide] over the Z values? *)
-        (* Make sure we did not overflow *)
-        if word.ltu old_time new_time then new_time else old_time
-      ));;
-      new_time ← reads (λ '(σ,g), σ.(world).(grove_node_tsc));
-      ret $ Val $ (#(new_time: u64))
-    | GetTimeRangeOp, LitV LitUnit =>
-      time_since_last ← any u64;
-      modify_g (set grove_global_time (λ old_time,
-        let new_time := word.add old_time time_since_last in
-        (* Make sure we did not overflow *)
-        if Z.leb (word.unsigned old_time) (word.unsigned new_time) then new_time else old_time
-      ));;
-      low_time ← suchThat (gen:=fun _ _ => None) (λ '(σ,g) (low_time: u64),
-         Z.leb (word.unsigned low_time) (word.unsigned g.(global_world).(grove_global_time)));
-      high_time ← suchThat (gen:=fun _ _ => None) (λ '(σ,g) (high_time: u64),
-         Z.leb (word.unsigned g.(global_world).(grove_global_time)) (word.unsigned high_time));
-      ret $ Val $ PairV #(low_time:u64) #(high_time:u64)
-    (* Everything else is UB *)
-    | _, _ => undefined
-    end.
-
 
   Definition ffi_step (op : GroveOp) (v : val) : transition (state*global_state) expr :=
     '(e', s', w') ← suchThat
       (λ '(σ, g) '(e', σ', w'),
          let _ := σ.(go_state).(go_lctx) in
-         let _ := g.(go_gctx) in
          let w := g.(global_world) in
-         is_grove_ffi_step op v e' _ σ σ' w w')
+         is_grove_ffi_step op v e' σ.(world) σ' g.(global_world) w')
       (gen:=fallback_genPred _);
   modify (λ '(σ, g), (σ, set global_world (const w') g));;
   ret e'.
