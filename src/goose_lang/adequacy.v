@@ -3,7 +3,7 @@ From iris.algebra Require Import auth.
 From Perennial.base_logic.lib Require Import proph_map.
 From Perennial.program_logic Require Export weakestpre.
 From Perennial.algebra Require Import gen_heap_names.
-From Perennial.goose_lang Require Import notation lifting.
+From Perennial.goose_lang Require Import lifting.
 Set Default Proof Using "Type".
 
 (** No actual adequacy theorem here, just definitions that are shared between

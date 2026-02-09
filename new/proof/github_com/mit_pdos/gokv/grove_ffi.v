@@ -9,60 +9,6 @@ Require Import New.generatedproof.github_com.mit_pdos.gokv.grove_ffi.
 
 Set Default Proof Using "Type".
 
-Module ConnectRet.
-Record t :=
-  mk {
-      Err : bool;
-      Connection : loc;
-    }.
-End ConnectRet.
-
-Global Instance into_val_ConnectRet `{ffi_syntax} : IntoVal ConnectRet.t :=
-  {|
-    to_val_def :=
-      λ v, struct.val_aux ConnectRet [
-               "Err" ::= #v.(ConnectRet.Err);
-               "Connection" ::= #v.(ConnectRet.Connection)
-             ]%struct
-  |}.
-
-Instance wp_struct_make_ConnectRet `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
-  err conn :
-  PureWp True
-  (struct.make ConnectRet (alist_val [("Err" ::= #err); ("Connection" ::= #conn)]))%struct
-  #(ConnectRet.mk err conn).
-Proof.
-  rewrite [in #(_ : ConnectRet.t)]to_val_unseal.
-  by apply wp_struct_make.
-Qed.
-
-Module ReceiveRet.
-Record t :=
-  mk {
-      Err : bool;
-      Data : slice.t;
-    }.
-End ReceiveRet.
-
-Global Instance into_val_ReceiveRet `{ffi_syntax} : IntoVal ReceiveRet.t :=
-  {|
-    to_val_def :=
-      λ v, struct.val_aux ReceiveRet [
-               "Err" ::= #v.(ReceiveRet.Err);
-               "Data" ::= #v.(ReceiveRet.Data)
-             ]%struct
-  |}.
-
-Instance wp_struct_make_ReceiveRet `{ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
-  err data :
-  PureWp True
-  (struct.make ReceiveRet (alist_val [("Err" ::= #err); ("Data" ::= #data)]))%struct
-  #(ReceiveRet.mk err data).
-Proof.
-  rewrite [in #(_ : ReceiveRet.t)]to_val_unseal.
-  by apply wp_struct_make.
-Qed.
-
 (** * Specs for user-facing operations *)
 Section grove.
   (* these are local instances on purpose, so that importing this files doesn't
@@ -71,8 +17,7 @@ Section grove.
   Set Printing Projections.
   Existing Instances grove_op grove_model grove_semantics grove_interp goose_groveGS goose_groveNodeGS.
 
-  Context `{!heapGS Σ}.
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context `{!heapGS Σ}.
 Context {sem : go.Semantics} {package_sem : grove_ffi.Assumptions}.
 Collection W := sem + package_sem.
 
@@ -88,9 +33,9 @@ Collection W := sem + package_sem.
     {{{ is_pkg_init grove_ffi }}}
       @! grove_ffi.Listen #host
     {{{ l, RET #l; is_Listener l host }}}.
-  Proof.
+  Proof using W.
     wp_start as "#Hdef".
-    rewrite to_val_unseal. cbn [to_val_def into_val_loc into_val_w64].
+    rewrite !go.into_val_unfold.
     wp_bind (ExternalOp _ _).
     iApply wp_ListenOp; first done.
     iIntros "!# _".
@@ -111,27 +56,27 @@ Collection W := sem + package_sem.
     {{{ is_pkg_init grove_ffi }}}
       @! grove_ffi.Connect #remote
     {{{ (err : bool) (local : chan) l,
-        RET #(ConnectRet.mk err l);
+        RET (#err, #l);
         if err then True else is_Connection l local remote
     }}}.
-  Proof.
+  Proof using W.
     wp_start as "#Hdef".
-    wp_bind (ExternalOp _ _)%E. rewrite [in #remote]to_val_unseal. iApply (wp_ConnectOp with "[//]").
+    wp_bind (ExternalOp _ _)%E. rewrite [in #remote]go.into_val_unfold. iApply (wp_ConnectOp with "[//]").
     iNext. iIntros (err recv) "Hr". wp_auto.
     replace (LitV err) with #err.
-    2:{ rewrite to_val_unseal //. }
+    2:{ rewrite go.into_val_unfold //. }
     wp_bind (ref _)%E.
     destruct err.
     - iApply wp_alloc_untyped; try done.
       iIntros "!# * ?".
       replace (LitV l) with #l.
-      2:{ rewrite to_val_unseal //. }
+      2:{ rewrite go.into_val_unfold //. }
       wp_auto. by iApply "HΦ".
       Unshelve. done.
     - iApply wp_alloc_untyped; try done.
       iIntros "!# * ?".
       replace (LitV l) with #l.
-      2:{ rewrite to_val_unseal //. }
+      2:{ rewrite go.into_val_unfold //. }
       iMod (heap_pointsto_persist with "[$]").
       wp_auto. iApply "HΦ". iFrame "∗#".
   Qed.
@@ -143,7 +88,7 @@ Collection W := sem + package_sem.
   Proof.
     wp_start as "[#? ?]".
     wp_bind (! _)%E.
-    rewrite [in #l]to_val_unseal.
+    rewrite [in #l]go.into_val_unfold.
     iApply (wp_load with "[$]").
     iIntros "!> ?".
     wp_bind (ExternalOp _ _).

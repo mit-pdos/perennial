@@ -4,7 +4,7 @@ From stdpp Require Import gmap vector fin_maps.
 From RecordUpdate Require Import RecordSet.
 
 From Perennial.Helpers Require Import CountableTactics Transitions Integers ByteString.
-From Perennial.goose_lang Require Import lang notation.
+From Perennial.goose_lang Require Import lang.
 
 Set Default Proof Using "Type".
 (* this is purely cosmetic but it makes printing line up with how the code is
@@ -29,13 +29,13 @@ Proof. solve_decision. Defined.
 Instance GroveOp_fin : Countable GroveOp.
 Proof. solve_countable GroveOp_rec 10%nat. Qed.
 
-(** [chan] corresponds to a host-IP-pair *)
-Definition chan := u64.
+(** [endpoint] corresponds to a host-IP-pair *)
+Definition endpoint := u64.
 Inductive GroveVal :=
 (** Corresponds to a 2-tuple. *)
-| ListenSocketV (c : chan)
+| ListenSocketV (c : endpoint)
 (** Corresponds to a 4-tuple. [c_l] is the local part, [c_r] the remote part. *)
-| ConnectionSocketV (c_l : chan) (c_r : chan)
+| ConnectionSocketV (c_l : endpoint) (c_r : endpoint)
 (** A bad (error'd) connection *)
 | BadSocketV.
 #[global]
@@ -64,7 +64,7 @@ Proof.
   refine (mkExtOp GroveOp _ _ GroveVal _ _).
 Defined.
 
-Record message := Message { msg_sender : chan; msg_data : list u8 }.
+Record message := Message { msg_sender : endpoint; msg_data : list u8 }.
 Add Printing Constructor message. (* avoid printing with record syntax *)
 #[global]
 Instance message_eq_decision : EqDecision message.
@@ -82,7 +82,7 @@ Qed.
 (** The global network state: a map from endpoint names to the set of messages sent to
 those endpoints. *)
 Record grove_global_state : Type := {
-  grove_net: gmap chan (gset message);
+  grove_net: gmap endpoint (gset message);
   grove_global_time: u64;
 }.
 
@@ -116,7 +116,7 @@ Section grove.
 
   Existing Instances r_mbind r_fmap.
 
-  Definition isFreshChan (σg : state * global_state) (c : option chan) : Prop :=
+  Definition isFreshChan (σg : state * global_state) (c : option endpoint) : Prop :=
     match c with
     | None => True (* failure (to allocate a channel) is always an option *)
     | Some c => σg.2.(global_world).(grove_net) !! c = None
@@ -125,10 +125,10 @@ Section grove.
   Definition gen_isFreshChan σg : isFreshChan σg None.
   Proof. rewrite /isFreshChan //. Defined.
 
-  Global Instance alloc_chan_gen : GenPred (option chan) (state*global_state) isFreshChan.
+  Global Instance alloc_chan_gen : GenPred (option endpoint) (state*global_state) isFreshChan.
   Proof. intros _ σg. refine (Some (exist _ _ (gen_isFreshChan σg))). Defined.
 
-  Global Instance chan_GenType Σ : GenType chan Σ :=
+  Global Instance chan_GenType Σ : GenType endpoint Σ :=
     fun z _ => Some (exist _ (W64 z) I).
 
   Local Definition modify_g (f : grove_global_state → grove_global_state) : transition (state*global_state) () :=
@@ -137,19 +137,21 @@ Section grove.
   Local Definition modify_n (f : grove_node_state → grove_node_state) : transition (state*global_state) () :=
     modify (λ '(σ, g), (set world f σ, g)).
 
-  Definition ffi_step (op: GroveOp) (v: val): transition (state*global_state) expr :=
-    match op, v with
+  Local Definition is_grove_ffi_step (op : GroveOp) (v : val) (e' : expr)
+    (go_gctx : GoGlobalContext) (σ σ' : state) (g g' : ffi_global_state) : Prop :=
+    match op with
     (* Network *)
-    | ListenOp, LitV (LitInt c) =>
-      ret $ Val $ (ExtV (ListenSocketV c))
+    | ListenOp => (∀ c, v = (into_val c) → e' = ret $ Val $ (ExtV (ListenSocketV c)))
+    end.
+
     | ConnectOp, LitV (LitInt c_r) =>
-      c_l ← suchThat isFreshChan;
-      match c_l with
-      | None => ret $ Val $ ((*err*)#true, ExtV BadSocketV)%V
-      | Some c_l =>
-        modify_g (set grove_net $ λ g, <[ c_l := ∅ ]> g);;
-        ret $ Val $ ((*err*)#false, ExtV (ConnectionSocketV c_l c_r))%V
-      end
+        c_l ← suchThat isFreshChan;
+  match c_l with
+  | None => ret $ Val $ ((*err*)#true, ExtV BadSocketV)%V
+  | Some c_l =>
+      modify_g (set grove_net $ λ g, <[ c_l := ∅ ]> g);;
+      ret $ Val $ ((*err*)#false, ExtV (ConnectionSocketV c_l c_r))%V
+  end
     | AcceptOp, ExtV (ListenSocketV c_l) =>
       c_r ← any chan;
       ret $ Val $ (ExtV (ConnectionSocketV c_l c_r))
@@ -243,6 +245,19 @@ Section grove.
     (* Everything else is UB *)
     | _, _ => undefined
     end.
+
+
+  Definition ffi_step (op : GroveOp) (v : val) : transition (state*global_state) expr :=
+    '(e', s', w') ← suchThat
+      (λ '(σ, g) '(e', σ', w'),
+         let _ := σ.(go_state).(go_lctx) in
+         let _ := g.(go_gctx) in
+         let w := g.(global_world) in
+         is_grove_ffi_step op v e' _ σ σ' w w')
+      (gen:=fallback_genPred _);
+  modify (λ '(σ, g), (σ, set global_world (const w') g));;
+  ret e'.
+
 
   Local Instance grove_semantics : ffi_semantics grove_op grove_model :=
     { ffi_step := ffi_step;

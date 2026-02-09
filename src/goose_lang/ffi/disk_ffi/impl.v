@@ -3,7 +3,7 @@ From stdpp Require Import vector fin_maps.
 From RecordUpdate Require Import RecordUpdate.
 
 From Perennial.Helpers Require Import CountableTactics Transitions.
-From Perennial.goose_lang Require Import lang notation.
+From Perennial.goose_lang Require Import lang.
 
 Set Default Proof Using "Type".
 Set Printing Projections.

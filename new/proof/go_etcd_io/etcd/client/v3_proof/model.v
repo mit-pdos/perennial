@@ -1,5 +1,7 @@
 From stdpp Require Import sorting.
 Require Import New.proof.proof_prelude.
+From New.golang Require Export theory.
+From RecordUpdate Require Import RecordSet.
 
 Inductive ecomp (E : Type → Type) (R : Type) : Type :=
 | Pure (r : R) : ecomp E R
@@ -326,9 +328,9 @@ count_only; min_mod_revision; max_mod_revision; min_create_revision; max_create_
 
 Definition default `{ffi_syntax} : t :=
   ltac:(let x := eval simpl in
-        (mk [] [] (default_val _) (default_val _) (default_val _) (default_val _) (default_val _)
-           (default_val _) (default_val _) (default_val _) (default_val _) (default_val _)
-           (default_val _)) in
+        (mk [] [] (zero_val _) (zero_val _) (zero_val _) (zero_val _) (zero_val _)
+           (zero_val _) (zero_val _) (zero_val _) (zero_val _) (zero_val _)
+           (zero_val _)) in
           refine x
        ).
 End RangeRequest.
@@ -484,8 +486,8 @@ Global Instance settable : Settable _ :=
 
 Definition default `{ffi_syntax} : t :=
   ltac:(let x := eval simpl in
-        (mk [] [] (default_val _) (default_val _) (default_val _)
-           (default_val _)) in
+        (mk [] [] (zero_val _) (zero_val _) (zero_val _)
+           (zero_val _)) in
           refine x
        ).
 End PutRequest.

@@ -35,8 +35,6 @@ Global Notation "e1 >⟨ t ⟩ e2" := (GoInstruction (GoOp GoGt t) (e1%E, e2%E)%
                              (at level 70, format "e1  >⟨ t ⟩  e2") : expr_scope.
 Global Notation "e1 =⟨ t ⟩ e2" := (GoInstruction (GoOp GoEquals t) (e1%E, e2%E)%E)
                              (at level 70, format "e1  =⟨ t ⟩  e2") : expr_scope.
-Global Notation "e1 ≠⟨ t ⟩ e2" := (UnOp NegOp (e1%E =⟨t⟩ e2%E))
-                             (at level 70, format "e1  ≠⟨ t ⟩  e2") : expr_scope.
 
 Global Notation "e1 +⟨ t ⟩ e2" := (GoInstruction (GoOp GoPlus t) (e1%E, e2%E)%E)
                              (at level 70, format "e1  +⟨ t ⟩  e2") : expr_scope.
@@ -151,9 +149,9 @@ Context {go_lctx : GoLocalContext} {go_gctx : GoGlobalContext}.
 Definition GlobalAlloc_def (v : go_string) (t : go.type) : val :=
   λ: <>,
     let: "l" := GoAlloc t (GoZeroVal t #()) in
-    if: "l" ≠⟨go.PointerType t⟩ (GlobalVarAddr v #()) then
-      AngelicExit #()
-    else #().
+    if: "l" =⟨go.PointerType t⟩ (GlobalVarAddr v #()) then
+      #()
+    else AngelicExit #().
 Program Definition GlobalAlloc := sealed GlobalAlloc_def.
 Definition GlobalAlloc_unseal : GlobalAlloc = _ := seal_eq _.
 
@@ -189,7 +187,7 @@ Global Instance func_eq_dec : EqDecision func.t.
 Proof. solve_decision. Qed.
 
 Definition ref_one : val :=
-  λ: "v", let: "l" := ref (LitV $ LitString "") in "l" <- "v";; "l".
+  λ: "v", let: "l" := Alloc (LitV $ LitString "") in "l" <- "v";; "l".
 
 (* Here's an example exhibiting struct comparison subtleties:
 
@@ -480,8 +478,7 @@ Class CoreSemantics `{!GoSemanticsFunctions} : Prop :=
                                                 end in
                 let field_addr := StructFieldRef (go.StructType fds) field_name "l" in
                 let: "l_field" := GoAlloc field_type (StructFieldGet (go.StructType fds) field_name v) in
-                (if: ("l_field" ≠⟨go.PointerType field_type⟩ field_addr) then AngelicExit #()
-                 else #());;
+                (if: ("l_field" =⟨go.PointerType field_type⟩ field_addr) then #() else AngelicExit #());;
                 alloc_rest
          ) #() fds_unsealed ;;
        "l")%E;
