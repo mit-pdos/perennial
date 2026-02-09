@@ -491,6 +491,7 @@ Class GoGlobalContext {ext : ffi_syntax} : Type :=
     #[global] into_val_inj_loc :: Inj eq eq (into_val (V:=loc));
     #[global] into_val_inj_bool ::  Inj eq eq (into_val (V:=bool));
     #[global] into_val_inj_proph_id ::  Inj eq eq (into_val (V:=proph_id));
+    #[global] into_val_inj_w64 :: Inj eq eq (into_val (V:=w64)); (* for grove_ffi *)
   }.
 Global Notation "# x" := (into_val x%go) (at level 8).
 Global Notation "#" := into_val (at level 0).

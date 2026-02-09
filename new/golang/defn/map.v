@@ -97,8 +97,6 @@ Class MapSemantics `{!GoSemanticsFunctions} :=
   #[global] internal_map_make_step v ::
     ⟦InternalMapMake, v⟧ ⤳ (map_empty v);
 
-  is_map_pure_flatten mv m (H : is_map_pure mv m) :
-    flatten_struct mv = [mv];
   map_lookup_pure k mv m (H : is_map_pure mv m) :
     map_lookup mv k = m k;
   is_map_pure_map_insert k v mv m (H : is_map_pure mv m) :
@@ -131,7 +129,7 @@ Class MapSemantics `{!GoSemanticsFunctions} :=
   #[global] make2_map key_type elem_type ::
     FuncUnfold go.make2 [go.MapType key_type elem_type]
     (λ: "len",
-       ref (InternalMapMake (GoZeroVal elem_type #())))%V;
+       go.ref_one (InternalMapMake (GoZeroVal elem_type #())))%V;
   #[global] make1_map key_type elem_type ::
     FuncUnfold go.make1 [go.MapType key_type elem_type]
     (λ: <>, FuncResolve go.make2 [go.MapType key_type elem_type] #() #(W64 0))%V;

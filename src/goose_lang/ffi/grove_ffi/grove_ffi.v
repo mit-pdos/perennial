@@ -20,13 +20,13 @@ Set Printing Projections.
 
 (** * Grove semantic interpretation and lifting lemmas *)
 Class groveGS Σ : Set := GroveGS {
-  #[global] groveG_net_heapG :: gen_heap.gen_heapGS chan (gset message) Σ;
+  #[global] groveG_net_heapG :: gen_heap.gen_heapGS endpoint (gset message) Σ;
   grove_time_name : gname;
   #[global] groveG_timeG :: mono_natG Σ;
 }.
 
 Class groveGpreS Σ : Set := {
-  #[global] grove_preG_net_heapG :: gen_heap.gen_heapGpreS chan (gset message) Σ;
+  #[global] grove_preG_net_heapG :: gen_heap.gen_heapGpreS endpoint (gset message) Σ;
   #[global] grove_preG_files_heapG :: gen_heap.gen_heapGpreS byte_string (list byte) Σ;
   #[global] grove_preG_tscG :: mono_natG Σ;
 }.
@@ -37,7 +37,7 @@ Class groveNodeGS Σ : Set := GroveNodeGS {
 }.
 
 Definition groveΣ : gFunctors :=
-  #[gen_heapΣ chan (gset message); gen_heapΣ byte_string (list byte); mono_natΣ].
+  #[gen_heapΣ endpoint (gset message); gen_heapΣ byte_string (list byte); mono_natΣ].
 
 #[global]
 Instance subG_groveGpreS Σ : subG groveΣ Σ → groveGpreS Σ.
@@ -47,11 +47,12 @@ Section grove.
   (* these are local instances on purpose, so that importing this files doesn't
   suddenly cause all FFI parameters to be inferred as the grove model *)
   Existing Instances grove_op grove_model.
+  Context {go_gctx : GoGlobalContext}.
 
   Definition data_vals (data : list u8) : list val :=
-    ((λ b, #(LitByte b)) <$> data).
+    ((λ b, #b) <$> data).
 
-  Definition chan_msg_bounds (g : gmap chan (gset message)) : Prop :=
+  Definition chan_msg_bounds (g : gmap endpoint (gset message)) : Prop :=
     ∀ c ms m, g !! c = Some ms → m ∈ ms → length m.(msg_data) < 2^64.
 
   Definition file_content_bounds (g : gmap byte_string (list byte)) : Prop :=
@@ -70,7 +71,7 @@ Section grove.
        ffi_local_start _ _ σ :=
          ([∗ map] f↦c ∈ σ.(grove_node_files), (pointsto (L:=byte_string) (V:=list byte) f (DfracOwn 1) c))%I;
        ffi_global_start _ _ g :=
-         ([∗ map] e↦ms ∈ g.(grove_net), (pointsto (L:=chan) (V:=gset message) e (DfracOwn 1) ms))%I;
+         ([∗ map] e↦ms ∈ g.(grove_net), (pointsto (L:=endpoint) (V:=gset message) e (DfracOwn 1) ms))%I;
        ffi_restart _ _ _ := True%I;
       ffi_crash_rel Σ hF1 σ1 hF2 σ2 :=
         (* TODO: you could also assume the tsc is non-decreasing across a crash *)
@@ -78,7 +79,7 @@ Section grove.
     |}.
 End grove.
 
-Notation "c c↦ ms" := (pointsto (L:=chan) (V:=gset message) c (DfracOwn 1) ms)
+Notation "c c↦ ms" := (pointsto (L:=endpoint) (V:=gset message) c (DfracOwn 1) ms)
                        (at level 20, format "c  c↦  ms") : bi_scope.
 
 Notation "s f↦{ q } c" := (pointsto (L:=byte_string) (V:=list byte) s q c)
@@ -89,13 +90,13 @@ Notation "s f↦ c" := (s f↦{DfracOwn 1} c)%I
 
 Section lifting.
   Existing Instances grove_op grove_model grove_semantics grove_interp.
-  Context `{!gooseGlobalGS Σ, !gooseLocalGS Σ}.
+  Context `{!gooseGlobalGS Σ, !gooseLocalGS Σ} {go_gctx : GoGlobalContext}.
   Local Instance goose_groveGS : groveGS Σ := goose_ffiGlobalGS.
   Local Instance goose_groveNodeGS : groveNodeGS Σ := goose_ffiLocalGS.
 
-  Definition chan_meta_token (c : chan) (E: coPset) : iProp Σ :=
+  Definition chan_meta_token (c : endpoint) (E: coPset) : iProp Σ :=
     gen_heap.meta_token (hG := groveG_net_heapG) c E.
-  Definition chan_meta `{Countable A} (c : chan) N (x : A) : iProp Σ :=
+  Definition chan_meta `{Countable A} (c : endpoint) N (x : A) : iProp Σ :=
     gen_heap.meta (hG := groveG_net_heapG) c N x.
 
   (** "The TSC is at least" *)
@@ -123,9 +124,9 @@ Section lifting.
     word.
   Qed.
 
-  Definition connection_socket (c_l : chan) (c_r : chan) : val :=
+  Definition connection_socket (c_l : endpoint) (c_r : endpoint) : val :=
     ExtV (ConnectionSocketV c_l c_r).
-  Definition listen_socket (c : chan) : val :=
+  Definition listen_socket (c : endpoint) : val :=
     ExtV (ListenSocketV c).
   Definition bad_socket : val :=
     ExtV BadSocketV.
@@ -142,41 +143,43 @@ lemmas. *)
     repeat match goal with
         | _ => progress simplify_map_eq/= (* simplify memory stuff *)
         | H : to_val _ = Some _ |- _ => apply of_to_val in H
-        | H : base_step_atomic _ _ _ _ _ _ _ _ |- _ =>
-          apply base_step_atomic_inv in H; [ | by inversion 1 ]
         | H : base_step ?e _ _ _ _ _ _ _ |- _ =>
           rewrite /base_step /= in H;
           monad_inv; repeat (simpl in H; monad_inv)
         | H : ffi_step _ _ _ _ _ |- _ =>
           inversion H; subst; clear H
+        | H : prod _ _ |- _ => destruct H
+        | H : and _ _ |- _ => destruct H
         end.
 
-  Lemma wp_ListenOp c s E :
+  Lemma wp_ListenOp (c : w64) s E :
     {{{ True }}}
-      ExternalOp ListenOp (LitV $ LitInt c) @ s; E
+      ExternalOp ListenOp #c @ s; E
     {{{ RET listen_socket c; True }}}.
   Proof.
     iIntros (Φ) "_ HΦ". iApply wp_lift_atomic_base_step_no_fork; first by auto.
-    iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hd&Htr) Hg !>".
+    iIntros (σ1 g1 ns mj D κ κs nt) "@ Hg !>".
     iSplit.
-    { iPureIntro. eexists _, _, _, _, _; simpl.
-      econstructor. rewrite /base_step/=.
-      monad_simpl. }
+    { iPureIntro. repeat econstructor.
+      { instantiate (1:=(_, _, _)). simpl.
+        repeat econstructor. intros. eapply inj in H; last apply _. subst.
+        done. }
+      repeat econstructor. }
     iIntros "!>" (v2 σ2 g2 efs Hstep).
     iMod (global_state_interp_le with "Hg") as "Hg".
     { apply step_count_next_incr. }
-    inv_base_step.
-    simpl.
-    iFrame.
+    inv_base_step. inv Hstep. monad_inv.
     iIntros "!>".
     iSplit; first done.
+    unfold state_interp. simpl.
+    iFrame "∗#%". specialize (H0 _ ltac:(done)). subst.
     by iApply "HΦ".
   Qed.
 
   Lemma wp_ConnectOp c_r s E :
     {{{ True }}}
       ExternalOp ConnectOp (LitV $ LitInt c_r) @ s; E
-    {{{ (err : bool) (c_l : chan),
+    {{{ (err : bool) (c_l : endpoint),
       RET (#err, if err then bad_socket else connection_socket c_l c_r);
       if err then True else c_l c↦ ∅
     }}}.

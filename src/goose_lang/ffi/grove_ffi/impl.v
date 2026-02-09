@@ -137,7 +137,7 @@ Section grove.
     match op with
     (* Network *)
     | ListenOp =>
-        σ = σ' ∧ g = g' ∧ (∀ c, v = (into_val c) → e' = (ExtV (ListenSocketV c)))
+        σ = σ' ∧ g = g' ∧ (∀ c, v = #c → e' = (ExtV (ListenSocketV c)))
     | ConnectOp =>
         σ = σ' ∧
         (∀ c_l c_r,
@@ -212,7 +212,7 @@ Section grove.
          let w := g.(global_world) in
          is_grove_ffi_step op v e' σ.(world) σ' g.(global_world) w')
       (gen:=fallback_genPred _);
-  modify (λ '(σ, g), (σ, set global_world (const w') g));;
+  modify (λ '(σ, g), (set world (const s') σ, set global_world (const w') g));;
   ret e'.
 
 
