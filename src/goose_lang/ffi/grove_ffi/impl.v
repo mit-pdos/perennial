@@ -116,20 +116,14 @@ Section grove.
 
   Existing Instances r_mbind r_fmap.
 
-  Definition isFreshChan (σg : state * global_state) (c : option endpoint) : Prop :=
+  Definition isFreshChan (fg : ffi_global_state) (c : option endpoint) : Prop :=
     match c with
     | None => True (* failure (to allocate a channel) is always an option *)
-    | Some c => σg.2.(global_world).(grove_net) !! c = None
+    | Some c => fg.(grove_net) !! c = None
     end.
 
   Definition gen_isFreshChan σg : isFreshChan σg None.
   Proof. rewrite /isFreshChan //. Defined.
-
-  Global Instance alloc_chan_gen : GenPred (option endpoint) (state*global_state) isFreshChan.
-  Proof. intros _ σg. refine (Some (exist _ _ (gen_isFreshChan σg))). Defined.
-
-  Global Instance chan_GenType Σ : GenType endpoint Σ :=
-    fun z _ => Some (exist _ (W64 z) I).
 
   Local Definition modify_g (f : grove_global_state → grove_global_state) : transition (state*global_state) () :=
     modify (λ '(σ, g), (σ, set global_world f g)).
@@ -141,9 +135,18 @@ Section grove.
     (go_gctx : GoGlobalContext) (σ σ' : state) (g g' : ffi_global_state) : Prop :=
     match op with
     (* Network *)
-    | ListenOp => (∀ c, v = (into_val c) → e' = ret $ Val $ (ExtV (ListenSocketV c)))
+    | ListenOp => (∀ c, v = (into_val c) →
+                       σ = σ' ∧ g = g' ∧ e' = (ExtV (ListenSocketV c)))
+    | ConnectOp => (∀ c_l c_r, isFreshChan g c_l →
+                    match c_l with
+                    | None =>
+                       σ = σ' ∧ g = g' ∧ e' = Val $ ((*err*)#true, ExtV BadSocketV)%V
+                    | Some c_l =>
+                        σ = σ' ∧ g' = ((set grove_net $ λ g, <[ c_l := ∅ ]> g) g) ∧
+                        e' = ((*err*)#false, ExtV (ConnectionSocketV c_l c_r))%V
+                    end)
+    | _ => False
     end.
-
     | ConnectOp, LitV (LitInt c_r) =>
         c_l ← suchThat isFreshChan;
   match c_l with

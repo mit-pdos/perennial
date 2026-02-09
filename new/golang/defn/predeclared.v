@@ -592,3 +592,6 @@ Class PredeclaredSemantics `{!GoSemanticsFunctions} :=
 
 End defs.
 End go.
+
+Global Notation "e1 ≠⟨ t ⟩ e2" := (⟨go.bool⟩! e1 =⟨t⟩ e2)%E
+                             (at level 70, format "e1  ≠⟨ t ⟩  e2") : expr_scope.
