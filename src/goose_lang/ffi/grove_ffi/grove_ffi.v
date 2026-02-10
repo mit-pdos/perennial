@@ -52,21 +52,14 @@ Section grove.
   Definition data_vals (data : list u8) : list val :=
     ((λ b, #b) <$> data).
 
-  Definition chan_msg_bounds (g : gmap endpoint (gset message)) : Prop :=
-    ∀ c ms m, g !! c = Some ms → m ∈ ms → length m.(msg_data) < 2^64.
-
-  Definition file_content_bounds (g : gmap byte_string (list byte)) : Prop :=
-    ∀ f c, g !! f = Some c → Z.of_nat (length c) < 2^63.
-
   Local Program Instance grove_interp: ffi_interp grove_model :=
     {| ffiGlobalGS := groveGS;
        ffiLocalGS := groveNodeGS;
        ffi_local_ctx _ _ σ :=
          (mono_nat_auth_own grove_tsc_name 1 (uint.nat σ.(grove_node_tsc)) ∗
-          ⌜file_content_bounds σ.(grove_node_files)⌝ ∗ gen_heap_interp σ.(grove_node_files))%I;
+          gen_heap_interp σ.(grove_node_files))%I;
        ffi_global_ctx _ _ g :=
-         (gen_heap_interp g.(grove_net) ∗ ⌜chan_msg_bounds g.(grove_net)⌝ ∗
-          mono_nat_auth_own grove_time_name 1 (uint.nat g.(grove_global_time))
+         (gen_heap_interp g.(grove_net) ∗ mono_nat_auth_own grove_time_name 1 (uint.nat g.(grove_global_time))
          )%I;
        ffi_local_start _ _ σ :=
          ([∗ map] f↦c ∈ σ.(grove_node_files), (pointsto (L:=byte_string) (V:=list byte) f (DfracOwn 1) c))%I;
@@ -150,73 +143,80 @@ lemmas. *)
           inversion H; subst; clear H
         | H : prod _ _ |- _ => destruct H
         | H : and _ _ |- _ => destruct H
+        | H : ex _ |- _ => destruct H
+        | H : ∀ _, (_ = _) → _ |- _ => specialize (H _ ltac:(done))
+        | H : ∀ _ _, (_ = _) → _ |- _ => specialize (H _ _ ltac:(done))
+        | H : ∀ _ _ _ , (_ = _) → _ |- _ => specialize (H _ _ _ ltac:(done))
+        | _ => progress subst
         end.
+
+  Local Lemma wp_GroveOp op (v : val) s E Φ :
+    ▷ (∀ σ1 g1 e2 σ2 g2 (Hstep : is_grove_ffi_step op v e2 σ1 σ2 g1 g2),
+       ffi_local_ctx goose_ffiLocalGS  σ1 -∗
+       ffi_global_ctx goose_ffiGlobalGS g1 -∗ |NC={E}=>
+       (ffi_local_ctx goose_ffiLocalGS σ2 ∗
+        ffi_global_ctx goose_ffiGlobalGS g2 ∗
+        WP e2 @ s; E {{ Φ }})) -∗
+    WP ExternalOp op v @ s; E {{ v, Φ v }}.
+  Proof.
+    iLöb as "IH".
+    iIntros "HΦ".
+    Search lc "wp_".
+    iApply wp_lift_step_ncfupd; first by auto.
+    iIntros (σ1 g1 ns mj D κ κs nt) "@ Hg".
+    iApply ncfupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
+    iSplit.
+    { iPureIntro. destruct s; try done. apply base_prim_reducible.
+      repeat econstructor; simpl.
+      { instantiate (1:=(_, _, _)). repeat econstructor. }
+      repeat econstructor. }
+    iIntros "!>" (v2 σ2 g2 efs Hstep).
+    iMod (global_state_interp_le with "Hg") as "Hg".
+    { apply step_count_next_incr. }
+    apply base_reducible_prim_step in Hstep.
+    2:{ repeat econstructor; simpl.
+        { instantiate (1:=(_, _, _)). repeat econstructor. }
+        repeat econstructor. }
+    inv Hstep. simpl in *.
+    inv_base_step. monad_inv. simpl in *.
+    inv_base_step. monad_inv. destruct H0; inv_base_step.
+    { iFrame "∗#%". iMod "Hmask" as "_". iIntros "Hlc". iModIntro.
+      iSplitL; last done. by iApply "IH". }
+    iMod "Hmask" as "_".
+    iDestruct "Hg" as "[Hffi_global Hg]".
+    iMod ("HΦ" with "[//] [$] [$]") as "H".
+    iDestruct "H" as "(? & ? & ?)".
+    iIntros "Hlc". iFrame "∗#%". done.
+  Qed.
 
   Lemma wp_ListenOp (c : w64) s E :
     {{{ True }}}
       ExternalOp ListenOp #c @ s; E
     {{{ RET listen_socket c; True }}}.
   Proof.
-    iIntros (Φ) "_ HΦ". iApply wp_lift_atomic_base_step_no_fork; first by auto.
-    iIntros (σ1 g1 ns mj D κ κs nt) "@ Hg !>".
-    iSplit.
-    { iPureIntro. repeat econstructor.
-      { instantiate (1:=(_, _, _)). simpl.
-        repeat econstructor. intros. eapply inj in H; last apply _. subst.
-        done. }
-      repeat econstructor. }
-    iIntros "!>" (v2 σ2 g2 efs Hstep).
-    iMod (global_state_interp_le with "Hg") as "Hg".
-    { apply step_count_next_incr. }
-    inv_base_step. inv Hstep. monad_inv.
-    iIntros "!>".
-    iSplit; first done.
-    unfold state_interp. simpl.
-    iFrame "∗#%". specialize (H0 _ ltac:(done)). subst.
-    by iApply "HΦ".
+    iIntros (Φ) "_ HΦ". iApply (wp_GroveOp with "[-]").
+    iIntros "!> * Hl Hg". iModIntro. inv_base_step.
+    iFrame "∗#". iApply wp_value. iFrame. by iApply "HΦ".
   Qed.
 
   Lemma wp_ConnectOp c_r s E :
     {{{ True }}}
-      ExternalOp ConnectOp (LitV $ LitInt c_r) @ s; E
+      ExternalOp ConnectOp #c_r @ s; E
     {{{ (err : bool) (c_l : endpoint),
       RET (#err, if err then bad_socket else connection_socket c_l c_r);
       if err then True else c_l c↦ ∅
     }}}.
   Proof.
-    iIntros (Φ) "_ HΦ". iApply wp_lift_atomic_base_step_no_fork; first by auto.
-    iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hd&Htr) Hg !>".
-    iSplit.
-    { iPureIntro. eexists _, _, _, _, _; simpl.
-      econstructor. rewrite /base_step/=.
-      monad_simpl. econstructor.
-      { econstructor. eapply gen_isFreshChan. }
-      monad_simpl. econstructor; first by econstructor.
-      monad_simpl.
-    }
-    iIntros "!>" (v2 σ2 g2 efs Hstep).
-    iMod (global_state_interp_le with "Hg") as "Hg".
-    { apply step_count_next_incr. }
-    iDestruct "Hg" as "((Hg & %Hg & ?)&?)".
-    inv_base_step.
-    match goal with
-    | H : isFreshChan _ ?c |- _ => rename H into Hfresh; rename c into c_l
-    end.
-    destruct c_l as [c_l|]; last first.
-    { (* Failed to pick a fresh channel. *)
-      monad_inv. simpl. iFrame. iModIntro.
-      do 2 (iSplit; first done).
-      iApply ("HΦ" $! true (W64 0)). done. }
-    simpl in *. monad_inv. simpl.
-    iMod (@gen_heap_alloc with "Hg") as "[$ [Hr _]]"; first done.
-    iIntros "!> /=".
-    iFrame.
-    iSplit; first done.
-    iSplit.
-    { iPureIntro. clear c_r. intros c ms m. destruct (decide (c = c_l)) as [->|Hne].
-      - rewrite lookup_insert_eq=>-[<-]. rewrite elem_of_empty. done.
-      - rewrite lookup_insert_ne //. apply Hg. }
-    by iApply ("HΦ" $! false).
+    iIntros (Φ) "_ HΦ".
+    iApply (wp_GroveOp with "[-]").
+    iIntros "!> * Hl Hg".
+    inv_base_step. monad_inv.
+    destruct x; inv_base_step.
+    - iFrame "∗#%".
+      iDestruct "Hg" as "(? & ?)".
+      iMod (@gen_heap_alloc with "[$]") as "[? [? ?]]"; first done.
+      iFrame "∗#%". iModIntro. iApply wp_value. iApply ("HΦ" $! false). iFrame.
+    - iFrame "∗#". iApply wp_value. by iApply ("HΦ" $! true (W64 0)).
   Qed.
 
   Lemma wp_AcceptOp c_l s E :
@@ -224,353 +224,82 @@ lemmas. *)
       ExternalOp AcceptOp (listen_socket c_l) @ s; E
     {{{ c_r, RET connection_socket c_l c_r; True }}}.
   Proof.
-    iIntros (Φ) "_ HΦ". iApply wp_lift_atomic_base_step_no_fork; first by auto.
-    iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hd&Htr) Hg !>".
-    iSplit.
-    { iPureIntro. eexists _, _, _, _, _; simpl.
-      econstructor. rewrite /base_step/=.
-      monad_simpl. econstructor.
-      1:by eapply (relation.suchThat_runs _ _ (W64 0)).
-      monad_simpl. }
-    iIntros "!>" (v2 σ2 g2 efs Hstep).
-    iMod (global_state_interp_le with "Hg") as "Hg".
-    { apply step_count_next_incr. }
-    inv_base_step.
-    simpl.
-    iFrame.
-    iIntros "!>".
-    iSplit; first done.
-    by iApply "HΦ".
+    iIntros (Φ) "_ HΦ". iApply (wp_GroveOp with "[-]").
+    iIntros "!> * Hl Hg". iModIntro. inv_base_step.
+    iFrame "∗#". iApply wp_value. iFrame. by iApply "HΦ".
   Qed.
 
-  Lemma pointsto_vals_bytes_valid l (data : list u8) q (σ : gmap _ _) :
-    na_heap.na_heap_ctx tls σ -∗ pointsto_vals l q (data_vals data) -∗
-    ⌜ (forall (i:Z), (0 <= i)%Z -> (i < length data)%Z ->
-              match σ !! (l +ₗ i) with
-           | Some (Reading _, LitV (LitByte v)) => data !! Z.to_nat i = Some v
-           | _ => False
-              end) ⌝.
-  Proof.
-    iIntros "Hh Hv". iDestruct (pointsto_vals_valid with "Hh Hv") as %Hl.
-    iPureIntro. intros i Hlb Hub.
-    rewrite length_fmap in Hl. specialize (Hl _ Hlb Hub).
-    destruct (σ !! (l +ₗ i)) as [[[] v]|]; [done| |done].
-    move: Hl. rewrite list_lookup_fmap /=.
-    intros [b [? ->]]%fmap_Some_1. done.
-  Qed.
-
-  Lemma wp_SendOp c_l c_r ms (l : loc) (len : u64) (data : list u8) (q : dfrac) s E :
-    Z.of_nat (length data) = sint.Z len →
-    {{{ c_r c↦ ms ∗ pointsto_vals l q (data_vals data) }}}
-      ExternalOp SendOp (connection_socket c_l c_r, (#l, #len))%V @ s; E
+  Lemma wp_SendOp c_l c_r ms (l : loc) (data : list u8) s E :
+    {{{ c_r c↦ ms }}}
+      ExternalOp SendOp (connection_socket c_l c_r, #data)%V @ s; E
     {{{ (err_early err_late : bool), RET #(err_early || err_late);
-       c_r c↦ (if err_early then ms else ms ∪ {[Message c_l data]}) ∗
-       pointsto_vals l q (data_vals data) }}}.
+       c_r c↦ (if err_early then ms else ms ∪ {[Message c_l data]}) }}}.
   Proof.
-    iIntros (Hmlen Φ) "[Hc Hl] HΦ".
-    iApply wp_lift_atomic_base_step_no_fork; first by auto.
-    iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hw&Htr) Hg".
-    iMod (global_state_interp_le with "Hg") as "Hg".
-    { apply step_count_next_incr. }
-    iDestruct "Hg" as "((Hg & %Hg & ?)&?)".
-    iDestruct (@gen_heap_valid with "Hg Hc") as %Hc.
-    iDestruct (pointsto_vals_bytes_valid with "Hσ Hl") as %Hl.
-    iModIntro.
-    iSplit.
-    { iPureIntro. eexists _, _, _, _, _; simpl.
-      econstructor. rewrite /base_step/=.
-      monad_simpl. econstructor. 1:by eapply (relation.suchThat_runs _ _ true).
-      monad_simpl. econstructor; first by econstructor.
-      monad_simpl.
-    }
-    iIntros "!>" (v2 σ2 g2 efs Hstep).
-    inv_base_step.
-    rename x into err_early. clear H.
-    destruct err_early.
-    { monad_inv. iFrame. iModIntro.
-      do 2 (iSplitR; first done).
-      iApply ("HΦ" $! true true). by iFrame. }
-    inv_base_step.
-    monad_inv.
-    rename x into err_late.
-    iFrame.
+    iIntros (Φ) "Hc HΦ". iApply (wp_GroveOp with "[-]").
+    iIntros "!> * Hl Hg". inv_base_step. iFrame "∗#".
+    iDestruct "Hg" as "(Hg & ?)".
+    iDestruct (@gen_heap_valid with "[$] [$]") as %Heq.
+    rewrite Heq in H0. inv_base_step.
     iMod (@gen_heap_update with "Hg Hc") as "[$ Hc]".
-    assert (data = data0) as <-.
-    { apply list_eq=>i.
-      rename select (Z.of_nat (length _) = _ ∧ _) into Hm0. destruct Hm0 as [Hm0len Hm0].
-      assert (length data0 = length data) as Hlen by word.
-      destruct (data !! i) as [v|] eqn:Hm; last first.
-      { move: Hm. rewrite lookup_ge_None -Hlen -lookup_ge_None. done. }
-      rewrite -Hm. apply lookup_lt_Some in Hm. apply inj_lt in Hm.
-      opose proof (Hl i _ _) as Hl; [lia..|].
-      opose proof (Hm0 i _ _) as Hm0; [lia..|].
-      destruct (σ1.(heap) !! (l +ₗ i)) as [[[] v'']|]; try done.
-      destruct v'' as [lit| | | | | | | | | | |]; try done.
-      destruct lit; try done.
-      rewrite Nat2Z.id in Hl Hm0. rewrite Hl -Hm0. done. }
-    iIntros "!> /=".
-    iSplit; first done.
-    iSplit.
-    { iPureIntro. intros c' ms' m'. destruct (decide (c_r = c')) as [<-|Hne].
-      - rewrite lookup_insert_eq=>-[<-]. rewrite elem_of_union=>-[Hm'|Hm'].
-        + eapply Hg; done.
-        + rewrite ->elem_of_singleton in Hm'. subst m'.
-          rewrite Hmlen. word.
-      - rewrite lookup_insert_ne //. eapply Hg. }
-    iApply ("HΦ" $! false err_late).
-    by iFrame.
+    iFrame. iModIntro. iApply wp_value. by iApply ("HΦ" $! false).
   Qed.
 
   Lemma wp_RecvOp c_l c_r ms s E :
     {{{ c_l c↦ ms }}}
       ExternalOp RecvOp (connection_socket c_l c_r) @ s; E
-    {{{ (err : bool) (l : loc) (len : u64) (data : list u8),
-        RET (#err, (#l, #len));
-        ⌜if err then l = null ∧ data = [] ∧ len = 0 else
-          Message c_r data ∈ ms ∧ Z.of_nat (length data) = sint.Z len⌝ ∗
-        c_l c↦ ms ∗ pointsto_vals l (DfracOwn 1) (data_vals data)
+    {{{ (err : bool) (data : list u8),
+        RET (#err, #data);
+        ⌜if err then True else Message c_r data ∈ ms ⌝ ∗
+        c_l c↦ ms
     }}}.
   Proof.
-    iIntros (Φ) "He HΦ". iApply wp_lift_atomic_base_step_no_fork; first by auto.
-    iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hw&Htr) Hg".
-    iMod (global_state_interp_le with "Hg") as "Hg".
-    { apply step_count_next_incr. }
-    iDestruct "Hg" as "((Hg & %Hg & ?)&?)".
-    iModIntro.
-    iDestruct (@gen_heap_valid with "Hg He") as %He.
-    iSplit.
-    { iPureIntro. eexists _, _, _, _, _; simpl.
-      econstructor. rewrite /base_step/=.
-      monad_simpl. econstructor; first by econstructor.
-      monad_simpl. econstructor.
-      { constructor. left. done. }
-      monad_simpl. econstructor.
-      { econstructor. done. }
-      monad_simpl.
-    }
-    iIntros "!>" (v2 σ2 g2 efs Hstep).
-    inv_base_step.
-    monad_inv.
-    rename select (m = None ∨ _) into Hm. simpl in Hm.
-    destruct Hm as [->|(m' & -> & Hm & <- & ?)].
-    { (* Returning no message. *)
-      inv_base_step.
-      monad_inv.
-      iFrame. simpl. iModIntro. do 2 (iSplit; first done).
-      iApply ("HΦ" $! true).
-      iFrame; (iSplit; first done); rewrite /pointsto_vals big_sepL_nil //.
-    }
-    (* Returning a message *)
-    repeat match goal with
-           | H : relation.bind _ _ _ _ _ |- _ => simpl in H; monad_inv
-           end.
-    move: (Hg _ _ _ He Hm)=>Hlen.
-    rename select (isFresh _ _) into Hfresh.
-    iAssert (na_heap_ctx tls (heap_array l ((λ v : val, (Reading 0, v)) <$> data_vals m'.(msg_data)) ∪ σ1.(heap)) ∗
-      [∗ list] i↦v ∈ data_vals m'.(msg_data), na_heap_pointsto (addr_plus_off l i) (DfracOwn 1) v)%I
-      with "[> Hσ]" as "[Hσ Hl]".
-    { destruct (decide (length m'.(msg_data) = 0%nat)) as [Heq%nil_length_inv|Hne].
-      { (* Zero-length message... no actually new memory allocation, so the proof needs
-           to work a bit differently. *)
-        rewrite Heq big_sepL_nil fmap_nil /= left_id. by iFrame. }
-      iMod (na_heap_alloc_list tls (heap σ1) l
-                               (data_vals m'.(msg_data))
-                               (Reading O) with "Hσ")
-        as "(Hσ & Hblock & Hl)".
-      { rewrite length_fmap. apply Nat2Z.inj_lt. lia. }
-      { destruct Hfresh as (?&?); eauto. }
-      { destruct Hfresh as (H'&?); eauto. eapply H'. }
-      { destruct Hfresh as (H'&?); eauto. destruct (H' 0) as (?&Hfresh).
-          by rewrite (loc_add_0) in Hfresh. }
-      { eauto. }
-      iModIntro. iFrame "Hσ". iApply (big_sepL_impl with "Hl").
-      iIntros "!#" (???) "[$ _]".
-    }
-    iModIntro. iEval simpl. iFrame "Htr Hg Hσ ∗".
-    do 2 (iSplit; first done).
-    iApply ("HΦ" $! false _ _ m'.(msg_data)). iFrame "He".
-    iSplit.
-    { iPureIntro. split; first by destruct m'. word. }
-    rewrite /pointsto_vals. iApply (big_sepL_mono with "Hl").
-    clear -Hfresh. simpl. iIntros (i v _) "Hpointsto".
-    iApply (na_pointsto_to_heap with "Hpointsto").
-    destruct Hfresh as (Hfresh & _). eapply Hfresh.
+    iIntros (Φ) "Hc HΦ". iApply (wp_GroveOp with "[-]").
+    iIntros "!> * Hl Hg". inv_base_step.
+    iDestruct "Hg" as "(Hg & ?)".
+    iDestruct (@gen_heap_valid with "[$] [$]") as %Heq.
+    iFrame "∗#%". rewrite Heq in H. iModIntro. destruct x; inv_base_step.
+    { iApply wp_value. iApply "HΦ". by iFrame. }
+    { iApply wp_value. iApply ("HΦ" $! false). by iFrame. }
   Qed.
 
-  Lemma wp_FileReadOp (f : byte_string) q c E :
+  Lemma wp_FileReadOp (f : go_string) q c E :
     {{{ f f↦{q} c }}}
-      ExternalOp FileReadOp #(str f) @ E
-    {{{ (err : bool) (l : loc) (len : u64), RET (#err, (#l, #len));
-      f f↦{q} c ∗
-      if err then True else ⌜Z.of_nat (length c) = sint.Z len⌝ ∗
-      pointsto_vals l (DfracOwn 1) (data_vals c)
-    }}}.
+      ExternalOp FileReadOp #f @ E
+    {{{ RET #c; f f↦{q} c }}}.
   Proof.
-    iIntros (Φ) "Hf HΦ". iApply wp_lift_atomic_base_step_no_fork; first by auto.
-    iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hw&Htr) Hg".
-    iMod (global_state_interp_le with "Hg") as "Hg".
-    { apply step_count_next_incr. }
-    iDestruct "Hw" as "(Htsc & %Hfilebound & Hfiles)".
-    iDestruct (@gen_heap_valid with "Hfiles Hf") as %Hf.
-    iModIntro. iSplit.
-    { iPureIntro. eexists _, _, _, _, _; simpl.
-      econstructor. rewrite /base_step/=.
-      monad_simpl. econstructor.
-      1:by eapply (relation.suchThat_runs _ _ true). (* set early_err to true *)
-      monad_simpl. econstructor.
-      { constructor. done. }
-      monad_simpl.
-    }
-    iIntros "!>" (v2 σ2 g2 efs Hstep).
-    inv_base_step.
-    rename x into err_early.
-    destruct err_early.
-    { monad_inv. iFrame. iModIntro. do 2 (iSplitR; first done).
-      simpl. iApply "HΦ". by iFrame. }
-    inv_base_step. monad_inv.
-    move: (Hfilebound _ _ Hf)=>Hlen.
-    rename select (isFresh _ _) into Hfresh.
-    iAssert (na_heap_ctx tls (heap_array l ((λ v : val, (Reading 0, v)) <$> data_vals c) ∪ σ1.(heap)) ∗
-      [∗ list] i↦v ∈ data_vals c, na_heap_pointsto (addr_plus_off l i) (DfracOwn 1) v)%I
-      with "[> Hσ]" as "[Hσ Hl]".
-    { destruct (decide (length c = 0%nat)) as [Heq%nil_length_inv|Hne].
-      { (* Zero-length file... no actually new memory allocation, so the proof needs
-           to work a bit differently. *)
-        rewrite Heq big_sepL_nil fmap_nil /= left_id. by iFrame. }
-      iMod (na_heap_alloc_list tls (heap σ1) l
-                               (data_vals c)
-                               (Reading O) with "Hσ")
-        as "(Hσ & Hblock & Hl)".
-      { rewrite length_fmap. apply Nat2Z.inj_lt. lia. }
-      { destruct Hfresh as (?&?); eauto. }
-      { destruct Hfresh as (H'&?); eauto. eapply H'. }
-      { destruct Hfresh as (H'&?); eauto. destruct (H' 0) as (?&Hfresh).
-          by rewrite (loc_add_0) in Hfresh. }
-      { eauto. }
-      iModIntro. iFrame "Hσ". iApply (big_sepL_impl with "Hl").
-      iIntros "!#" (???) "[$ _]".
-    }
-    iModIntro. iEval simpl. iFrame "Htr Hg Hσ ∗".
-    do 2 (iSplitR; first done).
-    iApply "HΦ". iFrame "Hf".
-    rewrite /pointsto_vals. iSplitR.
-    { word. }
-    iApply (big_sepL_mono with "Hl").
-    clear -Hfresh. simpl. iIntros (i v _) "Hpointsto".
-    iApply (na_pointsto_to_heap with "Hpointsto").
-    destruct Hfresh as (Hfresh & _). eapply Hfresh.
+    iIntros (Φ) "Hc HΦ". iApply (wp_GroveOp with "[-]").
+    iIntros "!> * Hl Hg". inv_base_step.
+    iDestruct "Hl" as "(? & %Hl & Hl)".
+    iDestruct (@gen_heap_valid with "[$] [$]") as %Heq.
+    iFrame "∗#%". rewrite Heq in H0. inv_base_step. iModIntro.
+    iApply wp_value. by iApply "HΦ".
   Qed.
 
-  Lemma wp_FileWriteOp f old new l q (len : u64) E :
-    Z.of_nat (length new) = sint.Z len →
-    {{{ f f↦ old ∗ pointsto_vals l q (data_vals new) }}}
-      ExternalOp FileWriteOp (#(str f), (#l, #len))%V @ E
-    {{{ (err : bool), RET #err; f f↦ (if err then old else new) ∗ pointsto_vals l q (data_vals new) }}}.
+  Lemma wp_FileWriteOp f old new E :
+    {{{ f f↦ old }}}
+      ExternalOp FileWriteOp (#f, #new)%V @ E
+    {{{ RET #(); f f↦ new }}}.
   Proof.
-    iIntros (Hmlen Φ) "[Hf Hl] HΦ".
-    iApply wp_lift_atomic_base_step_no_fork; first by auto.
-    iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hw&Htr) Hg".
-    iMod (global_state_interp_le with "Hg") as "Hg".
-    { apply step_count_next_incr. }
-    iDestruct "Hw" as "(Htsc & %Hfilebound & Hfiles)".
-    iDestruct (@gen_heap_valid with "Hfiles Hf") as %Hf.
-    iDestruct (pointsto_vals_bytes_valid with "Hσ Hl") as %Hl.
-    iModIntro. iSplit.
-    { iPureIntro. eexists _, _, _, _, _; simpl.
-      econstructor. rewrite /base_step/=.
-      monad_simpl. econstructor.
-      1:by eapply (relation.suchThat_runs _ _ true). (* set early_err to true *)
-      monad_simpl. econstructor.
-      { econstructor. done. }
-      monad_simpl.
-    }
-    iIntros "!>" (v2 σ2 g2 efs Hstep).
-    inv_base_step.
-    rename x into err_early.
-    destruct err_early.
-    { monad_inv. iFrame. do 2 (iSplitR; first done). simpl. iApply "HΦ". by iFrame. }
-    inv_base_step. monad_inv.
-    iFrame.
-    iMod (@gen_heap_update with "Hfiles Hf") as "[$ Hf]".
-    assert (data = new) as <-.
-    { apply list_eq=>i.
-      rename select (length _ = _ ∧ _) into Hm0. destruct Hm0 as [Hm0len Hm0].
-      assert (length new = length data) as Hlen by word.
-      destruct (data !! i) as [v|] eqn:Hm; last first.
-      { move: Hm. rewrite lookup_ge_None -Hlen -lookup_ge_None. done. }
-      rewrite -Hm. apply lookup_lt_Some in Hm. apply inj_lt in Hm.
-      opose proof (Hl i _ _) as Hl; [lia..|].
-      opose proof (Hm0 i _ _) as Hm0; [lia..|].
-      destruct (σ1.(heap) !! (l +ₗ i)) as [[[] v'']|]; try done.
-      destruct v'' as [lit| | | | | | | | | | |]; try done.
-      destruct lit; try done.
-      rewrite Nat2Z.id in Hl Hm0. rewrite Hl -Hm0. done. }
-    iIntros "!> /=".
-    iSplit; first done. iSplitR.
-    { iPureIntro. clear -Hmlen Hfilebound.
-      intros f' c'. destruct (decide (f = f')) as [<-|Hne].
-      - rewrite lookup_insert_eq=>-[<-]. word.
-      - rewrite lookup_insert_ne //. eapply Hfilebound. }
-    iApply "HΦ".
-    by iFrame.
+    iIntros (Φ) "Hc HΦ". iApply (wp_GroveOp with "[-]").
+    iIntros "!> * Hl Hg". inv_base_step.
+    iDestruct "Hl" as "(? & %Hfilebound & Hl)".
+    iDestruct (@gen_heap_valid with "[$] [$]") as %Heq.
+    iFrame "∗#%". iMod (@gen_heap_update with "[$] [$]") as "[? ?]".
+    iModIntro. iFrame. iApply wp_value; by iApply "HΦ".
   Qed.
 
-  Lemma wp_FileAppendOp f old new l q (len : u64) E :
-    length new = uint.nat len →
-    {{{ f f↦ old ∗ pointsto_vals l q (data_vals new) }}}
-      ExternalOp FileAppendOp (#(str f), (#l, #len))%V @ E
-    {{{ (err : bool), RET #err; f f↦ (if err then old else (old ++ new)) ∗ pointsto_vals l q (data_vals new) }}}.
+  Lemma wp_FileAppendOp f old new E :
+    {{{ f f↦ old  }}}
+      ExternalOp FileAppendOp (#f, #new)%V @ E
+    {{{ RET #(); f f↦ (old ++ new) }}}.
   Proof.
-    iIntros (Hmlen Φ) "[Hf Hl] HΦ".
-    iApply wp_lift_atomic_base_step_no_fork; first by auto.
-    iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hw&Htr) Hg".
-    iMod (global_state_interp_le with "Hg") as "Hg".
-    { apply step_count_next_incr. }
-    iDestruct "Hw" as "(Htsc & %Hfilebound & Hfiles)".
-    iDestruct (@gen_heap_valid with "Hfiles Hf") as %Hf.
-    iDestruct (pointsto_vals_bytes_valid with "Hσ Hl") as %Hl.
-    iModIntro. iSplit.
-    { iPureIntro. eexists _, _, _, _, _; simpl.
-      econstructor. rewrite /base_step/=.
-      monad_simpl. econstructor.
-      1:by eapply (relation.suchThat_runs _ _ true). (* set early_err to true *)
-      monad_simpl. econstructor.
-      { econstructor. done. }
-      monad_simpl.
-    }
-    iIntros "!>" (v2 σ2 g2 efs Hstep).
-    inv_base_step.
-    rename x into err_early.
-    destruct err_early.
-    { monad_inv. iFrame. do 2 (iSplitR; first done). simpl. iApply "HΦ". by iFrame. }
-    inv_base_step. monad_inv.
-    iFrame.
-    case_bool_decide.
-    { monad_inv. iFrame. do 2 (iSplitR; first done). simpl. iApply "HΦ". by iFrame. }
-    inv_base_step. monad_inv. iFrame.
-    rename select (¬ length _ >= _) into Halen.
-    iMod (@gen_heap_update with "Hfiles Hf") as "[$ Hf]".
-    assert (data = new) as <-.
-    { apply list_eq=>i.
-      rename select (length _ = _ ∧ _) into Hm0. destruct Hm0 as [Hm0len Hm0].
-      assert (length new = length data) as Hlen by word.
-      destruct (data !! i) as [v|] eqn:Hm; last first.
-      { move: Hm. rewrite lookup_ge_None -Hlen -lookup_ge_None. done. }
-      rewrite -Hm. apply lookup_lt_Some in Hm. apply inj_lt in Hm.
-      opose proof (Hl i _ _) as Hl; [lia..|].
-      opose proof (Hm0 i _ _) as Hm0; [lia..|].
-      destruct (σ1.(heap) !! (l +ₗ i)) as [[[] v'']|]; try done.
-      destruct v'' as [lit| | | | | | | |]; try done.
-      destruct lit; try done.
-      rewrite Nat2Z.id in Hl Hm0. rewrite Hl -Hm0. done. }
-    iIntros "!> /=".
-    iSplit; first done. iSplitR.
-    { iPureIntro. clear -Halen Hfilebound.
-      intros f' c'. destruct (decide (f = f')) as [<-|Hne].
-      - rewrite lookup_insert_eq=>-[<-]. word.
-      - rewrite lookup_insert_ne //. eapply Hfilebound. }
-    iApply "HΦ".
-    by iFrame.
+    iIntros (Φ) "Hc HΦ". iApply (wp_GroveOp with "[-]").
+    iIntros "!> * Hl Hg". inv_base_step.
+    iDestruct "Hl" as "(? & Hl)".
+    iDestruct (@gen_heap_valid with "[$] [$]") as %Heq.
+    rewrite Heq in H0. inv_base_step.
+    iFrame "∗#%". iMod (@gen_heap_update with "[$] [$]") as "[? ?]".
+    iModIntro. iFrame. iApply wp_value; by iApply "HΦ".
   Qed.
 
   Lemma wp_GetTscOp prev_time s E :
@@ -580,34 +309,12 @@ lemmas. *)
       ⌜prev_time ≤ uint.nat new_time⌝ ∗ tsc_lb (uint.nat new_time)
     }}}.
   Proof.
-    iIntros (Φ) "Hprev HΦ". iApply wp_lift_atomic_base_step_no_fork; first by auto.
-    iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hw&Htr) Hg !>".
-    iSplit.
-    { iPureIntro. eexists _, _, _, _, _; simpl.
-      econstructor. rewrite /base_step/=.
-      monad_simpl. econstructor.
-      1:by eapply (relation.suchThat_runs _ _ (W64 0)).
-      monad_simpl. }
-    iIntros "!>" (v2 σ2 g2 efs Hstep).
-    iMod (global_state_interp_le with "Hg") as "Hg".
-    { apply step_count_next_incr. }
-    inv_base_step. iFrame. simpl.
-    iSplitR; first done.
-    iDestruct "Hw" as "[Htsc Hfiles]".
-    set old := σ1.(world).(grove_node_tsc).
-    iDestruct (mono_nat_lb_own_valid with "Htsc Hprev") as %[_ Hlb].
-    iClear "Hprev".
-    evar (new: u64).
-    assert (uint.nat old <= uint.nat new) as Hupd.
-    2: iMod (mono_nat_own_update (uint.nat new) with "Htsc") as "[Htsc Hnew]"; first lia.
-    2: subst new; iFrame "Htsc Hfiles".
-    { subst new.
-      (* NOTE: word does not reason about [unsigned_ltu] since it's not used by
-         Goose. *)
-      rewrite word.unsigned_ltu.
-      edestruct (Z.ltb_spec (uint.Z old) (uint.Z (word.add old x))); word.
-    }
-    iApply "HΦ". iFrame. iPureIntro. lia.
+    iIntros (Φ) "Hc HΦ". iApply (wp_GroveOp with "[-]").
+    iIntros "!> * Hl Hg". inv_base_step.
+    iDestruct "Hl" as "(? & Hl)".
+    iDestruct (mono_nat_lb_own_valid with "[$] [$]") as %[_ Hlb].
+    iMod (mono_nat_own_update (uint.nat x) with "[$]") as "[? ?]"; first lia.
+    iFrame "∗#%". iModIntro. iApply wp_value. iApply "HΦ". iFrame. word.
   Qed.
 
   Lemma wp_GetTimeRangeOp s E :
@@ -615,59 +322,14 @@ lemmas. *)
                   own_time t -∗ |NC={E}=> (own_time t ∗ Φ (#l, #h)%V)) -∗
    WP ExternalOp GetTimeRangeOp #() @ s; E {{ Φ }}.
   Proof.
-    iIntros (Φ) "HΦ". iApply wp_lift_atomic_base_step_no_fork_nc; first by auto.
-    iIntros (σ1 g1 ns mj D κ κs nt) "(Hσ&Hd&Htr) Hg !>".
-    iSplit.
-    { iPureIntro. eexists _, _, _, _, _; simpl.
-      econstructor. rewrite /base_step/=.
-      monad_simpl.
-      econstructor.
-      1:by eapply (relation.suchThat_runs _ _ (W64 0)).
-      monad_simpl.
-      econstructor.
-      1: {
-        eapply (relation.suchThat_runs _ _ (W64 0)).
-        apply Is_true_true_2.
-        word.
-      }
-      monad_simpl.
-      econstructor.
-      {
-        eapply (relation.suchThat_runs _ _ (W64 (2^64-1))).
-        apply Is_true_true_2.
-        word.
-      }
-      monad_simpl.
-    }
-    iIntros "!>" (v2 σ2 g2 efs Hstep).
-    iMod (global_state_interp_le with "Hg") as "Hg".
-    { apply step_count_next_incr. }
-    inv_base_step.
-    simpl.
-    iFrame.
-    iSplitR; first done.
-    iDestruct "Hg" as "((? & %Hg & Ht)&?)".
-    iMod (mono_nat_own_update with "Ht") as "[Ht _]".
-    {
-      instantiate (1:=(uint.nat ((if
-           uint.Z g1.(global_world).(grove_global_time) <=?
-           uint.Z (word.add g1.(global_world).(grove_global_time) x)
-          then word.add g1.(global_world).(grove_global_time) x
-          else g1.(global_world).(grove_global_time))))).
-      destruct (Z.leb (uint.Z _) (uint.Z (word.add _ _))) eqn:Hlt.
-      {
-        rewrite Z.leb_le in Hlt.
-        apply Z2Nat.inj_le; [word..|].
-        done.
-      }
-      { word. }
-    }
-    iMod ("HΦ" $! low_time high_time _ with "[] [] Ht") as "[Ht HΦ]".
-    {apply Is_true_true_1 in H1. word. }
-    { apply Is_true_true_1 in H0. word. }
-    iModIntro.
-    iFrame "HΦ".
-    by iFrame.
+    iIntros (Φ) "HΦ". iApply (wp_GroveOp with "[-]").
+    iIntros "!> * Hl Hg". inv_base_step.
+    iDestruct "Hg" as "(? & Hg)".
+    iMod (@mono_nat_own_update with "[$]") as "[H _]"; first shelve.
+    iSpecialize ("HΦ" with "[] [] [$]"); [shelve..|].
+    iMod "HΦ" as "[? HΦ]".
+    iFrame. iModIntro. iApply wp_value. iFrame.
+    Unshelve. all: word.
   Qed.
 
   Lemma wp_time_acc e s E Φ:
@@ -678,7 +340,7 @@ lemmas. *)
     iIntros (?) "Hacc_wp".
     iApply wp_acc_global_state_interp.
     { rewrite H. done. }
-    iIntros (?????) "[(? & ? & Ht) ?]".
+    iIntros (?????) "[(? & Ht) ?]".
     unfold own_time.
     iMod ("Hacc_wp" with "Ht") as "[Ht Hacc_wp]".
     by iFrame.
@@ -707,29 +369,29 @@ End grove.
 From Perennial.goose_lang Require Import adequacy.
 
 #[global]
-Program Instance grove_interp_adequacy:
+Program Instance grove_interp_adequacy {go_gctx : GoGlobalContext} :
   @ffi_interp_adequacy grove_model grove_interp grove_op grove_semantics :=
   {| ffiGpreS := groveGpreS;
      ffiΣ := groveΣ;
      subG_ffiPreG := subG_groveGpreS;
-     ffi_initgP := λ g, chan_msg_bounds g.(grove_net);
-     ffi_initP := λ σ g, file_content_bounds σ.(grove_node_files);
+     ffi_initgP := λ g, True;
+     ffi_initP := λ σ g, True;
   |}.
 Next Obligation.
-  rewrite //=. iIntros (Σ hPre g Hchan). eauto.
+  rewrite //=. iIntros (_ Σ hPre g _). eauto.
   iMod (gen_heap_init g.(grove_net)) as (names) "(H1&H2&H3)".
   iMod (mono_nat_own_alloc (uint.nat g.(grove_global_time))) as (?) "[Ht _]".
   iExists (GroveGS _ names _ _). iFrame. eauto.
 Qed.
 Next Obligation.
   rewrite //=.
-  iIntros (Σ hPre σ ??).
+  iIntros (_ Σ hPre σ ??).
   iMod (mono_nat_own_alloc (uint.nat σ.(grove_node_tsc))) as (tsc_name) "[Htsc _]".
   iMod (gen_heap_init σ.(grove_node_files)) as (names) "(H1&H2&_)".
   iExists (GroveNodeGS _ _ tsc_name _). eauto with iFrame.
 Qed.
 Next Obligation.
-  iIntros (Σ σ σ' Hcrash Hold) "(Htsc_old & %Hfilebound & Hfiles_old)".
+  intros ?. iIntros (Σ σ σ' Hcrash Hold) "(Htsc_old & Hfiles_old)".
   simpl in Hold. destruct Hcrash.
   iExists Hold. iFrame. iPureIntro. done.
 Qed.

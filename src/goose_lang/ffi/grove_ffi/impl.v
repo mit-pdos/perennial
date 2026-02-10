@@ -132,59 +132,61 @@ Section grove.
   Local Definition modify_n (f : grove_node_state → grove_node_state) : transition (state*global_state) () :=
     modify (λ '(σ, g), (set world f σ, g)).
 
-  Local Definition is_grove_ffi_step (op : GroveOp) (v : val) (e' : expr)
+  Definition is_grove_ffi_step (op : GroveOp) (v : val) (e' : expr)
     (σ σ' : ffi_state) (g g' : ffi_global_state) : Prop :=
     match op with
-    (* Network *)
     | ListenOp =>
         σ = σ' ∧ g = g' ∧ (∀ c, v = #c → e' = (ExtV (ListenSocketV c)))
     | ConnectOp =>
-        σ = σ' ∧
-        (∀ c_l c_r,
-           isFreshChan g c_l →
-           match c_l with
-           | None => g = g' ∧ e' = Val $ ((*err*)#true, ExtV BadSocketV)%V
-           | Some c_l => g' = ((set grove_net <[ c_l := ∅ ]>) g) ∧
-                        e' = ((*err*)#false, ExtV (ConnectionSocketV c_l c_r))%V
-           end)
+        (∀ c_r, v = #c_r →
+                σ = σ' ∧
+                (∃ c_l,
+                    isFreshChan g c_l ∧
+                    match c_l with
+                    | None => g = g' ∧ e' = Val $ ((*err*)#true, ExtV BadSocketV)%V
+                    | Some c_l => (g' = ((set grove_net <[ c_l := ∅ ]>) g) ∧
+                                  e' = ((*err*)#false, ExtV (ConnectionSocketV c_l c_r)))%V
+                    end))
     | AcceptOp =>
-        σ = σ' ∧ g = g' ∧ (∀ c_l c_r, v = ExtV (ListenSocketV c_l) →
-                                      g = g' ∧ e' = Val $ (ExtV (ConnectionSocketV c_l c_r)))
+        σ = σ' ∧ g = g' ∧ (∀ c_l, v = ExtV (ListenSocketV c_l) →
+                                  ∃ c_r,
+                                    g = g' ∧ e' = Val $ (ExtV (ConnectionSocketV c_l c_r)))
     | SendOp =>
         σ = σ' ∧
-        (∀ data c_l c_r (b : bool),
-           v = (ExtV (ConnectionSocketV c_l c_r), #data)%V ∧
+        (∀ data c_l c_r,
+           v = (ExtV (ConnectionSocketV c_l c_r), #data)%V →
            match g.(grove_net) !! c_r with
-           | Some ms => g' = (set grove_net <[ c_r := ms ∪ {[Message c_l data]} ]> g) ∧ e' = #b
+           | Some ms => ∃ (b : bool),
+           g' = (set grove_net <[ c_r := ms ∪ {[Message c_l data]} ]> g) ∧ e' = #b
            | _ => e' = Panic "invalid"
            end)
     | RecvOp =>
         σ = σ' ∧ g = g' ∧
-        (∀ c_l c_r (err : bool),
-           v = ExtV (ConnectionSocketV c_l c_r) ∧
+        (∀ c_l c_r,
+           v = ExtV (ConnectionSocketV c_l c_r) →
+           ∃ (err : bool),
            match g.(grove_net) !! c_l with
            | Some ms => (if err then e' = (#true, #(@nil w8))%V
-                        else ∀ m, m ∈ ms → e' = (#false, #m)%V)
+                        else ∃ d, (Message c_r d) ∈ ms ∧ e' = (#false, #d)%V)
            | _ => e' = Panic "invalid"
            end)
     | FileReadOp =>
         σ = σ' ∧ g = g' ∧
-        (∀ (name : go_string) (err : bool),
-           v = #name ∧
-           if err then e' = (#true, #(@nil w8))%V
-           else match σ.(grove_node_files) !! name with
-                | Some data => e' = (#true, #data)%V
-                | _ => e' = Panic "invalid"
-                end)
+        (∀ (name : go_string),
+           v = #name →
+           match σ.(grove_node_files) !! name with
+           | Some data => e' = #data
+           | _ => e' = Panic "invalid"
+           end)
     | FileWriteOp =>
         g = g' ∧
         (∀ (name : go_string) (data : list w8),
-           v = (#name, #data)%V ∧ e' = #() ∧
+           v = (#name, #data)%V → e' = #() ∧
            σ' = (set grove_node_files <[ name := data ]> σ))
     | FileAppendOp =>
         g = g' ∧
         (∀ (name : go_string) (data : list w8),
-           v = (#name, #data)%V ∧
+           v = (#name, #data)%V →
            match σ.(grove_node_files) !! name with
            | Some old =>
                σ' = (set grove_node_files <[ name := old ++ data ]> σ) ∧ e' = #()
@@ -192,14 +194,14 @@ Section grove.
            end)
     | GetTscOp =>
         g = g' ∧
-        (∀ (new_time : w64),
-           sint.nat σ.(grove_node_tsc) ≤ sint.nat new_time →
+        (∃ (new_time : w64),
+           uint.nat σ.(grove_node_tsc) ≤ uint.nat new_time ∧
            σ' = set grove_node_tsc (const new_time) σ ∧ e' = #new_time)
     | GetTimeRangeOp =>
         σ = σ' ∧
-        (∀ (new_time low high : w64),
-           sint.nat g.(grove_global_time) ≤ sint.nat new_time →
-           sint.nat low ≤ sint.nat new_time ≤ sint.nat high →
+        (∃ (new_time low high : w64),
+           uint.nat g.(grove_global_time) ≤ uint.nat new_time ∧
+           uint.nat low ≤ uint.nat new_time ≤ uint.nat high ∧
            g' = set grove_global_time (const new_time) g ∧
            e' = (#low, #high)%V
         )
@@ -210,6 +212,7 @@ Section grove.
       (λ '(σ, g) '(e', σ', w'),
          let _ := σ.(go_state).(go_lctx) in
          let w := g.(global_world) in
+         (σ' = σ.(world) ∧ w' = g.(global_world) ∧ e' = ExternalOp op v) ∨
          is_grove_ffi_step op v e' σ.(world) σ' g.(global_world) w')
       (gen:=fallback_genPred _);
   modify (λ '(σ, g), (set world (const s') σ, set global_world (const w') g));;

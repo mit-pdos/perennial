@@ -1,3 +1,5 @@
+(* TODO gemini. I want to know where the list observation gets used to define
+the _real_ transition relation. Find me where that is *)
 From Coq.Program Require Import Equality.
 From RecordUpdate Require Import RecordSet.
 From stdpp Require Export binders.
