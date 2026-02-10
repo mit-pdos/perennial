@@ -1,6 +1,6 @@
 From Perennial.program_logic Require Export weakestpre.
 From Perennial.goose_lang Require Export lang lifting ipersist.
-From Perennial.Helpers Require Export ipm Tactics.
+From Perennial.Helpers Require Export ipm Tactics Transitions.
 From iris.proofmode Require Import coq_tactics.
 (* make sure solve_proper comes from stdpp and not Coq *)
 From stdpp Require Export tactics.
@@ -15,13 +15,15 @@ Section classes.
 
 (* FIXME: add later credits *)
 Class PureWp `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseGlobalGS Σ, !gooseLocalGS Σ}
+             {go_gctx : GoGlobalContext}
   φ (e : expr) (e' : expr) :=
   pure_wp_wp : ∀ stk E Φ (H : φ) K,
   ▷ (£ 1 -∗  WP (fill K e') @ stk ; E {{ Φ }}) -∗ WP (fill K e) @ stk; E {{ Φ }}.
 
-Global Hint Mode PureWp - - - - - - - - ! - : typeclass_instances.
+Global Hint Mode PureWp - - - - - - - - - ! - : typeclass_instances.
 
 Lemma tac_wp_pure_wp `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseGlobalGS Σ, !gooseLocalGS Σ}
+                     {go_gctx : GoGlobalContext}
       K e1 {e2 φ} (Hwp:PureWp φ e1 e2) Δ Δ' s E Φ :
   φ →
   MaybeIntoLaterNEnvs 1 Δ Δ' →
@@ -33,6 +35,7 @@ Proof.
 Qed.
 
 Lemma tac_wp_pure_wp_later_credit `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseGlobalGS Σ, !gooseLocalGS Σ}
+                                  {go_gctx : GoGlobalContext}
       K e1 {e2 φ} (Hwp:PureWp φ e1 e2) Δ Δ' s E Φ :
   φ →
   MaybeIntoLaterNEnvs 1 Δ Δ' →
@@ -45,7 +48,8 @@ Qed.
 
 (* Now a few lemmas to help establish PureWp in other ways. *)
 Lemma pure_exec_pure_wp n
-  `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseGlobalGS Σ, !gooseLocalGS Σ} {φ e e'} :
+  `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseGlobalGS Σ, !gooseLocalGS Σ}
+  {go_gctx : GoGlobalContext} {φ e e'} :
   PureExec φ (S n) e e' → PureWp φ e e'.
 Proof.
   intros ??????.
@@ -56,7 +60,7 @@ Proof.
 Qed.
 
 Lemma pure_wp_val `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseGlobalGS Σ, !gooseLocalGS Σ}
-  φ (e : expr) (v' : val) :
+                  {go_gctx : GoGlobalContext} φ (e : expr) (v' : val) :
   (∀ stk E Φ (H: φ),
      ▷ (£ 1 -∗  Φ v') -∗ WP e @ stk; E {{ Φ }}) →
   PureWp φ e v'.
@@ -73,13 +77,14 @@ End classes.
 (** Some basic, primitive instances. Adapted to use `IntoVal`. *)
 Section instances.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseGlobalGS Σ, !gooseLocalGS Σ}
-         {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
+         {go_gctx : GoGlobalContext} {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
 
-Global Instance wp_injl (v : val) : PureWp True (InjL v) (InjLV v).
-Proof. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
-
-Global Instance wp_injr (v : val) : PureWp True (InjR v) (InjRV v).
-Proof. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
+Ltac solve_exec_safe := intros; subst; do 4 eexists; econstructor; cbn; repeat (monad_simpl; simpl); try done.
+Ltac solve_exec_puredet :=
+  inversion 1; subst; unfold base_step in *; intros; repeat (monad_inv; simpl in * ); eauto.
+Ltac solve_pure_exec :=
+  subst; intros ?; apply nsteps_once, pure_base_step_pure_step;
+    constructor; [solve_exec_safe | solve_exec_puredet].
 
 Global Instance wp_snd (v1 v2 : val) : PureWp True (Snd (v1, v2)%V) v2.
 Proof. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
@@ -94,330 +99,10 @@ Global Instance wp_pair (v1 v2 : val) : PureWp True (v1, v2)%E (v1, v2)%V.
 Proof. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
 
 Global Instance wp_if_false e1 e2 : PureWp True (if: #false then e1 else e2) e2.
-Proof. apply (pure_exec_pure_wp O). rewrite !go.into_val_unfold. solve_pure_exec. Qed.
+Proof. apply (pure_exec_pure_wp O). solve_pure_exec. inv H2. done. Qed.
 
 Global Instance wp_if_true e1 e2 : PureWp True (if: #true then e1 else e2) e1.
-Proof. apply (pure_exec_pure_wp O). rewrite !go.into_val_unfold. solve_pure_exec. Qed.
-
-Global Instance wp_case_inr v e1 e2 : PureWp True (Case (InjRV v) e1 e2) (e2 v).
-Proof. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
-
-Global Instance wp_case_inl v e1 e2 : PureWp True (Case (InjLV v) e1 e2) (e1 v).
-Proof. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
-
-Definition wp_eq_val (v1 v2 : val) :
-  PureWp (is_comparable v1 ∧ is_comparable v2) (BinOp EqOp v1 v2) #(bool_decide (v1 = v2)).
-Proof.
-  apply (pure_exec_pure_wp O).
-  intros Hcomp.
-  cut (bin_op_eval EqOp v1 v2 = Some $ LitV $ LitBool $ bool_decide (v1 = v2)).
-  { rewrite !go.into_val_unfold. solve_pure_exec. }
-  rewrite /bin_op_eval /bin_op_eval_eq /=.
-  rewrite decide_True //.
-Qed.
-
-(** Unops *)
-(* w64 unops *)
-Global Instance wp_neg_w64 (v : w64) : PureWp True (~#v) #(word.not v).
-Proof. rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
-
-Global Instance wp_w64_u_to_w64 (v : w64) : PureWp True (u_to_w64 #v) #v.
-Proof.
-  rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O).
-  solve_pure_exec. replace (_ (uint.Z v)) with v by word. done.
-Qed.
-
-Global Instance wp_w64_u_to_w32 (v : w64) : PureWp True (u_to_w32 #v) #(W32 $ uint.Z v).
-Proof. rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
-
-Global Instance wp_w64_u_to_w16 (v : w64) : PureWp True (u_to_w16 #v) #(W16 $ uint.Z v).
-Proof. rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
-
-Global Instance wp_w64_u_to_w8 (v : w64) : PureWp True (u_to_w8 #v) #(W8 $ uint.Z v).
-Proof. rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
-
-Global Instance wp_w64_s_to_w64 (v : w64) : PureWp True (s_to_w64 #v) #v.
-Proof.
-  rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O).
-  solve_pure_exec. replace (_ (sint.Z v)) with v by word. done.
-Qed.
-
-Global Instance wp_w64_s_to_w32 (v : w64) : PureWp True (s_to_w32 #v) #(W32 $ sint.Z v).
-Proof. rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
-
-Global Instance wp_w64_s_to_w16 (v : w64) : PureWp True (s_to_w16 #v) #(W16 $ sint.Z v).
-Proof. rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
-
-Global Instance wp_w64_s_to_w8 (v : w64) : PureWp True (s_to_w8 #v) #(W8 $ sint.Z v).
-Proof. rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
-
-(* w32 unops *)
-Global Instance wp_neg_w32 (v : w32) : PureWp True (~#v) #(word.not v).
-Proof. rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
-
-Global Instance wp_w32_u_to_w64 (v : w32) : PureWp True (u_to_w64 #v) #(W64 $ uint.Z v).
-Proof. rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
-
-Global Instance wp_w32_u_to_w32 (v : w32) : PureWp True (u_to_w32 #v) #v.
-Proof.
-  rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O).
-  solve_pure_exec. replace (_ (uint.Z v)) with v by word. done.
-Qed.
-
-Global Instance wp_w32_u_to_w16 (v : w32) : PureWp True (u_to_w16 #v) #(W16 $ uint.Z v).
-Proof. rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
-
-Global Instance wp_w32_u_to_w8 (v : w32) : PureWp True (u_to_w8 #v) #(W8 $ uint.Z v).
-Proof. rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
-
-Global Instance wp_w32_s_to_w64 (v : w32) : PureWp True (s_to_w64 #v) #(W64 $ sint.Z v).
-Proof. rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
-
-Global Instance wp_w32_s_to_w32 (v : w32) : PureWp True (s_to_w32 #v) #v.
-Proof.
-  rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O).
-  solve_pure_exec. replace (_ (sint.Z v)) with v by word. done.
-Qed.
-
-Global Instance wp_w32_s_to_w16 (v : w32) : PureWp True (s_to_w16 #v) #(W16 $ sint.Z v).
-Proof. rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
-
-Global Instance wp_w32_s_to_w8 (v : w32) : PureWp True (s_to_w8 #v) #(W8 $ sint.Z v).
-Proof. rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
-
-(* w8 unops *)
-Global Instance wp_neg_w8 (v : w8) : PureWp True (~#v) #(word.not v).
-Proof. rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
-
-Global Instance wp_w8_u_to_w64 (v : w8) : PureWp True (u_to_w64 #v) #(W64 $ uint.Z v).
-Proof. rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
-
-Global Instance wp_w8_u_to_w32 (v : w8) : PureWp True (u_to_w32 #v) #(W32 $ uint.Z v).
-Proof. rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
-
-Global Instance wp_w8_u_to_w8 (v : w8) : PureWp True (u_to_w8 #v) #v.
-Proof.
-  rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O).
-  solve_pure_exec. replace (_ (uint.Z v)) with v by word. done.
-Qed.
-
-Global Instance wp_w8_s_to_w64 (v : w8) : PureWp True (s_to_w64 #v) #(W64 $ sint.Z v).
-Proof. rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
-
-Global Instance wp_w8_s_to_w32 (v : w8) : PureWp True (s_to_w32 #v) #(W32 $ sint.Z v).
-Proof. rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
-
-Global Instance wp_w8_s_to_w8 (v : w8) : PureWp True (s_to_w8 #v) #v.
-Proof.
-  rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O).
-  solve_pure_exec. replace (_ (sint.Z v)) with v by word. done.
-Qed.
-
-Global Instance wp_w8_to_string (v : w8) : PureWp True (to_string #v) #([v]).
-Proof. rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
-
-(* w16 unops *)
-Global Instance wp_neg_w16 (v : w16) : PureWp True (~#v) #(word.not v).
-Proof. rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
-
-Global Instance wp_w16_u_to_w64 (v : w16) : PureWp True (u_to_w64 #v) #(W64 $ uint.Z v).
-Proof. rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
-
-Global Instance wp_w16_u_to_w32 (v : w16) : PureWp True (u_to_w32 #v) #(W32 $ uint.Z v).
-Proof. rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
-
-Global Instance wp_w16_u_to_w16 (v : w16) : PureWp True (u_to_w16 #v) #(W16 $ uint.Z v).
-Proof. rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
-
-Global Instance wp_w16_u_to_w8 (v : w16) : PureWp True (u_to_w8 #v) #(W8 $ uint.Z v).
-Proof. rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
-
-Global Instance wp_w16_s_to_w64 (v : w16) : PureWp True (s_to_w64 #v) #(W64 $ sint.Z v).
-Proof. rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
-
-Global Instance wp_w16_s_to_w32 (v : w16) : PureWp True (s_to_w32 #v) #(W32 $ sint.Z v).
-Proof. rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
-
-Global Instance wp_w16_s_to_w16 (v : w16) : PureWp True (s_to_w16 #v) #(W16 $ sint.Z v).
-Proof. rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
-
-Global Instance wp_w16_s_to_w8 (v : w16) : PureWp True (s_to_w8 #v) #(W8 $ sint.Z v).
-Proof. rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
-
-(* bool unop *)
-Global Instance wp_bool_neg (b : bool) : PureWp True (~ #b) #(Datatypes.negb b).
-Proof. rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
-
-(* string unop *)
-Global Instance wp_StringLength (s : go_string) : PureWp True (StringLength #s) #(W64 $ length s).
-Proof. rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
-
-Global Instance wp_IsNoStringOverflow (s : go_string) : PureWp True (IsNoStringOverflow #s)
-                                                       #(bool_decide ((length s) < 2^63)).
-Proof. rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O). solve_pure_exec. Qed.
-
-(** Binops *)
-
-(* w64 binop instance *)
-Global Instance wp_w64_binop op (v1 v2 : w64) (v : val) :
-  PureWp (op ≠ EqOp ∧
-      (into_val <$> bin_op_eval_word op v1 v2) ∪ (into_val <$> bin_op_eval_compare op v1 v2) = Some v)
-    (BinOp op #v1 #v2)%E v | 1.
-Proof.
-  apply (pure_exec_pure_wp O). rewrite !go.into_val_unfold /=.
-  intros [??]. assert (bin_op_eval op (LitV v1) (LitV v2) = Some v).
-  { rewrite /bin_op_eval decide_False // /=. destruct op; by simpl in *. }
-  revert H. solve_pure_exec.
-Qed.
-
-Global Instance wp_w32_binop op (v1 v2 : w32) (v : val) :
-  PureWp (op ≠ EqOp ∧
-      (into_val <$> bin_op_eval_word op v1 v2) ∪ (into_val <$> bin_op_eval_compare op v1 v2) = Some v)
-    (BinOp op #v1 #v2)%E v | 1.
-Proof.
-  rewrite !go.into_val_unfold /=. apply (pure_exec_pure_wp O).
-  intros [??]. assert (bin_op_eval op (LitV v1) (LitV v2) = Some v).
-  { rewrite /bin_op_eval decide_False // /=. destruct op; try by simpl in *. }
-  revert H. solve_pure_exec.
-Qed.
-
-Global Instance wp_w16_binop op (v1 v2 : w16) (v : val) :
-  PureWp (op ≠ EqOp ∧
-      (into_val <$> bin_op_eval_word op v1 v2) ∪ (into_val <$> bin_op_eval_compare op v1 v2) = Some v)
-    (BinOp op #v1 #v2)%E v | 1.
-Proof.
-  rewrite !go.into_val_unfold /=. apply (pure_exec_pure_wp O).
-  intros [??]. assert (bin_op_eval op (LitV v1) (LitV v2) = Some v).
-  { rewrite /bin_op_eval decide_False // /=. destruct op; try by simpl in *. }
-  revert H. solve_pure_exec.
-Qed.
-
-Global Instance wp_w8_binop op (v1 v2 : w8) (v : val) :
-  PureWp (op ≠ EqOp ∧
-      (into_val <$> bin_op_eval_word op v1 v2) ∪ (into_val <$> bin_op_eval_compare op v1 v2) = Some v)
-    (BinOp op #v1 #v2)%E v | 1.
-Proof.
-  rewrite !go.into_val_unfold /=. apply (pure_exec_pure_wp O).
-  intros [??]. assert (bin_op_eval op (LitV v1) (LitV v2) = Some v).
-  { rewrite /bin_op_eval decide_False // /=. destruct op; try by simpl in *. }
-  revert H. solve_pure_exec.
-Qed.
-
-Global Instance wp_w8_w64_binop op (v1 : w8) (v2 : w64) (v : w8) :
-  PureWp (bin_op_eval_shift op v1 (W8 (uint.Z v2)) = Some v) (BinOp op #v1 #v2) #v | 1.
-Proof.
-  rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O).
-  rewrite /bin_op_eval_shift /=.
-  intros H. destruct op; simpl in H; try by exfalso.
-  all: revert H; solve_pure_exec; inversion H; subst; done.
-Qed.
-
-Global Instance wp_w8_w16_binop op (v1 : w8) (v2 : w16) (v : w8) :
-  PureWp (bin_op_eval_shift op v1 (W8 (uint.Z v2)) = Some v) (BinOp op #v1 #v2) #v | 1.
-Proof.
-  rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O).
-  intros H. destruct op; simpl in H; try by exfalso.
-  all: revert H; solve_pure_exec; inversion H; subst; done.
-Qed.
-
-Global Instance wp_w8_w32_binop op (v1 : w8) (v2 : w32) (v : w8) :
-  PureWp (bin_op_eval_shift op v1 (W8 (uint.Z v2)) = Some v) (BinOp op #v1 #v2) #v | 1.
-Proof.
-  rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O).
-  intros H. destruct op; simpl in H; try by exfalso.
-  all: revert H; solve_pure_exec; inversion H; subst; done.
-Qed.
-
-Global Instance wp_w32_w64_binop op (v1 : w32) (v2 : w64) (v : w32) :
-  PureWp (bin_op_eval_shift op v1 (W32 (uint.Z v2)) = Some v) (BinOp op #v1 #v2) #v | 1.
-Proof.
-  rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O).
-  intros H. destruct op; simpl in H; try by exfalso.
-  all: revert H; solve_pure_exec; inversion H; subst; done.
-Qed.
-
-Global Instance wp_w32_w16_binop op (v1 : w32) (v2 : w16) (v : w32) :
-  PureWp (bin_op_eval_shift op v1 (W32 (uint.Z v2)) = Some v) (BinOp op #v1 #v2) #v | 1.
-Proof.
-  rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O).
-  intros H. destruct op; simpl in H; try by exfalso.
-  all: revert H; solve_pure_exec; inversion H; subst; done.
-Qed.
-
-Global Instance wp_w32_w8_binop op (v1 : w32) (v2 : w8) (v : w32) :
-  PureWp (bin_op_eval_shift op v1 (W32 (uint.Z v2)) = Some v) (BinOp op #v1 #v2) #v | 1.
-Proof.
-  rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O).
-  intros H. destruct op; simpl in H; try by exfalso.
-  all: revert H; solve_pure_exec; inversion H; subst; done.
-Qed.
-
-Global Instance wp_w64_w16_binop op (v1 : w64) (v2 : w16) (v : w64) :
-  PureWp (bin_op_eval_shift op v1 (W64 (uint.Z v2)) = Some v) (BinOp op #v1 #v2) #v | 1.
-Proof.
-  rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O).
-  intros H. destruct op; simpl in H; try by exfalso.
-  all: revert H; solve_pure_exec; inversion H; subst; done.
-Qed.
-
-Global Instance wp_w64_w8_binop op (v1 : w64) (v2 : w8) (v : w64) :
-  PureWp (bin_op_eval_shift op v1 (W64 (uint.Z v2)) = Some v) (BinOp op #v1 #v2) #v | 1.
-Proof.
-  rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O).
-  intros H. destruct op; simpl in H; try by exfalso.
-  all: revert H; solve_pure_exec; inversion H; subst; done.
-Qed.
-
-Global Instance wp_w64_w32_binop op (v1 : w64) (v2 : w32) (v : w64) :
-  PureWp (bin_op_eval_shift op v1 (W64 (uint.Z v2)) = Some v) (BinOp op #v1 #v2) #v | 1.
-Proof.
-  rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O).
-  intros H. destruct op; simpl in H; try by exfalso.
-  all: revert H; solve_pure_exec; inversion H; subst; done.
-Qed.
-
-Global Instance wp_w16_w64_binop op (v1 : w16) (v2 : w64) (v : w16) :
-  PureWp (bin_op_eval_shift op v1 (W16 (uint.Z v2)) = Some v) (BinOp op #v1 #v2) #v | 1.
-Proof.
-  rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O).
-  intros H. destruct op; simpl in H; try by exfalso.
-  all: revert H; solve_pure_exec; inversion H; subst; done.
-Qed.
-
-Global Instance wp_w16_w32_binop op (v1 : w16) (v2 : w32) (v : w16) :
-  PureWp (bin_op_eval_shift op v1 (W16 (uint.Z v2)) = Some v) (BinOp op #v1 #v2) #v | 1.
-Proof.
-  rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O).
-  intros H. destruct op; simpl in H; try by exfalso.
-  all: revert H; solve_pure_exec; inversion H; subst; done.
-Qed.
-
-Global Instance wp_w16_w8_binop op (v1 : w16) (v2 : w8) (v : w16) :
-  PureWp (bin_op_eval_shift op v1 (W16 (uint.Z v2)) = Some v) (BinOp op #v1 #v2) #v | 1.
-Proof.
-  rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O).
-  intros H. destruct op; simpl in H; try by exfalso.
-  all: revert H; solve_pure_exec; inversion H; subst; done.
-Qed.
-
-(* bool binop *)
-Global Instance wp_bool_binop op (v1 v2 v : bool) :
-  PureWp (op ≠ EqOp ∧ bin_op_eval_bool op v1 v2 = Some v) (BinOp op #v1 #v2) #v | 1.
-Proof.
-  rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O).
-  case => ?. solve_pure_exec.
-  - rewrite /bin_op_eval decide_False // b /=. Transitions.monad_simpl.
-  - rewrite /bin_op_eval decide_False // b /= in H0. by Transitions.monad_inv.
-Qed.
-
-Global Instance wp_string_binop op (v1 v2 v : go_string) :
-  PureWp (op ≠ EqOp ∧ bin_op_eval_string op v1 v2 = Some v) (BinOp op #v1 #v2) #v | 1.
-Proof.
-  rewrite !go.into_val_unfold. apply (pure_exec_pure_wp O).
-  case => ?. solve_pure_exec.
-  - rewrite /bin_op_eval decide_False // b /=. Transitions.monad_simpl.
-  - rewrite /bin_op_eval decide_False // b /= in H0. by Transitions.monad_inv.
-Qed.
+Proof. apply (pure_exec_pure_wp O). solve_pure_exec. inv H2. done. Qed.
 
 (* XXX: making this an instance results in this fact getting used even in places
   where the RecV is under a definition. Making it an explicit [Hint Extern]
@@ -445,7 +130,7 @@ Global Hint Extern 0 (PureWp _ (App (Val (RecV _ _ _)) _) _) => simple apply wp_
 
 Section lemmas.
 Lemma tac_wp_bind `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseLocalGS Σ, !gooseGlobalGS Σ}
-    K e Δ s E Φ f :
+                  {go_gctx : GoGlobalContext} K e Δ s E Φ f :
   f = (λ e, fill K e) → (* as an eta expanded hypothesis so that the `wp_bind`
                            tactic can `simpl` the RHS to get a concrete function
                            f which results in a nice looking output without
@@ -455,7 +140,8 @@ Lemma tac_wp_bind `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseLocalGS �
 Proof. rewrite envs_entails_unseal=> -> ->. by apply: wp_bind. Qed.
 
 Lemma tac_wp_rec `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseGlobalGS Σ, !gooseLocalGS Σ}
-      K v1 v2 {f x e} {Hwp:TCEq v1 (rec: f x := e)%V} Δ Δ' s E Φ :
+                 {go_gctx : GoGlobalContext} K v1 v2 {f x e} {Hwp:TCEq v1 (rec: f x := e)%V}
+                 Δ Δ' s E Φ :
   MaybeIntoLaterNEnvs 1 Δ Δ' →
   envs_entails Δ' (£ 1 -∗ WP (fill K (subst' x v2 (subst' f v1 e))) @ s; E {{ Φ }}) →
   envs_entails Δ (WP (fill K (App v1 v2)) @ s; E {{ Φ }}).
@@ -465,8 +151,8 @@ Proof.
   by iApply wp_call.
 Qed.
 
-Lemma tac_wp_call_go_func `{ffi_sem: ffi_semantics} `{!ffi_interp ffi}
-  `{!gooseGlobalGS Σ, !gooseLocalGS Σ} {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}
+Lemma tac_wp_call_go_func `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!gooseGlobalGS Σ, !gooseLocalGS Σ}
+                          {go_gctx : GoGlobalContext} {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}
       K f x e v2 Δ Δ' s E Φ :
   MaybeIntoLaterNEnvs 1 Δ Δ' →
   envs_entails Δ' (WP (fill K (subst' x v2 (subst' f #(func.mk f x e) e))) @ s; E {{ Φ }}) →
@@ -493,24 +179,15 @@ Ltac2 walk_expr (e : constr) (f : constr -> constr -> 'a) : 'a :=
         | fill ?k' ?e                     => walk_ctx e constr:($k ++ $k')
         | App ?e1 (Val ?v)                => walk_ctx e1 constr:(@AppLCtx _ $v :: $k)
         | App ?e1 ?e2                     => walk_ctx e2 constr:(@AppRCtx _ $e1 :: $k)
-        | UnOp ?op ?e                     => walk_ctx e constr:(@UnOpCtx _ $op :: $k)
-        | BinOp ?op (Val ?v) ?e           => walk_ctx e constr:(@BinOpRCtx _ $op $v :: $k)
-        | BinOp ?op ?e1 ?e2               => walk_ctx e1 constr:(@BinOpLCtx _ $op $e2 :: $k)
         | If ?e0 ?e1 ?e2                  => walk_ctx e0 constr:(IfCtx $e1 $e2 :: $k)
         | Pair (Val ?v) ?e                => walk_ctx e constr:(PairRCtx $v :: $k)
         | Pair ?e1 ?e2                    => walk_ctx e1 constr:(PairLCtx $e2 :: $k)
         | Fst ?e                          => walk_ctx e constr:(@FstCtx _ :: $k)
         | Snd ?e                          => walk_ctx e constr:(@SndCtx _ :: $k)
-        | InjL ?e                         => walk_ctx e constr:(@InjLCtx _ :: $k)
-        | InjR ?e                         => walk_ctx e constr:(@InjRCtx _ :: $k)
-        | Case ?e0 ?e1 ?e2                => walk_ctx e0 constr:(CaseCtx $e1 $e2 :: $k)
         | Primitive2 ?op (Val ?v) ?e      => walk_ctx e constr:(@Primitive2RCtx _ $op $v :: $k)
         | Primitive2 ?op ?e1 ?e2          => walk_ctx e1 constr:(@Primitive2LCtx _ $op $e2 :: $k)
         | Primitive1 ?op ?e               => walk_ctx e constr:(@Primitive1Ctx _ $op :: $k)
         | @ExternalOp ?ext ?op ?e         => walk_ctx e constr:(@ExternalOpCtx $ext $op :: $k)
-        | CmpXchg (Val ?v0) (Val ?v1) ?e2 => walk_ctx e2 constr:(CmpXchgRCtx $v0 $v1 :: $k)
-        | CmpXchg (Val ?v0) ?e1 ?e2       => walk_ctx e1 constr:(CmpXchgMCtx $v0 $e2 :: $k)
-        | CmpXchg ?e0 ?e1 ?e2             => walk_ctx e0 constr:(CmpXchgLCtx $e1 $e2 :: $k)
         | ResolveProph (Val ?v) ?e        => walk_ctx e constr:(@ResolveProphRCtx _ $v :: $k)
         | ResolveProph ?e1 ?e2            => walk_ctx e1 constr:(@ResolveProphLCtx _ $e2 :: $k)
         | Rec _ _ _ => Control.zero Walk_expr_not_found
@@ -630,23 +307,14 @@ Ltac2 expr_is_unknown e : bool :=
   lazy_match! e with
   | fill _ _ => false
   | App _ _                => false
-  | UnOp _ _                     => false
-  | BinOp _ _ _ => false
-  | BinOp _ _ _ => false
   | If _ _ _ => false
   | Pair _ _ => false
   | Pair _ _ => false
   | Fst _ => false
   | Snd _ => false
-  | InjL _ => false
-  | InjR _ => false
-  | Case _ _ _ => false
   | Primitive2 _ _ _ => false
   | Primitive1 _ _ => false
   | @ExternalOp _ _ _ => false
-  | CmpXchg _ _ _ => false
-  | CmpXchg _ _ _ => false
-  | CmpXchg _ _ _ => false
   | ResolveProph _ _ => false
   | ResolveProph _ _ => false
   | _ => true
