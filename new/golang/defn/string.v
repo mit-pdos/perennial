@@ -10,9 +10,13 @@ Class StringSemantics `{!GoSemanticsFunctions} :=
 {
   #[global] package_sem :: strings.Assumptions;
 
+  #[global] internal_string_len_step (s : go_string) ::
+    ⟦InternalStringLen, #s⟧ ⤳ #(if decide (length s < 2^64) then
+                                  (Val #(W64 (length s)))
+                                else AngelicExit #());
+
   #[global] string_len_unfold `{!t ↓u go.string} :: FuncUnfold go.len [t]
-    (λ: "s", if: IsNoStringOverflow "s" then StringLength "s"
-             else AngelicExit #())%V;
+    (λ: "s", InternalStringLen "s")%V;
 
   #[global] string_index (s : go_string) (i : w64) `{!t ↓u go.string} ::
     ⟦Index t, (#s, #i)⟧ ⤳

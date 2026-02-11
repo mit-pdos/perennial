@@ -227,7 +227,10 @@ Inductive go_instruction : Type :=
 | InternalMapMake
 
 | CompositeLiteral (t : go.type)
-| SelectStmt.
+| SelectStmt
+
+| InternalStringLen
+.
 
 Inductive expr :=
 (* Values *)
