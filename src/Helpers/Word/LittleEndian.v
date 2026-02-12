@@ -25,16 +25,31 @@ Definition u32_le_def (x: u32) : list byte :=
 Program Definition u32_le := sealed @u32_le_def.
 Definition u32_le_unseal : u32_le = _ := seal_eq _.
 
-Local Ltac unseal := rewrite ?u64_le_unseal ?u32_le_unseal.
-
-(** 64-bit encoding *)
-
-Definition le_to_u64 (l: list byte) : u64.
+Definition le_to_u64_def (l: list byte) : u64.
 Proof.
   refine (word.of_Z _).
   set (t := tuple.of_list l).
   exact (combine (byte:=w8_word_instance) _ t).
 Defined.
+Program Definition le_to_u64 := sealed @le_to_u64_def.
+Definition le_to_u64_unseal : le_to_u64 = _ := seal_eq _.
+
+Definition le_to_u32_def (l: list byte) : u32.
+Proof.
+  refine (word.of_Z _).
+  set (t := tuple.of_list l).
+  exact (combine (byte:=w8_word_instance) _ t).
+Defined.
+Program Definition le_to_u32 := sealed @le_to_u32_def.
+Definition le_to_u32_unseal : le_to_u32 = _ := seal_eq _.
+
+Local Ltac unseal := rewrite
+  ?u64_le_unseal /u64_le_def
+  ?u32_le_unseal /u32_le_def
+  ?le_to_u64_unseal /le_to_u64_def
+  ?le_to_u32_unseal /le_to_u32_def.
+
+(** 64-bit encoding *)
 
 Lemma u64_le_0 : u64_le (W64 0) = replicate w64_bytes (W8 0).
 Proof. unseal. reflexivity. Qed.
@@ -56,8 +71,7 @@ Theorem u64_le_to_word : forall x,
     le_to_u64 (u64_le x) = x.
 Proof.
   unseal.
-  intros x; simpl.
-  unfold le_to_u64, u64_le_def.
+  intros x.
   rewrite -> tuple_of_to_list_u64.
   rewrite combine_split.
   change (Z.of_nat w64_bytes * 8) with 64.
@@ -69,13 +83,6 @@ Qed.
 (* end 64-bit code *)
 
 (** 32-bit encoding *)
-
-Definition le_to_u32 (l: list byte) : u32.
-Proof.
-  refine (word.of_Z _).
-  set (t := tuple.of_list l).
-  exact (combine (byte:=w8_word_instance) _ t).
-Defined.
 
 Lemma u32_le_0 : u32_le (W32 0) = replicate w32_bytes (W8 0).
 Proof. unseal. reflexivity. Qed.
@@ -97,8 +104,7 @@ Theorem u32_le_to_word : forall x,
     le_to_u32 (u32_le x) = x.
 Proof.
   unseal.
-  intros x; simpl.
-  unfold le_to_u32, u32_le_def.
+  intros x.
   rewrite -> tuple_of_to_list_u32.
   rewrite combine_split.
   change (Z.of_nat w32_bytes * 8) with 32.
@@ -178,7 +184,6 @@ Proof.
   intros.
   do 8 (destruct bs; [ simpl in H; lia | ]).
   destruct bs; [ clear H | simpl in H; lia ].
-  unfold le_to_u64, u64_le_def.
   rewrite word.unsigned_of_Z.
   rewrite wrap_small.
   { rewrite LittleEndian.split_combine.
