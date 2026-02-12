@@ -6,9 +6,11 @@ From iris.base_logic.lib Require Import saved_prop.
 
 (** * Done Channel Pattern Verification
 
-    This file provides verification for the "done channel" pattern - a broadcast
+    This file provides the "done channel" idiom spec - a broadcast
     signaling mechanism where one sender closes the channel to notify multiple
     receivers, with each receiver obtaining their designated resources.
+
+    Note: If the resources you are transferring are duplicable, you can use the simpler specfiication in done_bc.v which does not require allocating a notified handle for each receiver.
 
     Key features:
     - Single closer with exclusive Notify token
@@ -21,6 +23,7 @@ Section done.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context `{!globalsGS Σ} {go_ctx : GoContext}.
 Context `{!chan_idiomG Σ V}.
+Context `{!ghost_mapG Σ nat gname}.
 
 Context `{!IntoVal V}.
 Context `{!IntoValTyped V t}.
@@ -31,7 +34,6 @@ Record done_names := {
   receivers_map_name : gname;
   acc_name         : gname
 }.
-
 
 Definition NotifyInternal (γ : done_names) (Qs : list (iProp Σ)) : iProp Σ :=
   ∃ (m : gmap nat gname),
@@ -252,12 +254,12 @@ Proof.
   iDestruct 1 as "[$ _]".
 Qed.
 
-Lemma done_CloseAU γ ch R Φ :
+Lemma done_close_au γ ch R Φ :
   is_done γ ch -∗
   £1 ∗ £1 ∗ £1 -∗
   Notify γ R ∗ R -∗
   ▷ Φ -∗
-  CloseAU ch γ.(chan_name) Φ.
+  close_au ch γ.(chan_name) Φ.
 Proof.
   iIntros "#Hdone". iIntros "(Hlc1 & Hlc2 & Hlc3)". iIntros "[HNh HR]".
   unfold Notify. iNamed "HNh". iDestruct "HNh" as "[HProps Hsp]".
@@ -316,7 +318,7 @@ Proof.
   unfold is_done. iDestruct "Hdone" as "[Hch Hinv]".
   iApply (chan.wp_close ch γ.(chan_name) with "[$Hch]").
   iIntros "Hlc". iDestruct "Hlc" as "[Hlc Hlcrest]".
-  iApply (done_CloseAU with "[][$][$HNh $HR][Hphi]").
+  iApply (done_close_au with "[][$][$HNh $HR][Hphi]").
   { iFrame "#". }
   iNext. iApply "Hphi". done.
 Qed.

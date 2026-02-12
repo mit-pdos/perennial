@@ -105,7 +105,7 @@ Lemma handshake_send_au γ ch v P Q Φ :
   is_handshake γ ch P Q -∗
   P v -∗
   ▷(Q -∗ Φ) -∗
-  SendAU ch v γ Φ.
+  send_au ch v γ Φ.
 Proof.
   iIntros "(Hlc1 & Hlc2 & Hlc3) #Hchan HP Hau".
   iDestruct "Hchan" as "[Hchan Hinv]".

@@ -1,7 +1,6 @@
-
 From New.proof Require Export proof_prelude.
 From New.proof.github_com.goose_lang.goose.model.channel
-     Require Import idiom.base handoff future spsc done dsp dsp_proofmode mpmc join handshake.
+Require Import idiom.base handoff future spsc done done_bc dsp dsp_proofmode mpmc join handshake.
 From New.proof Require Import strings time sync.
 From New.generatedproof.github_com.goose_lang.goose.testdata.examples Require Import channel.
 From iris.base_logic Require Import ghost_map.
@@ -180,7 +179,7 @@ wp_apply (wp_fork with "[HNotify errMsg done]").
   wp_apply wp_Sleep.
   wp_apply (chan.wp_close (V:=()) with "[]") as "(Hlc1 & Hlc2 & Hlc3 & _)".
   { iApply (done_is_chan with "Hdone"). }
-  iApply (done_CloseAU (V:=()) with "[$] [$] [$HNotify errMsg]").
+  iApply (done_close_au (V:=()) with "[$] [$] [$HNotify errMsg]").
   { iFrame. }
   iNext.
   wp_auto.
@@ -1292,5 +1291,157 @@ Proof using chan_idiomG0.
 Qed.
 
 End exchange_pointer_proof.
+
+Section broadcast_example_proof.
+Context `{!chan_idiomG Σ unit}.
+Context `{!chan_idiomG Σ w64}.
+Context `{!inG Σ (exclR unitO)}.
+
+(* This proof uses the duplicable-facts-only done idiom which is easier to use *)
+Lemma wp_BroadcastExample :
+  {{{ is_pkg_init chan_spec_raw_examples }}}
+    @! chan_spec_raw_examples.BroadcastExample #()
+  {{{ RET #(); True }}}.
+  Proof using chan_idiomG0 chan_idiomG1 ext ffi ffi_interp0 ffi_semantics0 go_ctx hG inG0 Σ.
+  wp_start. wp_auto.
+  
+  wp_apply (chan.wp_make (t:=structT [])); first done.
+  iIntros (done_ch γdone) "(#Hdone_is_chan & _ & Hdone_own)". wp_auto. simpl.
+  
+  wp_apply (chan.wp_make (t:=intT)); first done.
+  iIntros (result1_ch γr1) "(#Hr1_is_chan & _ & Hr1_own)". wp_auto. simpl.
+  
+  wp_apply (chan.wp_make (t:=intT)); first done.
+  iIntros (result2_ch γr2) "(#Hr2_is_chan & _ & Hr2_own)". wp_auto. simpl.
+  
+  
+  iMod (start_handoff result1_ch γr1 (λ v, ⌜v = W64 6⌝)%I with "Hr1_is_chan Hr1_own") 
+    as (γh1) "[%Heq1 #Hhandoff1]".
+  iMod (start_handoff result2_ch γr2 (λ v, ⌜v = W64 10⌝)%I with "Hr2_is_chan Hr2_own")
+    as (γh2) "[%Heq2 #Hhandoff2]".
+  
+  iMod (start_done_bc done_ch γdone (sharedValue_ptr ↦□ W64 2)%I with "Hdone_is_chan Hdone_own")
+    as (γbc) "[#Hbc HBcast]".
+  
+  
+  iPersist "done result1 result2".
+  
+  wp_apply (wp_fork with "[result1 result2 done]").
+  {
+    rename done_ch into done_ch_1.
+    wp_auto_lc 1.
+    wp_apply ((wp_done_bc_receive (V:=unit) γbc done_ch_1)  with "[$Hbc]").
+
+    iIntros "HShared".
+    wp_auto.
+    wp_apply (wp_handoff_send with "[$Hhandoff1]").
+    { iPureIntro. word. }
+    done.
+  }
+
+   wp_apply (wp_fork with "[result1 result2 done]").
+  {
+    rename done_ch into done_ch_1.
+    wp_auto_lc 1.
+    wp_apply ((wp_done_bc_receive (V:=unit) γbc done_ch_1)  with "[$Hbc]").
+
+    iIntros "HShared".
+    wp_auto.
+    wp_apply (wp_handoff_send with "[$Hhandoff2]").
+    { iPureIntro. word. }
+    done.
+  }
+  iPersist "sharedValue".
+
+  wp_apply ((wp_done_bc_close (V:=unit) γbc done_ch) with "[$Hbc $HBcast]").
+  {
+    iFrame "#".
+  }
+
+  wp_apply (wp_handoff_receive with "Hhandoff1").
+  iIntros (v1) "%Hv1". subst v1.
+  wp_auto.
+  wp_apply (wp_handoff_receive with "Hhandoff2").
+  iIntros (v2) "%Hv2". subst v2.
+  wp_auto.
+  
+
+  iApply "HΦ". done.
+Qed.
+
+(* This proof uses the standard done idiom which is more powerful but requires more bookeeping than necessary for strictly duplicable resource transfer *)
+Lemma wp_BroadcastExample_done' :
+  {{{ is_pkg_init chan_spec_raw_examples }}}
+    @! chan_spec_raw_examples.BroadcastExample #()
+  {{{ RET #(); True }}}.
+  Proof using chan_idiomG0 chan_idiomG1 ext ffi ffi_interp0 ffi_semantics0 go_ctx hG inG0 Σ.
+  wp_start. wp_auto.
+  
+  wp_apply (chan.wp_make (t:=structT [])); first done.
+  iIntros (done_ch γdone_ch) "(#Hdone_is_chan & _ & Hdone_own)". wp_auto. simpl.
+  
+  wp_apply (chan.wp_make (t:=intT)); first done.
+  iIntros (result1_ch γr1) "(#Hr1_is_chan & _ & Hr1_own)". wp_auto. simpl.
+  
+  wp_apply (chan.wp_make (t:=intT)); first done.
+  iIntros (result2_ch γr2) "(#Hr2_is_chan & _ & Hr2_own)". wp_auto. simpl.
+  
+  
+  iMod (start_handoff result1_ch γr1 (λ v, ⌜v = W64 6⌝)%I with "Hr1_is_chan Hr1_own") 
+    as (γh1) "[%Heq1 #Hhandoff1]".
+  iMod (start_handoff result2_ch γr2 (λ v, ⌜v = W64 10⌝)%I with "Hr2_is_chan Hr2_own")
+    as (γh2) "[%Heq2 #Hhandoff2]".
+  
+  iMod (start_done done_ch γdone_ch with "Hdone_is_chan Hdone_own")
+    as (γdone) "[#Hdone HNotify]".
+  
+  (* Allocate 2 notified handles. Since the resource here is duplicable this adds no extra obligation to the closer. *)
+  iMod (done_alloc_notified γdone done_ch True (sharedValue_ptr ↦□ W64 2)%I
+        with "Hdone HNotify") as "[HNotify HNotified1]".
+  iMod (done_alloc_notified γdone done_ch (True ∗ sharedValue_ptr ↦□ W64 2) 
+                                          (sharedValue_ptr ↦□ W64 2)%I
+        with "Hdone HNotify") as "[HNotify HNotified2]".
+  
+  iPersist "done result1 result2".
+  
+  wp_apply (wp_fork with "[HNotified1]").
+  {
+    wp_auto.
+    wp_apply (wp_done_receive (V:=unit) with "[$Hdone $HNotified1]").
+    iIntros "#HShared".
+    wp_auto.
+    wp_apply (wp_handoff_send with "[$Hhandoff1]").
+    { iPureIntro. word. }
+    done.
+  }
+  
+  wp_apply (wp_fork with "[HNotified2]").
+  {
+    wp_auto.
+    wp_apply (wp_done_receive (V:=unit) with "[$Hdone $HNotified2]").
+    iIntros "#HShared".
+    wp_auto.
+    wp_apply (wp_handoff_send with "[$Hhandoff2]").
+    { iPureIntro. word. }
+    done.
+  }
+  
+  iPersist "sharedValue".
+  wp_apply (wp_done_close (V:=unit) with "[$Hdone $HNotify]").
+  {
+    iFrame. iFrame "#".
+  }
+  
+  wp_apply (wp_handoff_receive with "Hhandoff1").
+  iIntros (v1) "%Hv1". subst v1.
+  
+  wp_auto.
+  wp_apply (wp_handoff_receive with "Hhandoff2").
+  iIntros (v2) "%Hv2". subst v2.
+  wp_auto.
+  iApply "HΦ". done.
+Qed.
+
+End broadcast_example_proof.
 
 End proof.
