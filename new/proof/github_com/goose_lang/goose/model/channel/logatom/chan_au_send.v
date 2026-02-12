@@ -260,7 +260,7 @@ Qed.
 Local Lemma wp_TrySend_blocking (ch: loc) (v: V) (γ: chan_names) :
   ∀ Φ,
   is_chan ch γ -∗
-  SendAU ch v γ (Φ (#true)) ∧ Φ (#false) -∗
+  send_au ch v γ (Φ (#true)) ∧ Φ (#false) -∗
   WP channel.Channel__TrySendⁱᵐᵖˡ #ch #t #v #true {{ Φ }}.
 Proof.
   intros. iIntros "Hunb". iIntros "HΦ".
@@ -284,7 +284,7 @@ Proof.
       iDestruct (own_slice_wf with "slice") as "%Hwf".
       wp_apply (wp_slice_append with "[$slice $Hsl $slice_cap]").
       iIntros (fr) "(Hfr & Hfrsl & Hsl)". wp_auto_lc 1.
-      unfold SendAU.
+      unfold send_au.
 
       iApply fupd_wp. iLeft in "HΦ". iMod "HΦ".
       iMod (lc_fupd_elim_later with "[$] HΦ") as "Hlogatom".
@@ -568,7 +568,7 @@ Proof.
     iRight in "HΦ". iFrame.
   - (* RcvWait - unbuffered channel *)
     wp_auto_lc 2. iNamedSuffix "offer_inv" "_inv".
-    unfold SendAU.
+    unfold send_au.
     iApply fupd_wp. iApply "Hau_inv" in "HP_inv". iMod "HP_inv".
     iMod (lc_fupd_elim_later with "[$] HP_inv") as "HP_inv". iNamed "HP_inv".
     iNamed "Hoc".
@@ -607,7 +607,7 @@ Proof.
   - (* Closed *)
     destruct buffer; iNamedSuffix "phys_inv" "_inv".
     + simpl. iDestruct "offer_inv" as "[Hoc_inv offer_inv]". iLeft in "HΦ".
-      unfold SendAU.
+      unfold send_au.
       iApply fupd_wp.
       iMod "HΦ".
       iMod (lc_fupd_elim_later with "[$] HΦ") as "HΦ".
@@ -616,7 +616,7 @@ Proof.
       done.
     + simpl. iDestruct "offer_inv" as "Hoc_inv".
       iLeft in "HΦ".
-      unfold SendAU.
+      unfold send_au.
       iApply fupd_wp.
       iMod "HΦ".
       iMod (lc_fupd_elim_later with "[$] HΦ") as "HΦ".
@@ -709,7 +709,7 @@ Proof.
     iFrame.
   - (* RcvWait *)
     wp_auto_lc 2. iNamedSuffix "offer_inv" "_inv".
-    unfold SendAU.
+    unfold send_au.
     iApply fupd_wp. iApply "Hau_inv" in "HP_inv". iMod "HP_inv".
     iMod (lc_fupd_elim_later with "[$] HP_inv") as "HP_inv". iNamed "HP_inv".
     iNamed "Hoc".
@@ -782,7 +782,7 @@ Qed.
 Lemma wp_TrySend (ch: loc) (v: V) (γ: chan_names) (blocking : bool) :
   ∀ Φ,
   is_chan ch γ -∗
-  (if blocking then SendAU ch v γ (Φ (#true)) ∧ Φ (#false)
+  (if blocking then send_au ch v γ (Φ (#true)) ∧ Φ (#false)
    else (nonblocking_send_au ch v γ (Φ (#true)) (Φ (#false)) ∨ nonblocking_send_au_alt ch v γ (Φ (#true)) (Φ (#false))))
   -∗
   WP channel.Channel__TrySendⁱᵐᵖˡ #ch #t #v #blocking {{ Φ }}.
@@ -798,7 +798,7 @@ Qed.
 Lemma wp_Send (ch: loc) (v: V) (γ: chan_names):
   ∀ Φ,
   is_chan ch γ -∗
-  (£1 ∗ £1 ∗ £1 ∗ £1 -∗ SendAU ch v γ (Φ #())) -∗
+  (£1 ∗ £1 ∗ £1 ∗ £1 -∗ send_au ch v γ (Φ #())) -∗
   WP channel.Channel__Sendⁱᵐᵖˡ #ch #t #v {{ Φ }}.
 Proof.
   intros. iIntros "#Hic". iIntros "Hau".
@@ -812,7 +812,7 @@ Proof.
   wp_apply (wp_TrySend with "[$] [Hau c v]").
   iSplit.
   { iFrame.
-    unfold SendAU. iMod "Hau".
+    unfold send_au. iMod "Hau".
     iModIntro. iModIntro. iNamed "Hau". iFrame.
     destruct s. all: try done.
     {
@@ -863,7 +863,7 @@ Proof.
   iApply (wp_Send with "[$Hunb]").
   iIntros "Hlc".
   iSpecialize ("HΦ" with "[$Hlc]").
-  rewrite /SendAU /buffered_send_au.
+  rewrite /send_au /buffered_send_au.
   iMod "HΦ". iIntros "!> !>".
   iNamed "HΦ".
   destruct s; iFrame; auto.
@@ -880,7 +880,7 @@ Qed.
 Lemma wp_tryClose (ch: loc) (γ: chan_names) :
   ∀ Φ,
   is_chan ch γ -∗
-  CloseAU ch γ (Φ (#true)) ∧ Φ (#false) -∗
+  close_au ch γ (Φ (#true)) ∧ Φ (#false) -∗
   WP channel.Channel__tryCloseⁱᵐᵖˡ #ch #t #() {{ Φ }}.
 Proof.
   intros. iIntros "#Hunb". iIntros "HΦ".
@@ -894,7 +894,7 @@ Proof.
   iNamed "Hchan".
 
   (* Open the atomic update *)
-  unfold CloseAU.
+  unfold close_au.
 
   (* Case analysis on channel state *)
   destruct s; iNamed "phys".
@@ -1021,7 +1021,7 @@ Qed.
 Lemma wp_Close (ch: loc) (γ: chan_names) :
   ∀ Φ,
   is_chan ch γ -∗
-  (£1 ∗ £1 ∗ £1 ∗ £1 -∗ CloseAU ch γ (Φ #())) -∗
+  (£1 ∗ £1 ∗ £1 ∗ £1 -∗ close_au ch γ (Φ #())) -∗
   WP channel.Channel__Closeⁱᵐᵖˡ #ch #t #() {{ Φ }}.
 Proof.
   intros. iIntros "#Hic". iIntros "Hau".
@@ -1035,7 +1035,7 @@ Proof.
   wp_apply (wp_tryClose with "[$Hic]").
   iSplit.
   { iFrame.
-    unfold CloseAU. iMod "Hau". iModIntro. iModIntro. iNamed "Hau". iFrame.
+    unfold close_au. iMod "Hau". iModIntro. iModIntro. iNamed "Hau". iFrame.
     destruct s. all: try iFrame.
     {
       iIntros "H".

@@ -197,7 +197,7 @@ Lemma handoff_send_au γ ch P v (Φ: iProp Σ) :
   is_chan_handoff γ ch P ∗ £1 ∗ £1 ⊢
   P v -∗
   (▷ Φ) -∗
-  SendAU ch v γ.(chan_name) Φ.
+  send_au ch v γ.(chan_name) Φ.
 Proof.
   iIntros "(#Hhandoff & ? & ?) HP HΦ".
   iNamed "Hhandoff".

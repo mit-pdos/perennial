@@ -424,7 +424,7 @@ Lemma spsc_send_au γ ch (P : Z -> V → iProp Σ) (R : list V → iProp Σ)
   £1 ∗ £1 ∗ £1 -∗
   spsc_producer γ sent ∗ P (length sent) v -∗
   ▷ (spsc_producer γ (sent ++ [v]) -∗ Φ) -∗
-  SendAU ch v γ.(chan_name) Φ.
+  send_au ch v γ.(chan_name) Φ.
 Proof.
   iIntros "#Hspsc (Hlc1 & Hlc2 & Hlc3) [Hprod HP] Hcont".
   iDestruct "Hspsc" as "[Hchan Hinv]".
@@ -606,12 +606,12 @@ Qed.
 
 (** ** Close Operation *)
 
-Lemma spsc_CloseAU γ ch P R sent Φ :
+Lemma spsc_close_au γ ch P R sent Φ :
   is_spsc γ ch P R -∗
   £1 -∗
   spsc_producer γ sent ∗ R sent -∗
   ▷Φ -∗
-  CloseAU ch γ.(chan_name) Φ.
+  close_au ch γ.(chan_name) Φ.
 Proof.
   iIntros "#Hspsc Hlc1 [Hprod HP] Hcont".
   iDestruct "Hspsc" as "[Hchan #Hinv]".
@@ -664,7 +664,7 @@ Proof.
   iPoseProof "Hspsc" as "[Hchan _]".
   iApply (chan.wp_close ch γ.(chan_name) with "[$Hchan]").
   iIntros "(Hlc1 & _ & _ & _)".
-  iApply (spsc_CloseAU with "[$Hspsc] [$] [$Hprod $HP]").
+  iApply (spsc_close_au with "[$Hspsc] [$] [$Hprod $HP]").
   iModIntro.
   by iApply "Hcont".
 Qed.
