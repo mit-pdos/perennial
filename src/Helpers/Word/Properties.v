@@ -23,6 +23,18 @@ Qed.
 Lemma w64_to_nat_id x : W64 (Z.of_nat (uint.nat x)) = x.
 Proof. word. Qed.
 
+#[global] Instance uint_Z_inj `(word: Interface.word width) {word_ok: word.ok word} :
+  Inj eq eq (@word.unsigned width _).
+Proof. intros ? **. word. Qed.
+
+#[global] Instance sint_Z_inj `(word: Interface.word width) {word_ok: word.ok word} :
+  Inj eq eq (@word.signed width _).
+Proof.
+  intros x1 x2.
+  intros.
+  apply word.signed_inj in H; auto.
+Qed.
+
 (* Inj instance doesn't work for nested application. *)
 Lemma uint_nat_inj `(word: Interface.word width) {word_ok: word.ok word} w0 w1  :
   Z.to_nat (@word.unsigned width _ w0) = Z.to_nat (@word.unsigned width _ w1) →

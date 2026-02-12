@@ -164,22 +164,6 @@ Module sint.
   Notation nat x := (Z.to_nat (Z x)).
 End sint.
 
-#[global] Instance uint_Z_inj `(word: Interface.word width) {word_ok: word.ok word} :
-  Inj eq eq (@word.unsigned width _).
-Proof.
-  intros x1 x2.
-  intros.
-  apply word.unsigned_inj in H; auto.
-Qed.
-
-#[global] Instance sint_Z_inj `(word: Interface.word width) {word_ok: word.ok word} :
-  Inj eq eq (@word.signed width _).
-Proof.
-  intros x1 x2.
-  intros.
-  apply word.signed_inj in H; auto.
-Qed.
-
 Lemma word_wrap_bounds (width : Z) (word : Interface.word width) (word_ok : word.ok word) x :
   0 ≤ @word.wrap width word word_ok x < 2^width.
 Proof.
