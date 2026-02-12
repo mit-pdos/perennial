@@ -1613,7 +1613,7 @@ Definition Op__IsSortOptionValidⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
       let: "$r1" := "$ret1" in
       do:  "$r0";;;
       do:  ("ok" <-[go.bool] "$r1");;;
-      (if: (~ (![go.bool] "ok"))
+      (if: (⟨go.bool⟩! (![go.bool] "ok"))
       then return: (#false)
       else do:  #()));;;
       (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
@@ -1622,7 +1622,7 @@ Definition Op__IsSortOptionValidⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
       let: "$r1" := "$ret1" in
       do:  "$r0";;;
       do:  ("ok" <-[go.bool] "$r1");;;
-      (if: (~ (![go.bool] "ok"))
+      (if: (⟨go.bool⟩! (![go.bool] "ok"))
       then return: (#false)
       else do:  #()))
     else do:  #());;;

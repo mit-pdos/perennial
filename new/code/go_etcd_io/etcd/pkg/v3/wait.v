@@ -72,7 +72,7 @@ Definition list__Registerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
     let: "$r1" := "$ret1" in
     do:  "$r0";;;
     do:  ("ok" <-[go.bool] "$r1");;;
-    (if: (~ (![go.bool] "ok"))
+    (if: (⟨go.bool⟩! (![go.bool] "ok"))
     then
       let: "$r0" := (![go.ChannelType go.sendrecv go.any] "newCh") in
       do:  (map.insert go.uint64 (![go.MapType go.uint64 (go.ChannelType go.sendrecv go.any)] (StructFieldRef listElement "m"%go (IndexRef (go.SliceType listElement) (![go.SliceType listElement] (StructFieldRef list' "e"%go (![go.PointerType list'] "w")), Convert go.uint64 go.int (![go.uint64] "idx"))))) (![go.uint64] "id") "$r0")

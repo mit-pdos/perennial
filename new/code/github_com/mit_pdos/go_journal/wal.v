@@ -660,7 +660,7 @@ Definition Walog__installerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
     exception_do (let: "l" := (GoAlloc (go.PointerType Walog) "l") in
     do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (![go.PointerType sync.Mutex] (StructFieldRef Walog "memLock"%go (![go.PointerType Walog] "l")))) #());;;
     do:  ((StructFieldRef WalogState "nthread"%go (![go.PointerType WalogState] (StructFieldRef Walog "st"%go (![go.PointerType Walog] "l")))) <-[go.uint64] ((![go.uint64] (StructFieldRef WalogState "nthread"%go (![go.PointerType WalogState] (StructFieldRef Walog "st"%go (![go.PointerType Walog] "l"))))) +⟨go.uint64⟩ #(W64 1)));;;
-    (for: (λ: <>, (~ (![go.bool] (StructFieldRef WalogState "shutdown"%go (![go.PointerType WalogState] (StructFieldRef Walog "st"%go (![go.PointerType Walog] "l"))))))); (λ: <>, #()) := λ: <>,
+    (for: (λ: <>, (⟨go.bool⟩! (![go.bool] (StructFieldRef WalogState "shutdown"%go (![go.PointerType WalogState] (StructFieldRef Walog "st"%go (![go.PointerType Walog] "l"))))))); (λ: <>, #()) := λ: <>,
       let: "txn" := (GoAlloc LogPosition (GoZeroVal LogPosition #())) in
       let: "blkcount" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
       let: ("$ret0", "$ret1") := ((MethodResolve (go.PointerType Walog) "logInstall"%go (![go.PointerType Walog] "l")) #()) in
@@ -767,12 +767,12 @@ Definition Walog__loggerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
     let: "circ" := (GoAlloc (go.PointerType circularAppender) "circ") in
     do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (![go.PointerType sync.Mutex] (StructFieldRef Walog "memLock"%go (![go.PointerType Walog] "l")))) #());;;
     do:  ((StructFieldRef WalogState "nthread"%go (![go.PointerType WalogState] (StructFieldRef Walog "st"%go (![go.PointerType Walog] "l")))) <-[go.uint64] ((![go.uint64] (StructFieldRef WalogState "nthread"%go (![go.PointerType WalogState] (StructFieldRef Walog "st"%go (![go.PointerType Walog] "l"))))) +⟨go.uint64⟩ #(W64 1)));;;
-    (for: (λ: <>, (~ (![go.bool] (StructFieldRef WalogState "shutdown"%go (![go.PointerType WalogState] (StructFieldRef Walog "st"%go (![go.PointerType Walog] "l"))))))); (λ: <>, #()) := λ: <>,
+    (for: (λ: <>, (⟨go.bool⟩! (![go.bool] (StructFieldRef WalogState "shutdown"%go (![go.PointerType WalogState] (StructFieldRef Walog "st"%go (![go.PointerType Walog] "l"))))))); (λ: <>, #()) := λ: <>,
       let: "progress" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
       let: "$r0" := (let: "$a0" := (![go.PointerType circularAppender] "circ") in
       (MethodResolve (go.PointerType Walog) "logAppend"%go (![go.PointerType Walog] "l")) "$a0") in
       do:  ("progress" <-[go.bool] "$r0");;;
-      (if: (~ (![go.bool] "progress"))
+      (if: (⟨go.bool⟩! (![go.bool] "progress"))
       then do:  ((MethodResolve (go.PointerType sync.Cond) "Wait"%go (![go.PointerType sync.Cond] (StructFieldRef Walog "condLogger"%go (![go.PointerType Walog] "l")))) #())
       else do:  #()));;;
     do:  (let: "$a0" := #(W64 1) in
@@ -1082,7 +1082,7 @@ Definition Walog__Flushⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
     (if: Convert go.untyped_bool go.bool ((![LogPosition] "pos") >⟨go.uint64⟩ (![LogPosition] (StructFieldRef sliding "mutable"%go (![go.PointerType sliding] (StructFieldRef WalogState "memLog"%go (![go.PointerType WalogState] (StructFieldRef Walog "st"%go (![go.PointerType Walog] "l"))))))))
     then do:  ((MethodResolve (go.PointerType WalogState) "endGroupTxn"%go (![go.PointerType WalogState] (StructFieldRef Walog "st"%go (![go.PointerType Walog] "l")))) #())
     else do:  #());;;
-    (for: (λ: <>, (~ ((![LogPosition] "pos") ≤⟨go.uint64⟩ (![LogPosition] (StructFieldRef WalogState "diskEnd"%go (![go.PointerType WalogState] (StructFieldRef Walog "st"%go (![go.PointerType Walog] "l")))))))); (λ: <>, #()) := λ: <>,
+    (for: (λ: <>, (⟨go.bool⟩! ((![LogPosition] "pos") ≤⟨go.uint64⟩ (![LogPosition] (StructFieldRef WalogState "diskEnd"%go (![go.PointerType WalogState] (StructFieldRef Walog "st"%go (![go.PointerType Walog] "l")))))))); (λ: <>, #()) := λ: <>,
       do:  ((MethodResolve (go.PointerType sync.Cond) "Wait"%go (![go.PointerType sync.Cond] (StructFieldRef Walog "condLogger"%go (![go.PointerType Walog] "l")))) #()));;;
     do:  ((FuncResolve primitive.Linearize [] #()) #());;;
     do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (![go.PointerType sync.Mutex] (StructFieldRef Walog "memLock"%go (![go.PointerType Walog] "l")))) #());;;

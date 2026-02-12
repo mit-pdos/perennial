@@ -400,6 +400,7 @@ def main():
             "time",
             "fmt",
             "log",
+            "encoding/binary",
         )
 
     for proj in projs:

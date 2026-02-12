@@ -426,7 +426,7 @@ Definition Server__ReserveEpochAndGetConfigⁱᵐᵖˡ {ext : ffi_syntax} {go_gc
     do:  ("ok" <-[go.bool] "$r0");;;
     do:  ("st" <-[go.PointerType state] "$r1");;;
     do:  ("tryReleaseFn" <-[go.FunctionType (go.Signature [] false [go.bool])] "$r2");;;
-    (if: (~ (![go.bool] "ok"))
+    (if: (⟨go.bool⟩! (![go.bool] "ok"))
     then return: (#())
     else do:  #());;;
     let: "$r0" := (let: "$a0" := (![go.uint64] (StructFieldRef state "reservedEpoch"%go (![go.PointerType state] "st"))) in
@@ -439,7 +439,7 @@ Definition Server__ReserveEpochAndGetConfigⁱᵐᵖˡ {ext : ffi_syntax} {go_gc
     let: "reservedEpoch" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := (![go.uint64] (StructFieldRef state "reservedEpoch"%go (![go.PointerType state] "st"))) in
     do:  ("reservedEpoch" <-[go.uint64] "$r0");;;
-    (if: (~ ((![go.FunctionType (go.Signature [] false [go.bool])] "tryReleaseFn") #()))
+    (if: (⟨go.bool⟩! ((![go.FunctionType (go.Signature [] false [go.bool])] "tryReleaseFn") #()))
     then return: (#())
     else do:  #());;;
     let: "$r0" := ((FuncResolve go.make3 [go.SliceType go.byte] #()) #(W64 0) (#(W64 16) +⟨go.int⟩ (#(W64 8) *⟨go.int⟩ (let: "$a0" := (![go.SliceType go.uint64] (StructFieldRef config_gk.S "Addrs"%go "config")) in
@@ -511,12 +511,12 @@ Definition Server__TryWriteConfigⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
       do:  ("ok" <-[go.bool] "$r0");;;
       do:  ("st" <-[go.PointerType state] "$r1");;;
       do:  ("tryReleaseFn" <-[go.FunctionType (go.Signature [] false [go.bool])] "$r2");;;
-      (if: (~ (![go.bool] "ok"))
+      (if: (⟨go.bool⟩! (![go.bool] "ok"))
       then break: #()
       else do:  #());;;
       (if: Convert go.untyped_bool go.bool ((![go.uint64] "epoch") <⟨go.uint64⟩ (![go.uint64] (StructFieldRef state "reservedEpoch"%go (![go.PointerType state] "st"))))
       then
-        (if: (~ ((![go.FunctionType (go.Signature [] false [go.bool])] "tryReleaseFn") #()))
+        (if: (⟨go.bool⟩! ((![go.FunctionType (go.Signature [] false [go.bool])] "tryReleaseFn") #()))
         then break: #()
         else do:  #());;;
         let: "$r0" := (let: "$a0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) #(W64 0)) in
@@ -546,7 +546,7 @@ Definition Server__TryWriteConfigⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
             do:  ((StructFieldRef state "epoch"%go (![go.PointerType state] "st")) <-[go.uint64] "$r0");;;
             let: "$r0" := (![config_gk.S] "config") in
             do:  ((StructFieldRef state "config"%go (![go.PointerType state] "st")) <-[config_gk.S] "$r0");;;
-            (if: (~ ((![go.FunctionType (go.Signature [] false [go.bool])] "tryReleaseFn") #()))
+            (if: (⟨go.bool⟩! ((![go.FunctionType (go.Signature [] false [go.bool])] "tryReleaseFn") #()))
             then break: #()
             else do:  #());;;
             do:  (let: "$a0" := ((let: "$sl0" := (Convert go.string go.any #"New config is:"%go) in
@@ -564,7 +564,7 @@ Definition Server__TryWriteConfigⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
             let: "timeToSleep" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
             let: "$r0" := ((![go.uint64] (StructFieldRef state "leaseExpiration"%go (![go.PointerType state] "st"))) -⟨go.uint64⟩ (![go.uint64] "l")) in
             do:  ("timeToSleep" <-[go.uint64] "$r0");;;
-            (if: (~ ((![go.FunctionType (go.Signature [] false [go.bool])] "tryReleaseFn") #()))
+            (if: (⟨go.bool⟩! ((![go.FunctionType (go.Signature [] false [go.bool])] "tryReleaseFn") #()))
             then break: #()
             else do:  #());;;
             do:  (let: "$a0" := (![go.uint64] "timeToSleep") in
@@ -573,7 +573,7 @@ Definition Server__TryWriteConfigⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
         else
           let: "$r0" := (![config_gk.S] "config") in
           do:  ((StructFieldRef state "config"%go (![go.PointerType state] "st")) <-[config_gk.S] "$r0");;;
-          (if: (~ ((![go.FunctionType (go.Signature [] false [go.bool])] "tryReleaseFn") #()))
+          (if: (⟨go.bool⟩! ((![go.FunctionType (go.Signature [] false [go.bool])] "tryReleaseFn") #()))
           then break: #()
           else do:  #());;;
           let: "$r0" := (let: "$a0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) #(W64 0)) in
@@ -614,7 +614,7 @@ Definition Server__GetLeaseⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
     do:  ("ok" <-[go.bool] "$r0");;;
     do:  ("st" <-[go.PointerType state] "$r1");;;
     do:  ("tryReleaseFn" <-[go.FunctionType (go.Signature [] false [go.bool])] "$r2");;;
-    (if: (~ (![go.bool] "ok"))
+    (if: (⟨go.bool⟩! (![go.bool] "ok"))
     then return: (#())
     else do:  #());;;
     (if: ((![go.uint64] (StructFieldRef state "epoch"%go (![go.PointerType state] "st"))) ≠⟨go.uint64⟩ (![go.uint64] "epoch")) || (![go.bool] (StructFieldRef state "wantLeaseToExpire"%go (![go.PointerType state] "st")))
@@ -625,7 +625,7 @@ Definition Server__GetLeaseⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
       let: "$sl3" := (Convert go.bool go.any (![go.bool] (StructFieldRef state "wantLeaseToExpire"%go (![go.PointerType state] "st")))) in
       CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0"); KeyedElement None (ElementExpression go.any "$sl1"); KeyedElement None (ElementExpression go.any "$sl2"); KeyedElement None (ElementExpression go.any "$sl3")]))) in
       (FuncResolve log.Println [] #()) "$a0");;;
-      (if: (~ ((![go.FunctionType (go.Signature [] false [go.bool])] "tryReleaseFn") #()))
+      (if: (⟨go.bool⟩! ((![go.FunctionType (go.Signature [] false [go.bool])] "tryReleaseFn") #()))
       then return: (#())
       else do:  #());;;
       let: "$r0" := (let: "$a0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) #(W64 0)) in
@@ -652,7 +652,7 @@ Definition Server__GetLeaseⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
       let: "$r0" := (![go.uint64] "newLeaseExpiration") in
       do:  ((StructFieldRef state "leaseExpiration"%go (![go.PointerType state] "st")) <-[go.uint64] "$r0")
     else do:  #());;;
-    (if: (~ ((![go.FunctionType (go.Signature [] false [go.bool])] "tryReleaseFn") #()))
+    (if: (⟨go.bool⟩! ((![go.FunctionType (go.Signature [] false [go.bool])] "tryReleaseFn") #()))
     then return: (#())
     else do:  #());;;
     let: "$r0" := (let: "$a0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) #(W64 0)) in

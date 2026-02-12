@@ -179,7 +179,7 @@ Definition Log__CommitWaitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
       let: "$r1" := "$ret1" in
       do:  ("n" <-[wal.LogPosition] "$r0");;;
       do:  ("ok" <-[go.bool] "$r1");;;
-      (if: (~ (![go.bool] "ok"))
+      (if: (⟨go.bool⟩! (![go.bool] "ok"))
       then
         do:  (let: "$a0" := #(W64 10) in
         let: "$a1" := #"memappend failed; log is too small

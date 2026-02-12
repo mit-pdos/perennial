@@ -159,7 +159,7 @@ Definition StateMachine__setStateAndUnsealⁱᵐᵖˡ {ext : ffi_syntax} {go_gct
 Definition StateMachine__getStateAndSealⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "s" <>,
     exception_do (let: "s" := (GoAlloc (go.PointerType StateMachine) "s") in
-    (if: (~ (![go.bool] (StructFieldRef StateMachine "sealed"%go (![go.PointerType StateMachine] "s"))))
+    (if: (⟨go.bool⟩! (![go.bool] (StructFieldRef StateMachine "sealed"%go (![go.PointerType StateMachine] "s"))))
     then
       let: "$r0" := #true in
       do:  ((StructFieldRef StateMachine "sealed"%go (![go.PointerType StateMachine] "s")) <-[go.bool] "$r0");;;

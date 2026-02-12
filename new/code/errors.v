@@ -55,7 +55,7 @@ Definition Unwrapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : va
     let: "$r1" := "$ret1" in
     do:  ("u" <-[go.InterfaceType [go.MethodElem "Unwrap"%go (go.Signature [] false [go.error])]] "$r0");;;
     do:  ("ok" <-[go.bool] "$r1");;;
-    (if: (~ (![go.bool] "ok"))
+    (if: (⟨go.bool⟩! (![go.bool] "ok"))
     then return: (Convert go.untyped_nil go.error UntypedNil)
     else do:  #());;;
     return: ((MethodResolve (go.InterfaceType [go.MethodElem "Unwrap"%go (go.Signature [] false [go.error])]) "Unwrap"%go (![go.InterfaceType [go.MethodElem "Unwrap"%go (go.Signature [] false [go.error])]] "u")) #())).

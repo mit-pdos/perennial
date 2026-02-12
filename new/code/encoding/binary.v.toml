@@ -1,0 +1,5 @@
+translate = ["!*",
+  "LittleEndian",
+  "littleEndian*",
+]
+imports = ["*", "!reflect"]

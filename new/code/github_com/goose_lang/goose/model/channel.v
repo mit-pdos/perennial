@@ -152,7 +152,7 @@ Definition Channel__Sendⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
       (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
         do:  #())
     else do:  #());;;
-    (for: (λ: <>, (~ (let: "$a0" := (![T] "v") in
+    (for: (λ: <>, (⟨go.bool⟩! (let: "$a0" := (![T] "v") in
     let: "$a1" := #true in
     (MethodResolve (go.PointerType (Channel T)) "TrySend"%go (![go.PointerType (Channel T)] "c")) "$a0" "$a1"))); (λ: <>, #()) := λ: <>,
       do:  #());;;
@@ -315,7 +315,7 @@ Definition Channel__Closeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
       do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"close of nil channel"%go) in
       (FuncResolve go.panic [] #()) "$a0")
     else do:  #());;;
-    (for: (λ: <>, (~ ((MethodResolve (go.PointerType (Channel T)) "tryClose"%go (![go.PointerType (Channel T)] "c")) #()))); (λ: <>, #()) := λ: <>,
+    (for: (λ: <>, (⟨go.bool⟩! ((MethodResolve (go.PointerType (Channel T)) "tryClose"%go (![go.PointerType (Channel T)] "c")) #()))); (λ: <>, #()) := λ: <>,
       do:  #());;;
     return: #()).
 
@@ -393,13 +393,13 @@ Definition Channel__Iterⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
          do:  ("selected" <-[go.bool] "$r0");;;
          do:  ("v" <-[T] "$r1");;;
          do:  ("ok" <-[go.bool] "$r2");;;
-         (if: (~ (![go.bool] "selected"))
+         (if: (⟨go.bool⟩! (![go.bool] "selected"))
          then continue: #()
          else do:  #());;;
-         (if: (~ (![go.bool] "ok"))
+         (if: (⟨go.bool⟩! (![go.bool] "ok"))
          then return: (#())
          else do:  #());;;
-         (if: (~ (let: "$a0" := (![T] "v") in
+         (if: (⟨go.bool⟩! (let: "$a0" := (![T] "v") in
          (![go.FunctionType (go.Signature [T] false [go.bool])] "yield") "$a0"))
          then return: (#())
          else do:  #()));;;

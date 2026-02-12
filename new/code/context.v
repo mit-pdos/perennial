@@ -391,7 +391,7 @@ Definition parentCancelCtxⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
     let: "$r1" := "$ret1" in
     do:  ("p" <-[go.PointerType cancelCtx] "$r0");;;
     do:  ("ok" <-[go.bool] "$r1");;;
-    (if: (~ (![go.bool] "ok"))
+    (if: (⟨go.bool⟩! (![go.bool] "ok"))
     then return: (Convert go.untyped_nil (go.PointerType cancelCtx) UntypedNil, #false)
     else do:  #());;;
     let: "pdone" := (GoAlloc (go.ChannelType go.sendrecv (go.StructType [
@@ -450,7 +450,7 @@ Definition removeChildⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
     let: "$r1" := "$ret1" in
     do:  ("p" <-[go.PointerType cancelCtx] "$r0");;;
     do:  ("ok" <-[go.bool] "$r1");;;
-    (if: (~ (![go.bool] "ok"))
+    (if: (⟨go.bool⟩! (![go.bool] "ok"))
     then return: (#())
     else do:  #());;;
     do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (StructFieldRef cancelCtx "mu"%go (![go.PointerType cancelCtx] "p"))) #());;;

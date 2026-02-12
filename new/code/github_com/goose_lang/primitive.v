@@ -14,14 +14,6 @@ Definition Mutex {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.
 
 Definition ProphId {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/primitive.ProphId"%go [].
 
-Definition UInt64Get {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/primitive.UInt64Get"%go.
-
-Definition UInt32Get {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/primitive.UInt32Get"%go.
-
-Definition UInt64Put {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/primitive.UInt64Put"%go.
-
-Definition UInt32Put {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/primitive.UInt32Put"%go.
-
 Definition RandomUint64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/primitive.RandomUint64"%go.
 
 Definition UInt64ToString {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/primitive.UInt64ToString"%go.
@@ -37,8 +29,6 @@ Definition Exit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "g
 Definition TimeNow {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/primitive.TimeNow"%go.
 
 Definition Sleep {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/primitive.Sleep"%go.
-
-Definition AssumeNoStringOverflow {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/primitive.AssumeNoStringOverflow"%go.
 
 Definition NewProph {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/primitive.NewProph"%go.
 
@@ -73,9 +63,7 @@ Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!G
 {
   #[global] Mutex_instance :: Mutex_Assumptions;
   #[global] ProphId_instance :: ProphId_Assumptions;
-  #[global] UInt64Put_unfold :: FuncUnfold UInt64Put [] (UInt64Putⁱᵐᵖˡ);
   #[global] RandomUint64_unfold :: FuncUnfold RandomUint64 [] (RandomUint64ⁱᵐᵖˡ);
   #[global] Assume_unfold :: FuncUnfold Assume [] (Assumeⁱᵐᵖˡ);
-  #[global] AssumeNoStringOverflow_unfold :: FuncUnfold AssumeNoStringOverflow [] (AssumeNoStringOverflowⁱᵐᵖˡ);
 }.
 End primitive.

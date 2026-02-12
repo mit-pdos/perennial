@@ -78,7 +78,7 @@ Definition installOneBitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
     then
       (if: Convert go.untyped_bool go.bool (((![go.byte] "src") &⟨go.byte⟩ (#(W8 1) <<⟨go.byte⟩ (Convert go.uint64 go.byte (![go.uint64] "bit")))) =⟨go.byte⟩ #(W8 0))
       then
-        let: "$r0" := ((![go.byte] "new") &⟨go.byte⟩ (~ (#(W8 1) <<⟨go.byte⟩ (Convert go.uint64 go.byte (![go.uint64] "bit"))))) in
+        let: "$r0" := ((![go.byte] "new") &⟨go.byte⟩ (⟨go.bool⟩! (#(W8 1) <<⟨go.byte⟩ (Convert go.uint64 go.byte (![go.uint64] "bit"))))) in
         do:  ("new" <-[go.byte] "$r0")
       else
         let: "$r0" := ((![go.byte] "new") |⟨go.byte⟩ (#(W8 1) <<⟨go.byte⟩ (Convert go.uint64 go.byte (![go.uint64] "bit")))) in

@@ -627,7 +627,7 @@ Definition Value__Storeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
       (if: Convert go.untyped_bool go.bool ((![unsafe.Pointer] "typ") =⟨unsafe.Pointer⟩ (Convert go.untyped_nil unsafe.Pointer UntypedNil))
       then
         do:  ((FuncResolve runtime_procPin [] #()) #());;;
-        (if: (~ (let: "$a0" := (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vp")) in
+        (if: (⟨go.bool⟩! (let: "$a0" := (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vp")) in
         let: "$a1" := (Convert go.untyped_nil unsafe.Pointer UntypedNil) in
         let: "$a2" := (Convert (go.PointerType go.byte) unsafe.Pointer (GlobalVarAddr firstStoreInProgress #())) in
         (FuncResolve CompareAndSwapPointer [] #()) "$a0" "$a1" "$a2"))
@@ -689,7 +689,7 @@ Definition Value__Swapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
       (if: Convert go.untyped_bool go.bool ((![unsafe.Pointer] "typ") =⟨unsafe.Pointer⟩ (Convert go.untyped_nil unsafe.Pointer UntypedNil))
       then
         do:  ((FuncResolve runtime_procPin [] #()) #());;;
-        (if: (~ (let: "$a0" := (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vp")) in
+        (if: (⟨go.bool⟩! (let: "$a0" := (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vp")) in
         let: "$a1" := (Convert go.untyped_nil unsafe.Pointer UntypedNil) in
         let: "$a2" := (Convert (go.PointerType go.byte) unsafe.Pointer (GlobalVarAddr firstStoreInProgress #())) in
         (FuncResolve CompareAndSwapPointer [] #()) "$a0" "$a1" "$a2"))
@@ -768,7 +768,7 @@ Definition Value__CompareAndSwapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
         then return: (#false)
         else do:  #());;;
         do:  ((FuncResolve runtime_procPin [] #()) #());;;
-        (if: (~ (let: "$a0" := (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vp")) in
+        (if: (⟨go.bool⟩! (let: "$a0" := (StructFieldRef efaceWords "typ"%go (![go.PointerType efaceWords] "vp")) in
         let: "$a1" := (Convert go.untyped_nil unsafe.Pointer UntypedNil) in
         let: "$a2" := (Convert (go.PointerType go.byte) unsafe.Pointer (GlobalVarAddr firstStoreInProgress #())) in
         (FuncResolve CompareAndSwapPointer [] #()) "$a0" "$a1" "$a2"))

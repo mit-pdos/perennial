@@ -360,7 +360,7 @@ Definition Server__TryAcquireⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
     exception_do (let: "s" := (GoAlloc (go.PointerType Server) "s") in
     let: "retErr" := (GoAlloc error_gk.E (GoZeroVal error_gk.E #())) in
     do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (![go.PointerType sync.Mutex] (StructFieldRef Server "mu"%go (![go.PointerType Server] "s")))) #());;;
-    (if: (~ (![go.bool] (StructFieldRef paxosstate_gk.S "IsLeader"%go (![go.PointerType paxosstate_gk.S] (StructFieldRef Server "ps"%go (![go.PointerType Server] "s"))))))
+    (if: (⟨go.bool⟩! (![go.bool] (StructFieldRef paxosstate_gk.S "IsLeader"%go (![go.PointerType paxosstate_gk.S] (StructFieldRef Server "ps"%go (![go.PointerType Server] "s"))))))
     then
       do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (![go.PointerType sync.Mutex] (StructFieldRef Server "mu"%go (![go.PointerType Server] "s")))) #());;;
       let: "n" := (GoAlloc (go.PointerType (go.SliceType go.byte)) (GoZeroVal (go.PointerType (go.SliceType go.byte)) #())) in

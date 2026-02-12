@@ -254,7 +254,7 @@ Definition leaseCache__LockWriteOpsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoG
         (let: "k" := (GoAlloc go.string (GoZeroVal go.string #())) in
         map.for_range go.string (go.PointerType leaseKey) "$range" (λ: "$key" "value",
           do:  ("k" <-[go.string] "$key");;;
-          (if: (~ (let: "$a0" := (![go.string] "k") in
+          (if: (⟨go.bool⟩! (let: "$a0" := (![go.string] "k") in
           let: "$a1" := (![go.string] "key") in
           let: "$a2" := (![go.string] "end") in
           (FuncResolve inRange [] #()) "$a0" "$a1" "$a2"))
@@ -378,7 +378,7 @@ Definition leaseCache__MayAcquireⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
     do:  ("lr" <-[time.Time] "$r0");;;
     do:  ("ok" <-[go.bool] "$r1");;;
     do:  ((MethodResolve (go.PointerType sync.RWMutex) "RUnlock"%go (StructFieldRef leaseCache "mu"%go (![go.PointerType leaseCache] "lc"))) #());;;
-    return: ((~ (![go.bool] "ok")) || ((let: "$a0" := (![time.Time] "lr") in
+    return: ((⟨go.bool⟩! (![go.bool] "ok")) || ((let: "$a0" := (![time.Time] "lr") in
      (FuncResolve time.Since [] #()) "$a0") >⟨go.int64⟩ revokeBackoff))).
 
 (* go: cache.go:127:23 *)
@@ -641,7 +641,7 @@ Definition leaseKey__getⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
       do:  (let: "$a0" := (![go.SliceType go.byte] (StructFieldRef mvccpb.KeyValue "Key"%go "kv")) in
       let: "$a1" := (![go.SliceType go.byte] (StructFieldRef mvccpb.KeyValue "Key"%go (![go.PointerType mvccpb.KeyValue] (IndexRef (go.SliceType (go.PointerType mvccpb.KeyValue)) (![go.SliceType (go.PointerType mvccpb.KeyValue)] (StructFieldRef clientv3.GetResponse "Kvs"%go "ret"), #(W64 0)))))) in
       (FuncResolve go.copy [go.SliceType go.byte] #()) "$a0" "$a1");;;
-      (if: (~ ((MethodResolve clientv3.Op "IsKeysOnly"%go (![clientv3.Op] "op")) #()))
+      (if: (⟨go.bool⟩! ((MethodResolve clientv3.Op "IsKeysOnly"%go (![clientv3.Op] "op")) #()))
       then
         let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) (let: "$a0" := (![go.SliceType go.byte] (StructFieldRef mvccpb.KeyValue "Value"%go "kv")) in
         (FuncResolve go.len [go.SliceType go.byte] #()) "$a0")) in
@@ -734,7 +734,7 @@ Definition leaseCache__evalCmpⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
       (if: Convert go.untyped_bool go.bool ((![go.PointerType leaseKey] "lk") =⟨go.PointerType leaseKey⟩ (Convert go.untyped_nil (go.PointerType leaseKey) UntypedNil))
       then return: (#false, #false)
       else do:  #());;;
-      (if: (~ (let: "$a0" := (![go.PointerType clientv3.GetResponse] (StructFieldRef leaseKey "response"%go (![go.PointerType leaseKey] "lk"))) in
+      (if: (⟨go.bool⟩! (let: "$a0" := (![go.PointerType clientv3.GetResponse] (StructFieldRef leaseKey "response"%go (![go.PointerType leaseKey] "lk"))) in
       let: "$a1" := (![clientv3.Cmp] "cmp") in
       (FuncResolve evalCmp [] #()) "$a0" "$a1"))
       then return: (#false, #true)
@@ -756,7 +756,7 @@ Definition leaseCache__evalOpsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
     slice.for_range clientv3.Op "$range" (λ: "$key" "$value",
       do:  ("op" <-[clientv3.Op] "$value");;;
       do:  ("i" <-[go.int] "$key");;;
-      (if: (~ ((MethodResolve clientv3.Op "IsGet"%go (![clientv3.Op] "op")) #())) || (let: "$a0" := (![clientv3.Op] "op") in
+      (if: (⟨go.bool⟩! ((MethodResolve clientv3.Op "IsGet"%go (![clientv3.Op] "op")) #())) || (let: "$a0" := (![clientv3.Op] "op") in
       (FuncResolve isBadOp [] #()) "$a0")
       then return: (Convert go.untyped_nil (go.SliceType (go.PointerType etcdserverpb.ResponseOp)) UntypedNil, #false)
       else do:  #());;;
@@ -1260,7 +1260,7 @@ Definition leasingKV__tryModifyOpⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
 
        ])) UntypedNil, ![go.error] "err")
     else
-      (if: "$sw" =⟨go.bool⟩ (~ (![go.bool] (StructFieldRef clientv3.TxnResponse "Succeeded"%go (![go.PointerType clientv3.TxnResponse] "resp"))))
+      (if: "$sw" =⟨go.bool⟩ (⟨go.bool⟩! (![go.bool] (StructFieldRef clientv3.TxnResponse "Succeeded"%go (![go.PointerType clientv3.TxnResponse] "resp"))))
       then
         (if: Convert go.untyped_bool go.bool ((![go.ChannelType go.sendonly (go.StructType [
 
@@ -1423,7 +1423,7 @@ Definition leasingKV__acquireⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
       do:  ("err" <-[go.error] "$r1");;;
       (if: Convert go.untyped_bool go.bool ((![go.error] "err") =⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
       then
-        (if: (~ (![go.bool] (StructFieldRef clientv3.TxnResponse "Succeeded"%go (![go.PointerType clientv3.TxnResponse] "resp"))))
+        (if: (⟨go.bool⟩! (![go.bool] (StructFieldRef clientv3.TxnResponse "Succeeded"%go (![go.PointerType clientv3.TxnResponse] "resp"))))
         then
           let: "kvs" := (GoAlloc (go.SliceType (go.PointerType mvccpb.KeyValue)) (GoZeroVal (go.SliceType (go.PointerType mvccpb.KeyValue)) #())) in
           let: "$r0" := (![go.SliceType (go.PointerType mvccpb.KeyValue)] (StructFieldRef etcdserverpb.RangeResponse "Kvs"%go ((MethodResolve (go.PointerType etcdserverpb.ResponseOp) "GetResponseRange"%go (![go.PointerType etcdserverpb.ResponseOp] (IndexRef (go.SliceType (go.PointerType etcdserverpb.ResponseOp)) (![go.SliceType (go.PointerType etcdserverpb.ResponseOp)] (StructFieldRef clientv3.TxnResponse "Responses"%go (![go.PointerType clientv3.TxnResponse] "resp")), #(W64 1))))) #()))) in
@@ -1473,7 +1473,7 @@ Definition leasingKV__getⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
       return: ((MethodResolve clientv3.OpResponse "Get"%go (![clientv3.OpResponse] "r")) #(), ![go.error] "err"))
       ) in
     do:  ("do" <-[go.FunctionType (go.Signature [] false [go.PointerType clientv3.GetResponse; go.error])] "$r0");;;
-    (if: (~ ((MethodResolve (go.PointerType leasingKV) "readySession"%go (![go.PointerType leasingKV] "lkv")) #()))
+    (if: (⟨go.bool⟩! ((MethodResolve (go.PointerType leasingKV) "readySession"%go (![go.PointerType leasingKV] "lkv")) #()))
     then
       let: ("$ret0", "$ret1") := (((![go.FunctionType (go.Signature [] false [go.PointerType clientv3.GetResponse; go.error])] "do") #())) in
       return: ("$ret0", "$ret1")
@@ -1490,7 +1490,7 @@ Definition leasingKV__getⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
     (if: Convert go.untyped_bool go.bool ((![go.PointerType clientv3.GetResponse] "resp") ≠⟨go.PointerType clientv3.GetResponse⟩ (Convert go.untyped_nil (go.PointerType clientv3.GetResponse) UntypedNil))
     then return: (![go.PointerType clientv3.GetResponse] "resp", Convert go.untyped_nil go.error UntypedNil)
     else
-      (if: (~ (![go.bool] "ok")) || ((MethodResolve clientv3.Op "IsSerializable"%go (![clientv3.Op] "op")) #())
+      (if: (⟨go.bool⟩! (![go.bool] "ok")) || ((MethodResolve clientv3.Op "IsSerializable"%go (![clientv3.Op] "op")) #())
       then
         let: ("$ret0", "$ret1") := (((![go.FunctionType (go.Signature [] false [go.PointerType clientv3.GetResponse; go.error])] "do") #())) in
         return: ("$ret0", "$ret1")
@@ -1498,7 +1498,7 @@ Definition leasingKV__getⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
     let: "key" := (GoAlloc go.string (GoZeroVal go.string #())) in
     let: "$r0" := (Convert (go.SliceType go.byte) go.string ((MethodResolve clientv3.Op "KeyBytes"%go (![clientv3.Op] "op")) #())) in
     do:  ("key" <-[go.string] "$r0");;;
-    (if: (~ (let: "$a0" := (![go.string] "key") in
+    (if: (⟨go.bool⟩! (let: "$a0" := (![go.string] "key") in
     (MethodResolve (go.PointerType leaseCache) "MayAcquire"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] "lkv"))) "$a0"))
     then
       let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
@@ -1606,7 +1606,7 @@ Definition leasingKV__deleteRangeRPCⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : Go
       (MethodResolve (go.PointerType leaseCache) "EvictRange"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] "lkv"))) "$a0" "$a1");;;
       return: (Convert go.untyped_nil (go.PointerType clientv3.DeleteResponse) UntypedNil, ![go.error] "err")
     else do:  #());;;
-    (if: (~ (![go.bool] (StructFieldRef clientv3.TxnResponse "Succeeded"%go (![go.PointerType clientv3.TxnResponse] "resp"))))
+    (if: (⟨go.bool⟩! (![go.bool] (StructFieldRef clientv3.TxnResponse "Succeeded"%go (![go.PointerType clientv3.TxnResponse] "resp"))))
     then return: (Convert go.untyped_nil (go.PointerType clientv3.DeleteResponse) UntypedNil, Convert go.untyped_nil go.error UntypedNil)
     else do:  #());;;
     let: "$range" := (![go.SliceType (go.PointerType mvccpb.KeyValue)] (StructFieldRef etcdserverpb.RangeResponse "Kvs"%go ((MethodResolve (go.PointerType etcdserverpb.ResponseOp) "GetResponseRange"%go (![go.PointerType etcdserverpb.ResponseOp] (IndexRef (go.SliceType (go.PointerType etcdserverpb.ResponseOp)) (![go.SliceType (go.PointerType etcdserverpb.ResponseOp)] (StructFieldRef clientv3.TxnResponse "Responses"%go (![go.PointerType clientv3.TxnResponse] "resp")), #(W64 0))))) #()))) in
@@ -2093,12 +2093,12 @@ Definition txnLeasing__evalⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
     let: "$r1" := "$ret1" in
     do:  ("succeeded" <-[go.bool] "$r0");;;
     do:  ("ok" <-[go.bool] "$r1");;;
-    (if: (~ (![go.bool] "ok")) || ((![go.PointerType etcdserverpb.ResponseHeader] (StructFieldRef leaseCache "header"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] (StructFieldRef txnLeasing "lkv"%go (![go.PointerType txnLeasing] "txn")))))) =⟨go.PointerType etcdserverpb.ResponseHeader⟩ (Convert go.untyped_nil (go.PointerType etcdserverpb.ResponseHeader) UntypedNil))
+    (if: (⟨go.bool⟩! (![go.bool] "ok")) || ((![go.PointerType etcdserverpb.ResponseHeader] (StructFieldRef leaseCache "header"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] (StructFieldRef txnLeasing "lkv"%go (![go.PointerType txnLeasing] "txn")))))) =⟨go.PointerType etcdserverpb.ResponseHeader⟩ (Convert go.untyped_nil (go.PointerType etcdserverpb.ResponseHeader) UntypedNil))
     then return: (Convert go.untyped_nil (go.PointerType clientv3.TxnResponse) UntypedNil, Convert go.untyped_nil go.error UntypedNil)
     else do:  #());;;
     (let: "$r0" := (![go.SliceType clientv3.Op] (StructFieldRef txnLeasing "opst"%go (![go.PointerType txnLeasing] "txn"))) in
     do:  ("ops" <-[go.SliceType clientv3.Op] "$r0");;;
-    (if: (~ (![go.bool] "succeeded"))
+    (if: (⟨go.bool⟩! (![go.bool] "succeeded"))
     then
       let: "$r0" := (![go.SliceType clientv3.Op] (StructFieldRef txnLeasing "opse"%go (![go.PointerType txnLeasing] "txn"))) in
       do:  ("ops" <-[go.SliceType clientv3.Op] "$r0")
@@ -2110,7 +2110,7 @@ Definition txnLeasing__evalⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
     let: "$r1" := "$ret1" in
     do:  ("resps" <-[go.SliceType (go.PointerType etcdserverpb.ResponseOp)] "$r0");;;
     do:  ("ok" <-[go.bool] "$r1");;;
-    (if: (~ (![go.bool] "ok"))
+    (if: (⟨go.bool⟩! (![go.bool] "ok"))
     then return: (Convert go.untyped_nil (go.PointerType clientv3.TxnResponse) UntypedNil, Convert go.untyped_nil go.error UntypedNil)
     else do:  #());;;
     return: (GoAlloc clientv3.TxnResponse (CompositeLiteral clientv3.TxnResponse (LiteralValue [KeyedElement (Some (KeyField "Header"%go)) (ElementExpression (go.PointerType etcdserverpb.ResponseHeader) (let: "$a0" := (![go.PointerType etcdserverpb.ResponseHeader] (StructFieldRef leaseCache "header"%go (StructFieldRef leasingKV "leases"%go (![go.PointerType leasingKV] (StructFieldRef txnLeasing "lkv"%go (![go.PointerType txnLeasing] "txn")))))) in
@@ -2588,7 +2588,7 @@ Definition gatherOpsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
     slice.for_range clientv3.Op "$range" (λ: "$key" "$value",
       do:  ("op" <-[clientv3.Op] "$value");;;
       do:  "$key";;;
-      (if: (~ ((MethodResolve clientv3.Op "IsTxn"%go (![clientv3.Op] "op")) #()))
+      (if: (⟨go.bool⟩! ((MethodResolve clientv3.Op "IsTxn"%go (![clientv3.Op] "op")) #()))
       then
         let: "$r0" := (let: "$a0" := (![go.SliceType clientv3.Op] "ret") in
         let: "$a1" := ((let: "$sl0" := (![clientv3.Op] "op") in
@@ -2627,7 +2627,7 @@ Definition gatherResponseOpsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
     slice.for_range clientv3.Op "$range" (λ: "$key" "$value",
       do:  ("op" <-[clientv3.Op] "$value");;;
       do:  ("i" <-[go.int] "$key");;;
-      (if: (~ ((MethodResolve clientv3.Op "IsTxn"%go (![clientv3.Op] "op")) #()))
+      (if: (⟨go.bool⟩! ((MethodResolve clientv3.Op "IsTxn"%go (![clientv3.Op] "op")) #()))
       then
         let: "$r0" := (let: "$a0" := (![go.SliceType clientv3.Op] "ret") in
         let: "$a1" := ((let: "$sl0" := (![clientv3.Op] "op") in

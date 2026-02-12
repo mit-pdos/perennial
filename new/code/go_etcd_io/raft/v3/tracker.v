@@ -470,7 +470,7 @@ Definition Progress__Stringⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
       CompositeLiteral (go.SliceType go.any) (LiteralValue [KeyedElement None (ElementExpression go.any "$sl0")]))) in
       (FuncResolve fmt.Fprintf [] #()) "$a0" "$a1" "$a2")
     else do:  #());;;
-    (if: (~ (![go.bool] (StructFieldRef Progress "RecentActive"%go (![go.PointerType Progress] "pr"))))
+    (if: (⟨go.bool⟩! (![go.bool] (StructFieldRef Progress "RecentActive"%go (![go.PointerType Progress] "pr"))))
     then
       do:  (let: "$a0" := (Convert (go.PointerType strings.Builder) io.Writer "buf") in
       let: "$a1" := ((let: "$sl0" := (Convert go.string go.any #" inactive"%go) in
@@ -743,7 +743,7 @@ Definition matchAckIndexer__AckedIndexⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : 
     let: "$r1" := "$ret1" in
     do:  ("pr" <-[go.PointerType Progress] "$r0");;;
     do:  ("ok" <-[go.bool] "$r1");;;
-    (if: (~ (![go.bool] "ok"))
+    (if: (⟨go.bool⟩! (![go.bool] "ok"))
     then return: (#(W64 0), #false)
     else do:  #());;;
     return: (![go.uint64] (StructFieldRef Progress "Match"%go (![go.PointerType Progress] "pr")), #true)).
@@ -926,7 +926,7 @@ Definition ProgressTracker__RecordVoteⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : 
     let: "$r1" := "$ret1" in
     do:  "$r0";;;
     do:  ("ok" <-[go.bool] "$r1");;;
-    (if: (~ (![go.bool] "ok"))
+    (if: (⟨go.bool⟩! (![go.bool] "ok"))
     then
       let: "$r0" := (![go.bool] "v") in
       do:  (map.insert go.uint64 (![go.MapType go.uint64 go.bool] (StructFieldRef ProgressTracker "Votes"%go (![go.PointerType ProgressTracker] "p"))) (![go.uint64] "id") "$r0")
@@ -959,7 +959,7 @@ Definition ProgressTracker__TallyVotesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : 
       let: "$r1" := "$ret1" in
       do:  ("v" <-[go.bool] "$r0");;;
       do:  ("voted" <-[go.bool] "$r1");;;
-      (if: (~ (![go.bool] "voted"))
+      (if: (⟨go.bool⟩! (![go.bool] "voted"))
       then continue: #()
       else do:  #());;;
       (if: ![go.bool] "v"

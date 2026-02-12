@@ -214,7 +214,7 @@ Definition Searchⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : va
       let: "h" := (GoAlloc go.int (GoZeroVal go.int #())) in
       let: "$r0" := (Convert go.uint go.int ((Convert go.int go.uint ((![go.int] "i") +⟨go.int⟩ (![go.int] "j"))) >>⟨go.uint⟩ (Convert go.untyped_int go.uint #1))) in
       do:  ("h" <-[go.int] "$r0");;;
-      (if: (~ (let: "$a0" := (![go.int] "h") in
+      (if: (⟨go.bool⟩! (let: "$a0" := (![go.int] "h") in
       (![go.FunctionType (go.Signature [go.int] false [go.bool])] "f") "$a0"))
       then
         let: "$r0" := ((![go.int] "h") +⟨go.int⟩ #(W64 1)) in

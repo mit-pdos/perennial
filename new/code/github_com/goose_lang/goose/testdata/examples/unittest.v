@@ -36,10 +36,6 @@ Definition embedC {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go
 
 Definition embedD {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.embedD"%go [].
 
-Definition Enc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.Enc"%go [].
-
-Definition Dec {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.Dec"%go [].
-
 Definition Enum1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.Enum1"%go [].
 
 Definition Enum2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.Enum2"%go [].
@@ -854,7 +850,7 @@ Definition alwaysReturnⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
 Definition alwaysReturnInNestedBranchesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "x",
     exception_do (let: "x" := (GoAlloc go.bool "x") in
-    (if: (~ (![go.bool] "x"))
+    (if: (⟨go.bool⟩! (![go.bool] "x"))
     then
       (if: ![go.bool] "x"
       then return: (#(W64 0))
@@ -1313,72 +1309,6 @@ Definition anonymousParamⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
   λ: <>,
     exception_do (do:  #()).
 
-(* go: encoding.go:9:15 *)
-Definition Enc__consumeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
-  λ: "e" "n",
-    exception_do (let: "e" := (GoAlloc (go.PointerType Enc) "e") in
-    let: "n" := (GoAlloc go.uint64 "n") in
-    let: "b" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
-    let: "$r0" := (let: "$s" := (![go.SliceType go.byte] (StructFieldRef Enc "p"%go (![go.PointerType Enc] "e"))) in
-    Slice (go.SliceType go.byte) ("$s", #(W64 0), ![go.uint64] "n")) in
-    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
-    let: "$r0" := (let: "$s" := (![go.SliceType go.byte] (StructFieldRef Enc "p"%go (![go.PointerType Enc] "e"))) in
-    Slice (go.SliceType go.byte) ("$s", ![go.uint64] "n", FuncResolve go.len [go.SliceType go.byte] #() (![go.SliceType go.byte] (StructFieldRef Enc "p"%go (![go.PointerType Enc] "e"))))) in
-    do:  ((StructFieldRef Enc "p"%go (![go.PointerType Enc] "e")) <-[go.SliceType go.byte] "$r0");;;
-    return: (![go.SliceType go.byte] "b")).
-
-(* go: encoding.go:15:15 *)
-Definition Enc__UInt64ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
-  λ: "e" "x",
-    exception_do (let: "e" := (GoAlloc (go.PointerType Enc) "e") in
-    let: "x" := (GoAlloc go.uint64 "x") in
-    do:  (let: "$a0" := (let: "$a0" := #(W64 8) in
-    (MethodResolve (go.PointerType Enc) "consume"%go (![go.PointerType Enc] "e")) "$a0") in
-    let: "$a1" := (![go.uint64] "x") in
-    (FuncResolve primitive.UInt64Put [] #()) "$a0" "$a1");;;
-    return: #()).
-
-(* go: encoding.go:19:15 *)
-Definition Enc__UInt32ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
-  λ: "e" "x",
-    exception_do (let: "e" := (GoAlloc (go.PointerType Enc) "e") in
-    let: "x" := (GoAlloc go.uint32 "x") in
-    do:  (let: "$a0" := (let: "$a0" := #(W64 4) in
-    (MethodResolve (go.PointerType Enc) "consume"%go (![go.PointerType Enc] "e")) "$a0") in
-    let: "$a1" := (![go.uint32] "x") in
-    (FuncResolve primitive.UInt32Put [] #()) "$a0" "$a1");;;
-    return: #()).
-
-(* go: encoding.go:27:15 *)
-Definition Dec__consumeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
-  λ: "d" "n",
-    exception_do (let: "d" := (GoAlloc (go.PointerType Dec) "d") in
-    let: "n" := (GoAlloc go.uint64 "n") in
-    let: "b" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
-    let: "$r0" := (let: "$s" := (![go.SliceType go.byte] (StructFieldRef Dec "p"%go (![go.PointerType Dec] "d"))) in
-    Slice (go.SliceType go.byte) ("$s", #(W64 0), ![go.uint64] "n")) in
-    do:  ("b" <-[go.SliceType go.byte] "$r0");;;
-    let: "$r0" := (let: "$s" := (![go.SliceType go.byte] (StructFieldRef Dec "p"%go (![go.PointerType Dec] "d"))) in
-    Slice (go.SliceType go.byte) ("$s", ![go.uint64] "n", FuncResolve go.len [go.SliceType go.byte] #() (![go.SliceType go.byte] (StructFieldRef Dec "p"%go (![go.PointerType Dec] "d"))))) in
-    do:  ((StructFieldRef Dec "p"%go (![go.PointerType Dec] "d")) <-[go.SliceType go.byte] "$r0");;;
-    return: (![go.SliceType go.byte] "b")).
-
-(* go: encoding.go:33:15 *)
-Definition Dec__UInt64ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
-  λ: "d" <>,
-    exception_do (let: "d" := (GoAlloc (go.PointerType Dec) "d") in
-    return: (let: "$a0" := (let: "$a0" := #(W64 8) in
-     (MethodResolve (go.PointerType Dec) "consume"%go (![go.PointerType Dec] "d")) "$a0") in
-     (FuncResolve primitive.UInt64Get [] #()) "$a0")).
-
-(* go: encoding.go:37:15 *)
-Definition Dec__UInt32ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
-  λ: "d" <>,
-    exception_do (let: "d" := (GoAlloc (go.PointerType Dec) "d") in
-    return: (let: "$a0" := (let: "$a0" := #(W64 4) in
-     (MethodResolve (go.PointerType Dec) "consume"%go (![go.PointerType Dec] "d")) "$a0") in
-     (FuncResolve primitive.UInt32Get [] #()) "$a0")).
-
 (* go: float.go:8:6 *)
 Definition useFloatⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
@@ -1457,7 +1387,7 @@ Definition assertⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : va
   λ: "b" "s",
     exception_do (let: "s" := (GoAlloc go.string "s") in
     let: "b" := (GoAlloc go.bool "b") in
-    (if: (~ (![go.bool] "b"))
+    (if: (⟨go.bool⟩! (![go.bool] "b"))
     then
       do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) (![go.string] "s")) in
       (FuncResolve go.panic [] #()) "$a0")
@@ -2216,7 +2146,7 @@ Definition LogicalOperatorsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
   λ: "b1" "b2",
     exception_do (let: "b2" := (GoAlloc go.bool "b2") in
     let: "b1" := (GoAlloc go.bool "b1") in
-    return: (((![go.bool] "b1") && ((![go.bool] "b2") || (![go.bool] "b1"))) && (~ #false))).
+    return: (((![go.bool] "b1") && ((![go.bool] "b2") || (![go.bool] "b1"))) && (⟨go.bool⟩! #false))).
 
 (* go: operators.go:7:6 *)
 Definition LogicalAndEqualityOperatorsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -2710,7 +2640,7 @@ Definition loopSpawnⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
     let: "$r0" := #true in
     do:  ("dummy" <-[go.bool] "$r0");;;
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
-      let: "$r0" := (~ (![go.bool] "dummy")) in
+      let: "$r0" := (⟨go.bool⟩! (![go.bool] "dummy")) in
       do:  ("dummy" <-[go.bool] "$r0");;;
       continue: #()));;;
     return: #()).
@@ -2816,7 +2746,7 @@ Definition S__writeBⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
 Definition S__negateCⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "s" <>,
     exception_do (let: "s" := (GoAlloc (go.PointerType S) "s") in
-    let: "$r0" := (~ (![go.bool] (StructFieldRef S "c"%go (![go.PointerType S] "s")))) in
+    let: "$r0" := (⟨go.bool⟩! (![go.bool] (StructFieldRef S "c"%go (![go.PointerType S] "s")))) in
     do:  ((StructFieldRef S "c"%go (![go.PointerType S] "s")) <-[go.bool] "$r0");;;
     return: #()).
 
@@ -3406,76 +3336,6 @@ Class embedD_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContex
   #[global] embedD'ptr_Bar_unfold :: MethodUnfold (go.PointerType (embedD)) "Bar" (λ: "$r", MethodResolve (go.PointerType embedC) "Bar" (StructFieldRef embedD "embedC"%go "$r"));
   #[global] embedD'ptr_Car_unfold :: MethodUnfold (go.PointerType (embedD)) "Car" (λ: "$r", MethodResolve (go.PointerType embedC) "Car" (StructFieldRef embedD "embedC"%go "$r"));
   #[global] embedD'ptr_Foo_unfold :: MethodUnfold (go.PointerType (embedD)) "Foo" (λ: "$r", MethodResolve (go.PointerType embedC) "Foo" (StructFieldRef embedD "embedC"%go "$r"));
-}.
-
-Module Enc.
-Section def.
-Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Record t :=
-mk {
-  p' : slice.t;
-}.
-
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
-#[global] Arguments mk : clear implicits.
-#[global] Arguments t : clear implicits.
-End def.
-
-End Enc.
-
-Definition Enc'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
-  (go.FieldDecl "p"%go (go.SliceType go.byte))
-].
-Program Definition Enc'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (Enc'fds_unsealed).
-Global Instance equals_unfold_Enc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Enc'fds =→ Enc'fds_unsealed.
-Proof. rewrite /Enc'fds seal_eq //. Qed.
-
-Definition Encⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (Enc'fds).
-
-Class Enc_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] Enc_type_repr  :: go.TypeReprUnderlying Encⁱᵐᵖˡ Enc.t;
-  #[global] Enc_underlying :: (Enc) <u (Encⁱᵐᵖˡ);
-  #[global] Enc_get_p (x : Enc.t) :: ⟦StructFieldGet (Encⁱᵐᵖˡ) "p", #x⟧ ⤳[under] #x.(Enc.p');
-  #[global] Enc_set_p (x : Enc.t) y :: ⟦StructFieldSet (Encⁱᵐᵖˡ) "p", (#x, #y)⟧ ⤳[under] #(x <|Enc.p' := y|>);
-  #[global] Enc'ptr_UInt32_unfold :: MethodUnfold (go.PointerType (Enc)) "UInt32" (Enc__UInt32ⁱᵐᵖˡ);
-  #[global] Enc'ptr_UInt64_unfold :: MethodUnfold (go.PointerType (Enc)) "UInt64" (Enc__UInt64ⁱᵐᵖˡ);
-  #[global] Enc'ptr_consume_unfold :: MethodUnfold (go.PointerType (Enc)) "consume" (Enc__consumeⁱᵐᵖˡ);
-}.
-
-Module Dec.
-Section def.
-Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Record t :=
-mk {
-  p' : slice.t;
-}.
-
-#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
-#[global] Arguments mk : clear implicits.
-#[global] Arguments t : clear implicits.
-End def.
-
-End Dec.
-
-Definition Dec'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
-  (go.FieldDecl "p"%go (go.SliceType go.byte))
-].
-Program Definition Dec'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (Dec'fds_unsealed).
-Global Instance equals_unfold_Dec {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Dec'fds =→ Dec'fds_unsealed.
-Proof. rewrite /Dec'fds seal_eq //. Qed.
-
-Definition Decⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (Dec'fds).
-
-Class Dec_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] Dec_type_repr  :: go.TypeReprUnderlying Decⁱᵐᵖˡ Dec.t;
-  #[global] Dec_underlying :: (Dec) <u (Decⁱᵐᵖˡ);
-  #[global] Dec_get_p (x : Dec.t) :: ⟦StructFieldGet (Decⁱᵐᵖˡ) "p", #x⟧ ⤳[under] #x.(Dec.p');
-  #[global] Dec_set_p (x : Dec.t) y :: ⟦StructFieldSet (Decⁱᵐᵖˡ) "p", (#x, #y)⟧ ⤳[under] #(x <|Dec.p' := y|>);
-  #[global] Dec'ptr_UInt32_unfold :: MethodUnfold (go.PointerType (Dec)) "UInt32" (Dec__UInt32ⁱᵐᵖˡ);
-  #[global] Dec'ptr_UInt64_unfold :: MethodUnfold (go.PointerType (Dec)) "UInt64" (Dec__UInt64ⁱᵐᵖˡ);
-  #[global] Dec'ptr_consume_unfold :: MethodUnfold (go.PointerType (Dec)) "consume" (Dec__consumeⁱᵐᵖˡ);
 }.
 
 Module Enum1.
@@ -4379,8 +4239,6 @@ Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions
   #[global] embedB_instance :: embedB_Assumptions;
   #[global] embedC_instance :: embedC_Assumptions;
   #[global] embedD_instance :: embedD_Assumptions;
-  #[global] Enc_instance :: Enc_Assumptions;
-  #[global] Dec_instance :: Dec_Assumptions;
   #[global] Enum1_instance :: Enum1_Assumptions;
   #[global] Enum2_instance :: Enum2_Assumptions;
   #[global] Fooer_instance :: Fooer_Assumptions;

@@ -6,7 +6,6 @@ Require Export New.generatedproof.github_com.mit_pdos.gokv.grove_ffi.
 Require Export New.generatedproof.github_com.tchajed.marshal.
 Require Export New.generatedproof.log.
 Require Export New.generatedproof.sync.
-Require Export New.generatedproof.time.
 Require Export New.golang.theory.
 Require Export New.code.github_com.mit_pdos.gokv.urpc.
 

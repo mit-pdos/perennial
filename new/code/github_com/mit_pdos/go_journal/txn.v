@@ -92,7 +92,7 @@ Definition Txn__Acquireⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
     let: "$r0" := (let: "$a0" := (![addr.Addr] "addr") in
     (MethodResolve (go.PointerType Txn) "isAlreadyAcquired"%go (![go.PointerType Txn] "txn")) "$a0") in
     do:  ("already_acquired" <-[go.bool] "$r0");;;
-    (if: (~ (![go.bool] "already_acquired"))
+    (if: (⟨go.bool⟩! (![go.bool] "already_acquired"))
     then
       do:  (let: "$a0" := (![addr.Addr] "addr") in
       (MethodResolve (go.PointerType Txn) "acquireNoCheck"%go (![go.PointerType Txn] "txn")) "$a0")

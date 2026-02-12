@@ -44,7 +44,7 @@ Definition WaitTimeout {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_strin
 Definition Assertⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "b",
     exception_do (let: "b" := (GoAlloc go.bool "b") in
-    (if: (~ (![go.bool] "b"))
+    (if: (⟨go.bool⟩! (![go.bool] "b"))
     then
       do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"assertion failure"%go) in
       (FuncResolve go.panic [] #()) "$a0")

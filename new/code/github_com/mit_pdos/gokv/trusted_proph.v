@@ -10,7 +10,7 @@ End pkg_id.
 Export pkg_id.
 Module trusted_proph.
 
-Definition ProphId {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := primitive.ProphId.
+Definition ProphId {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.PointerType primitive.prophId.
 
 Definition NewProph {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/mit-pdos/gokv/trusted_proph.NewProph"%go.
 

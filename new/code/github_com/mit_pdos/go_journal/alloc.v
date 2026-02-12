@@ -55,7 +55,7 @@ Definition Alloc__MarkUsedⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
 Definition MkMaxAllocⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "max",
     exception_do (let: "max" := (GoAlloc go.uint64 "max") in
-    (if: Convert go.untyped_bool go.bool (~ ((#(W64 0) <⟨go.uint64⟩ (![go.uint64] "max")) && (((![go.uint64] "max") %⟨go.uint64⟩ #(W64 8)) =⟨go.uint64⟩ #(W64 0))))
+    (if: Convert go.untyped_bool go.bool (⟨go.bool⟩! ((#(W64 0) <⟨go.uint64⟩ (![go.uint64] "max")) && (((![go.uint64] "max") %⟨go.uint64⟩ #(W64 8)) =⟨go.uint64⟩ #(W64 0))))
     then
       do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"invalid max, must be at least 0 and divisible by 8"%go) in
       (FuncResolve go.panic [] #()) "$a0")
@@ -135,7 +135,7 @@ Definition Alloc__freeBitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
     let: "bit" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := ((![go.uint64] "bn") %⟨go.uint64⟩ #(W64 8)) in
     do:  ("bit" <-[go.uint64] "$r0");;;
-    let: "$r0" := ((![go.byte] (IndexRef (go.SliceType go.byte) (![go.SliceType go.byte] (StructFieldRef Alloc "bitmap"%go (![go.PointerType Alloc] "a")), Convert go.uint64 go.int (![go.uint64] "byte")))) &⟨go.byte⟩ (~ (#(W8 1) <<⟨go.byte⟩ (Convert go.uint64 go.byte (![go.uint64] "bit"))))) in
+    let: "$r0" := ((![go.byte] (IndexRef (go.SliceType go.byte) (![go.SliceType go.byte] (StructFieldRef Alloc "bitmap"%go (![go.PointerType Alloc] "a")), Convert go.uint64 go.int (![go.uint64] "byte")))) &⟨go.byte⟩ (⟨go.bool⟩! (#(W8 1) <<⟨go.byte⟩ (Convert go.uint64 go.byte (![go.uint64] "bit"))))) in
     do:  ((IndexRef (go.SliceType go.byte) (![go.SliceType go.byte] (StructFieldRef Alloc "bitmap"%go (![go.PointerType Alloc] "a")), Convert go.uint64 go.int (![go.uint64] "byte"))) <-[go.byte] "$r0");;;
     do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (![go.PointerType sync.Mutex] (StructFieldRef Alloc "mu"%go (![go.PointerType Alloc] "a")))) #());;;
     return: #()).

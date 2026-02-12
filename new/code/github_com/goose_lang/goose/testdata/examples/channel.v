@@ -830,7 +830,7 @@ Definition serverⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : va
       let: "$r1" := "$ret1" in
       do:  ("b" <-[go.SliceType go.byte] "$r0");;;
       do:  ("ok" <-[go.bool] "$r1");;;
-      (if: (~ (![go.bool] "ok"))
+      (if: (⟨go.bool⟩! (![go.bool] "ok"))
       then
         do:  (let: "$chan" := (![go.ChannelType go.sendrecv (go.StructType [
 
@@ -1070,7 +1070,7 @@ Definition CancellableMapServerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
       let: "$r1" := "$ret1" in
       do:  ("in" <-[go.string] "$r0");;;
       do:  ("ok" <-[go.bool] "$r1");;;
-      (if: (~ (![go.bool] "ok"))
+      (if: (⟨go.bool⟩! (![go.bool] "ok"))
       then return: (#())
       else do:  #());;;
       do:  (let: "$chan" := (![go.ChannelType go.sendrecv go.string] (StructFieldRef streamold "res"%go "s")) in
@@ -1103,7 +1103,7 @@ Definition CancellableMuxerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
       let: "$r1" := "$ret1" in
       do:  ("s" <-[streamold] "$r0");;;
       do:  ("ok" <-[go.bool] "$r1");;;
-      (if: (~ (![go.bool] "ok"))
+      (if: (⟨go.bool⟩! (![go.bool] "ok"))
       then return: (#"serviced all requests"%go)
       else do:  #());;;
       let: "$a0" := (![streamold] "s") in

@@ -60,7 +60,7 @@ Definition lockShard__acquireⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
         let: "$r0" := (![go.PointerType lockState] "state") in
         do:  (map.insert go.uint64 (![go.MapType go.uint64 (go.PointerType lockState)] (StructFieldRef lockShard "state"%go (![go.PointerType lockShard] "lmap"))) (![go.uint64] "addr") "$r0"));;;
       let: "acquired" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
-      (if: (~ (![go.bool] (StructFieldRef lockState "held"%go (![go.PointerType lockState] "state"))))
+      (if: (⟨go.bool⟩! (![go.bool] (StructFieldRef lockState "held"%go (![go.PointerType lockState] "state"))))
       then
         let: "$r0" := #true in
         do:  ((StructFieldRef lockState "held"%go (![go.PointerType lockState] "state")) <-[go.bool] "$r0");;;

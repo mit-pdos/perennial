@@ -41,7 +41,7 @@ Definition CreateAppendOnlyFileⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
       exception_do (do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (![go.PointerType sync.Mutex] (StructFieldRef AppendOnlyFile "mu"%go (![go.PointerType AppendOnlyFile] "a")))) #());;;
       (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
         (if: ((let: "$a0" := (![go.SliceType go.byte] (StructFieldRef AppendOnlyFile "membuf"%go (![go.PointerType AppendOnlyFile] "a"))) in
-        (FuncResolve go.len [go.SliceType go.byte] #()) "$a0") =⟨go.int⟩ #(W64 0)) && (~ (![go.bool] (StructFieldRef AppendOnlyFile "closeRequested"%go (![go.PointerType AppendOnlyFile] "a"))))
+        (FuncResolve go.len [go.SliceType go.byte] #()) "$a0") =⟨go.int⟩ #(W64 0)) && (⟨go.bool⟩! (![go.bool] (StructFieldRef AppendOnlyFile "closeRequested"%go (![go.PointerType AppendOnlyFile] "a"))))
         then
           do:  ((MethodResolve (go.PointerType sync.Cond) "Wait"%go (![go.PointerType sync.Cond] (StructFieldRef AppendOnlyFile "lengthCond"%go (![go.PointerType AppendOnlyFile] "a")))) #());;;
           continue: #()
@@ -101,7 +101,7 @@ Definition AppendOnlyFile__Closeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
     let: "$r0" := #true in
     do:  ((StructFieldRef AppendOnlyFile "closeRequested"%go (![go.PointerType AppendOnlyFile] "a")) <-[go.bool] "$r0");;;
     do:  ((MethodResolve (go.PointerType sync.Cond) "Signal"%go (![go.PointerType sync.Cond] (StructFieldRef AppendOnlyFile "lengthCond"%go (![go.PointerType AppendOnlyFile] "a")))) #());;;
-    (for: (λ: <>, (~ (![go.bool] (StructFieldRef AppendOnlyFile "closed"%go (![go.PointerType AppendOnlyFile] "a"))))); (λ: <>, #()) := λ: <>,
+    (for: (λ: <>, (⟨go.bool⟩! (![go.bool] (StructFieldRef AppendOnlyFile "closed"%go (![go.PointerType AppendOnlyFile] "a"))))); (λ: <>, #()) := λ: <>,
       do:  ((MethodResolve (go.PointerType sync.Cond) "Wait"%go (![go.PointerType sync.Cond] (StructFieldRef AppendOnlyFile "closedCond"%go (![go.PointerType AppendOnlyFile] "a")))) #()));;;
     do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (![go.PointerType sync.Mutex] (StructFieldRef AppendOnlyFile "mu"%go (![go.PointerType AppendOnlyFile] "a")))) #());;;
     return: #()).

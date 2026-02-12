@@ -1,10 +1,8 @@
 translate = ["!*"]
 imports = ["!*"]
 trusted = [
-  "UInt64Put",
   "Assume",
   "RandomUint64",
-  "AssumeNoStringOverflow",
   "Mutex*",
   "ProphId",
   # FIXME: add remaining functions

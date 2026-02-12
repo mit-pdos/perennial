@@ -205,7 +205,7 @@ Definition Election__Campaignⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
     do:  ((StructFieldRef Election "leaderKey"%go (![go.PointerType Election] "e")) <-[go.string] "$r0");;;
     do:  ((StructFieldRef Election "leaderRev"%go (![go.PointerType Election] "e")) <-[go.int64] "$r1");;;
     do:  ((StructFieldRef Election "leaderSession"%go (![go.PointerType Election] "e")) <-[go.PointerType Session] "$r2");;;
-    (if: (~ (![go.bool] (StructFieldRef clientv3.TxnResponse "Succeeded"%go (![go.PointerType clientv3.TxnResponse] "resp"))))
+    (if: (⟨go.bool⟩! (![go.bool] (StructFieldRef clientv3.TxnResponse "Succeeded"%go (![go.PointerType clientv3.TxnResponse] "resp"))))
     then
       let: "kv" := (GoAlloc (go.PointerType mvccpb.KeyValue) (GoZeroVal (go.PointerType mvccpb.KeyValue) #())) in
       let: "$r0" := (![go.PointerType mvccpb.KeyValue] (IndexRef (go.SliceType (go.PointerType mvccpb.KeyValue)) (![go.SliceType (go.PointerType mvccpb.KeyValue)] (StructFieldRef etcdserverpb.RangeResponse "Kvs"%go ((MethodResolve (go.PointerType etcdserverpb.ResponseOp) "GetResponseRange"%go (![go.PointerType etcdserverpb.ResponseOp] (IndexRef (go.SliceType (go.PointerType etcdserverpb.ResponseOp)) (![go.SliceType (go.PointerType etcdserverpb.ResponseOp)] (StructFieldRef clientv3.TxnResponse "Responses"%go (![go.PointerType clientv3.TxnResponse] "resp")), #(W64 0))))) #())), #(W64 0)))) in
@@ -292,7 +292,7 @@ Definition Election__Proclaimⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
     (if: Convert go.untyped_bool go.bool ((![go.error] "terr") ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
     then return: (![go.error] "terr")
     else do:  #());;;
-    (if: (~ (![go.bool] (StructFieldRef clientv3.TxnResponse "Succeeded"%go (![go.PointerType clientv3.TxnResponse] "tresp"))))
+    (if: (⟨go.bool⟩! (![go.bool] (StructFieldRef clientv3.TxnResponse "Succeeded"%go (![go.PointerType clientv3.TxnResponse] "tresp"))))
     then
       let: "$r0" := #""%go in
       do:  ((StructFieldRef Election "leaderKey"%go (![go.PointerType Election] "e")) <-[go.string] "$r0");;;
@@ -459,7 +459,7 @@ Definition Election__observeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
           let: "$r1" := "$ret1" in
           do:  ("wr" <-[clientv3.WatchResponse] "$r0");;;
           do:  ("ok" <-[go.bool] "$r1");;;
-          (if: (~ (![go.bool] "ok")) || (((MethodResolve (go.PointerType clientv3.WatchResponse) "Err"%go "wr") #()) ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
+          (if: (⟨go.bool⟩! (![go.bool] "ok")) || (((MethodResolve (go.PointerType clientv3.WatchResponse) "Err"%go "wr") #()) ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
           then
             do:  ((![context.CancelFunc] "cancel") #());;;
             return: (#())
@@ -510,7 +510,7 @@ Definition Election__observeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
       let: "keyDeleted" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
       let: "$r0" := #false in
       do:  ("keyDeleted" <-[go.bool] "$r0");;;
-      (for: (λ: <>, (~ (![go.bool] "keyDeleted"))); (λ: <>, #()) := λ: <>,
+      (for: (λ: <>, (⟨go.bool⟩! (![go.bool] "keyDeleted"))); (λ: <>, #()) := λ: <>,
         let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
         let: "wr" := (GoAlloc clientv3.WatchResponse (GoZeroVal clientv3.WatchResponse #())) in
         let: ("$ret0", "$ret1") := (chan.receive clientv3.WatchResponse (![clientv3.WatchChan] "wch")) in
@@ -518,7 +518,7 @@ Definition Election__observeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
         let: "$r1" := "$ret1" in
         do:  ("wr" <-[clientv3.WatchResponse] "$r0");;;
         do:  ("ok" <-[go.bool] "$r1");;;
-        (if: (~ (![go.bool] "ok"))
+        (if: (⟨go.bool⟩! (![go.bool] "ok"))
         then
           do:  ((![context.CancelFunc] "cancel") #());;;
           return: (#())
@@ -865,7 +865,7 @@ Definition Mutex__tryAcquireⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
     else do:  #());;;
     let: "$r0" := (![go.int64] (StructFieldRef etcdserverpb.ResponseHeader "Revision"%go (![go.PointerType etcdserverpb.ResponseHeader] (StructFieldRef clientv3.TxnResponse "Header"%go (![go.PointerType clientv3.TxnResponse] "resp"))))) in
     do:  ((StructFieldRef Mutex "myRev"%go (![go.PointerType Mutex] "m")) <-[go.int64] "$r0");;;
-    (if: (~ (![go.bool] (StructFieldRef clientv3.TxnResponse "Succeeded"%go (![go.PointerType clientv3.TxnResponse] "resp"))))
+    (if: (⟨go.bool⟩! (![go.bool] (StructFieldRef clientv3.TxnResponse "Succeeded"%go (![go.PointerType clientv3.TxnResponse] "resp"))))
     then
       let: "$r0" := (![go.int64] (StructFieldRef mvccpb.KeyValue "CreateRevision"%go (![go.PointerType mvccpb.KeyValue] (IndexRef (go.SliceType (go.PointerType mvccpb.KeyValue)) (![go.SliceType (go.PointerType mvccpb.KeyValue)] (StructFieldRef etcdserverpb.RangeResponse "Kvs"%go ((MethodResolve (go.PointerType etcdserverpb.ResponseOp) "GetResponseRange"%go (![go.PointerType etcdserverpb.ResponseOp] (IndexRef (go.SliceType (go.PointerType etcdserverpb.ResponseOp)) (![go.SliceType (go.PointerType etcdserverpb.ResponseOp)] (StructFieldRef clientv3.TxnResponse "Responses"%go (![go.PointerType clientv3.TxnResponse] "resp")), #(W64 0))))) #())), #(W64 0)))))) in
       do:  ((StructFieldRef Mutex "myRev"%go (![go.PointerType Mutex] "m")) <-[go.int64] "$r0")
@@ -880,7 +880,7 @@ Definition Mutex__Unlockⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
     (if: Convert go.untyped_bool go.bool ((((![go.string] (StructFieldRef Mutex "myKey"%go (![go.PointerType Mutex] "m"))) =⟨go.string⟩ #""%go) || ((![go.int64] (StructFieldRef Mutex "myRev"%go (![go.PointerType Mutex] "m"))) ≤⟨go.int64⟩ #(W64 0))) || ((![go.string] (StructFieldRef Mutex "myKey"%go (![go.PointerType Mutex] "m"))) =⟨go.string⟩ #" "%go))
     then return: (![go.error] (GlobalVarAddr ErrLockReleased #()))
     else do:  #());;;
-    (if: (~ (let: "$a0" := (![go.string] (StructFieldRef Mutex "myKey"%go (![go.PointerType Mutex] "m"))) in
+    (if: (⟨go.bool⟩! (let: "$a0" := (![go.string] (StructFieldRef Mutex "myKey"%go (![go.PointerType Mutex] "m"))) in
     let: "$a1" := (![go.string] (StructFieldRef Mutex "pfx"%go (![go.PointerType Mutex] "m"))) in
     (FuncResolve strings.HasPrefix [] #()) "$a0" "$a1"))
     then
@@ -1384,7 +1384,7 @@ Definition runSTMⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : va
           let: "$r1" := "$ret1" in
           do:  ("e" <-[stmError] "$r0");;;
           do:  ("ok" <-[go.bool] "$r1");;;
-          (if: (~ (![go.bool] "ok"))
+          (if: (⟨go.bool⟩! (![go.bool] "ok"))
           then
             do:  (let: "$a0" := (![go.InterfaceType []] "r") in
             (FuncResolve go.panic [] #()) "$a0")

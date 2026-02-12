@@ -114,7 +114,7 @@ Definition AsyncFile__Closeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
     let: "$r0" := #true in
     do:  ((StructFieldRef AsyncFile "closeRequested"%go (![go.PointerType AsyncFile] "s")) <-[go.bool] "$r0");;;
     do:  ((MethodResolve (go.PointerType sync.Cond) "Signal"%go (![go.PointerType sync.Cond] (StructFieldRef AsyncFile "indexCond"%go (![go.PointerType AsyncFile] "s")))) #());;;
-    (for: (λ: <>, (~ (![go.bool] (StructFieldRef AsyncFile "closed"%go (![go.PointerType AsyncFile] "s"))))); (λ: <>, #()) := λ: <>,
+    (for: (λ: <>, (⟨go.bool⟩! (![go.bool] (StructFieldRef AsyncFile "closed"%go (![go.PointerType AsyncFile] "s"))))); (λ: <>, #()) := λ: <>,
       do:  ((MethodResolve (go.PointerType sync.Cond) "Wait"%go (![go.PointerType sync.Cond] (StructFieldRef AsyncFile "closedCond"%go (![go.PointerType AsyncFile] "s")))) #()));;;
     return: #()).
 

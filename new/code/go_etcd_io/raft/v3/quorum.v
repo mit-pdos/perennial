@@ -277,7 +277,7 @@ Definition MajorityConfig__Describeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoG
       let: "bar" := (GoAlloc go.int (GoZeroVal go.int #())) in
       let: "$r0" := (![go.int] (StructFieldRef slices.Tup "Bar"%go (IndexRef (go.SliceType slices.Tup) (![go.SliceType slices.Tup] "info", ![go.int] "i")))) in
       do:  ("bar" <-[go.int] "$r0");;;
-      (if: (~ (![go.bool] (StructFieldRef slices.Tup "Ok"%go (IndexRef (go.SliceType slices.Tup) (![go.SliceType slices.Tup] "info", ![go.int] "i")))))
+      (if: (⟨go.bool⟩! (![go.bool] (StructFieldRef slices.Tup "Ok"%go (IndexRef (go.SliceType slices.Tup) (![go.SliceType slices.Tup] "info", ![go.int] "i")))))
       then
         do:  (let: "$a0" := (Convert (go.PointerType strings.Builder) io.Writer "buf") in
         let: "$a1" := ((let: "$sl0" := (Convert go.string go.any (#"?"%go +⟨go.string⟩ (let: "$a0" := #" "%go in
@@ -409,7 +409,7 @@ Definition MajorityConfig__VoteResultⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : G
       let: "$r1" := "$ret1" in
       do:  ("v" <-[go.bool] "$r0");;;
       do:  ("ok" <-[go.bool] "$r1");;;
-      (if: (~ (![go.bool] "ok"))
+      (if: (⟨go.bool⟩! (![go.bool] "ok"))
       then
         do:  ("missing" <-[go.int] ((![go.int] "missing") +⟨go.int⟩ #(W64 1)));;;
         continue: #()

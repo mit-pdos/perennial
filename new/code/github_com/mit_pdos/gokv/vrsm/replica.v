@@ -259,7 +259,7 @@ Definition Server__ApplyRoWaitForCommitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx :
     let: "$r0" := err_gk.None' in
     do:  ((StructFieldRef applyreply_gk.S "Err"%go (![go.PointerType applyreply_gk.S] "reply")) <-[err_gk.E] "$r0");;;
     do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (![go.PointerType sync.Mutex] (StructFieldRef Server "mu"%go (![go.PointerType Server] "s")))) #());;;
-    (if: (~ (![go.bool] (StructFieldRef Server "leaseValid"%go (![go.PointerType Server] "s"))))
+    (if: (⟨go.bool⟩! (![go.bool] (StructFieldRef Server "leaseValid"%go (![go.PointerType Server] "s"))))
     then
       do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (![go.PointerType sync.Mutex] (StructFieldRef Server "mu"%go (![go.PointerType Server] "s")))) #());;;
       do:  (let: "$a0" := #"Lease invalid"%go in
@@ -354,7 +354,7 @@ Definition Server__Applyⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
     let: "$r0" := (Convert go.untyped_nil (go.SliceType go.byte) UntypedNil) in
     do:  ((StructFieldRef applyreply_gk.S "Reply"%go (![go.PointerType applyreply_gk.S] "reply")) <-[go.SliceType go.byte] "$r0");;;
     do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (![go.PointerType sync.Mutex] (StructFieldRef Server "mu"%go (![go.PointerType Server] "s")))) #());;;
-    (if: (~ (![go.bool] (StructFieldRef Server "isPrimary"%go (![go.PointerType Server] "s"))))
+    (if: (⟨go.bool⟩! (![go.bool] (StructFieldRef Server "isPrimary"%go (![go.PointerType Server] "s"))))
     then
       do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (![go.PointerType sync.Mutex] (StructFieldRef Server "mu"%go (![go.PointerType Server] "s")))) #());;;
       let: "$r0" := err_gk.Stale in
@@ -516,7 +516,7 @@ Definition Server__sendIncreaseCommitThreadⁱᵐᵖˡ {ext : ffi_syntax} {go_gc
     exception_do (let: "s" := (GoAlloc (go.PointerType Server) "s") in
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (![go.PointerType sync.Mutex] (StructFieldRef Server "mu"%go (![go.PointerType Server] "s")))) #());;;
-      (for: (λ: <>, (~ (![go.bool] (StructFieldRef Server "isPrimary"%go (![go.PointerType Server] "s")))) || ((let: "$a0" := (![go.SliceType (go.PointerType Clerk)] (IndexRef (go.SliceType (go.SliceType (go.PointerType Clerk))) (![go.SliceType (go.SliceType (go.PointerType Clerk))] (StructFieldRef Server "clerks"%go (![go.PointerType Server] "s")), #(W64 0)))) in
+      (for: (λ: <>, (⟨go.bool⟩! (![go.bool] (StructFieldRef Server "isPrimary"%go (![go.PointerType Server] "s")))) || ((let: "$a0" := (![go.SliceType (go.PointerType Clerk)] (IndexRef (go.SliceType (go.SliceType (go.PointerType Clerk))) (![go.SliceType (go.SliceType (go.PointerType Clerk))] (StructFieldRef Server "clerks"%go (![go.PointerType Server] "s")), #(W64 0)))) in
       (FuncResolve go.len [go.SliceType (go.PointerType Clerk)] #()) "$a0") =⟨go.int⟩ #(W64 0))); (λ: <>, #()) := λ: <>,
         do:  ((MethodResolve (go.PointerType sync.Cond) "Wait"%go (![go.PointerType sync.Cond] (StructFieldRef Server "isPrimary_cond"%go (![go.PointerType Server] "s")))) #()));;;
       let: "newCommittedNextIndex" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
@@ -580,7 +580,7 @@ Definition Server__ApplyAsBackupⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
     exception_do (let: "s" := (GoAlloc (go.PointerType Server) "s") in
     let: "args" := (GoAlloc (go.PointerType applyasbackupargs_gk.S) "args") in
     do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (![go.PointerType sync.Mutex] (StructFieldRef Server "mu"%go (![go.PointerType Server] "s")))) #());;;
-    (for: (λ: <>, (((![go.uint64] (StructFieldRef applyasbackupargs_gk.S "Index"%go (![go.PointerType applyasbackupargs_gk.S] "args"))) >⟨go.uint64⟩ (![go.uint64] (StructFieldRef Server "nextIndex"%go (![go.PointerType Server] "s")))) && ((![go.uint64] (StructFieldRef Server "epoch"%go (![go.PointerType Server] "s"))) =⟨go.uint64⟩ (![go.uint64] (StructFieldRef applyasbackupargs_gk.S "Epoch"%go (![go.PointerType applyasbackupargs_gk.S] "args"))))) && (~ (![go.bool] (StructFieldRef Server "sealed"%go (![go.PointerType Server] "s"))))); (λ: <>, #()) := λ: <>,
+    (for: (λ: <>, (((![go.uint64] (StructFieldRef applyasbackupargs_gk.S "Index"%go (![go.PointerType applyasbackupargs_gk.S] "args"))) >⟨go.uint64⟩ (![go.uint64] (StructFieldRef Server "nextIndex"%go (![go.PointerType Server] "s")))) && ((![go.uint64] (StructFieldRef Server "epoch"%go (![go.PointerType Server] "s"))) =⟨go.uint64⟩ (![go.uint64] (StructFieldRef applyasbackupargs_gk.S "Epoch"%go (![go.PointerType applyasbackupargs_gk.S] "args"))))) && (⟨go.bool⟩! (![go.bool] (StructFieldRef Server "sealed"%go (![go.PointerType Server] "s"))))); (λ: <>, #()) := λ: <>,
       let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
       let: "cond" := (GoAlloc (go.PointerType sync.Cond) (GoZeroVal (go.PointerType sync.Cond) #())) in
       let: ("$ret0", "$ret1") := (map.lookup2 go.uint64 (go.PointerType sync.Cond) (![go.MapType go.uint64 (go.PointerType sync.Cond)] (StructFieldRef Server "opAppliedConds"%go (![go.PointerType Server] "s"))) (![go.uint64] (StructFieldRef applyasbackupargs_gk.S "Index"%go (![go.PointerType applyasbackupargs_gk.S] "args")))) in
@@ -588,7 +588,7 @@ Definition Server__ApplyAsBackupⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
       let: "$r1" := "$ret1" in
       do:  ("cond" <-[go.PointerType sync.Cond] "$r0");;;
       do:  ("ok" <-[go.bool] "$r1");;;
-      (if: (~ (![go.bool] "ok"))
+      (if: (⟨go.bool⟩! (![go.bool] "ok"))
       then
         let: "cond" := (GoAlloc (go.PointerType sync.Cond) (GoZeroVal (go.PointerType sync.Cond) #())) in
         let: "$r0" := (let: "$a0" := (Convert (go.PointerType sync.Mutex) sync.Locker (![go.PointerType sync.Mutex] (StructFieldRef Server "mu"%go (![go.PointerType Server] "s")))) in
@@ -730,7 +730,7 @@ Definition Server__BecomePrimaryⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
     exception_do (let: "s" := (GoAlloc (go.PointerType Server) "s") in
     let: "args" := (GoAlloc (go.PointerType becomeprimaryargs_gk.S) "args") in
     do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (![go.PointerType sync.Mutex] (StructFieldRef Server "mu"%go (![go.PointerType Server] "s")))) #());;;
-    (if: ((![go.uint64] (StructFieldRef becomeprimaryargs_gk.S "Epoch"%go (![go.PointerType becomeprimaryargs_gk.S] "args"))) ≠⟨go.uint64⟩ (![go.uint64] (StructFieldRef Server "epoch"%go (![go.PointerType Server] "s")))) || (~ (![go.bool] (StructFieldRef Server "canBecomePrimary"%go (![go.PointerType Server] "s"))))
+    (if: ((![go.uint64] (StructFieldRef becomeprimaryargs_gk.S "Epoch"%go (![go.PointerType becomeprimaryargs_gk.S] "args"))) ≠⟨go.uint64⟩ (![go.uint64] (StructFieldRef Server "epoch"%go (![go.PointerType Server] "s")))) || (⟨go.bool⟩! (![go.bool] (StructFieldRef Server "canBecomePrimary"%go (![go.PointerType Server] "s"))))
     then
       do:  (let: "$a0" := #"Wrong epoch in BecomePrimary request (in %d, got %d)"%go in
       let: "$a1" := ((let: "$sl0" := (Convert go.uint64 go.any (![go.uint64] (StructFieldRef Server "epoch"%go (![go.PointerType Server] "s")))) in

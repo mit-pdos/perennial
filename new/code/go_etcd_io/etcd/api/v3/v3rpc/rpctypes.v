@@ -303,7 +303,7 @@ Definition Errorⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val
     let: "$r1" := "$ret1" in
     do:  ("verr" <-[go.error] "$r0");;;
     do:  ("ok" <-[go.bool] "$r1");;;
-    (if: (~ (![go.bool] "ok"))
+    (if: (⟨go.bool⟩! (![go.bool] "ok"))
     then return: (![go.error] "err")
     else do:  #());;;
     let: "ev" := (GoAlloc (go.PointerType status.Status) (GoZeroVal (go.PointerType status.Status) #())) in
