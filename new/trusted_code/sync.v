@@ -17,7 +17,7 @@ Definition Mutex__Unlockⁱᵐᵖˡ : val :=
   λ: "m" <>, lock.unlock "m".
 
 Definition runtime_notifyListAddⁱᵐᵖˡ : val :=
-  λ: "l", u_to_w32 ArbitraryInt.
+  λ: "l", Convert go.int go.uint32 ArbitraryInt.
 Definition runtime_notifyListWaitⁱᵐᵖˡ : val :=
   λ: "l" "t", #().
 Definition runtime_notifyListNotifyAllⁱᵐᵖˡ : val :=
@@ -41,24 +41,24 @@ Definition runtime_Semacquireⁱᵐᵖˡ : val :=
             }
         }
     }
-    ```
-*)
+     ```
+ *)
   λ: "addr", exception_do
-    (for: (λ: <>, #true); (λ: <>, Skip) := λ: <>,
+    (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
        let: "v" := Load "addr" in
        (if: "v" =⟨go.uint32⟩ #(W32 0) then
           continue: #()
         else
           do: #()
        ) ;;;
-       (if: Snd (CmpXchg "addr" "v" ("v" - #(W32 1))) then
+       (if: Snd (CmpXchg "addr" "v" ("v" -⟨go.uint32⟩ #(W32 1))) then
           return: #()
         else
           do: #())
     ).
 
 Definition runtime_Semreleaseⁱᵐᵖˡ : val :=
-  λ: "addr" "_handoff" "_skipframes", AtomicOp PlusOp "addr" #(W32 1);; #().
+  λ: "addr" "_handoff" "_skipframes", AtomicAdd "addr" #(W32 1);; #().
 
 (* differs from runtime_Semacquire only in the park "reason", used for internal
    concurrency testing *)

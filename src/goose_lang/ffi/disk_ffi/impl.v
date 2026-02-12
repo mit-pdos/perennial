@@ -27,7 +27,7 @@ Proof.
 Defined.
 
 Definition block_bytes: nat := Z.to_nat 4096.
-Definition BlockSize {ext: ffi_syntax}: val := #4096.
+Definition BlockSize {ext: ffi_syntax} {go_gctx : GoGlobalContext} : val := #4096.
 Definition Block := vec byte block_bytes.
 (* TODO: could use vreplicate; not sure how much easier it is to work with *)
 Definition block0 : Block := list_to_vec (replicate (Z.to_nat 4096) (W8 0)).
@@ -52,10 +52,10 @@ Fixpoint init_disk (d: disk_state) (sz: nat) : disk_state :=
   | S n => <[(Z.of_nat n) := block0]> (init_disk d n)
   end.
 
-Definition Block_to_vals {ext: ffi_syntax} (bl:Block) : list val :=
-  b2val <$> vec_to_list bl.
+Definition Block_to_vals {ext: ffi_syntax} {go_gctx : GoGlobalContext} (bl:Block) : list val :=
+  into_val <$> vec_to_list bl.
 
-Lemma length_Block_to_vals {ext: ffi_syntax} b :
+Lemma length_Block_to_vals {ext: ffi_syntax} {go_gctx : GoGlobalContext} b :
     length (Block_to_vals b) = block_bytes.
 Proof.
   rewrite /Block_to_vals length_fmap length_vec_to_list //.
@@ -72,11 +72,15 @@ Section disk.
   Definition disk_size (d: gmap Z Block): Z :=
     1 + highest_addr (dom d).
 
+  Definition state_insert_list (l: loc) (vs: list val) (σ: state): state :=
+    set heap (λ h, heap_array l (fmap Free vs) ∪ h) σ.
+
+  Context {go_gctx : GoGlobalContext}.
   Definition ffi_step (op: DiskOp) (v: val): transition (state*global_state) expr :=
     match op, v with
     | ReadOp, LitV (LitInt a) =>
       b ← reads (λ '(σ,g), σ.(world) !! uint.Z a) ≫= unwrap;
-      l ← allocateN;
+      l ← allocate;
       modify (λ '(σ,g), (state_insert_list l (Block_to_vals b) σ, g));;
       ret $ Val $ #(LitLoc l)
     | WriteOp, PairV (LitV (LitInt a)) (LitV (LitLoc l)) =>

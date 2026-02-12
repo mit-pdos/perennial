@@ -34,7 +34,7 @@ End underlying_instances.
 #[global] Hint Extern 0 (go.NotInterface _) => (constructor; refine I) : typeclass_instances.
 
 Section into_val_defs.
-Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
+Context `{sem: ffi_semantics} `{!ffi_interp ffi} {go_gctx : GoGlobalContext} `{!heapGS Σ}.
 
 Class TypedPointsto (V : Type) :=
 {
@@ -96,7 +96,7 @@ Qed.
     not explicitly mention `t`, and there can be multiple `t`s for a single `V`
     (e.g. int64 and uint64 both have w64). *)
 Class IntoValTypedUnderlying (V : Type) (t_under : go.type) `{!ZeroVal V} `{!TypedPointsto V}
-  `{!GoSemanticsFunctions} :=
+                             `{!GoSemanticsFunctions} :=
   {
     wp_alloc_def : (∀ [s E] `[!t ↓u t_under] (v : V),
                       {{{ True }}}
@@ -148,9 +148,9 @@ Qed.
 
 End into_val_defs.
 
-Global Arguments wp_alloc {_ _ _ _ _ _} [_ _ _ _ _ _ _ _ _] (Φ).
-Global Arguments wp_load {_ _ _ _ _ _} [_ _ _ _ _ _ _ _] (l dq v Φ).
-Global Arguments wp_store {_ _ _ _ _ _} [_ _ _ _ _ _ _ _] (l v w Φ).
+Global Arguments wp_alloc {_ _ _ _ _ _ _} [_ _ _ _ _ _ _ _ _] (Φ).
+Global Arguments wp_load {_ _ _ _ _ _ _} [_ _ _ _ _ _ _ _] (l dq v Φ).
+Global Arguments wp_store {_ _ _ _ _ _ _} [_ _ _ _ _ _ _ _] (l v w Φ).
 
 Global Hint Mode TypedPointsto - ! : typeclass_instances.
 
@@ -160,7 +160,7 @@ Global Notation "l ↦ dq v" := (typed_pointsto l v%V dq)
 
 Section go_wps.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
-  {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
+  {go_gctx : GoGlobalContext} {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
 
 Global Instance pure_wp_go_step_det i v e :
   ⟦i, v⟧ ⤳ e →
@@ -252,53 +252,23 @@ Proof.
   - wp_apply wp_AngelicExit.
 Qed.
 
-Lemma wp_fork s E e Φ :
-  ▷ WP e @ s; ⊤ {{ _, True }} -∗ ▷ Φ #() -∗ WP Fork e @ s; E {{ Φ }}.
-Proof.
-  iIntros "Hwp HΦ".
-  wp_apply (lifting.wp_fork with "[$Hwp]").
-  replace (LitV LitUnit) with #().
-  { iFrame "HΦ". }
-  rewrite go.into_val_unfold //.
-Qed.
-
-(* use new goose's to_val for the return value *)
-Lemma wp_ArbitraryInt s E  :
-  {{{ True }}}
-    ArbitraryInt @ s; E
-  {{{ (x : w64), RET #x; True }}}.
-Proof.
-  iIntros "% _ HΦ".
-  wp_apply (lifting.wp_ArbitraryInt).
-  iIntros (x) "_".
-  replace (LitV x) with #x.
-  { by iApply "HΦ". }
-  rewrite go.into_val_unfold //.
-Qed.
-
 End go_wps.
 
 Section mem_lemmas.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
-  {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
+  {go_gctx : GoGlobalContext} {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
 (* Helper lemmas for establishing [IntoValTyped] *)
 
 Lemma _internal_wp_alloc_untyped stk E v :
   {{{ True }}} go.ref_one (Val v) @ stk; E {{{ l, RET #l; heap_pointsto l (DfracOwn 1) v }}}.
 Proof.
-  iIntros "% _ HΦ". wp_call. wp_apply wp_alloc_untyped; first done.
+  iIntros "% _ HΦ". wp_call. wp_apply wp_alloc_untyped.
   iIntros (?) "Hl". wp_pures.
   wp_call.
   wp_apply (wp_prepare_write with "Hl"). iIntros "[Hl Hl']".
   wp_pures. wp_apply (wp_finish_store with "[$Hl $Hl']"). iIntros "Hl".
   wp_pures. rewrite !go.into_val_unfold. iApply "HΦ". iFrame.
 Qed.
-
-Lemma _internal_wp_untyped_atomic_load l dq v s E :
-  {{{ ▷ heap_pointsto l dq v }}}
-    ! #l @ s; E
-  {{{ RET v; heap_pointsto l dq v }}}.
-Proof. rewrite !go.into_val_unfold. apply lifting.wp_load. Qed.
 
 Lemma _internal_wp_untyped_start_read l dq v s E :
   {{{ ▷ heap_pointsto l dq v }}}

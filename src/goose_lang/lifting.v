@@ -857,7 +857,7 @@ Proof.
   rewrite !loc_add_0. iFrame.
 Qed.
 
-Lemma wp_load s E l q v :
+Lemma wp_untyped_atomic_load s E l q v :
   {{{ ▷ l ↦{q} v }}} Load #l @ s; E {{{ RET v; l ↦{q} v }}}.
 Proof.
   iIntros (Φ) ">Hl HΦ". iApply wp_lift_atomic_base_step_no_fork; auto.

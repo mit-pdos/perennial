@@ -12,7 +12,7 @@ Definition send elem_type : val :=
 
 Definition for_range elem_type : val :=
   λ: "c" "body",
-    (for: (λ: <>, #true)%V; (λ: <>, Skip)%V := λ: <>,
+    (for: (λ: <>, #true)%V; (λ: <>, #())%V := λ: <>,
        let: ("v", "ok") := receive elem_type "c" in
        if: "ok" then
          "body" "v"
@@ -57,7 +57,7 @@ Definition try_comm_clause (c : comm_clause) : val :=
 Definition try_select (blocking : bool) : list comm_clause → expr :=
   foldr (λ clause cases_remaining,
       let: ("v", "done") := try_comm_clause clause #blocking in
-      if: ~"done" then (λ: <>, cases_remaining)%V #()
+      if: ⟨go.bool⟩! "done" then (λ: <>, cases_remaining)%V #()
       else ("v", #true))%E
     (#(), #false)%E.
 End defns.
