@@ -24,7 +24,7 @@ Lemma w64_to_nat_id x : W64 (Z.of_nat (uint.nat x)) = x.
 Proof. word. Qed.
 
 (* Inj instance doesn't work for nested application. *)
-Lemma uint_nat_inj `(word: Interface.word width) {word_ok: word.ok word} w0 w1  :
+Lemma uint_nat_inj `{word: Interface.word width} `{!word.ok word} w0 w1  :
   Z.to_nat (@word.unsigned width _ w0) = Z.to_nat (@word.unsigned width _ w1) →
   w0 = w1.
 Proof. intros. word. Qed.
