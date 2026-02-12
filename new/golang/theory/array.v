@@ -84,7 +84,7 @@ Proof.
     { wp_pures. iFrame. iPureIntro.
       replace m with 0 by word. setoid_rewrite take_0. eexists _; split; first done.
       split; [done|len]. }
-    wp_pure. wp_pure. set (m':=m-1).
+    wp_pure. wp_pure. wp_pure. set (m':=m-1).
     replace (word.sub _ _) with (W64 m') by word.
     progress replace (Z.to_nat m) with (S (Z.to_nat m'))%nat by word.
     pose proof (list_lookup_lt vs (Z.to_nat m')) as [ve Hlookup]; first word.
@@ -133,7 +133,7 @@ Proof.
 Qed.
 
 Lemma array_split (k : w64) l dq n (a : array.t V n) :
-  0 ≤ sint.Z k ≤ sint.Z n →
+  0 ≤ sint.Z k ≤ n →
   l ↦{dq} a ⊣⊢
   l ↦{dq} (array.mk (sint.Z k) $ take (sint.nat k) $ array.arr a) ∗
   array_index_ref V (sint.Z k) l ↦{dq} (array.mk (n - sint.Z k) $ drop (sint.nat k) $ array.arr a).

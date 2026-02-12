@@ -247,13 +247,13 @@ Proof.
   f_equal; [|word ..]. f_equal. word.
 Qed.
 
-Lemma own_slice_elem_acc (i : w64) v s dq vs :
-  0 ≤ sint.Z i →
-  vs !! (sint.nat i) = Some v →
+Lemma own_slice_elem_acc (i : Z) v s dq vs :
+  0 ≤ i →
+  vs !! (Z.to_nat i) = Some v →
   s ↦*{dq} vs -∗
-  slice_index_ref V (sint.Z i) s ↦{dq} v ∗
-  (∀ v', slice_index_ref V (sint.Z i) s ↦{dq} v' -∗
-        s ↦*{dq} (<[sint.nat i := v']> vs)).
+  slice_index_ref V i s ↦{dq} v ∗
+  (∀ v', slice_index_ref V i s ↦{dq} v' -∗
+        s ↦*{dq} (<[Z.to_nat i := v']> vs)).
 Proof.
   iIntros (Hpos Hlookup) "Hsl".
   rewrite own_slice_unseal /own_slice_def.
@@ -302,7 +302,7 @@ Global Instance pure_wp_slice_for_range (sl : slice.t) (body : val) t :
   PureWp True (slice.for_range t #sl body)%E
        (let: "i" := GoAlloc go.int #(W64 0) in
         for: (λ: <>, ![go.int] "i" <⟨go.int⟩ FuncResolve go.len [go.SliceType t] (# ()) (# sl)) ;
-        (λ: <>, "i" <-[go.int] ![go.int] "i" + # (W64 1)) :=
+        (λ: <>, "i" <-[go.int] ![go.int] "i" +⟨go.int⟩ # (W64 1)) :=
           λ: <>, body ![go.int] "i" (![t] (IndexRef (go.SliceType t) (# sl, ![go.int] "i"))))%E.
 Proof.
   iIntros (?????) "HΦ".
@@ -336,18 +336,14 @@ Proof.
   iApply "HΦ".
   rewrite own_slice_unseal/ own_slice_def /=.
 
-  iDestruct (array_split (sint.Z len) with "p") as "[Hsl Hcap]"; first word.
+  iDestruct (array_split len with "p") as "[Hsl Hcap]"; first word.
   simpl. rewrite take_replicate.
   iSplitL "Hsl".
   { iSplitL; last word.
     replace (_ `min` _)%nat with (sint.nat len) by word.
-    iExactEq "Hsl".
-    replace (word.signed (W64 _)) with (sint.Z len) by word.
-    done. }
+    iFrame. }
   rewrite own_slice_cap_unseal /own_slice_cap_def /=.
   iSplitL; last done. iSplitR; first word.
-  iExists _. rewrite /slice_index_ref.
-  replace (sint.Z (sint.Z len)) with (sint.Z len) by word.
   iFrame.
 Qed.
 
@@ -613,8 +609,6 @@ Proof.
   iDestruct (own_slice_len with "Hs") as %Hlen.
   pose proof (lookup_lt_Some _ _ _ Hlookup) as Hineq.
   iDestruct (own_slice_elem_acc i with "Hs") as "[Hv Hs]"; [ word | eauto | ].
-  { replace (sint.Z i) with i by word. done. }
-  replace (sint.Z i) with i by word.
   wp_apply (wp_load with "Hv"). iIntros "Hv".
   iApply "HΦ".
   iDestruct ("Hs" with "Hv") as "Hs".
@@ -631,8 +625,6 @@ Proof.
   iDestruct (own_slice_len with "Hs") as %Hlen.
   list_elem vs i as v.
   iDestruct (own_slice_elem_acc i with "Hs") as "[Hv Hs]"; [ word | eauto | ].
-  { replace (sint.Z i) with i by word. done. }
-  replace (sint.Z i) with i by word.
   wp_apply (wp_store with "Hv"). iIntros "Hv".
   iApply "HΦ".
   iDestruct ("Hs" with "Hv") as "Hs".

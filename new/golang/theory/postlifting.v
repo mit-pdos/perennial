@@ -34,7 +34,7 @@ End underlying_instances.
 #[global] Hint Extern 0 (go.NotInterface _) => (constructor; refine I) : typeclass_instances.
 
 Section into_val_defs.
-Context `{sem: ffi_semantics} `{!ffi_interp ffi} {go_gctx : GoGlobalContext} `{!heapGS Σ}.
+Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
 
 Class TypedPointsto (V : Type) :=
 {
@@ -148,9 +148,9 @@ Qed.
 
 End into_val_defs.
 
-Global Arguments wp_alloc {_ _ _ _ _ _ _} [_ _ _ _ _ _ _ _ _] (Φ).
-Global Arguments wp_load {_ _ _ _ _ _ _} [_ _ _ _ _ _ _ _] (l dq v Φ).
-Global Arguments wp_store {_ _ _ _ _ _ _} [_ _ _ _ _ _ _ _] (l v w Φ).
+Global Arguments wp_alloc {_ _ _ _ _ _} [_ _ _ _ _ _ _ _ _] (Φ).
+Global Arguments wp_load {_ _ _ _ _ _} [_ _ _ _ _ _ _ _] (l dq v Φ).
+Global Arguments wp_store {_ _ _ _ _ _} [_ _ _ _ _ _ _ _] (l v w Φ).
 
 Global Hint Mode TypedPointsto - ! : typeclass_instances.
 
@@ -160,7 +160,7 @@ Global Notation "l ↦ dq v" := (typed_pointsto l v%V dq)
 
 Section go_wps.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
-  {go_gctx : GoGlobalContext} {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
+  {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
 
 Global Instance pure_wp_go_step_det i v e :
   ⟦i, v⟧ ⤳ e →
@@ -256,7 +256,7 @@ End go_wps.
 
 Section mem_lemmas.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
-  {go_gctx : GoGlobalContext} {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
+  {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
 (* Helper lemmas for establishing [IntoValTyped] *)
 
 Lemma _internal_wp_alloc_untyped stk E v :
@@ -277,7 +277,6 @@ Lemma _internal_wp_untyped_start_read l dq v s E :
       (∀ Ψ, (heap_pointsto l dq v -∗ Ψ #()) -∗ WP FinishRead #l @ s ; E {{ Ψ }})
     }}}.
 Proof.
-  rewrite !go.into_val_unfold.
   iIntros "% Hl HΦ".
   wp_apply (wp_start_read with "Hl"). iIntros "[? ?]".
   iApply "HΦ".
@@ -291,7 +290,6 @@ Lemma _internal_wp_untyped_read l dq v s E :
     Read #l @ s; E
   {{{ RET v; heap_pointsto l dq v }}}.
 Proof.
-  rewrite !go.into_val_unfold.
   iIntros "% Hl HΦ".
   wp_call.
   wp_apply (wp_start_read with "Hl"). iIntros "[? ?]".
@@ -305,7 +303,7 @@ Lemma _internal_wp_untyped_store l v v' s E :
     #l <- v' @ s; E
   {{{ RET #(); heap_pointsto l (DfracOwn 1) v' }}}.
 Proof.
-  rewrite !go.into_val_unfold. iIntros "% Hl HΦ". wp_call.
+  iIntros "% Hl HΦ". wp_call.
   wp_apply (wp_prepare_write with "Hl"). iIntros "[Hl Hl']".
   wp_pures. by iApply (wp_finish_store with "[$Hl $Hl']").
 Qed.

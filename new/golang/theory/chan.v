@@ -25,7 +25,7 @@ Collection W := sem_fn + pre_sem + sem.
 
 Global Instance pure_wp_chan_for_range (c : chan.t) elem_type (body : val) :
   PureWp True (chan.for_range elem_type #c body)%E
-    ((for: (λ: <>, #true)%V; (λ: <>, Skip)%V :=
+    ((for: (λ: <>, #true)%V; (λ: <>, #())%V :=
         λ: <>,
           let: ("v", "ok") := chan.receive elem_type #c in
           if: "ok" then
@@ -53,8 +53,8 @@ Lemma wp_make2 (cap : w64) :
     #(functions go.make2 [ct]) #cap
   {{{ ch γ, RET #ch;
       is_chan ch γ V ∗
-      ⌜ chan_cap γ = sint.Z cap ⌝ ∗
-      own_chan γ V (if decide (cap = 0) then chanstate.Idle else chanstate.Buffered (@nil V))
+      ⌜ chan_cap γ = cap ⌝ ∗
+      own_chan γ V (if decide (cap = W64 0) then chanstate.Idle else chanstate.Buffered (@nil V))
   }}}.
 Proof using W Hunder IntoValTyped0.
   wp_start as "%Hle".
@@ -67,7 +67,7 @@ Lemma wp_make1 :
     #(functions go.make1 [ct]) #()
   {{{ ch γ, RET #ch;
       is_chan ch γ V ∗
-      ⌜ chan_cap γ = 0 ⌝ ∗
+      ⌜ chan_cap γ = W64 0 ⌝ ∗
       own_chan γ V chanstate.Idle
   }}}.
 Proof using W Hunder IntoValTyped0.

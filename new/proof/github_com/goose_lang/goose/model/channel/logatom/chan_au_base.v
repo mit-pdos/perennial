@@ -441,7 +441,7 @@ Definition chan_logical (s : chan_phys_state V): iProp Σ :=
 
   | Closed [] =>
           own_chan γ V (chanstate.Closed []) ∗
-           "Hoffer" ∷ (⌜chan_cap γ = 0⌝ -∗ saved_offer 1 None True True)
+           "Hoffer" ∷ (⌜ chan_cap γ = W64 0 ⌝ -∗ saved_offer 1 None True True)
 
   | Closed drain =>
           own_chan γ V (chanstate.Closed drain)

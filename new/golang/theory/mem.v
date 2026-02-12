@@ -29,23 +29,23 @@ Section goose_lang.
   Global Hint Mode AtomicWps + - - : typeclass_instances.
 
   Ltac solve_cmpxchg_fail :=
-    iIntros "* %Hne % Hl HΦ"; rewrite typed_pointsto_unseal /= !go.into_val_unfold;
-      iApply (lifting.wp_cmpxchg_fail with "[$]"); [naive_solver|done|done].
+    iIntros "* %Hne % Hl HΦ"; rewrite typed_pointsto_unseal /=;
+      iApply (lifting.wp_cmpxchg_fail with "[$]"); [naive_solver|done].
 
   Ltac solve_cmpxchg_suc :=
-    iIntros "* %Heq % Hl HΦ"; subst; rewrite typed_pointsto_unseal /= !go.into_val_unfold;
+    iIntros "* %Heq % Hl HΦ"; subst; rewrite typed_pointsto_unseal /=;
       iApply (lifting.wp_cmpxchg_suc with "[$]"); done.
 
   Ltac solve_wp_atomic_load :=
-    iIntros "* Hl HΦ"; rewrite typed_pointsto_unseal /= !go.into_val_unfold;
+    iIntros "* Hl HΦ"; rewrite typed_pointsto_unseal /=;
     iApply (lifting.wp_load with "[$]"); done.
 
   Ltac solve_wp_atomic_swap :=
-    iIntros "* Hl HΦ"; rewrite typed_pointsto_unseal /= !go.into_val_unfold;
+    iIntros "* Hl HΦ"; rewrite typed_pointsto_unseal /=;
     iApply (lifting.wp_atomic_swap with "[$]"); done.
 
   Ltac solve_atomic_wps :=
-    split; rewrite !go.into_val_unfold;
+    split;
     [solve_cmpxchg_fail | solve_cmpxchg_suc | solve_wp_atomic_load | solve_wp_atomic_swap ].
 
   #[global] Instance atomic_wps_uint64 : AtomicWps w64.

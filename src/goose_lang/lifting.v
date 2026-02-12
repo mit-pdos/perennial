@@ -413,6 +413,7 @@ Local Set Primitive Projections.
 Class heapGS Σ := HeapGS {
   goose_globalGS : gooseGlobalGS Σ;
   goose_localGS : gooseLocalGS Σ;
+  #[global] goose_gctx :: GoGlobalContext;
 }.
 Local Unset Primitive Projections.
 (* Hints are set up at the bottom of the file, outside the section. *)
@@ -857,7 +858,7 @@ Proof.
   rewrite !loc_add_0. iFrame.
 Qed.
 
-Lemma wp_untyped_atomic_load s E l q v :
+Lemma wp_load s E l q v :
   {{{ ▷ l ↦{q} v }}} Load #l @ s; E {{{ RET v; l ↦{q} v }}}.
 Proof.
   iIntros (Φ) ">Hl HΦ". iApply wp_lift_atomic_base_step_no_fork; auto.

@@ -25,7 +25,7 @@ Lemma wp_NewChannel (cap : w64) :
     #(functions channel.NewChannel [t]) #cap
   {{{ (ch: loc) (γ: chan_names), RET #ch;
       is_chan ch γ V ∗
-      ⌜chan_cap γ = sint.Z cap⌝ ∗
+      ⌜chan_cap γ = cap⌝ ∗
       own_chan γ V (if decide (cap = W64 0) then chanstate.Idle else chanstate.Buffered (@nil V))
   }}}.
 Proof using W.
@@ -83,7 +83,7 @@ Proof using W.
     split; first done. unfold chan_cap_valid. simpl; word.
   }
   {
-    assert (cap = 0) by word; subst.
+    assert (cap = W64 0) by word; subst.
 
     rewrite -wp_fupd.
     wp_alloc mu as "mu".
@@ -110,7 +110,7 @@ Proof using W.
                offer_parked_prop_name := offer_parked_prop_gname;
                offer_parked_pred_name := offer_parked_pred_gname;
                offer_continuation_name := offer_continuation_gname;
-               chan_cap := 0;
+               chan_cap := W64 0;
              |}).
     iPersist "Hmu Hcap".
     iMod ((init_lock (chan_inv_inner ch γ V)) with "[$mu] [-HΦ Hstate_frag]") as "H".
