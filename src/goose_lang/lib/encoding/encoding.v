@@ -530,6 +530,7 @@ Proof.
   apply word.unsigned_inj.
   pose proof (u32_le_to_word x).
   rewrite u32_le_unseal /u32_le_def in H.
+  rewrite le_to_u32_unseal /le_to_u32_def in H.
   cbv [le_to_u32 u32_le map LittleEndian.combine LittleEndian.split length Datatypes.HList.tuple.to_list Datatypes.HList.tuple.of_list PrimitivePair.pair._1 PrimitivePair.pair._2] in H.
   rewrite Z.shiftl_0_l in H.
   rewrite Z.lor_0_r in H.
@@ -574,6 +575,7 @@ Proof.
   apply word.unsigned_inj.
   pose proof (u64_le_to_word x).
   rewrite u64_le_unseal /u64_le_def in H.
+  rewrite le_to_u64_unseal /le_to_u64_def in H.
   cbv [le_to_u64 u64_le map LittleEndian.combine LittleEndian.split length Datatypes.HList.tuple.to_list Datatypes.HList.tuple.of_list PrimitivePair.pair._1 PrimitivePair.pair._2] in H.
   rewrite Z.shiftl_0_l in H.
   rewrite Z.lor_0_r in H.
