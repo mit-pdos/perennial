@@ -1,1 +1,13 @@
-translate = ["Reader", "Writer"]
+translate = [
+  "Reader", "Writer",
+  "ReaderFrom", "WriterTo",
+  "StringWriter",
+  "Err*",
+  "err*",
+  "EOF",
+  "Discard",
+  "discard",
+  "multiReader",
+  "multiWriter",
+  "_",
+]

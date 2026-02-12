@@ -1,5 +1,6 @@
 translate = ["!*",
   "LittleEndian",
   "littleEndian*",
+  "err*",
 ]
 imports = ["*", "!reflect"]

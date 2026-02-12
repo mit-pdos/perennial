@@ -15,7 +15,7 @@ Collection W := sem + package_sem.
 
 #[global] Instance : IsPkgInit (iProp Σ) slices := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf (iProp Σ) slices := build_get_is_pkg_init_wf.
-Context `{!IntoVal E} `{!IntoValTyped E Et} `{!BoundedTypeSize Et}.
+Context `{!ZeroVal E} `{!TypedPointsto E} `{!IntoValTyped E Et}.
 Context (R: E → E → Prop) `{!WeakOrder R} `{!RelDecision R}.
 
 #[local] Infix "≺" := R (at level 70).
@@ -55,24 +55,24 @@ Lemma wp_order2CmpFunc (data: slice.t) (a b: w64) (swaps_l: loc) (cmp_code: func
       "Hswaps" ∷ swaps_l ↦ swaps ∗
       "#Hcmp" ∷ cmp_implements cmp_code
   }}}
-    @! slices.order2CmpFunc #Et #data #a #b #swaps_l #cmp_code
+    #(functions slices.order2CmpFunc [Et]) #data #a #b #swaps_l #cmp_code
   {{{ (a' b': w64) (swaps': w64), RET (#a', #b');
       data ↦*{dq} xs ∗
       ⌜(a' = a ∧ b' = b ∧ xa ≺ xb) ∨
        (a' = b ∧ b' = a ∧ xa ⪰ xb)⌝ ∗
       swaps_l ↦ swaps'
   }}}.
-Proof using WeakOrder0.
+Proof using WeakOrder0 + W + IntoValTyped0.
   intros Ha_bound Hb_bound.
   wp_start as "H". iNamed "H".
   wp_auto.
   pose proof (lookup_lt_Some _ _ _ Hxa).
   pose proof (lookup_lt_Some _ _ _ Hxb).
   iDestruct (own_slice_len with "Hxs") as %Hlen.
-  wp_pure; first word.
-  wp_apply (wp_load_slice_elem with "[$Hxs]") as "Hxs"; eauto.
-  wp_pure; first word.
-  wp_apply (wp_load_slice_elem with "[$Hxs]") as "Hxs"; eauto.
+  rewrite -> decide_True; last word.
+  wp_apply (wp_load_slice_index with "[$Hxs]") as "Hxs"; eauto.
+  rewrite -> decide_True; last word.
+  wp_apply (wp_load_slice_index with "[$Hxs]") as "Hxs"; eauto.
   wp_apply "Hcmp".
   iIntros (ba_r) "%Hba_r".
   wp_auto.

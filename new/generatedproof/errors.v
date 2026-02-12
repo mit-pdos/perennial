@@ -15,13 +15,34 @@ Context {package_sem' : errors.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Instance errorString_typed_pointsto  :
-  TypedPointsto (Σ:=Σ) (errors.errorString.t). Admitted.
+#[global]Program Instance errorString_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (errors.errorString.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "s" ∷ l.[(errors.errorString.t), "s"] ↦{dq} v.(errors.errorString.s') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance errorString_into_val_typed
    :
   IntoValTypedUnderlying (errors.errorString.t) (errors.errorStringⁱᵐᵖˡ).
-Proof. Admitted.
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance errorString_access_load_s l (v : (errors.errorString.t)) dq :
+  AccessStrict
+    (l.[(errors.errorString.t), "s"] ↦{dq} (v.(errors.errorString.s')))
+    (l.[(errors.errorString.t), "s"] ↦{dq} (v.(errors.errorString.s')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance errorString_access_store_s l (v : (errors.errorString.t)) s' :
+  AccessStrict
+    (l.[(errors.errorString.t), "s"] ↦ (v.(errors.errorString.s')))
+    (l.[(errors.errorString.t), "s"] ↦ s')
+    (l ↦ v) (l ↦ (v <|(errors.errorString.s') := s'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
 
 End def.
 End errorString.

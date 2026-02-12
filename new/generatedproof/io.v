@@ -208,46 +208,6 @@ Proof. Admitted.
 End def.
 End ReadWriteSeeker.
 
-Module ReaderFrom.
-Section def.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context {sem : go.Semantics}.
-Context {package_sem' : io.Assumptions}.
-
-Local Set Default Proof Using "All".
-
-#[global] Instance ReaderFrom_typed_pointsto  :
-  TypedPointsto (Σ:=Σ) (io.ReaderFrom.t). Admitted.
-
-#[global] Instance ReaderFrom_into_val_typed
-   :
-  IntoValTypedUnderlying (io.ReaderFrom.t) (io.ReaderFromⁱᵐᵖˡ).
-Proof. Admitted.
-
-End def.
-End ReaderFrom.
-
-Module WriterTo.
-Section def.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context {sem : go.Semantics}.
-Context {package_sem' : io.Assumptions}.
-
-Local Set Default Proof Using "All".
-
-#[global] Instance WriterTo_typed_pointsto  :
-  TypedPointsto (Σ:=Σ) (io.WriterTo.t). Admitted.
-
-#[global] Instance WriterTo_into_val_typed
-   :
-  IntoValTypedUnderlying (io.WriterTo.t) (io.WriterToⁱᵐᵖˡ).
-Proof. Admitted.
-
-End def.
-End WriterTo.
-
 Module ReaderAt.
 Section def.
 
@@ -388,26 +348,6 @@ Proof. Admitted.
 End def.
 End RuneScanner.
 
-Module StringWriter.
-Section def.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context {sem : go.Semantics}.
-Context {package_sem' : io.Assumptions}.
-
-Local Set Default Proof Using "All".
-
-#[global] Instance StringWriter_typed_pointsto  :
-  TypedPointsto (Σ:=Σ) (io.StringWriter.t). Admitted.
-
-#[global] Instance StringWriter_into_val_typed
-   :
-  IntoValTypedUnderlying (io.StringWriter.t) (io.StringWriterⁱᵐᵖˡ).
-Proof. Admitted.
-
-End def.
-End StringWriter.
-
 Module LimitedReader.
 Section def.
 
@@ -497,13 +437,20 @@ Context {package_sem' : io.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Instance discard_typed_pointsto  :
-  TypedPointsto (Σ:=Σ) (io.discard.t). Admitted.
+#[global]Program Instance discard_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.discard.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance discard_into_val_typed
    :
   IntoValTypedUnderlying (io.discard.t) (io.discardⁱᵐᵖˡ).
-Proof. Admitted.
+Proof. solve_into_val_typed_struct. Qed.
 
 End def.
 End discard.
@@ -577,13 +524,34 @@ Context {package_sem' : io.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Instance multiReader_typed_pointsto  :
-  TypedPointsto (Σ:=Σ) (io.multiReader.t). Admitted.
+#[global]Program Instance multiReader_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.multiReader.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "readers" ∷ l.[(io.multiReader.t), "readers"] ↦{dq} v.(io.multiReader.readers') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance multiReader_into_val_typed
    :
   IntoValTypedUnderlying (io.multiReader.t) (io.multiReaderⁱᵐᵖˡ).
-Proof. Admitted.
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance multiReader_access_load_readers l (v : (io.multiReader.t)) dq :
+  AccessStrict
+    (l.[(io.multiReader.t), "readers"] ↦{dq} (v.(io.multiReader.readers')))
+    (l.[(io.multiReader.t), "readers"] ↦{dq} (v.(io.multiReader.readers')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance multiReader_access_store_readers l (v : (io.multiReader.t)) readers' :
+  AccessStrict
+    (l.[(io.multiReader.t), "readers"] ↦ (v.(io.multiReader.readers')))
+    (l.[(io.multiReader.t), "readers"] ↦ readers')
+    (l ↦ v) (l ↦ (v <|(io.multiReader.readers') := readers'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
 
 End def.
 End multiReader.
@@ -597,13 +565,34 @@ Context {package_sem' : io.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Instance multiWriter_typed_pointsto  :
-  TypedPointsto (Σ:=Σ) (io.multiWriter.t). Admitted.
+#[global]Program Instance multiWriter_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.multiWriter.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "writers" ∷ l.[(io.multiWriter.t), "writers"] ↦{dq} v.(io.multiWriter.writers') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
 
 #[global] Instance multiWriter_into_val_typed
    :
   IntoValTypedUnderlying (io.multiWriter.t) (io.multiWriterⁱᵐᵖˡ).
-Proof. Admitted.
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance multiWriter_access_load_writers l (v : (io.multiWriter.t)) dq :
+  AccessStrict
+    (l.[(io.multiWriter.t), "writers"] ↦{dq} (v.(io.multiWriter.writers')))
+    (l.[(io.multiWriter.t), "writers"] ↦{dq} (v.(io.multiWriter.writers')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance multiWriter_access_store_writers l (v : (io.multiWriter.t)) writers' :
+  AccessStrict
+    (l.[(io.multiWriter.t), "writers"] ↦ (v.(io.multiWriter.writers')))
+    (l.[(io.multiWriter.t), "writers"] ↦ writers')
+    (l ↦ v) (l ↦ (v <|(io.multiWriter.writers') := writers'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
 
 End def.
 End multiWriter.

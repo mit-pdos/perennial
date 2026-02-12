@@ -1,2 +1,2 @@
-translate = ["!*", "Unwrap"]
+translate = ["!*", "Unwrap", "New", "errorString*"]
 imports = ["!*"]

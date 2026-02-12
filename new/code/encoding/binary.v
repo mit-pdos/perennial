@@ -50,8 +50,6 @@ Axiom MaxVarintLen64 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition errBufferTooSmall {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "encoding/binary.errBufferTooSmall"%go.
 
-Axiom errBufferTooSmall'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
 Definition LittleEndian {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "encoding/binary.LittleEndian"%go.
 
 Definition BigEndian {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "encoding/binary.BigEndian"%go.
@@ -61,8 +59,6 @@ Definition structSize {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string
 Definition NativeEndian {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "encoding/binary.NativeEndian"%go.
 
 Definition errOverflow {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "encoding/binary.errOverflow"%go.
-
-Axiom errOverflow'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition Read {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "encoding/binary.Read"%go.
 
@@ -262,14 +258,20 @@ Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init pkg_id.binary (λ: <>,
-      exception_do (do:  (go.GlobalAlloc LittleEndian littleEndian #());;;
+      exception_do (do:  (go.GlobalAlloc errOverflow go.error #());;;
+      do:  (go.GlobalAlloc LittleEndian littleEndian #());;;
+      do:  (go.GlobalAlloc errBufferTooSmall go.error #());;;
       do:  (sync.initialize' #());;;
       do:  (slices.initialize' #());;;
       do:  (math.initialize' #());;;
       do:  (io.initialize' #());;;
       do:  (errors.initialize' #());;;
-      do:  (errBufferTooSmall'init #());;;
-      do:  (errOverflow'init #()))
+      let: "$r0" := (let: "$a0" := #"buffer too small"%go in
+      (FuncResolve errors.New [] #()) "$a0") in
+      do:  ((GlobalVarAddr errBufferTooSmall #()) <-[go.error] "$r0");;;
+      let: "$r0" := (let: "$a0" := #"binary: varint overflows a 64-bit integer"%go in
+      (FuncResolve errors.New [] #()) "$a0") in
+      do:  ((GlobalVarAddr errOverflow #()) <-[go.error] "$r0"))
       ).
 
 Module ByteOrder.

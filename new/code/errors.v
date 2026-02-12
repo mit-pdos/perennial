@@ -11,8 +11,6 @@ Definition errorString {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type 
 
 Definition joinError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "errors.joinError"%go [].
 
-Axiom errorStringⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
 Axiom joinErrorⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
 Definition ErrUnsupported {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "errors.ErrUnsupported"%go.
@@ -36,6 +34,21 @@ Definition is' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "er
 Definition As {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "errors.As"%go.
 
 Definition as' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "errors.as"%go.
+
+(* New returns an error that formats as the given text.
+   Each call to New returns a distinct error value even if the text is identical.
+
+   go: errors.go:64:6 *)
+Definition Newⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "text",
+    exception_do (let: "text" := (GoAlloc go.string "text") in
+    return: (Convert (go.PointerType errorString) go.error (GoAlloc errorString (CompositeLiteral errorString (LiteralValue [KeyedElement None (ElementExpression go.string (![go.string] "text"))]))))).
+
+(* go: errors.go:73:23 *)
+Definition errorString__Errorⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "e" <>,
+    exception_do (let: "e" := (GoAlloc (go.PointerType errorString) "e") in
+    return: (![go.string] (StructFieldRef errorString "s"%go (![go.PointerType errorString] "e")))).
 
 (* Unwrap returns the result of calling the Unwrap method on err, if err's
    type contains an Unwrap method returning error.
@@ -77,17 +90,34 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
 Module errorString.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Axiom t : Type.
-Axiom zero_val : ZeroVal t.
-#[global] Existing Instance zero_val.
+Record t :=
+mk {
+  s' : go_string;
+}.
+
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
 End def.
+
 End errorString.
+
+Definition errorString'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
+  (go.FieldDecl "s"%go go.string)
+].
+Program Definition errorString'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (errorString'fds_unsealed).
+Global Instance equals_unfold_errorString {ext : ffi_syntax} {go_gctx : GoGlobalContext} : errorString'fds =→ errorString'fds_unsealed.
+Proof. rewrite /errorString'fds seal_eq //. Qed.
+
+Definition errorStringⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (errorString'fds).
 
 Class errorString_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] errorString_type_repr  :: go.TypeReprUnderlying errorStringⁱᵐᵖˡ errorString.t;
   #[global] errorString_underlying :: (errorString) <u (errorStringⁱᵐᵖˡ);
-  #[global] errorStringⁱᵐᵖˡ_underlying :: (errorStringⁱᵐᵖˡ) ↓u (errorStringⁱᵐᵖˡ);
+  #[global] errorString_get_s (x : errorString.t) :: ⟦StructFieldGet (errorStringⁱᵐᵖˡ) "s", #x⟧ ⤳[under] #x.(errorString.s');
+  #[global] errorString_set_s (x : errorString.t) y :: ⟦StructFieldSet (errorStringⁱᵐᵖˡ) "s", (#x, #y)⟧ ⤳[under] #(x <|errorString.s' := y|>);
+  #[global] errorString'ptr_Error_unfold :: MethodUnfold (go.PointerType (errorString)) "Error" (errorString__Errorⁱᵐᵖˡ);
 }.
 
 Module joinError.
@@ -110,6 +140,7 @@ Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!G
 {
   #[global] errorString_instance :: errorString_Assumptions;
   #[global] joinError_instance :: joinError_Assumptions;
+  #[global] New_unfold :: FuncUnfold New [] (Newⁱᵐᵖˡ);
   #[global] Unwrap_unfold :: FuncUnfold Unwrap [] (Unwrapⁱᵐᵖˡ);
 }.
 End errors.

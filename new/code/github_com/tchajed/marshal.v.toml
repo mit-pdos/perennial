@@ -19,4 +19,4 @@ translate = [
   "Dec",
   "Enc",
 ]
-imports = ["github.com/goose-lang/primitive", "github.com/goose-lang/std"]
+imports = ["github.com/goose-lang/primitive", "github.com/goose-lang/std", "encoding/binary"]

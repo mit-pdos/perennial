@@ -101,10 +101,6 @@ Axiom WriteSeekerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext
 
 Axiom ReadWriteSeekerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom ReaderFromⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom WriterToⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
 Axiom ReaderAtⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
 Axiom WriterAtⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
@@ -119,8 +115,6 @@ Axiom RuneReaderⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
 
 Axiom RuneScannerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom StringWriterⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
 Axiom LimitedReaderⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
 Axiom SectionReaderⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
@@ -129,17 +123,11 @@ Axiom OffsetWriterⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContex
 
 Axiom teeReaderⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom discardⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
 Axiom nopCloserⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
 Axiom nopCloserWriterToⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
 Axiom eofReaderⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom multiReaderⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom multiWriterⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
 Axiom onceErrorⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
@@ -157,47 +145,27 @@ Axiom SeekEnd : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition ErrShortWrite {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "io.ErrShortWrite"%go.
 
-Axiom ErrShortWrite'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
 Definition errInvalidWrite {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "io.errInvalidWrite"%go.
-
-Axiom errInvalidWrite'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition ErrShortBuffer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "io.ErrShortBuffer"%go.
 
-Axiom ErrShortBuffer'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
 Definition EOF {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "io.EOF"%go.
-
-Axiom EOF'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition ErrUnexpectedEOF {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "io.ErrUnexpectedEOF"%go.
 
-Axiom ErrUnexpectedEOF'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
 Definition ErrNoProgress {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "io.ErrNoProgress"%go.
-
-Axiom ErrNoProgress'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition errWhence {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "io.errWhence"%go.
 
-Axiom errWhence'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
 Definition errOffset {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "io.errOffset"%go.
 
-Axiom errOffset'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
 Definition Discard {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "io.Discard"%go.
-
-Axiom Discard'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition blackHolePool {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "io.blackHolePool"%go.
 
 Axiom blackHolePool'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition ErrClosedPipe {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "io.ErrClosedPipe"%go.
-
-Axiom ErrClosedPipe'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition WriteString {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "io.WriteString"%go.
 
@@ -236,27 +204,54 @@ Definition Pipe {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "i
   pkg_imported_pkgs := [code.errors.pkg_id.errors; code.sync.pkg_id.sync]
 |}.
 
-Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init pkg_id.io (λ: <>,
-      exception_do (do:  (sync.initialize' #());;;
+      exception_do (do:  (go.GlobalAlloc ErrClosedPipe go.error #());;;
+      do:  (go.GlobalAlloc Discard Writer #());;;
+      do:  (go.GlobalAlloc errOffset go.error #());;;
+      do:  (go.GlobalAlloc errWhence go.error #());;;
+      do:  (go.GlobalAlloc ErrNoProgress go.error #());;;
+      do:  (go.GlobalAlloc ErrUnexpectedEOF go.error #());;;
+      do:  (go.GlobalAlloc EOF go.error #());;;
+      do:  (go.GlobalAlloc ErrShortBuffer go.error #());;;
+      do:  (go.GlobalAlloc errInvalidWrite go.error #());;;
+      do:  (go.GlobalAlloc ErrShortWrite go.error #());;;
+      do:  (sync.initialize' #());;;
       do:  (errors.initialize' #());;;
-      do:  (ErrShortWrite'init #());;;
-      do:  (errInvalidWrite'init #());;;
-      do:  (ErrShortBuffer'init #());;;
-      do:  (EOF'init #());;;
-      do:  (ErrUnexpectedEOF'init #());;;
-      do:  (ErrNoProgress'init #());;;
-      do:  (errWhence'init #());;;
-      do:  (errOffset'init #());;;
-      do:  (Discard'init #());;;
-      do:  (_'init #());;;
+      let: "$r0" := (let: "$a0" := #"short write"%go in
+      (FuncResolve errors.New [] #()) "$a0") in
+      do:  ((GlobalVarAddr ErrShortWrite #()) <-[go.error] "$r0");;;
+      let: "$r0" := (let: "$a0" := #"invalid write result"%go in
+      (FuncResolve errors.New [] #()) "$a0") in
+      do:  ((GlobalVarAddr errInvalidWrite #()) <-[go.error] "$r0");;;
+      let: "$r0" := (let: "$a0" := #"short buffer"%go in
+      (FuncResolve errors.New [] #()) "$a0") in
+      do:  ((GlobalVarAddr ErrShortBuffer #()) <-[go.error] "$r0");;;
+      let: "$r0" := (let: "$a0" := #"EOF"%go in
+      (FuncResolve errors.New [] #()) "$a0") in
+      do:  ((GlobalVarAddr EOF #()) <-[go.error] "$r0");;;
+      let: "$r0" := (let: "$a0" := #"unexpected EOF"%go in
+      (FuncResolve errors.New [] #()) "$a0") in
+      do:  ((GlobalVarAddr ErrUnexpectedEOF #()) <-[go.error] "$r0");;;
+      let: "$r0" := (let: "$a0" := #"multiple Read calls return no data or error"%go in
+      (FuncResolve errors.New [] #()) "$a0") in
+      do:  ((GlobalVarAddr ErrNoProgress #()) <-[go.error] "$r0");;;
+      let: "$r0" := (let: "$a0" := #"Seek: invalid whence"%go in
+      (FuncResolve errors.New [] #()) "$a0") in
+      do:  ((GlobalVarAddr errWhence #()) <-[go.error] "$r0");;;
+      let: "$r0" := (let: "$a0" := #"Seek: invalid offset"%go in
+      (FuncResolve errors.New [] #()) "$a0") in
+      do:  ((GlobalVarAddr errOffset #()) <-[go.error] "$r0");;;
+      let: "$r0" := (Convert discard Writer (CompositeLiteral discard (LiteralValue []))) in
+      do:  ((GlobalVarAddr Discard #()) <-[Writer] "$r0");;;
+      let: "$r0" := (Convert discard ReaderFrom (CompositeLiteral discard (LiteralValue []))) in
       do:  (blackHolePool'init #());;;
-      do:  (_'init #());;;
-      do:  (_'init #());;;
-      do:  (ErrClosedPipe'init #()))
+      let: "$r0" := (Convert (go.PointerType multiReader) WriterTo (Convert go.untyped_nil (go.PointerType multiReader) UntypedNil)) in
+      let: "$r0" := (Convert (go.PointerType multiWriter) StringWriter (Convert go.untyped_nil (go.PointerType multiWriter) UntypedNil)) in
+      let: "$r0" := (let: "$a0" := #"io: read/write on closed pipe"%go in
+      (FuncResolve errors.New [] #()) "$a0") in
+      do:  ((GlobalVarAddr ErrClosedPipe #()) <-[go.error] "$r0"))
       ).
 
 Module Reader.
@@ -450,33 +445,29 @@ Class ReadWriteSeeker_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLo
 Module ReaderFrom.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Axiom t : Type.
-Axiom zero_val : ZeroVal t.
-#[global] Existing Instance zero_val.
+Definition t : Type := interface.t.
 End def.
 End ReaderFrom.
 
+Definition ReaderFromⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.InterfaceType [go.MethodElem "ReadFrom"%go (go.Signature [Reader] false [go.int64; go.error])].
+
 Class ReaderFrom_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] ReaderFrom_type_repr  :: go.TypeReprUnderlying ReaderFromⁱᵐᵖˡ ReaderFrom.t;
   #[global] ReaderFrom_underlying :: (ReaderFrom) <u (ReaderFromⁱᵐᵖˡ);
-  #[global] ReaderFromⁱᵐᵖˡ_underlying :: (ReaderFromⁱᵐᵖˡ) ↓u (ReaderFromⁱᵐᵖˡ);
 }.
 
 Module WriterTo.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Axiom t : Type.
-Axiom zero_val : ZeroVal t.
-#[global] Existing Instance zero_val.
+Definition t : Type := interface.t.
 End def.
 End WriterTo.
 
+Definition WriterToⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.InterfaceType [go.MethodElem "WriteTo"%go (go.Signature [Writer] false [go.int64; go.error])].
+
 Class WriterTo_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] WriterTo_type_repr  :: go.TypeReprUnderlying WriterToⁱᵐᵖˡ WriterTo.t;
   #[global] WriterTo_underlying :: (WriterTo) <u (WriterToⁱᵐᵖˡ);
-  #[global] WriterToⁱᵐᵖˡ_underlying :: (WriterToⁱᵐᵖˡ) ↓u (WriterToⁱᵐᵖˡ);
 }.
 
 Module ReaderAt.
@@ -594,17 +585,15 @@ Class RuneScanner_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalC
 Module StringWriter.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Axiom t : Type.
-Axiom zero_val : ZeroVal t.
-#[global] Existing Instance zero_val.
+Definition t : Type := interface.t.
 End def.
 End StringWriter.
 
+Definition StringWriterⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.InterfaceType [go.MethodElem "WriteString"%go (go.Signature [go.string] false [go.int; go.error])].
+
 Class StringWriter_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] StringWriter_type_repr  :: go.TypeReprUnderlying StringWriterⁱᵐᵖˡ StringWriter.t;
   #[global] StringWriter_underlying :: (StringWriter) <u (StringWriterⁱᵐᵖˡ);
-  #[global] StringWriterⁱᵐᵖˡ_underlying :: (StringWriterⁱᵐᵖˡ) ↓u (StringWriterⁱᵐᵖˡ);
 }.
 
 Module LimitedReader.
@@ -674,17 +663,30 @@ Class teeReader_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalCon
 Module discard.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Axiom t : Type.
-Axiom zero_val : ZeroVal t.
-#[global] Existing Instance zero_val.
+Record t :=
+mk {
+}.
+
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk|}.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
 End def.
+
 End discard.
+
+Definition discard'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
+
+].
+Program Definition discard'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (discard'fds_unsealed).
+Global Instance equals_unfold_discard {ext : ffi_syntax} {go_gctx : GoGlobalContext} : discard'fds =→ discard'fds_unsealed.
+Proof. rewrite /discard'fds seal_eq //. Qed.
+
+Definition discardⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (discard'fds).
 
 Class discard_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] discard_type_repr  :: go.TypeReprUnderlying discardⁱᵐᵖˡ discard.t;
   #[global] discard_underlying :: (discard) <u (discardⁱᵐᵖˡ);
-  #[global] discardⁱᵐᵖˡ_underlying :: (discardⁱᵐᵖˡ) ↓u (discardⁱᵐᵖˡ);
 }.
 
 Module nopCloser.
@@ -738,33 +740,65 @@ Class eofReader_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalCon
 Module multiReader.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Axiom t : Type.
-Axiom zero_val : ZeroVal t.
-#[global] Existing Instance zero_val.
+Record t :=
+mk {
+  readers' : slice.t;
+}.
+
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
 End def.
+
 End multiReader.
+
+Definition multiReader'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
+  (go.FieldDecl "readers"%go (go.SliceType Reader))
+].
+Program Definition multiReader'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (multiReader'fds_unsealed).
+Global Instance equals_unfold_multiReader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : multiReader'fds =→ multiReader'fds_unsealed.
+Proof. rewrite /multiReader'fds seal_eq //. Qed.
+
+Definition multiReaderⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (multiReader'fds).
 
 Class multiReader_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] multiReader_type_repr  :: go.TypeReprUnderlying multiReaderⁱᵐᵖˡ multiReader.t;
   #[global] multiReader_underlying :: (multiReader) <u (multiReaderⁱᵐᵖˡ);
-  #[global] multiReaderⁱᵐᵖˡ_underlying :: (multiReaderⁱᵐᵖˡ) ↓u (multiReaderⁱᵐᵖˡ);
+  #[global] multiReader_get_readers (x : multiReader.t) :: ⟦StructFieldGet (multiReaderⁱᵐᵖˡ) "readers", #x⟧ ⤳[under] #x.(multiReader.readers');
+  #[global] multiReader_set_readers (x : multiReader.t) y :: ⟦StructFieldSet (multiReaderⁱᵐᵖˡ) "readers", (#x, #y)⟧ ⤳[under] #(x <|multiReader.readers' := y|>);
 }.
 
 Module multiWriter.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Axiom t : Type.
-Axiom zero_val : ZeroVal t.
-#[global] Existing Instance zero_val.
+Record t :=
+mk {
+  writers' : slice.t;
+}.
+
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
 End def.
+
 End multiWriter.
+
+Definition multiWriter'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
+  (go.FieldDecl "writers"%go (go.SliceType Writer))
+].
+Program Definition multiWriter'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (multiWriter'fds_unsealed).
+Global Instance equals_unfold_multiWriter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : multiWriter'fds =→ multiWriter'fds_unsealed.
+Proof. rewrite /multiWriter'fds seal_eq //. Qed.
+
+Definition multiWriterⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (multiWriter'fds).
 
 Class multiWriter_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] multiWriter_type_repr  :: go.TypeReprUnderlying multiWriterⁱᵐᵖˡ multiWriter.t;
   #[global] multiWriter_underlying :: (multiWriter) <u (multiWriterⁱᵐᵖˡ);
-  #[global] multiWriterⁱᵐᵖˡ_underlying :: (multiWriterⁱᵐᵖˡ) ↓u (multiWriterⁱᵐᵖˡ);
+  #[global] multiWriter_get_writers (x : multiWriter.t) :: ⟦StructFieldGet (multiWriterⁱᵐᵖˡ) "writers", #x⟧ ⤳[under] #x.(multiWriter.writers');
+  #[global] multiWriter_set_writers (x : multiWriter.t) y :: ⟦StructFieldSet (multiWriterⁱᵐᵖˡ) "writers", (#x, #y)⟧ ⤳[under] #(x <|multiWriter.writers' := y|>);
 }.
 
 Module onceError.

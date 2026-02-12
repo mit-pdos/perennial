@@ -8,6 +8,18 @@ Local Set Default Proof Using "All".
 #[global] Instance : IsPkgInit (iProp Σ) errors := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf (iProp Σ) errors := build_get_is_pkg_init_wf.
 
+Lemma wp_initialize' get_is_pkg_init :
+  get_is_pkg_init_prop errors get_is_pkg_init →
+  {{{ own_initializing get_is_pkg_init }}}
+    errors.initialize' #()
+  {{{ RET #(); own_initializing get_is_pkg_init ∗ is_pkg_init errors }}}.
+Proof.
+  intros Hinit. wp_start as "Hown".
+  wp_apply (wp_package_init with "[$Hown] HΦ").
+  { destruct Hinit as (-> & ?); done. }
+  iIntros "Hown". wp_auto.
+Admitted.
+
 Definition is_unwrappable (err : error.t) : iProp Σ :=
   □(match err with
     | interface.nil => True
@@ -18,6 +30,14 @@ Definition is_unwrappable (err : error.t) : iProp Σ :=
            {{{ err, RET #(interface.ok err); True }}})%I
         else True%I
     end).
+
+Lemma wp_New (msg : go_string) :
+  {{{ is_pkg_init errors }}}
+    @! errors.New #msg
+  {{{ (err : interface.t_ok), RET #(interface.ok err); True }}}.
+Proof.
+  wp_start. wp_auto. wp_alloc x as "Hx". wp_auto. wp_end.
+Qed.
 
 Lemma wp_Unwrap (err : error.t) :
   {{{ is_unwrappable err }}}
