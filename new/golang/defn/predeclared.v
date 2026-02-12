@@ -177,6 +177,9 @@ Class IntSemantics `{!GoSemanticsFunctions} :=
   #[global] shiftl_int (v1 v2 : w64) :: ⟦GoOp GoShiftl go.int, (#v1, #v2)⟧ ⤳[under] #(word.slu v1 v2);
   #[global] shiftr_int (v1 v2 : w64) :: ⟦GoOp GoShiftr go.int, (#v1, #v2)⟧ ⤳[under] #(word.srs v1 v2);
 
+  #[global] neg_int (v : w64) :: ⟦GoUnOp GoNeg go.int, #v⟧ ⤳[under] #(word.opp v);
+  #[global] complement_int (v : w64) :: ⟦GoUnOp GoComplement go.int, #v⟧ ⤳[under] #(word.not v);
+
   #[global] convert_int_to_int (v : w64) :: ⟦Convert go.int go.int, #v⟧ ⤳[under] #v;
   #[global] convert_int64_to_int (v : w64) :: ⟦Convert go.int64 go.int, #v⟧ ⤳[under] #v;
   #[global] convert_int32_to_int (v : w32) :: ⟦Convert go.int32 go.int, #v⟧ ⤳[under] #((W64 $ sint.Z v));
@@ -208,6 +211,9 @@ Class Int64Semantics `{!GoSemanticsFunctions} :=
   #[global] xor_int64 (v1 v2 : w64) :: ⟦GoOp GoXor go.int64, (#v1, #v2)⟧ ⤳[under] #(word.xor v1 v2);
   #[global] shiftl_int64 (v1 v2 : w64) :: ⟦GoOp GoShiftl go.int64, (#v1, #v2)⟧ ⤳[under] #(word.slu v1 v2);
   #[global] shiftr_int64 (v1 v2 : w64) :: ⟦GoOp GoShiftr go.int64, (#v1, #v2)⟧ ⤳[under] #(word.srs v1 v2);
+
+  #[global] neg_int64 (v : w64) :: ⟦GoUnOp GoNeg go.int64, #v⟧ ⤳[under] #(word.opp v);
+  #[global] complement_int64 (v : w64) :: ⟦GoUnOp GoComplement go.int64, #v⟧ ⤳[under] #(word.not v);
 
   #[global] convert_int_to_int64 (v : w64) :: ⟦Convert go.int go.int64, #v⟧ ⤳[under] #v;
   #[global] convert_int64_to_int64 (v : w64) :: ⟦Convert go.int64 go.int64, #v⟧ ⤳[under] #v;
@@ -241,6 +247,9 @@ Class Int32Semantics `{!GoSemanticsFunctions} :=
   #[global] shiftl_int32 (v1 v2 : w32) :: ⟦GoOp GoShiftl go.int32, (#v1, #v2)⟧ ⤳[under] #(word.slu v1 v2);
   #[global] shiftr_int32 (v1 v2 : w32) :: ⟦GoOp GoShiftr go.int32, (#v1, #v2)⟧ ⤳[under] #(word.srs v1 v2);
 
+  #[global] neg_int32 (v : w32) :: ⟦GoUnOp GoNeg go.int32, #v⟧ ⤳[under] #(word.opp v);
+  #[global] complement_int32 (v : w32) :: ⟦GoUnOp GoComplement go.int32, #v⟧ ⤳[under] #(word.not v);
+
   #[global] convert_int_to_int32 (v : w64) :: ⟦Convert go.int go.int32, #v⟧ ⤳[under] #((W32 $ sint.Z v));
   #[global] convert_int64_to_int32 (v : w64) :: ⟦Convert go.int64 go.int32, #v⟧ ⤳[under] #((W32 $ sint.Z v));
   #[global] convert_int32_to_int32 (v : w32) :: ⟦Convert go.int32 go.int32, #v⟧ ⤳[under] #v;
@@ -272,6 +281,9 @@ Class Int16Semantics `{!GoSemanticsFunctions} :=
   #[global] xor_int16 (v1 v2 : w16) :: ⟦GoOp GoXor go.int16, (#v1, #v2)⟧ ⤳[under] #(word.xor v1 v2);
   #[global] shiftl_int16 (v1 v2 : w16) :: ⟦GoOp GoShiftl go.int16, (#v1, #v2)⟧ ⤳[under] #(word.slu v1 v2);
   #[global] shiftr_int16 (v1 v2 : w16) :: ⟦GoOp GoShiftr go.int16, (#v1, #v2)⟧ ⤳[under] #(word.srs v1 v2);
+
+  #[global] neg_int16 (v : w16) :: ⟦GoUnOp GoNeg go.int16, #v⟧ ⤳[under] #(word.opp v);
+  #[global] complement_int16 (v : w16) :: ⟦GoUnOp GoComplement go.int16, #v⟧ ⤳[under] #(word.not v);
 
   #[global] convert_int_to_int16 (v : w64) :: ⟦Convert go.int go.int16, #v⟧ ⤳[under] #((W16 $ sint.Z v));
   #[global] convert_int64_to_int16 (v : w64) :: ⟦Convert go.int64 go.int16, #v⟧ ⤳[under] #((W16 $ sint.Z v));
@@ -305,6 +317,9 @@ Class Int8Semantics `{!GoSemanticsFunctions} :=
   #[global] shiftl_int8 (v1 v2 : w8) :: ⟦GoOp GoShiftl go.int8, (#v1, #v2)⟧ ⤳[under] #(word.slu v1 v2);
   #[global] shiftr_int8 (v1 v2 : w8) :: ⟦GoOp GoShiftr go.int8, (#v1, #v2)⟧ ⤳[under] #(word.srs v1 v2);
 
+  #[global] neg_int8 (v : w8) :: ⟦GoUnOp GoNeg go.int8, #v⟧ ⤳[under] #(word.opp v);
+  #[global] complement_int8 (v : w8) :: ⟦GoUnOp GoComplement go.int8, #v⟧ ⤳[under] #(word.not v);
+
   #[global] convert_int_to_int8 (v : w64) :: ⟦Convert go.int go.int8, #v⟧ ⤳[under] #((W8 $ sint.Z v));
   #[global] convert_int64_to_int8 (v : w64) :: ⟦Convert go.int64 go.int8, #v⟧ ⤳[under] #((W8 $ sint.Z v));
   #[global] convert_int32_to_int8 (v : w32) :: ⟦Convert go.int32 go.int8, #v⟧ ⤳[under] #((W8 $ sint.Z v));
@@ -336,6 +351,8 @@ Class UintSemantics `{!GoSemanticsFunctions} :=
   #[global] xor_uint (v1 v2 : w64) :: ⟦GoOp GoXor go.uint, (#v1, #v2)⟧ ⤳[under] #(word.xor v1 v2);
   #[global] shiftl_uint (v1 v2 : w64) :: ⟦GoOp GoShiftl go.uint, (#v1, #v2)⟧ ⤳[under] #(word.slu v1 v2);
   #[global] shiftr_uint (v1 v2 : w64) :: ⟦GoOp GoShiftr go.uint, (#v1, #v2)⟧ ⤳[under] #(word.sru v1 v2);
+
+  #[global] complement_uint (v : w64) :: ⟦GoUnOp GoComplement go.uint, #v⟧ ⤳[under] #(word.not v);
 
   #[global] convert_int_to_uint (v : w64) :: ⟦Convert go.int go.uint, #v⟧ ⤳[under] #v;
   #[global] convert_int64_to_uint (v : w64) :: ⟦Convert go.int64 go.uint, #v⟧ ⤳[under] #v;
@@ -369,6 +386,8 @@ Class Uint64Semantics `{!GoSemanticsFunctions} :=
   #[global] shiftl_uint64 (v1 v2 : w64) :: ⟦GoOp GoShiftl go.uint64, (#v1, #v2)⟧ ⤳[under] #(word.slu v1 v2);
   #[global] shiftr_uint64 (v1 v2 : w64) :: ⟦GoOp GoShiftr go.uint64, (#v1, #v2)⟧ ⤳[under] #(word.sru v1 v2);
 
+  #[global] complement_uint64 (v : w64) :: ⟦GoUnOp GoComplement go.uint64, #v⟧ ⤳[under] #(word.not v);
+
   #[global] convert_int_to_uint64 (v : w64) :: ⟦Convert go.int go.uint64, #v⟧ ⤳[under] #v;
   #[global] convert_int64_to_uint64 (v : w64) :: ⟦Convert go.int64 go.uint64, #v⟧ ⤳[under] #v;
   #[global] convert_int32_to_uint64 (v : w32) :: ⟦Convert go.int32 go.uint64, #v⟧ ⤳[under] #((W64 $ sint.Z v));
@@ -400,6 +419,8 @@ Class Uint32Semantics `{!GoSemanticsFunctions} :=
   #[global] xor_uint32 (v1 v2 : w32) :: ⟦GoOp GoXor go.uint32, (#v1, #v2)⟧ ⤳[under] #(word.xor v1 v2);
   #[global] shiftl_uint32 (v1 v2 : w32) :: ⟦GoOp GoShiftl go.uint32, (#v1, #v2)⟧ ⤳[under] #(word.slu v1 v2);
   #[global] shiftr_uint32 (v1 v2 : w32) :: ⟦GoOp GoShiftr go.uint32, (#v1, #v2)⟧ ⤳[under] #(word.sru v1 v2);
+
+  #[global] complement_uint32 (v : w32) :: ⟦GoUnOp GoComplement go.uint32, #v⟧ ⤳[under] #(word.not v);
 
   #[global] convert_int_to_uint32 (v : w64) :: ⟦Convert go.int go.uint32, #v⟧ ⤳[under] #((W32 $ sint.Z v));
   #[global] convert_int64_to_uint32 (v : w64) :: ⟦Convert go.int64 go.uint32, #v⟧ ⤳[under] #((W32 $ sint.Z v));
@@ -433,6 +454,8 @@ Class Uint16Semantics `{!GoSemanticsFunctions} :=
   #[global] shiftl_uint16 (v1 v2 : w16) :: ⟦GoOp GoShiftl go.uint16, (#v1, #v2)⟧ ⤳[under] #(word.slu v1 v2);
   #[global] shiftr_uint16 (v1 v2 : w16) :: ⟦GoOp GoShiftr go.uint16, (#v1, #v2)⟧ ⤳[under] #(word.sru v1 v2);
 
+  #[global] complement_uint16 (v : w16) :: ⟦GoUnOp GoComplement go.uint16, #v⟧ ⤳[under] #(word.not v);
+
   #[global] convert_int_to_uint16 (v : w64) :: ⟦Convert go.int go.uint16, #v⟧ ⤳[under] #((W16 $ sint.Z v));
   #[global] convert_int64_to_uint16 (v : w64) :: ⟦Convert go.int64 go.uint16, #v⟧ ⤳[under] #((W16 $ sint.Z v));
   #[global] convert_int32_to_uint16 (v : w32) :: ⟦Convert go.int32 go.uint16, #v⟧ ⤳[under] #((W16 $ sint.Z v));
@@ -464,6 +487,8 @@ Class Uint8Semantics `{!GoSemanticsFunctions} :=
   #[global] xor_uint8 (v1 v2 : w8) :: ⟦GoOp GoXor go.uint8, (#v1, #v2)⟧ ⤳[under] #(word.xor v1 v2);
   #[global] shiftl_uint8 (v1 v2 : w8) :: ⟦GoOp GoShiftl go.uint8, (#v1, #v2)⟧ ⤳[under] #(word.slu v1 v2);
   #[global] shiftr_uint8 (v1 v2 : w8) :: ⟦GoOp GoShiftr go.uint8, (#v1, #v2)⟧ ⤳[under] #(word.sru v1 v2);
+
+  #[global] complement_uint8 (v : w8) :: ⟦GoUnOp GoComplement go.uint8, #v⟧ ⤳[under] #(word.not v);
 
   #[global] convert_int_to_uint8 (v : w64) :: ⟦Convert go.int go.uint8, #v⟧ ⤳[under] #((W8 $ sint.Z v));
   #[global] convert_int64_to_uint8 (v : w64) :: ⟦Convert go.int64 go.uint8, #v⟧ ⤳[under] #((W8 $ sint.Z v));
@@ -547,6 +572,8 @@ Class PredeclaredSemantics `{!GoSemanticsFunctions} :=
   #[global] underlying_untyped_bool :: go.untyped_bool ↓u go.untyped_bool;
   #[global] convert_untyped_bool (b : Datatypes.bool) ::
     ⟦Convert go.untyped_bool go.bool, #b⟧ ⤳[under] #b;
+  #[global] go_unop_not_bool b ::
+    ⟦GoUnOp GoNot go.bool, #b⟧ ⤳[under] #(negb b);
 
   #[global] untyped_int_semantics :: UntypedIntSemantics;
   #[global] int_semantics :: IntSemantics;

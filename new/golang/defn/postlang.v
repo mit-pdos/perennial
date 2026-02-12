@@ -362,6 +362,8 @@ Class CoreSemantics `{!GoSemanticsFunctions} : Prop :=
   (* Underlying-respecting instructions *)
   #[global] convert_underlying `{!from ↓u from_under} `{!to ↓u to_under} v e ::
    ⟦Convert from_under to_under, v⟧ ⤳[under] e → ⟦Convert from to, v⟧ ⤳ e;
+  #[global] go_un_op_underlying o `{!t ↓u t_under} v e ::
+   ⟦GoUnOp o t_under, v⟧ ⤳[under] e → ⟦GoUnOp o t, v⟧ ⤳ e;
   #[global] go_op_underlying o `{!t ↓u t_under} v e ::
    ⟦GoOp o t_under, v⟧ ⤳[under] e → ⟦GoOp o t, v⟧ ⤳ e;
   #[global] composite_literal_underlying `{!t ↓u t_under} v e ::
