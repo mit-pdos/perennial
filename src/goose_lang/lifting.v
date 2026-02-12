@@ -531,6 +531,12 @@ Global Instance load_atomic s v : Atomic s (Load (Val v)).
 Proof. solve_atomic. Qed.
 Global Instance finish_store_atomic s v1 v2 : Atomic s (FinishStore (Val v1) (Val v2)).
 Proof. solve_atomic. Qed.
+Global Instance atomic_swap_atomic s v1 v2 : Atomic s (AtomicSwap (Val v1) (Val v2)).
+Proof. solve_atomic. Qed.
+Global Instance atomic_op_atomic s v1 v2 : Atomic s (AtomicAdd (Val v1) (Val v2)).
+Proof. solve_atomic. Qed.
+Global Instance cmpxchg_atomic s v0 v1 v2 : Atomic s (CmpXchg (Val v0) (Val v1) (Val v2)).
+Proof. solve_atomic. Qed.
 Global Instance start_read_atomic s v : Atomic s (StartRead (Val v)).
 Proof. solve_atomic. Qed.
 Global Instance finish_read_atomic s v1 : Atomic s (FinishRead (Val v1)).
@@ -960,6 +966,99 @@ Proof.
   iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
   { rewrite /step_count_next/=. lia. }
   iModIntro. iSplit=>//. iFrame. iApply "HΦ". iApply "Hl_rest". iApply "Hl".
+Qed.
+
+Lemma wp_atomic_swap s E l v0 v :
+  {{{ ▷ l ↦ v0 }}} AtomicSwap #l (Val v) @ s; E
+  {{{ RET v0; l ↦ v }}}.
+Proof.
+  iIntros (Φ) ">Hl HΦ".
+  iApply wp_lift_atomic_base_step_no_fork; auto.
+  iIntros (σ1 g1 ns mj D κ κs n) "[Hσ ?] Hg".
+  iDestruct (heap_pointsto_na_acc with "Hl") as "[Hl Hl_rest]".
+  iDestruct (@na_heap_read_1 with "Hσ Hl") as %(lk&?&?Hlock).
+  destruct lk; inversion Hlock; subst.
+  iMod (na_heap_write _ _ _ _ _ v with "Hσ Hl") as "(Hσ&Hl)"; first done.
+  iModIntro.
+  iSplit.
+  { iPureIntro. repeat econstructor; [rewrite H //|]; repeat econstructor. }
+  iNext; iIntros (v2 σ2 g2 efs Hstep); inv_base_step.
+  simpl in *. inv Hstep. monad_inv. simpl in *. monad_inv.
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
+  { rewrite /step_count_next/=. lia. }
+  iModIntro. iSplit=>//.
+  iFrame "Hσ ∗". iApply "HΦ".
+  iApply "Hl_rest". iFrame.
+Qed.
+
+Lemma wp_atomic_add s E l (v0 v1 v : val) :
+  atomic_add_eval v0 v1 = Some v →
+  {{{ ▷ l ↦ v0 }}} AtomicAdd #l (Val v1) @ s; E
+  {{{ RET v; l ↦ v }}}.
+Proof.
+  iIntros (Hev Φ) ">Hl HΦ".
+  iApply wp_lift_atomic_base_step_no_fork; auto.
+  iIntros (σ1 g1 ns mj D κ κs n) "[Hσ ?] Hg".
+  iDestruct (heap_pointsto_na_acc with "Hl") as "[Hl Hl_rest]".
+  iDestruct (@na_heap_read_1 with "Hσ Hl") as %(lk&?&?Hlock).
+  destruct lk; inversion Hlock; subst.
+  iMod (na_heap_write _ _ _ _ _ v with "Hσ Hl") as "(Hσ&Hl)"; first done.
+  iModIntro.
+  iSplit.
+  { iPureIntro. repeat econstructor; [rewrite H //|]; repeat econstructor.
+    rewrite /= Hev. repeat econstructor. }
+  iNext; iIntros (v2 σ2 g2 efs Hstep); inv_base_step.
+  simpl in *. inv Hstep. progress monad_inv; simpl in *.
+  inv_base_step. progress monad_inv; simpl in *.
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
+  { rewrite /step_count_next/=. lia. }
+  iModIntro. iSplit=>//.
+  iFrame "Hσ ∗". iApply "HΦ".
+  iApply "Hl_rest". iFrame.
+Qed.
+
+Lemma wp_cmpxchg_fail s E l q v' v1 v2 :
+  v' ≠ v1 →
+  {{{ ▷ l ↦{q} v' }}} CmpXchg #l (Val v1) (Val v2) @ s; E
+  {{{ RET (v', #false); l ↦{q} v' }}}.
+Proof.
+  iIntros (? Φ) ">Hl HΦ". iApply wp_lift_atomic_base_step_no_fork; auto.
+  iIntros (σ1 g1 ns mj D κ κs n) "[Hσ ?] Hg !>".
+  iDestruct (heap_pointsto_na_acc with "Hl") as "[Hl Hl_rest]".
+  iDestruct (@na_heap_read with "Hσ Hl") as %(lk&?&?&?Hlock).
+  destruct lk; inversion Hlock; subst.
+  iSplit. { iPureIntro. repeat econstructor; [rewrite H0 //|]. simpl. eauto. }
+  iNext; iIntros (v2' σ2 g2 efs Hstep); inv_base_step.
+  simpl in *. inv Hstep. progress monad_inv. simpl in *.
+  simpl in *. progress monad_inv. simpl in *.
+  rewrite bool_decide_false //.
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
+  { rewrite /step_count_next/=. lia. }
+  iModIntro; iSplit=> //. iFrame. iApply "HΦ".
+  iApply ("Hl_rest" with "Hl").
+Qed.
+
+Lemma wp_cmpxchg_suc s E l v1 v2 v' :
+  v' = v1 →
+  {{{ ▷ l ↦ v' }}} CmpXchg #l (Val v1) (Val v2) @ s; E
+  {{{ RET (v', #true); l ↦ v2 }}}.
+Proof.
+  iIntros (? Φ) ">Hl HΦ". iApply wp_lift_atomic_base_step_no_fork; auto.
+  iIntros (σ1 g1 ns mj D κ κs n) "[Hσ ?] Hg".
+  iDestruct (heap_pointsto_na_acc with "Hl") as "[Hl Hl_rest]".
+  iDestruct (@na_heap_read_1 with "Hσ Hl") as %(lk&?&?Hlock).
+  destruct lk; inversion Hlock; subst.
+  iMod (na_heap_write _ _ _ (Reading 0) with "Hσ Hl") as "(?&?)"; first done.
+  iModIntro.
+  iSplit. { iPureIntro. repeat econstructor; [rewrite H0 //|]; simpl. eauto. }
+  iNext; iIntros (v2' σ2 g2 efs Hstep); inv_base_step.
+  simpl in *. inv Hstep. progress monad_inv. simpl in *.
+  progress monad_inv. simpl in *. progress monad_inv.
+  rewrite bool_decide_true //.
+  iMod (global_state_interp_le _ _ _ _ _ κs with "[$]") as "$".
+  { rewrite /step_count_next/=. lia. }
+  iModIntro. iSplit=>//. iFrame. iApply "HΦ".
+  iApply ("Hl_rest" with "[$]").
 Qed.
 
 Lemma wp_new_proph s E :

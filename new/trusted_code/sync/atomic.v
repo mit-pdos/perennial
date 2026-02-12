@@ -12,7 +12,7 @@ Definition StoreUint64ⁱᵐᵖˡ : val :=
 Definition SwapUint64ⁱᵐᵖˡ : val :=
   λ: "addr" "val", AtomicSwap "addr" "val".
 Definition AddUint64ⁱᵐᵖˡ : val :=
-  λ: "addr" "val", AtomicOp PlusOp "addr" "val".
+  λ: "addr" "val", AtomicAdd "addr" "val".
 Definition CompareAndSwapUint64ⁱᵐᵖˡ : val :=
   λ: "addr" "old" "new",
     Snd (CmpXchg "addr" "old" "new").
@@ -28,7 +28,7 @@ Definition CompareAndSwapUint64ⁱᵐᵖˡ : val :=
   Definition SwapInt64ⁱᵐᵖˡ : val :=
     λ: "addr" "val", AtomicSwap "addr" "val".
   Definition AddInt64ⁱᵐᵖˡ : val :=
-    λ: "addr" "val", AtomicOp PlusOp "addr" "val".
+    λ: "addr" "val", AtomicAdd "addr" "val".
   Definition CompareAndSwapInt64ⁱᵐᵖˡ : val :=
     λ: "addr" "old" "new",
       Snd (CmpXchg "addr" "old" "new").
@@ -41,7 +41,7 @@ Definition CompareAndSwapUint64ⁱᵐᵖˡ : val :=
   Definition SwapUint32ⁱᵐᵖˡ : val :=
     λ: "addr" "val", AtomicSwap "addr" "val".
   Definition AddUint32ⁱᵐᵖˡ : val :=
-    λ: "addr" "val", AtomicOp PlusOp "addr" "val".
+    λ: "addr" "val", AtomicAdd "addr" "val".
   Definition CompareAndSwapUint32ⁱᵐᵖˡ : val :=
     λ: "addr" "old" "new",
       Snd (CmpXchg "addr" "old" "new").
@@ -54,7 +54,7 @@ Definition CompareAndSwapUint64ⁱᵐᵖˡ : val :=
   Definition SwapInt32ⁱᵐᵖˡ : val :=
     λ: "addr" "val", AtomicSwap "addr" "val".
   Definition AddInt32ⁱᵐᵖˡ : val :=
-    λ: "addr" "val", AtomicOp PlusOp "addr" "val".
+    λ: "addr" "val", AtomicAdd "addr" "val".
   Definition CompareAndSwapInt32ⁱᵐᵖˡ : val :=
     λ: "addr" "old" "new",
       Snd (CmpXchg "addr" "old" "new").

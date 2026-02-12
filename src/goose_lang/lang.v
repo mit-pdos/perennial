@@ -1,5 +1,3 @@
-(* TODO gemini. I want to know where the list observation gets used to define
-the _real_ transition relation. Find me where that is *)
 From Coq.Program Require Import Equality.
 From RecordUpdate Require Import RecordSet.
 From stdpp Require Export binders.
@@ -83,21 +81,6 @@ Inductive base_lit : Type :=
   | LitLoc (l : loc) | LitProphecy (p: proph_id)
   | LitSlice (s : slice.t).
 
-Inductive un_op : Set :=
-  | NegOp | MinusUnOp
-  | UToW64Op | UToW32Op | UToW16Op | UToW8Op
-  | SToW64Op | SToW32Op | SToW16Op | SToW8Op
-  | ToStringOp | StringLenOp | IsNoStringOverflowOp
-.
-Inductive bin_op : Set :=
-  | PlusOp | MinusOp | MultOp | QuotOp | QuotSignedOp | RemOp | RemSignedOp (* Arithmetic *)
-  | AndOp | OrOp | XorOp (* Bitwise *)
-  | ShiftLOp | ShiftROp (* Shifts *)
-  | LeOp | LtOp | EqOp (* Relations *)
-  | OffsetOp (k:Z) (* Pointer offset *)
-  | StringGetOp
-.
-
 Inductive prim_op0 : Type :=
   (* a stuck expression, to represent undefined behavior *)
 | PanicOp (s: string)
@@ -117,6 +100,8 @@ Inductive prim_op1 : Set :=
 
 Inductive prim_op2 : Set :=
 | FinishStoreOp (* pointer, value *)
+| AtomicSwapOp (* pointer, value; returns old value *)
+| AtomicAddOp (* pointer, value *) (* atomic add operation *)
 .
 
 Inductive arity : Set := args0 | args1 | args2.
@@ -251,6 +236,7 @@ Inductive expr :=
 | Primitive1 (op: prim_op args1) (e : expr)
 | Primitive2 (op: prim_op args2) (e1 e2 : expr)
 (* | Primitive3 (op: prim_op args3) (e0 e1 e2 : expr) *)
+| CmpXchg (e0 : expr) (e1 : expr) (e2 : expr) (* Compare-exchange *)
 (* External FFI operation *)
 | ExternalOp (op: ffi_opcode) (e: expr)
 (* Prophecy *)
@@ -316,6 +302,8 @@ Notation ArbitraryInt := (Primitive0 ArbitraryIntOp).
 Notation Alloc := (Primitive1 AllocOp).
 Notation PrepareWrite := (Primitive1 PrepareWriteOp).
 Notation FinishStore := (Primitive2 FinishStoreOp).
+Notation AtomicSwap := (Primitive2 AtomicSwapOp).
+Notation AtomicAdd := (Primitive2 AtomicAddOp).
 Notation StartRead := (Primitive1 StartReadOp).
 Notation FinishRead := (Primitive1 FinishReadOp).
 Notation Load := (Primitive1 LoadOp).
@@ -338,6 +326,9 @@ Notation Lam x e := (Rec BAnon x e) (only parsing).
 Notation Let x e1 e2 := (App (Lam x e2) e1) (only parsing).
 Notation Seq e1 e2 := (Let BAnon e1 e2) (only parsing).
 Notation LamV x e := (RecV BAnon x e) (only parsing).
+
+(** Compare-and-set (CAS) returns just a boolean indicating success or failure. *)
+Notation CAS l e1 e2 := (Snd (CmpXchg l e1 e2)) (only parsing).
 
 (** Syntax inspired by Coq/Ocaml. Constructions with higher precedence come
     first. *)
@@ -697,10 +688,6 @@ Proof. destruct e=>//=. by intros [= <-]. Qed.
 Global Instance of_val_inj : Inj (=) (=) of_val.
 Proof. intros ??. congruence. Qed.
 
-Global Instance un_op_eq_dec : EqDecision un_op.
-Proof. solve_decision. Defined.
-Global Instance bin_op_eq_dec : EqDecision bin_op.
-Proof. solve_decision. Defined.
 Global Instance arity_eq_dec : EqDecision arity.
 Proof. solve_decision. Defined.
 Global Instance prim_op0_eq_dec : EqDecision prim_op0.
@@ -766,6 +753,9 @@ Inductive ectx_item :=
   | Primitive3MCtx (op: prim_op args3) (v0 : val) (e2 : expr)
   | Primitive3RCtx (op: prim_op args3) (v0 : val) (v1 : val) *)
   | ExternalOpCtx (op : ffi_opcode)
+  | CmpXchgLCtx (e1 : expr) (e2 : expr)
+  | CmpXchgMCtx (v1 : val) (e2 : expr)
+  | CmpXchgRCtx (v1 : val) (v2 : val)
   | ResolveProphLCtx (v2 : val)
   | ResolveProphRCtx (e1 : expr).
 
@@ -782,6 +772,9 @@ Definition fill_item (Ki : ectx_item) (e : expr) : expr :=
   | Primitive2LCtx op e2 => Primitive2 op e e2
   | Primitive2RCtx op v1 => Primitive2 op (Val v1) e
   | ExternalOpCtx op => ExternalOp op e
+  | CmpXchgLCtx e1 e2 => CmpXchg e e1 e2
+  | CmpXchgMCtx v0 e2 => CmpXchg (Val v0) e e2
+  | CmpXchgRCtx v0 v1 => CmpXchg (Val v0) (Val v1) e
   | ResolveProphLCtx v2 => ResolveProph e (Val v2)
   | ResolveProphRCtx e1 => ResolveProph e1 e
   end.
@@ -804,6 +797,7 @@ Fixpoint subst (x : string) (v : val) (e : expr)  : expr :=
   | Primitive2 op e1 e2 => Primitive2 op (subst x v e1) (subst x v e2)
   (* | Primitive3 op e1 e2 e3 => Primitive3 op (subst x v e1) (subst x v e2) (subst x v e3) *)
   | ExternalOp op e => ExternalOp op (subst x v e)
+  | CmpXchg e0 e1 e2 => CmpXchg (subst x v e0) (subst x v e1) (subst x v e2)
   | NewProph => NewProph
   | ResolveProph e1 e2 => ResolveProph (subst x v e1) (subst x v e2)
   | LiteralValue l => LiteralValue ((subst_keyed_element x v) <$> l)
@@ -882,7 +876,6 @@ Qed.
 
 Inductive leaf_type : Type :=
   | BaseLitLeaf (val : base_lit)
-  | BinOpLeaf (val : bin_op)
   | BinderLeaf (val : binder)
   | FfiOpcodeLeaf (val : ffi_opcode)
   | FfiValLeaf (val : ffi_val)
@@ -893,7 +886,6 @@ Inductive leaf_type : Type :=
   | PrimOpArgs1Leaf (val : prim_op args1)
   | PrimOpArgs2Leaf (val : prim_op args2)
   | StringLeaf (val : string)
-  | UnOpLeaf (val : un_op)
   | GoTypeLeaf (t : go.type).
 
 Global Instance eq_decision_leaf_type : EqDecision leaf_type.
@@ -916,6 +908,7 @@ Fixpoint enc_expr (v : expr) : tree leaf_type :=
   | Primitive0 arg1 => Node "Primitive0" [Leaf $ PrimOpArgs0Leaf arg1]
   | Primitive1 arg1 arg2 => Node "Primitive1" [Leaf $ PrimOpArgs1Leaf arg1; enc_expr arg2]
   | Primitive2 arg1 arg2 arg3 => Node "Primitive2" [Leaf $ PrimOpArgs2Leaf arg1; enc_expr arg2; enc_expr arg3]
+  | CmpXchg arg1 arg2 arg3 => Node "CmpXchg" [enc_expr arg1; enc_expr arg2; enc_expr arg3]
   | ExternalOp arg1 arg2 => Node "ExternalOp" [Leaf $ FfiOpcodeLeaf arg1; enc_expr arg2]
   | NewProph  => Node "NewProph" []
   | ResolveProph arg1 arg2 => Node "ResolveProph" [enc_expr arg1; enc_expr arg2]
@@ -1001,6 +994,8 @@ Fixpoint dec_expr (v : tree leaf_type) : expr :=
        Primitive1 arg1 (dec_expr arg2)
   | Node "Primitive2" [Leaf (PrimOpArgs2Leaf arg1); arg2; arg3] =>
        Primitive2 arg1 (dec_expr arg2) (dec_expr arg3)
+  | Node "CmpXchg" [arg1; arg2; arg3] =>
+       CmpXchg (dec_expr arg1) (dec_expr arg2) (dec_expr arg3)
   | Node "ExternalOp" [Leaf (FfiOpcodeLeaf arg1); arg2] =>
        ExternalOp arg1 (dec_expr arg2)
   | Node "NewProph" [] => NewProph
@@ -1313,6 +1308,15 @@ Definition go_instruction_step (op : go_instruction) (arg : val) :
   modifyσ $ set go_state $ set package_state (λ _, s') ;;
   ret_expr e'.
 
+Definition atomic_add_eval (v1 v2 : val) : option val :=
+  match v1, v2 with
+  | LitV (LitInt n1), LitV (LitInt n2) => Some #(word.add n1 n2)
+  | LitV (LitInt32 n1), LitV (LitInt32 n2) => Some #(word.add n1 n2)
+  | LitV (LitInt16 n1), LitV (LitInt16 n2) => Some #(word.add n1 n2)
+  | LitV (LitByte n1), LitV (LitByte n2) => Some #(word.add n1 n2)
+  | _, _ => None
+  end.
+
 Definition base_trans (e : expr) :
  transition (state * global_state) (list observation * expr * list expr) :=
   match e with
@@ -1378,9 +1382,41 @@ Definition base_trans (e : expr) :
        check (is_Writing nav);;
        modifyσ (set heap <[l:=Free v]>);;
        ret $ #() )
+  | AtomicSwap (Val vl) (Val v) => (* atomic swap *)
+    atomically
+      (l ← suchThat (λ _ (l : loc), vl = #l) (gen:=fallback_genPred _);
+       nav ← reads (λ '(σ,g), σ.(heap) !! l) ≫= unwrap;
+       match nav with
+       | (Reading 0, v0) =>
+           modifyσ (set heap <[l:=Free v]>);;
+           ret $ v0
+       | _ => undefined
+      end)
+  | AtomicAdd (Val vl) (Val v) => (* atomic add *)
+    atomically
+      (l ← suchThat (λ _ (l : loc), vl = #l) (gen:=fallback_genPred _);
+       nav ← reads (λ '(σ,g), σ.(heap) !! l) ≫= unwrap;
+       match nav with
+       | (Reading 0, oldv) =>
+           match atomic_add_eval oldv v with
+           | Some v => modifyσ (set heap <[l:=Free v]>);; ret $ v
+           | _ => undefined
+           end
+       | _ => undefined
+      end)
   | ExternalOp op (Val v) => atomicallyM $ ffi_step op v
   | App (Val (GoInstruction op)) (Val arg) =>
       go_instruction_step op arg
+  | CmpXchg (Val vl) (Val v1) (Val v2) =>
+    atomically
+      (l ← suchThat (λ _ (l : loc), vl = #l) (gen:=fallback_genPred _);
+       nav ← reads (λ '(σ,g), σ.(heap) !! l) ≫= unwrap;
+       match nav with
+       | (Reading n, vl) =>
+           when (vl = v1) (check (n = 0%nat);; modifyσ (set heap <[l:=Free v2]>));;
+           ret $ PairV vl (#(bool_decide (vl = v1)))
+       | _ => undefined
+       end)
   | NewProph =>
     atomically
       (p ← newProphId;
@@ -1464,6 +1500,7 @@ Proof.
   induction Ki; intros;
     rewrite /base_step /= in H;
     repeat inv_undefined; eauto.
+  all: monad_inv.
 Qed.
 
 Lemma fill_item_no_val_inj Ki1 Ki2 e1 e2 :
