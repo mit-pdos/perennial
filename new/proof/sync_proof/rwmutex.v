@@ -147,10 +147,10 @@ Lemma step_RUnlock_readerCount_Add γ writer_sem reader_sem reader_count reader_
   own_RWMutex_invariant γ writer_sem reader_sem reader_count reader_wait (RLocked (S num_readers)) ==∗
   "Hrtok" ∷ own_toks γ.(rlock_overflow_gn) 1 ∗
   "Hprot_inv" ∷ own_RWMutex_invariant γ writer_sem reader_sem (word.add reader_count (W32 (-1))) reader_wait (RLocked num_readers) ∗
-  if decide (sint.Z (word.add reader_count (W32 (-1))) < sint.Z 0) then
+  if decide (sint.Z (word.add reader_count (W32 (-1))) < 0) then
     "Hwait_tok" ∷ own_toks γ.(read_wait_gn) 1 ∗
-    "%" ∷ ⌜ sint.Z reader_count ≠ sint.Z 0 ⌝ ∗
-    "%" ∷ ⌜ sint.Z reader_count ≠ -sint.Z rwmutexMaxReaders ⌝
+    "%" ∷ ⌜ sint.Z reader_count ≠ 0 ⌝ ∗
+    "%" ∷ ⌜ sint.Z reader_count ≠ -rwmutexMaxReaders ⌝
   else True.
 Proof.
   iIntros "Hinv". iNamed "Hinv".
@@ -249,7 +249,7 @@ Qed.
 Lemma step_Lock_readerWait_Add γ r writer_sem reader_sem reader_count reader_wait state :
   ghost_var γ.(wlock_gn) (1/2) (SignalingReaders r) ∗
   own_RWMutex_invariant γ writer_sem reader_sem reader_count reader_wait state ==∗
-  if decide (sint.Z (word.add reader_wait r) = sint.Z 0) then
+  if decide (sint.Z (word.add reader_wait r) = 0) then
      "%" ∷ ⌜ state = RLocked 0 ⌝ ∗
      "Hwl_inv" ∷ ghost_var γ.(wlock_gn) (1/2) IsLocked ∗
     "Hprot_inv" ∷ own_RWMutex_invariant γ writer_sem reader_sem reader_count (word.add reader_wait r) Locked
@@ -291,7 +291,7 @@ Proof.
 Qed.
 
 Lemma step_TryLock_readerCount_CompareAndSwap γ writer_sem reader_sem reader_count reader_wait state :
-  sint.Z reader_count = sint.Z 0 →
+  sint.Z reader_count = 0 →
   ghost_var γ.(wlock_gn) (1/2) (NotLocked (W32 0)) ∗
   own_RWMutex_invariant γ writer_sem reader_sem reader_count reader_wait state ==∗
   "%" ∷ ⌜ state = RLocked 0 ⌝ ∗
@@ -313,7 +313,7 @@ Lemma step_Unlock_readerCount_Add γ writer_sem reader_sem reader_count reader_w
   "Hwl" ∷ ghost_var γ.(wlock_gn) (1/2) (NotLocked (word.add reader_count (W32 rwmutexMaxReaders))) ∗
   "Hprot_inv" ∷ own_RWMutex_invariant γ writer_sem reader_sem (word.add reader_count (W32 rwmutexMaxReaders)) reader_wait (RLocked 0) ∗
   "%" ∷ ⌜ 0 ≤ sint.Z (word.add reader_count (W32 rwmutexMaxReaders)) ⌝ ∗
-  "%" ∷ ⌜ sint.Z (word.add reader_count (W32 rwmutexMaxReaders)) < sint.Z rwmutexMaxReaders ⌝.
+  "%" ∷ ⌜ sint.Z (word.add reader_count (W32 rwmutexMaxReaders)) < rwmutexMaxReaders ⌝.
 Proof.
   iIntros "[Hwl_in Hinv]". iNamed "Hinv". iCombine "Hwl_in Hwl" gives %[_ ?].
   destruct wl; iNamed "Hinv"; try done.

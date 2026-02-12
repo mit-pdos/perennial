@@ -36,6 +36,7 @@ Definition disk_update_pre {Σ} (dG: disk_preG Σ) (n: gen_heap_names) :=
 
 Section disk.
   #[local] Existing Instances disk_op disk_model disk_semantics.
+  Context {go_gctx : GoGlobalContext}.
 
   Program Instance disk_interp: ffi_interp disk_model :=
     {| ffiLocalGS := diskGS;
