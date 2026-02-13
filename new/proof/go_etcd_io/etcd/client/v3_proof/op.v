@@ -74,9 +74,9 @@ Admitted.
 
 Lemma wp_Op__applyOpts (op : loc) :
   {{{ is_pkg_init clientv3 }}}
-    op @ (ptrT.id clientv3.Op.id) @ "applyOpts" #slice.nil
+    op @! (go.PointerType clientv3.Op) @! "applyOpts" #slice.nil
   {{{ RET #(); True }}}.
-Proof.
+Proof using W.
   wp_start. wp_auto.
   wp_for "i".
   wp_if_destruct; [word|].
@@ -89,10 +89,10 @@ Lemma wp_OpPut key v :
   {{{ op, RET #op;
       is_Op op (Op.Put (PutRequest.default <| PutRequest.key := key |> <| PutRequest.value := v |>))
   }}}.
-Proof.
+Proof using W.
   wp_start. wp_auto.
-  wp_apply wp_StringToBytes. iIntros "%key_sl key_sl". wp_auto.
-  wp_apply wp_StringToBytes. iIntros "%val_sl val_sl". wp_auto.
+  wp_apply wp_string_to_bytes. iIntros "%key_sl [key_sl _]". wp_auto.
+  wp_apply wp_string_to_bytes. iIntros "%val_sl [val_sl _]". wp_auto.
   wp_apply wp_Op__applyOpts. wp_auto.
   rewrite !bool_decide_decide.
   rewrite !(decide_True (P:=slice.nil = slice.nil)) //=.
@@ -105,9 +105,9 @@ Qed.
 
 Lemma wp_Op__KeyBytes op req :
   {{{ is_pkg_init clientv3 ∗ is_Op op (Op.Put req) }}}
-    op @ clientv3.Op.id @ "KeyBytes" #()
+    op @! clientv3.Op @! "KeyBytes" #()
   {{{ key_sl, RET #key_sl; key_sl ↦*□ req.(PutRequest.key) }}}.
-Proof.
+Proof using W.
   wp_start. wp_auto. iApply "HΦ". iNamed "Hpre". iFrame "#".
 Qed.
 

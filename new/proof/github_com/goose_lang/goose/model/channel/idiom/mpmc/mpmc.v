@@ -24,11 +24,11 @@ From Perennial.algebra Require Import ghost_var.
 Section mpmc.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics}.
-Local Set Default Proof Using "All".
 Context `{!chan_idiomG Σ V}.
-Context `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}.
-Context `{!EqDecision V} `{!Countable V}.
+Context `[!ZeroVal V] `[!TypedPointsto V] `[!IntoValTyped V t].
+Context `[!EqDecision V] `[!Countable V].
 Context `{!contributionG Σ (gmultisetR V)}.
+Collection W := sem + IntoValTyped0.
 
 Record mpmc_names := {
   mpmc_chan_name : chan_names;
@@ -93,6 +93,7 @@ Lemma bulk_dealloc_all γ (X : gmultiset V) (ys : list (gmultiset V)) :
   let Z_total := fold_right (λ acc y, acc ⊎ y) ∅ ys in
   server γ (length ys) X -∗ ([∗ list] y_i ∈ ys, client γ y_i) ==∗ server γ 0 (∅: (gmultiset V)) ∗ ⌜X = Z_total⌝.
 Proof.
+  clear IntoValTyped0 ZeroVal0 TypedPointsto0.
   intros.
   iIntros "Hs Hcs".
   destruct ys.
@@ -143,6 +144,7 @@ Lemma bulk_alloc_clients γ (ys : list (gmultiset V)) :
   let X := fold_right (λ acc y, acc ⊎ y) ∅ ys in
   server γ 0 (∅: gmultiset V) ==∗ server γ (length ys) X ∗ ([∗ list] y_i ∈ ys, client γ y_i).
 Proof.
+  clear IntoValTyped0 ZeroVal0 TypedPointsto0.
   intros X.
   iIntros "Hs".
   iInduction ys as [|y ys'] "IH".
@@ -374,6 +376,7 @@ Lemma mpmc_send_au γ ch (n_prod n_cons:nat) (P : V → iProp Σ) (R : gmultiset
   ▷(mpmc_producer γ (sent ⊎ {[+ v +]}) -∗ Φ) -∗
   send_au γ.(mpmc_chan_name) v Φ.
 Proof.
+  clear IntoValTyped0.
   iIntros "#Hmpmc (Hlc1 & Hlc2) [Hprod HP] Hcont".
   iDestruct "Hmpmc" as "[Hchan Hinv]".
 
@@ -556,7 +559,7 @@ Lemma wp_mpmc_send γ ch (n_prod n_cons:nat) (P : V → iProp Σ) (R : gmultiset
       P v }}}
     chan.send t #ch #v
   {{{ RET #(); mpmc_producer γ (sent ⊎ {[+ v +]}) }}}.
-Proof.
+Proof using W.
   iIntros (Φ) "(#Hmpmc & Hprod & HP) Hcont".
   unfold is_mpmc. iPoseProof "Hmpmc" as "[#Hchan _]".
   iApply (chan.wp_send ch v γ.(mpmc_chan_name) with "[$Hchan]").
@@ -576,6 +579,7 @@ Lemma mpmc_rcv_au γ ch (n_prod n_cons:nat) (P : V → iProp Σ) (R : gmultiset 
       else is_closed γ ∗ mpmc_consumer γ received ∗ ⌜ v = (zero_val V) ⌝ ) -∗ Φ v ok) -∗
   recv_au γ.(mpmc_chan_name) V Φ.
 Proof.
+  clear IntoValTyped0.
   iIntros "#Hmpmc (Hlc1 & Hlc2) Hcons Hcont".
   unfold is_mpmc.
   iDestruct "Hmpmc" as "[Hchan Hinv]".
@@ -785,7 +789,7 @@ Lemma wp_mpmc_receive γ ch (n_prod n_cons:nat) (P : V → iProp Σ) (R : gmulti
       if ok
       then P v ∗ mpmc_consumer γ (received ⊎ {[+ v +]})
       else is_closed γ ∗ mpmc_consumer γ received ∗ ⌜ v = (zero_val V) ⌝ }}}.
-Proof.
+Proof using W.
   iIntros (Φ) "( #Hmpmc & Hcons) Hcont".
   unfold is_mpmc.
   iPoseProof "Hmpmc" as "[#Hchan _]".
@@ -804,6 +808,7 @@ Lemma mpmc_close_au γ ch (n_prod n_cons:nat) P R (producers : list (gmultiset V
   ▷ Φ -∗
   close_au γ.(mpmc_chan_name) V Φ.
 Proof.
+  clear IntoValTyped0.
   intros.
   iIntros "#Hmpmc Hlc1 (Hprods & HR) Hcont".
   unfold is_mpmc.
@@ -948,7 +953,7 @@ Lemma wp_mpmc_close γ ch (n_prod n_cons:nat) P R (producers : list (gmultiset V
       R (foldr (⊎) ∅ producers) }}}
     #(functions go.close [ct]) #ch
   {{{ RET #(); True }}}.
-Proof.
+Proof using W.
   intros.
   iIntros "(#Hmpmc & Hprods & HR) Hcont".
   iPoseProof "Hmpmc" as "[#Hchan _]".
@@ -968,6 +973,7 @@ Lemma mpmc_get_final_resource
   ([∗ list] r_i ∈ consumers, mpmc_consumer γ r_i)
   ={⊤}=∗ R (foldr disj_union ∅ consumers).
 Proof.
+  clear IntoValTyped0.
   iIntros (Hlen) "Hlc #Hmpmc #Hclosed Hcons".
   unfold is_mpmc. iDestruct "Hmpmc" as "[#Hchan #Hinv]".
   iInv "Hinv" as "Hinv_open" "Hinv_close".

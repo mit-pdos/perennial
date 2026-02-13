@@ -5,9 +5,9 @@ From New.golang.theory Require Import chan.
 Section handshake.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics}.
-Local Set Default Proof Using "All".
-Context `{!chan_idiomG Σ V}.
-Context `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}.
+Context `[!chan_idiomG Σ V].
+Context `[!ZeroVal V] `[!TypedPointsto V] `[!IntoValTyped V t].
+Collection W := sem + IntoValTyped0.
 
 (*----------------------------------------------------------------------------
   Invariant for a simple handshake on an unbuffered channel with unit payloads.
@@ -92,7 +92,7 @@ Lemma wp_handshake_receive γ ch P Q :
   {{{
       v, RET (#v, #true); P v
   }}}.
-Proof.
+Proof using W.
   iIntros (?) "((#Hchan & #Hinv) & HQ) HΦ".
   wp_apply ((chan.wp_receive ch γ Φ  ) with "[$Hchan]").
   iIntros "(Hlc1 & Hlc2 & Hlc3 & _)".
@@ -141,7 +141,7 @@ Lemma wp_handshake_send γ ch v P Q :
   {{{
       RET (#()); Q
   }}}.
-Proof.
+Proof using W.
   iIntros (?) "((#Hchan & #Hinv) & HP) HΦ".
   wp_apply ((chan.wp_send ch v γ Φ  ) with "[$Hchan]").
   iIntros "(Hlc1 & Hlc2 & Hlc3 & _)".
