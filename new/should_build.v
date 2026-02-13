@@ -7,7 +7,6 @@ From New.generatedproof.github_com.stretchr.testify Require assert.
 From New.proof Require Import bytes context sort slices runtime.
 
 From New.proof Require go_etcd_io.raft.v3.
-From New.proof.github_com.mit_pdos.gokv Require gokv.
 From New.proof.github_com.goose_lang.goose.testdata.examples
   Require unittest unittest.generics.
 From New.proof.github_com.goose_lang.goose.testdata.examples
@@ -19,9 +18,6 @@ From New.proof.github_com.goose_lang.goose.model.channel.idiom
   Require chan_au_sel. *)
 
 From New.proof Require go_etcd_io.etcd.client.v3.leasing leasing_proof.protocol.
-
-(* FIXME: requires updating gokv to use new primitive library.... *)
-Require New.generatedproof.github_com.mit_pdos.gokv.vrsm.apps.closed.
 
 From New.proof Require Import inG_problem.
 

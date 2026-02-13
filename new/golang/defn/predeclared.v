@@ -543,7 +543,7 @@ Class Float32Semantics `{!GoSemanticsFunctions} :=
 Class PredeclaredSemantics `{!GoSemanticsFunctions} :=
 {
   #[global] alloc_predeclared u (H : is_predeclared u) v ::
-    ⟦GoAlloc u, v⟧ ⤳[internal_under] (go.ref_one v)%E;
+    ⟦GoAlloc u, v⟧ ⤳[internal_under] (Alloc v)%E;
   #[global] load_predeclared u (H : is_predeclared u) l ::
     ⟦GoLoad u, l⟧ ⤳[internal_under] (Read l)%E;
   #[global] store_predeclared u (H : is_predeclared u) l v ::

@@ -257,19 +257,8 @@ End go_wps.
 Section mem_lemmas.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
   {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
+
 (* Helper lemmas for establishing [IntoValTyped] *)
-
-Lemma _internal_wp_alloc_untyped stk E v :
-  {{{ True }}} go.ref_one (Val v) @ stk; E {{{ l, RET #l; heap_pointsto l (DfracOwn 1) v }}}.
-Proof.
-  iIntros "% _ HΦ". wp_call. wp_apply wp_alloc_untyped.
-  iIntros (?) "Hl". wp_pures.
-  wp_call.
-  wp_apply (wp_prepare_write with "Hl"). iIntros "[Hl Hl']".
-  wp_pures. wp_apply (wp_finish_store with "[$Hl $Hl']"). iIntros "Hl".
-  wp_pures. rewrite !go.into_val_unfold. iApply "HΦ". iFrame.
-Qed.
-
 Lemma _internal_wp_untyped_start_read l dq v s E :
   {{{ ▷ heap_pointsto l dq v }}}
     StartRead #l @ s; E
@@ -385,7 +374,7 @@ Existing Class go.is_primitive_zero_val.
 Ltac solve_wp_alloc :=
   iIntros "* _ HΦ";
   rewrite typed_pointsto_unseal /=;
-  wp_pures; by wp_apply _internal_wp_alloc_untyped.
+  wp_pures; by wp_apply wp_alloc_untyped.
 
 Ltac solve_wp_load :=
   iIntros "* Hl HΦ";

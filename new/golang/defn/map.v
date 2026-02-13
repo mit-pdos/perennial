@@ -129,7 +129,7 @@ Class MapSemantics `{!GoSemanticsFunctions} :=
   #[global] make2_map key_type elem_type ::
     FuncUnfold go.make2 [go.MapType key_type elem_type]
     (λ: "len",
-       go.ref_one (InternalMapMake (GoZeroVal elem_type #())))%V;
+       Alloc (InternalMapMake (GoZeroVal elem_type #())))%V;
   #[global] make1_map key_type elem_type ::
     FuncUnfold go.make1 [go.MapType key_type elem_type]
     (λ: <>, FuncResolve go.make2 [go.MapType key_type elem_type] #() #(W64 0))%V;

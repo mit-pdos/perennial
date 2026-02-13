@@ -8,7 +8,7 @@ Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
 Ltac solve_wp_alloc :=
   iIntros "* _ HΦ";
   rewrite typed_pointsto_unseal /=;
-  wp_pures; by wp_apply _internal_wp_alloc_untyped.
+  wp_pures; by wp_apply wp_alloc_untyped.
 
 Ltac solve_wp_load :=
   iIntros "* Hl HΦ";

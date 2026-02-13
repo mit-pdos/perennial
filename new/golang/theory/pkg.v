@@ -210,7 +210,7 @@ Ltac iPkgInit :=
 
 Section package_init.
 Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
-  {go_gctx : GoGlobalContext} {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
+  {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
 Local Set Default Proof Using "All".
 
 #[local] Transparent own_initializing.

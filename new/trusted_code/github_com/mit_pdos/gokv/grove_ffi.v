@@ -14,19 +14,19 @@ Section grove.
 
   (** Type: func(uint64) Listener *)
   Definition Listenⁱᵐᵖˡ : val :=
-    λ: "e", ref (ExternalOp ListenOp "e").
+    λ: "e", Alloc (ExternalOp ListenOp "e").
 
   (** Type: func(uint64) (bool, Connection) *)
   Definition Connectⁱᵐᵖˡ : val :=
     λ: "e",
       let: "c" := ExternalOp ConnectOp "e" in
       let: "err" := Fst "c" in
-      let: "socket" := ref (Snd "c") in
+      let: "socket" := Alloc (Snd "c") in
       ("err", "socket").
 
   (** Type: func(Listener) Connection *)
   Definition Acceptⁱᵐᵖˡ : val :=
-    λ: "e", ref (ExternalOp AcceptOp (!"e")).
+    λ: "e", Alloc (ExternalOp AcceptOp (!"e")).
 
   (** Type: func(Connection, []byte) *)
   Definition Sendⁱᵐᵖˡ : val :=

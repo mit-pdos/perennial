@@ -12,6 +12,7 @@ From Perennial Require Export base.
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
+Collection W := sem_fn + pre_sem.
 
 (** This means [m] is a valid mutex with invariant [R]. *)
 Definition is_lock (m: loc) (R : iProp Σ) : iProp Σ :=
@@ -129,7 +130,7 @@ Lemma wp_lock_unlock m R :
   {{{ is_lock m R ∗ own_lock m ∗ ▷ R }}}
     lock.unlock #m
   {{{ RET #(); True }}}.
-Proof.
+Proof using W.
   wp_start as "(#His & Hlocked & HR)".
   iNamed "His".
   wp_bind (CmpXchg _ _ _).

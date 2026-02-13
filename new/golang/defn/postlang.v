@@ -37,39 +37,39 @@ Global Notation "e1 =⟨ t ⟩ e2" := (GoInstruction (GoOp GoEquals t) (e1%E, e2
                              (at level 70, format "e1  =⟨ t ⟩  e2") : expr_scope.
 
 Global Notation "e1 +⟨ t ⟩ e2" := (GoInstruction (GoOp GoPlus t) (e1%E, e2%E)%E)
-                             (at level 70, format "e1  +⟨ t ⟩  e2") : expr_scope.
+                             (at level 50, format "e1  +⟨ t ⟩  e2") : expr_scope.
 Global Notation "e1 -⟨ t ⟩ e2" := (GoInstruction (GoOp GoSub t) (e1%E, e2%E)%E)
-                             (at level 70, format "e1  -⟨ t ⟩  e2") : expr_scope.
+                             (at level 50, format "e1  -⟨ t ⟩  e2") : expr_scope.
 Global Notation "e1 *⟨ t ⟩ e2" := (GoInstruction (GoOp GoMul t) (e1%E, e2%E)%E)
-                             (at level 70, format "e1  *⟨ t ⟩  e2") : expr_scope.
+                             (at level 50, format "e1  *⟨ t ⟩  e2") : expr_scope.
 Global Notation "e1 /⟨ t ⟩ e2" := (GoInstruction (GoOp GoDiv t) (e1%E, e2%E)%E)
-                             (at level 70, format "e1  /⟨ t ⟩  e2") : expr_scope.
+                             (at level 50, format "e1  /⟨ t ⟩  e2") : expr_scope.
 Global Notation "e1 %⟨ t ⟩ e2" := (GoInstruction (GoOp GoRemainder t) (e1%E, e2%E)%E)
-                             (at level 70, format "e1  %⟨ t ⟩  e2") : expr_scope.
+                             (at level 50, format "e1  %⟨ t ⟩  e2") : expr_scope.
 
 Global Notation "e1 &⟨ t ⟩ e2" := (GoInstruction (GoOp GoAnd t) (e1%E, e2%E)%E)
-                             (at level 70, format "e1  &⟨ t ⟩  e2") : expr_scope.
+                             (at level 50, format "e1  &⟨ t ⟩  e2") : expr_scope.
 Global Notation "e1 |⟨ t ⟩ e2" := (GoInstruction (GoOp GoOr t) (e1%E, e2%E)%E)
-                             (at level 70, format "e1  |⟨ t ⟩  e2") : expr_scope.
+                             (at level 50, format "e1  |⟨ t ⟩  e2") : expr_scope.
 Global Notation "e1 ^⟨ t ⟩ e2" := (GoInstruction (GoOp GoXor t) (e1%E, e2%E)%E)
-                             (at level 70, format "e1  ^⟨ t ⟩  e2") : expr_scope.
+                             (at level 50, format "e1  ^⟨ t ⟩  e2") : expr_scope.
 Global Notation "e1 &^⟨ t ⟩ e2" := (GoInstruction (GoOp GoBitClear t) (e1%E, e2%E)%E)
-                             (at level 70, format "e1  &^⟨ t ⟩  e2") : expr_scope.
+                             (at level 50, format "e1  &^⟨ t ⟩  e2") : expr_scope.
 Global Notation "e1 <<⟨ t ⟩ e2" := (GoInstruction (GoOp GoShiftl t) (e1%E, e2%E)%E)
-                             (at level 70, format "e1  <<⟨ t ⟩  e2") : expr_scope.
+                             (at level 50, format "e1  <<⟨ t ⟩  e2") : expr_scope.
 Global Notation "e1 >>⟨ t ⟩ e2" := (GoInstruction (GoOp GoShiftr t) (e1%E, e2%E)%E)
-                             (at level 70, format "e1  >>⟨ t ⟩  e2") : expr_scope.
+                             (at level 50, format "e1  >>⟨ t ⟩  e2") : expr_scope.
 
 Global Notation "⟨ t ⟩- e" := (GoInstruction (GoUnOp GoNeg t) e%E)
-                                (at level 70, format "⟨ t ⟩-  e") : expr_scope.
+                                (at level 75, format "⟨ t ⟩-  e") : expr_scope.
 
 Global Notation "⟨ t ⟩! e" := (GoInstruction (GoUnOp GoNot t) e%E)
-                                (at level 70, format "⟨ t ⟩!  e") : expr_scope.
+                                (at level 75, format "⟨ t ⟩!  e") : expr_scope.
 
 Global Notation "⟨ t ⟩^ e" := (GoInstruction (GoUnOp GoComplement t) e%E)
-                                (at level 70, format "⟨ t ⟩^  e") : expr_scope.
+                                (at level 75, format "⟨ t ⟩^  e") : expr_scope.
 
-Global Notation "e1 ≠⟨ t ⟩ e2" := (⟨go.bool⟩! e1 =⟨t⟩ e2)%E
+Global Notation "e1 ≠⟨ t ⟩ e2" := (⟨go.bool⟩! (e1 =⟨t⟩ e2))%E
                              (at level 70, format "e1  ≠⟨ t ⟩  e2") : expr_scope.
 
 Module map.
@@ -188,9 +188,6 @@ Proof. solve_decision. Qed.
 
 Global Instance func_eq_dec : EqDecision func.t.
 Proof. solve_decision. Qed.
-
-Definition ref_one : val :=
-  λ: "v", let: "l" := Alloc (LitV $ LitString "") in "l" <- "v";; "l".
 
 (* Here's an example exhibiting struct comparison subtleties:
 
@@ -472,7 +469,7 @@ Class CoreSemantics `{!GoSemanticsFunctions} : Prop :=
     ⟦GoStore t_under, v⟧ ⤳[internal_under] e → ⟦GoStore t, v⟧ ⤳[internal] e;
 
   #[global] alloc_primitive v u (H : is_primitive u) ::
-    ⟦GoAlloc u, v⟧ ⤳[internal_under] (ref_one v)%E;
+    ⟦GoAlloc u, v⟧ ⤳[internal_under] (Alloc v)%E;
   #[global] alloc_struct v `{!fds =→ fds_unsealed} ::
     ⟦GoAlloc (go.StructType fds), v⟧ ⤳[internal_under]
       (let: "l" := GoPrealloc #() in

@@ -11,7 +11,7 @@ Class StringSemantics `{!GoSemanticsFunctions} :=
   #[global] package_sem :: strings.Assumptions;
 
   #[global] internal_string_len_step (s : go_string) ::
-    ⟦InternalStringLen, #s⟧ ⤳ #(if decide (length s < 2^64) then
+    ⟦InternalStringLen, #s⟧ ⤳ (if decide (length s < 2^63) then
                                   (Val #(W64 (length s)))
                                 else AngelicExit #());
 

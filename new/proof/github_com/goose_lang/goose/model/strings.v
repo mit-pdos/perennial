@@ -14,8 +14,8 @@ Lemma wp_string_len (s : go_string) `[!t ↓u go.string] :
     (#(functions go.len [t]) #s)
   {{{ RET #(W64 (length s)); ⌜ length s < 2^63 ⌝ }}}.
 Proof.
-  wp_start. wp_if_destruct.
-  - iApply "HΦ". word.
+  wp_start. destruct decide.
+  - wp_auto. iApply "HΦ". word.
   - wp_apply wp_AngelicExit.
 Qed.
 
@@ -46,7 +46,7 @@ Proof.
     wp_for_post.
     iFrame. iSplitL; last word.
     iApply to_named. iExactEq "Ha". f_equal.
-    simpl. replace (sint.nat 0) with O by word.
+    simpl. replace (sint.nat (W64 0)) with O by word.
     simpl. rewrite -take_S_r; last done.
     f_equal. word.
   - iApply "HΦ". rewrite take_ge; last len. iFrame.

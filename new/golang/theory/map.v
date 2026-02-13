@@ -166,11 +166,7 @@ Lemma wp_map_make2 (len : w64) key_type elem_type
 Proof.
   wp_start.
   epose proof (go.is_map_pure_map_empty _).
-  iApply wp_alloc_untyped; try done.
-  { erewrite go.is_map_pure_flatten; done. }
-  iNext.
-  iIntros (?) "Hl".
-  replace (LitV l) with #l; last by rewrite go.into_val_unfold.
+  wp_apply wp_alloc_untyped. iIntros (?) "Hl".
   iApply "HΦ". rewrite own_map_unseal.
   iFrame "∗%". iPureIntro. split.
   - intros. rewrite lookup_empty //.
