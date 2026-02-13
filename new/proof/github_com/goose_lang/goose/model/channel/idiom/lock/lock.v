@@ -40,7 +40,7 @@ Definition is_lock_channel (γ : lock_channel_names) (ch : loc)
   "#Hinv" ∷ inv nroot (
     ∃ s locked,
       "Hch" ∷ own_chan γ.(lchan_name) V s ∗
-      "%Hcap" ∷ ⌜ chan_cap γ.(lchan_name) = 1 ⌝ ∗
+      "%Hcap" ∷ ⌜ chan_cap γ.(lchan_name) = W64 1 ⌝ ∗
       "Hlocked_ghost" ∷ ghost_var γ.(locked_name) (DfracOwn (1/2)) locked ∗
       (match s with
        | chanstate.Buffered [] =>
@@ -62,7 +62,7 @@ Definition has_lock_channel (γ : lock_channel_names) : iProp Σ :=
   ghost_var γ.(locked_name) (DfracOwn (1/2)) true.
 
 Lemma start_lock_channel ch (R : iProp Σ) γ :
-  chan_cap γ = 1 ->
+  chan_cap γ = W64 1 ->
   is_chan ch γ V -∗
   own_chan γ V (chanstate.Buffered []) -∗
   ▷ R ={⊤}=∗
@@ -76,7 +76,7 @@ Proof.
   iMod (inv_alloc nroot _ (
             ∃ s locked,
               "Hch" ∷ own_chan γ V s ∗
-              "%Hcap" ∷ ⌜ chan_cap γ = 1 ⌝ ∗
+              "%Hcap" ∷ ⌜ chan_cap γ = W64 1 ⌝ ∗
               "Hlocked_ghost" ∷ ghost_var γlock.(locked_name) (DfracOwn (1/2)) locked ∗
               (match s with
                | chanstate.Buffered [] =>

@@ -66,9 +66,8 @@ Lemma wp_Equal sl_b0 sl_b1 d0 d1 (b0 b1 : list w8) :
   }}}.
 Proof.
   wp_start. iNamed "Hpre". wp_auto.
-  (* FIXME: expose lemmas about the [Convert] instruction for this case. *)
-  wp_apply (wp_StringFromBytes with "Hb0") as "Hb0".
-  wp_apply (wp_StringFromBytes with "Hb1") as "Hb1".
+  wp_apply (wp_bytes_to_string with "Hb0") as "Hb0".
+  wp_apply (wp_bytes_to_string with "Hb1") as "Hb1".
   iApply "HΦ". iFrame.
 Qed.
 

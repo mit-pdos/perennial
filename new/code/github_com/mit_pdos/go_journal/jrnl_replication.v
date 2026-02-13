@@ -24,11 +24,15 @@ Definition Openⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val 
   λ: "txn" "a",
     exception_do (let: "a" := (GoAlloc common.Bnum "a") in
     let: "txn" := (GoAlloc (go.PointerType obj.Log) "txn") in
-    return: (GoAlloc RepBlock (CompositeLiteral RepBlock (LiteralValue [KeyedElement (Some (KeyField "txn"%go)) (ElementExpression (go.PointerType obj.Log) (![go.PointerType obj.Log] "txn")); KeyedElement (Some (KeyField "m"%go)) (ElementExpression (go.PointerType sync.Mutex) (GoAlloc sync.Mutex (GoZeroVal sync.Mutex #()))); KeyedElement (Some (KeyField "a0"%go)) (ElementExpression addr.Addr (let: "$a0" := (![common.Bnum] "a") in
-      let: "$a1" := #(W64 0) in
-      (FuncResolve addr.MkAddr [] #()) "$a0" "$a1")); KeyedElement (Some (KeyField "a1"%go)) (ElementExpression addr.Addr (let: "$a0" := ((![common.Bnum] "a") +⟨go.uint64⟩ #(W64 1)) in
-      let: "$a1" := #(W64 0) in
-      (FuncResolve addr.MkAddr [] #()) "$a0" "$a1"))])))).
+    return: (GoAlloc RepBlock (let: "$v0" := (![go.PointerType obj.Log] "txn") in
+     let: "$v1" := (GoAlloc sync.Mutex (GoZeroVal sync.Mutex #())) in
+     let: "$v2" := (let: "$a0" := (![common.Bnum] "a") in
+     let: "$a1" := #(W64 0) in
+     (FuncResolve addr.MkAddr [] #()) "$a0" "$a1") in
+     let: "$v3" := (let: "$a0" := ((![common.Bnum] "a") +⟨go.uint64⟩ #(W64 1)) in
+     let: "$a1" := #(W64 0) in
+     (FuncResolve addr.MkAddr [] #()) "$a0" "$a1") in
+     CompositeLiteral RepBlock (LiteralValue [KeyedElement (Some (KeyField "txn"%go)) (ElementExpression (go.PointerType obj.Log) "$v0"); KeyedElement (Some (KeyField "m"%go)) (ElementExpression (go.PointerType sync.Mutex) "$v1"); KeyedElement (Some (KeyField "a0"%go)) (ElementExpression addr.Addr "$v2"); KeyedElement (Some (KeyField "a1"%go)) (ElementExpression addr.Addr "$v3")])))).
 
 (* can fail in principle if CommitWait fails,
    but that's really impossible since it's an empty transaction

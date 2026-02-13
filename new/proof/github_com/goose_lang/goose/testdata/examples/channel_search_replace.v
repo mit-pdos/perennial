@@ -11,7 +11,6 @@ Context {sem : go.Semantics} {package_sem : chan_spec_raw_examples.Assumptions}.
 Local Set Default Proof Using "All".
 Context `{!chan_idiomG Σ slice.t}.
 Context `{!syncG Σ}.
-Context `{!waitgroup_joinG Σ}.
 
 #[global] Instance : IsPkgInit (iProp Σ) chan_spec_raw_examples := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf (iProp Σ) chan_spec_raw_examples := build_get_is_pkg_init_wf.
@@ -78,7 +77,7 @@ Proof.
     assert (sint.nat i < length xs)%nat as Hlt by word.
     apply list_lookup_lt in Hlt as [x' Hlookup].
     erewrite drop_S; last done.
-    iDestruct (own_slice_elem_acc i with "Hxs") as "[Helem Hxs]".
+    iDestruct (own_slice_elem_acc (sint.Z i) with "Hxs") as "[Helem Hxs]".
     { word. }
     { rewrite lookup_app_r; last len.
       replace (_ - _)%nat with 0%nat by len. done. }
@@ -156,7 +155,7 @@ Proof.
         "offset" ∷ offset_ptr ↦ offset ∗
         "Hs" ∷ (slice.slice s w64 offset s.(slice.len)) ↦* drop (uint.nat offset) xs ∗
         "Hwg" ∷ join.own_Adder wg_ptr nadded
-          ((slice.slice s w64 0 offset) ↦* take (uint.nat offset) (search_replace x y xs)) ∗
+          ((slice.slice s w64 (W64 0) offset) ↦* take (uint.nat offset) (search_replace x y xs)) ∗
         "%Hoffset" ∷ ⌜ 0 ≤ sint.Z offset ≤ length xs ⌝ ∗
         "%Hnadded" ∷ ⌜ 0 ≤ workRange * sint.Z nadded ≤ sint.Z offset ∨ sint.nat offset = length xs⌝
     )%I with "[offset Hs Hwg]" as "HH".
@@ -190,7 +189,7 @@ Proof.
   { word. }
   iIntros "[Hwg Hdone]".
   wp_auto.
-  iDestruct (own_slice_split nextOffset with "Hs") as "[Hsection Hs]".
+  iDestruct (own_slice_split (W64 nextOffset) with "Hs") as "[Hsection Hs]".
   { subst nextOffset. word. }
   rewrite drop_drop.
   wp_apply (wp_handoff_send with "[Hdone Hsection]").

@@ -28,7 +28,9 @@ Definition Beginⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val
   λ: "log",
     exception_do (let: "log" := (GoAlloc (go.PointerType obj.Log) "log") in
     let: "trans" := (GoAlloc (go.PointerType Op) (GoZeroVal (go.PointerType Op) #())) in
-    let: "$r0" := (GoAlloc Op (CompositeLiteral Op (LiteralValue [KeyedElement (Some (KeyField "log"%go)) (ElementExpression (go.PointerType obj.Log) (![go.PointerType obj.Log] "log")); KeyedElement (Some (KeyField "bufs"%go)) (ElementExpression (go.PointerType buf.BufMap) ((FuncResolve buf.MkBufMap [] #()) #()))]))) in
+    let: "$r0" := (GoAlloc Op (let: "$v0" := (![go.PointerType obj.Log] "log") in
+    let: "$v1" := ((FuncResolve buf.MkBufMap [] #()) #()) in
+    CompositeLiteral Op (LiteralValue [KeyedElement (Some (KeyField "log"%go)) (ElementExpression (go.PointerType obj.Log) "$v0"); KeyedElement (Some (KeyField "bufs"%go)) (ElementExpression (go.PointerType buf.BufMap) "$v1")]))) in
     do:  ("trans" <-[go.PointerType Op] "$r0");;;
     do:  (let: "$a0" := #(W64 3) in
     let: "$a1" := #"Begin: %v

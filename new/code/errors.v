@@ -42,7 +42,8 @@ Definition as' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "er
 Definition Newⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "text",
     exception_do (let: "text" := (GoAlloc go.string "text") in
-    return: (Convert (go.PointerType errorString) go.error (GoAlloc errorString (CompositeLiteral errorString (LiteralValue [KeyedElement None (ElementExpression go.string (![go.string] "text"))]))))).
+    return: (Convert (go.PointerType errorString) go.error (GoAlloc errorString (let: "$v0" := (![go.string] "text") in
+     CompositeLiteral errorString (LiteralValue [KeyedElement None (ElementExpression go.string "$v0")]))))).
 
 (* go: errors.go:73:23 *)
 Definition errorString__Errorⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=

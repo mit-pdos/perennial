@@ -126,7 +126,7 @@ Lemma wp_Search (n: w64) (f_code: func.t) (f: Z → bool) (I: iProp Σ) :
       ⌜(∀ i, 0 ≤ i < sint.Z n → f i = false) → sint.Z i = sint.Z n⌝ ∗
       ⌜∀ k, 0 ≤ k < sint.Z i → f k = false⌝
   }}}.
-Proof.
+Proof using W.
   wp_start as "(%Hpos & #Hf0 & I & %Hvalid)".
   wp_auto.
 
@@ -273,7 +273,7 @@ Lemma wp_SearchInts (a: slice.t) (x: w64) q (xs: list w64) :
       ⌜(∀ (j: nat) x0, Z.of_nat j < sint.Z i → xs !! j = Some x0 → sint.Z x0 < sint.Z x) ∧
        (∀ (j: nat) x0, sint.Z i ≤ Z.of_nat j → xs !! j = Some x0 → sint.Z x ≤ sint.Z x0)
       ⌝ }}}.
-Proof.
+Proof using W.
   wp_start as "[Ha %Hsort]".
   wp_auto.
   iDestruct (own_slice_len with "Ha") as %Hlen.
@@ -285,7 +285,8 @@ Proof.
     - iIntros (i). wp_start as "[Ha %Hbound]".
       wp_auto.
       list_elem xs (sint.Z i) as x_i.
-      wp_apply (wp_load_slice_elem with "[$Ha]") as "Ha"; [ word | eauto | ].
+      rewrite -> decide_True; last word.
+      wp_apply (wp_load_slice_index with "[$Ha]") as "Ha"; [ word | eauto | ].
       iApply "HΦ". iFrame.
       iPureIntro.
       rewrite /search_f.
@@ -308,7 +309,7 @@ Proof.
   iFrame.
   iPureIntro.
   destruct Hsearch as (Hi_nn & Hfound & Hoob & Hgt).
-  destruct (decide (sint.Z i < sint.Z a.(slice.len_f))).
+  destruct (decide (sint.Z i < sint.Z a.(slice.len))).
   {
     (* returned index is in-bounds *)
     specialize (Hfound ltac:(word)).

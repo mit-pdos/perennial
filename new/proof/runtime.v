@@ -16,7 +16,7 @@ Lemma wp_Gosched :
   {{{
         RET #(); True
   }}}.
-Proof.
+Proof using W.
   wp_start.
   iApply "HΦ".
   done.

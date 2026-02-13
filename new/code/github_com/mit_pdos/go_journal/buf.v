@@ -36,7 +36,11 @@ Definition MkBufⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val
     let: "sz" := (GoAlloc go.uint64 "sz") in
     let: "addr" := (GoAlloc addr.Addr "addr") in
     let: "b" := (GoAlloc (go.PointerType Buf) (GoZeroVal (go.PointerType Buf) #())) in
-    let: "$r0" := (GoAlloc Buf (CompositeLiteral Buf (LiteralValue [KeyedElement (Some (KeyField "Addr"%go)) (ElementExpression addr.Addr (![addr.Addr] "addr")); KeyedElement (Some (KeyField "Sz"%go)) (ElementExpression go.uint64 (![go.uint64] "sz")); KeyedElement (Some (KeyField "Data"%go)) (ElementExpression (go.SliceType go.byte) (![go.SliceType go.byte] "data")); KeyedElement (Some (KeyField "dirty"%go)) (ElementExpression go.bool #false)]))) in
+    let: "$r0" := (GoAlloc Buf (let: "$v0" := (![addr.Addr] "addr") in
+    let: "$v1" := (![go.uint64] "sz") in
+    let: "$v2" := (![go.SliceType go.byte] "data") in
+    let: "$v3" := #false in
+    CompositeLiteral Buf (LiteralValue [KeyedElement (Some (KeyField "Addr"%go)) (ElementExpression addr.Addr "$v0"); KeyedElement (Some (KeyField "Sz"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "Data"%go)) (ElementExpression (go.SliceType go.byte) "$v2"); KeyedElement (Some (KeyField "dirty"%go)) (ElementExpression go.bool "$v3")]))) in
     do:  ("b" <-[go.PointerType Buf] "$r0");;;
     return: (![go.PointerType Buf] "b")).
 
@@ -59,7 +63,11 @@ Definition MkBufLoadⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
     Slice disk.Block ("$s", ![go.uint64] "bytefirst", (![go.uint64] "bytelast") +⟨go.uint64⟩ #(W64 1))) in
     do:  ("data" <-[disk.Block] "$r0");;;
     let: "b" := (GoAlloc (go.PointerType Buf) (GoZeroVal (go.PointerType Buf) #())) in
-    let: "$r0" := (GoAlloc Buf (CompositeLiteral Buf (LiteralValue [KeyedElement (Some (KeyField "Addr"%go)) (ElementExpression addr.Addr (![addr.Addr] "addr")); KeyedElement (Some (KeyField "Sz"%go)) (ElementExpression go.uint64 (![go.uint64] "sz")); KeyedElement (Some (KeyField "Data"%go)) (ElementExpression disk.Block (![disk.Block] "data")); KeyedElement (Some (KeyField "dirty"%go)) (ElementExpression go.bool #false)]))) in
+    let: "$r0" := (GoAlloc Buf (let: "$v0" := (![addr.Addr] "addr") in
+    let: "$v1" := (![go.uint64] "sz") in
+    let: "$v2" := (![disk.Block] "data") in
+    let: "$v3" := #false in
+    CompositeLiteral Buf (LiteralValue [KeyedElement (Some (KeyField "Addr"%go)) (ElementExpression addr.Addr "$v0"); KeyedElement (Some (KeyField "Sz"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "Data"%go)) (ElementExpression disk.Block "$v2"); KeyedElement (Some (KeyField "dirty"%go)) (ElementExpression go.bool "$v3")]))) in
     do:  ("b" <-[go.PointerType Buf] "$r0");;;
     return: (![go.PointerType Buf] "b")).
 
@@ -235,7 +243,8 @@ Definition Buf__BnumPutⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
 Definition MkBufMapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "a" := (GoAlloc (go.PointerType BufMap) (GoZeroVal (go.PointerType BufMap) #())) in
-    let: "$r0" := (GoAlloc BufMap (CompositeLiteral BufMap (LiteralValue [KeyedElement (Some (KeyField "addrs"%go)) (ElementExpression (go.MapType go.uint64 (go.PointerType Buf)) ((FuncResolve go.make1 [go.MapType go.uint64 (go.PointerType Buf)] #()) #()))]))) in
+    let: "$r0" := (GoAlloc BufMap (let: "$v0" := ((FuncResolve go.make1 [go.MapType go.uint64 (go.PointerType Buf)] #()) #()) in
+    CompositeLiteral BufMap (LiteralValue [KeyedElement (Some (KeyField "addrs"%go)) (ElementExpression (go.MapType go.uint64 (go.PointerType Buf)) "$v0")]))) in
     do:  ("a" <-[go.PointerType BufMap] "$r0");;;
     return: (![go.PointerType BufMap] "a")).
 

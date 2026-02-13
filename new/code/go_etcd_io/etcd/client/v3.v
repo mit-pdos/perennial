@@ -909,7 +909,18 @@ Definition Op__toRangeRequestⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
       (FuncResolve go.panic [] #()) "$a0")
     else do:  #());;;
     let: "r" := (GoAlloc (go.PointerType etcdserverpb.RangeRequest) (GoZeroVal (go.PointerType etcdserverpb.RangeRequest) #())) in
-    let: "$r0" := (GoAlloc etcdserverpb.RangeRequest (CompositeLiteral etcdserverpb.RangeRequest (LiteralValue [KeyedElement (Some (KeyField "Key"%go)) (ElementExpression (go.SliceType go.byte) (![go.SliceType go.byte] (StructFieldRef Op "key"%go "op"))); KeyedElement (Some (KeyField "RangeEnd"%go)) (ElementExpression (go.SliceType go.byte) (![go.SliceType go.byte] (StructFieldRef Op "end"%go "op"))); KeyedElement (Some (KeyField "Limit"%go)) (ElementExpression go.int64 (![go.int64] (StructFieldRef Op "limit"%go "op"))); KeyedElement (Some (KeyField "Revision"%go)) (ElementExpression go.int64 (![go.int64] (StructFieldRef Op "rev"%go "op"))); KeyedElement (Some (KeyField "Serializable"%go)) (ElementExpression go.bool (![go.bool] (StructFieldRef Op "serializable"%go "op"))); KeyedElement (Some (KeyField "KeysOnly"%go)) (ElementExpression go.bool (![go.bool] (StructFieldRef Op "keysOnly"%go "op"))); KeyedElement (Some (KeyField "CountOnly"%go)) (ElementExpression go.bool (![go.bool] (StructFieldRef Op "countOnly"%go "op"))); KeyedElement (Some (KeyField "MinModRevision"%go)) (ElementExpression go.int64 (![go.int64] (StructFieldRef Op "minModRev"%go "op"))); KeyedElement (Some (KeyField "MaxModRevision"%go)) (ElementExpression go.int64 (![go.int64] (StructFieldRef Op "maxModRev"%go "op"))); KeyedElement (Some (KeyField "MinCreateRevision"%go)) (ElementExpression go.int64 (![go.int64] (StructFieldRef Op "minCreateRev"%go "op"))); KeyedElement (Some (KeyField "MaxCreateRevision"%go)) (ElementExpression go.int64 (![go.int64] (StructFieldRef Op "maxCreateRev"%go "op")))]))) in
+    let: "$r0" := (GoAlloc etcdserverpb.RangeRequest (let: "$v0" := (![go.SliceType go.byte] (StructFieldRef Op "key"%go "op")) in
+    let: "$v1" := (![go.SliceType go.byte] (StructFieldRef Op "end"%go "op")) in
+    let: "$v2" := (![go.int64] (StructFieldRef Op "limit"%go "op")) in
+    let: "$v3" := (![go.int64] (StructFieldRef Op "rev"%go "op")) in
+    let: "$v4" := (![go.bool] (StructFieldRef Op "serializable"%go "op")) in
+    let: "$v5" := (![go.bool] (StructFieldRef Op "keysOnly"%go "op")) in
+    let: "$v6" := (![go.bool] (StructFieldRef Op "countOnly"%go "op")) in
+    let: "$v7" := (![go.int64] (StructFieldRef Op "minModRev"%go "op")) in
+    let: "$v8" := (![go.int64] (StructFieldRef Op "maxModRev"%go "op")) in
+    let: "$v9" := (![go.int64] (StructFieldRef Op "minCreateRev"%go "op")) in
+    let: "$v10" := (![go.int64] (StructFieldRef Op "maxCreateRev"%go "op")) in
+    CompositeLiteral etcdserverpb.RangeRequest (LiteralValue [KeyedElement (Some (KeyField "Key"%go)) (ElementExpression (go.SliceType go.byte) "$v0"); KeyedElement (Some (KeyField "RangeEnd"%go)) (ElementExpression (go.SliceType go.byte) "$v1"); KeyedElement (Some (KeyField "Limit"%go)) (ElementExpression go.int64 "$v2"); KeyedElement (Some (KeyField "Revision"%go)) (ElementExpression go.int64 "$v3"); KeyedElement (Some (KeyField "Serializable"%go)) (ElementExpression go.bool "$v4"); KeyedElement (Some (KeyField "KeysOnly"%go)) (ElementExpression go.bool "$v5"); KeyedElement (Some (KeyField "CountOnly"%go)) (ElementExpression go.bool "$v6"); KeyedElement (Some (KeyField "MinModRevision"%go)) (ElementExpression go.int64 "$v7"); KeyedElement (Some (KeyField "MaxModRevision"%go)) (ElementExpression go.int64 "$v8"); KeyedElement (Some (KeyField "MinCreateRevision"%go)) (ElementExpression go.int64 "$v9"); KeyedElement (Some (KeyField "MaxCreateRevision"%go)) (ElementExpression go.int64 "$v10")]))) in
     do:  ("r" <-[go.PointerType etcdserverpb.RangeRequest] "$r0");;;
     (if: Convert go.untyped_bool go.bool ((![go.PointerType SortOption] (StructFieldRef Op "sort"%go "op")) ≠⟨go.PointerType SortOption⟩ (Convert go.untyped_nil (go.PointerType SortOption) UntypedNil))
     then
@@ -958,7 +969,10 @@ Definition Op__toTxnRequestⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
       do:  ("i" <-[go.int] "$key");;;
       let: "$r0" := (Convert (go.PointerType Cmp) (go.PointerType etcdserverpb.Compare) (IndexRef Cmp (![go.SliceType Cmp] (StructFieldRef Op "cmps"%go "op"), ![go.int] "i"))) in
       do:  ((IndexRef (go.SliceType (go.PointerType etcdserverpb.Compare)) (![go.SliceType (go.PointerType etcdserverpb.Compare)] "cmps", ![go.int] "i")) <-[go.PointerType etcdserverpb.Compare] "$r0")));;;
-    return: (GoAlloc etcdserverpb.TxnRequest (CompositeLiteral etcdserverpb.TxnRequest (LiteralValue [KeyedElement (Some (KeyField "Compare"%go)) (ElementExpression (go.SliceType (go.PointerType etcdserverpb.Compare)) (![go.SliceType (go.PointerType etcdserverpb.Compare)] "cmps")); KeyedElement (Some (KeyField "Success"%go)) (ElementExpression (go.SliceType (go.PointerType etcdserverpb.RequestOp)) (![go.SliceType (go.PointerType etcdserverpb.RequestOp)] "thenOps")); KeyedElement (Some (KeyField "Failure"%go)) (ElementExpression (go.SliceType (go.PointerType etcdserverpb.RequestOp)) (![go.SliceType (go.PointerType etcdserverpb.RequestOp)] "elseOps"))])))).
+    return: (GoAlloc etcdserverpb.TxnRequest (let: "$v0" := (![go.SliceType (go.PointerType etcdserverpb.Compare)] "cmps") in
+     let: "$v1" := (![go.SliceType (go.PointerType etcdserverpb.RequestOp)] "thenOps") in
+     let: "$v2" := (![go.SliceType (go.PointerType etcdserverpb.RequestOp)] "elseOps") in
+     CompositeLiteral etcdserverpb.TxnRequest (LiteralValue [KeyedElement (Some (KeyField "Compare"%go)) (ElementExpression (go.SliceType (go.PointerType etcdserverpb.Compare)) "$v0"); KeyedElement (Some (KeyField "Success"%go)) (ElementExpression (go.SliceType (go.PointerType etcdserverpb.RequestOp)) "$v1"); KeyedElement (Some (KeyField "Failure"%go)) (ElementExpression (go.SliceType (go.PointerType etcdserverpb.RequestOp)) "$v2")])))).
 
 (* go: op.go:192:14 *)
 Definition Op__toRequestOpⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -966,24 +980,43 @@ Definition Op__toRequestOpⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
     exception_do (let: "op" := (GoAlloc Op "op") in
     let: "$sw" := (![opType] (StructFieldRef Op "t"%go "op")) in
     (if: "$sw" =⟨opType⟩ tRange
-    then return: (GoAlloc etcdserverpb.RequestOp (CompositeLiteral etcdserverpb.RequestOp (LiteralValue [KeyedElement (Some (KeyField "Request"%go)) (ElementExpression (go.PointerType etcdserverpb.RequestOp_RequestRange) (GoAlloc etcdserverpb.RequestOp_RequestRange (CompositeLiteral etcdserverpb.RequestOp_RequestRange (LiteralValue [KeyedElement (Some (KeyField "RequestRange"%go)) (ElementExpression (go.PointerType etcdserverpb.RangeRequest) ((MethodResolve Op "toRangeRequest"%go (![Op] "op")) #()))]))))])))
+    then
+      return: (GoAlloc etcdserverpb.RequestOp (let: "$v0" := (GoAlloc etcdserverpb.RequestOp_RequestRange (let: "$v0" := ((MethodResolve Op "toRangeRequest"%go (![Op] "op")) #()) in
+       CompositeLiteral etcdserverpb.RequestOp_RequestRange (LiteralValue [KeyedElement (Some (KeyField "RequestRange"%go)) (ElementExpression (go.PointerType etcdserverpb.RangeRequest) "$v0")]))) in
+       CompositeLiteral etcdserverpb.RequestOp (LiteralValue [KeyedElement (Some (KeyField "Request"%go)) (ElementExpression (go.PointerType etcdserverpb.RequestOp_RequestRange) "$v0")])))
     else
       (if: "$sw" =⟨opType⟩ tPut
       then
         let: "r" := (GoAlloc (go.PointerType etcdserverpb.PutRequest) (GoZeroVal (go.PointerType etcdserverpb.PutRequest) #())) in
-        let: "$r0" := (GoAlloc etcdserverpb.PutRequest (CompositeLiteral etcdserverpb.PutRequest (LiteralValue [KeyedElement (Some (KeyField "Key"%go)) (ElementExpression (go.SliceType go.byte) (![go.SliceType go.byte] (StructFieldRef Op "key"%go "op"))); KeyedElement (Some (KeyField "Value"%go)) (ElementExpression (go.SliceType go.byte) (![go.SliceType go.byte] (StructFieldRef Op "val"%go "op"))); KeyedElement (Some (KeyField "Lease"%go)) (ElementExpression go.int64 (![LeaseID] (StructFieldRef Op "leaseID"%go "op"))); KeyedElement (Some (KeyField "PrevKv"%go)) (ElementExpression go.bool (![go.bool] (StructFieldRef Op "prevKV"%go "op"))); KeyedElement (Some (KeyField "IgnoreValue"%go)) (ElementExpression go.bool (![go.bool] (StructFieldRef Op "ignoreValue"%go "op"))); KeyedElement (Some (KeyField "IgnoreLease"%go)) (ElementExpression go.bool (![go.bool] (StructFieldRef Op "ignoreLease"%go "op")))]))) in
+        let: "$r0" := (GoAlloc etcdserverpb.PutRequest (let: "$v0" := (![go.SliceType go.byte] (StructFieldRef Op "key"%go "op")) in
+        let: "$v1" := (![go.SliceType go.byte] (StructFieldRef Op "val"%go "op")) in
+        let: "$v2" := (![LeaseID] (StructFieldRef Op "leaseID"%go "op")) in
+        let: "$v3" := (![go.bool] (StructFieldRef Op "prevKV"%go "op")) in
+        let: "$v4" := (![go.bool] (StructFieldRef Op "ignoreValue"%go "op")) in
+        let: "$v5" := (![go.bool] (StructFieldRef Op "ignoreLease"%go "op")) in
+        CompositeLiteral etcdserverpb.PutRequest (LiteralValue [KeyedElement (Some (KeyField "Key"%go)) (ElementExpression (go.SliceType go.byte) "$v0"); KeyedElement (Some (KeyField "Value"%go)) (ElementExpression (go.SliceType go.byte) "$v1"); KeyedElement (Some (KeyField "Lease"%go)) (ElementExpression go.int64 "$v2"); KeyedElement (Some (KeyField "PrevKv"%go)) (ElementExpression go.bool "$v3"); KeyedElement (Some (KeyField "IgnoreValue"%go)) (ElementExpression go.bool "$v4"); KeyedElement (Some (KeyField "IgnoreLease"%go)) (ElementExpression go.bool "$v5")]))) in
         do:  ("r" <-[go.PointerType etcdserverpb.PutRequest] "$r0");;;
-        return: (GoAlloc etcdserverpb.RequestOp (CompositeLiteral etcdserverpb.RequestOp (LiteralValue [KeyedElement (Some (KeyField "Request"%go)) (ElementExpression (go.PointerType etcdserverpb.RequestOp_RequestPut) (GoAlloc etcdserverpb.RequestOp_RequestPut (CompositeLiteral etcdserverpb.RequestOp_RequestPut (LiteralValue [KeyedElement (Some (KeyField "RequestPut"%go)) (ElementExpression (go.PointerType etcdserverpb.PutRequest) (![go.PointerType etcdserverpb.PutRequest] "r"))]))))])))
+        return: (GoAlloc etcdserverpb.RequestOp (let: "$v0" := (GoAlloc etcdserverpb.RequestOp_RequestPut (let: "$v0" := (![go.PointerType etcdserverpb.PutRequest] "r") in
+         CompositeLiteral etcdserverpb.RequestOp_RequestPut (LiteralValue [KeyedElement (Some (KeyField "RequestPut"%go)) (ElementExpression (go.PointerType etcdserverpb.PutRequest) "$v0")]))) in
+         CompositeLiteral etcdserverpb.RequestOp (LiteralValue [KeyedElement (Some (KeyField "Request"%go)) (ElementExpression (go.PointerType etcdserverpb.RequestOp_RequestPut) "$v0")])))
       else
         (if: "$sw" =⟨opType⟩ tDeleteRange
         then
           let: "r" := (GoAlloc (go.PointerType etcdserverpb.DeleteRangeRequest) (GoZeroVal (go.PointerType etcdserverpb.DeleteRangeRequest) #())) in
-          let: "$r0" := (GoAlloc etcdserverpb.DeleteRangeRequest (CompositeLiteral etcdserverpb.DeleteRangeRequest (LiteralValue [KeyedElement (Some (KeyField "Key"%go)) (ElementExpression (go.SliceType go.byte) (![go.SliceType go.byte] (StructFieldRef Op "key"%go "op"))); KeyedElement (Some (KeyField "RangeEnd"%go)) (ElementExpression (go.SliceType go.byte) (![go.SliceType go.byte] (StructFieldRef Op "end"%go "op"))); KeyedElement (Some (KeyField "PrevKv"%go)) (ElementExpression go.bool (![go.bool] (StructFieldRef Op "prevKV"%go "op")))]))) in
+          let: "$r0" := (GoAlloc etcdserverpb.DeleteRangeRequest (let: "$v0" := (![go.SliceType go.byte] (StructFieldRef Op "key"%go "op")) in
+          let: "$v1" := (![go.SliceType go.byte] (StructFieldRef Op "end"%go "op")) in
+          let: "$v2" := (![go.bool] (StructFieldRef Op "prevKV"%go "op")) in
+          CompositeLiteral etcdserverpb.DeleteRangeRequest (LiteralValue [KeyedElement (Some (KeyField "Key"%go)) (ElementExpression (go.SliceType go.byte) "$v0"); KeyedElement (Some (KeyField "RangeEnd"%go)) (ElementExpression (go.SliceType go.byte) "$v1"); KeyedElement (Some (KeyField "PrevKv"%go)) (ElementExpression go.bool "$v2")]))) in
           do:  ("r" <-[go.PointerType etcdserverpb.DeleteRangeRequest] "$r0");;;
-          return: (GoAlloc etcdserverpb.RequestOp (CompositeLiteral etcdserverpb.RequestOp (LiteralValue [KeyedElement (Some (KeyField "Request"%go)) (ElementExpression (go.PointerType etcdserverpb.RequestOp_RequestDeleteRange) (GoAlloc etcdserverpb.RequestOp_RequestDeleteRange (CompositeLiteral etcdserverpb.RequestOp_RequestDeleteRange (LiteralValue [KeyedElement (Some (KeyField "RequestDeleteRange"%go)) (ElementExpression (go.PointerType etcdserverpb.DeleteRangeRequest) (![go.PointerType etcdserverpb.DeleteRangeRequest] "r"))]))))])))
+          return: (GoAlloc etcdserverpb.RequestOp (let: "$v0" := (GoAlloc etcdserverpb.RequestOp_RequestDeleteRange (let: "$v0" := (![go.PointerType etcdserverpb.DeleteRangeRequest] "r") in
+           CompositeLiteral etcdserverpb.RequestOp_RequestDeleteRange (LiteralValue [KeyedElement (Some (KeyField "RequestDeleteRange"%go)) (ElementExpression (go.PointerType etcdserverpb.DeleteRangeRequest) "$v0")]))) in
+           CompositeLiteral etcdserverpb.RequestOp (LiteralValue [KeyedElement (Some (KeyField "Request"%go)) (ElementExpression (go.PointerType etcdserverpb.RequestOp_RequestDeleteRange) "$v0")])))
         else
           (if: "$sw" =⟨opType⟩ tTxn
-          then return: (GoAlloc etcdserverpb.RequestOp (CompositeLiteral etcdserverpb.RequestOp (LiteralValue [KeyedElement (Some (KeyField "Request"%go)) (ElementExpression (go.PointerType etcdserverpb.RequestOp_RequestTxn) (GoAlloc etcdserverpb.RequestOp_RequestTxn (CompositeLiteral etcdserverpb.RequestOp_RequestTxn (LiteralValue [KeyedElement (Some (KeyField "RequestTxn"%go)) (ElementExpression (go.PointerType etcdserverpb.TxnRequest) ((MethodResolve Op "toTxnRequest"%go (![Op] "op")) #()))]))))])))
+          then
+            return: (GoAlloc etcdserverpb.RequestOp (let: "$v0" := (GoAlloc etcdserverpb.RequestOp_RequestTxn (let: "$v0" := ((MethodResolve Op "toTxnRequest"%go (![Op] "op")) #()) in
+             CompositeLiteral etcdserverpb.RequestOp_RequestTxn (LiteralValue [KeyedElement (Some (KeyField "RequestTxn"%go)) (ElementExpression (go.PointerType etcdserverpb.TxnRequest) "$v0")]))) in
+             CompositeLiteral etcdserverpb.RequestOp (LiteralValue [KeyedElement (Some (KeyField "Request"%go)) (ElementExpression (go.PointerType etcdserverpb.RequestOp_RequestTxn) "$v0")])))
           else
             do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"Unknown Op"%go) in
             (FuncResolve go.panic [] #()) "$a0")))))).
@@ -1029,7 +1062,9 @@ Definition OpGetⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val
       (FuncResolve go.panic [] #()) "$a0")
     else do:  #());;;
     let: "ret" := (GoAlloc Op (GoZeroVal Op #())) in
-    let: "$r0" := (CompositeLiteral Op (LiteralValue [KeyedElement (Some (KeyField "t"%go)) (ElementExpression opType tRange); KeyedElement (Some (KeyField "key"%go)) (ElementExpression (go.SliceType go.byte) (Convert go.string (go.SliceType go.byte) (![go.string] "key")))])) in
+    let: "$r0" := (let: "$v0" := tRange in
+    let: "$v1" := (Convert go.string (go.SliceType go.byte) (![go.string] "key")) in
+    CompositeLiteral Op (LiteralValue [KeyedElement (Some (KeyField "t"%go)) (ElementExpression opType "$v0"); KeyedElement (Some (KeyField "key"%go)) (ElementExpression (go.SliceType go.byte) "$v1")])) in
     do:  ("ret" <-[Op] "$r0");;;
     do:  (let: "$a0" := (![go.SliceType OpOption] "opts") in
     (MethodResolve (go.PointerType Op) "applyOpts"%go "ret") "$a0");;;
@@ -1050,7 +1085,9 @@ Definition OpDeleteⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : 
       (FuncResolve go.panic [] #()) "$a0")
     else do:  #());;;
     let: "ret" := (GoAlloc Op (GoZeroVal Op #())) in
-    let: "$r0" := (CompositeLiteral Op (LiteralValue [KeyedElement (Some (KeyField "t"%go)) (ElementExpression opType tDeleteRange); KeyedElement (Some (KeyField "key"%go)) (ElementExpression (go.SliceType go.byte) (Convert go.string (go.SliceType go.byte) (![go.string] "key")))])) in
+    let: "$r0" := (let: "$v0" := tDeleteRange in
+    let: "$v1" := (Convert go.string (go.SliceType go.byte) (![go.string] "key")) in
+    CompositeLiteral Op (LiteralValue [KeyedElement (Some (KeyField "t"%go)) (ElementExpression opType "$v0"); KeyedElement (Some (KeyField "key"%go)) (ElementExpression (go.SliceType go.byte) "$v1")])) in
     do:  ("ret" <-[Op] "$r0");;;
     do:  (let: "$a0" := (![go.SliceType OpOption] "opts") in
     (MethodResolve (go.PointerType Op) "applyOpts"%go "ret") "$a0");;;
@@ -1116,7 +1153,10 @@ Definition OpPutⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val
     let: "val" := (GoAlloc go.string "val") in
     let: "key" := (GoAlloc go.string "key") in
     let: "ret" := (GoAlloc Op (GoZeroVal Op #())) in
-    let: "$r0" := (CompositeLiteral Op (LiteralValue [KeyedElement (Some (KeyField "t"%go)) (ElementExpression opType tPut); KeyedElement (Some (KeyField "key"%go)) (ElementExpression (go.SliceType go.byte) (Convert go.string (go.SliceType go.byte) (![go.string] "key"))); KeyedElement (Some (KeyField "val"%go)) (ElementExpression (go.SliceType go.byte) (Convert go.string (go.SliceType go.byte) (![go.string] "val")))])) in
+    let: "$r0" := (let: "$v0" := tPut in
+    let: "$v1" := (Convert go.string (go.SliceType go.byte) (![go.string] "key")) in
+    let: "$v2" := (Convert go.string (go.SliceType go.byte) (![go.string] "val")) in
+    CompositeLiteral Op (LiteralValue [KeyedElement (Some (KeyField "t"%go)) (ElementExpression opType "$v0"); KeyedElement (Some (KeyField "key"%go)) (ElementExpression (go.SliceType go.byte) "$v1"); KeyedElement (Some (KeyField "val"%go)) (ElementExpression (go.SliceType go.byte) "$v2")])) in
     do:  ("ret" <-[Op] "$r0");;;
     do:  (let: "$a0" := (![go.SliceType OpOption] "opts") in
     (MethodResolve (go.PointerType Op) "applyOpts"%go "ret") "$a0");;;
@@ -1181,7 +1221,11 @@ Definition OpTxnⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val
     exception_do (let: "elseOps" := (GoAlloc (go.SliceType Op) "elseOps") in
     let: "thenOps" := (GoAlloc (go.SliceType Op) "thenOps") in
     let: "cmps" := (GoAlloc (go.SliceType Cmp) "cmps") in
-    return: (CompositeLiteral Op (LiteralValue [KeyedElement (Some (KeyField "t"%go)) (ElementExpression opType tTxn); KeyedElement (Some (KeyField "cmps"%go)) (ElementExpression (go.SliceType Cmp) (![go.SliceType Cmp] "cmps")); KeyedElement (Some (KeyField "thenOps"%go)) (ElementExpression (go.SliceType Op) (![go.SliceType Op] "thenOps")); KeyedElement (Some (KeyField "elseOps"%go)) (ElementExpression (go.SliceType Op) (![go.SliceType Op] "elseOps"))]))).
+    return: (let: "$v0" := tTxn in
+     let: "$v1" := (![go.SliceType Cmp] "cmps") in
+     let: "$v2" := (![go.SliceType Op] "thenOps") in
+     let: "$v3" := (![go.SliceType Op] "elseOps") in
+     CompositeLiteral Op (LiteralValue [KeyedElement (Some (KeyField "t"%go)) (ElementExpression opType "$v0"); KeyedElement (Some (KeyField "cmps"%go)) (ElementExpression (go.SliceType Cmp) "$v1"); KeyedElement (Some (KeyField "thenOps"%go)) (ElementExpression (go.SliceType Op) "$v2"); KeyedElement (Some (KeyField "elseOps"%go)) (ElementExpression (go.SliceType Op) "$v3")]))).
 
 (* go: op.go:330:15 *)
 Definition Op__applyOptsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -1255,7 +1299,9 @@ Definition WithSortⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : 
          let: "$r0" := SortNone in
          do:  ("order" <-[SortOrder] "$r0")
        else do:  #());;;
-       let: "$r0" := (GoAlloc SortOption (CompositeLiteral SortOption (LiteralValue [KeyedElement None (ElementExpression SortTarget (![SortTarget] "target")); KeyedElement None (ElementExpression SortOrder (![SortOrder] "order"))]))) in
+       let: "$r0" := (GoAlloc SortOption (let: "$v0" := (![SortTarget] "target") in
+       let: "$v1" := (![SortOrder] "order") in
+       CompositeLiteral SortOption (LiteralValue [KeyedElement None (ElementExpression SortTarget "$v0"); KeyedElement None (ElementExpression SortOrder "$v1")]))) in
        do:  ((StructFieldRef Op "sort"%go (![go.PointerType Op] "op")) <-[go.PointerType SortOption] "$r0");;;
        return: #())
        ))).
@@ -1274,8 +1320,10 @@ Definition WithPrefixⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
        (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType go.byte] (StructFieldRef Op "key"%go (![go.PointerType Op] "op"))) in
        (FuncResolve go.len [go.SliceType go.byte] #()) "$a0") =⟨go.int⟩ #(W64 0))
        then
-         let: "$r0" := (CompositeLiteral (go.SliceType go.byte) (LiteralValue [KeyedElement None (ElementExpression go.byte #(W8 0))])) in
-         let: "$r1" := (CompositeLiteral (go.SliceType go.byte) (LiteralValue [KeyedElement None (ElementExpression go.byte #(W8 0))])) in
+         let: "$r0" := (let: "$v0" := #(W8 0) in
+         CompositeLiteral (go.SliceType go.byte) (LiteralValue [KeyedElement None (ElementExpression go.byte "$v0")])) in
+         let: "$r1" := (let: "$v0" := #(W8 0) in
+         CompositeLiteral (go.SliceType go.byte) (LiteralValue [KeyedElement None (ElementExpression go.byte "$v0")])) in
          do:  ((StructFieldRef Op "key"%go (![go.PointerType Op] "op")) <-[go.SliceType go.byte] "$r0");;;
          do:  ((StructFieldRef Op "end"%go (![go.PointerType Op] "op")) <-[go.SliceType go.byte] "$r1");;;
          return: (#())
@@ -1313,7 +1361,8 @@ Definition WithFromKeyⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
        (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType go.byte] (StructFieldRef Op "key"%go (![go.PointerType Op] "op"))) in
        (FuncResolve go.len [go.SliceType go.byte] #()) "$a0") =⟨go.int⟩ #(W64 0))
        then
-         let: "$r0" := (CompositeLiteral (go.SliceType go.byte) (LiteralValue [KeyedElement None (ElementExpression go.byte #(W8 0))])) in
+         let: "$r0" := (let: "$v0" := #(W8 0) in
+         CompositeLiteral (go.SliceType go.byte) (LiteralValue [KeyedElement None (ElementExpression go.byte "$v0")])) in
          do:  ((StructFieldRef Op "key"%go (![go.PointerType Op] "op")) <-[go.SliceType go.byte] "$r0")
        else do:  #());;;
        let: "$r0" := (Convert go.string (go.SliceType go.byte) #" "%go) in

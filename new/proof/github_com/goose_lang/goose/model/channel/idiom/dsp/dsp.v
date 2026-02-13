@@ -50,6 +50,7 @@ Context `{!chanG Σ V}.
 Context `{!dspG Σ V}.
 
 Context `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}.
+Collection W := sem + IntoValTyped0.
 
 Let N := nroot .@ "dsp_chan".
 
@@ -233,7 +234,7 @@ Lemma wp_dsp_send (lr_chan rl_chan : loc) γ (v : V) (p : iProto Σ V) :
   {{{ (lr_chan,rl_chan) ↣{γ} <!> MSG v; p }}}
     chan.send t #lr_chan #v
   {{{ RET #(); (lr_chan,rl_chan) ↣{γ} p }}}.
-Proof.
+Proof using W.
   iIntros (Φ) "Hc HΦ".
   iDestruct "Hc" as "(#(Hcl&Hcr&HI)&Hp)".
   iApply (chan.wp_send with "Hcl").
@@ -268,7 +269,7 @@ Lemma wp_dsp_send_tele
   {{{ (lr_chan,rl_chan) ↣{γ} (<!.. x> MSG (v x) {{ P x }}; p x) ∗ P tt }}}
     chan.send t #lr_chan #(v tt)
   {{{ RET #(); (lr_chan,rl_chan) ↣{γ} p tt }}}.
-Proof.
+Proof using W.
   iIntros (Φ) "[Hc HP] HΦ".
   iDestruct (iProto_pointsto_le _ _ _ (<!> MSG v tt; p tt)%proto with "Hc [HP]")
     as "Hc".
@@ -403,7 +404,7 @@ Lemma wp_dsp_recv {TT:tele}
   {{{ (lr_chan,rl_chan) ↣{γ} <?.. x> MSG (v x) {{ ▷ P x }}; p x }}}
     chan.receive t #rl_chan
   {{{ x, RET (#(v x), #true); (lr_chan,rl_chan) ↣{γ} p x ∗ P x }}}.
-Proof.
+Proof using W.
   iIntros (Φ) "Hc HΦ".
   iDestruct "Hc" as "(#(Hcl&Hcr&HI)&Hp)".
   iApply (chan.wp_receive with "Hcr").
@@ -418,7 +419,7 @@ Lemma wp_dsp_close γ (lr_chan rl_chan : loc) (p : iProto Σ V) Φ :
   (lr_chan,rl_chan) ↣{γ} END -∗
   (↯{γ} (lr_chan,rl_chan) -∗ Φ) -∗
   close_au γ.(chan_lr_name) V Φ.
-Proof.
+Proof using W.
   iIntros "Hc HΦ".
   iDestruct "Hc" as  "(#(Hcl&Hcr&HI)&Hp)".
   iMod (inv_acc with "HI") as "[IH Hclose]"; [solve_ndisj|].
@@ -449,7 +450,7 @@ Lemma wp_dsp_recv_end γ (lr_chan rl_chan : loc) Φ :
   (lr_chan,rl_chan) ↣{γ} END-∗
   ((lr_chan,rl_chan) ↣{γ} END -∗ Φ (zero_val V) false) -∗
   recv_au γ.(chan_rl_name) V Φ.
-Proof.
+Proof using W.
   iIntros "H£s Hc HΦ".
   iDestruct "Hc" as "(#(Hcl&Hcr&HI)&Hp)".
   iMod (inv_acc with "HI") as "[IH Hclose]"; [solve_ndisj|].
@@ -526,7 +527,7 @@ Lemma wp_dsp_recv_closed γ (lr_chan rl_chan : loc) Φ :
   ↯{γ} (lr_chan,rl_chan) -∗
   (↯{γ} (lr_chan,rl_chan) -∗ Φ (zero_val V) false) -∗
   recv_au γ.(chan_rl_name) V Φ.
-Proof.
+Proof using W.
   iIntros "H£s Hc HΦ".
   iDestruct "Hc" as "(#(Hcl&Hcr&HI)&Hp)".
   iMod (inv_acc with "HI") as "[IH Hclose]"; [solve_ndisj|].
@@ -579,7 +580,8 @@ Lemma wp_dsp_recv_false (b : bool) γ (lr_chan rl_chan : loc) Φ :
   (if b then (lr_chan,rl_chan) ↣{γ} END else ↯{γ} (lr_chan,rl_chan)) -∗
   ((if b then (lr_chan,rl_chan) ↣{γ} END else ↯{γ} (lr_chan,rl_chan)) -∗ Φ (zero_val V) false) -∗
   recv_au γ.(chan_rl_name) V Φ.
-Proof. destruct b; [apply wp_dsp_recv_end|apply wp_dsp_recv_closed]. Qed.
+Proof using W. destruct b; [apply wp_dsp_recv_end|apply wp_dsp_recv_closed]. Qed.
+
 
 End dsp.
 

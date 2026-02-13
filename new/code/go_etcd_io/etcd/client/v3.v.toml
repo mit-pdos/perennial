@@ -51,3 +51,5 @@ imports = [
   "go.uber.org/zap",
   "context",
 ]
+
+trust_proofgen = true

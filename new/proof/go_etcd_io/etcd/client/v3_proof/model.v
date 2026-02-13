@@ -523,7 +523,7 @@ interp handle_exceptionE (
   let ret_prev_kv := (if req.(PutRequest.prev_kv) then prev_kv else None) in
   let prev_ver := default (W64 0) (KeyValue.version <$> prev_kv) in
   let ver := (word.add prev_ver (W64 1)) in (* should this handle overflow? *)
-  let mod_revision := (word.add σ.(EtcdState.revision) 1) in
+  let mod_revision := (word.add σ.(EtcdState.revision) (W64 1)) in
   let create_revision := default mod_revision (KeyValue.create_revision <$> prev_kv) in
   let new_kv := KeyValue.mk req.(PutRequest.key) create_revision mod_revision ver value lease in
   let σ := set EtcdState.key_values <[mod_revision := <[req.(PutRequest.key) := new_kv]> kvs]> σ in

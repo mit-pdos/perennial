@@ -56,7 +56,7 @@ Qed.
 
 Theorem list_to_block_to_vals l :
   length l = Z.to_nat 4096 ->
-  Block_to_vals (list_to_block l) = b2val <$> l.
+  Block_to_vals (list_to_block l) = into_val <$> l.
 Proof.
   intros H.
   rewrite /Block_to_vals list_to_block_to_list //.
@@ -98,7 +98,7 @@ Proof.
 Qed.
 
 Theorem slice_to_block s dq bs :
-  s.(slice.len) = 4096 ->
+  s.(slice.len) = W64 4096 ->
   s ↦*{dq} bs -∗ pointsto_block s.(slice.ptr) dq (list_to_block bs).
 Proof.
   iIntros (Hsz) "Hs".
@@ -112,7 +112,7 @@ Proof.
 Qed.
 
 Lemma block_array_to_slice_mk l dq (b: Block) :
-  pointsto_block l dq b -∗ (slice.mk l (length b) (length b)) ↦*{dq} (vec_to_list b).
+  pointsto_block l dq b -∗ (slice.mk l (W64 $ length b) (W64 $ length b)) ↦*{dq} (vec_to_list b).
 Proof.
   intros.
   rewrite /pointsto_block heap_array_to_list.
@@ -199,7 +199,7 @@ Proof.
   iModIntro.
   iIntros "[Hda Hmapsto]".
   iMod ("Hupd" with "Hda") as "HQ".
-  iModIntro.
+  iModIntro. rewrite !go.into_val_unfold.
   iApply "HQ".
   iApply block_array_to_slice; eauto.
   word.
@@ -268,8 +268,6 @@ Proof.
   iSpecialize ("HQ" with "Hs"). simpl.
   rewrite length_vec_to_list /block_bytes.
   replace (Z.of_nat (Z.to_nat 4096)) with 4096%Z by lia.
-  wp_auto.
-  replace (LitV l) with #l; last rewrite go.into_val_unfold //.
   wp_auto. rewrite go.array_index_ref_0. iApply "HQ".
 Qed.
 

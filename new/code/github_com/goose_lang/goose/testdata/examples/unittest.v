@@ -603,7 +603,9 @@ Definition takesPtrⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : 
 Definition usesArrayElemRefⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "x" := (GoAlloc (go.ArrayType 2 go.string) (GoZeroVal (go.ArrayType 2 go.string) #())) in
-    let: "$r0" := (CompositeLiteral (go.ArrayType 2 go.string) (LiteralValue [KeyedElement None (ElementExpression go.string #"a"%go); KeyedElement None (ElementExpression go.string #"b"%go)])) in
+    let: "$r0" := (let: "$v0" := #"a"%go in
+    let: "$v1" := #"b"%go in
+    CompositeLiteral (go.ArrayType 2 go.string) (LiteralValue [KeyedElement None (ElementExpression go.string "$v0"); KeyedElement None (ElementExpression go.string "$v1")])) in
     do:  ("x" <-[go.ArrayType 2 go.string] "$r0");;;
     let: "$r0" := #"c"%go in
     do:  ((IndexRef (go.ArrayType 2 go.string) (![go.ArrayType 2 go.string] "x", #(W64 1))) <-[go.string] "$r0");;;
@@ -630,7 +632,9 @@ Definition sumⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :
 Definition arrayToSliceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "x" := (GoAlloc (go.ArrayType 2 go.string) (GoZeroVal (go.ArrayType 2 go.string) #())) in
-    let: "$r0" := (CompositeLiteral (go.ArrayType 2 go.string) (LiteralValue [KeyedElement None (ElementExpression go.string #"a"%go); KeyedElement None (ElementExpression go.string #"b"%go)])) in
+    let: "$r0" := (let: "$v0" := #"a"%go in
+    let: "$v1" := #"b"%go in
+    CompositeLiteral (go.ArrayType 2 go.string) (LiteralValue [KeyedElement None (ElementExpression go.string "$v0"); KeyedElement None (ElementExpression go.string "$v1")])) in
     do:  ("x" <-[go.ArrayType 2 go.string] "$r0");;;
     return: (let: "$s" := (![go.ArrayType 2 go.string] "x") in
      Slice (go.ArrayType 2 go.string) ("$s", #(W64 0), FuncResolve go.len [go.ArrayType 2 go.string] #() (![go.ArrayType 2 go.string] "x")))).
@@ -639,7 +643,14 @@ Definition arrayToSliceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
 Definition arrayLiteralKeyedⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "x" := (GoAlloc (go.ArrayType 13 go.string) (GoZeroVal (go.ArrayType 13 go.string) #())) in
-    let: "$r0" := (CompositeLiteral (go.ArrayType 13 go.string) (LiteralValue [KeyedElement (Some (KeyExpression go.int (Convert go.untyped_int go.int arrayB))) (ElementExpression go.string #"B"%go); KeyedElement None (ElementExpression go.string #"1"%go); KeyedElement None (ElementExpression go.string #"2"%go); KeyedElement (Some (KeyExpression go.int (Convert go.untyped_int go.int arrayA))) (ElementExpression go.string #"A"%go); KeyedElement None (ElementExpression go.string #"3"%go)])) in
+    let: "$r0" := (let: "$k0" := (Convert go.untyped_int go.int arrayB) in
+    let: "$v1" := #"B"%go in
+    let: "$v2" := #"1"%go in
+    let: "$v3" := #"2"%go in
+    let: "$k4" := (Convert go.untyped_int go.int arrayA) in
+    let: "$v5" := #"A"%go in
+    let: "$v6" := #"3"%go in
+    CompositeLiteral (go.ArrayType 13 go.string) (LiteralValue [KeyedElement (Some (KeyExpression go.int "$k0")) (ElementExpression go.string "$v1"); KeyedElement None (ElementExpression go.string "$v2"); KeyedElement None (ElementExpression go.string "$v3"); KeyedElement (Some (KeyExpression go.int "$k4")) (ElementExpression go.string "$v5"); KeyedElement None (ElementExpression go.string "$v6")])) in
     do:  ("x" <-[go.ArrayType 13 go.string] "$r0");;;
     return: (![go.string] (IndexRef (go.ArrayType 13 go.string) (![go.ArrayType 13 go.string] "x", #(W64 0))))).
 
@@ -1013,12 +1024,16 @@ Definition testNumWrapperⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
 Definition testConversionLiteralⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "s" := (GoAlloc withInterface (GoZeroVal withInterface #())) in
-    let: "$r0" := (CompositeLiteral withInterface (LiteralValue [KeyedElement None (ElementExpression go.untyped_nil UntypedNil)])) in
+    let: "$r0" := (let: "$v0" := UntypedNil in
+    CompositeLiteral withInterface (LiteralValue [KeyedElement None (ElementExpression go.untyped_nil "$v0")])) in
     do:  ("s" <-[withInterface] "$r0");;;
-    let: "$r0" := (CompositeLiteral withInterface (LiteralValue [KeyedElement (Some (KeyField "a"%go)) (ElementExpression go.untyped_nil UntypedNil)])) in
+    let: "$r0" := (let: "$v0" := UntypedNil in
+    CompositeLiteral withInterface (LiteralValue [KeyedElement (Some (KeyField "a"%go)) (ElementExpression go.untyped_nil "$v0")])) in
     do:  ("s" <-[withInterface] "$r0");;;
     let: "m" := (GoAlloc (go.MapType go.any go.any) (GoZeroVal (go.MapType go.any go.any) #())) in
-    let: "$r0" := (CompositeLiteral (go.MapType go.any go.any) (LiteralValue [KeyedElement (Some (KeyExpression go.untyped_nil UntypedNil)) (ElementExpression go.untyped_nil UntypedNil)])) in
+    let: "$r0" := (let: "$k0" := UntypedNil in
+    let: "$v1" := UntypedNil in
+    CompositeLiteral (go.MapType go.any go.any) (LiteralValue [KeyedElement (Some (KeyExpression go.untyped_nil "$k0")) (ElementExpression go.untyped_nil "$v1")])) in
     do:  ("m" <-[go.MapType go.any go.any] "$r0");;;
     let: "$r0" := (Convert withInterface go.any (![withInterface] "s")) in
     do:  (map.insert go.any (![go.MapType go.any go.any] "m") (Convert go.untyped_nil go.any UntypedNil) "$r0");;;
@@ -1397,7 +1412,8 @@ Definition assertⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : va
 (* go: generic_conversion.go:25:6 *)
 Definition nilConvertⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (A : go.type) : val :=
   λ: <>,
-    exception_do (return: (CompositeLiteral (go.SliceType A) (LiteralValue [KeyedElement None (ElementExpression go.untyped_nil UntypedNil)]))).
+    exception_do (return: (let: "$v0" := UntypedNil in
+     CompositeLiteral (go.SliceType A) (LiteralValue [KeyedElement None (ElementExpression go.untyped_nil "$v0")]))).
 
 (* go: generic_conversion.go:29:6 *)
 Definition genericConversionsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -1528,7 +1544,9 @@ Definition testPassConcreteToInterfaceArgSpecialⁱᵐᵖˡ {ext : ffi_syntax} {
     let: "$r0" := (GoAlloc concreteFooer (CompositeLiteral concreteFooer (LiteralValue []))) in
     do:  ("c2" <-[go.PointerType concreteFooer] "$r0");;;
     let: "l" := (GoAlloc (go.SliceType Fooer) (GoZeroVal (go.SliceType Fooer) #())) in
-    let: "$r0" := (CompositeLiteral (go.SliceType Fooer) (LiteralValue [KeyedElement None (ElementExpression (go.PointerType concreteFooer) (![go.PointerType concreteFooer] "c1")); KeyedElement None (ElementExpression (go.PointerType concreteFooer) (![go.PointerType concreteFooer] "c2"))])) in
+    let: "$r0" := (let: "$v0" := (![go.PointerType concreteFooer] "c1") in
+    let: "$v1" := (![go.PointerType concreteFooer] "c2") in
+    CompositeLiteral (go.SliceType Fooer) (LiteralValue [KeyedElement None (ElementExpression (go.PointerType concreteFooer) "$v0"); KeyedElement None (ElementExpression (go.PointerType concreteFooer) "$v1")])) in
     do:  ("l" <-[go.SliceType Fooer] "$r0");;;
     let: "m" := (GoAlloc (go.MapType go.uint64 Fooer) (GoZeroVal (go.MapType go.uint64 Fooer) #())) in
     let: "$r0" := ((FuncResolve go.make1 [go.MapType go.uint64 Fooer] #()) #()) in
@@ -1536,7 +1554,8 @@ Definition testPassConcreteToInterfaceArgSpecialⁱᵐᵖˡ {ext : ffi_syntax} {
     let: "$r0" := (Convert (go.PointerType concreteFooer) Fooer (![go.PointerType concreteFooer] "c1")) in
     do:  (map.insert go.uint64 (![go.MapType go.uint64 Fooer] "m") #(W64 10) "$r0");;;
     let: "f" := (GoAlloc FooerUser (GoZeroVal FooerUser #())) in
-    let: "$r0" := (CompositeLiteral FooerUser (LiteralValue [KeyedElement None (ElementExpression (go.PointerType concreteFooer) (![go.PointerType concreteFooer] "c1"))])) in
+    let: "$r0" := (let: "$v0" := (![go.PointerType concreteFooer] "c1") in
+    CompositeLiteral FooerUser (LiteralValue [KeyedElement None (ElementExpression (go.PointerType concreteFooer) "$v0")])) in
     do:  ("f" <-[FooerUser] "$r0");;;
     return: (![go.SliceType Fooer] "l", ![go.MapType go.uint64 Fooer] "m", ![FooerUser] "f")).
 
@@ -1683,27 +1702,42 @@ Definition signedMidpointⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
 (* go: literals.go:9:6 *)
 Definition normalLiteralsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    exception_do (return: (CompositeLiteral allTheLiterals (LiteralValue [KeyedElement (Some (KeyField "int"%go)) (ElementExpression go.uint64 #(W64 0)); KeyedElement (Some (KeyField "s"%go)) (ElementExpression go.string #"foo"%go); KeyedElement (Some (KeyField "b"%go)) (ElementExpression go.bool #true)]))).
+    exception_do (return: (let: "$v0" := #(W64 0) in
+     let: "$v1" := #"foo"%go in
+     let: "$v2" := #true in
+     CompositeLiteral allTheLiterals (LiteralValue [KeyedElement (Some (KeyField "int"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "s"%go)) (ElementExpression go.string "$v1"); KeyedElement (Some (KeyField "b"%go)) (ElementExpression go.bool "$v2")]))).
 
 (* go: literals.go:17:6 *)
 Definition outOfOrderLiteralⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    exception_do (return: (CompositeLiteral allTheLiterals (LiteralValue [KeyedElement (Some (KeyField "b"%go)) (ElementExpression go.bool #true); KeyedElement (Some (KeyField "s"%go)) (ElementExpression go.string #"foo"%go); KeyedElement (Some (KeyField "int"%go)) (ElementExpression go.uint64 #(W64 0))]))).
+    exception_do (return: (let: "$v0" := #true in
+     let: "$v1" := #"foo"%go in
+     let: "$v2" := #(W64 0) in
+     CompositeLiteral allTheLiterals (LiteralValue [KeyedElement (Some (KeyField "b"%go)) (ElementExpression go.bool "$v0"); KeyedElement (Some (KeyField "s"%go)) (ElementExpression go.string "$v1"); KeyedElement (Some (KeyField "int"%go)) (ElementExpression go.uint64 "$v2")]))).
 
 (* go: literals.go:25:6 *)
 Definition specialLiteralsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    exception_do (return: (CompositeLiteral allTheLiterals (LiteralValue [KeyedElement (Some (KeyField "int"%go)) (ElementExpression go.uint64 #(W64 4096)); KeyedElement (Some (KeyField "s"%go)) (ElementExpression go.string #""%go); KeyedElement (Some (KeyField "b"%go)) (ElementExpression go.bool #false)]))).
+    exception_do (return: (let: "$v0" := #(W64 4096) in
+     let: "$v1" := #""%go in
+     let: "$v2" := #false in
+     CompositeLiteral allTheLiterals (LiteralValue [KeyedElement (Some (KeyField "int"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "s"%go)) (ElementExpression go.string "$v1"); KeyedElement (Some (KeyField "b"%go)) (ElementExpression go.bool "$v2")]))).
 
 (* go: literals.go:33:6 *)
 Definition oddLiteralsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    exception_do (return: (CompositeLiteral allTheLiterals (LiteralValue [KeyedElement (Some (KeyField "int"%go)) (ElementExpression go.uint64 #(W64 5)); KeyedElement (Some (KeyField "s"%go)) (ElementExpression go.string #"backquote string"%go); KeyedElement (Some (KeyField "b"%go)) (ElementExpression go.bool #false)]))).
+    exception_do (return: (let: "$v0" := #(W64 5) in
+     let: "$v1" := #"backquote string"%go in
+     let: "$v2" := #false in
+     CompositeLiteral allTheLiterals (LiteralValue [KeyedElement (Some (KeyField "int"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "s"%go)) (ElementExpression go.string "$v1"); KeyedElement (Some (KeyField "b"%go)) (ElementExpression go.bool "$v2")]))).
 
 (* go: literals.go:41:6 *)
 Definition unKeyedLiteralⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    exception_do (return: (CompositeLiteral allTheLiterals (LiteralValue [KeyedElement None (ElementExpression go.uint64 #(W64 0)); KeyedElement None (ElementExpression go.string #"a"%go); KeyedElement None (ElementExpression go.bool #false)]))).
+    exception_do (return: (let: "$v0" := #(W64 0) in
+     let: "$v1" := #"a"%go in
+     let: "$v2" := #false in
+     CompositeLiteral allTheLiterals (LiteralValue [KeyedElement None (ElementExpression go.uint64 "$v0"); KeyedElement None (ElementExpression go.string "$v1"); KeyedElement None (ElementExpression go.bool "$v2")]))).
 
 (* go: locks.go:5:6 *)
 Definition useLocksⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -2027,7 +2061,13 @@ Definition mapGetCallⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
 Definition mapLiteralTestⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "ascii" := (GoAlloc (go.MapType go.string go.uint64) (GoZeroVal (go.MapType go.string go.uint64) #())) in
-    let: "$r0" := (CompositeLiteral (go.MapType go.string go.uint64) (LiteralValue [KeyedElement (Some (KeyExpression go.string #"a"%go)) (ElementExpression go.uint64 #(W64 97)); KeyedElement (Some (KeyExpression go.string #"b"%go)) (ElementExpression go.uint64 #(W64 98)); KeyedElement (Some (KeyExpression go.string #"c"%go)) (ElementExpression go.uint64 #(W64 99))])) in
+    let: "$r0" := (let: "$k0" := #"a"%go in
+    let: "$v1" := #(W64 97) in
+    let: "$k2" := #"b"%go in
+    let: "$v3" := #(W64 98) in
+    let: "$k4" := #"c"%go in
+    let: "$v5" := #(W64 99) in
+    CompositeLiteral (go.MapType go.string go.uint64) (LiteralValue [KeyedElement (Some (KeyExpression go.string "$k0")) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyExpression go.string "$k2")) (ElementExpression go.uint64 "$v3"); KeyedElement (Some (KeyExpression go.string "$k4")) (ElementExpression go.uint64 "$v5")])) in
     do:  ("ascii" <-[go.MapType go.string go.uint64] "$r0");;;
     return: (![go.MapType go.string go.uint64] "ascii")).
 
@@ -2139,7 +2179,8 @@ Definition ComparePointerToNilⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
 (* go: nil.go:27:6 *)
 Definition useNilFieldⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    exception_do (return: (GoAlloc containsPointer (CompositeLiteral containsPointer (LiteralValue [KeyedElement (Some (KeyField "s"%go)) (ElementExpression go.untyped_nil UntypedNil)])))).
+    exception_do (return: (GoAlloc containsPointer (let: "$v0" := UntypedNil in
+     CompositeLiteral containsPointer (LiteralValue [KeyedElement (Some (KeyField "s"%go)) (ElementExpression go.untyped_nil "$v0")])))).
 
 (* go: operators.go:3:6 *)
 Definition LogicalOperatorsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -2255,9 +2296,13 @@ Definition ReassignVarsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
     let: "$r0" := #(W64 3) in
     do:  ("x" <-[go.uint64] "$r0");;;
     let: "z" := (GoAlloc composite (GoZeroVal composite #())) in
-    let: "$r0" := (CompositeLiteral composite (LiteralValue [KeyedElement (Some (KeyField "a"%go)) (ElementExpression go.uint64 (![go.uint64] "x")); KeyedElement (Some (KeyField "b"%go)) (ElementExpression go.uint64 (![go.uint64] "y"))])) in
+    let: "$r0" := (let: "$v0" := (![go.uint64] "x") in
+    let: "$v1" := (![go.uint64] "y") in
+    CompositeLiteral composite (LiteralValue [KeyedElement (Some (KeyField "a"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "b"%go)) (ElementExpression go.uint64 "$v1")])) in
     do:  ("z" <-[composite] "$r0");;;
-    let: "$r0" := (CompositeLiteral composite (LiteralValue [KeyedElement (Some (KeyField "a"%go)) (ElementExpression go.uint64 (![go.uint64] "y")); KeyedElement (Some (KeyField "b"%go)) (ElementExpression go.uint64 (![go.uint64] "x"))])) in
+    let: "$r0" := (let: "$v0" := (![go.uint64] "y") in
+    let: "$v1" := (![go.uint64] "x") in
+    CompositeLiteral composite (LiteralValue [KeyedElement (Some (KeyField "a"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "b"%go)) (ElementExpression go.uint64 "$v1")])) in
     do:  ("z" <-[composite] "$r0");;;
     let: "$r0" := (![go.uint64] (StructFieldRef composite "a"%go "z")) in
     do:  ("x" <-[go.uint64] "$r0");;;
@@ -2357,7 +2402,8 @@ Definition TwoDiskReadⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
   λ: "diskId" "a",
     exception_do (let: "a" := (GoAlloc go.uint64 "a") in
     let: "diskId" := (GoAlloc go.uint64 "diskId") in
-    return: (CompositeLiteral Block (LiteralValue [KeyedElement (Some (KeyField "Value"%go)) (ElementExpression go.uint64 #(W64 0))]), #true)).
+    return: (let: "$v0" := #(W64 0) in
+     CompositeLiteral Block (LiteralValue [KeyedElement (Some (KeyField "Value"%go)) (ElementExpression go.uint64 "$v0")]), #true)).
 
 (* TwoDiskLock is a dummy function to represent locking an address in the
    base layer
@@ -2566,7 +2612,8 @@ Definition sliceOpsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : 
 Definition makeSingletonSliceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "x",
     exception_do (let: "x" := (GoAlloc go.uint64 "x") in
-    return: (CompositeLiteral (go.SliceType go.uint64) (LiteralValue [KeyedElement None (ElementExpression go.uint64 (![go.uint64] "x"))]))).
+    return: (let: "$v0" := (![go.uint64] "x") in
+     CompositeLiteral (go.SliceType go.uint64) (LiteralValue [KeyedElement None (ElementExpression go.uint64 "$v0")]))).
 
 (* go: slices.go:26:25 *)
 Definition sliceOfThings__getThingRefⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -2688,7 +2735,9 @@ Definition Point__GetFieldⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
 Definition UseAddⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "c" := (GoAlloc Point (GoZeroVal Point #())) in
-    let: "$r0" := (CompositeLiteral Point (LiteralValue [KeyedElement (Some (KeyField "x"%go)) (ElementExpression go.uint64 #(W64 2)); KeyedElement (Some (KeyField "y"%go)) (ElementExpression go.uint64 #(W64 3))])) in
+    let: "$r0" := (let: "$v0" := #(W64 2) in
+    let: "$v1" := #(W64 3) in
+    CompositeLiteral Point (LiteralValue [KeyedElement (Some (KeyField "x"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "y"%go)) (ElementExpression go.uint64 "$v1")])) in
     do:  ("c" <-[Point] "$r0");;;
     let: "r" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := (let: "$a0" := #(W64 4) in
@@ -2701,7 +2750,9 @@ Definition UseAddWithLiteralⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
   λ: <>,
     exception_do (let: "r" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := (let: "$a0" := #(W64 4) in
-    (MethodResolve Point "Add"%go (CompositeLiteral Point (LiteralValue [KeyedElement (Some (KeyField "x"%go)) (ElementExpression go.uint64 #(W64 2)); KeyedElement (Some (KeyField "y"%go)) (ElementExpression go.uint64 #(W64 3))]))) "$a0") in
+    (MethodResolve Point "Add"%go (let: "$v0" := #(W64 2) in
+    let: "$v1" := #(W64 3) in
+    CompositeLiteral Point (LiteralValue [KeyedElement (Some (KeyField "x"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "y"%go)) (ElementExpression go.uint64 "$v1")]))) "$a0") in
     do:  ("r" <-[go.uint64] "$r0");;;
     return: (![go.uint64] "r")).
 
@@ -2713,7 +2764,12 @@ Definition Point__IgnoreReceiverⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
 (* go: struct_pointers.go:14:6 *)
 Definition NewSⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    exception_do (return: (GoAlloc S (CompositeLiteral S (LiteralValue [KeyedElement (Some (KeyField "a"%go)) (ElementExpression go.uint64 #(W64 2)); KeyedElement (Some (KeyField "b"%go)) (ElementExpression TwoInts (CompositeLiteral TwoInts (LiteralValue [KeyedElement (Some (KeyField "x"%go)) (ElementExpression go.uint64 #(W64 1)); KeyedElement (Some (KeyField "y"%go)) (ElementExpression go.uint64 #(W64 2))]))); KeyedElement (Some (KeyField "c"%go)) (ElementExpression go.bool #true)])))).
+    exception_do (return: (GoAlloc S (let: "$v0" := #(W64 2) in
+     let: "$v1" := (let: "$v0" := #(W64 1) in
+     let: "$v1" := #(W64 2) in
+     CompositeLiteral TwoInts (LiteralValue [KeyedElement (Some (KeyField "x"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "y"%go)) (ElementExpression go.uint64 "$v1")])) in
+     let: "$v2" := #true in
+     CompositeLiteral S (LiteralValue [KeyedElement (Some (KeyField "a"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "b"%go)) (ElementExpression TwoInts "$v1"); KeyedElement (Some (KeyField "c"%go)) (ElementExpression go.bool "$v2")])))).
 
 (* go: struct_pointers.go:22:13 *)
 Definition S__readAⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -3025,9 +3081,13 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
       let: "$r0" := #"b"%go in
       do:  ((GlobalVarAddr globalB #()) <-[go.string] "$r0");;;
       let: "$r0" := ((FuncResolve foo [] #()) #()) in
-      let: "$r0" := (CompositeLiteral (go.MapType go.string go.uint64) (LiteralValue [KeyedElement (Some (KeyExpression go.string #"a"%go)) (ElementExpression go.uint64 #(W64 10))])) in
+      let: "$r0" := (let: "$k0" := #"a"%go in
+      let: "$v1" := #(W64 10) in
+      CompositeLiteral (go.MapType go.string go.uint64) (LiteralValue [KeyedElement (Some (KeyExpression go.string "$k0")) (ElementExpression go.uint64 "$v1")])) in
       do:  ((GlobalVarAddr mapLiteral #()) <-[go.MapType go.string go.uint64] "$r0");;;
-      let: "$r0" := (CompositeLiteral (go.MapType go.any go.any) (LiteralValue [KeyedElement (Some (KeyExpression go.string #"a"%go)) (ElementExpression go.int #(W64 10))])) in
+      let: "$r0" := (let: "$k0" := #"a"%go in
+      let: "$v1" := #(W64 10) in
+      CompositeLiteral (go.MapType go.any go.any) (LiteralValue [KeyedElement (Some (KeyExpression go.string "$k0")) (ElementExpression go.int "$v1")])) in
       do:  ((GlobalVarAddr mapLiteralWithConversion #()) <-[go.MapType go.any go.any] "$r0");;;
       do:  ((λ: <>,
         exception_do (let: "$r0" := (![go.uint64] (GlobalVarAddr GlobalX #())) in

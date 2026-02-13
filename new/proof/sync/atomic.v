@@ -91,8 +91,7 @@ Proof.
   wp_start as "_".
   iMod "HΦ" as (?) "[Haddr HΦ]".
   rewrite typed_pointsto_unseal /typed_pointsto_def /=.
-  rewrite !go.into_val_unfold /=.
-  wp_apply (wp_atomic_op with "Haddr"); first done.
+  wp_apply (wp_atomic_add with "Haddr"); first rewrite !go.into_val_unfold //=.
   iFrame.
 Qed.
 
@@ -278,8 +277,7 @@ Qed.
     wp_start as "_".
     iMod "HΦ" as (?) "[Haddr HΦ]".
     rewrite typed_pointsto_unseal /typed_pointsto_def /=.
-    rewrite !go.into_val_unfold /=.
-    wp_apply (wp_atomic_op with "Haddr"); first done.
+    wp_apply (wp_atomic_add with "Haddr"); first rewrite !go.into_val_unfold //=.
     iFrame.
   Qed.
 
@@ -462,8 +460,7 @@ Qed.
     wp_start as "_".
     iMod "HΦ" as (?) "[Haddr HΦ]".
     rewrite typed_pointsto_unseal /typed_pointsto_def /=.
-    rewrite !go.into_val_unfold /=.
-    wp_apply (wp_atomic_op with "Haddr"); first done.
+    wp_apply (wp_atomic_add with "Haddr"); first rewrite !go.into_val_unfold //=.
     iFrame.
   Qed.
 
@@ -646,8 +643,7 @@ Qed.
     wp_start as "_".
     iMod "HΦ" as (?) "[Haddr HΦ]".
     rewrite typed_pointsto_unseal /typed_pointsto_def /=.
-    rewrite !go.into_val_unfold /=.
-    wp_apply (wp_atomic_op with "Haddr"); first done.
+    wp_apply (wp_atomic_add with "Haddr"); first rewrite !go.into_val_unfold //=.
     iFrame.
   Qed.
 

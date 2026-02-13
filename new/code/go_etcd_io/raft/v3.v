@@ -360,7 +360,10 @@ Definition RawNode__Bootstrapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
       do:  ("peer" <-[Peer] "$value");;;
       do:  ("i" <-[go.int] "$key");;;
       let: "cc" := (GoAlloc raftpb.ConfChange (GoZeroVal raftpb.ConfChange #())) in
-      let: "$r0" := (CompositeLiteral raftpb.ConfChange (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.ConfChangeType raftpb.ConfChangeAddNode); KeyedElement (Some (KeyField "NodeID"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef Peer "ID"%go "peer"))); KeyedElement (Some (KeyField "Context"%go)) (ElementExpression (go.SliceType go.byte) (![go.SliceType go.byte] (StructFieldRef Peer "Context"%go "peer")))])) in
+      let: "$r0" := (let: "$v0" := raftpb.ConfChangeAddNode in
+      let: "$v1" := (![go.uint64] (StructFieldRef Peer "ID"%go "peer")) in
+      let: "$v2" := (![go.SliceType go.byte] (StructFieldRef Peer "Context"%go "peer")) in
+      CompositeLiteral raftpb.ConfChange (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.ConfChangeType "$v0"); KeyedElement (Some (KeyField "NodeID"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "Context"%go)) (ElementExpression (go.SliceType go.byte) "$v2")])) in
       do:  ("cc" <-[raftpb.ConfChange] "$r0");;;
       let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
       let: "data" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
@@ -372,7 +375,11 @@ Definition RawNode__Bootstrapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
       (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
       then return: (![go.error] "err")
       else do:  #());;;
-      let: "$r0" := (CompositeLiteral raftpb.Entry (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.EntryType raftpb.EntryConfChange); KeyedElement (Some (KeyField "Term"%go)) (ElementExpression go.uint64 #(W64 1)); KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 (Convert go.int go.uint64 ((![go.int] "i") +⟨go.int⟩ #(W64 1)))); KeyedElement (Some (KeyField "Data"%go)) (ElementExpression (go.SliceType go.byte) (![go.SliceType go.byte] "data"))])) in
+      let: "$r0" := (let: "$v0" := raftpb.EntryConfChange in
+      let: "$v1" := #(W64 1) in
+      let: "$v2" := (Convert go.int go.uint64 ((![go.int] "i") +⟨go.int⟩ #(W64 1))) in
+      let: "$v3" := (![go.SliceType go.byte] "data") in
+      CompositeLiteral raftpb.Entry (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.EntryType "$v0"); KeyedElement (Some (KeyField "Term"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 "$v2"); KeyedElement (Some (KeyField "Data"%go)) (ElementExpression (go.SliceType go.byte) "$v3")])) in
       do:  ((IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] "ents", ![go.int] "i")) <-[raftpb.Entry] "$r0")));;;
     do:  (let: "$a0" := (![go.SliceType raftpb.Entry] "ents") in
     (MethodResolve (go.PointerType raftLog) "append"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] "rn")))))) "$a0");;;
@@ -384,7 +391,9 @@ Definition RawNode__Bootstrapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
     slice.for_range Peer "$range" (λ: "$key" "$value",
       do:  ("peer" <-[Peer] "$value");;;
       do:  "$key";;;
-      do:  (let: "$a0" := ((MethodResolve raftpb.ConfChange "AsV2"%go (CompositeLiteral raftpb.ConfChange (LiteralValue [KeyedElement (Some (KeyField "NodeID"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef Peer "ID"%go "peer"))); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.ConfChangeType raftpb.ConfChangeAddNode)]))) #()) in
+      do:  (let: "$a0" := ((MethodResolve raftpb.ConfChange "AsV2"%go (let: "$v0" := (![go.uint64] (StructFieldRef Peer "ID"%go "peer")) in
+      let: "$v1" := raftpb.ConfChangeAddNode in
+      CompositeLiteral raftpb.ConfChange (LiteralValue [KeyedElement (Some (KeyField "NodeID"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.ConfChangeType "$v1")]))) #()) in
       (MethodResolve (go.PointerType raft) "applyConfChange"%go (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] "rn")))) "$a0")));;;
     return: (Convert go.untyped_nil go.error UntypedNil)).
 
@@ -434,7 +443,17 @@ Definition newLogWithSizeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
       do:  (let: "$a0" := (Convert go.error (go.InterfaceType []) (![go.error] "err")) in
       (FuncResolve go.panic [] #()) "$a0")
     else do:  #());;;
-    return: (GoAlloc raftLog (CompositeLiteral raftLog (LiteralValue [KeyedElement (Some (KeyField "storage"%go)) (ElementExpression Storage (![Storage] "storage")); KeyedElement (Some (KeyField "unstable"%go)) (ElementExpression unstable (CompositeLiteral unstable (LiteralValue [KeyedElement (Some (KeyField "offset"%go)) (ElementExpression go.uint64 ((![go.uint64] "lastIndex") +⟨go.uint64⟩ #(W64 1))); KeyedElement (Some (KeyField "offsetInProgress"%go)) (ElementExpression go.uint64 ((![go.uint64] "lastIndex") +⟨go.uint64⟩ #(W64 1))); KeyedElement (Some (KeyField "logger"%go)) (ElementExpression Logger (![Logger] "logger"))]))); KeyedElement (Some (KeyField "maxApplyingEntsSize"%go)) (ElementExpression entryEncodingSize (![entryEncodingSize] "maxApplyingEntsSize")); KeyedElement (Some (KeyField "committed"%go)) (ElementExpression go.uint64 ((![go.uint64] "firstIndex") -⟨go.uint64⟩ #(W64 1))); KeyedElement (Some (KeyField "applying"%go)) (ElementExpression go.uint64 ((![go.uint64] "firstIndex") -⟨go.uint64⟩ #(W64 1))); KeyedElement (Some (KeyField "applied"%go)) (ElementExpression go.uint64 ((![go.uint64] "firstIndex") -⟨go.uint64⟩ #(W64 1))); KeyedElement (Some (KeyField "logger"%go)) (ElementExpression Logger (![Logger] "logger"))])))).
+    return: (GoAlloc raftLog (let: "$v0" := (![Storage] "storage") in
+     let: "$v1" := (let: "$v0" := ((![go.uint64] "lastIndex") +⟨go.uint64⟩ #(W64 1)) in
+     let: "$v1" := ((![go.uint64] "lastIndex") +⟨go.uint64⟩ #(W64 1)) in
+     let: "$v2" := (![Logger] "logger") in
+     CompositeLiteral unstable (LiteralValue [KeyedElement (Some (KeyField "offset"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "offsetInProgress"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "logger"%go)) (ElementExpression Logger "$v2")])) in
+     let: "$v2" := (![entryEncodingSize] "maxApplyingEntsSize") in
+     let: "$v3" := ((![go.uint64] "firstIndex") -⟨go.uint64⟩ #(W64 1)) in
+     let: "$v4" := ((![go.uint64] "firstIndex") -⟨go.uint64⟩ #(W64 1)) in
+     let: "$v5" := ((![go.uint64] "firstIndex") -⟨go.uint64⟩ #(W64 1)) in
+     let: "$v6" := (![Logger] "logger") in
+     CompositeLiteral raftLog (LiteralValue [KeyedElement (Some (KeyField "storage"%go)) (ElementExpression Storage "$v0"); KeyedElement (Some (KeyField "unstable"%go)) (ElementExpression unstable "$v1"); KeyedElement (Some (KeyField "maxApplyingEntsSize"%go)) (ElementExpression entryEncodingSize "$v2"); KeyedElement (Some (KeyField "committed"%go)) (ElementExpression go.uint64 "$v3"); KeyedElement (Some (KeyField "applying"%go)) (ElementExpression go.uint64 "$v4"); KeyedElement (Some (KeyField "applied"%go)) (ElementExpression go.uint64 "$v5"); KeyedElement (Some (KeyField "logger"%go)) (ElementExpression Logger "$v6")])))).
 
 (* go: log.go:100:19 *)
 Definition raftLog__Stringⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -967,7 +986,9 @@ Definition raftLog__lastEntryIDⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
       CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl1")]))) in
       (MethodResolve Logger "Panicf"%go (![Logger] (StructFieldRef raftLog "logger"%go (![go.PointerType raftLog] "l")))) "$a0" "$a1")
     else do:  #());;;
-    return: (CompositeLiteral entryID (LiteralValue [KeyedElement (Some (KeyField "term"%go)) (ElementExpression go.uint64 (![go.uint64] "t")); KeyedElement (Some (KeyField "index"%go)) (ElementExpression go.uint64 (![go.uint64] "index"))]))).
+    return: (let: "$v0" := (![go.uint64] "t") in
+     let: "$v1" := (![go.uint64] "index") in
+     CompositeLiteral entryID (LiteralValue [KeyedElement (Some (KeyField "term"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "index"%go)) (ElementExpression go.uint64 "$v1")]))).
 
 (* go: log.go:385:19 *)
 Definition raftLog__termⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -2003,23 +2024,34 @@ Definition RestartNodeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
 Definition newNodeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "rn",
     exception_do (let: "rn" := (GoAlloc (go.PointerType RawNode) "rn") in
-    return: (CompositeLiteral node (LiteralValue [KeyedElement (Some (KeyField "propc"%go)) (ElementExpression (go.ChannelType go.sendrecv msgWithResult) ((FuncResolve go.make1 [go.ChannelType go.sendrecv msgWithResult] #()) #())); KeyedElement (Some (KeyField "recvc"%go)) (ElementExpression (go.ChannelType go.sendrecv raftpb.Message) ((FuncResolve go.make1 [go.ChannelType go.sendrecv raftpb.Message] #()) #())); KeyedElement (Some (KeyField "confc"%go)) (ElementExpression (go.ChannelType go.sendrecv raftpb.ConfChangeV2) ((FuncResolve go.make1 [go.ChannelType go.sendrecv raftpb.ConfChangeV2] #()) #())); KeyedElement (Some (KeyField "confstatec"%go)) (ElementExpression (go.ChannelType go.sendrecv raftpb.ConfState) ((FuncResolve go.make1 [go.ChannelType go.sendrecv raftpb.ConfState] #()) #())); KeyedElement (Some (KeyField "readyc"%go)) (ElementExpression (go.ChannelType go.sendrecv Ready) ((FuncResolve go.make1 [go.ChannelType go.sendrecv Ready] #()) #())); KeyedElement (Some (KeyField "advancec"%go)) (ElementExpression (go.ChannelType go.sendrecv (go.StructType [
+    return: (let: "$v0" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv msgWithResult] #()) #()) in
+     let: "$v1" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv raftpb.Message] #()) #()) in
+     let: "$v2" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv raftpb.ConfChangeV2] #()) #()) in
+     let: "$v3" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv raftpb.ConfState] #()) #()) in
+     let: "$v4" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv Ready] #()) #()) in
+     let: "$v5" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv (go.StructType [
 
-      ])) ((FuncResolve go.make1 [go.ChannelType go.sendrecv (go.StructType [
+      ])] #()) #()) in
+     let: "$v6" := ((FuncResolve go.make2 [go.ChannelType go.sendrecv (go.StructType [
 
-       ])] #()) #())); KeyedElement (Some (KeyField "tickc"%go)) (ElementExpression (go.ChannelType go.sendrecv (go.StructType [
+      ])] #()) #(W64 128)) in
+     let: "$v7" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv (go.StructType [
 
-      ])) ((FuncResolve go.make2 [go.ChannelType go.sendrecv (go.StructType [
+      ])] #()) #()) in
+     let: "$v8" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv (go.StructType [
 
-       ])] #()) #(W64 128))); KeyedElement (Some (KeyField "done"%go)) (ElementExpression (go.ChannelType go.sendrecv (go.StructType [
+      ])] #()) #()) in
+     let: "$v9" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv (go.ChannelType go.sendrecv Status)] #()) #()) in
+     let: "$v10" := (![go.PointerType RawNode] "rn") in
+     CompositeLiteral node (LiteralValue [KeyedElement (Some (KeyField "propc"%go)) (ElementExpression (go.ChannelType go.sendrecv msgWithResult) "$v0"); KeyedElement (Some (KeyField "recvc"%go)) (ElementExpression (go.ChannelType go.sendrecv raftpb.Message) "$v1"); KeyedElement (Some (KeyField "confc"%go)) (ElementExpression (go.ChannelType go.sendrecv raftpb.ConfChangeV2) "$v2"); KeyedElement (Some (KeyField "confstatec"%go)) (ElementExpression (go.ChannelType go.sendrecv raftpb.ConfState) "$v3"); KeyedElement (Some (KeyField "readyc"%go)) (ElementExpression (go.ChannelType go.sendrecv Ready) "$v4"); KeyedElement (Some (KeyField "advancec"%go)) (ElementExpression (go.ChannelType go.sendrecv (go.StructType [
 
-      ])) ((FuncResolve go.make1 [go.ChannelType go.sendrecv (go.StructType [
+      ])) "$v5"); KeyedElement (Some (KeyField "tickc"%go)) (ElementExpression (go.ChannelType go.sendrecv (go.StructType [
 
-       ])] #()) #())); KeyedElement (Some (KeyField "stop"%go)) (ElementExpression (go.ChannelType go.sendrecv (go.StructType [
+      ])) "$v6"); KeyedElement (Some (KeyField "done"%go)) (ElementExpression (go.ChannelType go.sendrecv (go.StructType [
 
-      ])) ((FuncResolve go.make1 [go.ChannelType go.sendrecv (go.StructType [
+      ])) "$v7"); KeyedElement (Some (KeyField "stop"%go)) (ElementExpression (go.ChannelType go.sendrecv (go.StructType [
 
-       ])] #()) #())); KeyedElement (Some (KeyField "status"%go)) (ElementExpression (go.ChannelType go.sendrecv (go.ChannelType go.sendrecv Status)) ((FuncResolve go.make1 [go.ChannelType go.sendrecv (go.ChannelType go.sendrecv Status)] #()) #())); KeyedElement (Some (KeyField "rn"%go)) (ElementExpression (go.PointerType RawNode) (![go.PointerType RawNode] "rn"))]))).
+      ])) "$v8"); KeyedElement (Some (KeyField "status"%go)) (ElementExpression (go.ChannelType go.sendrecv (go.ChannelType go.sendrecv Status)) "$v9"); KeyedElement (Some (KeyField "rn"%go)) (ElementExpression (go.PointerType RawNode) "$v10")]))).
 
 (* go: node.go:331:16 *)
 Definition node__Stopⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -2177,7 +2209,9 @@ Definition node__runⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
       (if: (![go.bool] "okBefore") && (⟨go.bool⟩! (![go.bool] "okAfter"))
       then
         let: "found" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
-        let: "$range" := (CompositeLiteral (go.SliceType (go.SliceType go.uint64)) (LiteralValue [KeyedElement None (ElementExpression (go.SliceType go.uint64) (![go.SliceType go.uint64] (StructFieldRef raftpb.ConfState "Voters"%go "cs"))); KeyedElement None (ElementExpression (go.SliceType go.uint64) (![go.SliceType go.uint64] (StructFieldRef raftpb.ConfState "VotersOutgoing"%go "cs")))])) in
+        let: "$range" := (let: "$v0" := (![go.SliceType go.uint64] (StructFieldRef raftpb.ConfState "Voters"%go "cs")) in
+        let: "$v1" := (![go.SliceType go.uint64] (StructFieldRef raftpb.ConfState "VotersOutgoing"%go "cs")) in
+        CompositeLiteral (go.SliceType (go.SliceType go.uint64)) (LiteralValue [KeyedElement None (ElementExpression (go.SliceType go.uint64) "$v0"); KeyedElement None (ElementExpression (go.SliceType go.uint64) "$v1")])) in
         (let: "sl" := (GoAlloc (go.SliceType go.uint64) (GoZeroVal (go.SliceType go.uint64) #())) in
         slice.for_range (go.SliceType go.uint64) "$range" (λ: "$key" "$value",
           do:  ("sl" <-[go.SliceType go.uint64] "$value");;;
@@ -2285,7 +2319,8 @@ Definition node__Campaignⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
     exception_do (let: "n" := (GoAlloc (go.PointerType node) "n") in
     let: "ctx" := (GoAlloc context.Context "ctx") in
     return: (let: "$a0" := (![context.Context] "ctx") in
-     let: "$a1" := (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType raftpb.MsgHup)])) in
+     let: "$a1" := (let: "$v0" := raftpb.MsgHup in
+     CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v0")])) in
      (MethodResolve (go.PointerType node) "step"%go (![go.PointerType node] "n")) "$a0" "$a1")).
 
 (* go: node.go:469:16 *)
@@ -2295,7 +2330,10 @@ Definition node__Proposeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
     let: "data" := (GoAlloc (go.SliceType go.byte) "data") in
     let: "ctx" := (GoAlloc context.Context "ctx") in
     return: (let: "$a0" := (![context.Context] "ctx") in
-     let: "$a1" := (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType raftpb.MsgProp); KeyedElement (Some (KeyField "Entries"%go)) (ElementExpression (go.SliceType raftpb.Entry) (CompositeLiteral (go.SliceType raftpb.Entry) (LiteralValue [KeyedElement None (ElementLiteralValue [KeyedElement (Some (KeyField "Data"%go)) (ElementExpression (go.SliceType go.byte) (![go.SliceType go.byte] "data"))])])))])) in
+     let: "$a1" := (let: "$v0" := raftpb.MsgProp in
+     let: "$v1" := (let: "$v0" := (![go.SliceType go.byte] "data") in
+     CompositeLiteral (go.SliceType raftpb.Entry) (LiteralValue [KeyedElement None (ElementLiteralValue [KeyedElement (Some (KeyField "Data"%go)) (ElementExpression (go.SliceType go.byte) "$v0")])])) in
+     CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v0"); KeyedElement (Some (KeyField "Entries"%go)) (ElementExpression (go.SliceType raftpb.Entry) "$v1")])) in
      (MethodResolve (go.PointerType node) "stepWait"%go (![go.PointerType node] "n")) "$a0" "$a1")).
 
 (* go: node.go:473:16 *)
@@ -2331,7 +2369,11 @@ Definition confChangeToMsgⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
     (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
     then return: (CompositeLiteral raftpb.Message (LiteralValue []), ![go.error] "err")
     else do:  #());;;
-    return: (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType raftpb.MsgProp); KeyedElement (Some (KeyField "Entries"%go)) (ElementExpression (go.SliceType raftpb.Entry) (CompositeLiteral (go.SliceType raftpb.Entry) (LiteralValue [KeyedElement None (ElementLiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.EntryType (![raftpb.EntryType] "typ")); KeyedElement (Some (KeyField "Data"%go)) (ElementExpression (go.SliceType go.byte) (![go.SliceType go.byte] "data"))])])))]), Convert go.untyped_nil go.error UntypedNil)).
+    return: (let: "$v0" := raftpb.MsgProp in
+     let: "$v1" := (let: "$v0" := (![raftpb.EntryType] "typ") in
+     let: "$v1" := (![go.SliceType go.byte] "data") in
+     CompositeLiteral (go.SliceType raftpb.Entry) (LiteralValue [KeyedElement None (ElementLiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.EntryType "$v0"); KeyedElement (Some (KeyField "Data"%go)) (ElementExpression (go.SliceType go.byte) "$v1")])])) in
+     CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v0"); KeyedElement (Some (KeyField "Entries"%go)) (ElementExpression (go.SliceType raftpb.Entry) "$v1")]), Convert go.untyped_nil go.error UntypedNil)).
 
 (* go: node.go:490:16 *)
 Definition node__ProposeConfChangeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -2404,7 +2446,8 @@ Definition node__stepWithWaitOptionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoG
     let: "$r0" := (![go.ChannelType go.sendrecv msgWithResult] (StructFieldRef node "propc"%go (![go.PointerType node] "n"))) in
     do:  ("ch" <-[go.ChannelType go.sendrecv msgWithResult] "$r0");;;
     let: "pm" := (GoAlloc msgWithResult (GoZeroVal msgWithResult #())) in
-    let: "$r0" := (CompositeLiteral msgWithResult (LiteralValue [KeyedElement (Some (KeyField "m"%go)) (ElementExpression raftpb.Message (![raftpb.Message] "m"))])) in
+    let: "$r0" := (let: "$v0" := (![raftpb.Message] "m") in
+    CompositeLiteral msgWithResult (LiteralValue [KeyedElement (Some (KeyField "m"%go)) (ElementExpression raftpb.Message "$v0")])) in
     do:  ("pm" <-[msgWithResult] "$r0");;;
     (if: ![go.bool] "wait"
     then
@@ -2513,7 +2556,9 @@ Definition node__ReportUnreachableⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGl
   λ: "n" "id",
     exception_do (let: "n" := (GoAlloc (go.PointerType node) "n") in
     let: "id" := (GoAlloc go.uint64 "id") in
-    let: "$v0" := (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType raftpb.MsgUnreachable); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 (![go.uint64] "id"))])) in
+    let: "$v0" := (let: "$v0" := raftpb.MsgUnreachable in
+    let: "$v1" := (![go.uint64] "id") in
+    CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v0"); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 "$v1")])) in
     let: "$ch0" := (![go.ChannelType go.sendrecv raftpb.Message] (StructFieldRef node "recvc"%go (![go.PointerType node] "n"))) in
     let: "$ch1" := (![go.ChannelType go.sendrecv (go.StructType [
 
@@ -2532,7 +2577,10 @@ Definition node__ReportSnapshotⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
     let: "rej" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := ((![SnapshotStatus] "status") =⟨go.int⟩ SnapshotFailure) in
     do:  ("rej" <-[go.bool] "$r0");;;
-    let: "$v0" := (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType raftpb.MsgSnapStatus); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 (![go.uint64] "id")); KeyedElement (Some (KeyField "Reject"%go)) (ElementExpression go.bool (![go.bool] "rej"))])) in
+    let: "$v0" := (let: "$v0" := raftpb.MsgSnapStatus in
+    let: "$v1" := (![go.uint64] "id") in
+    let: "$v2" := (![go.bool] "rej") in
+    CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v0"); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "Reject"%go)) (ElementExpression go.bool "$v2")])) in
     let: "$ch0" := (![go.ChannelType go.sendrecv raftpb.Message] (StructFieldRef node "recvc"%go (![go.PointerType node] "n"))) in
     let: "$ch1" := (![go.ChannelType go.sendrecv (go.StructType [
 
@@ -2549,7 +2597,10 @@ Definition node__TransferLeadershipⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoG
     let: "transferee" := (GoAlloc go.uint64 "transferee") in
     let: "lead" := (GoAlloc go.uint64 "lead") in
     let: "ctx" := (GoAlloc context.Context "ctx") in
-    let: "$v0" := (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType raftpb.MsgTransferLeader); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 (![go.uint64] "transferee")); KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 (![go.uint64] "lead"))])) in
+    let: "$v0" := (let: "$v0" := raftpb.MsgTransferLeader in
+    let: "$v1" := (![go.uint64] "transferee") in
+    let: "$v2" := (![go.uint64] "lead") in
+    CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v0"); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v2")])) in
     let: "$ch0" := (![go.ChannelType go.sendrecv raftpb.Message] (StructFieldRef node "recvc"%go (![go.PointerType node] "n"))) in
     let: "$ch1" := (![go.ChannelType go.sendrecv (go.StructType [
 
@@ -2568,7 +2619,8 @@ Definition node__ForgetLeaderⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
     exception_do (let: "n" := (GoAlloc (go.PointerType node) "n") in
     let: "ctx" := (GoAlloc context.Context "ctx") in
     return: (let: "$a0" := (![context.Context] "ctx") in
-     let: "$a1" := (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType raftpb.MsgForgetLeader)])) in
+     let: "$a1" := (let: "$v0" := raftpb.MsgForgetLeader in
+     CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v0")])) in
      (MethodResolve (go.PointerType node) "step"%go (![go.PointerType node] "n")) "$a0" "$a1")).
 
 (* go: node.go:608:16 *)
@@ -2578,7 +2630,10 @@ Definition node__ReadIndexⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
     let: "rctx" := (GoAlloc (go.SliceType go.byte) "rctx") in
     let: "ctx" := (GoAlloc context.Context "ctx") in
     return: (let: "$a0" := (![context.Context] "ctx") in
-     let: "$a1" := (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType raftpb.MsgReadIndex); KeyedElement (Some (KeyField "Entries"%go)) (ElementExpression (go.SliceType raftpb.Entry) (CompositeLiteral (go.SliceType raftpb.Entry) (LiteralValue [KeyedElement None (ElementLiteralValue [KeyedElement (Some (KeyField "Data"%go)) (ElementExpression (go.SliceType go.byte) (![go.SliceType go.byte] "rctx"))])])))])) in
+     let: "$a1" := (let: "$v0" := raftpb.MsgReadIndex in
+     let: "$v1" := (let: "$v0" := (![go.SliceType go.byte] "rctx") in
+     CompositeLiteral (go.SliceType raftpb.Entry) (LiteralValue [KeyedElement None (ElementLiteralValue [KeyedElement (Some (KeyField "Data"%go)) (ElementExpression (go.SliceType go.byte) "$v0")])])) in
+     CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v0"); KeyedElement (Some (KeyField "Entries"%go)) (ElementExpression (go.SliceType raftpb.Entry) "$v1")])) in
      (MethodResolve (go.PointerType node) "step"%go (![go.PointerType node] "n")) "$a0" "$a1")).
 
 (* go: raft.go:95:22 *)
@@ -2706,10 +2761,27 @@ Definition newRaftⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : v
       (FuncResolve go.panic [] #()) "$a0")
     else do:  #());;;
     let: "r" := (GoAlloc (go.PointerType raft) (GoZeroVal (go.PointerType raft) #())) in
-    let: "$r0" := (GoAlloc raft (CompositeLiteral raft (LiteralValue [KeyedElement (Some (KeyField "id"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef Config "ID"%go (![go.PointerType Config] "c")))); KeyedElement (Some (KeyField "lead"%go)) (ElementExpression go.uint64 None'); KeyedElement (Some (KeyField "isLearner"%go)) (ElementExpression go.bool #false); KeyedElement (Some (KeyField "raftLog"%go)) (ElementExpression (go.PointerType raftLog) (![go.PointerType raftLog] "raftlog")); KeyedElement (Some (KeyField "maxMsgSize"%go)) (ElementExpression entryEncodingSize (![go.uint64] (StructFieldRef Config "MaxSizePerMsg"%go (![go.PointerType Config] "c")))); KeyedElement (Some (KeyField "maxUncommittedSize"%go)) (ElementExpression entryPayloadSize (![go.uint64] (StructFieldRef Config "MaxUncommittedEntriesSize"%go (![go.PointerType Config] "c")))); KeyedElement (Some (KeyField "trk"%go)) (ElementExpression tracker.ProgressTracker (let: "$a0" := (![go.int] (StructFieldRef Config "MaxInflightMsgs"%go (![go.PointerType Config] "c"))) in
-     let: "$a1" := (![go.uint64] (StructFieldRef Config "MaxInflightBytes"%go (![go.PointerType Config] "c"))) in
-     (FuncResolve tracker.MakeProgressTracker [] #()) "$a0" "$a1")); KeyedElement (Some (KeyField "electionTimeout"%go)) (ElementExpression go.int (![go.int] (StructFieldRef Config "ElectionTick"%go (![go.PointerType Config] "c")))); KeyedElement (Some (KeyField "heartbeatTimeout"%go)) (ElementExpression go.int (![go.int] (StructFieldRef Config "HeartbeatTick"%go (![go.PointerType Config] "c")))); KeyedElement (Some (KeyField "logger"%go)) (ElementExpression Logger (![Logger] (StructFieldRef Config "Logger"%go (![go.PointerType Config] "c")))); KeyedElement (Some (KeyField "checkQuorum"%go)) (ElementExpression go.bool (![go.bool] (StructFieldRef Config "CheckQuorum"%go (![go.PointerType Config] "c")))); KeyedElement (Some (KeyField "preVote"%go)) (ElementExpression go.bool (![go.bool] (StructFieldRef Config "PreVote"%go (![go.PointerType Config] "c")))); KeyedElement (Some (KeyField "readOnly"%go)) (ElementExpression (go.PointerType readOnly) (let: "$a0" := (![ReadOnlyOption] (StructFieldRef Config "ReadOnlyOption"%go (![go.PointerType Config] "c"))) in
-     (FuncResolve newReadOnly [] #()) "$a0")); KeyedElement (Some (KeyField "disableProposalForwarding"%go)) (ElementExpression go.bool (![go.bool] (StructFieldRef Config "DisableProposalForwarding"%go (![go.PointerType Config] "c")))); KeyedElement (Some (KeyField "disableConfChangeValidation"%go)) (ElementExpression go.bool (![go.bool] (StructFieldRef Config "DisableConfChangeValidation"%go (![go.PointerType Config] "c")))); KeyedElement (Some (KeyField "stepDownOnRemoval"%go)) (ElementExpression go.bool (![go.bool] (StructFieldRef Config "StepDownOnRemoval"%go (![go.PointerType Config] "c")))); KeyedElement (Some (KeyField "traceLogger"%go)) (ElementExpression TraceLogger (![TraceLogger] (StructFieldRef Config "TraceLogger"%go (![go.PointerType Config] "c"))))]))) in
+    let: "$r0" := (GoAlloc raft (let: "$v0" := (![go.uint64] (StructFieldRef Config "ID"%go (![go.PointerType Config] "c"))) in
+    let: "$v1" := None' in
+    let: "$v2" := #false in
+    let: "$v3" := (![go.PointerType raftLog] "raftlog") in
+    let: "$v4" := (![go.uint64] (StructFieldRef Config "MaxSizePerMsg"%go (![go.PointerType Config] "c"))) in
+    let: "$v5" := (![go.uint64] (StructFieldRef Config "MaxUncommittedEntriesSize"%go (![go.PointerType Config] "c"))) in
+    let: "$v6" := (let: "$a0" := (![go.int] (StructFieldRef Config "MaxInflightMsgs"%go (![go.PointerType Config] "c"))) in
+    let: "$a1" := (![go.uint64] (StructFieldRef Config "MaxInflightBytes"%go (![go.PointerType Config] "c"))) in
+    (FuncResolve tracker.MakeProgressTracker [] #()) "$a0" "$a1") in
+    let: "$v7" := (![go.int] (StructFieldRef Config "ElectionTick"%go (![go.PointerType Config] "c"))) in
+    let: "$v8" := (![go.int] (StructFieldRef Config "HeartbeatTick"%go (![go.PointerType Config] "c"))) in
+    let: "$v9" := (![Logger] (StructFieldRef Config "Logger"%go (![go.PointerType Config] "c"))) in
+    let: "$v10" := (![go.bool] (StructFieldRef Config "CheckQuorum"%go (![go.PointerType Config] "c"))) in
+    let: "$v11" := (![go.bool] (StructFieldRef Config "PreVote"%go (![go.PointerType Config] "c"))) in
+    let: "$v12" := (let: "$a0" := (![ReadOnlyOption] (StructFieldRef Config "ReadOnlyOption"%go (![go.PointerType Config] "c"))) in
+    (FuncResolve newReadOnly [] #()) "$a0") in
+    let: "$v13" := (![go.bool] (StructFieldRef Config "DisableProposalForwarding"%go (![go.PointerType Config] "c"))) in
+    let: "$v14" := (![go.bool] (StructFieldRef Config "DisableConfChangeValidation"%go (![go.PointerType Config] "c"))) in
+    let: "$v15" := (![go.bool] (StructFieldRef Config "StepDownOnRemoval"%go (![go.PointerType Config] "c"))) in
+    let: "$v16" := (![TraceLogger] (StructFieldRef Config "TraceLogger"%go (![go.PointerType Config] "c"))) in
+    CompositeLiteral raft (LiteralValue [KeyedElement (Some (KeyField "id"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "lead"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "isLearner"%go)) (ElementExpression go.bool "$v2"); KeyedElement (Some (KeyField "raftLog"%go)) (ElementExpression (go.PointerType raftLog) "$v3"); KeyedElement (Some (KeyField "maxMsgSize"%go)) (ElementExpression entryEncodingSize "$v4"); KeyedElement (Some (KeyField "maxUncommittedSize"%go)) (ElementExpression entryPayloadSize "$v5"); KeyedElement (Some (KeyField "trk"%go)) (ElementExpression tracker.ProgressTracker "$v6"); KeyedElement (Some (KeyField "electionTimeout"%go)) (ElementExpression go.int "$v7"); KeyedElement (Some (KeyField "heartbeatTimeout"%go)) (ElementExpression go.int "$v8"); KeyedElement (Some (KeyField "logger"%go)) (ElementExpression Logger "$v9"); KeyedElement (Some (KeyField "checkQuorum"%go)) (ElementExpression go.bool "$v10"); KeyedElement (Some (KeyField "preVote"%go)) (ElementExpression go.bool "$v11"); KeyedElement (Some (KeyField "readOnly"%go)) (ElementExpression (go.PointerType readOnly) "$v12"); KeyedElement (Some (KeyField "disableProposalForwarding"%go)) (ElementExpression go.bool "$v13"); KeyedElement (Some (KeyField "disableConfChangeValidation"%go)) (ElementExpression go.bool "$v14"); KeyedElement (Some (KeyField "stepDownOnRemoval"%go)) (ElementExpression go.bool "$v15"); KeyedElement (Some (KeyField "traceLogger"%go)) (ElementExpression TraceLogger "$v16")]))) in
     do:  ("r" <-[go.PointerType raft] "$r0");;;
     do:  (let: "$a0" := (![go.PointerType raft] "r") in
     (FuncResolve traceInitState [] #()) "$a0");;;
@@ -2718,7 +2790,9 @@ Definition newRaftⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : v
     do:  ("lastID" <-[entryID] "$r0");;;
     let: "trk" := (GoAlloc tracker.ProgressMap (GoZeroVal tracker.ProgressMap #())) in
     let: "cfg" := (GoAlloc tracker.Config (GoZeroVal tracker.Config #())) in
-    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (CompositeLiteral confchange.Changer (LiteralValue [KeyedElement (Some (KeyField "Tracker"%go)) (ElementExpression tracker.ProgressTracker (![tracker.ProgressTracker] (StructFieldRef raft "trk"%go (![go.PointerType raft] "r")))); KeyedElement (Some (KeyField "LastIndex"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef entryID "index"%go "lastID")))])) in
+    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (let: "$v0" := (![tracker.ProgressTracker] (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))) in
+    let: "$v1" := (![go.uint64] (StructFieldRef entryID "index"%go "lastID")) in
+    CompositeLiteral confchange.Changer (LiteralValue [KeyedElement (Some (KeyField "Tracker"%go)) (ElementExpression tracker.ProgressTracker "$v0"); KeyedElement (Some (KeyField "LastIndex"%go)) (ElementExpression go.uint64 "$v1")])) in
     let: "$a1" := (![raftpb.ConfState] "cs") in
     (FuncResolve confchange.Restore [] #()) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
@@ -2791,13 +2865,18 @@ Definition raft__hasLeaderⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
 Definition raft__softStateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" <>,
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
-    return: (CompositeLiteral SoftState (LiteralValue [KeyedElement (Some (KeyField "Lead"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef raft "lead"%go (![go.PointerType raft] "r")))); KeyedElement (Some (KeyField "RaftState"%go)) (ElementExpression StateType (![StateType] (StructFieldRef raft "state"%go (![go.PointerType raft] "r"))))]))).
+    return: (let: "$v0" := (![go.uint64] (StructFieldRef raft "lead"%go (![go.PointerType raft] "r"))) in
+     let: "$v1" := (![StateType] (StructFieldRef raft "state"%go (![go.PointerType raft] "r"))) in
+     CompositeLiteral SoftState (LiteralValue [KeyedElement (Some (KeyField "Lead"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "RaftState"%go)) (ElementExpression StateType "$v1")]))).
 
 (* go: raft.go:502:16 *)
 Definition raft__hardStateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" <>,
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
-    return: (CompositeLiteral raftpb.HardState (LiteralValue [KeyedElement (Some (KeyField "Term"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef raft "Term"%go (![go.PointerType raft] "r")))); KeyedElement (Some (KeyField "Vote"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef raft "Vote"%go (![go.PointerType raft] "r")))); KeyedElement (Some (KeyField "Commit"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef raftLog "committed"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r"))))))]))).
+    return: (let: "$v0" := (![go.uint64] (StructFieldRef raft "Term"%go (![go.PointerType raft] "r"))) in
+     let: "$v1" := (![go.uint64] (StructFieldRef raft "Vote"%go (![go.PointerType raft] "r"))) in
+     let: "$v2" := (![go.uint64] (StructFieldRef raftLog "committed"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r"))))) in
+     CompositeLiteral raftpb.HardState (LiteralValue [KeyedElement (Some (KeyField "Term"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Vote"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "Commit"%go)) (ElementExpression go.uint64 "$v2")]))).
 
 (* send schedules persisting state to a stable storage and AFTER that
    sending the message (as part of next Ready message processing).
@@ -2936,7 +3015,13 @@ Definition raft__maybeSendAppendⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
        let: "$a1" := (![go.PointerType tracker.Progress] "pr") in
        (MethodResolve (go.PointerType raft) "maybeSendSnapshot"%go (![go.PointerType raft] "r")) "$a0" "$a1")
     else do:  #());;;
-    do:  (let: "$a0" := (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 (![go.uint64] "to")); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType raftpb.MsgApp); KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 (![go.uint64] "prevIndex")); KeyedElement (Some (KeyField "LogTerm"%go)) (ElementExpression go.uint64 (![go.uint64] "prevTerm")); KeyedElement (Some (KeyField "Entries"%go)) (ElementExpression (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] "ents")); KeyedElement (Some (KeyField "Commit"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef raftLog "committed"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r"))))))])) in
+    do:  (let: "$a0" := (let: "$v0" := (![go.uint64] "to") in
+    let: "$v1" := raftpb.MsgApp in
+    let: "$v2" := (![go.uint64] "prevIndex") in
+    let: "$v3" := (![go.uint64] "prevTerm") in
+    let: "$v4" := (![go.SliceType raftpb.Entry] "ents") in
+    let: "$v5" := (![go.uint64] (StructFieldRef raftLog "committed"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r"))))) in
+    CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v1"); KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 "$v2"); KeyedElement (Some (KeyField "LogTerm"%go)) (ElementExpression go.uint64 "$v3"); KeyedElement (Some (KeyField "Entries"%go)) (ElementExpression (go.SliceType raftpb.Entry) "$v4"); KeyedElement (Some (KeyField "Commit"%go)) (ElementExpression go.uint64 "$v5")])) in
     (MethodResolve (go.PointerType raft) "send"%go (![go.PointerType raft] "r")) "$a0");;;
     do:  (let: "$a0" := (let: "$a0" := (![go.SliceType raftpb.Entry] "ents") in
     (FuncResolve go.len [go.SliceType raftpb.Entry] #()) "$a0") in
@@ -3015,7 +3100,10 @@ Definition raft__maybeSendSnapshotⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGl
     let: "$sl2" := (Convert (go.PointerType tracker.Progress) (go.InterfaceType []) (![go.PointerType tracker.Progress] "pr")) in
     CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl1"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl2")]))) in
     (MethodResolve Logger "Debugf"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] "r")))) "$a0" "$a1");;;
-    do:  (let: "$a0" := (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 (![go.uint64] "to")); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType raftpb.MsgSnap); KeyedElement (Some (KeyField "Snapshot"%go)) (ElementExpression (go.PointerType raftpb.Snapshot) "snapshot")])) in
+    do:  (let: "$a0" := (let: "$v0" := (![go.uint64] "to") in
+    let: "$v1" := raftpb.MsgSnap in
+    let: "$v2" := "snapshot" in
+    CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v1"); KeyedElement (Some (KeyField "Snapshot"%go)) (ElementExpression (go.PointerType raftpb.Snapshot) "$v2")])) in
     (MethodResolve (go.PointerType raft) "send"%go (![go.PointerType raft] "r")) "$a0");;;
     return: (#true)).
 
@@ -3035,7 +3123,11 @@ Definition raft__sendHeartbeatⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
     let: "$a1" := (![go.uint64] (StructFieldRef raftLog "committed"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r"))))) in
     (FuncResolve go.min [go.uint64; go.uint64] #()) "$a0" "$a1") in
     do:  ("commit" <-[go.uint64] "$r0");;;
-    do:  (let: "$a0" := (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 (![go.uint64] "to")); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType raftpb.MsgHeartbeat); KeyedElement (Some (KeyField "Commit"%go)) (ElementExpression go.uint64 (![go.uint64] "commit")); KeyedElement (Some (KeyField "Context"%go)) (ElementExpression (go.SliceType go.byte) (![go.SliceType go.byte] "ctx"))])) in
+    do:  (let: "$a0" := (let: "$v0" := (![go.uint64] "to") in
+    let: "$v1" := raftpb.MsgHeartbeat in
+    let: "$v2" := (![go.uint64] "commit") in
+    let: "$v3" := (![go.SliceType go.byte] "ctx") in
+    CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v1"); KeyedElement (Some (KeyField "Commit"%go)) (ElementExpression go.uint64 "$v2"); KeyedElement (Some (KeyField "Context"%go)) (ElementExpression (go.SliceType go.byte) "$v3")])) in
     (MethodResolve (go.PointerType raft) "send"%go (![go.PointerType raft] "r")) "$a0");;;
     do:  (let: "$a0" := (![go.uint64] "commit") in
     (MethodResolve (go.PointerType tracker.Progress) "SentCommit"%go (![go.PointerType tracker.Progress] "pr")) "$a0");;;
@@ -3178,7 +3270,9 @@ Definition raft__maybeCommitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
       "$f" "$a0";;
       "$oldf" #()
       )));;;
-    return: (let: "$a0" := (CompositeLiteral entryID (LiteralValue [KeyedElement (Some (KeyField "term"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef raft "Term"%go (![go.PointerType raft] "r")))); KeyedElement (Some (KeyField "index"%go)) (ElementExpression go.uint64 ((MethodResolve (go.PointerType tracker.ProgressTracker) "Committed"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))) #()))])) in
+    return: (let: "$a0" := (let: "$v0" := (![go.uint64] (StructFieldRef raft "Term"%go (![go.PointerType raft] "r"))) in
+     let: "$v1" := ((MethodResolve (go.PointerType tracker.ProgressTracker) "Committed"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))) #()) in
+     CompositeLiteral entryID (LiteralValue [KeyedElement (Some (KeyField "term"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "index"%go)) (ElementExpression go.uint64 "$v1")])) in
      (MethodResolve (go.PointerType raftLog) "maybeCommit"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) "$a0")).
 
 (* go: raft.go:784:16 *)
@@ -3205,9 +3299,13 @@ Definition raft__resetⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
     do:  (let: "$a0" := (λ: "id" "pr",
       exception_do (let: "pr" := (GoAlloc (go.PointerType tracker.Progress) "pr") in
       let: "id" := (GoAlloc go.uint64 "id") in
-      let: "$r0" := (CompositeLiteral tracker.Progress (LiteralValue [KeyedElement (Some (KeyField "Match"%go)) (ElementExpression go.uint64 #(W64 0)); KeyedElement (Some (KeyField "Next"%go)) (ElementExpression go.uint64 (((MethodResolve (go.PointerType raftLog) "lastIndex"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) #()) +⟨go.uint64⟩ #(W64 1))); KeyedElement (Some (KeyField "Inflights"%go)) (ElementExpression (go.PointerType tracker.Inflights) (let: "$a0" := (![go.int] (StructFieldRef tracker.ProgressTracker "MaxInflight"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r")))) in
-       let: "$a1" := (![go.uint64] (StructFieldRef tracker.ProgressTracker "MaxInflightBytes"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r")))) in
-       (FuncResolve tracker.NewInflights [] #()) "$a0" "$a1")); KeyedElement (Some (KeyField "IsLearner"%go)) (ElementExpression go.bool (![go.bool] (StructFieldRef tracker.Progress "IsLearner"%go (![go.PointerType tracker.Progress] "pr"))))])) in
+      let: "$r0" := (let: "$v0" := #(W64 0) in
+      let: "$v1" := (((MethodResolve (go.PointerType raftLog) "lastIndex"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) #()) +⟨go.uint64⟩ #(W64 1)) in
+      let: "$v2" := (let: "$a0" := (![go.int] (StructFieldRef tracker.ProgressTracker "MaxInflight"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r")))) in
+      let: "$a1" := (![go.uint64] (StructFieldRef tracker.ProgressTracker "MaxInflightBytes"%go (StructFieldRef raft "trk"%go (![go.PointerType raft] "r")))) in
+      (FuncResolve tracker.NewInflights [] #()) "$a0" "$a1") in
+      let: "$v3" := (![go.bool] (StructFieldRef tracker.Progress "IsLearner"%go (![go.PointerType tracker.Progress] "pr"))) in
+      CompositeLiteral tracker.Progress (LiteralValue [KeyedElement (Some (KeyField "Match"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Next"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "Inflights"%go)) (ElementExpression (go.PointerType tracker.Inflights) "$v2"); KeyedElement (Some (KeyField "IsLearner"%go)) (ElementExpression go.bool "$v3")])) in
       do:  ((![go.PointerType tracker.Progress] "pr") <-[tracker.Progress] "$r0");;;
       (if: Convert go.untyped_bool go.bool ((![go.uint64] "id") =⟨go.uint64⟩ (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r"))))
       then
@@ -3258,7 +3356,10 @@ Definition raft__appendEntryⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
     let: "$r0" := (let: "$a0" := (![go.SliceType raftpb.Entry] "es") in
     (MethodResolve (go.PointerType raftLog) "append"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) "$a0") in
     do:  ("li" <-[go.uint64] "$r0");;;
-    do:  (let: "$a0" := (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType raftpb.MsgAppResp); KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 (![go.uint64] "li"))])) in
+    do:  (let: "$a0" := (let: "$v0" := (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r"))) in
+    let: "$v1" := raftpb.MsgAppResp in
+    let: "$v2" := (![go.uint64] "li") in
+    CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v1"); KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 "$v2")])) in
     (MethodResolve (go.PointerType raft) "send"%go (![go.PointerType raft] "r")) "$a0");;;
     return: (#true)).
 
@@ -3274,7 +3375,9 @@ Definition raft__tickElectionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
       let: "$r0" := #(W64 0) in
       do:  ((StructFieldRef raft "electionElapsed"%go (![go.PointerType raft] "r")) <-[go.int] "$r0");;;
       (let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-      let: "$r0" := (let: "$a0" := (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType raftpb.MsgHup)])) in
+      let: "$r0" := (let: "$a0" := (let: "$v0" := (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r"))) in
+      let: "$v1" := raftpb.MsgHup in
+      CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v1")])) in
       (MethodResolve (go.PointerType raft) "Step"%go (![go.PointerType raft] "r")) "$a0") in
       do:  ("err" <-[go.error] "$r0");;;
       (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
@@ -3302,7 +3405,9 @@ Definition raft__tickHeartbeatⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
       (if: ![go.bool] (StructFieldRef raft "checkQuorum"%go (![go.PointerType raft] "r"))
       then
         (let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-        let: "$r0" := (let: "$a0" := (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType raftpb.MsgCheckQuorum)])) in
+        let: "$r0" := (let: "$a0" := (let: "$v0" := (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r"))) in
+        let: "$v1" := raftpb.MsgCheckQuorum in
+        CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v1")])) in
         (MethodResolve (go.PointerType raft) "Step"%go (![go.PointerType raft] "r")) "$a0") in
         do:  ("err" <-[go.error] "$r0");;;
         (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
@@ -3325,7 +3430,9 @@ Definition raft__tickHeartbeatⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
       let: "$r0" := #(W64 0) in
       do:  ((StructFieldRef raft "heartbeatElapsed"%go (![go.PointerType raft] "r")) <-[go.int] "$r0");;;
       (let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
-      let: "$r0" := (let: "$a0" := (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType raftpb.MsgBeat)])) in
+      let: "$r0" := (let: "$a0" := (let: "$v0" := (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r"))) in
+      let: "$v1" := raftpb.MsgBeat in
+      CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v1")])) in
       (MethodResolve (go.PointerType raft) "Step"%go (![go.PointerType raft] "r")) "$a0") in
       do:  ("err" <-[go.error] "$r0");;;
       (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
@@ -3446,7 +3553,8 @@ Definition raft__becomeLeaderⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
     do:  (let: "$a0" := (![go.PointerType raft] "r") in
     (FuncResolve traceBecomeLeader [] #()) "$a0");;;
     let: "emptyEnt" := (GoAlloc raftpb.Entry (GoZeroVal raftpb.Entry #())) in
-    let: "$r0" := (CompositeLiteral raftpb.Entry (LiteralValue [KeyedElement (Some (KeyField "Data"%go)) (ElementExpression go.untyped_nil UntypedNil)])) in
+    let: "$r0" := (let: "$v0" := UntypedNil in
+    CompositeLiteral raftpb.Entry (LiteralValue [KeyedElement (Some (KeyField "Data"%go)) (ElementExpression go.untyped_nil "$v0")])) in
     do:  ("emptyEnt" <-[raftpb.Entry] "$r0");;;
     (if: (⟨go.bool⟩! (let: "$a0" := ((let: "$sl0" := (![raftpb.Entry] "emptyEnt") in
     CompositeLiteral (go.SliceType raftpb.Entry) (LiteralValue [KeyedElement None (ElementExpression raftpb.Entry "$sl0")]))) in
@@ -3621,8 +3729,11 @@ Definition raft__campaignⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
       do:  "$key";;;
       (if: Convert go.untyped_bool go.bool ((![go.uint64] "id") =⟨go.uint64⟩ (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r"))))
       then
-        do:  (let: "$a0" := (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 (![go.uint64] "id")); KeyedElement (Some (KeyField "Term"%go)) (ElementExpression go.uint64 (![go.uint64] "term")); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType (let: "$a0" := (![raftpb.MessageType] "voteMsg") in
-         (FuncResolve voteRespMsgType [] #()) "$a0"))])) in
+        do:  (let: "$a0" := (let: "$v0" := (![go.uint64] "id") in
+        let: "$v1" := (![go.uint64] "term") in
+        let: "$v2" := (let: "$a0" := (![raftpb.MessageType] "voteMsg") in
+        (FuncResolve voteRespMsgType [] #()) "$a0") in
+        CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Term"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v2")])) in
         (MethodResolve (go.PointerType raft) "send"%go (![go.PointerType raft] "r")) "$a0");;;
         continue: #()
       else do:  #());;;
@@ -3644,7 +3755,13 @@ Definition raft__campaignⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
         let: "$r0" := (Convert CampaignType (go.SliceType go.byte) (![CampaignType] "t")) in
         do:  ("ctx" <-[go.SliceType go.byte] "$r0")
       else do:  #());;;
-      do:  (let: "$a0" := (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 (![go.uint64] "id")); KeyedElement (Some (KeyField "Term"%go)) (ElementExpression go.uint64 (![go.uint64] "term")); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType (![raftpb.MessageType] "voteMsg")); KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef entryID "index"%go "last"))); KeyedElement (Some (KeyField "LogTerm"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef entryID "term"%go "last"))); KeyedElement (Some (KeyField "Context"%go)) (ElementExpression (go.SliceType go.byte) (![go.SliceType go.byte] "ctx"))])) in
+      do:  (let: "$a0" := (let: "$v0" := (![go.uint64] "id") in
+      let: "$v1" := (![go.uint64] "term") in
+      let: "$v2" := (![raftpb.MessageType] "voteMsg") in
+      let: "$v3" := (![go.uint64] (StructFieldRef entryID "index"%go "last")) in
+      let: "$v4" := (![go.uint64] (StructFieldRef entryID "term"%go "last")) in
+      let: "$v5" := (![go.SliceType go.byte] "ctx") in
+      CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Term"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v2"); KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 "$v3"); KeyedElement (Some (KeyField "LogTerm"%go)) (ElementExpression go.uint64 "$v4"); KeyedElement (Some (KeyField "Context"%go)) (ElementExpression (go.SliceType go.byte) "$v5")])) in
       (MethodResolve (go.PointerType raft) "send"%go (![go.PointerType raft] "r")) "$a0")));;;
     return: #()).
 
@@ -3755,7 +3872,9 @@ Definition raft__Stepⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
         then
           (if: ((![go.bool] (StructFieldRef raft "checkQuorum"%go (![go.PointerType raft] "r"))) || (![go.bool] (StructFieldRef raft "preVote"%go (![go.PointerType raft] "r")))) && (((![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m")) =⟨go.int32⟩ raftpb.MsgHeartbeat) || ((![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m")) =⟨go.int32⟩ raftpb.MsgApp))
           then
-            do:  (let: "$a0" := (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m"))); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType raftpb.MsgAppResp)])) in
+            do:  (let: "$a0" := (let: "$v0" := (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m")) in
+            let: "$v1" := raftpb.MsgAppResp in
+            CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v1")])) in
             (MethodResolve (go.PointerType raft) "send"%go (![go.PointerType raft] "r")) "$a0")
           else
             (if: Convert go.untyped_bool go.bool ((![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m")) =⟨go.int32⟩ raftpb.MsgPreVote)
@@ -3775,7 +3894,11 @@ Definition raft__Stepⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
               let: "$sl8" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "Term"%go (![go.PointerType raft] "r")))) in
               CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl1"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl2"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl3"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl4"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl5"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl6"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl7"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl8")]))) in
               (MethodResolve Logger "Infof"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] "r")))) "$a0" "$a1");;;
-              do:  (let: "$a0" := (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m"))); KeyedElement (Some (KeyField "Term"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef raft "Term"%go (![go.PointerType raft] "r")))); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType raftpb.MsgPreVoteResp); KeyedElement (Some (KeyField "Reject"%go)) (ElementExpression go.bool #true)])) in
+              do:  (let: "$a0" := (let: "$v0" := (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m")) in
+              let: "$v1" := (![go.uint64] (StructFieldRef raft "Term"%go (![go.PointerType raft] "r"))) in
+              let: "$v2" := raftpb.MsgPreVoteResp in
+              let: "$v3" := #true in
+              CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Term"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v2"); KeyedElement (Some (KeyField "Reject"%go)) (ElementExpression go.bool "$v3")])) in
               (MethodResolve (go.PointerType raft) "send"%go (![go.PointerType raft] "r")) "$a0")
             else
               (if: Convert go.untyped_bool go.bool ((![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m")) =⟨go.int32⟩ raftpb.MsgStorageAppendResp)
@@ -3821,7 +3944,9 @@ Definition raft__Stepⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
       then
         (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef raftpb.Message "Index"%go "m")) ≠⟨go.uint64⟩ #(W64 0))
         then
-          do:  (let: "$a0" := (CompositeLiteral entryID (LiteralValue [KeyedElement (Some (KeyField "term"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef raftpb.Message "LogTerm"%go "m"))); KeyedElement (Some (KeyField "index"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef raftpb.Message "Index"%go "m")))])) in
+          do:  (let: "$a0" := (let: "$v0" := (![go.uint64] (StructFieldRef raftpb.Message "LogTerm"%go "m")) in
+          let: "$v1" := (![go.uint64] (StructFieldRef raftpb.Message "Index"%go "m")) in
+          CompositeLiteral entryID (LiteralValue [KeyedElement (Some (KeyField "term"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "index"%go)) (ElementExpression go.uint64 "$v1")])) in
           (MethodResolve (go.PointerType raftLog) "stableTo"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) "$a0")
         else do:  #());;;
         (if: Convert go.untyped_bool go.bool ((![go.PointerType raftpb.Snapshot] (StructFieldRef raftpb.Message "Snapshot"%go "m")) ≠⟨go.PointerType raftpb.Snapshot⟩ (Convert go.untyped_nil (go.PointerType raftpb.Snapshot) UntypedNil))
@@ -3857,7 +3982,9 @@ Definition raft__Stepⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
             let: "$r0" := ((MethodResolve (go.PointerType raftLog) "lastEntryID"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) #()) in
             do:  ("lastID" <-[entryID] "$r0");;;
             let: "candLastID" := (GoAlloc entryID (GoZeroVal entryID #())) in
-            let: "$r0" := (CompositeLiteral entryID (LiteralValue [KeyedElement (Some (KeyField "term"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef raftpb.Message "LogTerm"%go "m"))); KeyedElement (Some (KeyField "index"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef raftpb.Message "Index"%go "m")))])) in
+            let: "$r0" := (let: "$v0" := (![go.uint64] (StructFieldRef raftpb.Message "LogTerm"%go "m")) in
+            let: "$v1" := (![go.uint64] (StructFieldRef raftpb.Message "Index"%go "m")) in
+            CompositeLiteral entryID (LiteralValue [KeyedElement (Some (KeyField "term"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "index"%go)) (ElementExpression go.uint64 "$v1")])) in
             do:  ("candLastID" <-[entryID] "$r0");;;
             (if: (![go.bool] "canVote") && (let: "$a0" := (![entryID] "candLastID") in
             (MethodResolve (go.PointerType raftLog) "isUpToDate"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) "$a0")
@@ -3874,8 +4001,11 @@ Definition raft__Stepⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
               let: "$sl8" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "Term"%go (![go.PointerType raft] "r")))) in
               CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl1"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl2"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl3"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl4"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl5"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl6"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl7"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl8")]))) in
               (MethodResolve Logger "Infof"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] "r")))) "$a0" "$a1");;;
-              do:  (let: "$a0" := (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m"))); KeyedElement (Some (KeyField "Term"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef raftpb.Message "Term"%go "m"))); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType (let: "$a0" := (![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m")) in
-               (FuncResolve voteRespMsgType [] #()) "$a0"))])) in
+              do:  (let: "$a0" := (let: "$v0" := (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m")) in
+              let: "$v1" := (![go.uint64] (StructFieldRef raftpb.Message "Term"%go "m")) in
+              let: "$v2" := (let: "$a0" := (![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m")) in
+              (FuncResolve voteRespMsgType [] #()) "$a0") in
+              CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Term"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v2")])) in
               (MethodResolve (go.PointerType raft) "send"%go (![go.PointerType raft] "r")) "$a0");;;
               (if: Convert go.untyped_bool go.bool ((![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m")) =⟨go.int32⟩ raftpb.MsgVote)
               then
@@ -3897,8 +4027,12 @@ Definition raft__Stepⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
               let: "$sl8" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] (StructFieldRef raft "Term"%go (![go.PointerType raft] "r")))) in
               CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl1"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl2"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl3"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl4"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl5"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl6"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl7"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl8")]))) in
               (MethodResolve Logger "Infof"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] "r")))) "$a0" "$a1");;;
-              do:  (let: "$a0" := (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m"))); KeyedElement (Some (KeyField "Term"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef raft "Term"%go (![go.PointerType raft] "r")))); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType (let: "$a0" := (![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m")) in
-               (FuncResolve voteRespMsgType [] #()) "$a0")); KeyedElement (Some (KeyField "Reject"%go)) (ElementExpression go.bool #true)])) in
+              do:  (let: "$a0" := (let: "$v0" := (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m")) in
+              let: "$v1" := (![go.uint64] (StructFieldRef raft "Term"%go (![go.PointerType raft] "r"))) in
+              let: "$v2" := (let: "$a0" := (![raftpb.MessageType] (StructFieldRef raftpb.Message "Type"%go "m")) in
+              (FuncResolve voteRespMsgType [] #()) "$a0") in
+              let: "$v3" := #true in
+              CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Term"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v2"); KeyedElement (Some (KeyField "Reject"%go)) (ElementExpression go.bool "$v3")])) in
               (MethodResolve (go.PointerType raft) "send"%go (![go.PointerType raft] "r")) "$a0"))
           else
             let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
@@ -4050,7 +4184,8 @@ Definition stepLeaderⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
                 let: "$sl3" := (Convert go.string (go.InterfaceType []) (![go.string] "failedCheck")) in
                 CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl1"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl2"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl3")]))) in
                 (MethodResolve Logger "Infof"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] "r")))) "$a0" "$a1");;;
-                let: "$r0" := (CompositeLiteral raftpb.Entry (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.EntryType raftpb.EntryNormal)])) in
+                let: "$r0" := (let: "$v0" := raftpb.EntryNormal in
+                CompositeLiteral raftpb.Entry (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.EntryType "$v0")])) in
                 do:  ((IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] (StructFieldRef raftpb.Message "Entries"%go "m"), ![go.int] "i")) <-[raftpb.Entry] "$r0")
               else
                 let: "$r0" := ((((MethodResolve (go.PointerType raftLog) "lastIndex"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) #()) +⟨go.uint64⟩ (Convert go.int go.uint64 (![go.int] "i"))) +⟨go.uint64⟩ #(W64 1)) in
@@ -4601,7 +4736,9 @@ Definition stepFollowerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
                         return: (Convert go.untyped_nil go.error UntypedNil)
                       else do:  #());;;
                       let: "$r0" := (let: "$a0" := (![go.SliceType ReadState] (StructFieldRef raft "readStates"%go (![go.PointerType raft] "r"))) in
-                      let: "$a1" := ((let: "$sl0" := (CompositeLiteral ReadState (LiteralValue [KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef raftpb.Message "Index"%go "m"))); KeyedElement (Some (KeyField "RequestCtx"%go)) (ElementExpression (go.SliceType go.byte) (![go.SliceType go.byte] (StructFieldRef raftpb.Entry "Data"%go (IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] (StructFieldRef raftpb.Message "Entries"%go "m"), #(W64 0))))))])) in
+                      let: "$a1" := ((let: "$sl0" := (let: "$v0" := (![go.uint64] (StructFieldRef raftpb.Message "Index"%go "m")) in
+                      let: "$v1" := (![go.SliceType go.byte] (StructFieldRef raftpb.Entry "Data"%go (IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] (StructFieldRef raftpb.Message "Entries"%go "m"), #(W64 0))))) in
+                      CompositeLiteral ReadState (LiteralValue [KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "RequestCtx"%go)) (ElementExpression (go.SliceType go.byte) "$v1")])) in
                       CompositeLiteral (go.SliceType ReadState) (LiteralValue [KeyedElement None (ElementExpression ReadState "$sl0")]))) in
                       (FuncResolve go.append [go.SliceType ReadState] #()) "$a0" "$a1") in
                       do:  ((StructFieldRef raft "readStates"%go (![go.PointerType raft] "r")) <-[go.SliceType ReadState] "$r0")
@@ -4614,7 +4751,12 @@ Definition stepFollowerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
 Definition logSliceFromMsgAppⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "m",
     exception_do (let: "m" := (GoAlloc (go.PointerType raftpb.Message) "m") in
-    return: (CompositeLiteral logSlice (LiteralValue [KeyedElement (Some (KeyField "term"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef raftpb.Message "Term"%go (![go.PointerType raftpb.Message] "m")))); KeyedElement (Some (KeyField "prev"%go)) (ElementExpression entryID (CompositeLiteral entryID (LiteralValue [KeyedElement (Some (KeyField "term"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef raftpb.Message "LogTerm"%go (![go.PointerType raftpb.Message] "m")))); KeyedElement (Some (KeyField "index"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef raftpb.Message "Index"%go (![go.PointerType raftpb.Message] "m"))))]))); KeyedElement (Some (KeyField "entries"%go)) (ElementExpression (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] (StructFieldRef raftpb.Message "Entries"%go (![go.PointerType raftpb.Message] "m"))))]))).
+    return: (let: "$v0" := (![go.uint64] (StructFieldRef raftpb.Message "Term"%go (![go.PointerType raftpb.Message] "m"))) in
+     let: "$v1" := (let: "$v0" := (![go.uint64] (StructFieldRef raftpb.Message "LogTerm"%go (![go.PointerType raftpb.Message] "m"))) in
+     let: "$v1" := (![go.uint64] (StructFieldRef raftpb.Message "Index"%go (![go.PointerType raftpb.Message] "m"))) in
+     CompositeLiteral entryID (LiteralValue [KeyedElement (Some (KeyField "term"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "index"%go)) (ElementExpression go.uint64 "$v1")])) in
+     let: "$v2" := (![go.SliceType raftpb.Entry] (StructFieldRef raftpb.Message "Entries"%go (![go.PointerType raftpb.Message] "m"))) in
+     CompositeLiteral logSlice (LiteralValue [KeyedElement (Some (KeyField "term"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "prev"%go)) (ElementExpression entryID "$v1"); KeyedElement (Some (KeyField "entries"%go)) (ElementExpression (go.SliceType raftpb.Entry) "$v2")]))).
 
 (* go: raft.go:1786:16 *)
 Definition raft__handleAppendEntriesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -4627,7 +4769,10 @@ Definition raft__handleAppendEntriesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : Go
     do:  ("a" <-[logSlice] "$r0");;;
     (if: Convert go.untyped_bool go.bool ((![go.uint64] (StructFieldRef entryID "index"%go (StructFieldRef logSlice "prev"%go "a"))) <⟨go.uint64⟩ (![go.uint64] (StructFieldRef raftLog "committed"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r"))))))
     then
-      do:  (let: "$a0" := (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m"))); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType raftpb.MsgAppResp); KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef raftLog "committed"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r"))))))])) in
+      do:  (let: "$a0" := (let: "$v0" := (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m")) in
+      let: "$v1" := raftpb.MsgAppResp in
+      let: "$v2" := (![go.uint64] (StructFieldRef raftLog "committed"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r"))))) in
+      CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v1"); KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 "$v2")])) in
       (MethodResolve (go.PointerType raft) "send"%go (![go.PointerType raft] "r")) "$a0");;;
       return: (#())
     else do:  #());;;
@@ -4642,7 +4787,10 @@ Definition raft__handleAppendEntriesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : Go
     do:  ("ok" <-[go.bool] "$r1");;;
     (if: ![go.bool] "ok"
     then
-      do:  (let: "$a0" := (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m"))); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType raftpb.MsgAppResp); KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 (![go.uint64] "mlastIndex"))])) in
+      do:  (let: "$a0" := (let: "$v0" := (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m")) in
+      let: "$v1" := raftpb.MsgAppResp in
+      let: "$v2" := (![go.uint64] "mlastIndex") in
+      CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v1"); KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 "$v2")])) in
       (MethodResolve (go.PointerType raft) "send"%go (![go.PointerType raft] "r")) "$a0");;;
       return: (#())
     else do:  #()));;;
@@ -4672,7 +4820,13 @@ Definition raft__handleAppendEntriesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : Go
     let: "$r1" := "$ret1" in
     do:  ("hintIndex" <-[go.uint64] "$r0");;;
     do:  ("hintTerm" <-[go.uint64] "$r1");;;
-    do:  (let: "$a0" := (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m"))); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType raftpb.MsgAppResp); KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef raftpb.Message "Index"%go "m"))); KeyedElement (Some (KeyField "Reject"%go)) (ElementExpression go.bool #true); KeyedElement (Some (KeyField "RejectHint"%go)) (ElementExpression go.uint64 (![go.uint64] "hintIndex")); KeyedElement (Some (KeyField "LogTerm"%go)) (ElementExpression go.uint64 (![go.uint64] "hintTerm"))])) in
+    do:  (let: "$a0" := (let: "$v0" := (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m")) in
+    let: "$v1" := raftpb.MsgAppResp in
+    let: "$v2" := (![go.uint64] (StructFieldRef raftpb.Message "Index"%go "m")) in
+    let: "$v3" := #true in
+    let: "$v4" := (![go.uint64] "hintIndex") in
+    let: "$v5" := (![go.uint64] "hintTerm") in
+    CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v1"); KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 "$v2"); KeyedElement (Some (KeyField "Reject"%go)) (ElementExpression go.bool "$v3"); KeyedElement (Some (KeyField "RejectHint"%go)) (ElementExpression go.uint64 "$v4"); KeyedElement (Some (KeyField "LogTerm"%go)) (ElementExpression go.uint64 "$v5")])) in
     (MethodResolve (go.PointerType raft) "send"%go (![go.PointerType raft] "r")) "$a0");;;
     return: #()).
 
@@ -4683,7 +4837,10 @@ Definition raft__handleHeartbeatⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
     let: "m" := (GoAlloc raftpb.Message "m") in
     do:  (let: "$a0" := (![go.uint64] (StructFieldRef raftpb.Message "Commit"%go "m")) in
     (MethodResolve (go.PointerType raftLog) "commitTo"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) "$a0");;;
-    do:  (let: "$a0" := (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m"))); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType raftpb.MsgHeartbeatResp); KeyedElement (Some (KeyField "Context"%go)) (ElementExpression (go.SliceType go.byte) (![go.SliceType go.byte] (StructFieldRef raftpb.Message "Context"%go "m")))])) in
+    do:  (let: "$a0" := (let: "$v0" := (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m")) in
+    let: "$v1" := raftpb.MsgHeartbeatResp in
+    let: "$v2" := (![go.SliceType go.byte] (StructFieldRef raftpb.Message "Context"%go "m")) in
+    CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v1"); KeyedElement (Some (KeyField "Context"%go)) (ElementExpression (go.SliceType go.byte) "$v2")])) in
     (MethodResolve (go.PointerType raft) "send"%go (![go.PointerType raft] "r")) "$a0");;;
     return: #()).
 
@@ -4714,7 +4871,10 @@ Definition raft__handleSnapshotⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
       let: "$sl3" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] "sterm")) in
       CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl1"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl2"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl3")]))) in
       (MethodResolve Logger "Infof"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] "r")))) "$a0" "$a1");;;
-      do:  (let: "$a0" := (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m"))); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType raftpb.MsgAppResp); KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 ((MethodResolve (go.PointerType raftLog) "lastIndex"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) #()))])) in
+      do:  (let: "$a0" := (let: "$v0" := (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m")) in
+      let: "$v1" := raftpb.MsgAppResp in
+      let: "$v2" := ((MethodResolve (go.PointerType raftLog) "lastIndex"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) #()) in
+      CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v1"); KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 "$v2")])) in
       (MethodResolve (go.PointerType raft) "send"%go (![go.PointerType raft] "r")) "$a0")
     else
       do:  (let: "$a0" := #"%x [commit: %d] ignored snapshot [index: %d, term: %d]"%go in
@@ -4724,7 +4884,10 @@ Definition raft__handleSnapshotⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
       let: "$sl3" := (Convert go.uint64 (go.InterfaceType []) (![go.uint64] "sterm")) in
       CompositeLiteral (go.SliceType (go.InterfaceType [])) (LiteralValue [KeyedElement None (ElementExpression (go.InterfaceType []) "$sl0"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl1"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl2"); KeyedElement None (ElementExpression (go.InterfaceType []) "$sl3")]))) in
       (MethodResolve Logger "Infof"%go (![Logger] (StructFieldRef raft "logger"%go (![go.PointerType raft] "r")))) "$a0" "$a1");;;
-      do:  (let: "$a0" := (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m"))); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType raftpb.MsgAppResp); KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef raftLog "committed"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r"))))))])) in
+      do:  (let: "$a0" := (let: "$v0" := (![go.uint64] (StructFieldRef raftpb.Message "From"%go "m")) in
+      let: "$v1" := raftpb.MsgAppResp in
+      let: "$v2" := (![go.uint64] (StructFieldRef raftLog "committed"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r"))))) in
+      CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v1"); KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 "$v2")])) in
       (MethodResolve (go.PointerType raft) "send"%go (![go.PointerType raft] "r")) "$a0"));;;
     return: #()).
 
@@ -4757,7 +4920,10 @@ Definition raft__restoreⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
     let: "cs" := (GoAlloc raftpb.ConfState (GoZeroVal raftpb.ConfState #())) in
     let: "$r0" := (![raftpb.ConfState] (StructFieldRef raftpb.SnapshotMetadata "ConfState"%go (StructFieldRef raftpb.Snapshot "Metadata"%go "s"))) in
     do:  ("cs" <-[raftpb.ConfState] "$r0");;;
-    let: "$range" := (CompositeLiteral (go.SliceType (go.SliceType go.uint64)) (LiteralValue [KeyedElement None (ElementExpression (go.SliceType go.uint64) (![go.SliceType go.uint64] (StructFieldRef raftpb.ConfState "Voters"%go "cs"))); KeyedElement None (ElementExpression (go.SliceType go.uint64) (![go.SliceType go.uint64] (StructFieldRef raftpb.ConfState "Learners"%go "cs"))); KeyedElement None (ElementExpression (go.SliceType go.uint64) (![go.SliceType go.uint64] (StructFieldRef raftpb.ConfState "VotersOutgoing"%go "cs")))])) in
+    let: "$range" := (let: "$v0" := (![go.SliceType go.uint64] (StructFieldRef raftpb.ConfState "Voters"%go "cs")) in
+    let: "$v1" := (![go.SliceType go.uint64] (StructFieldRef raftpb.ConfState "Learners"%go "cs")) in
+    let: "$v2" := (![go.SliceType go.uint64] (StructFieldRef raftpb.ConfState "VotersOutgoing"%go "cs")) in
+    CompositeLiteral (go.SliceType (go.SliceType go.uint64)) (LiteralValue [KeyedElement None (ElementExpression (go.SliceType go.uint64) "$v0"); KeyedElement None (ElementExpression (go.SliceType go.uint64) "$v1"); KeyedElement None (ElementExpression (go.SliceType go.uint64) "$v2")])) in
     (let: "set" := (GoAlloc (go.SliceType go.uint64) (GoZeroVal (go.SliceType go.uint64) #())) in
     slice.for_range (go.SliceType go.uint64) "$range" (λ: "$key" "$value",
       do:  ("set" <-[go.SliceType go.uint64] "$value");;;
@@ -4786,7 +4952,9 @@ Definition raft__restoreⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
       return: (#false)
     else do:  #());;;
     let: "id" := (GoAlloc entryID (GoZeroVal entryID #())) in
-    let: "$r0" := (CompositeLiteral entryID (LiteralValue [KeyedElement (Some (KeyField "term"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef raftpb.SnapshotMetadata "Term"%go (StructFieldRef raftpb.Snapshot "Metadata"%go "s")))); KeyedElement (Some (KeyField "index"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef raftpb.SnapshotMetadata "Index"%go (StructFieldRef raftpb.Snapshot "Metadata"%go "s"))))])) in
+    let: "$r0" := (let: "$v0" := (![go.uint64] (StructFieldRef raftpb.SnapshotMetadata "Term"%go (StructFieldRef raftpb.Snapshot "Metadata"%go "s"))) in
+    let: "$v1" := (![go.uint64] (StructFieldRef raftpb.SnapshotMetadata "Index"%go (StructFieldRef raftpb.Snapshot "Metadata"%go "s"))) in
+    CompositeLiteral entryID (LiteralValue [KeyedElement (Some (KeyField "term"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "index"%go)) (ElementExpression go.uint64 "$v1")])) in
     do:  ("id" <-[entryID] "$r0");;;
     (if: let: "$a0" := (![entryID] "id") in
     (MethodResolve (go.PointerType raftLog) "matchTerm"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) "$a0"
@@ -4816,7 +4984,9 @@ Definition raft__restoreⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
     let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
     let: "trk" := (GoAlloc tracker.ProgressMap (GoZeroVal tracker.ProgressMap #())) in
     let: "cfg" := (GoAlloc tracker.Config (GoZeroVal tracker.Config #())) in
-    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (CompositeLiteral confchange.Changer (LiteralValue [KeyedElement (Some (KeyField "Tracker"%go)) (ElementExpression tracker.ProgressTracker (![tracker.ProgressTracker] (StructFieldRef raft "trk"%go (![go.PointerType raft] "r")))); KeyedElement (Some (KeyField "LastIndex"%go)) (ElementExpression go.uint64 ((MethodResolve (go.PointerType raftLog) "lastIndex"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) #()))])) in
+    let: (("$ret0", "$ret1"), "$ret2") := (let: "$a0" := (let: "$v0" := (![tracker.ProgressTracker] (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))) in
+    let: "$v1" := ((MethodResolve (go.PointerType raftLog) "lastIndex"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) #()) in
+    CompositeLiteral confchange.Changer (LiteralValue [KeyedElement (Some (KeyField "Tracker"%go)) (ElementExpression tracker.ProgressTracker "$v0"); KeyedElement (Some (KeyField "LastIndex"%go)) (ElementExpression go.uint64 "$v1")])) in
     let: "$a1" := (![raftpb.ConfState] "cs") in
     (FuncResolve confchange.Restore [] #()) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
@@ -4876,7 +5046,9 @@ Definition raft__applyConfChangeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
     let: "cfg" := (GoAlloc tracker.Config (GoZeroVal tracker.Config #())) in
     let: (("$ret0", "$ret1"), "$ret2") := ((λ: <>,
       exception_do (let: "changer" := (GoAlloc confchange.Changer (GoZeroVal confchange.Changer #())) in
-      let: "$r0" := (CompositeLiteral confchange.Changer (LiteralValue [KeyedElement (Some (KeyField "Tracker"%go)) (ElementExpression tracker.ProgressTracker (![tracker.ProgressTracker] (StructFieldRef raft "trk"%go (![go.PointerType raft] "r")))); KeyedElement (Some (KeyField "LastIndex"%go)) (ElementExpression go.uint64 ((MethodResolve (go.PointerType raftLog) "lastIndex"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) #()))])) in
+      let: "$r0" := (let: "$v0" := (![tracker.ProgressTracker] (StructFieldRef raft "trk"%go (![go.PointerType raft] "r"))) in
+      let: "$v1" := ((MethodResolve (go.PointerType raftLog) "lastIndex"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) #()) in
+      CompositeLiteral confchange.Changer (LiteralValue [KeyedElement (Some (KeyField "Tracker"%go)) (ElementExpression tracker.ProgressTracker "$v0"); KeyedElement (Some (KeyField "LastIndex"%go)) (ElementExpression go.uint64 "$v1")])) in
       do:  ("changer" <-[confchange.Changer] "$r0");;;
       (if: (MethodResolve raftpb.ConfChangeV2 "LeaveJoint"%go (![raftpb.ConfChangeV2] "cc")) #()
       then
@@ -5041,7 +5213,9 @@ Definition raft__sendTimeoutNowⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
   λ: "r" "to",
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
     let: "to" := (GoAlloc go.uint64 "to") in
-    do:  (let: "$a0" := (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 (![go.uint64] "to")); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType raftpb.MsgTimeoutNow)])) in
+    do:  (let: "$a0" := (let: "$v0" := (![go.uint64] "to") in
+    let: "$v1" := raftpb.MsgTimeoutNow in
+    CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v1")])) in
     (MethodResolve (go.PointerType raft) "send"%go (![go.PointerType raft] "r")) "$a0");;;
     return: #()).
 
@@ -5077,13 +5251,19 @@ Definition raft__responseToReadIndexReqⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx :
     (if: Convert go.untyped_bool go.bool (((![go.uint64] (StructFieldRef raftpb.Message "From"%go "req")) =⟨go.uint64⟩ None') || ((![go.uint64] (StructFieldRef raftpb.Message "From"%go "req")) =⟨go.uint64⟩ (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))))
     then
       let: "$r0" := (let: "$a0" := (![go.SliceType ReadState] (StructFieldRef raft "readStates"%go (![go.PointerType raft] "r"))) in
-      let: "$a1" := ((let: "$sl0" := (CompositeLiteral ReadState (LiteralValue [KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 (![go.uint64] "readIndex")); KeyedElement (Some (KeyField "RequestCtx"%go)) (ElementExpression (go.SliceType go.byte) (![go.SliceType go.byte] (StructFieldRef raftpb.Entry "Data"%go (IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] (StructFieldRef raftpb.Message "Entries"%go "req"), #(W64 0))))))])) in
+      let: "$a1" := ((let: "$sl0" := (let: "$v0" := (![go.uint64] "readIndex") in
+      let: "$v1" := (![go.SliceType go.byte] (StructFieldRef raftpb.Entry "Data"%go (IndexRef (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] (StructFieldRef raftpb.Message "Entries"%go "req"), #(W64 0))))) in
+      CompositeLiteral ReadState (LiteralValue [KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "RequestCtx"%go)) (ElementExpression (go.SliceType go.byte) "$v1")])) in
       CompositeLiteral (go.SliceType ReadState) (LiteralValue [KeyedElement None (ElementExpression ReadState "$sl0")]))) in
       (FuncResolve go.append [go.SliceType ReadState] #()) "$a0" "$a1") in
       do:  ((StructFieldRef raft "readStates"%go (![go.PointerType raft] "r")) <-[go.SliceType ReadState] "$r0");;;
       return: (CompositeLiteral raftpb.Message (LiteralValue []))
     else do:  #());;;
-    return: (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType raftpb.MsgReadIndexResp); KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef raftpb.Message "From"%go "req"))); KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 (![go.uint64] "readIndex")); KeyedElement (Some (KeyField "Entries"%go)) (ElementExpression (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] (StructFieldRef raftpb.Message "Entries"%go "req")))]))).
+    return: (let: "$v0" := raftpb.MsgReadIndexResp in
+     let: "$v1" := (![go.uint64] (StructFieldRef raftpb.Message "From"%go "req")) in
+     let: "$v2" := (![go.uint64] "readIndex") in
+     let: "$v3" := (![go.SliceType raftpb.Entry] (StructFieldRef raftpb.Message "Entries"%go "req")) in
+     CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v0"); KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 "$v2"); KeyedElement (Some (KeyField "Entries"%go)) (ElementExpression (go.SliceType raftpb.Entry) "$v3")]))).
 
 (* increaseUncommittedSize computes the size of the proposed entries and
    determines whether they would push leader over its maxUncommittedSize limit.
@@ -5203,7 +5383,8 @@ Definition NewRawNodeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
     (FuncResolve newRaft [] #()) "$a0") in
     do:  ("r" <-[go.PointerType raft] "$r0");;;
     let: "rn" := (GoAlloc (go.PointerType RawNode) (GoZeroVal (go.PointerType RawNode) #())) in
-    let: "$r0" := (GoAlloc RawNode (CompositeLiteral RawNode (LiteralValue [KeyedElement (Some (KeyField "raft"%go)) (ElementExpression (go.PointerType raft) (![go.PointerType raft] "r"))]))) in
+    let: "$r0" := (GoAlloc RawNode (let: "$v0" := (![go.PointerType raft] "r") in
+    CompositeLiteral RawNode (LiteralValue [KeyedElement (Some (KeyField "raft"%go)) (ElementExpression (go.PointerType raft) "$v0")]))) in
     do:  ("rn" <-[go.PointerType RawNode] "$r0");;;
     let: "$r0" := (![go.bool] (StructFieldRef Config "AsyncStorageWrites"%go (![go.PointerType Config] "config"))) in
     do:  ((StructFieldRef RawNode "asyncStorageWrites"%go (![go.PointerType RawNode] "rn")) <-[go.bool] "$r0");;;
@@ -5249,7 +5430,8 @@ Definition RawNode__TickQuiescedⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
 Definition RawNode__Campaignⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "rn" <>,
     exception_do (let: "rn" := (GoAlloc (go.PointerType RawNode) "rn") in
-    return: (let: "$a0" := (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType raftpb.MsgHup)])) in
+    return: (let: "$a0" := (let: "$v0" := raftpb.MsgHup in
+     CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v0")])) in
      (MethodResolve (go.PointerType raft) "Step"%go (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] "rn")))) "$a0")).
 
 (* Propose proposes data be appended to the raft log.
@@ -5259,7 +5441,11 @@ Definition RawNode__Proposeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
   λ: "rn" "data",
     exception_do (let: "rn" := (GoAlloc (go.PointerType RawNode) "rn") in
     let: "data" := (GoAlloc (go.SliceType go.byte) "data") in
-    return: (let: "$a0" := (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType raftpb.MsgProp); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] "rn")))))); KeyedElement (Some (KeyField "Entries"%go)) (ElementExpression (go.SliceType raftpb.Entry) (CompositeLiteral (go.SliceType raftpb.Entry) (LiteralValue [KeyedElement None (ElementLiteralValue [KeyedElement (Some (KeyField "Data"%go)) (ElementExpression (go.SliceType go.byte) (![go.SliceType go.byte] "data"))])])))])) in
+    return: (let: "$a0" := (let: "$v0" := raftpb.MsgProp in
+     let: "$v1" := (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] "rn"))))) in
+     let: "$v2" := (let: "$v0" := (![go.SliceType go.byte] "data") in
+     CompositeLiteral (go.SliceType raftpb.Entry) (LiteralValue [KeyedElement None (ElementLiteralValue [KeyedElement (Some (KeyField "Data"%go)) (ElementExpression (go.SliceType go.byte) "$v0")])])) in
+     CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v0"); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "Entries"%go)) (ElementExpression (go.SliceType raftpb.Entry) "$v2")])) in
      (MethodResolve (go.PointerType raft) "Step"%go (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] "rn")))) "$a0")).
 
 (* ProposeConfChange proposes a config change. See (Node).ProposeConfChange for
@@ -5346,8 +5532,11 @@ Definition RawNode__readyWithoutAcceptⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : 
     let: "$r0" := (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] "rn"))) in
     do:  ("r" <-[go.PointerType raft] "$r0");;;
     let: "rd" := (GoAlloc Ready (GoZeroVal Ready #())) in
-    let: "$r0" := (CompositeLiteral Ready (LiteralValue [KeyedElement (Some (KeyField "Entries"%go)) (ElementExpression (go.SliceType raftpb.Entry) ((MethodResolve (go.PointerType raftLog) "nextUnstableEnts"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) #())); KeyedElement (Some (KeyField "CommittedEntries"%go)) (ElementExpression (go.SliceType raftpb.Entry) (let: "$a0" := ((MethodResolve (go.PointerType RawNode) "applyUnstableEntries"%go (![go.PointerType RawNode] "rn")) #()) in
-     (MethodResolve (go.PointerType raftLog) "nextCommittedEnts"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) "$a0")); KeyedElement (Some (KeyField "Messages"%go)) (ElementExpression (go.SliceType raftpb.Message) (![go.SliceType raftpb.Message] (StructFieldRef raft "msgs"%go (![go.PointerType raft] "r"))))])) in
+    let: "$r0" := (let: "$v0" := ((MethodResolve (go.PointerType raftLog) "nextUnstableEnts"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) #()) in
+    let: "$v1" := (let: "$a0" := ((MethodResolve (go.PointerType RawNode) "applyUnstableEntries"%go (![go.PointerType RawNode] "rn")) #()) in
+    (MethodResolve (go.PointerType raftLog) "nextCommittedEnts"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) "$a0") in
+    let: "$v2" := (![go.SliceType raftpb.Message] (StructFieldRef raft "msgs"%go (![go.PointerType raft] "r"))) in
+    CompositeLiteral Ready (LiteralValue [KeyedElement (Some (KeyField "Entries"%go)) (ElementExpression (go.SliceType raftpb.Entry) "$v0"); KeyedElement (Some (KeyField "CommittedEntries"%go)) (ElementExpression (go.SliceType raftpb.Entry) "$v1"); KeyedElement (Some (KeyField "Messages"%go)) (ElementExpression (go.SliceType raftpb.Message) "$v2")])) in
     do:  ("rd" <-[Ready] "$r0");;;
     (let: "softSt" := (GoAlloc SoftState (GoZeroVal SoftState #())) in
     let: "$r0" := ((MethodResolve (go.PointerType raft) "softState"%go (![go.PointerType raft] "r")) #()) in
@@ -5477,7 +5666,11 @@ Definition newStorageAppendMsgⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
     exception_do (let: "rd" := (GoAlloc Ready "rd") in
     let: "r" := (GoAlloc (go.PointerType raft) "r") in
     let: "m" := (GoAlloc raftpb.Message (GoZeroVal raftpb.Message #())) in
-    let: "$r0" := (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType raftpb.MsgStorageAppend); KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 LocalAppendThread); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))); KeyedElement (Some (KeyField "Entries"%go)) (ElementExpression (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] (StructFieldRef Ready "Entries"%go "rd")))])) in
+    let: "$r0" := (let: "$v0" := raftpb.MsgStorageAppend in
+    let: "$v1" := LocalAppendThread in
+    let: "$v2" := (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r"))) in
+    let: "$v3" := (![go.SliceType raftpb.Entry] (StructFieldRef Ready "Entries"%go "rd")) in
+    CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v0"); KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 "$v2"); KeyedElement (Some (KeyField "Entries"%go)) (ElementExpression (go.SliceType raftpb.Entry) "$v3")])) in
     do:  ("m" <-[raftpb.Message] "$r0");;;
     (if: (⟨go.bool⟩! (let: "$a0" := (![raftpb.HardState] (StructFieldRef Ready "HardState"%go "rd")) in
     (FuncResolve IsEmptyHardState [] #()) "$a0"))
@@ -5525,7 +5718,11 @@ Definition newStorageAppendRespMsgⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGl
     exception_do (let: "rd" := (GoAlloc Ready "rd") in
     let: "r" := (GoAlloc (go.PointerType raft) "r") in
     let: "m" := (GoAlloc raftpb.Message (GoZeroVal raftpb.Message #())) in
-    let: "$r0" := (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType raftpb.MsgStorageAppendResp); KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 LocalAppendThread); KeyedElement (Some (KeyField "Term"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef raft "Term"%go (![go.PointerType raft] "r"))))])) in
+    let: "$r0" := (let: "$v0" := raftpb.MsgStorageAppendResp in
+    let: "$v1" := (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r"))) in
+    let: "$v2" := LocalAppendThread in
+    let: "$v3" := (![go.uint64] (StructFieldRef raft "Term"%go (![go.PointerType raft] "r"))) in
+    CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v0"); KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 "$v2"); KeyedElement (Some (KeyField "Term"%go)) (ElementExpression go.uint64 "$v3")])) in
     do:  ("m" <-[raftpb.Message] "$r0");;;
     (if: (MethodResolve (go.PointerType raftLog) "hasNextOrInProgressUnstableEnts"%go (![go.PointerType raftLog] (StructFieldRef raft "raftLog"%go (![go.PointerType raft] "r")))) #()
     then
@@ -5575,9 +5772,16 @@ Definition newStorageApplyMsgⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
     let: "ents" := (GoAlloc (go.SliceType raftpb.Entry) (GoZeroVal (go.SliceType raftpb.Entry) #())) in
     let: "$r0" := (![go.SliceType raftpb.Entry] (StructFieldRef Ready "CommittedEntries"%go "rd")) in
     do:  ("ents" <-[go.SliceType raftpb.Entry] "$r0");;;
-    return: (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType raftpb.MsgStorageApply); KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 LocalApplyThread); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))); KeyedElement (Some (KeyField "Term"%go)) (ElementExpression go.uint64 #(W64 0)); KeyedElement (Some (KeyField "Entries"%go)) (ElementExpression (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] "ents")); KeyedElement (Some (KeyField "Responses"%go)) (ElementExpression (go.SliceType raftpb.Message) (CompositeLiteral (go.SliceType raftpb.Message) (LiteralValue [KeyedElement None (ElementExpression raftpb.Message (let: "$a0" := (![go.PointerType raft] "r") in
-       let: "$a1" := (![go.SliceType raftpb.Entry] "ents") in
-       (FuncResolve newStorageApplyRespMsg [] #()) "$a0" "$a1"))])))]))).
+    return: (let: "$v0" := raftpb.MsgStorageApply in
+     let: "$v1" := LocalApplyThread in
+     let: "$v2" := (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r"))) in
+     let: "$v3" := #(W64 0) in
+     let: "$v4" := (![go.SliceType raftpb.Entry] "ents") in
+     let: "$v5" := (let: "$v0" := (let: "$a0" := (![go.PointerType raft] "r") in
+     let: "$a1" := (![go.SliceType raftpb.Entry] "ents") in
+     (FuncResolve newStorageApplyRespMsg [] #()) "$a0" "$a1") in
+     CompositeLiteral (go.SliceType raftpb.Message) (LiteralValue [KeyedElement None (ElementExpression raftpb.Message "$v0")])) in
+     CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v0"); KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 "$v2"); KeyedElement (Some (KeyField "Term"%go)) (ElementExpression go.uint64 "$v3"); KeyedElement (Some (KeyField "Entries"%go)) (ElementExpression (go.SliceType raftpb.Entry) "$v4"); KeyedElement (Some (KeyField "Responses"%go)) (ElementExpression (go.SliceType raftpb.Message) "$v5")]))).
 
 (* newStorageApplyRespMsg creates the message that should be returned to node
    after the committed entries in the current Ready (along with those in all
@@ -5588,7 +5792,12 @@ Definition newStorageApplyRespMsgⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
   λ: "r" "ents",
     exception_do (let: "ents" := (GoAlloc (go.SliceType raftpb.Entry) "ents") in
     let: "r" := (GoAlloc (go.PointerType raft) "r") in
-    return: (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType raftpb.MsgStorageApplyResp); KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 LocalApplyThread); KeyedElement (Some (KeyField "Term"%go)) (ElementExpression go.uint64 #(W64 0)); KeyedElement (Some (KeyField "Entries"%go)) (ElementExpression (go.SliceType raftpb.Entry) (![go.SliceType raftpb.Entry] "ents"))]))).
+    return: (let: "$v0" := raftpb.MsgStorageApplyResp in
+     let: "$v1" := (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r"))) in
+     let: "$v2" := LocalApplyThread in
+     let: "$v3" := #(W64 0) in
+     let: "$v4" := (![go.SliceType raftpb.Entry] "ents") in
+     CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v0"); KeyedElement (Some (KeyField "To"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 "$v2"); KeyedElement (Some (KeyField "Term"%go)) (ElementExpression go.uint64 "$v3"); KeyedElement (Some (KeyField "Entries"%go)) (ElementExpression (go.SliceType raftpb.Entry) "$v4")]))).
 
 (* acceptReady is called when the consumer of the RawNode has decided to go
    ahead and handle a Ready. Nothing must alter the state of the RawNode between
@@ -5841,7 +6050,9 @@ Definition RawNode__ReportUnreachableⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : G
   λ: "rn" "id",
     exception_do (let: "rn" := (GoAlloc (go.PointerType RawNode) "rn") in
     let: "id" := (GoAlloc go.uint64 "id") in
-    let: "$r0" := (let: "$a0" := (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType raftpb.MsgUnreachable); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 (![go.uint64] "id"))])) in
+    let: "$r0" := (let: "$a0" := (let: "$v0" := raftpb.MsgUnreachable in
+    let: "$v1" := (![go.uint64] "id") in
+    CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v0"); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 "$v1")])) in
     (MethodResolve (go.PointerType raft) "Step"%go (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] "rn")))) "$a0") in
     do:  "$r0";;;
     return: #()).
@@ -5857,7 +6068,10 @@ Definition RawNode__ReportSnapshotⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGl
     let: "rej" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "$r0" := ((![SnapshotStatus] "status") =⟨go.int⟩ SnapshotFailure) in
     do:  ("rej" <-[go.bool] "$r0");;;
-    let: "$r0" := (let: "$a0" := (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType raftpb.MsgSnapStatus); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 (![go.uint64] "id")); KeyedElement (Some (KeyField "Reject"%go)) (ElementExpression go.bool (![go.bool] "rej"))])) in
+    let: "$r0" := (let: "$a0" := (let: "$v0" := raftpb.MsgSnapStatus in
+    let: "$v1" := (![go.uint64] "id") in
+    let: "$v2" := (![go.bool] "rej") in
+    CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v0"); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "Reject"%go)) (ElementExpression go.bool "$v2")])) in
     (MethodResolve (go.PointerType raft) "Step"%go (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] "rn")))) "$a0") in
     do:  "$r0";;;
     return: #()).
@@ -5869,7 +6083,9 @@ Definition RawNode__TransferLeaderⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGl
   λ: "rn" "transferee",
     exception_do (let: "rn" := (GoAlloc (go.PointerType RawNode) "rn") in
     let: "transferee" := (GoAlloc go.uint64 "transferee") in
-    let: "$r0" := (let: "$a0" := (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType raftpb.MsgTransferLeader); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 (![go.uint64] "transferee"))])) in
+    let: "$r0" := (let: "$a0" := (let: "$v0" := raftpb.MsgTransferLeader in
+    let: "$v1" := (![go.uint64] "transferee") in
+    CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v0"); KeyedElement (Some (KeyField "From"%go)) (ElementExpression go.uint64 "$v1")])) in
     (MethodResolve (go.PointerType raft) "Step"%go (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] "rn")))) "$a0") in
     do:  "$r0";;;
     return: #()).
@@ -5881,7 +6097,8 @@ Definition RawNode__TransferLeaderⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGl
 Definition RawNode__ForgetLeaderⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "rn" <>,
     exception_do (let: "rn" := (GoAlloc (go.PointerType RawNode) "rn") in
-    return: (let: "$a0" := (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType raftpb.MsgForgetLeader)])) in
+    return: (let: "$a0" := (let: "$v0" := raftpb.MsgForgetLeader in
+     CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v0")])) in
      (MethodResolve (go.PointerType raft) "Step"%go (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] "rn")))) "$a0")).
 
 (* ReadIndex requests a read state. The read state will be set in ready.
@@ -5894,7 +6111,10 @@ Definition RawNode__ReadIndexⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
   λ: "rn" "rctx",
     exception_do (let: "rn" := (GoAlloc (go.PointerType RawNode) "rn") in
     let: "rctx" := (GoAlloc (go.SliceType go.byte) "rctx") in
-    let: "$r0" := (let: "$a0" := (CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType raftpb.MsgReadIndex); KeyedElement (Some (KeyField "Entries"%go)) (ElementExpression (go.SliceType raftpb.Entry) (CompositeLiteral (go.SliceType raftpb.Entry) (LiteralValue [KeyedElement None (ElementLiteralValue [KeyedElement (Some (KeyField "Data"%go)) (ElementExpression (go.SliceType go.byte) (![go.SliceType go.byte] "rctx"))])])))])) in
+    let: "$r0" := (let: "$a0" := (let: "$v0" := raftpb.MsgReadIndex in
+    let: "$v1" := (let: "$v0" := (![go.SliceType go.byte] "rctx") in
+    CompositeLiteral (go.SliceType raftpb.Entry) (LiteralValue [KeyedElement None (ElementLiteralValue [KeyedElement (Some (KeyField "Data"%go)) (ElementExpression (go.SliceType go.byte) "$v0")])])) in
+    CompositeLiteral raftpb.Message (LiteralValue [KeyedElement (Some (KeyField "Type"%go)) (ElementExpression raftpb.MessageType "$v0"); KeyedElement (Some (KeyField "Entries"%go)) (ElementExpression (go.SliceType raftpb.Entry) "$v1")])) in
     (MethodResolve (go.PointerType raft) "Step"%go (![go.PointerType raft] (StructFieldRef RawNode "raft"%go (![go.PointerType RawNode] "rn")))) "$a0") in
     do:  "$r0";;;
     return: #()).
@@ -5903,7 +6123,9 @@ Definition RawNode__ReadIndexⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
 Definition newReadOnlyⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "option",
     exception_do (let: "option" := (GoAlloc ReadOnlyOption "option") in
-    return: (GoAlloc readOnly (CompositeLiteral readOnly (LiteralValue [KeyedElement (Some (KeyField "option"%go)) (ElementExpression ReadOnlyOption (![ReadOnlyOption] "option")); KeyedElement (Some (KeyField "pendingReadIndex"%go)) (ElementExpression (go.MapType go.string (go.PointerType readIndexStatus)) ((FuncResolve go.make1 [go.MapType go.string (go.PointerType readIndexStatus)] #()) #()))])))).
+    return: (GoAlloc readOnly (let: "$v0" := (![ReadOnlyOption] "option") in
+     let: "$v1" := ((FuncResolve go.make1 [go.MapType go.string (go.PointerType readIndexStatus)] #()) #()) in
+     CompositeLiteral readOnly (LiteralValue [KeyedElement (Some (KeyField "option"%go)) (ElementExpression ReadOnlyOption "$v0"); KeyedElement (Some (KeyField "pendingReadIndex"%go)) (ElementExpression (go.MapType go.string (go.PointerType readIndexStatus)) "$v1")])))).
 
 (* addRequest adds a read only request into readonly struct.
    `index` is the commit index of the raft state machine when it received
@@ -5928,7 +6150,10 @@ Definition readOnly__addRequestⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
     (if: ![go.bool] "ok"
     then return: (#())
     else do:  #()));;;
-    let: "$r0" := (GoAlloc readIndexStatus (CompositeLiteral readIndexStatus (LiteralValue [KeyedElement (Some (KeyField "index"%go)) (ElementExpression go.uint64 (![go.uint64] "index")); KeyedElement (Some (KeyField "req"%go)) (ElementExpression raftpb.Message (![raftpb.Message] "m")); KeyedElement (Some (KeyField "acks"%go)) (ElementExpression (go.MapType go.uint64 go.bool) ((FuncResolve go.make1 [go.MapType go.uint64 go.bool] #()) #()))]))) in
+    let: "$r0" := (GoAlloc readIndexStatus (let: "$v0" := (![go.uint64] "index") in
+    let: "$v1" := (![raftpb.Message] "m") in
+    let: "$v2" := ((FuncResolve go.make1 [go.MapType go.uint64 go.bool] #()) #()) in
+    CompositeLiteral readIndexStatus (LiteralValue [KeyedElement (Some (KeyField "index"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "req"%go)) (ElementExpression raftpb.Message "$v1"); KeyedElement (Some (KeyField "acks"%go)) (ElementExpression (go.MapType go.uint64 go.bool) "$v2")]))) in
     do:  (map.insert go.string (![go.MapType go.string (go.PointerType readIndexStatus)] (StructFieldRef readOnly "pendingReadIndex"%go (![go.PointerType readOnly] "ro"))) (![go.string] "s") "$r0");;;
     let: "$r0" := (let: "$a0" := (![go.SliceType go.string] (StructFieldRef readOnly "readIndexQueue"%go (![go.PointerType readOnly] "ro"))) in
     let: "$a1" := ((let: "$sl0" := (![go.string] "s") in
@@ -6120,7 +6345,9 @@ Definition getBasicStatusⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
   λ: "r",
     exception_do (let: "r" := (GoAlloc (go.PointerType raft) "r") in
     let: "s" := (GoAlloc BasicStatus (GoZeroVal BasicStatus #())) in
-    let: "$r0" := (CompositeLiteral BasicStatus (LiteralValue [KeyedElement (Some (KeyField "ID"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r")))); KeyedElement (Some (KeyField "LeadTransferee"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef raft "leadTransferee"%go (![go.PointerType raft] "r"))))])) in
+    let: "$r0" := (let: "$v0" := (![go.uint64] (StructFieldRef raft "id"%go (![go.PointerType raft] "r"))) in
+    let: "$v1" := (![go.uint64] (StructFieldRef raft "leadTransferee"%go (![go.PointerType raft] "r"))) in
+    CompositeLiteral BasicStatus (LiteralValue [KeyedElement (Some (KeyField "ID"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "LeadTransferee"%go)) (ElementExpression go.uint64 "$v1")])) in
     do:  ("s" <-[BasicStatus] "$r0");;;
     let: "$r0" := ((MethodResolve (go.PointerType raft) "hardState"%go (![go.PointerType raft] "r")) #()) in
     do:  ((StructFieldRef BasicStatus "HardState"%go "s") <-[raftpb.HardState] "$r0");;;
@@ -6224,7 +6451,8 @@ Definition Status__Stringⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
    go: storage.go:113:6 *)
 Definition NewMemoryStorageⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    exception_do (return: (GoAlloc MemoryStorage (CompositeLiteral MemoryStorage (LiteralValue [KeyedElement (Some (KeyField "ents"%go)) (ElementExpression (go.SliceType raftpb.Entry) ((FuncResolve go.make2 [go.SliceType raftpb.Entry] #()) #(W64 1)))])))).
+    exception_do (return: (GoAlloc MemoryStorage (let: "$v0" := ((FuncResolve go.make2 [go.SliceType raftpb.Entry] #()) #(W64 1)) in
+     CompositeLiteral MemoryStorage (LiteralValue [KeyedElement (Some (KeyField "ents"%go)) (ElementExpression (go.SliceType raftpb.Entry) "$v0")])))).
 
 (* InitialState implements the Storage interface.
 
@@ -6413,7 +6641,9 @@ Definition MemoryStorage__ApplySnapshotⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx :
     else do:  #());;;
     let: "$r0" := (![raftpb.Snapshot] "snap") in
     do:  ((StructFieldRef MemoryStorage "snapshot"%go (![go.PointerType MemoryStorage] "ms")) <-[raftpb.Snapshot] "$r0");;;
-    let: "$r0" := (CompositeLiteral (go.SliceType raftpb.Entry) (LiteralValue [KeyedElement None (ElementLiteralValue [KeyedElement (Some (KeyField "Term"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef raftpb.SnapshotMetadata "Term"%go (StructFieldRef raftpb.Snapshot "Metadata"%go "snap")))); KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef raftpb.SnapshotMetadata "Index"%go (StructFieldRef raftpb.Snapshot "Metadata"%go "snap"))))])])) in
+    let: "$r0" := (let: "$v0" := (![go.uint64] (StructFieldRef raftpb.SnapshotMetadata "Term"%go (StructFieldRef raftpb.Snapshot "Metadata"%go "snap"))) in
+    let: "$v1" := (![go.uint64] (StructFieldRef raftpb.SnapshotMetadata "Index"%go (StructFieldRef raftpb.Snapshot "Metadata"%go "snap"))) in
+    CompositeLiteral (go.SliceType raftpb.Entry) (LiteralValue [KeyedElement None (ElementLiteralValue [KeyedElement (Some (KeyField "Term"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Index"%go)) (ElementExpression go.uint64 "$v1")])])) in
     do:  ((StructFieldRef MemoryStorage "ents"%go (![go.PointerType MemoryStorage] "ms")) <-[go.SliceType raftpb.Entry] "$r0");;;
     return: (Convert go.untyped_nil go.error UntypedNil)).
 
@@ -6583,7 +6813,9 @@ Definition MemoryStorage__Appendⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
 Definition pbEntryIDⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "entry",
     exception_do (let: "entry" := (GoAlloc (go.PointerType raftpb.Entry) "entry") in
-    return: (CompositeLiteral entryID (LiteralValue [KeyedElement (Some (KeyField "term"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef raftpb.Entry "Term"%go (![go.PointerType raftpb.Entry] "entry")))); KeyedElement (Some (KeyField "index"%go)) (ElementExpression go.uint64 (![go.uint64] (StructFieldRef raftpb.Entry "Index"%go (![go.PointerType raftpb.Entry] "entry"))))]))).
+    return: (let: "$v0" := (![go.uint64] (StructFieldRef raftpb.Entry "Term"%go (![go.PointerType raftpb.Entry] "entry"))) in
+     let: "$v1" := (![go.uint64] (StructFieldRef raftpb.Entry "Index"%go (![go.PointerType raftpb.Entry] "entry"))) in
+     CompositeLiteral entryID (LiteralValue [KeyedElement (Some (KeyField "term"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "index"%go)) (ElementExpression go.uint64 "$v1")]))).
 
 (* lastIndex returns the index of the last entry in this log slice. Returns
    prev.index if there are no entries.
@@ -7316,15 +7548,17 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
       do:  (fmt.initialize' #());;;
       do:  (raftpb.initialize' #());;;
       do:  (errors.initialize' #());;;
-      let: "$r0" := (GoAlloc DefaultLogger (CompositeLiteral DefaultLogger (LiteralValue [KeyedElement (Some (KeyField "Logger"%go)) (ElementExpression (go.PointerType log.Logger) (let: "$a0" := (Convert (go.PointerType os.File) io.Writer (![go.PointerType os.File] (GlobalVarAddr os.Stderr #()))) in
-       let: "$a1" := #"raft"%go in
-       let: "$a2" := (Convert go.untyped_int go.int log.LstdFlags) in
-       (FuncResolve log.New [] #()) "$a0" "$a1" "$a2"))]))) in
+      let: "$r0" := (GoAlloc DefaultLogger (let: "$v0" := (let: "$a0" := (Convert (go.PointerType os.File) io.Writer (![go.PointerType os.File] (GlobalVarAddr os.Stderr #()))) in
+      let: "$a1" := #"raft"%go in
+      let: "$a2" := (Convert go.untyped_int go.int log.LstdFlags) in
+      (FuncResolve log.New [] #()) "$a0" "$a1" "$a2") in
+      CompositeLiteral DefaultLogger (LiteralValue [KeyedElement (Some (KeyField "Logger"%go)) (ElementExpression (go.PointerType log.Logger) "$v0")]))) in
       do:  ((GlobalVarAddr defaultLogger #()) <-[go.PointerType DefaultLogger] "$r0");;;
-      let: "$r0" := (GoAlloc DefaultLogger (CompositeLiteral DefaultLogger (LiteralValue [KeyedElement (Some (KeyField "Logger"%go)) (ElementExpression (go.PointerType log.Logger) (let: "$a0" := (![io.Writer] (GlobalVarAddr io.Discard #())) in
-       let: "$a1" := #""%go in
-       let: "$a2" := #(W64 0) in
-       (FuncResolve log.New [] #()) "$a0" "$a1" "$a2"))]))) in
+      let: "$r0" := (GoAlloc DefaultLogger (let: "$v0" := (let: "$a0" := (![io.Writer] (GlobalVarAddr io.Discard #())) in
+      let: "$a1" := #""%go in
+      let: "$a2" := #(W64 0) in
+      (FuncResolve log.New [] #()) "$a0" "$a1" "$a2") in
+      CompositeLiteral DefaultLogger (LiteralValue [KeyedElement (Some (KeyField "Logger"%go)) (ElementExpression (go.PointerType log.Logger) "$v0")]))) in
       do:  ((GlobalVarAddr discardLogger #()) <-[go.PointerType DefaultLogger] "$r0");;;
       let: "$r0" := (Convert (go.PointerType DefaultLogger) Logger (![go.PointerType DefaultLogger] (GlobalVarAddr defaultLogger #()))) in
       do:  ((GlobalVarAddr raftLogger #()) <-[Logger] "$r0");;;
@@ -7338,7 +7572,11 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
       do:  ((GlobalVarAddr ErrProposalDropped #()) <-[go.error] "$r0");;;
       let: "$r0" := (GoAlloc lockedRand (CompositeLiteral lockedRand (LiteralValue []))) in
       do:  ((GlobalVarAddr globalRand #()) <-[go.PointerType lockedRand] "$r0");;;
-      let: "$r0" := (CompositeLiteral (go.ArrayType 4 go.string) (LiteralValue [KeyedElement None (ElementExpression go.string #"StateFollower"%go); KeyedElement None (ElementExpression go.string #"StateCandidate"%go); KeyedElement None (ElementExpression go.string #"StateLeader"%go); KeyedElement None (ElementExpression go.string #"StatePreCandidate"%go)])) in
+      let: "$r0" := (let: "$v0" := #"StateFollower"%go in
+      let: "$v1" := #"StateCandidate"%go in
+      let: "$v2" := #"StateLeader"%go in
+      let: "$v3" := #"StatePreCandidate"%go in
+      CompositeLiteral (go.ArrayType 4 go.string) (LiteralValue [KeyedElement None (ElementExpression go.string "$v0"); KeyedElement None (ElementExpression go.string "$v1"); KeyedElement None (ElementExpression go.string "$v2"); KeyedElement None (ElementExpression go.string "$v3")])) in
       do:  ((GlobalVarAddr stmap #()) <-[go.ArrayType 4 go.string] "$r0");;;
       let: "$r0" := (let: "$a0" := #"break"%go in
       (FuncResolve errors.New [] #()) "$a0") in
@@ -7361,9 +7599,43 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
       let: "$r0" := (let: "$a0" := #"snapshot is temporarily unavailable"%go in
       (FuncResolve errors.New [] #()) "$a0") in
       do:  ((GlobalVarAddr ErrSnapshotTemporarilyUnavailable #()) <-[go.error] "$r0");;;
-      let: "$r0" := (CompositeLiteral (go.ArrayType 23 go.bool) (LiteralValue [KeyedElement (Some (KeyExpression raftpb.MessageType raftpb.MsgHup)) (ElementExpression go.bool #true); KeyedElement (Some (KeyExpression raftpb.MessageType raftpb.MsgBeat)) (ElementExpression go.bool #true); KeyedElement (Some (KeyExpression raftpb.MessageType raftpb.MsgUnreachable)) (ElementExpression go.bool #true); KeyedElement (Some (KeyExpression raftpb.MessageType raftpb.MsgSnapStatus)) (ElementExpression go.bool #true); KeyedElement (Some (KeyExpression raftpb.MessageType raftpb.MsgCheckQuorum)) (ElementExpression go.bool #true); KeyedElement (Some (KeyExpression raftpb.MessageType raftpb.MsgStorageAppend)) (ElementExpression go.bool #true); KeyedElement (Some (KeyExpression raftpb.MessageType raftpb.MsgStorageAppendResp)) (ElementExpression go.bool #true); KeyedElement (Some (KeyExpression raftpb.MessageType raftpb.MsgStorageApply)) (ElementExpression go.bool #true); KeyedElement (Some (KeyExpression raftpb.MessageType raftpb.MsgStorageApplyResp)) (ElementExpression go.bool #true)])) in
+      let: "$r0" := (let: "$k0" := raftpb.MsgHup in
+      let: "$v1" := #true in
+      let: "$k2" := raftpb.MsgBeat in
+      let: "$v3" := #true in
+      let: "$k4" := raftpb.MsgUnreachable in
+      let: "$v5" := #true in
+      let: "$k6" := raftpb.MsgSnapStatus in
+      let: "$v7" := #true in
+      let: "$k8" := raftpb.MsgCheckQuorum in
+      let: "$v9" := #true in
+      let: "$k10" := raftpb.MsgStorageAppend in
+      let: "$v11" := #true in
+      let: "$k12" := raftpb.MsgStorageAppendResp in
+      let: "$v13" := #true in
+      let: "$k14" := raftpb.MsgStorageApply in
+      let: "$v15" := #true in
+      let: "$k16" := raftpb.MsgStorageApplyResp in
+      let: "$v17" := #true in
+      CompositeLiteral (go.ArrayType 23 go.bool) (LiteralValue [KeyedElement (Some (KeyExpression raftpb.MessageType "$k0")) (ElementExpression go.bool "$v1"); KeyedElement (Some (KeyExpression raftpb.MessageType "$k2")) (ElementExpression go.bool "$v3"); KeyedElement (Some (KeyExpression raftpb.MessageType "$k4")) (ElementExpression go.bool "$v5"); KeyedElement (Some (KeyExpression raftpb.MessageType "$k6")) (ElementExpression go.bool "$v7"); KeyedElement (Some (KeyExpression raftpb.MessageType "$k8")) (ElementExpression go.bool "$v9"); KeyedElement (Some (KeyExpression raftpb.MessageType "$k10")) (ElementExpression go.bool "$v11"); KeyedElement (Some (KeyExpression raftpb.MessageType "$k12")) (ElementExpression go.bool "$v13"); KeyedElement (Some (KeyExpression raftpb.MessageType "$k14")) (ElementExpression go.bool "$v15"); KeyedElement (Some (KeyExpression raftpb.MessageType "$k16")) (ElementExpression go.bool "$v17")])) in
       do:  ((GlobalVarAddr isLocalMsg #()) <-[go.ArrayType 23 go.bool] "$r0");;;
-      let: "$r0" := (CompositeLiteral (go.ArrayType 23 go.bool) (LiteralValue [KeyedElement (Some (KeyExpression raftpb.MessageType raftpb.MsgAppResp)) (ElementExpression go.bool #true); KeyedElement (Some (KeyExpression raftpb.MessageType raftpb.MsgVoteResp)) (ElementExpression go.bool #true); KeyedElement (Some (KeyExpression raftpb.MessageType raftpb.MsgHeartbeatResp)) (ElementExpression go.bool #true); KeyedElement (Some (KeyExpression raftpb.MessageType raftpb.MsgUnreachable)) (ElementExpression go.bool #true); KeyedElement (Some (KeyExpression raftpb.MessageType raftpb.MsgReadIndexResp)) (ElementExpression go.bool #true); KeyedElement (Some (KeyExpression raftpb.MessageType raftpb.MsgPreVoteResp)) (ElementExpression go.bool #true); KeyedElement (Some (KeyExpression raftpb.MessageType raftpb.MsgStorageAppendResp)) (ElementExpression go.bool #true); KeyedElement (Some (KeyExpression raftpb.MessageType raftpb.MsgStorageApplyResp)) (ElementExpression go.bool #true)])) in
+      let: "$r0" := (let: "$k0" := raftpb.MsgAppResp in
+      let: "$v1" := #true in
+      let: "$k2" := raftpb.MsgVoteResp in
+      let: "$v3" := #true in
+      let: "$k4" := raftpb.MsgHeartbeatResp in
+      let: "$v5" := #true in
+      let: "$k6" := raftpb.MsgUnreachable in
+      let: "$v7" := #true in
+      let: "$k8" := raftpb.MsgReadIndexResp in
+      let: "$v9" := #true in
+      let: "$k10" := raftpb.MsgPreVoteResp in
+      let: "$v11" := #true in
+      let: "$k12" := raftpb.MsgStorageAppendResp in
+      let: "$v13" := #true in
+      let: "$k14" := raftpb.MsgStorageApplyResp in
+      let: "$v15" := #true in
+      CompositeLiteral (go.ArrayType 23 go.bool) (LiteralValue [KeyedElement (Some (KeyExpression raftpb.MessageType "$k0")) (ElementExpression go.bool "$v1"); KeyedElement (Some (KeyExpression raftpb.MessageType "$k2")) (ElementExpression go.bool "$v3"); KeyedElement (Some (KeyExpression raftpb.MessageType "$k4")) (ElementExpression go.bool "$v5"); KeyedElement (Some (KeyExpression raftpb.MessageType "$k6")) (ElementExpression go.bool "$v7"); KeyedElement (Some (KeyExpression raftpb.MessageType "$k8")) (ElementExpression go.bool "$v9"); KeyedElement (Some (KeyExpression raftpb.MessageType "$k10")) (ElementExpression go.bool "$v11"); KeyedElement (Some (KeyExpression raftpb.MessageType "$k12")) (ElementExpression go.bool "$v13"); KeyedElement (Some (KeyExpression raftpb.MessageType "$k14")) (ElementExpression go.bool "$v15")])) in
       do:  ((GlobalVarAddr isResponseMsg #()) <-[go.ArrayType 23 go.bool] "$r0"))
       ).
 

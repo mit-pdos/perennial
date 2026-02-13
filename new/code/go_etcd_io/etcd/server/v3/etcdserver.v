@@ -428,7 +428,8 @@ Definition EtcdServer__Putⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
     let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
     let: "resp" := (GoAlloc proto.Message (GoZeroVal proto.Message #())) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![context.Context] "ctx") in
-    let: "$a1" := (CompositeLiteral etcdserverpb.InternalRaftRequest (LiteralValue [KeyedElement (Some (KeyField "Put"%go)) (ElementExpression (go.PointerType etcdserverpb.PutRequest) (![go.PointerType etcdserverpb.PutRequest] "r"))])) in
+    let: "$a1" := (let: "$v0" := (![go.PointerType etcdserverpb.PutRequest] "r") in
+    CompositeLiteral etcdserverpb.InternalRaftRequest (LiteralValue [KeyedElement (Some (KeyField "Put"%go)) (ElementExpression (go.PointerType etcdserverpb.PutRequest) "$v0")])) in
     (MethodResolve (go.PointerType EtcdServer) "raftRequest"%go (![go.PointerType EtcdServer] "s")) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
@@ -454,7 +455,8 @@ Definition EtcdServer__processInternalRaftRequestOnceⁱᵐᵖˡ {ext : ffi_synt
     (if: Convert go.untyped_bool go.bool ((![go.uint64] "ci") >⟨go.uint64⟩ ((![go.uint64] "ai") +⟨go.uint64⟩ (Convert go.untyped_int go.uint64 maxGapBetweenApplyAndCommitIndex)))
     then return: (Convert go.untyped_nil (go.PointerType apply.Result) UntypedNil, ![go.error] (GlobalVarAddr errors.ErrTooManyRequests #()))
     else do:  #());;;
-    let: "$r0" := (GoAlloc etcdserverpb.RequestHeader (CompositeLiteral etcdserverpb.RequestHeader (LiteralValue [KeyedElement (Some (KeyField "ID"%go)) (ElementExpression go.uint64 ((MethodResolve (go.PointerType idutil.Generator) "Next"%go (![go.PointerType idutil.Generator] (StructFieldRef EtcdServer "reqIDGen"%go (![go.PointerType EtcdServer] "s")))) #()))]))) in
+    let: "$r0" := (GoAlloc etcdserverpb.RequestHeader (let: "$v0" := ((MethodResolve (go.PointerType idutil.Generator) "Next"%go (![go.PointerType idutil.Generator] (StructFieldRef EtcdServer "reqIDGen"%go (![go.PointerType EtcdServer] "s")))) #()) in
+    CompositeLiteral etcdserverpb.RequestHeader (LiteralValue [KeyedElement (Some (KeyField "ID"%go)) (ElementExpression go.uint64 "$v0")]))) in
     do:  ((StructFieldRef etcdserverpb.InternalRaftRequest "Header"%go "r") <-[go.PointerType etcdserverpb.RequestHeader] "$r0");;;
     (if: Convert go.untyped_bool go.bool ((![go.PointerType etcdserverpb.InternalAuthenticateRequest] (StructFieldRef etcdserverpb.InternalRaftRequest "Authenticate"%go "r")) =⟨go.PointerType etcdserverpb.InternalAuthenticateRequest⟩ (Convert go.untyped_nil (go.PointerType etcdserverpb.InternalAuthenticateRequest) UntypedNil))
     then

@@ -76,7 +76,9 @@ Definition MkBlockDataⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
     exception_do (let: "blk" := (GoAlloc disk.Block "blk") in
     let: "bn" := (GoAlloc common.Bnum "bn") in
     let: "b" := (GoAlloc Update (GoZeroVal Update #())) in
-    let: "$r0" := (CompositeLiteral Update (LiteralValue [KeyedElement (Some (KeyField "Addr"%go)) (ElementExpression common.Bnum (![common.Bnum] "bn")); KeyedElement (Some (KeyField "Block"%go)) (ElementExpression disk.Block (![disk.Block] "blk"))])) in
+    let: "$r0" := (let: "$v0" := (![common.Bnum] "bn") in
+    let: "$v1" := (![disk.Block] "blk") in
+    CompositeLiteral Update (LiteralValue [KeyedElement (Some (KeyField "Addr"%go)) (ElementExpression common.Bnum "$v0"); KeyedElement (Some (KeyField "Block"%go)) (ElementExpression disk.Block "$v1")])) in
     do:  ("b" <-[Update] "$r0");;;
     return: (![Update] "b")).
 
@@ -99,7 +101,8 @@ Definition initCircularⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
     let: "addrs" := (GoAlloc (go.SliceType go.uint64) (GoZeroVal (go.SliceType go.uint64) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.uint64] #()) HDRADDRS) in
     do:  ("addrs" <-[go.SliceType go.uint64] "$r0");;;
-    return: (GoAlloc circularAppender (CompositeLiteral circularAppender (LiteralValue [KeyedElement (Some (KeyField "diskAddrs"%go)) (ElementExpression (go.SliceType go.uint64) (![go.SliceType go.uint64] "addrs"))])))).
+    return: (GoAlloc circularAppender (let: "$v0" := (![go.SliceType go.uint64] "addrs") in
+     CompositeLiteral circularAppender (LiteralValue [KeyedElement (Some (KeyField "diskAddrs"%go)) (ElementExpression (go.SliceType go.uint64) "$v0")])))).
 
 (* decodeHdr1 decodes (end, start) from hdr1
 
@@ -172,11 +175,14 @@ Definition recoverCircularⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
       (MethodResolve disk.Disk "Read"%go (![disk.Disk] "d")) "$a0") in
       do:  ("b" <-[disk.Block] "$r0");;;
       let: "$r0" := (let: "$a0" := (![go.SliceType Update] "bufs") in
-      let: "$a1" := ((let: "$sl0" := (CompositeLiteral Update (LiteralValue [KeyedElement (Some (KeyField "Addr"%go)) (ElementExpression go.uint64 (![go.uint64] "addr")); KeyedElement (Some (KeyField "Block"%go)) (ElementExpression disk.Block (![disk.Block] "b"))])) in
+      let: "$a1" := ((let: "$sl0" := (let: "$v0" := (![go.uint64] "addr") in
+      let: "$v1" := (![disk.Block] "b") in
+      CompositeLiteral Update (LiteralValue [KeyedElement (Some (KeyField "Addr"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Block"%go)) (ElementExpression disk.Block "$v1")])) in
       CompositeLiteral (go.SliceType Update) (LiteralValue [KeyedElement None (ElementExpression Update "$sl0")]))) in
       (FuncResolve go.append [go.SliceType Update] #()) "$a0" "$a1") in
       do:  ("bufs" <-[go.SliceType Update] "$r0")));;;
-    return: (GoAlloc circularAppender (CompositeLiteral circularAppender (LiteralValue [KeyedElement (Some (KeyField "diskAddrs"%go)) (ElementExpression (go.SliceType go.uint64) (![go.SliceType go.uint64] "addrs"))])), ![go.uint64] "start", ![go.uint64] "end", ![go.SliceType Update] "bufs")).
+    return: (GoAlloc circularAppender (let: "$v0" := (![go.SliceType go.uint64] "addrs") in
+     CompositeLiteral circularAppender (LiteralValue [KeyedElement (Some (KeyField "diskAddrs"%go)) (ElementExpression (go.SliceType go.uint64) "$v0")])), ![go.uint64] "start", ![go.uint64] "end", ![go.SliceType Update] "bufs")).
 
 (* go: 0circular.go:70:28 *)
 Definition circularAppender__hdr1ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -298,8 +304,12 @@ Definition mkSlidingⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
       do:  ("i" <-[go.int] "$key");;;
       let: "$r0" := ((![LogPosition] "start") +⟨go.uint64⟩ (Convert go.int LogPosition (![go.int] "i"))) in
       do:  (map.insert common.Bnum (![go.MapType common.Bnum LogPosition] "addrPos") (![common.Bnum] (StructFieldRef Update "Addr"%go "buf")) "$r0")));;;
-    return: (GoAlloc sliding (CompositeLiteral sliding (LiteralValue [KeyedElement (Some (KeyField "log"%go)) (ElementExpression (go.SliceType Update) (![go.SliceType Update] "log")); KeyedElement (Some (KeyField "start"%go)) (ElementExpression LogPosition (![LogPosition] "start")); KeyedElement (Some (KeyField "mutable"%go)) (ElementExpression LogPosition ((![LogPosition] "start") +⟨go.uint64⟩ (Convert go.int LogPosition (let: "$a0" := (![go.SliceType Update] "log") in
-      (FuncResolve go.len [go.SliceType Update] #()) "$a0")))); KeyedElement (Some (KeyField "addrPos"%go)) (ElementExpression (go.MapType common.Bnum LogPosition) (![go.MapType common.Bnum LogPosition] "addrPos"))])))).
+    return: (GoAlloc sliding (let: "$v0" := (![go.SliceType Update] "log") in
+     let: "$v1" := (![LogPosition] "start") in
+     let: "$v2" := ((![LogPosition] "start") +⟨go.uint64⟩ (Convert go.int LogPosition (let: "$a0" := (![go.SliceType Update] "log") in
+     (FuncResolve go.len [go.SliceType Update] #()) "$a0"))) in
+     let: "$v3" := (![go.MapType common.Bnum LogPosition] "addrPos") in
+     CompositeLiteral sliding (LiteralValue [KeyedElement (Some (KeyField "log"%go)) (ElementExpression (go.SliceType Update) "$v0"); KeyedElement (Some (KeyField "start"%go)) (ElementExpression LogPosition "$v1"); KeyedElement (Some (KeyField "mutable"%go)) (ElementExpression LogPosition "$v2"); KeyedElement (Some (KeyField "addrPos"%go)) (ElementExpression (go.MapType common.Bnum LogPosition) "$v3")])))).
 
 (* go: 0sliding.go:29:19 *)
 Definition sliding__endⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -807,15 +817,26 @@ Definition mkLogⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val
     let: "$r0" := (GoAlloc sync.Mutex (GoZeroVal sync.Mutex #())) in
     do:  ("ml" <-[go.PointerType sync.Mutex] "$r0");;;
     let: "st" := (GoAlloc (go.PointerType WalogState) (GoZeroVal (go.PointerType WalogState) #())) in
-    let: "$r0" := (GoAlloc WalogState (CompositeLiteral WalogState (LiteralValue [KeyedElement (Some (KeyField "memLog"%go)) (ElementExpression (go.PointerType sliding) (let: "$a0" := (![go.SliceType Update] "memLog") in
-     let: "$a1" := (![LogPosition] "start") in
-     (FuncResolve mkSliding [] #()) "$a0" "$a1")); KeyedElement (Some (KeyField "diskEnd"%go)) (ElementExpression LogPosition (![LogPosition] "end")); KeyedElement (Some (KeyField "shutdown"%go)) (ElementExpression go.bool #false); KeyedElement (Some (KeyField "nthread"%go)) (ElementExpression go.uint64 #(W64 0))]))) in
+    let: "$r0" := (GoAlloc WalogState (let: "$v0" := (let: "$a0" := (![go.SliceType Update] "memLog") in
+    let: "$a1" := (![LogPosition] "start") in
+    (FuncResolve mkSliding [] #()) "$a0" "$a1") in
+    let: "$v1" := (![LogPosition] "end") in
+    let: "$v2" := #false in
+    let: "$v3" := #(W64 0) in
+    CompositeLiteral WalogState (LiteralValue [KeyedElement (Some (KeyField "memLog"%go)) (ElementExpression (go.PointerType sliding) "$v0"); KeyedElement (Some (KeyField "diskEnd"%go)) (ElementExpression LogPosition "$v1"); KeyedElement (Some (KeyField "shutdown"%go)) (ElementExpression go.bool "$v2"); KeyedElement (Some (KeyField "nthread"%go)) (ElementExpression go.uint64 "$v3")]))) in
     do:  ("st" <-[go.PointerType WalogState] "$r0");;;
     let: "l" := (GoAlloc (go.PointerType Walog) (GoZeroVal (go.PointerType Walog) #())) in
-    let: "$r0" := (GoAlloc Walog (CompositeLiteral Walog (LiteralValue [KeyedElement (Some (KeyField "d"%go)) (ElementExpression disk.Disk (![disk.Disk] "disk")); KeyedElement (Some (KeyField "circ"%go)) (ElementExpression (go.PointerType circularAppender) (![go.PointerType circularAppender] "circ")); KeyedElement (Some (KeyField "memLock"%go)) (ElementExpression (go.PointerType sync.Mutex) (![go.PointerType sync.Mutex] "ml")); KeyedElement (Some (KeyField "st"%go)) (ElementExpression (go.PointerType WalogState) (![go.PointerType WalogState] "st")); KeyedElement (Some (KeyField "condLogger"%go)) (ElementExpression (go.PointerType sync.Cond) (let: "$a0" := (Convert (go.PointerType sync.Mutex) sync.Locker (![go.PointerType sync.Mutex] "ml")) in
-     (FuncResolve sync.NewCond [] #()) "$a0")); KeyedElement (Some (KeyField "condInstall"%go)) (ElementExpression (go.PointerType sync.Cond) (let: "$a0" := (Convert (go.PointerType sync.Mutex) sync.Locker (![go.PointerType sync.Mutex] "ml")) in
-     (FuncResolve sync.NewCond [] #()) "$a0")); KeyedElement (Some (KeyField "condShut"%go)) (ElementExpression (go.PointerType sync.Cond) (let: "$a0" := (Convert (go.PointerType sync.Mutex) sync.Locker (![go.PointerType sync.Mutex] "ml")) in
-     (FuncResolve sync.NewCond [] #()) "$a0"))]))) in
+    let: "$r0" := (GoAlloc Walog (let: "$v0" := (![disk.Disk] "disk") in
+    let: "$v1" := (![go.PointerType circularAppender] "circ") in
+    let: "$v2" := (![go.PointerType sync.Mutex] "ml") in
+    let: "$v3" := (![go.PointerType WalogState] "st") in
+    let: "$v4" := (let: "$a0" := (Convert (go.PointerType sync.Mutex) sync.Locker (![go.PointerType sync.Mutex] "ml")) in
+    (FuncResolve sync.NewCond [] #()) "$a0") in
+    let: "$v5" := (let: "$a0" := (Convert (go.PointerType sync.Mutex) sync.Locker (![go.PointerType sync.Mutex] "ml")) in
+    (FuncResolve sync.NewCond [] #()) "$a0") in
+    let: "$v6" := (let: "$a0" := (Convert (go.PointerType sync.Mutex) sync.Locker (![go.PointerType sync.Mutex] "ml")) in
+    (FuncResolve sync.NewCond [] #()) "$a0") in
+    CompositeLiteral Walog (LiteralValue [KeyedElement (Some (KeyField "d"%go)) (ElementExpression disk.Disk "$v0"); KeyedElement (Some (KeyField "circ"%go)) (ElementExpression (go.PointerType circularAppender) "$v1"); KeyedElement (Some (KeyField "memLock"%go)) (ElementExpression (go.PointerType sync.Mutex) "$v2"); KeyedElement (Some (KeyField "st"%go)) (ElementExpression (go.PointerType WalogState) "$v3"); KeyedElement (Some (KeyField "condLogger"%go)) (ElementExpression (go.PointerType sync.Cond) "$v4"); KeyedElement (Some (KeyField "condInstall"%go)) (ElementExpression (go.PointerType sync.Cond) "$v5"); KeyedElement (Some (KeyField "condShut"%go)) (ElementExpression (go.PointerType sync.Cond) "$v6")]))) in
     do:  ("l" <-[go.PointerType Walog] "$r0");;;
     do:  (let: "$a0" := #(W64 1) in
     let: "$a1" := #"mkLog: size %d

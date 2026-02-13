@@ -25,12 +25,12 @@ Class StringSemantics `{!GoSemanticsFunctions} :=
   #[global] convert_byte_to_string (c : w8) ::
     ⟦Convert go.byte go.string, #c⟧ ⤳[under] #([c]);
 
-  #[global] convert_bytes_to_string (v : val)
-    `{!from ↓u go.SliceType elem_type} `{!elem_type ↓u go.byte} `{!to ↓u go.string} ::
+  #[global] convert_bytes_to_string
+    `[!from ↓u go.SliceType elem_type] `[!elem_type ↓u go.byte] `[!to ↓u go.string] (v : val) ::
     ⟦Convert from to, v⟧ ⤳[internal] (@! strings.ByteSliceToString v);
 
-  #[global] convert_string_to_bytes (v : val)
-    `{!from ↓u go.string} `{!to ↓u go.SliceType elem_type} `{!to ↓u go.byte} ::
+  #[global] convert_string_to_bytes
+    `[!from ↓u go.string] `[!to ↓u go.SliceType elem_type] `[!elem_type ↓u go.byte] (v : val) ::
     ⟦Convert from to, v⟧ ⤳[internal] (@! strings.StringToByteSlice v);
 }.
 End defs.

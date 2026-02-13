@@ -30,7 +30,9 @@ Definition mkLockShardⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
     let: "$r0" := (GoAlloc sync.Mutex (GoZeroVal sync.Mutex #())) in
     do:  ("mu" <-[go.PointerType sync.Mutex] "$r0");;;
     let: "a" := (GoAlloc (go.PointerType lockShard) (GoZeroVal (go.PointerType lockShard) #())) in
-    let: "$r0" := (GoAlloc lockShard (CompositeLiteral lockShard (LiteralValue [KeyedElement (Some (KeyField "mu"%go)) (ElementExpression (go.PointerType sync.Mutex) (![go.PointerType sync.Mutex] "mu")); KeyedElement (Some (KeyField "state"%go)) (ElementExpression (go.MapType go.uint64 (go.PointerType lockState)) (![go.MapType go.uint64 (go.PointerType lockState)] "state"))]))) in
+    let: "$r0" := (GoAlloc lockShard (let: "$v0" := (![go.PointerType sync.Mutex] "mu") in
+    let: "$v1" := (![go.MapType go.uint64 (go.PointerType lockState)] "state") in
+    CompositeLiteral lockShard (LiteralValue [KeyedElement (Some (KeyField "mu"%go)) (ElementExpression (go.PointerType sync.Mutex) "$v0"); KeyedElement (Some (KeyField "state"%go)) (ElementExpression (go.MapType go.uint64 (go.PointerType lockState)) "$v1")]))) in
     do:  ("a" <-[go.PointerType lockShard] "$r0");;;
     return: (![go.PointerType lockShard] "a")).
 
@@ -54,8 +56,11 @@ Definition lockShard__acquireⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
         let: "$r0" := (![go.PointerType lockState] "state1") in
         do:  ("state" <-[go.PointerType lockState] "$r0")
       else
-        let: "$r0" := (GoAlloc lockState (CompositeLiteral lockState (LiteralValue [KeyedElement (Some (KeyField "held"%go)) (ElementExpression go.bool #false); KeyedElement (Some (KeyField "cond"%go)) (ElementExpression (go.PointerType sync.Cond) (let: "$a0" := (Convert (go.PointerType sync.Mutex) sync.Locker (![go.PointerType sync.Mutex] (StructFieldRef lockShard "mu"%go (![go.PointerType lockShard] "lmap")))) in
-         (FuncResolve sync.NewCond [] #()) "$a0")); KeyedElement (Some (KeyField "waiters"%go)) (ElementExpression go.uint64 #(W64 0))]))) in
+        let: "$r0" := (GoAlloc lockState (let: "$v0" := #false in
+        let: "$v1" := (let: "$a0" := (Convert (go.PointerType sync.Mutex) sync.Locker (![go.PointerType sync.Mutex] (StructFieldRef lockShard "mu"%go (![go.PointerType lockShard] "lmap")))) in
+        (FuncResolve sync.NewCond [] #()) "$a0") in
+        let: "$v2" := #(W64 0) in
+        CompositeLiteral lockState (LiteralValue [KeyedElement (Some (KeyField "held"%go)) (ElementExpression go.bool "$v0"); KeyedElement (Some (KeyField "cond"%go)) (ElementExpression (go.PointerType sync.Cond) "$v1"); KeyedElement (Some (KeyField "waiters"%go)) (ElementExpression go.uint64 "$v2")]))) in
         do:  ("state" <-[go.PointerType lockState] "$r0");;;
         let: "$r0" := (![go.PointerType lockState] "state") in
         do:  (map.insert go.uint64 (![go.MapType go.uint64 (go.PointerType lockState)] (StructFieldRef lockShard "state"%go (![go.PointerType lockShard] "lmap"))) (![go.uint64] "addr") "$r0"));;;
@@ -120,7 +125,8 @@ Definition MkLockMapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
       (FuncResolve go.append [go.SliceType (go.PointerType lockShard)] #()) "$a0" "$a1") in
       do:  ("shards" <-[go.SliceType (go.PointerType lockShard)] "$r0")));;;
     let: "a" := (GoAlloc (go.PointerType LockMap) (GoZeroVal (go.PointerType LockMap) #())) in
-    let: "$r0" := (GoAlloc LockMap (CompositeLiteral LockMap (LiteralValue [KeyedElement (Some (KeyField "shards"%go)) (ElementExpression (go.SliceType (go.PointerType lockShard)) (![go.SliceType (go.PointerType lockShard)] "shards"))]))) in
+    let: "$r0" := (GoAlloc LockMap (let: "$v0" := (![go.SliceType (go.PointerType lockShard)] "shards") in
+    CompositeLiteral LockMap (LiteralValue [KeyedElement (Some (KeyField "shards"%go)) (ElementExpression (go.SliceType (go.PointerType lockShard)) "$v0")]))) in
     do:  ("a" <-[go.PointerType LockMap] "$r0");;;
     return: (![go.PointerType LockMap] "a")).
 

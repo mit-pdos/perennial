@@ -37,7 +37,8 @@ Definition NewTimeList {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_strin
 Definition Newⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "res" := (GoAlloc list' (GoZeroVal list' #())) in
-    let: "$r0" := (CompositeLiteral list' (LiteralValue [KeyedElement (Some (KeyField "e"%go)) (ElementExpression (go.SliceType listElement) ((FuncResolve go.make2 [go.SliceType listElement] #()) (Convert go.untyped_int go.int defaultListElementLength)))])) in
+    let: "$r0" := (let: "$v0" := ((FuncResolve go.make2 [go.SliceType listElement] #()) (Convert go.untyped_int go.int defaultListElementLength)) in
+    CompositeLiteral list' (LiteralValue [KeyedElement (Some (KeyField "e"%go)) (ElementExpression (go.SliceType listElement) "$v0")])) in
     do:  ("res" <-[list'] "$r0");;;
     (let: "i" := (GoAlloc go.int (GoZeroVal go.int #())) in
     let: "$r0" := #(W64 0) in
@@ -137,7 +138,8 @@ Definition list__IsRegisteredⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
 Definition NewWithResponseⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "ch",
     exception_do (let: "ch" := (GoAlloc (go.ChannelType go.recvonly go.any) "ch") in
-    return: (Convert (go.PointerType waitWithResponse) Wait (GoAlloc waitWithResponse (CompositeLiteral waitWithResponse (LiteralValue [KeyedElement (Some (KeyField "ch"%go)) (ElementExpression (go.ChannelType go.recvonly go.any) (![go.ChannelType go.recvonly go.any] "ch"))]))))).
+    return: (Convert (go.PointerType waitWithResponse) Wait (GoAlloc waitWithResponse (let: "$v0" := (![go.ChannelType go.recvonly go.any] "ch") in
+     CompositeLiteral waitWithResponse (LiteralValue [KeyedElement (Some (KeyField "ch"%go)) (ElementExpression (go.ChannelType go.recvonly go.any) "$v0")]))))).
 
 (* go: wait.go:104:28 *)
 Definition waitWithResponse__Registerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -165,11 +167,12 @@ Definition waitWithResponse__IsRegisteredⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx
 (* go: wait_time.go:38:6 *)
 Definition NewTimeListⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    exception_do (return: (GoAlloc timeList (CompositeLiteral timeList (LiteralValue [KeyedElement (Some (KeyField "m"%go)) (ElementExpression (go.MapType go.uint64 (go.ChannelType go.sendrecv (go.StructType [
+    exception_do (return: (GoAlloc timeList (let: "$v0" := ((FuncResolve go.make1 [go.MapType go.uint64 (go.ChannelType go.sendrecv (go.StructType [
 
-      ]))) ((FuncResolve go.make1 [go.MapType go.uint64 (go.ChannelType go.sendrecv (go.StructType [
+      ]))] #()) #()) in
+     CompositeLiteral timeList (LiteralValue [KeyedElement (Some (KeyField "m"%go)) (ElementExpression (go.MapType go.uint64 (go.ChannelType go.sendrecv (go.StructType [
 
-       ]))] #()) #()))])))).
+      ]))) "$v0")])))).
 
 (* go: wait_time.go:42:21 *)
 Definition timeList__Waitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=

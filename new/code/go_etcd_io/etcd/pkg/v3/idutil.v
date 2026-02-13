@@ -38,7 +38,9 @@ Definition NewGeneratorⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
     let: "$a1" := (Convert go.untyped_int go.uint tsLen) in
     (FuncResolve lowbit [] #()) "$a0" "$a1") <<⟨go.uint64⟩ (Convert go.untyped_int go.uint64 cntLen)) in
     do:  ("suffix" <-[go.uint64] "$r0");;;
-    return: (GoAlloc Generator (CompositeLiteral Generator (LiteralValue [KeyedElement (Some (KeyField "prefix"%go)) (ElementExpression go.uint64 (![go.uint64] "prefix")); KeyedElement (Some (KeyField "suffix"%go)) (ElementExpression go.uint64 (![go.uint64] "suffix"))])))).
+    return: (GoAlloc Generator (let: "$v0" := (![go.uint64] "prefix") in
+     let: "$v1" := (![go.uint64] "suffix") in
+     CompositeLiteral Generator (LiteralValue [KeyedElement (Some (KeyField "prefix"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "suffix"%go)) (ElementExpression go.uint64 "$v1")])))).
 
 (* Next generates a id that is unique.
 

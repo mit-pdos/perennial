@@ -155,7 +155,10 @@ Definition newJoinHandleⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
     let: "$r0" := (let: "$a0" := (Convert (go.PointerType sync.Mutex) sync.Locker (![go.PointerType sync.Mutex] "mu")) in
     (FuncResolve sync.NewCond [] #()) "$a0") in
     do:  ("cond" <-[go.PointerType sync.Cond] "$r0");;;
-    return: (GoAlloc JoinHandle (CompositeLiteral JoinHandle (LiteralValue [KeyedElement (Some (KeyField "mu"%go)) (ElementExpression (go.PointerType sync.Mutex) (![go.PointerType sync.Mutex] "mu")); KeyedElement (Some (KeyField "done"%go)) (ElementExpression go.bool #false); KeyedElement (Some (KeyField "cond"%go)) (ElementExpression (go.PointerType sync.Cond) (![go.PointerType sync.Cond] "cond"))])))).
+    return: (GoAlloc JoinHandle (let: "$v0" := (![go.PointerType sync.Mutex] "mu") in
+     let: "$v1" := #false in
+     let: "$v2" := (![go.PointerType sync.Cond] "cond") in
+     CompositeLiteral JoinHandle (LiteralValue [KeyedElement (Some (KeyField "mu"%go)) (ElementExpression (go.PointerType sync.Mutex) "$v0"); KeyedElement (Some (KeyField "done"%go)) (ElementExpression go.bool "$v1"); KeyedElement (Some (KeyField "cond"%go)) (ElementExpression (go.PointerType sync.Cond) "$v2")])))).
 
 (* go: goose_std.go:94:22 *)
 Definition JoinHandle__finishⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=

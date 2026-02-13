@@ -1140,22 +1140,30 @@ Definition skipRpc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string :=
 (* go: rpc.pb.go:88:31 *)
 Definition RangeRequest_SortOrder__EnumDescriptorⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <> <>,
-    exception_do (return: (![go.SliceType go.byte] (GlobalVarAddr fileDescriptor_77a6da22d6a3feb1 #()), CompositeLiteral (go.SliceType go.int) (LiteralValue [KeyedElement None (ElementExpression go.int #(W64 1)); KeyedElement None (ElementExpression go.int #(W64 0))]))).
+    exception_do (return: (![go.SliceType go.byte] (GlobalVarAddr fileDescriptor_77a6da22d6a3feb1 #()), let: "$v0" := #(W64 1) in
+     let: "$v1" := #(W64 0) in
+     CompositeLiteral (go.SliceType go.int) (LiteralValue [KeyedElement None (ElementExpression go.int "$v0"); KeyedElement None (ElementExpression go.int "$v1")]))).
 
 (* go: rpc.pb.go:122:32 *)
 Definition RangeRequest_SortTarget__EnumDescriptorⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <> <>,
-    exception_do (return: (![go.SliceType go.byte] (GlobalVarAddr fileDescriptor_77a6da22d6a3feb1 #()), CompositeLiteral (go.SliceType go.int) (LiteralValue [KeyedElement None (ElementExpression go.int #(W64 1)); KeyedElement None (ElementExpression go.int #(W64 1))]))).
+    exception_do (return: (![go.SliceType go.byte] (GlobalVarAddr fileDescriptor_77a6da22d6a3feb1 #()), let: "$v0" := #(W64 1) in
+     let: "$v1" := #(W64 1) in
+     CompositeLiteral (go.SliceType go.int) (LiteralValue [KeyedElement None (ElementExpression go.int "$v0"); KeyedElement None (ElementExpression go.int "$v1")]))).
 
 (* go: rpc.pb.go:153:30 *)
 Definition Compare_CompareResult__EnumDescriptorⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <> <>,
-    exception_do (return: (![go.SliceType go.byte] (GlobalVarAddr fileDescriptor_77a6da22d6a3feb1 #()), CompositeLiteral (go.SliceType go.int) (LiteralValue [KeyedElement None (ElementExpression go.int #(W64 9)); KeyedElement None (ElementExpression go.int #(W64 0))]))).
+    exception_do (return: (![go.SliceType go.byte] (GlobalVarAddr fileDescriptor_77a6da22d6a3feb1 #()), let: "$v0" := #(W64 9) in
+     let: "$v1" := #(W64 0) in
+     CompositeLiteral (go.SliceType go.int) (LiteralValue [KeyedElement None (ElementExpression go.int "$v0"); KeyedElement None (ElementExpression go.int "$v1")]))).
 
 (* go: rpc.pb.go:187:30 *)
 Definition Compare_CompareTarget__EnumDescriptorⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <> <>,
-    exception_do (return: (![go.SliceType go.byte] (GlobalVarAddr fileDescriptor_77a6da22d6a3feb1 #()), CompositeLiteral (go.SliceType go.int) (LiteralValue [KeyedElement None (ElementExpression go.int #(W64 9)); KeyedElement None (ElementExpression go.int #(W64 1))]))).
+    exception_do (return: (![go.SliceType go.byte] (GlobalVarAddr fileDescriptor_77a6da22d6a3feb1 #()), let: "$v0" := #(W64 9) in
+     let: "$v1" := #(W64 1) in
+     CompositeLiteral (go.SliceType go.int) (LiteralValue [KeyedElement None (ElementExpression go.int "$v0"); KeyedElement None (ElementExpression go.int "$v1")]))).
 
 (* go: rpc.pb.go:955:32 *)
 Definition RequestOp_RequestRange__isRequestOp_Requestⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -2069,21 +2077,89 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
       do:  (_'init #());;;
       do:  (AlarmType_name'init #());;;
       do:  (AlarmType_value'init #());;;
-      let: "$r0" := (CompositeLiteral (go.MapType go.int32 go.string) (LiteralValue [KeyedElement (Some (KeyExpression go.int32 #(W32 0))) (ElementExpression go.string #"NONE"%go); KeyedElement (Some (KeyExpression go.int32 #(W32 1))) (ElementExpression go.string #"ASCEND"%go); KeyedElement (Some (KeyExpression go.int32 #(W32 2))) (ElementExpression go.string #"DESCEND"%go)])) in
+      let: "$r0" := (let: "$k0" := #(W32 0) in
+      let: "$v1" := #"NONE"%go in
+      let: "$k2" := #(W32 1) in
+      let: "$v3" := #"ASCEND"%go in
+      let: "$k4" := #(W32 2) in
+      let: "$v5" := #"DESCEND"%go in
+      CompositeLiteral (go.MapType go.int32 go.string) (LiteralValue [KeyedElement (Some (KeyExpression go.int32 "$k0")) (ElementExpression go.string "$v1"); KeyedElement (Some (KeyExpression go.int32 "$k2")) (ElementExpression go.string "$v3"); KeyedElement (Some (KeyExpression go.int32 "$k4")) (ElementExpression go.string "$v5")])) in
       do:  ((GlobalVarAddr RangeRequest_SortOrder_name #()) <-[go.MapType go.int32 go.string] "$r0");;;
-      let: "$r0" := (CompositeLiteral (go.MapType go.string go.int32) (LiteralValue [KeyedElement (Some (KeyExpression go.string #"NONE"%go)) (ElementExpression go.int32 #(W32 0)); KeyedElement (Some (KeyExpression go.string #"ASCEND"%go)) (ElementExpression go.int32 #(W32 1)); KeyedElement (Some (KeyExpression go.string #"DESCEND"%go)) (ElementExpression go.int32 #(W32 2))])) in
+      let: "$r0" := (let: "$k0" := #"NONE"%go in
+      let: "$v1" := #(W32 0) in
+      let: "$k2" := #"ASCEND"%go in
+      let: "$v3" := #(W32 1) in
+      let: "$k4" := #"DESCEND"%go in
+      let: "$v5" := #(W32 2) in
+      CompositeLiteral (go.MapType go.string go.int32) (LiteralValue [KeyedElement (Some (KeyExpression go.string "$k0")) (ElementExpression go.int32 "$v1"); KeyedElement (Some (KeyExpression go.string "$k2")) (ElementExpression go.int32 "$v3"); KeyedElement (Some (KeyExpression go.string "$k4")) (ElementExpression go.int32 "$v5")])) in
       do:  ((GlobalVarAddr RangeRequest_SortOrder_value #()) <-[go.MapType go.string go.int32] "$r0");;;
-      let: "$r0" := (CompositeLiteral (go.MapType go.int32 go.string) (LiteralValue [KeyedElement (Some (KeyExpression go.int32 #(W32 0))) (ElementExpression go.string #"KEY"%go); KeyedElement (Some (KeyExpression go.int32 #(W32 1))) (ElementExpression go.string #"VERSION"%go); KeyedElement (Some (KeyExpression go.int32 #(W32 2))) (ElementExpression go.string #"CREATE"%go); KeyedElement (Some (KeyExpression go.int32 #(W32 3))) (ElementExpression go.string #"MOD"%go); KeyedElement (Some (KeyExpression go.int32 #(W32 4))) (ElementExpression go.string #"VALUE"%go)])) in
+      let: "$r0" := (let: "$k0" := #(W32 0) in
+      let: "$v1" := #"KEY"%go in
+      let: "$k2" := #(W32 1) in
+      let: "$v3" := #"VERSION"%go in
+      let: "$k4" := #(W32 2) in
+      let: "$v5" := #"CREATE"%go in
+      let: "$k6" := #(W32 3) in
+      let: "$v7" := #"MOD"%go in
+      let: "$k8" := #(W32 4) in
+      let: "$v9" := #"VALUE"%go in
+      CompositeLiteral (go.MapType go.int32 go.string) (LiteralValue [KeyedElement (Some (KeyExpression go.int32 "$k0")) (ElementExpression go.string "$v1"); KeyedElement (Some (KeyExpression go.int32 "$k2")) (ElementExpression go.string "$v3"); KeyedElement (Some (KeyExpression go.int32 "$k4")) (ElementExpression go.string "$v5"); KeyedElement (Some (KeyExpression go.int32 "$k6")) (ElementExpression go.string "$v7"); KeyedElement (Some (KeyExpression go.int32 "$k8")) (ElementExpression go.string "$v9")])) in
       do:  ((GlobalVarAddr RangeRequest_SortTarget_name #()) <-[go.MapType go.int32 go.string] "$r0");;;
-      let: "$r0" := (CompositeLiteral (go.MapType go.string go.int32) (LiteralValue [KeyedElement (Some (KeyExpression go.string #"KEY"%go)) (ElementExpression go.int32 #(W32 0)); KeyedElement (Some (KeyExpression go.string #"VERSION"%go)) (ElementExpression go.int32 #(W32 1)); KeyedElement (Some (KeyExpression go.string #"CREATE"%go)) (ElementExpression go.int32 #(W32 2)); KeyedElement (Some (KeyExpression go.string #"MOD"%go)) (ElementExpression go.int32 #(W32 3)); KeyedElement (Some (KeyExpression go.string #"VALUE"%go)) (ElementExpression go.int32 #(W32 4))])) in
+      let: "$r0" := (let: "$k0" := #"KEY"%go in
+      let: "$v1" := #(W32 0) in
+      let: "$k2" := #"VERSION"%go in
+      let: "$v3" := #(W32 1) in
+      let: "$k4" := #"CREATE"%go in
+      let: "$v5" := #(W32 2) in
+      let: "$k6" := #"MOD"%go in
+      let: "$v7" := #(W32 3) in
+      let: "$k8" := #"VALUE"%go in
+      let: "$v9" := #(W32 4) in
+      CompositeLiteral (go.MapType go.string go.int32) (LiteralValue [KeyedElement (Some (KeyExpression go.string "$k0")) (ElementExpression go.int32 "$v1"); KeyedElement (Some (KeyExpression go.string "$k2")) (ElementExpression go.int32 "$v3"); KeyedElement (Some (KeyExpression go.string "$k4")) (ElementExpression go.int32 "$v5"); KeyedElement (Some (KeyExpression go.string "$k6")) (ElementExpression go.int32 "$v7"); KeyedElement (Some (KeyExpression go.string "$k8")) (ElementExpression go.int32 "$v9")])) in
       do:  ((GlobalVarAddr RangeRequest_SortTarget_value #()) <-[go.MapType go.string go.int32] "$r0");;;
-      let: "$r0" := (CompositeLiteral (go.MapType go.int32 go.string) (LiteralValue [KeyedElement (Some (KeyExpression go.int32 #(W32 0))) (ElementExpression go.string #"EQUAL"%go); KeyedElement (Some (KeyExpression go.int32 #(W32 1))) (ElementExpression go.string #"GREATER"%go); KeyedElement (Some (KeyExpression go.int32 #(W32 2))) (ElementExpression go.string #"LESS"%go); KeyedElement (Some (KeyExpression go.int32 #(W32 3))) (ElementExpression go.string #"NOT_EQUAL"%go)])) in
+      let: "$r0" := (let: "$k0" := #(W32 0) in
+      let: "$v1" := #"EQUAL"%go in
+      let: "$k2" := #(W32 1) in
+      let: "$v3" := #"GREATER"%go in
+      let: "$k4" := #(W32 2) in
+      let: "$v5" := #"LESS"%go in
+      let: "$k6" := #(W32 3) in
+      let: "$v7" := #"NOT_EQUAL"%go in
+      CompositeLiteral (go.MapType go.int32 go.string) (LiteralValue [KeyedElement (Some (KeyExpression go.int32 "$k0")) (ElementExpression go.string "$v1"); KeyedElement (Some (KeyExpression go.int32 "$k2")) (ElementExpression go.string "$v3"); KeyedElement (Some (KeyExpression go.int32 "$k4")) (ElementExpression go.string "$v5"); KeyedElement (Some (KeyExpression go.int32 "$k6")) (ElementExpression go.string "$v7")])) in
       do:  ((GlobalVarAddr Compare_CompareResult_name #()) <-[go.MapType go.int32 go.string] "$r0");;;
-      let: "$r0" := (CompositeLiteral (go.MapType go.string go.int32) (LiteralValue [KeyedElement (Some (KeyExpression go.string #"EQUAL"%go)) (ElementExpression go.int32 #(W32 0)); KeyedElement (Some (KeyExpression go.string #"GREATER"%go)) (ElementExpression go.int32 #(W32 1)); KeyedElement (Some (KeyExpression go.string #"LESS"%go)) (ElementExpression go.int32 #(W32 2)); KeyedElement (Some (KeyExpression go.string #"NOT_EQUAL"%go)) (ElementExpression go.int32 #(W32 3))])) in
+      let: "$r0" := (let: "$k0" := #"EQUAL"%go in
+      let: "$v1" := #(W32 0) in
+      let: "$k2" := #"GREATER"%go in
+      let: "$v3" := #(W32 1) in
+      let: "$k4" := #"LESS"%go in
+      let: "$v5" := #(W32 2) in
+      let: "$k6" := #"NOT_EQUAL"%go in
+      let: "$v7" := #(W32 3) in
+      CompositeLiteral (go.MapType go.string go.int32) (LiteralValue [KeyedElement (Some (KeyExpression go.string "$k0")) (ElementExpression go.int32 "$v1"); KeyedElement (Some (KeyExpression go.string "$k2")) (ElementExpression go.int32 "$v3"); KeyedElement (Some (KeyExpression go.string "$k4")) (ElementExpression go.int32 "$v5"); KeyedElement (Some (KeyExpression go.string "$k6")) (ElementExpression go.int32 "$v7")])) in
       do:  ((GlobalVarAddr Compare_CompareResult_value #()) <-[go.MapType go.string go.int32] "$r0");;;
-      let: "$r0" := (CompositeLiteral (go.MapType go.int32 go.string) (LiteralValue [KeyedElement (Some (KeyExpression go.int32 #(W32 0))) (ElementExpression go.string #"VERSION"%go); KeyedElement (Some (KeyExpression go.int32 #(W32 1))) (ElementExpression go.string #"CREATE"%go); KeyedElement (Some (KeyExpression go.int32 #(W32 2))) (ElementExpression go.string #"MOD"%go); KeyedElement (Some (KeyExpression go.int32 #(W32 3))) (ElementExpression go.string #"VALUE"%go); KeyedElement (Some (KeyExpression go.int32 #(W32 4))) (ElementExpression go.string #"LEASE"%go)])) in
+      let: "$r0" := (let: "$k0" := #(W32 0) in
+      let: "$v1" := #"VERSION"%go in
+      let: "$k2" := #(W32 1) in
+      let: "$v3" := #"CREATE"%go in
+      let: "$k4" := #(W32 2) in
+      let: "$v5" := #"MOD"%go in
+      let: "$k6" := #(W32 3) in
+      let: "$v7" := #"VALUE"%go in
+      let: "$k8" := #(W32 4) in
+      let: "$v9" := #"LEASE"%go in
+      CompositeLiteral (go.MapType go.int32 go.string) (LiteralValue [KeyedElement (Some (KeyExpression go.int32 "$k0")) (ElementExpression go.string "$v1"); KeyedElement (Some (KeyExpression go.int32 "$k2")) (ElementExpression go.string "$v3"); KeyedElement (Some (KeyExpression go.int32 "$k4")) (ElementExpression go.string "$v5"); KeyedElement (Some (KeyExpression go.int32 "$k6")) (ElementExpression go.string "$v7"); KeyedElement (Some (KeyExpression go.int32 "$k8")) (ElementExpression go.string "$v9")])) in
       do:  ((GlobalVarAddr Compare_CompareTarget_name #()) <-[go.MapType go.int32 go.string] "$r0");;;
-      let: "$r0" := (CompositeLiteral (go.MapType go.string go.int32) (LiteralValue [KeyedElement (Some (KeyExpression go.string #"VERSION"%go)) (ElementExpression go.int32 #(W32 0)); KeyedElement (Some (KeyExpression go.string #"CREATE"%go)) (ElementExpression go.int32 #(W32 1)); KeyedElement (Some (KeyExpression go.string #"MOD"%go)) (ElementExpression go.int32 #(W32 2)); KeyedElement (Some (KeyExpression go.string #"VALUE"%go)) (ElementExpression go.int32 #(W32 3)); KeyedElement (Some (KeyExpression go.string #"LEASE"%go)) (ElementExpression go.int32 #(W32 4))])) in
+      let: "$r0" := (let: "$k0" := #"VERSION"%go in
+      let: "$v1" := #(W32 0) in
+      let: "$k2" := #"CREATE"%go in
+      let: "$v3" := #(W32 1) in
+      let: "$k4" := #"MOD"%go in
+      let: "$v5" := #(W32 2) in
+      let: "$k6" := #"VALUE"%go in
+      let: "$v7" := #(W32 3) in
+      let: "$k8" := #"LEASE"%go in
+      let: "$v9" := #(W32 4) in
+      CompositeLiteral (go.MapType go.string go.int32) (LiteralValue [KeyedElement (Some (KeyExpression go.string "$k0")) (ElementExpression go.int32 "$v1"); KeyedElement (Some (KeyExpression go.string "$k2")) (ElementExpression go.int32 "$v3"); KeyedElement (Some (KeyExpression go.string "$k4")) (ElementExpression go.int32 "$v5"); KeyedElement (Some (KeyExpression go.string "$k6")) (ElementExpression go.int32 "$v7"); KeyedElement (Some (KeyExpression go.string "$k8")) (ElementExpression go.int32 "$v9")])) in
       do:  ((GlobalVarAddr Compare_CompareTarget_value #()) <-[go.MapType go.string go.int32] "$r0");;;
       do:  (WatchCreateRequest_FilterType_name'init #());;;
       do:  (WatchCreateRequest_FilterType_value'init #());;;

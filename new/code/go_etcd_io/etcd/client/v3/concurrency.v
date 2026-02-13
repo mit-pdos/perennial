@@ -121,7 +121,9 @@ Definition NewElectionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
   λ: "s" "pfx",
     exception_do (let: "pfx" := (GoAlloc go.string "pfx") in
     let: "s" := (GoAlloc (go.PointerType Session) "s") in
-    return: (GoAlloc Election (CompositeLiteral Election (LiteralValue [KeyedElement (Some (KeyField "session"%go)) (ElementExpression (go.PointerType Session) (![go.PointerType Session] "s")); KeyedElement (Some (KeyField "keyPrefix"%go)) (ElementExpression go.string ((![go.string] "pfx") +⟨go.string⟩ #"/"%go))])))).
+    return: (GoAlloc Election (let: "$v0" := (![go.PointerType Session] "s") in
+     let: "$v1" := ((![go.string] "pfx") +⟨go.string⟩ #"/"%go) in
+     CompositeLiteral Election (LiteralValue [KeyedElement (Some (KeyField "session"%go)) (ElementExpression (go.PointerType Session) "$v0"); KeyedElement (Some (KeyField "keyPrefix"%go)) (ElementExpression go.string "$v1")])))).
 
 (* ResumeElection initializes an election with a known leader.
 
@@ -132,7 +134,12 @@ Definition ResumeElectionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
     let: "leaderKey" := (GoAlloc go.string "leaderKey") in
     let: "pfx" := (GoAlloc go.string "pfx") in
     let: "s" := (GoAlloc (go.PointerType Session) "s") in
-    return: (GoAlloc Election (CompositeLiteral Election (LiteralValue [KeyedElement (Some (KeyField "keyPrefix"%go)) (ElementExpression go.string (![go.string] "pfx")); KeyedElement (Some (KeyField "session"%go)) (ElementExpression (go.PointerType Session) (![go.PointerType Session] "s")); KeyedElement (Some (KeyField "leaderKey"%go)) (ElementExpression go.string (![go.string] "leaderKey")); KeyedElement (Some (KeyField "leaderRev"%go)) (ElementExpression go.int64 (![go.int64] "leaderRev")); KeyedElement (Some (KeyField "leaderSession"%go)) (ElementExpression (go.PointerType Session) (![go.PointerType Session] "s"))])))).
+    return: (GoAlloc Election (let: "$v0" := (![go.string] "pfx") in
+     let: "$v1" := (![go.PointerType Session] "s") in
+     let: "$v2" := (![go.string] "leaderKey") in
+     let: "$v3" := (![go.int64] "leaderRev") in
+     let: "$v4" := (![go.PointerType Session] "s") in
+     CompositeLiteral Election (LiteralValue [KeyedElement (Some (KeyField "keyPrefix"%go)) (ElementExpression go.string "$v0"); KeyedElement (Some (KeyField "session"%go)) (ElementExpression (go.PointerType Session) "$v1"); KeyedElement (Some (KeyField "leaderKey"%go)) (ElementExpression go.string "$v2"); KeyedElement (Some (KeyField "leaderRev"%go)) (ElementExpression go.int64 "$v3"); KeyedElement (Some (KeyField "leaderSession"%go)) (ElementExpression (go.PointerType Session) "$v4")])))).
 
 (* Campaign puts a value as eligible for the election on the prefix
    key.
@@ -442,8 +449,10 @@ Definition Election__observeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
         do:  ("cctx" <-[context.Context] "$r0");;;
         do:  ("cancel" <-[context.CancelFunc] "$r1");;;
         let: "opts" := (GoAlloc (go.SliceType clientv3.OpOption) (GoZeroVal (go.SliceType clientv3.OpOption) #())) in
-        let: "$r0" := (CompositeLiteral (go.SliceType clientv3.OpOption) (LiteralValue [KeyedElement None (ElementExpression clientv3.OpOption (let: "$a0" := (![go.int64] (StructFieldRef etcdserverpb.ResponseHeader "Revision"%go (![go.PointerType etcdserverpb.ResponseHeader] (StructFieldRef clientv3.GetResponse "Header"%go (![go.PointerType clientv3.GetResponse] "resp"))))) in
-         (FuncResolve clientv3.WithRev [] #()) "$a0")); KeyedElement None (ElementExpression clientv3.OpOption ((FuncResolve clientv3.WithPrefix [] #()) #()))])) in
+        let: "$r0" := (let: "$v0" := (let: "$a0" := (![go.int64] (StructFieldRef etcdserverpb.ResponseHeader "Revision"%go (![go.PointerType etcdserverpb.ResponseHeader] (StructFieldRef clientv3.GetResponse "Header"%go (![go.PointerType clientv3.GetResponse] "resp"))))) in
+        (FuncResolve clientv3.WithRev [] #()) "$a0") in
+        let: "$v1" := ((FuncResolve clientv3.WithPrefix [] #()) #()) in
+        CompositeLiteral (go.SliceType clientv3.OpOption) (LiteralValue [KeyedElement None (ElementExpression clientv3.OpOption "$v0"); KeyedElement None (ElementExpression clientv3.OpOption "$v1")])) in
         do:  ("opts" <-[go.SliceType clientv3.OpOption] "$r0");;;
         let: "wch" := (GoAlloc clientv3.WatchChan (GoZeroVal clientv3.WatchChan #())) in
         let: "$r0" := (let: "$a0" := (![context.Context] "cctx") in
@@ -485,7 +494,10 @@ Definition Election__observeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
         let: "$r1" := (![go.PointerType mvccpb.KeyValue] (IndexRef (go.SliceType (go.PointerType mvccpb.KeyValue)) (![go.SliceType (go.PointerType mvccpb.KeyValue)] (StructFieldRef clientv3.GetResponse "Kvs"%go (![go.PointerType clientv3.GetResponse] "resp")), #(W64 0)))) in
         do:  ("hdr" <-[go.PointerType etcdserverpb.ResponseHeader] "$r0");;;
         do:  ("kv" <-[go.PointerType mvccpb.KeyValue] "$r1"));;;
-      let: "$v0" := (CompositeLiteral clientv3.GetResponse (LiteralValue [KeyedElement (Some (KeyField "Header"%go)) (ElementExpression (go.PointerType etcdserverpb.ResponseHeader) (![go.PointerType etcdserverpb.ResponseHeader] "hdr")); KeyedElement (Some (KeyField "Kvs"%go)) (ElementExpression (go.SliceType (go.PointerType mvccpb.KeyValue)) (CompositeLiteral (go.SliceType (go.PointerType mvccpb.KeyValue)) (LiteralValue [KeyedElement None (ElementExpression (go.PointerType mvccpb.KeyValue) (![go.PointerType mvccpb.KeyValue] "kv"))])))])) in
+      let: "$v0" := (let: "$v0" := (![go.PointerType etcdserverpb.ResponseHeader] "hdr") in
+      let: "$v1" := (let: "$v0" := (![go.PointerType mvccpb.KeyValue] "kv") in
+      CompositeLiteral (go.SliceType (go.PointerType mvccpb.KeyValue)) (LiteralValue [KeyedElement None (ElementExpression (go.PointerType mvccpb.KeyValue) "$v0")])) in
+      CompositeLiteral clientv3.GetResponse (LiteralValue [KeyedElement (Some (KeyField "Header"%go)) (ElementExpression (go.PointerType etcdserverpb.ResponseHeader) "$v0"); KeyedElement (Some (KeyField "Kvs"%go)) (ElementExpression (go.SliceType (go.PointerType mvccpb.KeyValue)) "$v1")])) in
       let: "$ch0" := (![go.ChannelType go.sendonly clientv3.GetResponse] "ch") in
       let: "$ch1" := ((MethodResolve context.Context "Done"%go (![context.Context] "ctx")) #()) in
       SelectStmt (SelectStmtClauses None [(CommClause (SendCase clientv3.GetResponse "$ch0" "$v0") (do:  #())); (CommClause (RecvCase (go.StructType [
@@ -536,7 +548,8 @@ Definition Election__observeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
           else do:  #());;;
           let: "$r0" := (StructFieldRef clientv3.WatchResponse "Header"%go "wr") in
           do:  ((StructFieldRef clientv3.GetResponse "Header"%go (![go.PointerType clientv3.GetResponse] "resp")) <-[go.PointerType etcdserverpb.ResponseHeader] "$r0");;;
-          let: "$r0" := (CompositeLiteral (go.SliceType (go.PointerType mvccpb.KeyValue)) (LiteralValue [KeyedElement None (ElementExpression (go.PointerType mvccpb.KeyValue) (![go.PointerType mvccpb.KeyValue] (StructFieldRef clientv3.Event "Kv"%go (![go.PointerType clientv3.Event] "ev"))))])) in
+          let: "$r0" := (let: "$v0" := (![go.PointerType mvccpb.KeyValue] (StructFieldRef clientv3.Event "Kv"%go (![go.PointerType clientv3.Event] "ev"))) in
+          CompositeLiteral (go.SliceType (go.PointerType mvccpb.KeyValue)) (LiteralValue [KeyedElement None (ElementExpression (go.PointerType mvccpb.KeyValue) "$v0")])) in
           do:  ((StructFieldRef clientv3.GetResponse "Kvs"%go (![go.PointerType clientv3.GetResponse] "resp")) <-[go.SliceType (go.PointerType mvccpb.KeyValue)] "$r0");;;
           let: "$v0" := (![clientv3.GetResponse] (![go.PointerType clientv3.GetResponse] "resp")) in
           let: "$ch0" := (![go.ChannelType go.sendonly clientv3.GetResponse] "ch") in
@@ -681,7 +694,12 @@ Definition NewMutexⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : 
   λ: "s" "pfx",
     exception_do (let: "pfx" := (GoAlloc go.string "pfx") in
     let: "s" := (GoAlloc (go.PointerType Session) "s") in
-    return: (GoAlloc Mutex (CompositeLiteral Mutex (LiteralValue [KeyedElement None (ElementExpression (go.PointerType Session) (![go.PointerType Session] "s")); KeyedElement None (ElementExpression go.string ((![go.string] "pfx") +⟨go.string⟩ #"/"%go)); KeyedElement None (ElementExpression go.string #""%go); KeyedElement None (ElementExpression go.int64 (Convert go.untyped_int go.int64 (⟨go.untyped_int⟩- #1))); KeyedElement None (ElementExpression go.untyped_nil UntypedNil)])))).
+    return: (GoAlloc Mutex (let: "$v0" := (![go.PointerType Session] "s") in
+     let: "$v1" := ((![go.string] "pfx") +⟨go.string⟩ #"/"%go) in
+     let: "$v2" := #""%go in
+     let: "$v3" := (Convert go.untyped_int go.int64 (⟨go.untyped_int⟩- #1)) in
+     let: "$v4" := UntypedNil in
+     CompositeLiteral Mutex (LiteralValue [KeyedElement None (ElementExpression (go.PointerType Session) "$v0"); KeyedElement None (ElementExpression go.string "$v1"); KeyedElement None (ElementExpression go.string "$v2"); KeyedElement None (ElementExpression go.int64 "$v3"); KeyedElement None (ElementExpression go.untyped_nil "$v4")])))).
 
 (* TryLock locks the mutex if not already locked by another session.
    If lock is held by another session, return immediately after attempting necessary cleanup
@@ -978,9 +996,10 @@ Definition NewLockerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
   λ: "s" "pfx",
     exception_do (let: "pfx" := (GoAlloc go.string "pfx") in
     let: "s" := (GoAlloc (go.PointerType Session) "s") in
-    return: (Convert (go.PointerType lockerMutex) sync.Locker (GoAlloc lockerMutex (CompositeLiteral lockerMutex (LiteralValue [KeyedElement None (ElementExpression (go.PointerType Mutex) (let: "$a0" := (![go.PointerType Session] "s") in
-      let: "$a1" := (![go.string] "pfx") in
-      (FuncResolve NewMutex [] #()) "$a0" "$a1"))]))))).
+    return: (Convert (go.PointerType lockerMutex) sync.Locker (GoAlloc lockerMutex (let: "$v0" := (let: "$a0" := (![go.PointerType Session] "s") in
+     let: "$a1" := (![go.string] "pfx") in
+     (FuncResolve NewMutex [] #()) "$a0" "$a1") in
+     CompositeLiteral lockerMutex (LiteralValue [KeyedElement None (ElementExpression (go.PointerType Mutex) "$v0")]))))).
 
 (* NewSession gets the leased session for a client.
 
@@ -993,7 +1012,9 @@ Definition NewSessionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
     let: "$r0" := ((MethodResolve (go.PointerType clientv3.Client) "GetLogger"%go (![go.PointerType clientv3.Client] "client")) #()) in
     do:  ("lg" <-[go.PointerType zap.Logger] "$r0");;;
     let: "ops" := (GoAlloc (go.PointerType sessionOptions) (GoZeroVal (go.PointerType sessionOptions) #())) in
-    let: "$r0" := (GoAlloc sessionOptions (CompositeLiteral sessionOptions (LiteralValue [KeyedElement (Some (KeyField "ttl"%go)) (ElementExpression go.int (Convert go.untyped_int go.int defaultSessionTTL)); KeyedElement (Some (KeyField "ctx"%go)) (ElementExpression context.Context ((MethodResolve (go.PointerType clientv3.Client) "Ctx"%go (![go.PointerType clientv3.Client] "client")) #()))]))) in
+    let: "$r0" := (GoAlloc sessionOptions (let: "$v0" := (Convert go.untyped_int go.int defaultSessionTTL) in
+    let: "$v1" := ((MethodResolve (go.PointerType clientv3.Client) "Ctx"%go (![go.PointerType clientv3.Client] "client")) #()) in
+    CompositeLiteral sessionOptions (LiteralValue [KeyedElement (Some (KeyField "ttl"%go)) (ElementExpression go.int "$v0"); KeyedElement (Some (KeyField "ctx"%go)) (ElementExpression context.Context "$v1")]))) in
     do:  ("ops" <-[go.PointerType sessionOptions] "$r0");;;
     let: "$range" := (![go.SliceType SessionOption] "opts") in
     (let: "opt" := (GoAlloc SessionOption (GoZeroVal SessionOption #())) in
@@ -1057,11 +1078,17 @@ Definition NewSessionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
 
     ])] "$r0");;;
     let: "s" := (GoAlloc (go.PointerType Session) (GoZeroVal (go.PointerType Session) #())) in
-    let: "$r0" := (GoAlloc Session (CompositeLiteral Session (LiteralValue [KeyedElement (Some (KeyField "client"%go)) (ElementExpression (go.PointerType clientv3.Client) (![go.PointerType clientv3.Client] "client")); KeyedElement (Some (KeyField "opts"%go)) (ElementExpression (go.PointerType sessionOptions) (![go.PointerType sessionOptions] "ops")); KeyedElement (Some (KeyField "id"%go)) (ElementExpression clientv3.LeaseID (![clientv3.LeaseID] "id")); KeyedElement (Some (KeyField "ctx"%go)) (ElementExpression context.Context (![context.Context] "ctx")); KeyedElement (Some (KeyField "cancel"%go)) (ElementExpression context.CancelFunc (![context.CancelFunc] "cancel")); KeyedElement (Some (KeyField "donec"%go)) (ElementExpression (go.ChannelType go.sendrecv (go.StructType [
+    let: "$r0" := (GoAlloc Session (let: "$v0" := (![go.PointerType clientv3.Client] "client") in
+    let: "$v1" := (![go.PointerType sessionOptions] "ops") in
+    let: "$v2" := (![clientv3.LeaseID] "id") in
+    let: "$v3" := (![context.Context] "ctx") in
+    let: "$v4" := (![context.CancelFunc] "cancel") in
+    let: "$v5" := (![go.ChannelType go.sendrecv (go.StructType [
 
-     ])) (![go.ChannelType go.sendrecv (go.StructType [
+    ])] "donec") in
+    CompositeLiteral Session (LiteralValue [KeyedElement (Some (KeyField "client"%go)) (ElementExpression (go.PointerType clientv3.Client) "$v0"); KeyedElement (Some (KeyField "opts"%go)) (ElementExpression (go.PointerType sessionOptions) "$v1"); KeyedElement (Some (KeyField "id"%go)) (ElementExpression clientv3.LeaseID "$v2"); KeyedElement (Some (KeyField "ctx"%go)) (ElementExpression context.Context "$v3"); KeyedElement (Some (KeyField "cancel"%go)) (ElementExpression context.CancelFunc "$v4"); KeyedElement (Some (KeyField "donec"%go)) (ElementExpression (go.ChannelType go.sendrecv (go.StructType [
 
-     ])] "donec"))]))) in
+     ])) "$v5")]))) in
     do:  ("s" <-[go.PointerType Session] "$r0");;;
     let: "$go" := (λ: <>,
       with_defer: (do:  (let: "$f" := (λ: <>,
@@ -1275,7 +1302,8 @@ Definition NewSTMⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : va
     let: "apply" := (GoAlloc (go.FunctionType (go.Signature [STM] false [go.error])) "apply") in
     let: "c" := (GoAlloc (go.PointerType clientv3.Client) "c") in
     let: "opts" := (GoAlloc (go.PointerType stmOptions) (GoZeroVal (go.PointerType stmOptions) #())) in
-    let: "$r0" := (GoAlloc stmOptions (CompositeLiteral stmOptions (LiteralValue [KeyedElement (Some (KeyField "ctx"%go)) (ElementExpression context.Context ((MethodResolve (go.PointerType clientv3.Client) "Ctx"%go (![go.PointerType clientv3.Client] "c")) #()))]))) in
+    let: "$r0" := (GoAlloc stmOptions (let: "$v0" := ((MethodResolve (go.PointerType clientv3.Client) "Ctx"%go (![go.PointerType clientv3.Client] "c")) #()) in
+    CompositeLiteral stmOptions (LiteralValue [KeyedElement (Some (KeyField "ctx"%go)) (ElementExpression context.Context "$v0")]))) in
     do:  ("opts" <-[go.PointerType stmOptions] "$r0");;;
     let: "$range" := (![go.SliceType stmOption] "so") in
     (let: "f" := (GoAlloc stmOption (GoZeroVal stmOption #())) in
@@ -1315,7 +1343,11 @@ Definition mkSTMⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val
     (if: "$sw" =⟨Isolation⟩ SerializableSnapshot
     then
       let: "s" := (GoAlloc (go.PointerType stmSerializable) (GoZeroVal (go.PointerType stmSerializable) #())) in
-      let: "$r0" := (GoAlloc stmSerializable (CompositeLiteral stmSerializable (LiteralValue [KeyedElement (Some (KeyField "stm"%go)) (ElementExpression stm (CompositeLiteral stm (LiteralValue [KeyedElement (Some (KeyField "client"%go)) (ElementExpression (go.PointerType clientv3.Client) (![go.PointerType clientv3.Client] "c")); KeyedElement (Some (KeyField "ctx"%go)) (ElementExpression context.Context (![context.Context] (StructFieldRef stmOptions "ctx"%go (![go.PointerType stmOptions] "opts"))))]))); KeyedElement (Some (KeyField "prefetch"%go)) (ElementExpression (go.MapType go.string (go.PointerType clientv3.GetResponse)) ((FuncResolve go.make1 [go.MapType go.string (go.PointerType clientv3.GetResponse)] #()) #()))]))) in
+      let: "$r0" := (GoAlloc stmSerializable (let: "$v0" := (let: "$v0" := (![go.PointerType clientv3.Client] "c") in
+      let: "$v1" := (![context.Context] (StructFieldRef stmOptions "ctx"%go (![go.PointerType stmOptions] "opts"))) in
+      CompositeLiteral stm (LiteralValue [KeyedElement (Some (KeyField "client"%go)) (ElementExpression (go.PointerType clientv3.Client) "$v0"); KeyedElement (Some (KeyField "ctx"%go)) (ElementExpression context.Context "$v1")])) in
+      let: "$v1" := ((FuncResolve go.make1 [go.MapType go.string (go.PointerType clientv3.GetResponse)] #()) #()) in
+      CompositeLiteral stmSerializable (LiteralValue [KeyedElement (Some (KeyField "stm"%go)) (ElementExpression stm "$v0"); KeyedElement (Some (KeyField "prefetch"%go)) (ElementExpression (go.MapType go.string (go.PointerType clientv3.GetResponse)) "$v1")]))) in
       do:  ("s" <-[go.PointerType stmSerializable] "$r0");;;
       let: "$r0" := (λ: <>,
         exception_do (return: (let: "$a0" := ((MethodResolve readSet "cmps"%go (![readSet] (StructFieldRef stm "rset"%go (StructFieldRef stmSerializable "stm"%go (![go.PointerType stmSerializable] "s"))))) #()) in
@@ -1329,7 +1361,11 @@ Definition mkSTMⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val
       (if: "$sw" =⟨Isolation⟩ Serializable
       then
         let: "s" := (GoAlloc (go.PointerType stmSerializable) (GoZeroVal (go.PointerType stmSerializable) #())) in
-        let: "$r0" := (GoAlloc stmSerializable (CompositeLiteral stmSerializable (LiteralValue [KeyedElement (Some (KeyField "stm"%go)) (ElementExpression stm (CompositeLiteral stm (LiteralValue [KeyedElement (Some (KeyField "client"%go)) (ElementExpression (go.PointerType clientv3.Client) (![go.PointerType clientv3.Client] "c")); KeyedElement (Some (KeyField "ctx"%go)) (ElementExpression context.Context (![context.Context] (StructFieldRef stmOptions "ctx"%go (![go.PointerType stmOptions] "opts"))))]))); KeyedElement (Some (KeyField "prefetch"%go)) (ElementExpression (go.MapType go.string (go.PointerType clientv3.GetResponse)) ((FuncResolve go.make1 [go.MapType go.string (go.PointerType clientv3.GetResponse)] #()) #()))]))) in
+        let: "$r0" := (GoAlloc stmSerializable (let: "$v0" := (let: "$v0" := (![go.PointerType clientv3.Client] "c") in
+        let: "$v1" := (![context.Context] (StructFieldRef stmOptions "ctx"%go (![go.PointerType stmOptions] "opts"))) in
+        CompositeLiteral stm (LiteralValue [KeyedElement (Some (KeyField "client"%go)) (ElementExpression (go.PointerType clientv3.Client) "$v0"); KeyedElement (Some (KeyField "ctx"%go)) (ElementExpression context.Context "$v1")])) in
+        let: "$v1" := ((FuncResolve go.make1 [go.MapType go.string (go.PointerType clientv3.GetResponse)] #()) #()) in
+        CompositeLiteral stmSerializable (LiteralValue [KeyedElement (Some (KeyField "stm"%go)) (ElementExpression stm "$v0"); KeyedElement (Some (KeyField "prefetch"%go)) (ElementExpression (go.MapType go.string (go.PointerType clientv3.GetResponse)) "$v1")]))) in
         do:  ("s" <-[go.PointerType stmSerializable] "$r0");;;
         let: "$r0" := (λ: <>,
           exception_do (return: ((MethodResolve readSet "cmps"%go (![readSet] (StructFieldRef stm "rset"%go (StructFieldRef stmSerializable "stm"%go (![go.PointerType stmSerializable] "s"))))) #()))
@@ -1340,7 +1376,11 @@ Definition mkSTMⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val
         (if: "$sw" =⟨Isolation⟩ RepeatableReads
         then
           let: "s" := (GoAlloc (go.PointerType stm) (GoZeroVal (go.PointerType stm) #())) in
-          let: "$r0" := (GoAlloc stm (CompositeLiteral stm (LiteralValue [KeyedElement (Some (KeyField "client"%go)) (ElementExpression (go.PointerType clientv3.Client) (![go.PointerType clientv3.Client] "c")); KeyedElement (Some (KeyField "ctx"%go)) (ElementExpression context.Context (![context.Context] (StructFieldRef stmOptions "ctx"%go (![go.PointerType stmOptions] "opts")))); KeyedElement (Some (KeyField "getOpts"%go)) (ElementExpression (go.SliceType clientv3.OpOption) (CompositeLiteral (go.SliceType clientv3.OpOption) (LiteralValue [KeyedElement None (ElementExpression clientv3.OpOption ((FuncResolve clientv3.WithSerializable [] #()) #()))])))]))) in
+          let: "$r0" := (GoAlloc stm (let: "$v0" := (![go.PointerType clientv3.Client] "c") in
+          let: "$v1" := (![context.Context] (StructFieldRef stmOptions "ctx"%go (![go.PointerType stmOptions] "opts"))) in
+          let: "$v2" := (let: "$v0" := ((FuncResolve clientv3.WithSerializable [] #()) #()) in
+          CompositeLiteral (go.SliceType clientv3.OpOption) (LiteralValue [KeyedElement None (ElementExpression clientv3.OpOption "$v0")])) in
+          CompositeLiteral stm (LiteralValue [KeyedElement (Some (KeyField "client"%go)) (ElementExpression (go.PointerType clientv3.Client) "$v0"); KeyedElement (Some (KeyField "ctx"%go)) (ElementExpression context.Context "$v1"); KeyedElement (Some (KeyField "getOpts"%go)) (ElementExpression (go.SliceType clientv3.OpOption) "$v2")]))) in
           do:  ("s" <-[go.PointerType stm] "$r0");;;
           let: "$r0" := (λ: <>,
             exception_do (return: ((MethodResolve readSet "cmps"%go (![readSet] (StructFieldRef stm "rset"%go (![go.PointerType stm] "s")))) #()))
@@ -1351,7 +1391,11 @@ Definition mkSTMⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val
           (if: "$sw" =⟨Isolation⟩ ReadCommitted
           then
             let: "s" := (GoAlloc (go.PointerType stm) (GoZeroVal (go.PointerType stm) #())) in
-            let: "$r0" := (GoAlloc stm (CompositeLiteral stm (LiteralValue [KeyedElement (Some (KeyField "client"%go)) (ElementExpression (go.PointerType clientv3.Client) (![go.PointerType clientv3.Client] "c")); KeyedElement (Some (KeyField "ctx"%go)) (ElementExpression context.Context (![context.Context] (StructFieldRef stmOptions "ctx"%go (![go.PointerType stmOptions] "opts")))); KeyedElement (Some (KeyField "getOpts"%go)) (ElementExpression (go.SliceType clientv3.OpOption) (CompositeLiteral (go.SliceType clientv3.OpOption) (LiteralValue [KeyedElement None (ElementExpression clientv3.OpOption ((FuncResolve clientv3.WithSerializable [] #()) #()))])))]))) in
+            let: "$r0" := (GoAlloc stm (let: "$v0" := (![go.PointerType clientv3.Client] "c") in
+            let: "$v1" := (![context.Context] (StructFieldRef stmOptions "ctx"%go (![go.PointerType stmOptions] "opts"))) in
+            let: "$v2" := (let: "$v0" := ((FuncResolve clientv3.WithSerializable [] #()) #()) in
+            CompositeLiteral (go.SliceType clientv3.OpOption) (LiteralValue [KeyedElement None (ElementExpression clientv3.OpOption "$v0")])) in
+            CompositeLiteral stm (LiteralValue [KeyedElement (Some (KeyField "client"%go)) (ElementExpression (go.PointerType clientv3.Client) "$v0"); KeyedElement (Some (KeyField "ctx"%go)) (ElementExpression context.Context "$v1"); KeyedElement (Some (KeyField "getOpts"%go)) (ElementExpression (go.SliceType clientv3.OpOption) "$v2")]))) in
             do:  ("s" <-[go.PointerType stm] "$r0");;;
             let: "$r0" := (λ: <>,
               exception_do (return: (Convert go.untyped_nil (go.SliceType clientv3.Cmp) UntypedNil))
@@ -1390,7 +1434,9 @@ Definition runSTMⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : va
             (FuncResolve go.panic [] #()) "$a0")
           else do:  #());;;
           do:  (let: "$chan" := (![go.ChannelType go.sendrecv stmResponse] "outc") in
-          let: "$v" := (CompositeLiteral stmResponse (LiteralValue [KeyedElement None (ElementExpression go.untyped_nil UntypedNil); KeyedElement None (ElementExpression go.error (![go.error] (StructFieldRef stmError "err"%go "e")))])) in
+          let: "$v" := (let: "$v0" := UntypedNil in
+          let: "$v1" := (![go.error] (StructFieldRef stmError "err"%go "e")) in
+          CompositeLiteral stmResponse (LiteralValue [KeyedElement None (ElementExpression go.untyped_nil "$v0"); KeyedElement None (ElementExpression go.error "$v1")])) in
           chan.send stmResponse "$chan" "$v")
         else do:  #()));;;
         return: #())
@@ -1583,10 +1629,12 @@ Definition stm__Putⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : 
     let: "opts" := (GoAlloc (go.SliceType clientv3.OpOption) "opts") in
     let: "val" := (GoAlloc go.string "val") in
     let: "key" := (GoAlloc go.string "key") in
-    let: "$r0" := (CompositeLiteral stmPut (LiteralValue [KeyedElement None (ElementExpression go.string (![go.string] "val")); KeyedElement None (ElementExpression clientv3.Op (let: "$a0" := (![go.string] "key") in
-     let: "$a1" := (![go.string] "val") in
-     let: "$a2" := (![go.SliceType clientv3.OpOption] "opts") in
-     (FuncResolve clientv3.OpPut [] #()) "$a0" "$a1" "$a2"))])) in
+    let: "$r0" := (let: "$v0" := (![go.string] "val") in
+    let: "$v1" := (let: "$a0" := (![go.string] "key") in
+    let: "$a1" := (![go.string] "val") in
+    let: "$a2" := (![go.SliceType clientv3.OpOption] "opts") in
+    (FuncResolve clientv3.OpPut [] #()) "$a0" "$a1" "$a2") in
+    CompositeLiteral stmPut (LiteralValue [KeyedElement None (ElementExpression go.string "$v0"); KeyedElement None (ElementExpression clientv3.Op "$v1")])) in
     do:  ((IndexRef writeSet (![writeSet] (StructFieldRef stm "wset"%go (![go.PointerType stm] "s")), ![go.string] "key")) <-[stmPut] "$r0");;;
     return: #()).
 
@@ -1595,9 +1643,11 @@ Definition stm__Delⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : 
   λ: "s" "key",
     exception_do (let: "s" := (GoAlloc (go.PointerType stm) "s") in
     let: "key" := (GoAlloc go.string "key") in
-    let: "$r0" := (CompositeLiteral stmPut (LiteralValue [KeyedElement None (ElementExpression go.string #""%go); KeyedElement None (ElementExpression clientv3.Op (let: "$a0" := (![go.string] "key") in
-     let: "$a1" := #slice.nil in
-     (FuncResolve clientv3.OpDelete [] #()) "$a0" "$a1"))])) in
+    let: "$r0" := (let: "$v0" := #""%go in
+    let: "$v1" := (let: "$a0" := (![go.string] "key") in
+    let: "$a1" := #slice.nil in
+    (FuncResolve clientv3.OpDelete [] #()) "$a0" "$a1") in
+    CompositeLiteral stmPut (LiteralValue [KeyedElement None (ElementExpression go.string "$v0"); KeyedElement None (ElementExpression clientv3.Op "$v1")])) in
     do:  ((IndexRef writeSet (![writeSet] (StructFieldRef stm "wset"%go (![go.PointerType stm] "s")), ![go.string] "key")) <-[stmPut] "$r0");;;
     return: #()).
 
@@ -1633,7 +1683,8 @@ Definition stm__commitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
     do:  ("err" <-[go.error] "$r1");;;
     (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
     then
-      do:  (let: "$a0" := (Convert stmError (go.InterfaceType []) (CompositeLiteral stmError (LiteralValue [KeyedElement None (ElementExpression go.error (![go.error] "err"))]))) in
+      do:  (let: "$a0" := (Convert stmError (go.InterfaceType []) (let: "$v0" := (![go.error] "err") in
+      CompositeLiteral stmError (LiteralValue [KeyedElement None (ElementExpression go.error "$v0")]))) in
       (FuncResolve go.panic [] #()) "$a0")
     else do:  #());;;
     (if: ![go.bool] (StructFieldRef clientv3.TxnResponse "Succeeded"%go (![go.PointerType clientv3.TxnResponse] "txnresp"))
@@ -1685,7 +1736,8 @@ Definition stm__fetchⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
     do:  ("err" <-[go.error] "$r1");;;
     (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
     then
-      do:  (let: "$a0" := (Convert stmError (go.InterfaceType []) (CompositeLiteral stmError (LiteralValue [KeyedElement None (ElementExpression go.error (![go.error] "err"))]))) in
+      do:  (let: "$a0" := (Convert stmError (go.InterfaceType []) (let: "$v0" := (![go.error] "err") in
+      CompositeLiteral stmError (LiteralValue [KeyedElement None (ElementExpression go.error "$v0")]))) in
       (FuncResolve go.panic [] #()) "$a0")
     else do:  #());;;
     do:  (let: "$a0" := (![go.SliceType go.string] "keys") in
@@ -1749,8 +1801,10 @@ Definition stmSerializable__Getⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
     do:  ("resp" <-[go.PointerType clientv3.GetResponse] "$r0");;;
     (if: ![go.bool] "firstRead"
     then
-      let: "$r0" := (CompositeLiteral (go.SliceType clientv3.OpOption) (LiteralValue [KeyedElement None (ElementExpression clientv3.OpOption (let: "$a0" := (![go.int64] (StructFieldRef etcdserverpb.ResponseHeader "Revision"%go (![go.PointerType etcdserverpb.ResponseHeader] (StructFieldRef clientv3.GetResponse "Header"%go (![go.PointerType clientv3.GetResponse] "resp"))))) in
-       (FuncResolve clientv3.WithRev [] #()) "$a0")); KeyedElement None (ElementExpression clientv3.OpOption ((FuncResolve clientv3.WithSerializable [] #()) #()))])) in
+      let: "$r0" := (let: "$v0" := (let: "$a0" := (![go.int64] (StructFieldRef etcdserverpb.ResponseHeader "Revision"%go (![go.PointerType etcdserverpb.ResponseHeader] (StructFieldRef clientv3.GetResponse "Header"%go (![go.PointerType clientv3.GetResponse] "resp"))))) in
+      (FuncResolve clientv3.WithRev [] #()) "$a0") in
+      let: "$v1" := ((FuncResolve clientv3.WithSerializable [] #()) #()) in
+      CompositeLiteral (go.SliceType clientv3.OpOption) (LiteralValue [KeyedElement None (ElementExpression clientv3.OpOption "$v0"); KeyedElement None (ElementExpression clientv3.OpOption "$v1")])) in
       do:  ((StructFieldRef stm "getOpts"%go (StructFieldRef stmSerializable "stm"%go (![go.PointerType stmSerializable] "s"))) <-[go.SliceType clientv3.OpOption] "$r0")
     else do:  #());;;
     return: (let: "$a0" := (![go.PointerType clientv3.GetResponse] "resp") in
@@ -1824,7 +1878,8 @@ Definition stmSerializable__commitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGl
     do:  ("err" <-[go.error] "$r1");;;
     (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
     then
-      do:  (let: "$a0" := (Convert stmError (go.InterfaceType []) (CompositeLiteral stmError (LiteralValue [KeyedElement None (ElementExpression go.error (![go.error] "err"))]))) in
+      do:  (let: "$a0" := (Convert stmError (go.InterfaceType []) (let: "$v0" := (![go.error] "err") in
+      CompositeLiteral stmError (LiteralValue [KeyedElement None (ElementExpression go.error "$v0")]))) in
       (FuncResolve go.panic [] #()) "$a0")
     else do:  #());;;
     (if: ![go.bool] (StructFieldRef clientv3.TxnResponse "Succeeded"%go (![go.PointerType clientv3.TxnResponse] "txnresp"))

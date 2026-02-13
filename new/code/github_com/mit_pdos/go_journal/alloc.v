@@ -25,7 +25,10 @@ Definition MkAllocⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : v
   λ: "bitmap",
     exception_do (let: "bitmap" := (GoAlloc (go.SliceType go.byte) "bitmap") in
     let: "a" := (GoAlloc (go.PointerType Alloc) (GoZeroVal (go.PointerType Alloc) #())) in
-    let: "$r0" := (GoAlloc Alloc (CompositeLiteral Alloc (LiteralValue [KeyedElement (Some (KeyField "mu"%go)) (ElementExpression (go.PointerType sync.Mutex) (GoAlloc sync.Mutex (GoZeroVal sync.Mutex #()))); KeyedElement (Some (KeyField "next"%go)) (ElementExpression go.uint64 #(W64 0)); KeyedElement (Some (KeyField "bitmap"%go)) (ElementExpression (go.SliceType go.byte) (![go.SliceType go.byte] "bitmap"))]))) in
+    let: "$r0" := (GoAlloc Alloc (let: "$v0" := (GoAlloc sync.Mutex (GoZeroVal sync.Mutex #())) in
+    let: "$v1" := #(W64 0) in
+    let: "$v2" := (![go.SliceType go.byte] "bitmap") in
+    CompositeLiteral Alloc (LiteralValue [KeyedElement (Some (KeyField "mu"%go)) (ElementExpression (go.PointerType sync.Mutex) "$v0"); KeyedElement (Some (KeyField "next"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "bitmap"%go)) (ElementExpression (go.SliceType go.byte) "$v2")]))) in
     do:  ("a" <-[go.PointerType Alloc] "$r0");;;
     return: (![go.PointerType Alloc] "a")).
 

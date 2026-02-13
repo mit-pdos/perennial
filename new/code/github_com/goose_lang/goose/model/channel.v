@@ -59,7 +59,11 @@ Definition NewChannelⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
       let: "$r0" := buffered in
       do:  ("local_state" <-[offerState] "$r0")
     else do:  #());;;
-    return: (GoAlloc (Channel T) (CompositeLiteral (Channel T) (LiteralValue [KeyedElement (Some (KeyField "cap"%go)) (ElementExpression go.int (![go.int] "cap")); KeyedElement (Some (KeyField "mu"%go)) (ElementExpression (go.PointerType primitive.Mutex) (GoAlloc primitive.Mutex (GoZeroVal primitive.Mutex #()))); KeyedElement (Some (KeyField "buffer"%go)) (ElementExpression (go.SliceType T) ((FuncResolve go.make2 [go.SliceType T] #()) #(W64 0))); KeyedElement (Some (KeyField "state"%go)) (ElementExpression offerState (![offerState] "local_state"))])))).
+    return: (GoAlloc (Channel T) (let: "$v0" := (![go.int] "cap") in
+     let: "$v1" := (GoAlloc primitive.Mutex (GoZeroVal primitive.Mutex #())) in
+     let: "$v2" := ((FuncResolve go.make2 [go.SliceType T] #()) #(W64 0)) in
+     let: "$v3" := (![offerState] "local_state") in
+     CompositeLiteral (Channel T) (LiteralValue [KeyedElement (Some (KeyField "cap"%go)) (ElementExpression go.int "$v0"); KeyedElement (Some (KeyField "mu"%go)) (ElementExpression (go.PointerType primitive.Mutex) "$v1"); KeyedElement (Some (KeyField "buffer"%go)) (ElementExpression (go.SliceType T) "$v2"); KeyedElement (Some (KeyField "state"%go)) (ElementExpression offerState "$v3")])))).
 
 (* Non-Blocking send operation for select statements. Blocking send and blocking select
    statements simply call this in a for loop until it returns true.

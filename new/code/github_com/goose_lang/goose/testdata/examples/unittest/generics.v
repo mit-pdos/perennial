@@ -87,12 +87,14 @@ Definition Box__Getⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T
 Definition makeGenericBoxⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) : val :=
   λ: "value",
     exception_do (let: "value" := (GoAlloc T "value") in
-    return: (CompositeLiteral (Box T) (LiteralValue [KeyedElement (Some (KeyField "Value"%go)) (ElementExpression T (![T] "value"))]))).
+    return: (let: "$v0" := (![T] "value") in
+     CompositeLiteral (Box T) (LiteralValue [KeyedElement (Some (KeyField "Value"%go)) (ElementExpression T "$v0")]))).
 
 (* go: generics.go:29:6 *)
 Definition makeBoxⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
-    exception_do (return: (CompositeLiteral (Box go.uint64) (LiteralValue [KeyedElement (Some (KeyField "Value"%go)) (ElementExpression go.uint64 #(W64 42))]))).
+    exception_do (return: (let: "$v0" := #(W64 42) in
+     CompositeLiteral (Box go.uint64) (LiteralValue [KeyedElement (Some (KeyField "Value"%go)) (ElementExpression go.uint64 "$v0")]))).
 
 (* go: generics.go:34:6 *)
 Definition useBoxGetⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -107,7 +109,13 @@ Definition useBoxGetⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
 Definition useContainerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "container" := (GoAlloc (Container go.uint64) (GoZeroVal (Container go.uint64) #())) in
-    let: "$r0" := (CompositeLiteral (Container go.uint64) (LiteralValue [KeyedElement (Some (KeyField "X"%go)) (ElementExpression go.uint64 #(W64 1)); KeyedElement (Some (KeyField "Y"%go)) (ElementExpression (go.MapType go.int go.uint64) (CompositeLiteral (go.MapType go.int go.uint64) (LiteralValue [KeyedElement (Some (KeyExpression go.int #(W64 1))) (ElementExpression go.uint64 #(W64 2))]))); KeyedElement (Some (KeyField "Z"%go)) (ElementExpression (go.PointerType go.uint64) (GoAlloc go.uint64 (GoZeroVal go.uint64 #()))); KeyedElement (Some (KeyField "W"%go)) (ElementExpression go.uint64 #(W64 3))])) in
+    let: "$r0" := (let: "$v0" := #(W64 1) in
+    let: "$v1" := (let: "$k0" := #(W64 1) in
+    let: "$v1" := #(W64 2) in
+    CompositeLiteral (go.MapType go.int go.uint64) (LiteralValue [KeyedElement (Some (KeyExpression go.int "$k0")) (ElementExpression go.uint64 "$v1")])) in
+    let: "$v2" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+    let: "$v3" := #(W64 3) in
+    CompositeLiteral (Container go.uint64) (LiteralValue [KeyedElement (Some (KeyField "X"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Y"%go)) (ElementExpression (go.MapType go.int go.uint64) "$v1"); KeyedElement (Some (KeyField "Z"%go)) (ElementExpression (go.PointerType go.uint64) "$v2"); KeyedElement (Some (KeyField "W"%go)) (ElementExpression go.uint64 "$v3")])) in
     do:  ("container" <-[Container go.uint64] "$r0");;;
     let: "$r0" := #(W64 2) in
     do:  ((StructFieldRef (Container go.uint64) "X"%go "container") <-[go.uint64] "$r0");;;
@@ -123,7 +131,9 @@ Definition useContainerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
 Definition useMultiParamⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "mp" := (GoAlloc (MultiParam go.uint64 go.bool) (GoZeroVal (MultiParam go.uint64 go.bool) #())) in
-    let: "$r0" := (CompositeLiteral (MultiParam go.uint64 go.bool) (LiteralValue [KeyedElement (Some (KeyField "Y"%go)) (ElementExpression go.bool #true); KeyedElement (Some (KeyField "X"%go)) (ElementExpression go.uint64 #(W64 1))])) in
+    let: "$r0" := (let: "$v0" := #true in
+    let: "$v1" := #(W64 1) in
+    CompositeLiteral (MultiParam go.uint64 go.bool) (LiteralValue [KeyedElement (Some (KeyField "Y"%go)) (ElementExpression go.bool "$v0"); KeyedElement (Some (KeyField "X"%go)) (ElementExpression go.uint64 "$v1")])) in
     do:  ("mp" <-[MultiParam go.uint64 go.bool] "$r0");;;
     let: "$r0" := #(W64 2) in
     do:  ((StructFieldRef (MultiParam go.uint64 go.bool) "X"%go "mp") <-[go.uint64] "$r0");;;
@@ -147,7 +157,8 @@ Definition multiParamFuncⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
   λ: "x" "b",
     exception_do (let: "b" := (GoAlloc B "b") in
     let: "x" := (GoAlloc A "x") in
-    return: (CompositeLiteral (go.SliceType B) (LiteralValue [KeyedElement None (ElementExpression B (![B] "b"))]))).
+    return: (let: "$v0" := (![B] "b") in
+     CompositeLiteral (go.SliceType B) (LiteralValue [KeyedElement None (ElementExpression B "$v0")]))).
 
 (* go: generics.go:90:6 *)
 Definition useMultiParamFuncⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=

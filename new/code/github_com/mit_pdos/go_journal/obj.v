@@ -27,8 +27,11 @@ Definition MkLogⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val
   λ: "d",
     exception_do (let: "d" := (GoAlloc disk.Disk "d") in
     let: "log" := (GoAlloc (go.PointerType Log) (GoZeroVal (go.PointerType Log) #())) in
-    let: "$r0" := (GoAlloc Log (CompositeLiteral Log (LiteralValue [KeyedElement (Some (KeyField "mu"%go)) (ElementExpression (go.PointerType sync.Mutex) (GoAlloc sync.Mutex (GoZeroVal sync.Mutex #()))); KeyedElement (Some (KeyField "log"%go)) (ElementExpression (go.PointerType wal.Walog) (let: "$a0" := (![disk.Disk] "d") in
-     (FuncResolve wal.MkLog [] #()) "$a0")); KeyedElement (Some (KeyField "pos"%go)) (ElementExpression wal.LogPosition #(W64 0))]))) in
+    let: "$r0" := (GoAlloc Log (let: "$v0" := (GoAlloc sync.Mutex (GoZeroVal sync.Mutex #())) in
+    let: "$v1" := (let: "$a0" := (![disk.Disk] "d") in
+    (FuncResolve wal.MkLog [] #()) "$a0") in
+    let: "$v2" := #(W64 0) in
+    CompositeLiteral Log (LiteralValue [KeyedElement (Some (KeyField "mu"%go)) (ElementExpression (go.PointerType sync.Mutex) "$v0"); KeyedElement (Some (KeyField "log"%go)) (ElementExpression (go.PointerType wal.Walog) "$v1"); KeyedElement (Some (KeyField "pos"%go)) (ElementExpression wal.LogPosition "$v2")]))) in
     do:  ("log" <-[go.PointerType Log] "$r0");;;
     return: (![go.PointerType Log] "log")).
 

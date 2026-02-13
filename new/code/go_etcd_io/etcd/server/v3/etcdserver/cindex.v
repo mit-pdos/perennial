@@ -32,7 +32,8 @@ Definition UpdateConsistentIndexForce {ext : ffi_syntax} {go_gctx : GoGlobalCont
 Definition NewConsistentIndexⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "be",
     exception_do (let: "be" := (GoAlloc Backend "be") in
-    return: (Convert (go.PointerType consistentIndex) ConsistentIndexer (GoAlloc consistentIndex (CompositeLiteral consistentIndex (LiteralValue [KeyedElement (Some (KeyField "be"%go)) (ElementExpression Backend (![Backend] "be"))]))))).
+    return: (Convert (go.PointerType consistentIndex) ConsistentIndexer (GoAlloc consistentIndex (let: "$v0" := (![Backend] "be") in
+     CompositeLiteral consistentIndex (LiteralValue [KeyedElement (Some (KeyField "be"%go)) (ElementExpression Backend "$v0")]))))).
 
 (* go: cindex.go:90:28 *)
 Definition consistentIndex__ConsistentIndexⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -167,7 +168,8 @@ Definition consistentIndex__SetConsistentApplyingIndexⁱᵐᵖˡ {ext : ffi_syn
 Definition NewFakeConsistentIndexⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "index",
     exception_do (let: "index" := (GoAlloc go.uint64 "index") in
-    return: (Convert (go.PointerType fakeConsistentIndex) ConsistentIndexer (GoAlloc fakeConsistentIndex (CompositeLiteral fakeConsistentIndex (LiteralValue [KeyedElement (Some (KeyField "index"%go)) (ElementExpression go.uint64 (![go.uint64] "index"))]))))).
+    return: (Convert (go.PointerType fakeConsistentIndex) ConsistentIndexer (GoAlloc fakeConsistentIndex (let: "$v0" := (![go.uint64] "index") in
+     CompositeLiteral fakeConsistentIndex (LiteralValue [KeyedElement (Some (KeyField "index"%go)) (ElementExpression go.uint64 "$v0")]))))).
 
 (* go: cindex.go:149:31 *)
 Definition fakeConsistentIndex__ConsistentIndexⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=

@@ -223,7 +223,10 @@ Definition MajorityConfig__Describeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoG
       do:  ("idx" <-[Index'] "$r0");;;
       do:  ("ok" <-[go.bool] "$r1");;;
       let: "$r0" := (let: "$a0" := (![go.SliceType slices.Tup] "info") in
-      let: "$a1" := ((let: "$sl0" := (CompositeLiteral slices.Tup (LiteralValue [KeyedElement (Some (KeyField "ID"%go)) (ElementExpression go.uint64 (![go.uint64] "id")); KeyedElement (Some (KeyField "Idx"%go)) (ElementExpression go.uint64 (![Index'] "idx")); KeyedElement (Some (KeyField "Ok"%go)) (ElementExpression go.bool (![go.bool] "ok"))])) in
+      let: "$a1" := ((let: "$sl0" := (let: "$v0" := (![go.uint64] "id") in
+      let: "$v1" := (![Index'] "idx") in
+      let: "$v2" := (![go.bool] "ok") in
+      CompositeLiteral slices.Tup (LiteralValue [KeyedElement (Some (KeyField "ID"%go)) (ElementExpression go.uint64 "$v0"); KeyedElement (Some (KeyField "Idx"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "Ok"%go)) (ElementExpression go.bool "$v2")])) in
       CompositeLiteral (go.SliceType slices.Tup) (LiteralValue [KeyedElement None (ElementExpression slices.Tup "$sl0")]))) in
       (FuncResolve go.append [go.SliceType slices.Tup] #()) "$a0" "$a1") in
       do:  ("info" <-[go.SliceType slices.Tup] "$r0")));;;
@@ -482,7 +485,11 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
       do:  (strings.initialize' #());;;
       do:  (math.initialize' #());;;
       do:  (fmt.initialize' #());;;
-      let: "$r0" := (CompositeLiteral (go.ArrayType 4 go.uint8) (LiteralValue [KeyedElement None (ElementExpression go.uint8 #(W8 0)); KeyedElement None (ElementExpression go.uint8 #(W8 11)); KeyedElement None (ElementExpression go.uint8 #(W8 19)); KeyedElement None (ElementExpression go.uint8 #(W8 26))])) in
+      let: "$r0" := (let: "$v0" := #(W8 0) in
+      let: "$v1" := #(W8 11) in
+      let: "$v2" := #(W8 19) in
+      let: "$v3" := #(W8 26) in
+      CompositeLiteral (go.ArrayType 4 go.uint8) (LiteralValue [KeyedElement None (ElementExpression go.uint8 "$v0"); KeyedElement None (ElementExpression go.uint8 "$v1"); KeyedElement None (ElementExpression go.uint8 "$v2"); KeyedElement None (ElementExpression go.uint8 "$v3")])) in
       do:  ((GlobalVarAddr _VoteResult_index #()) <-[go.ArrayType 4 go.uint8] "$r0"))
       ).
 

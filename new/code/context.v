@@ -294,7 +294,8 @@ Definition AfterFuncⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
     let: "f" := (GoAlloc (go.FunctionType (go.Signature [] false [])) "f") in
     let: "ctx" := (GoAlloc Context "ctx") in
     let: "a" := (GoAlloc (go.PointerType afterFuncCtx) (GoZeroVal (go.PointerType afterFuncCtx) #())) in
-    let: "$r0" := (GoAlloc afterFuncCtx (CompositeLiteral afterFuncCtx (LiteralValue [KeyedElement (Some (KeyField "f"%go)) (ElementExpression (go.FunctionType (go.Signature [] false [])) (![go.FunctionType (go.Signature [] false [])] "f"))]))) in
+    let: "$r0" := (GoAlloc afterFuncCtx (let: "$v0" := (![go.FunctionType (go.Signature [] false [])] "f") in
+    CompositeLiteral afterFuncCtx (LiteralValue [KeyedElement (Some (KeyField "f"%go)) (ElementExpression (go.FunctionType (go.Signature [] false [])) "$v0")]))) in
     do:  ("a" <-[go.PointerType afterFuncCtx] "$r0");;;
     do:  (let: "$a0" := (![Context] "ctx") in
     let: "$a1" := (Convert (go.PointerType afterFuncCtx) canceler (![go.PointerType afterFuncCtx] "a")) in
@@ -652,7 +653,9 @@ Definition cancelCtx__propagateCancelⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : G
         ) in
       (MethodResolve afterFuncer "AfterFunc"%go (![afterFuncer] "a")) "$a0") in
       do:  ("stop" <-[go.FunctionType (go.Signature [] false [go.bool])] "$r0");;;
-      let: "$r0" := (Convert stopCtx Context (CompositeLiteral stopCtx (LiteralValue [KeyedElement (Some (KeyField "Context"%go)) (ElementExpression Context (![Context] "parent")); KeyedElement (Some (KeyField "stop"%go)) (ElementExpression (go.FunctionType (go.Signature [] false [go.bool])) (![go.FunctionType (go.Signature [] false [go.bool])] "stop"))]))) in
+      let: "$r0" := (Convert stopCtx Context (let: "$v0" := (![Context] "parent") in
+      let: "$v1" := (![go.FunctionType (go.Signature [] false [go.bool])] "stop") in
+      CompositeLiteral stopCtx (LiteralValue [KeyedElement (Some (KeyField "Context"%go)) (ElementExpression Context "$v0"); KeyedElement (Some (KeyField "stop"%go)) (ElementExpression (go.FunctionType (go.Signature [] false [go.bool])) "$v1")]))) in
       do:  ((StructFieldRef cancelCtx "Context"%go (![go.PointerType cancelCtx] "c")) <-[Context] "$r0");;;
       do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (StructFieldRef cancelCtx "mu"%go (![go.PointerType cancelCtx] "c"))) #());;;
       return: (#())
@@ -794,7 +797,8 @@ Definition WithoutCancelⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
       do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"cannot create context from nil parent"%go) in
       (FuncResolve go.panic [] #()) "$a0")
     else do:  #());;;
-    return: (Convert withoutCancelCtx Context (CompositeLiteral withoutCancelCtx (LiteralValue [KeyedElement None (ElementExpression Context (![Context] "parent"))])))).
+    return: (Convert withoutCancelCtx Context (let: "$v0" := (![Context] "parent") in
+     CompositeLiteral withoutCancelCtx (LiteralValue [KeyedElement None (ElementExpression Context "$v0")])))).
 
 (* go: context.go:596:25 *)
 Definition withoutCancelCtx__Deadlineⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -886,7 +890,8 @@ Definition WithDeadlineCauseⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
       return: ("$ret0", "$ret1")
     else do:  #()));;;
     let: "c" := (GoAlloc (go.PointerType timerCtx) (GoZeroVal (go.PointerType timerCtx) #())) in
-    let: "$r0" := (GoAlloc timerCtx (CompositeLiteral timerCtx (LiteralValue [KeyedElement (Some (KeyField "deadline"%go)) (ElementExpression time.Time (![time.Time] "d"))]))) in
+    let: "$r0" := (GoAlloc timerCtx (let: "$v0" := (![time.Time] "d") in
+    CompositeLiteral timerCtx (LiteralValue [KeyedElement (Some (KeyField "deadline"%go)) (ElementExpression time.Time "$v0")]))) in
     do:  ("c" <-[go.PointerType timerCtx] "$r0");;;
     do:  (let: "$a0" := (![Context] "parent") in
     let: "$a1" := (Convert (go.PointerType timerCtx) canceler (![go.PointerType timerCtx] "c")) in

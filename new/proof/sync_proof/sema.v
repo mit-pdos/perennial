@@ -51,8 +51,7 @@ Proof.
 
   (* try to acquire *)
   rewrite bool_decide_eq_false in Hnz.
-  wp_auto.
-  wp_bind (CmpXchg _ _ _).
+  wp_auto. wp_bind (CmpXchg _ _ _).
   iInv "Hsem" as ">Hi" "Hclose".
   iDestruct "Hi" as (?) "[Hs Hv]".
   destruct (decide (v = v0)).
@@ -120,14 +119,13 @@ Lemma wp_runtime_Semrelease (sema : loc) γ N (_u1 : bool) (_u2 : w64):
   WP @! sync.runtime_Semrelease #sema #_u1 #_u2 {{ Φ }}.
 Proof.
   wp_start as "#Hsem".
-  wp_bind (AtomicOp _ _ _).
+  wp_bind (AtomicAdd _ _).
   iInv "Hsem" as ">Hi".
   iDestruct "Hi" as (?) "[Hptsto Hs]".
   iMod "HΦ" as (?) "[Hs2 HΦ]".
   iCombine "Hs Hs2" gives %[_ ->].
   rewrite typed_pointsto_unseal /typed_pointsto_def /=.
-  rewrite !go.into_val_unfold /=.
-  iApply (wp_atomic_op with "[$]"); first done.
+  iApply (wp_atomic_add with "[$]"); first rewrite !go.into_val_unfold //.
   iNext. iIntros "Hptsto".
   iMod (ghost_var_update_2 with "[$] [$]") as "[? ?]".
   { apply Qp.half_half. }

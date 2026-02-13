@@ -321,7 +321,9 @@ Definition Errorⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val
     else
       let: "$r0" := ((MethodResolve go.error "Error"%go (![go.error] "verr")) #()) in
       do:  ("desc" <-[go.string] "$r0"));;;
-    return: (Convert EtcdError go.error (CompositeLiteral EtcdError (LiteralValue [KeyedElement (Some (KeyField "code"%go)) (ElementExpression codes.Code ((MethodResolve (go.PointerType status.Status) "Code"%go (![go.PointerType status.Status] "ev")) #())); KeyedElement (Some (KeyField "desc"%go)) (ElementExpression go.string (![go.string] "desc"))])))).
+    return: (Convert EtcdError go.error (let: "$v0" := ((MethodResolve (go.PointerType status.Status) "Code"%go (![go.PointerType status.Status] "ev")) #()) in
+     let: "$v1" := (![go.string] "desc") in
+     CompositeLiteral EtcdError (LiteralValue [KeyedElement (Some (KeyField "code"%go)) (ElementExpression codes.Code "$v0"); KeyedElement (Some (KeyField "desc"%go)) (ElementExpression go.string "$v1")])))).
 
 (* go: error.go:274:6 *)
 Definition ErrorDescⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -732,64 +734,178 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
       let: "$a1" := #"etcdserver: context deadline exceeded"%go in
       (FuncResolve status.Error [] #()) "$a0" "$a1") in
       do:  ((GlobalVarAddr ErrGRPCDeadlineExceeded #()) <-[go.error] "$r0");;;
-      let: "$r0" := (CompositeLiteral (go.MapType go.string go.error) (LiteralValue [KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCEmptyKey #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCEmptyKey #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCKeyNotFound #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCKeyNotFound #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCValueProvided #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCValueProvided #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCLeaseProvided #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCLeaseProvided #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCTooManyOps #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCTooManyOps #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCDuplicateKey #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCDuplicateKey #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCInvalidSortOption #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCInvalidSortOption #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCCompacted #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCCompacted #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCFutureRev #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCFutureRev #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCNoSpace #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCNoSpace #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCLeaseNotFound #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCLeaseNotFound #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCLeaseExist #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCLeaseExist #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCLeaseTTLTooLarge #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCLeaseTTLTooLarge #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCMemberExist #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCMemberExist #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCPeerURLExist #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCPeerURLExist #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCMemberNotEnoughStarted #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCMemberNotEnoughStarted #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCMemberBadURLs #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCMemberBadURLs #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCMemberNotFound #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCMemberNotFound #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCMemberNotLearner #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCMemberNotLearner #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCLearnerNotReady #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCLearnerNotReady #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCTooManyLearners #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCTooManyLearners #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCClusterIDMismatch #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCClusterIDMismatch #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCRequestTooLarge #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCRequestTooLarge #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCRequestTooManyRequests #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCRequestTooManyRequests #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCRootUserNotExist #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCRootUserNotExist #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCRootRoleNotExist #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCRootRoleNotExist #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCUserAlreadyExist #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCUserAlreadyExist #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCUserEmpty #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCUserEmpty #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCUserNotFound #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCUserNotFound #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCRoleAlreadyExist #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCRoleAlreadyExist #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCRoleNotFound #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCRoleNotFound #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCRoleEmpty #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCRoleEmpty #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCAuthFailed #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCAuthFailed #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCPermissionDenied #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCPermissionDenied #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCRoleNotGranted #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCRoleNotGranted #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCPermissionNotGranted #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCPermissionNotGranted #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCAuthNotEnabled #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCAuthNotEnabled #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCInvalidAuthToken #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCInvalidAuthToken #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCInvalidAuthMgmt #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCInvalidAuthMgmt #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCAuthOldRevision #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCAuthOldRevision #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCNoLeader #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCNoLeader #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCNotLeader #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCNotLeader #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCLeaderChanged #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCLeaderChanged #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCNotCapable #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCNotCapable #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCStopped #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCStopped #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCTimeout #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCTimeout #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCTimeoutDueToLeaderFail #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCTimeoutDueToLeaderFail #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCTimeoutDueToConnectionLost #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCTimeoutDueToConnectionLost #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCUnhealthy #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCUnhealthy #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCCorrupt #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCCorrupt #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCNotSupportedForLearner #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCNotSupportedForLearner #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCBadLeaderTransferee #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCBadLeaderTransferee #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCClusterVersionUnavailable #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCClusterVersionUnavailable #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCWrongDowngradeVersionFormat #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCWrongDowngradeVersionFormat #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCInvalidDowngradeTargetVersion #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCInvalidDowngradeTargetVersion #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCDowngradeInProcess #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCDowngradeInProcess #()))); KeyedElement (Some (KeyExpression go.string (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCNoInflightDowngrade #())) in
-       (FuncResolve ErrorDesc [] #()) "$a0"))) (ElementExpression go.error (![go.error] (GlobalVarAddr ErrGRPCNoInflightDowngrade #())))])) in
+      let: "$r0" := (let: "$k0" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCEmptyKey #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v1" := (![go.error] (GlobalVarAddr ErrGRPCEmptyKey #())) in
+      let: "$k2" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCKeyNotFound #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v3" := (![go.error] (GlobalVarAddr ErrGRPCKeyNotFound #())) in
+      let: "$k4" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCValueProvided #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v5" := (![go.error] (GlobalVarAddr ErrGRPCValueProvided #())) in
+      let: "$k6" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCLeaseProvided #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v7" := (![go.error] (GlobalVarAddr ErrGRPCLeaseProvided #())) in
+      let: "$k8" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCTooManyOps #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v9" := (![go.error] (GlobalVarAddr ErrGRPCTooManyOps #())) in
+      let: "$k10" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCDuplicateKey #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v11" := (![go.error] (GlobalVarAddr ErrGRPCDuplicateKey #())) in
+      let: "$k12" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCInvalidSortOption #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v13" := (![go.error] (GlobalVarAddr ErrGRPCInvalidSortOption #())) in
+      let: "$k14" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCCompacted #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v15" := (![go.error] (GlobalVarAddr ErrGRPCCompacted #())) in
+      let: "$k16" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCFutureRev #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v17" := (![go.error] (GlobalVarAddr ErrGRPCFutureRev #())) in
+      let: "$k18" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCNoSpace #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v19" := (![go.error] (GlobalVarAddr ErrGRPCNoSpace #())) in
+      let: "$k20" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCLeaseNotFound #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v21" := (![go.error] (GlobalVarAddr ErrGRPCLeaseNotFound #())) in
+      let: "$k22" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCLeaseExist #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v23" := (![go.error] (GlobalVarAddr ErrGRPCLeaseExist #())) in
+      let: "$k24" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCLeaseTTLTooLarge #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v25" := (![go.error] (GlobalVarAddr ErrGRPCLeaseTTLTooLarge #())) in
+      let: "$k26" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCMemberExist #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v27" := (![go.error] (GlobalVarAddr ErrGRPCMemberExist #())) in
+      let: "$k28" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCPeerURLExist #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v29" := (![go.error] (GlobalVarAddr ErrGRPCPeerURLExist #())) in
+      let: "$k30" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCMemberNotEnoughStarted #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v31" := (![go.error] (GlobalVarAddr ErrGRPCMemberNotEnoughStarted #())) in
+      let: "$k32" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCMemberBadURLs #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v33" := (![go.error] (GlobalVarAddr ErrGRPCMemberBadURLs #())) in
+      let: "$k34" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCMemberNotFound #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v35" := (![go.error] (GlobalVarAddr ErrGRPCMemberNotFound #())) in
+      let: "$k36" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCMemberNotLearner #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v37" := (![go.error] (GlobalVarAddr ErrGRPCMemberNotLearner #())) in
+      let: "$k38" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCLearnerNotReady #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v39" := (![go.error] (GlobalVarAddr ErrGRPCLearnerNotReady #())) in
+      let: "$k40" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCTooManyLearners #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v41" := (![go.error] (GlobalVarAddr ErrGRPCTooManyLearners #())) in
+      let: "$k42" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCClusterIDMismatch #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v43" := (![go.error] (GlobalVarAddr ErrGRPCClusterIDMismatch #())) in
+      let: "$k44" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCRequestTooLarge #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v45" := (![go.error] (GlobalVarAddr ErrGRPCRequestTooLarge #())) in
+      let: "$k46" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCRequestTooManyRequests #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v47" := (![go.error] (GlobalVarAddr ErrGRPCRequestTooManyRequests #())) in
+      let: "$k48" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCRootUserNotExist #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v49" := (![go.error] (GlobalVarAddr ErrGRPCRootUserNotExist #())) in
+      let: "$k50" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCRootRoleNotExist #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v51" := (![go.error] (GlobalVarAddr ErrGRPCRootRoleNotExist #())) in
+      let: "$k52" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCUserAlreadyExist #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v53" := (![go.error] (GlobalVarAddr ErrGRPCUserAlreadyExist #())) in
+      let: "$k54" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCUserEmpty #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v55" := (![go.error] (GlobalVarAddr ErrGRPCUserEmpty #())) in
+      let: "$k56" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCUserNotFound #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v57" := (![go.error] (GlobalVarAddr ErrGRPCUserNotFound #())) in
+      let: "$k58" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCRoleAlreadyExist #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v59" := (![go.error] (GlobalVarAddr ErrGRPCRoleAlreadyExist #())) in
+      let: "$k60" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCRoleNotFound #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v61" := (![go.error] (GlobalVarAddr ErrGRPCRoleNotFound #())) in
+      let: "$k62" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCRoleEmpty #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v63" := (![go.error] (GlobalVarAddr ErrGRPCRoleEmpty #())) in
+      let: "$k64" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCAuthFailed #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v65" := (![go.error] (GlobalVarAddr ErrGRPCAuthFailed #())) in
+      let: "$k66" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCPermissionDenied #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v67" := (![go.error] (GlobalVarAddr ErrGRPCPermissionDenied #())) in
+      let: "$k68" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCRoleNotGranted #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v69" := (![go.error] (GlobalVarAddr ErrGRPCRoleNotGranted #())) in
+      let: "$k70" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCPermissionNotGranted #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v71" := (![go.error] (GlobalVarAddr ErrGRPCPermissionNotGranted #())) in
+      let: "$k72" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCAuthNotEnabled #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v73" := (![go.error] (GlobalVarAddr ErrGRPCAuthNotEnabled #())) in
+      let: "$k74" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCInvalidAuthToken #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v75" := (![go.error] (GlobalVarAddr ErrGRPCInvalidAuthToken #())) in
+      let: "$k76" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCInvalidAuthMgmt #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v77" := (![go.error] (GlobalVarAddr ErrGRPCInvalidAuthMgmt #())) in
+      let: "$k78" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCAuthOldRevision #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v79" := (![go.error] (GlobalVarAddr ErrGRPCAuthOldRevision #())) in
+      let: "$k80" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCNoLeader #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v81" := (![go.error] (GlobalVarAddr ErrGRPCNoLeader #())) in
+      let: "$k82" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCNotLeader #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v83" := (![go.error] (GlobalVarAddr ErrGRPCNotLeader #())) in
+      let: "$k84" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCLeaderChanged #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v85" := (![go.error] (GlobalVarAddr ErrGRPCLeaderChanged #())) in
+      let: "$k86" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCNotCapable #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v87" := (![go.error] (GlobalVarAddr ErrGRPCNotCapable #())) in
+      let: "$k88" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCStopped #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v89" := (![go.error] (GlobalVarAddr ErrGRPCStopped #())) in
+      let: "$k90" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCTimeout #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v91" := (![go.error] (GlobalVarAddr ErrGRPCTimeout #())) in
+      let: "$k92" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCTimeoutDueToLeaderFail #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v93" := (![go.error] (GlobalVarAddr ErrGRPCTimeoutDueToLeaderFail #())) in
+      let: "$k94" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCTimeoutDueToConnectionLost #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v95" := (![go.error] (GlobalVarAddr ErrGRPCTimeoutDueToConnectionLost #())) in
+      let: "$k96" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCUnhealthy #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v97" := (![go.error] (GlobalVarAddr ErrGRPCUnhealthy #())) in
+      let: "$k98" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCCorrupt #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v99" := (![go.error] (GlobalVarAddr ErrGRPCCorrupt #())) in
+      let: "$k100" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCNotSupportedForLearner #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v101" := (![go.error] (GlobalVarAddr ErrGRPCNotSupportedForLearner #())) in
+      let: "$k102" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCBadLeaderTransferee #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v103" := (![go.error] (GlobalVarAddr ErrGRPCBadLeaderTransferee #())) in
+      let: "$k104" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCClusterVersionUnavailable #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v105" := (![go.error] (GlobalVarAddr ErrGRPCClusterVersionUnavailable #())) in
+      let: "$k106" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCWrongDowngradeVersionFormat #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v107" := (![go.error] (GlobalVarAddr ErrGRPCWrongDowngradeVersionFormat #())) in
+      let: "$k108" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCInvalidDowngradeTargetVersion #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v109" := (![go.error] (GlobalVarAddr ErrGRPCInvalidDowngradeTargetVersion #())) in
+      let: "$k110" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCDowngradeInProcess #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v111" := (![go.error] (GlobalVarAddr ErrGRPCDowngradeInProcess #())) in
+      let: "$k112" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCNoInflightDowngrade #())) in
+      (FuncResolve ErrorDesc [] #()) "$a0") in
+      let: "$v113" := (![go.error] (GlobalVarAddr ErrGRPCNoInflightDowngrade #())) in
+      CompositeLiteral (go.MapType go.string go.error) (LiteralValue [KeyedElement (Some (KeyExpression go.string "$k0")) (ElementExpression go.error "$v1"); KeyedElement (Some (KeyExpression go.string "$k2")) (ElementExpression go.error "$v3"); KeyedElement (Some (KeyExpression go.string "$k4")) (ElementExpression go.error "$v5"); KeyedElement (Some (KeyExpression go.string "$k6")) (ElementExpression go.error "$v7"); KeyedElement (Some (KeyExpression go.string "$k8")) (ElementExpression go.error "$v9"); KeyedElement (Some (KeyExpression go.string "$k10")) (ElementExpression go.error "$v11"); KeyedElement (Some (KeyExpression go.string "$k12")) (ElementExpression go.error "$v13"); KeyedElement (Some (KeyExpression go.string "$k14")) (ElementExpression go.error "$v15"); KeyedElement (Some (KeyExpression go.string "$k16")) (ElementExpression go.error "$v17"); KeyedElement (Some (KeyExpression go.string "$k18")) (ElementExpression go.error "$v19"); KeyedElement (Some (KeyExpression go.string "$k20")) (ElementExpression go.error "$v21"); KeyedElement (Some (KeyExpression go.string "$k22")) (ElementExpression go.error "$v23"); KeyedElement (Some (KeyExpression go.string "$k24")) (ElementExpression go.error "$v25"); KeyedElement (Some (KeyExpression go.string "$k26")) (ElementExpression go.error "$v27"); KeyedElement (Some (KeyExpression go.string "$k28")) (ElementExpression go.error "$v29"); KeyedElement (Some (KeyExpression go.string "$k30")) (ElementExpression go.error "$v31"); KeyedElement (Some (KeyExpression go.string "$k32")) (ElementExpression go.error "$v33"); KeyedElement (Some (KeyExpression go.string "$k34")) (ElementExpression go.error "$v35"); KeyedElement (Some (KeyExpression go.string "$k36")) (ElementExpression go.error "$v37"); KeyedElement (Some (KeyExpression go.string "$k38")) (ElementExpression go.error "$v39"); KeyedElement (Some (KeyExpression go.string "$k40")) (ElementExpression go.error "$v41"); KeyedElement (Some (KeyExpression go.string "$k42")) (ElementExpression go.error "$v43"); KeyedElement (Some (KeyExpression go.string "$k44")) (ElementExpression go.error "$v45"); KeyedElement (Some (KeyExpression go.string "$k46")) (ElementExpression go.error "$v47"); KeyedElement (Some (KeyExpression go.string "$k48")) (ElementExpression go.error "$v49"); KeyedElement (Some (KeyExpression go.string "$k50")) (ElementExpression go.error "$v51"); KeyedElement (Some (KeyExpression go.string "$k52")) (ElementExpression go.error "$v53"); KeyedElement (Some (KeyExpression go.string "$k54")) (ElementExpression go.error "$v55"); KeyedElement (Some (KeyExpression go.string "$k56")) (ElementExpression go.error "$v57"); KeyedElement (Some (KeyExpression go.string "$k58")) (ElementExpression go.error "$v59"); KeyedElement (Some (KeyExpression go.string "$k60")) (ElementExpression go.error "$v61"); KeyedElement (Some (KeyExpression go.string "$k62")) (ElementExpression go.error "$v63"); KeyedElement (Some (KeyExpression go.string "$k64")) (ElementExpression go.error "$v65"); KeyedElement (Some (KeyExpression go.string "$k66")) (ElementExpression go.error "$v67"); KeyedElement (Some (KeyExpression go.string "$k68")) (ElementExpression go.error "$v69"); KeyedElement (Some (KeyExpression go.string "$k70")) (ElementExpression go.error "$v71"); KeyedElement (Some (KeyExpression go.string "$k72")) (ElementExpression go.error "$v73"); KeyedElement (Some (KeyExpression go.string "$k74")) (ElementExpression go.error "$v75"); KeyedElement (Some (KeyExpression go.string "$k76")) (ElementExpression go.error "$v77"); KeyedElement (Some (KeyExpression go.string "$k78")) (ElementExpression go.error "$v79"); KeyedElement (Some (KeyExpression go.string "$k80")) (ElementExpression go.error "$v81"); KeyedElement (Some (KeyExpression go.string "$k82")) (ElementExpression go.error "$v83"); KeyedElement (Some (KeyExpression go.string "$k84")) (ElementExpression go.error "$v85"); KeyedElement (Some (KeyExpression go.string "$k86")) (ElementExpression go.error "$v87"); KeyedElement (Some (KeyExpression go.string "$k88")) (ElementExpression go.error "$v89"); KeyedElement (Some (KeyExpression go.string "$k90")) (ElementExpression go.error "$v91"); KeyedElement (Some (KeyExpression go.string "$k92")) (ElementExpression go.error "$v93"); KeyedElement (Some (KeyExpression go.string "$k94")) (ElementExpression go.error "$v95"); KeyedElement (Some (KeyExpression go.string "$k96")) (ElementExpression go.error "$v97"); KeyedElement (Some (KeyExpression go.string "$k98")) (ElementExpression go.error "$v99"); KeyedElement (Some (KeyExpression go.string "$k100")) (ElementExpression go.error "$v101"); KeyedElement (Some (KeyExpression go.string "$k102")) (ElementExpression go.error "$v103"); KeyedElement (Some (KeyExpression go.string "$k104")) (ElementExpression go.error "$v105"); KeyedElement (Some (KeyExpression go.string "$k106")) (ElementExpression go.error "$v107"); KeyedElement (Some (KeyExpression go.string "$k108")) (ElementExpression go.error "$v109"); KeyedElement (Some (KeyExpression go.string "$k110")) (ElementExpression go.error "$v111"); KeyedElement (Some (KeyExpression go.string "$k112")) (ElementExpression go.error "$v113")])) in
       do:  ((GlobalVarAddr errStringToError #()) <-[go.MapType go.string go.error] "$r0");;;
       let: "$r0" := (let: "$a0" := (![go.error] (GlobalVarAddr ErrGRPCEmptyKey #())) in
       (FuncResolve Error [] #()) "$a0") in

@@ -21,8 +21,6 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}
   {sem : go.ChanSemantics}.
 
-Collection W := sem_fn + pre_sem + sem.
-
 Global Instance pure_wp_chan_for_range (c : chan.t) elem_type (body : val) :
   PureWp True (chan.for_range elem_type #c body)%E
     ((for: (λ: <>, #true)%V; (λ: <>, #())%V :=
@@ -34,7 +32,7 @@ Global Instance pure_wp_chan_for_range (c : chan.t) elem_type (body : val) :
             (* channel is closed *)
             break: #()
     )).
-Proof using W.
+Proof using sem_fn + pre_sem + sem.
   iIntros (?????) "HΦ". unfold chan.for_range.
   wp_pure_lc "?". wp_pure. wp_pure. by iApply "HΦ".
 Qed.
@@ -46,7 +44,7 @@ Context [ct dir t] [Hunder : ct ↓u go.ChannelType dir t].
 Context [V] `[!ZeroVal V] `[!TypedPointsto V] `[!IntoValTyped V t].
 Context `[!chanG Σ V].
 
-Collection W := sem_fn + pre_sem + sem + W.
+Collection W := sem_fn + pre_sem + sem + IntoValTyped0.
 
 Implicit Types (ch : loc) (v : V) (γ : chan_names).
 

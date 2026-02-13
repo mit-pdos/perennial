@@ -19,9 +19,10 @@ Record join_names :=
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics}.
-Local Set Default Proof Using "All".
+
 Context `{!chan_idiomG Σ V}.
-Context `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}.
+Context `[!ZeroVal V] `[!TypedPointsto V] `[!IntoValTyped V t].
+Collection W := sem + IntoValTyped0.
 
 Definition join (γ: join_names) (count:nat) (Q: iProp Σ): iProp Σ :=
   ghost_var γ.(join_counter_name) (DfracOwn (1/2)) count ∗
@@ -152,13 +153,16 @@ iExists γ.
   done.
   Qed.
 
-
 Lemma join_alloc_worker γ ch Q P count :
   £ 1 -∗
   is_join γ ch -∗
   join γ count Q ={⊤}=∗
   join γ (S count) (Q ∗ P) ∗ worker γ P.
 Proof.
+  (* FIXME: `set_solver` applies `set_unfold_default`, which causes ALL props in
+     context to be used in the proof term, even if they're actually
+     irrelevant. *)
+  clear IntoValTyped0.
   iIntros "Hlc (#Hisjoin & Hjoininv) Hjoin".
   iInv "Hjoininv" as "Hinv_open" "Hinv_close".
   iMod (lc_fupd_elim_later with "Hlc Hinv_open") as "Hinv_open".
@@ -298,7 +302,7 @@ Lemma wp_join_send γ ch P :
       P }}}
     chan.send t #ch #(zero_val V)
   {{{ RET #(); True }}}.
-Proof.
+Proof using W.
   iIntros (Φ) "(#Hjoin & HWorker & HP) HΦ".
   rewrite /is_join.
   iDestruct "Hjoin" as "[#Hch #Hinv]".
@@ -315,6 +319,7 @@ Lemma join_receive_au γ ch n Q Φ :
   ▷(∀ (v:V), join γ n Q -∗ Φ v true) -∗
   recv_au γ.(chan_name) V Φ.
 Proof.
+  clear IntoValTyped0.
   iIntros "(Hlc1 & Hlc2) #Hjoin HJoin Hau".
   rewrite /join /is_join.
   iDestruct "HJoin" as "[HJoin HJoinQ]".
@@ -475,7 +480,7 @@ Lemma wp_join_receive γ ch n Q :
       join γ (S n) Q }}}
     chan.receive t #ch
   {{{ (v:V), RET (#v, #true); join γ n Q }}}.
-Proof.
+Proof using W.
   iIntros (Φ) "(#Hjoin & HJoin) HΦ".
   rewrite /is_join.
   iDestruct "Hjoin" as "[#Hch #Hinv]".
@@ -491,6 +496,7 @@ Lemma join_finish γ ch Q :
   join γ 0 Q ={⊤}=∗
   ▷ Q.
 Proof.
+  clear IntoValTyped0.
   iIntros "Hlc (#Hjoinch & #Hjoininv) Hjoin".
   rewrite /is_join /join.
   iDestruct "Hjoin" as "[Hcount Hrest]".

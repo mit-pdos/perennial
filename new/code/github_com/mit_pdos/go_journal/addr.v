@@ -27,7 +27,9 @@ Definition MkAddrⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : va
   λ: "blkno" "off",
     exception_do (let: "off" := (GoAlloc go.uint64 "off") in
     let: "blkno" := (GoAlloc common.Bnum "blkno") in
-    return: (CompositeLiteral Addr (LiteralValue [KeyedElement (Some (KeyField "Blkno"%go)) (ElementExpression common.Bnum (![common.Bnum] "blkno")); KeyedElement (Some (KeyField "Off"%go)) (ElementExpression go.uint64 (![go.uint64] "off"))]))).
+    return: (let: "$v0" := (![common.Bnum] "blkno") in
+     let: "$v1" := (![go.uint64] "off") in
+     CompositeLiteral Addr (LiteralValue [KeyedElement (Some (KeyField "Blkno"%go)) (ElementExpression common.Bnum "$v0"); KeyedElement (Some (KeyField "Off"%go)) (ElementExpression go.uint64 "$v1")]))).
 
 (* go: addr.go:27:6 *)
 Definition MkBitAddrⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=

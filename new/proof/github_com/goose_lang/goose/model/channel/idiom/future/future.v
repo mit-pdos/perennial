@@ -21,10 +21,10 @@ From Perennial.algebra Require Import ghost_var.
 Section future.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics}.
-Collection W := sem.
 
 Context `{!chan_idiomG Σ V}.
-Context `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}.
+Context `[!ZeroVal V] `[!TypedPointsto V] `[!IntoValTyped V t].
+Collection W := sem + IntoValTyped0.
 
 (** ** Ghost State Names *)
 
@@ -189,7 +189,7 @@ Lemma wp_future_fulfill γ ch (P : V → iProp Σ) (v : V) :
   {{{ is_future γ ch P ∗ fulfill_token γ ∗ P v }}}
     chan.send t #ch #v
   {{{ RET #(); True }}}.
-Proof.
+Proof using W.
   iIntros (Φ) "(#Hfuture & Hfulfillt & HP) Hcont".
 
   unfold is_future.
@@ -248,7 +248,7 @@ Lemma wp_future_await γ ch (P : V → iProp Σ) :
   {{{ is_future γ ch P ∗ await_token γ }}}
     chan.receive t #ch
   {{{ (v : V), RET (#v, #true); P v }}}.
-Proof.
+Proof using W.
   iIntros (Φ) "(#Hfuture & Hawaitt) Hcont".
 
   unfold is_future.

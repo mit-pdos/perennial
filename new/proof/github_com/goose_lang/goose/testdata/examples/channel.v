@@ -735,20 +735,15 @@ Proof.
   wp_apply (wp_handoff_send with "[$Hch $Hdo_r1]").
   wp_apply (wp_handoff_send with "[$Hch $Hdo_r2]").
   wp_apply (wp_handoff_send with "[$Hch $Hdo_r3]").
-  iPersist "r1".
-  wp_apply wp_slice_literal.
-  { iIntros. wp_auto. wp_bind.
-    rewrite /go.array_literal_size /= /Z.add /= /Pos.add /= /Z.max /=.
-    (* TODO goose: more let bindings *)
-    wp_apply (wp_get_response with "[$Hawait_r1]") as "%s %Heq".
-    subst.
-  iIntros (sl) "[Hresponse _]".
+  wp_apply (wp_get_response with "[$Hawait_r1]") as "%s %Heq".
+  subst.
   wp_apply (wp_get_response with "[$Hawait_r2]") as "%s %Heq".
   subst.
   wp_apply (wp_get_response with "[$Hawait_r3]") as "%s %Heq".
   subst.
   wp_apply wp_slice_literal.
-  iIntros (sl) "[Hresponse _]".
+  { iIntros. wp_auto. iFrame. }
+  iIntros (sl) "Hresponse".
   wp_auto.
   iApply "HΦ".
   done.
@@ -766,7 +761,7 @@ Lemma wp_simple_join :
 Proof.
   wp_start. wp_auto_lc 3.
       iRename select (£1) into "Hlc".
-  wp_apply chan.wp_make; first done.
+  wp_apply chan.wp_make2; first done.
   iIntros (ch). iIntros (γ). iIntros "(#His_chan & _Hcap & Hownchan)".
   wp_auto.
   rewrite -fupd_wp.

@@ -29,8 +29,10 @@ Definition Initⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val 
   λ: "d",
     exception_do (let: "d" := (GoAlloc disk.Disk "d") in
     let: "twophasePre" := (GoAlloc (go.PointerType Log) (GoZeroVal (go.PointerType Log) #())) in
-    let: "$r0" := (GoAlloc Log (CompositeLiteral Log (LiteralValue [KeyedElement (Some (KeyField "log"%go)) (ElementExpression (go.PointerType obj.Log) (let: "$a0" := (![disk.Disk] "d") in
-     (FuncResolve obj.MkLog [] #()) "$a0")); KeyedElement (Some (KeyField "locks"%go)) (ElementExpression (go.PointerType lockmap.LockMap) ((FuncResolve lockmap.MkLockMap [] #()) #()))]))) in
+    let: "$r0" := (GoAlloc Log (let: "$v0" := (let: "$a0" := (![disk.Disk] "d") in
+    (FuncResolve obj.MkLog [] #()) "$a0") in
+    let: "$v1" := ((FuncResolve lockmap.MkLockMap [] #()) #()) in
+    CompositeLiteral Log (LiteralValue [KeyedElement (Some (KeyField "log"%go)) (ElementExpression (go.PointerType obj.Log) "$v0"); KeyedElement (Some (KeyField "locks"%go)) (ElementExpression (go.PointerType lockmap.LockMap) "$v1")]))) in
     do:  ("twophasePre" <-[go.PointerType Log] "$r0");;;
     return: (![go.PointerType Log] "twophasePre")).
 
@@ -41,8 +43,11 @@ Definition Beginⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val
   λ: "tsys",
     exception_do (let: "tsys" := (GoAlloc (go.PointerType Log) "tsys") in
     let: "trans" := (GoAlloc (go.PointerType Txn) (GoZeroVal (go.PointerType Txn) #())) in
-    let: "$r0" := (GoAlloc Txn (CompositeLiteral Txn (LiteralValue [KeyedElement (Some (KeyField "buftxn"%go)) (ElementExpression (go.PointerType jrnl.Op) (let: "$a0" := (![go.PointerType obj.Log] (StructFieldRef Log "log"%go (![go.PointerType Log] "tsys"))) in
-     (FuncResolve jrnl.Begin [] #()) "$a0")); KeyedElement (Some (KeyField "locks"%go)) (ElementExpression (go.PointerType lockmap.LockMap) (![go.PointerType lockmap.LockMap] (StructFieldRef Log "locks"%go (![go.PointerType Log] "tsys")))); KeyedElement (Some (KeyField "acquired"%go)) (ElementExpression (go.MapType go.uint64 go.bool) ((FuncResolve go.make1 [go.MapType go.uint64 go.bool] #()) #()))]))) in
+    let: "$r0" := (GoAlloc Txn (let: "$v0" := (let: "$a0" := (![go.PointerType obj.Log] (StructFieldRef Log "log"%go (![go.PointerType Log] "tsys"))) in
+    (FuncResolve jrnl.Begin [] #()) "$a0") in
+    let: "$v1" := (![go.PointerType lockmap.LockMap] (StructFieldRef Log "locks"%go (![go.PointerType Log] "tsys"))) in
+    let: "$v2" := ((FuncResolve go.make1 [go.MapType go.uint64 go.bool] #()) #()) in
+    CompositeLiteral Txn (LiteralValue [KeyedElement (Some (KeyField "buftxn"%go)) (ElementExpression (go.PointerType jrnl.Op) "$v0"); KeyedElement (Some (KeyField "locks"%go)) (ElementExpression (go.PointerType lockmap.LockMap) "$v1"); KeyedElement (Some (KeyField "acquired"%go)) (ElementExpression (go.MapType go.uint64 go.bool) "$v2")]))) in
     do:  ("trans" <-[go.PointerType Txn] "$r0");;;
     do:  (let: "$a0" := #(W64 5) in
     let: "$a1" := #"tp Begin: %v

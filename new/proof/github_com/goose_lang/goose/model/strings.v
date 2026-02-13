@@ -22,7 +22,7 @@ Qed.
 Lemma wp_StringToByteSlice (s : go_string) :
   {{{ True }}}
     @! strings.StringToByteSlice #s
-  {{{ sl, RET #sl; sl ↦* s }}}.
+  {{{ sl, RET #sl; sl ↦* s ∗ own_slice_cap w8 sl (DfracOwn 1) }}}.
 Proof.
   wp_start. wp_auto.
   iAssert (

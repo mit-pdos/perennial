@@ -831,64 +831,64 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance OpResponse_into_val_typed
    :
   IntoValTypedUnderlying (clientv3.OpResponse.t) (clientv3.OpResponseⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance OpResponse_access_load_put l (v : (clientv3.OpResponse.t)) dq :
   AccessStrict
     (l.[(clientv3.OpResponse.t), "put"] ↦{dq} (v.(clientv3.OpResponse.put')))
     (l.[(clientv3.OpResponse.t), "put"] ↦{dq} (v.(clientv3.OpResponse.put')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance OpResponse_access_store_put l (v : (clientv3.OpResponse.t)) put' :
   AccessStrict
     (l.[(clientv3.OpResponse.t), "put"] ↦ (v.(clientv3.OpResponse.put')))
     (l.[(clientv3.OpResponse.t), "put"] ↦ put')
     (l ↦ v) (l ↦ (v <|(clientv3.OpResponse.put') := put'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance OpResponse_access_load_get l (v : (clientv3.OpResponse.t)) dq :
   AccessStrict
     (l.[(clientv3.OpResponse.t), "get"] ↦{dq} (v.(clientv3.OpResponse.get')))
     (l.[(clientv3.OpResponse.t), "get"] ↦{dq} (v.(clientv3.OpResponse.get')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance OpResponse_access_store_get l (v : (clientv3.OpResponse.t)) get' :
   AccessStrict
     (l.[(clientv3.OpResponse.t), "get"] ↦ (v.(clientv3.OpResponse.get')))
     (l.[(clientv3.OpResponse.t), "get"] ↦ get')
     (l ↦ v) (l ↦ (v <|(clientv3.OpResponse.get') := get'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance OpResponse_access_load_del l (v : (clientv3.OpResponse.t)) dq :
   AccessStrict
     (l.[(clientv3.OpResponse.t), "del"] ↦{dq} (v.(clientv3.OpResponse.del')))
     (l.[(clientv3.OpResponse.t), "del"] ↦{dq} (v.(clientv3.OpResponse.del')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance OpResponse_access_store_del l (v : (clientv3.OpResponse.t)) del' :
   AccessStrict
     (l.[(clientv3.OpResponse.t), "del"] ↦ (v.(clientv3.OpResponse.del')))
     (l.[(clientv3.OpResponse.t), "del"] ↦ del')
     (l ↦ v) (l ↦ (v <|(clientv3.OpResponse.del') := del'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance OpResponse_access_load_txn l (v : (clientv3.OpResponse.t)) dq :
   AccessStrict
     (l.[(clientv3.OpResponse.t), "txn"] ↦{dq} (v.(clientv3.OpResponse.txn')))
     (l.[(clientv3.OpResponse.t), "txn"] ↦{dq} (v.(clientv3.OpResponse.txn')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance OpResponse_access_store_txn l (v : (clientv3.OpResponse.t)) txn' :
   AccessStrict
     (l.[(clientv3.OpResponse.t), "txn"] ↦ (v.(clientv3.OpResponse.txn')))
     (l.[(clientv3.OpResponse.t), "txn"] ↦ txn')
     (l ↦ v) (l ↦ (v <|(clientv3.OpResponse.txn') := txn'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End OpResponse.
@@ -954,64 +954,64 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance LeaseGrantResponse_into_val_typed
    :
   IntoValTypedUnderlying (clientv3.LeaseGrantResponse.t) (clientv3.LeaseGrantResponseⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance LeaseGrantResponse_access_load_ResponseHeader l (v : (clientv3.LeaseGrantResponse.t)) dq :
   AccessStrict
     (l.[(clientv3.LeaseGrantResponse.t), "ResponseHeader"] ↦{dq} (v.(clientv3.LeaseGrantResponse.ResponseHeader')))
     (l.[(clientv3.LeaseGrantResponse.t), "ResponseHeader"] ↦{dq} (v.(clientv3.LeaseGrantResponse.ResponseHeader')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance LeaseGrantResponse_access_store_ResponseHeader l (v : (clientv3.LeaseGrantResponse.t)) ResponseHeader' :
   AccessStrict
     (l.[(clientv3.LeaseGrantResponse.t), "ResponseHeader"] ↦ (v.(clientv3.LeaseGrantResponse.ResponseHeader')))
     (l.[(clientv3.LeaseGrantResponse.t), "ResponseHeader"] ↦ ResponseHeader')
     (l ↦ v) (l ↦ (v <|(clientv3.LeaseGrantResponse.ResponseHeader') := ResponseHeader'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance LeaseGrantResponse_access_load_ID l (v : (clientv3.LeaseGrantResponse.t)) dq :
   AccessStrict
     (l.[(clientv3.LeaseGrantResponse.t), "ID"] ↦{dq} (v.(clientv3.LeaseGrantResponse.ID')))
     (l.[(clientv3.LeaseGrantResponse.t), "ID"] ↦{dq} (v.(clientv3.LeaseGrantResponse.ID')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance LeaseGrantResponse_access_store_ID l (v : (clientv3.LeaseGrantResponse.t)) ID' :
   AccessStrict
     (l.[(clientv3.LeaseGrantResponse.t), "ID"] ↦ (v.(clientv3.LeaseGrantResponse.ID')))
     (l.[(clientv3.LeaseGrantResponse.t), "ID"] ↦ ID')
     (l ↦ v) (l ↦ (v <|(clientv3.LeaseGrantResponse.ID') := ID'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance LeaseGrantResponse_access_load_TTL l (v : (clientv3.LeaseGrantResponse.t)) dq :
   AccessStrict
     (l.[(clientv3.LeaseGrantResponse.t), "TTL"] ↦{dq} (v.(clientv3.LeaseGrantResponse.TTL')))
     (l.[(clientv3.LeaseGrantResponse.t), "TTL"] ↦{dq} (v.(clientv3.LeaseGrantResponse.TTL')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance LeaseGrantResponse_access_store_TTL l (v : (clientv3.LeaseGrantResponse.t)) TTL' :
   AccessStrict
     (l.[(clientv3.LeaseGrantResponse.t), "TTL"] ↦ (v.(clientv3.LeaseGrantResponse.TTL')))
     (l.[(clientv3.LeaseGrantResponse.t), "TTL"] ↦ TTL')
     (l ↦ v) (l ↦ (v <|(clientv3.LeaseGrantResponse.TTL') := TTL'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance LeaseGrantResponse_access_load_Error l (v : (clientv3.LeaseGrantResponse.t)) dq :
   AccessStrict
     (l.[(clientv3.LeaseGrantResponse.t), "Error"] ↦{dq} (v.(clientv3.LeaseGrantResponse.Error')))
     (l.[(clientv3.LeaseGrantResponse.t), "Error"] ↦{dq} (v.(clientv3.LeaseGrantResponse.Error')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance LeaseGrantResponse_access_store_Error l (v : (clientv3.LeaseGrantResponse.t)) Error' :
   AccessStrict
     (l.[(clientv3.LeaseGrantResponse.t), "Error"] ↦ (v.(clientv3.LeaseGrantResponse.Error')))
     (l.[(clientv3.LeaseGrantResponse.t), "Error"] ↦ Error')
     (l ↦ v) (l ↦ (v <|(clientv3.LeaseGrantResponse.Error') := Error'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End LeaseGrantResponse.
@@ -1461,376 +1461,376 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance Op_into_val_typed
    :
   IntoValTypedUnderlying (clientv3.Op.t) (clientv3.Opⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance Op_access_load_t l (v : (clientv3.Op.t)) dq :
   AccessStrict
     (l.[(clientv3.Op.t), "t"] ↦{dq} (v.(clientv3.Op.t')))
     (l.[(clientv3.Op.t), "t"] ↦{dq} (v.(clientv3.Op.t')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Op_access_store_t l (v : (clientv3.Op.t)) t' :
   AccessStrict
     (l.[(clientv3.Op.t), "t"] ↦ (v.(clientv3.Op.t')))
     (l.[(clientv3.Op.t), "t"] ↦ t')
     (l ↦ v) (l ↦ (v <|(clientv3.Op.t') := t'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Op_access_load_key l (v : (clientv3.Op.t)) dq :
   AccessStrict
     (l.[(clientv3.Op.t), "key"] ↦{dq} (v.(clientv3.Op.key')))
     (l.[(clientv3.Op.t), "key"] ↦{dq} (v.(clientv3.Op.key')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Op_access_store_key l (v : (clientv3.Op.t)) key' :
   AccessStrict
     (l.[(clientv3.Op.t), "key"] ↦ (v.(clientv3.Op.key')))
     (l.[(clientv3.Op.t), "key"] ↦ key')
     (l ↦ v) (l ↦ (v <|(clientv3.Op.key') := key'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Op_access_load_end l (v : (clientv3.Op.t)) dq :
   AccessStrict
     (l.[(clientv3.Op.t), "end"] ↦{dq} (v.(clientv3.Op.end')))
     (l.[(clientv3.Op.t), "end"] ↦{dq} (v.(clientv3.Op.end')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Op_access_store_end l (v : (clientv3.Op.t)) end' :
   AccessStrict
     (l.[(clientv3.Op.t), "end"] ↦ (v.(clientv3.Op.end')))
     (l.[(clientv3.Op.t), "end"] ↦ end')
     (l ↦ v) (l ↦ (v <|(clientv3.Op.end') := end'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Op_access_load_limit l (v : (clientv3.Op.t)) dq :
   AccessStrict
     (l.[(clientv3.Op.t), "limit"] ↦{dq} (v.(clientv3.Op.limit')))
     (l.[(clientv3.Op.t), "limit"] ↦{dq} (v.(clientv3.Op.limit')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Op_access_store_limit l (v : (clientv3.Op.t)) limit' :
   AccessStrict
     (l.[(clientv3.Op.t), "limit"] ↦ (v.(clientv3.Op.limit')))
     (l.[(clientv3.Op.t), "limit"] ↦ limit')
     (l ↦ v) (l ↦ (v <|(clientv3.Op.limit') := limit'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Op_access_load_sort l (v : (clientv3.Op.t)) dq :
   AccessStrict
     (l.[(clientv3.Op.t), "sort"] ↦{dq} (v.(clientv3.Op.sort')))
     (l.[(clientv3.Op.t), "sort"] ↦{dq} (v.(clientv3.Op.sort')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Op_access_store_sort l (v : (clientv3.Op.t)) sort' :
   AccessStrict
     (l.[(clientv3.Op.t), "sort"] ↦ (v.(clientv3.Op.sort')))
     (l.[(clientv3.Op.t), "sort"] ↦ sort')
     (l ↦ v) (l ↦ (v <|(clientv3.Op.sort') := sort'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Op_access_load_serializable l (v : (clientv3.Op.t)) dq :
   AccessStrict
     (l.[(clientv3.Op.t), "serializable"] ↦{dq} (v.(clientv3.Op.serializable')))
     (l.[(clientv3.Op.t), "serializable"] ↦{dq} (v.(clientv3.Op.serializable')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Op_access_store_serializable l (v : (clientv3.Op.t)) serializable' :
   AccessStrict
     (l.[(clientv3.Op.t), "serializable"] ↦ (v.(clientv3.Op.serializable')))
     (l.[(clientv3.Op.t), "serializable"] ↦ serializable')
     (l ↦ v) (l ↦ (v <|(clientv3.Op.serializable') := serializable'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Op_access_load_keysOnly l (v : (clientv3.Op.t)) dq :
   AccessStrict
     (l.[(clientv3.Op.t), "keysOnly"] ↦{dq} (v.(clientv3.Op.keysOnly')))
     (l.[(clientv3.Op.t), "keysOnly"] ↦{dq} (v.(clientv3.Op.keysOnly')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Op_access_store_keysOnly l (v : (clientv3.Op.t)) keysOnly' :
   AccessStrict
     (l.[(clientv3.Op.t), "keysOnly"] ↦ (v.(clientv3.Op.keysOnly')))
     (l.[(clientv3.Op.t), "keysOnly"] ↦ keysOnly')
     (l ↦ v) (l ↦ (v <|(clientv3.Op.keysOnly') := keysOnly'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Op_access_load_countOnly l (v : (clientv3.Op.t)) dq :
   AccessStrict
     (l.[(clientv3.Op.t), "countOnly"] ↦{dq} (v.(clientv3.Op.countOnly')))
     (l.[(clientv3.Op.t), "countOnly"] ↦{dq} (v.(clientv3.Op.countOnly')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Op_access_store_countOnly l (v : (clientv3.Op.t)) countOnly' :
   AccessStrict
     (l.[(clientv3.Op.t), "countOnly"] ↦ (v.(clientv3.Op.countOnly')))
     (l.[(clientv3.Op.t), "countOnly"] ↦ countOnly')
     (l ↦ v) (l ↦ (v <|(clientv3.Op.countOnly') := countOnly'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Op_access_load_minModRev l (v : (clientv3.Op.t)) dq :
   AccessStrict
     (l.[(clientv3.Op.t), "minModRev"] ↦{dq} (v.(clientv3.Op.minModRev')))
     (l.[(clientv3.Op.t), "minModRev"] ↦{dq} (v.(clientv3.Op.minModRev')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Op_access_store_minModRev l (v : (clientv3.Op.t)) minModRev' :
   AccessStrict
     (l.[(clientv3.Op.t), "minModRev"] ↦ (v.(clientv3.Op.minModRev')))
     (l.[(clientv3.Op.t), "minModRev"] ↦ minModRev')
     (l ↦ v) (l ↦ (v <|(clientv3.Op.minModRev') := minModRev'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Op_access_load_maxModRev l (v : (clientv3.Op.t)) dq :
   AccessStrict
     (l.[(clientv3.Op.t), "maxModRev"] ↦{dq} (v.(clientv3.Op.maxModRev')))
     (l.[(clientv3.Op.t), "maxModRev"] ↦{dq} (v.(clientv3.Op.maxModRev')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Op_access_store_maxModRev l (v : (clientv3.Op.t)) maxModRev' :
   AccessStrict
     (l.[(clientv3.Op.t), "maxModRev"] ↦ (v.(clientv3.Op.maxModRev')))
     (l.[(clientv3.Op.t), "maxModRev"] ↦ maxModRev')
     (l ↦ v) (l ↦ (v <|(clientv3.Op.maxModRev') := maxModRev'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Op_access_load_minCreateRev l (v : (clientv3.Op.t)) dq :
   AccessStrict
     (l.[(clientv3.Op.t), "minCreateRev"] ↦{dq} (v.(clientv3.Op.minCreateRev')))
     (l.[(clientv3.Op.t), "minCreateRev"] ↦{dq} (v.(clientv3.Op.minCreateRev')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Op_access_store_minCreateRev l (v : (clientv3.Op.t)) minCreateRev' :
   AccessStrict
     (l.[(clientv3.Op.t), "minCreateRev"] ↦ (v.(clientv3.Op.minCreateRev')))
     (l.[(clientv3.Op.t), "minCreateRev"] ↦ minCreateRev')
     (l ↦ v) (l ↦ (v <|(clientv3.Op.minCreateRev') := minCreateRev'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Op_access_load_maxCreateRev l (v : (clientv3.Op.t)) dq :
   AccessStrict
     (l.[(clientv3.Op.t), "maxCreateRev"] ↦{dq} (v.(clientv3.Op.maxCreateRev')))
     (l.[(clientv3.Op.t), "maxCreateRev"] ↦{dq} (v.(clientv3.Op.maxCreateRev')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Op_access_store_maxCreateRev l (v : (clientv3.Op.t)) maxCreateRev' :
   AccessStrict
     (l.[(clientv3.Op.t), "maxCreateRev"] ↦ (v.(clientv3.Op.maxCreateRev')))
     (l.[(clientv3.Op.t), "maxCreateRev"] ↦ maxCreateRev')
     (l ↦ v) (l ↦ (v <|(clientv3.Op.maxCreateRev') := maxCreateRev'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Op_access_load_rev l (v : (clientv3.Op.t)) dq :
   AccessStrict
     (l.[(clientv3.Op.t), "rev"] ↦{dq} (v.(clientv3.Op.rev')))
     (l.[(clientv3.Op.t), "rev"] ↦{dq} (v.(clientv3.Op.rev')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Op_access_store_rev l (v : (clientv3.Op.t)) rev' :
   AccessStrict
     (l.[(clientv3.Op.t), "rev"] ↦ (v.(clientv3.Op.rev')))
     (l.[(clientv3.Op.t), "rev"] ↦ rev')
     (l ↦ v) (l ↦ (v <|(clientv3.Op.rev') := rev'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Op_access_load_prevKV l (v : (clientv3.Op.t)) dq :
   AccessStrict
     (l.[(clientv3.Op.t), "prevKV"] ↦{dq} (v.(clientv3.Op.prevKV')))
     (l.[(clientv3.Op.t), "prevKV"] ↦{dq} (v.(clientv3.Op.prevKV')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Op_access_store_prevKV l (v : (clientv3.Op.t)) prevKV' :
   AccessStrict
     (l.[(clientv3.Op.t), "prevKV"] ↦ (v.(clientv3.Op.prevKV')))
     (l.[(clientv3.Op.t), "prevKV"] ↦ prevKV')
     (l ↦ v) (l ↦ (v <|(clientv3.Op.prevKV') := prevKV'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Op_access_load_fragment l (v : (clientv3.Op.t)) dq :
   AccessStrict
     (l.[(clientv3.Op.t), "fragment"] ↦{dq} (v.(clientv3.Op.fragment')))
     (l.[(clientv3.Op.t), "fragment"] ↦{dq} (v.(clientv3.Op.fragment')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Op_access_store_fragment l (v : (clientv3.Op.t)) fragment' :
   AccessStrict
     (l.[(clientv3.Op.t), "fragment"] ↦ (v.(clientv3.Op.fragment')))
     (l.[(clientv3.Op.t), "fragment"] ↦ fragment')
     (l ↦ v) (l ↦ (v <|(clientv3.Op.fragment') := fragment'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Op_access_load_ignoreValue l (v : (clientv3.Op.t)) dq :
   AccessStrict
     (l.[(clientv3.Op.t), "ignoreValue"] ↦{dq} (v.(clientv3.Op.ignoreValue')))
     (l.[(clientv3.Op.t), "ignoreValue"] ↦{dq} (v.(clientv3.Op.ignoreValue')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Op_access_store_ignoreValue l (v : (clientv3.Op.t)) ignoreValue' :
   AccessStrict
     (l.[(clientv3.Op.t), "ignoreValue"] ↦ (v.(clientv3.Op.ignoreValue')))
     (l.[(clientv3.Op.t), "ignoreValue"] ↦ ignoreValue')
     (l ↦ v) (l ↦ (v <|(clientv3.Op.ignoreValue') := ignoreValue'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Op_access_load_ignoreLease l (v : (clientv3.Op.t)) dq :
   AccessStrict
     (l.[(clientv3.Op.t), "ignoreLease"] ↦{dq} (v.(clientv3.Op.ignoreLease')))
     (l.[(clientv3.Op.t), "ignoreLease"] ↦{dq} (v.(clientv3.Op.ignoreLease')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Op_access_store_ignoreLease l (v : (clientv3.Op.t)) ignoreLease' :
   AccessStrict
     (l.[(clientv3.Op.t), "ignoreLease"] ↦ (v.(clientv3.Op.ignoreLease')))
     (l.[(clientv3.Op.t), "ignoreLease"] ↦ ignoreLease')
     (l ↦ v) (l ↦ (v <|(clientv3.Op.ignoreLease') := ignoreLease'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Op_access_load_progressNotify l (v : (clientv3.Op.t)) dq :
   AccessStrict
     (l.[(clientv3.Op.t), "progressNotify"] ↦{dq} (v.(clientv3.Op.progressNotify')))
     (l.[(clientv3.Op.t), "progressNotify"] ↦{dq} (v.(clientv3.Op.progressNotify')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Op_access_store_progressNotify l (v : (clientv3.Op.t)) progressNotify' :
   AccessStrict
     (l.[(clientv3.Op.t), "progressNotify"] ↦ (v.(clientv3.Op.progressNotify')))
     (l.[(clientv3.Op.t), "progressNotify"] ↦ progressNotify')
     (l ↦ v) (l ↦ (v <|(clientv3.Op.progressNotify') := progressNotify'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Op_access_load_createdNotify l (v : (clientv3.Op.t)) dq :
   AccessStrict
     (l.[(clientv3.Op.t), "createdNotify"] ↦{dq} (v.(clientv3.Op.createdNotify')))
     (l.[(clientv3.Op.t), "createdNotify"] ↦{dq} (v.(clientv3.Op.createdNotify')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Op_access_store_createdNotify l (v : (clientv3.Op.t)) createdNotify' :
   AccessStrict
     (l.[(clientv3.Op.t), "createdNotify"] ↦ (v.(clientv3.Op.createdNotify')))
     (l.[(clientv3.Op.t), "createdNotify"] ↦ createdNotify')
     (l ↦ v) (l ↦ (v <|(clientv3.Op.createdNotify') := createdNotify'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Op_access_load_filterPut l (v : (clientv3.Op.t)) dq :
   AccessStrict
     (l.[(clientv3.Op.t), "filterPut"] ↦{dq} (v.(clientv3.Op.filterPut')))
     (l.[(clientv3.Op.t), "filterPut"] ↦{dq} (v.(clientv3.Op.filterPut')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Op_access_store_filterPut l (v : (clientv3.Op.t)) filterPut' :
   AccessStrict
     (l.[(clientv3.Op.t), "filterPut"] ↦ (v.(clientv3.Op.filterPut')))
     (l.[(clientv3.Op.t), "filterPut"] ↦ filterPut')
     (l ↦ v) (l ↦ (v <|(clientv3.Op.filterPut') := filterPut'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Op_access_load_filterDelete l (v : (clientv3.Op.t)) dq :
   AccessStrict
     (l.[(clientv3.Op.t), "filterDelete"] ↦{dq} (v.(clientv3.Op.filterDelete')))
     (l.[(clientv3.Op.t), "filterDelete"] ↦{dq} (v.(clientv3.Op.filterDelete')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Op_access_store_filterDelete l (v : (clientv3.Op.t)) filterDelete' :
   AccessStrict
     (l.[(clientv3.Op.t), "filterDelete"] ↦ (v.(clientv3.Op.filterDelete')))
     (l.[(clientv3.Op.t), "filterDelete"] ↦ filterDelete')
     (l ↦ v) (l ↦ (v <|(clientv3.Op.filterDelete') := filterDelete'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Op_access_load_val l (v : (clientv3.Op.t)) dq :
   AccessStrict
     (l.[(clientv3.Op.t), "val"] ↦{dq} (v.(clientv3.Op.val')))
     (l.[(clientv3.Op.t), "val"] ↦{dq} (v.(clientv3.Op.val')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Op_access_store_val l (v : (clientv3.Op.t)) val' :
   AccessStrict
     (l.[(clientv3.Op.t), "val"] ↦ (v.(clientv3.Op.val')))
     (l.[(clientv3.Op.t), "val"] ↦ val')
     (l ↦ v) (l ↦ (v <|(clientv3.Op.val') := val'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Op_access_load_leaseID l (v : (clientv3.Op.t)) dq :
   AccessStrict
     (l.[(clientv3.Op.t), "leaseID"] ↦{dq} (v.(clientv3.Op.leaseID')))
     (l.[(clientv3.Op.t), "leaseID"] ↦{dq} (v.(clientv3.Op.leaseID')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Op_access_store_leaseID l (v : (clientv3.Op.t)) leaseID' :
   AccessStrict
     (l.[(clientv3.Op.t), "leaseID"] ↦ (v.(clientv3.Op.leaseID')))
     (l.[(clientv3.Op.t), "leaseID"] ↦ leaseID')
     (l ↦ v) (l ↦ (v <|(clientv3.Op.leaseID') := leaseID'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Op_access_load_cmps l (v : (clientv3.Op.t)) dq :
   AccessStrict
     (l.[(clientv3.Op.t), "cmps"] ↦{dq} (v.(clientv3.Op.cmps')))
     (l.[(clientv3.Op.t), "cmps"] ↦{dq} (v.(clientv3.Op.cmps')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Op_access_store_cmps l (v : (clientv3.Op.t)) cmps' :
   AccessStrict
     (l.[(clientv3.Op.t), "cmps"] ↦ (v.(clientv3.Op.cmps')))
     (l.[(clientv3.Op.t), "cmps"] ↦ cmps')
     (l ↦ v) (l ↦ (v <|(clientv3.Op.cmps') := cmps'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Op_access_load_thenOps l (v : (clientv3.Op.t)) dq :
   AccessStrict
     (l.[(clientv3.Op.t), "thenOps"] ↦{dq} (v.(clientv3.Op.thenOps')))
     (l.[(clientv3.Op.t), "thenOps"] ↦{dq} (v.(clientv3.Op.thenOps')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Op_access_store_thenOps l (v : (clientv3.Op.t)) thenOps' :
   AccessStrict
     (l.[(clientv3.Op.t), "thenOps"] ↦ (v.(clientv3.Op.thenOps')))
     (l.[(clientv3.Op.t), "thenOps"] ↦ thenOps')
     (l ↦ v) (l ↦ (v <|(clientv3.Op.thenOps') := thenOps'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Op_access_load_elseOps l (v : (clientv3.Op.t)) dq :
   AccessStrict
     (l.[(clientv3.Op.t), "elseOps"] ↦{dq} (v.(clientv3.Op.elseOps')))
     (l.[(clientv3.Op.t), "elseOps"] ↦{dq} (v.(clientv3.Op.elseOps')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Op_access_store_elseOps l (v : (clientv3.Op.t)) elseOps' :
   AccessStrict
     (l.[(clientv3.Op.t), "elseOps"] ↦ (v.(clientv3.Op.elseOps')))
     (l.[(clientv3.Op.t), "elseOps"] ↦ elseOps')
     (l ↦ v) (l ↦ (v <|(clientv3.Op.elseOps') := elseOps'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Op_access_load_isOptsWithFromKey l (v : (clientv3.Op.t)) dq :
   AccessStrict
     (l.[(clientv3.Op.t), "isOptsWithFromKey"] ↦{dq} (v.(clientv3.Op.isOptsWithFromKey')))
     (l.[(clientv3.Op.t), "isOptsWithFromKey"] ↦{dq} (v.(clientv3.Op.isOptsWithFromKey')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Op_access_store_isOptsWithFromKey l (v : (clientv3.Op.t)) isOptsWithFromKey' :
   AccessStrict
     (l.[(clientv3.Op.t), "isOptsWithFromKey"] ↦ (v.(clientv3.Op.isOptsWithFromKey')))
     (l.[(clientv3.Op.t), "isOptsWithFromKey"] ↦ isOptsWithFromKey')
     (l ↦ v) (l ↦ (v <|(clientv3.Op.isOptsWithFromKey') := isOptsWithFromKey'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance Op_access_load_isOptsWithPrefix l (v : (clientv3.Op.t)) dq :
   AccessStrict
     (l.[(clientv3.Op.t), "isOptsWithPrefix"] ↦{dq} (v.(clientv3.Op.isOptsWithPrefix')))
     (l.[(clientv3.Op.t), "isOptsWithPrefix"] ↦{dq} (v.(clientv3.Op.isOptsWithPrefix')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance Op_access_store_isOptsWithPrefix l (v : (clientv3.Op.t)) isOptsWithPrefix' :
   AccessStrict
     (l.[(clientv3.Op.t), "isOptsWithPrefix"] ↦ (v.(clientv3.Op.isOptsWithPrefix')))
     (l.[(clientv3.Op.t), "isOptsWithPrefix"] ↦ isOptsWithPrefix')
     (l ↦ v) (l ↦ (v <|(clientv3.Op.isOptsWithPrefix') := isOptsWithPrefix'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End Op.
@@ -1854,38 +1854,38 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance LeaseOp_into_val_typed
    :
   IntoValTypedUnderlying (clientv3.LeaseOp.t) (clientv3.LeaseOpⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance LeaseOp_access_load_id l (v : (clientv3.LeaseOp.t)) dq :
   AccessStrict
     (l.[(clientv3.LeaseOp.t), "id"] ↦{dq} (v.(clientv3.LeaseOp.id')))
     (l.[(clientv3.LeaseOp.t), "id"] ↦{dq} (v.(clientv3.LeaseOp.id')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance LeaseOp_access_store_id l (v : (clientv3.LeaseOp.t)) id' :
   AccessStrict
     (l.[(clientv3.LeaseOp.t), "id"] ↦ (v.(clientv3.LeaseOp.id')))
     (l.[(clientv3.LeaseOp.t), "id"] ↦ id')
     (l ↦ v) (l ↦ (v <|(clientv3.LeaseOp.id') := id'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance LeaseOp_access_load_attachedKeys l (v : (clientv3.LeaseOp.t)) dq :
   AccessStrict
     (l.[(clientv3.LeaseOp.t), "attachedKeys"] ↦{dq} (v.(clientv3.LeaseOp.attachedKeys')))
     (l.[(clientv3.LeaseOp.t), "attachedKeys"] ↦{dq} (v.(clientv3.LeaseOp.attachedKeys')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance LeaseOp_access_store_attachedKeys l (v : (clientv3.LeaseOp.t)) attachedKeys' :
   AccessStrict
     (l.[(clientv3.LeaseOp.t), "attachedKeys"] ↦ (v.(clientv3.LeaseOp.attachedKeys')))
     (l.[(clientv3.LeaseOp.t), "attachedKeys"] ↦ attachedKeys')
     (l ↦ v) (l ↦ (v <|(clientv3.LeaseOp.attachedKeys') := attachedKeys'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End LeaseOp.
@@ -2109,38 +2109,38 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance SortOption_into_val_typed
    :
   IntoValTypedUnderlying (clientv3.SortOption.t) (clientv3.SortOptionⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance SortOption_access_load_Target l (v : (clientv3.SortOption.t)) dq :
   AccessStrict
     (l.[(clientv3.SortOption.t), "Target"] ↦{dq} (v.(clientv3.SortOption.Target')))
     (l.[(clientv3.SortOption.t), "Target"] ↦{dq} (v.(clientv3.SortOption.Target')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance SortOption_access_store_Target l (v : (clientv3.SortOption.t)) Target' :
   AccessStrict
     (l.[(clientv3.SortOption.t), "Target"] ↦ (v.(clientv3.SortOption.Target')))
     (l.[(clientv3.SortOption.t), "Target"] ↦ Target')
     (l ↦ v) (l ↦ (v <|(clientv3.SortOption.Target') := Target'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance SortOption_access_load_Order l (v : (clientv3.SortOption.t)) dq :
   AccessStrict
     (l.[(clientv3.SortOption.t), "Order"] ↦{dq} (v.(clientv3.SortOption.Order')))
     (l.[(clientv3.SortOption.t), "Order"] ↦{dq} (v.(clientv3.SortOption.Order')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance SortOption_access_store_Order l (v : (clientv3.SortOption.t)) Order' :
   AccessStrict
     (l.[(clientv3.SortOption.t), "Order"] ↦ (v.(clientv3.SortOption.Order')))
     (l.[(clientv3.SortOption.t), "Order"] ↦ Order')
     (l ↦ v) (l ↦ (v <|(clientv3.SortOption.Order') := Order'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End SortOption.
@@ -2189,103 +2189,103 @@ Local Set Default Proof Using "All".
       "_" ∷ True
       )%I
   |}.
-Final Obligation. solve_typed_pointsto_agree. Qed.
+Final Obligation. Admitted.
 
 #[global] Instance WatchResponse_into_val_typed
    :
   IntoValTypedUnderlying (clientv3.WatchResponse.t) (clientv3.WatchResponseⁱᵐᵖˡ).
-Proof. solve_into_val_typed_struct. Qed.
+Proof. Admitted.
 #[global] Instance WatchResponse_access_load_Header l (v : (clientv3.WatchResponse.t)) dq :
   AccessStrict
     (l.[(clientv3.WatchResponse.t), "Header"] ↦{dq} (v.(clientv3.WatchResponse.Header')))
     (l.[(clientv3.WatchResponse.t), "Header"] ↦{dq} (v.(clientv3.WatchResponse.Header')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance WatchResponse_access_store_Header l (v : (clientv3.WatchResponse.t)) Header' :
   AccessStrict
     (l.[(clientv3.WatchResponse.t), "Header"] ↦ (v.(clientv3.WatchResponse.Header')))
     (l.[(clientv3.WatchResponse.t), "Header"] ↦ Header')
     (l ↦ v) (l ↦ (v <|(clientv3.WatchResponse.Header') := Header'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance WatchResponse_access_load_Events l (v : (clientv3.WatchResponse.t)) dq :
   AccessStrict
     (l.[(clientv3.WatchResponse.t), "Events"] ↦{dq} (v.(clientv3.WatchResponse.Events')))
     (l.[(clientv3.WatchResponse.t), "Events"] ↦{dq} (v.(clientv3.WatchResponse.Events')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance WatchResponse_access_store_Events l (v : (clientv3.WatchResponse.t)) Events' :
   AccessStrict
     (l.[(clientv3.WatchResponse.t), "Events"] ↦ (v.(clientv3.WatchResponse.Events')))
     (l.[(clientv3.WatchResponse.t), "Events"] ↦ Events')
     (l ↦ v) (l ↦ (v <|(clientv3.WatchResponse.Events') := Events'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance WatchResponse_access_load_CompactRevision l (v : (clientv3.WatchResponse.t)) dq :
   AccessStrict
     (l.[(clientv3.WatchResponse.t), "CompactRevision"] ↦{dq} (v.(clientv3.WatchResponse.CompactRevision')))
     (l.[(clientv3.WatchResponse.t), "CompactRevision"] ↦{dq} (v.(clientv3.WatchResponse.CompactRevision')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance WatchResponse_access_store_CompactRevision l (v : (clientv3.WatchResponse.t)) CompactRevision' :
   AccessStrict
     (l.[(clientv3.WatchResponse.t), "CompactRevision"] ↦ (v.(clientv3.WatchResponse.CompactRevision')))
     (l.[(clientv3.WatchResponse.t), "CompactRevision"] ↦ CompactRevision')
     (l ↦ v) (l ↦ (v <|(clientv3.WatchResponse.CompactRevision') := CompactRevision'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance WatchResponse_access_load_Canceled l (v : (clientv3.WatchResponse.t)) dq :
   AccessStrict
     (l.[(clientv3.WatchResponse.t), "Canceled"] ↦{dq} (v.(clientv3.WatchResponse.Canceled')))
     (l.[(clientv3.WatchResponse.t), "Canceled"] ↦{dq} (v.(clientv3.WatchResponse.Canceled')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance WatchResponse_access_store_Canceled l (v : (clientv3.WatchResponse.t)) Canceled' :
   AccessStrict
     (l.[(clientv3.WatchResponse.t), "Canceled"] ↦ (v.(clientv3.WatchResponse.Canceled')))
     (l.[(clientv3.WatchResponse.t), "Canceled"] ↦ Canceled')
     (l ↦ v) (l ↦ (v <|(clientv3.WatchResponse.Canceled') := Canceled'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance WatchResponse_access_load_Created l (v : (clientv3.WatchResponse.t)) dq :
   AccessStrict
     (l.[(clientv3.WatchResponse.t), "Created"] ↦{dq} (v.(clientv3.WatchResponse.Created')))
     (l.[(clientv3.WatchResponse.t), "Created"] ↦{dq} (v.(clientv3.WatchResponse.Created')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance WatchResponse_access_store_Created l (v : (clientv3.WatchResponse.t)) Created' :
   AccessStrict
     (l.[(clientv3.WatchResponse.t), "Created"] ↦ (v.(clientv3.WatchResponse.Created')))
     (l.[(clientv3.WatchResponse.t), "Created"] ↦ Created')
     (l ↦ v) (l ↦ (v <|(clientv3.WatchResponse.Created') := Created'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance WatchResponse_access_load_closeErr l (v : (clientv3.WatchResponse.t)) dq :
   AccessStrict
     (l.[(clientv3.WatchResponse.t), "closeErr"] ↦{dq} (v.(clientv3.WatchResponse.closeErr')))
     (l.[(clientv3.WatchResponse.t), "closeErr"] ↦{dq} (v.(clientv3.WatchResponse.closeErr')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance WatchResponse_access_store_closeErr l (v : (clientv3.WatchResponse.t)) closeErr' :
   AccessStrict
     (l.[(clientv3.WatchResponse.t), "closeErr"] ↦ (v.(clientv3.WatchResponse.closeErr')))
     (l.[(clientv3.WatchResponse.t), "closeErr"] ↦ closeErr')
     (l ↦ v) (l ↦ (v <|(clientv3.WatchResponse.closeErr') := closeErr'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 #[global] Instance WatchResponse_access_load_cancelReason l (v : (clientv3.WatchResponse.t)) dq :
   AccessStrict
     (l.[(clientv3.WatchResponse.t), "cancelReason"] ↦{dq} (v.(clientv3.WatchResponse.cancelReason')))
     (l.[(clientv3.WatchResponse.t), "cancelReason"] ↦{dq} (v.(clientv3.WatchResponse.cancelReason')))
     (l ↦{dq} v) (l ↦{dq} v)%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 #[global] Instance WatchResponse_access_store_cancelReason l (v : (clientv3.WatchResponse.t)) cancelReason' :
   AccessStrict
     (l.[(clientv3.WatchResponse.t), "cancelReason"] ↦ (v.(clientv3.WatchResponse.cancelReason')))
     (l.[(clientv3.WatchResponse.t), "cancelReason"] ↦ cancelReason')
     (l ↦ v) (l ↦ (v <|(clientv3.WatchResponse.cancelReason') := cancelReason'|>))%I.
-Proof. solve_pointsto_access_struct. Qed.
+Proof. Admitted.
 
 End def.
 End WatchResponse.

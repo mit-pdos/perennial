@@ -47,10 +47,17 @@ Definition Initⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val 
   λ: "diskSz",
     exception_do (let: "diskSz" := (GoAlloc go.uint64 "diskSz") in
     (if: Convert go.untyped_bool go.bool ((![go.uint64] "diskSz") <⟨go.uint64⟩ #(W64 1))
-    then return: (GoAlloc Log (CompositeLiteral Log (LiteralValue [KeyedElement (Some (KeyField "m"%go)) (ElementExpression (go.PointerType sync.Mutex) (GoAlloc sync.Mutex (GoZeroVal sync.Mutex #()))); KeyedElement (Some (KeyField "sz"%go)) (ElementExpression go.uint64 #(W64 0)); KeyedElement (Some (KeyField "diskSz"%go)) (ElementExpression go.uint64 #(W64 0))])), #false)
+    then
+      return: (GoAlloc Log (let: "$v0" := (GoAlloc sync.Mutex (GoZeroVal sync.Mutex #())) in
+       let: "$v1" := #(W64 0) in
+       let: "$v2" := #(W64 0) in
+       CompositeLiteral Log (LiteralValue [KeyedElement (Some (KeyField "m"%go)) (ElementExpression (go.PointerType sync.Mutex) "$v0"); KeyedElement (Some (KeyField "sz"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "diskSz"%go)) (ElementExpression go.uint64 "$v2")])), #false)
     else do:  #());;;
     let: "log" := (GoAlloc (go.PointerType Log) (GoZeroVal (go.PointerType Log) #())) in
-    let: "$r0" := (GoAlloc Log (CompositeLiteral Log (LiteralValue [KeyedElement (Some (KeyField "m"%go)) (ElementExpression (go.PointerType sync.Mutex) (GoAlloc sync.Mutex (GoZeroVal sync.Mutex #()))); KeyedElement (Some (KeyField "sz"%go)) (ElementExpression go.uint64 #(W64 0)); KeyedElement (Some (KeyField "diskSz"%go)) (ElementExpression go.uint64 (![go.uint64] "diskSz"))]))) in
+    let: "$r0" := (GoAlloc Log (let: "$v0" := (GoAlloc sync.Mutex (GoZeroVal sync.Mutex #())) in
+    let: "$v1" := #(W64 0) in
+    let: "$v2" := (![go.uint64] "diskSz") in
+    CompositeLiteral Log (LiteralValue [KeyedElement (Some (KeyField "m"%go)) (ElementExpression (go.PointerType sync.Mutex) "$v0"); KeyedElement (Some (KeyField "sz"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "diskSz"%go)) (ElementExpression go.uint64 "$v2")]))) in
     do:  ("log" <-[go.PointerType Log] "$r0");;;
     do:  ((MethodResolve (go.PointerType Log) "writeHdr"%go (![go.PointerType Log] "log")) #());;;
     return: (![go.PointerType Log] "log", #true)).
@@ -72,7 +79,10 @@ Definition Openⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val 
     let: "diskSz" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := ((MethodResolve marshal.Dec "GetInt"%go (![marshal.Dec] "dec")) #()) in
     do:  ("diskSz" <-[go.uint64] "$r0");;;
-    return: (GoAlloc Log (CompositeLiteral Log (LiteralValue [KeyedElement (Some (KeyField "m"%go)) (ElementExpression (go.PointerType sync.Mutex) (GoAlloc sync.Mutex (GoZeroVal sync.Mutex #()))); KeyedElement (Some (KeyField "sz"%go)) (ElementExpression go.uint64 (![go.uint64] "sz")); KeyedElement (Some (KeyField "diskSz"%go)) (ElementExpression go.uint64 (![go.uint64] "diskSz"))])))).
+    return: (GoAlloc Log (let: "$v0" := (GoAlloc sync.Mutex (GoZeroVal sync.Mutex #())) in
+     let: "$v1" := (![go.uint64] "sz") in
+     let: "$v2" := (![go.uint64] "diskSz") in
+     CompositeLiteral Log (LiteralValue [KeyedElement (Some (KeyField "m"%go)) (ElementExpression (go.PointerType sync.Mutex) "$v0"); KeyedElement (Some (KeyField "sz"%go)) (ElementExpression go.uint64 "$v1"); KeyedElement (Some (KeyField "diskSz"%go)) (ElementExpression go.uint64 "$v2")])))).
 
 (* go: append_log.go:50:17 *)
 Definition Log__getⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
