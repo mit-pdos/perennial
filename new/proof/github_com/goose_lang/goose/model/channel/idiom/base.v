@@ -7,7 +7,6 @@ From Perennial.algebra Require Export ghost_var.
 Class chan_idiomG Σ V := ChanIdiomG {
     chan_idiom_chanG :: chanG Σ V;
     chan_idiom_ghost_mapG :: ghost_mapG Σ nat gname;
-    (* already in chanG *)
     chan_idiom_savedPropG :: savedPropG Σ;
     chan_idiom_ghost_boolG :: ghost_varG Σ bool;
     chan_idiom_ghost_listG :: ghost_varG Σ (list V);
@@ -19,7 +18,7 @@ Class chan_idiomG Σ V := ChanIdiomG {
 Definition chan_idiomΣ V : gFunctors :=
   #[ chanΣ V; ghost_mapΣ nat gname;
      ghost_varΣ bool; ghost_varΣ (list V); ghost_varΣ nat; ghost_varΣ ();
-     auth_setΣ gname
+     savedPropΣ; auth_setΣ gname
     ].
 
 #[global] Instance subG_chan_idiomG Σ V :
