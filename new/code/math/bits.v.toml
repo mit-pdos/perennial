@@ -1,5 +1,0 @@
-translate = ["!*",
-"deBruijn32tab",
-"deBruijn64tab",
-]
-imports = ["!*"]
