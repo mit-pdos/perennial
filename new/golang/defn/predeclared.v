@@ -100,8 +100,8 @@ Definition uintptr : go.type := go.Named "uintptr"%go [].
 
 (* Untyped types *)
 Definition untyped_int := go.Named "untyped int"%go [].
-Definition untyped_string := go.Named "untyped string"%go [].
-Definition untyped_bool := go.Named "untyped bool"%go [].
+Definition untyped_string := go.string.
+Definition untyped_bool := go.bool.
 Definition untyped_nil := go.Named "untyped nil"%go [].
 Definition untyped_float := go.Named "untyped float"%go [].
 Definition untyped_rune := untyped_int.
@@ -569,9 +569,6 @@ Class PredeclaredSemantics `{!GoSemanticsFunctions} :=
   #[global] go_eq_bool :: go.IsStrictlyComparable go.bool Datatypes.bool;
   #[global] underlying_bool :: go.bool ↓u go.bool;
   #[global] go_zero_val_bool :: go.TypeReprUnderlying go.bool Datatypes.bool;
-  #[global] underlying_untyped_bool :: go.untyped_bool ↓u go.untyped_bool;
-  #[global] convert_untyped_bool (b : Datatypes.bool) ::
-    ⟦Convert go.untyped_bool go.bool, #b⟧ ⤳[under] #b;
   #[global] go_unop_not_bool b ::
     ⟦GoUnOp GoNot go.bool, #b⟧ ⤳[under] #(negb b);
 
@@ -596,9 +593,6 @@ Class PredeclaredSemantics `{!GoSemanticsFunctions} :=
   #[global] underlying_string :: go.string ↓u go.string;
   #[global] plus_string (v1 v2 : go_string) :: ⟦GoOp GoPlus go.string, (#v1, #v2)⟧ ⤳[under] #(v1 ++ v2);
   #[global] go_zero_val_string :: go.TypeReprUnderlying go.string go_string;
-  #[global] underlying_untyped_string :: go.untyped_string ↓u go.untyped_string;
-  #[global] convert_untyped_string (s : go_string) ::
-    ⟦Convert go.untyped_string go.string, #s⟧ ⤳[under] #s;
 
   #[global] underlying_untyped_nil :: go.untyped_nil ↓u go.untyped_nil;
   #[global] convert_nil_pointer elem ::
