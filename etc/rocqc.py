@@ -75,16 +75,16 @@ class TimingDb:
 
 class Classify:
     DEF_RE = re.compile(
-        r"""(?:#\[(local|global|export)\]\s+)?(?:(Local|Global)\s+)?(?:Theorem|Lemma|Instance|Definition|Corollary|Remark|Fact|Program Lemma)\s+"""
-        + r"""(?P<ident>\w(\w|')*)"""
+        br"""(?:#\[(local|global|export)\]\s+)?(?:(Local|Global)\s+)?(?:Theorem|Lemma|Instance|Definition|Corollary|Remark|Fact|Program Lemma)\s+"""
+        + br"""(?P<ident>\w(\w|')*)"""
     )
-    OBLIGATION_RE = re.compile(r"""(Next Obligation\.)|(Final Obligation\.)""")
-    GOAL_RE = re.compile(r"""\s*Goal\s+""")
+    OBLIGATION_RE = re.compile(br"""(Next Obligation\.)|(Final Obligation\.)""")
+    GOAL_RE = re.compile(br"""\s*Goal\s+""")
     TIME_RE = re.compile(
-        r"""Chars (?P<start>\d*) - (?P<end>\d*) \[.*\] """
-        + r"""(?P<time>[0-9.]*) secs .*"""
+        br"""Chars (?P<start>\d*) - (?P<end>\d*) \[.*\] """
+        + br"""(?P<time>[0-9.]*) secs .*"""
     )
-    QED_RE = re.compile(r"""(?:Time\s*)?Qed\.""")
+    QED_RE = re.compile(br"""(?:Time\s*)?Qed\.""")
     obligation_count = 0
     goal_count = 0
 
@@ -96,7 +96,7 @@ class Classify:
     def get_def(cls, s):
         m = cls.DEF_RE.match(s)
         if m is not None:
-            return m.group("ident")
+            return m.group("ident").decode("utf-8")
         m = cls.OBLIGATION_RE.match(s)
         if m is not None:
             cls.obligation_count += 1
@@ -152,7 +152,7 @@ class CoqcFilter:
     def chars(self, start, end):
         if not self.contents:
             self._read_vfile()
-        return self.contents[start:end].decode("utf-8")
+        return self.contents[start:end]
 
     def update_def(self, ident):
         """Update current definition to ident."""
@@ -178,12 +178,11 @@ class CoqcFilter:
 
     def line(self, ln):
         """Process a line of output from rocq compile."""
-        line = ln.decode("utf-8")
-        timing_info = Classify.get_time(line)
+        timing_info = Classify.get_time(ln)
         if timing_info:
             return self.update_timing(timing_info)
 
-        sys.stdout.write(line)
+        sys.stdout.buffer.write(ln)
 
     def done(self, end_t=None):
         if end_t is None:
