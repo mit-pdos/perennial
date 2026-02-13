@@ -1,6 +1,5 @@
 From New.generatedproof Require Import slices.
-From New.proof Require Import proof_prelude.
-From New.proof.math_proof Require Import bits_init.
+From New.proof Require Import proof_prelude math.bits.
 
 Module slices.
 Section proof.

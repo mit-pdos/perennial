@@ -35,11 +35,7 @@ Axiom len8tab : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition deBruijn32tab {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/bits.deBruijn32tab"%go.
 
-Axiom deBruijn32tab'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
 Definition deBruijn64tab {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/bits.deBruijn64tab"%go.
-
-Axiom deBruijn64tab'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition overflowError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math/bits.overflowError"%go.
 
@@ -153,8 +149,108 @@ Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init pkg_id.bits (λ: <>,
-      exception_do (do:  (deBruijn32tab'init #());;;
-      do:  (deBruijn64tab'init #()))
+      exception_do (do:  (go.GlobalAlloc deBruijn64tab (go.ArrayType 64 go.byte) #());;;
+      do:  (go.GlobalAlloc deBruijn32tab (go.ArrayType 32 go.byte) #());;;
+      let: "$r0" := (let: "$v0" := #(W8 0) in
+      let: "$v1" := #(W8 1) in
+      let: "$v2" := #(W8 28) in
+      let: "$v3" := #(W8 2) in
+      let: "$v4" := #(W8 29) in
+      let: "$v5" := #(W8 14) in
+      let: "$v6" := #(W8 24) in
+      let: "$v7" := #(W8 3) in
+      let: "$v8" := #(W8 30) in
+      let: "$v9" := #(W8 22) in
+      let: "$v10" := #(W8 20) in
+      let: "$v11" := #(W8 15) in
+      let: "$v12" := #(W8 25) in
+      let: "$v13" := #(W8 17) in
+      let: "$v14" := #(W8 4) in
+      let: "$v15" := #(W8 8) in
+      let: "$v16" := #(W8 31) in
+      let: "$v17" := #(W8 27) in
+      let: "$v18" := #(W8 13) in
+      let: "$v19" := #(W8 23) in
+      let: "$v20" := #(W8 21) in
+      let: "$v21" := #(W8 19) in
+      let: "$v22" := #(W8 16) in
+      let: "$v23" := #(W8 7) in
+      let: "$v24" := #(W8 26) in
+      let: "$v25" := #(W8 12) in
+      let: "$v26" := #(W8 18) in
+      let: "$v27" := #(W8 6) in
+      let: "$v28" := #(W8 11) in
+      let: "$v29" := #(W8 5) in
+      let: "$v30" := #(W8 10) in
+      let: "$v31" := #(W8 9) in
+      CompositeLiteral (go.ArrayType 32 go.byte) (LiteralValue [KeyedElement None (ElementExpression go.byte "$v0"); KeyedElement None (ElementExpression go.byte "$v1"); KeyedElement None (ElementExpression go.byte "$v2"); KeyedElement None (ElementExpression go.byte "$v3"); KeyedElement None (ElementExpression go.byte "$v4"); KeyedElement None (ElementExpression go.byte "$v5"); KeyedElement None (ElementExpression go.byte "$v6"); KeyedElement None (ElementExpression go.byte "$v7"); KeyedElement None (ElementExpression go.byte "$v8"); KeyedElement None (ElementExpression go.byte "$v9"); KeyedElement None (ElementExpression go.byte "$v10"); KeyedElement None (ElementExpression go.byte "$v11"); KeyedElement None (ElementExpression go.byte "$v12"); KeyedElement None (ElementExpression go.byte "$v13"); KeyedElement None (ElementExpression go.byte "$v14"); KeyedElement None (ElementExpression go.byte "$v15"); KeyedElement None (ElementExpression go.byte "$v16"); KeyedElement None (ElementExpression go.byte "$v17"); KeyedElement None (ElementExpression go.byte "$v18"); KeyedElement None (ElementExpression go.byte "$v19"); KeyedElement None (ElementExpression go.byte "$v20"); KeyedElement None (ElementExpression go.byte "$v21"); KeyedElement None (ElementExpression go.byte "$v22"); KeyedElement None (ElementExpression go.byte "$v23"); KeyedElement None (ElementExpression go.byte "$v24"); KeyedElement None (ElementExpression go.byte "$v25"); KeyedElement None (ElementExpression go.byte "$v26"); KeyedElement None (ElementExpression go.byte "$v27"); KeyedElement None (ElementExpression go.byte "$v28"); KeyedElement None (ElementExpression go.byte "$v29"); KeyedElement None (ElementExpression go.byte "$v30"); KeyedElement None (ElementExpression go.byte "$v31")])) in
+      do:  ((GlobalVarAddr deBruijn32tab #()) <-[go.ArrayType 32 go.byte] "$r0");;;
+      let: "$r0" := (let: "$v0" := #(W8 0) in
+      let: "$v1" := #(W8 1) in
+      let: "$v2" := #(W8 56) in
+      let: "$v3" := #(W8 2) in
+      let: "$v4" := #(W8 57) in
+      let: "$v5" := #(W8 49) in
+      let: "$v6" := #(W8 28) in
+      let: "$v7" := #(W8 3) in
+      let: "$v8" := #(W8 61) in
+      let: "$v9" := #(W8 58) in
+      let: "$v10" := #(W8 42) in
+      let: "$v11" := #(W8 50) in
+      let: "$v12" := #(W8 38) in
+      let: "$v13" := #(W8 29) in
+      let: "$v14" := #(W8 17) in
+      let: "$v15" := #(W8 4) in
+      let: "$v16" := #(W8 62) in
+      let: "$v17" := #(W8 47) in
+      let: "$v18" := #(W8 59) in
+      let: "$v19" := #(W8 36) in
+      let: "$v20" := #(W8 45) in
+      let: "$v21" := #(W8 43) in
+      let: "$v22" := #(W8 51) in
+      let: "$v23" := #(W8 22) in
+      let: "$v24" := #(W8 53) in
+      let: "$v25" := #(W8 39) in
+      let: "$v26" := #(W8 33) in
+      let: "$v27" := #(W8 30) in
+      let: "$v28" := #(W8 24) in
+      let: "$v29" := #(W8 18) in
+      let: "$v30" := #(W8 12) in
+      let: "$v31" := #(W8 5) in
+      let: "$v32" := #(W8 63) in
+      let: "$v33" := #(W8 55) in
+      let: "$v34" := #(W8 48) in
+      let: "$v35" := #(W8 27) in
+      let: "$v36" := #(W8 60) in
+      let: "$v37" := #(W8 41) in
+      let: "$v38" := #(W8 37) in
+      let: "$v39" := #(W8 16) in
+      let: "$v40" := #(W8 46) in
+      let: "$v41" := #(W8 35) in
+      let: "$v42" := #(W8 44) in
+      let: "$v43" := #(W8 21) in
+      let: "$v44" := #(W8 52) in
+      let: "$v45" := #(W8 32) in
+      let: "$v46" := #(W8 23) in
+      let: "$v47" := #(W8 11) in
+      let: "$v48" := #(W8 54) in
+      let: "$v49" := #(W8 26) in
+      let: "$v50" := #(W8 40) in
+      let: "$v51" := #(W8 15) in
+      let: "$v52" := #(W8 34) in
+      let: "$v53" := #(W8 20) in
+      let: "$v54" := #(W8 31) in
+      let: "$v55" := #(W8 10) in
+      let: "$v56" := #(W8 25) in
+      let: "$v57" := #(W8 14) in
+      let: "$v58" := #(W8 19) in
+      let: "$v59" := #(W8 9) in
+      let: "$v60" := #(W8 13) in
+      let: "$v61" := #(W8 8) in
+      let: "$v62" := #(W8 7) in
+      let: "$v63" := #(W8 6) in
+      CompositeLiteral (go.ArrayType 64 go.byte) (LiteralValue [KeyedElement None (ElementExpression go.byte "$v0"); KeyedElement None (ElementExpression go.byte "$v1"); KeyedElement None (ElementExpression go.byte "$v2"); KeyedElement None (ElementExpression go.byte "$v3"); KeyedElement None (ElementExpression go.byte "$v4"); KeyedElement None (ElementExpression go.byte "$v5"); KeyedElement None (ElementExpression go.byte "$v6"); KeyedElement None (ElementExpression go.byte "$v7"); KeyedElement None (ElementExpression go.byte "$v8"); KeyedElement None (ElementExpression go.byte "$v9"); KeyedElement None (ElementExpression go.byte "$v10"); KeyedElement None (ElementExpression go.byte "$v11"); KeyedElement None (ElementExpression go.byte "$v12"); KeyedElement None (ElementExpression go.byte "$v13"); KeyedElement None (ElementExpression go.byte "$v14"); KeyedElement None (ElementExpression go.byte "$v15"); KeyedElement None (ElementExpression go.byte "$v16"); KeyedElement None (ElementExpression go.byte "$v17"); KeyedElement None (ElementExpression go.byte "$v18"); KeyedElement None (ElementExpression go.byte "$v19"); KeyedElement None (ElementExpression go.byte "$v20"); KeyedElement None (ElementExpression go.byte "$v21"); KeyedElement None (ElementExpression go.byte "$v22"); KeyedElement None (ElementExpression go.byte "$v23"); KeyedElement None (ElementExpression go.byte "$v24"); KeyedElement None (ElementExpression go.byte "$v25"); KeyedElement None (ElementExpression go.byte "$v26"); KeyedElement None (ElementExpression go.byte "$v27"); KeyedElement None (ElementExpression go.byte "$v28"); KeyedElement None (ElementExpression go.byte "$v29"); KeyedElement None (ElementExpression go.byte "$v30"); KeyedElement None (ElementExpression go.byte "$v31"); KeyedElement None (ElementExpression go.byte "$v32"); KeyedElement None (ElementExpression go.byte "$v33"); KeyedElement None (ElementExpression go.byte "$v34"); KeyedElement None (ElementExpression go.byte "$v35"); KeyedElement None (ElementExpression go.byte "$v36"); KeyedElement None (ElementExpression go.byte "$v37"); KeyedElement None (ElementExpression go.byte "$v38"); KeyedElement None (ElementExpression go.byte "$v39"); KeyedElement None (ElementExpression go.byte "$v40"); KeyedElement None (ElementExpression go.byte "$v41"); KeyedElement None (ElementExpression go.byte "$v42"); KeyedElement None (ElementExpression go.byte "$v43"); KeyedElement None (ElementExpression go.byte "$v44"); KeyedElement None (ElementExpression go.byte "$v45"); KeyedElement None (ElementExpression go.byte "$v46"); KeyedElement None (ElementExpression go.byte "$v47"); KeyedElement None (ElementExpression go.byte "$v48"); KeyedElement None (ElementExpression go.byte "$v49"); KeyedElement None (ElementExpression go.byte "$v50"); KeyedElement None (ElementExpression go.byte "$v51"); KeyedElement None (ElementExpression go.byte "$v52"); KeyedElement None (ElementExpression go.byte "$v53"); KeyedElement None (ElementExpression go.byte "$v54"); KeyedElement None (ElementExpression go.byte "$v55"); KeyedElement None (ElementExpression go.byte "$v56"); KeyedElement None (ElementExpression go.byte "$v57"); KeyedElement None (ElementExpression go.byte "$v58"); KeyedElement None (ElementExpression go.byte "$v59"); KeyedElement None (ElementExpression go.byte "$v60"); KeyedElement None (ElementExpression go.byte "$v61"); KeyedElement None (ElementExpression go.byte "$v62"); KeyedElement None (ElementExpression go.byte "$v63")])) in
+      do:  ((GlobalVarAddr deBruijn64tab #()) <-[go.ArrayType 64 go.byte] "$r0"))
       ).
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
