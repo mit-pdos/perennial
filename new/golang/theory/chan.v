@@ -46,6 +46,8 @@ Context [ct dir t] [Hunder : ct ↓u go.ChannelType dir t].
 Context [V] `[!ZeroVal V] `[!TypedPointsto V] `[!IntoValTyped V t].
 Context `[!chanG Σ V].
 
+Collection W := sem_fn + pre_sem + sem + W.
+
 Implicit Types (ch : loc) (v : V) (γ : chan_names).
 
 Lemma wp_make2 (cap : w64) :

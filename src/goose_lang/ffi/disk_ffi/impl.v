@@ -82,7 +82,7 @@ Section disk.
       b ← reads (λ '(σ,g), σ.(world) !! uint.Z a) ≫= unwrap;
       l ← allocate;
       modify (λ '(σ,g), (state_insert_list l (Block_to_vals b) σ, g));;
-      ret $ Val $ #(LitLoc l)
+      ret $ Val $ #l
     | WriteOp, PairV (LitV (LitInt a)) (LitV (LitLoc l)) =>
       _ ← reads (λ '(σ,g), σ.(world) !! uint.Z a) ≫= unwrap;
         (* TODO: use Sydney's executable version from disk_interpreter.v as

@@ -80,7 +80,7 @@ lemmas. *)
   Theorem read_fresh : forall σ g a b,
       let l := fresh_locs (dom (heap σ)) in
       σ.(world) !! uint.Z a = Some b ->
-      relation.denote (ffi_step ReadOp (LitV $ LitInt a)) (σ,g) (state_insert_list l (Block_to_vals b) σ,g) (LitV $ LitLoc $ l).
+      relation.denote (ffi_step ReadOp (LitV $ LitInt a)) (σ,g) (state_insert_list l (Block_to_vals b) σ,g) #l.
   Proof.
     intros.
     simpl.
@@ -113,8 +113,8 @@ lemmas. *)
 
   Lemma wp_ReadOp s E (a: u64) q b :
     {{{ ▷ uint.Z a d↦{q} b }}}
-      ExternalOp ReadOp (Val $ LitV $ LitInt a) @ s; E
-    {{{ l, RET LitV (LitLoc l); uint.Z a d↦{q} b ∗
+      ExternalOp ReadOp (LitV $ LitInt a) @ s; E
+    {{{ l, RET #l; uint.Z a d↦{q} b ∗
                                   pointsto_block l (DfracOwn 1) b }}}.
   Proof.
     iIntros (Φ) ">Ha HΦ". iApply wp_lift_atomic_base_step_no_fork; first by auto.
@@ -124,7 +124,6 @@ lemmas. *)
     iSplit.
     { iPureIntro.
       eexists _, _, _, _, _; simpl.
-      constructor 1.
       rewrite /base_step /=.
       monad_simpl.
       simpl.
@@ -132,9 +131,7 @@ lemmas. *)
       econstructor; [ eapply relation.suchThat_gen0; reflexivity | ].
       monad_simpl. }
     iNext; iIntros (v2 σ2 g2 efs Hstep).
-    apply base_step_atomic_inv in Hstep; [ | by inversion 1 ].
-    inv_base_step.
-    monad_inv.
+    inv_base_step. monad_inv.
     iMod (global_state_interp_le with "Hg") as "$".
     { apply step_count_next_incr. }
     iMod (na_heap_alloc_list tls _ l (Block_to_vals b) (Reading O) with "Hσ")
@@ -167,7 +164,7 @@ lemmas. *)
   Defined.
 
   Theorem block_byte_index {ext: ffi_syntax} (b: Block) (i: Z) (Hlow: (0 <= i)%Z) (Hhi: (i < 4096)%Z) :
-    Block_to_vals b !! Z.to_nat i = Some (LitV $ LitByte $ b !!! bindex_of_Z i Hlow Hhi).
+    Block_to_vals b !! Z.to_nat i = Some (into_val $ b !!! bindex_of_Z i Hlow Hhi).
   Proof.
     unfold Block_to_vals.
     rewrite ?list_lookup_fmap.
@@ -185,7 +182,7 @@ lemmas. *)
     iIntros "Hm".
     pose proof (block_byte_index b i ltac:(auto) ltac:(auto)) as Hi.
     assert (heap_array l (Block_to_vals b) !! (l +ₗ i) =
-            Some $ LitV $ LitByte $ b !!! bindex_of_Z i Hlow Hhi) as Hha.
+            Some $ into_val $ b !!! bindex_of_Z i Hlow Hhi) as Hha.
     { apply heap_array_lookup.
       eexists; intuition eauto. }
     iDestruct (big_sepM_lookup_acc _ _ _ _ Hha with "Hm") as "(Hmi&_)".
@@ -223,14 +220,13 @@ lemmas. *)
       rewrite H in H1; try lia; congruence. }
     apply vec_to_list_inj2.
     apply list_fmap_eq_inj in H0; auto.
-    hnf; intros.
-    inversion H1; subst; auto.
+    hnf; intros. inv H1. done.
   Qed.
 
   Lemma wp_WriteOp s E (a: u64) b q l :
     {{{ ▷ ∃ b0, uint.Z a d↦{#1} b0 ∗ pointsto_block l q b }}}
       ExternalOp WriteOp (Val $ PairV (LitV $ LitInt a) (LitV $ LitLoc l)) @ s; E
-    {{{ RET LitV LitUnit; uint.Z a d↦{#1} b ∗ pointsto_block l q b}}}.
+    {{{ RET #(); uint.Z a d↦{#1} b ∗ pointsto_block l q b}}}.
   Proof.
     iIntros (Φ) ">H Hϕ". iDestruct "H" as (b0) "(Ha&Hl)".
     iApply wp_lift_atomic_base_step_no_fork; first by auto.
@@ -241,13 +237,11 @@ lemmas. *)
     iSplit.
     { iPureIntro.
       eexists _, _, _, _, _; cbn.
-      constructor 1; cbn.
       repeat (monad_simpl; cbn).
       econstructor; eauto; [ econstructor; eauto| monad_simpl ]. }
     iNext; iIntros (v2 σ2 g2 efs Hstep).
-    apply base_step_atomic_inv in Hstep; [ | by inversion 1 ].
+    inv_base_step. monad_inv.
     inv_base_step.
-    monad_inv.
     iMod (global_state_interp_le with "Hg") as "$".
     { apply step_count_next_incr. }
     iMod (@gen_heap_update with "Hd Ha") as "[$ Ha]".

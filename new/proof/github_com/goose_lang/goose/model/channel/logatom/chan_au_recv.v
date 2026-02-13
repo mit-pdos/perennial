@@ -16,7 +16,7 @@ Context {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}
 Context `[!chanG Σ V].
 Context `[!ZeroVal V] `[!TypedPointsto V] `[!IntoValTyped V t].
 
-Collection W := sem_fn + pre_sem + sem.
+Collection W := sem_fn + pre_sem + sem + IntoValTyped0.
 
 Local Lemma wp_TryReceive_blocking ch γ :
   ∀ Φ ,
