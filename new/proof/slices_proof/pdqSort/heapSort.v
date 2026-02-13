@@ -79,7 +79,6 @@ Proof using StrictWeakOrder0.
 Qed.
 
 
-
 Lemma wp_siftDownCmpFunc (data: slice.t) (lo hi a b: w64) (cmp_code: func.t)
                        (xs: list E):
   {{{ is_pkg_init slices ∗
@@ -146,7 +145,7 @@ Proof using StrictWeakOrder0 + RelDecision0 + W.
     }
   wp_for "HI".
   iDestruct (own_slice_len with "Hxs1") as "%Hlen".
-  assert(length xs = length xs'). { apply Permutation_length. auto. }
+  assert (Hxs_len : length xs = length xs'). { by apply Permutation_length. }
   clear Heap. wp_if_destruct.
   - (* child >= hi, exit the loop *)
     wp_for_post. iApply "HΦ". iFrame. iSplit; try iSplit; auto.
@@ -155,70 +154,81 @@ Proof using StrictWeakOrder0 + RelDecision0 + W.
       - split_and!; intros; word.
       - destruct (Heap0 i xi xls xrs); eauto.  }
   - replace (sint.Z (word.add (word.mul (W64 2) root_val) (W64 1))) with (2 * (sint.Z root_val) + 1) in n by word.
-    assert(sint.Z (word.add a root_val) = sint.Z a + sint.Z root_val) by word.
-    assert(∃ x : E, xs' !! ((sint.nat a) + 2 * (sint.nat root_val) + 1)%nat  = Some x).
-    { apply list_lookup_lt. lia. } destruct H1 as [xls Hls].
-    assert(Hindex_ls: sint.nat (word.add a (word.add (word.mul (W64 2) root_val) (W64 1))) = ((sint.nat a) + 2 * (sint.nat root_val) + 1)%nat) by word.
+    assert(∃ x : E, xs' !! ((sint.nat a) + 2 * (sint.nat root_val) + 1)%nat  = Some x) as [xls Hls].
+    { apply list_lookup_lt. lia. }
+    (* assert(Hindex_ls: sint.nat (word.add a (word.add (word.mul (W64 2) root_val) (W64 1))) = ((sint.nat a) + 2 * (sint.nat root_val) + 1)%nat) by word. *)
 
-    assert(∃ x : E, xs' !! (sint.nat a + sint.nat root_val)%nat = Some x). { apply list_lookup_lt. lia. }
-    assert(Hindex_rt: sint.nat (word.add a root_val) = (sint.nat a + sint.nat root_val)%nat ) by word.
-    destruct H1 as [xrt Hrt].
+    assert(∃ x : E, xs' !! (sint.nat a + sint.nat root_val)%nat = Some x) as [xrt Hrt].
+    { apply list_lookup_lt. lia. }
+    (* assert(Hindex_rt: sint.nat (word.add a root_val) = (sint.nat a + sint.nat root_val)%nat ) by word. *)
     wp_if_destruct.
     + (* right-chld within bound, check data[right-child] *)
-      replace (sint.Z (word.add (word.add (word.mul (W64 2) root_val) (W64 1)) (W64 1))) with (2 * (sint.Z root_val) + 2) in l; try word.
-      rewrite -> decide_True; last lia. (* Read left-child *)
-      wp_apply (wp_load_slice_index with "[$Hxs1]") as "Hxs1";
-      try rewrite Hindex_ls; try rewrite Hindex_ls; eauto; first lia.
+      (* replace (sint.Z (word.add (word.add (word.mul (W64 2) root_val) (W64 1)) (W64 1))) with (2 * (sint.Z root_val) + 2) in l; try word. *)
+      rewrite -> decide_True; last word. (* Read left-child *)
+      wp_apply (wp_load_slice_index with "[$Hxs1]") as "Hxs1"; first word.
+      { iPureIntro. exact_eq Hls. f_equal. word. }
+      assert(∃ x : E, xs' !! ((sint.nat a) + 2 * (sint.nat root_val) + 2)%nat  = Some x) as [xrs Hrs].
+      { apply list_lookup_lt. word. }
+      (* assert(Hindex_rs1: sint.nat (word.add (word.add a (word.add (word.mul (W64 2) root_val) (W64 1))) (W64 1)) = ((sint.nat a) + 2 * (sint.nat root_val) + 2)%nat) by word. *)
+      (* assert(Hindex_rs2: sint.nat (word.add a (word.add (word.add (word.mul (W64 2) root_val) (W64 1)) (W64 1))) = ((sint.nat a) + 2 * (sint.nat root_val) + 2)%nat). *)
+      (* { word. } *)
 
-      assert(∃ x : E, xs' !! ((sint.nat a) + 2 * (sint.nat root_val) + 2)%nat  = Some x).
-      { apply list_lookup_lt. lia. } destruct H1 as [xrs Hrs].
-      assert(Hindex_rs1: sint.nat (word.add (word.add a (word.add (word.mul (W64 2) root_val) (W64 1))) (W64 1)) = ((sint.nat a) + 2 * (sint.nat root_val) + 2)%nat) by word.
-      assert(Hindex_rs2: sint.nat (word.add a (word.add (word.add (word.mul (W64 2) root_val) (W64 1)) (W64 1))) = ((sint.nat a) + 2 * (sint.nat root_val) + 2)%nat).
-      { word. }
-
-      rewrite -> decide_True; last lia. (* Read right-child *)
-      wp_apply (wp_load_slice_index with "[$Hxs1]") as "Hxs1"; try rewrite Hindex_rs1; eauto; try lia.
+      rewrite -> decide_True; last word. (* Read right-child *)
+      wp_apply (wp_load_slice_index with "[$Hxs1]") as "Hxs1"; first word.
+      { iPureIntro. exact_eq Hrs. f_equal. word. }
 
       wp_apply "Hcmp". iIntros (r) "%Hcmp_r". wp_auto. wp_if_destruct.
 
       * (*.right-child greater *)
-        rewrite -> decide_True; last lia. (* read the root *)
-        wp_apply (wp_load_slice_index with "[$Hxs1]") as "Hxs1"; try rewrite Hindex_rt; eauto; first lia.
+        rewrite -> decide_True; last word. (* read the root *)
+        wp_apply (wp_load_slice_index with "[$Hxs1]") as "Hxs1"; first word.
+        { iPureIntro. exact_eq Hrt. f_equal. word. }
 
-        rewrite -> decide_True; last lia. (* read the right child *)
-        wp_apply (wp_load_slice_index with "[$Hxs1]") as "Hxs1"; try rewrite Hindex_rs2; eauto; first lia.
+        rewrite -> decide_True; last word. (* read the right child *)
+        wp_apply (wp_load_slice_index with "[$Hxs1]") as "Hxs1"; first word.
+        { iPureIntro. exact_eq Hrs. f_equal. word. }
 
         wp_apply "Hcmp". iIntros (r2) "%Hcmp_r2". wp_auto. wp_if_destruct.
         -- (* root is not greatest, swap and continue *)
-           rewrite -> decide_True; last lia. (* read the right child *)
-           wp_apply (wp_load_slice_index with "[$Hxs1]") as "Hxs1"; try rewrite Hindex_rs2; eauto; first lia.
-           rewrite -> decide_True; last lia. (* read the root *)
-           wp_apply (wp_load_slice_index with "[$Hxs1]") as "Hxs1"; try rewrite Hindex_rt; eauto; first lia.
-           rewrite -> decide_True; last lia. (* write to the root *)
-           wp_apply (wp_store_slice_index with"[$Hxs1]") as "Hxs1"; try (iPureIntro; lia).
-           rewrite -> decide_True; last lia. (* write to the right child *)
+           rewrite -> decide_True; last word. (* read the right child *)
+           wp_apply (wp_load_slice_index with "[$Hxs1]") as "Hxs1"; first word.
+           { iPureIntro. exact_eq Hrs. f_equal. word. }
+           rewrite -> decide_True; last word. (* read the root *)
+           wp_apply (wp_load_slice_index with "[$Hxs1]") as "Hxs1"; first word.
+           { iPureIntro. exact_eq Hrt. f_equal. word. }
+           rewrite -> decide_True; last word. wp_auto. (* write to the root *)
+           wp_apply (wp_store_slice_index with"[$Hxs1]") as "Hxs1"; first word.
+           rewrite -> decide_True; last word. wp_auto. (* write to the right child *)
            wp_apply (wp_store_slice_index with"[$Hxs1]") as "Hxs1".
-           { assert(length (<[sint.nat (word.add a root_val):=xrs]> xs') = length xs') by apply length_insert. iPureIntro. lia. }
+           { by len. }
 
            wp_for_post. iFrame. iSplit; iPureIntro.
-           { eapply perm_trans. { eapply HPerm1. } { eapply swap_perm; try rewrite Hindex_rs2; try rewrite Hindex_rt; eauto. } }
+           { eapply perm_trans; first apply HPerm1.
+             eapply swap_perm.
+             { exact_eq Hrs. f_equal. word. }
+             { exact_eq Hrt. f_equal. word. } }
            { split; first (clear HeapParent Heap0 HSegSorted Houtside; word).
-             rewrite Hindex_rt. rewrite Hindex_rs2. split; intros.
-            {
-              (* re-establish seg *)
-              rewrite list_lookup_insert_ne in H3; try lia.
-             rewrite list_lookup_insert_ne in H3; try lia.
-             destruct (Nat.eq_dec i (sint.nat a + 2 * sint.nat root_val + 2)%nat) as [Heq | Hneq].
-             - rewrite <- Heq in H2. rewrite list_lookup_insert_eq in H2.
-               { inv H2. eapply (HSegSorted1 (sint.nat a + sint.nat root_val)%nat j); eauto. lia. }
-               { rewrite length_insert. lia. }
-             - rewrite list_lookup_insert_ne in H2; try lia.
-               destruct (Nat.eq_dec i (sint.nat a + sint.nat root_val)%nat) as [Heq1 | Hneq1].
-               + rewrite <- Heq1 in H2. rewrite list_lookup_insert_eq in H2.
-               { inv H2. eapply (HSegSorted1 (sint.nat a + 2 * sint.nat root_val + 2)%nat); eauto. lia. }
-               { lia. }
-               + rewrite list_lookup_insert_ne in H2; auto. eapply HSegSorted1; eauto.
-            }
+             split.
+             {
+               intros * Hle Hi Hj.
+               (* re-establish seg *)
+               rewrite list_lookup_insert_ne in Hj; last word.
+               rewrite list_lookup_insert_ne in Hj; last word.
+               rewrite list_lookup_insert in Hi. destruct decide in Hi.
+               - simplify_eq. eapply (HSegSorted1 (sint.nat a + sint.nat root_val)%nat j); eauto. lia.
+               - rewrite list_lookup_insert_ne in Hi.
+                 2:{
+                   rewrite length_insert in n0.
+                 }
+                 destruct decide in Hi.
+                 +
+                 + eapply HSegSorted1; eauto. exact_eq Hj. f_equal. word
+                 + subst. eapply HSegSorted1; eassumption.
+                 + intros x. subst. apply n0. split.
+                   * word.
+                   * word.
+                   rewrite list_lookup_insert_ne in H; auto. eapply HSegSorted1; eauto.
+             }
             { (* re-establish heap *)
               apply Hcmp_r in l0. apply R_antisym in l0; auto.
               apply Hcmp_r2 in l1. apply R_antisym in l1; auto.
