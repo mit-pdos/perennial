@@ -16,13 +16,13 @@ Lemma wp_initialize' get_is_pkg_init :
   {{{ RET #(); own_initializing get_is_pkg_init ∗ is_pkg_init bits }}}.
 Proof using W.
   intros Hinit. wp_start as "Hown".
-  wp_apply (wp_package_init with "[$Hown] HΦ") as "[Hown _]".
+  wp_apply (wp_package_init with "[$Hown] HΦ") as "Hown".
   { destruct Hinit as (-> & ?); done. }
   wp_apply wp_GlobalAlloc as "?".
   wp_apply wp_GlobalAlloc as "?".
   wp_apply wp_GlobalAlloc as "H1".
   wp_apply wp_GlobalAlloc as "H2".
-  wp_apply (unsafe.wp_initialize' with "Hown") as "Hown" --no-auto; first naive_solver.
+  wp_apply (unsafe.wp_initialize' with "Hown") as "[Hown _]" --no-auto; first naive_solver.
   progress (do 64 wp_pure).
   progress (do 64 wp_pure).
   progress (do 64 wp_pure).
@@ -43,17 +43,45 @@ Qed.
 Lemma wp_Len64 (x : w64) :
   {{{ True }}}
     @! bits.Len64 #x
-  {{{ RET #(); True }}}.
+  {{{ (l : w64), RET #l; True }}}.
 Proof using W.
-  wp_start. wp_auto. repeat wp_if_destruct.
-Admitted.
+  wp_start. wp_auto.
+  wp_bind (if: _ then _ else _)%E.
+  wp_apply (wp_wand _ _ _ (λ v, ∃ (x n : w64),
+                  "->" ∷ ⌜ v = execute_val ⌝ ∗
+                  "x" ∷ x_ptr ↦ x ∗ "n" ∷ n_ptr ↦ n ∗
+                  "%Hx32" ∷ ⌜ uint.Z x < 2^32 ⌝
+       )%I with "[x n]").
+  { wp_if_destruct; iFrame; iSplit; try done; word. }
+  iIntros "% @". wp_auto.
+
+  wp_apply (wp_wand _ _ _ (λ v, ∃ (x n : w64),
+                  "->" ∷ ⌜ v = execute_val ⌝ ∗
+                  "x" ∷ x_ptr ↦ x ∗ "n" ∷ n_ptr ↦ n ∗
+                  "%Hx16" ∷ ⌜ uint.Z x < 2^16 ⌝
+       )%I with "[x n]").
+  { wp_if_destruct; iFrame; iSplit; try done; word. }
+  iIntros "% @". wp_auto.
+
+  wp_apply (wp_wand _ _ _ (λ v, ∃ (x n : w64),
+                  "->" ∷ ⌜ v = execute_val ⌝ ∗
+                  "x" ∷ x_ptr ↦ x ∗ "n" ∷ n_ptr ↦ n ∗
+                  "%Hx8" ∷ ⌜ uint.Z x < 2^8 ⌝
+       )%I with "[x n]").
+  { wp_if_destruct; iFrame; iSplit; try done; word. }
+  iIntros "% @". wp_auto.
+
+  destruct lookup eqn:Hlookup.
+  2:{ exfalso. apply lookup_ge_None in Hlookup. simpl in Hlookup. word. }
+  wp_auto. wp_end.
+Qed.
 
 Lemma wp_Len (x : w64) :
   {{{ True }}}
     @! bits.Len #x
-  {{{ RET #(); True }}}.
+  {{{ (l : w64), RET #l; True }}}.
 Proof using W.
-  wp_start. wp_auto. wp_apply wp_Len64. wp_end.
+  wp_start. wp_auto. wp_apply wp_Len64 as "% _". wp_end.
 Qed.
 
 End wps.
