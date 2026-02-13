@@ -6,7 +6,6 @@ From New.generatedproof.github_com.stretchr.testify Require assert.
 
 From New.proof Require Import bytes context sort slices runtime.
 
-From New.proof Require go_etcd_io.raft.v3.
 From New.proof.github_com.goose_lang.goose.testdata.examples
   Require unittest unittest.generics.
 From New.proof.github_com.goose_lang.goose.testdata.examples
@@ -14,14 +13,14 @@ From New.proof.github_com.goose_lang.goose.testdata.examples
 
 From New.proof.github_com.goose_lang.goose.model.channel.idiom
   Require idioms.
-(* From New.proof.github_com.goose_lang.goose.model.channel.logatom
-  Require chan_au_sel. *)
 
-From New.proof Require go_etcd_io.etcd.client.v3.leasing leasing_proof.protocol.
+(* FIXME: need all_scmra to get these proofs to work. *)
+(* From New.proof Require go_etcd_io.raft.v3. *)
+(* From New.proof Require go_etcd_io.etcd.client.v3.leasing leasing_proof.protocol. *)
+(* Require New.proof.go_etcd_io.etcd.server.v3.etcdserver. *)
 
 From New.proof Require Import inG_problem.
 
-Require New.proof.go_etcd_io.etcd.server.v3.etcdserver.
 
 (* might not be maintained going forward but do currently build *)
 From New.experiments Require all_scmra all_ucmra chan lang records.
