@@ -22,7 +22,7 @@ Proof using W.
   wp_apply wp_GlobalAlloc as "?".
   wp_apply wp_GlobalAlloc as "H1".
   wp_apply wp_GlobalAlloc as "H2".
-  wp_apply (unsafe.wp_initialize' with "Hown") as "[Hown _]" --no-auto; first naive_solver.
+  wp_apply (unsafe.wp_initialize' with "Hown") as "[Hown #?]" --no-auto; first naive_solver.
   progress (do 64 wp_pure).
   progress (do 64 wp_pure).
   progress (do 64 wp_pure).
@@ -37,7 +37,9 @@ Proof using W.
   wp_store.
   iClear "H1".
   wp_auto.
-  iEval (rewrite is_pkg_init_unfold /=). iFrame "∗#". done.
+  iEval (rewrite is_pkg_init_unfold /=). iFrame "∗#".
+  iModIntro.
+  iFrame "#". done.
 Qed.
 
 Lemma wp_Len64 (x : w64) :
@@ -46,29 +48,20 @@ Lemma wp_Len64 (x : w64) :
   {{{ (l : w64), RET #l; True }}}.
 Proof using W.
   wp_start. wp_auto.
-  wp_bind (if: _ then _ else _)%E.
-  wp_apply (wp_wand _ _ _ (λ v, ∃ (x n : w64),
-                  "->" ∷ ⌜ v = execute_val ⌝ ∗
-                  "x" ∷ x_ptr ↦ x ∗ "n" ∷ n_ptr ↦ n ∗
-                  "%Hx32" ∷ ⌜ uint.Z x < 2^32 ⌝
-       )%I with "[x n]").
-  { wp_if_destruct; iFrame; iSplit; try done; word. }
+  wp_if_join (λ v, ∃ (x n : w64), "->" ∷ ⌜ v = execute_val ⌝ ∗
+                                  "x" ∷ x_ptr ↦ x ∗ "n" ∷ n_ptr ↦ n ∗
+                                  "%Hx32" ∷ ⌜ uint.Z x < 2^32 ⌝)%I with "[x n]";
+    [iFrame; [iSplit; try done; word] ..|].
+  iIntros "% @". wp_auto. (* TODO: add this to [wp_if_join]? *)
+  wp_if_join (λ v, ∃ (x n : w64), "->" ∷ ⌜ v = execute_val ⌝ ∗
+                                  "x" ∷ x_ptr ↦ x ∗ "n" ∷ n_ptr ↦ n ∗
+                                  "%Hx16" ∷ ⌜ uint.Z x < 2^16 ⌝)%I with "[x n]";
+    [iFrame; [iSplit; try done; word] ..|].
   iIntros "% @". wp_auto.
-
-  wp_apply (wp_wand _ _ _ (λ v, ∃ (x n : w64),
-                  "->" ∷ ⌜ v = execute_val ⌝ ∗
-                  "x" ∷ x_ptr ↦ x ∗ "n" ∷ n_ptr ↦ n ∗
-                  "%Hx16" ∷ ⌜ uint.Z x < 2^16 ⌝
-       )%I with "[x n]").
-  { wp_if_destruct; iFrame; iSplit; try done; word. }
-  iIntros "% @". wp_auto.
-
-  wp_apply (wp_wand _ _ _ (λ v, ∃ (x n : w64),
-                  "->" ∷ ⌜ v = execute_val ⌝ ∗
-                  "x" ∷ x_ptr ↦ x ∗ "n" ∷ n_ptr ↦ n ∗
-                  "%Hx8" ∷ ⌜ uint.Z x < 2^8 ⌝
-       )%I with "[x n]").
-  { wp_if_destruct; iFrame; iSplit; try done; word. }
+  wp_if_join (λ v, ∃ (x n : w64), "->" ∷ ⌜ v = execute_val ⌝ ∗
+                                  "x" ∷ x_ptr ↦ x ∗ "n" ∷ n_ptr ↦ n ∗
+                                  "%Hx8" ∷ ⌜ uint.Z x < 2^8 ⌝)%I with "[x n]";
+    [iFrame; [iSplit; try done; word] ..|].
   iIntros "% @". wp_auto.
 
   destruct lookup eqn:Hlookup.
