@@ -13,12 +13,6 @@ Collection W := sem + package_sem.
 Context `{!ZeroVal E} `{!TypedPointsto E} `{!IntoValTyped E Et}.
 Context (R: E → E → Prop) `{!RelDecision R}.
 
-Lemma wp_Len (x: w64):
-  {{{ True }}}
-    @! bits.Len #x
-  {{{  (y: w64), RET #y; True }}}.
-Admitted.
-
 (*
   We assume a binary relation R on elements, which is a "strict weak order".
   The comparison function cmp_code implements R:

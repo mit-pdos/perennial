@@ -66,14 +66,13 @@ Proof using StrictWeakOrder0 + RelDecision0 + W.
   - (* Loop Invariant for the inner loop *)
     iAssert( ∃ (j_val: w64) xs'',
       "cmp" ∷ cmp_ptr ↦ cmp ∗
-      "i" ∷ i_ptr ↦ i_val ∗
       "j" ∷ j_ptr ↦ j_val ∗
       "%jrange" ∷ ⌜ sint.Z a ≤ sint.Z j_val ≤ sint.Z i_val ⌝ ∗
       "Hxs2" ∷ data ↦* xs'' ∗
       "%Hperm2" ∷ ⌜ Permutation xs xs'' ⌝ ∗
       "%HsortedBr" ∷ ⌜ ∀ i j xi xj, (sint.nat a <= i < j)%nat ∧ j ≤ sint.nat i_val -> j ≠ sint.nat j_val -> xs'' !! i = Some xi -> xs'' !! j = Some xj -> xj ≽ xi ⌝  ∗
       "%Houtside2" ∷ ⌜ outside_same xs xs'' (sint.nat a) (sint.nat b) ⌝
-    )%I with "[cmp i j Hxs1]" as "HI2".
+    )%I with "[cmp j Hxs1]" as "HI2".
     { iFrame. iSplit; iPureIntro. -lia. -split; auto.
       unfold is_sorted_seg in Hsorted. split; eauto.
       intros. eapply Hsorted; eauto. lia. }
@@ -117,7 +116,7 @@ Proof using StrictWeakOrder0 + RelDecision0 + W.
         iSplit; try word. {
           iPureIntro. split; try split. (* The pure fact, mainly about ordering *)
           - eapply perm_trans with xs''; auto. apply swap_perm; eauto.
-          - intros. apply Hcmp_r in l0. clear Hcmp_r.
+          - intros. apply Hcmp_r in l1. clear Hcmp_r.
             destruct (Nat.eq_dec j (sint.nat j_val)) as [Heq | Hneq].
             + rewrite list_lookup_insert_ne in H4; try lia.
               subst j. rewrite list_lookup_insert_eq in H4; try lia. inv H4.
@@ -170,20 +169,17 @@ Lemma wp_partialInsertionSortCmpFunc (data: slice.t) (a b: w64) (cmp_code: func.
       "%Header" ∷ ⌜ header R xs (sint.nat a) (sint.nat b) ⌝ ∗
       "%Hab_bound" ∷ ⌜ 0 ≤ sint.Z a < sint.Z b ∧ sint.Z b ≤ length xs ∧ length xs <= 2 ^ 62⌝
   }}}
-    @! slices.partialInsertionSortCmpFunc #Et #data #a #b #cmp_code
+    #(functions slices.partialInsertionSortCmpFunc [Et]) #data #a #b #cmp_code
   {{{ (xs': list E) (bl: bool), RET #bl;
       data ↦* xs' ∗
       "%Hperm" ∷ ⌜ Permutation xs xs' ⌝ ∗
       "%Hsorted" ∷ ⌜ if bl then is_sorted_seg R xs' (sint.nat a) (sint.nat b) else True ⌝ ∗
       "%Houtside" ∷ ⌜ outside_same xs xs' (sint.nat a) (sint.nat b) ⌝
   }}}.
-Proof using StrictWeakOrder0 RelDecision0.
+Proof using StrictWeakOrder0 + RelDecision0 + W.
   wp_start as "H". iNamed "H". wp_auto.
-  iAssert(⌜length xs = sint.nat data .(slice.len_f) ∧ 0 ≤ sint.Z data .(slice.len_f)⌝)%I
-  with "[Hxs]" as "%Hlen". { iApply own_slice_len. iFrame. }
+  iDestruct (own_slice_len with "Hxs") as "%Hlen".
   iAssert ( ∃ (i_val j_val: w64) xs',
-    "a" ∷ a_ptr ↦ a ∗
-    "b" ∷ b_ptr ↦ b ∗
     "cmp" ∷ cmp_ptr ↦ cmp_code ∗
     "data" ∷ data_ptr ↦ data ∗
     "i" ∷ i_ptr ↦ i_val ∗
@@ -193,52 +189,52 @@ Proof using StrictWeakOrder0 RelDecision0.
     "%HPerm1" ∷ ⌜ Permutation xs xs' ⌝ ∗
     "%Hsorted" ∷ ⌜ is_sorted_seg R xs' (sint.nat a) (sint.nat i_val) ⌝ ∗
     "%Houtside1" ∷ ⌜ outside_same xs xs' (sint.nat a) (sint.nat b) ⌝
-  )%I with "[a b cmp Hxs i j data]" as "HI1".
+  )%I with "[cmp Hxs i j data]" as "HI1".
   { iFrame. iPureIntro; split_and!; auto; try word.
     - unfold is_sorted_seg. intros. word.
     - apply outside_same_refl. }
 
   wp_for "HI1". wp_if_destruct. {
-      set HI := ( ∃ (i_val: w64) xs',
-        "a" ∷ a_ptr ↦ a ∗
-        "b" ∷ b_ptr ↦ b ∗
-        "cmp" ∷ cmp_ptr ↦ cmp_code ∗
-        "data" ∷ data_ptr ↦ data ∗
-        "i" ∷ i_ptr ↦ i_val ∗
-        "j" ∷ j_ptr ↦ j_val ∗
-        "Hxs1" ∷ data ↦* xs' ∗
-        "%irange" ∷ ⌜ sint.Z a + 1 ≤ sint.Z i_val ≤ sint.Z b ⌝ ∗
-        "%HPerm1" ∷ ⌜ Permutation xs xs' ⌝ ∗
-        "%Hsorted" ∷ ⌜ is_sorted_seg R xs' (sint.nat a) (sint.nat i_val) ⌝ ∗
-        "%Houtside1" ∷ ⌜ outside_same xs xs' (sint.nat a) (sint.nat b) ⌝
-      )%I.
-      wp_bind. iApply ((wp_wand _ _ _ (fun v => ⌜ v = execute_val ⌝ ∗ ( ∃ (i_val: w64) xs',
-        "a" ∷ a_ptr ↦ a ∗
-        "b" ∷ b_ptr ↦ b ∗
-        "cmp" ∷ cmp_ptr ↦ cmp_code ∗
-        "i" ∷ i_ptr ↦ i_val ∗
-        "data" ∷ data_ptr ↦ data ∗
-        "j" ∷ j_ptr ↦ j_val ∗
-        "Hxs1" ∷ data ↦* xs' ∗
-        "%irange" ∷ ⌜ sint.Z a + 1 ≤ sint.Z i_val ≤ sint.Z b ⌝ ∗
-        "%HPerm1" ∷ ⌜ Permutation xs xs' ⌝ ∗
-        "%Hsorted" ∷ ⌜ is_sorted_seg R xs' (sint.nat a) (sint.nat i_val) ⌝ ∗
-        "%Houtside1" ∷ ⌜ outside_same xs xs' (sint.nat a) (sint.nat b) ⌝ ∗
-        "%HBr" ∷ ⌜ sint.nat i_val = sint.nat b \/ forall x0 x1, xs' !! (sint.nat i_val - 1)%nat = Some x0 -> xs' !! (sint.nat i_val) = Some x1 -> x0 ≽ x1 ⌝
-      ))%I) with "[a b Hxs1 i j data cmp]"). {
+    set HI := ( ∃ (i_val: w64) xs',
+                  "a" ∷ a_ptr ↦ a ∗
+                  "b" ∷ b_ptr ↦ b ∗
+                  "cmp" ∷ cmp_ptr ↦ cmp_code ∗
+                  "data" ∷ data_ptr ↦ data ∗
+                  "i" ∷ i_ptr ↦ i_val ∗
+                  "j" ∷ j_ptr ↦ j_val ∗
+                  "Hxs1" ∷ data ↦* xs' ∗
+                  "%irange" ∷ ⌜ sint.Z a + 1 ≤ sint.Z i_val ≤ sint.Z b ⌝ ∗
+                  "%HPerm1" ∷ ⌜ Permutation xs xs' ⌝ ∗
+                  "%Hsorted" ∷ ⌜ is_sorted_seg R xs' (sint.nat a) (sint.nat i_val) ⌝ ∗
+                  "%Houtside1" ∷ ⌜ outside_same xs xs' (sint.nat a) (sint.nat b) ⌝
+              )%I.
+    wp_bind. iApply ((wp_wand _ _ _ (fun v => ⌜ v = execute_val ⌝ ∗ ( ∃ (i_val: w64) xs',
+                                                                     "a" ∷ a_ptr ↦ a ∗
+                                                                     "b" ∷ b_ptr ↦ b ∗
+                                                                     "cmp" ∷ cmp_ptr ↦ cmp_code ∗
+                                                                     "i" ∷ i_ptr ↦ i_val ∗
+                                                                     "data" ∷ data_ptr ↦ data ∗
+                                                                     "j" ∷ j_ptr ↦ j_val ∗
+                                                                     "Hxs1" ∷ data ↦* xs' ∗
+                                                                     "%irange" ∷ ⌜ sint.Z a + 1 ≤ sint.Z i_val ≤ sint.Z b ⌝ ∗
+                                                                     "%HPerm1" ∷ ⌜ Permutation xs xs' ⌝ ∗
+                                                                     "%Hsorted" ∷ ⌜ is_sorted_seg R xs' (sint.nat a) (sint.nat i_val) ⌝ ∗
+                                                                     "%Houtside1" ∷ ⌜ outside_same xs xs' (sint.nat a) (sint.nat b) ⌝ ∗
+                                                                     "%HBr" ∷ ⌜ sint.nat i_val = sint.nat b \/ forall x0 x1, xs' !! (sint.nat i_val - 1)%nat = Some x0 -> xs' !! (sint.nat i_val) = Some x1 -> x0 ≽ x1 ⌝
+                        ))%I) with "[a b Hxs1 i j data cmp]"). {
       iAssert HI with "[a b cmp Hxs1 i j data]" as "HI2".
       { unfold HI. iFrame. iPureIntro. split; first word. auto. }
       wp_for "HI2". wp_if_destruct. {
         clear dependent i_val xs'.
         rename i_val0 into i_val. rename xs'0 into xs'.
         assert(length xs = length xs'). { apply Permutation_length; auto. }
-        iAssert(⌜length xs' = sint.nat data .(slice.len_f) ∧ 0 ≤ sint.Z data .(slice.len_f)⌝)%I
-        with "[Hxs1]" as "%Hlen2". { iApply own_slice_len. iFrame. }
-        wp_pure; first lia.
+        iAssert(⌜length xs' = sint.nat data .(slice.len) ∧ 0 ≤ sint.Z data .(slice.len)⌝)%I
+          with "[Hxs1]" as "%Hlen2". { iApply own_slice_len. iFrame. }
+        rewrite -> decide_True; last word.
         assert(∃ x : E, xs' !! sint.nat i_val = Some x). { apply list_lookup_lt. lia. } destruct H0 as [x1 Hx1].
         wp_apply (wp_load_slice_index with "[$Hxs1]") as "Hxs"; eauto; try lia.
 
-        wp_pure; first word.
+        rewrite -> decide_True; last word.
         assert(sint.nat (word.sub i_val (W64 1)) = (sint.nat i_val - 1)%nat) by word.
         assert(∃ x : E, xs' !! sint.nat (word.sub i_val (W64 1)) = Some x). { apply list_lookup_lt. lia. } destruct H1 as [x0 Hx0].
         wp_apply (wp_load_slice_index with "[$Hxs]") as "Hxs"; eauto; try word.
@@ -255,7 +251,7 @@ Proof using StrictWeakOrder0 RelDecision0.
             rewrite H3 in Hx1. inv Hx1. eapply notR_trans; try apply n; auto.
             destruct (Nat.eq_dec i (sint.nat i_val - 1)%nat) as [Heq2 | Hneq2].
             * rewrite H0 in Hx0. subst i. rewrite H2 in Hx0. inv Hx0.
-            apply notR_refl; auto.
+              apply notR_refl; auto.
             * eapply Hsorted0; eauto; lia.
           + eapply Hsorted0; eauto; lia.
       }
@@ -274,44 +270,44 @@ Proof using StrictWeakOrder0 RelDecision0.
     }
     clear dependent i_val xs'. rename i_val0 into i_val. rename xs'0 into xs'.
     assert(length xs = length xs'). { apply Permutation_length; auto. }
-    iAssert(⌜length xs' = sint.nat data .(slice.len_f) ∧ 0 ≤ sint.Z data .(slice.len_f)⌝)%I
-    with "[Hxs1]" as "%Hlen2". { iApply own_slice_len. iFrame. }
+    iDestruct (own_slice_len with "Hxs1") as "%Hlen2".
 
     assert(sint.Z (word.sub i_val (W64 1)) = sint.Z i_val - 1) by word.
     assert(sint.nat (word.sub i_val (W64 1)) = (sint.nat i_val - 1)%nat) by word.
 
-    wp_pure; first lia.
+
     assert(∃ x : E, xs' !! sint.nat i_val = Some x). { apply list_lookup_lt. lia. } destruct H4 as [x1 Hx1].
     assert(∃ x : E, xs' !! sint.nat (word.sub i_val (W64 1)) = Some x). { apply list_lookup_lt. lia. } destruct H4 as [x0 Hx0].
+    rewrite -> decide_True; last lia.
     wp_apply (wp_load_slice_index with "[$Hxs1]") as "Hxs"; eauto; try lia.
 
-    wp_pure; first lia.
+    rewrite -> decide_True; last lia.
     wp_apply (wp_load_slice_index with "[$Hxs]") as "Hxs"; eauto; try lia.
 
     (* write new data[j] *)
-    wp_pure; first lia.
+    rewrite -> decide_True; last lia. wp_auto.
     wp_apply (wp_store_slice_index with "[$Hxs]") as "Hxs"; first word.
 
     (* write new data[j-1] *)
-    wp_pure; first word.
+    rewrite -> decide_True; last word. wp_auto.
     wp_apply (wp_store_slice_index with "[$Hxs]") as "Hxs". { rewrite length_insert. word. }
     rename j_ptr into j_ptr0; rename j_val into j_val0; iRename "j" into "j0".
 
     wp_bind. iApply ((wp_wand _ _ _ (fun v => ⌜ v = execute_val ⌝ ∗ HI)%I) with "[a b Hxs i j0 data cmp]"). {
       wp_if_destruct. {
         iAssert( ∃ (j_val: w64) xs',
-          "a" ∷ a_ptr ↦ a ∗
-          "b" ∷ b_ptr ↦ b ∗
-          "cmp" ∷ cmp_ptr ↦ cmp_code ∗
-          "i" ∷ i_ptr ↦ i_val ∗
-          "j" ∷ j_ptr ↦ j_val ∗
-          "j0" ∷ j_ptr0 ↦ j_val0 ∗
-          "%jrange" ∷ ⌜ sint.Z a ≤ sint.Z j_val ≤ sint.Z i_val ⌝ ∗
-          "Hxs2" ∷ data ↦* xs' ∗
-          "%Hperm2" ∷ ⌜ Permutation xs xs' ⌝ ∗
-          "%HsortedBr" ∷ ⌜ ∀ i j xi xj, (sint.nat a <= i < j)%nat ∧ j < sint.nat i_val -> j ≠ sint.nat j_val -> xs' !! i = Some xi -> xs' !! j = Some xj -> xj ≽ xi ⌝  ∗
-          "%Houtside2" ∷ ⌜ outside_same xs xs' (sint.nat a) (sint.nat b) ⌝
-        )%I with "[a b cmp i j j0 Hxs]" as "HI2".
+                   "a" ∷ a_ptr ↦ a ∗
+                   "b" ∷ b_ptr ↦ b ∗
+                   "cmp" ∷ cmp_ptr ↦ cmp_code ∗
+                   "i" ∷ i_ptr ↦ i_val ∗
+                   "j" ∷ j_ptr ↦ j_val ∗
+                   "j0" ∷ j_ptr0 ↦ j_val0 ∗
+                   "%jrange" ∷ ⌜ sint.Z a ≤ sint.Z j_val ≤ sint.Z i_val ⌝ ∗
+                   "Hxs2" ∷ data ↦* xs' ∗
+                   "%Hperm2" ∷ ⌜ Permutation xs xs' ⌝ ∗
+                   "%HsortedBr" ∷ ⌜ ∀ i j xi xj, (sint.nat a <= i < j)%nat ∧ j < sint.nat i_val -> j ≠ sint.nat j_val -> xs' !! i = Some xi -> xs' !! j = Some xj -> xj ≽ xi ⌝  ∗
+                                                 "%Houtside2" ∷ ⌜ outside_same xs xs' (sint.nat a) (sint.nat b) ⌝
+               )%I with "[a b cmp i j j0 Hxs]" as "HI2".
         { iFrame. iPureIntro; split_and!; try lia.
           - eapply perm_trans; eauto. eapply swap_perm; eauto.
           - intros. rewrite list_lookup_insert_ne in H7; try lia.
@@ -326,8 +322,7 @@ Proof using StrictWeakOrder0 RelDecision0.
         wp_if_destruct. {
           clear dependent x0 x1.
           assert(length xs = length xs'). { apply Permutation_length; auto. }
-          iAssert(⌜length xs' = sint.nat data .(slice.len_f) ∧ 0 ≤ sint.Z data .(slice.len_f)⌝)%I
-          with "[Hxs2]" as "%Hlen2". { iApply own_slice_len. iFrame. }
+          iDestruct (own_slice_len with "Hxs2") as "%Hlen2".
 
           assert(sint.Z j_val > 0) by word.
           assert(sint.nat j_val > 0)%nat by word.
@@ -337,26 +332,26 @@ Proof using StrictWeakOrder0 RelDecision0.
           assert(∃ x : E, xs' !! sint.nat j_val = Some x). { apply list_lookup_lt. lia. } destruct H8 as [x1 Hx1].
           assert(∃ x : E, xs' !! sint.nat (word.sub j_val (W64 1)) = Some x). { apply list_lookup_lt. lia. } destruct H8 as [x0 Hx0].
 
-          wp_pure; first lia.
+          rewrite -> decide_True; last lia.
           wp_apply (wp_load_slice_index with "[$Hxs2]") as "Hxs"; eauto; try lia.
 
-          wp_pure; first lia.
+          rewrite -> decide_True; last lia.
           wp_apply (wp_load_slice_index with "[$Hxs]") as "Hxs"; eauto; try lia.
 
           wp_apply "Hcmp". iIntros (r) "%Hcmp_r". wp_auto. wp_if_destruct. {
-            wp_pure; first lia.
+            rewrite -> decide_True; last lia.
             wp_apply (wp_load_slice_index with "[$Hxs]") as "Hxs"; eauto; try lia.
 
-            wp_pure; first lia.
+            rewrite -> decide_True; last lia.
             wp_apply (wp_load_slice_index with "[$Hxs]") as "Hxs"; eauto; try lia.
-            wp_pure; first lia.
+            rewrite -> decide_True; last lia. wp_auto.
             wp_apply (wp_store_slice_index with "[$Hxs]") as "Hxs"; first (iPureIntro; word).
 
             (* write new data[j-1] *)
-            wp_pure; first word.
+            rewrite -> decide_True; last word. wp_auto.
             wp_apply (wp_store_slice_index with "[$Hxs]") as "Hxs". { rewrite length_insert. iPureIntro. lia. }
 
-            wp_for_post. iFrame. iPureIntro. apply Hcmp_r in l0.
+            wp_for_post. iFrame. iPureIntro. apply Hcmp_r in l2.
             assert(sint.Z a < sint.Z j_val). {
               destruct (Z.eq_dec (sint.Z a) (sint.Z j_val)) as [Heq | Hneq].
               {
@@ -444,8 +439,7 @@ Proof using StrictWeakOrder0 RelDecision0.
         wp_for "HI2". wp_if_destruct. {
           clear dependent xs' x0 x1. rename xs'0 into xs'.
           assert(length xs = length xs'). { apply Permutation_length; auto. }
-          iAssert(⌜length xs' = sint.nat data .(slice.len_f) ∧ 0 ≤ sint.Z data .(slice.len_f)⌝)%I
-          with "[Hxs2]" as "%Hlen2". { iApply own_slice_len. iFrame. }
+          iDestruct (own_slice_len with "Hxs2") as "%Hlen2".
 
           assert(sint.Z (word.sub j_val (W64 1)) = sint.Z j_val - 1) by word.
           assert(sint.nat (word.sub j_val (W64 1)) = (sint.nat j_val - 1)%nat) by word.
@@ -453,25 +447,25 @@ Proof using StrictWeakOrder0 RelDecision0.
           assert(∃ x : E, xs' !! sint.nat j_val = Some x). { apply list_lookup_lt. lia. } destruct H2 as [x1 Hx1].
           assert(∃ x : E, xs' !! sint.nat (word.sub j_val (W64 1)) = Some x). { apply list_lookup_lt. lia. } destruct H2 as [x0 Hx0].
 
-          wp_pure; first lia.
+          rewrite -> decide_True; last lia.
           wp_apply (wp_load_slice_index with "[$Hxs2]") as "Hxs"; eauto; try lia.
 
-          wp_pure; first lia.
+          rewrite -> decide_True; last lia.
           wp_apply (wp_load_slice_index with "[$Hxs]") as "Hxs"; eauto; try lia.
 
           wp_apply "Hcmp". iIntros (r) "%Hcmp_r". wp_auto. wp_if_destruct. {
             (* write new data[j] *)
-            wp_pure; first lia.
+            rewrite -> decide_True; last lia.
             wp_apply (wp_load_slice_index with "[$Hxs]") as "Hxs"; eauto; try lia.
 
-            wp_pure; first lia.
+            rewrite -> decide_True; last lia.
             wp_apply (wp_load_slice_index with "[$Hxs]") as "Hxs"; eauto; try lia.
 
             (* write new data[j-1] *)
-            wp_pure; first word.
+            rewrite -> decide_True; last word. wp_auto.
             wp_apply (wp_store_slice_index with "[$Hxs]") as "Hxs". { iPureIntro; lia. }
 
-            wp_pure; first word.
+            rewrite -> decide_True; last word. wp_auto.
             wp_apply (wp_store_slice_index with "[$Hxs]") as "Hxs".
             { erewrite length_insert. iPureIntro. lia. }
 
