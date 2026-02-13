@@ -19,11 +19,13 @@ Record RWMutex_protocol_names :=
   }.
 
 Definition rwmutexMaxReaders := 1073741824.
-Definition actualMaxReaders := (1073741824 - 1).
 Example rwmutexMaxReaders_ok : #rwmutexMaxReaders = sync.rwmutexMaxReaders :=
   eq_refl.
 
-Local Hint Unfold rwmutexMaxReaders actualMaxReaders : word.
+Program Definition actualMaxReaders := sealed (1073741824 - 1).
+Definition actualMaxReaders_unseal : actualMaxReaders = _ := seal_eq _.
+Local Hint Unfold rwmutexMaxReaders : word.
+#[local] Hint Rewrite actualMaxReaders_unseal : word.
 
 Implicit Types γ : RWMutex_protocol_names.
 Local Definition own_RWMutex_invariant γ (writer_sem reader_sem reader_count reader_wait : w32)
@@ -608,7 +610,6 @@ Proof.
 Qed.
 
 Local Transparent own_RWMutex_invariant own_Int32.
-Opaque actualMaxReaders.
 
 Lemma init_RWMutex {E} N (rw : loc) :
   rw ↦ (zero_val sync.RWMutex.t) ={E}=∗
@@ -656,3 +657,6 @@ Qed.
 
 End wps.
 End wps.
+
+Global Hint Unfold rwmutexMaxReaders : word.
+#[global] Hint Rewrite actualMaxReaders_unseal : word.

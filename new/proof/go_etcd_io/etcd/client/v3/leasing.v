@@ -707,17 +707,12 @@ Proof using Type*.
 
   iMod (init_RWMutex
           (own_leasingKV_locked lkv {| etcd_gn := γetcd; entries_ready_gn := γready |} )
-         with "[] [Hentries_ready Hentries Hrevokes Hcancel HsessionOpts session sessionc Hwg_wait revokes] [$]") as "Hmus".
-  {
-    iIntros "!# *". rewrite fractional.fractional //.
-    iDestruct equiv_wand_iff as "$". done.
-  }
+         with "[Hentries_ready Hentries Hrevokes Hcancel HsessionOpts session sessionc Hwg_wait revokes] [$]") as "Hmus".
   { iFrame "∗#%". iExists ∅, false. iFrame. iSplit; first done.
     iApply big_sepM_empty. done. }
 
-  replace (rwmutex.actualMaxReaders) with (1 + 1 + num_lkvs).
-  2:{ unfold num_lkvs. word. }
-  rewrite Z2Nat.inj_add //.
+  replace (rwmutex.actualMaxReaders) with (1 + 1 + num_lkvs); [|word].
+  rewrite Z2Nat.inj_add; try done; [|word].
   rewrite -> replicate_add.
   iDestruct ("Hmus") as "[Hmu Hmus]".
   iDestruct "Hmu" as "(Hmu1 & Hmu2 & _)".
@@ -800,7 +795,7 @@ Proof using Type*.
   }
 
   replace (num_lkvs) with (1 + (num_lkvs - 1)) by word.
-  rewrite Z2Nat.inj_add //.
+  rewrite Z2Nat.inj_add; try done; [|word].
   rewrite -> replicate_S.
   iDestruct "Hmus" as "[Hmu Hmus]".
   wp_auto. wp_apply (wp_leasingKV__waitSession with "[Hmu]").

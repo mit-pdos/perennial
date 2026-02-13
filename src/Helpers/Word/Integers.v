@@ -164,7 +164,7 @@ Module sint.
   Notation nat x := (Z.to_nat (Z x)).
 End sint.
 
-#[global] Instance int_Z_inj `(word: Interface.word width) {word_ok: word.ok word} :
+#[global] Instance uint_Z_inj `(word: Interface.word width) {word_ok: word.ok word} :
   Inj eq eq (@word.unsigned width _).
 Proof.
   intros x1 x2.

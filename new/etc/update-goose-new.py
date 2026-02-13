@@ -297,6 +297,7 @@ def main():
             "math",
             "math/big",
             "math/rand",
+            "math/bits",
             "os",
             "runtime",
             "sort",

@@ -52,6 +52,16 @@ Definition select_no_double_close {ext : ffi_syntax} {go_gctx : GoGlobalContext}
 
 Definition exchangePointer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.exchangePointer"%go.
 
+Definition BroadcastExample {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.BroadcastExample"%go.
+
+Definition Web {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.Web"%go.
+
+Definition Image {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.Image"%go.
+
+Definition Video {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.Video"%go.
+
+Definition Google {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.Google"%go.
+
 Definition select_ready_case_no_panic {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.select_ready_case_no_panic"%go.
 
 Definition TestHelloWorldSync {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.TestHelloWorldSync"%go.
@@ -575,6 +585,151 @@ Definition exchangePointerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
       (FuncResolve go.panic [] #()) "$a0")
     else do:  #());;;
     return: #()).
+
+(* go: examples.go:168:6 *)
+Definition BroadcastExampleⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: <>,
+    exception_do (let: "done" := (GoAlloc (go.ChannelType go.sendrecv (go.StructType [
+
+    ])) (GoZeroVal (go.ChannelType go.sendrecv (go.StructType [
+
+    ])) #())) in
+    let: "$r0" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv (go.StructType [
+
+     ])] #()) #()) in
+    do:  ("done" <-[go.ChannelType go.sendrecv (go.StructType [
+
+    ])] "$r0");;;
+    let: "result1" := (GoAlloc (go.ChannelType go.sendrecv go.uint64) (GoZeroVal (go.ChannelType go.sendrecv go.uint64) #())) in
+    let: "$r0" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv go.uint64] #()) #()) in
+    do:  ("result1" <-[go.ChannelType go.sendrecv go.uint64] "$r0");;;
+    let: "result2" := (GoAlloc (go.ChannelType go.sendrecv go.uint64) (GoZeroVal (go.ChannelType go.sendrecv go.uint64) #())) in
+    let: "$r0" := ((FuncResolve go.make1 [go.ChannelType go.sendrecv go.uint64] #()) #()) in
+    do:  ("result2" <-[go.ChannelType go.sendrecv go.uint64] "$r0");;;
+    let: "sharedValue" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+    let: "$go" := (λ: <>,
+      exception_do (do:  (Fst (chan.receive (go.StructType [
+
+      ]) (![go.ChannelType go.sendrecv (go.StructType [
+
+      ])] "done")));;;
+      let: "val" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+      let: "$r0" := (![go.uint64] "sharedValue") in
+      do:  ("val" <-[go.uint64] "$r0");;;
+      do:  (let: "$chan" := (![go.ChannelType go.sendrecv go.uint64] "result1") in
+      let: "$v" := ((![go.uint64] "val") *⟨go.uint64⟩ #(W64 3)) in
+      chan.send go.uint64 "$chan" "$v");;;
+      return: #())
+      ) in
+    do:  (Fork ("$go" #()));;;
+    let: "$go" := (λ: <>,
+      exception_do (do:  (Fst (chan.receive (go.StructType [
+
+      ]) (![go.ChannelType go.sendrecv (go.StructType [
+
+      ])] "done")));;;
+      let: "val" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+      let: "$r0" := (![go.uint64] "sharedValue") in
+      do:  ("val" <-[go.uint64] "$r0");;;
+      do:  (let: "$chan" := (![go.ChannelType go.sendrecv go.uint64] "result2") in
+      let: "$v" := ((![go.uint64] "val") *⟨go.uint64⟩ #(W64 5)) in
+      chan.send go.uint64 "$chan" "$v");;;
+      return: #())
+      ) in
+    do:  (Fork ("$go" #()));;;
+    let: "$r0" := #(W64 2) in
+    do:  ("sharedValue" <-[go.uint64] "$r0");;;
+    do:  (let: "$a0" := (![go.ChannelType go.sendrecv (go.StructType [
+
+    ])] "done") in
+    (FuncResolve go.close [go.ChannelType go.sendrecv (go.StructType [
+
+     ])] #()) "$a0");;;
+    let: "r1" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+    let: "$r0" := (Fst (chan.receive go.uint64 (![go.ChannelType go.sendrecv go.uint64] "result1"))) in
+    do:  ("r1" <-[go.uint64] "$r0");;;
+    let: "r2" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+    let: "$r0" := (Fst (chan.receive go.uint64 (![go.ChannelType go.sendrecv go.uint64] "result2"))) in
+    do:  ("r2" <-[go.uint64] "$r0");;;
+    (if: Convert go.untyped_bool go.bool ((![go.uint64] "r1") ≠⟨go.uint64⟩ #(W64 6))
+    then
+      do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"receiver 1 got wrong value"%go) in
+      (FuncResolve go.panic [] #()) "$a0")
+    else do:  #());;;
+    (if: Convert go.untyped_bool go.bool ((![go.uint64] "r2") ≠⟨go.uint64⟩ #(W64 10))
+    then
+      do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"receiver 2 got wrong value"%go) in
+      (FuncResolve go.panic [] #()) "$a0")
+    else do:  #());;;
+    return: #()).
+
+(* go: examples.go:204:6 *)
+Definition Webⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "query",
+    exception_do (let: "query" := (GoAlloc go.string "query") in
+    return: ((![go.string] "query") +⟨go.string⟩ #".html"%go)).
+
+(* go: examples.go:208:6 *)
+Definition Imageⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "query",
+    exception_do (let: "query" := (GoAlloc go.string "query") in
+    return: ((![go.string] "query") +⟨go.string⟩ #".png"%go)).
+
+(* go: examples.go:212:6 *)
+Definition Videoⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "query",
+    exception_do (let: "query" := (GoAlloc go.string "query") in
+    return: ((![go.string] "query") +⟨go.string⟩ #".mp4"%go)).
+
+(* https://go.dev/talks/2012/concurrency.slide#46
+
+   go: examples.go:217:6 *)
+Definition Googleⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "query",
+    exception_do (let: "query" := (GoAlloc go.string "query") in
+    let: "c" := (GoAlloc (go.ChannelType go.sendrecv go.string) (GoZeroVal (go.ChannelType go.sendrecv go.string) #())) in
+    let: "$r0" := ((FuncResolve go.make2 [go.ChannelType go.sendrecv go.string] #()) #(W64 3)) in
+    do:  ("c" <-[go.ChannelType go.sendrecv go.string] "$r0");;;
+    let: "$go" := (λ: <>,
+      exception_do (do:  (let: "$chan" := (![go.ChannelType go.sendrecv go.string] "c") in
+      let: "$v" := (let: "$a0" := (![go.string] "query") in
+      (FuncResolve Web [] #()) "$a0") in
+      chan.send go.string "$chan" "$v");;;
+      return: #())
+      ) in
+    do:  (Fork ("$go" #()));;;
+    let: "$go" := (λ: <>,
+      exception_do (do:  (let: "$chan" := (![go.ChannelType go.sendrecv go.string] "c") in
+      let: "$v" := (let: "$a0" := (![go.string] "query") in
+      (FuncResolve Image [] #()) "$a0") in
+      chan.send go.string "$chan" "$v");;;
+      return: #())
+      ) in
+    do:  (Fork ("$go" #()));;;
+    let: "$go" := (λ: <>,
+      exception_do (do:  (let: "$chan" := (![go.ChannelType go.sendrecv go.string] "c") in
+      let: "$v" := (let: "$a0" := (![go.string] "query") in
+      (FuncResolve Video [] #()) "$a0") in
+      chan.send go.string "$chan" "$v");;;
+      return: #())
+      ) in
+    do:  (Fork ("$go" #()));;;
+    let: "results" := (GoAlloc (go.SliceType go.string) (GoZeroVal (go.SliceType go.string) #())) in
+    let: "$r0" := ((FuncResolve go.make3 [go.SliceType go.string] #()) #(W64 0) #(W64 3)) in
+    do:  ("results" <-[go.SliceType go.string] "$r0");;;
+    (let: "i" := (GoAlloc go.int (GoZeroVal go.int #())) in
+    let: "$r0" := #(W64 0) in
+    do:  ("i" <-[go.int] "$r0");;;
+    (for: (λ: <>, (![go.int] "i") <⟨go.int⟩ #(W64 3)); (λ: <>, do:  ("i" <-[go.int] ((![go.int] "i") +⟨go.int⟩ #(W64 1)))) := λ: <>,
+      let: "r" := (GoAlloc go.string (GoZeroVal go.string #())) in
+      let: "$r0" := (Fst (chan.receive go.string (![go.ChannelType go.sendrecv go.string] "c"))) in
+      do:  ("r" <-[go.string] "$r0");;;
+      let: "$r0" := (let: "$a0" := (![go.SliceType go.string] "results") in
+      let: "$a1" := ((let: "$sl0" := (![go.string] "r") in
+      CompositeLiteral (go.SliceType go.string) (LiteralValue [KeyedElement None (ElementExpression go.string "$sl0")]))) in
+      (FuncResolve go.append [go.SliceType go.string] #()) "$a0" "$a1") in
+      do:  ("results" <-[go.SliceType go.string] "$r0")));;;
+    return: (![go.SliceType go.string] "results")).
 
 (* Show that a guaranteed to be ready case makes default impossible
 
@@ -1465,6 +1620,11 @@ Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!G
   #[global] select_nb_no_panic_unfold :: FuncUnfold select_nb_no_panic [] (select_nb_no_panicⁱᵐᵖˡ);
   #[global] select_no_double_close_unfold :: FuncUnfold select_no_double_close [] (select_no_double_closeⁱᵐᵖˡ);
   #[global] exchangePointer_unfold :: FuncUnfold exchangePointer [] (exchangePointerⁱᵐᵖˡ);
+  #[global] BroadcastExample_unfold :: FuncUnfold BroadcastExample [] (BroadcastExampleⁱᵐᵖˡ);
+  #[global] Web_unfold :: FuncUnfold Web [] (Webⁱᵐᵖˡ);
+  #[global] Image_unfold :: FuncUnfold Image [] (Imageⁱᵐᵖˡ);
+  #[global] Video_unfold :: FuncUnfold Video [] (Videoⁱᵐᵖˡ);
+  #[global] Google_unfold :: FuncUnfold Google [] (Googleⁱᵐᵖˡ);
   #[global] select_ready_case_no_panic_unfold :: FuncUnfold select_ready_case_no_panic [] (select_ready_case_no_panicⁱᵐᵖˡ);
   #[global] TestHelloWorldSync_unfold :: FuncUnfold TestHelloWorldSync [] (TestHelloWorldSyncⁱᵐᵖˡ);
   #[global] TestHelloWorldWithTimeout_unfold :: FuncUnfold TestHelloWorldWithTimeout [] (TestHelloWorldWithTimeoutⁱᵐᵖˡ);
