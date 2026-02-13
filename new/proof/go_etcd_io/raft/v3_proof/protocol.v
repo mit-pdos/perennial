@@ -119,7 +119,7 @@ Lemma wp_node__Propose γraft n ctx ctx_desc (data_sl : slice.t) (data : list w8
 Proof.
   (* Inlining proofs of [stepWait] and [stepWithWaitOption (wait:=true)] here. *)
   wp_start. iNamed "Hpre". wp_auto.
-  iPersist "data". wp_apply wp_slice_literal as "%entries_sl [entries_sl _]".
+  wp_apply wp_slice_literal as "%entries_sl [entries_sl _]".
   { iIntros. wp_auto. iFrame. }
   wp_bind. wp_method_call. wp_call. wp_call.
   wp_auto. wp_bind. wp_method_call. wp_call. wp_call.
@@ -135,29 +135,26 @@ Proof.
     - (* case: got something from ctx.Done() channel *)
       repeat iExists _. iSplitR; first done. iSplitR; first admit.
       instantiate (1:=ctx_desc.(Context_desc.Done_gn)).
-      Set Printing All.
       iClear "Hinner".
-      clear closeable_chanG0.
-      iDestruct (@closeable_chan_receive with "HDone_ch []") as "H".
-      2:{
-        iExactEq "H".
-        f_equal.
-      iIntros "[_ #HDone_closed]". wp_auto. wp_apply ("HErr" with "HDone_closed").
-      iIntros (err) "%Herr". wp_auto.
-      iApply "HΦ". rewrite decide_False //.
-    - (* case: raft is done *)
-      repeat iExists _. iNamed "Hinner".
-      iApply (closeable_chan_receive with "Hdone").
-      iIntros "[_ #HDone_closed]". wp_auto. wp_apply wp_globals_get.
-      iDestruct (is_pkg_init_access with "[$]") as "#Hpkg".
-      simpl is_pkg_init_def. iNamed "Hpkg".
-      wp_auto.
-      iApply "HΦ". rewrite decide_False //.
-  }
-  repeat iExists _.
-  iSplitR; first done.
-  (* case: send proposeMessage on propc *)
-  (* TODO *)
+      iDestruct (closeable_chan_receive with "HDone_ch []") as "H".
+      2:{ iExactEq "H". f_equal.
+          (* FIXME: conflicting inGs. *)
+  (*     iIntros "[_ #HDone_closed]". wp_auto. wp_apply ("HErr" with "HDone_closed"). *)
+  (*     iIntros (err) "%Herr". wp_auto. *)
+  (*     iApply "HΦ". rewrite decide_False //. *)
+  (*   - (* case: raft is done *) *)
+  (*     repeat iExists _. iNamed "Hinner". *)
+  (*     iApply (closeable_chan_receive with "Hdone"). *)
+  (*     iIntros "[_ #HDone_closed]". wp_auto. wp_apply wp_globals_get. *)
+  (*     iDestruct (is_pkg_init_access with "[$]") as "#Hpkg". *)
+  (*     simpl is_pkg_init_def. iNamed "Hpkg". *)
+  (*     wp_auto. *)
+  (*     iApply "HΦ". rewrite decide_False //. *)
+  (* } *)
+  (* repeat iExists _. *)
+  (* iSplitR; first done. *)
+  (* (* case: send proposeMessage on propc *) *)
+  (* (* TODO *) *)
 Admitted.
 
 End raft.

@@ -22,7 +22,7 @@ Axiom is_Client : ∀ (cl : loc) γ, iProp Σ.
 
 Definition is_Client_pub (cl : loc) γ : iProp Σ :=
   ∃ (kv : interface.t),
-  "KV" ∷ cl ↦s[clientv3.Client :: "KV"]□ kv
+  "KV" ∷ cl.[clientv3.Client.t, "KV"] ↦□ kv
 .
 
 Axiom is_Client_to_pub : ∀ (cl : loc) γ, is_Client cl γ -∗ is_Client_pub cl γ.
@@ -41,24 +41,24 @@ Axiom wp_Client__Do_Get : ∀ key client γ (ctx : context.Context.t) (op : clie
   (|={⊤∖↑N,∅}=> ∃ dq val, key etcd[γ]↦{dq} val ∗
                         (key etcd[γ]↦{dq} val ={∅,⊤∖↑N}=∗ Φ #())) -∗
   (* TODO: return value. *)
-  WP client @ clientv3.Client.id @ "Do" #ctx #op {{ Φ }}.
+  WP client @! clientv3.Client @! "Do" #ctx #op {{ Φ }}.
 
 Axiom wp_Client__GetLogger :
   ∀ (client : loc) γ,
   {{{ is_Client client γ }}}
-    client @ (ptrT.id clientv3.Client.id) @ "GetLogger" #()
+    client @! (go.PointerType clientv3.Client) @! "GetLogger" #()
   {{{ (lg : loc), RET #lg; True }}}.
 
 Axiom wp_Client__Ctx :
   ∀ (client : loc) γ,
   {{{ is_Client client γ }}}
-    client @ (ptrT.id clientv3.Client.id) @ "Ctx" #()
+    client @! (go.PointerType clientv3.Client) @! "Ctx" #()
   {{{ ctx s, RET #ctx; is_Context ctx s }}}.
 
 Axiom wp_Client__Grant :
   ∀ client γ (ctx : context.Context.t) (ttl : w64),
   {{{ is_Client client γ }}}
-    client @ (ptrT.id clientv3.Client.id) @ "Grant" #ctx #ttl
+    client @! (go.PointerType clientv3.Client) @! "Grant" #ctx #ttl
   {{{
       resp_ptr (resp : clientv3.LeaseGrantResponse.t) (err : error.t),
         RET (#resp_ptr, #err);
@@ -68,23 +68,23 @@ Axiom wp_Client__Grant :
         else True
   }}}.
 
-Axiom wp_Client__KeepAlive :
-  ∀ client γ (ctx : context.Context.t) id,
-  (* The precondition requires that this is only called on a `Grant`ed lease. *)
-  {{{ is_Client client γ ∗ is_etcd_lease γ id }}}
-    client @ (ptrT.id clientv3.Client.id) @ "KeepAlive" #ctx #id
-  {{{
-      (kch : chan.t) (err : error.t),
-        RET (#kch, #err);
-        if decide (err = interface.nil) then
-          is_chan loc kch ∗
-          (* Persistent ability to do receives, including when [kch] is closed;
-             could wrap this in a definition *)
-          □(|={⊤,∅}=> ∃ (s : chanstate.t loc),
-              own_chan kch s ∗
-              (own_chan kch (set chanstate.received S s) ∨ own_chan kch s ={∅,⊤}=∗ True)
-            )
-        else True
-  }}}.
+(* Axiom wp_Client__KeepAlive : *)
+(*   ∀ client γ (ctx : context.Context.t) id, *)
+(*   (* The precondition requires that this is only called on a `Grant`ed lease. *) *)
+(*   {{{ is_Client client γ ∗ is_etcd_lease γ id }}} *)
+(*     client @! (go.PointerType clientv3.Client) @! "KeepAlive" #ctx #id *)
+(*   {{{ *)
+(*       (kch : chan.t) (err : error.t), *)
+(*         RET (#kch, #err); *)
+(*         if decide (err = interface.nil) then *)
+(*           is_chan loc kch ∗ *)
+(*           (* Persistent ability to do receives, including when [kch] is closed; *)
+(*              could wrap this in a definition *) *)
+(*           □(|={⊤,∅}=> ∃ (s : chanstate.t loc), *)
+(*               own_chan kch s ∗ *)
+(*               (own_chan kch (set chanstate.received S s) ∨ own_chan kch s ={∅,⊤}=∗ True) *)
+(*             ) *)
+(*         else True *)
+(*   }}}. *)
 
 End wps.
