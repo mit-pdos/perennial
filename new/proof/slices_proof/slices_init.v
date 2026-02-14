@@ -20,6 +20,7 @@ Proof using W.
   wp_apply (wp_package_init with "[$Hown] HΦ").
   { destruct Hinit as (-> & ?); done. }
   iIntros "Hown". wp_auto.
+  wp_apply (bits.wp_initialize' with "[$Hown]") as "(Hown & #?)"; first naive_solver.
   iEval (rewrite is_pkg_init_unfold /=). iFrame "∗#". done.
 Qed.
 
