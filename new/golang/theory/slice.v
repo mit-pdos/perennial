@@ -286,14 +286,14 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _}
   {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
 Local Set Default Proof Using "All".
 
-Global Instance pure_wp_slice_len t (s : slice.t) :
-  PureWp True (#(functions go.len [go.SliceType t]) (#s)) #(slice.len s).
+Global Instance pure_wp_slice_len `[!st ↓u go.SliceType t] (s : slice.t) :
+  PureWp True (#(functions go.len [st]) (#s)) #(slice.len s).
 Proof.
   pure_wp_start. rewrite func_unfold. wp_auto_lc 1. by iApply "HΦ".
 Qed.
 
-Global Instance pure_wp_slice_cap t (s : slice.t) :
-  PureWp True (#(functions go.cap [go.SliceType t]) (#s)) #(slice.cap s).
+Global Instance pure_wp_slice_cap `[!st ↓u go.SliceType t] (s : slice.t) :
+  PureWp True (#(functions go.cap [st]) (#s)) #(slice.cap s).
 Proof.
   pure_wp_start. rewrite func_unfold. wp_auto_lc 1. by iApply "HΦ".
 Qed.
@@ -311,10 +311,10 @@ Qed.
 
 Context [V] `[!ZeroVal V] `[!TypedPointsto (Σ:=Σ) V].
 
-Lemma wp_slice_make3 `[!IntoValTyped V t] stk E (len cap : w64) :
+Lemma wp_slice_make3 `[!st ↓u go.SliceType t] `[!IntoValTyped V t] stk E (len cap : w64) :
   0 ≤ sint.Z len ≤ sint.Z cap →
   {{{ True }}}
-    (#(functions go.make3 [go.SliceType t]) #len #cap) @ stk; E
+    (#(functions go.make3 [st]) #len #cap) @ stk; E
   {{{ (sl : slice.t), RET #sl;
       sl ↦* (replicate (sint.nat len) (zero_val V)) ∗
       own_slice_cap V sl (DfracOwn 1) ∗
@@ -347,9 +347,9 @@ Proof.
   iFrame.
 Qed.
 
-Lemma wp_slice_make2 `[!IntoValTyped V t] stk E (len : u64) :
+Lemma wp_slice_make2 `[!st ↓u go.SliceType t] `[!IntoValTyped V t] stk E (len : u64) :
   {{{ ⌜0 ≤ sint.Z len⌝ }}}
-    #(functions go.make2 [go.SliceType t]) #len @ stk; E
+    #(functions go.make2 [st]) #len @ stk; E
   {{{ sl, RET #sl;
       sl ↦* (replicate (sint.nat len) (zero_val V)) ∗
       own_slice_cap V sl (DfracOwn 1)
@@ -636,9 +636,9 @@ the number of bytes copied. See https://pkg.go.dev/builtin#copy.
 
 Use [take_ge] and [drop_ge] to simplify the resulting list expression.
  *)
-Lemma wp_slice_copy `[!IntoValTyped V t] (s: slice.t) (vs: list V) (s2: slice.t) (vs': list V) dq :
+Lemma wp_slice_copy `[!st ↓u go.SliceType t] `[!IntoValTyped V t] (s: slice.t) (vs: list V) (s2: slice.t) (vs': list V) dq :
   {{{ s ↦* vs ∗ s2 ↦*{dq} vs' }}}
-    #(functions go.copy [go.SliceType t]) #s #s2
+    #(functions go.copy [st]) #s #s2
   {{{ (n: w64), RET #n; ⌜sint.nat n = Nat.min (length vs) (length vs')⌝ ∗
                           s ↦* (take (length vs) vs' ++ drop (length vs') vs) ∗
                           s2 ↦*{dq} vs' }}}.
@@ -701,9 +701,9 @@ Proof.
     repeat (f_equal; try word).
 Qed.
 
-Lemma wp_slice_clear `[!IntoValTyped V t] s (vs : list V) :
+Lemma wp_slice_clear `[!st ↓u go.SliceType t] `[!IntoValTyped V t] s (vs : list V) :
   {{{ s ↦* vs }}}
-    #(functions go.clear [go.SliceType t]) #s
+    #(functions go.clear [st]) #s
   {{{ RET #(); s ↦* replicate (length vs) (zero_val V) }}}.
 Proof.
   wp_start as "Hs".
@@ -746,9 +746,9 @@ Proof.
     word.
 Qed.
 
-Lemma wp_slice_append `[!IntoValTyped V t] (s: slice.t) (vs: list V) (s2: slice.t) (vs': list V) dq :
+Lemma wp_slice_append `[!st ↓u go.SliceType t] `[!IntoValTyped V t] (s: slice.t) (vs: list V) (s2: slice.t) (vs': list V) dq :
   {{{ s ↦* vs ∗ own_slice_cap V s (DfracOwn 1) ∗ s2 ↦*{dq} vs' }}}
-    #(functions go.append [go.SliceType t]) #s #s2
+    #(functions go.append [st]) #s #s2
   {{{ (s' : slice.t), RET #s';
       s' ↦* (vs ++ vs') ∗ own_slice_cap V s' (DfracOwn 1) ∗ s2 ↦*{dq} vs' }}}.
 Proof.

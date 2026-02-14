@@ -365,9 +365,13 @@ Class CoreSemantics `{!GoSemanticsFunctions} : Prop :=
    ⟦GoOp o t_under, v⟧ ⤳[under] e → ⟦GoOp o t, v⟧ ⤳ e;
   #[global] composite_literal_underlying `{!t ↓u t_under} v e ::
    ⟦CompositeLiteral t_under, v⟧ ⤳[under] e → ⟦CompositeLiteral t, v⟧ ⤳ e;
-  #[global] index_underlying_typed `{!t ↓u t_under} v e ::
+  #[global] slice_underlying `{!t ↓u t_under} v e ::
+   ⟦Slice t_under, v⟧ ⤳[under] e → ⟦Slice t, v⟧ ⤳ e;
+  #[global] full_slice_underlying `{!t ↓u t_under} v e ::
+   ⟦FullSlice t_under, v⟧ ⤳[under] e → ⟦FullSlice t, v⟧ ⤳ e;
+  #[global] index_underlying `{!t ↓u t_under} v e ::
    ⟦Index t_under, v⟧ ⤳[under] e → ⟦Index t, v⟧ ⤳ e;
-  #[global] index_ref_underlying_typed `{!t ↓u t_under} v e ::
+  #[global] index_ref_underlying `{!t ↓u t_under} v e ::
    ⟦IndexRef t_under, v⟧ ⤳[under] e → ⟦IndexRef t, v⟧ ⤳ e;
   #[global] check_comparable_underlying `{!t ↓u t_under} v e ::
    ⟦CheckComparable t_under, v⟧ ⤳[under] e → ⟦CheckComparable t, v⟧ ⤳ e;
