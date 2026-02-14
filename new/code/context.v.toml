@@ -1,11 +1,3 @@
-translate = [
-  "*",
-  "!WithValue",
-  "!stringify",
-  "!contextName",
-]
+translate = ["*", "!WithValue", "!stringify", "!contextName"]
 
-imports = [
-  "*",
-  "!internal/reflectlite",
-]
+imports = ["*", "!internal/reflectlite"]

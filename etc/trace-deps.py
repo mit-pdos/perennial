@@ -2,9 +2,12 @@
 import collections
 import sys
 
+
 def main():
     if len(sys.argv) != 3:
-        print("usage: trace-deps.py <A.vos/vo/vok> <B.vos/vo/vok> will show why A transitively depends on B")
+        print(
+            "usage: trace-deps.py <A.vos/vo/vok> <B.vos/vo/vok> will show why A transitively depends on B"
+        )
         exit(-1)
 
     deps = collections.defaultdict(set)
@@ -20,6 +23,7 @@ def main():
     B = sys.argv[2]
     visited = set()
     cur_path = [A]
+
     def recur():
         cur_node = cur_path[-1]
         visited.add(cur_node)
@@ -34,7 +38,9 @@ def main():
                 return r
             cur_path.pop()
         return None
-    print(' -> '.join(recur()))
 
-if __name__=="__main__":
+    print(" -> ".join(recur()))
+
+
+if __name__ == "__main__":
     main()

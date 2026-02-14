@@ -1,5 +1,3 @@
 [bootstrap]
 enabled = true
-prelude = [
-  "From New.golang.defn Require Export slice defer.",
-]
+prelude = ["From New.golang.defn Require Export slice defer."]

@@ -26,10 +26,18 @@ class Proj:
 
 
 projs = {
-    "goose": Proj.make("goose", "https://github.com/goose-lang/goose/", commit="upamanyus-fixes"),
-    "std": Proj.make("std", "https://github.com/goose-lang/std", commit="upamanyus-fixes"),
-    "primitive": Proj.make("primitive", "https://github.com/goose-lang/primitive", commit="upamanyus-fixes"),
-    "marshal": Proj.make("marshal", "https://github.com/upamanyus/marshal", commit="upamanyus-fixes"),
+    "goose": Proj.make(
+        "goose", "https://github.com/goose-lang/goose/", commit="upamanyus-fixes"
+    ),
+    "std": Proj.make(
+        "std", "https://github.com/goose-lang/std", commit="upamanyus-fixes"
+    ),
+    "primitive": Proj.make(
+        "primitive", "https://github.com/goose-lang/primitive", commit="upamanyus-fixes"
+    ),
+    "marshal": Proj.make(
+        "marshal", "https://github.com/upamanyus/marshal", commit="upamanyus-fixes"
+    ),
     "examples": Proj.make("examples", "https://github.com/mit-pdos/perennial-examples"),
     "etcd-raft": Proj.make("etcd-raft", "https://github.com/upamanyus/etcd-raft"),
     "etcd": Proj.make("etcd", "https://github.com/upamanyus/etcd"),

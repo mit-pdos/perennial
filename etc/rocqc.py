@@ -75,16 +75,16 @@ class TimingDb:
 
 class Classify:
     DEF_RE = re.compile(
-        br"""(?:#\[(local|global|export)\]\s+)?(?:(Local|Global)\s+)?(?:Theorem|Lemma|Instance|Definition|Corollary|Remark|Fact|Program Lemma)\s+"""
-        + br"""(?P<ident>\w(\w|')*)"""
+        rb"""(?:#\[(local|global|export)\]\s+)?(?:(Local|Global)\s+)?(?:Theorem|Lemma|Instance|Definition|Corollary|Remark|Fact|Program Lemma)\s+"""
+        + rb"""(?P<ident>\w(\w|')*)"""
     )
-    OBLIGATION_RE = re.compile(br"""(Next Obligation\.)|(Final Obligation\.)""")
-    GOAL_RE = re.compile(br"""\s*Goal\s+""")
+    OBLIGATION_RE = re.compile(rb"""(Next Obligation\.)|(Final Obligation\.)""")
+    GOAL_RE = re.compile(rb"""\s*Goal\s+""")
     TIME_RE = re.compile(
-        br"""Chars (?P<start>\d*) - (?P<end>\d*) \[.*\] """
-        + br"""(?P<time>[0-9.]*) secs .*"""
+        rb"""Chars (?P<start>\d*) - (?P<end>\d*) \[.*\] """
+        + rb"""(?P<time>[0-9.]*) secs .*"""
     )
-    QED_RE = re.compile(br"""(?:Time\s*)?Qed\.""")
+    QED_RE = re.compile(rb"""(?:Time\s*)?Qed\.""")
     obligation_count = 0
     goal_count = 0
 

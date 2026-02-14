@@ -28,6 +28,10 @@ translate = [
   "!*.String",             # Uses proto.proto
 ]
 
-imports = ["!*", "go.etcd.io/etcd/api/v3/membershippb", "go.etcd.io/etcd/api/v3/mvccpb"]
+imports = [
+  "!*",
+  "go.etcd.io/etcd/api/v3/membershippb",
+  "go.etcd.io/etcd/api/v3/mvccpb",
+]
 
 trust_proofgen = true

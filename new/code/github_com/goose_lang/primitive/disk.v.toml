@@ -1,11 +1,3 @@
 translate = ["!*"]
 imports = ["!*"]
-trusted = [
-  "BlockSize",
-  "Get",
-  "Read",
-  "ReadTo",
-  "Write",
-  "Barrier",
-  "Size",
-]
+trusted = ["BlockSize", "Get", "Read", "ReadTo", "Write", "Barrier", "Size"]
