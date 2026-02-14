@@ -183,7 +183,7 @@ def main():
         for proj in projs:
             proj_path = path.join(args.all, proj.name)
             proj_arg = proj.name.replace("-", "_")
-            if getattr(args, proj_arg, None) == None and os.path.isdir(proj_path):
+            if getattr(args, proj_arg, None) is None and os.path.isdir(proj_path):
                 setattr(args, proj_arg, proj_path)
 
     perennial_dir = path.join(path.dirname(os.path.realpath(__file__)), "../..")
