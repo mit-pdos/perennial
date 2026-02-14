@@ -1,35 +1,106 @@
-From New Require Import notation.
-From New.golang.defn Require Import typing list.
+From New.golang.defn Require Export predeclared.
 
-(** Fixed-size arrays.
+Module go.
+Section defs.
+Context {ext : ffi_syntax}.
+Context {go_lctx : GoLocalContext} {go_gctx : GoGlobalContext}.
 
-NOTE: this library is incomplete, even the signatures here could be wrong.
-*)
+Class ArraySemantics `{!GoSemanticsFunctions} :=
+{
+  #[global] array_set_step V n (vs : array.t V n) (i : w64) (v : V) ::
+    ⟦ArraySet, (#vs, (#i, #v))⟧ ⤳
+    (# (array.mk n (<[sint.nat i:=v]> (array.arr vs))));
 
-Module array.
-Section defn.
-  Context `{ffi_syntax}.
+  #[global] array_length_step vs ::
+    ⟦ArrayLength, (ArrayV vs)⟧ ⤳
+    (if decide (length vs < 2 ^ 63) then #(W64 (length vs)) else AngelicExit (# ()));
 
-  Definition elem_ref : val :=
-    λ: "et" "a" "i", Panic "todo".
+  #[global] equals_array n t (H : ⟦CheckComparable t, #()⟧ ⤳[under] #()) ::
+    ⟦CheckComparable (go.ArrayType n t), #()⟧ ⤳[under] #();
 
-  Definition elem_get : val :=
-    λ: "et" "a" "i", Panic "todo".
+  #[global] type_repr_array ty V n `{!ZeroVal V} `{!TypeRepr ty V} ::
+    go.TypeReprUnderlying (go.ArrayType n ty) (array.t V n);
 
-  (* t here is the array type, not the element type *)
-  Definition len : val :=
-    λ: "t", Panic "todo".
+  (* TODO: implement alloc_array *)
+  #[global] alloc_array n elem v :: ⟦GoAlloc (go.ArrayType n elem), v⟧ ⤳[internal_under] AngelicExit #();
 
-  (* t here is the array type, not the element type *)
-  Definition cap : val :=
-    λ: "t", len "t".
+  #[global] load_array n elem_type l ::
+    ⟦GoLoad (go.ArrayType n elem_type), l⟧ ⤳[internal_under]
+    (if decide (¬(0 ≤ n < 2^63-1)) then
+      AngelicExit #()
+    else
+      (rec: "recur" "n" :=
+            if: "n" =⟨go.int⟩ #(W64 0) then GoZeroVal (go.ArrayType n elem_type) #()
+            else let: "array_so_far" := "recur" ("n" -⟨go.int⟩ #(W64 1)) in
+                 let: "elem_addr" := IndexRef (go.ArrayType n elem_type) (l, "n" -⟨go.int⟩ #(W64 1)) in
+                 let: "elem_val" := GoLoad elem_type "elem_addr" in
+                 ArraySet ("array_so_far", ("n" -⟨go.int⟩ #(W64 1), "elem_val"))
+         ) #(W64 n))%E;
 
-  Definition slice : val :=
-    λ: "t" "a", Panic "todo".
+  #[global] store_array n elem_type l v ::
+    ⟦GoStore (go.ArrayType n elem_type), (l, v)⟧ ⤳[internal_under]
+    (foldl (λ str_so_far j,
+                str_so_far;;
+                let elem_addr := IndexRef (go.ArrayType n elem_type) (l, #(W64 j)) in
+                let elem_val := Index (go.ArrayType n elem_type) (v, #(W64 n)) in
+                GoStore elem_type (elem_addr, elem_val))
+             (#()) (seqZ 0 n)
+    )%E;
 
-  (* takes a list as input, and makes an array value *)
-  Definition literal : val :=
-    rec: "literal" "len" "elems" :=
-      list.Match "elems" (λ: <>, #()) (λ: "hd" "tl", ("hd", "literal" "tl")).
-End defn.
-End array.
+  #[global] index_ref_array n elem_type (i : w64) l `{!ZeroVal V} `{!TypeRepr elem_type V} ::
+    ⟦IndexRef (go.ArrayType n elem_type), (#l, #i)⟧ ⤳[under]
+      (if decide (sint.Z i < n) then #(array_index_ref V (sint.Z i) l) else Panic "index out of range");
+
+  #[global] index_array n elem_type (i : w64) V (a : array.t V n) ::
+    ⟦Index (go.ArrayType n elem_type), (#a, #i)⟧ ⤳[under]
+      (match (array.arr a) !! (sint.nat i) with
+       | Some v => #v
+       | None => Panic "index out of range"
+       end);
+
+  #[global] composite_literal_array n elem_type kvs ::
+    ⟦CompositeLiteral (go.ArrayType n elem_type), (LiteralValueV kvs)⟧ ⤳[under]
+    (foldl (λ '(cur_index, expr_so_far) ke,
+             match ke with
+             | KeyedElement None (ElementExpression from e) =>
+                 (cur_index + 1, ArraySet (expr_so_far, (#(W64 cur_index), Convert from elem_type e))%E)
+             | KeyedElement None (ElementLiteralValue l) =>
+                 (cur_index + 1,
+                    ArraySet (expr_so_far, (#(W64 cur_index), CompositeLiteral elem_type $ LiteralValue l))%E)
+             | KeyedElement (Some (KeyInteger cur_index)) (ElementExpression from e) =>
+                 (cur_index + 1, ArraySet (expr_so_far, (#(W64 cur_index), Convert from elem_type e))%E)
+             | KeyedElement (Some (KeyInteger cur_index)) (ElementLiteralValue l) =>
+                 (cur_index + 1,
+                    ArraySet (expr_so_far, (#(W64 cur_index), CompositeLiteral elem_type $ LiteralValue l))%E)
+             | _ => (0, Panic "invalid array literal")
+             end
+      ) (0, (GoZeroVal (go.ArrayType n elem_type) #())) kvs).2;
+
+  #[global] slice_array_step n elem_type p low high `{!ZeroVal V} `{!TypeRepr elem_type V} ::
+    ⟦Slice $ go.ArrayType n elem_type, (#p, #low, #high)⟧ ⤳
+       (if decide (0 ≤ sint.Z low ≤ sint.Z high ≤ n) then
+          #(slice.mk (array_index_ref V (word.signed low) p)
+              (word.sub high low)
+              (word.sub (W64 n) low))
+        else Panic "slice bounds out of range");
+
+  #[global] full_slice_array_step_pure n elem_type p low high max `{!ZeroVal V} `{!TypeRepr elem_type V} ::
+    ⟦FullSlice (go.ArrayType n elem_type), (#p, #low, #high, #max)⟧ ⤳
+    (if decide (0 ≤ sint.Z low ≤ sint.Z high ≤ sint.Z max ∧ sint.Z max ≤ n) then
+       #(slice.mk (array_index_ref V (sint.Z low) p)
+           (word.sub high low) (word.sub max low))
+     else Panic "slice bounds out of range");
+
+  array_index_ref_add t i j l :
+    array_index_ref t (i + j) l = array_index_ref t j (array_index_ref t i l);
+
+  (* For disk FFI proof. *)
+  array_index_ref_add_loc_add i l :
+    array_index_ref w8 i l = loc_add l i;
+
+  #[global] into_val_inj_array V n {inj_V : go.IntoValInj V} ::
+    go.IntoValInj (array.t V n);
+}.
+
+End defs.
+End go.

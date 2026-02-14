@@ -2,7 +2,6 @@ From iris.algebra Require Export auth gmap frac agree excl.
 From iris.bi.lib Require Import fixpoint_mono.
 From iris.base_logic.lib Require Import mono_nat saved_prop.
 From Perennial.goose_lang Require Import lifting.
-From New.golang.theory Require Import typing.
 From Perennial Require Import base.
 From stdpp Require Import tactics.
 
@@ -20,6 +19,7 @@ Proof. solve_inG. Qed.
 
 Section defns_and_lemmas.
   Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
+  Context {go_gctx : GoGlobalContext}.
   Context `{!simpleCrashG Σ}.
   Context (N : namespace).
   Definition own_crash_concrete P Pc : iProp Σ :=

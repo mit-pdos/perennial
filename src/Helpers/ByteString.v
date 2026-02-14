@@ -65,6 +65,11 @@ String Notation byte_string parse_string print_string
   (via IndByteString mapping [id_byte_string => IByteString] )
   : byte_string_scope.
 
+Definition byte_eqb (x y : w8) : bool :=
+  match x, y with
+  | Naive.mk x _, Naive.mk y _ => Z.eqb x y
+  end.
+
 #[local] Fixpoint eqb (s1 s2: byte_string) : bool :=
   match s1 with
   | [] => match s2 with
@@ -74,14 +79,29 @@ String Notation byte_string parse_string print_string
   | c1 :: s1' =>
       match s2 with
       | [] => false
-      | c2 :: s2' => if word.eqb c1 c2 then eqb s1' s2' else false
+      | c2 :: s2' => if byte_eqb c1 c2 then eqb s1' s2' else false
       end
   end.
+
+Lemma byte_eqb_eq a b :
+  a = b → byte_eqb a b = true.
+Proof.
+  intros. subst. destruct b.
+  simpl. apply Z.eqb_refl.
+Qed.
+
+#[local] Lemma byte_eqb_true x y :
+  byte_eqb x y = true → x = y.
+Proof.
+  intros. destruct x, y. apply Zeq_bool_eq in H. subst.
+  f_equal. apply Eqdep_dec.UIP_dec. intros.
+  destruct (decide (x = y)); [left|right]; done.
+Qed.
 
 #[local] Lemma eqb_refl x :
   eqb x x = true.
 Proof.
-  induction x; first done. simpl. rewrite word.eqb_eq //.
+  induction x; first done. simpl. rewrite byte_eqb_eq //.
 Qed.
 
 #[local] Lemma eqb_eq x y :
@@ -97,8 +117,8 @@ Proof.
   - by destruct y.
   - destruct y; first done.
     simpl.
-    destruct (word.eqb) eqn:?; last done.
-    apply word.eqb_true in Heqb. subst.
+    destruct (byte_eqb) eqn:?; last done.
+    apply byte_eqb_true in Heqb. subst.
     intros H. f_equal.
     by apply IHx.
 Qed.

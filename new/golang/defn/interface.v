@@ -1,75 +1,97 @@
-From Perennial.goose_lang Require Import notation.
-From New.golang.defn Require Import struct dynamic_typing pkg.
-From Perennial Require Import base.
+From New.golang.defn Require Export postlang.
 
-Module interface.
-Section goose_lang.
-Context `{ffi_syntax}.
+Module go.
+Section defs.
+Context {ext : ffi_syntax}.
+Context {go_lctx : GoLocalContext} {go_gctx : GoGlobalContext} `{!GoSemanticsFunctions}.
 
-Definition get_def : val :=
-  λ: "method_name" "v",
-    let: ("type_id", "val") := option.unwrap "v" in
-    method_call "type_id" "method_name" "val".
+Definition is_interface_type (t : go.type) : bool :=
+  match t with go.InterfaceType _ => true | _ => false end.
 
-Program Definition get := sealed @get_def.
-Definition get_unseal : get = _ := seal_eq _.
+Definition is_untyped_nil (t : go.type) : bool :=
+  match t with go.Named n [] => ByteString.eqb n "untyped nil" | _ => false end.
 
-Local Definition make_def : val :=
-  λ: "type_id" "v", SOME ("type_id", "v").
-Program Definition make := sealed @make_def.
-Definition make_unseal : make = _ := seal_eq _.
+(* Based on: https://go.dev/ref/spec#General_interfaces *)
+Definition type_set_term_contains {go_ctx : GoLocalContext} t (e : go.type_term) : bool :=
+  match e with
+  | go.TypeTerm t' => bool_decide (t = t')
+  | go.TypeTermUnderlying t' => bool_decide (underlying t = t')
+  end.
 
-Definition eq : val :=
-  (* This is a "short-circuiting" comparison that first checks if the type
-     names are equal before possibly checking if the values are equal. *)
-  λ: "v1" "v2",
-    match: "v1" with
-      NONE => match: "v2" with
-               NONE => #true
-             | SOME <> => #false
-             end
-    | SOME "i1" => match: "v2" with
-                    NONE => #false
-                  | SOME "i1" =>
-                      ((Fst "i1") = (Fst "i2")) &&
-                      (Snd "i1" = Snd "i2")
-                  end
-    end.
+Definition type_set_elem_contains {go_ctx : GoLocalContext} t (e : go.interface_elem) : bool :=
+  match e with
+  | go.MethodElem m signature => bool_decide (method_set t !! m = Some signature)
+  | go.TypeElem terms => existsb (type_set_term_contains t) terms
+  end.
 
-(* Models v.(T) - this checks the type of the value stored in interface object x
-and also returns it. *)
-Definition type_assert : val :=
-  λ: "v" "expected_type_id",
-    let: "v" := option.unwrap "v" in
-    let: ("type_id", "underlying_v") := "v" in
-    if: "type_id" = "expected_type_id" then
-    "underlying_v"
-    else Panic "coerce failed: wrong type".
+Definition type_set_elems_contains {go_ctx : GoLocalContext} t (elems : list go.interface_elem) : bool :=
+  forallb (type_set_elem_contains t) elems.
 
-(* Try converting interface value v to expected_type_id. Returns unit if the type mismatches.
+(** Equals [true] iff t is in the type set of t'. *)
+Definition type_set_contains {go_ctx : GoLocalContext} t t' : bool :=
+  match (underlying t') with
+  | go.InterfaceType elems => type_set_elems_contains t elems
+  | _ => bool_decide (t = t')
+  end.
 
-This low-level primitive does not require knowing the type of
-expected_type_id. *)
-Definition try_type_coerce : val :=
-  λ: "v" "expected_type_id",
-    match: "v" with
-      SOME "v" =>
-        (let: ("type_id", "underlying_v") := "v" in
-        if: "type_id" = "expected_type_id"
-        then ("underlying_v", #true)
-        else (#(), #false))
-     | NONE =>
-        (* if the interface is nil, checked type assertions just return false *)
-         (#(), #false)
-     end.
+Class InterfaceSemantics :=
+{
+  #[global] is_comparable_interface elems ::
+    ⟦CheckComparable (go.InterfaceType elems), #()⟧ ⤳[under] #();
+  #[global] go_eq_interface elems i1 i2 ::
+    ⟦GoOp GoEquals (go.InterfaceType elems), (#i1, #i2)⟧ ⤳[under]
+      (match i1, i2 with
+       | interface.nil, interface.nil => #true
+       | (interface.ok i1), (interface.ok i2) =>
+           if decide (i1.(interface.ty) = i2.(interface.ty)) then
+             (CheckComparable i1.(interface.ty);;
+              GoOp GoEquals i1.(interface.ty) (i1.(interface.v), i2.(interface.v))%V)%E
+           else #false
+       | _, _ => #false
+       end);
 
-(* Models x, ok := v.(T) - this checks the type and returns a boolean on
-success. The type "T" is used to return the correct default value if the type
-assertion fails. *)
-Definition checked_type_assert : val :=
-  λ: "T" "v" "expected_type_id",
-    let: ("x", "ok") := try_type_coerce "v" "expected_type_id" in
-    if: "ok" then ("x", #true) else (type.zero_val "T", #false).
+  #[global] convert_to_interface (v : val)
+    `{!from ↓u funder} `{!to ≤u go.InterfaceType elems} ::
+    ⟦Convert from to, v⟧ ⤳
+    (Val (if is_interface_type funder then v else
+            if is_untyped_nil funder then #interface.nil
+            else #(interface.mk_ok from v)));
 
-End goose_lang.
-End interface.
+  #[global] type_assert_step `{!t ↓u t_under} i ::
+    ⟦TypeAssert t, #i⟧ ⤳
+    (match i with
+     | interface.nil => Panic "type assert failed"
+     | interface.ok ii =>
+         if is_interface_type t_under then
+           if (type_set_contains ii.(interface.ty) t) then #i else Panic "type assert failed"
+         else
+           if decide (ii.(interface.ty) = t) then ii.(interface.v) else Panic "type assert failed"
+     end);
+
+  #[global] type_assert2_interface_step `{!t ↓u t_under} i `{!⟦GoZeroVal t, #()⟧ ⤳ Val v} ::
+    ⟦TypeAssert2 t, #i⟧ ⤳
+    ((match i with
+      | interface.nil => v
+      | interface.ok ii =>
+          (if is_interface_type t_under then
+             if (type_set_contains ii.(interface.ty) t) then #i else v
+           else
+             if decide (ii.(interface.ty) = t) then ii.(interface.v) else v)
+      end),
+       #(match i with
+         | interface.nil => false
+         | interface.ok ii =>
+             if is_interface_type t_under then type_set_contains ii.(interface.ty) t
+             else bool_decide (ii.(interface.ty) = t)
+         end)
+     )%V;
+
+  #[global] method_interface_ok m `{!t ≤u go.InterfaceType elems} (i : interface.t) ::
+    ⟦MethodResolve t m, #i⟧ ⤳
+    (match i with
+     | interface.nil => (Panic "nil interface")%E
+     | interface.ok i => #(methods i.(interface.ty) m i.(interface.v))
+     end);
+}.
+End defs.
+End go.

@@ -1,18 +1,16 @@
 From New.golang.defn Require Export exception.
-From New.golang.theory Require Export proofmode typing.
-From iris.proofmode Require Import coq_tactics.
-Import Ltac2.
-Set Default Proof Mode "Classic".
+From New.golang.theory Require Export predeclared.
 
 Section wps.
-Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
+Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
+  {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
 
 Global Instance pure_execute_val (v : val) :
   PureWp True (exception_seq v (execute_val)) (v #()).
 Proof.
   rewrite exception_seq_unseal execute_val_unseal.
-  intros ?????. iIntros "Hwp".
-  wp_call_lc "?". by iApply "Hwp".
+  intros ?????. iIntros "Hwp". wp_call_lc "?".
+  wp_pures. by iApply "Hwp".
 Qed.
 
 Global Instance pure_do_execute_val (v : val) : PureWp True (do: v) execute_val.
@@ -27,7 +25,7 @@ Global Instance pure_return_val (v1 : val) (v : val) :
 Proof.
   rewrite exception_seq_unseal return_val_unseal.
   intros ?????. iIntros "Hwp".
-  wp_call_lc "?". by iApply "Hwp".
+  wp_call_lc "?". wp_pures. by iApply "Hwp".
 Qed.
 
 Global Instance pure_do_return_val (v : val) : PureWp True (return: v) (return_val v).

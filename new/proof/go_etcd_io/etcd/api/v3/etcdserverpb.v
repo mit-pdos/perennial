@@ -1,11 +1,15 @@
-Require Export New.code.go_etcd_io.etcd.api.v3.etcdserverpb.
 Require Export New.generatedproof.go_etcd_io.etcd.api.v3.etcdserverpb.
-Require Export New.proof.proof_prelude.
+Require Export New.proof.go_etcd_io.etcd.api.v3.mvccpb.
+Require Export New.proof.go_etcd_io.etcd.api.v3.membershippb.
 
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
-#[global] Instance : IsPkgInit etcdserverpb := define_is_pkg_init True%I.
+Context {sem : go.Semantics} {package_sem : etcdserverpb.Assumptions}.
+Local Set Default Proof Using "All".
+
+#[global] Instance : IsPkgInit (iProp Σ) etcdserverpb := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ) etcdserverpb := build_get_is_pkg_init_wf.
+
 
 (* FIXME: annoying to even state axioms about marshalling this stuff.
    Want to turn the protobuf data into Gallina.
@@ -24,7 +28,7 @@ Axiom own_InternalRaftRequest_new_header :
 
 Axiom wp_InternalRaftRequest__Marshal : ∀ m_ptr m msg,
   {{{ is_pkg_init etcdserverpb ∗ m_ptr ↦ m ∗ own_InternalRaftRequest m msg }}}
-    m_ptr @ (ptrT.id etcdserverpb.InternalRaftRequest.id) @ "Marshal" #()
+    m_ptr @! (go.PointerType etcdserverpb.InternalRaftRequest) @! "Marshal" #()
   {{{ dAtA_sl (err : error.t), RET (#dAtA_sl, #err);
       m_ptr ↦ m ∗
       own_InternalRaftRequest m msg ∗

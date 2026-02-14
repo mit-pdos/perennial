@@ -1,6 +1,4 @@
-From New Require Export notation.
-From New.golang.defn Require Export typing.
-From Perennial Require Import base.
+From New.golang.defn Require Export predeclared.
 
 (* "Exception monad" for modeling function returns.
 
@@ -30,7 +28,7 @@ the rules above. [exception_do m] is simply [Snd m] to remove the label.
 
 Section defn.
 
-Context `{!ffi_syntax}.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 
 Definition execute_val_def : val := (#"execute", #()).
 Program Definition execute_val := sealed @execute_val_def.
@@ -54,7 +52,7 @@ Definition do_execute_unseal : do_execute = _ := seal_eq _.
    next sequential computation. *)
 Local Definition exception_seq_def : val :=
   λ: "s2" "s1",
-    if: (Fst "s1") = #"execute" then
+    if: (Fst "s1") =⟨go.string⟩ #"execute" then
       "s2" #()
     else
       "s1"

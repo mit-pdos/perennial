@@ -1,10 +1,8 @@
-From New Require Import notation.
-From New.golang.defn Require Import exception builtin.
-From Perennial Require Import base.
+From New.golang.defn Require Export exception.
 
 Section defn.
 
-Context `{!ffi_syntax}.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 
 (** [assume e] goes into an infinite loop if e does not hold *)
 Definition assume : val :=
@@ -13,32 +11,32 @@ Definition assume : val :=
 
 (** Assume "a" + "b" doesn't overflow. *)
 Definition assume_sum_no_overflow : val :=
-  λ: "a" "b", assume ("a" ≤ #(W64 (2^64-1)) - "b");; #().
+  λ: "a" "b", assume ("a" ≤⟨go.uint64⟩ #(W64 (2^64-1)) -⟨go.uint64⟩ "b");; #().
 
 (** Assume "a" + "b" doesn't overflow and return the sum. *)
 Definition sum_assume_no_overflow : val :=
   λ: "a" "b", assume_sum_no_overflow "a" "b";;
-              "a" + "b".
+              "a" +⟨go.uint64⟩ "b".
 
 (** Assume "x" + "y" doesn't overflow. *)
 Definition assume_sum_no_overflow_signed : val :=
   λ: "x" "y",
   let: "max_int" := #(W64 (2^63-1)) in
   let: "min_int" := #(W64 (-2^63)) in
-  assume ((int_leq #(W64 0) "y" && int_lt "x" ("max_int"-"y")) ||
-    (int_lt "y" #(W64 0) && int_leq ("min_int"-"y") "x")).
+  assume (((#(W64 0) <⟨go.int⟩ "y") && ("x" <⟨go.int⟩ ("max_int" -⟨go.int⟩ "y"))) ||
+    (("y" <⟨go.int⟩ #(W64 0)) && (("min_int" -⟨go.int⟩ "y") <⟨go.int⟩ "x"))).
 
 (** Assume "x" + "y" doesn't overflow and return the sum. *)
 Definition sum_assume_no_overflow_signed : val :=
   λ: "a" "b", assume_sum_no_overflow_signed "a" "b";;
-              "a" + "b".
+              "a" +⟨go.uint64⟩ "b".
 
 Definition mul_overflows : val :=
-  λ: "a" "b", if: ("a" = #(W64 0)) || ("b" = #(W64 0)) then #false
-              else "a" > #(W64 (2^64-1)) `quot` "b".
+  λ: "a" "b", if: ("a" =⟨go.uint64⟩ #(W64 0)) || ("b" =⟨go.uint64⟩ #(W64 0)) then #false
+              else "a" >⟨go.uint64⟩ #(W64 (2^64-1)) /⟨go.uint64⟩ "b".
 
 (** Assume "a" * "b" doesn't overflow (as unsigned 64-bit integers) *)
 Definition assume_mul_no_overflow : val :=
-  λ: "a" "b", assume (~ mul_overflows "a" "b").
+  λ: "a" "b", assume (⟨go.bool⟩! mul_overflows "a" "b").
 
 End defn.

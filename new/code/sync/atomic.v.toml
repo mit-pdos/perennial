@@ -11,6 +11,10 @@ translate = [
   "Value*",
   "efaceWords",
 
+  "noCopy",
+  "Pointer",
+  "Pointer*",
+
   "_",
 ]
 
@@ -39,15 +43,10 @@ trusted = [
   "AddInt32",
   "CompareAndSwapInt32",
 
-  "noCopy",
-  "Pointer",
-  "Pointer.*",
+  "LoadPointer",
+  "StorePointer",
+  "SwapPointer",
+  "CompareAndSwapPointer",
 ]
 
 imports = ["!*"]
-
-[bootstrap]
-enabled = true
-prelude = [
-  "From New.golang.defn Require Export slice array map string interface defer builtin.",
-]

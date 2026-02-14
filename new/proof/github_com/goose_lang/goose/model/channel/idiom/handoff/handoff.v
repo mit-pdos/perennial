@@ -1,7 +1,7 @@
 Require Import New.proof.proof_prelude.
 From New.proof.github_com.goose_lang.goose.model.channel Require Import
   chan_au_base.
-From New.golang.theory Require Import chan.
+Require Import New.golang.theory.
 
 (** * Handoff Channel Pattern Verification
 
@@ -11,10 +11,10 @@ From New.golang.theory Require Import chan.
 
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
-Context `{!chanG Σ V}.
-Context `{!IntoVal V}.
-Context `{!IntoValTyped V t}.
+Context {sem : go.Semantics}.
+
+Context `[!chanG Σ V].
+Context `[!ZeroVal V] `[!TypedPointsto V] `[!IntoValTyped V t].
 
 Record handoff_names := {
   chan_name : chan_names;
@@ -22,16 +22,16 @@ Record handoff_names := {
 
 (* TODO: should not have to be exposed *)
 Definition is_chan_handoff (γ : handoff_names) (ch : loc) (P : V → iProp Σ) : iProp Σ :=
-  "#Hch" ∷ is_chan ch γ.(chan_name) ∗
+  "#Hch" ∷ is_chan ch γ.(chan_name) V ∗
   "#Hinv" ∷ inv nroot (
-    ∃ (s : chan_rep.t V),
-      "Hch" ∷ own_chan ch s γ.(chan_name) ∗
+    ∃ (s : chanstate.t V),
+      "Hch" ∷ own_chan γ.(chan_name) V s ∗
       match s with
-      | chan_rep.Idle => True
-      | chan_rep.SndPending v => P v
-      | chan_rep.SndCommit v => P v
-      | chan_rep.Buffered vs => [∗ list] v ∈ vs, P v
-      | chan_rep.Closed buffer => False
+      | chanstate.Idle => True
+      | chanstate.SndPending v => P v
+      | chanstate.SndCommit v => P v
+      | chanstate.Buffered vs => [∗ list] v ∈ vs, P v
+      | chanstate.Closed buffer => False
       | _ => True
       end
   )%I.
@@ -41,8 +41,8 @@ Definition is_chan_handoff (γ : handoff_names) (ch : loc) (P : V → iProp Σ) 
 Proof. apply _. Qed.
 
 Lemma start_handoff (ch : loc) (γ : chan_names) (P : V → iProp Σ) :
-  is_chan ch γ -∗
-  own_chan ch chan_rep.Idle γ ={⊤}=∗
+  is_chan ch γ V -∗
+  own_chan γ V chanstate.Idle ={⊤}=∗
   ∃ γhandoff,  ⌜γ = γhandoff.(chan_name)⌝ ∗ is_chan_handoff γhandoff ch P.
 Proof.
   iIntros "#Hch Hoc".
@@ -56,8 +56,8 @@ Proof.
 Qed.
 
 Lemma start_handoff_buffered (ch : loc) (γ : chan_names) (P : V → iProp Σ) :
-  is_chan ch γ -∗
-  own_chan ch (chan_rep.Buffered []) γ ={⊤}=∗
+  is_chan ch γ V -∗
+  own_chan γ V (chanstate.Buffered []) ={⊤}=∗
   ∃ γhandoff,  ⌜γ = γhandoff.(chan_name)⌝ ∗  is_chan_handoff γhandoff ch P.
 Proof.
   iIntros "#Hch Hoc".
@@ -74,7 +74,7 @@ Lemma handoff_rcv_au γ ch P Φ  :
   is_chan_handoff γ ch P ⊢
   £1 ∗ £1  -∗
   (▷ ∀ v, P v -∗ Φ v true ) -∗
-  recv_au ch γ.(chan_name) Φ.
+  recv_au γ.(chan_name) V Φ.
 Proof.
   iIntros "#Hhandoff (Hlc1 & Hlc2 ) HΦ".
   iNamed "Hhandoff".
@@ -177,9 +177,9 @@ Qed.
 
 Lemma wp_handoff_receive γ ch P :
   {{{ is_chan_handoff γ ch P }}}
-    chan.receive #t #ch
+    chan.receive t #ch
   {{{ v, RET (#v, #true); P v }}}.
-Proof.
+Proof using All.
   wp_start_folded as "#Hhandoff".
   iNamed "Hhandoff".
   wp_apply (chan.wp_receive ch γ.(chan_name) with "[$Hch]").
@@ -197,7 +197,7 @@ Lemma handoff_send_au γ ch P v (Φ: iProp Σ) :
   is_chan_handoff γ ch P ∗ £1 ∗ £1 ⊢
   P v -∗
   (▷ Φ) -∗
-  SendAU ch v γ.(chan_name) Φ.
+  send_au γ.(chan_name) v Φ.
 Proof.
   iIntros "(#Hhandoff & ? & ?) HP HΦ".
   iNamed "Hhandoff".
@@ -277,11 +277,10 @@ Proof.
 Qed.
 
 Lemma wp_handoff_send γ ch v P :
-  {{{ is_chan_handoff γ ch P ∗
-      P v }}}
-    chan.send #t #ch #v
+  {{{ is_chan_handoff γ ch P ∗ P v }}}
+    chan.send t #ch #v
   {{{ RET #(); True }}}.
-Proof.
+Proof using All.
   wp_start_folded as "[#Hhandoff HP]".
   unfold is_chan_handoff. iNamed "Hhandoff".
   wp_apply (chan.wp_send ch with "[$Hch]").

@@ -2,6039 +2,7049 @@
 Require Export New.proof.proof_prelude.
 Require Export New.manualproof.runtime.
 Require Export New.golang.theory.
-
 Require Export New.code.runtime.
 
 Set Default Proof Using "Type".
 
 Module runtime.
-
-(* type runtime.userArena *)
 Module userArena.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance userArena_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.userArena.t). Admitted.
+
+#[global] Instance userArena_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.userArena.t) (runtime.userArenaⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End userArena.
 
-Global Instance bounded_size_userArena : BoundedTypeSize runtime.userArena.
-Admitted.
-
-Global Instance into_val_userArena `{ffi_syntax} : IntoVal userArena.t.
-Admitted.
-
-Global Instance into_val_typed_userArena `{ffi_syntax} : IntoValTyped userArena.t runtime.userArena.
-Admitted.
-
-(* type runtime.liveUserArenaChunk *)
 Module liveUserArenaChunk.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance liveUserArenaChunk_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.liveUserArenaChunk.t). Admitted.
+
+#[global] Instance liveUserArenaChunk_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.liveUserArenaChunk.t) (runtime.liveUserArenaChunkⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End liveUserArenaChunk.
 
-Global Instance bounded_size_liveUserArenaChunk : BoundedTypeSize runtime.liveUserArenaChunk.
-Admitted.
-
-Global Instance into_val_liveUserArenaChunk `{ffi_syntax} : IntoVal liveUserArenaChunk.t.
-Admitted.
-
-Global Instance into_val_typed_liveUserArenaChunk `{ffi_syntax} : IntoValTyped liveUserArenaChunk.t runtime.liveUserArenaChunk.
-Admitted.
-
-(* type runtime.writeUserArenaHeapBits *)
 Module writeUserArenaHeapBits.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance writeUserArenaHeapBits_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.writeUserArenaHeapBits.t). Admitted.
+
+#[global] Instance writeUserArenaHeapBits_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.writeUserArenaHeapBits.t) (runtime.writeUserArenaHeapBitsⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End writeUserArenaHeapBits.
 
-Global Instance bounded_size_writeUserArenaHeapBits : BoundedTypeSize runtime.writeUserArenaHeapBits.
-Admitted.
-
-Global Instance into_val_writeUserArenaHeapBits `{ffi_syntax} : IntoVal writeUserArenaHeapBits.t.
-Admitted.
-
-Global Instance into_val_typed_writeUserArenaHeapBits `{ffi_syntax} : IntoValTyped writeUserArenaHeapBits.t runtime.writeUserArenaHeapBits.
-Admitted.
-
-(* type runtime.cgoCallers *)
 Module cgoCallers.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance cgoCallers_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.cgoCallers.t). Admitted.
+
+#[global] Instance cgoCallers_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.cgoCallers.t) (runtime.cgoCallersⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End cgoCallers.
 
-Global Instance bounded_size_cgoCallers : BoundedTypeSize runtime.cgoCallers.
-Admitted.
-
-Global Instance into_val_cgoCallers `{ffi_syntax} : IntoVal cgoCallers.t.
-Admitted.
-
-Global Instance into_val_typed_cgoCallers `{ffi_syntax} : IntoValTyped cgoCallers.t runtime.cgoCallers.
-Admitted.
-
-(* type runtime.argset *)
 Module argset.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance argset_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.argset.t). Admitted.
+
+#[global] Instance argset_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.argset.t) (runtime.argsetⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End argset.
 
-Global Instance bounded_size_argset : BoundedTypeSize runtime.argset.
-Admitted.
-
-Global Instance into_val_argset `{ffi_syntax} : IntoVal argset.t.
-Admitted.
-
-Global Instance into_val_typed_argset `{ffi_syntax} : IntoValTyped argset.t runtime.argset.
-Admitted.
-
-(* type runtime.hchan *)
 Module hchan.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance hchan_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.hchan.t). Admitted.
+
+#[global] Instance hchan_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.hchan.t) (runtime.hchanⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End hchan.
 
-Global Instance bounded_size_hchan : BoundedTypeSize runtime.hchan.
-Admitted.
-
-Global Instance into_val_hchan `{ffi_syntax} : IntoVal hchan.t.
-Admitted.
-
-Global Instance into_val_typed_hchan `{ffi_syntax} : IntoValTyped hchan.t runtime.hchan.
-Admitted.
-
-(* type runtime.waitq *)
 Module waitq.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance waitq_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.waitq.t). Admitted.
+
+#[global] Instance waitq_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.waitq.t) (runtime.waitqⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End waitq.
 
-Global Instance bounded_size_waitq : BoundedTypeSize runtime.waitq.
-Admitted.
-
-Global Instance into_val_waitq `{ffi_syntax} : IntoVal waitq.t.
-Admitted.
-
-Global Instance into_val_typed_waitq `{ffi_syntax} : IntoValTyped waitq.t runtime.waitq.
-Admitted.
-
-(* type runtime.coro *)
 Module coro.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance coro_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.coro.t). Admitted.
+
+#[global] Instance coro_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.coro.t) (runtime.coroⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End coro.
 
-Global Instance bounded_size_coro : BoundedTypeSize runtime.coro.
-Admitted.
-
-Global Instance into_val_coro `{ffi_syntax} : IntoVal coro.t.
-Admitted.
-
-Global Instance into_val_typed_coro `{ffi_syntax} : IntoValTyped coro.t runtime.coro.
-Admitted.
-
-(* type runtime.cpuProfile *)
 Module cpuProfile.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance cpuProfile_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.cpuProfile.t). Admitted.
+
+#[global] Instance cpuProfile_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.cpuProfile.t) (runtime.cpuProfileⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End cpuProfile.
 
-Global Instance bounded_size_cpuProfile : BoundedTypeSize runtime.cpuProfile.
-Admitted.
-
-Global Instance into_val_cpuProfile `{ffi_syntax} : IntoVal cpuProfile.t.
-Admitted.
-
-Global Instance into_val_typed_cpuProfile `{ffi_syntax} : IntoValTyped cpuProfile.t runtime.cpuProfile.
-Admitted.
-
-(* type runtime.debugCallWrapArgs *)
 Module debugCallWrapArgs.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance debugCallWrapArgs_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.debugCallWrapArgs.t). Admitted.
+
+#[global] Instance debugCallWrapArgs_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.debugCallWrapArgs.t) (runtime.debugCallWrapArgsⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End debugCallWrapArgs.
 
-Global Instance bounded_size_debugCallWrapArgs : BoundedTypeSize runtime.debugCallWrapArgs.
-Admitted.
-
-Global Instance into_val_debugCallWrapArgs `{ffi_syntax} : IntoVal debugCallWrapArgs.t.
-Admitted.
-
-Global Instance into_val_typed_debugCallWrapArgs `{ffi_syntax} : IntoValTyped debugCallWrapArgs.t runtime.debugCallWrapArgs.
-Admitted.
-
-(* type runtime.dloggerImpl *)
 Module dloggerImpl.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance dloggerImpl_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.dloggerImpl.t). Admitted.
+
+#[global] Instance dloggerImpl_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.dloggerImpl.t) (runtime.dloggerImplⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End dloggerImpl.
 
-Global Instance bounded_size_dloggerImpl : BoundedTypeSize runtime.dloggerImpl.
-Admitted.
-
-Global Instance into_val_dloggerImpl `{ffi_syntax} : IntoVal dloggerImpl.t.
-Admitted.
-
-Global Instance into_val_typed_dloggerImpl `{ffi_syntax} : IntoValTyped dloggerImpl.t runtime.dloggerImpl.
-Admitted.
-
-(* type runtime.dloggerFake *)
 Module dloggerFake.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance dloggerFake_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.dloggerFake.t). Admitted.
+
+#[global] Instance dloggerFake_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.dloggerFake.t) (runtime.dloggerFakeⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End dloggerFake.
 
-Global Instance bounded_size_dloggerFake : BoundedTypeSize runtime.dloggerFake.
-Admitted.
-
-Global Instance into_val_dloggerFake `{ffi_syntax} : IntoVal dloggerFake.t.
-Admitted.
-
-Global Instance into_val_typed_dloggerFake `{ffi_syntax} : IntoValTyped dloggerFake.t runtime.dloggerFake.
-Admitted.
-
-(* type runtime.debugLogWriter *)
 Module debugLogWriter.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance debugLogWriter_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.debugLogWriter.t). Admitted.
+
+#[global] Instance debugLogWriter_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.debugLogWriter.t) (runtime.debugLogWriterⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End debugLogWriter.
 
-Global Instance bounded_size_debugLogWriter : BoundedTypeSize runtime.debugLogWriter.
-Admitted.
-
-Global Instance into_val_debugLogWriter `{ffi_syntax} : IntoVal debugLogWriter.t.
-Admitted.
-
-Global Instance into_val_typed_debugLogWriter `{ffi_syntax} : IntoValTyped debugLogWriter.t runtime.debugLogWriter.
-Admitted.
-
-(* type runtime.debugLogBuf *)
 Module debugLogBuf.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance debugLogBuf_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.debugLogBuf.t). Admitted.
+
+#[global] Instance debugLogBuf_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.debugLogBuf.t) (runtime.debugLogBufⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End debugLogBuf.
 
-Global Instance bounded_size_debugLogBuf : BoundedTypeSize runtime.debugLogBuf.
-Admitted.
-
-Global Instance into_val_debugLogBuf `{ffi_syntax} : IntoVal debugLogBuf.t.
-Admitted.
-
-Global Instance into_val_typed_debugLogBuf `{ffi_syntax} : IntoValTyped debugLogBuf.t runtime.debugLogBuf.
-Admitted.
-
-(* type runtime.debugLogReader *)
 Module debugLogReader.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance debugLogReader_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.debugLogReader.t). Admitted.
+
+#[global] Instance debugLogReader_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.debugLogReader.t) (runtime.debugLogReaderⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End debugLogReader.
 
-Global Instance bounded_size_debugLogReader : BoundedTypeSize runtime.debugLogReader.
-Admitted.
-
-Global Instance into_val_debugLogReader `{ffi_syntax} : IntoVal debugLogReader.t.
-Admitted.
-
-Global Instance into_val_typed_debugLogReader `{ffi_syntax} : IntoValTyped debugLogReader.t runtime.debugLogReader.
-Admitted.
-
-(* type runtime.dlogger *)
-Module dlogger.
-Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
-End def.
-End dlogger.
-
-Global Instance bounded_size_dlogger : BoundedTypeSize runtime.dlogger.
-Admitted.
-
-Global Instance into_val_dlogger `{ffi_syntax} : IntoVal dlogger.t.
-Admitted.
-
-Global Instance into_val_typed_dlogger `{ffi_syntax} : IntoValTyped dlogger.t runtime.dlogger.
-Admitted.
-
-(* type runtime.dlogPerM *)
 Module dlogPerM.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance dlogPerM_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.dlogPerM.t). Admitted.
+
+#[global] Instance dlogPerM_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.dlogPerM.t) (runtime.dlogPerMⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End dlogPerM.
 
-Global Instance bounded_size_dlogPerM : BoundedTypeSize runtime.dlogPerM.
-Admitted.
-
-Global Instance into_val_dlogPerM `{ffi_syntax} : IntoVal dlogPerM.t.
-Admitted.
-
-Global Instance into_val_typed_dlogPerM `{ffi_syntax} : IntoValTyped dlogPerM.t runtime.dlogPerM.
-Admitted.
-
-(* type runtime.timespec *)
 Module timespec.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance timespec_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.timespec.t). Admitted.
+
+#[global] Instance timespec_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.timespec.t) (runtime.timespecⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End timespec.
 
-Global Instance bounded_size_timespec : BoundedTypeSize runtime.timespec.
-Admitted.
-
-Global Instance into_val_timespec `{ffi_syntax} : IntoVal timespec.t.
-Admitted.
-
-Global Instance into_val_typed_timespec `{ffi_syntax} : IntoValTyped timespec.t runtime.timespec.
-Admitted.
-
-(* type runtime.timeval *)
 Module timeval.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance timeval_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.timeval.t). Admitted.
+
+#[global] Instance timeval_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.timeval.t) (runtime.timevalⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End timeval.
 
-Global Instance bounded_size_timeval : BoundedTypeSize runtime.timeval.
-Admitted.
-
-Global Instance into_val_timeval `{ffi_syntax} : IntoVal timeval.t.
-Admitted.
-
-Global Instance into_val_typed_timeval `{ffi_syntax} : IntoValTyped timeval.t runtime.timeval.
-Admitted.
-
-(* type runtime.sigactiont *)
 Module sigactiont.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance sigactiont_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.sigactiont.t). Admitted.
+
+#[global] Instance sigactiont_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.sigactiont.t) (runtime.sigactiontⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End sigactiont.
 
-Global Instance bounded_size_sigactiont : BoundedTypeSize runtime.sigactiont.
-Admitted.
-
-Global Instance into_val_sigactiont `{ffi_syntax} : IntoVal sigactiont.t.
-Admitted.
-
-Global Instance into_val_typed_sigactiont `{ffi_syntax} : IntoValTyped sigactiont.t runtime.sigactiont.
-Admitted.
-
-(* type runtime.siginfoFields *)
 Module siginfoFields.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance siginfoFields_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.siginfoFields.t). Admitted.
+
+#[global] Instance siginfoFields_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.siginfoFields.t) (runtime.siginfoFieldsⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End siginfoFields.
 
-Global Instance bounded_size_siginfoFields : BoundedTypeSize runtime.siginfoFields.
-Admitted.
-
-Global Instance into_val_siginfoFields `{ffi_syntax} : IntoVal siginfoFields.t.
-Admitted.
-
-Global Instance into_val_typed_siginfoFields `{ffi_syntax} : IntoValTyped siginfoFields.t runtime.siginfoFields.
-Admitted.
-
-(* type runtime.siginfo *)
 Module siginfo.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance siginfo_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.siginfo.t). Admitted.
+
+#[global] Instance siginfo_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.siginfo.t) (runtime.siginfoⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End siginfo.
 
-Global Instance bounded_size_siginfo : BoundedTypeSize runtime.siginfo.
-Admitted.
-
-Global Instance into_val_siginfo `{ffi_syntax} : IntoVal siginfo.t.
-Admitted.
-
-Global Instance into_val_typed_siginfo `{ffi_syntax} : IntoValTyped siginfo.t runtime.siginfo.
-Admitted.
-
-(* type runtime.itimerspec *)
 Module itimerspec.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance itimerspec_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.itimerspec.t). Admitted.
+
+#[global] Instance itimerspec_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.itimerspec.t) (runtime.itimerspecⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End itimerspec.
 
-Global Instance bounded_size_itimerspec : BoundedTypeSize runtime.itimerspec.
-Admitted.
-
-Global Instance into_val_itimerspec `{ffi_syntax} : IntoVal itimerspec.t.
-Admitted.
-
-Global Instance into_val_typed_itimerspec `{ffi_syntax} : IntoValTyped itimerspec.t runtime.itimerspec.
-Admitted.
-
-(* type runtime.itimerval *)
 Module itimerval.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance itimerval_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.itimerval.t). Admitted.
+
+#[global] Instance itimerval_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.itimerval.t) (runtime.itimervalⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End itimerval.
 
-Global Instance bounded_size_itimerval : BoundedTypeSize runtime.itimerval.
-Admitted.
-
-Global Instance into_val_itimerval `{ffi_syntax} : IntoVal itimerval.t.
-Admitted.
-
-Global Instance into_val_typed_itimerval `{ffi_syntax} : IntoValTyped itimerval.t runtime.itimerval.
-Admitted.
-
-(* type runtime.sigeventFields *)
 Module sigeventFields.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance sigeventFields_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.sigeventFields.t). Admitted.
+
+#[global] Instance sigeventFields_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.sigeventFields.t) (runtime.sigeventFieldsⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End sigeventFields.
 
-Global Instance bounded_size_sigeventFields : BoundedTypeSize runtime.sigeventFields.
-Admitted.
-
-Global Instance into_val_sigeventFields `{ffi_syntax} : IntoVal sigeventFields.t.
-Admitted.
-
-Global Instance into_val_typed_sigeventFields `{ffi_syntax} : IntoValTyped sigeventFields.t runtime.sigeventFields.
-Admitted.
-
-(* type runtime.sigevent *)
 Module sigevent.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance sigevent_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.sigevent.t). Admitted.
+
+#[global] Instance sigevent_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.sigevent.t) (runtime.sigeventⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End sigevent.
 
-Global Instance bounded_size_sigevent : BoundedTypeSize runtime.sigevent.
-Admitted.
-
-Global Instance into_val_sigevent `{ffi_syntax} : IntoVal sigevent.t.
-Admitted.
-
-Global Instance into_val_typed_sigevent `{ffi_syntax} : IntoValTyped sigevent.t runtime.sigevent.
-Admitted.
-
-(* type runtime.usigset *)
 Module usigset.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance usigset_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.usigset.t). Admitted.
+
+#[global] Instance usigset_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.usigset.t) (runtime.usigsetⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End usigset.
 
-Global Instance bounded_size_usigset : BoundedTypeSize runtime.usigset.
-Admitted.
-
-Global Instance into_val_usigset `{ffi_syntax} : IntoVal usigset.t.
-Admitted.
-
-Global Instance into_val_typed_usigset `{ffi_syntax} : IntoValTyped usigset.t runtime.usigset.
-Admitted.
-
-(* type runtime.fpxreg *)
 Module fpxreg.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance fpxreg_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.fpxreg.t). Admitted.
+
+#[global] Instance fpxreg_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.fpxreg.t) (runtime.fpxregⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End fpxreg.
 
-Global Instance bounded_size_fpxreg : BoundedTypeSize runtime.fpxreg.
-Admitted.
-
-Global Instance into_val_fpxreg `{ffi_syntax} : IntoVal fpxreg.t.
-Admitted.
-
-Global Instance into_val_typed_fpxreg `{ffi_syntax} : IntoValTyped fpxreg.t runtime.fpxreg.
-Admitted.
-
-(* type runtime.xmmreg *)
 Module xmmreg.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance xmmreg_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.xmmreg.t). Admitted.
+
+#[global] Instance xmmreg_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.xmmreg.t) (runtime.xmmregⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End xmmreg.
 
-Global Instance bounded_size_xmmreg : BoundedTypeSize runtime.xmmreg.
-Admitted.
-
-Global Instance into_val_xmmreg `{ffi_syntax} : IntoVal xmmreg.t.
-Admitted.
-
-Global Instance into_val_typed_xmmreg `{ffi_syntax} : IntoValTyped xmmreg.t runtime.xmmreg.
-Admitted.
-
-(* type runtime.fpstate *)
 Module fpstate.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance fpstate_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.fpstate.t). Admitted.
+
+#[global] Instance fpstate_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.fpstate.t) (runtime.fpstateⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End fpstate.
 
-Global Instance bounded_size_fpstate : BoundedTypeSize runtime.fpstate.
-Admitted.
-
-Global Instance into_val_fpstate `{ffi_syntax} : IntoVal fpstate.t.
-Admitted.
-
-Global Instance into_val_typed_fpstate `{ffi_syntax} : IntoValTyped fpstate.t runtime.fpstate.
-Admitted.
-
-(* type runtime.fpxreg1 *)
 Module fpxreg1.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance fpxreg1_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.fpxreg1.t). Admitted.
+
+#[global] Instance fpxreg1_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.fpxreg1.t) (runtime.fpxreg1ⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End fpxreg1.
 
-Global Instance bounded_size_fpxreg1 : BoundedTypeSize runtime.fpxreg1.
-Admitted.
-
-Global Instance into_val_fpxreg1 `{ffi_syntax} : IntoVal fpxreg1.t.
-Admitted.
-
-Global Instance into_val_typed_fpxreg1 `{ffi_syntax} : IntoValTyped fpxreg1.t runtime.fpxreg1.
-Admitted.
-
-(* type runtime.xmmreg1 *)
 Module xmmreg1.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance xmmreg1_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.xmmreg1.t). Admitted.
+
+#[global] Instance xmmreg1_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.xmmreg1.t) (runtime.xmmreg1ⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End xmmreg1.
 
-Global Instance bounded_size_xmmreg1 : BoundedTypeSize runtime.xmmreg1.
-Admitted.
-
-Global Instance into_val_xmmreg1 `{ffi_syntax} : IntoVal xmmreg1.t.
-Admitted.
-
-Global Instance into_val_typed_xmmreg1 `{ffi_syntax} : IntoValTyped xmmreg1.t runtime.xmmreg1.
-Admitted.
-
-(* type runtime.fpstate1 *)
 Module fpstate1.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance fpstate1_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.fpstate1.t). Admitted.
+
+#[global] Instance fpstate1_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.fpstate1.t) (runtime.fpstate1ⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End fpstate1.
 
-Global Instance bounded_size_fpstate1 : BoundedTypeSize runtime.fpstate1.
-Admitted.
-
-Global Instance into_val_fpstate1 `{ffi_syntax} : IntoVal fpstate1.t.
-Admitted.
-
-Global Instance into_val_typed_fpstate1 `{ffi_syntax} : IntoValTyped fpstate1.t runtime.fpstate1.
-Admitted.
-
-(* type runtime.fpreg1 *)
 Module fpreg1.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance fpreg1_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.fpreg1.t). Admitted.
+
+#[global] Instance fpreg1_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.fpreg1.t) (runtime.fpreg1ⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End fpreg1.
 
-Global Instance bounded_size_fpreg1 : BoundedTypeSize runtime.fpreg1.
-Admitted.
-
-Global Instance into_val_fpreg1 `{ffi_syntax} : IntoVal fpreg1.t.
-Admitted.
-
-Global Instance into_val_typed_fpreg1 `{ffi_syntax} : IntoValTyped fpreg1.t runtime.fpreg1.
-Admitted.
-
-(* type runtime.stackt *)
 Module stackt.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance stackt_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.stackt.t). Admitted.
+
+#[global] Instance stackt_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.stackt.t) (runtime.stacktⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End stackt.
 
-Global Instance bounded_size_stackt : BoundedTypeSize runtime.stackt.
-Admitted.
-
-Global Instance into_val_stackt `{ffi_syntax} : IntoVal stackt.t.
-Admitted.
-
-Global Instance into_val_typed_stackt `{ffi_syntax} : IntoValTyped stackt.t runtime.stackt.
-Admitted.
-
-(* type runtime.mcontext *)
 Module mcontext.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance mcontext_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.mcontext.t). Admitted.
+
+#[global] Instance mcontext_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.mcontext.t) (runtime.mcontextⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End mcontext.
 
-Global Instance bounded_size_mcontext : BoundedTypeSize runtime.mcontext.
-Admitted.
-
-Global Instance into_val_mcontext `{ffi_syntax} : IntoVal mcontext.t.
-Admitted.
-
-Global Instance into_val_typed_mcontext `{ffi_syntax} : IntoValTyped mcontext.t runtime.mcontext.
-Admitted.
-
-(* type runtime.ucontext *)
 Module ucontext.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ucontext_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.ucontext.t). Admitted.
+
+#[global] Instance ucontext_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.ucontext.t) (runtime.ucontextⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End ucontext.
 
-Global Instance bounded_size_ucontext : BoundedTypeSize runtime.ucontext.
-Admitted.
-
-Global Instance into_val_ucontext `{ffi_syntax} : IntoVal ucontext.t.
-Admitted.
-
-Global Instance into_val_typed_ucontext `{ffi_syntax} : IntoValTyped ucontext.t runtime.ucontext.
-Admitted.
-
-(* type runtime.sigcontext *)
 Module sigcontext.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance sigcontext_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.sigcontext.t). Admitted.
+
+#[global] Instance sigcontext_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.sigcontext.t) (runtime.sigcontextⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End sigcontext.
 
-Global Instance bounded_size_sigcontext : BoundedTypeSize runtime.sigcontext.
-Admitted.
-
-Global Instance into_val_sigcontext `{ffi_syntax} : IntoVal sigcontext.t.
-Admitted.
-
-Global Instance into_val_typed_sigcontext `{ffi_syntax} : IntoValTyped sigcontext.t runtime.sigcontext.
-Admitted.
-
-(* type runtime.sockaddr_un *)
 Module sockaddr_un.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance sockaddr_un_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.sockaddr_un.t). Admitted.
+
+#[global] Instance sockaddr_un_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.sockaddr_un.t) (runtime.sockaddr_unⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End sockaddr_un.
 
-Global Instance bounded_size_sockaddr_un : BoundedTypeSize runtime.sockaddr_un.
-Admitted.
-
-Global Instance into_val_sockaddr_un `{ffi_syntax} : IntoVal sockaddr_un.t.
-Admitted.
-
-Global Instance into_val_typed_sockaddr_un `{ffi_syntax} : IntoValTyped sockaddr_un.t runtime.sockaddr_un.
-Admitted.
-
-(* type runtime.Error *)
 Module Error.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Error_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.Error.t). Admitted.
+
+#[global] Instance Error_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.Error.t) (runtime.Errorⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End Error.
 
-Global Instance bounded_size_Error : BoundedTypeSize runtime.Error.
-Admitted.
-
-Global Instance into_val_Error `{ffi_syntax} : IntoVal Error.t.
-Admitted.
-
-Global Instance into_val_typed_Error `{ffi_syntax} : IntoValTyped Error.t runtime.Error.
-Admitted.
-
-(* type runtime.TypeAssertionError *)
 Module TypeAssertionError.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance TypeAssertionError_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.TypeAssertionError.t). Admitted.
+
+#[global] Instance TypeAssertionError_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.TypeAssertionError.t) (runtime.TypeAssertionErrorⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End TypeAssertionError.
 
-Global Instance bounded_size_TypeAssertionError : BoundedTypeSize runtime.TypeAssertionError.
-Admitted.
-
-Global Instance into_val_TypeAssertionError `{ffi_syntax} : IntoVal TypeAssertionError.t.
-Admitted.
-
-Global Instance into_val_typed_TypeAssertionError `{ffi_syntax} : IntoValTyped TypeAssertionError.t runtime.TypeAssertionError.
-Admitted.
-
-(* type runtime.errorString *)
 Module errorString.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance errorString_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.errorString.t). Admitted.
+
+#[global] Instance errorString_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.errorString.t) (runtime.errorStringⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End errorString.
 
-Global Instance bounded_size_errorString : BoundedTypeSize runtime.errorString.
-Admitted.
-
-Global Instance into_val_errorString `{ffi_syntax} : IntoVal errorString.t.
-Admitted.
-
-Global Instance into_val_typed_errorString `{ffi_syntax} : IntoValTyped errorString.t runtime.errorString.
-Admitted.
-
-(* type runtime.errorAddressString *)
 Module errorAddressString.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance errorAddressString_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.errorAddressString.t). Admitted.
+
+#[global] Instance errorAddressString_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.errorAddressString.t) (runtime.errorAddressStringⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End errorAddressString.
 
-Global Instance bounded_size_errorAddressString : BoundedTypeSize runtime.errorAddressString.
-Admitted.
-
-Global Instance into_val_errorAddressString `{ffi_syntax} : IntoVal errorAddressString.t.
-Admitted.
-
-Global Instance into_val_typed_errorAddressString `{ffi_syntax} : IntoValTyped errorAddressString.t runtime.errorAddressString.
-Admitted.
-
-(* type runtime.plainError *)
 Module plainError.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance plainError_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.plainError.t). Admitted.
+
+#[global] Instance plainError_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.plainError.t) (runtime.plainErrorⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End plainError.
 
-Global Instance bounded_size_plainError : BoundedTypeSize runtime.plainError.
-Admitted.
-
-Global Instance into_val_plainError `{ffi_syntax} : IntoVal plainError.t.
-Admitted.
-
-Global Instance into_val_typed_plainError `{ffi_syntax} : IntoValTyped plainError.t runtime.plainError.
-Admitted.
-
-(* type runtime.boundsError *)
 Module boundsError.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance boundsError_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.boundsError.t). Admitted.
+
+#[global] Instance boundsError_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.boundsError.t) (runtime.boundsErrorⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End boundsError.
 
-Global Instance bounded_size_boundsError : BoundedTypeSize runtime.boundsError.
-Admitted.
-
-Global Instance into_val_boundsError `{ffi_syntax} : IntoVal boundsError.t.
-Admitted.
-
-Global Instance into_val_typed_boundsError `{ffi_syntax} : IntoValTyped boundsError.t runtime.boundsError.
-Admitted.
-
-(* type runtime.boundsErrorCode *)
 Module boundsErrorCode.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance boundsErrorCode_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.boundsErrorCode.t). Admitted.
+
+#[global] Instance boundsErrorCode_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.boundsErrorCode.t) (runtime.boundsErrorCodeⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End boundsErrorCode.
 
-Global Instance bounded_size_boundsErrorCode : BoundedTypeSize runtime.boundsErrorCode.
-Admitted.
-
-Global Instance into_val_boundsErrorCode `{ffi_syntax} : IntoVal boundsErrorCode.t.
-Admitted.
-
-Global Instance into_val_typed_boundsErrorCode `{ffi_syntax} : IntoValTyped boundsErrorCode.t runtime.boundsErrorCode.
-Admitted.
-
-(* type runtime.stringer *)
 Module stringer.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance stringer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.stringer.t). Admitted.
+
+#[global] Instance stringer_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.stringer.t) (runtime.stringerⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End stringer.
 
-Global Instance bounded_size_stringer : BoundedTypeSize runtime.stringer.
-Admitted.
-
-Global Instance into_val_stringer `{ffi_syntax} : IntoVal stringer.t.
-Admitted.
-
-Global Instance into_val_typed_stringer `{ffi_syntax} : IntoValTyped stringer.t runtime.stringer.
-Admitted.
-
-(* type runtime.typeCacheBucket *)
 Module typeCacheBucket.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance typeCacheBucket_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.typeCacheBucket.t). Admitted.
+
+#[global] Instance typeCacheBucket_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.typeCacheBucket.t) (runtime.typeCacheBucketⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End typeCacheBucket.
 
-Global Instance bounded_size_typeCacheBucket : BoundedTypeSize runtime.typeCacheBucket.
-Admitted.
-
-Global Instance into_val_typeCacheBucket `{ffi_syntax} : IntoVal typeCacheBucket.t.
-Admitted.
-
-Global Instance into_val_typed_typeCacheBucket `{ffi_syntax} : IntoValTyped typeCacheBucket.t runtime.typeCacheBucket.
-Admitted.
-
-(* type runtime.childInfo *)
 Module childInfo.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance childInfo_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.childInfo.t). Admitted.
+
+#[global] Instance childInfo_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.childInfo.t) (runtime.childInfoⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End childInfo.
 
-Global Instance bounded_size_childInfo : BoundedTypeSize runtime.childInfo.
-Admitted.
-
-Global Instance into_val_childInfo `{ffi_syntax} : IntoVal childInfo.t.
-Admitted.
-
-Global Instance into_val_typed_childInfo `{ffi_syntax} : IntoValTyped childInfo.t runtime.childInfo.
-Admitted.
-
-(* type runtime.timeHistogram *)
 Module timeHistogram.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance timeHistogram_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.timeHistogram.t). Admitted.
+
+#[global] Instance timeHistogram_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.timeHistogram.t) (runtime.timeHistogramⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End timeHistogram.
 
-Global Instance bounded_size_timeHistogram : BoundedTypeSize runtime.timeHistogram.
-Admitted.
-
-Global Instance into_val_timeHistogram `{ffi_syntax} : IntoVal timeHistogram.t.
-Admitted.
-
-Global Instance into_val_typed_timeHistogram `{ffi_syntax} : IntoValTyped timeHistogram.t runtime.timeHistogram.
-Admitted.
-
-(* type runtime.itabTableType *)
 Module itabTableType.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance itabTableType_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.itabTableType.t). Admitted.
+
+#[global] Instance itabTableType_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.itabTableType.t) (runtime.itabTableTypeⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End itabTableType.
 
-Global Instance bounded_size_itabTableType : BoundedTypeSize runtime.itabTableType.
-Admitted.
-
-Global Instance into_val_itabTableType `{ffi_syntax} : IntoVal itabTableType.t.
-Admitted.
-
-Global Instance into_val_typed_itabTableType `{ffi_syntax} : IntoValTyped itabTableType.t runtime.itabTableType.
-Admitted.
-
-(* type runtime.uint16InterfacePtr *)
 Module uint16InterfacePtr.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance uint16InterfacePtr_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.uint16InterfacePtr.t). Admitted.
+
+#[global] Instance uint16InterfacePtr_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.uint16InterfacePtr.t) (runtime.uint16InterfacePtrⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End uint16InterfacePtr.
 
-Global Instance bounded_size_uint16InterfacePtr : BoundedTypeSize runtime.uint16InterfacePtr.
-Admitted.
-
-Global Instance into_val_uint16InterfacePtr `{ffi_syntax} : IntoVal uint16InterfacePtr.t.
-Admitted.
-
-Global Instance into_val_typed_uint16InterfacePtr `{ffi_syntax} : IntoValTyped uint16InterfacePtr.t runtime.uint16InterfacePtr.
-Admitted.
-
-(* type runtime.uint32InterfacePtr *)
 Module uint32InterfacePtr.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance uint32InterfacePtr_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.uint32InterfacePtr.t). Admitted.
+
+#[global] Instance uint32InterfacePtr_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.uint32InterfacePtr.t) (runtime.uint32InterfacePtrⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End uint32InterfacePtr.
 
-Global Instance bounded_size_uint32InterfacePtr : BoundedTypeSize runtime.uint32InterfacePtr.
-Admitted.
-
-Global Instance into_val_uint32InterfacePtr `{ffi_syntax} : IntoVal uint32InterfacePtr.t.
-Admitted.
-
-Global Instance into_val_typed_uint32InterfacePtr `{ffi_syntax} : IntoValTyped uint32InterfacePtr.t runtime.uint32InterfacePtr.
-Admitted.
-
-(* type runtime.uint64InterfacePtr *)
 Module uint64InterfacePtr.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance uint64InterfacePtr_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.uint64InterfacePtr.t). Admitted.
+
+#[global] Instance uint64InterfacePtr_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.uint64InterfacePtr.t) (runtime.uint64InterfacePtrⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End uint64InterfacePtr.
 
-Global Instance bounded_size_uint64InterfacePtr : BoundedTypeSize runtime.uint64InterfacePtr.
-Admitted.
-
-Global Instance into_val_uint64InterfacePtr `{ffi_syntax} : IntoVal uint64InterfacePtr.t.
-Admitted.
-
-Global Instance into_val_typed_uint64InterfacePtr `{ffi_syntax} : IntoValTyped uint64InterfacePtr.t runtime.uint64InterfacePtr.
-Admitted.
-
-(* type runtime.stringInterfacePtr *)
 Module stringInterfacePtr.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance stringInterfacePtr_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.stringInterfacePtr.t). Admitted.
+
+#[global] Instance stringInterfacePtr_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.stringInterfacePtr.t) (runtime.stringInterfacePtrⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End stringInterfacePtr.
 
-Global Instance bounded_size_stringInterfacePtr : BoundedTypeSize runtime.stringInterfacePtr.
-Admitted.
-
-Global Instance into_val_stringInterfacePtr `{ffi_syntax} : IntoVal stringInterfacePtr.t.
-Admitted.
-
-Global Instance into_val_typed_stringInterfacePtr `{ffi_syntax} : IntoValTyped stringInterfacePtr.t runtime.stringInterfacePtr.
-Admitted.
-
-(* type runtime.sliceInterfacePtr *)
 Module sliceInterfacePtr.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance sliceInterfacePtr_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.sliceInterfacePtr.t). Admitted.
+
+#[global] Instance sliceInterfacePtr_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.sliceInterfacePtr.t) (runtime.sliceInterfacePtrⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End sliceInterfacePtr.
 
-Global Instance bounded_size_sliceInterfacePtr : BoundedTypeSize runtime.sliceInterfacePtr.
-Admitted.
-
-Global Instance into_val_sliceInterfacePtr `{ffi_syntax} : IntoVal sliceInterfacePtr.t.
-Admitted.
-
-Global Instance into_val_typed_sliceInterfacePtr `{ffi_syntax} : IntoValTyped sliceInterfacePtr.t runtime.sliceInterfacePtr.
-Admitted.
-
-(* type runtime.lfstack *)
 Module lfstack.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance lfstack_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.lfstack.t). Admitted.
+
+#[global] Instance lfstack_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.lfstack.t) (runtime.lfstackⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End lfstack.
 
-Global Instance bounded_size_lfstack : BoundedTypeSize runtime.lfstack.
-Admitted.
-
-Global Instance into_val_lfstack `{ffi_syntax} : IntoVal lfstack.t.
-Admitted.
-
-Global Instance into_val_typed_lfstack `{ffi_syntax} : IntoValTyped lfstack.t runtime.lfstack.
-Admitted.
-
-(* type runtime.linknameIter *)
 Module linknameIter.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance linknameIter_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.linknameIter.t). Admitted.
+
+#[global] Instance linknameIter_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.linknameIter.t) (runtime.linknameIterⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End linknameIter.
 
-Global Instance bounded_size_linknameIter : BoundedTypeSize runtime.linknameIter.
-Admitted.
-
-Global Instance into_val_linknameIter `{ffi_syntax} : IntoVal linknameIter.t.
-Admitted.
-
-Global Instance into_val_typed_linknameIter `{ffi_syntax} : IntoValTyped linknameIter.t runtime.linknameIter.
-Admitted.
-
-(* type runtime.mWaitList *)
 Module mWaitList.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance mWaitList_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.mWaitList.t). Admitted.
+
+#[global] Instance mWaitList_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.mWaitList.t) (runtime.mWaitListⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End mWaitList.
 
-Global Instance bounded_size_mWaitList : BoundedTypeSize runtime.mWaitList.
-Admitted.
-
-Global Instance into_val_mWaitList `{ffi_syntax} : IntoVal mWaitList.t.
-Admitted.
-
-Global Instance into_val_typed_mWaitList `{ffi_syntax} : IntoValTyped mWaitList.t runtime.mWaitList.
-Admitted.
-
-(* type runtime.lockRank *)
 Module lockRank.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance lockRank_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.lockRank.t). Admitted.
+
+#[global] Instance lockRank_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.lockRank.t) (runtime.lockRankⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End lockRank.
 
-Global Instance bounded_size_lockRank : BoundedTypeSize runtime.lockRank.
-Admitted.
-
-Global Instance into_val_lockRank `{ffi_syntax} : IntoVal lockRank.t.
-Admitted.
-
-Global Instance into_val_typed_lockRank `{ffi_syntax} : IntoValTyped lockRank.t runtime.lockRank.
-Admitted.
-
-(* type runtime.lockRankStruct *)
 Module lockRankStruct.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance lockRankStruct_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.lockRankStruct.t). Admitted.
+
+#[global] Instance lockRankStruct_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.lockRankStruct.t) (runtime.lockRankStructⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End lockRankStruct.
 
-Global Instance bounded_size_lockRankStruct : BoundedTypeSize runtime.lockRankStruct.
-Admitted.
-
-Global Instance into_val_lockRankStruct `{ffi_syntax} : IntoVal lockRankStruct.t.
-Admitted.
-
-Global Instance into_val_typed_lockRankStruct `{ffi_syntax} : IntoValTyped lockRankStruct.t runtime.lockRankStruct.
-Admitted.
-
-(* type runtime.persistentAlloc *)
 Module persistentAlloc.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance persistentAlloc_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.persistentAlloc.t). Admitted.
+
+#[global] Instance persistentAlloc_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.persistentAlloc.t) (runtime.persistentAllocⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End persistentAlloc.
 
-Global Instance bounded_size_persistentAlloc : BoundedTypeSize runtime.persistentAlloc.
-Admitted.
-
-Global Instance into_val_persistentAlloc `{ffi_syntax} : IntoVal persistentAlloc.t.
-Admitted.
-
-Global Instance into_val_typed_persistentAlloc `{ffi_syntax} : IntoValTyped persistentAlloc.t runtime.persistentAlloc.
-Admitted.
-
-(* type runtime.linearAlloc *)
 Module linearAlloc.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance linearAlloc_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.linearAlloc.t). Admitted.
+
+#[global] Instance linearAlloc_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.linearAlloc.t) (runtime.linearAllocⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End linearAlloc.
 
-Global Instance bounded_size_linearAlloc : BoundedTypeSize runtime.linearAlloc.
-Admitted.
-
-Global Instance into_val_linearAlloc `{ffi_syntax} : IntoVal linearAlloc.t.
-Admitted.
-
-Global Instance into_val_typed_linearAlloc `{ffi_syntax} : IntoValTyped linearAlloc.t runtime.linearAlloc.
-Admitted.
-
-(* type runtime.notInHeap *)
 Module notInHeap.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance notInHeap_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.notInHeap.t). Admitted.
+
+#[global] Instance notInHeap_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.notInHeap.t) (runtime.notInHeapⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End notInHeap.
 
-Global Instance bounded_size_notInHeap : BoundedTypeSize runtime.notInHeap.
-Admitted.
-
-Global Instance into_val_notInHeap `{ffi_syntax} : IntoVal notInHeap.t.
-Admitted.
-
-Global Instance into_val_typed_notInHeap `{ffi_syntax} : IntoValTyped notInHeap.t runtime.notInHeap.
-Admitted.
-
-(* type runtime.maptype *)
-Module maptype.
-Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
-End def.
-End maptype.
-
-Global Instance bounded_size_maptype : BoundedTypeSize runtime.maptype.
-Admitted.
-
-Global Instance into_val_maptype `{ffi_syntax} : IntoVal maptype.t.
-Admitted.
-
-Global Instance into_val_typed_maptype `{ffi_syntax} : IntoValTyped maptype.t runtime.maptype.
-Admitted.
-
-(* type runtime.typePointers *)
 Module typePointers.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance typePointers_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.typePointers.t). Admitted.
+
+#[global] Instance typePointers_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.typePointers.t) (runtime.typePointersⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End typePointers.
 
-Global Instance bounded_size_typePointers : BoundedTypeSize runtime.typePointers.
-Admitted.
-
-Global Instance into_val_typePointers `{ffi_syntax} : IntoVal typePointers.t.
-Admitted.
-
-Global Instance into_val_typed_typePointers `{ffi_syntax} : IntoValTyped typePointers.t runtime.typePointers.
-Admitted.
-
-(* type runtime.markBits *)
 Module markBits.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance markBits_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.markBits.t). Admitted.
+
+#[global] Instance markBits_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.markBits.t) (runtime.markBitsⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End markBits.
 
-Global Instance bounded_size_markBits : BoundedTypeSize runtime.markBits.
-Admitted.
-
-Global Instance into_val_markBits `{ffi_syntax} : IntoVal markBits.t.
-Admitted.
-
-Global Instance into_val_typed_markBits `{ffi_syntax} : IntoValTyped markBits.t runtime.markBits.
-Admitted.
-
-(* type runtime.mcache *)
 Module mcache.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance mcache_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.mcache.t). Admitted.
+
+#[global] Instance mcache_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.mcache.t) (runtime.mcacheⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End mcache.
 
-Global Instance bounded_size_mcache : BoundedTypeSize runtime.mcache.
-Admitted.
-
-Global Instance into_val_mcache `{ffi_syntax} : IntoVal mcache.t.
-Admitted.
-
-Global Instance into_val_typed_mcache `{ffi_syntax} : IntoValTyped mcache.t runtime.mcache.
-Admitted.
-
-(* type runtime.gclink *)
 Module gclink.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance gclink_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.gclink.t). Admitted.
+
+#[global] Instance gclink_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.gclink.t) (runtime.gclinkⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End gclink.
 
-Global Instance bounded_size_gclink : BoundedTypeSize runtime.gclink.
-Admitted.
-
-Global Instance into_val_gclink `{ffi_syntax} : IntoVal gclink.t.
-Admitted.
-
-Global Instance into_val_typed_gclink `{ffi_syntax} : IntoValTyped gclink.t runtime.gclink.
-Admitted.
-
-(* type runtime.gclinkptr *)
 Module gclinkptr.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance gclinkptr_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.gclinkptr.t). Admitted.
+
+#[global] Instance gclinkptr_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.gclinkptr.t) (runtime.gclinkptrⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End gclinkptr.
 
-Global Instance bounded_size_gclinkptr : BoundedTypeSize runtime.gclinkptr.
-Admitted.
-
-Global Instance into_val_gclinkptr `{ffi_syntax} : IntoVal gclinkptr.t.
-Admitted.
-
-Global Instance into_val_typed_gclinkptr `{ffi_syntax} : IntoValTyped gclinkptr.t runtime.gclinkptr.
-Admitted.
-
-(* type runtime.stackfreelist *)
 Module stackfreelist.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance stackfreelist_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.stackfreelist.t). Admitted.
+
+#[global] Instance stackfreelist_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.stackfreelist.t) (runtime.stackfreelistⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End stackfreelist.
 
-Global Instance bounded_size_stackfreelist : BoundedTypeSize runtime.stackfreelist.
-Admitted.
-
-Global Instance into_val_stackfreelist `{ffi_syntax} : IntoVal stackfreelist.t.
-Admitted.
-
-Global Instance into_val_typed_stackfreelist `{ffi_syntax} : IntoValTyped stackfreelist.t runtime.stackfreelist.
-Admitted.
-
-(* type runtime.mcentral *)
 Module mcentral.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance mcentral_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.mcentral.t). Admitted.
+
+#[global] Instance mcentral_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.mcentral.t) (runtime.mcentralⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End mcentral.
 
-Global Instance bounded_size_mcentral : BoundedTypeSize runtime.mcentral.
-Admitted.
-
-Global Instance into_val_mcentral `{ffi_syntax} : IntoVal mcentral.t.
-Admitted.
-
-Global Instance into_val_typed_mcentral `{ffi_syntax} : IntoValTyped mcentral.t runtime.mcentral.
-Admitted.
-
-(* type runtime.checkmarksMap *)
 Module checkmarksMap.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance checkmarksMap_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.checkmarksMap.t). Admitted.
+
+#[global] Instance checkmarksMap_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.checkmarksMap.t) (runtime.checkmarksMapⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End checkmarksMap.
 
-Global Instance bounded_size_checkmarksMap : BoundedTypeSize runtime.checkmarksMap.
-Admitted.
-
-Global Instance into_val_checkmarksMap `{ffi_syntax} : IntoVal checkmarksMap.t.
-Admitted.
-
-Global Instance into_val_typed_checkmarksMap `{ffi_syntax} : IntoValTyped checkmarksMap.t runtime.checkmarksMap.
-Admitted.
-
-(* type runtime.Cleanup *)
 Module Cleanup.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Cleanup_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.Cleanup.t). Admitted.
+
+#[global] Instance Cleanup_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.Cleanup.t) (runtime.Cleanupⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End Cleanup.
 
-Global Instance bounded_size_Cleanup : BoundedTypeSize runtime.Cleanup.
-Admitted.
+Module cleanupBlock.
+Section def.
 
-Global Instance into_val_Cleanup `{ffi_syntax} : IntoVal Cleanup.t.
-Admitted.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
 
-Global Instance into_val_typed_Cleanup `{ffi_syntax} : IntoValTyped Cleanup.t runtime.Cleanup.
-Admitted.
+Local Set Default Proof Using "All".
 
-(* type runtime.metricData *)
+#[global] Instance cleanupBlock_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.cleanupBlock.t). Admitted.
+
+#[global] Instance cleanupBlock_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.cleanupBlock.t) (runtime.cleanupBlockⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End cleanupBlock.
+
+Module cleanupBlockHeader.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance cleanupBlockHeader_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.cleanupBlockHeader.t). Admitted.
+
+#[global] Instance cleanupBlockHeader_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.cleanupBlockHeader.t) (runtime.cleanupBlockHeaderⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End cleanupBlockHeader.
+
+Module cleanupQueue.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance cleanupQueue_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.cleanupQueue.t). Admitted.
+
+#[global] Instance cleanupQueue_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.cleanupQueue.t) (runtime.cleanupQueueⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End cleanupQueue.
+
 Module metricData.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance metricData_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.metricData.t). Admitted.
+
+#[global] Instance metricData_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.metricData.t) (runtime.metricDataⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End metricData.
 
-Global Instance bounded_size_metricData : BoundedTypeSize runtime.metricData.
-Admitted.
-
-Global Instance into_val_metricData `{ffi_syntax} : IntoVal metricData.t.
-Admitted.
-
-Global Instance into_val_typed_metricData `{ffi_syntax} : IntoValTyped metricData.t runtime.metricData.
-Admitted.
-
-(* type runtime.metricReader *)
 Module metricReader.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance metricReader_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.metricReader.t). Admitted.
+
+#[global] Instance metricReader_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.metricReader.t) (runtime.metricReaderⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End metricReader.
 
-Global Instance bounded_size_metricReader : BoundedTypeSize runtime.metricReader.
-Admitted.
-
-Global Instance into_val_metricReader `{ffi_syntax} : IntoVal metricReader.t.
-Admitted.
-
-Global Instance into_val_typed_metricReader `{ffi_syntax} : IntoValTyped metricReader.t runtime.metricReader.
-Admitted.
-
-(* type runtime.statDep *)
 Module statDep.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance statDep_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.statDep.t). Admitted.
+
+#[global] Instance statDep_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.statDep.t) (runtime.statDepⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End statDep.
 
-Global Instance bounded_size_statDep : BoundedTypeSize runtime.statDep.
-Admitted.
-
-Global Instance into_val_statDep `{ffi_syntax} : IntoVal statDep.t.
-Admitted.
-
-Global Instance into_val_typed_statDep `{ffi_syntax} : IntoValTyped statDep.t runtime.statDep.
-Admitted.
-
-(* type runtime.statDepSet *)
 Module statDepSet.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance statDepSet_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.statDepSet.t). Admitted.
+
+#[global] Instance statDepSet_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.statDepSet.t) (runtime.statDepSetⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End statDepSet.
 
-Global Instance bounded_size_statDepSet : BoundedTypeSize runtime.statDepSet.
-Admitted.
-
-Global Instance into_val_statDepSet `{ffi_syntax} : IntoVal statDepSet.t.
-Admitted.
-
-Global Instance into_val_typed_statDepSet `{ffi_syntax} : IntoValTyped statDepSet.t runtime.statDepSet.
-Admitted.
-
-(* type runtime.heapStatsAggregate *)
 Module heapStatsAggregate.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance heapStatsAggregate_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.heapStatsAggregate.t). Admitted.
+
+#[global] Instance heapStatsAggregate_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.heapStatsAggregate.t) (runtime.heapStatsAggregateⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End heapStatsAggregate.
 
-Global Instance bounded_size_heapStatsAggregate : BoundedTypeSize runtime.heapStatsAggregate.
-Admitted.
-
-Global Instance into_val_heapStatsAggregate `{ffi_syntax} : IntoVal heapStatsAggregate.t.
-Admitted.
-
-Global Instance into_val_typed_heapStatsAggregate `{ffi_syntax} : IntoValTyped heapStatsAggregate.t runtime.heapStatsAggregate.
-Admitted.
-
-(* type runtime.sysStatsAggregate *)
 Module sysStatsAggregate.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance sysStatsAggregate_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.sysStatsAggregate.t). Admitted.
+
+#[global] Instance sysStatsAggregate_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.sysStatsAggregate.t) (runtime.sysStatsAggregateⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End sysStatsAggregate.
 
-Global Instance bounded_size_sysStatsAggregate : BoundedTypeSize runtime.sysStatsAggregate.
-Admitted.
-
-Global Instance into_val_sysStatsAggregate `{ffi_syntax} : IntoVal sysStatsAggregate.t.
-Admitted.
-
-Global Instance into_val_typed_sysStatsAggregate `{ffi_syntax} : IntoValTyped sysStatsAggregate.t runtime.sysStatsAggregate.
-Admitted.
-
-(* type runtime.cpuStatsAggregate *)
 Module cpuStatsAggregate.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance cpuStatsAggregate_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.cpuStatsAggregate.t). Admitted.
+
+#[global] Instance cpuStatsAggregate_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.cpuStatsAggregate.t) (runtime.cpuStatsAggregateⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End cpuStatsAggregate.
 
-Global Instance bounded_size_cpuStatsAggregate : BoundedTypeSize runtime.cpuStatsAggregate.
-Admitted.
-
-Global Instance into_val_cpuStatsAggregate `{ffi_syntax} : IntoVal cpuStatsAggregate.t.
-Admitted.
-
-Global Instance into_val_typed_cpuStatsAggregate `{ffi_syntax} : IntoValTyped cpuStatsAggregate.t runtime.cpuStatsAggregate.
-Admitted.
-
-(* type runtime.gcStatsAggregate *)
 Module gcStatsAggregate.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance gcStatsAggregate_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.gcStatsAggregate.t). Admitted.
+
+#[global] Instance gcStatsAggregate_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.gcStatsAggregate.t) (runtime.gcStatsAggregateⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End gcStatsAggregate.
 
-Global Instance bounded_size_gcStatsAggregate : BoundedTypeSize runtime.gcStatsAggregate.
-Admitted.
-
-Global Instance into_val_gcStatsAggregate `{ffi_syntax} : IntoVal gcStatsAggregate.t.
-Admitted.
-
-Global Instance into_val_typed_gcStatsAggregate `{ffi_syntax} : IntoValTyped gcStatsAggregate.t runtime.gcStatsAggregate.
-Admitted.
-
-(* type runtime.statAggregate *)
 Module statAggregate.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance statAggregate_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.statAggregate.t). Admitted.
+
+#[global] Instance statAggregate_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.statAggregate.t) (runtime.statAggregateⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End statAggregate.
 
-Global Instance bounded_size_statAggregate : BoundedTypeSize runtime.statAggregate.
-Admitted.
-
-Global Instance into_val_statAggregate `{ffi_syntax} : IntoVal statAggregate.t.
-Admitted.
-
-Global Instance into_val_typed_statAggregate `{ffi_syntax} : IntoValTyped statAggregate.t runtime.statAggregate.
-Admitted.
-
-(* type runtime.metricKind *)
 Module metricKind.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance metricKind_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.metricKind.t). Admitted.
+
+#[global] Instance metricKind_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.metricKind.t) (runtime.metricKindⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End metricKind.
 
-Global Instance bounded_size_metricKind : BoundedTypeSize runtime.metricKind.
-Admitted.
-
-Global Instance into_val_metricKind `{ffi_syntax} : IntoVal metricKind.t.
-Admitted.
-
-Global Instance into_val_typed_metricKind `{ffi_syntax} : IntoValTyped metricKind.t runtime.metricKind.
-Admitted.
-
-(* type runtime.metricSample *)
 Module metricSample.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance metricSample_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.metricSample.t). Admitted.
+
+#[global] Instance metricSample_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.metricSample.t) (runtime.metricSampleⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End metricSample.
 
-Global Instance bounded_size_metricSample : BoundedTypeSize runtime.metricSample.
-Admitted.
-
-Global Instance into_val_metricSample `{ffi_syntax} : IntoVal metricSample.t.
-Admitted.
-
-Global Instance into_val_typed_metricSample `{ffi_syntax} : IntoValTyped metricSample.t runtime.metricSample.
-Admitted.
-
-(* type runtime.metricValue *)
 Module metricValue.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance metricValue_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.metricValue.t). Admitted.
+
+#[global] Instance metricValue_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.metricValue.t) (runtime.metricValueⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End metricValue.
 
-Global Instance bounded_size_metricValue : BoundedTypeSize runtime.metricValue.
-Admitted.
-
-Global Instance into_val_metricValue `{ffi_syntax} : IntoVal metricValue.t.
-Admitted.
-
-Global Instance into_val_typed_metricValue `{ffi_syntax} : IntoValTyped metricValue.t runtime.metricValue.
-Admitted.
-
-(* type runtime.metricFloat64Histogram *)
 Module metricFloat64Histogram.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance metricFloat64Histogram_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.metricFloat64Histogram.t). Admitted.
+
+#[global] Instance metricFloat64Histogram_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.metricFloat64Histogram.t) (runtime.metricFloat64Histogramⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End metricFloat64Histogram.
 
-Global Instance bounded_size_metricFloat64Histogram : BoundedTypeSize runtime.metricFloat64Histogram.
-Admitted.
-
-Global Instance into_val_metricFloat64Histogram `{ffi_syntax} : IntoVal metricFloat64Histogram.t.
-Admitted.
-
-Global Instance into_val_typed_metricFloat64Histogram `{ffi_syntax} : IntoValTyped metricFloat64Histogram.t runtime.metricFloat64Histogram.
-Admitted.
-
-(* type runtime.metricName *)
 Module metricName.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance metricName_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.metricName.t). Admitted.
+
+#[global] Instance metricName_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.metricName.t) (runtime.metricNameⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End metricName.
 
-Global Instance bounded_size_metricName : BoundedTypeSize runtime.metricName.
-Admitted.
-
-Global Instance into_val_metricName `{ffi_syntax} : IntoVal metricName.t.
-Admitted.
-
-Global Instance into_val_typed_metricName `{ffi_syntax} : IntoValTyped metricName.t runtime.metricName.
-Admitted.
-
-(* type runtime.finblock *)
-Module finblock.
+Module finBlock.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance finBlock_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.finBlock.t). Admitted.
+
+#[global] Instance finBlock_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.finBlock.t) (runtime.finBlockⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
-End finblock.
+End finBlock.
 
-Global Instance bounded_size_finblock : BoundedTypeSize runtime.finblock.
-Admitted.
-
-Global Instance into_val_finblock `{ffi_syntax} : IntoVal finblock.t.
-Admitted.
-
-Global Instance into_val_typed_finblock `{ffi_syntax} : IntoValTyped finblock.t runtime.finblock.
-Admitted.
-
-(* type runtime.finalizer *)
 Module finalizer.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance finalizer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.finalizer.t). Admitted.
+
+#[global] Instance finalizer_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.finalizer.t) (runtime.finalizerⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End finalizer.
 
-Global Instance bounded_size_finalizer : BoundedTypeSize runtime.finalizer.
-Admitted.
-
-Global Instance into_val_finalizer `{ffi_syntax} : IntoVal finalizer.t.
-Admitted.
-
-Global Instance into_val_typed_finalizer `{ffi_syntax} : IntoValTyped finalizer.t runtime.finalizer.
-Admitted.
-
-(* type runtime.fixalloc *)
 Module fixalloc.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance fixalloc_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.fixalloc.t). Admitted.
+
+#[global] Instance fixalloc_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.fixalloc.t) (runtime.fixallocⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End fixalloc.
 
-Global Instance bounded_size_fixalloc : BoundedTypeSize runtime.fixalloc.
-Admitted.
-
-Global Instance into_val_fixalloc `{ffi_syntax} : IntoVal fixalloc.t.
-Admitted.
-
-Global Instance into_val_typed_fixalloc `{ffi_syntax} : IntoValTyped fixalloc.t runtime.fixalloc.
-Admitted.
-
-(* type runtime.mlink *)
 Module mlink.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance mlink_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.mlink.t). Admitted.
+
+#[global] Instance mlink_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.mlink.t) (runtime.mlinkⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End mlink.
 
-Global Instance bounded_size_mlink : BoundedTypeSize runtime.mlink.
-Admitted.
-
-Global Instance into_val_mlink `{ffi_syntax} : IntoVal mlink.t.
-Admitted.
-
-Global Instance into_val_typed_mlink `{ffi_syntax} : IntoValTyped mlink.t runtime.mlink.
-Admitted.
-
-(* type runtime.gcMarkWorkerMode *)
 Module gcMarkWorkerMode.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance gcMarkWorkerMode_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.gcMarkWorkerMode.t). Admitted.
+
+#[global] Instance gcMarkWorkerMode_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.gcMarkWorkerMode.t) (runtime.gcMarkWorkerModeⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End gcMarkWorkerMode.
 
-Global Instance bounded_size_gcMarkWorkerMode : BoundedTypeSize runtime.gcMarkWorkerMode.
-Admitted.
-
-Global Instance into_val_gcMarkWorkerMode `{ffi_syntax} : IntoVal gcMarkWorkerMode.t.
-Admitted.
-
-Global Instance into_val_typed_gcMarkWorkerMode `{ffi_syntax} : IntoValTyped gcMarkWorkerMode.t runtime.gcMarkWorkerMode.
-Admitted.
-
-(* type runtime.workType *)
 Module workType.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance workType_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.workType.t). Admitted.
+
+#[global] Instance workType_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.workType.t) (runtime.workTypeⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End workType.
 
-Global Instance bounded_size_workType : BoundedTypeSize runtime.workType.
-Admitted.
-
-Global Instance into_val_workType `{ffi_syntax} : IntoVal workType.t.
-Admitted.
-
-Global Instance into_val_typed_workType `{ffi_syntax} : IntoValTyped workType.t runtime.workType.
-Admitted.
-
-(* type runtime.gcMode *)
 Module gcMode.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance gcMode_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.gcMode.t). Admitted.
+
+#[global] Instance gcMode_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.gcMode.t) (runtime.gcModeⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End gcMode.
 
-Global Instance bounded_size_gcMode : BoundedTypeSize runtime.gcMode.
-Admitted.
-
-Global Instance into_val_gcMode `{ffi_syntax} : IntoVal gcMode.t.
-Admitted.
-
-Global Instance into_val_typed_gcMode `{ffi_syntax} : IntoValTyped gcMode.t runtime.gcMode.
-Admitted.
-
-(* type runtime.gcTrigger *)
 Module gcTrigger.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance gcTrigger_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.gcTrigger.t). Admitted.
+
+#[global] Instance gcTrigger_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.gcTrigger.t) (runtime.gcTriggerⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End gcTrigger.
 
-Global Instance bounded_size_gcTrigger : BoundedTypeSize runtime.gcTrigger.
-Admitted.
-
-Global Instance into_val_gcTrigger `{ffi_syntax} : IntoVal gcTrigger.t.
-Admitted.
-
-Global Instance into_val_typed_gcTrigger `{ffi_syntax} : IntoValTyped gcTrigger.t runtime.gcTrigger.
-Admitted.
-
-(* type runtime.gcTriggerKind *)
 Module gcTriggerKind.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance gcTriggerKind_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.gcTriggerKind.t). Admitted.
+
+#[global] Instance gcTriggerKind_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.gcTriggerKind.t) (runtime.gcTriggerKindⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End gcTriggerKind.
 
-Global Instance bounded_size_gcTriggerKind : BoundedTypeSize runtime.gcTriggerKind.
-Admitted.
-
-Global Instance into_val_gcTriggerKind `{ffi_syntax} : IntoVal gcTriggerKind.t.
-Admitted.
-
-Global Instance into_val_typed_gcTriggerKind `{ffi_syntax} : IntoValTyped gcTriggerKind.t runtime.gcTriggerKind.
-Admitted.
-
-(* type runtime.gcBgMarkWorkerNode *)
 Module gcBgMarkWorkerNode.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance gcBgMarkWorkerNode_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.gcBgMarkWorkerNode.t). Admitted.
+
+#[global] Instance gcBgMarkWorkerNode_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.gcBgMarkWorkerNode.t) (runtime.gcBgMarkWorkerNodeⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End gcBgMarkWorkerNode.
 
-Global Instance bounded_size_gcBgMarkWorkerNode : BoundedTypeSize runtime.gcBgMarkWorkerNode.
-Admitted.
+Module gcBgMarkWorkerNodePadded.
+Section def.
 
-Global Instance into_val_gcBgMarkWorkerNode `{ffi_syntax} : IntoVal gcBgMarkWorkerNode.t.
-Admitted.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
 
-Global Instance into_val_typed_gcBgMarkWorkerNode `{ffi_syntax} : IntoValTyped gcBgMarkWorkerNode.t runtime.gcBgMarkWorkerNode.
-Admitted.
+Local Set Default Proof Using "All".
 
-(* type runtime.gcCPULimiterState *)
+#[global] Instance gcBgMarkWorkerNodePadded_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.gcBgMarkWorkerNodePadded.t). Admitted.
+
+#[global] Instance gcBgMarkWorkerNodePadded_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.gcBgMarkWorkerNodePadded.t) (runtime.gcBgMarkWorkerNodePaddedⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End gcBgMarkWorkerNodePadded.
+
 Module gcCPULimiterState.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance gcCPULimiterState_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.gcCPULimiterState.t). Admitted.
+
+#[global] Instance gcCPULimiterState_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.gcCPULimiterState.t) (runtime.gcCPULimiterStateⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End gcCPULimiterState.
 
-Global Instance bounded_size_gcCPULimiterState : BoundedTypeSize runtime.gcCPULimiterState.
-Admitted.
-
-Global Instance into_val_gcCPULimiterState `{ffi_syntax} : IntoVal gcCPULimiterState.t.
-Admitted.
-
-Global Instance into_val_typed_gcCPULimiterState `{ffi_syntax} : IntoValTyped gcCPULimiterState.t runtime.gcCPULimiterState.
-Admitted.
-
-(* type runtime.limiterEventType *)
 Module limiterEventType.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance limiterEventType_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.limiterEventType.t). Admitted.
+
+#[global] Instance limiterEventType_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.limiterEventType.t) (runtime.limiterEventTypeⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End limiterEventType.
 
-Global Instance bounded_size_limiterEventType : BoundedTypeSize runtime.limiterEventType.
-Admitted.
-
-Global Instance into_val_limiterEventType `{ffi_syntax} : IntoVal limiterEventType.t.
-Admitted.
-
-Global Instance into_val_typed_limiterEventType `{ffi_syntax} : IntoValTyped limiterEventType.t runtime.limiterEventType.
-Admitted.
-
-(* type runtime.limiterEventStamp *)
 Module limiterEventStamp.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance limiterEventStamp_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.limiterEventStamp.t). Admitted.
+
+#[global] Instance limiterEventStamp_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.limiterEventStamp.t) (runtime.limiterEventStampⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End limiterEventStamp.
 
-Global Instance bounded_size_limiterEventStamp : BoundedTypeSize runtime.limiterEventStamp.
-Admitted.
-
-Global Instance into_val_limiterEventStamp `{ffi_syntax} : IntoVal limiterEventStamp.t.
-Admitted.
-
-Global Instance into_val_typed_limiterEventStamp `{ffi_syntax} : IntoValTyped limiterEventStamp.t runtime.limiterEventStamp.
-Admitted.
-
-(* type runtime.limiterEvent *)
 Module limiterEvent.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance limiterEvent_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.limiterEvent.t). Admitted.
+
+#[global] Instance limiterEvent_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.limiterEvent.t) (runtime.limiterEventⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End limiterEvent.
 
-Global Instance bounded_size_limiterEvent : BoundedTypeSize runtime.limiterEvent.
-Admitted.
-
-Global Instance into_val_limiterEvent `{ffi_syntax} : IntoVal limiterEvent.t.
-Admitted.
-
-Global Instance into_val_typed_limiterEvent `{ffi_syntax} : IntoValTyped limiterEvent.t runtime.limiterEvent.
-Admitted.
-
-(* type runtime.gcDrainFlags *)
 Module gcDrainFlags.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance gcDrainFlags_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.gcDrainFlags.t). Admitted.
+
+#[global] Instance gcDrainFlags_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.gcDrainFlags.t) (runtime.gcDrainFlagsⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End gcDrainFlags.
 
-Global Instance bounded_size_gcDrainFlags : BoundedTypeSize runtime.gcDrainFlags.
-Admitted.
+Module spanInlineMarkBits.
+Section def.
 
-Global Instance into_val_gcDrainFlags `{ffi_syntax} : IntoVal gcDrainFlags.t.
-Admitted.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
 
-Global Instance into_val_typed_gcDrainFlags `{ffi_syntax} : IntoValTyped gcDrainFlags.t runtime.gcDrainFlags.
-Admitted.
+Local Set Default Proof Using "All".
 
-(* type runtime.gcControllerState *)
+#[global] Instance spanInlineMarkBits_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.spanInlineMarkBits.t). Admitted.
+
+#[global] Instance spanInlineMarkBits_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.spanInlineMarkBits.t) (runtime.spanInlineMarkBitsⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End spanInlineMarkBits.
+
+Module spanQueue.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance spanQueue_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.spanQueue.t). Admitted.
+
+#[global] Instance spanQueue_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.spanQueue.t) (runtime.spanQueueⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End spanQueue.
+
+Module localSpanQueue.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance localSpanQueue_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.localSpanQueue.t). Admitted.
+
+#[global] Instance localSpanQueue_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.localSpanQueue.t) (runtime.localSpanQueueⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End localSpanQueue.
+
+Module objptr.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance objptr_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.objptr.t). Admitted.
+
+#[global] Instance objptr_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.objptr.t) (runtime.objptrⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End objptr.
+
+Module sizeClassScanStats.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance sizeClassScanStats_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.sizeClassScanStats.t). Admitted.
+
+#[global] Instance sizeClassScanStats_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.sizeClassScanStats.t) (runtime.sizeClassScanStatsⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End sizeClassScanStats.
+
 Module gcControllerState.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance gcControllerState_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.gcControllerState.t). Admitted.
+
+#[global] Instance gcControllerState_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.gcControllerState.t) (runtime.gcControllerStateⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End gcControllerState.
 
-Global Instance bounded_size_gcControllerState : BoundedTypeSize runtime.gcControllerState.
-Admitted.
-
-Global Instance into_val_gcControllerState `{ffi_syntax} : IntoVal gcControllerState.t.
-Admitted.
-
-Global Instance into_val_typed_gcControllerState `{ffi_syntax} : IntoValTyped gcControllerState.t runtime.gcControllerState.
-Admitted.
-
-(* type runtime.scavengerState *)
 Module scavengerState.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance scavengerState_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.scavengerState.t). Admitted.
+
+#[global] Instance scavengerState_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.scavengerState.t) (runtime.scavengerStateⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End scavengerState.
 
-Global Instance bounded_size_scavengerState : BoundedTypeSize runtime.scavengerState.
-Admitted.
-
-Global Instance into_val_scavengerState `{ffi_syntax} : IntoVal scavengerState.t.
-Admitted.
-
-Global Instance into_val_typed_scavengerState `{ffi_syntax} : IntoValTyped scavengerState.t runtime.scavengerState.
-Admitted.
-
-(* type runtime.scavengeIndex *)
 Module scavengeIndex.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance scavengeIndex_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.scavengeIndex.t). Admitted.
+
+#[global] Instance scavengeIndex_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.scavengeIndex.t) (runtime.scavengeIndexⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End scavengeIndex.
 
-Global Instance bounded_size_scavengeIndex : BoundedTypeSize runtime.scavengeIndex.
-Admitted.
-
-Global Instance into_val_scavengeIndex `{ffi_syntax} : IntoVal scavengeIndex.t.
-Admitted.
-
-Global Instance into_val_typed_scavengeIndex `{ffi_syntax} : IntoValTyped scavengeIndex.t runtime.scavengeIndex.
-Admitted.
-
-(* type runtime.atomicScavChunkData *)
 Module atomicScavChunkData.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance atomicScavChunkData_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.atomicScavChunkData.t). Admitted.
+
+#[global] Instance atomicScavChunkData_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.atomicScavChunkData.t) (runtime.atomicScavChunkDataⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End atomicScavChunkData.
 
-Global Instance bounded_size_atomicScavChunkData : BoundedTypeSize runtime.atomicScavChunkData.
-Admitted.
-
-Global Instance into_val_atomicScavChunkData `{ffi_syntax} : IntoVal atomicScavChunkData.t.
-Admitted.
-
-Global Instance into_val_typed_atomicScavChunkData `{ffi_syntax} : IntoValTyped atomicScavChunkData.t runtime.atomicScavChunkData.
-Admitted.
-
-(* type runtime.scavChunkData *)
 Module scavChunkData.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance scavChunkData_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.scavChunkData.t). Admitted.
+
+#[global] Instance scavChunkData_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.scavChunkData.t) (runtime.scavChunkDataⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End scavChunkData.
 
-Global Instance bounded_size_scavChunkData : BoundedTypeSize runtime.scavChunkData.
-Admitted.
-
-Global Instance into_val_scavChunkData `{ffi_syntax} : IntoVal scavChunkData.t.
-Admitted.
-
-Global Instance into_val_typed_scavChunkData `{ffi_syntax} : IntoValTyped scavChunkData.t runtime.scavChunkData.
-Admitted.
-
-(* type runtime.scavChunkFlags *)
 Module scavChunkFlags.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance scavChunkFlags_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.scavChunkFlags.t). Admitted.
+
+#[global] Instance scavChunkFlags_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.scavChunkFlags.t) (runtime.scavChunkFlagsⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End scavChunkFlags.
 
-Global Instance bounded_size_scavChunkFlags : BoundedTypeSize runtime.scavChunkFlags.
-Admitted.
-
-Global Instance into_val_scavChunkFlags `{ffi_syntax} : IntoVal scavChunkFlags.t.
-Admitted.
-
-Global Instance into_val_typed_scavChunkFlags `{ffi_syntax} : IntoValTyped scavChunkFlags.t runtime.scavChunkFlags.
-Admitted.
-
-(* type runtime.piController *)
 Module piController.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance piController_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.piController.t). Admitted.
+
+#[global] Instance piController_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.piController.t) (runtime.piControllerⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End piController.
 
-Global Instance bounded_size_piController : BoundedTypeSize runtime.piController.
-Admitted.
-
-Global Instance into_val_piController `{ffi_syntax} : IntoVal piController.t.
-Admitted.
-
-Global Instance into_val_typed_piController `{ffi_syntax} : IntoValTyped piController.t runtime.piController.
-Admitted.
-
-(* type runtime.stackWorkBuf *)
 Module stackWorkBuf.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance stackWorkBuf_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.stackWorkBuf.t). Admitted.
+
+#[global] Instance stackWorkBuf_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.stackWorkBuf.t) (runtime.stackWorkBufⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End stackWorkBuf.
 
-Global Instance bounded_size_stackWorkBuf : BoundedTypeSize runtime.stackWorkBuf.
-Admitted.
-
-Global Instance into_val_stackWorkBuf `{ffi_syntax} : IntoVal stackWorkBuf.t.
-Admitted.
-
-Global Instance into_val_typed_stackWorkBuf `{ffi_syntax} : IntoValTyped stackWorkBuf.t runtime.stackWorkBuf.
-Admitted.
-
-(* type runtime.stackWorkBufHdr *)
 Module stackWorkBufHdr.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance stackWorkBufHdr_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.stackWorkBufHdr.t). Admitted.
+
+#[global] Instance stackWorkBufHdr_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.stackWorkBufHdr.t) (runtime.stackWorkBufHdrⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End stackWorkBufHdr.
 
-Global Instance bounded_size_stackWorkBufHdr : BoundedTypeSize runtime.stackWorkBufHdr.
-Admitted.
-
-Global Instance into_val_stackWorkBufHdr `{ffi_syntax} : IntoVal stackWorkBufHdr.t.
-Admitted.
-
-Global Instance into_val_typed_stackWorkBufHdr `{ffi_syntax} : IntoValTyped stackWorkBufHdr.t runtime.stackWorkBufHdr.
-Admitted.
-
-(* type runtime.stackObjectBuf *)
 Module stackObjectBuf.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance stackObjectBuf_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.stackObjectBuf.t). Admitted.
+
+#[global] Instance stackObjectBuf_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.stackObjectBuf.t) (runtime.stackObjectBufⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End stackObjectBuf.
 
-Global Instance bounded_size_stackObjectBuf : BoundedTypeSize runtime.stackObjectBuf.
-Admitted.
-
-Global Instance into_val_stackObjectBuf `{ffi_syntax} : IntoVal stackObjectBuf.t.
-Admitted.
-
-Global Instance into_val_typed_stackObjectBuf `{ffi_syntax} : IntoValTyped stackObjectBuf.t runtime.stackObjectBuf.
-Admitted.
-
-(* type runtime.stackObjectBufHdr *)
 Module stackObjectBufHdr.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance stackObjectBufHdr_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.stackObjectBufHdr.t). Admitted.
+
+#[global] Instance stackObjectBufHdr_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.stackObjectBufHdr.t) (runtime.stackObjectBufHdrⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End stackObjectBufHdr.
 
-Global Instance bounded_size_stackObjectBufHdr : BoundedTypeSize runtime.stackObjectBufHdr.
-Admitted.
-
-Global Instance into_val_stackObjectBufHdr `{ffi_syntax} : IntoVal stackObjectBufHdr.t.
-Admitted.
-
-Global Instance into_val_typed_stackObjectBufHdr `{ffi_syntax} : IntoValTyped stackObjectBufHdr.t runtime.stackObjectBufHdr.
-Admitted.
-
-(* type runtime.stackObject *)
 Module stackObject.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance stackObject_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.stackObject.t). Admitted.
+
+#[global] Instance stackObject_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.stackObject.t) (runtime.stackObjectⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End stackObject.
 
-Global Instance bounded_size_stackObject : BoundedTypeSize runtime.stackObject.
-Admitted.
-
-Global Instance into_val_stackObject `{ffi_syntax} : IntoVal stackObject.t.
-Admitted.
-
-Global Instance into_val_typed_stackObject `{ffi_syntax} : IntoValTyped stackObject.t runtime.stackObject.
-Admitted.
-
-(* type runtime.stackScanState *)
 Module stackScanState.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance stackScanState_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.stackScanState.t). Admitted.
+
+#[global] Instance stackScanState_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.stackScanState.t) (runtime.stackScanStateⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End stackScanState.
 
-Global Instance bounded_size_stackScanState : BoundedTypeSize runtime.stackScanState.
-Admitted.
-
-Global Instance into_val_stackScanState `{ffi_syntax} : IntoVal stackScanState.t.
-Admitted.
-
-Global Instance into_val_typed_stackScanState `{ffi_syntax} : IntoValTyped stackScanState.t runtime.stackScanState.
-Admitted.
-
-(* type runtime.sweepdata *)
 Module sweepdata.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance sweepdata_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.sweepdata.t). Admitted.
+
+#[global] Instance sweepdata_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.sweepdata.t) (runtime.sweepdataⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End sweepdata.
 
-Global Instance bounded_size_sweepdata : BoundedTypeSize runtime.sweepdata.
-Admitted.
-
-Global Instance into_val_sweepdata `{ffi_syntax} : IntoVal sweepdata.t.
-Admitted.
-
-Global Instance into_val_typed_sweepdata `{ffi_syntax} : IntoValTyped sweepdata.t runtime.sweepdata.
-Admitted.
-
-(* type runtime.sweepClass *)
 Module sweepClass.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance sweepClass_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.sweepClass.t). Admitted.
+
+#[global] Instance sweepClass_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.sweepClass.t) (runtime.sweepClassⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End sweepClass.
 
-Global Instance bounded_size_sweepClass : BoundedTypeSize runtime.sweepClass.
-Admitted.
-
-Global Instance into_val_sweepClass `{ffi_syntax} : IntoVal sweepClass.t.
-Admitted.
-
-Global Instance into_val_typed_sweepClass `{ffi_syntax} : IntoValTyped sweepClass.t runtime.sweepClass.
-Admitted.
-
-(* type runtime.activeSweep *)
 Module activeSweep.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance activeSweep_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.activeSweep.t). Admitted.
+
+#[global] Instance activeSweep_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.activeSweep.t) (runtime.activeSweepⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End activeSweep.
 
-Global Instance bounded_size_activeSweep : BoundedTypeSize runtime.activeSweep.
-Admitted.
-
-Global Instance into_val_activeSweep `{ffi_syntax} : IntoVal activeSweep.t.
-Admitted.
-
-Global Instance into_val_typed_activeSweep `{ffi_syntax} : IntoValTyped activeSweep.t runtime.activeSweep.
-Admitted.
-
-(* type runtime.sweepLocker *)
 Module sweepLocker.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance sweepLocker_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.sweepLocker.t). Admitted.
+
+#[global] Instance sweepLocker_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.sweepLocker.t) (runtime.sweepLockerⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End sweepLocker.
 
-Global Instance bounded_size_sweepLocker : BoundedTypeSize runtime.sweepLocker.
-Admitted.
-
-Global Instance into_val_sweepLocker `{ffi_syntax} : IntoVal sweepLocker.t.
-Admitted.
-
-Global Instance into_val_typed_sweepLocker `{ffi_syntax} : IntoValTyped sweepLocker.t runtime.sweepLocker.
-Admitted.
-
-(* type runtime.sweepLocked *)
 Module sweepLocked.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance sweepLocked_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.sweepLocked.t). Admitted.
+
+#[global] Instance sweepLocked_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.sweepLocked.t) (runtime.sweepLockedⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End sweepLocked.
 
-Global Instance bounded_size_sweepLocked : BoundedTypeSize runtime.sweepLocked.
-Admitted.
-
-Global Instance into_val_sweepLocked `{ffi_syntax} : IntoVal sweepLocked.t.
-Admitted.
-
-Global Instance into_val_typed_sweepLocked `{ffi_syntax} : IntoValTyped sweepLocked.t runtime.sweepLocked.
-Admitted.
-
-(* type runtime.gcWork *)
 Module gcWork.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance gcWork_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.gcWork.t). Admitted.
+
+#[global] Instance gcWork_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.gcWork.t) (runtime.gcWorkⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End gcWork.
 
-Global Instance bounded_size_gcWork : BoundedTypeSize runtime.gcWork.
-Admitted.
-
-Global Instance into_val_gcWork `{ffi_syntax} : IntoVal gcWork.t.
-Admitted.
-
-Global Instance into_val_typed_gcWork `{ffi_syntax} : IntoValTyped gcWork.t runtime.gcWork.
-Admitted.
-
-(* type runtime.workbufhdr *)
 Module workbufhdr.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance workbufhdr_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.workbufhdr.t). Admitted.
+
+#[global] Instance workbufhdr_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.workbufhdr.t) (runtime.workbufhdrⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End workbufhdr.
 
-Global Instance bounded_size_workbufhdr : BoundedTypeSize runtime.workbufhdr.
-Admitted.
-
-Global Instance into_val_workbufhdr `{ffi_syntax} : IntoVal workbufhdr.t.
-Admitted.
-
-Global Instance into_val_typed_workbufhdr `{ffi_syntax} : IntoValTyped workbufhdr.t runtime.workbufhdr.
-Admitted.
-
-(* type runtime.workbuf *)
 Module workbuf.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance workbuf_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.workbuf.t). Admitted.
+
+#[global] Instance workbuf_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.workbuf.t) (runtime.workbufⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End workbuf.
 
-Global Instance bounded_size_workbuf : BoundedTypeSize runtime.workbuf.
-Admitted.
-
-Global Instance into_val_workbuf `{ffi_syntax} : IntoVal workbuf.t.
-Admitted.
-
-Global Instance into_val_typed_workbuf `{ffi_syntax} : IntoValTyped workbuf.t runtime.workbuf.
-Admitted.
-
-(* type runtime.mheap *)
 Module mheap.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance mheap_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.mheap.t). Admitted.
+
+#[global] Instance mheap_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.mheap.t) (runtime.mheapⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End mheap.
 
-Global Instance bounded_size_mheap : BoundedTypeSize runtime.mheap.
-Admitted.
-
-Global Instance into_val_mheap `{ffi_syntax} : IntoVal mheap.t.
-Admitted.
-
-Global Instance into_val_typed_mheap `{ffi_syntax} : IntoValTyped mheap.t runtime.mheap.
-Admitted.
-
-(* type runtime.heapArena *)
 Module heapArena.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance heapArena_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.heapArena.t). Admitted.
+
+#[global] Instance heapArena_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.heapArena.t) (runtime.heapArenaⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End heapArena.
 
-Global Instance bounded_size_heapArena : BoundedTypeSize runtime.heapArena.
-Admitted.
-
-Global Instance into_val_heapArena `{ffi_syntax} : IntoVal heapArena.t.
-Admitted.
-
-Global Instance into_val_typed_heapArena `{ffi_syntax} : IntoValTyped heapArena.t runtime.heapArena.
-Admitted.
-
-(* type runtime.arenaHint *)
 Module arenaHint.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance arenaHint_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.arenaHint.t). Admitted.
+
+#[global] Instance arenaHint_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.arenaHint.t) (runtime.arenaHintⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End arenaHint.
 
-Global Instance bounded_size_arenaHint : BoundedTypeSize runtime.arenaHint.
-Admitted.
-
-Global Instance into_val_arenaHint `{ffi_syntax} : IntoVal arenaHint.t.
-Admitted.
-
-Global Instance into_val_typed_arenaHint `{ffi_syntax} : IntoValTyped arenaHint.t runtime.arenaHint.
-Admitted.
-
-(* type runtime.mSpanState *)
 Module mSpanState.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance mSpanState_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.mSpanState.t). Admitted.
+
+#[global] Instance mSpanState_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.mSpanState.t) (runtime.mSpanStateⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End mSpanState.
 
-Global Instance bounded_size_mSpanState : BoundedTypeSize runtime.mSpanState.
-Admitted.
-
-Global Instance into_val_mSpanState `{ffi_syntax} : IntoVal mSpanState.t.
-Admitted.
-
-Global Instance into_val_typed_mSpanState `{ffi_syntax} : IntoValTyped mSpanState.t runtime.mSpanState.
-Admitted.
-
-(* type runtime.mSpanStateBox *)
 Module mSpanStateBox.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance mSpanStateBox_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.mSpanStateBox.t). Admitted.
+
+#[global] Instance mSpanStateBox_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.mSpanStateBox.t) (runtime.mSpanStateBoxⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End mSpanStateBox.
 
-Global Instance bounded_size_mSpanStateBox : BoundedTypeSize runtime.mSpanStateBox.
-Admitted.
-
-Global Instance into_val_mSpanStateBox `{ffi_syntax} : IntoVal mSpanStateBox.t.
-Admitted.
-
-Global Instance into_val_typed_mSpanStateBox `{ffi_syntax} : IntoValTyped mSpanStateBox.t runtime.mSpanStateBox.
-Admitted.
-
-(* type runtime.mSpanList *)
-Module mSpanList.
-Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
-End def.
-End mSpanList.
-
-Global Instance bounded_size_mSpanList : BoundedTypeSize runtime.mSpanList.
-Admitted.
-
-Global Instance into_val_mSpanList `{ffi_syntax} : IntoVal mSpanList.t.
-Admitted.
-
-Global Instance into_val_typed_mSpanList `{ffi_syntax} : IntoValTyped mSpanList.t runtime.mSpanList.
-Admitted.
-
-(* type runtime.mspan *)
 Module mspan.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance mspan_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.mspan.t). Admitted.
+
+#[global] Instance mspan_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.mspan.t) (runtime.mspanⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End mspan.
 
-Global Instance bounded_size_mspan : BoundedTypeSize runtime.mspan.
-Admitted.
-
-Global Instance into_val_mspan `{ffi_syntax} : IntoVal mspan.t.
-Admitted.
-
-Global Instance into_val_typed_mspan `{ffi_syntax} : IntoValTyped mspan.t runtime.mspan.
-Admitted.
-
-(* type runtime.spanClass *)
 Module spanClass.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance spanClass_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.spanClass.t). Admitted.
+
+#[global] Instance spanClass_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.spanClass.t) (runtime.spanClassⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End spanClass.
 
-Global Instance bounded_size_spanClass : BoundedTypeSize runtime.spanClass.
-Admitted.
-
-Global Instance into_val_spanClass `{ffi_syntax} : IntoVal spanClass.t.
-Admitted.
-
-Global Instance into_val_typed_spanClass `{ffi_syntax} : IntoValTyped spanClass.t runtime.spanClass.
-Admitted.
-
-(* type runtime.arenaIdx *)
 Module arenaIdx.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance arenaIdx_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.arenaIdx.t). Admitted.
+
+#[global] Instance arenaIdx_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.arenaIdx.t) (runtime.arenaIdxⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End arenaIdx.
 
-Global Instance bounded_size_arenaIdx : BoundedTypeSize runtime.arenaIdx.
-Admitted.
-
-Global Instance into_val_arenaIdx `{ffi_syntax} : IntoVal arenaIdx.t.
-Admitted.
-
-Global Instance into_val_typed_arenaIdx `{ffi_syntax} : IntoValTyped arenaIdx.t runtime.arenaIdx.
-Admitted.
-
-(* type runtime.spanAllocType *)
 Module spanAllocType.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance spanAllocType_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.spanAllocType.t). Admitted.
+
+#[global] Instance spanAllocType_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.spanAllocType.t) (runtime.spanAllocTypeⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End spanAllocType.
 
-Global Instance bounded_size_spanAllocType : BoundedTypeSize runtime.spanAllocType.
-Admitted.
+Module mSpanList.
+Section def.
 
-Global Instance into_val_spanAllocType `{ffi_syntax} : IntoVal spanAllocType.t.
-Admitted.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
 
-Global Instance into_val_typed_spanAllocType `{ffi_syntax} : IntoValTyped spanAllocType.t runtime.spanAllocType.
-Admitted.
+Local Set Default Proof Using "All".
 
-(* type runtime.special *)
+#[global] Instance mSpanList_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.mSpanList.t). Admitted.
+
+#[global] Instance mSpanList_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.mSpanList.t) (runtime.mSpanListⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End mSpanList.
+
+Module mSpanQueue.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance mSpanQueue_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.mSpanQueue.t). Admitted.
+
+#[global] Instance mSpanQueue_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.mSpanQueue.t) (runtime.mSpanQueueⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End mSpanQueue.
+
 Module special.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance special_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.special.t). Admitted.
+
+#[global] Instance special_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.special.t) (runtime.specialⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End special.
 
-Global Instance bounded_size_special : BoundedTypeSize runtime.special.
-Admitted.
-
-Global Instance into_val_special `{ffi_syntax} : IntoVal special.t.
-Admitted.
-
-Global Instance into_val_typed_special `{ffi_syntax} : IntoValTyped special.t runtime.special.
-Admitted.
-
-(* type runtime.specialfinalizer *)
 Module specialfinalizer.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance specialfinalizer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.specialfinalizer.t). Admitted.
+
+#[global] Instance specialfinalizer_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.specialfinalizer.t) (runtime.specialfinalizerⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End specialfinalizer.
 
-Global Instance bounded_size_specialfinalizer : BoundedTypeSize runtime.specialfinalizer.
-Admitted.
-
-Global Instance into_val_specialfinalizer `{ffi_syntax} : IntoVal specialfinalizer.t.
-Admitted.
-
-Global Instance into_val_typed_specialfinalizer `{ffi_syntax} : IntoValTyped specialfinalizer.t runtime.specialfinalizer.
-Admitted.
-
-(* type runtime.specialCleanup *)
 Module specialCleanup.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance specialCleanup_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.specialCleanup.t). Admitted.
+
+#[global] Instance specialCleanup_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.specialCleanup.t) (runtime.specialCleanupⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End specialCleanup.
 
-Global Instance bounded_size_specialCleanup : BoundedTypeSize runtime.specialCleanup.
-Admitted.
+Module specialCheckFinalizer.
+Section def.
 
-Global Instance into_val_specialCleanup `{ffi_syntax} : IntoVal specialCleanup.t.
-Admitted.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
 
-Global Instance into_val_typed_specialCleanup `{ffi_syntax} : IntoValTyped specialCleanup.t runtime.specialCleanup.
-Admitted.
+Local Set Default Proof Using "All".
 
-(* type runtime.specialWeakHandle *)
+#[global] Instance specialCheckFinalizer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.specialCheckFinalizer.t). Admitted.
+
+#[global] Instance specialCheckFinalizer_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.specialCheckFinalizer.t) (runtime.specialCheckFinalizerⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End specialCheckFinalizer.
+
+Module specialTinyBlock.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance specialTinyBlock_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.specialTinyBlock.t). Admitted.
+
+#[global] Instance specialTinyBlock_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.specialTinyBlock.t) (runtime.specialTinyBlockⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End specialTinyBlock.
+
 Module specialWeakHandle.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance specialWeakHandle_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.specialWeakHandle.t). Admitted.
+
+#[global] Instance specialWeakHandle_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.specialWeakHandle.t) (runtime.specialWeakHandleⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End specialWeakHandle.
 
-Global Instance bounded_size_specialWeakHandle : BoundedTypeSize runtime.specialWeakHandle.
-Admitted.
+Module immortalWeakHandleMap.
+Section def.
 
-Global Instance into_val_specialWeakHandle `{ffi_syntax} : IntoVal specialWeakHandle.t.
-Admitted.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
 
-Global Instance into_val_typed_specialWeakHandle `{ffi_syntax} : IntoValTyped specialWeakHandle.t runtime.specialWeakHandle.
-Admitted.
+Local Set Default Proof Using "All".
 
-(* type runtime.specialprofile *)
+#[global] Instance immortalWeakHandleMap_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.immortalWeakHandleMap.t). Admitted.
+
+#[global] Instance immortalWeakHandleMap_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.immortalWeakHandleMap.t) (runtime.immortalWeakHandleMapⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End immortalWeakHandleMap.
+
+Module immortalWeakHandle.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance immortalWeakHandle_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.immortalWeakHandle.t). Admitted.
+
+#[global] Instance immortalWeakHandle_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.immortalWeakHandle.t) (runtime.immortalWeakHandleⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End immortalWeakHandle.
+
 Module specialprofile.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance specialprofile_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.specialprofile.t). Admitted.
+
+#[global] Instance specialprofile_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.specialprofile.t) (runtime.specialprofileⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End specialprofile.
 
-Global Instance bounded_size_specialprofile : BoundedTypeSize runtime.specialprofile.
-Admitted.
-
-Global Instance into_val_specialprofile `{ffi_syntax} : IntoVal specialprofile.t.
-Admitted.
-
-Global Instance into_val_typed_specialprofile `{ffi_syntax} : IntoValTyped specialprofile.t runtime.specialprofile.
-Admitted.
-
-(* type runtime.specialReachable *)
 Module specialReachable.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance specialReachable_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.specialReachable.t). Admitted.
+
+#[global] Instance specialReachable_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.specialReachable.t) (runtime.specialReachableⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End specialReachable.
 
-Global Instance bounded_size_specialReachable : BoundedTypeSize runtime.specialReachable.
-Admitted.
-
-Global Instance into_val_specialReachable `{ffi_syntax} : IntoVal specialReachable.t.
-Admitted.
-
-Global Instance into_val_typed_specialReachable `{ffi_syntax} : IntoValTyped specialReachable.t runtime.specialReachable.
-Admitted.
-
-(* type runtime.specialPinCounter *)
 Module specialPinCounter.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance specialPinCounter_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.specialPinCounter.t). Admitted.
+
+#[global] Instance specialPinCounter_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.specialPinCounter.t) (runtime.specialPinCounterⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End specialPinCounter.
 
-Global Instance bounded_size_specialPinCounter : BoundedTypeSize runtime.specialPinCounter.
-Admitted.
-
-Global Instance into_val_specialPinCounter `{ffi_syntax} : IntoVal specialPinCounter.t.
-Admitted.
-
-Global Instance into_val_typed_specialPinCounter `{ffi_syntax} : IntoValTyped specialPinCounter.t runtime.specialPinCounter.
-Admitted.
-
-(* type runtime.specialsIter *)
 Module specialsIter.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance specialsIter_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.specialsIter.t). Admitted.
+
+#[global] Instance specialsIter_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.specialsIter.t) (runtime.specialsIterⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End specialsIter.
 
-Global Instance bounded_size_specialsIter : BoundedTypeSize runtime.specialsIter.
-Admitted.
-
-Global Instance into_val_specialsIter `{ffi_syntax} : IntoVal specialsIter.t.
-Admitted.
-
-Global Instance into_val_typed_specialsIter `{ffi_syntax} : IntoValTyped specialsIter.t runtime.specialsIter.
-Admitted.
-
-(* type runtime.gcBits *)
 Module gcBits.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance gcBits_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.gcBits.t). Admitted.
+
+#[global] Instance gcBits_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.gcBits.t) (runtime.gcBitsⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End gcBits.
 
-Global Instance bounded_size_gcBits : BoundedTypeSize runtime.gcBits.
-Admitted.
-
-Global Instance into_val_gcBits `{ffi_syntax} : IntoVal gcBits.t.
-Admitted.
-
-Global Instance into_val_typed_gcBits `{ffi_syntax} : IntoValTyped gcBits.t runtime.gcBits.
-Admitted.
-
-(* type runtime.gcBitsHeader *)
 Module gcBitsHeader.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance gcBitsHeader_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.gcBitsHeader.t). Admitted.
+
+#[global] Instance gcBitsHeader_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.gcBitsHeader.t) (runtime.gcBitsHeaderⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End gcBitsHeader.
 
-Global Instance bounded_size_gcBitsHeader : BoundedTypeSize runtime.gcBitsHeader.
-Admitted.
-
-Global Instance into_val_gcBitsHeader `{ffi_syntax} : IntoVal gcBitsHeader.t.
-Admitted.
-
-Global Instance into_val_typed_gcBitsHeader `{ffi_syntax} : IntoValTyped gcBitsHeader.t runtime.gcBitsHeader.
-Admitted.
-
-(* type runtime.gcBitsArena *)
 Module gcBitsArena.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance gcBitsArena_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.gcBitsArena.t). Admitted.
+
+#[global] Instance gcBitsArena_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.gcBitsArena.t) (runtime.gcBitsArenaⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End gcBitsArena.
 
-Global Instance bounded_size_gcBitsArena : BoundedTypeSize runtime.gcBitsArena.
-Admitted.
-
-Global Instance into_val_gcBitsArena `{ffi_syntax} : IntoVal gcBitsArena.t.
-Admitted.
-
-Global Instance into_val_typed_gcBitsArena `{ffi_syntax} : IntoValTyped gcBitsArena.t runtime.gcBitsArena.
-Admitted.
-
-(* type runtime.floaty *)
 Module floaty.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance floaty_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.floaty.t). Admitted.
+
+#[global] Instance floaty_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.floaty.t) (runtime.floatyⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End floaty.
 
-Global Instance bounded_size_floaty : BoundedTypeSize runtime.floaty.
-Admitted.
-
-Global Instance into_val_floaty `{ffi_syntax} : IntoVal floaty.t.
-Admitted.
-
-Global Instance into_val_typed_floaty `{ffi_syntax} : IntoValTyped floaty.t runtime.floaty.
-Admitted.
-
-(* type runtime.chunkIdx *)
 Module chunkIdx.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance chunkIdx_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.chunkIdx.t). Admitted.
+
+#[global] Instance chunkIdx_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.chunkIdx.t) (runtime.chunkIdxⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End chunkIdx.
 
-Global Instance bounded_size_chunkIdx : BoundedTypeSize runtime.chunkIdx.
-Admitted.
-
-Global Instance into_val_chunkIdx `{ffi_syntax} : IntoVal chunkIdx.t.
-Admitted.
-
-Global Instance into_val_typed_chunkIdx `{ffi_syntax} : IntoValTyped chunkIdx.t runtime.chunkIdx.
-Admitted.
-
-(* type runtime.pageAlloc *)
 Module pageAlloc.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance pageAlloc_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.pageAlloc.t). Admitted.
+
+#[global] Instance pageAlloc_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.pageAlloc.t) (runtime.pageAllocⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End pageAlloc.
 
-Global Instance bounded_size_pageAlloc : BoundedTypeSize runtime.pageAlloc.
-Admitted.
-
-Global Instance into_val_pageAlloc `{ffi_syntax} : IntoVal pageAlloc.t.
-Admitted.
-
-Global Instance into_val_typed_pageAlloc `{ffi_syntax} : IntoValTyped pageAlloc.t runtime.pageAlloc.
-Admitted.
-
-(* type runtime.pallocSum *)
 Module pallocSum.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance pallocSum_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.pallocSum.t). Admitted.
+
+#[global] Instance pallocSum_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.pallocSum.t) (runtime.pallocSumⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End pallocSum.
 
-Global Instance bounded_size_pallocSum : BoundedTypeSize runtime.pallocSum.
-Admitted.
-
-Global Instance into_val_pallocSum `{ffi_syntax} : IntoVal pallocSum.t.
-Admitted.
-
-Global Instance into_val_typed_pallocSum `{ffi_syntax} : IntoValTyped pallocSum.t runtime.pallocSum.
-Admitted.
-
-(* type runtime.pageCache *)
 Module pageCache.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance pageCache_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.pageCache.t). Admitted.
+
+#[global] Instance pageCache_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.pageCache.t) (runtime.pageCacheⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End pageCache.
 
-Global Instance bounded_size_pageCache : BoundedTypeSize runtime.pageCache.
-Admitted.
-
-Global Instance into_val_pageCache `{ffi_syntax} : IntoVal pageCache.t.
-Admitted.
-
-Global Instance into_val_typed_pageCache `{ffi_syntax} : IntoValTyped pageCache.t runtime.pageCache.
-Admitted.
-
-(* type runtime.pageBits *)
 Module pageBits.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance pageBits_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.pageBits.t). Admitted.
+
+#[global] Instance pageBits_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.pageBits.t) (runtime.pageBitsⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End pageBits.
 
-Global Instance bounded_size_pageBits : BoundedTypeSize runtime.pageBits.
-Admitted.
-
-Global Instance into_val_pageBits `{ffi_syntax} : IntoVal pageBits.t.
-Admitted.
-
-Global Instance into_val_typed_pageBits `{ffi_syntax} : IntoValTyped pageBits.t runtime.pageBits.
-Admitted.
-
-(* type runtime.pallocBits *)
 Module pallocBits.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance pallocBits_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.pallocBits.t). Admitted.
+
+#[global] Instance pallocBits_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.pallocBits.t) (runtime.pallocBitsⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End pallocBits.
 
-Global Instance bounded_size_pallocBits : BoundedTypeSize runtime.pallocBits.
-Admitted.
-
-Global Instance into_val_pallocBits `{ffi_syntax} : IntoVal pallocBits.t.
-Admitted.
-
-Global Instance into_val_typed_pallocBits `{ffi_syntax} : IntoValTyped pallocBits.t runtime.pallocBits.
-Admitted.
-
-(* type runtime.pallocData *)
 Module pallocData.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance pallocData_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.pallocData.t). Admitted.
+
+#[global] Instance pallocData_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.pallocData.t) (runtime.pallocDataⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End pallocData.
 
-Global Instance bounded_size_pallocData : BoundedTypeSize runtime.pallocData.
-Admitted.
-
-Global Instance into_val_pallocData `{ffi_syntax} : IntoVal pallocData.t.
-Admitted.
-
-Global Instance into_val_typed_pallocData `{ffi_syntax} : IntoValTyped pallocData.t runtime.pallocData.
-Admitted.
-
-(* type runtime.bucketType *)
 Module bucketType.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance bucketType_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.bucketType.t). Admitted.
+
+#[global] Instance bucketType_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.bucketType.t) (runtime.bucketTypeⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End bucketType.
 
-Global Instance bounded_size_bucketType : BoundedTypeSize runtime.bucketType.
-Admitted.
-
-Global Instance into_val_bucketType `{ffi_syntax} : IntoVal bucketType.t.
-Admitted.
-
-Global Instance into_val_typed_bucketType `{ffi_syntax} : IntoValTyped bucketType.t runtime.bucketType.
-Admitted.
-
-(* type runtime.bucket *)
 Module bucket.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance bucket_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.bucket.t). Admitted.
+
+#[global] Instance bucket_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.bucket.t) (runtime.bucketⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End bucket.
 
-Global Instance bounded_size_bucket : BoundedTypeSize runtime.bucket.
-Admitted.
-
-Global Instance into_val_bucket `{ffi_syntax} : IntoVal bucket.t.
-Admitted.
-
-Global Instance into_val_typed_bucket `{ffi_syntax} : IntoValTyped bucket.t runtime.bucket.
-Admitted.
-
-(* type runtime.memRecord *)
 Module memRecord.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance memRecord_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.memRecord.t). Admitted.
+
+#[global] Instance memRecord_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.memRecord.t) (runtime.memRecordⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End memRecord.
 
-Global Instance bounded_size_memRecord : BoundedTypeSize runtime.memRecord.
-Admitted.
-
-Global Instance into_val_memRecord `{ffi_syntax} : IntoVal memRecord.t.
-Admitted.
-
-Global Instance into_val_typed_memRecord `{ffi_syntax} : IntoValTyped memRecord.t runtime.memRecord.
-Admitted.
-
-(* type runtime.memRecordCycle *)
 Module memRecordCycle.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance memRecordCycle_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.memRecordCycle.t). Admitted.
+
+#[global] Instance memRecordCycle_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.memRecordCycle.t) (runtime.memRecordCycleⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End memRecordCycle.
 
-Global Instance bounded_size_memRecordCycle : BoundedTypeSize runtime.memRecordCycle.
-Admitted.
-
-Global Instance into_val_memRecordCycle `{ffi_syntax} : IntoVal memRecordCycle.t.
-Admitted.
-
-Global Instance into_val_typed_memRecordCycle `{ffi_syntax} : IntoValTyped memRecordCycle.t runtime.memRecordCycle.
-Admitted.
-
-(* type runtime.blockRecord *)
 Module blockRecord.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance blockRecord_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.blockRecord.t). Admitted.
+
+#[global] Instance blockRecord_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.blockRecord.t) (runtime.blockRecordⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End blockRecord.
 
-Global Instance bounded_size_blockRecord : BoundedTypeSize runtime.blockRecord.
-Admitted.
-
-Global Instance into_val_blockRecord `{ffi_syntax} : IntoVal blockRecord.t.
-Admitted.
-
-Global Instance into_val_typed_blockRecord `{ffi_syntax} : IntoValTyped blockRecord.t runtime.blockRecord.
-Admitted.
-
-(* type runtime.buckhashArray *)
 Module buckhashArray.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance buckhashArray_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.buckhashArray.t). Admitted.
+
+#[global] Instance buckhashArray_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.buckhashArray.t) (runtime.buckhashArrayⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End buckhashArray.
 
-Global Instance bounded_size_buckhashArray : BoundedTypeSize runtime.buckhashArray.
-Admitted.
-
-Global Instance into_val_buckhashArray `{ffi_syntax} : IntoVal buckhashArray.t.
-Admitted.
-
-Global Instance into_val_typed_buckhashArray `{ffi_syntax} : IntoValTyped buckhashArray.t runtime.buckhashArray.
-Admitted.
-
-(* type runtime.mProfCycleHolder *)
 Module mProfCycleHolder.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance mProfCycleHolder_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.mProfCycleHolder.t). Admitted.
+
+#[global] Instance mProfCycleHolder_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.mProfCycleHolder.t) (runtime.mProfCycleHolderⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End mProfCycleHolder.
 
-Global Instance bounded_size_mProfCycleHolder : BoundedTypeSize runtime.mProfCycleHolder.
-Admitted.
-
-Global Instance into_val_mProfCycleHolder `{ffi_syntax} : IntoVal mProfCycleHolder.t.
-Admitted.
-
-Global Instance into_val_typed_mProfCycleHolder `{ffi_syntax} : IntoValTyped mProfCycleHolder.t runtime.mProfCycleHolder.
-Admitted.
-
-(* type runtime.lockTimer *)
-Module lockTimer.
-Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
-End def.
-End lockTimer.
-
-Global Instance bounded_size_lockTimer : BoundedTypeSize runtime.lockTimer.
-Admitted.
-
-Global Instance into_val_lockTimer `{ffi_syntax} : IntoVal lockTimer.t.
-Admitted.
-
-Global Instance into_val_typed_lockTimer `{ffi_syntax} : IntoValTyped lockTimer.t runtime.lockTimer.
-Admitted.
-
-(* type runtime.mLockProfile *)
 Module mLockProfile.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance mLockProfile_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.mLockProfile.t). Admitted.
+
+#[global] Instance mLockProfile_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.mLockProfile.t) (runtime.mLockProfileⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End mLockProfile.
 
-Global Instance bounded_size_mLockProfile : BoundedTypeSize runtime.mLockProfile.
-Admitted.
-
-Global Instance into_val_mLockProfile `{ffi_syntax} : IntoVal mLockProfile.t.
-Admitted.
-
-Global Instance into_val_typed_mLockProfile `{ffi_syntax} : IntoValTyped mLockProfile.t runtime.mLockProfile.
-Admitted.
-
-(* type runtime.StackRecord *)
 Module StackRecord.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance StackRecord_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.StackRecord.t). Admitted.
+
+#[global] Instance StackRecord_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.StackRecord.t) (runtime.StackRecordⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End StackRecord.
 
-Global Instance bounded_size_StackRecord : BoundedTypeSize runtime.StackRecord.
-Admitted.
-
-Global Instance into_val_StackRecord `{ffi_syntax} : IntoVal StackRecord.t.
-Admitted.
-
-Global Instance into_val_typed_StackRecord `{ffi_syntax} : IntoValTyped StackRecord.t runtime.StackRecord.
-Admitted.
-
-(* type runtime.MemProfileRecord *)
 Module MemProfileRecord.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance MemProfileRecord_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.MemProfileRecord.t). Admitted.
+
+#[global] Instance MemProfileRecord_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.MemProfileRecord.t) (runtime.MemProfileRecordⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End MemProfileRecord.
 
-Global Instance bounded_size_MemProfileRecord : BoundedTypeSize runtime.MemProfileRecord.
-Admitted.
-
-Global Instance into_val_MemProfileRecord `{ffi_syntax} : IntoVal MemProfileRecord.t.
-Admitted.
-
-Global Instance into_val_typed_MemProfileRecord `{ffi_syntax} : IntoValTyped MemProfileRecord.t runtime.MemProfileRecord.
-Admitted.
-
-(* type runtime.BlockProfileRecord *)
 Module BlockProfileRecord.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance BlockProfileRecord_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.BlockProfileRecord.t). Admitted.
+
+#[global] Instance BlockProfileRecord_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.BlockProfileRecord.t) (runtime.BlockProfileRecordⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End BlockProfileRecord.
 
-Global Instance bounded_size_BlockProfileRecord : BoundedTypeSize runtime.BlockProfileRecord.
-Admitted.
-
-Global Instance into_val_BlockProfileRecord `{ffi_syntax} : IntoVal BlockProfileRecord.t.
-Admitted.
-
-Global Instance into_val_typed_BlockProfileRecord `{ffi_syntax} : IntoValTyped BlockProfileRecord.t runtime.BlockProfileRecord.
-Admitted.
-
-(* type runtime.goroutineProfileState *)
 Module goroutineProfileState.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance goroutineProfileState_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.goroutineProfileState.t). Admitted.
+
+#[global] Instance goroutineProfileState_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.goroutineProfileState.t) (runtime.goroutineProfileStateⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End goroutineProfileState.
 
-Global Instance bounded_size_goroutineProfileState : BoundedTypeSize runtime.goroutineProfileState.
-Admitted.
-
-Global Instance into_val_goroutineProfileState `{ffi_syntax} : IntoVal goroutineProfileState.t.
-Admitted.
-
-Global Instance into_val_typed_goroutineProfileState `{ffi_syntax} : IntoValTyped goroutineProfileState.t runtime.goroutineProfileState.
-Admitted.
-
-(* type runtime.goroutineProfileStateHolder *)
 Module goroutineProfileStateHolder.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance goroutineProfileStateHolder_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.goroutineProfileStateHolder.t). Admitted.
+
+#[global] Instance goroutineProfileStateHolder_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.goroutineProfileStateHolder.t) (runtime.goroutineProfileStateHolderⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End goroutineProfileStateHolder.
 
-Global Instance bounded_size_goroutineProfileStateHolder : BoundedTypeSize runtime.goroutineProfileStateHolder.
-Admitted.
-
-Global Instance into_val_goroutineProfileStateHolder `{ffi_syntax} : IntoVal goroutineProfileStateHolder.t.
-Admitted.
-
-Global Instance into_val_typed_goroutineProfileStateHolder `{ffi_syntax} : IntoValTyped goroutineProfileStateHolder.t runtime.goroutineProfileStateHolder.
-Admitted.
-
-(* type runtime.addrRange *)
 Module addrRange.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance addrRange_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.addrRange.t). Admitted.
+
+#[global] Instance addrRange_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.addrRange.t) (runtime.addrRangeⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End addrRange.
 
-Global Instance bounded_size_addrRange : BoundedTypeSize runtime.addrRange.
-Admitted.
-
-Global Instance into_val_addrRange `{ffi_syntax} : IntoVal addrRange.t.
-Admitted.
-
-Global Instance into_val_typed_addrRange `{ffi_syntax} : IntoValTyped addrRange.t runtime.addrRange.
-Admitted.
-
-(* type runtime.offAddr *)
 Module offAddr.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance offAddr_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.offAddr.t). Admitted.
+
+#[global] Instance offAddr_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.offAddr.t) (runtime.offAddrⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End offAddr.
 
-Global Instance bounded_size_offAddr : BoundedTypeSize runtime.offAddr.
-Admitted.
-
-Global Instance into_val_offAddr `{ffi_syntax} : IntoVal offAddr.t.
-Admitted.
-
-Global Instance into_val_typed_offAddr `{ffi_syntax} : IntoValTyped offAddr.t runtime.offAddr.
-Admitted.
-
-(* type runtime.atomicOffAddr *)
 Module atomicOffAddr.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance atomicOffAddr_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.atomicOffAddr.t). Admitted.
+
+#[global] Instance atomicOffAddr_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.atomicOffAddr.t) (runtime.atomicOffAddrⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End atomicOffAddr.
 
-Global Instance bounded_size_atomicOffAddr : BoundedTypeSize runtime.atomicOffAddr.
-Admitted.
-
-Global Instance into_val_atomicOffAddr `{ffi_syntax} : IntoVal atomicOffAddr.t.
-Admitted.
-
-Global Instance into_val_typed_atomicOffAddr `{ffi_syntax} : IntoValTyped atomicOffAddr.t runtime.atomicOffAddr.
-Admitted.
-
-(* type runtime.addrRanges *)
 Module addrRanges.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance addrRanges_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.addrRanges.t). Admitted.
+
+#[global] Instance addrRanges_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.addrRanges.t) (runtime.addrRangesⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End addrRanges.
 
-Global Instance bounded_size_addrRanges : BoundedTypeSize runtime.addrRanges.
-Admitted.
-
-Global Instance into_val_addrRanges `{ffi_syntax} : IntoVal addrRanges.t.
-Admitted.
-
-Global Instance into_val_typed_addrRanges `{ffi_syntax} : IntoValTyped addrRanges.t runtime.addrRanges.
-Admitted.
-
-(* type runtime.spanSet *)
 Module spanSet.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance spanSet_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.spanSet.t). Admitted.
+
+#[global] Instance spanSet_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.spanSet.t) (runtime.spanSetⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End spanSet.
 
-Global Instance bounded_size_spanSet : BoundedTypeSize runtime.spanSet.
-Admitted.
+Module spanSetBlockHeader.
+Section def.
 
-Global Instance into_val_spanSet `{ffi_syntax} : IntoVal spanSet.t.
-Admitted.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
 
-Global Instance into_val_typed_spanSet `{ffi_syntax} : IntoValTyped spanSet.t runtime.spanSet.
-Admitted.
+Local Set Default Proof Using "All".
 
-(* type runtime.spanSetBlock *)
+#[global] Instance spanSetBlockHeader_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.spanSetBlockHeader.t). Admitted.
+
+#[global] Instance spanSetBlockHeader_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.spanSetBlockHeader.t) (runtime.spanSetBlockHeaderⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End spanSetBlockHeader.
+
+Module spanSetBlockHeader2.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance spanSetBlockHeader2_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.spanSetBlockHeader2.t). Admitted.
+
+#[global] Instance spanSetBlockHeader2_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.spanSetBlockHeader2.t) (runtime.spanSetBlockHeader2ⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End spanSetBlockHeader2.
+
 Module spanSetBlock.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance spanSetBlock_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.spanSetBlock.t). Admitted.
+
+#[global] Instance spanSetBlock_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.spanSetBlock.t) (runtime.spanSetBlockⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End spanSetBlock.
 
-Global Instance bounded_size_spanSetBlock : BoundedTypeSize runtime.spanSetBlock.
-Admitted.
-
-Global Instance into_val_spanSetBlock `{ffi_syntax} : IntoVal spanSetBlock.t.
-Admitted.
-
-Global Instance into_val_typed_spanSetBlock `{ffi_syntax} : IntoValTyped spanSetBlock.t runtime.spanSetBlock.
-Admitted.
-
-(* type runtime.atomicSpanSetSpinePointer *)
 Module atomicSpanSetSpinePointer.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance atomicSpanSetSpinePointer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.atomicSpanSetSpinePointer.t). Admitted.
+
+#[global] Instance atomicSpanSetSpinePointer_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.atomicSpanSetSpinePointer.t) (runtime.atomicSpanSetSpinePointerⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End atomicSpanSetSpinePointer.
 
-Global Instance bounded_size_atomicSpanSetSpinePointer : BoundedTypeSize runtime.atomicSpanSetSpinePointer.
-Admitted.
-
-Global Instance into_val_atomicSpanSetSpinePointer `{ffi_syntax} : IntoVal atomicSpanSetSpinePointer.t.
-Admitted.
-
-Global Instance into_val_typed_atomicSpanSetSpinePointer `{ffi_syntax} : IntoValTyped atomicSpanSetSpinePointer.t runtime.atomicSpanSetSpinePointer.
-Admitted.
-
-(* type runtime.spanSetSpinePointer *)
 Module spanSetSpinePointer.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance spanSetSpinePointer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.spanSetSpinePointer.t). Admitted.
+
+#[global] Instance spanSetSpinePointer_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.spanSetSpinePointer.t) (runtime.spanSetSpinePointerⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End spanSetSpinePointer.
 
-Global Instance bounded_size_spanSetSpinePointer : BoundedTypeSize runtime.spanSetSpinePointer.
-Admitted.
-
-Global Instance into_val_spanSetSpinePointer `{ffi_syntax} : IntoVal spanSetSpinePointer.t.
-Admitted.
-
-Global Instance into_val_typed_spanSetSpinePointer `{ffi_syntax} : IntoValTyped spanSetSpinePointer.t runtime.spanSetSpinePointer.
-Admitted.
-
-(* type runtime.spanSetBlockAlloc *)
 Module spanSetBlockAlloc.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance spanSetBlockAlloc_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.spanSetBlockAlloc.t). Admitted.
+
+#[global] Instance spanSetBlockAlloc_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.spanSetBlockAlloc.t) (runtime.spanSetBlockAllocⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End spanSetBlockAlloc.
 
-Global Instance bounded_size_spanSetBlockAlloc : BoundedTypeSize runtime.spanSetBlockAlloc.
-Admitted.
-
-Global Instance into_val_spanSetBlockAlloc `{ffi_syntax} : IntoVal spanSetBlockAlloc.t.
-Admitted.
-
-Global Instance into_val_typed_spanSetBlockAlloc `{ffi_syntax} : IntoValTyped spanSetBlockAlloc.t runtime.spanSetBlockAlloc.
-Admitted.
-
-(* type runtime.headTailIndex *)
 Module headTailIndex.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance headTailIndex_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.headTailIndex.t). Admitted.
+
+#[global] Instance headTailIndex_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.headTailIndex.t) (runtime.headTailIndexⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End headTailIndex.
 
-Global Instance bounded_size_headTailIndex : BoundedTypeSize runtime.headTailIndex.
-Admitted.
-
-Global Instance into_val_headTailIndex `{ffi_syntax} : IntoVal headTailIndex.t.
-Admitted.
-
-Global Instance into_val_typed_headTailIndex `{ffi_syntax} : IntoValTyped headTailIndex.t runtime.headTailIndex.
-Admitted.
-
-(* type runtime.atomicHeadTailIndex *)
 Module atomicHeadTailIndex.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance atomicHeadTailIndex_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.atomicHeadTailIndex.t). Admitted.
+
+#[global] Instance atomicHeadTailIndex_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.atomicHeadTailIndex.t) (runtime.atomicHeadTailIndexⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End atomicHeadTailIndex.
 
-Global Instance bounded_size_atomicHeadTailIndex : BoundedTypeSize runtime.atomicHeadTailIndex.
-Admitted.
-
-Global Instance into_val_atomicHeadTailIndex `{ffi_syntax} : IntoVal atomicHeadTailIndex.t.
-Admitted.
-
-Global Instance into_val_typed_atomicHeadTailIndex `{ffi_syntax} : IntoValTyped atomicHeadTailIndex.t runtime.atomicHeadTailIndex.
-Admitted.
-
-(* type runtime.atomicMSpanPointer *)
 Module atomicMSpanPointer.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance atomicMSpanPointer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.atomicMSpanPointer.t). Admitted.
+
+#[global] Instance atomicMSpanPointer_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.atomicMSpanPointer.t) (runtime.atomicMSpanPointerⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End atomicMSpanPointer.
 
-Global Instance bounded_size_atomicMSpanPointer : BoundedTypeSize runtime.atomicMSpanPointer.
-Admitted.
-
-Global Instance into_val_atomicMSpanPointer `{ffi_syntax} : IntoVal atomicMSpanPointer.t.
-Admitted.
-
-Global Instance into_val_typed_atomicMSpanPointer `{ffi_syntax} : IntoValTyped atomicMSpanPointer.t runtime.atomicMSpanPointer.
-Admitted.
-
-(* type runtime.mstats *)
 Module mstats.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance mstats_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.mstats.t). Admitted.
+
+#[global] Instance mstats_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.mstats.t) (runtime.mstatsⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End mstats.
 
-Global Instance bounded_size_mstats : BoundedTypeSize runtime.mstats.
-Admitted.
-
-Global Instance into_val_mstats `{ffi_syntax} : IntoVal mstats.t.
-Admitted.
-
-Global Instance into_val_typed_mstats `{ffi_syntax} : IntoValTyped mstats.t runtime.mstats.
-Admitted.
-
-(* type runtime.MemStats *)
 Module MemStats.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance MemStats_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.MemStats.t). Admitted.
+
+#[global] Instance MemStats_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.MemStats.t) (runtime.MemStatsⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End MemStats.
 
-Global Instance bounded_size_MemStats : BoundedTypeSize runtime.MemStats.
-Admitted.
-
-Global Instance into_val_MemStats `{ffi_syntax} : IntoVal MemStats.t.
-Admitted.
-
-Global Instance into_val_typed_MemStats `{ffi_syntax} : IntoValTyped MemStats.t runtime.MemStats.
-Admitted.
-
-(* type runtime.sysMemStat *)
 Module sysMemStat.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance sysMemStat_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.sysMemStat.t). Admitted.
+
+#[global] Instance sysMemStat_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.sysMemStat.t) (runtime.sysMemStatⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End sysMemStat.
 
-Global Instance bounded_size_sysMemStat : BoundedTypeSize runtime.sysMemStat.
-Admitted.
-
-Global Instance into_val_sysMemStat `{ffi_syntax} : IntoVal sysMemStat.t.
-Admitted.
-
-Global Instance into_val_typed_sysMemStat `{ffi_syntax} : IntoValTyped sysMemStat.t runtime.sysMemStat.
-Admitted.
-
-(* type runtime.heapStatsDelta *)
 Module heapStatsDelta.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance heapStatsDelta_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.heapStatsDelta.t). Admitted.
+
+#[global] Instance heapStatsDelta_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.heapStatsDelta.t) (runtime.heapStatsDeltaⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End heapStatsDelta.
 
-Global Instance bounded_size_heapStatsDelta : BoundedTypeSize runtime.heapStatsDelta.
-Admitted.
-
-Global Instance into_val_heapStatsDelta `{ffi_syntax} : IntoVal heapStatsDelta.t.
-Admitted.
-
-Global Instance into_val_typed_heapStatsDelta `{ffi_syntax} : IntoValTyped heapStatsDelta.t runtime.heapStatsDelta.
-Admitted.
-
-(* type runtime.consistentHeapStats *)
 Module consistentHeapStats.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance consistentHeapStats_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.consistentHeapStats.t). Admitted.
+
+#[global] Instance consistentHeapStats_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.consistentHeapStats.t) (runtime.consistentHeapStatsⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End consistentHeapStats.
 
-Global Instance bounded_size_consistentHeapStats : BoundedTypeSize runtime.consistentHeapStats.
-Admitted.
-
-Global Instance into_val_consistentHeapStats `{ffi_syntax} : IntoVal consistentHeapStats.t.
-Admitted.
-
-Global Instance into_val_typed_consistentHeapStats `{ffi_syntax} : IntoValTyped consistentHeapStats.t runtime.consistentHeapStats.
-Admitted.
-
-(* type runtime.cpuStats *)
 Module cpuStats.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance cpuStats_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.cpuStats.t). Admitted.
+
+#[global] Instance cpuStats_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.cpuStats.t) (runtime.cpuStatsⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End cpuStats.
 
-Global Instance bounded_size_cpuStats : BoundedTypeSize runtime.cpuStats.
-Admitted.
-
-Global Instance into_val_cpuStats `{ffi_syntax} : IntoVal cpuStats.t.
-Admitted.
-
-Global Instance into_val_typed_cpuStats `{ffi_syntax} : IntoValTyped cpuStats.t runtime.cpuStats.
-Admitted.
-
-(* type runtime.wbBuf *)
 Module wbBuf.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance wbBuf_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.wbBuf.t). Admitted.
+
+#[global] Instance wbBuf_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.wbBuf.t) (runtime.wbBufⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End wbBuf.
 
-Global Instance bounded_size_wbBuf : BoundedTypeSize runtime.wbBuf.
-Admitted.
-
-Global Instance into_val_wbBuf `{ffi_syntax} : IntoVal wbBuf.t.
-Admitted.
-
-Global Instance into_val_typed_wbBuf `{ffi_syntax} : IntoValTyped wbBuf.t runtime.wbBuf.
-Admitted.
-
-(* type runtime.pollDesc *)
 Module pollDesc.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance pollDesc_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.pollDesc.t). Admitted.
+
+#[global] Instance pollDesc_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.pollDesc.t) (runtime.pollDescⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End pollDesc.
 
-Global Instance bounded_size_pollDesc : BoundedTypeSize runtime.pollDesc.
-Admitted.
-
-Global Instance into_val_pollDesc `{ffi_syntax} : IntoVal pollDesc.t.
-Admitted.
-
-Global Instance into_val_typed_pollDesc `{ffi_syntax} : IntoValTyped pollDesc.t runtime.pollDesc.
-Admitted.
-
-(* type runtime.pollInfo *)
 Module pollInfo.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance pollInfo_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.pollInfo.t). Admitted.
+
+#[global] Instance pollInfo_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.pollInfo.t) (runtime.pollInfoⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End pollInfo.
 
-Global Instance bounded_size_pollInfo : BoundedTypeSize runtime.pollInfo.
-Admitted.
-
-Global Instance into_val_pollInfo `{ffi_syntax} : IntoVal pollInfo.t.
-Admitted.
-
-Global Instance into_val_typed_pollInfo `{ffi_syntax} : IntoValTyped pollInfo.t runtime.pollInfo.
-Admitted.
-
-(* type runtime.pollCache *)
 Module pollCache.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance pollCache_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.pollCache.t). Admitted.
+
+#[global] Instance pollCache_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.pollCache.t) (runtime.pollCacheⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End pollCache.
 
-Global Instance bounded_size_pollCache : BoundedTypeSize runtime.pollCache.
-Admitted.
-
-Global Instance into_val_pollCache `{ffi_syntax} : IntoVal pollCache.t.
-Admitted.
-
-Global Instance into_val_typed_pollCache `{ffi_syntax} : IntoValTyped pollCache.t runtime.pollCache.
-Admitted.
-
-(* type runtime.winlibcall *)
 Module winlibcall.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance winlibcall_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.winlibcall.t). Admitted.
+
+#[global] Instance winlibcall_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.winlibcall.t) (runtime.winlibcallⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End winlibcall.
 
-Global Instance bounded_size_winlibcall : BoundedTypeSize runtime.winlibcall.
-Admitted.
-
-Global Instance into_val_winlibcall `{ffi_syntax} : IntoVal winlibcall.t.
-Admitted.
-
-Global Instance into_val_typed_winlibcall `{ffi_syntax} : IntoValTyped winlibcall.t runtime.winlibcall.
-Admitted.
-
-(* type runtime.note *)
 Module note.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance note_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.note.t). Admitted.
+
+#[global] Instance note_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.note.t) (runtime.noteⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End note.
 
-Global Instance bounded_size_note : BoundedTypeSize runtime.note.
-Admitted.
-
-Global Instance into_val_note `{ffi_syntax} : IntoVal note.t.
-Admitted.
-
-Global Instance into_val_typed_note `{ffi_syntax} : IntoValTyped note.t runtime.note.
-Admitted.
-
-(* type runtime.mOS *)
 Module mOS.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance mOS_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.mOS.t). Admitted.
+
+#[global] Instance mOS_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.mOS.t) (runtime.mOSⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End mOS.
 
-Global Instance bounded_size_mOS : BoundedTypeSize runtime.mOS.
-Admitted.
-
-Global Instance into_val_mOS `{ffi_syntax} : IntoVal mOS.t.
-Admitted.
-
-Global Instance into_val_typed_mOS `{ffi_syntax} : IntoValTyped mOS.t runtime.mOS.
-Admitted.
-
-(* type runtime.perThreadSyscallArgs *)
 Module perThreadSyscallArgs.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance perThreadSyscallArgs_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.perThreadSyscallArgs.t). Admitted.
+
+#[global] Instance perThreadSyscallArgs_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.perThreadSyscallArgs.t) (runtime.perThreadSyscallArgsⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End perThreadSyscallArgs.
 
-Global Instance bounded_size_perThreadSyscallArgs : BoundedTypeSize runtime.perThreadSyscallArgs.
-Admitted.
-
-Global Instance into_val_perThreadSyscallArgs `{ffi_syntax} : IntoVal perThreadSyscallArgs.t.
-Admitted.
-
-Global Instance into_val_typed_perThreadSyscallArgs `{ffi_syntax} : IntoValTyped perThreadSyscallArgs.t runtime.perThreadSyscallArgs.
-Admitted.
-
-(* type runtime.sigset *)
 Module sigset.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance sigset_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.sigset.t). Admitted.
+
+#[global] Instance sigset_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.sigset.t) (runtime.sigsetⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End sigset.
 
-Global Instance bounded_size_sigset : BoundedTypeSize runtime.sigset.
-Admitted.
-
-Global Instance into_val_sigset `{ffi_syntax} : IntoVal sigset.t.
-Admitted.
-
-Global Instance into_val_typed_sigset `{ffi_syntax} : IntoValTyped sigset.t runtime.sigset.
-Admitted.
-
-(* type runtime.throwType *)
 Module throwType.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance throwType_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.throwType.t). Admitted.
+
+#[global] Instance throwType_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.throwType.t) (runtime.throwTypeⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End throwType.
 
-Global Instance bounded_size_throwType : BoundedTypeSize runtime.throwType.
-Admitted.
-
-Global Instance into_val_throwType `{ffi_syntax} : IntoVal throwType.t.
-Admitted.
-
-Global Instance into_val_typed_throwType `{ffi_syntax} : IntoValTyped throwType.t runtime.throwType.
-Admitted.
-
-(* type runtime.PanicNilError *)
 Module PanicNilError.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance PanicNilError_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.PanicNilError.t). Admitted.
+
+#[global] Instance PanicNilError_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.PanicNilError.t) (runtime.PanicNilErrorⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End PanicNilError.
 
-Global Instance bounded_size_PanicNilError : BoundedTypeSize runtime.PanicNilError.
-Admitted.
-
-Global Instance into_val_PanicNilError `{ffi_syntax} : IntoVal PanicNilError.t.
-Admitted.
-
-Global Instance into_val_typed_PanicNilError `{ffi_syntax} : IntoValTyped PanicNilError.t runtime.PanicNilError.
-Admitted.
-
-(* type runtime.Pinner *)
 Module Pinner.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Pinner_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.Pinner.t). Admitted.
+
+#[global] Instance Pinner_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.Pinner.t) (runtime.Pinnerⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End Pinner.
 
-Global Instance bounded_size_Pinner : BoundedTypeSize runtime.Pinner.
-Admitted.
-
-Global Instance into_val_Pinner `{ffi_syntax} : IntoVal Pinner.t.
-Admitted.
-
-Global Instance into_val_typed_Pinner `{ffi_syntax} : IntoValTyped Pinner.t runtime.Pinner.
-Admitted.
-
-(* type runtime.pinner *)
 Module pinner.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance pinner_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.pinner.t). Admitted.
+
+#[global] Instance pinner_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.pinner.t) (runtime.pinnerⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End pinner.
 
-Global Instance bounded_size_pinner : BoundedTypeSize runtime.pinner.
-Admitted.
-
-Global Instance into_val_pinner `{ffi_syntax} : IntoVal pinner.t.
-Admitted.
-
-Global Instance into_val_typed_pinner `{ffi_syntax} : IntoValTyped pinner.t runtime.pinner.
-Admitted.
-
-(* type runtime.pinState *)
 Module pinState.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance pinState_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.pinState.t). Admitted.
+
+#[global] Instance pinState_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.pinState.t) (runtime.pinStateⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End pinState.
 
-Global Instance bounded_size_pinState : BoundedTypeSize runtime.pinState.
-Admitted.
-
-Global Instance into_val_pinState `{ffi_syntax} : IntoVal pinState.t.
-Admitted.
-
-Global Instance into_val_typed_pinState `{ffi_syntax} : IntoValTyped pinState.t runtime.pinState.
-Admitted.
-
-(* type runtime.pinnerBits *)
 Module pinnerBits.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance pinnerBits_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.pinnerBits.t). Admitted.
+
+#[global] Instance pinnerBits_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.pinnerBits.t) (runtime.pinnerBitsⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End pinnerBits.
 
-Global Instance bounded_size_pinnerBits : BoundedTypeSize runtime.pinnerBits.
-Admitted.
-
-Global Instance into_val_pinnerBits `{ffi_syntax} : IntoVal pinnerBits.t.
-Admitted.
-
-Global Instance into_val_typed_pinnerBits `{ffi_syntax} : IntoValTyped pinnerBits.t runtime.pinnerBits.
-Admitted.
-
-(* type runtime.ptabEntry *)
 Module ptabEntry.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ptabEntry_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.ptabEntry.t). Admitted.
+
+#[global] Instance ptabEntry_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.ptabEntry.t) (runtime.ptabEntryⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End ptabEntry.
 
-Global Instance bounded_size_ptabEntry : BoundedTypeSize runtime.ptabEntry.
-Admitted.
-
-Global Instance into_val_ptabEntry `{ffi_syntax} : IntoVal ptabEntry.t.
-Admitted.
-
-Global Instance into_val_typed_ptabEntry `{ffi_syntax} : IntoValTyped ptabEntry.t runtime.ptabEntry.
-Admitted.
-
-(* type runtime.suspendGState *)
 Module suspendGState.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance suspendGState_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.suspendGState.t). Admitted.
+
+#[global] Instance suspendGState_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.suspendGState.t) (runtime.suspendGStateⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End suspendGState.
 
-Global Instance bounded_size_suspendGState : BoundedTypeSize runtime.suspendGState.
-Admitted.
-
-Global Instance into_val_suspendGState `{ffi_syntax} : IntoVal suspendGState.t.
-Admitted.
-
-Global Instance into_val_typed_suspendGState `{ffi_syntax} : IntoValTyped suspendGState.t runtime.suspendGState.
-Admitted.
-
-(* type runtime.hex *)
 Module hex.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance hex_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.hex.t). Admitted.
+
+#[global] Instance hex_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.hex.t) (runtime.hexⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End hex.
 
-Global Instance bounded_size_hex : BoundedTypeSize runtime.hex.
-Admitted.
-
-Global Instance into_val_hex `{ffi_syntax} : IntoVal hex.t.
-Admitted.
-
-Global Instance into_val_typed_hex `{ffi_syntax} : IntoValTyped hex.t runtime.hex.
-Admitted.
-
-(* type runtime.stwReason *)
 Module stwReason.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance stwReason_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.stwReason.t). Admitted.
+
+#[global] Instance stwReason_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.stwReason.t) (runtime.stwReasonⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End stwReason.
 
-Global Instance bounded_size_stwReason : BoundedTypeSize runtime.stwReason.
-Admitted.
-
-Global Instance into_val_stwReason `{ffi_syntax} : IntoVal stwReason.t.
-Admitted.
-
-Global Instance into_val_typed_stwReason `{ffi_syntax} : IntoValTyped stwReason.t runtime.stwReason.
-Admitted.
-
-(* type runtime.worldStop *)
 Module worldStop.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance worldStop_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.worldStop.t). Admitted.
+
+#[global] Instance worldStop_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.worldStop.t) (runtime.worldStopⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End worldStop.
 
-Global Instance bounded_size_worldStop : BoundedTypeSize runtime.worldStop.
-Admitted.
-
-Global Instance into_val_worldStop `{ffi_syntax} : IntoVal worldStop.t.
-Admitted.
-
-Global Instance into_val_typed_worldStop `{ffi_syntax} : IntoValTyped worldStop.t runtime.worldStop.
-Admitted.
-
-(* type runtime.cgothreadstart *)
 Module cgothreadstart.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance cgothreadstart_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.cgothreadstart.t). Admitted.
+
+#[global] Instance cgothreadstart_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.cgothreadstart.t) (runtime.cgothreadstartⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End cgothreadstart.
 
-Global Instance bounded_size_cgothreadstart : BoundedTypeSize runtime.cgothreadstart.
-Admitted.
-
-Global Instance into_val_cgothreadstart `{ffi_syntax} : IntoVal cgothreadstart.t.
-Admitted.
-
-Global Instance into_val_typed_cgothreadstart `{ffi_syntax} : IntoValTyped cgothreadstart.t runtime.cgothreadstart.
-Admitted.
-
-(* type runtime.sysmontick *)
 Module sysmontick.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance sysmontick_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.sysmontick.t). Admitted.
+
+#[global] Instance sysmontick_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.sysmontick.t) (runtime.sysmontickⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End sysmontick.
 
-Global Instance bounded_size_sysmontick : BoundedTypeSize runtime.sysmontick.
-Admitted.
+Module updateMaxProcsGState.
+Section def.
 
-Global Instance into_val_sysmontick `{ffi_syntax} : IntoVal sysmontick.t.
-Admitted.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
 
-Global Instance into_val_typed_sysmontick `{ffi_syntax} : IntoValTyped sysmontick.t runtime.sysmontick.
-Admitted.
+Local Set Default Proof Using "All".
 
-(* type runtime.pMask *)
+#[global] Instance updateMaxProcsGState_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.updateMaxProcsGState.t). Admitted.
+
+#[global] Instance updateMaxProcsGState_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.updateMaxProcsGState.t) (runtime.updateMaxProcsGStateⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End updateMaxProcsGState.
+
 Module pMask.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance pMask_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.pMask.t). Admitted.
+
+#[global] Instance pMask_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.pMask.t) (runtime.pMaskⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End pMask.
 
-Global Instance bounded_size_pMask : BoundedTypeSize runtime.pMask.
-Admitted.
-
-Global Instance into_val_pMask `{ffi_syntax} : IntoVal pMask.t.
-Admitted.
-
-Global Instance into_val_typed_pMask `{ffi_syntax} : IntoValTyped pMask.t runtime.pMask.
-Admitted.
-
-(* type runtime.gQueue *)
 Module gQueue.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance gQueue_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.gQueue.t). Admitted.
+
+#[global] Instance gQueue_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.gQueue.t) (runtime.gQueueⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End gQueue.
 
-Global Instance bounded_size_gQueue : BoundedTypeSize runtime.gQueue.
-Admitted.
-
-Global Instance into_val_gQueue `{ffi_syntax} : IntoVal gQueue.t.
-Admitted.
-
-Global Instance into_val_typed_gQueue `{ffi_syntax} : IntoValTyped gQueue.t runtime.gQueue.
-Admitted.
-
-(* type runtime.gList *)
 Module gList.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance gList_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.gList.t). Admitted.
+
+#[global] Instance gList_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.gList.t) (runtime.gListⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End gList.
 
-Global Instance bounded_size_gList : BoundedTypeSize runtime.gList.
-Admitted.
-
-Global Instance into_val_gList `{ffi_syntax} : IntoVal gList.t.
-Admitted.
-
-Global Instance into_val_typed_gList `{ffi_syntax} : IntoValTyped gList.t runtime.gList.
-Admitted.
-
-(* type runtime.randomOrder *)
 Module randomOrder.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance randomOrder_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.randomOrder.t). Admitted.
+
+#[global] Instance randomOrder_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.randomOrder.t) (runtime.randomOrderⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End randomOrder.
 
-Global Instance bounded_size_randomOrder : BoundedTypeSize runtime.randomOrder.
-Admitted.
-
-Global Instance into_val_randomOrder `{ffi_syntax} : IntoVal randomOrder.t.
-Admitted.
-
-Global Instance into_val_typed_randomOrder `{ffi_syntax} : IntoValTyped randomOrder.t runtime.randomOrder.
-Admitted.
-
-(* type runtime.randomEnum *)
 Module randomEnum.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance randomEnum_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.randomEnum.t). Admitted.
+
+#[global] Instance randomEnum_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.randomEnum.t) (runtime.randomEnumⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End randomEnum.
 
-Global Instance bounded_size_randomEnum : BoundedTypeSize runtime.randomEnum.
-Admitted.
-
-Global Instance into_val_randomEnum `{ffi_syntax} : IntoVal randomEnum.t.
-Admitted.
-
-Global Instance into_val_typed_randomEnum `{ffi_syntax} : IntoValTyped randomEnum.t runtime.randomEnum.
-Admitted.
-
-(* type runtime.initTask *)
 Module initTask.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance initTask_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.initTask.t). Admitted.
+
+#[global] Instance initTask_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.initTask.t) (runtime.initTaskⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End initTask.
 
-Global Instance bounded_size_initTask : BoundedTypeSize runtime.initTask.
-Admitted.
-
-Global Instance into_val_initTask `{ffi_syntax} : IntoVal initTask.t.
-Admitted.
-
-Global Instance into_val_typed_initTask `{ffi_syntax} : IntoValTyped initTask.t runtime.initTask.
-Admitted.
-
-(* type runtime.tracestat *)
 Module tracestat.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance tracestat_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.tracestat.t). Admitted.
+
+#[global] Instance tracestat_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.tracestat.t) (runtime.tracestatⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End tracestat.
 
-Global Instance bounded_size_tracestat : BoundedTypeSize runtime.tracestat.
-Admitted.
-
-Global Instance into_val_tracestat `{ffi_syntax} : IntoVal tracestat.t.
-Admitted.
-
-Global Instance into_val_typed_tracestat `{ffi_syntax} : IntoValTyped tracestat.t runtime.tracestat.
-Admitted.
-
-(* type runtime.profBuf *)
 Module profBuf.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance profBuf_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.profBuf.t). Admitted.
+
+#[global] Instance profBuf_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.profBuf.t) (runtime.profBufⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End profBuf.
 
-Global Instance bounded_size_profBuf : BoundedTypeSize runtime.profBuf.
-Admitted.
-
-Global Instance into_val_profBuf `{ffi_syntax} : IntoVal profBuf.t.
-Admitted.
-
-Global Instance into_val_typed_profBuf `{ffi_syntax} : IntoValTyped profBuf.t runtime.profBuf.
-Admitted.
-
-(* type runtime.profAtomic *)
 Module profAtomic.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance profAtomic_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.profAtomic.t). Admitted.
+
+#[global] Instance profAtomic_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.profAtomic.t) (runtime.profAtomicⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End profAtomic.
 
-Global Instance bounded_size_profAtomic : BoundedTypeSize runtime.profAtomic.
-Admitted.
-
-Global Instance into_val_profAtomic `{ffi_syntax} : IntoVal profAtomic.t.
-Admitted.
-
-Global Instance into_val_typed_profAtomic `{ffi_syntax} : IntoValTyped profAtomic.t runtime.profAtomic.
-Admitted.
-
-(* type runtime.profIndex *)
 Module profIndex.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance profIndex_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.profIndex.t). Admitted.
+
+#[global] Instance profIndex_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.profIndex.t) (runtime.profIndexⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End profIndex.
 
-Global Instance bounded_size_profIndex : BoundedTypeSize runtime.profIndex.
-Admitted.
-
-Global Instance into_val_profIndex `{ffi_syntax} : IntoVal profIndex.t.
-Admitted.
-
-Global Instance into_val_typed_profIndex `{ffi_syntax} : IntoValTyped profIndex.t runtime.profIndex.
-Admitted.
-
-(* type runtime.profBufReadMode *)
 Module profBufReadMode.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance profBufReadMode_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.profBufReadMode.t). Admitted.
+
+#[global] Instance profBufReadMode_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.profBufReadMode.t) (runtime.profBufReadModeⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End profBufReadMode.
 
-Global Instance bounded_size_profBufReadMode : BoundedTypeSize runtime.profBufReadMode.
-Admitted.
-
-Global Instance into_val_profBufReadMode `{ffi_syntax} : IntoVal profBufReadMode.t.
-Admitted.
-
-Global Instance into_val_typed_profBufReadMode `{ffi_syntax} : IntoValTyped profBufReadMode.t runtime.profBufReadMode.
-Admitted.
-
-(* type runtime.ticksType *)
 Module ticksType.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ticksType_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.ticksType.t). Admitted.
+
+#[global] Instance ticksType_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.ticksType.t) (runtime.ticksTypeⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End ticksType.
 
-Global Instance bounded_size_ticksType : BoundedTypeSize runtime.ticksType.
-Admitted.
-
-Global Instance into_val_ticksType `{ffi_syntax} : IntoVal ticksType.t.
-Admitted.
-
-Global Instance into_val_typed_ticksType `{ffi_syntax} : IntoValTyped ticksType.t runtime.ticksType.
-Admitted.
-
-(* type runtime.godebugInc *)
 Module godebugInc.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance godebugInc_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.godebugInc.t). Admitted.
+
+#[global] Instance godebugInc_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.godebugInc.t) (runtime.godebugIncⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End godebugInc.
 
-Global Instance bounded_size_godebugInc : BoundedTypeSize runtime.godebugInc.
-Admitted.
-
-Global Instance into_val_godebugInc `{ffi_syntax} : IntoVal godebugInc.t.
-Admitted.
-
-Global Instance into_val_typed_godebugInc `{ffi_syntax} : IntoValTyped godebugInc.t runtime.godebugInc.
-Admitted.
-
-(* type runtime.dbgVar *)
 Module dbgVar.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance dbgVar_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.dbgVar.t). Admitted.
+
+#[global] Instance dbgVar_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.dbgVar.t) (runtime.dbgVarⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End dbgVar.
 
-Global Instance bounded_size_dbgVar : BoundedTypeSize runtime.dbgVar.
-Admitted.
-
-Global Instance into_val_dbgVar `{ffi_syntax} : IntoVal dbgVar.t.
-Admitted.
-
-Global Instance into_val_typed_dbgVar `{ffi_syntax} : IntoValTyped dbgVar.t runtime.dbgVar.
-Admitted.
-
-(* type runtime.mutex *)
 Module mutex.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance mutex_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.mutex.t). Admitted.
+
+#[global] Instance mutex_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.mutex.t) (runtime.mutexⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End mutex.
 
-Global Instance bounded_size_mutex : BoundedTypeSize runtime.mutex.
-Admitted.
-
-Global Instance into_val_mutex `{ffi_syntax} : IntoVal mutex.t.
-Admitted.
-
-Global Instance into_val_typed_mutex `{ffi_syntax} : IntoValTyped mutex.t runtime.mutex.
-Admitted.
-
-(* type runtime.funcval *)
 Module funcval.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance funcval_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.funcval.t). Admitted.
+
+#[global] Instance funcval_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.funcval.t) (runtime.funcvalⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End funcval.
 
-Global Instance bounded_size_funcval : BoundedTypeSize runtime.funcval.
-Admitted.
-
-Global Instance into_val_funcval `{ffi_syntax} : IntoVal funcval.t.
-Admitted.
-
-Global Instance into_val_typed_funcval `{ffi_syntax} : IntoValTyped funcval.t runtime.funcval.
-Admitted.
-
-(* type runtime.iface *)
 Module iface.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance iface_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.iface.t). Admitted.
+
+#[global] Instance iface_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.iface.t) (runtime.ifaceⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End iface.
 
-Global Instance bounded_size_iface : BoundedTypeSize runtime.iface.
-Admitted.
-
-Global Instance into_val_iface `{ffi_syntax} : IntoVal iface.t.
-Admitted.
-
-Global Instance into_val_typed_iface `{ffi_syntax} : IntoValTyped iface.t runtime.iface.
-Admitted.
-
-(* type runtime.eface *)
 Module eface.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance eface_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.eface.t). Admitted.
+
+#[global] Instance eface_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.eface.t) (runtime.efaceⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End eface.
 
-Global Instance bounded_size_eface : BoundedTypeSize runtime.eface.
-Admitted.
-
-Global Instance into_val_eface `{ffi_syntax} : IntoVal eface.t.
-Admitted.
-
-Global Instance into_val_typed_eface `{ffi_syntax} : IntoValTyped eface.t runtime.eface.
-Admitted.
-
-(* type runtime.guintptr *)
 Module guintptr.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance guintptr_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.guintptr.t). Admitted.
+
+#[global] Instance guintptr_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.guintptr.t) (runtime.guintptrⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End guintptr.
 
-Global Instance bounded_size_guintptr : BoundedTypeSize runtime.guintptr.
-Admitted.
-
-Global Instance into_val_guintptr `{ffi_syntax} : IntoVal guintptr.t.
-Admitted.
-
-Global Instance into_val_typed_guintptr `{ffi_syntax} : IntoValTyped guintptr.t runtime.guintptr.
-Admitted.
-
-(* type runtime.puintptr *)
 Module puintptr.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance puintptr_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.puintptr.t). Admitted.
+
+#[global] Instance puintptr_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.puintptr.t) (runtime.puintptrⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End puintptr.
 
-Global Instance bounded_size_puintptr : BoundedTypeSize runtime.puintptr.
-Admitted.
-
-Global Instance into_val_puintptr `{ffi_syntax} : IntoVal puintptr.t.
-Admitted.
-
-Global Instance into_val_typed_puintptr `{ffi_syntax} : IntoValTyped puintptr.t runtime.puintptr.
-Admitted.
-
-(* type runtime.muintptr *)
 Module muintptr.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance muintptr_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.muintptr.t). Admitted.
+
+#[global] Instance muintptr_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.muintptr.t) (runtime.muintptrⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End muintptr.
 
-Global Instance bounded_size_muintptr : BoundedTypeSize runtime.muintptr.
-Admitted.
-
-Global Instance into_val_muintptr `{ffi_syntax} : IntoVal muintptr.t.
-Admitted.
-
-Global Instance into_val_typed_muintptr `{ffi_syntax} : IntoValTyped muintptr.t runtime.muintptr.
-Admitted.
-
-(* type runtime.gobuf *)
 Module gobuf.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance gobuf_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.gobuf.t). Admitted.
+
+#[global] Instance gobuf_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.gobuf.t) (runtime.gobufⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End gobuf.
 
-Global Instance bounded_size_gobuf : BoundedTypeSize runtime.gobuf.
-Admitted.
-
-Global Instance into_val_gobuf `{ffi_syntax} : IntoVal gobuf.t.
-Admitted.
-
-Global Instance into_val_typed_gobuf `{ffi_syntax} : IntoValTyped gobuf.t runtime.gobuf.
-Admitted.
-
-(* type runtime.sudog *)
 Module sudog.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance sudog_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.sudog.t). Admitted.
+
+#[global] Instance sudog_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.sudog.t) (runtime.sudogⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End sudog.
 
-Global Instance bounded_size_sudog : BoundedTypeSize runtime.sudog.
-Admitted.
-
-Global Instance into_val_sudog `{ffi_syntax} : IntoVal sudog.t.
-Admitted.
-
-Global Instance into_val_typed_sudog `{ffi_syntax} : IntoValTyped sudog.t runtime.sudog.
-Admitted.
-
-(* type runtime.libcall *)
 Module libcall.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance libcall_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.libcall.t). Admitted.
+
+#[global] Instance libcall_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.libcall.t) (runtime.libcallⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End libcall.
 
-Global Instance bounded_size_libcall : BoundedTypeSize runtime.libcall.
-Admitted.
-
-Global Instance into_val_libcall `{ffi_syntax} : IntoVal libcall.t.
-Admitted.
-
-Global Instance into_val_typed_libcall `{ffi_syntax} : IntoValTyped libcall.t runtime.libcall.
-Admitted.
-
-(* type runtime.stack *)
 Module stack.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance stack_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.stack.t). Admitted.
+
+#[global] Instance stack_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.stack.t) (runtime.stackⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End stack.
 
-Global Instance bounded_size_stack : BoundedTypeSize runtime.stack.
-Admitted.
-
-Global Instance into_val_stack `{ffi_syntax} : IntoVal stack.t.
-Admitted.
-
-Global Instance into_val_typed_stack `{ffi_syntax} : IntoValTyped stack.t runtime.stack.
-Admitted.
-
-(* type runtime.heldLockInfo *)
 Module heldLockInfo.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance heldLockInfo_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.heldLockInfo.t). Admitted.
+
+#[global] Instance heldLockInfo_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.heldLockInfo.t) (runtime.heldLockInfoⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End heldLockInfo.
 
-Global Instance bounded_size_heldLockInfo : BoundedTypeSize runtime.heldLockInfo.
-Admitted.
-
-Global Instance into_val_heldLockInfo `{ffi_syntax} : IntoVal heldLockInfo.t.
-Admitted.
-
-Global Instance into_val_typed_heldLockInfo `{ffi_syntax} : IntoValTyped heldLockInfo.t runtime.heldLockInfo.
-Admitted.
-
-(* type runtime.g *)
 Module g.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance g_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.g.t). Admitted.
+
+#[global] Instance g_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.g.t) (runtime.gⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End g.
 
-Global Instance bounded_size_g : BoundedTypeSize runtime.g.
-Admitted.
-
-Global Instance into_val_g `{ffi_syntax} : IntoVal g.t.
-Admitted.
-
-Global Instance into_val_typed_g `{ffi_syntax} : IntoValTyped g.t runtime.g.
-Admitted.
-
-(* type runtime.m *)
 Module m.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance m_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.m.t). Admitted.
+
+#[global] Instance m_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.m.t) (runtime.mⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End m.
 
-Global Instance bounded_size_m : BoundedTypeSize runtime.m.
-Admitted.
+Module mPadded.
+Section def.
 
-Global Instance into_val_m `{ffi_syntax} : IntoVal m.t.
-Admitted.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
 
-Global Instance into_val_typed_m `{ffi_syntax} : IntoValTyped m.t runtime.m.
-Admitted.
+Local Set Default Proof Using "All".
 
-(* type runtime.p *)
+#[global] Instance mPadded_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.mPadded.t). Admitted.
+
+#[global] Instance mPadded_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.mPadded.t) (runtime.mPaddedⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End mPadded.
+
 Module p.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance p_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.p.t). Admitted.
+
+#[global] Instance p_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.p.t) (runtime.pⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End p.
 
-Global Instance bounded_size_p : BoundedTypeSize runtime.p.
-Admitted.
-
-Global Instance into_val_p `{ffi_syntax} : IntoVal p.t.
-Admitted.
-
-Global Instance into_val_typed_p `{ffi_syntax} : IntoValTyped p.t runtime.p.
-Admitted.
-
-(* type runtime.schedt *)
 Module schedt.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance schedt_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.schedt.t). Admitted.
+
+#[global] Instance schedt_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.schedt.t) (runtime.schedtⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End schedt.
 
-Global Instance bounded_size_schedt : BoundedTypeSize runtime.schedt.
-Admitted.
-
-Global Instance into_val_schedt `{ffi_syntax} : IntoVal schedt.t.
-Admitted.
-
-Global Instance into_val_typed_schedt `{ffi_syntax} : IntoValTyped schedt.t runtime.schedt.
-Admitted.
-
-(* type runtime._func *)
 Module _func.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance _func_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime._func.t). Admitted.
+
+#[global] Instance _func_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime._func.t) (runtime._funcⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End _func.
 
-Global Instance bounded_size__func : BoundedTypeSize runtime._func.
-Admitted.
-
-Global Instance into_val__func `{ffi_syntax} : IntoVal _func.t.
-Admitted.
-
-Global Instance into_val_typed__func `{ffi_syntax} : IntoValTyped _func.t runtime._func.
-Admitted.
-
-(* type runtime.funcinl *)
 Module funcinl.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance funcinl_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.funcinl.t). Admitted.
+
+#[global] Instance funcinl_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.funcinl.t) (runtime.funcinlⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End funcinl.
 
-Global Instance bounded_size_funcinl : BoundedTypeSize runtime.funcinl.
-Admitted.
-
-Global Instance into_val_funcinl `{ffi_syntax} : IntoVal funcinl.t.
-Admitted.
-
-Global Instance into_val_typed_funcinl `{ffi_syntax} : IntoValTyped funcinl.t runtime.funcinl.
-Admitted.
-
-(* type runtime.itab *)
-Module itab.
-Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
-End def.
-End itab.
-
-Global Instance bounded_size_itab : BoundedTypeSize runtime.itab.
-Admitted.
-
-Global Instance into_val_itab `{ffi_syntax} : IntoVal itab.t.
-Admitted.
-
-Global Instance into_val_typed_itab `{ffi_syntax} : IntoValTyped itab.t runtime.itab.
-Admitted.
-
-(* type runtime.lfnode *)
 Module lfnode.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance lfnode_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.lfnode.t). Admitted.
+
+#[global] Instance lfnode_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.lfnode.t) (runtime.lfnodeⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End lfnode.
 
-Global Instance bounded_size_lfnode : BoundedTypeSize runtime.lfnode.
-Admitted.
-
-Global Instance into_val_lfnode `{ffi_syntax} : IntoVal lfnode.t.
-Admitted.
-
-Global Instance into_val_typed_lfnode `{ffi_syntax} : IntoValTyped lfnode.t runtime.lfnode.
-Admitted.
-
-(* type runtime.forcegcstate *)
 Module forcegcstate.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance forcegcstate_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.forcegcstate.t). Admitted.
+
+#[global] Instance forcegcstate_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.forcegcstate.t) (runtime.forcegcstateⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End forcegcstate.
 
-Global Instance bounded_size_forcegcstate : BoundedTypeSize runtime.forcegcstate.
-Admitted.
-
-Global Instance into_val_forcegcstate `{ffi_syntax} : IntoVal forcegcstate.t.
-Admitted.
-
-Global Instance into_val_typed_forcegcstate `{ffi_syntax} : IntoValTyped forcegcstate.t runtime.forcegcstate.
-Admitted.
-
-(* type runtime._defer *)
 Module _defer.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance _defer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime._defer.t). Admitted.
+
+#[global] Instance _defer_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime._defer.t) (runtime._deferⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End _defer.
 
-Global Instance bounded_size__defer : BoundedTypeSize runtime._defer.
-Admitted.
-
-Global Instance into_val__defer `{ffi_syntax} : IntoVal _defer.t.
-Admitted.
-
-Global Instance into_val_typed__defer `{ffi_syntax} : IntoValTyped _defer.t runtime._defer.
-Admitted.
-
-(* type runtime._panic *)
 Module _panic.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance _panic_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime._panic.t). Admitted.
+
+#[global] Instance _panic_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime._panic.t) (runtime._panicⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End _panic.
 
-Global Instance bounded_size__panic : BoundedTypeSize runtime._panic.
-Admitted.
-
-Global Instance into_val__panic `{ffi_syntax} : IntoVal _panic.t.
-Admitted.
-
-Global Instance into_val_typed__panic `{ffi_syntax} : IntoValTyped _panic.t runtime._panic.
-Admitted.
-
-(* type runtime.savedOpenDeferState *)
 Module savedOpenDeferState.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance savedOpenDeferState_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.savedOpenDeferState.t). Admitted.
+
+#[global] Instance savedOpenDeferState_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.savedOpenDeferState.t) (runtime.savedOpenDeferStateⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End savedOpenDeferState.
 
-Global Instance bounded_size_savedOpenDeferState : BoundedTypeSize runtime.savedOpenDeferState.
-Admitted.
-
-Global Instance into_val_savedOpenDeferState `{ffi_syntax} : IntoVal savedOpenDeferState.t.
-Admitted.
-
-Global Instance into_val_typed_savedOpenDeferState `{ffi_syntax} : IntoValTyped savedOpenDeferState.t runtime.savedOpenDeferState.
-Admitted.
-
-(* type runtime.ancestorInfo *)
 Module ancestorInfo.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ancestorInfo_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.ancestorInfo.t). Admitted.
+
+#[global] Instance ancestorInfo_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.ancestorInfo.t) (runtime.ancestorInfoⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End ancestorInfo.
 
-Global Instance bounded_size_ancestorInfo : BoundedTypeSize runtime.ancestorInfo.
-Admitted.
-
-Global Instance into_val_ancestorInfo `{ffi_syntax} : IntoVal ancestorInfo.t.
-Admitted.
-
-Global Instance into_val_typed_ancestorInfo `{ffi_syntax} : IntoValTyped ancestorInfo.t runtime.ancestorInfo.
-Admitted.
-
-(* type runtime.waitReason *)
 Module waitReason.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance waitReason_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.waitReason.t). Admitted.
+
+#[global] Instance waitReason_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.waitReason.t) (runtime.waitReasonⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End waitReason.
 
-Global Instance bounded_size_waitReason : BoundedTypeSize runtime.waitReason.
-Admitted.
-
-Global Instance into_val_waitReason `{ffi_syntax} : IntoVal waitReason.t.
-Admitted.
-
-Global Instance into_val_typed_waitReason `{ffi_syntax} : IntoValTyped waitReason.t runtime.waitReason.
-Admitted.
-
-(* type runtime.rwmutex *)
 Module rwmutex.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance rwmutex_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.rwmutex.t). Admitted.
+
+#[global] Instance rwmutex_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.rwmutex.t) (runtime.rwmutexⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End rwmutex.
 
-Global Instance bounded_size_rwmutex : BoundedTypeSize runtime.rwmutex.
-Admitted.
-
-Global Instance into_val_rwmutex `{ffi_syntax} : IntoVal rwmutex.t.
-Admitted.
-
-Global Instance into_val_typed_rwmutex `{ffi_syntax} : IntoValTyped rwmutex.t runtime.rwmutex.
-Admitted.
-
-(* type runtime.scase *)
 Module scase.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance scase_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.scase.t). Admitted.
+
+#[global] Instance scase_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.scase.t) (runtime.scaseⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End scase.
 
-Global Instance bounded_size_scase : BoundedTypeSize runtime.scase.
-Admitted.
-
-Global Instance into_val_scase `{ffi_syntax} : IntoVal scase.t.
-Admitted.
-
-Global Instance into_val_typed_scase `{ffi_syntax} : IntoValTyped scase.t runtime.scase.
-Admitted.
-
-(* type runtime.runtimeSelect *)
 Module runtimeSelect.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance runtimeSelect_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.runtimeSelect.t). Admitted.
+
+#[global] Instance runtimeSelect_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.runtimeSelect.t) (runtime.runtimeSelectⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End runtimeSelect.
 
-Global Instance bounded_size_runtimeSelect : BoundedTypeSize runtime.runtimeSelect.
-Admitted.
-
-Global Instance into_val_runtimeSelect `{ffi_syntax} : IntoVal runtimeSelect.t.
-Admitted.
-
-Global Instance into_val_typed_runtimeSelect `{ffi_syntax} : IntoValTyped runtimeSelect.t runtime.runtimeSelect.
-Admitted.
-
-(* type runtime.selectDir *)
 Module selectDir.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance selectDir_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.selectDir.t). Admitted.
+
+#[global] Instance selectDir_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.selectDir.t) (runtime.selectDirⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End selectDir.
 
-Global Instance bounded_size_selectDir : BoundedTypeSize runtime.selectDir.
-Admitted.
-
-Global Instance into_val_selectDir `{ffi_syntax} : IntoVal selectDir.t.
-Admitted.
-
-Global Instance into_val_typed_selectDir `{ffi_syntax} : IntoValTyped selectDir.t runtime.selectDir.
-Admitted.
-
-(* type runtime.semaRoot *)
 Module semaRoot.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance semaRoot_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.semaRoot.t). Admitted.
+
+#[global] Instance semaRoot_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.semaRoot.t) (runtime.semaRootⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End semaRoot.
 
-Global Instance bounded_size_semaRoot : BoundedTypeSize runtime.semaRoot.
-Admitted.
-
-Global Instance into_val_semaRoot `{ffi_syntax} : IntoVal semaRoot.t.
-Admitted.
-
-Global Instance into_val_typed_semaRoot `{ffi_syntax} : IntoValTyped semaRoot.t runtime.semaRoot.
-Admitted.
-
-(* type runtime.semTable *)
 Module semTable.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance semTable_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.semTable.t). Admitted.
+
+#[global] Instance semTable_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.semTable.t) (runtime.semTableⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End semTable.
 
-Global Instance bounded_size_semTable : BoundedTypeSize runtime.semTable.
-Admitted.
-
-Global Instance into_val_semTable `{ffi_syntax} : IntoVal semTable.t.
-Admitted.
-
-Global Instance into_val_typed_semTable `{ffi_syntax} : IntoValTyped semTable.t runtime.semTable.
-Admitted.
-
-(* type runtime.semaProfileFlags *)
 Module semaProfileFlags.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance semaProfileFlags_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.semaProfileFlags.t). Admitted.
+
+#[global] Instance semaProfileFlags_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.semaProfileFlags.t) (runtime.semaProfileFlagsⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End semaProfileFlags.
 
-Global Instance bounded_size_semaProfileFlags : BoundedTypeSize runtime.semaProfileFlags.
-Admitted.
-
-Global Instance into_val_semaProfileFlags `{ffi_syntax} : IntoVal semaProfileFlags.t.
-Admitted.
-
-Global Instance into_val_typed_semaProfileFlags `{ffi_syntax} : IntoValTyped semaProfileFlags.t runtime.semaProfileFlags.
-Admitted.
-
-(* type runtime.notifyList *)
 Module notifyList.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance notifyList_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.notifyList.t). Admitted.
+
+#[global] Instance notifyList_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.notifyList.t) (runtime.notifyListⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End notifyList.
 
-Global Instance bounded_size_notifyList : BoundedTypeSize runtime.notifyList.
-Admitted.
-
-Global Instance into_val_notifyList `{ffi_syntax} : IntoVal notifyList.t.
-Admitted.
-
-Global Instance into_val_typed_notifyList `{ffi_syntax} : IntoValTyped notifyList.t runtime.notifyList.
-Admitted.
-
-(* type runtime.sigctxt *)
 Module sigctxt.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance sigctxt_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.sigctxt.t). Admitted.
+
+#[global] Instance sigctxt_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.sigctxt.t) (runtime.sigctxtⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End sigctxt.
 
-Global Instance bounded_size_sigctxt : BoundedTypeSize runtime.sigctxt.
-Admitted.
-
-Global Instance into_val_sigctxt `{ffi_syntax} : IntoVal sigctxt.t.
-Admitted.
-
-Global Instance into_val_typed_sigctxt `{ffi_syntax} : IntoValTyped sigctxt.t runtime.sigctxt.
-Admitted.
-
-(* type runtime.sigTabT *)
 Module sigTabT.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance sigTabT_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.sigTabT.t). Admitted.
+
+#[global] Instance sigTabT_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.sigTabT.t) (runtime.sigTabTⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End sigTabT.
 
-Global Instance bounded_size_sigTabT : BoundedTypeSize runtime.sigTabT.
-Admitted.
-
-Global Instance into_val_sigTabT `{ffi_syntax} : IntoVal sigTabT.t.
-Admitted.
-
-Global Instance into_val_typed_sigTabT `{ffi_syntax} : IntoValTyped sigTabT.t runtime.sigTabT.
-Admitted.
-
-(* type runtime.gsignalStack *)
 Module gsignalStack.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance gsignalStack_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.gsignalStack.t). Admitted.
+
+#[global] Instance gsignalStack_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.gsignalStack.t) (runtime.gsignalStackⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End gsignalStack.
 
-Global Instance bounded_size_gsignalStack : BoundedTypeSize runtime.gsignalStack.
-Admitted.
-
-Global Instance into_val_gsignalStack `{ffi_syntax} : IntoVal gsignalStack.t.
-Admitted.
-
-Global Instance into_val_typed_gsignalStack `{ffi_syntax} : IntoValTyped gsignalStack.t runtime.gsignalStack.
-Admitted.
-
-(* type runtime.slice *)
 Module slice.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance slice_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.slice.t). Admitted.
+
+#[global] Instance slice_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.slice.t) (runtime.sliceⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End slice.
 
-Global Instance bounded_size_slice : BoundedTypeSize runtime.slice.
-Admitted.
-
-Global Instance into_val_slice `{ffi_syntax} : IntoVal slice.t.
-Admitted.
-
-Global Instance into_val_typed_slice `{ffi_syntax} : IntoValTyped slice.t runtime.slice.
-Admitted.
-
-(* type runtime.notInHeapSlice *)
 Module notInHeapSlice.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance notInHeapSlice_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.notInHeapSlice.t). Admitted.
+
+#[global] Instance notInHeapSlice_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.notInHeapSlice.t) (runtime.notInHeapSliceⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End notInHeapSlice.
 
-Global Instance bounded_size_notInHeapSlice : BoundedTypeSize runtime.notInHeapSlice.
-Admitted.
-
-Global Instance into_val_notInHeapSlice `{ffi_syntax} : IntoVal notInHeapSlice.t.
-Admitted.
-
-Global Instance into_val_typed_notInHeapSlice `{ffi_syntax} : IntoValTyped notInHeapSlice.t runtime.notInHeapSlice.
-Admitted.
-
-(* type runtime.stackpoolItem *)
 Module stackpoolItem.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance stackpoolItem_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.stackpoolItem.t). Admitted.
+
+#[global] Instance stackpoolItem_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.stackpoolItem.t) (runtime.stackpoolItemⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End stackpoolItem.
 
-Global Instance bounded_size_stackpoolItem : BoundedTypeSize runtime.stackpoolItem.
-Admitted.
-
-Global Instance into_val_stackpoolItem `{ffi_syntax} : IntoVal stackpoolItem.t.
-Admitted.
-
-Global Instance into_val_typed_stackpoolItem `{ffi_syntax} : IntoValTyped stackpoolItem.t runtime.stackpoolItem.
-Admitted.
-
-(* type runtime.adjustinfo *)
 Module adjustinfo.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance adjustinfo_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.adjustinfo.t). Admitted.
+
+#[global] Instance adjustinfo_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.adjustinfo.t) (runtime.adjustinfoⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End adjustinfo.
 
-Global Instance bounded_size_adjustinfo : BoundedTypeSize runtime.adjustinfo.
-Admitted.
-
-Global Instance into_val_adjustinfo `{ffi_syntax} : IntoVal adjustinfo.t.
-Admitted.
-
-Global Instance into_val_typed_adjustinfo `{ffi_syntax} : IntoValTyped adjustinfo.t runtime.adjustinfo.
-Admitted.
-
-(* type runtime.bitvector *)
 Module bitvector.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance bitvector_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.bitvector.t). Admitted.
+
+#[global] Instance bitvector_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.bitvector.t) (runtime.bitvectorⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End bitvector.
 
-Global Instance bounded_size_bitvector : BoundedTypeSize runtime.bitvector.
-Admitted.
-
-Global Instance into_val_bitvector `{ffi_syntax} : IntoVal bitvector.t.
-Admitted.
-
-Global Instance into_val_typed_bitvector `{ffi_syntax} : IntoValTyped bitvector.t runtime.bitvector.
-Admitted.
-
-(* type runtime.stackObjectRecord *)
 Module stackObjectRecord.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance stackObjectRecord_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.stackObjectRecord.t). Admitted.
+
+#[global] Instance stackObjectRecord_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.stackObjectRecord.t) (runtime.stackObjectRecordⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End stackObjectRecord.
 
-Global Instance bounded_size_stackObjectRecord : BoundedTypeSize runtime.stackObjectRecord.
-Admitted.
-
-Global Instance into_val_stackObjectRecord `{ffi_syntax} : IntoVal stackObjectRecord.t.
-Admitted.
-
-Global Instance into_val_typed_stackObjectRecord `{ffi_syntax} : IntoValTyped stackObjectRecord.t runtime.stackObjectRecord.
-Admitted.
-
-(* type runtime.stkframe *)
 Module stkframe.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance stkframe_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.stkframe.t). Admitted.
+
+#[global] Instance stkframe_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.stkframe.t) (runtime.stkframeⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End stkframe.
 
-Global Instance bounded_size_stkframe : BoundedTypeSize runtime.stkframe.
-Admitted.
-
-Global Instance into_val_stkframe `{ffi_syntax} : IntoVal stkframe.t.
-Admitted.
-
-Global Instance into_val_typed_stkframe `{ffi_syntax} : IntoValTyped stkframe.t runtime.stkframe.
-Admitted.
-
-(* type runtime.reflectMethodValue *)
 Module reflectMethodValue.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance reflectMethodValue_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.reflectMethodValue.t). Admitted.
+
+#[global] Instance reflectMethodValue_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.reflectMethodValue.t) (runtime.reflectMethodValueⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End reflectMethodValue.
 
-Global Instance bounded_size_reflectMethodValue : BoundedTypeSize runtime.reflectMethodValue.
-Admitted.
-
-Global Instance into_val_reflectMethodValue `{ffi_syntax} : IntoVal reflectMethodValue.t.
-Admitted.
-
-Global Instance into_val_typed_reflectMethodValue `{ffi_syntax} : IntoValTyped reflectMethodValue.t runtime.reflectMethodValue.
-Admitted.
-
-(* type runtime.tmpBuf *)
 Module tmpBuf.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance tmpBuf_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.tmpBuf.t). Admitted.
+
+#[global] Instance tmpBuf_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.tmpBuf.t) (runtime.tmpBufⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End tmpBuf.
 
-Global Instance bounded_size_tmpBuf : BoundedTypeSize runtime.tmpBuf.
-Admitted.
-
-Global Instance into_val_tmpBuf `{ffi_syntax} : IntoVal tmpBuf.t.
-Admitted.
-
-Global Instance into_val_typed_tmpBuf `{ffi_syntax} : IntoValTyped tmpBuf.t runtime.tmpBuf.
-Admitted.
-
-(* type runtime.stringStruct *)
 Module stringStruct.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance stringStruct_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.stringStruct.t). Admitted.
+
+#[global] Instance stringStruct_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.stringStruct.t) (runtime.stringStructⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End stringStruct.
 
-Global Instance bounded_size_stringStruct : BoundedTypeSize runtime.stringStruct.
-Admitted.
-
-Global Instance into_val_stringStruct `{ffi_syntax} : IntoVal stringStruct.t.
-Admitted.
-
-Global Instance into_val_typed_stringStruct `{ffi_syntax} : IntoValTyped stringStruct.t runtime.stringStruct.
-Admitted.
-
-(* type runtime.stringStructDWARF *)
 Module stringStructDWARF.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance stringStructDWARF_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.stringStructDWARF.t). Admitted.
+
+#[global] Instance stringStructDWARF_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.stringStructDWARF.t) (runtime.stringStructDWARFⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End stringStructDWARF.
 
-Global Instance bounded_size_stringStructDWARF : BoundedTypeSize runtime.stringStructDWARF.
-Admitted.
-
-Global Instance into_val_stringStructDWARF `{ffi_syntax} : IntoVal stringStructDWARF.t.
-Admitted.
-
-Global Instance into_val_typed_stringStructDWARF `{ffi_syntax} : IntoValTyped stringStructDWARF.t runtime.stringStructDWARF.
-Admitted.
-
-(* type runtime.neverCallThisFunction *)
 Module neverCallThisFunction.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance neverCallThisFunction_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.neverCallThisFunction.t). Admitted.
+
+#[global] Instance neverCallThisFunction_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.neverCallThisFunction.t) (runtime.neverCallThisFunctionⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End neverCallThisFunction.
 
-Global Instance bounded_size_neverCallThisFunction : BoundedTypeSize runtime.neverCallThisFunction.
-Admitted.
-
-Global Instance into_val_neverCallThisFunction `{ffi_syntax} : IntoVal neverCallThisFunction.t.
-Admitted.
-
-Global Instance into_val_typed_neverCallThisFunction `{ffi_syntax} : IntoValTyped neverCallThisFunction.t runtime.neverCallThisFunction.
-Admitted.
-
-(* type runtime.Frames *)
 Module Frames.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Frames_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.Frames.t). Admitted.
+
+#[global] Instance Frames_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.Frames.t) (runtime.Framesⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End Frames.
 
-Global Instance bounded_size_Frames : BoundedTypeSize runtime.Frames.
-Admitted.
-
-Global Instance into_val_Frames `{ffi_syntax} : IntoVal Frames.t.
-Admitted.
-
-Global Instance into_val_typed_Frames `{ffi_syntax} : IntoValTyped Frames.t runtime.Frames.
-Admitted.
-
-(* type runtime.Frame *)
 Module Frame.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Frame_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.Frame.t). Admitted.
+
+#[global] Instance Frame_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.Frame.t) (runtime.Frameⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End Frame.
 
-Global Instance bounded_size_Frame : BoundedTypeSize runtime.Frame.
-Admitted.
-
-Global Instance into_val_Frame `{ffi_syntax} : IntoVal Frame.t.
-Admitted.
-
-Global Instance into_val_typed_Frame `{ffi_syntax} : IntoValTyped Frame.t runtime.Frame.
-Admitted.
-
-(* type runtime.Func *)
 Module Func.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Func_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.Func.t). Admitted.
+
+#[global] Instance Func_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.Func.t) (runtime.Funcⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End Func.
 
-Global Instance bounded_size_Func : BoundedTypeSize runtime.Func.
-Admitted.
-
-Global Instance into_val_Func `{ffi_syntax} : IntoVal Func.t.
-Admitted.
-
-Global Instance into_val_typed_Func `{ffi_syntax} : IntoValTyped Func.t runtime.Func.
-Admitted.
-
-(* type runtime.pcHeader *)
 Module pcHeader.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance pcHeader_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.pcHeader.t). Admitted.
+
+#[global] Instance pcHeader_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.pcHeader.t) (runtime.pcHeaderⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End pcHeader.
 
-Global Instance bounded_size_pcHeader : BoundedTypeSize runtime.pcHeader.
-Admitted.
-
-Global Instance into_val_pcHeader `{ffi_syntax} : IntoVal pcHeader.t.
-Admitted.
-
-Global Instance into_val_typed_pcHeader `{ffi_syntax} : IntoValTyped pcHeader.t runtime.pcHeader.
-Admitted.
-
-(* type runtime.moduledata *)
 Module moduledata.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance moduledata_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.moduledata.t). Admitted.
+
+#[global] Instance moduledata_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.moduledata.t) (runtime.moduledataⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End moduledata.
 
-Global Instance bounded_size_moduledata : BoundedTypeSize runtime.moduledata.
-Admitted.
-
-Global Instance into_val_moduledata `{ffi_syntax} : IntoVal moduledata.t.
-Admitted.
-
-Global Instance into_val_typed_moduledata `{ffi_syntax} : IntoValTyped moduledata.t runtime.moduledata.
-Admitted.
-
-(* type runtime.modulehash *)
 Module modulehash.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance modulehash_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.modulehash.t). Admitted.
+
+#[global] Instance modulehash_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.modulehash.t) (runtime.modulehashⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End modulehash.
 
-Global Instance bounded_size_modulehash : BoundedTypeSize runtime.modulehash.
-Admitted.
-
-Global Instance into_val_modulehash `{ffi_syntax} : IntoVal modulehash.t.
-Admitted.
-
-Global Instance into_val_typed_modulehash `{ffi_syntax} : IntoValTyped modulehash.t runtime.modulehash.
-Admitted.
-
-(* type runtime.functab *)
 Module functab.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance functab_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.functab.t). Admitted.
+
+#[global] Instance functab_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.functab.t) (runtime.functabⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End functab.
 
-Global Instance bounded_size_functab : BoundedTypeSize runtime.functab.
-Admitted.
-
-Global Instance into_val_functab `{ffi_syntax} : IntoVal functab.t.
-Admitted.
-
-Global Instance into_val_typed_functab `{ffi_syntax} : IntoValTyped functab.t runtime.functab.
-Admitted.
-
-(* type runtime.textsect *)
 Module textsect.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance textsect_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.textsect.t). Admitted.
+
+#[global] Instance textsect_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.textsect.t) (runtime.textsectⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End textsect.
 
-Global Instance bounded_size_textsect : BoundedTypeSize runtime.textsect.
-Admitted.
-
-Global Instance into_val_textsect `{ffi_syntax} : IntoVal textsect.t.
-Admitted.
-
-Global Instance into_val_typed_textsect `{ffi_syntax} : IntoValTyped textsect.t runtime.textsect.
-Admitted.
-
-(* type runtime.findfuncbucket *)
 Module findfuncbucket.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance findfuncbucket_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.findfuncbucket.t). Admitted.
+
+#[global] Instance findfuncbucket_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.findfuncbucket.t) (runtime.findfuncbucketⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End findfuncbucket.
 
-Global Instance bounded_size_findfuncbucket : BoundedTypeSize runtime.findfuncbucket.
-Admitted.
-
-Global Instance into_val_findfuncbucket `{ffi_syntax} : IntoVal findfuncbucket.t.
-Admitted.
-
-Global Instance into_val_typed_findfuncbucket `{ffi_syntax} : IntoValTyped findfuncbucket.t runtime.findfuncbucket.
-Admitted.
-
-(* type runtime.funcInfo *)
 Module funcInfo.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance funcInfo_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.funcInfo.t). Admitted.
+
+#[global] Instance funcInfo_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.funcInfo.t) (runtime.funcInfoⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End funcInfo.
 
-Global Instance bounded_size_funcInfo : BoundedTypeSize runtime.funcInfo.
-Admitted.
-
-Global Instance into_val_funcInfo `{ffi_syntax} : IntoVal funcInfo.t.
-Admitted.
-
-Global Instance into_val_typed_funcInfo `{ffi_syntax} : IntoValTyped funcInfo.t runtime.funcInfo.
-Admitted.
-
-(* type runtime.srcFunc *)
 Module srcFunc.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance srcFunc_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.srcFunc.t). Admitted.
+
+#[global] Instance srcFunc_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.srcFunc.t) (runtime.srcFuncⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End srcFunc.
 
-Global Instance bounded_size_srcFunc : BoundedTypeSize runtime.srcFunc.
-Admitted.
-
-Global Instance into_val_srcFunc `{ffi_syntax} : IntoVal srcFunc.t.
-Admitted.
-
-Global Instance into_val_typed_srcFunc `{ffi_syntax} : IntoValTyped srcFunc.t runtime.srcFunc.
-Admitted.
-
-(* type runtime.pcvalueCache *)
 Module pcvalueCache.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance pcvalueCache_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.pcvalueCache.t). Admitted.
+
+#[global] Instance pcvalueCache_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.pcvalueCache.t) (runtime.pcvalueCacheⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End pcvalueCache.
 
-Global Instance bounded_size_pcvalueCache : BoundedTypeSize runtime.pcvalueCache.
-Admitted.
-
-Global Instance into_val_pcvalueCache `{ffi_syntax} : IntoVal pcvalueCache.t.
-Admitted.
-
-Global Instance into_val_typed_pcvalueCache `{ffi_syntax} : IntoValTyped pcvalueCache.t runtime.pcvalueCache.
-Admitted.
-
-(* type runtime.pcvalueCacheEnt *)
 Module pcvalueCacheEnt.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance pcvalueCacheEnt_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.pcvalueCacheEnt.t). Admitted.
+
+#[global] Instance pcvalueCacheEnt_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.pcvalueCacheEnt.t) (runtime.pcvalueCacheEntⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End pcvalueCacheEnt.
 
-Global Instance bounded_size_pcvalueCacheEnt : BoundedTypeSize runtime.pcvalueCacheEnt.
-Admitted.
-
-Global Instance into_val_pcvalueCacheEnt `{ffi_syntax} : IntoVal pcvalueCacheEnt.t.
-Admitted.
-
-Global Instance into_val_typed_pcvalueCacheEnt `{ffi_syntax} : IntoValTyped pcvalueCacheEnt.t runtime.pcvalueCacheEnt.
-Admitted.
-
-(* type runtime.stackmap *)
 Module stackmap.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance stackmap_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.stackmap.t). Admitted.
+
+#[global] Instance stackmap_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.stackmap.t) (runtime.stackmapⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End stackmap.
 
-Global Instance bounded_size_stackmap : BoundedTypeSize runtime.stackmap.
-Admitted.
-
-Global Instance into_val_stackmap `{ffi_syntax} : IntoVal stackmap.t.
-Admitted.
-
-Global Instance into_val_typed_stackmap `{ffi_syntax} : IntoValTyped stackmap.t runtime.stackmap.
-Admitted.
-
-(* type runtime.inlinedCall *)
 Module inlinedCall.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance inlinedCall_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.inlinedCall.t). Admitted.
+
+#[global] Instance inlinedCall_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.inlinedCall.t) (runtime.inlinedCallⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End inlinedCall.
 
-Global Instance bounded_size_inlinedCall : BoundedTypeSize runtime.inlinedCall.
-Admitted.
-
-Global Instance into_val_inlinedCall `{ffi_syntax} : IntoVal inlinedCall.t.
-Admitted.
-
-Global Instance into_val_typed_inlinedCall `{ffi_syntax} : IntoValTyped inlinedCall.t runtime.inlinedCall.
-Admitted.
-
-(* type runtime.inlineUnwinder *)
 Module inlineUnwinder.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance inlineUnwinder_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.inlineUnwinder.t). Admitted.
+
+#[global] Instance inlineUnwinder_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.inlineUnwinder.t) (runtime.inlineUnwinderⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End inlineUnwinder.
 
-Global Instance bounded_size_inlineUnwinder : BoundedTypeSize runtime.inlineUnwinder.
-Admitted.
-
-Global Instance into_val_inlineUnwinder `{ffi_syntax} : IntoVal inlineUnwinder.t.
-Admitted.
-
-Global Instance into_val_typed_inlineUnwinder `{ffi_syntax} : IntoValTyped inlineUnwinder.t runtime.inlineUnwinder.
-Admitted.
-
-(* type runtime.inlineFrame *)
 Module inlineFrame.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance inlineFrame_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.inlineFrame.t). Admitted.
+
+#[global] Instance inlineFrame_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.inlineFrame.t) (runtime.inlineFrameⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End inlineFrame.
 
-Global Instance bounded_size_inlineFrame : BoundedTypeSize runtime.inlineFrame.
-Admitted.
-
-Global Instance into_val_inlineFrame `{ffi_syntax} : IntoVal inlineFrame.t.
-Admitted.
-
-Global Instance into_val_typed_inlineFrame `{ffi_syntax} : IntoValTyped inlineFrame.t runtime.inlineFrame.
-Admitted.
-
-(* type runtime.synctestGroup *)
-Module synctestGroup.
+Module synctestBubble.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance synctestBubble_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.synctestBubble.t). Admitted.
+
+#[global] Instance synctestBubble_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.synctestBubble.t) (runtime.synctestBubbleⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
-End synctestGroup.
+End synctestBubble.
 
-Global Instance bounded_size_synctestGroup : BoundedTypeSize runtime.synctestGroup.
-Admitted.
+Module synctestDeadlockError.
+Section def.
 
-Global Instance into_val_synctestGroup `{ffi_syntax} : IntoVal synctestGroup.t.
-Admitted.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
 
-Global Instance into_val_typed_synctestGroup `{ffi_syntax} : IntoValTyped synctestGroup.t runtime.synctestGroup.
-Admitted.
+Local Set Default Proof Using "All".
 
-(* type runtime.taggedPointer *)
+#[global] Instance synctestDeadlockError_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.synctestDeadlockError.t). Admitted.
+
+#[global] Instance synctestDeadlockError_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.synctestDeadlockError.t) (runtime.synctestDeadlockErrorⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End synctestDeadlockError.
+
+Module specialBubble.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance specialBubble_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.specialBubble.t). Admitted.
+
+#[global] Instance specialBubble_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.specialBubble.t) (runtime.specialBubbleⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End specialBubble.
+
 Module taggedPointer.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance taggedPointer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.taggedPointer.t). Admitted.
+
+#[global] Instance taggedPointer_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.taggedPointer.t) (runtime.taggedPointerⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End taggedPointer.
 
-Global Instance bounded_size_taggedPointer : BoundedTypeSize runtime.taggedPointer.
-Admitted.
-
-Global Instance into_val_taggedPointer `{ffi_syntax} : IntoVal taggedPointer.t.
-Admitted.
-
-Global Instance into_val_typed_taggedPointer `{ffi_syntax} : IntoValTyped taggedPointer.t runtime.taggedPointer.
-Admitted.
-
-(* type runtime.timer *)
 Module timer.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance timer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.timer.t). Admitted.
+
+#[global] Instance timer_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.timer.t) (runtime.timerⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End timer.
 
-Global Instance bounded_size_timer : BoundedTypeSize runtime.timer.
-Admitted.
-
-Global Instance into_val_timer `{ffi_syntax} : IntoVal timer.t.
-Admitted.
-
-Global Instance into_val_typed_timer `{ffi_syntax} : IntoValTyped timer.t runtime.timer.
-Admitted.
-
-(* type runtime.timers *)
 Module timers.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance timers_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.timers.t). Admitted.
+
+#[global] Instance timers_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.timers.t) (runtime.timersⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End timers.
 
-Global Instance bounded_size_timers : BoundedTypeSize runtime.timers.
-Admitted.
-
-Global Instance into_val_timers `{ffi_syntax} : IntoVal timers.t.
-Admitted.
-
-Global Instance into_val_typed_timers `{ffi_syntax} : IntoValTyped timers.t runtime.timers.
-Admitted.
-
-(* type runtime.timerWhen *)
 Module timerWhen.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance timerWhen_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.timerWhen.t). Admitted.
+
+#[global] Instance timerWhen_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.timerWhen.t) (runtime.timerWhenⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End timerWhen.
 
-Global Instance bounded_size_timerWhen : BoundedTypeSize runtime.timerWhen.
-Admitted.
-
-Global Instance into_val_timerWhen `{ffi_syntax} : IntoVal timerWhen.t.
-Admitted.
-
-Global Instance into_val_typed_timerWhen `{ffi_syntax} : IntoValTyped timerWhen.t runtime.timerWhen.
-Admitted.
-
-(* type runtime.timeTimer *)
 Module timeTimer.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance timeTimer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.timeTimer.t). Admitted.
+
+#[global] Instance timeTimer_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.timeTimer.t) (runtime.timeTimerⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End timeTimer.
 
-Global Instance bounded_size_timeTimer : BoundedTypeSize runtime.timeTimer.
-Admitted.
-
-Global Instance into_val_timeTimer `{ffi_syntax} : IntoVal timeTimer.t.
-Admitted.
-
-Global Instance into_val_typed_timeTimer `{ffi_syntax} : IntoValTyped timeTimer.t runtime.timeTimer.
-Admitted.
-
-(* type runtime.traceAdvancerState *)
 Module traceAdvancerState.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance traceAdvancerState_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.traceAdvancerState.t). Admitted.
+
+#[global] Instance traceAdvancerState_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.traceAdvancerState.t) (runtime.traceAdvancerStateⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End traceAdvancerState.
 
-Global Instance bounded_size_traceAdvancerState : BoundedTypeSize runtime.traceAdvancerState.
-Admitted.
-
-Global Instance into_val_traceAdvancerState `{ffi_syntax} : IntoVal traceAdvancerState.t.
-Admitted.
-
-Global Instance into_val_typed_traceAdvancerState `{ffi_syntax} : IntoValTyped traceAdvancerState.t runtime.traceAdvancerState.
-Admitted.
-
-(* type runtime.wakeableSleep *)
 Module wakeableSleep.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance wakeableSleep_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.wakeableSleep.t). Admitted.
+
+#[global] Instance wakeableSleep_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.wakeableSleep.t) (runtime.wakeableSleepⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End wakeableSleep.
 
-Global Instance bounded_size_wakeableSleep : BoundedTypeSize runtime.wakeableSleep.
-Admitted.
-
-Global Instance into_val_wakeableSleep `{ffi_syntax} : IntoVal wakeableSleep.t.
-Admitted.
-
-Global Instance into_val_typed_wakeableSleep `{ffi_syntax} : IntoValTyped wakeableSleep.t runtime.wakeableSleep.
-Admitted.
-
-(* type runtime.unwindFlags *)
 Module unwindFlags.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance unwindFlags_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.unwindFlags.t). Admitted.
+
+#[global] Instance unwindFlags_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.unwindFlags.t) (runtime.unwindFlagsⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End unwindFlags.
 
-Global Instance bounded_size_unwindFlags : BoundedTypeSize runtime.unwindFlags.
-Admitted.
-
-Global Instance into_val_unwindFlags `{ffi_syntax} : IntoVal unwindFlags.t.
-Admitted.
-
-Global Instance into_val_typed_unwindFlags `{ffi_syntax} : IntoValTyped unwindFlags.t runtime.unwindFlags.
-Admitted.
-
-(* type runtime.unwinder *)
 Module unwinder.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance unwinder_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.unwinder.t). Admitted.
+
+#[global] Instance unwinder_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.unwinder.t) (runtime.unwinderⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End unwinder.
 
-Global Instance bounded_size_unwinder : BoundedTypeSize runtime.unwinder.
-Admitted.
-
-Global Instance into_val_unwinder `{ffi_syntax} : IntoVal unwinder.t.
-Admitted.
-
-Global Instance into_val_typed_unwinder `{ffi_syntax} : IntoValTyped unwinder.t runtime.unwinder.
-Admitted.
-
-(* type runtime.cgoTracebackArg *)
 Module cgoTracebackArg.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance cgoTracebackArg_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.cgoTracebackArg.t). Admitted.
+
+#[global] Instance cgoTracebackArg_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.cgoTracebackArg.t) (runtime.cgoTracebackArgⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End cgoTracebackArg.
 
-Global Instance bounded_size_cgoTracebackArg : BoundedTypeSize runtime.cgoTracebackArg.
-Admitted.
-
-Global Instance into_val_cgoTracebackArg `{ffi_syntax} : IntoVal cgoTracebackArg.t.
-Admitted.
-
-Global Instance into_val_typed_cgoTracebackArg `{ffi_syntax} : IntoValTyped cgoTracebackArg.t runtime.cgoTracebackArg.
-Admitted.
-
-(* type runtime.cgoContextArg *)
 Module cgoContextArg.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance cgoContextArg_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.cgoContextArg.t). Admitted.
+
+#[global] Instance cgoContextArg_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.cgoContextArg.t) (runtime.cgoContextArgⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End cgoContextArg.
 
-Global Instance bounded_size_cgoContextArg : BoundedTypeSize runtime.cgoContextArg.
-Admitted.
-
-Global Instance into_val_cgoContextArg `{ffi_syntax} : IntoVal cgoContextArg.t.
-Admitted.
-
-Global Instance into_val_typed_cgoContextArg `{ffi_syntax} : IntoValTyped cgoContextArg.t runtime.cgoContextArg.
-Admitted.
-
-(* type runtime.cgoSymbolizerArg *)
 Module cgoSymbolizerArg.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance cgoSymbolizerArg_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.cgoSymbolizerArg.t). Admitted.
+
+#[global] Instance cgoSymbolizerArg_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.cgoSymbolizerArg.t) (runtime.cgoSymbolizerArgⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End cgoSymbolizerArg.
 
-Global Instance bounded_size_cgoSymbolizerArg : BoundedTypeSize runtime.cgoSymbolizerArg.
-Admitted.
-
-Global Instance into_val_cgoSymbolizerArg `{ffi_syntax} : IntoVal cgoSymbolizerArg.t.
-Admitted.
-
-Global Instance into_val_typed_cgoSymbolizerArg `{ffi_syntax} : IntoValTyped cgoSymbolizerArg.t runtime.cgoSymbolizerArg.
-Admitted.
-
-(* type runtime.traceWriter *)
 Module traceWriter.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance traceWriter_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.traceWriter.t). Admitted.
+
+#[global] Instance traceWriter_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.traceWriter.t) (runtime.traceWriterⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End traceWriter.
 
-Global Instance bounded_size_traceWriter : BoundedTypeSize runtime.traceWriter.
-Admitted.
-
-Global Instance into_val_traceWriter `{ffi_syntax} : IntoVal traceWriter.t.
-Admitted.
-
-Global Instance into_val_typed_traceWriter `{ffi_syntax} : IntoValTyped traceWriter.t runtime.traceWriter.
-Admitted.
-
-(* type runtime.traceBufQueue *)
 Module traceBufQueue.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance traceBufQueue_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.traceBufQueue.t). Admitted.
+
+#[global] Instance traceBufQueue_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.traceBufQueue.t) (runtime.traceBufQueueⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End traceBufQueue.
 
-Global Instance bounded_size_traceBufQueue : BoundedTypeSize runtime.traceBufQueue.
-Admitted.
-
-Global Instance into_val_traceBufQueue `{ffi_syntax} : IntoVal traceBufQueue.t.
-Admitted.
-
-Global Instance into_val_typed_traceBufQueue `{ffi_syntax} : IntoValTyped traceBufQueue.t runtime.traceBufQueue.
-Admitted.
-
-(* type runtime.traceBufHeader *)
 Module traceBufHeader.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance traceBufHeader_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.traceBufHeader.t). Admitted.
+
+#[global] Instance traceBufHeader_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.traceBufHeader.t) (runtime.traceBufHeaderⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End traceBufHeader.
 
-Global Instance bounded_size_traceBufHeader : BoundedTypeSize runtime.traceBufHeader.
-Admitted.
-
-Global Instance into_val_traceBufHeader `{ffi_syntax} : IntoVal traceBufHeader.t.
-Admitted.
-
-Global Instance into_val_typed_traceBufHeader `{ffi_syntax} : IntoValTyped traceBufHeader.t runtime.traceBufHeader.
-Admitted.
-
-(* type runtime.traceBuf *)
 Module traceBuf.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance traceBuf_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.traceBuf.t). Admitted.
+
+#[global] Instance traceBuf_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.traceBuf.t) (runtime.traceBufⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End traceBuf.
 
-Global Instance bounded_size_traceBuf : BoundedTypeSize runtime.traceBuf.
-Admitted.
-
-Global Instance into_val_traceBuf `{ffi_syntax} : IntoVal traceBuf.t.
-Admitted.
-
-Global Instance into_val_typed_traceBuf `{ffi_syntax} : IntoValTyped traceBuf.t runtime.traceBuf.
-Admitted.
-
-(* type runtime.traceEv *)
-Module traceEv.
-Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
-End def.
-End traceEv.
-
-Global Instance bounded_size_traceEv : BoundedTypeSize runtime.traceEv.
-Admitted.
-
-Global Instance into_val_traceEv `{ffi_syntax} : IntoVal traceEv.t.
-Admitted.
-
-Global Instance into_val_typed_traceEv `{ffi_syntax} : IntoValTyped traceEv.t runtime.traceEv.
-Admitted.
-
-(* type runtime.traceArg *)
 Module traceArg.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance traceArg_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.traceArg.t). Admitted.
+
+#[global] Instance traceArg_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.traceArg.t) (runtime.traceArgⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End traceArg.
 
-Global Instance bounded_size_traceArg : BoundedTypeSize runtime.traceArg.
-Admitted.
-
-Global Instance into_val_traceArg `{ffi_syntax} : IntoVal traceArg.t.
-Admitted.
-
-Global Instance into_val_typed_traceArg `{ffi_syntax} : IntoValTyped traceArg.t runtime.traceArg.
-Admitted.
-
-(* type runtime.traceEventWriter *)
 Module traceEventWriter.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance traceEventWriter_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.traceEventWriter.t). Admitted.
+
+#[global] Instance traceEventWriter_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.traceEventWriter.t) (runtime.traceEventWriterⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End traceEventWriter.
 
-Global Instance bounded_size_traceEventWriter : BoundedTypeSize runtime.traceEventWriter.
-Admitted.
-
-Global Instance into_val_traceEventWriter `{ffi_syntax} : IntoVal traceEventWriter.t.
-Admitted.
-
-Global Instance into_val_typed_traceEventWriter `{ffi_syntax} : IntoValTyped traceEventWriter.t runtime.traceEventWriter.
-Admitted.
-
-(* type runtime.traceExperiment *)
-Module traceExperiment.
-Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
-End def.
-End traceExperiment.
-
-Global Instance bounded_size_traceExperiment : BoundedTypeSize runtime.traceExperiment.
-Admitted.
-
-Global Instance into_val_traceExperiment `{ffi_syntax} : IntoVal traceExperiment.t.
-Admitted.
-
-Global Instance into_val_typed_traceExperiment `{ffi_syntax} : IntoValTyped traceExperiment.t runtime.traceExperiment.
-Admitted.
-
-(* type runtime.traceMap *)
 Module traceMap.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance traceMap_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.traceMap.t). Admitted.
+
+#[global] Instance traceMap_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.traceMap.t) (runtime.traceMapⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End traceMap.
 
-Global Instance bounded_size_traceMap : BoundedTypeSize runtime.traceMap.
-Admitted.
-
-Global Instance into_val_traceMap `{ffi_syntax} : IntoVal traceMap.t.
-Admitted.
-
-Global Instance into_val_typed_traceMap `{ffi_syntax} : IntoValTyped traceMap.t runtime.traceMap.
-Admitted.
-
-(* type runtime.traceMapNode *)
 Module traceMapNode.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance traceMapNode_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.traceMapNode.t). Admitted.
+
+#[global] Instance traceMapNode_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.traceMapNode.t) (runtime.traceMapNodeⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End traceMapNode.
 
-Global Instance bounded_size_traceMapNode : BoundedTypeSize runtime.traceMapNode.
-Admitted.
-
-Global Instance into_val_traceMapNode `{ffi_syntax} : IntoVal traceMapNode.t.
-Admitted.
-
-Global Instance into_val_typed_traceMapNode `{ffi_syntax} : IntoValTyped traceMapNode.t runtime.traceMapNode.
-Admitted.
-
-(* type runtime.traceRegionAlloc *)
 Module traceRegionAlloc.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance traceRegionAlloc_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.traceRegionAlloc.t). Admitted.
+
+#[global] Instance traceRegionAlloc_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.traceRegionAlloc.t) (runtime.traceRegionAllocⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End traceRegionAlloc.
 
-Global Instance bounded_size_traceRegionAlloc : BoundedTypeSize runtime.traceRegionAlloc.
-Admitted.
-
-Global Instance into_val_traceRegionAlloc `{ffi_syntax} : IntoVal traceRegionAlloc.t.
-Admitted.
-
-Global Instance into_val_typed_traceRegionAlloc `{ffi_syntax} : IntoValTyped traceRegionAlloc.t runtime.traceRegionAlloc.
-Admitted.
-
-(* type runtime.traceRegionAllocBlock *)
 Module traceRegionAllocBlock.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance traceRegionAllocBlock_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.traceRegionAllocBlock.t). Admitted.
+
+#[global] Instance traceRegionAllocBlock_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.traceRegionAllocBlock.t) (runtime.traceRegionAllocBlockⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End traceRegionAllocBlock.
 
-Global Instance bounded_size_traceRegionAllocBlock : BoundedTypeSize runtime.traceRegionAllocBlock.
-Admitted.
-
-Global Instance into_val_traceRegionAllocBlock `{ffi_syntax} : IntoVal traceRegionAllocBlock.t.
-Admitted.
-
-Global Instance into_val_typed_traceRegionAllocBlock `{ffi_syntax} : IntoValTyped traceRegionAllocBlock.t runtime.traceRegionAllocBlock.
-Admitted.
-
-(* type runtime.traceRegionAllocBlockHeader *)
 Module traceRegionAllocBlockHeader.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance traceRegionAllocBlockHeader_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.traceRegionAllocBlockHeader.t). Admitted.
+
+#[global] Instance traceRegionAllocBlockHeader_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.traceRegionAllocBlockHeader.t) (runtime.traceRegionAllocBlockHeaderⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End traceRegionAllocBlockHeader.
 
-Global Instance bounded_size_traceRegionAllocBlockHeader : BoundedTypeSize runtime.traceRegionAllocBlockHeader.
-Admitted.
-
-Global Instance into_val_traceRegionAllocBlockHeader `{ffi_syntax} : IntoVal traceRegionAllocBlockHeader.t.
-Admitted.
-
-Global Instance into_val_typed_traceRegionAllocBlockHeader `{ffi_syntax} : IntoValTyped traceRegionAllocBlockHeader.t runtime.traceRegionAllocBlockHeader.
-Admitted.
-
-(* type runtime.gTraceState *)
 Module gTraceState.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance gTraceState_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.gTraceState.t). Admitted.
+
+#[global] Instance gTraceState_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.gTraceState.t) (runtime.gTraceStateⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End gTraceState.
 
-Global Instance bounded_size_gTraceState : BoundedTypeSize runtime.gTraceState.
-Admitted.
-
-Global Instance into_val_gTraceState `{ffi_syntax} : IntoVal gTraceState.t.
-Admitted.
-
-Global Instance into_val_typed_gTraceState `{ffi_syntax} : IntoValTyped gTraceState.t runtime.gTraceState.
-Admitted.
-
-(* type runtime.mTraceState *)
 Module mTraceState.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance mTraceState_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.mTraceState.t). Admitted.
+
+#[global] Instance mTraceState_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.mTraceState.t) (runtime.mTraceStateⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End mTraceState.
 
-Global Instance bounded_size_mTraceState : BoundedTypeSize runtime.mTraceState.
-Admitted.
-
-Global Instance into_val_mTraceState `{ffi_syntax} : IntoVal mTraceState.t.
-Admitted.
-
-Global Instance into_val_typed_mTraceState `{ffi_syntax} : IntoValTyped mTraceState.t runtime.mTraceState.
-Admitted.
-
-(* type runtime.pTraceState *)
 Module pTraceState.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance pTraceState_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.pTraceState.t). Admitted.
+
+#[global] Instance pTraceState_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.pTraceState.t) (runtime.pTraceStateⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End pTraceState.
 
-Global Instance bounded_size_pTraceState : BoundedTypeSize runtime.pTraceState.
-Admitted.
-
-Global Instance into_val_pTraceState `{ffi_syntax} : IntoVal pTraceState.t.
-Admitted.
-
-Global Instance into_val_typed_pTraceState `{ffi_syntax} : IntoValTyped pTraceState.t runtime.pTraceState.
-Admitted.
-
-(* type runtime.traceBlockReason *)
 Module traceBlockReason.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance traceBlockReason_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.traceBlockReason.t). Admitted.
+
+#[global] Instance traceBlockReason_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.traceBlockReason.t) (runtime.traceBlockReasonⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End traceBlockReason.
 
-Global Instance bounded_size_traceBlockReason : BoundedTypeSize runtime.traceBlockReason.
-Admitted.
-
-Global Instance into_val_traceBlockReason `{ffi_syntax} : IntoVal traceBlockReason.t.
-Admitted.
-
-Global Instance into_val_typed_traceBlockReason `{ffi_syntax} : IntoValTyped traceBlockReason.t runtime.traceBlockReason.
-Admitted.
-
-(* type runtime.traceGoStopReason *)
 Module traceGoStopReason.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance traceGoStopReason_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.traceGoStopReason.t). Admitted.
+
+#[global] Instance traceGoStopReason_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.traceGoStopReason.t) (runtime.traceGoStopReasonⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End traceGoStopReason.
 
-Global Instance bounded_size_traceGoStopReason : BoundedTypeSize runtime.traceGoStopReason.
-Admitted.
-
-Global Instance into_val_traceGoStopReason `{ffi_syntax} : IntoVal traceGoStopReason.t.
-Admitted.
-
-Global Instance into_val_typed_traceGoStopReason `{ffi_syntax} : IntoValTyped traceGoStopReason.t runtime.traceGoStopReason.
-Admitted.
-
-(* type runtime.traceLocker *)
 Module traceLocker.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance traceLocker_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.traceLocker.t). Admitted.
+
+#[global] Instance traceLocker_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.traceLocker.t) (runtime.traceLockerⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End traceLocker.
 
-Global Instance bounded_size_traceLocker : BoundedTypeSize runtime.traceLocker.
-Admitted.
-
-Global Instance into_val_traceLocker `{ffi_syntax} : IntoVal traceLocker.t.
-Admitted.
-
-Global Instance into_val_typed_traceLocker `{ffi_syntax} : IntoValTyped traceLocker.t runtime.traceLocker.
-Admitted.
-
-(* type runtime.traceStackTable *)
 Module traceStackTable.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance traceStackTable_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.traceStackTable.t). Admitted.
+
+#[global] Instance traceStackTable_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.traceStackTable.t) (runtime.traceStackTableⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End traceStackTable.
 
-Global Instance bounded_size_traceStackTable : BoundedTypeSize runtime.traceStackTable.
-Admitted.
-
-Global Instance into_val_traceStackTable `{ffi_syntax} : IntoVal traceStackTable.t.
-Admitted.
-
-Global Instance into_val_typed_traceStackTable `{ffi_syntax} : IntoValTyped traceStackTable.t runtime.traceStackTable.
-Admitted.
-
-(* type runtime.traceFrame *)
 Module traceFrame.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance traceFrame_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.traceFrame.t). Admitted.
+
+#[global] Instance traceFrame_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.traceFrame.t) (runtime.traceFrameⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End traceFrame.
 
-Global Instance bounded_size_traceFrame : BoundedTypeSize runtime.traceFrame.
-Admitted.
-
-Global Instance into_val_traceFrame `{ffi_syntax} : IntoVal traceFrame.t.
-Admitted.
-
-Global Instance into_val_typed_traceFrame `{ffi_syntax} : IntoValTyped traceFrame.t runtime.traceFrame.
-Admitted.
-
-(* type runtime.traceGoStatus *)
-Module traceGoStatus.
-Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
-End def.
-End traceGoStatus.
-
-Global Instance bounded_size_traceGoStatus : BoundedTypeSize runtime.traceGoStatus.
-Admitted.
-
-Global Instance into_val_traceGoStatus `{ffi_syntax} : IntoVal traceGoStatus.t.
-Admitted.
-
-Global Instance into_val_typed_traceGoStatus `{ffi_syntax} : IntoValTyped traceGoStatus.t runtime.traceGoStatus.
-Admitted.
-
-(* type runtime.traceProcStatus *)
-Module traceProcStatus.
-Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
-End def.
-End traceProcStatus.
-
-Global Instance bounded_size_traceProcStatus : BoundedTypeSize runtime.traceProcStatus.
-Admitted.
-
-Global Instance into_val_traceProcStatus `{ffi_syntax} : IntoVal traceProcStatus.t.
-Admitted.
-
-Global Instance into_val_typed_traceProcStatus `{ffi_syntax} : IntoValTyped traceProcStatus.t runtime.traceProcStatus.
-Admitted.
-
-(* type runtime.traceSchedResourceState *)
 Module traceSchedResourceState.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance traceSchedResourceState_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.traceSchedResourceState.t). Admitted.
+
+#[global] Instance traceSchedResourceState_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.traceSchedResourceState.t) (runtime.traceSchedResourceStateⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End traceSchedResourceState.
 
-Global Instance bounded_size_traceSchedResourceState : BoundedTypeSize runtime.traceSchedResourceState.
-Admitted.
-
-Global Instance into_val_traceSchedResourceState `{ffi_syntax} : IntoVal traceSchedResourceState.t.
-Admitted.
-
-Global Instance into_val_typed_traceSchedResourceState `{ffi_syntax} : IntoValTyped traceSchedResourceState.t runtime.traceSchedResourceState.
-Admitted.
-
-(* type runtime.traceStringTable *)
 Module traceStringTable.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance traceStringTable_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.traceStringTable.t). Admitted.
+
+#[global] Instance traceStringTable_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.traceStringTable.t) (runtime.traceStringTableⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End traceStringTable.
 
-Global Instance bounded_size_traceStringTable : BoundedTypeSize runtime.traceStringTable.
-Admitted.
-
-Global Instance into_val_traceStringTable `{ffi_syntax} : IntoVal traceStringTable.t.
-Admitted.
-
-Global Instance into_val_typed_traceStringTable `{ffi_syntax} : IntoValTyped traceStringTable.t runtime.traceStringTable.
-Admitted.
-
-(* type runtime.traceTime *)
 Module traceTime.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance traceTime_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.traceTime.t). Admitted.
+
+#[global] Instance traceTime_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.traceTime.t) (runtime.traceTimeⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End traceTime.
 
-Global Instance bounded_size_traceTime : BoundedTypeSize runtime.traceTime.
-Admitted.
-
-Global Instance into_val_traceTime `{ffi_syntax} : IntoVal traceTime.t.
-Admitted.
-
-Global Instance into_val_typed_traceTime `{ffi_syntax} : IntoValTyped traceTime.t runtime.traceTime.
-Admitted.
-
-(* type runtime.traceTypeTable *)
 Module traceTypeTable.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance traceTypeTable_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.traceTypeTable.t). Admitted.
+
+#[global] Instance traceTypeTable_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.traceTypeTable.t) (runtime.traceTypeTableⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End traceTypeTable.
 
-Global Instance bounded_size_traceTypeTable : BoundedTypeSize runtime.traceTypeTable.
-Admitted.
-
-Global Instance into_val_traceTypeTable `{ffi_syntax} : IntoVal traceTypeTable.t.
-Admitted.
-
-Global Instance into_val_typed_traceTypeTable `{ffi_syntax} : IntoValTyped traceTypeTable.t runtime.traceTypeTable.
-Admitted.
-
-(* type runtime.nameOff *)
-Module nameOff.
-Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
-End def.
-End nameOff.
-
-Global Instance bounded_size_nameOff : BoundedTypeSize runtime.nameOff.
-Admitted.
-
-Global Instance into_val_nameOff `{ffi_syntax} : IntoVal nameOff.t.
-Admitted.
-
-Global Instance into_val_typed_nameOff `{ffi_syntax} : IntoValTyped nameOff.t runtime.nameOff.
-Admitted.
-
-(* type runtime.typeOff *)
-Module typeOff.
-Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
-End def.
-End typeOff.
-
-Global Instance bounded_size_typeOff : BoundedTypeSize runtime.typeOff.
-Admitted.
-
-Global Instance into_val_typeOff `{ffi_syntax} : IntoVal typeOff.t.
-Admitted.
-
-Global Instance into_val_typed_typeOff `{ffi_syntax} : IntoValTyped typeOff.t runtime.typeOff.
-Admitted.
-
-(* type runtime.textOff *)
-Module textOff.
-Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
-End def.
-End textOff.
-
-Global Instance bounded_size_textOff : BoundedTypeSize runtime.textOff.
-Admitted.
-
-Global Instance into_val_textOff `{ffi_syntax} : IntoVal textOff.t.
-Admitted.
-
-Global Instance into_val_typed_textOff `{ffi_syntax} : IntoValTyped textOff.t runtime.textOff.
-Admitted.
-
-(* type runtime._type *)
-Module _type.
-Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
-End def.
-End _type.
-
-Global Instance bounded_size__type : BoundedTypeSize runtime._type.
-Admitted.
-
-Global Instance into_val__type `{ffi_syntax} : IntoVal _type.t.
-Admitted.
-
-Global Instance into_val_typed__type `{ffi_syntax} : IntoValTyped _type.t runtime._type.
-Admitted.
-
-(* type runtime.rtype *)
 Module rtype.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance rtype_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.rtype.t). Admitted.
+
+#[global] Instance rtype_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.rtype.t) (runtime.rtypeⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End rtype.
 
-Global Instance bounded_size_rtype : BoundedTypeSize runtime.rtype.
-Admitted.
-
-Global Instance into_val_rtype `{ffi_syntax} : IntoVal rtype.t.
-Admitted.
-
-Global Instance into_val_typed_rtype `{ffi_syntax} : IntoValTyped rtype.t runtime.rtype.
-Admitted.
-
-(* type runtime.bitCursor *)
 Module bitCursor.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance bitCursor_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.bitCursor.t). Admitted.
+
+#[global] Instance bitCursor_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.bitCursor.t) (runtime.bitCursorⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End bitCursor.
 
-Global Instance bounded_size_bitCursor : BoundedTypeSize runtime.bitCursor.
-Admitted.
-
-Global Instance into_val_bitCursor `{ffi_syntax} : IntoVal bitCursor.t.
-Admitted.
-
-Global Instance into_val_typed_bitCursor `{ffi_syntax} : IntoValTyped bitCursor.t runtime.bitCursor.
-Admitted.
-
-(* type runtime.uncommontype *)
-Module uncommontype.
-Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
-End def.
-End uncommontype.
-
-Global Instance bounded_size_uncommontype : BoundedTypeSize runtime.uncommontype.
-Admitted.
-
-Global Instance into_val_uncommontype `{ffi_syntax} : IntoVal uncommontype.t.
-Admitted.
-
-Global Instance into_val_typed_uncommontype `{ffi_syntax} : IntoValTyped uncommontype.t runtime.uncommontype.
-Admitted.
-
-(* type runtime.interfacetype *)
-Module interfacetype.
-Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
-End def.
-End interfacetype.
-
-Global Instance bounded_size_interfacetype : BoundedTypeSize runtime.interfacetype.
-Admitted.
-
-Global Instance into_val_interfacetype `{ffi_syntax} : IntoVal interfacetype.t.
-Admitted.
-
-Global Instance into_val_typed_interfacetype `{ffi_syntax} : IntoValTyped interfacetype.t runtime.interfacetype.
-Admitted.
-
-(* type runtime.arraytype *)
-Module arraytype.
-Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
-End def.
-End arraytype.
-
-Global Instance bounded_size_arraytype : BoundedTypeSize runtime.arraytype.
-Admitted.
-
-Global Instance into_val_arraytype `{ffi_syntax} : IntoVal arraytype.t.
-Admitted.
-
-Global Instance into_val_typed_arraytype `{ffi_syntax} : IntoValTyped arraytype.t runtime.arraytype.
-Admitted.
-
-(* type runtime.chantype *)
-Module chantype.
-Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
-End def.
-End chantype.
-
-Global Instance bounded_size_chantype : BoundedTypeSize runtime.chantype.
-Admitted.
-
-Global Instance into_val_chantype `{ffi_syntax} : IntoVal chantype.t.
-Admitted.
-
-Global Instance into_val_typed_chantype `{ffi_syntax} : IntoValTyped chantype.t runtime.chantype.
-Admitted.
-
-(* type runtime.slicetype *)
-Module slicetype.
-Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
-End def.
-End slicetype.
-
-Global Instance bounded_size_slicetype : BoundedTypeSize runtime.slicetype.
-Admitted.
-
-Global Instance into_val_slicetype `{ffi_syntax} : IntoVal slicetype.t.
-Admitted.
-
-Global Instance into_val_typed_slicetype `{ffi_syntax} : IntoValTyped slicetype.t runtime.slicetype.
-Admitted.
-
-(* type runtime.functype *)
-Module functype.
-Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
-End def.
-End functype.
-
-Global Instance bounded_size_functype : BoundedTypeSize runtime.functype.
-Admitted.
-
-Global Instance into_val_functype `{ffi_syntax} : IntoVal functype.t.
-Admitted.
-
-Global Instance into_val_typed_functype `{ffi_syntax} : IntoValTyped functype.t runtime.functype.
-Admitted.
-
-(* type runtime.ptrtype *)
-Module ptrtype.
-Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
-End def.
-End ptrtype.
-
-Global Instance bounded_size_ptrtype : BoundedTypeSize runtime.ptrtype.
-Admitted.
-
-Global Instance into_val_ptrtype `{ffi_syntax} : IntoVal ptrtype.t.
-Admitted.
-
-Global Instance into_val_typed_ptrtype `{ffi_syntax} : IntoValTyped ptrtype.t runtime.ptrtype.
-Admitted.
-
-(* type runtime.name *)
-Module name.
-Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
-End def.
-End name.
-
-Global Instance bounded_size_name : BoundedTypeSize runtime.name.
-Admitted.
-
-Global Instance into_val_name `{ffi_syntax} : IntoVal name.t.
-Admitted.
-
-Global Instance into_val_typed_name `{ffi_syntax} : IntoValTyped name.t runtime.name.
-Admitted.
-
-(* type runtime.structtype *)
-Module structtype.
-Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
-End def.
-End structtype.
-
-Global Instance bounded_size_structtype : BoundedTypeSize runtime.structtype.
-Admitted.
-
-Global Instance into_val_structtype `{ffi_syntax} : IntoVal structtype.t.
-Admitted.
-
-Global Instance into_val_typed_structtype `{ffi_syntax} : IntoValTyped structtype.t runtime.structtype.
-Admitted.
-
-(* type runtime._typePair *)
 Module _typePair.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance _typePair_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime._typePair.t). Admitted.
+
+#[global] Instance _typePair_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime._typePair.t) (runtime._typePairⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End _typePair.
 
-Global Instance bounded_size__typePair : BoundedTypeSize runtime._typePair.
-Admitted.
-
-Global Instance into_val__typePair `{ffi_syntax} : IntoVal _typePair.t.
-Admitted.
-
-Global Instance into_val_typed__typePair `{ffi_syntax} : IntoValTyped _typePair.t runtime._typePair.
-Admitted.
-
-(* type runtime.elfSym *)
 Module elfSym.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance elfSym_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.elfSym.t). Admitted.
+
+#[global] Instance elfSym_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.elfSym.t) (runtime.elfSymⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End elfSym.
 
-Global Instance bounded_size_elfSym : BoundedTypeSize runtime.elfSym.
-Admitted.
-
-Global Instance into_val_elfSym `{ffi_syntax} : IntoVal elfSym.t.
-Admitted.
-
-Global Instance into_val_typed_elfSym `{ffi_syntax} : IntoValTyped elfSym.t runtime.elfSym.
-Admitted.
-
-(* type runtime.elfVerdef *)
 Module elfVerdef.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance elfVerdef_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.elfVerdef.t). Admitted.
+
+#[global] Instance elfVerdef_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.elfVerdef.t) (runtime.elfVerdefⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End elfVerdef.
 
-Global Instance bounded_size_elfVerdef : BoundedTypeSize runtime.elfVerdef.
-Admitted.
-
-Global Instance into_val_elfVerdef `{ffi_syntax} : IntoVal elfVerdef.t.
-Admitted.
-
-Global Instance into_val_typed_elfVerdef `{ffi_syntax} : IntoValTyped elfVerdef.t runtime.elfVerdef.
-Admitted.
-
-(* type runtime.elfEhdr *)
 Module elfEhdr.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance elfEhdr_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.elfEhdr.t). Admitted.
+
+#[global] Instance elfEhdr_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.elfEhdr.t) (runtime.elfEhdrⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End elfEhdr.
 
-Global Instance bounded_size_elfEhdr : BoundedTypeSize runtime.elfEhdr.
-Admitted.
-
-Global Instance into_val_elfEhdr `{ffi_syntax} : IntoVal elfEhdr.t.
-Admitted.
-
-Global Instance into_val_typed_elfEhdr `{ffi_syntax} : IntoValTyped elfEhdr.t runtime.elfEhdr.
-Admitted.
-
-(* type runtime.elfPhdr *)
 Module elfPhdr.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance elfPhdr_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.elfPhdr.t). Admitted.
+
+#[global] Instance elfPhdr_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.elfPhdr.t) (runtime.elfPhdrⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End elfPhdr.
 
-Global Instance bounded_size_elfPhdr : BoundedTypeSize runtime.elfPhdr.
-Admitted.
-
-Global Instance into_val_elfPhdr `{ffi_syntax} : IntoVal elfPhdr.t.
-Admitted.
-
-Global Instance into_val_typed_elfPhdr `{ffi_syntax} : IntoValTyped elfPhdr.t runtime.elfPhdr.
-Admitted.
-
-(* type runtime.elfShdr *)
 Module elfShdr.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance elfShdr_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.elfShdr.t). Admitted.
+
+#[global] Instance elfShdr_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.elfShdr.t) (runtime.elfShdrⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End elfShdr.
 
-Global Instance bounded_size_elfShdr : BoundedTypeSize runtime.elfShdr.
-Admitted.
-
-Global Instance into_val_elfShdr `{ffi_syntax} : IntoVal elfShdr.t.
-Admitted.
-
-Global Instance into_val_typed_elfShdr `{ffi_syntax} : IntoValTyped elfShdr.t runtime.elfShdr.
-Admitted.
-
-(* type runtime.elfDyn *)
 Module elfDyn.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance elfDyn_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.elfDyn.t). Admitted.
+
+#[global] Instance elfDyn_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.elfDyn.t) (runtime.elfDynⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End elfDyn.
 
-Global Instance bounded_size_elfDyn : BoundedTypeSize runtime.elfDyn.
-Admitted.
-
-Global Instance into_val_elfDyn `{ffi_syntax} : IntoVal elfDyn.t.
-Admitted.
-
-Global Instance into_val_typed_elfDyn `{ffi_syntax} : IntoValTyped elfDyn.t runtime.elfDyn.
-Admitted.
-
-(* type runtime.elfVerdaux *)
 Module elfVerdaux.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance elfVerdaux_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.elfVerdaux.t). Admitted.
+
+#[global] Instance elfVerdaux_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.elfVerdaux.t) (runtime.elfVerdauxⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End elfVerdaux.
 
-Global Instance bounded_size_elfVerdaux : BoundedTypeSize runtime.elfVerdaux.
-Admitted.
-
-Global Instance into_val_elfVerdaux `{ffi_syntax} : IntoVal elfVerdaux.t.
-Admitted.
-
-Global Instance into_val_typed_elfVerdaux `{ffi_syntax} : IntoValTyped elfVerdaux.t runtime.elfVerdaux.
-Admitted.
-
-(* type runtime.vdsoSymbolKey *)
 Module vdsoSymbolKey.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance vdsoSymbolKey_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.vdsoSymbolKey.t). Admitted.
+
+#[global] Instance vdsoSymbolKey_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.vdsoSymbolKey.t) (runtime.vdsoSymbolKeyⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End vdsoSymbolKey.
 
-Global Instance bounded_size_vdsoSymbolKey : BoundedTypeSize runtime.vdsoSymbolKey.
-Admitted.
-
-Global Instance into_val_vdsoSymbolKey `{ffi_syntax} : IntoVal vdsoSymbolKey.t.
-Admitted.
-
-Global Instance into_val_typed_vdsoSymbolKey `{ffi_syntax} : IntoValTyped vdsoSymbolKey.t runtime.vdsoSymbolKey.
-Admitted.
-
-(* type runtime.vdsoVersionKey *)
 Module vdsoVersionKey.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance vdsoVersionKey_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.vdsoVersionKey.t). Admitted.
+
+#[global] Instance vdsoVersionKey_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.vdsoVersionKey.t) (runtime.vdsoVersionKeyⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End vdsoVersionKey.
 
-Global Instance bounded_size_vdsoVersionKey : BoundedTypeSize runtime.vdsoVersionKey.
-Admitted.
-
-Global Instance into_val_vdsoVersionKey `{ffi_syntax} : IntoVal vdsoVersionKey.t.
-Admitted.
-
-Global Instance into_val_typed_vdsoVersionKey `{ffi_syntax} : IntoValTyped vdsoVersionKey.t runtime.vdsoVersionKey.
-Admitted.
-
-(* type runtime.vdsoInfo *)
 Module vdsoInfo.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance vdsoInfo_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.vdsoInfo.t). Admitted.
+
+#[global] Instance vdsoInfo_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.vdsoInfo.t) (runtime.vdsoInfoⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End vdsoInfo.
 
-Global Instance bounded_size_vdsoInfo : BoundedTypeSize runtime.vdsoInfo.
-Admitted.
-
-Global Instance into_val_vdsoInfo `{ffi_syntax} : IntoVal vdsoInfo.t.
-Admitted.
-
-Global Instance into_val_typed_vdsoInfo `{ffi_syntax} : IntoValTyped vdsoInfo.t runtime.vdsoInfo.
-Admitted.
-
-Section names.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext}.
-#[local] Transparent is_pkg_defined is_pkg_defined_pure.
-
-Global Instance is_pkg_defined_pure_runtime : IsPkgDefinedPure runtime :=
-  {|
-    is_pkg_defined_pure_def go_ctx :=
-      is_pkg_defined_pure_single runtime;
-  |}.
-
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_runtime : IsPkgDefined runtime :=
-  {|
-    is_pkg_defined_def go_ctx :=
-      (is_pkg_defined_single runtime)%I
-  |}.
-Final Obligation. iIntros. iFrame "#%". Qed.
-#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
-
-Global Instance wp_func_call_Gosched :
-  WpFuncCall runtime.Gosched _ (is_pkg_defined runtime) :=
-  ltac:(solve_wp_func_call).
-
-End names.
 End runtime.

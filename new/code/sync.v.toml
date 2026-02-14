@@ -6,6 +6,7 @@ translate = [
 
   "WaitGroup",
   "WaitGroup.*",
+  "waitGroupBubbleFlag",
   "noCopy",
   "rlocker",
   "Once",
@@ -18,7 +19,7 @@ translate = [
   "expunged",
 ]
 
-imports = ["sync/atomic", "internal/race"]
+imports = ["sync/atomic", "internal/race", "internal/synctest"]
 
 axiomatize = ["notifyList", "copyChecker", "copyChecker.*"]
 
@@ -35,10 +36,4 @@ trusted = [
 
   "runtime_Semacquire*",
   "runtime_Semrelease",
-]
-
-[bootstrap]
-enabled = true
-prelude = [
-  "From New.golang.defn Require Export slice array map string interface defer builtin.",
 ]

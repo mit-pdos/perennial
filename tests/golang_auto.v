@@ -8,10 +8,12 @@ From New.generatedproof.github_com.goose_lang.goose.testdata.examples
   Require Import unittest.
 
 Section proof.
-Context `{hG: !heapGS Σ} `{!globalsGS Σ} {go_ctx : GoContext}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics} {package_sem : unittest.Assumptions}.
+Collection W := sem + package_sem.
 
-#[global] Instance : IsPkgInit unittest := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf unittest := build_get_is_pkg_init_wf.
+#[global] Instance : IsPkgInit (iProp Σ) unittest := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ) unittest := build_get_is_pkg_init_wf.
 
 Lemma wp_useInts (x: w64) (y: w32) :
   {{{ is_pkg_init unittest }}}

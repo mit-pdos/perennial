@@ -1,27 +1,27 @@
-From New.proof Require Import proof_prelude.
+From New.proof Require Import disk_prelude.
 From New Require Export atomic_fupd.
-Require Import Perennial.goose_lang.ffi.disk.
-Require Import Perennial.goose_lang.ffi.disk_prelude.
+Require Import Perennial.goose_lang.ffi.disk_ffi.specs.
 Require Import New.code.github_com.goose_lang.primitive.disk.
 Require Import New.generatedproof.github_com.goose_lang.primitive.disk.
 
 Section wps.
 Context `{!heapGS Σ}.
-Context `{!globalsGS Σ} {go_ctx:GoContext}.
+Context {sem : go.Semantics} {package_sem : disk.Assumptions}.
+Local Set Default Proof Using "All".
 
-#[global] Instance : IsPkgInit disk := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf disk := build_get_is_pkg_init_wf.
+#[global] Instance : IsPkgInit (iProp Σ) disk := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ) disk := build_get_is_pkg_init_wf.
 
 Implicit Types v : val.
 Implicit Types z : Z.
 Implicit Types s : slice.t.
 Implicit Types (stk:stuckness) (E: coPset).
 
-Definition is_block (s:slice.t) (q: dfrac) (b:Block) :=
-  own_slice s q (vec_to_list b).
+Definition is_block s dq (b : Block) : iProp Σ :=
+  s ↦*{dq} vec_to_list b.
 
-Definition is_block_full (s:slice.t) (b:Block) :=
-  own_slice s (DfracOwn 1) (vec_to_list b).
+Definition is_block_full s (b : Block) : iProp Σ :=
+  s ↦* vec_to_list b.
 
 Global Instance is_block_timeless s q b :
   Timeless (is_block s q b) := _.
@@ -29,20 +29,6 @@ Global Instance is_block_timeless s q b :
 Global Instance is_block_dfractional s b :
   DFractional (λ dq, is_block s dq b).
 Proof. apply _. Qed.
-
-Theorem is_block_not_nil s q b :
-  is_block s q b -∗
-  ⌜ s ≠ slice.nil ⌝.
-Proof.
-  iIntros "Hb".
-  rewrite /is_block.
-  iDestruct (own_slice_not_null with "Hb") as "%Hnull"; eauto.
-  { rewrite go_type_size_unseal //. }
-  { rewrite length_vec_to_list.
-    rewrite /block_bytes. lia. }
-  iPureIntro.
-  destruct s. rewrite /slice.nil. simpl in *. congruence.
-Qed.
 
 Definition list_to_block (l: list u8) : Block :=
   match decide (length l = Z.to_nat 4096) with
@@ -70,7 +56,7 @@ Qed.
 
 Theorem list_to_block_to_vals l :
   length l = Z.to_nat 4096 ->
-  Block_to_vals (list_to_block l) = b2val <$> l.
+  Block_to_vals (list_to_block l) = into_val <$> l.
 Proof.
   intros H.
   rewrite /Block_to_vals list_to_block_to_list //.
@@ -94,28 +80,26 @@ Proof.
   auto.
 Qed.
 
-Lemma slice_to_block_array s q b :
-  own_slice s q (vec_to_list b) -∗ pointsto_block s.(slice.ptr_f) q b.
+Lemma slice_to_block_array s dq b :
+  s ↦*{dq} (vec_to_list b) -∗ pointsto_block s.(slice.ptr) dq b.
 Proof.
   rewrite /pointsto_block heap_array_to_list.
   rewrite own_slice_unseal /own_slice_def.
-  iIntros "[Ha %]".
+  rewrite typed_pointsto_unseal.
+  iIntros "((% & Ha) & %)". simpl.
   rewrite big_sepL_fmap.
   iApply (big_sepL_impl with "Ha"); simpl.
   iModIntro.
   iIntros (i x) "% Hl".
-  rewrite typed_pointsto_unseal /typed_pointsto_def.
-  rewrite to_val_unseal. simpl.
-  rewrite go_type_size_unseal. simpl.
-  rewrite loc_add_0.
-  replace (Z.mul 1%nat i) with (Z.of_nat i) by word.
-  iDestruct "Hl" as "[Hl _]".
+  rewrite typed_pointsto_unseal /typed_pointsto_def /=.
+  rewrite go.into_val_unfold /=.
+  rewrite go.array_index_ref_add_loc_add.
   iFrame.
 Qed.
 
-Theorem slice_to_block s q bs :
-  s.(slice.len_f) = 4096 ->
-  own_slice s q bs -∗ pointsto_block s.(slice.ptr_f) q (list_to_block bs).
+Theorem slice_to_block s dq bs :
+  s.(slice.len) = W64 4096 ->
+  s ↦*{dq} bs -∗ pointsto_block s.(slice.ptr) dq (list_to_block bs).
 Proof.
   iIntros (Hsz) "Hs".
   iDestruct (own_slice_len with "Hs") as "%".
@@ -127,12 +111,12 @@ Proof.
   iFrame.
 Qed.
 
-Lemma block_array_to_slice_mk l q (b: Block) :
-  pointsto_block l q b -∗ own_slice (slice.mk l (length b) (length b)) q (vec_to_list b).
+Lemma block_array_to_slice_mk l dq (b: Block) :
+  pointsto_block l dq b -∗ (slice.mk l (W64 $ length b) (W64 $ length b)) ↦*{dq} (vec_to_list b).
 Proof.
   intros.
   rewrite /pointsto_block heap_array_to_list.
-  rewrite own_slice_unseal /own_slice_def.
+  rewrite own_slice_unseal /own_slice_def. rewrite typed_pointsto_unseal.
   iIntros "Hb".
   rewrite big_sepL_fmap.
   iDestruct (big_sepL_impl with "Hb []") as "$"; eauto.
@@ -145,32 +129,28 @@ Proof.
   }
   iModIntro.
   iIntros (i x) "% Hl".
-  rewrite typed_pointsto_unseal /typed_pointsto_def.
-  rewrite to_val_unseal. simpl.
-  rewrite go_type_size_unseal. simpl.
-  rewrite loc_add_0.
-  replace (Z.mul 1%nat i) with (Z.of_nat i) by word.
+  rewrite typed_pointsto_unseal /typed_pointsto_def /=.
+  rewrite go.into_val_unfold /=.
+  rewrite go.array_index_ref_add_loc_add.
   iFrame.
 Qed.
 
-Lemma block_array_to_slice s q (b: Block) :
-  length b = sint.nat s.(slice.len_f) ->
-  0 ≤ sint.Z s.(slice.len_f) ≤ sint.Z s.(slice.cap_f) ->
-  pointsto_block s.(slice.ptr_f) q b -∗ own_slice s q (vec_to_list b).
+Lemma block_array_to_slice s dq (b: Block) :
+  length b = sint.nat s.(slice.len) ->
+  0 ≤ sint.Z s.(slice.len) ≤ sint.Z s.(slice.cap) ->
+  pointsto_block s.(slice.ptr) dq b -∗ s ↦*{dq} (vec_to_list b).
 Proof.
   intros.
   rewrite /pointsto_block heap_array_to_list.
-  rewrite own_slice_unseal /own_slice_def.
+  rewrite own_slice_unseal /own_slice_def typed_pointsto_unseal.
   iIntros "Hb".
   rewrite big_sepL_fmap.
-  iDestruct (big_sepL_impl with "Hb []") as "$"; [ | word ].
+  iDestruct (big_sepL_impl with "Hb []") as "$"; [ | simpl; word ].
   iModIntro.
   iIntros (i x) "% Hl".
-  rewrite typed_pointsto_unseal /typed_pointsto_def.
-  rewrite to_val_unseal. simpl.
-  rewrite go_type_size_unseal. simpl.
-  rewrite loc_add_0.
-  replace (Z.mul 1%nat i) with (Z.of_nat i) by word.
+  rewrite typed_pointsto_unseal /typed_pointsto_def /=.
+  rewrite go.into_val_unfold /=.
+  rewrite go.array_index_ref_add_loc_add.
   iFrame.
 Qed.
 
@@ -189,24 +169,28 @@ Local Ltac solve_atomic :=
     try solve [ apply atomically_is_val in H; auto ]
     |apply ectxi_language_sub_redexes_are_values; intros [] **; naive_solver].
 
-Theorem wp_Write_atomic (a: u64) s q b :
+Theorem wp_Write_atomic (a: u64) s dq b :
   ⊢
-  {{{ is_pkg_init disk ∗ own_slice s q (vec_to_list b) }}}
+  {{{ is_pkg_init disk ∗ s ↦*{dq} (vec_to_list b) }}}
   <<< ∀∀ b0, uint.Z a d↦ b0 >>>
     @! disk.Write #a #s @@ ∅
   <<< uint.Z a d↦ b >>>
-  {{{ RET #(); own_slice s q (vec_to_list b) }}}.
+  {{{ RET #(); s ↦*{dq} (vec_to_list b) }}}.
 Proof.
   wp_start as "Hs".
   iDestruct (own_slice_len with "Hs") as %Hsz.
   iDestruct (own_slice_wf with "Hs") as %Hwf.
+  rewrite -> decide_True; last len.
+  2:{ rewrite length_vec_to_list in Hsz. len. unfold block_bytes in *. word. }
+  wp_auto.
   iApply (wp_ncatomic _ _ ∅).
-  { solve_atomic. rewrite to_val_unseal in H.
+  { solve_atomic. rewrite !go.into_val_unfold in H.
     inversion H. subst. monad_inv. inversion H0. subst. inversion H2. subst.
     inversion H4. subst. inversion H6. subst. inversion H7. econstructor. eauto. }
   rewrite difference_empty_L.
   iMod "HΦ" as (b0) "[Hda Hupd]"; iModIntro.
-  rewrite to_val_unseal.
+  rewrite !go.into_val_unfold.
+  rewrite /slice_index_ref go.array_index_ref_0.
   iApply (wp_WriteOp with "[Hda Hs]").
   { iIntros "!>".
     iExists b0.
@@ -215,17 +199,17 @@ Proof.
   iModIntro.
   iIntros "[Hda Hmapsto]".
   iMod ("Hupd" with "Hda") as "HQ".
-  iModIntro.
+  iModIntro. rewrite !go.into_val_unfold.
   iApply "HQ".
   iApply block_array_to_slice; eauto.
   word.
 Qed.
 
-Theorem wp_Write_triple E' (Q: iProp Σ) (a: u64) s q b :
-  {{{ is_pkg_init disk ∗ own_slice s q (vec_to_list b) ∗
+Theorem wp_Write_triple E' (Q: iProp Σ) (a: u64) s dq b :
+  {{{ is_pkg_init disk ∗ s ↦*{dq} (vec_to_list b) ∗
       (|NC={⊤,E'}=> ∃ b0, uint.Z a d↦ b0 ∗ (uint.Z a d↦ b -∗ |NC={E',⊤}=> Q)) }}}
     @! disk.Write #a #s
-  {{{ RET #(); own_slice s q (vec_to_list b) ∗ Q }}}.
+  {{{ RET #(); s ↦*{dq} (vec_to_list b) ∗ Q }}}.
 Proof.
   iIntros (Φ) "[#Hpkg [Hs Hupd]] HΦ".
   iApply (wp_Write_atomic with "[$Hpkg $Hs]").
@@ -238,9 +222,9 @@ Proof.
 Qed.
 
 Theorem wp_Write (a: u64) s q b :
-  {{{ is_pkg_init disk ∗ ∃ b0, uint.Z a d↦ b0 ∗ own_slice s q (vec_to_list b) }}}
+  {{{ is_pkg_init disk ∗ ∃ b0, uint.Z a d↦ b0 ∗ s ↦*{q} (vec_to_list b) }}}
     @! disk.Write #a #s
-  {{{ RET #(); uint.Z a d↦ b ∗ own_slice s q (vec_to_list b) }}}.
+  {{{ RET #(); uint.Z a d↦ b ∗ s ↦*{q} (vec_to_list b) }}}.
 Proof.
   iIntros (Φ) "[#Hpkg Hpre] HΦ".
   iDestruct "Hpre" as (b0) "[Hda Hs]".
@@ -252,9 +236,9 @@ Proof.
 Qed.
 
 Theorem wp_Write' (z: Z) (a: u64) s q b :
-  {{{ is_pkg_init disk ∗ ⌜uint.Z a = z⌝ ∗ ▷ ∃ b0, z d↦ b0 ∗ own_slice s q (vec_to_list b) }}}
+  {{{ is_pkg_init disk ∗ ⌜uint.Z a = z⌝ ∗ ▷ ∃ b0, z d↦ b0 ∗ s ↦*{q} (vec_to_list b) }}}
     @! disk.Write #a #s
-  {{{ RET #(); z d↦ b ∗ own_slice s q (vec_to_list b) }}}.
+  {{{ RET #(); z d↦ b ∗ s ↦*{q} (vec_to_list b) }}}.
 Proof.
   iIntros (Φ) "[#Hpkg [<- >Hpre]] HΦ".
   iApply (wp_Write with "[$Hpkg $Hpre]").
@@ -272,10 +256,10 @@ Proof.
   wp_bind (ExternalOp _ _).
   rewrite difference_empty_L.
   iMod "HΦ" as (b) "[Hda Hupd]".
-  { solve_atomic. rewrite to_val_unseal in H.
+  { solve_atomic. rewrite !go.into_val_unfold in H.
     inversion H. subst. monad_inv. inversion H0. subst. inversion H2. subst.
     inversion H4. subst. inversion H6. subst. inversion H7. econstructor. eauto. }
-  rewrite to_val_unseal. simpl.
+  rewrite [in #a]go.into_val_unfold. simpl.
   iApply (wp_ReadOp with "Hda").
   iNext.
   iIntros (l) "(Hda&Hl)".
@@ -284,8 +268,7 @@ Proof.
   iSpecialize ("HQ" with "Hs"). simpl.
   rewrite length_vec_to_list /block_bytes.
   replace (Z.of_nat (Z.to_nat 4096)) with 4096%Z by lia.
-  wp_pures.
-  rewrite to_val_unseal //.
+  wp_auto. rewrite go.array_index_ref_0. iApply "HQ".
 Qed.
 
 Lemma wp_Read_triple E' (Q: Block -> iProp Σ) (a: u64) q :

@@ -2,58 +2,9 @@
 Require Export New.proof.disk_prelude.
 Require Export New.generatedproof.github_com.goose_lang.primitive.disk.
 Require Export New.golang.theory.
-
 Require Export New.code.github_com.mit_pdos.go_journal.common.
 
 Set Default Proof Using "Type".
 
 Module common.
-
-(* type common.Inum *)
-Module Inum.
-
-#[global] Transparent common.Inum.
-#[global] Typeclasses Transparent common.Inum.
-Section def.
-Context `{ffi_syntax}.
-Definition t := w64.
-End def.
-End Inum.
-
-(* type common.Bnum *)
-Module Bnum.
-
-#[global] Transparent common.Bnum.
-#[global] Typeclasses Transparent common.Bnum.
-Section def.
-Context `{ffi_syntax}.
-Definition t := w64.
-End def.
-End Bnum.
-
-Section names.
-
-Context `{!heapGS Σ}.
-Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext}.
-#[local] Transparent is_pkg_defined is_pkg_defined_pure.
-
-Global Instance is_pkg_defined_pure_common : IsPkgDefinedPure common :=
-  {|
-    is_pkg_defined_pure_def go_ctx :=
-      is_pkg_defined_pure_single common ∧
-      is_pkg_defined_pure code.github_com.goose_lang.primitive.disk.disk;
-  |}.
-
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_common : IsPkgDefined common :=
-  {|
-    is_pkg_defined_def go_ctx :=
-      (is_pkg_defined_single common ∗
-       is_pkg_defined code.github_com.goose_lang.primitive.disk.disk)%I
-  |}.
-Final Obligation. iIntros. iFrame "#%". Qed.
-#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
-
-End names.
 End common.

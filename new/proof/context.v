@@ -2,15 +2,10 @@ From New Require Import code.context.
 From New Require Export generatedproof.context.
 From New Require Import proof.proof_prelude.
 From New.proof Require Import sync.atomic sync time errors.
-(* make sure to use these specs *)
-From New.proof Require Import chan.
+From New.proof Require Import chan_proof.closeable.
 
 Require Import Perennial.Helpers.CountableTactics.
 
-Class contextG Σ :=
-  {
-    closeable_inG :: closeable_chanG Σ
-  }.
 
 (* Context logical descriptor. *)
 Module Context_desc.
@@ -24,65 +19,98 @@ Record t :=
       Values : gmap interface.t interface.t;
       Deadline : option time.Time.t;
       Done: chan.t;
+      Done_gn : chan_names;
       PDone: PROP;
     }.
 Global Instance eta : Settable _ :=
-  settable! mk <Values; Deadline; Done; PDone>.
+  settable! mk <Values; Deadline; Done; Done_gn; PDone>.
 End defn.
 End Context_desc.
 
 Section wps.
-
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
-Context `{contextG Σ}.
+Context {sem : go.Semantics} {package_sem : context.Assumptions}.
+(* XXX: not putting this in contextG because higher-level code might also have
+   its own closeable_chan, and this would conflict with that. *)
+Context `{!closeable_chanG Σ}.
 
-#[global] Instance : IsPkgInit reflectlite := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf reflectlite := build_get_is_pkg_init_wf.
+Definition is_init : iProp Σ :=
+  "Hgoroutines" ∷
+    inv nroot (
+      ∃ g, own_Int32 (global_addr context.goroutines) (DfracOwn 1) g
+    ) ∗
+  "_" ∷ True.
 
-#[global] Instance : IsPkgInit context := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf context := build_get_is_pkg_init_wf.
+#[global] Instance : IsPkgInit (iProp Σ) context := define_is_pkg_init is_init.
+#[global] Instance : GetIsPkgInitWf (iProp Σ) context := build_get_is_pkg_init_wf.
 
 Import Context_desc.
-Definition is_Context (c : interface.t) (s : Context_desc.t) : iProp Σ :=
-  "%Hnotnil" ∷ ⌜ c ≠ interface.nil ⌝ ∗
+Definition is_Context (c : interface.t_ok) (s : Context_desc.t) : iProp Σ :=
   "#HDeadline" ∷
     {{{ True }}}
-      interface.get #"Deadline" #c #()
-    {{{ RET (#(default (default_val time.Time.t) s.(Deadline)),
+      #(methods c.(interface.ty) "Deadline" c.(interface.v)) #()
+    {{{ RET (#(default (zero_val time.Time.t) s.(Deadline)),
              #(match s.(Deadline) with | None => false | _ => true end));
         True
     }}} ∗
   "#HDone" ∷
     {{{ True }}}
-      interface.get #"Done" #c #()
+      #(methods c.(interface.ty) "Done" c.(interface.v)) #()
     {{{ RET #s.(Done); True }}} ∗
   "#HErr" ∷
     (∀ cl,
-    {{{ own_closeable_chan s.(Done) s.(PDone) cl }}}
-      interface.get #"Err" #c #()
+    {{{ own_closeable_chan s.(Done) s.(Done_gn) s.(PDone) cl }}}
+      #(methods c.(interface.ty) "Err" c.(interface.v)) #()
     {{{ err, RET #err;
         match cl with
         | closeable.Closed => ⌜ err ≠ interface.nil ⌝
-        | _ => if decide (err = interface.nil) then own_closeable_chan s.(Done) s.(PDone) cl
-              else own_closeable_chan s.(Done) s.(PDone) closeable.Closed
+        | _ => if decide (err = interface.nil) then own_closeable_chan s.(Done) s.(Done_gn) s.(PDone) cl
+              else own_closeable_chan s.(Done) s.(Done_gn) s.(PDone) closeable.Closed
         end
     }}}) ∗
-  "#HDone_ch" ∷ own_closeable_chan s.(Done) s.(PDone) closeable.Unknown.
+  "#HDone_ch" ∷ own_closeable_chan s.(Done) s.(Done_gn) s.(PDone) closeable.Unknown.
 #[global] Typeclasses Opaque is_Context.
 #[global] Opaque is_Context.
 
 #[global] Transparent is_Context.
 #[global] Typeclasses Transparent is_Context.
 
-Lemma wp_propagateCancel (c : loc) (parent : context.Context.t) parent_desc
-  (child : context.canceler.t) :
+Lemma wp_Cause ctx ctx_desc :
+  {{{
+        is_pkg_init context ∗
+        "#Hctx" ∷ is_Context ctx ctx_desc
+  }}}
+    @! context.Cause #(interface.ok ctx)
+  {{{ (err : interface.t), RET #err; True }}}.
+Proof.
+  wp_start. iNamed "Hpre".
+  wp_auto.
+  (* Context.Value spec *)
+Admitted.
+
+Lemma wp_parentCancelCtx parent parent_desc :
+  {{{
+        is_pkg_init context ∗
+        "#Hctx" ∷ is_Context parent parent_desc
+  }}}
+    @! context.parentCancelCtx #(interface.ok parent)
+  {{{
+        ctx (ok : bool), RET (#ctx, #ok);
+        if ok then
+          ∃ (c : context.cancelCtx.t),
+            ctx ↦ c
+        else ⌜ ctx = null ⌝
+  }}}.
+Proof.
+Admitted.
+
+Lemma wp_propagateCancel (c : loc) parent parent_desc child :
   {{{
         is_pkg_init context ∗
         "Hparent" ∷ is_Context parent parent_desc ∗
-        "Hc" ∷ c ↦ (default_val context.cancelCtx.t)
+        "Hc" ∷ c ↦ (zero_val context.cancelCtx.t)
   }}}
-    c @ (ptrT.id context.cancelCtx.id) @ "propagateCancel" #parent #child
+    c @! (go.PointerType context.cancelCtx) @! "propagateCancel" #(interface.ok parent) #(interface.ok child)
   {{{
         RET #(); True
   }}}.
@@ -93,75 +121,85 @@ Proof.
   rewrite bool_decide_decide. case_decide.
   { wp_auto. by iApply "HΦ". }
   wp_auto.
-  wp_apply (wp_chan_select_nonblocking [True]%I).
-  { done. }
-  iSplit.
-  {
+  wp_apply (chan.wp_select_nonblocking_alt [True]%I with "[] [-]").
+  2: iNamedAccu.
+  { (* case: done channel closed*)
     simpl. iSplit; last done.
-    iExists unit, _, _.
-    iApply own_closeable_chan_nonblocking_receive.
-    { iFrame "#". }
-    simpl.
-    iClear "HDone_ch". iSplit. 2:{ iIntros "_". done. } iIntros "#HDone_ch".
-    wp_auto. wp_apply "HErr". { iFrame "#". } iIntros "% %Herr". wp_auto.
-  (* TODO: interesting pattern with interfaces. In a slightly more general form
-     than it appears here:
-     Package A defines an interface type `IT`. Package B defines a private type
-     `b` that implements the interface. It defines some functions that take an
-     `IT` and cast it into a `b`. The interface representation predicate would,
-     in that case, have to contain the representation predicate for b inside it.
-     One could coordinate this by having a a ghost resource track the per-type
-     repr predicate, and conversion to an interface requires knowledge of tha
-     typeId's predicate. This would be unfortunate for all the cases that have a
-     trivial predicate.
-
-     In this particular proof, the definition of `is_Context` can include
-     special cases for the types defined within this pacakge. The more general
-     thing would be needed if a higher-level package defined a new private
-     implementation of `Context` and relied on type casting.
-   *)
-  (* FIXME: bug in goose. Goose is translating type assertion to a named type
-     with underyling interface type as a type assertion to a non-interface type. E.g. it emits
-     a typeId `context.afterFuncer.id`, which should not happen because
-     `afterFuncer`'s underlying type is an interface.
-   *)
-Abort.
-
-Lemma wp_withCancel PDone' (ctx : interface.t) ctx_desc :
-  {{{
-        is_pkg_init context ∗ is_Context ctx ctx_desc
-  }}}
-    @! context.withCancel #ctx
-  {{{
-        ctx' done' (cancel : func.t), RET (#ctx', #cancel);
-        {{{ PDone' }}} #cancel #() {{{ RET #(); True }}} ∗
-        is_Context ctx' (ctx_desc <| PDone := ctx_desc.(PDone) ∨ PDone' |> <|Done := done'|> )
-  }}}.
-Proof.
-  wp_start. iNamed "Hpre". wp_auto.
-  rewrite bool_decide_false //. wp_auto.
-  wp_alloc c as "Hc". wp_auto.
-Abort.
-
-Lemma wp_WithCancel PDone' (ctx : interface.t) ctx_desc :
-  {{{
-        is_pkg_init context ∗ is_Context ctx ctx_desc
-  }}}
-    @! context.WithCancel #ctx
-  {{{
-        ctx' done' (cancel : func.t), RET (#ctx', #cancel);
-        {{{ PDone' }}} #cancel #() {{{ RET #(); True }}} ∗
-        is_Context ctx' (ctx_desc <| PDone := ctx_desc.(PDone) ∨ PDone' |> <|Done := done'|> )
-  }}}.
-Proof.
-  wp_start. wp_auto.
+    repeat iExists _. iSplitR; first done. iFrame "#".
+    iSplitR; first admit. (* absorb is_chan into au? *)
+    iApply (own_closeable_chan_nonblocking_receive with "[$]").
+    iSplit.
+    2:{ iIntros. done. }
+    iIntros "#Hclosed".
+    iNamed 1.
+    wp_auto. wp_apply ("HErr" with "[$Hclosed]") as "% %HparentErr".
+    wp_apply (wp_Cause with "[$]") as "% _".
+    (* TODO spec for canceler. *)
+    admit.
+  }
+  iNamed 1. iIntros "_".
+  wp_auto.
+  wp_apply (wp_parentCancelCtx with "[$]") as "* Hp".
+  wp_if_destruct.
+  { (* parent is or derives from a *cancelCtx *)
+    (* TODO invariant for cancelCtx *)
+    admit.
+  }
+  destruct go.type_set_contains eqn:Hafter.
+  {
+    wp_auto.
+    (* XXX: mutex seems unnecessary here, because this is never called
+       concurrently with other methods on `c`. *)
+    (* TODO afterFuncer spec *)
+    admit.
+  }
+  wp_auto.
+  wp_apply wp_Int32__Add.
+  iDestruct (is_pkg_init_access with "[$]") as "#Hi".
+  iNamed "Hi". iInv "Hgoroutines" as "Hi" "Hclose". iFrame.
+  iApply fupd_mask_intro; [solve_ndisj| iIntros "Hmask"].
+  iDestruct "Hi" as "[% $]". iIntros "!> Hg". iMod "Hmask" as "_".
+  iMod ("Hclose" with "[$Hg]") as "_". iModIntro.
+  iPersist "parent child".
+  wp_auto. wp_apply wp_fork.
+  { wp_auto.
+    wp_apply "HDone".
+    admit. (* TODO child context *)
+  }
+  wp_end.
 Admitted.
 
-Lemma wp_WithDeadlineCause (parent: interface.t) parent_desc (d : time.Time.t) (cause : error.t):
+Lemma wp_withCancel PDone' ctx ctx_desc :
+  {{{
+        is_pkg_init context ∗ is_Context ctx ctx_desc
+  }}}
+    @! context.withCancel #(interface.ok ctx)
+  {{{
+        ctx' done' (cancel : func.t), RET (#ctx', #cancel);
+        {{{ PDone' }}} #cancel #() {{{ RET #(); True }}} ∗
+        is_Context ctx' (ctx_desc <| PDone := ctx_desc.(PDone) ∨ PDone' |> <|Done := done'|> )
+  }}}.
+Proof.
+Abort.
+
+Lemma wp_WithCancel PDone' ctx ctx_desc :
+  {{{
+        is_pkg_init context ∗ is_Context ctx ctx_desc
+  }}}
+    @! context.WithCancel #(interface.ok ctx)
+  {{{
+        ctx' done' (cancel : func.t), RET (#ctx', #cancel);
+        {{{ PDone' }}} #cancel #() {{{ RET #(); True }}} ∗
+        is_Context ctx' (ctx_desc <| PDone := ctx_desc.(PDone) ∨ PDone' |> <|Done := done'|> )
+  }}}.
+Proof.
+Admitted.
+
+Lemma wp_WithDeadlineCause parent parent_desc (d : time.Time.t) (cause : error.t):
   {{{
         is_pkg_init context ∗ is_Context parent parent_desc
   }}}
-    @! context.WithDeadlineCause #parent #d #cause
+    @! context.WithDeadlineCause #(interface.ok parent) #d #cause
   {{{
         ctx' done' (cancel : func.t), RET (#ctx', #cancel);
         {{{ True }}} #cancel #() {{{ RET #(); True }}} ∗
@@ -170,34 +208,30 @@ Lemma wp_WithDeadlineCause (parent: interface.t) parent_desc (d : time.Time.t) (
 Proof.
 Admitted.
 
-Lemma wp_WithDeadline (parent: interface.t) parent_desc (d : time.Time.t) :
+Lemma wp_WithDeadline parent parent_desc (d : time.Time.t) :
   {{{
         is_pkg_init context ∗ is_Context parent parent_desc
   }}}
-    @! context.WithDeadline #parent #d
+    @! context.WithDeadline #(interface.ok parent) #d
   {{{
         ctx' done' (cancel : func.t), RET (#ctx', #cancel);
         {{{ True }}} #cancel #() {{{ RET #(); True }}} ∗
         is_Context ctx' (parent_desc <| Deadline := Some d |> <| PDone := True |> <|Done := done'|>)
   }}}.
 Proof.
-  wp_start. wp_auto. wp_apply (wp_WithDeadlineCause with "[$]"). iIntros "* [? ?]".
-  wp_auto. iApply "HΦ". iFrame.
-Qed.
+Admitted.
 
-Lemma wp_WithTimeout (parent: interface.t) parent_desc (timeout : time.Duration.t) :
+Lemma wp_WithTimeout parent parent_desc (timeout : time.Duration.t) :
   {{{
         is_pkg_init context ∗ is_Context parent parent_desc
   }}}
-    @! context.WithTimeout #parent #timeout
+    @! context.WithTimeout #(interface.ok parent) #timeout
   {{{
         ctx' done' (cancel : func.t) d, RET (#ctx', #cancel);
         {{{ True }}} #cancel #() {{{ RET #(); True }}} ∗
         is_Context ctx' (parent_desc <| Deadline := Some d |> <| PDone := True |> <|Done := done'|>)
   }}}.
 Proof.
-  wp_start. wp_auto. wp_apply wp_Now as "% _". wp_apply wp_Time__Add as "% _".
-  wp_apply (wp_WithDeadline with "[$]"). iIntros "* [? ?]". wp_auto. iApply "HΦ". iFrame.
-Qed.
+Admitted.
 
 End wps.

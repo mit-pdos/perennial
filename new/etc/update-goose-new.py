@@ -29,96 +29,6 @@ projs = [
     create_proj(repo="tchajed/marshal"),
     create_proj(repo="goose-lang/primitive", pkgs=[".", "./disk"]),
     create_proj(
-        repo="mit-pdos/gokv",
-        pkgs=[
-            "./aof",
-            "./asyncfile",
-            "./bank",
-            "./cachekv",
-            "./cachekv/cachevalue_gk",
-            "./fencing/ctr/error_gk",
-            "./fencing/ctr/putargs_gk",
-            "./fencing/ctr/getargs_gk",
-            "./fencing/ctr/getreply_gk",
-            "./globals_test",
-            "./grove_ffi",
-            "./kv",
-            "./lockservice",
-            "./map_marshal",
-            "./map_string_marshal",
-            "./memkv/error_gk",
-            "./memkv/kvop_gk",
-            "./memkv/putrequest_gk",
-            "./memkv/putreply_gk",
-            "./memkv/getrequest_gk",
-            "./memkv/getreply_gk",
-            "./memkv/conditionalputrequest_gk",
-            "./memkv/conditionalputreply_gk",
-            "./memkv/moveshardrequest_gk",
-            "./memkv/shardmap_gk",
-            "./partialapp",
-            "./paxi/comulti/preparereply_gk",
-            "./paxi/comulti/proposeargs_gk",
-            "./paxi/reconf/error_gk",
-            "./paxi/reconf/config_gk",
-            "./paxi/reconf/monotonicvalue_gk",
-            "./paxi/reconf/preparereply_gk",
-            "./paxi/reconf/proposeargs_gk",
-            "./paxi/reconf/trycommitreply_gk",
-            "./reconnectclient",
-            "./reconfig/replica/error_gk",
-            "./reconfig/replica/logentry_gk",
-            "./reconfig/replica/appendargs_gk",
-            "./reconfig/replica/configuration_gk",
-            "./reconfig/replica/becomereplicaargs_gk",
-            "./reconfig/replica/becomeprimaryargs_gk",
-            "./reconfig/replica/getlogreply_gk",
-            "./reconfig/util/configuration_gk",
-            "./trusted_proph",
-            "./tutorial/kvservice/put_gk",
-            "./tutorial/kvservice/conditionalput_gk",
-            "./tutorial/kvservice/get_gk",
-            "./tutorial/lockservice/lockrequest_gk",
-            "./tutorial/objectstore/dir/preparedwrite_gk",
-            "./tutorial/objectstore/dir/recordchunk_gk",
-            "./tutorial/objectstore/dir/finishwrite_gk",
-            "./tutorial/objectstore/dir/chunkhandle_gk",
-            "./tutorial/objectstore/dir/preparedread_gk",
-            "./tutorial/objectstore/chunk/writechunk_gk",
-            "./urpc",
-            "./vrsm/apps/closed",
-            "./vrsm/apps/exactlyonce",
-            "./vrsm/apps/vkv",
-            "./vrsm/apps/vkv/putargs_gk",
-            "./vrsm/apps/vkv/getargs_gk",
-            "./vrsm/apps/vkv/condputargs_gk",
-            "./vrsm/clerk",
-            "./vrsm/configservice",
-            "./vrsm/configservice/config_gk",
-            "./vrsm/configservice/state_gk",
-            "./vrsm/paxos",
-            "./vrsm/paxos/error_gk",
-            "./vrsm/paxos/applyasfollowerargs_gk",
-            "./vrsm/paxos/applyasfollowerreply_gk",
-            "./vrsm/paxos/applyreply_gk",
-            "./vrsm/paxos/enternewepochargs_gk",
-            "./vrsm/paxos/enternewepochreply_gk",
-            "./vrsm/paxos/paxosstate_gk",
-            "./vrsm/reconfig",
-            "./vrsm/replica",
-            "./vrsm/replica/err_gk",
-            "./vrsm/replica/applyasbackupargs_gk",
-            "./vrsm/replica/applyreply_gk",
-            "./vrsm/replica/becomeprimaryargs_gk",
-            "./vrsm/replica/getstateargs_gk",
-            "./vrsm/replica/getstatereply_gk",
-            "./vrsm/replica/getstatereply_gk",
-            "./vrsm/replica/increasecommitargs_gk",
-            "./vrsm/replica/setstateargs_gk",
-            "./vrsm/storage",
-        ],
-    ),
-    create_proj(
         repo="upamanyus/etcd-raft",
         pkgs=[
             ".",
@@ -135,6 +45,7 @@ projs = [
         pkgs=[
             "math",
             "google.golang.org/grpc",
+            "go.etcd.io/etcd/api/v3/membershippb",
             "go.etcd.io/etcd/api/v3/etcdserverpb",
             "go.etcd.io/etcd/api/v3/mvccpb",
             "go.etcd.io/etcd/client/v3",
@@ -236,8 +147,9 @@ def main():
     parser.add_argument(
         "-a",
         "--all",
-        help="translate all code, assuming it is found in `../<proj_name>`",
-        action="store_true",
+        help="translate all code, assuming it is found in `<ALL>/<proj_name>`",
+        metavar="ALL_PATH",
+        default="..",
     )
     parser.add_argument(
         "--goose-examples",
@@ -245,8 +157,8 @@ def main():
         action="store_true",
     )
     parser.add_argument(
-        "--channel",
-        help="translate channel model",
+        "--models",
+        help="translate Go models (e.g., channels and strings)",
         action="store_true",
     )
     parser.add_argument(
@@ -266,12 +178,13 @@ def main():
 
     if args.all:
         setattr(args, "std_lib", True)
-        setattr(args, "channel", True)
+        setattr(args, "models", True)
         setattr(args, "goose_examples", True)
         for proj in projs:
-            proj_path = path.join("..", proj.name)
-            if os.path.isdir(proj_path):
-                setattr(args, proj.name.replace("-", "_"), proj_path)
+            proj_path = path.join(args.all, proj.name)
+            proj_arg = proj.name.replace("-", "_")
+            if getattr(args, proj_arg, None) is None and os.path.isdir(proj_path):
+                setattr(args, proj_arg, proj_path)
 
     perennial_dir = path.join(path.dirname(os.path.realpath(__file__)), "../..")
     goose_dir = args.goose
@@ -364,8 +277,9 @@ def main():
             "./channel",
         )
 
-    if args.channel:
+    if args.models:
         run_goose(goose_dir, "./model/channel")
+        run_goose(goose_dir, "./model/strings")
 
     if args.std_lib:
         # this list of packages comes from the dependencies of etcd-raft and others
@@ -392,10 +306,12 @@ def main():
             "strings",
             "sync",
             "sync/atomic",
+            "internal/synctest",
             "internal/race",
             "time",
             "fmt",
             "log",
+            "encoding/binary",
         )
 
     for proj in projs:

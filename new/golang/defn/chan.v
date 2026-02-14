@@ -1,92 +1,119 @@
-From New.golang.defn Require Import mem typing exception loop pkg type_id list.
+From New.golang.defn Require Export loop assume predeclared.
 From New.code.github_com.goose_lang.goose.model Require Import channel.
 
 Module chan.
 Section defns.
-Context `{ffi_syntax}.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 
-(* takes type as first argument *)
-Definition make: val := λ: "T" "cap",
-    channel.NewChannelⁱᵐᵖˡ "T" "cap".
-Definition receive : val :=
-  λ: "T" "c", channel.Channel__Receiveⁱᵐᵖˡ "c" "T" #().
-Definition send : val :=
-  λ: "T" "c" "v", channel.Channel__Sendⁱᵐᵖˡ "c" "T" "v".
-Definition close : val :=
-  λ: "T" "c", channel.Channel__Closeⁱᵐᵖˡ "c" "T" #().
-Definition len : val :=
-  λ: "T" "c", channel.Channel__Lenⁱᵐᵖˡ "c" "T" #().
-Definition cap : val :=
-  λ: "T" "c", channel.Channel__Capⁱᵐᵖˡ "c" "T" #().
+Definition receive elem_type : val :=
+  λ: "c", MethodResolve (go.PointerType $ channel.Channel elem_type) "Receive" "c" #().
+Definition send elem_type : val :=
+  λ: "c", MethodResolve (go.PointerType $ channel.Channel elem_type) "Send" "c".
 
-Definition for_range : val :=
-  λ: "T" "c" "body",
-    (for: (λ: <>, #true)%V; (λ: <>, Skip)%V := λ: <>,
-       let: "t" := receive "T" "c" in
-       if: Snd "t" then
-         "body" (Fst "t")
+Definition for_range elem_type : val :=
+  λ: "c" "body",
+    (for: (λ: <>, #true)%V; (λ: <>, #())%V := λ: <>,
+       let: ("v", "ok") := receive elem_type "c" in
+       if: "ok" then
+         "body" "v"
        else
          (* channel is closed *)
          break: #()
     ).
 
-Definition select_send : val :=
-  λ: "T" "ch" "v" "f", InjL ("T", "ch", "v", "f").
+(* One could opt for reflection/dynamic typing here, mirroring the actual Go
+   reflect package. However, this does not line up so nicely with the generic
+   channel model.
+   In particular, using `Channel[T]` for `chan T` would require support for
+   dynamically instantiating generics, which Go probably anyways does not
+   support since it uses monomorphization. One could alternatively only
+   instantiate Channel[T] with `any` and use type assertions to get the right
+   types, but this would not match the way tests are written against the channel
+   model, so this also seems improper.
+*)
 
-Definition select_receive : val :=
-  λ: "T" "ch" "f", InjR ("T", "ch", "f").
-
-Definition try_select_case : val :=
-  λ: "c" "blocking",
-    (match: "c" with
-       InjL "data" =>
-         let: ((("T", "ch"), "v"), "handler") := "data" in
-         let: "success" := channel.Channel__TrySendⁱᵐᵖˡ "ch" "T" "v" "blocking" in
-         if: "success" then ("handler" #(), #true)
-         else (#(), #false)
-     | InjR "data" =>
-         let: (("T", "ch"), "handler") := "data" in
-         let: (("success", "v"), "ok") := channel.Channel__TryReceiveⁱᵐᵖˡ "ch" "T" "blocking" in
-         if: "success" then ("handler" ("v", "ok"), #true)
-         else (#(), #false)
-      end).
+(* Semantics is:
+   - Shuffle the list of non-default cases.
+   - Try the cases in order, finishing the select if one is ready.
+   - if there's a default then select it; else, go back to the beginning.
+ *)
+Definition try_comm_clause (c : comm_clause) : val :=
+  λ: "blocking",
+    let (case', body) := c in
+    match case' with
+    | SendCase elem_type ch e =>
+        let: "success" :=
+          MethodResolve (go.PointerType $ channel.Channel elem_type) "TrySend" ch e "blocking" in
+        if: "success" then ((λ: <>, body)%V #(), #true)
+        else (#(), #false)
+    | RecvCase elem_type ch =>
+        let: (("success", "v"), "ok") :=
+          MethodResolve (go.PointerType $ channel.Channel elem_type) "TryReceive" ch "blocking" in
+        if: "success" then ((λ: "$recvVal", body)%V ("v", "ok"), #true)
+        else (#(), #false)
+    end.
 
 (** [try_select] is used as the core of both [select_blocking] and [select_nonblocking] *)
-Definition try_select : val :=
-  rec: "go" "cases" "blocking" :=
-    list.Match "cases"
-      (λ: <>, (#(), #false))
-      (λ: "hd" "tl",
-         let: ("v", "done") := try_select_case "hd" "blocking" in
-         if: ~"done" then "go" "tl" "blocking"
-         else ("v", #true)).
-
-(** select_blocking models a select without a default case. It takes a list of
-cases (select_send or select_receive). It starts from a random position, then
-runs do_select_case with "blocking"=#false over each case until one until one
-returns true. Loop this until success. *)
-
-Definition select_blocking : val :=
-  rec: "loop" "cases" :=
-    let: ("v", "succeeded") := try_select (list.Shuffle "cases") #true in
-    if: "succeeded" then "v"
-    else "loop" "cases".
-
-(** select_nonblocking models a select with a default case. It takes a list of
-cases (select_send or select_receive) and a default handler. It starts from a
-random position, then runs do_select_case with "blocking"=#true over each case.
-On failure, run the default handler. *)
-Definition select_nonblocking : val :=
-  λ: "cases" "def",
-    let: ("v", "succeeded") := try_select (list.Shuffle "cases") #false in
-    if: "succeeded" then "v"
-    else "def" #().
-
+Definition try_select (blocking : bool) : list comm_clause → expr :=
+  foldr (λ clause cases_remaining,
+      let: ("v", "done") := try_comm_clause clause #blocking in
+      if: ⟨go.bool⟩! "done" then (λ: <>, cases_remaining)%V #()
+      else ("v", #true))%E
+    (#(), #false)%E.
 End defns.
 End chan.
 
-#[global] Opaque chan.make chan.receive chan.send chan.close
-  chan.len chan.cap
-  chan.select_nonblocking chan.select_blocking
-.
-(* [chan.for_range] is intended to be verified by unfolding and using [wp_for] *)
+
+Module go.
+Section defs.
+Context {ext : ffi_syntax}.
+Context {go_lctx : GoLocalContext} {go_gctx : GoGlobalContext}.
+
+Class ChanSemantics `{!GoSemanticsFunctions} :=
+{
+  #[global] package_sem :: channel.Assumptions;
+
+  #[global] convert_channel dir1 dir2 elem (c : chan.t) ::
+    ⟦Convert (go.ChannelType dir1 elem) (go.ChannelType dir2 elem), #c⟧ ⤳[under] #c;
+
+  #[global] make2_chan `{!t ↓u go.ChannelType dir elem_type} ::
+    FuncUnfold go.make2 [t]
+    (λ: "cap", FuncResolve channel.NewChannel [elem_type] #() "cap")%V;
+  #[global] make1_chan `{!t ↓u go.ChannelType dir elem_type} ::
+    FuncUnfold go.make1 [t]
+    (λ: "<>", FuncResolve go.make2 [t] #() #(W64 0))%V;
+  #[global] close_chan `{!t ↓u go.ChannelType dir elem_type} ::
+    FuncUnfold go.close [t]
+    (λ: "c", MethodResolve (go.PointerType $ channel.Channel elem_type) "Close" "c" #())%V;
+  #[global] len_chan `{!t ↓u go.ChannelType dir elem_type} ::
+    FuncUnfold go.len [t]
+    (λ: "c", MethodResolve (go.PointerType $ channel.Channel elem_type) "Len" "c" #())%V;
+  #[global] cap_chan `{!t ↓u go.ChannelType dir elem_type} ::
+    FuncUnfold go.cap [t]
+    (λ: "c", MethodResolve (go.PointerType $ channel.Channel elem_type) "Cap" "c" #())%V;
+
+  chan_select_nonblocking default_handler clauses :
+    is_go_step_pure SelectStmt (SelectStmtClausesV (Some default_handler) clauses) =
+    (λ e',
+       ∃ clauses',
+         clauses' ≡ₚ clauses ∧
+         e' =
+         (let: ("v", "succeeded") := chan.try_select false clauses' in
+          if: "succeeded" then "v"
+          else (λ: <>, default_handler)%V #())%E
+    );
+  chan_select_blocking clauses :
+    is_go_step_pure SelectStmt (SelectStmtClausesV None clauses) =
+    (λ e',
+       ∃ clauses',
+         clauses' ≡ₚ clauses ∧
+         e' =
+         (let: ("v", "succeeded") := chan.try_select true clauses' in
+          if: "succeeded" then "v"
+          else (λ: <>, SelectStmt (SelectStmtClauses None clauses))%V #())%E
+    );
+}.
+End defs.
+End go.
+
+#[global] Opaque chan.receive chan.send chan.for_range.

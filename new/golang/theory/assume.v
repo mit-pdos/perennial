@@ -1,15 +1,16 @@
-From New Require Export notation.
-From New.golang.defn Require Export builtin assume.
-From New.golang.theory Require Export builtin typing proofmode.
+From New.golang.defn Require Export assume.
+From New.golang.theory Require Export predeclared.
 From Perennial Require Import base.
 
 Set Default Proof Using "Type".
 
 Section wps.
 
-Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
+Context `{sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
+  {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
+Local Set Default Proof Using "All".
 
-Lemma wp_assume (b: bool) stk E Φ :
+Lemma wp_assume (b: bool) Φ stk E:
   (⌜b = true⌝ -∗ Φ #()) -∗
   WP assume #b @ stk; E {{ Φ }}.
 Proof.
@@ -23,12 +24,12 @@ Proof.
     iApply "IH".
 Qed.
 
-Lemma wp_assume_sum_no_overflow (x y: w64) stk E Φ :
+Lemma wp_assume_sum_no_overflow (x y: w64) Φ :
   (⌜uint.Z x + uint.Z y < 2^64⌝ -∗ Φ #()) -∗
-  WP assume_sum_no_overflow #x #y @ stk; E {{ Φ }}.
+  WP assume_sum_no_overflow #x #y {{ Φ }}.
 Proof.
   iIntros "HΦ".
-  wp_call.
+  wp_call. wp_pures.
   wp_apply wp_assume.
   iIntros (H).
   apply bool_decide_eq_true in H.
@@ -37,9 +38,9 @@ Proof.
   word.
 Qed.
 
-Lemma wp_sum_assume_no_overflow (x y: w64) stk E Φ :
+Lemma wp_sum_assume_no_overflow (x y: w64) Φ :
   (⌜uint.Z x + uint.Z y < 2^64⌝ -∗ Φ #(word.add x y)) -∗
-  WP sum_assume_no_overflow #x #y @ stk; E {{ Φ }}.
+  WP sum_assume_no_overflow #x #y {{ Φ }}.
 Proof.
   iIntros "HΦ".
   wp_call.
@@ -108,25 +109,24 @@ Proof.
   apply bool_decide_ext.
   rewrite word.unsigned_divu_nowrap; [ | word ].
   change (uint.Z (W64 (2^64-1))) with (2^64-1).
-  pose proof (mul_overflow_check_correct x y ltac:(word)).
+  pose proof (mul_overflow_check_correct x y n n0).
   word.
 Qed.
 
-Lemma wp_assume_mul_no_overflow (x y: w64) stk E Φ :
+Lemma wp_assume_mul_no_overflow (x y: w64) Φ :
   (⌜uint.Z x * uint.Z y < 2^64⌝ → Φ #()) -∗
-  WP assume_mul_no_overflow #x #y @ stk; E {{ Φ }}.
+  WP assume_mul_no_overflow #x #y {{ Φ }}.
 Proof.
   iIntros "HΦ".
   wp_call.
   wp_apply wp_mul_overflows.
   wp_pures.
   wp_apply wp_assume.
-  match goal with
-  | |- context[bool_decide ?P] => destruct (bool_decide_reflect P)
-  end.
+  case_bool_decide.
   { by iIntros (?). }
   iIntros (_). iApply "HΦ".
-  iPureIntro. lia.
+  iPureIntro.
+  lia.
 Qed.
 
 End wps.

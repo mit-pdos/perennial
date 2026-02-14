@@ -11,15 +11,17 @@ From iris.base_logic.lib Require Import token.
 Class locked_stackG Σ :=
   {
     #[local] ls_var_inG :: ghost_varG Σ (list go_string);
+    #[local] syncG :: syncG Σ;
   }.
 
 Section locked_stack_proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
+Context {sem : go.Semantics} {package_sem : chan_spec_raw_examples.Assumptions}.
+Local Set Default Proof Using "All".
 
 (* FIXME: duplication *)
-#[global] Instance : IsPkgInit chan_spec_raw_examples := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf chan_spec_raw_examples := build_get_is_pkg_init_wf.
+#[global] Instance : IsPkgInit (iProp Σ) chan_spec_raw_examples := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ) chan_spec_raw_examples := build_get_is_pkg_init_wf.
 
 Context `{!locked_stackG Σ}.
 
@@ -29,9 +31,9 @@ Definition own_LockedStack γ (σ : list go_string) : iProp Σ :=
 #[local] Transparent own_LockedStack.
 
 Definition is_LockedStack s γ : iProp Σ :=
-  "#Hmu" ∷ (is_Mutex (struct.field_ref_f chan_spec_raw_examples.LockedStack "mu" s)
+  "#Hmu" ∷ (is_Mutex (s.[chan_spec_raw_examples.LockedStack.t, "mu"])
               (∃ stack_sl (stack : list go_string),
-                  "stack" ∷ s ↦s[chan_spec_raw_examples.LockedStack :: "stack"] stack_sl ∗
+                  "stack" ∷ s.[chan_spec_raw_examples.LockedStack.t, "stack"] ↦ stack_sl ∗
                   "Hsl" ∷ stack_sl ↦* stack ∗
                   "Hcap" ∷ own_slice_cap go_string stack_sl (DfracOwn 1) ∗
                   "Hauth" ∷ ghost_var γ (1/2) (reverse stack)
@@ -52,7 +54,7 @@ Proof.
   wp_auto. wp_alloc s as "Hs".
   iApply wp_fupd. wp_auto.
   iMod (ghost_var_alloc []) as (γ) "[Hstack_auth Hstack_frag]".
-  iApply "HΦ". iDestruct (struct_fields_split with "Hs") as "H". iNamed "H".
+  iApply "HΦ". iStructNamed "Hs".
   simpl. iMod (init_Mutex with "[$] [-Hstack_frag]") as "$"; by iFrame.
 Qed.
 
@@ -60,12 +62,13 @@ Lemma wp_LockedStack__Push v γ s :
   ∀ Φ,
   is_pkg_init chan_spec_raw_examples ∗ is_LockedStack s γ -∗
   (|={⊤,∅}=> ∃ σ, own_LockedStack γ σ ∗ (own_LockedStack γ (v :: σ) ={∅,⊤}=∗ Φ #())) -∗
-  WP s @ (ptrT.id chan_spec_raw_examples.LockedStack.id) @ "Push" #v {{ Φ }}.
+  WP s @! (go.PointerType chan_spec_raw_examples.LockedStack) @! "Push" #v {{ Φ }}.
 Proof.
   wp_start as "#His". wp_auto. iNamed "His".
   wp_apply (wp_Mutex__Lock with "[$Hmu]"). iIntros "[Hlocked Hi]".
   iNamedSuffix "Hi" "_inv". wp_auto.
-  wp_apply wp_slice_literal. iIntros "% [Htmp _]". wp_auto.
+  wp_apply wp_slice_literal as "% [Htmp _]".
+  { iIntros. wp_auto. iFrame. }
   wp_apply (wp_slice_append with "[$Hsl_inv $Hcap_inv $Htmp]").
   iIntros (stack_sl') "(Hsl_inv & Hcap_inv & _)". wp_auto.
   iApply fupd_wp. iMod "HΦ" as "(% & Hl & HΦ)". iCombine "Hl Hauth_inv" gives %[_ ->].
@@ -87,7 +90,7 @@ Lemma wp_LockedStack__Pop γ s :
                   | v :: σ => own_LockedStack γ σ ={∅,⊤}=∗ Φ (#v, #true)%V
                   end)
   ) -∗
-  WP s @ (ptrT.id chan_spec_raw_examples.LockedStack.id) @ "Pop" #() {{ Φ }}.
+  WP s @! (go.PointerType chan_spec_raw_examples.LockedStack) @! "Pop" #() {{ Φ }}.
 Proof.
   wp_start as "#His". wp_auto. iNamed "His".
   wp_apply (wp_Mutex__Lock with "[$Hmu]"). iIntros "[Hlocked Hi]".
@@ -109,17 +112,20 @@ Proof.
     { compute_done. }
     iMod ("HΦ" with "Hl") as "HΦ". iModIntro.
     rewrite bool_decide_false; last (revert Hlen; by len).
-    wp_auto. wp_pure; first (revert Hlen; by len).
+    wp_auto. rewrite -> decide_True; last (revert Hlen; by len).
     rewrite reverse_cons.
-    wp_apply (wp_load_slice_elem with "[$Hsl_inv]") as "Hsl_inv".
+    wp_apply (wp_load_slice_index with "[$Hsl_inv]") as "Hsl_inv".
     { revert Hlen; by len. }
     { iPureIntro. rewrite lookup_app_r; last (revert Hlen; by len).
       replace (_) with O by (revert Hlen; by len). done. }
     (* NOTE: there are too many choices here... would be better to have at least
        one "canonical" proof approach. *)
-    wp_apply (wp_slice_slice_with_cap with "[$Hsl_inv $Hcap_inv]").
-    { iPureIntro. revert Hlen Hcap; by len. }
-    iIntros "(_ & Hsl_inv & Hcap_inv)".
+    rewrite -> decide_True; last (revert Hlen; by len).
+    iDestruct (own_slice_slice_with_cap
+                 (W64 0)
+                 (word.sub stack_sl.(slice.len) (W64 1))
+                with "[$Hsl_inv $Hcap_inv]") as "(_ & Hsl_inv & Hcap_inv)".
+    { revert Hlen Hcap; by len. }
     wp_auto.
     iCombineNamed "*_inv" as "Hi".
     wp_apply (wp_Mutex__Unlock with "[$Hmu $Hlocked Hi]").
@@ -156,7 +162,8 @@ Class elimination_stackG {ext : ffi_syntax} Σ :=
   }.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
+Context {sem : go.Semantics} {package_sem : chan_spec_raw_examples.Assumptions}.
+Local Set Default Proof Using "All".
 
 Context `{!elimination_stackG Σ}.
 
@@ -182,18 +189,18 @@ Local Definition own_exchanger_inv γ N exstate : iProp Σ :=
   "Hs●" ∷ ½s γs ∗ "Hr●" ∷ ½r γr ∗
   "Hexchanger" ∷ (
       match exstate with
-      | chan_rep.Idle =>
+      | chanstate.Idle =>
           "Hs◯" ∷ ½s γs ∗ "Hr◯" ∷ ½r γr
-      | chan_rep.SndPending v =>
+      | chanstate.SndPending v =>
           "Hpush_au" ∷ (|={⊤∖↑N,∅}=> ∃ σ, ⟦σ⟧ ∗ (⟦v :: σ⟧ ={∅,⊤∖↑N}=∗ token γs)) ∗
           "Hr◯" ∷ ½r γr
-      | chan_rep.RcvPending =>
+      | chanstate.RcvPending =>
           "Hpop_au" ∷ (|={⊤∖↑N,∅}=> ∃ σ, ⟦σ⟧ ∗ (∀ v σ', ⌜ σ = v :: σ' ⌝ → ⟦σ'⟧ ={∅,⊤∖↑N}=∗
                                                         ghost_var γr (3/4) v)) ∗
           "Hs◯" ∷ ½s γs
-      | chan_rep.SndCommit v =>
+      | chanstate.SndCommit v =>
           "Hpop_wit" ∷ ghost_var γr (3/4) v ∗ "Hs◯" ∷ ½s γs
-      | chan_rep.RcvCommit =>
+      | chanstate.RcvCommit =>
           "Hpush_wit" ∷ token γs ∗ "Hr◯" ∷ ½r γr
       | _ => False
       end
@@ -203,12 +210,12 @@ Definition is_EliminationStack s γ N : iProp Σ :=
   ∃ st,
     "#s" ∷ s ↦□ st ∗
     "#Hbase" ∷ is_LockedStack st.(chan_spec_raw_examples.EliminationStack.base') γ.(ls_gn) ∗
-    "#Hch" ∷ is_chan (t:=stringT) st.(chan_spec_raw_examples.EliminationStack.exchanger') γ.(ch_gn) ∗
+    "#Hch" ∷ is_chan st.(chan_spec_raw_examples.EliminationStack.exchanger') γ.(ch_gn) go_string ∗
     "#Hinv" ∷ inv (N.@"inv") (
-        ∃ stack (exstate : chan_rep.t go_string),
+        ∃ stack exstate,
           "Hls" ∷ own_LockedStack γ.(ls_gn) stack ∗
           "Hauth" ∷ ghost_var γ.(spec_gn) (1/2) stack ∗
-          "exchanger" ∷ own_chan st.(chan_spec_raw_examples.EliminationStack.exchanger') exstate γ.(ch_gn) ∗
+          "exchanger" ∷ own_chan γ.(ch_gn) go_string exstate ∗
           "Hexchanger" ∷ own_exchanger_inv γ (N.@"inv") exstate
       ).
 
@@ -221,7 +228,7 @@ Lemma wp_NewEliminationStack N :
   {{{ s γ, RET #s; is_EliminationStack s γ N ∗ ⟦[]⟧ }}}.
 Proof.
   wp_start. wp_apply wp_NewLockedStack as "%base %γbase (#Hbase & Hls)".
-  wp_apply (chan.wp_make (t:=stringT)); first lia.
+  wp_apply chan.wp_make1.
   iIntros "* (#? & _ & Hc)". simpl.
   wp_auto. wp_alloc s as "Hs".
   iApply wp_fupd. wp_auto.
@@ -279,7 +286,7 @@ Lemma wp_EliminationStack__Push v γ s N :
   ∀ Φ,
   is_pkg_init chan_spec_raw_examples ∗ is_EliminationStack s γ N -∗
   (|={⊤∖↑N,∅}=> ∃ σ, ⟦σ⟧ ∗ (⟦(v :: σ)⟧ ={∅,⊤∖↑N}=∗ Φ #())) -∗
-  WP s @ (ptrT.id chan_spec_raw_examples.EliminationStack.id) @ "Push" #v {{ Φ }}.
+  WP s @! (go.PointerType chan_spec_raw_examples.EliminationStack) @! "Push" #v {{ Φ }}.
 Proof.
   wp_start as "#His". iNamed "His".
   iRename "s" into "s1". wp_auto.
@@ -288,7 +295,7 @@ Proof.
   wp_apply chan.wp_select_blocking.
   simpl. iSplit.
   - (* elimination occurs *)
-    iFrame "#". iExists _; iSplitR; first done.
+    repeat iExists _; iSplitR; first done. iFrame "#".
     iInv "Hinv" as "Hi" "Hclose".
     iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
     iNamedSuffix "Hi" "_inv". iApply fupd_mask_intro; first solve_ndisj.
@@ -348,7 +355,7 @@ Proof.
     + done.
     + done.
   - iSplit; last done.
-    iFrame "#".
+    repeat iExists _; iSplitR; first done. iFrame "#".
     iPoseProof "Hafter" as "[$ _]".
     iApply (handoff.handoff_rcv_au (V:=time.Time.t) with "[$Hafter] [$]").
     iIntros (t) "_ !>". wp_auto_lc 1.
@@ -379,7 +386,7 @@ Lemma wp_EliminationStack__Pop γ s N :
                   | [] => ⟦[]⟧ ={∅,⊤∖↑N}=∗ Φ (#"", #false)%V
                   | v :: σ => ⟦σ⟧ ={∅,⊤∖↑N}=∗ Φ (#v, #true)%V
                   end)) -∗
-  WP s @ (ptrT.id chan_spec_raw_examples.EliminationStack.id) @ "Pop" #() {{ Φ }}.
+  WP s @! (go.PointerType chan_spec_raw_examples.EliminationStack) @! "Pop" #() {{ Φ }}.
 Proof.
   wp_start as "#His". iNamed "His".
   iRename "s" into "s1". wp_auto.
@@ -388,7 +395,7 @@ Proof.
   wp_apply chan.wp_select_blocking.
   simpl. iSplit.
   - (* elimination occurs *)
-    iFrame "#".
+    repeat iExists _; iSplitR; first done. iFrame "#".
     iInv "Hinv" as "Hi" "Hclose".
     iMod (lc_fupd_elim_later with "[$] Hi") as "Hi".
     iNamedSuffix "Hi" "_inv". iApply fupd_mask_intro; first solve_ndisj.
@@ -447,8 +454,8 @@ Proof.
     + done.
     + done.
     + done.
-  - iSplit; last done.
-    iFrame "#".
+  - iSplitL; last done.
+    repeat iExists _; iSplitR; first done. iFrame "#".
     (* FIXME: need to break is_handoff to get is_chan *)
     iPoseProof "Hafter" as "[$ _]".
     iApply (handoff.handoff_rcv_au (V:=time.Time.t) with "[$Hafter] [$]").

@@ -1,14 +1,16 @@
-From New.golang.defn Require Import exception mem.
-From Perennial Require Import base.
+From New.golang.defn Require Import exception.
 
 Section defn.
-Context `{!ffi_syntax}.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+
+Definition deferType := go.FunctionType (go.Signature [] false []).
 
 Definition wrap_defer : val :=
   λ: "body",
-    let: "$defer" := (alloc #(func.mk <> <> #())) in
+    let: "$defer" := GoAlloc deferType (GoZeroVal deferType #()) in
+    "$defer" <-[deferType] #(func.mk <> <> #());;
     let: "$func_ret" := exception_do ("body" "$defer") in
-    (![#funcT] "$defer") #();;
+    (![deferType] "$defer") #();;
     "$func_ret".
 
 End defn.

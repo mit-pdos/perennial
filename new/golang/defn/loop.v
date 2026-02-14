@@ -1,9 +1,7 @@
-From New Require Export notation.
-From New.golang.defn Require Import exception.
-From Perennial Require Import base.
+From New.golang.defn Require Export exception.
 
 Section goose_lang.
-Context {ext: ffi_syntax}.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
 
 Definition break_val_def : val := (#"break", #()).
 Program Definition break_val := sealed @break_val_def.
@@ -24,31 +22,17 @@ Definition do_continue_unseal : do_continue = _ := seal_eq _.
 Local Definition do_for_def : val :=
   rec: "loop" "cond" "body" "post" :=
    exception_do (
-   if: ~("cond" #()) then (return: (do: #()))
-   else
+   if: ("cond" #()) then
      let: "b" := "body" #() in
-     if: Fst "b" = #"break" then (return: (do: #())) else (do: #()) ;;;
-     if: (Fst "b" = #"continue") || (Fst "b" = #"execute")
+     if: (Fst "b") =⟨go.string⟩ #"break" then (return: (do: #())) else (do: #()) ;;;
+     if: (Fst "b" =⟨go.string⟩ #"continue") || (Fst $ Var "b" =⟨go.string⟩ #"execute")
           then (do: "post" #();;; return: "loop" "cond" "body" "post") else do: #() ;;;
      return: "b"
+   else (return: (do: #()))
   ).
 
 Program Definition do_for := sealed @do_for_def.
 Definition do_for_unseal : do_for = _ := seal_eq _.
-
-(* TODO: this is unused, remove it? (empty for loops use do_for with cond set to λ: <>, #true) *)
-Definition do_loop_def: val :=
-  λ: "body",
-  (rec: "loop" <> := exception_do (
-     let: "b" := "body" #() in
-     if: Fst "b" = #"break" then (return: (do: #())) else (do: #()) ;;;
-     if: (Fst "b" = #"continue") || (Fst "b" = #"execute")
-          then (return: "loop" #()) else do: #() ;;;
-     return: "b"
-  )) #().
-
-Program Definition do_loop := sealed @do_loop_def.
-Definition do_loop_unseal : do_loop = _ := seal_eq _.
 
 End goose_lang.
 

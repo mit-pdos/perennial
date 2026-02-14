@@ -2,864 +2,551 @@
 Require Export New.proof.proof_prelude.
 Require Export New.manualproof.sync.atomic.
 Require Export New.golang.theory.
-
 Require Export New.code.sync.atomic.
 
 Set Default Proof Using "Type".
 
 Module atomic.
+Module noCopy.
+Section def.
 
-(* type atomic.Bool *)
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : atomic.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance noCopy_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (atomic.noCopy.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance noCopy_into_val_typed
+   :
+  IntoValTypedUnderlying (atomic.noCopy.t) (atomic.noCopyⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+
+End def.
+End noCopy.
+
 Module Bool.
 Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-  _0' : noCopy.t;
-  v' : w32;
-}.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : atomic.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance Bool_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (atomic.Bool.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "_0" ∷ l.[(atomic.Bool.t), "_0"] ↦{dq} v.(atomic.Bool._0') ∗
+      "v" ∷ l.[(atomic.Bool.t), "v"] ↦{dq} v.(atomic.Bool.v') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance Bool_into_val_typed
+   :
+  IntoValTypedUnderlying (atomic.Bool.t) (atomic.Boolⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Bool_access_load__0 l (v : (atomic.Bool.t)) dq :
+  AccessStrict
+    (l.[(atomic.Bool.t), "_0"] ↦{dq} (v.(atomic.Bool._0')))
+    (l.[(atomic.Bool.t), "_0"] ↦{dq} (v.(atomic.Bool._0')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Bool_access_store__0 l (v : (atomic.Bool.t)) _0' :
+  AccessStrict
+    (l.[(atomic.Bool.t), "_0"] ↦ (v.(atomic.Bool._0')))
+    (l.[(atomic.Bool.t), "_0"] ↦ _0')
+    (l ↦ v) (l ↦ (v <|(atomic.Bool._0') := _0'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Bool_access_load_v l (v : (atomic.Bool.t)) dq :
+  AccessStrict
+    (l.[(atomic.Bool.t), "v"] ↦{dq} (v.(atomic.Bool.v')))
+    (l.[(atomic.Bool.t), "v"] ↦{dq} (v.(atomic.Bool.v')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Bool_access_store_v l (v : (atomic.Bool.t)) v' :
+  AccessStrict
+    (l.[(atomic.Bool.t), "v"] ↦ (v.(atomic.Bool.v')))
+    (l.[(atomic.Bool.t), "v"] ↦ v')
+    (l ↦ v) (l ↦ (v <|(atomic.Bool.v') := v'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End Bool.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent atomic.Bool.
-#[local] Typeclasses Transparent atomic.Bool.
+Module Pointer.
+Section def.
 
-Global Instance Bool_wf : struct.Wf atomic.Bool.
-Proof. apply _. Qed.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : atomic.Assumptions}.
 
-Global Instance settable_Bool : Settable Bool.t :=
-  settable! Bool.mk < Bool._0'; Bool.v' >.
-Global Instance into_val_Bool : IntoVal Bool.t :=
-  {| to_val_def v :=
-    struct.val_aux atomic.Bool [
-    "_0" ::= #(Bool._0' v);
-    "v" ::= #(Bool.v' v)
-    ]%struct
+Local Set Default Proof Using "All".
+
+#[global]Program Instance Pointer_typed_pointsto `{!TypedPointsto (Σ:=Σ) T'}  :
+  TypedPointsto (Σ:=Σ) (atomic.Pointer.t T') :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "_0" ∷ l.[(atomic.Pointer.t T'), "_0"] ↦{dq} v.(atomic.Pointer._0') ∗
+      "_1" ∷ l.[(atomic.Pointer.t T'), "_1"] ↦{dq} v.(atomic.Pointer._1') ∗
+      "v" ∷ l.[(atomic.Pointer.t T'), "v"] ↦{dq} v.(atomic.Pointer.v') ∗
+      "_" ∷ True
+      )%I
   |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
 
-Global Program Instance into_val_typed_Bool : IntoValTyped Bool.t atomic.Bool :=
-{|
-  default_val := Bool.mk (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
+#[global] Instance Pointer_into_val_typed
+  `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T}  :
+  IntoValTypedUnderlying (atomic.Pointer.t T') (atomic.Pointerⁱᵐᵖˡ T).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Pointer_access_load__0 `{!TypedPointsto (Σ:=Σ) T'} l (v : (atomic.Pointer.t T')) dq :
+  AccessStrict
+    (l.[(atomic.Pointer.t T'), "_0"] ↦{dq} (v.(atomic.Pointer._0')))
+    (l.[(atomic.Pointer.t T'), "_0"] ↦{dq} (v.(atomic.Pointer._0')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
 
-Global Instance into_val_struct_field_Bool__0 : IntoValStructField "_0" atomic.Bool Bool._0'.
-Proof. solve_into_val_struct_field. Qed.
+#[global] Instance Pointer_access_store__0 `{!TypedPointsto (Σ:=Σ) T'} l (v : (atomic.Pointer.t T')) _0' :
+  AccessStrict
+    (l.[(atomic.Pointer.t T'), "_0"] ↦ (v.(atomic.Pointer._0')))
+    (l.[(atomic.Pointer.t T'), "_0"] ↦ _0')
+    (l ↦ v) (l ↦ (v <|(atomic.Pointer._0') := _0'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Pointer_access_load__1 `{!TypedPointsto (Σ:=Σ) T'} l (v : (atomic.Pointer.t T')) dq :
+  AccessStrict
+    (l.[(atomic.Pointer.t T'), "_1"] ↦{dq} (v.(atomic.Pointer._1')))
+    (l.[(atomic.Pointer.t T'), "_1"] ↦{dq} (v.(atomic.Pointer._1')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
 
-Global Instance into_val_struct_field_Bool_v : IntoValStructField "v" atomic.Bool Bool.v'.
-Proof. solve_into_val_struct_field. Qed.
+#[global] Instance Pointer_access_store__1 `{!TypedPointsto (Σ:=Σ) T'} l (v : (atomic.Pointer.t T')) _1' :
+  AccessStrict
+    (l.[(atomic.Pointer.t T'), "_1"] ↦ (v.(atomic.Pointer._1')))
+    (l.[(atomic.Pointer.t T'), "_1"] ↦ _1')
+    (l ↦ v) (l ↦ (v <|(atomic.Pointer._1') := _1'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Pointer_access_load_v `{!TypedPointsto (Σ:=Σ) T'} l (v : (atomic.Pointer.t T')) dq :
+  AccessStrict
+    (l.[(atomic.Pointer.t T'), "v"] ↦{dq} (v.(atomic.Pointer.v')))
+    (l.[(atomic.Pointer.t T'), "v"] ↦{dq} (v.(atomic.Pointer.v')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
 
+#[global] Instance Pointer_access_store_v `{!TypedPointsto (Σ:=Σ) T'} l (v : (atomic.Pointer.t T')) v' :
+  AccessStrict
+    (l.[(atomic.Pointer.t T'), "v"] ↦ (v.(atomic.Pointer.v')))
+    (l.[(atomic.Pointer.t T'), "v"] ↦ v')
+    (l ↦ v) (l ↦ (v <|(atomic.Pointer.v') := v'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
 
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Bool _0' v':
-  PureWp True
-    (struct.make #atomic.Bool (alist_val [
-      "_0" ::= #_0';
-      "v" ::= #v'
-    ]))%struct
-    #(Bool.mk _0' v').
-Proof. solve_struct_make_pure_wp. Qed.
+End def.
+End Pointer.
 
-
-Global Instance Bool_struct_fields_split dq l (v : Bool.t) :
-  StructFieldsSplit dq l v (
-    "H_0" ∷ l ↦s[atomic.Bool :: "_0"]{dq} v.(Bool._0') ∗
-    "Hv" ∷ l ↦s[atomic.Bool :: "v"]{dq} v.(Bool.v')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Bool._0' v)) (atomic.Bool) "_0"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-(* type atomic.Int32 *)
 Module Int32.
 Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-  _0' : noCopy.t;
-  v' : w32;
-}.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : atomic.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance Int32_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (atomic.Int32.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "_0" ∷ l.[(atomic.Int32.t), "_0"] ↦{dq} v.(atomic.Int32._0') ∗
+      "v" ∷ l.[(atomic.Int32.t), "v"] ↦{dq} v.(atomic.Int32.v') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance Int32_into_val_typed
+   :
+  IntoValTypedUnderlying (atomic.Int32.t) (atomic.Int32ⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Int32_access_load__0 l (v : (atomic.Int32.t)) dq :
+  AccessStrict
+    (l.[(atomic.Int32.t), "_0"] ↦{dq} (v.(atomic.Int32._0')))
+    (l.[(atomic.Int32.t), "_0"] ↦{dq} (v.(atomic.Int32._0')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Int32_access_store__0 l (v : (atomic.Int32.t)) _0' :
+  AccessStrict
+    (l.[(atomic.Int32.t), "_0"] ↦ (v.(atomic.Int32._0')))
+    (l.[(atomic.Int32.t), "_0"] ↦ _0')
+    (l ↦ v) (l ↦ (v <|(atomic.Int32._0') := _0'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Int32_access_load_v l (v : (atomic.Int32.t)) dq :
+  AccessStrict
+    (l.[(atomic.Int32.t), "v"] ↦{dq} (v.(atomic.Int32.v')))
+    (l.[(atomic.Int32.t), "v"] ↦{dq} (v.(atomic.Int32.v')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Int32_access_store_v l (v : (atomic.Int32.t)) v' :
+  AccessStrict
+    (l.[(atomic.Int32.t), "v"] ↦ (v.(atomic.Int32.v')))
+    (l.[(atomic.Int32.t), "v"] ↦ v')
+    (l ↦ v) (l ↦ (v <|(atomic.Int32.v') := v'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End Int32.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent atomic.Int32.
-#[local] Typeclasses Transparent atomic.Int32.
-
-Global Instance Int32_wf : struct.Wf atomic.Int32.
-Proof. apply _. Qed.
-
-Global Instance settable_Int32 : Settable Int32.t :=
-  settable! Int32.mk < Int32._0'; Int32.v' >.
-Global Instance into_val_Int32 : IntoVal Int32.t :=
-  {| to_val_def v :=
-    struct.val_aux atomic.Int32 [
-    "_0" ::= #(Int32._0' v);
-    "v" ::= #(Int32.v' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_Int32 : IntoValTyped Int32.t atomic.Int32 :=
-{|
-  default_val := Int32.mk (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_Int32__0 : IntoValStructField "_0" atomic.Int32 Int32._0'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Int32_v : IntoValStructField "v" atomic.Int32 Int32.v'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Int32 _0' v':
-  PureWp True
-    (struct.make #atomic.Int32 (alist_val [
-      "_0" ::= #_0';
-      "v" ::= #v'
-    ]))%struct
-    #(Int32.mk _0' v').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance Int32_struct_fields_split dq l (v : Int32.t) :
-  StructFieldsSplit dq l v (
-    "H_0" ∷ l ↦s[atomic.Int32 :: "_0"]{dq} v.(Int32._0') ∗
-    "Hv" ∷ l ↦s[atomic.Int32 :: "v"]{dq} v.(Int32.v')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Int32._0' v)) (atomic.Int32) "_0"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-(* type atomic.align64 *)
 Module align64.
 Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-}.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : atomic.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance align64_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (atomic.align64.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance align64_into_val_typed
+   :
+  IntoValTypedUnderlying (atomic.align64.t) (atomic.align64ⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+
 End def.
 End align64.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent atomic.align64.
-#[local] Typeclasses Transparent atomic.align64.
-
-Global Instance align64_wf : struct.Wf atomic.align64.
-Proof. apply _. Qed.
-
-Global Instance into_val_align64 : IntoVal align64.t :=
-  {| to_val_def v :=
-    struct.val_aux atomic.align64 [
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_align64 : IntoValTyped align64.t atomic.align64 :=
-{|
-  default_val := align64.mk;
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_align64:
-  PureWp True
-    (struct.make #atomic.align64 (alist_val [
-    ]))%struct
-    #(align64.mk).
-Proof. solve_struct_make_pure_wp. Qed.
-
-End instances.
-
-(* type atomic.Int64 *)
 Module Int64.
 Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-  _0' : noCopy.t;
-  _1' : align64.t;
-  v' : w64;
-}.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : atomic.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance Int64_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (atomic.Int64.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "_0" ∷ l.[(atomic.Int64.t), "_0"] ↦{dq} v.(atomic.Int64._0') ∗
+      "_1" ∷ l.[(atomic.Int64.t), "_1"] ↦{dq} v.(atomic.Int64._1') ∗
+      "v" ∷ l.[(atomic.Int64.t), "v"] ↦{dq} v.(atomic.Int64.v') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance Int64_into_val_typed
+   :
+  IntoValTypedUnderlying (atomic.Int64.t) (atomic.Int64ⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Int64_access_load__0 l (v : (atomic.Int64.t)) dq :
+  AccessStrict
+    (l.[(atomic.Int64.t), "_0"] ↦{dq} (v.(atomic.Int64._0')))
+    (l.[(atomic.Int64.t), "_0"] ↦{dq} (v.(atomic.Int64._0')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Int64_access_store__0 l (v : (atomic.Int64.t)) _0' :
+  AccessStrict
+    (l.[(atomic.Int64.t), "_0"] ↦ (v.(atomic.Int64._0')))
+    (l.[(atomic.Int64.t), "_0"] ↦ _0')
+    (l ↦ v) (l ↦ (v <|(atomic.Int64._0') := _0'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Int64_access_load__1 l (v : (atomic.Int64.t)) dq :
+  AccessStrict
+    (l.[(atomic.Int64.t), "_1"] ↦{dq} (v.(atomic.Int64._1')))
+    (l.[(atomic.Int64.t), "_1"] ↦{dq} (v.(atomic.Int64._1')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Int64_access_store__1 l (v : (atomic.Int64.t)) _1' :
+  AccessStrict
+    (l.[(atomic.Int64.t), "_1"] ↦ (v.(atomic.Int64._1')))
+    (l.[(atomic.Int64.t), "_1"] ↦ _1')
+    (l ↦ v) (l ↦ (v <|(atomic.Int64._1') := _1'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Int64_access_load_v l (v : (atomic.Int64.t)) dq :
+  AccessStrict
+    (l.[(atomic.Int64.t), "v"] ↦{dq} (v.(atomic.Int64.v')))
+    (l.[(atomic.Int64.t), "v"] ↦{dq} (v.(atomic.Int64.v')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Int64_access_store_v l (v : (atomic.Int64.t)) v' :
+  AccessStrict
+    (l.[(atomic.Int64.t), "v"] ↦ (v.(atomic.Int64.v')))
+    (l.[(atomic.Int64.t), "v"] ↦ v')
+    (l ↦ v) (l ↦ (v <|(atomic.Int64.v') := v'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End Int64.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent atomic.Int64.
-#[local] Typeclasses Transparent atomic.Int64.
-
-Global Instance Int64_wf : struct.Wf atomic.Int64.
-Proof. apply _. Qed.
-
-Global Instance settable_Int64 : Settable Int64.t :=
-  settable! Int64.mk < Int64._0'; Int64._1'; Int64.v' >.
-Global Instance into_val_Int64 : IntoVal Int64.t :=
-  {| to_val_def v :=
-    struct.val_aux atomic.Int64 [
-    "_0" ::= #(Int64._0' v);
-    "_1" ::= #(Int64._1' v);
-    "v" ::= #(Int64.v' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_Int64 : IntoValTyped Int64.t atomic.Int64 :=
-{|
-  default_val := Int64.mk (default_val _) (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_Int64__0 : IntoValStructField "_0" atomic.Int64 Int64._0'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Int64__1 : IntoValStructField "_1" atomic.Int64 Int64._1'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Int64_v : IntoValStructField "v" atomic.Int64 Int64.v'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Int64 _0' _1' v':
-  PureWp True
-    (struct.make #atomic.Int64 (alist_val [
-      "_0" ::= #_0';
-      "_1" ::= #_1';
-      "v" ::= #v'
-    ]))%struct
-    #(Int64.mk _0' _1' v').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance Int64_struct_fields_split dq l (v : Int64.t) :
-  StructFieldsSplit dq l v (
-    "H_0" ∷ l ↦s[atomic.Int64 :: "_0"]{dq} v.(Int64._0') ∗
-    "H_1" ∷ l ↦s[atomic.Int64 :: "_1"]{dq} v.(Int64._1') ∗
-    "Hv" ∷ l ↦s[atomic.Int64 :: "v"]{dq} v.(Int64.v')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Int64._0' v)) (atomic.Int64) "_0"%go.
-  simpl_one_flatten_struct (# (Int64._1' v)) (atomic.Int64) "_1"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-(* type atomic.Uint32 *)
 Module Uint32.
 Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-  _0' : noCopy.t;
-  v' : w32;
-}.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : atomic.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance Uint32_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (atomic.Uint32.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "_0" ∷ l.[(atomic.Uint32.t), "_0"] ↦{dq} v.(atomic.Uint32._0') ∗
+      "v" ∷ l.[(atomic.Uint32.t), "v"] ↦{dq} v.(atomic.Uint32.v') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance Uint32_into_val_typed
+   :
+  IntoValTypedUnderlying (atomic.Uint32.t) (atomic.Uint32ⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Uint32_access_load__0 l (v : (atomic.Uint32.t)) dq :
+  AccessStrict
+    (l.[(atomic.Uint32.t), "_0"] ↦{dq} (v.(atomic.Uint32._0')))
+    (l.[(atomic.Uint32.t), "_0"] ↦{dq} (v.(atomic.Uint32._0')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Uint32_access_store__0 l (v : (atomic.Uint32.t)) _0' :
+  AccessStrict
+    (l.[(atomic.Uint32.t), "_0"] ↦ (v.(atomic.Uint32._0')))
+    (l.[(atomic.Uint32.t), "_0"] ↦ _0')
+    (l ↦ v) (l ↦ (v <|(atomic.Uint32._0') := _0'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Uint32_access_load_v l (v : (atomic.Uint32.t)) dq :
+  AccessStrict
+    (l.[(atomic.Uint32.t), "v"] ↦{dq} (v.(atomic.Uint32.v')))
+    (l.[(atomic.Uint32.t), "v"] ↦{dq} (v.(atomic.Uint32.v')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Uint32_access_store_v l (v : (atomic.Uint32.t)) v' :
+  AccessStrict
+    (l.[(atomic.Uint32.t), "v"] ↦ (v.(atomic.Uint32.v')))
+    (l.[(atomic.Uint32.t), "v"] ↦ v')
+    (l ↦ v) (l ↦ (v <|(atomic.Uint32.v') := v'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End Uint32.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent atomic.Uint32.
-#[local] Typeclasses Transparent atomic.Uint32.
-
-Global Instance Uint32_wf : struct.Wf atomic.Uint32.
-Proof. apply _. Qed.
-
-Global Instance settable_Uint32 : Settable Uint32.t :=
-  settable! Uint32.mk < Uint32._0'; Uint32.v' >.
-Global Instance into_val_Uint32 : IntoVal Uint32.t :=
-  {| to_val_def v :=
-    struct.val_aux atomic.Uint32 [
-    "_0" ::= #(Uint32._0' v);
-    "v" ::= #(Uint32.v' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_Uint32 : IntoValTyped Uint32.t atomic.Uint32 :=
-{|
-  default_val := Uint32.mk (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_Uint32__0 : IntoValStructField "_0" atomic.Uint32 Uint32._0'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Uint32_v : IntoValStructField "v" atomic.Uint32 Uint32.v'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Uint32 _0' v':
-  PureWp True
-    (struct.make #atomic.Uint32 (alist_val [
-      "_0" ::= #_0';
-      "v" ::= #v'
-    ]))%struct
-    #(Uint32.mk _0' v').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance Uint32_struct_fields_split dq l (v : Uint32.t) :
-  StructFieldsSplit dq l v (
-    "H_0" ∷ l ↦s[atomic.Uint32 :: "_0"]{dq} v.(Uint32._0') ∗
-    "Hv" ∷ l ↦s[atomic.Uint32 :: "v"]{dq} v.(Uint32.v')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Uint32._0' v)) (atomic.Uint32) "_0"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-(* type atomic.Uint64 *)
 Module Uint64.
 Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-  _0' : noCopy.t;
-  _1' : align64.t;
-  v' : w64;
-}.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : atomic.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance Uint64_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (atomic.Uint64.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "_0" ∷ l.[(atomic.Uint64.t), "_0"] ↦{dq} v.(atomic.Uint64._0') ∗
+      "_1" ∷ l.[(atomic.Uint64.t), "_1"] ↦{dq} v.(atomic.Uint64._1') ∗
+      "v" ∷ l.[(atomic.Uint64.t), "v"] ↦{dq} v.(atomic.Uint64.v') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance Uint64_into_val_typed
+   :
+  IntoValTypedUnderlying (atomic.Uint64.t) (atomic.Uint64ⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Uint64_access_load__0 l (v : (atomic.Uint64.t)) dq :
+  AccessStrict
+    (l.[(atomic.Uint64.t), "_0"] ↦{dq} (v.(atomic.Uint64._0')))
+    (l.[(atomic.Uint64.t), "_0"] ↦{dq} (v.(atomic.Uint64._0')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Uint64_access_store__0 l (v : (atomic.Uint64.t)) _0' :
+  AccessStrict
+    (l.[(atomic.Uint64.t), "_0"] ↦ (v.(atomic.Uint64._0')))
+    (l.[(atomic.Uint64.t), "_0"] ↦ _0')
+    (l ↦ v) (l ↦ (v <|(atomic.Uint64._0') := _0'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Uint64_access_load__1 l (v : (atomic.Uint64.t)) dq :
+  AccessStrict
+    (l.[(atomic.Uint64.t), "_1"] ↦{dq} (v.(atomic.Uint64._1')))
+    (l.[(atomic.Uint64.t), "_1"] ↦{dq} (v.(atomic.Uint64._1')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Uint64_access_store__1 l (v : (atomic.Uint64.t)) _1' :
+  AccessStrict
+    (l.[(atomic.Uint64.t), "_1"] ↦ (v.(atomic.Uint64._1')))
+    (l.[(atomic.Uint64.t), "_1"] ↦ _1')
+    (l ↦ v) (l ↦ (v <|(atomic.Uint64._1') := _1'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Uint64_access_load_v l (v : (atomic.Uint64.t)) dq :
+  AccessStrict
+    (l.[(atomic.Uint64.t), "v"] ↦{dq} (v.(atomic.Uint64.v')))
+    (l.[(atomic.Uint64.t), "v"] ↦{dq} (v.(atomic.Uint64.v')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Uint64_access_store_v l (v : (atomic.Uint64.t)) v' :
+  AccessStrict
+    (l.[(atomic.Uint64.t), "v"] ↦ (v.(atomic.Uint64.v')))
+    (l.[(atomic.Uint64.t), "v"] ↦ v')
+    (l ↦ v) (l ↦ (v <|(atomic.Uint64.v') := v'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End Uint64.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent atomic.Uint64.
-#[local] Typeclasses Transparent atomic.Uint64.
-
-Global Instance Uint64_wf : struct.Wf atomic.Uint64.
-Proof. apply _. Qed.
-
-Global Instance settable_Uint64 : Settable Uint64.t :=
-  settable! Uint64.mk < Uint64._0'; Uint64._1'; Uint64.v' >.
-Global Instance into_val_Uint64 : IntoVal Uint64.t :=
-  {| to_val_def v :=
-    struct.val_aux atomic.Uint64 [
-    "_0" ::= #(Uint64._0' v);
-    "_1" ::= #(Uint64._1' v);
-    "v" ::= #(Uint64.v' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_Uint64 : IntoValTyped Uint64.t atomic.Uint64 :=
-{|
-  default_val := Uint64.mk (default_val _) (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_Uint64__0 : IntoValStructField "_0" atomic.Uint64 Uint64._0'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Uint64__1 : IntoValStructField "_1" atomic.Uint64 Uint64._1'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Uint64_v : IntoValStructField "v" atomic.Uint64 Uint64.v'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Uint64 _0' _1' v':
-  PureWp True
-    (struct.make #atomic.Uint64 (alist_val [
-      "_0" ::= #_0';
-      "_1" ::= #_1';
-      "v" ::= #v'
-    ]))%struct
-    #(Uint64.mk _0' _1' v').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance Uint64_struct_fields_split dq l (v : Uint64.t) :
-  StructFieldsSplit dq l v (
-    "H_0" ∷ l ↦s[atomic.Uint64 :: "_0"]{dq} v.(Uint64._0') ∗
-    "H_1" ∷ l ↦s[atomic.Uint64 :: "_1"]{dq} v.(Uint64._1') ∗
-    "Hv" ∷ l ↦s[atomic.Uint64 :: "v"]{dq} v.(Uint64.v')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Uint64._0' v)) (atomic.Uint64) "_0"%go.
-  simpl_one_flatten_struct (# (Uint64._1' v)) (atomic.Uint64) "_1"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-(* type atomic.Uintptr *)
 Module Uintptr.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : atomic.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Uintptr_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (atomic.Uintptr.t). Admitted.
+
+#[global] Instance Uintptr_into_val_typed
+   :
+  IntoValTypedUnderlying (atomic.Uintptr.t) (atomic.Uintptrⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End Uintptr.
 
-Global Instance bounded_size_Uintptr : BoundedTypeSize atomic.Uintptr.
-Admitted.
-
-Global Instance into_val_Uintptr `{ffi_syntax} : IntoVal Uintptr.t.
-Admitted.
-
-Global Instance into_val_typed_Uintptr `{ffi_syntax} : IntoValTyped Uintptr.t atomic.Uintptr.
-Admitted.
-
-(* type atomic.Value *)
 Module Value.
 Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-  v' : interface.t;
-}.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : atomic.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance Value_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (atomic.Value.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "v" ∷ l.[(atomic.Value.t), "v"] ↦{dq} v.(atomic.Value.v') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance Value_into_val_typed
+   :
+  IntoValTypedUnderlying (atomic.Value.t) (atomic.Valueⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Value_access_load_v l (v : (atomic.Value.t)) dq :
+  AccessStrict
+    (l.[(atomic.Value.t), "v"] ↦{dq} (v.(atomic.Value.v')))
+    (l.[(atomic.Value.t), "v"] ↦{dq} (v.(atomic.Value.v')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Value_access_store_v l (v : (atomic.Value.t)) v' :
+  AccessStrict
+    (l.[(atomic.Value.t), "v"] ↦ (v.(atomic.Value.v')))
+    (l.[(atomic.Value.t), "v"] ↦ v')
+    (l ↦ v) (l ↦ (v <|(atomic.Value.v') := v'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End Value.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent atomic.Value.
-#[local] Typeclasses Transparent atomic.Value.
-
-Global Instance Value_wf : struct.Wf atomic.Value.
-Proof. apply _. Qed.
-
-Global Instance settable_Value : Settable Value.t :=
-  settable! Value.mk < Value.v' >.
-Global Instance into_val_Value : IntoVal Value.t :=
-  {| to_val_def v :=
-    struct.val_aux atomic.Value [
-    "v" ::= #(Value.v' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_Value : IntoValTyped Value.t atomic.Value :=
-{|
-  default_val := Value.mk (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_Value_v : IntoValStructField "v" atomic.Value Value.v'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Value v':
-  PureWp True
-    (struct.make #atomic.Value (alist_val [
-      "v" ::= #v'
-    ]))%struct
-    #(Value.mk v').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance Value_struct_fields_split dq l (v : Value.t) :
-  StructFieldsSplit dq l v (
-    "Hv" ∷ l ↦s[atomic.Value :: "v"]{dq} v.(Value.v')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-(* type atomic.efaceWords *)
 Module efaceWords.
 Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-  typ' : loc;
-  data' : loc;
-}.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : atomic.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance efaceWords_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (atomic.efaceWords.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "typ" ∷ l.[(atomic.efaceWords.t), "typ"] ↦{dq} v.(atomic.efaceWords.typ') ∗
+      "data" ∷ l.[(atomic.efaceWords.t), "data"] ↦{dq} v.(atomic.efaceWords.data') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance efaceWords_into_val_typed
+   :
+  IntoValTypedUnderlying (atomic.efaceWords.t) (atomic.efaceWordsⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance efaceWords_access_load_typ l (v : (atomic.efaceWords.t)) dq :
+  AccessStrict
+    (l.[(atomic.efaceWords.t), "typ"] ↦{dq} (v.(atomic.efaceWords.typ')))
+    (l.[(atomic.efaceWords.t), "typ"] ↦{dq} (v.(atomic.efaceWords.typ')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance efaceWords_access_store_typ l (v : (atomic.efaceWords.t)) typ' :
+  AccessStrict
+    (l.[(atomic.efaceWords.t), "typ"] ↦ (v.(atomic.efaceWords.typ')))
+    (l.[(atomic.efaceWords.t), "typ"] ↦ typ')
+    (l ↦ v) (l ↦ (v <|(atomic.efaceWords.typ') := typ'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance efaceWords_access_load_data l (v : (atomic.efaceWords.t)) dq :
+  AccessStrict
+    (l.[(atomic.efaceWords.t), "data"] ↦{dq} (v.(atomic.efaceWords.data')))
+    (l.[(atomic.efaceWords.t), "data"] ↦{dq} (v.(atomic.efaceWords.data')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance efaceWords_access_store_data l (v : (atomic.efaceWords.t)) data' :
+  AccessStrict
+    (l.[(atomic.efaceWords.t), "data"] ↦ (v.(atomic.efaceWords.data')))
+    (l.[(atomic.efaceWords.t), "data"] ↦ data')
+    (l ↦ v) (l ↦ (v <|(atomic.efaceWords.data') := data'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End efaceWords.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent atomic.efaceWords.
-#[local] Typeclasses Transparent atomic.efaceWords.
-
-Global Instance efaceWords_wf : struct.Wf atomic.efaceWords.
-Proof. apply _. Qed.
-
-Global Instance settable_efaceWords : Settable efaceWords.t :=
-  settable! efaceWords.mk < efaceWords.typ'; efaceWords.data' >.
-Global Instance into_val_efaceWords : IntoVal efaceWords.t :=
-  {| to_val_def v :=
-    struct.val_aux atomic.efaceWords [
-    "typ" ::= #(efaceWords.typ' v);
-    "data" ::= #(efaceWords.data' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_efaceWords : IntoValTyped efaceWords.t atomic.efaceWords :=
-{|
-  default_val := efaceWords.mk (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_efaceWords_typ : IntoValStructField "typ" atomic.efaceWords efaceWords.typ'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_efaceWords_data : IntoValStructField "data" atomic.efaceWords efaceWords.data'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_efaceWords typ' data':
-  PureWp True
-    (struct.make #atomic.efaceWords (alist_val [
-      "typ" ::= #typ';
-      "data" ::= #data'
-    ]))%struct
-    #(efaceWords.mk typ' data').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance efaceWords_struct_fields_split dq l (v : efaceWords.t) :
-  StructFieldsSplit dq l v (
-    "Htyp" ∷ l ↦s[atomic.efaceWords :: "typ"]{dq} v.(efaceWords.typ') ∗
-    "Hdata" ∷ l ↦s[atomic.efaceWords :: "data"]{dq} v.(efaceWords.data')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (efaceWords.typ' v)) (atomic.efaceWords) "typ"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-Section names.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext}.
-#[local] Transparent is_pkg_defined is_pkg_defined_pure.
-
-Global Instance is_pkg_defined_pure_atomic : IsPkgDefinedPure atomic :=
-  {|
-    is_pkg_defined_pure_def go_ctx :=
-      is_pkg_defined_pure_single atomic;
-  |}.
-
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_atomic : IsPkgDefined atomic :=
-  {|
-    is_pkg_defined_def go_ctx :=
-      (is_pkg_defined_single atomic)%I
-  |}.
-Final Obligation. iIntros. iFrame "#%". Qed.
-#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
-
-Global Instance wp_func_call_SwapInt32 :
-  WpFuncCall atomic.SwapInt32 _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_SwapUint32 :
-  WpFuncCall atomic.SwapUint32 _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_CompareAndSwapInt32 :
-  WpFuncCall atomic.CompareAndSwapInt32 _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_CompareAndSwapUint32 :
-  WpFuncCall atomic.CompareAndSwapUint32 _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_AddInt32 :
-  WpFuncCall atomic.AddInt32 _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_AddUint32 :
-  WpFuncCall atomic.AddUint32 _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_LoadInt32 :
-  WpFuncCall atomic.LoadInt32 _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_LoadUint32 :
-  WpFuncCall atomic.LoadUint32 _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_StoreInt32 :
-  WpFuncCall atomic.StoreInt32 _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_StoreUint32 :
-  WpFuncCall atomic.StoreUint32 _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_SwapInt64 :
-  WpFuncCall atomic.SwapInt64 _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_SwapUint64 :
-  WpFuncCall atomic.SwapUint64 _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_CompareAndSwapInt64 :
-  WpFuncCall atomic.CompareAndSwapInt64 _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_CompareAndSwapUint64 :
-  WpFuncCall atomic.CompareAndSwapUint64 _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_AddInt64 :
-  WpFuncCall atomic.AddInt64 _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_AddUint64 :
-  WpFuncCall atomic.AddUint64 _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_LoadInt64 :
-  WpFuncCall atomic.LoadInt64 _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_LoadUint64 :
-  WpFuncCall atomic.LoadUint64 _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_StoreInt64 :
-  WpFuncCall atomic.StoreInt64 _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_StoreUint64 :
-  WpFuncCall atomic.StoreUint64 _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_b32 :
-  WpFuncCall atomic.b32 _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_method_call_Bool'ptr_CompareAndSwap :
-  WpMethodCall (ptrT.id atomic.Bool.id) "CompareAndSwap" _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Bool'ptr_Load :
-  WpMethodCall (ptrT.id atomic.Bool.id) "Load" _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Bool'ptr_Store :
-  WpMethodCall (ptrT.id atomic.Bool.id) "Store" _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Bool'ptr_Swap :
-  WpMethodCall (ptrT.id atomic.Bool.id) "Swap" _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Pointer'ptr_CompareAndSwap :
-  WpMethodCall (ptrT.id atomic.Pointer.id) "CompareAndSwap" _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Pointer'ptr_Load :
-  WpMethodCall (ptrT.id atomic.Pointer.id) "Load" _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Pointer'ptr_Store :
-  WpMethodCall (ptrT.id atomic.Pointer.id) "Store" _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Pointer'ptr_Swap :
-  WpMethodCall (ptrT.id atomic.Pointer.id) "Swap" _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Int32'ptr_Add :
-  WpMethodCall (ptrT.id atomic.Int32.id) "Add" _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Int32'ptr_And :
-  WpMethodCall (ptrT.id atomic.Int32.id) "And" _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Int32'ptr_CompareAndSwap :
-  WpMethodCall (ptrT.id atomic.Int32.id) "CompareAndSwap" _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Int32'ptr_Load :
-  WpMethodCall (ptrT.id atomic.Int32.id) "Load" _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Int32'ptr_Or :
-  WpMethodCall (ptrT.id atomic.Int32.id) "Or" _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Int32'ptr_Store :
-  WpMethodCall (ptrT.id atomic.Int32.id) "Store" _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Int32'ptr_Swap :
-  WpMethodCall (ptrT.id atomic.Int32.id) "Swap" _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Int64'ptr_Add :
-  WpMethodCall (ptrT.id atomic.Int64.id) "Add" _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Int64'ptr_And :
-  WpMethodCall (ptrT.id atomic.Int64.id) "And" _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Int64'ptr_CompareAndSwap :
-  WpMethodCall (ptrT.id atomic.Int64.id) "CompareAndSwap" _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Int64'ptr_Load :
-  WpMethodCall (ptrT.id atomic.Int64.id) "Load" _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Int64'ptr_Or :
-  WpMethodCall (ptrT.id atomic.Int64.id) "Or" _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Int64'ptr_Store :
-  WpMethodCall (ptrT.id atomic.Int64.id) "Store" _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Int64'ptr_Swap :
-  WpMethodCall (ptrT.id atomic.Int64.id) "Swap" _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Uint32'ptr_Add :
-  WpMethodCall (ptrT.id atomic.Uint32.id) "Add" _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Uint32'ptr_And :
-  WpMethodCall (ptrT.id atomic.Uint32.id) "And" _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Uint32'ptr_CompareAndSwap :
-  WpMethodCall (ptrT.id atomic.Uint32.id) "CompareAndSwap" _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Uint32'ptr_Load :
-  WpMethodCall (ptrT.id atomic.Uint32.id) "Load" _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Uint32'ptr_Or :
-  WpMethodCall (ptrT.id atomic.Uint32.id) "Or" _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Uint32'ptr_Store :
-  WpMethodCall (ptrT.id atomic.Uint32.id) "Store" _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Uint32'ptr_Swap :
-  WpMethodCall (ptrT.id atomic.Uint32.id) "Swap" _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Uint64'ptr_Add :
-  WpMethodCall (ptrT.id atomic.Uint64.id) "Add" _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Uint64'ptr_And :
-  WpMethodCall (ptrT.id atomic.Uint64.id) "And" _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Uint64'ptr_CompareAndSwap :
-  WpMethodCall (ptrT.id atomic.Uint64.id) "CompareAndSwap" _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Uint64'ptr_Load :
-  WpMethodCall (ptrT.id atomic.Uint64.id) "Load" _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Uint64'ptr_Or :
-  WpMethodCall (ptrT.id atomic.Uint64.id) "Or" _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Uint64'ptr_Store :
-  WpMethodCall (ptrT.id atomic.Uint64.id) "Store" _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Uint64'ptr_Swap :
-  WpMethodCall (ptrT.id atomic.Uint64.id) "Swap" _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Value'ptr_CompareAndSwap :
-  WpMethodCall (ptrT.id atomic.Value.id) "CompareAndSwap" _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Value'ptr_Load :
-  WpMethodCall (ptrT.id atomic.Value.id) "Load" _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Value'ptr_Store :
-  WpMethodCall (ptrT.id atomic.Value.id) "Store" _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Value'ptr_Swap :
-  WpMethodCall (ptrT.id atomic.Value.id) "Swap" _ (is_pkg_defined atomic) :=
-  ltac:(solve_wp_method_call).
-
-End names.
 End atomic.

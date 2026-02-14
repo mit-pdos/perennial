@@ -13,18 +13,21 @@ From New.proof Require Import proof_prelude.
 
 Unset Printing Records.
 
-Section proof.
-Context `{hG: !heapGS Σ} `{!globalsGS Σ} {go_ctx : GoContext}.
+Section wps.
+Context `{!heapGS Σ}.
+Context {sem : go.Semantics} {package_sem : unittest.Assumptions}.
+Local Set Default Proof Using "All".
 
-#[global] Instance : IsPkgInit unittest := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf unittest := build_get_is_pkg_init_wf.
+#[global] Instance : IsPkgInit (iProp Σ) unittest := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ) unittest := build_get_is_pkg_init_wf.
 
 Lemma wp_BasicNamedReturn :
   {{{ is_pkg_init unittest }}}
     @! unittest.BasicNamedReturn #()
   {{{ RET #"ok"; True }}}.
 Proof.
-  wp_start. wp_auto. by iApply "HΦ".
+  wp_start.
+  wp_auto. by iApply "HΦ".
 Qed.
 
 Lemma wp_VoidButEndsWithReturn :
@@ -50,14 +53,13 @@ Proof.
 Qed.
 
 Lemma wp_typeAssertInt (x: interface.t) (v: w64) :
-  {{{ is_pkg_init unittest ∗ ⌜x = interface.mk intT.id #v⌝ }}}
+  {{{ is_pkg_init unittest ∗ ⌜ x = interface.mk_ok go.int #v ⌝ }}}
     @! unittest.typeAssertInt #x
   {{{ RET #v; True }}}.
 Proof.
   wp_start as "->". wp_auto.
-  wp_apply wp_interface_type_assert.
-  { done. }
-  by iApply "HΦ".
+  rewrite -> decide_True; last done.
+  wp_end.
 Qed.
 
 Lemma wp_wrapUnwrapInt :
@@ -68,77 +70,55 @@ Proof.
   wp_start as "_".
   wp_apply wp_typeAssertInt.
   { done. }
-  by iApply "HΦ".
+  wp_end.
 Qed.
 
 Lemma wp_checkedTypeAssert (x: interface.t) :
   {{{ is_pkg_init unittest ∗
         ⌜match x with
-        | interface.mk type_id' v0 =>
-            (* a technical side condition is required to show that if i has the
-               correct type identity, then the value it holds has the expected type
-               V *)
-            uint64T.id = type_id' →
-            ∃ (v: w64), v0 = #v
+        | interface.ok i =>
+            if decide (i.(interface.ty) = go.uint64) then
+              ∃ (v: w64), i.(interface.v) = #v
+            else True
         |  interface.nil => True
         end⌝
   }}}
     @! unittest.checkedTypeAssert #x
   {{{ (y: w64), RET #y; True }}}.
 Proof.
-  wp_start as "%Htype". wp_auto.
-  wp_apply (wp_interface_checked_type_assert _ (V:=w64)).
-  { auto. }
-  iIntros (y ok Hpost).
-  wp_auto.
-  destruct ok; subst; wp_auto.
-  - by iApply "HΦ".
-  - by iApply "HΦ".
-
-  Unshelve.
-  apply _.
+  wp_start as "%Htype". wp_auto. destruct x.
+  - destruct decide in *; subst.
+    + destruct Htype as [? ->]. wp_auto. rewrite bool_decide_true; last done. wp_auto. wp_end.
+    + wp_auto. rewrite bool_decide_false; last done. wp_auto. wp_end.
+  - wp_auto. wp_end.
 Qed.
 
 Lemma wp_basicTypeSwitch (x: interface.t) :
   {{{ is_pkg_init unittest ∗
-      ⌜match x with
-      | interface.mk type_id v =>
-          (type_id = intT.id → ∃ (v': w64), v = #v') ∧
-          (type_id = stringT.id → ∃ (v': go_string), v = #v')
-      | _ => True
-      end⌝
+      ⌜ (match x with
+         | interface.ok (interface.mk ty v) =>
+             (ty = go.int → ∃ (v': w64), v = #v') ∧
+             (ty = go.string → ∃ (v': go_string), v = #v')
+         | _ => True
+         end) ⌝
   }}}
     @! unittest.basicTypeSwitch #x
   {{{ (y: w64), RET #y; True }}}.
 Proof.
   wp_start as "%Htype". wp_auto.
-  wp_apply wp_interface_checked_type_assert.
-  {
-    destruct x; intuition.
-  }
-  iIntros (???).
-  wp_auto.
-  destruct ok; subst; wp_auto.
-  { by iApply "HΦ". }
-  wp_apply wp_interface_checked_type_assert.
-  {
-    destruct x; intuition.
-  }
-  iIntros (???).
-  wp_auto.
-  destruct ok; wp_auto.
-  { by iApply "HΦ". }
-  by iApply "HΦ".
-  Unshelve.
-  all: apply _.
+  destruct x as [[]|].
+  - simpl. rewrite bool_decide_decide. destruct decide; subst; wp_auto.
+    { wp_end. }
+    rewrite bool_decide_decide. destruct decide; subst; wp_auto; wp_end.
+  - wp_auto. wp_end.
 Qed.
 
 Lemma wp_fancyTypeSwitch (x: interface.t) :
   {{{ is_pkg_init unittest ∗
       ⌜match x with
-      | interface.mk type_id v =>
-          (type_id = intT.id → ∃ (v': w64), v = #v') ∧
-          (type_id = stringT.id → ∃ (v': go_string), v = #v')
+      | interface.ok (interface.mk ty v) =>
+          (ty = go.int → ∃ (v': w64), v = #v') ∧
+          (ty = go.string → ∃ (v': go_string), v = #v')
       | _ => True
       end⌝
   }}}
@@ -146,31 +126,24 @@ Lemma wp_fancyTypeSwitch (x: interface.t) :
   {{{ (y: w64), RET #y; True }}}.
 Proof.
   wp_start as "%Htype". wp_auto.
-  unshelve wp_apply wp_interface_checked_type_assert; try tc_solve.
-  {
-    destruct x; intuition.
-  }
-  iIntros (???); wp_auto.
-  destruct ok; subst; wp_auto.
-  { by iApply "HΦ". }
-  unshelve wp_apply wp_interface_checked_type_assert; try tc_solve.
-  {
-    destruct x; intuition.
-  }
-  iIntros (???); wp_auto.
-  destruct ok; subst; wp_auto.
-  { by iApply "HΦ". }
-  wp_if_destruct.
-  { by iApply "HΦ". }
-  by iApply "HΦ".
+  destruct x as [[]|].
+  - simpl. rewrite bool_decide_decide. destruct decide.
+    + wp_auto. destruct Htype as [Htype _]. destruct (Htype ltac:(done)) as [? ?]. subst.
+      wp_auto. wp_end.
+    + wp_auto. destruct Htype as [_ Htype].
+      rewrite bool_decide_decide. destruct decide.
+      * destruct (Htype ltac:(done)) as [? ?]. subst.
+        wp_auto. wp_end.
+      * wp_auto. wp_end.
+  - wp_auto. wp_end.
 Qed.
 
 Lemma wp_multiTypeSwitch x :
   {{{ is_pkg_init unittest ∗
       ⌜match x with
-      | interface.mk type_id v =>
-          (type_id = intT.id → ∃ (v': w64), v = #v') ∧
-          (type_id = stringT.id → ∃ (v': go_string), v = #v')
+      | interface.ok (interface.mk ty v) =>
+          (ty = go.int → ∃ (v': w64), v = #v') ∧
+          (ty = go.string → ∃ (v': go_string), v = #v')
       | _ => True
       end⌝
   }}}
@@ -178,15 +151,11 @@ Lemma wp_multiTypeSwitch x :
   {{{ (x : w64), RET #x; True }}}.
 Proof.
   wp_start as "%Htype". wp_auto.
-  unshelve wp_apply wp_interface_checked_type_assert; try tc_solve.
-  { destruct x; intuition. }
-  iIntros (???). wp_auto.
-  destruct ok; subst; wp_auto.
-  { by iApply "HΦ". }
-  unshelve wp_apply wp_interface_checked_type_assert; try tc_solve.
-  { destruct x; intuition. }
-  iIntros (???). wp_auto.
-  destruct ok; subst; wp_auto; by iApply "HΦ".
+  destruct x as [[]|].
+  - rewrite bool_decide_decide. destruct decide; wp_auto.
+    + wp_end.
+    + rewrite bool_decide_decide. destruct decide; wp_auto; wp_end.
+  - wp_auto. wp_end.
 Qed.
 
 Lemma wp_testSwitchMultiple (x: w64) :
@@ -212,10 +181,10 @@ Qed.
 
 Lemma wp_Point__IgnoreReceiver (p : unittest.Point.t) :
   {{{ is_pkg_init unittest }}}
-    p @ unittest.Point.id @ "IgnoreReceiver" #()
+    p @! unittest.Point @! "IgnoreReceiver" #()
   {{{ RET #"ok"; True }}}.
 Proof.
-  wp_start. by iApply "HΦ".
+  wp_start. wp_end.
 Qed.
 
 Lemma wp_mapGetCall :
@@ -223,12 +192,10 @@ Lemma wp_mapGetCall :
     @! unittest.mapGetCall #()
   {{{ RET #(); True }}}.
 Proof.
-  wp_start. wp_auto. unshelve wp_apply (wp_map_make (K:=w64) (V:=func.t)); try tc_solve.
-  { done. }
-  iIntros "* Hm". wp_auto. wp_apply (wp_map_insert with "Hm") as "Hm".
-  wp_apply (wp_map_get with "Hm") as "Hm".
-  rewrite lookup_insert_eq. wp_auto. iApply "HΦ".
-  done.
+  wp_start. wp_auto. wp_apply wp_map_make1 as "* Hm".
+  wp_apply (wp_map_insert with "Hm") as "Hm".
+  wp_bind. wp_bind (map.lookup1 _ _ _ _). wp_apply (wp_map_lookup1 with "Hm") as "Hm".
+  rewrite lookup_insert_eq. wp_auto. wp_end.
 Qed.
 
 Lemma wp_mapLiteralTest :
@@ -237,13 +204,38 @@ Lemma wp_mapLiteralTest :
   }}}
     @! unittest.mapLiteralTest #()
   {{{
-        l, RET #l; l ↦$ {["a"%go := (W64 97); "b"%go := (W64 98); "c"%go := (W64 99)]}
+        l, RET #l; l ↦$ {["c"%go := (W64 99); "b"%go := (W64 98); "a"%go := (W64 97)]}
   }}}.
 Proof.
-  wp_start. wp_auto.
-  wp_apply wp_map_literal; first done.
-  iIntros (?) "Hmap". wp_auto.
-  iApply "HΦ". iFrame.
+  wp_start. wp_auto. wp_apply wp_map_make1 as "% Hm".
+  repeat wp_apply (wp_map_insert with "Hm") as "Hm".
+  rewrite -insert_empty. wp_end.
+Qed.
+
+Lemma wp_testConversionLiteral :
+  {{{ is_pkg_init unittest }}}
+    @! unittest.testConversionLiteral #()
+  {{{ RET #true; True }}}.
+Proof.
+  wp_start.
+  wp_auto.
+  wp_apply wp_map_make1 as "* Hm".
+  wp_apply (wp_map_insert with "Hm") as "Hm".
+  { constructor. iIntros. wp_auto. done. }
+  wp_apply (wp_map_insert with "Hm") as "Hm".
+  { constructor. iIntros. wp_auto. done. }
+  wp_apply (wp_map_insert with "Hm") as "Hm".
+  { constructor. iIntros "* HΦ". wp_auto. rewrite -> decide_True; last done.
+    wp_auto. wp_end. }
+  wp_apply (wp_map_lookup1 with "Hm") as "Hm".
+  { constructor. iIntros "* HΦ". wp_auto. rewrite -> decide_True; last done.
+    wp_auto. wp_end. }
+  rewrite insert_empty.
+  rewrite lookup_insert_eq /=.
+  wp_apply (wp_map_lookup1 with "Hm") as "Hm".
+  { constructor. iIntros. wp_auto. done. }
+  rewrite lookup_insert_ne; last done. rewrite lookup_insert_eq. simpl.
+  rewrite -> decide_True; last done. wp_auto. wp_end.
 Qed.
 
 Lemma wp_useNilField :
@@ -259,7 +251,7 @@ Lemma wp_testU32NewtypeLen :
     @! unittest.testU32NewtypeLen #()
   {{{ RET #true; True }}}.
 Proof.
-  wp_start. wp_auto. wp_apply (wp_slice_make2 (V:=w8)) as "* [? ?]".
+  wp_start. wp_auto. wp_apply wp_slice_make2 as "* [? ?]".
   { word. }
   iDestruct (own_slice_len with "[$]") as "%". rewrite bool_decide_true.
   2:{ revert H. len. }
@@ -286,9 +278,7 @@ Lemma wp_useFloat :
     @! unittest.useFloat #()
   {{{ (f : w64), RET #f; True }}}.
 Proof.
-  wp_start. wp_auto.
-  repeat wp_apply wp_make_nondet_float64 as "% _".
-  by iApply "HΦ".
+  wp_start. wp_auto. wp_end.
 Qed.
 
 Lemma wp_intSliceLoop (s: slice.t) (xs: list w64) :
@@ -303,19 +293,33 @@ Proof.
       "i" ∷ i_ptr ↦ i ∗
       "xs" ∷ xs_ptr ↦ s ∗
       "sum" ∷ sum_ptr ↦ sum ∗
-      "%Hi" ∷ ⌜0 ≤ sint.Z i ≤ sint.Z (slice.len_f s)⌝
+      "%Hi" ∷ ⌜0 ≤ sint.Z i ≤ sint.Z (slice.len s)⌝
     )%I with "[$i $sum $xs]" as "IH".
   { word. }
   wp_for "IH".
   wp_if_destruct.
-  - wp_pure; first word.
+  - rewrite -> decide_True; last word.
     list_elem xs (sint.nat i) as x_i.
-    wp_apply (wp_load_slice_elem with "[$Hs]") as "Hs"; first word.
+    wp_apply (wp_load_slice_index with "[$Hs]") as "Hs"; first word.
     { eauto. }
     wp_for_post.
     iFrame.
     word.
   - iApply "HΦ". iFrame.
+Qed.
+
+Lemma wp_useEmbeddedMethod (d : unittest.embedD.t) (b : unittest.embedB.t) :
+  {{{ is_pkg_init unittest ∗ d.(unittest.embedD.embedC').(unittest.embedC.embedB') ↦ b }}}
+    @! unittest.useEmbeddedMethod #d
+  {{{ RET #true; True }}}.
+Proof.
+  wp_start. wp_auto.
+  wp_method_call. wp_auto.
+  wp_method_call. wp_auto.
+  wp_method_call. wp_auto.
+  wp_method_call. repeat wp_call. wp_auto.
+  wp_method_call. repeat wp_call. wp_auto.
+  rewrite bool_decide_true //.  wp_end.
 Qed.
 
 Lemma wp_pointerAny :
@@ -324,11 +328,8 @@ Lemma wp_pointerAny :
   {{{ (l:loc), RET #l; l ↦ interface.nil }}}.
 Proof.
   wp_start.
-  wp_auto.
   wp_alloc p as "Hp".
-  wp_auto.
-  iApply "HΦ".
-  iFrame.
+  wp_auto. wp_end.
 Qed.
 
 Lemma wp_useRuneOps (r0: w32) :
@@ -338,8 +339,7 @@ Lemma wp_useRuneOps (r0: w32) :
 Proof.
   wp_start.
   wp_auto.
-  iApply "HΦ".
-  done.
+  wp_end.
 Qed.
 
 Lemma wp_ifJoinDemo (arg1 arg2: bool) :
@@ -349,78 +349,32 @@ Lemma wp_ifJoinDemo (arg1 arg2: bool) :
 Proof.
   wp_start.
   wp_auto.
-  wp_bind (if: _ then _ else _)%E.
-  iPersist "arg2".
-  iApply (wp_wand _ _ _
-            (λ v, ⌜v = execute_val⌝ ∗
-              ∃ (sl: slice.t) (xs: list w64),
-                "arr" ∷ arr_ptr ↦ sl ∗
-                "Hsl" ∷ sl ↦* xs ∗
-                "Hsl_cap" ∷ own_slice_cap w64 sl (DfracOwn 1))%I
-         with "[arr]").
-  {
-    wp_if_destruct.
-    - wp_apply (wp_slice_literal (V:=w64)) as "%sl [Hsl _]".
-      wp_apply (wp_slice_append (V:=w64) with "[Hsl]") as "%sl1 (Hsl & Hsl_cap & _)".
-      {
-        iFrame.
-        iDestruct (own_slice_nil) as "$".
-        iDestruct (own_slice_cap_nil) as "$".
-      }
-      iSplit; [ done | ].
-      iFrame.
-    - iSplit; [ done | ].
-      iFrame.
-      iExists [].
-      iDestruct (own_slice_nil) as "$".
-      iDestruct (own_slice_cap_nil) as "$".
-  }
-  iIntros (v) "[% @]". subst.
-  wp_auto.
-  wp_if_destruct.
-  - wp_apply (wp_slice_literal (V:=w64)) as "%sl2 [Hsl2 _]".
-    wp_apply (wp_slice_append (V:=w64) with "[$Hsl $Hsl_cap $Hsl2]") as "%sl1 (Hsl & Hsl_cap & _)".
-    wp_end.
-  - wp_end.
-Qed.
-
-Lemma wp_ifJoinDemo_if_join_tactic (arg1 arg2: bool) :
-  {{{ is_pkg_init unittest }}}
-    @! unittest.ifJoinDemo #arg1 #arg2
-  {{{ RET #(); True }}}.
-Proof.
-  wp_start.
-  wp_auto.
+  wp_apply wp_slice_literal as "% _"; [iIntros; by wp_auto | ].
   iPersist "arg2".
   wp_if_join (λ v, ⌜v = execute_val⌝ ∗
                    ∃ (sl: slice.t) (xs: list w64),
-                       "arr" ∷ arr_ptr ↦ sl ∗
-                       "Hsl" ∷ sl ↦* xs ∗
-                       "Hsl_cap" ∷ own_slice_cap w64 sl (DfracOwn 1))%I
-             with "[arr]".
-  {
-    wp_apply (wp_slice_literal (V:=w64)) as "%sl [Hsl _]".
-    wp_apply (wp_slice_append (V:=w64) with "[Hsl]") as "%sl1 (Hsl & Hsl_cap & _)".
+                     "arr" ∷ arr_ptr ↦ sl ∗
+                     "Hsl" ∷ sl ↦* xs ∗
+                     "Hsl_cap" ∷ own_slice_cap w64 sl (DfracOwn 1))%I
+         with "[arr]".
+  { wp_apply wp_slice_literal as "% Hsl"; first (iIntros; by wp_auto).
+    wp_apply (wp_slice_append with "[Hsl]") as "%sl1 (Hsl & Hsl_cap & _)".
     {
-      iFrame.
-      iDestruct (own_slice_nil) as "$".
-      iDestruct (own_slice_cap_nil) as "$".
+      iFrame. simpl in *.
+      iDestruct (own_slice_empty) as "$"; simpl; [by len..|].
+      iDestruct (own_slice_cap_empty) as "$"; simpl; try by len.
     }
     iSplit; [ done | ].
-    iFrame.
-  }
-  {
-    iSplit; [ done | ].
+    iFrame. }
+  { iSplit; [ done | ].
     iFrame.
     iExists [].
-    iDestruct (own_slice_nil) as "$".
-    iDestruct (own_slice_cap_nil) as "$".
-  }
+    iDestruct (own_slice_empty) as "$"; simpl; [by len..|].
+    iDestruct (own_slice_cap_empty) as "$"; simpl; by len. }
   iIntros (v) "[% @]". subst.
-  wp_auto.
-  wp_if_destruct.
-  - wp_apply (wp_slice_literal (V:=w64)) as "%sl2 [Hsl2 _]".
-    wp_apply (wp_slice_append (V:=w64) with "[$Hsl $Hsl_cap $Hsl2]") as "%sl1 (Hsl & Hsl_cap & _)".
+  wp_auto. wp_if_destruct.
+  - wp_apply wp_slice_literal as "% Hsl2"; first (iIntros; by wp_auto).
+    wp_apply (wp_slice_append with "[$Hsl $Hsl_cap $Hsl2]") as "%sl1 (Hsl & Hsl_cap & _)".
     wp_end.
   - wp_end.
 Qed.
@@ -435,4 +389,4 @@ Proof.
   wp_end.
 Qed.
 
-End proof.
+End wps.

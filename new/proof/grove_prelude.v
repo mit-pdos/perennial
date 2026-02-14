@@ -1,7 +1,7 @@
+From Perennial.goose_lang.ffi.grove_ffi Require Import grove_ffi.
 From New.proof Require Export proof_prelude.
 From New Require Export atomic_fupd.
 From New Require Export grove_prelude.
-From Perennial.goose_lang.ffi.grove_ffi Require Import grove_ffi.
 
 #[global]
 Existing Instances grove_semantics grove_interp.

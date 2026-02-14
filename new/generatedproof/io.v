@@ -3,638 +3,678 @@ Require Export New.proof.proof_prelude.
 Require Export New.generatedproof.errors.
 Require Export New.generatedproof.sync.
 Require Export New.golang.theory.
-
 Require Export New.code.io.
 
 Set Default Proof Using "Type".
 
 Module io.
-
-(* type io.Reader *)
-Module Reader.
-
-#[global] Transparent io.Reader.
-#[global] Typeclasses Transparent io.Reader.
-Section def.
-Context `{ffi_syntax}.
-Definition t := interface.t.
-End def.
-End Reader.
-
-(* type io.Writer *)
-Module Writer.
-
-#[global] Transparent io.Writer.
-#[global] Typeclasses Transparent io.Writer.
-Section def.
-Context `{ffi_syntax}.
-Definition t := interface.t.
-End def.
-End Writer.
-
-(* type io.Closer *)
 Module Closer.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Closer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.Closer.t). Admitted.
+
+#[global] Instance Closer_into_val_typed
+   :
+  IntoValTypedUnderlying (io.Closer.t) (io.Closerⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End Closer.
 
-Global Instance bounded_size_Closer : BoundedTypeSize io.Closer.
-Admitted.
-
-Global Instance into_val_Closer `{ffi_syntax} : IntoVal Closer.t.
-Admitted.
-
-Global Instance into_val_typed_Closer `{ffi_syntax} : IntoValTyped Closer.t io.Closer.
-Admitted.
-
-(* type io.Seeker *)
 Module Seeker.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Seeker_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.Seeker.t). Admitted.
+
+#[global] Instance Seeker_into_val_typed
+   :
+  IntoValTypedUnderlying (io.Seeker.t) (io.Seekerⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End Seeker.
 
-Global Instance bounded_size_Seeker : BoundedTypeSize io.Seeker.
-Admitted.
-
-Global Instance into_val_Seeker `{ffi_syntax} : IntoVal Seeker.t.
-Admitted.
-
-Global Instance into_val_typed_Seeker `{ffi_syntax} : IntoValTyped Seeker.t io.Seeker.
-Admitted.
-
-(* type io.ReadWriter *)
 Module ReadWriter.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ReadWriter_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.ReadWriter.t). Admitted.
+
+#[global] Instance ReadWriter_into_val_typed
+   :
+  IntoValTypedUnderlying (io.ReadWriter.t) (io.ReadWriterⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End ReadWriter.
 
-Global Instance bounded_size_ReadWriter : BoundedTypeSize io.ReadWriter.
-Admitted.
-
-Global Instance into_val_ReadWriter `{ffi_syntax} : IntoVal ReadWriter.t.
-Admitted.
-
-Global Instance into_val_typed_ReadWriter `{ffi_syntax} : IntoValTyped ReadWriter.t io.ReadWriter.
-Admitted.
-
-(* type io.ReadCloser *)
 Module ReadCloser.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ReadCloser_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.ReadCloser.t). Admitted.
+
+#[global] Instance ReadCloser_into_val_typed
+   :
+  IntoValTypedUnderlying (io.ReadCloser.t) (io.ReadCloserⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End ReadCloser.
 
-Global Instance bounded_size_ReadCloser : BoundedTypeSize io.ReadCloser.
-Admitted.
-
-Global Instance into_val_ReadCloser `{ffi_syntax} : IntoVal ReadCloser.t.
-Admitted.
-
-Global Instance into_val_typed_ReadCloser `{ffi_syntax} : IntoValTyped ReadCloser.t io.ReadCloser.
-Admitted.
-
-(* type io.WriteCloser *)
 Module WriteCloser.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance WriteCloser_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.WriteCloser.t). Admitted.
+
+#[global] Instance WriteCloser_into_val_typed
+   :
+  IntoValTypedUnderlying (io.WriteCloser.t) (io.WriteCloserⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End WriteCloser.
 
-Global Instance bounded_size_WriteCloser : BoundedTypeSize io.WriteCloser.
-Admitted.
-
-Global Instance into_val_WriteCloser `{ffi_syntax} : IntoVal WriteCloser.t.
-Admitted.
-
-Global Instance into_val_typed_WriteCloser `{ffi_syntax} : IntoValTyped WriteCloser.t io.WriteCloser.
-Admitted.
-
-(* type io.ReadWriteCloser *)
 Module ReadWriteCloser.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ReadWriteCloser_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.ReadWriteCloser.t). Admitted.
+
+#[global] Instance ReadWriteCloser_into_val_typed
+   :
+  IntoValTypedUnderlying (io.ReadWriteCloser.t) (io.ReadWriteCloserⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End ReadWriteCloser.
 
-Global Instance bounded_size_ReadWriteCloser : BoundedTypeSize io.ReadWriteCloser.
-Admitted.
-
-Global Instance into_val_ReadWriteCloser `{ffi_syntax} : IntoVal ReadWriteCloser.t.
-Admitted.
-
-Global Instance into_val_typed_ReadWriteCloser `{ffi_syntax} : IntoValTyped ReadWriteCloser.t io.ReadWriteCloser.
-Admitted.
-
-(* type io.ReadSeeker *)
 Module ReadSeeker.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ReadSeeker_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.ReadSeeker.t). Admitted.
+
+#[global] Instance ReadSeeker_into_val_typed
+   :
+  IntoValTypedUnderlying (io.ReadSeeker.t) (io.ReadSeekerⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End ReadSeeker.
 
-Global Instance bounded_size_ReadSeeker : BoundedTypeSize io.ReadSeeker.
-Admitted.
-
-Global Instance into_val_ReadSeeker `{ffi_syntax} : IntoVal ReadSeeker.t.
-Admitted.
-
-Global Instance into_val_typed_ReadSeeker `{ffi_syntax} : IntoValTyped ReadSeeker.t io.ReadSeeker.
-Admitted.
-
-(* type io.ReadSeekCloser *)
 Module ReadSeekCloser.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ReadSeekCloser_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.ReadSeekCloser.t). Admitted.
+
+#[global] Instance ReadSeekCloser_into_val_typed
+   :
+  IntoValTypedUnderlying (io.ReadSeekCloser.t) (io.ReadSeekCloserⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End ReadSeekCloser.
 
-Global Instance bounded_size_ReadSeekCloser : BoundedTypeSize io.ReadSeekCloser.
-Admitted.
-
-Global Instance into_val_ReadSeekCloser `{ffi_syntax} : IntoVal ReadSeekCloser.t.
-Admitted.
-
-Global Instance into_val_typed_ReadSeekCloser `{ffi_syntax} : IntoValTyped ReadSeekCloser.t io.ReadSeekCloser.
-Admitted.
-
-(* type io.WriteSeeker *)
 Module WriteSeeker.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance WriteSeeker_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.WriteSeeker.t). Admitted.
+
+#[global] Instance WriteSeeker_into_val_typed
+   :
+  IntoValTypedUnderlying (io.WriteSeeker.t) (io.WriteSeekerⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End WriteSeeker.
 
-Global Instance bounded_size_WriteSeeker : BoundedTypeSize io.WriteSeeker.
-Admitted.
-
-Global Instance into_val_WriteSeeker `{ffi_syntax} : IntoVal WriteSeeker.t.
-Admitted.
-
-Global Instance into_val_typed_WriteSeeker `{ffi_syntax} : IntoValTyped WriteSeeker.t io.WriteSeeker.
-Admitted.
-
-(* type io.ReadWriteSeeker *)
 Module ReadWriteSeeker.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ReadWriteSeeker_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.ReadWriteSeeker.t). Admitted.
+
+#[global] Instance ReadWriteSeeker_into_val_typed
+   :
+  IntoValTypedUnderlying (io.ReadWriteSeeker.t) (io.ReadWriteSeekerⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End ReadWriteSeeker.
 
-Global Instance bounded_size_ReadWriteSeeker : BoundedTypeSize io.ReadWriteSeeker.
-Admitted.
-
-Global Instance into_val_ReadWriteSeeker `{ffi_syntax} : IntoVal ReadWriteSeeker.t.
-Admitted.
-
-Global Instance into_val_typed_ReadWriteSeeker `{ffi_syntax} : IntoValTyped ReadWriteSeeker.t io.ReadWriteSeeker.
-Admitted.
-
-(* type io.ReaderFrom *)
-Module ReaderFrom.
-Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
-End def.
-End ReaderFrom.
-
-Global Instance bounded_size_ReaderFrom : BoundedTypeSize io.ReaderFrom.
-Admitted.
-
-Global Instance into_val_ReaderFrom `{ffi_syntax} : IntoVal ReaderFrom.t.
-Admitted.
-
-Global Instance into_val_typed_ReaderFrom `{ffi_syntax} : IntoValTyped ReaderFrom.t io.ReaderFrom.
-Admitted.
-
-(* type io.WriterTo *)
-Module WriterTo.
-Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
-End def.
-End WriterTo.
-
-Global Instance bounded_size_WriterTo : BoundedTypeSize io.WriterTo.
-Admitted.
-
-Global Instance into_val_WriterTo `{ffi_syntax} : IntoVal WriterTo.t.
-Admitted.
-
-Global Instance into_val_typed_WriterTo `{ffi_syntax} : IntoValTyped WriterTo.t io.WriterTo.
-Admitted.
-
-(* type io.ReaderAt *)
 Module ReaderAt.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ReaderAt_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.ReaderAt.t). Admitted.
+
+#[global] Instance ReaderAt_into_val_typed
+   :
+  IntoValTypedUnderlying (io.ReaderAt.t) (io.ReaderAtⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End ReaderAt.
 
-Global Instance bounded_size_ReaderAt : BoundedTypeSize io.ReaderAt.
-Admitted.
-
-Global Instance into_val_ReaderAt `{ffi_syntax} : IntoVal ReaderAt.t.
-Admitted.
-
-Global Instance into_val_typed_ReaderAt `{ffi_syntax} : IntoValTyped ReaderAt.t io.ReaderAt.
-Admitted.
-
-(* type io.WriterAt *)
 Module WriterAt.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance WriterAt_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.WriterAt.t). Admitted.
+
+#[global] Instance WriterAt_into_val_typed
+   :
+  IntoValTypedUnderlying (io.WriterAt.t) (io.WriterAtⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End WriterAt.
 
-Global Instance bounded_size_WriterAt : BoundedTypeSize io.WriterAt.
-Admitted.
-
-Global Instance into_val_WriterAt `{ffi_syntax} : IntoVal WriterAt.t.
-Admitted.
-
-Global Instance into_val_typed_WriterAt `{ffi_syntax} : IntoValTyped WriterAt.t io.WriterAt.
-Admitted.
-
-(* type io.ByteReader *)
 Module ByteReader.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ByteReader_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.ByteReader.t). Admitted.
+
+#[global] Instance ByteReader_into_val_typed
+   :
+  IntoValTypedUnderlying (io.ByteReader.t) (io.ByteReaderⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End ByteReader.
 
-Global Instance bounded_size_ByteReader : BoundedTypeSize io.ByteReader.
-Admitted.
-
-Global Instance into_val_ByteReader `{ffi_syntax} : IntoVal ByteReader.t.
-Admitted.
-
-Global Instance into_val_typed_ByteReader `{ffi_syntax} : IntoValTyped ByteReader.t io.ByteReader.
-Admitted.
-
-(* type io.ByteScanner *)
 Module ByteScanner.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ByteScanner_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.ByteScanner.t). Admitted.
+
+#[global] Instance ByteScanner_into_val_typed
+   :
+  IntoValTypedUnderlying (io.ByteScanner.t) (io.ByteScannerⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End ByteScanner.
 
-Global Instance bounded_size_ByteScanner : BoundedTypeSize io.ByteScanner.
-Admitted.
-
-Global Instance into_val_ByteScanner `{ffi_syntax} : IntoVal ByteScanner.t.
-Admitted.
-
-Global Instance into_val_typed_ByteScanner `{ffi_syntax} : IntoValTyped ByteScanner.t io.ByteScanner.
-Admitted.
-
-(* type io.ByteWriter *)
 Module ByteWriter.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ByteWriter_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.ByteWriter.t). Admitted.
+
+#[global] Instance ByteWriter_into_val_typed
+   :
+  IntoValTypedUnderlying (io.ByteWriter.t) (io.ByteWriterⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End ByteWriter.
 
-Global Instance bounded_size_ByteWriter : BoundedTypeSize io.ByteWriter.
-Admitted.
-
-Global Instance into_val_ByteWriter `{ffi_syntax} : IntoVal ByteWriter.t.
-Admitted.
-
-Global Instance into_val_typed_ByteWriter `{ffi_syntax} : IntoValTyped ByteWriter.t io.ByteWriter.
-Admitted.
-
-(* type io.RuneReader *)
 Module RuneReader.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance RuneReader_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.RuneReader.t). Admitted.
+
+#[global] Instance RuneReader_into_val_typed
+   :
+  IntoValTypedUnderlying (io.RuneReader.t) (io.RuneReaderⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End RuneReader.
 
-Global Instance bounded_size_RuneReader : BoundedTypeSize io.RuneReader.
-Admitted.
-
-Global Instance into_val_RuneReader `{ffi_syntax} : IntoVal RuneReader.t.
-Admitted.
-
-Global Instance into_val_typed_RuneReader `{ffi_syntax} : IntoValTyped RuneReader.t io.RuneReader.
-Admitted.
-
-(* type io.RuneScanner *)
 Module RuneScanner.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance RuneScanner_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.RuneScanner.t). Admitted.
+
+#[global] Instance RuneScanner_into_val_typed
+   :
+  IntoValTypedUnderlying (io.RuneScanner.t) (io.RuneScannerⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End RuneScanner.
 
-Global Instance bounded_size_RuneScanner : BoundedTypeSize io.RuneScanner.
-Admitted.
-
-Global Instance into_val_RuneScanner `{ffi_syntax} : IntoVal RuneScanner.t.
-Admitted.
-
-Global Instance into_val_typed_RuneScanner `{ffi_syntax} : IntoValTyped RuneScanner.t io.RuneScanner.
-Admitted.
-
-(* type io.StringWriter *)
-Module StringWriter.
-Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
-End def.
-End StringWriter.
-
-Global Instance bounded_size_StringWriter : BoundedTypeSize io.StringWriter.
-Admitted.
-
-Global Instance into_val_StringWriter `{ffi_syntax} : IntoVal StringWriter.t.
-Admitted.
-
-Global Instance into_val_typed_StringWriter `{ffi_syntax} : IntoValTyped StringWriter.t io.StringWriter.
-Admitted.
-
-(* type io.LimitedReader *)
 Module LimitedReader.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance LimitedReader_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.LimitedReader.t). Admitted.
+
+#[global] Instance LimitedReader_into_val_typed
+   :
+  IntoValTypedUnderlying (io.LimitedReader.t) (io.LimitedReaderⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End LimitedReader.
 
-Global Instance bounded_size_LimitedReader : BoundedTypeSize io.LimitedReader.
-Admitted.
-
-Global Instance into_val_LimitedReader `{ffi_syntax} : IntoVal LimitedReader.t.
-Admitted.
-
-Global Instance into_val_typed_LimitedReader `{ffi_syntax} : IntoValTyped LimitedReader.t io.LimitedReader.
-Admitted.
-
-(* type io.SectionReader *)
 Module SectionReader.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance SectionReader_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.SectionReader.t). Admitted.
+
+#[global] Instance SectionReader_into_val_typed
+   :
+  IntoValTypedUnderlying (io.SectionReader.t) (io.SectionReaderⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End SectionReader.
 
-Global Instance bounded_size_SectionReader : BoundedTypeSize io.SectionReader.
-Admitted.
-
-Global Instance into_val_SectionReader `{ffi_syntax} : IntoVal SectionReader.t.
-Admitted.
-
-Global Instance into_val_typed_SectionReader `{ffi_syntax} : IntoValTyped SectionReader.t io.SectionReader.
-Admitted.
-
-(* type io.OffsetWriter *)
 Module OffsetWriter.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance OffsetWriter_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.OffsetWriter.t). Admitted.
+
+#[global] Instance OffsetWriter_into_val_typed
+   :
+  IntoValTypedUnderlying (io.OffsetWriter.t) (io.OffsetWriterⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End OffsetWriter.
 
-Global Instance bounded_size_OffsetWriter : BoundedTypeSize io.OffsetWriter.
-Admitted.
-
-Global Instance into_val_OffsetWriter `{ffi_syntax} : IntoVal OffsetWriter.t.
-Admitted.
-
-Global Instance into_val_typed_OffsetWriter `{ffi_syntax} : IntoValTyped OffsetWriter.t io.OffsetWriter.
-Admitted.
-
-(* type io.teeReader *)
 Module teeReader.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance teeReader_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.teeReader.t). Admitted.
+
+#[global] Instance teeReader_into_val_typed
+   :
+  IntoValTypedUnderlying (io.teeReader.t) (io.teeReaderⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End teeReader.
 
-Global Instance bounded_size_teeReader : BoundedTypeSize io.teeReader.
-Admitted.
-
-Global Instance into_val_teeReader `{ffi_syntax} : IntoVal teeReader.t.
-Admitted.
-
-Global Instance into_val_typed_teeReader `{ffi_syntax} : IntoValTyped teeReader.t io.teeReader.
-Admitted.
-
-(* type io.discard *)
 Module discard.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance discard_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.discard.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance discard_into_val_typed
+   :
+  IntoValTypedUnderlying (io.discard.t) (io.discardⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+
 End def.
 End discard.
 
-Global Instance bounded_size_discard : BoundedTypeSize io.discard.
-Admitted.
-
-Global Instance into_val_discard `{ffi_syntax} : IntoVal discard.t.
-Admitted.
-
-Global Instance into_val_typed_discard `{ffi_syntax} : IntoValTyped discard.t io.discard.
-Admitted.
-
-(* type io.nopCloser *)
 Module nopCloser.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance nopCloser_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.nopCloser.t). Admitted.
+
+#[global] Instance nopCloser_into_val_typed
+   :
+  IntoValTypedUnderlying (io.nopCloser.t) (io.nopCloserⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End nopCloser.
 
-Global Instance bounded_size_nopCloser : BoundedTypeSize io.nopCloser.
-Admitted.
-
-Global Instance into_val_nopCloser `{ffi_syntax} : IntoVal nopCloser.t.
-Admitted.
-
-Global Instance into_val_typed_nopCloser `{ffi_syntax} : IntoValTyped nopCloser.t io.nopCloser.
-Admitted.
-
-(* type io.nopCloserWriterTo *)
 Module nopCloserWriterTo.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance nopCloserWriterTo_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.nopCloserWriterTo.t). Admitted.
+
+#[global] Instance nopCloserWriterTo_into_val_typed
+   :
+  IntoValTypedUnderlying (io.nopCloserWriterTo.t) (io.nopCloserWriterToⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End nopCloserWriterTo.
 
-Global Instance bounded_size_nopCloserWriterTo : BoundedTypeSize io.nopCloserWriterTo.
-Admitted.
-
-Global Instance into_val_nopCloserWriterTo `{ffi_syntax} : IntoVal nopCloserWriterTo.t.
-Admitted.
-
-Global Instance into_val_typed_nopCloserWriterTo `{ffi_syntax} : IntoValTyped nopCloserWriterTo.t io.nopCloserWriterTo.
-Admitted.
-
-(* type io.eofReader *)
 Module eofReader.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance eofReader_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.eofReader.t). Admitted.
+
+#[global] Instance eofReader_into_val_typed
+   :
+  IntoValTypedUnderlying (io.eofReader.t) (io.eofReaderⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End eofReader.
 
-Global Instance bounded_size_eofReader : BoundedTypeSize io.eofReader.
-Admitted.
-
-Global Instance into_val_eofReader `{ffi_syntax} : IntoVal eofReader.t.
-Admitted.
-
-Global Instance into_val_typed_eofReader `{ffi_syntax} : IntoValTyped eofReader.t io.eofReader.
-Admitted.
-
-(* type io.multiReader *)
 Module multiReader.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance multiReader_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.multiReader.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "readers" ∷ l.[(io.multiReader.t), "readers"] ↦{dq} v.(io.multiReader.readers') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance multiReader_into_val_typed
+   :
+  IntoValTypedUnderlying (io.multiReader.t) (io.multiReaderⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance multiReader_access_load_readers l (v : (io.multiReader.t)) dq :
+  AccessStrict
+    (l.[(io.multiReader.t), "readers"] ↦{dq} (v.(io.multiReader.readers')))
+    (l.[(io.multiReader.t), "readers"] ↦{dq} (v.(io.multiReader.readers')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance multiReader_access_store_readers l (v : (io.multiReader.t)) readers' :
+  AccessStrict
+    (l.[(io.multiReader.t), "readers"] ↦ (v.(io.multiReader.readers')))
+    (l.[(io.multiReader.t), "readers"] ↦ readers')
+    (l ↦ v) (l ↦ (v <|(io.multiReader.readers') := readers'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End multiReader.
 
-Global Instance bounded_size_multiReader : BoundedTypeSize io.multiReader.
-Admitted.
-
-Global Instance into_val_multiReader `{ffi_syntax} : IntoVal multiReader.t.
-Admitted.
-
-Global Instance into_val_typed_multiReader `{ffi_syntax} : IntoValTyped multiReader.t io.multiReader.
-Admitted.
-
-(* type io.multiWriter *)
 Module multiWriter.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance multiWriter_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.multiWriter.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "writers" ∷ l.[(io.multiWriter.t), "writers"] ↦{dq} v.(io.multiWriter.writers') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance multiWriter_into_val_typed
+   :
+  IntoValTypedUnderlying (io.multiWriter.t) (io.multiWriterⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance multiWriter_access_load_writers l (v : (io.multiWriter.t)) dq :
+  AccessStrict
+    (l.[(io.multiWriter.t), "writers"] ↦{dq} (v.(io.multiWriter.writers')))
+    (l.[(io.multiWriter.t), "writers"] ↦{dq} (v.(io.multiWriter.writers')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance multiWriter_access_store_writers l (v : (io.multiWriter.t)) writers' :
+  AccessStrict
+    (l.[(io.multiWriter.t), "writers"] ↦ (v.(io.multiWriter.writers')))
+    (l.[(io.multiWriter.t), "writers"] ↦ writers')
+    (l ↦ v) (l ↦ (v <|(io.multiWriter.writers') := writers'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End multiWriter.
 
-Global Instance bounded_size_multiWriter : BoundedTypeSize io.multiWriter.
-Admitted.
-
-Global Instance into_val_multiWriter `{ffi_syntax} : IntoVal multiWriter.t.
-Admitted.
-
-Global Instance into_val_typed_multiWriter `{ffi_syntax} : IntoValTyped multiWriter.t io.multiWriter.
-Admitted.
-
-(* type io.onceError *)
 Module onceError.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance onceError_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.onceError.t). Admitted.
+
+#[global] Instance onceError_into_val_typed
+   :
+  IntoValTypedUnderlying (io.onceError.t) (io.onceErrorⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End onceError.
 
-Global Instance bounded_size_onceError : BoundedTypeSize io.onceError.
-Admitted.
-
-Global Instance into_val_onceError `{ffi_syntax} : IntoVal onceError.t.
-Admitted.
-
-Global Instance into_val_typed_onceError `{ffi_syntax} : IntoValTyped onceError.t io.onceError.
-Admitted.
-
-(* type io.pipe *)
 Module pipe.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance pipe_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.pipe.t). Admitted.
+
+#[global] Instance pipe_into_val_typed
+   :
+  IntoValTypedUnderlying (io.pipe.t) (io.pipeⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End pipe.
 
-Global Instance bounded_size_pipe : BoundedTypeSize io.pipe.
-Admitted.
-
-Global Instance into_val_pipe `{ffi_syntax} : IntoVal pipe.t.
-Admitted.
-
-Global Instance into_val_typed_pipe `{ffi_syntax} : IntoValTyped pipe.t io.pipe.
-Admitted.
-
-(* type io.PipeReader *)
 Module PipeReader.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance PipeReader_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.PipeReader.t). Admitted.
+
+#[global] Instance PipeReader_into_val_typed
+   :
+  IntoValTypedUnderlying (io.PipeReader.t) (io.PipeReaderⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End PipeReader.
 
-Global Instance bounded_size_PipeReader : BoundedTypeSize io.PipeReader.
-Admitted.
-
-Global Instance into_val_PipeReader `{ffi_syntax} : IntoVal PipeReader.t.
-Admitted.
-
-Global Instance into_val_typed_PipeReader `{ffi_syntax} : IntoValTyped PipeReader.t io.PipeReader.
-Admitted.
-
-(* type io.PipeWriter *)
 Module PipeWriter.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : io.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance PipeWriter_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (io.PipeWriter.t). Admitted.
+
+#[global] Instance PipeWriter_into_val_typed
+   :
+  IntoValTypedUnderlying (io.PipeWriter.t) (io.PipeWriterⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End PipeWriter.
 
-Global Instance bounded_size_PipeWriter : BoundedTypeSize io.PipeWriter.
-Admitted.
-
-Global Instance into_val_PipeWriter `{ffi_syntax} : IntoVal PipeWriter.t.
-Admitted.
-
-Global Instance into_val_typed_PipeWriter `{ffi_syntax} : IntoValTyped PipeWriter.t io.PipeWriter.
-Admitted.
-
-Section names.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext}.
-#[local] Transparent is_pkg_defined is_pkg_defined_pure.
-
-Global Instance is_pkg_defined_pure_io : IsPkgDefinedPure io :=
-  {|
-    is_pkg_defined_pure_def go_ctx :=
-      is_pkg_defined_pure_single io ∧
-      is_pkg_defined_pure code.errors.errors ∧
-      is_pkg_defined_pure code.sync.sync;
-  |}.
-
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_io : IsPkgDefined io :=
-  {|
-    is_pkg_defined_def go_ctx :=
-      (is_pkg_defined_single io ∗
-       is_pkg_defined code.errors.errors ∗
-       is_pkg_defined code.sync.sync)%I
-  |}.
-Final Obligation. iIntros. iFrame "#%". Qed.
-#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
-
-End names.
 End io.

@@ -1,21 +1,16 @@
-From Perennial.goose_lang Require Import notation.
 From Coq Require Import ssreflect.
 From Ltac2 Require Import Ltac2 Printf.
 Set Default Proof Mode "Classic".
-From New.golang.defn Require Import typing.
-From New.golang.theory Require Import proofmode pkg loop.
-From New.golang.theory Require Import mem.
+From New.golang.theory Require Export proofmode pkg loop.
+From New.golang.theory Require Export mem.
 From Perennial Require Import base.
 
 #[local] Open Scope general_if_scope.
 
-(* TODO: iFrame # is only for backwards compatibility *)
-Tactic Notation "wp_globals_get" :=
-  wp_globals_get_core; try iPkgInit; try iFrame "#".
 Tactic Notation "wp_func_call" :=
-  wp_func_call_core; try iPkgInit; try iFrame "#".
+  rewrite func_unfold; try iPkgInit.
 Tactic Notation "wp_method_call" :=
-  wp_method_call_core; try iPkgInit; try iFrame "#".
+  rewrite method_unfold; try iPkgInit; try iFrame "#".
 
 (* remove and introduce [is_pkg_init] and [is_pkg_defined] facts from a hypothesis *)
 Ltac destruct_pkg_init H :=
@@ -33,8 +28,6 @@ Ltac destruct_pkg_init H :=
     | |- environments.envs_entails ?env _ =>
         lazymatch env with
         | context[environments.Esnoc _ i (is_pkg_init _ ∗ _)%I] =>
-            split_hyp
-        | context[environments.Esnoc _ i (is_pkg_defined _ ∗ _)%I] =>
             split_hyp
         | context[environments.Esnoc _ i (is_pkg_init _)] =>
             iDestruct i as "#?";
@@ -67,7 +60,8 @@ Tactic Notation "wp_start_folded" "as" constr(pat) :=
 Tactic Notation "wp_start" "as" constr(pat) :=
   wp_start_folded as pat;
   (* only do this if it produces a single goal *)
-  try (first [ wp_func_call | wp_method_call ]; wp_call; [idtac]).
+  try (first [ wp_func_call| wp_method_call; try wp_call ]; [idtac]);
+  try wp_call.
 
 Tactic Notation "wp_start" :=
   wp_start as "Hpre".
@@ -101,8 +95,7 @@ Ltac2 wp_auto_lc (num_lc_wanted : int) :=
                     | wp_load ()
                     | wp_store ()
                     | wp_alloc_auto ()
-                    | ltac1:(progress wp_clear_unused_pointsto)
-                    | ltac1:(rewrite <- !default_val_eq_zero_val) ]);
+                    | ltac1:(progress wp_clear_unused_pointsto)]);
       if (Int.gt (Ref.get num_lc_wanted) 0) then
         Control.backtrack_tactic_failure "wp_auto_lc: unable to generate enough later credits"
       else
@@ -229,16 +222,17 @@ Tactic Notation "wp_auto_lc" int(x) :=
   let f := ltac2:(x |- wp_auto_lc (Option.get (Ltac1.to_int x))) in
   f x.
 
-Lemma true_neq_false `{ffi: ffi_syntax} :
-  #true ≠ #false.
-Proof. intros ?%(inj to_val); congruence. Qed.
-Lemma false_neq_true `{ffi: ffi_syntax} :
-  #false ≠ #true.
-Proof. intros ?%(inj to_val); congruence. Qed.
+Section bool_lemmas.
+Context {ext : ffi_syntax} {go_lctx : GoLocalContext} {go_gctx : GoGlobalContext}
+  {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
+Lemma true_neq_false : #true ≠ #false.
+Proof. intros ?%(inj into_val); congruence. Qed.
+Lemma false_neq_true : #false ≠ #true.
+Proof. intros ?%(inj into_val); congruence. Qed.
 
 Hint Resolve true_neq_false false_neq_true : core.
 
-Lemma if_decide_bool_eq_true `{!ffi_syntax} {A} `{!Decision P} (x y: A) :
+Lemma if_decide_bool_eq_true {A} `{!Decision P} (x y: A) :
   (if decide (#(bool_decide P) = #true) then x
   else y) = (if bool_decide P then x else y).
 Proof.
@@ -247,7 +241,7 @@ Proof.
   - rewrite decide_False //.
 Qed.
 
-Lemma if_decide_bool_eq_false `{!ffi_syntax} {A} `{!Decision P} (x y: A) :
+Lemma if_decide_bool_eq_false {A} `{!Decision P} (x y: A) :
   (if decide (#(bool_decide P) = #false) then x
   else y) = (if bool_decide P then y else x).
 Proof.
@@ -260,7 +254,7 @@ Qed.
 the common case where the value produced is a [bool_decide] expression (which is
 how GooseLang should work). I'm not sure how to integrate this into automation,
 since this only comes up after reasoning about the loop condition. *)
-Lemma if_decide_bool_eq `{!ffi_syntax} {A} `{!Decision P} (x y z: A) :
+Lemma if_decide_bool_eq {A} `{!Decision P} (x y z: A) :
   (if decide (#(bool_decide P) = #true) then x
   else if decide (#(bool_decide P) = #false) then y
       else z) = (if bool_decide P then x else y).
@@ -272,24 +266,28 @@ Qed.
 
 (* This pattern comes up in the postcondition from [wp_for] if the condition is
 the constant [#true] (for infinite loops using [break] for example) *)
-Lemma if_decide_eq `{!ffi_syntax} {A} (b: bool) (x y: A) :
+Lemma if_decide_eq {A} (b: bool) (x y: A) :
   (if decide (#b = #b) then x else y) = x.
 Proof. rewrite decide_True //. Qed.
 
 (* TODO: is there a systematic way to avoid seeing these? *)
-Lemma if_decide_true_eq_false `{!ffi_syntax} {A} (x y: A) :
+Lemma if_decide_true_eq_false {A} (x y: A) :
   (if decide (#true = #false) then x else y) = y.
 Proof. rewrite decide_False //. Qed.
-Lemma if_decide_false_eq_true `{!ffi_syntax} {A} (x y: A) :
+Lemma if_decide_false_eq_true {A} (x y: A) :
   (if decide (#false = #true) then x else y) = y.
 Proof. rewrite decide_False //. Qed.
 
-Lemma if_decide_true_neq_false `{!ffi_syntax} {A} (x y: A) :
+Lemma if_decide_true_neq_false {A} (x y: A) :
   (if decide (#true ≠ #false) then x else y) = x.
 Proof. rewrite decide_True //. Qed.
-Lemma if_decide_false_neq_true `{!ffi_syntax} {A} (x y: A) :
+Lemma if_decide_false_neq_true {A} (x y: A) :
   (if decide (#false ≠ #true) then x else y) = x.
 Proof. rewrite decide_True //. Qed.
+
+End bool_lemmas.
+
+Global Hint Resolve true_neq_false false_neq_true : core.
 
 Ltac cleanup_bool_decide :=
   rewrite ?if_decide_bool_eq_true ?if_decide_bool_eq_false
@@ -330,12 +328,12 @@ Ltac wp_if_destruct :=
           cleanup_bool_decide;
           try wp_auto;
           cleanup_bool_decide
-      | context[@to_val _ bool _ ?b] =>
+      | context[@into_val _ _ bool ?b] =>
           is_var b; destruct b;
           cleanup_bool_decide;
           try wp_auto;
           cleanup_bool_decide
-      | context[@to_val _ bool _ (negb ?b)] =>
+      | context[@into_val _ _ bool (negb ?b)] =>
           is_var b; destruct b;
           cleanup_bool_decide;
           try wp_auto;
@@ -358,8 +356,7 @@ Ltac wp_if_destruct :=
         3) Prove the remainder with [asn] as an assumption.
 **)
 Tactic Notation "wp_if_join" constr(asn) "with" constr(pat) :=
-  wp_bind (if: _ then _ else _)%E;
-  wp_pures;
+  wp_bind (if: (Val _) then _ else _)%E;
   iApply (wp_wand _ _ _ asn with pat)%I;
   [ wp_if_destruct | ].
 
@@ -382,3 +379,34 @@ Ltac wp_end :=
       iFrame;
       word
   ].
+
+Ltac solve_pointsto_access_struct :=
+  constructor;
+  iIntros "H"; iStructNamed "H"; iFrame; iIntros;
+  iApply typed_pointsto_combine; iFrame.
+
+Ltac solve_into_val_typed_struct :=
+    let alloc Hint :=
+      let field :=
+        rewrite bool_decide_decide; destruct decide; subst;
+        last (wp_auto; wp_apply wp_AngelicExit);
+        iDestruct "l_field" as "?"; wp_auto
+      in
+      iIntros "_ HΦ"; wp_pure; clear Hint; wp_apply wp_GoPrealloc as "* %Hnotnull"; repeat field;
+      iApply "HΦ"; iEval (rewrite typed_pointsto_unseal); by iFrame in
+    let load Hint :=
+      iIntros "Hl HΦ"; rewrite typed_pointsto_unseal;
+      iNamed "Hl"; simpl; wp_pure; clear Hint; wp_auto; destruct &v; simpl; iApply "HΦ"; by iFrame in
+    let store Hint :=
+      iIntros "Hl HΦ"; rewrite typed_pointsto_unseal;
+      iNamed "Hl"; simpl; wp_pure; clear Hint; wp_auto; destruct &v; simpl; iApply "HΦ"; by iFrame in
+    pose proof (go.tagged_steps internal) as Hint; constructor; intros; [alloc Hint | load Hint | store Hint | tc_solve].
+
+Global Instance equals_unfold_nil A : (@nil A) =→ (@nil A).
+Proof. done. Qed.
+
+Global Instance into_val_typed_unit
+  `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
+  {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}
+  : IntoValTypedUnderlying unit (go.StructType []).
+Proof. solve_into_val_typed_struct. Qed.

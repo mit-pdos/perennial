@@ -1,28 +1,30 @@
 From New.proof Require Import proof_prelude.
+From New.code.github_com.goose_lang Require Export std_core.
 From New.generatedproof.github_com.goose_lang Require Export std_core.
 From New.proof Require Import github_com.goose_lang.primitive.
 
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
+Context {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
+Context {package_sem : std_core.Assumptions}.
+Local Set Default Proof Using "All".
 
-#[global] Instance : IsPkgInit std_core := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf std_core := build_get_is_pkg_init_wf.
+#[global] Instance : IsPkgInit (iProp Σ) std_core := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ) std_core := build_get_is_pkg_init_wf.
 
 Lemma wp_initialize' get_is_pkg_init :
   get_is_pkg_init_prop std_core get_is_pkg_init →
-  {{{ own_initializing get_is_pkg_init ∗ is_go_context ∗ □ is_pkg_defined std_core }}}
+  {{{ own_initializing get_is_pkg_init }}}
     std_core.initialize' #()
   {{{ RET #(); own_initializing get_is_pkg_init ∗ is_pkg_init std_core }}}.
 Proof.
-  intros Hinit. wp_start as "(Hown & #? & #Hdef)".
-  wp_call. wp_apply (wp_package_init with "[$Hown] HΦ").
+  intros Hinit. wp_start as "Hown".
+  wp_apply (wp_package_init with "[$Hown] HΦ").
   { destruct Hinit as (-> & ?); done. }
   iIntros "Hown". wp_auto.
   wp_apply (primitive.wp_initialize' with "[$Hown]") as "(Hown & #?)".
   { naive_solver. }
-  { iModIntro. iEval simpl_is_pkg_defined in "Hdef". iPkgInit. }
-  wp_call. iEval (rewrite is_pkg_init_unfold /=). iFrame "∗#". done.
+  iEval (rewrite is_pkg_init_unfold /=). iFrame "∗#". done.
 Qed.
 
 Lemma wp_SumNoOverflow (x y : u64) :
@@ -30,8 +32,7 @@ Lemma wp_SumNoOverflow (x y : u64) :
     @! std_core.SumNoOverflow #x #y
   {{{ RET #(bool_decide (uint.Z (word.add x y) = (uint.Z x + uint.Z y)%Z)); True }}}.
 Proof.
-  wp_start as "_".
-  wp_auto.
+  wp_start as "_". wp_auto.
   iSpecialize ("HΦ" with "[$]").
   iExactEq "HΦ".
   repeat f_equal.
@@ -70,7 +71,7 @@ Proof.
   iExactEq "HΦ".
   repeat f_equal.
   apply bool_decide_ext.
-  pose proof (mul_overflow_check_correct x y ltac:(word)).
+  pose proof (mul_overflow_check_correct x y ltac:(word) ltac:(word)).
   word.
 Qed.
 
@@ -100,7 +101,7 @@ Proof.
   iPersist "xs".
   iDestruct (own_slice_len with "Hs") as %Hlen.
   iDestruct (own_slice_wf with "Hs") as %Hwf.
-  destruct (bool_decide_reflect (slice.len_f s = W64 0)); wp_auto.
+  destruct (bool_decide_reflect (slice.len s = W64 0)); wp_auto.
   {
     assert (xs = []); subst .
     { destruct xs; auto; simpl in *; word.  }
@@ -109,7 +110,7 @@ Proof.
   }
   iAssert (∃ (i: w64) (xs': list w64),
               "i" ∷ i_ptr ↦ i ∗
-              "%HI" ∷ ⌜0 ≤ sint.Z i < sint.Z (slice.len_f s)⌝ ∗
+              "%HI" ∷ ⌜0 ≤ sint.Z i < sint.Z (slice.len s)⌝ ∗
               "Hs" ∷ s ↦* xs' ∗
               "%Hperm" ∷ ⌜xs ≡ₚ xs'⌝
           )%I with "[$i $Hs]" as "IH".
@@ -126,15 +127,17 @@ Proof.
     iIntros (x) "_".
     wp_auto.
     list_elem xs' (sint.Z i) as x_i.
-    wp_apply (wp_load_slice_elem with "[$Hs]") as "Hs"; [ word | eauto | ].
+    rewrite -> decide_True; last word.
+    wp_apply (wp_load_slice_index with "[$Hs]") as "Hs"; [ word | eauto | ].
+    rewrite -> decide_True; last word.
 
     list_elem xs' (sint.nat (word.modu x (word.add i (W64 1)))) as x_i'.
-    wp_pure; first word.
-    wp_apply (wp_load_slice_elem with "[$Hs]") as "Hs"; [ word | eauto | ].
-    wp_apply (wp_store_slice_elem with "[$Hs]") as "Hs".
+    wp_apply (wp_load_slice_index with "[$Hs]") as "Hs"; [ word | eauto | ].
+    rewrite -> decide_True; last word. wp_auto.
+    wp_apply (wp_store_slice_index with "[$Hs]") as "Hs".
     { word. }
-    wp_pure; first word.
-    wp_apply (wp_store_slice_elem with "[$Hs]") as "Hs"; [ len | ].
+    rewrite -> decide_True; last word. wp_auto.
+    wp_apply (wp_store_slice_index with "[$Hs]") as "Hs"; [ len | ].
     wp_for_post.
     iFrame.
     iPureIntro.
@@ -167,7 +170,7 @@ Lemma wp_Permutation (n: w64) :
 Proof.
   wp_start as "%Hnz".
   wp_auto.
-  wp_apply (wp_slice_make2 (V:=w64)).
+  wp_apply wp_slice_make2.
   { word. }
   iIntros (s) "[Hs _]".
   wp_auto.
@@ -190,8 +193,8 @@ Proof.
   }
   wp_for "IH".
   destruct (bool_decide_reflect (uint.Z i < uint.Z n)); wp_auto.
-  - wp_pure; first word.
-    wp_apply (wp_store_slice_elem with "[$Hs]").
+  - rewrite -> decide_True; last word. wp_auto.
+    wp_apply (wp_store_slice_index with "[$Hs]").
     { len. }
     iIntros "Hs".
     wp_auto. wp_for_post.

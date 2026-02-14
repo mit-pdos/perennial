@@ -32,8 +32,12 @@ sketch in the Go source code:
 Unset Printing Projections.
 
 Section proof.
-Context  `{hG: heapGS Σ, !ffi_semantics _ _} `{!globalsGS Σ} {go_ctx : GoContext}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics} {package_sem : sort.Assumptions}.
+Collection W := sem + package_sem.
 
+#[global] Instance : IsPkgInit (iProp Σ) sort := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ) sort := build_get_is_pkg_init_wf.
 (* The comparison function must implement a pure function over in-bounds indices,
    with an arbitrary invariant I that it requires and preserves *)
 Definition cmp_implements (cmp_code: func.t) (cmp: Z → Z) (n: Z) (I: iProp Σ) : iProp Σ :=
@@ -148,7 +152,7 @@ Lemma wp_Find (n: w64) (cmp_code: func.t) (cmp: Z → Z) (I: iProp Σ) :
       ⌜(∀ i, 0 ≤ i < sint.Z n → cmp i > 0) → sint.Z i = sint.Z n⌝ ∗
       ⌜∀ k, 0 ≤ k < sint.Z i → cmp k > 0⌝
   }}}.
-Proof.
+Proof using W.
   wp_start as "(%Hpos & #Hcmp0 & I & %Hvalid)".
   wp_auto.
 

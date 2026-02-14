@@ -3,7 +3,6 @@ Require Import New.generatedproof.go_etcd_io.etcd.client.v3.concurrency.
 Require Import New.proof.proof_prelude.
 Require Import New.proof.go_etcd_io.etcd.client.v3.
 From New.proof Require Import context sync time math errors fmt.
-From New.proof Require Export chan.
 
 Ltac2 Set wp_apply_auto_default := Ltac2.Init.false.
 
@@ -18,7 +17,12 @@ Section proof.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics} {package_sem : zapcore.Assumptions}.
+Collection W := sem + package_sem.
+
+#[global] Instance : IsPkgInit (iProp Σ) zapcore := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ) zapcore := build_get_is_pkg_init_wf.
 Context `{concurrencyG Σ}.
 
 (* FIXME: move these *)

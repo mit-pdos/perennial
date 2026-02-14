@@ -43,10 +43,14 @@ Definition flip_dsp_names (γdsp_names : dsp_names) : dsp_names :=
     γdsp_names.(dsp_lr_name).
 
 Section dsp.
+
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!chanG Σ V} `{!IntoVal V} `{!IntoValTyped V tV}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
+Context {sem : go.Semantics}.
+Context `{!chanG Σ V}.
 Context `{!dspG Σ V}.
+
+Context `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}.
+Collection W := sem + IntoValTyped0.
 
 Let N := nroot .@ "dsp_chan".
 
@@ -54,11 +58,11 @@ Let N := nroot .@ "dsp_chan".
 
 (** Defines when Go channel state matches expected message queue *)
 Definition buffer_matches {V}
-    (state : chan_rep.t V) (vs : list V) : Prop :=
+    (state : chanstate.t V) (vs : list V) : Prop :=
   match state with
-  | chan_rep.Buffered queue => vs = queue
-  | chan_rep.SndPending v | chan_rep.SndCommit v => vs = [v]
-  | chan_rep.Closed drain => vs = drain
+  | chanstate.Buffered queue => vs = queue
+  | chanstate.SndPending v | chanstate.SndCommit v => vs = [v]
+  | chanstate.Closed drain => vs = drain
   | _ => vs = []
   end.
 
@@ -72,14 +76,14 @@ Definition dsp_session_inv
   ∃ lr_state rl_state (vsl vsr : list V),
     ⌜buffer_matches lr_state vsl⌝ ∗
     ⌜buffer_matches rl_state vsr⌝ ∗
-    own_chan lr_chan lr_state (γdsp_names.(chan_lr_name)) ∗
-    own_chan rl_chan rl_state (γdsp_names.(chan_rl_name)) ∗
+    own_chan (γdsp_names.(chan_lr_name)) V lr_state ∗
+    own_chan (γdsp_names.(chan_rl_name)) V rl_state ∗
     match lr_state with
-    | chan_rep.Closed _ => iProto_own (γdsp_names.(dsp_lr_name)) END
+    | chanstate.Closed _ => iProto_own (γdsp_names.(dsp_lr_name)) END
     | _ => token (γdsp_names.(token_lr_name))
     end ∗
     match rl_state with
-    | chan_rep.Closed _ => iProto_own (γdsp_names.(dsp_rl_name)) END
+    | chanstate.Closed _ => iProto_own (γdsp_names.(dsp_rl_name)) END
     | _ => token (γdsp_names.(token_rl_name))
     end ∗
     iProto_ctx (γdsp_names.(dsp_lr_name)) (γdsp_names.(dsp_rl_name)) vsl vsr.
@@ -99,8 +103,8 @@ Definition dsp_session
              (γdsp_names : dsp_names)
     (lr_chan rl_chan : loc)
      : iProp Σ :=
-  is_chan lr_chan γdsp_names.(chan_lr_name) ∗
-  is_chan rl_chan γdsp_names.(chan_rl_name) ∗
+  is_chan lr_chan γdsp_names.(chan_lr_name) V ∗
+  is_chan rl_chan γdsp_names.(chan_rl_name) V ∗
   inv N (dsp_session_inv γdsp_names lr_chan rl_chan).
 
 (** ** DSP Endpoints *)
@@ -108,11 +112,9 @@ Definition dsp_session
 (** Left endpoint - can send V_LR via lr_chan, receive V_RL via rl_chan *)
 Definition dsp_endpoint
   (γdsp_names : dsp_names)
-    (v : val)
+    (chans : (chan.t * chan.t))
     (p : option $ iProto Σ V) : iProp Σ :=
-  ∃ (lr_chan rl_chan : loc),
-    ⌜v = #(lr_chan,rl_chan)⌝ ∗
-    dsp_session γdsp_names lr_chan rl_chan ∗
+    dsp_session γdsp_names chans.1 chans.2 ∗
     match p with
     | None => token γdsp_names.(token_lr_name)
     | Some p => iProto_own γdsp_names.(dsp_lr_name) p
@@ -128,8 +130,8 @@ Proof. apply (ne_proper _). Qed.
 
 Lemma iProto_pointsto_le γ c p1 p2 : c ↣{γ}  p1 ⊢ ▷ (p1 ⊑ p2) -∗ c ↣{γ}  p2.
 Proof.
-  iDestruct 1 as (lr_chan rl_chan ->) "[Hc Hp]".
-  iIntros "Hle'". iExists _,_. iSplit; [done|]. iFrame "Hc".
+  iDestruct 1 as "[Hc Hp]".
+  iIntros "Hle'". iSplit; [done|].
   by iApply (iProto_own_le with "Hp").
 Qed.
 
@@ -137,17 +139,17 @@ Qed.
 
 (** Initialize a new DSP session from basic channels *)
 Lemma dsp_session_init
-    E (lr_chan rl_chan : loc) (lr_state rl_state : chan_rep.t V)
+    E (lr_chan rl_chan : loc) (lr_state rl_state : chanstate.t V)
     (γlr_names γrl_names : chan_names)
     (p : iProto Σ V) :
-  (lr_state = chan_rep.Idle ∨ lr_state = chan_rep.Buffered []) →
-  (rl_state = chan_rep.Idle ∨ rl_state = chan_rep.Buffered []) →
-  is_chan lr_chan γlr_names -∗
-  is_chan rl_chan γrl_names -∗
-  own_chan lr_chan lr_state γlr_names -∗
-  own_chan rl_chan rl_state γrl_names ={E}=∗
+  (lr_state = chanstate.Idle ∨ lr_state = chanstate.Buffered []) →
+  (rl_state = chanstate.Idle ∨ rl_state = chanstate.Buffered []) →
+  is_chan lr_chan γlr_names V -∗
+  is_chan rl_chan γrl_names V -∗
+  own_chan γlr_names V lr_state -∗
+  own_chan γrl_names V rl_state ={E}=∗
   ∃ γdsp1 γdsp2,
-  #(lr_chan,rl_chan) ↣{γdsp1}  p ∗ #(rl_chan,lr_chan) ↣{γdsp2} iProto_dual p.
+  (lr_chan,rl_chan) ↣{γdsp1}  p ∗ (rl_chan,lr_chan) ↣{γdsp2} iProto_dual p.
 Proof.
   iIntros (Hlr Hrl) "#Hcl_is #Hcr_is Hcl_own Hcr_own".
   iMod (iProto_init) as (γl γr) "(Hctx & Hpl & Hpr)".
@@ -161,10 +163,8 @@ Proof.
   iModIntro.
   iExists γdsp_names, (flip_dsp_names γdsp_names).
   iSplitL "Hpl".
-  - iExists _,_. iSplit; [done|].
-    iFrame "Hpl Hinv". iFrame "∗#".
-  - iExists _,_. iSplit; [done|].
-    rewrite dsp_session_inv_sym. iFrame "Hinv".
+  - iFrame "Hpl Hinv". iFrame "∗#".
+  - rewrite dsp_session_inv_sym. iFrame "Hinv".
     iFrame "∗#".
 Qed.
 
@@ -179,15 +179,12 @@ Qed.
 (** Endpoint sends value *)
 Lemma dsp_send_au γ (lr_chan rl_chan : loc) (v : V) (p : iProto Σ V) Φ :
   £1 -∗
-  #(lr_chan,rl_chan) ↣{γ} (<!> MSG v; p)%proto -∗
-  ▷(#(lr_chan,rl_chan) ↣{γ} p -∗ Φ) -∗
-  SendAU lr_chan v γ.(chan_lr_name) Φ.
+  (lr_chan,rl_chan) ↣{γ} (<!> MSG v; p)%proto -∗
+  ▷((lr_chan,rl_chan) ↣{γ} p -∗ Φ) -∗
+  send_au γ.(chan_lr_name) v Φ.
 Proof.
   iIntros "H£ Hc HΦ".
-  iDestruct "Hc" as (?? Heq) "(#(Hcl&Hcr&HI)&Hp)".
-  rewrite to_val_unseal in Heq. simplify_eq.
-  rename lr_chan0 into lr_chan.
-  rename rl_chan0 into rl_chan.
+  iDestruct "Hc" as "(#(Hcl&Hcr&HI)&Hp)".
   iMod (inv_acc with "HI") as "[IH Hclose]"; [solve_ndisj|].
   iDestruct "IH" as (????) "(>%&>%&Hownl&Hownr&Hclosel&Hcloser&Hctx)".
   iApply fupd_mask_intro; [solve_ndisj|].
@@ -234,19 +231,16 @@ Proof.
 Qed.
 
 Lemma wp_dsp_send (lr_chan rl_chan : loc) γ (v : V) (p : iProto Σ V) :
-  {{{ #(lr_chan,rl_chan) ↣{γ} <!> MSG v; p }}}
-    chan.send #tV #lr_chan #v
-  {{{ RET #(); #(lr_chan,rl_chan) ↣{γ} p }}}.
-Proof.
+  {{{ (lr_chan,rl_chan) ↣{γ} <!> MSG v; p }}}
+    chan.send t #lr_chan #v
+  {{{ RET #(); (lr_chan,rl_chan) ↣{γ} p }}}.
+Proof using W.
   iIntros (Φ) "Hc HΦ".
-  iDestruct "Hc" as (?? Heq) "(#(Hcl&Hcr&HI)&Hp)".
-  rewrite to_val_unseal in Heq. simplify_eq.
-  rename lr_chan0 into lr_chan.
-  rename rl_chan0 into rl_chan.
-  iApply (chan.wp_send lr_chan v _ with "[$Hcl]").
+  iDestruct "Hc" as "(#(Hcl&Hcr&HI)&Hp)".
+  iApply (chan.wp_send with "Hcl").
   iIntros "(Hlc1 & Hlc2 & _)".
   iApply (dsp_send_au with "[$] [$Hp]").
-  { iFrame "#". done. }
+  { iFrame "#". }
   done.
 Qed.
 
@@ -254,10 +248,10 @@ Lemma dsp_send_tele_au
   {TT : tele} (tt:TT)
   γ (lr_chan rl_chan : loc) (v : TT → V) (P : TT → iProp Σ) (p : TT → iProto Σ V) Φ :
   £1 -∗
-  #(lr_chan,rl_chan) ↣{γ} ((<!.. x> MSG (v x) {{ P x }}; p x))%proto -∗
+  (lr_chan,rl_chan) ↣{γ} ((<!.. x> MSG (v x) {{ P x }}; p x))%proto -∗
   P tt -∗
-  (#(lr_chan,rl_chan) ↣{γ} p tt -∗ Φ) -∗
-  SendAU lr_chan (v tt) γ.(chan_lr_name) Φ.
+  ((lr_chan,rl_chan) ↣{γ} p tt -∗ Φ) -∗
+  send_au γ.(chan_lr_name) (v tt) Φ.
 Proof.
   iIntros "H£ Hc HP HΦ".
   iDestruct (iProto_pointsto_le _ _ _ (<!> MSG v tt; p tt)%proto with "Hc [HP]")
@@ -265,17 +259,17 @@ Proof.
   { iIntros "!>".
     iApply iProto_le_trans;
       [iApply iProto_le_texist_intro_l|].
-    by iFrame "HP". }  
+    by iFrame "HP". }
   iApply (dsp_send_au with "H£ Hc HΦ").
 Qed.
 
 Lemma wp_dsp_send_tele
   {TT : tele} (tt:TT)
   (lr_chan rl_chan : loc) γ (v : TT → V) (P : TT → iProp Σ) (p : TT → iProto Σ V) :
-  {{{ #(lr_chan,rl_chan) ↣{γ} (<!.. x> MSG (v x) {{ P x }}; p x) ∗ P tt }}}
-    chan.send #tV #lr_chan #(v tt)
-  {{{ RET #(); #(lr_chan,rl_chan) ↣{γ} p tt }}}.
-Proof.
+  {{{ (lr_chan,rl_chan) ↣{γ} (<!.. x> MSG (v x) {{ P x }}; p x) ∗ P tt }}}
+    chan.send t #lr_chan #(v tt)
+  {{{ RET #(); (lr_chan,rl_chan) ↣{γ} p tt }}}.
+Proof using W.
   iIntros (Φ) "[Hc HP] HΦ".
   iDestruct (iProto_pointsto_le _ _ _ (<!> MSG v tt; p tt)%proto with "Hc [HP]")
     as "Hc".
@@ -290,15 +284,12 @@ Qed.
 Lemma dsp_recv_au {TT:tele}
     γ (lr_chan rl_chan : loc) (v : TT → V) (P : TT → iProp Σ) (p : TT → iProto Σ V) Φ :
   (£1 ∗ £1) -∗
-  #(lr_chan,rl_chan) ↣{γ} (<?.. x> MSG (v x) {{ ▷ P x }}; p x)%proto -∗
-   ▷(∀ x, #(lr_chan,rl_chan) ↣{γ} p x ∗ P x -∗ Φ (v x) true) -∗
-  recv_au rl_chan γ.(chan_rl_name) Φ.
+  (lr_chan,rl_chan) ↣{γ} (<?.. x> MSG (v x) {{ ▷ P x }}; p x)%proto -∗
+   ▷(∀ x, (lr_chan,rl_chan) ↣{γ} p x ∗ P x -∗ Φ (v x) true) -∗
+  recv_au γ.(chan_rl_name) V Φ.
 Proof.
   iIntros "H£s Hc HΦ".
-  iDestruct "Hc" as (?? Heq) "(#(Hcl&Hcr&HI)&Hp)".
-  rewrite to_val_unseal in Heq. simplify_eq.
-  rename lr_chan0 into lr_chan.
-  rename rl_chan0 into rl_chan.
+  iDestruct "Hc" as "(#(Hcl&Hcr&HI)&Hp)".
   iMod (inv_acc with "HI") as "[IH Hclose]"; [solve_ndisj|].
   iDestruct "IH" as (????) "(>%&>%&Hownl&Hownr&Hclosel&Hcloser&Hctx)".
   iApply fupd_mask_intro; [solve_ndisj|].
@@ -410,33 +401,27 @@ Qed.
 
 Lemma wp_dsp_recv {TT:tele}
     γ (lr_chan rl_chan : loc) (v : TT → V) (P : TT → iProp Σ) (p : TT → iProto Σ V) :
-  {{{ #(lr_chan,rl_chan) ↣{γ} <?.. x> MSG (v x) {{ ▷ P x }}; p x }}}
-    chan.receive #tV #rl_chan
-  {{{ x, RET (#(v x), #true); #(lr_chan,rl_chan) ↣{γ} p x ∗ P x }}}.
-Proof.
+  {{{ (lr_chan,rl_chan) ↣{γ} <?.. x> MSG (v x) {{ ▷ P x }}; p x }}}
+    chan.receive t #rl_chan
+  {{{ x, RET (#(v x), #true); (lr_chan,rl_chan) ↣{γ} p x ∗ P x }}}.
+Proof using W.
   iIntros (Φ) "Hc HΦ".
-  iDestruct "Hc" as (?? Heq) "(#(Hcl&Hcr&HI)&Hp)".
-  rewrite to_val_unseal in Heq. simplify_eq.
-  rename lr_chan0 into lr_chan.
-  rename rl_chan0 into rl_chan.
-  iApply (chan.wp_receive _ _ with "[$Hcr]").
+  iDestruct "Hc" as "(#(Hcl&Hcr&HI)&Hp)".
+  iApply (chan.wp_receive with "Hcr").
   iIntros "(Hlc1 & Hlc2 & Hlc3 & Hlc4)".
   iApply (dsp_recv_au with "[$] [$Hp]").
-  { iFrame "#". eauto. }
+  { iFrame "#". }
   done.
 Qed.
 
 (** Endpoint closes (stops sending val) *)
 Lemma wp_dsp_close γ (lr_chan rl_chan : loc) (p : iProto Σ V) Φ :
-  #(lr_chan,rl_chan) ↣{γ} END -∗
-  (↯{γ} #(lr_chan,rl_chan) -∗ Φ) -∗
-  CloseAU lr_chan γ.(chan_lr_name) Φ.
-Proof.
+  (lr_chan,rl_chan) ↣{γ} END -∗
+  (↯{γ} (lr_chan,rl_chan) -∗ Φ) -∗
+  close_au γ.(chan_lr_name) V Φ.
+Proof using W.
   iIntros "Hc HΦ".
-  iDestruct "Hc" as (?? Heq) "(#(Hcl&Hcr&HI)&Hp)".
-  rewrite to_val_unseal in Heq. simplify_eq.
-  rename lr_chan0 into lr_chan.
-  rename rl_chan0 into rl_chan.
+  iDestruct "Hc" as  "(#(Hcl&Hcr&HI)&Hp)".
   iMod (inv_acc with "HI") as "[IH Hclose]"; [solve_ndisj|].
   iDestruct "IH" as (????) "(>%&>%&Hownl&Hownr&Hclosel&Hcloser&Hctx)".
   iApply fupd_mask_intro; [solve_ndisj|].
@@ -462,15 +447,12 @@ Qed.
 (** Endpoint receives on a closed or ended channel *)
 Lemma wp_dsp_recv_end γ (lr_chan rl_chan : loc) Φ :
   (£1 ∗ £1) -∗
-  #(lr_chan,rl_chan) ↣{γ} END-∗
-  (#(lr_chan,rl_chan) ↣{γ} END -∗ Φ (default_val V) false) -∗
-  recv_au rl_chan γ.(chan_rl_name) Φ.
-Proof.
+  (lr_chan,rl_chan) ↣{γ} END-∗
+  ((lr_chan,rl_chan) ↣{γ} END -∗ Φ (zero_val V) false) -∗
+  recv_au γ.(chan_rl_name) V Φ.
+Proof using W.
   iIntros "H£s Hc HΦ".
-  iDestruct "Hc" as (?? Heq) "(#(Hcl&Hcr&HI)&Hp)".
-  rewrite to_val_unseal in Heq. simplify_eq.
-  rename lr_chan0 into lr_chan.
-  rename rl_chan0 into rl_chan.
+  iDestruct "Hc" as "(#(Hcl&Hcr&HI)&Hp)".
   iMod (inv_acc with "HI") as "[IH Hclose]"; [solve_ndisj|].
   iDestruct "IH" as (????) "(>%&>%&Hownl&Hownr&Hclosel&Hcloser&Hctx)".
   iApply fupd_mask_intro; [solve_ndisj|].
@@ -542,15 +524,12 @@ Qed.
 (** Endpoint receives on a closed or ended channel *)
 Lemma wp_dsp_recv_closed γ (lr_chan rl_chan : loc) Φ :
   (£1 ∗ £1) -∗
-  ↯{γ} #(lr_chan,rl_chan) -∗
-  (↯{γ} #(lr_chan,rl_chan) -∗ Φ (default_val V) false) -∗
-  recv_au rl_chan γ.(chan_rl_name) Φ.
-Proof.
+  ↯{γ} (lr_chan,rl_chan) -∗
+  (↯{γ} (lr_chan,rl_chan) -∗ Φ (zero_val V) false) -∗
+  recv_au γ.(chan_rl_name) V Φ.
+Proof using W.
   iIntros "H£s Hc HΦ".
-  iDestruct "Hc" as (?? Heq) "(#(Hcl&Hcr&HI)&Hp)".
-  rewrite to_val_unseal in Heq. simplify_eq.
-  rename lr_chan0 into lr_chan.
-  rename rl_chan0 into rl_chan.
+  iDestruct "Hc" as "(#(Hcl&Hcr&HI)&Hp)".
   iMod (inv_acc with "HI") as "[IH Hclose]"; [solve_ndisj|].
   iDestruct "IH" as (????) "(>%&>%&Hownl&Hownr&Hclosel&Hcloser&Hctx)".
   iCombine "Hctx Hclosel" as "H".
@@ -598,10 +577,11 @@ Qed.
 
 Lemma wp_dsp_recv_false (b : bool) γ (lr_chan rl_chan : loc) Φ :
   (£1 ∗ £1) -∗
-  (if b then #(lr_chan,rl_chan) ↣{γ} END else ↯{γ} #(lr_chan,rl_chan)) -∗
-  ((if b then #(lr_chan,rl_chan) ↣{γ} END else ↯{γ} #(lr_chan,rl_chan)) -∗ Φ (default_val V) false) -∗
-  recv_au rl_chan γ.(chan_rl_name) Φ.
-Proof. destruct b; [apply wp_dsp_recv_end|apply wp_dsp_recv_closed]. Qed.
+  (if b then (lr_chan,rl_chan) ↣{γ} END else ↯{γ} (lr_chan,rl_chan)) -∗
+  ((if b then (lr_chan,rl_chan) ↣{γ} END else ↯{γ} (lr_chan,rl_chan)) -∗ Φ (zero_val V) false) -∗
+  recv_au γ.(chan_rl_name) V Φ.
+Proof using W. destruct b; [apply wp_dsp_recv_end|apply wp_dsp_recv_closed]. Qed.
+
 
 End dsp.
 

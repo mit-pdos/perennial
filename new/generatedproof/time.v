@@ -2,564 +2,513 @@
 Require Export New.proof.proof_prelude.
 Require Export New.manualproof.time.
 Require Export New.golang.theory.
-
 Require Export New.code.time.
 
 Set Default Proof Using "Type".
 
 Module time.
-
-(* type time.ParseError *)
 Module ParseError.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : time.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ParseError_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (time.ParseError.t). Admitted.
+
+#[global] Instance ParseError_into_val_typed
+   :
+  IntoValTypedUnderlying (time.ParseError.t) (time.ParseErrorⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End ParseError.
 
-Global Instance bounded_size_ParseError : BoundedTypeSize time.ParseError.
-Admitted.
-
-Global Instance into_val_ParseError `{ffi_syntax} : IntoVal ParseError.t.
-Admitted.
-
-Global Instance into_val_typed_ParseError `{ffi_syntax} : IntoValTyped ParseError.t time.ParseError.
-Admitted.
-
-(* type time.Timer *)
 Module Timer.
 Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-  C' : loc;
-  initTimer' : bool;
-}.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : time.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance Timer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (time.Timer.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "C" ∷ l.[(time.Timer.t), "C"] ↦{dq} v.(time.Timer.C') ∗
+      "initTimer" ∷ l.[(time.Timer.t), "initTimer"] ↦{dq} v.(time.Timer.initTimer') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance Timer_into_val_typed
+   :
+  IntoValTypedUnderlying (time.Timer.t) (time.Timerⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Timer_access_load_C l (v : (time.Timer.t)) dq :
+  AccessStrict
+    (l.[(time.Timer.t), "C"] ↦{dq} (v.(time.Timer.C')))
+    (l.[(time.Timer.t), "C"] ↦{dq} (v.(time.Timer.C')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Timer_access_store_C l (v : (time.Timer.t)) C' :
+  AccessStrict
+    (l.[(time.Timer.t), "C"] ↦ (v.(time.Timer.C')))
+    (l.[(time.Timer.t), "C"] ↦ C')
+    (l ↦ v) (l ↦ (v <|(time.Timer.C') := C'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Timer_access_load_initTimer l (v : (time.Timer.t)) dq :
+  AccessStrict
+    (l.[(time.Timer.t), "initTimer"] ↦{dq} (v.(time.Timer.initTimer')))
+    (l.[(time.Timer.t), "initTimer"] ↦{dq} (v.(time.Timer.initTimer')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Timer_access_store_initTimer l (v : (time.Timer.t)) initTimer' :
+  AccessStrict
+    (l.[(time.Timer.t), "initTimer"] ↦ (v.(time.Timer.initTimer')))
+    (l.[(time.Timer.t), "initTimer"] ↦ initTimer')
+    (l ↦ v) (l ↦ (v <|(time.Timer.initTimer') := initTimer'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End Timer.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent time.Timer.
-#[local] Typeclasses Transparent time.Timer.
-
-Global Instance Timer_wf : struct.Wf time.Timer.
-Proof. apply _. Qed.
-
-Global Instance settable_Timer : Settable Timer.t :=
-  settable! Timer.mk < Timer.C'; Timer.initTimer' >.
-Global Instance into_val_Timer : IntoVal Timer.t :=
-  {| to_val_def v :=
-    struct.val_aux time.Timer [
-    "C" ::= #(Timer.C' v);
-    "initTimer" ::= #(Timer.initTimer' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_Timer : IntoValTyped Timer.t time.Timer :=
-{|
-  default_val := Timer.mk (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_Timer_C : IntoValStructField "C" time.Timer Timer.C'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Timer_initTimer : IntoValStructField "initTimer" time.Timer Timer.initTimer'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Timer C' initTimer':
-  PureWp True
-    (struct.make #time.Timer (alist_val [
-      "C" ::= #C';
-      "initTimer" ::= #initTimer'
-    ]))%struct
-    #(Timer.mk C' initTimer').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance Timer_struct_fields_split dq l (v : Timer.t) :
-  StructFieldsSplit dq l v (
-    "HC" ∷ l ↦s[time.Timer :: "C"]{dq} v.(Timer.C') ∗
-    "HinitTimer" ∷ l ↦s[time.Timer :: "initTimer"]{dq} v.(Timer.initTimer')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Timer.C' v)) (time.Timer) "C"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-(* type time.Ticker *)
 Module Ticker.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : time.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Ticker_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (time.Ticker.t). Admitted.
+
+#[global] Instance Ticker_into_val_typed
+   :
+  IntoValTypedUnderlying (time.Ticker.t) (time.Tickerⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End Ticker.
 
-Global Instance bounded_size_Ticker : BoundedTypeSize time.Ticker.
-Admitted.
-
-Global Instance into_val_Ticker `{ffi_syntax} : IntoVal Ticker.t.
-Admitted.
-
-Global Instance into_val_typed_Ticker `{ffi_syntax} : IntoValTyped Ticker.t time.Ticker.
-Admitted.
-
-(* type time.Time *)
 Module Time.
 Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-  wall' : w64;
-  ext' : w64;
-  loc' : loc;
-}.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : time.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance Time_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (time.Time.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "wall" ∷ l.[(time.Time.t), "wall"] ↦{dq} v.(time.Time.wall') ∗
+      "ext" ∷ l.[(time.Time.t), "ext"] ↦{dq} v.(time.Time.ext') ∗
+      "loc" ∷ l.[(time.Time.t), "loc"] ↦{dq} v.(time.Time.loc') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance Time_into_val_typed
+   :
+  IntoValTypedUnderlying (time.Time.t) (time.Timeⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Time_access_load_wall l (v : (time.Time.t)) dq :
+  AccessStrict
+    (l.[(time.Time.t), "wall"] ↦{dq} (v.(time.Time.wall')))
+    (l.[(time.Time.t), "wall"] ↦{dq} (v.(time.Time.wall')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Time_access_store_wall l (v : (time.Time.t)) wall' :
+  AccessStrict
+    (l.[(time.Time.t), "wall"] ↦ (v.(time.Time.wall')))
+    (l.[(time.Time.t), "wall"] ↦ wall')
+    (l ↦ v) (l ↦ (v <|(time.Time.wall') := wall'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Time_access_load_ext l (v : (time.Time.t)) dq :
+  AccessStrict
+    (l.[(time.Time.t), "ext"] ↦{dq} (v.(time.Time.ext')))
+    (l.[(time.Time.t), "ext"] ↦{dq} (v.(time.Time.ext')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Time_access_store_ext l (v : (time.Time.t)) ext' :
+  AccessStrict
+    (l.[(time.Time.t), "ext"] ↦ (v.(time.Time.ext')))
+    (l.[(time.Time.t), "ext"] ↦ ext')
+    (l ↦ v) (l ↦ (v <|(time.Time.ext') := ext'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Time_access_load_loc l (v : (time.Time.t)) dq :
+  AccessStrict
+    (l.[(time.Time.t), "loc"] ↦{dq} (v.(time.Time.loc')))
+    (l.[(time.Time.t), "loc"] ↦{dq} (v.(time.Time.loc')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Time_access_store_loc l (v : (time.Time.t)) loc' :
+  AccessStrict
+    (l.[(time.Time.t), "loc"] ↦ (v.(time.Time.loc')))
+    (l.[(time.Time.t), "loc"] ↦ loc')
+    (l ↦ v) (l ↦ (v <|(time.Time.loc') := loc'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End Time.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent time.Time.
-#[local] Typeclasses Transparent time.Time.
-
-Global Instance Time_wf : struct.Wf time.Time.
-Proof. apply _. Qed.
-
-Global Instance settable_Time : Settable Time.t :=
-  settable! Time.mk < Time.wall'; Time.ext'; Time.loc' >.
-Global Instance into_val_Time : IntoVal Time.t :=
-  {| to_val_def v :=
-    struct.val_aux time.Time [
-    "wall" ::= #(Time.wall' v);
-    "ext" ::= #(Time.ext' v);
-    "loc" ::= #(Time.loc' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_Time : IntoValTyped Time.t time.Time :=
-{|
-  default_val := Time.mk (default_val _) (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_Time_wall : IntoValStructField "wall" time.Time Time.wall'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Time_ext : IntoValStructField "ext" time.Time Time.ext'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Time_loc : IntoValStructField "loc" time.Time Time.loc'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Time wall' ext' loc':
-  PureWp True
-    (struct.make #time.Time (alist_val [
-      "wall" ::= #wall';
-      "ext" ::= #ext';
-      "loc" ::= #loc'
-    ]))%struct
-    #(Time.mk wall' ext' loc').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance Time_struct_fields_split dq l (v : Time.t) :
-  StructFieldsSplit dq l v (
-    "Hwall" ∷ l ↦s[time.Time :: "wall"]{dq} v.(Time.wall') ∗
-    "Hext" ∷ l ↦s[time.Time :: "ext"]{dq} v.(Time.ext') ∗
-    "Hloc" ∷ l ↦s[time.Time :: "loc"]{dq} v.(Time.loc')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Time.wall' v)) (time.Time) "wall"%go.
-  simpl_one_flatten_struct (# (Time.ext' v)) (time.Time) "ext"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-(* type time.Month *)
 Module Month.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : time.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Month_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (time.Month.t). Admitted.
+
+#[global] Instance Month_into_val_typed
+   :
+  IntoValTypedUnderlying (time.Month.t) (time.Monthⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End Month.
 
-Global Instance bounded_size_Month : BoundedTypeSize time.Month.
-Admitted.
-
-Global Instance into_val_Month `{ffi_syntax} : IntoVal Month.t.
-Admitted.
-
-Global Instance into_val_typed_Month `{ffi_syntax} : IntoValTyped Month.t time.Month.
-Admitted.
-
-(* type time.Weekday *)
 Module Weekday.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : time.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Weekday_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (time.Weekday.t). Admitted.
+
+#[global] Instance Weekday_into_val_typed
+   :
+  IntoValTypedUnderlying (time.Weekday.t) (time.Weekdayⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End Weekday.
 
-Global Instance bounded_size_Weekday : BoundedTypeSize time.Weekday.
-Admitted.
-
-Global Instance into_val_Weekday `{ffi_syntax} : IntoVal Weekday.t.
-Admitted.
-
-Global Instance into_val_typed_Weekday `{ffi_syntax} : IntoValTyped Weekday.t time.Weekday.
-Admitted.
-
-(* type time.absSeconds *)
 Module absSeconds.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : time.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance absSeconds_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (time.absSeconds.t). Admitted.
+
+#[global] Instance absSeconds_into_val_typed
+   :
+  IntoValTypedUnderlying (time.absSeconds.t) (time.absSecondsⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End absSeconds.
 
-Global Instance bounded_size_absSeconds : BoundedTypeSize time.absSeconds.
-Admitted.
-
-Global Instance into_val_absSeconds `{ffi_syntax} : IntoVal absSeconds.t.
-Admitted.
-
-Global Instance into_val_typed_absSeconds `{ffi_syntax} : IntoValTyped absSeconds.t time.absSeconds.
-Admitted.
-
-(* type time.absDays *)
 Module absDays.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : time.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance absDays_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (time.absDays.t). Admitted.
+
+#[global] Instance absDays_into_val_typed
+   :
+  IntoValTypedUnderlying (time.absDays.t) (time.absDaysⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End absDays.
 
-Global Instance bounded_size_absDays : BoundedTypeSize time.absDays.
-Admitted.
-
-Global Instance into_val_absDays `{ffi_syntax} : IntoVal absDays.t.
-Admitted.
-
-Global Instance into_val_typed_absDays `{ffi_syntax} : IntoValTyped absDays.t time.absDays.
-Admitted.
-
-(* type time.absCentury *)
 Module absCentury.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : time.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance absCentury_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (time.absCentury.t). Admitted.
+
+#[global] Instance absCentury_into_val_typed
+   :
+  IntoValTypedUnderlying (time.absCentury.t) (time.absCenturyⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End absCentury.
 
-Global Instance bounded_size_absCentury : BoundedTypeSize time.absCentury.
-Admitted.
-
-Global Instance into_val_absCentury `{ffi_syntax} : IntoVal absCentury.t.
-Admitted.
-
-Global Instance into_val_typed_absCentury `{ffi_syntax} : IntoValTyped absCentury.t time.absCentury.
-Admitted.
-
-(* type time.absCyear *)
 Module absCyear.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : time.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance absCyear_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (time.absCyear.t). Admitted.
+
+#[global] Instance absCyear_into_val_typed
+   :
+  IntoValTypedUnderlying (time.absCyear.t) (time.absCyearⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End absCyear.
 
-Global Instance bounded_size_absCyear : BoundedTypeSize time.absCyear.
-Admitted.
-
-Global Instance into_val_absCyear `{ffi_syntax} : IntoVal absCyear.t.
-Admitted.
-
-Global Instance into_val_typed_absCyear `{ffi_syntax} : IntoValTyped absCyear.t time.absCyear.
-Admitted.
-
-(* type time.absYday *)
 Module absYday.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : time.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance absYday_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (time.absYday.t). Admitted.
+
+#[global] Instance absYday_into_val_typed
+   :
+  IntoValTypedUnderlying (time.absYday.t) (time.absYdayⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End absYday.
 
-Global Instance bounded_size_absYday : BoundedTypeSize time.absYday.
-Admitted.
-
-Global Instance into_val_absYday `{ffi_syntax} : IntoVal absYday.t.
-Admitted.
-
-Global Instance into_val_typed_absYday `{ffi_syntax} : IntoValTyped absYday.t time.absYday.
-Admitted.
-
-(* type time.absMonth *)
 Module absMonth.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : time.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance absMonth_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (time.absMonth.t). Admitted.
+
+#[global] Instance absMonth_into_val_typed
+   :
+  IntoValTypedUnderlying (time.absMonth.t) (time.absMonthⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End absMonth.
 
-Global Instance bounded_size_absMonth : BoundedTypeSize time.absMonth.
-Admitted.
-
-Global Instance into_val_absMonth `{ffi_syntax} : IntoVal absMonth.t.
-Admitted.
-
-Global Instance into_val_typed_absMonth `{ffi_syntax} : IntoValTyped absMonth.t time.absMonth.
-Admitted.
-
-(* type time.absLeap *)
 Module absLeap.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : time.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance absLeap_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (time.absLeap.t). Admitted.
+
+#[global] Instance absLeap_into_val_typed
+   :
+  IntoValTypedUnderlying (time.absLeap.t) (time.absLeapⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End absLeap.
 
-Global Instance bounded_size_absLeap : BoundedTypeSize time.absLeap.
-Admitted.
-
-Global Instance into_val_absLeap `{ffi_syntax} : IntoVal absLeap.t.
-Admitted.
-
-Global Instance into_val_typed_absLeap `{ffi_syntax} : IntoValTyped absLeap.t time.absLeap.
-Admitted.
-
-(* type time.absJanFeb *)
 Module absJanFeb.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : time.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance absJanFeb_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (time.absJanFeb.t). Admitted.
+
+#[global] Instance absJanFeb_into_val_typed
+   :
+  IntoValTypedUnderlying (time.absJanFeb.t) (time.absJanFebⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End absJanFeb.
 
-Global Instance bounded_size_absJanFeb : BoundedTypeSize time.absJanFeb.
-Admitted.
-
-Global Instance into_val_absJanFeb `{ffi_syntax} : IntoVal absJanFeb.t.
-Admitted.
-
-Global Instance into_val_typed_absJanFeb `{ffi_syntax} : IntoValTyped absJanFeb.t time.absJanFeb.
-Admitted.
-
-(* type time.Duration *)
-Module Duration.
-
-#[global] Transparent time.Duration.
-#[global] Typeclasses Transparent time.Duration.
-Section def.
-Context `{ffi_syntax}.
-Definition t := w64.
-End def.
-End Duration.
-
-(* type time.Location *)
 Module Location.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : time.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance Location_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (time.Location.t). Admitted.
+
+#[global] Instance Location_into_val_typed
+   :
+  IntoValTypedUnderlying (time.Location.t) (time.Locationⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End Location.
 
-Global Instance bounded_size_Location : BoundedTypeSize time.Location.
-Admitted.
-
-Global Instance into_val_Location `{ffi_syntax} : IntoVal Location.t.
-Admitted.
-
-Global Instance into_val_typed_Location `{ffi_syntax} : IntoValTyped Location.t time.Location.
-Admitted.
-
-(* type time.zone *)
 Module zone.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : time.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance zone_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (time.zone.t). Admitted.
+
+#[global] Instance zone_into_val_typed
+   :
+  IntoValTypedUnderlying (time.zone.t) (time.zoneⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End zone.
 
-Global Instance bounded_size_zone : BoundedTypeSize time.zone.
-Admitted.
-
-Global Instance into_val_zone `{ffi_syntax} : IntoVal zone.t.
-Admitted.
-
-Global Instance into_val_typed_zone `{ffi_syntax} : IntoValTyped zone.t time.zone.
-Admitted.
-
-(* type time.zoneTrans *)
 Module zoneTrans.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : time.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance zoneTrans_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (time.zoneTrans.t). Admitted.
+
+#[global] Instance zoneTrans_into_val_typed
+   :
+  IntoValTypedUnderlying (time.zoneTrans.t) (time.zoneTransⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End zoneTrans.
 
-Global Instance bounded_size_zoneTrans : BoundedTypeSize time.zoneTrans.
-Admitted.
-
-Global Instance into_val_zoneTrans `{ffi_syntax} : IntoVal zoneTrans.t.
-Admitted.
-
-Global Instance into_val_typed_zoneTrans `{ffi_syntax} : IntoValTyped zoneTrans.t time.zoneTrans.
-Admitted.
-
-(* type time.ruleKind *)
 Module ruleKind.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : time.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance ruleKind_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (time.ruleKind.t). Admitted.
+
+#[global] Instance ruleKind_into_val_typed
+   :
+  IntoValTypedUnderlying (time.ruleKind.t) (time.ruleKindⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End ruleKind.
 
-Global Instance bounded_size_ruleKind : BoundedTypeSize time.ruleKind.
-Admitted.
-
-Global Instance into_val_ruleKind `{ffi_syntax} : IntoVal ruleKind.t.
-Admitted.
-
-Global Instance into_val_typed_ruleKind `{ffi_syntax} : IntoValTyped ruleKind.t time.ruleKind.
-Admitted.
-
-(* type time.rule *)
 Module rule.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : time.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance rule_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (time.rule.t). Admitted.
+
+#[global] Instance rule_into_val_typed
+   :
+  IntoValTypedUnderlying (time.rule.t) (time.ruleⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End rule.
 
-Global Instance bounded_size_rule : BoundedTypeSize time.rule.
-Admitted.
-
-Global Instance into_val_rule `{ffi_syntax} : IntoVal rule.t.
-Admitted.
-
-Global Instance into_val_typed_rule `{ffi_syntax} : IntoValTyped rule.t time.rule.
-Admitted.
-
-(* type time.fileSizeError *)
 Module fileSizeError.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : time.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance fileSizeError_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (time.fileSizeError.t). Admitted.
+
+#[global] Instance fileSizeError_into_val_typed
+   :
+  IntoValTypedUnderlying (time.fileSizeError.t) (time.fileSizeErrorⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End fileSizeError.
 
-Global Instance bounded_size_fileSizeError : BoundedTypeSize time.fileSizeError.
-Admitted.
-
-Global Instance into_val_fileSizeError `{ffi_syntax} : IntoVal fileSizeError.t.
-Admitted.
-
-Global Instance into_val_typed_fileSizeError `{ffi_syntax} : IntoValTyped fileSizeError.t time.fileSizeError.
-Admitted.
-
-(* type time.dataIO *)
 Module dataIO.
 Section def.
-Context `{ffi_syntax}.
-Axiom t : Type.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : time.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance dataIO_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (time.dataIO.t). Admitted.
+
+#[global] Instance dataIO_into_val_typed
+   :
+  IntoValTypedUnderlying (time.dataIO.t) (time.dataIOⁱᵐᵖˡ).
+Proof. Admitted.
+
 End def.
 End dataIO.
 
-Global Instance bounded_size_dataIO : BoundedTypeSize time.dataIO.
-Admitted.
-
-Global Instance into_val_dataIO `{ffi_syntax} : IntoVal dataIO.t.
-Admitted.
-
-Global Instance into_val_typed_dataIO `{ffi_syntax} : IntoValTyped dataIO.t time.dataIO.
-Admitted.
-
-Section names.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext}.
-#[local] Transparent is_pkg_defined is_pkg_defined_pure.
-
-Global Instance is_pkg_defined_pure_time : IsPkgDefinedPure time :=
-  {|
-    is_pkg_defined_pure_def go_ctx :=
-      is_pkg_defined_pure_single time;
-  |}.
-
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_time : IsPkgDefined time :=
-  {|
-    is_pkg_defined_def go_ctx :=
-      (is_pkg_defined_single time)%I
-  |}.
-Final Obligation. iIntros. iFrame "#%". Qed.
-#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
-
-Global Instance wp_func_call_Sleep :
-  WpFuncCall time.Sleep _ (is_pkg_defined time) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_syncTimer :
-  WpFuncCall time.syncTimer _ (is_pkg_defined time) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_newTimer :
-  WpFuncCall time.newTimer _ (is_pkg_defined time) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_After :
-  WpFuncCall time.After _ (is_pkg_defined time) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_runtimeNano :
-  WpFuncCall time.runtimeNano _ (is_pkg_defined time) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_method_call_Time_UnixNano :
-  WpMethodCall time.Time.id "UnixNano" _ (is_pkg_defined time) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Time'ptr_UnixNano :
-  WpMethodCall (ptrT.id time.Time.id) "UnixNano" _ (is_pkg_defined time) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Time'ptr_nsec :
-  WpMethodCall (ptrT.id time.Time.id) "nsec" _ (is_pkg_defined time) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Time'ptr_sec :
-  WpMethodCall (ptrT.id time.Time.id) "sec" _ (is_pkg_defined time) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Time'ptr_unixSec :
-  WpMethodCall (ptrT.id time.Time.id) "unixSec" _ (is_pkg_defined time) :=
-  ltac:(solve_wp_method_call).
-
-End names.
 End time.

@@ -1,44 +1,37 @@
-From New.golang.defn Require Import notation.
-From New.golang.defn Require Import mem typing slice.
-From Perennial Require Import base.
+From New.golang.defn Require Export loop assume predeclared.
+From New.code.github_com.goose_lang.goose.model Require Import strings.
 
-Section defn.
-  Context `{ffi_syntax}.
-  Definition string__mset : list (string * val) := [].
-End defn.
+Module go.
+Section defs.
+Context {ext : ffi_syntax}.
+Context {go_lctx : GoLocalContext} {go_gctx : GoGlobalContext}.
 
-Module string.
-Section defn.
-  Context `{ffi_syntax}.
+Class StringSemantics `{!GoSemanticsFunctions} :=
+{
+  #[global] package_sem :: strings.Assumptions;
 
-  Local Definition to_bytes_aux: val :=
-    (rec: "to_bytes" "i" "s" :=
-       if: (Var "i") = #(W64 0)
-       then #slice.nil
-       else
-         let: "j" := "i" - #(W64 1) in
-         (slice.append #byteT ("to_bytes" "j" "s") (StringGet "s" "j")))
-  .
+  #[global] internal_string_len_step (s : go_string) ::
+    ⟦InternalStringLen, #s⟧ ⤳ (if decide (length s < 2^63) then
+                                  (Val #(W64 (length s)))
+                                else AngelicExit #());
 
-  Definition to_bytes_def : val :=
-    rec: "f" "s" :=
-      (* assume that IsNoStringOverflow *)
-      if: (IsNoStringOverflow "s") then
-        to_bytes_aux (StringLength "s") "s"
-      else "f".
-  Program Definition to_bytes := sealed @to_bytes_def.
-  Definition to_bytes_unseal : to_bytes = _ := seal_eq _.
+  #[global] string_len_unfold `{!t ↓u go.string} :: FuncUnfold go.len [t]
+    (λ: "s", InternalStringLen "s")%V;
 
-  Definition from_bytes : val :=
-    (rec: "from_bytes" "b" :=
-       if: (slice.len "b") = #(W64 0)
-       then (# "")
-       else (to_string ![#byteT] (slice.elem_ref #byteT "b" #(W64 0))) +
-              ("from_bytes" (slice.slice #byteT "b" #(W64 1) (slice.len "b")))).
+  #[global] string_index (s : go_string) (i : w64) `{!t ↓u go.string} ::
+    ⟦Index t, (#s, #i)⟧ ⤳
+    (match (s !! (sint.nat i)) with Some b => #b | _ => Panic "index out of bounds" end);
 
-  Definition slice : val :=
-    λ: "s" "low" "high",
-      from_bytes (slice.slice #uint8T (to_bytes "s") "low" "high").
+  #[global] convert_byte_to_string (c : w8) ::
+    ⟦Convert go.byte go.string, #c⟧ ⤳[under] #([c]);
 
-End defn.
-End string.
+  #[global] convert_bytes_to_string
+    `[!from ↓u go.SliceType elem_type] `[!elem_type ↓u go.byte] `[!to ↓u go.string] (v : val) ::
+    ⟦Convert from to, v⟧ ⤳[internal] (@! strings.ByteSliceToString v);
+
+  #[global] convert_string_to_bytes
+    `[!from ↓u go.string] `[!to ↓u go.SliceType elem_type] `[!elem_type ↓u go.byte] (v : val) ::
+    ⟦Convert from to, v⟧ ⤳[internal] (@! strings.StringToByteSlice v);
+}.
+End defs.
+End go.

@@ -1,0 +1,3 @@
+translate = ["!*"]
+trusted = ["Run", "IsInBubble"]
+imports = ["!*"]

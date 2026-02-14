@@ -1,115 +1,174 @@
-From New.golang.defn Require Import loop assume exception typing list dynamic_typing mem builtin.
-From Perennial Require Import base.
+From New.golang.defn Require Export loop assume predeclared.
+
+Definition slice_index_ref {ext : ffi_syntax} `{!GoSemanticsFunctions} elem_type (i : Z) s : loc :=
+  array_index_ref elem_type i s.(slice.ptr).
 
 Module slice.
-(* FIXME: seal these functions *)
 Section goose_lang.
-Context `{ffi_syntax}.
+Context {ext : ffi_syntax}.
+Context {go_lctx : GoLocalContext} {go_gctx : GoGlobalContext} `{!GoSemanticsFunctions}.
 
-Definition ptr : val := λ: "s",
-                          let: "s" := (match: "s" with InjL "s" => "s" | InjR <> => #() end) in
-                          Fst (Fst "s").
-Definition len : val := λ: "s",
-                          let: "s" := (match: "s" with InjL "s" => "s" | InjR <> => #() end) in
-                          Snd (Fst "s").
-Definition cap : val := λ: "s",
-                          let: "s" := (match: "s" with InjL "s" => "s" | InjR <> => #() end) in
-                          Snd "s".
+Definition slice (sl : slice.t) (V : Type) (low high : u64) : slice.t :=
+  slice.mk (slice_index_ref V (sint.Z low) sl) (word.sub high low) (word.sub sl.(slice.cap) low).
 
-(* XXX: this computes a nondeterministic unallocated address by using
-   "(Loc 1 0) +ₗ ArbiraryInt"*)
-Definition make3 : val :=
-  λ: "t" "sz" "cap",
-  if: int_lt "cap" "sz" then Panic "NewSlice with cap smaller than len"
-  else if: "cap" = #(W64 0) then InjL (#(Loc 1 0) +ₗ ArbitraryInt, Var "sz", Var "cap")
-  else let: "p" := AllocN "cap" (type.zero_val "t") in
-       InjL ("p", "sz", "cap").
-
-Definition make2 : val :=
-  λ: "t" "sz", make3 "t" "sz" "sz".
-
-(* computes `&s[i]` *)
-Definition elem_ref : val :=
-  λ: "t" "s" "i", if: int_lt "i" (len "s")
-              then (array_loc_add "t" (ptr "s") "i")
-              else Panic "slice index out-of-bounds".
-
-(* s[a:b], as well as s[a:] = s[a:len(s)] and s[:b] = s[0:b] *)
-Definition slice : val :=
-  λ: "t" "s" "low" "high",
-  if: (int_leq #(W64 0) "low") && (int_leq "low" "high") && (int_leq "high" (cap "s")) then
-    InjL (array_loc_add "t" (ptr "s") "low", "high" - "low", cap "s" - "low")
-  else Panic "slice indices out of order"
-.
-
-(* s[a:b:c] (picking a specific capacity c) *)
-Definition full_slice : val :=
-  λ: "t" "s" "low" "high" "max",
-  if: (int_leq #(W64 0) "low") && (int_leq "low" "high") && (int_leq "high" "max") && (int_leq "max" (cap "s")) then
-    InjL (array_loc_add "t" (ptr "s") "low", "high" - "low", "max" - "low")
-  else Panic "slice indices out of order"
-.
-
-Definition for_range : val :=
-  λ: "t" "s" "body",
-  let: "i" := alloc #(W64 0) in
-  for: (λ: <>, int_lt (![#int64T] "i") (len "s")) ; (λ: <>, "i" <-[#int64T] (![#int64T] "i") + #(W64 1)) :=
-    (λ: <>, "body" (![#int64T] "i") (!["t"] (elem_ref "t" "s" (![#int64T] "i"))))
-.
-
-Definition copy : val :=
-  λ: "t" "dst" "src",
-  let: "i" := alloc (zero_val uint64T) in
-  (for: (λ: <>, int_lt (![#int64T] "i") (len "dst") && (int_lt (![#int64T] "i") (len "src"))) ; (λ: <>, Skip) :=
-    (λ: <>,
-    do: (let: "i_val" := ![#int64T] "i" in
-      elem_ref "t" "dst" "i_val" <-["t"] !["t"] (elem_ref "t" "src" "i_val");;
-      "i" <-[#int64T] "i_val" + #(W64 1))));;
-  ![#int64T] "i"
-.
+Definition full_slice (sl : slice.t) (V : Type) (low high max : u64) : slice.t :=
+  slice.mk (slice_index_ref V (sint.Z low) sl) (word.sub high low) (word.sub max low).
 
 (* only for internal use, not an external model *)
 Definition _new_cap : val :=
   λ: "len",
     let: "extra" := ArbitraryInt in
-    if: int_leq "len" ("len" + "extra") then "len" + "extra"
+    if: "len" <⟨go.int⟩ ("len" +⟨go.int⟩ "extra") then "len" +⟨go.int⟩ "extra"
     else "len".
 
-Definition append : val :=
-  λ: "t" "s" "x",
-  let: "new_len" := sum_assume_no_overflow_signed (len "s") (len "x") in
-  if: (cap "s") ≥ "new_len" then
-    (* "grow" s to include its capacity *)
-    let: "s_new" := slice "t" "s" #(W64 0) "new_len" in
-    (* copy "x" past the original "s" *)
-    copy "t" (slice "t" "s_new" (len "s") "new_len") "x";;
-    "s_new"
-  else
-    let: "new_cap" := _new_cap "new_len" in
-    let: "s_new" := make3 "t" "new_len" "new_cap" in
-    copy "t" "s_new" "s" ;;
-    copy "t" (slice "t" "s_new" (len "s") "new_len") "x" ;;
-    "s_new".
-
-(* Takes in a list as input, and turns it into a heap-allocated slice. *)
-Definition literal : val :=
-  λ: "t" "elems",
-  let: "len" := list.Length "elems" in
-  let: "s" := make2 "t" "len" in
-  let: "l" := ref "elems" in
-  let: "i" := alloc (zero_val uint64T) in
-  (for: (λ: <>, int_lt (![#int64T] "i") "len") ; (λ: <>, "i" <-[#int64T] ![#int64T] "i" + #(W64 1)) :=
-     (λ: <>,
-        do: (list.Match !"l" (λ: <>, #())
-               (λ: "elem" "l_tail",
-                  "l" <- "l_tail" ;;
-                  elem_ref "t" "s" (![#int64T] "i") <-["t"] "elem")))) ;;
-  "s"
-.
+Definition for_range (elem_type : go.type) : val :=
+  λ: "s" "body",
+  let: "i" := GoAlloc go.int #(W64 0) in
+  for: (λ: <>, (![go.int] "i") <⟨go.int⟩
+          (FuncResolve go.len [go.SliceType elem_type]) #() "s") ;
+                      (λ: <>, "i" <-[go.int] (![go.int] "i") +⟨go.int⟩ #(W64 1)) :=
+    (λ: <>, "body" (![go.int] "i") (![elem_type] (IndexRef (go.SliceType elem_type) ("s", (![go.int] "i"))))).
 
 End goose_lang.
 End slice.
 
-Global Opaque slice.ptr slice.len slice.cap slice.make3 slice.make2
-  slice.elem_ref slice.slice slice.full_slice slice.for_range
-  slice.copy slice._new_cap slice.append slice.literal.
+Global Opaque slice.for_range.
+
+Module go.
+Section defs.
+Context {ext : ffi_syntax}.
+Context {go_lctx : GoLocalContext} {go_gctx : GoGlobalContext}.
+
+Definition array_literal_size kvs : Z :=
+  let '(last, m) := (foldl (λ '(cur_index, max_so_far) ke,
+                              match ke with
+                              | KeyedElement None _ => (cur_index + 1, max_so_far)
+                              | KeyedElement (Some (KeyInteger cur_index')) _ =>
+                                  (cur_index' + 1, cur_index `max` max_so_far)
+                              | _ => (0, 0)
+                              end
+                       ) (0, 0) kvs) in
+  (last `max` m) `max` 0.
+
+Class SliceSemantics `{!GoSemanticsFunctions} :=
+{
+  #[global] internal_len_step s ::
+    ⟦InternalSliceLen, #s⟧ ⤳ #(s.(slice.len));
+  #[global] internal_cap_step s ::
+    ⟦InternalSliceCap, #s⟧ ⤳ #(s.(slice.cap));
+  #[global] internal_make_slice_step p l c ::
+    ⟦InternalMakeSlice, (#p, #l, #c)⟧ ⤳
+    #(slice.mk p l c);
+  #[global] internal_dynamic_array_alloc_step et (n : w64) ::
+    ⟦InternalDynamicArrayAlloc et, #n⟧ ⤳
+    (GoAlloc (go.ArrayType (sint.Z n) et) (GoZeroVal (go.ArrayType (sint.Z n) et) #()));
+  #[global] slice_slice_step_pure elem_type s low high `{!ZeroVal V} `{!TypeRepr elem_type V} ::
+    ⟦Slice (go.SliceType elem_type), (#s, #low, #high)⟧ ⤳[under]
+    (if decide (0 ≤ sint.Z low ≤ sint.Z high ≤ sint.Z s.(slice.cap)) then
+       #(slice.slice s V low high)
+     else Panic "slice bounds out of range");
+  #[global] full_slice_slice_step_pure elem_type s low high max `{!ZeroVal V} `{!TypeRepr elem_type V} ::
+    ⟦FullSlice (go.SliceType elem_type), (#s, #low, #high, #max)⟧ ⤳[under]
+    (if decide (0 ≤ sint.Z low ≤ sint.Z high ≤ sint.Z max ∧ sint.Z max ≤ sint.Z s.(slice.cap)) then
+       #(slice.full_slice s V low high max)
+     else Panic "slice bounds out of range");
+
+  (* special case for slice equality *)
+  #[global] is_go_op_go_equals_slice_nil_l elem_type s ::
+    ⟦GoOp GoEquals (go.SliceType elem_type), (#slice.nil, #s)⟧ ⤳[under] #(bool_decide (s = slice.nil));
+  #[global] is_go_op_go_equals_slice_nil_r elem_type s ::
+    ⟦GoOp GoEquals (go.SliceType elem_type), (#s, #slice.nil)⟧ ⤳[under] #(bool_decide (s = slice.nil));
+
+  #[global] clear_slice elem_type `{!st ↓u go.SliceType elem_type} ::
+    FuncUnfold go.clear [st]
+    (λ: "sl",
+       let: "zero_sl" := FuncResolve go.make2 [st] #() (FuncResolve go.len [st] #() "sl") in
+       FuncResolve go.copy [st] #() "sl" "zero_sl";;
+    #())%V;
+
+  #[global] copy_slice `{!st ↓u go.SliceType elem_type} ::
+    FuncUnfold go.copy [st]
+    (λ: "dst" "src",
+       let: "i" := GoAlloc go.int (GoZeroVal go.int #()) in
+       (for: (λ: <>, (![go.int] "i" <⟨go.int⟩ FuncResolve go.len [st] #() "dst") &&
+                (![go.int] "i" <⟨go.int⟩ FuncResolve go.len [st] #() "src")) ; (λ: <>, #()) :=
+          (λ: <>,
+             do: (let: "i_val" := ![go.int] "i" in
+                  IndexRef st ("dst", "i_val")
+                      <-[elem_type] ![elem_type] (IndexRef st ("src", "i_val"));;
+                  "i" <-[go.int] "i_val" +⟨go.int⟩ #(W64 1))));;
+       ![go.int] "i")%V;
+
+
+  #[global] make3_slice `{!st ↓u go.SliceType elem_type} ::
+    FuncUnfold go.make3 [st]
+    (λ: "len" "cap",
+       if: ("cap" <⟨go.int⟩ "len") then Panic "makeslice: cap out of range" else #();;
+       if: ("len" <⟨go.int⟩ #(W64 0)) then Panic "makeslice: len out of range" else #();;
+       if: "cap" =⟨go.int⟩ #(W64 0) then
+         (* XXX: this computes a nondeterministic unallocated address by using
+            "(Loc 1 0) +ₗ ArbiraryInt"*)
+         InternalMakeSlice (#(Loc 1 0) +⟨go.PointerType elem_type⟩ ArbitraryInt, "len", "cap")
+       else
+         let: "p" := (InternalDynamicArrayAlloc elem_type) "cap" in
+         InternalMakeSlice ("p", "len", "cap"))%V;
+  #[global] is_go_op_pointer_plus t (l : loc) (x : w64) ::
+    ⟦GoOp GoPlus (go.PointerType t), (#l, #x)⟧ ⤳[under] (#(loc_add l (sint.Z x)));
+
+  #[global] make2_slice `{!st ↓u go.SliceType elem_type} ::
+    FuncUnfold go.make2 [st]
+    (λ: "sz", FuncResolve go.make3 [st] #() "sz" "sz")%V;
+
+  #[global] index_ref_slice elem_type (i : w64) s `{!ZeroVal V} `{!TypeRepr elem_type V} ::
+    ⟦IndexRef (go.SliceType elem_type), (#s, #i)⟧ ⤳[under]
+    (if decide (0 ≤ sint.Z i < sint.Z s.(slice.len)) then
+       #(slice_index_ref V (sint.Z i) s)
+     else Panic "slice index out of bounds");
+
+  #[global] index_slice elem_type (i : w64) (s : slice.t) ::
+    ⟦Index (go.SliceType elem_type), (#s, #i)⟧ ⤳[under]
+    (GoLoad elem_type $ (IndexRef $ go.SliceType elem_type) (#i, #s)%V);
+
+  #[global] len_slice `{!st ↓u go.SliceType elem_type} ::
+    FuncUnfold go.len [st]
+    (λ: "s", InternalSliceLen "s")%V;
+
+  #[global] cap_slice `{!st ↓u go.SliceType elem_type} ::
+    FuncUnfold go.cap [st]
+    (λ: "s", InternalSliceCap "s")%V;
+
+  append_underlying t : functions go.append [t] = functions go.append [underlying t];
+  #[global] append_slice `{!st ↓u go.SliceType elem_type} ::
+    FuncUnfold go.append [st]
+    (λ: "s" "x",
+       let: "new_len" := sum_assume_no_overflow_signed (FuncResolve go.len [st] #() "s")
+                           (FuncResolve go.len [st] #() "x") in
+       if: (FuncResolve go.cap [st] #() "s") ≥⟨go.int⟩ "new_len" then
+         (* "grow" s to include its capacity *)
+         let: "s_new" := Slice st ("s", #(W64 0), "new_len") in
+         (* copy "x" past the original "s" *)
+         FuncResolve go.copy [st] #() (Slice st ("s_new", FuncResolve go.len [st] #() "s", "new_len")) "x";;
+         "s_new"
+       else
+         let: "new_cap" := slice._new_cap "new_len" in
+         let: "s_new" := FuncResolve go.make3 [st] #() "new_len" "new_cap" in
+         FuncResolve go.copy [st] #() "s_new" "s" ;;
+         FuncResolve go.copy [st] #() (Slice st ("s_new", FuncResolve go.len [st] #() "s", "new_len")) "x" ;;
+         "s_new")%V;
+
+  composite_literal_slice elem_type kvs ::
+    ⟦CompositeLiteral (go.SliceType elem_type), (LiteralValueV kvs)⟧ ⤳[under]
+    (
+      let len := array_literal_size kvs in
+      if decide (len < 2^63) then
+        (let: "tmp" := GoAlloc (go.ArrayType len elem_type) (GoZeroVal (go.ArrayType len elem_type) #()) in
+         "tmp" <-[(go.ArrayType len elem_type)]
+                  CompositeLiteral (go.ArrayType len elem_type) (LiteralValueV kvs);;
+         Slice (go.ArrayType len elem_type) ("tmp", #(W64 0), #(W64 len)))
+      else AngelicExit #()
+        )%E;
+
+  array_index_ref_0 t l : array_index_ref t 0 l = l;
+}.
+End defs.
+End go.

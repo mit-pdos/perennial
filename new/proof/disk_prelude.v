@@ -1,7 +1,7 @@
 From New.proof Require Export proof_prelude.
 From Perennial.program_logic Require Export atomic_fupd.
 From New Require Import disk_prelude.
-From Perennial.goose_lang.ffi Require Import disk_prelude.
+From Perennial.goose_lang.ffi.disk_ffi Require Import specs.
 
 #[global]
 Existing Instances disk_semantics disk_interp.

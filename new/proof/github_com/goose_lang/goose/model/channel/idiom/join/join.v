@@ -18,10 +18,11 @@ Record join_names :=
 
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+
 Context `{!chan_idiomG Σ V}.
-Context `{!IntoVal V}.
-Context `{!IntoValTyped V t}.
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
+Context `[!ZeroVal V] `[!TypedPointsto V] `[!IntoValTyped V t].
+Collection W := sem + IntoValTyped0.
 
 Definition join (γ: join_names) (count:nat) (Q: iProp Σ): iProp Σ :=
   ghost_var γ.(join_counter_name) (DfracOwn (1/2)) count ∗
@@ -33,7 +34,7 @@ Definition worker (γ: join_names) (P: iProp Σ): iProp Σ :=
 
 Definition own_join (γ : join_names) (ch : loc) : iProp Σ :=
   ∃ (workerQ: iProp Σ) (sendNames: gset gname) s count,
-    "Hch" ∷ own_chan ch s γ.(chan_name) ∗
+    "Hch" ∷ own_chan γ.(chan_name) V s ∗
     "joinQ" ∷ saved_prop_own γ.(join_prop_name) (DfracOwn (1/2)) workerQ ∗
     "%HnumWaiting" ∷ ⌜size sendNames = count⌝ ∗
     "Hjoincount" ∷ ghost_var γ.(join_counter_name) (DfracOwn (1/2)) count ∗
@@ -42,18 +43,18 @@ Definition own_join (γ : join_names) (ch : loc) : iProp Σ :=
                           ∃ P, saved_prop_own γS DfracDiscarded P ∗ ▷ P) -∗
                         ▷ workerQ) ∨ (ghost_var γ.(join_counter_name) (DfracOwn (1/2)) count)) ∗
     match s with
-    | chan_rep.Buffered msgs =>
+    | chanstate.Buffered msgs =>
         [∗ list] _ ∈ msgs, ∃ P, worker γ P ∗ P
-    | chan_rep.SndPending v =>
+    | chanstate.SndPending v =>
         ∃ P, worker γ P ∗ P
-    | chan_rep.SndCommit v =>
+    | chanstate.SndCommit v =>
         ∃ P, worker γ P ∗ P
-    | chan_rep.Idle | chan_rep.RcvPending | chan_rep.RcvCommit => True
+    | chanstate.Idle | chanstate.RcvPending | chanstate.RcvCommit => True
     | _ => False
     end.
 
 Definition is_join (γ : join_names) (ch : loc) : iProp Σ :=
-  is_chan ch γ.(chan_name) ∗
+  is_chan ch γ.(chan_name) V ∗
   inv nroot ("Hbar" ∷ own_join γ ch)%I.
 
 #[global] Instance is_join_persistent ch γ : Persistent (is_join γ ch) := _.
@@ -77,8 +78,8 @@ Proof.
 Qed.
 
 Lemma own_join_alloc_unbuff (ch : loc) (γch : chan_names):
-  is_chan ch γch -∗
-  own_chan ch chan_rep.Idle γch ={⊤}=∗
+  is_chan ch γch V -∗
+  own_chan γch V chanstate.Idle ={⊤}=∗
   ∃ γ,  is_join γ ch ∗ join γ 0 emp.
 Proof.
   iIntros "Hchan_info Hchan_own".
@@ -115,8 +116,8 @@ iExists γ.
 Qed.
 
 Lemma own_join_alloc_buff (ch : loc) (γch : chan_names) (cap:nat) :
-  is_chan ch γch -∗
-  own_chan ch (chan_rep.Buffered []) γch ={⊤}=∗
+  is_chan ch γch V -∗
+  own_chan γch V (chanstate.Buffered []) ={⊤}=∗
   ∃ γ, is_join γ ch ∗  join γ 0 emp.
 Proof.
    iIntros "Hchan_info Hchan_own".
@@ -152,13 +153,16 @@ iExists γ.
   done.
   Qed.
 
-
 Lemma join_alloc_worker γ ch Q P count :
   £ 1 -∗
   is_join γ ch -∗
   join γ count Q ={⊤}=∗
   join γ (S count) (Q ∗ P) ∗ worker γ P.
 Proof.
+  (* FIXME: `set_solver` applies `set_unfold_default`, which causes ALL props in
+     context to be used in the proof term, even if they're actually
+     irrelevant. *)
+  clear IntoValTyped0.
   iIntros "Hlc (#Hisjoin & Hjoininv) Hjoin".
   iInv "Hjoininv" as "Hinv_open" "Hinv_close".
   iMod (lc_fupd_elim_later with "Hlc Hinv_open") as "Hinv_open".
@@ -228,7 +232,7 @@ Lemma join_send_au γ ch P Φ :
   worker γ P -∗
   P -∗
   ▷(True -∗ Φ) -∗
-  SendAU ch (default_val V) γ.(chan_name) Φ.
+  send_au γ.(chan_name) (zero_val V) Φ.
 Proof.
   iIntros "(Hlc1 & Hlc2 & Hlc3) #Hjoin HWorker HP Hau".
   rewrite /worker /is_join.
@@ -296,13 +300,13 @@ Lemma wp_join_send γ ch P :
   {{{ is_join γ ch ∗
       worker γ P ∗
       P }}}
-    chan.send #t #ch #(default_val V)
+    chan.send t #ch #(zero_val V)
   {{{ RET #(); True }}}.
-Proof.
+Proof using W.
   iIntros (Φ) "(#Hjoin & HWorker & HP) HΦ".
   rewrite /is_join.
   iDestruct "Hjoin" as "[#Hch #Hinv]".
-  iApply (chan.wp_send ch (default_val V) γ.(chan_name) with "[$Hch]").
+  iApply (chan.wp_send ch (zero_val V) γ.(chan_name) with "[$Hch]").
   iIntros "(Hlc1 & Hlc2 & Hlc3 & _)".
   iApply (join_send_au with "[$] [$] [$] [$]").
   done.
@@ -313,8 +317,9 @@ Lemma join_receive_au γ ch n Q Φ :
   is_join γ ch -∗
   join γ (S n) Q -∗
   ▷(∀ (v:V), join γ n Q -∗ Φ v true) -∗
-  recv_au ch γ.(chan_name) Φ.
+  recv_au γ.(chan_name) V Φ.
 Proof.
+  clear IntoValTyped0.
   iIntros "(Hlc1 & Hlc2) #Hjoin HJoin Hau".
   rewrite /join /is_join.
   iDestruct "HJoin" as "[HJoin HJoinQ]".
@@ -473,9 +478,9 @@ Qed.
 Lemma wp_join_receive γ ch n Q :
   {{{ is_join γ ch ∗
       join γ (S n) Q }}}
-    chan.receive #t #ch
+    chan.receive t #ch
   {{{ (v:V), RET (#v, #true); join γ n Q }}}.
-Proof.
+Proof using W.
   iIntros (Φ) "(#Hjoin & HJoin) HΦ".
   rewrite /is_join.
   iDestruct "Hjoin" as "[#Hch #Hinv]".
@@ -491,6 +496,7 @@ Lemma join_finish γ ch Q :
   join γ 0 Q ={⊤}=∗
   ▷ Q.
 Proof.
+  clear IntoValTyped0.
   iIntros "Hlc (#Hjoinch & #Hjoininv) Hjoin".
   rewrite /is_join /join.
   iDestruct "Hjoin" as "[Hcount Hrest]".

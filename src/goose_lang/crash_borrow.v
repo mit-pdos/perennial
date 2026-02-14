@@ -1,9 +1,8 @@
 From iris.algebra Require Import gmap auth agree gset coPset excl csum.
 From Perennial.program_logic Require Import staged_invariant post_expr.
 From Perennial.goose_lang Require Import crash_modality lifting recovery_lifting.
-From Perennial.goose_lang Require Import wpc_proofmode.
 From Perennial.base_logic.lib Require Import saved_prop.
-From Perennial.Helpers Require Import Qextra.
+From Perennial.Helpers Require Import Qextra ipm.
 
 Set Default Proof Using "Type".
 
@@ -13,6 +12,7 @@ Context `{ffi_sem: ffi_semantics}.
 Context `{!ffi_interp ffi}.
 
 Context `{!gooseGlobalGS Σ, !gooseLocalGS Σ}.
+Context {go_gctx : GoGlobalContext}.
 Context `{!stagedG Σ}.
 
 Global Instance later_tokG_heap : later_tokG (goose_irisGS).
@@ -86,17 +86,16 @@ Proof.
   - iIntros (?????) "Hg". iDestruct "Hg" as "(?&?&?&?&?&?)". eauto.
   - iIntros (??????) "%Hlt Hg". iDestruct "Hg" as "(?&?&?&?&%Hle2&Hp)".
     iDestruct (ownfCP_op_plus with "Hp") as "(Hp1&$)".
-    iFrame. iSplit.
+    iFrame "∗#%". iSplit.
     { iPureIntro. split; auto. transitivity (q1 + q2)%Qp; last by naive_solver.
       apply Qp.le_add_r. }
     iIntros (???) "Hg". iDestruct "Hg" as "(?&?&?&?&%Hle2'&Hp)".
-    iFrame. iSplit; first auto.
-    iApply ownfCP_op_plus. iFrame.
+    iFrame "∗#%". iApply ownfCP_op_plus. iFrame.
   - iIntros (?????) "%Hlt (Hg&Hp')". iDestruct "Hg" as "(?&?&?&?&%Hle2&Hp)".
     iFrame. iDestruct "Hp'" as "(%Hinf&Hp')".
     iDestruct (ownfCP_op_plus with "[$Hp' $Hp]") as "Hp".
     iDestruct (ownfCP_inf_le1 with "[$Hp //]") as %Hle3.
-    iFrame. iPureIntro.
+    iFrame "∗#%". iPureIntro.
     split; auto. transitivity q2; first naive_solver.
     apply Qp.lt_add_r.
   - iIntros (g ns q D κ) "Hg".
@@ -384,7 +383,7 @@ Proof.
   iAssert (crash_borrow P Pc)%I with "[Hlt1 Hlt2 Hlt5 H2 Hstat2 Hitok_u]"  as "Hborrow".
   {
     rewrite crash_borrow_eq.
-    iExists P, Pc. iFrame "# ∗". 
+    iExists P, Pc. iFrame "# ∗".
     iSplitR; first eauto.
     iSplitR; eauto.
   }

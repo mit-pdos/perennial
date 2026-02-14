@@ -1,283 +1,370 @@
-From New.proof Require Import proof_prelude.
-From iris.algebra.lib Require Import mono_list mono_nat dfrac_agree gmap_view.
-From Coq Require Import Logic.ClassicalEpsilon.
+From iris.algebra Require Export
+  gset functions reservation_map mra dyn_reservation_map view gmultiset csum
+  gmap_view max_prefix_list dfrac_agree auth excl numbers proofmode_classes.
+From Coq Require Import Logic.ClassicalEpsilon Logic.FunctionalExtensionality.
+From iris.base_logic Require Export proofmode iprop.
+From iris.base_logic Require Import own.
+From Perennial.Helpers Require Export
+  Tactics List ListLen Transitions ModArith iris ipm.
+From Perennial Require Export base.
+Export uPred.
 
-Module cmra_expr.
-Inductive t :=
-| prod (A B : t)
-| gmap (K : Type) `{Countable K} (V : t)
-| mono_list (E : Type)
-| frac
-| dfrac
-| agree (A : Type)
-| excl (A : Type)
-| gmap_view (K : Type) `{Countable K} (V : t)
+Global Set Default Proof Using "Type".
+Global Set Printing Projections.
+
+Module syntax.
+Inductive ofe :=
+| unitO
+| leibnizO (A : Type)
 .
 
-Fixpoint interpret (x : t) : cmra :=
+Inductive cmra :=
+| authR (A : ucmra)
+| gmap_viewR (K : Type) `{Countable K} (V : cmra)
+| saved_propR
+| saved_predR (A : Type)
+
+| agreeR (A : ofe)
+| gmapR (K : Type) `{Countable K} (V : cmra)
+| prodR (A B : cmra)
+| optionR (A : cmra)
+| csumR (A B : cmra)
+| exclR (A : ofe)
+| natR
+| max_natR
+| min_natR
+| positiveR
+| ZR
+| max_ZR
+| gmultisetR (K : Type) `{Countable K}
+| fracR
+| gsetR (K : Type) `{Countable K}
+| dfracR
+with ucmra :=
+| gset_disjUR (K : Type) `{Countable K}
+| max_prefix_listUR (A : ofe)
+| gmapUR (K : Type) `{Countable K} (V : cmra)
+| natUR.
+End syntax.
+
+Section denote.
+Context (PROP : ofe) `{!Cofe PROP} .
+
+Definition int_ofe (x : syntax.ofe) : ofe :=
   match x with
-  | prod A B => prodR (interpret A) (interpret B)
-  | gmap K V => gmapR K (interpret V)
-  | mono_list A => mono_listR (leibnizO A)
-  | frac => fracR
-  | dfrac => dfracR
-  | agree A => agreeR (leibnizO A)
-  | excl A => exclR (leibnizO A)
-  | gmap_view K V => gmap_viewR K (interpret V)
+  | syntax.unitO => unitO
+  | syntax.leibnizO A => leibnizO A
   end.
-End cmra_expr.
 
-(* This would require ucmra for everything, which would exclude exclR. *)
-(* Definition any_cmra : Type := discrete_funUR cmra_expr.interpret. *)
+Fixpoint int_cmra (x : syntax.cmra) : cmra :=
+  match x with
+  | syntax.authR A => authR (int_ucmra A)
+  | syntax.gmap_viewR K V => gmap_viewR K (int_cmra V)
+  | syntax.saved_propR => dfrac_agreeR (laterO PROP)
+  | syntax.saved_predR A => dfrac_agreeR (A -d> laterO PROP)
 
-Inductive csigT {A : Type} P :=
-| CexistT : ∀ (x : A), P x → csigT P
-| Cinvalid : csigT P.
-Arguments CexistT {_ _} (_).
-Arguments Cinvalid {_ _}.
+  | syntax.agreeR A => agreeR (int_ofe A)
+  | syntax.gmapR K V => gmapR K (int_cmra V)
+  | syntax.prodR A B => prodR (int_cmra A) (int_cmra B)
+  | syntax.optionR A => optionR (int_cmra A)
+  | syntax.csumR A B => csumR (int_cmra A) (int_cmra B)
+  | syntax.exclR A => exclR (int_ofe A)
 
-Definition any_cmra : Type := csigT cmra_expr.interpret.
+  | syntax.natR => natR
+  | syntax.max_natR => max_natR
+  | syntax.min_natR => min_natR
+  | syntax.positiveR => positiveR
+  | syntax.ZR => ZR
+  | syntax.max_ZR => max_ZR
+  | syntax.gmultisetR K => gmultisetR K
+  | syntax.fracR => fracR
+  | syntax.gsetR K => gsetR K
+  | syntax.dfracR => dfracR
+  end
+with int_ucmra (x : syntax.ucmra) : ucmra :=
+  match x with
+  | syntax.gset_disjUR K => gset_disjUR K
+  | syntax.max_prefix_listUR A => max_prefix_listUR (int_ofe A)
+  | syntax.gmapUR K V => gmapUR K (int_cmra V)
+  | syntax.natUR => natUR
+  end.
 
-Inductive any_cmra_equiv_instance : Equiv any_cmra :=
-| CexistT_equiv {A} a b : a ≡ b → (CexistT A a) ≡ (CexistT A b)
-| Cinvalid_equiv : Cinvalid ≡ Cinvalid.
-Local Existing Instance any_cmra_equiv_instance.
+Fixpoint intF_cmra (x : syntax.cmra) : rFunctor :=
+  match x with
+  | syntax.authR A => authRF (intF_ucmra A)
+  | syntax.gmap_viewR K V => gmap_viewRF K (intF_cmra V)
 
-Inductive any_cmra_dist_instance : Dist any_cmra :=
-| CexistT_dist {A} a b i : a ≡{i}≡ b → (CexistT A a) ≡{i}≡ (CexistT A b)
-| Cinvalid_dist i : Cinvalid ≡{i}≡ Cinvalid.
-Local Existing Instance any_cmra_dist_instance.
+  | syntax.saved_propR => (dfrac_agreeRF (▶ ∙))
+  | syntax.saved_predR A => (dfrac_agreeRF (A -d> ▶ ∙))
 
-Local Instance any_cmra_valid_instance : Valid any_cmra :=
-  λ x, match x with CexistT A a => ✓ a | _ => False end.
+  | syntax.agreeR A => agreeR (int_ofe A)
+  | syntax.gmapR K V => gmapRF K (intF_cmra V)
+  | syntax.prodR A B => prodRF (intF_cmra A) (intF_cmra B)
+  | syntax.optionR A => optionRF (intF_cmra A)
+  | syntax.csumR A B => csumRF (intF_cmra A) (intF_cmra B)
+  | syntax.exclR A => exclR (int_ofe A)
 
-Local Instance any_cmra_validN_instance : ValidN any_cmra :=
-  λ n x, match x with CexistT A a => ✓{n} a | _ => False end.
+  | syntax.natR => natR
+  | syntax.max_natR => max_natR
+  | syntax.min_natR => min_natR
+  | syntax.positiveR => positiveR
+  | syntax.ZR => ZR
+  | syntax.max_ZR => max_ZR
+  | syntax.gmultisetR K => gmultisetR K
+  | syntax.fracR => fracR
+  | syntax.gsetR K => gsetR K
+  | syntax.dfracR => dfracR
+  end
+with intF_ucmra (x : syntax.ucmra) : urFunctor :=
+match x with
+| syntax.gset_disjUR K => gset_disjUR K
+| syntax.max_prefix_listUR A => max_prefix_listUR (int_ofe A)
+| syntax.gmapUR K V => gmapURF K (intF_cmra V)
+| syntax.natUR => natUR
+end.
 
-Local Instance any_cmra_pcore_instance : PCore any_cmra :=
-  λ x, match x with CexistT A a => CexistT A <$> pcore a | _ => Some Cinvalid end.
+Class IsCmra (A : cmra) (e : syntax.cmra) :=
+  { eq_cmra : A = int_cmra e; }.
+Global Hint Mode IsCmra ! - : typeclass_instances.
+Class IsUcmra (A : ucmra) (e : syntax.ucmra) :=
+  { eq_ucmra : A = int_ucmra e; }.
+Global Hint Mode IsUcmra ! - : typeclass_instances.
+Class IsOfe (A : ofe) (e : syntax.ofe) :=
+  { eq_ofe : A = int_ofe e; }.
+Global Hint Mode IsOfe ! - : typeclass_instances.
 
-Local Instance any_cmra_op_instance : Op any_cmra :=
-  λ x y,
-    match x, y with
-    | CexistT A a, CexistT A' a' =>
-        match (excluded_middle_informative (A = A')) with
-        | right _ => Cinvalid
-        | left eq_proof =>
-            CexistT A' ((eq_rect A cmra_expr.interpret a A' eq_proof) ⋅ a')
-        end
-    | _, _ => Cinvalid
-    end.
+Local Ltac s :=
+  constructor; simpl;
+  repeat (lazymatch goal with
+          | H : IsCmra _ _ |- _ => apply @eq_cmra in H; rewrite -H; clear H
+          | H : IsUcmra _ _ |- _ => apply @eq_ucmra in H; rewrite -H; clear H
+          | H : IsOfe _ _ |- _ => apply @eq_ofe in H; rewrite -H; clear H
+          end);
+  try done.
 
-(* Q: does [inj_pair2] *require* [classical]? *)
+#[global] Instance is_prodR `{!IsCmra A Ae} `{!IsCmra B Be} : IsCmra (prodR A B) (syntax.prodR Ae Be).
+Proof. s. Qed.
+#[global] Instance is_authR `{!IsUcmra A Ae} : IsCmra (authR A) (syntax.authR Ae).
+Proof. s. Qed.
+#[global] Instance is_gmap_viewR K `{Countable K} `{!IsCmra V Ve} :
+  IsCmra (gmap_viewR K V) (syntax.gmap_viewR K Ve).
+Proof. s. Qed.
+#[global] Instance is_saved_propR : IsCmra (dfrac_agreeR (laterO PROP)) (syntax.saved_propR).
+Proof. s. Qed.
+#[global] Instance is_saved_predR A : IsCmra (dfrac_agreeR (A -d> laterO PROP)) (syntax.saved_predR A).
+Proof. s. Qed.
+#[global] Instance is_agreeR `{!IsOfe A Ae} :
+  IsCmra (agreeR A) (syntax.agreeR Ae).
+Proof. s. Qed.
+#[global] Instance is_gmapR K `{Countable K} `{!IsCmra V Ve} :
+  IsCmra (gmapR K V) (syntax.gmapR K Ve).
+Proof. s. Qed.
+#[global] Instance is_optionR `{!IsCmra A Ae} :
+  IsCmra (optionR A) (syntax.optionR Ae).
+Proof. s. Qed.
+#[global] Instance is_csumR `{!IsCmra A Ae} `{!IsCmra B Be} :
+  IsCmra (csumR A B) (syntax.csumR Ae Be).
+Proof. s. Qed.
+#[global] Instance is_exclR `{!IsOfe A Ae} :
+  IsCmra (exclR A) (syntax.exclR Ae).
+Proof. s. Qed.
+#[global] Instance is_natR : IsCmra natR syntax.natR.
+Proof. s. Qed.
+#[global] Instance is_max_natR : IsCmra max_natR syntax.max_natR.
+Proof. s. Qed.
+#[global] Instance is_min_natR : IsCmra min_natR syntax.min_natR.
+Proof. s. Qed.
+#[global] Instance is_positiveR : IsCmra positiveR syntax.positiveR.
+Proof. s. Qed.
+#[global] Instance is_ZR : IsCmra ZR syntax.ZR.
+Proof. s. Qed.
+#[global] Instance is_max_ZR : IsCmra max_ZR syntax.max_ZR.
+Proof. s. Qed.
+#[global] Instance is_gmultisetR K `{Countable K} : IsCmra (gmultisetR K) (syntax.gmultisetR K).
+Proof. s. Qed.
+#[global] Instance is_fracR : IsCmra fracR syntax.fracR.
+Proof. s. Qed.
+#[global] Instance is_gsetR K `{Countable K} : IsCmra (gsetR K) (syntax.gsetR K).
+Proof. s. Qed.
+#[global] Instance is_dfracR : IsCmra dfracR syntax.dfracR.
+Proof. s. Qed.
+#[global] Instance is_gset_disjUR K `{Countable K} : IsUcmra (gset_disjUR K) (syntax.gset_disjUR K).
+Proof. s. Qed.
+#[global] Instance is_max_prefix_listUR `{!IsOfe A Ae} :
+  IsUcmra (max_prefix_listUR A) (syntax.max_prefix_listUR Ae).
+Proof. s. Qed.
+#[global] Instance is_gmapUR K `{Countable K} `{!IsCmra V Ve} :
+  IsUcmra (gmapUR K V) (syntax.gmapUR K Ve).
+Proof. s. Qed.
+#[global] Instance is_natUR :
+  IsUcmra natUR syntax.natUR.
+Proof. s. Qed.
+#[global] Instance is_unitO :
+  IsOfe unitO syntax.unitO.
+Proof. s. Qed.
+#[global] Instance is_leibnizO A :
+  IsOfe (leibnizO A) (syntax.leibnizO A).
+Proof. s. Qed.
+End denote.
 
-Local Instance any_cmra_dist_equivalence n : Equivalence (dist n (A:=any_cmra)).
-split.
-+ intros ?. destruct x; constructor. apply reflexivity.
-+ intros ?? Heq. oinversion Heq; subst; constructor.
-  symmetry. done.
-+ intros ??? Heqy Heqz. oinversion Heqy; subst; oinversion Heqz; subst; constructor.
-  apply inj_pair2 in H4. subst. by etransitivity.
-Qed.
+Arguments eq_cmra {_ _ _ _}.
+Arguments eq_ucmra {_ _ _ _}.
 
-Local Instance any_cmra_equiv_equivalence : Equivalence (equiv (A:=any_cmra)).
-split.
-+ intros ?. destruct x; constructor. apply reflexivity.
-+ intros ?? Heq. oinversion Heq; subst; constructor.
-  symmetry. done.
-+ intros ??? Heqy Heqz. oinversion Heqy; subst; oinversion Heqz; subst; constructor.
-  apply inj_pair2 in H3. subst. by etransitivity.
-Qed.
+Definition allUR (PROP : ofe) `{!Cofe PROP}
+  : Type := discrete_funUR (optionUR ∘ int_cmra PROP).
 
-Lemma any_cmra_ofe_mixin : OfeMixin any_cmra.
+Definition allURF := discrete_funURF (λ A, optionURF (intF_cmra A)).
+
+Global Instance all_contractive : urFunctorContractive allURF.
 Proof.
-  split.
-  - intros; split.
-    + intros Heq n. inversion Heq; constructor. by apply equiv_dist.
-    + intros Heq. oinversion (Heq 0ᵢ); subst; constructor.
-      apply equiv_dist => n. oinversion (Heq n); subst.
-      apply inj_pair2 in H4, H5. subst. done.
-  - apply _.
-  - intros ???? Heq Hlt. oinversion Heq; constructor; subst.
-    by eapply dist_le.
+  apply discrete_funURF_contractive.
+  intro A. apply optionURF_contractive. revert A.
+  fix I 1 with
+    (pf_u A : urFunctorContractive (intF_ucmra A)); intros A.
+  { induction A; simpl in *; try tc_solve. }
+  { induction A; simpl in *; try tc_solve. }
 Qed.
 
-Lemma any_cmra_validN A a n :
-  ✓{n} CexistT A a ↔ ✓{n} a.
-Proof. done. Qed.
+Definition allΣ : gFunctors :=
+  #[ GFunctor (urFunctor_to_rFunctor allURF) ].
 
-Lemma any_cmra_valid A a :
-  ✓ CexistT A a ↔ ✓ a.
-Proof. done. Qed.
+Class allG Σ :=
+  { #[local] any_inG :: inG Σ (allUR (iPropO Σ)); }.
 
-Lemma any_cmra_invalid_validN n :
-  ✓{n} Cinvalid = False.
-Proof. done. Qed.
-
-Lemma any_cmra_invalid_valid :
-  ✓ Cinvalid = False.
-Proof. done. Qed.
-
-Lemma CexistT_op A a a' :
-  CexistT A a ⋅ CexistT A a' = CexistT A (a ⋅ a').
+Local Lemma interpret_eq_intF A Σ :
+  (intF_cmra A).(rFunctor_car) (iPropO Σ) (iPropO Σ) =
+  (int_cmra (iPropO Σ) A).
 Proof.
-  cbn. destruct excluded_middle_informative; try done. rewrite (UIP_refl _ _ e) //.
+  revert A.
+  fix I 1 with
+    (pf_u A : (intF_ucmra A).(urFunctor_car) (iPropO Σ) (iPropO Σ) = int_ucmra (iPropO Σ) A
+    ); intros A.
+  - induction A; simpl in *; rewrite ?pf_u; try done.
+    + unfold rFunctor_apply in *. rewrite IHA //.
+    + unfold rFunctor_apply in *. rewrite IHA //.
+    + unfold rFunctor_apply in *. rewrite IHA1 IHA2 //.
+    + unfold rFunctor_apply in *. rewrite IHA //.
+    + unfold rFunctor_apply in *. rewrite IHA1 IHA2 //.
+  - induction A; simpl in *; rewrite ?I; try done.
 Qed.
 
-Lemma any_cmra_included x y :
-  x ≼ y ↔ y = Cinvalid ∨ (∃ A a a', x = CexistT A a ∧ y = CexistT A a' ∧ a ≼ a').
+Global Instance subG_allΣ Σ :
+  subG (allΣ) Σ → allG Σ.
 Proof.
-  split.
-  - intros [z Heq]. destruct y; last by left. right.
-    destruct x, z; cbn in *; try destruct excluded_middle_informative in Heq; subst; oinversion Heq.
-    subst. repeat eexists. apply inj_pair2 in H2, H4. subst. done.
-  - intros [|].
-    + subst. eexists Cinvalid. by destruct x.
-    + destruct H as (? & ? & ? & -> & -> & Hincl). destruct Hincl as [i Hincl].
-      eexists (CexistT x0 i). rewrite CexistT_op. constructor. done.
+  intros. constructor.
+  apply subG_inv in H. destruct H.
+  apply subG_inG in s. simpl in *.
+  exact_eq s. rewrite /allUR.
+  apply (f_equal ucmra_cmraR).
+  apply (f_equal discrete_funUR).
+  apply functional_extensionality_dep_good.
+  intros. rewrite interpret_eq_intF //.
 Qed.
 
-Lemma any_cmra_cmra_mixin : CmraMixin any_cmra.
+Local Instance ucmra_expr_eq_decision : EqDecision syntax.ucmra.
 Proof.
-  split.
-  - intros [] ? ? ? H.
-    + inversion H; subst; last done.
-      cbn. destruct excluded_middle_informative; constructor. rewrite H0 //.
-    + cbn. constructor.
-  - intros. oinversion H; subst; simpl.
-    + rewrite /pcore /any_cmra_pcore_instance in H0 |- *.
-      apply fmap_Some_1 in H0 as [? [Hpcore ?]]; subst.
-      eapply cmra_pcore_ne in Hpcore; last eassumption.
-      destruct Hpcore as (ca & -> & Heq).
-      eexists _; split; first done. constructor. done.
-    + eexists _. split; done.
-  - intros ?. intros ?? Heq. inversion Heq; last done.
-    rewrite !any_cmra_validN. by apply cmra_validN_ne.
-  - pose 0ᵢ. intros [|].
-    + setoid_rewrite any_cmra_validN. rewrite /= any_cmra_valid ?cmra_valid_validN //.
-    + rewrite any_cmra_invalid_valid. split; try done.
-      intros H. specialize (H 0). done.
-  - intros n m [|]; simpl; eauto using cmra_validN_le.
-  - intros [|] [|] [|]; try constructor.
-    + cbn. repeat (destruct excluded_middle_informative; subst; cbn); try constructor; try congruence.
-      unfold eq_rect. rewrite (UIP_refl _ _ e). rewrite assoc //.
-    + cbn. repeat (destruct excluded_middle_informative; subst; cbn); try constructor; try congruence.
-  - intros [|] [|]; try constructor. cbn.
-    repeat (destruct excluded_middle_informative; subst; cbn); try constructor; try congruence.
-    rewrite (UIP_refl _ _ e). rewrite comm //.
-  - intros [? a|] ? [=]; subst; auto. cbn in *.
-    destruct (pcore a) as [ca|] eqn:?; simplify_option_eq.
-    cbn. destruct excluded_middle_informative; try done.
-    constructor; rewrite (UIP_refl _ _ e). simpl. eauto using cmra_pcore_l.
-  - intros [? a|] ? [=]; subst; auto. cbn in *.
-    destruct (pcore a) as [ca|] eqn:?; simplify_option_eq. cbn.
-    oinversion (cmra_pcore_idemp a ca); repeat constructor; auto.
-  - intros ??? Hincl Hpcore. rewrite any_cmra_included in Hincl. destruct Hincl.
-    + subst. eexists Cinvalid. split; first done. eexists Cinvalid. destruct cx; reflexivity.
-    + destruct H as (? & ? & ? & -> & -> & Hincl). cbn in *. simplify_option_eq. rename H into p.
-      eapply cmra_pcore_mono in Hincl; try eassumption. destruct Hincl as (? & -> & Hincl).
-      destruct Hincl as [i Hincl]. eexists _. split; first done. eexists (CexistT x0 i).
-      cbn. destruct excluded_middle_informative; try done.
-      rewrite (UIP_refl _ _ e). simpl. constructor. done.
-  - intros n [|] [|]; simpl; try done.
-    cbn. destruct excluded_middle_informative; last done.
-    destruct e. simpl. cbn. eauto using cmra_validN_op_l.
-  - intros n [? a|] y1 y2 Hx Hx'.
-    + destruct y1 as [? a1|], y2 as [? a2|]; try by exfalso; inversion Hx'.
-      cbn in Hx'. destruct excluded_middle_informative in Hx'; last (exfalso; oinversion Hx').
-      subst. simpl in *. destruct (excluded_middle_informative (x = x1)).
-      2:{ exfalso. inversion Hx'. subst. done. }
-      subst.
-      destruct (cmra_extend n a a1 a2) as (z1&z2&?&?&?); [done| |].
-      * inversion Hx'. subst. apply inj_pair2 in H2, H3. subst. done.
-      * repeat econstructor; try done.
-        cbn. destruct excluded_middle_informative; last done.
-        rewrite (UIP_refl _ _ e). simpl. constructor. done.
-    + destruct y1 as [a1|], y2 as [a2|]; try by exfalso; inversion Hx'.
+  intros A B. destruct (excluded_middle_informative (A = B)); [left|right]; done.
 Qed.
 
-Canonical Structure any_cmraO : ofe := Ofe any_cmra any_cmra_ofe_mixin.
-Canonical Structure any_cmraR := Cmra any_cmra any_cmra_cmra_mixin.
-
-Definition to_any (A : cmra_expr.t) a : any_cmra :=
-  CexistT A a.
-
-Lemma any_cmra_validN_op A B a b n :
-  ✓{n} (CexistT A a ⋅ CexistT B b) ↔
-  ∃ (pf : A = B), ✓{n}((eq_rect A _ a B pf) ⋅ b).
+Local Instance cmra_expr_eq_decision : EqDecision syntax.cmra.
 Proof.
-  split.
-  - intros H. cbn in H. destruct excluded_middle_informative in H; try done.
-    exists e. destruct e. simpl in *. rewrite any_cmra_validN // in H.
-  - intros (? & H). subst. simpl in *. rewrite CexistT_op //.
-Qed.
-
-Lemma any_cmra_validN_op_invalid_r A a n :
-  ✓{n} (CexistT A a ⋅ Cinvalid) → False.
-Proof. done. Qed.
-
-Lemma any_cmra_validN_op_invalid_l A a n :
-  ✓{n} (Cinvalid ⋅ CexistT A a) → False.
-Proof. done. Qed.
-
-Lemma any_cmra_update {A : cmra_expr.t} a b :
-  a ~~> b →
-  to_any A a ~~> to_any A b.
-Proof.
-  unfold to_any. intros Hupd n [[]|] Hvalid.
-  - rewrite any_cmra_validN_op in Hvalid. destruct Hvalid as [-> Hvalid].
-    simpl. rewrite any_cmra_validN_op. eexists eq_refl.
-    simpl in *. specialize (Hupd n (Some c)). by apply Hupd.
-  - simpl in *. by apply any_cmra_validN_op_invalid_r in Hvalid.
-  - simpl in *. rewrite !any_cmra_validN in Hvalid |- *.
-    specialize (Hupd n None). by apply Hupd.
+  intros A B. destruct (excluded_middle_informative (A = B)); [left|right]; done.
 Qed.
 
 Section own.
-Context `{!inG Σ any_cmraR}.
+Context `{!allG Σ}.
 
-Class SimpleCmra A :=
-  {
-    Aexp : cmra_expr.t;
-    eq_proof : A = cmra_expr.interpret Aexp;
-  }.
+Definition own_def `{!IsCmra (iProp Σ) A e} γ (a : A) : iProp Σ :=
+  own γ (discrete_fun_singleton (B:=optionUR ∘ int_cmra (iProp Σ)) e
+           (Some (cmra_transport eq_cmra a))).
 
-Definition own_any {A : cmra} γ (a : A) : iProp Σ :=
-  ∃ (_ : SimpleCmra A), own γ (CexistT Aexp (eq_rect A id a _ eq_proof) : any_cmra).
+Program Definition own := sealed @own_def.
+Definition own_unseal : own = _ := seal_eq _.
+Global Arguments own {A _ _} (γ a).
 
-Lemma own_any_update γ {A : cmra} (a a' : A) :
-  a ~~> a' →
-  own_any γ a ==∗ own_any γ a'.
+Context {A e} {HC : IsCmra (iProp Σ) A e}.
+Implicit Types (a : A).
+
+(** Core facts that requires unfolding [own] *)
+Section core.
+
+(*
+  [*] own_ne
+  [*] own_op
+  [*] own_valid
+  [*] own_timeless
+  [*] own_persistent
+  [ ] later_own
+  [*] own_alloc_strong_dep
+  [*] own_updateP
+  [*] own_unit
+  [ ] own_forall
+ *)
+
+Ltac start :=
+  rewrite own_unseal /own_def; destruct HC; clear HC; subst; simpl in *.
+
+Global Instance own_ne γ : NonExpansive (own (A:=A) γ).
+Proof. start. solve_proper. Qed.
+
+Lemma own_op γ (a1 a2 : A) :
+  own γ (a1 ⋅ a2) ⊣⊢ own γ a1 ∗ own γ a2.
 Proof.
-  intros Hupd. iIntros "[% Hown]".
-  iExists _. iApply (own_update with "Hown").
-  apply any_cmra_update. simpl. destruct H.
-  simpl in *. destruct eq_proof0. simpl.
-  apply Hupd.
+  start. rewrite -own_op discrete_fun_singleton_op Some_op //.
 Qed.
 
-Lemma own_any_alloc `{!SimpleCmra A} (a : A) :
-  ✓ a →
-  ⊢ |==> ∃ γ, own_any γ a.
+Lemma own_valid γ (a : A) :
+  own γ a ⊢ ✓ a.
 Proof.
-  intros Hvalid.
-  iMod (own_alloc (CexistT Aexp (eq_rect A id a _ eq_proof) : any_cmra)) as (γ) "H".
-  { rewrite any_cmra_valid. simpl. destruct SimpleCmra0.
-    simpl in *. destruct eq_proof0. simpl in *. done. }
-  by iFrame.
+  start. iIntros "H". iDestruct (own_valid with "H") as "H".
+  rewrite discrete_fun_validI. iSpecialize ("H" $! e).
+  rewrite discrete_fun_lookup_singleton option_validI //.
 Qed.
 
-Instance mlist_simple_cmra (A : Type) : SimpleCmra (mono_listR (leibnizO A)).
-Proof. by eexists (cmra_expr.mono_list A). Qed.
+Global Instance own_timeless γ (a : A) :
+  Discrete a → Timeless (own γ a).
+Proof. start. apply _. Qed.
 
-Lemma own_any_mono_list (l : list nat) :
-  ⊢ |==> ∃ γ, own_any γ (●ML l).
+Global Instance own_core_persistent γ (a : A) : CoreId a → Persistent (own γ a).
+Proof. start. apply _. Qed.
+
+Lemma own_updateP P γ (a : A) : a ~~>: P → own γ a ⊢ |==> ∃ a', ⌜P a'⌝ ∗ own γ a'.
 Proof.
-  iApply own_any_alloc. apply mono_list_auth_valid.
+  start. iIntros "%Hupd H". iDestruct (own_updateP with "H") as "H".
+  { eapply discrete_fun_singleton_updateP'. by apply option_updateP'. }
+  iMod "H" as (?) "[% H]". destruct H as (? & ? & ?). subst.
+  destruct x; try done. simpl in *. iExists c. by iFrame.
 Qed.
+
+Lemma own_alloc_strong_dep (f : gname → A) (P : gname → Prop) :
+  pred_infinite P →
+  (∀ γ, P γ → ✓ (f γ)) →
+  ⊢ |==> ∃ γ, ⌜P γ⌝ ∗ own γ (f γ).
+Proof.
+  start. intros Hpred Hvalid.
+  iApply own_alloc_strong_dep; first done.
+  intros ?. rewrite discrete_fun_singleton_valid Some_valid. apply Hvalid.
+Qed.
+
+Lemma own_unit {B : ucmra} Be {HB : IsCmra (iProp Σ) B Be} γ :
+  ⊢ |==> own γ (ε : B).
+Proof.
+  destruct HB; subst; simpl in *. rewrite own_unseal.
+  simpl in *. rewrite /own_def.
+  iMod own_unit as "H". iApply (own_update with "H"). simpl.
+  apply discrete_fun_singleton_update_empty.
+  intros n []; simpl in *.
+  - intros H. rewrite left_id in H. destruct c.
+    + rewrite -Some_op Some_validN.
+      replace (c) with (cmra_transport eq_cmra0 (cmra_transport (eq_sym eq_cmra0) c)).
+      2:{ clear. destruct eq_cmra0. done. }
+      rewrite -cmra_transport_op. apply cmra_transport_validN.
+      rewrite Some_validN in H. rewrite -cmra_transport_validN in H.
+      rewrite left_id //.
+    + rewrite right_id. apply cmra_transport_validN, ucmra_unit_validN.
+  - intros Hbad. apply Some_validN.
+    apply cmra_transport_validN, ucmra_unit_validN.
+Qed.
+
+End core.
 End own.
-
-(* Print Assumptions own_any_mono_list.
-  constructive_indefinite_description : ∀ (A : Type) (P : A → Prop), (∃ x : A, P x) → {x : A | P x}
-  classic : ∀ P : Prop, P ∨ ¬ P
-*)

@@ -5,44 +5,33 @@ From Perennial.goose_lang.ffi.grove_ffi Require Export impl.
 Existing Instances grove_op grove_model.
 (** * Grove user-facing operations. *)
 Section grove.
+  Context {go_gctx : GoGlobalContext}.
 
   (** These are pointers in Go. *)
-  Definition Listener : go_type := ptrT.
-  Definition Connection : go_type := ptrT.
-  Definition Address : go_type := uint64T.
-
-  Definition ConnectRet := structT [
-                               "Err" :: boolT;
-                               "Connection" :: Connection
-                             ].
-
-  Definition ReceiveRet := structT [
-                               "Err" :: boolT;
-                               "Data" :: sliceT
-                             ].
+  Definition Listenerⁱᵐᵖˡ : go.type := unsafe.Pointer.
+  Definition Connectionⁱᵐᵖˡ : go.type := unsafe.Pointer.
+  Definition Address : go.type := go.uint64.
 
   (** Type: func(uint64) Listener *)
   Definition Listenⁱᵐᵖˡ : val :=
-    λ: "e", ref (ExternalOp ListenOp "e").
+    λ: "e", Alloc (ExternalOp ListenOp "e").
 
   (** Type: func(uint64) (bool, Connection) *)
   Definition Connectⁱᵐᵖˡ : val :=
     λ: "e",
       let: "c" := ExternalOp ConnectOp "e" in
       let: "err" := Fst "c" in
-      let: "socket" := ref (Snd "c") in
-      struct.make #ConnectRet [{
-        "Err" ::= "err" ;
-        "Connection" ::= "socket"
-      }].
+      let: "socket" := Alloc (Snd "c") in
+      ("err", "socket").
 
   (** Type: func(Listener) Connection *)
   Definition Acceptⁱᵐᵖˡ : val :=
-    λ: "e", ref (ExternalOp AcceptOp (!"e")).
+    λ: "e", Alloc (ExternalOp AcceptOp (!"e")).
 
   (** Type: func(Connection, []byte) *)
   Definition Sendⁱᵐᵖˡ : val :=
-    λ: "e" "m", ExternalOp SendOp (!"e", (slice.ptr "m", slice.len "m")).
+    λ: "e" "m", ExternalOp SendOp (!"e", (IndexRef (go.SliceType go.byte) ("m", #(W64 0)),
+                                            FuncResolve go.len [go.SliceType go.byte] "m")).
 
   (** Type: func(Connection) (bool, []byte) *)
   Definition Receiveⁱᵐᵖˡ : val :=
@@ -52,11 +41,8 @@ Section grove.
       let: "slice" := Snd "r" in
       let: "ptr" := Fst "slice" in
       let: "len" := Snd "slice" in
-      struct.make #ReceiveRet [{
-        "Err" ::= "err" ;
-        "Data" ::= InjL ("ptr", "len", "len")
-      }].
 
+      ("err", (InternalMakeSlice ("ptr", "len", "len"))).
 
   (** FileRead pretends that the operation can never fail.
       The Go implementation will accordingly abort the program if an I/O error occurs. *)
@@ -65,7 +51,7 @@ Section grove.
       let: "ret" := ExternalOp FileReadOp "f" in
       let: "err" := Fst "ret" in
       let: "slice" := Snd "ret" in
-      if: "err" then control.impl.Exit #() else
+      if: "err" then AngelicExit #() else
       let: "ptr" := Fst "slice" in
       let: "len" := Snd "slice" in
       InjL ("ptr", "len", "len").
@@ -74,16 +60,18 @@ Section grove.
       The Go implementation will accordingly abort the program if an I/O error occurs. *)
   Definition FileWriteⁱᵐᵖˡ : val :=
     λ: "f" "c",
-      let: "err" := ExternalOp FileWriteOp ("f", (slice.ptr "c", slice.len "c")) in
-      if: "err" then control.impl.Exit #() else
+      let: "err" := ExternalOp FileWriteOp ("f", (IndexRef (go.SliceType go.byte) ("c", #(W64 0)),
+                                                 FuncResolve go.len [go.SliceType go.byte] "c")) in
+      if: "err" then AngelicExit #() else
       #().
 
   (** FileAppend pretends that the operation can never fail.
       The Go implementation will accordingly abort the program if an I/O error occurs. *)
   Definition FileAppendⁱᵐᵖˡ : val :=
     λ: "f" "c",
-      let: "err" := ExternalOp FileAppendOp ("f", (slice.ptr "c", slice.len "c")) in
-      if: "err" then control.impl.Exit #() else
+      let: "err" := ExternalOp FileAppendOp ("f", (IndexRef (go.SliceType go.byte) ("c", #(W64 0)),
+                                                 FuncResolve go.len [go.SliceType go.byte] "c")) in
+      if: "err" then AngelicExit #() else
       #().
 
   (** Type: func() uint64 *)
@@ -95,3 +83,11 @@ Section grove.
     λ: <>, ExternalOp GetTimeRangeOp #().
 
 End grove.
+
+Module Connection.
+Definition t := loc.
+End Connection.
+
+Module Listener.
+Definition t := loc.
+End Listener.

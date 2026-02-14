@@ -4,11 +4,12 @@ From New.generatedproof.crypto Require Import ed25519.
 Module ed25519.
 
 Section proof.
-Context `{hG: heapGS Σ, !ffi_semantics _ _, !globalsGS Σ} {go_ctx : GoContext}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics} {package_sem : ed25519.Assumptions}.
+Collection W := sem + package_sem.
 
-#[global] Instance : IsPkgInit ed25519 := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf ed25519 := build_get_is_pkg_init_wf.
-
+#[global] Instance : IsPkgInit (iProp Σ) ed25519 := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ) ed25519 := build_get_is_pkg_init_wf.
 Lemma wp_initialize' get_is_pkg_init :
   get_is_pkg_init_prop ed25519 get_is_pkg_init →
   {{{ own_initializing get_is_pkg_init ∗ is_go_context ∗ □ is_pkg_defined ed25519 }}}

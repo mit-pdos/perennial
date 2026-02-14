@@ -1,5 +1,7 @@
 From stdpp Require Import sorting.
 Require Import New.proof.proof_prelude.
+From New.golang Require Export theory.
+From RecordUpdate Require Import RecordSet.
 
 Inductive ecomp (E : Type → Type) (R : Type) : Type :=
 | Pure (r : R) : ecomp E R
@@ -326,9 +328,9 @@ count_only; min_mod_revision; max_mod_revision; min_create_revision; max_create_
 
 Definition default `{ffi_syntax} : t :=
   ltac:(let x := eval simpl in
-        (mk [] [] (default_val _) (default_val _) (default_val _) (default_val _) (default_val _)
-           (default_val _) (default_val _) (default_val _) (default_val _) (default_val _)
-           (default_val _)) in
+        (mk [] [] (zero_val _) (zero_val _) (zero_val _) (zero_val _) (zero_val _)
+           (zero_val _) (zero_val _) (zero_val _) (zero_val _) (zero_val _)
+           (zero_val _)) in
           refine x
        ).
 End RangeRequest.
@@ -484,8 +486,8 @@ Global Instance settable : Settable _ :=
 
 Definition default `{ffi_syntax} : t :=
   ltac:(let x := eval simpl in
-        (mk [] [] (default_val _) (default_val _) (default_val _)
-           (default_val _)) in
+        (mk [] [] (zero_val _) (zero_val _) (zero_val _)
+           (zero_val _)) in
           refine x
        ).
 End PutRequest.
@@ -521,7 +523,7 @@ interp handle_exceptionE (
   let ret_prev_kv := (if req.(PutRequest.prev_kv) then prev_kv else None) in
   let prev_ver := default (W64 0) (KeyValue.version <$> prev_kv) in
   let ver := (word.add prev_ver (W64 1)) in (* should this handle overflow? *)
-  let mod_revision := (word.add σ.(EtcdState.revision) 1) in
+  let mod_revision := (word.add σ.(EtcdState.revision) (W64 1)) in
   let create_revision := default mod_revision (KeyValue.create_revision <$> prev_kv) in
   let new_kv := KeyValue.mk req.(PutRequest.key) create_revision mod_revision ver value lease in
   let σ := set EtcdState.key_values <[mod_revision := <[req.(PutRequest.key) := new_kv]> kvs]> σ in

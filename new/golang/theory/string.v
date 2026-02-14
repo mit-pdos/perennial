@@ -1,37 +1,31 @@
-From Perennial.Helpers Require Import List ListLen Fractional NamedProps.
-From iris.algebra Require Import dfrac.
-From Perennial.iris_lib Require Import dfractional.
-From Perennial.goose_lang Require Import ipersist.
 From New.golang.defn Require Export string.
-From New.golang.theory Require Import list assume exception loop typing primitive auto.
-From New.golang.theory Require Import mem slice.
-From Perennial Require Import base.
+Require Import New.proof.github_com.goose_lang.goose.model.strings.
+From New.golang.theory Require Export exception loop proofmode slice.
 
-Set Default Proof Using "Type".
+Section proof.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}
+  {sem : go.StringSemantics}.
+Collection W := sem.
 
-Section wps.
-  
-  Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Lemma wp_string_to_bytes (s : go_string)
+    `[!to ↓u go.SliceType elem_type] `[!elem_type ↓u go.byte] `[!from ↓u go.string] :
+  {{{ True }}}
+    Convert from to #s
+  {{{ sl, RET #sl; sl ↦* s ∗ own_slice_cap w8 sl (DfracOwn 1) }}}.
+Proof using W.
+  pose proof (go.tagged_steps internal). wp_start. wp_auto.
+  wp_apply wp_StringToByteSlice. done.
+Qed.
 
-  Lemma wp_StringToBytes (s:go_string) :
-  {{{
-        True
-  }}}
-    string.to_bytes #s
-  {{{
-        (sl:slice.t), RET #sl; own_slice sl (DfracOwn 1) s         
-  }}}.
-  Admitted.
+Lemma wp_bytes_to_string sl (s : go_string) dq
+    `[!from ↓u go.SliceType elem_type] `[!elem_type ↓u go.byte] `[!to ↓u go.string] :
+  {{{ sl ↦*{dq} s }}}
+    Convert from to #sl
+  {{{ RET #s; sl ↦*{dq} s }}}.
+Proof using W.
+  pose proof (go.tagged_steps internal). wp_start. wp_auto.
+  wp_apply (wp_ByteSliceToString with "[$]"). done.
+Qed.
 
-  Lemma wp_StringFromBytes sl q (l:go_string):
-  {{{
-        own_slice sl q l
-  }}}
-    string.from_bytes #sl
-  {{{
-        RET #l;
-        own_slice sl q l
-  }}}.
-  Admitted.
-
-End wps.
+End proof.

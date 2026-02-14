@@ -1,6 +1,5 @@
-From Perennial.goose_lang Require Import notation.
 From New.golang.defn Require Export loop.
-From New.golang.theory Require Import exception typing.
+From New.golang.theory Require Export exception.
 From iris_named_props Require Export named_props.
 From Perennial Require Import base.
 
@@ -10,21 +9,21 @@ Set Default Proof Using "Type".
 exported interface of this file. *)
 
 Section wps.
-Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}.
+Context `{ffi_sem: ffi_semantics} `{!ffi_interp ffi} `{!heapGS Σ}
+  {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
+Local Set Default Proof Using "All".
 
 Global Instance pure_continue_val (v1 : val) :
   PureWp True (exception_seq v1 (continue_val)) (continue_val).
 Proof.
   rewrite exception_seq_unseal continue_val_unseal.
-  intros ?????. iIntros "Hwp".
-  wp_call_lc "?". by iApply "Hwp".
+  intros ?????. iIntros "Hwp". wp_call_lc "?". by iApply "Hwp".
 Qed.
 
 Global Instance pure_break_val (v1 : val) : PureWp True (exception_seq v1 (break_val)) (break_val).
 Proof.
   rewrite exception_seq_unseal break_val_unseal.
-  intros ?????. iIntros "Hwp".
-  wp_call_lc "?". by iApply "Hwp".
+  intros ?????. iIntros "Hwp". wp_call_lc "?". by iApply "Hwp".
 Qed.
 
 Global Instance pure_do_continue_val : PureWp True (continue: #()) (continue_val).
@@ -109,6 +108,7 @@ Proof.
     iDestruct "Hb" as "[[% HP]|Hb]".
     { (* body terminates with "execute" *)
       subst. wp_pures.
+      wp_pures.
       wp_apply (wp_wand with "HP").
       iIntros (?) "HP".
       iSpecialize ("IH" with "HP").
@@ -125,7 +125,9 @@ Proof.
     }
     iDestruct "Hb" as (?) "[% HΦ]".
     { (* body terminates with other error code *)
-      subst. rewrite return_val_unseal. wp_pures. done.
+      subst. rewrite return_val_unseal. wp_pures.
+      repeat (rewrite bool_decide_false //; wp_pures).
+      done.
     }
   - destruct (decide _); subst.
     { wp_pures. by iFrame. }

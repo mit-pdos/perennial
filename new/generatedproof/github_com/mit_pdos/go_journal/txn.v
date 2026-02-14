@@ -7,266 +7,133 @@ Require Export New.generatedproof.github_com.mit_pdos.go_journal.lockmap.
 Require Export New.generatedproof.github_com.mit_pdos.go_journal.obj.
 Require Export New.generatedproof.github_com.mit_pdos.go_journal.util.
 Require Export New.golang.theory.
-
 Require Export New.code.github_com.mit_pdos.go_journal.txn.
 
 Set Default Proof Using "Type".
 
 Module txn.
-
-(* type txn.Log *)
 Module Log.
 Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-  log' : loc;
-  locks' : loc;
-}.
+
+Context `{!heapGS Σ}.
+Context {sem : go.Semantics}.
+Context {package_sem' : txn.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance Log_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (txn.Log.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "log" ∷ l.[(txn.Log.t), "log"] ↦{dq} v.(txn.Log.log') ∗
+      "locks" ∷ l.[(txn.Log.t), "locks"] ↦{dq} v.(txn.Log.locks') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance Log_into_val_typed
+   :
+  IntoValTypedUnderlying (txn.Log.t) (txn.Logⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Log_access_load_log l (v : (txn.Log.t)) dq :
+  AccessStrict
+    (l.[(txn.Log.t), "log"] ↦{dq} (v.(txn.Log.log')))
+    (l.[(txn.Log.t), "log"] ↦{dq} (v.(txn.Log.log')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Log_access_store_log l (v : (txn.Log.t)) log' :
+  AccessStrict
+    (l.[(txn.Log.t), "log"] ↦ (v.(txn.Log.log')))
+    (l.[(txn.Log.t), "log"] ↦ log')
+    (l ↦ v) (l ↦ (v <|(txn.Log.log') := log'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Log_access_load_locks l (v : (txn.Log.t)) dq :
+  AccessStrict
+    (l.[(txn.Log.t), "locks"] ↦{dq} (v.(txn.Log.locks')))
+    (l.[(txn.Log.t), "locks"] ↦{dq} (v.(txn.Log.locks')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Log_access_store_locks l (v : (txn.Log.t)) locks' :
+  AccessStrict
+    (l.[(txn.Log.t), "locks"] ↦ (v.(txn.Log.locks')))
+    (l.[(txn.Log.t), "locks"] ↦ locks')
+    (l ↦ v) (l ↦ (v <|(txn.Log.locks') := locks'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End Log.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent txn.Log.
-#[local] Typeclasses Transparent txn.Log.
-
-Global Instance Log_wf : struct.Wf txn.Log.
-Proof. apply _. Qed.
-
-Global Instance settable_Log : Settable Log.t :=
-  settable! Log.mk < Log.log'; Log.locks' >.
-Global Instance into_val_Log : IntoVal Log.t :=
-  {| to_val_def v :=
-    struct.val_aux txn.Log [
-    "log" ::= #(Log.log' v);
-    "locks" ::= #(Log.locks' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_Log : IntoValTyped Log.t txn.Log :=
-{|
-  default_val := Log.mk (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_Log_log : IntoValStructField "log" txn.Log Log.log'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Log_locks : IntoValStructField "locks" txn.Log Log.locks'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Log log' locks':
-  PureWp True
-    (struct.make #txn.Log (alist_val [
-      "log" ::= #log';
-      "locks" ::= #locks'
-    ]))%struct
-    #(Log.mk log' locks').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance Log_struct_fields_split dq l (v : Log.t) :
-  StructFieldsSplit dq l v (
-    "Hlog" ∷ l ↦s[txn.Log :: "log"]{dq} v.(Log.log') ∗
-    "Hlocks" ∷ l ↦s[txn.Log :: "locks"]{dq} v.(Log.locks')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Log.log' v)) (txn.Log) "log"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-(* type txn.Txn *)
 Module Txn.
 Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-  buftxn' : loc;
-  locks' : loc;
-  acquired' : loc;
-}.
+
+Context `{!heapGS Σ}.
+Context {sem : go.Semantics}.
+Context {package_sem' : txn.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance Txn_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (txn.Txn.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "buftxn" ∷ l.[(txn.Txn.t), "buftxn"] ↦{dq} v.(txn.Txn.buftxn') ∗
+      "locks" ∷ l.[(txn.Txn.t), "locks"] ↦{dq} v.(txn.Txn.locks') ∗
+      "acquired" ∷ l.[(txn.Txn.t), "acquired"] ↦{dq} v.(txn.Txn.acquired') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance Txn_into_val_typed
+   :
+  IntoValTypedUnderlying (txn.Txn.t) (txn.Txnⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Txn_access_load_buftxn l (v : (txn.Txn.t)) dq :
+  AccessStrict
+    (l.[(txn.Txn.t), "buftxn"] ↦{dq} (v.(txn.Txn.buftxn')))
+    (l.[(txn.Txn.t), "buftxn"] ↦{dq} (v.(txn.Txn.buftxn')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Txn_access_store_buftxn l (v : (txn.Txn.t)) buftxn' :
+  AccessStrict
+    (l.[(txn.Txn.t), "buftxn"] ↦ (v.(txn.Txn.buftxn')))
+    (l.[(txn.Txn.t), "buftxn"] ↦ buftxn')
+    (l ↦ v) (l ↦ (v <|(txn.Txn.buftxn') := buftxn'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Txn_access_load_locks l (v : (txn.Txn.t)) dq :
+  AccessStrict
+    (l.[(txn.Txn.t), "locks"] ↦{dq} (v.(txn.Txn.locks')))
+    (l.[(txn.Txn.t), "locks"] ↦{dq} (v.(txn.Txn.locks')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Txn_access_store_locks l (v : (txn.Txn.t)) locks' :
+  AccessStrict
+    (l.[(txn.Txn.t), "locks"] ↦ (v.(txn.Txn.locks')))
+    (l.[(txn.Txn.t), "locks"] ↦ locks')
+    (l ↦ v) (l ↦ (v <|(txn.Txn.locks') := locks'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Txn_access_load_acquired l (v : (txn.Txn.t)) dq :
+  AccessStrict
+    (l.[(txn.Txn.t), "acquired"] ↦{dq} (v.(txn.Txn.acquired')))
+    (l.[(txn.Txn.t), "acquired"] ↦{dq} (v.(txn.Txn.acquired')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Txn_access_store_acquired l (v : (txn.Txn.t)) acquired' :
+  AccessStrict
+    (l.[(txn.Txn.t), "acquired"] ↦ (v.(txn.Txn.acquired')))
+    (l.[(txn.Txn.t), "acquired"] ↦ acquired')
+    (l ↦ v) (l ↦ (v <|(txn.Txn.acquired') := acquired'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End Txn.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent txn.Txn.
-#[local] Typeclasses Transparent txn.Txn.
-
-Global Instance Txn_wf : struct.Wf txn.Txn.
-Proof. apply _. Qed.
-
-Global Instance settable_Txn : Settable Txn.t :=
-  settable! Txn.mk < Txn.buftxn'; Txn.locks'; Txn.acquired' >.
-Global Instance into_val_Txn : IntoVal Txn.t :=
-  {| to_val_def v :=
-    struct.val_aux txn.Txn [
-    "buftxn" ::= #(Txn.buftxn' v);
-    "locks" ::= #(Txn.locks' v);
-    "acquired" ::= #(Txn.acquired' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_Txn : IntoValTyped Txn.t txn.Txn :=
-{|
-  default_val := Txn.mk (default_val _) (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_Txn_buftxn : IntoValStructField "buftxn" txn.Txn Txn.buftxn'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Txn_locks : IntoValStructField "locks" txn.Txn Txn.locks'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Txn_acquired : IntoValStructField "acquired" txn.Txn Txn.acquired'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Txn buftxn' locks' acquired':
-  PureWp True
-    (struct.make #txn.Txn (alist_val [
-      "buftxn" ::= #buftxn';
-      "locks" ::= #locks';
-      "acquired" ::= #acquired'
-    ]))%struct
-    #(Txn.mk buftxn' locks' acquired').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance Txn_struct_fields_split dq l (v : Txn.t) :
-  StructFieldsSplit dq l v (
-    "Hbuftxn" ∷ l ↦s[txn.Txn :: "buftxn"]{dq} v.(Txn.buftxn') ∗
-    "Hlocks" ∷ l ↦s[txn.Txn :: "locks"]{dq} v.(Txn.locks') ∗
-    "Hacquired" ∷ l ↦s[txn.Txn :: "acquired"]{dq} v.(Txn.acquired')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Txn.buftxn' v)) (txn.Txn) "buftxn"%go.
-  simpl_one_flatten_struct (# (Txn.locks' v)) (txn.Txn) "locks"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-Section names.
-
-Context `{!heapGS Σ}.
-Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext}.
-#[local] Transparent is_pkg_defined is_pkg_defined_pure.
-
-Global Instance is_pkg_defined_pure_txn : IsPkgDefinedPure txn :=
-  {|
-    is_pkg_defined_pure_def go_ctx :=
-      is_pkg_defined_pure_single txn ∧
-      is_pkg_defined_pure code.github_com.goose_lang.primitive.disk.disk ∧
-      is_pkg_defined_pure code.github_com.mit_pdos.go_journal.addr.addr ∧
-      is_pkg_defined_pure code.github_com.mit_pdos.go_journal.jrnl.jrnl ∧
-      is_pkg_defined_pure code.github_com.mit_pdos.go_journal.lockmap.lockmap ∧
-      is_pkg_defined_pure code.github_com.mit_pdos.go_journal.obj.obj ∧
-      is_pkg_defined_pure code.github_com.mit_pdos.go_journal.util.util;
-  |}.
-
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_txn : IsPkgDefined txn :=
-  {|
-    is_pkg_defined_def go_ctx :=
-      (is_pkg_defined_single txn ∗
-       is_pkg_defined code.github_com.goose_lang.primitive.disk.disk ∗
-       is_pkg_defined code.github_com.mit_pdos.go_journal.addr.addr ∗
-       is_pkg_defined code.github_com.mit_pdos.go_journal.jrnl.jrnl ∗
-       is_pkg_defined code.github_com.mit_pdos.go_journal.lockmap.lockmap ∗
-       is_pkg_defined code.github_com.mit_pdos.go_journal.obj.obj ∗
-       is_pkg_defined code.github_com.mit_pdos.go_journal.util.util)%I
-  |}.
-Final Obligation. iIntros. iFrame "#%". Qed.
-#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
-
-Global Instance wp_func_call_Init :
-  WpFuncCall txn.Init _ (is_pkg_defined txn) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_Begin :
-  WpFuncCall txn.Begin _ (is_pkg_defined txn) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_bitToByte :
-  WpFuncCall txn.bitToByte _ (is_pkg_defined txn) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_method_call_Log'ptr_Flush :
-  WpMethodCall (ptrT.id txn.Log.id) "Flush" _ (is_pkg_defined txn) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Txn'ptr_Acquire :
-  WpMethodCall (ptrT.id txn.Txn.id) "Acquire" _ (is_pkg_defined txn) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Txn'ptr_Commit :
-  WpMethodCall (ptrT.id txn.Txn.id) "Commit" _ (is_pkg_defined txn) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Txn'ptr_NDirty :
-  WpMethodCall (ptrT.id txn.Txn.id) "NDirty" _ (is_pkg_defined txn) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Txn'ptr_OverWrite :
-  WpMethodCall (ptrT.id txn.Txn.id) "OverWrite" _ (is_pkg_defined txn) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Txn'ptr_OverWriteBit :
-  WpMethodCall (ptrT.id txn.Txn.id) "OverWriteBit" _ (is_pkg_defined txn) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Txn'ptr_ReadBuf :
-  WpMethodCall (ptrT.id txn.Txn.id) "ReadBuf" _ (is_pkg_defined txn) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Txn'ptr_ReadBufBit :
-  WpMethodCall (ptrT.id txn.Txn.id) "ReadBufBit" _ (is_pkg_defined txn) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Txn'ptr_ReleaseAll :
-  WpMethodCall (ptrT.id txn.Txn.id) "ReleaseAll" _ (is_pkg_defined txn) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Txn'ptr_acquireNoCheck :
-  WpMethodCall (ptrT.id txn.Txn.id) "acquireNoCheck" _ (is_pkg_defined txn) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Txn'ptr_commitNoRelease :
-  WpMethodCall (ptrT.id txn.Txn.id) "commitNoRelease" _ (is_pkg_defined txn) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Txn'ptr_isAlreadyAcquired :
-  WpMethodCall (ptrT.id txn.Txn.id) "isAlreadyAcquired" _ (is_pkg_defined txn) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Txn'ptr_readBufNoAcquire :
-  WpMethodCall (ptrT.id txn.Txn.id) "readBufNoAcquire" _ (is_pkg_defined txn) :=
-  ltac:(solve_wp_method_call).
-
-End names.
 End txn.

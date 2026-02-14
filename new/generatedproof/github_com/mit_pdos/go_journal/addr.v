@@ -3,128 +3,64 @@ Require Export New.proof.disk_prelude.
 Require Export New.generatedproof.github_com.goose_lang.primitive.disk.
 Require Export New.generatedproof.github_com.mit_pdos.go_journal.common.
 Require Export New.golang.theory.
-
 Require Export New.code.github_com.mit_pdos.go_journal.addr.
 
 Set Default Proof Using "Type".
 
 Module addr.
-
-(* type addr.Addr *)
 Module Addr.
 Section def.
-Context `{ffi_syntax}.
-Record t := mk {
-  Blkno' : w64;
-  Off' : w64;
-}.
+
+Context `{!heapGS Σ}.
+Context {sem : go.Semantics}.
+Context {package_sem' : addr.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance Addr_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (addr.Addr.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "Blkno" ∷ l.[(addr.Addr.t), "Blkno"] ↦{dq} v.(addr.Addr.Blkno') ∗
+      "Off" ∷ l.[(addr.Addr.t), "Off"] ↦{dq} v.(addr.Addr.Off') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance Addr_into_val_typed
+   :
+  IntoValTypedUnderlying (addr.Addr.t) (addr.Addrⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance Addr_access_load_Blkno l (v : (addr.Addr.t)) dq :
+  AccessStrict
+    (l.[(addr.Addr.t), "Blkno"] ↦{dq} (v.(addr.Addr.Blkno')))
+    (l.[(addr.Addr.t), "Blkno"] ↦{dq} (v.(addr.Addr.Blkno')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Addr_access_store_Blkno l (v : (addr.Addr.t)) Blkno' :
+  AccessStrict
+    (l.[(addr.Addr.t), "Blkno"] ↦ (v.(addr.Addr.Blkno')))
+    (l.[(addr.Addr.t), "Blkno"] ↦ Blkno')
+    (l ↦ v) (l ↦ (v <|(addr.Addr.Blkno') := Blkno'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance Addr_access_load_Off l (v : (addr.Addr.t)) dq :
+  AccessStrict
+    (l.[(addr.Addr.t), "Off"] ↦{dq} (v.(addr.Addr.Off')))
+    (l.[(addr.Addr.t), "Off"] ↦{dq} (v.(addr.Addr.Off')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance Addr_access_store_Off l (v : (addr.Addr.t)) Off' :
+  AccessStrict
+    (l.[(addr.Addr.t), "Off"] ↦ (v.(addr.Addr.Off')))
+    (l.[(addr.Addr.t), "Off"] ↦ Off')
+    (l ↦ v) (l ↦ (v <|(addr.Addr.Off') := Off'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
 End def.
 End Addr.
 
-Section instances.
-Context `{ffi_syntax}.
-#[local] Transparent addr.Addr.
-#[local] Typeclasses Transparent addr.Addr.
-
-Global Instance Addr_wf : struct.Wf addr.Addr.
-Proof. apply _. Qed.
-
-Global Instance settable_Addr : Settable Addr.t :=
-  settable! Addr.mk < Addr.Blkno'; Addr.Off' >.
-Global Instance into_val_Addr : IntoVal Addr.t :=
-  {| to_val_def v :=
-    struct.val_aux addr.Addr [
-    "Blkno" ::= #(Addr.Blkno' v);
-    "Off" ::= #(Addr.Off' v)
-    ]%struct
-  |}.
-
-Global Program Instance into_val_typed_Addr : IntoValTyped Addr.t addr.Addr :=
-{|
-  default_val := Addr.mk (default_val _) (default_val _);
-|}.
-Next Obligation. solve_to_val_type. Qed.
-Next Obligation. solve_zero_val. Qed.
-Next Obligation. solve_to_val_inj. Qed.
-Final Obligation. solve_decision. Qed.
-
-Global Instance into_val_struct_field_Addr_Blkno : IntoValStructField "Blkno" addr.Addr Addr.Blkno'.
-Proof. solve_into_val_struct_field. Qed.
-
-Global Instance into_val_struct_field_Addr_Off : IntoValStructField "Off" addr.Addr Addr.Off'.
-Proof. solve_into_val_struct_field. Qed.
-
-
-Context `{!ffi_model, !ffi_semantics _ _, !ffi_interp _, !heapGS Σ}.
-Global Instance wp_struct_make_Addr Blkno' Off':
-  PureWp True
-    (struct.make #addr.Addr (alist_val [
-      "Blkno" ::= #Blkno';
-      "Off" ::= #Off'
-    ]))%struct
-    #(Addr.mk Blkno' Off').
-Proof. solve_struct_make_pure_wp. Qed.
-
-
-Global Instance Addr_struct_fields_split dq l (v : Addr.t) :
-  StructFieldsSplit dq l v (
-    "HBlkno" ∷ l ↦s[addr.Addr :: "Blkno"]{dq} v.(Addr.Blkno') ∗
-    "HOff" ∷ l ↦s[addr.Addr :: "Off"]{dq} v.(Addr.Off')
-  ).
-Proof.
-  rewrite /named.
-  apply struct_fields_split_intro.
-  unfold_typed_pointsto; split_pointsto_app.
-
-  rewrite -!/(typed_pointsto_def _ _ _) -!typed_pointsto_unseal.
-  simpl_one_flatten_struct (# (Addr.Blkno' v)) (addr.Addr) "Blkno"%go.
-
-  solve_field_ref_f.
-Qed.
-
-End instances.
-
-Section names.
-
-Context `{!heapGS Σ}.
-Context `{!globalsGS Σ}.
-Context {go_ctx : GoContext}.
-#[local] Transparent is_pkg_defined is_pkg_defined_pure.
-
-Global Instance is_pkg_defined_pure_addr : IsPkgDefinedPure addr :=
-  {|
-    is_pkg_defined_pure_def go_ctx :=
-      is_pkg_defined_pure_single addr ∧
-      is_pkg_defined_pure code.github_com.goose_lang.primitive.disk.disk ∧
-      is_pkg_defined_pure code.github_com.mit_pdos.go_journal.common.common;
-  |}.
-
-#[local] Transparent is_pkg_defined_single is_pkg_defined_pure_single.
-Global Program Instance is_pkg_defined_addr : IsPkgDefined addr :=
-  {|
-    is_pkg_defined_def go_ctx :=
-      (is_pkg_defined_single addr ∗
-       is_pkg_defined code.github_com.goose_lang.primitive.disk.disk ∗
-       is_pkg_defined code.github_com.mit_pdos.go_journal.common.common)%I
-  |}.
-Final Obligation. iIntros. iFrame "#%". Qed.
-#[local] Opaque is_pkg_defined_single is_pkg_defined_pure_single.
-
-Global Instance wp_func_call_MkAddr :
-  WpFuncCall addr.MkAddr _ (is_pkg_defined addr) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_func_call_MkBitAddr :
-  WpFuncCall addr.MkBitAddr _ (is_pkg_defined addr) :=
-  ltac:(solve_wp_func_call).
-
-Global Instance wp_method_call_Addr_Flatid :
-  WpMethodCall addr.Addr.id "Flatid" _ (is_pkg_defined addr) :=
-  ltac:(solve_wp_method_call).
-
-Global Instance wp_method_call_Addr'ptr_Flatid :
-  WpMethodCall (ptrT.id addr.Addr.id) "Flatid" _ (is_pkg_defined addr) :=
-  ltac:(solve_wp_method_call).
-
-End names.
 End addr.

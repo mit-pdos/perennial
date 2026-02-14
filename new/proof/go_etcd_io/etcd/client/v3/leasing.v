@@ -8,8 +8,6 @@ From New.proof Require Import context sync.
 Require Import New.proof.go_etcd_io.etcd.client.v3.concurrency.
 Require Import New.proof.go_etcd_io.etcd.client.v3.
 
-From New.golang.theory Require Import chan_old.
-
 From Perennial.algebra Require Import ghost_var.
 Require Import Perennial.base.
 
@@ -26,7 +24,12 @@ Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 
 (* FIXME: come up with a plan for global addrs of imported packages. *)
-Context `{!globalsGS Σ} {go_ctx : GoContext}.
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics} {package_sem : bytes.Assumptions}.
+Collection W := sem + package_sem.
+
+#[global] Instance : IsPkgInit (iProp Σ) bytes := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ) bytes := build_get_is_pkg_init_wf.
 Context `{leasingG Σ}.
 
 (* FIXME: move these *)
