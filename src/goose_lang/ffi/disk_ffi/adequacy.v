@@ -10,6 +10,11 @@ From Perennial.algebra Require Import gen_heap_names.
 From Perennial.goose_lang Require Import crash_modality.
 From Perennial.goose_lang Require Import adequacy.
 
+Section adeq.
+Existing Instances disk_op disk_model.
+Existing Instances disk_semantics disk_interp.
+Existing Instance goose_diskGS.
+Context {go_gctx : GoGlobalContext}.
 #[global]
 Program Instance disk_interp_adequacy:
   @ffi_interp_adequacy disk_model disk_interp disk_op disk_semantics :=
@@ -32,6 +37,7 @@ Next Obligation.
   inversion Hcrash; subst.
   iFrame. iPureIntro; split_and!; auto.
 Qed.
+End adeq.
 
 Section crash.
   Existing Instances disk_op disk_model.

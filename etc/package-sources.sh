@@ -35,23 +35,14 @@ function find_build() {
   find "$@" -not -name "*__nobuild.v" -name "*.v"
 }
 
-function goose_common() {
-  ls -1 src/base.v
-  # TODO: program_logic adds a lot of extra files
-  find_build src/Helpers src/algebra src/base_logic src/iris_lib \
-    src/program_logic
-}
-
 if [ "$package" = "all" ]; then
   # get all files
   find src new -not -name "*__nobuild.v" -name "*.v"
 
 elif [ "$package" = "new-goose" ]; then
-  goose_common
   # golang.
-  find_build src/goose_lang/{lang,lifting,locations,notation}.v
-  find_build new/golang/{defn,defn.v}
-  find_build new/golang/{theory,theory.v}
+  find_build src/
+  find_build new/golang/
   find_build new/{code,generatedproof}/github_com/goose_lang/goose/model/channel.v
   find_build new/proof/github_com/goose_lang/goose/model/channel
   # go stdlib.
@@ -67,25 +58,7 @@ elif [ "$package" = "new-goose" ]; then
   find_build new/{code,generatedproof,proof}/github_com/goose_lang/{std.v,std}
   find_build new/{code,generatedproof,proof,trusted_code,manualproof}/github_com/goose_lang/{primitive.v,primitive}
   # misc.
-  find_build src/goose_lang/ipersist.v
   find_build new/experiments/glob.v
-
-elif [ "$package" = "old-goose" ]; then
-  goose_common
-  find_build src/goose_lang
-  #ls -1 \
-  #  src/goose_lang/{prelude,base_prelude,proofmode,tactics,wpc_proofmode}.v \
-  #  src/goose_lang/{adequacy,array,typing,crash_modality}.v
-  #find_build src/goose_lang/ffi/ src/goose_lang/lib/
-  find_build external/Goose/github_com/goose_lang
-  ls -1 external/Goose/github_com/mit_pdos/gokv/{erpc,urpc}.v
-  ls -1 external/Goose/github_com/tchajed/marshal.v
-  ls -1 \
-    src/program_proof/unittest.v \
-    src/program_proof/{proof_prelude,disk_lib,disk_prelude,grove_prelude}.v \
-    src/program_proof/marshal*.v \
-    src/program_proof/std_proof.v
-  find_build src/program_proof/grove_shared/
 
 else
   echo "unknown package $package" 1>&2
