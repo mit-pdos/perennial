@@ -23,4 +23,4 @@ From New.proof Require Import inG_problem.
 
 
 (* might not be maintained going forward but do currently build *)
-From New.experiments Require all_scmra all_ucmra chan lang records.
+From New.experiments Require chan records.
