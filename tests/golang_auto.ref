@@ -5,9 +5,9 @@ Tactic failure: iIntro: "y" not fresh.
 goal 1 is:
   
   Σ : gFunctors
-  hG : heapGS Σ
-  globalsGS0 : globalsGS Σ
-  go_ctx : GoContext
+  heapGS0 : heapGS Σ
+  sem : go.Semantics
+  package_sem : unittest.Assumptions
   x : w64
   y : w32
   Φ : val → iPropI Σ
@@ -20,24 +20,24 @@ goal 1 is:
            Φ (# a, # b)%V
   --------------------------------------∗
   WP exception_do
-       (let: "y" := alloc (# y) in
-        let: "x" := alloc (# x) in
-        let: "z" := alloc (type.zero_val (# uint64T)) in
-        let: "$r0" := u_to_w64 ![# uint32T] "y" in
-        (do: "z" <-[# uint64T] "$r0") ;;;
-        let: "$r0" := ![# uint64T] "z" + # (W64 1) in
-        (do: "z" <-[# uint64T] "$r0") ;;;
-        let: "y2" := alloc (type.zero_val (# uint32T)) in
-        let: "$r0" := ![# uint32T] "y" + # (W32 3) in
-        (do: "y2" <-[# uint32T] "$r0") ;;;
-        return: (![# uint64T] "z", ![# uint32T] "y2"))
+       (let: "y" := GoAlloc go.uint32 (# y) in
+        let: "x" := GoAlloc go.uint64 (# x) in
+        let: "z" := GoAlloc go.uint64 (GoZeroVal go.uint64 (# ()%V)) in
+        let: "$r0" := Convert go.uint32 go.uint64 ![go.uint32] "y" in
+        (do: "z" <-[go.uint64] "$r0") ;;;
+        let: "$r0" := ![go.uint64] "z" +⟨go.uint64⟩ # (W64 1) in
+        (do: "z" <-[go.uint64] "$r0") ;;;
+        let: "y2" := GoAlloc go.uint32 (GoZeroVal go.uint32 (# ()%V)) in
+        let: "$r0" := ![go.uint32] "y" +⟨go.uint32⟩ # (W32 3) in
+        (do: "y2" <-[go.uint32] "$r0") ;;;
+        return: (![go.uint64] "z", ![go.uint32] "y2"))
   {{ v, Φ v }}
 goal 1 is:
   
   Σ : gFunctors
-  hG : heapGS Σ
-  globalsGS0 : globalsGS Σ
-  go_ctx : GoContext
+  heapGS0 : heapGS Σ
+  sem : go.Semantics
+  package_sem : unittest.Assumptions
   Φ : val → iPropI Σ
   ============================
   _ : is_pkg_init unittest

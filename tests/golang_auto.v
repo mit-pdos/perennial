@@ -8,7 +8,7 @@ From New.generatedproof.github_com.goose_lang.goose.testdata.examples
   Require Import unittest.
 
 Section proof.
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context `{!heapGS Σ}.
 Context {sem : go.Semantics} {package_sem : unittest.Assumptions}.
 Collection W := sem + package_sem.
 
@@ -21,7 +21,7 @@ Lemma wp_useInts (x: w64) (y: w32) :
   {{{ (a: w64) (b: w32), RET (#a, #b);
       ⌜uint.Z a = (uint.Z y + 1)%Z⌝ ∗
       ⌜uint.Z b = (uint.Z y + 3) `mod` 2^32⌝ }}}.
-Proof.
+Proof using W.
   wp_start as "_".
   Fail wp_alloc y as "y".
   wp_alloc y_ptr as "y".
@@ -41,7 +41,7 @@ Lemma wp_useInts_auto (x: w64) (y: w32) :
   {{{ (a: w64) (b: w32), RET (#a, #b);
       ⌜uint.Z a = (uint.Z y + 1)%Z⌝ ∗
       ⌜uint.Z b = (uint.Z y + 3) `mod` 2^32⌝ }}}.
-Proof.
+Proof using W.
   wp_start.
   Show 1.
   wp_auto.
@@ -53,7 +53,7 @@ Lemma wp_repeatLocalVars :
   {{{ is_pkg_init unittest }}}
     @! unittest.repeatLocalVars #()
   {{{ RET #(); True }}}.
-Proof.
+Proof using W.
   wp_start.
   wp_auto.
   (* all points-tos should be gone *)
@@ -63,9 +63,9 @@ Qed.
 
 Lemma wp_load_pointsto_not_found (x_l y_l: loc) (x: w64) :
   {{{ x_l ↦ x }}}
-    ![#uint64T] #y_l
+    ![go.uint64] #y_l
   {{{ RET #x; True }}}.
-Proof.
+Proof using W.
   wp_start as "x".
   Fail wp_load.
 Abort.
@@ -73,48 +73,47 @@ Abort.
 Lemma wp_load_not_next (f: func.t) (x_l: loc) (x: w64) :
   {{{ x_l ↦ x }}}
     #f #x;;;
-    ![#uint64T] #x_l
+    ![go.uint64] #x_l
   {{{ RET #x; True }}}.
-Proof.
+Proof using W.
   wp_start as "x".
   Fail wp_load.
 Abort.
 
 Lemma wp_store_pointsto_not_found (x_l y_l: loc) (x: w64) :
   {{{ x_l ↦ x }}}
-    #y_l <-[#uint64T] #x
+    #y_l <-[go.uint64] #x
   {{{ RET #(); True }}}.
-Proof.
-  wp_start as "x".
+Proof using W.
+  wp_start as "x". wp_auto.
   Fail wp_store.
 Abort.
 
 Lemma wp_store_pointsto_not_fraction (x_l y_l: loc) (x: w64) :
   {{{ x_l ↦□ x }}}
-    #x_l <-[#uint64T] #x
+    #x_l <-[go.uint64] #x
   {{{ RET #(); True }}}.
-Proof.
-  wp_start as "x".
+Proof using W.
+  wp_start as "x". wp_auto.
   Fail wp_store.
 Abort.
 
 Lemma wp_store_not_next (f: func.t) (x_l y_l: loc) (x: w64) :
   {{{ x_l ↦ x }}}
     #f #x;;;
-    #y_l <-[#uint64T] #x
+    #y_l <-[go.uint64] #x
   {{{ RET #x; True }}}.
-Proof.
-  wp_start as "x".
+Proof using W.
+  wp_start as "x". wp_auto.
   Fail wp_store.
 Abort.
 
 Lemma wp_apply_not_wp (x_l: loc) (x: w64) :
   {{{ x_l ↦ x }}}
-    ![#uint64T] #x_l
+    ![go.uint64] #x_l
   {{{ RET #x; True }}}.
-Proof.
-  wp_start as "x".
-  wp_auto.
+Proof using W.
+  wp_start as "x". wp_auto.
   Fail wp_apply "HΦ".
 Abort.
 

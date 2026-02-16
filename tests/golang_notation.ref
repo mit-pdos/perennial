@@ -4,6 +4,7 @@
   
   Σ : gFunctors
   heapGS0 : heapGS Σ
+  sem : go.Semantics
   l1, l2 : loc
   v1 : bool
   v2 : slice.t
@@ -16,6 +17,7 @@
   
   Σ : gFunctors
   heapGS0 : heapGS Σ
+  sem : go.Semantics
   l : loc
   ============================
-  {{{ True }}} Skip {{{ RET (# true, # true); True }}}
+  {{{ True }}} λ: <>, # () {{{ RET (# true, # true); True }}}
