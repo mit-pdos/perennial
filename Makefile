@@ -32,7 +32,7 @@ else
 ROCQ_C := rocq compile
 endif
 
-default: src/ShouldBuild.vo
+default: all
 
 all: $(PROJ_VFILES:.v=.vo)
 vos: $(PROJ_VFILES:.v=.vos)
