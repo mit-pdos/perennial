@@ -3,8 +3,10 @@ From Perennial.Helpers Require Import List ListLen.
 (* TODO: might need pure theory from here *)
 (* From Perennial.goose_lang.lib Require Import encoding. *)
 
-From New.proof.github_com.goose_lang Require Import primitive.
-From New.proof.github_com.goose_lang Require Import std.
+From New.proof Require Import
+  github_com.goose_lang.std
+  github_com.goose_lang.primitive
+  encoding.binary.
 From New.proof Require Import proof_prelude.
 From New.generatedproof.github_com.tchajed Require Import marshal.
 
@@ -24,13 +26,12 @@ Lemma wp_initialize' get_is_pkg_init :
   {{{ RET #(); own_initializing get_is_pkg_init ∗ is_pkg_init marshal }}}.
 Proof.
   intros Hinit. wp_start as "Hown".
-  wp_apply (wp_package_init with "[$Hown] HΦ").
+  wp_apply (wp_package_init with "[$Hown] HΦ") as "Hown".
   { destruct Hinit as (-> & ?). reflexivity. }
-  iIntros "Hown". wp_auto. wp_apply (std.wp_initialize' with "[$Hown]").
+  wp_apply (std.wp_initialize' with "[$Hown]") as "(Hown & #?)".
   { naive_solver. }
-  iIntros "(Hown & #?)". wp_auto. wp_apply (primitive.wp_initialize' with "[$Hown]").
+  wp_apply (binary.wp_initialize' with "[$Hown]") as "(Hown & #?)".
   { naive_solver. }
-  iIntros "(Hown & #?)". wp_auto.
   iEval (rewrite is_pkg_init_unfold /=). iFrame "∗#". done.
 Qed.
 
@@ -353,7 +354,7 @@ Theorem wp_WriteLenPrefixedBytes s (vs : list u8) data_sl q (data : list u8) :
     @! marshal.WriteLenPrefixedBytes #s #data_sl
   {{{
         s', RET #s';
-        s' ↦*{DfracOwn 1} (vs ++ (u64_le $ length data) ++ data) ∗
+        s' ↦*{DfracOwn 1} (vs ++ (u64_le $ (W64 $ length data)) ++ data) ∗
         own_slice_cap w8 s' (DfracOwn 1) ∗
         data_sl ↦*{q} data
   }}}.

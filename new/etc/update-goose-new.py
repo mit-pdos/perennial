@@ -288,7 +288,6 @@ def main():
             "testing",
             "bytes",
             "context",
-            "internal/reflectlite",
             "unsafe",
             "crypto/ed25519",
             "crypto/rand",
