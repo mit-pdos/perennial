@@ -65,6 +65,12 @@ Definition BroadcastNotified (γ : done_names) (Q : iProp Σ) : iProp Σ :=
     i ↪[γ.(broadcast_map_name)]{DfracDiscarded} prop_gname ∗
     saved_prop_own prop_gname DfracDiscarded Q.
 
+Global Instance BroadcastNotified_persistent γ Q : Persistent (BroadcastNotified γ Q).
+Proof.
+  rewrite /BroadcastNotified.
+  apply _.
+Qed.
+
 Definition is_done (γ : done_names) (ch : loc) : iProp Σ :=
   is_chan ch γ.(chan_name) ∗
   inv nroot (
