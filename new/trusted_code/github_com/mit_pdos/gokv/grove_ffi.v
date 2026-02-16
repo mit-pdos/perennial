@@ -54,7 +54,7 @@ Section grove.
       if: "err" then AngelicExit #() else
       let: "ptr" := Fst "slice" in
       let: "len" := Snd "slice" in
-      InjL ("ptr", "len", "len").
+      InternalMakeSlice ("ptr", "len", "len").
 
   (** FileWrite pretends that the operation can never fail.
       The Go implementation will accordingly abort the program if an I/O error occurs. *)

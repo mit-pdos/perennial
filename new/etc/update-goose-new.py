@@ -76,7 +76,6 @@ projs = [
             "go.etcd.io/etcd/server/v3/storage/schema",
         ],
     ),
-    create_proj(repo="mit-pdos/go-journal"),
     create_proj(repo="mit-pdos/go-liveness"),
 ]
 

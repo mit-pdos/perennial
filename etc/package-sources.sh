@@ -32,7 +32,7 @@ fi
 package="$1"
 
 function find_build() {
-  find "$@" -not -name "*__nobuild.v" -name "*.v"
+  find "$@" -not -name "*__nobuild.v" -name "*.v" -print
 }
 
 if [ "$package" = "all" ]; then
@@ -42,23 +42,7 @@ if [ "$package" = "all" ]; then
 elif [ "$package" = "new-goose" ]; then
   # golang.
   find_build src/
-  find_build new/golang/
-  find_build new/{code,generatedproof}/github_com/goose_lang/goose/model/channel.v
-  find_build new/proof/github_com/goose_lang/goose/model/channel
-  # go stdlib.
-  # TODO: some misplaced files match "new/proof/*.v".
-  find_build new/{code,generatedproof,proof,trusted_code,manualproof}/*.v
-  find_build new/proof/*_proof
-  find_build new/{code,generatedproof,proof}/crypto
-  find_build new/{code,generatedproof,proof}/internal
-  find_build new/{code,generatedproof}/math
-  find_build new/{code,generatedproof,proof,trusted_code,manualproof}/sync
-  # common external pkgs.
-  find_build new/{code,generatedproof,proof}/github_com/tchajed/marshal.v
-  find_build new/{code,generatedproof,proof}/github_com/goose_lang/{std.v,std}
-  find_build new/{code,generatedproof,proof,trusted_code,manualproof}/github_com/goose_lang/{primitive.v,primitive}
-  # misc.
-  find_build new/experiments/glob.v
+  find_build new/ -type d -name go_etcd_io -prune -o
 
 else
   echo "unknown package $package" 1>&2

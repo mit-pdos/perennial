@@ -161,7 +161,6 @@ lemmas. *)
   Proof.
     iLöb as "IH".
     iIntros "HΦ".
-    Search lc "wp_".
     iApply wp_lift_step_ncfupd; first by auto.
     iIntros (σ1 g1 ns mj D κ κs nt) "@ Hg".
     iApply ncfupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
