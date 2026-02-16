@@ -78,10 +78,12 @@ Section gen_heap_defs.
     iMod (gen_heap_name_strong_init σ) as (n) "(H&_)". iExists n. eauto.
   Qed.
 
+  #[local] Existing Instance gen_heap_inG.
+
   Lemma gen_heap_name_reinit {Σ} (hG: gen_heapGS L V Σ) σ :
     ⊢ |==> ∃ names : gen_heap_names, gen_heap_interp (hG := gen_heapG_update hG names) σ.
   Proof.
-    iMod (gen_heap_init_names) as (γh γm) "(Hinterp & Hh & Hm)".
+    iMod (gen_heap_init_names σ) as (γh γm) "(Hinterp & Hh & Hm)".
     iExists {| gen_heap_heap_name := γh; gen_heap_meta_name := γm |}.
     iFrame. done.
   Qed.

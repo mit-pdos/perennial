@@ -42,10 +42,14 @@ Tactic Notation "iRight" "in" constr(H) :=
 
     the basic interface for this trick is borrowed from VST *)
 
-Definition freeze {A} (x:A) := x.
+Definition freeze_def {A} (x:A) := x.
+Definition freeze_aux : seal (@freeze_def). Proof. by eexists. Qed.
+Definition freeze := freeze_aux.(unseal).
+Definition freeze_eq : @freeze = @freeze_def := freeze_aux.(seal_eq).
+Arguments freeze {A}.
 
-Lemma freeze_eq {A} (x:A) : freeze x = x.
-Proof. reflexivity. Qed.
+Lemma to_freeze {A} (x: A) : x = freeze x.
+Proof. rewrite freeze_eq //. Qed.
 
 Ltac iFreezeCore H :=
   let i := lazymatch type of H with
@@ -54,7 +58,7 @@ Ltac iFreezeCore H :=
            end in
   lazymatch iTypeOf i with
   | Some (_, ?P) =>
-    iEval (rewrite -(freeze_eq P)) in i;
+    iEval (rewrite (to_freeze P)) in i;
     let var := fresh "__frozen" in
     set (var:=freeze P)
   | None => let H := pretty_ident i in
@@ -77,7 +81,7 @@ Ltac iThawCore H :=
            end in
   lazymatch iTypeOf i with
   | Some (_, ?P) =>
-    first [ is_var P; subst P; rewrite freeze_eq
+    first [ is_var P; subst P; rewrite freeze_eq /freeze_def
           | let H := pretty_ident i in
             fail 0 "iThaw:" H "is not frozen"]
   | None => let H := pretty_ident i in
@@ -91,8 +95,8 @@ Local Ltac iThaw_go Hs :=
 Tactic Notation "iThaw" constr(Hs) :=
   let Hs := iElaborateSelPat Hs in iThaw_go Hs.
 
-Typeclasses Opaque freeze.
-Opaque freeze.
+#[global] Typeclasses Opaque freeze.
+#[global] Opaque freeze.
 
 (* hide frozen terms from display (even in the Coq context) *)
 (* closing this scope will re-display frozen terms *)

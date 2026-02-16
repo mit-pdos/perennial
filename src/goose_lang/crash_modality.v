@@ -38,7 +38,8 @@ Lemma post_crash_mono P Q:
 Proof.
   iIntros (Hmono) "HP". iIntros (???) "Hrel".
   iMod ("HP" with "[$]") as "(H&HP)".
-  iFrame. iApply Hmono. iApply "HP"; eauto.
+  iFrame. iModIntro.
+  iApply (Hmono {| goose_globalGS := _; goose_localGS := _ |} with "HP").
 Qed.
 
 Lemma post_crash_sep P Q:
