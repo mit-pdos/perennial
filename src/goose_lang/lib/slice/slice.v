@@ -1099,10 +1099,10 @@ Proof.
   iIntros "#Hind".
   iIntros (Φ) "!> [Hs [Hi Hp]] HΦ".
   iDestruct (own_slice_small_sz with "Hs") as %Hlen.
-  wp_apply (wp_forSlice
-    (λ i, ([∗ list] x ∈ firstn (uint.nat i) vs, Q x) ∗
+  pose (Inv := (λ i : u64, (([∗ list] x ∈ firstn (uint.nat i) vs, Q x) ∗
           ([∗ list] x ∈ skipn (uint.nat i) vs, P x) ∗
-          I)%I with "[] [$Hs Hi Hp]").
+          I)%I) : u64 → iProp Σ).
+  wp_apply (wp_forSlice Inv with "[] [$Hs Hi Hp]"); subst Inv; simpl.
   {
     iIntros (i x).
     iModIntro.
