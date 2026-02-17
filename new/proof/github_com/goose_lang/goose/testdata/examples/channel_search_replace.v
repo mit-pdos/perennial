@@ -8,7 +8,8 @@ From New.generatedproof.github_com.goose_lang.goose.testdata.examples Require Im
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics} {package_sem : chan_spec_raw_examples.Assumptions}.
-Local Set Default Proof Using "All".
+Collection W := sem + package_sem.
+Set Default Proof Using "W".
 Context `{!chan_idiomG Σ slice.t}.
 Context `{!syncG Σ}.
 
@@ -113,7 +114,7 @@ Lemma wp_SearchReplace (s: slice.t) (xs: list w64) (x y: w64) :
   }}}
     @! chan_spec_raw_examples.SearchReplace #s #x #y
   {{{ RET #(); s ↦* (search_replace x y xs) }}}.
-Proof.
+Proof using chan_idiomG0 syncG0 W.
   (* The first overflow:
      implementation adds 1000 at a time, potentially surpassing the slice length
      before clamping. If it goes negative, then the clamping doesn't work. This

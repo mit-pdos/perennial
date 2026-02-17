@@ -4,10 +4,11 @@ Require Import New.generatedproof.github_com.goose_lang.goose.model.strings.
 
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}
-  {sem : go.StringSemantics}.
+Context {sem_fn : GoSemanticsFunctions} {sem : go.PreSemantics}
+  {package_sem : go.StringSemantics}.
 
-Local Set Default Proof Using "All".
+Collection W := sem + package_sem.
+Set Default Proof Using "W".
 
 Lemma wp_string_len (s : go_string) `[!t ↓u go.string] :
   {{{ True }}}

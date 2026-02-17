@@ -40,11 +40,9 @@ End axioms.
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics} {package_sem : raft.Assumptions}.
-Local Set Default Proof Using "All".
+Collection W := sem + package_sem.
+Set Default Proof Using "W".
 
-Context `{!closeable_chanG Σ}.
-Context `{!chanG Σ ()}.
-Context `{!chanG Σ error.t}.
 
 Implicit Type γraft : raft_names.
 

@@ -5,9 +5,10 @@ From New.proof Require Import github_com.goose_lang.primitive.
 
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}.
+Context {sem_fn : GoSemanticsFunctions} {sem : go.PreSemantics}.
 Context {package_sem : std_core.Assumptions}.
-Local Set Default Proof Using "All".
+Collection W := sem + package_sem.
+Set Default Proof Using "W".
 
 #[global] Instance : IsPkgInit (iProp Σ) std_core := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf (iProp Σ) std_core := build_get_is_pkg_init_wf.

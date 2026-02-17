@@ -17,7 +17,8 @@ Context {sem : go.Semantics} {package_sem : chan_spec_raw_examples.Assumptions}.
 
 #[global] Instance : IsPkgInit (iProp Σ) chan_spec_raw_examples := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf (iProp Σ) chan_spec_raw_examples := build_get_is_pkg_init_wf.
-Local Set Default Proof Using "All".
+Collection W := sem + package_sem.
+Set Default Proof Using "W".
 
 Instance func_countable : Countable func.t.
 Proof. Admitted.
@@ -78,7 +79,7 @@ Lemma wp_HelloWorldSync :
   {{{ is_pkg_init chan_spec_raw_examples }}}
     @! chan_spec_raw_examples.HelloWorldSync #()
   {{{ RET #("Hello, World!"); True }}}.
-Proof.
+Proof using W + chan_idiomG0.
   wp_start.
   wp_apply wp_HelloWorldAsync.
   iIntros (ch γfuture) "[#Hchan #Hfut]".
@@ -108,7 +109,7 @@ Lemma wp_HelloWorldCancellable
 (result: go_string), RET #result;
       ⌜result = err_msg ∨ result = "Hello, World!"%go⌝
     }}}.
-Proof.
+Proof using chan_idiomG0 chan_idiomG1 W.
   wp_start. wp_apply wp_alloc.
   iIntros (l). iIntros "Herr".
   wp_auto_lc 4.
@@ -159,7 +160,7 @@ Lemma wp_HelloWorldWithTimeout :
       ⌜result = "Hello, World!"%go ∨
         result = "operation timed out"%go⌝
   }}}.
-Proof.
+Proof using chan_idiomG0 + chan_idiomG1 + W.
   wp_start.
   wp_auto. wp_apply chan.wp_make1.
   iIntros (ch γ) "(#Hchan & _Hcap & Hoc)".
@@ -352,7 +353,7 @@ Lemma wp_fib_consumer:
 
 
   }}}.
-Proof .
+Proof using chan_idiomG0 W.
   wp_start. wp_auto.
   wp_apply chan.wp_make2; first done.
   iIntros (c γ) "(#Hchan & %Hcap_eq & Hown)".
@@ -464,7 +465,7 @@ Lemma wp_DSPExample :
   {{{ is_pkg_init chan_spec_raw_examples }}}
     @! chan_spec_raw_examples.DSPExample #()
   {{{ RET #(W64 42); True }}}.
-Proof.
+Proof using chan_idiomG0 dspG0 W.
   wp_start. wp_auto.
   wp_apply chan.wp_make1.
   iIntros (c γ) "(#Hic & _Hcap & Hoc)". wp_auto.
@@ -567,7 +568,7 @@ Lemma wp_select_nb_no_panic :
   {{{ is_pkg_init chan_spec_raw_examples}}}
     @! chan_spec_raw_examples.select_nb_no_panic #()
   {{{ RET #(); True }}}.
-Proof.
+Proof using chan_idiomG0 W.
   wp_start. wp_auto_lc 2.
   wp_apply chan.wp_make1.
   iIntros (ch). iIntros (γ). iIntros "(#His_chan & _Hcap & Hownchan)".
@@ -701,7 +702,7 @@ Lemma wp_HigherOrderExample :
   {{{ is_pkg_init chan_spec_raw_examples }}}
     @! chan_spec_raw_examples.HigherOrderExample #()
   {{{ (s:slice.t), RET #s; s ↦* ["hello world"%go; "HELLO"%go; "world"%go] }}}.
-Proof.
+Proof using chan_idiomG0 chan_idiomG1 W.
   wp_start.
   wp_auto.
   wp_apply chan.wp_make1.
@@ -763,7 +764,7 @@ Lemma wp_simple_join :
   {{{ is_pkg_init chan_spec_raw_examples ∗ is_pkg_init channel }}}
     @! chan_spec_raw_examples.simple_join #()
   {{{  RET #("Hello, World!"); True }}}.
-Proof.
+Proof using chan_idiomG0 W.
   wp_start. wp_auto_lc 3.
       iRename select (£1) into "Hlc".
   wp_apply chan.wp_make2; first done.
@@ -796,7 +797,7 @@ Lemma wp_simple_multi_join :
   {{{ is_pkg_init chan_spec_raw_examples ∗ is_pkg_init channel }}}
     @! chan_spec_raw_examples.simple_multi_join #()
   {{{ RET #("Hello World"); True }}}.
-Proof.
+Proof using chan_idiomG0 W.
   wp_start. wp_auto_lc 3.
   iRename select (£1) into "Hlc1".
   wp_apply chan.wp_make2; first done.
@@ -946,7 +947,7 @@ Lemma wp_Client:
   {{{ is_pkg_init chan_spec_raw_examples }}}
     @! chan_spec_raw_examples.Client #()
   {{{ RET #"Hello, World!"; True%I }}}.
-Proof.
+Proof using chan_idiomG0 dspG0 W.
   wp_start.
   wp_auto.
 
@@ -1154,7 +1155,7 @@ Lemma wp_makeGreeting :
   {{{ is_pkg_init chan_spec_raw_examples }}}
     @! chan_spec_raw_examples.makeGreeting #()
   {{{ RET #"Hello, World!"; True%I }}}.
-Proof.
+Proof using chan_idiomG0 chan_idiomG1 contributionG0 dspG0 W.
   wp_start. wp_auto.
   wp_apply chan.wp_make2; [done|].
   iIntros (c γ) "(#Hic & _ & Hoc)". wp_auto.
@@ -1200,7 +1201,7 @@ Lemma wp_select_no_double_close :
   {{{ is_pkg_init chan_spec_raw_examples }}}
     @! chan_spec_raw_examples.select_no_double_close #()
   {{{ RET #(); True }}}.
-Proof.
+Proof using chanG0 W.
   wp_start. wp_auto.
   wp_apply chan.wp_make1.
   iIntros "* (#His_ch & %Hcap & Hch)". simpl.
@@ -1228,7 +1229,7 @@ Lemma wp_exchangePointer :
   {{{ is_pkg_init chan_spec_raw_examples }}}
     @! chan_spec_raw_examples.exchangePointer #()
   {{{ RET #(); True }}}.
-Proof.
+Proof using chan_idiomG0 W.
   wp_start. wp_auto.
   wp_apply chan.wp_make1.
   iIntros (ch γ) "(#His_ch & % & Hch)". wp_auto. simpl.

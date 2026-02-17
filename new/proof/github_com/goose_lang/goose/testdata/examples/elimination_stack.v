@@ -17,7 +17,8 @@ Class locked_stackG Σ :=
 Section locked_stack_proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics} {package_sem : chan_spec_raw_examples.Assumptions}.
-Local Set Default Proof Using "All".
+Collection W := sem + package_sem.
+Set Default Proof Using "W".
 
 (* FIXME: duplication *)
 #[global] Instance : IsPkgInit (iProp Σ) chan_spec_raw_examples := define_is_pkg_init True%I.
@@ -163,7 +164,8 @@ Class elimination_stackG {ext : ffi_syntax} Σ :=
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics} {package_sem : chan_spec_raw_examples.Assumptions}.
-Local Set Default Proof Using "All".
+Collection W := sem + package_sem.
+Set Default Proof Using "W".
 
 Context `{!elimination_stackG Σ}.
 

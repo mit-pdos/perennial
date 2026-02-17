@@ -22,7 +22,8 @@ Proof.
   iIntros "Hown". wp_auto.
 Admitted.
 
-Local Set Default Proof Using "All".
+Collection W := sem + package_sem.
+Set Default Proof Using "W".
 
 #[local]
 Lemma wp_Time__sec (t : loc) (tv : time.Time.t) :

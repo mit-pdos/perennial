@@ -6,7 +6,8 @@ From coqutil Require Import Z.bitblast.
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics} {package_sem : sync.Assumptions}.
-Local Set Default Proof Using "All".
+Collection W := sem + package_sem.
+Set Default Proof Using "W".
 Context `{!syncG Σ}.
 
 Local Definition waitGroupBubbleFlag := 2147483648.

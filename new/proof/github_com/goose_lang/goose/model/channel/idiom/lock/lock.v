@@ -25,9 +25,10 @@ From Perennial.algebra Require Import ghost_var.
 Section lock_channel.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics}.
-Local Set Default Proof Using "All".
 Context `{!chan_idiomG Σ V}.
 Context `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}.
+Collection W := sem + IntoValTyped0.
+Set Default Proof Using "W".
 
 Record lock_channel_names := {
   lchan_name : chan_names;      (* Underlying channel ghost state *)

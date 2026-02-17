@@ -4,7 +4,8 @@ Require Export New.generatedproof.internal.synctest.
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics} {package_sem : synctest.Assumptions}.
-Local Set Default Proof Using "All".
+Collection W := sem + package_sem.
+Set Default Proof Using "W".
 
 #[global] Instance : IsPkgInit (iProp Σ) synctest := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf (iProp Σ) synctest := build_get_is_pkg_init_wf.

@@ -7,7 +7,8 @@ Require Export New.generatedproof.sync.atomic.
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics} {package_sem : atomic.Assumptions}.
-Local Set Default Proof Using "All".
+Collection W := sem + package_sem.
+Set Default Proof Using "W".
 
 #[global] Instance : IsPkgInit (iProp Σ) atomic := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf (iProp Σ) atomic := build_get_is_pkg_init_wf.
@@ -962,6 +963,8 @@ Qed.
 
 Section pointer.
 Context `{!ZeroVal T'} `{!TypedPointsto T'} `{!IntoValTyped T' T}.
+Collection W := sem + package_sem + IntoValTyped0.
+Set Default Proof Using "W".
 
 Definition own_Pointer (u : loc) dq (v : loc) : iProp Σ :=
   u ↦{dq} atomic.Pointer.mk T' (zero_val _) (zero_val _) v.
