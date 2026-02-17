@@ -81,9 +81,7 @@ endif
 
 .PHONY: skip-qed unskip-qed ci
 
-SLOW_QED_FILES := src/goose_lang/interpreter/disk_interpreter.v\
-	src/goose_lang/interpreter/interpreter.v\
-	src/goose_lang/logical_reln_fund.v
+SLOW_QED_FILES :=
 
 skip-qed:
 	$(Q)./etc/disable-qed.sh $(SLOW_QED_FILES)
@@ -91,7 +89,7 @@ skip-qed:
 unskip-qed:
 	$(Q)./etc/disable-qed.sh --undo $(SLOW_QED_FILES)
 
-ci: skip-qed src/ShouldBuild.vo
+ci: skip-qed new/should_build.vo
 
 # compiled by Rocq CI
 # not intended for normal development

@@ -6,8 +6,8 @@ Local Unset Printing Projections.
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics} {package_sem : sync.Assumptions}.
-Local Set Default Proof Using "All".
-Context `{!syncG Σ}.
+Collection W := sem + package_sem.
+Set Default Proof Using "W".
 
 (** This means [c] is a condvar with underyling Locker at address [m]. *)
 Definition is_Cond (c : loc) (m : interface.t_ok) : iProp Σ :=
