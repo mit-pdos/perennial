@@ -9,7 +9,6 @@ Local Set Default Proof Using "All".
 #[global] Instance : IsPkgInit (iProp Σ) bytes := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf (iProp Σ) bytes := build_get_is_pkg_init_wf.
 
-
 Lemma wp_initialize' get_is_pkg_init :
   get_is_pkg_init_prop bytes get_is_pkg_init →
   {{{ own_initializing get_is_pkg_init }}}
