@@ -24,6 +24,38 @@ Definition geometryInterface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go
 
 Definition SquareStruct {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.SquareStruct"%go [].
 
+Definition NumStruct {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.NumStruct"%go [].
+
+Definition shapeInterface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.shapeInterface"%go [].
+
+Definition polygonInterface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.polygonInterface"%go [].
+
+Definition shapeStruct {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.shapeStruct"%go [].
+
+Definition polygonStruct {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.polygonStruct"%go [].
+
+Definition dogInterface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.dogInterface"%go [].
+
+Definition catInterface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.catInterface"%go [].
+
+Definition Puppy {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.Puppy"%go [].
+
+Definition Kitten {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.Kitten"%go [].
+
+Definition printInterface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.printInterface"%go [].
+
+Definition PaperStruct {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.PaperStruct"%go [].
+
+Definition Flower {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.Flower"%go [].
+
+Definition Flora {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.Flora"%go [].
+
+Definition Lily {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.Lily"%go [].
+
+Definition Rose {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.Rose"%go [].
+
+Definition Daisy {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.Daisy"%go [].
+
 Definition LoopStruct {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.LoopStruct"%go [].
 
 Definition BoolTest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.BoolTest"%go [].
@@ -152,6 +184,28 @@ Definition testMultipleInterface {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
 Definition testBinaryExprInterface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testBinaryExprInterface"%go.
 
 Definition testIfStmtInterface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testIfStmtInterface"%go.
+
+Definition testParamsInterface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testParamsInterface"%go.
+
+Definition testEmptyInterface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testEmptyInterface"%go.
+
+Definition testStringInterface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testStringInterface"%go.
+
+Definition testTypeAssertionInterface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testTypeAssertionInterface"%go.
+
+Definition testDoublePointerInterface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testDoublePointerInterface"%go.
+
+Definition testMultipleFieldsInterface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testMultipleFieldsInterface"%go.
+
+Definition testSharedFunctionsInterface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testSharedFunctionsInterface"%go.
+
+Definition testAcceptAddressInterface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testAcceptAddressInterface"%go.
+
+Definition testPolymorphismInterface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testPolymorphismInterface"%go.
+
+Definition testEmbeddingInterface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testEmbeddingInterface"%go.
+
+Definition testDowncastInterface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testDowncastInterface"%go.
 
 Definition testsUseLocks {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testsUseLocks"%go.
 
@@ -1089,6 +1143,252 @@ Definition testIfStmtInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
     then return: (#true)
     else do:  #());;;
     return: (#false)).
+
+(* this doesn't work because it generates a conversion from SquareStruct to
+   uint64 due to the extra parameters
+
+   go: interfaces_complex.go:13:6 *)
+Definition testParamsInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: <>,
+    exception_do (let: "s" := (GoAlloc SquareStruct (GoZeroVal SquareStruct #())) in
+    let: "$r0" := (let: "$v0" := #(W64 3) in
+    CompositeLiteral SquareStruct (LiteralValue [KeyedElement (Some (KeyField "Side"%go)) (ElementExpression go.uint64 "$v0")])) in
+    do:  ("s" <-[SquareStruct] "$r0");;;
+    let: "volume" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+    let: "$r0" := (let: "$a0" := (Convert SquareStruct geometryInterface (![SquareStruct] "s")) in
+    let: "$a1" := #(W64 1) in
+    let: "$a2" := #(W64 2) in
+    (FuncResolve measureVolumePlusNM [] #()) "$a0" "$a1" "$a2") in
+    do:  ("volume" <-[go.uint64] "$r0");;;
+    return: ((![go.uint64] "volume") =⟨go.uint64⟩ #(W64 30))).
+
+(* go: interfaces_complex.go:21:6 *)
+Definition testEmptyInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: <>,
+    exception_do (let: "i" := (GoAlloc (go.InterfaceType []) (GoZeroVal (go.InterfaceType []) #())) in
+    let: "j" := (GoAlloc (go.InterfaceType []) (GoZeroVal (go.InterfaceType []) #())) in
+    return: ((![go.InterfaceType []] "i") =⟨go.InterfaceType []⟩ (![go.InterfaceType []] "j"))).
+
+(* go: interfaces_complex.go:27:6 *)
+Definition testStringInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: <>,
+    exception_do (let: "i" := (GoAlloc (go.InterfaceType []) (GoZeroVal (go.InterfaceType []) #())) in
+    let: "$r0" := (Convert go.string (go.InterfaceType []) #"string"%go) in
+    do:  ("i" <-[go.InterfaceType []] "$r0");;;
+    let: "j" := (GoAlloc (go.InterfaceType []) (GoZeroVal (go.InterfaceType []) #())) in
+    let: "$r0" := (Convert go.string (go.InterfaceType []) #"string"%go) in
+    do:  ("j" <-[go.InterfaceType []] "$r0");;;
+    return: ((![go.InterfaceType []] "i") =⟨go.InterfaceType []⟩ (![go.InterfaceType []] "j"))).
+
+(* go: interfaces_complex.go:37:6 *)
+Definition testTypeAssertionInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: <>,
+    exception_do (let: "i" := (GoAlloc (go.InterfaceType []) (GoZeroVal (go.InterfaceType []) #())) in
+    let: "$r0" := (Convert NumStruct (go.InterfaceType []) (let: "$v0" := #(W64 3) in
+    CompositeLiteral NumStruct (LiteralValue [KeyedElement None (ElementExpression go.int "$v0")]))) in
+    do:  ("i" <-[go.InterfaceType []] "$r0");;;
+    return: ((TypeAssert NumStruct (![go.InterfaceType []] "i")) =⟨go.StructType [
+       (go.FieldDecl "Value"%go go.int)
+     ]⟩ (let: "$v0" := #(W64 3) in
+     CompositeLiteral NumStruct (LiteralValue [KeyedElement None (ElementExpression go.int "$v0")])))).
+
+(* go: interfaces_complex.go:54:22 *)
+Definition shapeStruct__describeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "s" <>,
+    exception_do (let: "s" := (GoAlloc shapeStruct "s") in
+    return: (![go.string] (StructFieldRef shapeStruct "Shape"%go "s"))).
+
+(* go: interfaces_complex.go:63:24 *)
+Definition polygonStruct__describeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "p" <>,
+    exception_do (let: "p" := (GoAlloc polygonStruct "p") in
+    return: (![go.string] (StructFieldRef polygonStruct "Shape"%go "p"))).
+
+(* go: interfaces_complex.go:67:24 *)
+Definition polygonStruct__sidesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "p" <>,
+    exception_do (let: "p" := (GoAlloc polygonStruct "p") in
+    return: (![go.uint64] (StructFieldRef polygonStruct "Sides"%go "p"))).
+
+(* go: interfaces_complex.go:71:6 *)
+Definition testDoublePointerInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: <>,
+    exception_do (let: "s" := (GoAlloc shapeStruct (GoZeroVal shapeStruct #())) in
+    let: "$r0" := (let: "$v0" := #"circle"%go in
+    CompositeLiteral shapeStruct (LiteralValue [KeyedElement None (ElementExpression go.string "$v0")])) in
+    do:  ("s" <-[shapeStruct] "$r0");;;
+    let: "shapes" := (GoAlloc (go.SliceType shapeInterface) (GoZeroVal (go.SliceType shapeInterface) #())) in
+    let: "$r0" := (let: "$v0" := (![shapeStruct] "s") in
+    let: "$v1" := "s" in
+    CompositeLiteral (go.SliceType shapeInterface) (LiteralValue [KeyedElement None (ElementExpression shapeStruct "$v0"); KeyedElement None (ElementExpression (go.PointerType shapeStruct) "$v1")])) in
+    do:  ("shapes" <-[go.SliceType shapeInterface] "$r0");;;
+    let: "$r0" := #"square"%go in
+    do:  ((StructFieldRef shapeStruct "Shape"%go "s") <-[go.string] "$r0");;;
+    return: (((MethodResolve shapeInterface "describe"%go (![shapeInterface] (IndexRef (go.SliceType shapeInterface) (![go.SliceType shapeInterface] "shapes", #(W64 0))))) #()) ≠⟨go.string⟩ ((MethodResolve shapeInterface "describe"%go (![shapeInterface] (IndexRef (go.SliceType shapeInterface) (![go.SliceType shapeInterface] "shapes", #(W64 1))))) #()))).
+
+(* go: interfaces_complex.go:78:6 *)
+Definition testMultipleFieldsInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: <>,
+    exception_do (let: "s" := (GoAlloc polygonStruct (GoZeroVal polygonStruct #())) in
+    let: "$r0" := (let: "$v0" := #"triangle"%go in
+    let: "$v1" := #(W64 3) in
+    CompositeLiteral polygonStruct (LiteralValue [KeyedElement None (ElementExpression go.string "$v0"); KeyedElement None (ElementExpression go.uint64 "$v1")])) in
+    do:  ("s" <-[polygonStruct] "$r0");;;
+    return: (((![go.string] (StructFieldRef polygonStruct "Shape"%go "s")) =⟨go.string⟩ #"triangle"%go) && ((![go.uint64] (StructFieldRef polygonStruct "Sides"%go "s")) =⟨go.uint64⟩ #(W64 3)))).
+
+(* go: interfaces_complex.go:95:16 *)
+Definition Puppy__Nameⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "p" <>,
+    exception_do (let: "p" := (GoAlloc Puppy "p") in
+    return: (#"Max"%go)).
+
+(* go: interfaces_complex.go:99:16 *)
+Definition Puppy__Speedⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "p" <>,
+    exception_do (let: "p" := (GoAlloc Puppy "p") in
+    return: (#(W64 1))).
+
+(* go: interfaces_complex.go:105:17 *)
+Definition Kitten__Nameⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "k" <>,
+    exception_do (let: "k" := (GoAlloc Kitten "k") in
+    return: (#"Max"%go)).
+
+(* go: interfaces_complex.go:109:17 *)
+Definition Kitten__Weightⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "k" <>,
+    exception_do (let: "k" := (GoAlloc Kitten "k") in
+    return: (#(W64 10))).
+
+(* go: interfaces_complex.go:113:6 *)
+Definition testSharedFunctionsInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: <>,
+    exception_do (let: "kit" := (GoAlloc catInterface (GoZeroVal catInterface #())) in
+    let: "$r0" := (Convert Kitten catInterface #"Kitten"%go) in
+    do:  ("kit" <-[catInterface] "$r0");;;
+    let: "pup" := (GoAlloc dogInterface (GoZeroVal dogInterface #())) in
+    let: "$r0" := (Convert Puppy dogInterface #"Puppy"%go) in
+    do:  ("pup" <-[dogInterface] "$r0");;;
+    return: (((MethodResolve dogInterface "Name"%go (![dogInterface] "pup")) #()) =⟨go.string⟩ ((MethodResolve catInterface "Name"%go (![catInterface] "kit")) #()))).
+
+(* go: interfaces_complex.go:128:23 *)
+Definition PaperStruct__Assignⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "p" "t",
+    exception_do (let: "p" := (GoAlloc (go.PointerType PaperStruct) "p") in
+    let: "t" := (GoAlloc go.string "t") in
+    let: "$r0" := (![go.string] "t") in
+    do:  ((StructFieldRef PaperStruct "Title"%go (![go.PointerType PaperStruct] "p")) <-[go.string] "$r0");;;
+    return: #()).
+
+(* go: interfaces_complex.go:132:23 *)
+Definition PaperStruct__GetTitleⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "p" <>,
+    exception_do (let: "p" := (GoAlloc (go.PointerType PaperStruct) "p") in
+    return: (![go.string] (StructFieldRef PaperStruct "Title"%go (![go.PointerType PaperStruct] "p")))).
+
+(* go: interfaces_complex.go:136:6 *)
+Definition testAcceptAddressInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: <>,
+    exception_do (let: "p1" := (GoAlloc PaperStruct (GoZeroVal PaperStruct #())) in
+    let: "p2" := (GoAlloc PaperStruct (GoZeroVal PaperStruct #())) in
+    do:  (let: "$a0" := #"Sample Title"%go in
+    (MethodResolve (go.PointerType PaperStruct) "Assign"%go "p1") "$a0");;;
+    do:  (let: "$a0" := #"Sample Title"%go in
+    (MethodResolve (go.PointerType PaperStruct) "Assign"%go "p2") "$a0");;;
+    let: "print1" := (GoAlloc printInterface (GoZeroVal printInterface #())) in
+    let: "print2" := (GoAlloc printInterface (GoZeroVal printInterface #())) in
+    let: "$r0" := (Convert (go.PointerType PaperStruct) printInterface "p1") in
+    do:  ("print1" <-[printInterface] "$r0");;;
+    let: "$r0" := (Convert (go.PointerType PaperStruct) printInterface "p2") in
+    do:  ("print2" <-[printInterface] "$r0");;;
+    return: (((MethodResolve printInterface "GetTitle"%go (![printInterface] "print1")) #()) =⟨go.string⟩ ((MethodResolve printInterface "GetTitle"%go (![printInterface] "print2")) #()))).
+
+(* go: interfaces_complex.go:159:15 *)
+Definition Lily__Petalsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "l" <>,
+    exception_do (let: "l" := (GoAlloc Lily "l") in
+    return: (#(W64 3))).
+
+(* go: interfaces_complex.go:160:15 *)
+Definition Lily__Genusⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "l" <>,
+    exception_do (let: "l" := (GoAlloc Lily "l") in
+    return: (#"Lillium"%go)).
+
+(* go: interfaces_complex.go:164:15 *)
+Definition Rose__Petalsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "r" <>,
+    exception_do (let: "r" := (GoAlloc Rose "r") in
+    return: (#(W64 12))).
+
+(* go: interfaces_complex.go:165:15 *)
+Definition Rose__Genusⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "r" <>,
+    exception_do (let: "r" := (GoAlloc Rose "r") in
+    return: (#"Rosa"%go)).
+
+(* go: interfaces_complex.go:169:16 *)
+Definition Daisy__Petalsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "d" <>,
+    exception_do (let: "d" := (GoAlloc Daisy "d") in
+    return: (#(W64 5))).
+
+(* go: interfaces_complex.go:170:16 *)
+Definition Daisy__Genusⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: "d" <>,
+    exception_do (let: "d" := (GoAlloc Daisy "d") in
+    return: (#"Bellis"%go)).
+
+(* go: interfaces_complex.go:172:6 *)
+Definition testPolymorphismInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: <>,
+    exception_do (let: "l" := (GoAlloc (go.PointerType Lily) (GoZeroVal (go.PointerType Lily) #())) in
+    let: "$r0" := (GoAlloc Lily (GoZeroVal Lily #())) in
+    do:  ("l" <-[go.PointerType Lily] "$r0");;;
+    let: "r" := (GoAlloc (go.PointerType Rose) (GoZeroVal (go.PointerType Rose) #())) in
+    let: "$r0" := (GoAlloc Rose (GoZeroVal Rose #())) in
+    do:  ("r" <-[go.PointerType Rose] "$r0");;;
+    let: "d" := (GoAlloc (go.PointerType Daisy) (GoZeroVal (go.PointerType Daisy) #())) in
+    let: "$r0" := (GoAlloc Daisy (GoZeroVal Daisy #())) in
+    do:  ("d" <-[go.PointerType Daisy] "$r0");;;
+    let: "f" := (GoAlloc (go.ArrayType 3 Flower) (GoZeroVal (go.ArrayType 3 Flower) #())) in
+    let: "$r0" := (let: "$v0" := (![go.PointerType Lily] "l") in
+    let: "$v1" := (![go.PointerType Rose] "r") in
+    let: "$v2" := (![go.PointerType Daisy] "d") in
+    CompositeLiteral (go.ArrayType 3 Flower) (LiteralValue [KeyedElement None (ElementExpression (go.PointerType Lily) "$v0"); KeyedElement None (ElementExpression (go.PointerType Rose) "$v1"); KeyedElement None (ElementExpression (go.PointerType Daisy) "$v2")])) in
+    do:  ("f" <-[go.ArrayType 3 Flower] "$r0");;;
+    return: (((MethodResolve Flower "Petals"%go (![Flower] (IndexRef (go.ArrayType 3 Flower) (![go.ArrayType 3 Flower] "f", #(W64 0))))) #()) =⟨go.uint64⟩ #(W64 3))).
+
+(* go: interfaces_complex.go:180:6 *)
+Definition testEmbeddingInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: <>,
+    exception_do (let: "l" := (GoAlloc (go.PointerType Lily) (GoZeroVal (go.PointerType Lily) #())) in
+    let: "$r0" := (GoAlloc Lily (GoZeroVal Lily #())) in
+    do:  ("l" <-[go.PointerType Lily] "$r0");;;
+    let: "r" := (GoAlloc (go.PointerType Rose) (GoZeroVal (go.PointerType Rose) #())) in
+    let: "$r0" := (GoAlloc Rose (GoZeroVal Rose #())) in
+    do:  ("r" <-[go.PointerType Rose] "$r0");;;
+    let: "d" := (GoAlloc (go.PointerType Daisy) (GoZeroVal (go.PointerType Daisy) #())) in
+    let: "$r0" := (GoAlloc Daisy (GoZeroVal Daisy #())) in
+    do:  ("d" <-[go.PointerType Daisy] "$r0");;;
+    let: "f" := (GoAlloc (go.ArrayType 3 Flora) (GoZeroVal (go.ArrayType 3 Flora) #())) in
+    let: "$r0" := (let: "$v0" := (![go.PointerType Lily] "l") in
+    let: "$v1" := (![go.PointerType Rose] "r") in
+    let: "$v2" := (![go.PointerType Daisy] "d") in
+    CompositeLiteral (go.ArrayType 3 Flora) (LiteralValue [KeyedElement None (ElementExpression (go.PointerType Lily) "$v0"); KeyedElement None (ElementExpression (go.PointerType Rose) "$v1"); KeyedElement None (ElementExpression (go.PointerType Daisy) "$v2")])) in
+    do:  ("f" <-[go.ArrayType 3 Flora] "$r0");;;
+    return: (((MethodResolve Flora "Petals"%go (![Flora] (IndexRef (go.ArrayType 3 Flora) (![go.ArrayType 3 Flora] "f", #(W64 0))))) #()) =⟨go.uint64⟩ #(W64 3))).
+
+(* go: interfaces_complex.go:188:6 *)
+Definition testDowncastInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: <>,
+    exception_do (let: "l" := (GoAlloc Lily (GoZeroVal Lily #())) in
+    let: "$r0" := (CompositeLiteral Lily (LiteralValue [])) in
+    do:  ("l" <-[Lily] "$r0");;;
+    let: "f" := (GoAlloc Flora (GoZeroVal Flora #())) in
+    let: "$r0" := (Convert Lily Flora (![Lily] "l")) in
+    do:  ("f" <-[Flora] "$r0");;;
+    return: (((MethodResolve Flora "Petals"%go (![Flora] "f")) #()) =⟨go.uint64⟩ ((MethodResolve Flower "Petals"%go (TypeAssert Flower (![Flora] "f"))) #()))).
 
 (* We can't interpret multithreaded code, so this just checks that
    locks are correctly interpreted
@@ -3098,6 +3398,379 @@ Class SquareStruct_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocal
   #[global] SquareStruct'ptr_Volume_unfold :: MethodUnfold (go.PointerType (SquareStruct)) "Volume" (λ: "$r", MethodResolve (SquareStruct) "Volume" (![(SquareStruct)] "$r"));
 }.
 
+Module NumStruct.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  Value' : w64;
+}.
+
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+End def.
+
+End NumStruct.
+
+Definition NumStruct'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
+  (go.FieldDecl "Value"%go go.int)
+].
+Program Definition NumStruct'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (NumStruct'fds_unsealed).
+Global Instance equals_unfold_NumStruct {ext : ffi_syntax} {go_gctx : GoGlobalContext} : NumStruct'fds =→ NumStruct'fds_unsealed.
+Proof. rewrite /NumStruct'fds seal_eq //. Qed.
+
+Definition NumStructⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (NumStruct'fds).
+
+Class NumStruct_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] NumStruct_type_repr  :: go.TypeReprUnderlying NumStructⁱᵐᵖˡ NumStruct.t;
+  #[global] NumStruct_underlying :: (NumStruct) <u (NumStructⁱᵐᵖˡ);
+  #[global] NumStruct_get_Value (x : NumStruct.t) :: ⟦StructFieldGet (NumStructⁱᵐᵖˡ) "Value", #x⟧ ⤳[under] #x.(NumStruct.Value');
+  #[global] NumStruct_set_Value (x : NumStruct.t) y :: ⟦StructFieldSet (NumStructⁱᵐᵖˡ) "Value", (#x, #y)⟧ ⤳[under] #(x <|NumStruct.Value' := y|>);
+}.
+
+Module shapeInterface.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Definition t : Type := interface.t.
+End def.
+End shapeInterface.
+
+Definition shapeInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.InterfaceType [go.MethodElem "describe"%go (go.Signature [] false [go.string])].
+
+Class shapeInterface_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] shapeInterface_underlying :: (shapeInterface) <u (shapeInterfaceⁱᵐᵖˡ);
+}.
+
+Module polygonInterface.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Definition t : Type := interface.t.
+End def.
+End polygonInterface.
+
+Definition polygonInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.InterfaceType [go.MethodElem "sides"%go (go.Signature [] false [go.uint64])].
+
+Class polygonInterface_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] polygonInterface_underlying :: (polygonInterface) <u (polygonInterfaceⁱᵐᵖˡ);
+}.
+
+Module shapeStruct.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  Shape' : go_string;
+}.
+
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+End def.
+
+End shapeStruct.
+
+Definition shapeStruct'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
+  (go.FieldDecl "Shape"%go go.string)
+].
+Program Definition shapeStruct'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (shapeStruct'fds_unsealed).
+Global Instance equals_unfold_shapeStruct {ext : ffi_syntax} {go_gctx : GoGlobalContext} : shapeStruct'fds =→ shapeStruct'fds_unsealed.
+Proof. rewrite /shapeStruct'fds seal_eq //. Qed.
+
+Definition shapeStructⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (shapeStruct'fds).
+
+Class shapeStruct_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] shapeStruct_type_repr  :: go.TypeReprUnderlying shapeStructⁱᵐᵖˡ shapeStruct.t;
+  #[global] shapeStruct_underlying :: (shapeStruct) <u (shapeStructⁱᵐᵖˡ);
+  #[global] shapeStruct_get_Shape (x : shapeStruct.t) :: ⟦StructFieldGet (shapeStructⁱᵐᵖˡ) "Shape", #x⟧ ⤳[under] #x.(shapeStruct.Shape');
+  #[global] shapeStruct_set_Shape (x : shapeStruct.t) y :: ⟦StructFieldSet (shapeStructⁱᵐᵖˡ) "Shape", (#x, #y)⟧ ⤳[under] #(x <|shapeStruct.Shape' := y|>);
+  #[global] shapeStruct_describe_unfold :: MethodUnfold (shapeStruct) "describe" (shapeStruct__describeⁱᵐᵖˡ);
+  #[global] shapeStruct'ptr_describe_unfold :: MethodUnfold (go.PointerType (shapeStruct)) "describe" (λ: "$r", MethodResolve (shapeStruct) "describe" (![(shapeStruct)] "$r"));
+}.
+
+Module polygonStruct.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  Shape' : go_string;
+  Sides' : w64;
+}.
+
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _) (zero_val _)|}.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+End def.
+
+End polygonStruct.
+
+Definition polygonStruct'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
+  (go.FieldDecl "Shape"%go go.string);
+  (go.FieldDecl "Sides"%go go.uint64)
+].
+Program Definition polygonStruct'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (polygonStruct'fds_unsealed).
+Global Instance equals_unfold_polygonStruct {ext : ffi_syntax} {go_gctx : GoGlobalContext} : polygonStruct'fds =→ polygonStruct'fds_unsealed.
+Proof. rewrite /polygonStruct'fds seal_eq //. Qed.
+
+Definition polygonStructⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (polygonStruct'fds).
+
+Class polygonStruct_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] polygonStruct_type_repr  :: go.TypeReprUnderlying polygonStructⁱᵐᵖˡ polygonStruct.t;
+  #[global] polygonStruct_underlying :: (polygonStruct) <u (polygonStructⁱᵐᵖˡ);
+  #[global] polygonStruct_get_Shape (x : polygonStruct.t) :: ⟦StructFieldGet (polygonStructⁱᵐᵖˡ) "Shape", #x⟧ ⤳[under] #x.(polygonStruct.Shape');
+  #[global] polygonStruct_set_Shape (x : polygonStruct.t) y :: ⟦StructFieldSet (polygonStructⁱᵐᵖˡ) "Shape", (#x, #y)⟧ ⤳[under] #(x <|polygonStruct.Shape' := y|>);
+  #[global] polygonStruct_get_Sides (x : polygonStruct.t) :: ⟦StructFieldGet (polygonStructⁱᵐᵖˡ) "Sides", #x⟧ ⤳[under] #x.(polygonStruct.Sides');
+  #[global] polygonStruct_set_Sides (x : polygonStruct.t) y :: ⟦StructFieldSet (polygonStructⁱᵐᵖˡ) "Sides", (#x, #y)⟧ ⤳[under] #(x <|polygonStruct.Sides' := y|>);
+  #[global] polygonStruct_describe_unfold :: MethodUnfold (polygonStruct) "describe" (polygonStruct__describeⁱᵐᵖˡ);
+  #[global] polygonStruct_sides_unfold :: MethodUnfold (polygonStruct) "sides" (polygonStruct__sidesⁱᵐᵖˡ);
+  #[global] polygonStruct'ptr_describe_unfold :: MethodUnfold (go.PointerType (polygonStruct)) "describe" (λ: "$r", MethodResolve (polygonStruct) "describe" (![(polygonStruct)] "$r"));
+  #[global] polygonStruct'ptr_sides_unfold :: MethodUnfold (go.PointerType (polygonStruct)) "sides" (λ: "$r", MethodResolve (polygonStruct) "sides" (![(polygonStruct)] "$r"));
+}.
+
+Module dogInterface.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Definition t : Type := interface.t.
+End def.
+End dogInterface.
+
+Definition dogInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.InterfaceType [go.MethodElem "Name"%go (go.Signature [] false [go.string]); go.MethodElem "Speed"%go (go.Signature [] false [go.uint64])].
+
+Class dogInterface_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] dogInterface_underlying :: (dogInterface) <u (dogInterfaceⁱᵐᵖˡ);
+}.
+
+Module catInterface.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Definition t : Type := interface.t.
+End def.
+End catInterface.
+
+Definition catInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.InterfaceType [go.MethodElem "Name"%go (go.Signature [] false [go.string]); go.MethodElem "Weight"%go (go.Signature [] false [go.uint64])].
+
+Class catInterface_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] catInterface_underlying :: (catInterface) <u (catInterfaceⁱᵐᵖˡ);
+}.
+
+Module Puppy.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Definition t : Type := go_string.
+End def.
+End Puppy.
+
+Definition Puppyⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.string.
+
+Class Puppy_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Puppy_underlying :: (Puppy) <u (Puppyⁱᵐᵖˡ);
+  #[global] Puppy_Name_unfold :: MethodUnfold (Puppy) "Name" (Puppy__Nameⁱᵐᵖˡ);
+  #[global] Puppy_Speed_unfold :: MethodUnfold (Puppy) "Speed" (Puppy__Speedⁱᵐᵖˡ);
+  #[global] Puppy'ptr_Name_unfold :: MethodUnfold (go.PointerType (Puppy)) "Name" (λ: "$r", MethodResolve (Puppy) "Name" (![(Puppy)] "$r"));
+  #[global] Puppy'ptr_Speed_unfold :: MethodUnfold (go.PointerType (Puppy)) "Speed" (λ: "$r", MethodResolve (Puppy) "Speed" (![(Puppy)] "$r"));
+}.
+
+Module Kitten.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Definition t : Type := go_string.
+End def.
+End Kitten.
+
+Definition Kittenⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.string.
+
+Class Kitten_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Kitten_underlying :: (Kitten) <u (Kittenⁱᵐᵖˡ);
+  #[global] Kitten_Name_unfold :: MethodUnfold (Kitten) "Name" (Kitten__Nameⁱᵐᵖˡ);
+  #[global] Kitten_Weight_unfold :: MethodUnfold (Kitten) "Weight" (Kitten__Weightⁱᵐᵖˡ);
+  #[global] Kitten'ptr_Name_unfold :: MethodUnfold (go.PointerType (Kitten)) "Name" (λ: "$r", MethodResolve (Kitten) "Name" (![(Kitten)] "$r"));
+  #[global] Kitten'ptr_Weight_unfold :: MethodUnfold (go.PointerType (Kitten)) "Weight" (λ: "$r", MethodResolve (Kitten) "Weight" (![(Kitten)] "$r"));
+}.
+
+Module printInterface.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Definition t : Type := interface.t.
+End def.
+End printInterface.
+
+Definition printInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.InterfaceType [go.MethodElem "Assign"%go (go.Signature [go.string] false []); go.MethodElem "GetTitle"%go (go.Signature [] false [go.string])].
+
+Class printInterface_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] printInterface_underlying :: (printInterface) <u (printInterfaceⁱᵐᵖˡ);
+}.
+
+Module PaperStruct.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+  Title' : go_string;
+}.
+
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk (zero_val _)|}.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+End def.
+
+End PaperStruct.
+
+Definition PaperStruct'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
+  (go.FieldDecl "Title"%go go.string)
+].
+Program Definition PaperStruct'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (PaperStruct'fds_unsealed).
+Global Instance equals_unfold_PaperStruct {ext : ffi_syntax} {go_gctx : GoGlobalContext} : PaperStruct'fds =→ PaperStruct'fds_unsealed.
+Proof. rewrite /PaperStruct'fds seal_eq //. Qed.
+
+Definition PaperStructⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (PaperStruct'fds).
+
+Class PaperStruct_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] PaperStruct_type_repr  :: go.TypeReprUnderlying PaperStructⁱᵐᵖˡ PaperStruct.t;
+  #[global] PaperStruct_underlying :: (PaperStruct) <u (PaperStructⁱᵐᵖˡ);
+  #[global] PaperStruct_get_Title (x : PaperStruct.t) :: ⟦StructFieldGet (PaperStructⁱᵐᵖˡ) "Title", #x⟧ ⤳[under] #x.(PaperStruct.Title');
+  #[global] PaperStruct_set_Title (x : PaperStruct.t) y :: ⟦StructFieldSet (PaperStructⁱᵐᵖˡ) "Title", (#x, #y)⟧ ⤳[under] #(x <|PaperStruct.Title' := y|>);
+  #[global] PaperStruct'ptr_Assign_unfold :: MethodUnfold (go.PointerType (PaperStruct)) "Assign" (PaperStruct__Assignⁱᵐᵖˡ);
+  #[global] PaperStruct'ptr_GetTitle_unfold :: MethodUnfold (go.PointerType (PaperStruct)) "GetTitle" (PaperStruct__GetTitleⁱᵐᵖˡ);
+}.
+
+Module Flower.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Definition t : Type := interface.t.
+End def.
+End Flower.
+
+Definition Flowerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.InterfaceType [go.MethodElem "Petals"%go (go.Signature [] false [go.uint64])].
+
+Class Flower_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Flower_underlying :: (Flower) <u (Flowerⁱᵐᵖˡ);
+}.
+
+Module Flora.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Definition t : Type := interface.t.
+End def.
+End Flora.
+
+Definition Floraⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.InterfaceType [go.MethodElem "Genus"%go (go.Signature [] false [go.string]); go.TypeElem [go.TypeTerm Flower]].
+
+Class Flora_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Flora_underlying :: (Flora) <u (Floraⁱᵐᵖˡ);
+}.
+
+Module Lily.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+}.
+
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk|}.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+End def.
+
+End Lily.
+
+Definition Lily'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
+
+].
+Program Definition Lily'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (Lily'fds_unsealed).
+Global Instance equals_unfold_Lily {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Lily'fds =→ Lily'fds_unsealed.
+Proof. rewrite /Lily'fds seal_eq //. Qed.
+
+Definition Lilyⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (Lily'fds).
+
+Class Lily_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Lily_type_repr  :: go.TypeReprUnderlying Lilyⁱᵐᵖˡ Lily.t;
+  #[global] Lily_underlying :: (Lily) <u (Lilyⁱᵐᵖˡ);
+  #[global] Lily_Genus_unfold :: MethodUnfold (Lily) "Genus" (Lily__Genusⁱᵐᵖˡ);
+  #[global] Lily_Petals_unfold :: MethodUnfold (Lily) "Petals" (Lily__Petalsⁱᵐᵖˡ);
+  #[global] Lily'ptr_Genus_unfold :: MethodUnfold (go.PointerType (Lily)) "Genus" (λ: "$r", MethodResolve (Lily) "Genus" (![(Lily)] "$r"));
+  #[global] Lily'ptr_Petals_unfold :: MethodUnfold (go.PointerType (Lily)) "Petals" (λ: "$r", MethodResolve (Lily) "Petals" (![(Lily)] "$r"));
+}.
+
+Module Rose.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+}.
+
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk|}.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+End def.
+
+End Rose.
+
+Definition Rose'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
+
+].
+Program Definition Rose'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (Rose'fds_unsealed).
+Global Instance equals_unfold_Rose {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Rose'fds =→ Rose'fds_unsealed.
+Proof. rewrite /Rose'fds seal_eq //. Qed.
+
+Definition Roseⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (Rose'fds).
+
+Class Rose_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Rose_type_repr  :: go.TypeReprUnderlying Roseⁱᵐᵖˡ Rose.t;
+  #[global] Rose_underlying :: (Rose) <u (Roseⁱᵐᵖˡ);
+  #[global] Rose_Genus_unfold :: MethodUnfold (Rose) "Genus" (Rose__Genusⁱᵐᵖˡ);
+  #[global] Rose_Petals_unfold :: MethodUnfold (Rose) "Petals" (Rose__Petalsⁱᵐᵖˡ);
+  #[global] Rose'ptr_Genus_unfold :: MethodUnfold (go.PointerType (Rose)) "Genus" (λ: "$r", MethodResolve (Rose) "Genus" (![(Rose)] "$r"));
+  #[global] Rose'ptr_Petals_unfold :: MethodUnfold (go.PointerType (Rose)) "Petals" (λ: "$r", MethodResolve (Rose) "Petals" (![(Rose)] "$r"));
+}.
+
+Module Daisy.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t :=
+mk {
+}.
+
+#[global] Instance zero_val : ZeroVal t := {| zero_val := mk|}.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+End def.
+
+End Daisy.
+
+Definition Daisy'fds_unsealed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
+
+].
+Program Definition Daisy'fds {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (Daisy'fds_unsealed).
+Global Instance equals_unfold_Daisy {ext : ffi_syntax} {go_gctx : GoGlobalContext} : Daisy'fds =→ Daisy'fds_unsealed.
+Proof. rewrite /Daisy'fds seal_eq //. Qed.
+
+Definition Daisyⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.StructType (Daisy'fds).
+
+Class Daisy_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] Daisy_type_repr  :: go.TypeReprUnderlying Daisyⁱᵐᵖˡ Daisy.t;
+  #[global] Daisy_underlying :: (Daisy) <u (Daisyⁱᵐᵖˡ);
+  #[global] Daisy_Genus_unfold :: MethodUnfold (Daisy) "Genus" (Daisy__Genusⁱᵐᵖˡ);
+  #[global] Daisy_Petals_unfold :: MethodUnfold (Daisy) "Petals" (Daisy__Petalsⁱᵐᵖˡ);
+  #[global] Daisy'ptr_Genus_unfold :: MethodUnfold (go.PointerType (Daisy)) "Genus" (λ: "$r", MethodResolve (Daisy) "Genus" (![(Daisy)] "$r"));
+  #[global] Daisy'ptr_Petals_unfold :: MethodUnfold (go.PointerType (Daisy)) "Petals" (λ: "$r", MethodResolve (Daisy) "Petals" (![(Daisy)] "$r"));
+}.
+
 Module LoopStruct.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
@@ -3591,6 +4264,22 @@ Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions
   #[global] Uint32_instance :: Uint32_Assumptions;
   #[global] geometryInterface_instance :: geometryInterface_Assumptions;
   #[global] SquareStruct_instance :: SquareStruct_Assumptions;
+  #[global] NumStruct_instance :: NumStruct_Assumptions;
+  #[global] shapeInterface_instance :: shapeInterface_Assumptions;
+  #[global] polygonInterface_instance :: polygonInterface_Assumptions;
+  #[global] shapeStruct_instance :: shapeStruct_Assumptions;
+  #[global] polygonStruct_instance :: polygonStruct_Assumptions;
+  #[global] dogInterface_instance :: dogInterface_Assumptions;
+  #[global] catInterface_instance :: catInterface_Assumptions;
+  #[global] Puppy_instance :: Puppy_Assumptions;
+  #[global] Kitten_instance :: Kitten_Assumptions;
+  #[global] printInterface_instance :: printInterface_Assumptions;
+  #[global] PaperStruct_instance :: PaperStruct_Assumptions;
+  #[global] Flower_instance :: Flower_Assumptions;
+  #[global] Flora_instance :: Flora_Assumptions;
+  #[global] Lily_instance :: Lily_Assumptions;
+  #[global] Rose_instance :: Rose_Assumptions;
+  #[global] Daisy_instance :: Daisy_Assumptions;
   #[global] LoopStruct_instance :: LoopStruct_Assumptions;
   #[global] BoolTest_instance :: BoolTest_Assumptions;
   #[global] ArrayEditor_instance :: ArrayEditor_Assumptions;
@@ -3650,6 +4339,17 @@ Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions
   #[global] testMultipleInterface_unfold :: FuncUnfold testMultipleInterface [] (testMultipleInterfaceⁱᵐᵖˡ);
   #[global] testBinaryExprInterface_unfold :: FuncUnfold testBinaryExprInterface [] (testBinaryExprInterfaceⁱᵐᵖˡ);
   #[global] testIfStmtInterface_unfold :: FuncUnfold testIfStmtInterface [] (testIfStmtInterfaceⁱᵐᵖˡ);
+  #[global] testParamsInterface_unfold :: FuncUnfold testParamsInterface [] (testParamsInterfaceⁱᵐᵖˡ);
+  #[global] testEmptyInterface_unfold :: FuncUnfold testEmptyInterface [] (testEmptyInterfaceⁱᵐᵖˡ);
+  #[global] testStringInterface_unfold :: FuncUnfold testStringInterface [] (testStringInterfaceⁱᵐᵖˡ);
+  #[global] testTypeAssertionInterface_unfold :: FuncUnfold testTypeAssertionInterface [] (testTypeAssertionInterfaceⁱᵐᵖˡ);
+  #[global] testDoublePointerInterface_unfold :: FuncUnfold testDoublePointerInterface [] (testDoublePointerInterfaceⁱᵐᵖˡ);
+  #[global] testMultipleFieldsInterface_unfold :: FuncUnfold testMultipleFieldsInterface [] (testMultipleFieldsInterfaceⁱᵐᵖˡ);
+  #[global] testSharedFunctionsInterface_unfold :: FuncUnfold testSharedFunctionsInterface [] (testSharedFunctionsInterfaceⁱᵐᵖˡ);
+  #[global] testAcceptAddressInterface_unfold :: FuncUnfold testAcceptAddressInterface [] (testAcceptAddressInterfaceⁱᵐᵖˡ);
+  #[global] testPolymorphismInterface_unfold :: FuncUnfold testPolymorphismInterface [] (testPolymorphismInterfaceⁱᵐᵖˡ);
+  #[global] testEmbeddingInterface_unfold :: FuncUnfold testEmbeddingInterface [] (testEmbeddingInterfaceⁱᵐᵖˡ);
+  #[global] testDowncastInterface_unfold :: FuncUnfold testDowncastInterface [] (testDowncastInterfaceⁱᵐᵖˡ);
   #[global] testsUseLocks_unfold :: FuncUnfold testsUseLocks [] (testsUseLocksⁱᵐᵖˡ);
   #[global] standardForLoop_unfold :: FuncUnfold standardForLoop [] (standardForLoopⁱᵐᵖˡ);
   #[global] testStandardForLoop_unfold :: FuncUnfold testStandardForLoop [] (testStandardForLoopⁱᵐᵖˡ);

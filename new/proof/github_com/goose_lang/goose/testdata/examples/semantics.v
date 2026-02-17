@@ -33,7 +33,7 @@ Ltac semantics_auto :=
               done ].
 
 Ltac wp_call_auto :=
-  (wp_func_call || wp_method_call); wp_call;
+  (wp_func_call || wp_method_call || wp_call); try wp_call;
   try wp_auto;
   repeat rewrite -> decide_True by auto;
   repeat rewrite -> decide_False by auto;
@@ -105,10 +105,41 @@ Lemma wp_testStructUpdates :
   test_fun_ok semantics.testStructUpdates.
 Proof.
   semantics_auto.
-  repeat (wp_call_auto || wp_call || wp_auto).
+  repeat (wp_call_auto || wp_auto).
   wp_alloc x1 as "H"; wp_auto.
-  repeat (wp_call_auto || wp_call || wp_auto).
+  repeat (wp_call_auto || wp_auto).
   wp_end.
 Qed.
+
+Lemma wp_testOrCompare :
+  test_fun_ok semantics.testOrCompare.
+Proof. semantics_auto. Qed.
+Lemma wp_testAndCompare :
+  test_fun_ok semantics.testAndCompare.
+Proof. semantics_auto. Qed.
+Lemma wp_testShiftMod :
+  test_fun_ok semantics.testShiftMod.
+Proof. semantics_auto. Qed.
+
+Lemma wp_testParamsInterface :
+  test_fun_ok semantics.testParamsInterface.
+Proof.
+  semantics_auto.
+  repeat (wp_call_auto || wp_auto).
+  wp_end.
+Qed.
+
+Lemma wp_testEmptyInterface :
+  test_fun_ok semantics.testEmptyInterface.
+Proof. semantics_auto. Qed.
+
+Lemma wp_testTypeAssertionInterface :
+  test_fun_ok semantics.testTypeAssertionInterface.
+Proof.
+  semantics_auto.
+  rewrite decide_True //.
+  wp_auto.
+  (* TODO: looks like translation bug *)
+Abort.
 
 End wps.
