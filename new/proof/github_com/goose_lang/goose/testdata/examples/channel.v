@@ -33,7 +33,6 @@ Proof.
 Defined.
 
 Section hello_world.
-Context `{!chan_idiomG Σ go_string}.
 
 Lemma wp_sys_hello_world :
   {{{ is_pkg_init chan_spec_raw_examples }}}
@@ -94,15 +93,13 @@ End hello_world.
 
 
 Section cancellable.
-Context `{!chan_idiomG Σ go_string}.
-Context `{!chan_idiomG Σ unit}.
 
 Lemma wp_HelloWorldCancellable
   (done_ch : loc) (err_ptr1: loc) (err_msg: go_string)
   (γdone: done_names) :
   {{{ is_pkg_init chan_spec_raw_examples ∗
         is_done (V:=unit) γdone done_ch ∗
-        Notified (V:=unit) γdone (err_ptr1 ↦ err_msg)  }}}
+        Notified γdone (err_ptr1 ↦ err_msg)  }}}
     @! chan_spec_raw_examples.HelloWorldCancellable #done_ch #err_ptr1
     {{{
 (result: go_string), RET #result;
@@ -196,7 +193,6 @@ End cancellable.
 
 
 Section fibonacci_examples.
-Context `{!chan_idiomG Σ w64}.
 
 Fixpoint fib (n: nat) : w64 :=
   match n with
@@ -238,7 +234,7 @@ Lemma wp_fibonacci (n: w64) (c_ptr: loc) γ:
 
       is_spsc γ c_ptr (λ i v, ⌜v = fib (Z.to_nat i)⌝)
                   (λ sent, ⌜sent = fib_list  (sint.nat n)⌝) ∗
-      spsc_producer γ []
+      spsc_producer γ ([] : list w64)
   }}}
     @! chan_spec_raw_examples.fibonacci #n #c_ptr
   {{{ RET #(); True }}}.
@@ -453,7 +449,6 @@ Qed.
 End fibonacci_examples.
 
 Section dsp_examples.
-Context `{!chan_idiomG Σ interface.t}.
 Context `{!dspG Σ interface.t}.
 
 Definition ref_prot : iProto Σ interface.t :=
@@ -489,7 +484,6 @@ Qed.
 End dsp_examples.
 
 Section select_panic.
-Context `{!chan_idiomG Σ unit}.
 
 (** Invariant: channel must be Idle, all other states are False *)
 Definition is_select_nb_only (γ : chan_names) (ch : loc) : iProp Σ :=
@@ -629,8 +623,6 @@ Qed.
 End select_panic.
 
 Section higher_order_example.
-Context `{!chan_idiomG Σ chan_spec_raw_examples.request.t}.
-Context `{!chan_idiomG Σ go_string}.
 
 Definition do_request (r: chan_spec_raw_examples.request.t) γfut (Q: go_string → iProp Σ) : iProp Σ :=
   "Hf" ∷ WP #r.(chan_spec_raw_examples.request.f') #() {{ λ v, ∃ (s: go_string), ⌜v = #s⌝ ∗ Q s }} ∗
@@ -757,7 +749,6 @@ Qed.
 End higher_order_example.
 
 Section join.
-Context `{!chan_idiomG Σ unit}.
 
 Lemma wp_simple_join :
   {{{ is_pkg_init chan_spec_raw_examples ∗ is_pkg_init channel }}}
@@ -842,7 +833,6 @@ Qed.
 End join.
 
 Section serve.
-Context `{!chan_idiomG Σ go_string}.
 Context `{!dspG Σ go_string}.
 
 Definition service_prot_aux (Φpre : go_string → iProp Σ) (Φpost : go_string → go_string → iProp Σ)
@@ -968,8 +958,6 @@ End serve.
 
 
 Section muxer.
-Context `{!chan_idiomG Σ streamold.t}.
-Context `{!chan_idiomG Σ go_string}.
 Context `{!contributionG Σ (gmultisetUR streamold.t)}.
 Context `{!dspG Σ go_string}.
 (* perennial ghost_var, not iris *)
@@ -1194,7 +1182,6 @@ Qed.
 End muxer.
 
 Section notready_examples.
-Context `{!chanG Σ w64}.
 
 Lemma wp_select_no_double_close :
   {{{ is_pkg_init chan_spec_raw_examples }}}
@@ -1221,8 +1208,6 @@ Qed.
 End notready_examples.
 
 Section exchange_pointer_proof.
-
-Context `{!chan_idiomG Σ unit}.
 
 Lemma wp_exchangePointer :
   {{{ is_pkg_init chan_spec_raw_examples }}}

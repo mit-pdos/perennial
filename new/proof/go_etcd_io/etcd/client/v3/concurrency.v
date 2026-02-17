@@ -6,13 +6,6 @@ From New.proof Require Import context sync time math errors fmt.
 
 Ltac2 Set wp_apply_auto_default := Ltac2.Init.false.
 
-Class concurrencyG Σ :=
-  {
-    donecG :: closeable_chanG Σ ;
-    (* context_inG :: contextG Σ; *)
-    clientv3_inG :: clientv3G Σ;
-  }.
-
 Section proof.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.

@@ -42,10 +42,6 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics} {package_sem : raft.Assumptions}.
 Local Set Default Proof Using "All".
 
-Context `{!closeable_chanG Σ}.
-Context `{!chanG Σ ()}.
-Context `{!chanG Σ error.t}.
-
 Implicit Type γraft : raft_names.
 
 Definition MsgProp := (W32 2).
@@ -157,4 +153,4 @@ Proof.
   (* (* TODO *) *)
 Admitted.
 
-End raft.
+End wps.

@@ -1,4 +1,4 @@
-From New.experiments Require Export all_scmra.
+From New.ghost Require Export all.
 
 (** * Properties about ghost ownership *)
 Section global.
@@ -131,15 +131,15 @@ Lemma own_update_3 γ a1 a2 a3 a' :
 Proof. intros. apply entails_wand. do 2 apply wand_intro_r. rewrite -!own_op. by iApply own_update. Qed.
 End global.
 
-Global Arguments own_valid {_ _} [_] _ _.
-Global Arguments own_valid_2 {_ _} [_] _ _ _.
-Global Arguments own_valid_3 {_ _} [_] _ _ _ _.
-Global Arguments own_valid_l {_ _} [_] _ _.
-Global Arguments own_valid_r {_ _} [_] _ _.
-Global Arguments own_updateP {_ _} [_] _ _ _ _.
-Global Arguments own_update {_ _} [_] _ _ _ _.
-Global Arguments own_update_2 {_ _} [_] _ _ _ _ _.
-Global Arguments own_update_3 {_ _} [_] _ _ _ _ _ _.
+Global Arguments own_valid {_ _} [_] {_ _} _ _.
+Global Arguments own_valid_2 {_ _} [_] {_ _} _ _ _.
+Global Arguments own_valid_3 {_ _} [_] {_ _} _ _ _ _.
+Global Arguments own_valid_l {_ _} [_] {_ _} _ _.
+Global Arguments own_valid_r {_ _} [_] {_ _} _ _.
+Global Arguments own_updateP {_ _} [_] {_ _} _ _ _ _.
+Global Arguments own_update {_ _} [_] {_ _} _ _ _ _.
+Global Arguments own_update_2 {_ _} [_] {_ _} _ _ _ _ _.
+Global Arguments own_update_3 {_ _} [_] {_ _} _ _ _ _ _ _.
 
 (* Lemma own_unit A `{i : !inG Σ (A:ucmra)} γ : ⊢ |==> own γ (ε:A). *)
 (* Proof. *)

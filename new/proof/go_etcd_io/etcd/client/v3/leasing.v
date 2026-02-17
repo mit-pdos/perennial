@@ -63,8 +63,6 @@ Context `{leasingG Σ}.
 #[global] Instance : IsPkgInit leasing := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf leasing := build_get_is_pkg_init_wf.
 
-Context `{!syncG Σ}.
-
 (* TODO: move this somewhere else *)
 Context `{!ghost_mapG Σ nat ()}.
 Lemma trivial_WaitGroup_start_done N' wg_ptr γ (N : namespace) ctr :
@@ -477,7 +475,7 @@ Proof.
   iSplit.
   {
     repeat iExists _.
-    iApply (closeable_chan_receive (closeable_chanG0:=clientv3_contextG.(closeable_inG))
+    iApply (closeable_chan_receive
              with "[$HDone_ch_lkv]"). (* FIXME: multiple [inG]s *)
     iIntros "[_ #Hclosed]". wp_auto. wp_apply ("HErr_lkv" with "[$Hclosed]").
     iIntros "* %Herr". wp_auto. iApply "HΦ".
@@ -485,7 +483,7 @@ Proof.
   }
   {
     repeat iExists _.
-    iApply (closeable_chan_receive (closeable_chanG0:=clientv3_contextG.(closeable_inG))
+    iApply (closeable_chan_receive
              with "[$HDone_ch]"). (* FIXME: multiple [inG]s *)
     iIntros "[_ #Hclosed]". wp_auto. wp_apply ("HErr" with "[$Hclosed]").
     iIntros "* %Herr". wp_auto. iApply "HΦ".

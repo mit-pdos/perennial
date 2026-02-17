@@ -5,7 +5,6 @@ From New.golang.theory Require Import chan.
 From iris.algebra Require Import gmultiset big_op.
 From iris.algebra Require Export csum.
 From stdpp Require Export sets gmultiset countable.
-From Perennial.algebra Require Import ghost_var.
 
 (** * Multiple Producer Multiple Consumer (MPMC) Channel Verification
 
@@ -24,7 +23,7 @@ From Perennial.algebra Require Import ghost_var.
 Section mpmc.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics}.
-Context `{!chan_idiomG Σ V}.
+
 Context `[!ZeroVal V] `[!TypedPointsto V] `[!IntoValTyped V t].
 Context `[!EqDecision V] `[!Countable V].
 Context `{!contributionG Σ (gmultisetR V)}.
@@ -179,7 +178,7 @@ Proof.
 Qed.
 
 Definition is_closed (γ:mpmc_names) : iProp Σ :=
-  ghost_var γ.(mpmc_closed_name) DfracDiscarded true.
+  dghost_var γ.(mpmc_closed_name) DfracDiscarded true.
 
 Global Instance is_closed_persistent γ : Persistent (is_closed γ) := _.
 
@@ -209,8 +208,8 @@ Definition is_mpmc (γ:mpmc_names) (ch:loc) (n_prod n_cons:nat)
         "%Hncons" ∷ ⌜n_cons > 0⌝ ∗
         "%Hnprod" ∷ ⌜n_prod > 0⌝ ∗
         "Hclosed" ∷ (match s with
-                     | chanstate.Closed [] => ghost_var γ.(mpmc_closed_name) DfracDiscarded true
-                     | _ => ghost_var γ.(mpmc_closed_name) (DfracOwn 1) false
+                     | chanstate.Closed [] => dghost_var γ.(mpmc_closed_name) DfracDiscarded true
+                     | _ => dghost_var γ.(mpmc_closed_name) (DfracOwn 1) false
                      end) ∗
         (match s with
         | chanstate.Buffered buff => "Hbuff" ∷ [∗ list] v ∈ buff, P v
@@ -253,7 +252,7 @@ Lemma start_mpmc ch (P : V → iProp Σ) (R : gmultiset V → iProp Σ) γ (n_pr
 Proof.
   intros Hs Hprod Hcons.
   iIntros "#Hch Hoc".
-  iMod (ghost_var_alloc false) as (γclosed) "Hclosed".
+  iMod (dghost_var_alloc false) as (γclosed) "Hclosed".
   iMod (contribution_init_pow n_prod (A := gmultisetR V)) as (γsent) "[HsentAuth HsentFrags]".
   iMod (contribution_init_pow n_cons (A := gmultisetR V)) as (γrecv) "[HrecvAuth HrecvFrags]".
   set (γmpmc := {| mpmc_chan_name := γ;
@@ -272,8 +271,8 @@ Proof.
         "%Hncons" ∷ ⌜n_cons > 0⌝ ∗
         "%Hnprod" ∷ ⌜n_prod > 0⌝ ∗
         "Hclosed" ∷ (match s with
-                     | chanstate.Closed [] => ghost_var γclosed DfracDiscarded true
-                     | _ => ghost_var γclosed (DfracOwn 1) false
+                     | chanstate.Closed [] => dghost_var γclosed DfracDiscarded true
+                     | _ => dghost_var γclosed (DfracOwn 1) false
                      end) ∗
         (match s with
         | chanstate.Buffered buff => "Hbuff" ∷ [∗ list] v ∈ buff, P v
@@ -324,8 +323,8 @@ Proof.
         "%Hncons" ∷ ⌜n_cons > 0⌝ ∗
         "%Hnprod" ∷ ⌜n_prod > 0⌝ ∗
         "Hclosed" ∷ (match s with
-                     | chanstate.Closed [] => ghost_var γclosed DfracDiscarded true
-                     | _ => ghost_var γclosed (DfracOwn 1) false
+                     | chanstate.Closed [] => dghost_var γclosed DfracDiscarded true
+                     | _ => dghost_var γclosed (DfracOwn 1) false
                      end) ∗
         (match s with
         | chanstate.Buffered buff => "Hbuff" ∷ [∗ list] v ∈ buff, P v
@@ -742,8 +741,8 @@ Proof.
         iDestruct (big_sepL_cons with "Hrest") as "[HPv Hrest2]".
         destruct rest.
         {
-          iMod (ghost_var_update true with "Hclosed") as "Hclosed".
-          iMod (ghost_var_persist with "Hclosed") as "#Hclosed'".
+          iMod (dghost_var_update true with "Hclosed") as "Hclosed".
+          iMod (dghost_var_persist with "Hclosed") as "#Hclosed'".
           iMod ("Hinv_close" with "[HsentI HrecvI_new Hoc HR Hmp]") as "_".
           {
             iNext.
@@ -823,12 +822,13 @@ Proof.
     iMod "Hmask".
     iFrame.
     destruct buff as [|v rest].
-    + iMod (ghost_var_update true with "Hclosed") as "Hclosed".
-      iMod (ghost_var_persist with "Hclosed") as "#Hclosed'".
+    + iMod (dghost_var_update true with "Hclosed") as "Hclosed".
+      iMod (dghost_var_persist with "Hclosed") as "#Hclosed'".
       assert (inflight_mset (chanstate.Buffered []) = ∅) as Hempty.
       { simpl. reflexivity. }
       rewrite Hempty in Hrel.
-      rewrite right_id in Hrel.
+      symmetry in Hrel.
+      rewrite (right_id (R:=eq)) in Hrel.
       unfold mpmc_producer.
       subst n_prod.
       iMod (auth_map_agree γ.(mpmc_sent_name) sent producers with "[$HsentI] [$Hprods]") as "(%Hsent_eq & HsentI & Hprods)".
@@ -839,7 +839,7 @@ Proof.
         iFrame. iFrame "#".
         simpl.
         iFrame "%".
-        rewrite right_id.
+        rewrite (right_id (R:=eq)).
         iSplitL ""; first done.
         unfold inflight_mset in Hrel.
         simpl in Hrel.
@@ -863,8 +863,8 @@ Proof.
       done.
   - iApply fupd_mask_intro; [solve_ndisj|]. iIntros "Hmask". iNext.
     iFrame. iIntros "Hoc".
-    iMod (ghost_var_update true with "Hclosed") as "Hclosed".
-    iMod (ghost_var_persist with "Hclosed") as "#Hclosed'".
+    iMod (dghost_var_update true with "Hclosed") as "Hclosed".
+    iMod (dghost_var_persist with "Hclosed") as "#Hclosed'".
     iMod "Hmask".
     unfold mpmc_producer.
     subst n_prod.
@@ -982,7 +982,7 @@ Proof.
   iDestruct "Hclosed" as "#Hclosed1".
   iNamed "Hinv_open".
   unfold is_closed.
-  destruct s; try (iExFalso;(iDestruct (ghost_var_agree with "Hclosed1 Hclosed") as %Hbad);done).
+  destruct s; try (iExFalso;(iDestruct (dghost_var_agree with "Hclosed1 Hclosed") as %Hbad);done).
   destruct drain.
   - iNamed "Hinv_open".
     iDestruct "HR_or_clients" as "[HR | Hconss]".
@@ -1015,7 +1015,7 @@ Proof.
       lia.
   - iNamed "Hinv_open".
     unfold is_mpmc.
-    iDestruct (ghost_var_agree with "Hclosed1 Hclosed") as %Hclosed_eq.
+    iDestruct (dghost_var_agree with "Hclosed1 Hclosed") as %Hclosed_eq.
     done.
 Qed.
 

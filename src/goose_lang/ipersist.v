@@ -1,7 +1,7 @@
 From iris.proofmode Require Import coq_tactics reduction intro_patterns.
 From Perennial.Helpers Require Export ipm.
 From Perennial.iris_lib Require Import dfractional.
-From Perennial.program_logic Require Export weakestpre.
+From iris.algebra Require Import dfrac.
 Set Default Proof Using "Type".
 
 Class UpdateIntoPersistently `{!BiBUpd PROP} (P Q : PROP) :=

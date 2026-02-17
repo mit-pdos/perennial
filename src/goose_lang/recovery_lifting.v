@@ -13,12 +13,12 @@ Context `{!ffi_interp ffi}.
 (* FIXME: to be useful with new goose, this will require the package.Assumptions
    to be threaded through. E.g. [idempotence_wpr] will need to have
    package.Assumptions as precondition in the restart case. *)
-Definition wpr {go_goctx : GoGlobalContext} `{hG: !gooseGlobalGS Σ, hL: !gooseLocalGS Σ} (s: stuckness) (E: coPset)
+Definition wpr {go_goctx : GoGlobalContext} `{!all.allG Σ} `{hG: !gooseGlobalGS Σ, hL: !gooseLocalGS Σ} (s: stuckness) (E: coPset)
   (e: expr) (recv: expr) (Φ: val → iProp Σ) (Φinv: heapGS Σ → iProp Σ) (Φr: heapGS Σ → val → iProp Σ) :=
   wpr goose_crash_lang s _ E e recv
-              Φ
-              (λ hGen, ∃ hL:gooseLocalGS Σ, ⌜hGen = goose_generationGS (L:=hL)⌝ ∗ Φinv (HeapGS _ _ hL _))%I
-              (λ hGen v, ∃ hL:gooseLocalGS Σ, ⌜hGen = goose_generationGS (L:=hL)⌝ ∗ Φr (HeapGS _ _ hL _) v)%I.
+    Φ
+    (λ hGen, ∃ hL:gooseLocalGS Σ, ⌜hGen = goose_generationGS (L:=hL)⌝ ∗ Φinv (HeapGS _ _ _ hL _))%I
+    (λ hGen v, ∃ hL:gooseLocalGS Σ, ⌜hGen = goose_generationGS (L:=hL)⌝ ∗ Φr (HeapGS _ _ _ hL _) v)%I.
 
 Section wpr.
 Context `{hG: !heapGS Σ}.
@@ -63,7 +63,7 @@ Lemma idempotence_wpr `{!ffi_interp_adequacy} s E1 e rec Φx
   ⊢ WPC e @ s ; E1 {{ Φx }} {{ Φcx _ }} -∗
    (□ ∀ (hL': gooseLocalGS Σ) σ σ'
         (HC: goose_crash σ σ'),
-        let hG' := HeapGS _ _ hL' _ in (* sadly this let-binding is lost for users of this lemma, but they should really have it in scope to use the right instances of everything. *)
+        let hG' := HeapGS _ _ _ hL' _ in (* sadly this let-binding is lost for users of this lemma, but they should really have it in scope to use the right instances of everything. *)
         Φcx hG' -∗ ▷ post_crash (hG := hG') (λ hG'', let hL'' := goose_localGS (heapGS:=hG'') in
         ffi_restart (goose_ffiLocalGS (hL:=hL'')) σ'.(world) -∗
         (Φinv hG'' ∧ WPC rec @ s ; E1 {{ Φrx hG'' }} {{ Φcx hG'' }}))) -∗
@@ -72,7 +72,7 @@ Proof.
   iIntros "Hwpc #Hidemp".
   iApply (idempotence_wpr goose_crash_lang s E1 e rec _ _ _
                           (λ hGen, ∃ hL:gooseLocalGS Σ, ⌜hGen = goose_generationGS (L:=hL)⌝ ∗
-                                   Φcx (HeapGS _ _ hL _))%I
+                                   Φcx (HeapGS _ _ _ hL _))%I
                                                     with "[Hwpc] [Hidemp]"); first auto.
   { iApply (wpc_crash_mono with "[] Hwpc").
     iIntros "HΦcx". iExists _. destruct hG. by iFrame. }

@@ -1,18 +1,11 @@
 (* TODO: there should be a directory for this Go package. *)
 
-From New.proof Require Export proof_prelude.
 From New.golang.theory Require Import chan.
 From New.proof.github_com.goose_lang.goose.model.channel
   Require Import chan_au_base idiom.base.
 From New.proof Require Import sync strings time.
 From New.generatedproof.github_com.goose_lang.goose.testdata.examples Require Import channel.
-From iris.base_logic.lib Require Import token.
-
-Class locked_stackG Σ :=
-  {
-    #[local] ls_var_inG :: ghost_varG Σ (list go_string);
-    #[local] syncG :: syncG Σ;
-  }.
+From New.proof Require Export proof_prelude.
 
 Section locked_stack_proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
@@ -22,8 +15,6 @@ Local Set Default Proof Using "All".
 (* FIXME: duplication *)
 #[global] Instance : IsPkgInit (iProp Σ) chan_spec_raw_examples := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf (iProp Σ) chan_spec_raw_examples := build_get_is_pkg_init_wf.
-
-Context `{!locked_stackG Σ}.
 
 Definition own_LockedStack γ (σ : list go_string) : iProp Σ :=
   ghost_var γ (1/2) σ.
@@ -147,18 +138,6 @@ Record EliminationStack_names :=
     ch_gn : chan_names;
     s_gn : gname;
     r_gn : gname;
-  }.
-
-Class elimination_stackG {ext : ffi_syntax} Σ :=
-  {
-    #[local] es_ls_inG :: locked_stackG Σ;
-    #[local] es_var_inG :: ghost_varG Σ (list go_string);
-    #[local] es_chan_inG :: chanG Σ go_string;
-    #[local] es_afterChan_inG :: chanG Σ unit;
-    #[local] es_time_inG :: chan_idiomG Σ time.Time.t;
-    #[local] es_token_pointer_inG :: ghost_varG Σ gname;
-    #[local] es_send_token_inG :: tokenG Σ;
-    #[local] es_reply_token_inG :: ghost_varG Σ go_string;
   }.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.

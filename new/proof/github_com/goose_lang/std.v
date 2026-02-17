@@ -6,16 +6,11 @@ From iris_named_props Require Import custom_syntax.
 
 Set Default Proof Using "Type".
 
-Class stdG Σ := {
-    #[local] std_syncG :: syncG Σ;
-  }.
-
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics} {package_sem : std.Assumptions}.
 Collection W := sem + package_sem.
 Set Default Proof Using "W".
-Context `{!stdG Σ}.
 
 #[global] Instance : IsPkgInit (iProp Σ) std := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf (iProp Σ) std := build_get_is_pkg_init_wf.

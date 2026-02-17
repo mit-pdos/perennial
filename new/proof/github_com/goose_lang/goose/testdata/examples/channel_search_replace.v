@@ -9,8 +9,6 @@ Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics} {package_sem : chan_spec_raw_examples.Assumptions}.
 Local Set Default Proof Using "All".
-Context `{!chan_idiomG Σ slice.t}.
-Context `{!syncG Σ}.
 
 #[global] Instance : IsPkgInit (iProp Σ) chan_spec_raw_examples := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf (iProp Σ) chan_spec_raw_examples := build_get_is_pkg_init_wf.

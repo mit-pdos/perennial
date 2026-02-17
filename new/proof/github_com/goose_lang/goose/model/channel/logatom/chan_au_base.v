@@ -1,8 +1,6 @@
 From New.proof.github_com.goose_lang.goose.model.channel Require Import chan_init.
 From New.proof Require Import proof_prelude.
 From New.golang.theory Require Import lock.
-From iris.base_logic.lib Require Import saved_prop.
-From iris.algebra Require Import auth gset.
 Require Export New.code.github_com.goose_lang.goose.model.channel.
 From New.generatedproof.github_com.goose_lang.goose Require Import model.channel.
 
@@ -74,29 +72,12 @@ Record chan_names := {
   chan_cap : w64;                        (* The channel capacity *)
 }.
 
-Class chanG Σ V := ChanG {
-  offerG :: ghost_varG Σ (chanstate.t V);
-  offer_lockG :: ghost_varG Σ (option (offer_lock V));
-  offer_parked_propG :: savedPropG Σ;
-  offer_parked_predG :: savedPredG Σ (V * bool);
-}.
-Global Hint Mode chanG - + : typeclass_instances.
-Local Hint Mode chanG - - : typeclass_instances.
-
-Definition chanΣ V : gFunctors :=
-  #[ ghost_varΣ (chanstate.t V); ghost_varΣ (option (offer_lock V));
-     savedPropΣ; savedPredΣ  (V * bool) ].
-
-#[global] Instance subG_chanG Σ V :
-  subG (chanΣ V) Σ → chanG Σ V.
-Proof. solve_inG. Qed.
-
 Section au_defns.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}
   {sem : go.ChanSemantics}.
 
-Context (ch : loc) (γ : chan_names) (V : Type) (v : V) `{!chanG Σ V}.
+Context (ch : loc) (γ : chan_names) (V : Type) (v : V).
 Context `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}.
 
 Definition chanstate (q : Qp) (s : chanstate.t V) : iProp Σ :=
@@ -317,10 +298,10 @@ Definition close_au (Φ : iProp Σ) : iProp Σ :=
 
 End au_defns.
 
-Global Arguments own_chan {_} (γ V) {_} (s).
-Global Arguments send_au {_ _ _ _ _ _} (γ) {V} (v) {_} (Φ).
-Global Arguments nonblocking_send_au {_ _ _ _ _ _} (γ) {V} (v) {_} (Φ).
-Global Arguments nonblocking_send_au_alt {_ _ _ _ _ _} (γ) {V} (v) {_} (Φ).
+Global Arguments own_chan {_ _ _ _ _} (γ V) (s).
+Global Arguments send_au {_ _ _ _ _ _} (γ) {V} (v) (Φ).
+Global Arguments nonblocking_send_au {_ _ _ _ _ _} (γ) {V} (v) (Φ).
+Global Arguments nonblocking_send_au_alt {_ _ _ _ _ _} (γ) {V} (v) (Φ).
 Global Arguments chan_cap_valid {_} (s cap).
 
 Section defns.
@@ -328,7 +309,7 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}
   {sem : go.ChanSemantics}.
 
-Context (ch : loc) (γ : chan_names) (V : Type) `{!chanG Σ V}.
+Context (ch : loc) (γ : chan_names) (V : Type).
 Context `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}.
 
 (** Maps physical channel states to their heap representations.
@@ -482,7 +463,7 @@ Proof.
   destruct s; try done.
 Qed.
 
-Lemma blocking_send_implies_nonblocking (Φ : iProp Σ) v :
+Lemma blocking_send_implies_nonblocking (Φ : iProp Σ) (v : V) :
   send_au γ v Φ -∗
   nonblocking_send_au γ v Φ True.
 Proof.
@@ -521,10 +502,6 @@ Proof.
   iCombine "Hoffer Hoffer2" as "Hoffer".
   iMod (ghost_var_update None with "Hlock") as "Hlock".
   iModIntro. iFrame.
-  unfold saved_prop_own.
-  rewrite dfrac_op_own.
-  rewrite Qp.half_half.
-  iFrame.
 Qed.
 
 Lemma offer_idle_to_recv parked_prop cont:
@@ -598,9 +575,6 @@ Proof.
   (* Combine the updated halves to get full ownership *)
   iCombine "Hp1 Hp2" as "Hparked".
   iCombine "Hc1 Hc2" as "Hcont".
-
-  (* Simplify the combined fractions *)
-  rewrite dfrac_op_own Qp.half_half.
 
   iFrame.
   auto.

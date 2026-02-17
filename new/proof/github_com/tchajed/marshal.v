@@ -13,7 +13,6 @@ From New.generatedproof.github_com.tchajed Require Import marshal.
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics} {package_sem : marshal.Assumptions}.
-Context `{!stdG Σ}.
 Local Set Default Proof Using "All".
 
 #[global] Instance : IsPkgInit (iProp Σ) marshal := define_is_pkg_init True%I.

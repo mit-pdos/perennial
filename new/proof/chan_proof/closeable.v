@@ -1,15 +1,10 @@
 From iris.algebra.lib Require Import dfrac_agree.
-Require Import New.proof.proof_prelude.
 Require Import New.golang.theory.
+Require Import New.proof.proof_prelude.
 
 (** A pattern for channel usage: a channel that never has anything sent, and is
     only closed at some point. Closing transfers a persistent proposition to
     readers. *)
-Class closeable_chanG Σ :=
-  {
-    #[local] chanG :: chanG Σ ();
-    #[local] close_tok_inG :: inG Σ (dfrac_agreeR boolO);
-  }.
 
 Record closeable_internal_names :=
   { closed_gn : gname }.
@@ -22,7 +17,6 @@ Import closeable.
 Section proof.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _} `{!go.Semantics}.
-Context `{!closeable_chanG Σ}.
 
 (* Note: could make the namespace be user-chosen *)
 #[local] Definition is_closeable_chan_internal (ch : chan.t) γ γch (Pclose : iProp Σ) : iProp Σ :=
@@ -139,7 +133,7 @@ Proof.
   iNext. iNamed "Hi". iFrame. destruct st; try done.
   - iIntros "Hch". iMod "Hmask" as "_".
     iCombine "Hown Hs" as "Hown". rewrite -dfrac_agree_op dfrac_op_own Qp.half_half.
-    iMod (own_update _ _ (to_dfrac_agree DfracDiscarded true) with "Hown") as "#H".
+    iMod (own_update  _ (to_dfrac_agree DfracDiscarded true) with "Hown") as "#H".
     { apply cmra_update_exclusive. done. }
     iSpecialize ("HΦ" with "[$]"). iFrame.
     iMod ("Hclose" with "[-]"); last done. iFrame "∗#%".

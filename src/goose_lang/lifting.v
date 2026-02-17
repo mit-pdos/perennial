@@ -12,6 +12,7 @@ From Perennial.base_logic Require Export proph_map frac_coPset.
 From Perennial.algebra Require Export na_heap.
 From Perennial.goose_lang Require Export lang.
 From Perennial Require Import base.
+From New.ghost Require all.
 Set Default Proof Using "Type".
 
 Notation nonAtomic T := (naMode * T)%type.
@@ -411,6 +412,7 @@ Class gooseLocalGS Σ := GooseLocalGS {
    TODO: rename to gooseGS, or remove. *)
 Local Set Primitive Projections.
 Class heapGS Σ := HeapGS {
+  #[global] goose_ghostGS :: all.allG Σ;
   goose_globalGS : gooseGlobalGS Σ;
   goose_localGS : gooseLocalGS Σ;
   #[global] goose_gctx :: GoGlobalContext;

@@ -1,5 +1,5 @@
 (* Slightly modified version https://gitlab.mpi-sws.org/iris/iris/-/blob/849f50f421114ad1b8caf0cd1b66aff338e4abfa/iris/base_logic/lib/ghost_var.v *)
-From New.experiments Require Export own.
+From New.ghost Require Export own.
 
 (** A simple "ghost variable" of arbitrary type with fractional ownership.
 Can be mutated when fully owned. *)

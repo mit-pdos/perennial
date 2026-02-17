@@ -14,7 +14,6 @@ Context {sem_fn : GoSemanticsFunctions} {pre_sem : go.PreSemantics}
   {sem : go.ChanSemantics}.
 Collection Wp := sem_fn + pre_sem + sem.
 
-Context `[!chanG Σ V].
 Context `[!ZeroVal V] `[!TypedPointsto V] `[!IntoValTyped V t].
 Collection W := Wp + IntoValTyped0.
 

@@ -11,7 +11,7 @@ Existing Instances grove_op grove_model.
 Existing Instances grove_semantics grove_interp.
 Existing Instances goose_groveGS goose_groveNodeGS.
 Theorem grove_ffi_dist_adequacy Σ {go_gctx : GoGlobalContext}
-  `{hPre: !gooseGpreS Σ} ebσs g (φinv : _ → Prop) :
+  {hGhost: all.allG Σ} `{hPre: !gooseGpreS Σ} ebσs g (φinv : _ → Prop) :
   (∀ HG : gooseGlobalGS Σ,
       ⊢@{iPropI Σ}
         ([∗ map] e↦ms ∈ g.(global_world).(grove_net), e c↦ ms) ={⊤}=∗
@@ -34,7 +34,8 @@ Proof.
   { eauto. }
 Qed.
 
-Theorem grove_ffi_dist_adequacy_failstop Σ {go_gctx : GoGlobalContext} `{hPre: !gooseGpreS Σ}
+Theorem grove_ffi_dist_adequacy_failstop Σ {go_gctx : GoGlobalContext}
+  {hGhost: all.allG Σ} `{hPre: !gooseGpreS Σ}
   (ebσs : list (goose_lang.expr * state)) g (φinv : _ → Prop) :
   (∀ HG : gooseGlobalGS Σ,
       ⊢@{iPropI Σ}
@@ -58,7 +59,7 @@ Proof.
 Qed.
 
 Theorem grove_ffi_single_node_adequacy_failstop Σ {go_gctx : GoGlobalContext}
-  `{hPre: !gooseGpreS Σ} e σ g φ :
+  {hGhost: all.allG Σ} `{hPre: !gooseGpreS Σ} e σ g φ :
   (∀ (Hl : gooseLocalGS Σ) (Hg : gooseGlobalGS Σ),
     ⊢ ([∗ map] e↦ms ∈ g.(global_world).(grove_net), e c↦ ms) -∗
       ([∗ map] f ↦ c ∈ σ.(world).(grove_node_files), f f↦ c)

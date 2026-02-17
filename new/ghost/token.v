@@ -1,5 +1,5 @@
 (* Slightly modified version https://gitlab.mpi-sws.org/iris/iris/-/blob/849f50f421114ad1b8caf0cd1b66aff338e4abfa/iris/base_logic/lib/token.v *)
-From New.experiments Require Export own.
+From New.ghost Require Export own.
 
 (** This library provides assertions that represent "unique tokens".
 The [token γ] assertion provides ownership of the token named [γ],

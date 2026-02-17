@@ -1,6 +1,5 @@
 From New.proof.sync_proof Require Import base.
 From New.proof.sync_proof Require rwmutex.
-Local Existing Instances tokG wg_totalG rw_ghost_varG rw_ghost_wlG rw_ghost_rwmutexG  wg_auth_inG.
 
 (** A specification for RWMutex which guards a fractional resource [P q].
     [RLock] returns [P rfrac] while [Lock] returns [P 1]. *)
@@ -8,7 +7,6 @@ Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics} {package_sem : sync.Assumptions}.
 Local Set Default Proof Using "All".
-Context `{!syncG Σ}.
 
 Definition rfrac_def : Qp := / pos_to_Qp (Z.to_pos (rwmutex.actualMaxReaders + 1)).
 Program Definition rfrac := sealed @rfrac_def.

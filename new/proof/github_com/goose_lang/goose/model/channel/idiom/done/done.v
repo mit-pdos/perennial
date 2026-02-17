@@ -1,8 +1,6 @@
 Require Import New.proof.proof_prelude.
-From New.proof.github_com.goose_lang.goose.model.channel.idiom Require Export base.
 From New.golang.theory Require Import chan.
-From iris.base_logic Require Import ghost_map.
-From iris.base_logic.lib Require Import saved_prop.
+From New.proof.github_com.goose_lang.goose.model.channel.idiom Require Export base.
 
 (** * Done Channel Pattern Verification
 
@@ -20,7 +18,6 @@ From iris.base_logic.lib Require Import saved_prop.
 Section done.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics}.
-Context `[!chan_idiomG Σ V].
 
 Context `[!ZeroVal V] `[!TypedPointsto V] `[!IntoValTyped V t].
 
@@ -44,7 +41,7 @@ Definition Notify (γ : done_names) (R : iProp Σ) : iProp Σ :=
 ∗ (R -∗ [∗ list] Q ∈ Qs, Q) .
 
 Definition Notified (γ : done_names) (Q : iProp Σ) : iProp Σ :=
-  ∃ prop_gname i,
+  ∃ prop_gname (i : nat),
     i ↪[γ.(receivers_map_name)]{#1/2} prop_gname ∗
     saved_prop_own prop_gname (DfracOwn (1/2)) Q.
 
@@ -108,7 +105,7 @@ with "[HQs Hfrag1 Hprop1]" as "HQs_ext".
   - (* keep the old part as-is *)
     rewrite big_sepL_singleton.
     iFrame.
-    replace (length Qs + 0) with (length Qs) by done.
+    replace (length Qs + 0)%nat with (length Qs) by done.
     iFrame.
 
 }
@@ -130,7 +127,7 @@ iMod (saved_prop_update (R ∗ Q) with "Hsp") as "Hsp".
         - rewrite lookup_insert_ne; last done.
           apply H. lia.
       }
-      replace (length Qs + 0) with (length Qs) by lia.
+      replace (length Qs + 0)%nat with (length Qs) by lia.
       iIntros "[HR' HQ]".
       iFrame. simpl. iSplitL "HR' HRQs".
       {
@@ -148,7 +145,7 @@ iMod (saved_prop_update (R ∗ Q) with "Hsp") as "Hsp".
     }
     {
       iModIntro. iFrame.
-      replace (length Qs + 0) with (length Qs) by lia.
+      replace (length Qs + 0)%nat with (length Qs) by lia.
       iFrame.
       iSplitL "". { iPureIntro.
  intros.
@@ -376,11 +373,11 @@ Proof.
         iDestruct (ghost_map_lookup with "Hmap Hn1") as %Hlookup.
         have Hi_lt : i < length Qs0.
         {
-          destruct (lt_dec i (length Qs0)) as [H|Hge]; [exact H|].
+          destruct (decide (i < length Qs0)) as [H|Hge]; [exact H|].
           have Hge' : i ≥ length Qs0 by lia.
           rewrite (Hbound i Hge') in Hlookup. discriminate.
         }
-        destruct (lookup_lt_is_Some_2 Qs0 i Hi_lt) as [x Hx].
+        destruct (lookup_lt_is_Some_2 Qs0 i ltac:(lia)) as [x Hx].
         iDestruct (big_sepL_lookup_acc _ _ i x Hx with "Hrecv") as "[H H2]".
         iNamed "H". iDestruct "H" as "[H3 H4]".
         iDestruct (ghost_map_elem_agree with "Hn1 H3") as %Heq.
@@ -391,8 +388,9 @@ Proof.
           iMod (lc_fupd_elim_later with "[$] HQQi") as "#Hp_eq2".
           iMod ("Hinv_close" with "[Hoc H2 Hmap Hgm H3 Hn2 Hprop_half]") as "Hc".
           {
-            iCombine "Hprop_half" "Hn2" as "H". iModIntro. iExists (chanstate.Closed []). iFrame. iExists Qs0. iSplitL ""; first done. iFrame. iApply "H2".
-            iFrame. iRight. unfold saved_prop_own. iFrame.
+            iCombine "Hprop_half" "Hn2" as "H".
+            iModIntro. iExists (chanstate.Closed []). iFrame. iExists Qs0. iSplitL ""; first done. iFrame. iApply "H2".
+            iFrame. iRight.
             replace (DfracOwn (1 / 2) ⋅ DfracOwn (1 / 2)) with (DfracOwn 1) by (rewrite dfrac_op_own; rewrite Qp.half_half; done).
             done.
           }
@@ -425,11 +423,11 @@ Proof.
       iDestruct (ghost_map_lookup with "Hmap Hn1") as %Hlookup.
       have Hi_lt : i < length Qs.
       {
-        destruct (lt_dec i (length Qs)) as [H|Hge]; [exact H|].
+        destruct (decide (i < length Qs)) as [H|Hge]; [exact H|].
         have Hge' : i ≥ length Qs by lia.
         rewrite (Hbound i Hge') in Hlookup. discriminate.
       }
-      destruct (lookup_lt_is_Some_2 Qs i Hi_lt) as [x Hx].
+      destruct (lookup_lt_is_Some_2 Qs i ltac:(lia)) as [x Hx].
       iDestruct (big_sepL_lookup_acc _ _ i x Hx with "Hrecv") as "[H H2]".
       iNamed "H". iDestruct "H" as "[H3 H4]".
       iDestruct (ghost_map_elem_agree with "Hn1 H3") as %Heq.

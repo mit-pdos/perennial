@@ -1,5 +1,5 @@
 (* Based on https://gitlab.mpi-sws.org/iris/iris/-/blob/849f50f421114ad1b8caf0cd1b66aff338e4abfa/iris/base_logic/lib/saved_prop.v *)
-From New.experiments Require Export own.
+From New.ghost Require Export own.
 
 (* From stdpp Require Import gmap. *)
 (* From iris.algebra Require Import dfrac_agree. *)
@@ -13,6 +13,7 @@ Section saved_prop.
   Context `{!allG Σ}.
   Definition saved_prop_own (γ : gname) (dq : dfrac) (P : iProp Σ) :=
     own γ (to_dfrac_agree dq (Next P)).
+  Global Typeclasses Opaque saved_prop_own.
 
   Implicit Types (γ : gname) (dq : dfrac).
 
@@ -64,6 +65,18 @@ Section saved_prop.
   Lemma saved_prop_agree γ dq1 dq2 P Q :
     saved_prop_own γ dq1 P -∗ saved_prop_own γ dq2 Q -∗ ▷ (P ≡ Q).
   Proof. iIntros "Hx Hy". iPoseProof (saved_prop_valid_2 with "Hx Hy") as "[_ $]". Qed.
+
+  Global Instance saved_prop_combine_as γ dq1 dq2 P Q :
+    CombineSepAs (saved_prop_own γ dq1 P) (saved_prop_own γ dq2 Q)
+      (saved_prop_own γ (dq1 ⋅ dq2) P).
+  (* higher cost than the Fractional instance, which kicks in for #qs *)
+  Proof.
+    rewrite /CombineSepAs. iIntros "[Hx Hy]".
+    unfold saved_prop_own.
+    iCombine "Hx Hy" gives "H". rewrite dfrac_agree_validI_2.
+    iDestruct "H" as "[_ Heq]". iRewrite -"Heq" in "Hy".
+    iCombine "Hx Hy" as "H". rewrite dfrac_agree_op. iFrame.
+  Qed.
 
   Global Instance saved_prop_combine_gives γ dq1 dq2 P Q :
     CombineSepGives (saved_prop_own γ dq1 P) (saved_prop_own γ dq2 Q)
@@ -117,6 +130,8 @@ Section saved_pred.
   Context `{!allG Σ} {A : Type}.
   Definition saved_pred_own (γ : gname) (dq : dfrac) (Φ : A → iProp Σ) :=
     own γ (to_dfrac_agree dq (Next ∘ Φ : oFunctor_apply (A -d> ▶ ∙) (iPropO Σ))).
+
+  Global Typeclasses Opaque saved_prop_own.
 
   Global Instance saved_pred_discarded_persistent γ Φ :
     Persistent (saved_pred_own γ DfracDiscarded Φ).

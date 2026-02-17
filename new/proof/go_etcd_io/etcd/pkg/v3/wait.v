@@ -4,15 +4,9 @@ From New.proof Require Import log sync.
 From New.proof.github_com.goose_lang.goose.model.channel
   Require Import logatom.chan_au_base idiom.handoff.handoff.
 
-Class waitG `{ffi_syntax} Σ :=
-  {
-    #[local] wait_chanG :: chanG Σ any.t;
-  }.
-
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics} {package_sem : wait.Assumptions}.
-Context `{!waitG Σ}.
 Local Set Default Proof Using "All".
 
 #[global] Instance : IsPkgInit (iProp Σ) wait := define_is_pkg_init True%I.

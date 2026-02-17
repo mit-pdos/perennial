@@ -5,7 +5,7 @@ From New.golang.theory Require Import chan.
 Section handshake.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics}.
-Context `[!chan_idiomG Σ V].
+
 Context `[!ZeroVal V] `[!TypedPointsto V] `[!IntoValTyped V t].
 Collection W := sem + IntoValTyped0.
 
