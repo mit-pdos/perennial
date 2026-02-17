@@ -46,11 +46,17 @@ Definition switchConcrete {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.ty
 
 Definition switchInterface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.switchInterface"%go [].
 
+Definition DefinedStr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.DefinedStr"%go [].
+
+Definition List {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.List"%go [T].
+
 Definition Log {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.Log"%go [].
 
 Definition AdderType {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.FunctionType (go.Signature [go.uint64] false [go.uint64]).
 
 Definition MultipleArgsType {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.FunctionType (go.Signature [go.uint64; go.bool] false [go.uint64]).
+
+Definition DefinedStr2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := DefinedStr.
 
 (* 10 is completely arbitrary *)
 Definition MaxTxnWrites {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #(W64 10).
@@ -123,9 +129,13 @@ Definition failing_testArgumentOrder {ext : ffi_syntax} {go_gctx : GoGlobalConte
 
 Definition testU64ToU32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testU64ToU32"%go.
 
+Definition testU32ToU64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testU32ToU64"%go.
+
 Definition testU32Len {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testU32Len"%go.
 
-Definition failing_testU32NewtypeLen {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.failing_testU32NewtypeLen"%go.
+Definition testU32NewtypeLen {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testU32NewtypeLen"%go.
+
+Definition testUint32Untyped {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testUint32Untyped"%go.
 
 Definition measureArea {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.measureArea"%go.
 
@@ -300,6 +310,14 @@ Definition testSwitchMultiple {ext : ffi_syntax} {go_gctx : GoGlobalContext} : g
 Definition testSwitchDefaultTrue {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testSwitchDefaultTrue"%go.
 
 Definition testSwitchConversion {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testSwitchConversion"%go.
+
+Definition TypesEqual {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.TypesEqual"%go.
+
+Definition testPrimitiveTypesEqual {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testPrimitiveTypesEqual"%go.
+
+Definition testDefinedStrTypesEqual {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testDefinedStrTypesEqual"%go.
+
+Definition testListTypesEqual {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testListTypesEqual"%go.
 
 Definition testPointerAssignment {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testPointerAssignment"%go.
 
@@ -925,6 +943,24 @@ Definition testU64ToU32ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
     return: (![go.bool] "ok")).
 
 (* go: int_conversions.go:12:6 *)
+Definition testU32ToU64ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: <>,
+    exception_do (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
+    let: "$r0" := #true in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "x" := (GoAlloc go.uint32 (GoZeroVal go.uint32 #())) in
+    let: "$r0" := #(W32 1230) in
+    do:  ("x" <-[go.uint32] "$r0");;;
+    let: "y" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
+    let: "$r0" := #(W64 1230) in
+    do:  ("y" <-[go.uint64] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((Convert go.uint32 go.uint64 (![go.uint32] "x")) =⟨go.uint64⟩ (![go.uint64] "y"))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    let: "$r0" := ((![go.bool] "ok") && ((Convert go.uint64 go.uint32 (![go.uint64] "y")) =⟨go.uint32⟩ (![go.uint32] "x"))) in
+    do:  ("ok" <-[go.bool] "$r0");;;
+    return: (![go.bool] "ok")).
+
+(* go: int_conversions.go:21:6 *)
 Definition testU32Lenⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "s" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
@@ -933,16 +969,22 @@ Definition testU32Lenⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
     return: ((Convert go.int go.uint32 (let: "$a0" := (![go.SliceType go.byte] "s") in
      (FuncResolve go.len [go.SliceType go.byte] #()) "$a0")) =⟨go.uint32⟩ #(W32 100))).
 
-(* https://github.com/goose-lang/goose/issues/14
-
-   go: int_conversions.go:20:6 *)
-Definition failing_testU32NewtypeLenⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+(* go: int_conversions.go:28:6 *)
+Definition testU32NewtypeLenⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "s" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) #(W64 20)) in
     do:  ("s" <-[go.SliceType go.byte] "$r0");;;
     return: ((Convert go.int Uint32 (let: "$a0" := (![go.SliceType go.byte] "s") in
      (FuncResolve go.len [go.SliceType go.byte] #()) "$a0")) =⟨go.uint32⟩ #(W32 20))).
+
+(* go: int_conversions.go:33:6 *)
+Definition testUint32Untypedⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: <>,
+    exception_do (let: "x" := (GoAlloc Uint32 (GoZeroVal Uint32 #())) in
+    let: "$r0" := #(W32 1230) in
+    do:  ("x" <-[Uint32] "$r0");;;
+    return: ((![Uint32] "x") =⟨go.uint32⟩ #(W32 1230))).
 
 (* go: interfaces.go:12:6 *)
 Definition measureAreaⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -2475,6 +2517,28 @@ Definition testSwitchConversionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
     else return: (#false));;;
     return: (#true)).
 
+(* go: type_equality.go:3:6 *)
+Definition TypesEqualⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T U : go.type) : val :=
+  λ: <>,
+    exception_do (let: "t" := (GoAlloc (go.PointerType T) (GoZeroVal (go.PointerType T) #())) in
+    let: "u" := (GoAlloc (go.PointerType U) (GoZeroVal (go.PointerType U) #())) in
+    return: ((Convert (go.PointerType T) go.any (![go.PointerType T] "t")) =⟨go.InterfaceType []⟩ (Convert (go.PointerType U) go.any (![go.PointerType U] "u")))).
+
+(* go: type_equality.go:9:6 *)
+Definition testPrimitiveTypesEqualⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: <>,
+    exception_do (return: (((((((FuncResolve TypesEqual [go.int; go.int] #()) #()) && (⟨go.bool⟩! ((FuncResolve TypesEqual [go.int; go.string] #()) #()))) && (⟨go.bool⟩! ((FuncResolve TypesEqual [go.int; go.uint32] #()) #()))) && (⟨go.bool⟩! ((FuncResolve TypesEqual [go.int; go.int64] #()) #()))) && (⟨go.bool⟩! ((FuncResolve TypesEqual [go.int; go.uint64] #()) #()))) && ((FuncResolve TypesEqual [go.FunctionType (go.Signature [] false [go.bool]); go.FunctionType (go.Signature [] false [go.bool])] #()) #()))).
+
+(* go: type_equality.go:22:6 *)
+Definition testDefinedStrTypesEqualⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: <>,
+    exception_do (return: ((⟨go.bool⟩! ((FuncResolve TypesEqual [DefinedStr; go.string] #()) #())) && ((FuncResolve TypesEqual [DefinedStr; DefinedStr2] #()) #()))).
+
+(* go: type_equality.go:32:6 *)
+Definition testListTypesEqualⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: <>,
+    exception_do (return: (((FuncResolve TypesEqual [List go.int; List go.int] #()) #()) && (⟨go.bool⟩! ((FuncResolve TypesEqual [List go.int; List go.string] #()) #())))).
+
 (* go: vars.go:3:6 *)
 Definition testPointerAssignmentⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
@@ -3409,6 +3473,56 @@ Class switchInterface_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLo
   #[global] switchInterface_underlying :: (switchInterface) <u (switchInterfaceⁱᵐᵖˡ);
 }.
 
+Module DefinedStr.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Definition t : Type := go_string.
+End def.
+End DefinedStr.
+
+Definition DefinedStrⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.string.
+
+Class DefinedStr_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] DefinedStr_underlying :: (DefinedStr) <u (DefinedStrⁱᵐᵖˡ);
+}.
+
+Module List.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Record t {T : Type} :=
+mk {
+  X' : T;
+  Next' : loc;
+}.
+
+#[global] Instance zero_val `{!ZeroVal T} : ZeroVal t := {| zero_val := mk T (zero_val _) (zero_val _)|}.
+#[global] Arguments mk : clear implicits.
+#[global] Arguments t : clear implicits.
+End def.
+
+End List.
+
+Definition List'fds_unsealed (T : go.type) {ext : ffi_syntax} {go_gctx : GoGlobalContext} : list go.field_decl := [
+  (go.FieldDecl "X"%go T);
+  (go.FieldDecl "Next"%go (go.PointerType (List T)))
+].
+Program Definition List'fds (T : go.type) {ext : ffi_syntax} {go_gctx : GoGlobalContext} := sealed (List'fds_unsealed T).
+Global Instance equals_unfold_List T {ext : ffi_syntax} {go_gctx : GoGlobalContext} : List'fds T =→ List'fds_unsealed T.
+Proof. rewrite /List'fds seal_eq //. Qed.
+
+Definition Listⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) : go.type := go.StructType (List'fds T).
+
+Class List_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] List_type_repr T T' `{!ZeroVal T'} `{!TypeRepr T T'} :: go.TypeReprUnderlying (Listⁱᵐᵖˡ T) (List.t T');
+  #[global] List_underlying T :: (List T) <u (Listⁱᵐᵖˡ T);
+  #[global] List_get_X T T' (x : List.t T') :: ⟦StructFieldGet (Listⁱᵐᵖˡ T) "X", #x⟧ ⤳[under] #x.(List.X');
+  #[global] List_set_X T T' (x : List.t T') y :: ⟦StructFieldSet (Listⁱᵐᵖˡ T) "X", (#x, #y)⟧ ⤳[under] #(x <|List.X' := y|>);
+  #[global] List_get_Next T T' (x : List.t T') :: ⟦StructFieldGet (Listⁱᵐᵖˡ T) "Next", #x⟧ ⤳[under] #x.(List.Next');
+  #[global] List_set_Next T T' (x : List.t T') y :: ⟦StructFieldSet (Listⁱᵐᵖˡ T) "Next", (#x, #y)⟧ ⤳[under] #(x <|List.Next' := y|>);
+}.
+
 Module Log.
 Section def.
 Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
@@ -3488,6 +3602,8 @@ Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions
   #[global] StructWithFunc_instance :: StructWithFunc_Assumptions;
   #[global] switchConcrete_instance :: switchConcrete_Assumptions;
   #[global] switchInterface_instance :: switchInterface_Assumptions;
+  #[global] DefinedStr_instance :: DefinedStr_Assumptions;
+  #[global] List_instance :: List_Assumptions;
   #[global] Log_instance :: Log_Assumptions;
   #[global] findKey_unfold :: FuncUnfold findKey [] (findKeyⁱᵐᵖˡ);
   #[global] allocate_unfold :: FuncUnfold allocate [] (allocateⁱᵐᵖˡ);
@@ -3522,8 +3638,10 @@ Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions
   #[global] storeAndReturn_unfold :: FuncUnfold storeAndReturn [] (storeAndReturnⁱᵐᵖˡ);
   #[global] failing_testArgumentOrder_unfold :: FuncUnfold failing_testArgumentOrder [] (failing_testArgumentOrderⁱᵐᵖˡ);
   #[global] testU64ToU32_unfold :: FuncUnfold testU64ToU32 [] (testU64ToU32ⁱᵐᵖˡ);
+  #[global] testU32ToU64_unfold :: FuncUnfold testU32ToU64 [] (testU32ToU64ⁱᵐᵖˡ);
   #[global] testU32Len_unfold :: FuncUnfold testU32Len [] (testU32Lenⁱᵐᵖˡ);
-  #[global] failing_testU32NewtypeLen_unfold :: FuncUnfold failing_testU32NewtypeLen [] (failing_testU32NewtypeLenⁱᵐᵖˡ);
+  #[global] testU32NewtypeLen_unfold :: FuncUnfold testU32NewtypeLen [] (testU32NewtypeLenⁱᵐᵖˡ);
+  #[global] testUint32Untyped_unfold :: FuncUnfold testUint32Untyped [] (testUint32Untypedⁱᵐᵖˡ);
   #[global] measureArea_unfold :: FuncUnfold measureArea [] (measureAreaⁱᵐᵖˡ);
   #[global] measureVolumePlusNM_unfold :: FuncUnfold measureVolumePlusNM [] (measureVolumePlusNMⁱᵐᵖˡ);
   #[global] measureVolume_unfold :: FuncUnfold measureVolume [] (measureVolumeⁱᵐᵖˡ);
@@ -3611,6 +3729,10 @@ Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions
   #[global] testSwitchMultiple_unfold :: FuncUnfold testSwitchMultiple [] (testSwitchMultipleⁱᵐᵖˡ);
   #[global] testSwitchDefaultTrue_unfold :: FuncUnfold testSwitchDefaultTrue [] (testSwitchDefaultTrueⁱᵐᵖˡ);
   #[global] testSwitchConversion_unfold :: FuncUnfold testSwitchConversion [] (testSwitchConversionⁱᵐᵖˡ);
+  #[global] TypesEqual_unfold T U :: FuncUnfold TypesEqual [T; U] (TypesEqualⁱᵐᵖˡ T U);
+  #[global] testPrimitiveTypesEqual_unfold :: FuncUnfold testPrimitiveTypesEqual [] (testPrimitiveTypesEqualⁱᵐᵖˡ);
+  #[global] testDefinedStrTypesEqual_unfold :: FuncUnfold testDefinedStrTypesEqual [] (testDefinedStrTypesEqualⁱᵐᵖˡ);
+  #[global] testListTypesEqual_unfold :: FuncUnfold testListTypesEqual [] (testListTypesEqualⁱᵐᵖˡ);
   #[global] testPointerAssignment_unfold :: FuncUnfold testPointerAssignment [] (testPointerAssignmentⁱᵐᵖˡ);
   #[global] testAddressOfLocal_unfold :: FuncUnfold testAddressOfLocal [] (testAddressOfLocalⁱᵐᵖˡ);
   #[global] testAnonymousAssign_unfold :: FuncUnfold testAnonymousAssign [] (testAnonymousAssignⁱᵐᵖˡ);

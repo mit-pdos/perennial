@@ -696,6 +696,61 @@ Proof. solve_into_val_typed_struct. Qed.
 End def.
 End switchConcrete.
 
+Module List.
+Section def.
+
+Context `{!heapGS Σ}.
+Context {sem : go.Semantics}.
+Context {package_sem' : semantics.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance List_typed_pointsto `{!TypedPointsto (Σ:=Σ) T'}  :
+  TypedPointsto (Σ:=Σ) (semantics.List.t T') :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "X" ∷ l.[(semantics.List.t T'), "X"] ↦{dq} v.(semantics.List.X') ∗
+      "Next" ∷ l.[(semantics.List.t T'), "Next"] ↦{dq} v.(semantics.List.Next') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance List_into_val_typed
+  `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T}  :
+  IntoValTypedUnderlying (semantics.List.t T') (semantics.Listⁱᵐᵖˡ T).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance List_access_load_X `{!TypedPointsto (Σ:=Σ) T'} l (v : (semantics.List.t T')) dq :
+  AccessStrict
+    (l.[(semantics.List.t T'), "X"] ↦{dq} (v.(semantics.List.X')))
+    (l.[(semantics.List.t T'), "X"] ↦{dq} (v.(semantics.List.X')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance List_access_store_X `{!TypedPointsto (Σ:=Σ) T'} l (v : (semantics.List.t T')) X' :
+  AccessStrict
+    (l.[(semantics.List.t T'), "X"] ↦ (v.(semantics.List.X')))
+    (l.[(semantics.List.t T'), "X"] ↦ X')
+    (l ↦ v) (l ↦ (v <|(semantics.List.X') := X'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance List_access_load_Next `{!TypedPointsto (Σ:=Σ) T'} l (v : (semantics.List.t T')) dq :
+  AccessStrict
+    (l.[(semantics.List.t T'), "Next"] ↦{dq} (v.(semantics.List.Next')))
+    (l.[(semantics.List.t T'), "Next"] ↦{dq} (v.(semantics.List.Next')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance List_access_store_Next `{!TypedPointsto (Σ:=Σ) T'} l (v : (semantics.List.t T')) Next' :
+  AccessStrict
+    (l.[(semantics.List.t T'), "Next"] ↦ (v.(semantics.List.Next')))
+    (l.[(semantics.List.t T'), "Next"] ↦ Next')
+    (l ↦ v) (l ↦ (v <|(semantics.List.Next') := Next'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+End def.
+End List.
+
 Module Log.
 Section def.
 
