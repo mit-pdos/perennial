@@ -303,6 +303,8 @@ Definition testManyParentheses {ext : ffi_syntax} {go_gctx : GoGlobalContext} : 
 
 Definition testPlusTimes {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testPlusTimes"%go.
 
+Definition shouldPanic {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.shouldPanic"%go.
+
 Definition testOrCompareSimple {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testOrCompareSimple"%go.
 
 Definition testOrCompare {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testOrCompare"%go.
@@ -1144,10 +1146,7 @@ Definition testIfStmtInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
     else do:  #());;;
     return: (#false)).
 
-(* this doesn't work because it generates a conversion from SquareStruct to
-   uint64 due to the extra parameters
-
-   go: interfaces_complex.go:13:6 *)
+(* go: interfaces_complex.go:11:6 *)
 Definition testParamsInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "s" := (GoAlloc SquareStruct (GoZeroVal SquareStruct #())) in
@@ -1162,14 +1161,14 @@ Definition testParamsInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
     do:  ("volume" <-[go.uint64] "$r0");;;
     return: ((![go.uint64] "volume") =⟨go.uint64⟩ #(W64 30))).
 
-(* go: interfaces_complex.go:21:6 *)
+(* go: interfaces_complex.go:19:6 *)
 Definition testEmptyInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "i" := (GoAlloc (go.InterfaceType []) (GoZeroVal (go.InterfaceType []) #())) in
     let: "j" := (GoAlloc (go.InterfaceType []) (GoZeroVal (go.InterfaceType []) #())) in
     return: ((![go.InterfaceType []] "i") =⟨go.InterfaceType []⟩ (![go.InterfaceType []] "j"))).
 
-(* go: interfaces_complex.go:27:6 *)
+(* go: interfaces_complex.go:25:6 *)
 Definition testStringInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "i" := (GoAlloc (go.InterfaceType []) (GoZeroVal (go.InterfaceType []) #())) in
@@ -1180,7 +1179,7 @@ Definition testStringInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
     do:  ("j" <-[go.InterfaceType []] "$r0");;;
     return: ((![go.InterfaceType []] "i") =⟨go.InterfaceType []⟩ (![go.InterfaceType []] "j"))).
 
-(* go: interfaces_complex.go:37:6 *)
+(* go: interfaces_complex.go:35:6 *)
 Definition testTypeAssertionInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "i" := (GoAlloc (go.InterfaceType []) (GoZeroVal (go.InterfaceType []) #())) in
@@ -1192,25 +1191,25 @@ Definition testTypeAssertionInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : G
      ]⟩ (let: "$v0" := #(W64 3) in
      CompositeLiteral NumStruct (LiteralValue [KeyedElement None (ElementExpression go.int "$v0")])))).
 
-(* go: interfaces_complex.go:54:22 *)
+(* go: interfaces_complex.go:52:22 *)
 Definition shapeStruct__describeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "s" <>,
     exception_do (let: "s" := (GoAlloc shapeStruct "s") in
     return: (![go.string] (StructFieldRef shapeStruct "Shape"%go "s"))).
 
-(* go: interfaces_complex.go:63:24 *)
+(* go: interfaces_complex.go:61:24 *)
 Definition polygonStruct__describeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "p" <>,
     exception_do (let: "p" := (GoAlloc polygonStruct "p") in
     return: (![go.string] (StructFieldRef polygonStruct "Shape"%go "p"))).
 
-(* go: interfaces_complex.go:67:24 *)
+(* go: interfaces_complex.go:65:24 *)
 Definition polygonStruct__sidesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "p" <>,
     exception_do (let: "p" := (GoAlloc polygonStruct "p") in
     return: (![go.uint64] (StructFieldRef polygonStruct "Sides"%go "p"))).
 
-(* go: interfaces_complex.go:71:6 *)
+(* go: interfaces_complex.go:69:6 *)
 Definition testDoublePointerInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "s" := (GoAlloc shapeStruct (GoZeroVal shapeStruct #())) in
@@ -1226,7 +1225,7 @@ Definition testDoublePointerInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : G
     do:  ((StructFieldRef shapeStruct "Shape"%go "s") <-[go.string] "$r0");;;
     return: (((MethodResolve shapeInterface "describe"%go (![shapeInterface] (IndexRef (go.SliceType shapeInterface) (![go.SliceType shapeInterface] "shapes", #(W64 0))))) #()) ≠⟨go.string⟩ ((MethodResolve shapeInterface "describe"%go (![shapeInterface] (IndexRef (go.SliceType shapeInterface) (![go.SliceType shapeInterface] "shapes", #(W64 1))))) #()))).
 
-(* go: interfaces_complex.go:78:6 *)
+(* go: interfaces_complex.go:76:6 *)
 Definition testMultipleFieldsInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "s" := (GoAlloc polygonStruct (GoZeroVal polygonStruct #())) in
@@ -1236,31 +1235,31 @@ Definition testMultipleFieldsInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : 
     do:  ("s" <-[polygonStruct] "$r0");;;
     return: (((![go.string] (StructFieldRef polygonStruct "Shape"%go "s")) =⟨go.string⟩ #"triangle"%go) && ((![go.uint64] (StructFieldRef polygonStruct "Sides"%go "s")) =⟨go.uint64⟩ #(W64 3)))).
 
-(* go: interfaces_complex.go:95:16 *)
+(* go: interfaces_complex.go:93:16 *)
 Definition Puppy__Nameⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "p" <>,
     exception_do (let: "p" := (GoAlloc Puppy "p") in
     return: (#"Max"%go)).
 
-(* go: interfaces_complex.go:99:16 *)
+(* go: interfaces_complex.go:97:16 *)
 Definition Puppy__Speedⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "p" <>,
     exception_do (let: "p" := (GoAlloc Puppy "p") in
     return: (#(W64 1))).
 
-(* go: interfaces_complex.go:105:17 *)
+(* go: interfaces_complex.go:103:17 *)
 Definition Kitten__Nameⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "k" <>,
     exception_do (let: "k" := (GoAlloc Kitten "k") in
     return: (#"Max"%go)).
 
-(* go: interfaces_complex.go:109:17 *)
+(* go: interfaces_complex.go:107:17 *)
 Definition Kitten__Weightⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "k" <>,
     exception_do (let: "k" := (GoAlloc Kitten "k") in
     return: (#(W64 10))).
 
-(* go: interfaces_complex.go:113:6 *)
+(* go: interfaces_complex.go:111:6 *)
 Definition testSharedFunctionsInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "kit" := (GoAlloc catInterface (GoZeroVal catInterface #())) in
@@ -1271,7 +1270,7 @@ Definition testSharedFunctionsInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx :
     do:  ("pup" <-[dogInterface] "$r0");;;
     return: (((MethodResolve dogInterface "Name"%go (![dogInterface] "pup")) #()) =⟨go.string⟩ ((MethodResolve catInterface "Name"%go (![catInterface] "kit")) #()))).
 
-(* go: interfaces_complex.go:128:23 *)
+(* go: interfaces_complex.go:126:23 *)
 Definition PaperStruct__Assignⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "p" "t",
     exception_do (let: "p" := (GoAlloc (go.PointerType PaperStruct) "p") in
@@ -1280,13 +1279,13 @@ Definition PaperStruct__Assignⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
     do:  ((StructFieldRef PaperStruct "Title"%go (![go.PointerType PaperStruct] "p")) <-[go.string] "$r0");;;
     return: #()).
 
-(* go: interfaces_complex.go:132:23 *)
+(* go: interfaces_complex.go:130:23 *)
 Definition PaperStruct__GetTitleⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "p" <>,
     exception_do (let: "p" := (GoAlloc (go.PointerType PaperStruct) "p") in
     return: (![go.string] (StructFieldRef PaperStruct "Title"%go (![go.PointerType PaperStruct] "p")))).
 
-(* go: interfaces_complex.go:136:6 *)
+(* go: interfaces_complex.go:134:6 *)
 Definition testAcceptAddressInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "p1" := (GoAlloc PaperStruct (GoZeroVal PaperStruct #())) in
@@ -1303,43 +1302,43 @@ Definition testAcceptAddressInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : G
     do:  ("print2" <-[printInterface] "$r0");;;
     return: (((MethodResolve printInterface "GetTitle"%go (![printInterface] "print1")) #()) =⟨go.string⟩ ((MethodResolve printInterface "GetTitle"%go (![printInterface] "print2")) #()))).
 
-(* go: interfaces_complex.go:159:15 *)
+(* go: interfaces_complex.go:157:15 *)
 Definition Lily__Petalsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "l" <>,
     exception_do (let: "l" := (GoAlloc Lily "l") in
     return: (#(W64 3))).
 
-(* go: interfaces_complex.go:160:15 *)
+(* go: interfaces_complex.go:158:15 *)
 Definition Lily__Genusⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "l" <>,
     exception_do (let: "l" := (GoAlloc Lily "l") in
     return: (#"Lillium"%go)).
 
-(* go: interfaces_complex.go:164:15 *)
+(* go: interfaces_complex.go:162:15 *)
 Definition Rose__Petalsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" <>,
     exception_do (let: "r" := (GoAlloc Rose "r") in
     return: (#(W64 12))).
 
-(* go: interfaces_complex.go:165:15 *)
+(* go: interfaces_complex.go:163:15 *)
 Definition Rose__Genusⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" <>,
     exception_do (let: "r" := (GoAlloc Rose "r") in
     return: (#"Rosa"%go)).
 
-(* go: interfaces_complex.go:169:16 *)
+(* go: interfaces_complex.go:167:16 *)
 Definition Daisy__Petalsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "d" <>,
     exception_do (let: "d" := (GoAlloc Daisy "d") in
     return: (#(W64 5))).
 
-(* go: interfaces_complex.go:170:16 *)
+(* go: interfaces_complex.go:168:16 *)
 Definition Daisy__Genusⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "d" <>,
     exception_do (let: "d" := (GoAlloc Daisy "d") in
     return: (#"Bellis"%go)).
 
-(* go: interfaces_complex.go:172:6 *)
+(* go: interfaces_complex.go:170:6 *)
 Definition testPolymorphismInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "l" := (GoAlloc (go.PointerType Lily) (GoZeroVal (go.PointerType Lily) #())) in
@@ -1359,7 +1358,7 @@ Definition testPolymorphismInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : Go
     do:  ("f" <-[go.ArrayType 3 Flower] "$r0");;;
     return: (((MethodResolve Flower "Petals"%go (![Flower] (IndexRef (go.ArrayType 3 Flower) (![go.ArrayType 3 Flower] "f", #(W64 0))))) #()) =⟨go.uint64⟩ #(W64 3))).
 
-(* go: interfaces_complex.go:180:6 *)
+(* go: interfaces_complex.go:178:6 *)
 Definition testEmbeddingInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "l" := (GoAlloc (go.PointerType Lily) (GoZeroVal (go.PointerType Lily) #())) in
@@ -1379,7 +1378,7 @@ Definition testEmbeddingInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
     do:  ("f" <-[go.ArrayType 3 Flora] "$r0");;;
     return: (((MethodResolve Flora "Petals"%go (![Flora] (IndexRef (go.ArrayType 3 Flora) (![go.ArrayType 3 Flora] "f", #(W64 0))))) #()) =⟨go.uint64⟩ #(W64 3))).
 
-(* go: interfaces_complex.go:188:6 *)
+(* go: interfaces_complex.go:186:6 *)
 Definition testDowncastInterfaceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "l" := (GoAlloc Lily (GoZeroVal Lily #())) in
@@ -2124,6 +2123,13 @@ Definition testManyParenthesesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
 Definition testPlusTimesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (return: (#true)).
+
+(* go: panic.go:3:6 *)
+Definition shouldPanicⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: <>,
+    exception_do (do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"bad"%go) in
+    (FuncResolve go.panic [] #()) "$a0");;;
+    return: #()).
 
 (* go: precedence.go:3:6 *)
 Definition testOrCompareSimpleⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -4398,6 +4404,7 @@ Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions
   #[global] testBitAddAnd_unfold :: FuncUnfold testBitAddAnd [] (testBitAddAndⁱᵐᵖˡ);
   #[global] testManyParentheses_unfold :: FuncUnfold testManyParentheses [] (testManyParenthesesⁱᵐᵖˡ);
   #[global] testPlusTimes_unfold :: FuncUnfold testPlusTimes [] (testPlusTimesⁱᵐᵖˡ);
+  #[global] shouldPanic_unfold :: FuncUnfold shouldPanic [] (shouldPanicⁱᵐᵖˡ);
   #[global] testOrCompareSimple_unfold :: FuncUnfold testOrCompareSimple [] (testOrCompareSimpleⁱᵐᵖˡ);
   #[global] testOrCompare_unfold :: FuncUnfold testOrCompare [] (testOrCompareⁱᵐᵖˡ);
   #[global] testAndCompare_unfold :: FuncUnfold testAndCompare [] (testAndCompareⁱᵐᵖˡ);
