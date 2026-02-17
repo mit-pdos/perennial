@@ -5,8 +5,8 @@ Local Existing Instances tokG wg_totalG rw_ghost_varG rw_ghost_wlG rw_ghost_rwmu
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics} {package_sem : sync.Assumptions}.
-Local Set Default Proof Using "All".
-Context `{!syncG Σ}.
+Collection W := sem + package_sem.
+Set Default Proof Using "W".
 
 (** This means [m] is a valid mutex with invariant [R]. *)
 Definition is_Mutex (m: loc) (R : iProp Σ) : iProp Σ :=
