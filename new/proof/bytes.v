@@ -36,8 +36,8 @@ Lemma wp_Clone sl_b dq (b : list w8) :
   }}}.
 Proof.
   wp_start. iNamed "Hpre". wp_auto.
-  iDestruct (own_slice_nil (DfracOwn 1)) as "?".
-  iDestruct own_slice_cap_nil as "?".
+  iDestruct (own_slice_nil (V:=w8) (DfracOwn 1)) as "?".
+  iDestruct (own_slice_cap_nil (V:=w8)) as "?".
   wp_if_destruct.
   { iApply "HΦ".
     iDestruct (own_slice_len with "Hsl_b") as %[Hb_len ?].

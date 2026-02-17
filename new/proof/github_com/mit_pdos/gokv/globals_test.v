@@ -123,16 +123,20 @@ Proof.
     set (hG' := HeapGS _ _ _). (* overcome impedence mismatch between heapGS (bundled) and gooseGLobalGS+gooseLocalGS (split) proofs *)
     iIntros "Hglobals".
     iMod (ghost_var_alloc ()) as (γtok) "Hescrow".
-    iMod (go_init (λ k, default True%I (({[
-                                globals_test.main := is_pkg_init globals_test.main
-                            ]} : gmap _ _) !! k)) with "[$]")
-      as "(? & #?)"; [done|].
+    pose proof (is_pkg_init_globals_test γtok) as HpkgInit.
     iModIntro. iExists (λ _, True)%I.
-    Unshelve.
-    2:{ apply (is_pkg_init_globals_test γtok). }
-    wp_apply (wp_initialize' with "[-Hescrow]").
-    2:{ iFrame "∗#". iModIntro. iApply (is_pkg_defined_boot with "[$]"). done. }
-    { rewrite /= -insert_empty lookup_insert_eq //. }
+    iApply fupd_wp.
+    iPoseProof (go_init (λ k, default True%I (({[
+                                globals_test.main := is_pkg_init globals_test.main
+                            ]} : gmap _ _) !! k)) σ Hginit) as "Hgo".
+    iMod ("Hgo" with "Hglobals") as "(? & #?)".
+    iModIntro.
+    set (get_ipkginit := (λ k, default True%I (({[
+                                globals_test.main := is_pkg_init globals_test.main
+                            ]} : gmap _ _) !! k))).
+    wp_apply (wp_initialize' γtok get_ipkginit with "[-Hescrow]").
+    { rewrite /get_is_pkg_init_prop /get_ipkginit /=. rewrite lookup_singleton. done. }
+    { iFrame "∗#". iModIntro. iApply (is_pkg_defined_boot with "[$]"). done. }
     iIntros "* (Hown & #Hinit)".
     iApply fupd_wp. iDestruct (is_pkg_init_access with "Hinit") as "Hinv".
     simpl. iInv "Hinv" as ">[Hbad|Hi]" "Hclose".

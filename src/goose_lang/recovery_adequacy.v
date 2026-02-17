@@ -34,10 +34,10 @@ Proof.
   iDestruct (cred_frag_split with "Hcred") as "(Hpre&Hcred)".
   iMod (proph_map_init κs g.(used_proph_id)) as (proph_names) "Hproph".
 
-  iAssert (|={⊤}=> crash_borrow_ginv)%I with "[Hcred]" as ">#Hinv".
-  { rewrite /crash_borrow_ginv. iApply (inv_alloc _). iNext. eauto. }
   (* TODO(RJ): reformulate init lemmas to better match what we need here. *)
   set (hG := GooseGlobalGS _ _ proph_names (creditGS_update_pre _ _ name_credit) ffi_namesg).
+  iAssert (|={⊤}=> crash_borrow_ginv)%I with "[Hcred]" as ">#Hinv".
+  { rewrite /crash_borrow_ginv. iApply (inv_alloc _). iNext. eauto. }
   set (hL := GooseLocalGS Σ Hc ffi_names (na_heapGS_update_pre _ name_na_heap) (traceGS_update_pre Σ _ name_trace)
                           (globalsGS_update_pre Σ _ globals_name)).
   destruct (Hwp (HeapGS _ hG hL)) as [Φinv Hwp']. clear Hwp.

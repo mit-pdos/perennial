@@ -99,7 +99,9 @@ Proof using stagedG0.
     { simpl.
       iIntros (_) "Hrc".
       iSplit; [ | done ].
-      iApply wpc_crash_modality_intro. iFrame. }
+      rewrite /wpc_crash_modality. iIntros (????) "Hg #HC Hlc".
+      iApply (step_fupd2N_inner_later); auto.
+      iNext. iFrame. }
     iIntros "$".
   - iSplit.
     { iApply "HQRc'". iFrame. }

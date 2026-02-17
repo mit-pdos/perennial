@@ -398,14 +398,14 @@ lemmas. *)
         iDestruct (gen_heap_valid with "[$] [$]") as %Hlook.
         iPureIntro. eapply Ha in Hlook. eauto.
       }
-      iFrame. rewrite big_sepL_nil right_id.
+      iFrame.
       iApply wp_value.
       iFrame. iApply ("Hϕ" with "[-]").
       simpl. iFrame. eauto.
     - monad_inv.
       iMod (global_state_interp_le with "Hg") as "$".
       { apply step_count_next_incr. }
-      iFrame. rewrite big_sepL_nil right_id.
+      iFrame.
       iApply ("IH" with "[$] [$]").
   Qed.
 

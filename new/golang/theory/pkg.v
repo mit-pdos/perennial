@@ -447,13 +447,11 @@ Tactic Notation "wp_globals_get_core" :=
 
 Tactic Notation "wp_func_call_core" :=
   (wp_bind (#(func_callv _) _);
-   unshelve iApply (wp_func_call with "[]");
-   [| | (tc_solve || fail "could not find mapping from function name to val") | | ]).
+   iApply (wp_func_call with "[]")).
 
 Tactic Notation "wp_method_call_core" :=
   (wp_bind (#(method_callv _ _ _) _);
-   unshelve iApply (wp_method_call with "[]");
-   [| | (tc_solve || fail "could not find mapping from method to val") | |]).
+   iApply (wp_method_call with "[]")).
 
 #[global]
 Notation "@! func" :=
