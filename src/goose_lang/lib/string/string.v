@@ -126,7 +126,7 @@ Proof.
   wp_pures.
   iModIntro.
   iSpecialize ("HΦ" with "[H0 Hsl]").
-  { iApply (own_slice_combine with "[$] [$]").
+  { iApply (own_slice_combine with "[$H0] [$Hsl]").
     simpl in *. word. }
   iFrame.
 Qed.

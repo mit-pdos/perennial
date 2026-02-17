@@ -48,7 +48,6 @@ Lemma wp_copyChecker__check c (c_v: sync.copyChecker.t) dq :
     c @ (ptrT.id sync.copyChecker.id) @ "check" #()
   {{{ RET #(); c ↦{dq} c_v }}}.
 Proof.
-  wp_start as "c".
 Admitted.
 
 Lemma wp_runtime_notifyListAdd l (l_v: sync.notifyList.t) dq :

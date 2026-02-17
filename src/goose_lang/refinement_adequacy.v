@@ -159,7 +159,7 @@ Proof using Hrpre Hcpre.
   iMod (source_cfg_init_names1 r tp0 σ0 g0 [r] σ_post_crash g (own γ (Cinl 1%Qp))) as (Hcfg_γ) "(Hsource_ctx&Hpool&Hstate&Hcfupd)"; eauto.
   { eapply erased_rsteps_r; eauto. econstructor. }
   iMod (na_heap_init tls σ_post_crash.(heap)) as (Hrheap) "Hrh".
-  iMod (ffi_crash _ σ.(world) σ_post_crash.(world) with "Hffi")
+  iMod (@ffi_crash _ _ _ _ spec_ffi_interp_adequacy_field _ σ.(world) σ_post_crash.(world) with "Hffi")
     as (ffi_names) "(Hrw&Hcrash_rel&Hrs)".
   { inversion Hcrash. subst. eauto. }
   iMod (trace_init σ_post_crash.(trace) σ_post_crash.(oracle)) as (HtraceG) "(?&Htr'&?&Hor')".
