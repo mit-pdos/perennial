@@ -8,7 +8,7 @@ Local Set Default Proof Using "All".
 
 Lemma wp_testParamsInterface :
   test_fun_ok semantics.testParamsInterface.
-Proof. semantics_auto. Qed.
+Proof. semantics_auto.  Qed.
 
 Lemma wp_testEmptyInterface :
   test_fun_ok semantics.testEmptyInterface.

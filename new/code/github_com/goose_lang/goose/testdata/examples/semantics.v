@@ -263,7 +263,7 @@ Definition returnFour {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string
 
 Definition testReturnFour {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testReturnFour"%go.
 
-Definition failing_testCompareSliceToNil {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.failing_testCompareSliceToNil"%go.
+Definition testCompareSliceToNil {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testCompareSliceToNil"%go.
 
 Definition testComparePointerToNil {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testComparePointerToNil"%go.
 
@@ -272,6 +272,8 @@ Definition testCompareNilToNil {ext : ffi_syntax} {go_gctx : GoGlobalContext} : 
 Definition testComparePointerWrappedToNil {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testComparePointerWrappedToNil"%go.
 
 Definition testComparePointerWrappedDefaultToNil {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testComparePointerWrappedDefaultToNil"%go.
+
+Definition testInterfaceNilWithType {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.testInterfaceNilWithType"%go.
 
 Definition reverseAssignOps64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/semantics.reverseAssignOps64"%go.
 
@@ -1844,7 +1846,7 @@ Definition testReturnFourⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
     return: (((((![go.uint64] "x") =⟨go.uint64⟩ #(W64 2)) && ((![go.bool] "y") =⟨go.bool⟩ #true)) && ((![go.uint32] "z") =⟨go.uint32⟩ #(W32 1))) && ((![go.uint64] "w") =⟨go.uint64⟩ #(W64 7)))).
 
 (* go: nil.go:3:6 *)
-Definition failing_testCompareSliceToNilⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+Definition testCompareSliceToNilⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "s" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) #(W64 0)) in
@@ -1880,6 +1882,17 @@ Definition testComparePointerWrappedDefaultToNilⁱᵐᵖˡ {ext : ffi_syntax} {
   λ: <>,
     exception_do (let: "s" := (GoAlloc (go.SliceType go.byte) (GoZeroVal (go.SliceType go.byte) #())) in
     return: ((![go.SliceType go.byte] "s") =⟨go.SliceType go.byte⟩ (Convert go.untyped_nil (go.SliceType go.byte) UntypedNil))).
+
+(* go: nil.go:29:6 *)
+Definition testInterfaceNilWithTypeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: <>,
+    exception_do (let: "isNil" := (GoAlloc go.any (GoZeroVal go.any #())) in
+    let: "$r0" := (Convert go.untyped_nil go.any UntypedNil) in
+    do:  ("isNil" <-[go.any] "$r0");;;
+    let: "notNil" := (GoAlloc go.any (GoZeroVal go.any #())) in
+    let: "$r0" := (Convert (go.PointerType go.string) go.any (Convert go.untyped_nil (go.PointerType go.string) UntypedNil)) in
+    do:  ("notNil" <-[go.any] "$r0");;;
+    return: ((((![go.any] "isNil") =⟨go.InterfaceType []⟩ (Convert go.untyped_nil (go.InterfaceType []) UntypedNil)) && ((![go.any] "notNil") ≠⟨go.InterfaceType []⟩ (Convert go.untyped_nil (go.InterfaceType []) UntypedNil))) && ((![go.any] "isNil") ≠⟨go.InterfaceType []⟩ (![go.any] "notNil")))).
 
 (* helpers
 
@@ -4384,11 +4397,12 @@ Class Assumptions `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions
   #[global] testReturnThree_unfold :: FuncUnfold testReturnThree [] (testReturnThreeⁱᵐᵖˡ);
   #[global] returnFour_unfold :: FuncUnfold returnFour [] (returnFourⁱᵐᵖˡ);
   #[global] testReturnFour_unfold :: FuncUnfold testReturnFour [] (testReturnFourⁱᵐᵖˡ);
-  #[global] failing_testCompareSliceToNil_unfold :: FuncUnfold failing_testCompareSliceToNil [] (failing_testCompareSliceToNilⁱᵐᵖˡ);
+  #[global] testCompareSliceToNil_unfold :: FuncUnfold testCompareSliceToNil [] (testCompareSliceToNilⁱᵐᵖˡ);
   #[global] testComparePointerToNil_unfold :: FuncUnfold testComparePointerToNil [] (testComparePointerToNilⁱᵐᵖˡ);
   #[global] testCompareNilToNil_unfold :: FuncUnfold testCompareNilToNil [] (testCompareNilToNilⁱᵐᵖˡ);
   #[global] testComparePointerWrappedToNil_unfold :: FuncUnfold testComparePointerWrappedToNil [] (testComparePointerWrappedToNilⁱᵐᵖˡ);
   #[global] testComparePointerWrappedDefaultToNil_unfold :: FuncUnfold testComparePointerWrappedDefaultToNil [] (testComparePointerWrappedDefaultToNilⁱᵐᵖˡ);
+  #[global] testInterfaceNilWithType_unfold :: FuncUnfold testInterfaceNilWithType [] (testInterfaceNilWithTypeⁱᵐᵖˡ);
   #[global] reverseAssignOps64_unfold :: FuncUnfold reverseAssignOps64 [] (reverseAssignOps64ⁱᵐᵖˡ);
   #[global] reverseAssignOps32_unfold :: FuncUnfold reverseAssignOps32 [] (reverseAssignOps32ⁱᵐᵖˡ);
   #[global] add64Equals_unfold :: FuncUnfold add64Equals [] (add64Equalsⁱᵐᵖˡ);

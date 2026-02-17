@@ -32,9 +32,16 @@ Ltac _cleanup :=
   repeat rewrite -> decide_False by (auto; word).
 
 Ltac wp_call_auto :=
-  (wp_func_call || wp_method_call || wp_call); try wp_call.
+  first [ wp_func_call; wp_call
+        | wp_method_call; wp_call
+        | wp_call ].
 
-Ltac steps := repeat (wp_call_auto || wp_auto || _cleanup).
+Ltac steps := repeat (
+                  wp_call_auto ||
+                  wp_auto ||
+                  let x := fresh "x" in wp_alloc x as "?" ||
+                  _cleanup
+               ).
 
 Ltac semantics_auto :=
   iIntros (Φ) "HΦ";
