@@ -81,7 +81,7 @@ endif
 
 .PHONY: skip-qed unskip-qed ci
 
-SLOW_QED_FILES :=
+SLOW_QED_FILES := ""
 
 skip-qed:
 	$(Q)./etc/disable-qed.sh $(SLOW_QED_FILES)
@@ -89,7 +89,7 @@ skip-qed:
 unskip-qed:
 	$(Q)./etc/disable-qed.sh --undo $(SLOW_QED_FILES)
 
-ci: skip-qed new/should_build.vo
+ci: new/should_build.vo
 
 # compiled by Rocq CI
 # not intended for normal development
