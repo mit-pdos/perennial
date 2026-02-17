@@ -20,3 +20,5 @@ From New.proof.github_com.goose_lang.goose.model.channel.idiom
 (* Require New.proof.go_etcd_io.etcd.server.v3.etcdserver. *)
 
 From New.proof Require Import inG_problem.
+
+From New.experiments Require all_scmra.
