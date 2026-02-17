@@ -21,7 +21,8 @@ satisfy [{P} #f #() {Q}].
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics} {package_sem : sync.Assumptions}.
-Local Set Default Proof Using "All".
+Collection W := sem + package_sem.
+Set Default Proof Using "W".
 
 Definition is_Once (o: loc) (P: iProp Σ) (Q: iProp Σ) : iProp Σ :=
   "#Q_persistent" ∷ □(Q -∗ □Q) ∗

@@ -125,7 +125,8 @@ End classes.
 Section lang.
   Context `{hG: heapGS Σ, !ffi_semantics _ _}.
   Context {sem : go.Semantics}.
-  Local Set Default Proof Using "All".
+  Collection W := sem.
+  Local Set Default Proof Using "W".
   Context `{!dspG Σ V}.
   Context `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}.
   Implicit Types TT : tele.

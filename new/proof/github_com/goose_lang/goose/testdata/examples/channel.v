@@ -17,7 +17,8 @@ Context {sem : go.Semantics} {package_sem : chan_spec_raw_examples.Assumptions}.
 
 #[global] Instance : IsPkgInit (iProp Σ) chan_spec_raw_examples := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf (iProp Σ) chan_spec_raw_examples := build_get_is_pkg_init_wf.
-Local Set Default Proof Using "All".
+Collection W := sem + package_sem.
+Set Default Proof Using "W".
 
 Instance func_countable : Countable func.t.
 Proof. Admitted.
@@ -348,7 +349,7 @@ Lemma wp_fib_consumer:
 
 
   }}}.
-Proof .
+Proof.
   wp_start. wp_auto.
   wp_apply chan.wp_make2; first done.
   iIntros (c γ) "(#Hchan & %Hcap_eq & Hown)".
@@ -459,7 +460,7 @@ Lemma wp_DSPExample :
   {{{ is_pkg_init chan_spec_raw_examples }}}
     @! chan_spec_raw_examples.DSPExample #()
   {{{ RET #(W64 42); True }}}.
-Proof.
+Proof using dspG0 W.
   wp_start. wp_auto.
   wp_apply chan.wp_make1.
   iIntros (c γ) "(#Hic & _Hcap & Hoc)". wp_auto.
@@ -936,7 +937,7 @@ Lemma wp_Client:
   {{{ is_pkg_init chan_spec_raw_examples }}}
     @! chan_spec_raw_examples.Client #()
   {{{ RET #"Hello, World!"; True%I }}}.
-Proof.
+Proof using dspG0 W.
   wp_start.
   wp_auto.
 
@@ -1142,7 +1143,7 @@ Lemma wp_makeGreeting :
   {{{ is_pkg_init chan_spec_raw_examples }}}
     @! chan_spec_raw_examples.makeGreeting #()
   {{{ RET #"Hello, World!"; True%I }}}.
-Proof.
+Proof using contributionG0 dspG0 W.
   wp_start. wp_auto.
   wp_apply chan.wp_make2; [done|].
   iIntros (c γ) "(#Hic & _ & Hoc)". wp_auto.

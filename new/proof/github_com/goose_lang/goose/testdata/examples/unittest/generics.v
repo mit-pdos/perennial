@@ -5,7 +5,8 @@ From New.generatedproof.github_com.goose_lang.goose.testdata.examples
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics} {package_sem : generics.Assumptions}.
-Local Set Default Proof Using "All".
+Collection W := sem + package_sem.
+Set Default Proof Using "W".
 
 #[global] Instance : IsPkgInit (iProp Σ) helpers := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf (iProp Σ) helpers := build_get_is_pkg_init_wf.
@@ -15,6 +16,8 @@ Local Set Default Proof Using "All".
 
 Section generic_proofs.
 Context `[!ZeroVal T'] `[!TypedPointsto T'] `[!IntoValTyped T' T].
+Collection W' := sem + package_sem + IntoValTyped0.
+Local Set Default Proof Using "W'".
 
 Lemma wp_BoxGet (b: generics.Box.t T') :
   {{{ is_pkg_init generics }}}

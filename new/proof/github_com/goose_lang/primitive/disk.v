@@ -7,7 +7,8 @@ Require Import New.generatedproof.github_com.goose_lang.primitive.disk.
 Section wps.
 Context `{!heapGS Σ}.
 Context {sem : go.Semantics} {package_sem : disk.Assumptions}.
-Local Set Default Proof Using "All".
+Collection W := sem + package_sem.
+Set Default Proof Using "W".
 
 #[global] Instance : IsPkgInit (iProp Σ) disk := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf (iProp Σ) disk := build_get_is_pkg_init_wf.

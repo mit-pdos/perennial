@@ -3,7 +3,8 @@ From New.proof.sync_proof Require Import base.
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics} {package_sem : sync.Assumptions}.
-Local Set Default Proof Using "All".
+Collection W := sem + package_sem.
+Set Default Proof Using "W".
 
 Definition is_sema (x : loc) γ N : iProp Σ :=
   inv N (∃ (v : w32), x ↦ v ∗ ghost_var γ (1/2) v).

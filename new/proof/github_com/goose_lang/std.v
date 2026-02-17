@@ -4,8 +4,6 @@ From New.generatedproof.github_com.goose_lang Require Import std.
 From New.proof Require Import github_com.goose_lang.primitive std.std_core sync.
 From iris_named_props Require Import custom_syntax.
 
-Set Default Proof Using "Type".
-
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics} {package_sem : std.Assumptions}.

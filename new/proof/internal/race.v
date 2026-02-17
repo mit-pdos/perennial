@@ -4,8 +4,9 @@ Require Export New.generatedproof.internal.race.
 
 Section init.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context {sem : go.Semantics}.
-Local Set Default Proof Using "All".
+Context {sem : go.Semantics} {package_sem : race.Assumptions}.
+Collection W := sem + package_sem.
+Set Default Proof Using "W".
 
 #[global] Instance : IsPkgInit (iProp Σ) race := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf (iProp Σ) race := build_get_is_pkg_init_wf.
