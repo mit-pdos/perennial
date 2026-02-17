@@ -8,9 +8,9 @@ From Perennial Require Import base.
 #[local] Open Scope general_if_scope.
 
 Tactic Notation "wp_func_call" :=
-  rewrite func_unfold; try iPkgInit.
+  iEval (rewrite func_unfold); try iPkgInit.
 Tactic Notation "wp_method_call" :=
-  rewrite method_unfold; try iPkgInit; try iFrame "#".
+  iEval (rewrite method_unfold); try iPkgInit; try iFrame "#".
 
 (* remove and introduce [is_pkg_init] and [is_pkg_defined] facts from a hypothesis *)
 Ltac destruct_pkg_init H :=

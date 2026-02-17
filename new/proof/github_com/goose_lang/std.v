@@ -13,7 +13,8 @@ Class stdG Σ := {
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics} {package_sem : std.Assumptions}.
-Local Set Default Proof Using "All".
+Collection W := sem + package_sem.
+Set Default Proof Using "W".
 Context `{!stdG Σ}.
 
 #[global] Instance : IsPkgInit (iProp Σ) std := define_is_pkg_init True%I.
@@ -176,7 +177,7 @@ Lemma wp_newJoinHandle (P: iProp Σ) :
   {{{ is_pkg_init std }}}
     @! std.newJoinHandle #()
   {{{ (l: loc), RET #l; is_JoinHandle l P }}}.
-Proof.
+Proof using W + stdG0.
   wp_start as "_".
   wp_auto.
   wp_alloc mu as "Hmu".
@@ -198,7 +199,7 @@ Lemma wp_JoinHandle__finish l (P: iProp Σ) :
   {{{ is_pkg_init std ∗ is_JoinHandle l P ∗ P }}}
     l @! (go.PointerType std.JoinHandle) @! "finish" #()
   {{{ RET #(); True }}}.
-Proof.
+Proof using W + stdG0.
   wp_start as "[Hhandle P]".
   iNamed "Hhandle".
   wp_auto.
@@ -216,7 +217,7 @@ Lemma wp_Spawn (P: iProp Σ) (f : func.t) :
         (∀ Φ, ▷(P -∗ Φ #()) -∗ WP #f #() {{ Φ }}) }}}
   @! std.Spawn #f
   {{{ (l: loc), RET #l; is_JoinHandle l P }}}.
-Proof.
+Proof using W + stdG0.
   wp_start as "Hwp".
   wp_auto.
   wp_apply (wp_newJoinHandle P) as "%l #Hhandle".
@@ -235,7 +236,7 @@ Lemma wp_JoinHandle__Join l P :
   {{{ is_pkg_init std ∗ is_JoinHandle l P }}}
     l @! (go.PointerType std.JoinHandle) @! "Join" #()
   {{{ RET #(); P }}}.
-Proof.
+Proof using W + stdG0.
   wp_start as "Hjh". iNamed "Hjh".
   wp_auto.
   wp_apply (wp_Mutex__Lock with "[$Hlock]") as "[Hlocked @]".
