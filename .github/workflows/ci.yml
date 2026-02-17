@@ -70,7 +70,7 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             gh-paired-pr -base mit-pdos/perennial -dependency goose-lang/goose -pr ${{ github.event.number }} -verbose
-            ./etc/ci-goose-check.py --new-goose-url "$( gh-paired-pr -base mit-pdos/perennial -dependency goose-lang/goose -pr ${{ github.event.number }} )"
+            ./etc/ci-goose-check.py --goose-url "$( gh-paired-pr -base mit-pdos/perennial -dependency goose-lang/goose -pr ${{ github.event.number }} )"
           else
             ./etc/ci-goose-check.py
           fi

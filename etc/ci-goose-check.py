@@ -41,7 +41,6 @@ projs = {
     "examples": Proj.make("examples", "https://github.com/mit-pdos/perennial-examples"),
     "etcd-raft": Proj.make("etcd-raft", "https://github.com/upamanyus/etcd-raft"),
     "etcd": Proj.make("etcd", "https://github.com/upamanyus/etcd"),
-    "go-journal": Proj.make("go-journal", "https://github.com/mit-pdos/go-journal"),
 }
 
 
@@ -114,8 +113,6 @@ def main():
             projs["etcd"].path(),
             "--etcd-raft",
             projs["etcd-raft"].path(),
-            "--go-journal",
-            projs["go-journal"].path(),
         ],
         check=True,
     )
