@@ -1,3 +1,29 @@
+(** This file provides a universal cmra and a new notion of ownership that
+   allows for using many different cmras in proofs, without having separate
+   [inG] assumptions for each algebra as is typical in Iris.
+
+   Instead of Iris's built-in [own] predicate, use this file's
+   [own γ (a : A)] predicate, which requires ensuring proofs have [allG Σ] in
+   their context. The single [allG Σ] covers a large class of cmras, and is
+   meant to be a singleton in all proofs (there should never be more than one in
+   context). *)
+
+(** For developers: the universal cmra is roughly a coproduct of all supported
+   cmras. This is an infinite coproduct, as it supports e.g. [authR A] for any
+   type [A]. The type [syntax.cmra] is the indexing type for the coproduct, and
+   each one denotes some actual [cmra] via [int_cmra]. To add more cmras, add it
+   to [syntax], and then also add the relevant [IsCmra] instances; [IsCmra]
+   helps map an arbitrary [cmra] into some [syntax.cmra] as evidence that it is
+   included in the universal cmra.
+
+   Iris does not provide a coproduct cmra library. Iris does provide arbitrary
+   products of [ucmra]s via [discrete_funUR]. In the category of ucmras,
+   coproducts and products are similar (e.g. think coproduct and product of
+   abelian groups being similar: ∐ᵢ Aᵢ = ⨁ᵢ Aᵢ ⊆ ∏ᵢ Aᵢ). Moreover, [optionUR]
+   turns any [cmra] into a [ucmra] in a nice way. Put together, this allows for
+   having (something bigger than) the coproduct as [discrete_funUR (optionUR ∘
+   int_cmra)]. *)
+
 From iris.algebra Require Export
   gset functions reservation_map mra dyn_reservation_map view gmultiset csum
   gmap_view max_prefix_list dfrac_agree auth excl numbers proofmode_classes.
