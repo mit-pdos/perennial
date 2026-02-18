@@ -29,9 +29,10 @@ Definition own_Wait γ w R : iProp Σ :=
       (∀ (id' : w64),
          {{{ I γ ∗ own_unregistered_id γ id' }}}
            interface_call w "Register" #id'
-         {{{ ch, RET #ch;
+         {{{ ch γch, RET #ch;
              I γ ∗
-             (∀ Φ, (∀ v, R id' v -∗ Φ v true) -∗ recv_au ch any.t Φ)
+             is_chan ch γch interface.t ∗
+             (∀ Φ, (∀ v, R id' v -∗ Φ v true) -∗ recv_au γch any.t Φ)
          }}}) ∗
     "#Trigger" ∷
       (∀ (id' : w64) (x : interface.t),
@@ -51,13 +52,14 @@ Definition own_Wait γ w R : iProp Σ :=
 Lemma wp_Wait__Register γ w (id' : w64) R :
   {{{ is_pkg_init wait ∗ own_Wait γ w R ∗ own_unregistered_id γ id' }}}
     interface_call w "Register" #id'
-  {{{ ch, RET #ch;
+  {{{ ch γch, RET #ch;
+      is_chan ch γch interface.t ∗
       own_Wait γ w R ∗
-      (∀ Φ, (∀ v, R id' v -∗ Φ v true) -∗ recv_au ch any.t Φ)
+      (∀ Φ, (∀ v, R id' v -∗ Φ v true) -∗ recv_au γch any.t Φ)
   }}}.
 Proof.
   wp_start as "[Hw Hid]". iNamed "Hw".
-  iApply ("Register" with "[$]"). iIntros "!> * [I post]". iApply "HΦ". iFrame "∗#".
+  iApply ("Register" with "[$]"). iIntros "!> * [I post]". iApply "HΦ". iFrame "∗#". iFrame.
 Qed.
 
 Lemma wp_Wait__Trigger γ w (id' : w64) (x : interface.t) R :

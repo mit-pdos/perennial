@@ -175,7 +175,7 @@ Lemma wp_withCancel PDone' ctx ctx_desc :
   }}}
     @! context.withCancel #(interface.ok ctx)
   {{{
-        ctx' done' (cancel : func.t), RET (#ctx', #cancel);
+        ctx' done' (cancel : func.t), RET (#(interface.ok ctx'), #cancel);
         {{{ PDone' }}} #cancel #() {{{ RET #(); True }}} ∗
         is_Context ctx' (ctx_desc <| PDone := ctx_desc.(PDone) ∨ PDone' |> <|Done := done'|> )
   }}}.
@@ -188,7 +188,7 @@ Lemma wp_WithCancel PDone' ctx ctx_desc :
   }}}
     @! context.WithCancel #(interface.ok ctx)
   {{{
-        ctx' done' (cancel : func.t), RET (#ctx', #cancel);
+        ctx' done' (cancel : func.t), RET (#(interface.ok ctx'), #cancel);
         {{{ PDone' }}} #cancel #() {{{ RET #(); True }}} ∗
         is_Context ctx' (ctx_desc <| PDone := ctx_desc.(PDone) ∨ PDone' |> <|Done := done'|> )
   }}}.
@@ -201,7 +201,7 @@ Lemma wp_WithDeadlineCause parent parent_desc (d : time.Time.t) (cause : error.t
   }}}
     @! context.WithDeadlineCause #(interface.ok parent) #d #cause
   {{{
-        ctx' done' (cancel : func.t), RET (#ctx', #cancel);
+        ctx' done' (cancel : func.t), RET (#(interface.ok ctx'), #cancel);
         {{{ True }}} #cancel #() {{{ RET #(); True }}} ∗
         is_Context ctx' (parent_desc <| Deadline := Some d |> <| PDone := True |> <|Done := done'|>)
   }}}.
@@ -214,7 +214,7 @@ Lemma wp_WithDeadline parent parent_desc (d : time.Time.t) :
   }}}
     @! context.WithDeadline #(interface.ok parent) #d
   {{{
-        ctx' done' (cancel : func.t), RET (#ctx', #cancel);
+        ctx' done' (cancel : func.t), RET (#(interface.ok ctx'), #cancel);
         {{{ True }}} #cancel #() {{{ RET #(); True }}} ∗
         is_Context ctx' (parent_desc <| Deadline := Some d |> <| PDone := True |> <|Done := done'|>)
   }}}.
@@ -227,7 +227,7 @@ Lemma wp_WithTimeout parent parent_desc (timeout : time.Duration.t) :
   }}}
     @! context.WithTimeout #(interface.ok parent) #timeout
   {{{
-        ctx' done' (cancel : func.t) d, RET (#ctx', #cancel);
+        ctx' done' (cancel : func.t) d, RET (#(interface.ok ctx'), #cancel);
         {{{ True }}} #cancel #() {{{ RET #(); True }}} ∗
         is_Context ctx' (parent_desc <| Deadline := Some d |> <| PDone := True |> <|Done := done'|>)
   }}}.

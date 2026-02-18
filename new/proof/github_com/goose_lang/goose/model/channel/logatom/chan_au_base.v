@@ -688,4 +688,4 @@ End defns.
 
 #[global] Opaque is_chan own_chan.
 
-Global Arguments own_chan_halves_update {_ _ _ _} (_).
+Global Arguments own_chan_halves_update {_ _ _ _ _ _ _} (_).

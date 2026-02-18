@@ -68,7 +68,7 @@ Section saved_prop.
 
   Global Instance saved_prop_combine_as γ dq1 dq2 P Q :
     CombineSepAs (saved_prop_own γ dq1 P) (saved_prop_own γ dq2 Q)
-      (saved_prop_own γ (dq1 ⋅ dq2) P).
+      (saved_prop_own γ (dq1 ⋅ dq2) P) | 100.
   (* higher cost than the Fractional instance, which kicks in for #qs *)
   Proof.
     rewrite /CombineSepAs. iIntros "[Hx Hy]".
@@ -131,7 +131,7 @@ Section saved_pred.
   Definition saved_pred_own (γ : gname) (dq : dfrac) (Φ : A → iProp Σ) :=
     own γ (to_dfrac_agree dq (Next ∘ Φ : oFunctor_apply (A -d> ▶ ∙) (iPropO Σ))).
 
-  Global Typeclasses Opaque saved_prop_own.
+  Global Typeclasses Opaque saved_pred_own.
 
   Global Instance saved_pred_discarded_persistent γ Φ :
     Persistent (saved_pred_own γ DfracDiscarded Φ).
@@ -184,6 +184,31 @@ Section saved_pred.
   Lemma saved_pred_agree γ dq1 dq2 Φ Ψ x :
     saved_pred_own γ dq1 Φ -∗ saved_pred_own γ dq2 Ψ -∗ ▷ (Φ x ≡ Ψ x).
   Proof. iIntros "Hx Hy". iPoseProof (saved_pred_valid_2 with "Hx Hy") as "[_ $]". Qed.
+
+  Global Instance saved_pred_combine_as γ dq1 dq2 Φ Ψ :
+    CombineSepAs (saved_pred_own γ dq1 Φ) (saved_pred_own γ dq2 Ψ)
+      (saved_pred_own γ (dq1 ⋅ dq2) Φ) | 100.
+  (* higher cost than the Fractional instance, which kicks in for #qs *)
+  Proof.
+    rewrite /CombineSepAs. iIntros "[Hx Hy]".
+    unfold saved_pred_own.
+    set (x:=(Next ∘ Φ : (A -d> laterO (iPropO Σ)))).
+    set (y:=(Next ∘ Ψ : (A -d> laterO (iPropO Σ)))).
+    iCombine "Hx Hy" gives "H". rewrite dfrac_agree_validI_2.
+    iDestruct "H" as "[_ Heq]".
+    iRewrite -"Heq" in "Hy".
+    iCombine "Hx Hy" as "H". rewrite dfrac_agree_op. iFrame.
+  Qed.
+
+  Global Instance saved_pred_combine_gives γ dq1 dq2 Φ Ψ :
+    CombineSepGives (saved_pred_own γ dq1 Φ) (saved_pred_own γ dq2 Ψ)
+      (⌜✓ (dq1 ⋅ dq2)⌝ ∗
+       (Next ∘ Φ : A -d> laterO (iPropO Σ)) ≡ (Next ∘ Ψ : A -d> laterO (iPropO Σ))).
+  Proof.
+    rewrite /CombineSepGives. iIntros "[Hx Hy]". unfold saved_pred_own.
+    iCombine "Hx Hy" gives "Hv". rewrite dfrac_agree_validI_2.
+    iModIntro. iDestruct "Hv" as "[$ $]".
+  Qed.
 
   (** Make an element read-only. *)
   Lemma saved_pred_persist γ dq v :

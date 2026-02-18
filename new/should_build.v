@@ -14,7 +14,6 @@ From New.proof.github_com.goose_lang.goose.testdata.examples
 From New.proof.github_com.goose_lang.goose.model.channel.idiom
   Require idioms.
 
-(* FIXME: need all_scmra to get these proofs to work. *)
 From New.proof Require go_etcd_io.raft.v3.
 From New.proof Require go_etcd_io.etcd.client.v3.leasing leasing_proof.protocol.
 Require New.proof.go_etcd_io.etcd.server.v3.etcdserver.

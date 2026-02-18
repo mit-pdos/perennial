@@ -9,11 +9,9 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics} {package_sem : raft.Assumptions}.
 Collection W := sem + package_sem.
 
-#[global] Instance : IsPkgInit (iProp Σ) raft := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf (iProp Σ) raft := build_get_is_pkg_init_wf.
-Definition is_Node (γ : raft_names) (n : raft.Node.t) : iProp Σ :=
+Definition is_Node (γ : raft_names) n : iProp Σ :=
   ∃ (n_ptr : loc),
-    "%Hn" ∷ ⌜ n = interface.mk (ptrT.id raft.node.id) #n_ptr ⌝ ∗
+    "%Hn" ∷ ⌜ n = interface.mk (go.PointerType raft.node) #n_ptr ⌝ ∗
     "#Hnode" ∷ is_node γ n_ptr.
 
 Lemma wp_Node__Propose  ctx ctx_desc n γraft data_sl data :
@@ -23,11 +21,11 @@ Lemma wp_Node__Propose  ctx ctx_desc n γraft data_sl data :
       "data_sl" ∷ data_sl ↦* data ∗
       "Hupd" ∷ (|={⊤,∅}=> ∃ log, own_raft_log γraft log ∗ (own_raft_log γraft (log ++ [data]) ={∅,⊤}=∗ True))
   }}}
-    interface.get #"Propose" #n #ctx #data_sl
+    #(methods n.(interface.ty) "Propose" n.(interface.v)) #(interface.ok ctx) #data_sl
   {{{ (err : error.t), RET #err; True }}}.
 Proof.
-  wp_start. iNamed "Hpre". iNamed "Hnode". subst.
-  wp_auto. wp_apply (wp_node__Propose with "[$]").
+  wp_start. iNamed "Hpre". iNamed "Hnode". subst. simpl.
+  wp_apply (wp_node__Propose with "[$]").
   iIntros (?) "_". by iApply "HΦ".
 Qed.
 

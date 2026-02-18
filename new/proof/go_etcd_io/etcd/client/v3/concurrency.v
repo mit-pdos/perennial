@@ -2,16 +2,14 @@ Require Import New.code.go_etcd_io.etcd.client.v3.concurrency.
 Require Import New.generatedproof.go_etcd_io.etcd.client.v3.concurrency.
 Require Import New.proof.proof_prelude.
 Require Import New.proof.go_etcd_io.etcd.client.v3.
-From New.proof Require Import context sync time math errors fmt.
+From New.proof Require Import context sync time math errors fmt chan_proof.closeable.
 
 Ltac2 Set wp_apply_auto_default := Ltac2.Init.false.
 
 Section proof.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context {sem : go.Semantics} {package_sem : zapcore.Assumptions}.
+Context {sem : go.Semantics} {package_sem : concurrency.Assumptions}.
 Collection W := sem + package_sem.
 
 #[global] Instance : IsPkgInit (iProp Σ) zapcore := define_is_pkg_init True%I.
@@ -19,28 +17,28 @@ Collection W := sem + package_sem.
 Context `{concurrencyG Σ}.
 
 (* FIXME: move these *)
-#[global] Instance : IsPkgInit zapcore := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf zapcore := build_get_is_pkg_init_wf.
+#[global] Instance : IsPkgInit (iProp Σ) zapcore := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ) zapcore := build_get_is_pkg_init_wf.
 
-#[global] Instance : IsPkgInit zap := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf zap := build_get_is_pkg_init_wf.
+#[global] Instance : IsPkgInit (iProp Σ) zap := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ) zap := build_get_is_pkg_init_wf.
 
-#[global] Instance : IsPkgInit strings := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf strings := build_get_is_pkg_init_wf.
+#[global] Instance : IsPkgInit (iProp Σ) strings := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ) strings := build_get_is_pkg_init_wf.
 
-#[global] Instance : IsPkgInit concurrency := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf concurrency := build_get_is_pkg_init_wf.
+#[global] Instance : IsPkgInit (iProp Σ) concurrency := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ) concurrency := build_get_is_pkg_init_wf.
 
 Definition is_Session (s : loc) γ (lease : clientv3.LeaseID.t) : iProp Σ :=
-  ∃ cl donec,
-  "#client" ∷ s ↦s[concurrency.Session :: "client"]□ cl ∗
-  "#id" ∷ s ↦s[concurrency.Session :: "id"]□ lease ∗
+  ∃ cl donec γdonec,
+  "#client" ∷ s.[concurrency.Session.t, "client"] ↦□ cl ∗
+  "#id" ∷ s.[concurrency.Session.t, "id"] ↦□ lease ∗
   "#Hclient" ∷ is_Client cl γ ∗
   "#Hlease" ∷ is_etcd_lease γ lease ∗
-  "#donec" ∷ s ↦s[concurrency.Session :: "donec"]□ donec ∗
+  "#donec" ∷ s.[concurrency.Session.t, "donec"] ↦□ donec ∗
   (* One can keep calling receive, and the only thing they might get back is a
      "closed" value. *)
-  "#Hdonec" ∷ own_closeable_chan donec True closeable.Unknown.
+  "#Hdonec" ∷ own_closeable_chan donec γdonec True closeable.Unknown.
 
 #[global] Opaque is_Session.
 #[local] Transparent is_Session.
@@ -68,15 +66,13 @@ Proof.
   wp_for "i".
   wp_if_destruct; [word|].
   wp_apply (wp_Client__Grant with "[$]") as "* [Hresp Hl]". wp_auto.
-  destruct bool_decide eqn:Herr.
-  2:{ (* got an error; early return *)
+  destruct err.
+  { (* got an error; early return *)
     wp_auto.
     iApply "HΦ".
-    rewrite bool_decide_eq_false in Herr.
     destruct decide; done.
   }
   (* no error from Grant() call *)
-  rewrite bool_decide_eq_true in Herr. subst.
   wp_auto.
   rewrite decide_True //.
   iDestruct "Hl" as "#Hlease0".

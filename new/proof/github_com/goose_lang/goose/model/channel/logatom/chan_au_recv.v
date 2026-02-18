@@ -151,11 +151,7 @@ Proof using W.
       iCombine "Hpred1 Hpred2" as "Hp".
       wp_apply (wp_Mutex__Unlock
                  with "[$lock state v slice slice_cap buffer Hchanrepfrag   Hp  H1   $Hlock]").
-      { unfold chan_inv_inner. iExists (Idle). iFrame.
-        iExists Φr0. iFrame. unfold  saved_prop.saved_pred_own . rewrite dfrac_op_own Qp.half_half.
-        iFrame "∗#".
-        done.
-      }
+      { unfold chan_inv_inner. iExists (Idle). iFrame. done. }
       iRewrite -"Hpeq" in "HP".
       iRight in "HP". iFrame.
     }
@@ -182,8 +178,7 @@ Proof using W.
                                                  (uncurry Φr0)
                                                  (v0, true)
                   with "[$Hpred2] [$Hpred]") as "#Hagree".
-      iCombine "Hpred2 Hpred" as "offer".
-      rewrite dfrac_op_own Qp.half_half.
+      iCombine "Hpred2 Hpred" as "offer". rewrite dfrac_op_own Qp.half_half.
       iDestruct (saved_offer_lc_agree with "[$] [$offer2] [$Hoffer]") as ">(%Heq & Hpeq & H & H1)".
       wp_apply (wp_Mutex__Unlock
                  with "[$lock state v slice slice_cap buffer H1   Hgv2 offer   $Hlock]").

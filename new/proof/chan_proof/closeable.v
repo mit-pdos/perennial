@@ -133,7 +133,7 @@ Proof.
   iNext. iNamed "Hi". iFrame. destruct st; try done.
   - iIntros "Hch". iMod "Hmask" as "_".
     iCombine "Hown Hs" as "Hown". rewrite -dfrac_agree_op dfrac_op_own Qp.half_half.
-    iMod (own_update  _ (to_dfrac_agree DfracDiscarded true) with "Hown") as "#H".
+    iMod (own_update  _ _ (to_dfrac_agree DfracDiscarded true) with "Hown") as "#H".
     { apply cmra_update_exclusive. done. }
     iSpecialize ("HΦ" with "[$]"). iFrame.
     iMod ("Hclose" with "[-]"); last done. iFrame "∗#%".
