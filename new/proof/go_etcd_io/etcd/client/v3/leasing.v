@@ -1,4 +1,3 @@
-From Perennial.base_logic.lib Require Import ghost_map.
 Require Import New.code.go_etcd_io.etcd.client.v3.leasing.
 Require Import New.generatedproof.go_etcd_io.etcd.client.v3.leasing.
 Require Import New.generatedproof.go_etcd_io.etcd.api.v3.v3rpc.rpctypes.
@@ -7,69 +6,56 @@ From New.proof Require Import context sync.
 
 Require Import New.proof.go_etcd_io.etcd.client.v3.concurrency.
 Require Import New.proof.go_etcd_io.etcd.client.v3.
+Require Import New.proof.chan_proof.closeable.
 
 Require Import Perennial.base.
 
 Ltac2 Set wp_apply_auto_default := Ltac2.Init.false.
 
-Class leasingG Σ :=
-  {
-    concurrency_inG :: concurrencyG Σ;
-    (* context_inG :: contextG Σ *) (* FIXME: skipped to avoid duplicate [inG]s. *)
-    entries_ready_inG :: ghost_varG Σ bool;
-  }.
-
 Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-
-(* FIXME: come up with a plan for global addrs of imported packages. *)
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context {sem : go.Semantics} {package_sem : bytes.Assumptions}.
+Context {sem : go.Semantics} {package_sem : leasing.Assumptions}.
 Collection W := sem + package_sem.
+Set Default Proof Using "W".
 
 #[global] Instance : IsPkgInit (iProp Σ) bytes := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf (iProp Σ) bytes := build_get_is_pkg_init_wf.
-Context `{leasingG Σ}.
 
 (* FIXME: move these *)
 
-#[global] Instance : IsPkgInit bytes := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf bytes := build_get_is_pkg_init_wf.
+#[global] Instance : IsPkgInit (iProp Σ) rpc.status.pkg_id.status := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ) rpc.status.pkg_id.status := build_get_is_pkg_init_wf.
 
-#[global] Instance : IsPkgInit rpc.status.status := define_is_pkg_init True%I.
+#[global] Instance : IsPkgInit (iProp Σ) pkg_id.status := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ) pkg_id.status := build_get_is_pkg_init_wf.
 
-(* FIXME: status.info' refers to its own [status.status] because `grpc/status` imports
-   `genproto/googleapis/rpc/status *)
-#[global] Instance : IsPkgInit status.status :=
-  {|
-    is_pkg_init_def := True;
-    is_pkg_init_deps := is_pkg_defined status.status;
-  |}.
-#[global] Instance : GetIsPkgInitWf status.status :=
-  {|
-    get_is_pkg_init_prop get_is_pkg_init := get_is_pkg_init status.status = is_pkg_init status.status
- |}.
+#[global] Instance : IsPkgInit (iProp Σ) codes := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ) codes := build_get_is_pkg_init_wf.
 
-#[global] Instance : IsPkgInit codes := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf codes := build_get_is_pkg_init_wf.
+#[global] Instance : IsPkgInit (iProp Σ) rpctypes := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ) rpctypes := build_get_is_pkg_init_wf.
 
-#[global] Instance : IsPkgInit rpctypes := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf rpctypes := build_get_is_pkg_init_wf.
+#[global] Instance : IsPkgInit (iProp Σ) strings := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ) strings := build_get_is_pkg_init_wf.
 
-#[global] Instance : IsPkgInit strings := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf strings := build_get_is_pkg_init_wf.
+#[global] Instance : IsPkgInit (iProp Σ) leasing := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ) leasing := build_get_is_pkg_init_wf.
 
-#[global] Instance : IsPkgInit leasing := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf leasing := build_get_is_pkg_init_wf.
+Lemma seq_replicate_fmap {A} y n (a : A) :
+  (λ _, a) <$> seq y n = replicate n a.
+Proof.
+  revert y. induction n.
+  { done. }
+  { simpl. intros. f_equal. by erewrite IHn. }
+Qed.
 
 (* TODO: move this somewhere else *)
-Context `{!ghost_mapG Σ nat ()}.
 Lemma trivial_WaitGroup_start_done N' wg_ptr γ (N : namespace) ctr :
   (↑N' : coPset) ## ↑N →
   is_WaitGroup wg_ptr γ N ∗ own_WaitGroup γ ctr ={⊤}=∗
   [∗] (replicate (Z.to_nat (sint.Z ctr))
-         (∀ Φ, is_pkg_init sync -∗ Φ #() -∗ WP wg_ptr @ (ptrT.id sync.WaitGroup.id) @ "Done" #() {{ Φ }})).
-Proof using ghost_mapG0.
+         (∀ Φ, is_pkg_init sync -∗ Φ #() -∗ WP wg_ptr @! (go.PointerType sync.WaitGroup) @! "Done" #() {{ Φ }})).
+Proof.
   intros HN.
   iIntros "(#His & Hctr)".
   destruct (decide (sint.Z ctr > 0)).
@@ -136,14 +122,10 @@ Record leasingKV_names := {
 
 Implicit Types γ : leasingKV_names.
 
-(* FIXME: make this a global instance where it's defined?; this is to have contextG
-   available here without directly adding it to [leasingG]. *)
-Local Existing Instance clientv3_inG.
-Local Existing Instance clientv3_contextG.
-
 Definition own_leaseKey (lk : leasing.leaseKey.t) γ (key : go_string) : iProp Σ :=
   "Hwaitc" ∷ (⌜ lk.(leasing.leaseKey.waitc') = chan.nil ⌝ ∨
-              own_closeable_chan lk.(leasing.leaseKey.waitc') True closeable.Unknown) ∗
+                                                 ∃ γlk,
+              own_closeable_chan lk.(leasing.leaseKey.waitc') γlk True closeable.Unknown) ∗
   "_" ∷ True
   (* TODO: repr predicate for RangeResponse *)
 .
@@ -151,47 +133,45 @@ Definition own_leaseKey (lk : leasing.leaseKey.t) γ (key : go_string) : iProp �
 Definition own_leaseCache_locked lc γ q : iProp Σ :=
   ∃ entries_ptr (entries : gmap go_string loc) revokes_ptr (revokes : gmap go_string time.Time.t)
     (entries_ready : bool),
-  "entries_ptr" ∷ lc ↦s[leasing.leaseCache :: "entries"]{#q} entries_ptr ∗
+  "entries_ptr" ∷ lc.[leasing.leaseCache.t, "entries"] ↦{#q} entries_ptr ∗
   "entries" ∷ (if entries_ready then entries_ptr ↦$ entries else ⌜ entries_ptr = null ∧ entries = ∅ ⌝
     ) ∗
   "Hentries" ∷ ([∗ map] key ↦ lk_ptr ∈ entries, ∃ lk, lk_ptr ↦ lk ∗ own_leaseKey lk γ key) ∗
-  "revokes_ptr" ∷ lc ↦s[leasing.leaseCache :: "revokes"]{#q} revokes_ptr ∗
+  "revokes_ptr" ∷ lc.[leasing.leaseCache.t, "revokes"] ↦{#q} revokes_ptr ∗
   "revokes" ∷  revokes_ptr ↦$ revokes ∗
-  "Hentries_ready" ∷ ghost_var γ.(entries_ready_gn)
+  "Hentries_ready" ∷ dghost_var γ.(entries_ready_gn)
                                 (if entries_ready then DfracDiscarded else (DfracOwn 1)) entries_ready
   (* TODO: header? *)
 .
 
-Definition is_entries_ready γ := ghost_var γ.(entries_ready_gn) DfracDiscarded true.
+Definition is_entries_ready γ := dghost_var γ.(entries_ready_gn) DfracDiscarded true.
 
 (* Proposition guarded by [lkv.leases.mu] *)
 Local Definition own_leasingKV_locked lkv (γ : leasingKV_names) q : iProp Σ :=
-  let leases := (struct.field_ref_f leasing.leasingKV "leases" lkv) in
-  ∃ (sessionc : chan.t) (session : loc),
-    "sessionc" ∷ lkv ↦s[leasing.leasingKV :: "sessionc"]{#q/2} sessionc ∗
-    "#Hsessionc" ∷ own_closeable_chan sessionc (is_entries_ready γ) closeable.Unknown ∗
-    "session" ∷ lkv ↦s[leasing.leasingKV :: "session"]{#q/2} session ∗
+  ∃ (sessionc : chan.t) (session : loc) γsession,
+    "sessionc" ∷ lkv.[leasing.leasingKV.t, "sessionc"] ↦{#q/2} sessionc ∗
+    "#Hsessionc" ∷ own_closeable_chan sessionc γsession (is_entries_ready γ) closeable.Unknown ∗
+    "session" ∷ lkv.[leasing.leasingKV.t, "session"] ↦{#q/2} session ∗
     "#Hsession" ∷ (if decide (session = null) then True else ∃ lease, is_Session session γ.(etcd_gn) lease) ∗
-    "Hleases" ∷ own_leaseCache_locked leases γ q.
+    "Hleases" ∷ own_leaseCache_locked (lkv.[leasing.leasingKV.t, "leases"]) γ q.
 
 (* This is owned by the background thread running [monitorSession]. *)
 Local Definition own_leasingKV_monitorSession lkv γ : iProp Σ :=
-  ∃ (session : loc) sessionc (open : bool),
-  "session" ∷ lkv ↦s[leasing.leasingKV :: "session"]{#(1/2)} session ∗
+  ∃ (session : loc) sessionc (open : bool) γsessionc,
+  "session" ∷ lkv.[leasing.leasingKV.t, "session"] ↦{#(1/2)} session ∗
   "#Hsession" ∷ (if decide (session = null) then True else ∃ lease, is_Session session γ.(etcd_gn) lease) ∗
-  "sessionc" ∷ lkv ↦s[leasing.leasingKV :: "sessionc"]{#(1/2)} sessionc ∗
-  "Hsessionc" ∷ own_closeable_chan sessionc (is_entries_ready γ) (if open then closeable.Open else closeable.Closed).
+  "sessionc" ∷ lkv.[leasing.leasingKV.t, "sessionc"] ↦{#(1/2)} sessionc ∗
+  "Hsessionc" ∷ own_closeable_chan sessionc γsessionc (is_entries_ready γ) (if open then closeable.Open else closeable.Closed).
 
 (* Almost persistent. *)
 Definition own_leasingKV (lkv : loc) γ : iProp Σ :=
-  ∃ (cl : loc) (ctx : context.Context.t) ctx_st,
-  "#cl" ∷ lkv ↦s[leasing.leasingKV :: "cl"]□ cl ∗
+  ∃ (cl : loc) ctx ctx_st,
+  "#cl" ∷ lkv.[leasing.leasingKV.t, "cl"] ↦□ cl ∗
   "#Hcl" ∷ is_Client cl γ.(etcd_gn) ∗
-  "#ctx" ∷ lkv ↦s[leasing.leasingKV::"ctx"]□ ctx ∗
+  "#ctx" ∷ lkv.[leasing.leasingKV.t, "ctx"] ↦□ (interface.ok ctx) ∗
   "#Hctx" ∷ is_Context ctx ctx_st ∗
-  "#session_opts" ∷ lkv ↦s[leasing.leasingKV :: "sessionOpts"]□ slice.nil ∗
-  "Hmu" ∷ own_RWMutex (struct.field_ref_f leasing.leaseCache "mu" (struct.field_ref_f leasing.leasingKV "leases" lkv))
-    (own_leasingKV_locked lkv γ).
+  "#session_opts" ∷ lkv.[leasing.leasingKV.t, "sessionOpts"] ↦□ slice.nil ∗
+  "Hmu" ∷ own_RWMutex lkv.[leasing.leasingKV.t, "leases"].[leasing.leaseCache.t, "mu"] (own_leasingKV_locked lkv γ).
 #[global] Opaque own_leasingKV.
 #[local] Transparent own_leasingKV.
 
@@ -204,25 +184,25 @@ Lemma wp_leasingKV__monitorSession lkv γ :
       "Hown_kv" ∷ own_leasingKV lkv γ ∗
       "Hown" ∷ own_leasingKV_monitorSession lkv γ
   }}}
-    lkv @ (ptrT.id leasing.leasingKV.id) @ "monitorSession" #()
+    lkv @! (go.PointerType leasing.leasingKV) @! "monitorSession" #()
   {{{ RET #(); True }}}.
 Proof.
   wp_start as "Hpre". iNamed "Hpre". wp_auto.
   wp_for. iNamed "Hown_kv". wp_auto. iNamed "Hctx".
-  wp_apply "HErr"; first iFrame "#". iIntros (?) "_". wp_pures.
-  destruct bool_decide.
-  2:{
+  wp_apply "HErr"; first iFrame "#". iIntros (?) "_". wp_auto.
+  destruct err; wp_auto.
+  {
     rewrite decide_False //.
     rewrite decide_True //. wp_auto. iApply "HΦ". eauto.
   }
   rewrite decide_True //. wp_auto.
   iNamed "Hown".
   wp_auto.
-  wp_bind (if: _ then _ else _)%E.
-  iApply (wp_wand _ _ _ (λ v,
-                           (⌜ v = execute_val ⌝ ∨
-                                    ⌜ v = return_val #tt ⌝) ∗
-                           "session" ∷ _ ↦s[_::_]{#1/2} session ∗ _)%I with "[-]").
+
+  wp_if_join(λ v,
+               (⌜ v = execute_val ⌝ ∨
+                        ⌜ v = return_val #tt ⌝) ∗
+               "session" ∷ _.[_, _] ↦{#1/2} session ∗ _)%I with "[-]".
   {
     wp_if_destruct.
     { simpl. iFrame "session". iSplitR.

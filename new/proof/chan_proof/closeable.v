@@ -122,7 +122,7 @@ Proof.
       iMod "Hmask" as "_". iMod ("Hclose" with "[-]"); last done. iFrame "∗#".
 Qed.
 
-Lemma wp_closeable_chan_close `{!ty ↓u go.ChannelType dir (go.StructType [])} ch γch Pclosed :
+Lemma wp_closeable_chan_close `[!ty ↓u go.ChannelType dir (go.StructType [])] ch γch Pclosed :
   {{{ own_closeable_chan ch γch Pclosed Open ∗ □ Pclosed }}}
   #(functions go.close [ty]) #ch
   {{{ RET #(); own_closeable_chan ch γch Pclosed Closed }}}.
@@ -141,7 +141,7 @@ Proof.
     iCombine "Hown Hs" gives %Hbad%dfrac_agree_op_valid. exfalso. naive_solver.
 Qed.
 
-Lemma alloc_closeable_chan {E} Pclose γ ch (s : chanstate.t unit) :
+Lemma alloc_closeable_chan {E} Pclose γ ch :
   is_chan ch γ unit -∗
   own_chan γ unit chanstate.Idle ={E}=∗
   own_closeable_chan ch γ Pclose Open.

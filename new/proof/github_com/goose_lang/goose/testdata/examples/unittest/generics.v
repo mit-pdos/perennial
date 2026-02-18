@@ -27,7 +27,7 @@ Proof.
   wp_start as "_". wp_auto. wp_end.
 Qed.
 
-Lemma wp_Box__Get (b: generics.Box.t T') :
+Lemma wp_Box__Get' (b: generics.Box.t T') :
   {{{ is_pkg_init generics }}}
     b @! (generics.Box T) @! "Get" #()
   {{{ RET #(generics.Box.Value' b); True }}}.
@@ -35,12 +35,12 @@ Proof.
   wp_start as "_". wp_auto. wp_end.
 Qed.
 
-Lemma wp_Box__Get' l (b: generics.Box.t T') :
+Lemma wp_Box__Get l (b: generics.Box.t T') :
   {{{ is_pkg_init generics ∗ l ↦ b }}}
     l @! (go.PointerType $ generics.Box T) @! "Get" #()
   {{{ RET #(generics.Box.Value' b); True }}}.
 Proof.
-  wp_start. wp_auto. wp_apply wp_Box__Get. wp_end.
+  wp_start. wp_auto. wp_apply wp_Box__Get'. wp_end.
 Qed.
 
 Lemma wp_makeGenericBox (value : T') :
@@ -73,7 +73,7 @@ Lemma wp_useBoxGet :
     @! generics.useBoxGet #()
   {{{ RET #(W64 42); True }}}.
 Proof.
-  wp_start. wp_auto. wp_apply wp_makeGenericBox. wp_apply wp_Box__Get. wp_end.
+  wp_start. wp_auto. wp_apply wp_makeGenericBox. wp_apply (wp_Box__Get with "[$]"). wp_end.
 Qed.
 
 Lemma wp_useContainer :

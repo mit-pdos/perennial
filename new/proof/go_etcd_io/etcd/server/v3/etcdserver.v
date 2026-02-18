@@ -58,11 +58,8 @@ Axiom own_EtcdServer_access : ∀ s γ,
     "#w" ∷ s.[etcdserver.EtcdServer.t, "w"] ↦□ (interface.ok w) ∗
     "#Hinternal" ∷ is_EtcdServer_internal s γ ∗
     "#r" ∷ s.[etcdserver.EtcdServer.t, "r"] ↦□ r ∗
-    "#raftNode" ∷ r.[etcdserver.raftNode.t, "raftNodeConfig"]
+    "#r_raftNode" ∷ r.[etcdserver.raftNode.t, "raftNodeConfig"]
        .[etcdserver.raftNodeConfig.t, "Node"] ↦□ (interface.ok rn) ∗
-
-      (s.[etcdserver.EtcdServer.t, "r"].[etcdserver.raftNode.t, "raftNodeConfig"]
-       .[etcdserver.raftNodeConfig.t, "Node"] ↦□ (interface.ok rn)) ∗
     "#Hr" ∷ is_Node (raft_gn γ) rn ∗
     "Hw" ∷ own_Wait γw w waitR ∗
     "Hclose" ∷ (own_Wait γw w waitR -∗ own_EtcdServer s γ)
@@ -139,7 +136,7 @@ Lemma wp_EtcdServer__processInternalRaftRequestOnce (s : loc) γ ctx ctx_desc re
 Proof.
   wp_start. iNamed "Hpre".
   wp_apply wp_with_defer as "%defer Hdefer" . simpl subst.
-  wp_auto.
+  wp_auto. iRename "r" into "req_ptr".
   iDestruct (own_EtcdServer_access with "Hsrv") as "H". iNamed "H".
   wp_apply (wp_EtcdServer__getAppliedIndex with "[$Hinternal]") as "%ai _".
   wp_apply (wp_EtcdServer__getCommittedIndex with "[$Hinternal]") as "%ci _".
@@ -170,7 +167,7 @@ Proof.
   wp_auto.
 
   iDestruct (own_InternalRaftRequest_new_header with "[$] [$]") as "[%req_abs' req]".
-  wp_apply (wp_InternalRaftRequest__Marshal with "[$r $req]").
+  wp_apply (wp_InternalRaftRequest__Marshal with "[$req_ptr $req]").
   iIntros "* Hmarshal". wp_auto.
   destruct err.
   { wp_auto. iApply "HΦ". done. }
@@ -188,7 +185,7 @@ Proof.
   }
   iIntros "*". iNamed 1.
   iDestruct (own_EtcdServer_access with "Hsrv") as "H".
-  iClear "reqIDGen HreqIDGen Cfg_MaxRequestBytes w Hinternal Hr raftNode".
+  iClear "reqIDGen HreqIDGen Cfg_MaxRequestBytes w Hinternal Hr r_raftNode r".
   clear dependent reqIDGen MaxRequestBytes w γw.
   iNamed "H".
   wp_auto. wp_apply (wp_Wait__Register with "[Hw]").
@@ -199,6 +196,16 @@ Proof.
   wp_auto. wp_apply wp_WithTimeout. { iFrame "#". } iIntros "* (Hcancel & #Hcctx)".
   wp_auto. wp_apply wp_Now as "% _".
   wp_bind.
+  wp_method_call.
+  wp_auto.
+  wp_method_call.
+  wp_auto.
+  unshelve erewrite method_unfold.
+  2:{
+    apply _.
+  }
+  wp_method_call.
+  wp_auto.
   wp_bind.
 
   (* FIXME: this is loading the entire `raftNode` struct for calling the

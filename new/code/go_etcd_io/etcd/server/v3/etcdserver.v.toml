@@ -3,6 +3,7 @@ translate = [
   "EtcdServer.Put",
   "EtcdServer.processInternalRaftRequestOnce",
   "maxGapBetweenApplyAndCommitIndex",
+  "*.Propose",
 ]
 imports = [
   "!*",

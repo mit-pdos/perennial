@@ -11,6 +11,7 @@ Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics} {package_sem : concurrency.Assumptions}.
 Collection W := sem + package_sem.
+Local Set Default Proof Using "W".
 
 #[global] Instance : IsPkgInit (iProp Σ) zapcore := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf (iProp Σ) zapcore := build_get_is_pkg_init_wf.
@@ -81,28 +82,29 @@ Proof.
   wp_auto.
 
   wp_apply (wp_Client__KeepAlive with "[$]") as "* #Hkch".
-  wp_auto. rewrite bool_decide_decide. destruct decide.
-  2:{ (* error *)
+  wp_auto. destruct err.
+  { (* error *)
     wp_auto. wp_apply "Hcancel". wp_auto. iApply "HΦ".
-    rewrite decide_False //.
+    rewrite decide_False //. rewrite decide_False //.
   }
-  iDestruct "Hkch" as "#[Hkch #Hkrecv]".
+  rewrite decide_True //.
   wp_auto.
+  iDestruct "Hkch" as (γkch) "#[Hkch #Hkrecv]".
   rewrite bool_decide_decide. destruct decide.
   {
     (* NOTE: if `clientv3.lessor.KeepAlive` returns `nil` for its error, it is guaranteed to
        return a non-nil chan, so this case is impossible. *)
-    iDestruct (is_chan_not_nil with "Hkch") as %hbad.
+    iDestruct (is_chan_not_null with "Hkch") as %hbad.
     done.
   }
   wp_auto.
-  wp_apply (wp_chan_make (V:=())) as "* Hdonec".
+  wp_apply chan.wp_make1 as "* (Hdonec_is & % & Hdonec)".
   wp_auto.
   rename s into ctx_desc.
   wp_alloc s as "Hs".
   wp_auto.
   iPersist "cancel donec keepAlive".
-  iMod (alloc_closeable_chan True with "Hdonec") as "Hdonec_open"; [done..|].
+  iMod (alloc_closeable_chan True with "[$] [$]") as "Hdonec_open".
   iDestruct (own_closeable_chan_Unknown with "[$]") as "#?".
   rewrite -wp_fupd.
   wp_apply (wp_fork with "[Hdonec_open Hcancel]").
@@ -110,37 +112,19 @@ Proof.
     wp_auto. wp_apply wp_with_defer as "%defer defer".
     simpl subst.
     wp_auto.
-    wp_for_chan.
-    iAssert _ with "Hkrecv" as "Hkrecv1".
-    iMod "Hkrecv1" as "(% & ? & Hkrecv1)".
-    iFrame. iModIntro. iNext.
-    destruct decide.
-    {
-      iIntros "?".
-      iMod ("Hkrecv1" with "[$]") as "_".
-      iModIntro.
-      wp_auto.
-      wp_apply (wp_closeable_chan_close with "[$Hdonec_open]") as "_".
-      { iFrame "#". done. }
-      wp_auto. wp_apply "Hcancel". wp_auto.
-      done.
-    }
-    {
-      iIntros "?".
-      iMod ("Hkrecv1" with "[$]") as "_".
-      iModIntro.
-      iMod "Hkrecv" as "(% & $ & Hkrecv)".
-      iModIntro. iNext.
-      iIntros "* _ ?".
-      iMod ("Hkrecv" with "[$]") as "_".
-      iModIntro.
-      wp_auto.
-      wp_for_chan_post.
-      iFrame.
-    }
+    wp_for.
+    wp_apply chan.wp_receive.
+    { iFrame "#". }
+    iIntros "_". iApply "Hkrecv". iIntros "*". wp_auto.
+    wp_if_destruct.
+    { wp_for_post. iFrame. }
+    wp_for_post.
+    wp_apply (wp_closeable_chan_close with "[$Hdonec_open]") as "_".
+    { iFrame "#". done. }
+    wp_auto. wp_apply "Hcancel". wp_auto.
+    done.
   }
-  iDestruct (struct_fields_split with "Hs") as "hs".
-  simpl. iClear "Hctx". iNamed "hs".
+  iClear "Hctx". iStructNamedPrefix "Hs" "H". simpl.
   iPersist "Hclient Hid Hdonec".
   wp_auto. iModIntro.
   iApply "HΦ".
@@ -150,18 +134,18 @@ Qed.
 
 Lemma wp_Session__Lease s γ lease :
   {{{ is_pkg_init concurrency ∗ is_Session s γ lease }}}
-    s @ (ptrT.id concurrency.Session.id) @ "Lease" #()
+    s @! (go.PointerType concurrency.Session) @! "Lease" #()
   {{{ RET #lease; True }}}.
 Proof.
-  wp_start. iNamed "Hpre". wp_auto. by iApply "HΦ".
+  wp_start. iNamed "Hpre". wp_auto. wp_end.
 Qed.
 
 Lemma wp_Session__Done s γ lease :
   {{{ is_pkg_init concurrency ∗ is_Session s γ lease }}}
-    s @ (ptrT.id concurrency.Session.id) @ "Done" #()
-  {{{ ch, RET #ch; own_closeable_chan ch True closeable.Unknown }}}.
+    s @! (go.PointerType concurrency.Session) @! "Done" #()
+  {{{ ch γch, RET #ch; own_closeable_chan ch γch True closeable.Unknown }}}.
 Proof.
-  wp_start. iNamed "Hpre". wp_auto. by iApply "HΦ".
+  wp_start. iNamed "Hpre". wp_auto. wp_end.
 Qed.
 
 End proof.

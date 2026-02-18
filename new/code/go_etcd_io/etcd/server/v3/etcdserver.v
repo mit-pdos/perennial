@@ -880,6 +880,8 @@ Class raftNode_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalCont
   #[global] raftNode_type_repr  :: go.TypeReprUnderlying raftNodeⁱᵐᵖˡ raftNode.t;
   #[global] raftNode_underlying :: (raftNode) <u (raftNodeⁱᵐᵖˡ);
   #[global] raftNodeⁱᵐᵖˡ_underlying :: (raftNodeⁱᵐᵖˡ) ↓u (raftNodeⁱᵐᵖˡ);
+  #[global] raftNode_Propose_unfold :: MethodUnfold (raftNode) "Propose" (λ: "$r", MethodResolve raftNodeConfig "Propose" (StructFieldGet (raftNode) "raftNodeConfig" "$r" ))%V;
+  #[global] raftNode'ptr_Propose_unfold :: MethodUnfold (go.PointerType (raftNode)) "Propose" (λ: "$r", MethodResolve (go.PointerType raftNodeConfig) "Propose" (StructFieldRef raftNode "raftNodeConfig"%go "$r"));
 }.
 
 Module raftNodeConfig.
@@ -896,6 +898,8 @@ Class raftNodeConfig_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLoc
   #[global] raftNodeConfig_type_repr  :: go.TypeReprUnderlying raftNodeConfigⁱᵐᵖˡ raftNodeConfig.t;
   #[global] raftNodeConfig_underlying :: (raftNodeConfig) <u (raftNodeConfigⁱᵐᵖˡ);
   #[global] raftNodeConfigⁱᵐᵖˡ_underlying :: (raftNodeConfigⁱᵐᵖˡ) ↓u (raftNodeConfigⁱᵐᵖˡ);
+  #[global] raftNodeConfig_Propose_unfold :: MethodUnfold (raftNodeConfig) "Propose" (λ: "$r", MethodResolve raft.Node "Propose" (StructFieldGet (raftNodeConfig) "Node" "$r" ))%V;
+  #[global] raftNodeConfig'ptr_Propose_unfold :: MethodUnfold (go.PointerType (raftNodeConfig)) "Propose" (λ: "$r", MethodResolve (go.PointerType raft.Node) "Propose" (StructFieldRef raftNodeConfig "Node"%go "$r"));
 }.
 
 Module Response.

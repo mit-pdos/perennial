@@ -727,27 +727,6 @@ Lemma Zmul_nat_add1_r (x k:nat) :
   (x + 1)%nat * k = k + x * k.
 Proof. lia. Qed.
 
-(* Lemma heap_seq_replicate_to_nested_pointsto l vs (n : nat) (P: loc → val → iProp Σ) : *)
-(*   ([∗ list] j ↦ v ∈ concat_replicate n vs, P (l +ₗ j) v )-∗ *)
-(*   [∗ list] i ∈ seq 0 n, [∗ list] j ↦ v ∈ vs, P (l +ₗ ((i : nat) * Z.of_nat (length vs)) +ₗ j)%nat v. *)
-(* Proof. *)
-(*   iIntros "Hvs". *)
-(*   iInduction n as [|n] "IH" forall (l); simpl. *)
-(*   { done. } *)
-(*   rewrite concat_replicate_S. *)
-(*   iDestruct (big_sepL_app with "Hvs") as "[Hvs Hconcat]". *)
-(*   iSplitL "Hvs". *)
-(*   - rewrite loc_add_0. *)
-(*     iFrame. *)
-(*   - setoid_rewrite Nat2Z.inj_add. *)
-(*     setoid_rewrite <- loc_add_assoc. *)
-(*     iDestruct ("IH" with "Hconcat") as "Hseq". *)
-(*     rewrite (big_sepL_offset _ 1%nat). *)
-(*     setoid_rewrite Zmul_nat_add1_r. *)
-(*     setoid_rewrite <- loc_add_assoc. *)
-(*     iExact "Hseq". *)
-(* Qed. *)
-
 (* Lemma alloc_list_loc_not_null: *)
 (*   ∀ v (n : u64) σg1 l, *)
 (*     isFresh σg1 l *)
