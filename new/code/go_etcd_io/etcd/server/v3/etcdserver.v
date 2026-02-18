@@ -200,7 +200,7 @@ Axiom DowngradeEnabledPath : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext},
 
 Axiom memorySnapshotCount : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom maxGapBetweenApplyAndCommitIndex : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
+Definition maxGapBetweenApplyAndCommitIndex {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #5000.
 
 Axiom traceThreshold : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
