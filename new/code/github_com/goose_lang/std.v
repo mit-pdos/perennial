@@ -301,7 +301,7 @@ Definition WaitTimeoutⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
       return: #())
       ) in
     do:  (Fork ("$go" #()));;;
-    let: "$ch0" := (let: "$a0" := ((Convert go.uint64 time.Duration (![go.uint64] "timeoutMs")) *⟨go.int64⟩ time.Millisecond) in
+    let: "$ch0" := (let: "$a0" := ((Convert go.uint64 time.Duration (![go.uint64] "timeoutMs")) *⟨time.Duration⟩ time.Millisecond) in
     (FuncResolve time.After [] #()) "$a0") in
     let: "$ch1" := (![go.ChannelType go.sendrecv (go.StructType [
 

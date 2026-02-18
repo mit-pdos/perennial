@@ -220,11 +220,7 @@ Definition WithCancelCauseⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
 Definition withCancelⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "parent",
     exception_do (let: "parent" := (GoAlloc Context "parent") in
-    (if: Convert go.untyped_bool go.bool ((![Context] "parent") =⟨go.InterfaceType [go.MethodElem "Deadline"%go (go.Signature [] false [time.Time; go.bool]); go.MethodElem "Done"%go (go.Signature [] false [go.ChannelType go.recvonly (go.StructType [
-
-      ])]); go.MethodElem "Err"%go (go.Signature [] false [go.error]); go.MethodElem "Value"%go (go.Signature [go.any] false [go.any])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Deadline"%go (go.Signature [] false [time.Time; go.bool]); go.MethodElem "Done"%go (go.Signature [] false [go.ChannelType go.recvonly (go.StructType [
-
-      ])]); go.MethodElem "Err"%go (go.Signature [] false [go.error]); go.MethodElem "Value"%go (go.Signature [go.any] false [go.any])]) UntypedNil))
+    (if: Convert go.untyped_bool go.bool ((![Context] "parent") =⟨Context⟩ (Convert go.untyped_nil Context UntypedNil))
     then
       do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"cannot create context from nil parent"%go) in
       (FuncResolve go.panic [] #()) "$a0")
@@ -263,7 +259,7 @@ Definition Causeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val
       let: "$r0" := (![go.error] (StructFieldRef cancelCtx "cause"%go (![go.PointerType cancelCtx] "cc"))) in
       do:  ("cause" <-[go.error] "$r0");;;
       do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (StructFieldRef cancelCtx "mu"%go (![go.PointerType cancelCtx] "cc"))) #());;;
-      (if: Convert go.untyped_bool go.bool ((![go.error] "cause") ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
+      (if: Convert go.untyped_bool go.bool ((![go.error] "cause") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
       then return: (![go.error] "cause")
       else do:  #())
     else do:  #()));;;
@@ -479,7 +475,7 @@ Definition cancelCtx__Valueⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
   λ: "c" "key",
     exception_do (let: "c" := (GoAlloc (go.PointerType cancelCtx) "c") in
     let: "key" := (GoAlloc go.any "key") in
-    (if: Convert go.untyped_bool go.bool ((![go.any] "key") =⟨go.InterfaceType []⟩ (Convert (go.PointerType go.int) (go.InterfaceType []) (GlobalVarAddr cancelCtxKey #())))
+    (if: Convert go.untyped_bool go.bool ((![go.any] "key") =⟨go.any⟩ (Convert (go.PointerType go.int) go.any (GlobalVarAddr cancelCtxKey #())))
     then return: (Convert (go.PointerType cancelCtx) go.any (![go.PointerType cancelCtx] "c"))
     else do:  #());;;
     return: (let: "$a0" := (![Context] (StructFieldRef cancelCtx "Context"%go (![go.PointerType cancelCtx] "c"))) in
@@ -493,7 +489,7 @@ Definition cancelCtx__Doneⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
     let: "d" := (GoAlloc go.any (GoZeroVal go.any #())) in
     let: "$r0" := ((MethodResolve (go.PointerType atomic.Value) "Load"%go (StructFieldRef cancelCtx "done"%go (![go.PointerType cancelCtx] "c"))) #()) in
     do:  ("d" <-[go.any] "$r0");;;
-    (if: Convert go.untyped_bool go.bool ((![go.any] "d") ≠⟨go.InterfaceType []⟩ (Convert go.untyped_nil (go.InterfaceType []) UntypedNil))
+    (if: Convert go.untyped_bool go.bool ((![go.any] "d") ≠⟨go.any⟩ (Convert go.untyped_nil go.any UntypedNil))
     then
       return: (Convert (go.ChannelType go.sendrecv (go.StructType [
 
@@ -512,7 +508,7 @@ Definition cancelCtx__Doneⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
       )));;;
     let: "$r0" := ((MethodResolve (go.PointerType atomic.Value) "Load"%go (StructFieldRef cancelCtx "done"%go (![go.PointerType cancelCtx] "c"))) #()) in
     do:  ("d" <-[go.any] "$r0");;;
-    (if: Convert go.untyped_bool go.bool ((![go.any] "d") =⟨go.InterfaceType []⟩ (Convert go.untyped_nil (go.InterfaceType []) UntypedNil))
+    (if: Convert go.untyped_bool go.bool ((![go.any] "d") =⟨go.any⟩ (Convert go.untyped_nil go.any UntypedNil))
     then
       let: "$r0" := (Convert (go.ChannelType go.sendrecv (go.StructType [
 
@@ -538,7 +534,7 @@ Definition cancelCtx__Errⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
     (let: "err" := (GoAlloc go.any (GoZeroVal go.any #())) in
     let: "$r0" := ((MethodResolve (go.PointerType atomic.Value) "Load"%go (StructFieldRef cancelCtx "err"%go (![go.PointerType cancelCtx] "c"))) #()) in
     do:  ("err" <-[go.any] "$r0");;;
-    (if: Convert go.untyped_bool go.bool ((![go.any] "err") ≠⟨go.InterfaceType []⟩ (Convert go.untyped_nil (go.InterfaceType []) UntypedNil))
+    (if: Convert go.untyped_bool go.bool ((![go.any] "err") ≠⟨go.any⟩ (Convert go.untyped_nil go.any UntypedNil))
     then
       do:  (Fst (chan.receive (go.StructType [
 
@@ -601,7 +597,7 @@ Definition cancelCtx__propagateCancelⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : G
       (let: "err" := (GoAlloc go.any (GoZeroVal go.any #())) in
       let: "$r0" := ((MethodResolve (go.PointerType atomic.Value) "Load"%go (StructFieldRef cancelCtx "err"%go (![go.PointerType cancelCtx] "p"))) #()) in
       do:  ("err" <-[go.any] "$r0");;;
-      (if: Convert go.untyped_bool go.bool ((![go.any] "err") ≠⟨go.InterfaceType []⟩ (Convert go.untyped_nil (go.InterfaceType []) UntypedNil))
+      (if: Convert go.untyped_bool go.bool ((![go.any] "err") ≠⟨go.any⟩ (Convert go.untyped_nil go.any UntypedNil))
       then
         do:  (let: "$a0" := #false in
         let: "$a1" := (TypeAssert go.error (![go.any] "err")) in
@@ -697,18 +693,18 @@ Definition cancelCtx__cancelⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
     let: "cause" := (GoAlloc go.error "cause") in
     let: "err" := (GoAlloc go.error "err") in
     let: "removeFromParent" := (GoAlloc go.bool "removeFromParent") in
-    (if: Convert go.untyped_bool go.bool ((![go.error] "err") =⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
+    (if: Convert go.untyped_bool go.bool ((![go.error] "err") =⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
     then
       do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"context: internal error: missing cancel error"%go) in
       (FuncResolve go.panic [] #()) "$a0")
     else do:  #());;;
-    (if: Convert go.untyped_bool go.bool ((![go.error] "cause") =⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
+    (if: Convert go.untyped_bool go.bool ((![go.error] "cause") =⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
     then
       let: "$r0" := (![go.error] "err") in
       do:  ("cause" <-[go.error] "$r0")
     else do:  #());;;
     do:  ((MethodResolve (go.PointerType sync.Mutex) "Lock"%go (StructFieldRef cancelCtx "mu"%go (![go.PointerType cancelCtx] "c"))) #());;;
-    (if: Convert go.untyped_bool go.bool (((MethodResolve (go.PointerType atomic.Value) "Load"%go (StructFieldRef cancelCtx "err"%go (![go.PointerType cancelCtx] "c"))) #()) ≠⟨go.InterfaceType []⟩ (Convert go.untyped_nil (go.InterfaceType []) UntypedNil))
+    (if: Convert go.untyped_bool go.bool (((MethodResolve (go.PointerType atomic.Value) "Load"%go (StructFieldRef cancelCtx "err"%go (![go.PointerType cancelCtx] "c"))) #()) ≠⟨go.any⟩ (Convert go.untyped_nil go.any UntypedNil))
     then
       do:  ((MethodResolve (go.PointerType sync.Mutex) "Unlock"%go (StructFieldRef cancelCtx "mu"%go (![go.PointerType cancelCtx] "c"))) #());;;
       return: (#())
@@ -788,11 +784,7 @@ Definition cancelCtx__cancelⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
 Definition WithoutCancelⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "parent",
     exception_do (let: "parent" := (GoAlloc Context "parent") in
-    (if: Convert go.untyped_bool go.bool ((![Context] "parent") =⟨go.InterfaceType [go.MethodElem "Deadline"%go (go.Signature [] false [time.Time; go.bool]); go.MethodElem "Done"%go (go.Signature [] false [go.ChannelType go.recvonly (go.StructType [
-
-      ])]); go.MethodElem "Err"%go (go.Signature [] false [go.error]); go.MethodElem "Value"%go (go.Signature [go.any] false [go.any])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Deadline"%go (go.Signature [] false [time.Time; go.bool]); go.MethodElem "Done"%go (go.Signature [] false [go.ChannelType go.recvonly (go.StructType [
-
-      ])]); go.MethodElem "Err"%go (go.Signature [] false [go.error]); go.MethodElem "Value"%go (go.Signature [go.any] false [go.any])]) UntypedNil))
+    (if: Convert go.untyped_bool go.bool ((![Context] "parent") =⟨Context⟩ (Convert go.untyped_nil Context UntypedNil))
     then
       do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"cannot create context from nil parent"%go) in
       (FuncResolve go.panic [] #()) "$a0")
@@ -866,11 +858,7 @@ Definition WithDeadlineCauseⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
     with_defer: (let: "cause" := (GoAlloc go.error "cause") in
     let: "d" := (GoAlloc time.Time "d") in
     let: "parent" := (GoAlloc Context "parent") in
-    (if: Convert go.untyped_bool go.bool ((![Context] "parent") =⟨go.InterfaceType [go.MethodElem "Deadline"%go (go.Signature [] false [time.Time; go.bool]); go.MethodElem "Done"%go (go.Signature [] false [go.ChannelType go.recvonly (go.StructType [
-
-      ])]); go.MethodElem "Err"%go (go.Signature [] false [go.error]); go.MethodElem "Value"%go (go.Signature [go.any] false [go.any])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Deadline"%go (go.Signature [] false [time.Time; go.bool]); go.MethodElem "Done"%go (go.Signature [] false [go.ChannelType go.recvonly (go.StructType [
-
-      ])]); go.MethodElem "Err"%go (go.Signature [] false [go.error]); go.MethodElem "Value"%go (go.Signature [go.any] false [go.any])]) UntypedNil))
+    (if: Convert go.untyped_bool go.bool ((![Context] "parent") =⟨Context⟩ (Convert go.untyped_nil Context UntypedNil))
     then
       do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"cannot create context from nil parent"%go) in
       (FuncResolve go.panic [] #()) "$a0")
@@ -883,7 +871,7 @@ Definition WithDeadlineCauseⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
     do:  ("cur" <-[time.Time] "$r0");;;
     do:  ("ok" <-[go.bool] "$r1");;;
     (if: (![go.bool] "ok") && (let: "$a0" := (![time.Time] "d") in
-    (MethodResolve time.Time "Before"%go (![time.Time] "cur")) "$a0")
+    (MethodResolve (go.PointerType time.Time) "Before"%go "cur") "$a0")
     then
       let: ("$ret0", "$ret1") := ((let: "$a0" := (![Context] "parent") in
       (FuncResolve WithCancel [] #()) "$a0")) in
@@ -900,7 +888,7 @@ Definition WithDeadlineCauseⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
     let: "$r0" := (let: "$a0" := (![time.Time] "d") in
     (FuncResolve time.Until [] #()) "$a0") in
     do:  ("dur" <-[time.Duration] "$r0");;;
-    (if: Convert go.untyped_bool go.bool ((![time.Duration] "dur") ≤⟨go.int64⟩ #(W64 0))
+    (if: Convert go.untyped_bool go.bool ((![time.Duration] "dur") ≤⟨time.Duration⟩ #(W64 0))
     then
       do:  (let: "$a0" := #true in
       let: "$a1" := (![go.error] (GlobalVarAddr DeadlineExceeded #())) in
@@ -921,7 +909,7 @@ Definition WithDeadlineCauseⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
       "$f" #();;
       "$oldf" #()
       )));;;
-    (if: Convert go.untyped_bool go.bool (((MethodResolve (go.PointerType atomic.Value) "Load"%go (StructFieldRef cancelCtx "err"%go (StructFieldRef timerCtx "cancelCtx"%go (![go.PointerType timerCtx] "c")))) #()) =⟨go.InterfaceType []⟩ (Convert go.untyped_nil (go.InterfaceType []) UntypedNil))
+    (if: Convert go.untyped_bool go.bool (((MethodResolve (go.PointerType atomic.Value) "Load"%go (StructFieldRef cancelCtx "err"%go (StructFieldRef timerCtx "cancelCtx"%go (![go.PointerType timerCtx] "c")))) #()) =⟨go.any⟩ (Convert go.untyped_nil go.any UntypedNil))
     then
       let: "$r0" := (let: "$a0" := (![time.Duration] "dur") in
       let: "$a1" := (λ: <>,
@@ -955,7 +943,7 @@ Definition timerCtx__Stringⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
   λ: "c" <>,
     exception_do (let: "c" := (GoAlloc (go.PointerType timerCtx) "c") in
     return: ((((((let: "$a0" := (![Context] (StructFieldRef cancelCtx "Context"%go (StructFieldRef timerCtx "cancelCtx"%go (![go.PointerType timerCtx] "c")))) in
-     (FuncResolve contextName [] #()) "$a0") +⟨go.string⟩ #".WithDeadline("%go) +⟨go.string⟩ ((MethodResolve time.Time "String"%go (![time.Time] (StructFieldRef timerCtx "deadline"%go (![go.PointerType timerCtx] "c")))) #())) +⟨go.string⟩ #" ["%go) +⟨go.string⟩ ((MethodResolve time.Duration "String"%go (let: "$a0" := (![time.Time] (StructFieldRef timerCtx "deadline"%go (![go.PointerType timerCtx] "c"))) in
+     (FuncResolve contextName [] #()) "$a0") +⟨go.string⟩ #".WithDeadline("%go) +⟨go.string⟩ ((MethodResolve (go.PointerType time.Time) "String"%go (StructFieldRef timerCtx "deadline"%go (![go.PointerType timerCtx] "c"))) #())) +⟨go.string⟩ #" ["%go) +⟨go.string⟩ ((MethodResolve time.Duration "String"%go (let: "$a0" := (![time.Time] (StructFieldRef timerCtx "deadline"%go (![go.PointerType timerCtx] "c"))) in
      (FuncResolve time.Until [] #()) "$a0")) #())) +⟨go.string⟩ #"])"%go)).
 
 (* go: context.go:679:20 *)
@@ -1038,7 +1026,7 @@ Definition valueCtx__Valueⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
   λ: "c" "key",
     exception_do (let: "c" := (GoAlloc (go.PointerType valueCtx) "c") in
     let: "key" := (GoAlloc go.any "key") in
-    (if: Convert go.untyped_bool go.bool ((![go.any] (StructFieldRef valueCtx "key"%go (![go.PointerType valueCtx] "c"))) =⟨go.InterfaceType []⟩ (![go.any] "key"))
+    (if: Convert go.untyped_bool go.bool ((![go.any] (StructFieldRef valueCtx "key"%go (![go.PointerType valueCtx] "c"))) =⟨go.any⟩ (![go.any] "key"))
     then return: (![go.any] (StructFieldRef valueCtx "val"%go (![go.PointerType valueCtx] "c")))
     else do:  #());;;
     return: (let: "$a0" := (![Context] (StructFieldRef valueCtx "Context"%go (![go.PointerType valueCtx] "c"))) in
@@ -1056,7 +1044,7 @@ Definition valueⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val
       (if: "$ok"
       then
         let: "ctx" := (GoAlloc (go.PointerType valueCtx) "$x") in
-        (if: Convert go.untyped_bool go.bool ((![go.any] "key") =⟨go.InterfaceType []⟩ (![go.any] (StructFieldRef valueCtx "key"%go (![go.PointerType valueCtx] "ctx"))))
+        (if: Convert go.untyped_bool go.bool ((![go.any] "key") =⟨go.any⟩ (![go.any] (StructFieldRef valueCtx "key"%go (![go.PointerType valueCtx] "ctx"))))
         then return: (![go.any] (StructFieldRef valueCtx "val"%go (![go.PointerType valueCtx] "ctx")))
         else do:  #());;;
         let: "$r0" := (![Context] (StructFieldRef valueCtx "Context"%go (![go.PointerType valueCtx] "ctx"))) in
@@ -1066,7 +1054,7 @@ Definition valueⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val
         (if: "$ok"
         then
           let: "ctx" := (GoAlloc (go.PointerType cancelCtx) "$x") in
-          (if: Convert go.untyped_bool go.bool ((![go.any] "key") =⟨go.InterfaceType []⟩ (Convert (go.PointerType go.int) (go.InterfaceType []) (GlobalVarAddr cancelCtxKey #())))
+          (if: Convert go.untyped_bool go.bool ((![go.any] "key") =⟨go.any⟩ (Convert (go.PointerType go.int) go.any (GlobalVarAddr cancelCtxKey #())))
           then return: (Convert Context go.any (![Context] "c"))
           else do:  #());;;
           let: "$r0" := (![Context] (StructFieldRef cancelCtx "Context"%go (![go.PointerType cancelCtx] "ctx"))) in
@@ -1076,7 +1064,7 @@ Definition valueⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val
           (if: "$ok"
           then
             let: "ctx" := (GoAlloc withoutCancelCtx "$x") in
-            (if: Convert go.untyped_bool go.bool ((![go.any] "key") =⟨go.InterfaceType []⟩ (Convert (go.PointerType go.int) (go.InterfaceType []) (GlobalVarAddr cancelCtxKey #())))
+            (if: Convert go.untyped_bool go.bool ((![go.any] "key") =⟨go.any⟩ (Convert (go.PointerType go.int) go.any (GlobalVarAddr cancelCtxKey #())))
             then return: (Convert go.untyped_nil go.any UntypedNil)
             else do:  #());;;
             let: "$r0" := (![Context] (StructFieldRef withoutCancelCtx "c"%go "ctx")) in
@@ -1086,7 +1074,7 @@ Definition valueⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val
             (if: "$ok"
             then
               let: "ctx" := (GoAlloc (go.PointerType timerCtx) "$x") in
-              (if: Convert go.untyped_bool go.bool ((![go.any] "key") =⟨go.InterfaceType []⟩ (Convert (go.PointerType go.int) (go.InterfaceType []) (GlobalVarAddr cancelCtxKey #())))
+              (if: Convert go.untyped_bool go.bool ((![go.any] "key") =⟨go.any⟩ (Convert (go.PointerType go.int) go.any (GlobalVarAddr cancelCtxKey #())))
               then return: (Convert (go.PointerType cancelCtx) go.any (StructFieldRef timerCtx "cancelCtx"%go (![go.PointerType timerCtx] "ctx")))
               else do:  #());;;
               let: "$r0" := (![Context] (StructFieldRef cancelCtx "Context"%go (StructFieldRef timerCtx "cancelCtx"%go (![go.PointerType timerCtx] "ctx")))) in

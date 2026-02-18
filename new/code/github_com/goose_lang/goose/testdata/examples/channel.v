@@ -274,7 +274,7 @@ Definition HelloWorldWithTimeoutⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
     let: "$r0" := #""%go in
     do:  ("errMsg" <-[go.string] "$r0");;;
     let: "$go" := (λ: <>,
-      exception_do (do:  (let: "$a0" := (#(W64 10) *⟨go.int64⟩ time.Millisecond) in
+      exception_do (do:  (let: "$a0" := (#(W64 10) *⟨time.Duration⟩ time.Millisecond) in
       (FuncResolve time.Sleep [] #()) "$a0");;;
       let: "$r0" := #"operation timed out"%go in
       do:  ("errMsg" <-[go.string] "$r0");;;
@@ -852,7 +852,7 @@ Definition TestSelectNbNoPanicⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
     do:  ("i" <-[go.int] "$r0");;;
     (for: (λ: <>, (![go.int] "i") <⟨go.int⟩ (![go.int] "iterations")); (λ: <>, do:  ("i" <-[go.int] ((![go.int] "i") +⟨go.int⟩ #(W64 1)))) := λ: <>,
       do:  ((FuncResolve select_nb_no_panic [] #()) #());;;
-      do:  (let: "$a0" := (#(W64 1) *⟨go.int64⟩ time.Microsecond) in
+      do:  (let: "$a0" := (#(W64 1) *⟨time.Duration⟩ time.Microsecond) in
       (FuncResolve time.Sleep [] #()) "$a0")));;;
     return: #()).
 

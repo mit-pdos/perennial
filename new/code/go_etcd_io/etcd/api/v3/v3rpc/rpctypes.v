@@ -292,7 +292,7 @@ Definition EtcdError__Errorⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
 Definition Errorⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "err",
     exception_do (let: "err" := (GoAlloc go.error "err") in
-    (if: Convert go.untyped_bool go.bool ((![go.error] "err") =⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
+    (if: Convert go.untyped_bool go.bool ((![go.error] "err") =⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
     then return: (Convert go.untyped_nil go.error UntypedNil)
     else do:  #());;;
     let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in

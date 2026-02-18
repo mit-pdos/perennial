@@ -210,9 +210,9 @@ Definition SortFuncⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} (S
 Definition xorshift__Nextⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" <>,
     exception_do (let: "r" := (GoAlloc (go.PointerType xorshift) "r") in
-    do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) ^⟨go.uint64⟩ ((![xorshift] (![go.PointerType xorshift] "r")) <<⟨xorshift⟩ (Convert go.untyped_int xorshift #13))));;;
-    do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) ^⟨go.uint64⟩ ((![xorshift] (![go.PointerType xorshift] "r")) >>⟨xorshift⟩ (Convert go.untyped_int xorshift #7))));;;
-    do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) ^⟨go.uint64⟩ ((![xorshift] (![go.PointerType xorshift] "r")) <<⟨xorshift⟩ (Convert go.untyped_int xorshift #17))));;;
+    do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) ^⟨xorshift⟩ ((![xorshift] (![go.PointerType xorshift] "r")) <<⟨xorshift⟩ (Convert go.untyped_int xorshift #13))));;;
+    do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) ^⟨xorshift⟩ ((![xorshift] (![go.PointerType xorshift] "r")) >>⟨xorshift⟩ (Convert go.untyped_int xorshift #7))));;;
+    do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) ^⟨xorshift⟩ ((![xorshift] (![go.PointerType xorshift] "r")) <<⟨xorshift⟩ (Convert go.untyped_int xorshift #17))));;;
     return: (![xorshift] (![go.PointerType xorshift] "r"))).
 
 (* insertionSortCmpFunc sorts data[a:b] using insertion sort.
@@ -385,7 +385,7 @@ Definition pdqsortCmpFuncⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
       let: "$r1" := "$ret1" in
       do:  ("pivot" <-[go.int] "$r0");;;
       do:  ("hint" <-[sortedHint] "$r1");;;
-      (if: Convert go.untyped_bool go.bool ((![sortedHint] "hint") =⟨go.int⟩ decreasingHint)
+      (if: Convert go.untyped_bool go.bool ((![sortedHint] "hint") =⟨sortedHint⟩ decreasingHint)
       then
         do:  (let: "$a0" := (![go.SliceType E] "data") in
         let: "$a1" := (![go.int] "a") in
@@ -397,7 +397,7 @@ Definition pdqsortCmpFuncⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
         let: "$r0" := increasingHint in
         do:  ("hint" <-[sortedHint] "$r0")
       else do:  #());;;
-      (if: ((![go.bool] "wasBalanced") && (![go.bool] "wasPartitioned")) && ((![sortedHint] "hint") =⟨go.int⟩ increasingHint)
+      (if: ((![go.bool] "wasBalanced") && (![go.bool] "wasPartitioned")) && ((![sortedHint] "hint") =⟨sortedHint⟩ increasingHint)
       then
         (if: let: "$a0" := (![go.SliceType E] "data") in
         let: "$a1" := (![go.int] "a") in

@@ -1002,7 +1002,7 @@ Definition testU32NewtypeLenⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
     let: "$r0" := ((FuncResolve go.make2 [go.SliceType go.byte] #()) #(W64 20)) in
     do:  ("s" <-[go.SliceType go.byte] "$r0");;;
     return: ((Convert go.int Uint32 (let: "$a0" := (![go.SliceType go.byte] "s") in
-     (FuncResolve go.len [go.SliceType go.byte] #()) "$a0")) =⟨go.uint32⟩ #(W32 20))).
+     (FuncResolve go.len [go.SliceType go.byte] #()) "$a0")) =⟨Uint32⟩ #(W32 20))).
 
 (* go: conversions.go:48:22 *)
 Definition numWrapper__incⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -1039,7 +1039,7 @@ Definition testConversionLiteralⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
     do:  (map.insert go.any (![go.MapType go.any go.any] "m") (Convert go.untyped_nil go.any UntypedNil) "$r0");;;
     let: "$r0" := (Convert go.untyped_nil go.any UntypedNil) in
     do:  (map.insert go.any (![go.MapType go.any go.any] "m") (Convert withInterface go.any (![withInterface] "s")) "$r0");;;
-    return: ((map.lookup1 go.any go.any (![go.MapType go.any go.any] "m") (map.lookup1 go.any go.any (![go.MapType go.any go.any] "m") (Convert withInterface go.any (![withInterface] "s")))) =⟨go.InterfaceType []⟩ (Convert withInterface (go.InterfaceType []) (![withInterface] "s")))).
+    return: ((map.lookup1 go.any go.any (![go.MapType go.any go.any] "m") (map.lookup1 go.any go.any (![go.MapType go.any go.any] "m") (Convert withInterface go.any (![withInterface] "s")))) =⟨go.any⟩ (Convert withInterface go.any (![withInterface] "s")))).
 
 (* go: copy.go:3:6 *)
 Definition testCopySimpleⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -1294,14 +1294,14 @@ Definition useEmbeddedValFieldⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
 Definition useEmbeddedMethodⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "d",
     exception_do (let: "d" := (GoAlloc embedD "d") in
-    return: (((MethodResolve embedD "Bar"%go (![embedD] "d")) #()) =⟨go.string⟩ ((MethodResolve (go.PointerType embedA) "Bar"%go (StructFieldRef embedB "embedA"%go (![go.PointerType embedB] (StructFieldRef embedC "embedB"%go (StructFieldRef embedD "embedC"%go "d"))))) #()))).
+    return: (((MethodResolve (go.PointerType embedD) "Bar"%go "d") #()) =⟨go.string⟩ ((MethodResolve (go.PointerType embedA) "Bar"%go (StructFieldRef embedB "embedA"%go (![go.PointerType embedB] (StructFieldRef embedC "embedB"%go (StructFieldRef embedD "embedC"%go "d"))))) #()))).
 
 (* go: embedded.go:64:6 *)
 Definition useEmbeddedMethod2ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "d",
     exception_do (let: "d" := (GoAlloc embedD "d") in
-    do:  ((MethodResolve embedD "Car"%go (![embedD] "d")) #());;;
-    return: (((MethodResolve embedD "Foo"%go (![embedD] "d")) #()) =⟨go.string⟩ ((MethodResolve (go.PointerType embedB) "Foo"%go (![go.PointerType embedB] (StructFieldRef embedC "embedB"%go (StructFieldRef embedD "embedC"%go "d")))) #()))).
+    do:  ((MethodResolve (go.PointerType embedD) "Car"%go "d") #());;;
+    return: (((MethodResolve (go.PointerType embedD) "Foo"%go "d") #()) =⟨go.string⟩ ((MethodResolve (go.PointerType embedB) "Foo"%go (![go.PointerType embedB] (StructFieldRef embedC "embedB"%go (StructFieldRef embedD "embedC"%go "d")))) #()))).
 
 (* go: empty_functions.go:3:6 *)
 Definition emptyⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -1432,7 +1432,7 @@ Definition genericConversionsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
     let: "$a1" := #""%go in
     (FuncResolve assert [] #()) "$a0" "$a1");;;
     do:  (let: "$a0" := ((let: "$a0" := #"ok"%go in
-    (FuncResolve maybeConvertToInterface [go.string] #()) "$a0") =⟨go.InterfaceType []⟩ (Convert go.string (go.InterfaceType []) #"ok"%go)) in
+    (FuncResolve maybeConvertToInterface [go.string] #()) "$a0") =⟨go.any⟩ (Convert go.string go.any #"ok"%go)) in
     let: "$a1" := #""%go in
     (FuncResolve assert [] #()) "$a0" "$a1");;;
     do:  (let: "$a0" := ((TypeAssert go.string (let: "$a0" := (let: "$a0" := #"ok"%go in
@@ -1611,7 +1611,7 @@ Definition testConversionInEqⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
     do:  ("c" <-[go.PointerType concreteFooer] "$r0");;;
     let: "$r0" := (Convert (go.PointerType concreteFooer) Fooer (![go.PointerType concreteFooer] "c")) in
     do:  ("f" <-[Fooer] "$r0");;;
-    return: ((Convert (go.PointerType concreteFooer) (go.InterfaceType [go.MethodElem "Foo"%go (go.Signature [] false [])]) (![go.PointerType concreteFooer] "c")) =⟨go.InterfaceType [go.MethodElem "Foo"%go (go.Signature [] false [])]⟩ (![Fooer] "f"))).
+    return: ((Convert (go.PointerType concreteFooer) Fooer (![go.PointerType concreteFooer] "c")) =⟨Fooer⟩ (![Fooer] "f"))).
 
 (* go: interfaces.go:82:6 *)
 Definition takeMultipleⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -2325,7 +2325,7 @@ Definition R__recurMethodⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
 Definition RecursiveEmbedded__recurEmbeddedMethodⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" <>,
     exception_do (let: "r" := (GoAlloc (go.PointerType RecursiveEmbedded) "r") in
-    do:  ((MethodResolve Other "recurEmbeddedMethod"%go (![Other] (StructFieldRef RecursiveEmbedded "Other"%go (![go.PointerType RecursiveEmbedded] "r")))) #());;;
+    do:  ((MethodResolve (go.PointerType Other) "recurEmbeddedMethod"%go (StructFieldRef RecursiveEmbedded "Other"%go (![go.PointerType RecursiveEmbedded] "r"))) #());;;
     return: #()).
 
 (* go: renamedImport.go:7:6 *)
@@ -2741,7 +2741,7 @@ Definition UseAddⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : va
     do:  ("c" <-[Point] "$r0");;;
     let: "r" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := (let: "$a0" := #(W64 4) in
-    (MethodResolve Point "Add"%go (![Point] "c")) "$a0") in
+    (MethodResolve (go.PointerType Point) "Add"%go "c") "$a0") in
     do:  ("r" <-[go.uint64] "$r0");;;
     return: (![go.uint64] "r")).
 

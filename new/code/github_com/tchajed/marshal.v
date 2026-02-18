@@ -113,7 +113,7 @@ Definition ReadIntⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : v
     exception_do (let: "b" := (GoAlloc (go.SliceType go.byte) "b") in
     let: "i" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "b") in
-    (MethodResolve binary.littleEndian "Uint64"%go (![binary.littleEndian] (GlobalVarAddr binary.LittleEndian #()))) "$a0") in
+    (MethodResolve (go.PointerType binary.littleEndian) "Uint64"%go (GlobalVarAddr binary.LittleEndian #())) "$a0") in
     do:  ("i" <-[go.uint64] "$r0");;;
     return: (![go.uint64] "i", let: "$s" := (![go.SliceType go.byte] "b") in
      Slice (go.SliceType go.byte) ("$s", #(W64 8), FuncResolve go.len [go.SliceType go.byte] #() (![go.SliceType go.byte] "b")))).
@@ -124,7 +124,7 @@ Definition ReadInt32ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
     exception_do (let: "b" := (GoAlloc (go.SliceType go.byte) "b") in
     let: "i" := (GoAlloc go.uint32 (GoZeroVal go.uint32 #())) in
     let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "b") in
-    (MethodResolve binary.littleEndian "Uint32"%go (![binary.littleEndian] (GlobalVarAddr binary.LittleEndian #()))) "$a0") in
+    (MethodResolve (go.PointerType binary.littleEndian) "Uint32"%go (GlobalVarAddr binary.LittleEndian #())) "$a0") in
     do:  ("i" <-[go.uint32] "$r0");;;
     return: (![go.uint32] "i", let: "$s" := (![go.SliceType go.byte] "b") in
      Slice (go.SliceType go.byte) ("$s", #(W64 4), FuncResolve go.len [go.SliceType go.byte] #() (![go.SliceType go.byte] "b")))).
@@ -216,7 +216,7 @@ Definition WriteIntⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : 
     do:  (let: "$a0" := (let: "$s" := (![go.SliceType go.byte] "b3") in
     Slice (go.SliceType go.byte) ("$s", ![go.int] "off", FuncResolve go.len [go.SliceType go.byte] #() (![go.SliceType go.byte] "b3"))) in
     let: "$a1" := (![go.uint64] "i") in
-    (MethodResolve binary.littleEndian "PutUint64"%go (![binary.littleEndian] (GlobalVarAddr binary.LittleEndian #()))) "$a0" "$a1");;;
+    (MethodResolve (go.PointerType binary.littleEndian) "PutUint64"%go (GlobalVarAddr binary.LittleEndian #())) "$a0" "$a1");;;
     return: (![go.SliceType go.byte] "b3")).
 
 (* WriteInt32 appends 32-bit integer i in little-endian format to b, returning the new slice.
@@ -242,7 +242,7 @@ Definition WriteInt32ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
     do:  (let: "$a0" := (let: "$s" := (![go.SliceType go.byte] "b3") in
     Slice (go.SliceType go.byte) ("$s", ![go.int] "off", FuncResolve go.len [go.SliceType go.byte] #() (![go.SliceType go.byte] "b3"))) in
     let: "$a1" := (![go.uint32] "i") in
-    (MethodResolve binary.littleEndian "PutUint32"%go (![binary.littleEndian] (GlobalVarAddr binary.LittleEndian #()))) "$a0" "$a1");;;
+    (MethodResolve (go.PointerType binary.littleEndian) "PutUint32"%go (GlobalVarAddr binary.LittleEndian #())) "$a0" "$a1");;;
     return: (![go.SliceType go.byte] "b3")).
 
 (* Append data to b, returning the new slice.

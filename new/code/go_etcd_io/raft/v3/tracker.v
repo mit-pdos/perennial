@@ -233,7 +233,7 @@ Definition Progress__ResetStateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
 Definition Progress__BecomeProbeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "pr" <>,
     exception_do (let: "pr" := (GoAlloc (go.PointerType Progress) "pr") in
-    (if: Convert go.untyped_bool go.bool ((![StateType] (StructFieldRef Progress "State"%go (![go.PointerType Progress] "pr"))) =⟨go.uint64⟩ StateSnapshot)
+    (if: Convert go.untyped_bool go.bool ((![StateType] (StructFieldRef Progress "State"%go (![go.PointerType Progress] "pr"))) =⟨StateType⟩ StateSnapshot)
     then
       let: "pendingSnapshot" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
       let: "$r0" := (![go.uint64] (StructFieldRef Progress "PendingSnapshot"%go (![go.PointerType Progress] "pr"))) in
@@ -386,7 +386,7 @@ Definition Progress__MaybeDecrToⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
     exception_do (let: "pr" := (GoAlloc (go.PointerType Progress) "pr") in
     let: "matchHint" := (GoAlloc go.uint64 "matchHint") in
     let: "rejected" := (GoAlloc go.uint64 "rejected") in
-    (if: Convert go.untyped_bool go.bool ((![StateType] (StructFieldRef Progress "State"%go (![go.PointerType Progress] "pr"))) =⟨go.uint64⟩ StateReplicate)
+    (if: Convert go.untyped_bool go.bool ((![StateType] (StructFieldRef Progress "State"%go (![go.PointerType Progress] "pr"))) =⟨StateType⟩ StateReplicate)
     then
       (if: Convert go.untyped_bool go.bool ((![go.uint64] "rejected") ≤⟨go.uint64⟩ (![go.uint64] (StructFieldRef Progress "Match"%go (![go.PointerType Progress] "pr"))))
       then return: (#false)
@@ -731,8 +731,8 @@ Definition MakeProgressTrackerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
 Definition ProgressTracker__ConfStateⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "p" <>,
     exception_do (let: "p" := (GoAlloc (go.PointerType ProgressTracker) "p") in
-    return: (let: "$v0" := ((MethodResolve quorum.MajorityConfig "Slice"%go (![quorum.MajorityConfig] (IndexRef quorum.JointConfig (![quorum.JointConfig] (StructFieldRef Config "Voters"%go (StructFieldRef ProgressTracker "Config"%go (![go.PointerType ProgressTracker] "p"))), #(W64 0))))) #()) in
-     let: "$v1" := ((MethodResolve quorum.MajorityConfig "Slice"%go (![quorum.MajorityConfig] (IndexRef quorum.JointConfig (![quorum.JointConfig] (StructFieldRef Config "Voters"%go (StructFieldRef ProgressTracker "Config"%go (![go.PointerType ProgressTracker] "p"))), #(W64 1))))) #()) in
+    return: (let: "$v0" := ((MethodResolve (go.PointerType quorum.MajorityConfig) "Slice"%go (IndexRef quorum.JointConfig (![quorum.JointConfig] (StructFieldRef Config "Voters"%go (StructFieldRef ProgressTracker "Config"%go (![go.PointerType ProgressTracker] "p"))), #(W64 0)))) #()) in
+     let: "$v1" := ((MethodResolve (go.PointerType quorum.MajorityConfig) "Slice"%go (IndexRef quorum.JointConfig (![quorum.JointConfig] (StructFieldRef Config "Voters"%go (StructFieldRef ProgressTracker "Config"%go (![go.PointerType ProgressTracker] "p"))), #(W64 1)))) #()) in
      let: "$v2" := ((MethodResolve quorum.MajorityConfig "Slice"%go (![go.MapType go.uint64 (go.StructType [
 
      ])] (StructFieldRef Config "Learners"%go (StructFieldRef ProgressTracker "Config"%go (![go.PointerType ProgressTracker] "p"))))) #()) in
@@ -780,7 +780,7 @@ Definition ProgressTracker__Committedⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : G
   λ: "p" <>,
     exception_do (let: "p" := (GoAlloc (go.PointerType ProgressTracker) "p") in
     return: (let: "$a0" := (Convert matchAckIndexer quorum.AckedIndexer (![ProgressMap] (StructFieldRef ProgressTracker "Progress"%go (![go.PointerType ProgressTracker] "p")))) in
-     (MethodResolve quorum.JointConfig "CommittedIndex"%go (![quorum.JointConfig] (StructFieldRef Config "Voters"%go (StructFieldRef ProgressTracker "Config"%go (![go.PointerType ProgressTracker] "p"))))) "$a0")).
+     (MethodResolve (go.PointerType quorum.JointConfig) "CommittedIndex"%go (StructFieldRef Config "Voters"%go (StructFieldRef ProgressTracker "Config"%go (![go.PointerType ProgressTracker] "p")))) "$a0")).
 
 (* Visit invokes the supplied closure for all tracked progresses in stable order.
 
@@ -844,7 +844,7 @@ Definition ProgressTracker__QuorumActiveⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx 
       ) in
     (MethodResolve (go.PointerType ProgressTracker) "Visit"%go (![go.PointerType ProgressTracker] "p")) "$a0");;;
     return: ((let: "$a0" := (![go.MapType go.uint64 go.bool] "votes") in
-     (MethodResolve quorum.JointConfig "VoteResult"%go (![quorum.JointConfig] (StructFieldRef Config "Voters"%go (StructFieldRef ProgressTracker "Config"%go (![go.PointerType ProgressTracker] "p"))))) "$a0") =⟨go.uint8⟩ quorum.VoteWon)).
+     (MethodResolve (go.PointerType quorum.JointConfig) "VoteResult"%go (StructFieldRef Config "Voters"%go (StructFieldRef ProgressTracker "Config"%go (![go.PointerType ProgressTracker] "p")))) "$a0") =⟨quorum.VoteResult⟩ quorum.VoteWon)).
 
 (* VoterNodes returns a sorted slice of voters.
 
@@ -857,7 +857,7 @@ Definition ProgressTracker__VoterNodesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : 
     ])) (GoZeroVal (go.MapType go.uint64 (go.StructType [
 
     ])) #())) in
-    let: "$r0" := ((MethodResolve quorum.JointConfig "IDs"%go (![quorum.JointConfig] (StructFieldRef Config "Voters"%go (StructFieldRef ProgressTracker "Config"%go (![go.PointerType ProgressTracker] "p"))))) #()) in
+    let: "$r0" := ((MethodResolve (go.PointerType quorum.JointConfig) "IDs"%go (StructFieldRef Config "Voters"%go (StructFieldRef ProgressTracker "Config"%go (![go.PointerType ProgressTracker] "p")))) #()) in
     do:  ("m" <-[go.MapType go.uint64 (go.StructType [
 
     ])] "$r0");;;
@@ -991,7 +991,7 @@ Definition ProgressTracker__TallyVotesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : 
       else do:  ("rejected" <-[go.int] ((![go.int] "rejected") +⟨go.int⟩ #(W64 1))))));;;
     let: "result" := (GoAlloc quorum.VoteResult (GoZeroVal quorum.VoteResult #())) in
     let: "$r0" := (let: "$a0" := (![go.MapType go.uint64 go.bool] (StructFieldRef ProgressTracker "Votes"%go (![go.PointerType ProgressTracker] "p"))) in
-    (MethodResolve quorum.JointConfig "VoteResult"%go (![quorum.JointConfig] (StructFieldRef Config "Voters"%go (StructFieldRef ProgressTracker "Config"%go (![go.PointerType ProgressTracker] "p"))))) "$a0") in
+    (MethodResolve (go.PointerType quorum.JointConfig) "VoteResult"%go (StructFieldRef Config "Voters"%go (StructFieldRef ProgressTracker "Config"%go (![go.PointerType ProgressTracker] "p")))) "$a0") in
     do:  ("result" <-[quorum.VoteResult] "$r0");;;
     return: (![go.int] "granted", ![go.int] "rejected", ![quorum.VoteResult] "result")).
 
