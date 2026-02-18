@@ -35,9 +35,6 @@ From Perennial.Helpers Require Export
 From Perennial Require Export base.
 Export uPred.
 
-Global Set Default Proof Using "Type".
-Global Set Printing Projections.
-
 Module syntax.
 Inductive ofe :=
 | unitO
