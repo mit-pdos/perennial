@@ -203,7 +203,7 @@ Definition Election__Campaignⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
     let: "$r1" := "$ret1" in
     do:  ("resp" <-[go.PointerType clientv3.TxnResponse] "$r0");;;
     do:  ("err" <-[go.error] "$r1");;;
-    (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
+    (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
     then return: (![go.error] "err")
     else do:  #());;;
     let: "$r0" := (![go.string] "k") in
@@ -225,7 +225,7 @@ Definition Election__Campaignⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
         let: "$a1" := (![go.string] "val") in
         (MethodResolve (go.PointerType Election) "Proclaim"%go (![go.PointerType Election] "e")) "$a0" "$a1") in
         do:  ("err" <-[go.error] "$r0");;;
-        (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
+        (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
         then
           do:  (let: "$a0" := (![context.Context] "ctx") in
           (MethodResolve (go.PointerType Election) "Resign"%go (![go.PointerType Election] "e")) "$a0");;;
@@ -239,7 +239,7 @@ Definition Election__Campaignⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
     let: "$a3" := ((![go.int64] (StructFieldRef Election "leaderRev"%go (![go.PointerType Election] "e"))) -⟨go.int64⟩ #(W64 1)) in
     (FuncResolve waitDeletes [] #()) "$a0" "$a1" "$a2" "$a3") in
     do:  ("err" <-[go.error] "$r0");;;
-    (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
+    (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
     then
       let: "$ch0" := ((MethodResolve context.Context "Done"%go (![context.Context] "ctx")) #()) in
       SelectStmt (SelectStmtClauses (Some (let: "$r0" := (Convert go.untyped_nil (go.PointerType Session) UntypedNil) in
@@ -296,7 +296,7 @@ Definition Election__Proclaimⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
     let: "$r1" := "$ret1" in
     do:  ("tresp" <-[go.PointerType clientv3.TxnResponse] "$r0");;;
     do:  ("terr" <-[go.error] "$r1");;;
-    (if: Convert go.untyped_bool go.bool ((![go.error] "terr") ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
+    (if: Convert go.untyped_bool go.bool ((![go.error] "terr") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
     then return: (![go.error] "terr")
     else do:  #());;;
     (if: (⟨go.bool⟩! (![go.bool] (StructFieldRef clientv3.TxnResponse "Succeeded"%go (![go.PointerType clientv3.TxnResponse] "tresp"))))
@@ -343,7 +343,7 @@ Definition Election__Resignⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
     let: "$r1" := "$ret1" in
     do:  ("resp" <-[go.PointerType clientv3.TxnResponse] "$r0");;;
     do:  ("err" <-[go.error] "$r1");;;
-    (if: Convert go.untyped_bool go.bool ((![go.error] "err") =⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
+    (if: Convert go.untyped_bool go.bool ((![go.error] "err") =⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
     then
       let: "$r0" := (![go.PointerType etcdserverpb.ResponseHeader] (StructFieldRef clientv3.TxnResponse "Header"%go (![go.PointerType clientv3.TxnResponse] "resp"))) in
       do:  ((StructFieldRef Election "hdr"%go (![go.PointerType Election] "e")) <-[go.PointerType etcdserverpb.ResponseHeader] "$r0")
@@ -374,7 +374,7 @@ Definition Election__Leaderⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
     let: "$r1" := "$ret1" in
     do:  ("resp" <-[go.PointerType clientv3.GetResponse] "$r0");;;
     do:  ("err" <-[go.error] "$r1");;;
-    (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
+    (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
     then return: (Convert go.untyped_nil (go.PointerType clientv3.GetResponse) UntypedNil, ![go.error] "err")
     else
       (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType (go.PointerType mvccpb.KeyValue)] (StructFieldRef clientv3.GetResponse "Kvs"%go (![go.PointerType clientv3.GetResponse] "resp"))) in
@@ -432,7 +432,7 @@ Definition Election__observeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
       let: "$r1" := "$ret1" in
       do:  ("resp" <-[go.PointerType clientv3.GetResponse] "$r0");;;
       do:  ("err" <-[go.error] "$r1");;;
-      (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
+      (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
       then return: (#())
       else do:  #());;;
       let: "kv" := (GoAlloc (go.PointerType mvccpb.KeyValue) (GoZeroVal (go.PointerType mvccpb.KeyValue) #())) in
@@ -468,7 +468,7 @@ Definition Election__observeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
           let: "$r1" := "$ret1" in
           do:  ("wr" <-[clientv3.WatchResponse] "$r0");;;
           do:  ("ok" <-[go.bool] "$r1");;;
-          (if: (⟨go.bool⟩! (![go.bool] "ok")) || (((MethodResolve (go.PointerType clientv3.WatchResponse) "Err"%go "wr") #()) ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
+          (if: (⟨go.bool⟩! (![go.bool] "ok")) || (((MethodResolve (go.PointerType clientv3.WatchResponse) "Err"%go "wr") #()) ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
           then
             do:  ((![context.CancelFunc] "cancel") #());;;
             return: (#())
@@ -478,7 +478,7 @@ Definition Election__observeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
           slice.for_range (go.PointerType clientv3.Event) "$range" (λ: "$key" "$value",
             do:  ("ev" <-[go.PointerType clientv3.Event] "$value");;;
             do:  "$key";;;
-            (if: Convert go.untyped_bool go.bool ((![mvccpb.Event_EventType] (StructFieldRef clientv3.Event "Type"%go (![go.PointerType clientv3.Event] "ev"))) =⟨go.int32⟩ mvccpb.PUT)
+            (if: Convert go.untyped_bool go.bool ((![mvccpb.Event_EventType] (StructFieldRef clientv3.Event "Type"%go (![go.PointerType clientv3.Event] "ev"))) =⟨mvccpb.Event_EventType⟩ mvccpb.PUT)
             then
               let: "$r0" := (StructFieldRef clientv3.WatchResponse "Header"%go "wr") in
               let: "$r1" := (![go.PointerType mvccpb.KeyValue] (StructFieldRef clientv3.Event "Kv"%go (![go.PointerType clientv3.Event] "ev"))) in
@@ -540,7 +540,7 @@ Definition Election__observeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
         slice.for_range (go.PointerType clientv3.Event) "$range" (λ: "$key" "$value",
           do:  ("ev" <-[go.PointerType clientv3.Event] "$value");;;
           do:  "$key";;;
-          (if: Convert go.untyped_bool go.bool ((![mvccpb.Event_EventType] (StructFieldRef clientv3.Event "Type"%go (![go.PointerType clientv3.Event] "ev"))) =⟨go.int32⟩ mvccpb.DELETE)
+          (if: Convert go.untyped_bool go.bool ((![mvccpb.Event_EventType] (StructFieldRef clientv3.Event "Type"%go (![go.PointerType clientv3.Event] "ev"))) =⟨mvccpb.Event_EventType⟩ mvccpb.DELETE)
           then
             let: "$r0" := #true in
             do:  ("keyDeleted" <-[go.bool] "$r0");;;
@@ -623,19 +623,19 @@ Definition waitDeleteⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
       slice.for_range (go.PointerType clientv3.Event) "$range" (λ: "$key" "$value",
         do:  ("ev" <-[go.PointerType clientv3.Event] "$value");;;
         do:  "$key";;;
-        (if: Convert go.untyped_bool go.bool ((![mvccpb.Event_EventType] (StructFieldRef clientv3.Event "Type"%go (![go.PointerType clientv3.Event] "ev"))) =⟨go.int32⟩ mvccpb.DELETE)
+        (if: Convert go.untyped_bool go.bool ((![mvccpb.Event_EventType] (StructFieldRef clientv3.Event "Type"%go (![go.PointerType clientv3.Event] "ev"))) =⟨mvccpb.Event_EventType⟩ mvccpb.DELETE)
         then return: (Convert go.untyped_nil go.error UntypedNil)
         else do:  #()))));;;
     (let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
     let: "$r0" := ((MethodResolve (go.PointerType clientv3.WatchResponse) "Err"%go "wr") #()) in
     do:  ("err" <-[go.error] "$r0");;;
-    (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
+    (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
     then return: (![go.error] "err")
     else do:  #()));;;
     (let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
     let: "$r0" := ((MethodResolve context.Context "Err"%go (![context.Context] "ctx")) #()) in
     do:  ("err" <-[go.error] "$r0");;;
-    (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
+    (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
     then return: (![go.error] "err")
     else do:  #()));;;
     return: (let: "$a0" := #"lost watcher waiting for delete"%go in
@@ -669,7 +669,7 @@ Definition waitDeletesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
       let: "$r1" := "$ret1" in
       do:  ("resp" <-[go.PointerType clientv3.GetResponse] "$r0");;;
       do:  ("err" <-[go.error] "$r1");;;
-      (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
+      (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
       then return: (![go.error] "err")
       else do:  #());;;
       (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType (go.PointerType mvccpb.KeyValue)] (StructFieldRef clientv3.GetResponse "Kvs"%go (![go.PointerType clientv3.GetResponse] "resp"))) in
@@ -685,7 +685,7 @@ Definition waitDeletesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
       let: "$a3" := (![go.int64] (StructFieldRef etcdserverpb.ResponseHeader "Revision"%go (![go.PointerType etcdserverpb.ResponseHeader] (StructFieldRef clientv3.GetResponse "Header"%go (![go.PointerType clientv3.GetResponse] "resp"))))) in
       (FuncResolve waitDelete [] #()) "$a0" "$a1" "$a2" "$a3") in
       do:  ("err" <-[go.error] "$r0");;;
-      (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
+      (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
       then return: (![go.error] "err")
       else do:  #())))).
 
@@ -718,7 +718,7 @@ Definition Mutex__TryLockⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
     let: "$r1" := "$ret1" in
     do:  ("resp" <-[go.PointerType clientv3.TxnResponse] "$r0");;;
     do:  ("err" <-[go.error] "$r1");;;
-    (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
+    (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
     then return: (![go.error] "err")
     else do:  #());;;
     let: "ownerKey" := (GoAlloc (go.SliceType (go.PointerType mvccpb.KeyValue)) (GoZeroVal (go.SliceType (go.PointerType mvccpb.KeyValue)) #())) in
@@ -743,7 +743,7 @@ Definition Mutex__TryLockⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
     let: "$r1" := "$ret1" in
     do:  "$r0";;;
     do:  ("err" <-[go.error] "$r1");;;
-    (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
+    (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
     then return: (![go.error] "err")
     else do:  #()));;;
     let: "$r0" := #" "%go in
@@ -768,7 +768,7 @@ Definition Mutex__Lockⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
     let: "$r1" := "$ret1" in
     do:  ("resp" <-[go.PointerType clientv3.TxnResponse] "$r0");;;
     do:  ("err" <-[go.error] "$r1");;;
-    (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
+    (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
     then return: (![go.error] "err")
     else do:  #());;;
     let: "ownerKey" := (GoAlloc (go.SliceType (go.PointerType mvccpb.KeyValue)) (GoZeroVal (go.SliceType (go.PointerType mvccpb.KeyValue)) #())) in
@@ -791,7 +791,7 @@ Definition Mutex__Lockⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
     let: "$a3" := ((![go.int64] (StructFieldRef Mutex "myRev"%go (![go.PointerType Mutex] "m"))) -⟨go.int64⟩ #(W64 1)) in
     (FuncResolve waitDeletes [] #()) "$a0" "$a1" "$a2" "$a3") in
     do:  ("werr" <-[go.error] "$r0");;;
-    (if: Convert go.untyped_bool go.bool ((![go.error] "werr") ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
+    (if: Convert go.untyped_bool go.bool ((![go.error] "werr") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
     then
       do:  (let: "$a0" := ((MethodResolve (go.PointerType clientv3.Client) "Ctx"%go (![go.PointerType clientv3.Client] "client")) #()) in
       (MethodResolve (go.PointerType Mutex) "Unlock"%go (![go.PointerType Mutex] "m")) "$a0");;;
@@ -806,7 +806,7 @@ Definition Mutex__Lockⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
     let: "$r1" := "$ret1" in
     do:  ("gresp" <-[go.PointerType clientv3.GetResponse] "$r0");;;
     do:  ("werr" <-[go.error] "$r1");;;
-    (if: Convert go.untyped_bool go.bool ((![go.error] "werr") ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
+    (if: Convert go.untyped_bool go.bool ((![go.error] "werr") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
     then
       do:  (let: "$a0" := ((MethodResolve (go.PointerType clientv3.Client) "Ctx"%go (![go.PointerType clientv3.Client] "client")) #()) in
       (MethodResolve (go.PointerType Mutex) "Unlock"%go (![go.PointerType Mutex] "m")) "$a0");;;
@@ -878,7 +878,7 @@ Definition Mutex__tryAcquireⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
     let: "$r1" := "$ret1" in
     do:  ("resp" <-[go.PointerType clientv3.TxnResponse] "$r0");;;
     do:  ("err" <-[go.error] "$r1");;;
-    (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
+    (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
     then return: (Convert go.untyped_nil (go.PointerType clientv3.TxnResponse) UntypedNil, ![go.error] "err")
     else do:  #());;;
     let: "$r0" := (![go.int64] (StructFieldRef etcdserverpb.ResponseHeader "Revision"%go (![go.PointerType etcdserverpb.ResponseHeader] (StructFieldRef clientv3.TxnResponse "Header"%go (![go.PointerType clientv3.TxnResponse] "resp"))))) in
@@ -920,7 +920,7 @@ Definition Mutex__Unlockⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
     let: "$r1" := "$ret1" in
     do:  "$r0";;;
     do:  ("err" <-[go.error] "$r1");;;
-    (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
+    (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
     then return: (![go.error] "err")
     else do:  #()));;;
     let: "$r0" := #" "%go in
@@ -964,7 +964,7 @@ Definition lockerMutex__Lockⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
     let: "$r0" := (let: "$a0" := ((MethodResolve (go.PointerType clientv3.Client) "Ctx"%go (![go.PointerType clientv3.Client] "client")) #()) in
     (MethodResolve (go.PointerType Mutex) "Lock"%go (![go.PointerType Mutex] (StructFieldRef lockerMutex "Mutex"%go (![go.PointerType lockerMutex] "lm")))) "$a0") in
     do:  ("err" <-[go.error] "$r0");;;
-    (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
+    (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
     then
       do:  (let: "$a0" := (Convert go.error (go.InterfaceType []) (![go.error] "err")) in
       (FuncResolve go.panic [] #()) "$a0")
@@ -982,7 +982,7 @@ Definition lockerMutex__Unlockⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobal
     let: "$r0" := (let: "$a0" := ((MethodResolve (go.PointerType clientv3.Client) "Ctx"%go (![go.PointerType clientv3.Client] "client")) #()) in
     (MethodResolve (go.PointerType Mutex) "Unlock"%go (![go.PointerType Mutex] (StructFieldRef lockerMutex "Mutex"%go (![go.PointerType lockerMutex] "lm")))) "$a0") in
     do:  ("err" <-[go.error] "$r0");;;
-    (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
+    (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
     then
       do:  (let: "$a0" := (Convert go.error (go.InterfaceType []) (![go.error] "err")) in
       (FuncResolve go.panic [] #()) "$a0")
@@ -1027,7 +1027,7 @@ Definition NewSessionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
     let: "id" := (GoAlloc clientv3.LeaseID (GoZeroVal clientv3.LeaseID #())) in
     let: "$r0" := (![clientv3.LeaseID] (StructFieldRef sessionOptions "leaseID"%go (![go.PointerType sessionOptions] "ops"))) in
     do:  ("id" <-[clientv3.LeaseID] "$r0");;;
-    (if: Convert go.untyped_bool go.bool ((![clientv3.LeaseID] "id") =⟨go.int64⟩ clientv3.NoLease)
+    (if: Convert go.untyped_bool go.bool ((![clientv3.LeaseID] "id") =⟨clientv3.LeaseID⟩ clientv3.NoLease)
     then
       let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
       let: "resp" := (GoAlloc (go.PointerType clientv3.LeaseGrantResponse) (GoZeroVal (go.PointerType clientv3.LeaseGrantResponse) #())) in
@@ -1038,7 +1038,7 @@ Definition NewSessionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
       let: "$r1" := "$ret1" in
       do:  ("resp" <-[go.PointerType clientv3.LeaseGrantResponse] "$r0");;;
       do:  ("err" <-[go.error] "$r1");;;
-      (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
+      (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
       then return: (Convert go.untyped_nil (go.PointerType Session) UntypedNil, ![go.error] "err")
       else do:  #());;;
       let: "$r0" := (![clientv3.LeaseID] (StructFieldRef clientv3.LeaseGrantResponse "ID"%go (![go.PointerType clientv3.LeaseGrantResponse] "resp"))) in
@@ -1061,7 +1061,7 @@ Definition NewSessionⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
     let: "$r1" := "$ret1" in
     do:  ("keepAlive" <-[go.ChannelType go.recvonly (go.PointerType clientv3.LeaseKeepAliveResponse)] "$r0");;;
     do:  ("err" <-[go.error] "$r1");;;
-    (if: Convert go.untyped_bool go.bool (((![go.error] "err") ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil)) || ((![go.ChannelType go.recvonly (go.PointerType clientv3.LeaseKeepAliveResponse)] "keepAlive") =⟨go.ChannelType go.recvonly (go.PointerType clientv3.LeaseKeepAliveResponse)⟩ (Convert go.untyped_nil (go.ChannelType go.recvonly (go.PointerType clientv3.LeaseKeepAliveResponse)) UntypedNil)))
+    (if: Convert go.untyped_bool go.bool (((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil)) || ((![go.ChannelType go.recvonly (go.PointerType clientv3.LeaseKeepAliveResponse)] "keepAlive") =⟨go.ChannelType go.recvonly (go.PointerType clientv3.LeaseKeepAliveResponse)⟩ (Convert go.untyped_nil (go.ChannelType go.recvonly (go.PointerType clientv3.LeaseKeepAliveResponse)) UntypedNil)))
     then
       do:  ((![context.CancelFunc] "cancel") #());;;
       return: (Convert go.untyped_nil (go.PointerType Session) UntypedNil, ![go.error] "err")
@@ -1176,7 +1176,7 @@ Definition Session__Closeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalConte
     let: "cancel" := (GoAlloc context.CancelFunc (GoZeroVal context.CancelFunc #())) in
     let: "ctx" := (GoAlloc context.Context (GoZeroVal context.Context #())) in
     let: ("$ret0", "$ret1") := (let: "$a0" := (![context.Context] (StructFieldRef sessionOptions "ctx"%go (![go.PointerType sessionOptions] (StructFieldRef Session "opts"%go (![go.PointerType Session] "s"))))) in
-    let: "$a1" := ((Convert go.int time.Duration (![go.int] (StructFieldRef sessionOptions "ttl"%go (![go.PointerType sessionOptions] (StructFieldRef Session "opts"%go (![go.PointerType Session] "s")))))) *⟨go.int64⟩ time.Second) in
+    let: "$a1" := ((Convert go.int time.Duration (![go.int] (StructFieldRef sessionOptions "ttl"%go (![go.PointerType sessionOptions] (StructFieldRef Session "opts"%go (![go.PointerType Session] "s")))))) *⟨time.Duration⟩ time.Second) in
     (FuncResolve context.WithTimeout [] #()) "$a0" "$a1") in
     let: "$r0" := "$ret0" in
     let: "$r1" := "$ret1" in
@@ -1350,9 +1350,9 @@ Definition mkSTMⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val
       CompositeLiteral stmSerializable (LiteralValue [KeyedElement (Some (KeyField "stm"%go)) (ElementExpression stm "$v0"); KeyedElement (Some (KeyField "prefetch"%go)) (ElementExpression (go.MapType go.string (go.PointerType clientv3.GetResponse)) "$v1")]))) in
       do:  ("s" <-[go.PointerType stmSerializable] "$r0");;;
       let: "$r0" := (λ: <>,
-        exception_do (return: (let: "$a0" := ((MethodResolve readSet "cmps"%go (![readSet] (StructFieldRef stm "rset"%go (StructFieldRef stmSerializable "stm"%go (![go.PointerType stmSerializable] "s"))))) #()) in
-         let: "$a1" := (let: "$a0" := (((MethodResolve readSet "first"%go (![readSet] (StructFieldRef stm "rset"%go (StructFieldRef stmSerializable "stm"%go (![go.PointerType stmSerializable] "s"))))) #()) +⟨go.int64⟩ #(W64 1)) in
-         (MethodResolve writeSet "cmps"%go (![writeSet] (StructFieldRef stm "wset"%go (StructFieldRef stmSerializable "stm"%go (![go.PointerType stmSerializable] "s"))))) "$a0") in
+        exception_do (return: (let: "$a0" := ((MethodResolve (go.PointerType readSet) "cmps"%go (StructFieldRef stm "rset"%go (StructFieldRef stmSerializable "stm"%go (![go.PointerType stmSerializable] "s")))) #()) in
+         let: "$a1" := (let: "$a0" := (((MethodResolve (go.PointerType readSet) "first"%go (StructFieldRef stm "rset"%go (StructFieldRef stmSerializable "stm"%go (![go.PointerType stmSerializable] "s")))) #()) +⟨go.int64⟩ #(W64 1)) in
+         (MethodResolve (go.PointerType writeSet) "cmps"%go (StructFieldRef stm "wset"%go (StructFieldRef stmSerializable "stm"%go (![go.PointerType stmSerializable] "s")))) "$a0") in
          (FuncResolve go.append [go.SliceType clientv3.Cmp] #()) "$a0" "$a1"))
         ) in
       do:  ((StructFieldRef stm "conflicts"%go (StructFieldRef stmSerializable "stm"%go (![go.PointerType stmSerializable] "s"))) <-[go.FunctionType (go.Signature [] false [go.SliceType clientv3.Cmp])] "$r0");;;
@@ -1368,7 +1368,7 @@ Definition mkSTMⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val
         CompositeLiteral stmSerializable (LiteralValue [KeyedElement (Some (KeyField "stm"%go)) (ElementExpression stm "$v0"); KeyedElement (Some (KeyField "prefetch"%go)) (ElementExpression (go.MapType go.string (go.PointerType clientv3.GetResponse)) "$v1")]))) in
         do:  ("s" <-[go.PointerType stmSerializable] "$r0");;;
         let: "$r0" := (λ: <>,
-          exception_do (return: ((MethodResolve readSet "cmps"%go (![readSet] (StructFieldRef stm "rset"%go (StructFieldRef stmSerializable "stm"%go (![go.PointerType stmSerializable] "s"))))) #()))
+          exception_do (return: ((MethodResolve (go.PointerType readSet) "cmps"%go (StructFieldRef stm "rset"%go (StructFieldRef stmSerializable "stm"%go (![go.PointerType stmSerializable] "s")))) #()))
           ) in
         do:  ((StructFieldRef stm "conflicts"%go (StructFieldRef stmSerializable "stm"%go (![go.PointerType stmSerializable] "s"))) <-[go.FunctionType (go.Signature [] false [go.SliceType clientv3.Cmp])] "$r0");;;
         return: (Convert (go.PointerType stmSerializable) STM (![go.PointerType stmSerializable] "s"))
@@ -1383,7 +1383,7 @@ Definition mkSTMⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val
           CompositeLiteral stm (LiteralValue [KeyedElement (Some (KeyField "client"%go)) (ElementExpression (go.PointerType clientv3.Client) "$v0"); KeyedElement (Some (KeyField "ctx"%go)) (ElementExpression context.Context "$v1"); KeyedElement (Some (KeyField "getOpts"%go)) (ElementExpression (go.SliceType clientv3.OpOption) "$v2")]))) in
           do:  ("s" <-[go.PointerType stm] "$r0");;;
           let: "$r0" := (λ: <>,
-            exception_do (return: ((MethodResolve readSet "cmps"%go (![readSet] (StructFieldRef stm "rset"%go (![go.PointerType stm] "s")))) #()))
+            exception_do (return: ((MethodResolve (go.PointerType readSet) "cmps"%go (StructFieldRef stm "rset"%go (![go.PointerType stm] "s"))) #()))
             ) in
           do:  ((StructFieldRef stm "conflicts"%go (![go.PointerType stm] "s")) <-[go.FunctionType (go.Signature [] false [go.SliceType clientv3.Cmp])] "$r0");;;
           return: (Convert (go.PointerType stm) STM (![go.PointerType stm] "s"))
@@ -1452,7 +1452,7 @@ Definition runSTMⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : va
         (let: "$r0" := (let: "$a0" := (![STM] "s") in
         (![go.FunctionType (go.Signature [STM] false [go.error])] "apply") "$a0") in
         do:  ((StructFieldRef stmResponse "err"%go "out") <-[go.error] "$r0");;;
-        (if: Convert go.untyped_bool go.bool ((![go.error] (StructFieldRef stmResponse "err"%go "out")) ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
+        (if: Convert go.untyped_bool go.bool ((![go.error] (StructFieldRef stmResponse "err"%go "out")) ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
         then break: #()
         else do:  #()));;;
         (let: "$r0" := ((MethodResolve STM "commit"%go (![STM] "s")) #()) in
@@ -1613,7 +1613,7 @@ Definition stm__Getⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : 
     let: "keys" := (GoAlloc (go.SliceType go.string) "keys") in
     (let: "wv" := (GoAlloc (go.PointerType stmPut) (GoZeroVal (go.PointerType stmPut) #())) in
     let: "$r0" := (let: "$a0" := (![go.SliceType go.string] "keys") in
-    (MethodResolve writeSet "get"%go (![writeSet] (StructFieldRef stm "wset"%go (![go.PointerType stm] "s")))) "$a0") in
+    (MethodResolve (go.PointerType writeSet) "get"%go (StructFieldRef stm "wset"%go (![go.PointerType stm] "s"))) "$a0") in
     do:  ("wv" <-[go.PointerType stmPut] "$r0");;;
     (if: Convert go.untyped_bool go.bool ((![go.PointerType stmPut] "wv") ≠⟨go.PointerType stmPut⟩ (Convert go.untyped_nil (go.PointerType stmPut) UntypedNil))
     then return: (![go.string] (StructFieldRef stmPut "val"%go (![go.PointerType stmPut] "wv")))
@@ -1673,7 +1673,7 @@ Definition stm__commitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
     exception_do (let: "s" := (GoAlloc (go.PointerType stm) "s") in
     let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
     let: "txnresp" := (GoAlloc (go.PointerType clientv3.TxnResponse) (GoZeroVal (go.PointerType clientv3.TxnResponse) #())) in
-    let: ("$ret0", "$ret1") := ((MethodResolve clientv3.Txn "Commit"%go (let: "$a0" := ((MethodResolve writeSet "puts"%go (![writeSet] (StructFieldRef stm "wset"%go (![go.PointerType stm] "s")))) #()) in
+    let: ("$ret0", "$ret1") := ((MethodResolve clientv3.Txn "Commit"%go (let: "$a0" := ((MethodResolve (go.PointerType writeSet) "puts"%go (StructFieldRef stm "wset"%go (![go.PointerType stm] "s"))) #()) in
     (MethodResolve clientv3.Txn "Then"%go (let: "$a0" := ((![go.FunctionType (go.Signature [] false [go.SliceType clientv3.Cmp])] (StructFieldRef stm "conflicts"%go (![go.PointerType stm] "s"))) #()) in
     (MethodResolve clientv3.Txn "If"%go (let: "$a0" := (![context.Context] (StructFieldRef stm "ctx"%go (![go.PointerType stm] "s"))) in
     (MethodResolve (go.PointerType clientv3.Client) "Txn"%go (![go.PointerType clientv3.Client] (StructFieldRef stm "client"%go (![go.PointerType stm] "s")))) "$a0")) "$a0")) "$a0")) #()) in
@@ -1681,7 +1681,7 @@ Definition stm__commitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
     let: "$r1" := "$ret1" in
     do:  ("txnresp" <-[go.PointerType clientv3.TxnResponse] "$r0");;;
     do:  ("err" <-[go.error] "$r1");;;
-    (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
+    (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
     then
       do:  (let: "$a0" := (Convert stmError (go.InterfaceType []) (let: "$v0" := (![go.error] "err") in
       CompositeLiteral stmError (LiteralValue [KeyedElement None (ElementExpression go.error "$v0")]))) in
@@ -1734,7 +1734,7 @@ Definition stm__fetchⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
     let: "$r1" := "$ret1" in
     do:  ("txnresp" <-[go.PointerType clientv3.TxnResponse] "$r0");;;
     do:  ("err" <-[go.error] "$r1");;;
-    (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
+    (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
     then
       do:  (let: "$a0" := (Convert stmError (go.InterfaceType []) (let: "$v0" := (![go.error] "err") in
       CompositeLiteral stmError (LiteralValue [KeyedElement None (ElementExpression go.error "$v0")]))) in
@@ -1742,7 +1742,7 @@ Definition stm__fetchⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
     else do:  #());;;
     do:  (let: "$a0" := (![go.SliceType go.string] "keys") in
     let: "$a1" := (![go.PointerType clientv3.TxnResponse] "txnresp") in
-    (MethodResolve readSet "add"%go (![readSet] (StructFieldRef stm "rset"%go (![go.PointerType stm] "s")))) "$a0" "$a1");;;
+    (MethodResolve (go.PointerType readSet) "add"%go (StructFieldRef stm "rset"%go (![go.PointerType stm] "s"))) "$a0" "$a1");;;
     return: (Convert (go.PointerType etcdserverpb.RangeResponse) (go.PointerType clientv3.GetResponse) ((MethodResolve (go.PointerType etcdserverpb.ResponseOp) "GetResponseRange"%go (![go.PointerType etcdserverpb.ResponseOp] (IndexRef (go.SliceType (go.PointerType etcdserverpb.ResponseOp)) (![go.SliceType (go.PointerType etcdserverpb.ResponseOp)] (StructFieldRef clientv3.TxnResponse "Responses"%go (![go.PointerType clientv3.TxnResponse] "txnresp")), #(W64 0))))) #()))).
 
 (* go: stm.go:295:15 *)
@@ -1766,7 +1766,7 @@ Definition stmSerializable__Getⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGloba
     else do:  #());;;
     (let: "wv" := (GoAlloc (go.PointerType stmPut) (GoZeroVal (go.PointerType stmPut) #())) in
     let: "$r0" := (let: "$a0" := (![go.SliceType go.string] "keys") in
-    (MethodResolve writeSet "get"%go (![writeSet] (StructFieldRef stm "wset"%go (StructFieldRef stmSerializable "stm"%go (![go.PointerType stmSerializable] "s"))))) "$a0") in
+    (MethodResolve (go.PointerType writeSet) "get"%go (StructFieldRef stm "wset"%go (StructFieldRef stmSerializable "stm"%go (![go.PointerType stmSerializable] "s")))) "$a0") in
     do:  ("wv" <-[go.PointerType stmPut] "$r0");;;
     (if: Convert go.untyped_bool go.bool ((![go.PointerType stmPut] "wv") ≠⟨go.PointerType stmPut⟩ (Convert go.untyped_nil (go.PointerType stmPut) UntypedNil))
     then return: (![go.string] (StructFieldRef stmPut "val"%go (![go.PointerType stmPut] "wv")))
@@ -1863,7 +1863,7 @@ Definition stmSerializable__commitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGl
     do:  ("keys" <-[go.SliceType go.string] "$r0");;;
     do:  ("getops" <-[go.SliceType clientv3.Op] "$r1");;;
     let: "txn" := (GoAlloc clientv3.Txn (GoZeroVal clientv3.Txn #())) in
-    let: "$r0" := (let: "$a0" := ((MethodResolve writeSet "puts"%go (![writeSet] (StructFieldRef stm "wset"%go (StructFieldRef stmSerializable "stm"%go (![go.PointerType stmSerializable] "s"))))) #()) in
+    let: "$r0" := (let: "$a0" := ((MethodResolve (go.PointerType writeSet) "puts"%go (StructFieldRef stm "wset"%go (StructFieldRef stmSerializable "stm"%go (![go.PointerType stmSerializable] "s")))) #()) in
     (MethodResolve clientv3.Txn "Then"%go (let: "$a0" := ((![go.FunctionType (go.Signature [] false [go.SliceType clientv3.Cmp])] (StructFieldRef stm "conflicts"%go (StructFieldRef stmSerializable "stm"%go (![go.PointerType stmSerializable] "s")))) #()) in
     (MethodResolve clientv3.Txn "If"%go (let: "$a0" := (![context.Context] (StructFieldRef stm "ctx"%go (StructFieldRef stmSerializable "stm"%go (![go.PointerType stmSerializable] "s")))) in
     (MethodResolve (go.PointerType clientv3.Client) "Txn"%go (![go.PointerType clientv3.Client] (StructFieldRef stm "client"%go (StructFieldRef stmSerializable "stm"%go (![go.PointerType stmSerializable] "s"))))) "$a0")) "$a0")) "$a0") in
@@ -1876,7 +1876,7 @@ Definition stmSerializable__commitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGl
     let: "$r1" := "$ret1" in
     do:  ("txnresp" <-[go.PointerType clientv3.TxnResponse] "$r0");;;
     do:  ("err" <-[go.error] "$r1");;;
-    (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
+    (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
     then
       do:  (let: "$a0" := (Convert stmError (go.InterfaceType []) (let: "$v0" := (![go.error] "err") in
       CompositeLiteral stmError (LiteralValue [KeyedElement None (ElementExpression go.error "$v0")]))) in
@@ -1887,7 +1887,7 @@ Definition stmSerializable__commitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGl
     else do:  #());;;
     do:  (let: "$a0" := (![go.SliceType go.string] "keys") in
     let: "$a1" := (![go.PointerType clientv3.TxnResponse] "txnresp") in
-    (MethodResolve readSet "add"%go (![readSet] (StructFieldRef stm "rset"%go (StructFieldRef stmSerializable "stm"%go (![go.PointerType stmSerializable] "s"))))) "$a0" "$a1");;;
+    (MethodResolve (go.PointerType readSet) "add"%go (StructFieldRef stm "rset"%go (StructFieldRef stmSerializable "stm"%go (![go.PointerType stmSerializable] "s")))) "$a0" "$a1");;;
     let: "$r0" := (![readSet] (StructFieldRef stm "rset"%go (StructFieldRef stmSerializable "stm"%go (![go.PointerType stmSerializable] "s")))) in
     do:  ((StructFieldRef stmSerializable "prefetch"%go (![go.PointerType stmSerializable] "s")) <-[go.MapType go.string (go.PointerType clientv3.GetResponse)] "$r0");;;
     let: "$r0" := (Convert go.untyped_nil (go.SliceType clientv3.OpOption) UntypedNil) in

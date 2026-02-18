@@ -1263,7 +1263,7 @@ Definition RequestOp_RequestRange__MarshalToSizedBufferⁱᵐᵖˡ {ext : ffi_sy
       let: "$r1" := "$ret1" in
       do:  ("size" <-[go.int] "$r0");;;
       do:  ("err" <-[go.error] "$r1");;;
-      (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
+      (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
       then return: (#(W64 0), ![go.error] "err")
       else do:  #());;;
       do:  ("i" <-[go.int] ((![go.int] "i") -⟨go.int⟩ (![go.int] "size")));;;
@@ -1312,7 +1312,7 @@ Definition RequestOp_RequestPut__MarshalToSizedBufferⁱᵐᵖˡ {ext : ffi_synt
       let: "$r1" := "$ret1" in
       do:  ("size" <-[go.int] "$r0");;;
       do:  ("err" <-[go.error] "$r1");;;
-      (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
+      (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
       then return: (#(W64 0), ![go.error] "err")
       else do:  #());;;
       do:  ("i" <-[go.int] ((![go.int] "i") -⟨go.int⟩ (![go.int] "size")));;;
@@ -1361,7 +1361,7 @@ Definition RequestOp_RequestDeleteRange__MarshalToSizedBufferⁱᵐᵖˡ {ext : 
       let: "$r1" := "$ret1" in
       do:  ("size" <-[go.int] "$r0");;;
       do:  ("err" <-[go.error] "$r1");;;
-      (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
+      (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
       then return: (#(W64 0), ![go.error] "err")
       else do:  #());;;
       do:  ("i" <-[go.int] ((![go.int] "i") -⟨go.int⟩ (![go.int] "size")));;;
@@ -1410,7 +1410,7 @@ Definition RequestOp_RequestTxn__MarshalToSizedBufferⁱᵐᵖˡ {ext : ffi_synt
       let: "$r1" := "$ret1" in
       do:  ("size" <-[go.int] "$r0");;;
       do:  ("err" <-[go.error] "$r1");;;
-      (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
+      (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
       then return: (#(W64 0), ![go.error] "err")
       else do:  #());;;
       do:  ("i" <-[go.int] ((![go.int] "i") -⟨go.int⟩ (![go.int] "size")));;;
@@ -1459,7 +1459,7 @@ Definition ResponseOp_ResponseRange__MarshalToSizedBufferⁱᵐᵖˡ {ext : ffi_
       let: "$r1" := "$ret1" in
       do:  ("size" <-[go.int] "$r0");;;
       do:  ("err" <-[go.error] "$r1");;;
-      (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
+      (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
       then return: (#(W64 0), ![go.error] "err")
       else do:  #());;;
       do:  ("i" <-[go.int] ((![go.int] "i") -⟨go.int⟩ (![go.int] "size")));;;
@@ -1508,7 +1508,7 @@ Definition ResponseOp_ResponsePut__MarshalToSizedBufferⁱᵐᵖˡ {ext : ffi_sy
       let: "$r1" := "$ret1" in
       do:  ("size" <-[go.int] "$r0");;;
       do:  ("err" <-[go.error] "$r1");;;
-      (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
+      (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
       then return: (#(W64 0), ![go.error] "err")
       else do:  #());;;
       do:  ("i" <-[go.int] ((![go.int] "i") -⟨go.int⟩ (![go.int] "size")));;;
@@ -1557,7 +1557,7 @@ Definition ResponseOp_ResponseDeleteRange__MarshalToSizedBufferⁱᵐᵖˡ {ext 
       let: "$r1" := "$ret1" in
       do:  ("size" <-[go.int] "$r0");;;
       do:  ("err" <-[go.error] "$r1");;;
-      (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
+      (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
       then return: (#(W64 0), ![go.error] "err")
       else do:  #());;;
       do:  ("i" <-[go.int] ((![go.int] "i") -⟨go.int⟩ (![go.int] "size")));;;
@@ -1606,7 +1606,7 @@ Definition ResponseOp_ResponseTxn__MarshalToSizedBufferⁱᵐᵖˡ {ext : ffi_sy
       let: "$r1" := "$ret1" in
       do:  ("size" <-[go.int] "$r0");;;
       do:  ("err" <-[go.error] "$r1");;;
-      (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
+      (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
       then return: (#(W64 0), ![go.error] "err")
       else do:  #());;;
       do:  ("i" <-[go.int] ((![go.int] "i") -⟨go.int⟩ (![go.int] "size")));;;

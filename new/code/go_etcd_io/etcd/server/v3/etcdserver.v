@@ -435,7 +435,7 @@ Definition EtcdServer__Putⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
     let: "$r1" := "$ret1" in
     do:  ("resp" <-[proto.Message] "$r0");;;
     do:  ("err" <-[go.error] "$r1");;;
-    (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
+    (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
     then return: (Convert go.untyped_nil (go.PointerType etcdserverpb.PutResponse) UntypedNil, ![go.error] "err")
     else do:  #());;;
     return: (TypeAssert (go.PointerType etcdserverpb.PutResponse) (![proto.Message] "resp"), Convert go.untyped_nil go.error UntypedNil)).
@@ -468,7 +468,7 @@ Definition EtcdServer__processInternalRaftRequestOnceⁱᵐᵖˡ {ext : ffi_synt
       let: "$r1" := "$ret1" in
       do:  ("authInfo" <-[go.PointerType auth.AuthInfo] "$r0");;;
       do:  ("err" <-[go.error] "$r1");;;
-      (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
+      (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
       then return: (Convert go.untyped_nil (go.PointerType apply.Result) UntypedNil, ![go.error] "err")
       else do:  #());;;
       (if: Convert go.untyped_bool go.bool ((![go.PointerType auth.AuthInfo] "authInfo") ≠⟨go.PointerType auth.AuthInfo⟩ (Convert go.untyped_nil (go.PointerType auth.AuthInfo) UntypedNil))
@@ -486,7 +486,7 @@ Definition EtcdServer__processInternalRaftRequestOnceⁱᵐᵖˡ {ext : ffi_synt
     let: "$r1" := "$ret1" in
     do:  ("data" <-[go.SliceType go.byte] "$r0");;;
     do:  ("err" <-[go.error] "$r1");;;
-    (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
+    (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
     then return: (Convert go.untyped_nil (go.PointerType apply.Result) UntypedNil, ![go.error] "err")
     else do:  #());;;
     (if: Convert go.untyped_bool go.bool ((let: "$a0" := (![go.SliceType go.byte] "data") in
@@ -525,9 +525,9 @@ Definition EtcdServer__processInternalRaftRequestOnceⁱᵐᵖˡ {ext : ffi_synt
     do:  ("start" <-[time.Time] "$r0");;;
     let: "$r0" := (let: "$a0" := (![context.Context] "cctx") in
     let: "$a1" := (![go.SliceType go.byte] "data") in
-    (MethodResolve raftNode "Propose"%go (![raftNode] (StructFieldRef EtcdServer "r"%go (![go.PointerType EtcdServer] "s")))) "$a0" "$a1") in
+    (MethodResolve (go.PointerType raftNode) "Propose"%go (StructFieldRef EtcdServer "r"%go (![go.PointerType EtcdServer] "s"))) "$a0" "$a1") in
     do:  ("err" <-[go.error] "$r0");;;
-    (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]⟩ (Convert go.untyped_nil (go.InterfaceType [go.MethodElem "Error"%go (go.Signature [] false [go.string])]) UntypedNil))
+    (if: Convert go.untyped_bool go.bool ((![go.error] "err") ≠⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
     then
       do:  ((MethodResolve prometheus.Counter "Inc"%go (![prometheus.Counter] (GlobalVarAddr proposalsFailed #()))) #());;;
       do:  (let: "$a0" := (![go.uint64] "id") in

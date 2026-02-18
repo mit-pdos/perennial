@@ -103,7 +103,7 @@ Definition useBoxGetⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
     let: "$r0" := (let: "$a0" := #(W64 42) in
     (FuncResolve makeGenericBox [go.uint64] #()) "$a0") in
     do:  ("x" <-[Box go.uint64] "$r0");;;
-    return: ((MethodResolve (Box go.uint64) "Get"%go (![Box go.uint64] "x")) #())).
+    return: ((MethodResolve (go.PointerType (Box go.uint64)) "Get"%go "x") #())).
 
 (* go: generics.go:47:6 *)
 Definition useContainerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=

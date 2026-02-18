@@ -298,9 +298,9 @@ Definition SearchIntsⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
 Definition xorshift__Nextⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "r" <>,
     exception_do (let: "r" := (GoAlloc (go.PointerType xorshift) "r") in
-    do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) ^⟨go.uint64⟩ ((![xorshift] (![go.PointerType xorshift] "r")) <<⟨xorshift⟩ (Convert go.untyped_int xorshift #13))));;;
-    do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) ^⟨go.uint64⟩ ((![xorshift] (![go.PointerType xorshift] "r")) >>⟨xorshift⟩ (Convert go.untyped_int xorshift #7))));;;
-    do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) ^⟨go.uint64⟩ ((![xorshift] (![go.PointerType xorshift] "r")) <<⟨xorshift⟩ (Convert go.untyped_int xorshift #17))));;;
+    do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) ^⟨xorshift⟩ ((![xorshift] (![go.PointerType xorshift] "r")) <<⟨xorshift⟩ (Convert go.untyped_int xorshift #13))));;;
+    do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) ^⟨xorshift⟩ ((![xorshift] (![go.PointerType xorshift] "r")) >>⟨xorshift⟩ (Convert go.untyped_int xorshift #7))));;;
+    do:  ((![go.PointerType xorshift] "r") <-[xorshift] ((![xorshift] (![go.PointerType xorshift] "r")) ^⟨xorshift⟩ ((![xorshift] (![go.PointerType xorshift] "r")) <<⟨xorshift⟩ (Convert go.untyped_int xorshift #17))));;;
     return: (![xorshift] (![go.PointerType xorshift] "r"))).
 
 #[global] Instance info' : PkgInfo pkg_id.sort :=

@@ -31,7 +31,7 @@ Definition NewGeneratorⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
     let: "$r0" := ((Convert go.uint16 go.uint64 (![go.uint16] "memberID")) <<⟨go.uint64⟩ (Convert go.untyped_int go.uint64 suffixLen)) in
     do:  ("prefix" <-[go.uint64] "$r0");;;
     let: "unixMilli" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    let: "$r0" := ((Convert go.int64 go.uint64 ((MethodResolve time.Time "UnixNano"%go (![time.Time] "now")) #())) /⟨go.uint64⟩ (Convert time.Duration go.uint64 (time.Millisecond /⟨go.int64⟩ time.Nanosecond))) in
+    let: "$r0" := ((Convert go.int64 go.uint64 ((MethodResolve (go.PointerType time.Time) "UnixNano"%go "now") #())) /⟨go.uint64⟩ (Convert time.Duration go.uint64 (time.Millisecond /⟨time.Duration⟩ time.Nanosecond))) in
     do:  ("unixMilli" <-[go.uint64] "$r0");;;
     let: "suffix" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
     let: "$r0" := ((let: "$a0" := (![go.uint64] "unixMilli") in

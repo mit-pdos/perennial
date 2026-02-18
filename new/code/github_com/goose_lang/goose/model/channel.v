@@ -421,7 +421,7 @@ Definition NonBlockingSelect1ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
     let: "dir" := (GoAlloc SelectDir "dir") in
     let: "ch" := (GoAlloc (go.PointerType (Channel T)) "ch") in
     let: "zero" := (GoAlloc T (GoZeroVal T #())) in
-    (if: Convert go.untyped_bool go.bool ((![SelectDir] "dir") =⟨go.uint64⟩ SelectSend)
+    (if: Convert go.untyped_bool go.bool ((![SelectDir] "dir") =⟨SelectDir⟩ SelectSend)
     then
       let: "selected" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
       let: "$r0" := (let: "$a0" := (![T] "value") in
@@ -460,7 +460,7 @@ Definition BlockingSelect2ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
     (for: (λ: <>, #true); (λ: <>, #()) := λ: <>,
       (if: Convert go.untyped_bool go.bool ((((FuncResolve primitive.RandomUint64 [] #()) #()) %⟨go.uint64⟩ #(W64 2)) =⟨go.uint64⟩ #(W64 0))
       then
-        (if: Convert go.untyped_bool go.bool ((![SelectDir] "dir1") =⟨go.uint64⟩ SelectSend)
+        (if: Convert go.untyped_bool go.bool ((![SelectDir] "dir1") =⟨SelectDir⟩ SelectSend)
         then
           (if: let: "$a0" := (![T1] "val1") in
           let: "$a1" := #true in
@@ -483,7 +483,7 @@ Definition BlockingSelect2ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
           then return: (#(W64 0), ![T1] "recv_val", ![T2] "zero2", ![go.bool] "ok")
           else do:  #()))
       else
-        (if: Convert go.untyped_bool go.bool ((![SelectDir] "dir2") =⟨go.uint64⟩ SelectSend)
+        (if: Convert go.untyped_bool go.bool ((![SelectDir] "dir2") =⟨SelectDir⟩ SelectSend)
         then
           (if: let: "$a0" := (![T2] "val2") in
           let: "$a1" := #true in
@@ -523,7 +523,7 @@ Definition NonBlockingSelect2ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
     let: "zero2" := (GoAlloc T2 (GoZeroVal T2 #())) in
     (if: Convert go.untyped_bool go.bool ((((FuncResolve primitive.RandomUint64 [] #()) #()) %⟨go.uint64⟩ #(W64 2)) =⟨go.uint64⟩ #(W64 0))
     then
-      (if: Convert go.untyped_bool go.bool ((![SelectDir] "dir1") =⟨go.uint64⟩ SelectSend)
+      (if: Convert go.untyped_bool go.bool ((![SelectDir] "dir1") =⟨SelectDir⟩ SelectSend)
       then
         (if: let: "$a0" := (![T1] "val1") in
         let: "$a1" := #false in
@@ -545,7 +545,7 @@ Definition NonBlockingSelect2ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
         (if: ![go.bool] "selected"
         then return: (#(W64 0), ![T1] "recv_val", ![T2] "zero2", ![go.bool] "ok")
         else do:  #()));;;
-      (if: Convert go.untyped_bool go.bool ((![SelectDir] "dir2") =⟨go.uint64⟩ SelectSend)
+      (if: Convert go.untyped_bool go.bool ((![SelectDir] "dir2") =⟨SelectDir⟩ SelectSend)
       then
         (if: let: "$a0" := (![T2] "val2") in
         let: "$a1" := #false in
@@ -568,7 +568,7 @@ Definition NonBlockingSelect2ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
         then return: (#(W64 1), ![T1] "zero1", ![T2] "recv_val", ![go.bool] "ok")
         else do:  #()))
     else
-      (if: Convert go.untyped_bool go.bool ((![SelectDir] "dir2") =⟨go.uint64⟩ SelectSend)
+      (if: Convert go.untyped_bool go.bool ((![SelectDir] "dir2") =⟨SelectDir⟩ SelectSend)
       then
         (if: let: "$a0" := (![T2] "val2") in
         let: "$a1" := #false in
@@ -590,7 +590,7 @@ Definition NonBlockingSelect2ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
         (if: ![go.bool] "selected"
         then return: (#(W64 1), ![T1] "zero1", ![T2] "recv_val", ![go.bool] "ok")
         else do:  #()));;;
-      (if: Convert go.untyped_bool go.bool ((![SelectDir] "dir1") =⟨go.uint64⟩ SelectSend)
+      (if: Convert go.untyped_bool go.bool ((![SelectDir] "dir1") =⟨SelectDir⟩ SelectSend)
       then
         (if: let: "$a0" := (![T1] "val1") in
         let: "$a1" := #false in
@@ -636,7 +636,7 @@ Definition BlockingSelect3ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
       let: "$sw" := (![go.uint64] "r") in
       (if: "$sw" =⟨go.uint64⟩ #(W64 0)
       then
-        (if: Convert go.untyped_bool go.bool ((![SelectDir] "dir1") =⟨go.uint64⟩ SelectSend)
+        (if: Convert go.untyped_bool go.bool ((![SelectDir] "dir1") =⟨SelectDir⟩ SelectSend)
         then
           (if: let: "$a0" := (![T1] "val1") in
           let: "$a1" := #true in
@@ -661,7 +661,7 @@ Definition BlockingSelect3ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
       else
         (if: "$sw" =⟨go.uint64⟩ #(W64 1)
         then
-          (if: Convert go.untyped_bool go.bool ((![SelectDir] "dir2") =⟨go.uint64⟩ SelectSend)
+          (if: Convert go.untyped_bool go.bool ((![SelectDir] "dir2") =⟨SelectDir⟩ SelectSend)
           then
             (if: let: "$a0" := (![T2] "val2") in
             let: "$a1" := #true in
@@ -684,7 +684,7 @@ Definition BlockingSelect3ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
             then return: (#(W64 1), ![T1] "zero1", ![T2] "recv_val", ![T3] "zero3", ![go.bool] "ok")
             else do:  #()))
         else
-          (if: Convert go.untyped_bool go.bool ((![SelectDir] "dir3") =⟨go.uint64⟩ SelectSend)
+          (if: Convert go.untyped_bool go.bool ((![SelectDir] "dir3") =⟨SelectDir⟩ SelectSend)
           then
             (if: let: "$a0" := (![T3] "val3") in
             let: "$a1" := #true in
@@ -738,7 +738,7 @@ Definition NonBlockingSelect3ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
       do:  ("caseIdx" <-[go.uint64] "$r0");;;
       (if: Convert go.untyped_bool go.bool ((![go.uint64] "caseIdx") =⟨go.uint64⟩ #(W64 0))
       then
-        (if: Convert go.untyped_bool go.bool ((![SelectDir] "dir1") =⟨go.uint64⟩ SelectSend)
+        (if: Convert go.untyped_bool go.bool ((![SelectDir] "dir1") =⟨SelectDir⟩ SelectSend)
         then
           (if: let: "$a0" := (![T1] "val1") in
           let: "$a1" := #false in
@@ -763,7 +763,7 @@ Definition NonBlockingSelect3ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
       else
         (if: Convert go.untyped_bool go.bool ((![go.uint64] "caseIdx") =⟨go.uint64⟩ #(W64 1))
         then
-          (if: Convert go.untyped_bool go.bool ((![SelectDir] "dir2") =⟨go.uint64⟩ SelectSend)
+          (if: Convert go.untyped_bool go.bool ((![SelectDir] "dir2") =⟨SelectDir⟩ SelectSend)
           then
             (if: let: "$a0" := (![T2] "val2") in
             let: "$a1" := #false in
@@ -786,7 +786,7 @@ Definition NonBlockingSelect3ⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
             then return: (#(W64 1), ![T1] "zero1", ![T2] "recv_val", ![T3] "zero3", ![go.bool] "ok")
             else do:  #()))
         else
-          (if: Convert go.untyped_bool go.bool ((![SelectDir] "dir3") =⟨go.uint64⟩ SelectSend)
+          (if: Convert go.untyped_bool go.bool ((![SelectDir] "dir3") =⟨SelectDir⟩ SelectSend)
           then
             (if: let: "$a0" := (![T3] "val3") in
             let: "$a1" := #false in

@@ -608,7 +608,7 @@ Definition Value__Storeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext
   λ: "v" "val",
     exception_do (let: "v" := (GoAlloc (go.PointerType Value) "v") in
     let: "val" := (GoAlloc go.any "val") in
-    (if: Convert go.untyped_bool go.bool ((![go.any] "val") =⟨go.InterfaceType []⟩ (Convert go.untyped_nil (go.InterfaceType []) UntypedNil))
+    (if: Convert go.untyped_bool go.bool ((![go.any] "val") =⟨go.any⟩ (Convert go.untyped_nil go.any UntypedNil))
     then
       do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"sync/atomic: store of nil value into Value"%go) in
       (FuncResolve go.panic [] #()) "$a0")
@@ -670,7 +670,7 @@ Definition Value__Swapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
     exception_do (let: "old" := (GoAlloc go.any (GoZeroVal go.any #())) in
     let: "v" := (GoAlloc (go.PointerType Value) "v") in
     let: "new" := (GoAlloc go.any "new") in
-    (if: Convert go.untyped_bool go.bool ((![go.any] "new") =⟨go.InterfaceType []⟩ (Convert go.untyped_nil (go.InterfaceType []) UntypedNil))
+    (if: Convert go.untyped_bool go.bool ((![go.any] "new") =⟨go.any⟩ (Convert go.untyped_nil go.any UntypedNil))
     then
       do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"sync/atomic: swap of nil value into Value"%go) in
       (FuncResolve go.panic [] #()) "$a0")
@@ -738,7 +738,7 @@ Definition Value__CompareAndSwapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
     let: "v" := (GoAlloc (go.PointerType Value) "v") in
     let: "new" := (GoAlloc go.any "new") in
     let: "old" := (GoAlloc go.any "old") in
-    (if: Convert go.untyped_bool go.bool ((![go.any] "new") =⟨go.InterfaceType []⟩ (Convert go.untyped_nil (go.InterfaceType []) UntypedNil))
+    (if: Convert go.untyped_bool go.bool ((![go.any] "new") =⟨go.any⟩ (Convert go.untyped_nil go.any UntypedNil))
     then
       do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"sync/atomic: compare and swap of nil value into Value"%go) in
       (FuncResolve go.panic [] #()) "$a0")
@@ -764,7 +764,7 @@ Definition Value__CompareAndSwapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
       do:  ("typ" <-[unsafe.Pointer] "$r0");;;
       (if: Convert go.untyped_bool go.bool ((![unsafe.Pointer] "typ") =⟨unsafe.Pointer⟩ (Convert go.untyped_nil unsafe.Pointer UntypedNil))
       then
-        (if: Convert go.untyped_bool go.bool ((![go.any] "old") ≠⟨go.InterfaceType []⟩ (Convert go.untyped_nil (go.InterfaceType []) UntypedNil))
+        (if: Convert go.untyped_bool go.bool ((![go.any] "old") ≠⟨go.any⟩ (Convert go.untyped_nil go.any UntypedNil))
         then return: (#false)
         else do:  #());;;
         do:  ((FuncResolve runtime_procPin [] #()) #());;;
@@ -802,7 +802,7 @@ Definition Value__CompareAndSwapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlob
       do:  ((StructFieldRef efaceWords "typ"%go (Convert unsafe.Pointer (go.PointerType efaceWords) (Convert (go.PointerType go.any) unsafe.Pointer "i"))) <-[unsafe.Pointer] "$r0");;;
       let: "$r0" := (![unsafe.Pointer] "data") in
       do:  ((StructFieldRef efaceWords "data"%go (Convert unsafe.Pointer (go.PointerType efaceWords) (Convert (go.PointerType go.any) unsafe.Pointer "i"))) <-[unsafe.Pointer] "$r0");;;
-      (if: Convert go.untyped_bool go.bool ((![go.any] "i") ≠⟨go.InterfaceType []⟩ (![go.any] "old"))
+      (if: Convert go.untyped_bool go.bool ((![go.any] "i") ≠⟨go.any⟩ (![go.any] "old"))
       then return: (#false)
       else do:  #());;;
       return: (let: "$a0" := (StructFieldRef efaceWords "data"%go (![go.PointerType efaceWords] "vp")) in

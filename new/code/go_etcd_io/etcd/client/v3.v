@@ -732,7 +732,7 @@ Definition WithZapLoggerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
 Definition Op__IsTxnⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "op" <>,
     exception_do (let: "op" := (GoAlloc Op "op") in
-    return: ((![opType] (StructFieldRef Op "t"%go "op")) =⟨go.int⟩ tTxn)).
+    return: ((![opType] (StructFieldRef Op "t"%go "op")) =⟨opType⟩ tTxn)).
 
 (* Txn returns the comparison(if) operations, "then" operations, and "else" operations.
 
@@ -783,7 +783,7 @@ Definition Op__Revⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : v
 Definition Op__IsPutⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "op" <>,
     exception_do (let: "op" := (GoAlloc Op "op") in
-    return: ((![opType] (StructFieldRef Op "t"%go "op")) =⟨go.int⟩ tPut)).
+    return: ((![opType] (StructFieldRef Op "t"%go "op")) =⟨opType⟩ tPut)).
 
 (* IsGet returns true iff the operation is a Get.
 
@@ -791,7 +791,7 @@ Definition Op__IsPutⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
 Definition Op__IsGetⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "op" <>,
     exception_do (let: "op" := (GoAlloc Op "op") in
-    return: ((![opType] (StructFieldRef Op "t"%go "op")) =⟨go.int⟩ tRange)).
+    return: ((![opType] (StructFieldRef Op "t"%go "op")) =⟨opType⟩ tRange)).
 
 (* IsDelete returns true iff the operation is a Delete.
 
@@ -799,7 +799,7 @@ Definition Op__IsGetⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} :
 Definition Op__IsDeleteⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "op" <>,
     exception_do (let: "op" := (GoAlloc Op "op") in
-    return: ((![opType] (StructFieldRef Op "t"%go "op")) =⟨go.int⟩ tDeleteRange)).
+    return: ((![opType] (StructFieldRef Op "t"%go "op")) =⟨opType⟩ tDeleteRange)).
 
 (* IsSerializable returns true if the serializable field is true.
 
@@ -903,7 +903,7 @@ Definition Op__WithValueBytesⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalC
 Definition Op__toRangeRequestⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "op" <>,
     exception_do (let: "op" := (GoAlloc Op "op") in
-    (if: Convert go.untyped_bool go.bool ((![opType] (StructFieldRef Op "t"%go "op")) ≠⟨go.int⟩ tRange)
+    (if: Convert go.untyped_bool go.bool ((![opType] (StructFieldRef Op "t"%go "op")) ≠⟨opType⟩ tRange)
     then
       do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"op.t != tRange"%go) in
       (FuncResolve go.panic [] #()) "$a0")
@@ -945,7 +945,7 @@ Definition Op__toTxnRequestⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
     slice.for_range Op "$range" (λ: "$key" "$value",
       do:  ("tOp" <-[Op] "$value");;;
       do:  ("i" <-[go.int] "$key");;;
-      let: "$r0" := ((MethodResolve Op "toRequestOp"%go (![Op] "tOp")) #()) in
+      let: "$r0" := ((MethodResolve (go.PointerType Op) "toRequestOp"%go "tOp") #()) in
       do:  ((IndexRef (go.SliceType (go.PointerType etcdserverpb.RequestOp)) (![go.SliceType (go.PointerType etcdserverpb.RequestOp)] "thenOps", ![go.int] "i")) <-[go.PointerType etcdserverpb.RequestOp] "$r0")));;;
     let: "elseOps" := (GoAlloc (go.SliceType (go.PointerType etcdserverpb.RequestOp)) (GoZeroVal (go.SliceType (go.PointerType etcdserverpb.RequestOp)) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.SliceType (go.PointerType etcdserverpb.RequestOp)] #()) (let: "$a0" := (![go.SliceType Op] (StructFieldRef Op "elseOps"%go "op")) in
@@ -957,7 +957,7 @@ Definition Op__toTxnRequestⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
     slice.for_range Op "$range" (λ: "$key" "$value",
       do:  ("eOp" <-[Op] "$value");;;
       do:  ("i" <-[go.int] "$key");;;
-      let: "$r0" := ((MethodResolve Op "toRequestOp"%go (![Op] "eOp")) #()) in
+      let: "$r0" := ((MethodResolve (go.PointerType Op) "toRequestOp"%go "eOp") #()) in
       do:  ((IndexRef (go.SliceType (go.PointerType etcdserverpb.RequestOp)) (![go.SliceType (go.PointerType etcdserverpb.RequestOp)] "elseOps", ![go.int] "i")) <-[go.PointerType etcdserverpb.RequestOp] "$r0")));;;
     let: "cmps" := (GoAlloc (go.SliceType (go.PointerType etcdserverpb.Compare)) (GoZeroVal (go.SliceType (go.PointerType etcdserverpb.Compare)) #())) in
     let: "$r0" := ((FuncResolve go.make2 [go.SliceType (go.PointerType etcdserverpb.Compare)] #()) (let: "$a0" := (![go.SliceType Cmp] (StructFieldRef Op "cmps"%go "op")) in
@@ -981,7 +981,7 @@ Definition Op__toRequestOpⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
     let: "$sw" := (![opType] (StructFieldRef Op "t"%go "op")) in
     (if: "$sw" =⟨opType⟩ tRange
     then
-      return: (GoAlloc etcdserverpb.RequestOp (let: "$v0" := (GoAlloc etcdserverpb.RequestOp_RequestRange (let: "$v0" := ((MethodResolve Op "toRangeRequest"%go (![Op] "op")) #()) in
+      return: (GoAlloc etcdserverpb.RequestOp (let: "$v0" := (GoAlloc etcdserverpb.RequestOp_RequestRange (let: "$v0" := ((MethodResolve (go.PointerType Op) "toRangeRequest"%go "op") #()) in
        CompositeLiteral etcdserverpb.RequestOp_RequestRange (LiteralValue [KeyedElement (Some (KeyField "RequestRange"%go)) (ElementExpression (go.PointerType etcdserverpb.RangeRequest) "$v0")]))) in
        CompositeLiteral etcdserverpb.RequestOp (LiteralValue [KeyedElement (Some (KeyField "Request"%go)) (ElementExpression (go.PointerType etcdserverpb.RequestOp_RequestRange) "$v0")])))
     else
@@ -1014,7 +1014,7 @@ Definition Op__toRequestOpⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
         else
           (if: "$sw" =⟨opType⟩ tTxn
           then
-            return: (GoAlloc etcdserverpb.RequestOp (let: "$v0" := (GoAlloc etcdserverpb.RequestOp_RequestTxn (let: "$v0" := ((MethodResolve Op "toTxnRequest"%go (![Op] "op")) #()) in
+            return: (GoAlloc etcdserverpb.RequestOp (let: "$v0" := (GoAlloc etcdserverpb.RequestOp_RequestTxn (let: "$v0" := ((MethodResolve (go.PointerType Op) "toTxnRequest"%go "op") #()) in
              CompositeLiteral etcdserverpb.RequestOp_RequestTxn (LiteralValue [KeyedElement (Some (KeyField "RequestTxn"%go)) (ElementExpression (go.PointerType etcdserverpb.TxnRequest) "$v0")]))) in
              CompositeLiteral etcdserverpb.RequestOp (LiteralValue [KeyedElement (Some (KeyField "Request"%go)) (ElementExpression (go.PointerType etcdserverpb.RequestOp_RequestTxn) "$v0")])))
           else
@@ -1025,14 +1025,14 @@ Definition Op__toRequestOpⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
 Definition Op__isWriteⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "op" <>,
     exception_do (let: "op" := (GoAlloc Op "op") in
-    (if: Convert go.untyped_bool go.bool ((![opType] (StructFieldRef Op "t"%go "op")) =⟨go.int⟩ tTxn)
+    (if: Convert go.untyped_bool go.bool ((![opType] (StructFieldRef Op "t"%go "op")) =⟨opType⟩ tTxn)
     then
       let: "$range" := (![go.SliceType Op] (StructFieldRef Op "thenOps"%go "op")) in
       (let: "tOp" := (GoAlloc Op (GoZeroVal Op #())) in
       slice.for_range Op "$range" (λ: "$key" "$value",
         do:  ("tOp" <-[Op] "$value");;;
         do:  "$key";;;
-        (if: (MethodResolve Op "isWrite"%go (![Op] "tOp")) #()
+        (if: (MethodResolve (go.PointerType Op) "isWrite"%go "tOp") #()
         then return: (#true)
         else do:  #())));;;
       let: "$range" := (![go.SliceType Op] (StructFieldRef Op "elseOps"%go "op")) in
@@ -1040,12 +1040,12 @@ Definition Op__isWriteⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
       slice.for_range Op "$range" (λ: "$key" "$value",
         do:  ("tOp" <-[Op] "$value");;;
         do:  "$key";;;
-        (if: (MethodResolve Op "isWrite"%go (![Op] "tOp")) #()
+        (if: (MethodResolve (go.PointerType Op) "isWrite"%go "tOp") #()
         then return: (#true)
         else do:  #())));;;
       return: (#false)
     else do:  #());;;
-    return: ((![opType] (StructFieldRef Op "t"%go "op")) ≠⟨go.int⟩ tRange)).
+    return: ((![opType] (StructFieldRef Op "t"%go "op")) ≠⟨opType⟩ tRange)).
 
 (* OpGet returns "get" operation based on given key and operation options.
 
@@ -1092,7 +1092,7 @@ Definition OpDeleteⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : 
     do:  (let: "$a0" := (![go.SliceType OpOption] "opts") in
     (MethodResolve (go.PointerType Op) "applyOpts"%go "ret") "$a0");;;
     let: "$sw" := #true in
-    (if: "$sw" =⟨go.bool⟩ ((![LeaseID] (StructFieldRef Op "leaseID"%go "ret")) ≠⟨go.int64⟩ #(W64 0))
+    (if: "$sw" =⟨go.bool⟩ ((![LeaseID] (StructFieldRef Op "leaseID"%go "ret")) ≠⟨LeaseID⟩ #(W64 0))
     then
       do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"unexpected lease in delete"%go) in
       (FuncResolve go.panic [] #()) "$a0")
@@ -1294,7 +1294,7 @@ Definition WithSortⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : 
     let: "target" := (GoAlloc SortTarget "target") in
     return: ((λ: "op",
        exception_do (let: "op" := (GoAlloc (go.PointerType Op) "op") in
-       (if: Convert go.untyped_bool go.bool (((![SortTarget] "target") =⟨go.int⟩ SortByKey) && ((![SortOrder] "order") =⟨go.int⟩ SortAscend))
+       (if: Convert go.untyped_bool go.bool (((![SortTarget] "target") =⟨SortTarget⟩ SortByKey) && ((![SortOrder] "order") =⟨SortOrder⟩ SortAscend))
        then
          let: "$r0" := SortNone in
          do:  ("order" <-[SortOrder] "$r0")

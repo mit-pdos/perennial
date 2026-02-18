@@ -28,10 +28,10 @@ Definition Log__mkHdrⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
     (FuncResolve marshal.NewEnc [] #()) "$a0") in
     do:  ("enc" <-[marshal.Enc] "$r0");;;
     do:  (let: "$a0" := (![go.uint64] (StructFieldRef Log "sz"%go (![go.PointerType Log] "log"))) in
-    (MethodResolve marshal.Enc "PutInt"%go (![marshal.Enc] "enc")) "$a0");;;
+    (MethodResolve (go.PointerType marshal.Enc) "PutInt"%go "enc") "$a0");;;
     do:  (let: "$a0" := (![go.uint64] (StructFieldRef Log "diskSz"%go (![go.PointerType Log] "log"))) in
-    (MethodResolve marshal.Enc "PutInt"%go (![marshal.Enc] "enc")) "$a0");;;
-    return: ((MethodResolve marshal.Enc "Finish"%go (![marshal.Enc] "enc")) #())).
+    (MethodResolve (go.PointerType marshal.Enc) "PutInt"%go "enc") "$a0");;;
+    return: ((MethodResolve (go.PointerType marshal.Enc) "Finish"%go "enc") #())).
 
 (* go: append_log.go:29:17 *)
 Definition Log__writeHdrⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
@@ -74,10 +74,10 @@ Definition Openⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val 
     (FuncResolve marshal.NewDec [] #()) "$a0") in
     do:  ("dec" <-[marshal.Dec] "$r0");;;
     let: "sz" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    let: "$r0" := ((MethodResolve marshal.Dec "GetInt"%go (![marshal.Dec] "dec")) #()) in
+    let: "$r0" := ((MethodResolve (go.PointerType marshal.Dec) "GetInt"%go "dec") #()) in
     do:  ("sz" <-[go.uint64] "$r0");;;
     let: "diskSz" := (GoAlloc go.uint64 (GoZeroVal go.uint64 #())) in
-    let: "$r0" := ((MethodResolve marshal.Dec "GetInt"%go (![marshal.Dec] "dec")) #()) in
+    let: "$r0" := ((MethodResolve (go.PointerType marshal.Dec) "GetInt"%go "dec") #()) in
     do:  ("diskSz" <-[go.uint64] "$r0");;;
     return: (GoAlloc Log (let: "$v0" := (GoAlloc sync.Mutex (GoZeroVal sync.Mutex #())) in
      let: "$v1" := (![go.uint64] "sz") in
