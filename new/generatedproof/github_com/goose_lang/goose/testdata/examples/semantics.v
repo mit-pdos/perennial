@@ -188,6 +188,265 @@ Proof. solve_pointsto_access_struct. Qed.
 End def.
 End SquareStruct.
 
+Module NumStruct.
+Section def.
+
+Context `{!heapGS Σ}.
+Context {sem : go.Semantics}.
+Context {package_sem' : semantics.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance NumStruct_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (semantics.NumStruct.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "Value" ∷ l.[(semantics.NumStruct.t), "Value"] ↦{dq} v.(semantics.NumStruct.Value') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance NumStruct_into_val_typed
+   :
+  IntoValTypedUnderlying (semantics.NumStruct.t) (semantics.NumStructⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance NumStruct_access_load_Value l (v : (semantics.NumStruct.t)) dq :
+  AccessStrict
+    (l.[(semantics.NumStruct.t), "Value"] ↦{dq} (v.(semantics.NumStruct.Value')))
+    (l.[(semantics.NumStruct.t), "Value"] ↦{dq} (v.(semantics.NumStruct.Value')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance NumStruct_access_store_Value l (v : (semantics.NumStruct.t)) Value' :
+  AccessStrict
+    (l.[(semantics.NumStruct.t), "Value"] ↦ (v.(semantics.NumStruct.Value')))
+    (l.[(semantics.NumStruct.t), "Value"] ↦ Value')
+    (l ↦ v) (l ↦ (v <|(semantics.NumStruct.Value') := Value'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+End def.
+End NumStruct.
+
+Module shapeStruct.
+Section def.
+
+Context `{!heapGS Σ}.
+Context {sem : go.Semantics}.
+Context {package_sem' : semantics.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance shapeStruct_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (semantics.shapeStruct.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "Shape" ∷ l.[(semantics.shapeStruct.t), "Shape"] ↦{dq} v.(semantics.shapeStruct.Shape') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance shapeStruct_into_val_typed
+   :
+  IntoValTypedUnderlying (semantics.shapeStruct.t) (semantics.shapeStructⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance shapeStruct_access_load_Shape l (v : (semantics.shapeStruct.t)) dq :
+  AccessStrict
+    (l.[(semantics.shapeStruct.t), "Shape"] ↦{dq} (v.(semantics.shapeStruct.Shape')))
+    (l.[(semantics.shapeStruct.t), "Shape"] ↦{dq} (v.(semantics.shapeStruct.Shape')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance shapeStruct_access_store_Shape l (v : (semantics.shapeStruct.t)) Shape' :
+  AccessStrict
+    (l.[(semantics.shapeStruct.t), "Shape"] ↦ (v.(semantics.shapeStruct.Shape')))
+    (l.[(semantics.shapeStruct.t), "Shape"] ↦ Shape')
+    (l ↦ v) (l ↦ (v <|(semantics.shapeStruct.Shape') := Shape'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+End def.
+End shapeStruct.
+
+Module polygonStruct.
+Section def.
+
+Context `{!heapGS Σ}.
+Context {sem : go.Semantics}.
+Context {package_sem' : semantics.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance polygonStruct_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (semantics.polygonStruct.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "Shape" ∷ l.[(semantics.polygonStruct.t), "Shape"] ↦{dq} v.(semantics.polygonStruct.Shape') ∗
+      "Sides" ∷ l.[(semantics.polygonStruct.t), "Sides"] ↦{dq} v.(semantics.polygonStruct.Sides') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance polygonStruct_into_val_typed
+   :
+  IntoValTypedUnderlying (semantics.polygonStruct.t) (semantics.polygonStructⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance polygonStruct_access_load_Shape l (v : (semantics.polygonStruct.t)) dq :
+  AccessStrict
+    (l.[(semantics.polygonStruct.t), "Shape"] ↦{dq} (v.(semantics.polygonStruct.Shape')))
+    (l.[(semantics.polygonStruct.t), "Shape"] ↦{dq} (v.(semantics.polygonStruct.Shape')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance polygonStruct_access_store_Shape l (v : (semantics.polygonStruct.t)) Shape' :
+  AccessStrict
+    (l.[(semantics.polygonStruct.t), "Shape"] ↦ (v.(semantics.polygonStruct.Shape')))
+    (l.[(semantics.polygonStruct.t), "Shape"] ↦ Shape')
+    (l ↦ v) (l ↦ (v <|(semantics.polygonStruct.Shape') := Shape'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance polygonStruct_access_load_Sides l (v : (semantics.polygonStruct.t)) dq :
+  AccessStrict
+    (l.[(semantics.polygonStruct.t), "Sides"] ↦{dq} (v.(semantics.polygonStruct.Sides')))
+    (l.[(semantics.polygonStruct.t), "Sides"] ↦{dq} (v.(semantics.polygonStruct.Sides')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance polygonStruct_access_store_Sides l (v : (semantics.polygonStruct.t)) Sides' :
+  AccessStrict
+    (l.[(semantics.polygonStruct.t), "Sides"] ↦ (v.(semantics.polygonStruct.Sides')))
+    (l.[(semantics.polygonStruct.t), "Sides"] ↦ Sides')
+    (l ↦ v) (l ↦ (v <|(semantics.polygonStruct.Sides') := Sides'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+End def.
+End polygonStruct.
+
+Module PaperStruct.
+Section def.
+
+Context `{!heapGS Σ}.
+Context {sem : go.Semantics}.
+Context {package_sem' : semantics.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance PaperStruct_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (semantics.PaperStruct.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "Title" ∷ l.[(semantics.PaperStruct.t), "Title"] ↦{dq} v.(semantics.PaperStruct.Title') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance PaperStruct_into_val_typed
+   :
+  IntoValTypedUnderlying (semantics.PaperStruct.t) (semantics.PaperStructⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance PaperStruct_access_load_Title l (v : (semantics.PaperStruct.t)) dq :
+  AccessStrict
+    (l.[(semantics.PaperStruct.t), "Title"] ↦{dq} (v.(semantics.PaperStruct.Title')))
+    (l.[(semantics.PaperStruct.t), "Title"] ↦{dq} (v.(semantics.PaperStruct.Title')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance PaperStruct_access_store_Title l (v : (semantics.PaperStruct.t)) Title' :
+  AccessStrict
+    (l.[(semantics.PaperStruct.t), "Title"] ↦ (v.(semantics.PaperStruct.Title')))
+    (l.[(semantics.PaperStruct.t), "Title"] ↦ Title')
+    (l ↦ v) (l ↦ (v <|(semantics.PaperStruct.Title') := Title'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+End def.
+End PaperStruct.
+
+Module Lily.
+Section def.
+
+Context `{!heapGS Σ}.
+Context {sem : go.Semantics}.
+Context {package_sem' : semantics.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance Lily_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (semantics.Lily.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance Lily_into_val_typed
+   :
+  IntoValTypedUnderlying (semantics.Lily.t) (semantics.Lilyⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+
+End def.
+End Lily.
+
+Module Rose.
+Section def.
+
+Context `{!heapGS Σ}.
+Context {sem : go.Semantics}.
+Context {package_sem' : semantics.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance Rose_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (semantics.Rose.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance Rose_into_val_typed
+   :
+  IntoValTypedUnderlying (semantics.Rose.t) (semantics.Roseⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+
+End def.
+End Rose.
+
+Module Daisy.
+Section def.
+
+Context `{!heapGS Σ}.
+Context {sem : go.Semantics}.
+Context {package_sem' : semantics.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance Daisy_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (semantics.Daisy.t) :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance Daisy_into_val_typed
+   :
+  IntoValTypedUnderlying (semantics.Daisy.t) (semantics.Daisyⁱᵐᵖˡ).
+Proof. solve_into_val_typed_struct. Qed.
+
+End def.
+End Daisy.
+
 Module LoopStruct.
 Section def.
 
@@ -695,6 +954,61 @@ Proof. solve_into_val_typed_struct. Qed.
 
 End def.
 End switchConcrete.
+
+Module List.
+Section def.
+
+Context `{!heapGS Σ}.
+Context {sem : go.Semantics}.
+Context {package_sem' : semantics.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global]Program Instance List_typed_pointsto `{!TypedPointsto (Σ:=Σ) T'}  :
+  TypedPointsto (Σ:=Σ) (semantics.List.t T') :=
+  {|
+    typed_pointsto_def l v dq :=
+      (
+      "X" ∷ l.[(semantics.List.t T'), "X"] ↦{dq} v.(semantics.List.X') ∗
+      "Next" ∷ l.[(semantics.List.t T'), "Next"] ↦{dq} v.(semantics.List.Next') ∗
+      "_" ∷ True
+      )%I
+  |}.
+Final Obligation. solve_typed_pointsto_agree. Qed.
+
+#[global] Instance List_into_val_typed
+  `{!ZeroVal T'} `{!TypedPointsto (Σ:=Σ) T'} `{!IntoValTyped T' T}  :
+  IntoValTypedUnderlying (semantics.List.t T') (semantics.Listⁱᵐᵖˡ T).
+Proof. solve_into_val_typed_struct. Qed.
+#[global] Instance List_access_load_X `{!TypedPointsto (Σ:=Σ) T'} l (v : (semantics.List.t T')) dq :
+  AccessStrict
+    (l.[(semantics.List.t T'), "X"] ↦{dq} (v.(semantics.List.X')))
+    (l.[(semantics.List.t T'), "X"] ↦{dq} (v.(semantics.List.X')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance List_access_store_X `{!TypedPointsto (Σ:=Σ) T'} l (v : (semantics.List.t T')) X' :
+  AccessStrict
+    (l.[(semantics.List.t T'), "X"] ↦ (v.(semantics.List.X')))
+    (l.[(semantics.List.t T'), "X"] ↦ X')
+    (l ↦ v) (l ↦ (v <|(semantics.List.X') := X'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+#[global] Instance List_access_load_Next `{!TypedPointsto (Σ:=Σ) T'} l (v : (semantics.List.t T')) dq :
+  AccessStrict
+    (l.[(semantics.List.t T'), "Next"] ↦{dq} (v.(semantics.List.Next')))
+    (l.[(semantics.List.t T'), "Next"] ↦{dq} (v.(semantics.List.Next')))
+    (l ↦{dq} v) (l ↦{dq} v)%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+#[global] Instance List_access_store_Next `{!TypedPointsto (Σ:=Σ) T'} l (v : (semantics.List.t T')) Next' :
+  AccessStrict
+    (l.[(semantics.List.t T'), "Next"] ↦ (v.(semantics.List.Next')))
+    (l.[(semantics.List.t T'), "Next"] ↦ Next')
+    (l ↦ v) (l ↦ (v <|(semantics.List.Next') := Next'|>))%I.
+Proof. solve_pointsto_access_struct. Qed.
+
+End def.
+End List.
 
 Module Log.
 Section def.
