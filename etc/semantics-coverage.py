@@ -251,7 +251,7 @@ if __name__ == "__main__":
     instances = CoverageAnalyzer.get_semantics_instances(repo_root)
     covered, uncovered = CoverageAnalyzer.compute_coverage(instances, graph)
     print(
-        f"Coverage: {len(covered)}/{len(instances)} instances ({100*len(covered)//len(instances)}%)"
+        f"Coverage: {len(covered)}/{len(instances)} instances ({100 * len(covered) // len(instances)}%)"
     )
     print()
     print("Uncovered:")
