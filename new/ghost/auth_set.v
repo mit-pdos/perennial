@@ -1,50 +1,36 @@
 (* Auth set from sys verif course
 https://github.com/tchajed/sys-verif-fa25-proofs/blob/main/src/sys_verif/program_proof/demos/auth_set.v
 *)
-From iris.algebra Require Import auth gset.
-From iris.proofmode Require Import proofmode.
-From iris.base_logic.lib Require Export own.
+From New.ghost Require Export own.
 
 Set Default Proof Using "Type".
 Set Default Goal Selector "!".
 
-Class auth_setG Σ (A: Type) `{Countable A} := AuthSetG {
-    auth_set_inG :: inG Σ (authUR (gset_disjUR A));
-}.
-Global Hint Mode auth_setG - ! - - : typeclass_instances.
-
-Definition auth_setΣ A `{Countable A} : gFunctors :=
-  #[ GFunctor (authRF (gset_disjUR A)) ].
-
-#[global] Instance subG_auth_setG Σ A `{Countable A} :
-  subG (auth_setΣ A) Σ → auth_setG Σ A.
-Proof. solve_inG. Qed.
-
 (*| auth_set is a thin wrapper around the resource algebra `authUR (gset_disjUR A)`. |*)
-Local Definition auth_set_auth_def `{auth_setG Σ A}
+Local Definition auth_set_auth_def `{!allG Σ} `{Countable A}
     (γ : gname) (s: gset A) : iProp Σ :=
   own γ (● GSet s).
 Local Definition auth_set_auth_aux : seal (@auth_set_auth_def). Proof. by eexists. Qed.
 Definition auth_set_auth := auth_set_auth_aux.(unseal).
 Local Definition auth_set_auth_unseal :
   @auth_set_auth = @auth_set_auth_def := auth_set_auth_aux.(seal_eq).
-Global Arguments auth_set_auth {Σ A _ _ _} γ s.
+Global Arguments auth_set_auth {Σ _ A _ _} γ s.
 
 #[local] Notation "○ a" := (auth_frag a) (at level 20).
 
-Local Definition auth_set_frag_def `{auth_setG Σ A}
+Local Definition auth_set_frag_def `{!allG Σ} `{Countable A}
     (γ : gname) (a: A) : iProp Σ :=
   own γ (○ GSet {[a]}).
 Local Definition auth_set_frag_aux : seal (@auth_set_frag_def). Proof. by eexists. Qed.
 Definition auth_set_frag := auth_set_frag_aux.(unseal).
 Local Definition auth_set_frag_unseal :
   @auth_set_frag = @auth_set_frag_def := auth_set_frag_aux.(seal_eq).
-Global Arguments auth_set_frag {Σ A _ _ _} γ a.
+Global Arguments auth_set_frag {Σ _ A _ _} γ a.
 
 Local Ltac unseal := rewrite ?auth_set_auth_unseal ?auth_set_frag_unseal /auth_set_auth_def /auth_set_frag_def.
 
 Section lemmas.
-  Context `{auth_setG Σ A}.
+  Context `{!allG Σ} `{Countable A}.
 
   Implicit Types (s: gset A) (a: A).
 

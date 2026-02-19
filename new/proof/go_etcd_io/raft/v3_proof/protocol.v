@@ -43,7 +43,6 @@ Context {sem : go.Semantics} {package_sem : raft.Assumptions}.
 Collection W := sem + package_sem.
 Set Default Proof Using "W".
 
-
 Implicit Type γraft : raft_names.
 
 Definition MsgProp := (W32 2).
@@ -96,12 +95,7 @@ Proof.
     admit. (* just prove the send atomic update then trivial postcondition *)
   - iNamed "Hinner". repeat iExists _.
     iSplitR; first done. iSplitR; first admit.
-    iDestruct (closeable_chan_receive with "Hdone [-]") as "H".
-    2:{
-      iExactEq "H". f_equal.
-      (* FIXME: chanG0 needs to match closeable_chanG0.... *)
-      admit.
-    }
+    iApply (closeable_chan_receive with "[$]").
     iIntros "[_ _]". wp_auto. iApply "HΦ". done.
 Admitted.
 
@@ -109,7 +103,7 @@ Lemma wp_node__Propose γraft n ctx ctx_desc (data_sl : slice.t) (data : list w8
   {{{ is_pkg_init raft ∗
       "#Hctx" ∷ is_Context ctx ctx_desc ∗
       "#Hnode" ∷ is_node γraft n ∗
-      "data_sl" ∷ data_sl ↦* data ∗
+      "#data_sl" ∷ data_sl ↦*□ data ∗
       "Hupd" ∷ (|={⊤,∅}=> ∃ log, own_raft_log γraft log ∗ (own_raft_log γraft (log ++ [data]) ={∅,⊤}=∗ True))
   }}}
     n @! (go.PointerType raft.node) @! "Propose" #(interface.ok ctx) #data_sl
@@ -134,25 +128,23 @@ Proof.
       repeat iExists _. iSplitR; first done. iSplitR; first admit.
       instantiate (1:=ctx_desc.(Context_desc.Done_gn)).
       iClear "Hinner".
-      iDestruct (closeable_chan_receive with "HDone_ch []") as "H".
-      2:{ iExactEq "H". f_equal.
-          (* FIXME: conflicting inGs. *)
-  (*     iIntros "[_ #HDone_closed]". wp_auto. wp_apply ("HErr" with "HDone_closed"). *)
-  (*     iIntros (err) "%Herr". wp_auto. *)
-  (*     iApply "HΦ". rewrite decide_False //. *)
-  (*   - (* case: raft is done *) *)
-  (*     repeat iExists _. iNamed "Hinner". *)
-  (*     iApply (closeable_chan_receive with "Hdone"). *)
-  (*     iIntros "[_ #HDone_closed]". wp_auto. wp_apply wp_globals_get. *)
-  (*     iDestruct (is_pkg_init_access with "[$]") as "#Hpkg". *)
-  (*     simpl is_pkg_init_def. iNamed "Hpkg". *)
-  (*     wp_auto. *)
-  (*     iApply "HΦ". rewrite decide_False //. *)
-  (* } *)
-  (* repeat iExists _. *)
-  (* iSplitR; first done. *)
-  (* (* case: send proposeMessage on propc *) *)
-  (* (* TODO *) *)
+      iApply (closeable_chan_receive with "HDone_ch").
+      iIntros "[_ #HDone_closed]". wp_auto. simpl subst. wp_auto.
+      wp_apply ("HErr" with "HDone_closed").
+      iIntros (err) "%Herr". wp_auto.
+      iApply "HΦ". rewrite decide_False //.
+    - (* case: raft is done *)
+      repeat iExists _. iSplitR; first done. iSplitR; first admit.
+      iApply (closeable_chan_receive with "[$]").
+      iIntros "[_ #HDone_closed]". wp_auto. simpl subst. wp_auto.
+      iDestruct (is_pkg_init_access with "[$]") as "#Hpkg".
+      simpl is_pkg_init_def. iNamed "Hpkg".
+      wp_auto.
+      iApply "HΦ". rewrite decide_False //.
+  }
+  repeat iExists _.
+  iSplitR; first done.
+  (* case: send proposeMessage on propc *)
 Admitted.
 
-End raft.
+End wps.

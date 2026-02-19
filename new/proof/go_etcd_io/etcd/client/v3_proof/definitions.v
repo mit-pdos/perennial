@@ -23,16 +23,10 @@ Collection W := sem + package_sem.
 
 End init.
 
-Axiom clientv3G : gFunctors → Set.
-Existing Class clientv3G.
 Axiom clientv3_names : Set.
-Axiom clientv3_context_closeable_chanG : ∀ {Σ : gFunctors} {_:clientv3G Σ},
-  closeable.closeable_chanG Σ.
-
-Global Existing Instance clientv3_context_closeable_chanG.
 
 Axiom own_etcd_pointsto :
-  ∀ `{!clientv3G Σ}(γ : clientv3_names) (dq : dfrac) (k : go_string) (kv : option KeyValue.t), iProp Σ.
+  ∀ `{!allG Σ} (γ : clientv3_names) (dq : dfrac) (k : go_string) (kv : option KeyValue.t), iProp Σ.
 
 Global Notation "k etcd[ γ ]↦ dq kv" := (own_etcd_pointsto γ dq k kv)
   (at level 20, γ at level 50, dq custom dfrac at level 1, format "k  etcd[ γ ]↦ dq  kv").

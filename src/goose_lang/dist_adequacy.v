@@ -10,7 +10,7 @@ Set Default Proof Using "Type".
 Theorem goose_dist_adequacy `{ffi_sem: ffi_semantics}
   `{!ffi_interp ffi} {Hffi_adequacy:ffi_interp_adequacy}
   {go_gctx : GoGlobalContext}
-  Σ `{hPre: !gooseGpreS Σ} (ebσs : list node_init_cfg)
+  Σ `{!all.allG Σ} `{hPre: !gooseGpreS Σ} (ebσs : list node_init_cfg)
   g φinv (HINITG: ffi_initgP g.(global_world)) (HINIT: ∀ σ, σ ∈ init_local_state <$> ebσs → ffi_initP σ.(world) g.(global_world))
   : (∀ `(HG : !gooseGlobalGS Σ),
       ⊢ ffi_global_start goose_ffiGlobalGS g.(global_world) ={⊤}=∗
@@ -77,7 +77,7 @@ Definition dist_adequate_failstop (ebσs: list (expr * state)) (g: global_state)
 
 (* Like above, but, for failstop execution one only needs to prove a wp about initial threads, not a wpr *)
 Theorem goose_dist_adequacy_failstop
-        Σ `{hPre: !gooseGpreS Σ} (ebσs : list (expr * state))
+        Σ `{!all.allG Σ} `{hPre: !gooseGpreS Σ} (ebσs : list (expr * state))
         g φinv (HINITG: ffi_initgP g.(global_world)) (HINIT: ∀ σ, σ ∈ snd  <$> ebσs → ffi_initP σ.(world) g.(global_world)) :
   (∀ `(HG : !gooseGlobalGS Σ),
       ⊢
@@ -105,7 +105,7 @@ Proof.
   iIntros (HL) "Hffi Hglobals". iMod ("H" $! HL with "[$] [$]") as "Hwp".
   iDestruct "Hwp" as (Φ) "H". simpl.
   iModIntro. iExists Φ, (λ _ _, True%I), (λ _, True%I).
-  set (Hheao := HeapGS _ HG HL).
+  set (Hheao := HeapGS _ _ HG HL).
   iApply (idempotence_wpr _ _ _ _ _ _ _ (λ _, True%I) with "[H] []").
   { iApply wp_wpc. eauto. }
   { iModIntro. iIntros (????) "_".

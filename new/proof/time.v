@@ -52,13 +52,21 @@ Proof.
   wp_start. wp_auto. by iApply "HΦ".
 Qed.
 
-Lemma wp_Time__UnixNano (t : time.Time.t) :
+Lemma wp_Time__UnixNano' (t : time.Time.t) :
   {{{ is_pkg_init time }}}
     t @! time.Time @! "UnixNano" #()
   {{{ (x : w64), RET #x; True }}}.
 Proof.
   wp_start. wp_auto. wp_apply (wp_Time__unixSec with "[$]") as "% ?".
   wp_apply (wp_Time__nsec with "[$]") as "% ?". by iApply "HΦ".
+Qed.
+
+Lemma wp_Time__UnixNano l (t : time.Time.t) :
+  {{{ is_pkg_init time ∗ l ↦ t }}}
+    l @! (go.PointerType time.Time) @! "UnixNano" #()
+  {{{ (x : w64), RET #x; l ↦ t }}}.
+Proof.
+  wp_start. wp_auto. wp_apply wp_Time__UnixNano' as "% _".  wp_end.
 Qed.
 
 Axiom wp_Now :
@@ -79,7 +87,7 @@ Proof.
   wp_start. wp_apply wp_ArbitraryInt as "%x _". by iApply "HΦ".
 Qed.
 
-Lemma wp_After `{!chanG Σ time.Time.t} (d : time.Duration.t) :
+Lemma wp_After (d : time.Duration.t) :
   {{{ is_pkg_init time }}}
     @! time.After #d
   {{{ (ch: loc) γ, RET #ch; is_chan_handoff γ ch (λ (t: time.Time.t), True)%I }}}.

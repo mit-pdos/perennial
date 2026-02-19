@@ -1,10 +1,6 @@
 Require Import New.proof.proof_prelude.
-From New.proof.github_com.goose_lang.goose.model.channel.idiom Require Export base.
 From New.golang.theory Require Import chan.
-From Perennial.algebra Require Import auth_set.
-From iris.base_logic Require Import ghost_map.
-From iris.base_logic.lib Require Import saved_prop.
-From Perennial.algebra Require Import ghost_var.
+From New.proof.github_com.goose_lang.goose.model.channel.idiom Require Export base.
 
 Module join.
 
@@ -20,12 +16,11 @@ Section proof.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics}.
 
-Context `{!chan_idiomG Σ V}.
 Context `[!ZeroVal V] `[!TypedPointsto V] `[!IntoValTyped V t].
 Collection W := sem + IntoValTyped0.
 
 Definition join (γ: join_names) (count:nat) (Q: iProp Σ): iProp Σ :=
-  ghost_var γ.(join_counter_name) (DfracOwn (1/2)) count ∗
+  dghost_var γ.(join_counter_name) (DfracOwn (1/2)) count ∗
   ∃ Q', saved_prop_own γ.(join_prop_name) (DfracOwn (1/2)) Q' ∗ (Q' -∗ Q).
 
 Definition worker (γ: join_names) (P: iProp Σ): iProp Σ :=
@@ -37,11 +32,11 @@ Definition own_join (γ : join_names) (ch : loc) : iProp Σ :=
     "Hch" ∷ own_chan γ.(chan_name) V s ∗
     "joinQ" ∷ saved_prop_own γ.(join_prop_name) (DfracOwn (1/2)) workerQ ∗
     "%HnumWaiting" ∷ ⌜size sendNames = count⌝ ∗
-    "Hjoincount" ∷ ghost_var γ.(join_counter_name) (DfracOwn (1/2)) count ∗
+    "Hjoincount" ∷ dghost_var γ.(join_counter_name) (DfracOwn (1/2)) count ∗
     "HsendNames_auth" ∷ auth_set_auth γ.(worker_names_name) sendNames ∗
     "HworkerQ_wand" ∷ ((([∗ set] γS ∈ sendNames,
                           ∃ P, saved_prop_own γS DfracDiscarded P ∗ ▷ P) -∗
-                        ▷ workerQ) ∨ (ghost_var γ.(join_counter_name) (DfracOwn (1/2)) count)) ∗
+                        ▷ workerQ) ∨ (dghost_var γ.(join_counter_name) (DfracOwn (1/2)) count)) ∗
     match s with
     | chanstate.Buffered msgs =>
         [∗ list] _ ∈ msgs, ∃ P, worker γ P ∗ P
@@ -86,7 +81,7 @@ Proof.
   iMod (saved_prop_alloc emp (DfracOwn 1)) as (γjoin_prop) "Hjoin_prop".
   { done. }
   iMod (auth_set_init (A:=gname)) as (γworker_names) "Hworker_names".
-  iMod (ghost_var_alloc 0) as (γjoin_counter) "Hjoin_counter".
+  iMod (dghost_var_alloc O) as (γjoin_counter) "Hjoin_counter".
   set (γ := {|
     chan_name := γch;
     join_prop_name := γjoin_prop;
@@ -124,7 +119,7 @@ Proof.
   iMod (saved_prop_alloc emp (DfracOwn 1)) as (γjoin_prop) "Hjoin_prop".
   { done. }
   iMod (auth_set_init (A:=gname)) as (γworker_names) "Hworker_names".
-  iMod (ghost_var_alloc 0) as (γjoin_counter) "Hjoin_counter".
+  iMod (dghost_var_alloc O) as (γjoin_counter) "Hjoin_counter".
   set (γ := {|
     chan_name := γch;
     join_prop_name := γjoin_prop;
@@ -174,10 +169,10 @@ Proof.
   iDestruct "Hrest" as "[Hsp HQimp]".
   iDestruct (saved_prop_agree with "joinQ Hsp") as "#HQeq".
   iMod (saved_prop_update_halves (Q ∗ P) with "joinQ Hsp") as "[joinQ worker_prop]".
-  iDestruct (ghost_var_agree with "Hjoincount Hcount") as %Hcount_eq.
+  iDestruct (dghost_var_agree with "Hjoincount Hcount") as %Hcount_eq.
   assert (count = count0) as -> by done.
-  iMod (ghost_var_update_halves (S count0) with "Hjoincount Hcount") as "[Hjoincount Hjoincount2]".
-  iMod (saved_prop_alloc_cofinite sendNames P DfracDiscarded) as (γS) "[%Hfresh #HworkerS]".
+  iMod (dghost_var_update_halves (S count0) with "Hjoincount Hcount") as "[Hjoincount Hjoincount2]".
+  iMod (saved_prop_alloc_cofinite P sendNames DfracDiscarded) as (γS) "[%Hfresh #HworkerS]".
   { done. }
   iMod (auth_set_alloc γS with "HsendNames_auth") as "[HsendNames_auth HγS_frag]".
   { set_solver. }
@@ -221,7 +216,7 @@ Proof.
   }
   {
     iCombine "H2 Hjoincount" as "H2".
-    iDestruct (ghost_var_valid_2 with "Hjoincount2 H2") as "[%Hvalid _]".
+    iDestruct (dghost_var_valid_2 with "Hjoincount2 H2") as "[%Hvalid _]".
     done.
   }
 Qed.
@@ -342,9 +337,9 @@ Proof.
     iDestruct "Hworker_P" as "[Hworker_P HP]".
     iIntros "Hoc".
     iMod "Hmask".
-    iDestruct (ghost_var_agree with "Hjoincount HJoin") as %Hcount_eq.
+    iDestruct (dghost_var_agree with "Hjoincount HJoin") as %Hcount_eq.
     assert (count = S n) as -> by done.
-    iMod (ghost_var_update_halves n with "Hjoincount HJoin") as "[Hjoincount HJoin_new]".
+    iMod (dghost_var_update_halves n with "Hjoincount HJoin") as "[Hjoincount HJoin_new]".
     unfold worker.
     iDestruct "Hworker_P" as (γS) "[Hfrag Hprop]".
     iDestruct (auth_set_elem with "HsendNames_auth Hfrag") as %HγS_in_names.
@@ -373,7 +368,7 @@ Proof.
     }
     {
       iCombine "H2 Hjoincount" as "H2".
-      iDestruct (ghost_var_valid_2 with "HJoin_new H2") as "[%Hvalid _]".
+      iDestruct (dghost_var_valid_2 with "HJoin_new H2") as "[%Hvalid _]".
       done.
     }
   - iMod "Hmask".
@@ -393,9 +388,9 @@ Proof.
     destruct s; try done.
     + iIntros "Hoc".
       iMod "Hmask2".
-      iDestruct (ghost_var_agree with "Hjoincount HJoin") as %Hcount_eq.
+      iDestruct (dghost_var_agree with "Hjoincount HJoin") as %Hcount_eq.
       assert (count0 = S n) as -> by done.
-      iMod (ghost_var_update_halves n with "Hjoincount HJoin") as "[Hjoincount HJoin_new]".
+      iMod (dghost_var_update_halves n with "Hjoincount HJoin") as "[Hjoincount HJoin_new]".
       unfold worker. iNamed "Hbar".
       iDestruct "Hbar" as "[Hy HP]".
       iDestruct "Hy" as (γS0) "[Hfrag Hprop]".
@@ -428,7 +423,7 @@ Proof.
       }
       {
         iCombine "H2 Hjoincount" as "H2".
-        iDestruct (ghost_var_valid_2 with "HJoin_new H2") as "[%Hvalid _]".
+        iDestruct (dghost_var_valid_2 with "HJoin_new H2") as "[%Hvalid _]".
         done.
       }
   - iNamed "Hbar".
@@ -437,9 +432,9 @@ Proof.
     iDestruct "Hworker_P" as "[Hworker_P HP]".
     iIntros "Hoc".
     iMod "Hmask".
-    iDestruct (ghost_var_agree with "Hjoincount HJoin") as %Hcount_eq.
+    iDestruct (dghost_var_agree with "Hjoincount HJoin") as %Hcount_eq.
     assert (count = S n) as -> by done.
-    iMod (ghost_var_update_halves n with "Hjoincount HJoin") as "[Hjoincount HJoin_new]".
+    iMod (dghost_var_update_halves n with "Hjoincount HJoin") as "[Hjoincount HJoin_new]".
     unfold worker.
     iDestruct (auth_set_elem with "HsendNames_auth Hworker_P") as %HγS_in_names.
     iMod ((auth_set_dealloc γ.(worker_names_name) sendNames γS) with "[$HsendNames_auth $Hworker_P]") as "HsendNames_auth".
@@ -471,7 +466,7 @@ Proof.
       iModIntro. iApply "Hau". iFrame.
     }
     iCombine "H2 Hjoincount" as "H2".
-    iDestruct (ghost_var_valid_2 with "HJoin_new H2") as "[%Hvalid _]".
+    iDestruct (dghost_var_valid_2 with "HJoin_new H2") as "[%Hvalid _]".
     done.
 Qed.
 
@@ -506,8 +501,8 @@ Proof.
   iMod (lc_fupd_elim_later with "Hlc Hinv_open") as "Hinv_open".
   iNamed "Hinv_open".
   iNamed "Hbar".
-  iDestruct (ghost_var_agree with "Hjoincount Hcount") as %Hcount_eq.
-  assert (count = 0) as -> by done.
+  iDestruct (dghost_var_agree with "Hjoincount Hcount") as %Hcount_eq.
+  assert (count = O) as -> by done.
   replace sendNames with (∅: gset gname).
   {
     iDestruct (saved_prop_agree with "joinQ Hsp") as "#HQeq".
@@ -527,7 +522,7 @@ Proof.
     }
     {
       iCombine "H2 Hjoincount" as "H2".
-      iDestruct (ghost_var_valid_2 with "Hcount H2") as "[%Hvalid _]".
+      iDestruct (dghost_var_valid_2 with "Hcount H2") as "[%Hvalid _]".
       done.
     }
   }

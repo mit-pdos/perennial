@@ -2,7 +2,6 @@ From New.proof Require Import proof_prelude.
 From New.proof.github_com.goose_lang.goose.model.channel
      Require Export chan_au_send chan_au_recv chan_au_base chan_init.
 From New.proof.github_com.goose_lang.goose.model.channel Require Export dsp_ghost_theory.
-From iris.base_logic.lib Require Export token.
 From iris.proofmode Require Import coq_tactics reduction spec_patterns proofmode.
 From New.proof.github_com.goose_lang.goose.model.channel
      Require Export dsp.
@@ -128,7 +127,6 @@ Section lang.
   Context {sem : go.Semantics}.
   Collection W := sem.
   Local Set Default Proof Using "W".
-  Context `{!chanG Σ V}.
   Context `{!dspG Σ V}.
   Context `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}.
   Implicit Types TT : tele.
@@ -160,7 +158,7 @@ End lang.
 (** * Symbolic execution tactics *)
 (* TODO: Maybe strip laters from other hypotheses in the future? *)
 Lemma tac_wp_recv
-  `{hG: heapGS Σ, !ffi_semantics _ _} {sem : go.Semantics} `{!chanG Σ V} `{!dspG Σ V}
+  `{hG: heapGS Σ, !ffi_semantics _ _} {sem : go.Semantics} `{!dspG Σ V}
   `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}
   {TT : tele} Δ i j K (lr_chan rl_chan:loc) γ p m (tv : TT -t> V) tP tP' tp Φ :
   envs_lookup i Δ = Some (false, (lr_chan, rl_chan) ↣{γ} p)%I →
@@ -266,7 +264,7 @@ Tactic Notation "wp_recv" "(" simple_intropattern_list(xs) ")" "as"
   wp_recv_core (intros xs) as (fun H => _iDestructHyp H ys pat).
 
 Lemma tac_wp_send
-  `{hG: heapGS Σ, !ffi_semantics _ _} {sem : go.Semantics} `{!chanG Σ V} `{!dspG Σ V}
+  `{hG: heapGS Σ, !ffi_semantics _ _} {sem : go.Semantics} `{!dspG Σ V}
   `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}
   {TT : tele} Δ neg i js K (lr_chan rl_chan : loc) γ v p m tv tP tp Φ :
   envs_lookup i Δ = Some (false, (lr_chan,rl_chan) ↣{γ} p)%I →

@@ -1,7 +1,6 @@
 Require Import New.proof.proof_prelude.
-From New.proof.github_com.goose_lang.goose.model.channel.idiom Require Export base.
 From New.golang.theory Require Import chan.
-From Perennial.algebra Require Import ghost_var.
+From New.proof.github_com.goose_lang.goose.model.channel.idiom Require Export base.
 
 (** * Future Channel Verification
 
@@ -22,7 +21,7 @@ Section future.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics}.
 
-Context `{!chan_idiomG Σ V}.
+
 Context `[!ZeroVal V] `[!TypedPointsto V] `[!IntoValTyped V t].
 Collection W := sem + IntoValTyped0.
 
@@ -40,11 +39,11 @@ Notation half := (DfracOwn (1/2)).
 
 (** Await token - permission to receive exactly once *)
 Definition await_token (γ : future_names) : iProp Σ :=
-  ghost_var γ.(await_name) half true.
+  dghost_var γ.(await_name) half true.
 
 (** Fulfill token - permission to send exactly once *)
 Definition fulfill_token (γ : future_names) : iProp Σ :=
-  ghost_var γ.(fulfill_name) half true.
+  dghost_var γ.(fulfill_name) half true.
 
 (** ** Future Channel Invariant *)
 
@@ -66,8 +65,8 @@ Definition is_future (γ : future_names) (ch : loc)
   inv nroot (
     ∃ s await_avail fulfill_avail,
       "Hch" ∷ own_chan γ.(chan_name) V s ∗
-      "Hawait" ∷ ghost_var γ.(await_name) half await_avail ∗
-      "Hfulfill" ∷ ghost_var γ.(fulfill_name) half fulfill_avail ∗
+      "Hawait" ∷ dghost_var γ.(await_name) half await_avail ∗
+      "Hfulfill" ∷ dghost_var γ.(fulfill_name) half fulfill_avail ∗
       (match s with
       (* Empty buffer: either initial state or final state *)
       | chanstate.Buffered [] =>
@@ -92,8 +91,8 @@ Proof.
   iIntros "#Hch Hoc".
 
   (* Allocate ghost variables for await and fulfill tokens *)
-  iMod (ghost_var_alloc true) as (γawait) "[HawaitA HawaitF]".
-  iMod (ghost_var_alloc true) as (γfulfill) "[HfulfillA HfulfillF]".
+  iMod (dghost_var_alloc true) as (γawait) "[HawaitA HawaitF]".
+  iMod (dghost_var_alloc true) as (γfulfill) "[HfulfillA HfulfillF]".
 
   (* Create the future_names record *)
   set (γfuture := {| chan_name := γ; await_name := γawait; fulfill_name := γfulfill |}).
@@ -102,8 +101,8 @@ Proof.
   iMod (inv_alloc nroot _ (
     ∃ s await_avail fulfill_avail,
       "Hch" ∷ own_chan γ V s ∗
-      "Hawait" ∷ ghost_var γawait half await_avail ∗
-      "Hfulfill" ∷ ghost_var γfulfill half fulfill_avail ∗
+      "Hawait" ∷ dghost_var γawait half await_avail ∗
+      "Hfulfill" ∷ dghost_var γfulfill half fulfill_avail ∗
       (match s with
        | chanstate.Buffered [] =>
            ⌜(await_avail = true ∧ fulfill_avail = true) ∨
@@ -150,7 +149,7 @@ Proof.
   iMod (lc_fupd_elim_later with "[$] [$Hinv_open]") as "Hinv_open".
   iNamed "Hinv_open".
 
-  iDestruct (ghost_var_agree with "Hfulfill Hfulfillt") as %Hagree.
+  iDestruct (dghost_var_agree with "Hfulfill Hfulfillt") as %Hagree.
 
   iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
   iNext.
@@ -167,7 +166,7 @@ Proof.
     iIntros "Hoc".
     iMod "Hmask".
     iCombine "Hfulfill Hfulfillt" as "Hfulfill_full".
-    iMod (ghost_var_update false with "Hfulfill_full") as "[HfulfillI_new _]".
+    iMod (dghost_var_update false with "Hfulfill_full") as "[HfulfillI_new _]".
     iMod ("Hinv_close" with "[Hoc Hawait HP HfulfillI_new]") as "_".
     {
       iNext. iExists (chanstate.Buffered [v]), true, false.
@@ -219,7 +218,7 @@ Proof.
   iMod (lc_fupd_elim_later with "[$] [$Hinv_open]") as "Hinv_open".
   iNamed "Hinv_open".
 
-  iDestruct (ghost_var_agree with "Hawait Hawaitt") as %Hagree.
+  iDestruct (dghost_var_agree with "Hawait Hawaitt") as %Hagree.
 
   iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
   iNext.
@@ -234,7 +233,7 @@ Proof.
   iIntros "Hoc".
   iMod "Hmask".
   iCombine "Hawait Hawaitt" as "Hawait_full".
-  iMod (ghost_var_update false with "Hawait_full") as "[HawaitI_new _]".
+  iMod (dghost_var_update false with "Hawait_full") as "[HawaitI_new _]".
   iMod ("Hinv_close" with "[Hoc HawaitI_new Hfulfill]") as "_".
   {
     iNext. iExists (chanstate.Buffered []), false, false.

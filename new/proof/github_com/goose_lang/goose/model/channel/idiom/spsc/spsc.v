@@ -1,7 +1,6 @@
 Require Import New.proof.proof_prelude.
 From New.golang.theory Require Import chan.
 From New.proof.github_com.goose_lang.goose.model.channel.idiom Require Export base.
-From Perennial.algebra Require Import ghost_var.
 
 (** * Single Producer Single Consumer (SPSC) Channel Verification
 
@@ -22,7 +21,6 @@ From Perennial.algebra Require Import ghost_var.
 Section spsc.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics}.
-Context [V] `[!chan_idiomG Σ V].
 Context `[!ZeroVal V] `[!TypedPointsto V] `[!IntoValTyped V t].
 
 (** ** Ghost State Names *)
@@ -38,11 +36,11 @@ Record spsc_names := {
 
 (** Producer maintains (1/2) permission of sent history *)
 Definition spsc_producer (γ:spsc_names) (sent:list V) : iProp Σ :=
-    ghost_var γ.(spsc_sent_name) (DfracOwn (1/2)) sent.
+    dghost_var γ.(spsc_sent_name) (DfracOwn (1/2)) sent.
 
 (** Consumer maintains (1/2) permission of received history *)
 Definition spsc_consumer (γ:spsc_names) (received:list V) : iProp Σ :=
-    ghost_var γ.(spsc_recv_name) (DfracOwn (1/2)) received.
+    dghost_var γ.(spsc_recv_name) (DfracOwn (1/2)) received.
 
 (** ** In-Flight Values *)
 
@@ -75,8 +73,8 @@ Definition is_spsc (γ:spsc_names) (ch:loc)
     inv nroot (
       ∃ s sent recv,
         "Hch"    ∷ own_chan γ.(chan_name) V s ∗
-        "HsentI" ∷ ghost_var γ.(spsc_sent_name) (DfracOwn (1/2)) sent ∗
-        "HrecvI" ∷ ghost_var γ.(spsc_recv_name) (DfracOwn (1/2)) recv ∗
+        "HsentI" ∷ dghost_var γ.(spsc_sent_name) (DfracOwn (1/2)) sent ∗
+        "HrecvI" ∷ dghost_var γ.(spsc_recv_name) (DfracOwn (1/2)) recv ∗
         "%Hrel"  ∷ ⌜sent = recv ++ inflight s⌝ ∗
         (match s with
         (* P holds for all buffered values *)
@@ -107,8 +105,8 @@ Proof.
   iIntros "#Hch Hoc".
 
   (* Allocate ghost variables for sent and received histories *)
-  iMod (ghost_var_alloc ([] : list V)) as (γsent) "[HsentA HsentF]".
-  iMod (ghost_var_alloc ([] : list V)) as (γrecv) "[HrecvA HrecvF]".
+  iMod (dghost_var_alloc ([] : list V)) as (γsent) "[HsentA HsentF]".
+  iMod (dghost_var_alloc ([] : list V)) as (γrecv) "[HrecvA HrecvF]".
 
   (* Create the spsc_names record *)
   set (γspsc := {| chan_name := γ; spsc_sent_name := γsent; spsc_recv_name := γrecv |}).
@@ -160,7 +158,7 @@ Proof.
   iNamed "Hinv_open".
 
   (* Establish agreement between our received and invariant's recv *)
-  iDestruct (ghost_var_agree with "Hcons HrecvI") as %->.
+  iDestruct (dghost_var_agree with "Hcons HrecvI") as %->.
 
   (* Provide recv_au *)
   unfold recv_au.
@@ -179,7 +177,7 @@ Proof.
 
       (* Update received history *)
       iCombine "Hcons HrecvI" as "Hrecv_full".
-      iMod (ghost_var_update (recv ++ [v]) with "Hrecv_full") as "[HrecvI_new Hcons_new]".
+      iMod (dghost_var_update (recv ++ [v]) with "Hrecv_full") as "[HrecvI_new Hcons_new]".
 
       (* Extract P v from the big star list *)
       iDestruct (big_sepL_cons with "Hinv_open") as "[HPv Hrest]".
@@ -229,7 +227,7 @@ done.
     iNamed "Hinv_open2".
 
     (* Establish agreement between our received and invariant's recv *)
-    iDestruct (ghost_var_agree with "Hcons HrecvI") as %->.
+    iDestruct (dghost_var_agree with "Hcons HrecvI") as %->.
 
     unfold recv_au.
     iExists s. iFrame "Hch".
@@ -241,7 +239,7 @@ done.
     {
       (* SndCommit case - complete the handshake *)
       iCombine "Hcons HrecvI" as "Hrcv_full".
-      iMod (ghost_var_update (recv0 ++ [v]) with "Hrcv_full") as "[HrecvI_new Hcons_new]".
+      iMod (dghost_var_update (recv0 ++ [v]) with "Hrcv_full") as "[HrecvI_new Hcons_new]".
       iIntros "Hoc".
       iMod "Hmask1".
       iMod ("Hinv_close" with "[HsentI HrecvI_new Hoc]") as "_".
@@ -275,7 +273,7 @@ done.
           iExFalso.
           unfold spsc_consumer.
           iCombine "Hcons HrecvI" as "Hfull".
-          iDestruct (ghost_var_valid_2 with "Hfull H3") as "[%Hvalid _]".
+          iDestruct (dghost_var_valid_2 with "Hfull H3") as "[%Hvalid _]".
           done.
         }
       }
@@ -287,7 +285,7 @@ done.
     iIntros "Hcont1".
     iMod "Hmask".
     iCombine "Hcons HrecvI" as "Hrcv_full".
-    iMod (ghost_var_update (recv ++ [v]) with "Hrcv_full") as "[HrecvI_new Hcons_new]".
+    iMod (dghost_var_update (recv ++ [v]) with "Hrcv_full") as "[HrecvI_new Hcons_new]".
     iMod ("Hinv_close" with "[HsentI HrecvI_new Hcont1]") as "H".
     {
       iNext. iFrame. iPureIntro.
@@ -319,14 +317,14 @@ done.
         iExFalso.
         unfold spsc_consumer.
         iCombine "Hcons HrecvI" as "Hfull".
-        iDestruct (ghost_var_valid_2 with "Hfull H3") as "[%Hvalid _]".
+        iDestruct (dghost_var_valid_2 with "Hfull H3") as "[%Hvalid _]".
         done.
       }
     }
     { (* Closed channel with drain values *)
       iIntros "Hoc".
       iCombine "Hcons HrecvI" as "Hrcv_full".
-      iMod (ghost_var_update (recv ++ [v]) with "Hrcv_full") as "[HrecvI_new Hcons_new]".
+      iMod (dghost_var_update (recv ++ [v]) with "Hrcv_full") as "[HrecvI_new Hcons_new]".
       iMod "Hmask".
       iDestruct "Hinv_open" as "(H1 & H2 & H3)".
       iDestruct "H3" as "[H4 | H5]".
@@ -437,7 +435,7 @@ Proof.
   iNamed "Hinv_open".
 
   (* Establish agreement between our sent and invariant's sent *)
-  iDestruct (ghost_var_agree with "Hprod HsentI") as %->.
+  iDestruct (dghost_var_agree with "Hprod HsentI") as %->.
 
   iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
   iNext. iFrame.
@@ -450,7 +448,7 @@ Proof.
 
     (* Update sent history *)
     iCombine "Hprod HsentI" as "Hsent_full".
-    iMod (ghost_var_update (sent0 ++ [v]) with "Hsent_full") as "[HsentI_new Hprod_new]".
+    iMod (dghost_var_update (sent0 ++ [v]) with "Hsent_full") as "[HsentI_new Hprod_new]".
 
     (* Close invariant *)
     iMod "Hmask".
@@ -472,7 +470,7 @@ Proof.
 
     (* Update sent history *)
     iCombine "Hprod HsentI" as "Hsent_full".
-    iMod (ghost_var_update (sent0 ++ [v]) with "Hsent_full") as "[HsentI_new Hprod_new]".
+    iMod (dghost_var_update (sent0 ++ [v]) with "Hsent_full") as "[HsentI_new Hprod_new]".
 
     iMod "Hmask".
     iNamed "Hoc".
@@ -498,7 +496,7 @@ Proof.
     iNamed "Hi".
     iApply fupd_mask_intro; [solve_ndisj | iIntros "Hmask1"].
     iNext. iNamed "Hi". iFrame.
-    iDestruct (ghost_var_agree with "Hprod_new HsentI") as %Heq.
+    iDestruct (dghost_var_agree with "Hprod_new HsentI") as %Heq.
 
     (* Case analysis on current state *)
     unfold chan_cap_valid in Hcapvalid.
@@ -523,7 +521,7 @@ Proof.
         unfold spsc_producer.
         iCombine "HsentI Hd" as "Hfull".
         iExFalso.
-        iDestruct (ghost_var_valid_2 with "Hfull Hprod_new") as "[%Hvalid _]".
+        iDestruct (dghost_var_valid_2 with "Hfull Hprod_new") as "[%Hvalid _]".
         done.
       }
       {
@@ -531,7 +529,7 @@ Proof.
         unfold spsc_producer.
         iCombine "HsentI Hspp" as "Hfull".
         iExFalso.
-        iDestruct (ghost_var_valid_2 with "Hfull Hprod_new") as "[%Hvalid _]".
+        iDestruct (dghost_var_valid_2 with "Hfull Hprod_new") as "[%Hvalid _]".
         done.
       }
     }
@@ -542,7 +540,7 @@ Proof.
 
     (* Update sent history *)
     iCombine "Hprod HsentI" as "Hsent_full".
-    iMod (ghost_var_update (sent0 ++ [v]) with "Hsent_full") as "[HsentI_new Hprod_new]".
+    iMod (dghost_var_update (sent0 ++ [v]) with "Hsent_full") as "[HsentI_new Hprod_new]".
 
     iMod "Hmask".
 
@@ -568,7 +566,7 @@ Proof.
       unfold spsc_producer.
       iCombine "HsentI Hd" as "Hfull".
       iExFalso.
-      iDestruct (ghost_var_valid_2 with "Hfull Hprod") as "[%Hvalid _]".
+      iDestruct (dghost_var_valid_2 with "Hfull Hprod") as "[%Hvalid _]".
       done.
     }
     {
@@ -576,7 +574,7 @@ Proof.
       unfold spsc_producer.
       iCombine "HsentI Hspp" as "Hfull".
       iExFalso.
-      iDestruct (ghost_var_valid_2 with "Hfull Hprod") as "[%Hvalid _]".
+      iDestruct (dghost_var_valid_2 with "Hfull Hprod") as "[%Hvalid _]".
       done.
     }
   }
@@ -618,7 +616,7 @@ Proof.
   iInv "Hinv" as "Hinv_open" "Hinv_close".
   iMod (lc_fupd_elim_later with "Hlc1 Hinv_open") as "Hinv_open".
   iNamed "Hinv_open".
-  iDestruct (ghost_var_agree with "Hprod HsentI") as %->.
+  iDestruct (dghost_var_agree with "Hprod HsentI") as %->.
 
   iApply fupd_mask_intro; [solve_ndisj|iIntros "Hmask"].
   iNext. iFrame.
@@ -643,13 +641,13 @@ Proof.
       iCombine "HsentI HrecvI" as "H".
       iDestruct "H" as "[Hsent Hrecv]".
       iCombine "Hgv1 Hsent" as "Hfull".
-      iDestruct (ghost_var_valid_2 with "Hfull Hprod") as "[%Hvalid _]". done.
+      iDestruct (dghost_var_valid_2 with "Hfull Hprod") as "[%Hvalid _]". done.
 
     + unfold spsc_producer. simpl.
       iDestruct "Hinv_open" as "[Hgv1 HR]".
       iDestruct "HR" as "[Hgv2 HR]".
       iCombine "Hgv2 HsentI" as "Hfull".
-      iDestruct (ghost_var_valid_2 with "Hfull Hprod") as "[%Hvalid _]". done.
+      iDestruct (dghost_var_valid_2 with "Hfull Hprod") as "[%Hvalid _]". done.
 Qed.
 
 (** SPSC close operation *)

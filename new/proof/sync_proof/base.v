@@ -19,22 +19,6 @@ Inductive wlock_state :=
 | WaitingForReaders
 | IsLocked.
 
-Class syncG Σ := {
-    #[local] tokG :: tok_setG Σ;
-    #[local] wg_totalG :: ghost_varG Σ w32;
-
-    #[local] rw_ghost_varG :: ghost_varG Σ ();
-    #[local] rw_ghost_wlG :: ghost_varG Σ wlock_state;
-    #[local] rw_ghost_rwmutexG :: ghost_varG Σ rwmutex;
-
-    #[local] wg_auth_inG :: auth_propG Σ;
-  }.
-Local Existing Instances tokG wg_totalG rw_ghost_varG rw_ghost_wlG wg_auth_inG.
-
-Definition syncΣ := #[tok_setΣ; ghost_varΣ w32; ghost_varΣ (); ghost_varΣ wlock_state; ghost_varΣ rwmutex; auth_propΣ].
-Global Instance subG_syncΣ{Σ} : subG (syncΣ) Σ → (syncG Σ).
-Proof. solve_inG. Qed.
-
 Module sync.
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.

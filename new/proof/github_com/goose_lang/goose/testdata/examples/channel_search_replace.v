@@ -10,8 +10,6 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics} {package_sem : chan_spec_raw_examples.Assumptions}.
 Collection W := sem + package_sem.
 Set Default Proof Using "W".
-Context `{!chan_idiomG Σ slice.t}.
-Context `{!syncG Σ}.
 
 #[global] Instance : IsPkgInit (iProp Σ) chan_spec_raw_examples := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf (iProp Σ) chan_spec_raw_examples := build_get_is_pkg_init_wf.
@@ -114,7 +112,7 @@ Lemma wp_SearchReplace (s: slice.t) (xs: list w64) (x y: w64) :
   }}}
     @! chan_spec_raw_examples.SearchReplace #s #x #y
   {{{ RET #(); s ↦* (search_replace x y xs) }}}.
-Proof using chan_idiomG0 syncG0 W.
+Proof.
   (* The first overflow:
      implementation adds 1000 at a time, potentially surpassing the slice length
      before clamping. If it goes negative, then the clamping doesn't work. This

@@ -355,12 +355,12 @@ Ltac wp_if_destruct :=
         2) Prove [asn] in the false branch.
         3) Prove the remainder with [asn] as an assumption.
 **)
-Tactic Notation "wp_if_join" constr(asn) "with" constr(pat) :=
+Tactic Notation "wp_if_join" open_constr(asn) "with" constr(pat) :=
   wp_bind (if: (Val _) then _ else _)%E;
   iApply (wp_wand _ _ _ asn with pat)%I;
   [ wp_if_destruct | ].
 
-Tactic Notation "wp_if_join" constr(asn) := wp_if_join asn with "[]".
+Tactic Notation "wp_if_join" open_constr(asn) := wp_if_join asn with "[]".
 
 Ltac wp_end :=
   wp_pures;

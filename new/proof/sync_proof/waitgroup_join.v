@@ -2,7 +2,6 @@ From New.proof Require Export proof_prelude.
 From New.proof.sync_proof Require Import base.
 From New.proof.sync_proof Require Import waitgroup.
 From Perennial Require Export base.
-Local Existing Instances tokG wg_totalG rw_ghost_varG rw_ghost_wlG rw_ghost_rwmutexG  wg_auth_inG.
 
 Module join.
 Section waitgroup_join_idiom.
@@ -10,7 +9,6 @@ Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics} {package_sem : sync.Assumptions}.
 Collection W := sem + package_sem.
 Set Default Proof Using "W".
-Context `{!syncG Σ}.
 
 Record WaitGroup_join_names :=
   {

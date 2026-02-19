@@ -1,5 +1,4 @@
 From New.proof.sync_proof Require Import base mutex.
-Local Existing Instances tokG wg_totalG rw_ghost_varG rw_ghost_wlG rw_ghost_rwmutexG  wg_auth_inG.
 
 Local Unset Printing Projections.
 

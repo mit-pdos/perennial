@@ -4,7 +4,7 @@ From New.proof.github_com.goose_lang.goose.model.channel
 From New.golang.theory Require Import chan.
 From New.proof.github_com.goose_lang.goose.model.channel
      Require Export dsp_ghost_theory.
-From iris.base_logic.lib Require Export token.
+From New.ghost Require Import token.
 
 (** * Dependent Separation Protocols (DSP) over Go Channels
 
@@ -20,7 +20,6 @@ From iris.base_logic.lib Require Export token.
 
 (* Include [chanG Σ V] etc. here or not? *)
 Class dspG Σ V := {
-  chanG_tokenG :: tokenG Σ;
   chanG_protoG :: protoG Σ V;
 }.
 
@@ -46,7 +45,6 @@ Section dsp.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics}.
-Context `{!chanG Σ V}.
 Context `{!dspG Σ V}.
 
 Context `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}.

@@ -1,7 +1,6 @@
 Require Import New.proof.proof_prelude.
-From New.proof.github_com.goose_lang.goose.model.channel.idiom Require Export base.
 From New.golang.theory Require Import chan.
-From Perennial.algebra Require Import ghost_var.
+From New.proof.github_com.goose_lang.goose.model.channel.idiom Require Export base.
 
 
 (** * Lock Channel Idiom
@@ -25,7 +24,6 @@ From Perennial.algebra Require Import ghost_var.
 Section lock_channel.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics}.
-Context `{!chan_idiomG Σ V}.
 Context `{!ZeroVal V} `{!TypedPointsto V} `{!IntoValTyped V t}.
 Collection W := sem + IntoValTyped0.
 Set Default Proof Using "W".
@@ -42,10 +40,10 @@ Definition is_lock_channel (γ : lock_channel_names) (ch : loc)
     ∃ s locked,
       "Hch" ∷ own_chan γ.(lchan_name) V s ∗
       "%Hcap" ∷ ⌜ chan_cap γ.(lchan_name) = W64 1 ⌝ ∗
-      "Hlocked_ghost" ∷ ghost_var γ.(locked_name) (DfracOwn (1/2)) locked ∗
+      "Hlocked_ghost" ∷ dghost_var γ.(locked_name) (DfracOwn (1/2)) locked ∗
       (match s with
        | chanstate.Buffered [] =>
-          ⌜locked = false⌝ ∗ ghost_var γ.(locked_name) (DfracOwn (1/2)) locked ∗ R
+          ⌜locked = false⌝ ∗ dghost_var γ.(locked_name) (DfracOwn (1/2)) locked ∗ R
        | chanstate.Buffered [v] =>
            ⌜locked = true⌝
        | _ =>
@@ -60,7 +58,7 @@ Definition is_lock_channel (γ : lock_channel_names) (ch : loc)
     capacity invariant, only one such ownership can exist at a time.
 *)
 Definition has_lock_channel (γ : lock_channel_names) : iProp Σ :=
-  ghost_var γ.(locked_name) (DfracOwn (1/2)) true.
+  dghost_var γ.(locked_name) (DfracOwn (1/2)) true.
 
 Lemma start_lock_channel ch (R : iProp Σ) γ :
   chan_cap γ = W64 1 ->
@@ -71,17 +69,17 @@ Lemma start_lock_channel ch (R : iProp Σ) γ :
 Proof.
   intros Hcap.
   iIntros "#Hch Hoc HR".
-  iMod (ghost_var_alloc false) as (γlocked) "[HlockedI HlockedF]".
+  iMod (dghost_var_alloc false) as (γlocked) "[HlockedI HlockedF]".
   set (γlock := {| lchan_name := γ; locked_name := γlocked |}).
 
   iMod (inv_alloc nroot _ (
             ∃ s locked,
               "Hch" ∷ own_chan γ V s ∗
               "%Hcap" ∷ ⌜ chan_cap γ = W64 1 ⌝ ∗
-              "Hlocked_ghost" ∷ ghost_var γlock.(locked_name) (DfracOwn (1/2)) locked ∗
+              "Hlocked_ghost" ∷ dghost_var γlock.(locked_name) (DfracOwn (1/2)) locked ∗
               (match s with
                | chanstate.Buffered [] =>
-                   ⌜locked = false⌝ ∗ ghost_var γlock.(locked_name) (DfracOwn (1/2)) locked  ∗ R
+                   ⌜locked = false⌝ ∗ dghost_var γlock.(locked_name) (DfracOwn (1/2)) locked  ∗ R
                | chanstate.Buffered [v] =>
                    ⌜locked = true⌝
                | _ =>
@@ -132,7 +130,7 @@ Proof.
     iMod "Hmask".
     iDestruct "Hinv_open" as "(%Hlocked & Hgv & HR)".
     iCombine "Hgv Hlocked_ghost" as "Hgv".
-      iMod (ghost_var_update (true) with "Hgv") as "[Hlock1 Hlock2]".
+      iMod (dghost_var_update (true) with "Hgv") as "[Hlock1 Hlock2]".
     iMod ("Hinv_close" with "[Hlock1 Hoc]") as "_".
     {
       iNext. iExists (chanstate.Buffered [v]). iExists true. iFrame.
@@ -204,7 +202,7 @@ Proof.
   iIntros "Hoc".
   iMod "Hmask".
     iCombine "Hhaslock Hlocked_ghost" as "Hgv".
-      iMod (ghost_var_update (false) with "Hgv") as "[Hlock1 Hlock2]".
+      iMod (dghost_var_update (false) with "Hgv") as "[Hlock1 Hlock2]".
   iMod ("Hinv_close" with "[Hoc HR Hlock1 Hlock2]") as "_".
   {
     iNext. iExists (chanstate.Buffered []). iFrame.

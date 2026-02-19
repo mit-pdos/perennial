@@ -4,16 +4,11 @@ From New.generatedproof.github_com.goose_lang Require Import std.
 From New.proof Require Import github_com.goose_lang.primitive std.std_core sync.
 From iris_named_props Require Import custom_syntax.
 
-Class stdG Σ := {
-    #[local] std_syncG :: syncG Σ;
-  }.
-
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics} {package_sem : std.Assumptions}.
 Collection W := sem + package_sem.
 Set Default Proof Using "W".
-Context `{!stdG Σ}.
 
 #[global] Instance : IsPkgInit (iProp Σ) std := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf (iProp Σ) std := build_get_is_pkg_init_wf.

@@ -53,7 +53,7 @@ Proof.
 Qed.
 
 Global Instance into_val_typed_array n : IntoValTypedUnderlying (array.t V n) (go.ArrayType n t).
-Proof.
+Proof using IntoValTyped0.
   pose proof go.tagged_steps internal.
   split.
   - admit.
