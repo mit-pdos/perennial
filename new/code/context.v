@@ -1398,7 +1398,7 @@ Class cancelCtx_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalCon
   #[global] cancelCtx_get_cause (x : cancelCtx.t) :: ⟦StructFieldGet (cancelCtxⁱᵐᵖˡ) "cause", #x⟧ ⤳[under] #x.(cancelCtx.cause');
   #[global] cancelCtx_set_cause (x : cancelCtx.t) y :: ⟦StructFieldSet (cancelCtxⁱᵐᵖˡ) "cause", (#x, #y)⟧ ⤳[under] #(x <|cancelCtx.cause' := y|>);
   #[global] cancelCtx_Deadline_unfold :: MethodUnfold (cancelCtx) "Deadline" (λ: "$r", MethodResolve Context "Deadline" (StructFieldGet (cancelCtx) "Context" "$r" ))%V;
-  #[global] cancelCtx'ptr_Deadline_unfold :: MethodUnfold (go.PointerType (cancelCtx)) "Deadline" (λ: "$r", MethodResolve (go.PointerType Context) "Deadline" (StructFieldRef cancelCtx "Context"%go "$r"));
+  #[global] cancelCtx'ptr_Deadline_unfold :: MethodUnfold (go.PointerType (cancelCtx)) "Deadline" (λ: "$r", MethodResolve Context "Deadline" (![Context] (StructFieldRef cancelCtx "Context"%go "$r")));
   #[global] cancelCtx'ptr_Done_unfold :: MethodUnfold (go.PointerType (cancelCtx)) "Done" (cancelCtx__Doneⁱᵐᵖˡ);
   #[global] cancelCtx'ptr_Err_unfold :: MethodUnfold (go.PointerType (cancelCtx)) "Err" (cancelCtx__Errⁱᵐᵖˡ);
   #[global] cancelCtx'ptr_String_unfold :: MethodUnfold (go.PointerType (cancelCtx)) "String" (cancelCtx__Stringⁱᵐᵖˡ);
@@ -1493,10 +1493,10 @@ Class stopCtx_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalConte
   #[global] stopCtx_Done_unfold :: MethodUnfold (stopCtx) "Done" (λ: "$r", MethodResolve Context "Done" (StructFieldGet (stopCtx) "Context" "$r" ))%V;
   #[global] stopCtx_Err_unfold :: MethodUnfold (stopCtx) "Err" (λ: "$r", MethodResolve Context "Err" (StructFieldGet (stopCtx) "Context" "$r" ))%V;
   #[global] stopCtx_Value_unfold :: MethodUnfold (stopCtx) "Value" (λ: "$r", MethodResolve Context "Value" (StructFieldGet (stopCtx) "Context" "$r" ))%V;
-  #[global] stopCtx'ptr_Deadline_unfold :: MethodUnfold (go.PointerType (stopCtx)) "Deadline" (λ: "$r", MethodResolve (go.PointerType Context) "Deadline" (StructFieldRef stopCtx "Context"%go "$r"));
-  #[global] stopCtx'ptr_Done_unfold :: MethodUnfold (go.PointerType (stopCtx)) "Done" (λ: "$r", MethodResolve (go.PointerType Context) "Done" (StructFieldRef stopCtx "Context"%go "$r"));
-  #[global] stopCtx'ptr_Err_unfold :: MethodUnfold (go.PointerType (stopCtx)) "Err" (λ: "$r", MethodResolve (go.PointerType Context) "Err" (StructFieldRef stopCtx "Context"%go "$r"));
-  #[global] stopCtx'ptr_Value_unfold :: MethodUnfold (go.PointerType (stopCtx)) "Value" (λ: "$r", MethodResolve (go.PointerType Context) "Value" (StructFieldRef stopCtx "Context"%go "$r"));
+  #[global] stopCtx'ptr_Deadline_unfold :: MethodUnfold (go.PointerType (stopCtx)) "Deadline" (λ: "$r", MethodResolve Context "Deadline" (![Context] (StructFieldRef stopCtx "Context"%go "$r")));
+  #[global] stopCtx'ptr_Done_unfold :: MethodUnfold (go.PointerType (stopCtx)) "Done" (λ: "$r", MethodResolve Context "Done" (![Context] (StructFieldRef stopCtx "Context"%go "$r")));
+  #[global] stopCtx'ptr_Err_unfold :: MethodUnfold (go.PointerType (stopCtx)) "Err" (λ: "$r", MethodResolve Context "Err" (![Context] (StructFieldRef stopCtx "Context"%go "$r")));
+  #[global] stopCtx'ptr_Value_unfold :: MethodUnfold (go.PointerType (stopCtx)) "Value" (λ: "$r", MethodResolve Context "Value" (![Context] (StructFieldRef stopCtx "Context"%go "$r")));
 }.
 
 Module canceler.
@@ -1659,9 +1659,9 @@ Class valueCtx_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalCont
   #[global] valueCtx_Deadline_unfold :: MethodUnfold (valueCtx) "Deadline" (λ: "$r", MethodResolve Context "Deadline" (StructFieldGet (valueCtx) "Context" "$r" ))%V;
   #[global] valueCtx_Done_unfold :: MethodUnfold (valueCtx) "Done" (λ: "$r", MethodResolve Context "Done" (StructFieldGet (valueCtx) "Context" "$r" ))%V;
   #[global] valueCtx_Err_unfold :: MethodUnfold (valueCtx) "Err" (λ: "$r", MethodResolve Context "Err" (StructFieldGet (valueCtx) "Context" "$r" ))%V;
-  #[global] valueCtx'ptr_Deadline_unfold :: MethodUnfold (go.PointerType (valueCtx)) "Deadline" (λ: "$r", MethodResolve (go.PointerType Context) "Deadline" (StructFieldRef valueCtx "Context"%go "$r"));
-  #[global] valueCtx'ptr_Done_unfold :: MethodUnfold (go.PointerType (valueCtx)) "Done" (λ: "$r", MethodResolve (go.PointerType Context) "Done" (StructFieldRef valueCtx "Context"%go "$r"));
-  #[global] valueCtx'ptr_Err_unfold :: MethodUnfold (go.PointerType (valueCtx)) "Err" (λ: "$r", MethodResolve (go.PointerType Context) "Err" (StructFieldRef valueCtx "Context"%go "$r"));
+  #[global] valueCtx'ptr_Deadline_unfold :: MethodUnfold (go.PointerType (valueCtx)) "Deadline" (λ: "$r", MethodResolve Context "Deadline" (![Context] (StructFieldRef valueCtx "Context"%go "$r")));
+  #[global] valueCtx'ptr_Done_unfold :: MethodUnfold (go.PointerType (valueCtx)) "Done" (λ: "$r", MethodResolve Context "Done" (![Context] (StructFieldRef valueCtx "Context"%go "$r")));
+  #[global] valueCtx'ptr_Err_unfold :: MethodUnfold (go.PointerType (valueCtx)) "Err" (λ: "$r", MethodResolve Context "Err" (![Context] (StructFieldRef valueCtx "Context"%go "$r")));
   #[global] valueCtx'ptr_String_unfold :: MethodUnfold (go.PointerType (valueCtx)) "String" (valueCtx__Stringⁱᵐᵖˡ);
   #[global] valueCtx'ptr_Value_unfold :: MethodUnfold (go.PointerType (valueCtx)) "Value" (valueCtx__Valueⁱᵐᵖˡ);
 }.

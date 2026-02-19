@@ -899,7 +899,7 @@ Class raftNodeConfig_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLoc
   #[global] raftNodeConfig_underlying :: (raftNodeConfig) <u (raftNodeConfigⁱᵐᵖˡ);
   #[global] raftNodeConfigⁱᵐᵖˡ_underlying :: (raftNodeConfigⁱᵐᵖˡ) ↓u (raftNodeConfigⁱᵐᵖˡ);
   #[global] raftNodeConfig_Propose_unfold :: MethodUnfold (raftNodeConfig) "Propose" (λ: "$r", MethodResolve raft.Node "Propose" (StructFieldGet (raftNodeConfig) "Node" "$r" ))%V;
-  #[global] raftNodeConfig'ptr_Propose_unfold :: MethodUnfold (go.PointerType (raftNodeConfig)) "Propose" (λ: "$r", MethodResolve (go.PointerType raft.Node) "Propose" (StructFieldRef raftNodeConfig "Node"%go "$r"));
+  #[global] raftNodeConfig'ptr_Propose_unfold :: MethodUnfold (go.PointerType (raftNodeConfig)) "Propose" (λ: "$r", MethodResolve raft.Node "Propose" (![raft.Node] (StructFieldRef raftNodeConfig "Node"%go "$r")));
 }.
 
 Module Response.

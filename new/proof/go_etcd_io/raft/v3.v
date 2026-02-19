@@ -18,7 +18,7 @@ Lemma wp_Node__Propose  ctx ctx_desc n γraft data_sl data :
   {{{ is_pkg_init raft ∗
       "#Hctx" ∷ is_Context ctx ctx_desc ∗
       "#Hnode" ∷ is_Node γraft n ∗
-      "data_sl" ∷ data_sl ↦* data ∗
+      "#data_sl" ∷ data_sl ↦*□ data ∗
       "Hupd" ∷ (|={⊤,∅}=> ∃ log, own_raft_log γraft log ∗ (own_raft_log γraft (log ++ [data]) ={∅,⊤}=∗ True))
   }}}
     #(methods n.(interface.ty) "Propose" n.(interface.v)) #(interface.ok ctx) #data_sl

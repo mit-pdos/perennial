@@ -103,7 +103,7 @@ Lemma wp_node__Propose γraft n ctx ctx_desc (data_sl : slice.t) (data : list w8
   {{{ is_pkg_init raft ∗
       "#Hctx" ∷ is_Context ctx ctx_desc ∗
       "#Hnode" ∷ is_node γraft n ∗
-      "data_sl" ∷ data_sl ↦* data ∗
+      "#data_sl" ∷ data_sl ↦*□ data ∗
       "Hupd" ∷ (|={⊤,∅}=> ∃ log, own_raft_log γraft log ∗ (own_raft_log γraft (log ++ [data]) ={∅,⊤}=∗ True))
   }}}
     n @! (go.PointerType raft.node) @! "Propose" #(interface.ok ctx) #data_sl

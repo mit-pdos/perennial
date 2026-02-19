@@ -50,15 +50,14 @@ Axiom own_EtcdServer : ∀ (s : loc) γ, iProp Σ.
 #[local] Axiom is_EtcdServer_internal : ∀ (s : loc) γ, iProp Σ.
 Axiom own_EtcdServer_access : ∀ s γ,
   own_EtcdServer s γ -∗
-  ∃ (reqIDGen : loc) (MaxRequestBytes : w64) w γw r rn,
+  ∃ (reqIDGen : loc) (MaxRequestBytes : w64) w γw rn,
     "#reqIDGen" ∷ s .[etcdserver.EtcdServer.t, "reqIDGen"] ↦□ reqIDGen ∗
     "#HreqIDGen" ∷ is_Generator reqIDGen (own_ID γ) ∗
     "#Cfg_MaxRequestBytes" ∷
       s.[etcdserver.EtcdServer.t, "Cfg"].[config.ServerConfig.t, "MaxRequestBytes"] ↦□ MaxRequestBytes ∗
     "#w" ∷ s.[etcdserver.EtcdServer.t, "w"] ↦□ (interface.ok w) ∗
     "#Hinternal" ∷ is_EtcdServer_internal s γ ∗
-    "#r" ∷ s.[etcdserver.EtcdServer.t, "r"] ↦□ r ∗
-    "#r_raftNode" ∷ r.[etcdserver.raftNode.t, "raftNodeConfig"]
+    "#raftNode" ∷ s.[etcdserver.EtcdServer.t, "r"].[etcdserver.raftNode.t, "raftNodeConfig"]
        .[etcdserver.raftNodeConfig.t, "Node"] ↦□ (interface.ok rn) ∗
     "#Hr" ∷ is_Node (raft_gn γ) rn ∗
     "Hw" ∷ own_Wait γw w waitR ∗
@@ -185,7 +184,7 @@ Proof.
   }
   iIntros "*". iNamed 1.
   iDestruct (own_EtcdServer_access with "Hsrv") as "H".
-  iClear "reqIDGen HreqIDGen Cfg_MaxRequestBytes w Hinternal Hr r_raftNode r".
+  iClear "reqIDGen HreqIDGen Cfg_MaxRequestBytes w Hinternal Hr raftNode".
   clear dependent reqIDGen MaxRequestBytes w γw.
   iNamed "H".
   wp_auto. wp_apply (wp_Wait__Register with "[Hw]").
@@ -200,21 +199,14 @@ Proof.
   wp_auto.
   wp_method_call.
   wp_auto.
-  unshelve erewrite method_unfold.
-  2:{
-    apply _.
+  wp_apply (wp_Node__Propose with "[data_sl]").
+  {
+    simpl.
+    (* FIXME: iFrame "#". still leaves an evar for the [own_raft_log] gname,
+       unless first unfolding named. *)
+    rewrite /named. iFrame "∗#".
+    admit. (* TODO: actually fire the atomic update. *)
   }
-  wp_method_call.
-  wp_auto.
-  wp_bind.
-
-  (* FIXME: this is loading the entire `raftNode` struct for calling the
-     embedded Propose method. Really, Go does *not* copy the entire struct until
-     getting to the bottom. I.e. we should read this sentence of the Go spec very strictly:
-     > If x is addressable and &x's method set contains m, x.m() is shorthand for (&x).m():
-     Here, s.r.Propose means (&s.r).Propose because (s.r) is addressable and
-     (&s.r) contains Propose. That might make stuff work out OK.
-   *)
 
   (* TODO:
      axiomatize prometheus Counter inc
