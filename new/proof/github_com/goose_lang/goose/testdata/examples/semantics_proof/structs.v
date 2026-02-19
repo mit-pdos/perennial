@@ -18,8 +18,14 @@ Lemma wp_testStructConstructions :
   test_fun_ok semantics.testStructConstructions.
 Proof.
   semantics_auto.
-  wp_bind (GoOp GoEquals _ _).
-Abort.
+  iSelect (x ↦ _)%I (fun H => iRename H into "x").
+  destruct (decide (p4_ptr = x)).
+  {
+    subst.
+    admit. (* TODO: how to combine typed_pointsto to get sum of fractions? *)
+  }
+  rewrite bool_decide_eq_false_2 //.
+Admitted.
 
 Lemma wp_testIncompleteStruct :
   test_fun_ok semantics.testIncompleteStruct.
