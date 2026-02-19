@@ -7,7 +7,7 @@ From New.generatedproof.github_com.stretchr.testify Require assert.
 From New.proof Require Import bytes context sort slices runtime.
 
 From New.proof.github_com.goose_lang.goose.testdata.examples
-  Require unittest unittest.generics.
+  Require unittest unittest.generics semantics.
 From New.proof.github_com.goose_lang.goose.testdata.examples
   Require channel channel_search_replace elimination_stack.
 
