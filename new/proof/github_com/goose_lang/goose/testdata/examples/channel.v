@@ -33,6 +33,208 @@ Proof.
   by intros [].
 Defined.
 
+Section select_full_buffer.
+
+(* Invariant for the “full buffer” situation                                  *)
+
+(** Invariant: channel must be Buffered [W64 0] (full for cap = 1). *)
+Definition is_select_nb_full1 (γ : chan_names) (ch : loc) : iProp Σ :=
+  "#Hch"  ∷ is_chan ch γ w64 ∗
+  "%Hcap1" ∷ ⌜chan_cap γ = (W64 1)⌝ ∗
+  "#Hinv" ∷ (own_chan γ w64 (chanstate.Buffered [W64 0])).
+
+Lemma start_select_nb_full1 (ch : loc) (γ : chan_names) :
+  is_chan ch γ w64 -∗
+  ⌜chan_cap γ = (W64 1)⌝ -∗
+  own_chan γ w64 (chanstate.Buffered [W64 0]) ={⊤}=∗
+  is_select_nb_full1 γ ch.
+Proof.
+  iIntros "#Hch %Hcap Hoc".
+  iModIntro. iFrame "#". iFrame "%". iFrame.
+Qed.
+
+Lemma select_nb_full1_send_au (γ : chan_names) (ch : loc) :
+  ∀ Φ Φnotready,
+    is_select_nb_full1 γ ch -∗
+    Φnotready -∗
+    nonblocking_send_au γ (W64 0) Φ Φnotready.
+Proof.
+  intros Φ Φnotready.
+  iIntros "Hfull Hnotready".
+  iNamed "Hfull".
+  iSplit; last done.
+  iApply fupd_mask_intro; [solve_ndisj|].
+  iIntros "Hmask". iNext.
+
+  iExists (chanstate.Buffered [W64 0]).
+  iFrame.
+  iIntros "Hoc'".
+  (* Show this contradicts the capacity bound. *)
+  iPoseProof (own_chan_buffer_size with "Hoc'") as "%Hle".
+  rewrite Hcap1 in Hle.
+  done.
+Qed.
+
+Lemma SendAU_from_empty_buffer_to
+    (ch: loc) (γ: chan_names) (Φ : iProp Σ) :
+  own_chan γ w64 (chanstate.Buffered []) -∗
+  (own_chan γ w64 (chanstate.Buffered [W64 0]) -∗ Φ) -∗
+  send_au γ (W64 0) Φ.
+Proof.
+  iIntros "Hoc Hk".
+  unfold send_au.
+  iApply fupd_mask_intro; [solve_ndisj|].
+  iIntros "Hmask". iNext.
+  iExists (chanstate.Buffered []).
+  iFrame "Hoc".
+  simpl.
+  iIntros "Hoc'".
+  iMod "Hmask".
+  iApply ("Hk" with "Hoc'").
+Qed.
+
+(* 
+  From a send on full buffer (which blocks indefinitely), any Φ can be derived 
+*)
+Lemma SendAU_full_cap1_vacuous
+  (ch : loc) (γ : chan_names) (v0 v : w64) (Φ : iProp Σ) :
+  chan_cap γ = (W64 1) ->
+  own_chan γ w64 (chanstate.Buffered [v0]) -∗
+  send_au γ v Φ.
+Proof.
+  intros Hcap.
+  iIntros "Hoc".
+  unfold send_au.
+  iApply fupd_mask_intro; [solve_ndisj|].
+  iIntros "Hmask". iNext.
+  iExists (chanstate.Buffered [v0]).
+  iFrame "Hoc".
+  simpl.
+  iIntros "Hoc'".
+  iPoseProof (own_chan_buffer_size with "Hoc'") as "%Hle".
+  rewrite Hcap in Hle.
+  done.
+Qed.
+
+Lemma wp_select_nb_full_buffer_no_panic :
+  {{{ is_pkg_init chan_spec_raw_examples }}}
+    @! chan_spec_raw_examples.select_nb_full_buffer_no_panic #()
+  {{{ RET #(); True }}}.
+Proof.
+  wp_start. wp_auto_lc 2.
+
+  wp_apply (chan.wp_make2); first done.
+  iIntros (ch γ) "(#His_chan & %Hcap & Hown)".
+  wp_auto.
+
+  (* First send: use the empty-buffer AU to fill buffer to [0]. *)
+  wp_apply (chan.wp_send ch (W64 0) γ with "[$His_chan]").
+  iIntros "Hlc_send". simpl.
+  iApply ((SendAU_from_empty_buffer_to ch γ) with "Hown").
+
+  (* Now we have: own_chan ch (Buffered [0]) γ in the continuation. *)
+  iIntros "Hoc".
+  iMod (start_select_nb_full1 ch γ with "[$His_chan] [%] [$Hoc]") as "Hfull".
+{ exact Hcap. }  (* supplies ⌜chan_cap γ = 1⌝ *)
+wp_auto.
+
+  (* Nonblocking select: show send case is disabled -> default taken. *)
+  wp_apply chan.wp_select_nonblocking.
+
+  iSplit.
+  - simpl. iSplit; last done.
+    iExists w64, ch,γ, (W64 0). repeat iExists _.
+    
+    iSplit; [iPureIntro; split;first done;reflexivity|].
+    iSplit; [iFrame "#"; done|].
+    (* AU for send case: forced not-ready by full-buffer invariant. 
+      => We can get contradiction
+    *)
+    iApply (select_nb_full1_send_au γ ch with "[$Hfull]"). 
+    all:try done.
+  - (* default branch *)
+    wp_auto. iApply "HΦ". done.
+    Unshelve.
+    + apply sem.
+    + apply _.
+Qed.
+
+(* Example 2: buffer space -> panic branch ready -> fails to verify  *)
+
+Lemma wp_select_nb_buffer_space_panic_fails :
+  {{{ is_pkg_init chan_spec_raw_examples }}}
+    @! chan_spec_raw_examples.select_nb_buffer_space_panic #()
+  {{{ RET #(); True }}}.
+Proof using chan_idiomG0.
+  wp_start. wp_auto_lc 2.
+  wp_apply (chan.wp_make (t:=intT) 1); first done.
+  iIntros (ch γ) "(#His_chan & %Hcap & Hown)".
+
+  wp_auto.
+  wp_apply chan.wp_select_nonblocking.
+  simpl.
+
+  (* Split (case package) and default. *)
+  iSplit.
+  - iSplit; last done.
+    iExists w64, γ, (W64 0), _, _, _.
+    iSplit; [iPureIntro; reflexivity|].
+    iSplit; [iFrame "#"; done|].
+    unfold nonblocking_send_au.
+    iSplit; last done.
+    iApply fupd_mask_intro; [solve_ndisj|].
+    iIntros "Hmask". iNext.
+    iExists (chanstate.Buffered []).
+    iFrame "Hown".
+    simpl.
+    iIntros "Hoc".
+    iMod "Hmask".
+    iModIntro. wp_auto.
+    wp_apply wp_panic.
+    (* Branch fails here *)
+    admit.
+  - wp_auto. iApply "HΦ". done.
+Abort.
+
+(* Example 3: deadlock on blocking select send -> vacuously verifies  *)
+Lemma wp_select_nb_buffer_space_deadlock_vacuous :
+  {{{ is_pkg_init chan_spec_raw_examples }}}
+    @! chan_spec_raw_examples.select_nb_buffer_space_deadlock #()
+  {{{ RET #(); True }}}.
+Proof using chan_idiomG0.
+  wp_start. wp_auto.
+  wp_apply (chan.wp_make (t:=intT) 1); first done.
+  iIntros (ch γ) "(#His_chan & %Hcap & Hown)".
+  wp_auto.
+  wp_apply (chan.wp_send ch (W64 0) γ with "[$His_chan]").
+
+  (* First send: fill the buffer. We verify it by giving a SendAU that
+     updates Buffered [] -> Buffered [0], then continues. *)
+  iIntros "Hlc". simpl.
+ 
+  iApply ((SendAU_from_empty_buffer_to (V:=w64) (ch) (γ) (W64 0)
+         ) with "Hown").
+      
+         iIntros "Hoc". wp_auto.
+  wp_apply chan.wp_select_blocking.
+  simpl.
+  iSplitL "Hoc".
+  - iExists w64, γ, (W64 0), _, _, _. 
+    iSplit.
+    { iPureIntro. reflexivity. }
+    iSplitL "".
+    { iFrame "#". }
+
+  iApply (SendAU_full_cap1_vacuous (ch) (γ)
+              (W64 0) (W64 0)).
+              { done. }
+              
+              done.
+              - done.
+Qed.
+
+End select_full_buffer.
+
 Section hello_world.
 
 Lemma wp_sys_hello_world :
