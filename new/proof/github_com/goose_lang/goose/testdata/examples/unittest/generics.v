@@ -73,7 +73,8 @@ Lemma wp_useBoxGet :
     @! generics.useBoxGet #()
   {{{ RET #(W64 42); True }}}.
 Proof.
-  wp_start. wp_auto. wp_apply wp_makeGenericBox. wp_apply wp_Box__Get. wp_end.
+  wp_start. wp_auto. wp_apply wp_makeGenericBox.
+  wp_apply (wp_Box__Get' with "[$x]"). wp_end.
 Qed.
 
 Lemma wp_useContainer :

@@ -8,14 +8,11 @@ Ltac2 Set wp_apply_auto_default := Ltac2.Init.false.
 
 Class concurrencyG Σ :=
   {
-    donecG :: closeable_chanG Σ ;
     (* context_inG :: contextG Σ; *)
     clientv3_inG :: clientv3G Σ;
   }.
 
 Section proof.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
 Context {sem : go.Semantics} {package_sem : zapcore.Assumptions}.
@@ -26,25 +23,25 @@ Collection W := sem + package_sem.
 Context `{concurrencyG Σ}.
 
 (* FIXME: move these *)
-#[global] Instance : IsPkgInit zapcore := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf zapcore := build_get_is_pkg_init_wf.
+#[global] Instance : IsPkgInit (iProp Σ) zapcore := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ) zapcore := build_get_is_pkg_init_wf.
 
-#[global] Instance : IsPkgInit zap := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf zap := build_get_is_pkg_init_wf.
+#[global] Instance : IsPkgInit (iProp Σ) zap := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ) zap := build_get_is_pkg_init_wf.
 
-#[global] Instance : IsPkgInit strings := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf strings := build_get_is_pkg_init_wf.
+#[global] Instance : IsPkgInit (iProp Σ) strings := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ) strings := build_get_is_pkg_init_wf.
 
-#[global] Instance : IsPkgInit concurrency := define_is_pkg_init True%I.
-#[global] Instance : GetIsPkgInitWf concurrency := build_get_is_pkg_init_wf.
+#[global] Instance : IsPkgInit (iProp Σ) concurrency := define_is_pkg_init True%I.
+#[global] Instance : GetIsPkgInitWf (iProp Σ) concurrency := build_get_is_pkg_init_wf.
 
 Definition is_Session (s : loc) γ (lease : clientv3.LeaseID.t) : iProp Σ :=
   ∃ cl donec,
-  "#client" ∷ s ↦s[concurrency.Session :: "client"]□ cl ∗
-  "#id" ∷ s ↦s[concurrency.Session :: "id"]□ lease ∗
+  "#client" ∷ s.[concurrency.Session, "client"] ↦□ cl ∗
+  "#id" ∷ s.[concurrency.Session, "id"] ↦□ lease ∗
   "#Hclient" ∷ is_Client cl γ ∗
   "#Hlease" ∷ is_etcd_lease γ lease ∗
-  "#donec" ∷ s ↦s[concurrency.Session :: "donec"]□ donec ∗
+  "#donec" ∷ s.[concurrency.Session, "donec"] ↦□ donec ∗
   (* One can keep calling receive, and the only thing they might get back is a
      "closed" value. *)
   "#Hdonec" ∷ own_closeable_chan donec True closeable.Unknown.
