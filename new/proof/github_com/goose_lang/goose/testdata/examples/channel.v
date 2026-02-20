@@ -165,9 +165,9 @@ Lemma wp_select_nb_buffer_space_panic_fails :
   {{{ is_pkg_init chan_spec_raw_examples }}}
     @! chan_spec_raw_examples.select_nb_buffer_space_panic #()
   {{{ RET #(); True }}}.
-Proof using chan_idiomG0.
+  Proof.
   wp_start. wp_auto_lc 2.
-  wp_apply (chan.wp_make (t:=intT) 1); first done.
+  wp_apply (chan.wp_make2); first done.
   iIntros (ch γ) "(#His_chan & %Hcap & Hown)".
 
   wp_auto.
@@ -177,8 +177,8 @@ Proof using chan_idiomG0.
   (* Split (case package) and default. *)
   iSplit.
   - iSplit; last done.
-    iExists w64, γ, (W64 0), _, _, _.
-    iSplit; [iPureIntro; reflexivity|].
+    iExists w64, ch, γ, _, _, _,_.
+    iSplit; [iPureIntro; first done;reflexivity|].
     iSplit; [iFrame "#"; done|].
     unfold nonblocking_send_au.
     iSplit; last done.
@@ -189,8 +189,7 @@ Proof using chan_idiomG0.
     simpl.
     iIntros "Hoc".
     iMod "Hmask".
-    iModIntro. wp_auto.
-    wp_apply wp_panic.
+    iModIntro. wp_auto.  
     (* Branch fails here *)
     admit.
   - wp_auto. iApply "HΦ". done.
@@ -201,9 +200,9 @@ Lemma wp_select_nb_buffer_space_deadlock_vacuous :
   {{{ is_pkg_init chan_spec_raw_examples }}}
     @! chan_spec_raw_examples.select_nb_buffer_space_deadlock #()
   {{{ RET #(); True }}}.
-Proof using chan_idiomG0.
+  Proof.
   wp_start. wp_auto.
-  wp_apply (chan.wp_make (t:=intT) 1); first done.
+  wp_apply (chan.wp_make2); first done.
   iIntros (ch γ) "(#His_chan & %Hcap & Hown)".
   wp_auto.
   wp_apply (chan.wp_send ch (W64 0) γ with "[$His_chan]").
@@ -212,16 +211,16 @@ Proof using chan_idiomG0.
      updates Buffered [] -> Buffered [0], then continues. *)
   iIntros "Hlc". simpl.
  
-  iApply ((SendAU_from_empty_buffer_to (V:=w64) (ch) (γ) (W64 0)
+  iApply ((SendAU_from_empty_buffer_to (ch) (γ) 
          ) with "Hown").
       
          iIntros "Hoc". wp_auto.
   wp_apply chan.wp_select_blocking.
   simpl.
   iSplitL "Hoc".
-  - iExists w64, γ, (W64 0), _, _, _. 
+  - iExists w64,ch, γ, (W64 0), _, _, _. 
     iSplit.
-    { iPureIntro. reflexivity. }
+    { iPureIntro. split;first done;done. }
     iSplitL "".
     { iFrame "#". }
 
@@ -231,6 +230,9 @@ Proof using chan_idiomG0.
               
               done.
               - done.
+              Unshelve.
+              { apply sem.  }
+              { apply _. }
 Qed.
 
 End select_full_buffer.
