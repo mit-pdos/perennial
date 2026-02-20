@@ -198,7 +198,8 @@ Ltac2 walk_expr (e : constr) (f : constr -> constr -> 'a) : 'a :=
         | Primitive0 _ => Control.zero Walk_expr_not_found
         | LiteralValue _ => Control.zero Walk_expr_not_found
         | SelectStmtClauses _ _ => Control.zero Walk_expr_not_found
-        | _ => Control.zero (Tactic_failure (Some (fprintf "walk_expr: no match for expr %t" e)))
+        (* fprintf'ing the expression can be quite slow. | _ => Control.zero (Tactic_failure (Some (fprintf "walk_expr: no match for expr %t" e))) *)
+        | _ => Control.zero (Tactic_failure (Some (fprintf "walk_expr: no match for expr")))
         end
     | Err e => Control.zero e
     end
