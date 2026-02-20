@@ -50,6 +50,12 @@ Definition select_nb_no_panic {ext : ffi_syntax} {go_gctx : GoGlobalContext} : g
 
 Definition select_no_double_close {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.select_no_double_close"%go.
 
+Definition select_nb_full_buffer_no_panic {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.select_nb_full_buffer_no_panic"%go.
+
+Definition select_nb_buffer_space_panic {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.select_nb_buffer_space_panic"%go.
+
+Definition select_nb_buffer_space_deadlock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.select_nb_buffer_space_deadlock"%go.
+
 Definition exchangePointer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.exchangePointer"%go.
 
 Definition BroadcastExample {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/channel.BroadcastExample"%go.
@@ -532,7 +538,56 @@ Definition select_no_double_closeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlo
     (FuncResolve go.close [go.ChannelType go.sendrecv go.int] #()) "$a0"))) [(CommClause (RecvCase go.int "$ch0") (do:  #()))]);;;
     return: #()).
 
-(* go: examples.go:148:6 *)
+(* Show that a nonblocking select does not take a send case
+   when the buffered channel is already full.
+
+   go: examples.go:150:6 *)
+Definition select_nb_full_buffer_no_panicⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: <>,
+    exception_do (let: "ch" := (GoAlloc (go.ChannelType go.sendrecv go.int) (GoZeroVal (go.ChannelType go.sendrecv go.int) #())) in
+    let: "$r0" := ((FuncResolve go.make2 [go.ChannelType go.sendrecv go.int] #()) #(W64 1)) in
+    do:  ("ch" <-[go.ChannelType go.sendrecv go.int] "$r0");;;
+    do:  (let: "$chan" := (![go.ChannelType go.sendrecv go.int] "ch") in
+    let: "$v" := #(W64 0) in
+    chan.send go.int "$chan" "$v");;;
+    let: "$v0" := #(W64 0) in
+    let: "$ch0" := (![go.ChannelType go.sendrecv go.int] "ch") in
+    SelectStmt (SelectStmtClauses (Some (do:  #())) [(CommClause (SendCase go.int "$ch0" "$v0") (do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"unreachable"%go) in
+    (FuncResolve go.panic [] #()) "$a0")))]);;;
+    return: #()).
+
+(* Unverifiable: Panic is irreducible
+
+   go: examples.go:169:6 *)
+Definition select_nb_buffer_space_panicⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: <>,
+    exception_do (let: "ch" := (GoAlloc (go.ChannelType go.sendrecv go.int) (GoZeroVal (go.ChannelType go.sendrecv go.int) #())) in
+    let: "$r0" := ((FuncResolve go.make2 [go.ChannelType go.sendrecv go.int] #()) #(W64 1)) in
+    do:  ("ch" <-[go.ChannelType go.sendrecv go.int] "$r0");;;
+    let: "$v0" := #(W64 0) in
+    let: "$ch0" := (![go.ChannelType go.sendrecv go.int] "ch") in
+    SelectStmt (SelectStmtClauses (Some (do:  #())) [(CommClause (SendCase go.int "$ch0" "$v0") (do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"bad"%go) in
+    (FuncResolve go.panic [] #()) "$a0")))]);;;
+    return: #()).
+
+(* Blocking select: vacuously verifiable due to deadlock
+
+   go: examples.go:184:6 *)
+Definition select_nb_buffer_space_deadlockⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
+  λ: <>,
+    exception_do (let: "ch" := (GoAlloc (go.ChannelType go.sendrecv go.int) (GoZeroVal (go.ChannelType go.sendrecv go.int) #())) in
+    let: "$r0" := ((FuncResolve go.make2 [go.ChannelType go.sendrecv go.int] #()) #(W64 1)) in
+    do:  ("ch" <-[go.ChannelType go.sendrecv go.int] "$r0");;;
+    do:  (let: "$chan" := (![go.ChannelType go.sendrecv go.int] "ch") in
+    let: "$v" := #(W64 0) in
+    chan.send go.int "$chan" "$v");;;
+    let: "$v0" := #(W64 0) in
+    let: "$ch0" := (![go.ChannelType go.sendrecv go.int] "ch") in
+    SelectStmt (SelectStmtClauses None [(CommClause (SendCase go.int "$ch0" "$v0") (do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"unreachable"%go) in
+    (FuncResolve go.panic [] #()) "$a0")))]);;;
+    return: #()).
+
+(* go: examples.go:199:6 *)
 Definition exchangePointerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "x" := (GoAlloc go.int (GoZeroVal go.int #())) in
@@ -586,7 +641,7 @@ Definition exchangePointerⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
     else do:  #());;;
     return: #()).
 
-(* go: examples.go:168:6 *)
+(* go: examples.go:219:6 *)
 Definition BroadcastExampleⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     exception_do (let: "done" := (GoAlloc (go.ChannelType go.sendrecv (go.StructType [
@@ -663,19 +718,19 @@ Definition BroadcastExampleⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCon
     else do:  #());;;
     return: #()).
 
-(* go: examples.go:204:6 *)
+(* go: examples.go:255:6 *)
 Definition Webⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "query",
     exception_do (let: "query" := (GoAlloc go.string "query") in
     return: ((![go.string] "query") +⟨go.string⟩ #".html"%go)).
 
-(* go: examples.go:208:6 *)
+(* go: examples.go:259:6 *)
 Definition Imageⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "query",
     exception_do (let: "query" := (GoAlloc go.string "query") in
     return: ((![go.string] "query") +⟨go.string⟩ #".png"%go)).
 
-(* go: examples.go:212:6 *)
+(* go: examples.go:263:6 *)
 Definition Videoⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "query",
     exception_do (let: "query" := (GoAlloc go.string "query") in
@@ -683,7 +738,7 @@ Definition Videoⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val
 
 (* https://go.dev/talks/2012/concurrency.slide#46
 
-   go: examples.go:217:6 *)
+   go: examples.go:268:6 *)
 Definition Googleⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "query",
     exception_do (let: "query" := (GoAlloc go.string "query") in
@@ -1619,6 +1674,9 @@ Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!G
   #[global] simple_multi_join_unfold :: FuncUnfold simple_multi_join [] (simple_multi_joinⁱᵐᵖˡ);
   #[global] select_nb_no_panic_unfold :: FuncUnfold select_nb_no_panic [] (select_nb_no_panicⁱᵐᵖˡ);
   #[global] select_no_double_close_unfold :: FuncUnfold select_no_double_close [] (select_no_double_closeⁱᵐᵖˡ);
+  #[global] select_nb_full_buffer_no_panic_unfold :: FuncUnfold select_nb_full_buffer_no_panic [] (select_nb_full_buffer_no_panicⁱᵐᵖˡ);
+  #[global] select_nb_buffer_space_panic_unfold :: FuncUnfold select_nb_buffer_space_panic [] (select_nb_buffer_space_panicⁱᵐᵖˡ);
+  #[global] select_nb_buffer_space_deadlock_unfold :: FuncUnfold select_nb_buffer_space_deadlock [] (select_nb_buffer_space_deadlockⁱᵐᵖˡ);
   #[global] exchangePointer_unfold :: FuncUnfold exchangePointer [] (exchangePointerⁱᵐᵖˡ);
   #[global] BroadcastExample_unfold :: FuncUnfold BroadcastExample [] (BroadcastExampleⁱᵐᵖˡ);
   #[global] Web_unfold :: FuncUnfold Web [] (Webⁱᵐᵖˡ);
