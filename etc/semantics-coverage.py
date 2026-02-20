@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 #
-# opam install coq-dpdgraph
+# opam pin add coq-dpdgraph https://github.com/rocq-community/coq-dpdgraph.git#coq-master
+#
+# release 1.0 for rocq 9.1 doesn't work - we need Print DependGraph with a list of references.
 #
 # ./etc/semantics-coverage.py new/proof/github_com/ --generate
 
