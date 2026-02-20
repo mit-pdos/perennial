@@ -123,6 +123,12 @@ Proof.
   iIntros "* [-> HR]". iApply "HΦ". done.
 Qed.
 
+(* Time Instance x : IntoValTyped etcdserverpb.InternalRaftRequest.t etcdserverpb.InternalRaftRequest. *)
+(* Proof. *)
+(*   Opaque etcdserverpb.InternalRaftRequest. *)
+(*   Time apply _. *)
+(* Qed. *)
+
 Lemma wp_EtcdServer__processInternalRaftRequestOnce (s : loc) γ ctx ctx_desc req req_abs :
   {{{ is_pkg_init etcdserver ∗
       "Hsrv" ∷ own_EtcdServer s γ ∗
@@ -135,6 +141,111 @@ Lemma wp_EtcdServer__processInternalRaftRequestOnce (s : loc) γ ctx ctx_desc re
 Proof.
   wp_start. iNamed "Hpre".
   wp_apply wp_with_defer as "%defer Hdefer" . simpl subst.
+
+  Time wp_alloc_auto.
+  (* wp_bind. *)
+  (* Time eapply (@tac_wp_alloc _ _ _ _ _ _ _ []). *)
+  (* { *)
+  (*   Set Typeclasses Debug. *)
+  (*   Reset Ltac Profile. *)
+  (*   Time apply _. *)
+  (* } *)
+  wp_pure.
+  wp_pure.
+  (* Typeclasses Opaque etcdserverpb.InternalRaftRequest. *)
+  (* Typeclasses Opaque etcdserverpb.InternalRaftRequestⁱᵐᵖˡ. *)
+  (* Typeclasses Opaque etcdserverpb.InternalRaftRequest'fds. *)
+  (* Time wp_alloc_auto. *)
+  (* Time wp_alloc_auto. *)
+
+  Time wp_alloc_auto.
+  wp_pure.
+  wp_pure.
+  Typeclasses Opaque context.Context.
+  Time wp_alloc_auto.
+  wp_pure.
+  wp_pure.
+  wp_pure.
+  Typeclasses Opaque go.uint64.
+  assert (IntoValTyped w64 go.uint64) by admit.
+  Time wp_alloc_auto.
+  wp_pure.
+  wp_pure.
+  Typeclasses Opaque etcdserver.EtcdServer.
+  assert (∀ t, IntoValTyped loc $ go.PointerType t) by admit.
+  Time wp_load.
+
+  Time wp_bind.
+
+  assert (IntoValTyped etcdserverpb.InternalRaftRequest.t etcdserverpb.InternalRaftRequest).
+  { apply _. }
+  Time wp_alloc_auto.
+  Time eapply (@tac_wp_alloc _ _ _ _ _ _ _ []).
+  {
+    Set Typeclasses Debug.
+    Reset Ltac Profile.
+
+    Time simple eapply @underlying_to_into_val_typed.
+    { simple apply @defn.go.core_sem. }
+    {
+      simple eapply @is_underlying_unfold;
+        [
+          simple eapply @etcdserverpb.InternalRaftRequest_underlying |
+        ].
+      { Print Hint.
+        simple apply @etcdserverpb.InternalRaftRequest_instance (cost 1, pattern
+      }
+
+    }
+      Print Hint.
+    }
+    [ apply _ | | ].
+    {
+      apply _.
+    }
+    Time apply _.
+  }
+    Time simple eapply @underlying_to_into_val_typed.
+    { Time apply _. }
+    {
+      Time apply _.
+    }
+    {
+      Time apply _.
+    }
+  }
+      simple eapply @is_underlying_unfold.
+      {
+        Typeclasses Opaque etcdserverpb.InternalRaftRequest.
+        Time apply _.
+        unfold etcdserverpb.InternalRaftRequest.
+        simple eapply @etcdserverpb.InternalRaftRequest_underlying.
+        apply _.
+      }
+      apply _.
+    }
+
+    Time apply _.
+  }
+  iApply wp_alloc. --no-auto.
+  Time wp_apply wp_alloc --no-auto.
+  Show Ltac Profile.
+  Time wp_alloc_auto.
+  Show Ltac Profile.
+  wp_pure.
+  wp_pure.
+  wp_pure.
+
+  Set Ltac Profiling.
+  Set Ltac2 In Ltac1 Profiling.
+  wp_alloc_auto.
+  wp_pure.
+  wp_auto.
+  Show Ltac Profile.
+  Time Fail wp_pure.
+  Time Fail wp_load.
+  Time Fail wp_store.
+  Time wp_alloc_auto.
   wp_auto. iRename "r" into "req_ptr".
   iDestruct (own_EtcdServer_access with "Hsrv") as "H". iNamed "H".
   wp_apply (wp_EtcdServer__getAppliedIndex with "[$Hinternal]") as "%ai _".
