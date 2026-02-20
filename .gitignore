@@ -48,3 +48,8 @@ _opam
 .filestoinstall
 Makefile.rocq*
 _RocqProject.install
+
+# etc/semantics-coverage.py
+/graph.dpd
+# temporary file
+src/dpdgraph.v
