@@ -4,7 +4,14 @@ From New.generatedproof Require math.rand testing unsafe.
 
 From New.generatedproof.github_com.stretchr.testify Require assert.
 
-From New.proof Require Import bytes context sort slices runtime.
+(* stdlib. *)
+From New.proof Require Import
+  bytes context errors fmt io log math runtime slices sort strings
+  sync time unsafe.
+From New.proof.crypto Require Import ed25519.
+From New.proof.encoding Require Import binary.
+From New.proof.internal Require Import race synctest.
+From New.proof.math Require Import bits.
 
 From New.proof.github_com.goose_lang.goose.testdata.examples
   Require unittest unittest.generics semantics.
