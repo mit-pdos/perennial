@@ -24,9 +24,12 @@
    having (something bigger than) the coproduct as [discrete_funUR (optionUR ∘
    int_cmra)]. *)
 
+(* alphabetical to make it easier to see what we've added. *)
 From iris.algebra Require Export
-  gset functions reservation_map mra dyn_reservation_map view gmultiset csum
-  gmap_view max_prefix_list dfrac_agree auth excl numbers proofmode_classes.
+  auth csum dyn_reservation_map excl functions gmultiset gset
+  max_prefix_list mra numbers proofmode_classes reservation_map view.
+From iris.algebra.lib Require Export
+  dfrac_agree gmap_view mono_list mono_nat.
 From Coq Require Import Logic.ClassicalEpsilon Logic.FunctionalExtensionality.
 From iris.base_logic Require Export proofmode iprop.
 From iris.base_logic Require Import own.
@@ -63,11 +66,15 @@ Inductive cmra :=
 | fracR
 | gsetR (K : Type) `{Countable K}
 | dfracR
+| mono_natR
+| mono_listR (A : ofe)
 with ucmra :=
 | gset_disjUR (K : Type) `{Countable K}
 | max_prefix_listUR (A : ofe)
 | gmapUR (K : Type) `{Countable K} (V : cmra)
-| natUR.
+| natUR
+| mono_natUR
+| mono_listUR (A : ofe).
 End syntax.
 
 Section denote.
@@ -103,6 +110,8 @@ Fixpoint int_cmra (x : syntax.cmra) : cmra :=
   | syntax.fracR => fracR
   | syntax.gsetR K => gsetR K
   | syntax.dfracR => dfracR
+  | syntax.mono_natR => mono_natR
+  | syntax.mono_listR A => mono_listR (int_ofe A)
   end
 with int_ucmra (x : syntax.ucmra) : ucmra :=
   match x with
@@ -110,6 +119,8 @@ with int_ucmra (x : syntax.ucmra) : ucmra :=
   | syntax.max_prefix_listUR A => max_prefix_listUR (int_ofe A)
   | syntax.gmapUR K V => gmapUR K (int_cmra V)
   | syntax.natUR => natUR
+  | syntax.mono_natUR => mono_natUR
+  | syntax.mono_listUR A => mono_listUR (int_ofe A)
   end.
 
 Fixpoint intF_cmra (x : syntax.cmra) : rFunctor :=
@@ -137,6 +148,8 @@ Fixpoint intF_cmra (x : syntax.cmra) : rFunctor :=
   | syntax.fracR => fracR
   | syntax.gsetR K => gsetR K
   | syntax.dfracR => dfracR
+  | syntax.mono_natR => mono_natR
+  | syntax.mono_listR A => mono_listR (int_ofe A)
   end
 with intF_ucmra (x : syntax.ucmra) : urFunctor :=
 match x with
@@ -144,6 +157,8 @@ match x with
 | syntax.max_prefix_listUR A => max_prefix_listUR (int_ofe A)
 | syntax.gmapUR K V => gmapURF K (intF_cmra V)
 | syntax.natUR => natUR
+| syntax.mono_natUR => mono_natUR
+| syntax.mono_listUR A => mono_listUR (int_ofe A)
 end.
 
 Class IsCmra (A : cmra) (e : syntax.cmra) :=
@@ -197,6 +212,12 @@ Proof. s. Qed.
 Proof. s. Qed.
 #[global] Instance is_min_natR : IsCmra min_natR syntax.min_natR.
 Proof. s. Qed.
+#[global] Instance is_mono_natR :
+  IsCmra mono_natR syntax.mono_natR.
+Proof. s. Qed.
+#[global] Instance is_mono_listR `{!IsOfe A Ae} :
+  IsCmra (mono_listR A) (syntax.mono_listR Ae).
+Proof. s. Qed.
 #[global] Instance is_positiveR : IsCmra positiveR syntax.positiveR.
 Proof. s. Qed.
 #[global] Instance is_ZR : IsCmra ZR syntax.ZR.
@@ -221,6 +242,12 @@ Proof. s. Qed.
 Proof. s. Qed.
 #[global] Instance is_natUR :
   IsUcmra natUR syntax.natUR.
+Proof. s. Qed.
+#[global] Instance is_mono_natUR :
+  IsUcmra mono_natUR syntax.mono_natUR.
+Proof. s. Qed.
+#[global] Instance is_mono_listUR `{!IsOfe A Ae} :
+  IsUcmra (mono_listUR A) (syntax.mono_listUR Ae).
 Proof. s. Qed.
 #[global] Instance is_unitO :
   IsOfe unitO syntax.unitO.
