@@ -10,20 +10,11 @@ The key rules are [mono_nat_lb_own_valid], which asserts that an auth at [n] and
 a lower-bound at [m] imply that [m ≤ n], and [mono_nat_update], which allows to
 increase the auth element. At any time the auth nat can be "snapshotted" with
 [mono_nat_get_lb] to produce a persistent lower-bound proposition. *)
-From iris.proofmode Require Import proofmode.
+From New.ghost Require Export own.
 From iris.algebra.lib Require Import mono_nat.
 From iris.bi.lib Require Import fractional.
-From iris.base_logic.lib Require Export own.
-From iris.prelude Require Import options.
 
-Class mono_natG Σ :=
-  MonoNatG { #[local] mono_natG_inG :: inG Σ mono_natR; }.
-
-Definition mono_natΣ : gFunctors := #[ GFunctor mono_natR ].
-Global Instance subG_mono_natΣ Σ : subG mono_natΣ Σ → mono_natG Σ.
-Proof. solve_inG. Qed.
-
-Local Definition mono_nat_auth_own_def `{!mono_natG Σ}
+Local Definition mono_nat_auth_own_def `{!allG Σ}
     (γ : gname) (q : Qp) (n : nat) : iProp Σ :=
   own γ (●MN{#q} n).
 Local Definition mono_nat_auth_own_aux : seal (@mono_nat_auth_own_def).
@@ -33,7 +24,7 @@ Local Definition mono_nat_auth_own_unseal :
   @mono_nat_auth_own = @mono_nat_auth_own_def := mono_nat_auth_own_aux.(seal_eq).
 Global Arguments mono_nat_auth_own {Σ _} γ q n.
 
-Local Definition mono_nat_lb_own_def `{!mono_natG Σ} (γ : gname) (n : nat): iProp Σ :=
+Local Definition mono_nat_lb_own_def `{!allG Σ} (γ : gname) (n : nat): iProp Σ :=
   own γ (◯MN n).
 Local Definition mono_nat_lb_own_aux : seal (@mono_nat_lb_own_def). Proof. by eexists. Qed.
 Definition mono_nat_lb_own := mono_nat_lb_own_aux.(unseal).
@@ -46,7 +37,7 @@ Local Ltac unseal := rewrite
   ?mono_nat_lb_own_unseal /mono_nat_lb_own_def.
 
 Section mono_nat.
-  Context `{!mono_natG Σ}.
+  Context `{!allG Σ}.
   Implicit Types (n m : nat).
 
   Global Instance mono_nat_auth_own_timeless γ q n : Timeless (mono_nat_auth_own γ q n).
