@@ -11,10 +11,11 @@
 (** For developers: the universal cmra is roughly a coproduct of all supported
    cmras. This is an infinite coproduct, as it supports e.g. [authR A] for any
    type [A]. The type [syntax.cmra] is the indexing type for the coproduct, and
-   each one denotes some actual [cmra] via [int_cmra]. To add more cmras, add it
-   to [syntax], and then also add the relevant [IsCmra] instances; [IsCmra]
-   helps map an arbitrary [cmra] into some [syntax.cmra] as evidence that it is
-   included in the universal cmra.
+   each one denotes some actual [cmra] via [int_cmra].
+   To add more cmras, add both the `R` and `UR` variants to [syntax],
+   and then also add the relevant [IsCmra] instances.
+   [IsCmra] helps map an arbitrary [cmra] into some [syntax.cmra] as
+   evidence that it is included in the universal cmra.
 
    Iris does not provide a coproduct cmra library. Iris does provide arbitrary
    products of [ucmra]s via [discrete_funUR]. In the category of ucmras,
