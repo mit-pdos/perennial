@@ -299,11 +299,12 @@ End hello_world.
 
 Section cancellable.
 
+
 Lemma wp_HelloWorldCancellable
   (done_ch : loc) (err_ptr1: loc) (err_msg: go_string)
   (γdone: done_names) :
   {{{ is_pkg_init chan_spec_raw_examples ∗
-        is_done (V:=unit) γdone done_ch ∗
+        is_done (V:=unit)  γdone done_ch ∗
         Notified γdone (err_ptr1 ↦ err_msg)  }}}
     @! chan_spec_raw_examples.HelloWorldCancellable #done_ch #err_ptr1
     {{{
@@ -319,13 +320,7 @@ Proof.
   iIntros (ch γfuture) "[#Hch #Hfut]". wp_auto_lc 1.
   do 2 (iRename select (£1) into "Hlc1").
   iDestruct "Hpre" as "(#H1 & H2)".
-  iAssert (is_chan done_ch γdone.(chan_name) unit) as "#Hdonech".
-  {
-    iFrame "#".
-    unfold is_done.
-    iDestruct "H1" as "[#Hdone #Hinv]". iFrame "#".
-
-  }
+ 
   iFrame "#".
   wp_apply chan.wp_select_blocking.
   simpl.
@@ -333,7 +328,7 @@ Proof.
     {
       repeat iExists _; iSplitR; first done. iFrame "#".
 
-      iApply (handoff_rcv_au γfuture ch with "[$Hfut] [$]").
+      iApply (handoff_rcv_au (V:=go_string)  γfuture ch with "[$Hfut] [$]").
       iNext. iIntros (v). iIntros "%Hw".
       wp_auto.
       subst v.
@@ -343,9 +338,10 @@ Proof.
     }
     {
       iSplitL; last done. repeat iExists _; iSplitR; first done. iFrame "#".
-
-      iApply (done_receive_au with "[$H1] [$H2] [HΦ Herr] [$]").
+      iSplitL "". { iApply (done_is_chan γdone done_ch (V:=unit) (t:=(go.StructType []))).  iFrame "#". }
+      iApply ((done_receive_au (V:=unit) (t:=((go.StructType []))) γdone done_ch) with "[$H1] [$H2] [HΦ Herr] [$]").
       {
+        
         iNext. iIntros "Herr'".
         wp_auto. iApply "HΦ". iLeft. done.
       }
@@ -366,19 +362,19 @@ Proof.
   wp_auto. wp_apply chan.wp_make1.
   iIntros (ch γ) "(#Hchan & _Hcap & Hoc)".
   simpl.
-  iDestruct (start_done ch γ with "Hchan") as "Hstart".
+  iDestruct (start_done (t:=(go.StructType [])) ch γ with "Hchan") as "Hstart".
   iMod ("Hstart" with "Hoc") as (γdone) "(#Hdone & Hnot)".
   wp_auto.
   iPersist "done".
 
-  iMod (done_alloc_notified  _ _ _ (errMsg_ptr ↦ "operation timed out"%go)%I
+  iMod (done_alloc_notified (t:=(go.StructType []))  _ _ _ (errMsg_ptr ↦ "operation timed out"%go)%I
          with "[$Hdone] [$Hnot]") as "[HNotify HNotified]".
   wp_apply (wp_fork with "[HNotify errMsg done]").
   { wp_auto.
     wp_apply wp_Sleep.
     wp_apply (chan.wp_close with "[]") as "(Hlc1 & Hlc2 & Hlc3 & _)".
-    { iApply (done_is_chan with "Hdone"). }
-    iApply (done_close_au with "[$] [$] [$HNotify errMsg]").
+    { iApply (done_is_chan (t:=(go.StructType [])) with "Hdone"). }
+    iApply (done_close_au (t:=(go.StructType [])) with "[$] [$] [$HNotify errMsg]").
     { iFrame. }
     iNext.
     wp_auto.
@@ -1430,5 +1426,81 @@ Proof.
 Qed.
 
 End exchange_pointer_proof.
+
+Section broadcast_example_proof.
+
+Lemma wp_BroadcastExample :
+  {{{ is_pkg_init chan_spec_raw_examples }}}
+    @! chan_spec_raw_examples.BroadcastExample #()
+  {{{ RET #(); True }}}.
+Proof.
+  wp_start. wp_auto.
+
+  wp_apply (chan.wp_make1). 
+  iIntros (done_ch γdone) "(#Hdone_is_chan & _ & Hdone_own)". wp_auto. simpl.
+  wp_apply (chan.wp_make1).
+  iIntros (result1_ch γr1) "(#Hr1_is_chan & _ & Hr1_own)". wp_auto. simpl.
+  
+  wp_apply (chan.wp_make1).
+  iIntros (result2_ch γr2) "(#Hr2_is_chan & _ & Hr2_own)". wp_auto. simpl.
+  
+  iMod (start_handoff result1_ch γr1 (λ v, ⌜v = W64 6⌝)%I with "Hr1_is_chan Hr1_own") 
+    as (γh1) "[%Heq1 #Hhandoff1]".
+  iMod (start_handoff result2_ch γr2 (λ v, ⌜v = W64 10⌝)%I with "Hr2_is_chan Hr2_own")
+    as (γh2) "[%Heq2 #Hhandoff2]".
+  
+  iMod (start_done_with_broadcast_notified (V:=unit) (t:=go.StructType []) done_ch γdone (sharedValue_ptr ↦□ W64 2)%I with "Hdone_is_chan Hdone_own")
+    as (γbc) "(#Hbc & HBcastNotif & #HBc)".
+
+  iPersist "done result1 result2".
+  
+  wp_apply (wp_fork with "[result1 result2 done]").
+  {
+    rename done_ch into done_ch_1.
+    wp_auto_lc 1.
+    wp_apply ((wp_done_receive_broadcast (V:=unit) (t:=go.StructType []) γbc done_ch_1 ((sharedValue_ptr ↦□ W64 2)%I))  with "[$Hbc]").
+    {
+      iFrame "#".
+    }
+
+    iIntros "HShared".
+    wp_auto.
+    wp_apply (wp_handoff_send with "[$Hhandoff1]").
+    { iPureIntro. word. }
+    done.
+  }
+
+   wp_apply (wp_fork with "[result1 result2 done]").
+  {
+    rename done_ch into done_ch_1.
+    wp_auto_lc 1.
+    wp_apply ((wp_done_receive_broadcast (V:=unit) (t:=go.StructType []) γbc done_ch_1  ((sharedValue_ptr ↦□ W64 2)%I))
+    with "[$Hbc]").
+    {
+      iFrame "#".
+    }
+
+    iIntros "HShared".
+    wp_auto.
+    wp_apply (wp_handoff_send with "[$Hhandoff2]").
+    { iPureIntro. word. }
+    done.
+  }
+  iPersist "sharedValue".
+
+  wp_apply ((wp_done_close (V:=unit) (t:=go.StructType []) γbc done_ch ( ((sharedValue_ptr ↦□ W64 2)%I))) with "[Hbc HBcastNotif]").
+  {
+    iFrame "#". iFrame.
+  }
+  wp_apply (wp_handoff_receive with "Hhandoff1").
+  iIntros (v1) "%Hv1". subst v1.
+  wp_auto.
+  wp_apply (wp_handoff_receive with "Hhandoff2").
+  iIntros (v2) "%Hv2". subst v2.
+  wp_auto.
+  iApply "HΦ". done.
+Qed.
+
+End broadcast_example_proof.
 
 End proof.
