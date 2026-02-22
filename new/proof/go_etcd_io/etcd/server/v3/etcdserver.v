@@ -1,4 +1,5 @@
 Require Export New.code.go_etcd_io.etcd.server.v3.etcdserver.
+
 Require Export New.generatedproof.go_etcd_io.etcd.server.v3.etcdserver.
 Require Export New.proof.proof_prelude.
 From New.proof Require Import context log fmt time
@@ -6,6 +7,144 @@ From New.proof Require Import context log fmt time
   go_etcd_io.etcd.pkg.v3.wait
   go_etcd_io.etcd.api.v3.etcdserverpb
   go_etcd_io.raft.v3.
+
+Existing Instance channel.Channel_underlying.
+Definition x := @etcdserver.zapRaftLogger_underlying.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+Existing Instance x. Existing Instance x. Existing Instance x. Existing Instance x.
+
+Section instance1.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}
+  {go_lctx : GoLocalContext} {sem : go.Semantics}.
+Global Instance z T :
+  channel.Channel T <u channel.Channelⁱᵐᵖˡ T | 2.
+Proof using.
+  intros.
+  Existing Instance channel.Channel_underlying.
+  Existing Instance x.
+  Existing Instance x.
+  Set Debug "tactic-unification".
+  (* Opaque channel.Channel. *)
+  Time Fail apply _; [|].
+  About id_byte_string.
+  (* Time simple eapply @channel.Channel_underlying. *)
+Qed.
+End instance1.
+
+Section instance2.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}
+  {go_lctx : GoLocalContext} {sem : go.Semantics}.
+Instance w T :
+  channel.Channel T <u channel.Channelⁱᵐᵖˡ T | 2.
+Proof using.
+  Set Typeclasses Debug.
+  intros.
+  Print Hint.
+  Time apply _.
+  (* Time simple eapply @channel.Channel_underlying. *)
+Qed.
+End instance1.
 
 Section wps.
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
@@ -123,11 +262,102 @@ Proof.
   iIntros "* [-> HR]". iApply "HΦ". done.
 Qed.
 
-(* Time Instance x : IntoValTyped etcdserverpb.InternalRaftRequest.t etcdserverpb.InternalRaftRequest. *)
-(* Proof. *)
-(*   Opaque etcdserverpb.InternalRaftRequest. *)
-(*   Time apply _. *)
-(* Qed. *)
+
+Instance struct_underlying `{!TCEq t (go.StructType fds)}: t ↓u t.
+Proof. inversion TCEq0. subst t. apply _. Qed.
+
+Program Definition C := sealed channel.Channel.
+Definition C_unseal : C = _ := seal_eq _.
+
+Instance y : ∀ T : go.type,
+  C T <u C T.
+Proof. Admitted.
+
+(* Time Eval compute in channel.Channel. *)
+(* Time Eval compute in etcdserver.EtcdServer. *)
+
+Lemma x :
+  ∀ T : go.type,
+  C T <u C T.
+Proof.
+  intros.
+  Print Hint.
+  Time apply _.
+Abort.
+
+About go.UnderlyingDirectedEq.
+Instance z T `{!channel.Assumptions} :
+  channel.Channel T <u channel.Channelⁱᵐᵖˡ T | 2.
+Proof using.
+  Set Typeclasses Debug.
+  intros.
+  Time apply _.
+  (* Time simple eapply @channel.Channel_underlying. *)
+Qed.
+
+Instance w :
+  ∀ T : go.type, channel.Channel T <u channel.Channelⁱᵐᵖˡ T.
+Proof.
+  Set Typeclasses Debug.
+  intros.
+  Print Hint.
+  Time apply _.
+  (* Time simple eapply @channel.Channel_underlying. *)
+Qed.
+
+Global Hint Mode go.UnderlyingDirectedEq + + + + : typeclass_instances.
+
+Instance a : channel.Assumptions.
+Proof. apply _. Qed.
+Instance x V t : ∀ (H : ZeroVal V) (H' : TypedPointsto V), IntoValTyped V t →
+                 IntoValTyped (channel.Channel.t V) (channel.Channel t).
+Proof.
+  intros.
+
+  Time Fail simple eapply @underlying_to_into_val_typed;
+  [ simple apply @defn.go.core_sem |
+    simple eapply @is_underlying_unfold;
+    [ (* simple eapply @channel.Channel_underlying;  *)apply _
+      (* simple apply @channel.Channel_instance; exact a  *) |
+      apply _] |
+    apply _]; [|].
+
+
+  Time Fail simple eapply @underlying_to_into_val_typed;
+  [ simple apply @defn.go.core_sem |
+    simple eapply @is_underlying_unfold;
+    [ simple eapply @channel.Channel_underlying; simple apply @channel.Channel_instance; exact a |
+      simple apply struct_underlying ] |
+    simple apply @channel.channel.Channel.Channel_into_val_typed;
+    [ exact a | exact H0 ]]; [|].
+
+  Set Ltac2
+  simple eapply @underlying_to_into_val_typed.
+  - simple apply @defn.go.core_sem.
+  - simple eapply @is_underlying_unfold.
+    + simple eapply @channel.Channel_underlying. simple apply @channel.Channel_instance. exact a.
+    + simple apply struct_underlying.
+  - simple apply @channel.channel.Channel.Channel_into_val_typed.
+    + exact a.
+    + exact H0.
+Qed.
+
+Instance a : channel.Assumptions.
+Proof. apply _. Qed.
+Instance x V t : ∀ (H : ZeroVal V) (H' : TypedPointsto V), IntoValTyped V t →
+                 IntoValTyped (channel.Channel.t V) (channel.Channel t).
+Proof.
+  clear.
+  intros.
+  Set Typeclasses Debug.
+  Time apply _.
+Qed.
+
+Instance x : IntoValTyped etcdserverpb.InternalRaftRequest.t etcdserverpb.InternalRaftRequest.
+Proof.
+  Typeclasses Opaque etcdserverpb.InternalRaftRequest.
+  Time apply _.
+Qed.
 
 Lemma wp_EtcdServer__processInternalRaftRequestOnce (s : loc) γ ctx ctx_desc req req_abs :
   {{{ is_pkg_init etcdserver ∗
