@@ -14,53 +14,83 @@ Module sync.
 
 Definition Cond {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync.Cond"%go [].
 
+#[global] Opaque Cond.
+
 Definition copyChecker {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync.copyChecker"%go [].
+
+#[global] Opaque copyChecker.
 
 Definition noCopy {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync.noCopy"%go [].
 
+#[global] Opaque noCopy.
+
 Definition Map {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync.Map"%go [].
 
-Definition readOnly {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync.readOnly"%go [].
-
-Definition entry {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync.entry"%go [].
+#[global] Opaque Map.
 
 Definition Mutex {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync.Mutex"%go [].
 
+#[global] Opaque Mutex.
+
 Definition Locker {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync.Locker"%go [].
+
+#[global] Opaque Locker.
 
 Definition Once {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync.Once"%go [].
 
+#[global] Opaque Once.
+
 Definition Pool {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync.Pool"%go [].
+
+#[global] Opaque Pool.
 
 Definition poolLocalInternal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync.poolLocalInternal"%go [].
 
+#[global] Opaque poolLocalInternal.
+
 Definition poolLocal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync.poolLocal"%go [].
+
+#[global] Opaque poolLocal.
 
 Definition poolDequeue {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync.poolDequeue"%go [].
 
+#[global] Opaque poolDequeue.
+
 Definition eface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync.eface"%go [].
+
+#[global] Opaque eface.
 
 Definition dequeueNil {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync.dequeueNil"%go [].
 
+#[global] Opaque dequeueNil.
+
 Definition poolChain {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync.poolChain"%go [].
+
+#[global] Opaque poolChain.
 
 Definition poolChainElt {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync.poolChainElt"%go [].
 
+#[global] Opaque poolChainElt.
+
 Definition notifyList {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync.notifyList"%go [].
+
+#[global] Opaque notifyList.
 
 Definition RWMutex {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync.RWMutex"%go [].
 
+#[global] Opaque RWMutex.
+
 Definition rlocker {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync.rlocker"%go [].
 
+#[global] Opaque rlocker.
+
 Definition WaitGroup {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync.WaitGroup"%go [].
+
+#[global] Opaque WaitGroup.
 
 Axiom copyCheckerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
 Axiom Mapⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom readOnlyⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom entryⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
 Axiom Poolⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
@@ -88,8 +118,6 @@ Definition rwmutexMaxReaders {ext : ffi_syntax} {go_gctx : GoGlobalContext} : va
 
 Definition waitGroupBubbleFlag {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #2147483648.
 
-Definition expunged {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync.expunged"%go.
-
 Definition poolRaceHash {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync.poolRaceHash"%go.
 
 Definition allPoolsMu {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync.allPoolsMu"%go.
@@ -99,8 +127,6 @@ Definition allPools {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string :
 Definition oldPools {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync.oldPools"%go.
 
 Definition NewCond {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync.NewCond"%go.
-
-Definition newEntry {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync.newEntry"%go.
 
 Definition OnceFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "sync.OnceFunc"%go.
 
@@ -744,16 +770,19 @@ Definition WaitGroup__Waitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
         do:  (let: "$a0" := (StructFieldRef WaitGroup "sema"%go (![go.PointerType WaitGroup] "wg")) in
         let: "$a1" := (![go.bool] "synctestDurable") in
         (FuncResolve runtime_SemacquireWaitGroup [] #()) "$a0" "$a1");;;
-        (if: Convert go.untyped_bool go.bool (((MethodResolve (go.PointerType atomic.Uint64) "Load"%go (StructFieldRef WaitGroup "state"%go (![go.PointerType WaitGroup] "wg"))) #()) ≠⟨go.uint64⟩ #(W64 0))
-        then
-          do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"sync: WaitGroup is reused before previous Wait has returned"%go) in
-          (FuncResolve go.panic [] #()) "$a0")
-        else do:  #());;;
+        let: "isReset" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
+        let: "$r0" := (((MethodResolve (go.PointerType atomic.Uint64) "Load"%go (StructFieldRef WaitGroup "state"%go (![go.PointerType WaitGroup] "wg"))) #()) ≠⟨go.uint64⟩ #(W64 0)) in
+        do:  ("isReset" <-[go.bool] "$r0");;;
         (if: Convert go.untyped_bool go.bool race.Enabled
         then
           do:  ((FuncResolve race.Enable [] #()) #());;;
           do:  (let: "$a0" := (Convert (go.PointerType WaitGroup) unsafe.Pointer (![go.PointerType WaitGroup] "wg")) in
           (FuncResolve race.Acquire [] #()) "$a0")
+        else do:  #());;;
+        (if: ![go.bool] "isReset"
+        then
+          do:  (let: "$a0" := (Convert go.string (go.InterfaceType []) #"sync: WaitGroup is reused before previous Wait has returned"%go) in
+          (FuncResolve go.panic [] #()) "$a0")
         else do:  #());;;
         return: (#())
       else do:  #()));;;
@@ -776,7 +805,7 @@ Definition WaitGroup__Waitⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCont
 
    [the Go memory model]: https://go.dev/ref/mem
 
-   go: waitgroup.go:235:22 *)
+   go: waitgroup.go:236:22 *)
 Definition WaitGroup__Goⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "wg" "f",
     exception_do (let: "wg" := (GoAlloc (go.PointerType WaitGroup) "wg") in
@@ -784,7 +813,18 @@ Definition WaitGroup__Goⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
     do:  (let: "$a0" := #(W64 1) in
     (MethodResolve (go.PointerType WaitGroup) "Add"%go (![go.PointerType WaitGroup] "wg")) "$a0");;;
     let: "$go" := (λ: <>,
-      with_defer: (do:  (let: "$f" := (MethodResolve (go.PointerType WaitGroup) "Done"%go (![go.PointerType WaitGroup] "wg")) in
+      with_defer: (do:  (let: "$f" := (λ: <>,
+        exception_do ((let: "x" := (GoAlloc (go.InterfaceType []) (GoZeroVal (go.InterfaceType []) #())) in
+        let: "$r0" := ((FuncResolve go.recover [] #()) #()) in
+        do:  ("x" <-[go.InterfaceType []] "$r0");;;
+        (if: Convert go.untyped_bool go.bool ((![go.InterfaceType []] "x") ≠⟨go.InterfaceType []⟩ (Convert go.untyped_nil (go.InterfaceType []) UntypedNil))
+        then
+          do:  (let: "$a0" := (![go.InterfaceType []] "x") in
+          (FuncResolve go.panic [] #()) "$a0")
+        else do:  #()));;;
+        do:  ((MethodResolve (go.PointerType WaitGroup) "Done"%go (![go.PointerType WaitGroup] "wg")) #());;;
+        return: #())
+        ) in
       "$defer" <-[deferType] (let: "$oldf" := (![deferType] "$defer") in
       (λ: <>,
         "$f" #();;
@@ -806,12 +846,9 @@ Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init pkg_id.sync (λ: <>,
-      exception_do (do:  (go.GlobalAlloc expunged (go.PointerType go.any) #());;;
-      do:  (synctest.initialize' #());;;
+      exception_do (do:  (synctest.initialize' #());;;
       do:  (race.initialize' #());;;
-      do:  (atomic.initialize' #());;;
-      let: "$r0" := (GoAlloc go.any (GoZeroVal go.any #())) in
-      do:  ((GlobalVarAddr expunged #()) <-[go.PointerType go.any] "$r0"))
+      do:  (atomic.initialize' #()))
       ).
 
 Module noCopy.
@@ -950,38 +987,6 @@ Class Map_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} 
   #[global] Map_type_repr  :: go.TypeReprUnderlying Mapⁱᵐᵖˡ Map.t;
   #[global] Map_underlying :: (Map) <u (Mapⁱᵐᵖˡ);
   #[global] Mapⁱᵐᵖˡ_underlying :: (Mapⁱᵐᵖˡ) ↓u (Mapⁱᵐᵖˡ);
-}.
-
-Module readOnly.
-Section def.
-Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Axiom t : Type.
-Axiom zero_val : ZeroVal t.
-#[global] Existing Instance zero_val.
-End def.
-End readOnly.
-
-Class readOnly_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] readOnly_type_repr  :: go.TypeReprUnderlying readOnlyⁱᵐᵖˡ readOnly.t;
-  #[global] readOnly_underlying :: (readOnly) <u (readOnlyⁱᵐᵖˡ);
-  #[global] readOnlyⁱᵐᵖˡ_underlying :: (readOnlyⁱᵐᵖˡ) ↓u (readOnlyⁱᵐᵖˡ);
-}.
-
-Module entry.
-Section def.
-Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Axiom t : Type.
-Axiom zero_val : ZeroVal t.
-#[global] Existing Instance zero_val.
-End def.
-End entry.
-
-Class entry_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] entry_type_repr  :: go.TypeReprUnderlying entryⁱᵐᵖˡ entry.t;
-  #[global] entry_underlying :: (entry) <u (entryⁱᵐᵖˡ);
-  #[global] entryⁱᵐᵖˡ_underlying :: (entryⁱᵐᵖˡ) ↓u (entryⁱᵐᵖˡ);
 }.
 
 Class Mutex_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
@@ -1283,8 +1288,6 @@ Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!G
   #[global] copyChecker_instance :: copyChecker_Assumptions;
   #[global] noCopy_instance :: noCopy_Assumptions;
   #[global] Map_instance :: Map_Assumptions;
-  #[global] readOnly_instance :: readOnly_Assumptions;
-  #[global] entry_instance :: entry_Assumptions;
   #[global] Mutex_instance :: Mutex_Assumptions;
   #[global] Locker_instance :: Locker_Assumptions;
   #[global] Once_instance :: Once_Assumptions;

@@ -107,6 +107,26 @@ Proof. Admitted.
 End def.
 End argset.
 
+Module cgoErrorMsg.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance cgoErrorMsg_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.cgoErrorMsg.t). Admitted.
+
+#[global] Instance cgoErrorMsg_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.cgoErrorMsg.t) (runtime.cgoErrorMsgⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End cgoErrorMsg.
+
 Module hchan.
 Section def.
 
@@ -887,26 +907,6 @@ Proof. Admitted.
 End def.
 End boundsError.
 
-Module boundsErrorCode.
-Section def.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context {sem : go.Semantics}.
-Context {package_sem' : runtime.Assumptions}.
-
-Local Set Default Proof Using "All".
-
-#[global] Instance boundsErrorCode_typed_pointsto  :
-  TypedPointsto (Σ:=Σ) (runtime.boundsErrorCode.t). Admitted.
-
-#[global] Instance boundsErrorCode_into_val_typed
-   :
-  IntoValTypedUnderlying (runtime.boundsErrorCode.t) (runtime.boundsErrorCodeⁱᵐᵖˡ).
-Proof. Admitted.
-
-End def.
-End boundsErrorCode.
-
 Module stringer.
 Section def.
 
@@ -966,6 +966,46 @@ Proof. Admitted.
 
 End def.
 End childInfo.
+
+Module hexdumper.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance hexdumper_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.hexdumper.t). Admitted.
+
+#[global] Instance hexdumper_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.hexdumper.t) (runtime.hexdumperⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End hexdumper.
+
+Module hexdumpMarker.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance hexdumpMarker_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.hexdumpMarker.t). Admitted.
+
+#[global] Instance hexdumpMarker_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.hexdumpMarker.t) (runtime.hexdumpMarkerⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End hexdumpMarker.
 
 Module timeHistogram.
 Section def.
@@ -1146,6 +1186,86 @@ Proof. Admitted.
 
 End def.
 End linknameIter.
+
+Module listHead.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance listHead_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.listHead.t). Admitted.
+
+#[global] Instance listHead_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.listHead.t) (runtime.listHeadⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End listHead.
+
+Module listNode.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance listNode_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.listNode.t). Admitted.
+
+#[global] Instance listNode_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.listNode.t) (runtime.listNodeⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End listNode.
+
+Module listHeadManual.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance listHeadManual_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.listHeadManual.t). Admitted.
+
+#[global] Instance listHeadManual_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.listHeadManual.t) (runtime.listHeadManualⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End listHeadManual.
+
+Module listNodeManual.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance listNodeManual_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.listNodeManual.t). Admitted.
+
+#[global] Instance listNodeManual_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.listNodeManual.t) (runtime.listNodeManualⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End listNodeManual.
 
 Module mWaitList.
 Section def.
@@ -1467,6 +1587,26 @@ Proof. Admitted.
 End def.
 End cleanupBlock.
 
+Module cleanupFn.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance cleanupFn_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.cleanupFn.t). Admitted.
+
+#[global] Instance cleanupFn_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.cleanupFn.t) (runtime.cleanupFnⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End cleanupFn.
+
 Module cleanupBlockHeader.
 Section def.
 
@@ -1666,6 +1806,46 @@ Proof. Admitted.
 
 End def.
 End gcStatsAggregate.
+
+Module finalStatsAggregate.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance finalStatsAggregate_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.finalStatsAggregate.t). Admitted.
+
+#[global] Instance finalStatsAggregate_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.finalStatsAggregate.t) (runtime.finalStatsAggregateⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End finalStatsAggregate.
+
+Module schedStatsAggregate.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance schedStatsAggregate_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.schedStatsAggregate.t). Admitted.
+
+#[global] Instance schedStatsAggregate_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.schedStatsAggregate.t) (runtime.schedStatsAggregateⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End schedStatsAggregate.
 
 Module statAggregate.
 Section def.
@@ -2127,6 +2307,26 @@ Proof. Admitted.
 End def.
 End spanInlineMarkBits.
 
+Module spanScanOwnership.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance spanScanOwnership_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.spanScanOwnership.t). Admitted.
+
+#[global] Instance spanScanOwnership_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.spanScanOwnership.t) (runtime.spanScanOwnershipⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End spanScanOwnership.
+
 Module spanQueue.
 Section def.
 
@@ -2147,7 +2347,7 @@ Proof. Admitted.
 End def.
 End spanQueue.
 
-Module localSpanQueue.
+Module spanSPMC.
 Section def.
 
 Context `{hG: heapGS Σ, !ffi_semantics _ _}.
@@ -2156,16 +2356,16 @@ Context {package_sem' : runtime.Assumptions}.
 
 Local Set Default Proof Using "All".
 
-#[global] Instance localSpanQueue_typed_pointsto  :
-  TypedPointsto (Σ:=Σ) (runtime.localSpanQueue.t). Admitted.
+#[global] Instance spanSPMC_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.spanSPMC.t). Admitted.
 
-#[global] Instance localSpanQueue_into_val_typed
+#[global] Instance spanSPMC_into_val_typed
    :
-  IntoValTypedUnderlying (runtime.localSpanQueue.t) (runtime.localSpanQueueⁱᵐᵖˡ).
+  IntoValTypedUnderlying (runtime.spanSPMC.t) (runtime.spanSPMCⁱᵐᵖˡ).
 Proof. Admitted.
 
 End def.
-End localSpanQueue.
+End spanSPMC.
 
 Module objptr.
 Section def.
@@ -2827,26 +3027,6 @@ Proof. Admitted.
 End def.
 End mSpanList.
 
-Module mSpanQueue.
-Section def.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context {sem : go.Semantics}.
-Context {package_sem' : runtime.Assumptions}.
-
-Local Set Default Proof Using "All".
-
-#[global] Instance mSpanQueue_typed_pointsto  :
-  TypedPointsto (Σ:=Σ) (runtime.mSpanQueue.t). Admitted.
-
-#[global] Instance mSpanQueue_into_val_typed
-   :
-  IntoValTypedUnderlying (runtime.mSpanQueue.t) (runtime.mSpanQueueⁱᵐᵖˡ).
-Proof. Admitted.
-
-End def.
-End mSpanQueue.
-
 Module special.
 Section def.
 
@@ -3066,6 +3246,26 @@ Proof. Admitted.
 
 End def.
 End specialPinCounter.
+
+Module specialSecret.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance specialSecret_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.specialSecret.t). Admitted.
+
+#[global] Instance specialSecret_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.specialSecret.t) (runtime.specialSecretⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End specialSecret.
 
 Module specialsIter.
 Section def.
@@ -4307,6 +4507,86 @@ Proof. Admitted.
 End def.
 End suspendGState.
 
+Module xRegs.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance xRegs_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.xRegs.t). Admitted.
+
+#[global] Instance xRegs_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.xRegs.t) (runtime.xRegsⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End xRegs.
+
+Module xRegState.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance xRegState_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.xRegState.t). Admitted.
+
+#[global] Instance xRegState_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.xRegState.t) (runtime.xRegStateⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End xRegState.
+
+Module xRegPerG.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance xRegPerG_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.xRegPerG.t). Admitted.
+
+#[global] Instance xRegPerG_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.xRegPerG.t) (runtime.xRegPerGⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End xRegPerG.
+
+Module xRegPerP.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance xRegPerP_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.xRegPerP.t). Admitted.
+
+#[global] Instance xRegPerP_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.xRegPerP.t) (runtime.xRegPerPⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End xRegPerP.
+
 Module hex.
 Section def.
 
@@ -4326,6 +4606,26 @@ Proof. Admitted.
 
 End def.
 End hex.
+
+Module quoted.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance quoted_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.quoted.t). Admitted.
+
+#[global] Instance quoted_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.quoted.t) (runtime.quotedⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End quoted.
 
 Module stwReason.
 Section def.
@@ -4406,6 +4706,26 @@ Proof. Admitted.
 
 End def.
 End sysmontick.
+
+Module syscallingThread.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance syscallingThread_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.syscallingThread.t). Admitted.
+
+#[global] Instance syscallingThread_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.syscallingThread.t) (runtime.syscallingThreadⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End syscallingThread.
 
 Module updateMaxProcsGState.
 Section def.
@@ -4867,6 +5187,46 @@ Proof. Admitted.
 End def.
 End gobuf.
 
+Module maybeTraceablePtr.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance maybeTraceablePtr_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.maybeTraceablePtr.t). Admitted.
+
+#[global] Instance maybeTraceablePtr_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.maybeTraceablePtr.t) (runtime.maybeTraceablePtrⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End maybeTraceablePtr.
+
+Module maybeTraceableChan.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance maybeTraceableChan_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.maybeTraceableChan.t). Admitted.
+
+#[global] Instance maybeTraceableChan_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.maybeTraceableChan.t) (runtime.maybeTraceableChanⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End maybeTraceableChan.
+
 Module sudog.
 Section def.
 
@@ -5006,6 +5366,26 @@ Proof. Admitted.
 
 End def.
 End mPadded.
+
+Module mWeakPointer.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : runtime.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance mWeakPointer_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (runtime.mWeakPointer.t). Admitted.
+
+#[global] Instance mWeakPointer_into_val_typed
+   :
+  IntoValTypedUnderlying (runtime.mWeakPointer.t) (runtime.mWeakPointerⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End mWeakPointer.
 
 Module p.
 Section def.

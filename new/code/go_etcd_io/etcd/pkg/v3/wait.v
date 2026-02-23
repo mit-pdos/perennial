@@ -11,15 +11,27 @@ Module wait.
 
 Definition Wait {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/pkg/v3/wait.Wait"%go [].
 
+#[global] Opaque Wait.
+
 Definition list' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/pkg/v3/wait.list"%go [].
+
+#[global] Opaque list'.
 
 Definition listElement {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/pkg/v3/wait.listElement"%go [].
 
+#[global] Opaque listElement.
+
 Definition waitWithResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/pkg/v3/wait.waitWithResponse"%go [].
+
+#[global] Opaque waitWithResponse.
 
 Definition WaitTime {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/pkg/v3/wait.WaitTime"%go [].
 
+#[global] Opaque WaitTime.
+
 Definition timeList {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/pkg/v3/wait.timeList"%go [].
+
+#[global] Opaque timeList.
 
 Definition defaultListElementLength {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #64.
 

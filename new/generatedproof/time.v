@@ -27,6 +27,26 @@ Proof. Admitted.
 End def.
 End ParseError.
 
+Module parseDurationError.
+Section def.
+
+Context `{hG: heapGS Σ, !ffi_semantics _ _}.
+Context {sem : go.Semantics}.
+Context {package_sem' : time.Assumptions}.
+
+Local Set Default Proof Using "All".
+
+#[global] Instance parseDurationError_typed_pointsto  :
+  TypedPointsto (Σ:=Σ) (time.parseDurationError.t). Admitted.
+
+#[global] Instance parseDurationError_into_val_typed
+   :
+  IntoValTypedUnderlying (time.parseDurationError.t) (time.parseDurationErrorⁱᵐᵖˡ).
+Proof. Admitted.
+
+End def.
+End parseDurationError.
+
 Module Timer.
 Section def.
 

@@ -9,243 +9,483 @@ Module grpc.
 
 Definition BackoffConfig {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.BackoffConfig"%go [].
 
+#[global] Opaque BackoffConfig.
+
 Definition ConnectParams {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.ConnectParams"%go [].
+
+#[global] Opaque ConnectParams.
 
 Definition ccBalancerWrapper {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.ccBalancerWrapper"%go [].
 
+#[global] Opaque ccBalancerWrapper.
+
 Definition acBalancerWrapper {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.acBalancerWrapper"%go [].
+
+#[global] Opaque acBalancerWrapper.
 
 Definition healthData {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.healthData"%go [].
 
+#[global] Opaque healthData.
+
 Definition refCountedProducer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.refCountedProducer"%go [].
+
+#[global] Opaque refCountedProducer.
 
 Definition defaultConfigSelector {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.defaultConfigSelector"%go [].
 
+#[global] Opaque defaultConfigSelector.
+
 Definition idler {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.idler"%go [].
+
+#[global] Opaque idler.
 
 Definition connectivityStateManager {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.connectivityStateManager"%go [].
 
+#[global] Opaque connectivityStateManager.
+
 Definition ClientConnInterface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.ClientConnInterface"%go [].
+
+#[global] Opaque ClientConnInterface.
 
 Definition ClientConn {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.ClientConn"%go [].
 
+#[global] Opaque ClientConn.
+
 Definition addrConn {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.addrConn"%go [].
+
+#[global] Opaque addrConn.
 
 Definition retryThrottler {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.retryThrottler"%go [].
 
+#[global] Opaque retryThrottler.
+
 Definition baseCodec {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.baseCodec"%go [].
+
+#[global] Opaque baseCodec.
 
 Definition codecV0Bridge {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.codecV0Bridge"%go [].
 
+#[global] Opaque codecV0Bridge.
+
 Definition codecV1Bridge {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.codecV1Bridge"%go [].
+
+#[global] Opaque codecV1Bridge.
 
 Definition Codec {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.Codec"%go [].
 
+#[global] Opaque Codec.
+
 Definition dialOptions {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.dialOptions"%go [].
+
+#[global] Opaque dialOptions.
 
 Definition DialOption {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.DialOption"%go [].
 
+#[global] Opaque DialOption.
+
 Definition perTargetDialOption {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.perTargetDialOption"%go [].
+
+#[global] Opaque perTargetDialOption.
 
 Definition EmptyDialOption {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.EmptyDialOption"%go [].
 
+#[global] Opaque EmptyDialOption.
+
 Definition disableGlobalDialOptions {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.disableGlobalDialOptions"%go [].
+
+#[global] Opaque disableGlobalDialOptions.
 
 Definition funcDialOption {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.funcDialOption"%go [].
 
+#[global] Opaque funcDialOption.
+
 Definition joinDialOption {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.joinDialOption"%go [].
+
+#[global] Opaque joinDialOption.
 
 Definition MaxHeaderListSizeDialOption {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.MaxHeaderListSizeDialOption"%go [].
 
+#[global] Opaque MaxHeaderListSizeDialOption.
+
 Definition UnaryInvoker {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.UnaryInvoker"%go [].
+
+#[global] Opaque UnaryInvoker.
 
 Definition UnaryClientInterceptor {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.UnaryClientInterceptor"%go [].
 
+#[global] Opaque UnaryClientInterceptor.
+
 Definition Streamer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.Streamer"%go [].
+
+#[global] Opaque Streamer.
 
 Definition StreamClientInterceptor {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.StreamClientInterceptor"%go [].
 
+#[global] Opaque StreamClientInterceptor.
+
 Definition UnaryServerInfo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.UnaryServerInfo"%go [].
+
+#[global] Opaque UnaryServerInfo.
 
 Definition UnaryHandler {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.UnaryHandler"%go [].
 
+#[global] Opaque UnaryHandler.
+
 Definition UnaryServerInterceptor {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.UnaryServerInterceptor"%go [].
+
+#[global] Opaque UnaryServerInterceptor.
 
 Definition StreamServerInfo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.StreamServerInfo"%go [].
 
+#[global] Opaque StreamServerInfo.
+
 Definition StreamServerInterceptor {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.StreamServerInterceptor"%go [].
+
+#[global] Opaque StreamServerInterceptor.
 
 Definition pickerGeneration {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.pickerGeneration"%go [].
 
+#[global] Opaque pickerGeneration.
+
 Definition pickerWrapper {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.pickerWrapper"%go [].
+
+#[global] Opaque pickerWrapper.
 
 Definition dropError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.dropError"%go [].
 
+#[global] Opaque dropError.
+
 Definition PreparedMsg {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.PreparedMsg"%go [].
+
+#[global] Opaque PreparedMsg.
 
 Definition ccResolverWrapper {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.ccResolverWrapper"%go [].
 
+#[global] Opaque ccResolverWrapper.
+
 Definition Compressor {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.Compressor"%go [].
+
+#[global] Opaque Compressor.
 
 Definition gzipCompressor {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.gzipCompressor"%go [].
 
+#[global] Opaque gzipCompressor.
+
 Definition Decompressor {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.Decompressor"%go [].
+
+#[global] Opaque Decompressor.
 
 Definition gzipDecompressor {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.gzipDecompressor"%go [].
 
+#[global] Opaque gzipDecompressor.
+
 Definition callInfo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.callInfo"%go [].
+
+#[global] Opaque callInfo.
 
 Definition CallOption {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.CallOption"%go [].
 
+#[global] Opaque CallOption.
+
 Definition EmptyCallOption {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.EmptyCallOption"%go [].
+
+#[global] Opaque EmptyCallOption.
 
 Definition StaticMethodCallOption {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.StaticMethodCallOption"%go [].
 
+#[global] Opaque StaticMethodCallOption.
+
 Definition HeaderCallOption {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.HeaderCallOption"%go [].
+
+#[global] Opaque HeaderCallOption.
 
 Definition TrailerCallOption {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.TrailerCallOption"%go [].
 
+#[global] Opaque TrailerCallOption.
+
 Definition PeerCallOption {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.PeerCallOption"%go [].
+
+#[global] Opaque PeerCallOption.
 
 Definition FailFastCallOption {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.FailFastCallOption"%go [].
 
+#[global] Opaque FailFastCallOption.
+
 Definition OnFinishCallOption {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.OnFinishCallOption"%go [].
+
+#[global] Opaque OnFinishCallOption.
 
 Definition MaxRecvMsgSizeCallOption {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.MaxRecvMsgSizeCallOption"%go [].
 
+#[global] Opaque MaxRecvMsgSizeCallOption.
+
 Definition MaxSendMsgSizeCallOption {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.MaxSendMsgSizeCallOption"%go [].
+
+#[global] Opaque MaxSendMsgSizeCallOption.
 
 Definition PerRPCCredsCallOption {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.PerRPCCredsCallOption"%go [].
 
+#[global] Opaque PerRPCCredsCallOption.
+
 Definition CompressorCallOption {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.CompressorCallOption"%go [].
+
+#[global] Opaque CompressorCallOption.
 
 Definition ContentSubtypeCallOption {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.ContentSubtypeCallOption"%go [].
 
+#[global] Opaque ContentSubtypeCallOption.
+
 Definition ForceCodecCallOption {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.ForceCodecCallOption"%go [].
+
+#[global] Opaque ForceCodecCallOption.
 
 Definition ForceCodecV2CallOption {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.ForceCodecV2CallOption"%go [].
 
+#[global] Opaque ForceCodecV2CallOption.
+
 Definition CustomCodecCallOption {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.CustomCodecCallOption"%go [].
+
+#[global] Opaque CustomCodecCallOption.
 
 Definition MaxRetryRPCBufferSizeCallOption {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.MaxRetryRPCBufferSizeCallOption"%go [].
 
+#[global] Opaque MaxRetryRPCBufferSizeCallOption.
+
 Definition payloadFormat {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.payloadFormat"%go [].
+
+#[global] Opaque payloadFormat.
 
 Definition streamReader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.streamReader"%go [].
 
+#[global] Opaque streamReader.
+
 Definition parser {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.parser"%go [].
+
+#[global] Opaque parser.
 
 Definition payloadInfo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.payloadInfo"%go [].
 
+#[global] Opaque payloadInfo.
+
 Definition recvCompressor {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.recvCompressor"%go [].
+
+#[global] Opaque recvCompressor.
 
 Definition rpcInfo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.rpcInfo"%go [].
 
+#[global] Opaque rpcInfo.
+
 Definition compressorInfo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.compressorInfo"%go [].
+
+#[global] Opaque compressorInfo.
 
 Definition rpcInfoContextKey {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.rpcInfoContextKey"%go [].
 
+#[global] Opaque rpcInfoContextKey.
+
 Definition MethodHandler {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.MethodHandler"%go [].
+
+#[global] Opaque MethodHandler.
 
 Definition MethodDesc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.MethodDesc"%go [].
 
+#[global] Opaque MethodDesc.
+
 Definition ServiceDesc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.ServiceDesc"%go [].
+
+#[global] Opaque ServiceDesc.
 
 Definition serviceInfo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.serviceInfo"%go [].
 
+#[global] Opaque serviceInfo.
+
 Definition Server {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.Server"%go [].
+
+#[global] Opaque Server.
 
 Definition serverOptions {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.serverOptions"%go [].
 
+#[global] Opaque serverOptions.
+
 Definition ServerOption {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.ServerOption"%go [].
+
+#[global] Opaque ServerOption.
 
 Definition EmptyServerOption {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.EmptyServerOption"%go [].
 
+#[global] Opaque EmptyServerOption.
+
 Definition funcServerOption {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.funcServerOption"%go [].
+
+#[global] Opaque funcServerOption.
 
 Definition joinServerOption {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.joinServerOption"%go [].
 
+#[global] Opaque joinServerOption.
+
 Definition MaxHeaderListSizeServerOption {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.MaxHeaderListSizeServerOption"%go [].
+
+#[global] Opaque MaxHeaderListSizeServerOption.
 
 Definition ServiceRegistrar {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.ServiceRegistrar"%go [].
 
+#[global] Opaque ServiceRegistrar.
+
 Definition MethodInfo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.MethodInfo"%go [].
+
+#[global] Opaque MethodInfo.
 
 Definition ServiceInfo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.ServiceInfo"%go [].
 
+#[global] Opaque ServiceInfo.
+
 Definition listenSocket {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.listenSocket"%go [].
+
+#[global] Opaque listenSocket.
 
 Definition streamKey {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.streamKey"%go [].
 
+#[global] Opaque streamKey.
+
 Definition ServerTransportStream {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.ServerTransportStream"%go [].
+
+#[global] Opaque ServerTransportStream.
 
 Definition serverKey {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.serverKey"%go [].
 
+#[global] Opaque serverKey.
+
 Definition atomicSemaphore {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.atomicSemaphore"%go [].
+
+#[global] Opaque atomicSemaphore.
 
 Definition ServiceConfig {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.ServiceConfig"%go [].
 
+#[global] Opaque ServiceConfig.
+
 Definition healthCheckConfig {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.healthCheckConfig"%go [].
+
+#[global] Opaque healthCheckConfig.
 
 Definition jsonRetryPolicy {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.jsonRetryPolicy"%go [].
 
+#[global] Opaque jsonRetryPolicy.
+
 Definition retryThrottlingPolicy {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.retryThrottlingPolicy"%go [].
+
+#[global] Opaque retryThrottlingPolicy.
 
 Definition jsonName {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.jsonName"%go [].
 
+#[global] Opaque jsonName.
+
 Definition jsonMC {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.jsonMC"%go [].
+
+#[global] Opaque jsonMC.
 
 Definition jsonSC {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.jsonSC"%go [].
 
+#[global] Opaque jsonSC.
+
 Definition StreamHandler {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.StreamHandler"%go [].
+
+#[global] Opaque StreamHandler.
 
 Definition StreamDesc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.StreamDesc"%go [].
 
+#[global] Opaque StreamDesc.
+
 Definition Stream {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.Stream"%go [].
+
+#[global] Opaque Stream.
 
 Definition ClientStream {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.ClientStream"%go [].
 
+#[global] Opaque ClientStream.
+
 Definition clientStream {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.clientStream"%go [].
+
+#[global] Opaque clientStream.
 
 Definition replayOp {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.replayOp"%go [].
 
+#[global] Opaque replayOp.
+
 Definition csAttempt {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.csAttempt"%go [].
+
+#[global] Opaque csAttempt.
 
 Definition addrConnStream {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.addrConnStream"%go [].
 
+#[global] Opaque addrConnStream.
+
 Definition ServerStream {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.ServerStream"%go [].
+
+#[global] Opaque ServerStream.
 
 Definition serverStream {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.serverStream"%go [].
 
+#[global] Opaque serverStream.
+
 Definition ServerStreamingClient {ext : ffi_syntax} {go_gctx : GoGlobalContext} (Res : go.type) : go.type := go.Named "google.golang.org/grpc.ServerStreamingClient"%go [Res].
+
+#[global] Opaque ServerStreamingClient.
 
 Definition ServerStreamingServer {ext : ffi_syntax} {go_gctx : GoGlobalContext} (Res : go.type) : go.type := go.Named "google.golang.org/grpc.ServerStreamingServer"%go [Res].
 
+#[global] Opaque ServerStreamingServer.
+
 Definition ClientStreamingClient {ext : ffi_syntax} {go_gctx : GoGlobalContext} (Req : go.type) (Res : go.type) : go.type := go.Named "google.golang.org/grpc.ClientStreamingClient"%go [Req; Res].
+
+#[global] Opaque ClientStreamingClient.
 
 Definition ClientStreamingServer {ext : ffi_syntax} {go_gctx : GoGlobalContext} (Req : go.type) (Res : go.type) : go.type := go.Named "google.golang.org/grpc.ClientStreamingServer"%go [Req; Res].
 
+#[global] Opaque ClientStreamingServer.
+
 Definition BidiStreamingClient {ext : ffi_syntax} {go_gctx : GoGlobalContext} (Req : go.type) (Res : go.type) : go.type := go.Named "google.golang.org/grpc.BidiStreamingClient"%go [Req; Res].
+
+#[global] Opaque BidiStreamingClient.
 
 Definition BidiStreamingServer {ext : ffi_syntax} {go_gctx : GoGlobalContext} (Req : go.type) (Res : go.type) : go.type := go.Named "google.golang.org/grpc.BidiStreamingServer"%go [Req; Res].
 
+#[global] Opaque BidiStreamingServer.
+
 Definition GenericClientStream {ext : ffi_syntax} {go_gctx : GoGlobalContext} (Req : go.type) (Res : go.type) : go.type := go.Named "google.golang.org/grpc.GenericClientStream"%go [Req; Res].
+
+#[global] Opaque GenericClientStream.
 
 Definition GenericServerStream {ext : ffi_syntax} {go_gctx : GoGlobalContext} (Req : go.type) (Res : go.type) : go.type := go.Named "google.golang.org/grpc.GenericServerStream"%go [Req; Res].
 
+#[global] Opaque GenericServerStream.
+
 Definition traceEventLog {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.traceEventLog"%go [].
+
+#[global] Opaque traceEventLog.
 
 Definition traceLog {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.traceLog"%go [].
 
+#[global] Opaque traceLog.
+
 Definition traceInfo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.traceInfo"%go [].
+
+#[global] Opaque traceInfo.
 
 Definition firstLine {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.firstLine"%go [].
 
+#[global] Opaque firstLine.
+
 Definition payload {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.payload"%go [].
+
+#[global] Opaque payload.
 
 Definition fmtStringer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.fmtStringer"%go [].
 
+#[global] Opaque fmtStringer.
+
 Definition stringer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc.stringer"%go [].
+
+#[global] Opaque stringer.
 
 Axiom BackoffConfigⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 

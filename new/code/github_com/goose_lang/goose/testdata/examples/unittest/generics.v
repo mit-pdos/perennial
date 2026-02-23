@@ -10,13 +10,23 @@ Module generics.
 
 Definition Box {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest/generics.Box"%go [T].
 
+#[global] Opaque Box.
+
 Definition Container {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest/generics.Container"%go [T].
+
+#[global] Opaque Container.
 
 Definition UseContainer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest/generics.UseContainer"%go [].
 
+#[global] Opaque UseContainer.
+
 Definition OnlyIndirect {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest/generics.OnlyIndirect"%go [T].
 
+#[global] Opaque OnlyIndirect.
+
 Definition MultiParam {ext : ffi_syntax} {go_gctx : GoGlobalContext} (A : go.type) (B : go.type) : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest/generics.MultiParam"%go [A; B].
+
+#[global] Opaque MultiParam.
 
 Definition UnderlyingSlice {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/unittest/generics.UnderlyingSlice"%go.
 

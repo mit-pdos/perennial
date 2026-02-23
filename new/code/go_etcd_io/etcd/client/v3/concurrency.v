@@ -20,37 +20,71 @@ Module concurrency.
 
 Definition Election {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3/concurrency.Election"%go [].
 
+#[global] Opaque Election.
+
 Definition Mutex {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3/concurrency.Mutex"%go [].
+
+#[global] Opaque Mutex.
 
 Definition lockerMutex {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3/concurrency.lockerMutex"%go [].
 
+#[global] Opaque lockerMutex.
+
 Definition Session {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3/concurrency.Session"%go [].
+
+#[global] Opaque Session.
 
 Definition sessionOptions {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3/concurrency.sessionOptions"%go [].
 
+#[global] Opaque sessionOptions.
+
 Definition SessionOption {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3/concurrency.SessionOption"%go [].
+
+#[global] Opaque SessionOption.
 
 Definition STM {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3/concurrency.STM"%go [].
 
+#[global] Opaque STM.
+
 Definition Isolation {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3/concurrency.Isolation"%go [].
+
+#[global] Opaque Isolation.
 
 Definition stmError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3/concurrency.stmError"%go [].
 
+#[global] Opaque stmError.
+
 Definition stmOptions {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3/concurrency.stmOptions"%go [].
+
+#[global] Opaque stmOptions.
 
 Definition stmOption {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3/concurrency.stmOption"%go [].
 
+#[global] Opaque stmOption.
+
 Definition stmResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3/concurrency.stmResponse"%go [].
+
+#[global] Opaque stmResponse.
 
 Definition stm {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3/concurrency.stm"%go [].
 
+#[global] Opaque stm.
+
 Definition stmPut {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3/concurrency.stmPut"%go [].
+
+#[global] Opaque stmPut.
 
 Definition readSet {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3/concurrency.readSet"%go [].
 
+#[global] Opaque readSet.
+
 Definition writeSet {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3/concurrency.writeSet"%go [].
 
+#[global] Opaque writeSet.
+
 Definition stmSerializable {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3/concurrency.stmSerializable"%go [].
+
+#[global] Opaque stmSerializable.
 
 Definition defaultSessionTTL {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #60.
 

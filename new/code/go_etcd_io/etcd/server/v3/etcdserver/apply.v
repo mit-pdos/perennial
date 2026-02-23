@@ -9,29 +9,55 @@ Module apply.
 
 Definition RaftStatusGetter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver/apply.RaftStatusGetter"%go [].
 
+#[global] Opaque RaftStatusGetter.
+
 Definition Result {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver/apply.Result"%go [].
+
+#[global] Opaque Result.
 
 Definition applyFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver/apply.applyFunc"%go [].
 
+#[global] Opaque applyFunc.
+
 Definition applierV3 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver/apply.applierV3"%go [].
+
+#[global] Opaque applierV3.
 
 Definition SnapshotServer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver/apply.SnapshotServer"%go [].
 
+#[global] Opaque SnapshotServer.
+
 Definition applierV3backend {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver/apply.applierV3backend"%go [].
+
+#[global] Opaque applierV3backend.
 
 Definition applierV3Capped {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver/apply.applierV3Capped"%go [].
 
+#[global] Opaque applierV3Capped.
+
 Definition applierMembership {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver/apply.applierMembership"%go [].
+
+#[global] Opaque applierMembership.
 
 Definition quotaApplierV3 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver/apply.quotaApplierV3"%go [].
 
+#[global] Opaque quotaApplierV3.
+
 Definition authApplierV3 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver/apply.authApplierV3"%go [].
+
+#[global] Opaque authApplierV3.
 
 Definition applierV3Corrupt {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver/apply.applierV3Corrupt"%go [].
 
+#[global] Opaque applierV3Corrupt.
+
 Definition UberApplier {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver/apply.UberApplier"%go [].
 
+#[global] Opaque UberApplier.
+
 Definition uberApplier {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver/apply.uberApplier"%go [].
+
+#[global] Opaque uberApplier.
 
 Axiom RaftStatusGetterⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 

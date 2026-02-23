@@ -9,107 +9,211 @@ Module zapcore.
 
 Definition BufferedWriteSyncer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.BufferedWriteSyncer"%go [].
 
+#[global] Opaque BufferedWriteSyncer.
+
 Definition Clock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.Clock"%go [].
+
+#[global] Opaque Clock.
 
 Definition systemClock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.systemClock"%go [].
 
+#[global] Opaque systemClock.
+
 Definition consoleEncoder {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.consoleEncoder"%go [].
+
+#[global] Opaque consoleEncoder.
 
 Definition Core {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.Core"%go [].
 
+#[global] Opaque Core.
+
 Definition nopCore {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.nopCore"%go [].
+
+#[global] Opaque nopCore.
 
 Definition ioCore {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.ioCore"%go [].
 
+#[global] Opaque ioCore.
+
 Definition LevelEncoder {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.LevelEncoder"%go [].
+
+#[global] Opaque LevelEncoder.
 
 Definition TimeEncoder {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.TimeEncoder"%go [].
 
+#[global] Opaque TimeEncoder.
+
 Definition DurationEncoder {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.DurationEncoder"%go [].
+
+#[global] Opaque DurationEncoder.
 
 Definition CallerEncoder {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.CallerEncoder"%go [].
 
+#[global] Opaque CallerEncoder.
+
 Definition NameEncoder {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.NameEncoder"%go [].
+
+#[global] Opaque NameEncoder.
 
 Definition EncoderConfig {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.EncoderConfig"%go [].
 
+#[global] Opaque EncoderConfig.
+
 Definition ObjectEncoder {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.ObjectEncoder"%go [].
+
+#[global] Opaque ObjectEncoder.
 
 Definition ArrayEncoder {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.ArrayEncoder"%go [].
 
+#[global] Opaque ArrayEncoder.
+
 Definition PrimitiveArrayEncoder {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.PrimitiveArrayEncoder"%go [].
+
+#[global] Opaque PrimitiveArrayEncoder.
 
 Definition Encoder {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.Encoder"%go [].
 
+#[global] Opaque Encoder.
+
 Definition EntryCaller {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.EntryCaller"%go [].
+
+#[global] Opaque EntryCaller.
 
 Definition Entry {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.Entry"%go [].
 
+#[global] Opaque Entry.
+
 Definition CheckWriteHook {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.CheckWriteHook"%go [].
+
+#[global] Opaque CheckWriteHook.
 
 Definition CheckWriteAction {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.CheckWriteAction"%go [].
 
+#[global] Opaque CheckWriteAction.
+
 Definition CheckedEntry {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.CheckedEntry"%go [].
+
+#[global] Opaque CheckedEntry.
 
 Definition errorGroup {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.errorGroup"%go [].
 
+#[global] Opaque errorGroup.
+
 Definition errArray {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.errArray"%go [].
+
+#[global] Opaque errArray.
 
 Definition errArrayElem {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.errArrayElem"%go [].
 
+#[global] Opaque errArrayElem.
+
 Definition FieldType {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.FieldType"%go [].
+
+#[global] Opaque FieldType.
 
 Definition Field {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.Field"%go [].
 
+#[global] Opaque Field.
+
 Definition hooked {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.hooked"%go [].
+
+#[global] Opaque hooked.
 
 Definition levelFilterCore {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.levelFilterCore"%go [].
 
+#[global] Opaque levelFilterCore.
+
 Definition jsonEncoder {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.jsonEncoder"%go [].
+
+#[global] Opaque jsonEncoder.
 
 Definition lazyWithCore {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.lazyWithCore"%go [].
 
+#[global] Opaque lazyWithCore.
+
 Definition Level {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.Level"%go [].
+
+#[global] Opaque Level.
 
 Definition leveledEnabler {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.leveledEnabler"%go [].
 
+#[global] Opaque leveledEnabler.
+
 Definition LevelEnabler {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.LevelEnabler"%go [].
+
+#[global] Opaque LevelEnabler.
 
 Definition ObjectMarshaler {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.ObjectMarshaler"%go [].
 
+#[global] Opaque ObjectMarshaler.
+
 Definition ObjectMarshalerFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.ObjectMarshalerFunc"%go [].
+
+#[global] Opaque ObjectMarshalerFunc.
 
 Definition ArrayMarshaler {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.ArrayMarshaler"%go [].
 
+#[global] Opaque ArrayMarshaler.
+
 Definition ArrayMarshalerFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.ArrayMarshalerFunc"%go [].
+
+#[global] Opaque ArrayMarshalerFunc.
 
 Definition MapObjectEncoder {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.MapObjectEncoder"%go [].
 
+#[global] Opaque MapObjectEncoder.
+
 Definition sliceArrayEncoder {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.sliceArrayEncoder"%go [].
+
+#[global] Opaque sliceArrayEncoder.
 
 Definition ReflectedEncoder {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.ReflectedEncoder"%go [].
 
+#[global] Opaque ReflectedEncoder.
+
 Definition counter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.counter"%go [].
+
+#[global] Opaque counter.
 
 Definition counters {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.counters"%go [].
 
+#[global] Opaque counters.
+
 Definition SamplingDecision {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.SamplingDecision"%go [].
+
+#[global] Opaque SamplingDecision.
 
 Definition optionFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.optionFunc"%go [].
 
+#[global] Opaque optionFunc.
+
 Definition SamplerOption {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.SamplerOption"%go [].
+
+#[global] Opaque SamplerOption.
 
 Definition sampler {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.sampler"%go [].
 
+#[global] Opaque sampler.
+
 Definition multiCore {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.multiCore"%go [].
+
+#[global] Opaque multiCore.
 
 Definition WriteSyncer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.WriteSyncer"%go [].
 
+#[global] Opaque WriteSyncer.
+
 Definition lockedWriteSyncer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.lockedWriteSyncer"%go [].
+
+#[global] Opaque lockedWriteSyncer.
 
 Definition writerWrapper {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.writerWrapper"%go [].
 
+#[global] Opaque writerWrapper.
+
 Definition multiWriteSyncer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap/zapcore.multiWriteSyncer"%go [].
+
+#[global] Opaque multiWriteSyncer.
 
 Axiom BufferedWriteSyncerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 

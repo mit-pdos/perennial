@@ -9,7 +9,11 @@ Module errors.
 
 Definition errorString {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "errors.errorString"%go [].
 
+#[global] Opaque errorString.
+
 Definition joinError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "errors.joinError"%go [].
+
+#[global] Opaque joinError.
 
 Axiom joinErrorⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
@@ -34,6 +38,10 @@ Definition is' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "er
 Definition As {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "errors.As"%go.
 
 Definition as' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "errors.as"%go.
+
+Definition AsType {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "errors.AsType"%go.
+
+Definition asType {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "errors.asType"%go.
 
 (* New returns an error that formats as the given text.
    Each call to New returns a distinct error value even if the text is identical.

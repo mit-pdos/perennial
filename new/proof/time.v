@@ -84,7 +84,9 @@ Lemma wp_arbitraryTime :
     time.arbitraryTime #()
   {{{ (t: time.Time.t), RET #t; True }}}.
 Proof.
-  wp_start. wp_apply wp_ArbitraryInt as "%x _". by iApply "HΦ".
+  wp_start. wp_apply wp_ArbitraryInt as "%x _".
+  change (go.Named "time.Time"%go []) with time.Time.
+  wp_auto. by iApply "HΦ".
 Qed.
 
 Lemma wp_After (d : time.Duration.t) :
@@ -92,7 +94,7 @@ Lemma wp_After (d : time.Duration.t) :
     @! time.After #d
   {{{ (ch: loc) γ, RET #ch; is_chan_handoff γ ch (λ (t: time.Time.t), True)%I }}}.
 Proof.
-  wp_start.
+  wp_start. change (go.Named "time.Time"%go []) with time.Time.
   wp_apply chan.wp_make2; first word.
   iIntros (ch γ) "(His & Hcap & Hown)".
   simpl.

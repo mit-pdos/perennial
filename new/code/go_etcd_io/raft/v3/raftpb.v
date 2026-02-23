@@ -9,31 +9,59 @@ Module raftpb.
 
 Definition ConfChangeI {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3/raftpb.ConfChangeI"%go [].
 
+#[global] Opaque ConfChangeI.
+
 Definition EntryType {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3/raftpb.EntryType"%go [].
+
+#[global] Opaque EntryType.
 
 Definition MessageType {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3/raftpb.MessageType"%go [].
 
+#[global] Opaque MessageType.
+
 Definition ConfChangeTransition {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3/raftpb.ConfChangeTransition"%go [].
+
+#[global] Opaque ConfChangeTransition.
 
 Definition ConfChangeType {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3/raftpb.ConfChangeType"%go [].
 
+#[global] Opaque ConfChangeType.
+
 Definition Entry {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3/raftpb.Entry"%go [].
+
+#[global] Opaque Entry.
 
 Definition SnapshotMetadata {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3/raftpb.SnapshotMetadata"%go [].
 
+#[global] Opaque SnapshotMetadata.
+
 Definition Snapshot {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3/raftpb.Snapshot"%go [].
+
+#[global] Opaque Snapshot.
 
 Definition Message {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3/raftpb.Message"%go [].
 
+#[global] Opaque Message.
+
 Definition HardState {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3/raftpb.HardState"%go [].
+
+#[global] Opaque HardState.
 
 Definition ConfState {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3/raftpb.ConfState"%go [].
 
+#[global] Opaque ConfState.
+
 Definition ConfChange {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3/raftpb.ConfChange"%go [].
+
+#[global] Opaque ConfChange.
 
 Definition ConfChangeSingle {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3/raftpb.ConfChangeSingle"%go [].
 
+#[global] Opaque ConfChangeSingle.
+
 Definition ConfChangeV2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3/raftpb.ConfChangeV2"%go [].
+
+#[global] Opaque ConfChangeV2.
 
 Axiom ConfChangeSingleⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 

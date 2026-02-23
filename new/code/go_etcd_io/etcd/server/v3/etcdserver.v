@@ -22,77 +22,151 @@ Module etcdserver.
 
 Definition serverVersionAdapter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver.serverVersionAdapter"%go [].
 
+#[global] Opaque serverVersionAdapter.
+
 Definition bootstrappedServer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver.bootstrappedServer"%go [].
+
+#[global] Opaque bootstrappedServer.
 
 Definition bootstrappedStorage {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver.bootstrappedStorage"%go [].
 
+#[global] Opaque bootstrappedStorage.
+
 Definition bootstrappedBackend {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver.bootstrappedBackend"%go [].
+
+#[global] Opaque bootstrappedBackend.
 
 Definition bootstrappedCluster {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver.bootstrappedCluster"%go [].
 
+#[global] Opaque bootstrappedCluster.
+
 Definition bootstrappedRaft {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver.bootstrappedRaft"%go [].
+
+#[global] Opaque bootstrappedRaft.
 
 Definition snapshotMetadata {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver.snapshotMetadata"%go [].
 
+#[global] Opaque snapshotMetadata.
+
 Definition bootstrappedWAL {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver.bootstrappedWAL"%go [].
+
+#[global] Opaque bootstrappedWAL.
 
 Definition CorruptionChecker {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver.CorruptionChecker"%go [].
 
+#[global] Opaque CorruptionChecker.
+
 Definition corruptionChecker {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver.corruptionChecker"%go [].
+
+#[global] Opaque corruptionChecker.
 
 Definition Hasher {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver.Hasher"%go [].
 
+#[global] Opaque Hasher.
+
 Definition hasherAdapter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver.hasherAdapter"%go [].
+
+#[global] Opaque hasherAdapter.
 
 Definition peerInfo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver.peerInfo"%go [].
 
+#[global] Opaque peerInfo.
+
 Definition peerHashKVResp {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver.peerHashKVResp"%go [].
+
+#[global] Opaque peerHashKVResp.
 
 Definition hashKVHandler {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver.hashKVHandler"%go [].
 
+#[global] Opaque hashKVHandler.
+
 Definition toApply {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver.toApply"%go [].
+
+#[global] Opaque toApply.
 
 Definition raftNode {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver.raftNode"%go [].
 
+#[global] Opaque raftNode.
+
 Definition raftNodeConfig {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver.raftNodeConfig"%go [].
+
+#[global] Opaque raftNodeConfig.
 
 Definition Response {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver.Response"%go [].
 
+#[global] Opaque Response.
+
 Definition ServerV2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver.ServerV2"%go [].
+
+#[global] Opaque ServerV2.
 
 Definition ServerV3 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver.ServerV3"%go [].
 
+#[global] Opaque ServerV3.
+
 Definition Server {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver.Server"%go [].
+
+#[global] Opaque Server.
 
 Definition EtcdServer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver.EtcdServer"%go [].
 
+#[global] Opaque EtcdServer.
+
 Definition ServerPeer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver.ServerPeer"%go [].
+
+#[global] Opaque ServerPeer.
 
 Definition ServerPeerV2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver.ServerPeerV2"%go [].
 
+#[global] Opaque ServerPeerV2.
+
 Definition downgradeEnabledHandler {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver.downgradeEnabledHandler"%go [].
+
+#[global] Opaque downgradeEnabledHandler.
 
 Definition etcdProgress {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver.etcdProgress"%go [].
 
+#[global] Opaque etcdProgress.
+
 Definition raftReadyHandler {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver.raftReadyHandler"%go [].
+
+#[global] Opaque raftReadyHandler.
 
 Definition confChangeResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver.confChangeResponse"%go [].
 
+#[global] Opaque confChangeResponse.
+
 Definition AccessController {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver.AccessController"%go [].
+
+#[global] Opaque AccessController.
 
 Definition notifier {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver.notifier"%go [].
 
+#[global] Opaque notifier.
+
 Definition panicAlternativeStringer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver.panicAlternativeStringer"%go [].
+
+#[global] Opaque panicAlternativeStringer.
 
 Definition RequestV2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver.RequestV2"%go [].
 
+#[global] Opaque RequestV2.
+
 Definition RaftKV {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver.RaftKV"%go [].
+
+#[global] Opaque RaftKV.
 
 Definition Lessor {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver.Lessor"%go [].
 
+#[global] Opaque Lessor.
+
 Definition Authenticator {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver.Authenticator"%go [].
 
+#[global] Opaque Authenticator.
+
 Definition zapRaftLogger {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver.zapRaftLogger"%go [].
+
+#[global] Opaque zapRaftLogger.
 
 Axiom serverVersionAdapterⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 

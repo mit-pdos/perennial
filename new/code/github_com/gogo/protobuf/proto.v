@@ -9,153 +9,303 @@ Module proto.
 
 Definition Merger {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.Merger"%go [].
 
+#[global] Opaque Merger.
+
 Definition generatedMerger {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.generatedMerger"%go [].
+
+#[global] Opaque generatedMerger.
 
 Definition custom {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.custom"%go [].
 
+#[global] Opaque custom.
+
 Definition Unmarshaler {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.Unmarshaler"%go [].
+
+#[global] Opaque Unmarshaler.
 
 Definition newUnmarshaler {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.newUnmarshaler"%go [].
 
+#[global] Opaque newUnmarshaler.
+
 Definition Stats {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.Stats"%go [].
+
+#[global] Opaque Stats.
 
 Definition generatedDiscarder {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.generatedDiscarder"%go [].
 
+#[global] Opaque generatedDiscarder.
+
 Definition discardInfo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.discardInfo"%go [].
+
+#[global] Opaque discardInfo.
 
 Definition discardFieldInfo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.discardFieldInfo"%go [].
 
+#[global] Opaque discardFieldInfo.
+
 Definition duration {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.duration"%go [].
+
+#[global] Opaque duration.
 
 Definition Marshaler {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.Marshaler"%go [].
 
+#[global] Opaque Marshaler.
+
 Definition ExtensionRange {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.ExtensionRange"%go [].
+
+#[global] Opaque ExtensionRange.
 
 Definition extendableProto {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.extendableProto"%go [].
 
+#[global] Opaque extendableProto.
+
 Definition extendableProtoV1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.extendableProtoV1"%go [].
+
+#[global] Opaque extendableProtoV1.
 
 Definition extensionAdapter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.extensionAdapter"%go [].
 
+#[global] Opaque extensionAdapter.
+
 Definition notLocker {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.notLocker"%go [].
+
+#[global] Opaque notLocker.
 
 Definition XXX_InternalExtensions {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.XXX_InternalExtensions"%go [].
 
+#[global] Opaque XXX_InternalExtensions.
+
 Definition ExtensionDesc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.ExtensionDesc"%go [].
+
+#[global] Opaque ExtensionDesc.
 
 Definition Extension {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.Extension"%go [].
 
+#[global] Opaque Extension.
+
 Definition extPropKey {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.extPropKey"%go [].
+
+#[global] Opaque extPropKey.
 
 Definition extensionsBytes {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.extensionsBytes"%go [].
 
+#[global] Opaque extensionsBytes.
+
 Definition slowExtensionAdapter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.slowExtensionAdapter"%go [].
+
+#[global] Opaque slowExtensionAdapter.
 
 Definition sortableMapElem {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.sortableMapElem"%go [].
 
+#[global] Opaque sortableMapElem.
+
 Definition sortableExtensions {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.sortableExtensions"%go [].
+
+#[global] Opaque sortableExtensions.
 
 Definition RequiredNotSetError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.RequiredNotSetError"%go [].
 
+#[global] Opaque RequiredNotSetError.
+
 Definition invalidUTF8Error {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.invalidUTF8Error"%go [].
+
+#[global] Opaque invalidUTF8Error.
 
 Definition nonFatal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.nonFatal"%go [].
 
+#[global] Opaque nonFatal.
+
 Definition Message {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.Message"%go [].
+
+#[global] Opaque Message.
 
 Definition Buffer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.Buffer"%go [].
 
+#[global] Opaque Buffer.
+
 Definition defaultMessage {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.defaultMessage"%go [].
+
+#[global] Opaque defaultMessage.
 
 Definition scalarField {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.scalarField"%go [].
 
+#[global] Opaque scalarField.
+
 Definition mapKeySorter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.mapKeySorter"%go [].
+
+#[global] Opaque mapKeySorter.
 
 Definition InternalMessageInfo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.InternalMessageInfo"%go [].
 
+#[global] Opaque InternalMessageInfo.
+
 Definition Sizer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.Sizer"%go [].
+
+#[global] Opaque Sizer.
 
 Definition ProtoSizer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.ProtoSizer"%go [].
 
+#[global] Opaque ProtoSizer.
+
 Definition _MessageSet_Item {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto._MessageSet_Item"%go [].
+
+#[global] Opaque _MessageSet_Item.
 
 Definition messageSet {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.messageSet"%go [].
 
+#[global] Opaque messageSet.
+
 Definition messageTypeIder {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.messageTypeIder"%go [].
+
+#[global] Opaque messageTypeIder.
 
 Definition field {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.field"%go [].
 
+#[global] Opaque field.
+
 Definition pointer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.pointer"%go [].
+
+#[global] Opaque pointer.
 
 Definition tagMap {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.tagMap"%go [].
 
+#[global] Opaque tagMap.
+
 Definition StructProperties {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.StructProperties"%go [].
+
+#[global] Opaque StructProperties.
 
 Definition OneofProperties {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.OneofProperties"%go [].
 
+#[global] Opaque OneofProperties.
+
 Definition Properties {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.Properties"%go [].
+
+#[global] Opaque Properties.
 
 Definition oneofFuncsIface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.oneofFuncsIface"%go [].
 
+#[global] Opaque oneofFuncsIface.
+
 Definition oneofWrappersIface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.oneofWrappersIface"%go [].
+
+#[global] Opaque oneofWrappersIface.
 
 Definition sizer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.sizer"%go [].
 
+#[global] Opaque sizer.
+
 Definition marshaler {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.marshaler"%go [].
+
+#[global] Opaque marshaler.
 
 Definition marshalInfo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.marshalInfo"%go [].
 
+#[global] Opaque marshalInfo.
+
 Definition marshalFieldInfo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.marshalFieldInfo"%go [].
+
+#[global] Opaque marshalFieldInfo.
 
 Definition marshalElemInfo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.marshalElemInfo"%go [].
 
+#[global] Opaque marshalElemInfo.
+
 Definition byTag {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.byTag"%go [].
+
+#[global] Opaque byTag.
 
 Definition newMarshaler {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.newMarshaler"%go [].
 
+#[global] Opaque newMarshaler.
+
 Definition mergeInfo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.mergeInfo"%go [].
+
+#[global] Opaque mergeInfo.
 
 Definition mergeFieldInfo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.mergeFieldInfo"%go [].
 
+#[global] Opaque mergeFieldInfo.
+
 Definition unmarshalInfo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.unmarshalInfo"%go [].
+
+#[global] Opaque unmarshalInfo.
 
 Definition unmarshaler {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.unmarshaler"%go [].
 
+#[global] Opaque unmarshaler.
+
 Definition unmarshalFieldInfo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.unmarshalFieldInfo"%go [].
+
+#[global] Opaque unmarshalFieldInfo.
 
 Definition writer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.writer"%go [].
 
+#[global] Opaque writer.
+
 Definition textWriter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.textWriter"%go [].
+
+#[global] Opaque textWriter.
 
 Definition int32Slice {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.int32Slice"%go [].
 
+#[global] Opaque int32Slice.
+
 Definition TextMarshaler {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.TextMarshaler"%go [].
+
+#[global] Opaque TextMarshaler.
 
 Definition ParseError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.ParseError"%go [].
 
+#[global] Opaque ParseError.
+
 Definition token {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.token"%go [].
+
+#[global] Opaque token.
 
 Definition textParser {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.textParser"%go [].
 
+#[global] Opaque textParser.
+
 Definition timestamp {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.timestamp"%go [].
+
+#[global] Opaque timestamp.
 
 Definition float64Value {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.float64Value"%go [].
 
+#[global] Opaque float64Value.
+
 Definition float32Value {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.float32Value"%go [].
+
+#[global] Opaque float32Value.
 
 Definition int64Value {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.int64Value"%go [].
 
+#[global] Opaque int64Value.
+
 Definition uint64Value {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.uint64Value"%go [].
+
+#[global] Opaque uint64Value.
 
 Definition int32Value {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.int32Value"%go [].
 
+#[global] Opaque int32Value.
+
 Definition uint32Value {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.uint32Value"%go [].
+
+#[global] Opaque uint32Value.
 
 Definition boolValue {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.boolValue"%go [].
 
+#[global] Opaque boolValue.
+
 Definition stringValue {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.stringValue"%go [].
 
+#[global] Opaque stringValue.
+
 Definition bytesValue {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/gogo/protobuf/proto.bytesValue"%go [].
+
+#[global] Opaque bytesValue.
 
 Axiom Mergerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 

@@ -14,15 +14,27 @@ Module quorum.
 
 Definition JointConfig {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3/quorum.JointConfig"%go [].
 
+#[global] Opaque JointConfig.
+
 Definition MajorityConfig {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3/quorum.MajorityConfig"%go [].
+
+#[global] Opaque MajorityConfig.
 
 Definition Index' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3/quorum.Index"%go [].
 
+#[global] Opaque Index'.
+
 Definition AckedIndexer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3/quorum.AckedIndexer"%go [].
+
+#[global] Opaque AckedIndexer.
 
 Definition mapAckIndexer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3/quorum.mapAckIndexer"%go [].
 
+#[global] Opaque mapAckIndexer.
+
 Definition VoteResult {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3/quorum.VoteResult"%go [].
+
+#[global] Opaque VoteResult.
 
 Definition VotePending {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #(W8 1).
 

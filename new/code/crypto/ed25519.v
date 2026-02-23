@@ -9,9 +9,15 @@ Module ed25519.
 
 Definition PublicKey {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "crypto/ed25519.PublicKey"%go [].
 
+#[global] Opaque PublicKey.
+
 Definition PrivateKey {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "crypto/ed25519.PrivateKey"%go [].
 
+#[global] Opaque PrivateKey.
+
 Definition Options {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "crypto/ed25519.Options"%go [].
+
+#[global] Opaque Options.
 
 Axiom PrivateKeyⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
@@ -26,6 +32,10 @@ Axiom SignatureSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 Axiom SeedSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition privateKeyCache {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "crypto/ed25519.privateKeyCache"%go.
+
+Definition cryptocustomrand {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "crypto/ed25519.cryptocustomrand"%go.
+
+Axiom cryptocustomrand'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition GenerateKey {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "crypto/ed25519.GenerateKey"%go.
 
@@ -51,7 +61,7 @@ Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init pkg_id.ed25519 (λ: <>,
-      exception_do (do:  #())
+      exception_do (do:  (cryptocustomrand'init #()))
       ).
 
 Module PublicKey.

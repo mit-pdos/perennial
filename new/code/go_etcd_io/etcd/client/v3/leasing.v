@@ -22,11 +22,19 @@ Module leasing.
 
 Definition leaseCache {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3/leasing.leaseCache"%go [].
 
+#[global] Opaque leaseCache.
+
 Definition leaseKey {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3/leasing.leaseKey"%go [].
+
+#[global] Opaque leaseKey.
 
 Definition leasingKV {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3/leasing.leasingKV"%go [].
 
+#[global] Opaque leasingKV.
+
 Definition txnLeasing {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3/leasing.txnLeasing"%go [].
+
+#[global] Opaque txnLeasing.
 
 Definition revokeBackoff {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #(W64 2000000000).
 

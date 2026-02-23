@@ -9,71 +9,139 @@ Module testing.
 
 Definition durationOrCountFlag {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.durationOrCountFlag"%go [].
 
+#[global] Opaque durationOrCountFlag.
+
 Definition InternalBenchmark {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.InternalBenchmark"%go [].
+
+#[global] Opaque InternalBenchmark.
 
 Definition B {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.B"%go [].
 
+#[global] Opaque B.
+
 Definition BenchmarkResult {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.BenchmarkResult"%go [].
+
+#[global] Opaque BenchmarkResult.
 
 Definition benchState {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.benchState"%go [].
 
+#[global] Opaque benchState.
+
 Definition PB {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.PB"%go [].
+
+#[global] Opaque PB.
 
 Definition discard {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.discard"%go [].
 
+#[global] Opaque discard.
+
 Definition CoverBlock {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.CoverBlock"%go [].
+
+#[global] Opaque CoverBlock.
 
 Definition Cover {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.Cover"%go [].
 
+#[global] Opaque Cover.
+
 Definition InternalExample {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.InternalExample"%go [].
+
+#[global] Opaque InternalExample.
 
 Definition InternalFuzzTarget {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.InternalFuzzTarget"%go [].
 
+#[global] Opaque InternalFuzzTarget.
+
 Definition F {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.F"%go [].
+
+#[global] Opaque F.
 
 Definition fuzzResult {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.fuzzResult"%go [].
 
+#[global] Opaque fuzzResult.
+
 Definition fuzzCrashError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.fuzzCrashError"%go [].
+
+#[global] Opaque fuzzCrashError.
 
 Definition fuzzState {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.fuzzState"%go [].
 
+#[global] Opaque fuzzState.
+
 Definition fuzzMode {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.fuzzMode"%go [].
+
+#[global] Opaque fuzzMode.
 
 Definition matcher {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.matcher"%go [].
 
+#[global] Opaque matcher.
+
 Definition filterMatch {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.filterMatch"%go [].
+
+#[global] Opaque filterMatch.
 
 Definition simpleMatch {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.simpleMatch"%go [].
 
+#[global] Opaque simpleMatch.
+
 Definition alternationMatch {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.alternationMatch"%go [].
+
+#[global] Opaque alternationMatch.
 
 Definition chattyFlag {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.chattyFlag"%go [].
 
+#[global] Opaque chattyFlag.
+
 Definition chattyPrinter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.chattyPrinter"%go [].
+
+#[global] Opaque chattyPrinter.
 
 Definition common {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.common"%go [].
 
+#[global] Opaque common.
+
 Definition indenter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.indenter"%go [].
+
+#[global] Opaque indenter.
 
 Definition TB {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.TB"%go [].
 
+#[global] Opaque TB.
+
 Definition T {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.T"%go [].
+
+#[global] Opaque T.
 
 Definition outputWriter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.outputWriter"%go [].
 
+#[global] Opaque outputWriter.
+
 Definition panicHandling {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.panicHandling"%go [].
+
+#[global] Opaque panicHandling.
 
 Definition InternalTest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.InternalTest"%go [].
 
+#[global] Opaque InternalTest.
+
 Definition testState {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.testState"%go [].
+
+#[global] Opaque testState.
 
 Definition matchStringOnly {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.matchStringOnly"%go [].
 
+#[global] Opaque matchStringOnly.
+
 Definition M {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.M"%go [].
+
+#[global] Opaque M.
 
 Definition testDeps {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.testDeps"%go [].
 
+#[global] Opaque testDeps.
+
 Definition highPrecisionTime {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "testing.highPrecisionTime"%go [].
+
+#[global] Opaque highPrecisionTime.
 
 Axiom durationOrCountFlagⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
@@ -144,6 +212,8 @@ Axiom Mⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type
 Axiom testDepsⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
 Axiom highPrecisionTimeⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom maxBenchPredictIters : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom loopPoisonTimer : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
@@ -223,6 +293,8 @@ Definition failFast {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string :
 
 Definition outputDir {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.outputDir"%go.
 
+Definition artifacts {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.artifacts"%go.
+
 Definition chatty {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.chatty"%go.
 
 Definition count {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.count"%go.
@@ -272,6 +344,8 @@ Definition haveExamples {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_stri
 Definition cpuList {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.cpuList"%go.
 
 Definition testlogFile {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.testlogFile"%go.
+
+Definition artifactDir {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.artifactDir"%go.
 
 Definition numFailed {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.numFailed"%go.
 
@@ -357,11 +431,17 @@ Definition Verbose {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string :=
 
 Definition fmtDuration {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.fmtDuration"%go.
 
+Definition hashString {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.hashString"%go.
+
+Definition removeSymbolsExcept {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.removeSymbolsExcept"%go.
+
 Definition removeAll {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.removeAll"%go.
 
 Definition callerName {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.callerName"%go.
 
 Definition pcToName {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.pcToName"%go.
+
+Definition checkParallel {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.checkParallel"%go.
 
 Definition tRunner {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "testing.tRunner"%go.
 

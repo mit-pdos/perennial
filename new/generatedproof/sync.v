@@ -180,46 +180,6 @@ Proof. Admitted.
 End def.
 End Map.
 
-Module readOnly.
-Section def.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context {sem : go.Semantics}.
-Context {package_sem' : sync.Assumptions}.
-
-Local Set Default Proof Using "All".
-
-#[global] Instance readOnly_typed_pointsto  :
-  TypedPointsto (Σ:=Σ) (sync.readOnly.t). Admitted.
-
-#[global] Instance readOnly_into_val_typed
-   :
-  IntoValTypedUnderlying (sync.readOnly.t) (sync.readOnlyⁱᵐᵖˡ).
-Proof. Admitted.
-
-End def.
-End readOnly.
-
-Module entry.
-Section def.
-
-Context `{hG: heapGS Σ, !ffi_semantics _ _}.
-Context {sem : go.Semantics}.
-Context {package_sem' : sync.Assumptions}.
-
-Local Set Default Proof Using "All".
-
-#[global] Instance entry_typed_pointsto  :
-  TypedPointsto (Σ:=Σ) (sync.entry.t). Admitted.
-
-#[global] Instance entry_into_val_typed
-   :
-  IntoValTypedUnderlying (sync.entry.t) (sync.entryⁱᵐᵖˡ).
-Proof. Admitted.
-
-End def.
-End entry.
-
 Module Once.
 Section def.
 

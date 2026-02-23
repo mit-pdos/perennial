@@ -13,11 +13,19 @@ Module cindex.
 
 Definition Backend {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver/cindex.Backend"%go [].
 
+#[global] Opaque Backend.
+
 Definition ConsistentIndexer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver/cindex.ConsistentIndexer"%go [].
+
+#[global] Opaque ConsistentIndexer.
 
 Definition consistentIndex {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver/cindex.consistentIndex"%go [].
 
+#[global] Opaque consistentIndex.
+
 Definition fakeConsistentIndex {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver/cindex.fakeConsistentIndex"%go [].
+
+#[global] Opaque fakeConsistentIndex.
 
 Definition NewConsistentIndex {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "go.etcd.io/etcd/server/v3/etcdserver/cindex.NewConsistentIndex"%go.
 

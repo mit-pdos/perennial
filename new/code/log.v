@@ -11,6 +11,8 @@ Module log.
 
 Definition Logger {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "log.Logger"%go [].
 
+#[global] Opaque Logger.
+
 Axiom Loggerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
 (* the date in the local time zone: 2009/01/23 *)

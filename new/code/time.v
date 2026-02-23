@@ -11,49 +11,99 @@ Module time.
 
 Definition ParseError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "time.ParseError"%go [].
 
+#[global] Opaque ParseError.
+
+Definition parseDurationError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "time.parseDurationError"%go [].
+
+#[global] Opaque parseDurationError.
+
 Definition Timer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "time.Timer"%go [].
+
+#[global] Opaque Timer.
 
 Definition Ticker {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "time.Ticker"%go [].
 
+#[global] Opaque Ticker.
+
 Definition Time {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "time.Time"%go [].
+
+#[global] Opaque Time.
 
 Definition Month {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "time.Month"%go [].
 
+#[global] Opaque Month.
+
 Definition Weekday {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "time.Weekday"%go [].
+
+#[global] Opaque Weekday.
 
 Definition absSeconds {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "time.absSeconds"%go [].
 
+#[global] Opaque absSeconds.
+
 Definition absDays {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "time.absDays"%go [].
+
+#[global] Opaque absDays.
 
 Definition absCentury {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "time.absCentury"%go [].
 
+#[global] Opaque absCentury.
+
 Definition absCyear {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "time.absCyear"%go [].
+
+#[global] Opaque absCyear.
 
 Definition absYday {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "time.absYday"%go [].
 
+#[global] Opaque absYday.
+
 Definition absMonth {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "time.absMonth"%go [].
+
+#[global] Opaque absMonth.
 
 Definition absLeap {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "time.absLeap"%go [].
 
+#[global] Opaque absLeap.
+
 Definition absJanFeb {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "time.absJanFeb"%go [].
+
+#[global] Opaque absJanFeb.
 
 Definition Duration {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "time.Duration"%go [].
 
+#[global] Opaque Duration.
+
 Definition Location {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "time.Location"%go [].
+
+#[global] Opaque Location.
 
 Definition zone {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "time.zone"%go [].
 
+#[global] Opaque zone.
+
 Definition zoneTrans {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "time.zoneTrans"%go [].
+
+#[global] Opaque zoneTrans.
 
 Definition ruleKind {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "time.ruleKind"%go [].
 
+#[global] Opaque ruleKind.
+
 Definition rule {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "time.rule"%go [].
+
+#[global] Opaque rule.
 
 Definition fileSizeError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "time.fileSizeError"%go [].
 
+#[global] Opaque fileSizeError.
+
 Definition dataIO {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "time.dataIO"%go [].
 
+#[global] Opaque dataIO.
+
 Axiom ParseErrorⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
+
+Axiom parseDurationErrorⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
 Axiom Tickerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
@@ -643,7 +693,7 @@ Definition Time__unixSecⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContex
    on the zero Time is undefined. The result does not depend on the
    location associated with t.
 
-   go: time.go:1456:15 *)
+   go: time.go:1460:15 *)
 Definition Time__UnixNanoⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "t" <>,
     exception_do (let: "t" := (GoAlloc Time "t") in
@@ -692,6 +742,22 @@ Class ParseError_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalCo
   #[global] ParseError_type_repr  :: go.TypeReprUnderlying ParseErrorⁱᵐᵖˡ ParseError.t;
   #[global] ParseError_underlying :: (ParseError) <u (ParseErrorⁱᵐᵖˡ);
   #[global] ParseErrorⁱᵐᵖˡ_underlying :: (ParseErrorⁱᵐᵖˡ) ↓u (ParseErrorⁱᵐᵖˡ);
+}.
+
+Module parseDurationError.
+Section def.
+Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
+Axiom t : Type.
+Axiom zero_val : ZeroVal t.
+#[global] Existing Instance zero_val.
+End def.
+End parseDurationError.
+
+Class parseDurationError_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
+{
+  #[global] parseDurationError_type_repr  :: go.TypeReprUnderlying parseDurationErrorⁱᵐᵖˡ parseDurationError.t;
+  #[global] parseDurationError_underlying :: (parseDurationError) <u (parseDurationErrorⁱᵐᵖˡ);
+  #[global] parseDurationErrorⁱᵐᵖˡ_underlying :: (parseDurationErrorⁱᵐᵖˡ) ↓u (parseDurationErrorⁱᵐᵖˡ);
 }.
 
 Module Timer.
@@ -1080,6 +1146,7 @@ Class dataIO_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContex
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] ParseError_instance :: ParseError_Assumptions;
+  #[global] parseDurationError_instance :: parseDurationError_Assumptions;
   #[global] Timer_instance :: Timer_Assumptions;
   #[global] Ticker_instance :: Ticker_Assumptions;
   #[global] Time_instance :: Time_Assumptions;

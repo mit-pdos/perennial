@@ -12,13 +12,23 @@ Module chan_spec_raw_examples.
 
 Definition LockedStack {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/channel.LockedStack"%go [].
 
+#[global] Opaque LockedStack.
+
 Definition EliminationStack {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/channel.EliminationStack"%go [].
+
+#[global] Opaque EliminationStack.
 
 Definition request {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/channel.request"%go [].
 
+#[global] Opaque request.
+
 Definition stream {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/channel.stream"%go [].
 
+#[global] Opaque stream.
+
 Definition streamold {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/channel.streamold"%go [].
+
+#[global] Opaque streamold.
 
 Definition timeout {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #(W64 10000).
 

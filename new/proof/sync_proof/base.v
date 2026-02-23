@@ -29,11 +29,6 @@ Set Default Proof Using "W".
 #[global] Instance : IsPkgInit (iProp Σ) sync := define_is_pkg_init True%I.
 #[global] Instance : GetIsPkgInitWf (iProp Σ) sync := build_get_is_pkg_init_wf.
 
-Definition is_initialized : iProp Σ :=
-  ∃ (p: loc),
-    global_addr sync.expunged ↦□ p ∗
-    p ↦□ interface.nil.
-
 Lemma wp_initialize' get_is_pkg_init :
   get_is_pkg_init_prop sync get_is_pkg_init →
   {{{ own_initializing get_is_pkg_init }}}
@@ -44,17 +39,12 @@ Proof.
   wp_apply (wp_package_init with "[$Hown] HΦ").
   { destruct Hinit as (-> & ?); done. }
   iIntros "Hown". wp_auto.
-  wp_apply wp_GlobalAlloc as "expunged".
   wp_apply (synctest.wp_initialize' with "[$Hown]") as "(Hown & #?)".
   { naive_solver. }
   wp_apply (race.wp_initialize' with "[$Hown]") as "(Hown & #?)".
   { naive_solver. }
   wp_apply (atomic.wp_initialize' with "[$Hown]") as "(Hown & #?)".
   { naive_solver. }
-
-  wp_alloc expunged_p as "Hexpunged_p".
-  iPersist "Hexpunged_p".
-  wp_auto.
 
   iEval (rewrite is_pkg_init_unfold /=). iFrame "∗#". done.
 Qed.

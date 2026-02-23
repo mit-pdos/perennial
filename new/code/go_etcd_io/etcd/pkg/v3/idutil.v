@@ -12,6 +12,8 @@ Module idutil.
 
 Definition Generator {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/pkg/v3/idutil.Generator"%go [].
 
+#[global] Opaque Generator.
+
 Definition tsLen {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #40.
 
 Definition cntLen {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #8.

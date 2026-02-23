@@ -11,9 +11,15 @@ Module channel.
 
 Definition offerState {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/model/channel.offerState"%go [].
 
+#[global] Opaque offerState.
+
 Definition Channel {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) : go.type := go.Named "github.com/goose-lang/goose/model/channel.Channel"%go [T].
 
+#[global] Opaque Channel.
+
 Definition SelectDir {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/model/channel.SelectDir"%go [].
+
+#[global] Opaque SelectDir.
 
 Definition buffered {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #(W64 0).
 

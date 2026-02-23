@@ -9,6 +9,8 @@ Module codes.
 
 Definition Code {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/grpc/codes.Code"%go [].
 
+#[global] Opaque Code.
+
 Axiom OK : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition Canceled {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #(W32 1).

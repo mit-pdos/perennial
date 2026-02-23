@@ -9,171 +9,339 @@ Module prometheus.
 
 Definition Collector {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.Collector"%go [].
 
+#[global] Opaque Collector.
+
 Definition selfCollector {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.selfCollector"%go [].
+
+#[global] Opaque selfCollector.
 
 Definition collectorMetric {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.collectorMetric"%go [].
 
+#[global] Opaque collectorMetric.
+
 Definition Counter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.Counter"%go [].
+
+#[global] Opaque Counter.
 
 Definition ExemplarAdder {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.ExemplarAdder"%go [].
 
+#[global] Opaque ExemplarAdder.
+
 Definition CounterOpts {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.CounterOpts"%go [].
+
+#[global] Opaque CounterOpts.
 
 Definition CounterVecOpts {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.CounterVecOpts"%go [].
 
+#[global] Opaque CounterVecOpts.
+
 Definition counter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.counter"%go [].
+
+#[global] Opaque counter.
 
 Definition CounterVec {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.CounterVec"%go [].
 
+#[global] Opaque CounterVec.
+
 Definition CounterFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.CounterFunc"%go [].
+
+#[global] Opaque CounterFunc.
 
 Definition Desc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.Desc"%go [].
 
+#[global] Opaque Desc.
+
 Definition expvarCollector {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.expvarCollector"%go [].
+
+#[global] Opaque expvarCollector.
 
 Definition Gauge {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.Gauge"%go [].
 
+#[global] Opaque Gauge.
+
 Definition GaugeOpts {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.GaugeOpts"%go [].
+
+#[global] Opaque GaugeOpts.
 
 Definition GaugeVecOpts {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.GaugeVecOpts"%go [].
 
+#[global] Opaque GaugeVecOpts.
+
 Definition gauge {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.gauge"%go [].
+
+#[global] Opaque gauge.
 
 Definition GaugeVec {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.GaugeVec"%go [].
 
+#[global] Opaque GaugeVec.
+
 Definition GaugeFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.GaugeFunc"%go [].
+
+#[global] Opaque GaugeFunc.
 
 Definition baseGoCollector {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.baseGoCollector"%go [].
 
+#[global] Opaque baseGoCollector.
+
 Definition memStatsMetrics {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.memStatsMetrics"%go [].
+
+#[global] Opaque memStatsMetrics.
 
 Definition goCollector {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.goCollector"%go [].
 
+#[global] Opaque goCollector.
+
 Definition rmMetricDesc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.rmMetricDesc"%go [].
+
+#[global] Opaque rmMetricDesc.
 
 Definition batchHistogram {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.batchHistogram"%go [].
 
+#[global] Opaque batchHistogram.
+
 Definition Histogram {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.Histogram"%go [].
+
+#[global] Opaque Histogram.
 
 Definition HistogramOpts {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.HistogramOpts"%go [].
 
+#[global] Opaque HistogramOpts.
+
 Definition HistogramVecOpts {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.HistogramVecOpts"%go [].
+
+#[global] Opaque HistogramVecOpts.
 
 Definition histogramCounts {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.histogramCounts"%go [].
 
+#[global] Opaque histogramCounts.
+
 Definition histogram {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.histogram"%go [].
+
+#[global] Opaque histogram.
 
 Definition HistogramVec {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.HistogramVec"%go [].
 
+#[global] Opaque HistogramVec.
+
 Definition constHistogram {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.constHistogram"%go [].
+
+#[global] Opaque constHistogram.
 
 Definition buckSort {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.buckSort"%go [].
 
+#[global] Opaque buckSort.
+
 Definition nativeExemplars {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.nativeExemplars"%go [].
+
+#[global] Opaque nativeExemplars.
 
 Definition Labels {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.Labels"%go [].
 
+#[global] Opaque Labels.
+
 Definition LabelConstraint {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.LabelConstraint"%go [].
+
+#[global] Opaque LabelConstraint.
 
 Definition ConstrainedLabel {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.ConstrainedLabel"%go [].
 
+#[global] Opaque ConstrainedLabel.
+
 Definition ConstrainableLabels {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.ConstrainableLabels"%go [].
+
+#[global] Opaque ConstrainableLabels.
 
 Definition ConstrainedLabels {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.ConstrainedLabels"%go [].
 
+#[global] Opaque ConstrainedLabels.
+
 Definition UnconstrainedLabels {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.UnconstrainedLabels"%go [].
+
+#[global] Opaque UnconstrainedLabels.
 
 Definition compiledLabels {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.compiledLabels"%go [].
 
+#[global] Opaque compiledLabels.
+
 Definition Metric {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.Metric"%go [].
+
+#[global] Opaque Metric.
 
 Definition Opts {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.Opts"%go [].
 
+#[global] Opaque Opts.
+
 Definition invalidMetric {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.invalidMetric"%go [].
+
+#[global] Opaque invalidMetric.
 
 Definition timestampedMetric {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.timestampedMetric"%go [].
 
+#[global] Opaque timestampedMetric.
+
 Definition withExemplarsMetric {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.withExemplarsMetric"%go [].
+
+#[global] Opaque withExemplarsMetric.
 
 Definition Exemplar {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.Exemplar"%go [].
 
+#[global] Opaque Exemplar.
+
 Definition Observer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.Observer"%go [].
+
+#[global] Opaque Observer.
 
 Definition ObserverFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.ObserverFunc"%go [].
 
+#[global] Opaque ObserverFunc.
+
 Definition ObserverVec {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.ObserverVec"%go [].
+
+#[global] Opaque ObserverVec.
 
 Definition ExemplarObserver {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.ExemplarObserver"%go [].
 
+#[global] Opaque ExemplarObserver.
+
 Definition processCollector {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.processCollector"%go [].
+
+#[global] Opaque processCollector.
 
 Definition ProcessCollectorOpts {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.ProcessCollectorOpts"%go [].
 
+#[global] Opaque ProcessCollectorOpts.
+
 Definition Registerer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.Registerer"%go [].
+
+#[global] Opaque Registerer.
 
 Definition Gatherer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.Gatherer"%go [].
 
+#[global] Opaque Gatherer.
+
 Definition GathererFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.GathererFunc"%go [].
+
+#[global] Opaque GathererFunc.
 
 Definition AlreadyRegisteredError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.AlreadyRegisteredError"%go [].
 
+#[global] Opaque AlreadyRegisteredError.
+
 Definition MultiError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.MultiError"%go [].
+
+#[global] Opaque MultiError.
 
 Definition Registry {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.Registry"%go [].
 
+#[global] Opaque Registry.
+
 Definition Gatherers {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.Gatherers"%go [].
+
+#[global] Opaque Gatherers.
 
 Definition MultiTRegistry {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.MultiTRegistry"%go [].
 
+#[global] Opaque MultiTRegistry.
+
 Definition TransactionalGatherer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.TransactionalGatherer"%go [].
+
+#[global] Opaque TransactionalGatherer.
 
 Definition noTransactionGatherer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.noTransactionGatherer"%go [].
 
+#[global] Opaque noTransactionGatherer.
+
 Definition Summary {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.Summary"%go [].
+
+#[global] Opaque Summary.
 
 Definition SummaryOpts {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.SummaryOpts"%go [].
 
+#[global] Opaque SummaryOpts.
+
 Definition SummaryVecOpts {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.SummaryVecOpts"%go [].
+
+#[global] Opaque SummaryVecOpts.
 
 Definition summary {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.summary"%go [].
 
+#[global] Opaque summary.
+
 Definition summaryCounts {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.summaryCounts"%go [].
+
+#[global] Opaque summaryCounts.
 
 Definition noObjectivesSummary {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.noObjectivesSummary"%go [].
 
+#[global] Opaque noObjectivesSummary.
+
 Definition quantSort {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.quantSort"%go [].
+
+#[global] Opaque quantSort.
 
 Definition SummaryVec {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.SummaryVec"%go [].
 
+#[global] Opaque SummaryVec.
+
 Definition constSummary {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.constSummary"%go [].
+
+#[global] Opaque constSummary.
 
 Definition Timer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.Timer"%go [].
 
+#[global] Opaque Timer.
+
 Definition UntypedOpts {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.UntypedOpts"%go [].
+
+#[global] Opaque UntypedOpts.
 
 Definition UntypedFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.UntypedFunc"%go [].
 
+#[global] Opaque UntypedFunc.
+
 Definition ValueType {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.ValueType"%go [].
+
+#[global] Opaque ValueType.
 
 Definition valueFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.valueFunc"%go [].
 
+#[global] Opaque valueFunc.
+
 Definition constMetric {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.constMetric"%go [].
+
+#[global] Opaque constMetric.
 
 Definition MetricVec {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.MetricVec"%go [].
 
+#[global] Opaque MetricVec.
+
 Definition metricWithLabelValues {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.metricWithLabelValues"%go [].
+
+#[global] Opaque metricWithLabelValues.
 
 Definition curriedLabelValue {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.curriedLabelValue"%go [].
 
+#[global] Opaque curriedLabelValue.
+
 Definition metricMap {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.metricMap"%go [].
+
+#[global] Opaque metricMap.
 
 Definition v2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.v2"%go [].
 
+#[global] Opaque v2.
+
 Definition wrappingRegisterer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.wrappingRegisterer"%go [].
+
+#[global] Opaque wrappingRegisterer.
 
 Definition wrappingCollector {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.wrappingCollector"%go [].
 
+#[global] Opaque wrappingCollector.
+
 Definition wrappingMetric {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/prometheus/client_golang/prometheus.wrappingMetric"%go [].
+
+#[global] Opaque wrappingMetric.
 
 Axiom Collectorⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 

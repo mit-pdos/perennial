@@ -9,17 +9,31 @@ Module rand.
 
 Definition Source {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "math/rand.Source"%go [].
 
+#[global] Opaque Source.
+
 Definition Source64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "math/rand.Source64"%go [].
+
+#[global] Opaque Source64.
 
 Definition Rand {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "math/rand.Rand"%go [].
 
+#[global] Opaque Rand.
+
 Definition runtimeSource {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "math/rand.runtimeSource"%go [].
+
+#[global] Opaque runtimeSource.
 
 Definition lockedSource {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "math/rand.lockedSource"%go [].
 
+#[global] Opaque lockedSource.
+
 Definition rngSource {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "math/rand.rngSource"%go [].
 
+#[global] Opaque rngSource.
+
 Definition Zipf {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "math/rand.Zipf"%go [].
+
+#[global] Opaque Zipf.
 
 Axiom Sourceⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 

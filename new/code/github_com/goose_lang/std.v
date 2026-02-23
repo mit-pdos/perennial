@@ -14,6 +14,8 @@ Module std.
 
 Definition JoinHandle {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/std.JoinHandle"%go [].
 
+#[global] Opaque JoinHandle.
+
 Definition Assert {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/std.Assert"%go.
 
 Definition SumNoOverflow {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/std.SumNoOverflow"%go.

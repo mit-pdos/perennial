@@ -14,19 +14,35 @@ Module tracker.
 
 Definition inflight {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3/tracker.inflight"%go [].
 
+#[global] Opaque inflight.
+
 Definition Inflights {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3/tracker.Inflights"%go [].
+
+#[global] Opaque Inflights.
 
 Definition Progress {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3/tracker.Progress"%go [].
 
+#[global] Opaque Progress.
+
 Definition ProgressMap {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3/tracker.ProgressMap"%go [].
+
+#[global] Opaque ProgressMap.
 
 Definition StateType {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3/tracker.StateType"%go [].
 
+#[global] Opaque StateType.
+
 Definition Config {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3/tracker.Config"%go [].
+
+#[global] Opaque Config.
 
 Definition ProgressTracker {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3/tracker.ProgressTracker"%go [].
 
+#[global] Opaque ProgressTracker.
+
 Definition matchAckIndexer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3/tracker.matchAckIndexer"%go [].
+
+#[global] Opaque matchAckIndexer.
 
 Definition StateProbe {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #(W64 0).
 

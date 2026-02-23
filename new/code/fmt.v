@@ -12,37 +12,71 @@ Module fmt.
 
 Definition wrapError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "fmt.wrapError"%go [].
 
+#[global] Opaque wrapError.
+
 Definition wrapErrors {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "fmt.wrapErrors"%go [].
+
+#[global] Opaque wrapErrors.
 
 Definition fmtFlags {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "fmt.fmtFlags"%go [].
 
+#[global] Opaque fmtFlags.
+
 Definition fmt {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "fmt.fmt"%go [].
+
+#[global] Opaque fmt.
 
 Definition State {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "fmt.State"%go [].
 
+#[global] Opaque State.
+
 Definition Formatter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "fmt.Formatter"%go [].
+
+#[global] Opaque Formatter.
 
 Definition Stringer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "fmt.Stringer"%go [].
 
+#[global] Opaque Stringer.
+
 Definition GoStringer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "fmt.GoStringer"%go [].
+
+#[global] Opaque GoStringer.
 
 Definition buffer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "fmt.buffer"%go [].
 
+#[global] Opaque buffer.
+
 Definition pp {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "fmt.pp"%go [].
+
+#[global] Opaque pp.
 
 Definition ScanState {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "fmt.ScanState"%go [].
 
+#[global] Opaque ScanState.
+
 Definition Scanner {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "fmt.Scanner"%go [].
+
+#[global] Opaque Scanner.
 
 Definition stringReader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "fmt.stringReader"%go [].
 
+#[global] Opaque stringReader.
+
 Definition scanError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "fmt.scanError"%go [].
+
+#[global] Opaque scanError.
 
 Definition ss {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "fmt.ss"%go [].
 
+#[global] Opaque ss.
+
 Definition ssave {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "fmt.ssave"%go [].
 
+#[global] Opaque ssave.
+
 Definition readRune {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "fmt.readRune"%go [].
+
+#[global] Opaque readRune.
 
 Axiom wrapErrorⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
@@ -159,6 +193,8 @@ Definition errBool {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string :=
 Axiom errBool'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition Errorf {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "fmt.Errorf"%go.
+
+Definition errorf {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "fmt.errorf"%go.
 
 Definition FormatString {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "fmt.FormatString"%go.
 

@@ -11,75 +11,147 @@ Module io.
 
 Definition Reader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "io.Reader"%go [].
 
+#[global] Opaque Reader.
+
 Definition Writer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "io.Writer"%go [].
+
+#[global] Opaque Writer.
 
 Definition Closer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "io.Closer"%go [].
 
+#[global] Opaque Closer.
+
 Definition Seeker {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "io.Seeker"%go [].
+
+#[global] Opaque Seeker.
 
 Definition ReadWriter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "io.ReadWriter"%go [].
 
+#[global] Opaque ReadWriter.
+
 Definition ReadCloser {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "io.ReadCloser"%go [].
+
+#[global] Opaque ReadCloser.
 
 Definition WriteCloser {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "io.WriteCloser"%go [].
 
+#[global] Opaque WriteCloser.
+
 Definition ReadWriteCloser {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "io.ReadWriteCloser"%go [].
+
+#[global] Opaque ReadWriteCloser.
 
 Definition ReadSeeker {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "io.ReadSeeker"%go [].
 
+#[global] Opaque ReadSeeker.
+
 Definition ReadSeekCloser {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "io.ReadSeekCloser"%go [].
+
+#[global] Opaque ReadSeekCloser.
 
 Definition WriteSeeker {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "io.WriteSeeker"%go [].
 
+#[global] Opaque WriteSeeker.
+
 Definition ReadWriteSeeker {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "io.ReadWriteSeeker"%go [].
+
+#[global] Opaque ReadWriteSeeker.
 
 Definition ReaderFrom {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "io.ReaderFrom"%go [].
 
+#[global] Opaque ReaderFrom.
+
 Definition WriterTo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "io.WriterTo"%go [].
+
+#[global] Opaque WriterTo.
 
 Definition ReaderAt {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "io.ReaderAt"%go [].
 
+#[global] Opaque ReaderAt.
+
 Definition WriterAt {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "io.WriterAt"%go [].
+
+#[global] Opaque WriterAt.
 
 Definition ByteReader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "io.ByteReader"%go [].
 
+#[global] Opaque ByteReader.
+
 Definition ByteScanner {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "io.ByteScanner"%go [].
+
+#[global] Opaque ByteScanner.
 
 Definition ByteWriter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "io.ByteWriter"%go [].
 
+#[global] Opaque ByteWriter.
+
 Definition RuneReader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "io.RuneReader"%go [].
+
+#[global] Opaque RuneReader.
 
 Definition RuneScanner {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "io.RuneScanner"%go [].
 
+#[global] Opaque RuneScanner.
+
 Definition StringWriter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "io.StringWriter"%go [].
+
+#[global] Opaque StringWriter.
 
 Definition LimitedReader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "io.LimitedReader"%go [].
 
+#[global] Opaque LimitedReader.
+
 Definition SectionReader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "io.SectionReader"%go [].
+
+#[global] Opaque SectionReader.
 
 Definition OffsetWriter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "io.OffsetWriter"%go [].
 
+#[global] Opaque OffsetWriter.
+
 Definition teeReader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "io.teeReader"%go [].
+
+#[global] Opaque teeReader.
 
 Definition discard {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "io.discard"%go [].
 
+#[global] Opaque discard.
+
 Definition nopCloser {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "io.nopCloser"%go [].
+
+#[global] Opaque nopCloser.
 
 Definition nopCloserWriterTo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "io.nopCloserWriterTo"%go [].
 
+#[global] Opaque nopCloserWriterTo.
+
 Definition eofReader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "io.eofReader"%go [].
+
+#[global] Opaque eofReader.
 
 Definition multiReader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "io.multiReader"%go [].
 
+#[global] Opaque multiReader.
+
 Definition multiWriter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "io.multiWriter"%go [].
+
+#[global] Opaque multiWriter.
 
 Definition onceError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "io.onceError"%go [].
 
+#[global] Opaque onceError.
+
 Definition pipe {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "io.pipe"%go [].
+
+#[global] Opaque pipe.
 
 Definition PipeReader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "io.PipeReader"%go [].
 
+#[global] Opaque PipeReader.
+
 Definition PipeWriter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "io.PipeWriter"%go [].
+
+#[global] Opaque PipeWriter.
 
 Axiom Closerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 

@@ -14,19 +14,35 @@ Module binary.
 
 Definition ByteOrder {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "encoding/binary.ByteOrder"%go [].
 
+#[global] Opaque ByteOrder.
+
 Definition AppendByteOrder {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "encoding/binary.AppendByteOrder"%go [].
+
+#[global] Opaque AppendByteOrder.
 
 Definition littleEndian {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "encoding/binary.littleEndian"%go [].
 
+#[global] Opaque littleEndian.
+
 Definition bigEndian {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "encoding/binary.bigEndian"%go [].
+
+#[global] Opaque bigEndian.
 
 Definition coder {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "encoding/binary.coder"%go [].
 
+#[global] Opaque coder.
+
 Definition decoder {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "encoding/binary.decoder"%go [].
+
+#[global] Opaque decoder.
 
 Definition encoder {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "encoding/binary.encoder"%go [].
 
+#[global] Opaque encoder.
+
 Definition nativeEndian {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "encoding/binary.nativeEndian"%go [].
+
+#[global] Opaque nativeEndian.
 
 Axiom ByteOrderⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 

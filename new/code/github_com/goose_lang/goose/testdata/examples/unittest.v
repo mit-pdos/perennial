@@ -16,91 +16,179 @@ Module unittest.
 
 Definition Foo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.Foo"%go [].
 
+#[global] Opaque Foo.
+
 Definition importantStruct {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.importantStruct"%go [].
+
+#[global] Opaque importantStruct.
 
 Definition stringWrapper {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.stringWrapper"%go [].
 
+#[global] Opaque stringWrapper.
+
 Definition Uint32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.Uint32"%go [].
+
+#[global] Opaque Uint32.
 
 Definition numWrapper {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.numWrapper"%go [].
 
+#[global] Opaque numWrapper.
+
 Definition withInterface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.withInterface"%go [].
+
+#[global] Opaque withInterface.
 
 Definition diskWrapper {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.diskWrapper"%go [].
 
+#[global] Opaque diskWrapper.
+
 Definition embedA {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.embedA"%go [].
+
+#[global] Opaque embedA.
 
 Definition embedB {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.embedB"%go [].
 
+#[global] Opaque embedB.
+
 Definition embedC {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.embedC"%go [].
+
+#[global] Opaque embedC.
 
 Definition embedD {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.embedD"%go [].
 
+#[global] Opaque embedD.
+
 Definition Enum1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.Enum1"%go [].
+
+#[global] Opaque Enum1.
 
 Definition Enum2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.Enum2"%go [].
 
+#[global] Opaque Enum2.
+
 Definition Fooer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.Fooer"%go [].
+
+#[global] Opaque Fooer.
 
 Definition concreteFooer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.concreteFooer"%go [].
 
+#[global] Opaque concreteFooer.
+
 Definition FooerUser {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.FooerUser"%go [].
+
+#[global] Opaque FooerUser.
 
 Definition PointerInterface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.PointerInterface"%go [].
 
+#[global] Opaque PointerInterface.
+
 Definition concrete1 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.concrete1"%go [].
+
+#[global] Opaque concrete1.
 
 Definition my_u32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.my_u32"%go [].
 
+#[global] Opaque my_u32.
+
 Definition also_u32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.also_u32"%go [].
+
+#[global] Opaque also_u32.
 
 Definition allTheLiterals {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.allTheLiterals"%go [].
 
+#[global] Opaque allTheLiterals.
+
 Definition hasCondVar {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.hasCondVar"%go [].
+
+#[global] Opaque hasCondVar.
 
 Definition IntWrapper {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.IntWrapper"%go [].
 
+#[global] Opaque IntWrapper.
+
 Definition MapWrapper {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.MapWrapper"%go [].
+
+#[global] Opaque MapWrapper.
 
 Definition mapElem {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.mapElem"%go [].
 
+#[global] Opaque mapElem.
+
 Definition containsPointer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.containsPointer"%go [].
+
+#[global] Opaque containsPointer.
 
 Definition wrapExternalStruct {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.wrapExternalStruct"%go [].
 
+#[global] Opaque wrapExternalStruct.
+
 Definition typing {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.typing"%go [].
+
+#[global] Opaque typing.
 
 Definition composite {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.composite"%go [].
 
+#[global] Opaque composite.
+
 Definition R {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.R"%go [].
+
+#[global] Opaque R.
 
 Definition Other {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.Other"%go [].
 
+#[global] Opaque Other.
+
 Definition RecursiveEmbedded {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.RecursiveEmbedded"%go [].
+
+#[global] Opaque RecursiveEmbedded.
 
 Definition Block {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.Block"%go [].
 
+#[global] Opaque Block.
+
 Definition SliceAlias {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.SliceAlias"%go [].
+
+#[global] Opaque SliceAlias.
 
 Definition thing {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.thing"%go [].
 
+#[global] Opaque thing.
+
 Definition sliceOfThings {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.sliceOfThings"%go [].
+
+#[global] Opaque sliceOfThings.
 
 Definition Point {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.Point"%go [].
 
+#[global] Opaque Point.
+
 Definition TwoInts {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.TwoInts"%go [].
+
+#[global] Opaque TwoInts.
 
 Definition S {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.S"%go [].
 
+#[global] Opaque S.
+
 Definition B {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.B"%go [].
+
+#[global] Opaque B.
 
 Definition A {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.A"%go [].
 
+#[global] Opaque A.
+
 Definition Timestamp {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.Timestamp"%go [].
+
+#[global] Opaque Timestamp.
 
 Definition UseTypeAbbrev {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.UseTypeAbbrev"%go [].
 
+#[global] Opaque UseTypeAbbrev.
+
 Definition UseNamedType {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/unittest.UseNamedType"%go [].
+
+#[global] Opaque UseNamedType.
 
 Definition my_u64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.uint64.
 

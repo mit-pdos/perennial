@@ -26,73 +26,143 @@ Module raft.
 
 Definition raftLog {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3.raftLog"%go [].
 
+#[global] Opaque raftLog.
+
 Definition unstable {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3.unstable"%go [].
+
+#[global] Opaque unstable.
 
 Definition Logger {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3.Logger"%go [].
 
+#[global] Opaque Logger.
+
 Definition DefaultLogger {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3.DefaultLogger"%go [].
+
+#[global] Opaque DefaultLogger.
 
 Definition SnapshotStatus {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3.SnapshotStatus"%go [].
 
+#[global] Opaque SnapshotStatus.
+
 Definition SoftState {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3.SoftState"%go [].
+
+#[global] Opaque SoftState.
 
 Definition Ready {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3.Ready"%go [].
 
+#[global] Opaque Ready.
+
 Definition Node {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3.Node"%go [].
+
+#[global] Opaque Node.
 
 Definition Peer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3.Peer"%go [].
 
+#[global] Opaque Peer.
+
 Definition msgWithResult {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3.msgWithResult"%go [].
+
+#[global] Opaque msgWithResult.
 
 Definition node {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3.node"%go [].
 
+#[global] Opaque node.
+
 Definition ReadOnlyOption {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3.ReadOnlyOption"%go [].
+
+#[global] Opaque ReadOnlyOption.
 
 Definition lockedRand {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3.lockedRand"%go [].
 
+#[global] Opaque lockedRand.
+
 Definition CampaignType {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3.CampaignType"%go [].
+
+#[global] Opaque CampaignType.
 
 Definition StateType {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3.StateType"%go [].
 
+#[global] Opaque StateType.
+
 Definition Config {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3.Config"%go [].
+
+#[global] Opaque Config.
 
 Definition raft {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3.raft"%go [].
 
+#[global] Opaque raft.
+
 Definition stepFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3.stepFunc"%go [].
+
+#[global] Opaque stepFunc.
 
 Definition RawNode {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3.RawNode"%go [].
 
+#[global] Opaque RawNode.
+
 Definition ProgressType {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3.ProgressType"%go [].
+
+#[global] Opaque ProgressType.
 
 Definition ReadState {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3.ReadState"%go [].
 
+#[global] Opaque ReadState.
+
 Definition readIndexStatus {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3.readIndexStatus"%go [].
+
+#[global] Opaque readIndexStatus.
 
 Definition readOnly {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3.readOnly"%go [].
 
+#[global] Opaque readOnly.
+
 Definition TraceLogger {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3.TraceLogger"%go [].
+
+#[global] Opaque TraceLogger.
 
 Definition TracingEvent {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3.TracingEvent"%go [].
 
+#[global] Opaque TracingEvent.
+
 Definition Status {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3.Status"%go [].
+
+#[global] Opaque Status.
 
 Definition BasicStatus {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3.BasicStatus"%go [].
 
+#[global] Opaque BasicStatus.
+
 Definition Storage {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3.Storage"%go [].
+
+#[global] Opaque Storage.
 
 Definition inMemStorageCallStats {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3.inMemStorageCallStats"%go [].
 
+#[global] Opaque inMemStorageCallStats.
+
 Definition MemoryStorage {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3.MemoryStorage"%go [].
+
+#[global] Opaque MemoryStorage.
 
 Definition entryID {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3.entryID"%go [].
 
+#[global] Opaque entryID.
+
 Definition logSlice {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3.logSlice"%go [].
+
+#[global] Opaque logSlice.
 
 Definition EntryFormatter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3.EntryFormatter"%go [].
 
+#[global] Opaque EntryFormatter.
+
 Definition entryEncodingSize {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3.entryEncodingSize"%go [].
 
+#[global] Opaque entryEncodingSize.
+
 Definition entryPayloadSize {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3.entryPayloadSize"%go [].
+
+#[global] Opaque entryPayloadSize.
 
 Definition lenMultiple {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #2.
 

@@ -18,8 +18,8 @@ Class StringSemantics `{!GoSemanticsFunctions} :=
   #[global] string_len_unfold `{!t ↓u go.string} :: FuncUnfold go.len [t]
     (λ: "s", InternalStringLen "s")%V;
 
-  #[global] string_index (s : go_string) (i : w64) `{!t ↓u go.string} ::
-    ⟦Index t, (#s, #i)⟧ ⤳
+  #[global] string_index (s : go_string) (i : w64) ::
+    ⟦Index go.string, (#s, #i)⟧ ⤳[under]
     (match (s !! (sint.nat i)) with Some b => #b | _ => Panic "index out of bounds" end);
 
   #[global] convert_byte_to_string (c : w8) ::

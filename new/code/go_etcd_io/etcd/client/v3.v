@@ -13,211 +13,419 @@ Module clientv3.
 
 Definition AuthEnableResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.AuthEnableResponse"%go [].
 
+#[global] Opaque AuthEnableResponse.
+
 Definition AuthDisableResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.AuthDisableResponse"%go [].
+
+#[global] Opaque AuthDisableResponse.
 
 Definition AuthStatusResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.AuthStatusResponse"%go [].
 
+#[global] Opaque AuthStatusResponse.
+
 Definition AuthenticateResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.AuthenticateResponse"%go [].
+
+#[global] Opaque AuthenticateResponse.
 
 Definition AuthUserAddResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.AuthUserAddResponse"%go [].
 
+#[global] Opaque AuthUserAddResponse.
+
 Definition AuthUserDeleteResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.AuthUserDeleteResponse"%go [].
+
+#[global] Opaque AuthUserDeleteResponse.
 
 Definition AuthUserChangePasswordResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.AuthUserChangePasswordResponse"%go [].
 
+#[global] Opaque AuthUserChangePasswordResponse.
+
 Definition AuthUserGrantRoleResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.AuthUserGrantRoleResponse"%go [].
+
+#[global] Opaque AuthUserGrantRoleResponse.
 
 Definition AuthUserGetResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.AuthUserGetResponse"%go [].
 
+#[global] Opaque AuthUserGetResponse.
+
 Definition AuthUserRevokeRoleResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.AuthUserRevokeRoleResponse"%go [].
+
+#[global] Opaque AuthUserRevokeRoleResponse.
 
 Definition AuthRoleAddResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.AuthRoleAddResponse"%go [].
 
+#[global] Opaque AuthRoleAddResponse.
+
 Definition AuthRoleGrantPermissionResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.AuthRoleGrantPermissionResponse"%go [].
+
+#[global] Opaque AuthRoleGrantPermissionResponse.
 
 Definition AuthRoleGetResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.AuthRoleGetResponse"%go [].
 
+#[global] Opaque AuthRoleGetResponse.
+
 Definition AuthRoleRevokePermissionResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.AuthRoleRevokePermissionResponse"%go [].
+
+#[global] Opaque AuthRoleRevokePermissionResponse.
 
 Definition AuthRoleDeleteResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.AuthRoleDeleteResponse"%go [].
 
+#[global] Opaque AuthRoleDeleteResponse.
+
 Definition AuthUserListResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.AuthUserListResponse"%go [].
+
+#[global] Opaque AuthUserListResponse.
 
 Definition AuthRoleListResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.AuthRoleListResponse"%go [].
 
+#[global] Opaque AuthRoleListResponse.
+
 Definition PermissionType {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.PermissionType"%go [].
+
+#[global] Opaque PermissionType.
 
 Definition Permission {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.Permission"%go [].
 
+#[global] Opaque Permission.
+
 Definition UserAddOptions {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.UserAddOptions"%go [].
+
+#[global] Opaque UserAddOptions.
 
 Definition Auth {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.Auth"%go [].
 
+#[global] Opaque Auth.
+
 Definition authClient {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.authClient"%go [].
+
+#[global] Opaque authClient.
 
 Definition Client {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.Client"%go [].
 
+#[global] Opaque Client.
+
 Definition Option {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.Option"%go [].
+
+#[global] Opaque Option.
 
 Definition Member {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.Member"%go [].
 
+#[global] Opaque Member.
+
 Definition MemberListResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.MemberListResponse"%go [].
+
+#[global] Opaque MemberListResponse.
 
 Definition MemberAddResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.MemberAddResponse"%go [].
 
+#[global] Opaque MemberAddResponse.
+
 Definition MemberRemoveResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.MemberRemoveResponse"%go [].
+
+#[global] Opaque MemberRemoveResponse.
 
 Definition MemberUpdateResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.MemberUpdateResponse"%go [].
 
+#[global] Opaque MemberUpdateResponse.
+
 Definition MemberPromoteResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.MemberPromoteResponse"%go [].
+
+#[global] Opaque MemberPromoteResponse.
 
 Definition Cluster {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.Cluster"%go [].
 
+#[global] Opaque Cluster.
+
 Definition cluster {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.cluster"%go [].
+
+#[global] Opaque cluster.
 
 Definition CompactOp {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.CompactOp"%go [].
 
+#[global] Opaque CompactOp.
+
 Definition CompactOption {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.CompactOption"%go [].
+
+#[global] Opaque CompactOption.
 
 Definition CompareTarget {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.CompareTarget"%go [].
 
+#[global] Opaque CompareTarget.
+
 Definition CompareResult {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.CompareResult"%go [].
+
+#[global] Opaque CompareResult.
 
 Definition Cmp {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.Cmp"%go [].
 
+#[global] Opaque Cmp.
+
 Definition Config {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.Config"%go [].
+
+#[global] Opaque Config.
 
 Definition ConfigSpec {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.ConfigSpec"%go [].
 
+#[global] Opaque ConfigSpec.
+
 Definition SecureConfig {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.SecureConfig"%go [].
+
+#[global] Opaque SecureConfig.
 
 Definition AuthConfig {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.AuthConfig"%go [].
 
+#[global] Opaque AuthConfig.
+
 Definition CompactResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.CompactResponse"%go [].
+
+#[global] Opaque CompactResponse.
 
 Definition PutResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.PutResponse"%go [].
 
+#[global] Opaque PutResponse.
+
 Definition GetResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.GetResponse"%go [].
+
+#[global] Opaque GetResponse.
 
 Definition DeleteResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.DeleteResponse"%go [].
 
+#[global] Opaque DeleteResponse.
+
 Definition TxnResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.TxnResponse"%go [].
+
+#[global] Opaque TxnResponse.
 
 Definition KV {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.KV"%go [].
 
+#[global] Opaque KV.
+
 Definition OpResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.OpResponse"%go [].
+
+#[global] Opaque OpResponse.
 
 Definition kv {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.kv"%go [].
 
+#[global] Opaque kv.
+
 Definition LeaseRevokeResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.LeaseRevokeResponse"%go [].
+
+#[global] Opaque LeaseRevokeResponse.
 
 Definition LeaseID {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.LeaseID"%go [].
 
+#[global] Opaque LeaseID.
+
 Definition LeaseGrantResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.LeaseGrantResponse"%go [].
+
+#[global] Opaque LeaseGrantResponse.
 
 Definition LeaseKeepAliveResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.LeaseKeepAliveResponse"%go [].
 
+#[global] Opaque LeaseKeepAliveResponse.
+
 Definition LeaseTimeToLiveResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.LeaseTimeToLiveResponse"%go [].
+
+#[global] Opaque LeaseTimeToLiveResponse.
 
 Definition LeaseStatus {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.LeaseStatus"%go [].
 
+#[global] Opaque LeaseStatus.
+
 Definition LeaseLeasesResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.LeaseLeasesResponse"%go [].
+
+#[global] Opaque LeaseLeasesResponse.
 
 Definition ErrKeepAliveHalted {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.ErrKeepAliveHalted"%go [].
 
+#[global] Opaque ErrKeepAliveHalted.
+
 Definition Lease {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.Lease"%go [].
+
+#[global] Opaque Lease.
 
 Definition lessor {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.lessor"%go [].
 
+#[global] Opaque lessor.
+
 Definition keepAlive {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.keepAlive"%go [].
+
+#[global] Opaque keepAlive.
 
 Definition keepAliveCtxKey {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.keepAliveCtxKey"%go [].
 
+#[global] Opaque keepAliveCtxKey.
+
 Definition DefragmentResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.DefragmentResponse"%go [].
+
+#[global] Opaque DefragmentResponse.
 
 Definition AlarmResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.AlarmResponse"%go [].
 
+#[global] Opaque AlarmResponse.
+
 Definition AlarmMember {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.AlarmMember"%go [].
+
+#[global] Opaque AlarmMember.
 
 Definition StatusResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.StatusResponse"%go [].
 
+#[global] Opaque StatusResponse.
+
 Definition HashKVResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.HashKVResponse"%go [].
+
+#[global] Opaque HashKVResponse.
 
 Definition MoveLeaderResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.MoveLeaderResponse"%go [].
 
+#[global] Opaque MoveLeaderResponse.
+
 Definition DowngradeResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.DowngradeResponse"%go [].
+
+#[global] Opaque DowngradeResponse.
 
 Definition DowngradeAction {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.DowngradeAction"%go [].
 
+#[global] Opaque DowngradeAction.
+
 Definition Maintenance {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.Maintenance"%go [].
+
+#[global] Opaque Maintenance.
 
 Definition SnapshotResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.SnapshotResponse"%go [].
 
+#[global] Opaque SnapshotResponse.
+
 Definition maintenance {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.maintenance"%go [].
+
+#[global] Opaque maintenance.
 
 Definition snapshotReadCloser {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.snapshotReadCloser"%go [].
 
+#[global] Opaque snapshotReadCloser.
+
 Definition opType {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.opType"%go [].
+
+#[global] Opaque opType.
 
 Definition Op {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.Op"%go [].
 
+#[global] Opaque Op.
+
 Definition OpOption {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.OpOption"%go [].
+
+#[global] Opaque OpOption.
 
 Definition LeaseOp {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.LeaseOp"%go [].
 
+#[global] Opaque LeaseOp.
+
 Definition LeaseOption {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.LeaseOption"%go [].
+
+#[global] Opaque LeaseOption.
 
 Definition retryPolicy {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.retryPolicy"%go [].
 
+#[global] Opaque retryPolicy.
+
 Definition retryKVClient {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.retryKVClient"%go [].
+
+#[global] Opaque retryKVClient.
 
 Definition retryLeaseClient {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.retryLeaseClient"%go [].
 
+#[global] Opaque retryLeaseClient.
+
 Definition retryClusterClient {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.retryClusterClient"%go [].
+
+#[global] Opaque retryClusterClient.
 
 Definition retryMaintenanceClient {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.retryMaintenanceClient"%go [].
 
+#[global] Opaque retryMaintenanceClient.
+
 Definition retryAuthClient {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.retryAuthClient"%go [].
+
+#[global] Opaque retryAuthClient.
 
 Definition serverStreamingRetryingStream {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.serverStreamingRetryingStream"%go [].
 
+#[global] Opaque serverStreamingRetryingStream.
+
 Definition backoffFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.backoffFunc"%go [].
+
+#[global] Opaque backoffFunc.
 
 Definition options {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.options"%go [].
 
+#[global] Opaque options.
+
 Definition retryOption {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.retryOption"%go [].
+
+#[global] Opaque retryOption.
 
 Definition SortTarget {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.SortTarget"%go [].
 
+#[global] Opaque SortTarget.
+
 Definition SortOrder {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.SortOrder"%go [].
+
+#[global] Opaque SortOrder.
 
 Definition SortOption {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.SortOption"%go [].
 
+#[global] Opaque SortOption.
+
 Definition Txn {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.Txn"%go [].
+
+#[global] Opaque Txn.
 
 Definition txn {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.txn"%go [].
 
+#[global] Opaque txn.
+
 Definition Event {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.Event"%go [].
+
+#[global] Opaque Event.
 
 Definition WatchChan {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.WatchChan"%go [].
 
+#[global] Opaque WatchChan.
+
 Definition Watcher {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.Watcher"%go [].
+
+#[global] Opaque Watcher.
 
 Definition WatchResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.WatchResponse"%go [].
 
+#[global] Opaque WatchResponse.
+
 Definition watcher {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.watcher"%go [].
+
+#[global] Opaque watcher.
 
 Definition watchGRPCStream {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.watchGRPCStream"%go [].
 
+#[global] Opaque watchGRPCStream.
+
 Definition watchStreamRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.watchStreamRequest"%go [].
+
+#[global] Opaque watchStreamRequest.
 
 Definition watchRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.watchRequest"%go [].
 
+#[global] Opaque watchRequest.
+
 Definition progressRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.progressRequest"%go [].
+
+#[global] Opaque progressRequest.
 
 Definition watcherStream {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.watcherStream"%go [].
 
+#[global] Opaque watcherStream.
+
 Definition valCtx {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/client/v3.valCtx"%go [].
+
+#[global] Opaque valCtx.
 
 Axiom AuthEnableResponseⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
