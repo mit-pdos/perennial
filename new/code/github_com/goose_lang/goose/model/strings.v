@@ -23,7 +23,7 @@ Definition StringToByteSliceⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalCo
     (for: (λ: <>, (![go.int] "i") <⟨go.int⟩ (let: "$a0" := (![go.string] "s") in
     (FuncResolve go.len [go.string] #()) "$a0")); (λ: <>, do:  ("i" <-[go.int] ((![go.int] "i") +⟨go.int⟩ #(W64 1)))) := λ: <>,
       let: "$r0" := (let: "$a0" := (![go.SliceType go.byte] "a") in
-      let: "$a1" := ((let: "$sl0" := (Index go.string (![go.string] "s", Convert go.int go.int (![go.int] "i"))) in
+      let: "$a1" := ((let: "$sl0" := (Index go.string (![go.string] "s", ![go.int] "i")) in
       CompositeLiteral (go.SliceType go.byte) (LiteralValue [KeyedElement None (ElementExpression go.byte "$sl0")]))) in
       (FuncResolve go.append [go.SliceType go.byte] #()) "$a0" "$a1") in
       do:  ("a" <-[go.SliceType go.byte] "$r0")));;;
