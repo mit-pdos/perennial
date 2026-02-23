@@ -63,7 +63,7 @@ Proof using W.
                                   "%Hx8" ∷ ⌜ uint.Z x < 2^8 ⌝)%I with "[x n]";
     [iFrame; [iSplit; try done; word] ..|].
   iIntros "% @". wp_auto.
-
+  wp_bind.
   destruct lookup eqn:Hlookup.
   2:{ exfalso. apply lookup_ge_None in Hlookup. simpl in Hlookup. word. }
   wp_auto. wp_end.
