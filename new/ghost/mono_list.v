@@ -15,23 +15,11 @@ and a lower-bound at [l'] imply that [l' `prefix_of` l], and [mono_list_update],
 which allows one to grow the auth element by appending only. At any time the
 auth list can be "snapshotted" with [mono_list_lb_own_get] to produce a
 persistent lower-bound. *)
-From iris.proofmode Require Import proofmode.
+From New.ghost Require Export own.
 From iris.algebra.lib Require Import mono_list.
 From iris.bi.lib Require Import fractional.
-From iris.base_logic.lib Require Export own.
-From iris.prelude Require Import options.
 
-Class mono_listG (A : Type) Σ :=
-  MonoListG { #[local] mono_list_inG :: inG Σ (mono_listR (leibnizO A)) }.
-
-Definition mono_listΣ (A : Type) : gFunctors :=
-  #[GFunctor (mono_listR (leibnizO A))].
-
-Global Instance subG_mono_listΣ {A Σ} :
-  subG (mono_listΣ A) Σ → (mono_listG A) Σ.
-Proof. solve_inG. Qed.
-
-Local Definition mono_list_auth_own_def `{!mono_listG A Σ}
+Local Definition mono_list_auth_own_def {A} `{!allG Σ}
     (γ : gname) (q : Qp) (l : list A) : iProp Σ :=
   own γ (●ML{#q} (l : listO (leibnizO A))).
 Local Definition mono_list_auth_own_aux : seal (@mono_list_auth_own_def).
@@ -41,7 +29,7 @@ Local Definition mono_list_auth_own_unseal :
   @mono_list_auth_own = @mono_list_auth_own_def := mono_list_auth_own_aux.(seal_eq).
 Global Arguments mono_list_auth_own {A Σ _} γ q l.
 
-Local Definition mono_list_lb_own_def `{!mono_listG A Σ}
+Local Definition mono_list_lb_own_def {A} `{!allG Σ}
     (γ : gname) (l : list A) : iProp Σ :=
   own γ (◯ML (l : listO (leibnizO A))).
 Local Definition mono_list_lb_own_aux : seal (@mono_list_lb_own_def).
@@ -51,7 +39,7 @@ Local Definition mono_list_lb_own_unseal :
   @mono_list_lb_own = @mono_list_lb_own_def := mono_list_lb_own_aux.(seal_eq).
 Global Arguments mono_list_lb_own {A Σ _} γ l.
 
-Definition mono_list_idx_own `{!mono_listG A Σ}
+Definition mono_list_idx_own {A} `{!allG Σ}
     (γ : gname) (i : nat) (a : A) : iProp Σ :=
   ∃ l : list A, ⌜ l !! i = Some a ⌝ ∗ mono_list_lb_own γ l.
 
@@ -60,7 +48,7 @@ Local Ltac unseal := rewrite
   ?mono_list_lb_own_unseal /mono_list_lb_own_def.
 
 Section mono_list_own.
-  Context `{!mono_listG A Σ}.
+  Context {A : Type} `{!allG Σ}.
   Implicit Types (l : list A) (i : nat) (a : A).
 
   Global Instance mono_list_auth_own_timeless γ q l : Timeless (mono_list_auth_own γ q l).
@@ -166,7 +154,7 @@ Section mono_list_own.
   Proof. by apply mono_list_auth_own_update, prefix_app_r. Qed.
 
   Lemma mono_list_lb_own_nil γ :
-    ⊢ |==> mono_list_lb_own γ [].
+    ⊢ |==> mono_list_lb_own (A:=A) γ [].
   Proof. unseal. iApply own_unit. Qed.
 
   Lemma mono_list_lb_idx_lookup γ l i a :

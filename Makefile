@@ -44,12 +44,6 @@ new-goose:
 new-goose.vos:
 	$(Q)$(MAKE) $$(./etc/package-sources.sh new-goose | sed 's/\.v$$/\.vos/')
 
-.PHONY: old-goose old-goose.vos
-old-goose:
-	$(Q)$(MAKE) $$(./etc/package-sources.sh old-goose | sed 's/\.v$$/\.vo/')
-old-goose.vos:
-	$(Q)$(MAKE) $$(./etc/package-sources.sh old-goose | sed 's/\.v$$/\.vos/')
-
 .rocqdeps.d: $(ALL_VFILES) _RocqProject
 	@echo "ROCQ DEP $@"
 	$(Q)rocq dep -vos -f _RocqProject $(ROCQ_DEP_ARGS) $(ALL_VFILES) > $@

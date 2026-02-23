@@ -168,11 +168,6 @@ Qed.
 
 (** ** Endpoint Operations *)
 
- (* is_mpmc γ ch n_prod n_cons P R -∗ *)
- (*  £1 ∗ £1 -∗ *)
- (*  mpmc_producer γ sent ∗ P v -∗ *)
- (*  ▷(mpmc_producer γ (sent ⊎ {[+ v +]}) -∗ Φ) -∗ *)
- (*  SendAU ch v γ.(mpmc_chan_name) Φ. *)
 
 (** Endpoint sends value *)
 Lemma dsp_send_au γ (lr_chan rl_chan : loc) (v : V) (p : iProto Σ V) Φ :

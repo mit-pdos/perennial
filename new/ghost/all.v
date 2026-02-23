@@ -11,10 +11,11 @@
 (** For developers: the universal cmra is roughly a coproduct of all supported
    cmras. This is an infinite coproduct, as it supports e.g. [authR A] for any
    type [A]. The type [syntax.cmra] is the indexing type for the coproduct, and
-   each one denotes some actual [cmra] via [int_cmra]. To add more cmras, add it
-   to [syntax], and then also add the relevant [IsCmra] instances; [IsCmra]
-   helps map an arbitrary [cmra] into some [syntax.cmra] as evidence that it is
-   included in the universal cmra.
+   each one denotes some actual [cmra] via [int_cmra].
+   To add more cmras, add both the `R` and `UR` variants to [syntax],
+   and then also add the relevant [IsCmra] instances.
+   [IsCmra] helps map an arbitrary [cmra] into some [syntax.cmra] as
+   evidence that it is included in the universal cmra.
 
    Iris does not provide a coproduct cmra library. Iris does provide arbitrary
    products of [ucmra]s via [discrete_funUR]. In the category of ucmras,
@@ -24,9 +25,12 @@
    having (something bigger than) the coproduct as [discrete_funUR (optionUR ∘
    int_cmra)]. *)
 
+(* alphabetical to make it easier to see what we've added. *)
 From iris.algebra Require Export
-  gset functions reservation_map mra dyn_reservation_map view gmultiset csum
-  gmap_view max_prefix_list dfrac_agree auth excl numbers proofmode_classes.
+  auth csum dyn_reservation_map excl functions gmultiset gset
+  max_prefix_list mra numbers proofmode_classes reservation_map view.
+From iris.algebra.lib Require Export
+  dfrac_agree gmap_view.
 From Coq Require Import Logic.ClassicalEpsilon Logic.FunctionalExtensionality.
 From iris.base_logic Require Export proofmode iprop.
 From iris.base_logic Require Import own.
@@ -67,7 +71,8 @@ with ucmra :=
 | gset_disjUR (K : Type) `{Countable K}
 | max_prefix_listUR (A : ofe)
 | gmapUR (K : Type) `{Countable K} (V : cmra)
-| natUR.
+| natUR
+| max_natUR.
 End syntax.
 
 Section denote.
@@ -110,6 +115,7 @@ with int_ucmra (x : syntax.ucmra) : ucmra :=
   | syntax.max_prefix_listUR A => max_prefix_listUR (int_ofe A)
   | syntax.gmapUR K V => gmapUR K (int_cmra V)
   | syntax.natUR => natUR
+  | syntax.max_natUR => max_natUR
   end.
 
 Fixpoint intF_cmra (x : syntax.cmra) : rFunctor :=
@@ -144,6 +150,7 @@ match x with
 | syntax.max_prefix_listUR A => max_prefix_listUR (int_ofe A)
 | syntax.gmapUR K V => gmapURF K (intF_cmra V)
 | syntax.natUR => natUR
+| syntax.max_natUR => max_natUR
 end.
 
 Class IsCmra (A : cmra) (e : syntax.cmra) :=
@@ -172,9 +179,11 @@ Proof. s. Qed.
 #[global] Instance is_gmap_viewR K `{Countable K} `{!IsCmra V Ve} :
   IsCmra (gmap_viewR K V) (syntax.gmap_viewR K Ve).
 Proof. s. Qed.
-#[global] Instance is_saved_propR : IsCmra (dfrac_agreeR (laterO PROP)) (syntax.saved_propR).
+#[global] Instance is_saved_propR :
+  IsCmra (dfrac_agreeR (laterO PROP)) (syntax.saved_propR).
 Proof. s. Qed.
-#[global] Instance is_saved_predR A : IsCmra (dfrac_agreeR (A -d> laterO PROP)) (syntax.saved_predR A).
+#[global] Instance is_saved_predR A :
+  IsCmra (dfrac_agreeR (A -d> laterO PROP)) (syntax.saved_predR A).
 Proof. s. Qed.
 #[global] Instance is_agreeR `{!IsOfe A Ae} :
   IsCmra (agreeR A) (syntax.agreeR Ae).
@@ -219,14 +228,13 @@ Proof. s. Qed.
 #[global] Instance is_gmapUR K `{Countable K} `{!IsCmra V Ve} :
   IsUcmra (gmapUR K V) (syntax.gmapUR K Ve).
 Proof. s. Qed.
-#[global] Instance is_natUR :
-  IsUcmra natUR syntax.natUR.
+#[global] Instance is_natUR : IsUcmra natUR syntax.natUR.
 Proof. s. Qed.
-#[global] Instance is_unitO :
-  IsOfe unitO syntax.unitO.
+#[global] Instance is_max_natUR : IsUcmra max_natUR syntax.max_natUR.
 Proof. s. Qed.
-#[global] Instance is_leibnizO A :
-  IsOfe (leibnizO A) (syntax.leibnizO A).
+#[global] Instance is_unitO : IsOfe unitO syntax.unitO.
+Proof. s. Qed.
+#[global] Instance is_leibnizO A : IsOfe (leibnizO A) (syntax.leibnizO A).
 Proof. s. Qed.
 End denote.
 

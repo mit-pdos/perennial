@@ -9,4 +9,5 @@ From New.proof.github_com.goose_lang.goose.testdata.examples.semantics_proof
        panic
        precedence
        structs
+       type_equality
 .
