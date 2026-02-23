@@ -58,7 +58,7 @@ jobs:
       - uses: actions/setup-go@v6
         with:
           # pin exact version for deterministic stdlib translation.
-          go-version: "1.25.6"
+          go-version: "1.26.0"
           # repo doesn't have go.sum file. nothing to cache.
           cache: false
       - name: install gh-paired-pr
