@@ -9,15 +9,27 @@ Module membershippb.
 
 Definition RaftAttributes {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/membershippb.RaftAttributes"%go [].
 
+#[global] Opaque RaftAttributes.
+
 Definition Attributes {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/membershippb.Attributes"%go [].
+
+#[global] Opaque Attributes.
 
 Definition Member {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/membershippb.Member"%go [].
 
+#[global] Opaque Member.
+
 Definition ClusterVersionSetRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/membershippb.ClusterVersionSetRequest"%go [].
+
+#[global] Opaque ClusterVersionSetRequest.
 
 Definition ClusterMemberAttrSetRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/membershippb.ClusterMemberAttrSetRequest"%go [].
 
+#[global] Opaque ClusterMemberAttrSetRequest.
+
 Definition DowngradeInfoSetRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/membershippb.DowngradeInfoSetRequest"%go [].
+
+#[global] Opaque DowngradeInfoSetRequest.
 
 Axiom RaftAttributesⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 

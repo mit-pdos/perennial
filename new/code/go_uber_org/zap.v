@@ -10,89 +10,175 @@ Module zap.
 
 Definition objects {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) : go.type := go.Named "go.uber.org/zap.objects"%go [T].
 
+#[global] Opaque objects.
+
 Definition ObjectMarshalerPtr {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) : go.type := go.Named "go.uber.org/zap.ObjectMarshalerPtr"%go [T].
+
+#[global] Opaque ObjectMarshalerPtr.
 
 Definition objectValues {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) (P : go.type) : go.type := go.Named "go.uber.org/zap.objectValues"%go [T; P].
 
+#[global] Opaque objectValues.
+
 Definition stringers {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) : go.type := go.Named "go.uber.org/zap.stringers"%go [T].
+
+#[global] Opaque stringers.
 
 Definition bools {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap.bools"%go [].
 
+#[global] Opaque bools.
+
 Definition byteStringsArray {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap.byteStringsArray"%go [].
+
+#[global] Opaque byteStringsArray.
 
 Definition complex128s {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap.complex128s"%go [].
 
+#[global] Opaque complex128s.
+
 Definition complex64s {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap.complex64s"%go [].
+
+#[global] Opaque complex64s.
 
 Definition durations {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap.durations"%go [].
 
+#[global] Opaque durations.
+
 Definition float64s {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap.float64s"%go [].
+
+#[global] Opaque float64s.
 
 Definition float32s {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap.float32s"%go [].
 
+#[global] Opaque float32s.
+
 Definition ints {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap.ints"%go [].
+
+#[global] Opaque ints.
 
 Definition int64s {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap.int64s"%go [].
 
+#[global] Opaque int64s.
+
 Definition int32s {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap.int32s"%go [].
+
+#[global] Opaque int32s.
 
 Definition int16s {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap.int16s"%go [].
 
+#[global] Opaque int16s.
+
 Definition int8s {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap.int8s"%go [].
+
+#[global] Opaque int8s.
 
 Definition stringArray {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap.stringArray"%go [].
 
+#[global] Opaque stringArray.
+
 Definition times {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap.times"%go [].
+
+#[global] Opaque times.
 
 Definition uints {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap.uints"%go [].
 
+#[global] Opaque uints.
+
 Definition uint64s {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap.uint64s"%go [].
+
+#[global] Opaque uint64s.
 
 Definition uint32s {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap.uint32s"%go [].
 
+#[global] Opaque uint32s.
+
 Definition uint16s {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap.uint16s"%go [].
+
+#[global] Opaque uint16s.
 
 Definition uint8s {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap.uint8s"%go [].
 
+#[global] Opaque uint8s.
+
 Definition uintptrs {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap.uintptrs"%go [].
+
+#[global] Opaque uintptrs.
 
 Definition SamplingConfig {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap.SamplingConfig"%go [].
 
+#[global] Opaque SamplingConfig.
+
 Definition Config {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap.Config"%go [].
+
+#[global] Opaque Config.
 
 Definition errArray {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap.errArray"%go [].
 
+#[global] Opaque errArray.
+
 Definition errArrayElem {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap.errArrayElem"%go [].
+
+#[global] Opaque errArrayElem.
 
 Definition dictObject {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap.dictObject"%go [].
 
+#[global] Opaque dictObject.
+
 Definition anyFieldC {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) : go.type := go.Named "go.uber.org/zap.anyFieldC"%go [T].
+
+#[global] Opaque anyFieldC.
 
 Definition loggerWriter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap.loggerWriter"%go [].
 
+#[global] Opaque loggerWriter.
+
 Definition LevelEnablerFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap.LevelEnablerFunc"%go [].
+
+#[global] Opaque LevelEnablerFunc.
 
 Definition AtomicLevel {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap.AtomicLevel"%go [].
 
+#[global] Opaque AtomicLevel.
+
 Definition Logger {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap.Logger"%go [].
+
+#[global] Opaque Logger.
 
 Definition Option {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap.Option"%go [].
 
+#[global] Opaque Option.
+
 Definition optionFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap.optionFunc"%go [].
+
+#[global] Opaque optionFunc.
 
 Definition Sink {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap.Sink"%go [].
 
+#[global] Opaque Sink.
+
 Definition errSinkNotFound {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap.errSinkNotFound"%go [].
+
+#[global] Opaque errSinkNotFound.
 
 Definition nopCloserSink {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap.nopCloserSink"%go [].
 
+#[global] Opaque nopCloserSink.
+
 Definition sinkRegistry {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap.sinkRegistry"%go [].
+
+#[global] Opaque sinkRegistry.
 
 Definition SugaredLogger {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap.SugaredLogger"%go [].
 
+#[global] Opaque SugaredLogger.
+
 Definition invalidPair {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap.invalidPair"%go [].
 
+#[global] Opaque invalidPair.
+
 Definition invalidPairs {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.uber.org/zap.invalidPairs"%go [].
+
+#[global] Opaque invalidPairs.
 
 Axiom objectsⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, ∀ (T : go.type), go.type.
 

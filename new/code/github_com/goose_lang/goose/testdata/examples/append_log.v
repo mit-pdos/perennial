@@ -13,6 +13,8 @@ Module append_log.
 
 Definition Log {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/append_log.Log"%go [].
 
+#[global] Opaque Log.
+
 Definition Init {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/append_log.Init"%go.
 
 Definition Open {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/goose/testdata/examples/append_log.Open"%go.

@@ -9,29 +9,55 @@ Module big.
 
 Definition Word {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "math/big.Word"%go [].
 
+#[global] Opaque Word.
+
 Definition decimal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "math/big.decimal"%go [].
+
+#[global] Opaque decimal.
 
 Definition Float {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "math/big.Float"%go [].
 
+#[global] Opaque Float.
+
 Definition ErrNaN {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "math/big.ErrNaN"%go [].
+
+#[global] Opaque ErrNaN.
 
 Definition form {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "math/big.form"%go [].
 
+#[global] Opaque form.
+
 Definition RoundingMode {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "math/big.RoundingMode"%go [].
+
+#[global] Opaque RoundingMode.
 
 Definition Accuracy {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "math/big.Accuracy"%go [].
 
+#[global] Opaque Accuracy.
+
 Definition Int {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "math/big.Int"%go [].
+
+#[global] Opaque Int.
 
 Definition byteReader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "math/big.byteReader"%go [].
 
+#[global] Opaque byteReader.
+
 Definition nat {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "math/big.nat"%go [].
+
+#[global] Opaque nat.
 
 Definition stack {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "math/big.stack"%go [].
 
+#[global] Opaque stack.
+
 Definition divisor {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "math/big.divisor"%go [].
 
+#[global] Opaque divisor.
+
 Definition Rat {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "math/big.Rat"%go [].
+
+#[global] Opaque Rat.
 
 Axiom Wordⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 

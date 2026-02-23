@@ -317,8 +317,6 @@ Axiom haveArchHypot : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom haveArchLog : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
-Axiom haveArchModf : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
 Axiom haveArchAcos : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom haveArchAcosh : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
@@ -788,10 +786,6 @@ Definition Mod {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "ma
 Definition mod' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.mod"%go.
 
 Definition Modf {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Modf"%go.
-
-Definition modf {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.modf"%go.
-
-Definition archModf {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.archModf"%go.
 
 Definition Nextafter32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "math.Nextafter32"%go.
 

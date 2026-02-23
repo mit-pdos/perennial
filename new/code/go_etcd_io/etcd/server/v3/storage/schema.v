@@ -9,33 +9,63 @@ Module schema.
 
 Definition action {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/storage/schema.action"%go [].
 
+#[global] Opaque action.
+
 Definition setKeyAction {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/storage/schema.setKeyAction"%go [].
+
+#[global] Opaque setKeyAction.
 
 Definition deleteKeyAction {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/storage/schema.deleteKeyAction"%go [].
 
+#[global] Opaque deleteKeyAction.
+
 Definition ActionList {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/storage/schema.ActionList"%go [].
+
+#[global] Opaque ActionList.
 
 Definition alarmBackend {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/storage/schema.alarmBackend"%go [].
 
+#[global] Opaque alarmBackend.
+
 Definition authBackend {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/storage/schema.authBackend"%go [].
+
+#[global] Opaque authBackend.
 
 Definition authReadTx {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/storage/schema.authReadTx"%go [].
 
+#[global] Opaque authReadTx.
+
 Definition authBatchTx {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/storage/schema.authBatchTx"%go [].
+
+#[global] Opaque authBatchTx.
 
 Definition bucket {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/storage/schema.bucket"%go [].
 
+#[global] Opaque bucket.
+
 Definition schemaChange {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/storage/schema.schemaChange"%go [].
+
+#[global] Opaque schemaChange.
 
 Definition simpleSchemaChange {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/storage/schema.simpleSchemaChange"%go [].
 
+#[global] Opaque simpleSchemaChange.
+
 Definition membershipBackend {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/storage/schema.membershipBackend"%go [].
+
+#[global] Opaque membershipBackend.
 
 Definition migrationPlan {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/storage/schema.migrationPlan"%go [].
 
+#[global] Opaque migrationPlan.
+
 Definition migrationStep {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/storage/schema.migrationStep"%go [].
 
+#[global] Opaque migrationStep.
+
 Definition WALVersion {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/storage/schema.WALVersion"%go [].
+
+#[global] Opaque WALVersion.
 
 Axiom actionⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 

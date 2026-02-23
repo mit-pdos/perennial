@@ -11,343 +11,683 @@ Module etcdserverpb.
 
 Definition Request {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.Request"%go [].
 
+#[global] Opaque Request.
+
 Definition Metadata {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.Metadata"%go [].
+
+#[global] Opaque Metadata.
 
 Definition RequestHeader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.RequestHeader"%go [].
 
+#[global] Opaque RequestHeader.
+
 Definition InternalRaftRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.InternalRaftRequest"%go [].
+
+#[global] Opaque InternalRaftRequest.
 
 Definition EmptyResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.EmptyResponse"%go [].
 
+#[global] Opaque EmptyResponse.
+
 Definition InternalAuthenticateRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.InternalAuthenticateRequest"%go [].
+
+#[global] Opaque InternalAuthenticateRequest.
 
 Definition InternalRaftStringer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.InternalRaftStringer"%go [].
 
+#[global] Opaque InternalRaftStringer.
+
 Definition txnRequestStringer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.txnRequestStringer"%go [].
+
+#[global] Opaque txnRequestStringer.
 
 Definition requestOpStringer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.requestOpStringer"%go [].
 
+#[global] Opaque requestOpStringer.
+
 Definition loggableValueCompare {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.loggableValueCompare"%go [].
+
+#[global] Opaque loggableValueCompare.
 
 Definition loggablePutRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.loggablePutRequest"%go [].
 
+#[global] Opaque loggablePutRequest.
+
 Definition AlarmType {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.AlarmType"%go [].
+
+#[global] Opaque AlarmType.
 
 Definition RangeRequest_SortOrder {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.RangeRequest_SortOrder"%go [].
 
+#[global] Opaque RangeRequest_SortOrder.
+
 Definition RangeRequest_SortTarget {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.RangeRequest_SortTarget"%go [].
+
+#[global] Opaque RangeRequest_SortTarget.
 
 Definition Compare_CompareResult {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.Compare_CompareResult"%go [].
 
+#[global] Opaque Compare_CompareResult.
+
 Definition Compare_CompareTarget {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.Compare_CompareTarget"%go [].
+
+#[global] Opaque Compare_CompareTarget.
 
 Definition WatchCreateRequest_FilterType {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.WatchCreateRequest_FilterType"%go [].
 
+#[global] Opaque WatchCreateRequest_FilterType.
+
 Definition AlarmRequest_AlarmAction {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.AlarmRequest_AlarmAction"%go [].
+
+#[global] Opaque AlarmRequest_AlarmAction.
 
 Definition DowngradeRequest_DowngradeAction {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.DowngradeRequest_DowngradeAction"%go [].
 
+#[global] Opaque DowngradeRequest_DowngradeAction.
+
 Definition ResponseHeader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.ResponseHeader"%go [].
+
+#[global] Opaque ResponseHeader.
 
 Definition RangeRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.RangeRequest"%go [].
 
+#[global] Opaque RangeRequest.
+
 Definition RangeResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.RangeResponse"%go [].
+
+#[global] Opaque RangeResponse.
 
 Definition PutRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.PutRequest"%go [].
 
+#[global] Opaque PutRequest.
+
 Definition PutResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.PutResponse"%go [].
+
+#[global] Opaque PutResponse.
 
 Definition DeleteRangeRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.DeleteRangeRequest"%go [].
 
+#[global] Opaque DeleteRangeRequest.
+
 Definition DeleteRangeResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.DeleteRangeResponse"%go [].
+
+#[global] Opaque DeleteRangeResponse.
 
 Definition RequestOp {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.RequestOp"%go [].
 
+#[global] Opaque RequestOp.
+
 Definition isRequestOp_Request {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.isRequestOp_Request"%go [].
+
+#[global] Opaque isRequestOp_Request.
 
 Definition RequestOp_RequestRange {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.RequestOp_RequestRange"%go [].
 
+#[global] Opaque RequestOp_RequestRange.
+
 Definition RequestOp_RequestPut {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.RequestOp_RequestPut"%go [].
+
+#[global] Opaque RequestOp_RequestPut.
 
 Definition RequestOp_RequestDeleteRange {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.RequestOp_RequestDeleteRange"%go [].
 
+#[global] Opaque RequestOp_RequestDeleteRange.
+
 Definition RequestOp_RequestTxn {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.RequestOp_RequestTxn"%go [].
+
+#[global] Opaque RequestOp_RequestTxn.
 
 Definition ResponseOp {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.ResponseOp"%go [].
 
+#[global] Opaque ResponseOp.
+
 Definition isResponseOp_Response {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.isResponseOp_Response"%go [].
+
+#[global] Opaque isResponseOp_Response.
 
 Definition ResponseOp_ResponseRange {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.ResponseOp_ResponseRange"%go [].
 
+#[global] Opaque ResponseOp_ResponseRange.
+
 Definition ResponseOp_ResponsePut {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.ResponseOp_ResponsePut"%go [].
+
+#[global] Opaque ResponseOp_ResponsePut.
 
 Definition ResponseOp_ResponseDeleteRange {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.ResponseOp_ResponseDeleteRange"%go [].
 
+#[global] Opaque ResponseOp_ResponseDeleteRange.
+
 Definition ResponseOp_ResponseTxn {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.ResponseOp_ResponseTxn"%go [].
+
+#[global] Opaque ResponseOp_ResponseTxn.
 
 Definition Compare {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.Compare"%go [].
 
+#[global] Opaque Compare.
+
 Definition isCompare_TargetUnion {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.isCompare_TargetUnion"%go [].
+
+#[global] Opaque isCompare_TargetUnion.
 
 Definition Compare_Version {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.Compare_Version"%go [].
 
+#[global] Opaque Compare_Version.
+
 Definition Compare_CreateRevision {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.Compare_CreateRevision"%go [].
+
+#[global] Opaque Compare_CreateRevision.
 
 Definition Compare_ModRevision {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.Compare_ModRevision"%go [].
 
+#[global] Opaque Compare_ModRevision.
+
 Definition Compare_Value {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.Compare_Value"%go [].
+
+#[global] Opaque Compare_Value.
 
 Definition Compare_Lease {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.Compare_Lease"%go [].
 
+#[global] Opaque Compare_Lease.
+
 Definition TxnRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.TxnRequest"%go [].
+
+#[global] Opaque TxnRequest.
 
 Definition TxnResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.TxnResponse"%go [].
 
+#[global] Opaque TxnResponse.
+
 Definition CompactionRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.CompactionRequest"%go [].
+
+#[global] Opaque CompactionRequest.
 
 Definition CompactionResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.CompactionResponse"%go [].
 
+#[global] Opaque CompactionResponse.
+
 Definition HashRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.HashRequest"%go [].
+
+#[global] Opaque HashRequest.
 
 Definition HashKVRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.HashKVRequest"%go [].
 
+#[global] Opaque HashKVRequest.
+
 Definition HashKVResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.HashKVResponse"%go [].
+
+#[global] Opaque HashKVResponse.
 
 Definition HashResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.HashResponse"%go [].
 
+#[global] Opaque HashResponse.
+
 Definition SnapshotRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.SnapshotRequest"%go [].
+
+#[global] Opaque SnapshotRequest.
 
 Definition SnapshotResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.SnapshotResponse"%go [].
 
+#[global] Opaque SnapshotResponse.
+
 Definition WatchRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.WatchRequest"%go [].
+
+#[global] Opaque WatchRequest.
 
 Definition isWatchRequest_RequestUnion {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.isWatchRequest_RequestUnion"%go [].
 
+#[global] Opaque isWatchRequest_RequestUnion.
+
 Definition WatchRequest_CreateRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.WatchRequest_CreateRequest"%go [].
+
+#[global] Opaque WatchRequest_CreateRequest.
 
 Definition WatchRequest_CancelRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.WatchRequest_CancelRequest"%go [].
 
+#[global] Opaque WatchRequest_CancelRequest.
+
 Definition WatchRequest_ProgressRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.WatchRequest_ProgressRequest"%go [].
+
+#[global] Opaque WatchRequest_ProgressRequest.
 
 Definition WatchCreateRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.WatchCreateRequest"%go [].
 
+#[global] Opaque WatchCreateRequest.
+
 Definition WatchCancelRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.WatchCancelRequest"%go [].
+
+#[global] Opaque WatchCancelRequest.
 
 Definition WatchProgressRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.WatchProgressRequest"%go [].
 
+#[global] Opaque WatchProgressRequest.
+
 Definition WatchResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.WatchResponse"%go [].
+
+#[global] Opaque WatchResponse.
 
 Definition LeaseGrantRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.LeaseGrantRequest"%go [].
 
+#[global] Opaque LeaseGrantRequest.
+
 Definition LeaseGrantResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.LeaseGrantResponse"%go [].
+
+#[global] Opaque LeaseGrantResponse.
 
 Definition LeaseRevokeRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.LeaseRevokeRequest"%go [].
 
+#[global] Opaque LeaseRevokeRequest.
+
 Definition LeaseRevokeResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.LeaseRevokeResponse"%go [].
+
+#[global] Opaque LeaseRevokeResponse.
 
 Definition LeaseCheckpoint {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.LeaseCheckpoint"%go [].
 
+#[global] Opaque LeaseCheckpoint.
+
 Definition LeaseCheckpointRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.LeaseCheckpointRequest"%go [].
+
+#[global] Opaque LeaseCheckpointRequest.
 
 Definition LeaseCheckpointResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.LeaseCheckpointResponse"%go [].
 
+#[global] Opaque LeaseCheckpointResponse.
+
 Definition LeaseKeepAliveRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.LeaseKeepAliveRequest"%go [].
+
+#[global] Opaque LeaseKeepAliveRequest.
 
 Definition LeaseKeepAliveResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.LeaseKeepAliveResponse"%go [].
 
+#[global] Opaque LeaseKeepAliveResponse.
+
 Definition LeaseTimeToLiveRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.LeaseTimeToLiveRequest"%go [].
+
+#[global] Opaque LeaseTimeToLiveRequest.
 
 Definition LeaseTimeToLiveResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.LeaseTimeToLiveResponse"%go [].
 
+#[global] Opaque LeaseTimeToLiveResponse.
+
 Definition LeaseLeasesRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.LeaseLeasesRequest"%go [].
+
+#[global] Opaque LeaseLeasesRequest.
 
 Definition LeaseStatus {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.LeaseStatus"%go [].
 
+#[global] Opaque LeaseStatus.
+
 Definition LeaseLeasesResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.LeaseLeasesResponse"%go [].
+
+#[global] Opaque LeaseLeasesResponse.
 
 Definition Member {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.Member"%go [].
 
+#[global] Opaque Member.
+
 Definition MemberAddRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.MemberAddRequest"%go [].
+
+#[global] Opaque MemberAddRequest.
 
 Definition MemberAddResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.MemberAddResponse"%go [].
 
+#[global] Opaque MemberAddResponse.
+
 Definition MemberRemoveRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.MemberRemoveRequest"%go [].
+
+#[global] Opaque MemberRemoveRequest.
 
 Definition MemberRemoveResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.MemberRemoveResponse"%go [].
 
+#[global] Opaque MemberRemoveResponse.
+
 Definition MemberUpdateRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.MemberUpdateRequest"%go [].
+
+#[global] Opaque MemberUpdateRequest.
 
 Definition MemberUpdateResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.MemberUpdateResponse"%go [].
 
+#[global] Opaque MemberUpdateResponse.
+
 Definition MemberListRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.MemberListRequest"%go [].
+
+#[global] Opaque MemberListRequest.
 
 Definition MemberListResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.MemberListResponse"%go [].
 
+#[global] Opaque MemberListResponse.
+
 Definition MemberPromoteRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.MemberPromoteRequest"%go [].
+
+#[global] Opaque MemberPromoteRequest.
 
 Definition MemberPromoteResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.MemberPromoteResponse"%go [].
 
+#[global] Opaque MemberPromoteResponse.
+
 Definition DefragmentRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.DefragmentRequest"%go [].
+
+#[global] Opaque DefragmentRequest.
 
 Definition DefragmentResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.DefragmentResponse"%go [].
 
+#[global] Opaque DefragmentResponse.
+
 Definition MoveLeaderRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.MoveLeaderRequest"%go [].
+
+#[global] Opaque MoveLeaderRequest.
 
 Definition MoveLeaderResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.MoveLeaderResponse"%go [].
 
+#[global] Opaque MoveLeaderResponse.
+
 Definition AlarmRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.AlarmRequest"%go [].
+
+#[global] Opaque AlarmRequest.
 
 Definition AlarmMember {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.AlarmMember"%go [].
 
+#[global] Opaque AlarmMember.
+
 Definition AlarmResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.AlarmResponse"%go [].
+
+#[global] Opaque AlarmResponse.
 
 Definition DowngradeRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.DowngradeRequest"%go [].
 
+#[global] Opaque DowngradeRequest.
+
 Definition DowngradeResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.DowngradeResponse"%go [].
+
+#[global] Opaque DowngradeResponse.
 
 Definition StatusRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.StatusRequest"%go [].
 
+#[global] Opaque StatusRequest.
+
 Definition StatusResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.StatusResponse"%go [].
+
+#[global] Opaque StatusResponse.
 
 Definition AuthEnableRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.AuthEnableRequest"%go [].
 
+#[global] Opaque AuthEnableRequest.
+
 Definition AuthDisableRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.AuthDisableRequest"%go [].
+
+#[global] Opaque AuthDisableRequest.
 
 Definition AuthStatusRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.AuthStatusRequest"%go [].
 
+#[global] Opaque AuthStatusRequest.
+
 Definition AuthenticateRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.AuthenticateRequest"%go [].
+
+#[global] Opaque AuthenticateRequest.
 
 Definition AuthUserAddRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.AuthUserAddRequest"%go [].
 
+#[global] Opaque AuthUserAddRequest.
+
 Definition AuthUserGetRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.AuthUserGetRequest"%go [].
+
+#[global] Opaque AuthUserGetRequest.
 
 Definition AuthUserDeleteRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.AuthUserDeleteRequest"%go [].
 
+#[global] Opaque AuthUserDeleteRequest.
+
 Definition AuthUserChangePasswordRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.AuthUserChangePasswordRequest"%go [].
+
+#[global] Opaque AuthUserChangePasswordRequest.
 
 Definition AuthUserGrantRoleRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.AuthUserGrantRoleRequest"%go [].
 
+#[global] Opaque AuthUserGrantRoleRequest.
+
 Definition AuthUserRevokeRoleRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.AuthUserRevokeRoleRequest"%go [].
+
+#[global] Opaque AuthUserRevokeRoleRequest.
 
 Definition AuthRoleAddRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.AuthRoleAddRequest"%go [].
 
+#[global] Opaque AuthRoleAddRequest.
+
 Definition AuthRoleGetRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.AuthRoleGetRequest"%go [].
+
+#[global] Opaque AuthRoleGetRequest.
 
 Definition AuthUserListRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.AuthUserListRequest"%go [].
 
+#[global] Opaque AuthUserListRequest.
+
 Definition AuthRoleListRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.AuthRoleListRequest"%go [].
+
+#[global] Opaque AuthRoleListRequest.
 
 Definition AuthRoleDeleteRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.AuthRoleDeleteRequest"%go [].
 
+#[global] Opaque AuthRoleDeleteRequest.
+
 Definition AuthRoleGrantPermissionRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.AuthRoleGrantPermissionRequest"%go [].
+
+#[global] Opaque AuthRoleGrantPermissionRequest.
 
 Definition AuthRoleRevokePermissionRequest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.AuthRoleRevokePermissionRequest"%go [].
 
+#[global] Opaque AuthRoleRevokePermissionRequest.
+
 Definition AuthEnableResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.AuthEnableResponse"%go [].
+
+#[global] Opaque AuthEnableResponse.
 
 Definition AuthDisableResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.AuthDisableResponse"%go [].
 
+#[global] Opaque AuthDisableResponse.
+
 Definition AuthStatusResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.AuthStatusResponse"%go [].
+
+#[global] Opaque AuthStatusResponse.
 
 Definition AuthenticateResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.AuthenticateResponse"%go [].
 
+#[global] Opaque AuthenticateResponse.
+
 Definition AuthUserAddResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.AuthUserAddResponse"%go [].
+
+#[global] Opaque AuthUserAddResponse.
 
 Definition AuthUserGetResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.AuthUserGetResponse"%go [].
 
+#[global] Opaque AuthUserGetResponse.
+
 Definition AuthUserDeleteResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.AuthUserDeleteResponse"%go [].
+
+#[global] Opaque AuthUserDeleteResponse.
 
 Definition AuthUserChangePasswordResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.AuthUserChangePasswordResponse"%go [].
 
+#[global] Opaque AuthUserChangePasswordResponse.
+
 Definition AuthUserGrantRoleResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.AuthUserGrantRoleResponse"%go [].
+
+#[global] Opaque AuthUserGrantRoleResponse.
 
 Definition AuthUserRevokeRoleResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.AuthUserRevokeRoleResponse"%go [].
 
+#[global] Opaque AuthUserRevokeRoleResponse.
+
 Definition AuthRoleAddResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.AuthRoleAddResponse"%go [].
+
+#[global] Opaque AuthRoleAddResponse.
 
 Definition AuthRoleGetResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.AuthRoleGetResponse"%go [].
 
+#[global] Opaque AuthRoleGetResponse.
+
 Definition AuthRoleListResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.AuthRoleListResponse"%go [].
+
+#[global] Opaque AuthRoleListResponse.
 
 Definition AuthUserListResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.AuthUserListResponse"%go [].
 
+#[global] Opaque AuthUserListResponse.
+
 Definition AuthRoleDeleteResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.AuthRoleDeleteResponse"%go [].
+
+#[global] Opaque AuthRoleDeleteResponse.
 
 Definition AuthRoleGrantPermissionResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.AuthRoleGrantPermissionResponse"%go [].
 
+#[global] Opaque AuthRoleGrantPermissionResponse.
+
 Definition AuthRoleRevokePermissionResponse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.AuthRoleRevokePermissionResponse"%go [].
+
+#[global] Opaque AuthRoleRevokePermissionResponse.
 
 Definition KVClient {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.KVClient"%go [].
 
+#[global] Opaque KVClient.
+
 Definition kVClient {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.kVClient"%go [].
+
+#[global] Opaque kVClient.
 
 Definition KVServer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.KVServer"%go [].
 
+#[global] Opaque KVServer.
+
 Definition UnimplementedKVServer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.UnimplementedKVServer"%go [].
+
+#[global] Opaque UnimplementedKVServer.
 
 Definition WatchClient {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.WatchClient"%go [].
 
+#[global] Opaque WatchClient.
+
 Definition watchClient {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.watchClient"%go [].
+
+#[global] Opaque watchClient.
 
 Definition Watch_WatchClient {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.Watch_WatchClient"%go [].
 
+#[global] Opaque Watch_WatchClient.
+
 Definition watchWatchClient {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.watchWatchClient"%go [].
+
+#[global] Opaque watchWatchClient.
 
 Definition WatchServer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.WatchServer"%go [].
 
+#[global] Opaque WatchServer.
+
 Definition UnimplementedWatchServer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.UnimplementedWatchServer"%go [].
+
+#[global] Opaque UnimplementedWatchServer.
 
 Definition Watch_WatchServer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.Watch_WatchServer"%go [].
 
+#[global] Opaque Watch_WatchServer.
+
 Definition watchWatchServer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.watchWatchServer"%go [].
+
+#[global] Opaque watchWatchServer.
 
 Definition LeaseClient {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.LeaseClient"%go [].
 
+#[global] Opaque LeaseClient.
+
 Definition leaseClient {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.leaseClient"%go [].
+
+#[global] Opaque leaseClient.
 
 Definition Lease_LeaseKeepAliveClient {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.Lease_LeaseKeepAliveClient"%go [].
 
+#[global] Opaque Lease_LeaseKeepAliveClient.
+
 Definition leaseLeaseKeepAliveClient {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.leaseLeaseKeepAliveClient"%go [].
+
+#[global] Opaque leaseLeaseKeepAliveClient.
 
 Definition LeaseServer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.LeaseServer"%go [].
 
+#[global] Opaque LeaseServer.
+
 Definition UnimplementedLeaseServer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.UnimplementedLeaseServer"%go [].
+
+#[global] Opaque UnimplementedLeaseServer.
 
 Definition Lease_LeaseKeepAliveServer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.Lease_LeaseKeepAliveServer"%go [].
 
+#[global] Opaque Lease_LeaseKeepAliveServer.
+
 Definition leaseLeaseKeepAliveServer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.leaseLeaseKeepAliveServer"%go [].
+
+#[global] Opaque leaseLeaseKeepAliveServer.
 
 Definition ClusterClient {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.ClusterClient"%go [].
 
+#[global] Opaque ClusterClient.
+
 Definition clusterClient {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.clusterClient"%go [].
+
+#[global] Opaque clusterClient.
 
 Definition ClusterServer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.ClusterServer"%go [].
 
+#[global] Opaque ClusterServer.
+
 Definition UnimplementedClusterServer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.UnimplementedClusterServer"%go [].
+
+#[global] Opaque UnimplementedClusterServer.
 
 Definition MaintenanceClient {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.MaintenanceClient"%go [].
 
+#[global] Opaque MaintenanceClient.
+
 Definition maintenanceClient {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.maintenanceClient"%go [].
+
+#[global] Opaque maintenanceClient.
 
 Definition Maintenance_SnapshotClient {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.Maintenance_SnapshotClient"%go [].
 
+#[global] Opaque Maintenance_SnapshotClient.
+
 Definition maintenanceSnapshotClient {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.maintenanceSnapshotClient"%go [].
+
+#[global] Opaque maintenanceSnapshotClient.
 
 Definition MaintenanceServer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.MaintenanceServer"%go [].
 
+#[global] Opaque MaintenanceServer.
+
 Definition UnimplementedMaintenanceServer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.UnimplementedMaintenanceServer"%go [].
+
+#[global] Opaque UnimplementedMaintenanceServer.
 
 Definition Maintenance_SnapshotServer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.Maintenance_SnapshotServer"%go [].
 
+#[global] Opaque Maintenance_SnapshotServer.
+
 Definition maintenanceSnapshotServer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.maintenanceSnapshotServer"%go [].
+
+#[global] Opaque maintenanceSnapshotServer.
 
 Definition AuthClient {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.AuthClient"%go [].
 
+#[global] Opaque AuthClient.
+
 Definition authClient {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.authClient"%go [].
+
+#[global] Opaque authClient.
 
 Definition AuthServer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.AuthServer"%go [].
 
+#[global] Opaque AuthServer.
+
 Definition UnimplementedAuthServer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/etcdserverpb.UnimplementedAuthServer"%go [].
+
+#[global] Opaque UnimplementedAuthServer.
 
 Axiom Requestⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 

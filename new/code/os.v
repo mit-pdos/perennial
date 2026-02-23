@@ -9,55 +9,107 @@ Module os.
 
 Definition readdirMode {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "os.readdirMode"%go [].
 
+#[global] Opaque readdirMode.
+
 Definition dirInfo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "os.dirInfo"%go [].
+
+#[global] Opaque dirInfo.
 
 Definition timeout {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "os.timeout"%go [].
 
+#[global] Opaque timeout.
+
 Definition SyscallError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "os.SyscallError"%go [].
+
+#[global] Opaque SyscallError.
 
 Definition processStatus {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "os.processStatus"%go [].
 
+#[global] Opaque processStatus.
+
 Definition Process {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "os.Process"%go [].
+
+#[global] Opaque Process.
 
 Definition processHandle {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "os.processHandle"%go [].
 
+#[global] Opaque processHandle.
+
 Definition ProcAttr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "os.ProcAttr"%go [].
+
+#[global] Opaque ProcAttr.
 
 Definition Signal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "os.Signal"%go [].
 
+#[global] Opaque Signal.
+
 Definition ProcessState {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "os.ProcessState"%go [].
+
+#[global] Opaque ProcessState.
 
 Definition LinkError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "os.LinkError"%go [].
 
+#[global] Opaque LinkError.
+
 Definition noReadFrom {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "os.noReadFrom"%go [].
+
+#[global] Opaque noReadFrom.
 
 Definition fileWithoutReadFrom {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "os.fileWithoutReadFrom"%go [].
 
+#[global] Opaque fileWithoutReadFrom.
+
 Definition noWriteTo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "os.noWriteTo"%go [].
+
+#[global] Opaque noWriteTo.
 
 Definition fileWithoutWriteTo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "os.fileWithoutWriteTo"%go [].
 
+#[global] Opaque fileWithoutWriteTo.
+
 Definition dirFS {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "os.dirFS"%go [].
+
+#[global] Opaque dirFS.
 
 Definition file {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "os.file"%go [].
 
+#[global] Opaque file.
+
 Definition newFileKind {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "os.newFileKind"%go [].
+
+#[global] Opaque newFileKind.
 
 Definition unixDirent {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "os.unixDirent"%go [].
 
+#[global] Opaque unixDirent.
+
 Definition rawConn {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "os.rawConn"%go [].
+
+#[global] Opaque rawConn.
 
 Definition Root {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "os.Root"%go [].
 
+#[global] Opaque Root.
+
 Definition rootFS {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "os.rootFS"%go [].
+
+#[global] Opaque rootFS.
 
 Definition root {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "os.root"%go [].
 
+#[global] Opaque root.
+
 Definition errSymlink {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "os.errSymlink"%go [].
+
+#[global] Opaque errSymlink.
 
 Definition File {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "os.File"%go [].
 
+#[global] Opaque File.
+
 Definition fileStat {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "os.fileStat"%go [].
+
+#[global] Opaque fileStat.
 
 Axiom readdirModeⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
@@ -258,6 +310,14 @@ Axiom ErrDeadlineExceeded'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalConte
 Definition ErrProcessDone {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.ErrProcessDone"%go.
 
 Axiom ErrProcessDone'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
+
+Definition errProcessReleased {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.errProcessReleased"%go.
+
+Axiom errProcessReleased'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
+
+Definition ErrNoHandle {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.ErrNoHandle"%go.
+
+Axiom ErrNoHandle'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition Interrupt {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "os.Interrupt"%go.
 
@@ -692,6 +752,8 @@ Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
       do:  (ErrNoDeadline'init #());;;
       do:  (ErrDeadlineExceeded'init #());;;
       do:  (ErrProcessDone'init #());;;
+      do:  (errProcessReleased'init #());;;
+      do:  (ErrNoHandle'init #());;;
       do:  (Interrupt'init #());;;
       do:  (Kill'init #());;;
       do:  (Stdin'init #());;;

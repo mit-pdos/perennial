@@ -14,75 +14,147 @@ Module semantics.
 
 Definition unit {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.unit"%go [].
 
+#[global] Opaque unit.
+
 Definition Editor {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.Editor"%go [].
+
+#[global] Opaque Editor.
 
 Definition Pair {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.Pair"%go [].
 
+#[global] Opaque Pair.
+
 Definition Uint32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.Uint32"%go [].
+
+#[global] Opaque Uint32.
 
 Definition geometryInterface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.geometryInterface"%go [].
 
+#[global] Opaque geometryInterface.
+
 Definition SquareStruct {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.SquareStruct"%go [].
+
+#[global] Opaque SquareStruct.
 
 Definition NumStruct {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.NumStruct"%go [].
 
+#[global] Opaque NumStruct.
+
 Definition shapeInterface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.shapeInterface"%go [].
+
+#[global] Opaque shapeInterface.
 
 Definition polygonInterface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.polygonInterface"%go [].
 
+#[global] Opaque polygonInterface.
+
 Definition shapeStruct {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.shapeStruct"%go [].
+
+#[global] Opaque shapeStruct.
 
 Definition polygonStruct {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.polygonStruct"%go [].
 
+#[global] Opaque polygonStruct.
+
 Definition dogInterface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.dogInterface"%go [].
+
+#[global] Opaque dogInterface.
 
 Definition catInterface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.catInterface"%go [].
 
+#[global] Opaque catInterface.
+
 Definition Puppy {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.Puppy"%go [].
+
+#[global] Opaque Puppy.
 
 Definition Kitten {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.Kitten"%go [].
 
+#[global] Opaque Kitten.
+
 Definition printInterface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.printInterface"%go [].
+
+#[global] Opaque printInterface.
 
 Definition PaperStruct {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.PaperStruct"%go [].
 
+#[global] Opaque PaperStruct.
+
 Definition Flower {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.Flower"%go [].
+
+#[global] Opaque Flower.
 
 Definition Flora {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.Flora"%go [].
 
+#[global] Opaque Flora.
+
 Definition Lily {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.Lily"%go [].
+
+#[global] Opaque Lily.
 
 Definition Rose {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.Rose"%go [].
 
+#[global] Opaque Rose.
+
 Definition Daisy {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.Daisy"%go [].
+
+#[global] Opaque Daisy.
 
 Definition LoopStruct {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.LoopStruct"%go [].
 
+#[global] Opaque LoopStruct.
+
 Definition BoolTest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.BoolTest"%go [].
+
+#[global] Opaque BoolTest.
 
 Definition ArrayEditor {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.ArrayEditor"%go [].
 
+#[global] Opaque ArrayEditor.
+
 Definition Bar {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.Bar"%go [].
+
+#[global] Opaque Bar.
 
 Definition Foo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.Foo"%go [].
 
+#[global] Opaque Foo.
+
 Definition TwoInts {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.TwoInts"%go [].
+
+#[global] Opaque TwoInts.
 
 Definition S {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.S"%go [].
 
+#[global] Opaque S.
+
 Definition StructWrap {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.StructWrap"%go [].
+
+#[global] Opaque StructWrap.
 
 Definition StructWithFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.StructWithFunc"%go [].
 
+#[global] Opaque StructWithFunc.
+
 Definition switchConcrete {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.switchConcrete"%go [].
+
+#[global] Opaque switchConcrete.
 
 Definition switchInterface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.switchInterface"%go [].
 
+#[global] Opaque switchInterface.
+
 Definition DefinedStr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.DefinedStr"%go [].
+
+#[global] Opaque DefinedStr.
 
 Definition List {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.List"%go [T].
 
+#[global] Opaque List.
+
 Definition Log {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/goose/testdata/examples/semantics.Log"%go [].
+
+#[global] Opaque Log.
 
 Definition AdderType {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.FunctionType (go.Signature [go.uint64] false [go.uint64]).
 

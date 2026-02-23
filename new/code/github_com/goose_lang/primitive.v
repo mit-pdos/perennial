@@ -12,7 +12,11 @@ Module primitive.
 
 Definition Mutex {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/primitive.Mutex"%go [].
 
+#[global] Opaque Mutex.
+
 Definition ProphId {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/primitive.ProphId"%go [].
+
+#[global] Opaque ProphId.
 
 Definition RandomUint64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/goose-lang/primitive.RandomUint64"%go.
 

@@ -9,41 +9,79 @@ Module auth.
 
 Definition tokenJWT {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/auth.tokenJWT"%go [].
 
+#[global] Opaque tokenJWT.
+
 Definition tokenNop {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/auth.tokenNop"%go [].
+
+#[global] Opaque tokenNop.
 
 Definition jwtOptions {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/auth.jwtOptions"%go [].
 
+#[global] Opaque jwtOptions.
+
 Definition unifiedRangePermissions {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/auth.unifiedRangePermissions"%go [].
+
+#[global] Opaque unifiedRangePermissions.
 
 Definition simpleTokenTTLKeeper {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/auth.simpleTokenTTLKeeper"%go [].
 
+#[global] Opaque simpleTokenTTLKeeper.
+
 Definition tokenSimple {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/auth.tokenSimple"%go [].
+
+#[global] Opaque tokenSimple.
 
 Definition AuthInfo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/auth.AuthInfo"%go [].
 
+#[global] Opaque AuthInfo.
+
 Definition AuthenticateParamIndex {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/auth.AuthenticateParamIndex"%go [].
+
+#[global] Opaque AuthenticateParamIndex.
 
 Definition AuthenticateParamSimpleTokenPrefix {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/auth.AuthenticateParamSimpleTokenPrefix"%go [].
 
+#[global] Opaque AuthenticateParamSimpleTokenPrefix.
+
 Definition AuthStore {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/auth.AuthStore"%go [].
+
+#[global] Opaque AuthStore.
 
 Definition TokenProvider {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/auth.TokenProvider"%go [].
 
+#[global] Opaque TokenProvider.
+
 Definition AuthBackend {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/auth.AuthBackend"%go [].
+
+#[global] Opaque AuthBackend.
 
 Definition AuthReadTx {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/auth.AuthReadTx"%go [].
 
+#[global] Opaque AuthReadTx.
+
 Definition UnsafeAuthReader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/auth.UnsafeAuthReader"%go [].
+
+#[global] Opaque UnsafeAuthReader.
 
 Definition AuthBatchTx {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/auth.AuthBatchTx"%go [].
 
+#[global] Opaque AuthBatchTx.
+
 Definition UnsafeAuthReadWriter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/auth.UnsafeAuthReadWriter"%go [].
+
+#[global] Opaque UnsafeAuthReadWriter.
 
 Definition UnsafeAuthWriter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/auth.UnsafeAuthWriter"%go [].
 
+#[global] Opaque UnsafeAuthWriter.
+
 Definition authStore {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/auth.authStore"%go [].
 
+#[global] Opaque authStore.
+
 Definition permSlice {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/auth.permSlice"%go [].
+
+#[global] Opaque permSlice.
 
 Axiom tokenJWTⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 

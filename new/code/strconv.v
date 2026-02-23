@@ -9,99 +9,15 @@ Module strconv.
 
 Definition NumError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "strconv.NumError"%go [].
 
-Definition decimal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "strconv.decimal"%go [].
-
-Definition leftCheat {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "strconv.leftCheat"%go [].
-
-Definition floatInfo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "strconv.floatInfo"%go [].
-
-Definition decimalSlice {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "strconv.decimalSlice"%go [].
+#[global] Opaque NumError.
 
 Axiom NumErrorⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
-Axiom decimalⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom leftCheatⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom floatInfoⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom decimalSliceⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
-Axiom fnParseComplex : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
-Axiom fnParseFloat : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
-Axiom intSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
 Axiom IntSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
-Axiom maxUint64 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
-Axiom uintSize : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
-Axiom maxShift : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
-Axiom detailedPowersOfTenMinExp10 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
-Axiom detailedPowersOfTenMaxExp10 : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
-Axiom fastSmalls : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
-Axiom nSmalls : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
-Axiom smallsString : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
-Axiom host32bit : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
-Axiom digits : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom lowerhex : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Axiom upperhex : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
-Definition optimize {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.optimize"%go.
-
-Axiom optimize'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
-Definition powtab {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.powtab"%go.
-
-Axiom powtab'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
-Definition float64pow10 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.float64pow10"%go.
-
-Axiom float64pow10'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
-Definition float32pow10 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.float32pow10"%go.
-
-Axiom float32pow10'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
-Definition ErrRange {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.ErrRange"%go.
-
-Axiom ErrRange'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
-Definition ErrSyntax {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.ErrSyntax"%go.
-
-Axiom ErrSyntax'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
-Definition leftcheats {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.leftcheats"%go.
-
-Axiom leftcheats'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
-Definition detailedPowersOfTen {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.detailedPowersOfTen"%go.
-
-Axiom detailedPowersOfTen'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
-Definition float32info {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.float32info"%go.
-
-Axiom float32info'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
-Definition float64info {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.float64info"%go.
-
-Axiom float64info'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
-
-Definition uint64pow10 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.uint64pow10"%go.
-
-Axiom uint64pow10'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition isPrint16 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.isPrint16"%go.
 
@@ -123,45 +39,25 @@ Definition isGraphic {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string 
 
 Axiom isGraphic'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
+Definition ErrRange {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.ErrRange"%go.
+
+Axiom ErrRange'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
+
+Definition ErrSyntax {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.ErrSyntax"%go.
+
+Axiom ErrSyntax'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
+
+Definition index {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.index"%go.
+
 Definition ParseBool {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.ParseBool"%go.
 
 Definition FormatBool {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.FormatBool"%go.
 
 Definition AppendBool {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.AppendBool"%go.
 
-Definition convErr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.convErr"%go.
-
 Definition ParseComplex {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.ParseComplex"%go.
 
-Definition commonPrefixLenIgnoreCase {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.commonPrefixLenIgnoreCase"%go.
-
-Definition special {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.special"%go.
-
-Definition readFloat {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.readFloat"%go.
-
-Definition atof64exact {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.atof64exact"%go.
-
-Definition atof32exact {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.atof32exact"%go.
-
-Definition atofHex {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.atofHex"%go.
-
-Definition atof32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.atof32"%go.
-
-Definition atof64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.atof64"%go.
-
 Definition ParseFloat {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.ParseFloat"%go.
-
-Definition parseFloatPrefix {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.parseFloatPrefix"%go.
-
-Definition lower {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.lower"%go.
-
-Definition syntaxError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.syntaxError"%go.
-
-Definition rangeError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.rangeError"%go.
-
-Definition baseError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.baseError"%go.
-
-Definition bitSizeError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.bitSizeError"%go.
 
 Definition ParseUint {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.ParseUint"%go.
 
@@ -169,73 +65,11 @@ Definition ParseInt {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string :
 
 Definition Atoi {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.Atoi"%go.
 
-Definition underscoreOK {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.underscoreOK"%go.
-
-Definition index {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.index"%go.
-
 Definition FormatComplex {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.FormatComplex"%go.
-
-Definition digitZero {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.digitZero"%go.
-
-Definition trim {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.trim"%go.
-
-Definition rightShift {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.rightShift"%go.
-
-Definition prefixIsLessThan {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.prefixIsLessThan"%go.
-
-Definition leftShift {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.leftShift"%go.
-
-Definition shouldRoundUp {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.shouldRoundUp"%go.
-
-Definition eiselLemire64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.eiselLemire64"%go.
-
-Definition eiselLemire32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.eiselLemire32"%go.
 
 Definition FormatFloat {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.FormatFloat"%go.
 
 Definition AppendFloat {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.AppendFloat"%go.
-
-Definition genericFtoa {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.genericFtoa"%go.
-
-Definition bigFtoa {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.bigFtoa"%go.
-
-Definition formatDigits {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.formatDigits"%go.
-
-Definition roundShortest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.roundShortest"%go.
-
-Definition fmtE {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.fmtE"%go.
-
-Definition fmtF {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.fmtF"%go.
-
-Definition fmtB {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.fmtB"%go.
-
-Definition fmtX {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.fmtX"%go.
-
-Definition ryuFtoaFixed32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.ryuFtoaFixed32"%go.
-
-Definition ryuFtoaFixed64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.ryuFtoaFixed64"%go.
-
-Definition formatDecimal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.formatDecimal"%go.
-
-Definition ryuFtoaShortest {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.ryuFtoaShortest"%go.
-
-Definition mulByLog2Log10 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.mulByLog2Log10"%go.
-
-Definition mulByLog10Log2 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.mulByLog10Log2"%go.
-
-Definition computeBounds {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.computeBounds"%go.
-
-Definition ryuDigits {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.ryuDigits"%go.
-
-Definition ryuDigits32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.ryuDigits32"%go.
-
-Definition mult64bitPow10 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.mult64bitPow10"%go.
-
-Definition mult128bitPow10 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.mult128bitPow10"%go.
-
-Definition divisibleByPower5 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.divisibleByPower5"%go.
-
-Definition divmod1e9 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.divmod1e9"%go.
 
 Definition FormatUint {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.FormatUint"%go.
 
@@ -247,11 +81,15 @@ Definition AppendInt {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string 
 
 Definition AppendUint {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.AppendUint"%go.
 
-Definition small {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.small"%go.
+Definition toError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.toError"%go.
 
-Definition formatBits {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.formatBits"%go.
+Definition syntaxError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.syntaxError"%go.
 
-Definition isPowerOfTwo {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.isPowerOfTwo"%go.
+Definition rangeError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.rangeError"%go.
+
+Definition baseError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.baseError"%go.
+
+Definition bitSizeError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.bitSizeError"%go.
 
 Definition contains {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "strconv.contains"%go.
 
@@ -319,22 +157,13 @@ Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init pkg_id.strconv (λ: <>,
-      exception_do (do:  (optimize'init #());;;
-      do:  (powtab'init #());;;
-      do:  (float64pow10'init #());;;
-      do:  (float32pow10'init #());;;
-      do:  (ErrRange'init #());;;
-      do:  (ErrSyntax'init #());;;
-      do:  (leftcheats'init #());;;
-      do:  (detailedPowersOfTen'init #());;;
-      do:  (float32info'init #());;;
-      do:  (float64info'init #());;;
-      do:  (uint64pow10'init #());;;
-      do:  (isPrint16'init #());;;
+      exception_do (do:  (isPrint16'init #());;;
       do:  (isNotPrint16'init #());;;
       do:  (isPrint32'init #());;;
       do:  (isNotPrint32'init #());;;
-      do:  (isGraphic'init #()))
+      do:  (isGraphic'init #());;;
+      do:  (ErrRange'init #());;;
+      do:  (ErrSyntax'init #()))
       ).
 
 Module NumError.
@@ -353,76 +182,8 @@ Class NumError_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalCont
   #[global] NumErrorⁱᵐᵖˡ_underlying :: (NumErrorⁱᵐᵖˡ) ↓u (NumErrorⁱᵐᵖˡ);
 }.
 
-Module decimal.
-Section def.
-Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Axiom t : Type.
-Axiom zero_val : ZeroVal t.
-#[global] Existing Instance zero_val.
-End def.
-End decimal.
-
-Class decimal_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] decimal_type_repr  :: go.TypeReprUnderlying decimalⁱᵐᵖˡ decimal.t;
-  #[global] decimal_underlying :: (decimal) <u (decimalⁱᵐᵖˡ);
-  #[global] decimalⁱᵐᵖˡ_underlying :: (decimalⁱᵐᵖˡ) ↓u (decimalⁱᵐᵖˡ);
-}.
-
-Module leftCheat.
-Section def.
-Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Axiom t : Type.
-Axiom zero_val : ZeroVal t.
-#[global] Existing Instance zero_val.
-End def.
-End leftCheat.
-
-Class leftCheat_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] leftCheat_type_repr  :: go.TypeReprUnderlying leftCheatⁱᵐᵖˡ leftCheat.t;
-  #[global] leftCheat_underlying :: (leftCheat) <u (leftCheatⁱᵐᵖˡ);
-  #[global] leftCheatⁱᵐᵖˡ_underlying :: (leftCheatⁱᵐᵖˡ) ↓u (leftCheatⁱᵐᵖˡ);
-}.
-
-Module floatInfo.
-Section def.
-Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Axiom t : Type.
-Axiom zero_val : ZeroVal t.
-#[global] Existing Instance zero_val.
-End def.
-End floatInfo.
-
-Class floatInfo_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] floatInfo_type_repr  :: go.TypeReprUnderlying floatInfoⁱᵐᵖˡ floatInfo.t;
-  #[global] floatInfo_underlying :: (floatInfo) <u (floatInfoⁱᵐᵖˡ);
-  #[global] floatInfoⁱᵐᵖˡ_underlying :: (floatInfoⁱᵐᵖˡ) ↓u (floatInfoⁱᵐᵖˡ);
-}.
-
-Module decimalSlice.
-Section def.
-Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Axiom t : Type.
-Axiom zero_val : ZeroVal t.
-#[global] Existing Instance zero_val.
-End def.
-End decimalSlice.
-
-Class decimalSlice_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] decimalSlice_type_repr  :: go.TypeReprUnderlying decimalSliceⁱᵐᵖˡ decimalSlice.t;
-  #[global] decimalSlice_underlying :: (decimalSlice) <u (decimalSliceⁱᵐᵖˡ);
-  #[global] decimalSliceⁱᵐᵖˡ_underlying :: (decimalSliceⁱᵐᵖˡ) ↓u (decimalSliceⁱᵐᵖˡ);
-}.
-
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
   #[global] NumError_instance :: NumError_Assumptions;
-  #[global] decimal_instance :: decimal_Assumptions;
-  #[global] leftCheat_instance :: leftCheat_Assumptions;
-  #[global] floatInfo_instance :: floatInfo_Assumptions;
-  #[global] decimalSlice_instance :: decimalSlice_Assumptions;
 }.
 End strconv.

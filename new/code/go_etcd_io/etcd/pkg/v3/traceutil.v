@@ -9,13 +9,23 @@ Module traceutil.
 
 Definition TraceKey {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/pkg/v3/traceutil.TraceKey"%go [].
 
+#[global] Opaque TraceKey.
+
 Definition StartTimeKey {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/pkg/v3/traceutil.StartTimeKey"%go [].
+
+#[global] Opaque StartTimeKey.
 
 Definition Field {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/pkg/v3/traceutil.Field"%go [].
 
+#[global] Opaque Field.
+
 Definition Trace {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/pkg/v3/traceutil.Trace"%go [].
 
+#[global] Opaque Trace.
+
 Definition step {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/pkg/v3/traceutil.step"%go [].
+
+#[global] Opaque step.
 
 Axiom TraceKeyⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 

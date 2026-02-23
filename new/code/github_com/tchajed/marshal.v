@@ -11,7 +11,11 @@ Module marshal.
 
 Definition Enc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/tchajed/marshal.Enc"%go [].
 
+#[global] Opaque Enc.
+
 Definition Dec {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/tchajed/marshal.Dec"%go [].
+
+#[global] Opaque Dec.
 
 Definition NewEncFromSlice {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "github.com/tchajed/marshal.NewEncFromSlice"%go.
 

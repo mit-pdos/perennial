@@ -11,6 +11,8 @@ Module errors.
 
 Definition DiscoveryError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/etcdserver/errors.DiscoveryError"%go [].
 
+#[global] Opaque DiscoveryError.
+
 Definition ErrUnknownMethod {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "go.etcd.io/etcd/server/v3/etcdserver/errors.ErrUnknownMethod"%go.
 
 Definition ErrStopped {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "go.etcd.io/etcd/server/v3/etcdserver/errors.ErrStopped"%go.

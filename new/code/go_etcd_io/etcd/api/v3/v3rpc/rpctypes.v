@@ -11,7 +11,11 @@ Module rpctypes.
 
 Definition EtcdError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/v3rpc/rpctypes.EtcdError"%go [].
 
+#[global] Opaque EtcdError.
+
 Definition TokenFieldNameGRPCKey {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/v3rpc/rpctypes.TokenFieldNameGRPCKey"%go [].
+
+#[global] Opaque TokenFieldNameGRPCKey.
 
 Definition ErrGRPCEmptyKey {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "go.etcd.io/etcd/api/v3/v3rpc/rpctypes.ErrGRPCEmptyKey"%go.
 

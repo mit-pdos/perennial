@@ -11,7 +11,11 @@ Module synctest.
 
 Definition Association {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "internal/synctest.Association"%go [].
 
+#[global] Opaque Association.
+
 Definition Bubble {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "internal/synctest.Bubble"%go [].
+
+#[global] Opaque Bubble.
 
 Axiom Associationⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 

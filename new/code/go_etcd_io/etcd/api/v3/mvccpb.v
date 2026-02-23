@@ -9,9 +9,15 @@ Module mvccpb.
 
 Definition Event_EventType {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/mvccpb.Event_EventType"%go [].
 
+#[global] Opaque Event_EventType.
+
 Definition KeyValue {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/mvccpb.KeyValue"%go [].
 
+#[global] Opaque KeyValue.
+
 Definition Event {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/api/v3/mvccpb.Event"%go [].
+
+#[global] Opaque Event.
 
 Definition PUT {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #(W32 0).
 

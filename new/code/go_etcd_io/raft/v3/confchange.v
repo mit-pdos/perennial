@@ -10,6 +10,8 @@ Module confchange.
 
 Definition Changer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3/confchange.Changer"%go [].
 
+#[global] Opaque Changer.
+
 Definition checkInvariants {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "go.etcd.io/raft/v3/confchange.checkInvariants"%go.
 
 Definition checkAndReturn {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "go.etcd.io/raft/v3/confchange.checkAndReturn"%go.

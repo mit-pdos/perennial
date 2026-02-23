@@ -7,13 +7,11 @@ End pkg_id.
 Export pkg_id.
 Module rand.
 
-Definition reader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "crypto/rand.reader"%go [].
-
-Axiom readerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
-
 Axiom base32alphabet : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition Reader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "crypto/rand.Reader"%go.
+
+Axiom Reader'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 
 Definition fatal {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "crypto/rand.fatal"%go.
 
@@ -35,27 +33,10 @@ Axiom _'init : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, val.
 Definition initialize' {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: <>,
     package.init pkg_id.rand (λ: <>,
-      exception_do (do:  #())
+      exception_do (do:  (Reader'init #()))
       ).
-
-Module reader.
-Section def.
-Context {ext : ffi_syntax} {go_gctx : GoGlobalContext}.
-Axiom t : Type.
-Axiom zero_val : ZeroVal t.
-#[global] Existing Instance zero_val.
-End def.
-End reader.
-
-Class reader_Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
-{
-  #[global] reader_type_repr  :: go.TypeReprUnderlying readerⁱᵐᵖˡ reader.t;
-  #[global] reader_underlying :: (reader) <u (readerⁱᵐᵖˡ);
-  #[global] readerⁱᵐᵖˡ_underlying :: (readerⁱᵐᵖˡ) ↓u (readerⁱᵐᵖˡ);
-}.
 
 Class Assumptions {ext : ffi_syntax} `{!GoGlobalContext} `{!GoLocalContext} `{!GoSemanticsFunctions} : Prop :=
 {
-  #[global] reader_instance :: reader_Assumptions;
 }.
 End rand.

@@ -9,6 +9,8 @@ Module status.
 
 Definition Status {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "google.golang.org/genproto/googleapis/rpc/status.Status"%go [].
 
+#[global] Opaque Status.
+
 Axiom Statusⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
 Definition File_google_rpc_status_proto {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "google.golang.org/genproto/googleapis/rpc/status.File_google_rpc_status_proto"%go.

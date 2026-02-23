@@ -10,7 +10,11 @@ Module slices.
 
 Definition sortedHint {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "slices.sortedHint"%go [].
 
+#[global] Opaque sortedHint.
+
 Definition xorshift {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "slices.xorshift"%go [].
+
+#[global] Opaque xorshift.
 
 Definition unknownHint {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val := #(W64 0).
 

@@ -9,59 +9,115 @@ Module backend.
 
 Definition Backend {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/storage/backend.Backend"%go [].
 
+#[global] Opaque Backend.
+
 Definition Snapshot {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/storage/backend.Snapshot"%go [].
+
+#[global] Opaque Snapshot.
 
 Definition txReadBufferCache {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/storage/backend.txReadBufferCache"%go [].
 
+#[global] Opaque txReadBufferCache.
+
 Definition backend {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/storage/backend.backend"%go [].
+
+#[global] Opaque backend.
 
 Definition BackendConfig {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/storage/backend.BackendConfig"%go [].
 
+#[global] Opaque BackendConfig.
+
 Definition BackendConfigOption {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/storage/backend.BackendConfigOption"%go [].
+
+#[global] Opaque BackendConfigOption.
 
 Definition snapshot {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/storage/backend.snapshot"%go [].
 
+#[global] Opaque snapshot.
+
 Definition zapBoltLogger {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/storage/backend.zapBoltLogger"%go [].
+
+#[global] Opaque zapBoltLogger.
 
 Definition BucketID {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/storage/backend.BucketID"%go [].
 
+#[global] Opaque BucketID.
+
 Definition Bucket {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/storage/backend.Bucket"%go [].
+
+#[global] Opaque Bucket.
 
 Definition BatchTx {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/storage/backend.BatchTx"%go [].
 
+#[global] Opaque BatchTx.
+
 Definition UnsafeReadWriter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/storage/backend.UnsafeReadWriter"%go [].
+
+#[global] Opaque UnsafeReadWriter.
 
 Definition UnsafeWriter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/storage/backend.UnsafeWriter"%go [].
 
+#[global] Opaque UnsafeWriter.
+
 Definition batchTx {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/storage/backend.batchTx"%go [].
+
+#[global] Opaque batchTx.
 
 Definition batchTxBuffered {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/storage/backend.batchTxBuffered"%go [].
 
+#[global] Opaque batchTxBuffered.
+
 Definition HookFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/storage/backend.HookFunc"%go [].
+
+#[global] Opaque HookFunc.
 
 Definition Hooks {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/storage/backend.Hooks"%go [].
 
+#[global] Opaque Hooks.
+
 Definition hooks {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/storage/backend.hooks"%go [].
+
+#[global] Opaque hooks.
 
 Definition ReadTx {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/storage/backend.ReadTx"%go [].
 
+#[global] Opaque ReadTx.
+
 Definition UnsafeReader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/storage/backend.UnsafeReader"%go [].
+
+#[global] Opaque UnsafeReader.
 
 Definition baseReadTx {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/storage/backend.baseReadTx"%go [].
 
+#[global] Opaque baseReadTx.
+
 Definition readTx {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/storage/backend.readTx"%go [].
+
+#[global] Opaque readTx.
 
 Definition concurrentReadTx {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/storage/backend.concurrentReadTx"%go [].
 
+#[global] Opaque concurrentReadTx.
+
 Definition txBuffer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/storage/backend.txBuffer"%go [].
+
+#[global] Opaque txBuffer.
 
 Definition txWriteBuffer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/storage/backend.txWriteBuffer"%go [].
 
+#[global] Opaque txWriteBuffer.
+
 Definition txReadBuffer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/storage/backend.txReadBuffer"%go [].
+
+#[global] Opaque txReadBuffer.
 
 Definition kv {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/storage/backend.kv"%go [].
 
+#[global] Opaque kv.
+
 Definition bucketBuffer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/storage/backend.bucketBuffer"%go [].
+
+#[global] Opaque bucketBuffer.
 
 Axiom Backendⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 

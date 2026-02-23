@@ -9,29 +9,55 @@ Module strings.
 
 Definition Builder {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "strings.Builder"%go [].
 
+#[global] Opaque Builder.
+
 Definition Reader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "strings.Reader"%go [].
+
+#[global] Opaque Reader.
 
 Definition Replacer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "strings.Replacer"%go [].
 
+#[global] Opaque Replacer.
+
 Definition replacer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "strings.replacer"%go [].
+
+#[global] Opaque replacer.
 
 Definition trieNode {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "strings.trieNode"%go [].
 
+#[global] Opaque trieNode.
+
 Definition genericReplacer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "strings.genericReplacer"%go [].
+
+#[global] Opaque genericReplacer.
 
 Definition appendSliceWriter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "strings.appendSliceWriter"%go [].
 
+#[global] Opaque appendSliceWriter.
+
 Definition stringWriter {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "strings.stringWriter"%go [].
+
+#[global] Opaque stringWriter.
 
 Definition singleStringReplacer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "strings.singleStringReplacer"%go [].
 
+#[global] Opaque singleStringReplacer.
+
 Definition byteReplacer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "strings.byteReplacer"%go [].
+
+#[global] Opaque byteReplacer.
 
 Definition byteStringReplacer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "strings.byteStringReplacer"%go [].
 
+#[global] Opaque byteStringReplacer.
+
 Definition stringFinder {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "strings.stringFinder"%go [].
 
+#[global] Opaque stringFinder.
+
 Definition asciiSet {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "strings.asciiSet"%go [].
+
+#[global] Opaque asciiSet.
 
 Axiom Readerⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 

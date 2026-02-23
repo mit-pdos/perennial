@@ -13,35 +13,67 @@ Module context.
 
 Definition Context {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "context.Context"%go [].
 
+#[global] Opaque Context.
+
 Definition deadlineExceededError {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "context.deadlineExceededError"%go [].
+
+#[global] Opaque deadlineExceededError.
 
 Definition emptyCtx {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "context.emptyCtx"%go [].
 
+#[global] Opaque emptyCtx.
+
 Definition backgroundCtx {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "context.backgroundCtx"%go [].
+
+#[global] Opaque backgroundCtx.
 
 Definition todoCtx {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "context.todoCtx"%go [].
 
+#[global] Opaque todoCtx.
+
 Definition CancelFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "context.CancelFunc"%go [].
+
+#[global] Opaque CancelFunc.
 
 Definition CancelCauseFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "context.CancelCauseFunc"%go [].
 
+#[global] Opaque CancelCauseFunc.
+
 Definition afterFuncer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "context.afterFuncer"%go [].
+
+#[global] Opaque afterFuncer.
 
 Definition afterFuncCtx {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "context.afterFuncCtx"%go [].
 
+#[global] Opaque afterFuncCtx.
+
 Definition stopCtx {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "context.stopCtx"%go [].
+
+#[global] Opaque stopCtx.
 
 Definition canceler {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "context.canceler"%go [].
 
+#[global] Opaque canceler.
+
 Definition cancelCtx {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "context.cancelCtx"%go [].
+
+#[global] Opaque cancelCtx.
 
 Definition stringer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "context.stringer"%go [].
 
+#[global] Opaque stringer.
+
 Definition withoutCancelCtx {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "context.withoutCancelCtx"%go [].
+
+#[global] Opaque withoutCancelCtx.
 
 Definition timerCtx {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "context.timerCtx"%go [].
 
+#[global] Opaque timerCtx.
+
 Definition valueCtx {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "context.valueCtx"%go [].
+
+#[global] Opaque valueCtx.
 
 Definition Canceled {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "context.Canceled"%go.
 
@@ -244,6 +276,12 @@ Definition withCancelⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} 
 Definition Causeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "c",
     exception_do (let: "c" := (GoAlloc Context "c") in
+    let: "err" := (GoAlloc go.error (GoZeroVal go.error #())) in
+    let: "$r0" := ((MethodResolve Context "Err"%go (![Context] "c")) #()) in
+    do:  ("err" <-[go.error] "$r0");;;
+    (if: Convert go.untyped_bool go.bool ((![go.error] "err") =⟨go.error⟩ (Convert go.untyped_nil go.error UntypedNil))
+    then return: (Convert go.untyped_nil go.error UntypedNil)
+    else do:  #());;;
     (let: "ok" := (GoAlloc go.bool (GoZeroVal go.bool #())) in
     let: "cc" := (GoAlloc (go.PointerType cancelCtx) (GoZeroVal (go.PointerType cancelCtx) #())) in
     let: ("$ret0", "$ret1") := (TypeAssert2 (go.PointerType cancelCtx) (let: "$a0" := (Convert (go.PointerType go.int) go.any (GlobalVarAddr cancelCtxKey #())) in
@@ -263,7 +301,7 @@ Definition Causeⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val
       then return: (![go.error] "cause")
       else do:  #())
     else do:  #()));;;
-    return: ((MethodResolve Context "Err"%go (![Context] "c")) #())).
+    return: (![go.error] "err")).
 
 (* AfterFunc arranges to call f in its own goroutine after ctx is canceled.
    If ctx is already canceled, AfterFunc calls f immediately in its own goroutine.

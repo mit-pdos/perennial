@@ -11,25 +11,47 @@ Module atomic.
 
 Definition Bool {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync/atomic.Bool"%go [].
 
+#[global] Opaque Bool.
+
 Definition Pointer {ext : ffi_syntax} {go_gctx : GoGlobalContext} (T : go.type) : go.type := go.Named "sync/atomic.Pointer"%go [T].
+
+#[global] Opaque Pointer.
 
 Definition Int32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync/atomic.Int32"%go [].
 
+#[global] Opaque Int32.
+
 Definition Int64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync/atomic.Int64"%go [].
+
+#[global] Opaque Int64.
 
 Definition Uint32 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync/atomic.Uint32"%go [].
 
+#[global] Opaque Uint32.
+
 Definition Uint64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync/atomic.Uint64"%go [].
+
+#[global] Opaque Uint64.
 
 Definition Uintptr {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync/atomic.Uintptr"%go [].
 
+#[global] Opaque Uintptr.
+
 Definition noCopy {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync/atomic.noCopy"%go [].
+
+#[global] Opaque noCopy.
 
 Definition align64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync/atomic.align64"%go [].
 
+#[global] Opaque align64.
+
 Definition Value {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync/atomic.Value"%go [].
 
+#[global] Opaque Value.
+
 Definition efaceWords {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sync/atomic.efaceWords"%go [].
+
+#[global] Opaque efaceWords.
 
 Axiom Uintptrⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
@@ -731,7 +753,7 @@ Definition Value__Swapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext}
    concrete type. CompareAndSwap of an inconsistent type panics, as does
    CompareAndSwap(old, nil).
 
-   go: value.go:135:17 *)
+   go: value.go:134:17 *)
 Definition Value__CompareAndSwapⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "v" "old" "new",
     exception_do (let: "swapped" := (GoAlloc go.bool (GoZeroVal go.bool #())) in

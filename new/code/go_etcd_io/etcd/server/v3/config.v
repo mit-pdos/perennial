@@ -9,7 +9,11 @@ Module config.
 
 Definition ServerConfig {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/config.ServerConfig"%go [].
 
+#[global] Opaque ServerConfig.
+
 Definition V2DeprecationEnum {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/etcd/server/v3/config.V2DeprecationEnum"%go [].
+
+#[global] Opaque V2DeprecationEnum.
 
 Axiom ServerConfigⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 

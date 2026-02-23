@@ -9,11 +9,19 @@ Module bytes.
 
 Definition Buffer {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "bytes.Buffer"%go [].
 
+#[global] Opaque Buffer.
+
 Definition readOp {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "bytes.readOp"%go [].
+
+#[global] Opaque readOp.
 
 Definition asciiSet {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "bytes.asciiSet"%go [].
 
+#[global] Opaque asciiSet.
+
 Definition Reader {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "bytes.Reader"%go [].
+
+#[global] Opaque Reader.
 
 Axiom Bufferⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 
@@ -224,7 +232,7 @@ Definition Equalⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val
    The result may have additional unused capacity.
    Clone(nil) returns nil.
 
-   go: bytes.go:1415:6 *)
+   go: bytes.go:1384:6 *)
 Definition Cloneⁱᵐᵖˡ {ext : ffi_syntax} {go_gctx : GoGlobalContext} : val :=
   λ: "b",
     exception_do (let: "b" := (GoAlloc (go.SliceType go.byte) "b") in

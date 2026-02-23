@@ -9,27 +9,51 @@ Module assert.
 
 Definition compareResult {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/stretchr/testify/assert.compareResult"%go [].
 
+#[global] Opaque compareResult.
+
 Definition TestingT {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/stretchr/testify/assert.TestingT"%go [].
+
+#[global] Opaque TestingT.
 
 Definition ComparisonAssertionFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/stretchr/testify/assert.ComparisonAssertionFunc"%go [].
 
+#[global] Opaque ComparisonAssertionFunc.
+
 Definition ValueAssertionFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/stretchr/testify/assert.ValueAssertionFunc"%go [].
+
+#[global] Opaque ValueAssertionFunc.
 
 Definition BoolAssertionFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/stretchr/testify/assert.BoolAssertionFunc"%go [].
 
+#[global] Opaque BoolAssertionFunc.
+
 Definition ErrorAssertionFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/stretchr/testify/assert.ErrorAssertionFunc"%go [].
+
+#[global] Opaque ErrorAssertionFunc.
 
 Definition Comparison {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/stretchr/testify/assert.Comparison"%go [].
 
+#[global] Opaque Comparison.
+
 Definition failNower {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/stretchr/testify/assert.failNower"%go [].
+
+#[global] Opaque failNower.
 
 Definition labeledContent {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/stretchr/testify/assert.labeledContent"%go [].
 
+#[global] Opaque labeledContent.
+
 Definition PanicTestFunc {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/stretchr/testify/assert.PanicTestFunc"%go [].
+
+#[global] Opaque PanicTestFunc.
 
 Definition CollectT {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/stretchr/testify/assert.CollectT"%go [].
 
+#[global] Opaque CollectT.
+
 Definition Assertions {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/stretchr/testify/assert.Assertions"%go [].
+
+#[global] Opaque Assertions.
 
 Axiom CompareType : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 

@@ -9,19 +9,35 @@ Module sort.
 
 Definition Interface {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sort.Interface"%go [].
 
+#[global] Opaque Interface.
+
 Definition sortedHint {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sort.sortedHint"%go [].
+
+#[global] Opaque sortedHint.
 
 Definition xorshift {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sort.xorshift"%go [].
 
+#[global] Opaque xorshift.
+
 Definition lessSwap {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sort.lessSwap"%go [].
+
+#[global] Opaque lessSwap.
 
 Definition reverse {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sort.reverse"%go [].
 
+#[global] Opaque reverse.
+
 Definition IntSlice {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sort.IntSlice"%go [].
+
+#[global] Opaque IntSlice.
 
 Definition Float64Slice {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sort.Float64Slice"%go [].
 
+#[global] Opaque Float64Slice.
+
 Definition StringSlice {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "sort.StringSlice"%go [].
+
+#[global] Opaque StringSlice.
 
 Axiom Interfaceⁱᵐᵖˡ : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 

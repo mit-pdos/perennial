@@ -12,9 +12,15 @@ Module disk.
 
 Definition Disk {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/primitive/disk.Disk"%go [].
 
+#[global] Opaque Disk.
+
 Definition FileDisk {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/primitive/disk.FileDisk"%go [].
 
+#[global] Opaque FileDisk.
+
 Definition MemDisk {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "github.com/goose-lang/primitive/disk.MemDisk"%go [].
+
+#[global] Opaque MemDisk.
 
 Axiom Block : ∀ {ext : ffi_syntax} {go_gctx : GoGlobalContext}, go.type.
 

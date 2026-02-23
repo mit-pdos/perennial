@@ -9,6 +9,8 @@ Module slices.
 
 Definition Tup {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go.type := go.Named "go.etcd.io/raft/v3/quorum/slices.Tup"%go [].
 
+#[global] Opaque Tup.
+
 Definition CompareUint64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "go.etcd.io/raft/v3/quorum/slices.CompareUint64"%go.
 
 Definition SortUint64 {ext : ffi_syntax} {go_gctx : GoGlobalContext} : go_string := "go.etcd.io/raft/v3/quorum/slices.SortUint64"%go.
