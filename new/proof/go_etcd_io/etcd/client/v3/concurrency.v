@@ -65,9 +65,6 @@ Proof.
   wp_alloc ops as "Hops".
   wp_auto.
   wp_for "i".
-  (* TODO: wp_method_call seems to be broken here *)
-  (*
-  wp_if_destruct; [word|].
   wp_apply (wp_Client__Grant with "[$]") as "* [Hresp Hl]". wp_auto.
   destruct err.
   { (* got an error; early return *)
@@ -133,8 +130,6 @@ Proof.
   rewrite decide_True //.
   iFrame "#".
 Qed.
-*)
-Admitted.
 
 Lemma wp_Session__Lease s γ lease :
   {{{ is_pkg_init concurrency ∗ is_Session s γ lease }}}
