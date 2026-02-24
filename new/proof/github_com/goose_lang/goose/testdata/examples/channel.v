@@ -1764,11 +1764,11 @@ Proof using All.
 
   wp_auto.
 
-  iMod (future_alloc_promise γmf c (contract_of q KWeb) []
+  iMod (future_alloc_promise (t:=go.string) γmf c (contract_of q KWeb) []
         with "[$Hmf] [$HAwait]") as "(Hprom_web & HAwait)".
-  iMod (future_alloc_promise γmf c (contract_of q KImg) _
+  iMod (future_alloc_promise (t:=go.string) γmf c (contract_of q KImg) _
         with "[$Hmf] [$HAwait]") as "(Hprom_img & HAwait)".
-  iMod (future_alloc_promise γmf c (contract_of q KVid) _
+  iMod (future_alloc_promise (t:=go.string) γmf c (contract_of q KVid) _
         with "[$Hmf] [$HAwait]") as "(Hprom_vid & HAwait)".
 
   simpl.
@@ -2056,43 +2056,6 @@ Proof using All.
 
     Unshelve.
     all: try (typeclasses eauto).
-    all: try apply _; try apply sem; try apply go.string.
-
-    { simpl.
-      pose proof (_ : go.PredeclaredSemantics) as Hpre.
-      have Hunder :
-        sem.(go.sem_fn).(underlying) go.string = go.string :=
-        go.predeclared_underlying
-          (H:=sem.(go.sem_fn))
-          go.string
-          go.is_predeclared_string.
-      rewrite Hunder.
-      typeclasses eauto.
-    }
-
-    { simpl.
-      pose proof (_ : go.PredeclaredSemantics) as Hpre.
-      have Hunder :
-        sem.(go.sem_fn).(underlying) go.string = go.string :=
-        go.predeclared_underlying
-          (H:=sem.(go.sem_fn))
-          go.string
-          go.is_predeclared_string.
-      rewrite Hunder.
-      typeclasses eauto.
-    }
-
-    { simpl.
-      pose proof (_ : go.PredeclaredSemantics) as Hpre.
-      have Hunder :
-        sem.(go.sem_fn).(underlying) go.string = go.string :=
-        go.predeclared_underlying
-          (H:=sem.(go.sem_fn))
-          go.string
-          go.is_predeclared_string.
-      rewrite Hunder.
-      typeclasses eauto.
-    }
 Qed.
 
 End google_example.

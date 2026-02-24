@@ -84,7 +84,7 @@ Proof using W.
         iFrame.
         iDestruct (own_slice_len with "Hhd") as %[Hlent _].
         iDestruct (own_slice_cap_wf with "slice_cap") as %Hlen_le_cap.
-        iDestruct (own_slice_cap_slice (slice_val) (W64 1) (DfracOwn 1)) as "H".
+        iDestruct (own_slice_cap_slice (V:=V) slice_val (W64 1) (DfracOwn 1)) as "H".
         { word. }
         iApply "H" in "slice_cap". iFrame.
       }
@@ -151,7 +151,7 @@ Proof using W.
       iCombine "Hpred1 Hpred2" as "Hp".
       wp_apply (wp_Mutex__Unlock
                  with "[$lock state v slice slice_cap buffer Hchanrepfrag   Hp  H1   $Hlock]").
-      { unfold chan_inv_inner. iExists (Idle). iFrame. done. }
+      { unfold chan_inv_inner. iExists (@Idle V). iFrame. done. }
       iRewrite -"Hpeq" in "HP".
       iRight in "HP". iFrame.
     }
@@ -182,7 +182,7 @@ Proof using W.
       iDestruct (saved_offer_lc_agree with "[$] [$offer2] [$Hoffer]") as ">(%Heq & Hpeq & H & H1)".
       wp_apply (wp_Mutex__Unlock
                  with "[$lock state v slice slice_cap buffer H1   Hgv2 offer   $Hlock]").
-      { unfold chan_inv_inner. iExists (Idle). iFrame.
+      { unfold chan_inv_inner. iExists (@Idle V). iFrame.
       }
       unfold uncurry.
       iRewrite -"Hagree" in "Hcont". done.
@@ -341,7 +341,7 @@ Proof using W.
           iFrame.
           iDestruct (own_slice_len with "Hhd") as %[Hlent _].
           iDestruct (own_slice_cap_wf with "slice_cap") as %Hlen_le_cap.
-          iDestruct (own_slice_cap_slice (slice_val) (W64 1) (DfracOwn 1)) as "H".
+          iDestruct (own_slice_cap_slice (V:=V) slice_val (W64 1) (DfracOwn 1)) as "H".
           { word. }
           iApply "H" in "slice_cap". iFrame.
           destruct buffer.
@@ -610,7 +610,7 @@ Proof using W.
     iCombineNamed "*_inv" as "Hi".
     wp_apply (wp_Mutex__Unlock
                with "[$lock $Hlock Hi]").
-    { iNamed "Hi". iFrame. unfold chan_inv_inner. iFrame. iExists (Idle).
+    { iNamed "Hi". unfold chan_inv_inner. iExists (@Idle V).
       iFrame. iPureIntro. done. }
     iFrame.
   - (* SndWait *)

@@ -158,12 +158,12 @@ iMod (saved_prop_update (R ∗ Q) with "Hsp") as "Hsp".
           apply H. lia.
         }
         {
-         intros i Hi. set_solver. 
+         intros i Hi. set_solver.
         }
       }
       iIntros "[HR' HQ]".
       iDestruct ("HRQs" with "HR'") as "[HQs' HQs_bc']".
-      iFrame. done.
+      iFrame.
     }
   }
   {
@@ -191,7 +191,7 @@ iMod (saved_prop_update (R ∗ Q) with "Hsp") as "Hsp".
       }
        iIntros "[HR' HQ]".
       iDestruct ("HRQs" with "HR'") as "[HQs' HQs_bc']".
-      iFrame. done.
+      iFrame.
     }
   }
   {
@@ -351,8 +351,8 @@ Lemma start_done (ch : loc) (γ : chan_names) :
   ∃ γdone, is_done γdone ch ∗ Notify γdone True.
 Proof.
   iIntros "#Hch Hoc".
-  iMod (ghost_map_alloc_empty) as (γmap) "[Hmap_auth1 Hmap_auth2]".
-  iMod (ghost_map_alloc_empty) as (γmap_bc) "[Hmap_bc_auth1 Hmap_bc_auth2]".
+  iMod (ghost_map_alloc_empty (K:=nat) (V:=gname)) as (γmap) "[Hmap_auth1 Hmap_auth2]".
+  iMod (ghost_map_alloc_empty (K:=nat) (V:=gname)) as (γmap_bc) "[Hmap_bc_auth1 Hmap_bc_auth2]".
   iMod (saved_prop_alloc (emp : iProp Σ) (DfracOwn 1)) as (γacc) "Hacc_full".
   {
     done.
@@ -845,7 +845,6 @@ Proof.
   iApply ((done_receive_broadcast_au _ _ _) with "[] [$HBroadcastNotified] [Hcont]").
   { unfold is_done. iFrame "#". }
   { iNext. iIntros "HQ". iApply "Hcont". iFrame. }
-  Unshelve. done.
 Qed.
 
 (* The lemmas below are for when you want receivers to gain exclusive ownership of something but 

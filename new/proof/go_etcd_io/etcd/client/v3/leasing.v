@@ -66,7 +66,7 @@ Proof.
   iDestruct (big_sepS_list_to_set with "Htoks") as "Htoks".
   { apply NoDup_seq. }
   iMod (inv_alloc N' _ (
-            ∃ ctr m,
+            ∃ ctr (m: gmap nat unit),
               "Hctr" ∷ own_WaitGroup γ ctr ∗
               "Hm" ∷ ghost_map_auth γtoks 1 m ∗
               "%Hm" ∷ ⌜ size (dom m) = Z.to_nat (sint.Z ctr) ⌝ ∗

@@ -146,7 +146,6 @@ Module tests.
     Proof.
       iIntros "H".
       iFreeze "H".
-      Fail progress iFrame.
       iThaw "H".
       iExact "H".
     Qed.

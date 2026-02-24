@@ -277,12 +277,13 @@ Proof.
   iDestruct (cred_frag_split 1 _ with "H") as "(Hlt5&H)".
   iDestruct ("Hwpc") as "(Hwpc&_)".
   rewrite Hnv.
-  iMod (later_tok_decr with "[$]") as (ns' Heq) "Hg".
+  iMod (later_tok_decr with "[$Hg H]") as (ns' Heq) "Hg".
+  { eauto. (* later_tok *) }
   iMod ("Hwpc" with "[$] [$] [$] [Hlc]") as "Hwpc".
   { iApply (lc_weaken with "Hlc").
     apply num_laters_per_step_lt in Heq. lia. }
   iModIntro.
-  iApply (step_fupd_extra.step_fupd2N_le (S (num_laters_per_step ns')) (num_laters_per_step ns) with "[-]").
+  iApply (step_fupd_extra.step_fupd2N_le (S (num_laters_per_step ns')) (S (num_laters_per_step ns)) with "[-]").
   { assert (Hlt: ns' < ns) by lia.
     apply num_laters_per_step_lt in Hlt. lia.
   }
@@ -397,12 +398,13 @@ Proof.
   rewrite wpc0_unfold.
   iDestruct ("Hwpc") as "(Hwpc&_)".
   rewrite Hnv.
-  iMod (later_tok_decr with "[$]") as (ns' Heq) "Hg".
+  iMod (later_tok_decr with "[$Hg Hlt4]") as (ns' Heq) "Hg".
+  { eauto. }
   iMod ("Hwpc" with "[$] [$] [$] [Hlc]") as "Hwpc".
   { iApply (lc_weaken with "Hlc").
     apply num_laters_per_step_lt in Heq. lia. }
   iModIntro.
-  iApply (step_fupd_extra.step_fupd2N_le (S (num_laters_per_step ns')) (num_laters_per_step ns) with "[-]").
+  iApply (step_fupd_extra.step_fupd2N_le (S (num_laters_per_step ns')) (S (num_laters_per_step ns)) with "[-]").
   { assert (Hlt: ns' < ns) by lia.
     apply num_laters_per_step_lt in Hlt. lia.
   }

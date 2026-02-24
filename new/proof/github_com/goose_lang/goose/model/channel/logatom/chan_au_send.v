@@ -116,7 +116,7 @@ Proof using W.
     {
       iModIntro. unfold chan_inv_inner.
       iDestruct "Hsl" as "[Hsl Hos]".
-      iExists (Idle).   simpl.
+      iExists (@Idle V).   simpl.
       iFrame "#". iFrame.
       iPureIntro.
       rewrite /chan_cap_valid //.
@@ -332,7 +332,7 @@ Proof using W.
       iCombine "Hpred1 Hpred2" as "Hp".
       wp_apply (wp_Mutex__Unlock
         with "[$lock state v slice slice_cap buffer Hchanrepfrag Hp H1 $Hlock]").
-      { unfold chan_inv_inner. iExists (Idle). iFrame. done. }
+      { unfold chan_inv_inner. iExists (@Idle V). iFrame. done. }
       iRewrite -"Hpeq" in "HP".
       iRight in "HP". iFrame.
 
@@ -368,7 +368,7 @@ Proof using W.
         ">(%Heq & Hpeq & H & H1)".
       wp_apply (wp_Mutex__Unlock
         with "[$lock state v slice slice_cap buffer Hpred Hgv2 Hpeq H1 $Hlock]").
-      { unfold chan_inv_inner. iExists (Idle). iFrame. }
+      { unfold chan_inv_inner. iExists (@Idle V). iFrame. }
       iRewrite -"H" in "Hcont". done.
 
     + iNamed "phys".
@@ -524,7 +524,7 @@ Proof using W.
     iCombineNamed "*_inv" as "Hi".
     wp_apply (wp_Mutex__Unlock
       with "[$lock $Hlock Hi]").
-    { iNamed "Hi". iFrame. unfold chan_inv_inner. iExists (Idle). iFrame. }
+    { iNamed "Hi". unfold chan_inv_inner. iExists (@Idle V). iFrame. }
     iRight in "HΦ". iFrame.
   - (* SndWait *)
     wp_auto_lc 5.

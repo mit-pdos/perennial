@@ -81,7 +81,7 @@ Section gen_heap_defs.
   Lemma gen_heap_name_reinit {Σ} (hG: gen_heapGS L V Σ) σ :
     ⊢ |==> ∃ names : gen_heap_names, gen_heap_interp (hG := gen_heapG_update hG names) σ.
   Proof.
-    iMod (gen_heap_init_names) as (γh γm) "(Hinterp & Hh & Hm)".
+    iMod (@gen_heap_init_names _ _ _ _ _ (@gen_heap_inG _ _ _ _ _ hG) σ) as (γh γm) "(Hinterp & Hh & Hm)".
     iExists {| gen_heap_heap_name := γh; gen_heap_meta_name := γm |}.
     iFrame. done.
   Qed.
@@ -93,7 +93,7 @@ Section gen_heap_defs.
              gen_heap_exchanger (hG1 := hG1) (hG2 := gen_heapG_update hG1 names) σ σ'.
   Proof.
     iIntros (Hdom) "Hauth".
-    iMod (gen_heap_name_strong_init' σ') as (names) "(Hauth'&Hkeys&_)".
+    iMod (@gen_heap_name_strong_init' _ (@gen_heap_inG _ _ _ _ _ hG1) σ') as (names) "(Hauth'&Hkeys&_)".
     iModIntro. iExists _; iFrame.
     iApply big_sepM_dom.
     rewrite Hdom.

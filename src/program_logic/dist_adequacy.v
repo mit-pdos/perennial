@@ -105,7 +105,7 @@ Proof.
   iClear "HC".
   iMod "H" as (HG') "(HNC&Hσ&Hg&(_&Hwpr))".
   iModIntro. iExists HG'.
-  iFrame. rewrite /wptp. rewrite big_sepL_nil. eauto.
+  iFrame.
 Qed.
 
 Lemma stwpnodes_step dns1 g1 ns D dns2 g2 κ κs :
@@ -275,7 +275,7 @@ Proof.
   iMod Hwp as (global_stateI fork_post) "Hwp".
   iDestruct "Hwp" as (Hpf1a Hpf1b) "(Hg & Hwp & Hφ)".
   set (HI := IrisGS Λ Σ Hinv (global_stateI) (fork_post) f1 f2 Hpf1a Hpf1b).
-  iMod (stwpnodes_strong_adequacy _
+  iDestruct (stwpnodes_strong_adequacy _
                1%Qp n _ _ nsinit _ _ _ _ []
     with "[Hg] [Hwp] [Hlc]") as "H"; first done.
   { rewrite app_nil_r /=. iExact "Hg". }
@@ -295,7 +295,6 @@ Proof.
     by iApply wpr0_wpr.
   }
   { iExactEq "Hlc". f_equal. }
-  iModIntro.
   iApply (step_fupd2N_wand with "H").
   iIntros "H".
   iApply step_fupd2N_S_fupd2. simpl. iMod "H".
@@ -321,7 +320,7 @@ Proof.
   iMod Hwp as (global_stateI fork_post) "Hwp".
   iDestruct "Hwp" as (Hpf1a Hpf1b) "(Hg & Hwp & Hφ)".
   set (HI := IrisGS Λ Σ Hinv (global_stateI) (fork_post) f1 f2 Hpf1a Hpf1b).
-  iMod (stwpnodes_progress _
+  iDestruct (stwpnodes_progress _
                1%Qp n _ _ nsinit _ _ _ _ []
     with "[Hg] [Hwp] [Hlc]") as "H"; first done.
   { exact Hin. }
@@ -343,7 +342,6 @@ Proof.
     by iApply wpr0_wpr.
   }
   { done. }
-  iModIntro.
   iApply (step_fupd2N_wand with "H").
   iIntros "H". iApply step_fupd2_fupd2N; first lia.
   iMod "H". iModIntro. done.

@@ -66,7 +66,7 @@ Proof.
   iExists (array.mk _ []). rewrite /slice_index_ref /=.
   subst.
   replace (_ - _) with 0 by word.
-  iDestruct (array_empty (array_index_ref V _ ptr) (DfracOwn 1)) as "H".
+  iDestruct (array_empty (V:=V) (array_index_ref V _ ptr) (DfracOwn 1)) as "H".
   iExactEq "H".  f_equal.
 Qed.
 

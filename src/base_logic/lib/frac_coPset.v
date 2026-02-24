@@ -242,7 +242,7 @@ Section frac_coPset_prop.
 
   Lemma ownfCP_init_fresh_name_finite (E : gset positive) : ⊢ |==> ∃ γ, ownfCP γ 1 (gset_to_coPset E).
   Proof.
-    iMod (own_alloc _) as "H"; last by iFrame.
+    iMod (own_alloc (fCoPset 1 (gset_to_coPset E))) as "H"; last by iFrame.
     { apply fCoPset_valid2; auto.
       apply difference_infinite; auto.
       * apply top_infinite.

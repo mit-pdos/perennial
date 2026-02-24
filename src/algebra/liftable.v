@@ -56,7 +56,7 @@ Section liftable.
     iDestruct (LiftableP with "Hp") as (mp) "[Hpm #Hpi]"; eauto.
     iDestruct (LiftableQ with "Hq") as (mq) "[Hqm #Hqi]"; eauto.
     iExists (mp ∪ mq).
-    iDestruct (big_sepM_disjoint_pred with "[$Hpm] [$Hqm]") as %?; eauto.
+    iDestruct (@big_sepM_disjoint_pred with "[$Hpm] [$Hqm]") as %?; eauto.
     iDestruct (big_sepM_union with "[$Hpm $Hqm]") as "Hm"; eauto.
     iFrame.
     iIntros "!>" (h2) "Hm".
