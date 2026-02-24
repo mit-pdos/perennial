@@ -111,7 +111,7 @@ Proof.
     + iSplitL.
       * iDestruct (own_slice_len with "Hb") as "[%Hb_len %]".
         apply nil_length_inv in Hb_len. subst.
-        iDestruct (own_slice_nil (DfracOwn 1)) as "Hnil".
+        iDestruct (own_slice_nil (V:=w8) (DfracOwn 1)) as "Hnil".
         iApply "Hnil".
       * iApply own_slice_cap_nil.
   - wp_apply wp_slice_literal as "% _".

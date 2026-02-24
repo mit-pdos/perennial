@@ -322,7 +322,7 @@ Section auth_map.
     iSplitR.
     2: {
       iMod (own_update with "[Hk Hm]") as "Hm".
-      2: iApply own_op; iFrame.
+      2: iApply @own_op; iFrame.
       { eapply auth_update_dealloc.
         eapply delete_singleton_local_update.
         apply Cinl_exclusive.

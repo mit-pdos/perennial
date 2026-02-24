@@ -106,7 +106,7 @@ Proof.
   iDestruct "Hwp" as (Φ) "H". simpl.
   iModIntro. iExists Φ, (λ _ _, True%I), (λ _, True%I).
   set (Hheao := HeapGS _ _ HG HL).
-  iApply (idempotence_wpr _ _ _ _ _ _ _ (λ _, True%I) with "[H] []").
+  iApply (idempotence_wpr _ _ _ _ Φ _ _ (λ _, True%I) with "[H] []").
   { iApply wp_wpc. eauto. }
   { iModIntro. iIntros (????) "_".
     iModIntro.

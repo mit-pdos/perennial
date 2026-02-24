@@ -36,9 +36,9 @@ Lemma post_crash_mono P Q:
   (∀ hL, P hL ⊢ Q hL) →
   post_crash P ⊢ post_crash Q.
 Proof.
-  iIntros (Hmono) "HP". iIntros (???) "Hrel".
+  iIntros (Hmono) "HP". iIntros (σ σ' hL') "Hrel".
   iMod ("HP" with "[$]") as "(H&HP)".
-  iFrame. iApply Hmono. iApply "HP"; eauto.
+  iModIntro. iFrame. iApply (Hmono (HeapGS _ _ _ hL' _)). iApply "HP".
 Qed.
 
 Lemma post_crash_sep P Q:

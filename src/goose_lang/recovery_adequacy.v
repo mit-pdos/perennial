@@ -33,6 +33,8 @@ Proof.
   iDestruct (cred_frag_split with "Hcred") as "(Hpre&Hcred)".
   iMod (proph_map_init κs g.(used_proph_id)) as (proph_names) "Hproph".
 
+  set (creditH:=creditGS_update_pre Σ (@goose_preG_credit ext ffi ffi_sem ffi_interp0 Hffi_adequacy Σ hPre)
+          name_credit).
   iAssert (|={⊤}=> crash_borrow_ginv)%I with "[Hcred]" as ">#Hinv".
   { rewrite /crash_borrow_ginv. iApply (inv_alloc _). iNext. eauto. }
   (* TODO(RJ): reformulate init lemmas to better match what we need here. *)

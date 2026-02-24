@@ -152,7 +152,7 @@ Section lemmas.
     iExists γ.
     replace (fin_to_set K) with (dom m); last first.
     { apply dom_gset_to_gmap. }
-    iDestruct (big_sepM_dom) as "Hm".
+    iDestruct (@big_sepM_dom) as "Hm".
     iDestruct "Hm" as "[Hm1 _]".
     iApply ("Hm1" with "[H]").
     iApply (big_sepM_impl with "H").

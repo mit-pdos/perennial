@@ -29,7 +29,7 @@ Notation own_aprop γ P := (own_aprop_frag γ P 1).
 Lemma own_aprop_auth_alloc :
   ⊢ |==> ∃ γ, own_aprop_auth γ True 0.
 Proof.
-  iMod (ghost_map_alloc ∅) as (γ) "[H _]".
+  iMod (ghost_map_alloc (∅ : gmap gname unit)) as (γ) "[H _]".
   iExists γ. unfold own_aprop_auth. iExists ∅.
   rewrite gset_to_gmap_empty. iFrame. rewrite !big_sepS_empty //.
   iModIntro. repeat iSplitL; try done. iModIntro. iIntros "_ "; done.

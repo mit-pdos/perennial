@@ -65,7 +65,6 @@ Proof.
   wp_alloc ops as "Hops".
   wp_auto.
   wp_for "i".
-  wp_if_destruct; [word|].
   wp_apply (wp_Client__Grant with "[$]") as "* [Hresp Hl]". wp_auto.
   destruct err.
   { (* got an error; early return *)

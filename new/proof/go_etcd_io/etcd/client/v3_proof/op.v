@@ -79,7 +79,6 @@ Lemma wp_Op__applyOpts (op : loc) :
 Proof using W.
   wp_start. wp_auto.
   wp_for "i".
-  wp_if_destruct; [word|].
   by iApply "HΦ".
 Qed.
 
