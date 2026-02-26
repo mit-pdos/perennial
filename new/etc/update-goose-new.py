@@ -148,7 +148,8 @@ def main():
         "--all",
         help="translate all code, assuming it is found in `<ALL>/<proj_name>`",
         metavar="ALL_PATH",
-        default="..",
+        nargs="?",
+        const="..",
     )
     parser.add_argument(
         "--goose-examples",
